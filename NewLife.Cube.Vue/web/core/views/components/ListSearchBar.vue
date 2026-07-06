@@ -7,13 +7,12 @@ interface SelectOption {
   label: string;
 }
 
-/** 筛选字段类型 */
 type FieldType =
-  | 'text' // 普通文本输入
-  | 'select' // 单选下拉
-  | 'multi-select' // 多选下拉（标签式）
-  | 'number-range' // 数字范围：最小值 ~ 最大值
-  | 'date-range'; // 日期范围：开始 ~ 结束
+  | 'text'
+  | 'select'
+  | 'multi-select'
+  | 'number-range'
+  | 'date-range';
 
 interface SearchField {
   key: string;
@@ -21,13 +20,11 @@ interface SearchField {
   type: FieldType;
   placeholder?: string;
   options?: SelectOption[];
-  /** 占用的列数，默认 1，最大 4 */
   span?: 1 | 2 | 3 | 4;
 }
 
 interface Props {
   fields?: SearchField[];
-  /** 折叠状态下显示的行数，默认 1 */
   visibleRows?: number;
 }
 
@@ -59,7 +56,6 @@ const COLS = 4;
 const collapsed = ref(true);
 const formData = reactive<Record<string, unknown>>({});
 
-/** 折叠时最多显示的字段数（按 span 累计列数，不超过 visibleRows * COLS） */
 const visibleFields = computed(() => {
   if (!collapsed.value) return props.fields;
   const limit = props.visibleRows * COLS;
@@ -103,7 +99,6 @@ function toggleCollapse() {
 <template>
   <div class="list-search-bar">
     <div class="lsb-body">
-      <!-- 字段网格 -->
       <div class="lsb-grid">
         <template v-for="field in visibleFields" :key="field.key">
           <div
@@ -111,8 +106,6 @@ function toggleCollapse() {
             :style="field.span && field.span > 1 ? { gridColumn: `span ${field.span}` } : undefined"
           >
             <label class="lsb-label">{{ field.label }}</label>
-
-            <!-- 文本输入 -->
             <el-input
               v-if="field.type === 'text'"
               v-model="formData[field.key] as string"
@@ -121,8 +114,6 @@ function toggleCollapse() {
               class="lsb-input"
               @keyup.enter="handleSearch"
             />
-
-            <!-- 单选下拉 -->
             <el-select
               v-else-if="field.type === 'select'"
               v-model="formData[field.key]"
@@ -137,8 +128,6 @@ function toggleCollapse() {
                 :value="opt.value"
               />
             </el-select>
-
-            <!-- 多选下拉 -->
             <el-select
               v-else-if="field.type === 'multi-select'"
               v-model="formData[field.key]"
@@ -156,8 +145,6 @@ function toggleCollapse() {
                 :value="opt.value"
               />
             </el-select>
-
-            <!-- 数字范围 -->
             <div v-else-if="field.type === 'number-range'" class="lsb-range">
               <el-input-number
                 v-model="formData[`${field.key}_min`] as number"
@@ -173,8 +160,6 @@ function toggleCollapse() {
                 class="lsb-range-num"
               />
             </div>
-
-            <!-- 日期范围 -->
             <el-date-picker
               v-else-if="field.type === 'date-range'"
               v-model="formData[field.key]"
@@ -188,8 +173,6 @@ function toggleCollapse() {
           </div>
         </template>
       </div>
-
-      <!-- 操作按钮区（固定右侧，与第一行对齐） -->
       <div class="lsb-actions">
         <el-button v-if="hasMore" class="lsb-btn lsb-btn--ghost" @click="toggleCollapse">
           <el-icon><ArrowUp v-if="!collapsed" /><ArrowDown v-else /></el-icon>
@@ -206,76 +189,77 @@ function toggleCollapse() {
 
 <style lang="scss" scoped>
 .list-search-bar {
-  background: var(--el-bg-color-overlay);
-  border: 1px solid var(--el-border-color-light);
-  border-radius: var(--el-border-radius-base);
-  box-shadow: var(--el-box-shadow-light);
-  padding: 12px 16px;
+  width: 100%;
 }
 
-/* ── 主体：字段网格 + 右侧操作按钮 ── */
 .lsb-body {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 16px;
 }
 
-/* ── 4列字段网格 ── */
 .lsb-grid {
   flex: 1;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px 12px;
+  gap: 12px 16px;
   min-width: 0;
 }
 
-/* ── 单个字段 ── */
 .lsb-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
 }
 
 .lsb-label {
-  font-family: 'Fira Sans', system-ui, sans-serif;
+  font-family: var(--el-font-family);
   font-size: 12px;
   font-weight: 500;
-  line-height: 1.2;
+  line-height: 1.3;
   color: var(--el-text-color-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-/* ── 通用输入控件 ── */
 .lsb-input {
   width: 100%;
 
   :deep(.el-input__wrapper),
   :deep(.el-select__wrapper) {
-    min-height: 34px;
-    border-radius: 6px;
+    min-height: 36px;
+    border-radius: var(--el-border-radius-base);
     background: var(--el-bg-color);
-    box-shadow: 0 0 0 1px var(--el-border-color-light) inset;
+    border: 1px solid var(--el-border-color-light);
+    box-shadow: none;
     transition:
-      box-shadow 0.15s ease,
-      background 0.15s ease;
+      border-color 0.15s ease,
+      background 0.15s ease,
+      box-shadow 0.15s ease;
   }
 
   :deep(.el-input__wrapper.is-focus),
   :deep(.el-select__wrapper.is-focused) {
     background: var(--el-fill-color-blank);
+    border-color: var(--el-color-primary);
     box-shadow:
       0 0 0 1px var(--el-color-primary) inset,
-      0 0 0 3px rgba(29, 112, 64, 0.08);
+      0 0 0 3px var(--el-color-primary-light-8);
   }
 
   :deep(.el-input__inner),
   :deep(.el-select__selected-item) {
-    font-family: 'Fira Sans', system-ui, sans-serif;
+    font-family: var(--el-font-family);
     font-size: 13px;
     color: var(--el-text-color-primary);
+  }
+
+  :deep(.el-input__inner::placeholder) {
+    color: var(--el-text-color-placeholder);
   }
 }
 
@@ -283,13 +267,26 @@ function toggleCollapse() {
   :deep(.el-date-editor) {
     width: 100%;
   }
+
+  :deep(.el-input__wrapper) {
+    min-height: 36px;
+    border-radius: var(--el-border-radius-base);
+    background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color-light);
+  }
+
+  :deep(.el-input__wrapper.is-focus) {
+    border-color: var(--el-color-primary);
+    box-shadow:
+      0 0 0 1px var(--el-color-primary) inset,
+      0 0 0 3px var(--el-color-primary-light-8);
+  }
 }
 
-/* ── 数字范围 ── */
 .lsb-range {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .lsb-range-num {
@@ -297,21 +294,22 @@ function toggleCollapse() {
   min-width: 0;
 
   :deep(.el-input__wrapper) {
-    min-height: 34px;
-    border-radius: 6px;
+    min-height: 36px;
+    border-radius: var(--el-border-radius-base);
     background: var(--el-bg-color);
-    box-shadow: 0 0 0 1px var(--el-border-color-light) inset;
+    border: 1px solid var(--el-border-color-light);
   }
 
   :deep(.el-input__wrapper.is-focus) {
     background: var(--el-fill-color-blank);
+    border-color: var(--el-color-primary);
     box-shadow:
       0 0 0 1px var(--el-color-primary) inset,
-      0 0 0 3px rgba(29, 112, 64, 0.08);
+      0 0 0 3px var(--el-color-primary-light-8);
   }
 
   :deep(.el-input__inner) {
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-family: var(--el-font-family-mono);
     font-size: 13px;
     color: var(--el-text-color-primary);
     text-align: center;
@@ -321,63 +319,63 @@ function toggleCollapse() {
 .lsb-range-sep {
   flex-shrink: 0;
   font-size: 13px;
+  font-weight: 500;
   color: var(--el-text-color-secondary);
   line-height: 1;
 }
 
-/* ── 操作按钮（右侧竖排或横排） ── */
 .lsb-actions {
   flex-shrink: 0;
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 8px;
-  padding-top: 20px; /* 与 label 高度对齐 */
+  padding-top: 22px;
 }
 
 .lsb-btn {
-  min-height: 34px;
-  padding: 0 14px;
-  border-radius: 6px;
-  font-family: 'Fira Sans', system-ui, sans-serif;
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: var(--el-border-radius-base);
+  font-family: var(--el-font-family);
   font-size: 13px;
   font-weight: 500;
+  transition: all 0.15s ease;
 
   &--primary {
     --el-button-bg-color: var(--el-color-primary);
     --el-button-border-color: var(--el-color-primary);
     --el-button-hover-bg-color: var(--el-color-primary-dark-2);
     --el-button-hover-border-color: var(--el-color-primary-dark-2);
-    --el-button-active-bg-color: var(--el-color-primary);
-    --el-button-active-border-color: var(--el-color-primary);
+    --el-button-active-bg-color: var(--el-color-primary-dark-2);
+    --el-button-active-border-color: var(--el-color-primary-dark-2);
     --el-button-text-color: var(--el-color-white);
   }
 
   &--secondary {
-    --el-button-bg-color: var(--el-fill-color-blank);
+    --el-button-bg-color: transparent;
     --el-button-border-color: var(--el-border-color-light);
     --el-button-text-color: var(--el-text-color-regular);
     --el-button-hover-bg-color: var(--el-color-primary-light-9);
-    --el-button-hover-border-color: var(--el-color-primary-light-8);
+    --el-button-hover-border-color: var(--el-color-primary);
     --el-button-hover-text-color: var(--el-color-primary);
     --el-button-active-bg-color: var(--el-color-primary-light-8);
-    --el-button-active-border-color: var(--el-color-primary-light-8);
+    --el-button-active-border-color: var(--el-color-primary);
     --el-button-active-text-color: var(--el-color-primary);
     margin-left: 0;
   }
 
   &--ghost {
     --el-button-bg-color: transparent;
-    --el-button-border-color: var(--el-border-color-light);
-    --el-button-text-color: var(--el-text-color-regular);
+    --el-button-border-color: var(--el-border-color-lighter);
+    --el-button-text-color: var(--el-text-color-secondary);
     --el-button-hover-bg-color: var(--el-bg-color);
-    --el-button-hover-border-color: var(--el-color-primary-light-8);
-    --el-button-hover-text-color: var(--el-color-primary);
+    --el-button-hover-border-color: var(--el-border-color);
+    --el-button-hover-text-color: var(--el-text-color-regular);
     margin-left: 0;
   }
 }
 
-/* ── 响应式：小屏收为单列 ── */
 @media (max-width: 900px) {
   .lsb-body {
     flex-direction: column;

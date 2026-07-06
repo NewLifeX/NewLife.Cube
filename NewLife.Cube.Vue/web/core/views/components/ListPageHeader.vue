@@ -25,8 +25,12 @@ const pageTitle = computed(
 </template>
 
 <style lang="scss" scoped>
+/**
+ * - 大标题使用无衬线字体，负字间距
+ * - 副标题使用浅色调
+ */
 .list-page-header {
-  padding: 0 0 6px;
+  padding: 0 0 8px;
   display: flex;
 }
 
@@ -37,19 +41,21 @@ const pageTitle = computed(
 }
 
 .lph-title {
-  font-family: 'Libre Baskerville', Georgia, serif;
-  font-size: 27px;
-  font-weight: 700;
+  font-family: var(--el-font-family);
+  font-size: 24px;
+  font-weight: 600;
   color: var(--el-text-color-primary);
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
   margin: 0;
-  line-height: 1.2;
+  line-height: 1.3;
 }
 
 .lph-subtitle {
-  font-family: 'Fira Sans', system-ui, sans-serif;
-  font-size: 13.5px;
+  font-family: var(--el-font-family);
+  font-size: 13px;
+  font-weight: 400;
   color: var(--el-text-color-secondary);
   margin: 0;
+  line-height: 1.4;
 }
 </style>

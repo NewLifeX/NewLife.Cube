@@ -48,20 +48,19 @@ function handleSizeChange(size: number) {
 .list-pagination {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  background: var(--el-bg-color-overlay);
-  border: 1px solid var(--el-border-color-light);
-  border-radius: var(--el-border-radius-base);
-  box-shadow: var(--el-box-shadow-light);
-  padding: 10px 16px;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .lp-pagination {
+  width: 100%;
+
   :deep(.el-pagination) {
     flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 8px 12px;
-    font-family: 'Fira Sans', system-ui, sans-serif;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--el-font-family);
     color: var(--el-text-color-secondary);
   }
 
@@ -73,9 +72,17 @@ function handleSizeChange(size: number) {
 
   :deep(.el-select .el-input__wrapper),
   :deep(.el-pagination__editor.el-input .el-input__wrapper) {
-    border-radius: 6px;
-    box-shadow: 0 0 0 1px var(--el-border-color-light) inset;
-    background: var(--el-fill-color-blank);
+    min-height: 32px;
+    border-radius: var(--el-border-radius-base);
+    background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color-light);
+    box-shadow: none;
+  }
+
+  :deep(.el-select .el-input__wrapper.is-focus),
+  :deep(.el-pagination__editor.el-input .el-input__wrapper.is-focus) {
+    border-color: var(--el-color-primary);
+    box-shadow: 0 0 0 1px var(--el-color-primary) inset;
   }
 
   :deep(.btn-prev),
@@ -83,28 +90,30 @@ function handleSizeChange(size: number) {
   :deep(.el-pager li) {
     min-width: 32px;
     height: 32px;
-    border-radius: 6px;
+    border-radius: var(--el-border-radius-base);
     border: 1px solid var(--el-border-color-light);
-    background: var(--el-fill-color-blank);
+    background: var(--el-bg-color);
     color: var(--el-text-color-regular);
     transition:
-      background 0.13s var(--ease),
-      border-color 0.13s var(--ease),
-      color 0.13s var(--ease);
+      background 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease;
+    font-weight: 500;
   }
 
   :deep(.btn-prev:disabled),
   :deep(.btn-next:disabled) {
-    opacity: 0.4;
+    opacity: 0.35;
     background: var(--el-disabled-bg-color);
-    border-color: var(--el-border-color-light);
+    border-color: var(--el-border-color-lighter);
+    cursor: not-allowed;
   }
 
   :deep(.btn-prev:not(:disabled):hover),
   :deep(.btn-next:not(:disabled):hover),
   :deep(.el-pager li:hover) {
     background: var(--el-color-primary-light-9);
-    border-color: var(--el-color-primary-light-8);
+    border-color: var(--el-color-primary);
     color: var(--el-color-primary);
   }
 
@@ -112,19 +121,16 @@ function handleSizeChange(size: number) {
     background: var(--el-color-primary);
     border-color: var(--el-color-primary);
     color: var(--el-color-white);
+    font-weight: 600;
   }
 }
 
 @media (max-width: 768px) {
-  .list-pagination {
-    justify-content: flex-start;
-  }
-
   .lp-pagination {
-    width: 100%;
-
     :deep(.el-pagination) {
-      justify-content: flex-start;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
     }
   }
 }

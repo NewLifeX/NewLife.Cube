@@ -160,7 +160,6 @@ const PageFooterComp = inject(ListPageFooterKey, DefaultListPageFooter);
 
 const apiPrefix = computed(() => routeToApiPrefix(route.path));
 
-// 弹窗表单相关
 const dialogVisible = ref(false);
 const dialogTitle = ref('新增');
 const dialogMode = ref<'add' | 'edit'>('add');
@@ -306,7 +305,10 @@ const computedColumns = computed<Column[]>(() => {
         col.mono = true;
         col.width = '80px';
       }
-      if (f.typeName === 'String' && (f.itemType === 'image' || (f.itemType && f.itemType.startsWith('file')))) {
+      if (
+        f.typeName === 'String' &&
+        (f.itemType === 'image' || (f.itemType && f.itemType.startsWith('file')))
+      ) {
         col.width = '100px';
       }
       return col;
@@ -316,10 +318,10 @@ const computedColumns = computed<Column[]>(() => {
 async function fetchPageMeta() {
   if (!auto.value) return;
   try {
-    const url =  apiPrefix.value + '/GetPage';
+    const url = apiPrefix.value + '/GetPage';
     console.log('[DefaultList] GetPage:', url);
     const res = await request({ url, method: 'get' });
-    pageMeta.value = (res as any).data ?? res as unknown as PageMeta;
+    pageMeta.value = (res as any).data ?? (res as unknown as PageMeta);
   } catch (err) {
     console.error('[DefaultList] GetPage failed:', err);
   }
@@ -329,13 +331,16 @@ async function fetchList() {
   if (!auto.value) return;
   internalLoading.value = true;
   try {
-    const params: Record<string, unknown> = { pageIndex: internalPage.value, pageSize: internalPageSize.value };
+    const params: Record<string, unknown> = {
+      pageIndex: internalPage.value,
+      pageSize: internalPageSize.value,
+    };
     for (const [k, v] of Object.entries(filterData)) {
       if (v !== '' && v !== null && v !== undefined) {
         params[k] = v;
       }
     }
-    const url =  apiPrefix.value;
+    const url = apiPrefix.value;
     console.log('[DefaultList] Index:', url, params);
     const res: any = await request({ url, method: 'get', params });
     if (res && res.data && res.page) {
@@ -345,7 +350,7 @@ async function fetchList() {
       internalList.value = res;
       internalTotal.value = res.length;
     } else {
-      internalList.value = (res && res.data) ? res.data : (res ?? []);
+      internalList.value = res && res.data ? res.data : (res ?? []);
       internalTotal.value = internalList.value.length;
     }
   } catch (err) {
@@ -440,15 +445,18 @@ const renderPage = computed(() => (auto.value ? internalPage.value : props.curre
 const renderPageSize = computed(() => (auto.value ? internalPageSize.value : props.pageSize));
 const renderLoading = computed(() => (auto.value ? internalLoading.value : props.loading));
 
-watch(() => route.path, () => {
-  if (auto.value) {
-    internalPage.value = 1;
-    pageMeta.value = null;
-    internalList.value = [];
-    fetchPageMeta();
-    fetchList();
-  }
-});
+watch(
+  () => route.path,
+  () => {
+    if (auto.value) {
+      internalPage.value = 1;
+      pageMeta.value = null;
+      internalList.value = [];
+      fetchPageMeta();
+      fetchList();
+    }
+  },
+);
 
 onMounted(async () => {
   if (auto.value) {
@@ -464,24 +472,60 @@ onMounted(async () => {
       <component :is="PageHeaderComp" :title="title" :subtitle="subtitle" />
     </slot>
     <div class="lp-body">
-      <slot name="search">
-        <component :is="SearchBarComp" :fields="searchFields ?? computedSearchFields" @search="handleSearch" @reset="handleReset" />
-      </slot>
-      <slot name="toolbar">
-        <component :is="ToolbarComp" @new="handleNew" @delete="handleDelete" @export="handleExport" @refresh="handleRefresh" />
-      </slot>
-      <slot name="table">
-        <component :is="TableContentComp" :columns="columns ?? computedColumns" :data="renderData" :loading="renderLoading" @edit="handleEditRow" @delete="handleDeleteRowTable" />
-      </slot>
-      <slot name="pagination">
-        <component :is="PaginationComp" :total="renderTotal" :current-page="renderPage" :page-size="renderPageSize" @update:current-page="handlePageChange" @update:page-size="handlePageSizeChange" />
-      </slot>
+      <div class="lp-card">
+        <div class="lp-card-header">
+          <slot name="search">
+            <div class="lp-search-area">
+              <component
+                :is="SearchBarComp"
+                :fields="searchFields ?? computedSearchFields"
+                @search="handleSearch"
+                @reset="handleReset"
+              />
+            </div>
+          </slot>
+          <div class="lp-divider"></div>
+          <slot name="toolbar">
+            <div class="lp-toolbar-area">
+              <component
+                :is="ToolbarComp"
+                @new="handleNew"
+                @delete="handleDelete"
+                @export="handleExport"
+                @refresh="handleRefresh"
+              />
+            </div>
+          </slot>
+        </div>
+        <div class="lp-card-body">
+          <slot name="table">
+            <component
+              :is="TableContentComp"
+              :columns="columns ?? computedColumns"
+              :data="renderData"
+              :loading="renderLoading"
+              @edit="handleEditRow"
+              @delete="handleDeleteRowTable"
+            />
+          </slot>
+        </div>
+        <div class="lp-card-footer">
+          <slot name="pagination">
+            <component
+              :is="PaginationComp"
+              :total="renderTotal"
+              :current-page="renderPage"
+              :page-size="renderPageSize"
+              @update:current-page="handlePageChange"
+              @update:page-size="handlePageSizeChange"
+            />
+          </slot>
+        </div>
+      </div>
       <slot name="footer">
         <component :is="PageFooterComp" />
       </slot>
     </div>
-
-    <!-- 新增/编辑弹窗 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="700px" destroy-on-close>
       <FormPage
         :fields="dialogFields"
@@ -506,19 +550,108 @@ onMounted(async () => {
 .lp-body {
   flex: 1;
   overflow-y: auto;
-  padding: 20px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  background: var(--bg);
+  padding: var(--el-main-padding, 24px);
+  background: var(--el-bg-color-page);
+}
 
-  &::-webkit-scrollbar {
-    width: 6px;
+.lp-card {
+  background: var(--el-bg-color-overlay);
+  border: 1px solid var(--el-border-color-light);
+  border-radius: var(--el-border-radius-base);
+  box-shadow: var(--el-box-shadow-light);
+  overflow: hidden;
+  animation: fadeInUp 0.3s ease;
+}
+
+.lp-card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--el-border-color-light);
+}
+
+.lp-search-area {
+  margin-bottom: 0;
+}
+
+.lp-divider {
+  height: 1px;
+  background: var(--el-border-color-light);
+  margin: 12px 0;
+}
+
+.lp-toolbar-area {
+  margin-top: 0;
+}
+
+.lp-card-body {
+  min-height: 200px;
+}
+
+.lp-card-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--el-border-color-light);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+:deep(.el-dialog) {
+  border-radius: var(--el-border-radius-base);
+  background: var(--el-bg-color-overlay);
+  box-shadow: var(--el-box-shadow-dark);
+}
+
+:deep(.el-dialog__header) {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--el-border-color-light);
+}
+
+:deep(.el-dialog__title) {
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+:deep(.el-dialog__body) {
+  padding: 20px;
+  color: var(--el-text-color-regular);
+}
+
+@media (max-width: 768px) {
+  .lp-body {
+    padding: 16px;
   }
 
-  &::-webkit-scrollbar-thumb {
-    background: #c8d4c8;
-    border-radius: 3px;
+  .lp-card {
+    border-radius: var(--el-border-radius-sm);
+  }
+
+  .lp-card-header {
+    padding: 12px 16px;
+  }
+
+  .lp-card-footer {
+    padding: 10px 16px;
+  }
+}
+
+@media (max-width: 560px) {
+  .lp-body {
+    padding: 12px;
+  }
+
+  .lp-card-header {
+    padding: 10px 12px;
+  }
+
+  .lp-card-footer {
+    padding: 8px 12px;
   }
 }
 </style>

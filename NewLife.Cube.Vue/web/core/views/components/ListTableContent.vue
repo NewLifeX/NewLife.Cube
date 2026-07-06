@@ -66,6 +66,8 @@ function getSelectionColumnWidth() {
       v-loading="loading"
       empty-text=""
       header-row-class-name="ltc-header-row"
+      stripe
+      border
     >
       <el-table-column
         v-if="selectable"
@@ -81,10 +83,18 @@ function getSelectionColumnWidth() {
         :label="col.label"
         :width="col.width"
         :align="col.align ?? 'left'"
-        show-overflow-tooltip
       >
+        <template #header>
+          <el-tooltip :content="col.label" placement="top" :show-after="500">
+            <span class="ltc-header-text">{{ col.label }}</span>
+          </el-tooltip>
+        </template>
         <template #default="scope">
-          <template v-if="col.key === 'status' && getStatusInfo(String(getValueByKey(scope.row, col.key) ?? ''))">
+          <template
+            v-if="
+              col.key === 'status' && getStatusInfo(String(getValueByKey(scope.row, col.key) ?? ''))
+            "
+          >
             <el-tag
               effect="plain"
               round
@@ -101,26 +111,40 @@ function getSelectionColumnWidth() {
       </el-table-column>
 
       <el-table-column label="操作" width="120" fixed="right" align="center">
+        <template #header>
+          <el-tooltip content="操作" placement="top" :show-after="500">
+            <span class="ltc-header-text">操作</span>
+          </el-tooltip>
+        </template>
         <template #default="scope">
-          <el-button type="primary" link @click="emit('edit', scope.row)">编辑</el-button>
-          <el-button type="danger" link @click="emit('delete', scope.row)">删除</el-button>
+          <div class="ltc-actions">
+            <button class="ltc-action-btn ltc-action-btn--edit" @click="emit('edit', scope.row)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+                <path d="m15 5 4 4"></path>
+              </svg>
+              <span>编辑</span>
+            </button>
+            <button class="ltc-action-btn ltc-action-btn--delete" @click="emit('delete', scope.row)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+              </svg>
+              <span>删除</span>
+            </button>
+          </div>
         </template>
       </el-table-column>
 
-      <template #empty>
-        <div class="ltc-empty">暂无数据</div>
-      </template>
+
     </el-table>
   </div>
 </template>
 
 <style lang="scss" scoped>
 .list-table-content {
-  background: var(--el-bg-color-overlay);
-  border: 1px solid var(--el-border-color-light);
-  border-radius: var(--el-border-radius-base);
-  box-shadow: var(--el-box-shadow-light);
-  overflow: hidden;
+  width: 100%;
 }
 
 .ltc-table {
@@ -129,33 +153,42 @@ function getSelectionColumnWidth() {
   }
 
   :deep(.el-table__header-wrapper th.el-table__cell) {
-    background: var(--el-bg-color);
-    border-bottom: 1px solid var(--el-border-color-light);
+    background: var(--el-fill-color-lighter);
+    border-bottom: 2px solid var(--el-border-color-light);
     padding: 0;
   }
 
   :deep(.el-table__header-wrapper .cell) {
-    padding: 10px 14px;
-    font-family: 'Fira Sans', system-ui, sans-serif;
-    font-size: 11px;
+    padding: 14px 16px;
+    font-family: var(--el-font-family);
+    font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     color: var(--el-text-color-secondary);
   }
 
   :deep(.el-table__body-wrapper td.el-table__cell) {
     padding: 0;
-    border-bottom: 1px solid var(--el-border-color-light);
+    border-bottom: 1px solid var(--el-border-color-lighter);
+    transition: background 0.15s ease;
   }
 
   :deep(.el-table__body tr:hover > td.el-table__cell) {
-    background: var(--table-row-hover, var(--el-color-primary-light-9));
+    background: var(--el-color-primary-light-9);
+  }
+
+  :deep(.el-table__body tr.el-table__row--striped > td.el-table__cell) {
+    background: var(--el-fill-color-lighter);
+  }
+
+  :deep(.el-table__body tr.el-table__row--striped:hover > td.el-table__cell) {
+    background: var(--el-color-primary-light-9);
   }
 
   :deep(.el-table__body .cell) {
-    padding: 12px 14px;
-    line-height: 1.4;
+    padding: 14px 16px;
+    line-height: 1.5;
   }
 
   :deep(.el-checkbox__input.is-checked .el-checkbox__inner),
@@ -167,61 +200,112 @@ function getSelectionColumnWidth() {
   :deep(.el-checkbox__inner:hover) {
     border-color: var(--el-color-primary);
   }
+
+  :deep(.el-table__fixed-right) {
+    border-left: 1px solid var(--el-border-color-light);
+  }
+
+  :deep(.el-table__fixed-right::before) {
+    background-color: transparent;
+  }
+}
+
+.ltc-header-text {
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
 }
 
 .ltc-cell-text {
-  font-family: 'Fira Sans', system-ui, sans-serif;
+  font-family: var(--el-font-family);
   font-size: 13px;
   color: var(--el-text-color-primary);
 
   &--mono {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12.5px;
+    font-family: var(--el-font-family-mono);
+    font-size: 12px;
+    font-weight: 500;
   }
 }
 
-.ltc-empty {
-  padding: 48px 16px;
-  text-align: center;
-  color: var(--el-text-color-secondary);
-  font-family: 'Fira Sans', system-ui, sans-serif;
-  font-size: 13px;
+.ltc-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ltc-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &--edit {
+    color: var(--el-text-color-secondary);
+
+    &:hover {
+      background: var(--el-color-primary-light-9);
+      color: var(--el-color-primary);
+    }
+  }
+
+  &--delete {
+    color: var(--el-text-color-secondary);
+
+    &:hover {
+      background: var(--el-color-danger-light-9);
+      color: var(--el-color-danger);
+    }
+  }
 }
 
 .ltc-tag {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-family: 'Fira Sans', system-ui, sans-serif;
+  gap: 6px;
+  font-family: var(--el-font-family);
   font-size: 12px;
   font-weight: 500;
-  padding: 3px 9px;
+  padding: 4px 12px;
+  border-radius: var(--el-border-radius-round);
   border: none;
 
   &::before {
     content: '';
-    width: 5px;
-    height: 5px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     background: currentColor;
     flex-shrink: 0;
   }
 
   &--ok {
-    background: var(--okl);
-    color: var(--ok);
+    background: var(--el-color-success-light-9);
+    color: var(--el-color-success);
   }
+
   &--wn {
-    background: var(--wnl);
-    color: var(--wn);
+    background: var(--el-color-warning-light-9);
+    color: var(--el-color-warning);
   }
+
   &--er {
-    background: var(--erl);
+    background: var(--el-color-danger-light-9);
     color: var(--el-color-danger);
   }
+
   &--in {
-    background: var(--inl);
-    color: var(--in);
+    background: var(--el-fill-color);
+    color: var(--el-text-color-secondary);
   }
 }
 </style>

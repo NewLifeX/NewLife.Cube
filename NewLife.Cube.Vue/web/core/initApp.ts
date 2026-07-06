@@ -194,7 +194,11 @@ export const initApp = async (optionsOrConfigure?: InitAppOptions | ConfigureFun
   app.use(router);
   app.use(pinia);
   app.use(i18n); // 添加 i18n 插件
-  app.use(ElementPlus);
+  app.use(ElementPlus, {
+    table: {
+      showOverflowTooltip: true,
+    },
+  });
 
   // 注册页面 Section 覆盖组件
   // 优先级：options.sections（手动指定）> virtual:cube-front-sections（插件自动扫描）
