@@ -186,33 +186,33 @@ apps/{app-name}/src/views/{area}/{controller}/index.vue
 
 **常用 token 速查：**
 
-| 语义 | token | 用途 |
-|------|-------|------|
-| 背景色 | `var(--el-bg-color)` | 页面主体背景 |
-| 卡片/浮层面板背景 | `var(--el-bg-color-overlay)` | 弹窗、卡片、下拉面板 |
-| 填充色 | `var(--el-fill-color-light)` | 输入框背景、搜索栏背景 |
-| 一级文字色 | `var(--el-text-color-primary)` | 标题、正文 |
-| 二级文字色 | `var(--el-text-color-regular)` | 次要信息 |
-| 三级文字色 | `var(--el-text-color-secondary)` | 提示文字、占位符 |
-| 边框色 | `var(--el-border-color)` | 表格、卡片边框 |
-| 浅边框色 | `var(--el-border-color-light)` | 分割线、搜索栏边框 |
-| 主色 | `var(--el-color-primary)` | 按钮、链接、激活态 |
-| 成功色 | `var(--el-color-success)` | 成功状态 |
-| 警告色 | `var(--el-color-warning)` | 警告状态 |
-| 危险色 | `var(--el-color-danger)` | 错误、删除 |
-| 圆角 | `var(--el-border-radius-base)` | 卡片、弹窗圆角 |
-| 小圆角 | `var(--el-border-radius-small)` | 按钮、输入框圆角 |
-| 浅阴影 | `var(--el-box-shadow-light)` | 卡片阴影 |
-| 深阴影 | `var(--el-box-shadow)` | 下拉面板、弹窗阴影 |
-| 侧边栏宽度 | `var(--cube-layout-sidebar-width)` | 布局结构 |
-| 导航栏高度 | `var(--cube-layout-nav-height)` | 布局结构 |
-| 内容区域内边距 | `var(--cube-layout-content-padding)` | 布局结构 |
+| 语义              | token                                | 用途                   |
+| ----------------- | ------------------------------------ | ---------------------- |
+| 背景色            | `var(--el-bg-color)`                 | 页面主体背景           |
+| 卡片/浮层面板背景 | `var(--el-bg-color-overlay)`         | 弹窗、卡片、下拉面板   |
+| 填充色            | `var(--el-fill-color-light)`         | 输入框背景、搜索栏背景 |
+| 一级文字色        | `var(--el-text-color-primary)`       | 标题、正文             |
+| 二级文字色        | `var(--el-text-color-regular)`       | 次要信息               |
+| 三级文字色        | `var(--el-text-color-secondary)`     | 提示文字、占位符       |
+| 边框色            | `var(--el-border-color)`             | 表格、卡片边框         |
+| 浅边框色          | `var(--el-border-color-light)`       | 分割线、搜索栏边框     |
+| 主色              | `var(--el-color-primary)`            | 按钮、链接、激活态     |
+| 成功色            | `var(--el-color-success)`            | 成功状态               |
+| 警告色            | `var(--el-color-warning)`            | 警告状态               |
+| 危险色            | `var(--el-color-danger)`             | 错误、删除             |
+| 圆角              | `var(--el-border-radius-base)`       | 卡片、弹窗圆角         |
+| 小圆角            | `var(--el-border-radius-small)`      | 按钮、输入框圆角       |
+| 浅阴影            | `var(--el-box-shadow-light)`         | 卡片阴影               |
+| 深阴影            | `var(--el-box-shadow)`               | 下拉面板、弹窗阴影     |
+| 侧边栏宽度        | `var(--cube-layout-sidebar-width)`   | 布局结构               |
+| 导航栏高度        | `var(--cube-layout-nav-height)`      | 布局结构               |
+| 内容区域内边距    | `var(--cube-layout-content-padding)` | 布局结构               |
 
 ### 自定义页面对接后端 API
 
 自定义页面中可通过 `usePageApi(area, controller)` composable 快速对接后端 CRUD API，无需为每个模块手写请求逻辑。
 
-> **前提**：前端项目需在 `package.json` 中添加 `"@cube/api-core": "workspace:*"` 依赖，根目录 `pnpm-workspace.yaml` 包含 `- "Cube/packages/*"`。参考 SmartMES 项目的实现。
+> **前提**：前端项目需在 `package.json` 中添加 `"@cube/api-core": "workspace:*"` 依赖，根目录 `pnpm-workspace.yaml` 包含 `- "Cube/packages/*"`。
 
 #### 全局 API 实例
 
@@ -317,7 +317,7 @@ onMounted(() => fetchList());
 
 ### 第五步：刷新验证
 
-- 确保后端项目（SmartMES.Web）正在运行
+- 确保后端项目正在运行
 - 刷新浏览器页面，框架会自动加载新页面
 - 页面路径为 `/{area}/{controller}`，无需手动输入路由配置
 
@@ -494,10 +494,10 @@ const typeLabel = createEnumLabel(typeOptions);
 
 **`createEnumLabel` 自动处理以下情况：**
 
-| 输入值 | 选项中有匹配 | 选项中无匹配 | 说明 |
-| ------ | ------------ | ------------ | ---- |
-| `null` / `undefined` / `''` | — | `"未设置"` | 空值统一显示 |
-| `0` | 匹配成员的 label | `"未设置"` | 0 且无对应成员 |
-| `1`/`2`/... | 匹配成员的 label | 原始值字符串 | 有匹配显示 label |
+| 输入值                      | 选项中有匹配     | 选项中无匹配 | 说明             |
+| --------------------------- | ---------------- | ------------ | ---------------- |
+| `null` / `undefined` / `''` | —                | `"未设置"`   | 空值统一显示     |
+| `0`                         | 匹配成员的 label | `"未设置"`   | 0 且无对应成员   |
+| `1`/`2`/...                 | 匹配成员的 label | 原始值字符串 | 有匹配显示 label |
 
 > **不需要再手写** `if (v == null || v === '' || Number(v) === 0) return '未设置'` 这类重复代码。
