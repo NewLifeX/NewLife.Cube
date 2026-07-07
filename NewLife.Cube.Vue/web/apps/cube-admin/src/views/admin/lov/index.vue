@@ -116,7 +116,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { usePageApi } from '@/composables/usePageApi';
+import { usePageApi } from '../../../../../core/composables/useCubeApi';
 import CubeListPager from 'cube-front/core/components/CubeListPager.vue';
 import LovConfig from './config.vue';
 

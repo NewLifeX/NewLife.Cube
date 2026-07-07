@@ -254,8 +254,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch } from 'vue';
 import { ElMessage } from 'element-plus';
-import { usePageApi } from '@/composables/usePageApi';
-import cubeApi from '@/cubeApi';
+import cubeApi, { usePageApi } from '../../../../../core/composables/useCubeApi';
 
 interface EnumItem {
   id: number; lovDefId: number; value: string; label: string;
