@@ -18,6 +18,7 @@
  */
 import { createCubeApi } from '@cube/api-core';
 import { getConfig } from '../configure';
+import { ElMessage } from 'element-plus';
 import type { ApiResponse, PageParams } from '@cube/api-core';
 
 // ── 全局 API 客户端实例 ──────────────────────────────────────────────
@@ -34,6 +35,10 @@ const cfg = getConfig();
 const cubeApi = createCubeApi({
   baseURL: cfg.request.baseUrl,
   tokenStorage: 'localStorage',
+  onFieldError: (fieldErrors) => {
+    // 统一展示字段级验证错误（如"编码不可以为空！"），无需每个页面单独处理
+    ElMessage.error(fieldErrors.map(e => e.message).join('；'));
+  },
   onUnauthorized: () => {
     // cube-front 已处理 401 → 清除 token 并跳转登录页
     // 此处无需额外处理，仅做兜底
