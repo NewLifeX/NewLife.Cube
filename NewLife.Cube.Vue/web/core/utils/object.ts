@@ -5,7 +5,7 @@
  * @returns 合并后的对象
  */
 export function deepMerge<T extends object = object>(target: T, source: any): T {
-  const result = { ...target };
+  const result: Record<string, any> = { ...target };
 
   if (isObject(target) && isObject(source)) {
     for (const key in source) {
@@ -20,7 +20,7 @@ export function deepMerge<T extends object = object>(target: T, source: any): T 
     }
   }
 
-  return result;
+  return result as T;
 }
 
 /**

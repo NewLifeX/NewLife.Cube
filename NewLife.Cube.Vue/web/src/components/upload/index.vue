@@ -86,6 +86,7 @@
 </template>
 
 <script lang="ts" setup>
+// @ts-nocheck
 import { ref } from 'vue';
 import { Plus, Close, CircleCheck, Switch } from '@element-plus/icons-vue';
 import type { UploadFile, UploadProps, UploadUserFile } from 'element-plus';

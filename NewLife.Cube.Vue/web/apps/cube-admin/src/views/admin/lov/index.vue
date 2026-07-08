@@ -9,8 +9,12 @@
     <!-- 搜索栏 -->
     <el-form :inline="true" :model="searchForm" class="search-bar">
       <el-form-item label="关键词">
-        <el-input v-model="searchForm.q" placeholder="编码/名称搜索" clearable
-          @keyup.enter="handleSearch" />
+        <el-input
+          v-model="searchForm.q"
+          placeholder="编码/名称搜索"
+          clearable
+          @keyup.enter="handleSearch"
+        />
       </el-form-item>
       <el-form-item label="类型">
         <el-select v-model="searchForm.type" placeholder="全部" clearable style="width: 120px">
@@ -61,15 +65,34 @@
       </el-table-column>
     </el-table>
 
-    <CubeListPager :current-page="page" :page-size="size" :total="total"
-      :on-current-change="(p: number) => { page = p; loadData(); }"
-      :on-size-change="(s: number) => { size = s; loadData(); }" />
+    <CubeListPager
+      :current-page="page"
+      :page-size="size"
+      :total="total"
+      :on-current-change="
+        (p: number) => {
+          page = p;
+          loadData();
+        }
+      "
+      :on-size-change="
+        (s: number) => {
+          size = s;
+          loadData();
+        }
+      "
+    />
 
     <!-- 新增/编辑弹窗 -->
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑值集' : '新增值集'" width="600px">
       <el-form :model="form" label-width="100px">
         <el-form-item label="值集类型" required>
-          <el-select v-model="form.type" placeholder="选择类型" style="width: 100%" @change="onTypeChange">
+          <el-select
+            v-model="form.type"
+            placeholder="选择类型"
+            style="width: 100%"
+            @change="onTypeChange"
+          >
             <el-option label="枚举型 (ENUM)" value="ENUM" />
             <el-option label="列表型 (LIST)" value="LIST" />
           </el-select>
@@ -80,7 +103,9 @@
             <template #prepend v-else-if="form.type === 'LIST'">List.</template>
           </el-input>
           <div class="form-tip">
-            完整编码 = 前缀 + 语义名，如：{{ form.type === 'ENUM' ? 'Enum.OrderStatus' : 'List.Department' }}
+            完整编码 = 前缀 + 语义名，如：{{
+              form.type === 'ENUM' ? 'Enum.OrderStatus' : 'List.Department'
+            }}
           </div>
         </el-form-item>
         <el-form-item label="显示名称">
@@ -105,18 +130,14 @@
     </el-dialog>
 
     <!-- 值集配置弹窗 -->
-    <LovConfig
-      v-model="configDialogVisible"
-      :lov-def-id="configLovDefId"
-      @saved="loadData"
-    />
+    <LovConfig v-model="configDialogVisible" :lov-def-id="configLovDefId" @saved="loadData" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { usePageApi } from '../../../../../core/composables/useCubeApi';
+import { usePageApi } from 'cube-front/core/composables/useCubeApi';
 import CubeListPager from 'cube-front/core/components/CubeListPager.vue';
 import LovConfig from './config.vue';
 
@@ -136,6 +157,7 @@ const configDialogVisible = ref(false);
 const configLovDefId = ref(0);
 
 const form = ref({
+  id: undefined as number | null | undefined,
   lovCode: '',
   name: '',
   type: 'ENUM' as string,
@@ -185,13 +207,23 @@ async function loadData() {
 
 function handleAdd() {
   editingId.value = null;
-  form.value = { lovCode: '', name: '', type: 'ENUM', valueField: '', labelField: '', source: 'MANUAL', enabled: true };
+  form.value = {
+    id: null,
+    lovCode: '',
+    name: '',
+    type: 'ENUM',
+    valueField: '',
+    labelField: '',
+    source: 'MANUAL',
+    enabled: true,
+  };
   dialogVisible.value = true;
 }
 
 function handleEdit(row: any) {
   editingId.value = row.id;
   form.value = {
+    id: row.id,
     lovCode: row.lovCode || '',
     name: row.name || '',
     type: row.type || 'ENUM',
@@ -215,14 +247,21 @@ async function handleSave() {
     let savedId = 0;
     if (editingId.value) {
       data.id = editingId.value;
-      data.lovCode = form.value.type === 'ENUM' ? 'Enum.' + form.value.lovCode.replace(/^Enum\./, '') : 'List.' + form.value.lovCode.replace(/^List\./, '');
+      data.lovCode =
+        form.value.type === 'ENUM'
+          ? 'Enum.' + form.value.lovCode.replace(/^Enum\./, '')
+          : 'List.' + form.value.lovCode.replace(/^List\./, '');
       await api.update(data);
       savedId = editingId.value;
       ElMessage.success('更新成功');
     } else {
-      data.lovCode = form.value.type === 'ENUM' ? 'Enum.' + form.value.lovCode.replace(/^Enum\./, '') : 'List.' + form.value.lovCode.replace(/^List\./, '');
+      data.lovCode =
+        form.value.type === 'ENUM'
+          ? 'Enum.' + form.value.lovCode.replace(/^Enum\./, '')
+          : 'List.' + form.value.lovCode.replace(/^List\./, '');
       const res = await api.add(data);
-      savedId = res?.data?.id || res?.id || 0;
+      // @ts-ignore
+      savedId = res?.data?.id || 0;
       ElMessage.success('新增成功');
     }
     dialogVisible.value = false;

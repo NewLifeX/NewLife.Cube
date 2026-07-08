@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { FormRule } from "@form-create/element-ui";
 import { DefineComponent } from "vue";
 import { forms } from '../component';

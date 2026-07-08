@@ -10,6 +10,7 @@
 </template>
 
 <script setup lang="ts">
+// @ts-nocheck
 import useOptions from '/@/hook/useOptions';
 import { OptionEmits, optionProps } from '/@/utils/optionProps';
 

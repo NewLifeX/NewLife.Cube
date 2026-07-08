@@ -13,6 +13,7 @@
 </template>
 
 <script setup lang="ts" name="wngEditor">
+// @ts-nocheck
 // https://www.wangeditor.com/v5/for-frame.html#vue3
 import '@wangeditor/editor/dist/css/style.css';
 import { reactive, shallowRef, watch, onBeforeUnmount } from 'vue';

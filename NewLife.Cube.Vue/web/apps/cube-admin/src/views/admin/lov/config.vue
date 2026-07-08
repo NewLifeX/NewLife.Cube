@@ -36,8 +36,13 @@
         <el-table :data="form.enumItems" max-height="400" border>
           <el-table-column label="排序" width="120">
             <template #default="{ row }">
-              <el-input-number v-model="row.sort" :disabled="form.source === 'AUTO'"
-                size="small" :min="0" controls-position="right" />
+              <el-input-number
+                v-model="row.sort"
+                :disabled="form.source === 'AUTO'"
+                size="small"
+                :min="0"
+                controls-position="right"
+              />
             </template>
           </el-table-column>
           <el-table-column label="值(Value)" min-width="120">
@@ -57,13 +62,20 @@
           </el-table-column>
           <el-table-column label="操作" width="100" fixed="right">
             <template #default="{ $index }">
-              <el-button v-if="form.source !== 'AUTO'" size="small" type="danger" text
-                @click="removeItem('enumItems', $index)">删除</el-button>
+              <el-button
+                v-if="form.source !== 'AUTO'"
+                size="small"
+                type="danger"
+                text
+                @click="removeItem('enumItems', $index)"
+                >删除</el-button
+              >
             </template>
           </el-table-column>
         </el-table>
-        <el-button v-if="form.source !== 'AUTO'" type="primary" class="mt-2"
-          @click="addEnumItem">+ 新增枚举值</el-button>
+        <el-button v-if="form.source !== 'AUTO'" type="primary" class="mt-2" @click="addEnumItem"
+          >+ 新增枚举值</el-button
+        >
       </el-tab-pane>
 
       <!-- 列表配置 (LIST 类型) -->
@@ -99,8 +111,12 @@
             <div class="form-tip">总记录数所在的 JSON 路径，如 page.totalCount</div>
           </el-form-item>
           <el-form-item label="固定参数(JSON)">
-            <el-input v-model="form.listConfig.fixedParams"
-              type="textarea" :rows="3" placeholder='{ "status": "active" }' />
+            <el-input
+              v-model="form.listConfig.fixedParams"
+              type="textarea"
+              :rows="3"
+              placeholder='{ "status": "active" }'
+            />
           </el-form-item>
         </el-form>
       </el-tab-pane>
@@ -129,8 +145,9 @@
           <el-table-column label="操作" width="130" fixed="right">
             <template #default="{ $index }">
               <el-button size="small" @click="editSearchField($index)">编辑</el-button>
-              <el-button size="small" type="danger" text
-                @click="removeItem('searchFields', $index)">删除</el-button>
+              <el-button size="small" type="danger" text @click="removeItem('searchFields', $index)"
+                >删除</el-button
+              >
             </template>
           </el-table-column>
         </el-table>
@@ -152,8 +169,10 @@
                 <el-option label="值集选择 (lov)" value="lov" />
               </el-select>
             </el-form-item>
-            <el-form-item v-if="sfForm.componentType === 'select' || sfForm.componentType === 'lov'"
-              label="关联值集">
+            <el-form-item
+              v-if="sfForm.componentType === 'select' || sfForm.componentType === 'lov'"
+              label="关联值集"
+            >
               <el-input v-model="sfForm.refLovCode" placeholder="如 Enum.Department" />
             </el-form-item>
             <el-form-item label="传参方式">
@@ -197,8 +216,9 @@
           <el-table-column label="操作" width="130" fixed="right">
             <template #default="{ $index }">
               <el-button size="small" @click="editTableColumn($index)">编辑</el-button>
-              <el-button size="small" type="danger" text
-                @click="removeItem('tableColumns', $index)">删除</el-button>
+              <el-button size="small" type="danger" text @click="removeItem('tableColumns', $index)"
+                >删除</el-button
+              >
             </template>
           </el-table-column>
         </el-table>
@@ -227,13 +247,19 @@
               <el-switch v-model="tcForm.sortable" />
             </el-form-item>
             <el-form-item label="关联值集">
-              <el-input v-model="tcForm.refLovCode" placeholder="如 Enum.Status"
-                @input="tcForm.formatType = ''" />
+              <el-input
+                v-model="tcForm.refLovCode"
+                placeholder="如 Enum.Status"
+                @input="tcForm.formatType = ''"
+              />
               <div class="form-tip">选中后自动对列值做翻译</div>
             </el-form-item>
             <el-form-item label="格式化类型">
-              <el-input v-model="tcForm.formatType"
-                @input="tcForm.refLovCode = ''" placeholder="与关联值集互斥" />
+              <el-input
+                v-model="tcForm.formatType"
+                @input="tcForm.refLovCode = ''"
+                placeholder="与关联值集互斥"
+              />
             </el-form-item>
           </el-form>
           <template #footer>
@@ -254,34 +280,66 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch } from 'vue';
 import { ElMessage } from 'element-plus';
-import cubeApi, { usePageApi } from '../../../../../core/composables/useCubeApi';
+import cubeApi, { usePageApi } from 'cube-front/core/composables/useCubeApi';
 
 interface EnumItem {
-  id: number; lovDefId: number; value: string; label: string;
-  sort: number; enabled: boolean; extra?: string | null;
+  id: number;
+  lovDefId: number;
+  value: string;
+  label: string;
+  sort: number;
+  enabled: boolean;
+  extra?: string | null;
 }
 
 interface ListConfig {
-  id: number; lovDefId: number; requestUrl?: string; method: string;
-  pageable: boolean; pageNumField?: string; pageSizeField?: string;
-  dataPath?: string; totalPath?: string; fixedParams?: string;
+  id: number;
+  lovDefId: number;
+  requestUrl?: string;
+  method: string;
+  pageable: boolean;
+  pageNumField?: string;
+  pageSizeField?: string;
+  dataPath?: string;
+  totalPath?: string;
+  fixedParams?: string;
 }
 
 interface SearchField {
-  id: number; lovDefId: number; field: string; title?: string;
-  componentType: string; paramType: string; required: boolean;
-  defaultValue?: string; sort: number; refLovCode?: string;
+  id: number;
+  lovDefId: number;
+  field: string;
+  title?: string;
+  componentType: string;
+  paramType: string;
+  required: boolean;
+  defaultValue?: string;
+  sort: number;
+  refLovCode?: string;
 }
 
 interface TableColumn {
-  id: number; lovDefId: number; field: string; title?: string;
-  width: number; align: string; sortable: boolean;
-  refLovCode?: string; formatType?: string; sort: number;
+  id: number;
+  lovDefId: number;
+  field: string;
+  title?: string;
+  width: number;
+  align: string;
+  sortable: boolean;
+  refLovCode?: string;
+  formatType?: string;
+  sort: number;
 }
 
 interface LovConfigForm {
-  id: number; lovCode: string; name: string; type: string; source: string;
-  valueField?: string; labelField?: string; enabled: boolean;
+  id: number;
+  lovCode: string;
+  name: string;
+  type: string;
+  source: string;
+  valueField?: string;
+  labelField?: string;
+  enabled: boolean;
   enumItems: EnumItem[];
   listConfig: ListConfig;
   searchFields: SearchField[];
@@ -304,14 +362,27 @@ const saving = ref(false);
 const loading = ref(false);
 
 const emptyListConfig = (): ListConfig => ({
-  id: 0, lovDefId: 0, requestUrl: '', method: 'GET',
-  pageable: false, pageNumField: 'pageNo', pageSizeField: 'pageSize',
-  dataPath: 'data.list', totalPath: 'data.total', fixedParams: '',
+  id: 0,
+  lovDefId: 0,
+  requestUrl: '',
+  method: 'GET',
+  pageable: false,
+  pageNumField: 'pageNo',
+  pageSizeField: 'pageSize',
+  dataPath: 'data.list',
+  totalPath: 'data.total',
+  fixedParams: '',
 });
 
 const form = ref<LovConfigForm>({
-  id: 0, lovCode: '', name: '', type: 'ENUM', source: 'MANUAL',
-  valueField: '', labelField: '', enabled: true,
+  id: 0,
+  lovCode: '',
+  name: '',
+  type: 'ENUM',
+  source: 'MANUAL',
+  valueField: '',
+  labelField: '',
+  enabled: true,
   enumItems: [],
   listConfig: emptyListConfig(),
   searchFields: [],
@@ -322,8 +393,16 @@ const form = ref<LovConfigForm>({
 const sfVisible = ref(false);
 const sfIndex = ref(-1);
 const sfForm = reactive<SearchField>({
-  id: 0, lovDefId: 0, field: '', title: '', componentType: 'input',
-  paramType: 'BODY', required: false, defaultValue: '', sort: 0, refLovCode: '',
+  id: 0,
+  lovDefId: 0,
+  field: '',
+  title: '',
+  componentType: 'input',
+  paramType: 'BODY',
+  required: false,
+  defaultValue: '',
+  sort: 0,
+  refLovCode: '',
 });
 
 function editSearchField(index: number) {
@@ -334,8 +413,16 @@ function editSearchField(index: number) {
 function addSearchField() {
   sfIndex.value = -1;
   Object.assign(sfForm, {
-    id: 0, lovDefId: form.value.id, field: '', title: '', componentType: 'input',
-    paramType: 'BODY', required: false, defaultValue: '', sort: form.value.searchFields.length, refLovCode: '',
+    id: 0,
+    lovDefId: form.value.id,
+    field: '',
+    title: '',
+    componentType: 'input',
+    paramType: 'BODY',
+    required: false,
+    defaultValue: '',
+    sort: form.value.searchFields.length,
+    refLovCode: '',
   });
   sfVisible.value = true;
 }
@@ -353,8 +440,16 @@ function confirmSearchField() {
 const tcVisible = ref(false);
 const tcIndex = ref(-1);
 const tcForm = reactive<TableColumn>({
-  id: 0, lovDefId: 0, field: '', title: '', width: 120,
-  align: 'left', sortable: false, refLovCode: '', formatType: '', sort: 0,
+  id: 0,
+  lovDefId: 0,
+  field: '',
+  title: '',
+  width: 120,
+  align: 'left',
+  sortable: false,
+  refLovCode: '',
+  formatType: '',
+  sort: 0,
 });
 
 function editTableColumn(index: number) {
@@ -365,8 +460,16 @@ function editTableColumn(index: number) {
 function addTableColumn() {
   tcIndex.value = -1;
   Object.assign(tcForm, {
-    id: 0, lovDefId: form.value.id, field: '', title: '', width: 120,
-    align: 'left', sortable: false, refLovCode: '', formatType: '', sort: form.value.tableColumns.length,
+    id: 0,
+    lovDefId: form.value.id,
+    field: '',
+    title: '',
+    width: 120,
+    align: 'left',
+    sortable: false,
+    refLovCode: '',
+    formatType: '',
+    sort: form.value.tableColumns.length,
   });
   tcVisible.value = true;
 }
@@ -383,9 +486,13 @@ function confirmTableColumn() {
 // 枚举值
 function addEnumItem() {
   form.value.enumItems.push({
-    id: 0, lovDefId: props.lovDefId,
-    value: '', label: '', sort: form.value.enumItems.length,
-    enabled: true, extra: null,
+    id: 0,
+    lovDefId: props.lovDefId,
+    value: '',
+    label: '',
+    sort: form.value.enumItems.length,
+    enabled: true,
+    extra: null,
   });
 }
 
@@ -409,7 +516,10 @@ async function loadConfig() {
       config = res.data ?? res;
     }
 
-    if (!config) { loading.value = false; return; }
+    if (!config) {
+      loading.value = false;
+      return;
+    }
 
     if (config.type === 'LIST' && !config.listConfig) {
       config.listConfig = emptyListConfig();
@@ -430,8 +540,12 @@ async function loadConfig() {
       tableColumns: config.tableColumns ?? [],
     };
 
-    activeTab.value = form.value.type === 'ENUM' ? 'enumItems' :
-      (form.value.searchFields.length > 0 ? 'searchFields' : 'listConfig');
+    activeTab.value =
+      form.value.type === 'ENUM'
+        ? 'enumItems'
+        : form.value.searchFields.length > 0
+          ? 'searchFields'
+          : 'listConfig';
   } catch (err: any) {
     ElMessage.error(err?.message || '加载配置失败');
   } finally {
@@ -458,9 +572,12 @@ function close() {
   emit('update:modelValue', false);
 }
 
-watch(() => props.modelValue, (val) => {
-  if (val) loadConfig();
-});
+watch(
+  () => props.modelValue,
+  (val) => {
+    if (val) loadConfig();
+  },
+);
 </script>
 
 <style scoped>

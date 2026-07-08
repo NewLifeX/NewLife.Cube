@@ -1,4 +1,4 @@
-import notification from '../components/Notification.ts';
+import notification from '../components/Notification';
 
 /**
  * 生成指定长度的随机十六进制字符串

@@ -10,7 +10,7 @@ import { getUrlHashToken } from '../utils/token';
 import { useLayout } from '../composables/useLayout';
 import TabsView from '../components/TabsView.vue';
 import TopMenuLayout from './TopMenu/index.vue'; // 兜底默认布局
-import { getConfig } from '../configure/index.ts';
+import { getConfig } from '../configure';
 
 const router = useRouter();
 const route = useRoute();

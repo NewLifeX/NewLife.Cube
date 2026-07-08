@@ -217,7 +217,7 @@ function handleResponseError(error: AxiosError) {
   const errorObj = {
     type: undefined,
     message: error.message,
-    description: `${data?.description || data?.content || response?.requestMessage || ''}`,
+    description: `${data?.description || data?.content || (response as any)?.requestMessage || ''}`,
   };
 
   if (data && data.code > 200) {

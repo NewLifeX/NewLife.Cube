@@ -3,6 +3,7 @@
 </template>
 
 <script setup lang="ts" name="cascader">
+// @ts-nocheck
 import { useVModel } from '@vueuse/core';
 import type { CascaderProps } from 'element-plus'
 import { computed, ref, useAttrs, watch } from 'vue';

@@ -100,7 +100,7 @@ const covertMenu = (list: Record<string, unknown>[]): TreeMenuItem[] => {
       title: item[menuConfig.titleField] as string,
       icon: item[menuConfig.iconField] as string,
       sort: item[menuConfig.sortField] as number,
-      visible: item[menuConfig.visibleField] as boolean | undefined,
+      visible: item[menuConfig.visibleField as string] as boolean | undefined,
       children: children ? covertMenu(children).filter(Boolean) as TreeMenuItem[] : undefined,
     };
   };
