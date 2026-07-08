@@ -616,8 +616,8 @@ importers:
         specifier: ^1.11.21
         version: 1.11.21
       echarts:
-        specifier: ^5.6.0
-        version: 5.6.0
+        specifier: ^6.1.0
+        version: 6.1.0
       element-plus:
         specifier: ^2.9.7
         version: 2.13.7(typescript@5.8.3)(vue@3.5.32(typescript@5.8.3))
@@ -638,7 +638,7 @@ importers:
         version: 3.5.32(typescript@5.8.3)
       vue-echarts:
         specifier: ^7.0.3
-        version: 7.0.3(@vue/runtime-core@3.5.32)(echarts@5.6.0)(vue@3.5.32(typescript@5.8.3))
+        version: 7.0.3(@vue/runtime-core@3.5.32)(echarts@6.1.0)(vue@3.5.32(typescript@5.8.3))
       vue-i18n:
         specifier: ^11.4.0
         version: 11.4.6(vue@3.5.32(typescript@5.8.3))
@@ -8191,6 +8191,9 @@ packages:
   echarts@6.0.0:
     resolution: {integrity: sha512-Tte/grDQRiETQP4xz3iZWSvoHrkCQtwqd6hs+mifXcjrCuo2iKWbajFObuLJVBlDIJlOzgQPd1hsaKt/3+OMkQ==}
 
+  echarts@6.1.0:
+    resolution: {integrity: sha512-q0yaFPggC9FUdsWH4blavRWFmxdrIodbkoKNAjJudAI6CA9gNPxHtV2RcZNEepZVlk4yvBYkOkbk6HIVpIyHZA==}
+
   editorconfig@1.0.7:
     resolution: {integrity: sha512-e0GOtq/aTQhVdNyDU9e02+wz9oDDM+SIOQxWME2QRjzRX5yyLAuHDE+0aE8vHb9XRC8XD37eO2u57+F09JqFhw==}
     engines: {node: '>=14'}
@@ -15294,6 +15297,9 @@ packages:
 
   zrender@6.0.0:
     resolution: {integrity: sha512-41dFXEEXuJpNecuUQq6JlbybmnHaqqpGlbH1yxnA5V9MMP4SbohSVZsJIwz+zdjQXSSlR1Vc34EgH1zxyTDvhg==}
+
+  zrender@6.1.0:
+    resolution: {integrity: sha512-oEGMDB6pOP2S6OwRR4PdVv610zrjnA3Bh+JnSG12fYJlBKjtNAoEb5fSUoCOOINlH96I2fU38/A2UpRKs67xYQ==}
 
   zscroller@0.4.8:
     resolution: {integrity: sha512-G5NiNLKx2+QhhvZi2yV1jjVXY50otktxkseX2hG2N/eixohOUk0AY8ZpbAxNqS9oJS/NxItCsowupy2tsXxAMw==}
@@ -23984,6 +23990,11 @@ snapshots:
       tslib: 2.3.0
       zrender: 6.0.0
 
+  echarts@6.1.0:
+    dependencies:
+      tslib: 2.3.0
+      zrender: 6.1.0
+
   editorconfig@1.0.7:
     dependencies:
       '@one-ini/wasm': 0.1.1
@@ -32494,6 +32505,16 @@ snapshots:
     transitivePeerDependencies:
       - '@vue/composition-api'
 
+  vue-echarts@7.0.3(@vue/runtime-core@3.5.32)(echarts@6.1.0)(vue@3.5.32(typescript@5.8.3)):
+    dependencies:
+      echarts: 6.1.0
+      vue: 3.5.32(typescript@5.8.3)
+      vue-demi: 0.13.11(vue@3.5.32(typescript@5.8.3))
+    optionalDependencies:
+      '@vue/runtime-core': 3.5.32
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+
   vue-eslint-parser@10.4.1(eslint@9.39.4(jiti@2.6.1)):
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
@@ -32879,6 +32900,10 @@ snapshots:
       tslib: 2.3.0
 
   zrender@6.0.0:
+    dependencies:
+      tslib: 2.3.0
+
+  zrender@6.1.0:
     dependencies:
       tslib: 2.3.0
 
