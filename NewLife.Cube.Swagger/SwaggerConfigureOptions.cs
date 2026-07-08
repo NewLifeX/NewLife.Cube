@@ -2,28 +2,19 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi;
 using NewLife.Reflection;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using Microsoft.Extensions.DependencyInjection;
-
-#if NET10_0_OR_GREATER
-using Microsoft.OpenApi;
-#else
-using Microsoft.OpenApi.Models;
-#endif
 
 namespace NewLife.Cube.Swagger;
 
 /// <summary>自动为每个文档分组引入Swagger</summary>
-public class SwaggerConfigureOptions : IConfigureOptions<SwaggerGenOptions>
+/// <remarks>实例化</remarks>
+/// <param name="provider"></param>
+public class SwaggerConfigureOptions(IApiDescriptionGroupCollectionProvider provider) : IConfigureOptions<SwaggerGenOptions>
 {
-    private readonly IApiDescriptionGroupCollectionProvider provider;
-
-    /// <summary>实例化</summary>
-    /// <param name="provider"></param>
-    public SwaggerConfigureOptions(IApiDescriptionGroupCollectionProvider provider) => this.provider = provider;
-
     /// <summary>自动配置添加分组文档</summary>
     /// <param name="options"></param>
     public void Configure(SwaggerGenOptions options)

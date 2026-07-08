@@ -7,7 +7,7 @@
     <Description>魔方WebAPI核心库，提供实体控制器、权限管理、菜单管理、字段元数据、OAuth服务端、JWT认证等功能。支持前后端分离架构，对接Vue/Blazor/Antd等前端框架，单表100亿级数据验证。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 NewLife</Copyright>
-    <VersionPrefix>6.11</VersionPrefix>
+    <VersionPrefix>6.12</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
@@ -31,7 +31,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>增强认证与 OAuth 支持，新增图片验证码与 MFA；优化前端多皮肤与登录流程，提升构建与兼容性；修复若干登录、导航与上传相关 bug；文档与示例更新，改进 CI/CD 打包流程</PackageReleaseNotes>
+    <PackageReleaseNotes>集成第三方外部认证服务；新增 LOV 值集系统；新增审计日志页面与 AI 日志诊断；升级 IP 封禁策略支持子网封禁；前端 API 层统一与字段约束验证；新增实体树控制器与全局实体链接字典；优化 SSO 角色规则与 Token 滑动刷新</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -128,12 +128,12 @@
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\MiddlewareHelper.cs" Link="WebMiddleware\MiddlewareHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.AI" Version="1.3.2026.608" />
-    <PackageReference Include="NewLife.Core" Version="11.16.2026.601" />
+    <PackageReference Include="NewLife.AI" Version="1.4.2026.708" />
+    <PackageReference Include="NewLife.Core" Version="11.17.2026.701" />
     <PackageReference Include="NewLife.IP" Version="2.4.2026.501" />
-    <PackageReference Include="NewLife.Office" Version="1.1.2026.501" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.8.2026.601" />
-    <PackageReference Include="NewLife.XCode" Version="11.27.2026.601" />
+    <PackageReference Include="NewLife.Office" Version="1.2.2026.701" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.9.2026.708" />
+    <PackageReference Include="NewLife.XCode" Version="12.0.2026.701" />
   </ItemGroup>
 
   <!-- 将 wwwroot 静态文件嵌入 DLL，同时不打包到 NuGet -->

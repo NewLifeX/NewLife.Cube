@@ -1,20 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc.ApiExplorer;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi;
 using NewLife.Cube.Entity;
 using NewLife.Reflection;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Builder;
 using XCode.Membership;
-
-
-
-#if NET10_0_OR_GREATER
-using Microsoft.OpenApi;
-#else
-using Microsoft.OpenApi.Models;
-#endif
 
 namespace NewLife.Cube.Swagger;
 
@@ -75,18 +68,9 @@ public static class SwaggerService
                 });
 
                 // 声明一个Scheme，注意下面的Id要和上面AddSecurityDefinition中的参数name一致
-#if NET10_0_OR_GREATER
                 var schemeRef = new OpenApiSecuritySchemeReference("OAuth2");
                 // 注册全局认证（所有的接口都可以使用认证）
                 options.AddSecurityRequirement(doc => new OpenApiSecurityRequirement() { [schemeRef] = [] });
-#else
-                var scheme = new OpenApiSecurityScheme()
-                {
-                    Reference = new OpenApiReference() { Type = ReferenceType.SecurityScheme, Id = "OAuth2" }
-                };
-                // 注册全局认证（所有的接口都可以使用认证）
-                options.AddSecurityRequirement(new OpenApiSecurityRequirement() { [scheme] = [] });
-#endif
             }
             else
             {
@@ -100,18 +84,9 @@ public static class SwaggerService
                     Scheme = "Bearer"
                 });
                 // 声明一个Scheme，注意下面的Id要和上面AddSecurityDefinition中的参数name一致
-#if NET10_0_OR_GREATER
                 var schemeRef = new OpenApiSecuritySchemeReference("JwtBearer");
                 // 注册全局认证（所有的接口都可以使用认证）
                 options.AddSecurityRequirement(doc => new OpenApiSecurityRequirement() { [schemeRef] = [] });
-#else
-                var scheme = new OpenApiSecurityScheme()
-                {
-                    Reference = new OpenApiReference() { Type = ReferenceType.SecurityScheme, Id = "JwtBearer" }
-                };
-                // 注册全局认证（所有的接口都可以使用认证）
-                options.AddSecurityRequirement(new OpenApiSecurityRequirement() { [scheme] = [] });
-#endif
             }
         });
 

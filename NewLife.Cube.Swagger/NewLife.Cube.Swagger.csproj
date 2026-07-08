@@ -7,7 +7,7 @@
     <Description>魔方Swagger接口文档扩展包，支持按区域(Area)自动分组生成API文档。提供标准化的接口描述、请求响应模型展示、在线调试功能，便于前后端对接和第三方集成。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 NewLife</Copyright>
-    <VersionPrefix>6.11</VersionPrefix>
+    <VersionPrefix>6.12</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
@@ -32,7 +32,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>增强认证与 OAuth 支持，新增图片验证码与 MFA；优化前端多皮肤与登录流程，提升构建与兼容性；修复若干登录、导航与上传相关问题</PackageReleaseNotes>
+    <PackageReleaseNotes>集成第三方外部认证服务；新增 LOV 值集系统；新增审计日志页面与 AI 日志诊断；升级 IP 封禁策略支持子网封禁；前端 API 层统一与字段约束验证；新增实体树控制器与全局实体链接字典；优化 SSO 角色规则与 Token 滑动刷新</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -49,19 +49,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.8.2026.601" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.9.2026.708" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)'=='net8.0'">
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.2" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)'=='net9.0'">
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)'=='net10.0'">
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
   </ItemGroup>
 
   <ItemGroup>
