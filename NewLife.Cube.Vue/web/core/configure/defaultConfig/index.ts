@@ -72,6 +72,7 @@ export const defaultConfig: CubeFrontConfig = {
     baseUrl: '',
     timeout: 10000,
     responseIntercept: (response) => response,
+    requestInterceptor: (config) => config,
   },
   auth: {
     tokenKey: 'token',

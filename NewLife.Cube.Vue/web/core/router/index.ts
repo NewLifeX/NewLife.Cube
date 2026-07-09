@@ -127,7 +127,7 @@ router.beforeEach(async (to, from, next) => {
           // 使用与 registerMenuRoutes 一致的命名风格
           const { router: { routeNamingStyle } } = getConfig();
           const toStyle: RouteNamingStyle = routeNamingStyle === 'kebab' ? 'kebab' : 'pascal';
-          pendingNavigationPath = normalizeMenuUrl(to.path, toStyle);
+          pendingNavigationPath = normalizeMenuUrl(to.fullPath, toStyle);
           return next(false); // 取消当前导航，让 afterEach 触发重新导航
         }
       }

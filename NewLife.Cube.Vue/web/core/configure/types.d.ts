@@ -1,4 +1,8 @@
-import type { AxiosRequestConfig } from 'axios';
+import type {
+  AxiosRequestConfig,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from 'axios';
 
 // 基础配置
 export interface BaseConfig {
@@ -81,6 +85,10 @@ export interface RequestConfig {
   additionalRequestHeader?: Recore<string, string> | (() => Recore<string, string>);
   /** 响应拦截器 */
   responseIntercept?: (response: AxiosResponse) => void;
+  /** 请求配置拦截钩子：在请求发送前对配置做自定义修改 */
+  requestInterceptor?: (
+    config: InternalAxiosRequestConfig ,
+  ) => InternalAxiosRequestConfig | Promise<InternalAxiosRequestConfig>;
 }
 
 // 认证相关配置

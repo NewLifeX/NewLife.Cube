@@ -329,9 +329,8 @@ cubeAxios.interceptors.response.use(handleResponseSuccess, handleResponseError);
  * @returns {Object} - 处理后的请求配置
  */
 function handleRequestConfig(config: InternalAxiosRequestConfig) {
-  const {
-    request: { baseUrl: API_HOST },
-  } = getConfig();
+  const { request: requestConfig } = getConfig();
+  const { baseUrl: API_HOST, requestInterceptor, additionalRequestHeader: additionalRequestHeaderConfig } = requestConfig;
   let { url = '' } = config || {};
 
   if (url.indexOf('://') === -1 && !url.startsWith('/_api')) {
@@ -339,7 +338,6 @@ function handleRequestConfig(config: InternalAxiosRequestConfig) {
   }
 
   // 添加额外的请求头
-  const additionalRequestHeaderConfig = getConfig().request.additionalRequestHeader;
   let additionalRequestHeader: Record<string, string> = {};
   if (additionalRequestHeaderConfig) {
     additionalRequestHeader =
@@ -358,6 +356,11 @@ function handleRequestConfig(config: InternalAxiosRequestConfig) {
       ...config?.headers,
     } as AxiosRequestHeaders,
   };
+
+  // 调用请求配置钩子
+  if (requestInterceptor) {
+    return requestInterceptor(newOptions);
+  }
 
   return newOptions;
 }
