@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useMenuStore, type TreeMenuItem } from 'cube-front/core/stores/menu';
+import { useMenuStore, type TreeMenuItem } from '@newlifex/cube-vue/core/stores/menu';
 import Topnav from './Topnav/index.vue';
 import Content from './Content/index.vue';
 

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="xcode-container">
     <el-card class="box-card">
       <template #header>
@@ -84,7 +84,7 @@
 
 import { ref, reactive, onMounted } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus';
-import { request } from 'cube-front/core/utils/request';
+import { request } from '@newlifex/cube-vue/core/utils/request';
 
 // 表单相关
 const formRef = ref<FormInstance | null>(null);

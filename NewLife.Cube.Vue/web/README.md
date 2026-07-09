@@ -1,4 +1,4 @@
-# cube-front
+# @newlifex/cube-vue
 
 ## 推荐的IDE设置
 

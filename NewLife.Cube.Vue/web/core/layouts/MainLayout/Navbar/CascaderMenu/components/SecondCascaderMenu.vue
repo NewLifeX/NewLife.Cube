@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { type TreeMenuItem } from 'cube-front/core/stores/menu';
-import { renderMenuTitle } from 'cube-front/core/utils/menuHelpers';
+import { type TreeMenuItem } from '@newlifex/cube-vue/core/stores/menu';
+import { renderMenuTitle } from '@newlifex/cube-vue/core/utils/menuHelpers';
 import SecondCascaderMenuItem from './SecondCascaderMenuItem.vue';
 import { computed } from 'vue';
 

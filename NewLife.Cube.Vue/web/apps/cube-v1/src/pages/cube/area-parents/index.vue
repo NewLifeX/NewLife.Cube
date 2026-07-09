@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="cube-area-parents-container">
     <el-card class="box-card">
       <template #header>
@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
-import { request } from 'cube-front/core/utils/request';
+import { request } from '@newlifex/cube-vue/core/utils/request';
 
 interface SearchForm {
   id: number;

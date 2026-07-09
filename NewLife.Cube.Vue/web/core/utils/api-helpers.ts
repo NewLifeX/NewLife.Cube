@@ -3,7 +3,7 @@
  * 提供统一的数据处理方法，简化业务代码
  */
 
-import type { ListResponse, ApiPageInfo } from 'cube-front/core/types/common';
+import type { ListResponse, ApiPageInfo } from '@newlifex/cube-vue/core/types/common';
 
 /**
  * 处理列表数据响应 - 兼容request.ts拦截器已处理的数据格式

@@ -53,7 +53,7 @@ src/
 ### 1. 打开函数（openUserForm.ts）
 
 ```typescript
-import { useModal } from 'cube-front/core/composables/useModal';
+import { useModal } from '@newlifex/cube-vue/core/composables/useModal';
 import UserForm from './UserForm.vue';
 import type { UserFormData } from './UserForm.vue';
 

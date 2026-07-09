@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useMenuStore, type TreeMenuItem } from 'cube-front/core/stores/menu';
-import { getConfig } from 'cube-front/core/configure';
-import { openMenuTab } from 'cube-front/core/utils/menuTab';
-import ThemeSwitcher from 'cube-front/core/components/ThemeSwitcher.vue';
-import LayoutSwitcher from 'cube-front/core/components/LayoutSwitcher.vue';
-import ModeSwitcher from 'cube-front/core/components/ModeSwitcher.vue';
-import NotificationBell from 'cube-front/core/components/NotificationBell.vue';
-import SearchBar from 'cube-front/core/components/SearchBar.vue';
-import UserProfile from 'cube-front/core/components/UserProfile.vue';
+import { useMenuStore, type TreeMenuItem } from '@newlifex/cube-vue/core/stores/menu';
+import { getConfig } from '@newlifex/cube-vue/core/configure';
+import { openMenuTab } from '@newlifex/cube-vue/core/utils/menuTab';
+import ThemeSwitcher from '@newlifex/cube-vue/core/components/ThemeSwitcher.vue';
+import LayoutSwitcher from '@newlifex/cube-vue/core/components/LayoutSwitcher.vue';
+import ModeSwitcher from '@newlifex/cube-vue/core/components/ModeSwitcher.vue';
+import NotificationBell from '@newlifex/cube-vue/core/components/NotificationBell.vue';
+import SearchBar from '@newlifex/cube-vue/core/components/SearchBar.vue';
+import UserProfile from '@newlifex/cube-vue/core/components/UserProfile.vue';
 
 const menuStore = useMenuStore();
 const { treeMenus, topLevelActiveMenu } = storeToRefs(menuStore);

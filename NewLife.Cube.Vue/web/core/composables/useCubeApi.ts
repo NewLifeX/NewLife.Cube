@@ -7,11 +7,11 @@
  * @example
  * ```ts
  * // 方式一：直接使用全局 cubeApi 实例（自定义请求）
- * import { cubeApi } from 'cube-front/core/composables/useCubeApi';
+ * import { cubeApi } from '@newlifex/cube-vue/core/composables/useCubeApi';
  * await cubeApi.client.post('/Area/Controller/Action', data);
  *
  * // 方式二：使用 usePageApi 获取 CRUD 方法集
- * import { usePageApi } from 'cube-front/core/composables/useCubeApi';
+ * import { usePageApi } from '@newlifex/cube-vue/core/composables/useCubeApi';
  * const api = usePageApi('ProcessCard', 'ProcessCard');
  * const { data } = await api.getList({ pageIndex: 0, pageSize: 20 });
  * ```
@@ -29,8 +29,8 @@ const cfg = getConfig();
  * cubeApi 全局实例
  *
  * 基于 @cube/api-core 创建，提供通用 CRUD 及认证 API。
- * baseUrl 统一从 cube-front 配置系统获取，
- * Token 存储使用 localStorage（与 cube-front core/utils/token.ts 一致）。
+ * baseUrl 统一从 @newlifex/cube-vue 配置系统获取，
+ * Token 存储使用 localStorage（与 @newlifex/cube-vue core/utils/token.ts 一致）。
  */
 const cubeApi = createCubeApi({
   baseURL: cfg.request.baseUrl,
@@ -40,7 +40,7 @@ const cubeApi = createCubeApi({
     ElMessage.error(fieldErrors.map(e => e.message).join('；'));
   },
   onUnauthorized: () => {
-    // cube-front 已处理 401 → 清除 token 并跳转登录页
+    // @newlifex/cube-vue 已处理 401 → 清除 token 并跳转登录页
     // 此处无需额外处理，仅做兜底
     if (!window.location.pathname.startsWith('/login')) {
       window.location.href = '/';

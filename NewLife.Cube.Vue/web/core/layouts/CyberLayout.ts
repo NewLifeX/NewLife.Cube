@@ -8,8 +8,8 @@
  *
  * 使用方式：
  * ```typescript
- * import CyberLayout from 'cube-front/core/layouts/CyberLayout';
- * import { LayoutKey } from 'cube-front/core/composables/useProvideInject';
+ * import CyberLayout from '@newlifex/cube-vue/core/layouts/CyberLayout';
+ * import { LayoutKey } from '@newlifex/cube-vue/core/composables/useProvideInject';
  *
  * initApp((app, { provide }) => {
  *   provide(app, LayoutKey, CyberLayout, { override: true });

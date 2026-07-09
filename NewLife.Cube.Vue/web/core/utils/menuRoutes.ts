@@ -1,5 +1,5 @@
 import type { Router } from 'vue-router';
-import type { FlatMenuItem } from 'cube-front/core/stores/menu';
+import type { FlatMenuItem } from '@newlifex/cube-vue/core/stores/menu';
 import { normalizeMenuUrl, toKebabCase, type RouteNamingStyle } from './url';
 import { getConfig } from '../configure';
 
@@ -17,14 +17,14 @@ const viewComponentCache = new Map<string, ComponentLoader>();
  * 预加载所有框架项目视图目录
  * 路径格式：
  *   /apps/&#42;/src/views/xxx/yyy/index.vue
- *   /cube-front/core/apps/&#42;/src/views/xxx/yyy/index.vue
+ *   /@newlifex/cube-vue/core/apps/&#42;/src/views/xxx/yyy/index.vue
  *
  * Vite import.meta.glob 要求使用字面量，不能拼接变量，
  * 所以这里预先 glob 所有视图，再在运行时按需查找。
  */
 const allViewModules = import.meta.glob([
   '/apps/*/src/views/**/index.vue',
-  '/cube-front/core/apps/*/src/views/**/index.vue',
+  '/@newlifex/cube-vue/core/apps/*/src/views/**/index.vue',
 ], { eager: false });
 
 /**
@@ -44,8 +44,8 @@ for (const originalKey of Object.keys(allViewModules)) {
 function extractKnownAppNames(): string[] {
   const names = new Set<string>();
   for (const p of normalizedModulePaths) {
-    // 匹配 /apps/{name}/ 或 /cube-front/core/apps/{name}/
-    const m = p.match(/\/(?:apps|cube-front\/core\/apps)\/([^/]+)\//);
+    // 匹配 /apps/{name}/ 或 /@newlifex\/cube-vue\/core\/apps/{name}/
+    const m = p.match(/\/(?:apps|@newlifex\/cube-vue\/core\/apps)\/([^/]+)\//);
     if (m) names.add(m[1]);
   }
   return Array.from(names);
@@ -79,7 +79,7 @@ function fromCacheOrResolve(
  *     2. 原始风格:   /apps/IoT/src/views/MyDevice/MyLogs/index.vue
  *   - 路径优先级：
  *     1. /apps/&#42;/src/views/** （框架项目）
- *     2. /cube-front/core/apps/&#42;/src/views/** （核心应用）
+ *     2. /@newlifex/cube-vue/core/apps/&#42;/src/views/** （核心应用）
  *
  * @param path 路由路径，如 /IoT/Device/Product 或 /ProcessCard/ProcessCard
  */
@@ -137,7 +137,7 @@ function scanViewModules(
 
     if (normalizedPath.includes('/apps/')) {
       isFrameworkProject = true;
-    } else if (!normalizedPath.includes('/cube-front/core/apps/')) {
+    } else if (!normalizedPath.includes('/@newlifex/cube-vue/core/apps/')) {
       continue;
     }
 
@@ -244,7 +244,7 @@ function resolveViewComponent(
  * 获取后备组件（无匹配视图时使用）
  */
 function getFallbackComponent(type: 'index' | 'form'): ComponentLoader {
-  return () => import(`cube-front/core/views/${type}.vue`);
+  return () => import(`@newlifex/cube-vue/core/views/${type}.vue`);
 }
 
 /**

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <div class="page-header">
       <h1>系统首页</h1>
@@ -229,7 +229,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import { Refresh, Delete, Switch } from '@element-plus/icons-vue'
-import { request } from 'cube-front/core/utils/request'
+import { request } from '@newlifex/cube-vue/core/utils/request'
 
 // 系统信息接口
 interface SystemInfo {

@@ -12,7 +12,7 @@ import {
 import type { Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import request from 'cube-front/core/utils/request';
+import request from '@newlifex/cube-vue/core/utils/request';
 import {
   ListPageHeaderKey,
   ListSearchBarKey,
@@ -22,16 +22,16 @@ import {
   ListPageFooterKey,
   PageSectionRegistryKey,
   SectionKeyMap,
-} from 'cube-front/core/composables/useSections';
+} from '@newlifex/cube-vue/core/composables/useSections';
 
-import DefaultListPageHeader from 'cube-front/core/views/components/ListPageHeader.vue';
-import DefaultListSearchBar from 'cube-front/core/views/components/ListSearchBar.vue';
-import DefaultListToolbar from 'cube-front/core/views/components/ListToolbar.vue';
-import DefaultListTableContent from 'cube-front/core/views/components/ListTableContent.vue';
-import DefaultListPagination from 'cube-front/core/views/components/ListPagination.vue';
-import DefaultListPageFooter from 'cube-front/core/views/components/ListPageFooter.vue';
-import FormPage from 'cube-front/core/views/form.vue';
-import { routeToApiPrefix, getValueByKey } from 'cube-front/core/utils/url';
+import DefaultListPageHeader from '@newlifex/cube-vue/core/views/components/ListPageHeader.vue';
+import DefaultListSearchBar from '@newlifex/cube-vue/core/views/components/ListSearchBar.vue';
+import DefaultListToolbar from '@newlifex/cube-vue/core/views/components/ListToolbar.vue';
+import DefaultListTableContent from '@newlifex/cube-vue/core/views/components/ListTableContent.vue';
+import DefaultListPagination from '@newlifex/cube-vue/core/views/components/ListPagination.vue';
+import DefaultListPageFooter from '@newlifex/cube-vue/core/views/components/ListPageFooter.vue';
+import FormPage from '@newlifex/cube-vue/core/views/form.vue';
+import { routeToApiPrefix, getValueByKey } from '@newlifex/cube-vue/core/utils/url';
 
 interface FormField {
   key: string;

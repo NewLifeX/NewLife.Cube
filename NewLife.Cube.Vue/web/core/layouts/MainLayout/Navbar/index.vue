@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import ModeSwitcher from 'cube-front/core/components/ModeSwitcher.vue';
-import ThemeSwitcher from 'cube-front/core/components/ThemeSwitcher.vue';
-import LayoutSwitcher from 'cube-front/core/components/LayoutSwitcher.vue';
-import LogoBrand from 'cube-front/core/components/LogoBrand.vue';
-import UserProfile from 'cube-front/core/components/UserProfile.vue';
+import ModeSwitcher from '@newlifex/cube-vue/core/components/ModeSwitcher.vue';
+import ThemeSwitcher from '@newlifex/cube-vue/core/components/ThemeSwitcher.vue';
+import LayoutSwitcher from '@newlifex/cube-vue/core/components/LayoutSwitcher.vue';
+import LogoBrand from '@newlifex/cube-vue/core/components/LogoBrand.vue';
+import UserProfile from '@newlifex/cube-vue/core/components/UserProfile.vue';
 </script>
 
 <template>

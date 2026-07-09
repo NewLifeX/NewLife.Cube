@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getValueByKey } from 'cube-front/core/utils/url';
+import { getValueByKey } from '@newlifex/cube-vue/core/utils/url';
 interface Column {
   key: string;
   label: string;

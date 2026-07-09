@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { type TreeMenuItem } from 'cube-front/core/stores/menu';
-import { isChildMenu, renderMenuTitle } from 'cube-front/core/utils/menuHelpers';
-import TextOverflow from 'cube-front/core/components/TextOverflow.vue';
+import { type TreeMenuItem } from '@newlifex/cube-vue/core/stores/menu';
+import { isChildMenu, renderMenuTitle } from '@newlifex/cube-vue/core/utils/menuHelpers';
+import TextOverflow from '@newlifex/cube-vue/core/components/TextOverflow.vue';
 
 interface SecondCascaderMenuItemProps {
   menu: TreeMenuItem;

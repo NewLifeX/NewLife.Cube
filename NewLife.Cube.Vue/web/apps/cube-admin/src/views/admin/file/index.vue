@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <div class="page-header">
       <h1>文件管理</h1>
@@ -133,7 +133,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import { Plus, Refresh } from '@element-plus/icons-vue'
-import { request } from 'cube-front/core/utils/request'
+import { request } from '@newlifex/cube-vue/core/utils/request'
 
 // 文件信息接口
 interface FileInfo {

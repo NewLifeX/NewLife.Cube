@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
-import { useMenuStore, type TreeMenuItem } from 'cube-front/core/stores/menu';
-import { openMenuTab } from 'cube-front/core/utils/menuTab';
+import { useMenuStore, type TreeMenuItem } from '@newlifex/cube-vue/core/stores/menu';
+import { openMenuTab } from '@newlifex/cube-vue/core/utils/menuTab';
 
 const menuStore = useMenuStore();
 const { treeMenus, topLevelActiveMenu } = storeToRefs(menuStore);

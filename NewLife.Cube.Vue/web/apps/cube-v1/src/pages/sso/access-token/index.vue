@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="sso-access-token-container">
     <el-card class="box-card">
       <template #header>
@@ -131,7 +131,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
-import { request } from 'cube-front/core/utils/request';
+import { request } from '@newlifex/cube-vue/core/utils/request';
 import { ElMessage } from 'element-plus';
 
 // 定义接口类型

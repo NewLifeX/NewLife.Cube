@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { type TreeMenuItem } from 'cube-front/core/stores/menu';
-import { isChildMenu, renderMenuTitle, hasChildren } from 'cube-front/core/utils/menuHelpers';
-import { openMenuTab } from 'cube-front/core/utils/menuTab';
-import { useMenuStore } from 'cube-front/core/stores/menu';
+import { type TreeMenuItem } from '@newlifex/cube-vue/core/stores/menu';
+import { isChildMenu, renderMenuTitle, hasChildren } from '@newlifex/cube-vue/core/utils/menuHelpers';
+import { openMenuTab } from '@newlifex/cube-vue/core/utils/menuTab';
+import { useMenuStore } from '@newlifex/cube-vue/core/stores/menu';
 
 const props = withDefaults(
   defineProps<{

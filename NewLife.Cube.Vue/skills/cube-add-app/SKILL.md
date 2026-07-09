@@ -1,12 +1,12 @@
 ---
 name: cube-add-app
 description: |
-  在 cube-front 微前端架构中新增一个子应用/模块。
+  在 @newlifex/cube-vue 微前端架构中新增一个子应用/模块。
   当用户说"新增应用"、"创建子应用"、"添加新模块"、"新建页面"、"创建新页面"时使用。
-  注意：新增的应用放在调用技能的目录（项目根目录 apps/），而不是 cube-front 目录。
+  注意：新增的应用放在调用技能的目录（项目根目录 apps/），而不是 @newlifex/cube-vue 目录。
 ---
 
-# Cube-Front 新增应用
+# @newlifex/cube-vue 新增应用
 
 ## 什么时候用
 
@@ -18,6 +18,90 @@ description: |
 2. **导出路由**：在 `apps/<app-name>/src/routes.ts` 添加路由导出
 3. **新建 main.ts**：`apps/<app-name>/src/main.ts`，内容为 `export { default as routes } from './routes';`
 4. **注册应用**：在 `{前端项目}/configs/microAppConfig.json` 添加配置
+
+## packageName 写法详解
+
+`microAppConfig.json` 中的 `packageName` 字段支持多种写法，框架会根据前缀自动解析：
+
+### 1. 本项目内置应用（推荐）
+
+```json
+{
+  "name": "ioc",
+  "packageName": "/apps/ioc"
+}
+```
+
+| packageName  | 解析结果                      |
+| ------------ | ----------------------------- |
+| `/apps/ioc`  | `{root}/apps/ioc/src/main.ts` |
+| `apps/ioc`   | `{root}/apps/ioc/src/main.ts` |
+| `./apps/ioc` | `{root}/apps/ioc/src/main.ts` |
+
+### 2. 外部包引用（@scope/name 格式）
+
+```json
+{
+  "name": "cube-admin",
+  "packageName": "@newlifex/cube-vue/apps/cube-admin"
+}
+```
+
+| packageName                          | 包名                 | 路径                                                                 |
+| ------------------------------------ | -------------------- | -------------------------------------------------------------------- |
+| `@newlifex/cube-vue`                 | `@newlifex/cube-vue` | `{root}/node_modules/@newlifex/cube-vue/src/main.ts`                 |
+| `@newlifex/cube-vue/apps/cube-admin` | `@newlifex/cube-vue` | `{root}/node_modules/@newlifex/cube-vue/apps/cube-admin/src/main.ts` |
+
+### 3. 普通包名
+
+```json
+{
+  "name": "some-lib",
+  "packageName": "some-lib"
+}
+```
+
+会从 `node_modules/some-lib/src/main.ts` 加载。
+
+### 4. 不写 packageName（使用内置应用）
+
+```json
+{
+  "name": "cube-admin"
+}
+```
+
+| 场景 | 行为 |
+|------|------|
+| `@newlifex/cube-vue` 源码开发 | 自动加载 `{root}/apps/{name}/src/main.ts` |
+| 外部项目引用 @newlifex/cube-vue | 自动加载 `node_modules/@newlifex/cube-vue/apps/{name}/src/main.ts` |
+
+> 💡 **提示**：使用 `@newlifex/cube-vue` 内置应用（如 cube-admin、cube-cube）时，可以不写 `packageName`，框架会自动从包内加载。
+
+## 完整配置示例
+
+### microAppConfig.json
+
+```json
+[
+  {
+    "name": "ioc",
+    "prefix": "/ioc",
+    "packageName": "/apps/ioc"
+  },
+  {
+    "name": "cube-admin",
+    "prefix": "/admin",
+    "packageName": "@newlifex/cube-vue/apps/cube-admin"
+  }
+]
+```
+
+| 字段          | 说明                                 |
+| ------------- | ------------------------------------ |
+| `name`        | 应用唯一标识，用于内部路由和状态管理 |
+| `prefix`      | URL 前缀，访问路径为 `/{prefix}/*`   |
+| `packageName` | 包路径，支持多种格式（见上表）       |
 
 ## 内置模板
 
@@ -69,15 +153,6 @@ export default routes;
 export { default as routes } from './routes';
 ```
 
-### 4. 微应用配置 (configs/microAppConfig.json)
-
-```json
-{
-  "name": "<app-name>",
-  "packageName": "/apps/<app-name>"
-}
-```
-
 ## 新增页面
 
 在已有应用中新增页面只需2步：
@@ -98,8 +173,8 @@ export { default as routes } from './routes';
 ## 常用工具
 
 ```typescript
-import { getAccessToken } from 'cube-front/core/utils/token';
-import { useUserStore } from 'cube-front/core/stores/user';
+import { getAccessToken } from '@newlifex/cube-vue/core/utils/token';
+import { useUserStore } from '@newlifex/cube-vue/core/stores/user';
 
 const token = getAccessToken();
 const userStore = useUserStore();

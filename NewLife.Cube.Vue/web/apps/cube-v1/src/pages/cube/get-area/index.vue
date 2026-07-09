@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="cube-get-area-container">
     <el-card class="box-card">
       <template #header>
@@ -54,7 +54,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
-import { request } from 'cube-front/core/utils/request';
+import { request } from '@newlifex/cube-vue/core/utils/request';
 
 // 定义搜索参数类型
 interface AreaParams {

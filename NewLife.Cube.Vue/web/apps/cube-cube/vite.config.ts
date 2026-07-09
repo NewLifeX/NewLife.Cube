@@ -7,7 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      'cube-front': resolve(__dirname, '../../core'),
+      '@newlifex/cube-vue': resolve(__dirname, '../../core'),
     },
   },
   build: {

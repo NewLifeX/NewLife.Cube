@@ -75,8 +75,7 @@ export default defineConfig(({ command, mode }) => {
       ],
       resolve: {
         alias: {
-          '@': fileURLToPath(new URL('./src', import.meta.url)),
-          'cube-front': join(__dirname, './'),
+          '@newlifex/cube-vue': fileURLToPath(new URL('./', import.meta.url)),
         },
       },
       build: {

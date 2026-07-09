@@ -3,7 +3,7 @@
  * LogoutButton - 退出登录按钮组件
  * 使用 ActionButton 基类样式
  */
-import { useUserStore } from 'cube-front/core/stores/user';
+import { useUserStore } from '@newlifex/cube-vue/core/stores/user';
 import ActionButton from './ActionButton.vue';
 
 interface Props {

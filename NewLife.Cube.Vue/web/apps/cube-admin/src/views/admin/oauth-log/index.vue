@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <div class="page-header">
       <h1>OAuth日志管理</h1>
@@ -112,11 +112,11 @@
 <script setup lang="ts">
 
 import { ref, reactive, onMounted } from 'vue'
-import { request } from 'cube-front/core/utils/request'
-import CubeListPager from 'cube-front/core/components/CubeListPager.vue'
-import CubeListToolbarSearch from 'cube-front/core/components/CubeListToolbarSearch.vue'
-import { pageInfoDefault } from 'cube-front/core/types/common';
-import type { BaseEntity } from 'cube-front/core/types/common';
+import { request } from '@newlifex/cube-vue/core/utils/request'
+import CubeListPager from '@newlifex/cube-vue/core/components/CubeListPager.vue'
+import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListToolbarSearch.vue'
+import { pageInfoDefault } from '@newlifex/cube-vue/core/types/common';
+import type { BaseEntity } from '@newlifex/cube-vue/core/types/common';
 
 // OAuth日志接口，继承 BaseEntity
 interface OAuthLog extends BaseEntity {

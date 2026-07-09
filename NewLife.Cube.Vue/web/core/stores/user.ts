@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { getConfig } from 'cube-front/core/configure';
+import { getConfig } from '@newlifex/cube-vue/core/configure';
 import { type AxiosRequestConfig } from 'axios';
 import request from '../utils/request';
 import { removeAccessToken } from '../utils/token';

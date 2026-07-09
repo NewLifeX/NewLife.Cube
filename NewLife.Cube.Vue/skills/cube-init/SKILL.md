@@ -1,35 +1,35 @@
 ---
 name: cube-init
 description: |
-  初始化一个新的前端项目，使用 cube-front 框架。
-  当用户说"初始化项目"、"创建新项目"、"搭建前端项目"、"使用 cube-front 初始化"时使用此技能。
+  初始化一个新的前端项目，使用 @newlifex/cube-vue 框架。
+  当用户说"初始化项目"、"创建新项目"、"搭建前端项目"、"使用 @newlifex/cube-vue 初始化"时使用此技能。
   自动配置布局、状态管理(Pinia)、路由、API请求库、多语言支持、容器化部署等核心功能，开箱即用。
 ---
 
-# Cube-Front 项目初始化
+# @newlifex/cube-vue 项目初始化
 
 ## 什么时候用
 
-当用户需要创建一个新的前端项目，或在现有项目中引入 cube-front 框架时使用。
+当用户需要创建一个新的前端项目，或在现有项目中引入 @newlifex/cube-vue 框架时使用。
 
 ## 架构说明
 
-cube-front 包发布名为 `@newlife/cube-vue`，代码中 import 使用 `cube-front/...` 路径（通过 pnpm 别名机制）。
+@newlifex/cube-vue 包发布名为 `@newlifex/cube-vue`，代码中 import 使用 `@newlifex/cube-vue/...` 路径（通过 pnpm 别名机制）。
 
 支持两种项目结构：
 
-| 场景                  | 说明                                                    | 参考            |
-| --------------------- | ------------------------------------------------------- | --------------- |
-| **Monorepo 工作空间** | 项目放在 cube-front 所在仓库内，通过 workspace 协议引用 |                 |
-| **独立应用**          | cube-front 作为 npm 包安装                              | 后续 npm 发布后 |
+| 场景                  | 说明                                                            | 参考            |
+| --------------------- | --------------------------------------------------------------- | --------------- |
+| **Monorepo 工作空间** | 项目放在 @newlifex/cube-vue 所在仓库内，通过 workspace 协议引用 |                 |
+| **独立应用**          | @newlifex/cube-vue 作为 npm 包安装                              | 后续 npm 发布后 |
 
-**本技能以 monorepo 场景为主**，独立应用场景仅调整依赖声明方式（`npm install @newlife/cube-vue` + 别名）。
+**本技能以 monorepo 场景为主**，独立应用场景仅调整依赖声明方式（`npm install @newlifex/cube-vue` + 别名）。
 
 ## 初始化步骤
 
 ### 1. 检查环境
 
-- Node.js >= 18
+- Node.js >= 24
 - pnpm >= 9
 - 根目录需配置 `pnpm-workspace.yaml`（monorepo 场景）
 
@@ -49,8 +49,8 @@ packages:
 
 ```typescript
 // src/main.ts
-import { initApp } from 'cube-front/core/initApp';
-import 'cube-front/core/global.css';
+import { initApp } from '@newlifex/cube-vue/core/initApp';
+import '@newlifex/cube-vue/core/global.css';
 
 initApp();
 ```
@@ -79,7 +79,7 @@ initApp();
 
 **configs/config.ts** - 通用配置：
 ```typescript
-import type { EnvConfig } from 'cube-front/core/configure/types';
+import type { EnvConfig } from '@newlifex/cube-vue/core/configure/types';
 
 export const config: EnvConfig = {
   base: {
@@ -103,7 +103,7 @@ export const config: EnvConfig = {
 
 **configs/config.development.ts** - 开发环境配置：
 ```typescript
-import type { EnvConfig } from 'cube-front/core/configure/types';
+import type { EnvConfig } from '@newlifex/cube-vue/core/configure/types';
 
 export const config: EnvConfig = {
   request: {
@@ -115,7 +115,7 @@ export const config: EnvConfig = {
 
 **configs/config.test.ts** - 测试环境配置：
 ```typescript
-import type { EnvConfig } from 'cube-front/core/configure/types';
+import type { EnvConfig } from '@newlifex/cube-vue/core/configure/types';
 
 export const config: EnvConfig = {
   request: {
@@ -127,7 +127,7 @@ export const config: EnvConfig = {
 
 **configs/config.production.ts** - 生产环境配置（支持容器部署替换）：
 ```typescript
-import type { EnvConfig } from 'cube-front/core/configure/types';
+import type { EnvConfig } from '@newlifex/cube-vue/core/configure/types';
 
 export const config: EnvConfig = {
   request: {
@@ -180,7 +180,7 @@ import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, loadEnv } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
-import cubeFront from 'cube-front/core/plugin';
+import cubeFront from '@newlifex/cube-vue/core/plugin';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -194,7 +194,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
-        // ❌ 不需要 'cube-front' 别名——pnpm workspace 协议自动处理
+        // ❌ 不需要 '@newlifex/cube-vue' 别名——pnpm workspace 协议自动处理
       },
     },
     server: {
@@ -216,9 +216,11 @@ export default defineConfig(({ mode }) => {
 });
 ```
 
-> **为什么不需要 `cube-front` 别名？** 因为 pnpm workspace 协议（`workspace:*`）+ 别名（`"cube-front": "workspace:@newlife/cube-vue@*"`）会自动创建 `node_modules/cube-front` 的 symlink，Node.js 模块解析就能直接找到。
+> **为什么不需要 `@newlifex/cube-vue` 别名？** 因为 pnpm workspace 协议（`workspace:*`）+ 别名（`"@newlifex/cube-vue": "workspace:@newlifex/cube-vue@*"`）会自动创建 `node_modules/@newlifex/cube-vue` 的 symlink，Node.js 模块解析就能直接找到。
 
 ### 8. 配置 TypeScript
+
+> ⚠️ **重要**：必须添加 `@newlifex/cube-vue/core/client` 类型声明，否则 `initApp()` 等 API 会报类型错误。
 
 **tsconfig.json**：
 ```json
@@ -242,12 +244,15 @@ export default defineConfig(({ mode }) => {
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "types": ["@newlifex/cube-vue/core/client"]
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
 ```
+
+> **说明**：`"types": ["@newlifex/cube-vue/core/client"]` 会自动加载框架的类型声明文件，确保 `initApp()`、`useUserStore()` 等 API 的类型提示正常工作。
 
 **tsconfig.node.json**：
 ```json
@@ -268,13 +273,12 @@ export default defineConfig(({ mode }) => {
 
 **Monorepo 场景 — 依赖声明**：
 
-使用 **两条** workspace 依赖，利用 pnpm 别名保留 `cube-front` import 路径：
+使用 **一条** workspace 依赖：
 
 ```json
 {
   "dependencies": {
-    "cube-front": "workspace:@newlife/cube-vue@*",
-    "@newlife/cube-vue": "workspace:*",
+    "@newlifex/cube-vue": "workspace:*",
     "dayjs": "^1.11.0"
   },
   "devDependencies": {
@@ -289,13 +293,12 @@ export default defineConfig(({ mode }) => {
 ```
 
 **条目解释**：
-| 依赖                                            | 作用                                                                 |
-| ----------------------------------------------- | -------------------------------------------------------------------- |
-| `"cube-front": "workspace:@newlife/cube-vue@*"` | 别名，让 `node_modules/cube-front` → symlink 到本地库                |
-| `"@newlife/cube-vue": "workspace:*"`            | 正式包名，将来发 npm 版时用于安装                                    |
-| vue/pinia/element-plus/vue-router               | 不必须声明（pnpm auto-install-peers 自动装），但**建议显式锁定版本** |
+| 依赖                                                     | 作用                                                                 |
+| -------------------------------------------------------- | -------------------------------------------------------------------- |
+| `"@newlifex/cube-vue": "workspace:*"`                    | 正式包名，monorepo 内通过 workspace 协议引用本地库                   |
+| vue/pinia/element-plus/vue-router                        | 不必须声明（pnpm auto-install-peers 自动装），但**建议显式锁定版本** |
 
-> **为什么不需要`cube-front: "link:../../cube-front"`**？因为 monorepo workspace 模式下，`workspace:*` 等价且语义更清晰，`link:` 路径已被淘汰。
+> **为什么不需要`@newlifex/cube-vue: "link:../../@newlifex/cube-vue"`**？因为 monorepo workspace 模式下，`workspace:*` 等价且语义更清晰，`link:` 路径已被淘汰。
 
 ### 10. package.json 完整示例
 
@@ -314,8 +317,8 @@ export default defineConfig(({ mode }) => {
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix"
   },
   "dependencies": {
-    "cube-front": "workspace:@newlife/cube-vue@*",
-    "@newlife/cube-vue": "workspace:*",
+    "@newlifex/cube-vue": "workspace:@newlifex/cube-vue@*",
+    "@newlifex/cube-vue": "workspace:*",
     "element-plus": "^2.9.0",
     "pinia": "^3.0.0",
     "vue": "^3.5.0",
@@ -410,15 +413,15 @@ request["baseUrl"] = "BUILD_REQUEST_BASE_URL";
 
 ## 框架提供的能力
 
-| 功能                | 说明                                     | 如何使用                                              |
-| ------------------- | ---------------------------------------- | ----------------------------------------------------- |
-| **布局系统**        | MainLayout 主布局，侧边栏+内容区         | 通过 `LayoutKey` 依赖注入自定义                       |
-| **状态管理**        | UserStore 用户状态，MenuStore 菜单状态   | `useUserStore()`, `useMenuStore()`                    |
-| **路由系统**        | 动态路由，微前端支持                     | 通过后端菜单动态生成                                  |
-| **API请求**         | 带 Token、401处理、错误提示的 Axios 封装 | `import request from 'cube-front/core/utils/request'` |
-| **国际化**          | Vue I18n，支持动态切换                   | `intl.get('key').d('默认值')`                         |
-| **页面覆盖**        | Section 机制，可覆盖框架组件             | 在 `views/` 下创建大写开头的 Vue 文件                 |
-| **BUILD_ 配置注入** | 生产构建时自动注入到 html                | 在 config.production.ts 使用 `${BUILD_XXX}`           |
+| 功能                | 说明                                     | 如何使用                                                      |
+| ------------------- | ---------------------------------------- | ------------------------------------------------------------- |
+| **布局系统**        | MainLayout 主布局，侧边栏+内容区         | 通过 `LayoutKey` 依赖注入自定义                               |
+| **状态管理**        | UserStore 用户状态，MenuStore 菜单状态   | `useUserStore()`, `useMenuStore()`                            |
+| **路由系统**        | 动态路由，微前端支持                     | 通过后端菜单动态生成                                          |
+| **API请求**         | 带 Token、401处理、错误提示的 Axios 封装 | `import request from '@newlifex/cube-vue/core/utils/request'` |
+| **国际化**          | Vue I18n，支持动态切换                   | `intl.get('key').d('默认值')`                                 |
+| **页面覆盖**        | Section 机制，可覆盖框架组件             | 在 `views/` 下创建大写开头的 Vue 文件                         |
+| **BUILD_ 配置注入** | 生产构建时自动注入到 html                | 在 config.production.ts 使用 `${BUILD_XXX}`                   |
 
 ## 验证初始化成功
 

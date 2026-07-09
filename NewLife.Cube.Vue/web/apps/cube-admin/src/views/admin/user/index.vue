@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="user-page">
     <!-- ─── 页头 ─── -->
     <div class="page-header">
@@ -368,16 +368,16 @@
 import { ref, reactive, onMounted } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { request } from 'cube-front/core/utils/request';
+import { request } from '@newlifex/cube-vue/core/utils/request';
 import {
   apiDataToList,
   apiDataToSingle,
   handleDeleteOperation,
   handleFormSubmit,
-} from 'cube-front/core/utils/api-helpers';
-import CubeListPager from 'cube-front/core/components/CubeListPager.vue';
-import type { SelectOption, BaseEntity, EnableStatus } from 'cube-front/core/types/common';
-import { pageInfoDefault } from 'cube-front/core/types/common';
+} from '@newlifex/cube-vue/core/utils/api-helpers';
+import CubeListPager from '@newlifex/cube-vue/core/components/CubeListPager.vue';
+import type { SelectOption, BaseEntity, EnableStatus } from '@newlifex/cube-vue/core/types/common';
+import { pageInfoDefault } from '@newlifex/cube-vue/core/types/common';
 
 // 定义用户类型接口
 interface User extends BaseEntity, EnableStatus {

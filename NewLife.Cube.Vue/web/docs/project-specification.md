@@ -20,7 +20,7 @@
 ## 项目结构规范
 
 ```
-cube-front/
+@newlifex/cube-vue/
 ├── public/                 # 静态资源目录
 ├── src/
 │   ├── api/                # API接口定义

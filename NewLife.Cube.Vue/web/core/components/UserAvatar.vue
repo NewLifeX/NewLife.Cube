@@ -4,7 +4,7 @@
  * 显示用户头像（首字母）和名称
  */
 import { computed } from 'vue';
-import { useUserStore } from 'cube-front/core/stores/user';
+import { useUserStore } from '@newlifex/cube-vue/core/stores/user';
 
 interface Props {
   /** 是否显示用户名 */

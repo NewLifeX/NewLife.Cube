@@ -93,15 +93,15 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { getConfig } from 'cube-front/core/configure';
+import { getConfig } from '@newlifex/cube-vue/core/configure';
 import LovSelect from './LovSelect.vue';
-import { fetchLovListData, fetchBatchLabel } from 'cube-front/core/utils/lov-api';
+import { fetchLovListData, fetchBatchLabel } from '@newlifex/cube-vue/core/utils/lov-api';
 import type {
   LovEnumOption,
   LovListMeta,
   LovSearchField,
   LovTableColumn,
-} from 'cube-front/core/types/lov';
+} from '@newlifex/cube-vue/core/types/lov';
 
 const props = defineProps<{
   dialogVisible: boolean;

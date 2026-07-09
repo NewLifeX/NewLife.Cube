@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="user-online-container">
     <el-card class="box-card">
       <template #header>
@@ -86,12 +86,12 @@
 <script setup lang="ts">
 
 import { ref, reactive, onMounted } from 'vue'
-import { request } from 'cube-front/core/utils/request'
-import { apiDataToList, handleDeleteOperation } from 'cube-front/core/utils/api-helpers'
-import CubeListToolbarSearch from 'cube-front/core/components/CubeListToolbarSearch.vue'
-import CubeListPager from 'cube-front/core/components/CubeListPager.vue'
-import { pageInfoDefault } from 'cube-front/core/types/common';
-import type { BaseEntity } from 'cube-front/core/types/common';
+import { request } from '@newlifex/cube-vue/core/utils/request'
+import { apiDataToList, handleDeleteOperation } from '@newlifex/cube-vue/core/utils/api-helpers'
+import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListToolbarSearch.vue'
+import CubeListPager from '@newlifex/cube-vue/core/components/CubeListPager.vue'
+import { pageInfoDefault } from '@newlifex/cube-vue/core/types/common';
+import type { BaseEntity } from '@newlifex/cube-vue/core/types/common';
 
 // 在线用户接口，继承 BaseEntity
 interface UserOnline extends BaseEntity {

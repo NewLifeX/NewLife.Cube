@@ -1,4 +1,4 @@
-import { type TreeMenuItem } from 'cube-front/core/stores/menu';
+import { type TreeMenuItem } from '@newlifex/cube-vue/core/stores/menu';
 
 /**
  * 判断 childMenu 的祖先是否是parentMenu

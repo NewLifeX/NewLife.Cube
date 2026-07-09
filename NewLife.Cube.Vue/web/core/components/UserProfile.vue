@@ -15,8 +15,8 @@
  */
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useUserStore } from 'cube-front/core/stores/user';
-import { getConfig } from 'cube-front/core/configure';
+import { useUserStore } from '@newlifex/cube-vue/core/stores/user';
+import { getConfig } from '@newlifex/cube-vue/core/configure';
 
 interface Props {
   /** 显示变体 */

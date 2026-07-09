@@ -1,6 +1,6 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed } from 'vue';
-import { useMenuStore } from 'cube-front/core/stores/menu';
+import { useMenuStore } from '@newlifex/cube-vue/core/stores/menu';
 import SideMenuItem from './SideMenuItem.vue';
 
 const menuStore = useMenuStore();

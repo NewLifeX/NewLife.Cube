@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <div class="page-header">
       <h1>租户用户管理</h1>
@@ -178,11 +178,11 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import { Plus, Refresh } from '@element-plus/icons-vue'
-import { request } from 'cube-front/core/utils/request'
-import CubeListToolbarSearch from 'cube-front/core/components/CubeListToolbarSearch.vue'
-import CubeListPager from 'cube-front/core/components/CubeListPager.vue'
-import { pageInfoDefault } from 'cube-front/core/types/common';
-import type { BaseEntity } from 'cube-front/core/types/common';
+import { request } from '@newlifex/cube-vue/core/utils/request'
+import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListToolbarSearch.vue'
+import CubeListPager from '@newlifex/cube-vue/core/components/CubeListPager.vue'
+import { pageInfoDefault } from '@newlifex/cube-vue/core/types/common';
+import type { BaseEntity } from '@newlifex/cube-vue/core/types/common';
 
 // 租户用户接口，继承 BaseEntity
 interface TenantUser extends BaseEntity {

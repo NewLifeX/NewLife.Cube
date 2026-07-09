@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import LayoutSwitcher from 'cube-front/core/components/LayoutSwitcher.vue';
-import ThemeSwitcher from 'cube-front/core/components/ThemeSwitcher.vue';
-import ModeSwitcher from 'cube-front/core/components/ModeSwitcher.vue';
-import { useUserStore } from 'cube-front/core/stores/user';
-import { useMenuStore } from 'cube-front/core/stores/menu';
-import NotificationBell from 'cube-front/core/components/NotificationBell.vue';
+import LayoutSwitcher from '@newlifex/cube-vue/core/components/LayoutSwitcher.vue';
+import ThemeSwitcher from '@newlifex/cube-vue/core/components/ThemeSwitcher.vue';
+import ModeSwitcher from '@newlifex/cube-vue/core/components/ModeSwitcher.vue';
+import { useUserStore } from '@newlifex/cube-vue/core/stores/user';
+import { useMenuStore } from '@newlifex/cube-vue/core/stores/menu';
+import NotificationBell from '@newlifex/cube-vue/core/components/NotificationBell.vue';
 
 const userStore = useUserStore();
 const menuStore = useMenuStore();

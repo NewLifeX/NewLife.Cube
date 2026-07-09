@@ -1,12 +1,12 @@
 ---
 name: cube-layout
 description: |
-  在 cube-front 框架中新增、注册或切换页面布局。
+  在 @newlifex/cube-vue 框架中新增、注册或切换页面布局。
   当用户说"新增布局"、"自定义布局"、"修改布局"、"切换布局"、"使用 XXX 布局"时使用。
   包含布局组件创建、框架注册、应用使用的完整流程。
 ---
 
-# Cube-Front 布局系统
+# @newlifex/cube-vue 布局系统
 
 ## 什么时候用
 
@@ -23,9 +23,9 @@ description: |
 框架内置了 CyberLayout（赛博风格布局），默认已注册并使用，无需任何配置：
 
 ```
-cube-front/core/layouts/CyberLayout/  ← 默认使用
-cube-front/core/layouts/MainLayout/   ← 备用布局
-cube-front/core/layouts/TopMenu/      ← 备用布局
+@newlifex/cube-vue/core/layouts/CyberLayout/  ← 默认使用
+@newlifex/cube-vue/core/layouts/MainLayout/   ← 备用布局
+@newlifex/cube-vue/core/layouts/TopMenu/      ← 备用布局
 ```
 
 ### 方式二：应用层注册并使用自定义布局
@@ -34,10 +34,10 @@ cube-front/core/layouts/TopMenu/      ← 备用布局
 
 ```typescript
 // src/main.ts
-import { initApp } from 'cube-front/core/initApp';
-import 'cube-front/core/global.css';
-import { registerLayout } from 'cube-front/core/composables/useLayout';
-import MainLayout from 'cube-front/core/layouts/MainLayout';
+import { initApp } from '@newlifex/cube-vue/core/initApp';
+import '@newlifex/cube-vue/core/global.css';
+import { registerLayout } from '@newlifex/cube-vue/core/composables/useLayout';
+import MainLayout from '@newlifex/cube-vue/core/layouts/MainLayout';
 
 // 注册布局并立即切换为当前布局（第二个参数 setAsCurrent = true）
 registerLayout({
@@ -122,7 +122,7 @@ initApp();
 | `--cube-layout-breadcrumb-current-color` | 面包屑当前色   | `var(--el-text-color-primary)`    |
 | `--cube-layout-tabsview-bg`              | 标签页栏背景   | `var(--el-bg-color-overlay)`      |
 
-> 完整 `--cube-layout-*` 变量清单见 `cube-front/core/cube-layout-vars.css`
+> 完整 `--cube-layout-*` 变量清单见 `@newlifex/cube-vue/core/cube-layout-vars.css`
 
 ### 使用规则
 
@@ -190,7 +190,7 @@ initApp();
 ## 新增自定义布局
 
 > **注意**：首先判断在哪个项目新增布局：
-> - **cube-front 框架项目**：布局将作为内置布局，默认被所有应用使用
+> - **@newlifex/cube-vue 框架项目**：布局将作为内置布局，默认被所有应用使用
 > - **用户自己的项目（如 NewLife.Cube.Vue）**：布局仅当前应用可用
 
 ---
@@ -285,9 +285,9 @@ defineProps<{
 **src/main.ts**：
 
 ```typescript
-import { initApp } from 'cube-front/core/initApp';
-import 'cube-front/core/global.css';
-import { registerLayout } from 'cube-front/core/composables/useLayout';
+import { initApp } from '@newlifex/cube-vue/core/initApp';
+import '@newlifex/cube-vue/core/global.css';
+import { registerLayout } from '@newlifex/cube-vue/core/composables/useLayout';
 import CustomLayout from './layouts/CustomLayout/index.vue';
 
 // 注册自定义布局并立即切换为当前布局
@@ -304,16 +304,16 @@ initApp();
 
 ---
 
-### 场景 B：在 cube-front 框架中新增布局
+### 场景 B：在 @newlifex/cube-vue 框架中新增布局
 
 适用于需要让布局成为框架内置布局，所有应用默认使用的情况。
 
 #### 步骤 1：创建布局组件
 
-在 `cube-front/core/layouts/` 下创建布局目录：
+在 `@newlifex/cube-vue/core/layouts/` 下创建布局目录：
 
 ```
-cube-front/core/layouts/
+@newlifex/cube-vue/core/layouts/
 └── YourLayout/
     ├── index.vue           # 主布局入口
     ├── Sidebar.vue         # 侧边栏（可选）
@@ -325,7 +325,7 @@ cube-front/core/layouts/
 
 #### 步骤 2：编写布局组件
 
-**cube-front/core/layouts/YourLayout/index.vue**：
+**@newlifex/cube-vue/core/layouts/YourLayout/index.vue**：
 
 ```vue
 <template>
@@ -394,7 +394,7 @@ defineProps<{
 
 #### 步骤 3：在框架中注册布局
 
-编辑 `cube-front/core/main.ts`：
+编辑 `@newlifex/cube-vue/core/main.ts`：
 
 ```typescript
 import { initApp } from './initApp';
@@ -437,9 +437,9 @@ registerLayout({
 
 ```typescript
 // src/main.ts
-import { initApp } from 'cube-front/core/initApp';
-import 'cube-front/core/global.css';
-import { registerLayout } from 'cube-front/core/composables/useLayout';
+import { initApp } from '@newlifex/cube-vue/core/initApp';
+import '@newlifex/cube-vue/core/global.css';
+import { registerLayout } from '@newlifex/cube-vue/core/composables/useLayout';
 import CustomLayout from './layouts/CustomLayout/index.vue';
 
 // 注册自定义布局并立即切换
@@ -459,7 +459,7 @@ initApp();
 使用 `useLayout` 组合函数：
 
 ```typescript
-import { useLayout } from 'cube-front/core/composables/useLayout';
+import { useLayout } from '@newlifex/cube-vue/core/composables/useLayout';
 
 const { currentLayout, setLayout, availableLayouts } = useLayout();
 
@@ -490,9 +490,9 @@ const routes = [
 
 | 布局 ID    | 路径                                   | 特点                               |
 | ---------- | -------------------------------------- | ---------------------------------- |
-| `cyber`    | `cube-front/core/layouts/CyberLayout/` | 深色科技风格 + 霓虹发光 + 主题切换 |
-| `main`     | `cube-front/core/layouts/MainLayout/`  | 侧边栏 + 内容区，Element Plus 风格 |
-| `top-menu` | `cube-front/core/layouts/TopMenu/`     | 顶部导航栏 + 内容区                |
+| `cyber`    | `@newlifex/cube-vue/core/layouts/CyberLayout/` | 深色科技风格 + 霓虹发光 + 主题切换 |
+| `main`     | `@newlifex/cube-vue/core/layouts/MainLayout/`  | 侧边栏 + 内容区，Element Plus 风格 |
+| `top-menu` | `@newlifex/cube-vue/core/layouts/TopMenu/`     | 顶部导航栏 + 内容区                |
 
 ### CyberLayout 赛博风格
 
@@ -552,9 +552,9 @@ CSS 变量（可在项目覆盖）：
 
 ```typescript
 // src/main.ts
-import { initApp } from 'cube-front/core/initApp';
-import 'cube-front/core/global.css';
-import { registerLayout } from 'cube-front/core/composables/useLayout';
+import { initApp } from '@newlifex/cube-vue/core/initApp';
+import '@newlifex/cube-vue/core/global.css';
+import { registerLayout } from '@newlifex/cube-vue/core/composables/useLayout';
 import AuroraLayout from './layouts/AuroraLayout/index.vue';
 
 registerLayout({
@@ -609,11 +609,11 @@ import Navbar from './Navbar.vue';
 <script setup lang="ts">
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useMenuStore } from 'cube-front/core/stores/menu';
-import LogoBrand from 'cube-front/core/components/LogoBrand.vue';
-import SearchBar from 'cube-front/core/components/SearchBar.vue';
-import MenuItem from 'cube-front/core/components/MenuItem.vue';
-import UserProfile from 'cube-front/core/components/UserProfile.vue';
+import { useMenuStore } from '@newlifex/cube-vue/core/stores/menu';
+import LogoBrand from '@newlifex/cube-vue/core/components/LogoBrand.vue';
+import SearchBar from '@newlifex/cube-vue/core/components/SearchBar.vue';
+import MenuItem from '@newlifex/cube-vue/core/components/MenuItem.vue';
+import UserProfile from '@newlifex/cube-vue/core/components/UserProfile.vue';
 
 const menuStore = useMenuStore();
 const { treeMenus, activeMenu, loading, hasMenus } = storeToRefs(menuStore);
@@ -674,13 +674,13 @@ const menuGroups = computed(() => treeMenus.value ?? []);
 ```vue
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useMenuStore } from 'cube-front/core/stores/menu';
-import LayoutSwitcher from 'cube-front/core/components/LayoutSwitcher.vue';
-import ThemeSwitcher from 'cube-front/core/components/ThemeSwitcher.vue';
-import ModeSwitcher from 'cube-front/core/components/ModeSwitcher.vue';
-import NotificationBell from 'cube-front/core/components/NotificationBell.vue';
-import UserProfile from 'cube-front/core/components/UserProfile.vue';
-import SearchBar from 'cube-front/core/components/SearchBar.vue';
+import { useMenuStore } from '@newlifex/cube-vue/core/stores/menu';
+import LayoutSwitcher from '@newlifex/cube-vue/core/components/LayoutSwitcher.vue';
+import ThemeSwitcher from '@newlifex/cube-vue/core/components/ThemeSwitcher.vue';
+import ModeSwitcher from '@newlifex/cube-vue/core/components/ModeSwitcher.vue';
+import NotificationBell from '@newlifex/cube-vue/core/components/NotificationBell.vue';
+import UserProfile from '@newlifex/cube-vue/core/components/UserProfile.vue';
+import SearchBar from '@newlifex/cube-vue/core/components/SearchBar.vue';
 
 const menuStore = useMenuStore();
 const pageTitle = computed(() => menuStore.activeMenu?.title || menuStore.activeMenu?.name || '仪表盘');
@@ -809,17 +809,17 @@ const breadcrumbPath = computed(() => {
 
 | Store          | 路径                                      | 用途             |
 | -------------- | ----------------------------------------- | ---------------- |
-| `useMenuStore` | `cube-front/core/stores/menu.ts`          | 菜单树、活跃菜单 |
-| `useUserStore` | `cube-front/core/stores/user.ts`          | 用户信息、登出   |
-| `useTheme`     | `cube-front/core/composables/useTheme.ts` | 主题切换         |
+| `useMenuStore` | `@newlifex/cube-vue/core/stores/menu.ts`          | 菜单树、活跃菜单 |
+| `useUserStore` | `@newlifex/cube-vue/core/stores/user.ts`          | 用户信息、登出   |
+| `useTheme`     | `@newlifex/cube-vue/core/composables/useTheme.ts` | 主题切换         |
 
 ## 场景判断速查
 
 | 需求           | 在哪里新增                 | 是否需要 registerLayout                         |
 | -------------- | -------------------------- | ----------------------------------------------- |
 | 仅当前项目使用 | 用户项目 `src/layouts/`    | 是，`registerLayout(option, true)` 切换为当前   |
-| 所有应用共用   | cube-front `core/layouts/` | 是，在 `core/main.ts` 中注册                    |
-| 设为框架默认   | cube-front `core/layouts/` | 是，`registerLayout(option, true)` 设为当前布局 |
+| 所有应用共用   | @newlifex/cube-vue `core/layouts/` | 是，在 `core/main.ts` 中注册                    |
+| 设为框架默认   | @newlifex/cube-vue `core/layouts/` | 是，`registerLayout(option, true)` 设为当前布局 |
 
 > **核心规则**：无论哪种场景，都必须调用 `registerLayout` 才能让布局生效。
 > `RootLayout.vue` 只读取 `useLayout` 的 `currentComponent`，不读取 `provide(LayoutKey)`。
@@ -853,11 +853,11 @@ const breadcrumbPath = computed(() => {
 
 ## 二、复用的框架组件清单
 
-以下组件均来自 `cube-front/core/components/`，**无需自行实现**，直接 import 使用即可。
+以下组件均来自 `@newlifex/cube-vue/core/components/`，**无需自行实现**，直接 import 使用即可。
 
 ### 可复用的框架内置组件
 
-以下组件均来自 `cube-front/core/components/`，**无需自行实现**，直接 import 使用即可。
+以下组件均来自 `@newlifex/cube-vue/core/components/`，**无需自行实现**，直接 import 使用即可。
 所有组件都已对接真实数据（menuStore / userStore / config），不是静态 UI。
 
 | 组件               | 路径                                   | 对接数据                           | 用途                                                                    |
@@ -877,7 +877,7 @@ const breadcrumbPath = computed(() => {
 
 ```vue
 <script setup lang="ts">
-import LogoBrand from 'cube-front/core/components/LogoBrand.vue';
+import LogoBrand from '@newlifex/cube-vue/core/components/LogoBrand.vue';
 </script>
 
 <template>
@@ -899,8 +899,8 @@ import LogoBrand from 'cube-front/core/components/LogoBrand.vue';
 
 ```vue
 <script setup lang="ts">
-import MenuItem from 'cube-front/core/components/MenuItem.vue';
-import { useMenuStore } from 'cube-front/core/stores/menu';
+import MenuItem from '@newlifex/cube-vue/core/components/MenuItem.vue';
+import { useMenuStore } from '@newlifex/cube-vue/core/stores/menu';
 import { storeToRefs } from 'pinia';
 
 const menuStore = useMenuStore();
@@ -930,7 +930,7 @@ const { activeMenu } = storeToRefs(menuStore);
 
 ```vue
 <script setup lang="ts">
-import SearchBar from 'cube-front/core/components/SearchBar.vue';
+import SearchBar from '@newlifex/cube-vue/core/components/SearchBar.vue';
 </script>
 
 <template>
@@ -956,7 +956,7 @@ import SearchBar from 'cube-front/core/components/SearchBar.vue';
 
 ```vue
 <script setup lang="ts">
-import UserProfile from 'cube-front/core/components/UserProfile.vue';
+import UserProfile from '@newlifex/cube-vue/core/components/UserProfile.vue';
 </script>
 
 <template>
@@ -985,7 +985,7 @@ import UserProfile from 'cube-front/core/components/UserProfile.vue';
 
 ```vue
 <script setup lang="ts">
-import LayoutSwitcher from 'cube-front/core/components/LayoutSwitcher.vue';
+import LayoutSwitcher from '@newlifex/cube-vue/core/components/LayoutSwitcher.vue';
 </script>
 
 <template>
@@ -1005,7 +1005,7 @@ import LayoutSwitcher from 'cube-front/core/components/LayoutSwitcher.vue';
 
 ```vue
 <script setup lang="ts">
-import ThemeSwitcher from 'cube-front/core/components/ThemeSwitcher.vue';
+import ThemeSwitcher from '@newlifex/cube-vue/core/components/ThemeSwitcher.vue';
 </script>
 
 <template>
@@ -1023,7 +1023,7 @@ import ThemeSwitcher from 'cube-front/core/components/ThemeSwitcher.vue';
 
 ```vue
 <script setup lang="ts">
-import ModeSwitcher from 'cube-front/core/components/ModeSwitcher.vue';
+import ModeSwitcher from '@newlifex/cube-vue/core/components/ModeSwitcher.vue';
 </script>
 
 <template>
@@ -1041,7 +1041,7 @@ import ModeSwitcher from 'cube-front/core/components/ModeSwitcher.vue';
 
 ```vue
 <script setup lang="ts">
-import NotificationBell from 'cube-front/core/components/NotificationBell.vue';
+import NotificationBell from '@newlifex/cube-vue/core/components/NotificationBell.vue';
 </script>
 
 <template>
@@ -1060,7 +1060,7 @@ import NotificationBell from 'cube-front/core/components/NotificationBell.vue';
 
 ```vue
 <script setup lang="ts">
-import UserAvatar from 'cube-front/core/components/UserAvatar.vue';
+import UserAvatar from '@newlifex/cube-vue/core/components/UserAvatar.vue';
 </script>
 
 <template>
@@ -1084,8 +1084,8 @@ import UserAvatar from 'cube-front/core/components/UserAvatar.vue';
 ### 3.1 使用的 Store
 
 ```typescript
-import { useMenuStore, type TreeMenuItem } from 'cube-front/core/stores/menu';
-import { useUserStore } from 'cube-front/core/stores/user';
+import { useMenuStore, type TreeMenuItem } from '@newlifex/cube-vue/core/stores/menu';
+import { useUserStore } from '@newlifex/cube-vue/core/stores/user';
 ```
 
 | Store          | 关键字段     | 类型                   | 说明                                |
@@ -1120,8 +1120,8 @@ interface TreeMenuItem {
 ```vue
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
-import { useMenuStore } from 'cube-front/core/stores/menu';
-import MenuItem from 'cube-front/core/components/MenuItem.vue';
+import { useMenuStore } from '@newlifex/cube-vue/core/stores/menu';
+import MenuItem from '@newlifex/cube-vue/core/components/MenuItem.vue';
 
 const menuStore = useMenuStore();
 const { treeMenus, activeMenu } = storeToRefs(menuStore);
@@ -1295,9 +1295,9 @@ src/layouts/{LayoutName}/
 
 ```typescript
 // src/main.ts
-import { initApp } from 'cube-front/core/initApp';
-import 'cube-front/core/global.css';
-import { registerLayout } from 'cube-front/core/composables/useLayout';
+import { initApp } from '@newlifex/cube-vue/core/initApp';
+import '@newlifex/cube-vue/core/global.css';
+import { registerLayout } from '@newlifex/cube-vue/core/composables/useLayout';
 import AuroraLayout from './layouts/AuroraLayout/index.vue';
 
 registerLayout({

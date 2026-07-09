@@ -8,8 +8,8 @@ import type { MicroAppConfig } from '../microAppRouter';
  * 递归遍历对象，找出所有值为 BUILD_ 开头的配置项
  * 返回扁平化的路径数组，如 ["request.baseUrl"]
  */
-function findBuildConfigKeys(obj: unknown, prefix = ''): Array<{ path: string; value: string }> {
-  const results: Array<{ path: string; value: string }> = [];
+function findBuildConfigKeys(obj: unknown, prefix = ''): Array<{ path: string; value: string; }> {
+  const results: Array<{ path: string; value: string; }> = [];
 
   if (obj && typeof obj === 'object') {
     for (const [key, value] of Object.entries(obj)) {
@@ -30,13 +30,13 @@ function findBuildConfigKeys(obj: unknown, prefix = ''): Array<{ path: string; v
  * 将 BUILD_ 配置项生成为内联脚本代码
  * 格式: let cubeConfig = window._CUBE_CONFIG_ || (window._CUBE_CONFIG_={});
  */
-function generateBuildConfigScript(buildConfigs: Array<{ path: string; value: string }>): string {
+function generateBuildConfigScript(buildConfigs: Array<{ path: string; value: string; }>): string {
   if (buildConfigs.length === 0) return '';
 
   const lines = ['let cubeConfig = window._CUBE_CONFIG_ || (window._CUBE_CONFIG_={});'];
 
   // 按顶层分组
-  const grouped = new Map<string, Array<{ path: string; value: string }>>();
+  const grouped = new Map<string, Array<{ path: string; value: string; }>>();
   for (const config of buildConfigs) {
     const topLevel = config.path.split('.')[0];
     if (!grouped.has(topLevel)) grouped.set(topLevel, []);
@@ -60,7 +60,7 @@ function generateBuildConfigScript(buildConfigs: Array<{ path: string; value: st
 
 export default function vitePluginCubeFront() {
   const virtualModuleNamePrefix = 'cube';
-  const virtualModuleIdPrefix = 'virtual:cube-front-';
+  const virtualModuleIdPrefix = 'virtual:@newlifex/cube-vue-';
   const resolvedVirtualModuleIdPrefix = '\0' + virtualModuleIdPrefix;
 
   // 虚拟模块名称常量
@@ -70,7 +70,7 @@ export default function vitePluginCubeFront() {
   const sectionsName = 'sections';
 
   /** 配置信息 */
-  let config: ResolvedConfig & { routes: ConfigRoute[] };
+  let config: ResolvedConfig & { routes: ConfigRoute[]; };
   /** 包含路由信息的字符串代码 */
   let routesStr: string | undefined;
   /** 生产配置内容（用于 transformIndexHtml 提取 BUILD_ 配置） */
@@ -83,7 +83,7 @@ export default function vitePluginCubeFront() {
       return {
         // resolve: {
         //   alias: {
-        //     'cube-front': path.resolve(__dirname, './'),
+        //     '@newlifex/cube-vue': path.resolve(__dirname, './'),
         //   },
         // },
       };
@@ -100,7 +100,7 @@ export default function vitePluginCubeFront() {
       if (id === resolvedVirtualModuleIdPrefix + appName) {
         return `
         export const msg = "from virtual module"
-        export { default as App } from 'cube-front/core/App.vue'
+        export { default as App } from '@newlifex/cube-vue/core/App.vue'
         `;
       }
     },
@@ -111,7 +111,7 @@ export default function vitePluginCubeFront() {
       // 生产模式下，提取 BUILD_ 开头的配置项并注入到 html
       if (config.mode === 'production' && productionConfigContent) {
         // 解析嵌套配置：提取 parent: { key: '${BUILD_XXX}' } 格式
-        const buildConfigs: Array<{ path: string; value: string }> = [];
+        const buildConfigs: Array<{ path: string; value: string; }> = [];
 
         // 按行解析，追踪缩进层级
         const lines = productionConfigContent.split('\n');
@@ -158,7 +158,7 @@ export default function vitePluginCubeFront() {
     name: `vite:${virtualModuleNamePrefix}-${microAppsName}`,
     enforce: 'post',
     configResolved: (cfg) => {
-      config = cfg as ResolvedConfig & { routes: ConfigRoute[] };
+      config = cfg as ResolvedConfig & { routes: ConfigRoute[]; };
     },
     resolveId(id: string) {
       if (id === virtualModuleIdPrefix + microAppsName) {
@@ -174,10 +174,10 @@ export default function vitePluginCubeFront() {
             fs.readFileSync(configPath, 'utf-8'),
           ) as Array<MicroAppConfig>;
 
-          // 判断当前是否在 cube-front 源码目录运行
-          // 如果 config.root 包含 'cube-front' 但不是直接运行，说明是外部项目引用
+          // 判断当前是否在 @newlifex/cube-vue 源码目录运行
+          // 如果 config.root 包含 '@newlifex/cube-vue' 但不是直接运行，说明是外部项目引用
           const isExternalProject =
-            !config.root.endsWith('cube-front') && config.root.includes('cube-front');
+            !config.root.endsWith('@newlifex/cube-vue') && config.root.includes('@newlifex/cube-vue');
 
           // 构建应用配置代码
           const microAppConfigsStrList = microAppConfigs.map((app) => {
@@ -195,23 +195,39 @@ export default function vitePluginCubeFront() {
                 pkgName.startsWith('/apps') ||
                 pkgName.startsWith('./apps')
               ) {
-                // 本项目路径，追加 /src/main.ts
-                importPath = `./${pkgName.replace(/^\.\//, '')}/src/main.ts`;
+                // 本项目路径，使用绝对路径
+                const cleanPath = pkgName.replace(/^\.\//, '').replace(/^\//, '');
+                importPath = `${config.root}/${cleanPath}/src/main.ts`;
               } else if (pkgName.startsWith('./src/') || pkgName.startsWith('./')) {
                 // 本项目相对路径（如 ./src/routes），直接使用
                 importPath = pkgName;
               } else {
-                // 外部包路径，取第一段作为包名
-                const firstSlash = pkgName.indexOf('/');
+                // 外部包路径，正确处理 @scope/name 格式
                 let packageName: string;
                 let packagePath: string;
 
-                if (firstSlash === -1) {
-                  packageName = pkgName;
-                  packagePath = '';
+                if (pkgName.startsWith('@')) {
+                  // @scope/name/path 格式：用正则匹配 @scope/name 作为包名
+                  const match = pkgName.match(/^@[^\/]+\/[^\/]+/);
+                  if (!match) {
+                    // 只有 @scope，没有 name，如 @newlifex（无效的包名）
+                    throw new Error(
+                      `[CubeFront] 微应用 ${app.name} 的包名 "${pkgName}" 无效。\n` +
+                      `请使用完整的包名，如 "@newlifex/cube-vue"。`,
+                    );
+                  }
+                  packageName = match[0];
+                  packagePath = pkgName.substring(match[0].length);
                 } else {
-                  packageName = pkgName.substring(0, firstSlash);
-                  packagePath = pkgName.substring(firstSlash);
+                  // 普通包名：取第一段
+                  const firstSlash = pkgName.indexOf('/');
+                  if (firstSlash === -1) {
+                    packageName = pkgName;
+                    packagePath = '';
+                  } else {
+                    packageName = pkgName.substring(0, firstSlash);
+                    packagePath = pkgName.substring(firstSlash);
+                  }
                 }
 
                 // 验证包是否存在
@@ -224,19 +240,19 @@ export default function vitePluginCubeFront() {
                 if (!fs.existsSync(packageMainPath)) {
                   throw new Error(
                     `[CubeFront] 微应用 ${app.name} 的包 "${packageName}" 未找到。\n` +
-                      `请确保已安装：pnpm add ${packageName}\n` +
-                      `或检查 node_modules 中是否存在该包。`,
+                    `请确保已安装：pnpm add ${packageName}\n` +
+                    `或检查 node_modules 中是否存在该包。`,
                   );
                 }
 
                 importPath = `${packageName}${packagePath}/src/main.ts`;
               }
             } else if (isExternalProject) {
-              // 外部项目引用 cube-front，使用 node_modules/cube-front 路径
-              importPath = `node_modules/cube-front/apps/${app.name}/src/main.ts`;
+              // 外部项目引用 @newlifex/cube-vue，使用 node_modules/@newlifex/cube-vue 路径
+              importPath = `node_modules/@newlifex/cube-vue/apps/${app.name}/src/main.ts`;
             } else {
-              // cube-front 源码本身运行，使用内置的 apps 目录
-              importPath = `./apps/${app.name}/src/main.ts`;
+              // @newlifex/cube-vue 源码本身运行，使用内置的 apps 目录
+              importPath = `${config.root}/apps/${app.name}/src/main.ts`;
             }
 
             return {
@@ -268,7 +284,7 @@ export default microAppConfigs
     name: `vite:${virtualModuleNamePrefix}-${configName}`,
     enforce: 'post',
     configResolved: (cfg) => {
-      config = cfg as ResolvedConfig & { routes: ConfigRoute[] };
+      config = cfg as ResolvedConfig & { routes: ConfigRoute[]; };
     },
     resolveId(id: string) {
       if (id === virtualModuleIdPrefix + configName) {
@@ -316,15 +332,15 @@ export default { configData, currentEnv };
   };
 
   // Section 组件自动发现虚拟模块插件
-  // 虚拟模块 ID: virtual:cube-front-sections
+  // 虚拟模块 ID: virtual:@newlifex/cube-vue-sections
   // 运行时在 initApp.ts 中自动导入并调用 registerPageSections
-  let sectionsConfig: (ResolvedConfig & { routes: ConfigRoute[] }) | null = null;
+  let sectionsConfig: (ResolvedConfig & { routes: ConfigRoute[]; }) | null = null;
 
   const viteCubeSections: PluginOption = {
     name: `vite:${virtualModuleNamePrefix}-${sectionsName}`,
     enforce: 'pre',
     configResolved: (cfg) => {
-      sectionsConfig = cfg as ResolvedConfig & { routes: ConfigRoute[] };
+      sectionsConfig = cfg as ResolvedConfig & { routes: ConfigRoute[]; };
     },
     resolveId(id: string) {
       if (id === virtualModuleIdPrefix + sectionsName) {
@@ -398,10 +414,10 @@ function resolveAppViewsDir(configFile: string | undefined, root: string): strin
  *          key:     模块映射键（如 `./views/user/ListSearchBar.vue`）
  *          absPath: 绝对路径（POSIX 风格，用于生成 import() 语句）
  */
-function scanSectionFiles(viewsDir: string): Array<{ key: string; absPath: string }> {
+function scanSectionFiles(viewsDir: string): Array<{ key: string; absPath: string; }> {
   if (!fs.existsSync(viewsDir)) return [];
 
-  const result: Array<{ key: string; absPath: string }> = [];
+  const result: Array<{ key: string; absPath: string; }> = [];
 
   function walk(dir: string, relPath: string) {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -428,18 +444,18 @@ function scanSectionFiles(viewsDir: string): Array<{ key: string; absPath: strin
 }
 
 /**
- * 生成 virtual:cube-front-sections 的模块代码。
+ * 生成 virtual:@newlifex/cube-vue-sections 的模块代码。
  * 导出一个 Record<string, () => Promise<{default:unknown}>> 对象，
  * 可直接传入 registerPageSections(app, modules)。
  */
-function generateSectionsCode(sections: Array<{ key: string; absPath: string }>): string {
+function generateSectionsCode(sections: Array<{ key: string; absPath: string; }>): string {
   if (sections.length === 0) {
-    return `// virtual:cube-front-sections — no section overrides found\nconst modules = {};\nexport default modules;\n`;
+    return `// virtual:@newlifex/cube-vue-sections — no section overrides found\nconst modules = {};\nexport default modules;\n`;
   }
   const lines = sections
     .map(
       ({ key, absPath }) => `  ${JSON.stringify(key)}: () => import(${JSON.stringify(absPath)}),`,
     )
     .join('\n');
-  return `// virtual:cube-front-sections — auto-generated\nconst modules = {\n${lines}\n};\nexport default modules;\n`;
+  return `// virtual:@newlifex/cube-vue-sections — auto-generated\nconst modules = {\n${lines}\n};\nexport default modules;\n`;
 }

@@ -7,7 +7,7 @@
  * - 点击展开下拉菜单，包含个人中心和退出选项
  */
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useUserStore } from 'cube-front/core/stores/user';
+import { useUserStore } from '@newlifex/cube-vue/core/stores/user';
 
 interface MenuOption {
   id: string;

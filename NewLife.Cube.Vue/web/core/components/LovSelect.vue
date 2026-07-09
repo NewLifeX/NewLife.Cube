@@ -55,14 +55,14 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
 import { Search } from '@element-plus/icons-vue';
-import request from 'cube-front/core/utils/request';
-import { fetchLovMeta, resolveLovType } from 'cube-front/core/utils/lov-api';
+import request from '@newlifex/cube-vue/core/utils/request';
+import { fetchLovMeta, resolveLovType } from '@newlifex/cube-vue/core/utils/lov-api';
 import type {
   LovMetaItem,
   LovEnumOption,
   LovListMeta,
   LovMetaResponse,
-} from 'cube-front/core/types/lov';
+} from '@newlifex/cube-vue/core/types/lov';
 import LovSelectTable from './LovSelectTable.vue';
 
 const props = withDefaults(

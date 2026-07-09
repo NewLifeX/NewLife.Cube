@@ -4,7 +4,7 @@
  * 用于导航栏左侧的品牌展示
  */
 import { ref, computed } from 'vue';
-import { getConfig } from 'cube-front/core/configure';
+import { getConfig } from '@newlifex/cube-vue/core/configure';
 
 interface Props {
   /** 是否折叠（折叠时隐藏标题） */

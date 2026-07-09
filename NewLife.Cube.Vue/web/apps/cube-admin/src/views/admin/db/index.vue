@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <div class="page-header">
       <h1>数据库管理</h1>
@@ -72,7 +72,7 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { request } from 'cube-front/core/utils/request'
+import { request } from '@newlifex/cube-vue/core/utils/request'
 
 // 表单数据
 const backupForm = reactive({

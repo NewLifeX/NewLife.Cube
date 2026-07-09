@@ -51,7 +51,7 @@ import {
 } from './composables/useProvideInject';
 import { currentComponent } from './composables/useLayout';
 import { registerPageSections } from './utils/pageSections';
-import autoSectionModules from 'virtual:cube-front-sections';
+import autoSectionModules from 'virtual:@newlifex/cube-vue-sections';
 import CyberLayout from './layouts/CyberLayout/index.vue';
 
 /**
@@ -95,13 +95,13 @@ export type ConfigureFunction = (
  *
  * @property configure - 可选的应用配置函数，在插件安装后、挂载前执行
  * @property sections  - 可选的额外 Section 模块映射（优先级高于插件自动扫描结果）。
- *                       通常无需手动传入；Vite 插件 `vite:cube-front-sections` 会自动
- *                       扫描子应用的 `src/views/` 目录并通过虚拟模块 `virtual:cube-front-sections`
+ *                       通常无需手动传入；Vite 插件 `vite:@newlifex/cube-vue-sections` 会自动
+ *                       扫描子应用的 `src/views/` 目录并通过虚拟模块 `virtual:@newlifex/cube-vue-sections`
  *                       提供给框架。仅在需要手动覆盖时使用此字段。
  *
  * @example 标准子应用入口（无需配置，插件自动处理）
  * ```typescript
- * import { initApp } from 'cube-front/core/initApp';
+ * import { initApp } from '@newlifex/cube-vue/core/initApp';
  * initApp();
  * ```
  *
@@ -202,7 +202,7 @@ export const initApp = async (optionsOrConfigure?: InitAppOptions | ConfigureFun
   });
 
   // 注册页面 Section 覆盖组件
-  // 优先级：options.sections（手动指定）> virtual:cube-front-sections（插件自动扫描）
+  // 优先级：options.sections（手动指定）> virtual:@newlifex/cube-vue-sections（插件自动扫描）
   const mergedSections = { ...autoSectionModules, ...(sections ?? {}) };
   if (Object.keys(mergedSections).length > 0) {
     registerPageSections(app, mergedSections);

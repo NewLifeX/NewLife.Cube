@@ -6,17 +6,17 @@
  *   - ListData：获取列表型值集的数据（代理查询）
  *   - BatchLabel：批量翻译值（value → label）
  *
- * 所有请求走 cube-front 全局 Axios 实例（request），自动携带认证 Token。
+ * 所有请求走 @newlifex/cube-vue 全局 Axios 实例（request），自动携带认证 Token。
  */
 
-import request from 'cube-front/core/utils/request';
+import request from '@newlifex/cube-vue/core/utils/request';
 import type {
   LovMetaResponse,
   LovListDataRequest,
   LovListDataResponse,
   LovBatchLabelRequest,
   LovBatchLabelResponse,
-} from 'cube-front/core/types/lov';
+} from '@newlifex/cube-vue/core/types/lov';
 
 /**
  * 获取值集元数据。支持逗号分隔多个 lovCode，枚举型内联 options。

@@ -1,7 +1,7 @@
 import type { CubeFrontConfig, EnvConfig } from './types';
 import { defaultConfig } from './defaultConfig';
 import { deepMerge } from '../utils/object';
-import { configData, currentEnv } from 'virtual:cube-front-config';
+import { configData, currentEnv } from 'virtual:@newlifex/cube-vue-config';
 
 /**
  * 获取当前配置

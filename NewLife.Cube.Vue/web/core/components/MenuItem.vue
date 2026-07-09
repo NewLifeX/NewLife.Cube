@@ -17,7 +17,7 @@
  *    - `sidebarCollapsed` — 侧边栏折叠状态（由 Layout 提供）
  *
  * == 外部导入 ==
- *   import { MENU_ITEM_ICON_RESOLVER } from 'cube-front/core/components/MenuItem.vue';
+ *   import { MENU_ITEM_ICON_RESOLVER } from '@newlifex/cube-vue/core/components/MenuItem.vue';
  *   provide(MENU_ITEM_ICON_RESOLVER, (name) => name === 'x' ? MyIcon : null);
  */
 
@@ -28,10 +28,10 @@ export type MenuIconResolver = (iconName?: string) => Component | null;
 
 <script setup lang="ts">
 import { ref, computed, watch, inject, markRaw, type Component } from 'vue';
-import { type TreeMenuItem } from 'cube-front/core/stores/menu';
-import { isChildMenu, hasChildren, renderMenuTitle } from 'cube-front/core/utils/menuHelpers';
-import { openMenuTab } from 'cube-front/core/utils/menuTab';
-import { useMenuStore } from 'cube-front/core/stores/menu';
+import { type TreeMenuItem } from '@newlifex/cube-vue/core/stores/menu';
+import { isChildMenu, hasChildren, renderMenuTitle } from '@newlifex/cube-vue/core/utils/menuHelpers';
+import { openMenuTab } from '@newlifex/cube-vue/core/utils/menuTab';
+import { useMenuStore } from '@newlifex/cube-vue/core/stores/menu';
 import * as ElementPlusIcons from '@element-plus/icons-vue';
 const ElIconMenu = markRaw(ElementPlusIcons.Menu);
 

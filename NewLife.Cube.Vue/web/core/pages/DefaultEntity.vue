@@ -9,14 +9,14 @@
 import { computed, defineAsyncComponent, inject, watchEffect } from 'vue';
 import type { Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useMenuStore, type FlatMenuItem } from 'cube-front/core/stores/menu';
+import { useMenuStore, type FlatMenuItem } from '@newlifex/cube-vue/core/stores/menu';
 import {
   DefaultListPageKey,
   PageNotFoundKey,
   PageSectionRegistryKey,
-} from 'cube-front/core/composables/useSections';
-import { registerMenuRoutes } from 'cube-front/core/utils/menuRoutes';
-import FrameworkDefaultListPage from 'cube-front/core/views/index.vue';
+} from '@newlifex/cube-vue/core/composables/useSections';
+import { registerMenuRoutes } from '@newlifex/cube-vue/core/utils/menuRoutes';
+import FrameworkDefaultListPage from '@newlifex/cube-vue/core/views/index.vue';
 import FrameworkPageNotFound from './PageNotFound.vue';
 
 type SectionRegistry = Record<string, Record<string, () => Promise<{ default: unknown }>>>;

@@ -1,12 +1,12 @@
 ---
 name: cube-page-override
 description: |
-  使用 cube-front 的 Section 机制覆盖/扩展页面组件。
+  使用 @newlifex/cube-vue 的 Section 机制覆盖/扩展页面组件。
   当用户说"覆盖页面"、"扩展页面"、"自定义组件"、"修改框架组件"时使用。
   Section 机制允许在不修改框架源码的情况下，覆盖搜索栏、表格、操作按钮等页面区块。
 ---
 
-# Cube-Front 页面覆盖 (Section)
+# @newlifex/cube-vue 页面覆盖 (Section)
 
 ## 什么时候用
 
@@ -201,7 +201,7 @@ Vite 插件会自动扫描并注册 Section 组件：
 
 1. 插件在构建时扫描 `views/` 目录
 2. 收集所有以大写字母开头的 `.vue` 文件
-3. 通过 `virtual:cube-front-sections` 虚拟模块导出
+3. 通过 `virtual:@newlifex/cube-vue-sections` 虚拟模块导出
 4. `initApp()` 时自动调用 `registerPageSections()` 注册
 
 ## 调试 Section

@@ -13,7 +13,7 @@
  *
  * @example 基本使用
  * ```typescript
- * import { useModal } from 'cube-front/core/composables/useModal';
+ * import { useModal } from '@newlifex/cube-vue/core/composables/useModal';
  *
  * const { openModal } = useModal();
  * const modal = openModal({
@@ -326,7 +326,7 @@ export const ModalKey: InjectionKey<{
   closeModal: (id: ModalId) => void;
   closeAll: () => void;
   getModals: () => ModalInstance[];
-}> = Symbol('cube-front.use-modal');
+}> = Symbol('@newlifex/cube-vue.use-modal');
 
 // ─── 复杂度评估与类型推断 ─────────────────────────────────────
 

@@ -1,4 +1,4 @@
-# Cube-Front 颜色系统设计规格
+# @newlifex/cube-vue 颜色系统设计规格
 
 > **状态：** 已实现
 > **日期：** 2026-05-13
@@ -6,7 +6,7 @@
 
 ## 目标
 
-重构 Cube-Front 前端框架的颜色系统，建立分层 Token 架构，实现：
+重构 @newlifex/cube-vue 前端框架的颜色系统，建立分层 Token 架构，实现：
 - 布局与颜色解耦
 - 主题与模式组合切换
 - Element Plus 组件颜色与主题系统统一
@@ -272,7 +272,7 @@
 ### useTheme Composable
 
 ```typescript
-import { useTheme, type ThemeId, type ThemeFamily, type ThemeMode } from 'cube-front/core/composables/useTheme';
+import { useTheme, type ThemeId, type ThemeFamily, type ThemeMode } from '@newlifex/cube-vue/core/composables/useTheme';
 
 const {
   currentTheme,      // 当前主题选项 { id, label, icon, description, family, mode }

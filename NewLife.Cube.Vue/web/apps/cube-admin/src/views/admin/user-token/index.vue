@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <div class="page-header">
       <h1>用户令牌管理</h1>
@@ -198,12 +198,12 @@ import { ref, reactive, onMounted } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
-import { request } from 'cube-front/core/utils/request';
-import { apiDataToList, handleDeleteOperation, handleFormSubmit } from 'cube-front/core/utils/api-helpers';
-import CubeListToolbarSearch from 'cube-front/core/components/CubeListToolbarSearch.vue';
-import CubeListPager from 'cube-front/core/components/CubeListPager.vue';
-import { pageInfoDefault } from 'cube-front/core/types/common';
-import type { BaseEntity } from 'cube-front/core/types/common';
+import { request } from '@newlifex/cube-vue/core/utils/request';
+import { apiDataToList, handleDeleteOperation, handleFormSubmit } from '@newlifex/cube-vue/core/utils/api-helpers';
+import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListToolbarSearch.vue';
+import CubeListPager from '@newlifex/cube-vue/core/components/CubeListPager.vue';
+import { pageInfoDefault } from '@newlifex/cube-vue/core/types/common';
+import type { BaseEntity } from '@newlifex/cube-vue/core/types/common';
 
 // 用户令牌类型接口，继承 BaseEntity
 interface UserToken extends BaseEntity {

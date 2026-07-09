@@ -69,7 +69,7 @@ restoreLayoutSelection();
  *
  * @example
  * ```typescript
- * import { registerLayout } from 'cube-front/core/composables/useLayout';
+ * import { registerLayout } from '@newlifex/cube-vue/core/composables/useLayout';
  * import AuroraLayout from './layouts/AuroraLayout/index.vue';
  *
  * registerLayout({

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <div class="page-header">
       <h1>用户统计</h1>
@@ -110,12 +110,12 @@
 <script setup lang="ts">
 
 import { ref, reactive, onMounted, computed } from 'vue'
-import { request } from 'cube-front/core/utils/request'
-import { apiDataToList } from 'cube-front/core/utils/api-helpers'
-import CubeListToolbarSearch from 'cube-front/core/components/CubeListToolbarSearch.vue'
-import CubeListPager from 'cube-front/core/components/CubeListPager.vue'
-import { pageInfoDefault } from 'cube-front/core/types/common';
-import type { BaseEntity } from 'cube-front/core/types/common';
+import { request } from '@newlifex/cube-vue/core/utils/request'
+import { apiDataToList } from '@newlifex/cube-vue/core/utils/api-helpers'
+import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListToolbarSearch.vue'
+import CubeListPager from '@newlifex/cube-vue/core/components/CubeListPager.vue'
+import { pageInfoDefault } from '@newlifex/cube-vue/core/types/common';
+import type { BaseEntity } from '@newlifex/cube-vue/core/types/common';
 import VChart from 'vue-echarts'
 import { use } from 'echarts/core'
 import {

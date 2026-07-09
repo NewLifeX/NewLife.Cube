@@ -87,7 +87,7 @@ static ProcessCardController()
 
 ```vue
 <script setup lang="ts">
-import LovSelect from 'cube-front/core/components/LovSelect.vue';
+import LovSelect from '@newlifex/cube-vue/core/components/LovSelect.vue';
 import { ref } from 'vue';
 
 const filterStatus = ref('');
@@ -110,7 +110,7 @@ const filterStatus = ref('');
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { usePageApi } from '@/composables/usePageApi';
-import LovSelect from 'cube-front/core/components/LovSelect.vue';
+import LovSelect from '@newlifex/cube-vue/core/components/LovSelect.vue';
 
 const api = usePageApi("AreaName", "ControllerName");
 const filterStatus = ref('');
@@ -210,7 +210,7 @@ onMounted(() => { fetchPageMeta(); });
 
 ## 前端类型定义
 
-完整类型定义位于 `cube-front/core/types/lov.ts`：
+完整类型定义位于 `@newlifex/cube-vue/core/types/lov.ts`：
 
 ```typescript
 import type {
@@ -226,15 +226,15 @@ import type {
   LovListDataResponse,  // ListData 响应
   LovBatchLabelRequest, // BatchLabel 请求参数
   LovBatchLabelResponse,// BatchLabel 响应
-} from 'cube-front/core/types/lov';
+} from '@newlifex/cube-vue/core/types/lov';
 ```
 
 ## 前端 API 封装
 
-位于 `cube-front/core/utils/lov-api.ts`：
+位于 `@newlifex/cube-vue/core/utils/lov-api.ts`：
 
 ```typescript
-import { fetchLovMeta, fetchLovListData, fetchBatchLabel, resolveLovType } from 'cube-front/core/utils/lov-api';
+import { fetchLovMeta, fetchLovListData, fetchBatchLabel, resolveLovType } from '@newlifex/cube-vue/core/utils/lov-api';
 
 // 获取值集元数据
 const meta = await fetchLovMeta('Enum.SmartMES.Data.ProcessCard.ProcessCardStatus');

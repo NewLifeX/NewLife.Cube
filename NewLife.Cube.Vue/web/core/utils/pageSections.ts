@@ -1,6 +1,6 @@
 import type { App } from 'vue';
 import { defineAsyncComponent } from 'vue';
-import { PageSectionRegistryKey, SectionKeyMap } from 'cube-front/core/composables/useSections';
+import { PageSectionRegistryKey, SectionKeyMap } from '@newlifex/cube-vue/core/composables/useSections';
 import type { Component } from 'vue';
 
 type GlobLoader = () => Promise<{ default: unknown }>;
@@ -32,7 +32,7 @@ function parseGlobKey(key: string): { routePath: string; sectionName: string } |
  * 在应用启动时（initApp 回调中）调用，一次性注册所有页面的覆盖组件：
  *
  * ```typescript
- * import { registerPageSections } from 'cube-front/core/utils/pageSections';
+ * import { registerPageSections } from '@newlifex/cube-vue/core/utils/pageSections';
  * const viewModules = import.meta.glob('./views/**\/*.vue');
  * initApp((app) => {
  *   registerPageSections(app, viewModules);

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="log-container">
     <el-card class="box-card">
       <template #header>
@@ -65,11 +65,11 @@
 
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { request } from 'cube-front/core/utils/request';
-import CubeListToolbarSearch from 'cube-front/core/components/CubeListToolbarSearch.vue';
-import CubeListPager from 'cube-front/core/components/CubeListPager.vue';
-import { pageInfoDefault } from 'cube-front/core/types/common';
-import type { BaseEntity } from 'cube-front/core/types/common';
+import { request } from '@newlifex/cube-vue/core/utils/request';
+import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListToolbarSearch.vue';
+import CubeListPager from '@newlifex/cube-vue/core/components/CubeListPager.vue';
+import { pageInfoDefault } from '@newlifex/cube-vue/core/types/common';
+import type { BaseEntity } from '@newlifex/cube-vue/core/types/common';
 
 // 定义日志类型接口，继承 BaseEntity
 interface Log extends BaseEntity {

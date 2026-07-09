@@ -5,7 +5,7 @@
 
 import type { Router } from 'vue-router';
 import type { ConfigRoute } from './typings';
-import microAppConfigs from 'virtual:cube-front-micro-apps';
+import microAppConfigs from 'virtual:@newlifex/cube-vue-micro-apps';
 
 // 定义应用信息类型
 interface AppInfo {

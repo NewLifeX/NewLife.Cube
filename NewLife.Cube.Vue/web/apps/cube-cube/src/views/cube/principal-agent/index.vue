@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="principal-agent-container">
     <el-card class="box-card">
       <template #header>
@@ -103,9 +103,9 @@
 
 <script setup lang="ts">
 
-import { pageInfoDefault, type BaseEntity } from 'cube-front/core/types/common';
-import { handleDeleteOperation, handleFormSubmit, apiDataToList } from 'cube-front/core/utils/api-helpers';
-import { request } from 'cube-front/core/utils/request';
+import { pageInfoDefault, type BaseEntity } from '@newlifex/cube-vue/core/types/common';
+import { handleDeleteOperation, handleFormSubmit, apiDataToList } from '@newlifex/cube-vue/core/utils/api-helpers';
+import { request } from '@newlifex/cube-vue/core/utils/request';
 import type { FormInstance, FormRules } from 'element-plus';
 
 // 定义主体代理类型接口，继承 BaseEntity

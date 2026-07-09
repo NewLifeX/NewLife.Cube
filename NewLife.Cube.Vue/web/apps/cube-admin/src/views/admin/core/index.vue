@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="core-container">
     <el-card class="box-card">
       <template #header>
@@ -48,7 +48,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
-import { request } from 'cube-front/core/utils/request';
+import { request } from '@newlifex/cube-vue/core/utils/request';
 
 // 定义系统配置类型接口
 interface SysConfig {

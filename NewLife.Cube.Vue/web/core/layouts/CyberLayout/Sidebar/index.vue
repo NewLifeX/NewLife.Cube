@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { ref, computed, provide, readonly, watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import { getConfig } from 'cube-front/core/configure';
-import { useMenuStore, type TreeMenuItem } from 'cube-front/core/stores/menu';
-import MenuItem from 'cube-front/core/components/MenuItem.vue';
-import UserProfile from 'cube-front/core/components/UserProfile.vue';
-import ModeSwitcher from 'cube-front/core/components/ModeSwitcher.vue';
-import ThemeSwitcher from 'cube-front/core/components/ThemeSwitcher.vue';
-import LayoutSwitcher from 'cube-front/core/components/LayoutSwitcher.vue';
-import NotificationBell from 'cube-front/core/components/NotificationBell.vue';
-import SearchBar from 'cube-front/core/components/SearchBar.vue';
-import LogoBrand from 'cube-front/core/components/LogoBrand.vue';
-import { renderMenuTitle } from 'cube-front/core/utils/menuHelpers';
-import { openMenuTab } from 'cube-front/core/utils/menuTab';
+import { getConfig } from '@newlifex/cube-vue/core/configure';
+import { useMenuStore, type TreeMenuItem } from '@newlifex/cube-vue/core/stores/menu';
+import MenuItem from '@newlifex/cube-vue/core/components/MenuItem.vue';
+import UserProfile from '@newlifex/cube-vue/core/components/UserProfile.vue';
+import ModeSwitcher from '@newlifex/cube-vue/core/components/ModeSwitcher.vue';
+import ThemeSwitcher from '@newlifex/cube-vue/core/components/ThemeSwitcher.vue';
+import LayoutSwitcher from '@newlifex/cube-vue/core/components/LayoutSwitcher.vue';
+import NotificationBell from '@newlifex/cube-vue/core/components/NotificationBell.vue';
+import SearchBar from '@newlifex/cube-vue/core/components/SearchBar.vue';
+import LogoBrand from '@newlifex/cube-vue/core/components/LogoBrand.vue';
+import { renderMenuTitle } from '@newlifex/cube-vue/core/utils/menuHelpers';
+import { openMenuTab } from '@newlifex/cube-vue/core/utils/menuTab';
 
 const config = getConfig();
 const menuStore = useMenuStore();

@@ -280,7 +280,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch } from 'vue';
 import { ElMessage } from 'element-plus';
-import cubeApi, { usePageApi } from 'cube-front/core/composables/useCubeApi';
+import cubeApi, { usePageApi } from '@newlifex/cube-vue/core/composables/useCubeApi';
 
 interface EnumItem {
   id: number;

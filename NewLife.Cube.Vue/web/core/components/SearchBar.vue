@@ -7,8 +7,8 @@
  */
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useMenuStore, type FlatMenuItem } from 'cube-front/core/stores/menu';
-import { openMenuTab } from 'cube-front/core/utils/menuTab';
+import { useMenuStore, type FlatMenuItem } from '@newlifex/cube-vue/core/stores/menu';
+import { openMenuTab } from '@newlifex/cube-vue/core/utils/menuTab';
 import ActionButton from './ActionButton.vue';
 
 interface Props {

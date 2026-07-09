@@ -1,11 +1,11 @@
-﻿<script setup lang="tsx">
+<script setup lang="tsx">
 import { computed, ref, onMounted, nextTick, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { type TreeMenuItem, useMenuStore } from 'cube-front/core/stores/menu';
+import { type TreeMenuItem, useMenuStore } from '@newlifex/cube-vue/core/stores/menu';
 import CascaderMenu from '../CascaderMenu/index.vue';
 import { ElScrollbar } from 'element-plus';
-import { hasChildren } from 'cube-front/core/utils/menuHelpers';
-import { openMenuTab } from 'cube-front/core/utils/menuTab';
+import { hasChildren } from '@newlifex/cube-vue/core/utils/menuHelpers';
+import { openMenuTab } from '@newlifex/cube-vue/core/utils/menuTab';
 
 interface MenuProps {
   tabPanes?: Array<TreeMenuItem>;

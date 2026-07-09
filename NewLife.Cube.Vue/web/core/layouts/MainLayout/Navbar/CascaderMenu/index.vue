@@ -1,8 +1,8 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed } from 'vue';
-import { type TreeMenuItem } from 'cube-front/core/stores/menu';
+import { type TreeMenuItem } from '@newlifex/cube-vue/core/stores/menu';
 import SecondCascaderMenu from './components/SecondCascaderMenu.vue';
-import { isChildMenu, hasChildren } from 'cube-front/core/utils/menuHelpers';
+import { isChildMenu, hasChildren } from '@newlifex/cube-vue/core/utils/menuHelpers';
 
 interface CascaderMenuProps {
   menu: TreeMenuItem;

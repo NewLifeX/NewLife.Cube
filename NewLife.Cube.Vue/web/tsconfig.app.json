@@ -10,6 +10,7 @@
     "core/pages/Login.ts"
   ],
   "exclude": [
+    "src/**",
     "src/**/__tests__/*"
   ],
   "compilerOptions": {
@@ -21,16 +22,10 @@
       "element-plus/global"
     ],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "/@/*": [
-        "./src/*"
-      ],
-      "cube-front": [
+      "@newlifex/cube-vue": [
         "./"
       ],
-      "cube-front/*": [
+      "@newlifex/cube-vue/*": [
         "./*"
       ],
     }

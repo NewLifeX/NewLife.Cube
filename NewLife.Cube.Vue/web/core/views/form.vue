@@ -3,18 +3,18 @@ import { inject, provide, defineAsyncComponent, ref, computed, onMounted } from 
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import type { Component } from 'vue';
-import request from 'cube-front/core/utils/request';
+import request from '@newlifex/cube-vue/core/utils/request';
 import {
   FormPageHeaderKey,
   FormContentKey,
   FormActionsKey,
   PageSectionRegistryKey,
   SectionKeyMap,
-} from 'cube-front/core/composables/useSections';
+} from '@newlifex/cube-vue/core/composables/useSections';
 
-import DefaultFormPageHeader from 'cube-front/core/views/components/FormPageHeader.vue';
-import DefaultFormContent from 'cube-front/core/views/components/FormContent.vue';
-import DefaultFormActions from 'cube-front/core/views/components/FormActions.vue';
+import DefaultFormPageHeader from '@newlifex/cube-vue/core/views/components/FormPageHeader.vue';
+import DefaultFormContent from '@newlifex/cube-vue/core/views/components/FormContent.vue';
+import DefaultFormActions from '@newlifex/cube-vue/core/views/components/FormActions.vue';
 import { routeToApiPrefix } from '../utils/url';
 
 interface BackendField {

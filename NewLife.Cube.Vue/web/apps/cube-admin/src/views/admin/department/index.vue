@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="department-container">
     <el-card class="box-card">
       <template #header>
@@ -150,10 +150,10 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus';
-import { request } from 'cube-front/core/utils/request';
-import { apiDataToList, handleDeleteOperation, handleFormSubmit } from 'cube-front/core/utils/api-helpers';
-import CubeListToolbarSearch from 'cube-front/core/components/CubeListToolbarSearch.vue';
-import type { BaseEntity } from 'cube-front/core/types/common';
+import { request } from '@newlifex/cube-vue/core/utils/request';
+import { apiDataToList, handleDeleteOperation, handleFormSubmit } from '@newlifex/cube-vue/core/utils/api-helpers';
+import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListToolbarSearch.vue';
+import type { BaseEntity } from '@newlifex/cube-vue/core/types/common';
 
 // 定义部门类型接口
 interface Department extends BaseEntity {

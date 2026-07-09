@@ -66,7 +66,7 @@
 
 ## 使用方法
 
-1. 确保核心模块 `cube-front` 已正确配置
+1. 确保核心模块 `@newlifex/cube-vue` 已正确配置
 2. 导入路由配置：
    ```typescript
    import { routes } from 'cube-cube'
@@ -75,7 +75,7 @@
 
 ## 注意事项
 
-- 所有接口调用都使用 `cube-front/utils/request` 统一的请求工具
+- 所有接口调用都使用 `@newlifex/cube-vue/utils/request` 统一的请求工具
 - 页面样式遵循 Element Plus 设计规范
 - 支持国际化（中文为主）
 - 包含完整的 TypeScript 类型定义

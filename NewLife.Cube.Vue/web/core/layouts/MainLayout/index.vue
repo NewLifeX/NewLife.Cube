@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import Navbar from './Navbar/index.vue';
 import Content from './Content/index.vue';
 import Sider from './Sider/index.vue';
-import { useUserStore } from 'cube-front/core/stores/user';
+import { useUserStore } from '@newlifex/cube-vue/core/stores/user';
 
 const userStore = useUserStore();
 const collapsed = ref(false);

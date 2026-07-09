@@ -137,8 +137,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { usePageApi } from 'cube-front/core/composables/useCubeApi';
-import CubeListPager from 'cube-front/core/components/CubeListPager.vue';
+import { usePageApi } from '@newlifex/cube-vue/core/composables/useCubeApi';
+import CubeListPager from '@newlifex/cube-vue/core/components/CubeListPager.vue';
 import LovConfig from './config.vue';
 
 const api = usePageApi('Admin', 'Lov');

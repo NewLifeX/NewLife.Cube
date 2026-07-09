@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="cube-container">
     <el-card class="box-card">
       <template #header>
@@ -234,7 +234,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import type { FormInstance } from 'element-plus';
-import { request } from 'cube-front/core/utils/request';
+import { request } from '@newlifex/cube-vue/core/utils/request';
 
 // 定义魔方配置类型接口
 interface CubeSetting {
