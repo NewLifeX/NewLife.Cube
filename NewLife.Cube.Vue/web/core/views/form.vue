@@ -33,11 +33,11 @@ interface BackendField {
 interface FormField {
   key: string;
   label: string;
-  type: 'text' | 'email' | 'tel' | 'select' | 'textarea' | 'radio';
+  type: 'text' | 'email' | 'tel' | 'select' | 'textarea' | 'radio' | 'switch' | 'datetime';
   required?: boolean;
   fullWidth?: boolean;
   placeholder?: string;
-  options?: Array<{ value: string; label: string; }>;
+  options?: Array<{ value: string; label: string }>;
   error?: string;
 }
 
@@ -65,14 +65,14 @@ const router = useRouter();
 
 const registry = inject(
   PageSectionRegistryKey,
-  {} as Record<string, Record<string, () => Promise<{ default: unknown; }>>>,
+  {} as Record<string, Record<string, () => Promise<{ default: unknown }>>>,
 );
 const pageOverrides = registry[route.path] ?? {};
 
 for (const [name, loader] of Object.entries(pageOverrides)) {
   const key = SectionKeyMap[name];
   if (key) {
-    provide(key, defineAsyncComponent(loader as () => Promise<{ default: Component; }>));
+    provide(key, defineAsyncComponent(loader as () => Promise<{ default: Component }>));
   }
 }
 
@@ -80,15 +80,13 @@ const PageHeaderComp = inject(FormPageHeaderKey, DefaultFormPageHeader);
 const FormContentComp = inject(FormContentKey, DefaultFormContent);
 const FormActionsComp = inject(FormActionsKey, DefaultFormActions);
 
-
-
 const apiPrefix = computed(() => routeToApiPrefix(route.path));
 const isEdit = computed(() => !!(route.query.id || route.query.id?.toString() === '0'));
 
 // 未传入 fields 时启动自动模式
 const auto = computed(() => !!!props.fields);
 
-const pageMeta = ref<{ addForm: BackendField[]; editForm: BackendField[]; } | null>(null);
+const pageMeta = ref<{ addForm: BackendField[]; editForm: BackendField[] } | null>(null);
 const internalModelValue = ref<Record<string, unknown>>({});
 const internalFields = ref<FormField[]>([]);
 const isSubmitting = ref(false);
@@ -99,8 +97,8 @@ const TYPE_TO_FORM_TYPE: Record<string, FormField['type']> = {
   Int64: 'text',
   Decimal: 'text',
   Double: 'text',
-  Boolean: 'select',
-  DateTime: 'text',
+  Boolean: 'switch',
+  DateTime: 'datetime',
 };
 
 function backendFieldsToFormFields(fields: BackendField[]): FormField[] {
@@ -119,11 +117,7 @@ function backendFieldsToFormFields(fields: BackendField[]): FormField[] {
         item.placeholder = f.description;
       }
       if (f.typeName === 'Boolean') {
-        item.type = 'select';
-        item.options = [
-          { value: 'true', label: '是' },
-          { value: 'false', label: '否' },
-        ];
+        item.type = 'switch';
       }
       return item;
     });
@@ -154,13 +148,11 @@ async function fetchDetail() {
     const url = apiPrefix.value + '/' + id;
     console.log('[DefaultForm] Detail:', url);
     const res: any = await request({ url, method: 'get' });
-    if (res && res.data) {
-      internalModelValue.value = { ...res.data };
-    } else if (res && typeof res === 'object') {
-      internalModelValue.value = { ...res };
-    } else {
-      internalModelValue.value = {};
-    }
+    const data = res?.data ?? res ?? {};
+    // 将字符串 "true"/"false" 转换为布尔值
+    internalModelValue.value = Object.fromEntries(
+      Object.entries(data).map(([k, v]) => [k, v === 'true' ? true : v === 'false' ? false : v]),
+    );
   } catch (err) {
     console.error('[DefaultForm] Detail failed:', err);
   }
@@ -214,7 +206,9 @@ function handleModelUpdate(val: Record<string, unknown>) {
 }
 
 const renderFields = computed(() => (auto.value ? internalFields.value : (props.fields ?? [])));
-const renderModelValue = computed(() => (auto.value ? internalModelValue.value : (props.modelValue ?? {})));
+const renderModelValue = computed(() =>
+  auto.value ? internalModelValue.value : (props.modelValue ?? {}),
+);
 
 onMounted(async () => {
   if (auto.value) {
@@ -231,12 +225,21 @@ onMounted(async () => {
     </slot>
     <div class="fp-body">
       <slot name="form">
-        <component :is="FormContentComp" :fields="renderFields" :model-value="renderModelValue"
-          @update:model-value="handleModelUpdate" />
+        <component
+          :is="FormContentComp"
+          :fields="renderFields"
+          :model-value="renderModelValue"
+          @update:model-value="handleModelUpdate"
+        />
       </slot>
       <slot name="actions">
-        <component :is="FormActionsComp" :show-continue="showContinue && !auto" @submit="handleSubmit"
-          @continue="handleContinue" @cancel="handleCancel" />
+        <component
+          :is="FormActionsComp"
+          :show-continue="showContinue && !auto"
+          @submit="handleSubmit"
+          @continue="handleContinue"
+          @cancel="handleCancel"
+        />
       </slot>
     </div>
   </div>

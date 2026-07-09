@@ -7,7 +7,7 @@ interface SelectOption {
 interface FormField {
   key: string;
   label: string;
-  type: 'text' | 'email' | 'tel' | 'select' | 'textarea' | 'radio';
+  type: 'text' | 'email' | 'tel' | 'select' | 'textarea' | 'radio' | 'switch' | 'datetime';
   required?: boolean;
   fullWidth?: boolean;
   placeholder?: string;
@@ -42,8 +42,8 @@ function updateField(key: string, value: unknown) {
   emit('update:modelValue', { ...props.modelValue, [key]: value });
 }
 
-function getValue(key: string): unknown {
-  return props.modelValue?.[key] ?? '';
+function getValue<T = any>(key: string): T {
+  return (props.modelValue?.[key] as T) ?? ('' as T);
 }
 </script>
 
@@ -102,6 +102,26 @@ function getValue(key: string): unknown {
               {{ opt.label }}
             </label>
           </div>
+
+          <!-- 开关组件 -->
+          <div v-else-if="field.type === 'switch'" class="fmc-switch-wrapper">
+            <el-switch
+              :model-value="Boolean(getValue(field.key))"
+              @change="updateField(field.key, $event)"
+            />
+          </div>
+
+          <!-- 日期选择器 -->
+          <el-date-picker
+            v-else-if="field.type === 'datetime'"
+            class="fmc-date-picker"
+            type="datetime"
+            :model-value="getValue(field.key)"
+            placeholder="选择日期时间"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DDTHH:mm:ss"
+            @update:model-value="updateField(field.key, $event)"
+          />
 
           <input
             v-else
@@ -228,6 +248,16 @@ function getValue(key: string): unknown {
   font-size: 13px;
   color: var(--el-text-color-primary);
   cursor: pointer;
+}
+
+.fmc-switch-wrapper {
+  display: flex;
+  align-items: center;
+  padding-top: 2px;
+}
+
+.fmc-date-picker {
+  width: 100%;
 }
 
 .fmc-error-msg {
