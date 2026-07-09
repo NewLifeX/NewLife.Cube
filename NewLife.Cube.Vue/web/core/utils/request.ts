@@ -208,11 +208,12 @@ function handleResponseError(error: AxiosError) {
 
   // 响应拦截，请求时设置
   const responseIntercept = envConfig.request.responseIntercept;
-  if (responseIntercept && typeof responseIntercept === 'function') {
-    responseIntercept(error);
+  if (responseIntercept && typeof responseIntercept === 'function' && response) {
+    // TODO 不确定这里的响应是否包含错误信息，需要确认是否需要传递错误对象
+    responseIntercept(response);
   }
 
-   
+
   const data = response?.data as any;
   const errorObj = {
     type: undefined,

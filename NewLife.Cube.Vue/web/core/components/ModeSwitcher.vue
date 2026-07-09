@@ -27,7 +27,8 @@ const handleClick = async () => {
 
   // 使用 View Transitions API 实现平滑过渡
   const isAppearanceTransition =
-    document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    !!document.startViewTransition &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if (!isAppearanceTransition) {
     toggleMode();
