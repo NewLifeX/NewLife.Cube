@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Areas.Admin.Models;
+using NewLife.Cube.Jobs;
 using NewLife.Reflection;
 using XCode;
 using XCode.DataAccessLayer;
@@ -67,6 +68,32 @@ public class DbController : ControllerBaseX
         var dal = DAL.Create(name);
         //var bak = dal.Db.CreateMetaData().SetSchema(DDLSchema.BackupDatabase, dal.ConnName, null, false);
         var bak = dal.Db.CreateMetaData().Invoke("Backup", dal.ConnName, null, false);
+
+        // 如果备份结果已经是zip，跳过后续压缩
+        if (BackupHelper.IsCompressedBackup(bak))
+        {
+            sw.Stop();
+            WriteLog("备份", true, $"备份数据库 {name} 到 {bak}，耗时 {sw.Elapsed}");
+            return Index();
+        }
+
+        // SQLite备份文件多做一步WAL checkpoint（仅对.db文件有效）
+        var bakFile = bak as String;
+        if (!bakFile.IsNullOrEmpty())
+            BackupHelper.WalCheckpointBackup(bakFile);
+
+        // 压缩备份文件为zip
+        var file = BackupHelper.GetBackupFile(bak);
+        if (file != null)
+        {
+            var rs = BackupHelper.CompressBackupFile(file);
+            if (!rs.IsNullOrEmpty())
+            {
+                sw.Stop();
+                WriteLog("备份", true, $"备份数据库 {name} 到 {rs}，耗时 {sw.Elapsed}");
+                return Index();
+            }
+        }
 
         sw.Stop();
         WriteLog("备份", true, $"备份数据库 {name} 到 {bak}，耗时 {sw.Elapsed}");

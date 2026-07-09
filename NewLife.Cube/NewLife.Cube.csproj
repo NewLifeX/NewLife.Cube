@@ -80,6 +80,7 @@
 
   <ItemGroup>
     <Compile Include="..\NewLife.CubeNC\Jobs\BackupDbService.cs" Link="Jobs\BackupDbService.cs" />
+    <Compile Include="..\NewLife.CubeNC\Jobs\BackupHelper.cs" Link="Jobs\BackupHelper.cs" />
     <Compile Include="..\NewLife.CubeNC\Jobs\CronJobAttribute.cs" Link="Jobs\CronJobAttribute.cs" />
     <Compile Include="..\NewLife.CubeNC\Jobs\CubeJobBase.cs" Link="Jobs\CubeJobBase.cs" />
     <Compile Include="..\NewLife.CubeNC\Jobs\HttpService.cs" Link="Jobs\HttpService.cs" />
