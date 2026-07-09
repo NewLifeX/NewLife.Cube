@@ -207,7 +207,7 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--bg-tertiary, rgba(0, 0, 0, 0.04));
+  background: var(--el-fill-color-light);
   border: 1px solid var(--el-border-color-light);
   border-radius: var(--radius-sm, 8px);
   padding: 7px 10px;
@@ -272,7 +272,7 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
   background: var(--el-bg-color-overlay);
   border: 1px solid var(--el-border-color-light);
   border-radius: var(--radius-md, 10px);
-  box-shadow: var(--shadow-lg, 0 10px 40px rgba(0, 0, 0, 0.18));
+  box-shadow: var(--el-box-shadow);
   z-index: 600;
   overflow: hidden;
   max-height: 300px;

@@ -1,0 +1,19 @@
+/**
+ * Forest 森林绿主题
+ * 品牌色：绿色系 (#22c55e)
+ */
+
+[data-theme='forest'] {
+  --el-color-primary: #22c55e;
+  --el-color-primary-light-3: color-mix(in srgb, #22c55e 60%, white);
+  --el-color-primary-light-5: color-mix(in srgb, #22c55e 40%, white);
+  --el-color-primary-light-7: color-mix(in srgb, #22c55e 20%, white);
+  --el-color-primary-light-8: color-mix(in srgb, #22c55e 10%, white);
+  --el-color-primary-light-9: color-mix(in srgb, #22c55e 5%, white);
+  --el-color-primary-dark-2: color-mix(in srgb, #22c55e 80%, black);
+
+  --el-color-success: #22c55e;
+  --el-color-warning: #f59e0b;
+  --el-color-danger: #ef4444;
+  --el-color-info: #3b82f6;
+}

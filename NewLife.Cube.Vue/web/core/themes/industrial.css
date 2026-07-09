@@ -1,0 +1,19 @@
+/**
+ * Industrial 工业科技主题
+ * 品牌色：橙色系 (#f97316)
+ */
+
+[data-theme='industrial'] {
+  --el-color-primary: #f97316;
+  --el-color-primary-light-3: color-mix(in srgb, #f97316 60%, white);
+  --el-color-primary-light-5: color-mix(in srgb, #f97316 40%, white);
+  --el-color-primary-light-7: color-mix(in srgb, #f97316 20%, white);
+  --el-color-primary-light-8: color-mix(in srgb, #f97316 10%, white);
+  --el-color-primary-light-9: color-mix(in srgb, #f97316 5%, white);
+  --el-color-primary-dark-2: color-mix(in srgb, #f97316 80%, black);
+
+  --el-color-success: #4ade80;
+  --el-color-warning: #fbbf24;
+  --el-color-danger: #ef4444;
+  --el-color-info: #3b82f6;
+}

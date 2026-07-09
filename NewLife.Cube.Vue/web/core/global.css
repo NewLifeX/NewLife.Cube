@@ -1,143 +1,11 @@
-/* ============================================================
-   CUBE 后台管理系统 — 全局样式
-   多主题系统：分层 Token 架构 + Element Plus 集成
-   ============================================================ */
+/**
+ * CUBE 后台管理系统 — 全局样式
+ * 
+ * 只保留通用样式，品牌色在 themes/ 目录下的主题文件中定义
+ */
 
 /* ============================================================
-   §0 — Layer 0: Primitive Tokens（设计原语 - 已迁移至 --el-*）
-   ============================================================ */
-/* Layer 0 tokens have been removed. Use --el-* equivalents. */
-
-/* ============================================================
-   §1 — Layer 1: Semantic Tokens（已迁移至 --el-* / --cube-layout-*）
-   ============================================================ */
-/* Layer 1 tokens have been removed. Use --el-* equivalents. */
-
-/* ============================================================
-   §2 — Layer 2: Component Tokens（已迁移至 --el-* / --cube-layout-*）
-   ============================================================ */
-/* Layer 2 tokens have been removed. Use --el-* equivalents. */
-
-/* ============================================================
-   §3 — Layer 3: Element Plus 主题覆盖
-   覆盖 EP 内部 CSS 变量，实现主题一致性
-   ============================================================ */
-
-/* 深色模式统一处理（由 ModeSwitcher 的 html.dark class 控制） */
-:root,
-html.dark {
-  --el-color-primary: var(--accent);
-  --el-color-primary-light-3: color-mix(in srgb, var(--accent) 60%, white);
-  --el-color-primary-light-5: color-mix(in srgb, var(--accent) 40%, white);
-  --el-color-primary-light-7: color-mix(in srgb, var(--accent) 20%, white);
-  --el-color-primary-light-8: color-mix(in srgb, var(--accent) 10%, white);
-  --el-color-primary-light-9: color-mix(in srgb, var(--accent) 5%, white);
-  --el-color-primary-dark-2: color-mix(in srgb, var(--accent) 80%, black);
-
-  /* EP 深色模式背景 */
-  --el-bg-color: var(--bg-primary);
-  --el-bg-color-page: var(--bg-primary);
-  --el-bg-color-overlay: var(--bg-elevated);
-
-  /* EP 文字色 */
-  --el-text-color-primary: var(--text-primary);
-  --el-text-color-regular: var(--text-secondary);
-  --el-text-color-secondary: var(--text-muted);
-  --el-text-color-placeholder: var(--text-muted);
-
-  /* EP 边框色 */
-  --el-border-color: var(--border-subtle);
-  --el-border-color-light: var(--border-subtle);
-  --el-border-color-lighter: var(--border-subtle);
-  --el-border-color-extra-light: rgba(255, 255, 255, 0.05);
-  --el-border-color-dark: var(--border-default);
-  --el-border-color-darker: var(--border-emphasis);
-
-  /* EP 填充色 */
-  --el-fill-color: var(--bg-secondary);
-  --el-fill-color-light: var(--bg-tertiary);
-  --el-fill-color-lighter: var(--bg-elevated);
-  --el-fill-color-blank: var(--bg-card);
-
-  /* EP 阴影 */
-  --el-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --el-box-shadow-light: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --el-box-shadow-lighter: 0 1px 4px rgba(0, 0, 0, 0.2);
-
-  /* EP 禁用状态 */
-  --el-disabled-bg-color: var(--bg-secondary);
-  --el-disabled-text-color: var(--text-muted);
-  --el-disabled-border-color: var(--border-subtle);
-
-  /* EP 成功/警告/错误 */
-  --el-color-success: var(--color-success);
-  --el-color-warning: var(--color-warning);
-  --el-color-danger: var(--color-error);
-  --el-color-info: var(--color-info);
-}
-
-/* 浅色模式（默认，html.dark 不生效时使用） */
-:root {
-  --el-color-primary: var(--accent);
-  --el-color-primary-light-3: color-mix(in srgb, var(--accent) 70%, white);
-  --el-color-primary-light-5: color-mix(in srgb, var(--accent) 50%, white);
-  --el-color-primary-light-7: color-mix(in srgb, var(--accent) 30%, white);
-  --el-color-primary-light-8: color-mix(in srgb, var(--accent) 15%, white);
-  --el-color-primary-light-9: color-mix(in srgb, var(--accent) 8%, white);
-  --el-color-primary-dark-2: color-mix(in srgb, var(--accent) 85%, black);
-
-  /* EP 浅色模式背景 */
-  --el-bg-color: var(--bg-secondary);
-  --el-bg-color-page: var(--bg-primary);
-  --el-bg-color-overlay: var(--bg-elevated);
-
-  /* EP 文字色 */
-  --el-text-color-primary: var(--text-primary);
-  --el-text-color-regular: var(--text-secondary);
-  --el-text-color-secondary: var(--text-muted);
-  --el-text-color-placeholder: var(--text-muted);
-
-  /* EP 边框色 */
-  --el-border-color: var(--border-default);
-  --el-border-color-light: var(--border-subtle);
-  --el-border-color-lighter: rgba(0, 0, 0, 0.04);
-  --el-border-color-extra-light: rgba(0, 0, 0, 0.02);
-  --el-border-color-dark: var(--border-emphasis);
-  --el-border-color-darker: var(--border-emphasis);
-
-  /* EP 填充色 */
-  --el-fill-color: var(--bg-secondary);
-  --el-fill-color-light: var(--bg-tertiary);
-  --el-fill-color-lighter: var(--bg-primary);
-  --el-fill-color-blank: var(--bg-card);
-
-  /* EP 阴影 */
-  --el-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --el-box-shadow-light: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --el-box-shadow-lighter: 0 1px 4px rgba(0, 0, 0, 0.04);
-
-  /* EP 禁用状态 */
-  --el-disabled-bg-color: var(--bg-tertiary);
-  --el-disabled-text-color: var(--text-muted);
-  --el-disabled-border-color: var(--border-subtle);
-
-  /* EP 成功/警告/错误 */
-  --el-color-success: var(--color-success);
-  --el-color-warning: var(--color-warning);
-  --el-color-danger: var(--color-error);
-  --el-color-info: var(--color-info);
-
-  /* EP 遮罩色 */
-  --el-mask-color: rgba(0, 0, 0, 0.5);
-  --el-mask-color-extra-light: rgba(0, 0, 0, 0.1);
-}
-
-/* ============================================================
-   §4 — 布局级变量（已迁移至 cube-layout-vars.css）
-   ============================================================ */
-/* Layout tokens moved to cube-layout-vars.css */
-/* ============================================================
-   §5 — 全局基础样式
+   §1 — 全局基础样式
    ============================================================ */
 
 body {
@@ -156,21 +24,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--el-bg-color, #0a0e14);
-  color: var(--el-text-color-primary, #e8eaed);
-}
-
-/* ── 微噪点纹理（仅深色主题） ── */
-[data-theme='cyber-dark'] body::before,
-[data-theme='forest-dark'] body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 256px 256px;
+  background: var(--el-bg-color);
+  color: var(--el-text-color-primary);
 }
 
 /* ── 滚动条样式 ── */
@@ -182,27 +37,36 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--el-border-color-light, #4a5568);
+  background: var(--el-border-color-light);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--el-border-color, #718096);
+  background: var(--el-border-color);
 }
 
 /* ── 焦点样式 ── */
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--el-color-primary);
   outline-offset: 2px;
 }
 
 /* ── 选中文本样式 ── */
 ::selection {
-  background: var(--accent-soft);
-  color: var(--text-primary);
+  background: var(--el-color-primary-light-8);
+  color: var(--el-text-color-primary);
 }
 
-/* ============================================================
-   §6 — 兼容性别名（已删除，使用直接 --el-* 引用）
-   ============================================================ */
-/* Deprecated aliases removed. Use --el-* directly. */
+/* ── 工具类 ── */
+.hidden {
+  display: none !important;
+}
 
+.flex {
+  display: flex;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

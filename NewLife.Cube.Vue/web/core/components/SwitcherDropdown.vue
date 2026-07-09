@@ -149,7 +149,7 @@ defineExpose({ close });
   white-space: nowrap;
 
   &:hover {
-    background: var(--navbar-hover-bg, rgba(0, 0, 0, 0.06));
+    background: var(--navbar-hover-bg, var(--el-fill-color-light));
     color: var(--navbar-text-hover, var(--el-text-color-primary));
   }
 }

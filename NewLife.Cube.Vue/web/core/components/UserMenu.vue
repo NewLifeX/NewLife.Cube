@@ -23,7 +23,7 @@ const menuOpen = ref(false);
 
 const currentUser = computed(() => userStore.userInfo);
 const userInitial = computed(() =>
-  (currentUser.value?.displayName || currentUser.value?.name || 'U').charAt(0).toUpperCase()
+  (currentUser.value?.displayName || currentUser.value?.name || 'U').charAt(0).toUpperCase(),
 );
 const userName = computed(() => currentUser.value?.displayName || currentUser.value?.name || '');
 
@@ -100,11 +100,28 @@ onUnmounted(() => {
           :class="{ danger: opt.danger }"
           @click="handleOptionClick(opt)"
         >
-          <svg v-if="opt.icon === 'user'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            v-if="opt.icon === 'user'"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
             <circle cx="12" cy="7" r="4" />
           </svg>
-          <svg v-else-if="opt.icon === 'logout'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <svg
+            v-else-if="opt.icon === 'logout'"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          >
             <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
             <polyline points="16 17 21 12 16 7" />
             <line x1="21" y1="12" x2="9" y2="12" />
@@ -134,7 +151,7 @@ onUnmounted(() => {
   font-family: inherit;
 
   &:hover {
-    background: var(--navbar-hover-bg, rgba(0, 0, 0, 0.06));
+    background: var(--navbar-hover-bg, var(--el-fill-color-light));
   }
 }
 
@@ -172,10 +189,10 @@ onUnmounted(() => {
   right: 0;
   top: calc(100% + 8px);
   min-width: 200px;
-  background: var(--bg-elevated, #fff);
-  border: 1px solid var(--border-subtle, #e2e0dc);
+  background: var(--el-bg-color-overlay);
+  border: 1px solid var(--el-border-color-light);
   border-radius: var(--radius-md, 10px);
-  box-shadow: var(--shadow-lg, 0 10px 40px rgba(0, 0, 0, 0.12));
+  box-shadow: var(--el-box-shadow);
   z-index: 300;
   overflow: hidden;
 }
@@ -233,7 +250,9 @@ onUnmounted(() => {
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
   text-align: left;
 
   &:hover {
@@ -252,7 +271,9 @@ onUnmounted(() => {
 
 .menu-fade-enter-active,
 .menu-fade-leave-active {
-  transition: opacity 0.12s, transform 0.12s;
+  transition:
+    opacity 0.12s,
+    transform 0.12s;
 }
 
 .menu-fade-enter-from,

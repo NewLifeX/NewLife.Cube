@@ -394,7 +394,12 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
   right: 0;
   width: 1px;
   height: 100%;
-  background: linear-gradient(180deg, var(--el-color-primary), transparent 50%, var(--accent-secondary));
+  background: linear-gradient(
+    180deg,
+    var(--el-color-primary),
+    transparent 50%,
+    var(--accent-secondary)
+  );
   opacity: 0.3;
   pointer-events: none;
 }
@@ -417,15 +422,15 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
   flex-shrink: 0;
   overflow: visible;
 
-  // 覆盖 SearchBar 的输入框样式，适配侧边栏暗色主题
+  // 覆盖 SearchBar 的输入框样式，适配侧边栏主题
   :deep(.sb-box) {
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--el-fill-color-light);
     border-color: var(--cube-layout-sidebar-border-color);
 
     &.focused,
     &:focus-within {
       border-color: var(--el-color-primary);
-      background: rgba(255, 255, 255, 0.07);
+      background: var(--el-fill-color-lighter);
     }
   }
 }
@@ -649,7 +654,7 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
   // UserProfile CSS 变量覆盖——适配侧边栏主题
   --navbar-text: var(--el-text-color-primary);
   --navbar-text-hover: var(--el-color-primary);
-  --navbar-hover-bg: rgba(255, 255, 255, 0.06);
+  --navbar-hover-bg: var(--el-fill-color-light);
 
   // 折叠时隐藏用户名和箭头
   &.collapsed {
@@ -714,7 +719,7 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
   }
 
   &:hover {
-    background: var(--navbar-hover-bg, rgba(255, 255, 255, 0.06));
+    background: var(--navbar-hover-bg, var(--el-fill-color-light));
     color: var(--el-text-color-primary);
   }
 

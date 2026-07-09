@@ -243,7 +243,7 @@ onUnmounted(() => {
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
-  background: linear-gradient(135deg, var(--accent, #4ec685) 0%, var(--accent-hover, #3db873) 100%);
+  background: linear-gradient(135deg, var(--el-color-primary) 0%, var(--el-color-primary-dark-2) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -295,10 +295,10 @@ onUnmounted(() => {
 .profile-dropdown {
   position: absolute;
   min-width: 220px;
-  background: var(--bg-elevated, #fff);
-  border: 1px solid var(--border-subtle, #e2e0dc);
-  border-radius: var(--radius-md, 10px);
-  box-shadow: var(--shadow-lg, 0 10px 40px rgba(0, 0, 0, 0.12));
+  background: var(--el-bg-color-overlay);
+  border: 1px solid var(--el-border-color);
+  border-radius: var(--el-border-radius-base);
+  box-shadow: var(--el-box-shadow);
   z-index: 300;
   overflow: visible;
 }
@@ -352,7 +352,7 @@ onUnmounted(() => {
   height: 40px;
   border-radius: 50%;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--accent, #4ec685) 0%, var(--accent-hover, #3db873) 100%);
+  background: linear-gradient(135deg, var(--el-color-primary) 0%, var(--el-color-primary-dark-2) 100%);
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -421,10 +421,10 @@ onUnmounted(() => {
   }
 
   &.danger {
-    color: var(--color-danger, #dc2626);
+    color: var(--el-color-danger);
 
     &:hover {
-      background: var(--color-danger-bg, #fef2f2);
+      background: var(--el-fill-color-lighter);
     }
   }
 }

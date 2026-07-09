@@ -1,0 +1,19 @@
+/**
+ * Cyber 赛博主题
+ * 品牌色：绿色系 (#4ade80)
+ */
+
+[data-theme='cyber'] {
+  --el-color-primary: #4ade80;
+  --el-color-primary-light-3: color-mix(in srgb, #4ade80 60%, white);
+  --el-color-primary-light-5: color-mix(in srgb, #4ade80 40%, white);
+  --el-color-primary-light-7: color-mix(in srgb, #4ade80 20%, white);
+  --el-color-primary-light-8: color-mix(in srgb, #4ade80 10%, white);
+  --el-color-primary-light-9: color-mix(in srgb, #4ade80 5%, white);
+  --el-color-primary-dark-2: color-mix(in srgb, #4ade80 80%, black);
+
+  --el-color-success: #4ade80;
+  --el-color-warning: #fbbf24;
+  --el-color-danger: #fb7185;
+  --el-color-info: #22d3ee;
+}

@@ -1,4 +1,5 @@
 import { ref, watchEffect } from 'vue';
+import { loadThemeCss } from '../themes';
 
 export type ThemeFamily = 'cyber' | 'forest' | 'aurora' | 'industrial';
 export type ThemeMode = 'dark' | 'light';
@@ -128,14 +129,18 @@ export function useTheme() {
     currentMode.value = currentMode.value === 'dark' ? 'light' : 'dark';
   }
 
-  function switchTheme(family: ThemeFamily) {
+  async function switchTheme(family: ThemeFamily) {
+    // 加载主题 CSS
+    await loadThemeCss(family);
     currentFamily.value = family;
   }
 
-  function setTheme(id: string) {
+  async function setTheme(id: string) {
     // 兼容旧用法：id 可能为 "cyber-dark" 格式，解析后分别设置
     const theme = THEMES.find(t => t.id === id);
     if (theme) {
+      // 加载主题 CSS
+      await loadThemeCss(theme.family);
       currentFamily.value = theme.family;
       currentMode.value = theme.mode;
     }

@@ -3,7 +3,7 @@
  * ModeSwitcher - 暗/亮模式切换按钮（太阳/月亮）
  * 使用 ActionButton 基类样式
  */
-import { computed } from 'vue';
+import { computed, ref, nextTick } from 'vue';
 import { useTheme } from '../composables/useTheme';
 import ActionButton from './ActionButton.vue';
 
@@ -17,18 +17,62 @@ const props = withDefaults(defineProps<Props>(), {});
 const { currentTheme, toggleMode } = useTheme();
 
 const isDark = computed(() => currentTheme.value.mode === 'dark');
+const switchRef = ref<InstanceType<typeof ActionButton>>();
 
-const handleClick = () => {
+const handleClick = async () => {
   if (props.onClick) {
     props.onClick();
-  } else {
-    toggleMode();
+    return;
   }
+
+  // 使用 View Transitions API 实现平滑过渡
+  const isAppearanceTransition =
+    document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!isAppearanceTransition) {
+    toggleMode();
+    return;
+  }
+
+  // 计算过渡动画参数
+  const switchElement = switchRef.value?.$el;
+  if (!switchElement) {
+    toggleMode();
+    return;
+  }
+
+  const rect = switchElement.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top + rect.height / 2;
+  const endRadius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+
+  const transition = document.startViewTransition(async () => {
+    toggleMode();
+    await nextTick();
+  });
+
+  transition.ready.then(() => {
+    document.documentElement.animate(
+      {
+        clipPath: isDark.value
+          ? [`circle(0% at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`]
+          : [`circle(0% at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`],
+      },
+      {
+        duration: 400,
+        easing: 'ease-in',
+      },
+    );
+  });
 };
 </script>
 
 <template>
-  <ActionButton :title="isDark ? '切换到浅色模式' : '切换到深色模式'" @click="handleClick">
+  <ActionButton
+    ref="switchRef"
+    :title="isDark ? '切换到浅色模式' : '切换到深色模式'"
+    @click="handleClick"
+  >
     <!-- 太阳图标（浅色模式） -->
     <svg v-show="!isDark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <circle cx="12" cy="12" r="5" />

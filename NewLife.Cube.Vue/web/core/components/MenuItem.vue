@@ -231,7 +231,7 @@ const handleClick = () => {
   font-size: 12px;
   font-weight: 700;
   color: var(--cube-layout-menu-item-color);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--el-fill-color-light);
   transition:
     background 0.15s,
     color 0.15s;

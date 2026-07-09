@@ -34,7 +34,7 @@ import Sidebar from './Sidebar/index.vue';
     radial-gradient(ellipse at 90% 90%, var(--el-color-info-light-9) 0%, transparent 40%),
     var(--el-bg-color);
   scrollbar-width: thin;
-  scrollbar-color: var(--border-subtle) transparent;
+  scrollbar-color: var(--el-border-color) transparent;
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -44,7 +44,7 @@ import Sidebar from './Sidebar/index.vue';
     background: transparent;
   }
   &::-webkit-scrollbar-thumb {
-    background: var(--border-subtle);
+    background: var(--el-border-color);
     border-radius: 4px;
   }
 }

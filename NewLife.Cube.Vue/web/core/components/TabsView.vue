@@ -383,7 +383,7 @@ if (typeof document !== 'undefined') {
   }
 
   &:hover {
-    background: rgba(0, 0, 0, 0.1);
+    background: var(--el-fill-color-light);
   }
 }
 
@@ -394,7 +394,7 @@ if (typeof document !== 'undefined') {
   border: 1px solid var(--cube-layout-tabsview-border-color, var(--el-border-color-light));
   border-radius: 6px;
   padding: 4px 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--el-box-shadow);
   min-width: 120px;
 }
 

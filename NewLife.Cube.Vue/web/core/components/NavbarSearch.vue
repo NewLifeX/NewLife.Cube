@@ -84,7 +84,7 @@ function handleKeydown(e: KeyboardEvent) {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--bg-tertiary, rgba(0, 0, 0, 0.04));
+  background: var(--el-fill-color-light);
   border: 1px solid var(--el-border-color-light);
   border-radius: var(--radius-sm, 8px);
   padding: 7px 12px;
