@@ -472,12 +472,13 @@ public class TokenService : ITokenService
         var online = UserOnline.FindAllByUserID(user.ID).FirstOrDefault(e => !e.DeviceId.IsNullOrEmpty());
 
         // 获取用户当前租户信息
-        var tenantId = 0;
-        String tenantCode = null;
-        String tenantName = null;
+        Object rs;
         if (user is User user2)
         {
             // 从 TenantUser 查找用户的租户关系
+            var tenantId = 0;
+            String tenantCode = null;
+            String tenantName = null;
             var tenantUser = TenantUser.FindAllByUserId(user2.ID).FirstOrDefault(e => e.Enable);
             if (tenantUser != null)
             {
@@ -507,7 +508,7 @@ public class TokenService : ITokenService
                 avatarUrl = user2.Avatar;
             }
 
-            return new
+            rs = new
             {
                 userid = user.ID,
                 username = user.Name,
@@ -535,7 +536,7 @@ public class TokenService : ITokenService
         }
         else
         {
-            return new
+            rs = new
             {
                 userid = user.ID,
                 username = user.Name,
@@ -543,6 +544,105 @@ public class TokenService : ITokenService
                 resources = dic,
             };
         }
+
+        // 转为字典，后续追加动态字段
+        var result = rs.ToDictionary();
+
+        // 构建所有提供商连接数据，追加 connect_{Provider} 集合
+        try
+        {
+            var set = CubeSetting.Current;
+            var ss = set.JwtSecret.Split(':');
+            var jwt = new JwtBuilder { Algorithm = ss[0], Secret = ss[1] };
+            if (jwt.TryDecode(token, out _) && !jwt.Audience.IsNullOrEmpty())
+            {
+                var app = App.FindByName(jwt.Audience);
+                if (app != null)
+                {
+                    var allConnectData = BuildAllConnectData(user.ID, app.Scopes);
+                    if (allConnectData != null)
+                    {
+                        foreach (var kv in allConnectData)
+                        {
+                            result[$"connect_{kv.Key}"] = kv.Value;
+                        }
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // 解析失败不影响主流程
+        }
+
+        return result;
+    }
+
+    /// <summary>已知标准 Scope。不在列表中的 Scopes 项视为 UserConnect 字段过滤 pattern</summary>
+    private static readonly String[] _knownScopes = ["password", "client_credentials", "refresh_token", "basic", "UserInfo"];
+
+    /// <summary>敏感字段。从 UserConnect 数据中移除，不传递给下游</summary>
+    private static readonly String[] _sensitiveFields = ["access_token", "refresh_token"];
+
+    /// <summary>从 App.Scopes 中提取 UserConnect 字段过滤 pattern 列表</summary>
+    /// <param name="scopes">App.Scopes 逗号分隔字符串</param>
+    /// <returns>字段过滤 pattern 列表，仅含标准 scope 或空时返回 null</returns>
+    private static String[] ParseConnectFieldPatterns(String scopes)
+    {
+        if (scopes.IsNullOrEmpty()) return null;
+
+        var items = scopes.Split(',');
+        var patterns = items.Where(e => !_knownScopes.Contains(e, StringComparer.OrdinalIgnoreCase)).ToArray();
+        return patterns.Length > 0 ? patterns : null;
+    }
+
+    /// <summary>构建所有提供商的连接数据字典</summary>
+    /// <remarks>
+    /// 从用户的所有 UserConnect 记录中读取 Remark JSON，
+    /// 按 Provider 分组，每个 Provider 独立一个字典。
+    /// 过滤掉 <see cref="_sensitiveFields"/> 中的敏感字段。
+    /// 通过 App.Scopes 中配置的字段 pattern 做模糊过滤。
+    /// </remarks>
+    /// <param name="userId">用户编号</param>
+    /// <param name="scopes">App.Scopes 配置</param>
+    /// <returns>Provider → 过滤后字段字典 的映射</returns>
+    private static Dictionary<String, IDictionary<String, Object>> BuildAllConnectData(Int32 userId, String scopes)
+    {
+        var patterns = ParseConnectFieldPatterns(scopes);
+
+        var connects = UserConnect.FindAllByUserID(userId)
+            .Where(e => e.Enable && !e.Remark.IsNullOrEmpty())
+            .OrderByDescending(e => e.UpdateTime);
+
+        var result = new Dictionary<String, IDictionary<String, Object>>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var uc in connects)
+        {
+            try
+            {
+                var remark = JsonParser.Decode(uc.Remark);
+                if (remark == null) continue;
+
+                var providerData = new Dictionary<String, Object>(StringComparer.OrdinalIgnoreCase);
+                foreach (var kv in remark)
+                {
+                    // 跳过敏感字段，不传递给下游
+                    if (_sensitiveFields.Contains(kv.Key, StringComparer.OrdinalIgnoreCase)) continue;
+
+                    // 无 pattern 或匹配任意 pattern 时包含该字段
+                    if (patterns == null || patterns.Any(p => StringHelper.IsMatch(p, kv.Key)))
+                        providerData[kv.Key] = kv.Value;
+                }
+
+                if (providerData.Count > 0)
+                    result[uc.Provider] = providerData;
+            }
+            catch
+            {
+                // 单条 Remark 解析失败不影响其他记录
+            }
+        }
+        return result;
     }
     #endregion
 
