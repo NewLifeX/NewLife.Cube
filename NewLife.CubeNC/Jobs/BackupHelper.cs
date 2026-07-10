@@ -31,9 +31,15 @@ public static class BackupHelper
         return file;
     }
 
-    /// <summary>对SQLite备份文件执行WAL checkpoint，合并WAL到主库并截断</summary>
+    /// <summary>对SQLite备份文件执行WAL checkpoint和VACUUM，回收空闲页，减小文件体积</summary>
+    /// <remarks>
+    /// 备份后的 SQLite 文件可能附带 WAL 日志，且存在空闲页导致体积偏大。
+    /// 本方法依次执行：
+    /// 1. PRAGMA wal_checkpoint(TRUNCATE) — 将 WAL 合并到主库并截断
+    /// 2. VACUUM — 重建数据库文件，回收空闲页，减小文件体积
+    /// </remarks>
     /// <param name="bakFile">备份的数据库文件路径</param>
-    public static void WalCheckpointBackup(String bakFile)
+    public static void CompactBackupFile(String bakFile)
     {
         if (bakFile.IsNullOrEmpty() || !File.Exists(bakFile)) return;
         if (!bakFile.EndsWith(".db", StringComparison.OrdinalIgnoreCase)) return;
@@ -45,10 +51,13 @@ public static class BackupHelper
             DAL.AddConnStr(tempName, "Data Source=" + bakFile, null, "SQLite");
             var bakDal = DAL.Create(tempName);
             bakDal.Execute("PRAGMA wal_checkpoint(TRUNCATE)");
+
+            // VACUUM 重建数据库，回收空闲页，减小文件体积
+            bakDal.Execute("VACUUM");
         }
         catch (Exception ex)
         {
-            XTrace.WriteLine("备份文件WAL checkpoint 失败：{0}", ex.Message);
+            XTrace.WriteLine("备份文件压缩失败：{0}", ex.Message);
         }
         finally
         {

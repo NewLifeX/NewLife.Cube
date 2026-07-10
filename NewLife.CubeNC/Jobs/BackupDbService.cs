@@ -58,10 +58,10 @@ public class BackupDbService
                 continue;
             }
 
-            // SQLite备份文件多做一步WAL checkpoint（仅对.db文件有效）
+            // SQLite备份文件多做一步压缩回收空间（WAL checkpoint + VACUUM，仅对.db文件有效）
             var bakFile = bak as String;
             if (!bakFile.IsNullOrEmpty())
-                BackupHelper.WalCheckpointBackup(bakFile);
+                BackupHelper.CompactBackupFile(bakFile);
 
             // 压缩备份文件为zip
             var file = BackupHelper.GetBackupFile(bak);
