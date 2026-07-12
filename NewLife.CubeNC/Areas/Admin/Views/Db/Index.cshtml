@@ -17,6 +17,7 @@
             <th class="text-center">驱动版本</th>
             <th class="text-center">实体个数</th>
             <th class="text-center">表个数</th>
+            <th class="text-center">压缩</th>
             <th class="text-center">备份</th>
             <th class="text-center">备份并压缩</th>
             <th class="text-center">下载表结构</th>
@@ -42,6 +43,7 @@
                 <td>@item.DriverVersion</td>
                 <td class="text-center">@Html.ActionLink(item.Entities + "", "ShowEntities", new { Name = item.Name })</td>
                 <td class="text-center">@Html.ActionLink(item.Tables + "", "ShowTables", new { Name = item.Name })</td>
+                <td class="text-center">@Html.ActionLink("压缩", "Compact", new { Name = item.Name })</td>
                 <td>@Html.ActionLink("备份", "Backup", new { Name = item.Name })，共 @item.Backups.ToString("n0")个</td>
                 <td>@Html.ActionLink("备份并压缩", "BackupAndCompress", new { Name = item.Name })</td>
                 <td class="text-center">@Html.ActionLink("下载", "Download", new { Name = item.Name })</td>

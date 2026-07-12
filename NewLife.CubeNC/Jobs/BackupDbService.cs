@@ -39,7 +39,7 @@ public class BackupDbService
             Object bak = null;
             try
             {
-                bak = dal.Db.CreateMetaData().Invoke("Backup", dal.ConnName, null, false);
+                bak = dal.Db.CreateMetaData().BackupDatabase();
             }
             catch (Exception ex)
             {

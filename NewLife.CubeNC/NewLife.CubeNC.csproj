@@ -52,11 +52,11 @@
 
   <ItemGroup>
     <PackageReference Include="NewLife.AI" Version="1.4.2026.708" />
-    <PackageReference Include="NewLife.Core" Version="11.17.2026.701" />
+    <PackageReference Include="NewLife.Core" Version="11.17.2026.707-beta1051" />
     <PackageReference Include="NewLife.IP" Version="2.4.2026.501" />
     <PackageReference Include="NewLife.Office" Version="1.2.2026.701" />
     <PackageReference Include="NewLife.Stardust.Extensions" Version="3.9.2026.708" />
-    <PackageReference Include="NewLife.XCode" Version="12.0.2026.701" />
+    <PackageReference Include="NewLife.XCode" Version="12.0.2026.710-beta1359" />
   </ItemGroup>
 
   <ItemGroup>

@@ -79,6 +79,31 @@ public class DbController : ControllerBaseX
         return View("Index", list);
     }
 
+    /// <summary>压缩数据库（回收空闲空间）。对SQLite执行VACUUM</summary>
+    /// <param name="name">连接名</param>
+    /// <returns></returns>
+    [EntityAuthorize(PermissionFlags.Update)]
+    public async Task<ActionResult> Compact(String name)
+    {
+        var sw = Stopwatch.StartNew();
+
+        var dal = DAL.Create(name);
+        try
+        {
+            var meta = dal.Db.CreateMetaData();
+            meta.Invoke("CompactDatabase");
+            sw.Stop();
+            WriteLog("压缩", true, $"压缩数据库 {name} 完成，耗时 {sw.Elapsed}");
+        }
+        catch (Exception ex)
+        {
+            sw.Stop();
+            WriteLog("压缩", false, $"压缩数据库 {name} 失败：{ex.Message}");
+        }
+
+        return await Index();
+    }
+
     /// <summary>备份数据库</summary>
     /// <param name="name"></param>
     /// <returns></returns>
@@ -89,7 +114,8 @@ public class DbController : ControllerBaseX
 
         var dal = DAL.Create(name);
         //var bak = dal.Db.CreateMetaData().SetSchema(DDLSchema.BackupDatabase, dal.ConnName, null, false);
-        var bak = dal.Db.CreateMetaData().Invoke("Backup", dal.ConnName, null, false);
+        //var bak = dal.Db.CreateMetaData().Invoke("Backup", dal.ConnName, null, false);
+        var bak = dal.Db.CreateMetaData().BackupDatabase();
 
         // 如果备份结果已经是zip，跳过后续压缩
         if (BackupHelper.IsCompressedBackup(bak))
