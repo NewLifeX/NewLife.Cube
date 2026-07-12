@@ -1,4 +1,11 @@
 <script setup lang="ts">
+/**
+ * 表单页（默认模板）
+ *
+ * 自动模式下从后端 GetPage 拉取 addForm / editForm 字段元数据，归一为 `FieldMeta[]`
+ * 交给 `FormContent` 统一渲染（控件解析由 fieldControl.ts 的 resolveControl 完成，
+ * 本文件不再维护本地 TYPE_TO_FORM_TYPE 映射，彻底消除与列表页的不一致）。
+ */
 import { inject, provide, defineAsyncComponent, ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
@@ -16,7 +23,10 @@ import DefaultFormPageHeader from '@newlifex/cube-vue/core/views/components/Form
 import DefaultFormContent from '@newlifex/cube-vue/core/views/components/FormContent.vue';
 import DefaultFormActions from '@newlifex/cube-vue/core/views/components/FormActions.vue';
 import { routeToApiPrefix } from '../utils/url';
+import { serializeSubmitModel } from '../utils/fieldControl';
+import type { FieldMeta } from '../types/field';
 
+/** 后端下发的原始字段（DataField 归一结构） */
 interface BackendField {
   name: string;
   displayName: string;
@@ -27,24 +37,14 @@ interface BackendField {
   nullable?: boolean;
   primaryKey?: boolean;
   readOnly?: boolean;
-  mapField?: string;
-}
-
-interface FormField {
-  key: string;
-  label: string;
-  type: 'text' | 'email' | 'tel' | 'select' | 'textarea' | 'radio' | 'switch' | 'datetime';
-  required?: boolean;
-  fullWidth?: boolean;
-  placeholder?: string;
-  options?: Array<{ value: string; label: string }>;
-  error?: string;
+  lovCode?: string;
+  multiple?: boolean;
 }
 
 interface Props {
   title?: string;
   subtitle?: string;
-  fields?: FormField[];
+  fields?: FieldMeta[];
   modelValue?: Record<string, unknown>;
   showContinue?: boolean;
 }
@@ -88,39 +88,26 @@ const auto = computed(() => !!!props.fields);
 
 const pageMeta = ref<{ addForm: BackendField[]; editForm: BackendField[] } | null>(null);
 const internalModelValue = ref<Record<string, unknown>>({});
-const internalFields = ref<FormField[]>([]);
+const internalFields = ref<FieldMeta[]>([]);
 const isSubmitting = ref(false);
 
-const TYPE_TO_FORM_TYPE: Record<string, FormField['type']> = {
-  String: 'text',
-  Int32: 'text',
-  Int64: 'text',
-  Decimal: 'text',
-  Double: 'text',
-  Boolean: 'switch',
-  DateTime: 'datetime',
-};
-
-function backendFieldsToFormFields(fields: BackendField[]): FormField[] {
+/** 后端字段 → 统一 FieldMeta（透传 lovCode / multiple / description 等元数据） */
+function backendFieldsToFormFields(fields: BackendField[]): FieldMeta[] {
   return fields
     .filter((f) => !f.primaryKey && !f.readOnly)
-    .map((f) => {
-      const type = TYPE_TO_FORM_TYPE[f.typeName] ?? 'text';
-      const item: FormField = { key: f.name, label: f.displayName || f.name, type };
-      if (!f.nullable && !f.primaryKey) {
-        item.required = true;
-      }
-      if (f.length && f.length > 50 && type === 'text') {
-        item.type = 'textarea';
-      }
-      if (f.description) {
-        item.placeholder = f.description;
-      }
-      if (f.typeName === 'Boolean') {
-        item.type = 'switch';
-      }
-      return item;
-    });
+    .map((f) => ({
+      name: f.name,
+      displayName: f.displayName,
+      description: f.description,
+      typeName: f.typeName,
+      itemType: f.itemType,
+      length: f.length,
+      nullable: f.nullable,
+      primaryKey: f.primaryKey,
+      readOnly: f.readOnly,
+      lovCode: f.lovCode,
+      multiple: f.multiple,
+    }));
 }
 
 async function fetchPageMeta() {
@@ -149,7 +136,7 @@ async function fetchDetail() {
     console.log('[DefaultForm] Detail:', url);
     const res: any = await request({ url, method: 'get' });
     const data = res?.data ?? res ?? {};
-    // 将字符串 "true"/"false" 转换为布尔值
+    // 将字符串 "true"/"false" 转换为布尔值（Enable 等）
     internalModelValue.value = Object.fromEntries(
       Object.entries(data).map(([k, v]) => [k, v === 'true' ? true : v === 'false' ? false : v]),
     );
@@ -163,7 +150,7 @@ async function handleSubmit() {
     if (isSubmitting.value) return;
     isSubmitting.value = true;
     try {
-      const model = internalModelValue.value;
+      const model = serializeSubmitModel(internalModelValue.value, renderFields.value);
       if (isEdit.value) {
         await request({ url: apiPrefix.value, method: 'put', data: model });
         ElMessage.success('更新成功');
@@ -183,6 +170,11 @@ async function handleSubmit() {
   }
 }
 
+/**
+ * 提交前序列化：将 multipleSelect 字段（后端以 String 列存储）的 string[] 合并为逗号分隔字符串，
+ * 避免 System.Text.Json 将数组绑定到 String 属性时报错。同时兼容 itemType=文件的其它来源。
+ * （实现见 utils/fieldControl.serializeSubmitModel，与列表页 submitDialog 共用）
+ */
 function handleCancel() {
   if (auto.value) {
     router.back();
@@ -229,6 +221,7 @@ onMounted(async () => {
           :is="FormContentComp"
           :fields="renderFields"
           :model-value="renderModelValue"
+          :api-prefix="apiPrefix"
           @update:model-value="handleModelUpdate"
         />
       </slot>

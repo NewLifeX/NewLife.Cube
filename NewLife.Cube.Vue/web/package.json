@@ -7,9 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:unit": "vitest",
-    "test:e2e": "start-server-and-test preview http://localhost:4173 'cypress run --e2e'",
-    "test:e2e:dev": "start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open --e2e'",
+    "test:unit": "vitest run --config vitest.config.unit.ts",
+    "test:e2e": "cypress run --e2e",
+    "test:e2e:dev": "cypress open --e2e",
+    "test:component": "cypress run --component --browser chrome",
+    "test:component:dev": "cypress open --component --browser chrome",
     "build:plugin": "set BUILD_TARGET=plugin&& vite build",
     "type-check": "vue-tsc --build",
     "lint:oxlint": "oxlint . --fix -D correctness --ignore-path .gitignore",
@@ -27,6 +29,10 @@
     "lodash": "^4.17.21",
     "query-string": "^9.1.1",
     "universal-cookie": "^8.0.1",
+    "vanilla-jsoneditor": "^2.2.2",
+    "@wangeditor/editor": "^5.1.23",
+    "@wangeditor/editor-for-vue": "^5.1.12",
+    "md-editor-v3": "^4.19.1",
     "vue-echarts": "^7.0.3"
   },
   "peerDependencies": {
@@ -77,8 +83,9 @@
     "vitest": "^3.0.8",
     "vue-tsc": "^2.2.8"
   },
+  "packageManager": "pnpm@9.0.0",
   "engines": {
-    "node": ">=18",
+    "node": ">=24",
     "pnpm": ">=9"
   }
 }

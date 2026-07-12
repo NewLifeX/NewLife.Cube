@@ -84,12 +84,16 @@ export default defineConfig(({ command, mode }) => {
       },
       server: {
         port: 5187,
-        proxy: {
-          '/Admin': { target: 'http://localhost:5000', changeOrigin: true },
-          '/Cube': { target: 'http://localhost:5000', changeOrigin: true },
-          '/Sso': { target: 'http://localhost:5000', changeOrigin: true },
-          '/api': { target: 'http://localhost:5000', changeOrigin: true },
-        },
+        // Vite 代理已移除：前端 API 请求直连后端（由 VITE_API_URL 配置 baseUrl）
+        // proxy: {
+        //   '/Admin': { target: 'http://localhost:5000', changeOrigin: true },
+        //   '/Cube': { target: 'http://localhost:5000', changeOrigin: true },
+        //   '/Sso': { target: 'http://localhost:5000', changeOrigin: true },
+        //   '/Test': { target: 'http://localhost:5000', changeOrigin: true },
+        //   '/api': { target: 'http://localhost:5000', changeOrigin: true },
+        //   // 上传文件回显（TestUploadController 落盘到 wwwroot/upload/test/...）
+        //   '/upload': { target: 'http://localhost:5000', changeOrigin: true },
+        // },
       },
     };
   }

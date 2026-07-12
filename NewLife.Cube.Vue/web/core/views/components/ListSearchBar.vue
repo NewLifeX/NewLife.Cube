@@ -1,48 +1,45 @@
 <script setup lang="ts">
+/**
+ * 列表搜索栏
+ *
+ * 入参 `fields` 为后端下发的 `FieldMeta[]`，按 `resolveSearchControl` 解析搜索控件类型，
+ * 渲染 text / numberRange / dateRange / datetimeRange / timeRange / lov / lovMulti /
+ * switch / fileExists 等控件（兼容旧版 `searchFields` 入参）。
+ */
 import { ref, reactive, computed } from 'vue';
 import { ArrowDown, ArrowUp, Search } from '@element-plus/icons-vue';
+import LovSelect from '../../components/LovSelect.vue';
+import { resolveSearchControl } from '../../utils/fieldControl';
+import type { FieldMeta, SearchControlType } from '../../types/field';
 
-interface SelectOption {
-  value: string | number;
-  label: string;
-}
-
-type FieldType =
-  | 'text'
-  | 'select'
-  | 'multi-select'
-  | 'number-range'
-  | 'date-range';
-
-interface SearchField {
+/** 旧版搜索字段（兼容保留） */
+interface LegacySearchField {
   key: string;
   label: string;
-  type: FieldType;
+  type: 'text' | 'select' | 'multi-select' | 'number-range' | 'date-range';
   placeholder?: string;
-  options?: SelectOption[];
+  options?: Array<{ value: string | number; label: string }>;
+  span?: 1 | 2 | 3 | 4;
+}
+
+interface InternalField {
+  key: string;
+  label: string;
+  searchType: SearchControlType;
+  field?: FieldMeta;
+  legacyOptions?: Array<{ value: string | number; label: string }>;
   span?: 1 | 2 | 3 | 4;
 }
 
 interface Props {
-  fields?: SearchField[];
+  fields?: FieldMeta[];
+  searchFields?: LegacySearchField[];
   visibleRows?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  fields: () =>
-    [
-      { key: 'keyword', label: '关键词', type: 'text' },
-      {
-        key: 'status',
-        label: '状态',
-        type: 'select',
-        options: [
-          { value: '', label: '全部' },
-          { value: 'active', label: '正常' },
-          { value: 'disabled', label: '禁用' },
-        ],
-      },
-    ] satisfies SearchField[],
+  fields: () => [],
+  searchFields: () => [],
   visibleRows: 1,
 });
 
@@ -56,12 +53,58 @@ const COLS = 4;
 const collapsed = ref(true);
 const formData = reactive<Record<string, unknown>>({});
 
+const switchOptions = [
+  { value: '', label: '全部' },
+  { value: 'true', label: '是' },
+  { value: 'false', label: '否' },
+];
+
+const fileExistsOptions = [
+  { value: '', label: '全部' },
+  { value: 'true', label: '有' },
+  { value: 'false', label: '无' },
+];
+
+/** 搜索字段（优先 fields，回退 legacy searchFields） */
+const renderFields = computed<InternalField[]>(() => {
+  if (props.fields?.length) {
+    return props.fields.map((f) => ({
+      key: f.name,
+      label: f.displayName || f.name,
+      searchType: resolveSearchControl(f),
+      field: f,
+    }));
+  }
+  return props.searchFields.map((s) => ({
+    key: s.key,
+    label: s.label,
+    searchType: legacyToSearchType(s.type),
+    legacyOptions: s.options,
+    span: s.span,
+  }));
+});
+
+function legacyToSearchType(t: LegacySearchField['type']): SearchControlType {
+  switch (t) {
+    case 'select':
+      return 'lov';
+    case 'multi-select':
+      return 'lovMulti';
+    case 'number-range':
+      return 'numberRange';
+    case 'date-range':
+      return 'dateRange';
+    default:
+      return 'text';
+  }
+}
+
 const visibleFields = computed(() => {
-  if (!collapsed.value) return props.fields;
+  if (!collapsed.value) return renderFields.value;
   const limit = props.visibleRows * COLS;
   let used = 0;
-  const result: SearchField[] = [];
-  for (const f of props.fields) {
+  const result: InternalField[] = [];
+  for (const f of renderFields.value) {
     const span = f.span ?? 1;
     if (used + span > limit) break;
     result.push(f);
@@ -73,7 +116,7 @@ const visibleFields = computed(() => {
 const hasMore = computed(() => {
   const limit = props.visibleRows * COLS;
   let used = 0;
-  for (const f of props.fields) {
+  for (const f of renderFields.value) {
     used += f.span ?? 1;
     if (used > limit) return true;
   }
@@ -106,46 +149,19 @@ function toggleCollapse() {
             :style="field.span && field.span > 1 ? { gridColumn: `span ${field.span}` } : undefined"
           >
             <label class="lsb-label">{{ field.label }}</label>
+
+            <!-- 文本 -->
             <el-input
-              v-if="field.type === 'text'"
+              v-if="field.searchType === 'text'"
               v-model="formData[field.key] as string"
-              :placeholder="field.placeholder ?? `请输入${field.label}`"
+              :placeholder="`请输入${field.label}`"
               clearable
               class="lsb-input"
               @keyup.enter="handleSearch"
             />
-            <el-select
-              v-else-if="field.type === 'select'"
-              v-model="formData[field.key]"
-              :placeholder="field.placeholder ?? `请选择`"
-              clearable
-              class="lsb-input"
-            >
-              <el-option
-                v-for="opt in field.options"
-                :key="opt.value"
-                :label="opt.label"
-                :value="opt.value"
-              />
-            </el-select>
-            <el-select
-              v-else-if="field.type === 'multi-select'"
-              v-model="formData[field.key]"
-              :placeholder="field.placeholder ?? `请选择`"
-              clearable
-              multiple
-              collapse-tags
-              collapse-tags-tooltip
-              class="lsb-input"
-            >
-              <el-option
-                v-for="opt in field.options"
-                :key="opt.value"
-                :label="opt.label"
-                :value="opt.value"
-              />
-            </el-select>
-            <div v-else-if="field.type === 'number-range'" class="lsb-range">
+
+            <!-- 数值范围 -->
+            <div v-else-if="field.searchType === 'numberRange'" class="lsb-range">
               <el-input-number
                 v-model="formData[`${field.key}_min`] as number"
                 placeholder="最小值"
@@ -160,9 +176,11 @@ function toggleCollapse() {
                 class="lsb-range-num"
               />
             </div>
+
+            <!-- 日期范围 -->
             <el-date-picker
-              v-else-if="field.type === 'date-range'"
-              v-model="formData[field.key]"
+              v-else-if="field.searchType === 'dateRange'"
+              v-model="formData[field.key] as [string, string] | null"
               type="daterange"
               range-separator="~"
               start-placeholder="开始日期"
@@ -170,6 +188,104 @@ function toggleCollapse() {
               value-format="YYYY-MM-DD"
               class="lsb-input lsb-datepicker"
             />
+
+            <!-- 日期时间范围 -->
+            <el-date-picker
+              v-else-if="field.searchType === 'datetimeRange'"
+              v-model="formData[field.key] as [string, string] | null"
+              type="datetimerange"
+              range-separator="~"
+              start-placeholder="开始时间"
+              end-placeholder="结束时间"
+              value-format="YYYY-MM-DDTHH:mm:ss"
+              class="lsb-input lsb-datepicker"
+            />
+
+            <!-- 时间范围 -->
+            <div v-else-if="field.searchType === 'timeRange'" class="lsb-range">
+              <el-time-picker
+                v-model="formData[`${field.key}_min`] as string"
+                placeholder="起"
+                format="HH:mm:ss"
+                value-format="HH:mm:ss"
+                class="lsb-range-num"
+              />
+              <span class="lsb-range-sep">~</span>
+              <el-time-picker
+                v-model="formData[`${field.key}_max`] as string"
+                placeholder="止"
+                format="HH:mm:ss"
+                value-format="HH:mm:ss"
+                class="lsb-range-num"
+              />
+            </div>
+
+            <!-- 值集单选 -->
+            <LovSelect
+              v-else-if="field.searchType === 'lov' && field.field?.lovCode"
+              :code="field.field.lovCode"
+              v-model="formData[field.key] as string | number | undefined"
+              :placeholder="`请选择${field.label}`"
+              class="lsb-input"
+            />
+
+            <!-- 值集多选 -->
+            <LovSelect
+              v-else-if="field.searchType === 'lovMulti' && field.field?.lovCode"
+              :code="field.field.lovCode"
+              :multiple="true"
+              v-model="formData[field.key] as string[] | undefined"
+              :placeholder="`请选择${field.label}`"
+              class="lsb-input"
+            />
+
+            <!-- 布尔（是/否） -->
+            <el-select
+              v-else-if="field.searchType === 'switch'"
+              v-model="formData[field.key] as string | undefined"
+              :placeholder="`请选择`"
+              clearable
+              class="lsb-input"
+            >
+              <el-option
+                v-for="opt in switchOptions"
+                :key="opt.value"
+                :label="opt.label"
+                :value="opt.value"
+              />
+            </el-select>
+
+            <!-- 附件存在性 -->
+            <el-select
+              v-else-if="field.searchType === 'fileExists'"
+              v-model="formData[field.key] as string | undefined"
+              :placeholder="`请选择`"
+              clearable
+              class="lsb-input"
+            >
+              <el-option
+                v-for="opt in fileExistsOptions"
+                :key="opt.value"
+                :label="opt.label"
+                :value="opt.value"
+              />
+            </el-select>
+
+            <!-- 旧版 select（无 lovCode 兜底） -->
+            <el-select
+              v-else-if="field.legacyOptions"
+              v-model="formData[field.key] as string | number | undefined"
+              :placeholder="`请选择`"
+              clearable
+              class="lsb-input"
+            >
+              <el-option
+                v-for="opt in field.legacyOptions"
+                :key="opt.value"
+                :label="opt.label"
+                :value="opt.value"
+              />
+            </el-select>
           </div>
         </template>
       </div>

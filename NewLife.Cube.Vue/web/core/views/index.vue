@@ -1,4 +1,16 @@
 <script setup lang="ts">
+/**
+ * 列表页（默认模板）
+ *
+ * 自动模式下从后端 GetPage 拉取 list / search / addForm / editForm 字段元数据，
+ * 归一为 `FieldMeta[]` 交给子组件：
+ *   - ListTableContent   按 resolveListControl 渲染单元格
+ *   - ListSearchBar      按 resolveSearchControl 渲染搜索控件
+ *   - FormPage/FormContent 按 resolveControl 渲染表单
+ *
+ * 本文件不再维护本地 TYPE_TO_SEARCH_TYPE / TYPE_TO_FORM_TYPE 映射，
+ * 彻底消除与表单页的 Boolean / DateTime 不一致 BUG。
+ */
 import {
   inject,
   provide,
@@ -31,27 +43,15 @@ import DefaultListTableContent from '@newlifex/cube-vue/core/views/components/Li
 import DefaultListPagination from '@newlifex/cube-vue/core/views/components/ListPagination.vue';
 import DefaultListPageFooter from '@newlifex/cube-vue/core/views/components/ListPageFooter.vue';
 import FormPage from '@newlifex/cube-vue/core/views/form.vue';
+// 图表弹窗懒加载（按需载入 echarts，仅在点击「图表」时加载）
+const ChartDialog = defineAsyncComponent(
+  () => import('@newlifex/cube-vue/core/views/components/ListChartDialog.vue'),
+);
 import { routeToApiPrefix, getValueByKey } from '@newlifex/cube-vue/core/utils/url';
+import { serializeSubmitModel } from '@newlifex/cube-vue/core/utils/fieldControl';
+import type { FieldMeta } from '@newlifex/cube-vue/core/types/field';
 
-interface FormField {
-  key: string;
-  label: string;
-  type: 'text' | 'email' | 'tel' | 'select' | 'textarea' | 'radio';
-  required?: boolean;
-  fullWidth?: boolean;
-  placeholder?: string;
-  options?: Array<{ value: string; label: string }>;
-}
-
-const TYPE_TO_SEARCH_TYPE: Record<string, 'text' | 'select'> = {
-  String: 'text',
-  Int32: 'text',
-  Int64: 'text',
-  Decimal: 'text',
-  Double: 'text',
-  Boolean: 'select',
-};
-
+/** 后端下发的原始字段（DataField 归一结构） */
 interface BackendField {
   name: string;
   displayName: string;
@@ -63,9 +63,7 @@ interface BackendField {
   primaryKey?: boolean;
   readOnly?: boolean;
   mapField?: string;
-}
-
-interface BackendSearchField extends BackendField {
+  lovCode?: string;
   multiple?: boolean;
 }
 
@@ -87,34 +85,17 @@ interface PageMeta {
   addForm: BackendField[];
   editForm: BackendField[];
   detail: BackendField[];
-  search: BackendSearchField[];
-}
-
-interface Column {
-  key: string;
-  label: string;
-  width?: string;
-  align?: 'left' | 'center' | 'right';
-  mono?: boolean;
-}
-
-interface SearchFieldItem {
-  key: string;
-  label: string;
-  type: 'text' | 'select';
-  options?: Array<{ value: string | number; label: string }>;
+  search: BackendField[];
 }
 
 interface Props {
   title?: string;
   subtitle?: string;
-  columns?: Column[];
   data?: Record<string, unknown>[];
   loading?: boolean;
   total?: number;
   currentPage?: number;
   pageSize?: number;
-  searchFields?: SearchFieldItem[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -164,43 +145,60 @@ const dialogVisible = ref(false);
 const dialogTitle = ref('新增');
 const dialogMode = ref<'add' | 'edit'>('add');
 const dialogFormData = ref<Record<string, unknown>>({});
-const dialogFields = ref<FormField[]>([]);
+const dialogFields = ref<FieldMeta[]>([]);
 const isSubmitting = ref(false);
 
-const TYPE_TO_FORM_TYPE: Record<string, FormField['type']> = {
-  String: 'text',
-  Int32: 'text',
-  Int64: 'text',
-  Decimal: 'text',
-  Double: 'text',
-  Boolean: 'select',
-  DateTime: 'text',
-};
+/** 导入：隐藏的文件选择框 */
+const importInput = ref<HTMLInputElement | null>(null);
+/** 图表弹窗状态与数据（GetChartData 返回的 ECharts 配置数组） */
+const chartVisible = ref(false);
+const chartList = ref<Record<string, unknown>[]>([]);
 
-function backendFieldsToFormFields(fields: BackendField[]): FormField[] {
+/** 后端字段 → 统一 FieldMeta */
+function toFieldMeta(f: BackendField): FieldMeta {
+  return {
+    name: f.name,
+    displayName: f.displayName,
+    description: f.description,
+    typeName: f.typeName,
+    itemType: f.itemType,
+    length: f.length,
+    nullable: f.nullable,
+    primaryKey: f.primaryKey,
+    readOnly: f.readOnly,
+    lovCode: f.lovCode,
+    multiple: f.multiple,
+  };
+}
+
+const auto = computed(() => !props.data);
+
+const internalLoading = ref(false);
+const internalList = ref<Record<string, unknown>[]>([]);
+const internalTotal = ref(0);
+const internalPage = ref(1);
+const internalPageSize = ref(20);
+const pageMeta = ref<PageMeta | null>(null);
+const filterData = reactive<Record<string, unknown>>({});
+
+/** 列表字段（含 Guid 作为只读文本展示，但不进搜索） */
+const computedListFields = computed<FieldMeta[]>(() => {
+  if (!pageMeta.value) return [];
+  return pageMeta.value.list.map(toFieldMeta);
+});
+
+/** 搜索字段（过滤主键与 Guid，永不进搜索） */
+const computedSearchFields = computed<FieldMeta[]>(() => {
+  if (!pageMeta.value) return [];
+  return pageMeta.value.search
+    .filter((f) => !f.primaryKey && f.typeName !== 'Guid')
+    .map(toFieldMeta);
+});
+
+function backendFieldsToFormFields(fields: BackendField[]): FieldMeta[] {
   return fields
     .filter((f) => !f.primaryKey && !f.readOnly)
-    .map((f) => {
-      const type = TYPE_TO_FORM_TYPE[f.typeName] ?? 'text';
-      const item: FormField = { key: f.name, label: f.displayName || f.name, type };
-      if (!f.nullable && !f.primaryKey) {
-        item.required = true;
-      }
-      if (f.length && f.length > 50 && type === 'text') {
-        item.type = 'textarea';
-      }
-      if (f.description) {
-        item.placeholder = f.description;
-      }
-      if (f.typeName === 'Boolean') {
-        item.type = 'select';
-        item.options = [
-          { value: 'true', label: '是' },
-          { value: 'false', label: '否' },
-        ];
-      }
-      return item;
-    });
+    .map(toFieldMeta);
 }
 
 function openDialog(mode: 'add' | 'edit', row?: Record<string, unknown>) {
@@ -223,7 +221,8 @@ async function submitDialog() {
   isSubmitting.value = true;
   try {
     const url = apiPrefix.value;
-    const data = { ...dialogFormData.value };
+    // 多选字段（lovMulti / multipleSelect）序列化为逗号分隔字符串，避免数组提交
+    const data = serializeSubmitModel(dialogFormData.value, dialogFields.value);
     if (dialogMode.value === 'edit') {
       await request({ url, method: 'put', data });
       ElMessage.success('更新成功');
@@ -263,57 +262,6 @@ async function handleDeleteRow(row: Record<string, unknown>) {
 function handleDialogUpdate(val: Record<string, unknown>) {
   dialogFormData.value = val;
 }
-const auto = computed(() => !props.columns);
-
-const internalLoading = ref(false);
-const internalList = ref<Record<string, unknown>[]>([]);
-const internalTotal = ref(0);
-const internalPage = ref(1);
-const internalPageSize = ref(20);
-const pageMeta = ref<PageMeta | null>(null);
-const filterData = reactive<Record<string, unknown>>({});
-
-const computedSearchFields = computed<SearchFieldItem[]>(() => {
-  if (props.searchFields) return props.searchFields;
-  if (!pageMeta.value) return [];
-  return pageMeta.value.search
-    .filter((f) => !f.primaryKey)
-    .map((f) => {
-      const type = TYPE_TO_SEARCH_TYPE[f.typeName] ?? 'text';
-      const item: SearchFieldItem = { key: f.name, label: f.displayName, type };
-      if (f.typeName === 'Boolean') {
-        item.options = [
-          { value: 'true', label: '是' },
-          { value: 'false', label: '否' },
-        ];
-      }
-      return item;
-    });
-});
-
-const computedColumns = computed<Column[]>(() => {
-  if (props.columns) return props.columns;
-  if (!pageMeta.value) return [];
-  return pageMeta.value.list
-    .filter((f) => !f.name.endsWith('ID') || f.primaryKey)
-    .map((f) => {
-      const col: Column = { key: f.name, label: f.displayName || f.name };
-      if (f.typeName === 'Int32' || f.typeName === 'Int64') {
-        col.align = 'right';
-      }
-      if (f.primaryKey) {
-        col.mono = true;
-        col.width = '80px';
-      }
-      if (
-        f.typeName === 'String' &&
-        (f.itemType === 'image' || (f.itemType && f.itemType.startsWith('file')))
-      ) {
-        col.width = '100px';
-      }
-      return col;
-    });
-});
 
 async function fetchPageMeta() {
   if (!auto.value) return;
@@ -417,7 +365,99 @@ async function handleRefresh() {
 }
 
 function handleExport() {
-  emit('export');
+  if (!auto.value) {
+    emit('export');
+    return;
+  }
+  exportData();
+}
+
+/** 触发浏览器下载（blob） */
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/** 根据响应 content-type 推断导出文件扩展名 */
+function blobExt(contentType: string): string {
+  if (contentType.includes('csv')) return '.csv';
+  if (contentType.includes('json')) return '.json';
+  if (contentType.includes('xml')) return '.xml';
+  return '.bin';
+}
+
+/** 生成时间戳文件名片段（yyyyMMddHHmmss） */
+function dateStamp(): string {
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+}
+
+/** 导出：GET /{type}/ExportFile，返回文件流后触发下载 */
+async function exportData() {
+  try {
+    const blob = (await request.get(apiPrefix.value + '/ExportFile', {
+      responseType: 'blob',
+    })) as unknown as Blob;
+    const name = apiPrefix.value.split('/').filter(Boolean).pop() || 'export';
+    downloadBlob(blob, `${name}_${dateStamp()}${blobExt(blob.type)}`);
+    ElMessage.success('导出成功');
+  } catch (err: any) {
+    const msg = err?.message || '导出失败';
+    ElMessage.error(msg);
+  }
+}
+
+/** 导入：打开文件选择框（非自动模式交父组件处理） */
+function handleImport() {
+  if (!auto.value) {
+    emit('import');
+    return;
+  }
+  importInput.value?.click();
+}
+
+/** 导入：POST /{type}/ImportFile，上传选中的文件 */
+async function onImportFileChange(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = ''; // 重置，允许重复选择同一文件
+  if (!file) return;
+  const formData = new FormData();
+  formData.append('file', file);
+  try {
+    await request.post(apiPrefix.value + '/ImportFile', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    ElMessage.success('导入成功');
+    await fetchList();
+  } catch (err: any) {
+    const msg = err?.message || '导入失败';
+    ElMessage.error(msg);
+  }
+}
+
+/** 图表：GET /{type}/GetChartData，返回 ECharts 配置数组 */
+async function handleChart() {
+  if (!auto.value) {
+    emit('chart');
+    return;
+  }
+  try {
+    const res: any = await request.get(apiPrefix.value + '/GetChartData');
+    const data = res?.data ?? res;
+    chartList.value = Array.isArray(data) ? data : [];
+    chartVisible.value = true;
+  } catch (err: any) {
+    const msg = err?.message || '获取图表失败';
+    ElMessage.error(msg);
+  }
 }
 
 function handlePageChange(page: number) {
@@ -478,7 +518,7 @@ onMounted(async () => {
             <div class="lp-search-area">
               <component
                 :is="SearchBarComp"
-                :fields="searchFields ?? computedSearchFields"
+                :fields="computedSearchFields"
                 @search="handleSearch"
                 @reset="handleReset"
               />
@@ -492,6 +532,8 @@ onMounted(async () => {
                 @new="handleNew"
                 @delete="handleDelete"
                 @export="handleExport"
+                @import="handleImport"
+                @chart="handleChart"
                 @refresh="handleRefresh"
               />
             </div>
@@ -501,7 +543,7 @@ onMounted(async () => {
           <slot name="table">
             <component
               :is="TableContentComp"
-              :columns="columns ?? computedColumns"
+              :fields="computedListFields"
               :data="renderData"
               :loading="renderLoading"
               @edit="handleEditRow"
@@ -536,6 +578,18 @@ onMounted(async () => {
         @cancel="closeDialog"
       />
     </el-dialog>
+
+    <!-- 导入：隐藏的文件选择框 -->
+    <input
+      ref="importInput"
+      type="file"
+      accept=".xls,.xlsx,.csv,.json,.zip"
+      style="display: none"
+      @change="onImportFileChange"
+    />
+
+    <!-- 图表弹窗（懒加载 echarts） -->
+    <ChartDialog v-model:visible="chartVisible" :charts="chartList" />
   </div>
 </template>
 

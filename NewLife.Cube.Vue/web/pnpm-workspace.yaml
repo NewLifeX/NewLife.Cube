@@ -1,5 +1,6 @@
 packages:
   - 'core'
+  - '../../packages/*'
 allowBuilds:
   '@parcel/watcher': true
   cypress: true

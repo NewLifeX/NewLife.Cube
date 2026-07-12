@@ -16,6 +16,10 @@
 // Import commands.js using ES2015 syntax:
 import './commands'
 
+// 引入 ElementPlus 基础样式，使组件测试截图拥有正确的主题色（CSS 变量 --el-*）
+// 组件测试走 Cypress 自带 vite devServer，不经过应用 main.ts，需在此显式引入
+import 'element-plus/dist/index.css'
+
 import { mount } from 'cypress/vue'
 
 // Augment the Cypress namespace to include type definitions for

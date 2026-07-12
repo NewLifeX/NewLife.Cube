@@ -32,11 +32,30 @@
         :lov-meta="listMeta"
         :inline-enums="metaInlineEnums"
         :translate-cache="translateCache"
+        :multiple="multiple"
         @select="onTableSelect"
+        @confirm="onTableMultiConfirm"
       />
     </template>
 
-    <!-- 枚举型 ↓ 普通下拉 -->
+    <!-- 枚举型 · 多选 -->
+    <el-select
+      v-else-if="resolvedType === 'ENUM' && multiple"
+      v-model="selectedValues"
+      multiple
+      collapse-tags
+      collapse-tags-tooltip
+      :placeholder="placeholder"
+      :clearable="clearable"
+      :disabled="disabled"
+      :loading="loading"
+      style="width: 100%"
+      @change="onMultiChange"
+    >
+      <el-option v-for="opt in options" :key="opt.value" :label="opt.label" :value="opt.value" />
+    </el-select>
+
+    <!-- 枚举型 · 单选 -->
     <el-select
       v-else
       v-model="selectedValue"
@@ -55,36 +74,39 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
 import { Search } from '@element-plus/icons-vue';
-import request from '@newlifex/cube-vue/core/utils/request';
-import { fetchLovMeta, resolveLovType } from '@newlifex/cube-vue/core/utils/lov-api';
+import request from '../utils/request';
+import { fetchLovMeta } from '../utils/lov-api';
 import type {
   LovMetaItem,
   LovEnumOption,
   LovListMeta,
   LovMetaResponse,
-} from '@newlifex/cube-vue/core/types/lov';
+} from '../types/lov';
 import LovSelectTable from './LovSelectTable.vue';
 
 const props = withDefaults(
   defineProps<{
     code: string;
     type?: string;
-    modelValue?: string | number;
+    modelValue?: string | number | string[];
     placeholder?: string;
     clearable?: boolean;
     disabled?: boolean;
     size?: 'large' | 'default' | 'small';
+    /** 是否为多选（multipleSelect 场景），emit string[] */
+    multiple?: boolean;
   }>(),
   {
     placeholder: '请选择',
     clearable: true,
     disabled: false,
+    multiple: false,
   },
 );
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string | number | undefined): void;
-  (e: 'change', value: string | number | undefined): void;
+  (e: 'update:modelValue', value: string | number | string[] | undefined): void;
+  (e: 'change', value: string | number | string[] | undefined): void;
 }>();
 
 // ── 元数据请求（全局缓存） ──
@@ -97,13 +119,15 @@ const metaInlineEnums = ref<Record<string, LovEnumOption[]>>({});
 const resolvedType = ref<'ENUM' | 'LIST' | null>(null);
 
 // ── 枚举型 ──
-const selectedValue = ref(props.modelValue);
+const selectedValue = ref<string | number | undefined>(
+  Array.isArray(props.modelValue) ? undefined : (props.modelValue as string | number | undefined),
+);
+const selectedValues = ref<string[]>(Array.isArray(props.modelValue) ? (props.modelValue as string[]) : []);
 const options = ref<LovEnumOption[]>([]);
 
 // ── 列表型 ──
 const dialogVisible = ref(false);
 const displayText = ref('');
-/** 将 LovMetaItem 缩小为 LovListMeta（仅在 LIST 分支使用） */
 const listMeta = computed<LovListMeta | null>(() =>
   lovMeta.value?.type === 'LIST' ? (lovMeta.value as LovListMeta) : null,
 );
@@ -147,7 +171,6 @@ function applyMeta(metaData: LovMetaResponse) {
   if (theMeta.type === 'ENUM') {
     options.value = theMeta.options || [];
   } else if (theMeta.type === 'LIST') {
-    // 预填内联枚举到翻译缓存
     if (metaData.inlineEnums) {
       for (const [enumLovCode, items] of Object.entries(metaData.inlineEnums)) {
         for (const item of items) {
@@ -170,7 +193,19 @@ function onTableSelect(row: Record<string, unknown>) {
   dialogVisible.value = false;
 }
 
+function onTableMultiConfirm(vals: string[]) {
+  selectedValues.value = vals;
+  emit('update:modelValue', vals);
+  emit('change', vals);
+  dialogVisible.value = false;
+}
+
 function onChange(val: string | number | undefined) {
+  emit('update:modelValue', val);
+  emit('change', val);
+}
+
+function onMultiChange(val: string[]) {
   emit('update:modelValue', val);
   emit('change', val);
 }
@@ -187,7 +222,6 @@ watch(
   () => props.code,
   (newCode, oldCode) => {
     if (newCode && newCode !== oldCode) {
-      // code 变化时重新加载元数据（支持异步配置场景：GetPage 返回后更新 code）
       loading.value = false;
       lovMeta.value = null;
       resolvedType.value = null;
@@ -200,7 +234,14 @@ watch(
 
 watch(
   () => props.modelValue,
-  () => updateDisplayText(),
+  (val) => {
+    if (Array.isArray(val)) {
+      selectedValues.value = val as string[];
+    } else {
+      selectedValue.value = val as string | number | undefined;
+    }
+    updateDisplayText();
+  },
 );
 </script>
 

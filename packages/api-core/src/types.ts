@@ -249,6 +249,8 @@ export interface SecurityConfig {
   challengeRequired?: boolean;
   /** 是否开放 MFA 功能 */
   mfaAvailable?: boolean;
+  /** 密码强度正则。* 表示无限制，客户端可用于校验提示 */
+  passwordStrength?: string;
 }
 
 /** 登录配置（新版嵌套结构，v2 起） */

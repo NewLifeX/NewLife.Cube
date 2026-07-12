@@ -16,7 +16,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@newlifex/cube-vue/core/stores/user';
-import { getConfig } from '@newlifex/cube-vue/core/configure';
+import { resolveAssetUrl } from '@newlifex/cube-vue/core/utils/url';
 
 interface Props {
   /** 显示变体 */
@@ -33,8 +33,6 @@ withDefaults(defineProps<Props>(), {
 const router = useRouter();
 const userStore = useUserStore();
 
-const baseUrl = getConfig().request.baseUrl ?? '';
-
 const menuRef = ref<HTMLElement | null>(null);
 const menuOpen = ref(false);
 const avatarError = ref(false);
@@ -45,7 +43,10 @@ const userName = computed(
   () => currentUser.value?.displayName || currentUser.value?.name || '用户',
 );
 const userInitial = computed(() => userName.value.charAt(0).toUpperCase());
-const avatarUrl = computed(() => (userId.value ? `${baseUrl}/Cube/Avatar/${userId.value}` : ''));
+// 头像地址后端以 / 开头返回时，统一拼接 baseUrl
+const avatarUrl = computed(() =>
+  userId.value ? resolveAssetUrl(`/Cube/Avatar/${userId.value}`) : '',
+);
 
 function toggleMenu() {
   menuOpen.value = !menuOpen.value;

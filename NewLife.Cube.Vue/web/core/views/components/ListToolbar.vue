@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Grid, List } from '@element-plus/icons-vue';
+import { Grid, List, Upload, DataLine } from '@element-plus/icons-vue';
 
 const emit = defineEmits<{
   new: [];
   delete: [];
   export: [];
+  import: [];
+  chart: [];
   refresh: [];
   'view-change': [view: 'table' | 'card'];
 }>();
@@ -48,6 +50,18 @@ function toggleView() {
           </svg>
         </template>
         导出
+      </el-button>
+      <el-button class="lt-btn lt-btn--secondary" @click="emit('import')">
+        <template #icon>
+          <Upload />
+        </template>
+        导入
+      </el-button>
+      <el-button class="lt-btn lt-btn--secondary" @click="emit('chart')">
+        <template #icon>
+          <DataLine />
+        </template>
+        图表
       </el-button>
     </div>
     <div class="lt-right">

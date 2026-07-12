@@ -30,7 +30,14 @@
     "dev:angular": "pnpm --filter ./NewLife.Cube.Angular/web dev",
     "dev:vuetify": "pnpm --filter ./NewLife.Cube.Vuetify/web dev",
     "dev:svelte": "pnpm --filter ./NewLife.Cube.Svelte/web dev",
-    "dev:tdesign": "pnpm --filter ./NewLife.Cube.TDesign/web dev"
+    "dev:tdesign": "pnpm --filter ./NewLife.Cube.TDesign/web dev",
+    "test:unit": "pnpm --filter ./NewLife.Cube.Vue/web run test:unit",
+    "test:e2e": "pnpm --filter ./NewLife.Cube.Vue/web run test:e2e",
+    "test:e2e:dev": "pnpm --filter ./NewLife.Cube.Vue/web run test:e2e:dev",
+    "test:component": "pnpm --filter ./NewLife.Cube.Vue/web run test:component",
+    "test:component:dev": "pnpm --filter ./NewLife.Cube.Vue/web run test:component:dev",
+    "test:playwright": "node NewLife.Cube.Vue/web/tests/e2e/all-field-crud-screenshots.cjs",
+    "test:playwright:login": "node NewLife.Cube.Vue/web/tests/e2e/login-screenshots.cjs"
   },
   "license": "MIT"
 }

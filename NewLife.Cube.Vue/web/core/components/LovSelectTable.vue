@@ -54,7 +54,8 @@
       :data="tableData"
       v-loading="tableLoading"
       stripe
-      highlight-current-row
+      :highlight-current-row="!multiple"
+      :row-class-name="rowClassName"
       style="width: 100%"
       @row-click="selectRow"
     >
@@ -87,6 +88,7 @@
 
     <template #footer>
       <el-button @click="$emit('update:dialogVisible', false)">取消</el-button>
+      <el-button v-if="multiple" type="primary" @click="confirmMulti">确定</el-button>
     </template>
   </el-dialog>
 </template>
@@ -109,12 +111,18 @@ const props = defineProps<{
   lovMeta: LovListMeta | null;
   inlineEnums: Record<string, LovEnumOption[]>;
   translateCache: Map<string, string>;
+  /** 是否多选（multipleSelect 场景），确定后 emit string[] */
+  multiple?: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: 'update:dialogVisible', value: boolean): void;
   (e: 'select', row: Record<string, unknown>): void;
+  (e: 'confirm', values: string[]): void;
 }>();
+
+/** 多选模式下的选中值集合 */
+const selectedValues = ref<string[]>([]);
 
 // ── 从 meta 中读取配置 ──
 const listConfig = props.lovMeta?.listConfig || null;
@@ -140,6 +148,7 @@ watch(() => props.lovMeta, (meta) => {
 watch(() => props.dialogVisible, (visible) => {
   if (visible) {
     searchParams.value = {};
+    selectedValues.value = [];
     currentPage.value = 1;
     fetchListData();
   }
@@ -226,7 +235,28 @@ function getTranslatedText(row: Record<string, unknown>, col: LovTableColumn): s
 }
 
 function selectRow(row: Record<string, unknown>) {
+  if (props.multiple) {
+    const valueField = props.lovMeta?.valueField || 'id';
+    const val = String(row[valueField]);
+    const idx = selectedValues.value.indexOf(val);
+    if (idx >= 0) selectedValues.value.splice(idx, 1);
+    else selectedValues.value.push(val);
+    return;
+  }
   emit('select', row);
+}
+
+/** 确认多选结果 */
+function confirmMulti() {
+  emit('confirm', [...selectedValues.value]);
+}
+
+/** 多选行高亮 */
+function rowClassName(row: { row: Record<string, unknown> }): string {
+  if (!props.multiple) return '';
+  const valueField = props.lovMeta?.valueField || 'id';
+  const val = String(row.row[valueField]);
+  return selectedValues.value.includes(val) ? 'lst-row--selected' : '';
 }
 </script>
 
@@ -242,5 +272,9 @@ function selectRow(row: Record<string, unknown>) {
   display: flex;
   justify-content: flex-end;
   margin-top: 16px;
+}
+
+:deep(.lst-row--selected) {
+  background: var(--el-color-primary-light-9) !important;
 }
 </style>
