@@ -453,6 +453,13 @@ public class CubeSetting : Config<CubeSetting>
     public Int32 MaxBackup { get; set; } = 10_000_000;
     #endregion
 
+    #region API前缀
+    /// <summary>API前缀。多个前缀用逗号或分号分隔，如 /api,/api/v1。请求路径命中前缀时自动去掉前缀并转发到真实路由</summary>
+    [Description("API前缀。多个前缀用逗号或分号分隔，如 /api,/api/v1。请求路径命中前缀时自动去掉前缀并转发到真实路由")]
+    [Category("API前缀")]
+    public String ApiPrefixes { get; set; }
+    #endregion
+
     #region 方法
     /// <summary>实例化</summary>
     public CubeSetting() { }

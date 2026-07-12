@@ -33,7 +33,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     //[DisplayName("修改")]
     [EntityAuthorize(PermissionFlags.Update)]
     [HttpPut("/[area]/[controller]")]
-    public virtual TObject Update(TObject obj)
+    public virtual TObject Update([FromBody] TObject obj)
     {
         WriteLog(obj, UserHost);
 
