@@ -47,6 +47,9 @@ public class SecurityConfigModel
 
     /// <summary>是否开放 MFA 功能。true 时允许用户在个人设置中开启 TOTP</summary>
     public Boolean MfaAvailable { get; set; }
+
+    /// <summary>密码强度正则。* 表示无限制，前端可用于客户端校验提示</summary>
+    public String PasswordStrength { get; set; }
 }
 
 /// <summary>OAuth 提供商模型</summary>
@@ -135,5 +138,6 @@ public class LoginConfigModel
     {
         ChallengeRequired = !_set.AllowPlainPassword,
         MfaAvailable = _set.EnableMfa,
+        PasswordStrength = _set.PaswordStrength,
     };
 }

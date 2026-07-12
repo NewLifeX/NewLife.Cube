@@ -1,4 +1,5 @@
 import qs from 'query-string';
+import { getConfig } from '../configure';
 
 /**
  * 翻转字符串首字母大小写。
@@ -111,6 +112,37 @@ export function isUrl(path: string) {
   const reg =
     /(((^https?:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)(:[\d]+)?((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)$/g;
   return reg.test(path);
+}
+
+/**
+ * 将后端返回的资源地址（头像 / 图片 / 文件）解析为可访问的完整 URL。
+ *
+ * 后端上传 / 附件接口常返回以「/」开头的相对路径（如 `/cube/image?id=xxx.png`），
+ * 而非完整 http 地址。前端展示时必须拼接配置的 baseUrl（请求前缀）才能正确加载：
+ *
+ *   - 空值                                    → 原样返回 ''
+ *   - 已是完整/绝对地址（http(s)://、//、data:、blob:）→ 原样返回
+ *   - 以「/」开头                              → `${baseUrl}${path}`
+ *   - 其它相对地址                            → `${baseUrl}/${path}`
+ *
+ * 当未配置 baseUrl（值为空）时，返回原始路径（相对站点根），适用于前后端同域部署。
+ *
+ * @param path 后端返回的资源路径
+ */
+export function resolveAssetUrl(path: string | null | undefined): string {
+  if (!path) return '';
+  const s = String(path).trim();
+  if (!s) return '';
+  // 已是绝对地址（含协议、协议相对、data、blob）则不处理
+  if (/^(https?:)?\/\//i.test(s) || /^(data|blob):/i.test(s)) {
+    return s;
+  }
+  const base = (getConfig().request.baseUrl ?? '').replace(/\/+$/, '');
+  if (!base) {
+    // 未配置 baseUrl 时返回原始路径（相对站点根，适用于前后端同域）
+    return s;
+  }
+  return s.startsWith('/') ? `${base}${s}` : `${base}/${s}`;
 }
 
 /**

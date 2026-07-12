@@ -1,37 +1,17 @@
-import { defineComponent, h, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import { getConfig } from '../configure';
+import { defineComponent, h } from 'vue';
+import LoginPage from './LoginPage.vue';
 
 /**
- * 处理OAuth认证重定向的登录组件。
+ * 登录页包装器（薄包装器模式）
  *
- * 该组件会自动将用户重定向到配置的OAuth登录URL。
- * 它从路由查询参数中提取重定向URL（默认为'/'），
- * 将其与当前源结合，并将其作为参数传递给OAuth端点。
+ * 原先此组件包含 OAuth 跳转逻辑，现已迁移至 LoginPage.vue。
+ * 此组件仅作为向后兼容的包装器，保持 core/routes/index.ts 的导入路径不变。
  *
- * 由于立即重定向到配置中定义的外部认证服务，该组件不渲染任何内容。
- *
- * @returns {JSX.Element} - 显示加载中的组件
+ * @returns 渲染 LoginPage.vue 的组件
  */
 export default defineComponent({
   name: 'PageLogin',
   setup() {
-    const route = useRoute();
-
-    onMounted(() => {
-      const config = getConfig();
-      console.log('config', config);
-      const oauthUrl = config.auth.oauthUrl;
-      const baseUrl = config.request.baseUrl;
-      if (!baseUrl) {
-        throw new Error('config.request.baseUrl is not defined');
-      }
-
-      console.log('login', route);
-      const redirect = `${location.origin}${route.query.redirect || '/'}`;
-      location.href = `${baseUrl}${oauthUrl}${encodeURIComponent(redirect)}`;
-    });
-
-    return () => h('div', 'Loading...');
+    return () => h(LoginPage);
   },
 });
