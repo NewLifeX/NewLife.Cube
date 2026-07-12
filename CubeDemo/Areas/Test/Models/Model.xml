@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<EntityModel xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="https://newlifex.com https://newlifex.com/Model202509.xsd" Version="11.7.2023.0327" Document="https://newlifex.com/xcode/model" ModelVersion="2.0.2026.130" xmlns="https://newlifex.com/Model202509.xsd">
+  <Option>
+    <!--类名模板。其中{name}替换为Table.Name，如{name}Model/I{name}Dto等-->
+    <ClassNameTemplate />
+    <!--显示名模板。其中{displayName}替换为Table.DisplayName-->
+    <DisplayNameTemplate />
+    <!--基类。可能包含基类和接口，其中{name}替换为Table.Name-->
+    <BaseClass>Entity</BaseClass>
+    <!--命名空间-->
+    <Namespace>CubeDemo.Areas.Test</Namespace>
+    <!--引用命名空间-->
+    <ExtendNameSpace />
+    <!--输出目录-->
+    <Output>.\Entity\</Output>
+    <!--是否使用中文文件名。默认false-->
+    <ChineseFileName>False</ChineseFileName>
+    <!--用于生成Copy函数的参数类型。例如{name}或I{name}-->
+    <ModelNameForCopy />
+    <!--带有索引器。实现IModel接口-->
+    <HasIModel>True</HasIModel>
+    <!--可为null上下文。生成String?等-->
+    <Nullable>False</Nullable>
+    <!--数据库连接名-->
+    <ConnName>Cube</ConnName>
+    <!--模型类模版。设置后生成模型类，用于接口数据传输，例如{name}Model-->
+    <ModelClass>{name}Model</ModelClass>
+    <!--模型类输出目录。默认当前目录的Models子目录-->
+    <ModelsOutput>.\Models\</ModelsOutput>
+    <!--模型接口模版。设置后生成模型接口，用于约束模型类和实体类，例如I{name}-->
+    <ModelInterface>I{name}</ModelInterface>
+    <!--模型接口输出目录。默认当前目录的Interfaces子目录-->
+    <InterfacesOutput>.\Interfaces\</InterfacesOutput>
+    <!--用户实体转为模型类的模型类。例如{name}或{name}DTO-->
+    <ModelNameForToModel />
+    <!--命名格式。Default/Upper/Lower/Underline-->
+    <NameFormat>Default</NameFormat>
+    <!--魔方区域显示名-->
+    <DisplayName />
+    <!--魔方控制器输出目录-->
+    <CubeOutput />
+  </Option>
+  <Tables>
+    <Table Name="测试字段" Description="字段类型全覆盖测试实体" ConnName="Cube" DbType="SQLite">
+      <Columns>
+        <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+        <Column Name="ShortText" DataType="String" Nullable="False" Description="短文本。必填的短文本示例" Category="基本信息" />
+        <Column Name="LongText" DataType="String" Length="500" Description="长文本。大文本（Length&gt;=300）渲染为多行文本域" Category="基本信息" />
+        <Column Name="Int32Val" DataType="Int32" Nullable="True" Description="整数。Int32 数值" Category="基本信息" />
+        <Column Name="Int64Val" DataType="Int64" Nullable="True" Description="长整数。Int64 数值" Category="基本信息" />
+        <Column Name="DecimalVal" DataType="Decimal" Precision="18" Scale="2" Nullable="True" Description="金额。Decimal 数值，带精度" Category="基本信息" />
+        <Column Name="DoubleVal" DataType="Double" Nullable="True" Description="双精度。Double 数值" Category="基本信息" />
+        <Column Name="FloatVal" DataType="Single" Nullable="True" Description="单精度。Single 数值" Category="基本信息" />
+        <Column Name="Enable" DataType="Boolean" Description="启用。布尔开关" Category="基本信息" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间。日期时间" Category="基本信息" />
+        <Column Name="Kind" DataType="Int32" Nullable="True" Description="种类。枚举类型，后端下发 lovCode 走 LOV 单选" Type="CubeDemo.Areas.Test.测试枚举" Category="值集" />
+        <Column Name="GuidVal" DataType="Guid" Nullable="True" Description="唯一标识。Guid，非主键，渲染为只读文本" Category="高级控件" />
+        <Column Name="FileUrl" DataType="String" ItemType="file" Length="200" Description="附件。文件上传，存储上传后返回的 URL" Category="高级控件" />
+        <Column Name="Avatar" DataType="String" ItemType="image" Length="200" Description="头像。图片上传，带预览，存储 URL" Category="高级控件" />
+        <Column Name="JsonVal" DataType="String" ItemType="json" Length="2000" Description="Json。Json 编辑器，存储 Json 字符串" Category="高级控件" />
+        <Column Name="HtmlVal" DataType="String" ItemType="html" Length="2000" Description="富文本。html 富文本编辑器，存储 html 字符串" Category="高级控件" />
+        <Column Name="MarkdownVal" DataType="String" ItemType="markdown" Length="2000" Description="Markdown。Markdown 富文本编辑器，存储 md 字符串" Category="高级控件" />
+        <Column Name="ColorVal" DataType="String" ItemType="color" Description="颜色。颜色选择器，存储色值字符串" Category="高级控件" />
+        <Column Name="IconVal" DataType="String" ItemType="icon" Description="图标。图标选择器，存储图标名字符串" Category="高级控件" />
+        <Column Name="MailVal" DataType="String" ItemType="mail" Description="邮箱。邮箱输入，带格式校验" Category="高级控件" />
+        <Column Name="MobileVal" DataType="String" ItemType="mobile" Description="手机。手机输入，带格式校验" Category="高级控件" />
+        <Column Name="UrlVal" DataType="String" ItemType="url" Length="200" Description="网址。网址输入，带格式校验" Category="高级控件" />
+        <Column Name="SingleVal" DataType="Int32" ItemType="singleSelect" Nullable="True" Description="单选。singleSelect，后端下发 lovCode 走 LOV 单选" Category="值集" />
+        <Column Name="MultiVal" DataType="String" ItemType="multipleSelect" Length="200" Description="多选。multipleSelect，后端下发 lovCode 走 LOV 多选，存储逗号分隔的值" Category="值集" />
+      </Columns>
+    </Table>
+  </Tables>
+</EntityModel>
