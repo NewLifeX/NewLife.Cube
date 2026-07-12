@@ -174,7 +174,7 @@ public static IList<UserConnect> FindAllByDeviceId(String deviceId)
         if (client.Items != null)
         {
             uc.Remark = client.Items
-                .Where(e => e.Value == null || e.Value.Length < 200)
+                .Where(e => e.Value != null && (e.Value is not String || ((String)e.Value).Length < 200))
                 .ToDictionary(e => e.Key, e => e.Value)
                 .ToJson();
         }

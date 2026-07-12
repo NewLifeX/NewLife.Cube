@@ -124,9 +124,10 @@ public class DingTalkClient : OAuthClient
             //OpenID = dic["openid"] as String;
             //UnionID = dic["unionid"] as String;
 
-            Items = dic.ToDictionary(e => e.Key, e => e.Value as String);
+            Items = dic;
 
-            OnGetInfo(Items);
+            var strDic = dic.Where(e => e.Value is String).ToDictionary(e => e.Key, e => (String)e.Value);
+            OnGetInfo(strDic);
         }
 
         return null;
@@ -219,7 +220,7 @@ public class DingTalkClient : OAuthClient
         // 合并字典
         var dic = Items;
         if (dic == null)
-            Items = js.ToDictionary(e => e.Key, e => e.Value as String);
+            Items = js.ToDictionary(e => e.Key, e => (Object)e.Value);
         else
         {
             foreach (var item in js)

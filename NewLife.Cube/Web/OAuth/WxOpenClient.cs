@@ -44,18 +44,20 @@ public class WxOpenClient : OAuthClient
         if (dic != null)
         {
             // 解析返回结果
-            if (dic.TryGetValue("session_key", out var sk)) SessionKey = sk.Trim();
-            if (dic.TryGetValue("openid", out var oid)) OpenID = oid.Trim();
-            if (dic.TryGetValue("unionid", out var uid)) UnionID = uid.Trim();
+            if (dic.TryGetValue("session_key", out var v) && v is String sk) SessionKey = sk.Trim();
+            if (dic.TryGetValue("openid", out v) && v is String oid) OpenID = oid.Trim();
+            if (dic.TryGetValue("unionid", out v) && v is String uid) UnionID = uid.Trim();
 
             // 检查错误
-            if (dic.TryGetValue("errcode", out var err) && err != "0")
+            if (dic.TryGetValue("errcode", out v) && v != null && v.ToString() != "0")
             {
-                var msg = dic.TryGetValue("errmsg", out var m) ? m : "未知错误";
+                var err = v.ToString();
+                var msg = dic.TryGetValue("errmsg", out v) && v != null ? v.ToString() : "未知错误";
                 throw new InvalidOperationException($"微信小程序登录失败[{err}]: {msg}");
             }
 
-            OnGetInfo(dic);
+            var strDic = dic.Where(e => e.Value is String).ToDictionary(e => e.Key, e => (String)e.Value);
+            OnGetInfo(strDic);
         }
         Items = dic;
 

@@ -137,7 +137,7 @@ namespace NewLife.Web.OAuth
             if (dic.TryGetValue("preferred_username", out str)) UserName = str;
             if (dic.TryGetValue("email", out str)) Mail = str;
 
-            if (UserName.IsNullOrEmpty() && Items.TryGetValue("preferred_username", out str)) UserName = str;
+            if (UserName.IsNullOrEmpty() && Items.TryGetValue("preferred_username", out var v) && v is String str2) UserName = str2;
 
             // 去掉简体中文名字中的空格
             if (!UserName.IsNullOrEmpty() && UserName.Contains(" ") && Encoding.UTF8.GetByteCount(UserName) != UserName.Length) UserName = UserName.Replace(" ", null);

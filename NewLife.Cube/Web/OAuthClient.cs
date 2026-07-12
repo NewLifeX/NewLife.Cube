@@ -89,7 +89,7 @@ public class OAuthClient
     public DateTime Expire { get; set; }
 
     /// <summary>访问项</summary>
-    public IDictionary<String, String> Items { get; set; }
+    public IDictionary<String, Object> Items { get; set; }
     #endregion
 
     #region 构造
@@ -252,14 +252,14 @@ public class OAuthClient
         var dic = GetNameValues(html);
         if (dic != null)
         {
-            if (dic.ContainsKey("access_token")) AccessToken = dic["access_token"].Trim();
-            if (dic.ContainsKey("expires_in")) Expire = DateTime.Now.AddSeconds(dic["expires_in"].Trim().ToInt());
-            if (dic.ContainsKey("refresh_token")) RefreshToken = dic["refresh_token"].Trim();
+            if (dic.TryGetValue("access_token", out var v) && v != null) AccessToken = v.ToString().Trim();
+            if (dic.TryGetValue("expires_in", out v) && v != null) Expire = DateTime.Now.AddSeconds(v.ToInt());
+            if (dic.TryGetValue("refresh_token", out v) && v != null) RefreshToken = v.ToString().Trim();
 
             // 如果响应区域包含用户信息，则增加用户地址
-            if (UserUrl.IsNullOrEmpty() && dic.ContainsKey("scope"))
+            if (UserUrl.IsNullOrEmpty() && dic.TryGetValue("scope", out v) && v != null)
             {
-                var ss = dic["scope"].Trim().Split(",");
+                var ss = v.ToString().Trim().Split(",");
                 if (ss.Contains("UserInfo"))
                 {
                     UserUrl = "userinfo?access_token={token}";
@@ -267,7 +267,9 @@ public class OAuthClient
                 }
             }
 
-            OnGetInfo(dic);
+            // 提取字符串值传给 OnGetInfo（嵌套对象不参与字段映射）
+            var strDic = dic.Where(e => e.Value is String).ToDictionary(e => e.Key, e => (String)e.Value);
+            OnGetInfo(strDic);
         }
         Items = dic;
 
@@ -294,10 +296,11 @@ public class OAuthClient
         var dic = GetNameValues(html);
         if (dic != null)
         {
-            if (dic.ContainsKey("expires_in")) Expire = DateTime.Now.AddSeconds(dic["expires_in"].Trim().ToInt());
-            if (dic.ContainsKey("openid")) OpenID = dic["openid"].Trim();
+            if (dic.TryGetValue("expires_in", out var v) && v != null) Expire = DateTime.Now.AddSeconds(v.ToInt());
+            if (dic.TryGetValue("openid", out v) && v != null) OpenID = v.ToString().Trim();
 
-            OnGetInfo(dic);
+            var strDic = dic.Where(e => e.Value is String).ToDictionary(e => e.Key, e => (String)e.Value);
+            OnGetInfo(strDic);
         }
         Items = dic;
 
@@ -385,8 +388,8 @@ public class OAuthClient
         var dic = GetNameValues(html);
         if (dic != null)
         {
-
-            OnGetInfo(dic);
+            var strDic = dic.Where(e => e.Value is String).ToDictionary(e => e.Key, e => (String)e.Value);
+            OnGetInfo(strDic);
 
             // 合并字典
             if (Items == null)
@@ -486,26 +489,26 @@ public class OAuthClient
     /// <summary>获取名值字典</summary>
     /// <param name="html"></param>
     /// <returns></returns>
-    protected virtual IDictionary<String, String> GetNameValues(String html)
+    protected virtual IDictionary<String, Object> GetNameValues(String html)
     {
         // 部分提供者的返回Json不是{开头，比如QQ
         var p1 = html.IndexOf('{');
         var p2 = html.LastIndexOf('}');
         if (p1 > 0 && p2 > p1) html = html.Substring(p1, p2 - p1 + 1);
 
-        IDictionary<String, String> dic = null;
+        IDictionary<String, Object> dic = null;
         // Json格式转为名值字典
         if (p1 >= 0 && p2 > p1)
         {
             var js = JsonParser.Decode(html);
-            dic = new Dictionary<String, String>();
+            dic = new Dictionary<String, Object>();
             foreach (var item in js)
             {
                 var v = item.Value;
                 if (v is IList<Object> list)
                     dic[item.Key] = "[" + list.Join() + "]";
                 else if (v is IDictionary<String, Object> dic2)
-                    dic[item.Key] = dic2.ToJson();
+                    dic[item.Key] = dic2;
                 else if (v != null)
                     dic[item.Key] = v + "";
             }
@@ -513,10 +516,10 @@ public class OAuthClient
         // Url格式转为名值字典
         else if (html.Contains("=") && html.Contains("&"))
         {
-            dic = html.SplitAsDictionary("=", "&");
+            dic = html.SplitAsDictionary("=", "&").ToDictionary(e => e.Key, e => (Object)e.Value);
         }
 
-        return dic.ToNullable(StringComparer.OrdinalIgnoreCase);
+        return dic != null ? new Dictionary<String, Object>(dic, StringComparer.OrdinalIgnoreCase) : null;
     }
 
     /// <summary>最后一次请求的响应内容</summary>

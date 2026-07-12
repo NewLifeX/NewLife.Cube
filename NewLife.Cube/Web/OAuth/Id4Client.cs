@@ -44,7 +44,7 @@ public class Id4Client : OAuthClient
         if (action == nameof(GetAccessToken))
         {
             var p = url.IndexOf('?');
-            var dic = url[(p + 1)..].SplitAsDictionary("=", "&").ToDictionary(e => e.Key, e => HttpUtility.UrlDecode(e.Value));
+            var dic = url[(p + 1)..].SplitAsDictionary("=", "&").ToDictionary(e => e.Key, e => (Object)HttpUtility.UrlDecode(e.Value));
             url = url[..p];
             //WriteLog(dic.ToJson(true));
             var state = HttpContext.Current.Request.Query["state"].FirstOrDefault();
@@ -89,8 +89,8 @@ public class Id4Client : OAuthClient
         {
             var dic = GetNameValues(html);
 
-            if (dic.ContainsKey("sub")) OpenID = dic["sub"].Trim();
-            if (dic.ContainsKey("name")) UserName = dic["name"].Trim();
+            if (dic.TryGetValue("sub", out var v) && v != null) OpenID = v.ToString().Trim();
+            if (dic.TryGetValue("name", out v) && v != null) UserName = v.ToString().Trim();
 
         }
 
@@ -106,11 +106,10 @@ public class Id4Client : OAuthClient
     {
         var baseUrl = base.GetUrl(name, url);
         var p = baseUrl.IndexOf('?');
-        var dic = baseUrl[(p + 1)..].SplitAsDictionary("=", "&").ToDictionary(e => e.Key, e => HttpUtility.UrlDecode(e.Value));
-        if (dic.ContainsKey("state"))
+        var dic = baseUrl[(p + 1)..].SplitAsDictionary("=", "&").ToDictionary(e => e.Key, e => (Object)HttpUtility.UrlDecode(e.Value));
+        if (dic.TryGetValue("state", out var state) && state is String stateStr)
         {
-            var state = dic["state"];
-            _ = _cache.GetOrAdd(state, k =>
+            _ = _cache.GetOrAdd(stateStr, k =>
             {
                 var codeVerifier = GenerateRandomDataBase64url(32);
                 var codeChallenge = Base64UrlEncodeNoPadding(Sha256Ascii(codeVerifier));

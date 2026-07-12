@@ -735,9 +735,9 @@ public class UserBindingService : IUserBindingService
         return key;
     }
 
-    private Int32 GetRole(IDictionary<String, String> dic, Boolean create)
+    private Int32 GetRole(IDictionary<String, Object> dic, Boolean create)
     {
-        if (dic.TryGetValue("RoleName", out var name) && !name.IsNullOrEmpty())
+        if (dic.TryGetValue("RoleName", out var v) && v is String name && !name.IsNullOrEmpty())
         {
             var r = Role.FindByName(name);
             if (r != null) return r.ID;
@@ -753,9 +753,9 @@ public class UserBindingService : IUserBindingService
         return 0;
     }
 
-    private Int32[] GetRoles(IDictionary<String, String> dic, Boolean create)
+    private Int32[] GetRoles(IDictionary<String, Object> dic, Boolean create)
     {
-        if (dic.TryGetValue("RoleNames", out var roleNames)) return GetRoles(roleNames, create);
+        if (dic.TryGetValue("RoleNames", out var v) && v is String roleNames) return GetRoles(roleNames, create);
 
         return new Int32[0];
     }

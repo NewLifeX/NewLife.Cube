@@ -548,7 +548,7 @@ public class TokenService : ITokenService
         // 转为字典，后续追加动态字段
         var result = rs.ToDictionary();
 
-        // 构建所有提供商连接数据，追加 connect_{Provider} 集合
+        // 构建所有提供商连接数据，追加 connect_{Provider} 嵌套集合
         try
         {
             var set = CubeSetting.Current;
@@ -582,7 +582,7 @@ public class TokenService : ITokenService
     private static readonly String[] _knownScopes = ["password", "client_credentials", "refresh_token", "basic", "UserInfo"];
 
     /// <summary>敏感字段。从 UserConnect 数据中移除，不传递给下游</summary>
-    private static readonly String[] _sensitiveFields = ["access_token", "refresh_token"];
+    private static readonly String[] _sensitiveFields = ["access_token", "refresh_token", "expires_in", "scope"];
 
     /// <summary>从 App.Scopes 中提取 UserConnect 字段过滤 pattern 列表</summary>
     /// <param name="scopes">App.Scopes 逗号分隔字符串</param>
