@@ -157,7 +157,7 @@ const configDialogVisible = ref(false);
 const configLovDefId = ref(0);
 
 const form = ref({
-  id: undefined as number | null | undefined,
+  id: 0 as number,
   lovCode: '',
   name: '',
   type: 'ENUM' as string,
@@ -208,7 +208,7 @@ async function loadData() {
 function handleAdd() {
   editingId.value = null;
   form.value = {
-    id: null,
+    id: 0,
     lovCode: '',
     name: '',
     type: 'ENUM',
