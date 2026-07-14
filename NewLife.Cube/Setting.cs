@@ -457,7 +457,7 @@ public class CubeSetting : Config<CubeSetting>
     /// <summary>API前缀。多个前缀用逗号或分号分隔，如 /api,/api/v1。请求路径命中前缀时自动去掉前缀并转发到真实路由</summary>
     [Description("API前缀。多个前缀用逗号或分号分隔，如 /api,/api/v1。请求路径命中前缀时自动去掉前缀并转发到真实路由")]
     [Category("API前缀")]
-    public String ApiPrefixes { get; set; }
+    public String ApiPrefixes { get; set; } = "/api";
     #endregion
 
     #region 方法
