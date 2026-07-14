@@ -233,8 +233,8 @@ async function submitDialog() {
     closeDialog();
     await fetchList();
   } catch (err: any) {
-    const msg = err?.response?.data?.message || err?.message || '操作失败';
-    ElMessage.error(msg);
+    // 全局响应拦截器已统一弹出错误提示，业务层无需重复 toast
+    console.error('[DefaultList] submitDialog 保存失败:', err);
   } finally {
     isSubmitting.value = false;
   }
