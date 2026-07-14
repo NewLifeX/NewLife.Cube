@@ -20,6 +20,9 @@ public class FieldError
 
     /// <summary>错误消息。例如"XX字段不可以为空"</summary>
     public String Message { get; set; }
+
+    /// <summary>错误详情。例如异常堆栈信息</summary>
+    public String? Error { get; set; } = null;
 }
 
 /// <summary>响应模型</summary>
