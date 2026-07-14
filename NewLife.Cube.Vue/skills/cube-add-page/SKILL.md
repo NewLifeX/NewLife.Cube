@@ -21,7 +21,7 @@ Cube 前端新增页面技能。根据后端控制器定义，在前端对应应
 
 ## 前置条件
 
-1. **应用是否存在**：一个后端 Area 对应一个前端应用（在 `{前端项目}/apps/{app-name}/`）
+1. **应用是否存在**：先查看前端 `apps/` 目录，按「页面目录结构」判断该区域是独立成应用（情形 B）还是归在某个综合 app 下（情形 A），确认目标 app 目录已存在
 2. **若应用未创建**：先调用 `cube-add-app` 技能创建应用
 3. **若控制器未创建**：先基于 Model 实体创建 Controller
 
@@ -38,18 +38,45 @@ Cube 前端新增页面技能。根据后端控制器定义，在前端对应应
 
 ## 页面目录结构
 
-每个页面在前端应用目录下创建（路径规则：`{area}/{controller}/index.vue`）：
+页面位置由**后端控制器所属的区域（Area）** 和**前端 `apps/` 目录的部署形态**共同决定。先按以下步骤判断：
+
+1. 确定页面所属的后端 `Area`（区域）和 `Controller`（控制器）。
+2. 查看前端 `apps/` 目录，按下列**两种情形**取对应的路径：
+
+### 情形 A：多个区域共用一个应用（或 apps 下只有一个 app）
+
+区域与 app 是一对多关系——`apps/` 下只有一个应用，或多个区域归在某个综合 app 下。此时 `views` 下**先按区域、再按控制器**分两级文件夹：
 
 ```
 {前端项目}/apps/{app-name}/
 └── src/
     └── views/
-        └── {area}/
-            └── {controller}/
-                └── index.vue      ← 唯一需要创建的文件
+        └── {area}/                 ← 区域文件夹（与后端 Area 名一致）
+            └── {controller}/       ← 控制器文件夹
+                └── index.vue       ← 唯一需要创建的文件
 ```
 
-> **框架自动完成：** 路由注册、菜单加载、侧边栏渲染均由框架自动处理，不要手工注册路由。
+**路径模板**：`apps/{app-name}/src/views/{area}/{controller}/index.vue`
+**示例**：Admin 区域、User 控制器，应用为 `cube-admin`
+→ `apps/cube-admin/src/views/admin/user/index.vue`
+
+### 情形 B：一个区域一个应用（区域即应用）
+
+区域与 app 是一一对应关系——`apps/` 下每个 Area 是一个独立 app，app 名即区域名（如 `cube-admin` 对应 Admin 区域）。此时区域已经体现在 app 名上，`views` 下**只有控制器一级**文件夹：
+
+```
+{前端项目}/apps/{area-app}/
+└── src/
+    └── views/
+        └── {controller}/           ← 控制器文件夹（无区域层）
+            └── index.vue           ← 唯一需要创建的文件
+```
+
+**路径模板**：`apps/{area-app}/src/views/{controller}/index.vue`
+**示例**：Admin 区域、User 控制器，对应应用为 `admin`（区域即应用）
+→ `apps/admin/src/views/user/index.vue`
+
+> **判断口诀**：`apps/` 里区域是"文件夹"还是"应用名"？是文件夹 → 情形 A（两级）；是应用名 → 情形 B（一级）。无论哪种情形，路由注册、菜单加载、侧边栏渲染均由框架自动处理，不要手工注册路由。
 
 ## 工作流程
 
@@ -131,10 +158,14 @@ static ProductController()
 
 #### 自定义页面（需创建 index.vue）
 
-若需要**自定义页面**（非标准 CRUD 布局、自定义交互、看板、图表等），只需在以下路径创建 `index.vue`：
+若需要**自定义页面**（非标准 CRUD 布局、自定义交互、看板、图表等），只需按「页面目录结构」中的判断规则，在对应路径创建 `index.vue`：
 
 ```
+# 情形 A：多区域共用一个应用（两级）
 apps/{app-name}/src/views/{area}/{controller}/index.vue
+
+# 情形 B：区域即应用（一级，views 下无区域层）
+apps/{area-app}/src/views/{controller}/index.vue
 ```
 
 创建此文件后，**框架会自动加载并渲染此组件**，无需做以下任何操作：
@@ -156,6 +187,8 @@ apps/{app-name}/src/views/{area}/{controller}/index.vue
 #### 自定义页面样式规范
 
 创建自定义页面时，所有样式**必须**使用 Element Plus CSS token（`--el-*`）或 Cube Layout token（`--cube-layout-*`），禁止硬编码色值、自定义 CSS 变量或第三方 token 体系。
+
+**组件优先（页面只用 el-*）：** 页面结构应优先使用 Element Plus 组件（`el-table` / `el-card` / `el-form` / `el-space` / `el-segmented` 等），它们自带主题样式并自动跟随明暗主题。需要微调布局时，自定义 `<style scoped>` **允许使用**，但其中颜色 / 边框 / 背景 / 圆角 / 阴影等**必须**通过 `var(--el-*)` 或 `var(--cube-layout-*)` 引用 token，**禁止**出现硬编码色值（`#fff`、`rgba(...)`）或自定义 `--xxx` 变量。简言之：**自定义样式可以，但必须引用 el-* token，禁止硬编码色值与自定义 token。**
 
 **✅ 正确写法（使用 --el-*）：**
 ```scss
@@ -305,7 +338,9 @@ async function handleDelete(row: Record<string, unknown>) {
     ElMessage.success("删除成功");
     await fetchList();
   } catch (err: any) {
-    if (err !== "cancel") ElMessage.error(err?.message || "删除失败");
+    // 失败提示由全局拦截器（或 src/api/index.ts 统一挂的 onBusinessError）负责，业务层不重复 toast
+    // 仅 "cancel" 来自 ElMessageBox 取消，非 HTTP 错误，需单独排除
+    if (err !== "cancel") console.error("[Demo] 删除失败:", err);
   }
 }
 
@@ -314,6 +349,21 @@ onMounted(() => fetchList());
 ```
 
 > **关键设计**：`usePageApi` composable 是唯一的 API 入口，所有自定义页面都通过它调用后端。这样既不需要为每个模块创建 `api/xxx.ts` 文件，也保持了统一的错误处理和 Token 管理。
+
+### 错误处理约定（重要）
+
+接口请求**不需要在每个业务方法里判断成功/失败并自行 `ElMessage.error`**，错误处理由全局拦截器统一负责。但本项目有**两条 API 路径**，行为不同，必须区分：
+
+| 路径 | 入口 | 全局是否自动弹错 | 业务页面是否还需处理 |
+| --- | --- | --- | --- |
+| 默认模板页 | `@newlifex/cube-vue` 的 `request`（index.vue / form.vue 使用） | ✅ 是（响应拦截器 `notification.error` + `throw`） | ❌ 不需要，catch 里只做复位/日志 |
+| 自定义页 | `usePageApi` / `@cube/api-core` 的 `cubeApi` | ⚠️ **取决于是否挂 `onBusinessError`** | 见下方说明 |
+
+- **默认模板页**：全局拦截器已统一弹错，业务 `catch` 不要再 `ElMessage.error`，否则会和全局提示**重复弹两次**。正确写法：`catch` 只留 `console.error` 便于排查，`finally` 复位 loading；`ElMessage.success('更新成功/新增成功')` 可保留。
+- **自定义页（usePageApi）**：`src/api/index.ts` 创建 `cubeApi` 时**默认没挂 `onBusinessError`**，所以全局**不会**自动弹错。`usePageApi` 的请求失败只会 `reject(ApiError)` 并冒泡。因此自定义页的 `catch` **必须**自己处理错误提示（否则错误静默丢失）；唯一不重复的做法是在 `cubeApi` 实例上**统一挂一次** `onBusinessError`/`onFieldError`（在 `src/api/index.ts` 里），之后各页面 `catch` 只做复位即可。
+- **通用铁律**：无论哪条路径，`ElMessage.success(...)` 这类**成功**提示可保留；**失败**提示只许全局一处弹，业务页面不得重复 `ElMessage.error`。
+
+> 删除操作例外：`ElMessageBox.confirm` 取消时 reject 的是字符串 `'cancel'`（非 HTTP 错误，全局拦截器不处理），所以 `catch` 里仍需 `if (err !== 'cancel')` 判断后再提示/记录，避免把"用户取消"当错误处理。
 
 ### 第五步：刷新验证
 
@@ -356,7 +406,7 @@ public class DemoController : EntityController<DemoEntity>
 
 ### 自定义页面组件
 
-只需在 `apps/{app-name}/src/views/{area}/{controller}/index.vue` 创建 Vue 组件，框架自动加载。
+只需按「页面目录结构」的两种情形，在 `apps/{app-name}/src/views/[{area}/]{controller}/index.vue` 创建 Vue 组件，框架自动加载。
 
 ```vue
 <template>
@@ -416,7 +466,7 @@ onMounted(() => fetchList());
 | 菜单图标 | Controller `[Menu(Icon = "Files")]`                       | 使用 Element Plus 图标名                     |
 | 列表字段 | Controller 静态构造函数 `ListFields`                      | 增删改字段及配置链接                         |
 | API 对接 | 页面内 `usePageApi(area, controller)`                     | 传入区域+控制器名即得完整 CRUD，无需手写请求 |
-| 页面组件 | `apps/{app-name}/src/views/{area}/{controller}/index.vue` | 默认 CRUD 无需创建，自定义页面需提供原型     |
+| 页面组件 | 情形 A：`apps/{app-name}/src/views/{area}/{controller}/index.vue`；情形 B：`apps/{area-app}/src/views/{controller}/index.vue` | 默认 CRUD 无需创建，自定义页面需提供原型；路径按「页面目录结构」两种情形判断 |
 | 路由     | **框架自动注册，不要手工配置**                            | 无需关心                                     |
 
 ## 注意事项
@@ -425,7 +475,7 @@ onMounted(() => fetchList());
 2. **字段名**必须与实体属性名一致，大小写敏感
 3. **Area 注册**：Controller 必须加上 `[XxxArea]` 特性（即 Area 类名），Area 类继承 `AreaBase` 即可，基类构造函数自动注册，无需手动调用 `RegisterArea`
 4. **路由由框架自动注册**：前端不要在 `routes.ts` 中写路由，不要修改 `main.ts`，只需创建 views 目录下的 `index.vue`
-5. **页面自动加载**：框架扫描 `apps/*/src/views/{area}/{controller}/index.vue` 并自动匹配后端菜单路由
+5. **页面自动加载**：框架扫描 `apps/*/src/views/**/index.vue` 并自动匹配后端菜单路由（路径层级见「页面目录结构」两种情形）
 6. **新增/编辑**默认通过弹窗（对话框）打开，无需注册独立前端路由
 7. **不需要手工注册任何东西**：只需创建 `index.vue` 文件，刷新浏览器即可看到效果
 8. **API 调用**：自定义页面通过 `usePageApi(area, controller)` 对接后端，该 composable 包装了 `@cube/api-core` 的通用 CRUD 方法，**不需要为每个模块建 `api/xxx.ts` 文件**
