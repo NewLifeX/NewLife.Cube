@@ -9,8 +9,6 @@
     <BaseClass>Entity</BaseClass>
     <!--命名空间-->
     <Namespace>NewLife.Cube.Entity</Namespace>
-    <!--引用命名空间-->
-    <ExtendNameSpace />
     <!--输出目录-->
     <Output>.\</Output>
     <!--是否使用中文文件名。默认false-->
@@ -651,7 +649,7 @@
     </Table>
     <Table Name="LovEnumItem" Description="值集枚举值。枚举型值集的可选值列表">
       <Columns>
-        <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+        <Column Name="Id" DataType="Int32" Description="编号" />
         <Column Name="LovDefId" DataType="Int32" Description="值集定义。关联LovDefinition" />
         <Column Name="Value" DataType="String" Nullable="False" Description="枚举值。实际存储的值" />
         <Column Name="Label" DataType="String" Description="显示文本。枚举值对应的显示名称" />
@@ -666,14 +664,10 @@
         <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
         <Column Name="Remark" DataType="String" Length="500" Description="备注" Category="扩展" />
       </Columns>
-      <Indexes>
-        <Index Columns="LovDefId,Value" Unique="True" />
-        <Index Columns="LovDefId,Sort" />
-      </Indexes>
     </Table>
     <Table Name="LovListConfig" Description="值集列表配置。列表型值集的数据源配置">
       <Columns>
-        <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+        <Column Name="Id" DataType="Int32" Description="编号" />
         <Column Name="LovDefId" DataType="Int32" Description="值集定义。关联LovDefinition" />
         <Column Name="RequestUrl" DataType="String" Length="500" Description="请求地址。数据接口地址，仅后端可见" />
         <Column Name="Method" DataType="String" Description="请求方式。GET/POST" />
@@ -691,13 +685,10 @@
         <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
         <Column Name="Remark" DataType="String" Length="500" Description="备注" Category="扩展" />
       </Columns>
-      <Indexes>
-        <Index Columns="LovDefId" Unique="True" />
-      </Indexes>
     </Table>
     <Table Name="LovSearchField" Description="值集搜索字段。列表型值集的搜索条件字段定义">
       <Columns>
-        <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+        <Column Name="Id" DataType="Int32" Description="编号" />
         <Column Name="LovDefId" DataType="Int32" Description="值集定义。关联LovDefinition" />
         <Column Name="Field" DataType="String" Nullable="False" Description="字段名。搜索参数字段名" />
         <Column Name="Title" DataType="String" Master="True" Description="显示标题" />
@@ -715,14 +706,10 @@
         <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
         <Column Name="Remark" DataType="String" Length="500" Description="备注" Category="扩展" />
       </Columns>
-      <Indexes>
-        <Index Columns="LovDefId,Field" Unique="True" />
-        <Index Columns="LovDefId,Sort" />
-      </Indexes>
     </Table>
     <Table Name="LovTableColumn" Description="值集表格列。列表型值集的列字段定义">
       <Columns>
-        <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+        <Column Name="Id" DataType="Int32" Description="编号" />
         <Column Name="LovDefId" DataType="Int32" Description="值集定义。关联LovDefinition" />
         <Column Name="Field" DataType="String" Nullable="False" Description="字段名。数据字段名" />
         <Column Name="Title" DataType="String" Master="True" Description="显示标题" />
@@ -740,10 +727,6 @@
         <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
         <Column Name="Remark" DataType="String" Length="500" Description="备注" Category="扩展" />
       </Columns>
-      <Indexes>
-        <Index Columns="LovDefId,Field" Unique="True" />
-        <Index Columns="LovDefId,Sort" />
-      </Indexes>
     </Table>
   </Tables>
 </EntityModel>

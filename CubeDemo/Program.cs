@@ -42,9 +42,6 @@ var app = builder.Build();
 
 app.UseCube(builder.Environment);
 
-// 触发 Lov 值集自动注册（扫描 CubeDemo.Areas.Test 下的枚举）
-app.UseCubeLov();
-
 app.UseAuthorization();
 
 app.MapControllerRoute(name: "default", pattern: "{controller=Index}/{action=Index}/{id?}");

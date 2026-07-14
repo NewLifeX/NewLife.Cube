@@ -71,7 +71,8 @@ public class LovController : EntityController<LovDefinition>
             if (def.Type == "ENUM")
             {
                 // 枚举型：返回枚举值列表
-                var items = LovEnumItem.FindAll(LovEnumItem._.LovDefId == def.Id & LovEnumItem._.Enabled == true)
+                var items = LovEnumItem.FindAllByLovDefId(def.Id)
+                    .Where(e => e.Enabled)
                     .OrderBy(e => e.Sort)
                     .Select(e => new { e.Value, e.Label, e.Extra })
                     .ToList();
@@ -87,8 +88,8 @@ public class LovController : EntityController<LovDefinition>
             else if (def.Type == "LIST")
             {
                 // 列表型：返回配置 + 搜索字段 + 列字段 + 内联引用的枚举
-                var listConfig = LovListConfig.Find(LovListConfig._.LovDefId == def.Id);
-                var searchFields = LovSearchField.FindAll(LovSearchField._.LovDefId == def.Id)
+                var listConfig = LovListConfig.FindByLovDefId(def.Id);
+                var searchFields = LovSearchField.FindAllByLovDefId(def.Id)
                     .OrderBy(e => e.Sort)
                     .Select(e => new
                     {
@@ -102,7 +103,7 @@ public class LovController : EntityController<LovDefinition>
                     })
                     .ToList();
 
-                var tableColumns = LovTableColumn.FindAll(LovTableColumn._.LovDefId == def.Id)
+                var tableColumns = LovTableColumn.FindAllByLovDefId(def.Id)
                     .OrderBy(e => e.Sort)
                     .Select(e => new
                     {
@@ -128,7 +129,8 @@ public class LovController : EntityController<LovDefinition>
                         var refDef = LovDefinition.Find(LovDefinition._.LovCode == refCode);
                         if (refDef != null)
                         {
-                            var enumItems = LovEnumItem.FindAll(LovEnumItem._.LovDefId == refDef.Id & LovEnumItem._.Enabled == true)
+                            var enumItems = LovEnumItem.FindAllByLovDefId(refDef.Id)
+                                .Where(e => e.Enabled)
                                 .OrderBy(e => e.Sort)
                                 .Select(e => new { e.Value, e.Label, e.Extra })
                                 .ToList();
@@ -182,7 +184,7 @@ public class LovController : EntityController<LovDefinition>
         if (def == null)
             throw new InvalidOperationException($"值集 {request.LovCode} 不存在");
 
-        var config = LovListConfig.Find(LovListConfig._.LovDefId == def.Id);
+        var config = LovListConfig.FindByLovDefId(def.Id);
         if (config == null)
             throw new InvalidOperationException($"值集 {request.LovCode} 未配置列表数据源");
 
@@ -331,7 +333,7 @@ public class LovController : EntityController<LovDefinition>
         {
             // 枚举型：直接从 LovEnumItem 查询
             var values = request.Values.Select(v => v.ToString()).ToArray();
-            var items = LovEnumItem.FindAll(LovEnumItem._.LovDefId == def.Id & LovEnumItem._.Value.In(values) & LovEnumItem._.Enabled == true);
+            var items = LovEnumItem.FindAllByLovDefId(def.Id).Where(e => e.Enabled && values.Contains(e.Value)).ToList();
             foreach (var item in items)
             {
                 result[item.Value] = item.Label;
@@ -340,12 +342,12 @@ public class LovController : EntityController<LovDefinition>
         else if (def.Type == "LIST")
         {
             // 列表型：通过 ListData 代理获取数据，再建立映射
-            var config = LovListConfig.Find(LovListConfig._.LovDefId == def.Id);
+            var config = LovListConfig.FindByLovDefId(def.Id);
             if (config != null && !def.ValueField.IsNullOrEmpty() && !def.LabelField.IsNullOrEmpty())
             {
                 // 这里简化处理：如果有 Redis 缓存则优先使用
                 // 否则通过 ListData 接口获取基础数据并提取映射
-                var lists = LovEnumItem.FindAll(LovEnumItem._.LovDefId == def.Id & LovEnumItem._.Value.In(request.Values.Select(v => v.ToString()).ToArray()) & LovEnumItem._.Enabled == true);
+                var lists = LovEnumItem.FindAllByLovDefId(def.Id).Where(e => e.Enabled && request.Values.Select(v => v.ToString()).Contains(e.Value)).ToList();
                 foreach (var item in lists)
                 {
                     result[item.Value] = item.Label;
@@ -401,7 +403,7 @@ public class LovController : EntityController<LovDefinition>
 
         if (def.Type == "ENUM")
         {
-            var items = LovEnumItem.FindAll(LovEnumItem._.LovDefId == def.Id)
+            var items = LovEnumItem.FindAllByLovDefId(def.Id)
                 .OrderBy(e => e.Sort)
                 .Select(e => new Dictionary<String, Object?>
                 {
@@ -417,7 +419,7 @@ public class LovController : EntityController<LovDefinition>
         }
         else if (def.Type == "LIST")
         {
-            var config = LovListConfig.Find(LovListConfig._.LovDefId == def.Id);
+            var config = LovListConfig.FindByLovDefId(def.Id);
             result["listConfig"] = config == null ? null : new Dictionary<String, Object?>
             {
                 ["id"] = config.Id,
@@ -432,7 +434,7 @@ public class LovController : EntityController<LovDefinition>
                 ["fixedParams"] = config.FixedParams,
             };
 
-            var fields = LovSearchField.FindAll(LovSearchField._.LovDefId == def.Id)
+            var fields = LovSearchField.FindAllByLovDefId(def.Id)
                 .OrderBy(e => e.Sort)
                 .Select(e => new Dictionary<String, Object?>
                 {
@@ -447,7 +449,7 @@ public class LovController : EntityController<LovDefinition>
                 }).ToList();
             result["searchFields"] = fields;
 
-            var cols = LovTableColumn.FindAll(LovTableColumn._.LovDefId == def.Id)
+            var cols = LovTableColumn.FindAllByLovDefId(def.Id)
                 .OrderBy(e => e.Sort)
                 .Select(e => new Dictionary<String, Object?>
                 {
@@ -498,51 +500,27 @@ public class LovController : EntityController<LovDefinition>
         return new { success = true };
     }
 
-    /// <summary>全量替换枚举值</summary>
+    /// <summary>全量替换枚举值。整表覆盖到 Parameter（按 lovDefId 聚合一条）</summary>
     private static void BatchSaveEnumItems(Int32 lovDefId, JsonElement items)
     {
-        var existing = LovEnumItem.FindAll(LovEnumItem._.LovDefId == lovDefId);
-        var existingMap = existing.ToDictionary(e => e.Id);
-        var keepIds = new HashSet<Int32>();
-
+        var list = new List<LovEnumItem>();
         foreach (var item in items.EnumerateArray())
         {
-            var itemId = item.TryGetProperty("id", out var idProp) ? idProp.GetInt32() : 0;
-
-            LovEnumItem entity;
-            if (itemId > 0 && existingMap.TryGetValue(itemId, out var found))
-            {
-                entity = found;
-                keepIds.Add(itemId);
-            }
-            else
-            {
-                entity = new LovEnumItem { LovDefId = lovDefId };
-            }
-
+            var entity = new LovEnumItem { LovDefId = lovDefId };
             entity.Value = item.GetProperty("value").GetString() ?? "";
             entity.Label = item.TryGetProperty("label", out var l) ? l.GetString() ?? "" : "";
             entity.Sort = item.TryGetProperty("sort", out var s) ? s.GetInt32() : 0;
             entity.Enabled = item.TryGetProperty("enabled", out var e) ? e.GetBoolean() : true;
             entity.Extra = item.TryGetProperty("extra", out var ex) ? ex.GetString() : null;
-
-            if (entity.Id > 0) entity.Update();
-            else entity.Insert();
+            list.Add(entity);
         }
-
-        foreach (var old in existing)
-        {
-            if (!keepIds.Contains(old.Id))
-                old.Delete();
-        }
+        LovEnumItem.SaveAllByLovDefId(lovDefId, list);
     }
 
-    /// <summary>保存列表配置（单条 upsert）</summary>
+    /// <summary>保存列表配置（单条）。整表覆盖到 Parameter</summary>
     private static void SaveListConfig(Int32 lovDefId, JsonElement config)
     {
-        var existing = LovListConfig.Find(LovListConfig._.LovDefId == lovDefId);
-        var entity = existing ?? new LovListConfig { LovDefId = lovDefId };
-
+        var entity = new LovListConfig { LovDefId = lovDefId };
         entity.RequestUrl = config.TryGetProperty("requestUrl", out var ru) ? ru.GetString() : null;
         entity.Method = config.TryGetProperty("method", out var m) ? m.GetString() : "GET";
         entity.Pageable = config.TryGetProperty("pageable", out var p) ? p.GetBoolean() : false;
@@ -551,33 +529,16 @@ public class LovController : EntityController<LovDefinition>
         entity.DataPath = config.TryGetProperty("dataPath", out var dp) ? dp.GetString() : null;
         entity.TotalPath = config.TryGetProperty("totalPath", out var tp) ? tp.GetString() : null;
         entity.FixedParams = config.TryGetProperty("fixedParams", out var fp) ? fp.GetString() : null;
-
-        if (entity.Id > 0) entity.Update();
-        else entity.Insert();
+        LovListConfig.SaveByLovDefId(lovDefId, entity);
     }
 
-    /// <summary>全量替换搜索字段</summary>
+    /// <summary>全量替换搜索字段。整表覆盖到 Parameter</summary>
     private static void BatchSaveSearchFields(Int32 lovDefId, JsonElement fields)
     {
-        var existing = LovSearchField.FindAll(LovSearchField._.LovDefId == lovDefId);
-        var existingMap = existing.ToDictionary(e => e.Id);
-        var keepIds = new HashSet<Int32>();
-
+        var list = new List<LovSearchField>();
         foreach (var item in fields.EnumerateArray())
         {
-            var itemId = item.TryGetProperty("id", out var idProp) ? idProp.GetInt32() : 0;
-
-            LovSearchField entity;
-            if (itemId > 0 && existingMap.TryGetValue(itemId, out var found))
-            {
-                entity = found;
-                keepIds.Add(itemId);
-            }
-            else
-            {
-                entity = new LovSearchField { LovDefId = lovDefId };
-            }
-
+            var entity = new LovSearchField { LovDefId = lovDefId };
             entity.Field = item.GetProperty("field").GetString() ?? "";
             entity.Title = item.TryGetProperty("title", out var t) ? t.GetString() ?? "" : "";
             entity.ComponentType = item.TryGetProperty("componentType", out var ct) ? ct.GetString() : "input";
@@ -586,40 +547,18 @@ public class LovController : EntityController<LovDefinition>
             entity.DefaultValue = item.TryGetProperty("defaultValue", out var dv) ? dv.GetString() : null;
             entity.Sort = item.TryGetProperty("sort", out var s) ? s.GetInt32() : 0;
             entity.RefLovCode = item.TryGetProperty("refLovCode", out var rc) ? rc.GetString() : null;
-
-            if (entity.Id > 0) entity.Update();
-            else entity.Insert();
+            list.Add(entity);
         }
-
-        foreach (var old in existing)
-        {
-            if (!keepIds.Contains(old.Id))
-                old.Delete();
-        }
+        LovSearchField.SaveAllByLovDefId(lovDefId, list);
     }
 
-    /// <summary>全量替换表格列</summary>
+    /// <summary>全量替换表格列。整表覆盖到 Parameter</summary>
     private static void BatchSaveTableColumns(Int32 lovDefId, JsonElement columns)
     {
-        var existing = LovTableColumn.FindAll(LovTableColumn._.LovDefId == lovDefId);
-        var existingMap = existing.ToDictionary(e => e.Id);
-        var keepIds = new HashSet<Int32>();
-
+        var list = new List<LovTableColumn>();
         foreach (var item in columns.EnumerateArray())
         {
-            var itemId = item.TryGetProperty("id", out var idProp) ? idProp.GetInt32() : 0;
-
-            LovTableColumn entity;
-            if (itemId > 0 && existingMap.TryGetValue(itemId, out var found))
-            {
-                entity = found;
-                keepIds.Add(itemId);
-            }
-            else
-            {
-                entity = new LovTableColumn { LovDefId = lovDefId };
-            }
-
+            var entity = new LovTableColumn { LovDefId = lovDefId };
             entity.Field = item.GetProperty("field").GetString() ?? "";
             entity.Title = item.TryGetProperty("title", out var t) ? t.GetString() ?? "" : "";
             entity.Width = item.TryGetProperty("width", out var w) ? w.GetInt32() : 0;
@@ -628,16 +567,9 @@ public class LovController : EntityController<LovDefinition>
             entity.RefLovCode = item.TryGetProperty("refLovCode", out var rc) ? rc.GetString() : null;
             entity.FormatType = item.TryGetProperty("formatType", out var ft) ? ft.GetString() : null;
             entity.Sort = item.TryGetProperty("sort", out var s) ? s.GetInt32() : 0;
-
-            if (entity.Id > 0) entity.Update();
-            else entity.Insert();
+            list.Add(entity);
         }
-
-        foreach (var old in existing)
-        {
-            if (!keepIds.Contains(old.Id))
-                old.Delete();
-        }
+        LovTableColumn.SaveAllByLovDefId(lovDefId, list);
     }
 
     #endregion

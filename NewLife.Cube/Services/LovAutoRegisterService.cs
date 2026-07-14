@@ -1,5 +1,6 @@
-using System.Reflection;
+﻿using System.Reflection;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Enums;
 using NewLife.Log;
 using XCode;
 using XCode.DataAccessLayer;
@@ -10,7 +11,7 @@ namespace NewLife.Cube.Services;
 public class LovAutoRegisterService
 {
     /// <summary>默认扫描的命名空间前缀列表</summary>
-    public IList<String> NamespacePrefixes { get; } = new List<String> { "NewLife.Cube.Entity" };
+    public IList<String> NamespacePrefixes { get; } = new List<String> { "NewLife.Cube.Entity", typeof(AuthCategory).Namespace };
 
     /// <summary>是否已启用</summary>
     public Boolean Enabled { get; set; } = true;
@@ -100,29 +101,36 @@ public class LovAutoRegisterService
             return false;
         }
 
-        // 同步枚举值
-        SyncEnumValues(def, enumType);
+        // 同步枚举值（被 LovStringValue 标记的枚举使用成员名作为选项值，而非数字）
+        // 按特性名识别，避免 NewLife.Cube 与定义该特性的程序集产生编译期耦合
+        var useStringValue = enumType.GetCustomAttributes().Any(a => a.GetType().Name == "LovStringValueAttribute");
+        SyncEnumValues(def, enumType, useStringValue);
 
         return true;
     }
 
-    /// <summary>同步枚举值到 LovEnumItem</summary>
-    private static void SyncEnumValues(LovDefinition def, Type enumType)
+    /// <summary>同步枚举值到 LovEnumItem（数据落到 Parameter，不触碰真实表）</summary>
+    /// <param name="def">值集定义</param>
+    /// <param name="enumType">要同步的枚举类型</param>
+    /// <param name="useStringValue">为 true 时使用枚举成员名作为选项值（字符串），否则使用数字值</param>
+    private static void SyncEnumValues(LovDefinition def, Type enumType, Boolean useStringValue)
     {
         var names = Enum.GetNames(enumType);
         var values = Enum.GetValues(enumType);
 
-        // 获取现有记录
-        var existingItems = LovEnumItem.FindAll(LovEnumItem._.LovDefId == def.Id);
+        // 读取现有记录（全部落到 Parameter）
+        var existingItems = LovEnumItem.FindAllByLovDefId(def.Id);
         var existingMap = existingItems.ToDictionary(e => e.Value, e => e);
 
         // 当前枚举值集合
         var currentValues = new HashSet<String>();
+        var result = new List<LovEnumItem>();
 
         for (var i = 0; i < names.Length; i++)
         {
             var name = names[i];
-            var value = Convert.ToInt32(values.GetValue(i)!).ToString();
+            // 默认用数字值；被 LovStringValue 标记的枚举改用成员名（字符串），便于与以名存储的字段对应
+            var value = useStringValue ? name : Convert.ToInt32(values.GetValue(i)!).ToString();
             currentValues.Add(value);
 
             // 获取枚举成员的描述（可配合 DisplayName 或 Description 特性）
@@ -143,43 +151,37 @@ public class LovAutoRegisterService
 
             if (existingMap.TryGetValue(value, out var existing))
             {
-                // 已存在，更新 label
-                if (existing.Label != label)
-                {
-                    existing.Label = label;
-                    existing.Update();
-                }
-                // 确保启用
-                if (!existing.Enabled)
-                {
-                    existing.Enabled = true;
-                    existing.Update();
-                }
+                // 已存在：复用原行（保留审计字段与手工排序），仅更新可能变化的 label 与启用状态
+                existing.Label = label;
+                existing.Enabled = true;
+                result.Add(existing);
             }
             else
             {
                 // 新增枚举值
-                var item = new LovEnumItem
+                result.Add(new LovEnumItem
                 {
                     LovDefId = def.Id,
                     Value = value,
                     Label = label,
                     Sort = i,
                     Enabled = true,
-                };
-                item.Insert();
+                });
             }
         }
 
-        // 逻辑禁用已删除的枚举成员
+        // 逻辑禁用已删除的枚举成员：保留原行并置 Enabled=false
         foreach (var existing in existingItems)
         {
             if (!currentValues.Contains(existing.Value) && existing.Enabled)
             {
                 existing.Enabled = false;
-                existing.Update();
+                result.Add(existing);
             }
         }
+
+        // 整表覆盖写回 Parameter
+        LovEnumItem.SaveAllByLovDefId(def.Id, result);
     }
 
     /// <summary>获取枚举类型的显示名称，优先 DisplayName 特性，无则返回 null</summary>

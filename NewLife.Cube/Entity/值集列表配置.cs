@@ -17,7 +17,6 @@ namespace NewLife.Cube.Entity;
 [Serializable]
 [DataObject]
 [Description("值集列表配置。列表型值集的数据源配置")]
-[BindIndex("IU_LovListConfig_LovDefId", true, "LovDefId")]
 [BindTable("LovListConfig", Description = "值集列表配置。列表型值集的数据源配置", ConnName = "Cube", DbType = DatabaseType.None)]
 public partial class LovListConfig : IEntity<LovListConfigModel>
 {
@@ -26,7 +25,7 @@ public partial class LovListConfig : IEntity<LovListConfigModel>
     /// <summary>编号</summary>
     [DisplayName("编号")]
     [Description("编号")]
-    [DataObjectField(true, true, false, 0)]
+    [DataObjectField(false, false, false, 0)]
     [BindColumn("Id", "编号", "")]
     public Int32 Id { get => _Id; set { if (OnPropertyChanging("Id", value)) { _Id = value; OnPropertyChanged("Id"); } } }
 
@@ -249,34 +248,6 @@ public partial class LovListConfig : IEntity<LovListConfigModel>
     #endregion
 
     #region 扩展查询
-    /// <summary>根据编号查找</summary>
-    /// <param name="id">编号</param>
-    /// <returns>实体对象</returns>
-    public static LovListConfig FindById(Int32 id)
-    {
-        if (id < 0) return null;
-
-        // 实体缓存
-        if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Id == id);
-
-        // 单对象缓存
-        return Meta.SingleCache[id];
-
-        //return Find(_.Id == id);
-    }
-
-    /// <summary>根据值集定义查找</summary>
-    /// <param name="lovDefId">值集定义</param>
-    /// <returns>实体对象</returns>
-    public static LovListConfig FindByLovDefId(Int32 lovDefId)
-    {
-        if (lovDefId < 0) return null;
-
-        // 实体缓存
-        if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.LovDefId == lovDefId);
-
-        return Find(_.LovDefId == lovDefId);
-    }
     #endregion
 
     #region 字段名
