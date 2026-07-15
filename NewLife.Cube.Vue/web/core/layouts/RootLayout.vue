@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { onBeforeMount, onMounted, watch, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 // import NotFound from '../pages/404.vue'
@@ -76,6 +76,10 @@ onBeforeMount(() => {
 });
 
 onMounted(async () => {
+  // 登录页、loading 页等不需要认证的页面，无需获取用户信息和菜单
+  if (route.path === loginPageUrl || route.meta?.auth === false) {
+    return;
+  }
   try {
     await userStore.fetchUserInfoAsync();
     await menuStore.fetchMenuAsync();
@@ -86,8 +90,13 @@ onMounted(async () => {
 </script>
 
 <template>
+  <!-- 初始路由未匹配前不渲染布局（START_LOCATION 的 matched 为空数组），避免刷新时短暂显示布局组件 -->
+  <template v-if="route.matched.length === 0">
+    <slot />
+  </template>
+
   <!-- 如果是登录页面，直接返回 -->
-  <template v-if="route.path === loginPageUrl">
+  <template v-else-if="route.path === loginPageUrl">
     <slot />
   </template>
 
