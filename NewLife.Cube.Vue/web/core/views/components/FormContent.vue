@@ -8,13 +8,15 @@
  *
  * v-model 绑定整个表单对象；任一控件变更时聚合 emit 整个对象（沿用既有行为）。
  */
-import { computed } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import type { FieldMeta, ControlType } from '../../types/field';
 import { resolveControl, isFullWidthControl, resolveNumberPrecision, resolveNumberStep } from '../../utils/fieldControl';
 import LovSelect from '../../components/LovSelect.vue';
 import Uploader from '../../components/Uploader.vue';
-import JsonEditor from '../../components/JsonEditor.vue';
-import RichEditor from '../../components/RichEditor.vue';
+// 重型编辑器改为异步组件，仅在表单确有 json / 富文本字段时才按需加载，
+// 避免把 @wangeditor / md-editor-v3 / vanilla-jsoneditor 全部打进主表单 chunk。
+const JsonEditor = defineAsyncComponent(() => import('../../components/JsonEditor.vue'));
+const RichEditor = defineAsyncComponent(() => import('../../components/RichEditor.vue'));
 import ColorPicker from '../../components/ColorPicker.vue';
 import IconSelector from '../../components/IconSelector.vue';
 
