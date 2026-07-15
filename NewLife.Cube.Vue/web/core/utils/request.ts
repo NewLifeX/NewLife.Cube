@@ -141,6 +141,12 @@ function authIntercept(status: number, config: InternalAxiosRequestConfig) {
     const isSelf401 = url.includes(AUTH_SELF_URL);
 
     if (isSelf401) {
+      // 如果已经在登录页、loading 页或未授权页，不再重复跳转，避免 redirect_uri 嵌套增长
+      const currentPath = window.location.pathname;
+      if (currentPath === '/login' || currentPath === '/loading' || currentPath === '/unauthorized') {
+        isErrorFlag = false;
+        return false;
+      }
       setRedirectUrl();
       redirectToLogin();
       return false;
@@ -169,6 +175,11 @@ function authIntercept(status: number, config: InternalAxiosRequestConfig) {
     }
 
     setTimeout(() => {
+      // 如果当前在登录页、loading 页或未授权页，不跳转，避免循环跳转
+      const currentPath = window.location.pathname;
+      if (currentPath === '/login' || currentPath === '/loading' || currentPath === '/unauthorized') {
+        return;
+      }
       redirectToUnauthorized();
     }, 100);
   }
