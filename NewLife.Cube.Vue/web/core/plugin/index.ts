@@ -104,8 +104,8 @@ export default function vitePluginCubeFront() {
         `;
       }
     },
-    transform(code: string, _id: string) {
-      return code;
+    transform(_code: string, _id: string) {
+      return null;
     },
     transformIndexHtml(html: string) {
       // 生产模式下，提取 BUILD_ 开头的配置项并注入到 html

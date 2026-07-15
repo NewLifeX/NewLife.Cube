@@ -111,6 +111,8 @@ const emit = defineEmits<{
   new: [];
   delete: [];
   export: [];
+  import: [];
+  chart: [];
   refresh: [];
   'update:currentPage': [page: number];
   'update:pageSize': [size: number];

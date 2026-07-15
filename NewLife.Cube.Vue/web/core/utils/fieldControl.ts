@@ -243,7 +243,8 @@ export function serializeSubmitModel(
  */
 export function resolveNumberPrecision(field: FieldMeta): number | undefined {
   // 后端显式返回了有效精度 → 直接用返回的精度
-  if (field.scale > 0) return field.scale;
+  const scale = field.scale ?? 0;
+  if (scale > 0) return scale;
 
   // scale 为 0 或未下发 → 按 CLR 类型给默认精度（整数固定 0 位）
   switch (field.typeName) {
@@ -272,7 +273,8 @@ export function resolveNumberPrecision(field: FieldMeta): number | undefined {
  * @returns 步进值
  */
 export function resolveNumberStep(field: FieldMeta): number {
-  if (field.scale > 0) return Math.pow(10, -field.scale);
+  const scale = field.scale ?? 0;
+  if (scale > 0) return Math.pow(10, -scale);
   if (field.typeName === 'Single' || field.typeName === 'Double') return 0.1;
   if (field.typeName === 'Decimal') return 0.01;
   return 1; // 整数默认步进 1

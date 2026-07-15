@@ -166,11 +166,14 @@ const logoSrc = computed<string>(() => {
 
 /** 背景样式（支持自定义背景图） */
 const backgroundStyle = computed<Record<string, string>>(() => {
+  const style: Record<string, string> = {};
   const bg = loginConfig.value?.loginBackground;
   if (bg) {
-    return { backgroundImage: `url(${resolveLogo(bg)})`, backgroundSize: 'cover', backgroundPosition: 'center' };
+    style.backgroundImage = `url(${resolveLogo(bg)})`;
+    style.backgroundSize = 'cover';
+    style.backgroundPosition = 'center';
   }
-  return {};
+  return style;
 });
 
 // 密码强度校验逻辑已抽到 LoginForm.vue（通过 prop 传入 loginConfig），本容器不再持有。
@@ -357,7 +360,7 @@ function initParticleSystem(): void {
   // 无障碍：用户偏好减少动画时跳过
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d')!;
   if (!ctx) return;
 
   // 读取主题色
