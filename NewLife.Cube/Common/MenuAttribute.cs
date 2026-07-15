@@ -15,22 +15,16 @@ public enum MenuModes
 public class MenuAttribute : Attribute
 {
     #region 属性
-    /// <summary>
-    /// 顺序。较大者在前面
-    /// </summary>
+    /// <summary>顺序。较大者在前面</summary>
     public Int32 Order { get; set; }
 
-    /// <summary>
-    /// 可见
-    /// </summary>
+    /// <summary>可见</summary>
     public Boolean Visible { get; set; } = true;
 
     /// <summary>菜单模式。控制在管理后台和租户模式下是否可见</summary>
     public MenuModes Mode { get; set; }
 
-    /// <summary>
-    /// 图标
-    /// </summary>
+    /// <summary>图标</summary>
     public String Icon { get; set; }
 
     /// <summary>最后更新时间。小于该更新时间的菜单设置将被覆盖。</summary>

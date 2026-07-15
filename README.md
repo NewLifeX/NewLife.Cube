@@ -16,6 +16,12 @@ Swagger：[https://cube3.newlifex.com](https://cube3.newlifex.com)
 XCode教程：<https://newlifex.com/xcode>  
 核心库教程：<https://newlifex.com/core>  
 
+> **文档索引**：详细需求文档、功能清单、架构设计见 [`Doc/`](Doc/) 目录：
+> - 📋 [需求文档](Doc/需求文档.md) — 愿景、核心目标、功能需求
+> - ✅ [功能清单](Doc/功能清单.md) — 实现/测试/注释三维状态追踪
+> - 🏗️ [架构设计](Doc/架构设计.md) — 分层架构、模块设计、关键决策
+> - 📚 [魔方用户手册](Doc/魔方用户手册.md) — 完整的用户与开发手册
+
 ---
 ## 目录索引
 - [核心价值](#核心价值)

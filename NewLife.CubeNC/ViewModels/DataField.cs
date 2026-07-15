@@ -65,34 +65,22 @@ public class DataField
     /// <summary>只读</summary>
     public Boolean ReadOnly { get; set; }
 
-    /// <summary>
-    /// 是否可见
-    /// </summary>
+    /// <summary>是否可见</summary>
     public Boolean Visible { get; set; }
 
-    /// <summary>
-    /// 是否必填
-    /// </summary>
+    /// <summary>是否必填</summary>
     public Boolean Required { get; set; }
 
-    /// <summary>
-    /// 权限相关。用户自由发挥
-    /// </summary>
+    /// <summary>权限相关。用户自由发挥</summary>
     public String Authority { get; set; }
 
-    /// <summary>
-    /// 扩展字段。用户自由发挥
-    /// </summary>
+    /// <summary>扩展字段。用户自由发挥</summary>
     public String Extended1 { get; set; }
 
-    /// <summary>
-    /// 扩展字段。用户自由发挥
-    /// </summary>
+    /// <summary>扩展字段。用户自由发挥</summary>
     public String Extended2 { get; set; }
 
-    /// <summary>
-    /// 扩展字段。用户自由发挥
-    /// </summary>
+    /// <summary>扩展字段。用户自由发挥</summary>
     public String Extended3 { get; set; }
 
     /// <summary>原始字段</summary>
