@@ -357,8 +357,8 @@ options.FileProviders.Add(new CubeEmbeddedFileProvider(typeof(TablerModule).Asse
 
 **下一步**：
 
-- 学习 [自定义列表页](自定义列表页.md) 进行列表页定制
-- 了解 [自定义表单页](自定义表单页.md) 的表单定制
+- 学习 [自定义列表页](DATA-自定义列表页.md) 进行列表页定制
+- 了解 [自定义表单页](DATA-自定义表单页.md) 的表单定制
 
 ---
 

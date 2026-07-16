@@ -676,4 +676,4 @@ protected override void OnInsert(Student entity)
 
 ---
 
-**下一章**：[服务扩展](服务扩展.md) - 了解如何扩展魔方的核心服务
+**下一章**：[服务扩展](BASE-服务扩展.md) - 了解如何扩展魔方的核心服务

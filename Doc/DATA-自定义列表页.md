@@ -429,7 +429,7 @@ protected override IEnumerable<Product> Search(Pager p)
 
 **下一步**：
 
-- 学习 [自定义查询](自定义查询.md) 了解搜索功能定制
-- 了解 [自定义表单页](自定义表单页.md) 的表单定制
+- 学习 [自定义查询](DATA-自定义查询.md) 了解搜索功能定制
+- 了解 [自定义表单页](DATA-自定义表单页.md) 的表单定制
 
 ---

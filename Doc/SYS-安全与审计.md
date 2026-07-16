@@ -579,8 +579,8 @@ public class CubeSetting
 
 **下一步**：
 
-- 学习 [用户认证](用户认证.md) 了解认证机制
-- 了解 [OAuth 与 SSO](OAuth与SSO.md) 的单点登录
+- 学习 [用户认证](AUTH-用户认证.md) 了解认证机制
+- 了解 [OAuth 与 SSO](OAUTH-OAuth与SSO.md) 的单点登录
 
 ---
 

@@ -839,4 +839,4 @@ public class MyController : EntityController<MyEntity>
 
 ---
 
-**下一章**：[中间件与过滤器](中间件与过滤器.md) - 了解魔方的中间件和过滤器机制
+**下一章**：[中间件与过滤器](BASE-中间件与过滤器.md) - 了解魔方的中间件和过滤器机制

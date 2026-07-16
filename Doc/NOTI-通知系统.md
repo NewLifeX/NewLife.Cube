@@ -204,7 +204,7 @@ var channels = VerifyCodeRecord.GetChannelList();
 
 - 避免大量通知记录影响主库性能
 - 独立配置日志库的备份和清理策略
-- 通过 `DataRetentionService` 自动清理过期记录（参见 [数据保留](数据保留.md)）
+- 通过 `DataRetentionService` 自动清理过期记录（参见 [数据保留](BASE-数据保留.md)）
 
 ## 管理后台
 

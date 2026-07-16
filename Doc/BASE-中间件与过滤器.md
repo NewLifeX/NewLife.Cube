@@ -786,4 +786,4 @@ Authorization Filter → Resource Filter → Action Filter → Action → Action
 
 ---
 
-**下一章**：[模型绑定](模型绑定.md) - 了解魔方的模型绑定机制
+**下一章**：[模型绑定](DATA-模型绑定.md) - 了解魔方的模型绑定机制

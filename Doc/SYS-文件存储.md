@@ -368,7 +368,7 @@ protected override IEnumerable<IFileInfo> GetMissingAttachments(DateTime startTi
 3. **多节点部署**：启用 `FileStorageProvide` 和 `FileStorageFetch` 实现文件自动同步
 4. **NAS 共享**：如果使用共享存储（NAS），可不启用分布式同步，直接配置 `UploadPath` 到共享目录
 5. **哈希校验**：利用 `Hash` 字段进行文件去重和完整性校验
-6. **数据保留**：结合 `DataRetentionService` 定期清理过期附件（参见 [数据保留](数据保留.md)）
+6. **数据保留**：结合 `DataRetentionService` 定期清理过期附件（参见 [数据保留](BASE-数据保留.md)）
 - 延迟 10 秒初始化，避免应用启动时资源争抢
 
 ## 管理后台

@@ -800,8 +800,8 @@ grant_type=password&client_id=your_app&username=zhangsan&password=your_password
 
 **下一步**：
 
-- 学习 [OAuth 与 SSO](OAuth与SSO.md) 了解第三方登录
-- 了解 [视图体系](视图体系.md) 的登录页面定制
+- 学习 [OAuth 与 SSO](OAUTH-OAuth与SSO.md) 了解第三方登录
+- 了解 [视图体系](MVC-视图体系.md) 的登录页面定制
 
 ---
 
