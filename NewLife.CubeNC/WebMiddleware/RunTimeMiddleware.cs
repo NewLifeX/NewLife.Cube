@@ -23,9 +23,6 @@ public class RunTimeMiddleware
     private readonly UserService _userService;
     private readonly AccessService _accessService;
 
-    /// <summary>会话提供者</summary>
-    static readonly SessionProvider _sessionProvider = new();
-
     /// <summary>实例化</summary>
     /// <param name="next"></param>
     /// <param name="userService"></param>
@@ -225,7 +222,7 @@ public class RunTimeMiddleware
             ss?.SetString(key, sid);
         }
 
-        var session = _sessionProvider.GetSession(sid);
+        var session = SessionProvider.Instance.GetSession(sid);
         ctx.Items["Session"] = session;
 
         return session;

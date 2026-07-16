@@ -462,13 +462,6 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
             (userAv as IEntity).Update();
         }
 
-        // 保存Cookie
-        var provider = ManageProvider.Provider;
-        var expire = remember ? TimeSpan.FromDays(365) : TimeSpan.FromMinutes(0);
-        if (set.SessionTimeout > 0 && !remember)
-            expire = TimeSpan.FromSeconds(set.SessionTimeout);
-        provider.SaveCookie(user, expire, httpContext);
-
         // 记录在线统计
         var stat = UserStat.GetOrAdd(DateTime.Today);
         if (stat != null)
@@ -497,7 +490,15 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
             };
         }
 
-        var tokens = httpContext.IssueTokenAndRefreshToken(user, TimeSpan.FromSeconds(set.TokenExpire));
+        // 先颁发令牌，JWT 缓存在 context.Items["jwtToken"]
+        var tokens = httpContext.IssueLoginToken(user, TimeSpan.FromSeconds(set.TokenExpire));
+
+        // 再存 Cookie（优先取 Items 中的 JWT，即包含 jti 的那个）
+        var provider = ManageProvider.Provider;
+        var expire = remember ? TimeSpan.FromDays(365) : TimeSpan.FromMinutes(0);
+        if (set.SessionTimeout > 0 && !remember)
+            expire = TimeSpan.FromSeconds(set.SessionTimeout);
+        provider.SaveCookie(user, expire, httpContext);
 
         return new ServiceResult<IToken> { IsSuccess = true, Data = tokens, Message = "登录成功" };
     }

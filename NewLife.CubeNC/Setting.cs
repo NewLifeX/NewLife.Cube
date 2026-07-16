@@ -208,6 +208,11 @@ public class CubeSetting : Config<CubeSetting>
     [Category("用户登录")]
     public Boolean LogoutAll { get; set; } = true;
 
+    /// <summary>允许多设备登录。false时同一账号新登录会踢掉旧设备，注销时吊销该账号所有令牌；true时仅吊销当前会话令牌，默认true</summary>
+    [Description("允许多设备登录。false时同一账号新登录会踢掉旧设备，注销时吊销该账号所有令牌；true时仅吊销当前会话令牌，默认true")]
+    [Category("用户登录")]
+    public Boolean EnableMultiDeviceLogin { get; set; } = true;
+
     /// <summary>会话超时。单点登录后会话超时时间，该时间内可借助Cookie登录，默认0s</summary>
     [Description("会话超时。单点登录后会话超时时间，该时间内可借助Cookie登录，默认0s")]
     [Category("用户登录")]

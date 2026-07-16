@@ -136,7 +136,7 @@ public class MfaController : ControllerBaseX
 
         // MFA 通过，签发正式令牌
         var set = CubeSetting.Current;
-        var tokens = HttpContext.IssueTokenAndRefreshToken(user, TimeSpan.FromSeconds(set.TokenExpire));
+        var tokens = HttpContext.IssueLoginToken(user, TimeSpan.FromSeconds(set.TokenExpire));
 
         return Json(0, "登录成功", new
         {

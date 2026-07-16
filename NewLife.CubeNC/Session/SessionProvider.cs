@@ -6,6 +6,9 @@ namespace NewLife.Cube;
 /// <summary>基于内存实现的会话</summary>
 public class SessionProvider
 {
+    /// <summary>默认全局实例</summary>
+    public static SessionProvider Instance { get; } = new();
+
     /// <summary>有效期</summary>
     public TimeSpan Expire { get; set; } = TimeSpan.FromMinutes(20);
 
@@ -31,6 +34,15 @@ public class SessionProvider
         }
 
         return dic;
+    }
+
+    /// <summary>移除会话。用于强制踢下线等场景</summary>
+    /// <param name="sessionKey">会话标识</param>
+    public virtual void RemoveSession(String sessionKey)
+    {
+        if (sessionKey.IsNullOrEmpty()) return;
+
+        Cache.Remove(sessionKey);
     }
 }
 

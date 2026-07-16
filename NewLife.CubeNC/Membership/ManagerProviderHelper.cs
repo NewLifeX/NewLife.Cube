@@ -1,16 +1,11 @@
-﻿using System;
-using System.IO;
-using System.Net.NetworkInformation;
-using System.Security.Principal;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Principal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Net.Http.Headers;
 using NewLife.Common;
+using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Log;
 using NewLife.Model;
-using NewLife.Serialization;
 using NewLife.Web;
 using XCode.Membership;
 using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
@@ -164,6 +159,27 @@ public static class ManagerProviderHelper
             return (null, jwt);
         }
 
+        // 通过 jti 检查 UserToken 是否已被吊销
+        if (jwt.Id.IsNullOrEmpty())
+        {
+            // 旧令牌可能不含 jti，写日志辅助排查，但仍放行（灰度期）
+            span?.AppendTag("令牌缺少 jti（可能是旧令牌，建议重新登录）");
+        }
+        else
+        {
+            var utId = jwt.Id.ToInt();
+            if (utId > 0)
+            {
+                var ut = UserToken.FindByID(utId);
+                if (ut == null || !ut.Enable)
+                {
+                    span?.AppendTag($"UserToken 已吊销：{utId}");
+                    XTrace.WriteLine("UserToken 已吊销：{0}", utId);
+                    return (null, jwt);
+                }
+            }
+        }
+
         var u = provider.FindByName(user);
         if (u == null || !u.Enable) return (null, jwt);
         span?.AppendTag($"用户：{u}");
@@ -240,6 +256,36 @@ public static class ManagerProviderHelper
 
         TenantContext.Current = new TenantContext { TenantId = tenantId };
         //ManageProvider.Provider.Tenant = Tenant.FindById(tenantId);
+    }
+
+    /// <summary>从当前请求的 JWT 中提取 jti（UserToken.Id），用于多设备模式精确吊销</summary>
+    /// <param name="context">HTTP 上下文</param>
+    /// <returns>UserToken.Id，未找到返回 0</returns>
+    public static Int32 GetJti(this HttpContext context)
+    {
+        var token = context.LoadToken();
+        if (token.IsNullOrEmpty()) return 0;
+
+        try
+        {
+            var set = CubeSetting.Current;
+            var ss = set.JwtSecret.Split(':');
+
+            var jwt = new JwtBuilder
+            {
+                Algorithm = ss[0],
+                Secret = ss[1],
+            };
+
+            if (jwt.TryDecode(token, out _) && !jwt.Id.IsNullOrEmpty())
+                return jwt.Id.ToInt();
+        }
+        catch
+        {
+            // 解码失败不影响主流程
+        }
+
+        return 0;
     }
 
     /// <summary>生成令牌</summary>
@@ -320,15 +366,47 @@ public static class ManagerProviderHelper
         return token;
     }
 
-    /// <summary>带刷新令牌</summary>
-    /// <param name="context"></param>
-    /// <param name="user"></param>
-    /// <param name="expire">有效期（单位：秒）</param>
-    /// <returns></returns>
-    public static IToken IssueTokenAndRefreshToken(this HttpContext context, IManageUser user, TimeSpan expire)
+    /// <summary>统一登录令牌颁发。创建 UserToken 记录并嵌入 JWT 的 jti，所有认证路径（密码/验证码/SSO/MFA）均走此方法</summary>
+    /// <remarks>
+    /// 流程：① CreateRefreshToken → ② UserToken.Insert（获取自增 Id）→ ③ JWT { sub, jti=ut.Id, exp }
+    /// accessToken(jti) 与 refreshToken(Token字段) 共用同一条 UserToken 记录，Enable=false 时同时失效。
+    /// </remarks>
+    /// <param name="context">HTTP 上下文</param>
+    /// <param name="user">登录用户</param>
+    /// <param name="expire">accessToken 有效期（秒）</param>
+    /// <returns>令牌模型</returns>
+    public static TokenModel IssueLoginToken(this HttpContext context, IManageUser user, TimeSpan expire)
     {
-        var accessToken = context.IssueToken(user, expire);
+        // 1. 创建刷新令牌（纯字符串，尚未入库）
         var refreshToken = CreateRefreshToken(user, DateTime.Now.AddDays(7));
+
+        // 2. 先插入 UserToken 记录（获取自增 Id）
+        UserToken ut = null;
+        if (user != null)
+        {
+            ut = new UserToken
+            {
+                Token = refreshToken,
+                UserID = user.ID,
+                Enable = true,
+                Expire = DateTime.Now.AddDays(7),
+                CreateIP = context.GetUserHost(),
+            };
+            ut.Insert();
+        }
+
+        // 3. 再颁发 JWT，jti = UserToken.Id
+        String accessToken = null;
+        if (user != null)
+        {
+            var exp = DateTime.Now.Add(expire.TotalSeconds > 0 ? expire : TimeSpan.FromHours(2));
+            var jwt = GetJwt();
+            jwt.Subject = user.Name;
+            jwt.Expire = exp;
+            if (ut != null) jwt.Id = ut.ID.ToString();
+            accessToken = jwt.Encode(null);
+        }
+        context.Items["jwtToken"] = accessToken;
 
         return new TokenModel
         {
@@ -336,9 +414,9 @@ public static class ManagerProviderHelper
             RefreshToken = refreshToken,
             ExpireIn = expire.TotalSeconds.ToInt()
         };
-
-        //return new Tuple<String, String>(accessToken, refreshToken);
     }
+
+    // IssueTokenAndRefreshToken 已迁移至 IssueLoginToken，旧名不再保留
 
     /// <summary>刷新令牌</summary>
     /// <param name="context"></param>
@@ -352,7 +430,15 @@ public static class ManagerProviderHelper
         var result = DecodeRefreshToken(refresh_token, out var username, out var expire);
         if (!result) throw new Exception($"刷新令牌异常：{refresh_token}");
 
-        return context.IssueTokenAndRefreshToken(user, TimeSpan.FromSeconds(set.TokenExpire));
+        // 吊销旧令牌，实现令牌旋转
+        var oldUt = UserToken.FindByToken(refresh_token);
+        if (oldUt != null)
+        {
+            oldUt.Enable = false;
+            oldUt.Update();
+        }
+
+        return context.IssueLoginToken(user, TimeSpan.FromSeconds(set.TokenExpire));
     }
 
     /// <summary>创建刷新令牌</summary>
@@ -378,7 +464,7 @@ public static class ManagerProviderHelper
         return tokenProverder.TryDecode(token, out username, out expire);
     }
 
-    /// <summary>验证令牌是否有效</summary>
+    /// <summary>验证令牌是否有效，同时校验 UserToken 未被吊销</summary>
     /// <param name="access_token"></param>
     /// <param name="manageProvider"></param>
     /// <returns></returns>
@@ -387,7 +473,22 @@ public static class ManagerProviderHelper
     {
         if (access_token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(access_token));
 
-        var username = Decode(access_token);
+        var username = Decode(access_token, out var jwt);
+        // 通过 jti 检查 UserToken 是否已被吊销
+        if (jwt != null && !jwt.Id.IsNullOrEmpty())
+        {
+            var utId = jwt.Id.ToInt();
+            if (utId > 0)
+            {
+                var ut = UserToken.FindByID(utId);
+                if (ut == null || !ut.Enable)
+                {
+                    XTrace.WriteLine("UserToken 已吊销：{0}", utId);
+                    return null;
+                }
+            }
+        }
+
         // 设置登录用户
         var user = manageProvider.FindByName(username);
         if (user == null) XTrace.WriteLine($"未查询到相关用户{username}");
@@ -399,7 +500,14 @@ public static class ManagerProviderHelper
     /// <param name="token"></param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    private static String Decode(String token)
+    private static String Decode(String token) => Decode(token, out _);
+
+    /// <summary>解码令牌，同时返回 JwtBuilder 用于读取 jti 等声明</summary>
+    /// <param name="token">JWT 字符串</param>
+    /// <param name="jwt">解码后的 JWT 构建器</param>
+    /// <returns>令牌主体（Subject）</returns>
+    /// <exception cref="Exception">令牌无效或格式错误</exception>
+    private static String Decode(String token, out JwtBuilder jwt)
     {
         // 区分访问令牌和内部刷新令牌
         var ts = token.Split('.');
@@ -409,7 +517,7 @@ public static class ManagerProviderHelper
             var set = CubeSetting.Current;
             var ss = set.JwtSecret.Split(':');
 
-            var jwt = new JwtBuilder
+            jwt = new JwtBuilder
             {
                 Algorithm = ss[0],
                 Secret = ss[1],
@@ -424,11 +532,16 @@ public static class ManagerProviderHelper
             return jwt.Subject;
         }
 
+        jwt = null;
         XTrace.WriteLine("令牌格式错误：{0}", token);
         throw new Exception("非法访问令牌");
     }
 
     /// <summary>保存用户信息到Cookie</summary>
+    /// <remarks>
+    /// 优先使用 context.Items["jwtToken"]（由 IssueLoginToken 设置），确保 Cookie 中的 JWT 也包含 jti。
+    /// 若无则回退到 IssueToken（兼容旧调用方）。
+    /// </remarks>
     /// <param name="provider">提供者</param>
     /// <param name="user">用户</param>
     /// <param name="expire">过期时间</param>
@@ -459,7 +572,11 @@ public static class ManagerProviderHelper
         var token = "";
         if (user != null)
         {
-            token = context.IssueToken(user, expire);
+            // 优先使用已有 JWT（由 IssueLoginToken 预先颁发，含 jti）
+            token = context.Items["jwtToken"] as String;
+            if (token.IsNullOrEmpty())
+                token = context.IssueToken(user, expire);
+
             if (expire.TotalSeconds > 0) option.Expires = DateTimeOffset.Now.Add(expire);
         }
         else

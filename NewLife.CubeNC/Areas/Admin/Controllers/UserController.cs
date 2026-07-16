@@ -972,6 +972,30 @@ public class UserController : EntityController<User, UserModel>
         return RedirectToAction("Edit", new { id });
     }
 
+    /// <summary>吊销令牌。吊销指定用户的所有访问令牌，不依赖在线状态，适用于安全运维场景</summary>
+    /// <param name="id">用户编号</param>
+    /// <returns></returns>
+    [DisplayName("吊销令牌")]
+    [EntityAuthorize(PermissionFlags.Update)]
+    public ActionResult RevokeTokens(Int32 id)
+    {
+        var user = FindByID(id);
+        if (user == null)
+        {
+            if (IsJsonRequest) return Json(1, "用户不存在");
+            return RedirectToAction("Edit", new { id });
+        }
+
+        var count = UserToken.RevokeByUser(id);
+
+        LogProvider.Provider.WriteLog("用户", "吊销令牌", true,
+            $"吊销用户[{user.Name}]的{count}个令牌", id, user.Name);
+
+        if (IsJsonRequest) return Json(0, $"已吊销 {count} 个令牌");
+
+        return RedirectToAction("Edit", new { id });
+    }
+
     /// <summary>设置租户</summary>
     /// <returns></returns>
     [EntityAuthorize]

@@ -282,8 +282,8 @@ public class SsoController : ControllerBaseX
                 }
                 else
                 {
-                    var token = HttpContext.IssueToken(user, TimeSpan.FromSeconds(set.TokenExpire));
-                    url += $"#token={token}";
+                    var tokenModel = HttpContext.IssueLoginToken(user, TimeSpan.FromSeconds(set.TokenExpire));
+                    url += $"#token={tokenModel.AccessToken}";
                 }
             }
 
@@ -521,9 +521,9 @@ public class SsoController : ControllerBaseX
             log.Update();
 
             var set = CubeSetting.Current;
-            var token = HttpContext.IssueTokenAndRefreshToken(user, TimeSpan.FromSeconds(set.TokenExpire));
+            var token = HttpContext.IssueLoginToken(user, TimeSpan.FromSeconds(set.TokenExpire));
 
-            return token as TokenModel;
+            return token;
         }
         catch (Exception ex)
         {

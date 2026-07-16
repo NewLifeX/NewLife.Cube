@@ -279,8 +279,8 @@ public class SsoController : ControllerBaseX
                 }
                 else
                 {
-                    var token = HttpContext.IssueToken(user, TimeSpan.FromSeconds(set.TokenExpire));
-                    url += $"#token={token}";
+                    var tokenModel = HttpContext.IssueLoginToken(user, TimeSpan.FromSeconds(set.TokenExpire));
+                    url += $"#token={tokenModel.AccessToken}";
                 }
             }
 

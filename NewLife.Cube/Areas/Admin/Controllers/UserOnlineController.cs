@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using NewLife.Cube.ViewModels;
 using NewLife.Web;
@@ -66,4 +67,34 @@ public class UserOnlineController : EntityController<UserOnline, UserOnlineModel
             _ => base.Valid(entity, type, post),
         };
     }
+
+    #region 强制下线
+    /// <summary>强制指定用户下线。吊销该用户所有令牌并清除其会话，保留在线记录用于审计</summary>
+    /// <param name="id">在线记录编号</param>
+    /// <returns></returns>
+    [DisplayName("强制下线")]
+    [EntityAuthorize(PermissionFlags.Delete)]
+    public ActionResult Kick(Int32 id)
+    {
+        var online = UserOnline.FindByID(id);
+        if (online == null) return Json(1, "在线记录不存在");
+
+        // 1. 吊销该用户所有令牌（API/JWT 即时失效）
+        var count = UserToken.RevokeByUser(online.UserID);
+
+        // 2. 清除 Session 会话（MVC 用户即时下线）
+        if (!online.SessionID.IsNullOrEmpty())
+            SessionProvider.Instance.RemoveSession(online.SessionID);
+
+        // 3. 标记记录为已强制下线，不删除（保留审计数据）
+        online.Status = "已强制下线";
+        online.SaveAsync(3_000);
+
+        // 4. 审计日志
+        LogProvider.Provider.WriteLog("用户在线", "强制下线", true,
+            $"用户[{online.Name}]被强制下线，吊销{count}个令牌", online.UserID, online.Name);
+
+        return Json(0, $"已强制下线，吊销{count}个令牌");
+    }
+    #endregion
 }
