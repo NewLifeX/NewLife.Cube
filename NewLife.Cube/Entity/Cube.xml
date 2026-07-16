@@ -9,6 +9,8 @@
     <BaseClass>Entity</BaseClass>
     <!--命名空间-->
     <Namespace>NewLife.Cube.Entity</Namespace>
+    <!--引用命名空间-->
+    <ExtendNameSpace />
     <!--输出目录-->
     <Output>.\</Output>
     <!--是否使用中文文件名。默认false-->
@@ -140,7 +142,7 @@
     <Table Name="UserToken" Description="用户令牌。授权指定用户访问接口数据，支持有效期" ConnName="Membership">
       <Columns>
         <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
-        <Column Name="Token" DataType="String" Description="令牌" />
+        <Column Name="Token" DataType="String" Length="200" Description="令牌" />
         <Column Name="Url" DataType="String" Length="200" Description="地址。锁定该令牌只能访问该资源路径" />
         <Column Name="UserID" DataType="Int32" Description="用户。本地用户" />
         <Column Name="Expire" DataType="DateTime" Description="过期时间" />

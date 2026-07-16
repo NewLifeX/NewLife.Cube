@@ -35,7 +35,7 @@ public partial class UserToken : IEntity<UserTokenModel>
     /// <summary>令牌</summary>
     [DisplayName("令牌")]
     [Description("令牌")]
-    [DataObjectField(false, false, true, 50)]
+    [DataObjectField(false, false, true, 200)]
     [BindColumn("Token", "令牌", "")]
     public String Token { get => _Token; set { if (OnPropertyChanging("Token", value)) { _Token = value; OnPropertyChanged("Token"); } } }
 
