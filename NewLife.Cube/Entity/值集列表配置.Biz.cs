@@ -28,7 +28,9 @@ public partial class LovListConfig : Entity<LovListConfig>
         Meta.Table.DataTable.Properties["Migration"] = "Off";
     }
 
-    // 读（1:1）：禁用 GetOrAdd，避免无数据时插入空占位孤儿行
+    /// <summary>根据值集定义编号查找列表配置。使用 Find 读取 Parameter，禁用 GetOrAdd 避免无数据时插入空占位孤儿行</summary>
+    /// <param name="lovDefId">值集定义编号</param>
+    /// <returns>列表配置，不存在时返回 null</returns>
     public static LovListConfig FindByLovDefId(Int32 lovDefId)
     {
         var p = Parameter.FindByUserIDAndCategoryAndName(0, Category, lovDefId.ToString());
@@ -42,7 +44,10 @@ public partial class LovListConfig : Entity<LovListConfig>
         return e;
     }
 
-    // 写（主路径）：覆盖为一条 Parameter
+    /// <summary>保存值集列表配置。覆盖写入为一条 Parameter 记录</summary>
+    /// <param name="lovDefId">值集定义编号</param>
+    /// <param name="entity">列表配置实体</param>
+    /// <returns>影响行数</returns>
     public static Int32 SaveByLovDefId(Int32 lovDefId, LovListConfig entity)
     {
         var p = Parameter.FindByUserIDAndCategoryAndName(0, Category, lovDefId.ToString());
@@ -57,16 +62,22 @@ public partial class LovListConfig : Entity<LovListConfig>
         lock (gate) return p.Save();
     }
 
-    // 兜底：单行 Insert/Update/Delete → 写整表
+    /// <summary>插入时执行整表覆盖写入</summary>
+    /// <returns>影响行数</returns>
     protected override Int32 OnInsert() => SaveByLovDefId(LovDefId, this);
+    /// <summary>更新时执行整表覆盖写入</summary>
+    /// <returns>影响行数</returns>
     protected override Int32 OnUpdate() => SaveByLovDefId(LovDefId, this);
+    /// <summary>删除时清除对应的 Parameter 记录</summary>
+    /// <returns>影响行数</returns>
     protected override Int32 OnDelete()
     {
         var p = Parameter.FindByUserIDAndCategoryAndName(0, Category, LovDefId.ToString());
         return p != null ? p.Delete() : 0;
     }
 
-    // 实体转模型（数据列+审计字段，用于 JSON 序列化存 Parameter）
+    /// <summary>转换为列表配置模型。包含数据列和审计字段，用于 JSON 序列化存储到 Parameter</summary>
+    /// <returns>列表配置模型</returns>
     public LovListConfigModel ToModel()
     {
         return new LovListConfigModel

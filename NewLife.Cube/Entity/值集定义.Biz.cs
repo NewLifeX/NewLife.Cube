@@ -160,6 +160,8 @@ public partial class LovDefinition : Entity<LovDefinition>
     #endregion
 
     #region 业务操作
+    /// <summary>转换为值集定义模型</summary>
+    /// <returns>值集定义模型</returns>
     public LovDefinitionModel ToModel()
     {
         var model = new LovDefinitionModel();
