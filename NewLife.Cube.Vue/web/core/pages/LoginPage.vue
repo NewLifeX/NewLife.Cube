@@ -32,12 +32,7 @@
       <div class="login-card">
         <!-- 品牌区：Logo + 系统名称 -->
         <div class="brand">
-          <img
-            v-if="logoSrc"
-            :src="logoSrc"
-            class="brand-logo"
-            alt="logo"
-          />
+          <img v-if="logoSrc" :src="logoSrc" class="brand-logo" alt="logo" />
           <!-- 默认魔方 Logo（使用 CSS 变量，随主题变色） -->
           <svg
             v-else
@@ -99,11 +94,12 @@
         </div>
 
         <!-- 底部版权信息 -->
-        <footer
-          v-if="loginConfig?.copyright || loginConfig?.registration"
-          class="login-footer"
-        >
-          <div v-if="loginConfig?.copyright" class="footer-copy" v-html="loginConfig.copyright"></div>
+        <footer v-if="loginConfig?.copyright || loginConfig?.registration" class="login-footer">
+          <div
+            v-if="loginConfig?.copyright"
+            class="footer-copy"
+            v-html="loginConfig.copyright"
+          ></div>
           <div v-if="loginConfig?.registration" class="footer-registration">
             {{ loginConfig.registration }}
           </div>
@@ -143,9 +139,7 @@ const particleCanvas = ref<HTMLCanvasElement | null>(null);
 
 // ── 计算属性 ────────────────────────────────────────────────────────
 /** 是否显示密码表单 */
-const showPasswordForm = computed<boolean>(
-  () => loginConfig.value?.login?.password === true,
-);
+const showPasswordForm = computed<boolean>(() => loginConfig.value?.login?.password === true);
 
 /** OAuth 提供商列表 */
 const oauthProviders = computed<OAuthProvider[]>(() => {
@@ -166,11 +160,14 @@ const logoSrc = computed<string>(() => {
 
 /** 背景样式（支持自定义背景图） */
 const backgroundStyle = computed<Record<string, string>>(() => {
+  const style: Record<string, string> = {};
   const bg = loginConfig.value?.loginBackground;
   if (bg) {
-    return { backgroundImage: `url(${resolveLogo(bg)})`, backgroundSize: 'cover', backgroundPosition: 'center' };
+    style.backgroundImage = `url(${resolveLogo(bg)})`;
+    style.backgroundSize = 'cover';
+    style.backgroundPosition = 'center';
   }
-  return {};
+  return style;
 });
 
 // 密码强度校验逻辑已抽到 LoginForm.vue（通过 prop 传入 loginConfig），本容器不再持有。
@@ -335,7 +332,9 @@ function createParticle(canvasWidth: number, canvasHeight: number): Particle {
     vx: (Math.random() - 0.5) * 0.4,
     vy: (Math.random() - 0.5) * 0.4,
     radius: Math.random() * 2 + 0.5,
-    color: particleColors[Math.floor(Math.random() * particleColors.length)] || 'rgba(34, 197, 94, 0.25)',
+    color:
+      particleColors[Math.floor(Math.random() * particleColors.length)] ||
+      'rgba(34, 197, 94, 0.25)',
     baseAlpha: Math.random() * 0.3 + 0.15,
     alpha: 0,
   };
@@ -357,7 +356,7 @@ function initParticleSystem(): void {
   // 无障碍：用户偏好减少动画时跳过
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d')!;
   if (!ctx) return;
 
   // 读取主题色
@@ -516,13 +515,6 @@ onMounted(async () => {
   // 初始化粒子动画
   initParticleSystem();
 
-  // 检查 baseUrl 是否已配置
-  if (!baseUrl) {
-    configError.value = '未配置后端 API 地址（VITE_API_URL），无法获取登录配置';
-    loading.value = false;
-    return;
-  }
-
   try {
     const res = await fetchLoginConfig(baseUrl);
 
@@ -616,7 +608,9 @@ onUnmounted(() => {
   position: relative;
   overflow: hidden;
   animation: card-appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .login-card:hover {
@@ -716,12 +710,7 @@ onUnmounted(() => {
 .divider-line {
   flex: 1;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--el-border-color),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, var(--el-border-color), transparent);
 }
 
 .divider-text {
@@ -746,7 +735,11 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
   color: var(--el-text-color-regular);
 }
 

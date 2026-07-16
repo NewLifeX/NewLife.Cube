@@ -114,8 +114,8 @@ public class SsoController : ControllerBaseX
     /// <param name="name"></param>
     /// <returns></returns>
     [AllowAnonymous]
-    [HttpGet]
-    public virtual ActionResult Login(String name)
+    [HttpGet("{name}")]
+    public virtual ActionResult Login([FromRoute][FromQuery] String name)
     {
         var client = _clientService.GetClient(TenantContext.CurrentId, name);
         client.Init(GetUserAgent());
