@@ -23,9 +23,10 @@ using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 namespace NewLife.Cube.Controllers;
 
 /// <summary>魔方前端数据接口</summary>
-/// <param name="fileStorage"></param>
-/// <param name="tokenService"></param>
-/// <param name="sources"></param>
+/// <param name="fileStorage">文件存储服务</param>
+/// <param name="tokenService">令牌服务</param>
+/// <param name="sources">端点数据源集合</param>
+/// <param name="setting">魔方设置</param>
 [DisplayName("数据接口")]
 public class CubeController(IFileStorage fileStorage, TokenService tokenService, IEnumerable<EndpointDataSource> sources, CubeSetting setting) : ControllerBaseX
 {

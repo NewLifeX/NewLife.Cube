@@ -126,6 +126,8 @@ public partial class VerifyCodeRecord : Entity<VerifyCodeRecord>
     #endregion
 
     #region 业务操作
+    /// <summary>转换为验证码记录模型</summary>
+    /// <returns>验证码记录模型</returns>
     public VerifyCodeRecordModel ToModel()
     {
         var model = new VerifyCodeRecordModel();

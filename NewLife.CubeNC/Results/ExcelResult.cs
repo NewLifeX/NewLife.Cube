@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 using NewLife.Cube.ViewModels;
 using NewLife.Data;
-using ExcelWriter = NewLife.Office.ExcelWriter;
+using NewLife.Office.Excel;
 
 namespace NewLife.Cube.Results;
 

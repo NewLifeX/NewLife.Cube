@@ -200,6 +200,8 @@ public partial class MailConfig : Entity<MailConfig>
     #endregion
 
     #region 业务操作
+    /// <summary>转换为邮件配置模型</summary>
+    /// <returns>邮件配置模型</returns>
     public MailConfigModel ToModel()
     {
         var model = new MailConfigModel();

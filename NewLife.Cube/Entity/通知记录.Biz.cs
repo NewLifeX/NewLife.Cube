@@ -124,6 +124,8 @@ public partial class NotificationRecord : Entity<NotificationRecord>
     #endregion
 
     #region 业务操作
+    /// <summary>转换为通知记录模型</summary>
+    /// <returns>通知记录模型</returns>
     public NotificationRecordModel ToModel()
     {
         var model = new NotificationRecordModel();

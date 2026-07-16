@@ -16,7 +16,6 @@ using XCode;
 using XCode.Configuration;
 using XCode.Membership;
 using XCode.Model;
-using ExcelReader = NewLife.Office.ExcelReader;
 
 namespace NewLife.Cube;
 

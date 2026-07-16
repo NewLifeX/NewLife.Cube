@@ -758,6 +758,10 @@ public class SsoController : ControllerBaseX
         }
     }
 
+    /// <summary>获取应用公钥。用于 OAuth 客户端获取服务端 DSA 公钥进行加密通信</summary>
+    /// <param name="client_id">应用标识</param>
+    /// <param name="client_secret">应用密钥</param>
+    /// <returns>DSA 公钥 JSON</returns>
     [AllowAnonymous]
     public ActionResult GetKey(String client_id, String client_secret)
     {
@@ -781,6 +785,10 @@ public class SsoController : ControllerBaseX
         }
     }
 
+    /// <summary>验证访问令牌。校验 access_token 有效性并返回用户信息</summary>
+    /// <param name="access_token">访问令牌</param>
+    /// <param name="redirect_uri">回调地址</param>
+    /// <returns>验证结果 JSON</returns>
     [AllowAnonymous]
     public ActionResult Verify(String access_token, String redirect_uri)
     {

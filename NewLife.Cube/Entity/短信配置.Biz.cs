@@ -160,6 +160,8 @@ public partial class SmsConfig : Entity<SmsConfig>
     #endregion
 
     #region 业务操作
+    /// <summary>转换为短信配置模型</summary>
+    /// <returns>短信配置模型</returns>
     public SmsConfigModel ToModel()
     {
         var model = new SmsConfigModel();
