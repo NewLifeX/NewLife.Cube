@@ -102,7 +102,8 @@ public class LovAutoRegisterService
         }
 
         // 同步枚举值（被 LovStringValue 标记的枚举使用成员名作为选项值，而非数字）
-        // 按特性名识别，避免 NewLife.Cube 与定义该特性的程序集产生编译期耦合
+        // 按特性名识别：NewLife.Cube 已内置 NewLife.Cube.LovStringValueAttribute；
+        // 若公共层不愿引用 Cube，也可在自己程序集定义同名特性（任意命名空间），同样生效，避免编译期耦合
         var useStringValue = enumType.GetCustomAttributes().Any(a => a.GetType().Name == "LovStringValueAttribute");
         SyncEnumValues(def, enumType, useStringValue);
 
