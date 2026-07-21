@@ -286,6 +286,16 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item label="部门" prop="departmentID">
+          <el-select v-model="userForm.departmentID" placeholder="请选择部门" style="width: 100%">
+            <el-option
+              v-for="dept in departmentOptions"
+              :key="dept.value"
+              :label="dept.label"
+              :value="dept.value"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="密码" prop="password" v-if="formType === 'add'">
           <el-input
             v-model="userForm.password"
@@ -396,9 +406,9 @@ interface User extends BaseEntity, EnableStatus {
   /** 头像 */
   avatar?: string;
   /** 角色ID */
-  roleID: number;
+  roleID?: number;
   /** 部门ID */
-  departmentID: number;
+  departmentID?: number;
   /** 注册时间 */
   registerTime: string;
   /** 最后登录时间 */
@@ -432,8 +442,8 @@ const initialUserForm: User = {
   enable: true,
   sex: 1,
   avatar: '',
-  roleID: 0,
-  departmentID: 0,
+  roleID: undefined,
+  departmentID: undefined,
   registerTime: '',
   lastLogin: '',
   updateTime: '',
@@ -465,6 +475,10 @@ const changePasswordForm = reactive<ChangePasswordForm>({
 // 角色选项数据
 const roleOptions = ref<SelectOption[]>([]);
 const roleOptionsLoaded = ref(false); // 标记角色数据是否已加载
+
+// 部门选项数据
+const departmentOptions = ref<SelectOption[]>([]);
+const departmentOptionsLoaded = ref(false); // 标记部门数据是否已加载
 
 // 页面请求参数
 const queryParams = reactive({
@@ -548,6 +562,12 @@ const userFormRules = reactive<FormRules>({
     { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' },
     { max: 50, message: '长度不能超过 50 个字符', trigger: 'blur' },
   ],
+  roleID: [
+    { required: true, message: '请选择角色', trigger: 'change' },
+  ],
+  departmentID: [
+    { required: true, message: '请选择部门', trigger: 'change' },
+  ],
   code: [{ max: 50, message: '长度不能超过 50 个字符', trigger: 'blur' }],
   avatar: [{ max: 200, message: '长度不能超过 200 个字符', trigger: 'blur' }],
   roleIds: [{ max: 200, message: '长度不能超过 200 个字符', trigger: 'blur' }],
@@ -578,6 +598,24 @@ const changePasswordFormRules = reactive<FormRules>({
     },
   ],
 });
+
+// 加载部门数据
+const loadDepartmentOptions = async (forceRefresh = false) => {
+  if (!forceRefresh && departmentOptionsLoaded.value) return;
+  try {
+    const data = await request.get('/Admin/Department');
+    const { list } = apiDataToList<{ id: number; name: string }>(data);
+    departmentOptions.value = list.map((dept: { id: number; name: string }) => ({
+      value: dept.id,
+      label: dept.name,
+    }));
+    departmentOptionsLoaded.value = true;
+  } catch (error) {
+    console.error('加载部门数据失败:', error);
+    departmentOptions.value = [];
+    departmentOptionsLoaded.value = false;
+  }
+};
 
 // 获取头像完整URL
 const getAvatarUrl = (avatar: string): string => {
@@ -772,6 +810,7 @@ const submitChangePassword = async () => {
 onMounted(() => {
   queryUser();
   loadRoleOptions(true); // 页面加载时强制刷新角色数据
+  loadDepartmentOptions(true); // 页面加载时强制刷新部门数据
 });
 </script>
 

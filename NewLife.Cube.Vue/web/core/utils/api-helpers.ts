@@ -106,12 +106,29 @@ export async function handleFormSubmit(
  * @returns 单个对象或null
  */
 export function apiDataToSingle<T = Record<string, unknown>>(data: unknown): T | null {
-  // 情况1: 单个对象响应
-  if (data && typeof data === 'object' && data !== null && !Array.isArray(data)) {
-    return data as T;
+  if (data && typeof data === 'object' && data !== null) {
+    // 情况0: 处理 ApiResponse 标准包装格式 { code, data, page }
+    // request.ts 拦截器直接返回完整 ApiResponse，需解包提取实际数据
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const obj = data as any;
+    if ('code' in obj && 'data' in obj) {
+      const inner = obj.data;
+      if (inner && typeof inner === 'object' && inner !== null && !Array.isArray(inner)) {
+        return inner as T;
+      }
+      if (Array.isArray(inner) && inner.length > 0) {
+        return inner[0] as T;
+      }
+      return null;
+    }
+
+    // 情况1: 单个对象响应（非包装格式）
+    if (!Array.isArray(data)) {
+      return data as T;
+    }
   }
   // 情况2: 数组响应，取第一个
-  else if (Array.isArray(data) && data.length > 0) {
+  if (Array.isArray(data) && data.length > 0) {
     return data[0] as T;
   }
   // 情况3: 其他情况返回null

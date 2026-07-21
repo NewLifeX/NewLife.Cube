@@ -446,6 +446,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     /// <summary>查询一批Code的数据源</summary>
     /// <param name="codes"></param>
     /// <returns></returns>
+    [AllowAnonymous]
     [HttpGet]
     public ActionResult Lookup(String codes)
     {

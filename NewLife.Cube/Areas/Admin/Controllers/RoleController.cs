@@ -49,7 +49,15 @@ public class RoleController : EntityController<Role, RoleModel>
 
         if (post && type is DataObjectMethodType.Insert or DataObjectMethodType.Update)
         {
-            // 保存权限项
+            // JSON API 请求：权限字符串由前端构建并通过模型绑定写入 entity.Permission，此处不再处理
+            if (Request.ContentType != null && Request.ContentType.Contains("application/json"))
+            {
+                // JSON 模式仍需清空缓存，确保后续读取拿到最新数据
+                Role.Meta.Session.ClearCache($"{type}-{entity}", true);
+                return rs;
+            }
+
+            // MVC 表单提交：通过 p{id} / pf{id}_{flag} 字段处理权限
             var menus = XCode.Membership.Menu.Root.AllChilds;
             var dels = new List<Int32>();
             // 遍历所有权限资源
