@@ -1,13 +1,6 @@
 <script setup lang="ts">
-/**
- * Json 编辑器（vanilla-jsoneditor 轻量封装）
- *
- * v-model 绑定「Json 字符串」：外部传入 Json 文本，组件内解析为结构化内容编辑，
- * 变更后以格式化后的 Json 字符串回写（resolveControl 映射的 control = 'json'）。
- */
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
-import type { Content, JSONContent } from 'vanilla-jsoneditor';
-import { createJSONEditor } from 'vanilla-jsoneditor';
+import { ref, watch } from 'vue';
+import VueJsonEditor from 'vue-json-editor';
 
 const props = withDefaults(
   defineProps<{
@@ -20,67 +13,59 @@ const props = withDefaults(
 
 const emit = defineEmits<{ (e: 'update:modelValue', value: string): void }>();
 
-const container = ref<HTMLElement | null>(null);
-let editor: ReturnType<typeof createJSONEditor> | null = null;
-
-/** 将 Json 字符串解析为编辑器 Content */
-function toContent(str: string): Content {
-  if (!str || !str.trim()) return { text: '' };
+function parseValue(str: string): unknown {
+  if (!str || !str.trim()) return {};
   try {
-    return { json: JSON.parse(str) };
+    return JSON.parse(str);
   } catch {
-    return { text: str };
+    return {};
   }
 }
 
-/** 将编辑器 Content 序列化回 Json 字符串 */
-function serialize(content: JSONContent): string {
-  if (content.json !== undefined) return JSON.stringify(content.json, null, 2);
-  return '';
-}
+const innerValue = ref<unknown>(parseValue(props.modelValue));
+let isInternalChange = false;
 
-onMounted(() => {
-  if (!container.value) return;
-  editor = createJSONEditor({
-    target: container.value,
-    props: {
-      content: toContent(props.modelValue),
-      readOnly: props.disabled,
-      onChange: (content: JSONContent) => {
-        emit('update:modelValue', serialize(content));
-      },
-    },
-  });
-});
-
-// 外部值变化时同步（避免与 onChange 回环）
 watch(
   () => props.modelValue,
   (val) => {
-    if (!editor) return;
-    const current = editor.get();
-    if (current && serialize(current as JSONContent) !== val) {
-      editor.set(toContent(val));
+    if (isInternalChange) {
+      isInternalChange = false;
+      return;
     }
+    innerValue.value = parseValue(val);
   },
 );
 
-watch(
-  () => props.disabled,
-  (disabled) => {
-    editor?.updateProps({ readOnly: disabled });
-  },
-);
+function onInput(val: unknown) {
+  isInternalChange = true;
+  innerValue.value = val;
+  if (val === null || val === undefined) {
+    emit('update:modelValue', '');
+    return;
+  }
+  try {
+    emit('update:modelValue', JSON.stringify(val, null, 2));
+  } catch {
+    // ignore
+  }
+}
 
-onBeforeUnmount(() => {
-  editor?.destroy();
-  editor = null;
-});
+function onError(_err: unknown) {
+  // JSON syntax error during typing, no action needed
+}
 </script>
 
 <template>
-  <div class="json-editor">
-    <div ref="container" class="json-editor__body"></div>
+  <div class="json-editor" :class="{ 'is-disabled': disabled }">
+    <VueJsonEditor
+      :value="innerValue"
+      :mode="'code'"
+      :show-btns="false"
+      :expanded-on-start="false"
+      :lang="'zh'"
+      @input="onInput"
+      @has-error="onError"
+    />
     <p v-if="!modelValue" class="json-editor__placeholder">{{ placeholder }}</p>
   </div>
 </template>
@@ -94,8 +79,9 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
-.json-editor__body {
-  min-height: 220px;
+.json-editor.is-disabled {
+  pointer-events: none;
+  opacity: 0.6;
 }
 
 .json-editor__placeholder {
@@ -103,5 +89,14 @@ onBeforeUnmount(() => {
   padding: 8px 10px;
   font-size: 12px;
   color: var(--el-text-color-placeholder);
+}
+</style>
+
+<style>
+.jsoneditor-vue .jsoneditor-outer {
+  min-height: 150px;
+}
+.jsoneditor-vue div.jsoneditor-tree {
+  min-height: 200px;
 }
 </style>

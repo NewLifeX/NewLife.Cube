@@ -47,10 +47,13 @@ if (typeof Element !== 'undefined' && !Element.prototype.scrollIntoView) {
 // ── 隔离第三方重型编辑器（Svelte/wangEditor/md-editor 在 jsdom 下无法稳定挂载）──
 // 仅替换其内部实现，FormContent 仍会渲染真实的 JsonEditor/RichEditor 组件本身，
 // 以此验证“某字段类型 → 对应控件组件”的分发逻辑。
-vi.mock('vanilla-jsoneditor', () => ({
-  // JsonEditor.vue 使用具名导入 createJSONEditor（非 createEditor）
-  createJSONEditor: () => ({ get: () => ({ content: { text: '' } }), set: () => {}, destroy: () => {} }),
-  createEditor: () => ({ get: () => ({ content: { text: '' } }), set: () => {}, destroy: () => {} }),
+vi.mock('vue-json-editor', async () => ({
+  // vue-json-editor 是 Vue 组件，直接 mock 为一个简易占位组件
+  default: {
+    name: 'VueJsonEditorMock',
+    template: '<div class="vue-json-editor-mock" />',
+    props: ['modelValue', 'mode', 'show-btns', 'expandedOnStart', 'disabled'],
+  },
 }));
 vi.mock('@wangeditor/editor-for-vue', async () => ({
   Editor: { name: 'WEditorMock', render: () => h('div', { class: 'wangeditor-mock' }) },
