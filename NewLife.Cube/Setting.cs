@@ -128,10 +128,10 @@ public class CubeSetting : Config<CubeSetting>
     //[Category("用户登录")]
     //public Int32 MinPasswordLength { get; set; } = 6;
 
-    /// <summary>密码强度。*表示无限制，默认8位起，数字大小写字母和符号。简易版^(?=.*\\d.*)(?=.*[a-zA-Z].*).{6,32}$</summary>
-    [Description("密码强度。*表示无限制，默认8位起，数字大小写字母和符号。简易版^(?=.*\\d.*)(?=.*[a-zA-Z].*).{6,32}$")]
+    /// <summary>密码强度。*表示无限制，简易版默认5~32位，不限制字符类型。完整版默认8位起，数字大小写字母和符号。完整版^(?=.*\d.*)(?=.*[a-z].*)(?=.*[A-Z].*)(?=.*[^(0-9a-zA-Z)].*).{8,32}$</summary>
+    [Description("密码强度。*表示无限制，简易版默认5~32位，不限制字符类型。完整版默认8位起，数字大小写字母和符号。完整版^(?=.*\\d.*)(?=.*[a-z].*)(?=.*[A-Z].*)(?=.*[^(0-9a-zA-Z)].*).{8,32}$")]
     [Category("用户登录")]
-    public String PaswordStrength { get; set; } = @"^(?=.*\d.*)(?=.*[a-z].*)(?=.*[A-Z].*)(?=.*[^(0-9a-zA-Z)].*).{8,32}$";
+    public String PaswordStrength { get; set; } = @"^.{5,32}$";
 
     /// <summary>登录失败次数。短时间内，相同用户或IP地址连续登录错误次数达到该值后禁止登录，默认5</summary>
     [Description("登录失败次数。短时间内，相同用户或IP地址连续登录错误次数达到该值后禁止登录，默认5")]
@@ -506,7 +506,7 @@ public class CubeSetting : Config<CubeSetting>
             //}
         }
 
-        if (PaswordStrength.IsNullOrEmpty()) PaswordStrength = @"^(?=.*\d.*)(?=.*[a-z].*)(?=.*[A-Z].*)(?=.*[^(0-9a-zA-Z)].*).{8,32}$";
+        if (PaswordStrength.IsNullOrEmpty()) PaswordStrength = @"^.{5,32}$";
         if (MaxLoginError <= 0) MaxLoginError = 5;
         if (LoginForbiddenTime <= 0) LoginForbiddenTime = 300;
 

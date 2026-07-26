@@ -139,7 +139,7 @@
             <el-form-item label="密码强度" prop="paswordStrength">
               <el-input
                 v-model="form.paswordStrength"
-                placeholder="*表示无限制，默认8位起，数字大小写字母和符号"
+                placeholder="*表示无限制，简易版默认5~32位，不限制字符类型"
               />
             </el-form-item>
             <el-form-item label="登录失败次数" prop="maxLoginError">
