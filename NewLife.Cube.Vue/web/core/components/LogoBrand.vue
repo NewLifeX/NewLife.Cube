@@ -16,7 +16,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const config = getConfig();
-const brandTitle = config.base.title || 'Cube Front';
+const brandTitle = config.base.title || '魔方系统';
 const brandLogo = computed(() => config.base.logo);
 
 // 图片 logo 相关
