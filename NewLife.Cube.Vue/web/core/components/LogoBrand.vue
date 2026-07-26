@@ -29,11 +29,12 @@ const onLogoLoad = (e: Event) => {
   }
 };
 // 根据图片宽高比和折叠状态决定是否显示标题
+// 长方形 logo 只显示图标不显示标题，正方形 logo 才显示标题
 const showLogoTitle = computed(() => {
   if (props.collapsed) return false; // 折叠时隐藏
   if (logoAspectRatio.value === null) return true; // 加载中默认显示
   const ratio = logoAspectRatio.value;
-  return ratio > 0.9 && ratio < 1.1; // 正方形隐藏标题
+  return ratio > 0.9 && ratio < 1.1; // 正方形显示标题，长方形隐藏标题
 });
 </script>
 
@@ -66,16 +67,14 @@ const showLogoTitle = computed(() => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  height: 100%;
-  width: auto;
-  max-width: 100%;
+  width: 32px;
+  height: 32px;
   border-radius: 6px;
   overflow: hidden;
 
   img {
+    width: 100%;
     height: 100%;
-    width: auto;
-    max-width: 100%;
     object-fit: contain;
   }
 }
