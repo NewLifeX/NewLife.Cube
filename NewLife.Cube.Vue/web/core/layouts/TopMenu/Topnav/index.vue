@@ -209,7 +209,6 @@ $tn-h: 60px;
 .tn-mark {
   width: 32px;
   height: 32px;
-  background: var(--el-color-primary);
   border-radius: 8px;
   display: flex;
   align-items: center;
