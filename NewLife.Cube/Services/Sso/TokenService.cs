@@ -559,7 +559,7 @@ public class TokenService : ITokenService
                 var app = App.FindByName(jwt.Audience);
                 if (app != null)
                 {
-                    var allConnectData = BuildAllConnectData(user.ID, app.Scopes);
+                    var allConnectData = BuildAllConnectData(user.ID, app.Scopes, app.OAuths);
                     if (allConnectData != null)
                     {
                         foreach (var kv in allConnectData)
@@ -602,13 +602,22 @@ public class TokenService : ITokenService
     /// 按 Provider 分组，每个 Provider 独立一个字典。
     /// 过滤掉 <see cref="_sensitiveFields"/> 中的敏感字段。
     /// 通过 App.Scopes 中配置的字段 pattern 做模糊过滤。
+    /// 通过 App.OAuths 限制仅返回指定提供商的连接数据。
     /// </remarks>
     /// <param name="userId">用户编号</param>
-    /// <param name="scopes">App.Scopes 配置</param>
+    /// <param name="scopes">App.Scopes 配置。无字段 pattern 时不返回任何 connect 数据</param>
+    /// <param name="oauths">App.OAuths 配置。逗号分隔的提供商白名单，为空时不过滤</param>
     /// <returns>Provider → 过滤后字段字典 的映射</returns>
-    private static Dictionary<String, IDictionary<String, Object>> BuildAllConnectData(Int32 userId, String scopes)
+    private static Dictionary<String, IDictionary<String, Object>> BuildAllConnectData(Int32 userId, String scopes, String oauths = null)
     {
         var patterns = ParseConnectFieldPatterns(scopes);
+        // 没有字段过滤规则时，不返回任何 connect 数据
+        if (patterns == null) return null;
+
+        // 解析允许的提供商列表
+        var allowOAuths = !oauths.IsNullOrEmpty()
+            ? oauths.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            : null;
 
         var connects = UserConnect.FindAllByUserID(userId)
             .Where(e => e.Enable && !e.Remark.IsNullOrEmpty())
@@ -618,6 +627,10 @@ public class TokenService : ITokenService
 
         foreach (var uc in connects)
         {
+            // 如果 App.OAuths 有配置，只返回允许的提供商数据
+            if (allowOAuths != null && !allowOAuths.Contains(uc.Provider, StringComparer.OrdinalIgnoreCase))
+                continue;
+
             try
             {
                 var remark = JsonParser.Decode(uc.Remark);
@@ -629,8 +642,8 @@ public class TokenService : ITokenService
                     // 跳过敏感字段，不传递给下游
                     if (_sensitiveFields.Contains(kv.Key, StringComparer.OrdinalIgnoreCase)) continue;
 
-                    // 无 pattern 或匹配任意 pattern 时包含该字段
-                    if (patterns == null || patterns.Any(p => StringHelper.IsMatch(p, kv.Key)))
+                    // patterns 由 ParseConnectFieldPatterns 保证非 null
+                    if (patterns.Any(p => StringHelper.IsMatch(p, kv.Key)))
                         providerData[kv.Key] = kv.Value;
                 }
 
