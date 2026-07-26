@@ -45,7 +45,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    include: ['core/__tests__/**/*.{spec,test}.ts'],
+    include: ['core/__tests__/**/*.{spec,test}.ts', 'core/**/*.{spec,test}.ts'],
     exclude: ['**/node_modules/**', '**/dist/**', '**/cypress/**', 'e2e/**', '**/.{idea,git,cache}/**'],
     testTimeout: 20000,
     hookTimeout: 20000,

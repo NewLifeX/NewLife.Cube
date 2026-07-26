@@ -6,10 +6,9 @@
  * 归一为 `FieldMeta[]` 交给子组件：
  *   - ListTableContent   按 resolveListControl 渲染单元格
  *   - ListSearchBar      按 resolveSearchControl 渲染搜索控件
- *   - FormPage/FormContent 按 resolveControl 渲染表单
+ *   - ListFormDialog（命令式弹窗）按 resolveControl 渲染表单
  *
- * 本文件不再维护本地 TYPE_TO_SEARCH_TYPE / TYPE_TO_FORM_TYPE 映射，
- * 彻底消除与表单页的 Boolean / DateTime 不一致 BUG。
+ * 新增/编辑弹窗使用命令式 openListFormDialog，无需在模板中声明 el-dialog。
  */
 import {
   inject,
@@ -22,7 +21,7 @@ import {
   watch,
 } from 'vue';
 import type { Component } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import request from '@newlifex/cube-vue/core/utils/request';
 import {
@@ -42,13 +41,12 @@ import DefaultListToolbar from '@newlifex/cube-vue/core/views/components/ListToo
 import DefaultListTableContent from '@newlifex/cube-vue/core/views/components/ListTableContent.vue';
 import DefaultListPagination from '@newlifex/cube-vue/core/views/components/ListPagination.vue';
 import DefaultListPageFooter from '@newlifex/cube-vue/core/views/components/ListPageFooter.vue';
-import FormPage from '@newlifex/cube-vue/core/views/form.vue';
 // 图表弹窗懒加载（按需载入 echarts，仅在点击「图表」时加载）
 const ChartDialog = defineAsyncComponent(
   () => import('@newlifex/cube-vue/core/views/components/ListChartDialog.vue'),
 );
 import { routeToApiPrefix, getValueByKey } from '@newlifex/cube-vue/core/utils/url';
-import { serializeSubmitModel } from '@newlifex/cube-vue/core/utils/fieldControl';
+import { openListFormDialog } from './modals/list-form-dialog/openListFormDialog';
 import type { FieldMeta } from '@newlifex/cube-vue/core/types/field';
 
 /** 后端下发的原始字段（DataField 归一结构） */
@@ -119,7 +117,6 @@ const emit = defineEmits<{
 }>();
 
 const route = useRoute();
-const router = useRouter();
 
 const registry = inject(
   PageSectionRegistryKey,
@@ -143,13 +140,6 @@ const PageFooterComp = inject(ListPageFooterKey, DefaultListPageFooter);
 
 const apiPrefix = computed(() => routeToApiPrefix(route.path));
 
-const dialogVisible = ref(false);
-const dialogTitle = ref('新增');
-const dialogMode = ref<'add' | 'edit'>('add');
-const dialogFormData = ref<Record<string, unknown>>({});
-const dialogFields = ref<FieldMeta[]>([]);
-const isSubmitting = ref(false);
-
 /** 导入：隐藏的文件选择框 */
 const importInput = ref<HTMLInputElement | null>(null);
 /** 图表弹窗状态与数据（GetChartData 返回的 ECharts 配置数组） */
@@ -171,6 +161,11 @@ function toFieldMeta(f: BackendField): FieldMeta {
     lovCode: f.lovCode,
     multiple: f.multiple,
   };
+}
+
+/** 后端字段 → 表单 FieldMeta 数组（过滤主键与只读字段） */
+function backendFieldsToFormFields(fields: BackendField[]): FieldMeta[] {
+  return fields.filter((f) => !f.primaryKey && !f.readOnly).map(toFieldMeta);
 }
 
 const auto = computed(() => !props.data);
@@ -197,48 +192,32 @@ const computedSearchFields = computed<FieldMeta[]>(() => {
     .map(toFieldMeta);
 });
 
-function backendFieldsToFormFields(fields: BackendField[]): FieldMeta[] {
-  return fields
-    .filter((f) => !f.primaryKey && !f.readOnly)
-    .map(toFieldMeta);
-}
-
-function openDialog(mode: 'add' | 'edit', row?: Record<string, unknown>) {
-  dialogMode.value = mode;
-  dialogTitle.value = mode === 'add' ? '新增' : '编辑';
-  dialogFormData.value = mode === 'edit' && row ? { ...row } : {};
-  if (pageMeta.value) {
-    const sourceFields = mode === 'add' ? pageMeta.value.addForm : pageMeta.value.editForm;
-    dialogFields.value = backendFieldsToFormFields(sourceFields || pageMeta.value.addForm || []);
+function handleNew() {
+  if (auto.value) {
+    openListFormDialog({
+      title: '新增',
+      fields: backendFieldsToFormFields(pageMeta.value!.addForm ?? []),
+      apiPrefix: apiPrefix.value,
+      mode: 'add',
+      routePath: route.path,
+      onSuccess: () => fetchList(),
+    });
+  } else {
+    emit('new');
   }
-  dialogVisible.value = true;
 }
 
-function closeDialog() {
-  dialogVisible.value = false;
-}
-
-async function submitDialog() {
-  if (isSubmitting.value) return;
-  isSubmitting.value = true;
-  try {
-    const url = apiPrefix.value;
-    // 多选字段（lovMulti / multipleSelect）序列化为逗号分隔字符串，避免数组提交
-    const data = serializeSubmitModel(dialogFormData.value, dialogFields.value);
-    if (dialogMode.value === 'edit') {
-      await request({ url, method: 'put', data });
-      ElMessage.success('更新成功');
-    } else {
-      await request({ url, method: 'post', data });
-      ElMessage.success('新增成功');
-    }
-    closeDialog();
-    await fetchList();
-  } catch (err: any) {
-    // 全局响应拦截器已统一弹出错误提示，业务层无需重复 toast
-    console.error('[DefaultList] submitDialog 保存失败:', err);
-  } finally {
-    isSubmitting.value = false;
+function handleEditRow(row: Record<string, unknown>) {
+  if (auto.value) {
+    openListFormDialog({
+      title: '编辑',
+      fields: backendFieldsToFormFields(pageMeta.value!.editForm ?? pageMeta.value!.addForm ?? []),
+      modelValue: { ...row },
+      apiPrefix: apiPrefix.value,
+      mode: 'edit',
+      routePath: route.path,
+      onSuccess: () => fetchList(),
+    });
   }
 }
 
@@ -259,10 +238,6 @@ async function handleDeleteRow(row: Record<string, unknown>) {
       ElMessage.error(msg);
     }
   }
-}
-
-function handleDialogUpdate(val: Record<string, unknown>) {
-  dialogFormData.value = val;
 }
 
 async function fetchPageMeta() {
@@ -329,20 +304,6 @@ function handleReset() {
     fetchList();
   } else {
     emit('reset');
-  }
-}
-
-function handleNew() {
-  if (auto.value) {
-    openDialog('add');
-  } else {
-    emit('new');
-  }
-}
-
-function handleEditRow(row: Record<string, unknown>) {
-  if (auto.value) {
-    openDialog('edit', row);
   }
 }
 
@@ -570,17 +531,6 @@ onMounted(async () => {
         <component :is="PageFooterComp" />
       </slot>
     </div>
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="700px" destroy-on-close>
-      <FormPage
-        :fields="dialogFields"
-        :model-value="dialogFormData"
-        :show-continue="false"
-        @update:model-value="handleDialogUpdate"
-        @submit="submitDialog"
-        @cancel="closeDialog"
-      />
-    </el-dialog>
-
     <!-- 导入：隐藏的文件选择框 -->
     <input
       ref="importInput"

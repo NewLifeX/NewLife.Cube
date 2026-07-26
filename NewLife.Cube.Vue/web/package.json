@@ -17,6 +17,7 @@
     "lint:oxlint": "oxlint . --fix -D correctness --ignore-path .gitignore",
     "lint:eslint": "eslint . --fix",
     "lint": "run-s lint:*",
+    "check": "pnpm run type-check && pnpm run lint:eslint",
     "format": "prettier --write src/"
   },
   "dependencies": {

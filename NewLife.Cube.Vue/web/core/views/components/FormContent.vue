@@ -26,6 +26,8 @@ interface Props {
   modelValue?: Record<string, unknown>;
   /** 接口前缀（动态类型，由路由计算得，如 /Device/DeviceProfile），透传给 Uploader 推导上传地址 */
   apiPrefix?: string;
+  /** 栅格列数，默认 2。在弹窗/抽屉中可根据字段数量动态调整 */
+  columns?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -33,6 +35,7 @@ const props = withDefaults(defineProps<Props>(), {
   fields: () => [],
   modelValue: () => ({}),
   apiPrefix: '',
+  columns: 2,
 });
 
 const emit = defineEmits<{
@@ -97,7 +100,7 @@ function toMultiArray(val: unknown): string[] {
       <h2 class="fmc-title">{{ title }}</h2>
     </div>
     <div class="fmc-body">
-      <div class="fmc-grid">
+      <div class="fmc-grid" :style="{ gridTemplateColumns: `repeat(${props.columns}, 1fr)` }">
         <div
           v-for="field in fields"
           :key="field.name"
@@ -302,7 +305,6 @@ function toMultiArray(val: unknown): string[] {
 
 .fmc-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 20px 24px;
 }
 
