@@ -49,9 +49,47 @@ public class RoleController : EntityController<Role, RoleModel>
 
         if (post && type is DataObjectMethodType.Insert or DataObjectMethodType.Update)
         {
-            // JSON API 请求：权限字符串由前端构建并通过模型绑定写入 entity.Permission，此处不再处理
+            // JSON API 请求：权限字符串由前端构建并通过模型绑定写入 entity.Permission
+            // 此处需解析字符串并通过 entity.Set() 同步更新 Permissions 字典，确保保存时不会丢失
             if (Request.ContentType != null && Request.ContentType.Contains("application/json"))
             {
+                // 收集现有权限键，用于后续清理已移除的项
+                var oldKeys = entity.Permissions.Keys.ToList();
+
+                // 解析权限字符串 "MenuID#Flags,MenuID#Flags" 并通过 entity.Set() 设置
+                var permStr = entity.Permission;
+                if (!permStr.IsNullOrEmpty())
+                {
+                    var newKeys = new List<Int32>();
+                    foreach (var part in permStr.Split(','))
+                    {
+                        var kv = part.Split('#');
+                        if (kv.Length == 2 &&
+                            Int32.TryParse(kv[0], out var menuId) &&
+                            Int32.TryParse(kv[1], out var flag) &&
+                            flag > 0)
+                        {
+                            entity.Set(menuId, (PermissionFlags)flag);
+                            newKeys.Add(menuId);
+                        }
+                    }
+
+                    // 移除不在新权限中的旧项
+                    foreach (var key in oldKeys)
+                    {
+                        if (!newKeys.Contains(key))
+                            entity.Permissions.Remove(key);
+                    }
+                }
+                else
+                {
+                    // 权限字符串为空，清空所有权限
+                    foreach (var key in oldKeys)
+                    {
+                        entity.Permissions.Remove(key);
+                    }
+                }
+
                 // JSON 模式仍需清空缓存，确保后续读取拿到最新数据
                 Role.Meta.Session.ClearCache($"{type}-{entity}", true);
                 return rs;
