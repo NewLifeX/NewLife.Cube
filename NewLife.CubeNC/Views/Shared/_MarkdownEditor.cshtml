@@ -22,6 +22,15 @@
         margin-bottom: 0;
         border-collapse: initial;
     }
+
+    /* 限制编辑器高度，超出滚动 */
+    .CodeMirror {
+        max-height: 600px;
+    }
+    .CodeMirror-scroll {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
 </style>
 <script>
     (function () {
