@@ -55,6 +55,7 @@ XCode教程：<https://newlifex.com/xcode>
 3. 多前端共存：Vue / Blazor / AntDesign / 传统 Razor 可渐进迁移。  
 4. 多数据库 + 自动建表 + 自动分表 + 读写分离（依赖 XCode）支持超大规模数据。  
 5. 可扩展：字段元数据、视图覆写、主题插件、IModule 模块化。  
+7. **AI 智能洞察**：任何数据页面一键 AI 分析——自动统计、异常检测、趋势预判、可执行建议。支持 SSE 流式输出和深度推理模式。MVC / Vue 双前端适配。  
 6. 长期演进 & 多目标框架，易升级、稳定可控。  
 
 ---
@@ -97,6 +98,7 @@ XCode教程：<https://newlifex.com/xcode>
 - 权限模型：用户 -> 角色 -> 菜单(Action 集合)。首个用户抢管理员，`admin` 被禁用。  
 - ApiResponse：标准响应包装 code / data / page / stat。  
 - IModule：启动模块注入服务和静态资源（主题、Swagger 等）。  
+- **AI 洞察**：EntityController 内置 `AiInsight` Action，支持 `_query` 复用导出机制。前端按钮一键触发，SSE 流式消费分析结果。数据安全过滤（14 类敏感字段黑名单 + `[AIVisible]` 白名单）。
 
 ---
 ## 快速拥有
