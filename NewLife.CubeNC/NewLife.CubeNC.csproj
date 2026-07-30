@@ -64,6 +64,9 @@
     <Compile Include="..\NewLife.Cube\AI\AIService.cs" Link="AI\AIService.cs" />
     <Compile Include="..\NewLife.Cube\AI\AIPlugin.cs" Link="AI\AIPlugin.cs" />
     <Compile Include="..\NewLife.Cube\AI\Jobs\AILogSummaryJob.cs" Link="AI\Jobs\AILogSummaryJob.cs" />
+    <Compile Include="..\NewLife.Cube\AI\AIVisibleAttribute.cs" Link="AI\AIVisibleAttribute.cs" />
+    <Compile Include="..\NewLife.Cube\AI\AiDataHelper.cs" Link="AI\AiDataHelper.cs" />
+    <Compile Include="..\NewLife.Cube\AI\AiInsightHelper.cs" Link="AI\AiInsightHelper.cs" />
     <Compile Include="..\NewLife.Cube\AI\Jobs\AISecurityReportJob.cs" Link="AI\Jobs\AISecurityReportJob.cs" />
   </ItemGroup>
 

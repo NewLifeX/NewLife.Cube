@@ -44,6 +44,7 @@
             <div class="pull-right form-group">
                 @await Html.PartialAsync("_List_Search")
                 @await Html.PartialAsync("_List_Toolbar_Search")
+                @await Html.PartialAsync("_List_Toolbar_AiInsight")
                 @await Html.PartialAsync("_List_Toolbar_Adv")
             </div>
         </form>
@@ -88,3 +89,5 @@
         })
     </script>
 }
+@* AI 洞察弹窗 *@
+@await Html.PartialAsync("_AiInsightModal")

@@ -1,0 +1,52 @@
+@using NewLife.Common;
+@using NewLife.Security
+@{
+    var user = ViewBag.User as IUser ?? User.Identity as IUser;
+    var page = ViewBag.Page as Pager;
+    var queryData = page.GetBaseUrl(true, true, true).ToString().GetBytes().ToUrlBase64();
+}
+<div class="btn-group">
+    <button data-toggle="dropdown" class="btn btn-ai btn-sm btn-sm-force dropdown-toggle" aria-expanded="false" title="AI 智能分析当前数据">
+        <span class="ace-icon fa fa-magic icon-on-right"></span>
+        AI洞察
+        <span class="ace-icon fa fa-caret-down icon-on-right"></span>
+    </button>
+
+    <ul class="dropdown-menu dropdown-ai dropdown-menu-right">
+        <li>
+            <a href="javascript:;" onclick="CubeAI.insight('@queryData', false)" title="快速分析，3-8秒出结果">
+                <i class="ace-icon fa fa-bolt"></i> 快速洞察
+            </a>
+        </li>
+        <li>
+            <a href="javascript:;" onclick="CubeAI.insight('@queryData', true)" title="深度推理，结果更准确，需要等待较长时间">
+                <i class="ace-icon fa fa-brain"></i> 深度分析
+            </a>
+        </li>
+    </ul>
+</div>
+
+<style>
+    /* AI 洞察按钮主题色 */
+    .btn-ai {
+        color: #fff !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border-color: #667eea !important;
+    }
+    .btn-ai:hover, .btn-ai:focus, .btn-ai:active {
+        background: linear-gradient(135deg, #5a6fd6 0%, #6a4192 100%) !important;
+        border-color: #5a6fd6 !important;
+        color: #fff !important;
+    }
+    .dropdown-ai {
+        border-top: 2px solid #667eea;
+    }
+    .dropdown-ai > li > a {
+        color: #555;
+        padding: 6px 16px;
+    }
+    .dropdown-ai > li > a:hover {
+        background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+        color: #667eea;
+    }
+</style>

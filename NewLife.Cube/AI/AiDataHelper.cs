@@ -1,0 +1,104 @@
+using NewLife.Reflection;
+using XCode;
+using XCode.Configuration;
+
+namespace NewLife.Cube.AI;
+
+/// <summary>AI 数据助手。负责字段安全过滤和数据收集</summary>
+public static class AiDataHelper
+{
+    /// <summary>默认敏感字段名模式（忽略大小写）</summary>
+    /// <remarks>匹配规则：字段名包含任一模式则视为敏感字段</remarks>
+    private static readonly String[] _sensitivePatterns =
+    [
+        "password", "pwd", "pass",
+        "mobile", "phone", "cellphone", "tel",
+        "idcard", "idnumber", "identity",
+        "email", "mail",
+        "token", "accesstoken", "refreshtoken",
+        "secret", "appsecret", "apisecret",
+        "key", "apikey", "privatekey",
+        "salt", "hash", "sign",
+        "ip", "ipaddress", "clientip",
+        "mac", "macaddress",
+        "address", "location", "coordinate",
+        "avatar", "photo", "headimg",
+        "fingerprint", "deviceid"
+    ];
+
+    /// <summary>判断字段是否安全可发送给 AI</summary>
+    /// <param name="field">字段元数据</param>
+    /// <returns>true=安全可发送</returns>
+    public static Boolean IsSafeField(FieldItem field)
+    {
+        if (field == null) return false;
+
+        var name = field.Name;
+        if (name.IsNullOrEmpty()) return false;
+
+        // 检查字段名是否命中敏感模式
+        var lower = name.ToLower();
+        foreach (var pattern in _sensitivePatterns)
+        {
+            if (lower.Contains(pattern)) return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>判断实体属性是否为 AI 可见</summary>
+    /// <param name="entityType">实体类型</param>
+    /// <param name="propertyName">属性名</param>
+    /// <returns>true=标记了 [AIVisible]</returns>
+    public static Boolean HasAIVisible(Type entityType, String propertyName)
+    {
+        if (entityType == null || propertyName.IsNullOrEmpty()) return false;
+
+        var pi = entityType.GetProperty(propertyName);
+        if (pi == null) return false;
+
+        return pi.GetCustomAttributes(typeof(AIVisibleAttribute), true).Length > 0;
+    }
+
+    /// <summary>实体是否有任意字段标记了 [AIVisible]</summary>
+    /// <param name="entityType">实体类型</param>
+    /// <returns></returns>
+    public static Boolean HasAnyAIVisible(Type entityType)
+    {
+        if (entityType == null) return false;
+
+        return entityType.GetProperties().Any(p => p.GetCustomAttributes(typeof(AIVisibleAttribute), true).Length > 0);
+    }
+
+    /// <summary>过滤实体字段，仅保留 AI 可用的安全字段</summary>
+    /// <param name="allFields">实体所有字段</param>
+    /// <param name="entityType">实体类型（用于读取 [AIVisible]）</param>
+    /// <returns>安全字段列表</returns>
+    public static IList<FieldItem> FilterSafeFields(FieldItem[] allFields, Type entityType)
+    {
+        if (allFields == null || allFields.Length == 0) return [];
+
+        // 若实体有 [AIVisible] 标记，仅发送标记字段
+        if (HasAnyAIVisible(entityType))
+        {
+            return allFields.Where(f => HasAIVisible(entityType, f.Name)).ToList();
+        }
+
+        // 否则使用黑名单过滤
+        return allFields.Where(IsSafeField).ToList();
+    }
+
+    /// <summary>将实体对象转为安全字段的字典（仅包含 AI 可见字段）</summary>
+    /// <param name="entity">实体对象</param>
+    /// <param name="safeFields">安全字段列表</param>
+    /// <returns>字段名→值的字典</returns>
+    public static IDictionary<String, Object?> ToSafeDictionary(IEntity entity, IList<FieldItem> safeFields)
+    {
+        var dic = new Dictionary<String, Object?>();
+        foreach (var field in safeFields)
+        {
+            dic[field.Name] = entity[field.Name];
+        }
+        return dic;
+    }
+}

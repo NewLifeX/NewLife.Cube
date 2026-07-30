@@ -3,6 +3,7 @@ using NewLife.AI.Clients;
 using NewLife.AI.Clients.OpenAI;
 using NewLife.AI.Models;
 using NewLife.Log;
+using System.Runtime.CompilerServices;
 
 namespace NewLife.Cube.AI;
 
@@ -31,6 +32,13 @@ public class AIService : IAIService
     {
         EnableThinking = false,
         Temperature = 0.3,
+    };
+
+    /// <summary>深度分析选项：开启深度推理、适中温度，适合复杂数据洞察场景</summary>
+    private static readonly ChatOptions _deepOptions = new()
+    {
+        EnableThinking = true,
+        Temperature = 0.5,
     };
 
     /// <summary>获取或创建客户端，按需延迟初始化</summary>
@@ -105,6 +113,52 @@ public class AIService : IAIService
 直接输出诊断报告，不要加无关解释。";
 
         return ChatFastAsync(prompt, sysInfoJson, cancellationToken);
+    }
+
+    /// <summary>数据分析洞察。根据上下文数据生成分析报告</summary>
+    public async Task<String> AnalyzeDataAsync(String prompt, Boolean think = false, CancellationToken cancellationToken = default)
+    {
+        var options = think ? _deepOptions : _fastOptions;
+        return await ChatInternalAsync(prompt, null, options, cancellationToken);
+    }
+
+    /// <summary>数据分析洞察（流式输出）。逐块返回生成内容</summary>
+    public async IAsyncEnumerable<String> AnalyzeDataStreamAsync(String prompt, Boolean think = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (!_setting.AISwitch)
+        {
+            yield return "AI 未启用，请在系统设置中开启 AISwitch";
+            yield break;
+        }
+
+        var options = think ? _deepOptions : _fastOptions;
+        var error = default(String);
+        IChatClient? client = null;
+
+        try
+        {
+            client = GetClient();
+            WriteLog("AnalyzeDataStream 开始", prompt[..Math.Min(prompt.Length, 200)]);
+        }
+        catch (Exception ex)
+        {
+            WriteLog("AnalyzeDataStream 失败", ex.ToString());
+            error = $"\n\n---\n>  AI 调用失败：{ex.Message}";
+        }
+
+        if (error != null)
+        {
+            yield return error;
+            yield break;
+        }
+
+        await foreach (var chunk in client!.GetStreamingResponseAsync(prompt, options, cancellationToken))
+        {
+            if (chunk?.Text != null)
+                yield return chunk.Text;
+        }
+
+        WriteLog("AnalyzeDataStream 完成", "");
     }
 
     /// <summary>快速 AI 对话，关闭深度推理、低温度，适合用户交互场景</summary>
