@@ -1,4 +1,4 @@
-using NewLife.Reflection;
+﻿using NewLife.Reflection;
 using XCode;
 using XCode.Configuration;
 
@@ -25,6 +25,24 @@ public static class AiDataHelper
         "avatar", "photo", "headimg",
         "fingerprint", "deviceid"
     ];
+
+    
+
+    /// <summary>判断字段名是否安全（仅检查名称黑名单）</summary>
+    /// <param name="fieldName">字段名</param>
+    /// <returns>true=安全可发送</returns>
+    public static Boolean IsSafeFieldName(String fieldName)
+    {
+        if (fieldName.IsNullOrEmpty()) return false;
+
+        var lower = fieldName.ToLower();
+        foreach (var pattern in _sensitivePatterns)
+        {
+            if (lower.Contains(pattern)) return false;
+        }
+
+        return true;
+    }
 
     /// <summary>判断字段是否安全可发送给 AI</summary>
     /// <param name="field">字段元数据</param>

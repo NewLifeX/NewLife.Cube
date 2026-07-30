@@ -1,4 +1,4 @@
-<template>
+﻿<template>
 	<div class="table-demo-container layout-padding">
 		<div class="table-demo-padding layout-padding-view layout-padding-auto h-full">
 			<div v-if="chartList.length > 0" class="chart-area mb15">
@@ -29,7 +29,11 @@
 				@sortHeader="onSortHeader">
 				<template v-for="item in search.filter(v => v.slot)" :key="item.prop.toString()" #[`${item.slot!}`]="data">
 					<slot :name="item.slot" :model="data.model" :prop="data.prop"></slot>
-				</template>
+				
+  <!-- AI Drawer -->
+  <AiInsightDrawer v-model="insightVisible" :url="insightUrl" :thinking="insightThinking" />
+  <AiInsightDrawer v-model="insightVisible" :url="insightUrl" :thinking="insightThinking" />
+</template>
 				<template v-for="item in columns.filter(v => v.slot)" :key="item.prop" #[`${item.slot!}`]="data">
 					<slot :name="item.slot" :scope="data.scope"></slot>
 				</template>
@@ -64,12 +68,15 @@
 			</Edit>
 		</div>
 	</div>
+  <!-- AI Drawer -->
+  <AiInsightDrawer v-model="insightVisible" :url="insightUrl" :thinking="insightThinking" />
 </template>
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, inject, markRaw, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import * as echarts from 'echarts';
+import AiInsightDrawer from '../table/AiInsightDrawer.vue';
 import { ColumnKind, usePageApi } from '../../api/page';
 import request from '/@/utils/request';
 import Edit from './edit.vue';
@@ -307,9 +314,21 @@ getTableData();
 loadChartData();
 
 defineExpose({
-	getTableData
+	getTableData,
+	openInsight
 })
 providePage && (providePage.handle.reload = getTableData)
+
+
+const insightVisible = ref(false);
+const insightThinking = ref(false);
+const insightUrl = ref('');
+
+function openInsight(think) {
+  insightThinking.value = think;
+  insightUrl.value = props.type + '/AiInsight?think=' + think + '&stream=true&maxRows=100';
+  insightVisible.value = true;
+}
 
 </script>
 
