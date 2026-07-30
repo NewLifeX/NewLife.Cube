@@ -4,6 +4,12 @@
 			<div v-if="chartList.length > 0" class="chart-area mb15">
 				<div v-for="(chart, idx) in chartList" :key="idx" class="chart-item" :ref="el => setChartRef(el as HTMLElement, idx)"></div>
 			</div>
+
+			<!-- AI -->
+			<el-button type="primary" plain size="default" @click="openInsight(false)" style="margin-bottom:12px;">
+				<el-icon :size="16"><MagicStick /></el-icon> AI洞察
+			</el-button>
+
 			<Table
 				v-if="wrapper !== 'div'"
 				class="table-demo"
@@ -75,6 +81,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, inject, markRaw, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
+import { MagicStick, ArrowDown } from '@element-plus/icons-vue';
 import * as echarts from 'echarts';
 import AiInsightDrawer from '../table/AiInsightDrawer.vue';
 import { ColumnKind, usePageApi } from '../../api/page';
