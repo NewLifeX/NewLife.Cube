@@ -13,7 +13,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [DisplayName("数据库")]
 [EntityAuthorize(PermissionFlags.Detail)]
 [AdminArea]
-[Menu(26, true, Icon = "fa-database")]
+[Menu(26, true, Icon = "DataBoard")]
 public class DbController : ControllerBaseX
 {
     /// <summary>数据库列表</summary>

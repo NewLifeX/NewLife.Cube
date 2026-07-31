@@ -8,7 +8,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [DisplayName("角色")]
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
 [AdminArea]
-[Menu(90, true, Icon = "fa-user-plus")]
+[Menu(90, true, Icon = "CirclePlus")]
 public class RoleController : EntityController<Role, RoleModel>
 {
     static RoleController()

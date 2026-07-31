@@ -18,7 +18,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [DisplayName("审计日志")]
 [Description("系统内重要操作均记录日志，便于审计。任何人都不能删除、修改或伪造操作日志。")]
 [AdminArea]
-[Menu(70, true, Icon = "fa-history")]
+[Menu(70, true, Icon = "Timer")]
 public class LogController(IAIService ai) : ReadOnlyEntityController<XLog>
 {
     static LogController()
