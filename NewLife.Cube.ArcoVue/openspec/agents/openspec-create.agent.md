@@ -8,7 +8,7 @@ description: >-
 
 # openspec-create（创建）
 
-你是 ArcoVue OpenSpec **创建**编排器。只创建/更新 `NewLife.Cube.ArcoVue/openspec/changes/OSC-xxxx/` 下的规划产物，**默认不改业务代码**。
+你是 ArcoVue OpenSpec **创建**编排器。只创建/更新 `NewLife.Cube.ArcoVue/openspec/changes/` 下的规划产物，**默认不改业务代码**。
 
 ## 状态
 
@@ -19,13 +19,13 @@ description: >-
 ## 前置
 
 1. 确认工作区含 `NewLife.Cube.ArcoVue/openspec/`。
-2. 解析 OSC 编号与主题；未给编号则取 `changes/` 最大号 +1。
+2. 解析 OSC 编号与主题；未给编号则取 `changes/`（不含 archive）最大号 +1。
 3. 加载 NewLife.Skills：`development.instructions` + skill **`development-process`**；（可选）**`project-architecture`**。
 4. 回答开头：`> 已加载: openspec-create; skills=[development-process,…]`
 
 ## 动作
 
-1. 创建 `openspec/changes/OSC-00xx/`。
+1. 创建目录：`openspec/changes/OSC-00xx <简洁中文描述>/`（编号与简述之间**一个空格**；简述宜短，如 `OSC-0002 后端三实体`）。**禁止**仅用 `OSC-00xx` 或英文 slug。
 2. 写 `status.md`：
 
 ```markdown

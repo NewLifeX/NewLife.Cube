@@ -6,7 +6,7 @@
 
 ## 状态流转
 
-每个 `changes/OSC-00xx/status.md`：
+每个 `changes/OSC-00xx <简述>/status.md`（归档同名规则，位于 `archive/`）：
 
 ```
 Draft → Accepted → Implementing → Validating → Done
@@ -21,6 +21,8 @@ Draft → Accepted → Implementing → Validating → Done
 | `Implementing` | **执行**（含测试） |
 | `Validating` | **验收** |
 | `Done` | **复盘**归档终态 |
+
+**目录命名：** `OSC-00xx <简洁中文描述>`（编号与简述间一空格），如 `OSC-0001 协作基线与通路`、`OSC-0002 后端三实体`。进行中与 `archive/` 均使用该规则。
 
 **门禁：** 仅 `Accepted`（首次）或 `Implementing`（续跑）可执行。批准用语：`批准 OSC-0001`、`推进 OSC-0001 到 Accepted.`；拒绝：`拒绝 OSC-0001`。
 

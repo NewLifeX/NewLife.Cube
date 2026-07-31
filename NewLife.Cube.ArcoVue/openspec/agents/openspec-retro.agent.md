@@ -21,7 +21,7 @@ description: >-
 
 1. 写 `retro.md`。
 2. 追加 `openspec/harness/lessons.md`。
-3. 目录移至 `openspec/changes/archive/OSC-00xx-<slug>/`。
+3. 目录移至 `openspec/changes/archive/OSC-00xx <简洁中文描述>/`（与进行中变更同一命名规则，保持原文件夹名整体搬迁即可）。
 4. `status.md`：`state: Done`。
 
 ## 禁止

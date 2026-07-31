@@ -277,7 +277,7 @@ Agent / Copilot 实施约定：OSC-0002 的 `tasks.md` 首项应为「编辑 Cub
 |-------|----------------|------|
 | UserProfile | Id；UserId；LayoutJson / ThemeJson / WorkspaceJson（或单一 ProfileJson）；Version；Enable；Create*/Update* | Unique(UserId) |
 | EntityViewProfile | Id；UserId；TypePath；View；ColumnsJson；GanttJson；CardJson；FiltersJson；Version；Create*/Update* | Unique(UserId, TypePath) |
-| EntityComment | Id；Category；LinkId；Content；CreateUser/Id/IP/Time；Update* | (Category, LinkId)；CreateUserID |
+| EntityComment | Id；Category；LinkId；**ParentId / RootId / ReplyUserId / ReplyUser**；Content；CreateUser/Id/IP/Time；Update* | (Category, LinkId)；ParentId；RootId；CreateUserID |
 
 嵌套配置（layout/theme/columns 等）以 **JSON 文本列** 落库，与 §5.2 逻辑模型对应；API 层序列化为前端 TypeScript 形状。
 
@@ -344,10 +344,12 @@ GET    /Cube/EntityViewProfile?typePath=Admin/User
 PUT    /Cube/EntityViewProfile           # body: EntityViewProfile（含 typePath）
 DELETE /Cube/EntityViewProfile?typePath=Admin/User   # 恢复该实体默认视图
 
-GET    /Cube/EntityComment?category=&linkId=
-POST   /Cube/EntityComment
+GET    /Cube/EntityComment?category=&linkId=&parentId=
+POST   /Cube/EntityComment               # body 可含 parentId 表示回复
 DELETE /Cube/EntityComment?id=
 ```
+
+`EntityComment` **同表回复**（不新增表）：`ParentId`（0=顶层）、`RootId`（线程根）、`ReplyUserId` / `ReplyUser`（被回复作者）。`GET` 的 `parentId` 可选：缺省/负数=全部，`0`=仅顶层，`>0`=该父评论的直接回复。
 
 **实现约束：**
 
@@ -427,8 +429,8 @@ DELETE /Cube/EntityComment?id=
 
 ### 7.3 后端新建（评论）
 
-建议 `EntityComment`：`Category`、`LinkId`、`Content`、创建人信息等。  
-API：`GET/POST/DELETE /Cube/EntityComment`（名称可最终定稿）。  
+建议 `EntityComment`：`Category`、`LinkId`、`Content`、**ParentId / RootId / ReplyUserId / ReplyUser**（同表回复）、创建人信息等。  
+API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复，不另建回复表。
 供所有皮肤复用，不绑死 ArcoVue。
 
 ---
@@ -481,12 +483,15 @@ NewLife.Cube.ArcoVue/openspec/
 ├── agents/                   # 薄壳编排 Agent（openspec-*）
 ├── harness/lessons.md
 └── changes/
-    ├── OSC-0001/
+    ├── OSC-0002 后端三实体/   # 命名：OSC-00xx + 空格 + 简洁中文描述
     │   ├── status.md         # 状态机（必选）
     │   ├── proposal.md / design.md / tasks.md / verify.md / retro.md
     │   └── ui/               # 可选
     └── archive/
+        └── OSC-0001 协作基线与通路/
 ```
+
+进行中与归档目录均使用 **`OSC-00xx <简洁中文描述>`**（禁止仅编号或英文 slug）。
 
 | 产物 | 必选 |
 |------|------|

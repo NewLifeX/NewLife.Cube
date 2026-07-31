@@ -730,5 +730,74 @@
         <Column Name="Remark" DataType="String" Length="500" Description="备注" Category="扩展" />
       </Columns>
     </Table>
+    <Table Name="UserProfile" Description="用户呈现配置。个人布局、主题与工作台默认">
+      <Columns>
+        <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+        <Column Name="UserId" DataType="Int32" Description="用户" />
+        <Column Name="LayoutJson" DataType="String" Length="-1" Description="布局。JSON：mode/siderCollapsed/siderWidth/showTabs/contentWidth" />
+        <Column Name="ThemeJson" DataType="String" Length="-1" Description="主题。JSON：appearance/primaryColor/radius/density/fontScale" />
+        <Column Name="WorkspaceJson" DataType="String" Length="-1" Description="工作台。JSON：defaultView/pageSize" />
+        <Column Name="Version" DataType="Int32" Description="版本。配置契约版本" />
+        <Column Name="Enable" DataType="Boolean" Description="启用" />
+        <Column Name="CreateUserId" DataType="Int32" Description="创建者" Category="扩展" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+        <Column Name="UpdateUserId" DataType="Int32" Description="更新者" Category="扩展" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+        <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
+        <Column Name="Remark" DataType="String" Length="500" Description="备注" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="UserId" Unique="True" />
+      </Indexes>
+    </Table>
+    <Table Name="EntityViewProfile" Description="实体视图配置。按用户与实体路径的视图类型与列布局">
+      <Columns>
+        <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+        <Column Name="UserId" DataType="Int32" Description="用户" />
+        <Column Name="TypePath" DataType="String" Length="200" Nullable="False" Description="实体路径。如 Admin/User" />
+        <Column Name="View" DataType="String" Description="视图。table/tree/card/gantt" />
+        <Column Name="ColumnsJson" DataType="String" Length="-1" Description="列布局。JSON 数组" />
+        <Column Name="GanttJson" DataType="String" Length="-1" Description="甘特映射。JSON" />
+        <Column Name="CardJson" DataType="String" Length="-1" Description="卡片映射。JSON" />
+        <Column Name="FiltersJson" DataType="String" Length="-1" Description="筛选记忆。JSON" />
+        <Column Name="Version" DataType="Int32" Description="版本。配置契约版本" />
+        <Column Name="CreateUserId" DataType="Int32" Description="创建者" Category="扩展" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+        <Column Name="UpdateUserId" DataType="Int32" Description="更新者" Category="扩展" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+        <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
+        <Column Name="Remark" DataType="String" Length="500" Description="备注" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="UserId,TypePath" Unique="True" />
+      </Indexes>
+    </Table>
+    <Table Name="EntityComment" Description="实体评论。挂在业务记录上的用户评论，支持同表回复">
+      <Columns>
+        <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+        <Column Name="Category" DataType="String" Length="100" Nullable="False" Description="分类。实体类型或业务类别" />
+        <Column Name="LinkId" DataType="Int64" Description="关联。业务记录主键" />
+        <Column Name="ParentId" DataType="Int32" Description="父评论。0 表示顶层评论；回复时指向被回复的评论 Id" />
+        <Column Name="RootId" DataType="Int32" Description="根评论。线程根节点 Id；顶层评论插入后等于自身 Id" />
+        <Column Name="ReplyUserId" DataType="Int32" Description="回复对象。被回复评论的作者用户 Id，顶层为 0" />
+        <Column Name="ReplyUser" DataType="String" Description="回复对象名。被回复作者显示名" />
+        <Column Name="Content" DataType="String" Length="-1" Nullable="False" Description="内容" />
+        <Column Name="CreateUser" DataType="String" Description="创建人" Category="扩展" />
+        <Column Name="CreateUserId" DataType="Int32" Description="创建者" Category="扩展" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+        <Column Name="UpdateUserId" DataType="Int32" Description="更新者" Category="扩展" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+        <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="Category,LinkId" />
+        <Index Columns="ParentId" />
+        <Index Columns="RootId" />
+        <Index Columns="CreateUserId" />
+      </Indexes>
+    </Table>
   </Tables>
 </EntityModel>

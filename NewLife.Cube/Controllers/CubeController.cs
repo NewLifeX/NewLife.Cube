@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using System.ComponentModel;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
@@ -747,6 +748,119 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         }
 
         return null;
+    }
+    #endregion
+
+    #region 呈现配置与评论
+    /// <summary>获取当前用户呈现配置</summary>
+    [HttpGet]
+    public ActionResult UserProfile()
+    {
+        var user = CurrentUser;
+        if (user == null) return Json(401, "未授权");
+
+        var entity = global::NewLife.Cube.Entity.UserProfile.FindByUserId(user.ID);
+        return Json(0, null, entity?.ToModel());
+    }
+
+    /// <summary>保存当前用户呈现配置（upsert）</summary>
+    [HttpPut]
+    public ActionResult UserProfile([FromBody] UserProfileModel model)
+    {
+        var user = CurrentUser;
+        if (user == null) return Json(401, "未授权");
+
+        var entity = global::NewLife.Cube.Entity.UserProfile.UpsertForUser(user.ID, model);
+        return Json(0, null, entity.ToModel());
+    }
+
+    /// <summary>获取当前用户指定实体路径的视图配置</summary>
+    [HttpGet]
+    public ActionResult EntityViewProfile(String typePath)
+    {
+        var user = CurrentUser;
+        if (user == null) return Json(401, "未授权");
+        if (typePath.IsNullOrEmpty()) return Json(400, "typePath 不能为空");
+
+        var entity = global::NewLife.Cube.Entity.EntityViewProfile.FindByUserIdAndTypePath(user.ID, typePath);
+        return Json(0, null, entity?.ToModel());
+    }
+
+    /// <summary>保存当前用户实体视图配置（upsert）</summary>
+    [HttpPut]
+    public ActionResult EntityViewProfile([FromBody] EntityViewProfileModel model)
+    {
+        var user = CurrentUser;
+        if (user == null) return Json(401, "未授权");
+
+        var typePath = model?.TypePath;
+        if (typePath.IsNullOrEmpty()) return Json(400, "typePath 不能为空");
+
+        var entity = global::NewLife.Cube.Entity.EntityViewProfile.UpsertForUser(user.ID, typePath, model);
+        return Json(0, null, entity.ToModel());
+    }
+
+    /// <summary>删除当前用户指定实体路径的视图配置（恢复默认）</summary>
+    [HttpDelete]
+    [ActionName(nameof(EntityViewProfile))]
+    public ActionResult DeleteEntityViewProfile(String typePath)
+    {
+        var user = CurrentUser;
+        if (user == null) return Json(401, "未授权");
+        if (typePath.IsNullOrEmpty()) return Json(400, "typePath 不能为空");
+
+        global::NewLife.Cube.Entity.EntityViewProfile.DeleteForUser(user.ID, typePath);
+        return Json(0, "ok");
+    }
+
+    /// <summary>按分类与关联主键列出实体评论（含回复字段；可选 parentId 过滤）</summary>
+    [HttpGet]
+    public ActionResult EntityComment(String category, Int64 linkId, Int32 parentId = -1)
+    {
+        var user = CurrentUser;
+        if (user == null) return Json(401, "未授权");
+        if (category.IsNullOrEmpty()) return Json(400, "category 不能为空");
+
+        var list = global::NewLife.Cube.Entity.EntityComment.FindList(category, linkId, parentId);
+        return Json(0, null, list.Select(e => e.ToModel()).ToList());
+    }
+
+    /// <summary>发表实体评论或回复（body.ParentId&gt;0 为回复）</summary>
+    [HttpPost]
+    public ActionResult EntityComment([FromBody] EntityCommentModel model)
+    {
+        var user = CurrentUser;
+        if (user == null) return Json(401, "未授权");
+        if (model == null) return Json(400, "body 不能为空");
+        if (model.Category.IsNullOrEmpty()) return Json(400, "category 不能为空");
+        if (model.Content.IsNullOrEmpty()) return Json(400, "content 不能为空");
+
+        try
+        {
+            var entity = global::NewLife.Cube.Entity.EntityComment.AddComment(
+                user.ID, user.Name, model.Category, model.LinkId, model.Content, model.ParentId);
+            return Json(0, null, entity.ToModel());
+        }
+        catch (ArgumentException ex)
+        {
+            return Json(400, ex.Message);
+        }
+    }
+
+    /// <summary>删除实体评论（本人或系统管理员）</summary>
+    [HttpDelete]
+    [ActionName(nameof(EntityComment))]
+    public ActionResult DeleteEntityComment(Int32 id)
+    {
+        var user = CurrentUser;
+        if (user == null) return Json(401, "未授权");
+        if (id <= 0) return Json(400, "id 无效");
+
+        var isAdmin = user is IUser iu && iu.Roles != null && iu.Roles.Any(e => e.IsSystem);
+        if (!global::NewLife.Cube.Entity.EntityComment.TryDelete(id, user.ID, isAdmin))
+            return Json(403, "无权删除或评论不存在");
+
+        return Json(0, "ok");
     }
     #endregion
 }

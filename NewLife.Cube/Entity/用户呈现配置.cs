@@ -1,0 +1,366 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.Serialization;
+using System.Web.Script.Serialization;
+using System.Xml.Serialization;
+using NewLife;
+using NewLife.Data;
+using XCode;
+using XCode.Cache;
+using XCode.Configuration;
+using XCode.DataAccessLayer;
+
+namespace NewLife.Cube.Entity;
+
+/// <summary>用户呈现配置。个人布局、主题与工作台默认</summary>
+[Serializable]
+[DataObject]
+[Description("用户呈现配置。个人布局、主题与工作台默认")]
+[BindIndex("IU_UserProfile_UserId", true, "UserId")]
+[BindTable("UserProfile", Description = "用户呈现配置。个人布局、主题与工作台默认", ConnName = "Cube", DbType = DatabaseType.None)]
+public partial class UserProfile : IEntity<UserProfileModel>
+{
+    #region 属性
+    private Int32 _Id;
+    /// <summary>编号</summary>
+    [DisplayName("编号")]
+    [Description("编号")]
+    [DataObjectField(true, true, false, 0)]
+    [BindColumn("Id", "编号", "")]
+    public Int32 Id { get => _Id; set { if (OnPropertyChanging("Id", value)) { _Id = value; OnPropertyChanged("Id"); } } }
+
+    private Int32 _UserId;
+    /// <summary>用户</summary>
+    [DisplayName("用户")]
+    [Description("用户")]
+    [DataObjectField(false, false, false, 0)]
+    [BindColumn("UserId", "用户", "")]
+    public Int32 UserId { get => _UserId; set { if (OnPropertyChanging("UserId", value)) { _UserId = value; OnPropertyChanged("UserId"); } } }
+
+    private String _LayoutJson;
+    /// <summary>布局。JSON：mode/siderCollapsed/siderWidth/showTabs/contentWidth</summary>
+    [DisplayName("布局")]
+    [Description("布局。JSON：mode/siderCollapsed/siderWidth/showTabs/contentWidth")]
+    [DataObjectField(false, false, true, -1)]
+    [BindColumn("LayoutJson", "布局。JSON：mode/siderCollapsed/siderWidth/showTabs/contentWidth", "")]
+    public String LayoutJson { get => _LayoutJson; set { if (OnPropertyChanging("LayoutJson", value)) { _LayoutJson = value; OnPropertyChanged("LayoutJson"); } } }
+
+    private String _ThemeJson;
+    /// <summary>主题。JSON：appearance/primaryColor/radius/density/fontScale</summary>
+    [DisplayName("主题")]
+    [Description("主题。JSON：appearance/primaryColor/radius/density/fontScale")]
+    [DataObjectField(false, false, true, -1)]
+    [BindColumn("ThemeJson", "主题。JSON：appearance/primaryColor/radius/density/fontScale", "")]
+    public String ThemeJson { get => _ThemeJson; set { if (OnPropertyChanging("ThemeJson", value)) { _ThemeJson = value; OnPropertyChanged("ThemeJson"); } } }
+
+    private String _WorkspaceJson;
+    /// <summary>工作台。JSON：defaultView/pageSize</summary>
+    [DisplayName("工作台")]
+    [Description("工作台。JSON：defaultView/pageSize")]
+    [DataObjectField(false, false, true, -1)]
+    [BindColumn("WorkspaceJson", "工作台。JSON：defaultView/pageSize", "")]
+    public String WorkspaceJson { get => _WorkspaceJson; set { if (OnPropertyChanging("WorkspaceJson", value)) { _WorkspaceJson = value; OnPropertyChanged("WorkspaceJson"); } } }
+
+    private Int32 _Version;
+    /// <summary>版本。配置契约版本</summary>
+    [DisplayName("版本")]
+    [Description("版本。配置契约版本")]
+    [DataObjectField(false, false, false, 0)]
+    [BindColumn("Version", "版本。配置契约版本", "")]
+    public Int32 Version { get => _Version; set { if (OnPropertyChanging("Version", value)) { _Version = value; OnPropertyChanged("Version"); } } }
+
+    private Boolean _Enable;
+    /// <summary>启用</summary>
+    [DisplayName("启用")]
+    [Description("启用")]
+    [DataObjectField(false, false, false, 0)]
+    [BindColumn("Enable", "启用", "")]
+    public Boolean Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
+
+    private Int32 _CreateUserId;
+    /// <summary>创建者</summary>
+    [Category("扩展")]
+    [DisplayName("创建者")]
+    [Description("创建者")]
+    [DataObjectField(false, false, false, 0)]
+    [BindColumn("CreateUserId", "创建者", "")]
+    public Int32 CreateUserId { get => _CreateUserId; set { if (OnPropertyChanging("CreateUserId", value)) { _CreateUserId = value; OnPropertyChanged("CreateUserId"); } } }
+
+    private DateTime _CreateTime;
+    /// <summary>创建时间</summary>
+    [Category("扩展")]
+    [DisplayName("创建时间")]
+    [Description("创建时间")]
+    [DataObjectField(false, false, true, 0)]
+    [BindColumn("CreateTime", "创建时间", "")]
+    public DateTime CreateTime { get => _CreateTime; set { if (OnPropertyChanging("CreateTime", value)) { _CreateTime = value; OnPropertyChanged("CreateTime"); } } }
+
+    private String _CreateIP;
+    /// <summary>创建地址</summary>
+    [Category("扩展")]
+    [DisplayName("创建地址")]
+    [Description("创建地址")]
+    [DataObjectField(false, false, true, 50)]
+    [BindColumn("CreateIP", "创建地址", "")]
+    public String CreateIP { get => _CreateIP; set { if (OnPropertyChanging("CreateIP", value)) { _CreateIP = value; OnPropertyChanged("CreateIP"); } } }
+
+    private Int32 _UpdateUserId;
+    /// <summary>更新者</summary>
+    [Category("扩展")]
+    [DisplayName("更新者")]
+    [Description("更新者")]
+    [DataObjectField(false, false, false, 0)]
+    [BindColumn("UpdateUserId", "更新者", "")]
+    public Int32 UpdateUserId { get => _UpdateUserId; set { if (OnPropertyChanging("UpdateUserId", value)) { _UpdateUserId = value; OnPropertyChanged("UpdateUserId"); } } }
+
+    private DateTime _UpdateTime;
+    /// <summary>更新时间</summary>
+    [Category("扩展")]
+    [DisplayName("更新时间")]
+    [Description("更新时间")]
+    [DataObjectField(false, false, true, 0)]
+    [BindColumn("UpdateTime", "更新时间", "")]
+    public DateTime UpdateTime { get => _UpdateTime; set { if (OnPropertyChanging("UpdateTime", value)) { _UpdateTime = value; OnPropertyChanged("UpdateTime"); } } }
+
+    private String _UpdateIP;
+    /// <summary>更新地址</summary>
+    [Category("扩展")]
+    [DisplayName("更新地址")]
+    [Description("更新地址")]
+    [DataObjectField(false, false, true, 50)]
+    [BindColumn("UpdateIP", "更新地址", "")]
+    public String UpdateIP { get => _UpdateIP; set { if (OnPropertyChanging("UpdateIP", value)) { _UpdateIP = value; OnPropertyChanged("UpdateIP"); } } }
+
+    private String _Remark;
+    /// <summary>备注</summary>
+    [Category("扩展")]
+    [DisplayName("备注")]
+    [Description("备注")]
+    [DataObjectField(false, false, true, 500)]
+    [BindColumn("Remark", "备注", "")]
+    public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
+    #endregion
+
+    #region 拷贝
+    /// <summary>拷贝模型对象</summary>
+    /// <param name="model">模型</param>
+    public void Copy(UserProfileModel model)
+    {
+        Id = model.Id;
+        UserId = model.UserId;
+        LayoutJson = model.LayoutJson;
+        ThemeJson = model.ThemeJson;
+        WorkspaceJson = model.WorkspaceJson;
+        Version = model.Version;
+        Enable = model.Enable;
+        CreateUserId = model.CreateUserId;
+        CreateTime = model.CreateTime;
+        CreateIP = model.CreateIP;
+        UpdateUserId = model.UpdateUserId;
+        UpdateTime = model.UpdateTime;
+        UpdateIP = model.UpdateIP;
+        Remark = model.Remark;
+    }
+    #endregion
+
+    #region 获取/设置 字段值
+    /// <summary>获取/设置 字段值</summary>
+    /// <param name="name">字段名</param>
+    /// <returns></returns>
+    public override Object this[String name]
+    {
+        get => name switch
+        {
+            "Id" => _Id,
+            "UserId" => _UserId,
+            "LayoutJson" => _LayoutJson,
+            "ThemeJson" => _ThemeJson,
+            "WorkspaceJson" => _WorkspaceJson,
+            "Version" => _Version,
+            "Enable" => _Enable,
+            "CreateUserId" => _CreateUserId,
+            "CreateTime" => _CreateTime,
+            "CreateIP" => _CreateIP,
+            "UpdateUserId" => _UpdateUserId,
+            "UpdateTime" => _UpdateTime,
+            "UpdateIP" => _UpdateIP,
+            "Remark" => _Remark,
+            _ => base[name]
+        };
+        set
+        {
+            switch (name)
+            {
+                case "Id": _Id = value.ToInt(); break;
+                case "UserId": _UserId = value.ToInt(); break;
+                case "LayoutJson": _LayoutJson = Convert.ToString(value); break;
+                case "ThemeJson": _ThemeJson = Convert.ToString(value); break;
+                case "WorkspaceJson": _WorkspaceJson = Convert.ToString(value); break;
+                case "Version": _Version = value.ToInt(); break;
+                case "Enable": _Enable = value.ToBoolean(); break;
+                case "CreateUserId": _CreateUserId = value.ToInt(); break;
+                case "CreateTime": _CreateTime = value.ToDateTime(); break;
+                case "CreateIP": _CreateIP = Convert.ToString(value); break;
+                case "UpdateUserId": _UpdateUserId = value.ToInt(); break;
+                case "UpdateTime": _UpdateTime = value.ToDateTime(); break;
+                case "UpdateIP": _UpdateIP = Convert.ToString(value); break;
+                case "Remark": _Remark = Convert.ToString(value); break;
+                default: base[name] = value; break;
+            }
+        }
+    }
+    #endregion
+
+    #region 关联映射
+    #endregion
+
+    #region 扩展查询
+    /// <summary>根据编号查找</summary>
+    /// <param name="id">编号</param>
+    /// <returns>实体对象</returns>
+    public static UserProfile FindById(Int32 id)
+    {
+        if (id < 0) return null;
+
+        // 实体缓存
+        if (Meta.Session.Count < MaxCacheCount) return Meta.Cache.Find(e => e.Id == id);
+
+        // 单对象缓存
+        return Meta.SingleCache[id];
+
+        //return Find(_.Id == id);
+    }
+
+    /// <summary>根据用户查找</summary>
+    /// <param name="userId">用户</param>
+    /// <returns>实体对象</returns>
+    public static UserProfile FindByUserId(Int32 userId)
+    {
+        if (userId < 0) return null;
+
+        // 实体缓存
+        if (Meta.Session.Count < MaxCacheCount) return Meta.Cache.Find(e => e.UserId == userId);
+
+        return Find(_.UserId == userId);
+    }
+    #endregion
+
+    #region 高级查询
+    /// <summary>高级查询</summary>
+    /// <param name="userId">用户</param>
+    /// <param name="enable">启用</param>
+    /// <param name="start">更新时间开始</param>
+    /// <param name="end">更新时间结束</param>
+    /// <param name="key">关键字</param>
+    /// <param name="page">分页参数信息。可携带统计和数据权限扩展查询等信息</param>
+    /// <returns>实体列表</returns>
+    public static IList<UserProfile> Search(Int32 userId, Boolean? enable, DateTime start, DateTime end, String key, PageParameter page)
+    {
+        var exp = new WhereExpression();
+
+        if (userId >= 0) exp &= _.UserId == userId;
+        if (enable != null) exp &= _.Enable == enable;
+        exp &= _.UpdateTime.Between(start, end);
+        if (!key.IsNullOrEmpty()) exp &= SearchWhereByKeys(key);
+
+        return FindAll(exp, page);
+    }
+    #endregion
+
+    #region 字段名
+    /// <summary>取得用户呈现配置字段信息的快捷方式</summary>
+    public partial class _
+    {
+        /// <summary>编号</summary>
+        public static readonly Field Id = FindByName("Id");
+
+        /// <summary>用户</summary>
+        public static readonly Field UserId = FindByName("UserId");
+
+        /// <summary>布局。JSON：mode/siderCollapsed/siderWidth/showTabs/contentWidth</summary>
+        public static readonly Field LayoutJson = FindByName("LayoutJson");
+
+        /// <summary>主题。JSON：appearance/primaryColor/radius/density/fontScale</summary>
+        public static readonly Field ThemeJson = FindByName("ThemeJson");
+
+        /// <summary>工作台。JSON：defaultView/pageSize</summary>
+        public static readonly Field WorkspaceJson = FindByName("WorkspaceJson");
+
+        /// <summary>版本。配置契约版本</summary>
+        public static readonly Field Version = FindByName("Version");
+
+        /// <summary>启用</summary>
+        public static readonly Field Enable = FindByName("Enable");
+
+        /// <summary>创建者</summary>
+        public static readonly Field CreateUserId = FindByName("CreateUserId");
+
+        /// <summary>创建时间</summary>
+        public static readonly Field CreateTime = FindByName("CreateTime");
+
+        /// <summary>创建地址</summary>
+        public static readonly Field CreateIP = FindByName("CreateIP");
+
+        /// <summary>更新者</summary>
+        public static readonly Field UpdateUserId = FindByName("UpdateUserId");
+
+        /// <summary>更新时间</summary>
+        public static readonly Field UpdateTime = FindByName("UpdateTime");
+
+        /// <summary>更新地址</summary>
+        public static readonly Field UpdateIP = FindByName("UpdateIP");
+
+        /// <summary>备注</summary>
+        public static readonly Field Remark = FindByName("Remark");
+
+        static Field FindByName(String name) => Meta.Table.FindByName(name);
+    }
+
+    /// <summary>取得用户呈现配置字段名称的快捷方式</summary>
+    public partial class __
+    {
+        /// <summary>编号</summary>
+        public const String Id = "Id";
+
+        /// <summary>用户</summary>
+        public const String UserId = "UserId";
+
+        /// <summary>布局。JSON：mode/siderCollapsed/siderWidth/showTabs/contentWidth</summary>
+        public const String LayoutJson = "LayoutJson";
+
+        /// <summary>主题。JSON：appearance/primaryColor/radius/density/fontScale</summary>
+        public const String ThemeJson = "ThemeJson";
+
+        /// <summary>工作台。JSON：defaultView/pageSize</summary>
+        public const String WorkspaceJson = "WorkspaceJson";
+
+        /// <summary>版本。配置契约版本</summary>
+        public const String Version = "Version";
+
+        /// <summary>启用</summary>
+        public const String Enable = "Enable";
+
+        /// <summary>创建者</summary>
+        public const String CreateUserId = "CreateUserId";
+
+        /// <summary>创建时间</summary>
+        public const String CreateTime = "CreateTime";
+
+        /// <summary>创建地址</summary>
+        public const String CreateIP = "CreateIP";
+
+        /// <summary>更新者</summary>
+        public const String UpdateUserId = "UpdateUserId";
+
+        /// <summary>更新时间</summary>
+        public const String UpdateTime = "UpdateTime";
+
+        /// <summary>更新地址</summary>
+        public const String UpdateIP = "UpdateIP";
+
+        /// <summary>备注</summary>
+        public const String Remark = "Remark";
+    }
+    #endregion
+}
