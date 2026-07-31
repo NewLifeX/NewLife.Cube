@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import AutoImport from 'unplugin-auto-import/vite';
 import { resolve } from 'path';
+import { createDevProxy } from './devProxy';
 
 export default defineConfig({
   plugins: [
@@ -18,12 +19,7 @@ export default defineConfig({
   },
   server: {
     port: 5183,
-    proxy: {
-      '/Admin': { target: 'http://localhost:5000', changeOrigin: true },
-      '/Cube': { target: 'http://localhost:5000', changeOrigin: true },
-      '/Sso': { target: 'http://localhost:5000', changeOrigin: true },
-      '/api': { target: 'http://localhost:5000', changeOrigin: true },
-    },
+    proxy: createDevProxy(),
   },
   build: {
     outDir: '../wwwroot',
