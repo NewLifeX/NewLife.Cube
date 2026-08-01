@@ -58,6 +58,7 @@
 - `DataField` 上若有 `Boolean Nullable` 属性，禁止写 `Nullable.GetUnderlyingType`——须 `System.Nullable.GetUnderlyingType`。
 - 验收与范围外抛光分列：chrome/徽章/分组等不充当 M3a 硬 AC；冻结 UI 暂禁用须在 verify 记残留。
 - 打开详情手势变更（单击→双击）必须同步 README/对接指南，避免「行点」文档漂移。
+- 残留补齐：左冻结前缀钉住；操作列用横向比例命中分发动作（`opsAction.ts`）；`DynamicPage`/`DefaultList` 异步加载 + vite `manualChunks` 拆 VTable。
 
 ## 待办 — 字体规范（Harness）
 

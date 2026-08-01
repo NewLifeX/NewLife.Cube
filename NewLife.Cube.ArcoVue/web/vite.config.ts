@@ -24,5 +24,12 @@ export default defineConfig({
   build: {
     outDir: '../wwwroot',
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/@visactor')) return 'vtable';
+        },
+      },
+    },
   },
 });

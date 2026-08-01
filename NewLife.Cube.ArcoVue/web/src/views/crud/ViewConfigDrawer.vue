@@ -74,9 +74,10 @@
               <a-button
                 type="text"
                 size="mini"
-                disabled
                 class="freeze-btn"
-                title="左冻结暂不可用"
+                :class="{ 'is-frozen': col.frozen === 'left' }"
+                :title="col.frozen === 'left' ? '取消左冻结' : '左冻结至此列'"
+                @click="toggleFreeze(col)"
               >
                 <icon-pushpin />
               </a-button>
@@ -513,6 +514,21 @@ function toggleVisible(col: ColumnPref) {
   commitColumns();
 }
 
+/** 左冻结：前缀连续冻结。钉住=冻结到该列（含之前可见列）；再点=自该列起解冻 */
+function toggleFreeze(col: ColumnPref) {
+  const cols = localColumns.value;
+  const idx = cols.findIndex((c) => c.key === col.key);
+  if (idx < 0) return;
+  if (col.frozen === 'left') {
+    for (let i = idx; i < cols.length; i++) cols[i].frozen = false;
+  } else {
+    for (let i = 0; i <= idx; i++) {
+      if (cols[i].visible) cols[i].frozen = 'left';
+    }
+  }
+  commitColumns();
+}
+
 
 function onDragStart(idx: number, e: DragEvent) {
   dragFrom = idx;
@@ -663,8 +679,10 @@ function setHeight(mode: HeightMode) {
   color: var(--color-text-3);
 }
 .freeze-btn {
-  opacity: 0.35;
-  cursor: not-allowed;
+  color: var(--color-text-3);
+}
+.freeze-btn.is-frozen {
+  color: rgb(var(--primary-6));
 }
 
 .color-trigger {

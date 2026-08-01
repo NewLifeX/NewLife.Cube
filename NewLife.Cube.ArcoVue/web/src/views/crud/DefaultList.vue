@@ -231,7 +231,8 @@ import {
   type ViewSort,
 } from '@/core/utils/entityViewProfile';
 import FieldInput from '@/components/FieldInput.vue';
-import ListTable from '@/features/vtable/ListTable.vue';
+/** VTable 适配层异步加载，降低 DynamicPage 首包 */
+const ListTable = defineAsyncComponent(() => import('@/features/vtable/ListTable.vue'));
 import RecordDrawer from './RecordDrawer.vue';
 import ListChartModal from './ListChartModal.vue';
 import NamedViewsToolbar from './NamedViewsToolbar.vue';
@@ -840,7 +841,7 @@ onMounted(bootstrap);
   box-sizing: border-box;
   padding: 16px;
   background: var(--color-bg-2);
-  border: 1px solid var(--color-border-2);
+  border: none;
   border-radius: 8px;
   overflow: hidden;
 }

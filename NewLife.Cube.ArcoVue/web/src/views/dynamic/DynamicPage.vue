@@ -10,9 +10,11 @@
  */
 import { computed, defineAsyncComponent, ref, watch, type Component } from 'vue';
 import { useRoute } from 'vue-router';
-import DefaultList from '@/views/crud/DefaultList.vue';
 import { getSectionLoader } from '@/core/composables/useSections';
 import { routeToApiPrefix } from '@/core/utils/url';
+
+/** 异步拉 DefaultList，避免把 VTable 打进 DynamicPage 主 chunk */
+const DefaultList = defineAsyncComponent(() => import('@/views/crud/DefaultList.vue'));
 
 const props = defineProps<{
   type?: string;

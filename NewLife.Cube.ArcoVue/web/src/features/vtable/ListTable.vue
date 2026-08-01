@@ -8,6 +8,12 @@ import { ListTable } from '@visactor/vtable';
 import type { ColumnPref } from '@/core/utils/entityViewProfile';
 import { frozenLeftCount } from '@/core/utils/entityViewProfile';
 import { BADGE_BORDER_RADIUS, BADGE_PADDING } from '@/core/utils/fieldBadge';
+import {
+  buildOpsParts,
+  formatOpsLabel,
+  resolveOpsActionByRatio,
+  type OpsAction,
+} from '@/core/utils/opsAction';
 
 export interface ListTableColumnDef {
   pref: ColumnPref;
@@ -68,12 +74,50 @@ function rowId(row: Record<string, unknown>): string {
   return v == null ? '' : String(v);
 }
 
+function opsFlags() {
+  return {
+    canViewDetail: props.canViewDetail,
+    canEdit: props.canEdit,
+    canDelete: props.canDelete,
+  };
+}
+
 function opsLabel(): string {
-  const parts: string[] = [];
-  if (props.canViewDetail) parts.push('详情');
-  if (props.canEdit) parts.push('编辑');
-  if (props.canDelete) parts.push('删除');
-  return parts.length ? parts.join(' · ') : '-';
+  return formatOpsLabel(buildOpsParts(opsFlags()));
+}
+
+function opsColumnWidth(): number {
+  const n = buildOpsParts(opsFlags()).length;
+  if (n <= 0) return 80;
+  return Math.min(220, Math.max(72, n * 56));
+}
+
+/** 按点击在操作列内的横向位置解析动作 */
+function resolveOpsClick(args: {
+  col?: number;
+  row?: number;
+  event?: MouseEvent | PointerEvent | TouchEvent;
+}): OpsAction | null {
+  const flags = opsFlags();
+  const parts = buildOpsParts(flags);
+  if (!parts.length) return null;
+  if (parts.length === 1 || !table || args.col == null || args.row == null) {
+    return resolveOpsActionByRatio(0, flags);
+  }
+  try {
+    const rect = table.getCellRect(args.col, args.row) as {
+      left?: number;
+      width?: number;
+    };
+    const ev = args.event as MouseEvent | undefined;
+    if (rect && typeof rect.left === 'number' && typeof rect.width === 'number' && ev?.clientX != null) {
+      const ratio = (ev.clientX - rect.left) / Math.max(1, rect.width);
+      return resolveOpsActionByRatio(ratio, flags);
+    }
+  } catch {
+    /* fall through */
+  }
+  return resolveOpsActionByRatio(0, flags);
 }
 
 function leadingCount(): number {
@@ -167,11 +211,16 @@ function buildColumns(): any[] {
     cols.push({
       field: '__ops',
       title: '操作',
-      width: 168,
+      width: opsColumnWidth(),
       dragHeader: false,
       sort: false,
       disableColumnResize: true,
       fieldFormat: () => opsLabel(),
+      style: {
+        color: '#165DFF',
+        cursor: 'pointer',
+        textAlign: 'center',
+      },
     });
   }
 
@@ -204,9 +253,11 @@ function buildOption(): any {
     tooltip: { isShowOverflowTextTooltip: true },
     // 默认表头与数据行区分；字体规范待 Harness「组件/场景」体系落地
     theme: {
+      // 默认 cellBorderClipDirection=top-left 会裁掉底/右边；行分隔须用顶边
+      // borderLineWidth: [上, 右, 下, 左] — 仅行分隔，无列分隔
       defaultStyle: {
         borderColor: '#E5E6EB',
-        borderLineWidth: 1,
+        borderLineWidth: [1, 0, 0, 0],
       },
       headerStyle: {
         bgColor: '#F2F3F5',
@@ -214,7 +265,7 @@ function buildOption(): any {
         fontWeight: 500,
         fontSize: 13,
         borderColor: '#E5E6EB',
-        borderLineWidth: 1,
+        borderLineWidth: [1, 0, 0, 0],
       },
       bodyStyle: {
         bgColor: '#FFFFFF',
@@ -222,15 +273,15 @@ function buildOption(): any {
         fontWeight: 400,
         fontSize: 13,
         borderColor: '#E5E6EB',
-        borderLineWidth: 1,
+        borderLineWidth: [1, 0, 0, 0],
         hover: {
           cellBgColor: '#F7F8FA',
           inlineRowBgColor: '#F7F8FA',
         },
       },
       frameStyle: {
-        borderColor: '#E5E6EB',
-        borderLineWidth: 1,
+        borderColor: 'transparent',
+        borderLineWidth: 0,
       },
       selectionStyle: {
         cellBorderLineWidth: 0,
@@ -266,7 +317,7 @@ function syncFromTable(colWidths?: number[]) {
   const hidden = next.filter((c) => !orderedVisible.some((v) => v.key === c.key));
   for (const h of hidden) h.visible = false;
 
-  // 冻结入口已禁用：保留偏好中的 frozen，避免拖宽时被表头冻结数改写
+  // 拖宽/拖表头只同步宽与顺序；frozen 由配置抽屉维护，避免被表头冻结数改写
   emit('columnsChange', [...orderedVisible, ...hidden]);
 }
 
@@ -290,8 +341,13 @@ function bindEvents() {
     const field = fieldKey(args.field);
     if (field === '__checked') return;
     // 单击仅处理操作列 / 展开列；数据行单击不打开详情
-    if (field === '__expand' || field === '__ops') {
+    if (field === '__expand') {
       if (props.canViewDetail) emit('action', { action: 'detail', row });
+      return;
+    }
+    if (field === '__ops') {
+      const action = resolveOpsClick(args);
+      if (action) emit('action', { action, row });
       return;
     }
     emit('rowClick', row);
@@ -405,8 +461,7 @@ watch(
   max-width: 100%;
   min-width: 0;
   min-height: 320px;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border: none;
   overflow: hidden;
   background: var(--color-bg-2);
   box-sizing: border-box;
