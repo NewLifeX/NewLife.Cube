@@ -98,9 +98,6 @@ public static class CubeService
             options.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All);
         });
 
-        // 添加管理提供者
-        services.AddManageProvider();
-
         // 添加数据保护，优先在外部支持Redis持久化，这里默认使用数据库持久化
         //if (services.Any(e => e.ServiceType == typeof(FullRedis) || e.ServiceType == typeof(ICacheProvider) && e.ImplementationType == typeof(RedisCacheProvider)))
         //    services.AddDataProtection().PersistKeysToRedis();

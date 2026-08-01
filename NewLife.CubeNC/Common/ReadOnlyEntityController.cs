@@ -254,6 +254,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
         else
         {
             var ut = UserToken.Valid(token, UserHost);
+            // 防御：Valid 内部已校验，此处再兜底避免空引用
+            if (ut == null || ut.User == null) throw new XException("令牌无效或已过期！");
             var user = ut.User;
 
             // 定位菜单页面

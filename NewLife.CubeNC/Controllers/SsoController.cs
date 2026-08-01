@@ -553,8 +553,8 @@ public class SsoController : ControllerBaseX
     /// <param name="refresh_token">刷新令牌</param>
     /// <param name="grant_type">授权类型</param>
     /// <returns></returns>
+    // 禁止 GET 传输密码，避免密码暴露在 Url/日志/浏览器历史中
     [AllowAnonymous]
-    [HttpGet]
     [HttpPost]
     public virtual ActionResult Token(String client_id, String client_secret, String username, String password, String refresh_token, String grant_type = null)
     {
@@ -613,8 +613,8 @@ public class SsoController : ControllerBaseX
     /// </remarks>
     /// <param name="model">请求模型</param>
     /// <returns></returns>
+    // 禁止 GET 传输密码，避免密码暴露在 Url/日志/浏览器历史中
     [AllowAnonymous]
-    [HttpGet]
     [HttpPost]
     public virtual ActionResult PasswordToken([FromBody] SsoTokenModel model)
     {
@@ -700,8 +700,8 @@ public class SsoController : ControllerBaseX
     /// <param name="grant_type">授权类型</param>
     /// <param name="refresh_token">刷新令牌</param>
     /// <returns></returns>
+    // 禁止 GET 传输刷新令牌，避免令牌暴露在 Url/日志/浏览器历史中
     [AllowAnonymous]
-    [HttpGet]
     [HttpPost]
     public virtual ActionResult Refresh_Token(String client_id, String grant_type, String refresh_token)
     {

@@ -64,19 +64,21 @@ public class TokenService : ITokenService
         var exp = DateTime.Now.AddSeconds(expire);
 
         // 颁发JWT令牌，优先应用密钥HS256，同时也是子应用请求sso的密钥。再使用全局密钥
+        // app 可能为 null（退回全局配置），因此 Secret/Audience 使用空条件访问
         var jwt = new JwtBuilder
         {
             Algorithm = "HS256",
-            Secret = app.Secret,
+            Secret = app?.Secret,
 
             Subject = name,
             Expire = exp,
             //Issuer = Environment.MachineName,
-            Audience = app.Name,
+            Audience = app?.Name,
         };
         if (jwt.Secret.IsNullOrEmpty())
         {
             var ss = set.JwtSecret.Split(':');
+            if (ss.Length != 2) throw new ArgumentException($"非法JwtSecret[{set.JwtSecret}]，应为“算法:密钥”格式");
             jwt.Algorithm = ss[0];
             jwt.Secret = ss[1];
         }
