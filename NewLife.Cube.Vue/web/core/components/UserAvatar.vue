@@ -59,15 +59,23 @@ function handleClick() {
   // Default variant (blue theme)
   &.variant-default .user-avatar {
     border-radius: 10px;
-    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-    color: #1e40af;
+    background: linear-gradient(
+      135deg,
+      var(--el-color-primary-light-9) 0%,
+      var(--el-color-primary-light-7) 100%
+    );
+    color: var(--el-color-primary);
   }
 
   // Green variant (for TopMenu)
   &.variant-green .user-avatar {
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--tn-ac, #4ec685) 0%, #a8e6c8 100%);
-    color: var(--tn, #1a3328);
+    background: linear-gradient(
+      135deg,
+      var(--el-color-primary) 0%,
+      var(--el-color-primary-light-5) 100%
+    );
+    color: var(--el-color-white);
   }
 }
 
@@ -100,11 +108,11 @@ function handleClick() {
 .user-name {
   font-size: 14px;
   font-weight: 500;
-  color: #475569;
+  color: var(--el-text-color-regular);
   white-space: nowrap;
 }
 
 .variant-green .user-name {
-  color: var(--tn-t, #74b898);
+  color: var(--el-text-color-primary);
 }
 </style>

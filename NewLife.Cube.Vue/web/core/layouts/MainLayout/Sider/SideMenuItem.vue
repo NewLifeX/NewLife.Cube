@@ -150,7 +150,7 @@ const handleClick = () => {
     transform: translateY(-50%);
     width: 3px;
     height: 0;
-    background: linear-gradient(180deg, var(--el-color-primary) 0%, #2563eb 100%);
+    background: linear-gradient(180deg, var(--el-color-primary) 0%, var(--el-color-primary-dark-2) 100%);
     border-radius: 0 3px 3px 0;
     transition: height 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -161,7 +161,7 @@ const handleClick = () => {
 
   // 激活态（叶子节点）
   &--active {
-    background: linear-gradient(90deg, var(--el-color-primary-light-9) 0%, rgba(239, 246, 255, 0.4) 100%);
+    background: linear-gradient(90deg, var(--el-color-primary-light-9) 0%, color-mix(in srgb, var(--el-color-primary-light-9) 40%, transparent) 100%);
     color: var(--el-color-primary);
     font-weight: 600;
 

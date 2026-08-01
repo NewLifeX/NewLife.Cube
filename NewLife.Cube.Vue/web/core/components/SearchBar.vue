@@ -333,7 +333,7 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--border-default, #ccc);
+  background: var(--el-border-color);
   flex-shrink: 0;
   transition:
     background 0.15s,

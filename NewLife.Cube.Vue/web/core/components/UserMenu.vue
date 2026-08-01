@@ -89,7 +89,7 @@ onUnmounted(() => {
           <div class="dropdown-avatar">{{ userInitial }}</div>
           <div class="dropdown-info">
             <div class="dropdown-name">{{ userName }}</div>
-            <div class="dropdown-role">{{ currentUser?.role || '用户' }}</div>
+            <div class="dropdown-role">{{ currentUser?.roleNames || '游客' }}</div>
           </div>
         </div>
         <div class="dropdown-divider"></div>
@@ -159,8 +159,12 @@ onUnmounted(() => {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent, #4ec685) 0%, var(--accent-hover, #3db873) 100%);
-  color: var(--navbar-bg, #fff);
+  background: linear-gradient(
+    135deg,
+    var(--el-color-primary) 0%,
+    var(--el-color-primary-light-5) 100%
+  );
+  color: var(--el-color-white);
   font-size: 12px;
   font-weight: 700;
   display: flex;
@@ -208,7 +212,11 @@ onUnmounted(() => {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--el-color-primary) 0%, var(--accent-hover) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--el-color-primary) 0%,
+    var(--el-color-primary-light-5) 100%
+  );
   color: var(--el-color-white);
   font-size: 16px;
   font-weight: 700;
@@ -261,10 +269,10 @@ onUnmounted(() => {
   }
 
   &.danger {
-    color: var(--color-danger, #dc2626);
+    color: var(--el-color-danger);
 
     &:hover {
-      background: var(--color-danger-bg, #fef2f2);
+      background: color-mix(in srgb, var(--el-color-danger) 10%, var(--el-bg-color-overlay));
     }
   }
 }

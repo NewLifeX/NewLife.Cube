@@ -59,7 +59,7 @@ $tn-h: 60px;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg, #f4f5f1);
+  background: var(--el-bg-color-page);
   overflow: hidden;
 }
 
@@ -77,8 +77,8 @@ $tn-h: 60px;
 }
 
 .sub-hd {
-  background: var(--card, #fff);
-  border-bottom: 1px solid var(--bd, #e0e6da);
+  background: var(--el-bg-color-overlay);
+  border-bottom: 1px solid var(--el-border-color-light);
   padding: 0 16px;
   display: flex;
   align-items: center;

@@ -19,7 +19,7 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb, #c8d4c8);
+    background: var(--el-border-color-light);
     border-radius: 3px;
   }
 }

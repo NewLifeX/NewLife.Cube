@@ -67,7 +67,7 @@ const registry = inject(
   PageSectionRegistryKey,
   {} as Record<string, Record<string, () => Promise<{ default: unknown }>>>,
 );
-const pageOverrides = registry[route.path] ?? {};
+const pageOverrides = registry[route.path.toLowerCase()] ?? {};
 
 for (const [name, loader] of Object.entries(pageOverrides)) {
   const key = SectionKeyMap[name];
@@ -253,14 +253,14 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: var(--bg);
+  background: var(--el-bg-color-page);
 
   &::-webkit-scrollbar {
     width: 6px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #c8d4c8;
+    background: var(--el-border-color-light);
     border-radius: 3px;
   }
 }

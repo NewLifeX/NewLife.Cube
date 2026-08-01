@@ -125,7 +125,8 @@ const currentDate = computed(() => {
   svg {
     width: 14px;
     height: 14px;
-    color: var(--text-muted);
+    /* 使用 --el-text-color-secondary 替代未定义的 --text-muted */
+    color: var(--el-text-color-secondary);
     flex-shrink: 0;
   }
 
@@ -133,13 +134,15 @@ const currentDate = computed(() => {
     background: none;
     border: none;
     outline: none;
-    color: var(--text-primary);
+    /* 使用 --el-text-color-primary 替代未定义的 --text-primary */
+    color: var(--el-text-color-primary);
     font-family: inherit;
     font-size: 13px;
     width: 100%;
 
     &::placeholder {
-      color: var(--text-muted);
+      /* 使用 --el-text-color-placeholder 替代未定义的 --text-muted 作为占位符色 */
+      color: var(--el-text-color-placeholder);
     }
   }
 }

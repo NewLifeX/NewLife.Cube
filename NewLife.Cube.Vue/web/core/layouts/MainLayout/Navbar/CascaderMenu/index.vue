@@ -63,14 +63,14 @@ const children = computed(() => {
   overflow: hidden auto;
   padding: 28px 20px 0;
   z-index: 1100;
-  background: rgba(255, 255, 255, 0.95);
+  background: color-mix(in srgb, var(--el-bg-color-overlay) 95%, transparent);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-left: 1px solid rgba(226, 224, 220, 0.5);
+  border-left: 1px solid var(--el-border-color-light);
   border-radius: 0 14px 14px 0;
   box-shadow:
-    4px 0 24px rgba(0, 0, 0, 0.05),
-    0 4px 24px rgba(0, 0, 0, 0.04);
+    4px 0 24px color-mix(in srgb, var(--el-text-color-primary) 5%, transparent),
+    0 4px 24px color-mix(in srgb, var(--el-text-color-primary) 4%, transparent);
 
   scrollbar-width: none;
   -ms-overflow-style: none;

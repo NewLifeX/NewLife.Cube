@@ -43,14 +43,14 @@ const menuItemColumns = computed(() => props.menuItemColumns);
     height: 36px;
     margin-left: 12px;
     padding-left: 16px;
-    border-bottom: 1px solid #f0ece6;
+    border-bottom: 1px solid var(--el-border-color-light);
     overflow: hidden;
   }
 
   .title-text {
     font-size: 14px;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--el-text-color-primary);
     letter-spacing: -0.01em;
     white-space: nowrap;
     overflow: hidden;
