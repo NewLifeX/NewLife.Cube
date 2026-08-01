@@ -1011,11 +1011,11 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
             PageSetting.DoubleDelete,
         };
 
-        var list = OnGetFields(ViewKinds.List, null);
-        var addForm = OnGetFields(ViewKinds.AddForm, null);
-        var editForm = OnGetFields(ViewKinds.EditForm, null);
-        var detail = OnGetFields(ViewKinds.Detail, null);
-        var search = OnGetFields(ViewKinds.Search, null);
+        var list = PrepareFieldsForApi(OnGetFields(ViewKinds.List, null));
+        var addForm = PrepareFieldsForApi(OnGetFields(ViewKinds.AddForm, null));
+        var editForm = PrepareFieldsForApi(OnGetFields(ViewKinds.EditForm, null));
+        var detail = PrepareFieldsForApi(OnGetFields(ViewKinds.Detail, null));
+        var search = PrepareFieldsForApi(OnGetFields(ViewKinds.Search, null));
 
         var data = new
         {
@@ -1038,11 +1038,20 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
     [AllowAnonymous]
     public virtual ActionResult GetFields(ViewKinds kind)
     {
-        var fields = OnGetFields(kind, null);
+        var fields = PrepareFieldsForApi(OnGetFields(kind, null));
 
         Object data = new { code = 0, message = "", data = fields };
 
         return new JsonResult(data);
+    }
+
+    /// <summary>物化字段数据源字典，供 SPA 列表徽章/表单下拉复用，避免反复拉值集</summary>
+    [NonAction]
+    protected virtual IList<DataField> PrepareFieldsForApi(IList<DataField> fields)
+    {
+        if (fields == null) return fields;
+        foreach (var df in fields) df?.PrepareForApi();
+        return fields;
     }
     #endregion
 

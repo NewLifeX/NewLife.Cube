@@ -66,6 +66,29 @@ public class ProfileCommentEntityTests
         Assert.NotNull(EntityViewProfile.FindByUserIdAndTypePath(uid, pathB));
     }
 
+    [Fact(DisplayName = "EntityViewProfile：ViewsJson/ActiveViewId upsert 持久化")]
+    public void EntityViewProfile_NamedViews_Upsert()
+    {
+        var uid = (Environment.TickCount & 0x0FFF_FFFF) | 0x2100_0000;
+        var path = "Admin/Menu";
+        var views = """[{"id":"default","name":"列表","view":"table","columns":[{"key":"Name","visible":true}]}]""";
+
+        EntityViewProfile.UpsertForUser(uid, path, new EntityViewProfileModel
+        {
+            TypePath = path,
+            View = "table",
+            ViewsJson = views,
+            ActiveViewId = "default",
+            ColumnsJson = """[{"key":"Name","visible":true}]""",
+            Version = 1,
+        });
+
+        var saved = EntityViewProfile.FindByUserIdAndTypePath(uid, path);
+        Assert.NotNull(saved);
+        Assert.Equal("default", saved.ActiveViewId);
+        Assert.Contains("列表", saved.ViewsJson);
+    }
+
     [Fact(DisplayName = "EntityComment：按 category+linkId 列表；同表回复 ParentId/RootId；非作者非管理员不可删")]
     public void EntityComment_ListReplyAndDeleteAuth()
     {

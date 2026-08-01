@@ -30,6 +30,12 @@ export function applyTheme(theme: ThemePrefs, prefersDark = prefersDarkNow()): v
   }
 
   for (const [k, v] of Object.entries(tokens.cssVars)) {
+    if (k === 'zoom') {
+      // zoom 整体缩放界面（Arco 字号多为 px，仅改 root font-size 无效）
+      if (v === 'normal' || v === '1') root.style.removeProperty('zoom');
+      else (root.style as CSSStyleDeclaration & { zoom: string }).zoom = v;
+      continue;
+    }
     root.style.setProperty(k, v);
   }
 

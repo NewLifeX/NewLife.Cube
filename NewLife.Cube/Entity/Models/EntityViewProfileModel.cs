@@ -23,8 +23,14 @@ public partial class EntityViewProfileModel
     /// <summary>视图。table/tree/card/gantt</summary>
     public String View { get; set; }
 
-    /// <summary>列布局。JSON 数组</summary>
+    /// <summary>列布局。JSON 数组（与活跃命名视图同步）</summary>
     public String ColumnsJson { get; set; }
+
+    /// <summary>命名视图集合。JSON 数组</summary>
+    public String ViewsJson { get; set; }
+
+    /// <summary>当前激活的命名视图 Id</summary>
+    public String ActiveViewId { get; set; }
 
     /// <summary>甘特映射。JSON</summary>
     public String GanttJson { get; set; }
@@ -70,6 +76,8 @@ public partial class EntityViewProfileModel
         TypePath = model.TypePath;
         View = model.View;
         ColumnsJson = model.ColumnsJson;
+        ViewsJson = model.ViewsJson;
+        ActiveViewId = model.ActiveViewId;
         GanttJson = model.GanttJson;
         CardJson = model.CardJson;
         FiltersJson = model.FiltersJson;

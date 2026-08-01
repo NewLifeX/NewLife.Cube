@@ -40,7 +40,10 @@
           <SidebarMenuNodes :items="sideMenus" />
         </a-menu>
       </a-layout-sider>
-      <LayoutContent />
+      <!-- 包一层 a-layout，命中 Arco has-sider > .arco-layout 的 overflow-x: hidden -->
+      <a-layout class="layout-mix__main">
+        <LayoutContent />
+      </a-layout>
     </a-layout>
   </a-layout>
 </template>
@@ -157,5 +160,10 @@ function toggleCollapsed() {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.layout-mix__main {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 </style>

@@ -17,6 +17,7 @@
     "@cube/field-mapping": "workspace:*",
     "@cube/page-logic": "workspace:*",
     "@cube/page-utils": "workspace:*",
+    "@visactor/vtable": "^1.26.5",
     "echarts": "^5.6.0",
     "pinia": "^3.0.0",
     "vue": "^3.5.0",

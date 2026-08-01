@@ -114,6 +114,8 @@ export interface DataField {
   textAlign?: string;
   /** 数据字典（键值对列表） */
   dataSource?: Record<string, string>;
+  /** GetPage 物化后的数据源（与 dataSource 同义，兼容 DataSourceMap 序列化） */
+  dataSourceMap?: Record<string, string>;
 }
 
 /** 页面设置（GetPage.data.setting） */
@@ -410,6 +412,25 @@ export interface UserProfileModel {
   workspaceJson?: string | null;
   version?: number;
   enable?: boolean;
+  remark?: string | null;
+}
+
+/**
+ * 实体视图配置（EntityViewProfile）线缆模型。
+ * columns/views 等以 JSON 字符串列存储。
+ */
+export interface EntityViewProfileModel {
+  id?: number;
+  userId?: number;
+  typePath?: string;
+  view?: string | null;
+  columnsJson?: string | null;
+  viewsJson?: string | null;
+  activeViewId?: string | null;
+  ganttJson?: string | null;
+  cardJson?: string | null;
+  filtersJson?: string | null;
+  version?: number;
   remark?: string | null;
 }
 

@@ -158,6 +158,8 @@ public partial class EntityViewProfile : Entity<EntityViewProfile>
         {
             if (model.View != null) entity.View = model.View;
             if (model.ColumnsJson != null) entity.ColumnsJson = model.ColumnsJson;
+            if (model.ViewsJson != null) entity.ViewsJson = model.ViewsJson;
+            if (model.ActiveViewId != null) entity.ActiveViewId = model.ActiveViewId;
             if (model.GanttJson != null) entity.GanttJson = model.GanttJson;
             if (model.CardJson != null) entity.CardJson = model.CardJson;
             if (model.FiltersJson != null) entity.FiltersJson = model.FiltersJson;

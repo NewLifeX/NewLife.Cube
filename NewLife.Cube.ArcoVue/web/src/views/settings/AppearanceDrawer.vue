@@ -1,8 +1,15 @@
 <template>
-  <div class="appearance-page">
-    <a-page-header title="外观设置" subtitle="布局、主题与密度偏好将同步到当前账号" />
+  <a-drawer
+    :visible="visible"
+    :width="480"
+    unmount-on-close
+    title="外观设置"
+    placement="right"
+    @update:visible="(v: boolean) => emit('update:visible', v)"
+  >
+    <p class="drawer-sub">布局、主题与密度偏好将同步到当前账号</p>
 
-    <a-card title="布局" :bordered="false" class="block">
+    <a-card title="布局" :bordered="false" class="block" size="small">
       <a-form :model="form.layout" layout="vertical">
         <a-form-item label="布局模式">
           <a-radio-group v-model="form.layout.mode" @change="onLayoutChange">
@@ -38,7 +45,7 @@
       </a-form>
     </a-card>
 
-    <a-card title="主题" :bordered="false" class="block">
+    <a-card title="主题" :bordered="false" class="block" size="small">
       <a-form :model="form.theme" layout="vertical">
         <a-form-item label="外观">
           <a-radio-group v-model="form.theme.appearance" @change="onThemeChange">
@@ -62,7 +69,6 @@
             :min="0"
             :max="16"
             :step="1"
-            style="max-width: 320px"
             @change="onThemeChange"
           />
         </a-form-item>
@@ -72,15 +78,14 @@
             :min="0.875"
             :max="1.25"
             :step="0.025"
-            :format-tooltip="(v: number) => v.toFixed(3)"
-            style="max-width: 320px"
+            :format-tooltip="(v: number) => `${Math.round(v * 100)}%`"
             @change="onThemeChange"
           />
         </a-form-item>
       </a-form>
     </a-card>
 
-    <div class="actions">
+    <template #footer>
       <a-space>
         <a-button type="primary" :loading="profileStore.saving" @click="saveNow">立即保存</a-button>
         <a-button :loading="profileStore.saving" @click="reset">恢复默认</a-button>
@@ -89,8 +94,8 @@
         <a-tag v-else color="green">已同步</a-tag>
       </a-space>
       <p v-if="profileStore.saveError" class="err">{{ profileStore.saveError }}</p>
-    </div>
-  </div>
+    </template>
+  </a-drawer>
 </template>
 
 <script setup lang="ts">
@@ -99,10 +104,12 @@ import { Message } from '@arco-design/web-vue';
 import { useUserProfileStore } from '@/stores/userProfile';
 import { cloneProfile, type UserProfilePrefs } from '@/core/utils/userProfile';
 
-defineOptions({ name: 'AppearanceSettings' });
+defineOptions({ name: 'AppearanceDrawer' });
+
+defineProps<{ visible: boolean }>();
+const emit = defineEmits<{ 'update:visible': [boolean] }>();
 
 const profileStore = useUserProfileStore();
-
 const form = reactive(cloneProfile(profileStore.prefs)) as UserProfilePrefs;
 
 watch(
@@ -144,14 +151,13 @@ async function reset() {
 </script>
 
 <style scoped>
-.appearance-page {
-  max-width: 720px;
+.drawer-sub {
+  margin: -4px 0 16px;
+  color: var(--color-text-3);
+  font-size: 13px;
 }
 .block {
-  margin-bottom: 16px;
-}
-.actions {
-  margin-top: 8px;
+  margin-bottom: 12px;
 }
 .err {
   color: rgb(var(--red-6));

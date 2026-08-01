@@ -18,6 +18,7 @@ import type {
   RegisterModel,
   OAuthPendingInfo,
   UserProfileModel,
+  EntityViewProfileModel,
 } from './types';
 
 type RequestFn = <T>(config: AxiosRequestConfig) => Promise<ApiResponse<T>>;
@@ -248,5 +249,25 @@ export function createProfileApi(request: RequestFn) {
     /** 保存当前用户 UserProfile（upsert；仅非 null 的 Json 字段会更新） */
     putUserProfile: (data: Partial<UserProfileModel>) =>
       request<UserProfileModel>({ url: '/Cube/UserProfile', method: 'put', data }),
+
+    /** 获取当前用户指定实体的视图配置；无记录时 data 可能为 null */
+    getEntityViewProfile: (typePath: string) =>
+      request<EntityViewProfileModel | null>({
+        url: '/Cube/EntityViewProfile',
+        method: 'get',
+        params: { typePath },
+      }),
+
+    /** 保存实体视图配置（upsert） */
+    putEntityViewProfile: (data: Partial<EntityViewProfileModel> & { typePath: string }) =>
+      request<EntityViewProfileModel>({ url: '/Cube/EntityViewProfile', method: 'put', data }),
+
+    /** 删除实体视图配置（恢复默认） */
+    deleteEntityViewProfile: (typePath: string) =>
+      request<unknown>({
+        url: '/Cube/EntityViewProfile',
+        method: 'delete',
+        params: { typePath },
+      }),
   };
 }

@@ -101,6 +101,9 @@ public class DataField
     [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public DataSourceDelegate DataSource { get; set; }
 
+    /// <summary>数据源字典（API/SPA 序列化输出，键值均为字符串）。与 DataSource 委托互补</summary>
+    public IDictionary DataSourceMap { get; set; }
+
     /// <summary>是否显示</summary>
     [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public DataVisibleDelegate DataVisible { get; set; }
@@ -255,6 +258,62 @@ public class DataField
     /// <param name="value"></param>
     /// <returns></returns>
     public virtual String FormatValue(Object value) => ViewHelper.FormatValue(!ItemType.IsNullOrEmpty() ? ItemType : Field?.Field?.DataScale, value, Description);
+
+    /// <summary>为 API/SPA 物化数据源字典（布尔/枚举/DataSource 委托），避免前端反复请求</summary>
+    public virtual void PrepareForApi()
+    {
+        if (DataSourceMap != null && DataSourceMap.Count > 0) return;
+
+        var map = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
+
+        if (DataSource != null)
+        {
+            try
+            {
+                var dic = DataSource(null);
+                if (dic != null)
+                {
+                    foreach (DictionaryEntry de in dic)
+                    {
+                        if (de.Key == null) continue;
+                        map[de.Key + ""] = de.Value + "";
+                    }
+                }
+            }
+            catch { /* 忽略委托异常，回落类型推断 */ }
+        }
+
+        if (map.Count == 0 && Type != null)
+        {
+            var t = System.Nullable.GetUnderlyingType(Type) ?? Type;
+            if (t == typeof(Boolean))
+            {
+                map["true"] = "是";
+                map["false"] = "否";
+                map["1"] = "是";
+                map["0"] = "否";
+            }
+            else if (t.IsEnum)
+            {
+                foreach (var v in Enum.GetValues(t))
+                {
+                    var name = Enum.GetName(t, v);
+                    if (name.IsNullOrEmpty()) continue;
+                    var fi = t.GetField(name);
+                    var dn = fi?.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName
+                        ?? fi?.GetCustomAttribute<DescriptionAttribute>()?.Description
+                        ?? name;
+                    var num = Convert.ToInt64(v).ToString();
+                    map[num] = dn;
+                    map[name] = dn;
+                }
+                if (LovCode.IsNullOrEmpty() && t.FullName != null)
+                    LovCode = "Enum." + t.FullName;
+            }
+        }
+
+        if (map.Count > 0) DataSourceMap = map;
+    }
     #endregion
 
     #region 服务

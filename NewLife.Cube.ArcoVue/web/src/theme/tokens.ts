@@ -39,6 +39,9 @@ export function buildThemeTokens(
       '--border-radius-small': `${Math.max(0, theme.radius - 2)}px`,
       '--border-radius-medium': `${theme.radius}px`,
       '--cube-font-scale': String(scale),
+      '--cube-font-size': `${14 * scale}px`,
+      /* Arco 组件多为 px 字号，靠 zoom 整体缩放才生效 */
+      zoom: scale === 1 ? 'normal' : String(scale),
       'font-size': `${14 * scale}px`,
     },
     arcoTheme: effectiveAppearance === 'dark' ? 'dark' : null,

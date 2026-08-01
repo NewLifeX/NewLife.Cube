@@ -276,7 +276,7 @@ Agent / Copilot 实施约定：OSC-0002 的 `tasks.md` 首项应为「编辑 Cub
 | Table | 关键列（示意） | 索引 |
 |-------|----------------|------|
 | UserProfile | Id；UserId；LayoutJson / ThemeJson / WorkspaceJson（或单一 ProfileJson）；Version；Enable；Create*/Update* | Unique(UserId) |
-| EntityViewProfile | Id；UserId；TypePath；View；ColumnsJson；GanttJson；CardJson；FiltersJson；Version；Create*/Update* | Unique(UserId, TypePath) |
+| EntityViewProfile | Id；UserId；TypePath；View；ColumnsJson；**ViewsJson**；**ActiveViewId**；GanttJson；CardJson；FiltersJson；Version；Create*/Update* | Unique(UserId, TypePath)；命名视图存 ViewsJson |
 | EntityComment | Id；Category；LinkId；**ParentId / RootId / ReplyUserId / ReplyUser**；Content；CreateUser/Id/IP/Time；Update* | (Category, LinkId)；ParentId；RootId；CreateUserID |
 
 嵌套配置（layout/theme/columns 等）以 **JSON 文本列** 落库，与 §5.2 逻辑模型对应；API 层序列化为前端 TypeScript 形状。
@@ -314,11 +314,15 @@ interface EntityViewProfileDto {
   userId: number | string
   typePath: string
   view: 'table' | 'tree' | 'card' | 'gantt'
+  /** 权威：多命名视图 JSON 字符串（ViewsJson） */
+  viewsJson?: string
+  activeViewId?: string
   columns?: Array<{
     key: string
     visible: boolean
     width?: number
     frozen?: 'left' | 'right' | false
+    title?: string
   }>
   gantt?: { startField?: string; endField?: string; titleField?: string }
   card?: { titleField?: string; subtitleField?: string; statusField?: string; coverField?: string }
@@ -618,8 +622,10 @@ Draft → Accepted → Implementing → Validating → Done
 
 ### M3a — VTable 表格 + 列布局 → **OSC-0005**（依赖 **OSC-0002**）
 
-- ListTable、列显隐/顺序/宽度、写 EntityViewProfile。
-- **不含** tree/card/gantt（下一号）。
+- ListTable、列显隐/顺序/宽度/左冻结、表头排序、写 EntityViewProfile。
+- **多命名视图**（仅 `table`）：`ViewsJson` + `ActiveViewId`；默认种子「默认列表」（兼容旧种子「列表」）。
+- **不含** tree/card/gantt 类型切换（下一号）；列表扁平（树启发式已移除）。
+- **出口（OSC-0005）：** DefaultList 主表为 VTable；命名视图工具条 + 字段设置；`GET/PUT/DELETE /Cube/EntityViewProfile`。
 
 ### M3b — 树 / 卡片 / 甘特 → **OSC-0006**（依赖 OSC-0005）
 

@@ -6,11 +6,6 @@
           {{ appearanceLabel }}
         </a-button>
       </a-tooltip>
-      <a-tooltip content="密度">
-        <a-button type="text" size="small" @click="toggleDensity">
-          {{ densityLabel }}
-        </a-button>
-      </a-tooltip>
       <a-button type="text" size="small" @click="goAppearance">外观设置</a-button>
       <a-dropdown>
         <a-button type="text">
@@ -31,6 +26,7 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
 import { useUserProfileStore } from '@/stores/userProfile';
+import { useAppStore } from '@/stores/app';
 import { useTagsViewStore } from '@/stores/tagsView';
 import { resetMenuRoutesFlag } from '@/router';
 import type { Appearance } from '@/core/utils/userProfile';
@@ -38,6 +34,7 @@ import type { Appearance } from '@/core/utils/userProfile';
 const router = useRouter();
 const userStore = useUserStore();
 const profileStore = useUserProfileStore();
+const appStore = useAppStore();
 const tagsStore = useTagsViewStore();
 
 const appearanceLabel = computed(() => {
@@ -45,24 +42,14 @@ const appearanceLabel = computed(() => {
   return map[profileStore.theme.appearance];
 });
 
-const densityLabel = computed(() =>
-  profileStore.theme.density === 'compact' ? '紧凑' : '默认密度',
-);
-
 function cycleAppearance() {
   const order: Appearance[] = ['light', 'dark', 'system'];
   const i = order.indexOf(profileStore.theme.appearance);
   profileStore.patchTheme({ appearance: order[(i + 1) % order.length] });
 }
 
-function toggleDensity() {
-  profileStore.patchTheme({
-    density: profileStore.theme.density === 'compact' ? 'default' : 'compact',
-  });
-}
-
 function goAppearance() {
-  router.push('/settings/appearance');
+  appStore.openAppearanceDrawer();
 }
 
 async function handleLogout() {

@@ -44,13 +44,19 @@
     />
     <a-select
       v-else-if="control === 'select'"
-      :model-value="modelValue as any"
+      :model-value="selectValue"
       :disabled="disabled"
       allow-clear
       style="width: 100%"
-      @update:model-value="emitValue"
+      @update:model-value="onSelect"
     >
-      <a-option v-for="(label, key) in field.dataSource || {}" :key="key" :value="key">{{ label }}</a-option>
+      <a-option
+        v-for="(label, key) in field.dataSource || {}"
+        :key="key"
+        :value="String(key)"
+      >
+        {{ label }}
+      </a-option>
     </a-select>
     <LovSelect
       v-else-if="control === 'lov' || control === 'lovMulti'"
@@ -142,6 +148,9 @@ const numValue = computed(() => {
 const displayText = computed(() => strValue.value || '-');
 const precision = computed(() => resolveNumberPrecision(props.field));
 const step = computed(() => resolveNumberStep(props.field));
+const selectValue = computed(() =>
+  props.modelValue == null || props.modelValue === '' ? undefined : String(props.modelValue),
+);
 const inputType = computed(() => {
   switch (control.value) {
     case 'email':
@@ -157,6 +166,26 @@ const inputType = computed(() => {
 
 function emitValue(v: unknown) {
   emit('update:modelValue', v);
+}
+
+/** 下拉值尽量还原数值/布尔，兼容实体字段类型 */
+function onSelect(v: unknown) {
+  if (v == null || v === '') {
+    emitValue(undefined);
+    return;
+  }
+  const s = String(v);
+  const tn = props.field.typeName;
+  if (tn === 'Boolean') {
+    emitValue(s === 'true' || s === '1');
+    return;
+  }
+  if (tn === 'Int32' || tn === 'Int64' || tn === 'Decimal' || tn === 'Double' || tn === 'Single') {
+    const n = Number(s);
+    emitValue(Number.isNaN(n) ? s : n);
+    return;
+  }
+  emitValue(s);
 }
 
 async function onUpload(option: { fileItem: { file?: File }; onSuccess: () => void; onError: () => void }) {

@@ -757,7 +757,9 @@
         <Column Name="UserId" DataType="Int32" Description="用户" />
         <Column Name="TypePath" DataType="String" Length="200" Nullable="False" Description="实体路径。如 Admin/User" />
         <Column Name="View" DataType="String" Description="视图。table/tree/card/gantt" />
-        <Column Name="ColumnsJson" DataType="String" Length="-1" Description="列布局。JSON 数组" />
+        <Column Name="ColumnsJson" DataType="String" Length="-1" Description="列布局。JSON 数组（与活跃命名视图同步）" />
+        <Column Name="ViewsJson" DataType="String" Length="-1" Description="命名视图集合。JSON 数组" />
+        <Column Name="ActiveViewId" DataType="String" Length="50" Description="当前激活的命名视图 Id" />
         <Column Name="GanttJson" DataType="String" Length="-1" Description="甘特映射。JSON" />
         <Column Name="CardJson" DataType="String" Length="-1" Description="卡片映射。JSON" />
         <Column Name="FiltersJson" DataType="String" Length="-1" Description="筛选记忆。JSON" />

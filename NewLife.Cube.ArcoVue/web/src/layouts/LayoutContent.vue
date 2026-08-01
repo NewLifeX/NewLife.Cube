@@ -33,11 +33,15 @@ const contentWidth = computed(() => props.width || profileStore.layout.contentWi
   display: flex;
   flex-direction: column;
   flex: 1;
+  /* 混合导航时与 sider 并排：必须允许横向收缩，否则宽表会撑开整页 */
+  min-width: 0;
   min-height: 0;
+  overflow-x: hidden;
   background: var(--color-fill-2);
 }
 .layout-content__body {
   flex: 1;
+  min-width: 0;
   padding: 16px;
   overflow: auto;
 }

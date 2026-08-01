@@ -45,6 +45,9 @@ export function resolveControl(field: FieldMeta): ControlType {
 
   if (typeName === 'Guid') return 'readonly';
 
+  // 布尔优先开关（即使已物化 dataSourceMap）
+  if (typeName === 'Boolean') return 'switch';
+
   if (field.lovCode) {
     return field.multiple || itemType === 'multipleselect' ? 'lovMulti' : 'lov';
   }
@@ -53,7 +56,6 @@ export function resolveControl(field: FieldMeta): ControlType {
     return 'select';
   }
 
-  if (typeName === 'Boolean') return 'switch';
   if (typeName === 'DateTime') return 'datePicker';
   if (typeName === 'TimeSpan') return 'timePicker';
   if (NUMERIC_TYPES.has(typeName)) return 'inputNumber';
@@ -78,6 +80,7 @@ export function resolveSearchControl(field: FieldMeta): SearchControlType {
   const typeName = field.typeName;
 
   if (typeName === 'Guid') return 'text';
+  if (typeName === 'Boolean') return 'switch';
 
   if (field.lovCode) {
     return field.multiple || itemType === 'multipleselect' ? 'lovMulti' : 'lov';
@@ -87,7 +90,6 @@ export function resolveSearchControl(field: FieldMeta): SearchControlType {
     return 'select';
   }
 
-  if (typeName === 'Boolean') return 'switch';
   if (typeName === 'DateTime') return 'datetimeRange';
   if (typeName === 'TimeSpan') return 'timeRange';
   if (NUMERIC_TYPES.has(typeName)) return 'numberRange';
@@ -122,9 +124,9 @@ export function resolveListControl(field: FieldMeta): ListControlType {
   const typeName = field.typeName;
 
   if (typeName === 'Guid') return 'readonly';
+  if (typeName === 'Boolean') return 'boolean';
   if (field.lovCode || typeName === 'Enum') return 'lov';
   if (field.dataSource && Object.keys(field.dataSource).length > 0) return 'select';
-  if (typeName === 'Boolean') return 'boolean';
   if (typeName === 'DateTime') return 'date';
   if (typeName === 'TimeSpan') return 'time';
   if (NUMERIC_TYPES.has(typeName)) return 'number';

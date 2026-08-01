@@ -18,7 +18,13 @@ pnpm install
 pnpm dev
 ```
 
-默认开发端口 **5183**。Vite 将下列前缀代理到 `http://localhost:5000`：`/Admin`、`/Auth`、`/Mfa`、`/Cube`、`/Sso`、`/api`（定义见 `devProxy.ts`）。
+默认开发端口 **5183**。Vite 代理见 `devProxy.ts`：
+
+- 固定前缀：`/Admin`、`/Auth`、`/Mfa`、`/Cube`、`/Sso`、`/api`
+- **业务 Area 通配**：`/^/[A-Z]…/`（如 `/School/Class/GetPage`）
+- 浏览器 HTML 导航 `bypass` 回 SPA；XHR/fetch 转发后端
+
+改代理后需**重启** `pnpm dev`。
 
 单元测试：
 
@@ -49,6 +55,12 @@ pnpm build
 - 主题 / 密度写入 CSS 变量与 `arco-theme`，持久化到 `GET/PUT /Cube/UserProfile`。
 - 外观设置：`/settings/appearance`；顶栏提供主题、密度、设置入口。
 - CRUD 页面不读取壳偏好 store（契约隔离）。
+
+## 列表与 EntityViewProfile
+
+- 默认列表主表为 **VisActor VTable**（`features/vtable/ListTable.vue`）。
+- 列布局 / 多命名视图（仅 table）经 `GET/PUT/DELETE /Cube/EntityViewProfile` 持久化。
+- 工具条：命名视图切换 +「配置」抽屉；数据行**双击**或操作列打开右侧详情抽屉。
 
 ## 目录结构
 

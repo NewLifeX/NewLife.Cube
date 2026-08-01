@@ -3,6 +3,7 @@ import RootLayout from '@/layouts/RootLayout.vue';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
 import { useUserProfileStore } from '@/stores/userProfile';
+import { useAppStore } from '@/stores/app';
 import { registerLeafRoutes } from '@/core/utils/menuRoutes';
 
 const routes: RouteRecordRaw[] = [
@@ -37,10 +38,14 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '首页' },
       },
       {
+        /** 兼容旧链接：打开外观抽屉并回首页，不占用内容页签 */
         path: 'settings/appearance',
         name: 'AppearanceSettings',
-        component: () => import('@/views/settings/appearance.vue'),
-        meta: { title: '外观设置' },
+        component: { render: () => null },
+        beforeEnter: (_to, _from, next) => {
+          useAppStore().openAppearanceDrawer();
+          next({ path: '/home', replace: true });
+        },
       },
     ],
   },

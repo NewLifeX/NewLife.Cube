@@ -55,12 +55,28 @@ public partial class EntityViewProfile : IEntity<EntityViewProfileModel>
     public String View { get => _View; set { if (OnPropertyChanging("View", value)) { _View = value; OnPropertyChanged("View"); } } }
 
     private String _ColumnsJson;
-    /// <summary>列布局。JSON 数组</summary>
+    /// <summary>列布局。JSON 数组（与活跃命名视图同步）</summary>
     [DisplayName("列布局")]
-    [Description("列布局。JSON 数组")]
+    [Description("列布局。JSON 数组（与活跃命名视图同步）")]
     [DataObjectField(false, false, true, -1)]
-    [BindColumn("ColumnsJson", "列布局。JSON 数组", "")]
+    [BindColumn("ColumnsJson", "列布局。JSON 数组（与活跃命名视图同步）", "")]
     public String ColumnsJson { get => _ColumnsJson; set { if (OnPropertyChanging("ColumnsJson", value)) { _ColumnsJson = value; OnPropertyChanged("ColumnsJson"); } } }
+
+    private String _ViewsJson;
+    /// <summary>命名视图集合。JSON 数组</summary>
+    [DisplayName("命名视图")]
+    [Description("命名视图集合。JSON 数组")]
+    [DataObjectField(false, false, true, -1)]
+    [BindColumn("ViewsJson", "命名视图集合。JSON 数组", "")]
+    public String ViewsJson { get => _ViewsJson; set { if (OnPropertyChanging("ViewsJson", value)) { _ViewsJson = value; OnPropertyChanged("ViewsJson"); } } }
+
+    private String _ActiveViewId;
+    /// <summary>当前激活的命名视图 Id</summary>
+    [DisplayName("激活视图")]
+    [Description("当前激活的命名视图 Id")]
+    [DataObjectField(false, false, true, 50)]
+    [BindColumn("ActiveViewId", "当前激活的命名视图 Id", "")]
+    public String ActiveViewId { get => _ActiveViewId; set { if (OnPropertyChanging("ActiveViewId", value)) { _ActiveViewId = value; OnPropertyChanged("ActiveViewId"); } } }
 
     private String _GanttJson;
     /// <summary>甘特映射。JSON</summary>
@@ -168,6 +184,8 @@ public partial class EntityViewProfile : IEntity<EntityViewProfileModel>
         TypePath = model.TypePath;
         View = model.View;
         ColumnsJson = model.ColumnsJson;
+        ViewsJson = model.ViewsJson;
+        ActiveViewId = model.ActiveViewId;
         GanttJson = model.GanttJson;
         CardJson = model.CardJson;
         FiltersJson = model.FiltersJson;
@@ -195,6 +213,8 @@ public partial class EntityViewProfile : IEntity<EntityViewProfileModel>
             "TypePath" => _TypePath,
             "View" => _View,
             "ColumnsJson" => _ColumnsJson,
+            "ViewsJson" => _ViewsJson,
+            "ActiveViewId" => _ActiveViewId,
             "GanttJson" => _GanttJson,
             "CardJson" => _CardJson,
             "FiltersJson" => _FiltersJson,
@@ -217,6 +237,8 @@ public partial class EntityViewProfile : IEntity<EntityViewProfileModel>
                 case "TypePath": _TypePath = Convert.ToString(value); break;
                 case "View": _View = Convert.ToString(value); break;
                 case "ColumnsJson": _ColumnsJson = Convert.ToString(value); break;
+                case "ViewsJson": _ViewsJson = Convert.ToString(value); break;
+                case "ActiveViewId": _ActiveViewId = Convert.ToString(value); break;
                 case "GanttJson": _GanttJson = Convert.ToString(value); break;
                 case "CardJson": _CardJson = Convert.ToString(value); break;
                 case "FiltersJson": _FiltersJson = Convert.ToString(value); break;
@@ -321,8 +343,14 @@ public partial class EntityViewProfile : IEntity<EntityViewProfileModel>
         /// <summary>视图。table/tree/card/gantt</summary>
         public static readonly Field View = FindByName("View");
 
-        /// <summary>列布局。JSON 数组</summary>
+        /// <summary>列布局。JSON 数组（与活跃命名视图同步）</summary>
         public static readonly Field ColumnsJson = FindByName("ColumnsJson");
+
+        /// <summary>命名视图集合。JSON 数组</summary>
+        public static readonly Field ViewsJson = FindByName("ViewsJson");
+
+        /// <summary>当前激活的命名视图 Id</summary>
+        public static readonly Field ActiveViewId = FindByName("ActiveViewId");
 
         /// <summary>甘特映射。JSON</summary>
         public static readonly Field GanttJson = FindByName("GanttJson");
@@ -375,8 +403,14 @@ public partial class EntityViewProfile : IEntity<EntityViewProfileModel>
         /// <summary>视图。table/tree/card/gantt</summary>
         public const String View = "View";
 
-        /// <summary>列布局。JSON 数组</summary>
+        /// <summary>列布局。JSON 数组（与活跃命名视图同步）</summary>
         public const String ColumnsJson = "ColumnsJson";
+
+        /// <summary>命名视图集合。JSON 数组</summary>
+        public const String ViewsJson = "ViewsJson";
+
+        /// <summary>当前激活的命名视图 Id</summary>
+        public const String ActiveViewId = "ActiveViewId";
 
         /// <summary>甘特映射。JSON</summary>
         public const String GanttJson = "GanttJson";

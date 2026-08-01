@@ -59,6 +59,8 @@ export interface FieldOption {
 export interface FieldMeta {
   name: string;
   displayName?: string;
+  /** 表单分组（对应后端 DataField.Category） */
+  category?: string;
   typeName: string;
   itemType?: string;
   length?: number;
