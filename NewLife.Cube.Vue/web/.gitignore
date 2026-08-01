@@ -14,8 +14,9 @@ dist-ssr
 coverage
 *.local
 
-/cypress/videos/
-/cypress/screenshots/
+/playwright-report/
+/test-results/
+/playwright/.auth/
 
 # Editor directories and files
 .vscode/*
