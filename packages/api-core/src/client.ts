@@ -5,14 +5,14 @@ import { ApiError } from './types';
 import qs from 'qs';
 
 /**
- * 将后端可能返回的大写字段名（Token/RefreshToken/ExpireIn）归一化为小驼峰。
- * 部分版本后端直接返回 C# 属性名，需在客户端兼容。
+ * 将后端可能返回的兼容字段名归一化为小驼峰：
+ * 大写 C# 属性名（Token/RefreshToken/ExpireIn）与 snake_case（access_token 等）均兼容。
  */
 function normalizeLoginResult(data: LoginResult): LoginResult {
   return {
-    accessToken: data.accessToken ?? data.Token ?? '',
-    refreshToken: data.refreshToken ?? data.RefreshToken,
-    expireIn: data.expireIn ?? data.ExpireIn,
+    accessToken: data.accessToken ?? data.Token ?? data.access_token ?? '',
+    refreshToken: data.refreshToken ?? data.RefreshToken ?? data.refresh_token,
+    expireIn: data.expireIn ?? data.ExpireIn ?? data.expire_in,
   };
 }
 

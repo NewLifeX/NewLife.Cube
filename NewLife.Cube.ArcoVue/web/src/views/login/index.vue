@@ -149,13 +149,21 @@ async function handleLogin() {
   }
   loading.value = true;
   try {
-    const res = await userStore.login(form.username, form.password);
-    if (res.data) {
+    // 参考 NewLife.Cube.Vue 登录处理：直接明文密码登录，绕开 RSA Challenge 加密。
+    // 后端 AllowPlainPassword 默认开启；RSA 解密在部分后端版本存在 PEM/XML 兼容问题，
+    // 使用 Challenge 加密会触发 "No supported key formats were found" 错误。
+    const res = await cubeApi.user.login({ username: form.username, password: form.password });
+    if (res.data?.accessToken) {
+      cubeApi.tokenManager.setToken(res.data.accessToken);
+      await userStore.fetchUserInfo();
+      await userStore.fetchMenus();
       Message.success('登录成功');
       router.push('/home');
     } else {
       Message.error(res.message || '登录失败');
     }
+  } catch (err: any) {
+    Message.error(err?.message || '登录失败');
   } finally {
     loading.value = false;
   }

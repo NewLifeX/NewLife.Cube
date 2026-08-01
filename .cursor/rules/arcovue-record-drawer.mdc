@@ -1,0 +1,12 @@
+---
+description: ArcoVue 记录表单抽屉从右侧弹出
+globs: NewLife.Cube.ArcoVue/**/*
+alwaysApply: false
+---
+
+# ArcoVue 记录抽屉方向
+
+- 列表行详情 / 新增 / 编辑使用的 **RecordDrawer（及同类表单抽屉）必须从右边弹出**。
+- Arco：`a-drawer` 使用 `placement="right"`（或等价 API）。
+- **禁止** `placement="left"` 作为记录表单抽屉默认方向。
+- 文档与示意（OpenSpec ui、迁移方案）若描述抽屉弹出方向，以**右侧**为准。

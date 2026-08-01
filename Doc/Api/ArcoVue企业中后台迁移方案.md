@@ -440,9 +440,10 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
 ### 8.1 自动生成路径
 
 1. 菜单来自 `/Cube/MenuTree`。
-2. 动态路由落入 `DynamicPage`，`type` = 菜单 URL/控制器路径。
-3. `usePageLogic` 拉 `GetPage` + 列表数据。
-4. ViewShell 按用户偏好渲染；点击行打开抽屉。
+2. **B3 叶路由**：有 `url` 的节点扁平 `addRoute` 到 Layout（文件夹不嵌套子路由）；`props: { type, authId }`；优先 `apps/*/src/views/**/index.vue` 整页覆写，否则 `DynamicPage`。
+3. **DynamicPage** 为薄宿主：解析 Section `DefaultListPage` 覆写，否则挂载 **DefaultList** 微内核（GetPage → fieldControl → 列表/搜索/LOV → **右侧**抽屉）。
+4. 点击行打开 **右侧 RecordDrawer**（`placement="right"`；表单 / 历史 / 评论预留）；微内核**不读**布局/主题 store（契约隔离）。
+5. 多视图 ViewShell / VTable 由后续 OSC-0005+ 在 Section 上替换表格实现。
 
 ### 8.2 业务侧日常开发
 
@@ -602,11 +603,12 @@ Draft → Accepted → Implementing → Validating → Done
 - ArcoVue 代理 `/Auth` + `/Mfa`；`UseArcoVue` 冒烟；依赖 spike 写入 design。
 - **出口：** 状态机可跑通「创建→批准→…」；登录通路通。
 
-### M1 — 零配置 CRUD → **OSC-0003**（可与 OSC-0002 并行开发，合并顺序仍 0002 在消费方之前）
+### M1 — 零配置 CRUD → **OSC-0003**（加宽 A2；可与 OSC-0002 并行，评论 Tab 合并顺序 0002 优先）
 
-- 动态路由、`usePageLogic`、FieldMapping；Vitest 关键路径。
-- **不含**布局引擎/多视图/抽屉（留给后续号）。
-- **出口：** 元数据 CRUD 可用。
+- 动态路由 B3、`DynamicPage` + Cube.Vue 同构微内核（fieldControl / LOV / Section·apps / 树表 / GetChartData / **右侧**抽屉表单+历史）。
+- Arco 本地控件适配；Vitest 关键路径。
+- **不含**布局引擎/主题持久化/多页签产品化（→ OSC-0004）；**不含** VTable 多视图（→ OSC-0005+）。
+- **出口：** 冒烟 Admin/User·Role·Menu·Log；元数据 CRUD + LOV/树/图表/覆写/抽屉可用。
 
 ### M2 — 壳 + 消费 UserProfile → **OSC-0004**（依赖 **OSC-0002**）
 
@@ -641,7 +643,7 @@ Draft → Accepted → Implementing → Validating → Done
 ### 总验收清单
 
 - [ ] 仅 `UseArcoVue`：Admin + 新业务实体自动 CRUD  
-- [ ] **OSC-0002** 三实体后端已合并且带 XUnitTest  
+- [x] **OSC-0002** 三实体后端已合并且带 XUnitTest  
 - [ ] 布局/主题来自 UserProfile，列表视图/列来自 EntityViewProfile  
 - [ ] 四视图 + 左抽屉三 Tab；评论走 EntityComment  
 - [ ] §3.1 矩阵 P0 目标达成（或书面豁免）  
@@ -688,12 +690,12 @@ Draft → Accepted → Implementing → Validating → Done
 |------|------|--------------|------|
 | OSC-0001 | 协作基线：openspec 五壳就绪、代理 `/Auth` `/Mfa`、核心接口架构 MFA 交叉引用 | 无业务功能大改 | — |
 | OSC-0002 | 后端三实体：**UserProfile** + **EntityViewProfile** + **EntityComment**（Cube.xml → xcode → 三套 API） | 仅 NewLife.Cube + 测试/文档；无 Arco UI | — |
-| OSC-0003 | ArcoVue CRUD 接线（page-logic / FieldMapping / 动态路由） | 不含壳主题、多视图、抽屉 | — |
+| OSC-0003 | ArcoVue **零配置 CRUD 微内核**（B3 路由 + DynamicPage + fieldControl/LOV/树/图表/Section·apps + **右侧**抽屉表单/历史） | 不含壳主题/TagsView；不含 VTable；评论 Tab 预留 | OSC-0001；评论接线软依赖 0002 |
 | OSC-0004 | 布局/主题引擎 + **消费** UserProfile | 不含 VTable | OSC-0002 |
-| OSC-0005 | VTable **表格** + 列布局 + **消费** EntityViewProfile | 不含 tree/card/gantt | OSC-0002、建议 OSC-0003 |
-| OSC-0006 | 树表 / 卡片 / 甘特视图 | 不含抽屉 | OSC-0005 |
-| OSC-0007 | 左抽屉：表单编辑 + Log 历史 | 不含评论 | OSC-0003 |
-| OSC-0008 | 抽屉评论 Tab + **消费** EntityComment | 仅评论链路 | OSC-0002、OSC-0007 |
+| OSC-0005 | VTable **表格** + 列布局 + **消费** EntityViewProfile | 不含 tree/card/gantt；可替换 0003 默认 a-table Section | OSC-0002、建议 OSC-0003 |
+| OSC-0006 | 卡片 / 甘特等视图增强（树表基础能力已在 0003） | 不含抽屉 | OSC-0005 |
+| OSC-0007 | 记录抽屉 **增强**（历史筛选 UX 等；右侧表单骨架已在 0003） | 不含评论 | OSC-0003 |
+| OSC-0008 | 抽屉评论 Tab + **消费** EntityComment | 仅评论链路 | OSC-0002、OSC-0003/0007 |
 | OSC-0009 | FlowGram 单一样例 | 不扩流程平台 | — |
 | OSC-0010 | 收口：矩阵/功能清单/冒烟/harness | 无新功能 | 建议前述 P0 已完成 |
 

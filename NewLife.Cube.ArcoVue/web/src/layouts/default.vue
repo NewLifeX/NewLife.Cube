@@ -7,33 +7,25 @@
       :width="220"
       :collapsed-width="48"
     >
-      <div class="logo" style="height: 48px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 16px;">
+      <div
+        class="logo"
+        style="height: 48px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 16px;"
+      >
         {{ appStore.collapsed ? '魔' : (appStore.loginConfig?.name || '魔方管理平台') }}
       </div>
       <a-menu
         :selected-keys="selectedKeys"
-        :open-keys="openKeys"
         :auto-open-selected="true"
         @menu-item-click="onMenuClick"
       >
-        <template v-for="item in userStore.menus" :key="item.id">
-          <a-sub-menu v-if="item.children?.length" :key="'sub-' + item.id">
-            <template #icon><icon-apps /></template>
-            <template #title>{{ item.displayName || item.name }}</template>
-            <a-menu-item v-for="child in item.children" :key="child.url || child.id">
-              {{ child.displayName || child.name }}
-            </a-menu-item>
-          </a-sub-menu>
-          <a-menu-item v-else :key="item.url || item.id">
-            <template #icon><icon-apps /></template>
-            {{ item.displayName || item.name }}
-          </a-menu-item>
-        </template>
+        <SidebarMenuNodes :items="visibleMenus" />
       </a-menu>
     </a-layout-sider>
 
     <a-layout>
-      <a-layout-header style="background: var(--color-bg-2); padding: 0 16px; display: flex; align-items: center; justify-content: space-between;">
+      <a-layout-header
+        style="background: var(--color-bg-2); padding: 0 16px; display: flex; align-items: center; justify-content: space-between;"
+      >
         <div style="display: flex; align-items: center; gap: 12px;">
           <a-button type="text" @click="appStore.toggleCollapsed">
             <template #icon>
@@ -50,9 +42,9 @@
         </div>
 
         <div style="display: flex; align-items: center; gap: 12px;">
-          <a-switch v-model="appStore.darkMode" @change="appStore.toggleDarkMode">
-            <template #checked>🌙</template>
-            <template #unchecked>☀️</template>
+          <a-switch :model-value="appStore.darkMode" @change="onDarkChange">
+            <template #checked>暗</template>
+            <template #unchecked>亮</template>
           </a-switch>
           <a-dropdown>
             <a-button type="text">
@@ -67,7 +59,11 @@
       </a-layout-header>
 
       <a-layout-content style="padding: 16px;">
-        <router-view />
+        <router-view v-slot="{ Component }">
+          <keep-alive>
+            <component :is="Component" />
+          </keep-alive>
+        </router-view>
       </a-layout-content>
     </a-layout>
   </a-layout>
@@ -76,56 +72,47 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import {
-  IconApps,
-  IconMenuFold,
-  IconMenuUnfold,
-} from '@arco-design/web-vue/es/icon';
+import { IconMenuFold, IconMenuUnfold } from '@arco-design/web-vue/es/icon';
+import type { MenuItem } from '@cube/api-core';
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
+import { normalizeMenuUrl } from '@/core/utils/url';
+import { resetMenuRoutesFlag } from '@/router';
+import SidebarMenuNodes from './SidebarMenuNodes.vue';
 
 const route = useRoute();
 const router = useRouter();
 const appStore = useAppStore();
 const userStore = useUserStore();
 
-// 初始化
 appStore.fetchLoginConfig();
 if (!userStore.isLoggedIn) {
   userStore.fetchUserInfo().then(() => {
     if (userStore.isLoggedIn) userStore.fetchMenus();
     else router.push('/login');
   });
+} else if (!userStore.menus?.length) {
+  userStore.fetchMenus();
 }
 
-const selectedKeys = computed(() => {
-  const path = '/' + (route.params.type as string[] || []).join('/');
-  return [path];
-});
+const visibleMenus = computed(() =>
+  (userStore.menus || []).filter((m: MenuItem) => m.visible !== false),
+);
 
-const openKeys = computed(() => {
-  const keys: string[] = [];
-  for (const item of userStore.menus) {
-    if (item.children?.length) {
-      const path = '/' + (route.params.type as string[] || []).join('/');
-      if (item.children.some((c) => c.url === path)) {
-        keys.push('sub-' + item.id);
-      }
-    }
-  }
-  return keys;
-});
-
-const currentTitle = computed(() => route.meta.title as string || '');
+const selectedKeys = computed(() => [normalizeMenuUrl(route.path, 'pascal')]);
+const currentTitle = computed(() => (route.meta.title as string) || '');
 
 function onMenuClick(key: string) {
-  if (key && !key.startsWith('sub-')) {
-    router.push(key);
-  }
+  if (key && !key.startsWith('sub-')) router.push(key);
+}
+
+function onDarkChange() {
+  appStore.toggleDarkMode();
 }
 
 async function handleLogout() {
   await userStore.logout();
+  resetMenuRoutesFlag();
   router.push('/login');
 }
 </script>

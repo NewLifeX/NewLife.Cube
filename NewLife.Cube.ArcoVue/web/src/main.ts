@@ -4,6 +4,9 @@ import ArcoVue from '@arco-design/web-vue';
 import '@arco-design/web-vue/dist/arco.css';
 import App from './App.vue';
 import router from './router';
+import { registerPageSectionsFromGlob } from '@/core/composables/useSections';
+
+registerPageSectionsFromGlob(import.meta.glob('./apps/*/src/views/**/[A-Z]*.vue'));
 
 const app = createApp(App);
 

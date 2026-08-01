@@ -207,6 +207,12 @@ export interface LoginResult {
   RefreshToken?: string;
   /** @internal 后端兼容字段，请使用 expireIn */
   ExpireIn?: number;
+  /** @internal 后端兼容字段（snake_case），请使用 accessToken */
+  access_token?: string;
+  /** @internal 后端兼容字段（snake_case），请使用 refreshToken */
+  refresh_token?: string;
+  /** @internal 后端兼容字段（snake_case），请使用 expireIn */
+  expire_in?: number;
 }
 
 /** OAuth 提供商 */
