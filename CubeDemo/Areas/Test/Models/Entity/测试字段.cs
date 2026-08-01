@@ -235,6 +235,15 @@ public partial class 测试字段 : I测试字段, IEntity<I测试字段>
     [DataObjectField(false, false, true, 200)]
     [BindColumn("MultiVal", "多选。multipleSelect，后端下发 lovCode 走 LOV 多选，存储逗号分隔的值", "", ItemType = "multipleSelect")]
     public String MultiVal { get => _MultiVal; set { if (OnPropertyChanging("MultiVal", value)) { _MultiVal = value; OnPropertyChanged("MultiVal"); } } }
+
+    private String _UserId;
+    /// <summary>用户。singleSelect，后端下发 lovCode 走 LOV 单选</summary>
+    [Category("值集")]
+    [DisplayName("用户")]
+    [Description("用户。singleSelect，后端下发 lovCode 走 LOV 单选")]
+    [DataObjectField(false, false, true, 200)]
+    [BindColumn("UserId", "用户。singleSelect，后端下发 lovCode 走 LOV 单选", "", ItemType = "singleSelect")]
+    public String UserId { get => _UserId; set { if (OnPropertyChanging("UserId", value)) { _UserId = value; OnPropertyChanged("UserId"); } } }
     #endregion
 
     #region 拷贝
@@ -266,6 +275,7 @@ public partial class 测试字段 : I测试字段, IEntity<I测试字段>
         UrlVal = model.UrlVal;
         SingleVal = model.SingleVal;
         MultiVal = model.MultiVal;
+        UserId = model.UserId;
     }
     #endregion
 
@@ -301,6 +311,7 @@ public partial class 测试字段 : I测试字段, IEntity<I测试字段>
             "UrlVal" => _UrlVal,
             "SingleVal" => _SingleVal,
             "MultiVal" => _MultiVal,
+            "UserId" => _UserId,
             _ => base[name]
         };
         set
@@ -331,6 +342,7 @@ public partial class 测试字段 : I测试字段, IEntity<I测试字段>
                 case "UrlVal": _UrlVal = Convert.ToString(value); break;
                 case "SingleVal": _SingleVal = value.ToInt(); break;
                 case "MultiVal": _MultiVal = Convert.ToString(value); break;
+                case "UserId": _UserId = Convert.ToString(value); break;
                 default: base[name] = value; break;
             }
         }
@@ -441,6 +453,9 @@ public partial class 测试字段 : I测试字段, IEntity<I测试字段>
         /// <summary>多选。multipleSelect，后端下发 lovCode 走 LOV 多选，存储逗号分隔的值</summary>
         public static readonly Field MultiVal = FindByName("MultiVal");
 
+        /// <summary>用户。singleSelect，后端下发 lovCode 走 LOV 单选</summary>
+        public static readonly Field UserId = FindByName("UserId");
+
         static Field FindByName(String name) => Meta.Table.FindByName(name);
     }
 
@@ -518,6 +533,9 @@ public partial class 测试字段 : I测试字段, IEntity<I测试字段>
 
         /// <summary>多选。multipleSelect，后端下发 lovCode 走 LOV 多选，存储逗号分隔的值</summary>
         public const String MultiVal = "MultiVal";
+
+        /// <summary>用户。singleSelect，后端下发 lovCode 走 LOV 单选</summary>
+        public const String UserId = "UserId";
     }
     #endregion
 }

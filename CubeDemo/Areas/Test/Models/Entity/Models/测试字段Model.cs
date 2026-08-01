@@ -85,6 +85,9 @@ public partial class 测试字段Model : IModel
 
     /// <summary>多选。multipleSelect，后端下发 lovCode 走 LOV 多选，存储逗号分隔的值</summary>
     public String MultiVal { get; set; }
+
+    /// <summary>用户。singleSelect，后端下发 lovCode 走 LOV 单选</summary>
+    public String UserId { get; set; }
     #endregion
 
     #region 获取/设置 字段值
@@ -121,6 +124,7 @@ public partial class 测试字段Model : IModel
                 "UrlVal" => UrlVal,
                 "SingleVal" => SingleVal,
                 "MultiVal" => MultiVal,
+                "UserId" => UserId,
                 _ => this.GetValue(name, false),
             };
         }
@@ -152,6 +156,7 @@ public partial class 测试字段Model : IModel
                 case "UrlVal": UrlVal = Convert.ToString(value); break;
                 case "SingleVal": SingleVal = value.ToInt(); break;
                 case "MultiVal": MultiVal = Convert.ToString(value); break;
+                case "UserId": UserId = Convert.ToString(value); break;
                 default: this.SetValue(name, value); break;
             }
         }
@@ -187,6 +192,7 @@ public partial class 测试字段Model : IModel
         UrlVal = model.UrlVal;
         SingleVal = model.SingleVal;
         MultiVal = model.MultiVal;
+        UserId = model.UserId;
     }
     #endregion
 }
