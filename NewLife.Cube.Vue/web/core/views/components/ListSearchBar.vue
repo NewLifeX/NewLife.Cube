@@ -425,7 +425,7 @@ function toggleCollapse() {
   }
 
   :deep(.el-input__inner) {
-    font-family: var(--el-font-family-mono);
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
     font-size: 13px;
     color: var(--el-text-color-primary);
     text-align: center;

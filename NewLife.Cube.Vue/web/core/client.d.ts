@@ -1,11 +1,11 @@
 declare module 'virtual:@newlifex/cube-vue-app' {
-  import { DefineComponent } from 'vue';
+  import type { DefineComponent } from 'vue';
   const App: DefineComponent;
   export { App };
 }
 
 declare module 'virtual:@newlifex/cube-vue-routes' {
-  import { RouteRecordRaw } from 'vue-router';
+  import type { RouteRecordRaw } from 'vue-router';
   const routes: RouteRecordRaw[];
   export default routes;
 }

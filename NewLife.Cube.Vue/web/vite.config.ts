@@ -80,7 +80,15 @@ export default defineConfig(({ command, mode }) => {
       },
       build: {
         sourcemap: true, // Generates source maps for better debugging
-        outDir: '../wwwroot', emptyOutDir: true
+        outDir: '../wwwroot',
+        emptyOutDir: true,
+        commonjsOptions: {
+          strictRequires: false,
+          transformMixedEsModules: true,
+        },
+        rollupOptions: {
+          external: (id) => id.includes('@lezer/php'),
+        },
       },
       server: {
         port: 5187,

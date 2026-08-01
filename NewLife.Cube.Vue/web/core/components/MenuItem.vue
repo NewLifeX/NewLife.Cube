@@ -325,7 +325,8 @@ const handleClick = () => {
 
 .menu-badge {
   background: var(--cube-layout-menu-icon-active-color);
-  color: var(--text-inverse);
+  /* 使用 --el-color-white 替代未定义的 --text-inverse，确保所有主题下文字可读 */
+  color: var(--el-color-white);
   font-size: 11px;
   font-weight: 600;
   padding: 2px 6px;

@@ -8,7 +8,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 /// <summary>系统设置控制器</summary>
 [DisplayName("魔方设置")]
 [AdminArea]
-[Menu(30, true, Icon = "fa-wrench")]
+[Menu(30, true, Icon = "Tools")]
 public class CubeController : ConfigController<CubeSetting>
 {
     //private Boolean _has;

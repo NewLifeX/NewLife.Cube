@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife;
 using NewLife.Cube;
@@ -34,6 +34,11 @@ public class TestFieldController : EntityController<测试字段, 测试字段Mo
         SetLov(AddFormFields, 测试字段._.MultiVal, lovCode);
         SetLov(EditFormFields, 测试字段._.MultiVal, lovCode);
         SetLov(SearchFields, 测试字段._.MultiVal, lovCode);
+
+        SearchFields.AddField(测试字段._.UserId);
+        var field = SearchFields.GetField(测试字段._.UserId);
+        field.DisplayName = "用户";
+        SetLov(SearchFields, 测试字段._.UserId, "List.UserList");
     }
 
     /// <summary>为字段集合中的指定字段设置 LOV 值集编码</summary>

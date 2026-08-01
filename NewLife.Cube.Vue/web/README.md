@@ -9,7 +9,8 @@
 | `web/core/` | **框架引擎（默认模板本体）** | 所有动态列表/表单/布局/通用组件都在这里。**改默认模板逻辑只动这里。** |
 | `web/src/` | 遗留演示壳（**已废弃**） | 旧版代码，**并未 import `@newlifex/cube-vue/core`**，不是默认模板。不要在此修改动态模板。 |
 | `web/apps/`（cube-admin / cube-cube / cube-v1） | 消费 core 的应用壳 | 微前端子应用，运行时引用 `core`。 |
-| `web/skills/` | 开发流程说明 | 见下方「开发流程 / 快捷指令」。 |
+| `web/docs/` | 前端文档入口 | 从 [`docs/README.md`](./docs/README.md) 按任务查找架构、规范、指南、参考与运行手册。 |
+| `../skills/` | AI 开发流程说明 | 新增页面、覆盖页面、布局、LOV 等专项流程。 |
 
 包名 `@newlifex/cube-vue`，通过 pnpm workspace 别名引用；`vite.config.ts` 中 `'@newlifex/cube-vue' → web/`。
 
@@ -111,21 +112,21 @@ const TYPE_TO_FORM_TYPE = {
 ### 常用命令（在 `web/` 目录）
 ```sh
 pnpm install
-pnpm dev            # 开发服务器，端口 5187；代理 /Admin /Cube /Sso /api → http://localhost:5000
+pnpm dev            # 开发服务器，端口 5187；API 按 VITE_API_URL 直连后端
 pnpm build          # 生产构建，产物输出到 ../wwwroot（由 CubeDemo 的 UseVue() 托管）
 pnpm test:unit      # Vitest 单元测试
-pnpm test:e2e:dev   # Cypress E2E（针对 dev server）
-pnpm test:e2e       # Cypress E2E（针对生产构建，适合 CI）
+pnpm test:e2e       # Playwright E2E
+pnpm test:e2e:ui    # Playwright UI 模式
 pnpm lint           # ESLint
 ```
 
 ### 后端联调
-- `web/.env.development` 的 `VITE_API_URL` 配置后端地址；`vite.config.ts` 的 `server.proxy` 将 `/Admin`、`/Cube`、`/Sso`、`/api` 转发到本地后端（默认 `:5000`）。
+- `web/.env.development` 的 `VITE_API_URL` 配置后端地址；当前 `vite.config.ts` 不启用 API proxy，请求会直连该地址。
 - 后端 demo 见 `NewLife.Cube/CubeDemo`（SQLite 本地库，已接入本前端默认模板）。
 
-## 开发流程 / 快捷指令（web/skills）
+## 开发流程 / 快捷指令（../skills）
 
-`web/skills/` 下为可复用的流程说明，AI 助手按场景调用：
+`../skills/` 下为可复用的流程说明，AI 助手按场景调用；常规开发文档从 [`docs/README.md`](./docs/README.md) 开始：
 
 | Skill | 用途 | 触发场景 |
 |-------|------|----------|
@@ -141,10 +142,10 @@ pnpm lint           # ESLint
 > 详细步骤见各 `SKILL.md`。
 
 ## 扩展机制
-- **Section 覆盖**：在应用 `views/<area>/<controller>/` 下放置大写开头的 `.vue`（如 `ListSearchBar.vue`、`FormFields.vue`），由 `cubeFront` 插件自动扫描注册，覆盖框架默认区块，无需改框架源码。
+- **Section 覆盖**：在应用 `views/<area>/<controller>/` 下放置大写开头的 `.vue`（如 `ListSearchBar.vue`、`FormContent.vue`），由 `cubeFront` 插件自动扫描注册，覆盖框架默认区块，无需改框架源码。完整约定见 [`docs/guides/customize-page.md`](./docs/guides/customize-page.md)。
 - **弹窗**：遵循 `modal-organize`，每个弹窗一个文件夹（组件 + `openXxx.ts`）。
 - **布局**：`registerLayout()` 注册，详见 `cube-layout`。
 
 ## 测试建议
 - **组件测试（推荐锁死「字段类型渲染」）**：挂载 `FormContent` / 列表页，喂入不同 `typeName` / `itemType` 的字段元数据，断言渲染出正确控件（`inputNumber` / `switch` / `datePicker` / `timePicker` / `select` / `upload` / `colorPicker` / `iconSelector` / `textarea` / `jsonEditor`…）。正好覆盖「每种字段类型都能正常渲染」。
-- **E2E（锁死「完整 CRUD」）**：Cypress 启动真实 `CubeDemo` + `web` dev，走 新增 → 列表 → 编辑 → 提交 → 删除。
+- **E2E（锁死「完整 CRUD」）**：Playwright 启动真实 `CubeDemo` + `web` dev，走 新增 → 列表 → 编辑 → 提交 → 删除。

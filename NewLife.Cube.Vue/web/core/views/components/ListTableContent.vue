@@ -465,13 +465,13 @@ function getCellRaw(row: Record<string, unknown>, col: InternalColumn): string {
   color: var(--el-text-color-primary);
 
   &--mono {
-    font-family: var(--el-font-family-mono);
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
     font-size: 12px;
     font-weight: 500;
   }
 
   &--num {
-    font-family: var(--el-font-family-mono);
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
   }
 }
 
@@ -504,7 +504,7 @@ function getCellRaw(row: Record<string, unknown>, col: InternalColumn): string {
 .ltc-pre {
   max-height: 300px;
   overflow: auto;
-  font-family: var(--el-font-family-mono);
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
   font-size: 12px;
   white-space: pre-wrap;
   word-break: break-all;

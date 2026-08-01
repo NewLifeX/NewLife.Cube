@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
@@ -14,7 +14,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 /// <summary>值集管理。管理枚举型和列表型值集的定义、枚举值、列表配置、搜索字段与列字段</summary>
 [DisplayName("值集管理")]
 [AdminArea]
-[Menu(85, true, Icon = "fa-tasks")]
+[Menu(85, true, Icon = "Operation")]
 public class LovController : EntityController<LovDefinition>
 {
     static LovController()

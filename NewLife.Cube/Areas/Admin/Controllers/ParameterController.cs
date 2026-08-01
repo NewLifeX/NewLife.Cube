@@ -6,7 +6,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 /// <summary>字典参数</summary>
 [DisplayName("字典参数")]
 [AdminArea]
-[Menu(30, false, Icon = "fa-wrench")]
+[Menu(30, false, Icon = "Tools")]
 public class ParameterController : EntityController<Parameter, ParameterModel>
 {
     static ParameterController()

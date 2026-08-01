@@ -8,7 +8,7 @@ namespace NewLife.Cube.Areas.Cube.Controllers;
 
 /// <summary>附件管理</summary>
 [CubeArea]
-[Menu(38, true, Icon = "fa-file-text")]
+[Menu(38, true, Icon = "Document")]
 public class AttachmentController : EntityController<Attachment, AttachmentModel>
 {
     static AttachmentController()

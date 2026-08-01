@@ -10,7 +10,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [DisplayName("文件")]
 [EntityAuthorize(PermissionFlags.Detail)]
 [AdminArea]
-[Menu(28, false, Icon = "fa-file")]
+[Menu(28, false, Icon = "Files")]
 public class FileController : ControllerBaseX
 {
     #region 构造

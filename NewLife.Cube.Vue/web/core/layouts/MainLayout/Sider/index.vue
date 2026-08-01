@@ -81,7 +81,7 @@ const secondLevelMenus = computed(() => parentMenu.value?.children || []);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-right: 1px solid var(--el-border-color-lighter);
-  box-shadow: 1px 0 12px rgba(0, 0, 0, 0.02);
+  box-shadow: 1px 0 12px color-mix(in srgb, var(--el-text-color-primary) 2%, transparent);
 }
 
 // ---- 顶部标题 ----
@@ -131,7 +131,7 @@ const secondLevelMenus = computed(() => parentMenu.value?.children || []);
   padding: 8px 0;
 
   scrollbar-width: thin;
-  scrollbar-color: #d5cec4 transparent;
+  scrollbar-color: var(--el-border-color) transparent;
 
   &::-webkit-scrollbar {
     width: 4px;
@@ -140,10 +140,10 @@ const secondLevelMenus = computed(() => parentMenu.value?.children || []);
     background: transparent;
   }
   &::-webkit-scrollbar-thumb {
-    background: #d5cec4;
+    background: var(--el-border-color);
     border-radius: 4px;
     &:hover {
-      background: #b8b3bf;
+      background: var(--el-border-color-dark, var(--el-border-color));
     }
   }
 }
@@ -170,7 +170,7 @@ const secondLevelMenus = computed(() => parentMenu.value?.children || []);
   height: 32px;
   border: 1px solid var(--el-border-color-light);
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--el-bg-color-overlay);
   color: var(--el-text-color-secondary);
   cursor: pointer;
   transition: all 0.18s ease;
@@ -182,7 +182,7 @@ const secondLevelMenus = computed(() => parentMenu.value?.children || []);
   }
 
   &:active {
-    background: #f1f5f9;
+    background: var(--el-fill-color-light);
   }
 }
 </style>

@@ -69,7 +69,9 @@ import {
   defineAsyncComponent,
   nextTick,
 } from 'vue';
-import type { ColumnConfig } from '../../src/components/form/model/form';
+/* 从 types/forms 引入 FormColumnConfig 替代 src/ 下的 ColumnConfig，
+   消除 core/ 对 src/ 的跨层依赖，同时剪裁为仅包含弹窗实际使用的字段 */
+import type { FormColumnConfig } from '../types/forms';
 
 // ─── 类型定义 ───────────────────────────────────────────────────
 
@@ -236,7 +238,7 @@ export interface RenderModalOptions<P = Record<string, unknown>> extends ModalBa
 /** 表单配置模式弹窗选项 */
 export interface FormModalOptions extends ModalBaseOptions {
   /** 表单列配置 */
-  config: ColumnConfig[];
+  config: FormColumnConfig[];
   /** 表单数据 */
   modelValue?: Record<string, unknown>;
   /** 表单提交成功回调 */
@@ -345,7 +347,7 @@ export const ModalKey: InjectionKey<{
  * // { fieldCount: 12, groupCount: 3, score: 0.7, suggestedType: 'drawer' }
  * ```
  */
-export function evaluateFormComplexity(config: ColumnConfig[]): FormComplexity {
+export function evaluateFormComplexity(config: FormColumnConfig[]): FormComplexity {
   // 过滤掉隐藏字段
   const visibleFields = config.filter((item) => {
     // show: false 的字段不计入
