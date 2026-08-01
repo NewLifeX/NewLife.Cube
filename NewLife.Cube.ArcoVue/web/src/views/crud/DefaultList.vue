@@ -2,21 +2,13 @@
   <div class="default-list" :style="listShellStyle">
     <component :is="headerSection" v-if="headerSection" />
 
-    <!-- 视图背景色覆盖：视图工具栏 + 分布 + 搜索 + 表格 -->
+    <!-- 视图背景色覆盖：分布 + 搜索 + 表格（含视图 Tab） -->
     <div class="list-surface" :class="{ 'list-surface--chrome': hasChromeBg }" :style="listSurfaceStyle">
-      <div class="page-tools">
+      <div
+        v-if="(flags.canDelete && chrome.allowDelete) || flags.canExport || flags.canImport"
+        class="page-tools"
+      >
         <a-space>
-          <NamedViewsToolbar
-            v-if="viewState"
-            :views="viewState.views"
-            :active-id="viewState.activeViewId"
-            @switch="onSwitchView"
-            @create="onCreateView"
-            @rename="onRenameView"
-            @remove="onRemoveView"
-            @reset="onResetViews"
-            @open-config="configDrawerVisible = true"
-          />
           <a-button
             v-if="flags.canDelete && chrome.allowDelete"
             status="danger"
@@ -27,7 +19,6 @@
           </a-button>
         </a-space>
         <a-space>
-          <a-button @click="openChart">图表</a-button>
           <a-dropdown v-if="flags.canExport" @select="handleExport">
             <a-button>导出 <icon-down /></a-button>
             <template #content>
@@ -70,25 +61,42 @@
             :key="field.name"
             :label="field.displayName || field.name"
           >
-            <FieldInput
+            <SearchFieldInput
               :field="field"
               :model-value="searchForm[field.name]"
-              :control-override="searchControlOf(field)"
-              style="min-width: 160px"
+              :form="searchForm"
               @update:model-value="(v) => (searchForm[field.name] = v)"
+              @update:key="(k, v) => (searchForm[k] = v)"
+              @search="handleSearch"
             />
           </a-form-item>
           <a-form-item>
             <a-space>
               <a-button type="primary" html-type="submit">搜索</a-button>
+              <a-button @click="openChart">图表</a-button>
               <a-button @click="handleReset">重置</a-button>
             </a-space>
           </a-form-item>
         </a-form>
       </div>
 
-      <!-- 表格面板：工具栏 + 表格 + 分页 -->
+      <!-- 表格面板：视图 Tab + 工具栏 + 表格 + 分页 -->
       <div class="list-panel list-panel--table">
+        <div v-if="viewState" class="list-view-tabs">
+          <ViewTabsToolbar
+            :views="viewState.views"
+            :active-id="viewState.activeViewId"
+            :fields="listFields"
+            :type-path="typePath"
+            @switch="onSwitchView"
+            @create="onCreateView"
+            @rename="onRenameView"
+            @remove="onRemoveView"
+            @duplicate="onDuplicateView"
+            @reset="onResetViews"
+            @open-config="configDrawerVisible = true"
+          />
+        </div>
         <div class="list-topbar">
           <a-space>
             <a-button
@@ -101,6 +109,13 @@
             <a-button v-if="chrome.customButton" @click="onCustomButton">自定义</a-button>
           </a-space>
           <a-space>
+            <a-button
+              v-if="!(showSearchPanel && searchFields.length)"
+              type="text"
+              @click="openChart"
+            >
+              图表
+            </a-button>
             <a-button
               v-if="chrome.showFilter"
               type="text"
@@ -121,29 +136,95 @@
         </div>
 
         <a-spin :loading="loading" style="width: 100%">
-          <ListTable
-            v-if="tableColumns.length"
+          <template v-if="activeViewKind === 'table' || activeViewKind === 'tree'">
+            <a-alert
+              v-if="activeViewKind === 'tree' && tableData.length && !treeDataDetected"
+              type="warning"
+              style="margin-bottom: 8px"
+            >
+              当前数据无法组装为树。可改用表格视图，或确认后端返回含 ParentID/id 或 Path 字段的层级数据。
+            </a-alert>
+            <ListTable
+              v-if="tableColumns.length"
+              :records="treeRows"
+              :columns="tableColumns"
+              :row-key="pkField"
+              :selected-keys="selectedKeys"
+              :show-checkbox="flags.canDelete && chrome.allowDelete"
+              :can-edit="flags.canEdit"
+              :can-delete="flags.canDelete && chrome.allowDelete"
+              :can-view-detail="chrome.allowViewDetail"
+              :show-expand="chrome.expandRow"
+              :enable-sort="chrome.showSort"
+              :hierarchy="activeViewKind === 'tree' && treeDataDetected"
+              :height="resolvedTableHeight"
+              @row-dbl-click="openDetail"
+              @selection-change="onSelectionChange"
+              @columns-change="onColumnsChange"
+              @sort-change="onSortChange"
+              @action="onTableAction"
+            />
+            <a-empty v-else description="暂无列表字段（GetPage.list 为空）" />
+          </template>
+
+          <CardList
+            v-else-if="activeViewKind === 'card'"
             :records="tableData"
-            :columns="tableColumns"
+            :columns="activeColumns"
+            :fields="listFields"
+            :mapping="activeCardMapping"
             :row-key="pkField"
-            :selected-keys="selectedKeys"
-            :show-checkbox="flags.canDelete && chrome.allowDelete"
+            :height="resolvedTableHeight"
+            :can-view-detail="chrome.allowViewDetail"
             :can-edit="flags.canEdit"
             :can-delete="flags.canDelete && chrome.allowDelete"
-            :can-view-detail="chrome.allowViewDetail"
-            :show-expand="chrome.expandRow"
-            :enable-sort="chrome.showSort"
-            :height="resolvedTableHeight"
-            @row-dbl-click="openDetail"
-            @selection-change="onSelectionChange"
-            @columns-change="onColumnsChange"
-            @sort-change="onSortChange"
-            @action="onTableAction"
+            :format-cell="renderCell"
+            @detail="openDetail"
+            @edit="openEdit"
+            @delete="onCardDelete"
           />
-          <a-empty v-else description="暂无列表字段（GetPage.list 为空）" />
+
+          <KanbanBoard
+            v-else-if="activeViewKind === 'kanban'"
+            :records="tableData"
+            :columns="activeColumns"
+            :fields="listFields"
+            :mapping="activeKanbanMapping"
+            :row-key="pkField"
+            :height="resolvedTableHeight"
+            :can-view-detail="chrome.allowViewDetail"
+            :can-edit="flags.canEdit"
+            :can-delete="flags.canDelete && chrome.allowDelete"
+            :format-cell="renderCell"
+            @detail="openDetail"
+            @edit="openEdit"
+            @delete="onCardDelete"
+          />
+
+          <CalendarMonth
+            v-else-if="activeViewKind === 'calendar'"
+            :records="tableData"
+            :fields="listFields"
+            :mapping="activeCalendarMapping"
+            :row-key="pkField"
+            :height="resolvedTableHeight"
+            @detail="openDetail"
+          />
+
+          <GanttView
+            v-else-if="activeViewKind === 'gantt'"
+            :records="tableData"
+            :fields="listFields"
+            :mapping="activeGanttMapping"
+            :row-key="pkField"
+            :height="resolvedTableHeight"
+            @detail="openDetail"
+          />
+
+          <a-empty v-else description="未知视图类型" />
         </a-spin>
 
-        <div v-if="chrome.showPager" class="list-pager">
+        <div v-if="showPagerBar" class="list-pager">
           <a-pagination
             :current="pagination.current"
             :page-size="pagination.pageSize"
@@ -154,6 +235,11 @@
             @page-size-change="onPageSizeChange"
           />
         </div>
+        <div v-else-if="isLargePageView" class="list-pager list-pager--hint">
+          <a-typography-text type="secondary" style="font-size: 12px">
+            当前视图一次最多加载 {{ effectivePageSize }} 条（共 {{ pagination.total }} 条）
+          </a-typography-text>
+        </div>
       </div>
     </div>
 
@@ -161,14 +247,18 @@
       v-if="viewState"
       v-model:visible="configDrawerVisible"
       :type-path="typePath"
+      :view-kind="activeViewKind"
       :view-name="getActiveView(viewState).name"
       :columns="activeColumns"
       :titles="columnTitles"
+      :fields="listFields"
       :sort="activeSort"
       :chrome="getActiveView(viewState).chrome"
+      :mapping="getActiveView(viewState).mapping"
       @update:columns="onColumnsChange"
       @update:sort="onConfigSort"
       @update:chrome="onChromeChange"
+      @update:mapping="onMappingChange"
       @update:name="onConfigRename"
     />
 
@@ -203,9 +293,9 @@ import { EXPORT_FORMATS } from '@cube/page-utils';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
 import { useEntityViewProfileStore } from '@/stores/entityViewProfile';
-import type { ControlType, FieldMeta } from '@/core/types/field';
+import type { FieldMeta } from '@/core/types/field';
 import { toFieldMetas } from '@/core/utils/fieldNormalize';
-import { resolveListControl, resolveSearchControl } from '@/core/utils/fieldControl';
+import { resolveListControl } from '@/core/utils/fieldControl';
 import {
   defaultBadgeColumnWidth,
   isBadgeField,
@@ -214,7 +304,11 @@ import {
 } from '@/core/utils/fieldBadge';
 import { resolveCrudFlags } from '@/core/utils/permissions';
 import { getValueByKey } from '@/core/utils/url';
-import { enrichFieldsWithEnumDataSource, fetchBatchLabel } from '@/core/utils/lov-api';
+import {
+  enrichFieldsWithEnumDataSource,
+  enrichFieldsWithLookup,
+  fetchBatchLabel,
+} from '@/core/utils/lov-api';
 import { getSectionLoader } from '@/core/composables/useSections';
 import { selectListColumns } from '@/core/utils/listColumns';
 import { prepareSubmitPayload } from '@/core/utils/submitPayload';
@@ -228,14 +322,30 @@ import {
   type ColumnPref,
   type EntityViewState,
   type ViewChrome,
+  type ViewKind,
+  type ViewMapping,
   type ViewSort,
 } from '@/core/utils/entityViewProfile';
-import FieldInput from '@/components/FieldInput.vue';
-/** VTable 适配层异步加载，降低 DynamicPage 首包 */
+import {
+  isLargePageViewKind,
+  resolveViewPageSize,
+  type CalendarMapping,
+  type CardMapping,
+  type GanttMapping,
+  type KanbanMapping,
+} from '@/core/utils/viewMapping';
+import { detectTreeData } from '@/core/utils/tree';
+import { buildTree, canBuildTree } from '@/core/utils/treeBuilder';
+import SearchFieldInput from '@/components/SearchFieldInput.vue';
+/** VTable / 多视图异步加载，降低 DynamicPage 首包 */
 const ListTable = defineAsyncComponent(() => import('@/features/vtable/ListTable.vue'));
+const CardList = defineAsyncComponent(() => import('@/features/views/CardList.vue'));
+const KanbanBoard = defineAsyncComponent(() => import('@/features/views/KanbanBoard.vue'));
+const CalendarMonth = defineAsyncComponent(() => import('@/features/views/CalendarMonth.vue'));
+const GanttView = defineAsyncComponent(() => import('@/features/views/GanttView.vue'));
 import RecordDrawer from './RecordDrawer.vue';
 import ListChartModal from './ListChartModal.vue';
-import NamedViewsToolbar from './NamedViewsToolbar.vue';
+import ViewTabsToolbar from './ViewTabsToolbar.vue';
 import ViewConfigDrawer from './ViewConfigDrawer.vue';
 
 const props = defineProps<{
@@ -320,6 +430,56 @@ const activeSort = computed<ViewSort | null>(() =>
   viewState.value ? getActiveView(viewState.value).sort || null : null,
 );
 
+const activeViewKind = computed<ViewKind>(() =>
+  viewState.value ? getActiveView(viewState.value).view : 'table',
+);
+
+const activeMapping = computed(() =>
+  viewState.value ? getActiveView(viewState.value).mapping : undefined,
+);
+
+const activeCardMapping = computed(
+  () => (activeMapping.value?.kind === 'card' ? activeMapping.value : null) as CardMapping | null,
+);
+const activeKanbanMapping = computed(
+  () =>
+    (activeMapping.value?.kind === 'kanban' ? activeMapping.value : null) as KanbanMapping | null,
+);
+const activeCalendarMapping = computed(
+  () =>
+    (activeMapping.value?.kind === 'calendar'
+      ? activeMapping.value
+      : null) as CalendarMapping | null,
+);
+const activeGanttMapping = computed(
+  () =>
+    (activeMapping.value?.kind === 'gantt' ? activeMapping.value : null) as GanttMapping | null,
+);
+
+const isLargePageView = computed(() => isLargePageViewKind(activeViewKind.value));
+
+const effectivePageSize = computed(() =>
+  resolveViewPageSize(activeViewKind.value, pagination.pageSize),
+);
+
+const showPagerBar = computed(
+  () => chrome.value.showPager && !isLargePageView.value,
+);
+
+/** 树数据可用：后端已返回 children 树，或扁平行可组装为树 */
+const treeDataDetected = computed(() => {
+  const rows = tableData.value;
+  return rows.length > 0 && (detectTreeData(rows) || canBuildTree(rows));
+});
+
+/** 树视图展示数据：后端已返回树或可组装时用树，否则回落原始行；字段元数据仍取自 GetPage */
+const treeRows = computed(() => {
+  if (activeViewKind.value !== 'tree') return tableData.value;
+  // 后端已返回 children 树，直接使用，避免无谓重建
+  if (detectTreeData(tableData.value)) return tableData.value;
+  return canBuildTree(tableData.value) ? buildTree(tableData.value) : tableData.value;
+});
+
 const chrome = computed(() =>
   resolveChrome(viewState.value ? getActiveView(viewState.value) : null),
 );
@@ -350,7 +510,7 @@ const hasChromeBg = computed(() => {
   return c.bgPreset === 'custom' && !!c.bgColor;
 });
 
-/** 背景色：视图工具栏（命名视图/配置/图表）+ 分布 + 搜索 + 表格 */
+/** 背景色：分布 + 搜索 + 表格（含视图 Tab） */
 const listSurfaceStyle = computed(() => {
   const c = chrome.value;
   const style: Record<string, string> = {};
@@ -403,23 +563,6 @@ const tableColumns = computed(() =>
     };
   }),
 );
-
-function searchControlOf(field: FieldMeta): ControlType {
-  const s = resolveSearchControl(field);
-  const map: Record<string, ControlType> = {
-    text: 'input',
-    numberRange: 'inputNumber',
-    dateRange: 'datePicker',
-    datetimeRange: 'datePicker',
-    timeRange: 'timePicker',
-    lov: 'lov',
-    lovMulti: 'lovMulti',
-    switch: 'switch',
-    fileExists: 'switch',
-    select: 'select',
-  };
-  return map[s] ?? 'input';
-}
 
 function renderCell(field: FieldMeta, record: Record<string, unknown>): string {
   const raw = getValueByKey(record, field.name);
@@ -512,8 +655,10 @@ async function loadFields() {
   const detail = toFieldMetas((meta.detail || nested?.form?.detail) as never).filter(
     (f) => !!f.name,
   );
-  // 一次 Meta 灌入 Enum dataSource，列表徽章与表单下拉共用
-  await enrichFieldsWithEnumDataSource([...list, ...search, ...add, ...edit, ...detail]);
+  // 一次 Meta 灌入 Enum dataSource；再按 Cube.Vue Lookup 补未知 typeName 枚举
+  const allFields = [...list, ...search, ...add, ...edit, ...detail];
+  await enrichFieldsWithEnumDataSource(allFields);
+  await enrichFieldsWithLookup(allFields);
   listFields.value = list;
   searchFields.value = search;
   addFields.value = add;
@@ -524,7 +669,12 @@ async function loadFields() {
 }
 
 async function loadProfile() {
-  viewState.value = await evpStore.load(typePath.value, metaKeys.value);
+  viewState.value = await evpStore.load(
+    typePath.value,
+    metaKeys.value,
+    listFields.value,
+  );
+  evpStore.setFields(typePath.value, listFields.value);
   // 再 rematch 一次，确保与最新 listFields 对齐
   if (metaKeys.value.length) {
     viewState.value = evpStore.rematch(typePath.value, metaKeys.value);
@@ -535,9 +685,11 @@ async function loadData() {
   loading.value = true;
   try {
     const sort = buildSortPayload(activeSort.value);
+    const pageSize = effectivePageSize.value;
+    const pageIndex = isLargePageView.value ? 0 : pagination.current - 1;
     const res = await cubeApi.page.getList(typePath.value, {
-      pageIndex: pagination.current - 1,
-      pageSize: pagination.pageSize,
+      pageIndex,
+      pageSize,
       ...sort,
       ...searchForm,
     });
@@ -577,6 +729,11 @@ function onChromeChange(next: ViewChrome) {
   syncLocalState();
 }
 
+function onMappingChange(mapping: ViewMapping | undefined) {
+  evpStore.updateMapping(typePath.value, mapping);
+  syncLocalState();
+}
+
 function onConfigRename(name: string) {
   if (!viewState.value) return;
   onRenameView(viewState.value.activeViewId, name);
@@ -589,9 +746,10 @@ function onSwitchView(id: string) {
   loadData();
 }
 
-function onCreateView(name: string) {
-  evpStore.addView(typePath.value, name);
+function onCreateView(kind: ViewKind, name: string) {
+  evpStore.addView(typePath.value, name, kind);
   syncLocalState();
+  pagination.current = 1;
   loadData();
 }
 
@@ -604,6 +762,21 @@ function onRemoveView(id: string) {
   evpStore.remove(typePath.value, id);
   syncLocalState();
   loadData();
+}
+
+function onDuplicateView(id: string) {
+  evpStore.duplicate(typePath.value, id);
+  syncLocalState();
+  loadData();
+}
+
+function onCardDelete(row: Record<string, unknown>) {
+  if (!chrome.value.allowDelete) return;
+  Modal.confirm({
+    title: '确认删除？',
+    content: '删除后不可恢复',
+    onOk: () => handleDelete(row),
+  });
 }
 
 async function onResetViews() {
@@ -869,6 +1042,11 @@ onMounted(bootstrap);
   font-size: 18px;
   font-weight: 600;
   color: var(--color-text-1);
+}
+.list-view-tabs {
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--color-border-2);
 }
 .list-topbar {
   display: flex;

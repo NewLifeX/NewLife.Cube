@@ -1,0 +1,44 @@
+diff --git a/dist/index.cjs b/dist/index.cjs
+index 96bf4f330e9bb8a8c8a3f8d0ab49489b47e1808c..18ccffb094114ccab9f1d41e7009b07a0c07f13f 100644
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -61,7 +61,7 @@ const castOpen = 1,
+   _null = 49,
+   or = 50,
+   print = 51,
+-  readonly = 52,
++  _readonly = 52,
+   _require = 53,
+   require_once = 54,
+   _return = 55,
+@@ -127,7 +127,7 @@ const keywordMap = {
+   null: _null,
+   or,
+   print,
+-  readonly,
++  readonly: _readonly,
+   require: _require,
+   require_once,
+   return: _return,
+diff --git a/dist/index.js b/dist/index.js
+index 4af7ea4f1fa40607843b982c6b72b9f7244cdc9b..8fd875cda98245c530537d16e34b67c38156e4c0 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -57,7 +57,7 @@ const castOpen = 1,
+   _null = 49,
+   or = 50,
+   print = 51,
+-  readonly = 52,
++  _readonly = 52,
+   _require = 53,
+   require_once = 54,
+   _return = 55,
+@@ -123,7 +123,7 @@ const keywordMap = {
+   null: _null,
+   or,
+   print,
+-  readonly,
++  readonly: _readonly,
+   require: _require,
+   require_once,
+   return: _return,

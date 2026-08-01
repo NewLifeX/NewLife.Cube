@@ -303,18 +303,25 @@ interface UserProfileDto {
     fontScale: 'normal' | 'large'
   }
   workspace: {
-    defaultView: 'table' | 'tree' | 'card' | 'gantt'
+    defaultView: 'table' | 'tree' | 'card' | 'kanban' | 'calendar' | 'gantt'
     pageSize: number
   }
 }
+
+/** 命名视图内类型映射（存于 ViewsJson，不写 ganttJson/cardJson） */
+type ViewMapping =
+  | { kind: 'card'; titleField: string; imageField?: string }
+  | { kind: 'kanban'; groupField: string; titleField: string; imageField?: string }
+  | { kind: 'gantt'; startField: string; endField: string; titleField: string; colorField?: string }
+  | { kind: 'calendar'; startField: string; endField?: string; titleField: string; colorField?: string }
 
 /** 实体视图自定义 — 实体 EntityViewProfile；唯一键 userId + typePath */
 interface EntityViewProfileDto {
   version: 1
   userId: number | string
   typePath: string
-  view: 'table' | 'tree' | 'card' | 'gantt'
-  /** 权威：多命名视图 JSON 字符串（ViewsJson） */
+  view: 'table' | 'tree' | 'card' | 'kanban' | 'calendar' | 'gantt'
+  /** 权威：多命名视图 JSON 字符串（ViewsJson）；元素含 mapping? */
   viewsJson?: string
   activeViewId?: string
   columns?: Array<{
@@ -324,6 +331,7 @@ interface EntityViewProfileDto {
     frozen?: 'left' | 'right' | false
     title?: string
   }>
+  /** 预留列；OSC-0006 前端不读写，映射以 NamedView.mapping 为准 */
   gantt?: { startField?: string; endField?: string; titleField?: string }
   card?: { titleField?: string; subtitleField?: string; statusField?: string; coverField?: string }
   filters?: Record<string, unknown>
@@ -627,9 +635,13 @@ Draft → Accepted → Implementing → Validating → Done
 - **不含** tree/card/gantt 类型切换（下一号）；列表扁平（树启发式已移除）。
 - **出口（OSC-0005）：** DefaultList 主表为 VTable；命名视图工具条 + 字段设置；`GET/PUT/DELETE /Cube/EntityViewProfile`。
 
-### M3b — 树 / 卡片 / 甘特 → **OSC-0006**（依赖 OSC-0005）
+### M3b — 多视图类型 + Tab 工作台 → **OSC-0006**（依赖 OSC-0005）
 
-- 三视图与字段映射；可选 ui/。
+- `ViewKind`：`table | tree | card | kanban | calendar | gantt`；`NamedView.mapping` 存类型映射。
+- Tab + `···` + `+` 新建（门禁：无树元数据禁止创建 tree）；配置抽屉「列表区」按类型替换。
+- 看板只读分列；日历开始必选/结束可选；看板/日历/甘特 GetList 大 pageSize（约 200–500）。
+- 卡片/看板左下操作与表一致：有权则详情+编辑+删除。
+- **出口（OSC-0006）：** ViewTabsToolbar + Card/Kanban/Calendar/Gantt 舞台；映射只写 `viewsJson`。
 
 ### M4a — 左抽屉表单 + Log 历史 → **OSC-0007**
 

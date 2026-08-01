@@ -46,7 +46,9 @@
       v-else-if="control === 'select'"
       :model-value="selectValue"
       :disabled="disabled"
+      :placeholder="`请选择${field.displayName || field.name}`"
       allow-clear
+      allow-search
       style="width: 100%"
       @update:model-value="onSelect"
     >
@@ -54,6 +56,7 @@
         v-for="(label, key) in field.dataSource || {}"
         :key="key"
         :value="String(key)"
+        :label="label"
       >
         {{ label }}
       </a-option>

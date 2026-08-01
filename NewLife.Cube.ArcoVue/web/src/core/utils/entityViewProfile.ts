@@ -1,6 +1,14 @@
 import type { EntityViewProfileModel } from '@cube/api-core';
+import type { FieldMeta } from '@/core/types/field';
+import {
+  normalizeMapping,
+  parseViewKind,
+  seedMapping,
+  type ViewKind,
+  type ViewMapping,
+} from '@/core/utils/viewMapping';
 
-export type ViewKind = 'table' | 'tree' | 'card' | 'gantt';
+export type { ViewKind, ViewMapping } from '@/core/utils/viewMapping';
 
 export interface ColumnPref {
   key: string;
@@ -49,6 +57,8 @@ export interface NamedView {
   columns: ColumnPref[];
   sort?: ViewSort | null;
   chrome?: ViewChrome;
+  /** 类型专属字段映射（存 ViewsJson；不写 ganttJson/cardJson） */
+  mapping?: ViewMapping;
 }
 
 export const DEFAULT_CHROME: Required<ViewChrome> = {
@@ -206,7 +216,7 @@ export function parseNamedViews(raw: string | null | undefined, metaKeys: string
     let name = typeof o.name === 'string' && o.name ? o.name : DEFAULT_VIEW_NAME;
     // 统一历史种子名「列表」→「默认列表」
     if (id === DEFAULT_VIEW_ID && name === '列表') name = DEFAULT_VIEW_NAME;
-    const view = o.view === 'tree' || o.view === 'card' || o.view === 'gantt' ? o.view : 'table';
+    const view = parseViewKind(o.view);
     const colsRaw = Array.isArray(o.columns) ? (o.columns as unknown[]) : [];
     const columns = mergeColumns(
       metaKeys,
@@ -219,6 +229,11 @@ export function parseNamedViews(raw: string | null | undefined, metaKeys: string
         sort = { field: s.field, desc: !!s.desc };
       }
     }
+    // 解析阶段无 FieldMeta 时先原样保留 mapping；load 后 rematchMapping 校正
+    let mapping: ViewMapping | undefined;
+    if (o.mapping && typeof o.mapping === 'object') {
+      mapping = o.mapping as ViewMapping;
+    }
     views.push({
       id,
       name,
@@ -226,6 +241,7 @@ export function parseNamedViews(raw: string | null | undefined, metaKeys: string
       columns,
       sort,
       chrome: normalizeChrome(o.chrome) ?? { ...DEFAULT_CHROME },
+      mapping,
     });
   }
   return views.length ? views : [seedDefaultView(metaKeys)];
@@ -259,7 +275,7 @@ export function stateFromWire(
   return {
     views,
     activeViewId,
-    view: active.view === 'table' ? 'table' : 'table', // OSC-0005 舞台仅 table
+    view: active.view,
   };
 }
 
@@ -270,11 +286,26 @@ export function stateToWirePayload(
   const active = state.views.find((v) => v.id === state.activeViewId) || state.views[0];
   return {
     typePath,
-    view: 'table',
+    view: active.view,
     activeViewId: active.id,
     viewsJson: JSON.stringify(state.views),
     columnsJson: JSON.stringify(active.columns),
     version: 1,
+  };
+}
+
+/** 用 FieldMeta 校正所有命名视图的 mapping */
+export function rematchStateMappings(
+  state: EntityViewState,
+  fields: FieldMeta[],
+): EntityViewState {
+  if (!fields.length) return state;
+  return {
+    ...state,
+    views: state.views.map((v) => ({
+      ...v,
+      mapping: normalizeMapping(v.view, v.mapping, fields),
+    })),
   };
 }
 
@@ -306,24 +337,37 @@ export function createTableView(
   name: string,
   metaKeys: string[],
 ): EntityViewState {
+  return createNamedView(state, name, 'table', metaKeys);
+}
+
+export function createNamedView(
+  state: EntityViewState,
+  name: string,
+  kind: ViewKind,
+  metaKeys: string[],
+  fields?: FieldMeta[],
+): EntityViewState {
   const trimmed = name.trim() || '未命名';
   if (state.views.some((v) => v.name === trimmed)) {
     throw new Error('视图名称已存在');
   }
   const id = `v-${Date.now().toString(36)}`;
   const active = getActiveView(state);
+  const mapping =
+    fields && fields.length ? seedMapping(kind, fields) : undefined;
   const next: NamedView = {
     id,
     name: trimmed,
-    view: 'table',
+    view: kind,
     columns: mergeColumns(metaKeys, active.columns.map((c) => ({ ...c }))),
     sort: active.sort ? { ...active.sort } : null,
     chrome: { ...(active.chrome || DEFAULT_CHROME) },
+    mapping,
   };
   return {
     views: [...state.views, next],
     activeViewId: id,
-    view: 'table',
+    view: kind,
   };
 }
 
@@ -332,7 +376,33 @@ export function removeView(state: EntityViewState, id: string): EntityViewState 
   const views = state.views.filter((v) => v.id !== id);
   const activeViewId =
     state.activeViewId === id ? views[0].id : state.activeViewId;
-  return { views, activeViewId, view: 'table' };
+  const active = views.find((v) => v.id === activeViewId) || views[0];
+  return { views, activeViewId, view: active.view };
+}
+
+export function duplicateView(state: EntityViewState, id: string): EntityViewState {
+  const src = state.views.find((v) => v.id === id);
+  if (!src) throw new Error('视图不存在');
+  let name = `${src.name} 副本`;
+  let n = 2;
+  while (state.views.some((v) => v.name === name)) {
+    name = `${src.name} 副本${n++}`;
+  }
+  const newId = `v-${Date.now().toString(36)}`;
+  const next: NamedView = {
+    ...src,
+    id: newId,
+    name,
+    columns: src.columns.map((c) => ({ ...c })),
+    sort: src.sort ? { ...src.sort } : null,
+    chrome: src.chrome ? { ...src.chrome } : { ...DEFAULT_CHROME },
+    mapping: src.mapping ? { ...src.mapping } : undefined,
+  };
+  return {
+    views: [...state.views, next],
+    activeViewId: newId,
+    view: next.view,
+  };
 }
 
 export function renameView(state: EntityViewState, id: string, name: string): EntityViewState {
@@ -381,6 +451,18 @@ export function patchActiveChrome(
       v.id === state.activeViewId
         ? { ...v, chrome: { ...(v.chrome || DEFAULT_CHROME), ...chrome } }
         : v,
+    ),
+  };
+}
+
+export function patchActiveMapping(
+  state: EntityViewState,
+  mapping: ViewMapping | undefined,
+): EntityViewState {
+  return {
+    ...state,
+    views: state.views.map((v) =>
+      v.id === state.activeViewId ? { ...v, mapping } : v,
     ),
   };
 }

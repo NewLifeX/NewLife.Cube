@@ -37,6 +37,31 @@ describe('fieldControl', () => {
     ).toBe('lov');
   });
 
+  it('search prefers dataSource over lovCode for readable labels', () => {
+    expect(
+      resolveSearchControl(
+        base({
+          name: 'Sex',
+          typeName: 'Int32',
+          lovCode: 'Enum.SexKinds',
+          dataSource: { '0': '未知', '1': '男', '2': '女' },
+        }),
+      ),
+    ).toBe('select');
+    expect(
+      resolveSearchControl(base({ name: 'RoleID', typeName: 'Int32', lovCode: 'Role' })),
+    ).toBe('lov');
+  });
+
+  it('Cube.Vue getComponentBaseField: unknown typeName → select (enum)', () => {
+    expect(resolveSearchControl(base({ name: 'Sex', typeName: 'SexKinds' }))).toBe('select');
+    expect(resolveControl(base({ name: 'Sex', typeName: 'SexKinds' }))).toBe('select');
+    expect(resolveListControl(base({ name: 'Sex', typeName: 'SexKinds' }))).toBe('select');
+    // 系统类型仍走原映射
+    expect(resolveSearchControl(base({ name: 'Name', typeName: 'String' }))).toBe('text');
+    expect(resolveSearchControl(base({ name: 'Enable', typeName: 'Boolean' }))).toBe('switch');
+  });
+
   it('serializeSubmitModel joins multi-select arrays', () => {
     const fields = [
       base({ name: 'Tags', typeName: 'String', multiple: true, itemType: 'multipleSelect' }),

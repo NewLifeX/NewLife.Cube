@@ -8,7 +8,7 @@
     @update:visible="(v: boolean) => $emit('update:visible', v)"
   >
     <template #title>
-      <span class="drawer-title">列表视图</span>
+      <span class="drawer-title">{{ drawerTitle }}</span>
     </template>
 
     <a-tabs v-model:active-key="activeTab" type="line" size="medium">
@@ -284,37 +284,264 @@
             <icon-down :class="{ open: listAreaOpen }" />
           </button>
           <div v-show="listAreaOpen" class="collapse-body">
-            <div class="switch-row">
-              <span>分页器</span>
-              <a-switch v-model="chrome.showPager" @change="emitChrome" />
-            </div>
-            <div class="switch-row">
-              <span>
-                允许查看记录详情
-                <a-tooltip content="关闭后点击行与「详情」入口将不可用">
-                  <icon-info-circle class="hint-ico" />
-                </a-tooltip>
-              </span>
-              <a-switch v-model="chrome.allowViewDetail" @change="emitChrome" />
-            </div>
-            <div class="switch-row">
-              <span>
-                允许删除记录
-                <a-tooltip content="仍受菜单权限约束；关闭后隐藏删除入口">
-                  <icon-info-circle class="hint-ico" />
-                </a-tooltip>
-              </span>
-              <a-switch v-model="chrome.allowDelete" @change="emitChrome" />
-            </div>
-            <div class="switch-row">
-              <span>
-                展开行记录
-                <a-tooltip content="在表格左侧显示展开列，点击可查看详情">
-                  <icon-info-circle class="hint-ico" />
-                </a-tooltip>
-              </span>
-              <a-switch v-model="chrome.expandRow" @change="emitChrome" />
-            </div>
+            <template v-if="viewKind === 'table' || viewKind === 'tree'">
+              <div class="switch-row">
+                <span>分页器</span>
+                <a-switch v-model="chrome.showPager" @change="emitChrome" />
+              </div>
+              <div class="switch-row">
+                <span>
+                  允许查看记录详情
+                  <a-tooltip content="关闭后点击行与「详情」入口将不可用">
+                    <icon-info-circle class="hint-ico" />
+                  </a-tooltip>
+                </span>
+                <a-switch v-model="chrome.allowViewDetail" @change="emitChrome" />
+              </div>
+              <div class="switch-row">
+                <span>
+                  允许删除记录
+                  <a-tooltip content="仍受菜单权限约束；关闭后隐藏删除入口">
+                    <icon-info-circle class="hint-ico" />
+                  </a-tooltip>
+                </span>
+                <a-switch v-model="chrome.allowDelete" @change="emitChrome" />
+              </div>
+              <div class="switch-row">
+                <span>
+                  展开行记录
+                  <a-tooltip content="在表格左侧显示展开列，点击可查看详情">
+                    <icon-info-circle class="hint-ico" />
+                  </a-tooltip>
+                </span>
+                <a-switch v-model="chrome.expandRow" @change="emitChrome" />
+              </div>
+            </template>
+
+            <template v-else-if="viewKind === 'card'">
+              <div class="nested-field">
+                <div class="cfg-label">卡片标题</div>
+                <a-select
+                  v-model="localMapping.titleField"
+                  placeholder="选择标题字段"
+                  @change="emitMapping"
+                >
+                  <a-option
+                    v-for="f in titleCandidates"
+                    :key="f.name"
+                    :value="f.name"
+                  >
+                    {{ fieldLabel(f) }}
+                  </a-option>
+                </a-select>
+              </div>
+              <div class="nested-field">
+                <div class="cfg-label">卡片图片</div>
+                <a-select
+                  v-model="localMapping.imageField"
+                  allow-clear
+                  placeholder="无"
+                  @change="emitMapping"
+                >
+                  <a-option
+                    v-for="f in imageCandidates"
+                    :key="f.name"
+                    :value="f.name"
+                  >
+                    {{ fieldLabel(f) }}
+                  </a-option>
+                </a-select>
+              </div>
+            </template>
+
+            <template v-else-if="viewKind === 'kanban'">
+              <div class="nested-field">
+                <div class="cfg-label">分组依据</div>
+                <a-select
+                  v-model="localMapping.groupField"
+                  placeholder="选择分组字段"
+                  @change="emitMapping"
+                >
+                  <a-option
+                    v-for="f in groupCandidates"
+                    :key="f.name"
+                    :value="f.name"
+                  >
+                    {{ fieldLabel(f) }}
+                  </a-option>
+                </a-select>
+              </div>
+              <div class="nested-field">
+                <div class="cfg-label">卡片标题</div>
+                <a-select
+                  v-model="localMapping.titleField"
+                  placeholder="选择标题字段"
+                  @change="emitMapping"
+                >
+                  <a-option
+                    v-for="f in titleCandidates"
+                    :key="f.name"
+                    :value="f.name"
+                  >
+                    {{ fieldLabel(f) }}
+                  </a-option>
+                </a-select>
+              </div>
+              <div class="nested-field">
+                <div class="cfg-label">卡片图片</div>
+                <a-select
+                  v-model="localMapping.imageField"
+                  allow-clear
+                  placeholder="无"
+                  @change="emitMapping"
+                >
+                  <a-option
+                    v-for="f in imageCandidates"
+                    :key="f.name"
+                    :value="f.name"
+                  >
+                    {{ fieldLabel(f) }}
+                  </a-option>
+                </a-select>
+              </div>
+            </template>
+
+            <template v-else-if="viewKind === 'calendar'">
+              <div class="nested-field">
+                <div class="cfg-label">开始日期 *</div>
+                <a-select
+                  v-model="localMapping.startField"
+                  placeholder="选择开始日期字段"
+                  @change="emitMapping"
+                >
+                  <a-option
+                    v-for="f in dateCandidates"
+                    :key="f.name"
+                    :value="f.name"
+                  >
+                    {{ fieldLabel(f) }}
+                  </a-option>
+                </a-select>
+              </div>
+              <div class="nested-field">
+                <div class="cfg-label">结束日期</div>
+                <a-select
+                  v-model="localMapping.endField"
+                  allow-clear
+                  placeholder="无"
+                  @change="emitMapping"
+                >
+                  <a-option
+                    v-for="f in dateCandidates"
+                    :key="f.name"
+                    :value="f.name"
+                  >
+                    {{ fieldLabel(f) }}
+                  </a-option>
+                </a-select>
+              </div>
+              <div class="nested-field">
+                <div class="cfg-label">标题</div>
+                <a-select
+                  v-model="localMapping.titleField"
+                  placeholder="选择标题字段"
+                  @change="emitMapping"
+                >
+                  <a-option
+                    v-for="f in titleCandidates"
+                    :key="f.name"
+                    :value="f.name"
+                  >
+                    {{ fieldLabel(f) }}
+                  </a-option>
+                </a-select>
+              </div>
+              <div class="nested-field">
+                <div class="cfg-label">颜色</div>
+                <a-select
+                  v-model="localMapping.colorField"
+                  allow-clear
+                  placeholder="无"
+                  @change="emitMapping"
+                >
+                  <a-option
+                    v-for="f in colorCandidates"
+                    :key="f.name"
+                    :value="f.name"
+                  >
+                    {{ fieldLabel(f) }}
+                  </a-option>
+                </a-select>
+              </div>
+            </template>
+
+            <template v-else-if="viewKind === 'gantt'">
+              <div class="nested-field">
+                <div class="cfg-label">开始 *</div>
+                <a-select
+                  v-model="localMapping.startField"
+                  placeholder="选择开始日期字段"
+                  @change="emitMapping"
+                >
+                  <a-option
+                    v-for="f in dateCandidates"
+                    :key="f.name"
+                    :value="f.name"
+                  >
+                    {{ fieldLabel(f) }}
+                  </a-option>
+                </a-select>
+              </div>
+              <div class="nested-field">
+                <div class="cfg-label">结束 *</div>
+                <a-select
+                  v-model="localMapping.endField"
+                  placeholder="选择结束日期字段"
+                  @change="emitMapping"
+                >
+                  <a-option
+                    v-for="f in dateCandidates"
+                    :key="f.name"
+                    :value="f.name"
+                  >
+                    {{ fieldLabel(f) }}
+                  </a-option>
+                </a-select>
+              </div>
+              <div class="nested-field">
+                <div class="cfg-label">标题</div>
+                <a-select
+                  v-model="localMapping.titleField"
+                  placeholder="选择标题字段"
+                  @change="emitMapping"
+                >
+                  <a-option
+                    v-for="f in titleCandidates"
+                    :key="f.name"
+                    :value="f.name"
+                  >
+                    {{ fieldLabel(f) }}
+                  </a-option>
+                </a-select>
+              </div>
+              <div class="nested-field">
+                <div class="cfg-label">颜色</div>
+                <a-select
+                  v-model="localMapping.colorField"
+                  allow-clear
+                  placeholder="无"
+                  @change="emitMapping"
+                >
+                  <a-option
+                    v-for="f in colorCandidates"
+                    :key="f.name"
+                    :value="f.name"
+                  >
+                    {{ fieldLabel(f) }}
+                  </a-option>
+                </a-select>
+              </div>
+            </template>
           </div>
         </section>
       </a-tab-pane>
@@ -338,9 +565,21 @@ import {
   type ColumnPref,
   type HeightMode,
   type ViewChrome,
+  type ViewKind,
+  type ViewMapping,
   type ViewSort,
   type WidthMode,
 } from '@/core/utils/entityViewProfile';
+import type { FieldMeta } from '@/core/types/field';
+import {
+  VIEW_KIND_LABEL,
+  colorFieldCandidates,
+  dateFieldCandidates,
+  groupFieldCandidates,
+  imageFieldCandidates,
+  normalizeMapping,
+  titleFieldCandidates,
+} from '@/core/utils/viewMapping';
 
 type Swatch = { key: string; label: string; color?: string; none?: boolean };
 
@@ -382,15 +621,24 @@ const recommendedColors: Swatch[] = [
 
 type PanelKey = 'bg' | null;
 
-const props = defineProps<{
-  visible: boolean;
-  typePath: string;
-  viewName: string;
-  columns: ColumnPref[];
-  titles: Record<string, string>;
-  sort: ViewSort | null;
-  chrome?: ViewChrome | null;
-}>();
+const props = withDefaults(
+  defineProps<{
+    visible: boolean;
+    typePath: string;
+    viewName: string;
+    columns: ColumnPref[];
+    titles: Record<string, string>;
+    sort: ViewSort | null;
+    chrome?: ViewChrome | null;
+    viewKind?: ViewKind;
+    fields?: FieldMeta[];
+    mapping?: ViewMapping | null;
+  }>(),
+  {
+    viewKind: 'table',
+    fields: () => [],
+  },
+);
 
 const emit = defineEmits<{
   'update:visible': [boolean];
@@ -398,6 +646,7 @@ const emit = defineEmits<{
   'update:sort': [sort: ViewSort | null];
   'update:chrome': [chrome: ViewChrome];
   'update:name': [name: string];
+  'update:mapping': [mapping: ViewMapping | undefined];
 }>();
 
 const activeTab = ref('basic');
@@ -408,7 +657,26 @@ const localColumns = ref<ColumnPref[]>([]);
 const localName = ref('');
 const localSort = ref<ViewSort | null>(null);
 const chrome = reactive<Required<ViewChrome>>({ ...DEFAULT_CHROME });
+const localMapping = reactive({
+  titleField: '',
+  imageField: undefined as string | undefined,
+  groupField: '',
+  startField: '',
+  endField: undefined as string | undefined,
+  colorField: undefined as string | undefined,
+});
 let dragFrom = -1;
+
+const drawerTitle = computed(() => `${VIEW_KIND_LABEL[props.viewKind]}视图`);
+const titleCandidates = computed(() => titleFieldCandidates(props.fields));
+const imageCandidates = computed(() => imageFieldCandidates(props.fields));
+const groupCandidates = computed(() => groupFieldCandidates(props.fields));
+const dateCandidates = computed(() => dateFieldCandidates(props.fields));
+const colorCandidates = computed(() => colorFieldCandidates(props.fields));
+
+function fieldLabel(f: FieldMeta): string {
+  return (f.displayName?.trim() || f.name).toString();
+}
 
 const visibleCount = computed(() => localColumns.value.filter((c) => c.visible).length);
 
@@ -461,11 +729,46 @@ function togglePanel(key: Exclude<PanelKey, null>) {
   openPanel.value = openPanel.value === key ? null : key;
 }
 
+function syncMappingFromProps() {
+  localMapping.titleField = '';
+  localMapping.imageField = undefined;
+  localMapping.groupField = '';
+  localMapping.startField = '';
+  localMapping.endField = undefined;
+  localMapping.colorField = undefined;
+
+  const kind = props.viewKind;
+  if (kind === 'table' || kind === 'tree') return;
+
+  const m = normalizeMapping(kind, props.mapping, props.fields);
+  if (!m) return;
+
+  if (m.kind === 'card') {
+    localMapping.titleField = m.titleField;
+    localMapping.imageField = m.imageField;
+  } else if (m.kind === 'kanban') {
+    localMapping.groupField = m.groupField;
+    localMapping.titleField = m.titleField;
+    localMapping.imageField = m.imageField;
+  } else if (m.kind === 'calendar') {
+    localMapping.startField = m.startField;
+    localMapping.endField = m.endField;
+    localMapping.titleField = m.titleField;
+    localMapping.colorField = m.colorField;
+  } else if (m.kind === 'gantt') {
+    localMapping.startField = m.startField;
+    localMapping.endField = m.endField;
+    localMapping.titleField = m.titleField;
+    localMapping.colorField = m.colorField;
+  }
+}
+
 function syncFromProps() {
   localColumns.value = (props.columns || []).map((c) => ({ ...c }));
   localName.value = props.viewName || '';
   localSort.value = props.sort ? { ...props.sort } : null;
   Object.assign(chrome, DEFAULT_CHROME, props.chrome || {});
+  syncMappingFromProps();
 }
 
 watch(
@@ -480,7 +783,7 @@ watch(
 );
 
 watch(
-  () => [props.columns, props.viewName, props.sort, props.chrome] as const,
+  () => [props.columns, props.viewName, props.sort, props.chrome, props.mapping, props.viewKind, props.fields] as const,
   () => {
     if (props.visible) syncFromProps();
   },
@@ -566,6 +869,54 @@ function onSortDir(v: string | number | boolean) {
 
 function emitChrome() {
   emit('update:chrome', { ...chrome });
+}
+
+function emitMapping() {
+  const kind = props.viewKind;
+  if (kind === 'table' || kind === 'tree') {
+    emit('update:mapping', undefined);
+    return;
+  }
+  if (kind === 'card') {
+    if (!localMapping.titleField) return;
+    emit('update:mapping', {
+      kind: 'card',
+      titleField: localMapping.titleField,
+      imageField: localMapping.imageField || undefined,
+    });
+    return;
+  }
+  if (kind === 'kanban') {
+    if (!localMapping.groupField || !localMapping.titleField) return;
+    emit('update:mapping', {
+      kind: 'kanban',
+      groupField: localMapping.groupField,
+      titleField: localMapping.titleField,
+      imageField: localMapping.imageField || undefined,
+    });
+    return;
+  }
+  if (kind === 'calendar') {
+    if (!localMapping.startField || !localMapping.titleField) return;
+    emit('update:mapping', {
+      kind: 'calendar',
+      startField: localMapping.startField,
+      endField: localMapping.endField || undefined,
+      titleField: localMapping.titleField,
+      colorField: localMapping.colorField || undefined,
+    });
+    return;
+  }
+  if (kind === 'gantt') {
+    if (!localMapping.startField || !localMapping.endField || !localMapping.titleField) return;
+    emit('update:mapping', {
+      kind: 'gantt',
+      startField: localMapping.startField,
+      endField: localMapping.endField,
+      titleField: localMapping.titleField,
+      colorField: localMapping.colorField || undefined,
+    });
+  }
 }
 
 function emitName() {

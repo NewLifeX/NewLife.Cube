@@ -1,5 +1,9 @@
 /**
- * 字段 → 控件映射（移植自 Cube.Vue fieldControl，ArcoVue 本地真理源）
+ * 字段 → 控件映射
+ *
+ * 对齐 NewLife.Cube.Vue：
+ * - `web/core/utils/fieldControl.ts`（LOV / ItemType / SearchControl）
+ * - `web/src/utils/other.ts` 的 `getComponentBaseField`（未知 typeName → 枚举下拉）
  */
 import type {
   FieldMeta,
@@ -8,12 +12,61 @@ import type {
   ListControlType,
 } from '../types/field';
 
+/** 已知 CLR 数值类型（搜索用范围、表单用数字框） */
 const NUMERIC_TYPES: ReadonlySet<string> = new Set([
   'Int32',
   'Int64',
+  'Int16',
+  'UInt32',
+  'UInt64',
+  'Byte',
+  'SByte',
   'Decimal',
   'Double',
   'Single',
+  'Short',
+  'UShort',
+]);
+
+/**
+ * Cube.Vue `getComponentBaseField` 中的系统类型表。
+ * 不在此表内的 typeName 视为枚举/自定义类型 → select + Lookup。
+ */
+const KNOWN_SYSTEM_TYPES: ReadonlySet<string> = new Set([
+  'Int32',
+  'Int64',
+  'Int16',
+  'UInt32',
+  'UInt64',
+  'Byte',
+  'SByte',
+  'Short',
+  'UShort',
+  'Decimal',
+  'Double',
+  'Single',
+  'String',
+  'Boolean',
+  'DateTime',
+  'TimeSpan',
+  'Guid',
+  'Enum',
+]);
+
+/** Cube.Vue contents 映射：已知 ItemType 不当作枚举 Lookup */
+const KNOWN_CONTENT_ITEM_TYPES: ReadonlySet<string> = new Set([
+  'mail',
+  'mobile',
+  'image',
+  'file',
+  'json',
+  'html',
+  'markdown',
+  'color',
+  'icon',
+  'url',
+  'singleselect',
+  'multipleselect',
 ]);
 
 const ITEM_TYPE_TO_CONTROL: Record<string, ControlType> = {
@@ -33,6 +86,18 @@ const ITEM_TYPE_TO_CONTROL: Record<string, ControlType> = {
 
 function normalizeItemType(field: FieldMeta): string {
   return (field.itemType ?? '').trim().toLowerCase();
+}
+
+/**
+ * 是否为 Cube.Vue 语义下的「枚举类 typeName」
+ *（如 SexKinds、DepartmentKinds：非系统 CLR 名，走 select / Lookup）
+ */
+export function isEnumLikeTypeName(field: FieldMeta): boolean {
+  const typeName = (field.typeName ?? '').trim();
+  if (!typeName || KNOWN_SYSTEM_TYPES.has(typeName)) return false;
+  const itemType = normalizeItemType(field);
+  if (itemType && KNOWN_CONTENT_ITEM_TYPES.has(itemType)) return false;
+  return true;
 }
 
 export function resolveControl(field: FieldMeta): ControlType {
@@ -61,6 +126,9 @@ export function resolveControl(field: FieldMeta): ControlType {
   if (NUMERIC_TYPES.has(typeName)) return 'inputNumber';
   if (typeName === 'Enum') return 'lov';
 
+  // Cube.Vue getComponentBaseField：未知 typeName → select（枚举）
+  if (isEnumLikeTypeName(field)) return 'select';
+
   if (typeName === 'String') {
     const len = field.length ?? 0;
     if (len >= 300) return 'textarea';
@@ -74,21 +142,32 @@ export function resolveSearchControl(field: FieldMeta): SearchControlType {
   const itemType = normalizeItemType(field);
 
   if (itemType === 'file' || itemType === 'image') return 'fileExists';
-  if (itemType === 'singleselect') return 'lov';
-  if (itemType === 'multipleselect') return 'lovMulti';
+  if (itemType === 'singleselect') {
+    // GetPage 已物化 dataSource 时优先本地下拉，避免再走 Lov Meta
+    if (field.dataSource && Object.keys(field.dataSource).length > 0) return 'select';
+    return 'lov';
+  }
+  if (itemType === 'multipleselect') {
+    if (field.dataSource && Object.keys(field.dataSource).length > 0) return 'select';
+    return 'lovMulti';
+  }
 
   const typeName = field.typeName;
 
   if (typeName === 'Guid') return 'text';
   if (typeName === 'Boolean') return 'switch';
 
+  // 搜索优先使用 GetPage 物化的 dataSource（枚举/委托字典），直接展示可读标签
+  if (field.dataSource && Object.keys(field.dataSource).length > 0) {
+    return 'select';
+  }
+
   if (field.lovCode) {
     return field.multiple || itemType === 'multipleselect' ? 'lovMulti' : 'lov';
   }
 
-  if (field.dataSource && Object.keys(field.dataSource).length > 0) {
-    return 'select';
-  }
+  // Cube.Vue：未知 typeName（SexKinds 等）→ 下拉，由 Lookup / PrepareForApi 灌选项
+  if (isEnumLikeTypeName(field)) return 'select';
 
   if (typeName === 'DateTime') return 'datetimeRange';
   if (typeName === 'TimeSpan') return 'timeRange';
@@ -127,6 +206,7 @@ export function resolveListControl(field: FieldMeta): ListControlType {
   if (typeName === 'Boolean') return 'boolean';
   if (field.lovCode || typeName === 'Enum') return 'lov';
   if (field.dataSource && Object.keys(field.dataSource).length > 0) return 'select';
+  if (isEnumLikeTypeName(field)) return 'select';
   if (typeName === 'DateTime') return 'date';
   if (typeName === 'TimeSpan') return 'time';
   if (NUMERIC_TYPES.has(typeName)) return 'number';

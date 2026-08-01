@@ -42,6 +42,8 @@ const props = withDefaults(
     canViewDetail?: boolean;
     showExpand?: boolean;
     enableSort?: boolean;
+    /** 树视图：启用 VTable hierarchy（行含 children） */
+    hierarchy?: boolean;
   }>(),
   {
     selectedKeys: () => [],
@@ -52,6 +54,7 @@ const props = withDefaults(
     canViewDetail: true,
     showExpand: false,
     enableSort: true,
+    hierarchy: false,
   },
 );
 
@@ -240,9 +243,14 @@ function withChecks(records: Record<string, unknown>[]) {
 }
 
 function buildOption(): any {
+  const cols = buildColumns();
+  if (props.hierarchy && cols.length) {
+    const firstData = cols.find((c: { field?: string }) => c.field && c.field !== '__check' && c.field !== '__ops' && c.field !== '__expand');
+    if (firstData) (firstData as { tree?: boolean }).tree = true;
+  }
   return {
     records: withChecks(props.records),
-    columns: buildColumns(),
+    columns: cols,
     frozenColCount: frozenCount(),
     rightFrozenColCount: props.canViewDetail || props.canEdit || props.canDelete ? 1 : 0,
     widthMode: 'standard',
@@ -251,6 +259,10 @@ function buildOption(): any {
     // 禁用单元格选中框；勾选列负责多选。Hover 用整行高亮
     select: { highlightMode: 'row', disableSelect: true, disableHeaderSelect: true },
     tooltip: { isShowOverflowTextTooltip: true },
+    ...(props.hierarchy
+      ? // VTable 的 hierarchyExpandLevel>1 时根节点才默认展开；设为 2 使树视图默认显示第一层子节点
+        { hierarchyExpandLevel: 2, hierarchyIndent: 16 }
+      : {}),
     // 默认表头与数据行区分；字体规范待 Harness「组件/场景」体系落地
     theme: {
       // 默认 cellBorderClipDirection=top-left 会裁掉底/右边；行分隔须用顶边

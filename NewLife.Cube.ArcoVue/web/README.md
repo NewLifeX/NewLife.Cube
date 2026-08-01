@@ -58,9 +58,11 @@ pnpm build
 
 ## 列表与 EntityViewProfile
 
-- 默认列表主表为 **VisActor VTable**（`features/vtable/ListTable.vue`）。
-- 列布局 / 多命名视图（仅 table）经 `GET/PUT/DELETE /Cube/EntityViewProfile` 持久化。
-- 工具条：命名视图切换 +「配置」抽屉；数据行**双击**或操作列打开右侧详情抽屉。
+- 默认列表支持多视图：`table` / `tree`（VTable）、`card` / `kanban` / `calendar` / `gantt`（`features/views/*`）。
+- Tab 工具条（`ViewTabsToolbar`）切换 / 新建 / 配置；映射存 `ViewsJson` 的 `NamedView.mapping`。
+- 列布局与命名视图经 `GET/PUT/DELETE /Cube/EntityViewProfile` 持久化。
+- 看板/日历/甘特使用较大 pageSize（约 200–500）；看板不拖拽写回。
+- 表格行**双击**或操作列 / 卡片左下按钮打开右侧详情抽屉。
 
 ## 目录结构
 

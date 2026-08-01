@@ -1,4 +1,6 @@
 import cubeApi from '@/api';
+import type { FieldMeta } from '../types/field';
+import { isEnumLikeTypeName } from './fieldControl';
 import type {
   LovBatchLabelResponse,
   LovListDataRequest,
@@ -42,6 +44,10 @@ export async function fetchLovMeta(lovCode: string): Promise<LovMetaResponse> {
   }
 }
 
+function hasDataSource(field: { dataSource?: Record<string, string> }): boolean {
+  return !!(field.dataSource && Object.keys(field.dataSource).length);
+}
+
 /** 将 Enum.* 值集 options 灌入 field.dataSource（一次 Meta，列表徽章/表单下拉共用） */
 export async function enrichFieldsWithEnumDataSource(
   fields: { lovCode?: string; dataSource?: Record<string, string> }[],
@@ -49,7 +55,7 @@ export async function enrichFieldsWithEnumDataSource(
   const codes = [
     ...new Set(
       fields
-        .filter((f) => f.lovCode?.startsWith('Enum.') && !(f.dataSource && Object.keys(f.dataSource).length))
+        .filter((f) => f.lovCode?.startsWith('Enum.') && !hasDataSource(f))
         .map((f) => f.lovCode!),
     ),
   ];
@@ -57,7 +63,7 @@ export async function enrichFieldsWithEnumDataSource(
   try {
     const meta = await fetchLovMeta(codes.join(','));
     for (const f of fields) {
-      if (!f.lovCode?.startsWith('Enum.') || (f.dataSource && Object.keys(f.dataSource).length)) continue;
+      if (!f.lovCode?.startsWith('Enum.') || hasDataSource(f)) continue;
       const item = meta.meta?.find((m) => m.lovCode === f.lovCode);
       const opts =
         (item?.type === 'ENUM' ? item.options : undefined) ??
@@ -67,6 +73,42 @@ export async function enrichFieldsWithEnumDataSource(
       const ds: Record<string, string> = {};
       for (const o of opts) ds[String(o.value)] = o.label;
       f.dataSource = ds;
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * 对齐 Cube.Vue `useEnumOptions` + `/Cube/Lookup`：
+ * 对「未知 typeName」字段（SexKinds 等）拉取枚举项，灌入 dataSource。
+ * GetPage 已 PrepareForApi 物化时跳过。
+ */
+export async function enrichFieldsWithLookup(
+  fields: FieldMeta[],
+): Promise<void> {
+  const targets = fields.filter((f) => isEnumLikeTypeName(f) && !hasDataSource(f));
+  if (!targets.length) return;
+  const codes = [...new Set(targets.map((f) => f.typeName.trim()))];
+  try {
+    const res = await cubeApi.page.lookup(codes.join(','));
+    const payload = (res.data ?? res) as Record<string, unknown>;
+    for (const f of targets) {
+      if (hasDataSource(f)) continue;
+      const raw =
+        payload[f.typeName] ??
+        payload[f.typeName.charAt(0).toLowerCase() + f.typeName.slice(1)];
+      if (!Array.isArray(raw) || !raw.length) continue;
+      const ds: Record<string, string> = {};
+      for (const item of raw) {
+        if (!item || typeof item !== 'object') continue;
+        const row = item as Record<string, unknown>;
+        const value = row.value ?? row.Value;
+        const label = row.label ?? row.Label ?? value;
+        if (value == null) continue;
+        ds[String(value)] = String(label ?? value);
+      }
+      if (Object.keys(ds).length) f.dataSource = ds;
     }
   } catch {
     /* ignore */

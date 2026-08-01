@@ -2,14 +2,19 @@ import { defineStore } from 'pinia';
 import { Message } from '@arco-design/web-vue';
 import cubeApi from '@/api';
 import { formatApiError } from '@/core/utils/apiError';
+import type { FieldMeta } from '@/core/types/field';
 import {
+  createNamedView,
   createTableView,
+  duplicateView,
   getActiveView,
   mergeColumns,
   patchActiveChrome,
   patchActiveColumns,
+  patchActiveMapping,
   patchActiveSort,
   rematchStateColumns,
+  rematchStateMappings,
   removeView,
   renameView,
   stateFromWire,
@@ -17,14 +22,18 @@ import {
   type ColumnPref,
   type EntityViewState,
   type ViewChrome,
+  type ViewKind,
+  type ViewMapping,
   type ViewSort,
 } from '@/core/utils/entityViewProfile';
+import { canCreateViewKind } from '@/core/utils/viewMapping';
 
 const SAVE_MS = 400;
 
 type CacheEntry = {
   state: EntityViewState;
   metaKeys: string[];
+  fields: FieldMeta[];
   dirty: boolean;
   timer: ReturnType<typeof setTimeout> | null;
 };
@@ -46,6 +55,7 @@ export const useEntityViewProfileStore = defineStore('entityViewProfile', {
         this.byType[typePath] = {
           state: stateFromWire(null, metaKeys),
           metaKeys,
+          fields: [],
           dirty: false,
           timer: null,
         };
@@ -55,8 +65,16 @@ export const useEntityViewProfileStore = defineStore('entityViewProfile', {
       return this.byType[typePath];
     },
 
-    async load(typePath: string, metaKeys: string[]) {
+    setFields(typePath: string, fields: FieldMeta[]) {
+      const entry = this.byType[typePath];
+      if (!entry) return;
+      entry.fields = fields;
+      entry.state = rematchStateMappings(entry.state, fields);
+    },
+
+    async load(typePath: string, metaKeys: string[], fields?: FieldMeta[]) {
       const entry = this.ensureEntry(typePath, metaKeys);
+      if (fields) entry.fields = fields;
       try {
         const res = await cubeApi.profile.getEntityViewProfile(typePath);
         entry.state = stateFromWire(res.data, metaKeys);
@@ -64,7 +82,9 @@ export const useEntityViewProfileStore = defineStore('entityViewProfile', {
       } catch {
         entry.state = stateFromWire(null, metaKeys);
       }
-      // 脏数据：views 列为空但元数据已有 → 重合并并写回
+      if (entry.fields.length) {
+        entry.state = rematchStateMappings(entry.state, entry.fields);
+      }
       return this.rematch(typePath, metaKeys);
     },
 
@@ -74,7 +94,9 @@ export const useEntityViewProfileStore = defineStore('entityViewProfile', {
       entry.metaKeys = metaKeys;
       const before = JSON.stringify(getActiveView(entry.state).columns);
       entry.state = rematchStateColumns(entry.state, metaKeys);
-      // 若活跃视图仍无列且有元数据，强制种子列
+      if (entry.fields.length) {
+        entry.state = rematchStateMappings(entry.state, entry.fields);
+      }
       const active = getActiveView(entry.state);
       if (!active.columns.length && metaKeys.length) {
         entry.state = patchActiveColumns(entry.state, mergeColumns(metaKeys, null));
@@ -113,19 +135,73 @@ export const useEntityViewProfileStore = defineStore('entityViewProfile', {
       this.setState(typePath, patchActiveChrome(entry.state, chrome), immediate);
     },
 
+    updateMapping(typePath: string, mapping: ViewMapping | undefined, immediate?: boolean) {
+      const entry = this.byType[typePath];
+      if (!entry) return;
+      const active = getActiveView(entry.state);
+      const normalized =
+        entry.fields.length && mapping
+          ? rematchStateMappings(
+              {
+                ...entry.state,
+                views: entry.state.views.map((v) =>
+                  v.id === active.id ? { ...v, mapping } : v,
+                ),
+              },
+              entry.fields,
+            )
+          : patchActiveMapping(entry.state, mapping);
+      this.setState(typePath, normalized, immediate);
+    },
+
     switchView(typePath: string, viewId: string) {
       const entry = this.byType[typePath];
       if (!entry || !entry.state.views.some((v) => v.id === viewId)) return;
-      this.setState(typePath, { ...entry.state, activeViewId: viewId, view: 'table' }, true);
+      const active = entry.state.views.find((v) => v.id === viewId)!;
+      this.setState(
+        typePath,
+        { ...entry.state, activeViewId: viewId, view: active.view },
+        true,
+      );
     },
 
-    addView(typePath: string, name: string) {
+    addView(typePath: string, name: string, kind: ViewKind = 'table') {
+      const entry = this.byType[typePath];
+      if (!entry) return;
+      const gate = canCreateViewKind(kind, entry.fields, typePath);
+      if (!gate.ok) {
+        Message.warning(gate.reason || '无法创建该视图类型');
+        return;
+      }
+      try {
+        this.setState(
+          typePath,
+          createNamedView(entry.state, name, kind, entry.metaKeys, entry.fields),
+          true,
+        );
+      } catch (e) {
+        Message.warning(e instanceof Error ? e.message : '无法创建视图');
+      }
+    },
+
+    /** @deprecated 用 addView(type, name, 'table') */
+    addTableView(typePath: string, name: string) {
       const entry = this.byType[typePath];
       if (!entry) return;
       try {
         this.setState(typePath, createTableView(entry.state, name, entry.metaKeys), true);
       } catch (e) {
         Message.warning(e instanceof Error ? e.message : '无法创建视图');
+      }
+    },
+
+    duplicate(typePath: string, id: string) {
+      const entry = this.byType[typePath];
+      if (!entry) return;
+      try {
+        this.setState(typePath, duplicateView(entry.state, id), true);
+      } catch (e) {
+        Message.warning(e instanceof Error ? e.message : '复制失败');
       }
     },
 
@@ -157,6 +233,9 @@ export const useEntityViewProfileStore = defineStore('entityViewProfile', {
       }
       const entry = this.ensureEntry(typePath, metaKeys);
       entry.state = stateFromWire(null, metaKeys);
+      if (entry.fields.length) {
+        entry.state = rematchStateMappings(entry.state, entry.fields);
+      }
       entry.dirty = false;
     },
 

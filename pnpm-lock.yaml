@@ -101,6 +101,9 @@ importers:
       '@visactor/vtable':
         specifier: ^1.26.5
         version: 1.26.5
+      '@visactor/vtable-gantt':
+        specifier: ^1.26.5
+        version: 1.26.5
       echarts:
         specifier: ^5.6.0
         version: 5.6.0
@@ -6541,6 +6544,9 @@ packages:
 
   '@visactor/vtable-editors@1.26.5':
     resolution: {integrity: sha512-vE/ggIpmiE2ZOHgKlXmxmH6nYNjlauuLLsUt9cKp8d+oEc0BqaQsd2uTlL1aeALAYbZQiijMJcBh2Ib6a4O/9w==}
+
+  '@visactor/vtable-gantt@1.26.5':
+    resolution: {integrity: sha512-ZinbL9Z1CAJtlqTxvoaRvRzZjlCaXRuWkxqAQ0RdROVzZwc52LnPbHTsW503S5m3MqTL9QPRr2u6nKvVhzjxmw==}
 
   '@visactor/vtable@1.26.5':
     resolution: {integrity: sha512-fW5zwZB5fq4PD7PxcGTGB69j4h4AgtHR7TlUcnqQVMFhwrw6+koaZiKIoFnaioq4eTansCY9mT43Mf265l0kvQ==}
@@ -22784,6 +22790,15 @@ snapshots:
 
   '@visactor/vtable-editors@1.26.5': {}
 
+  '@visactor/vtable-gantt@1.26.5':
+    dependencies:
+      '@visactor/vdataset': 1.0.23
+      '@visactor/vscale': 1.0.23
+      '@visactor/vtable': 1.26.5
+      '@visactor/vtable-editors': 1.26.5
+      '@visactor/vutils': 1.0.23
+      cssfontparser: 1.2.1
+
   '@visactor/vtable@1.26.5':
     dependencies:
       '@visactor/vdataset': 1.0.23
@@ -30028,7 +30043,7 @@ snapshots:
       lodash: 4.18.1
       postcss: 8.5.15
 
-  postcss-syntax@0.36.2(postcss-html@0.36.0)(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39):
+  postcss-syntax@0.36.2(postcss-html@0.36.0(postcss-syntax@0.36.2(postcss@8.5.15))(postcss@7.0.39))(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39):
     dependencies:
       postcss: 7.0.39
     optionalDependencies:
@@ -32748,7 +32763,7 @@ snapshots:
       postcss-sass: 0.4.4
       postcss-scss: 2.1.1
       postcss-selector-parser: 6.1.2
-      postcss-syntax: 0.36.2(postcss-html@0.36.0)(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39)
+      postcss-syntax: 0.36.2(postcss-html@0.36.0(postcss-syntax@0.36.2(postcss@8.5.15))(postcss@7.0.39))(postcss-less@3.1.4)(postcss-scss@2.1.1)(postcss@7.0.39)
       postcss-value-parser: 4.2.0
       resolve-from: 5.0.0
       slash: 3.0.0

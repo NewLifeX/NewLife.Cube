@@ -27,6 +27,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          if (id.includes('node_modules/@visactor/vtable-gantt')) return 'vtable-gantt';
           if (id.includes('node_modules/@visactor')) return 'vtable';
         },
       },
