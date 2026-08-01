@@ -1,8 +1,11 @@
 import { createCubeApi } from '@cube/api-core';
+import { clearLocalProfile } from '@/core/utils/userProfile';
 
 const cubeApi = createCubeApi({
   baseURL: '',
   onUnauthorized() {
+    // 全页跳转会丢内存 store；须清 localStorage，避免串用户壳偏好
+    clearLocalProfile();
     if (!window.location.pathname.startsWith('/login')) {
       window.location.href = '/login';
     }

@@ -1,7 +1,7 @@
 import type { AxiosInstance } from 'axios';
 import { createApiClient, createRequest, type ApiClientOptions } from './client';
 import { TokenManager, type TokenStorage } from './token';
-import { createUserApi, createMenuApi, createPageApi, createConfigApi } from './api';
+import { createUserApi, createMenuApi, createPageApi, createConfigApi, createProfileApi } from './api';
 
 export interface CubeApiOptions extends ApiClientOptions {
   /** Token 存储方式，默认 cookie */
@@ -21,6 +21,8 @@ export interface CubeApi {
   page: ReturnType<typeof createPageApi>;
   /** 系统配置 API */
   config: ReturnType<typeof createConfigApi>;
+  /** 用户呈现配置 API */
+  profile: ReturnType<typeof createProfileApi>;
 }
 
 /**
@@ -46,5 +48,6 @@ export function createCubeApi(options: CubeApiOptions = {}): CubeApi {
     menu: createMenuApi(request),
     page: createPageApi(request, options.baseURL),
     config: createConfigApi(request),
+    profile: createProfileApi(request),
   };
 }

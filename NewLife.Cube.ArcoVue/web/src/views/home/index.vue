@@ -14,6 +14,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
+defineOptions({ name: 'Home' });
+
 const stats = ref([
   { title: '用户总数', value: 0 },
   { title: '今日访问', value: 0 },

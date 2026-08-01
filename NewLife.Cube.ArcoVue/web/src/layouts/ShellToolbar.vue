@@ -1,0 +1,82 @@
+<template>
+  <div class="shell-toolbar">
+    <a-space>
+      <a-tooltip content="主题">
+        <a-button type="text" size="small" @click="cycleAppearance">
+          {{ appearanceLabel }}
+        </a-button>
+      </a-tooltip>
+      <a-tooltip content="密度">
+        <a-button type="text" size="small" @click="toggleDensity">
+          {{ densityLabel }}
+        </a-button>
+      </a-tooltip>
+      <a-button type="text" size="small" @click="goAppearance">外观设置</a-button>
+      <a-dropdown>
+        <a-button type="text">
+          <a-avatar :size="28">{{ userStore.displayName?.charAt(0) || 'U' }}</a-avatar>
+          <span style="margin-left: 8px;">{{ userStore.displayName }}</span>
+        </a-button>
+        <template #content>
+          <a-doption @click="goAppearance">外观设置</a-doption>
+          <a-doption @click="handleLogout">退出登录</a-doption>
+        </template>
+      </a-dropdown>
+    </a-space>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { useUserStore } from '@/stores/user';
+import { useUserProfileStore } from '@/stores/userProfile';
+import { useTagsViewStore } from '@/stores/tagsView';
+import { resetMenuRoutesFlag } from '@/router';
+import type { Appearance } from '@/core/utils/userProfile';
+
+const router = useRouter();
+const userStore = useUserStore();
+const profileStore = useUserProfileStore();
+const tagsStore = useTagsViewStore();
+
+const appearanceLabel = computed(() => {
+  const map: Record<Appearance, string> = { light: '亮色', dark: '暗色', system: '跟随系统' };
+  return map[profileStore.theme.appearance];
+});
+
+const densityLabel = computed(() =>
+  profileStore.theme.density === 'compact' ? '紧凑' : '默认密度',
+);
+
+function cycleAppearance() {
+  const order: Appearance[] = ['light', 'dark', 'system'];
+  const i = order.indexOf(profileStore.theme.appearance);
+  profileStore.patchTheme({ appearance: order[(i + 1) % order.length] });
+}
+
+function toggleDensity() {
+  profileStore.patchTheme({
+    density: profileStore.theme.density === 'compact' ? 'default' : 'compact',
+  });
+}
+
+function goAppearance() {
+  router.push('/settings/appearance');
+}
+
+async function handleLogout() {
+  await userStore.logout();
+  profileStore.resetSession();
+  tagsStore.clearAll();
+  resetMenuRoutesFlag();
+  router.push('/login');
+}
+</script>
+
+<style scoped>
+.shell-toolbar {
+  display: flex;
+  align-items: center;
+}
+</style>

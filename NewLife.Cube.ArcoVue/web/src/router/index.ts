@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
-import DefaultLayout from '@/layouts/default.vue';
+import RootLayout from '@/layouts/RootLayout.vue';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
+import { useUserProfileStore } from '@/stores/userProfile';
 import { registerLeafRoutes } from '@/core/utils/menuRoutes';
 
 const routes: RouteRecordRaw[] = [
@@ -26,7 +27,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'Layout',
-    component: DefaultLayout,
+    component: RootLayout,
     redirect: '/home',
     children: [
       {
@@ -34,6 +35,12 @@ const routes: RouteRecordRaw[] = [
         name: 'Home',
         component: () => import('@/views/home/index.vue'),
         meta: { title: '首页' },
+      },
+      {
+        path: 'settings/appearance',
+        name: 'AppearanceSettings',
+        component: () => import('@/views/settings/appearance.vue'),
+        meta: { title: '外观设置' },
       },
     ],
   },
@@ -61,9 +68,14 @@ router.beforeEach(async (to, _from, next) => {
 
   if (token && !routesLoaded && !isPublic) {
     const userStore = useUserStore();
+    const profileStore = useUserProfileStore();
     try {
       if (!userStore.menus?.length) {
         await userStore.fetchMenus();
+      }
+      if (!profileStore.loaded) {
+        profileStore.bootstrapLocal();
+        await profileStore.loadFromServer();
       }
       const { currentPathNeedsRefresh } = registerLeafRoutes(
         router,

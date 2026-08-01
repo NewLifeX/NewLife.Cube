@@ -17,6 +17,7 @@ import type {
   PageParams,
   RegisterModel,
   OAuthPendingInfo,
+  UserProfileModel,
 } from './types';
 
 type RequestFn = <T>(config: AxiosRequestConfig) => Promise<ApiResponse<T>>;
@@ -232,5 +233,20 @@ export function createConfigApi(request: RequestFn) {
     /** 更新系统配置 */
     updateSetting: (data: Record<string, unknown>) =>
       request<unknown>({ url: '/Cube/Setting', method: 'put', data }),
+  };
+}
+
+/**
+ * 用户呈现配置 API（布局 / 主题 / 工作台偏好）
+ */
+export function createProfileApi(request: RequestFn) {
+  return {
+    /** 获取当前用户 UserProfile；无记录时 data 可能为 null */
+    getUserProfile: () =>
+      request<UserProfileModel | null>({ url: '/Cube/UserProfile', method: 'get' }),
+
+    /** 保存当前用户 UserProfile（upsert；仅非 null 的 Json 字段会更新） */
+    putUserProfile: (data: Partial<UserProfileModel>) =>
+      request<UserProfileModel>({ url: '/Cube/UserProfile', method: 'put', data }),
   };
 }

@@ -1,0 +1,22 @@
+/* 密度：由 applyTheme 挂到 html 的 cube-density-* class */
+html.cube-density-compact {
+  --cube-density-gap: 8px;
+  --cube-density-control-height: 28px;
+}
+
+html.cube-density-compact .arco-btn {
+  height: var(--cube-density-control-height);
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+html.cube-density-compact .arco-table-th,
+html.cube-density-compact .arco-table-td {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+html.cube-density-default {
+  --cube-density-gap: 16px;
+  --cube-density-control-height: 32px;
+}

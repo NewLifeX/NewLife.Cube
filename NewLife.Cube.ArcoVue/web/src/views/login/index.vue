@@ -111,9 +111,17 @@ import { Message } from '@arco-design/web-vue';
 import type { OAuthProvider, LoginConfig } from '@cube/api-core';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
+import { useUserProfileStore } from '@/stores/userProfile';
 
 const router = useRouter();
 const userStore = useUserStore();
+const profileStore = useUserProfileStore();
+
+async function afterLoginSuccess() {
+  await userStore.fetchUserInfo();
+  await userStore.fetchMenus();
+  await profileStore.loadFromServer();
+}
 
 const form = reactive({ username: '', password: '' });
 const codeForm = reactive({ username: '', code: '' });
@@ -155,8 +163,7 @@ async function handleLogin() {
     const res = await cubeApi.user.login({ username: form.username, password: form.password });
     if (res.data?.accessToken) {
       cubeApi.tokenManager.setToken(res.data.accessToken);
-      await userStore.fetchUserInfo();
-      await userStore.fetchMenus();
+      await afterLoginSuccess();
       Message.success('登录成功');
       router.push('/home');
     } else {
@@ -205,8 +212,7 @@ async function handleCodeLogin(loginCategory: 'mobile' | 'mail', formData?: { us
     const res = await cubeApi.user.login({ username: data.username, password: data.code, category: loginCategory });
     if (res.data?.accessToken) {
       cubeApi.tokenManager.setToken(res.data.accessToken);
-      await userStore.fetchUserInfo();
-      await userStore.fetchMenus();
+      await afterLoginSuccess();
     }
     Message.success('登录成功');
     router.push('/home');

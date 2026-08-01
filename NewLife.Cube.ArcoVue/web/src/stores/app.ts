@@ -2,24 +2,12 @@ import { defineStore } from 'pinia';
 import type { LoginConfig } from '@cube/api-core';
 import cubeApi from '@/api';
 
+/** 应用级状态（登录配置等）。布局/主题请用 userProfileStore。 */
 export const useAppStore = defineStore('app', {
   state: () => ({
-    collapsed: false,
-    darkMode: false,
     loginConfig: null as LoginConfig | null,
   }),
   actions: {
-    toggleCollapsed() {
-      this.collapsed = !this.collapsed;
-    },
-    toggleDarkMode() {
-      this.darkMode = !this.darkMode;
-      if (this.darkMode) {
-        document.body.setAttribute('arco-theme', 'dark');
-      } else {
-        document.body.removeAttribute('arco-theme');
-      }
-    },
     async fetchLoginConfig() {
       const res = await cubeApi.user.getLoginConfig();
       if (res.data) this.loginConfig = res.data;

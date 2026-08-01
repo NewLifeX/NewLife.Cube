@@ -398,6 +398,21 @@ export interface MenuItem {
   children: MenuItem[];
 }
 
+/**
+ * 用户呈现配置（UserProfile）线缆模型。
+ * layout/theme/workspace 以 JSON 字符串列存储，前端负责 parse/stringify。
+ */
+export interface UserProfileModel {
+  id?: number;
+  userId?: number;
+  layoutJson?: string | null;
+  themeJson?: string | null;
+  workspaceJson?: string | null;
+  version?: number;
+  enable?: boolean;
+  remark?: string | null;
+}
+
 /** 权限码常量（2 的幂） */
 export const Auth = {
   /** 查看 */

@@ -1,6 +1,7 @@
 import type { Router, RouteRecordRaw } from 'vue-router';
 import type { MenuItem } from '@cube/api-core';
 import { normalizeMenuUrl, routeToApiPrefix, toKebabCase } from './url';
+import { withRouteComponentName } from './namedRouteComponent';
 
 export type ComponentLoader = () => Promise<{ default: unknown }>;
 
@@ -75,10 +76,11 @@ export function buildLeafRoutes(menus: MenuItem[]): RouteRecordRaw[] {
     seen.add(path.toLowerCase());
 
     const typePath = routeToApiPrefix(path);
+    const routeName = 'menu-' + (item.name || item.id);
     routes.push({
       path: path.replace(/^\//, ''),
-      name: 'menu-' + (item.name || item.id),
-      component: resolvePageComponent(item.url),
+      name: routeName,
+      component: withRouteComponentName(resolvePageComponent(item.url), routeName),
       props: { type: typePath, authId: item.id },
       meta: {
         title: item.displayName || item.name,

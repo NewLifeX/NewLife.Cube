@@ -614,6 +614,7 @@ Draft → Accepted → Implementing → Validating → Done
 
 - 布局/主题/密度/页签 + 外观设置；对接 UserProfile。
 - **不含** VTable 多视图。
+- **出口（OSC-0004）：** ArcoVue `RootLayout` 动态 `side`/`top`/`mix`；主题 `light`/`dark`/`system` + 密度；TagsView；`/settings/appearance`；`GET/PUT /Cube/UserProfile`（线缆字段 `layoutJson`/`themeJson`/`workspaceJson`）；CRUD 微内核不读壳偏好。
 
 ### M3a — VTable 表格 + 列布局 → **OSC-0005**（依赖 **OSC-0002**）
 
@@ -644,7 +645,7 @@ Draft → Accepted → Implementing → Validating → Done
 
 - [ ] 仅 `UseArcoVue`：Admin + 新业务实体自动 CRUD  
 - [x] **OSC-0002** 三实体后端已合并且带 XUnitTest  
-- [ ] 布局/主题来自 UserProfile，列表视图/列来自 EntityViewProfile  
+- [x] 布局/主题来自 UserProfile（OSC-0004）；列表视图/列来自 EntityViewProfile（→ OSC-0005+）  
 - [ ] 四视图 + 左抽屉三 Tab；评论走 EntityComment  
 - [ ] §3.1 矩阵 P0 目标达成（或书面豁免）  
 - [ ] 功能清单可追溯；各 OSC 含测试设计与 verify 记录  

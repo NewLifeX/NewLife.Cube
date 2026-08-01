@@ -43,17 +43,25 @@ app.UseArcoVue(builder.Environment);
 pnpm build
 ```
 
+## 壳与 UserProfile
+
+- 布局由 `userProfile.layout.mode`（`side` / `top` / `mix`）经 `layouts/RootLayout.vue` 动态切换。
+- 主题 / 密度写入 CSS 变量与 `arco-theme`，持久化到 `GET/PUT /Cube/UserProfile`。
+- 外观设置：`/settings/appearance`；顶栏提供主题、密度、设置入口。
+- CRUD 页面不读取壳偏好 store（契约隔离）。
+
 ## 目录结构
 
 ```
 web/
 ├── src/
 │   ├── api/          # API 调用层（复用 @cube/api-core）
-│   ├── components/   # 组件
-│   ├── layouts/      # 布局组件
+│   ├── components/   # 组件（含 TagsView）
+│   ├── layouts/      # RootLayout + side/top/mix
+│   ├── theme/        # 主题 token / 密度 CSS
 │   ├── router/       # 路由配置
-│   ├── stores/       # Pinia 状态管理
-│   ├── views/        # 页面视图
+│   ├── stores/       # Pinia（含 userProfile、tagsView）
+│   ├── views/        # 页面视图（含 settings/appearance）
 │   ├── App.vue
 │   └── main.ts
 ├── index.html
