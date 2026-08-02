@@ -515,7 +515,7 @@ public class TokenService : ITokenService
                 userid = user.ID,
                 username = user.Name,
                 nickname = user.NickName,
-                sex = user2.Sex,
+                sex = user2.Sex + "",
                 mail = user2.Mail,
                 mobile = user2.Mobile,
                 code = user2.Code,
