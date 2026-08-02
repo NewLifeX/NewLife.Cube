@@ -98,7 +98,9 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
       return response;
     },
     (error) => {
-      if (error.response?.status === 401 || error.response?.status === 403) {
+      // 403=已登录但无权限，不应清除 Token 或跳转登录页，仅需提示无权限
+      // 只有 401（未登录/登录过期）才清除 Token 并触发重新登录
+      if (error.response?.status === 401) {
         tm.clearToken();
         if (onUnauthorized) {
           onUnauthorized();
