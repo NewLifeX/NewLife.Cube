@@ -132,6 +132,7 @@
 import { computed } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
 import { resolveSearchControl } from '@/core/utils/fieldControl';
+import { normalizeDataSource } from '@/core/utils/viewMapping';
 import LovSelect from './LovSelect.vue';
 
 const props = defineProps<{
@@ -167,25 +168,8 @@ const rangeValue = computed(() => {
   return undefined;
 });
 
-/** 枚举 PrepareForApi 会同时写入数字键与名称键，按 label 去重并优先数字键 */
-function uniqueDataSourceOptions(
-  ds: Record<string, string>,
-): Array<{ value: string; label: string }> {
-  const byLabel = new Map<string, string>();
-  for (const [key, lbl] of Object.entries(ds)) {
-    const prev = byLabel.get(lbl);
-    if (prev == null) {
-      byLabel.set(lbl, key);
-      continue;
-    }
-    // 优先保留纯数字键（与实体存储一致）
-    if (/^-?\d+$/.test(key) && !/^-?\d+$/.test(prev)) byLabel.set(lbl, key);
-  }
-  return [...byLabel.entries()].map(([lbl, value]) => ({ value, label: lbl }));
-}
-
 const dataSourceOptions = computed(() =>
-  hasDataSource.value ? uniqueDataSourceOptions(props.field.dataSource!) : [],
+  hasDataSource.value ? normalizeDataSource(props.field.dataSource!).options : [],
 );
 
 const boolOptions = computed(() => {

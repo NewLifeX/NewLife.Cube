@@ -5,6 +5,7 @@ import type { FieldMeta } from '@/core/types/field';
 import { isBadgeField } from '@/core/utils/fieldBadge';
 import { resolveListControl } from '@/core/utils/fieldControl';
 import { preferTreeByType } from '@/core/utils/tree';
+import { getValueByKey } from '@/core/utils/url';
 
 export type ViewKind = 'table' | 'tree' | 'card' | 'kanban' | 'calendar' | 'gantt';
 
@@ -30,6 +31,7 @@ export type CalendarMapping = {
   colorField?: string;
 };
 export type ViewMapping = CardMapping | KanbanMapping | GanttMapping | CalendarMapping;
+export type DataSourceOption = { value: string; label: string };
 
 export const LARGE_VIEW_PAGE_SIZE_DEFAULT = 200;
 export const LARGE_VIEW_PAGE_SIZE_MAX = 500;
@@ -78,6 +80,33 @@ export function dateFieldCandidates(fields: FieldMeta[]): FieldMeta[] {
 
 export function colorFieldCandidates(fields: FieldMeta[]): FieldMeta[] {
   return fields.filter((f) => isBadgeField(f));
+}
+
+function isNumericDataSourceKey(key: string): boolean {
+  return /^-?\d+$/.test(key);
+}
+
+/** PrepareForApi 可能同时返回数字键与名称键；按 label 去重并优先数字键，同时保留别名映射供视图归并 */
+export function normalizeDataSource(
+  ds: Record<string, string>,
+): { options: DataSourceOption[]; canonicalByKey: Map<string, string> } {
+  const canonicalByLabel = new Map<string, string>();
+  for (const [key, label] of Object.entries(ds)) {
+    const prev = canonicalByLabel.get(label);
+    if (prev == null || (isNumericDataSourceKey(key) && !isNumericDataSourceKey(prev))) {
+      canonicalByLabel.set(label, key);
+    }
+  }
+
+  const canonicalByKey = new Map<string, string>();
+  for (const [key, label] of Object.entries(ds)) {
+    canonicalByKey.set(key, canonicalByLabel.get(label) || key);
+  }
+
+  return {
+    options: [...canonicalByLabel.entries()].map(([label, value]) => ({ value, label })),
+    canonicalByKey,
+  };
 }
 
 export function hasTreeMetadata(
@@ -274,22 +303,26 @@ export function bucketKanban(
 ): KanbanBucket[] {
   const order: string[] = [];
   const labelOf = new Map<string, string>();
+  let canonicalByKey = new Map<string, string>();
   if (dataSource) {
-    for (const [k, v] of Object.entries(dataSource)) {
-      order.push(k);
-      labelOf.set(k, v);
+    const normalized = normalizeDataSource(dataSource);
+    canonicalByKey = normalized.canonicalByKey;
+    for (const opt of normalized.options) {
+      order.push(opt.value);
+      labelOf.set(opt.value, opt.label);
     }
   }
   const buckets = new Map<string, Record<string, unknown>[]>();
   const ungrouped: Record<string, unknown>[] = [];
 
   for (const row of rows) {
-    const raw = row[groupField];
+    // 字段名大小写容错取值（FieldMeta.name 为 PascalCase，数据行 key 为 camelCase）
+    const raw = getValueByKey(row, groupField);
     if (raw == null || raw === '') {
       ungrouped.push(row);
       continue;
     }
-    const key = String(raw);
+    const key = canonicalByKey.get(String(raw)) || String(raw);
     if (!buckets.has(key)) {
       buckets.set(key, []);
       if (!order.includes(key)) order.push(key);
@@ -303,7 +336,7 @@ export function bucketKanban(
     const list = buckets.get(key);
     if (!list?.length) {
       // 仍展示空列（有 dataSource 定义时）
-      if (dataSource && key in dataSource) {
+      if (dataSource && labelOf.has(key)) {
         result.push({ key, label: labelOf.get(key) || key, rows: [] });
       }
       continue;
