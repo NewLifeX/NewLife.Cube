@@ -11,9 +11,12 @@
 | 路由、菜单和应用是怎样协作的？     | [architecture/routing.md](./architecture/routing.md)                                                               |
 | 配置、请求和状态由谁负责？         | [architecture/state-and-data.md](./architecture/state-and-data.md)                                                 |
 | 新增页面、接口或主题怎样做？       | [guides/](./guides/)                                                                                               |
-| 新代码必须遵守什么？               | [standards/](./standards/)                                                                                         |
+| 新增 / 改写一个通用组件（含样式）？ | [guides/add-component.md](./guides/add-component.md) + [standards/ui-spec.md](./standards/ui-spec.md)             |
+| 新增一个接口 / API？               | [guides/add-api.md](./guides/add-api.md)                                                                           |
+| 新代码必须遵守什么？               | [standards/](./standards/)（总纲见 [frontend-testable-development.md](./standards/frontend-testable-development.md)） |
 | 当前已有何种组件、配置和路由约定？ | [reference/](./reference/)                                                                                         |
 | 如何测试、构建、发布和排障？       | [operations/](./operations/)                                                                                       |
+| 写组件时怎么看渲染效果 / 做视觉回归？ | [guides/component-visual-dev.md](./guides/component-visual-dev.md)                                                 |
 | 为什么曾作出某项关键选择？         | [decisions/](./decisions/)                                                                                         |
 
 ## 文档分层
@@ -34,7 +37,7 @@
 
 - 运行行为以 `core/`、`apps/`、`configs/`、`vite.config.ts` 和 `package.json` 为准。
 - 产品方向以 [product/vision-and-roadmap.md](./product/vision-and-roadmap.md) 为准；AI 迭代按 [guides/ai-iteration.md](./guides/ai-iteration.md) 执行。
-- UI 规则以 [standards/ui-spec.md](./standards/ui-spec.md) 为准；其设计方法论在 `../skills/cube-design/`。
+- UI 规则以 [standards/ui-spec.md](./standards/ui-spec.md) 为准；Element Plus / Tailwind 分工见 [decisions/0003](../decisions/0003-element-plus-tailwind-design-system.md)。
 - 文档放置、状态、更新和删除规则以 [standards/documentation-standard.md](./standards/documentation-standard.md) 为准。
 - 文档与代码冲突时，先以代码为事实修正文档；若代码行为本身不明确，补 ADR 后再改实现。
 

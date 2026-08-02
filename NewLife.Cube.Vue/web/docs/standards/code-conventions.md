@@ -1,17 +1,32 @@
 # Vue、TypeScript 与样式约定
 
+> 团队规范总纲见 [前端可测试渐进式开发与测试规范](../standards/frontend-testable-development.md)。下文「关注点分离」为其强制细则。
+
+## 关注点分离（强制）
+
+- **视图只渲染，逻辑只计算，基础设施只通信**。严禁在 `index.vue` 的 `<template>` 与 `<script setup>` 中编写业务逻辑（数据结构转换、提交拼装、取数、复杂 `filter/map`）。
+- **`index.vue` 的 `<script setup>` 不允许超过 50 行**，不允许出现 `new Date()`、`fetch()`、直接 `request` 取数或复杂条件拼接。
+- 任何数据转换、复杂计算、提交前拼装，必须提取到 **`*.logic.ts`** 作为纯函数导出（页面级放 `apps/<app>/src/views/<area>/<entity>/<entity>.logic.ts`；跨页面共享逻辑进 `core/engine`）。纯函数禁止依赖 Vue/DOM，便于 Vitest 单测。
+- 页面定制一律用 `CubeTable` 具名插槽（见 [customize-page.md](../guides/customize-page.md)）；不再新建 Section 覆盖文件。
+
 ## 代码边界
 
-- 默认模板和共享能力修改在 `core/`；业务页面和覆盖组件修改在 `apps/<app>/`。
+- 默认模板和共享能力修改在 `core/`（引擎在 `core/engine/`、集成组件在 `core/components/CubeTable/`）；业务页面和定制组件修改在 `apps/<app>/`。
 - 根 `src/` 是遗留壳，不是当前默认模板的实现位置。
-- 优先扩展已有 composable、业务组件和 Section；不要为局部页面复制框架逻辑。
+- 优先扩展已有 composable、业务组件和 `CubeTable` 插槽；不要为局部页面复制框架逻辑。
 
 ## Vue 与 TypeScript
 
 - 使用 Vue 3 Composition API 与 `<script setup lang="ts">`。
 - Props、emits、请求结果和跨模块数据必须有显式 TypeScript 类型。
 - 类型导入使用 `import type`。
-- 组件使用 PascalCase；业务视图目录按路由约定，入口文件为 `index.vue`。
+- **命名分层约定（避免歧义，组件文件夹与文件分开规定）：**
+  - **组件文件夹**：大驼峰 **PascalCase**，与组件名一致。例：`core/components/LovSelectTable/`、`core/components/CubeTable/`（内含 `CubeTable.vue`、`CubeTableSearch.vue`、`CubeTableToolbar.vue`、`CubeTableGrid.vue`、`CubeTablePagination.vue`、`CubeTableFormDialog.vue`）。现役代码目录即采用此风格，新增组件目录必须沿用。
+  - **组件文件**：大驼峰 **PascalCase** 的 `.vue`（`CubeTable.vue`、`LovSelectTable.vue`）。
+  - **组件名声明**：组件必须使用 `defineOptions({ name: '...' })` 显式声明组件名，组件名应与文件名（不含扩展名）一致，确保 Vue DevTools 正确显示组件层级。
+  - **业务视图目录**（`apps/<app>/src/views/<area>/<entity>/`）：跟随 `router.routeNamingStyle`（`pascal` 或 `kebab`），解析兼容 PascalCase / kebab-case / 小写；入口文件固定为 `index.vue`。
+  - **纯逻辑 / 工具文件**：小驼峰 `*.logic.ts`、`utils/*.ts`（`user.logic.ts`、`transform.ts`）；**不使用横线**。
+  - **测试文件**：固定后缀 `*.spec.ts` / `*.test.ts`，基名跟随被测对象（现役 `LovSelectTable.test.ts`）；**不使用横线**。
 - 自动发现的 Section 文件首字母大写，且名称必须存在于 `SectionKeyMap`。
 
 ## 状态与副作用

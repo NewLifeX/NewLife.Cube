@@ -1,6 +1,6 @@
 # ADR 0004：控制器优先提供 CRUD，业务差异按覆盖层级递进
 
-**状态：已采纳**
+**状态：已采纳（「Section 覆盖」层级自 ADR 0005 起被 CubeTable 插槽取代，见下方遗留标注）**
 
 ## 背景
 
@@ -20,3 +20,5 @@
 - Section 与整页覆盖仍是第一等扩展能力，但不能成为绕开默认引擎的捷径。
 
 完整产品方向和阶段优先级见 [愿景与路线图](../product/vision-and-roadmap.md)。
+
+> **遗留标注（2026-08-02）**：本 ADR 中「Section 覆盖」作为默认 CRUD 与完整页面之间的中间层级，自 `decisions/0005` 起被 **`CubeTable` 具名插槽** 取代。即业务差异的选择层级更新为「元数据 → **CubeTable 插槽** → 完整页面 → 框架能力回流」。Section 覆盖文件（`useSections`/`SectionKeyMap`）为遗留机制，存量页面在迁移完成前保留，最终随 `architecture/cube-engine.md` §7 的 P6 移除。最新定制方式见 [customize-page.md](../guides/customize-page.md)。
