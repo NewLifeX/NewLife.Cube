@@ -457,8 +457,15 @@ public partial class ReadOnlyEntityController<TEntity>
             };
         }
 
+        // 与列表页一致的查询逻辑：数据权限 + 搜索条件 + 排序
+        pager.PageIndex = 1;
+        pager.PageSize = maxRows;
+        pager.RetrieveTotalCount = false;
+
+        var data = SearchData(pager).ToList();
+
         // 收集数据并构造 Prompt
-        var ctx = AiInsightHelper.Collect<TEntity>(Factory, pager, maxRows);
+        var ctx = AiInsightHelper.Collect<TEntity>(Factory, pager, data, maxRows);
         var prompt = AiInsightHelper.BuildPrompt(ctx);
 
         if (stream)

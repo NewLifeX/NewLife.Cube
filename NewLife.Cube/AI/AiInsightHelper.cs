@@ -13,10 +13,11 @@ public static class AiInsightHelper
     /// <summary>收集实体数据和元数据，构建 AI 分析上下文</summary>
     /// <typeparam name="TEntity">实体类型</typeparam>
     /// <param name="factory">实体工厂</param>
-    /// <param name="pager">查询条件（已解码的 _query）</param>
+    /// <param name="pager">查询条件（已解码的 _query），用于提取查询上下文与排序</param>
+    /// <param name="data">控制器按列表页逻辑（SearchData）查询得到的数据，已应用数据权限/搜索条件/排序</param>
     /// <param name="maxRows">最大数据行数</param>
     /// <returns>AI 洞察上下文数据</returns>
-    public static AiInsightContext Collect<TEntity>(IEntityFactory factory, Pager pager, Int32 maxRows = 100) where TEntity : Entity<TEntity>, new()
+    public static AiInsightContext Collect<TEntity>(IEntityFactory factory, Pager pager, IList<TEntity> data, Int32 maxRows = 100) where TEntity : Entity<TEntity>, new()
     {
         var ctx = new AiInsightContext
         {
@@ -46,14 +47,8 @@ public static class AiInsightHelper
         ctx.SortField = pager.Sort;
         ctx.SortDesc = pager.Desc;
 
-        // 3. 查询数据
-        pager.PageIndex = 1;
-        pager.PageSize = maxRows;
-        pager.RetrieveTotalCount = false;
-
-        var data = Entity<TEntity>.FindAll(null, pager);
-        var dataList = data.ToList();
-        var entityList = dataList.Cast<IEntity>().ToList();
+        // 3. 使用控制器查询结果（数据权限 + 搜索条件 + 排序已由 SearchData 应用）
+        var entityList = data.Cast<IEntity>().ToList();
         ctx.ShownCount = entityList.Count;
 
         // 4. 预计算统计摘要
