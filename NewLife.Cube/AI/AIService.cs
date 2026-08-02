@@ -81,19 +81,6 @@ public class AIService : IAIService
     public Task<String> ChatAsync(String prompt, String data, CancellationToken cancellationToken = default)
         => ChatInternalAsync(prompt, data, null, cancellationToken);
 
-    /// <summary>分析错误日志（用户交互场景，快速）</summary>
-    public Task<String> AnalyzeLogsAsync(String logsJson, CancellationToken cancellationToken = default)
-    {
-        var prompt = @"你是系统运维专家。请分析以下错误日志，用中文给出：
-1. 错误类型归类（按频率排序）
-2. 最可能的根因
-3. 建议的排查步骤
-
-直接输出分析报告，不要加无关解释。";
-
-        return ChatFastAsync(prompt, logsJson, cancellationToken);
-    }
-
     /// <summary>润色通知内容（用户交互场景，快速）</summary>
     public Task<String> PolishNotificationAsync(String title, String content, String style, CancellationToken cancellationToken = default)
     {
@@ -107,13 +94,55 @@ public class AIService : IAIService
 
     /// <summary>系统健康诊断（用户交互场景，快速）</summary>
     public Task<String> DiagnoseSystemAsync(String sysInfoJson, CancellationToken cancellationToken = default)
+        => ChatFastAsync(BuildDiagnosePrompt(), sysInfoJson, cancellationToken);
+
+    /// <summary>系统健康诊断（流式输出）。逐块返回生成内容</summary>
+    public async IAsyncEnumerable<String> DiagnoseSystemStreamAsync(String sysInfoJson, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var prompt = @"你是系统运维专家。根据以下系统运行指标，给出健康诊断报告（中文）：
+        if (!_setting.AISwitch)
+        {
+            yield return "AI 未启用，请在系统设置中开启 AISwitch";
+            yield break;
+        }
+
+        var error = default(String);
+        IChatClient? client = null;
+
+        try
+        {
+            client = GetClient();
+            WriteLog("DiagnoseSystemStream 开始", sysInfoJson[..Math.Min(sysInfoJson.Length, 200)]);
+        }
+        catch (Exception ex)
+        {
+            WriteLog("DiagnoseSystemStream 失败", ex.ToString());
+            error = $"\n\n---\n>  AI 调用失败：{ex.Message}";
+        }
+
+        if (error != null)
+        {
+            yield return error;
+            yield break;
+        }
+
+        // 与 ChatInternalAsync 一致：提示词 + 数据拼接到一次对话
+        var content = BuildDiagnosePrompt();
+        if (!sysInfoJson.IsNullOrEmpty())
+            content = $"{content}\n\n数据：\n{sysInfoJson}";
+
+        await foreach (var chunk in client!.GetStreamingResponseAsync(content, _fastOptions, cancellationToken))
+        {
+            if (chunk?.Text != null)
+                yield return chunk.Text;
+        }
+
+        WriteLog("DiagnoseSystemStream 完成", "");
+    }
+
+    /// <summary>构建系统诊断提示词</summary>
+    private static String BuildDiagnosePrompt() => @"你是系统运维专家。根据以下系统运行指标，给出健康诊断报告（中文）：
 分析要点：是否存在瓶颈、是否需要扩容、是否需要关注的风险点。
 直接输出诊断报告，不要加无关解释。";
-
-        return ChatFastAsync(prompt, sysInfoJson, cancellationToken);
-    }
 
     /// <summary>数据分析洞察。根据上下文数据生成分析报告</summary>
     public async Task<String> AnalyzeDataAsync(String prompt, Boolean think = false, CancellationToken cancellationToken = default)

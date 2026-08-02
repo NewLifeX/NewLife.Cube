@@ -108,11 +108,12 @@ public class IndexController : ControllerBaseX
 
     #region AI 诊断
     /// <summary>AI 系统诊断。根据服务器运行指标生成健康诊断报告</summary>
+    /// <param name="stream">是否流式输出（SSE）</param>
     /// <returns></returns>
     [DisplayName("AI 系统诊断")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpGet]
-    public async Task<ActionResult> AiDiagnose()
+    public async Task<ActionResult> AiDiagnose(Boolean stream = true)
     {
         var set = CubeSetting.Current;
         if (!set.AISwitch) return Json(500, null, "AI 未启用，请在系统设置中开启");
@@ -140,9 +141,39 @@ public class IndexController : ControllerBaseX
             machineName = Environment.MachineName,
         }.ToJson();
 
-        var result = await _ai.DiagnoseSystemAsync(sysInfo);
+        if (stream)
+        {
+            // SSE 方式输出
+            Response.Headers["Content-Type"] = "text/event-stream; charset=utf-8";
+            Response.Headers["Cache-Control"] = "no-cache";
+            Response.Headers["X-Accel-Buffering"] = "no";
 
-        return Json(0, null, result);
+            // 发送元数据事件
+            var metaJson = new { type = "meta", model = set.AIModel, thinking = false }.ToJson();
+            await Response.WriteAsync($"data: {metaJson}\n\n", HttpContext.RequestAborted);
+            await Response.Body.FlushAsync(HttpContext.RequestAborted);
+
+            await foreach (var chunk in _ai.DiagnoseSystemStreamAsync(sysInfo, HttpContext.RequestAborted))
+            {
+                if (chunk.IsNullOrEmpty()) continue;
+                var eventJson = new { type = "text", content = chunk }.ToJson();
+                await Response.WriteAsync($"data: {eventJson}\n\n", HttpContext.RequestAborted);
+                await Response.Body.FlushAsync(HttpContext.RequestAborted);
+            }
+
+            // 发送结束事件
+            await Response.WriteAsync($"data: {{\"type\":\"done\"}}\n\n", HttpContext.RequestAborted);
+            await Response.Body.FlushAsync(HttpContext.RequestAborted);
+
+            return new EmptyResult();
+        }
+        else
+        {
+            // 一次性返回 JSON
+            var result = await _ai.DiagnoseSystemAsync(sysInfo);
+
+            return Json(0, null, result);
+        }
     }
     #endregion
 
