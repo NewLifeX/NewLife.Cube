@@ -1,4 +1,4 @@
-import type { EntityViewProfileModel } from '@cube/api-core';
+import type { ViewProfileModel } from '@cube/api-core';
 import type { FieldMeta } from '@/core/types/field';
 import {
   normalizeMapping,
@@ -87,8 +87,16 @@ export interface EntityViewState {
   view: ViewKind;
 }
 
+export interface ViewSeedOptions {
+  defaultView?: ViewKind | String | null;
+}
+
 export const DEFAULT_VIEW_ID = 'default';
 export const DEFAULT_VIEW_NAME = '默认列表';
+
+function resolveSeedViewKind(raw?: ViewKind | String | null): ViewKind {
+  return parseViewKind(typeof raw === 'string' ? raw : raw?.toString());
+}
 
 function parseJsonArray(raw: string | null | undefined): unknown[] | null {
   if (!raw || typeof raw !== 'string') return null;
@@ -193,20 +201,28 @@ function normalizeChrome(raw: unknown): ViewChrome | undefined {
   };
 }
 
-export function seedDefaultView(metaKeys: string[], columns?: ColumnPref[]): NamedView {
+export function seedDefaultView(
+  metaKeys: string[],
+  columns?: ColumnPref[],
+  defaultView?: ViewKind | String | null,
+): NamedView {
   return {
     id: DEFAULT_VIEW_ID,
     name: DEFAULT_VIEW_NAME,
-    view: 'table',
+    view: resolveSeedViewKind(defaultView),
     columns: columns ?? mergeColumns(metaKeys, null),
     sort: null,
     chrome: { ...DEFAULT_CHROME },
   };
 }
 
-export function parseNamedViews(raw: string | null | undefined, metaKeys: string[]): NamedView[] {
+export function parseNamedViews(
+  raw: string | null | undefined,
+  metaKeys: string[],
+  defaultView?: ViewKind | String | null,
+): NamedView[] {
   const arr = parseJsonArray(raw);
-  if (!arr?.length) return [seedDefaultView(metaKeys)];
+  if (!arr?.length) return [seedDefaultView(metaKeys, undefined, defaultView)];
 
   const views: NamedView[] = [];
   for (const item of arr) {
@@ -244,25 +260,27 @@ export function parseNamedViews(raw: string | null | undefined, metaKeys: string
       mapping,
     });
   }
-  return views.length ? views : [seedDefaultView(metaKeys)];
+  return views.length ? views : [seedDefaultView(metaKeys, undefined, defaultView)];
 }
 
 /** 线缆 → 状态；兼容仅有 columnsJson 的旧数据 */
 export function stateFromWire(
-  model: EntityViewProfileModel | null | undefined,
+  model: ViewProfileModel | null | undefined,
   metaKeys: string[],
+  opts?: ViewSeedOptions,
 ): EntityViewState {
+  const seedView = model?.view || opts?.defaultView;
   if (!model) {
-    const v = seedDefaultView(metaKeys);
-    return { views: [v], activeViewId: v.id, view: 'table' };
+    const v = seedDefaultView(metaKeys, undefined, seedView);
+    return { views: [v], activeViewId: v.id, view: v.view };
   }
 
-  let views = parseNamedViews(model.viewsJson, metaKeys);
+  let views = parseNamedViews(model.viewsJson, metaKeys, seedView);
   if ((!model.viewsJson || !parseJsonArray(model.viewsJson)?.length) && model.columnsJson) {
     const cols = parseJsonArray(model.columnsJson)
       ?.map(normalizeColumn)
       .filter(Boolean) as ColumnPref[] | undefined;
-    views = [seedDefaultView(metaKeys, mergeColumns(metaKeys, cols))];
+    views = [seedDefaultView(metaKeys, mergeColumns(metaKeys, cols), seedView)];
   }
 
   let activeViewId =
@@ -282,7 +300,7 @@ export function stateFromWire(
 export function stateToWirePayload(
   typePath: string,
   state: EntityViewState,
-): Partial<EntityViewProfileModel> & { typePath: string } {
+): Partial<ViewProfileModel> & { typePath: string } {
   const active = state.views.find((v) => v.id === state.activeViewId) || state.views[0];
   return {
     typePath,

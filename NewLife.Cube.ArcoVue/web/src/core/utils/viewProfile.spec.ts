@@ -9,7 +9,7 @@ import {
   seedDefaultView,
   stateFromWire,
   stateToWirePayload,
-} from './entityViewProfile';
+} from './viewProfile';
 
 describe('mergeColumns', () => {
   it('keeps pref order and appends new meta keys', () => {
@@ -44,6 +44,12 @@ describe('namedViews', () => {
     expect(v.id).toBe('default');
     expect(v.name).toBe('默认列表');
     expect(v.view).toBe('table');
+  });
+
+  it('uses workspace defaultView when seeding empty state', () => {
+    const s = stateFromWire(null, ['Name'], { defaultView: 'card' });
+    expect(s.view).toBe('card');
+    expect(s.views[0].view).toBe('card');
   });
 
   it('migrates legacy 列表 name on default view', () => {
@@ -91,6 +97,34 @@ describe('namedViews', () => {
     expect(payload.activeViewId).toBe('default');
     expect(JSON.parse(payload.viewsJson!).length).toBe(1);
     expect(JSON.parse(payload.columnsJson!)[0].key).toBe('Name');
+  });
+
+  it('keeps saved named views and active view id from wire', () => {
+    const s = stateFromWire(
+      {
+        viewsJson: JSON.stringify([
+          {
+            id: 'default',
+            name: '默认列表',
+            view: 'table',
+            columns: [{ key: 'Name', visible: true }],
+          },
+          {
+            id: 'v-card',
+            name: '卡片视图',
+            view: 'card',
+            columns: [{ key: 'Name', visible: true }],
+          },
+        ]),
+        activeViewId: 'v-card',
+      },
+      ['Name'],
+      { defaultView: 'table' },
+    );
+    expect(s.views).toHaveLength(2);
+    expect(s.activeViewId).toBe('v-card');
+    expect(s.view).toBe('card');
+    expect(s.views[1].name).toBe('卡片视图');
   });
 });
 

@@ -292,7 +292,8 @@ import type { PageSetting } from '@cube/api-core';
 import { EXPORT_FORMATS } from '@cube/page-utils';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
-import { useEntityViewProfileStore } from '@/stores/entityViewProfile';
+import { useUserProfileStore } from '@/stores/userProfile';
+import { useViewProfileStore } from '@/stores/viewProfile';
 import type { FieldMeta } from '@/core/types/field';
 import { toFieldMetas } from '@/core/utils/fieldNormalize';
 import { resolveListControl } from '@/core/utils/fieldControl';
@@ -325,9 +326,10 @@ import {
   type ViewKind,
   type ViewMapping,
   type ViewSort,
-} from '@/core/utils/entityViewProfile';
+} from '@/core/utils/viewProfile';
 import {
   isLargePageViewKind,
+  parseViewKind,
   resolveViewPageSize,
   type CalendarMapping,
   type CardMapping,
@@ -354,7 +356,8 @@ const props = defineProps<{
 }>();
 
 const userStore = useUserStore();
-const evpStore = useEntityViewProfileStore();
+const profileStore = useUserProfileStore();
+const evpStore = useViewProfileStore();
 const typePath = computed(() => props.type);
 
 const listFields = ref<FieldMeta[]>([]);
@@ -378,6 +381,14 @@ const pagination = reactive({
   pageSize: 20,
   total: 0,
 });
+
+const preferredDefaultView = computed<ViewKind>(() =>
+  parseViewKind(profileStore.prefs.workspace.defaultView),
+);
+
+const preferredPageSize = computed(() =>
+  Math.max(1, profileStore.prefs.workspace.pageSize || 20),
+);
 
 const searchForm = reactive<Record<string, unknown>>({});
 const formModel = reactive<Record<string, unknown>>({});
@@ -459,7 +470,7 @@ const activeGanttMapping = computed(
 const isLargePageView = computed(() => isLargePageViewKind(activeViewKind.value));
 
 const effectivePageSize = computed(() =>
-  resolveViewPageSize(activeViewKind.value, pagination.pageSize),
+  resolveViewPageSize(activeViewKind.value, pagination.pageSize, preferredPageSize.value),
 );
 
 const showPagerBar = computed(
@@ -673,12 +684,18 @@ async function loadProfile() {
     typePath.value,
     metaKeys.value,
     listFields.value,
+    { defaultView: preferredDefaultView.value },
   );
   evpStore.setFields(typePath.value, listFields.value);
   // 再 rematch 一次，确保与最新 listFields 对齐
   if (metaKeys.value.length) {
     viewState.value = evpStore.rematch(typePath.value, metaKeys.value);
   }
+}
+
+function applyWorkspacePrefs() {
+  const size = preferredPageSize.value;
+  if (pagination.pageSize !== size) pagination.pageSize = size;
 }
 
 async function loadData() {
@@ -780,7 +797,9 @@ function onCardDelete(row: Record<string, unknown>) {
 }
 
 async function onResetViews() {
-  await evpStore.reset(typePath.value, metaKeys.value);
+  await evpStore.reset(typePath.value, metaKeys.value, {
+    defaultView: preferredDefaultView.value,
+  });
   syncLocalState();
   pagination.current = 1;
   loadData();
@@ -959,6 +978,7 @@ function onPageChange(page: number) {
 }
 function onPageSizeChange(size: number) {
   pagination.pageSize = size;
+  profileStore.patchWorkspace({ pageSize: size });
   pagination.current = 1;
   loadData();
 }
@@ -967,6 +987,7 @@ function onSelectionChange(keys: (string | number)[]) {
 }
 
 async function bootstrap() {
+  applyWorkspacePrefs();
   await loadFields();
   await loadProfile();
   await loadData();

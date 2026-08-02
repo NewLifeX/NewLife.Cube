@@ -23,7 +23,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { IconCheck, IconDown } from '@arco-design/web-vue/es/icon';
-import { DEFAULT_VIEW_NAME, type NamedView } from '@/core/utils/entityViewProfile';
+import { DEFAULT_VIEW_NAME, type NamedView } from '@/core/utils/viewProfile';
 
 const props = defineProps<{
   views: NamedView[];

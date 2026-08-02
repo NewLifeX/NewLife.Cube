@@ -1,5 +1,5 @@
 import type { FieldMeta } from '@/core/types/field';
-import type { ColumnPref } from '@/core/utils/entityViewProfile';
+import type { ColumnPref } from '@/core/utils/viewProfile';
 import { resolveCellLabel } from '@/core/utils/fieldBadge';
 import { getValueByKey } from '@/core/utils/url';
 import type { CardMapping, KanbanMapping } from '@/core/utils/viewMapping';
@@ -23,7 +23,7 @@ export function buildCardBodyFields(
       const raw = getValueByKey(record, field.name);
       value = raw == null || raw === '' ? '-' : resolveCellLabel(field, raw);
     } else {
-      const raw = record[col.key];
+      const raw = getValueByKey(record, col.key);
       value = raw == null || raw === '' ? '-' : String(raw);
     }
     out.push({ key: col.key, label, value });

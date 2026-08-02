@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
-import type { ColumnPref } from '@/core/utils/entityViewProfile';
+import type { ColumnPref } from '@/core/utils/viewProfile';
 import type { CardMapping } from '@/core/utils/viewMapping';
 import { getValueByKey } from '@/core/utils/url';
 import RecordCard from './RecordCard.vue';

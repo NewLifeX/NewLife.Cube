@@ -280,7 +280,7 @@
         <!-- 列表区 -->
         <section class="cfg-block">
           <button type="button" class="collapse-head" @click="listAreaOpen = !listAreaOpen">
-            <span>列表区</span>
+            <span>{{ listAreaLabel }}</span>
             <icon-down :class="{ open: listAreaOpen }" />
           </button>
           <div v-show="listAreaOpen" class="collapse-body">
@@ -569,7 +569,7 @@ import {
   type ViewMapping,
   type ViewSort,
   type WidthMode,
-} from '@/core/utils/entityViewProfile';
+} from '@/core/utils/viewProfile';
 import type { FieldMeta } from '@/core/types/field';
 import {
   VIEW_KIND_LABEL,
@@ -668,6 +668,24 @@ const localMapping = reactive({
 let dragFrom = -1;
 
 const drawerTitle = computed(() => `${VIEW_KIND_LABEL[props.viewKind]}视图`);
+const listAreaLabel = computed(() => {
+  switch (props.viewKind) {
+    case 'table':
+      return '表格区';
+    case 'tree':
+      return '树图区';
+    case 'card':
+      return '卡片区';
+    case 'kanban':
+      return '看板区';
+    case 'calendar':
+      return '日历区';
+    case 'gantt':
+      return '甘特图区';
+    default:
+      return '视图区';
+  }
+});
 const titleCandidates = computed(() => titleFieldCandidates(props.fields));
 const imageCandidates = computed(() => imageFieldCandidates(props.fields));
 const groupCandidates = computed(() => groupFieldCandidates(props.fields));

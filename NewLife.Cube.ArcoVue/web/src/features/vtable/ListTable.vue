@@ -5,9 +5,10 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { ListTable } from '@visactor/vtable';
-import type { ColumnPref } from '@/core/utils/entityViewProfile';
-import { frozenLeftCount } from '@/core/utils/entityViewProfile';
+import type { ColumnPref } from '@/core/utils/viewProfile';
+import { frozenLeftCount } from '@/core/utils/viewProfile';
 import { BADGE_BORDER_RADIUS, BADGE_PADDING } from '@/core/utils/fieldBadge';
+import { getValueByKey } from '@/core/utils/url';
 import {
   buildOpsParts,
   formatOpsLabel,
@@ -73,7 +74,8 @@ let applying = false;
 let ro: ResizeObserver | null = null;
 
 function rowId(row: Record<string, unknown>): string {
-  const v = row[props.rowKey];
+  // 字段名大小写容错（rowKey 为 FieldMeta.name PascalCase，数据行 key 为 camelCase）
+  const v = getValueByKey(row, props.rowKey);
   return v == null ? '' : String(v);
 }
 

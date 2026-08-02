@@ -78,6 +78,8 @@ defineEmits<{
   grid-template-columns: 1fr 1fr;
   gap: 6px 12px;
   font-size: 12px;
+  flex: 1;
+  align-content: start;
 }
 .record-card-field {
   min-width: 0;
@@ -95,6 +97,7 @@ defineEmits<{
 .record-card-ops {
   display: flex;
   gap: 6px;
-  margin-top: 4px;
+  margin-top: auto;
+  padding-top: 4px;
 }
 </style>

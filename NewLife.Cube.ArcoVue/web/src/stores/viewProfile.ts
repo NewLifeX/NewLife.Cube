@@ -24,21 +24,27 @@ import {
   type ViewChrome,
   type ViewKind,
   type ViewMapping,
+  type ViewSeedOptions,
   type ViewSort,
-} from '@/core/utils/entityViewProfile';
+} from '@/core/utils/viewProfile';
 import { canCreateViewKind } from '@/core/utils/viewMapping';
 
 const SAVE_MS = 400;
 
+function cloneState(state: EntityViewState): EntityViewState {
+  return JSON.parse(JSON.stringify(state)) as EntityViewState;
+}
+
 type CacheEntry = {
   state: EntityViewState;
+  committedState: EntityViewState;
   metaKeys: string[];
   fields: FieldMeta[];
   dirty: boolean;
   timer: ReturnType<typeof setTimeout> | null;
 };
 
-export const useEntityViewProfileStore = defineStore('entityViewProfile', {
+export const useViewProfileStore = defineStore('viewProfile', {
   state: () => ({
     byType: {} as Record<string, CacheEntry>,
   }),
@@ -50,10 +56,12 @@ export const useEntityViewProfileStore = defineStore('entityViewProfile', {
     },
   },
   actions: {
-    ensureEntry(typePath: string, metaKeys: string[]): CacheEntry {
+    ensureEntry(typePath: string, metaKeys: string[], opts?: ViewSeedOptions): CacheEntry {
       if (!this.byType[typePath]) {
+        const state = stateFromWire(null, metaKeys, opts);
         this.byType[typePath] = {
-          state: stateFromWire(null, metaKeys),
+          state,
+          committedState: cloneState(state),
           metaKeys,
           fields: [],
           dirty: false,
@@ -70,21 +78,23 @@ export const useEntityViewProfileStore = defineStore('entityViewProfile', {
       if (!entry) return;
       entry.fields = fields;
       entry.state = rematchStateMappings(entry.state, fields);
+      if (!entry.dirty) entry.committedState = cloneState(entry.state);
     },
 
-    async load(typePath: string, metaKeys: string[], fields?: FieldMeta[]) {
-      const entry = this.ensureEntry(typePath, metaKeys);
+    async load(typePath: string, metaKeys: string[], fields?: FieldMeta[], opts?: ViewSeedOptions) {
+      const entry = this.ensureEntry(typePath, metaKeys, opts);
       if (fields) entry.fields = fields;
       try {
-        const res = await cubeApi.profile.getEntityViewProfile(typePath);
-        entry.state = stateFromWire(res.data, metaKeys);
+        const res = await cubeApi.profile.getViewProfile(typePath);
+        entry.state = stateFromWire(res.data, metaKeys, opts);
         entry.dirty = false;
       } catch {
-        entry.state = stateFromWire(null, metaKeys);
+        entry.state = stateFromWire(null, metaKeys, opts);
       }
       if (entry.fields.length) {
         entry.state = rematchStateMappings(entry.state, entry.fields);
       }
+      entry.committedState = cloneState(entry.state);
       return this.rematch(typePath, metaKeys);
     },
 
@@ -225,17 +235,18 @@ export const useEntityViewProfileStore = defineStore('entityViewProfile', {
       }
     },
 
-    async reset(typePath: string, metaKeys: string[]) {
+    async reset(typePath: string, metaKeys: string[], opts?: ViewSeedOptions) {
       try {
-        await cubeApi.profile.deleteEntityViewProfile(typePath);
+        await cubeApi.profile.deleteViewProfile(typePath);
       } catch {
         /* ignore */
       }
-      const entry = this.ensureEntry(typePath, metaKeys);
-      entry.state = stateFromWire(null, metaKeys);
+      const entry = this.ensureEntry(typePath, metaKeys, opts);
+      entry.state = stateFromWire(null, metaKeys, opts);
       if (entry.fields.length) {
         entry.state = rematchStateMappings(entry.state, entry.fields);
       }
+      entry.committedState = cloneState(entry.state);
       entry.dirty = false;
     },
 
@@ -260,13 +271,17 @@ export const useEntityViewProfileStore = defineStore('entityViewProfile', {
         clearTimeout(entry.timer);
         entry.timer = null;
       }
+      const rollback = cloneState(entry.committedState);
       try {
-        await cubeApi.profile.putEntityViewProfile(
+        await cubeApi.profile.putViewProfile(
           stateToWirePayload(typePath, entry.state),
         );
         entry.dirty = false;
+        entry.committedState = cloneState(entry.state);
       } catch (err) {
-        Message.error(formatApiError(err, '保存视图配置失败'));
+        entry.state = rollback;
+        entry.dirty = false;
+        Message.error(formatApiError(err, '保存视图配置失败，已恢复上次配置'));
       }
     },
   },

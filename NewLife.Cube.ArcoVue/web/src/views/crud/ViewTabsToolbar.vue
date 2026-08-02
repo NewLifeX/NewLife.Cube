@@ -53,7 +53,7 @@
 import { computed } from 'vue';
 import { IconMoreVertical } from '@arco-design/web-vue/es/icon';
 import type { FieldMeta } from '@/core/types/field';
-import type { NamedView, ViewKind } from '@/core/utils/entityViewProfile';
+import type { NamedView, ViewKind } from '@/core/utils/viewProfile';
 import {
   VIEW_KIND_LABEL,
   canCreateViewKind,
