@@ -36,7 +36,7 @@
     (function () {
         function initEasyMDE() {
             if (typeof EasyMDE === 'undefined') return;
-            var ta = document.getElementById('@editorId');
+            var ta = document.getElementById(@Json.Serialize(editorId));
             if (!ta || ta._easymde) return;
             ta._easymde = new EasyMDE({
                 element: ta,
@@ -49,10 +49,10 @@
                     if (!file.type.startsWith('image/')) { onError('只支持图片文件'); return; }
                     var fd = new FormData();
                     fd.append('file', file);
-                    var eid = '@entityId';
+                    var eid = @Json.Serialize(entityId);
                     if (eid) fd.append('id', eid);
                     var xhr = new XMLHttpRequest();
-                    xhr.open('POST', '@uploadUrl');
+                    xhr.open('POST', @Json.Serialize(uploadUrl));
                     xhr.onload = function() {
                         try {
                             var resp = JSON.parse(xhr.responseText);

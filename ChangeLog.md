@@ -1,5 +1,39 @@
 # ChangeLog
 
+## v6.13.2026.0802 (2026-08-02)
+
+### AI 数据洞察
+- **AI 洞察**：列表页新增 AI洞察 按钮，基于当前查询条件自动收集数据并调用大模型生成分析报告（数据概览/分布特征/异常值/趋势/建议），支持 SSE 流式输出和深度推理两档
+- **字段安全**：`[AIVisible]` 特性 + 敏感字段黑名单双层过滤，密码/手机号/Token/邮箱/IP 等敏感字段自动排除，未标记字段默认走黑名单
+- **跨端支持**：MVC（NewLife.CubeNC）与 Vue（NewLife.Cube.Vue）皮肤均已集成 AI 洞察按钮与弹窗/抽屉
+
+### 安全与修复
+- **Token 端点安全**：移除 `[HttpGet]`，仅保留 POST，杜绝密码/刷新令牌经 URL 泄露
+- **刷新令牌独立**：RefreshToken 与 AccessToken 内容完全独立（不同 Id + 更长有效期），防止访问令牌泄露即可长期重放
+- **验证码安全**：改用密码学安全随机数（RandomNumberGenerator）逐位生成验证码
+- **健壮性修复**：修复 Sso CreateToken 空引用、MailService 未知渠道空引用、ImportZip/ImportJson 异常处理、密钥解析越界等 14 项缺陷
+- **登录风控**：修复风控缓存 Key 冲突（用户名恰为 IP 字符串时），前缀区分 IP 与用户名
+
+### SSO 与认证
+- **userinfo 瘦身**：`/sso/userinfo` 默认不再返回全部 OAuth 连接数据，由 `App.Scopes` 字段规则 + `App.OAuths` 提供商白名单双层控制，响应体量大幅减小
+
+### 编辑器增强
+- **滚动条优化**：HTML 编辑器与 Markdown 编辑器增加最大高度与内部滚动，解决长内容编辑时页面整体下拉问题
+- **JS 注入修复**：编辑器 JS 上下文改用 JSON 序列化输出，杜绝 Query 参数注入
+
+### 新一代前端皮肤体系
+- **公共模块**：新增 `@cube/api-core`（统一 API 客户端、Token 管理、类型定义）和 `@cube/field-mapping`（字段元数据推断控件类型，20+ WidgetType）
+- **pnpm workspace**：所有前端皮肤共享 `packages/` 工作区，统一依赖管理
+- **8 套前端皮肤包**：NaiveUI / MUI / Shadcn / ArcoVue / Angular / Vuetify / Svelte / TDesign，均支持动态菜单、字段元数据驱动列表/表单、CRUD、批量删除、CSV 导入导出、OAuth 登录、深色模式
+- **NuGet 一键集成**：引用 NuGet 包即获完整前端，`app.UseXxx(env)` 或 IModule 自动注册
+- **CI/CD**：test/publish/publish-beta 三个 GitHub Actions 工作流已更新，全部皮肤自动构建打包发布
+
+### 工程与测试
+- **Swagger 修复**：修复编译失败与 OAuth 配置选取逻辑
+- **测试**：新增 AI 数据助手、验证码、Token 服务、邮件服务等单元测试
+
+---
+
 ## v6.12.2026.0708 (2026-07-08)
 
 ### 认证与安全
@@ -57,26 +91,6 @@
 
 ### Bug 修复
 - **若干修复**：修正导航条和用户信息显示问题，修复前端编译错误与文件上传/下载相关编码问题，改进数据库信息加载与异常处理
-
----
-
-## vNext
-
-### 新一代前端皮肤体系
-- **公共模块**：新增 `@cube/api-core`（统一 API 客户端、Token 管理、类型定义）和 `@cube/field-mapping`（字段元数据推断控件类型，20+ WidgetType）
-- **pnpm workspace**：所有前端皮肤共享 `packages/` 工作区，统一依赖管理
-- **8 套前端皮肤包**：
-  - `NewLife.Cube.NaiveUI` — Vue 3 + Naive UI（端口 5180）
-  - `NewLife.Cube.MUI` — React 19 + MUI 6 Material Design（端口 5181）
-  - `NewLife.Cube.Shadcn` — React 19 + Radix UI + Tailwind CSS 4（端口 5182）
-  - `NewLife.Cube.ArcoVue` — Vue 3 + Arco Design Vue / 字节跳动（端口 5183）
-  - `NewLife.Cube.Angular` — Angular 19 + NG-ZORRO / Ant Design（端口 5184）
-  - `NewLife.Cube.Vuetify` — Vue 3 + Vuetify 3 Material Design（端口 5185）
-  - `NewLife.Cube.Svelte` — SvelteKit 2 + Svelte 5 + Tailwind CSS 4（端口 5186）
-  - `NewLife.Cube.TDesign` — Vue 3 + TDesign / 腾讯（端口 5187）
-- **统一功能**：每套皮肤均支持动态菜单、字段元数据驱动列表/表单、CRUD、批量删除、CSV 导入导出、OAuth 登录、深色模式
-- **NuGet 一键集成**：引用 NuGet 包即获完整前端，`app.UseXxx(env)` 或 IModule 自动注册
-- **CI/CD**：更新 test/publish/publish-beta 三个 GitHub Actions 工作流，全部皮肤自动构建打包发布
 
 ---
 

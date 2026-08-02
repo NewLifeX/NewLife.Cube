@@ -7,7 +7,7 @@
     <Description>魔方Swagger接口文档扩展包，支持按区域(Area)自动分组生成API文档。提供标准化的接口描述、请求响应模型展示、在线调试功能，便于前后端对接和第三方集成。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 NewLife</Copyright>
-    <VersionPrefix>6.12</VersionPrefix>
+    <VersionPrefix>6.13</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
@@ -32,7 +32,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>集成第三方外部认证服务；新增 LOV 值集系统；新增审计日志页面与 AI 日志诊断；升级 IP 封禁策略支持子网封禁；前端 API 层统一与字段约束验证；新增实体树控制器与全局实体链接字典；优化 SSO 角色规则与 Token 滑动刷新</PackageReleaseNotes>
+    <PackageReleaseNotes>新增 AI 数据洞察，列表页一键 AI 分析，支持 SSE 流式与深度推理；安全加固：Token 端点仅 POST、刷新令牌独立防重放、密码学安全验证码；优化 SSO /sso/userinfo 响应体量，Scopes/OAuths 双层控制；修复 Swagger OAuth 配置与编译问题；新增 8 套新一代前端皮肤；升级 XCode、NewLife.MySql 等核心依赖</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -49,7 +49,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.9.2026.716-beta1411" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.10.2026.801" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)'=='net8.0'">

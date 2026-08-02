@@ -12,6 +12,14 @@
 
 #### v6.x（当前版本）
 
+**v6.13** - 2026年8月
+
+- ?? 新增：AI 数据洞察（SSE 流式 + 深度推理，MVC/Vue 双端）
+- ?? 新增：8 套新一代前端皮肤（NaiveUI/MUI/Shadcn/ArcoVue/Angular/Vuetify/Svelte/TDesign）
+- ?? 优化：`/sso/userinfo` 响应瘦身（Scopes/OAuths 双层控制）
+- ?? 安全：Token 端点仅 POST、刷新令牌独立、密码学安全验证码
+- ?? 修复：编辑器滚动条与 JS 注入、14 项健壮性缺陷
+
 **v6.0** - 2024年
 
 - ?? 新增：前后端分离架构支持
