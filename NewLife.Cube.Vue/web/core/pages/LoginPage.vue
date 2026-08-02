@@ -59,6 +59,7 @@
         <LoginForm
           v-if="showPasswordForm"
           :login-config="loginConfig ?? undefined"
+          :submitting="submitting"
           @submit="handleLogin"
         />
 
@@ -130,6 +131,8 @@ const baseUrl: string = config.request.baseUrl || '';
 // ── 响应式状态 ──────────────────────────────────────────────────────
 /** 配置加载中 */
 const loading = ref<boolean>(true);
+/** 表单提交中 */
+const submitting = ref<boolean>(false);
 /** 后端返回的登录配置 */
 const loginConfig = ref<LoginConfig | null>(null);
 /** 配置加载错误信息 */
@@ -224,6 +227,7 @@ function handleOAuth(name: string): void {
  * 客户端校验已前置到 LoginForm，校验通过才会 emit('submit')。
  */
 async function handleLogin(payload: { username: string; password: string }): Promise<void> {
+  submitting.value = true;
   try {
     const res = await loginByPassword(baseUrl, payload.username, payload.password);
 
@@ -242,6 +246,8 @@ async function handleLogin(payload: { username: string; password: string }): Pro
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : '网络错误，请稍后重试';
     ElMessage.error(message);
+  } finally {
+    submitting.value = false;
   }
 }
 
