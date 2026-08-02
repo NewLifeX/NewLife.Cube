@@ -3,7 +3,12 @@ import type { FieldMeta } from '@/core/types/field';
 import {
   bucketKanban,
   canCreateViewKind,
+  isTableLikeViewKind,
+  normalizeCardBodyColumns,
+  normalizeCardFieldOrientation,
+  normalizeCardLayout,
   normalizeMapping,
+  resolveBatchDeleteState,
   resolveViewPageSize,
   seedMapping,
 } from './viewMapping';
@@ -98,6 +103,163 @@ describe('normalizeMapping / seedMapping', () => {
 
   it('table has no mapping', () => {
     expect(normalizeMapping('table', { kind: 'card', titleField: 'Name' }, fields)).toBeUndefined();
+  });
+
+  it('card keeps valid layout and falls back to standard otherwise', () => {
+    expect(
+      normalizeMapping('card', { kind: 'card', titleField: 'Name', layout: 'large' }, fields),
+    ).toMatchObject({
+      kind: 'card',
+      layout: 'large',
+      bodyColumns: 2,
+      fieldOrientation: 'vertical',
+    });
+    expect(
+      normalizeMapping('card', { kind: 'card', titleField: 'Name', layout: 'row' }, fields),
+    ).toMatchObject({ kind: 'card', layout: 'row' });
+    expect(
+      normalizeMapping('card', { kind: 'card', titleField: 'Name' }, fields),
+    ).toMatchObject({ kind: 'card', layout: 'standard' });
+    expect(
+      normalizeMapping('card', { kind: 'card', titleField: 'Name', layout: 'big' }, fields),
+    ).toMatchObject({ kind: 'card', layout: 'standard' });
+    expect(
+      normalizeMapping('card', { kind: 'card', titleField: 'Name', layout: null }, fields),
+    ).toMatchObject({ kind: 'card', layout: 'standard' });
+    expect(
+      normalizeMapping(
+        'card',
+        {
+          kind: 'card',
+          titleField: 'Name',
+          layout: 'standard',
+          bodyColumns: 3,
+          fieldOrientation: 'horizontal',
+        },
+        fields,
+      ),
+    ).toMatchObject({ bodyColumns: 2, fieldOrientation: 'horizontal' });
+    expect(
+      normalizeMapping(
+        'card',
+        { kind: 'card', titleField: 'Name', layout: 'row', bodyColumns: 3 },
+        fields,
+      ),
+    ).toMatchObject({ bodyColumns: 3 });
+  });
+
+  it('seeds card mapping with standard layout', () => {
+    expect(seedMapping('card', fields)).toMatchObject({
+      kind: 'card',
+      titleField: 'Name',
+      layout: 'standard',
+      bodyColumns: 2,
+      fieldOrientation: 'vertical',
+    });
+  });
+});
+
+describe('isTableLikeViewKind', () => {
+  it('only table/tree are table-like', () => {
+    expect(isTableLikeViewKind('table')).toBe(true);
+    expect(isTableLikeViewKind('tree')).toBe(true);
+    expect(isTableLikeViewKind('card')).toBe(false);
+    expect(isTableLikeViewKind('kanban')).toBe(false);
+    expect(isTableLikeViewKind('calendar')).toBe(false);
+    expect(isTableLikeViewKind('gantt')).toBe(false);
+  });
+});
+
+describe('normalizeCardLayout', () => {
+  it('accepts only standard/large/row', () => {
+    expect(normalizeCardLayout('standard')).toBe('standard');
+    expect(normalizeCardLayout('large')).toBe('large');
+    expect(normalizeCardLayout('row')).toBe('row');
+    expect(normalizeCardLayout(undefined)).toBe('standard');
+    expect(normalizeCardLayout(null)).toBe('standard');
+    expect(normalizeCardLayout('')).toBe('standard');
+    expect(normalizeCardLayout('big')).toBe('standard');
+    expect(normalizeCardLayout(123)).toBe('standard');
+    expect(normalizeCardLayout({})).toBe('standard');
+  });
+});
+
+describe('normalizeCardBodyColumns', () => {
+  it('falls back illegal values to 2 and clamps 3 on standard/large', () => {
+    expect(normalizeCardBodyColumns(1, 'standard')).toBe(1);
+    expect(normalizeCardBodyColumns(2, 'standard')).toBe(2);
+    expect(normalizeCardBodyColumns(3, 'standard')).toBe(2);
+    expect(normalizeCardBodyColumns(3, 'large')).toBe(2);
+    expect(normalizeCardBodyColumns(3, 'row')).toBe(3);
+    expect(normalizeCardBodyColumns(undefined, 'row')).toBe(2);
+    expect(normalizeCardBodyColumns('3', 'row')).toBe(3);
+  });
+});
+
+describe('normalizeCardFieldOrientation', () => {
+  it('accepts horizontal otherwise vertical', () => {
+    expect(normalizeCardFieldOrientation('horizontal')).toBe('horizontal');
+    expect(normalizeCardFieldOrientation('vertical')).toBe('vertical');
+    expect(normalizeCardFieldOrientation(undefined)).toBe('vertical');
+    expect(normalizeCardFieldOrientation('side')).toBe('vertical');
+  });
+});
+
+describe('resolveBatchDeleteState', () => {
+  it('hidden outside table or without permission/allow', () => {
+    for (const kind of ['tree', 'card', 'kanban', 'calendar', 'gantt'] as const) {
+      expect(
+        resolveBatchDeleteState({
+          viewKind: kind,
+          canDelete: true,
+          allowDelete: true,
+          selectedCount: 3,
+        }),
+      ).toEqual({ visible: false, disabled: true });
+    }
+    expect(
+      resolveBatchDeleteState({
+        viewKind: 'table',
+        canDelete: false,
+        allowDelete: true,
+        selectedCount: 3,
+      }),
+    ).toEqual({ visible: false, disabled: true });
+    expect(
+      resolveBatchDeleteState({
+        viewKind: 'table',
+        canDelete: true,
+        allowDelete: false,
+        selectedCount: 3,
+      }),
+    ).toEqual({ visible: false, disabled: true });
+  });
+
+  it('visible but disabled without selection, enabled with selection', () => {
+    expect(
+      resolveBatchDeleteState({
+        viewKind: 'table',
+        canDelete: true,
+        allowDelete: true,
+        selectedCount: 0,
+      }),
+    ).toEqual({ visible: true, disabled: true });
+    expect(
+      resolveBatchDeleteState({
+        viewKind: 'table',
+        canDelete: true,
+        allowDelete: true,
+        selectedCount: 1,
+      }),
+    ).toEqual({ visible: true, disabled: false });
+    expect(
+      resolveBatchDeleteState({
+        viewKind: 'table',
+        canDelete: true,
+        allowDelete: true,
+        selectedCount: 5,
+      }),
+    ).toEqual({ visible: true, disabled: false });
   });
 });
 

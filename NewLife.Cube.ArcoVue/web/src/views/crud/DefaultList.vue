@@ -4,39 +4,6 @@
 
     <!-- 视图背景色覆盖：分布 + 搜索 + 表格（含视图 Tab） -->
     <div class="list-surface" :class="{ 'list-surface--chrome': hasChromeBg }" :style="listSurfaceStyle">
-      <div
-        v-if="(flags.canDelete && chrome.allowDelete) || flags.canExport || flags.canImport"
-        class="page-tools"
-      >
-        <a-space>
-          <a-button
-            v-if="flags.canDelete && chrome.allowDelete"
-            status="danger"
-            :disabled="!selectedKeys.length"
-            @click="handleBatchDelete"
-          >
-            批量删除
-          </a-button>
-        </a-space>
-        <a-space>
-          <a-dropdown v-if="flags.canExport" @select="handleExport">
-            <a-button>导出 <icon-down /></a-button>
-            <template #content>
-              <a-doption v-for="f in exportFormats" :key="f.key" :value="f.key">{{ f.label }}</a-doption>
-            </template>
-          </a-dropdown>
-          <a-upload
-            v-if="flags.canImport"
-            :custom-request="handleImport"
-            :show-file-list="false"
-          >
-            <template #upload-button>
-              <a-button>导入</a-button>
-            </template>
-          </a-upload>
-        </a-space>
-      </div>
-
       <div v-if="statData" class="list-panel list-panel--dist">
         <div class="list-dist">
           <div
@@ -73,7 +40,6 @@
           <a-form-item>
             <a-space>
               <a-button type="primary" html-type="submit">搜索</a-button>
-              <a-button @click="openChart">图表</a-button>
               <a-button @click="handleReset">重置</a-button>
             </a-space>
           </a-form-item>
@@ -99,23 +65,9 @@
         </div>
         <div class="list-topbar">
           <a-space>
-            <a-button
-              v-if="flags.canAdd && chrome.allowAdd"
-              type="primary"
-              @click="openAdd"
-            >
-              + {{ chrome.addButtonText || '添加记录' }}
-            </a-button>
-            <a-button v-if="chrome.customButton" @click="onCustomButton">自定义</a-button>
+            <a-button v-if="flags.canAdd" type="primary" @click="openAdd">+ 添加记录</a-button>
           </a-space>
           <a-space>
-            <a-button
-              v-if="!(showSearchPanel && searchFields.length)"
-              type="text"
-              @click="openChart"
-            >
-              图表
-            </a-button>
             <a-button
               v-if="chrome.showFilter"
               type="text"
@@ -123,8 +75,20 @@
             >
               筛选
             </a-button>
-            <a-button v-if="chrome.showGroup" type="text" @click="onToolbarGroup">分组</a-button>
-            <a-button v-if="chrome.showSort" type="text" @click="onToolbarSort">排序</a-button>
+            <a-button
+              v-if="isTableLikeViewKind(activeViewKind) && chrome.showGroup"
+              type="text"
+              @click="onToolbarGroup"
+            >
+              分组
+            </a-button>
+            <a-button
+              v-if="isTableLikeViewKind(activeViewKind) && chrome.showSort"
+              type="text"
+              @click="onToolbarSort"
+            >
+              排序
+            </a-button>
             <a-button
               v-if="chrome.showSearch"
               type="text"
@@ -132,6 +96,41 @@
             >
               搜索
             </a-button>
+            <a-dropdown v-if="advancedVisible" trigger="click">
+              <a-button>高级 <IconDown /></a-button>
+              <template #content>
+                <a-doption v-if="flags.canImport" class="advanced-upload-option">
+                  <a-upload
+                    :custom-request="handleImport"
+                    :show-file-list="false"
+                    class="advanced-upload"
+                  >
+                    <template #upload-button>
+                      <span class="advanced-menu-label">导入</span>
+                    </template>
+                  </a-upload>
+                </a-doption>
+                <a-dsubmenu v-if="flags.canExport" value="export">
+                  <template #default>导出</template>
+                  <template #content>
+                    <a-doption
+                      v-for="f in exportFormats"
+                      :key="f.key"
+                      @click="handleExport(f.key)"
+                    >
+                      {{ f.label }}
+                    </a-doption>
+                  </template>
+                </a-dsubmenu>
+                <a-doption
+                  v-if="batchDeleteState.visible"
+                  :disabled="batchDeleteState.disabled"
+                  @click="confirmBatchDelete"
+                >
+                  批量删除
+                </a-doption>
+              </template>
+            </a-dropdown>
           </a-space>
         </div>
 
@@ -150,12 +149,13 @@
               :columns="tableColumns"
               :row-key="pkField"
               :selected-keys="selectedKeys"
-              :show-checkbox="flags.canDelete && chrome.allowDelete"
+              :show-checkbox="activeViewKind === 'table'"
               :can-edit="flags.canEdit"
               :can-delete="flags.canDelete && chrome.allowDelete"
               :can-view-detail="chrome.allowViewDetail"
               :show-expand="chrome.expandRow"
               :enable-sort="chrome.showSort"
+              :sort-state="activeSort"
               :hierarchy="activeViewKind === 'tree' && treeDataDetected"
               :height="resolvedTableHeight"
               @row-dbl-click="openDetail"
@@ -169,10 +169,14 @@
 
           <CardList
             v-else-if="activeViewKind === 'card'"
+            :key="cardListKey"
             :records="tableData"
             :columns="activeColumns"
             :fields="listFields"
             :mapping="activeCardMapping"
+            :layout="activeCardMapping?.layout ?? 'standard'"
+            :body-columns="activeCardMapping?.bodyColumns ?? 2"
+            :field-orientation="activeCardMapping?.fieldOrientation ?? 'vertical'"
             :row-key="pkField"
             :height="resolvedTableHeight"
             :can-view-detail="chrome.allowViewDetail"
@@ -236,7 +240,7 @@
           />
         </div>
         <div v-else-if="isLargePageView" class="list-pager list-pager--hint">
-          <a-typography-text type="secondary" style="font-size: 12px">
+          <a-typography-text type="secondary" class="list-pager-hint">
             当前视图一次最多加载 {{ effectivePageSize }} 条（共 {{ pagination.total }} 条）
           </a-typography-text>
         </div>
@@ -329,7 +333,9 @@ import {
 } from '@/core/utils/viewProfile';
 import {
   isLargePageViewKind,
+  isTableLikeViewKind,
   parseViewKind,
+  resolveBatchDeleteState,
   resolveViewPageSize,
   type CalendarMapping,
   type CardMapping,
@@ -452,6 +458,12 @@ const activeMapping = computed(() =>
 const activeCardMapping = computed(
   () => (activeMapping.value?.kind === 'card' ? activeMapping.value : null) as CardMapping | null,
 );
+
+/** 列数/排版变更时强制重挂卡片列表，确保样式立即生效 */
+const cardListKey = computed(() => {
+  const m = activeCardMapping.value;
+  return `card:${m?.layout ?? 'standard'}:${m?.bodyColumns ?? 2}:${m?.fieldOrientation ?? 'vertical'}`;
+});
 const activeKanbanMapping = computed(
   () =>
     (activeMapping.value?.kind === 'kanban' ? activeMapping.value : null) as KanbanMapping | null,
@@ -493,6 +505,21 @@ const treeRows = computed(() => {
 
 const chrome = computed(() =>
   resolveChrome(viewState.value ? getActiveView(viewState.value) : null),
+);
+
+/** 批量删除门禁：表格视图 + 删除权限 + 允许删除 + 至少选中一行 */
+const batchDeleteState = computed(() =>
+  resolveBatchDeleteState({
+    viewKind: activeViewKind.value,
+    canDelete: flags.value.canDelete,
+    allowDelete: chrome.value.allowDelete,
+    selectedCount: selectedKeys.value.length,
+  }),
+);
+
+/** 「高级」菜单仅在有可见操作时出现 */
+const advancedVisible = computed(
+  () => flags.value.canImport || flags.value.canExport || batchDeleteState.value.visible,
 );
 
 const filterPanelOpen = ref(false);
@@ -699,6 +726,8 @@ function applyWorkspacePrefs() {
 }
 
 async function loadData() {
+  // 翻页/重载后以当前页选择为准，避免旧主键残留导致批量删除误用
+  selectedKeys.value = [];
   loading.value = true;
   try {
     const sort = buildSortPayload(activeSort.value);
@@ -759,6 +788,7 @@ function onConfigRename(name: string) {
 function onSwitchView(id: string) {
   evpStore.switchView(typePath.value, id);
   syncLocalState();
+  selectedKeys.value = [];
   pagination.current = 1;
   loadData();
 }
@@ -766,6 +796,7 @@ function onSwitchView(id: string) {
 function onCreateView(kind: ViewKind, name: string) {
   evpStore.addView(typePath.value, name, kind);
   syncLocalState();
+  selectedKeys.value = [];
   pagination.current = 1;
   loadData();
 }
@@ -778,12 +809,14 @@ function onRenameView(id: string, name: string) {
 function onRemoveView(id: string) {
   evpStore.remove(typePath.value, id);
   syncLocalState();
+  selectedKeys.value = [];
   loadData();
 }
 
 function onDuplicateView(id: string) {
   evpStore.duplicate(typePath.value, id);
   syncLocalState();
+  selectedKeys.value = [];
   loadData();
 }
 
@@ -801,6 +834,7 @@ async function onResetViews() {
     defaultView: preferredDefaultView.value,
   });
   syncLocalState();
+  selectedKeys.value = [];
   pagination.current = 1;
   loadData();
 }
@@ -887,10 +921,6 @@ function onToolbarSort() {
   Message.info('请点击表头进行排序');
 }
 
-function onCustomButton() {
-  Message.info('自定义按钮：可按业务扩展');
-}
-
 async function handleSave() {
   saving.value = true;
   try {
@@ -919,7 +949,19 @@ async function handleDelete(row: Record<string, unknown>) {
   loadData();
 }
 
+function confirmBatchDelete() {
+  if (!batchDeleteState.value.visible || batchDeleteState.value.disabled) return;
+  if (!selectedKeys.value.length) return;
+  const count = selectedKeys.value.length;
+  Modal.confirm({
+    title: '确认批量删除？',
+    content: `将删除已选中的 ${count} 条记录，删除后不可恢复`,
+    onOk: () => handleBatchDelete(),
+  });
+}
+
 async function handleBatchDelete() {
+  if (!batchDeleteState.value.visible || batchDeleteState.value.disabled) return;
   if (!selectedKeys.value.length) return;
   await cubeApi.page.deleteSelect(typePath.value, selectedKeys.value);
   Message.success('批量删除成功');
@@ -962,6 +1004,8 @@ async function openChart() {
   }
   chartVisible.value = true;
 }
+// 图表入口按钮已暂时移除（OSC-0007），图表区由后续独立 OSC 完善；保留 openChart 供其重新接线
+void openChart;
 
 function handleSearch() {
   pagination.current = 1;
@@ -1011,12 +1055,6 @@ onMounted(bootstrap);
   max-width: 100%;
   box-sizing: border-box;
 }
-.page-tools {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-}
 .list-surface {
   display: flex;
   flex-direction: column;
@@ -1055,13 +1093,14 @@ onMounted(bootstrap);
   border: 1px solid var(--color-border-2);
 }
 .list-dist-label {
-  font-size: 12px;
+  font-size: var(--cube-font-size-meta);
+  font-weight: var(--cube-font-weight-normal);
   color: var(--color-text-3);
   margin-bottom: 4px;
 }
 .list-dist-value {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: var(--cube-font-size-title);
+  font-weight: var(--cube-font-weight-medium);
   color: var(--color-text-1);
 }
 .list-view-tabs {
@@ -1077,9 +1116,26 @@ onMounted(bootstrap);
   gap: 8px;
   margin-bottom: 12px;
 }
+.advanced-upload {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+}
+.advanced-menu-label {
+  font-size: var(--cube-font-size-body);
+  color: var(--color-text-1);
+}
+.advanced-upload-option :deep(.arco-upload) {
+  display: block;
+  width: 100%;
+}
 .list-pager {
   margin-top: 12px;
   display: flex;
   justify-content: flex-end;
+}
+.list-pager-hint {
+  font-size: var(--cube-font-size-meta);
+  font-weight: var(--cube-font-weight-normal);
 }
 </style>

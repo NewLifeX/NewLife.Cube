@@ -14,6 +14,20 @@ describe('resolveCrudFlags', () => {
     expect(f.canDelete).toBe(false);
   });
 
+  it('maps export/import to backend Detail/Insert when 16/32 absent', () => {
+    const f = resolveCrudFlags(
+      {
+        [String(Auth.VIEW)]: '查看',
+        [String(Auth.ADD)]: '新增',
+        [String(Auth.EDIT)]: '编辑',
+      },
+      null,
+    );
+    expect(f.canExport).toBe(true);
+    expect(f.canImport).toBe(true);
+    expect(f.canDelete).toBe(false);
+  });
+
   it('honors pageSetting isReadOnly / enableAdd', () => {
     const perms = {
       [String(Auth.ADD)]: '新增',
@@ -21,6 +35,7 @@ describe('resolveCrudFlags', () => {
       [String(Auth.DELETE)]: '删除',
     };
     expect(resolveCrudFlags(perms, { isReadOnly: true }).canAdd).toBe(false);
+    expect(resolveCrudFlags(perms, { isReadOnly: true }).canImport).toBe(false);
     expect(resolveCrudFlags(perms, { enableAdd: false }).canAdd).toBe(false);
     expect(resolveCrudFlags(perms, { enableAdd: true }).canAdd).toBe(true);
   });

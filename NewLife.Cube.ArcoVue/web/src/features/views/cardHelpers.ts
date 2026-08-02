@@ -4,15 +4,43 @@ import { resolveCellLabel } from '@/core/utils/fieldBadge';
 import { getValueByKey } from '@/core/utils/url';
 import type { CardMapping, KanbanMapping } from '@/core/utils/viewMapping';
 
+export type CardBodyField = {
+  key: string;
+  label: string;
+  value: string;
+  /** 长文本/多行文本独占整行 */
+  fullRow: boolean;
+};
+
+/** 多行/富文本控件判定集；命中即整行，与文本长度无关 */
+const FULL_ROW_ITEM_TYPES = new Set(['textarea', 'multiline', 'richtext', 'html']);
+
+/** 备注/说明/评论等语义字段名或显示名，无视列数一律整行 */
+const FULL_ROW_NAME_RE =
+  /^(remark|remarks|comment|comments|description|desc|note|notes|memo)$|备注|说明|评论|描述|附注/i;
+
+/** 长字段判定：语义长文本字段、多行/富文本控件，或格式化值不少于 33 个 Unicode 码位 */
+export function isCardBodyFieldFullRow(
+  field: FieldMeta | undefined,
+  value: string,
+): boolean {
+  const itemType = (field?.itemType || '').toLowerCase();
+  if (FULL_ROW_ITEM_TYPES.has(itemType)) return true;
+  const name = field?.name || '';
+  const label = field?.displayName || '';
+  if (FULL_ROW_NAME_RE.test(name) || FULL_ROW_NAME_RE.test(label)) return true;
+  return Array.from(value).length >= 33;
+}
+
 export function buildCardBodyFields(
   record: Record<string, unknown>,
   columns: ColumnPref[],
   fields: FieldMeta[],
   exclude: string[],
   format?: (field: FieldMeta, record: Record<string, unknown>) => string,
-): { key: string; label: string; value: string }[] {
+): CardBodyField[] {
   const skip = new Set(exclude.filter(Boolean));
-  const out: { key: string; label: string; value: string }[] = [];
+  const out: CardBodyField[] = [];
   for (const col of columns) {
     if (!col.visible || skip.has(col.key)) continue;
     const field = fields.find((f) => f.name === col.key);
@@ -26,7 +54,7 @@ export function buildCardBodyFields(
       const raw = getValueByKey(record, col.key);
       value = raw == null || raw === '' ? '-' : String(raw);
     }
-    out.push({ key: col.key, label, value });
+    out.push({ key: col.key, label, value, fullRow: isCardBodyFieldFullRow(field, value) });
     if (out.length >= 8) break;
   }
   return out;

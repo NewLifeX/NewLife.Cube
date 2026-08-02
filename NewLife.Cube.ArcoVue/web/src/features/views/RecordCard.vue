@@ -1,11 +1,25 @@
 <template>
-  <div class="record-card" @dblclick="$emit('detail', record)">
+  <div
+    class="record-card"
+    :class="[
+      layoutClass,
+      orientationClass,
+      { 'record-card--no-image': !imageUrl },
+    ]"
+    :style="cardCssVars"
+    @dblclick="$emit('detail', record)"
+  >
     <div class="record-card-title">{{ title }}</div>
     <div v-if="imageUrl" class="record-card-image">
       <img :src="imageUrl" alt="" />
     </div>
     <div class="record-card-fields">
-      <div v-for="item in bodyFields" :key="item.key" class="record-card-field">
+      <div
+        v-for="item in bodyFields"
+        :key="item.key"
+        class="record-card-field"
+        :class="{ 'record-card-field--full': item.fullRow }"
+      >
         <span class="label">{{ item.label }}</span>
         <span class="value">{{ item.value }}</span>
       </div>
@@ -26,15 +40,48 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  record: Record<string, unknown>;
-  title: string;
-  imageUrl?: string;
-  bodyFields: { key: string; label: string; value: string }[];
-  canViewDetail: boolean;
-  canEdit: boolean;
-  canDelete: boolean;
-}>();
+import { computed } from 'vue';
+import type {
+  CardBodyColumns,
+  CardFieldOrientation,
+  CardLayout,
+} from '@/core/utils/viewMapping';
+import type { CardBodyField } from './cardHelpers';
+
+const props = withDefaults(
+  defineProps<{
+    record: Record<string, unknown>;
+    title: string;
+    imageUrl?: string;
+    bodyFields: CardBodyField[];
+    canViewDetail: boolean;
+    canEdit: boolean;
+    canDelete: boolean;
+    layout?: CardLayout;
+    bodyColumns?: CardBodyColumns;
+    fieldOrientation?: CardFieldOrientation;
+  }>(),
+  {
+    layout: 'standard',
+    bodyColumns: 2,
+    fieldOrientation: 'vertical',
+  },
+);
+
+const cols = computed(() => {
+  const n = props.bodyColumns;
+  return n === 1 || n === 3 ? n : 2;
+});
+
+const layoutClass = computed(() => `record-card--${props.layout || 'standard'}`);
+const orientationClass = computed(
+  () => `record-card--orient-${props.fieldOrientation === 'horizontal' ? 'horizontal' : 'vertical'}`,
+);
+
+/** 用 CSS 变量驱动列数，避免动态 class 未命中时样式不生效 */
+const cardCssVars = computed(() => ({
+  '--record-card-cols': String(cols.value),
+}));
 
 defineEmits<{
   detail: [row: Record<string, unknown>];
@@ -49,20 +96,25 @@ defineEmits<{
   border-radius: 8px;
   padding: 12px;
   background: var(--color-bg-2);
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 8px;
   min-width: 0;
+  grid-template-areas:
+    'title'
+    'image'
+    'fields'
+    'ops';
 }
 .record-card-title {
-  font-size: 14px;
-  font-weight: 500;
+  grid-area: title;
+  font-size: var(--cube-font-size-body);
+  font-weight: var(--cube-font-weight-medium);
   color: var(--color-text-1);
   word-break: break-all;
 }
 .record-card-image {
+  grid-area: image;
   width: 100%;
-  max-height: 140px;
   overflow: hidden;
   border-radius: 6px;
   background: var(--color-fill-1);
@@ -73,19 +125,44 @@ defineEmits<{
   object-fit: cover;
   display: block;
 }
+.record-card--large .record-card-image img {
+  height: 180px;
+}
 .record-card-fields {
+  grid-area: fields;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(var(--record-card-cols, 2), minmax(0, 1fr));
   gap: 6px 12px;
-  font-size: 12px;
-  flex: 1;
+  font-size: var(--cube-font-size-meta);
   align-content: start;
+  min-width: 0;
+}
+.record-card-field--full {
+  grid-column: 1 / -1;
 }
 .record-card-field {
   min-width: 0;
   display: flex;
-  flex-direction: column;
   gap: 2px;
+}
+.record-card--orient-vertical .record-card-field {
+  flex-direction: column;
+}
+.record-card--orient-horizontal .record-card-field {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
+}
+.record-card--orient-horizontal .record-card-field .label {
+  flex-shrink: 0;
+  min-width: 3em;
+}
+.record-card--orient-horizontal .record-card-field .label::after {
+  content: '：';
+}
+.record-card--orient-horizontal .record-card-field .value {
+  flex: 1;
+  min-width: 0;
 }
 .record-card-field .label {
   color: var(--color-text-3);
@@ -95,9 +172,38 @@ defineEmits<{
   word-break: break-all;
 }
 .record-card-ops {
+  grid-area: ops;
   display: flex;
   gap: 6px;
   margin-top: auto;
   padding-top: 4px;
+}
+
+.record-card--row:not(.record-card--no-image) {
+  grid-template-columns: 180px 1fr;
+  grid-template-areas:
+    'image title'
+    'image fields'
+    'image ops';
+  align-items: start;
+}
+.record-card--row .record-card-image img {
+  width: 180px;
+  height: 180px;
+}
+
+@media (max-width: 639px) {
+  .record-card--row:not(.record-card--no-image) {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'title'
+      'image'
+      'fields'
+      'ops';
+  }
+  .record-card--row .record-card-image img {
+    width: 100%;
+    height: 140px;
+  }
 }
 </style>

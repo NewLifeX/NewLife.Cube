@@ -43,6 +43,8 @@ const props = withDefaults(
     canViewDetail?: boolean;
     showExpand?: boolean;
     enableSort?: boolean;
+    /** 服务端排序状态；用于表头升/降序图标（不走 VTable 内部排序） */
+    sortState?: { field: string; desc: boolean } | null;
     /** 树视图：启用 VTable hierarchy（行含 children） */
     hierarchy?: boolean;
   }>(),
@@ -55,6 +57,7 @@ const props = withDefaults(
     canViewDetail: true,
     showExpand: false,
     enableSort: true,
+    sortState: null,
     hierarchy: false,
   },
 );
@@ -138,14 +141,21 @@ function buildColumns(): any[] {
       width: 40,
       dragHeader: false,
       sort: false,
+      showSort: false,
       fieldFormat: () => '›',
     });
   }
   if (props.showCheckbox) {
+    // VTable 要求 cellType/headerType，误用 type 会把勾选图标渲染成截断文本（如 "f..."）
     cols.push({
-      type: 'checkbox',
       field: '__checked',
+      title: '',
       width: 48,
+      headerType: 'checkbox',
+      cellType: 'checkbox',
+      dragHeader: false,
+      sort: false,
+      showSort: false,
     });
   }
 
@@ -155,7 +165,9 @@ function buildColumns(): any[] {
         field: c.pref.key,
         title: c.title,
         width: c.pref.width || 80,
-        sort: props.enableSort,
+        // 服务端排序：只显示图标，禁用 VTable 内部排序（见 sort_click）
+        sort: false,
+        showSort: props.enableSort,
         dragHeader: true,
         cellType: 'button',
         disable: true,
@@ -201,7 +213,8 @@ function buildColumns(): any[] {
       field: c.pref.key,
       title: c.title,
       width: c.pref.width || 140,
-      sort: props.enableSort,
+      sort: false,
+      showSort: props.enableSort,
       dragHeader: true,
       disableColumnResize: false,
       fieldFormat: (rec: Record<string, unknown>) => {
@@ -219,6 +232,7 @@ function buildColumns(): any[] {
       width: opsColumnWidth(),
       dragHeader: false,
       sort: false,
+      showSort: false,
       disableColumnResize: true,
       fieldFormat: () => opsLabel(),
       style: {
@@ -250,6 +264,10 @@ function buildOption(): any {
     const firstData = cols.find((c: { field?: string }) => c.field && c.field !== '__check' && c.field !== '__ops' && c.field !== '__expand');
     if (firstData) (firstData as { tree?: boolean }).tree = true;
   }
+  const sortState = props.sortState?.field
+    ? { field: props.sortState.field, order: props.sortState.desc ? 'desc' : 'asc' }
+    : null;
+
   return {
     records: withChecks(props.records),
     columns: cols,
@@ -261,6 +279,8 @@ function buildOption(): any {
     // 禁用单元格选中框；勾选列负责多选。Hover 用整行高亮
     select: { highlightMode: 'row', disableSelect: true, disableHeaderSelect: true },
     tooltip: { isShowOverflowTextTooltip: true },
+    // 服务端排序：图标状态由 sortState 驱动，数据不走 VTable 内部排序
+    sortState,
     ...(props.hierarchy
       ? // VTable 的 hierarchyExpandLevel>1 时根节点才默认展开；设为 2 使树视图默认显示第一层子节点
         { hierarchyExpandLevel: 2, hierarchyIndent: 16 }
@@ -376,13 +396,24 @@ function bindEvents() {
   }) as any);
 
   table.on('checkbox_state_change', (() => {
+    // VTable 勾选状态在 stateManager，不一定回写 records.__checked
     const records = (table!.records || []) as Record<string, unknown>[];
+    let states: unknown;
+    try {
+      states = table!.getCheckboxState('__checked');
+    } catch {
+      states = undefined;
+    }
     const out: (string | number)[] = [];
-    for (const rec of records) {
-      if (rec.__checked) {
-        const id = rowId(rec);
-        if (id) out.push(/^\d+$/.test(id) ? Number(id) : id);
-      }
+    for (let i = 0; i < records.length; i++) {
+      const rec = records[i];
+      const checked =
+        Array.isArray(states) && i < states.length
+          ? !!states[i]
+          : !!(rec as { __checked?: unknown })?.__checked;
+      if (!checked) continue;
+      const id = rowId(rec);
+      if (id) out.push(/^\d+$/.test(id) ? Number(id) : id);
     }
     emit('selectionChange', out);
   }) as any);
@@ -401,8 +432,13 @@ function bindEvents() {
       if (!props.enableSort) return false;
       const field = fieldKey(args.field);
       if (!field || field === '__ops' || field === '__checked' || field === '__expand') return false;
-      if (args.order === 'normal') emit('sortChange', null);
-      else emit('sortChange', { field, desc: args.order === 'desc' });
+      // return false 会跳过 VTable 内部状态推进，必须按业务 sortState 自行循环：无→升→降→无
+      const cur = props.sortState;
+      let next: { field: string; desc: boolean } | null;
+      if (!cur || cur.field !== field) next = { field, desc: false };
+      else if (!cur.desc) next = { field, desc: true };
+      else next = null;
+      emit('sortChange', next);
       return false;
     }) as any,
   );
@@ -452,20 +488,46 @@ onBeforeUnmount(() => {
   table = null;
 });
 
+// 注意：不要把 selectedKeys 放进全量 refresh 依赖——勾选后回写会 updateOption，冲掉 VTable 勾选态
 watch(
   () => [
     props.records,
     props.columns,
     props.showCheckbox,
-    props.selectedKeys,
     props.canEdit,
     props.canDelete,
     props.canViewDetail,
     props.showExpand,
     props.enableSort,
+    props.sortState?.field,
+    props.sortState?.desc,
+    props.hierarchy,
   ],
   () => refreshOption(),
   { deep: true },
+);
+
+/** 父级清空选择时同步勾选 UI（不整表 refresh，避免打断勾选交互） */
+watch(
+  () => props.selectedKeys,
+  (keys) => {
+    if (!table || applying) return;
+    if ((keys?.length ?? 0) > 0) return;
+    applying = true;
+    try {
+      table.setRecords?.(withChecks(props.records), { sortState: null });
+      if (props.sortState?.field) {
+        table.updateSortState?.(
+          { field: props.sortState.field, order: props.sortState.desc ? 'desc' : 'asc' },
+          false,
+        );
+      }
+    } catch {
+      refreshOption();
+    } finally {
+      applying = false;
+    }
+  },
 );
 </script>
 

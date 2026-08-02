@@ -32,7 +32,7 @@
           <div class="cfg-label">数据范围</div>
           <div class="range-row">
             <span>全部记录</span>
-            <a-typography-text type="secondary" style="font-size: 12px">
+            <a-typography-text type="secondary" class="cfg-hint">
               （筛选条件使用列表上方搜索区）
             </a-typography-text>
           </div>
@@ -41,7 +41,7 @@
         <section class="cfg-block">
           <div class="cfg-label row-between">
             <span>字段配置</span>
-            <a-typography-text type="secondary" style="font-size: 12px">
+            <a-typography-text type="secondary" class="cfg-hint">
               {{ visibleCount }} / {{ localColumns.length }} 可见
             </a-typography-text>
           </div>
@@ -239,10 +239,10 @@
           </div>
         </section>
 
-        <!-- 顶部栏 -->
+        <!-- 工具栏 -->
         <section class="cfg-block">
           <button type="button" class="collapse-head" @click="topBarOpen = !topBarOpen">
-            <span>顶部栏</span>
+            <span>工具栏</span>
             <icon-down :class="{ open: topBarOpen }" />
           </button>
           <div v-show="topBarOpen" class="collapse-body">
@@ -250,29 +250,17 @@
               <span>筛选</span>
               <a-switch v-model="chrome.showFilter" @change="emitChrome" />
             </div>
-            <div class="switch-row">
+            <div v-if="isTableLikeViewKind(props.viewKind)" class="switch-row">
               <span>分组</span>
               <a-switch v-model="chrome.showGroup" @change="emitChrome" />
             </div>
-            <div class="switch-row">
+            <div v-if="isTableLikeViewKind(props.viewKind)" class="switch-row">
               <span>排序</span>
               <a-switch v-model="chrome.showSort" @change="emitChrome" />
             </div>
             <div class="switch-row">
               <span>搜索</span>
               <a-switch v-model="chrome.showSearch" @change="emitChrome" />
-            </div>
-            <div class="switch-row">
-              <span>允许添加记录</span>
-              <a-switch v-model="chrome.allowAdd" @change="emitChrome" />
-            </div>
-            <div v-if="chrome.allowAdd" class="nested-field">
-              <div class="cfg-label">按钮文字</div>
-              <a-input v-model="chrome.addButtonText" placeholder="添加记录" @change="emitChrome" />
-            </div>
-            <div class="switch-row">
-              <span>自定义按钮</span>
-              <a-switch v-model="chrome.customButton" @change="emitChrome" />
             </div>
           </div>
         </section>
@@ -351,6 +339,56 @@
                     {{ fieldLabel(f) }}
                   </a-option>
                 </a-select>
+              </div>
+              <div class="nested-field">
+                <div class="cfg-label">卡片布局</div>
+                <a-radio-group
+                  v-model="localMapping.layout"
+                  type="button"
+                  size="small"
+                  @change="onCardLayoutChange"
+                >
+                  <a-radio v-for="l in cardLayouts" :key="l.value" :value="l.value">
+                    {{ l.label }}
+                  </a-radio>
+                </a-radio-group>
+              </div>
+              <div class="nested-field">
+                <div class="cfg-label">内容排版列数</div>
+                <div class="seg-group seg-group-3">
+                  <button
+                    v-for="c in cardBodyColumnOptions"
+                    :key="c.value"
+                    type="button"
+                    class="seg-item"
+                    :class="{ active: localMapping.bodyColumns === c.value }"
+                    :disabled="c.value === 3 && localMapping.layout !== 'row'"
+                    @click="setBodyColumns(c.value)"
+                  >
+                    <span>{{ c.label }}</span>
+                  </button>
+                </div>
+              </div>
+              <div class="nested-field">
+                <div class="cfg-label">内容排版</div>
+                <div class="seg-group">
+                  <button
+                    type="button"
+                    class="seg-item"
+                    :class="{ active: localMapping.fieldOrientation === 'horizontal' }"
+                    @click="setFieldOrientation('horizontal')"
+                  >
+                    <span>横向</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="seg-item"
+                    :class="{ active: localMapping.fieldOrientation === 'vertical' }"
+                    @click="setFieldOrientation('vertical')"
+                  >
+                    <span>竖向</span>
+                  </button>
+                </div>
               </div>
             </template>
 
@@ -577,8 +615,13 @@ import {
   dateFieldCandidates,
   groupFieldCandidates,
   imageFieldCandidates,
+  isTableLikeViewKind,
+  normalizeCardBodyColumns,
   normalizeMapping,
   titleFieldCandidates,
+  type CardBodyColumns,
+  type CardFieldOrientation,
+  type CardLayout,
 } from '@/core/utils/viewMapping';
 
 type Swatch = { key: string; label: string; color?: string; none?: boolean };
@@ -664,7 +707,21 @@ const localMapping = reactive({
   startField: '',
   endField: undefined as string | undefined,
   colorField: undefined as string | undefined,
+  layout: 'standard' as CardLayout,
+  bodyColumns: 2 as CardBodyColumns,
+  fieldOrientation: 'vertical' as CardFieldOrientation,
 });
+
+const cardLayouts: { value: CardLayout; label: string }[] = [
+  { value: 'standard', label: '标准' },
+  { value: 'large', label: '偏大' },
+  { value: 'row', label: '整行' },
+];
+const cardBodyColumnOptions: { value: CardBodyColumns; label: string }[] = [
+  { value: 1, label: '一列' },
+  { value: 2, label: '两列' },
+  { value: 3, label: '三列' },
+];
 let dragFrom = -1;
 
 const drawerTitle = computed(() => `${VIEW_KIND_LABEL[props.viewKind]}视图`);
@@ -754,6 +811,9 @@ function syncMappingFromProps() {
   localMapping.startField = '';
   localMapping.endField = undefined;
   localMapping.colorField = undefined;
+  localMapping.layout = 'standard';
+  localMapping.bodyColumns = 2;
+  localMapping.fieldOrientation = 'vertical';
 
   const kind = props.viewKind;
   if (kind === 'table' || kind === 'tree') return;
@@ -764,6 +824,9 @@ function syncMappingFromProps() {
   if (m.kind === 'card') {
     localMapping.titleField = m.titleField;
     localMapping.imageField = m.imageField;
+    localMapping.layout = m.layout;
+    localMapping.bodyColumns = m.bodyColumns;
+    localMapping.fieldOrientation = m.fieldOrientation;
   } else if (m.kind === 'kanban') {
     localMapping.groupField = m.groupField;
     localMapping.titleField = m.titleField;
@@ -897,10 +960,16 @@ function emitMapping() {
   }
   if (kind === 'card') {
     if (!localMapping.titleField) return;
+    const layout = localMapping.layout;
+    const bodyColumns = normalizeCardBodyColumns(localMapping.bodyColumns, layout);
+    localMapping.bodyColumns = bodyColumns;
     emit('update:mapping', {
       kind: 'card',
       titleField: localMapping.titleField,
       imageField: localMapping.imageField || undefined,
+      layout,
+      bodyColumns,
+      fieldOrientation: localMapping.fieldOrientation === 'horizontal' ? 'horizontal' : 'vertical',
     });
     return;
   }
@@ -935,6 +1004,22 @@ function emitMapping() {
       colorField: localMapping.colorField || undefined,
     });
   }
+}
+
+function onCardLayoutChange() {
+  localMapping.bodyColumns = normalizeCardBodyColumns(localMapping.bodyColumns, localMapping.layout);
+  emitMapping();
+}
+
+function setBodyColumns(cols: CardBodyColumns) {
+  if (cols === 3 && localMapping.layout !== 'row') return;
+  localMapping.bodyColumns = cols;
+  emitMapping();
+}
+
+function setFieldOrientation(orient: CardFieldOrientation) {
+  localMapping.fieldOrientation = orient;
+  emitMapping();
 }
 
 function emitName() {
@@ -980,7 +1065,8 @@ function setHeight(mode: HeightMode) {
 
 <style scoped>
 .drawer-title {
-  font-weight: 600;
+  font-size: var(--cube-font-size-title);
+  font-weight: var(--cube-font-weight-medium);
 }
 .cfg-block {
   margin-bottom: 22px;
@@ -990,9 +1076,13 @@ function setHeight(mode: HeightMode) {
   align-items: center;
   gap: 6px;
   margin-bottom: 8px;
-  font-size: 13px;
+  font-size: var(--cube-font-size-body);
   color: var(--color-text-1);
-  font-weight: 500;
+  font-weight: var(--cube-font-weight-medium);
+}
+.cfg-hint {
+  font-size: var(--cube-font-size-meta);
+  font-weight: var(--cube-font-weight-normal);
 }
 .row-between {
   justify-content: space-between;
@@ -1064,7 +1154,8 @@ function setHeight(mode: HeightMode) {
   border: 1px solid var(--color-border);
   border-radius: 4px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--cube-font-size-body);
+  font-weight: var(--cube-font-weight-normal);
   background: var(--color-bg-2);
   color: var(--color-text-1);
   text-align: left;
@@ -1112,7 +1203,8 @@ function setHeight(mode: HeightMode) {
 }
 .color-section-title {
   margin: 14px 0 8px;
-  font-size: 12px;
+  font-size: var(--cube-font-size-meta);
+  font-weight: var(--cube-font-weight-normal);
   color: var(--color-text-3);
 }
 .swatch-grid {
@@ -1144,7 +1236,7 @@ function setHeight(mode: HeightMode) {
 }
 .swatch-check {
   color: #fff;
-  font-size: 12px;
+  font-size: var(--cube-font-size-meta);
   filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.45));
 }
 .slider-row {
@@ -1152,7 +1244,8 @@ function setHeight(mode: HeightMode) {
   justify-content: space-between;
   margin-top: 14px;
   margin-bottom: 4px;
-  font-size: 13px;
+  font-size: var(--cube-font-size-body);
+  font-weight: var(--cube-font-weight-normal);
   color: var(--color-text-2);
 }
 .slider-val {
@@ -1179,17 +1272,22 @@ function setHeight(mode: HeightMode) {
   border-radius: 6px;
   background: var(--color-bg-2);
   color: var(--color-text-2);
-  font-size: 12px;
+  font-size: var(--cube-font-size-meta);
+  font-weight: var(--cube-font-weight-normal);
   cursor: pointer;
   line-height: 1.2;
 }
-.seg-item:hover {
+.seg-item:hover:not(:disabled) {
   border-color: rgb(var(--primary-6));
 }
 .seg-item.active {
   border-color: rgb(var(--primary-6));
   background: var(--color-primary-light-1);
   color: rgb(var(--primary-6));
+}
+.seg-item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 .seg-ico {
   width: 28px;
@@ -1268,8 +1366,8 @@ function setHeight(mode: HeightMode) {
   border: none;
   background: transparent;
   cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--cube-font-size-body);
+  font-weight: var(--cube-font-weight-medium);
   color: var(--color-text-1);
 }
 .collapse-head .arco-icon {
@@ -1288,8 +1386,8 @@ function setHeight(mode: HeightMode) {
   justify-content: space-between;
   min-height: 40px;
   padding: 6px 0;
-  border-bottom: 1px solid var(--color-border);
-  font-size: 13px;
+  font-size: var(--cube-font-size-body);
+  font-weight: var(--cube-font-weight-normal);
   color: var(--color-text-2);
   gap: 8px;
 }
@@ -1300,6 +1398,5 @@ function setHeight(mode: HeightMode) {
 }
 .nested-field {
   padding: 8px 0 12px 12px;
-  border-bottom: 1px solid var(--color-border);
 }
 </style>

@@ -15,6 +15,7 @@
 
 - 触及前后端代码时：执行阶段必须跑单元测试；验收阶段须**本 OSC 新增单测全过**且**构建无错误**。不得以「无业务逻辑 / 仅配置」跳过跑测（纯文档/纯 openspec 文案除外）。
 - 变更目录命名：`OSC-00xx <简洁中文描述>`（进行中与 archive 相同）；禁止仅编号或英文 slug。
+- 实施型 OpenSpec 要面向**小参数模型可准确执行**：design 必须逐文件写清组件/函数/状态及冻结不动的符号；条件分支给完整矩阵；JSON/DTO 给 schema、默认/非法值归一化与旧数据策略；UI 给 props/emits、阈值、断点、空态和范围外行为。verify 的 AC 必须覆盖正常、无权限、边界/非法输入、旧数据兼容，并给出命令和可判定结果；不得用「按需」「适配」「优化」等隐含决策替代细节。
 
 ## OSC-0001 — 2026-07-31
 
@@ -65,6 +66,14 @@
 - `EntityViewProfile` 已统一收敛为 `ViewProfile`：后端实体 / 控制器路由、`@cube/api-core` 类型与方法名、ArcoVue store/工具模块、README/对接文档必须同步改名，避免旧路径残留导致接口与类型双轨并存。
 - `UserProfile` / `ViewProfile` 保存接口前端需兼容 `PUT → POST` 回退；部分宿主、代理或历史环境会放行读取但拒绝 `PUT`，若不兜底会出现「加载成功、保存 405」的伪联调通过。
 - 列表页默认态要消费 `workspace.defaultView` 与 `workspace.pageSize`：当用户尚未保存个人 ViewProfile 时，`seedDefaultView` 负责首视图回落，分页条数也要与工作台偏好一致，避免壳偏好和 CRUD 默认值各走各的。
+
+## OSC-0007 — 2026-08-02
+
+- 「高级」菜单权限勿直接用前端自拟 `Auth.EXPORT/IMPORT` 位：后端菜单常见只有 Detail/Insert/Update/Delete；导入/导出应对齐 `VIEW`/`ADD`（或真实菜单权）做兼容，否则菜单项整片消失。
+- VTable 勾选列必须用 `cellType`/`headerType: 'checkbox'`（误用 `type` 会渲染成截断文本）；不要 `watch(selectedKeys)` 后全量 `updateOption`，会冲掉勾选态。
+- 服务端排序接管时：`sort: false` + `showSort: true`，`sort_click` 里按业务状态自行 none→asc→desc；若 `return false` 且不自管，表头图标会卡死。
+- 卡片配置类样式变更要用 **CSS 变量 + remount key**（mapping 为真源），避免 scoped/异步组件下「配置已存、视觉不变」。
+- 冻结范围外能力（如列表/树拖拽排序）即使可做，也应另立 OSC；本号试做后整段撤销，避免验收范围蠕变。
 
 ## 待办 — 字体规范（Harness）
 

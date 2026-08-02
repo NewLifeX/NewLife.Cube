@@ -26,8 +26,10 @@ export function resolveCrudFlags(
     canAdd: allow(Auth.ADD) && setting?.enableAdd !== false && !readOnly,
     canEdit: allow(Auth.EDIT) && !readOnly,
     canDelete: allow(Auth.DELETE) && !readOnly,
-    canExport: allow(Auth.EXPORT),
-    canImport: allow(Auth.IMPORT),
+    // 后端 ExportFile 挂 PermissionFlags.Detail(1)，ImportFile 挂 Insert(2)；
+    // Auth.EXPORT/IMPORT(16/32) 为历史前端约定，菜单权限中通常不存在，作兼容回退。
+    canExport: allow(Auth.EXPORT) || allow(Auth.VIEW),
+    canImport: (allow(Auth.IMPORT) || allow(Auth.ADD)) && !readOnly,
   };
 }
 

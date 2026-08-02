@@ -312,7 +312,7 @@ interface UserProfileDto {
 
 /** 命名视图内类型映射（存于 ViewsJson，不写 ganttJson/cardJson） */
 type ViewMapping =
-  | { kind: 'card'; titleField: string; imageField?: string }
+  | { kind: 'card'; titleField: string; imageField?: string; layout: 'standard' | 'large' | 'row' }
   | { kind: 'kanban'; groupField: string; titleField: string; imageField?: string }
   | { kind: 'gantt'; startField: string; endField: string; titleField: string; colorField?: string }
   | { kind: 'calendar'; startField: string; endField?: string; titleField: string; colorField?: string }
@@ -721,11 +721,11 @@ Draft → Accepted → Implementing → Validating → Done
 - **出口（OSC-0006）：** ViewTabsToolbar + Card/Kanban/Calendar/Gantt 舞台；映射只写 `viewsJson`。
 - **OSC-0006 增补（已并入）：** 树形组装工具 `treeBuilder`（ParentID/id、Path/ParentPath 组装）+ 修复 VTable `hierarchyExpandLevel`（≥2 根节点才默认展开）。
 
-### M4a — 右抽屉表单 + Log 历史 → **OSC-0007** 🟠 核心已随 OSC-0003 达成
+### M4a — Log 历史增强 → 待排期（原误挂 OSC-0007）
 
-- 编辑/历史 Tab 已随 OSC-0003 实现（右抽屉）；历史为朴素 timeline，无分页/无字段 diff——OSC-0007 仅需补历史增强，可缩小范围或并入收口。
+- 编辑/历史 Tab 已随 OSC-0003 实现（右抽屉）；历史为朴素 timeline，无分页/无字段 diff——增强可另立变更或并入收口。**OSC-0007** 已转为「视图工具栏与卡片布局」，见 §13。
 
-### M4b — 评论 Tab → **OSC-0008**（依赖 **OSC-0002** + OSC-0007）
+### M4b — 评论 Tab → **OSC-0008**（依赖 **OSC-0002** + OSC-0003）
 
 - 消费 EntityComment。后端 OSC-0002 已就绪（`GET/POST/DELETE /Cube/EntityComment`，同表回复），**纯前端接线**：api-core 增 `createCommentApi` + `RecordDrawer` 评论 Tab 真实实现。
 
@@ -763,7 +763,7 @@ Draft → Accepted → Implementing → Validating → Done
 | 4 | 列 frozen 仅 left/false，无 right | P1 | 补充右冻结 |
 | 5 | 角色/租户级配置层未实现（仅系统默认+用户两级，§5.1） | P1 | 分层扩展 |
 | 6 | 组件测试缺失（仅纯逻辑单测） | P1 | `@vue/test-utils` + happy-dom 覆盖关键组件 |
-| 7 | 占位/死代码：分组/排序/自定义按钮 `Message.info`、`NamedViewsToolbar.vue` 无引用 | P2 | 清理或实现 |
+| 7 | 占位/死代码：table/tree 分组/排序入口 `Message.info`（OSC-0007 已移除自定义按钮占位）、`NamedViewsToolbar.vue` 无引用 | P2 | 清理或实现 |
 | 8 | `ListTable` 树列标记排除条件写 `__check`（实际复选框列为 `__checked`），showCheckbox+hierarchy 同时开启时 tree:true 可能标错列 | P2 | 修正排除条件 |
 | 9 | i18n 未实现（矩阵目标 ✅ 但实际无文案外置） | P1 | 文案外置 |
 | 10 | MFA UI / FlowGram / E2E 冒烟 | P1/P2 | 后续 OSC（0009/0010） |
@@ -814,7 +814,7 @@ Draft → Accepted → Implementing → Validating → Done
 | OSC-0004 ✅ | 布局/主题引擎 + **消费** UserProfile | 不含 VTable | OSC-0002 |
 | OSC-0005 ✅ | VTable **表格** + 列布局 + **消费** ViewProfile | 不含 tree/card/gantt；可替换 0003 默认 a-table Section | OSC-0002、建议 OSC-0003 |
 | OSC-0006 ✅ | 卡片 / 甘特等视图增强；**增补已并入**：树形组装 `treeBuilder`（ParentID/id、Path/ParentPath）+ VTable `hierarchyExpandLevel` 修复 | 不含抽屉 | OSC-0005 |
-| OSC-0007 🟠 | 记录抽屉 **增强**（历史筛选 UX 等；右侧表单/历史已随 0003 达成，可缩小范围） | 不含评论 | OSC-0003 |
+| OSC-0007 ✅ | 视图工具栏与卡片布局：图表入口按钮暂移除（图表区留待后续 OSC）、「高级」菜单（导入/导出/批量删除 + 表格全选门禁）、工具栏精简（去添加记录/自定义按钮）、卡片三布局/正文列数与排版、字体 Token | 不含图表区完善、抽屉评论；列表/树拖拽排序未纳入本号 | OSC-0003/0005/0006 |
 | OSC-0008 | 抽屉评论 Tab + **消费** EntityComment（后端 OSC-0002 已就绪，纯前端接线） | 仅评论链路 | OSC-0002 ✅、OSC-0003 |
 | OSC-0009 | FlowGram 单一样例 | 不扩流程平台 | — |
 | OSC-0010 | 收口：矩阵/功能清单/冒烟/harness + 清理 §10.4 占位/死代码 | 无新功能 | 建议前述 P0 已完成 |

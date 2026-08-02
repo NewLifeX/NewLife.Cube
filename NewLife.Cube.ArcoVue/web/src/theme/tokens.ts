@@ -40,6 +40,12 @@ export function buildThemeTokens(
       '--border-radius-medium': `${theme.radius}px`,
       '--cube-font-scale': String(scale),
       '--cube-font-size': `${14 * scale}px`,
+      /* 语义字体 Token（OSC-0007）：组件优先消费，避免散落临时字号/字重 */
+      '--cube-font-size-body': `${14 * scale}px`,
+      '--cube-font-size-meta': `${12 * scale}px`,
+      '--cube-font-size-title': `${16 * scale}px`,
+      '--cube-font-weight-normal': '400',
+      '--cube-font-weight-medium': '500',
       /* Arco 组件多为 px 字号，靠 zoom 整体缩放才生效 */
       zoom: scale === 1 ? 'normal' : String(scale),
       'font-size': `${14 * scale}px`,

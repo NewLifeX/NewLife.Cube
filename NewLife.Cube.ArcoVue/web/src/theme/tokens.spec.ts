@@ -44,4 +44,23 @@ describe('buildThemeTokens', () => {
     expect(t.cssVars.zoom).toBe('1.1');
     expect(t.cssVars['--cube-font-size']).toBe(`${14 * 1.1}px`);
   });
+
+  it('exposes semantic font tokens scaled by fontScale', () => {
+    const base = buildThemeTokens(SYSTEM_DEFAULT_PROFILE.theme, false);
+    expect(base.cssVars['--cube-font-size-body']).toBe('14px');
+    expect(base.cssVars['--cube-font-size-meta']).toBe('12px');
+    expect(base.cssVars['--cube-font-size-title']).toBe('16px');
+    expect(base.cssVars['--cube-font-weight-normal']).toBe('400');
+    expect(base.cssVars['--cube-font-weight-medium']).toBe('500');
+
+    const scaled = buildThemeTokens(
+      { ...SYSTEM_DEFAULT_PROFILE.theme, fontScale: 1.25 },
+      false,
+    );
+    expect(scaled.cssVars['--cube-font-size-body']).toBe(`${14 * 1.25}px`);
+    expect(scaled.cssVars['--cube-font-size-meta']).toBe(`${12 * 1.25}px`);
+    expect(scaled.cssVars['--cube-font-size-title']).toBe(`${16 * 1.25}px`);
+    expect(scaled.cssVars['--cube-font-weight-normal']).toBe('400');
+    expect(scaled.cssVars['--cube-font-weight-medium']).toBe('500');
+  });
 });

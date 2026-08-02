@@ -9,7 +9,22 @@ import { getValueByKey } from '@/core/utils/url';
 
 export type ViewKind = 'table' | 'tree' | 'card' | 'kanban' | 'calendar' | 'gantt';
 
-export type CardMapping = { kind: 'card'; titleField: string; imageField?: string };
+/** 卡片布局：标准 / 偏大 / 整行（OSC-0007） */
+export type CardLayout = 'standard' | 'large' | 'row';
+/** 卡片正文字段栅格列数 */
+export type CardBodyColumns = 1 | 2 | 3;
+/** 字段标签/内容排版：竖向上下，横向同行 */
+export type CardFieldOrientation = 'vertical' | 'horizontal';
+
+export type CardMapping = {
+  kind: 'card';
+  titleField: string;
+  imageField?: string;
+  layout: CardLayout;
+  /** 正文排版列数；标准/偏大时 3 会回退为 2 */
+  bodyColumns: CardBodyColumns;
+  fieldOrientation: CardFieldOrientation;
+};
 export type KanbanMapping = {
   kind: 'kanban';
   groupField: string;
@@ -38,6 +53,45 @@ export const LARGE_VIEW_PAGE_SIZE_MAX = 500;
 
 export function isLargePageViewKind(kind: ViewKind): boolean {
   return kind === 'kanban' || kind === 'calendar' || kind === 'gantt';
+}
+
+/** 是否表格类视图：分组/排序/批量删除等工具仅在 table/tree 可用（OSC-0007） */
+export function isTableLikeViewKind(kind: ViewKind): boolean {
+  return kind === 'table' || kind === 'tree';
+}
+
+/** 仅接受合法卡片布局；缺失或非法一律回落标准 */
+export function normalizeCardLayout(raw: unknown): CardLayout {
+  return raw === 'large' || raw === 'row' ? raw : 'standard';
+}
+
+/** 正文列数；非法回落 2；标准/偏大不允许 3 */
+export function normalizeCardBodyColumns(raw: unknown, layout: CardLayout): CardBodyColumns {
+  const n = raw === 1 || raw === '1' ? 1 : raw === 3 || raw === '3' ? 3 : raw === 2 || raw === '2' ? 2 : 2;
+  if (n === 3 && layout !== 'row') return 2;
+  return n;
+}
+
+export function normalizeCardFieldOrientation(raw: unknown): CardFieldOrientation {
+  return raw === 'horizontal' ? 'horizontal' : 'vertical';
+}
+
+export type BatchDeleteState = { visible: boolean; disabled: boolean };
+
+/**
+ * 批量删除菜单门禁：仅表格视图 + 最终删除权限 + 视图允许删除 + 至少选中一行。
+ * visible=false 时 disabled 恒为 true，防止调用方遗漏二次保护。
+ */
+export function resolveBatchDeleteState(args: {
+  viewKind: ViewKind;
+  canDelete: boolean;
+  allowDelete: boolean;
+  selectedCount: number;
+}): BatchDeleteState {
+  if (args.viewKind !== 'table' || !args.canDelete || !args.allowDelete) {
+    return { visible: false, disabled: true };
+  }
+  return { visible: true, disabled: args.selectedCount <= 0 };
 }
 
 export function resolveViewPageSize(
@@ -173,7 +227,14 @@ export function seedMapping(kind: ViewKind, fields: FieldMeta[]): ViewMapping | 
 
   if (kind === 'card') {
     if (!title) return undefined;
-    return { kind: 'card', titleField: title, imageField: images[0] };
+    return {
+      kind: 'card',
+      titleField: title,
+      imageField: images[0],
+      layout: 'standard',
+      bodyColumns: 2,
+      fieldOrientation: 'vertical',
+    };
   }
   if (kind === 'kanban') {
     if (!groups[0] || !title) return undefined;
@@ -227,10 +288,14 @@ export function normalizeMapping(
       titleFieldCandidates(fields)[0]?.name;
     if (!titleField) return undefined;
     const imageRaw = typeof o.imageField === 'string' ? o.imageField : '';
+    const layout = normalizeCardLayout(o.layout);
     return {
       kind: 'card',
       titleField,
       imageField: imageRaw && names.has(imageRaw) ? imageRaw : imageFieldCandidates(fields)[0]?.name,
+      layout,
+      bodyColumns: normalizeCardBodyColumns(o.bodyColumns, layout),
+      fieldOrientation: normalizeCardFieldOrientation(o.fieldOrientation),
     };
   }
 

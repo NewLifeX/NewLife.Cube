@@ -35,7 +35,7 @@ export interface ViewChrome {
   bgBlur?: number;
   widthMode?: WidthMode;
   heightMode?: HeightMode;
-  /** 顶部栏 */
+  /** 工具栏 */
   showFilter?: boolean;
   showGroup?: boolean;
   showSort?: boolean;
