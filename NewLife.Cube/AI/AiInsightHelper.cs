@@ -232,7 +232,7 @@ public static class AiInsightHelper
         if (!ctx.Description.IsNullOrEmpty())
             sb.AppendLine("- 说明：" + ctx.Description);
         sb.AppendLine("- 总记录数：" + ctx.TotalCount.ToString("N0"));
-        sb.AppendLine("- 分析样本数：" + ctx.ShownCount.ToString("N0"));
+        sb.AppendLine("- 分析范围：当前列表页数据 " + ctx.ShownCount.ToString("N0") + " 行");
         sb.AppendLine();
 
         // 字段列表

@@ -432,7 +432,7 @@ public partial class ReadOnlyEntityController<TEntity>
     /// <summary>AI 数据洞察。根据当前查询条件收集数据并生成分析报告</summary>
     /// <param name="think">是否启用深度推理</param>
     /// <param name="stream">是否流式输出（SSE）</param>
-    /// <param name="maxRows">最大数据行数</param>
+    /// <param name="maxRows">最大数据行数。保留兼容，当前分析范围为列表页当前页</param>
     /// <returns></returns>
     [DisplayName("AI 数据洞察")]
     [EntityAuthorize(PermissionFlags.Detail)]
@@ -449,17 +449,17 @@ public partial class ReadOnlyEntityController<TEntity>
         var pager = GetCachePager();
         if (pager == null)
         {
+            // 无 _query 时按当前请求参数构造，默认第一页
             pager = new Pager(WebHelper.Params)
             {
-                RetrieveTotalCount = true,
                 PageIndex = 1,
-                PageSize = 1,
+                PageSize = 20,
             };
         }
 
-        // 与列表页一致的查询逻辑：数据权限 + 搜索条件 + 排序
-        pager.PageIndex = 1;
-        pager.PageSize = maxRows;
+        // 只分析当前页（WYSIWYG）。保留 _query 携带的当前分页与排序，不重置到第一页
+        // 分析范围 = 用户当前看到的列表页数据；_query 缺省 PageSize 时按列表页默认 20
+        if (pager.PageSize <= 0) pager.PageSize = 20;
         pager.RetrieveTotalCount = false;
 
         var data = SearchData(pager).ToList();

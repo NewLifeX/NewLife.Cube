@@ -60,6 +60,17 @@
                     throw new Error('HTTP ' + response.status);
                 }
 
+                // 非 SSE 响应（如 AISwitch 未开启时后端返回 JSON 错误），解析错误信息并回调
+                var contentType = response.headers.get('Content-Type') || '';
+                if (contentType.indexOf('application/json') >= 0) {
+                    return response.json().then(function (data) {
+                        var msg = (data && (data.data || data.message)) ? (data.data || data.message) : 'AI 服务返回异常';
+                        if (handlers.onError) handlers.onError({ message: msg }, 'fetch');
+                    }).catch(function () {
+                        if (handlers.onError) handlers.onError({ message: 'AI 服务响应解析失败' }, 'fetch');
+                    });
+                }
+
                 var reader = response.body.getReader();
                 var decoder = new TextDecoder();
                 var buffer = '';
