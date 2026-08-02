@@ -34,7 +34,7 @@ export type {
   AuthCategory,
   MfaVerifyResult,
   UserProfileModel,
-  EntityViewProfileModel,
+  ViewProfileModel,
 } from './types';
 export { FieldKind, Auth, ApiError } from './types';
 

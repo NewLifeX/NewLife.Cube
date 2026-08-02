@@ -416,10 +416,10 @@ export interface UserProfileModel {
 }
 
 /**
- * 实体视图配置（EntityViewProfile）线缆模型。
+ * 实体视图配置（ViewProfile）线缆模型。
  * columns/views 等以 JSON 字符串列存储。
  */
-export interface EntityViewProfileModel {
+export interface ViewProfileModel {
   id?: number;
   userId?: number;
   typePath?: string;

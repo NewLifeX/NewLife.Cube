@@ -1,4 +1,4 @@
-import type { AxiosRequestConfig } from 'axios';
+import { isAxiosError, type AxiosRequestConfig } from 'axios';
 import type {
   ApiResponse,
   AuthCategory,
@@ -18,10 +18,21 @@ import type {
   RegisterModel,
   OAuthPendingInfo,
   UserProfileModel,
-  EntityViewProfileModel,
+  ViewProfileModel,
 } from './types';
 
 type RequestFn = <T>(config: AxiosRequestConfig) => Promise<ApiResponse<T>>;
+
+async function requestWithPostFallback<T>(request: RequestFn, config: AxiosRequestConfig) {
+  try {
+    return await request<T>(config);
+  } catch (error) {
+    if ((config.method === 'put' || config.method === 'PUT') && isAxiosError(error) && error.response?.status === 405) {
+      return await request<T>({ ...config, method: 'post' });
+    }
+    throw error;
+  }
+}
 
 /**
  * 用户认证相关 API
@@ -248,24 +259,24 @@ export function createProfileApi(request: RequestFn) {
 
     /** 保存当前用户 UserProfile（upsert；仅非 null 的 Json 字段会更新） */
     putUserProfile: (data: Partial<UserProfileModel>) =>
-      request<UserProfileModel>({ url: '/Cube/UserProfile', method: 'put', data }),
+      requestWithPostFallback<UserProfileModel>(request, { url: '/Cube/UserProfile', method: 'put', data }),
 
     /** 获取当前用户指定实体的视图配置；无记录时 data 可能为 null */
-    getEntityViewProfile: (typePath: string) =>
-      request<EntityViewProfileModel | null>({
-        url: '/Cube/EntityViewProfile',
+    getViewProfile: (typePath: string) =>
+      request<ViewProfileModel | null>({
+        url: '/Cube/ViewProfile',
         method: 'get',
         params: { typePath },
       }),
 
     /** 保存实体视图配置（upsert） */
-    putEntityViewProfile: (data: Partial<EntityViewProfileModel> & { typePath: string }) =>
-      request<EntityViewProfileModel>({ url: '/Cube/EntityViewProfile', method: 'put', data }),
+    putViewProfile: (data: Partial<ViewProfileModel> & { typePath: string }) =>
+      requestWithPostFallback<ViewProfileModel>(request, { url: '/Cube/ViewProfile', method: 'put', data }),
 
     /** 删除实体视图配置（恢复默认） */
-    deleteEntityViewProfile: (typePath: string) =>
+    deleteViewProfile: (typePath: string) =>
       request<unknown>({
-        url: '/Cube/EntityViewProfile',
+        url: '/Cube/ViewProfile',
         method: 'delete',
         params: { typePath },
       }),

@@ -107,7 +107,7 @@
     <Compile Include="..\NewLife.Cube\Entity\Models\LovSearchFieldModel.cs" Link="Entity\Models\LovSearchFieldModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\LovTableColumnModel.cs" Link="Entity\Models\LovTableColumnModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\UserProfileModel.cs" Link="Entity\Models\UserProfileModel.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\Models\EntityViewProfileModel.cs" Link="Entity\Models\EntityViewProfileModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\ViewProfileModel.cs" Link="Entity\Models\ViewProfileModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\EntityCommentModel.cs" Link="Entity\Models\EntityCommentModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth日志.Biz.cs" Link="Entity\OAuth日志.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth日志.cs" Link="Entity\OAuth日志.cs" />
@@ -175,8 +175,8 @@
     <Compile Include="..\NewLife.Cube\Entity\值集表格列.Biz.cs" Link="Entity\值集表格列.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\用户呈现配置.cs" Link="Entity\用户呈现配置.cs" />
     <Compile Include="..\NewLife.Cube\Entity\用户呈现配置.Biz.cs" Link="Entity\用户呈现配置.Biz.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\实体视图配置.cs" Link="Entity\实体视图配置.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\实体视图配置.Biz.cs" Link="Entity\实体视图配置.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\视图配置.cs" Link="Entity\视图配置.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\视图配置.Biz.cs" Link="Entity\视图配置.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\实体评论.cs" Link="Entity\实体评论.cs" />
     <Compile Include="..\NewLife.Cube\Entity\实体评论.Biz.cs" Link="Entity\实体评论.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Web\AttachmentProvider.cs" Link="Web\AttachmentProvider.cs" />

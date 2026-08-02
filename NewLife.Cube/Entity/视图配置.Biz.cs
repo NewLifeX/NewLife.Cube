@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -26,13 +26,13 @@ using XCode.Shards;
 
 namespace NewLife.Cube.Entity;
 
-public partial class EntityViewProfile : Entity<EntityViewProfile>
+public partial class ViewProfile : Entity<ViewProfile>
 {
     #region 对象操作
     // 控制最大缓存数量，Find/FindAll查询方法在表行数小于该值时走实体缓存
     private static Int32 MaxCacheCount = 1000;
 
-    static EntityViewProfile()
+    static ViewProfile()
     {
         // 累加字段，生成 Update xx Set Count=Count+1234 Where xxx
         //var df = Meta.Factory.AdditionalFields;
@@ -89,9 +89,9 @@ public partial class EntityViewProfile : Entity<EntityViewProfile>
     //    // InitData一般用于当数据表没有数据时添加一些默认数据，该实体类的任何第一次数据库操作都会触发该方法，默认异步调用
     //    if (Meta.Session.Count > 0) return;
 
-    //    if (XTrace.Debug) XTrace.WriteLine("开始初始化EntityViewProfile[实体视图配置]数据……");
+    //    if (XTrace.Debug) XTrace.WriteLine("开始初始化ViewProfile[实体视图配置]数据……");
 
-    //    var entity = new EntityViewProfile();
+    //    var entity = new ViewProfile();
     //    entity.UserId = 0;
     //    entity.TypePath = "abc";
     //    entity.View = "abc";
@@ -102,7 +102,7 @@ public partial class EntityViewProfile : Entity<EntityViewProfile>
     //    entity.Version = 0;
     //    entity.Insert();
 
-    //    if (XTrace.Debug) XTrace.WriteLine("完成初始化EntityViewProfile[实体视图配置]数据！");
+    //    if (XTrace.Debug) XTrace.WriteLine("完成初始化ViewProfile[实体视图配置]数据！");
     //}
 
     ///// <summary>已重载。基类先调用Valid(true)验证数据，然后在事务保护内调用OnInsert</summary>
@@ -125,8 +125,8 @@ public partial class EntityViewProfile : Entity<EntityViewProfile>
 
     #region 高级查询
 
-    // Select Count(Id) as Id,Category From EntityViewProfile Where CreateTime>'2020-01-24 00:00:00' Group By Category Order By Id Desc limit 20
-    //static readonly FieldCache<EntityViewProfile> _CategoryCache = new(nameof(Category))
+    // Select Count(Id) as Id,Category From ViewProfile Where CreateTime>'2020-01-24 00:00:00' Group By Category Order By Id Desc limit 20
+    //static readonly FieldCache<ViewProfile> _CategoryCache = new(nameof(Category))
     //{
     //Where = _.CreateTime > DateTime.Today.AddDays(-30) & Expression.Empty
     //};
@@ -138,22 +138,22 @@ public partial class EntityViewProfile : Entity<EntityViewProfile>
 
     #region 业务操作
     /// <summary>转为模型</summary>
-    public EntityViewProfileModel ToModel()
+    public ViewProfileModel ToModel()
     {
-        var model = new EntityViewProfileModel();
+        var model = new ViewProfileModel();
         model.Copy(this);
 
         return model;
     }
 
     /// <summary>为指定用户与实体路径 upsert 视图配置</summary>
-    public static EntityViewProfile UpsertForUser(Int32 userId, String typePath, EntityViewProfileModel model)
+    public static ViewProfile UpsertForUser(Int32 userId, String typePath, ViewProfileModel model)
     {
         if (userId <= 0) throw new ArgumentOutOfRangeException(nameof(userId));
         if (typePath.IsNullOrEmpty()) throw new ArgumentNullException(nameof(typePath));
 
         var entity = FindByUserIdAndTypePath(userId, typePath)
-            ?? new EntityViewProfile { UserId = userId, TypePath = typePath };
+            ?? new ViewProfile { UserId = userId, TypePath = typePath };
         if (model != null)
         {
             if (model.View != null) entity.View = model.View;

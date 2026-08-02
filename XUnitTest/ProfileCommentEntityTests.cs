@@ -5,7 +5,7 @@ using Xunit;
 
 namespace XUnitTest;
 
-/// <summary>OSC-0002：UserProfile / EntityViewProfile / EntityComment 实体与业务方法</summary>
+/// <summary>OSC-0002：UserProfile / ViewProfile / EntityComment 实体与业务方法</summary>
 public class ProfileCommentEntityTests
 {
     public ProfileCommentEntityTests()
@@ -37,43 +37,43 @@ public class ProfileCommentEntityTests
         Assert.Null(UserProfile.FindByUserId(uid + 99));
     }
 
-    [Fact(DisplayName = "EntityViewProfile：按 typePath 隔离，Delete 后找不到")]
-    public void EntityViewProfile_TypePath_IsolationAndDelete()
+    [Fact(DisplayName = "ViewProfile：按 typePath 隔离，Delete 后找不到")]
+    public void ViewProfile_TypePath_IsolationAndDelete()
     {
         var uid = (Environment.TickCount & 0x0FFF_FFFF) | 0x2000_0000;
         var pathA = "Admin/User";
         var pathB = "Admin/Role";
 
-        EntityViewProfile.UpsertForUser(uid, pathA, new EntityViewProfileModel
+        ViewProfile.UpsertForUser(uid, pathA, new ViewProfileModel
         {
             TypePath = pathA,
             View = "table",
             ColumnsJson = """[{"key":"Name","visible":true}]""",
             Version = 1,
         });
-        EntityViewProfile.UpsertForUser(uid, pathB, new EntityViewProfileModel
+        ViewProfile.UpsertForUser(uid, pathB, new ViewProfileModel
         {
             TypePath = pathB,
             View = "tree",
             Version = 1,
         });
 
-        Assert.Equal("table", EntityViewProfile.FindByUserIdAndTypePath(uid, pathA)?.View);
-        Assert.Equal("tree", EntityViewProfile.FindByUserIdAndTypePath(uid, pathB)?.View);
+        Assert.Equal("table", ViewProfile.FindByUserIdAndTypePath(uid, pathA)?.View);
+        Assert.Equal("tree", ViewProfile.FindByUserIdAndTypePath(uid, pathB)?.View);
 
-        Assert.True(EntityViewProfile.DeleteForUser(uid, pathA));
-        Assert.Null(EntityViewProfile.FindByUserIdAndTypePath(uid, pathA));
-        Assert.NotNull(EntityViewProfile.FindByUserIdAndTypePath(uid, pathB));
+        Assert.True(ViewProfile.DeleteForUser(uid, pathA));
+        Assert.Null(ViewProfile.FindByUserIdAndTypePath(uid, pathA));
+        Assert.NotNull(ViewProfile.FindByUserIdAndTypePath(uid, pathB));
     }
 
-    [Fact(DisplayName = "EntityViewProfile：ViewsJson/ActiveViewId upsert 持久化")]
-    public void EntityViewProfile_NamedViews_Upsert()
+    [Fact(DisplayName = "ViewProfile：ViewsJson/ActiveViewId upsert 持久化")]
+    public void ViewProfile_NamedViews_Upsert()
     {
         var uid = (Environment.TickCount & 0x0FFF_FFFF) | 0x2100_0000;
         var path = "Admin/Menu";
         var views = """[{"id":"default","name":"列表","view":"table","columns":[{"key":"Name","visible":true}]}]""";
 
-        EntityViewProfile.UpsertForUser(uid, path, new EntityViewProfileModel
+        ViewProfile.UpsertForUser(uid, path, new ViewProfileModel
         {
             TypePath = path,
             View = "table",
@@ -83,7 +83,7 @@ public class ProfileCommentEntityTests
             Version = 1,
         });
 
-        var saved = EntityViewProfile.FindByUserIdAndTypePath(uid, path);
+        var saved = ViewProfile.FindByUserIdAndTypePath(uid, path);
         Assert.NotNull(saved);
         Assert.Equal("default", saved.ActiveViewId);
         Assert.Contains("列表", saved.ViewsJson);
@@ -130,7 +130,7 @@ public class ProfileCommentEntityTests
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => UserProfile.UpsertForUser(0, new UserProfileModel()));
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            EntityViewProfile.UpsertForUser(0, "Admin/User", new EntityViewProfileModel { TypePath = "Admin/User" }));
+            ViewProfile.UpsertForUser(0, "Admin/User", new ViewProfileModel { TypePath = "Admin/User" }));
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             EntityComment.AddComment(0, "x", "Admin/User", 1, "c"));
     }

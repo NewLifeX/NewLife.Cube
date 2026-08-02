@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -659,21 +659,26 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
         return Json(0, null, entity.ToModel());
     }
 
+    /// <summary>保存当前用户呈现配置（兼容部分环境仅允许 POST）</summary>
+    [HttpPost]
+    [ActionName(nameof(UserProfile))]
+    public ActionResult SaveUserProfile([FromBody] UserProfileModel model) => UserProfile(model);
+
     /// <summary>获取当前用户指定实体路径的视图配置</summary>
     [HttpGet]
-    public ActionResult EntityViewProfile(String typePath)
+    public ActionResult ViewProfile(String typePath)
     {
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");
         if (typePath.IsNullOrEmpty()) return Json(400, "typePath 不能为空");
 
-        var entity = global::NewLife.Cube.Entity.EntityViewProfile.FindByUserIdAndTypePath(user.ID, typePath);
+        var entity = global::NewLife.Cube.Entity.ViewProfile.FindByUserIdAndTypePath(user.ID, typePath);
         return Json(0, null, entity?.ToModel());
     }
 
     /// <summary>保存当前用户实体视图配置（upsert）</summary>
     [HttpPut]
-    public ActionResult EntityViewProfile([FromBody] EntityViewProfileModel model)
+    public ActionResult ViewProfile([FromBody] ViewProfileModel model)
     {
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");
@@ -681,20 +686,25 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
         var typePath = model?.TypePath;
         if (typePath.IsNullOrEmpty()) return Json(400, "typePath 不能为空");
 
-        var entity = global::NewLife.Cube.Entity.EntityViewProfile.UpsertForUser(user.ID, typePath, model);
+        var entity = global::NewLife.Cube.Entity.ViewProfile.UpsertForUser(user.ID, typePath, model);
         return Json(0, null, entity.ToModel());
     }
 
+    /// <summary>保存当前用户实体视图配置（兼容部分环境仅允许 POST）</summary>
+    [HttpPost]
+    [ActionName(nameof(ViewProfile))]
+    public ActionResult SaveViewProfile([FromBody] ViewProfileModel model) => ViewProfile(model);
+
     /// <summary>删除当前用户指定实体路径的视图配置（恢复默认）</summary>
     [HttpDelete]
-    [ActionName(nameof(EntityViewProfile))]
-    public ActionResult DeleteEntityViewProfile(String typePath)
+    [ActionName(nameof(ViewProfile))]
+    public ActionResult DeleteViewProfile(String typePath)
     {
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");
         if (typePath.IsNullOrEmpty()) return Json(400, "typePath 不能为空");
 
-        global::NewLife.Cube.Entity.EntityViewProfile.DeleteForUser(user.ID, typePath);
+        global::NewLife.Cube.Entity.ViewProfile.DeleteForUser(user.ID, typePath);
         return Json(0, "ok");
     }
 

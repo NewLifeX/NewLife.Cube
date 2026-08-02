@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.Serialization;
@@ -17,9 +17,9 @@ namespace NewLife.Cube.Entity;
 [Serializable]
 [DataObject]
 [Description("实体视图配置。按用户与实体路径的视图类型与列布局")]
-[BindIndex("IU_EntityViewProfile_UserId_TypePath", true, "UserId,TypePath")]
-[BindTable("EntityViewProfile", Description = "实体视图配置。按用户与实体路径的视图类型与列布局", ConnName = "Cube", DbType = DatabaseType.None)]
-public partial class EntityViewProfile : IEntity<EntityViewProfileModel>
+[BindIndex("IU_ViewProfile_UserId_TypePath", true, "UserId,TypePath")]
+[BindTable("ViewProfile", Description = "实体视图配置。按用户与实体路径的视图类型与列布局", ConnName = "Cube", DbType = DatabaseType.None)]
+public partial class ViewProfile : IEntity<ViewProfileModel>
 {
     #region 属性
     private Int32 _Id;
@@ -177,7 +177,7 @@ public partial class EntityViewProfile : IEntity<EntityViewProfileModel>
     #region 拷贝
     /// <summary>拷贝模型对象</summary>
     /// <param name="model">模型</param>
-    public void Copy(EntityViewProfileModel model)
+    public void Copy(ViewProfileModel model)
     {
         Id = model.Id;
         UserId = model.UserId;
@@ -263,7 +263,7 @@ public partial class EntityViewProfile : IEntity<EntityViewProfileModel>
     /// <summary>根据编号查找</summary>
     /// <param name="id">编号</param>
     /// <returns>实体对象</returns>
-    public static EntityViewProfile FindById(Int32 id)
+    public static ViewProfile FindById(Int32 id)
     {
         if (id < 0) return null;
 
@@ -280,7 +280,7 @@ public partial class EntityViewProfile : IEntity<EntityViewProfileModel>
     /// <param name="userId">用户</param>
     /// <param name="typePath">实体路径</param>
     /// <returns>实体对象</returns>
-    public static EntityViewProfile FindByUserIdAndTypePath(Int32 userId, String typePath)
+    public static ViewProfile FindByUserIdAndTypePath(Int32 userId, String typePath)
     {
         if (userId < 0) return null;
         if (typePath.IsNullOrEmpty()) return null;
@@ -294,7 +294,7 @@ public partial class EntityViewProfile : IEntity<EntityViewProfileModel>
     /// <summary>根据用户查找</summary>
     /// <param name="userId">用户</param>
     /// <returns>实体列表</returns>
-    public static IList<EntityViewProfile> FindAllByUserId(Int32 userId)
+    public static IList<ViewProfile> FindAllByUserId(Int32 userId)
     {
         if (userId < 0) return [];
 
@@ -314,7 +314,7 @@ public partial class EntityViewProfile : IEntity<EntityViewProfileModel>
     /// <param name="key">关键字</param>
     /// <param name="page">分页参数信息。可携带统计和数据权限扩展查询等信息</param>
     /// <returns>实体列表</returns>
-    public static IList<EntityViewProfile> Search(Int32 userId, String typePath, DateTime start, DateTime end, String key, PageParameter page)
+    public static IList<ViewProfile> Search(Int32 userId, String typePath, DateTime start, DateTime end, String key, PageParameter page)
     {
         var exp = new WhereExpression();
 

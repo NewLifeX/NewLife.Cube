@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.Serialization;
@@ -8,7 +8,7 @@ using System.Xml.Serialization;
 namespace NewLife.Cube.Entity;
 
 /// <summary>实体视图配置。按用户与实体路径的视图类型与列布局</summary>
-public partial class EntityViewProfileModel
+public partial class ViewProfileModel
 {
     #region 属性
     /// <summary>编号</summary>
@@ -69,7 +69,7 @@ public partial class EntityViewProfileModel
     #region 拷贝
     /// <summary>拷贝模型对象</summary>
     /// <param name="model">模型</param>
-    public void Copy(EntityViewProfileModel model)
+    public void Copy(ViewProfileModel model)
     {
         Id = model.Id;
         UserId = model.UserId;

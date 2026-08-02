@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <EntityModel xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="https://newlifex.com https://newlifex.com/Model202509.xsd" Document="https://newlifex.com/xcode/model" ModelVersion="2.0.2026.130" xmlns="https://newlifex.com/Model202509.xsd">
   <Option>
     <!--类名模板。其中{name}替换为Table.Name，如{name}Model/I{name}Dto等-->
@@ -751,7 +751,7 @@
         <Index Columns="UserId" Unique="True" />
       </Indexes>
     </Table>
-    <Table Name="EntityViewProfile" Description="实体视图配置。按用户与实体路径的视图类型与列布局">
+    <Table Name="ViewProfile" Description="实体视图配置。按用户与实体路径的视图类型与列布局">
       <Columns>
         <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
         <Column Name="UserId" DataType="Int32" Description="用户" />
