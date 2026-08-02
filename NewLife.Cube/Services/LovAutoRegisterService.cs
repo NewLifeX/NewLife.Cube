@@ -1,4 +1,6 @@
 ﻿using System.Reflection;
+using System.Threading;
+using NewLife.Cube;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Enums;
 using NewLife.Log;
@@ -45,6 +47,9 @@ public class LovAutoRegisterService
                 }
             }
         }
+
+        // 扫描 [LovList] 特性，自动注册列表型值集（与枚举初始化一并执行）
+        count += RegisterListAttributes();
 
         return count;
     }
@@ -105,7 +110,7 @@ public class LovAutoRegisterService
         // 按特性名识别：NewLife.Cube 已内置 NewLife.Cube.LovStringValueAttribute；
         // 若公共层不愿引用 Cube，也可在自己程序集定义同名特性（任意命名空间），同样生效，避免编译期耦合
         var useStringValue = enumType.GetCustomAttributes().Any(a => a.GetType().Name == "LovStringValueAttribute");
-        SyncEnumValues(def, enumType, useStringValue);
+        RetryDb(() => SyncEnumValues(def, enumType, useStringValue));
 
         return true;
     }
@@ -198,4 +203,214 @@ public class LovAutoRegisterService
 
         return null;
     }
+
+    #region 列表型值集（[LovList] 特性）
+
+    /// <summary>扫描已加载程序集中标注了 <see cref="LovListAttribute"/> 的控制器方法，自动注册列表型值集</summary>
+    /// <returns>本次新注册/更新的列表型值集数量</returns>
+    private static Int32 RegisterListAttributes()
+    {
+        var count = 0;
+        foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            // 仅扫描引用了 NewLife.Cube 的程序集（业务/入口程序集），跳过系统程序集
+            Boolean referencesCube;
+            try
+            {
+                referencesCube = asm.GetReferencedAssemblies().Any(a => a.Name == "NewLife.Cube");
+            }
+            catch
+            {
+                continue;
+            }
+            if (!referencesCube) continue;
+
+            Type[] types;
+            try
+            {
+                types = asm.GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                types = ex.Types.Where(t => t != null).ToArray()!;
+            }
+            catch
+            {
+                continue;
+            }
+
+            foreach (var type in types)
+            {
+                if (type == null || !type.IsClass) continue;
+                foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
+                {
+                    var attr = method.GetCustomAttribute<LovListAttribute>();
+                    if (attr == null) continue;
+                    try
+                    {
+                        if (RegisterList(attr)) count++;
+                    }
+                    catch (Exception ex)
+                    {
+                        XTrace.WriteException(ex);
+                    }
+                }
+            }
+        }
+
+        return count;
+    }
+
+    /// <summary>根据 [LovList] 特性注册/更新一个列表型值集（含数据源配置、表格列、搜索字段）</summary>
+    /// <param name="attr">特性实例</param>
+    /// <returns>是否成功注册或更新</returns>
+    private static Boolean RegisterList(LovListAttribute attr)
+    {
+        if (attr.LovCode.IsNullOrEmpty())
+            return false;
+
+        // 校验前缀：列表型值集 LovCode 必须以 List. 开头
+        if (!attr.LovCode.StartsWith("List.", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException($"LovList 特性的 LovCode 必须以 'List.' 开头：{attr.LovCode}");
+
+        var def = LovDefinition.Find(LovDefinition._.LovCode == attr.LovCode);
+        if (def == null)
+        {
+            def = new LovDefinition
+            {
+                LovCode = attr.LovCode,
+                Name = attr.Name.IsNullOrEmpty() ? attr.LovCode : attr.Name,
+                Type = "LIST",
+                ValueField = attr.ValueField,
+                LabelField = attr.LabelField,
+                Source = "AUTO",
+                Enabled = true,
+            };
+            def.Insert();
+            XTrace.WriteLine("Lov: 自动注册列表值集 {0}", attr.LovCode);
+        }
+        else if (def.Source != "AUTO")
+        {
+            // 手工管理的值集不覆盖
+            return false;
+        }
+        else
+        {
+            def.Name = attr.Name.IsNullOrEmpty() ? def.Name : attr.Name;
+            def.ValueField = attr.ValueField;
+            def.LabelField = attr.LabelField;
+            def.Update();
+        }
+
+        // 列表数据源配置（1:1，覆盖写入 Parameter）
+        var config = LovListConfig.FindByLovDefId(def.Id) ?? new LovListConfig { LovDefId = def.Id };
+        config.RequestUrl = attr.RequestUrl;
+        config.Method = attr.Method;
+        config.Pageable = attr.Pageable;
+        config.PageNumField = attr.PageNumField;
+        config.PageSizeField = attr.PageSizeField;
+        config.DataPath = attr.DataPath;
+        config.TotalPath = attr.TotalPath;
+        config.FixedParams = attr.FixedParams;
+        config.ProxyRequest = attr.ProxyRequest;
+        // 首跑建库期间数据库可能处于繁忙/锁定状态，写入 Parameter 需容忍瞬时锁定并重试
+        RetryDb(() => LovListConfig.SaveByLovDefId(def.Id, config));
+
+        // 表格列与搜索字段（覆盖写入）
+        RetryDb(() => LovTableColumn.SaveAllByLovDefId(def.Id, ParseColumns(attr.Columns, def.Id)));
+        RetryDb(() => LovSearchField.SaveAllByLovDefId(def.Id, ParseSearchFields(attr.SearchFields, def.Id)));
+
+        return true;
+    }
+
+    /// <summary>解析表格列声明。元素格式 "Field:Title:Width:Align"</summary>
+    private static IList<LovTableColumn> ParseColumns(String[]? tokens, Int32 lovDefId)
+    {
+        var list = new List<LovTableColumn>();
+        if (tokens == null) return list;
+
+        for (var i = 0; i < tokens.Length; i++)
+        {
+            var parts = tokens[i].Split(':');
+            if (parts.Length < 2) continue;
+
+            var col = new LovTableColumn
+            {
+                LovDefId = lovDefId,
+                Field = parts[0].Trim(),
+                Title = parts[1].Trim(),
+                Width = parts.Length > 2 && Int32.TryParse(parts[2].Trim(), out var w) ? w : 0,
+                Align = parts.Length > 3 ? parts[3].Trim() : "left",
+                Sortable = false,
+                Sort = i,
+            };
+            list.Add(col);
+        }
+
+        return list;
+    }
+
+    /// <summary>解析搜索字段声明。元素格式 "Field:Title:ComponentType:ParamType:Required"</summary>
+    private static IList<LovSearchField> ParseSearchFields(String[]? tokens, Int32 lovDefId)
+    {
+        var list = new List<LovSearchField>();
+        if (tokens == null) return list;
+
+        for (var i = 0; i < tokens.Length; i++)
+        {
+            var parts = tokens[i].Split(':');
+            if (parts.Length < 2) continue;
+
+            var sf = new LovSearchField
+            {
+                LovDefId = lovDefId,
+                Field = parts[0].Trim(),
+                Title = parts[1].Trim(),
+                ComponentType = parts.Length > 2 ? parts[2].Trim() : "input",
+                ParamType = parts.Length > 3 ? parts[3].Trim() : "BODY",
+                Required = parts.Length > 4 && Boolean.TryParse(parts[4].Trim(), out var r) && r,
+                Sort = i,
+            };
+            list.Add(sf);
+        }
+
+        return list;
+    }
+
+    #endregion
+
+    #region 写入重试（容忍首跑建库期间的瞬时数据库锁定）
+
+    /// <summary>对数据库写入操作进行重试，容忍 SQLite 首跑建库期间的瞬时锁定（database is locked / Busy）</summary>
+    /// <param name="action">写入操作</param>
+    /// <param name="maxRetry">最大重试次数</param>
+    private static void RetryDb(Action action, Int32 maxRetry = 30)
+    {
+        for (var i = 0; i < maxRetry; i++)
+        {
+            try
+            {
+                action();
+                return;
+            }
+            catch (Exception ex) when (i < maxRetry - 1 && IsTransient(ex))
+            {
+                Thread.Sleep(400);
+            }
+        }
+
+        // 最后一次不再吞异常，便于上层感知真实错误
+        action();
+    }
+
+    /// <summary>判断是否为可重试的瞬时数据库错误（如 SQLite 忙/锁定）</summary>
+    private static Boolean IsTransient(Exception ex)
+    {
+        var msg = ex?.Message ?? "";
+        return msg.Contains("locked", StringComparison.OrdinalIgnoreCase)
+            || msg.Contains("Busy", StringComparison.OrdinalIgnoreCase)
+            || msg.Contains("database is busy", StringComparison.OrdinalIgnoreCase);
+    }
+
+    #endregion
 }

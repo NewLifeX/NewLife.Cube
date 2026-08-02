@@ -92,6 +92,7 @@ public partial class LovListConfig : Entity<LovListConfig>
             DataPath = DataPath,
             TotalPath = TotalPath,
             FixedParams = FixedParams,
+            ProxyRequest = ProxyRequest,
             CreateUserID = CreateUserID,
             CreateIP = CreateIP,
             CreateTime = CreateTime,
