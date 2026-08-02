@@ -295,7 +295,7 @@ interface UserProfileDto {
     siderCollapsed: boolean
     siderWidth: number
     showTabs: boolean
-    contentWidth: 'fluid' | 'fixed'
+    contentWidth: 'standard' | 'wide' | 'fluid' // 旧 fixed → standard
   }
   theme: {
     appearance: 'light' | 'dark' | 'system'

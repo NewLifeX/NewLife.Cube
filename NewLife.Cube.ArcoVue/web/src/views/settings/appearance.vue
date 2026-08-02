@@ -25,8 +25,9 @@
         </a-form-item>
         <a-form-item label="内容区宽度">
           <a-radio-group v-model="form.layout.contentWidth" @change="onLayoutChange">
+            <a-radio value="standard">标准</a-radio>
+            <a-radio value="wide">较宽</a-radio>
             <a-radio value="fluid">流式</a-radio>
-            <a-radio value="fixed">定宽</a-radio>
           </a-radio-group>
         </a-form-item>
         <a-form-item label="密度">

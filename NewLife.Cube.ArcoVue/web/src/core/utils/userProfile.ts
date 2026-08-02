@@ -1,7 +1,8 @@
 import type { UserProfileModel } from '@cube/api-core';
 
 export type LayoutMode = 'side' | 'top' | 'mix';
-export type ContentWidth = 'fluid' | 'fixed';
+/** 内容区宽度：标准 / 较宽 / 流式（适配不同分辨率） */
+export type ContentWidth = 'standard' | 'wide' | 'fluid';
 export type Appearance = 'light' | 'dark' | 'system';
 export type Density = 'default' | 'compact';
 
@@ -54,6 +55,7 @@ export const SYSTEM_DEFAULT_PROFILE: UserProfilePrefs = {
 };
 
 const LAYOUT_MODES: LayoutMode[] = ['side', 'top', 'mix'];
+const CONTENT_WIDTHS: ContentWidth[] = ['standard', 'wide', 'fluid'];
 const APPEARANCES: Appearance[] = ['light', 'dark', 'system'];
 const DENSITIES: Density[] = ['default', 'compact'];
 
@@ -72,6 +74,15 @@ export function resolveLayoutMode(mode: unknown): LayoutMode {
     return mode as LayoutMode;
   }
   return 'side';
+}
+
+/** 旧值 `fixed` 迁移为 `standard`；非法回落 fluid */
+export function resolveContentWidth(raw: unknown): ContentWidth {
+  if (raw === 'fixed') return 'standard';
+  if (typeof raw === 'string' && CONTENT_WIDTHS.includes(raw as ContentWidth)) {
+    return raw as ContentWidth;
+  }
+  return SYSTEM_DEFAULT_PROFILE.layout.contentWidth;
 }
 
 function resolveAppearance(v: unknown): Appearance {
@@ -109,7 +120,7 @@ function mergeLayout(partial?: Partial<LayoutPrefs> | Record<string, unknown> | 
     siderWidth:
       typeof p.siderWidth === 'number' && p.siderWidth >= 48 ? p.siderWidth : d.siderWidth,
     showTabs: typeof p.showTabs === 'boolean' ? p.showTabs : d.showTabs,
-    contentWidth: p.contentWidth === 'fixed' ? 'fixed' : 'fluid',
+    contentWidth: resolveContentWidth(p.contentWidth ?? d.contentWidth),
   };
 }
 

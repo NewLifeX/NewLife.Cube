@@ -233,6 +233,7 @@
             :current="pagination.current"
             :page-size="pagination.pageSize"
             :total="pagination.total"
+            :page-size-options="[...PAGE_SIZE_OPTIONS]"
             show-total
             show-page-size
             @change="onPageChange"
@@ -334,6 +335,7 @@ import {
 import {
   isLargePageViewKind,
   isTableLikeViewKind,
+  PAGE_SIZE_OPTIONS,
   parseViewKind,
   resolveBatchDeleteState,
   resolveViewPageSize,
@@ -1075,7 +1077,9 @@ onMounted(bootstrap);
   background: var(--color-bg-2);
   border: none;
   border-radius: 8px;
-  overflow: hidden;
+  /* 允许内部横向滚动；勿用 overflow:hidden 把右侧 gutter 连带裁掉 */
+  overflow-x: auto;
+  overflow-y: visible;
 }
 .list-panel--search {
   padding-bottom: 4px;

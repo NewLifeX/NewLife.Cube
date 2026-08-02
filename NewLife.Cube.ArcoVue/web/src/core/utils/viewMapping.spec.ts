@@ -27,10 +27,11 @@ describe('resolveViewPageSize', () => {
     expect(resolveViewPageSize('tree')).toBe(20);
   });
 
-  it('clamps large views to 200–500', () => {
+  it('clamps large views to 200–1000', () => {
     expect(resolveViewPageSize('kanban')).toBe(200);
     expect(resolveViewPageSize('calendar', 20, 300)).toBe(300);
-    expect(resolveViewPageSize('gantt', 20, 900)).toBe(500);
+    expect(resolveViewPageSize('gantt', 20, 900)).toBe(900);
+    expect(resolveViewPageSize('gantt', 20, 2000)).toBe(1000);
   });
 });
 

@@ -48,8 +48,12 @@ export type CalendarMapping = {
 export type ViewMapping = CardMapping | KanbanMapping | GanttMapping | CalendarMapping;
 export type DataSourceOption = { value: string; label: string };
 
+/** 各视图分页器可选条数（与 a-pagination page-size-options 一致） */
+export const PAGE_SIZE_OPTIONS = [20, 50, 100, 200, 500, 1000] as const;
+
 export const LARGE_VIEW_PAGE_SIZE_DEFAULT = 200;
-export const LARGE_VIEW_PAGE_SIZE_MAX = 500;
+/** 与 PAGE_SIZE_OPTIONS 上限对齐，便于工作台 pageSize 在大视图间复用 */
+export const LARGE_VIEW_PAGE_SIZE_MAX = 1000;
 
 export function isLargePageViewKind(kind: ViewKind): boolean {
   return kind === 'kanban' || kind === 'calendar' || kind === 'gantt';

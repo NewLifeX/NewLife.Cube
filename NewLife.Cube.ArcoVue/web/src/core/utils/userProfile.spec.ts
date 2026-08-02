@@ -4,6 +4,7 @@ import {
   mergeProfile,
   prefsFromWire,
   prefsToWirePayload,
+  resolveContentWidth,
   resolveLayoutMode,
 } from './userProfile';
 
@@ -17,6 +18,23 @@ describe('resolveLayoutMode', () => {
   it('falls back to side for invalid', () => {
     expect(resolveLayoutMode('weird')).toBe('side');
     expect(resolveLayoutMode(null)).toBe('side');
+  });
+});
+
+describe('resolveContentWidth', () => {
+  it('accepts standard/wide/fluid', () => {
+    expect(resolveContentWidth('standard')).toBe('standard');
+    expect(resolveContentWidth('wide')).toBe('wide');
+    expect(resolveContentWidth('fluid')).toBe('fluid');
+  });
+
+  it('migrates legacy fixed → standard', () => {
+    expect(resolveContentWidth('fixed')).toBe('standard');
+  });
+
+  it('falls back to fluid for invalid', () => {
+    expect(resolveContentWidth('weird')).toBe('fluid');
+    expect(resolveContentWidth(null)).toBe('fluid');
   });
 });
 

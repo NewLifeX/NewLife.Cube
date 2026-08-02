@@ -96,6 +96,11 @@ function bodyOf(row: Record<string, unknown>) {
   overflow-x: auto;
   padding: 4px 0 12px;
   align-items: stretch;
+  /* 横向滚动时保留右端空隙，避免贴边 */
+  padding-right: 4px;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 .kanban-col {
   flex: 0 0 280px;
@@ -105,6 +110,7 @@ function bodyOf(row: Record<string, unknown>) {
   flex-direction: column;
   max-height: inherit;
   min-height: 240px;
+  min-width: 0;
 }
 .kanban-col-head {
   display: flex;

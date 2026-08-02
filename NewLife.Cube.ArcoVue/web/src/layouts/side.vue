@@ -97,6 +97,8 @@ function toggleCollapsed() {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-sizing: border-box;
+  min-width: 0;
 }
 .layout-header__left {
   display: flex;
