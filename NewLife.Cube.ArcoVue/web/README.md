@@ -56,11 +56,11 @@ pnpm build
 - 外观设置：`/settings/appearance`；顶栏提供主题、密度、设置入口。
 - CRUD 页面不读取壳偏好 store（契约隔离）。
 
-## 列表与 EntityViewProfile
+## 列表与 ViewProfile
 
 - 默认列表支持多视图：`table` / `tree`（VTable）、`card` / `kanban` / `calendar` / `gantt`（`features/views/*`）。
 - Tab 工具条（`ViewTabsToolbar`）切换 / 新建 / 配置；映射存 `ViewsJson` 的 `NamedView.mapping`。
-- 列布局与命名视图经 `GET/PUT/DELETE /Cube/EntityViewProfile` 持久化。
+- 列布局与命名视图经 `GET/PUT/DELETE /Cube/ViewProfile` 持久化。
 - 看板/日历/甘特使用较大 pageSize（约 200–500）；看板不拖拽写回。
 - 表格行**双击**或操作列 / 卡片左下按钮打开右侧详情抽屉。
 

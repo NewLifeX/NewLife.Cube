@@ -1,6 +1,6 @@
 # NewLife.Cube.ArcoVue 企业中后台迁移与产品化方案
 
-> 版本：2026-07-31（修订：MFA 文档出处、能力矩阵、测试要求、功能清单对齐、后端独立任务）  
+> 版本：2026-08-02（修订：看板分组字段取值修复；`EntityViewProfile`→`ViewProfile` 前后端统一重构；§8 收敛为「固定 CRUD 容器 + 有限用户运行时自定义」）
 > 状态：可落地执行稿  
 > 适用范围：以 NewLife.Cube（WebAPI）为后端，将 NewLife.Cube.ArcoVue 建设为默认企业中后台皮肤；复用 NewLife.Cube.Vue 能力成果，对接字节官方组件栈，支持用户级呈现配置与 AI（OpenSpec）协作。
 
@@ -20,7 +20,7 @@
 ### 1.2 产品目标（必须达成）
 
 1. **零配置自动 CRUD**：宿主仅 `UseArcoVue` 时，内置 Admin/Cube 与新增业务 `EntityController` 自动获得完整管理界面。
-2. **飞书式多维数据工作台**：表格（自定义列）/ 树表 / 卡片 / 甘特；记录以**左侧抽屉**编辑，并含修改历史、用户评论。
+2. **飞书式多维数据工作台**：表格（自定义列）/ 树表 / 卡片 / 甘特；记录以**右侧抽屉**编辑（飞书多维表为左侧记录栏，本实现按 §8.1 契约用右侧），并含修改历史、用户评论。
 3. **用户级可配置呈现**：导航布局、主题样式、列表默认视图与列布局等**禁止写死**，按用户（及可选租户/角色默认）配置生效。
 4. **现代扁平视觉**：参考苹果 Human Interface / 飞书与 [Arco Design](https://arco.design/) 的扁平、留白、低噪点风格。
 5. **业务增量开发模型**：新业务 = 新 .NET 项目 + 实体控制器；仅特殊页覆写前端。
@@ -44,7 +44,7 @@
 | AUTH-1～12、OAUTH-* | 前端对接；MFA 见 [认证接口设计.md](./认证接口设计.md)（`/Mfa/*`），非 [核心接口架构.md](./核心接口架构.md) 最小集 |
 | DATA-1～11、SYS-3、SYS-16～20（LOV） | 元数据 CRUD / 审计 / 值集；ArcoVue 消费这些已有后端 |
 | PERM-* | 菜单驱动路由与按钮权限位；数据权限/多租户以后端为准，皮肤透传 |
-| **拟新增**（需回写功能清单） | `UserProfile`、`EntityViewProfile`、`EntityComment` — 写入 [Cube.xml](../../NewLife.Cube/Entity/Cube.xml) 后由 XCode 协作指令生成，见 §5.2.1 / §10.2 |
+| **拟新增**（需回写功能清单） | `UserProfile`、`ViewProfile`、`EntityComment` — 写入 [Cube.xml](../../NewLife.Cube/Entity/Cube.xml) 后由 XCode 协作指令生成，见 §5.2.1 / §10.2 |
 
 实施时：每个 OpenSpec 变更的 `design.md` 应标注触及的功能清单编码；归档后视情况更新 [功能清单.md](../功能清单.md) 实现/测试列。
 
@@ -77,7 +77,7 @@
 |------|----------|
 | 首次进入 | 清晰品牌区 + 简洁侧栏/顶栏；默认浅色扁平主题，可选深色 |
 | 日常列表 | 飞书多维表感觉：工具条干净、视图切换明显、列可拖拽显隐；大数据不卡顿（VTable） |
-| 编辑记录 | 左侧抽屉滑入，不丢列表上下文；表单分区清晰；可看历史与评论 |
+| 编辑记录 | 右侧抽屉滑入，不丢列表上下文；表单分区清晰；可看历史与评论 |
 | 个性化 | 「外观设置」中切换布局（侧栏/顶栏/混合）、主题（浅/深/跟随系统）、密度（舒适/紧凑）；立即生效并记住 |
 | 树/项目类数据 | 一键切树表或甘特（有日期字段时）；无能力时禁用并提示原因 |
 | 权限不足 | 按钮隐藏或禁用，文案友好，不出现空白报错页 |
@@ -95,7 +95,7 @@
 | 后端契约 | 最小集见 [核心接口架构.md](./核心接口架构.md)；MFA 见 [认证接口设计.md](./认证接口设计.md) `/Mfa/*`（AUTH-10）；Profile/Comment 见独立后端任务 |
 | UI 栈 | Arco Design Vue（壳/表单）+ VisActor VTable（多维视图）+ FlowGram.AI（流程，后期） |
 | 逻辑复用 | `@cube/*`；接线模板优先对照 NaiveUI，能力验收对照 §3.1 矩阵 |
-| 呈现配置 | `UserProfile` + `EntityViewProfile`（后端独立交付，前端消费，见 §5 / §10.1） |
+| 呈现配置 | `UserProfile` + `ViewProfile`（后端独立交付，前端消费，见 §5 / §10.1） |
 | 扩展 | `registerSection` + `apps/` 整页覆写 |
 | 协作 | 恢复 `.github` Copilot 指令；OpenSpec（OSC-0000）；测试要求见 §9.3 |
 | 测试 | 对齐 `development.instructions.md`：实现功能默认同步补充测试 |
@@ -110,7 +110,7 @@
 |------|------|
 | API/认证/菜单 | ArcoVue 已走 `@cube/api-core` / auth-logic；最小集对齐核心接口架构；MFA 对齐认证接口设计 |
 | 自动 CRUD | 后端完备；ArcoVue 需接入 `usePageLogic` 并产品化 |
-| 多视图/抽屉 | 前端新建；**UserProfile / EntityViewProfile / EntityComment 为 Cube 核心后端扩展**，独立排期 |
+| 多视图/抽屉 | 前端新建；**UserProfile / ViewProfile / EntityComment 为 Cube 核心后端扩展**，独立排期 |
 | 工作量 | 后端独立 OSC + 前端 M0–M6（约 2–3 个迭代月，视人力浮动） |
 
 **为何接线阶段对标 NaiveUI、能力对标 Cube.Vue：**
@@ -124,38 +124,40 @@
 
 | 能力 | 功能清单/说明 | Cube.Vue | ArcoVue 现状 | 目标 | 优先级 |
 |------|---------------|:--------:|:------------:|:----:|:------:|
-| 动态 CRUD（GetPage 列表/表单） | DATA-1/4/5/6，SPA-7 | ✅ | 🟠 基础 | ✅ | P0 |
-| 菜单驱动路由 + 鉴权守卫 | PERM-3，SPA-1 | ✅ | 🟠 catch-all | ✅ | P0 |
-| 登录（密码/验证码/OAuth） | AUTH-2/6/8，OAUTH-1 | ✅ | 🟠 | ✅ | P0 |
-| Token 刷新 / 登出 | AUTH-3 | ✅ | 🟠 | ✅ | P0 |
-| MFA 二步验证 UI | AUTH-10，`/Mfa/*` | ✅ | ❌ | ✅ | P1 |
-| Challenge / 验证码登录增强 | AUTH-4/5 | ✅ | 🟠 | ✅ | P1 |
-| 导入导出 | DATA-9 | ✅ | 🟠 | ✅ | P0 |
-| 批量删除 | DATA-10 | ✅ | 🟠 | ✅ | P0 |
-| 批量其它操作（启用/禁用等） | 工具条扩展 | ✅ | ❌ | 🟠 | P2 |
-| 图表 GetChartData | SPA-15 | ✅ | 🟠 | ✅ | P1 |
-| 字段控件矩阵（含上传/JSON/富文本等） | DATA-11 等 | 🟠～✅ | 🟠 基础 | ✅ | P0 |
-| LOV 选择器 | SYS-16～20 | ✅ | ❌ | ✅ | P1 |
-| 多页签 TagsView | 壳 | ✅ | ❌ | ✅ | P0 |
-| 多布局（侧/顶/混合）可配置 | → UserProfile | ✅ 多布局 | ❌ 写死 | ✅ 配置化 | P0 |
-| 主题/密度/i18n | 壳 | ✅ | 🟠 暗色开关 | ✅ | P0 |
-| UserProfile 持久化 | **后端新建** | ➖/局部 | ❌ | ✅ | P0 |
-| EntityViewProfile（列/视图） | **后端新建** | ➖/局部 | ❌ | ✅ | P0 |
-| VTable 表格+自定义列 | 本方案增强 | 🟠 DOM 表 | ❌ | ✅ | P0 |
-| 树表视图 | DATA-3 | 🟠 部分页 | ❌ | ✅ | P0 |
-| 卡片视图 | Vue 有未接线 stub | ❌ | ❌ | ✅ | P0 |
-| 甘特视图 | 本方案新建 | ❌ | ❌ | ✅ | P0 |
-| 左侧记录抽屉 | 本方案 | ❌ 多为弹层 | ❌ | ✅ | P0 |
-| 修改历史（Log 筛选） | SYS-3 | 🟠 独立日志页 | ❌ | ✅ 抽屉 Tab | P0 |
-| 实体评论 EntityComment | **后端新建** | ❌ | ❌ | ✅ | P0 |
-| Section 页面覆写 | Vue skills | ✅ | ❌ | ✅ | P1 |
-| apps 自定义业务页 | cube-admin 等 | ✅ | ❌ | 🟠 机制+高频页 | P1 |
-| 微前端多应用运行时 | Vue microApp | ✅ | ❌ | ➖ | — |
-| FlowGram 工作流画布 | 本方案 | ❌ | ❌ | ✅ 样例 | P1 |
+| 动态 CRUD（GetPage 列表/表单） | DATA-1/4/5/6，SPA-7 | ✅ | ✅ | ✅ | P0 |
+| 菜单驱动路由 + 鉴权守卫 | PERM-3，SPA-1 | ✅ | ✅ | ✅ | P0 |
+| 登录（密码/验证码/OAuth） | AUTH-2/6/8，OAUTH-1 | ✅ | ✅ | ✅ | P0 |
+| Token 刷新 / 登出 | AUTH-3 | ✅ | ✅ | ✅ | P0 |
+| MFA 二步验证 UI | AUTH-10，`/Mfa/*` | ✅ | ❌（api-core 已封装 `/Mfa/*`，UI 未做） | ✅ | P1 |
+| Challenge / 验证码登录增强 | AUTH-4/5 | ✅ | 🟠（api 已封装，UI 未完整） | ✅ | P1 |
+| 导入导出 | DATA-9 | ✅ | ✅ | ✅ | P0 |
+| 批量删除 | DATA-10 | ✅ | ✅ | ✅ | P0 |
+| 批量其它操作（启用/禁用等） | 工具条扩展 | ✅ | ❌（工具栏占位） | 🟠 | P2 |
+| 图表 GetChartData | SPA-15 | ✅ | ✅（后端 option 渲染壳，无前端配置） | ✅ | P1 |
+| 字段控件矩阵（含上传/JSON/富文本等） | DATA-11 等 | 🟠～✅ | ✅（20+ 控件，FieldInput） | ✅ | P0 |
+| LOV 选择器 | SYS-16～20 | ✅ | ✅（LovSelect + lov-api） | ✅ | P1 |
+| 多页签 TagsView | 壳 | ✅ | ✅ | ✅ | P0 |
+| 多布局（侧/顶/混合）可配置 | → UserProfile | ✅ 多布局 | ✅ 配置化（RootLayout 动态组件） | ✅ 配置化 | P0 |
+| 主题/密度/i18n | 壳 | ✅ | 🟠 主题/密度 ✅；i18n ❌ | ✅ | P0 |
+| UserProfile 持久化 | **后端新建** | ➖/局部 | ✅（localStorage + 后端双通道；`workspace.defaultView/pageSize` 未消费） | ✅ | P0 |
+| ViewProfile（列/视图） | **后端新建** | ➖/局部 | ✅（直接后端权威，命名视图/列/sort/chrome/mapping 全落地） | ✅ | P0 |
+| VTable 表格+自定义列 | 本方案增强 | 🟠 DOM 表 | ✅ | ✅ | P0 |
+| 树表视图 | DATA-3 | 🟠 部分页 | ✅（treeBuilder 组装 + VTable hierarchy） | ✅ | P0 |
+| 卡片视图 | Vue 有未接线 stub | ❌ | ✅（CardList/RecordCard） | ✅ | P0 |
+| 甘特视图 | 本方案新建 | ❌ | ✅ 只读（vtable-gantt，无拖拽写回） | ✅ | P0 |
+| 左侧记录抽屉 | 本方案 | ❌ 多为弹层 | 🟠 右抽屉（表单/历史 ✅；评论 stub 待接线） | ✅ | P0 |
+| 修改历史（Log 筛选） | SYS-3 | 🟠 独立日志页 | ✅（抽屉内 timeline，无分页/无 diff） | ✅ 抽屉 Tab | P0 |
+| 实体评论 EntityComment | **后端新建** | ❌ | ❌（后端 OSC-0002 ✅，前端未接线） | ✅ | P0 |
+| Section 页面覆写 | Vue skills | ✅ | ✅ 机制（useSections，仅 `_demo` 案例） | ✅ | P1 |
+| apps 自定义业务页 | cube-admin 等 | ✅ | 🟠 机制 + `_demo`（无真实业务案例） | 🟠 机制+高频页 | P1 |
+| 微前端多应用运行时 | Vue microApp | ✅ | ➖（未做） | ➖ | — |
+| FlowGram 工作流画布 | 本方案 | ❌ | ❌（未做） | ✅ 样例 | P1 |
 | 字段级变更 diff | 相对 Log | ❌ | ❌ | ➖ 一期 / P2 二期 | P2 |
-| 单元/组件测试体系 | Vue Vitest 等 | ✅ | ❌ | ✅ 关键路径 | P0 |
+| 单元/组件测试体系 | Vue Vitest 等 | ✅ | 🟠（逻辑单测 88 用例；无组件测试） | ✅ 关键路径 | P0 |
 | E2E（Cypress 级） | Vue | ✅ | ❌ | 🟠 冒烟即可 | P2 |
 | 嵌入 NuGet / UseArcoVue | SPA-2/3/7 | ✅ UseVue | ✅ | ✅ | P0 |
+
+> 注：以上「ArcoVue 现状」列已于 2026-08-02 对照代码实测刷新（OSC-0001~0006 已归档后）。刷新依据见 §10.4 审查结论。
 
 矩阵随里程碑更新「ArcoVue 现状」列；目标为 ➖ 的项不得在 OSC 中膨胀为必做范围。
 
@@ -175,7 +177,7 @@ flowchart TB
     Auth["/Auth/*"]
     Menu["/Cube/MenuTree"]
     Page["GetPage + CRUD"]
-    PrefApi["UserProfile / EntityViewProfile API"]
+    PrefApi["UserProfile / ViewProfile API"]
     CommentApi["EntityComment API"]
     LogApi["/Admin/Log"]
   end
@@ -205,7 +207,7 @@ flowchart TB
 
 ```
 NewLife.Cube.ArcoVue/web/src/
-├── api/                      # createCubeApi + userProfile/entityViewProfile/comment/history
+├── api/                      # createCubeApi + userProfile/viewProfile/comment/history
 ├── stores/                   # user / app / tabs / userProfile
 ├── router/                   # 菜单动态路由 + 守卫 + keep-alive
 ├── layouts/                  # layout 实现：side / top / mix（由 UserProfile 选择）
@@ -245,7 +247,7 @@ NewLife.Cube.ArcoVue/web/src/
 | 系统默认 | 产品出厂默认（扁平浅色、侧栏布局、表格视图） | 最低 |
 | 租户/应用默认（可选） | 企业品牌色、默认布局 | 覆盖系统 |
 | 角色默认（可选） | 如运营角色默认紧凑密度 | 覆盖租户 |
-| **UserProfile / EntityViewProfile** | 个人最终呈现与实体视图 | **最高** |
+| **UserProfile / ViewProfile** | 个人最终呈现与实体视图 | **最高** |
 
 读取顺序：`用户 > 角色 > 租户 > 系统`。
 
@@ -256,7 +258,7 @@ NewLife.Cube.ArcoVue/web/src/
 | 对象 | 作用域 | 职责 |
 |------|--------|------|
 | **UserProfile** | 按用户一条（或按用户+应用） | 导航布局、主题样式、工作台全局默认 |
-| **EntityViewProfile** | 按用户 + 实体（typePath）多条 | 视图类型、列布局、甘特/卡片映射、筛选记忆 |
+| **ViewProfile** | 按用户 + 实体（typePath）多条 | 视图类型、列布局、甘特/卡片映射、筛选记忆 |
 | **EntityComment** | 按实体记录多条 | 用户评论 |
 
 #### 5.2.1 建模与代码生成（Cube.xml + 已有协作指令）
@@ -276,7 +278,7 @@ Agent / Copilot 实施约定：OSC-0002 的 `tasks.md` 首项应为「编辑 Cub
 | Table | 关键列（示意） | 索引 |
 |-------|----------------|------|
 | UserProfile | Id；UserId；LayoutJson / ThemeJson / WorkspaceJson（或单一 ProfileJson）；Version；Enable；Create*/Update* | Unique(UserId) |
-| EntityViewProfile | Id；UserId；TypePath；View；ColumnsJson；**ViewsJson**；**ActiveViewId**；GanttJson；CardJson；FiltersJson；Version；Create*/Update* | Unique(UserId, TypePath)；命名视图存 ViewsJson |
+| ViewProfile | Id；UserId；TypePath；View；ColumnsJson；**ViewsJson**；**ActiveViewId**；GanttJson；CardJson；FiltersJson；**FormJson**；Version；Create*/Update* | Unique(UserId, TypePath)；命名视图存 ViewsJson；`UserId=0` 表示管理员发布的全局只读模板；FormJson 存受限表单布局 |
 | EntityComment | Id；Category；LinkId；**ParentId / RootId / ReplyUserId / ReplyUser**；Content；CreateUser/Id/IP/Time；Update* | (Category, LinkId)；ParentId；RootId；CreateUserID |
 
 嵌套配置（layout/theme/columns 等）以 **JSON 文本列** 落库，与 §5.2 逻辑模型对应；API 层序列化为前端 TypeScript 形状。
@@ -315,8 +317,8 @@ type ViewMapping =
   | { kind: 'gantt'; startField: string; endField: string; titleField: string; colorField?: string }
   | { kind: 'calendar'; startField: string; endField?: string; titleField: string; colorField?: string }
 
-/** 实体视图自定义 — 实体 EntityViewProfile；唯一键 userId + typePath */
-interface EntityViewProfileDto {
+/** 实体视图自定义 — 实体 ViewProfile；唯一键 userId + typePath */
+interface ViewProfileDto {
   version: 1
   userId: number | string
   typePath: string
@@ -334,6 +336,11 @@ interface EntityViewProfileDto {
   /** 预留列；OSC-0006 前端不读写，映射以 NamedView.mapping 为准 */
   gantt?: { startField?: string; endField?: string; titleField?: string }
   card?: { titleField?: string; subtitleField?: string; statusField?: string; coverField?: string }
+  /** 仅字段顺序、显隐与元数据 Category 分组的折叠偏好；不改变字段类型、校验、权限 */
+  form?: {
+    fields?: Record<string, { visible?: boolean; order?: number }>
+    collapsedGroups?: string[]
+  }
   filters?: Record<string, unknown>
 }
 ```
@@ -342,7 +349,7 @@ interface EntityViewProfileDto {
 
 | 阶段 | 策略 |
 |------|------|
-| 前端可先行 | `localStorage`：`cube.arco.userProfile.{userId}`、`cube.arco.entityViewProfile.{userId}.{typePath}` |
+| 前端可先行 | `localStorage`：`cube.arco.userProfile.{userId}`、`cube.arco.viewProfile.{userId}.{typePath}` |
 | **后端权威** | **OSC-0002**：一次改 **Cube.xml**（三表）并经 XCode 指令生成，再挂齐三套 API；**非 ArcoVue 内实现** |
 | 冲突 | 服务端成功拉取后覆盖本地；本地脏写防抖保存（300–500ms） |
 
@@ -352,9 +359,13 @@ interface EntityViewProfileDto {
 GET    /Cube/UserProfile
 PUT    /Cube/UserProfile                 # body: UserProfile 字段子集
 
-GET    /Cube/EntityViewProfile?typePath=Admin/User
-PUT    /Cube/EntityViewProfile           # body: EntityViewProfile（含 typePath）
-DELETE /Cube/EntityViewProfile?typePath=Admin/User   # 恢复该实体默认视图
+GET    /Cube/ViewProfile?typePath=Admin/User
+PUT    /Cube/ViewProfile           # body: ViewProfile（含 typePath）
+DELETE /Cube/ViewProfile?typePath=Admin/User   # 恢复该实体默认视图
+
+GET    /Cube/ViewProfile/Template?typePath=Admin/User
+PUT    /Cube/ViewProfile/Template  # 仅管理员；服务端固定 UserId=0
+DELETE /Cube/ViewProfile/Template?typePath=Admin/User
 
 GET    /Cube/EntityComment?category=&linkId=&parentId=
 POST   /Cube/EntityComment               # body 可含 parentId 表示回复
@@ -367,14 +378,14 @@ DELETE /Cube/EntityComment?id=
 
 - `layouts/*` 只注册实现，**不在路由里写死唯一布局**；根布局读 `userProfile.layout.mode` 动态 `<component :is>`。
 - 主题通过 CSS Variables + Arco `ConfigProvider` 注入，**禁止**在业务组件写死主色/背景。
-- `DynamicPage` / ViewShell 读当前用户的 `EntityViewProfile`（按 `typePath`）；无则回落 `UserProfile.workspace.defaultView`，再回落系统默认。
-- 列布局、视图切换的保存写入 **EntityViewProfile**；外观设置页写入 **UserProfile**。
+- `DynamicPage` / ViewShell 读当前用户的 `ViewProfile`（按 `typePath`）；后续模板能力按 §8.2.4 将个人配置与 `UserId=0` 模板字段级合并；无则回落 `UserProfile.workspace.defaultView`，再回落系统默认。
+- 列布局、视图切换的保存写入 **ViewProfile**；外观设置页写入 **UserProfile**。
 - 提供「外观设置」页与顶栏快捷入口（主题、密度）；支持「恢复默认」（删或重置对应 Profile）。
 
 ### 5.4 与权限的关系
 
 - `UserProfile` 布局/主题属个人配置，不占用菜单权限位。
-- `EntityViewProfile` 视图切换不绕过 `canAdd/Edit/Delete/Export/Import`。
+- `ViewProfile` 视图切换不绕过 `canAdd/Edit/Delete/Export/Import`。
 - 甘特拖拽改期必须受 `canEdit` 约束。
 
 ---
@@ -414,7 +425,7 @@ DELETE /Cube/EntityComment?id=
 - 顶栏：产品名/Logo、全局搜索（可后期）、主题切换、用户菜单——扁平、低分隔。
 - 侧栏：图标 + 文案；激活态用浅底或左边线，避免厚重选中块。
 - 内容区：页签（可关）+ 工具条 + VTable 主舞台。
-- 抽屉：自左侧推入（宽度可配，默认 480–640），遮罩轻量。
+- 抽屉：自右侧推入（宽度可配，默认 480–640），遮罩轻量。
 
 ---
 
@@ -425,13 +436,17 @@ DELETE /Cube/EntityComment?id=
 | 视图 | 实现 | 启用条件 |
 |------|------|----------|
 | table | VTable ListTable + 列布局偏好 | 默认 |
-| tree | VTable tree | 实体为树或存在 Parent 字段 / EntityTree 数据 |
-| card | VTable 自定义布局或卡片模式 | 配置了 card 字段映射或可自动推断 title |
-| gantt | VisActor 甘特 | 存在可映射的起止日期字段 |
+| tree | VTable tree | 实体为树或存在 Parent 字段 / EntityTree 数据（扁平列表由 treeBuilder 自动组装） |
+| card | 卡片流（CardList/RecordCard） | 配置了 card 字段映射或可自动推断 title |
+| kanban | 看板只读分列（KanbanBoard） | 存在可分组字段（枚举/布尔/选项） |
+| calendar | 月历视图（CalendarMonth） | 存在 DateTime 字段作为开始日期 |
+| gantt | VisActor 甘特（只读，无拖拽写回） | 存在可映射的起止日期字段 |
 
-视图切换器绑定当前 `typePath` 的 **EntityViewProfile.view**，切换即持久化该 Profile。
+> 6 种视图均已落地（OSC-0006）；「看板/甘特/日历无拖拽写回」为设计内「不做」项，见 §10.4。
 
-### 7.2 左侧 RecordDrawer
+视图切换器绑定当前 `typePath` 的 **ViewProfile.view**，切换即持久化该 Profile。
+
+### 7.2 右侧 RecordDrawer
 
 | Tab | 数据 | 说明 |
 |-----|------|------|
@@ -454,10 +469,72 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
 1. 菜单来自 `/Cube/MenuTree`。
 2. **B3 叶路由**：有 `url` 的节点扁平 `addRoute` 到 Layout（文件夹不嵌套子路由）；`props: { type, authId }`；优先 `apps/*/src/views/**/index.vue` 整页覆写，否则 `DynamicPage`。
 3. **DynamicPage** 为薄宿主：解析 Section `DefaultListPage` 覆写，否则挂载 **DefaultList** 微内核（GetPage → fieldControl → 列表/搜索/LOV → **右侧**抽屉）。
-4. 点击行打开 **右侧 RecordDrawer**（`placement="right"`；表单 / 历史 / 评论预留）；微内核**不读**布局/主题 store（契约隔离）。
-5. 多视图 ViewShell / VTable 由后续 OSC-0005+ 在 Section 上替换表格实现。
+4. 点击行打开 **右侧 RecordDrawer**（`placement="right"`；表单 / 历史 / 评论）；微内核**不读**布局/主题 store（契约隔离）。
+5. 多视图 ViewShell / VTable 已由 **OSC-0005/0006** 落地（6 视图 + 命名视图 Tab + 配置抽屉）；在此基础上向「视图/表单容器 + 用户运行时自定义」演进，见 §8.2。
 
-### 8.2 业务侧日常开发
+### 8.2 固定视图/表单容器与有限用户运行时自定义（飞书应用模式）
+
+> 研究依据：飞书帮助中心「应用模式」及其列表、标签页、尺寸文档。飞书的应用页可以自由编排跨表组件；其前提是完整的数据源、页面、权限和自动化平台。ArcoVue 的定位是 **Cube 的默认 CRUD 皮肤**，而非低代码平台，因此只借鉴“同源数据多种呈现、配置与使用分离、用户可恢复默认”的体验，不复制画布与组件市场。
+
+#### 8.2.1 评审结论与边界
+
+| 飞书能力 | 本方案处理 | 原因 |
+|----------|------------|------|
+| 同一数据源的列表、卡片、详情、筛选、排序 | **采用**：复用命名视图、6 类视图、右侧 RecordDrawer | 当前 `DefaultList` 已具备，用户收益直接 |
+| 固定区域展示统计/图表 | **有限采用**：列表顶部可选一个洞察区 | 复用 `GetPage.stat` / `GetChartData`，不引入区块编排 |
+| 字段显示与表单组织 | **采用**：仅顺序、显隐、按现有 Category 分组折叠 | 不改变 Cube 元数据、字段控件、校验和权限 |
+| 管理员发布默认界面 | **采用**：每实体一个全局只读模板，个人可覆盖 | 满足统一体验，避免首期角色/租户优先级与协作编辑 |
+| 任意画布、拖拽区块、组合布局、嵌套标签页 | **不做** | 会新增 Widget 生命周期、布局引擎、移动端和性能问题 |
+| 跨实体数据源、文本/图片/按钮组件、工作流执行 | **不做** | 脱离 GetPage 与 Cube 权限契约，属于独立低代码产品范围 |
+
+#### 8.2.2 容器契约（复用而非重建）
+
+每个实体路由默认仍是一个固定的 **DefaultList 容器**：
+
+1. `GetPage` 是字段、权限、表单和统计的唯一元数据来源；`GetList`、`GetDetail` 与 CRUD API 仍是唯一数据/写入通道。
+2. 容器固定顺序为：可选**洞察区** → 搜索区 → 命名视图 Tab/工具栏 → 当前数据视图 → 分页 → 右侧 `RecordDrawer`。不允许用户新增、删除、拖动或嵌套页面区块。
+3. 洞察区最多一个：优先展示 `GetPage.stat`；有 `GetChartData` 时可在“统计 / 图表 / 关闭”三态间选择。图表仍按当前实体和当前筛选条件取数，不支持用户录入 ECharts option。
+4. NamedView 继续承载 table/tree/card/kanban/calendar/gantt 的列、映射、排序和工具栏外观；现有 `widthMode` / `heightMode` 只表示当前视图的容器尺寸，不升级为通用 Widget 尺寸系统。
+
+#### 8.2.3 受限配置模型
+
+| 配置 | 存储 | 允许用户改变 | 明确禁止 |
+|------|------|--------------|----------|
+| 命名视图 | `ViewsJson` / `ActiveViewId` / `ColumnsJson` | 视图类型、列显隐/顺序/宽度/标题、排序、已有 mapping/chrome | 自定义 SQL、跨实体数据源、绕过字段权限 |
+| 筛选记忆 | `FiltersJson` | 当前实体的搜索字段条件；可选择保存为该命名视图默认条件 | 新增后端未声明的查询字段或表达式 |
+| 洞察区 | `ViewsJson` 中当前 NamedView 的 `insight` 子配置 | `none` / `stat` / `chart`；仅保存展示偏好 | 任意图表 option、多个图表或拖拽位置 |
+| 表单布局 | **新增 `FormJson`** | add/edit/detail 的字段顺序、显隐、按 GetPage `Category` 的分组折叠 | 新字段、字段类型/控件、默认值、校验、必填、权限、提交动作 |
+
+`FormJson` 仅是前端呈现偏好；字段是否存在、是否可编辑、是否必填以及提交载荷仍由 GetPage 与 `prepareSubmitPayload` 判定。配置中出现已删除字段时静默忽略；元数据中新字段按所属分组追加且默认可见，保证升级后仍能操作。
+
+#### 8.2.4 模板与优先级
+
+首期不实现角色/租户模板或多人协同编辑。对每个 `typePath` 最多存在两层配置：
+
+1. **个人 ViewProfile**：`UserId = 当前用户`，可编辑，优先级最高。
+2. **全局只读模板**：`UserId = 0`，由具备管理权限的管理员发布；普通用户仅可“基于模板开始自定义”，首次保存时创建个人 Profile。
+3. **系统默认**：没有模板或个人配置时，由 GetPage 和 `seedDefaultView` 生成。
+
+读取为“个人配置覆盖模板，模板覆盖系统默认”的字段级合并，而非整份 JSON 互相替换；个人删除某项配置应回落模板。管理员模板的发布、恢复及审计必须复用 Cube 的权限与日志，不能向普通用户暴露 `UserId=0` 的写接口。
+
+开发者扩展优先级保持不变：整页 `apps/*/index.vue` 覆写直接接管页面；未整页覆写时，Section 可局部替换容器插槽；只有默认容器才消费上述用户配置。业务覆写不必兼容通用配置协议，避免运行时互相干扰。
+
+#### 8.2.5 实施切片（评论接线后）
+
+| OSC | 内容 | 出口 |
+|-----|------|------|
+| OSC-0011 | 筛选记忆 + 单一洞察区 | `FiltersJson` 按命名视图保存；统计/图表/关闭三态，始终使用当前实体与筛选条件 |
+| OSC-0012 | 受限表单布局 | ViewProfile 增 `FormJson`；RecordDrawer 支持字段顺序、显隐、Category 分组折叠与恢复默认 |
+| OSC-0013 | 全局只读模板 | `UserId=0` 模板读写 API、权限与审计；个人覆盖/恢复模板；不做角色、租户与协同编辑 |
+
+#### 8.2.6 验收与非目标
+
+- 新实体仍只需实体 + `EntityController` + 菜单即可获得完整页面；没有任何 Profile 时与当前行为一致。
+- 用户可以保存一个命名视图的筛选、洞察展示和表单呈现；恢复默认后回落全局模板或系统默认。
+- 管理员发布模板后，未个性化用户立即使用；已个性化用户不被覆盖。
+- 不新增画布、Widget 注册表、通用拖拽/缩放、页内标签容器、跨实体查询、文本/图片/按钮组件、用户自定义工作流或公式字段。这些能力若未来确有需求，应以独立产品立项并先补齐数据源、权限和审计模型。
+
+### 8.3 业务侧日常开发
 
 1. 新建业务类库/宿主，引用 `NewLife.Cube`、`NewLife.Cube.ArcoVue`。
 2. 实体 + `EntityController` / `EntityTreeController`，配置 List/Form 字段与菜单。
@@ -467,7 +544,7 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
    - **整页覆写**：`apps/{biz}/...`
    - **流程页**：FlowGram 画布
 
-### 8.3 Cube.Vue 成果复用边界
+### 8.4 Cube.Vue 成果复用边界
 
 | 复用 | 重写 |
 |------|------|
@@ -605,51 +682,52 @@ Draft → Accepted → Implementing → Validating → Done
 
 | OSC | 交付物 | 范围控制 | 测试最低要求 |
 |-----|--------|----------|--------------|
-| **OSC-0002** | Cube.xml：**UserProfile** + **EntityViewProfile** + **EntityComment** → 生成 → 三套 API | 仅 NewLife.Cube + 测试/文档；**不含**任何 ArcoVue UI | XUnitTest 覆盖三实体：鉴权、读写、唯一约束、Comment 按 category+linkId |
+| **OSC-0002** ✅ 已完成 | Cube.xml：**UserProfile** + **ViewProfile** + **EntityComment** → 生成 → 三套 API | 仅 NewLife.Cube + 测试/文档；**不含**任何 ArcoVue UI | XUnitTest 覆盖三实体：鉴权、读写、唯一约束、Comment 按 category+linkId |
 
 ### 10.3 前端与协作里程碑（对应顺序 OSC）
 
-### M0 — 协作基线与通路 → **OSC-0001**
+### M0 — 协作基线与通路 → **OSC-0001** ✅ 已完成
 
 - 落地 `NewLife.Cube.ArcoVue/openspec/`（五壳 Agent + harness；见 §9）；用 `openspec-create` 建 OSC-0001。
 - ArcoVue 代理 `/Auth` + `/Mfa`；`UseArcoVue` 冒烟；依赖 spike 写入 design。
 - **出口：** 状态机可跑通「创建→批准→…」；登录通路通。
 
-### M1 — 零配置 CRUD → **OSC-0003**（加宽 A2；可与 OSC-0002 并行，评论 Tab 合并顺序 0002 优先）
+### M1 — 零配置 CRUD → **OSC-0003** ✅ 已完成（加宽 A2；可与 OSC-0002 并行，评论 Tab 合并顺序 0002 优先）
 
 - 动态路由 B3、`DynamicPage` + Cube.Vue 同构微内核（fieldControl / LOV / Section·apps / 树表 / GetChartData / **右侧**抽屉表单+历史）。
 - Arco 本地控件适配；Vitest 关键路径。
 - **不含**布局引擎/主题持久化/多页签产品化（→ OSC-0004）；**不含** VTable 多视图（→ OSC-0005+）。
 - **出口：** 冒烟 Admin/User·Role·Menu·Log；元数据 CRUD + LOV/树/图表/覆写/抽屉可用。
 
-### M2 — 壳 + 消费 UserProfile → **OSC-0004**（依赖 **OSC-0002**）
+### M2 — 壳 + 消费 UserProfile → **OSC-0004** ✅ 已完成（依赖 **OSC-0002**）
 
 - 布局/主题/密度/页签 + 外观设置；对接 UserProfile。
 - **不含** VTable 多视图。
 - **出口（OSC-0004）：** ArcoVue `RootLayout` 动态 `side`/`top`/`mix`；主题 `light`/`dark`/`system` + 密度；TagsView；`/settings/appearance`；`GET/PUT /Cube/UserProfile`（线缆字段 `layoutJson`/`themeJson`/`workspaceJson`）；CRUD 微内核不读壳偏好。
 
-### M3a — VTable 表格 + 列布局 → **OSC-0005**（依赖 **OSC-0002**）
+### M3a — VTable 表格 + 列布局 → **OSC-0005** ✅ 已完成（依赖 **OSC-0002**）
 
-- ListTable、列显隐/顺序/宽度/左冻结、表头排序、写 EntityViewProfile。
+- ListTable、列显隐/顺序/宽度/左冻结、表头排序、写 ViewProfile。
 - **多命名视图**（仅 `table`）：`ViewsJson` + `ActiveViewId`；默认种子「默认列表」（兼容旧种子「列表」）。
 - **不含** tree/card/gantt 类型切换（下一号）；列表扁平（树启发式已移除）。
-- **出口（OSC-0005）：** DefaultList 主表为 VTable；命名视图工具条 + 字段设置；`GET/PUT/DELETE /Cube/EntityViewProfile`。
+- **出口（OSC-0005）：** DefaultList 主表为 VTable；命名视图工具条 + 字段设置；`GET/PUT/DELETE /Cube/ViewProfile`。
 
-### M3b — 多视图类型 + Tab 工作台 → **OSC-0006**（依赖 OSC-0005）
+### M3b — 多视图类型 + Tab 工作台 → **OSC-0006** ✅ 已完成（依赖 OSC-0005）
 
 - `ViewKind`：`table | tree | card | kanban | calendar | gantt`；`NamedView.mapping` 存类型映射。
 - Tab + `···` + `+` 新建（门禁：无树元数据禁止创建 tree）；配置抽屉「列表区」按类型替换。
 - 看板只读分列；日历开始必选/结束可选；看板/日历/甘特 GetList 大 pageSize（约 200–500）。
 - 卡片/看板左下操作与表一致：有权则详情+编辑+删除。
 - **出口（OSC-0006）：** ViewTabsToolbar + Card/Kanban/Calendar/Gantt 舞台；映射只写 `viewsJson`。
+- **OSC-0006 增补（已并入）：** 树形组装工具 `treeBuilder`（ParentID/id、Path/ParentPath 组装）+ 修复 VTable `hierarchyExpandLevel`（≥2 根节点才默认展开）。
 
-### M4a — 左抽屉表单 + Log 历史 → **OSC-0007**
+### M4a — 右抽屉表单 + Log 历史 → **OSC-0007** 🟠 核心已随 OSC-0003 达成
 
-- 编辑/历史 Tab；**不含**评论（下一号）。
+- 编辑/历史 Tab 已随 OSC-0003 实现（右抽屉）；历史为朴素 timeline，无分页/无字段 diff——OSC-0007 仅需补历史增强，可缩小范围或并入收口。
 
 ### M4b — 评论 Tab → **OSC-0008**（依赖 **OSC-0002** + OSC-0007）
 
-- 消费 EntityComment。
+- 消费 EntityComment。后端 OSC-0002 已就绪（`GET/POST/DELETE /Cube/EntityComment`，同表回复），**纯前端接线**：api-core 增 `createCommentApi` + `RecordDrawer` 评论 Tab 真实实现。
 
 ### M5 — FlowGram 样例 → **OSC-0009**
 
@@ -657,17 +735,40 @@ Draft → Accepted → Implementing → Validating → Done
 
 ### M6 — 硬化 → **OSC-0010**（收口）
 
-- 矩阵现状列、功能清单回写、冒烟、harness；无大功能开发。
+- 矩阵现状列、功能清单回写、冒烟、harness；无大功能开发。另清理 §10.4 所列占位/死代码。
 
-### 总验收清单
+### 总验收清单（2026-08-02 刷新）
 
-- [ ] 仅 `UseArcoVue`：Admin + 新业务实体自动 CRUD  
+- [x] 仅 `UseArcoVue`：Admin + 新业务实体自动 CRUD  
 - [x] **OSC-0002** 三实体后端已合并且带 XUnitTest  
-- [x] 布局/主题来自 UserProfile（OSC-0004）；列表视图/列来自 EntityViewProfile（→ OSC-0005+）  
-- [ ] 四视图 + 左抽屉三 Tab；评论走 EntityComment  
-- [ ] §3.1 矩阵 P0 目标达成（或书面豁免）  
+- [x] 布局/主题来自 UserProfile（OSC-0004）；列表视图/列来自 ViewProfile（OSC-0005+）  
+- [ ] 六视图（table/tree/card/kanban/calendar/gantt）✅；右抽屉表单/历史 ✅；**评论 Tab 待 OSC-0008 接线**  
+- [ ] §3.1 矩阵 P0 目标：大部分达成；书面豁免 = i18n、组件测试、评论接线（→ 后续 OSC，见 §10.4）  
 - [ ] 功能清单可追溯；各 OSC 含测试设计与 verify 记录  
-- [ ] OSC 编号连续、依赖方编号大于被依赖方  
+- [x] OSC 编号连续（0001~0006 已归档）、依赖方编号大于被依赖方  
+
+### 10.4 代码审查结论（2026-08-02）
+
+对照本方案对 NewLife.Cube.ArcoVue 全量代码审查（OSC-0001~0006 归档后），「ArcoVue 现状」列已按实测刷新（§3.1）。
+
+**达成度高**：零配置 CRUD、6 视图工作台（table/tree/card/kanban/calendar/gantt）、UserProfile 双通道消费（布局/主题/密度）、ViewProfile 直接后端权威（命名视图/列/sort/chrome/mapping）、apps 两级覆写（整页+Section）、树形组装与 VTable hierarchy，均落地并带单测（16 spec / 88 用例）。
+
+**差距与后续规划**：
+
+| # | 差距 | 定位 | 建议后续 |
+|---|------|:---:|----------|
+| 1 | 评论 Tab 前端未接线（后端 OSC-0002 已就绪） | P0 | OSC-0008：api-core 增 comment API + RecordDrawer 评论 Tab |
+| 2 | `UserProfile.workspace.defaultView / pageSize` 已建模未消费 | P0 | DefaultList 无 ViewProfile 时回落默认视图；每页条数接入 |
+| 3 | 筛选记忆未持久化（filtersJson 预留未用；分组为占位） | P1 | OSC-0011：仅保存当前实体、当前命名视图的搜索条件；不做通用数据范围引擎 |
+| 4 | 列 frozen 仅 left/false，无 right | P1 | 补充右冻结 |
+| 5 | 角色/租户级配置层未实现（仅系统默认+用户两级，§5.1） | P1 | 分层扩展 |
+| 6 | 组件测试缺失（仅纯逻辑单测） | P1 | `@vue/test-utils` + happy-dom 覆盖关键组件 |
+| 7 | 占位/死代码：分组/排序/自定义按钮 `Message.info`、`NamedViewsToolbar.vue` 无引用 | P2 | 清理或实现 |
+| 8 | `ListTable` 树列标记排除条件写 `__check`（实际复选框列为 `__checked`），showCheckbox+hierarchy 同时开启时 tree:true 可能标错列 | P2 | 修正排除条件 |
+| 9 | i18n 未实现（矩阵目标 ✅ 但实际无文案外置） | P1 | 文案外置 |
+| 10 | MFA UI / FlowGram / E2E 冒烟 | P1/P2 | 后续 OSC（0009/0010） |
+
+**文档一致性修正**：§7 与 §6.3 的「左侧抽屉」表述与本方案 §8.1 契约（`placement="right"`）及实际实现（右侧抽屉）不一致，本审查统一为「右侧抽屉」，并保留「飞书多维表为左抽屉」的范式差异说明。
 
 ---
 
@@ -694,7 +795,7 @@ Draft → Accepted → Implementing → Validating → Done
 | 拟建 `NewLife.Cube.ArcoVue/web/docs/` | Pref 消费、多视图、覆写、测试约定 |
 | [内置前端皮肤.md](./内置前端皮肤.md) | SPA-7 能力矩阵 |
 | [前端对接指南.md](./前端对接指南.md) | Profile / Comment 对接 |
-| [核心接口架构.md](./核心接口架构.md) | 高级接口：UserProfile、EntityViewProfile、EntityComment；**建议**增加 MFA → 认证接口设计 交叉引用 |
+| [核心接口架构.md](./核心接口架构.md) | 高级接口：UserProfile、ViewProfile、EntityComment；**建议**增加 MFA → 认证接口设计 交叉引用 |
 | [认证接口设计.md](./认证接口设计.md) | `/Mfa/*` 权威定义（AUTH-10） |
 | [功能清单.md](../功能清单.md) | 新增 Profile/Comment 编码；更新 SPA-7/测试列 |
 | 根 README 皮肤表/端口 | 若脚本或默认皮肤变化 |
@@ -707,18 +808,18 @@ Draft → Accepted → Implementing → Validating → Done
 
 | 编号 | 主题 | 范围（控制） | 依赖 |
 |------|------|--------------|------|
-| OSC-0001 | 协作基线：openspec 五壳就绪、代理 `/Auth` `/Mfa`、核心接口架构 MFA 交叉引用 | 无业务功能大改 | — |
-| OSC-0002 | 后端三实体：**UserProfile** + **EntityViewProfile** + **EntityComment**（Cube.xml → xcode → 三套 API） | 仅 NewLife.Cube + 测试/文档；无 Arco UI | — |
-| OSC-0003 | ArcoVue **零配置 CRUD 微内核**（B3 路由 + DynamicPage + fieldControl/LOV/树/图表/Section·apps + **右侧**抽屉表单/历史） | 不含壳主题/TagsView；不含 VTable；评论 Tab 预留 | OSC-0001；评论接线软依赖 0002 |
-| OSC-0004 | 布局/主题引擎 + **消费** UserProfile | 不含 VTable | OSC-0002 |
-| OSC-0005 | VTable **表格** + 列布局 + **消费** EntityViewProfile | 不含 tree/card/gantt；可替换 0003 默认 a-table Section | OSC-0002、建议 OSC-0003 |
-| OSC-0006 | 卡片 / 甘特等视图增强（树表基础能力已在 0003） | 不含抽屉 | OSC-0005 |
-| OSC-0007 | 记录抽屉 **增强**（历史筛选 UX 等；右侧表单骨架已在 0003） | 不含评论 | OSC-0003 |
-| OSC-0008 | 抽屉评论 Tab + **消费** EntityComment | 仅评论链路 | OSC-0002、OSC-0003/0007 |
+| OSC-0001 ✅ | 协作基线：openspec 五壳就绪、代理 `/Auth` `/Mfa`、核心接口架构 MFA 交叉引用 | 无业务功能大改 | — |
+| OSC-0002 ✅ | 后端三实体：**UserProfile** + **ViewProfile** + **EntityComment**（Cube.xml → xcode → 三套 API） | 仅 NewLife.Cube + 测试/文档；无 Arco UI | — |
+| OSC-0003 ✅ | ArcoVue **零配置 CRUD 微内核**（B3 路由 + DynamicPage + fieldControl/LOV/树/图表/Section·apps + **右侧**抽屉表单/历史） | 不含壳主题/TagsView；不含 VTable；评论 Tab 预留 | OSC-0001；评论接线软依赖 0002 |
+| OSC-0004 ✅ | 布局/主题引擎 + **消费** UserProfile | 不含 VTable | OSC-0002 |
+| OSC-0005 ✅ | VTable **表格** + 列布局 + **消费** ViewProfile | 不含 tree/card/gantt；可替换 0003 默认 a-table Section | OSC-0002、建议 OSC-0003 |
+| OSC-0006 ✅ | 卡片 / 甘特等视图增强；**增补已并入**：树形组装 `treeBuilder`（ParentID/id、Path/ParentPath）+ VTable `hierarchyExpandLevel` 修复 | 不含抽屉 | OSC-0005 |
+| OSC-0007 🟠 | 记录抽屉 **增强**（历史筛选 UX 等；右侧表单/历史已随 0003 达成，可缩小范围） | 不含评论 | OSC-0003 |
+| OSC-0008 | 抽屉评论 Tab + **消费** EntityComment（后端 OSC-0002 已就绪，纯前端接线） | 仅评论链路 | OSC-0002 ✅、OSC-0003 |
 | OSC-0009 | FlowGram 单一样例 | 不扩流程平台 | — |
-| OSC-0010 | 收口：矩阵/功能清单/冒烟/harness | 无新功能 | 建议前述 P0 已完成 |
+| OSC-0010 | 收口：矩阵/功能清单/冒烟/harness + 清理 §10.4 占位/死代码 | 无新功能 | 建议前述 P0 已完成 |
 
-后续能力（LOV、MFA UI、Section/apps 等）自 **OSC-0011** 起顺延新增，仍保持「依赖在前、一号一事」。
+后续能力（**有限视图/表单自定义 OSC-0011~0013**、MFA UI、i18n、组件测试、角色/租户配置层、E2E 冒烟等）自 **OSC-0011** 起顺延新增，仍保持「依赖在前、一号一事」；LOV 已在 OSC-0006 前落地，不再列为后续；筛选记忆（FiltersJson）归入 OSC-0011，受限表单布局（FormJson）归入 OSC-0012，全局只读模板归入 OSC-0013。
 
 ---
 
