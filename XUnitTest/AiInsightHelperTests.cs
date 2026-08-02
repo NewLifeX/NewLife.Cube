@@ -1,23 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Threading.Tasks;
 using NewLife;
 using NewLife.Cube.AI;
-using NewLife.Data;
 using NewLife.Web;
 using XCode;
-using XCode.Cache;
-using XCode.Configuration;
-using XCode.DataAccessLayer;
 using Xunit;
 
 namespace XUnitTest;
 
-/// <summary>AI 洞察数据收集单元测试 — Collect 使用控制器传入的数据</summary>
-/// <remarks>验证 AiInsightHelper.Collect 新契约：数据由控制器经 SearchData 查询后传入，
-/// Collect 仅负责字段元数据、查询上下文提取、统计摘要与样本选取，不再自行查询数据库。</remarks>
+/// <summary>AI 洞察数据收集单元测试 — Collect 收集整页数据并过滤敏感字段</summary>
+/// <remarks>验证 AiInsightHelper.Collect 契约：数据由控制器经 SearchData 查询后传入，
+/// Collect 负责字段元数据（安全过滤）、查询上下文（Pager）与整页数据收集，不再自行查询数据库。</remarks>
 public class AiInsightHelperTests
 {
     #region 测试实体
@@ -46,9 +40,34 @@ public class AiInsightHelperTests
 
         private String _Password;
         /// <summary>密码（敏感字段，应被过滤）</summary>
+        [BindColumn("Password", "密码", "", ItemType = "password")]
         [DisplayName("密码")]
         [DataObjectField(false, false, false, 50)]
         public String Password { get => _Password; set { if (OnPropertyChanging("Password", value)) { _Password = value; OnPropertyChanged("Password"); } } }
+
+        private String _ExtData;
+        /// <summary>扩展数据（名称安全但 ItemType=secret，验证 ItemType 过滤）</summary>
+        [BindColumn("ExtData", "扩展数据", "", ItemType = "secret")]
+        [DisplayName("扩展数据")]
+        [DataObjectField(false, false, false, 50)]
+        public String ExtData { get => _ExtData; set { if (OnPropertyChanging("ExtData", value)) { _ExtData = value; OnPropertyChanged("ExtData"); } } }
+
+        private Int32 _RoleId;
+        /// <summary>角色（映射字段，应被 RoleName 替代）</summary>
+        [DisplayName("角色")]
+        [DataObjectField(false, false, false, 0)]
+        public Int32 RoleId { get => _RoleId; set { if (OnPropertyChanging("RoleId", value)) { _RoleId = value; OnPropertyChanged("RoleId"); } } }
+
+        /// <summary>角色名称（Map 扩展属性，映射 RoleId，验证 xxxId→xxxName 替换）</summary>
+        [Map("RoleId")]
+        [DisplayName("角色名称")]
+        public String RoleName => "角色" + _RoleId;
+
+        private String _Remark;
+        /// <summary>备注（大文本字段，应被截断）</summary>
+        [DisplayName("备注")]
+        [DataObjectField(false, false, false, 2000)]
+        public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
 
         private DateTime _CreateTime;
         /// <summary>创建时间</summary>
@@ -65,6 +84,10 @@ public class AiInsightHelperTests
                 "Name" => _Name,
                 "Amount" => _Amount,
                 "Password" => _Password,
+                "ExtData" => _ExtData,
+                "RoleId" => _RoleId,
+                "RoleName" => RoleName,
+                "Remark" => _Remark,
                 "CreateTime" => _CreateTime,
                 _ => base[name],
             };
@@ -76,6 +99,9 @@ public class AiInsightHelperTests
                     case "Name": _Name = value + ""; break;
                     case "Amount": _Amount = value.ToDouble(); break;
                     case "Password": _Password = value + ""; break;
+                    case "ExtData": _ExtData = value + ""; break;
+                    case "RoleId": _RoleId = value.ToInt(); break;
+                    case "Remark": _Remark = value + ""; break;
                     case "CreateTime": _CreateTime = value.ToDateTime(); break;
                     default: base[name] = value; break;
                 }
@@ -84,80 +110,17 @@ public class AiInsightHelperTests
     }
     #endregion
 
-    #region 测试替身
-    /// <summary>实体工厂测试替身。继承真实 DefaultEntityFactory，仅重写 Session 避免访问数据库</summary>
-    private class FakeFactory : Entity<AiTestEntity>.DefaultEntityFactory
-    {
-        private readonly IEntitySession _session;
-
-        public FakeFactory(Int32 totalCount) => _session = new FakeSession(totalCount);
-
-        public override IEntitySession Session => _session;
-    }
-
-    /// <summary>实体会话测试替身。仅实现 Count，其余成员不支持（Collect 只用到 Count）</summary>
-    private class FakeSession : IEntitySession
-    {
-        private readonly Int32 _count;
-
-        public FakeSession(Int32 count) => _count = count;
-
-        public String ConnName => "Test";
-        public String TableName => "AiTestEntity";
-        public IDataTable DataTable => throw new NotSupportedException();
-        public String Key => "Test###AiTestEntity";
-        public String FormatedTableName => throw new NotSupportedException();
-        public DAL Dal => throw new NotSupportedException();
-        public IDictionary<String, Object> Items { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
-        public Int32 Count => _count;
-        public Int64 LongCount => _count;
-        public IEntityCache Cache => throw new NotSupportedException();
-        public ISingleEntityCache SingleCache => throw new NotSupportedException();
-
-        public event Action<Type> OnDataChange { add { } remove { } }
-
-        public Boolean WaitForInitData(Int32 ms = 3000) => true;
-
-        [Obsolete]
-        public void ClearCache(String reason) { }
-
-        public void ClearCache(String reason, Boolean force) { }
-
-        public void InitData() { }
-
-        public DbTable Query(SelectBuilder builder, Int64 startRowIndex, Int64 maximumRows) => throw new NotSupportedException();
-        public Int32 QueryCount(SelectBuilder builder) => throw new NotSupportedException();
-        public Int32 Execute(String sql, CommandType type = CommandType.Text, params IDataParameter[] ps) => throw new NotSupportedException();
-        public Int64 InsertAndGetIdentity(String sql, CommandType type = CommandType.Text, params IDataParameter[] ps) => throw new NotSupportedException();
-        public Task<DbTable> QueryAsync(SelectBuilder builder, Int64 startRowIndex, Int64 maximumRows) => throw new NotSupportedException();
-        public Task<Int64> QueryCountAsync(SelectBuilder builder) => throw new NotSupportedException();
-        public Task<Int32> ExecuteAsync(String sql, CommandType type = CommandType.Text, params IDataParameter[]? ps) => throw new NotSupportedException();
-        public Task<Int64> InsertAndGetIdentityAsync(String sql, CommandType type = CommandType.Text, params IDataParameter[]? ps) => throw new NotSupportedException();
-        public Int32 Truncate() => throw new NotSupportedException();
-        public Int32 BeginTrans() => throw new NotSupportedException();
-        public Int32 Commit() => throw new NotSupportedException();
-        public Int32 Rollback() => throw new NotSupportedException();
-        public EntityTransaction CreateTrans() => throw new NotSupportedException();
-        public Int32 Insert(IEntity entity) => throw new NotSupportedException();
-        public Int32 Update(IEntity entity) => throw new NotSupportedException();
-        public Int32 Delete(IEntity entity) => throw new NotSupportedException();
-        public Task<Int32> InsertAsync(IEntity entity) => throw new NotSupportedException();
-        public Task<Int32> UpdateAsync(IEntity entity) => throw new NotSupportedException();
-        public Task<Int32> DeleteAsync(IEntity entity) => throw new NotSupportedException();
-    }
-    #endregion
-
     #region 测试方法
     [Fact]
-    [DisplayName("Collect - 使用传入数据计算统计与样本")]
-    public void Collect_UsesPassedData_ComputesStatsAndSamples()
+    [DisplayName("Collect - 整页数据进入上下文，敏感字段被过滤")]
+    public void Collect_KeepsWholePage_FiltersSensitiveFields()
     {
         var now = new DateTime(2026, 1, 1);
         var list = new List<AiTestEntity>
         {
-            new() { Id = 1, Name = "甲", Amount = 10, Password = "x", CreateTime = now },
-            new() { Id = 2, Name = "乙", Amount = 20, Password = "y", CreateTime = now.AddDays(1) },
-            new() { Id = 3, Name = "丙", Amount = 30, Password = "z", CreateTime = now.AddDays(2) },
+            new() { Id = 1, Name = "甲", Amount = 10, Password = "x", ExtData = "secret-1", CreateTime = now },
+            new() { Id = 2, Name = "乙", Amount = 20, Password = "y", ExtData = "secret-2", CreateTime = now.AddDays(1) },
+            new() { Id = 3, Name = "丙", Amount = 30, Password = "z", ExtData = "secret-3", CreateTime = now.AddDays(2) },
         };
 
         var pager = new Pager();
@@ -165,62 +128,102 @@ public class AiInsightHelperTests
         pager.Sort = "Amount";
         pager.Desc = true;
 
-        var ctx = AiInsightHelper.Collect<AiTestEntity>(new FakeFactory(1000), pager, list, 100);
+        var ctx = AiInsightHelper.Collect<AiTestEntity>(new Entity<AiTestEntity>.DefaultEntityFactory(), pager, list);
 
-        // 使用传入数据，不再自行查询
-        Assert.Equal(3, ctx.ShownCount);
-        // 总记录数来自工厂会话
-        Assert.Equal(1000, ctx.TotalCount);
+        // 整页数据保留
+        Assert.Equal(3, ctx.Data.Count);
 
-        // 统计摘要：数值字段 min/max/avg
-        Assert.True(ctx.Stats.NumericStats.ContainsKey("Amount"));
-        var ns = ctx.Stats.NumericStats["Amount"];
-        Assert.Equal(10.0, ns.Min);
-        Assert.Equal(30.0, ns.Max);
-        Assert.Equal(20.0, ns.Avg);
+        // 每行仅含安全字段，密码/密钥被过滤
+        foreach (var row in ctx.Data)
+        {
+            Assert.Contains("Name", row.Keys);
+            Assert.Contains("Amount", row.Keys);
+            Assert.DoesNotContain("Password", row.Keys);
+            Assert.DoesNotContain("ExtData", row.Keys);
+        }
 
-        // 查询上下文：过滤条件与排序
-        Assert.Equal("测试", ctx.Filters["Name"]);
-        Assert.Equal("Amount", ctx.SortField);
-        Assert.True(ctx.SortDesc);
-
-        // 样本非空且全部来自传入数据
-        Assert.True(ctx.Samples.Count > 0);
-        Assert.True(ctx.Samples.Count <= 50);
+        // 查询上下文由 Pager 携带
+        Assert.Same(pager, ctx.Pager);
+        Assert.Equal("测试", ctx.Pager.Params["Name"]);
+        Assert.Equal("Amount", ctx.Pager.Sort);
+        Assert.True(ctx.Pager.Desc);
     }
 
     [Fact]
-    [DisplayName("Collect - 空数据时样本与统计为空")]
-    public void Collect_EmptyData_NoSamplesNoStats()
+    [DisplayName("Collect - 空数据时数据为空但字段列表保留")]
+    public void Collect_EmptyData_DataEmpty()
     {
         var pager = new Pager();
 
-        var ctx = AiInsightHelper.Collect<AiTestEntity>(new FakeFactory(0), pager, new List<AiTestEntity>(), 100);
+        var ctx = AiInsightHelper.Collect<AiTestEntity>(new Entity<AiTestEntity>.DefaultEntityFactory(), pager, new List<AiTestEntity>());
 
-        Assert.Equal(0, ctx.ShownCount);
-        Assert.Empty(ctx.Samples);
-        Assert.Empty(ctx.Stats.NumericStats);
-        Assert.Empty(ctx.Stats.Distribution);
+        Assert.Empty(ctx.Data);
+        Assert.Contains(ctx.Fields, f => f.Name == "Name");
     }
 
     [Fact]
-    [DisplayName("Collect - 敏感字段 Password 被过滤")]
+    [DisplayName("Collect - 敏感字段按名称与 ItemType 双重过滤")]
     public void Collect_FiltersSensitiveFields()
     {
         var list = new List<AiTestEntity>
         {
-            new() { Id = 1, Name = "甲", Amount = 10, Password = "secret", CreateTime = DateTime.Now },
+            new() { Id = 1, Name = "甲", Amount = 10, Password = "secret", ExtData = "secret", CreateTime = DateTime.Now },
         };
         var pager = new Pager();
 
-        var ctx = AiInsightHelper.Collect<AiTestEntity>(new FakeFactory(1), pager, list, 100);
+        var ctx = AiInsightHelper.Collect<AiTestEntity>(new Entity<AiTestEntity>.DefaultEntityFactory(), pager, list);
 
-        // 敏感字段（Password）不应出现在 AI 字段列表中
+        // 字段名黑名单：Password 被过滤
         Assert.DoesNotContain(ctx.Fields, f => f.Name == "Password");
+        // ItemType 黑名单：ExtData 名称安全但 ItemType=secret 被过滤
+        Assert.DoesNotContain(ctx.Fields, f => f.Name == "ExtData");
         // 安全字段保留
         Assert.Contains(ctx.Fields, f => f.Name == "Name");
         Assert.Contains(ctx.Fields, f => f.Name == "Amount");
         Assert.Contains(ctx.Fields, f => f.Name == "CreateTime");
+    }
+
+    [Fact]
+    [DisplayName("Collect - 映射字段 RoleId 被 RoleName 替代")]
+    public void Collect_ReplacesMapFieldWithName()
+    {
+        var list = new List<AiTestEntity>
+        {
+            new() { Id = 1, Name = "甲", Amount = 10, RoleId = 5 },
+        };
+        var pager = new Pager();
+
+        var ctx = AiInsightHelper.Collect<AiTestEntity>(new Entity<AiTestEntity>.DefaultEntityFactory(), pager, list);
+
+        // 字段列表：RoleId 被 RoleName 替代
+        Assert.DoesNotContain(ctx.Fields, f => f.Name == "RoleId");
+        Assert.Contains(ctx.Fields, f => f.Name == "RoleName");
+
+        // 数据：RoleId 被 RoleName 替代，值为可读名称
+        var row = Assert.Single(ctx.Data);
+        Assert.DoesNotContain("RoleId", row.Keys);
+        Assert.Equal("角色5", row["RoleName"]);
+    }
+
+    [Fact]
+    [DisplayName("Collect - 大文本字段截断")]
+    public void Collect_TruncatesLongText()
+    {
+        var longText = new String('测', 2000);
+        var list = new List<AiTestEntity>
+        {
+            new() { Id = 1, Name = "甲", Remark = longText },
+        };
+        var pager = new Pager();
+
+        var ctx = AiInsightHelper.Collect<AiTestEntity>(new Entity<AiTestEntity>.DefaultEntityFactory(), pager, list);
+
+        var row = Assert.Single(ctx.Data);
+        var remark = (String)row["Remark"]!;
+        // 截断到 MaxTextLength + 截断标记
+        var mark = "...[已截断]";
+        Assert.True(remark.Length <= AiDataHelper.MaxTextLength + mark.Length);
+        Assert.EndsWith(mark, remark);
     }
     #endregion
 }

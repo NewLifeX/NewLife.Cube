@@ -13,18 +13,17 @@ public static class AiInsightHelper
     /// <summary>收集实体数据和元数据，构建 AI 分析上下文</summary>
     /// <typeparam name="TEntity">实体类型</typeparam>
     /// <param name="factory">实体工厂</param>
-    /// <param name="pager">查询条件（已解码的 _query），用于提取查询上下文与排序</param>
-    /// <param name="data">控制器按列表页逻辑（SearchData）查询得到的数据，已应用数据权限/搜索条件/排序</param>
-    /// <param name="maxRows">最大数据行数</param>
+    /// <param name="pager">查询条件（已解码的 _query），携带分页、排序与参数</param>
+    /// <param name="data">控制器按列表页逻辑（SearchData）查询得到的当前页数据</param>
     /// <returns>AI 洞察上下文数据</returns>
-    public static AiInsightContext Collect<TEntity>(IEntityFactory factory, Pager pager, IList<TEntity> data, Int32 maxRows = 100) where TEntity : Entity<TEntity>, new()
+    public static AiInsightContext Collect<TEntity>(IEntityFactory factory, Pager pager, IList<TEntity> data) where TEntity : Entity<TEntity>, new()
     {
         var ctx = new AiInsightContext
         {
             EntityName = factory.EntityType.GetDisplayName() ?? factory.Table.DataTable.DisplayName ?? factory.EntityType.Name,
             TableName = factory.Table.DataTable.TableName,
             Description = factory.Table.DataTable.Description,
-            TotalCount = factory.Session.Count,
+            Pager = pager,
         };
 
         var entityType = typeof(TEntity);
@@ -32,6 +31,21 @@ public static class AiInsightHelper
         // 1. 收集字段元数据（安全过滤后）
         var allFields = factory.AllFields;
         var safeFields = AiDataHelper.FilterSafeFields(allFields, entityType);
+
+        // 映射字段替换：xxxId → xxxName（与列表页 FieldCollection.SetRelation 一致）
+        // Map 扩展属性（如 RoleName 映射 RoleId）替代原始 Id 字段，LLM 更易理解
+        foreach (var f in safeFields.ToArray())
+        {
+            if (f.Map != null && !f.Map.Name.IsNullOrEmpty())
+            {
+                for (var i = safeFields.Count - 1; i >= 0; i--)
+                {
+                    if (safeFields[i].Name.EqualIgnoreCase(f.Map.Name))
+                        safeFields.RemoveAt(i);
+                }
+            }
+        }
+
         ctx.Fields = safeFields.Select(f => new AiFieldMeta
         {
             Name = f.Name,
@@ -40,173 +54,10 @@ public static class AiInsightHelper
             Description = f.Description,
         }).ToList();
 
-        // 2. 记录查询上下文
-        ctx.Filters = pager.Params
-            .Where(kv => !kv.Key.EqualIgnoreCase("_query") && !kv.Key.EqualIgnoreCase("Sort") && !kv.Key.EqualIgnoreCase("Desc") && !kv.Key.EqualIgnoreCase("PageIndex") && !kv.Key.EqualIgnoreCase("PageSize"))
-            .ToDictionary(kv => kv.Key, kv => kv.Value + "");
-        ctx.SortField = pager.Sort;
-        ctx.SortDesc = pager.Desc;
-
-        // 3. 使用控制器查询结果（数据权限 + 搜索条件 + 排序已由 SearchData 应用）
-        var entityList = data.Cast<IEntity>().ToList();
-        ctx.ShownCount = entityList.Count;
-
-        // 4. 预计算统计摘要
-        ctx.Stats = ComputeStats(entityList, safeFields);
-
-        // 5. 智能选取数据样本（首尾 + 异常 + 随机）
-        ctx.Samples = SelectSamples(entityList, safeFields, ctx.Stats, maxRows);
+        // 2. 当前页数据，仅保留安全字段，整页交给 LLM
+        ctx.Data = data.Cast<IEntity>().Select(e => AiDataHelper.ToSafeDictionary(e, safeFields)).ToList();
 
         return ctx;
-    }
-
-    /// <summary>预计算统计摘要</summary>
-    private static AiStatsSummary ComputeStats(IList<IEntity> data, IList<FieldItem> safeFields)
-    {
-        var stats = new AiStatsSummary();
-        if (data.Count == 0) return stats;
-
-        // 数值字段统计
-        foreach (var field in safeFields)
-        {
-            var type = field.Type;
-            if (type == null) continue;
-
-            if (type == typeof(Int32) || type == typeof(Int64) || type == typeof(Decimal) || type == typeof(Double) || type == typeof(Single))
-            {
-                var values = data.Select(e => e[field.Name] is IConvertible c ? c.ToDouble(null) : (Double?)null)
-                                 .Where(v => v.HasValue)
-                                 .Select(v => v!.Value)
-                                 .ToList();
-                if (values.Count > 0)
-                {
-                    stats.NumericStats[field.Name] = new NumericStats
-                    {
-                        Count = values.Count,
-                        NullCount = data.Count - values.Count,
-                        Min = values.Min(),
-                        Max = values.Max(),
-                        Avg = Math.Round(values.Average(), 2),
-                        Sum = Math.Round(values.Sum(), 2),
-                    };
-                }
-            }
-
-            // 分类字段分布（字符串/枚举，Top 10）
-            if (type == typeof(String) || type == typeof(Boolean) || type.IsEnum)
-            {
-                var groups = data.GroupBy(e => e[field.Name]?.ToString() ?? "(空)")
-                                 .OrderByDescending(g => g.Count())
-                                 .Take(10)
-                                 .ToDictionary(g => g.Key, g => g.Count());
-                if (groups.Count > 0)
-                    stats.Distribution[field.Name] = groups;
-            }
-        }
-
-        // 时间范围
-        var timeFields = safeFields.Where(f => f.Type == typeof(DateTime)).ToList();
-        foreach (var tf in timeFields)
-        {
-            var values = data.Select(e => e[tf.Name] is DateTime dt ? dt : (DateTime?)null)
-                             .Where(v => v.HasValue)
-                             .Select(v => v!.Value)
-                             .ToList();
-            if (values.Count > 0)
-            {
-                stats.TimeRange[tf.Name] = new TimeRangeStat
-                {
-                    Earliest = values.Min(),
-                    Latest = values.Max(),
-                    Span = values.Max() - values.Min(),
-                };
-            }
-        }
-
-        // 空值率
-        foreach (var field in safeFields)
-        {
-            var nullCount = data.Count(e => e[field.Name] == null || (e[field.Name] is String s && s.IsNullOrEmpty()));
-            if (nullCount > 0)
-                stats.NullRates[field.Name] = Math.Round((Double)nullCount / data.Count * 100, 1);
-        }
-
-        return stats;
-    }
-
-    /// <summary>智能选取数据样本：首部 5 + 尾部 5 + 异常行 + 随机 5，总计 50 行内</summary>
-    private static IList<IDictionary<String, Object?>> SelectSamples(IList<IEntity> data, IList<FieldItem> safeFields, AiStatsSummary stats, Int32 maxRows)
-    {
-        var samples = new List<IDictionary<String, Object?>>();
-        if (data.Count == 0) return samples;
-
-        var used = new HashSet<Int32>();
-        var total = data.Count;
-
-        // 首部 5 行
-        for (var i = 0; i < Math.Min(5, total); i++)
-        {
-            used.Add(i);
-            samples.Add(AiDataHelper.ToSafeDictionary(data[i], safeFields));
-        }
-
-        // 尾部 5 行
-        for (var i = total - 1; i >= Math.Max(0, total - 5); i--)
-        {
-            if (used.Add(i))
-                samples.Add(AiDataHelper.ToSafeDictionary(data[i], safeFields));
-        }
-
-        // 异常行：每个数值字段的 min/max 行（各取 1 行）
-        foreach (var stat in stats.NumericStats)
-        {
-            if (used.Count >= 50) break;
-
-            // Max 行
-            var maxIdx = -1;
-            Double maxVal = Double.MinValue;
-            for (var i = 0; i < total; i++)
-            {
-                if (used.Contains(i)) continue;
-                var v = ToDouble(data[i][stat.Key]);
-                if (v.HasValue && v.Value > maxVal) { maxVal = v.Value; maxIdx = i; }
-            }
-            if (maxIdx >= 0) { used.Add(maxIdx); samples.Add(AiDataHelper.ToSafeDictionary(data[maxIdx], safeFields)); }
-
-            // Min 行
-            var minIdx = -1;
-            Double minVal = Double.MaxValue;
-            for (var i = 0; i < total; i++)
-            {
-                if (used.Contains(i)) continue;
-                var v = ToDouble(data[i][stat.Key]);
-                if (v.HasValue && v.Value < minVal) { minVal = v.Value; minIdx = i; }
-            }
-            if (minIdx >= 0) { used.Add(minIdx); samples.Add(AiDataHelper.ToSafeDictionary(data[minIdx], safeFields)); }
-        }
-
-        // 随机 5 行
-        var rnd = new Random();
-        var attempts = 0;
-        while (samples.Count < Math.Min(50, total) && attempts < 100)
-        {
-            var idx = rnd.Next(total);
-            if (used.Add(idx))
-                samples.Add(AiDataHelper.ToSafeDictionary(data[idx], safeFields));
-            attempts++;
-        }
-
-        return samples;
-    }
-
-    private static Double? ToDouble(Object? value)
-    {
-        if (value is IConvertible c)
-        {
-            try { return c.ToDouble(null); }
-            catch { return null; }
-        }
-        return null;
     }
 
     /// <summary>构建 AI 分析提示词</summary>
@@ -231,8 +82,7 @@ public static class AiInsightHelper
         sb.AppendLine("- 表名：" + ctx.TableName);
         if (!ctx.Description.IsNullOrEmpty())
             sb.AppendLine("- 说明：" + ctx.Description);
-        sb.AppendLine("- 总记录数：" + ctx.TotalCount.ToString("N0"));
-        sb.AppendLine("- 分析范围：当前列表页数据 " + ctx.ShownCount.ToString("N0") + " 行");
+        sb.AppendLine("- 分析范围：当前列表页数据 " + ctx.Data.Count.ToString("N0") + " 行");
         sb.AppendLine();
 
         // 字段列表
@@ -244,79 +94,28 @@ public static class AiInsightHelper
         }
         sb.AppendLine();
 
-        // 查询条件
-        if (ctx.Filters.Count > 0)
+        // 查询条件（来自 Pager）
+        var filters = ctx.Pager.Params
+            .Where(kv => !kv.Key.EqualIgnoreCase("_query") && !kv.Key.EqualIgnoreCase("Sort") && !kv.Key.EqualIgnoreCase("Desc") && !kv.Key.EqualIgnoreCase("PageIndex") && !kv.Key.EqualIgnoreCase("PageSize"))
+            .ToList();
+        if (filters.Count > 0 || !ctx.Pager.Sort.IsNullOrEmpty())
         {
             sb.AppendLine("## 当前查询条件");
-            foreach (var kv in ctx.Filters)
+            foreach (var kv in filters)
             {
                 sb.AppendLine($"- {kv.Key}: {kv.Value}");
             }
-            if (!ctx.SortField.IsNullOrEmpty())
-                sb.AppendLine($"- 排序: {ctx.SortField}{(ctx.SortDesc ? " 降序" : " 升序")}");
+            if (!ctx.Pager.Sort.IsNullOrEmpty())
+                sb.AppendLine($"- 排序: {ctx.Pager.Sort}{(ctx.Pager.Desc ? " 降序" : " 升序")}");
             sb.AppendLine();
         }
 
-        // 统计摘要
-        sb.AppendLine("## 数据统计摘要");
-        if (ctx.Stats.NumericStats.Count > 0)
+        // 当前页数据（仅安全字段）
+        if (ctx.Data.Count > 0)
         {
-            sb.AppendLine("### 数值字段");
-            sb.AppendLine("| 字段 | 总数 | 空值 | 最小值 | 最大值 | 平均值 | 合计 |");
-            sb.AppendLine("|------|------|------|--------|--------|--------|------|");
-            foreach (var kv in ctx.Stats.NumericStats)
-            {
-                var ns = kv.Value;
-                var fieldName = ctx.Fields.FirstOrDefault(f => f.Name == kv.Key)?.DisplayName ?? kv.Key;
-                sb.AppendLine($"| {fieldName} | {ns.Count} | {ns.NullCount} | {ns.Min:N2} | {ns.Max:N2} | {ns.Avg:N2} | {ns.Sum:N2} |");
-            }
-            sb.AppendLine();
-        }
-
-        if (ctx.Stats.Distribution.Count > 0)
-        {
-            sb.AppendLine("### 分类分布");
-            foreach (var kv in ctx.Stats.Distribution)
-            {
-                var fieldName = ctx.Fields.FirstOrDefault(f => f.Name == kv.Key)?.DisplayName ?? kv.Key;
-                sb.AppendLine($"**{fieldName}**：");
-                var items = kv.Value.OrderByDescending(x => x.Value).Take(10);
-                foreach (var item in items)
-                {
-                    sb.AppendLine($"  - {item.Key}: {item.Value} 条");
-                }
-            }
-            sb.AppendLine();
-        }
-
-        if (ctx.Stats.TimeRange.Count > 0)
-        {
-            sb.AppendLine("### 时间范围");
-            foreach (var kv in ctx.Stats.TimeRange)
-            {
-                var fieldName = ctx.Fields.FirstOrDefault(f => f.Name == kv.Key)?.DisplayName ?? kv.Key;
-                sb.AppendLine($"- **{fieldName}**: {kv.Value.Earliest:yyyy-MM-dd HH:mm} ~ {kv.Value.Latest:yyyy-MM-dd HH:mm}（跨度 {kv.Value.Span.TotalDays:N1} 天）");
-            }
-            sb.AppendLine();
-        }
-
-        if (ctx.Stats.NullRates.Count > 0)
-        {
-            sb.AppendLine("### 数据质量");
-            foreach (var kv in ctx.Stats.NullRates.Where(x => x.Value > 0))
-            {
-                var fieldName = ctx.Fields.FirstOrDefault(f => f.Name == kv.Key)?.DisplayName ?? kv.Key;
-                sb.AppendLine($"- **{fieldName}** 空值率: {kv.Value}%");
-            }
-            sb.AppendLine();
-        }
-
-        // 数据样本
-        if (ctx.Samples.Count > 0)
-        {
-            sb.AppendLine($"## 数据样本（{ctx.Samples.Count} 行）");
+            sb.AppendLine("## 当前页数据");
             sb.AppendLine("```json");
-            sb.AppendLine(ctx.Samples.ToJson(true));
+            sb.AppendLine(ctx.Data.ToJson(true));
             sb.AppendLine("```");
             sb.AppendLine();
         }
@@ -355,29 +154,14 @@ public class AiInsightContext
     /// <summary>表说明</summary>
     public String? Description { get; set; }
 
-    /// <summary>总记录数</summary>
-    public Int64 TotalCount { get; set; }
-
-    /// <summary>分析样本数</summary>
-    public Int32 ShownCount { get; set; }
+    /// <summary>查询上下文。分页、排序与参数等全部信息</summary>
+    public Pager Pager { get; set; } = null!;
 
     /// <summary>安全字段列表</summary>
     public IList<AiFieldMeta> Fields { get; set; } = [];
 
-    /// <summary>当前查询条件</summary>
-    public IDictionary<String, String> Filters { get; set; } = new Dictionary<String, String>();
-
-    /// <summary>排序字段</summary>
-    public String? SortField { get; set; }
-
-    /// <summary>是否降序</summary>
-    public Boolean SortDesc { get; set; }
-
-    /// <summary>统计摘要</summary>
-    public AiStatsSummary Stats { get; set; } = new();
-
-    /// <summary>数据样本</summary>
-    public IList<IDictionary<String, Object?>> Samples { get; set; } = [];
+    /// <summary>当前页数据（仅安全字段）</summary>
+    public IList<IDictionary<String, Object?>> Data { get; set; } = [];
 }
 
 /// <summary>AI 字段元数据</summary>
@@ -394,56 +178,5 @@ public class AiFieldMeta
 
     /// <summary>字段说明</summary>
     public String? Description { get; set; }
-}
-
-/// <summary>统计摘要</summary>
-public class AiStatsSummary
-{
-    /// <summary>数值字段统计</summary>
-    public Dictionary<String, NumericStats> NumericStats { get; set; } = new();
-
-    /// <summary>分类字段分布（Top 10）</summary>
-    public Dictionary<String, Dictionary<String, Int32>> Distribution { get; set; } = new();
-
-    /// <summary>时间字段范围</summary>
-    public Dictionary<String, TimeRangeStat> TimeRange { get; set; } = new();
-
-    /// <summary>字段空值率（%）</summary>
-    public Dictionary<String, Double> NullRates { get; set; } = new();
-}
-
-/// <summary>数值统计</summary>
-public class NumericStats
-{
-    /// <summary>有效值数量</summary>
-    public Int32 Count { get; set; }
-
-    /// <summary>空值数量</summary>
-    public Int32 NullCount { get; set; }
-
-    /// <summary>最小值</summary>
-    public Double Min { get; set; }
-
-    /// <summary>最大值</summary>
-    public Double Max { get; set; }
-
-    /// <summary>平均值</summary>
-    public Double Avg { get; set; }
-
-    /// <summary>合计</summary>
-    public Double Sum { get; set; }
-}
-
-/// <summary>时间范围统计</summary>
-public class TimeRangeStat
-{
-    /// <summary>最早时间</summary>
-    public DateTime Earliest { get; set; }
-
-    /// <summary>最晚时间</summary>
-    public DateTime Latest { get; set; }
-
-    /// <summary>时间跨度</summary>
-    public TimeSpan Span { get; set; }
 }
 #endregion

@@ -429,15 +429,14 @@ public partial class ReadOnlyEntityController<TEntity>
     #endregion
 
     #region AI 洞察
-    /// <summary>AI 数据洞察。根据当前查询条件收集数据并生成分析报告</summary>
+    /// <summary>AI 数据洞察。根据当前列表页数据生成分析报告</summary>
     /// <param name="think">是否启用深度推理</param>
     /// <param name="stream">是否流式输出（SSE）</param>
-    /// <param name="maxRows">最大数据行数。保留兼容，当前分析范围为列表页当前页</param>
     /// <returns></returns>
     [DisplayName("AI 数据洞察")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpGet]
-    public virtual async Task<ActionResult> AiInsight(Boolean think = false, Boolean stream = true, Int32 maxRows = 100)
+    public virtual async Task<ActionResult> AiInsight(Boolean think = false, Boolean stream = true)
     {
         var set = CubeSetting.Current;
         if (!set.AISwitch) return Json(500, null, "AI 未启用，请联系系统管理员开启 AISwitch");
@@ -465,7 +464,7 @@ public partial class ReadOnlyEntityController<TEntity>
         var data = SearchData(pager).ToList();
 
         // 收集数据并构造 Prompt
-        var ctx = AiInsightHelper.Collect<TEntity>(Factory, pager, data, maxRows);
+        var ctx = AiInsightHelper.Collect<TEntity>(Factory, pager, data);
         var prompt = AiInsightHelper.BuildPrompt(ctx);
 
         if (stream)
