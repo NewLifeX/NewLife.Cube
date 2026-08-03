@@ -6,6 +6,8 @@ using NewLife.Cube.Enums;
 using NewLife.Log;
 using XCode;
 using XCode.DataAccessLayer;
+// 用于反射推断路由特性，不直接引入 ASP.NET Core MVC 强类型以保持多框架兼容
+//using Microsoft.AspNetCore.Mvc;
 
 namespace NewLife.Cube.Services;
 
@@ -248,7 +250,7 @@ public class LovAutoRegisterService
                     if (attr == null) continue;
                     try
                     {
-                        if (RegisterList(attr)) count++;
+                        if (RegisterList(attr, method)) count++;
                     }
                     catch (Exception ex)
                     {
@@ -263,8 +265,9 @@ public class LovAutoRegisterService
 
     /// <summary>根据 [LovList] 特性注册/更新一个列表型值集（含数据源配置、表格列、搜索字段）</summary>
     /// <param name="attr">特性实例</param>
+    /// <param name="method">标注该特性的 Action 方法，用于自动推断路由等属性</param>
     /// <returns>是否成功注册或更新</returns>
-    private static Boolean RegisterList(LovListAttribute attr)
+    private static Boolean RegisterList(LovListAttribute attr, MethodInfo method)
     {
         if (attr.LovCode.IsNullOrEmpty())
             return false;
@@ -272,6 +275,9 @@ public class LovAutoRegisterService
         // 校验前缀：列表型值集 LovCode 必须以 List. 开头
         if (!attr.LovCode.StartsWith("List.", StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException($"LovList 特性的 LovCode 必须以 'List.' 开头：{attr.LovCode}");
+
+        // 自动推断未指定的属性（RequestUrl、Method、Name）
+        InferLovList(attr, method);
 
         var def = LovDefinition.Find(LovDefinition._.LovCode == attr.LovCode);
         if (def == null)
@@ -375,6 +381,175 @@ public class LovAutoRegisterService
         }
 
         return list;
+    }
+
+    #endregion
+
+    #region 自动推断
+
+    /// <summary>推断 LovList 特性中未指定的属性（RequestUrl、Method、Name）</summary>
+    /// <param name="attr">特性实例</param>
+    /// <param name="method">标注该特性的方法</param>
+    private static void InferLovList(LovListAttribute attr, MethodInfo method)
+    {
+        // 推断显示名称：方法名未指定时，使用 ControllerName.ActionName
+        if (attr.Name.IsNullOrEmpty())
+        {
+            var controllerName = method.DeclaringType?.Name.Replace("Controller", "");
+            attr.Name = $"{controllerName}.{method.Name}";
+        }
+
+        // 推断请求地址
+        if (attr.RequestUrl.IsNullOrEmpty())
+        {
+            attr.RequestUrl = InferRequestUrl(method);
+        }
+
+        // 推断请求方式（仅当特性中 Method 为空或默认 GET 时）
+        if (attr.Method.IsNullOrEmpty() || attr.Method == "GET")
+        {
+            attr.Method = InferHttpMethod(method);
+        }
+    }
+
+    /// <summary>从方法所在控制器的路由特性推断请求地址，自动拼接 API 前缀</summary>
+    private static String InferRequestUrl(MethodInfo method)
+    {
+        var controllerType = method.DeclaringType;
+        if (controllerType == null) return "";
+
+        // 按类型名反射获取特性，避免编译期强依赖特定 ASP.NET Core 版本
+        // RouteAttribute / HttpGetAttribute / HttpPostAttribute 等均位于 Microsoft.AspNetCore.Mvc 命名空间
+        const String routeAttrName = "Microsoft.AspNetCore.Mvc.RouteAttribute";
+        const String httpMethodAttrName = "Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute";
+
+        var controllerName = controllerType.Name.Replace("Controller", "");
+
+        var segments = new List<String>();
+
+        // 控制器级别 [Route] 特性
+        var controllerRoute = controllerType.GetCustomAttributes(inherit: true)
+            .FirstOrDefault(a => a.GetType().FullName == routeAttrName);
+        if (controllerRoute != null)
+        {
+            var template = GetAttributeProperty(controllerRoute, "Template") as String;
+            if (!template.IsNullOrEmpty())
+            {
+                template = template.Trim('/');
+                // 替换令牌
+                if (template.Contains("[controller]"))
+                    template = template.Replace("[controller]", controllerName);
+                if (template.Contains("[action]"))
+                    template = template.Replace("[action]", method.Name);
+                segments.Add(template);
+            }
+        }
+
+        // Action 级别的 [Route] 或 HTTP 方法特性（如 [HttpGet("template")]）
+        var actionRoute = method.GetCustomAttributes(inherit: true)
+            .FirstOrDefault(a => a.GetType().FullName == routeAttrName);
+        var httpAttr = method.GetCustomAttributes(inherit: true)
+            .FirstOrDefault(a =>
+            {
+                var fullName = a.GetType().FullName;
+                return fullName != null &&
+                    (fullName == httpMethodAttrName ||
+                     fullName.EndsWith("HttpGetAttribute") ||
+                     fullName.EndsWith("HttpPostAttribute") ||
+                     fullName.EndsWith("HttpPutAttribute") ||
+                     fullName.EndsWith("HttpDeleteAttribute") ||
+                     fullName.EndsWith("HttpPatchAttribute"));
+            });
+
+        var actionTemplate = "";
+        if (actionRoute != null)
+        {
+            actionTemplate = GetAttributeProperty(actionRoute, "Template") as String ?? "";
+        }
+        else if (httpAttr != null)
+        {
+            actionTemplate = GetAttributeProperty(httpAttr, "Template") as String ?? "";
+        }
+
+        // 如果没有任何控制器路由，使用约定路由 controller/action 作为基础路径
+        if (segments.Count == 0)
+        {
+            if (!actionTemplate.IsNullOrEmpty())
+                // 有 Action 模板但无控制器路由，用 controller/template 作为路径
+                segments.Add($"{controllerName}/{actionTemplate.Trim('/')}");
+            else
+                // 都没有路由特性，纯约定路由
+                segments.Add($"{controllerName}/{method.Name}");
+        }
+        else if (!actionTemplate.IsNullOrEmpty())
+        {
+            // 有控制器路由，Action 模板作为独立段追加
+            segments.Add(actionTemplate.Trim('/'));
+        }
+
+        var path = String.Join("/", segments);
+
+        // 拼接 API 前缀
+        var set = CubeSetting.Current;
+        if (!set.ApiPrefixes.IsNullOrEmpty())
+        {
+            var firstPrefix = set.ApiPrefixes.Split(',', ';', '|', ' ')[0].Trim().Trim('/');
+            if (!firstPrefix.IsNullOrEmpty())
+                path = $"{firstPrefix}/{path}";
+        }
+
+        return "/" + path;
+    }
+
+    /// <summary>从 HTTP 方法特性推断请求方式（GET/POST/PUT/DELETE/PATCH）</summary>
+    private static String InferHttpMethod(MethodInfo method)
+    {
+        // 查找 HTTP 方法特性，按类型名匹配
+        var attr = method.GetCustomAttributes(inherit: true).FirstOrDefault(a =>
+        {
+            var fullName = a.GetType().FullName;
+            return fullName != null &&
+                (fullName == "Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute" ||
+                 fullName.EndsWith("HttpGetAttribute") ||
+                 fullName.EndsWith("HttpPostAttribute") ||
+                 fullName.EndsWith("HttpPutAttribute") ||
+                 fullName.EndsWith("HttpDeleteAttribute") ||
+                 fullName.EndsWith("HttpPatchAttribute"));
+        });
+
+        if (attr == null) return "GET";
+
+        var typeName = attr.GetType().Name;
+        if (typeName == "HttpGetAttribute") return "GET";
+        if (typeName == "HttpPostAttribute") return "POST";
+        if (typeName == "HttpPutAttribute") return "PUT";
+        if (typeName == "HttpDeleteAttribute") return "DELETE";
+        if (typeName == "HttpPatchAttribute") return "PATCH";
+
+        // 对于 HttpMethodAttribute（基类），尝试从 HttpMethods 属性获取
+        try
+        {
+            var methods = GetAttributeProperty(attr, "HttpMethods") as ICollection<String>;
+            if (methods != null && methods.Count > 0)
+                return methods.First().ToUpper();
+        }
+        catch { }
+
+        return "GET";
+    }
+
+    /// <summary>通过反射获取特性实例的属性值，避免编译期强依赖</summary>
+    private static Object? GetAttributeProperty(Object attr, String propertyName)
+    {
+        try
+        {
+            var prop = attr.GetType().GetProperty(propertyName);
+            return prop?.GetValue(attr);
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     #endregion
