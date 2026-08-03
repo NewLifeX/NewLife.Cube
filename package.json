@@ -6,6 +6,7 @@
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "build": "pnpm build:packages",
+    "build:api": "dotnet build CubeDemo/CubeDemo.csproj",
     "build:all": "pnpm -r build",
     "build:packages": "pnpm -r --filter @cube/api-core --filter @cube/page-utils --filter @cube/field-mapping --filter @cube/auth-logic --filter @cube/page-logic build",
     "build:vue": "pnpm --filter ./NewLife.Cube.Vue/web build",

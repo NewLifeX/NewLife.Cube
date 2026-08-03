@@ -55,3 +55,6 @@ NewLife.Cube.Svelte/wwwroot/_app/
 NewLife.Cube.TDesign/wwwroot/assets/
 NewLife.Cube.Vuetify/wwwroot/assets/
 /XUnitTest/TestResults
+.shot/
+*/memory/*.md
+TODO.md
