@@ -1,6 +1,11 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
+using NewLife;
+using NewLife.AI.Models;
+using NewLife.AI.Tools;
+using NewLife.Caching;
+using NewLife.Collections;
 using NewLife.Common;
 using NewLife.Cube.AI;
 using NewLife.Cube.ViewModels;
@@ -500,6 +505,210 @@ public partial class ReadOnlyEntityController<TEntity>
 
             return Json(0, null, new { result, model = set.AIModel, thinking = think });
         }
+    }
+    #endregion
+
+    #region AI 对话
+    /// <summary>AI 对话助手。通过工具调用完成数据分析、表单填写等操作，SSE 流式返回</summary>
+    /// <returns></returns>
+    [DisplayName("AI 对话")]
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpPost]
+    public async Task<ActionResult> AiChat()
+    {
+        var set = CubeSetting.Current;
+        if (!set.AISwitch) return Json(500, null, "AI 未启用，请联系系统管理员开启 AISwitch");
+
+        var svc = HttpContext.RequestServices.GetService<IAIService>();
+        if (svc == null) return Json(500, null, "AI 服务未注册");
+
+        // 读取 JSON 请求体
+        var body = await new StreamReader(Request.Body).ReadToEndAsync();
+        if (body.IsNullOrEmpty()) return Json(500, null, "请求体为空");
+        var req = body.ToJsonEntity<AiChatRequest>();
+        if (req == null || req.Message.IsNullOrEmpty()) return Json(500, null, "消息不能为空");
+
+        // 会话历史（内存缓存）
+        var sessionKey = $"CubeAI_Session_{req.SessionId}";
+        var history = MemoryCache.Instance.Get<IList<ChatMessage>>(sessionKey) ?? [];
+        history.Add(new ChatMessage { Role = "user", Content = req.Message });
+
+        // 当前查询条件（_query Base64 解码）
+        var pager = default(Pager);
+        if (!req.Query.IsNullOrEmpty())
+        {
+            try
+            {
+                var queryData = req.Query.ToBase64().ToStr();
+                pager = new Pager();
+                pager.Parse(queryData);
+            }
+            catch (Exception ex) { XTrace.WriteLine("AiChat 解析 _query 失败：{0}", ex.Message); }
+        }
+
+        // 构建工具：当前实体上下文 + 内置工具
+        var tools = new CubeTools<TEntity>(Factory, pager, req.Id, p => SearchData(p).ToList());
+        var registry = new ToolRegistry();
+        registry.AddTools(tools);
+        registry.AddTools(new BuiltinToolService());
+
+        // 组装消息：system + 历史（限长 30 条）
+        var messages = new List<ChatMessage>
+        {
+            new() { Role = "system", Content = BuildChatSystemPrompt(req, pager) }
+        };
+        messages.AddRange(history.TakeLast(30));
+
+        var think = req.Think || set.AIDefaultThink;
+        var options = new ChatOptions
+        {
+            EnableThinking = think,
+            Temperature = think ? 0.5 : 0.3,
+        };
+
+        // SSE 输出
+        Response.Headers["Content-Type"] = "text/event-stream; charset=utf-8";
+        Response.Headers["Cache-Control"] = "no-cache";
+        Response.Headers["X-Accel-Buffering"] = "no";
+
+        var metaJson = new { type = "meta", model = set.AIModel, thinking = think }.ToJson();
+        await Response.WriteAsync($"data: {metaJson}\n\n", HttpContext.RequestAborted);
+        await Response.Body.FlushAsync(HttpContext.RequestAborted);
+
+        var sb = Pool.StringBuilder.Get();
+        var hasText = false;
+        var hasError = false;
+        try
+        {
+            if (!req.Stream)
+            {
+                // 非流式：一次返回完整响应（含工具调用事件与文本）
+                var response = await svc.ChatAgentAsync(messages, [registry], options, HttpContext.RequestAborted);
+                if (response is ChatResponse cr2 && cr2.ToolCallEvents != null)
+                {
+                    foreach (var ev in cr2.ToolCallEvents)
+                    {
+                        var evJson = new { type = "tool", @event = ev.Type, id = ev.ToolCallId, name = ev.Name, value = ev.Value }.ToJson();
+                        await Response.WriteAsync($"data: {evJson}\n\n", HttpContext.RequestAborted);
+                        await Response.Body.FlushAsync(HttpContext.RequestAborted);
+                    }
+                }
+                var text = response?.Text;
+                if (!text.IsNullOrEmpty())
+                {
+                    hasText = true;
+                    sb.Append(text);
+                    var textJson = new { type = "text", content = text }.ToJson();
+                    await Response.WriteAsync($"data: {textJson}\n\n", HttpContext.RequestAborted);
+                    await Response.Body.FlushAsync(HttpContext.RequestAborted);
+                }
+            }
+            else
+            {
+                await foreach (var chunk in svc.ChatAgentStreamAsync(messages, [registry], options, HttpContext.RequestAborted))
+                {
+                    // 文本增量
+                    var text = chunk?.Text;
+                    if (!text.IsNullOrEmpty())
+                    {
+                        hasText = true;
+                        sb.Append(text);
+                        var textJson = new { type = "text", content = text }.ToJson();
+                        await Response.WriteAsync($"data: {textJson}\n\n", HttpContext.RequestAborted);
+                        await Response.Body.FlushAsync(HttpContext.RequestAborted);
+                    }
+
+                    // 工具调用事件
+                    if (chunk is ChatResponse cr && cr.ToolCallEvents != null)
+                    {
+                        foreach (var ev in cr.ToolCallEvents)
+                        {
+                            var evJson = new { type = "tool", @event = ev.Type, id = ev.ToolCallId, name = ev.Name, value = ev.Value }.ToJson();
+                            await Response.WriteAsync($"data: {evJson}\n\n", HttpContext.RequestAborted);
+                            await Response.Body.FlushAsync(HttpContext.RequestAborted);
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            hasError = true;
+            XTrace.WriteException(ex);
+            var errJson = new { type = "error", message = ex.Message }.ToJson();
+            await Response.WriteAsync($"data: {errJson}\n\n", HttpContext.RequestAborted);
+        }
+
+        // 空响应兜底：工具回合未完成（常见于服务商不支持函数调用），给出提示而非静默结束
+        if (!hasText && !hasError)
+        {
+            var note = "⚠️ AI 未返回有效结果。若需要数据分析/填表等工具能力，请确认 AI 服务商支持函数调用（如 DeepSeek/OpenAI/Ollama 工具模型）。";
+            var noteJson = new { type = "text", content = $"\n\n> {note}" }.ToJson();
+            await Response.WriteAsync($"data: {noteJson}\n\n", HttpContext.RequestAborted);
+            await Response.Body.FlushAsync(HttpContext.RequestAborted);
+        }
+
+        // 保存助手回复到会话历史
+        var reply = sb.Put(true);
+        if (!reply.IsNullOrEmpty())
+        {
+            history.Add(new ChatMessage { Role = "assistant", Content = reply });
+            MemoryCache.Instance.Set(sessionKey, history, 3600);
+        }
+
+        await Response.WriteAsync("data: {\"type\":\"done\"}\n\n", HttpContext.RequestAborted);
+        await Response.Body.FlushAsync(HttpContext.RequestAborted);
+
+        return new EmptyResult();
+    }
+
+    /// <summary>构建 AI 对话系统提示词，注入当前页面上下文</summary>
+    /// <param name="req">对话请求</param>
+    /// <param name="pager">当前查询条件</param>
+    /// <returns></returns>
+    protected virtual String BuildChatSystemPrompt(AiChatRequest req, Pager? pager)
+    {
+        var tb = Factory.Table.DataTable;
+        var name = Factory.EntityType.GetDisplayName() ?? tb.DisplayName ?? Factory.EntityType.Name;
+
+        var sb = Pool.StringBuilder.Get();
+        sb.AppendLine("你是魔方后台管理系统的 AI 助手，正在协助管理员操作当前页面。");
+        sb.AppendLine();
+        sb.AppendLine($"当前实体：{name}（表 {tb.TableName}）");
+        if (!tb.Description.IsNullOrEmpty()) sb.AppendLine($"实体说明：{tb.Description}");
+        var pageName = req.Page switch
+        {
+            "form" => req.Mode.EqualIgnoreCase("edit") ? "编辑表单" : "新增表单",
+            "detail" => "详情页",
+            _ => "列表页",
+        };
+        sb.AppendLine($"页面类型：{pageName}");
+        if (req.Id > 0) sb.AppendLine($"当前记录编号：{req.Id}");
+        if (pager != null && pager.Params.Count > 0)
+        {
+            sb.AppendLine("当前查询条件：");
+            foreach (var kv in pager.Params.Where(e => !e.Key.EqualIgnoreCase("_query", "Sort", "Desc", "PageIndex", "PageSize")))
+            {
+                sb.AppendLine($"- {kv.Key}: {kv.Value}");
+            }
+        }
+        sb.AppendLine();
+        sb.AppendLine("可用工具：");
+        sb.AppendLine("- get_form_schema(mode)：获取表单字段结构（类型、枚举、必填、说明）");
+        sb.AppendLine("- fill_form(values, mode)：生成表单字段值并回填到前端表单（不写数据库，由用户确认后提交）");
+        sb.AppendLine("- get_data_insight_context()：收集当前查询的数据统计摘要与样本");
+        sb.AppendLine("- get_record_context()：收集当前记录的值与表统计");
+        sb.AppendLine("- get_system_info()：收集服务器运行指标");
+        sb.AppendLine();
+        sb.AppendLine("规则：");
+        sb.AppendLine("1. 使用简体中文回答，语言简洁专业");
+        sb.AppendLine("2. 用户要求分析/洞察当前数据时，先调用 get_data_insight_context 获取数据，再给出分析结论与建议");
+        sb.AppendLine("3. 用户要求新建/填写/补全表单时，先调用 get_form_schema 了解字段，再调用 fill_form 生成值，最后提示用户检查后提交");
+        sb.AppendLine("4. 用户要求分析某条记录时，先调用 get_record_context 获取记录与统计，再指出异常与建议");
+        sb.AppendLine("5. 用户询问系统状态/诊断时，调用 get_system_info");
+        sb.AppendLine("6. 不要编造数据；信息不足时主动询问用户澄清");
+
+        return sb.Put(true);
     }
     #endregion
 

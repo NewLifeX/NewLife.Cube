@@ -1,0 +1,113 @@
+@using NewLife.Cube;
+@using XCode.Membership
+@{
+    var set = CubeSetting.Current;
+    var user = Context.User.Identity as IUser;
+}
+@if (set.AISwitch && user != null)
+{
+    @* AI 助手：右下角悬浮球 + 对话面板。所有 MVC 主题共享 *@
+    <div id="aiAssistant" class="ai-assistant">
+        <button type="button" id="aiAssistantFab" class="ai-fab" title="AI 助手">
+            <i class="ace-icon fa fa-magic"></i>
+        </button>
+        <div class="ai-panel" id="aiAssistantPanel" style="display:none;">
+            <div class="ai-panel-header">
+                <span><i class="ace-icon fa fa-magic"></i> AI 助手</span>
+                <div class="ai-panel-actions">
+                    <button type="button" id="aiClearChat" title="清空会话"><i class="ace-icon fa fa-trash"></i></button>
+                    <button type="button" id="aiClosePanel" title="收起"><i class="ace-icon fa fa-times"></i></button>
+                </div>
+            </div>
+            <div class="ai-messages" id="aiMessages">
+                <div class="ai-msg ai-msg-assistant">
+                    <div class="ai-bubble">你好，我是魔方 AI 助手 👋 我可以帮你分析当前数据、填写表单、检查系统状态。试试下面的快捷操作，或直接输入你的问题。</div>
+                </div>
+                <div class="ai-quick" id="aiQuickActions">
+                    <button type="button" class="ai-chip" data-prompt="分析当前列表数据">📊 分析当前数据</button>
+                    <button type="button" class="ai-chip" data-prompt="帮我填写当前表单">📝 帮我填表</button>
+                    <button type="button" class="ai-chip" data-prompt="分析当前记录">🔍 分析当前记录</button>
+                    <button type="button" class="ai-chip" data-prompt="检查系统运行状态">🩺 系统诊断</button>
+                </div>
+            </div>
+            <div class="ai-panel-footer">
+                <label class="ai-think" title="深度推理更准确，但耗时更长">
+                    <input type="checkbox" id="aiThink" @(set.AIDefaultThink ? "checked" : "") /> 深度
+                </label>
+                <textarea id="aiInput" rows="1" placeholder="输入问题，Enter 发送，Shift+Enter 换行"></textarea>
+                <button type="button" id="aiSend" class="ai-send" title="发送"><i class="ace-icon fa fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+    <script src="~/js/ai-assistant.js"></script>
+    <style>
+        /* AI 助手浮窗样式（主题无关） */
+        .ai-assistant { font-size: 13px; }
+        .ai-fab {
+            position: fixed; right: 20px; bottom: 20px; z-index: 9998;
+            width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer;
+            color: #fff; font-size: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, .45);
+        }
+        .ai-fab:hover { transform: scale(1.06); }
+        .ai-panel {
+            position: fixed; right: 20px; bottom: 80px; z-index: 9999;
+            width: 380px; height: 62vh; min-height: 320px;
+            display: flex; flex-direction: column; overflow: hidden;
+            background: #fff; border-radius: 10px; border: 1px solid #e4e7f0;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .15);
+        }
+        .ai-panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 14px; color: #fff; font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .ai-panel-header .ai-panel-actions button {
+            background: none; border: none; color: #fff; cursor: pointer; padding: 2px 6px; font-size: 14px;
+        }
+        .ai-messages {
+            flex: 1; overflow-y: auto; padding: 12px; background: #f7f8fc;
+        }
+        .ai-msg { margin-bottom: 10px; display: flex; }
+        .ai-msg-user { justify-content: flex-end; }
+        .ai-bubble {
+            max-width: 82%; padding: 8px 12px; border-radius: 8px; line-height: 1.6;
+            background: #fff; border: 1px solid #e4e7f0; white-space: pre-wrap; word-break: break-word;
+        }
+        .ai-msg-user .ai-bubble { background: #667eea; color: #fff; border-color: #667eea; }
+        .ai-bubble h1, .ai-bubble h2, .ai-bubble h3 { font-size: 14px; margin: 6px 0; }
+        .ai-bubble table { border-collapse: collapse; width: 100%; margin: 6px 0; }
+        .ai-bubble table th, .ai-bubble table td { border: 1px solid #ddd; padding: 4px 6px; font-size: 12px; }
+        .ai-bubble table th { background: #f5f5f5; }
+        .ai-bubble code { background: #f0f0f0; padding: 1px 4px; border-radius: 3px; }
+        .ai-bubble pre { background: #f8f8f8; padding: 8px; border-radius: 4px; overflow-x: auto; }
+        .ai-bubble ul, .ai-bubble ol { padding-left: 18px; margin: 4px 0; }
+        .ai-bubble blockquote { border-left: 3px solid #667eea; padding: 2px 10px; margin: 6px 0; background: #f2f3ff; }
+        .ai-tool {
+            margin: 4px 0; padding: 6px 10px; border-radius: 6px; font-size: 12px;
+            background: #eef0ff; border: 1px solid #dfe3ff; color: #555;
+        }
+        .ai-tool.ai-tool-done { background: #eefaf0; border-color: #d4f0da; color: #2e7d32; }
+        .ai-tool.ai-tool-error { background: #fdeeee; border-color: #f5d4d4; color: #c62828; }
+        .ai-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0 8px; }
+        .ai-chip {
+            border: 1px solid #667eea; color: #667eea; background: #fff; border-radius: 14px;
+            padding: 4px 10px; font-size: 12px; cursor: pointer;
+        }
+        .ai-chip:hover { background: #667eea; color: #fff; }
+        .ai-panel-footer {
+            display: flex; align-items: flex-end; gap: 6px; padding: 8px 10px; border-top: 1px solid #e4e7f0; background: #fff;
+        }
+        .ai-think { font-size: 12px; color: #555; white-space: nowrap; padding-bottom: 8px; cursor: pointer; }
+        .ai-panel-footer textarea {
+            flex: 1; resize: none; border: 1px solid #ddd; border-radius: 6px; padding: 6px 8px;
+            font-size: 13px; max-height: 90px; outline: none;
+        }
+        .ai-send {
+            border: none; background: #667eea; color: #fff; border-radius: 6px;
+            width: 36px; height: 32px; cursor: pointer;
+        }
+        .ai-field-highlight { box-shadow: 0 0 0 2px #667eea !important; border-color: #667eea !important; transition: box-shadow .3s; }
+    </style>
+}

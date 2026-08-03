@@ -12,6 +12,13 @@
     </button>
 
     <ul class="dropdown-menu dropdown-info dropdown-menu-right">
+        @if (NewLife.Cube.CubeSetting.Current.AISwitch)
+        {
+            <li>
+                <a href="javascript:;" onclick="CubeAI.insight('@queryData', false)" title="AI 快速分析当前查询数据，3-8秒出结果">AI 分析</a>
+            </li>
+            <li class="divider"></li>
+        }
         <li>
             <a href="@Url.Action("ExportExcel", new { _query = queryData })" title="导出Csv格式，中文表头，含扩展属性，用于Excel查看数据">导出Excel</a>
         </li>

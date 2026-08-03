@@ -381,6 +381,11 @@ public class CubeSetting : Config<CubeSetting>
     [Description("AI 默认模型。NewLife 默认 newlife-flash")]
     [Category("AI")]
     public String AIModel { get; set; } = "newlife-flash";
+
+    /// <summary>AI 默认深度推理。AI 分析与对话默认是否启用深度推理（think），默认false即快速</summary>
+    [Description("AI 默认深度推理。AI 分析与对话默认是否启用深度推理（think），默认false即快速")]
+    [Category("AI")]
+    public Boolean AIDefaultThink { get; set; }
     #endregion
 
     #region 系统功能

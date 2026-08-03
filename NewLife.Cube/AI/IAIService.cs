@@ -1,3 +1,7 @@
+using NewLife.AI.Clients;
+using NewLife.AI.Models;
+using NewLife.AI.Tools;
+
 namespace NewLife.Cube.AI;
 
 /// <summary>AI 服务接口，封装提示词+数据→LLM 结果的简单调用模式</summary>
@@ -43,4 +47,20 @@ public interface IAIService
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>流式文本块的异步枚举</returns>
     IAsyncEnumerable<String> AnalyzeDataStreamAsync(String prompt, Boolean think = false, CancellationToken cancellationToken = default);
+
+    /// <summary>AI 对话（含工具调用）。使用 ToolChatClient 自动多轮工具循环，流式返回响应块</summary>
+    /// <param name="messages">完整消息历史（含 system 消息）</param>
+    /// <param name="providers">工具提供者列表（按工具名路由），可为空</param>
+    /// <param name="options">对话选项（模型、温度、思考模式等）</param>
+    /// <param name="cancellationToken">取消令牌</param>
+    /// <returns>流式响应块，含文本与工具调用事件</returns>
+    IAsyncEnumerable<IChatResponse> ChatAgentStreamAsync(IList<ChatMessage> messages, IList<IToolProvider>? providers = null, ChatOptions? options = null, CancellationToken cancellationToken = default);
+
+    /// <summary>AI 对话（含工具调用）。非流式，一次返回完整响应（含文本与工具调用事件）</summary>
+    /// <param name="messages">完整消息历史（含 system 消息）</param>
+    /// <param name="providers">工具提供者列表（按工具名路由），可为空</param>
+    /// <param name="options">对话选项（模型、温度、思考模式等）</param>
+    /// <param name="cancellationToken">取消令牌</param>
+    /// <returns>完整响应，含文本与工具调用事件</returns>
+    Task<IChatResponse> ChatAgentAsync(IList<ChatMessage> messages, IList<IToolProvider>? providers = null, ChatOptions? options = null, CancellationToken cancellationToken = default);
 }

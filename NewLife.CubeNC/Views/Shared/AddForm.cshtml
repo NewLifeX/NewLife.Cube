@@ -16,6 +16,9 @@
     Object htmlAttributes = null;
     if (fields != null && fields.Any(e => e.IsAttachment())) htmlAttributes = new { enctype = "multipart/form-data" };
 }
+@* AI 助手页面上下文 *@
+<input type="hidden" id="aiPage" value="form" />
+<input type="hidden" id="aiMode" value="add" />
 @if (!set.NavView.IsNullOrEmpty())
 {
     <div class="row">

@@ -1,9 +1,9 @@
-using NewLife.AI;
+﻿using System.Runtime.CompilerServices;
 using NewLife.AI.Clients;
 using NewLife.AI.Clients.OpenAI;
 using NewLife.AI.Models;
+using NewLife.AI.Tools;
 using NewLife.Log;
-using System.Runtime.CompilerServices;
 
 namespace NewLife.Cube.AI;
 
@@ -188,6 +188,49 @@ public class AIService : IAIService
         }
 
         WriteLog("AnalyzeDataStream 完成", "");
+    }
+
+    /// <summary>AI 对话（含工具调用）。使用 ToolChatClient 自动多轮工具循环，流式返回响应块</summary>
+    /// <remarks>
+    /// 工具调用事件通过 <see cref="IChatResponse.ToolCallEvents"/> 随流式块透传，供上层转换为 SSE 事件。
+    /// </remarks>
+    /// <param name="messages">完整消息历史（含 system 消息）</param>
+    /// <param name="providers">工具提供者列表（按工具名路由），可为空</param>
+    /// <param name="options">对话选项（模型、温度、思考模式等）</param>
+    /// <param name="cancellationToken">取消令牌</param>
+    /// <returns>流式响应块，含文本与工具调用事件</returns>
+    public IAsyncEnumerable<IChatResponse> ChatAgentStreamAsync(IList<ChatMessage> messages, IList<IToolProvider>? providers = null, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        var client = GetClient();
+        var toolClient = new ToolChatClient(client, [.. providers ?? []]);
+        toolClient.Log = Log;
+        toolClient.OnToolExecuted = e =>
+        {
+            WriteLog("工具调用", $"{e.ToolName} 参数={e.Arguments} 结果={e.ResultSummary} 耗时={e.ElapsedMs}ms 成功={!e.IsError}");
+            return Task.CompletedTask;
+        };
+
+        return toolClient.GetStreamingResponseAsync(messages, options, cancellationToken);
+    }
+
+    /// <summary>AI 对话（含工具调用）。非流式，一次返回完整响应（含文本与工具调用事件）</summary>
+    /// <param name="messages">完整消息历史（含 system 消息）</param>
+    /// <param name="providers">工具提供者列表（按工具名路由），可为空</param>
+    /// <param name="options">对话选项（模型、温度、思考模式等）</param>
+    /// <param name="cancellationToken">取消令牌</param>
+    /// <returns>完整响应，含文本与工具调用事件</returns>
+    public async Task<IChatResponse> ChatAgentAsync(IList<ChatMessage> messages, IList<IToolProvider>? providers = null, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        var client = GetClient();
+        var toolClient = new ToolChatClient(client, [.. providers ?? []]);
+        toolClient.Log = Log;
+        toolClient.OnToolExecuted = e =>
+        {
+            WriteLog("工具调用", $"{e.ToolName} 参数={e.Arguments} 结果={e.ResultSummary} 耗时={e.ElapsedMs}ms 成功={!e.IsError}");
+            return Task.CompletedTask;
+        };
+
+        return await toolClient.GetResponseAsync(ChatRequest.Create(messages, options, false), cancellationToken);
     }
 
     /// <summary>快速 AI 对话，关闭深度推理、低温度，适合用户交互场景</summary>
