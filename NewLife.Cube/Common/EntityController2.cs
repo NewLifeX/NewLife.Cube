@@ -860,22 +860,14 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         var msg = "";
         try
         {
-            rs = await att.SaveFile(file.OpenReadStream(), uploadPath, fileName);
-
-            // 广播指定附件在当前节点可用
-            var fileStorage = HttpContext.RequestServices.GetService<IFileStorage>();
-            if (fileStorage != null)
+            // 上传流使用完毕后立即释放，避免文件句柄泄漏；保存完成后回调与上传流无关
             {
-                // 忽略异常
-                try
-                {
-                    await fileStorage.PublishNewFileAsync(att.Id, att.FilePath, HttpContext.RequestAborted);
-                }
-                catch (Exception ex2)
-                {
-                    span?.SetError(ex2);
-                }
+                using var stream = file.OpenReadStream();
+                rs = await att.SaveFile(stream, uploadPath, fileName);
             }
+
+            // 保存完成后回调。默认广播附件；子类可重载，在广播前执行额外处理（如向压缩包注入配置）
+            await OnFileSaved(entity, att, uploadPath, file);
         }
         catch (Exception ex)
         {
@@ -895,6 +887,30 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         }
 
         return att;
+    }
+
+    /// <summary>保存文件完成后回调。默认广播附件到分布式存储；子类可重载，在广播前执行额外处理</summary>
+    /// <param name="entity">实体对象</param>
+    /// <param name="att">附件实体</param>
+    /// <param name="uploadPath">上传目录</param>
+    /// <param name="file">上传文件</param>
+    /// <returns></returns>
+    protected virtual async Task OnFileSaved(TEntity entity, Attachment att, String uploadPath, IFormFile file)
+    {
+        // 广播指定附件在当前节点可用
+        var fileStorage = HttpContext.RequestServices.GetService<IFileStorage>();
+        if (fileStorage != null)
+        {
+            // 忽略异常
+            try
+            {
+                await fileStorage.PublishNewFileAsync(att.Id, att.FilePath, HttpContext.RequestAborted);
+            }
+            catch (Exception ex2)
+            {
+                DefaultSpan.Current?.SetError(ex2);
+            }
+        }
     }
     #endregion
 }
