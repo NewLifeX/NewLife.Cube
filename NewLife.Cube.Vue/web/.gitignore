@@ -16,7 +16,12 @@ coverage
 
 /playwright-report/
 /test-results/
+# Playwright 组件测试截图基线（首次自动生成，应提交；运行期 diff 产物不提交）
+*-snapshots/
 /playwright/.auth/
+
+# 类人点击验证截图（瞬态产物，固定输出到 ct/verify-shots/，不提交）
+/ct/verify-shots/
 
 # Editor directories and files
 .vscode/*
