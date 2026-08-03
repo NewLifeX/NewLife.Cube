@@ -17,6 +17,7 @@
 | 当前已有何种组件、配置和路由约定？ | [reference/](./reference/)                                                                                         |
 | 如何测试、构建、发布和排障？       | [operations/](./operations/)                                                                                       |
 | 写组件时怎么看渲染效果 / 做视觉回归？ | [guides/component-visual-dev.md](./guides/component-visual-dev.md)                                                 |
+| 怎么测组件在「页面 + 逻辑」综合下的完整闭环（请求/提交/调接口）？ | [guides/ct-page-mode-proposal.md](./guides/ct-page-mode-proposal.md)（草案） |
 | 为什么曾作出某项关键选择？         | [decisions/](./decisions/)                                                                                         |
 
 ## 文档分层
@@ -39,6 +40,7 @@
 - 产品方向以 [product/vision-and-roadmap.md](./product/vision-and-roadmap.md) 为准；AI 迭代按 [guides/ai-iteration.md](./guides/ai-iteration.md) 执行。
 - UI 规则以 [standards/ui-spec.md](./standards/ui-spec.md) 为准；Element Plus / Tailwind 分工见 [decisions/0003](../decisions/0003-element-plus-tailwind-design-system.md)。
 - 文档放置、状态、更新和删除规则以 [standards/documentation-standard.md](./standards/documentation-standard.md) 为准。
+- 组件视觉开发的操作细节（Gallery 预览、`?story=` 深链、CT 编写、类人点击验证、CT 环境从零搭建）不在本文档展开，统一收口于项目技能 `vue-component-visual-loop`（`skills/vue-component-visual-loop/`）；本文档只阐述规范、使用流程与达成效果。
 - 文档与代码冲突时，先以代码为事实修正文档；若代码行为本身不明确，补 ADR 后再改实现。
 
 ## 已迁移的旧文档

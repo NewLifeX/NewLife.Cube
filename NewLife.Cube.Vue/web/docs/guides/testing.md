@@ -43,3 +43,5 @@ Playwright E2E 默认前端地址为 `http://localhost:5187`，后端地址由 `
 - E2E 不使用固定等待；等待具体请求、路由或可观察 UI 状态。
 - CT 截图测试开发期用 `--update-snapshots` 只拍照不对比，确认效果后用 `pnpm test:ct:update` 确立基线。
 - 环境不可用导致无法跑测试时，说明阻塞条件和已执行的最窄静态检查。
+
+> 组件视觉开发的完整闭环（Gallery 预览、`?story=` 深链、CT 编写、类人点击验证）与 CT 环境从零搭建的操作细节，见项目技能 `vue-component-visual-loop`（`skills/vue-component-visual-loop/`，references：`ct-gallery.md`、`ct-environment-setup.md`、`vitest-strategy.md`、`mcp-playwright.md`、`component-readme-template.md`）。本文档只列规范、流程与命令。

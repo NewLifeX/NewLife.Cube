@@ -181,52 +181,34 @@ export const transformUserBeforeSave = (formData: Record<string, unknown>) => {
 - **单一职责**：一个 `it` 只断言一个行为。
 - **避免逻辑**：测试代码不出现 `if/for`；多组数据用 `it.each`。
 - **拒绝脆弱快照**：禁止滥用 `toMatchSnapshot()`（尤其含动态类名的组件），改为精准断言文本/属性。
-- **Mock 策略（关键校正）**：**不使用 MSW**。纯工厂测试直接注入假 `getPage`/`http`；组件测试用 `vi.mock(...)` 桩掉 `@newlifex/cube-vue/core/utils/request`、`core/configure` 等外部模块（参考 `LovSelectTable.test.ts`）。
+- **Mock 策略（关键校正）**：**不使用 MSW**。纯工厂测试直接注入假 `getPage`/`http`；组件测试用 `vi.mock(...)` 桩掉 `@newlifex/cube-vue/core/utils/request`、`core/configure` 等外部模块（参考 `LovSelectTable.test.ts`）。**桩的配置写法、别名优先纪律、CT 的 `ct/mocks/` 统一 mock 方案**见技能 `vue-component-visual-loop` → `references/ct-environment-setup.md` 与 `vitest-strategy.md`。
 
 ---
 
-## 5. 测试基础设施落地指南
+## 5. 测试基础设施落地指南（规范与门槛）
+
+> 本节的**硬性标准**必须遵守；具体的配置文件内容、安装命令、别名桩写法、Gallery / CT 搭建步骤等**操作细节**，一律见技能 `vue-component-visual-loop` → `references/ct-environment-setup.md`（CT 环境从零搭建）与 `vitest-strategy.md`（Vitest Mock）。本文只定标准，不给逐行配置。
 
 ### 5.1 现有工具链（已安装，直接复用）
 
 `vitest@^3`、`@vue/test-utils@^2`、`jsdom@^29`、`@playwright/test@^1.54`、`vue-tsc`、`eslint`、`oxlint`。命令见 `standards/testing-standard.md`：`pnpm run test:unit` / `test:e2e` / `type-check` / `lint:eslint`。
 
-### 5.2 需新增的工具（覆盖率）
+### 5.2 需新增的工具（覆盖率门槛）
 
-```bash
-pnpm add -D @vitest/coverage-v8
-```
+新增 `@vitest/coverage-v8` 并在 `package.json` 增加 `test:coverage` 脚本（具体写法见技能 `references/ct-environment-setup.md` §三 / `references/vitest-strategy.md`）。
 
-并在 `package.json` 增加脚本：
+### 5.3 Vitest 配置规范（最小配置 + 覆盖率门槛）
 
-```json
-{ "scripts": { "test:coverage": "vitest run --config vitest.config.unit.ts --coverage" } }
-```
+`vitest.config.unit.ts` 必须是**最小配置**（仅 `@vitejs/plugin-vue` + `jsdom` + 虚拟配置桩），足以驱动单元/组件测试且不拉起重型框架插件；CT 测试 `*.ct.spec.ts` 由 Playwright 单独跑，E2E 在 `e2e/` 由 Playwright 单独跑。覆盖率硬性指标（v8）：
 
-### 5.3 Vitest 配置规范（扩展 `vitest.config.unit.ts`）
+- statements ≥ 80、branches ≥ 75、functions ≥ 80、lines ≥ 80；
+- 排除：`node_modules/`、类型声明、`core/main.ts`、测试文件自身。
 
-现有 `vitest.config.unit.ts` 已是**最小配置**（仅 `@vitejs/plugin-vue` + `jsdom` + 虚拟配置桩），足以驱动单元/组件测试且不拉起重型插件。在其 `test` 内追加覆盖率：
+> 本项目**使用别名 `@newlifex/cube-vue`**（指向 `web/core`），**不是** `@`。
 
-```ts
-test: {
-  environment: 'jsdom',
-  globals: true,
-  include: ['core/__tests__/**/*.{spec,test}.ts', 'core/**/*.{spec,test}.ts'],
-  exclude: ['**/*.ct.{spec,test}.ts', 'e2e/**'],
-  coverage: {
-    provider: 'v8',
-    reporter: ['text', 'json', 'html'],
-    statements: 80, branches: 75, functions: 80, lines: 80,
-    exclude: ['node_modules/', 'core/**/*.d.ts', 'core/main.ts', 'core/**/*.spec.ts', 'core/**/*.test.ts'],
-  },
-}
-```
+### 5.4 网络层 Mock（规范：不用 MSW）
 
-> 注意：本项目**使用别名 `@newlifex/cube-vue`**（指向 `web/core`），**不是** `@`；测试 `include` 限定在 `core/` 与相邻 `*.spec.ts`，CT 测试 `*.ct.spec.ts` 由 Playwright 单独跑，E2E 在 `e2e/` 由 Playwright 单独跑。
-
-### 5.4 网络层 Mock（沿用 `vi.mock`/DI，不新增 MSW）
-
-组件/集成测试不受影响后端接口，靠 `vi.mock` 桩模块 + 纯工厂依赖注入（见 §0 差异表与 `architecture/cube-engine.md` §6 的引擎测试示例）。**不要**引入 `msw`。
+组件/集成测试不依赖真实后端，靠 `vi.mock` 桩模块 + 纯工厂依赖注入（详见 §4.3 与技能 `references/ct-environment-setup.md`）。**禁止引入 `msw`。**
 
 ---
 

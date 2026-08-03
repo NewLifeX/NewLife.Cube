@@ -36,49 +36,18 @@
 
 ## 组件视觉测试（CT）
 
-### 架构：Gallery 模式
+### 架构：Gallery 模式（规范）
 
-本项目采用自建 Gallery 模式（轻量 Storybook 替代），而非 `@playwright/experimental-ct-vue` 官方包。核心链路：
-
-```
-*.story.ts → ct/stories.ts (Vite glob 自动收集) → ct/gallery.html → Playwright *.ct.spec.ts → 截图对比
-```
-
-各文件职责：
-
-| 文件                             | 职责                                                                            |
-| -------------------------------- | ------------------------------------------------------------------------------- |
-| `*.story.ts`                     | 声明组件 + props 变体（"组件在什么状态下"）                                     |
-| `ct/stories.ts`                  | 自动收集所有 `*.story.ts`                                                       |
-| `ct/gallery.html` + `ct/main.ts` | 渲染 gallery，暴露 `window.mountStory()` / `setStoryProps()` 供 Playwright 控制 |
-| `ct/vite.config.ts`              | 独立 Vite 配置（端口 5190），mock 掉后端 API，组件无需后端即可渲染              |
-| `ct/mocks/`                      | 统一网络层 mock（lov-api、request、configure）                                  |
-| `*.ct.spec.ts`                   | Playwright 截图测试，驱动 gallery 挂载组件并截图                                |
-
-### 与官方 CT 方案的对比
-
-| 维度         | 官方 `@playwright/experimental-ct-vue` | 本项目 Gallery 模式                          |
-| ------------ | -------------------------------------- | -------------------------------------------- |
-| 挂载方式     | `mount(MyComponent, { props })`        | `page.evaluate(() => window.mountStory(id))` |
-| 组件导入     | 测试文件直接 import                    | 在 `*.story.ts` 中注册，通过 story ID 引用   |
-| Mock 策略    | 每个测试写 `page.route()`              | 统一在 `ct/mocks/` 管理                      |
-| Story 可复用 | ❌ 每个测试自己 mount                   | ✅ `.story.ts` 供截图+单元测试共用            |
-| 额外依赖     | `@playwright/experimental-ct-vue`      | 零额外依赖                                   |
-
-**结论**：Gallery 模式做到了官方 CT 的所有能力（真实浏览器渲染、截图对比、props 传递），还多了 Story 复用和 mock 统一管理的好处。保持现有方案，不引入官方 CT。
-
-### 开发循环
+本项目采用**自建 Gallery 模式**（轻量 Storybook 替代，零额外依赖），而非 `@playwright/experimental-ct-vue` 官方包。核心链路：
 
 ```
-改组件源码 → pnpm test:ct:dev (有头截图，不对比) → 看浏览器窗口 → 不满意继续改
-                                                      ↓ 满意
-                                              pnpm test:ct:update (确立基线)
-                                              pnpm test:ct (以后回归保护)
+*.story.ts → ct/stories.ts（显式静态导入聚合）→ ct/index.html → Playwright *.ct.spec.ts → 截图对比
 ```
 
-### 详细流程
+**决策**：Gallery 模式做到了官方 CT 的全部能力（真实浏览器渲染、截图对比、props 传递），还多了 Story 复用与 `ct/mocks/` 统一 mock 管理的好处；**保持现有方案，不引入官方 CT。**
 
-见 [guides/component-visual-dev.md](../guides/component-visual-dev.md)（开发期预览 vs 回归基线）。
+- 各文件职责、与官方方案的逐项对比、开发循环图、Gallery 挂载契约、Story / CT 编写等**操作细节** → 见技能 `vue-component-visual-loop` → `references/ct-gallery.md`（使用）与 `ct-environment-setup.md`（搭建/文件职责）。
+- 开发期预览 vs 回归基线的**流程与效果** → 见 [guides/component-visual-dev.md](../guides/component-visual-dev.md)。
 
 ## 覆盖率门槛
 
