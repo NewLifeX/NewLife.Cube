@@ -172,6 +172,18 @@ public class CubeToolsTests
     }
 
     [Fact]
+    [DisplayName("FillForm - 空值字典返回错误而非抛异常")]
+    public void FillForm_NullValues_ReturnsError()
+    {
+        var tools = CreateTools();
+        var result = tools.FillForm(null!);
+
+        Assert.True(result.IsError);
+        var user = result.Contents.First(c => c.Audience.HasFlag(ToolAudience.User)).Data + "";
+        Assert.Contains("fill_form", user);
+    }
+
+    [Fact]
     [DisplayName("GetSystemInfo - 返回服务器运行指标")]
     public void GetSystemInfo_ReturnsMetrics()
     {

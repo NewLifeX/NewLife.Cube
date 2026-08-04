@@ -74,8 +74,18 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
     [ToolDescription("fill_form")]
     [DisplayName("回填表单")]
     [Description("生成表单字段值并回填到前端表单。不写数据库，由用户确认后提交")]
-    public virtual IToolResult FillForm([Description("字段值字典，键为字段名，值为要填入的值")] IDictionary<String, Object> values, [Description("表单模式：add 新增 / edit 编辑")] String mode = "add")
+    public virtual IToolResult FillForm([Description("字段值字典，键为字段名，值为要填入的值，如 {\"Name\":\"张三\"}")] IDictionary<String, Object> values, [Description("表单模式：add 新增 / edit 编辑")] String mode = "add")
     {
+        // 参数防御：LLM 未传字段值或格式错误时返回友好错误，避免空引用导致工具执行失败
+        if (values == null || values.Count == 0)
+        {
+            var err = new { kind = "fill_form", count = 0, message = "未收到有效的字段值字典" }.ToJson();
+            return new ToolResult(ToolContent.ForUser(err), ToolContent.ForLlm("[fill_form 参数错误] 未收到字段值字典。请先调用 get_form_schema 获取字段结构，再以 {\"字段名\":值} 形式传入 values 参数。"))
+            {
+                IsError = true
+            };
+        }
+
         var fields = mode.EqualIgnoreCase("edit") ? EditFields : AddFields;
 
         var rs = new Dictionary<String, Object?>();
