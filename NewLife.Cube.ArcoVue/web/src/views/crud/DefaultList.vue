@@ -279,6 +279,7 @@
       :show-history-tabs="showHistoryTabs"
       :can-prev="drawerCanPrev"
       :can-next="drawerCanNext"
+      :field-errors="fieldErrors"
       @save="handleSave"
       @edit="drawerMode = 'edit'"
       @prev="navigateRecord(-1)"
@@ -293,7 +294,7 @@
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch, type Component } from 'vue';
 import { Message, Modal } from '@arco-design/web-vue';
 import { IconDown } from '@arco-design/web-vue/es/icon';
-import type { PageSetting } from '@cube/api-core';
+import { ApiError, type PageSetting } from '@cube/api-core';
 import { EXPORT_FORMATS } from '@cube/page-utils';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
@@ -320,6 +321,7 @@ import { selectListColumns } from '@/core/utils/listColumns';
 import { prepareSubmitPayload } from '@/core/utils/submitPayload';
 import { formatApiError } from '@/core/utils/apiError';
 import { FieldKind } from '@cube/api-core';
+import { resolveFieldsForKind } from '@/core/utils/fieldParts';
 import {
   buildSortPayload,
   getActiveView,
@@ -408,6 +410,8 @@ const saving = ref(false);
 const chartVisible = ref(false);
 const chartList = ref<unknown[]>([]);
 const tableHeight = 520;
+/** 后端字段级错误（FieldErrors），映射到表单对应字段（OSC-0009） */
+const fieldErrors = ref<{ field: string; message: string }[]>([]);
 
 const exportFormats = EXPORT_FORMATS;
 
@@ -424,11 +428,18 @@ const flags = computed(() =>
 /** 只读实体列表页不展示历史与评论（新建由表单 mode 自行隐藏） */
 const showHistoryTabs = computed(() => pageSetting.value?.isReadOnly !== true);
 
-const drawerFields = computed(() => {
-  if (drawerMode.value === 'add') return addFields.value;
-  if (drawerMode.value === 'edit') return editFields.value;
-  return detailFields.value.length ? detailFields.value : listFields.value;
-});
+/** 表单字段分区唯一入口：展示、回填、保存共用同一字段来源（OSC-0009） */
+const fieldParts = computed(() => ({
+  list: listFields.value,
+  add: addFields.value,
+  edit: editFields.value,
+  detail: detailFields.value,
+  search: searchFields.value,
+}));
+
+const drawerFields = computed(() =>
+  resolveFieldsForKind(drawerMode.value, fieldParts.value),
+);
 
 const metaKeys = computed(() => selectListColumns(listFields.value).map((f) => f.name));
 
@@ -683,18 +694,53 @@ async function loadFields() {
   const nested = meta.fields as
     | { list?: unknown; search?: unknown; form?: { addForm?: unknown; editForm?: unknown; detail?: unknown } }
     | undefined;
-  const search = toFieldMetas((meta.search || nested?.search) as never).filter(
+  let search = toFieldMetas((meta.search || nested?.search) as never).filter(
     (f) => !!f.name && !f.primaryKey && f.typeName !== 'Guid',
   );
-  const add = toFieldMetas((meta.addForm || nested?.form?.addForm) as never).filter(
+  let add = toFieldMetas((meta.addForm || nested?.form?.addForm) as never).filter(
     (f) => !!f.name,
   );
-  const edit = toFieldMetas((meta.editForm || nested?.form?.editForm) as never).filter(
+  let edit = toFieldMetas((meta.editForm || nested?.form?.editForm) as never).filter(
     (f) => !!f.name,
   );
-  const detail = toFieldMetas((meta.detail || nested?.form?.detail) as never).filter(
+  let detail = toFieldMetas((meta.detail || nested?.form?.detail) as never).filter(
     (f) => !!f.name,
   );
+  // 各分区缺失时按 ViewKind 走 GetFields 兜底，保证表单/搜索有权威元数据（OSC-0009）
+  if (!search.length) {
+    try {
+      const fb = await cubeApi.page.getFields(typePath.value, FieldKind.Search);
+      search = toFieldMetas(fb.data).filter(
+        (f) => !!f.name && !f.primaryKey && f.typeName !== 'Guid',
+      );
+    } catch {
+      /* ignore */
+    }
+  }
+  if (!add.length) {
+    try {
+      const fb = await cubeApi.page.getFields(typePath.value, FieldKind.Add);
+      add = toFieldMetas(fb.data).filter((f) => !!f.name);
+    } catch {
+      /* ignore */
+    }
+  }
+  if (!edit.length) {
+    try {
+      const fb = await cubeApi.page.getFields(typePath.value, FieldKind.Edit);
+      edit = toFieldMetas(fb.data).filter((f) => !!f.name);
+    } catch {
+      /* ignore */
+    }
+  }
+  if (!detail.length) {
+    try {
+      const fb = await cubeApi.page.getFields(typePath.value, FieldKind.Detail);
+      detail = toFieldMetas(fb.data).filter((f) => !!f.name);
+    } catch {
+      /* ignore */
+    }
+  }
   // 一次 Meta 灌入 Enum dataSource；再按 Cube.Vue Lookup 补未知 typeName 枚举
   const allFields = [...list, ...search, ...add, ...edit, ...detail];
   await enrichFieldsWithEnumDataSource(allFields);
@@ -883,7 +929,8 @@ async function loadRecordIntoDrawer(
   const id = getValueByKey(row, pkField.value);
   // GetPage 字段名为 PascalCase，而 GetDetail 返回数据为 camelCase；
   // 按字段元数据归一化 key，否则编辑表单 model[field.name] 取不到值（内容为空）
-  const targetFields = mode === 'edit' ? editFields.value : detailFields.value;
+  // 回填字段与 drawerFields 同源：detail 分区缺失时回退 edit → list，避免详情全空（OSC-0009）
+  const targetFields = resolveFieldsForKind(mode, fieldParts.value);
   try {
     const res = await cubeApi.page.getDetail(typePath.value, id as string | number);
     Object.assign(
@@ -933,7 +980,8 @@ async function handleSave() {
   saving.value = true;
   try {
     const mode = drawerMode.value === 'add' ? 'add' : 'edit';
-    const fields = mode === 'add' ? addFields.value : editFields.value;
+    // 保存字段集与表单回填同源（editForm → addForm），避免字段名不一致
+    const fields = resolveFieldsForKind(mode, fieldParts.value);
     const payload = prepareSubmitPayload({ ...formModel }, fields, {
       mode,
       pkField: pkField.value,
@@ -941,10 +989,20 @@ async function handleSave() {
     if (mode === 'add') await cubeApi.page.add(typePath.value, payload);
     else await cubeApi.page.update(typePath.value, payload);
     Message.success('保存成功');
+    fieldErrors.value = [];
     drawerVisible.value = false;
     await loadData();
   } catch (err) {
-    Message.error(formatApiError(err, '保存失败'));
+    // 后端字段级错误优先映射到表单字段；其余保留全局提示（OSC-0009）
+    const errors =
+      err instanceof ApiError
+        ? (err.fieldErrors ?? [])
+        : ((err as { response?: { data?: { fieldErrors?: { field: string; message: string }[] } } })
+            .response?.data?.fieldErrors ?? []);
+    fieldErrors.value = errors;
+    if (!errors.length) {
+      Message.error(formatApiError(err, '保存失败'));
+    }
   } finally {
     saving.value = false;
   }

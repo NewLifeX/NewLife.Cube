@@ -113,12 +113,13 @@ export function resolveControl(field: FieldMeta): ControlType {
   // 布尔优先开关（即使已物化 dataSourceMap）
   if (typeName === 'Boolean') return 'switch';
 
-  if (field.lovCode) {
-    return field.multiple || itemType === 'multipleselect' ? 'lovMulti' : 'lov';
-  }
-
+  // 静态字典（GetPage 已物化 dataSource）优先本地下拉，避免自动 Enum lovCode 抢占导致多余 Meta 请求
   if (field.dataSource && Object.keys(field.dataSource).length > 0) {
     return 'select';
+  }
+
+  if (field.lovCode) {
+    return field.multiple || itemType === 'multipleselect' ? 'lovMulti' : 'lov';
   }
 
   if (typeName === 'DateTime') return 'datePicker';
@@ -204,8 +205,9 @@ export function resolveListControl(field: FieldMeta): ListControlType {
 
   if (typeName === 'Guid') return 'readonly';
   if (typeName === 'Boolean') return 'boolean';
-  if (field.lovCode || typeName === 'Enum') return 'lov';
+  // 静态字典优先（列表显示直接用 label，避免走 LOV/BatchLabel 链路）
   if (field.dataSource && Object.keys(field.dataSource).length > 0) return 'select';
+  if (field.lovCode || typeName === 'Enum') return 'lov';
   if (isEnumLikeTypeName(field)) return 'select';
   if (typeName === 'DateTime') return 'date';
   if (typeName === 'TimeSpan') return 'time';
@@ -252,9 +254,21 @@ export function isAuditField(field: Pick<FieldMeta, 'name'>): boolean {
  * MVC 版后端 System.Text.Json 反序列化时拒绝 JSON 字符串绑定到 Int32/Enum 属性，
  * 这里按字段元数据把字符串数字转回原生类型。空值原样交给上层处理。
  */
+/** 64 位整数：安全范围内转 number（保证后端 System.Text.Json 绑定成功）；超安全整数保留字符串避免精度丢失 */
+function normalizeInt64(value: unknown): unknown {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string' && /^-?\d+$/.test(value.trim())) {
+    const n = Number(value);
+    return Number.isSafeInteger(n) ? n : value;
+  }
+  return value;
+}
+
 export function normalizeSubmitValue(field: FieldMeta | undefined, value: unknown): unknown {
   if (value == null || value === '') return value;
   const typeName = (field?.typeName ?? '').trim();
+  // Int64/UInt64 可能承载雪花 ID 等超安全整数；无条件 Number 会丢精度
+  if (typeName === 'Int64' || typeName === 'UInt64') return normalizeInt64(value);
   if (NUMERIC_TYPES.has(typeName)) {
     if (typeof value === 'number' && Number.isFinite(value)) return value;
     if (typeof value === 'string' && /^-?\d+(\.\d+)?$/.test(value.trim())) return Number(value);
@@ -279,7 +293,8 @@ export function serializeSubmitModel(
   const fieldMap = new Map(fields.map((f) => [f.name, f]));
   const multiNames = new Set(
     fields
-      .filter((f) => f.multiple || f.itemType === 'multipleSelect')
+      // itemType 大小写不敏感（MultipleSelect / multipleselect 等价）
+      .filter((f) => f.multiple || normalizeItemType(f) === 'multipleselect')
       .map((f) => f.name),
   );
   const out: Record<string, unknown> = {};

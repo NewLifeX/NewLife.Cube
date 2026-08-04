@@ -188,7 +188,122 @@ public class LovController : EntityController<LovDefinition>
         if (config == null)
             throw new InvalidOperationException($"值集 {request.LovCode} 未配置列表数据源");
 
-        // 构建请求参数
+        var (rows, total) = await FetchRemoteList(config, request.Params, request.PageNum, request.PageSize);
+
+        return new
+        {
+            Data = rows,
+            Total = total,
+        };
+    }
+
+    /// <summary>批量翻译。将列表型值集的原始 value 批量翻译为 label</summary>
+    /// <param name="request">翻译请求</param>
+    /// <returns>value→label 字典</returns>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpPost]
+    public async Task<Object> BatchLabel([FromBody] LovBatchLabelRequest request)
+    {
+        if (request == null || request.LovCode.IsNullOrEmpty())
+            throw new ArgumentNullException(nameof(request));
+
+        var def = LovDefinition.Find(LovDefinition._.LovCode == request.LovCode);
+        if (def == null)
+            throw new InvalidOperationException($"值集 {request.LovCode} 不存在");
+
+        var result = new Dictionary<String, String>();
+
+        if (request.Values == null || request.Values.Length == 0)
+            return result;
+
+        if (def.Type == "ENUM")
+        {
+            // 枚举型：直接从 LovEnumItem 查询
+            var values = request.Values.Select(v => v.ToString()).ToArray();
+            var items = LovEnumItem.FindAllByLovDefId(def.Id).Where(e => e.Enabled && values.Contains(e.Value)).ToList();
+            foreach (var item in items)
+            {
+                result[item.Value] = item.Label;
+            }
+        }
+        else if (def.Type == "LIST")
+        {
+            // 列表型：通过远端 ListData 按 ValueField/LabelField 权威反查，禁止以第一页内容猜测
+            var config = LovListConfig.FindByLovDefId(def.Id);
+            if (config != null && !def.ValueField.IsNullOrEmpty() && !def.LabelField.IsNullOrEmpty())
+            {
+                // 去重待查值
+                var pending = request.Values
+                    .Select(v => v?.ToString())
+                    .Where(v => !v.IsNullOrEmpty())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+                // 大小写不敏感匹配：远端 value 与请求值可能大小写不一致（如字符串编号）
+                var pendingSet = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
+                foreach (var v in pending)
+                {
+                    if (!pendingSet.ContainsKey(v)) pendingSet[v] = v;
+                }
+
+                // 远端接口支持分页时按页遍历，直到找全、取完或达到页数上限；不支持分页时一次取完
+                var pageSize = config.Pageable ? 500 : Math.Max(200, pending.Count);
+                var maxPages = 20;
+                for (var pageNum = 1; pageNum <= maxPages; pageNum++)
+                {
+                    var (rows, _) = await FetchRemoteList(config, null, pageNum, pageSize);
+                    if (rows.Count == 0) break;
+
+                    foreach (var row in rows)
+                    {
+                        if (pendingSet.Count == 0) break;
+                        var v = GetRowValue(row, def.ValueField);
+                        if (v == null) continue;
+                        var key = v.ToString()!;
+                        if (pendingSet.TryGetValue(key, out var original) && !result.ContainsKey(original))
+                        {
+                            var label = GetRowValue(row, def.LabelField)?.ToString();
+                            if (!label.IsNullOrEmpty()) result[original] = label!;
+                            pendingSet.Remove(key);
+                        }
+                    }
+
+                    // 已全部找到，或远端不支持分页（一页即全部），或页数据不满一页（无更多数据）
+                    if (pendingSet.Count == 0 || !config.Pageable || rows.Count < pageSize) break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>从行数据中按字段名大小写不敏感取值（兼容远端 camelCase / PascalCase）</summary>
+    private static Object? GetRowValue(IDictionary<String, Object> row, String field)
+    {
+        if (row == null || field.IsNullOrEmpty()) return null;
+        if (row.TryGetValue(field, out var v)) return v;
+        // 大小写不敏感：遍历键匹配
+        foreach (var kv in row)
+        {
+            if (kv.Key.EqualIgnoreCase(field)) return kv.Value;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 代理远端列表接口，返回解析后的行数据与总数。
+    /// 参数规则与 ListData 一致：额外参数 + 分页参数 + 固定参数（GET 拼接查询串，POST 放 Body）。
+    /// </summary>
+    /// <param name="config">列表型值集配置</param>
+    /// <param name="extraParams">额外查询参数（搜索条件等）</param>
+    /// <param name="pageNum">页码，从 1 开始；非分页接口可忽略</param>
+    /// <param name="pageSize">每页条数</param>
+    /// <returns>解析后的行数据列表与总数</returns>
+    private static async Task<(List<Dictionary<String, Object>> Rows, Int32 Total)> FetchRemoteList(
+        LovListConfig config,
+        Dictionary<String, Object>? extraParams,
+        Int32 pageNum,
+        Int32 pageSize)
+    {
         using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
 
         var url = config.RequestUrl;
@@ -200,9 +315,9 @@ public class LovController : EntityController<LovDefinition>
         {
             // GET 请求：参数拼接到 URL
             var queryParams = new List<String>();
-            if (request.Params != null)
+            if (extraParams != null)
             {
-                foreach (var kv in request.Params)
+                foreach (var kv in extraParams)
                 {
                     if (kv.Value != null)
                         queryParams.Add($"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value.ToString()!)}");
@@ -211,10 +326,10 @@ public class LovController : EntityController<LovDefinition>
             // 分页参数
             if (config.Pageable)
             {
-                if (request.PageNum > 0 && !config.PageNumField.IsNullOrEmpty())
-                    queryParams.Add($"{Uri.EscapeDataString(config.PageNumField)}={request.PageNum}");
-                if (request.PageSize > 0 && !config.PageSizeField.IsNullOrEmpty())
-                    queryParams.Add($"{Uri.EscapeDataString(config.PageSizeField)}={request.PageSize}");
+                if (pageNum > 0 && !config.PageNumField.IsNullOrEmpty())
+                    queryParams.Add($"{Uri.EscapeDataString(config.PageNumField)}={pageNum}");
+                if (pageSize > 0 && !config.PageSizeField.IsNullOrEmpty())
+                    queryParams.Add($"{Uri.EscapeDataString(config.PageSizeField)}={pageSize}");
             }
             // 固定参数
             if (!config.FixedParams.IsNullOrEmpty())
@@ -240,9 +355,9 @@ public class LovController : EntityController<LovDefinition>
         {
             // POST 请求：参数放 Body
             var bodyParams = new Dictionary<String, Object>();
-            if (request.Params != null)
+            if (extraParams != null)
             {
-                foreach (var kv in request.Params)
+                foreach (var kv in extraParams)
                 {
                     bodyParams[kv.Key] = kv.Value!;
                 }
@@ -250,10 +365,10 @@ public class LovController : EntityController<LovDefinition>
             // 分页参数
             if (config.Pageable)
             {
-                if (request.PageNum > 0 && !config.PageNumField.IsNullOrEmpty())
-                    bodyParams[config.PageNumField] = request.PageNum;
-                if (request.PageSize > 0 && !config.PageSizeField.IsNullOrEmpty())
-                    bodyParams[config.PageSizeField] = request.PageSize;
+                if (pageNum > 0 && !config.PageNumField.IsNullOrEmpty())
+                    bodyParams[config.PageNumField] = pageNum;
+                if (pageSize > 0 && !config.PageSizeField.IsNullOrEmpty())
+                    bodyParams[config.PageSizeField] = pageSize;
             }
             // 固定参数
             if (!config.FixedParams.IsNullOrEmpty())
@@ -298,64 +413,18 @@ public class LovController : EntityController<LovDefinition>
                 total = totalElement.Value.GetInt32();
         }
 
-        // 序列化数据
-        var dataList = dataElement.HasValue
-            ? JsonSerializer.Serialize(dataElement.Value)
-            : "[]";
-
-        return new
+        var rows = new List<Dictionary<String, Object>>();
+        if (dataElement.HasValue && dataElement.Value.ValueKind == JsonValueKind.Array)
         {
-            Data = JsonParser.Decode(dataList),
-            Total = total,
-        };
-    }
-
-    /// <summary>批量翻译。将列表型值集的原始 value 批量翻译为 label</summary>
-    /// <param name="request">翻译请求</param>
-    /// <returns>value→label 字典</returns>
-    [EntityAuthorize(PermissionFlags.Detail)]
-    [HttpPost]
-    public Object BatchLabel([FromBody] LovBatchLabelRequest request)
-    {
-        if (request == null || request.LovCode.IsNullOrEmpty())
-            throw new ArgumentNullException(nameof(request));
-
-        var def = LovDefinition.Find(LovDefinition._.LovCode == request.LovCode);
-        if (def == null)
-            throw new InvalidOperationException($"值集 {request.LovCode} 不存在");
-
-        var result = new Dictionary<String, String>();
-
-        if (request.Values == null || request.Values.Length == 0)
-            return result;
-
-        if (def.Type == "ENUM")
-        {
-            // 枚举型：直接从 LovEnumItem 查询
-            var values = request.Values.Select(v => v.ToString()).ToArray();
-            var items = LovEnumItem.FindAllByLovDefId(def.Id).Where(e => e.Enabled && values.Contains(e.Value)).ToList();
-            foreach (var item in items)
+            foreach (var item in dataElement.Value.EnumerateArray())
             {
-                result[item.Value] = item.Label;
-            }
-        }
-        else if (def.Type == "LIST")
-        {
-            // 列表型：通过 ListData 代理获取数据，再建立映射
-            var config = LovListConfig.FindByLovDefId(def.Id);
-            if (config != null && !def.ValueField.IsNullOrEmpty() && !def.LabelField.IsNullOrEmpty())
-            {
-                // 这里简化处理：如果有 Redis 缓存则优先使用
-                // 否则通过 ListData 接口获取基础数据并提取映射
-                var lists = LovEnumItem.FindAllByLovDefId(def.Id).Where(e => e.Enabled && request.Values.Select(v => v.ToString()).Contains(e.Value)).ToList();
-                foreach (var item in lists)
-                {
-                    result[item.Value] = item.Label;
-                }
+                if (item.ValueKind != JsonValueKind.Object) continue;
+                var row = JsonSerializer.Deserialize<Dictionary<String, Object>>(item.GetRawText());
+                if (row != null) rows.Add(row);
             }
         }
 
-        return result;
+        return (rows, total);
     }
 
     /// <summary>解析 JSON 路径表达式（如 data.records）</summary>

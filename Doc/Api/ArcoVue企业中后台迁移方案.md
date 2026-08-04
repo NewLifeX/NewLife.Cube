@@ -523,9 +523,9 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
 
 | OSC | 内容 | 出口 |
 |-----|------|------|
-| OSC-0011 | 筛选记忆 + 单一洞察区 | `FiltersJson` 按命名视图保存；统计/图表/关闭三态，始终使用当前实体与筛选条件 |
-| OSC-0012 | 受限表单布局 | ViewProfile 增 `FormJson`；RecordDrawer 支持字段顺序、显隐、Category 分组折叠与恢复默认 |
-| OSC-0013 | 全局只读模板 | `UserId=0` 模板读写 API、权限与审计；个人覆盖/恢复模板；不做角色、租户与协同编辑 |
+| OSC-0012 | 筛选记忆 + 单一洞察区 | `FiltersJson` 按命名视图保存；统计/图表/关闭三态，始终使用当前实体与筛选条件 |
+| OSC-0013 | 受限表单布局 | ViewProfile 增 `FormJson`；RecordDrawer 支持字段顺序、显隐、Category 分组折叠与恢复默认 |
+| OSC-0014 | 全局只读模板 | `UserId=0` 模板读写 API、权限与审计；个人覆盖/恢复模板；不做角色、租户与协同编辑 |
 
 #### 8.2.6 验收与非目标
 
@@ -730,11 +730,11 @@ Draft → Accepted → Implementing → Validating → Done
 
 - 消费 EntityComment。后端 OSC-0002 已就绪（`GET/POST/DELETE /Cube/EntityComment`，同表回复）：api-core 增 `createCommentApi`（`cubeApi.comment.*`）+ `RecordDrawer` 评论 Tab 真实实现（顶层 + 一层回复缩进、发表/回复/删除本人）。
 
-### M5 — FlowGram 样例 → **OSC-0009**
+### M5 — FlowGram 样例 → **OSC-0010**
 
 - 单一样例 + 文档；不扩平台级流程引擎。
 
-### M6 — 硬化 → **OSC-0010**（收口）
+### M6 — 硬化 → **OSC-0011**（收口）
 
 - 矩阵现状列、功能清单回写、冒烟、harness；无大功能开发。另清理 §10.4 所列占位/死代码。
 
@@ -760,14 +760,15 @@ Draft → Accepted → Implementing → Validating → Done
 |---|------|:---:|----------|
 | 1 | ~~评论 Tab 前端未接线~~（OSC-0008 已接线：api-core comment API + RecordDrawer 评论 Tab） | P0 | ✅ 已解决 |
 | 2 | `UserProfile.workspace.defaultView / pageSize` 已建模未消费 | P0 | DefaultList 无 ViewProfile 时回落默认视图；每页条数接入 |
-| 3 | 筛选记忆未持久化（filtersJson 预留未用；分组为占位） | P1 | OSC-0011：仅保存当前实体、当前命名视图的搜索条件；不做通用数据范围引擎 |
+| 3 | 筛选记忆未持久化（filtersJson 预留未用；分组为占位） | P1 | OSC-0012：仅保存当前实体、当前命名视图的搜索条件；不做通用数据范围引擎 |
 | 4 | 列 frozen 仅 left/false，无 right | P1 | 补充右冻结 |
 | 5 | 角色/租户级配置层未实现（仅系统默认+用户两级，§5.1） | P1 | 分层扩展 |
 | 6 | 组件测试缺失（仅纯逻辑单测） | P1 | `@vue/test-utils` + happy-dom 覆盖关键组件 |
 | 7 | 占位/死代码：table/tree 分组/排序入口 `Message.info`（OSC-0007 已移除自定义按钮占位）、`NamedViewsToolbar.vue` 无引用 | P2 | 清理或实现 |
 | 8 | `ListTable` 树列标记排除条件写 `__check`（实际复选框列为 `__checked`），showCheckbox+hierarchy 同时开启时 tree:true 可能标错列 | P2 | 修正排除条件 |
 | 9 | i18n 未实现（矩阵目标 ✅ 但实际无文案外置） | P1 | 文案外置 |
-| 10 | MFA UI / FlowGram / E2E 冒烟 | P1/P2 | 后续 OSC（0009/0010） |
+| 10 | MFA UI / FlowGram / E2E 冒烟 | P1/P2 | 后续 OSC（0010/0011） |
+| 11 | ~~通用实体表单/列表/搜索元数据治理~~（OSC-0009 已落地：GetPage 分区统一回退、静态字典优先、Int64 精度、LIST LOV 权威反查 `BatchLabel`、详情/搜索/六视图共享 label、字段级错误映射） | P0 | ✅ 已解决；Cube.Vue core 对齐另行立项 |
 
 **文档一致性修正**：§7 与 §6.3 的「左侧抽屉」表述与本方案 §8.1 契约（`placement="right"`）及实际实现（右侧抽屉）不一致，本审查统一为「右侧抽屉」，并保留「飞书多维表为左抽屉」的范式差异说明。
 
@@ -817,10 +818,11 @@ Draft → Accepted → Implementing → Validating → Done
 | OSC-0006 ✅ | 卡片 / 甘特等视图增强；**增补已并入**：树形组装 `treeBuilder`（ParentID/id、Path/ParentPath）+ VTable `hierarchyExpandLevel` 修复 | 不含抽屉 | OSC-0005 |
 | OSC-0007 ✅ | 视图工具栏与卡片布局：图表入口按钮暂移除（图表区留待后续 OSC）、「高级」菜单（导入/导出/批量删除 + 表格全选门禁）、工具栏精简（去添加记录/自定义按钮）、卡片三布局/正文列数与排版、字体 Token | 不含图表区完善、抽屉评论；列表/树拖拽排序未纳入本号 | OSC-0003/0005/0006 |
 | OSC-0008 ✅ | 表单提交归一化（枚举/Lov 字符串→number，对齐 MVC 版 System.Text.Json 绑定）+ 抽屉历史增强（分页/筛选/展示）+ 评论 Tab 接线 | 不含字段 diff、恢复版本、评论附件 | OSC-0002 ✅、OSC-0003 |
-| OSC-0009 | FlowGram 单一样例 | 不扩流程平台 | — |
-| OSC-0010 | 收口：矩阵/功能清单/冒烟/harness + 清理 §10.4 占位/死代码 | 无新功能 | 建议前述 P0 已完成 |
+| OSC-0009 ✅ | 实体元数据表单、列表与搜索治理：GetPage 分区统一回退与回填同源；静态字典优先控件；Int64 精度保护；LIST LOV 按 `valueField/labelField` 权威反查（后端 `BatchLabel` 增强）；详情/搜索/六视图共享 label resolver；字段级错误映射 | 仅 ArcoVue + `LovController.BatchLabel`；不含 Cube.Vue 前端 | OSC-0003、OSC-0008 |
+| OSC-0010 | FlowGram 单一样例 | 不扩流程平台 | — |
+| OSC-0011 | 收口：矩阵/功能清单/冒烟/harness + 清理 §10.4 占位/死代码 | 无新功能 | 建议前述 P0 已完成 |
 
-后续能力（**有限视图/表单自定义 OSC-0011~0013**、MFA UI、i18n、组件测试、角色/租户配置层、E2E 冒烟等）自 **OSC-0011** 起顺延新增，仍保持「依赖在前、一号一事」；LOV 已在 OSC-0006 前落地，不再列为后续；筛选记忆（FiltersJson）归入 OSC-0011，受限表单布局（FormJson）归入 OSC-0012，全局只读模板归入 OSC-0013。
+后续能力（**有限视图/表单自定义 OSC-0012~0014**、MFA UI、i18n、组件测试、角色/租户配置层、E2E 冒烟等）自 **OSC-0012** 起顺延新增，仍保持「依赖在前、一号一事」；LOV 已在 OSC-0006 前落地，不再列为后续；筛选记忆（FiltersJson）归入 OSC-0012，受限表单布局（FormJson）归入 OSC-0013，全局只读模板归入 OSC-0014。
 
 ---
 

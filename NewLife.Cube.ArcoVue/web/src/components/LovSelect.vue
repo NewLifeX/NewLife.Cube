@@ -15,25 +15,54 @@
         {{ opt.label }}
       </a-option>
     </a-select>
-    <a-input-group v-else>
-      <a-input :model-value="displayLabel" readonly :placeholder="placeholder" :disabled="disabled" />
+
+    <!-- LIST 单选：只读展示权威 label + 选择/清除 -->
+    <a-input-group v-else-if="!multiple">
+      <a-input
+        :model-value="displayLabel"
+        readonly
+        :placeholder="placeholder"
+        :disabled="disabled"
+      />
       <a-button :disabled="disabled" @click="tableVisible = true">选择</a-button>
-      <a-button v-if="modelValue != null && modelValue !== ''" :disabled="disabled" @click="onUpdate(multiple ? [] : undefined)">
-        清除
-      </a-button>
+      <a-button v-if="hasValue" :disabled="disabled" @click="onClear">清除</a-button>
     </a-input-group>
+
+    <!-- LIST 多选：已选标签 + 选择/清除（弹窗内勾选确认） -->
+    <div v-else class="lov-select--multi">
+      <a-space v-if="selectedLabels.length" wrap :size="4">
+        <a-tag
+          v-for="(lb, i) in selectedLabels"
+          :key="`${lb}-${i}`"
+          closable
+          @close="onRemoveLabel(i)"
+        >
+          {{ lb }}
+        </a-tag>
+      </a-space>
+      <a-button :disabled="disabled" @click="tableVisible = true">选择</a-button>
+      <a-button v-if="hasValue" :disabled="disabled" @click="onClear">清除</a-button>
+    </div>
+
     <LovSelectTable
       v-model:visible="tableVisible"
       :lov-code="code"
-      @select="onListSelect"
+      :meta="listMeta"
+      :multiple="multiple"
+      :model-value="modelValue"
+      @confirm="onConfirm"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
-import { fetchLovMeta, resolveLovType } from '@/core/utils/lov-api';
-import type { LovEnumOption } from '@/core/types/lov';
+import { computed, reactive, ref, watch, onMounted } from 'vue';
+import {
+  fetchBatchLabel,
+  fetchLovMeta,
+  resolveLovType,
+} from '@/core/utils/lov-api';
+import type { LovEnumOption, LovListMeta } from '@/core/types/lov';
 import LovSelectTable from './LovSelectTable.vue';
 
 const props = withDefaults(
@@ -53,8 +82,27 @@ const emit = defineEmits<{
 
 const mode = ref<'enum' | 'list'>('enum');
 const options = ref<LovEnumOption[]>([]);
-const displayLabel = ref('');
+const listMeta = ref<LovListMeta | null>(null);
 const tableVisible = ref(false);
+/** value → label 缓存；LIST 历史值回显与已选标签展示共用 */
+const labelCache = reactive<Record<string, string>>({});
+
+const values = computed<(string | number)[]>(() => {
+  if (props.modelValue == null || props.modelValue === '') return [];
+  return Array.isArray(props.modelValue) ? props.modelValue : [props.modelValue];
+});
+
+const hasValue = computed(() => values.value.length > 0);
+
+const displayLabel = computed(() => {
+  if (!values.value.length) return '';
+  const v = values.value[0];
+  return labelCache[String(v)] ?? String(v);
+});
+
+const selectedLabels = computed(() =>
+  values.value.map((v) => labelCache[String(v)] ?? String(v)),
+);
 
 async function loadMeta() {
   if (!props.code) return;
@@ -64,13 +112,34 @@ async function loadMeta() {
     const item = meta.meta?.find((m) => m.lovCode === props.code) ?? meta.meta?.[0];
     if (item?.type === 'LIST' || inferred === 'LIST') {
       mode.value = 'list';
+      listMeta.value = item?.type === 'LIST' ? (item as LovListMeta) : null;
     } else {
       mode.value = 'enum';
+      listMeta.value = null;
       const inline = meta.inlineEnums?.[props.code];
       options.value = item?.type === 'ENUM' ? item.options : (inline ?? []);
     }
   } catch {
     mode.value = inferred === 'LIST' ? 'list' : 'enum';
+    listMeta.value = null;
+  }
+  // 历史值回显：即使 Meta 失败也尝试反查标签
+  ensureLabels(values.value);
+}
+
+/** 对缺失标签的 value 调用 BatchLabel 权威反查（LIST 值集） */
+async function ensureLabels(vals: (string | number)[]) {
+  const missing = vals
+    .map(String)
+    .filter((v) => v && labelCache[v] == null);
+  if (!missing.length) return;
+  try {
+    const map = await fetchBatchLabel({ lovCode: props.code, values: missing });
+    for (const [k, v] of Object.entries(map)) {
+      if (v != null) labelCache[k] = v;
+    }
+  } catch {
+    /* 保留原始值降级显示 */
   }
 }
 
@@ -78,31 +147,48 @@ function onUpdate(v: unknown) {
   emit('update:modelValue', v as string | number | Array<string | number> | undefined);
 }
 
-function onListSelect(row: Record<string, unknown>) {
-  const value = (row.value ?? row.Value ?? row.id ?? row.Id) as string | number;
-  const label = String(row.label ?? row.Label ?? row.name ?? row.Name ?? value);
-  displayLabel.value = label;
+function onConfirm(vals: unknown[]) {
   if (props.multiple) {
-    const cur = Array.isArray(props.modelValue) ? [...props.modelValue] : [];
-    if (!cur.includes(value)) cur.push(value);
-    emit('update:modelValue', cur);
+    emit('update:modelValue', vals as (string | number)[]);
   } else {
-    emit('update:modelValue', value);
+    emit('update:modelValue', (vals[0] as string | number) ?? undefined);
   }
+  ensureLabels(vals as (string | number)[]);
   tableVisible.value = false;
+}
+
+function onClear() {
+  emit('update:modelValue', props.multiple ? [] : undefined);
+}
+
+function onRemoveLabel(index: number) {
+  const next = [...values.value];
+  next.splice(index, 1);
+  emit('update:modelValue', next);
 }
 
 watch(() => props.code, loadMeta, { immediate: true });
 watch(
   () => props.modelValue,
   (v) => {
-    if (mode.value === 'enum' && v != null) {
-      const opt = options.value.find((o) => String(o.value) === String(v));
-      displayLabel.value = opt?.label ?? String(v ?? '');
-    } else if (v == null || v === '') {
-      displayLabel.value = '';
-    }
+    if (v == null || v === '') return;
+    ensureLabels(Array.isArray(v) ? v : [v]);
   },
+  { deep: true },
 );
 onMounted(loadMeta);
 </script>
+
+<style scoped>
+.lov-select--multi {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.lov-select--multi .arco-space {
+  flex: 1;
+  min-width: 0;
+}
+</style>

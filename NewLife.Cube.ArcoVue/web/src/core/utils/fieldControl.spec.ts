@@ -73,6 +73,47 @@ describe('fieldControl', () => {
     });
   });
 
+  it('multi-select itemType is case-insensitive (OSC-0009)', () => {
+    const fields = [
+      base({ name: 'Tags', typeName: 'String', itemType: 'MultipleSelect' }),
+      base({ name: 'Flags', typeName: 'String', itemType: 'MULTIPLESELECT' }),
+    ];
+    expect(serializeSubmitModel({ Tags: ['a', 'b'], Flags: ['x', 'y'] }, fields)).toEqual({
+      Tags: 'a,b',
+      Flags: 'x,y',
+    });
+  });
+
+  it('Int64/UInt64 keep precision beyond safe integer (OSC-0009)', () => {
+    const i64 = base({ name: 'BigId', typeName: 'Int64' });
+    const u64 = base({ name: 'BigU', typeName: 'UInt64' });
+    // 安全整数 → number（保证后端 System.Text.Json 绑定成功）
+    expect(serializeSubmitModel({ BigId: '123456789012' }, [i64])).toEqual({
+      BigId: 123456789012,
+    });
+    // 超安全整数（雪花 ID 19 位）→ 保留字符串，避免 Number 精度丢失
+    const snowflake = '2300000000000000001';
+    expect(serializeSubmitModel({ BigId: snowflake }, [i64])).toEqual({ BigId: snowflake });
+    expect(serializeSubmitModel({ BigU: snowflake }, [u64])).toEqual({ BigU: snowflake });
+    expect(serializeSubmitModel({ BigId: 42 }, [i64])).toEqual({ BigId: 42 });
+  });
+
+  it('control prefers dataSource over auto Enum lovCode (OSC-0009)', () => {
+    const f = base({
+      name: 'Kind',
+      typeName: 'Int32',
+      lovCode: 'Enum.Kind',
+      dataSource: { '1': 'A', '2': 'B' },
+    });
+    expect(resolveControl(f)).toBe('select');
+    expect(resolveListControl(f)).toBe('select');
+    expect(resolveSearchControl(f)).toBe('select');
+    // 无 dataSource 的 LIST/枚举仍走 LovSelect
+    expect(
+      resolveControl(base({ name: 'DeptId', typeName: 'Int32', lovCode: 'List.Dept' })),
+    ).toBe('lov');
+  });
+
   it('isAuditField detects create/update audit fields (case-insensitive)', () => {
     expect(isAuditField(base({ name: 'CreateUser', typeName: 'String' }))).toBe(true);
     expect(isAuditField(base({ name: 'CreateUserID', typeName: 'Int32' }))).toBe(true);

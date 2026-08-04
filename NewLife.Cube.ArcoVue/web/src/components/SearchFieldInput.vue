@@ -221,7 +221,12 @@ function onSelect(v: unknown) {
     else emitScalar(s);
     return;
   }
-  if (tn === 'Int32' || tn === 'Int64' || tn === 'Decimal' || tn === 'Double' || tn === 'Single') {
+  if (tn === 'Int64' || tn === 'UInt64') {
+    const n = Number(s);
+    emitScalar(/^-?\d+$/.test(s.trim()) && Number.isSafeInteger(n) ? n : s);
+    return;
+  }
+  if (tn === 'Int32' || tn === 'Decimal' || tn === 'Double' || tn === 'Single') {
     const n = Number(s);
     emitScalar(Number.isNaN(n) ? s : n);
     return;

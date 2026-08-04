@@ -68,7 +68,11 @@ pnpm build
 
 ## 记录抽屉（表单 / 历史 / 评论）
 
-- 新增/编辑提交时，枚举/Lov 值按字段元数据自动归一化为 `number`（对齐 MVC 版 System.Text.Json 绑定）；可空 String 空值提交 `""`（OSC-0008）。
+- 新增/编辑提交时，枚举/Lov 值按字段元数据自动归一化为 `number`（对齐 MVC 版 System.Text.Json 绑定）；可空 String 空值提交 `""`（OSC-0008）；Int64/UInt64 超过安全整数范围时保留字符串避免精度丢失（OSC-0009）。
+- 字段分区（`GetPage` list/addForm/editForm/detail/search）由 `resolveFieldsForKind` 统一回退，详情展示与回填同源；分区缺失时按依赖顺序兜底（OSC-0009）。
+- 静态 `dataSourceMap`（枚举/状态/布尔）优先本地下拉；LIST 值集按 Meta 的 `valueField` / `labelField` / `tableColumns` / `searchFields` 工作，历史值标签由后端 `BatchLabel` 权威反查（OSC-0009）。
+- 详情按字段类型富渲染：字典/多选标签、Boolean、时间、URL 安全链接、图片缩略图、文件下载链接、JSON 摘要；HTML/Markdown 仅以纯文本输出（OSC-0009）。
+- 保存失败时后端 `FieldErrors` 优先映射到对应表单字段；无法映射时保留全局提示（OSC-0009）。
 - 历史 Tab：分页（20/页）+ 操作类型筛选（新增/更新/删除）+ 时间/操作人/成功失败徽章/换行（OSC-0008）。
 - 评论 Tab：顶层 + 一层回复 + 删除本人评论，消费 `/Cube/EntityComment`（OSC-0008）。
 

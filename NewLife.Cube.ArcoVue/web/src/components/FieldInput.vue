@@ -171,7 +171,7 @@ function emitValue(v: unknown) {
   emit('update:modelValue', v);
 }
 
-/** 下拉值尽量还原数值/布尔，兼容实体字段类型 */
+/** 下拉值尽量还原数值/布尔，兼容实体字段类型；Int64 超安全整数保留字符串避免精度丢失（OSC-0009） */
 function onSelect(v: unknown) {
   if (v == null || v === '') {
     emitValue(undefined);
@@ -183,7 +183,12 @@ function onSelect(v: unknown) {
     emitValue(s === 'true' || s === '1');
     return;
   }
-  if (tn === 'Int32' || tn === 'Int64' || tn === 'Decimal' || tn === 'Double' || tn === 'Single') {
+  if (tn === 'Int64' || tn === 'UInt64') {
+    const n = Number(s);
+    emitValue(/^-?\d+$/.test(s.trim()) && Number.isSafeInteger(n) ? n : s);
+    return;
+  }
+  if (tn === 'Int32' || tn === 'Decimal' || tn === 'Double' || tn === 'Single') {
     const n = Number(s);
     emitValue(Number.isNaN(n) ? s : n);
     return;

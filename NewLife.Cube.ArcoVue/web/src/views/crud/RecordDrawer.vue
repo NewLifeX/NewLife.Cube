@@ -34,6 +34,7 @@
         :model="model"
         :type-path="typePath"
         :mode="mode === 'add' ? 'add' : 'edit'"
+        :field-errors="fieldErrors"
       />
       <div v-else class="detail-grouped" :style="detailLabelCssVars">
         <section
@@ -47,7 +48,33 @@
               <div class="detail-field__label" :style="detailLabelStyle">
                 {{ field.displayName || field.name }}
               </div>
-              <div class="detail-field__value">{{ formatDetail(field) }}</div>
+              <div class="detail-field__value">
+                <img
+                  v-if="detailImageOf(field)"
+                  :src="detailImageOf(field)!.href"
+                  class="detail-image"
+                  :alt="detailImageOf(field)!.text"
+                />
+                <a-link
+                  v-else-if="detailUrlOf(field)"
+                  :href="detailUrlOf(field)!.href"
+                  target="_blank"
+                  :disabled="!detailUrlOf(field)!.safe"
+                >
+                  {{ detailUrlOf(field)!.text }}
+                </a-link>
+                <a-link
+                  v-else-if="detailFileOf(field)"
+                  :href="detailFileOf(field)!.href"
+                  target="_blank"
+                  :disabled="!detailFileOf(field)!.safe"
+                >
+                  {{ detailFileOf(field)!.text }}
+                </a-link>
+                <span v-else class="detail-json" :title="detailTitle(field)">
+                  {{ formatDetail(field) }}
+                </span>
+              </div>
             </div>
           </div>
         </section>
@@ -63,6 +90,7 @@
           :model="model"
           :type-path="typePath"
           mode="edit"
+          :field-errors="fieldErrors"
         />
         <div v-else class="detail-grouped" :style="detailLabelCssVars">
           <section
@@ -76,7 +104,33 @@
                 <div class="detail-field__label" :style="detailLabelStyle">
                   {{ field.displayName || field.name }}
                 </div>
-                <div class="detail-field__value">{{ formatDetail(field) }}</div>
+                <div class="detail-field__value">
+                  <img
+                    v-if="detailImageOf(field)"
+                    :src="detailImageOf(field)!.href"
+                    class="detail-image"
+                    :alt="detailImageOf(field)!.text"
+                  />
+                  <a-link
+                    v-else-if="detailUrlOf(field)"
+                    :href="detailUrlOf(field)!.href"
+                    target="_blank"
+                    :disabled="!detailUrlOf(field)!.safe"
+                  >
+                    {{ detailUrlOf(field)!.text }}
+                  </a-link>
+                  <a-link
+                    v-else-if="detailFileOf(field)"
+                    :href="detailFileOf(field)!.href"
+                    target="_blank"
+                    :disabled="!detailFileOf(field)!.safe"
+                  >
+                    {{ detailFileOf(field)!.text }}
+                  </a-link>
+                  <span v-else class="detail-json" :title="detailTitle(field)">
+                    {{ formatDetail(field) }}
+                  </span>
+                </div>
               </div>
             </div>
           </section>
@@ -292,6 +346,13 @@ import {
 } from '@/core/utils/fieldGroups';
 import { formatApiError } from '@/core/utils/apiError';
 import { formatDateTime } from '@/core/utils/datetime';
+import {
+  detailFile,
+  detailImage,
+  detailText,
+  detailUrl,
+  jsonPreview,
+} from '@/core/utils/detailFormat';
 import { useUserStore } from '@/stores/user';
 import cubeApi from '@/api';
 import CommentReplyEditor from '@/components/CommentReplyEditor.vue';
@@ -313,8 +374,10 @@ const props = withDefaults(
     /** 编辑/详情：当前页可见数据内上一条/下一条 */
     canPrev?: boolean;
     canNext?: boolean;
+    /** 后端字段级错误（FieldErrors），映射到表单对应字段（OSC-0009） */
+    fieldErrors?: { field: string; message: string }[];
   }>(),
-  { showHistoryTabs: true, canPrev: false, canNext: false },
+  { showHistoryTabs: true, canPrev: false, canNext: false, fieldErrors: () => [] },
 );
 
 const emit = defineEmits<{
@@ -403,14 +466,34 @@ const commentTree = computed<CommentNode[]>(() => {
   }));
 });
 
-function formatDetail(field: FieldMeta) {
-  const v = getValueByKey(props.model, field.name);
-  if (v == null || v === '') return '-';
-  if (field.dataSource && field.dataSource[String(v)] != null) {
-    return field.dataSource[String(v)];
+/** 详情取值统一入口 */
+function rawOf(field: FieldMeta): unknown {
+  return getValueByKey(props.model, field.name);
+}
+
+/** 详情纯文本（dataSource/布尔/多选/JSON 摘要/常规字符串，安全输出） */
+function formatDetail(field: FieldMeta): string {
+  return detailText(field, rawOf(field));
+}
+
+function detailImageOf(field: FieldMeta) {
+  return detailImage(field, rawOf(field));
+}
+
+function detailUrlOf(field: FieldMeta) {
+  return detailUrl(field, rawOf(field));
+}
+
+function detailFileOf(field: FieldMeta) {
+  return detailFile(field, rawOf(field));
+}
+
+/** JSON 字段悬浮显示完整内容；其它字段无提示 */
+function detailTitle(field: FieldMeta): string | undefined {
+  if ((field.itemType ?? '').trim().toLowerCase() === 'json') {
+    return jsonPreview(rawOf(field), 4000);
   }
-  if (typeof v === 'boolean') return v ? '是' : '否';
-  return String(v);
+  return undefined;
 }
 
 async function loadHistory() {
@@ -687,7 +770,18 @@ defineExpose({ validate: () => formRef.value?.validate() });
 .detail-field {
   display: flex;
   align-items: stretch;
-  gap: 0;
+ 
+.detail-image {
+  max-width: 160px;
+  max-height: 120px;
+  object-fit: contain;
+  border-radius: 4px;
+  display: block;
+}
+.detail-json {
+  font-family: var(--font-family, inherit);
+  white-space: pre-wrap;
+} gap: 0;
   min-height: 36px;
   border-bottom: 1px solid var(--color-border-2);
   background: var(--color-bg-2);

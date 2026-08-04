@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
 import { isAuditField, isFullWidthControl, resolveControl } from '@/core/utils/fieldControl';
 import { groupFieldsByCategory } from '@/core/utils/fieldGroups';
@@ -46,8 +46,10 @@ const props = withDefaults(
     readonly?: boolean;
     /** 新增时隐藏主键/只读（对齐 Cube.Vue） */
     mode?: 'add' | 'edit' | 'detail';
+    /** 后端字段级错误（FieldErrors），映射到对应 a-form-item（OSC-0009） */
+    fieldErrors?: { field: string; message: string }[];
   }>(),
-  { mode: 'edit' },
+  { mode: 'edit', fieldErrors: () => [] },
 );
 
 const formRef = ref();
@@ -68,11 +70,32 @@ function rulesFor(field: FieldMeta) {
   return [{ required: true, message: `${field.displayName || field.name}不可以为空！` }];
 }
 
+/** 后端 FieldErrors 的 field 名（PascalCase）与表单字段名做大小写不敏感匹配后写入 Arco Form 字段错误 */
+function applyFieldErrors() {
+  const errs = props.fieldErrors;
+  if (!errs?.length || !formRef.value) return;
+  const names = new Set(visibleFields.value.map((f) => f.name));
+  const fields: Record<string, { status: 'error'; message: string }> = {};
+  for (const e of errs) {
+    const key = names.has(e.field)
+      ? e.field
+      : visibleFields.value.find((f) => f.name.toLowerCase() === e.field.toLowerCase())?.name;
+    if (key && !fields[key]) fields[key] = { status: 'error', message: e.message };
+  }
+  if (Object.keys(fields).length) formRef.value.setFields(fields);
+}
+
+watch(() => props.fieldErrors, applyFieldErrors);
+
 async function validate() {
   return formRef.value?.validate();
 }
 
-defineExpose({ validate });
+function clearValidate() {
+  formRef.value?.clearValidate();
+}
+
+defineExpose({ validate, clearValidate });
 </script>
 
 <style scoped>
