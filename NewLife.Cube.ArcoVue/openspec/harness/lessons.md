@@ -80,6 +80,10 @@
 - MVC 版（NewLife.Cube WebAPI）**未注册** CubeNC 的 `EntityModelBinderProvider`，`Insert/Update(TModel)` 走 System.Text.Json 直接反序列化 JSON body → 实体；System.Text.Json **拒绝** JSON 字符串绑定 `Int32`/数值枚举属性。ArcoVue 若把枚举/Lov 值字符串化提交（`String(o.value)` + `dataSource: Record<string,string>`）会报「请求数据格式不正确」。修复：提交前按字段元数据归一化（`normalizeSubmitValue`：`"1"`→`1`）。
 - **字段名大小写不一致（编辑表单空值坑）**：GetPage/GetFields 返回 `DataField.name` 为 **PascalCase**（`Name`），而 GetList/GetDetail 数据行 key 为 **camelCase**（`name`）。列表/详情用 `getValueByKey`（容错）正常，但表单 `model[field.name]` 直接索引取不到值 → 编辑窗口内容全空。修复：`normalizeKeysByFields`（url.ts）按字段元数据把数据归一化到 PascalCase key，在 `loadRecordIntoDrawer` 统一入口调用。新皮肤/新控件凡 `model[field.name]` 直取，必须先归一化或走容错取值。
 - 评论 Tab（M4b）：`createCommentApi`（getList/post/remove）消费 `/Cube/EntityComment`；前端按 `parentId` 组装顶层+一层回复；删除仅本人显示、后端兜底；改 api-core src 后必须 `pnpm build`。
+- **评论回复层级比 design 深**：实际实现三层嵌套（顶层 + 两级回复，最深不再展开），回复编辑框内嵌于被回复评论内部；Arco `a-comment` 嵌套子回复放 **default slot**（`.arco-comment-inner-comment` 内）。
+- **头像徽章**：评论/回复/内嵌编辑框统一走 `UserAvatar` 组件；无头像回落 `avatarInitial(name)`（`Array.from` 取 Unicode 首字符；英文首字母 `toUpperCase`；空回落 `?`）。
+- **watch 对象引用 vs 原地赋值**：抽屉切换记录时父组件 `Object.assign` 原地改 `formModel`，`watch(model)` 不触发；须 watch 主键值（`getValueByKey(model, pkField)`）驱动历史/评论重载。
+- 抽屉「上一条/下一条」用 Arco `IconUp`/`IconDown` 图标 + `:disabled` 禁用态；切换记录同时清空未提交回复编辑状态。
 
 ## 待办 — 字体规范（Harness）
 

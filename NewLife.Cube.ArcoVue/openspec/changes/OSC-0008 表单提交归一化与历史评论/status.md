@@ -1,5 +1,5 @@
 # Status
 - id: OSC-0008
-- state: Implementing
-- updated: 2026-08-02
-- note: approved; implementation + tests + build + doc sync done; entering validation
+- state: Validating
+- updated: 2026-08-04
+- note: verify passed; checklist: passed; awaiting retro/archive

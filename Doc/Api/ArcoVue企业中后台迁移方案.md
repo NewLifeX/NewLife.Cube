@@ -816,7 +816,7 @@ Draft → Accepted → Implementing → Validating → Done
 | OSC-0005 ✅ | VTable **表格** + 列布局 + **消费** ViewProfile | 不含 tree/card/gantt；可替换 0003 默认 a-table Section | OSC-0002、建议 OSC-0003 |
 | OSC-0006 ✅ | 卡片 / 甘特等视图增强；**增补已并入**：树形组装 `treeBuilder`（ParentID/id、Path/ParentPath）+ VTable `hierarchyExpandLevel` 修复 | 不含抽屉 | OSC-0005 |
 | OSC-0007 ✅ | 视图工具栏与卡片布局：图表入口按钮暂移除（图表区留待后续 OSC）、「高级」菜单（导入/导出/批量删除 + 表格全选门禁）、工具栏精简（去添加记录/自定义按钮）、卡片三布局/正文列数与排版、字体 Token | 不含图表区完善、抽屉评论；列表/树拖拽排序未纳入本号 | OSC-0003/0005/0006 |
-| OSC-0008 🟠 | 表单提交归一化（枚举/Lov 字符串→number，对齐 MVC 版 System.Text.Json 绑定）+ 抽屉历史增强（分页/筛选/展示）+ 评论 Tab 接线 | 不含字段 diff、恢复版本、评论附件 | OSC-0002 ✅、OSC-0003 |
+| OSC-0008 ✅ | 表单提交归一化（枚举/Lov 字符串→number，对齐 MVC 版 System.Text.Json 绑定）+ 抽屉历史增强（分页/筛选/展示）+ 评论 Tab 接线 | 不含字段 diff、恢复版本、评论附件 | OSC-0002 ✅、OSC-0003 |
 | OSC-0009 | FlowGram 单一样例 | 不扩流程平台 | — |
 | OSC-0010 | 收口：矩阵/功能清单/冒烟/harness + 清理 §10.4 占位/死代码 | 无新功能 | 建议前述 P0 已完成 |
 
