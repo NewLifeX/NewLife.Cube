@@ -1,10 +1,53 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createProfileApi } from './api';
-import type { ApiResponse, ViewProfileModel } from './types';
+import { createCommentApi, createProfileApi } from './api';
+import type { ApiResponse, EntityCommentModel, ViewProfileModel } from './types';
 
 vi.mock('axios', () => ({
   isAxiosError: (error: unknown) => !!(error as { isAxiosError?: boolean })?.isAxiosError,
 }));
+
+describe('createCommentApi', () => {
+  it('getList hits GET /Cube/EntityComment with category+linkId', async () => {
+    const ok: ApiResponse<EntityCommentModel[]> = { code: 0, data: [{ id: 1, content: 'hi' }] };
+    const request = vi.fn().mockResolvedValueOnce(ok);
+    const api = createCommentApi(request);
+    const result = await api.getList({ category: 'Admin/User', linkId: 7 });
+    expect(result).toBe(ok);
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Cube/EntityComment',
+        method: 'get',
+        params: { category: 'Admin/User', linkId: 7 },
+      }),
+    );
+  });
+
+  it('post sends parentId for reply', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: {} });
+    const api = createCommentApi(request);
+    await api.post({ category: 'Admin/User', linkId: 7, content: '回复', parentId: 3 });
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Cube/EntityComment',
+        method: 'post',
+        data: { category: 'Admin/User', linkId: 7, content: '回复', parentId: 3 },
+      }),
+    );
+  });
+
+  it('remove hits DELETE /Cube/EntityComment?id=', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: undefined });
+    const api = createCommentApi(request);
+    await api.remove(9);
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Cube/EntityComment',
+        method: 'delete',
+        params: { id: 9 },
+      }),
+    );
+  });
+});
 
 describe('createProfileApi', () => {
   it('falls back to POST when PUT /Cube/ViewProfile returns 405', async () => {

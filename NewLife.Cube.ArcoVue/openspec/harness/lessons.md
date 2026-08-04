@@ -75,6 +75,12 @@
 - 卡片配置类样式变更要用 **CSS 变量 + remount key**（mapping 为真源），避免 scoped/异步组件下「配置已存、视觉不变」。
 - 冻结范围外能力（如列表/树拖拽排序）即使可做，也应另立 OSC；本号试做后整段撤销，避免验收范围蠕变。
 
+## OSC-0008 — 2026-08-02
+
+- MVC 版（NewLife.Cube WebAPI）**未注册** CubeNC 的 `EntityModelBinderProvider`，`Insert/Update(TModel)` 走 System.Text.Json 直接反序列化 JSON body → 实体；System.Text.Json **拒绝** JSON 字符串绑定 `Int32`/数值枚举属性。ArcoVue 若把枚举/Lov 值字符串化提交（`String(o.value)` + `dataSource: Record<string,string>`）会报「请求数据格式不正确」。修复：提交前按字段元数据归一化（`normalizeSubmitValue`：`"1"`→`1`）。
+- **字段名大小写不一致（编辑表单空值坑）**：GetPage/GetFields 返回 `DataField.name` 为 **PascalCase**（`Name`），而 GetList/GetDetail 数据行 key 为 **camelCase**（`name`）。列表/详情用 `getValueByKey`（容错）正常，但表单 `model[field.name]` 直接索引取不到值 → 编辑窗口内容全空。修复：`normalizeKeysByFields`（url.ts）按字段元数据把数据归一化到 PascalCase key，在 `loadRecordIntoDrawer` 统一入口调用。新皮肤/新控件凡 `model[field.name]` 直取，必须先归一化或走容错取值。
+- 评论 Tab（M4b）：`createCommentApi`（getList/post/remove）消费 `/Cube/EntityComment`；前端按 `parentId` 组装顶层+一层回复；删除仅本人显示、后端兜底；改 api-core src 后必须 `pnpm build`。
+
 ## 待办 — 字体规范（Harness）
 
 - 后续按现代中后台常见 **组件/场景**（列表表头、单元格、表单标签、抽屉标题、徽章等）在 Harness 建立统一的 **字体 / 字号 / 字重** 规范，并替换各处临时字重（如 VTable `headerStyle.fontWeight: 400`）。

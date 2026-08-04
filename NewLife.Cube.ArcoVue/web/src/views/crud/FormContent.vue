@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
-import { isFullWidthControl, resolveControl } from '@/core/utils/fieldControl';
+import { isAuditField, isFullWidthControl, resolveControl } from '@/core/utils/fieldControl';
 import { groupFieldsByCategory } from '@/core/utils/fieldGroups';
 import { isFieldRequired } from '@/core/utils/submitPayload';
 import FieldInput from '@/components/FieldInput.vue';
@@ -53,10 +53,12 @@ const props = withDefaults(
 const formRef = ref();
 
 const visibleFields = computed(() => {
+  // 新增/编辑均隐藏审计字段（创建/更新用户、IP、时间），由后端自动维护
+  const withoutAudit = props.fields.filter((f) => !isAuditField(f));
   if (props.mode === 'add') {
-    return props.fields.filter((f) => !f.primaryKey && !f.readOnly);
+    return withoutAudit.filter((f) => !f.primaryKey && !f.readOnly);
   }
-  return props.fields;
+  return withoutAudit;
 });
 
 const fieldGroups = computed(() => groupFieldsByCategory(visibleFields.value));

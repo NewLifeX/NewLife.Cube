@@ -309,7 +309,7 @@ import {
   resolveCellLabel,
 } from '@/core/utils/fieldBadge';
 import { resolveCrudFlags } from '@/core/utils/permissions';
-import { getValueByKey } from '@/core/utils/url';
+import { getValueByKey, normalizeKeysByFields } from '@/core/utils/url';
 import {
   enrichFieldsWithEnumDataSource,
   enrichFieldsWithLookup,
@@ -881,11 +881,17 @@ async function loadRecordIntoDrawer(
   drawerRowIndex.value = findVisibleRowIndex(row);
   clearModel();
   const id = getValueByKey(row, pkField.value);
+  // GetPage 字段名为 PascalCase，而 GetDetail 返回数据为 camelCase；
+  // 按字段元数据归一化 key，否则编辑表单 model[field.name] 取不到值（内容为空）
+  const targetFields = mode === 'edit' ? editFields.value : detailFields.value;
   try {
     const res = await cubeApi.page.getDetail(typePath.value, id as string | number);
-    Object.assign(formModel, (res.data as object) || row);
+    Object.assign(
+      formModel,
+      normalizeKeysByFields((res.data as Record<string, unknown>) || row, targetFields),
+    );
   } catch {
-    Object.assign(formModel, row);
+    Object.assign(formModel, normalizeKeysByFields(row, targetFields));
   }
   drawerVisible.value = true;
 }

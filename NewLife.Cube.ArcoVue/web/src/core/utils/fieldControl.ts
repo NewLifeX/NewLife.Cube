@@ -229,10 +229,54 @@ export function isFullWidthControl(control: ControlType): boolean {
   return FULL_WIDTH_CONTROLS.has(control);
 }
 
+/** 审计字段名集合：创建/更新用户、IP、时间；新增/编辑表单不展示 */
+const AUDIT_FIELD_NAMES = new Set([
+  'createuser',
+  'createuserid',
+  'createip',
+  'createtime',
+  'updateuser',
+  'updateuserid',
+  'updateip',
+  'updatetime',
+]);
+
+/** 是否为审计字段（创建/更新的用户、IP、时间），按字段名小写匹配 */
+export function isAuditField(field: Pick<FieldMeta, 'name'>): boolean {
+  return AUDIT_FIELD_NAMES.has((field.name || '').toLowerCase());
+}
+
+/**
+ * 提交值类型归一化（OSC-0008）：
+ * 枚举/Lov/select 控件的值来自 dataSource 字符串 key（如 "1"），
+ * MVC 版后端 System.Text.Json 反序列化时拒绝 JSON 字符串绑定到 Int32/Enum 属性，
+ * 这里按字段元数据把字符串数字转回原生类型。空值原样交给上层处理。
+ */
+export function normalizeSubmitValue(field: FieldMeta | undefined, value: unknown): unknown {
+  if (value == null || value === '') return value;
+  const typeName = (field?.typeName ?? '').trim();
+  if (NUMERIC_TYPES.has(typeName)) {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value === 'string' && /^-?\d+(\.\d+)?$/.test(value.trim())) return Number(value);
+    return value;
+  }
+  if (typeName === 'Boolean') {
+    if (typeof value === 'boolean') return value;
+    if (value === 'true' || value === '1') return true;
+    if (value === 'false' || value === '0') return false;
+    return value;
+  }
+  if (typeName === 'Enum') {
+    if (typeof value === 'string' && /^-?\d+$/.test(value.trim())) return Number(value);
+  }
+  return value;
+}
+
 export function serializeSubmitModel(
   model: Record<string, unknown>,
   fields: FieldMeta[],
 ): Record<string, unknown> {
+  const fieldMap = new Map(fields.map((f) => [f.name, f]));
   const multiNames = new Set(
     fields
       .filter((f) => f.multiple || f.itemType === 'multipleSelect')
@@ -241,9 +285,10 @@ export function serializeSubmitModel(
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(model)) {
     if (multiNames.has(k) && Array.isArray(v)) {
+      // XCode 多选约定：逗号分隔字符串
       out[k] = (v as unknown[]).map(String).join(',');
     } else {
-      out[k] = v;
+      out[k] = normalizeSubmitValue(fieldMap.get(k), v);
     }
   }
   return out;

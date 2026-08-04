@@ -19,6 +19,7 @@ import type {
   OAuthPendingInfo,
   UserProfileModel,
   ViewProfileModel,
+  EntityCommentModel,
 } from './types';
 
 type RequestFn = <T>(config: AxiosRequestConfig) => Promise<ApiResponse<T>>;
@@ -280,5 +281,33 @@ export function createProfileApi(request: RequestFn) {
         method: 'delete',
         params: { typePath },
       }),
+  };
+}
+
+/**
+ * 实体评论 API（M4b，消费 OSC-0002 后端 EntityComment）
+ */
+export function createCommentApi(request: RequestFn) {
+  return {
+    /** 评论列表；parentId 缺省/负数=全部，0=仅顶层，>0=直接回复 */
+    getList: (params: {
+      category: string;
+      linkId: number | string;
+      parentId?: number | string;
+      pageIndex?: number;
+      pageSize?: number;
+    }) => request<EntityCommentModel[]>({ url: '/Cube/EntityComment', method: 'get', params }),
+
+    /** 发表评论；body 含 parentId 表示回复 */
+    post: (data: {
+      category: string;
+      linkId: number | string;
+      content: string;
+      parentId?: number | string;
+    }) => request<EntityCommentModel>({ url: '/Cube/EntityComment', method: 'post', data }),
+
+    /** 删除评论（本人或管理员） */
+    remove: (id: number | string) =>
+      request<unknown>({ url: '/Cube/EntityComment', method: 'delete', params: { id } }),
   };
 }

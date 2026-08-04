@@ -1,27 +1,16 @@
 import type { FieldMeta } from '../types/field';
 import { serializeSubmitModel } from './fieldControl';
 
-const NUMERIC_TYPES = new Set([
-  'Int32',
-  'Int64',
-  'Decimal',
-  'Double',
-  'Single',
-  'Byte',
-  'Int16',
-  'UInt32',
-  'UInt64',
-]);
-
 function isEmptyValue(v: unknown): boolean {
   return v === undefined || v === null || v === '';
 }
 
 /**
  * 组装新增/编辑提交体：
- * - 多选数组序列化
+ * - 多选数组序列化 + 类型归一化（serializeSubmitModel）
  * - 新增时去掉自增主键（避免 Identity 约定冲突）
- * - 去掉空字符串；数值字段空值不提交（避免 JSON 绑到 Int32 失败）
+ * - 空值矩阵（OSC-0008）：String 字段空值提交 ""（对齐 Cube.Vue，避免 DB NOT NULL 报错）；
+ *   数值/布尔/日期等空值不提交（避免 JSON 绑到 Int32 失败或覆盖默认值）
  */
 export function prepareSubmitPayload(
   model: Record<string, unknown>,
@@ -41,9 +30,10 @@ export function prepareSubmitPayload(
     const typeName = meta?.typeName ?? '';
 
     if (isEmptyValue(value)) {
-      // 空字符串不要发给数值列；可选字符串省略由后端保持默认
-      if (NUMERIC_TYPES.has(typeName)) continue;
-      if (value === '') continue;
+      // 可空 String 提交空串，避免数据库 NOT NULL 报错；数值/布尔/日期等空值不提交
+      if (typeName === 'String') {
+        out[key] = '';
+      }
       continue;
     }
 

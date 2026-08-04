@@ -11,7 +11,7 @@ export { createCubeApi, type CubeApi, type CubeApiOptions } from './cube';
 // 底层构建块（高级用法）
 export { createApiClient, createRequest, type ApiClientOptions } from './client';
 export { TokenManager, type TokenStorage } from './token';
-export { createUserApi, createMenuApi, createPageApi, createConfigApi, createProfileApi } from './api';
+export { createUserApi, createMenuApi, createPageApi, createConfigApi, createProfileApi, createCommentApi } from './api';
 
 // 类型
 export type {
@@ -35,6 +35,7 @@ export type {
   MfaVerifyResult,
   UserProfileModel,
   ViewProfileModel,
+  EntityCommentModel,
 } from './types';
 export { FieldKind, Auth, ApiError } from './types';
 

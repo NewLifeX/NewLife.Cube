@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  isAuditField,
   resolveControl,
   resolveListControl,
   resolveSearchControl,
@@ -70,5 +71,20 @@ describe('fieldControl', () => {
       Tags: 'a,b',
       Name: 'x',
     });
+  });
+
+  it('isAuditField detects create/update audit fields (case-insensitive)', () => {
+    expect(isAuditField(base({ name: 'CreateUser', typeName: 'String' }))).toBe(true);
+    expect(isAuditField(base({ name: 'CreateUserID', typeName: 'Int32' }))).toBe(true);
+    expect(isAuditField(base({ name: 'CreateIP', typeName: 'String' }))).toBe(true);
+    expect(isAuditField(base({ name: 'CreateTime', typeName: 'DateTime' }))).toBe(true);
+    expect(isAuditField(base({ name: 'UpdateUser', typeName: 'String' }))).toBe(true);
+    expect(isAuditField(base({ name: 'UpdateUserID', typeName: 'Int32' }))).toBe(true);
+    expect(isAuditField(base({ name: 'UpdateIP', typeName: 'String' }))).toBe(true);
+    expect(isAuditField(base({ name: 'UpdateTime', typeName: 'DateTime' }))).toBe(true);
+    expect(isAuditField(base({ name: 'createTime', typeName: 'DateTime' }))).toBe(true);
+    expect(isAuditField(base({ name: 'Name', typeName: 'String' }))).toBe(false);
+    expect(isAuditField(base({ name: 'LastLogin', typeName: 'DateTime' }))).toBe(false);
+    expect(isAuditField(base({ name: 'Remark', typeName: 'String' }))).toBe(false);
   });
 });

@@ -65,3 +65,20 @@ export function getValueByKey(data: Record<string, unknown>, key: string): unkno
   }
   return undefined;
 }
+
+/**
+ * 按字段元数据把数据键归一化到 FieldMeta.name（PascalCase）。
+ * GetPage 返回字段名为 PascalCase，而 GetList/Detail 返回数据为 camelCase；
+ * 编辑表单用 model[field.name] 直接索引，若不归一化将取不到值导致内容为空。
+ */
+export function normalizeKeysByFields(
+  data: Record<string, unknown>,
+  fields: { name: string }[],
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const f of fields) {
+    const v = getValueByKey(data, f.name);
+    if (v !== undefined) out[f.name] = v;
+  }
+  return out;
+}

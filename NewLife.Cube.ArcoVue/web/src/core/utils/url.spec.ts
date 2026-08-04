@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   getValueByKey,
+  normalizeKeysByFields,
   normalizeMenuUrl,
   routeToApiPrefix,
   toKebabCase,
@@ -26,5 +27,28 @@ describe('url utils', () => {
   it('getValueByKey tolerates case', () => {
     expect(getValueByKey({ Id: 1 }, 'id')).toBe(1);
     expect(getValueByKey({ id: 2 }, 'Id')).toBe(2);
+  });
+
+  it('normalizeKeysByFields maps camelCase data to FieldMeta.name keys', () => {
+    const fields = [
+      { name: 'Name' },
+      { name: 'Sex' },
+      { name: 'CreateTime' },
+      { name: 'Missing' },
+    ];
+    const data = { name: 'admin', sex: 1, createTime: '2026-08-02T00:00:00' };
+    expect(normalizeKeysByFields(data, fields)).toEqual({
+      Name: 'admin',
+      Sex: 1,
+      CreateTime: '2026-08-02T00:00:00',
+    });
+  });
+
+  it('normalizeKeysByFields keeps existing PascalCase keys', () => {
+    const data = { Name: 'x', CreateTime: 't' };
+    expect(normalizeKeysByFields(data, [{ name: 'Name' }, { name: 'CreateTime' }])).toEqual({
+      Name: 'x',
+      CreateTime: 't',
+    });
   });
 });

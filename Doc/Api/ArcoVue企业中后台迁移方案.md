@@ -721,13 +721,14 @@ Draft → Accepted → Implementing → Validating → Done
 - **出口（OSC-0006）：** ViewTabsToolbar + Card/Kanban/Calendar/Gantt 舞台；映射只写 `viewsJson`。
 - **OSC-0006 增补（已并入）：** 树形组装工具 `treeBuilder`（ParentID/id、Path/ParentPath 组装）+ 修复 VTable `hierarchyExpandLevel`（≥2 根节点才默认展开）。
 
-### M4a — Log 历史增强 → 待排期（原误挂 OSC-0007）
+### M4a — Log 历史增强 → **OSC-0008 已实现**
 
-- 编辑/历史 Tab 已随 OSC-0003 实现（右抽屉）；历史为朴素 timeline，无分页/无字段 diff——增强可另立变更或并入收口。**OSC-0007** 已转为「视图工具栏与卡片布局」，见 §13。
+- 编辑/历史 Tab 随 OSC-0003 落地（右抽屉）；OSC-0008 增强：历史 Tab **分页（20/页）+ 操作类型筛选（新增/更新/删除）+ 展示增强**（绝对时间、操作人、成功/失败徽章、Remark 换行）。
+- **字段 diff 未做**：`Log` 无结构化字段变更数据（`WriteLog("Update", entity)` 仅写实体 ToString），需后端记录变更字段另起变更。
 
-### M4b — 评论 Tab → **OSC-0008**（依赖 **OSC-0002** + OSC-0003）
+### M4b — 评论 Tab → **OSC-0008 已实现**（依赖 **OSC-0002** + OSC-0003）
 
-- 消费 EntityComment。后端 OSC-0002 已就绪（`GET/POST/DELETE /Cube/EntityComment`，同表回复），**纯前端接线**：api-core 增 `createCommentApi` + `RecordDrawer` 评论 Tab 真实实现。
+- 消费 EntityComment。后端 OSC-0002 已就绪（`GET/POST/DELETE /Cube/EntityComment`，同表回复）：api-core 增 `createCommentApi`（`cubeApi.comment.*`）+ `RecordDrawer` 评论 Tab 真实实现（顶层 + 一层回复缩进、发表/回复/删除本人）。
 
 ### M5 — FlowGram 样例 → **OSC-0009**
 
@@ -742,8 +743,8 @@ Draft → Accepted → Implementing → Validating → Done
 - [x] 仅 `UseArcoVue`：Admin + 新业务实体自动 CRUD  
 - [x] **OSC-0002** 三实体后端已合并且带 XUnitTest  
 - [x] 布局/主题来自 UserProfile（OSC-0004）；列表视图/列来自 ViewProfile（OSC-0005+）  
-- [ ] 六视图（table/tree/card/kanban/calendar/gantt）✅；右抽屉表单/历史 ✅；**评论 Tab 待 OSC-0008 接线**  
-- [ ] §3.1 矩阵 P0 目标：大部分达成；书面豁免 = i18n、组件测试、评论接线（→ 后续 OSC，见 §10.4）  
+- [x] 六视图（table/tree/card/kanban/calendar/gantt）✅；右抽屉表单/历史 ✅；**评论 Tab 已随 OSC-0008 接线**
+- [ ] §3.1 矩阵 P0 目标：大部分达成；书面豁免 = i18n、组件测试（评论接线已随 OSC-0008 完成）
 - [ ] 功能清单可追溯；各 OSC 含测试设计与 verify 记录  
 - [x] OSC 编号连续（0001~0006 已归档）、依赖方编号大于被依赖方  
 
@@ -757,7 +758,7 @@ Draft → Accepted → Implementing → Validating → Done
 
 | # | 差距 | 定位 | 建议后续 |
 |---|------|:---:|----------|
-| 1 | 评论 Tab 前端未接线（后端 OSC-0002 已就绪） | P0 | OSC-0008：api-core 增 comment API + RecordDrawer 评论 Tab |
+| 1 | ~~评论 Tab 前端未接线~~（OSC-0008 已接线：api-core comment API + RecordDrawer 评论 Tab） | P0 | ✅ 已解决 |
 | 2 | `UserProfile.workspace.defaultView / pageSize` 已建模未消费 | P0 | DefaultList 无 ViewProfile 时回落默认视图；每页条数接入 |
 | 3 | 筛选记忆未持久化（filtersJson 预留未用；分组为占位） | P1 | OSC-0011：仅保存当前实体、当前命名视图的搜索条件；不做通用数据范围引擎 |
 | 4 | 列 frozen 仅 left/false，无 right | P1 | 补充右冻结 |
@@ -815,7 +816,7 @@ Draft → Accepted → Implementing → Validating → Done
 | OSC-0005 ✅ | VTable **表格** + 列布局 + **消费** ViewProfile | 不含 tree/card/gantt；可替换 0003 默认 a-table Section | OSC-0002、建议 OSC-0003 |
 | OSC-0006 ✅ | 卡片 / 甘特等视图增强；**增补已并入**：树形组装 `treeBuilder`（ParentID/id、Path/ParentPath）+ VTable `hierarchyExpandLevel` 修复 | 不含抽屉 | OSC-0005 |
 | OSC-0007 ✅ | 视图工具栏与卡片布局：图表入口按钮暂移除（图表区留待后续 OSC）、「高级」菜单（导入/导出/批量删除 + 表格全选门禁）、工具栏精简（去添加记录/自定义按钮）、卡片三布局/正文列数与排版、字体 Token | 不含图表区完善、抽屉评论；列表/树拖拽排序未纳入本号 | OSC-0003/0005/0006 |
-| OSC-0008 | 抽屉评论 Tab + **消费** EntityComment（后端 OSC-0002 已就绪，纯前端接线） | 仅评论链路 | OSC-0002 ✅、OSC-0003 |
+| OSC-0008 🟠 | 表单提交归一化（枚举/Lov 字符串→number，对齐 MVC 版 System.Text.Json 绑定）+ 抽屉历史增强（分页/筛选/展示）+ 评论 Tab 接线 | 不含字段 diff、恢复版本、评论附件 | OSC-0002 ✅、OSC-0003 |
 | OSC-0009 | FlowGram 单一样例 | 不扩流程平台 | — |
 | OSC-0010 | 收口：矩阵/功能清单/冒烟/harness + 清理 §10.4 占位/死代码 | 无新功能 | 建议前述 P0 已完成 |
 

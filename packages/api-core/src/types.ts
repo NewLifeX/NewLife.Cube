@@ -434,6 +434,33 @@ export interface ViewProfileModel {
   remark?: string | null;
 }
 
+/**
+ * 实体评论（EntityComment）线缆模型。
+ * 后端 OSC-0002 已就绪；GET parentId 缺省/负数=全部，0=仅顶层，>0=直接回复。
+ */
+export interface EntityCommentModel {
+  id?: number | string;
+  /** 实体类别：typePath 去前导 /，如 "Admin/User" */
+  category?: string;
+  /** 记录主键 */
+  linkId?: number | string;
+  /** 父评论 ID（0=顶层） */
+  parentId?: number | string;
+  /** 线程根 ID */
+  rootId?: number | string;
+  /** 被回复用户 ID */
+  replyUserId?: number | string;
+  /** 被回复用户名 */
+  replyUser?: string;
+  /** 评论内容 */
+  content?: string;
+  /** 创建人 */
+  createUser?: string;
+  createUserId?: number | string;
+  createTime?: string;
+  updateTime?: string;
+}
+
 /** 权限码常量（2 的幂） */
 export const Auth = {
   /** 查看 */
