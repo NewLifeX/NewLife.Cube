@@ -41,6 +41,7 @@ description: >-
 5. `design.md` 含「核心文档影响」与「测试设计」；`proposal` 含测试范围；`tasks` 含补测/跑测勾选项。
 6. 若预计改前端/后端代码：proposal 不得写「无单元测试」；须规划补测与执行期跑测、验收期「新增单测全过 + 构建无错误」。仅纯文档/纯 openspec 文案可声明测试 N/A。
 7. 对照迁移方案声明依赖 OSC；范围过大则建议拆号。
+8. 涉及前端时，`design.md` 必须标明适用框架及官方资料：设计系统 / 壳 / 表单使用 Arco Design Vue（https://arco.design/vue/docs/start）；多维数据视图使用 VisActor VTable（教程：https://arco.design/vue/docs/start；配置：https://visactor.com/vtable/option/ListTable；接口：https://visactor.com/vtable/api/Methods）；工作流使用 FlowGram.AI（指引：https://flowgram.ai/guide/getting-started/introduction.html；例子：https://flowgram.ai/examples/index.html；API：https://flowgram.ai/api/index.html）。
 
 ## 小参数模型可执行性（强制）
 

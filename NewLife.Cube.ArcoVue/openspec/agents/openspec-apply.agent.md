@@ -20,11 +20,16 @@ description: >-
 ## 编排
 
 1. 阅读 tasks/design；有 ui/ 必须对照。
-2. 委托 **dev-loop**：实现 → 补测 → 编译 → 测试 → AC 自检。
-3. **凡触及前端或后端代码修改：必须跑单元测试**（后端 XUnit / 前端 Vitest 等）；实现功能默认同步补测。不得以「仅配置」跳过跑测；仅纯文档 / 纯 openspec 文案可在 proposal 声明 N/A。
-4. 域加载：`xcode-data-modeling` + xcode/cube（实体类变更）；`testing-strategy`；可选 `@文档同步`。
-5. 按 design「核心文档影响」改文档；勾选 tasks。
-6. 在 tasks/status 记录：跑了哪些测试命令、结果；本 OSC 新增了哪些测试文件。
+2. 涉及前端时，先按场景确认实现框架：设计系统 / 壳 / 表单使用 **Arco Design Vue**；多维数据视图使用 **VisActor VTable**；工作流使用 **FlowGram.AI**。
+3. 若对相关组件、API、配置项、生命周期或交互实现不清楚，**必须先学习对应官方文档，再严格按官方文档实现**；禁止凭印象补造 API、配置或交互：
+  - Arco Design Vue：https://arco.design/vue/docs/start
+  - VisActor VTable：教程 https://arco.design/vue/docs/start；配置 https://visactor.com/vtable/option/ListTable；接口 https://visactor.com/vtable/api/Methods
+  - FlowGram.AI：指引 https://flowgram.ai/guide/getting-started/introduction.html；例子 https://flowgram.ai/examples/index.html；API https://flowgram.ai/api/index.html
+4. 委托 **dev-loop**：实现 → 补测 → 编译 → 测试 → AC 自检。
+5. **凡触及前端或后端代码修改：必须跑单元测试**（后端 XUnit / 前端 Vitest 等）；实现功能默认同步补测。不得以「仅配置」跳过跑测；仅纯文档 / 纯 openspec 文案可在 proposal 声明 N/A。
+6. 域加载：`xcode-data-modeling` + xcode/cube（实体类变更）；`testing-strategy`；可选 `@文档同步`。
+7. 按 design「核心文档影响」改文档；勾选 tasks。
+8. 在 tasks/status 记录：跑了哪些测试命令、结果；本 OSC 新增了哪些测试文件。
 
 ## 禁止
 
