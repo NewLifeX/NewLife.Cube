@@ -9,6 +9,7 @@ using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Models;
 using NewLife.Cube.Services;
+using NewLife.Cube.ViewModels;
 using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
@@ -88,6 +89,12 @@ public class UserController : EntityController<User, UserModel>
             var df = EditFormFields.AddDataField("RoleIds", "RoleNames");
             df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
             EditFormFields.RemoveField("RoleNames");
+        }
+
+        // 地区字段使用系统内置 Area 实体（省/市/区树），SPA 依 ItemType=area4 渲染级联选择
+        {
+            if (AddFormFields.GetField("AreaId") is FormField addArea) addArea.ItemType = "area4";
+            if (EditFormFields.GetField("AreaId") is FormField editArea) editArea.ItemType = "area4";
         }
 
         {

@@ -27,20 +27,20 @@
     />
     <a-date-picker
       v-else-if="control === 'datePicker'"
-      :model-value="strValue || undefined"
-      show-time
-      value-format="YYYY-MM-DDTHH:mm:ss"
+      :model-value="pickerValue"
+      :show-time="dateKind !== 'date'"
+      :value-format="pickerFormat"
       style="width: 100%"
       :disabled="disabled"
-      @update:model-value="emitValue"
+      @update:model-value="onPickerChange"
     />
     <a-time-picker
       v-else-if="control === 'timePicker'"
-      :model-value="strValue || undefined"
+      :model-value="pickerValue"
       value-format="HH:mm:ss"
       style="width: 100%"
       :disabled="disabled"
-      @update:model-value="emitValue"
+      @update:model-value="onPickerChange"
     />
     <a-select
       v-else-if="control === 'select'"
@@ -48,7 +48,6 @@
       :disabled="disabled"
       :placeholder="`请选择${field.displayName || field.name}`"
       allow-clear
-      allow-search
       style="width: 100%"
       @update:model-value="onSelect"
     >
@@ -61,6 +60,13 @@
         {{ label }}
       </a-option>
     </a-select>
+    <CascaderField
+      v-else-if="control === 'cascader'"
+      :model-value="modelValue as string | number | null"
+      :disabled="disabled"
+      :placeholder="`请选择${field.displayName || field.name}`"
+      @update:model-value="emitValue"
+    />
     <LovSelect
       v-else-if="control === 'lov' || control === 'lovMulti'"
       :code="field.lovCode || ''"
@@ -122,8 +128,15 @@ import {
   resolveNumberPrecision,
   resolveNumberStep,
 } from '@/core/utils/fieldControl';
+import {
+  type DateKind,
+  fromPickerValue,
+  inferDateKind,
+  toPickerValue,
+} from '@/core/utils/datetime';
 import cubeApi from '@/api';
 import LovSelect from './LovSelect.vue';
+import CascaderField from './CascaderField.vue';
 import JsonEditor from './JsonEditor.vue';
 import RichEditor from './RichEditor.vue';
 
@@ -154,6 +167,22 @@ const step = computed(() => resolveNumberStep(props.field));
 const selectValue = computed(() =>
   props.modelValue == null || props.modelValue === '' ? undefined : String(props.modelValue),
 );
+
+/** 日期种类与 picker 字符串值：壁钟时间，避免时区漂移 */
+const dateKind = computed<DateKind>(() =>
+  control.value === 'datePicker' || control.value === 'timePicker'
+    ? inferDateKind(props.field)
+    : 'datetime',
+);
+const pickerFormat = computed(() =>
+  dateKind.value === 'date' ? 'YYYY-MM-DD' : dateKind.value === 'time' ? 'HH:mm:ss' : 'YYYY-MM-DD HH:mm:ss',
+);
+const pickerValue = computed(() => {
+  if (control.value !== 'datePicker' && control.value !== 'timePicker') return undefined;
+  if (props.modelValue == null || props.modelValue === '') return undefined;
+  return toPickerValue(props.modelValue, dateKind.value);
+});
+
 const inputType = computed(() => {
   switch (control.value) {
     case 'email':
@@ -169,6 +198,15 @@ const inputType = computed(() => {
 
 function emitValue(v: unknown) {
   emit('update:modelValue', v);
+}
+
+/** picker 输出 → naive 本地字符串提交后端 */
+function onPickerChange(v: unknown) {
+  if (v == null || v === '') {
+    emitValue(undefined);
+    return;
+  }
+  emitValue(fromPickerValue(v, dateKind.value));
 }
 
 /** 下拉值尽量还原数值/布尔，兼容实体字段类型；Int64 超安全整数保留字符串避免精度丢失（OSC-0009） */

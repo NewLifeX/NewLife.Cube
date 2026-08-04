@@ -38,3 +38,12 @@
 - [x] 5.2 `dotnet build NewLife.Cube`：0 错误（157 既有警告）；BatchLabel 行为以编译 + 前端消费链路验证（XUnit 受限原因见 T3.5）。
 - [ ] 5.3 真实 MVC 后端新增/编辑/详情/搜索/六视图冒烟（Enum、状态、LIST 单多选、Int64、字段错误）——待可运行环境。
 - [x] 5.4 迁移方案（编号顺延 + OSC-0009 行 + 差距表#11）、web README 已回写；核心接口架构/附录B 无 LOV 段落（BatchLabel 为既有接口行为增强，无新路径），功能清单无新增后端能力项，均无需改动。
+
+## T6 补充迭代：搜索角色 / 字段校验 / 地区级联 / 日期时间
+
+- [x] 6.1 搜索框角色 LIST 单选：`LovSelect` LIST 单选改为 `a-select` 直显首页数据（按 Meta `valueField/labelField` 映射），“更多”按钮打开高级表格；移除 enum/select 的 `allow-search`，单/多选不再显示编辑光标。
+- [x] 6.2 通用字段校验：新增 `validation.ts`（手机/电话/邮件/邮箱/网址，按 itemType 与字段名识别，空值不触发格式校验），`FormContent.rulesFor` 接入；新增 `validation.spec.ts`（7 用例）。
+- [x] 6.3 地区级联：新增 `CascaderField.vue`（懒加载 `/Cube/Area` 子级、叶子值提交、向上回溯路径回显）；`fieldControl` 增 `cascader` 控件与 `isCascaderField`；`FieldInput`/`SearchFieldInput` 渲染级联；后端 MVC `UserController` 为 `AreaId` 补 `ItemType=area4`（对齐 NC 版）。
+- [x] 6.4 日期时间：`datetime.ts` 重写为壁钟时间解析（`parseWallClock`/`formatDate`/`formatTime`/`formatDateTime`/`inferDateKind`/`toPickerValue`/`fromPickerValue`），避免 UTC 'Z' 串被换算到本地时区；`FieldInput` 按 `inferDateKind` 选择 date/datetime/time 组件与 `value-format`；`resolveSearchControl` 按 itemType 返回 `dateRange`/`datetimeRange`/`timeRange`。
+- [x] 6.5 列表多维视图同步：新增 `fieldFormat.ts` `formatFieldValue`（日期/时间/字典/布尔/LOV 缓存/地区叶子），`DefaultList.renderCell` 改用它，CardList/KanbanBoard/ListTable 经 `format-cell` 同步；`detailFormat.detailText` 增日期格式化。
+- [x] 6.6 测试：`datetime.spec.ts`（18）、`fieldFormat.spec.ts`（7）、`validation.spec.ts`（7）、`fieldControl.spec.ts` 增补 cascader/date 推断（+1 文件级用例）；全量 24 files / 172 tests 通过；`npm run build` 与 `dotnet build NewLife.Cube` 均成功。

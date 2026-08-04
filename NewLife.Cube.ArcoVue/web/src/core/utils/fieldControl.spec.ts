@@ -114,6 +114,22 @@ describe('fieldControl', () => {
     ).toBe('lov');
   });
 
+  it('cascader / date itemType inference (OSC-0009 续)', () => {
+    // 地区/级联
+    expect(resolveControl(base({ name: 'AreaId', typeName: 'Int32', itemType: 'area4' }))).toBe('cascader');
+    expect(resolveControl(base({ name: 'AreaId', typeName: 'Int32', itemType: 'cascader' }))).toBe('cascader');
+    expect(resolveSearchControl(base({ name: 'AreaId', typeName: 'Int32', itemType: 'area4' }))).toBe('cascader');
+    expect(resolveListControl(base({ name: 'AreaId', typeName: 'Int32', itemType: 'area4' }))).toBe('text');
+
+    // 日期 / 时间 itemType 推断
+    expect(resolveControl(base({ name: 'Birthday', typeName: 'DateTime', itemType: 'date' }))).toBe('datePicker');
+    expect(resolveControl(base({ name: 'WorkTime', typeName: 'DateTime', itemType: 'time' }))).toBe('timePicker');
+    expect(resolveSearchControl(base({ name: 'Birthday', typeName: 'DateTime', itemType: 'date' }))).toBe('dateRange');
+    expect(resolveSearchControl(base({ name: 'CreateTime', typeName: 'DateTime' }))).toBe('datetimeRange');
+    expect(resolveListControl(base({ name: 'Birthday', typeName: 'DateTime', itemType: 'date' }))).toBe('date');
+    expect(resolveListControl(base({ name: 'WorkTime', typeName: 'DateTime', itemType: 'time' }))).toBe('time');
+  });
+
   it('isAuditField detects create/update audit fields (case-insensitive)', () => {
     expect(isAuditField(base({ name: 'CreateUser', typeName: 'String' }))).toBe(true);
     expect(isAuditField(base({ name: 'CreateUserID', typeName: 'Int32' }))).toBe(true);

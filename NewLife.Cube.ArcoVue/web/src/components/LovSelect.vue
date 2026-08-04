@@ -7,7 +7,6 @@
       :disabled="disabled"
       :multiple="multiple"
       allow-clear
-      allow-search
       style="width: 100%"
       @update:model-value="onUpdate"
     >
@@ -16,16 +15,27 @@
       </a-option>
     </a-select>
 
-    <!-- LIST 单选：只读展示权威 label + 选择/清除 -->
-    <a-input-group v-else-if="!multiple">
-      <a-input
-        :model-value="displayLabel"
-        readonly
+    <!-- LIST 单选：下拉直接展示首页数据（角色列表等），“更多”按钮打开高级表格 -->
+    <a-input-group v-else-if="!multiple" class="lov-select--single">
+      <a-select
+        :model-value="singleSelectValue"
         :placeholder="placeholder"
         :disabled="disabled"
-      />
-      <a-button :disabled="disabled" @click="tableVisible = true">选择</a-button>
-      <a-button v-if="hasValue" :disabled="disabled" @click="onClear">清除</a-button>
+        :loading="loadingOptions"
+        allow-clear
+        style="flex: 1; min-width: 0"
+        @update:model-value="onInlineSelect"
+      >
+        <a-option
+          v-for="opt in inlineOptions"
+          :key="String(opt.value)"
+          :value="opt.value"
+          :label="opt.label"
+        >
+          {{ opt.label }}
+        </a-option>
+      </a-select>
+      <a-button :disabled="disabled" @click="tableVisible = true">更多</a-button>
     </a-input-group>
 
     <!-- LIST 多选：已选标签 + 选择/清除（弹窗内勾选确认） -->
@@ -59,6 +69,7 @@
 import { computed, reactive, ref, watch, onMounted } from 'vue';
 import {
   fetchBatchLabel,
+  fetchLovListData,
   fetchLovMeta,
   resolveLovType,
 } from '@/core/utils/lov-api';
@@ -82,6 +93,8 @@ const emit = defineEmits<{
 
 const mode = ref<'enum' | 'list'>('enum');
 const options = ref<LovEnumOption[]>([]);
+const inlineOptions = ref<LovEnumOption[]>([]);
+const loadingOptions = ref(false);
 const listMeta = ref<LovListMeta | null>(null);
 const tableVisible = ref(false);
 /** value → label 缓存；LIST 历史值回显与已选标签展示共用 */
@@ -94,10 +107,10 @@ const values = computed<(string | number)[]>(() => {
 
 const hasValue = computed(() => values.value.length > 0);
 
-const displayLabel = computed(() => {
-  if (!values.value.length) return '';
-  const v = values.value[0];
-  return labelCache[String(v)] ?? String(v);
+/** LIST 单选下拉值（字符串键与 option 对齐；提交时由 normalizeSubmitValue 还原数值） */
+const singleSelectValue = computed(() => {
+  if (!values.value.length) return undefined;
+  return String(values.value[0]);
 });
 
 const selectedLabels = computed(() =>
@@ -113,6 +126,8 @@ async function loadMeta() {
     if (item?.type === 'LIST' || inferred === 'LIST') {
       mode.value = 'list';
       listMeta.value = item?.type === 'LIST' ? (item as LovListMeta) : null;
+      // 单选时预加载首页数据，直接以下拉形式展示角色等列表
+      if (!props.multiple) await loadInlineOptions(item as LovListMeta | null);
     } else {
       mode.value = 'enum';
       listMeta.value = null;
@@ -125,6 +140,37 @@ async function loadMeta() {
   }
   // 历史值回显：即使 Meta 失败也尝试反查标签
   ensureLabels(values.value);
+}
+
+/** 按 Meta 的 valueField/labelField 映射 ListData 行为下拉选项 */
+async function loadInlineOptions(meta: LovListMeta | null) {
+  const valueField = (meta?.valueField || 'id').trim();
+  const labelField = (meta?.labelField || 'name').trim();
+  loadingOptions.value = true;
+  try {
+    const res = await fetchLovListData({
+      lovCode: props.code,
+      pageSize: 200,
+      pageNum: 1,
+    });
+    const rows = Array.isArray(res?.data) ? res.data : [];
+    inlineOptions.value = rows
+      .map((r) => {
+        const row = r as Record<string, unknown>;
+        const val = row[valueField] ?? row[valueField.charAt(0).toLowerCase() + valueField.slice(1)];
+        const lbl = row[labelField] ?? row[labelField.charAt(0).toLowerCase() + labelField.slice(1)];
+        if (val == null) return null;
+        const value = String(val);
+        const label = String(lbl ?? val);
+        labelCache[value] = label;
+        return { value, label } as LovEnumOption;
+      })
+      .filter((x): x is LovEnumOption => x != null);
+  } catch {
+    inlineOptions.value = [];
+  } finally {
+    loadingOptions.value = false;
+  }
 }
 
 /** 对缺失标签的 value 调用 BatchLabel 权威反查（LIST 值集） */
@@ -147,6 +193,15 @@ function onUpdate(v: unknown) {
   emit('update:modelValue', v as string | number | Array<string | number> | undefined);
 }
 
+/** LIST 单选下拉选择：emit 字符串值；提交时由 normalizeSubmitValue 还原数值型字段 */
+function onInlineSelect(v: unknown) {
+  if (v == null || v === '') {
+    emit('update:modelValue', undefined);
+    return;
+  }
+  emit('update:modelValue', String(v));
+}
+
 function onConfirm(vals: unknown[]) {
   if (props.multiple) {
     emit('update:modelValue', vals as (string | number)[]);
@@ -154,6 +209,17 @@ function onConfirm(vals: unknown[]) {
     emit('update:modelValue', (vals[0] as string | number) ?? undefined);
   }
   ensureLabels(vals as (string | number)[]);
+  // 表格确认后回填 inline 选项，保证下拉也能展示新选值
+  if (!props.multiple && vals.length) {
+    const v = vals[0];
+    const key = String(v);
+    if (!inlineOptions.value.some((o) => o.value === key)) {
+      inlineOptions.value = [
+        { value: key, label: labelCache[key] ?? key },
+        ...inlineOptions.value,
+      ];
+    }
+  }
   tableVisible.value = false;
 }
 

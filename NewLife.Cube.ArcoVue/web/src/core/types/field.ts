@@ -9,6 +9,7 @@ export type ControlType =
   | 'select'
   | 'lov'
   | 'lovMulti'
+  | 'cascader'
   | 'upload'
   | 'image'
   | 'json'
@@ -31,7 +32,8 @@ export type SearchControlType =
   | 'lovMulti'
   | 'switch'
   | 'fileExists'
-  | 'select';
+  | 'select'
+  | 'cascader';
 
 export type ListControlType =
   | 'text'

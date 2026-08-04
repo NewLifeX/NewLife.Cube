@@ -92,7 +92,6 @@
       :model-value="selectValue"
       :placeholder="`请选择${label}`"
       allow-clear
-      allow-search
       style="width: 100%"
       @update:model-value="onSelect"
     >
@@ -105,6 +104,14 @@
         {{ opt.label }}
       </a-option>
     </a-select>
+
+    <!-- 地区 / 级联（User.AreaId 等） -->
+    <CascaderField
+      v-else-if="searchType === 'cascader'"
+      :model-value="modelValue as string | number | null"
+      :placeholder="`请选择${label}`"
+      @update:model-value="emitScalar"
+    />
 
     <!-- 值集（无本地 dataSource 时走 Lov） -->
     <LovSelect
@@ -134,6 +141,7 @@ import type { FieldMeta } from '@/core/types/field';
 import { resolveSearchControl } from '@/core/utils/fieldControl';
 import { normalizeDataSource } from '@/core/utils/viewMapping';
 import LovSelect from './LovSelect.vue';
+import CascaderField from './CascaderField.vue';
 
 const props = defineProps<{
   field: FieldMeta;

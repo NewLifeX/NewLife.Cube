@@ -67,6 +67,12 @@ const KNOWN_CONTENT_ITEM_TYPES: ReadonlySet<string> = new Set([
   'url',
   'singleselect',
   'multipleselect',
+  'area',
+  'area4',
+  'cascader',
+  'date',
+  'datetime',
+  'time',
 ]);
 
 const ITEM_TYPE_TO_CONTROL: Record<string, ControlType> = {
@@ -82,7 +88,21 @@ const ITEM_TYPE_TO_CONTROL: Record<string, ControlType> = {
   url: 'url',
   singleselect: 'lov',
   multipleselect: 'lovMulti',
+  area: 'cascader',
+  area4: 'cascader',
+  cascader: 'cascader',
+  date: 'datePicker',
+  datetime: 'datePicker',
+  time: 'timePicker',
 };
+
+/** 地区/级联 ItemType：后端 User.AreaId 使用 area4，地区实体为系统内置 Area */
+const CASCADER_ITEM_TYPES: ReadonlySet<string> = new Set(['area', 'area4', 'cascader']);
+
+/** 是否为地区/级联字段（用于表单 Cascader 与列表/搜索适配） */
+export function isCascaderField(field: Pick<FieldMeta, 'itemType'>): boolean {
+  return CASCADER_ITEM_TYPES.has((field.itemType ?? '').trim().toLowerCase());
+}
 
 function normalizeItemType(field: FieldMeta): string {
   return (field.itemType ?? '').trim().toLowerCase();
@@ -143,6 +163,8 @@ export function resolveSearchControl(field: FieldMeta): SearchControlType {
   const itemType = normalizeItemType(field);
 
   if (itemType === 'file' || itemType === 'image') return 'fileExists';
+  // 地区/级联：搜索也用 Cascader，便于按省市区逐级过滤
+  if (CASCADER_ITEM_TYPES.has(itemType)) return 'cascader';
   if (itemType === 'singleselect') {
     // GetPage 已物化 dataSource 时优先本地下拉，避免再走 Lov Meta
     if (field.dataSource && Object.keys(field.dataSource).length > 0) return 'select';
@@ -170,6 +192,9 @@ export function resolveSearchControl(field: FieldMeta): SearchControlType {
   // Cube.Vue：未知 typeName（SexKinds 等）→ 下拉，由 Lookup / PrepareForApi 灌选项
   if (isEnumLikeTypeName(field)) return 'select';
 
+  // 日期 / 时间：按 itemType 推断 date/datetime/time 范围
+  if (itemType === 'date') return 'dateRange';
+  if (itemType === 'time') return 'timeRange';
   if (typeName === 'DateTime') return 'datetimeRange';
   if (typeName === 'TimeSpan') return 'timeRange';
   if (NUMERIC_TYPES.has(typeName)) return 'numberRange';
@@ -199,6 +224,16 @@ export function resolveListControl(field: FieldMeta): ListControlType {
     case 'singleselect':
     case 'multipleselect':
       return 'lov';
+    case 'area':
+    case 'area4':
+    case 'cascader':
+      // 地区/级联列暂以文本展示叶子值；如有 BatchLabel 缓存 label 则由 formatFieldValue 翻译
+      return 'text';
+    case 'date':
+    case 'datetime':
+      return 'date';
+    case 'time':
+      return 'time';
   }
 
   const typeName = field.typeName;

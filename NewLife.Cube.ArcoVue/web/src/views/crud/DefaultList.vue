@@ -307,10 +307,10 @@ import {
   defaultBadgeColumnWidth,
   isBadgeField,
   resolveCellBadge,
-  resolveCellLabel,
 } from '@/core/utils/fieldBadge';
 import { resolveCrudFlags } from '@/core/utils/permissions';
 import { getValueByKey, normalizeKeysByFields } from '@/core/utils/url';
+import { formatFieldValue } from '@/core/utils/fieldFormat';
 import {
   enrichFieldsWithEnumDataSource,
   enrichFieldsWithLookup,
@@ -616,19 +616,7 @@ const tableColumns = computed(() =>
 );
 
 function renderCell(field: FieldMeta, record: Record<string, unknown>): string {
-  const raw = getValueByKey(record, field.name);
-  if (raw == null || raw === '') return '-';
-  // 优先元数据 dataSource（GetPage 已物化 / Enum Meta 灌入）
-  if (field.dataSource && Object.keys(field.dataSource).length) {
-    return resolveCellLabel(field, raw);
-  }
-  const kind = resolveListControl(field);
-  if (kind === 'boolean') return resolveCellLabel(field, raw);
-  if (kind === 'lov' && field.lovCode) {
-    const map = labelCache[field.lovCode] || {};
-    return map[String(raw)] ?? String(raw);
-  }
-  return String(raw);
+  return formatFieldValue(field, record, { labelCache });
 }
 
 async function hydrateLovLabels(rows: Record<string, unknown>[]) {

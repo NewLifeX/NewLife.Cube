@@ -5,6 +5,7 @@
  */
 import type { FieldMeta } from '../types/field';
 import { isTruthy } from './fieldBadge';
+import { formatDate, formatDateTime, formatTime, inferDateKind } from './datetime';
 
 function itemTypeOf(field: FieldMeta): string {
   return (field.itemType ?? '').trim().toLowerCase();
@@ -73,7 +74,7 @@ export function jsonPreview(raw: unknown, max = 200): string {
   return `${s.slice(0, max)}…`;
 }
 
-/** 详情纯文本（模板 <div> 直接输出，安全）：dataSource/多选/Boolean/JSON 摘要/常规字符串 */
+/** 详情纯文本（模板 <div> 直接输出，安全）：dataSource/多选/Boolean/日期时间/JSON 摘要/常规字符串 */
 export function detailText(field: FieldMeta, raw: unknown): string {
   if (raw == null || raw === '') return '-';
   const itemType = itemTypeOf(field);
@@ -86,6 +87,14 @@ export function detailText(field: FieldMeta, raw: unknown): string {
   if (label != null) return label;
   if (typeof raw === 'boolean') return raw ? '是' : '否';
   if (field.typeName === 'Boolean') return isTruthy(raw) ? '是' : '否';
+  // 日期 / 时间：壁钟时间格式化，避免时区漂移
+  if (field.typeName === 'DateTime' || itemType === 'date' || itemType === 'datetime' || itemType === 'time') {
+    const dk = inferDateKind(field);
+    if (dk === 'date') return formatDate(raw);
+    if (dk === 'time') return formatTime(raw);
+    return formatDateTime(raw);
+  }
+  if (field.typeName === 'TimeSpan') return formatTime(raw);
   return String(raw);
 }
 

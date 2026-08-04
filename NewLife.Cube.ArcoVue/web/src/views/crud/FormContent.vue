@@ -36,6 +36,7 @@ import type { FieldMeta } from '@/core/types/field';
 import { isAuditField, isFullWidthControl, resolveControl } from '@/core/utils/fieldControl';
 import { groupFieldsByCategory } from '@/core/utils/fieldGroups';
 import { isFieldRequired } from '@/core/utils/submitPayload';
+import { fieldFormatRules } from '@/core/utils/validation';
 import FieldInput from '@/components/FieldInput.vue';
 
 const props = withDefaults(
@@ -66,8 +67,11 @@ const visibleFields = computed(() => {
 const fieldGroups = computed(() => groupFieldsByCategory(visibleFields.value));
 
 function rulesFor(field: FieldMeta) {
-  if (!isFieldRequired(field)) return undefined;
-  return [{ required: true, message: `${field.displayName || field.name}不可以为空！` }];
+  const rules = [...fieldFormatRules(field)];
+  if (isFieldRequired(field)) {
+    rules.unshift({ required: true, message: `${field.displayName || field.name}不可以为空！` });
+  }
+  return rules.length ? rules : undefined;
 }
 
 /** 后端 FieldErrors 的 field 名（PascalCase）与表单字段名做大小写不敏感匹配后写入 Arco Form 字段错误 */
