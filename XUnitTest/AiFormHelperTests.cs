@@ -132,6 +132,30 @@ public class AiFormHelperTests
     }
 
     [Fact]
+    [DisplayName("BuildSchema - 编辑模式并入已有值")]
+    public void BuildSchema_MergeValues()
+    {
+        var factory = new Entity<AiFormTestEntity>.DefaultEntityFactory();
+        var fields = new FieldCollection(factory, ViewKinds.AddForm);
+        var values = new Dictionary<String, Object?>
+        {
+            ["Name"] = "张三",
+            ["Status"] = StatusKinds.启用,
+        };
+        var schema = AiFormHelper.BuildSchema(fields, values);
+
+        var name = schema.First(f => f.Name == "Name");
+        Assert.Equal("张三", name.Value);
+
+        var status = schema.First(f => f.Name == "Status");
+        Assert.Equal(StatusKinds.启用, status.Value);
+
+        // 未提供的字段值为空
+        var ct = schema.First(f => f.Name == "CreateTime");
+        Assert.Null(ct.Value);
+    }
+
+    [Fact]
     [DisplayName("CoerceValue - 枚举合法值转换，非法值返回 null")]
     public void CoerceValue_Enum_ValidAndInvalid()
     {

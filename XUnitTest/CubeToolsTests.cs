@@ -98,6 +98,18 @@ public class CubeToolsTests
     }
 
     [Fact]
+    [DisplayName("GetFormSchema - 编辑模式返回字段结构与实体描述")]
+    public void GetFormSchema_EditMode_ReturnsEntity()
+    {
+        var tools = CreateTools();
+        var json = tools.GetFormSchema("edit");
+
+        Assert.Contains("\"mode\":\"edit\"", json);
+        Assert.Contains("AI工具测试实体", json);
+        Assert.Contains("\"Name\"", json);
+    }
+
+    [Fact]
     [DisplayName("FillForm - 有效值转换，敏感字段跳过")]
     public void FillForm_ConvertsValues_SkipsSensitive()
     {
@@ -137,14 +149,37 @@ public class CubeToolsTests
     }
 
     [Fact]
-    [DisplayName("GetEntityInfo - 返回实体名称与表名")]
-    public void GetEntityInfo_ReturnsEntityName()
+    [DisplayName("GetDataContext - 列表模式返回数据摘要与字段")]
+    public void GetDataContext_ListMode()
     {
         var tools = CreateTools();
-        var json = tools.GetEntityInfo();
+        var json = tools.GetDataContext();
 
         Assert.Contains("AI工具测试实体", json);
-        Assert.Contains("AiToolTestEntity", json);
+        Assert.Contains("\"shown\":0", json);
+        Assert.Contains("\"Name\"", json);
+    }
+
+    [Fact]
+    [DisplayName("GetDataContext - 记录模式（编号>0）走记录收集")]
+    public void GetDataContext_RecordMode()
+    {
+        var tools = new CubeTools<AiToolTestEntity>(new Entity<AiToolTestEntity>.DefaultEntityFactory(), null, 1, p => []);
+        var json = tools.GetDataContext();
+
+        // 无库环境下 FindByKey 返回 null → 返回"记录不存在"提示，验证分派到记录收集路径
+        Assert.Contains("记录不存在", json);
+    }
+
+    [Fact]
+    [DisplayName("GetSystemInfo - 返回服务器运行指标")]
+    public void GetSystemInfo_ReturnsMetrics()
+    {
+        var tools = CreateTools();
+        var json = tools.GetSystemInfo();
+
+        Assert.Contains("cpu", json);
+        Assert.Contains("machineName", json);
     }
     #endregion
 }

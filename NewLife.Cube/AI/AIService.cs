@@ -34,13 +34,6 @@ public class AIService : IAIService
         Temperature = 0.3,
     };
 
-    /// <summary>深度分析选项：开启深度推理、适中温度，适合复杂数据洞察场景</summary>
-    private static readonly ChatOptions _deepOptions = new()
-    {
-        EnableThinking = true,
-        Temperature = 0.5,
-    };
-
     /// <summary>获取或创建客户端，按需延迟初始化</summary>
     private IChatClient GetClient()
     {
@@ -143,52 +136,6 @@ public class AIService : IAIService
     private static String BuildDiagnosePrompt() => @"你是系统运维专家。根据以下系统运行指标，给出健康诊断报告（中文）：
 分析要点：是否存在瓶颈、是否需要扩容、是否需要关注的风险点。
 直接输出诊断报告，不要加无关解释。";
-
-    /// <summary>数据分析洞察。根据上下文数据生成分析报告</summary>
-    public async Task<String> AnalyzeDataAsync(String prompt, Boolean think = false, CancellationToken cancellationToken = default)
-    {
-        var options = think ? _deepOptions : _fastOptions;
-        return await ChatInternalAsync(prompt, null, options, cancellationToken);
-    }
-
-    /// <summary>数据分析洞察（流式输出）。逐块返回生成内容</summary>
-    public async IAsyncEnumerable<String> AnalyzeDataStreamAsync(String prompt, Boolean think = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        if (!_setting.AISwitch)
-        {
-            yield return "AI 未启用，请在系统设置中开启 AISwitch";
-            yield break;
-        }
-
-        var options = think ? _deepOptions : _fastOptions;
-        var error = default(String);
-        IChatClient? client = null;
-
-        try
-        {
-            client = GetClient();
-            WriteLog("AnalyzeDataStream 开始", prompt[..Math.Min(prompt.Length, 200)]);
-        }
-        catch (Exception ex)
-        {
-            WriteLog("AnalyzeDataStream 失败", ex.ToString());
-            error = $"\n\n---\n>  AI 调用失败：{ex.Message}";
-        }
-
-        if (error != null)
-        {
-            yield return error;
-            yield break;
-        }
-
-        await foreach (var chunk in client!.GetStreamingResponseAsync(prompt, options, cancellationToken))
-        {
-            if (chunk?.Text != null)
-                yield return chunk.Text;
-        }
-
-        WriteLog("AnalyzeDataStream 完成", "");
-    }
 
     /// <summary>AI 对话（含工具调用）。使用 ToolChatClient 自动多轮工具循环，流式返回响应块</summary>
     /// <remarks>

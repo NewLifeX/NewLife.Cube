@@ -34,20 +34,6 @@ public interface IAIService
     /// <returns>流式文本块的异步枚举</returns>
     IAsyncEnumerable<String> DiagnoseSystemStreamAsync(String sysInfoJson, CancellationToken cancellationToken = default);
 
-    /// <summary>数据分析洞察。根据上下文数据生成分析报告</summary>
-    /// <param name="prompt">完整的分析提示词（含统计摘要和数据样本）</param>
-    /// <param name="think">是否启用深度推理</param>
-    /// <param name="cancellationToken">取消令牌</param>
-    /// <returns></returns>
-    Task<String> AnalyzeDataAsync(String prompt, Boolean think = false, CancellationToken cancellationToken = default);
-
-    /// <summary>数据分析洞察（流式输出）。逐块返回生成内容</summary>
-    /// <param name="prompt">完整的分析提示词（含统计摘要和数据样本）</param>
-    /// <param name="think">是否启用深度推理</param>
-    /// <param name="cancellationToken">取消令牌</param>
-    /// <returns>流式文本块的异步枚举</returns>
-    IAsyncEnumerable<String> AnalyzeDataStreamAsync(String prompt, Boolean think = false, CancellationToken cancellationToken = default);
-
     /// <summary>AI 对话（含工具调用）。使用 ToolChatClient 自动多轮工具循环，流式返回响应块</summary>
     /// <param name="messages">完整消息历史（含 system 消息）</param>
     /// <param name="providers">工具提供者列表（按工具名路由），可为空</param>

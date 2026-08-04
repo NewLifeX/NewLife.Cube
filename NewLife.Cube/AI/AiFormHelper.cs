@@ -28,6 +28,9 @@ public class AiFormField
 
     /// <summary>是否可填。false 表示敏感或自动维护字段，AI 不应填写</summary>
     public Boolean Fillable { get; set; }
+
+    /// <summary>当前值（编辑模式）。仅 edit 模式且存在当前记录时填充，供 AI 基于现状补全/修正</summary>
+    public Object? Value { get; set; }
 }
 
 /// <summary>AI 表单助手。收集表单字段元数据与类型转换，供 AI 工具 get_form_schema / fill_form 使用</summary>
@@ -43,8 +46,9 @@ public static class AiFormHelper
 
     /// <summary>构建表单字段 Schema，供 AI 识别字段结构与约束</summary>
     /// <param name="fields">表单字段集合</param>
+    /// <param name="values">当前记录已有值（编辑模式），按字段名匹配填充到 <see cref="AiFormField.Value"/></param>
     /// <returns></returns>
-    public static IList<AiFormField> BuildSchema(FieldCollection fields)
+    public static IList<AiFormField> BuildSchema(FieldCollection fields, IDictionary<String, Object?>? values = null)
     {
         var list = new List<AiFormField>();
         foreach (var item in fields)
@@ -66,6 +70,11 @@ public static class AiFormHelper
 
             // 可填：非敏感 + 非自动维护 + 非只读
             fi.Fillable = !IsAutoField(item.Name) && AiDataHelper.IsSafeFieldName(item.Name) && !item.ReadOnly;
+
+            // 编辑模式已有值并入（仅安全字段才有值）
+            if (values != null && values.TryGetValue(item.Name, out var v))
+                fi.Value = v;
+
             list.Add(fi);
         }
         return list;

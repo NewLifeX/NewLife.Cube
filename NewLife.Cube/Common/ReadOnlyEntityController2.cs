@@ -433,81 +433,6 @@ public partial class ReadOnlyEntityController<TEntity>
     }
     #endregion
 
-    #region AI 洞察
-    /// <summary>AI 数据洞察。根据当前列表页数据生成分析报告</summary>
-    /// <param name="think">是否启用深度推理</param>
-    /// <param name="stream">是否流式输出（SSE）</param>
-    /// <returns></returns>
-    [DisplayName("AI 数据洞察")]
-    [EntityAuthorize(PermissionFlags.Detail)]
-    [HttpGet]
-    public virtual async Task<ActionResult> AiInsight(Boolean think = false, Boolean stream = true)
-    {
-        var set = CubeSetting.Current;
-        if (!set.AISwitch) return Json(500, null, "AI 未启用，请联系系统管理员开启 AISwitch");
-
-        var svc = HttpContext.RequestServices.GetService<IAIService>();
-        if (svc == null) return Json(500, null, "AI 服务未注册");
-
-        // 使用 _query 参数获取查询条件
-        var pager = GetCachePager();
-        if (pager == null)
-        {
-            // 无 _query 时按当前请求参数构造，默认第一页
-            pager = new Pager(WebHelper.Params)
-            {
-                PageIndex = 1,
-                PageSize = 20,
-            };
-        }
-
-        // 只分析当前页（WYSIWYG）。保留 _query 携带的当前分页与排序，不重置到第一页
-        // 分析范围 = 用户当前看到的列表页数据；_query 缺省 PageSize 时按列表页默认 20
-        if (pager.PageSize <= 0) pager.PageSize = 20;
-        pager.RetrieveTotalCount = false;
-
-        var data = SearchData(pager).ToList();
-
-        // 收集数据并构造 Prompt
-        var ctx = AiInsightHelper.Collect<TEntity>(Factory, pager, data);
-        var prompt = AiInsightHelper.BuildPrompt(ctx);
-
-        if (stream)
-        {
-            // SSE 方式输出
-            Response.Headers["Content-Type"] = "text/event-stream; charset=utf-8";
-            Response.Headers["Cache-Control"] = "no-cache";
-            Response.Headers["X-Accel-Buffering"] = "no";
-
-            // 发送元数据事件
-            var metaJson = new { type = "meta", model = set.AIModel, thinking = think }.ToJson();
-            await Response.WriteAsync($"data: {metaJson}\n\n", HttpContext.RequestAborted);
-            await Response.Body.FlushAsync(HttpContext.RequestAborted);
-
-            await foreach (var chunk in svc.AnalyzeDataStreamAsync(prompt, think, HttpContext.RequestAborted))
-            {
-                if (chunk.IsNullOrEmpty()) continue;
-                var eventJson = new { type = "text", content = chunk }.ToJson();
-                await Response.WriteAsync($"data: {eventJson}\n\n", HttpContext.RequestAborted);
-                await Response.Body.FlushAsync(HttpContext.RequestAborted);
-            }
-
-            // 发送结束事件
-            await Response.WriteAsync($"data: {{\"type\":\"done\"}}\n\n", HttpContext.RequestAborted);
-            await Response.Body.FlushAsync(HttpContext.RequestAborted);
-
-            return new EmptyResult();
-        }
-        else
-        {
-            // 一次性返回 JSON
-            var result = await svc.AnalyzeDataAsync(prompt, think, HttpContext.RequestAborted);
-
-            return Json(0, null, new { result, model = set.AIModel, thinking = think });
-        }
-    }
-    #endregion
-
     #region AI 对话
     /// <summary>AI 对话助手。通过工具调用完成数据分析、表单填写等操作，SSE 流式返回</summary>
     /// <returns></returns>
@@ -519,19 +444,14 @@ public partial class ReadOnlyEntityController<TEntity>
         var set = CubeSetting.Current;
         if (!set.AISwitch) return Json(500, null, "AI 未启用，请联系系统管理员开启 AISwitch");
 
-        var svc = HttpContext.RequestServices.GetService<IAIService>();
-        if (svc == null) return Json(500, null, "AI 服务未注册");
+        var svc = HttpContext.RequestServices.GetService<IAIChatService>();
+        if (svc == null) return Json(500, null, "AI 对话服务未注册");
 
         // 读取 JSON 请求体
         var body = await new StreamReader(Request.Body).ReadToEndAsync();
         if (body.IsNullOrEmpty()) return Json(500, null, "请求体为空");
         var req = body.ToJsonEntity<AiChatRequest>();
         if (req == null || req.Message.IsNullOrEmpty()) return Json(500, null, "消息不能为空");
-
-        // 会话历史（内存缓存）
-        var sessionKey = $"CubeAI_Session_{req.SessionId}";
-        var history = MemoryCache.Instance.Get<IList<ChatMessage>>(sessionKey) ?? [];
-        history.Add(new ChatMessage { Role = "user", Content = req.Message });
 
         // 当前查询条件（_query Base64 解码）
         var pager = default(Pager);
@@ -546,121 +466,42 @@ public partial class ReadOnlyEntityController<TEntity>
             catch (Exception ex) { XTrace.WriteLine("AiChat 解析 _query 失败：{0}", ex.Message); }
         }
 
-        // 构建工具：当前实体上下文 + 内置工具
-        var tools = new CubeTools<TEntity>(Factory, pager, req.Id, p => SearchData(p).ToList());
+        // 构建工具：当前实体上下文 + 内置工具。CreateCubeTools 可重载以定制工具与数据逻辑
+        var tools = CreateCubeTools(pager, req.Id);
         var registry = new ToolRegistry();
         registry.AddTools(tools);
         registry.AddTools(new BuiltinToolService());
 
-        // 组装消息：system + 历史（限长 30 条）
-        var messages = new List<ChatMessage>
-        {
-            new() { Role = "system", Content = BuildChatSystemPrompt(req, pager) }
-        };
-        messages.AddRange(history.TakeLast(30));
-
-        var think = req.Think || set.AIDefaultThink;
-        var options = new ChatOptions
-        {
-            EnableThinking = think,
-            Temperature = think ? 0.5 : 0.3,
-        };
+        // 系统提示词：注入页面上下文，保留子类重载
+        var systemPrompt = BuildChatSystemPrompt(req, pager);
 
         // SSE 输出
         Response.Headers["Content-Type"] = "text/event-stream; charset=utf-8";
         Response.Headers["Cache-Control"] = "no-cache";
         Response.Headers["X-Accel-Buffering"] = "no";
 
-        var metaJson = new { type = "meta", model = set.AIModel, thinking = think }.ToJson();
-        await Response.WriteAsync($"data: {metaJson}\n\n", HttpContext.RequestAborted);
-        await Response.Body.FlushAsync(HttpContext.RequestAborted);
-
-        var sb = Pool.StringBuilder.Get();
-        var hasText = false;
-        var hasError = false;
-        try
+        // 对话核心逻辑下沉到全局服务：会话管理、工具循环、SSE 事件、空响应兜底
+        await svc.ChatAsync(req, systemPrompt, [registry], async json =>
         {
-            if (!req.Stream)
-            {
-                // 非流式：一次返回完整响应（含工具调用事件与文本）
-                var response = await svc.ChatAgentAsync(messages, [registry], options, HttpContext.RequestAborted);
-                if (response is ChatResponse cr2 && cr2.ToolCallEvents != null)
-                {
-                    foreach (var ev in cr2.ToolCallEvents)
-                    {
-                        var evJson = new { type = "tool", @event = ev.Type, id = ev.ToolCallId, name = ev.Name, value = ev.Value }.ToJson();
-                        await Response.WriteAsync($"data: {evJson}\n\n", HttpContext.RequestAborted);
-                        await Response.Body.FlushAsync(HttpContext.RequestAborted);
-                    }
-                }
-                var text = response?.Text;
-                if (!text.IsNullOrEmpty())
-                {
-                    hasText = true;
-                    sb.Append(text);
-                    var textJson = new { type = "text", content = text }.ToJson();
-                    await Response.WriteAsync($"data: {textJson}\n\n", HttpContext.RequestAborted);
-                    await Response.Body.FlushAsync(HttpContext.RequestAborted);
-                }
-            }
-            else
-            {
-                await foreach (var chunk in svc.ChatAgentStreamAsync(messages, [registry], options, HttpContext.RequestAborted))
-                {
-                    // 文本增量
-                    var text = chunk?.Text;
-                    if (!text.IsNullOrEmpty())
-                    {
-                        hasText = true;
-                        sb.Append(text);
-                        var textJson = new { type = "text", content = text }.ToJson();
-                        await Response.WriteAsync($"data: {textJson}\n\n", HttpContext.RequestAborted);
-                        await Response.Body.FlushAsync(HttpContext.RequestAborted);
-                    }
-
-                    // 工具调用事件
-                    if (chunk is ChatResponse cr && cr.ToolCallEvents != null)
-                    {
-                        foreach (var ev in cr.ToolCallEvents)
-                        {
-                            var evJson = new { type = "tool", @event = ev.Type, id = ev.ToolCallId, name = ev.Name, value = ev.Value }.ToJson();
-                            await Response.WriteAsync($"data: {evJson}\n\n", HttpContext.RequestAborted);
-                            await Response.Body.FlushAsync(HttpContext.RequestAborted);
-                        }
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            hasError = true;
-            XTrace.WriteException(ex);
-            var errJson = new { type = "error", message = ex.Message }.ToJson();
-            await Response.WriteAsync($"data: {errJson}\n\n", HttpContext.RequestAborted);
-        }
-
-        // 空响应兜底：工具回合未完成（常见于服务商不支持函数调用），给出提示而非静默结束
-        if (!hasText && !hasError)
-        {
-            var note = "⚠️ AI 未返回有效结果。若需要数据分析/填表等工具能力，请确认 AI 服务商支持函数调用（如 DeepSeek/OpenAI/Ollama 工具模型）。";
-            var noteJson = new { type = "text", content = $"\n\n> {note}" }.ToJson();
-            await Response.WriteAsync($"data: {noteJson}\n\n", HttpContext.RequestAborted);
+            await Response.WriteAsync($"data: {json}\n\n", HttpContext.RequestAborted);
             await Response.Body.FlushAsync(HttpContext.RequestAborted);
-        }
-
-        // 保存助手回复到会话历史
-        var reply = sb.Put(true);
-        if (!reply.IsNullOrEmpty())
-        {
-            history.Add(new ChatMessage { Role = "assistant", Content = reply });
-            MemoryCache.Instance.Set(sessionKey, history, 3600);
-        }
-
-        await Response.WriteAsync("data: {\"type\":\"done\"}\n\n", HttpContext.RequestAborted);
-        await Response.Body.FlushAsync(HttpContext.RequestAborted);
+        }, HttpContext.RequestAborted);
 
         return new EmptyResult();
     }
+
+    /// <summary>创建 AI 工具集。二次开发者可重载，返回自定义工具集以调整 AI 使用的数据逻辑</summary>
+    /// <remarks>
+    /// 默认工具集 <see cref="CubeTools{TEntity}"/> 提供数据上下文、表单 Schema、回填表单等能力。
+    /// 重载时通常继承 <see cref="CubeTools{TEntity}"/> 并重写其 virtual 工具方法
+    /// （GetDataContext / GetFormSchema / FillForm），或重写数据收集方法（GetListContext / GetRecordContext），
+    /// 或返回全新的 IToolProvider 实现。数据查询委托默认走 SearchData（保留子类重载与数据权限）。
+    /// </remarks>
+    /// <param name="pager">当前查询条件（可为空）</param>
+    /// <param name="entityId">当前记录编号</param>
+    /// <returns>AI 工具集</returns>
+    protected virtual CubeTools<TEntity> CreateCubeTools(Pager? pager, Int64 entityId)
+        => new CubeTools<TEntity>(Factory, pager, entityId, p => SearchData(p).ToList());
 
     /// <summary>构建 AI 对话系统提示词，注入当前页面上下文</summary>
     /// <param name="req">对话请求</param>
@@ -692,24 +533,20 @@ public partial class ReadOnlyEntityController<TEntity>
                 sb.AppendLine($"- {kv.Key}: {kv.Value}");
             }
         }
+
         sb.AppendLine();
-        sb.AppendLine("可用工具：");
-        sb.AppendLine("- get_form_schema(mode)：获取表单字段结构（类型、枚举、必填、说明）");
-        sb.AppendLine("- fill_form(values, mode)：生成表单字段值并回填到前端表单（不写数据库，由用户确认后提交）");
-        sb.AppendLine("- get_data_insight_context()：收集当前查询的数据统计摘要与样本");
-        sb.AppendLine("- get_record_context()：收集当前记录的值与表统计");
-        sb.AppendLine("- get_system_info()：收集服务器运行指标");
+        sb.AppendLine("可用工具：get_data_context / get_form_schema / fill_form / get_system_info（详细说明见函数定义，按需调用）");
         sb.AppendLine();
         sb.AppendLine("规则：");
         sb.AppendLine("1. 使用简体中文回答，语言简洁专业");
-        sb.AppendLine("2. 用户要求分析/洞察当前数据时，先调用 get_data_insight_context 获取数据，再给出分析结论与建议");
+        sb.AppendLine("2. 用户要求分析/洞察当前数据或单条记录时，先调用 get_data_context 获取数据，再给出分析结论与建议");
         sb.AppendLine("3. 用户要求新建/填写/补全表单时，先调用 get_form_schema 了解字段，再调用 fill_form 生成值，最后提示用户检查后提交");
-        sb.AppendLine("4. 用户要求分析某条记录时，先调用 get_record_context 获取记录与统计，再指出异常与建议");
-        sb.AppendLine("5. 用户询问系统状态/诊断时，调用 get_system_info");
-        sb.AppendLine("6. 不要编造数据；信息不足时主动询问用户澄清");
+        sb.AppendLine("4. 用户询问系统状态/诊断时，调用 get_system_info");
+        sb.AppendLine("5. 不要编造数据；信息不足时主动询问用户澄清");
 
         return sb.Put(true);
     }
+
     #endregion
 
     #region 实体操作重载

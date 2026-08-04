@@ -5,12 +5,7 @@
 				<div v-for="(chart, idx) in chartList" :key="idx" class="chart-item" :ref="el => setChartRef(el as HTMLElement, idx)"></div>
 			</div>
 
-			<!-- AI -->
-			<el-button type="primary" plain size="default" @click="openInsight(false)" style="margin-bottom:12px;">
-				<el-icon :size="16"><MagicStick /></el-icon> AI洞察
-			</el-button>
-
-			<Table
+      <Table
 				v-if="wrapper !== 'div'"
 				class="table-demo"
 				ref="tableRef"
@@ -35,11 +30,7 @@
 				@sortHeader="onSortHeader">
 				<template v-for="item in search.filter(v => v.slot)" :key="item.prop.toString()" #[`${item.slot!}`]="data">
 					<slot :name="item.slot" :model="data.model" :prop="data.prop"></slot>
-				
-  <!-- AI Drawer -->
-  <AiInsightDrawer v-model="insightVisible" :url="insightUrl" :thinking="insightThinking" />
-  <AiInsightDrawer v-model="insightVisible" :url="insightUrl" :thinking="insightThinking" />
-</template>
+				</template>
 				<template v-for="item in columns.filter(v => v.slot)" :key="item.prop" #[`${item.slot!}`]="data">
 					<slot :name="item.slot" :scope="data.scope"></slot>
 				</template>
@@ -74,16 +65,16 @@
 			</Edit>
 		</div>
 	</div>
-  <!-- AI Drawer -->
-  <AiInsightDrawer v-model="insightVisible" :url="insightUrl" :thinking="insightThinking" />
+
+	<!-- AI 助手浮窗（列表页上下文） -->
+	<AiAssistant page="list" :query="aiQuery" :url="props.type || ''" />
 </template>
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, inject, markRaw, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
-import { MagicStick, ArrowDown } from '@element-plus/icons-vue';
 import * as echarts from 'echarts';
-import AiInsightDrawer from '../table/AiInsightDrawer.vue';
+import AiAssistant from '../ai/AiAssistant.vue';
 import { ColumnKind, usePageApi } from '../../api/page';
 import request from '/@/utils/request';
 import Edit from './edit.vue';
@@ -321,21 +312,25 @@ getTableData();
 loadChartData();
 
 defineExpose({
-	getTableData,
-	openInsight
+	getTableData
 })
 providePage && (providePage.handle.reload = getTableData)
 
 
-const insightVisible = ref(false);
-const insightThinking = ref(false);
-const insightUrl = ref('');
-
-function openInsight(think) {
-  insightThinking.value = think;
-  insightUrl.value = props.type + '/AiInsight?think=' + think + '&stream=true&maxRows=100';
-  insightVisible.value = true;
-}
+// AI 助手：当前查询条件（_query Base64），与服务端 Pager.Parse 兼容
+const aiQuery = computed(() => {
+  const p: Record<string, any> = { ...searchForm.value };
+  if (param.value.sort) p['Sort'] = param.value.sort;
+  if (param.value.desc) p['Desc'] = 'True';
+  p['PageIndex'] = param.value.pageIndex;
+  p['PageSize'] = param.value.pageSize;
+  const usp = new URLSearchParams();
+  Object.entries(p).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== '') usp.append(k, String(v));
+  });
+  const s = usp.toString();
+  return btoa(unescape(encodeURIComponent(s)));
+});
 
 </script>
 

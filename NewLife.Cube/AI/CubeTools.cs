@@ -10,7 +10,13 @@ namespace NewLife.Cube.AI;
 
 /// <summary>魔方 AI 工具集。封装当前实体上下文的 AI 可调用工具，供对话 Agent 使用</summary>
 /// <typeparam name="TEntity">实体类型</typeparam>
-/// <remarks>实例化魔方工具集</remarks>
+/// <remarks>
+/// 实例化魔方工具集。
+/// 对外暴露 4 个 AI 工具：get_data_context（当前数据上下文）/ get_form_schema（表单结构）/ fill_form（回填表单）/ get_system_info（服务器状态）。
+/// 工具方法均为 virtual；数据收集方法 GetListContext / GetRecordContext 为 protected virtual，
+/// 二次开发者可继承本类重写数据收集逻辑（如调整洞察范围、表单字段、记录字段），
+/// 也可由控制器重写 <c>CreateCubeTools</c> 返回自定义工具集。
+/// </remarks>
 /// <param name="factory">实体工厂</param>
 /// <param name="pager">当前查询条件（可为空）</param>
 /// <param name="entityId">当前记录编号</param>
@@ -28,30 +34,47 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
     #endregion
 
     #region 工具
-    /// <summary>获取当前实体基本信息，如名称、表名、说明、总记录数</summary>
-    [ToolDescription("get_entity_info", IsSystem = true, ReadOnly = true)]
-    public String GetEntityInfo()
-    {
-        var tb = factory.Table.DataTable;
-        var name = factory.EntityType.GetDisplayName() ?? tb.DisplayName ?? factory.EntityType.Name;
-        return new { entity = name, table = tb.TableName, description = tb.Description, total = factory.Session.Count }.ToJson();
-    }
+    /// <summary>获取当前页面数据上下文：有当前记录时返回该记录的值与字段元数据，否则返回当前查询条件下的数据摘要与样本</summary>
+    [ToolDescription("get_data_context", ReadOnly = true)]
+    [DisplayName("获取数据上下文")]
+    [Description("获取当前页面数据上下文：有当前记录时返回该记录的值与字段元数据，否则返回当前查询条件下的数据摘要与样本，供分析使用")]
+    public virtual String GetDataContext()
+        => entityId > 0 ? GetRecordContext() : GetListContext();
 
-    /// <summary>获取当前实体的表单字段结构，包含字段名、类型、枚举值、必填、说明，供生成表单值使用</summary>
+    /// <summary>获取当前实体的表单字段结构，包含字段名、类型、枚举值、必填、说明与已有值（编辑模式），供生成表单值使用</summary>
     /// <param name="mode">表单模式：add 新增 / edit 编辑，默认 add</param>
     [ToolDescription("get_form_schema", ReadOnly = true)]
-    public String GetFormSchema([Description("表单模式：add 新增 / edit 编辑")] String mode = "add")
+    [DisplayName("获取表单字段结构")]
+    [Description("获取当前实体的表单字段结构，包含字段名、类型、枚举值、必填、说明与已有值（编辑模式），供生成表单值使用")]
+    public virtual String GetFormSchema([Description("表单模式：add 新增 / edit 编辑")] String mode = "add")
     {
         var fields = mode.EqualIgnoreCase("edit") ? EditFields : AddFields;
         var schema = AiFormHelper.BuildSchema(fields);
-        return new { mode, fields = schema }.ToJson();
+
+        // 编辑模式：并入当前记录已有值，供 AI 基于现状补全/修正（而非凭空生成）
+        if (mode.EqualIgnoreCase("edit") && entityId > 0)
+        {
+            var entity = Entity<TEntity>.FindByKey(entityId);
+            if (entity != null)
+            {
+                var safeFields = AiDataHelper.FilterSafeFields(factory.AllFields, typeof(TEntity));
+                var values = AiDataHelper.ToSafeDictionary(entity, safeFields);
+                schema = AiFormHelper.BuildSchema(fields, values);
+            }
+        }
+
+        var tb = factory.Table.DataTable;
+        var name = factory.EntityType.GetDisplayName() ?? tb.DisplayName ?? factory.EntityType.Name;
+        return new { mode, entity = name, description = tb.Description, fields = schema }.ToJson();
     }
 
     /// <summary>生成表单字段值并回填到前端表单。不写数据库，由用户确认后提交</summary>
     /// <param name="values">字段值字典，键为字段名，值为要填入的值</param>
     /// <param name="mode">表单模式：add 新增 / edit 编辑，默认 add</param>
     [ToolDescription("fill_form")]
-    public IToolResult FillForm([Description("字段值字典，键为字段名，值为要填入的值")] IDictionary<String, Object> values, [Description("表单模式：add 新增 / edit 编辑")] String mode = "add")
+    [DisplayName("回填表单")]
+    [Description("生成表单字段值并回填到前端表单。不写数据库，由用户确认后提交")]
+    public virtual IToolResult FillForm([Description("字段值字典，键为字段名，值为要填入的值")] IDictionary<String, Object> values, [Description("表单模式：add 新增 / edit 编辑")] String mode = "add")
     {
         var fields = mode.EqualIgnoreCase("edit") ? EditFields : AddFields;
 
@@ -86,9 +109,32 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
         return new ToolResult(ToolContent.ForUser(user), ToolContent.ForLlm(llm));
     }
 
+    /// <summary>收集服务器运行指标，供系统健康诊断使用</summary>
+    [ToolDescription("get_system_info", ReadOnly = true)]
+    [DisplayName("获取系统状态")]
+    [Description("获取当前服务器运行指标，包括 CPU 使用率、内存、进程工作集、系统信息等，供系统健康诊断使用")]
+    public virtual String GetSystemInfo()
+    {
+        var mi = MachineInfo.Current ?? new MachineInfo();
+        var process = Process.GetCurrentProcess();
+        var sysInfo = new
+        {
+            cpu = $"{mi.CpuRate:P0}",
+            temperature = mi.Temperature,
+            memoryAvailable = $"{mi.AvailableMemory / 1024 / 1024:N0}M",
+            memoryTotal = $"{mi.Memory / 1024 / 1024:N0}M",
+            workingSet = $"{process.WorkingSet64 / 1024 / 1024:N0}M",
+            openTime = TimeSpan.FromMilliseconds(Environment.TickCount64).ToString(@"dd\.hh\:mm\:ss"),
+            os = mi.OSName + " " + mi.OSVersion,
+            machineName = Environment.MachineName,
+        };
+        return sysInfo.ToJson();
+    }
+    #endregion
+
+    #region 数据收集
     /// <summary>收集当前查询条件下的数据（仅安全字段）与字段元数据，供数据洞察分析使用</summary>
-    [ToolDescription("get_data_insight_context", ReadOnly = true)]
-    public String GetDataInsightContext()
+    protected virtual String GetListContext()
     {
         // 克隆当前查询条件，避免污染缓存对象
         var pager = _pager == null ? new Pager() : new Pager(_pager);
@@ -117,8 +163,7 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
     }
 
     /// <summary>收集当前记录的值与字段元数据，供单条记录异常分析使用</summary>
-    [ToolDescription("get_record_context", ReadOnly = true)]
-    public String GetRecordContext()
+    protected virtual String GetRecordContext()
     {
         if (entityId <= 0) return "{\"error\":\"当前无记录（新增模式），请先保存或切换到详情/编辑页\"}";
 
@@ -146,26 +191,6 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
             }).ToList(),
             values,
         }.ToJson();
-    }
-
-    /// <summary>收集服务器运行指标，供系统健康诊断使用</summary>
-    [ToolDescription("get_system_info", ReadOnly = true)]
-    public String GetSystemInfo()
-    {
-        var mi = MachineInfo.Current ?? new MachineInfo();
-        var process = Process.GetCurrentProcess();
-        var sysInfo = new
-        {
-            cpu = $"{mi.CpuRate:P0}",
-            temperature = mi.Temperature,
-            memoryAvailable = $"{mi.AvailableMemory / 1024 / 1024:N0}M",
-            memoryTotal = $"{mi.Memory / 1024 / 1024:N0}M",
-            workingSet = $"{process.WorkingSet64 / 1024 / 1024:N0}M",
-            openTime = TimeSpan.FromMilliseconds(Environment.TickCount64).ToString(@"dd\.hh\:mm\:ss"),
-            os = mi.OSName + " " + mi.OSVersion,
-            machineName = Environment.MachineName,
-        };
-        return sysInfo.ToJson();
     }
     #endregion
 }
