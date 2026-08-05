@@ -46,6 +46,8 @@ public partial class EntityController<TEntity, TModel>
     public virtual ApiResponse<TEntity> EnableSelect(String keys, String reason = null)
     {
         var count = EnableOrDisableSelect(true, reason);
+        if (count <= 0)
+            return new ApiResponse<TEntity> { Code = 500, Message = "未找到可启用的记录（keys 无效或无 Enable 字段）" };
         return new ApiResponse<TEntity> { Code = 0, Message = $"共启用[{count}]个" };
     }
 
@@ -59,6 +61,8 @@ public partial class EntityController<TEntity, TModel>
     public virtual ApiResponse<TEntity> DisableSelect(String keys, String reason = null)
     {
         var count = EnableOrDisableSelect(false, reason);
+        if (count <= 0)
+            return new ApiResponse<TEntity> { Code = 500, Message = "未找到可禁用的记录（keys 无效或无 Enable 字段）" };
         return new ApiResponse<TEntity> { Code = 0, Message = $"共禁用[{count}]个" };
     }
 

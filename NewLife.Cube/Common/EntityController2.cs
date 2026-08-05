@@ -97,7 +97,16 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     protected virtual Int32 EnableOrDisableSelect(Boolean isEnable, String reason)
     {
         var count = 0;
-        var ids = GetRequest("keys").SplitAsInt();
+        // 主键可能是 Int64 雪花 ID（Int64AsString 序列化为字符串）。
+        // SplitAsInt 按 Int32 解析，超范围片段会被过滤为空数组 → 实际未更新却返回“共禁用[0]个”成功码，前端误报成功。
+        // 改用手动 Int64 解析（ToLong 无效返回 0，再过滤）。
+        var ids = GetRequest("keys")
+            .Split(",")
+            .Select(e => e.Trim())
+            .Where(e => !e.IsNullOrEmpty())
+            .Select(e => e.ToLong())
+            .Where(e => e > 0)
+            .ToArray();
         var fields = Factory.AllFields;
         if (ids.Length > 0 && fields.Any(f => f.Name.EqualIgnoreCase("enable")))
         {
