@@ -169,9 +169,21 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
     remove: (type: string, id: number | string) =>
       request<unknown>({ url: type, method: 'delete', params: { id } }),
 
-    /** 启用/禁用（须有 Update 权限；实体需含 Enable 字段） */
-    setEnable: (type: string, id: number | string, enable: boolean) =>
-      request<unknown>({ url: `${type}/SetEnable`, method: 'get', params: { id, enable } }),
+    /** 批量启用（须有 Update 权限；实体需含 Enable 字段；复用后端 EnableOrDisableSelect） */
+    enableSelect: (type: string, keys: (number | string)[], reason?: string) =>
+      request<unknown>({
+        url: `${type}/EnableSelect`,
+        method: 'get',
+        params: { keys: keys.join(','), ...(reason ? { reason } : {}) },
+      }),
+
+    /** 批量禁用（须有 Update 权限；实体需含 Enable 字段；复用后端 EnableOrDisableSelect） */
+    disableSelect: (type: string, keys: (number | string)[], reason?: string) =>
+      request<unknown>({
+        url: `${type}/DisableSelect`,
+        method: 'get',
+        params: { keys: keys.join(','), ...(reason ? { reason } : {}) },
+      }),
 
     /**
      * 批量删除，默认使用重复参数 id=1&id=2 （文档标准）。

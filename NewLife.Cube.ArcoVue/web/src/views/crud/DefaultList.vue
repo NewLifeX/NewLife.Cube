@@ -893,16 +893,16 @@ function onTableAction(payload: { action: 'detail' | 'edit' | 'delete'; row: Rec
   } else openDetail(payload.row);
 }
 
-/** 点击「启用/Enable」徽标：调用后端 SetEnable 切换启停后刷新列表 */
+/** 点击「启用/Enable」徽标：复用后端 EnableOrDisableSelect 切换启停后刷新列表 */
 async function onToggleEnable(row: Record<string, unknown>) {
   const field = listFields.value.find((f) => isEnableField(f));
   if (!field || !flags.value.canEdit) return;
   const id = getValueByKey(row, pkField.value);
   if (id == null || id === '') return;
-  const current = !!getValueByKey(row, field.name);
-  const enable = !current;
+  const enable = !getValueByKey(row, field.name);
   try {
-    await cubeApi.page.setEnable(typePath.value, id as string | number, enable);
+    if (enable) await cubeApi.page.enableSelect(typePath.value, [id as string | number]);
+    else await cubeApi.page.disableSelect(typePath.value, [id as string | number]);
     Message.success(enable ? '启用成功' : '禁用成功');
     await loadData();
   } catch (err) {

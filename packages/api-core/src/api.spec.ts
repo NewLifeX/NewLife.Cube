@@ -50,15 +50,28 @@ describe('createCommentApi', () => {
 });
 
 describe('createPageApi', () => {
-  it('setEnable hits GET /Admin/User/SetEnable with id+enable', async () => {
+  it('enableSelect hits GET /Admin/User/EnableSelect with keys', async () => {
     const request = vi.fn().mockResolvedValueOnce({ code: 0, data: {} });
     const api = createPageApi(request);
-    await api.setEnable('/Admin/User', 7, false);
+    await api.enableSelect('/Admin/User', [7]);
     expect(request).toHaveBeenCalledWith(
       expect.objectContaining({
-        url: '/Admin/User/SetEnable',
+        url: '/Admin/User/EnableSelect',
         method: 'get',
-        params: { id: 7, enable: false },
+        params: { keys: '7' },
+      }),
+    );
+  });
+
+  it('disableSelect hits GET /Admin/User/DisableSelect with keys', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: {} });
+    const api = createPageApi(request);
+    await api.disableSelect('/Admin/User', [7, 8]);
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Admin/User/DisableSelect',
+        method: 'get',
+        params: { keys: '7,8' },
       }),
     );
   });

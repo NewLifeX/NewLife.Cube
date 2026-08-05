@@ -56,3 +56,11 @@
 - [x] 7.4 卡片/看板：`cardHelpers.CardBodyField` 增 `badge`（`resolveCellBadge`）与 `enableToggle`（`isEnableField`）；`RecordCard` 渲染徽标（浅底+同色文字），Enable 徽标可点击；`CardList`/`KanbanBoard` 透传 `toggleEnable` 至 `DefaultList`。
 - [x] 7.5 卡片高度：`.card-list` 改 `align-items: start`，卡片高度按所显示字段自动伸缩；操作区以 grid 末行 + `margin-top:auto` + `justify-content:flex-start` 固定于各卡片左下角。
 - [x] 7.6 测试：`fieldBadge.spec.ts` 增 `isEnableField`（4 断言）；api-core `api.spec.ts` 增 `setEnable` URL（1 用例）；web 24 files / 173 tests、api-core 5 tests 全过；`npm run build` 与 `dotnet build NewLife.Cube`（0 错误）通过。
+
+## T8 徽标交互回退与卡片等高
+
+- [x] 8.1 撤销自定义 `SetEnable` 接口，改用既有 `EnableOrDisableSelect`：后端 `EntityController` 暴露 `EnableSelect(keys, reason)` / `DisableSelect(keys, reason)`（`[HttpGet]` + `[EntityAuthorize(Update)]`，内部复用 `EnableOrDisableSelect` 的 OnSetField/日志/批量逻辑，与 NC 版对齐）。
+- [x] 8.2 api-core `setEnable` 移除，改为 `enableSelect(type, keys, reason?)` / `disableSelect(...)`（`GET {type}/EnableSelect?keys=1,2`）；`DefaultList.onToggleEnable` 单条主键切换调用对应接口后刷新。
+- [x] 8.3 看板视图徽标与卡片视图保持一致（核验）：`KanbanBoard` 经 `RecordCard` 渲染 `CardBodyField.badge`（状态/枚举/值集），Enable 徽标可点击——上一轮 T7.4 已落地，本轮无回归。
+- [x] 8.4 卡片等高：`CardList` 挂载/数据或布局变化后测量所有 `.record-card` 最大高度，以 `min-height` 统一下发（`RecordCard` 增 `minHeight` prop，并入 `cardCssVars`），使所有卡片高度=后端返回全量对象中最高者；操作区仍经 grid 末行 + `margin-top:auto` 固定左下。
+- [x] 8.5 测试：api-core `api.spec.ts` 改/增 `enableSelect`、`disableSelect` 用例（2 条）；web 24 files / 173 tests、api-core 6 tests 全过；`npm run build` 与 `dotnet build NewLife.Cube`（0 错误）通过。

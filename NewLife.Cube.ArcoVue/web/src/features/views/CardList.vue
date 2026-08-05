@@ -1,6 +1,7 @@
 <template>
   <!-- key 强制在列数/排版变更时整表重挂，避免 scoped 样式缓存导致无感 -->
   <div
+    ref="listRef"
     class="card-list"
     :key="layoutSignature"
     :class="layoutClass"
@@ -16,6 +17,7 @@
       :layout="resolvedLayout"
       :body-columns="resolvedBodyColumns"
       :field-orientation="resolvedFieldOrientation"
+      :min-height="cardMinHeight"
       :can-view-detail="canViewDetail"
       :can-edit="canEdit"
       :can-delete="canDelete"
@@ -29,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
 import type { ColumnPref } from '@/core/utils/viewProfile';
 import type {
@@ -96,6 +98,33 @@ const layoutSignature = computed(
     `${resolvedLayout.value}:${resolvedBodyColumns.value}:${resolvedFieldOrientation.value}`,
 );
 
+/** 等高：所有卡片高度统一为“所有对象中最高卡片”的高度（后端返回全量对象取最大） */
+const listRef = ref<HTMLElement | null>(null);
+const cardMinHeight = ref(0);
+
+async function measureTallest() {
+  await nextTick();
+  const host = listRef.value;
+  if (!host) return;
+  const cards = host.querySelectorAll('.record-card');
+  let max = 0;
+  cards.forEach((c) => {
+    max = Math.max(max, (c as HTMLElement).offsetHeight);
+  });
+  if (max > 0) cardMinHeight.value = max;
+}
+
+watch(
+  () => [props.records, props.columns, layoutSignature.value],
+  () => {
+    cardMinHeight.value = 0;
+    requestAnimationFrame(measureTallest);
+  },
+  { deep: true },
+);
+
+onMounted(measureTallest);
+
 defineEmits<{
   detail: [row: Record<string, unknown>];
   edit: [row: Record<string, unknown>];
@@ -138,8 +167,7 @@ function bodyOf(row: Record<string, unknown>) {
   gap: 12px;
   padding: 4px 0 12px;
   align-content: start;
-  /* 卡片高度按所显示字段自动伸缩，不做等高拉伸；操作区仍固定在各卡片左下 */
-  align-items: start;
+  /* 所有卡片高度统一为最高卡片（由 CardList 测量后以 min-height 下发） */
 }
 .card-list--standard {
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

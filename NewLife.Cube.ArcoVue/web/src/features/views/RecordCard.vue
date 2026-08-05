@@ -69,11 +69,14 @@ const props = withDefaults(
     layout?: CardLayout;
     bodyColumns?: CardBodyColumns;
     fieldOrientation?: CardFieldOrientation;
+    /** 等高：所有卡片统一最小高度（由 CardList 取最高卡片下发） */
+    minHeight?: number;
   }>(),
   {
     layout: 'standard',
     bodyColumns: 2,
     fieldOrientation: 'vertical',
+    minHeight: 0,
   },
 );
 
@@ -105,9 +108,12 @@ const orientationClass = computed(
   () => `record-card--orient-${props.fieldOrientation === 'horizontal' ? 'horizontal' : 'vertical'}`,
 );
 
-/** 用 CSS 变量驱动列数，避免动态 class 未命中时样式不生效 */
+/** 用 CSS 变量驱动列数，避免动态 class 未命中时样式不生效；同时下发等高 min-height */
 const cardCssVars = computed(() => ({
   '--record-card-cols': String(cols.value),
+  ...(props.minHeight && props.minHeight > 0
+    ? { minHeight: `${props.minHeight}px` }
+    : {}),
 }));
 </script>
 
