@@ -11,3 +11,4 @@
 - note6: 补充迭代（横向徽标居中）：卡片横向排版（fieldOrientation=horizontal）下徽标 `align-self:center`，与前方标签垂直居中对齐不下沉；并入 tasks T9，纯样式，构建成功
 - note7: 补充迭代（卡片间距收紧）：`.record-card` grid gap 8px→4px、操作区 padding-top 4px→2px，减小字段与标题/操作按钮间隙；并入 tasks T8，纯样式，构建成功
 - note8: 验收通过（2026-08-05）：实现审计无缺口；代码审查无高危（8 项中/低记 verify 残留）；文档同步修正 3 处 SetEnable 残留 + web README 补 T6~T9；web 173 tests + api-core 6 tests 全过、web 与 NewLife.Cube 构建成功。已复盘归档 Done
+- note9: 归档后补充迭代（徽标交互完善，录 tasks T10）：列表/树徽标光标修复（移除 disable:true 强制禁用态）；Enable 徽标乐观更新（实际值即时展示+失败回滚+防并发）；后端 EnableOrDisableSelect Int64 雪花主键修复（SplitAsInt 溢出过滤致静默失败）+ count<=0 返回错误码；撤销 SetField 新增接口回归既有接口；其它 Boolean 字段徽标按单字段 Update（复用 Update 接口）切换、全视图一致。web 177 tests + api-core 6 tests 全过、构建成功。菜单「可见/必要」徽标真实点击待复验（T10.7）

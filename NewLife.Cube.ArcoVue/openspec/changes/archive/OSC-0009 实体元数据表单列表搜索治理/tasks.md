@@ -72,3 +72,13 @@
 - [x] 9.2 看板视图与卡片视图共用 `RecordCard`，样式修复同时作用于两者；Enable 徽标点击切换行为不受影响。
 - [x] 9.3 横向排版（`fieldOrientation=horizontal`）下，`.record-card--orient-horizontal .record-card-field .record-card-badge` 增 `align-self: center`——徽标与前方标签垂直居中对齐，不再随 `align-items: baseline` 文本基线下沉；value 文本仍保持基线对齐。
 - [x] 9.4 纯样式调整，无逻辑变更；`npm run build`（vue-tsc + vite）成功。
+
+## T10 归档后补充迭代（徽标交互完善：光标 / 乐观更新 / Int64 / 单字段 Update）
+
+- [x] 10.1 列表/树徽标光标修复：移除徽标列级 `disable: true`（VTable 强制渲染 not-allowed 禁用光标并覆盖 `style.cursor`，T7.3 目标实际未生效）；Enable 徽标 `pointer`、其余状态/枚举/值集徽标 `default` 正常指示（e1e3f2b8）。
+- [x] 10.2 Enable 徽标乐观更新：点击按切换后的实际值即时渲染双态徽标（启用→success、停用→danger，而非单一禁用态），失败回滚，`enableBusy` 防并发双击回跳；`url.ts` 新增 `setValueByKey`（与 `getValueByKey` 对称容错赋值）+ 3 用例（1f502266）。
+- [x] 10.3 后端 Int64 主键修复：`EnableOrDisableSelect` 原用 `SplitAsInt()`（Int32）解析 keys，Int64 雪花 ID 超范围被过滤为空数组 → 实际未更新却返回 `Code=0 共禁用[0]个`，前端误报成功、刷新仍为旧值；改手动 Int64 解析（提取 `ParseKeys`），`EnableSelect/DisableSelect` 在 `count<=0` 时返回 `Code=500` 防静默成功（dc02db49）。
+- [x] 10.4 撤销 `SetField` 新增接口：曾为全 Boolean 字段切换新加 `EntityController.SetField` / `EntityController2.SetFieldSelect` 与 api-core `setField`，按「不改后端、优先使用已有接口」规则整体撤销，回归既有 `EnableSelect/DisableSelect`（b4803a60）。
+- [x] 10.5 其它 Boolean 字段徽标点击：按**单字段 Update** 模式处理——复用既有 `Update`(PUT) 接口：`GetDetail` 拉完整详情 → 仅翻转目标字段 → `prepareSubmitPayload`（与表单保存同模式，PascalCase + 空值矩阵）→ PUT，避免直接提交最小 payload 覆盖其它字段；Enable 字段仍走 `EnableSelect/DisableSelect`；列表/树/卡片/看板全视图一致，`toggleEnable` 事件携带字段名（b1e89f74）。
+- [x] 10.6 测试：web 24 files / 177 tests（恢复 `isBooleanToggleField` 4 断言）、api-core 6 tests 全过；`npm run build`（vue-tsc + vite）成功、后端零改动。
+- [ ] 10.7 已知问题（进行中）：菜单「可见/必要」徽标真实点击待复验——2026-08-05 排查确认后端单字段 Update 链路正常（实测 PUT 生效）、菜单字段 typeName=Boolean、`canEdit=true`、直接调用 `onToggleEnable` 正常（乐观更新+提示+后端生效）；真实点击事件链路（VTable canvas 徽标 → `click_cell` → `toggleEnable`）需进一步复验。
