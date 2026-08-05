@@ -466,11 +466,22 @@ public partial class ReadOnlyEntityController<TEntity>
             catch (Exception ex) { XTrace.WriteLine("AiChat 解析 _query 失败：{0}", ex.Message); }
         }
 
-        // 构建工具：当前实体上下文 + 内置工具。CreateCubeTools 可重载以定制工具与数据逻辑
+        // 构建工具：当前实体上下文 + 内置工具 + 浏览器操作工具。CreateCubeTools 可重载以定制工具与数据逻辑
         var tools = CreateCubeTools(pager, req.Id);
         var registry = new ToolRegistry();
         registry.AddTools(tools);
         registry.AddTools(new BuiltinToolService());
+
+        // SSE 写回调：ChatAsync 与浏览器工具服务共用，浏览器工具经它下发 run_js 事件到前端
+        Func<String, Task> writeEvent = async json =>
+        {
+            await Response.WriteAsync($"data: {json}\n\n", HttpContext.RequestAborted);
+            await Response.Body.FlushAsync(HttpContext.RequestAborted);
+        };
+
+        // 浏览器工具服务：run_js 等工具经页面检查点服务下发脚本到前端执行，结果回传后端继续对话（全局 AiController.OperationResult 端点回传）
+        var user = HttpContext.User.Identity as IUser;
+        registry.AddTools(new BrowserToolService(user?.ID ?? 0) { Writer = writeEvent });
 
         // 系统提示词：注入页面上下文，保留子类重载
         var systemPrompt = BuildChatSystemPrompt(req, pager);
@@ -481,11 +492,7 @@ public partial class ReadOnlyEntityController<TEntity>
         Response.Headers["X-Accel-Buffering"] = "no";
 
         // 对话核心逻辑下沉到全局服务：会话管理、工具循环、SSE 事件、空响应兜底
-        await svc.ChatAsync(req, systemPrompt, [registry], async json =>
-        {
-            await Response.WriteAsync($"data: {json}\n\n", HttpContext.RequestAborted);
-            await Response.Body.FlushAsync(HttpContext.RequestAborted);
-        }, HttpContext.RequestAborted);
+        await svc.ChatAsync(req, systemPrompt, [registry], writeEvent, HttpContext.RequestAborted);
 
         return new EmptyResult();
     }
@@ -511,9 +518,12 @@ public partial class ReadOnlyEntityController<TEntity>
     {
         var tb = Factory.Table.DataTable;
         var name = Factory.EntityType.GetDisplayName() ?? tb.DisplayName ?? Factory.EntityType.Name;
+        // 系统名称取系统设置里的配置，空值时兜底为默认名称
+        var sysName = SysConfig?.DisplayName;
+        if (sysName.IsNullOrEmpty()) sysName = "魔方后台管理系统";
 
         var sb = Pool.StringBuilder.Get();
-        sb.AppendLine("你是魔方后台管理系统的 AI 助手，正在协助管理员操作当前页面。");
+        sb.AppendLine($"你是{sysName}的 AI 助手，正在协助管理员操作当前页面。");
         sb.AppendLine();
         sb.AppendLine($"当前实体：{name}（表 {tb.TableName}）");
         if (!tb.Description.IsNullOrEmpty()) sb.AppendLine($"实体说明：{tb.Description}");
@@ -535,14 +545,15 @@ public partial class ReadOnlyEntityController<TEntity>
         }
 
         sb.AppendLine();
-        sb.AppendLine("可用工具：get_data_context / get_form_schema / fill_form / get_system_info（详细说明见函数定义，按需调用）");
+        sb.AppendLine("可用工具：get_data_context / get_form_schema / fill_form / get_system_info / run_js（详细说明见函数定义，按需调用）");
         sb.AppendLine();
         sb.AppendLine("规则：");
         sb.AppendLine("1. 使用简体中文回答，语言简洁专业");
         sb.AppendLine("2. 用户要求分析/洞察当前数据或单条记录时，先调用 get_data_context 获取数据，再给出分析结论与建议");
         sb.AppendLine("3. 用户要求新建/填写/补全表单时，先调用 get_form_schema 了解字段，再调用 fill_form 生成值，最后提示用户检查后提交");
         sb.AppendLine("4. 用户询问系统状态/诊断时，调用 get_system_info");
-        sb.AppendLine("5. 不要编造数据；信息不足时主动询问用户澄清");
+        sb.AppendLine("5. 用户要求读取或操作当前页面元素（填写输入框、点击按钮、读取标题等）时，可调用 run_js 执行 JavaScript；脚本在用户浏览器当前页面执行，可用 document.querySelector 等定位元素；修改页面内容或提交表单等写操作前，先向用户说明将执行的操作");
+        sb.AppendLine("6. 不要编造数据；信息不足时主动询问用户澄清");
 
         return sb.Put(true);
     }

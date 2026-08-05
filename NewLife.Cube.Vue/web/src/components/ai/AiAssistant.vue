@@ -189,6 +189,62 @@ function handleTool(json: any) {
   scrollBottom();
 }
 
+/** 序列化脚本执行结果，处理循环引用/函数等无法 JSON 化的值 */
+function serializeResult(v: any): string {
+  if (v === undefined) return 'undefined';
+  if (v === null) return 'null';
+  if (typeof v === 'function') return '[Function]';
+  if (typeof v === 'symbol' || typeof v === 'bigint') return String(v);
+  if (typeof v === 'object') {
+    try {
+      const s = JSON.stringify(v);
+      return s === undefined ? String(v) : s;
+    } catch {
+      return String(v);
+    }
+  }
+  return JSON.stringify(v);
+}
+
+/** 获取浏览器操作回传端点：区域前缀 + 全局 AI 控制器 OperationResult，所有实体页面共用 */
+function getAiOperationUrl(): string {
+  const seg = props.url.split('/')[0];
+  return (seg ? seg + '/Ai/OperationResult' : 'Ai/OperationResult');
+}
+
+/** 回传浏览器操作结果到全局 AI 控制器，完成等待中的工具调用 */
+async function postOperationResult(checkpointId: string, result: string) {
+  try {
+    await fetch(getAiOperationUrl(), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(Session.get('token') ? { Authorization: `${Session.get('token')}` } : {}),
+      },
+      body: JSON.stringify({ checkpointId, result }),
+    });
+  } catch {
+    // 回传失败忽略，后端会超时自动失败
+  }
+}
+
+/** 处理后端下发的 run_js 事件：执行脚本并回传结果 */
+function handleRunJs(json: any) {
+  const checkpointId = json.checkpointId as string;
+  const script = (json.script as string) || '';
+  let result: string;
+  try {
+    const fn = new Function(script);
+    const v = fn();
+    result = JSON.stringify({ ok: true, value: serializeResult(v) });
+  } catch (e: any) {
+    result = JSON.stringify({ ok: false, error: e?.message || String(e) });
+  }
+  // 结果过大时截断，避免请求体膨胀
+  if (result.length > 8192) result = result.substring(0, 8192);
+  postOperationResult(checkpointId, result);
+}
+
 /** 发送消息 */
 async function send() {
   if (streaming.value) return;
@@ -254,6 +310,8 @@ async function send() {
           scrollBottom();
         } else if (json.type === 'tool') {
           handleTool(json);
+        } else if (json.type === 'run_js') {
+          handleRunJs(json);
         } else if (json.type === 'error') {
           am.html = `<span style="color:#c62828">⚠️ ${json.message || 'AI 调用失败'}</span>`;
           scrollBottom();

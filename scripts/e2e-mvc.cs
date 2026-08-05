@@ -93,6 +93,32 @@ if (publishResult != 0)
 Console.WriteLine("[E2E] CubeSSO 发布完成。");
 
 // ============================================================
+// 复制 SQLite 驱动（离线环境运行时联网下载插件会失败，从缓存运行目录复制）
+// ============================================================
+var pluginsDir = Path.Combine(appDir, "Plugins");
+Directory.CreateDirectory(pluginsDir);
+if (!File.Exists(Path.Combine(pluginsDir, "System.Data.SQLite.dll")))
+{
+    var cache = Directory.GetDirectories(Path.Combine(repoRoot, "Bin", "E2ETest"), "Run-*")
+        .Where(d => !String.Equals(d, runDir, StringComparison.OrdinalIgnoreCase))
+        .OrderByDescending(d => d)
+        .Select(d => Path.Combine(d, "app", "Plugins", "System.Data.SQLite.dll"))
+        .FirstOrDefault(File.Exists);
+    if (cache != null)
+    {
+        var src = Path.GetDirectoryName(cache);
+        if (src != null)
+        {
+            foreach (var f in Directory.GetFiles(src))
+                File.Copy(f, Path.Combine(pluginsDir, Path.GetFileName(f)), true);
+            Console.WriteLine("[E2E] 已从缓存复制 SQLite 驱动到 Plugins。");
+        }
+    }
+    else
+        Console.WriteLine("[E2E] ⚠ 未找到 SQLite 驱动缓存，CubeSSO 可能因插件缺失无法启动。");
+}
+
+// ============================================================
 // 构建测试项目
 // ============================================================
 

@@ -11,6 +11,47 @@
     function renderMarkdown(text) {
         if (!text) return '';
 
+        // 表格：先于行级替换处理多行块（| 表头 | + | --- | 分隔行 + 数据行）
+        text = text.replace(/((?:^\|.*\|[ \t]*\n?)+)/gm, function (block) {
+            var lines = block.replace(/\n+$/, '').split('\n');
+            if (lines.length < 2) return block;
+            // 第二行必须是分隔行（| --- | --- |，可含 : 对齐），否则不当作表格
+            if (!/^\|[\s:|-]+\|$/.test(lines[1].trim())) return block;
+            var rows = [];
+            for (var i = 0; i < lines.length; i++) {
+                var ln = lines[i].trim();
+                if (ln.length < 2 || ln.charAt(0) !== '|' || ln.charAt(ln.length - 1) !== '|') return block;
+                rows.push(ln);
+            }
+            // 解析分隔行对齐：:--- 右对齐、:---: 居中、--- 默认左对齐
+            var align = [];
+            var sep = rows[1].slice(1, -1).split('|');
+            for (var k = 0; k < sep.length; k++) {
+                var s = sep[k].trim();
+                if (s.charAt(0) === ':' && s.charAt(s.length - 1) === ':') align.push('center');
+                else if (s.charAt(s.length - 1) === ':') align.push('right');
+                else align.push('');
+            }
+            function cells(line) {
+                return line.slice(1, -1).split('|').map(function (s) { return s.trim(); });
+            }
+            function cell(tag, content, idx) {
+                var style = align[idx] ? ' style="text-align:' + align[idx] + '"' : '';
+                return '<' + tag + style + '>' + content + '</' + tag + '>';
+            }
+            var html = '<table><thead><tr>';
+            var header = cells(rows[0]);
+            for (var j = 0; j < header.length; j++) html += cell('th', header[j], j);
+            html += '</tr></thead><tbody>';
+            for (var r = 2; r < rows.length; r++) {
+                var tds = cells(rows[r]);
+                html += '<tr>';
+                for (var c = 0; c < tds.length; c++) html += cell('td', tds[c], c);
+                html += '</tr>';
+            }
+            return html + '</tbody></table>';
+        });
+
         var html = text
             // 标题
             .replace(/^### (.+)$/gm, '<h3>$1</h3>')

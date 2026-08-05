@@ -27,3 +27,13 @@ public class AiChatRequest
     /// <summary>是否流式输出（SSE）。默认 true</summary>
     public Boolean Stream { get; set; } = true;
 }
+
+/// <summary>浏览器操作回传结果。前端执行 run_js 脚本后 POST 到全局 AiController.OperationResult 端点</summary>
+public class BrowserOpResult
+{
+    /// <summary>检查点编号。与 SSE run_js 事件中的 checkpointId 对应</summary>
+    public String? CheckpointId { get; set; }
+
+    /// <summary>前端回传的结果 JSON（<c>{ok,value,error}</c>）</summary>
+    public String? Result { get; set; }
+}

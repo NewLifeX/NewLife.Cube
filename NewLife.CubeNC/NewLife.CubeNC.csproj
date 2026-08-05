@@ -69,6 +69,8 @@
     <Compile Include="..\NewLife.Cube\AI\AiFormHelper.cs" Link="AI\AiFormHelper.cs" />
     <Compile Include="..\NewLife.Cube\AI\AiInsightHelper.cs" Link="AI\AiInsightHelper.cs" />
     <Compile Include="..\NewLife.Cube\AI\AiChatRequest.cs" Link="AI\AiChatRequest.cs" />
+    <Compile Include="..\NewLife.Cube\AI\PageCheckpointService.cs" Link="AI\PageCheckpointService.cs" />
+    <Compile Include="..\NewLife.Cube\AI\BrowserToolService.cs" Link="AI\BrowserToolService.cs" />
     <Compile Include="..\NewLife.Cube\AI\CubeTools.cs" Link="AI\CubeTools.cs" />
     <Compile Include="..\NewLife.Cube\AI\IAIChatService.cs" Link="AI\IAIChatService.cs" />
     <Compile Include="..\NewLife.Cube\AI\CubeAIChatService.cs" Link="AI\CubeAIChatService.cs" />
@@ -89,6 +91,7 @@
     <Compile Include="..\NewLife.Cube\Common\ValidFormatHelper.cs" Link="Common\ValidFormatHelper.cs" />
     <Compile Include="..\NewLife.Cube\Common\EntityPageRegistry.cs" Link="Common\EntityPageRegistry.cs" />
     <Compile Include="..\NewLife.Cube\Common\ViewHelper.cs" Link="Common\ViewHelper.cs" />
+    <Compile Include="..\NewLife.Cube\Controllers\AiController.cs" Link="Controllers\AiController.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\AccessRuleModel.cs" Link="Entity\Models\AccessRuleModel.cs" />
      <Compile Include="..\NewLife.Cube\Entity\Models\AppLogModel.cs" Link="Entity\Models\AppLogModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\AppModel.cs" Link="Entity\Models\AppModel.cs" />

@@ -11,6 +11,48 @@
     /* ================= 轻量 Markdown 渲染 ================= */
     function renderMarkdown(text) {
         if (!text) return '';
+
+        // 表格：先于行级替换处理多行块（| 表头 | + | --- | 分隔行 + 数据行）
+        text = text.replace(/((?:^\|.*\|[ \t]*\n?)+)/gm, function (block) {
+            var lines = block.replace(/\n+$/, '').split('\n');
+            if (lines.length < 2) return block;
+            // 第二行必须是分隔行（| --- | --- |，可含 : 对齐），否则不当作表格
+            if (!/^\|[\s:|-]+\|$/.test(lines[1].trim())) return block;
+            var rows = [];
+            for (var i = 0; i < lines.length; i++) {
+                var ln = lines[i].trim();
+                if (ln.length < 2 || ln.charAt(0) !== '|' || ln.charAt(ln.length - 1) !== '|') return block;
+                rows.push(ln);
+            }
+            // 解析分隔行对齐：:--- 右对齐、:---: 居中、--- 默认左对齐
+            var align = [];
+            var sep = rows[1].slice(1, -1).split('|');
+            for (var k = 0; k < sep.length; k++) {
+                var s = sep[k].trim();
+                if (s.charAt(0) === ':' && s.charAt(s.length - 1) === ':') align.push('center');
+                else if (s.charAt(s.length - 1) === ':') align.push('right');
+                else align.push('');
+            }
+            function cells(line) {
+                return line.slice(1, -1).split('|').map(function (s) { return s.trim(); });
+            }
+            function cell(tag, content, idx) {
+                var style = align[idx] ? ' style="text-align:' + align[idx] + '"' : '';
+                return '<' + tag + style + '>' + content + '</' + tag + '>';
+            }
+            var html = '<table><thead><tr>';
+            var header = cells(rows[0]);
+            for (var j = 0; j < header.length; j++) html += cell('th', header[j], j);
+            html += '</tr></thead><tbody>';
+            for (var r = 2; r < rows.length; r++) {
+                var tds = cells(rows[r]);
+                html += '<tr>';
+                for (var c = 0; c < tds.length; c++) html += cell('td', tds[c], c);
+                html += '</tr>';
+            }
+            return html + '</tbody></table>';
+        });
+
         var html = text
             .replace(/^### (.+)$/gm, '<h3>$1</h3>')
             .replace(/^## (.+)$/gm, '<h2>$1</h2>')
@@ -121,6 +163,23 @@
 
     /* ================= 表单智能填充 ================= */
     /**
+     * 同步下拉插件表面 UI。bootstrap-multiselect 初始化后隐藏原生 select，仅改 value 不会刷新
+     * 按钮文字与勾选状态，需调用插件 refresh；chosen 需 trigger('chosen:updated')；其余监听 change。
+     * @param {jQuery} $el 下拉元素
+     */
+    function syncSelectPlugin($el) {
+        if (!jQuery) return;
+        if (jQuery.fn.multiselect && $el.data('multiselect')) {
+            // bootstrap-multiselect：值写入隐藏原生 select，调用插件刷新重建按钮文字与勾选
+            $el.multiselect('refresh');
+        } else if (jQuery.fn.chosen && $el.hasClass('chosen-select')) {
+            $el.trigger('chosen:updated');
+        } else {
+            $el.trigger('change'); // select2 等监听 change
+        }
+    }
+
+    /**
      * 将 AI 返回的 {字段名:值} 填入当前表单控件。
      * 魔方表单所有控件均按 name=字段名 渲染（TextBox/CheckBox/DropDownList/textarea），
      * 因此可按字段名定位控件并按其类型填值。
@@ -144,8 +203,17 @@
                     $el.bootstrapSwitch('state', !!v);
                 }
             } else if (el.tagName === 'SELECT') {
-                el.value = String(v);
-                if (jQuery) $el.trigger('change'); // select2/multiselect 监听 change
+                if (el.multiple) {
+                    // 多选：支持数组或逗号串，逐个匹配并置选中
+                    var vals = (v instanceof Array ? v : String(v).split(',')).map(function (s) { return String(s).trim(); });
+                    for (var i = 0; i < el.options.length; i++) {
+                        el.options[i].selected = vals.indexOf(el.options[i].value) >= 0;
+                    }
+                } else {
+                    el.value = String(v);
+                }
+                // 同步下拉插件 UI（bootstrap-multiselect 隐藏原生 select，需刷新表面按钮/勾选）
+                syncSelectPlugin($el);
             } else if (el.tagName === 'TEXTAREA') {
                 el.value = v == null ? '' : String(v);
                 // 富文本编辑器实例同步（summernote 等）
@@ -182,6 +250,72 @@
         bubble.innerHTML = html;
     }
 
+    /* ================= 浏览器操作（run_js） ================= */
+    /**
+     * 获取 AI 端点基础路径：去掉当前页面动作段（/Index /Add /Edit /Detail/{id}），
+     * 得到控制器路径；否则在表单/详情页会拼出 /Admin/User/Add/AiChat 这类错误路由
+     */
+    function getAiBasePath() {
+        return location.pathname
+            .replace(/\/Index$/i, '')
+            .replace(/\/(?:Add|Edit|Detail)(?:\/\d+)?$/i, '');
+    }
+
+    /**
+     * 获取浏览器操作回传端点：魔方后台区域前缀（如 /Admin）+ 全局 AI 控制器 OperationResult，
+     * 所有实体页面共用，不在各实体控制器上重复增加接口
+     */
+    function getAiOperationUrl() {
+        var m = location.pathname.match(/^\/([^\/]+)/);
+        return (m ? '/' + m[1] : '') + '/Ai/OperationResult';
+    }
+
+    /** 序列化脚本执行结果，处理循环引用/函数等无法 JSON 化的值 */
+    function serializeResult(v) {
+        if (v === undefined) return 'undefined';
+        if (v === null) return 'null';
+        if (typeof v === 'function') return '[Function]';
+        if (typeof v === 'symbol' || typeof v === 'bigint') return String(v);
+        if (typeof v === 'object') {
+            try {
+                var s = JSON.stringify(v);
+                return s === undefined ? String(v) : s;
+            } catch (e) {
+                return String(v);
+            }
+        }
+        return JSON.stringify(v);
+    }
+
+    /** 处理后端下发的 run_js 事件：执行脚本并回传结果 */
+    function handleRunJs(json) {
+        var checkpointId = json.checkpointId;
+        var script = json.script || '';
+        var result;
+        try {
+            var fn = new Function(script);
+            var v = fn();
+            result = JSON.stringify({ ok: true, value: serializeResult(v) });
+        } catch (e) {
+            result = JSON.stringify({ ok: false, error: (e && e.message) || String(e) });
+        }
+        // 结果过大时截断，避免请求体膨胀
+        if (result.length > 8192) result = result.substring(0, 8192);
+        postOperationResult(checkpointId, result);
+    }
+
+    /** 回传浏览器操作结果到全局 AI 控制器，完成等待中的工具调用 */
+    function postOperationResult(checkpointId, result) {
+        fetch(getAiOperationUrl(), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ checkpointId: checkpointId, result: result })
+        }).catch(function () {
+            // 回传失败忽略，后端会超时自动失败
+        });
+    }
+
     /* ================= 发送消息 ================= */
     function sendMessage(text) {
         if (streaming) return;
@@ -198,11 +332,8 @@
         var bubble = appendAssistant();
         var full = '';
 
-        // 构造 AiChat 端点：去掉当前页面动作段（/Index /Add /Edit /Detail/{id}），
-        // 得到控制器路径 + /AiChat；否则在表单/详情页会拼出 /Admin/User/Add/AiChat 这类错误路由
-        var path = location.pathname
-            .replace(/\/Index$/i, '')
-            .replace(/\/(?:Add|Edit|Detail)(?:\/\d+)?$/i, '');
+        // 构造 AiChat 端点：控制器路径 + /AiChat（去掉当前页面动作段）
+        var path = getAiBasePath();
         var url = path + '/AiChat';
 
         fetch(url, {
@@ -260,6 +391,8 @@
                             scrollBottom();
                         } else if (json.type === 'tool') {
                             appendTool(json.event, json.id, json.name, json.value);
+                        } else if (json.type === 'run_js') {
+                            handleRunJs(json);
                         } else if (json.type === 'error') {
                             if (isFirst) { bubble.innerHTML = ''; isFirst = false; }
                             bubble.innerHTML = '<span style="color:#c62828">⚠️ ' + (json.message || 'AI 调用失败') + '</span>';
@@ -275,6 +408,45 @@
         });
     }
 
+    /* ================= 面板拖动 ================= */
+    /**
+     * 拖动面板标题栏移动对话窗口位置。拖起时从 right/bottom 定位切换为 left/top，
+     * 按视口约束防止拖出屏幕；不做位置持久化，重开面板回到右下角默认位置。
+     * @param {HTMLElement} panel 面板元素
+     * @param {HTMLElement} header 标题栏拖动手柄
+     */
+    function initPanelDrag(panel, header) {
+        var dragging = false;
+        var startX = 0, startY = 0, startLeft = 0, startTop = 0;
+        header.addEventListener('mousedown', function (e) {
+            // 排除清空/关闭等按钮
+            if (e.target.closest('button')) return;
+            dragging = true;
+            var rect = panel.getBoundingClientRect();
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = rect.left;
+            startTop = rect.top;
+            // 从 right/bottom 切换为 left/top 接管定位
+            panel.style.right = 'auto';
+            panel.style.bottom = 'auto';
+            panel.style.left = startLeft + 'px';
+            panel.style.top = startTop + 'px';
+            e.preventDefault();
+        });
+        document.addEventListener('mousemove', function (e) {
+            if (!dragging) return;
+            var left = startLeft + (e.clientX - startX);
+            var top = startTop + (e.clientY - startY);
+            // 约束：至少保留 60px 在视口内
+            left = Math.max(-(panel.offsetWidth - 60), Math.min(left, window.innerWidth - 60));
+            top = Math.max(0, Math.min(top, window.innerHeight - 40));
+            panel.style.left = left + 'px';
+            panel.style.top = top + 'px';
+        });
+        document.addEventListener('mouseup', function () { dragging = false; });
+    }
+
     /* ================= 初始化 ================= */
     function init() {
         var fab = getEl('aiAssistantFab');
@@ -286,6 +458,10 @@
         });
         var close = getEl('aiClosePanel');
         if (close) close.addEventListener('click', function () { panel.style.display = 'none'; });
+
+        // 面板拖动：拖标题栏移动对话窗口位置
+        var header = panel.querySelector('.ai-panel-header');
+        if (header) initPanelDrag(panel, header);
 
         var clear = getEl('aiClearChat');
         if (clear) clear.addEventListener('click', function () {
