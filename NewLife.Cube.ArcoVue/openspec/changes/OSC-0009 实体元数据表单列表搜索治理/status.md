@@ -8,3 +8,4 @@
 - note3: 补充迭代（徽标交互）：Enable 徽标可点击调后端 SetEnable（列表/树/卡片/看板全视图）；非 Enable 状态/枚举/值集徽标悬停光标不变；卡片/看板状态字段渲染为徽标；卡片高度按字段自动伸缩、操作区固定左下。web 173 tests + api-core 5 tests 全过、构建成功
 - note4: 补充迭代（回退与等高）：撤销自定义 SetEnable，改用既有 EnableOrDisableSelect 暴露的 EnableSelect/DisableSelect（与 NC 对齐）；看板徽标与卡片一致核验；卡片视图所有卡片高度统一为全量对象最高者（min-height 下发）、操作区固定左下。web 173 tests + api-core 6 tests 全过、构建成功
 - note5: 补充迭代（徽标宽度自适应）：看板/卡片徽标 `align-self:flex-start` + nowrap，宽度按文案自适应（修复 vertical flex stretch 拉伸）；纯样式，构建成功
+- note6: 补充迭代（横向徽标居中）：卡片横向排版（fieldOrientation=horizontal）下徽标 `align-self:center`，与前方标签垂直居中对齐不下沉；并入 tasks T9，纯样式，构建成功

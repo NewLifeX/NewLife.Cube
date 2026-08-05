@@ -65,8 +65,9 @@
 - [x] 8.4 卡片等高：`CardList` 挂载/数据或布局变化后测量所有 `.record-card` 最大高度，以 `min-height` 统一下发（`RecordCard` 增 `minHeight` prop，并入 `cardCssVars`），使所有卡片高度=后端返回全量对象中最高者；操作区仍经 grid 末行 + `margin-top:auto` 固定左下。
 - [x] 8.5 测试：api-core `api.spec.ts` 改/增 `enableSelect`、`disableSelect` 用例（2 条）；web 24 files / 173 tests、api-core 6 tests 全过；`npm run build` 与 `dotnet build NewLife.Cube`（0 错误）通过。
 
-## T9 看板/卡片徽标宽度自适应
+## T9 看板/卡片徽标样式（宽度自适应 + 横向居中）
 
 - [x] 9.1 `RecordCard` 徽标样式：`.record-card-badge` 增 `align-self: flex-start` + `max-width: 100%` + `box-sizing: border-box`——修复 vertical 布局（flex `column`）下交叉轴 `stretch` 把徽标拉伸到整行宽的问题；结合 `inline-block` + `white-space: nowrap`，徽标宽度严格按文案自适应。
 - [x] 9.2 看板视图与卡片视图共用 `RecordCard`，样式修复同时作用于两者；Enable 徽标点击切换行为不受影响。
-- [x] 9.3 纯样式调整，无逻辑变更；`npm run build`（vue-tsc + vite）成功。
+- [x] 9.3 横向排版（`fieldOrientation=horizontal`）下，`.record-card--orient-horizontal .record-card-field .record-card-badge` 增 `align-self: center`——徽标与前方标签垂直居中对齐，不再随 `align-items: baseline` 文本基线下沉；value 文本仍保持基线对齐。
+- [x] 9.4 纯样式调整，无逻辑变更；`npm run build`（vue-tsc + vite）成功。

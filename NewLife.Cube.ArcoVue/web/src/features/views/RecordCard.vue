@@ -191,6 +191,10 @@ const cardCssVars = computed(() => ({
   flex: 1;
   min-width: 0;
 }
+.record-card--orient-horizontal .record-card-field .record-card-badge {
+  /* 横向排版：徽标与前方标签垂直居中对齐，不随文本基线下沉 */
+  align-self: center;
+}
 .record-card-field .label {
   color: var(--color-text-3);
 }
