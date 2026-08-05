@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   defaultBadgeColumnWidth,
   isBadgeField,
+  isBooleanToggleField,
   isEnableField,
   resolveCellBadge,
   resolveCellLabel,
@@ -44,5 +45,12 @@ describe('fieldBadge', () => {
     expect(isEnableField(f({ name: 'enable', typeName: 'Boolean' }))).toBe(true);
     expect(isEnableField(f({ name: 'Status', typeName: 'Int32' }))).toBe(false);
     expect(isEnableField(f({ name: 'Enabled', typeName: 'Boolean' }))).toBe(false);
+  });
+
+  it('detects any Boolean field for clickable toggle', () => {
+    expect(isBooleanToggleField(f({ name: 'Enable', typeName: 'Boolean' }))).toBe(true);
+    expect(isBooleanToggleField(f({ name: 'Visible', typeName: 'Boolean' }))).toBe(true);
+    expect(isBooleanToggleField(f({ name: 'Status', typeName: 'Int32' }))).toBe(false);
+    expect(isBooleanToggleField(f({ name: 'Name', typeName: 'String' }))).toBe(false);
   });
 });

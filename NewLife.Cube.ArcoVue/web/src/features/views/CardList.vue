@@ -24,7 +24,7 @@
       @detail="$emit('detail', $event)"
       @edit="$emit('edit', $event)"
       @delete="$emit('delete', $event)"
-      @toggle-enable="$emit('toggleEnable', $event)"
+      @toggle-enable="(row, field) => $emit('toggleEnable', row, field)"
     />
     <a-empty v-if="!records.length" description="暂无数据" />
   </div>
@@ -129,7 +129,7 @@ defineEmits<{
   detail: [row: Record<string, unknown>];
   edit: [row: Record<string, unknown>];
   delete: [row: Record<string, unknown>];
-  toggleEnable: [row: Record<string, unknown>];
+  toggleEnable: [row: Record<string, unknown>, field: string];
 }>();
 
 const exclude = computed(() =>

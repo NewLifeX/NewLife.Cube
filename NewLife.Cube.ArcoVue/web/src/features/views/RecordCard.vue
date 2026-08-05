@@ -26,7 +26,7 @@
           class="record-card-badge"
           :class="{ 'record-card-badge--toggle': item.enableToggle }"
           :style="badgeStyle(item)"
-          @click.stop="item.enableToggle && $emit('toggleEnable', record)"
+          @click.stop="item.enableToggle && $emit('toggleEnable', record, item.key)"
         >
           {{ item.badge.label }}
         </span>
@@ -95,7 +95,7 @@ defineEmits<{
   detail: [row: Record<string, unknown>];
   edit: [row: Record<string, unknown>];
   delete: [row: Record<string, unknown>];
-  toggleEnable: [row: Record<string, unknown>];
+  toggleEnable: [row: Record<string, unknown>, field: string];
 }>();
 
 const cols = computed(() => {

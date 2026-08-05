@@ -1,6 +1,6 @@
 import type { FieldMeta } from '@/core/types/field';
 import type { ColumnPref } from '@/core/utils/viewProfile';
-import { isEnableField, resolveCellBadge, resolveCellLabel, type CellBadge } from '@/core/utils/fieldBadge';
+import { isBooleanToggleField, resolveCellBadge, resolveCellLabel, type CellBadge } from '@/core/utils/fieldBadge';
 import { getValueByKey } from '@/core/utils/url';
 import type { CardMapping, KanbanMapping } from '@/core/utils/viewMapping';
 
@@ -70,7 +70,8 @@ export function buildCardBodyFields(
       value,
       fullRow: isCardBodyFieldFullRow(field, value),
       badge,
-      enableToggle: !!field && isEnableField(field),
+      // Boolean 字段徽标（Enable 及任意 Boolean 字段）：有 Update 权限时可点击切换状态
+      enableToggle: !!field && isBooleanToggleField(field),
     });
     if (out.length >= 8) break;
   }
