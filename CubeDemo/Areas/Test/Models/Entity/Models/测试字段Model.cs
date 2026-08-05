@@ -88,6 +88,12 @@ public partial class 测试字段Model : IModel
 
     /// <summary>用户。singleSelect，后端下发 lovCode 走 LOV 单选</summary>
     public String UserId { get; set; }
+
+    /// <summary>下拉表格。lovTable，后端下发 List.* 类型 lovCode，走 LOV 弹窗表格选择</summary>
+    public Int32 ListVal { get; set; }
+
+    /// <summary>下拉表格(多选)。lovTableMulti，后端下发 List.* 类型 lovCode，走 LOV 弹窗表格多选，存储逗号分隔的 id</summary>
+    public String ListMVal { get; set; }
     #endregion
 
     #region 获取/设置 字段值
@@ -125,6 +131,8 @@ public partial class 测试字段Model : IModel
                 "SingleVal" => SingleVal,
                 "MultiVal" => MultiVal,
                 "UserId" => UserId,
+                "ListVal" => ListVal,
+                "ListMVal" => ListMVal,
                 _ => this.GetValue(name, false),
             };
         }
@@ -157,6 +165,8 @@ public partial class 测试字段Model : IModel
                 case "SingleVal": SingleVal = value.ToInt(); break;
                 case "MultiVal": MultiVal = Convert.ToString(value); break;
                 case "UserId": UserId = Convert.ToString(value); break;
+                case "ListVal": ListVal = value.ToInt(); break;
+                case "ListMVal": ListMVal = Convert.ToString(value); break;
                 default: this.SetValue(name, value); break;
             }
         }
@@ -193,6 +203,8 @@ public partial class 测试字段Model : IModel
         SingleVal = model.SingleVal;
         MultiVal = model.MultiVal;
         UserId = model.UserId;
+        ListVal = model.ListVal;
+        ListMVal = model.ListMVal;
     }
     #endregion
 }

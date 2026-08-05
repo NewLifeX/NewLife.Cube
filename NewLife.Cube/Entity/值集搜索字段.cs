@@ -252,7 +252,7 @@ public partial class LovSearchField : IEntity<LovSearchFieldModel>
 
     #region 高级查询
     /// <summary>高级查询</summary>
-    /// <param name="required">是否必填</param>
+    /// <param name="@required">是否必填</param>
     /// <param name="start">更新时间开始</param>
     /// <param name="end">更新时间结束</param>
     /// <param name="key">关键字</param>

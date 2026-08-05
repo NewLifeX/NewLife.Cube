@@ -1,6 +1,6 @@
 # UI 规范
 
-> **状态：当前。** 这是前端 UI 的唯一权威规范；设计方法论和检查单位于 `../skills/cube-design/`。
+> **状态：当前。** 这是前端 UI 的唯一权威规范；设计方法论与 Element Plus / Tailwind 分工见 [ADR 0003](../decisions/0003-element-plus-tailwind-design-system.md)。
 
 ## 系统边界
 
@@ -8,6 +8,7 @@
 - Tailwind 负责页面级 `flex`、`grid`、间距和响应式布局。
 - `src/theme/tailwind.css` 将 Tailwind 语义类映射到 Element Plus `--el-*` 变量；主题切换时 UI 必须自动跟随。
 - 框架已有业务组件优先于 Element Plus，Element Plus 优先于新建自定义组件。
+- 组件定制（如 `CubeTable` 插槽）同样必须遵守上述令牌规则；详见 [CubeTable 引擎](../architecture/cube-engine.md) 与 [页面定制](../guides/customize-page.md)。
 
 页面级布局禁止同时使用 Tailwind 栅格与 `el-row`/`el-col`；后者仅适用于 `el-form` 内的字段网格。理由见 [ADR 0003](../decisions/0003-element-plus-tailwind-design-system.md)。
 

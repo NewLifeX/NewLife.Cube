@@ -3,9 +3,9 @@
 ## 强制选择扩展层级
 
 1. 后端已有标准实体控制器、菜单和字段元数据且默认 CRUD 足够：只配置后端能力并验证，前端不新建页面。
-2. 默认 CRUD 只差搜索栏、工具栏、表格或表单等局部能力：新建 Section 覆盖，见 [customize-page.md](./customize-page.md)。
-3. 需求需要独特的信息架构、连续工作流、复杂可视化或跨实体协调：在目标应用建立 `index.vue` 完整页面。
-4. 需求会让多个控制器或应用受益：优先评估回流 `core/views/`、共享组件或字段元数据契约，不要复制多个业务页面。
+2. 默认 CRUD 只差搜索栏、工具栏、表格或表单等局部能力：用 `CubeTable` 具名插槽覆盖，见 [customize-page.md](./customize-page.md)。
+3. 需求需要独特的信息架构、连续工作流、复杂可视化或跨实体协调：在目标应用建立 `index.vue` 完整页面（可 `useCubeEngine({ routePath })` + `:context` 自定义引擎）。
+4. 需求会让多个控制器或应用受益：优先评估回流 `core/components/CubeTable/`、`core/engine/`、共享组件或字段元数据契约，不要复制多个业务页面。
 
 不要先手写 `router.addRoute()`；菜单动态路由与页面解析已在框架处理。
 完整决策树见 [愿景与路线图](../product/vision-and-roadmap.md)；AI 的执行顺序见 [ai-iteration.md](./ai-iteration.md)。

@@ -27,7 +27,8 @@
   ],
   "scripts": {
     "build": "tsup src/index.ts src/pinia.ts src/zustand.ts --format esm,cjs --dts",
-    "dev": "tsup src/index.ts src/pinia.ts src/zustand.ts --format esm,cjs --dts --watch"
+    "dev": "tsup src/index.ts src/pinia.ts src/zustand.ts --format esm,cjs --dts --watch",
+    "postinstall": "pnpm build"
   },
   "dependencies": {
     "@cube/api-core": "workspace:*",
@@ -39,8 +40,12 @@
     "zustand": ">=4.0.0"
   },
   "peerDependenciesMeta": {
-    "pinia": { "optional": true },
-    "zustand": { "optional": true }
+    "pinia": {
+      "optional": true
+    },
+    "zustand": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "pinia": "^3.0.0",

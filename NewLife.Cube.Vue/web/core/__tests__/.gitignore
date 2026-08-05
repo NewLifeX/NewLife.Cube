@@ -1,0 +1,5 @@
+# 截图产物（由 LovSelectTable.shots.mjs 生成，纯验证产物，不入库）
+shots/
+
+# 运行日志
+*.log

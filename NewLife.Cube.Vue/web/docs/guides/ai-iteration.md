@@ -6,7 +6,7 @@
 
 1. 阅读 `docs/README.md`、相关 architecture/reference/standards，以及目标控制器、菜单、应用视图。
 2. 判断需求是否已有后端控制器、菜单与字段元数据。
-3. 把需求归类为：默认 CRUD 验证、Section 覆盖、完整页面、框架能力回流或后端契约缺口。
+3. 把需求归类为：默认 CRUD 验证、CubeTable 插槽定制、完整页面、框架能力回流或后端契约缺口。
 4. 选择能验证结论的最窄检查：打开默认页面、检查菜单路径、运行单元测试或请求目标 API。
 
 没有完成这一步，不得直接生成整页 CRUD。
@@ -16,12 +16,12 @@
 | 情况                                   | 默认动作                                         |
 | -------------------------------------- | ------------------------------------------------ |
 | 控制器 + 菜单 + 元数据已满足           | 不写页面；验证默认 CRUD                          |
-| 仅需搜索、工具栏、表格、表单等局部差异 | 在应用 `views/<route>/` 添加 Section 覆盖        |
-| 需要独特工作流、复杂视觉或跨实体协调   | 创建该路径的 `index.vue` 完整页面                |
-| 多处重复的字段/交互/覆盖模式           | 改进 `core/views/`、共享组件或元数据契约         |
+| 仅需搜索、工具栏、表格、表单等局部差异 | 在应用 `views/<route>/index.vue` 用 `CubeTable` 具名插槽覆盖（见 [customize-page.md](../guides/customize-page.md)） |
+| 需要独特工作流、复杂视觉或跨实体协调   | 创建该路径的 `index.vue` 完整页面（可 `useCubeEngine` + `:context`） |
+| 多处重复的字段/交互/覆盖模式           | 改进 `core/components/CubeTable/`、`core/engine/` 或元数据契约 |
 | 缺少字段语义、权限或 API 能力          | 明确记录为后端契约缺口，先补后端而非伪造前端状态 |
 
-路径和覆盖名称以 [route-conventions.md](../reference/route-conventions.md) 与 `SectionKeyMap` 为准。
+路径与插槽约定以 [route-conventions.md](../reference/route-conventions.md) 为准；旧 Section 覆盖（`SectionKeyMap`）为遗留机制，新页面不再使用。
 
 ## 3. 实现时必须保留的边界
 
@@ -43,7 +43,7 @@
 
 AI 每次交付应简明说明：
 
-- 选择的扩展层级：默认 CRUD / Section / 完整页面 / 框架回流。
+- 选择的扩展层级：默认 CRUD / CubeTable 插槽 / 完整页面 / 框架回流。
 - 复用的控制器、菜单、默认能力和关键路径。
 - 验证结果与未执行项。
 - 已更新的文档或需要后端配合的契约缺口。

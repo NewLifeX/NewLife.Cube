@@ -68,6 +68,8 @@
         <Column Name="SingleVal" DataType="Int32" ItemType="singleSelect" Nullable="True" Description="单选。singleSelect，后端下发 lovCode 走 LOV 单选" Category="值集" />
         <Column Name="MultiVal" DataType="String" ItemType="multipleSelect" Length="200" Description="多选。multipleSelect，后端下发 lovCode 走 LOV 多选，存储逗号分隔的值" Category="值集" />
         <Column Name="UserId" DataType="String" ItemType="singleSelect" Length="200" Description="用户。singleSelect，后端下发 lovCode 走 LOV 单选" Category="值集" />
+        <Column Name="ListVal" DataType="Int32" ItemType="lovTable" Nullable="True" Description="下拉表格。lovTable，后端下发 List.* 类型 lovCode，走 LOV 弹窗表格选择" Category="值集" />
+        <Column Name="ListMVal" DataType="String" ItemType="lovTableMulti" Length="200" Description="下拉表格(多选)。lovTableMulti，后端下发 List.* 类型 lovCode，走 LOV 弹窗表格多选，存储逗号分隔的 id" Category="值集" />
       </Columns>
     </Table>
   </Tables>

@@ -41,6 +41,9 @@ public partial class LovListConfigModel
     /// <summary>固定参数。每次请求附加的固定参数，JSON格式</summary>
     public String FixedParams { get; set; }
 
+    /// <summary>是否代理请求。true=后端代理转发；false=前端直连 RequestUrl</summary>
+    public Boolean ProxyRequest { get; set; }
+
     /// <summary>创建用户</summary>
     public Int32 CreateUserID { get; set; }
 
@@ -78,6 +81,7 @@ public partial class LovListConfigModel
         DataPath = model.DataPath;
         TotalPath = model.TotalPath;
         FixedParams = model.FixedParams;
+        ProxyRequest = model.ProxyRequest;
         CreateUserID = model.CreateUserID;
         CreateIP = model.CreateIP;
         CreateTime = model.CreateTime;

@@ -16,18 +16,18 @@
 
 | 位置                                                   | 用途         |
 | ------------------------------------------------------ | ------------ |
-| `core/components/LovSelect.vue` / `LovSelectTable.vue` | LOV 值集选择 |
+| `core/components/LovSelect.vue` / `LovSelectTable/`（含 `index.vue` 入口） | LOV 值集选择 |
 | `core/components/Uploader.vue`                         | 上传         |
 | `core/components/RichEditor.vue`                       | 富文本编辑   |
 | `core/components/JsonEditor.vue`                       | JSON 编辑    |
 | `core/components/IconSelector.vue`                     | 图标选择     |
 | `core/components/Notification.ts`                      | 统一通知入口 |
 
-`CbTable`、`CubeSearch`、`CubePager` 等旧封装目前未接入默认页面渲染链，不应为新业务页面直接选用。列表、搜索和分页优先使用默认页面及其 `core/views/components/` Section；只有完成独立迁移决策后，才能重新将这些旧组件列为可复用入口。
+`CbTable`、`CubeSearch`、`CubePager` 等旧封装目前未接入默认页面渲染链，不应为新业务页面直接选用。列表、搜索和分页优先使用默认 `CubeTable`（见 [cube-engine.md](../architecture/cube-engine.md) / [customize-page.md](../guides/customize-page.md)）；Section 覆盖为遗留机制（见 [ADR 0005](../decisions/0005-cube-engine-context.md)），不再新增。
 
 ## 扩展入口
 
-- 页面局部替换：Section 覆盖，见 [customize-page.md](../guides/customize-page.md)。
-- 对象关联选择：使用 `LovSelect`/`LovSelectTable`，对应开发技能 `../../skills/cube-lov/`。
-- 布局：`core/layouts/` 与 `core/composables/useLayout.ts`，对应开发技能 `../../skills/cube-layout/`。
-- 命令式弹窗：遵循 `../../skills/modal-organize/`。
+- 页面局部定制：`CubeTable` 具名插槽，见 [customize-page.md](../guides/customize-page.md)。
+- 对象关联选择：使用 `LovSelect`/`LovSelectTable`。
+- 布局：`core/layouts/` 与 `core/composables/useLayout.ts`。
+- 命令式弹窗：参考 `core/composables/useModal.ts`。
