@@ -124,7 +124,8 @@ const cardCssVars = computed(() => ({
   padding: 12px;
   background: var(--color-bg-2);
   display: grid;
-  gap: 8px;
+  /* 紧凑排版：收紧标题/图片/字段/操作区之间的间隙 */
+  gap: 4px;
   min-width: 0;
   grid-template-areas:
     'title'
@@ -227,7 +228,7 @@ const cardCssVars = computed(() => ({
   justify-content: flex-start;
   gap: 6px;
   margin-top: auto;
-  padding-top: 4px;
+  padding-top: 2px;
 }
 
 .record-card--row:not(.record-card--no-image) {

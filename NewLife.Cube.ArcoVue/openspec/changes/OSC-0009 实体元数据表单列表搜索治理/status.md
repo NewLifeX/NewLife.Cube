@@ -9,3 +9,4 @@
 - note4: 补充迭代（回退与等高）：撤销自定义 SetEnable，改用既有 EnableOrDisableSelect 暴露的 EnableSelect/DisableSelect（与 NC 对齐）；看板徽标与卡片一致核验；卡片视图所有卡片高度统一为全量对象最高者（min-height 下发）、操作区固定左下。web 173 tests + api-core 6 tests 全过、构建成功
 - note5: 补充迭代（徽标宽度自适应）：看板/卡片徽标 `align-self:flex-start` + nowrap，宽度按文案自适应（修复 vertical flex stretch 拉伸）；纯样式，构建成功
 - note6: 补充迭代（横向徽标居中）：卡片横向排版（fieldOrientation=horizontal）下徽标 `align-self:center`，与前方标签垂直居中对齐不下沉；并入 tasks T9，纯样式，构建成功
+- note7: 补充迭代（卡片间距收紧）：`.record-card` grid gap 8px→4px、操作区 padding-top 4px→2px，减小字段与标题/操作按钮间隙；并入 tasks T8，纯样式，构建成功

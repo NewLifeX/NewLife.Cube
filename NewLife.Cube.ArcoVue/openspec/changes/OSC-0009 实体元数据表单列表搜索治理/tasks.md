@@ -64,6 +64,7 @@
 - [x] 8.3 看板视图徽标与卡片视图保持一致（核验）：`KanbanBoard` 经 `RecordCard` 渲染 `CardBodyField.badge`（状态/枚举/值集），Enable 徽标可点击——上一轮 T7.4 已落地，本轮无回归。
 - [x] 8.4 卡片等高：`CardList` 挂载/数据或布局变化后测量所有 `.record-card` 最大高度，以 `min-height` 统一下发（`RecordCard` 增 `minHeight` prop，并入 `cardCssVars`），使所有卡片高度=后端返回全量对象中最高者；操作区仍经 grid 末行 + `margin-top:auto` 固定左下。
 - [x] 8.5 测试：api-core `api.spec.ts` 改/增 `enableSelect`、`disableSelect` 用例（2 条）；web 24 files / 173 tests、api-core 6 tests 全过；`npm run build` 与 `dotnet build NewLife.Cube`（0 错误）通过。
+- [x] 8.6 卡片内部间距收紧：`.record-card` grid `gap` 8px→4px、`.record-card-ops` `padding-top` 4px→2px，减小字段区与顶部标题/底部操作按钮的间隙；纯样式，构建成功。
 
 ## T9 看板/卡片徽标样式（宽度自适应 + 横向居中）
 
