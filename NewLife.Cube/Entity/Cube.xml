@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <EntityModel xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="https://newlifex.com https://newlifex.com/Model202509.xsd" Document="https://newlifex.com/xcode/model" ModelVersion="2.0.2026.130" xmlns="https://newlifex.com/Model202509.xsd">
   <Option>
     <!--类名模板。其中{name}替换为Table.Name，如{name}Model/I{name}Dto等-->
@@ -759,10 +759,12 @@
         <Column Name="View" DataType="String" Description="视图。table/tree/card/gantt" />
         <Column Name="ColumnsJson" DataType="String" Length="-1" Description="列布局。JSON 数组（与活跃命名视图同步）" />
         <Column Name="ViewsJson" DataType="String" Length="-1" Description="命名视图集合。JSON 数组" />
-        <Column Name="ActiveViewId" DataType="String" Length="50" Description="当前激活的命名视图 Id" />
+        <Column Name="ActiveViewId" DataType="String" Description="当前激活的命名视图 Id" />
         <Column Name="GanttJson" DataType="String" Length="-1" Description="甘特映射。JSON" />
         <Column Name="CardJson" DataType="String" Length="-1" Description="卡片映射。JSON" />
         <Column Name="FiltersJson" DataType="String" Length="-1" Description="筛选记忆。JSON" />
+        <Column Name="PageSize" DataType="Int32" Description="页面条数。每页显示记录数，0 表示未配置" />
+        <Column Name="FormJson" DataType="String" Length="-1" Description="表单布局。JSON：add/edit/detail 的字段顺序/显隐/分组折叠" />
         <Column Name="Version" DataType="Int32" Description="版本。配置契约版本" />
         <Column Name="CreateUserId" DataType="Int32" Description="创建者" Category="扩展" />
         <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />

@@ -1,4 +1,5 @@
 import type { FieldMeta } from '@/core/types/field';
+import type { FormLayout } from '@/core/utils/viewProfile';
 
 export interface FieldGroup {
   /** 空字符串表示未分组 */
@@ -42,6 +43,64 @@ export function groupFieldsByCategory(fields: FieldMeta[]): FieldGroup[] {
     title: resolveCategoryTitle(category),
     fields: map.get(category)!,
   }));
+}
+
+/**
+ * 按字段集归一化表单布局（OSC-0013）：
+ * order/hidden 去重且仅保留当前字段集的 canonical name；collapsedCategories 仅保留存在的非空 Category。
+ */
+export function normalizeFormLayout(
+  layout: FormLayout | null | undefined,
+  fields: FieldMeta[],
+): FormLayout {
+  if (!layout) return { order: [], hidden: [], collapsedCategories: [] };
+  const names = new Set(fields.map((f) => f.name));
+  const categories = new Set(
+    fields.map((f) => (f.category ?? '').trim()).filter(Boolean),
+  );
+  return {
+    order: [...new Set(layout.order.filter((n) => names.has(n)))],
+    hidden: [...new Set(layout.hidden.filter((n) => names.has(n)))],
+    collapsedCategories: [
+      ...new Set(layout.collapsedCategories.filter((c) => categories.has(c))),
+    ],
+  };
+}
+
+/**
+ * 应用表单布局到分组（OSC-0013）：hidden 过滤、order 排序（未列字段按元数据原序追加）、
+ * 返回折叠的 Category 集合；空分组不显示。无布局时按元数据原样返回。
+ */
+export function applyFormLayout(
+  groups: FieldGroup[],
+  layout: FormLayout | null | undefined,
+): { groups: FieldGroup[]; collapsed: string[] } {
+  const norm = normalizeFormLayout(layout, groups.flatMap((g) => g.fields));
+  const hidden = new Set(norm.hidden);
+  const orderMap = new Map(norm.order.map((n, i) => [n, i]));
+  const collapsed = norm.collapsedCategories.filter((c) =>
+    groups.some((g) => g.category === c),
+  );
+  const next = groups
+    .map((g) => ({
+      ...g,
+      fields: orderFields(
+        g.fields.filter((f) => !hidden.has(f.name)),
+        orderMap,
+      ),
+    }))
+    .filter((g) => g.fields.length > 0);
+  return { groups: next, collapsed };
+}
+
+/** 按 orderMap 排序；未列字段保持原序追加到末尾 */
+function orderFields(fields: FieldMeta[], orderMap: Map<string, number>): FieldMeta[] {
+  if (!orderMap.size) return fields;
+  const ordered = fields
+    .filter((f) => orderMap.has(f.name))
+    .sort((a, b) => orderMap.get(a.name)! - orderMap.get(b.name)!);
+  const rest = fields.filter((f) => !orderMap.has(f.name));
+  return [...ordered, ...rest];
 }
 
 /** 估算详情标签列统一宽度（px），按整页最宽标签 */

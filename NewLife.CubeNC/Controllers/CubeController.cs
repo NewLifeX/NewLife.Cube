@@ -664,7 +664,7 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
     [ActionName(nameof(UserProfile))]
     public ActionResult SaveUserProfile([FromBody] UserProfileModel model) => UserProfile(model);
 
-    /// <summary>获取当前用户指定实体路径的视图配置</summary>
+    /// <summary>获取当前用户指定实体路径的视图配置（表单布局取全局配置，所有用户共享）</summary>
     [HttpGet]
     public ActionResult ViewProfile(String typePath)
     {
@@ -673,10 +673,16 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
         if (typePath.IsNullOrEmpty()) return Json(400, "typePath 不能为空");
 
         var entity = global::NewLife.Cube.Entity.ViewProfile.FindByUserIdAndTypePath(user.ID, typePath);
-        return Json(0, null, entity?.ToModel());
+        // 表单布局为系统全局唯一配置（管理员定义，作用于所有用户）：从 UserId=0 全局记录读取
+        var global = global::NewLife.Cube.Entity.ViewProfile.FindGlobal(typePath);
+        if (entity == null && global == null) return Json(0, null, null);
+
+        var model = entity?.ToModel() ?? new ViewProfileModel { TypePath = typePath };
+        if (global?.FormJson != null) model.FormJson = global.FormJson;
+        return Json(0, null, model);
     }
 
-    /// <summary>保存当前用户实体视图配置（upsert）</summary>
+    /// <summary>保存当前用户实体视图配置（表单布局为系统全局配置，仅管理员可写）</summary>
     [HttpPut]
     public ActionResult ViewProfile([FromBody] ViewProfileModel model)
     {
@@ -685,6 +691,18 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
 
         var typePath = model?.TypePath;
         if (typePath.IsNullOrEmpty()) return Json(400, "typePath 不能为空");
+
+        // 表单布局为系统全局唯一配置：仅管理员可写，写入 UserId=0 全局记录（不进入个人记录）
+        if (model.FormJson != null)
+        {
+            var isAdmin = user is IUser iu && iu.Roles != null && iu.Roles.Any(e => e.IsSystem);
+            if (!isAdmin) return Json(403, "仅管理员可配置表单布局");
+            // 内容未变不重复写，避免无谓的全局记录更新
+            var global = global::NewLife.Cube.Entity.ViewProfile.FindGlobal(typePath);
+            if (global?.FormJson != model.FormJson)
+                global::NewLife.Cube.Entity.ViewProfile.SaveGlobalFormJson(typePath, model.FormJson);
+            model.FormJson = null;
+        }
 
         var entity = global::NewLife.Cube.Entity.ViewProfile.UpsertForUser(user.ID, typePath, model);
         return Json(0, null, entity.ToModel());
@@ -705,6 +723,59 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
         if (typePath.IsNullOrEmpty()) return Json(400, "typePath 不能为空");
 
         global::NewLife.Cube.Entity.ViewProfile.DeleteForUser(user.ID, typePath);
+        return Json(0, "ok");
+    }
+
+    /// <summary>获取全局模板（视图/筛选域）。仅系统管理员。</summary>
+    [HttpGet]
+    public ActionResult ViewProfileTemplate(String typePath)
+    {
+        var user = ManageProvider.User;
+        if (user == null) return Json(401, "未授权");
+        if (!(user is IUser iu) || iu.Roles == null || !iu.Roles.Any(e => e.IsSystem))
+            return Json(403, "仅系统管理员可管理模板");
+        if (typePath.IsNullOrEmpty()) return Json(400, "typePath 不能为空");
+
+        var entity = global::NewLife.Cube.Entity.ViewProfile.FindGlobal(typePath);
+        return Json(0, null, entity?.ToModel());
+    }
+
+    /// <summary>发布/更新全局模板（视图/筛选域）。仅系统管理员；服务端固定 UserId=0，忽略请求主体字段。</summary>
+    [HttpPut]
+    public ActionResult ViewProfileTemplate([FromBody] ViewProfileModel model)
+    {
+        var user = ManageProvider.User;
+        if (user == null) return Json(401, "未授权");
+        if (!(user is IUser iu) || iu.Roles == null || !iu.Roles.Any(e => e.IsSystem))
+            return Json(403, "仅系统管理员可管理模板");
+
+        var typePath = model?.TypePath;
+        if (typePath.IsNullOrEmpty()) return Json(400, "typePath 不能为空");
+
+        // 模板域仅接受 ViewsJson/FiltersJson；FormJson 不属模板域（走 ViewProfile 全局唯一逻辑）
+        var entity = global::NewLife.Cube.Entity.ViewProfile.SaveGlobalTemplate(typePath, model.ViewsJson, model.FiltersJson);
+        WriteLog("发布模板", true, $"typePath={typePath} 视图/筛选模板已发布");
+        return Json(0, null, entity?.ToModel());
+    }
+
+    /// <summary>发布/更新全局模板（兼容部分环境仅允许 POST）</summary>
+    [HttpPost]
+    [ActionName(nameof(ViewProfileTemplate))]
+    public ActionResult SaveViewProfileTemplate([FromBody] ViewProfileModel model) => ViewProfileTemplate(model);
+
+    /// <summary>删除全局模板（视图/筛选域回落系统默认）。仅系统管理员。</summary>
+    [HttpDelete]
+    [ActionName(nameof(ViewProfileTemplate))]
+    public ActionResult DeleteViewProfileTemplate(String typePath)
+    {
+        var user = ManageProvider.User;
+        if (user == null) return Json(401, "未授权");
+        if (!(user is IUser iu) || iu.Roles == null || !iu.Roles.Any(e => e.IsSystem))
+            return Json(403, "仅系统管理员可管理模板");
+        if (typePath.IsNullOrEmpty()) return Json(400, "typePath 不能为空");
+
+        global::NewLife.Cube.Entity.ViewProfile.DeleteGlobalTemplate(typePath);
+        WriteLog("删除模板", true, $"typePath={typePath} 视图/筛选模板已删除");
         return Json(0, "ok");
     }
 

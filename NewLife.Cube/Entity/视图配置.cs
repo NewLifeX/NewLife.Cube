@@ -102,6 +102,22 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
     [BindColumn("FiltersJson", "筛选记忆。JSON", "")]
     public String FiltersJson { get => _FiltersJson; set { if (OnPropertyChanging("FiltersJson", value)) { _FiltersJson = value; OnPropertyChanged("FiltersJson"); } } }
 
+    private Int32 _PageSize;
+    /// <summary>页面条数。每页显示记录数，0 表示未配置</summary>
+    [DisplayName("页面条数")]
+    [Description("页面条数。每页显示记录数，0 表示未配置")]
+    [DataObjectField(false, false, false, 0)]
+    [BindColumn("PageSize", "页面条数。每页显示记录数，0 表示未配置", "")]
+    public Int32 PageSize { get => _PageSize; set { if (OnPropertyChanging("PageSize", value)) { _PageSize = value; OnPropertyChanged("PageSize"); } } }
+
+    private String _FormJson;
+    /// <summary>表单布局。JSON：add/edit/detail 的字段顺序/显隐/分组折叠</summary>
+    [DisplayName("表单布局")]
+    [Description("表单布局。JSON：add/edit/detail 的字段顺序/显隐/分组折叠")]
+    [DataObjectField(false, false, true, -1)]
+    [BindColumn("FormJson", "表单布局。JSON：add/edit/detail 的字段顺序/显隐/分组折叠", "")]
+    public String FormJson { get => _FormJson; set { if (OnPropertyChanging("FormJson", value)) { _FormJson = value; OnPropertyChanged("FormJson"); } } }
+
     private Int32 _Version;
     /// <summary>版本。配置契约版本</summary>
     [DisplayName("版本")]
@@ -189,6 +205,8 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
         GanttJson = model.GanttJson;
         CardJson = model.CardJson;
         FiltersJson = model.FiltersJson;
+        PageSize = model.PageSize;
+        FormJson = model.FormJson;
         Version = model.Version;
         CreateUserId = model.CreateUserId;
         CreateTime = model.CreateTime;
@@ -218,6 +236,8 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
             "GanttJson" => _GanttJson,
             "CardJson" => _CardJson,
             "FiltersJson" => _FiltersJson,
+            "PageSize" => _PageSize,
+            "FormJson" => _FormJson,
             "Version" => _Version,
             "CreateUserId" => _CreateUserId,
             "CreateTime" => _CreateTime,
@@ -242,6 +262,8 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
                 case "GanttJson": _GanttJson = Convert.ToString(value); break;
                 case "CardJson": _CardJson = Convert.ToString(value); break;
                 case "FiltersJson": _FiltersJson = Convert.ToString(value); break;
+                case "PageSize": _PageSize = value.ToInt(); break;
+                case "FormJson": _FormJson = Convert.ToString(value); break;
                 case "Version": _Version = value.ToInt(); break;
                 case "CreateUserId": _CreateUserId = value.ToInt(); break;
                 case "CreateTime": _CreateTime = value.ToDateTime(); break;
@@ -361,6 +383,12 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
         /// <summary>筛选记忆。JSON</summary>
         public static readonly Field FiltersJson = FindByName("FiltersJson");
 
+        /// <summary>页面条数。每页显示记录数，0 表示未配置</summary>
+        public static readonly Field PageSize = FindByName("PageSize");
+
+        /// <summary>表单布局。JSON：add/edit/detail 的字段顺序/显隐/分组折叠</summary>
+        public static readonly Field FormJson = FindByName("FormJson");
+
         /// <summary>版本。配置契约版本</summary>
         public static readonly Field Version = FindByName("Version");
 
@@ -420,6 +448,12 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
 
         /// <summary>筛选记忆。JSON</summary>
         public const String FiltersJson = "FiltersJson";
+
+        /// <summary>页面条数。每页显示记录数，0 表示未配置</summary>
+        public const String PageSize = "PageSize";
+
+        /// <summary>表单布局。JSON：add/edit/detail 的字段顺序/显隐/分组折叠</summary>
+        public const String FormJson = "FormJson";
 
         /// <summary>版本。配置契约版本</summary>
         public const String Version = "Version";

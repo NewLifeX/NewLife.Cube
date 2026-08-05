@@ -97,6 +97,21 @@
 - 卡片间距/徽标等纯样式微调不新建任务，并入相似任务（T8/T9）即可；纯样式变更以构建成功为门禁，无需重跑全量单测。
 - **归档竞态（0008/0009 两次复现）**：归档前用编辑工具修改 `retro.md`/`status.md`/`verify.md` 后执行 `Move-Item` 移动目录，编辑器文档缓冲会在旧路径重新写回这 3 个文件，导致 `changes/` 下残留重复副本（内容与 archive 哈希一致）。归档后**必须校验** `changes/` 下该变更目录已消失，若有残留直接删除。
 
+## OSC-0012 — 2026-08-05
+
+- **列表/统计/图表必须共用单一 `effectiveSearch`**：GetList 与 GetChartData 同源条件；过期图表响应用 `chartSeq` 序号丢弃，防止慢响应覆盖新搜索结果（快速切换筛选的经典竞态）。
+- **筛选来源优先级 + 一次性 URL**：URL→当前视图保存条件→空条件；URL 只作为进入页面的一次性来源，**绝不自动持久化**，避免污染用户保存的筛选。
+- **配置 JSON round-trip 必须保留未知字段**：insight 旧 `mode` 等历史字段安全迁移，未知键不丢失（删除即破坏用户配置）。
+- **域解析（个人/模板/系统）用整体选取而非字段级 patch 合并**：解析函数单点演进（OSC-0012 → OSC-0014 扩展模板域），契约简单可预测，避免多套合并逻辑漂移。
+- **PageSize 归属实体 ViewProfile（typePath 级）**：仅接受固定枚举（20/50/100/200/500/1000）；kanban/calendar/gantt 的「自动大页」只读本地展示，**不回写**普通页面偏好，也不写全局 workspace.pageSize——全局工作台值仅作旧配置种子。
+
+## OSC-0013 — 2026-08-05
+
+- **`SystemJson.Apply(options, true)` 第二参数是 `web`，不是 camelCase**：它**不设置** `PropertyNameCaseInsensitive` 与 `PropertyNamingPolicy`；MVC `[FromBody]` 反序列化默认大小写敏感。前端 api-core 的 camelCase 线缆（`typePath`/`formJson`/`filtersJson`/`pageSize`/`viewsJson`）**无法绑定**后端 PascalCase 属性 → 保存静默失败（`typePath=null` 400、其余字段 null），此前多次 OSC 的「保存成功」实际是前端内存态、刷新即丢。
+- **修复**：`NewLife.Cube` / `NewLife.CubeNC` 双栈 `CubeService.cs` 在 `SystemJson.Apply` 后追加 `options.JsonSerializerOptions.PropertyNameCaseInsensitive = true`（ASP.NET Core 标准 web 实践，兼容 camelCase/PascalCase，不影响 OSC-0008 枚举数值归一化）。
+- **判定技巧**：涉及 `[FromBody]` DTO 与前端 camelCase 交互时，用 XUnitTest 复刻 `SystemJson.Apply(options, true)` 反序列化 camelCase JSON 并断言属性绑定成功，避免「前端提示保存成功、后端未落库」的伪联调。
+- 配置抽屉类 UI 的字段列表样式应与既有 `ViewConfigDrawer` 字段配置保持统一（`.field-list` 边框容器/max-height、`.field-item` border-bottom、`.drag-handle`、隐藏项 `muted` 变灰），避免同一产品两套视觉。
+
 ## 待办 — 字体规范（Harness）
 
 - 后续按现代中后台常见 **组件/场景**（列表表头、单元格、表单标签、抽屉标题、徽章等）在 Harness 建立统一的 **字体 / 字号 / 字重** 规范，并替换各处临时字重（如 VTable `headerStyle.fontWeight: 400`）。

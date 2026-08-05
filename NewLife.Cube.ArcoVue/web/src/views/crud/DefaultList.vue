@@ -4,47 +4,26 @@
 
     <!-- 视图背景色覆盖：分布 + 搜索 + 表格（含视图 Tab） -->
     <div class="list-surface" :class="{ 'list-surface--chrome': hasChromeBg }" :style="listSurfaceStyle">
-      <div v-if="statData" class="list-panel list-panel--dist">
-        <div class="list-dist">
-          <div
-            v-for="f in listFields.filter((x) => statData![x.name] != null)"
-            :key="f.name"
-            class="list-dist-item"
-          >
-            <div class="list-dist-label">{{ f.displayName || f.name }}</div>
-            <div class="list-dist-value">{{ statData[f.name] }}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 搜索面板：与表格面板视觉独立 -->
-      <div
+      <!-- 查询与洞察面板（OSC-0012）：搜索字段/操作在上，统计标签与固定图表作为下方可选结果区 -->
+      <QueryInsightPanel
         v-if="showSearchPanel && searchFields.length"
-        class="list-panel list-panel--search"
-      >
-        <a-form :model="searchForm" layout="inline" @submit.prevent="handleSearch">
-          <a-form-item
-            v-for="field in searchFields"
-            :key="field.name"
-            :label="field.displayName || field.name"
-          >
-            <SearchFieldInput
-              :field="field"
-              :model-value="searchForm[field.name]"
-              :form="searchForm"
-              @update:model-value="(v) => (searchForm[field.name] = v)"
-              @update:key="(k, v) => (searchForm[k] = v)"
-              @search="handleSearch"
-            />
-          </a-form-item>
-          <a-form-item>
-            <a-space>
-              <a-button type="primary" html-type="submit">搜索</a-button>
-              <a-button @click="handleReset">重置</a-button>
-            </a-space>
-          </a-form-item>
-        </a-form>
-      </div>
+        :fields="searchFields"
+        :model="searchForm"
+        :source="searchSource"
+        :source-label="searchSourceLabel"
+        :can-save="!!activeViewId"
+        :show-stat="insight.showStat"
+        :show-chart="insight.showChart"
+        :stat-data="statData"
+        :stat-labels="statLabels"
+        :chart-data="chartData"
+        :chart-loading="chartLoading"
+        :chart-error="chartError"
+        @search="handleSearch"
+        @reset="handleReset"
+        @save="handleSaveFilters"
+        @clear="handleClearFilters"
+      />
 
       <!-- 表格面板：视图 Tab + 工具栏 + 表格 + 分页 -->
       <div class="list-panel list-panel--table">
@@ -128,6 +107,12 @@
                   @click="confirmBatchDelete"
                 >
                   批量删除
+                </a-doption>
+                <a-doption v-if="isAdmin" @click="formLayoutDrawerVisible = true">
+                  表单布局
+                </a-doption>
+                <a-doption v-if="isAdmin" @click="templateDrawerVisible = true">
+                  管理模板
                 </a-doption>
               </template>
             </a-dropdown>
@@ -263,10 +248,12 @@
       :sort="activeSort"
       :chrome="getActiveView(viewState).chrome"
       :mapping="getActiveView(viewState).mapping"
+      :insight="getActiveView(viewState).insight ?? null"
       @update:columns="onColumnsChange"
       @update:sort="onConfigSort"
       @update:chrome="onChromeChange"
       @update:mapping="onMappingChange"
+      @update:insight="onInsightChange"
       @update:name="onConfigRename"
     />
 
@@ -283,6 +270,8 @@
       :can-prev="drawerCanPrev"
       :can-next="drawerCanNext"
       :field-errors="fieldErrors"
+      :layout="drawerFormLayout"
+      @toggle-collapse="onToggleCollapse"
       @save="handleSave"
       @edit="drawerMode = 'edit'"
       @prev="navigateRecord(-1)"
@@ -290,11 +279,28 @@
     />
 
     <ListChartModal v-model:visible="chartVisible" :charts="chartList" />
+
+    <FormLayoutDrawer
+      v-if="viewState"
+      v-model:visible="formLayoutDrawerVisible"
+      :type-path="typePath"
+      :add-fields="addFields"
+      :edit-fields="editFields"
+      :detail-fields="detailFields"
+      :can-configure="isAdmin"
+    />
+
+    <TemplateManageDrawer
+      v-if="viewState"
+      v-model:visible="templateDrawerVisible"
+      :type-path="typePath"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch, type Component } from 'vue';
+import { useRoute } from 'vue-router';
 import { Message, Modal } from '@arco-design/web-vue';
 import { IconDown } from '@arco-design/web-vue/es/icon';
 import { ApiError, type PageSetting } from '@cube/api-core';
@@ -335,7 +341,9 @@ import {
   resolveChrome,
   type ColumnPref,
   type EntityViewState,
+  type FormLayout,
   type ViewChrome,
+  type ViewInsight,
   type ViewKind,
   type ViewMapping,
   type ViewSort,
@@ -343,6 +351,7 @@ import {
 import {
   isLargePageViewKind,
   isTableLikeViewKind,
+  normalizePageSize,
   PAGE_SIZE_OPTIONS,
   parseViewKind,
   resolveBatchDeleteState,
@@ -352,9 +361,10 @@ import {
   type GanttMapping,
   type KanbanMapping,
 } from '@/core/utils/viewMapping';
+import { cleanSearchParams, collectSearchKeys, parseUrlSearch } from '@/core/utils/searchFilters';
 import { detectTreeData } from '@/core/utils/tree';
 import { buildTree, canBuildTree } from '@/core/utils/treeBuilder';
-import SearchFieldInput from '@/components/SearchFieldInput.vue';
+import QueryInsightPanel from '@/features/search/QueryInsightPanel.vue';
 /** VTable / 多视图异步加载，降低 DynamicPage 首包 */
 const ListTable = defineAsyncComponent(() => import('@/features/vtable/ListTable.vue'));
 const CardList = defineAsyncComponent(() => import('@/features/views/CardList.vue'));
@@ -363,6 +373,8 @@ const CalendarMonth = defineAsyncComponent(() => import('@/features/views/Calend
 const GanttView = defineAsyncComponent(() => import('@/features/views/GanttView.vue'));
 import RecordDrawer from './RecordDrawer.vue';
 import ListChartModal from './ListChartModal.vue';
+import FormLayoutDrawer from './FormLayoutDrawer.vue';
+import TemplateManageDrawer from './TemplateManageDrawer.vue';
 import ViewTabsToolbar from './ViewTabsToolbar.vue';
 import ViewConfigDrawer from './ViewConfigDrawer.vue';
 
@@ -392,6 +404,7 @@ const selectedKeys = ref<(string | number)[]>([]);
 const statData = ref<Record<string, unknown> | null>(null);
 const labelCache = reactive<Record<string, Record<string, string>>>({});
 const configDrawerVisible = ref(false);
+const templateDrawerVisible = ref(false);
 const viewState = ref<EntityViewState | null>(null);
 
 const pagination = reactive({
@@ -408,7 +421,18 @@ const preferredPageSize = computed(() =>
   Math.max(1, profileStore.prefs.workspace.pageSize || 20),
 );
 
+/** 页面级 PageSize（typePath 级，OSC-0012）；0 表示未配置，回退旧全局 workspace 种子 */
+const pageProfileSize = computed(() => evpStore.getPageSize(typePath.value));
+
+const effectivePageSizePref = computed(() => {
+  const n = pageProfileSize.value;
+  return n > 0 ? n : preferredPageSize.value;
+});
+
 const searchForm = reactive<Record<string, unknown>>({});
+/** 当前会话是否已显式执行过搜索/重置；未执行时有效条件取 URL→已保存基准（OSC-0012） */
+const searchTouched = ref(false);
+const route = useRoute();
 const formModel = reactive<Record<string, unknown>>({});
 const drawerVisible = ref(false);
 const drawerMode = ref<'add' | 'edit' | 'detail'>('add');
@@ -433,6 +457,12 @@ const flags = computed(() =>
   resolveCrudFlags(userStore.getMenuPermission(typePath.value), pageSetting.value),
 );
 
+/** 仅管理员角色可使用表单布局（OSC-0013）：admin 用户主角色名为「管理员」 */
+const isAdmin = computed(() => {
+  const role = userStore.userInfo?.roleName ?? '';
+  return role === '管理员';
+});
+
 /** 只读实体列表页不展示历史与评论（新建由表单 mode 自行隐藏） */
 const showHistoryTabs = computed(() => pageSetting.value?.isReadOnly !== true);
 
@@ -449,9 +479,24 @@ const drawerFields = computed(() =>
   resolveFieldsForKind(drawerMode.value, fieldParts.value),
 );
 
+/** 当前抽屉模式的受限表单布局（OSC-0013）；无配置返回 null */
+const drawerFormLayout = computed<FormLayout | null>(() =>
+  evpStore.getFormModeLayout(typePath.value, drawerMode.value),
+);
+
+/** 表单布局配置抽屉开关（OSC-0013） */
+const formLayoutDrawerVisible = ref(false);
+
 const metaKeys = computed(() => selectListColumns(listFields.value).map((f) => f.name));
 
 const columnTitles = computed(() => {
+  const m: Record<string, string> = {};
+  for (const f of listFields.value) m[f.name] = f.displayName || f.name;
+  return m;
+});
+
+/** 洞察统计标签显示名（按 listFields，与 GetList.stat 的 key 对齐，OSC-0012） */
+const statLabels = computed(() => {
   const m: Record<string, string> = {};
   for (const f of listFields.value) m[f.name] = f.displayName || f.name;
   return m;
@@ -471,6 +516,65 @@ const activeSort = computed<ViewSort | null>(() =>
 const activeViewKind = computed<ViewKind>(() =>
   viewState.value ? getActiveView(viewState.value).view : 'table',
 );
+
+const activeViewId = computed(() => viewState.value?.activeViewId ?? '');
+
+/** 合法搜索 key（含范围字段 _min/_max 后缀，OSC-0012） */
+const searchKeys = computed(() => collectSearchKeys(searchFields.value));
+
+/** URL 搜索参数（当前会话；只影响本页，不自动写回存储） */
+const urlSearch = computed(() =>
+  parseUrlSearch(route.query as Record<string, unknown>, searchKeys.value),
+);
+
+/** 当前命名视图的已保存筛选（经合法 key 集清理） */
+const savedSearch = computed(() => {
+  if (!activeViewId.value) return {};
+  return cleanSearchParams(
+    evpStore.getViewFilters(typePath.value, activeViewId.value) ?? {},
+    searchKeys.value,
+  );
+});
+
+/** 条件来源：URL > 已保存 > 空（OSC-0012） */
+const searchSource = computed<'url' | 'saved' | 'none'>(() => {
+  if (Object.keys(urlSearch.value).length) return 'url';
+  if (Object.keys(savedSearch.value).length) return 'saved';
+  return 'none';
+});
+
+/** 未显式搜索时的基准条件：URL → 已保存 → 空 */
+const baseSearch = computed(() => {
+  if (Object.keys(urlSearch.value).length) return urlSearch.value;
+  if (Object.keys(savedSearch.value).length) return savedSearch.value;
+  return {};
+});
+
+/** 唯一有效搜索条件：会话内未搜索时取基准，搜索/重置后取表单正规化结果 */
+const effectiveSearch = computed(() => {
+  if (!searchTouched.value) return baseSearch.value;
+  return cleanSearchParams({ ...searchForm }, searchKeys.value);
+});
+
+/** 条件来源提示（不显示内部 JSON 或字段值） */
+const searchSourceLabel = computed(() => {
+  if (searchSource.value === 'url') return '来自 URL 参数';
+  if (searchSource.value === 'saved') return '来自已保存筛选';
+  return '未保存筛选';
+});
+
+/** 当前命名视图的受限洞察配置（OSC-0012） */
+const insight = computed<ViewInsight>(() => {
+  if (!viewState.value) return { showStat: false, showChart: false };
+  const v = getActiveView(viewState.value);
+  return v?.insight ?? { showStat: false, showChart: false };
+});
+
+const chartData = ref<unknown[]>([]);
+const chartLoading = ref(false);
+const chartError = ref('');
+/** 图表请求序号：切换筛选/视图/刷新时丢弃过期响应 */
+let chartSeq = 0;
 
 const activeMapping = computed(() =>
   viewState.value ? getActiveView(viewState.value).mapping : undefined,
@@ -503,7 +607,7 @@ const activeGanttMapping = computed(
 const isLargePageView = computed(() => isLargePageViewKind(activeViewKind.value));
 
 const effectivePageSize = computed(() =>
-  resolveViewPageSize(activeViewKind.value, pagination.pageSize, preferredPageSize.value),
+  resolveViewPageSize(activeViewKind.value, pagination.pageSize, effectivePageSizePref.value),
 );
 
 const showPagerBar = computed(
@@ -538,9 +642,13 @@ const batchDeleteState = computed(() =>
   }),
 );
 
-/** 「高级」菜单仅在有可见操作时出现 */
+/** 「高级」菜单仅在有可见操作（导入/导出/批量删除/管理员表单布局）时出现 */
 const advancedVisible = computed(
-  () => flags.value.canImport || flags.value.canExport || batchDeleteState.value.visible,
+  () =>
+    flags.value.canImport ||
+    flags.value.canExport ||
+    batchDeleteState.value.visible ||
+    isAdmin.value,
 );
 
 const filterPanelOpen = ref(false);
@@ -767,8 +875,15 @@ async function loadProfile() {
 }
 
 function applyWorkspacePrefs() {
-  const size = preferredPageSize.value;
+  // 页面级 PageSize 优先（OSC-0012），未配置才回落旧全局 workspace 种子
+  const size = effectivePageSizePref.value;
   if (pagination.pageSize !== size) pagination.pageSize = size;
+}
+
+/** 将基准/已保存条件回填到搜索表单（视图切换、初始加载时调用） */
+function applySearchToForm(params: Record<string, unknown>) {
+  Object.keys(searchForm).forEach((k) => delete searchForm[k]);
+  Object.assign(searchForm, params);
 }
 
 async function loadData() {
@@ -783,7 +898,7 @@ async function loadData() {
       pageIndex,
       pageSize,
       ...sort,
-      ...searchForm,
+      ...effectiveSearch.value,
     });
     const rows = (res.data as Record<string, unknown>[]) || [];
     tableData.value = rows;
@@ -792,6 +907,32 @@ async function loadData() {
     await hydrateLovLabels(rows);
   } finally {
     loading.value = false;
+    // 洞察图表与列表同源（同一 effectiveSearch），随列表刷新；竞态由 chartSeq 保护
+    void loadChart();
+  }
+}
+
+/** 加载固定图表（OSC-0012）：showChart 时带有效搜索请求 GetChartData；过期响应丢弃 */
+async function loadChart() {
+  if (!insight.value.showChart) {
+    chartData.value = [];
+    chartError.value = '';
+    chartLoading.value = false;
+    return;
+  }
+  const seq = ++chartSeq;
+  chartLoading.value = true;
+  chartError.value = '';
+  try {
+    const res = await cubeApi.page.getChartData(typePath.value, effectiveSearch.value);
+    if (seq !== chartSeq) return;
+    chartData.value = Array.isArray(res.data) ? res.data : [];
+  } catch (err) {
+    if (seq !== chartSeq) return;
+    chartData.value = [];
+    chartError.value = formatApiError(err, '图表加载失败');
+  } finally {
+    if (seq === chartSeq) chartLoading.value = false;
   }
 }
 
@@ -826,6 +967,30 @@ function onMappingChange(mapping: ViewMapping | undefined) {
   syncLocalState();
 }
 
+function onInsightChange(insight: ViewInsight) {
+  evpStore.updateInsight(typePath.value, insight);
+  syncLocalState();
+}
+
+/** Category 折叠切换：更新当前模式布局的 collapsedCategories（OSC-0013） */
+function onToggleCollapse(category: string) {
+  const mode = drawerMode.value;
+  const cur = evpStore.getFormModeLayout(typePath.value, mode) ?? {
+    order: [],
+    hidden: [],
+    collapsedCategories: [],
+  };
+  const set = new Set(cur.collapsedCategories);
+  if (set.has(category)) set.delete(category);
+  else set.add(category);
+  evpStore.updateFormLayout(
+    typePath.value,
+    mode,
+    { ...cur, collapsedCategories: [...set] },
+    false,
+  );
+}
+
 function onConfigRename(name: string) {
   if (!viewState.value) return;
   onRenameView(viewState.value.activeViewId, name);
@@ -836,6 +1001,9 @@ function onSwitchView(id: string) {
   syncLocalState();
   selectedKeys.value = [];
   pagination.current = 1;
+  // 切换视图后重新计算条件来源并回填表单（OSC-0012）
+  searchTouched.value = false;
+  applySearchToForm(baseSearch.value);
   loadData();
 }
 
@@ -876,9 +1044,8 @@ function onCardDelete(row: Record<string, unknown>) {
 }
 
 async function onResetViews() {
-  await evpStore.reset(typePath.value, metaKeys.value, {
-    defaultView: preferredDefaultView.value,
-  });
+  // 「恢复默认」= 恢复视图域：删除个人视图副本，回落管理员模板或系统默认（OSC-0014）
+  await evpStore.restoreViewDomain(typePath.value);
   syncLocalState();
   selectedKeys.value = [];
   pagination.current = 1;
@@ -1149,21 +1316,56 @@ async function openChart() {
 void openChart;
 
 function handleSearch() {
+  // 显式搜索后有效条件取自表单（OSC-0012）
+  searchTouched.value = true;
   pagination.current = 1;
   loadData();
 }
 function handleReset() {
   Object.keys(searchForm).forEach((k) => delete searchForm[k]);
+  searchTouched.value = true;
   pagination.current = 1;
   loadData();
 }
+
+/** 将当前表单正规化结果显式保存为当前命名视图的默认筛选（OSC-0012） */
+function handleSaveFilters() {
+  if (!activeViewId.value) return;
+  const filters = cleanSearchParams({ ...searchForm }, searchKeys.value);
+  if (Object.keys(filters).length) {
+    evpStore.saveViewFilters(typePath.value, activeViewId.value, filters, true);
+  } else {
+    // 保存空条件等价于清除当前视图 key
+    evpStore.clearViewFilters(typePath.value, activeViewId.value, true);
+  }
+  // 保存后基准=saved=表单内容，刷新展示
+  searchTouched.value = false;
+  pagination.current = 1;
+  loadData();
+  Message.success('已保存到此视图');
+}
+
+/** 清除当前命名视图的已保存默认筛选（OSC-0012） */
+function handleClearFilters() {
+  if (!activeViewId.value) return;
+  evpStore.clearViewFilters(typePath.value, activeViewId.value, true);
+  searchTouched.value = true;
+  applySearchToForm({});
+  pagination.current = 1;
+  loadData();
+  Message.success('已清除默认筛选');
+}
+
 function onPageChange(page: number) {
   pagination.current = page;
   loadData();
 }
 function onPageSizeChange(size: number) {
   pagination.pageSize = size;
-  profileStore.patchWorkspace({ pageSize: size });
+  // 页面级 PageSize：仅普通视图（非大视图）保存到当前 typePath，不再写全局 workspace
+  if (!isLargePageView.value) {
+    evpStore.setPageSize(typePath.value, normalizePageSize(size), true);
+  }
   pagination.current = 1;
   loadData();
 }
@@ -1172,9 +1374,11 @@ function onSelectionChange(keys: (string | number)[]) {
 }
 
 async function bootstrap() {
-  applyWorkspacePrefs();
   await loadFields();
   await loadProfile();
+  applyWorkspacePrefs();
+  // 初始回填 URL→已保存基准条件到搜索表单（OSC-0012）
+  applySearchToForm(baseSearch.value);
   await loadData();
 }
 
@@ -1183,6 +1387,26 @@ watch(typePath, () => {
   selectedKeys.value = [];
   bootstrap();
 });
+
+// URL 参数变化（同页面路由 query 变更）时重新派生基准条件
+watch(
+  () => route.query,
+  () => {
+    searchTouched.value = false;
+    applySearchToForm(baseSearch.value);
+    pagination.current = 1;
+    loadData();
+  },
+  { deep: true },
+);
+
+// 洞察图表开关变化时刷新图表区（不影响列表）
+watch(
+  () => insight.value.showChart,
+  () => {
+    void loadChart();
+  },
+);
 
 onMounted(bootstrap);
 </script>
@@ -1219,32 +1443,6 @@ onMounted(bootstrap);
   /* 允许内部横向滚动；勿用 overflow:hidden 把右侧 gutter 连带裁掉 */
   overflow-x: auto;
   overflow-y: visible;
-}
-.list-panel--search {
-  padding-bottom: 4px;
-}
-.list-dist {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.list-dist-item {
-  min-width: 120px;
-  padding: 10px 14px;
-  border-radius: 6px;
-  background: var(--color-fill-2);
-  border: 1px solid var(--color-border-2);
-}
-.list-dist-label {
-  font-size: var(--cube-font-size-meta);
-  font-weight: var(--cube-font-weight-normal);
-  color: var(--color-text-3);
-  margin-bottom: 4px;
-}
-.list-dist-value {
-  font-size: var(--cube-font-size-title);
-  font-weight: var(--cube-font-weight-medium);
-  color: var(--color-text-1);
 }
 .list-view-tabs {
   margin-bottom: 8px;

@@ -59,7 +59,25 @@ export interface NamedView {
   chrome?: ViewChrome;
   /** 类型专属字段映射（存 ViewsJson；不写 ganttJson/cardJson） */
   mapping?: ViewMapping;
+  /** 受限洞察配置（OSC-0012）：每个命名视图仅一个，可独立启用统计标签与一张固定图表 */
+  insight?: ViewInsight;
+  /** 原始线缆对象（保留未知顶层属性，round-trip 不丢后续 OSC 字段） */
+  _raw?: Record<string, unknown>;
 }
+
+/** 受限洞察配置。双开关均为 false 表示关闭；仅一个为 true 表示单项；均为 true 表示统计+图表同显 */
+export interface ViewInsight {
+  showStat: boolean;
+  showChart: boolean;
+}
+
+/** FiltersJson 线缆格式（OSC-0012）。key 为 NamedView.id，值为经过搜索正规化的平坦搜索参数 */
+export interface SavedFiltersWire {
+  version: 1;
+  views: Record<string, Record<string, unknown>>;
+}
+
+export const SAVED_FILTERS_VERSION = 1;
 
 export const DEFAULT_CHROME: Required<ViewChrome> = {
   bgPreset: 'default',
@@ -201,6 +219,256 @@ function normalizeChrome(raw: unknown): ViewChrome | undefined {
   };
 }
 
+/**
+ * 归一化受限洞察配置（OSC-0012）。
+ * 缺失/非法 → 双开关关闭；兼容早期草案 `mode`：stat→仅 showStat，chart→仅 showChart，none/其他→都关闭。
+ */
+export function normalizeInsight(raw: unknown): ViewInsight {
+  if (!raw || typeof raw !== 'object') return { showStat: false, showChart: false };
+  const o = raw as Record<string, unknown>;
+  if (typeof o.mode === 'string') {
+    if (o.mode === 'stat') return { showStat: true, showChart: false };
+    if (o.mode === 'chart') return { showStat: false, showChart: true };
+    return { showStat: false, showChart: false };
+  }
+  return {
+    showStat: o.showStat === true,
+    showChart: o.showChart === true,
+  };
+}
+
+/** 序列化 insight：保留原始未知扩展字段，仅覆盖本号管理的双开关 */
+function serializeInsight(insight: ViewInsight | undefined, raw: unknown): Record<string, unknown> {
+  const base: Record<string, unknown> =
+    raw && typeof raw === 'object' && !Array.isArray(raw)
+      ? { ...(raw as Record<string, unknown>) }
+      : {};
+  delete base.mode;
+  base.showStat = insight?.showStat === true;
+  base.showChart = insight?.showChart === true;
+  return base;
+}
+
+/** 序列化单个命名视图：保留未知顶层属性，已知域由状态对象覆盖（round-trip 不丢后续 OSC 字段） */
+export function serializeNamedView(v: NamedView): Record<string, unknown> {
+  const raw: Record<string, unknown> = {};
+  if (v._raw && typeof v._raw === 'object') {
+    for (const [k, val] of Object.entries(v._raw)) {
+      if (MANAGED_VIEW_KEYS.has(k)) continue;
+      raw[k] = val;
+    }
+  }
+  raw.id = v.id;
+  raw.name = v.name;
+  raw.view = v.view;
+  if (v.columns) raw.columns = v.columns;
+  if (v.sort) raw.sort = v.sort;
+  if (v.chrome) raw.chrome = v.chrome;
+  if (v.mapping !== undefined) raw.mapping = v.mapping;
+  if (v.insight) raw.insight = serializeInsight(v.insight, v._raw?.insight);
+  return raw;
+}
+
+/** 本号管理的命名视图键；序列化时优先由状态对象覆盖 */
+const MANAGED_VIEW_KEYS = new Set(['id', 'name', 'view', 'columns', 'sort', 'chrome', 'mapping', 'insight']);
+
+/** 空 FiltersJson 线缆 */
+export function emptySavedFilters(): SavedFiltersWire {
+  return { version: SAVED_FILTERS_VERSION, views: {} };
+}
+
+/**
+ * 宽容解析 FiltersJson（OSC-0012）。
+ * 缺失、空串、非对象、未知 version、views 非法均归一为 `{ version: 1, views: {} }`；
+ * 仅保留对象类型的视图筛选条目，损坏单条数据降级为空条件。
+ */
+export function parseSavedFilters(raw: string | null | undefined): SavedFiltersWire {
+  if (!raw || typeof raw !== 'string') return emptySavedFilters();
+  let v: unknown;
+  try {
+    v = JSON.parse(raw);
+  } catch {
+    return emptySavedFilters();
+  }
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return emptySavedFilters();
+  const o = v as Record<string, unknown>;
+  if (o.version !== SAVED_FILTERS_VERSION) return emptySavedFilters();
+  if (!o.views || typeof o.views !== 'object' || Array.isArray(o.views)) {
+    return emptySavedFilters();
+  }
+  const views: Record<string, Record<string, unknown>> = {};
+  for (const [k, val] of Object.entries(o.views as Record<string, unknown>)) {
+    if (val && typeof val === 'object' && !Array.isArray(val)) {
+      views[k] = val as Record<string, unknown>;
+    }
+  }
+  return { version: SAVED_FILTERS_VERSION, views };
+}
+
+/** 序列化 FiltersJson 线缆 */
+export function serializeSavedFilters(wire: SavedFiltersWire): string {
+  return JSON.stringify(wire);
+}
+
+/** 读取指定命名视图的已保存筛选；无则 undefined */
+export function getSavedViewFilters(
+  wire: SavedFiltersWire,
+  viewId: string,
+): Record<string, unknown> | undefined {
+  return wire.views[viewId];
+}
+
+/** 以完整筛选对象替换指定视图的已保存筛选（只影响当前视图） */
+export function setSavedViewFilters(
+  wire: SavedFiltersWire,
+  viewId: string,
+  filters: Record<string, unknown>,
+): SavedFiltersWire {
+  return {
+    ...wire,
+    views: { ...wire.views, [viewId]: { ...filters } },
+  };
+}
+
+/** 清除指定视图的已保存筛选（删除该 key）；不存在则原样返回 */
+export function clearSavedViewFilters(
+  wire: SavedFiltersWire,
+  viewId: string,
+): SavedFiltersWire {
+  if (!(viewId in wire.views)) return wire;
+  const views = { ...wire.views };
+  delete views[viewId];
+  return { ...wire, views };
+}
+
+/** 视图域来源（OSC-0014）：personal > template > system */
+export type ViewDomainSource = 'personal' | 'template' | 'system';
+
+/** 筛选域来源（OSC-0014）：personal > template > system */
+export type FilterDomainSource = 'personal' | 'template' | 'system';
+
+/** 判定 ViewsJson 是否 present（含实际命名视图；空数组/空对象视为未配置） */
+export function hasViewsDomain(raw: string | null | undefined): boolean {
+  const arr = parseJsonArray(raw);
+  return !!arr?.length;
+}
+
+/** 判定 FiltersJson 是否 present（含实际筛选条目；空 views map 视为未配置） */
+export function hasFiltersDomain(raw: string | null | undefined): boolean {
+  const wire = parseSavedFilters(raw);
+  return Object.keys(wire.views).length > 0;
+}
+
+/** 表单布局模式：新增 / 编辑 / 详情（OSC-0013） */
+export type FormMode = 'add' | 'edit' | 'detail';
+
+/** 单个模式的受限表单布局（仅展示偏好，不改变元数据/权限/校验/提交载荷） */
+export interface FormLayout {
+  /** 字段顺序（canonical FieldMeta.name；未列字段按元数据原序追加） */
+  order: string[];
+  /** 隐藏字段（仅展示隐藏，不能绕过必填/校验/提交） */
+  hidden: string[];
+  /** 折叠的既有 Category（非空且当前字段集中存在才生效） */
+  collapsedCategories: string[];
+}
+
+/** FormJson 线缆格式（OSC-0013）。add/edit/detail 独立配置；写入时只替换当前模式 */
+export interface FormJsonWire {
+  version: 1;
+  add?: FormLayout;
+  edit?: FormLayout;
+  detail?: FormLayout;
+}
+
+export const FORM_JSON_VERSION = 1;
+
+/** 空表单布局 */
+export function emptyFormLayout(): FormLayout {
+  return { order: [], hidden: [], collapsedCategories: [] };
+}
+
+/** 空 FormJson 线缆 */
+export function emptyFormJson(): FormJsonWire {
+  return { version: FORM_JSON_VERSION };
+}
+
+function isFormLayout(v: unknown): v is FormLayout {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return false;
+  const o = v as Record<string, unknown>;
+  return (
+    Array.isArray(o.order) &&
+    Array.isArray(o.hidden) &&
+    Array.isArray(o.collapsedCategories)
+  );
+}
+
+/**
+ * 宽容解析 FormJson（OSC-0013）。
+ * 缺失、空串、数组、无效 JSON 或 version 不支持：归一到空线缆；
+ * 仅保留结构合法的模式布局；未知顶层字段由 round-trip 丢弃（本号只管理三模式）。
+ */
+export function parseFormJson(raw: string | null | undefined): FormJsonWire {
+  if (!raw || typeof raw !== 'string') return emptyFormJson();
+  let v: unknown;
+  try {
+    v = JSON.parse(raw);
+  } catch {
+    return emptyFormJson();
+  }
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return emptyFormJson();
+  const o = v as Record<string, unknown>;
+  if (o.version !== FORM_JSON_VERSION) return emptyFormJson();
+  const wire: FormJsonWire = { version: FORM_JSON_VERSION };
+  for (const mode of ['add', 'edit', 'detail'] as const) {
+    if (isFormLayout(o[mode])) wire[mode] = { ...o[mode] };
+  }
+  return wire;
+}
+
+/** 序列化 FormJson 线缆 */
+export function serializeFormJson(wire: FormJsonWire): string {
+  return JSON.stringify(wire);
+}
+
+/** 读取指定模式的布局；无则 null */
+export function getFormModeLayout(wire: FormJsonWire, mode: FormMode): FormLayout | null {
+  return wire[mode] ?? null;
+}
+
+/** 以完整布局替换指定模式（只影响当前模式，保留另两模式） */
+export function setFormModeLayout(
+  wire: FormJsonWire,
+  mode: FormMode,
+  layout: FormLayout,
+): FormJsonWire {
+  return { ...wire, [mode]: { ...layout } };
+}
+
+/** 清除指定模式布局（恢复该模式默认）；不存在则原样返回 */
+export function clearFormModeLayout(wire: FormJsonWire, mode: FormMode): FormJsonWire {
+  if (!wire[mode]) return wire;
+  const next = { ...wire };
+  delete next[mode];
+  return next;
+}
+
+/**
+ * 由三模式本地编辑态构建 FormJson 线缆（OSC-0013 手动保存）。
+ * 过滤全空布局（order/hidden/collapsedCategories 均为空，等同默认），避免冗余 key 落库。
+ */
+export function buildFormJsonWire(
+  layouts: Record<FormMode, FormLayout>,
+): FormJsonWire {
+  const wire: FormJsonWire = { version: FORM_JSON_VERSION };
+  for (const mode of ['add', 'edit', 'detail'] as const) {
+    const l = layouts[mode];
+    if (l && (l.order.length || l.hidden.length || l.collapsedCategories.length)) {
+      wire[mode] = { ...l };
+    }
+  }
+  return wire;
+}
+
 export function seedDefaultView(
   metaKeys: string[],
   columns?: ColumnPref[],
@@ -258,6 +526,9 @@ export function parseNamedViews(
       sort,
       chrome: normalizeChrome(o.chrome) ?? { ...DEFAULT_CHROME },
       mapping,
+      insight: normalizeInsight(o.insight),
+      // 保留原始线缆对象，round-trip 不丢未知顶层属性（后续 OSC 扩展字段）
+      _raw: o,
     });
   }
   return views.length ? views : [seedDefaultView(metaKeys, undefined, defaultView)];
@@ -306,7 +577,7 @@ export function stateToWirePayload(
     typePath,
     view: active.view,
     activeViewId: active.id,
-    viewsJson: JSON.stringify(state.views),
+    viewsJson: JSON.stringify(state.views.map(serializeNamedView)),
     columnsJson: JSON.stringify(active.columns),
     version: 1,
   };
@@ -481,6 +752,19 @@ export function patchActiveMapping(
     ...state,
     views: state.views.map((v) =>
       v.id === state.activeViewId ? { ...v, mapping } : v,
+    ),
+  };
+}
+
+/** 更新当前命名视图的受限洞察配置（OSC-0012） */
+export function patchActiveInsight(
+  state: EntityViewState,
+  insight: ViewInsight,
+): EntityViewState {
+  return {
+    ...state,
+    views: state.views.map((v) =>
+      v.id === state.activeViewId ? { ...v, insight: { ...insight } } : v,
     ),
   };
 }

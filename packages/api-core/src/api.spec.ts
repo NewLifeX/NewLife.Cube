@@ -75,6 +75,34 @@ describe('createPageApi', () => {
       }),
     );
   });
+
+  it('getChartData without params keeps original URL and no params', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: [] });
+    const api = createPageApi(request);
+    const result = await api.getChartData('/Admin/User');
+    expect(result.data).toEqual([]);
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Admin/User/GetChartData',
+        method: 'get',
+        params: undefined,
+      }),
+    );
+  });
+
+  it('getChartData with search params passes them through', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: [] });
+    const api = createPageApi(request);
+    const params = { Name: 'abc', Status: ['1', '2'], Enable: false };
+    await api.getChartData('/Admin/User', params);
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Admin/User/GetChartData',
+        method: 'get',
+        params,
+      }),
+    );
+  });
 });
 
 describe('createProfileApi', () => {
@@ -112,6 +140,61 @@ describe('createProfileApi', () => {
         url: '/Cube/ViewProfile',
         method: 'post',
         data: payload,
+      }),
+    );
+  });
+
+  it('getViewProfileTemplate hits GET /Cube/ViewProfileTemplate with typePath', async () => {
+    const ok: ApiResponse<ViewProfileModel> = {
+      code: 0,
+      data: { typePath: 'Admin/User', viewsJson: '[]' },
+    };
+    const request = vi.fn().mockResolvedValueOnce(ok);
+    const api = createProfileApi(request);
+    const result = await api.getViewProfileTemplate('Admin/User');
+    expect(result).toBe(ok);
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Cube/ViewProfileTemplate',
+        method: 'get',
+        params: { typePath: 'Admin/User' },
+      }),
+    );
+  });
+
+  it('putViewProfileTemplate falls back to POST when PUT returns 405', async () => {
+    const ok: ApiResponse<ViewProfileModel> = {
+      code: 0,
+      data: { typePath: 'Admin/User', viewsJson: '[{"id":"default","name":"默认","view":"table"}]' },
+    };
+    const request = vi
+      .fn()
+      .mockRejectedValueOnce({ isAxiosError: true, response: { status: 405 } })
+      .mockResolvedValueOnce(ok);
+    const api = createProfileApi(request);
+    const payload = { typePath: 'Admin/User', viewsJson: '[{"id":"default","name":"默认","view":"table"}]' };
+    const result = await api.putViewProfileTemplate(payload);
+    expect(result).toBe(ok);
+    expect(request).toHaveBeenCalledTimes(2);
+    expect(request).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ url: '/Cube/ViewProfileTemplate', method: 'put', data: payload }),
+    );
+    expect(request).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ url: '/Cube/ViewProfileTemplate', method: 'post', data: payload }),
+    );
+  });
+
+  it('deleteViewProfileTemplate hits DELETE /Cube/ViewProfileTemplate with typePath', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: undefined });
+    const api = createProfileApi(request);
+    await api.deleteViewProfileTemplate('Admin/User');
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Cube/ViewProfileTemplate',
+        method: 'delete',
+        params: { typePath: 'Admin/User' },
       }),
     );
   });

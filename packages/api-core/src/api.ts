@@ -240,9 +240,13 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
       });
     },
 
-    /** 获取图表数据 */
-    getChartData: (type: string) =>
-      request<unknown[]>({ url: `${type}/GetChartData`, method: 'get' }),
+    /**
+     * 获取图表数据。
+     * params 可选：缺省保持原 URL 与行为；提供时经 query serializer 编码（数组遵循 GetList 约定）。
+     * 只传搜索条件 effectiveSearch，不传分页、排序与视图 UI 配置。
+     */
+    getChartData: (type: string, params?: Record<string, unknown>) =>
+      request<unknown[]>({ url: `${type}/GetChartData`, method: 'get', params }),
   };
 }
 
@@ -294,6 +298,30 @@ export function createProfileApi(request: RequestFn) {
     deleteViewProfile: (typePath: string) =>
       request<unknown>({
         url: '/Cube/ViewProfile',
+        method: 'delete',
+        params: { typePath },
+      }),
+
+    /** 获取全局模板（视图/筛选域）；仅系统管理员可调用（OSC-0014） */
+    getViewProfileTemplate: (typePath: string) =>
+      request<ViewProfileModel | null>({
+        url: '/Cube/ViewProfileTemplate',
+        method: 'get',
+        params: { typePath },
+      }),
+
+    /** 发布/更新全局模板（视图/筛选域）；仅系统管理员可调用（OSC-0014） */
+    putViewProfileTemplate: (data: Partial<ViewProfileModel> & { typePath: string }) =>
+      requestWithPostFallback<ViewProfileModel>(request, {
+        url: '/Cube/ViewProfileTemplate',
+        method: 'put',
+        data,
+      }),
+
+    /** 删除全局模板（视图/筛选域回落系统默认）；仅系统管理员可调用（OSC-0014） */
+    deleteViewProfileTemplate: (typePath: string) =>
+      request<unknown>({
+        url: '/Cube/ViewProfileTemplate',
         method: 'delete',
         params: { typePath },
       }),

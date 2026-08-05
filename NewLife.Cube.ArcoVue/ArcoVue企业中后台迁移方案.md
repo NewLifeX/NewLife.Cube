@@ -493,7 +493,7 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
 
 1. `GetPage` 是字段、权限、表单和统计的唯一元数据来源；`GetList`、`GetDetail` 与 CRUD API 仍是唯一数据/写入通道。
 2. 容器固定顺序为：可选**洞察区** → 搜索区 → 命名视图 Tab/工具栏 → 当前数据视图 → 分页 → 右侧 `RecordDrawer`。不允许用户新增、删除、拖动或嵌套页面区块。
-3. 洞察区最多一个：优先展示 `GetPage.stat`；有 `GetChartData` 时可在“统计 / 图表 / 关闭”三态间选择。图表仍按当前实体和当前筛选条件取数，不支持用户录入 ECharts option。
+3. 洞察区最多一个：统计标签与一张固定图表（`insight.showStat` / `showChart` 两个独立开关）可单独或同时启用；图表仍按当前实体和当前筛选条件取数，不支持用户录入 ECharts option。
 4. NamedView 继续承载 table/tree/card/kanban/calendar/gantt 的列、映射、排序和工具栏外观；现有 `widthMode` / `heightMode` 只表示当前视图的容器尺寸，不升级为通用 Widget 尺寸系统。
 
 #### 8.2.3 受限配置模型
@@ -502,7 +502,7 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
 |------|------|--------------|----------|
 | 命名视图 | `ViewsJson` / `ActiveViewId` / `ColumnsJson` | 视图类型、列显隐/顺序/宽度/标题、排序、已有 mapping/chrome | 自定义 SQL、跨实体数据源、绕过字段权限 |
 | 筛选记忆 | `FiltersJson` | 当前实体的搜索字段条件；可选择保存为该命名视图默认条件 | 新增后端未声明的查询字段或表达式 |
-| 洞察区 | `ViewsJson` 中当前 NamedView 的 `insight` 子配置 | `none` / `stat` / `chart`；仅保存展示偏好 | 任意图表 option、多个图表或拖拽位置 |
+| 洞察区 | `ViewsJson` 中当前 NamedView 的 `insight` 子配置 | `showStat` / `showChart` 两个独立开关（可同时）；仅保存展示偏好 | 任意图表 option、多个图表或拖拽位置 |
 | 表单布局 | **新增 `FormJson`** | add/edit/detail 的字段顺序、显隐、按 GetPage `Category` 的分组折叠 | 新字段、字段类型/控件、默认值、校验、必填、权限、提交动作 |
 
 `FormJson` 仅是前端呈现偏好；字段是否存在、是否可编辑、是否必填以及提交载荷仍由 GetPage 与 `prepareSubmitPayload` 判定。配置中出现已删除字段时静默忽略；元数据中新字段按所属分组追加且默认可见，保证升级后仍能操作。
@@ -523,7 +523,7 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
 
 | OSC | 内容 | 出口 |
 |-----|------|------|
-| OSC-0012 | 筛选记忆 + 单一洞察区 | `FiltersJson` 按命名视图保存；统计/图表/关闭三态，始终使用当前实体与筛选条件 |
+| OSC-0012 | 筛选记忆 + 单一洞察区 | `FiltersJson` 按命名视图保存；`insight.showStat`/`showChart` 双开关独立（可同时），始终使用当前实体与筛选条件 |
 | OSC-0013 | 受限表单布局 | ViewProfile 增 `FormJson`；RecordDrawer 支持字段顺序、显隐、Category 分组折叠与恢复默认 |
 | OSC-0014 | 全局只读模板 | `UserId=0` 模板读写 API、权限与审计；个人覆盖/恢复模板；不做角色、租户与协同编辑 |
 
@@ -759,8 +759,8 @@ Draft → Accepted → Implementing → Validating → Done
 | # | 差距 | 定位 | 建议后续 |
 |---|------|:---:|----------|
 | 1 | ~~评论 Tab 前端未接线~~（OSC-0008 已接线：api-core comment API + RecordDrawer 评论 Tab） | P0 | ✅ 已解决 |
-| 2 | `UserProfile.workspace.defaultView / pageSize` 已建模未消费 | P0 | DefaultList 无 ViewProfile 时回落默认视图；每页条数接入 |
-| 3 | 筛选记忆未持久化（filtersJson 预留未用；分组为占位） | P1 | OSC-0012：仅保存当前实体、当前命名视图的搜索条件；不做通用数据范围引擎 |
+| 2 | ~~`UserProfile.workspace.defaultView / pageSize` 已建模未消费~~（OSC-0012：无 ViewProfile 时回落默认视图；页面级 PageSize 已按 typePath 接入，旧全局值仅作种子） | P0 | ✅ 已解决 |
+| 3 | ~~筛选记忆未持久化（filtersJson 预留未用；分组为占位）~~（OSC-0012：仅保存当前实体、当前命名视图的搜索条件；不做通用数据范围引擎） | P1 | ✅ 已解决 |
 | 4 | 列 frozen 仅 left/false，无 right | P1 | 补充右冻结 |
 | 5 | 角色/租户级配置层未实现（仅系统默认+用户两级，§5.1） | P1 | 分层扩展 |
 | 6 | 组件测试缺失（仅纯逻辑单测） | P1 | `@vue/test-utils` + happy-dom 覆盖关键组件 |

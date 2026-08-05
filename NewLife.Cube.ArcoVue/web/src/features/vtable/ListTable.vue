@@ -1,4 +1,5 @@
 <template>
+  <!-- hover 表头时显示各列边界分隔线，辅助定位列宽拖拽区（VTable 原生分隔线仅拖动时显示） -->
   <div ref="hostRef" class="cube-list-table" :style="{ height: height + 'px' }"></div>
 </template>
 
@@ -78,6 +79,107 @@ const hostRef = ref<HTMLElement | null>(null);
 let table: InstanceType<typeof ListTable> | null = null;
 let applying = false;
 let ro: ResizeObserver | null = null;
+let sepRaf = 0;
+/** 分隔线层由 JS 动态创建：VTable 构造时会清空宿主容器，模板子元素会被删除 */
+let sepEl: HTMLElement | null = null;
+
+/** 确保分隔线层存在（VTable 创建/重建后调用） */
+function ensureSeparatorLayer(): HTMLElement | null {
+  const host = hostRef.value;
+  if (!host) return null;
+  let el = host.querySelector<HTMLElement>('.cube-table-separators');
+  if (!el) {
+    el = document.createElement('div');
+    el.className = 'cube-table-separators';
+    el.setAttribute('aria-hidden', 'true');
+    host.appendChild(el);
+  }
+  sepEl = el;
+  return el;
+}
+
+/** 清除表头分隔线 */
+function clearHeaderSeparators() {
+  const el = sepEl;
+  if (!el) return;
+  el.classList.remove('show');
+  el.replaceChildren();
+}
+
+/**
+ * hover 表头时渲染各列边界分隔线（OSC-0014）。
+ * 仅当指针位于表头区域时显示；列边界取 VTable getCellRelativeRect（相对容器视口坐标，含冻结/滚动）。
+ */
+function updateHeaderSeparators(ev: MouseEvent) {
+  const host = hostRef.value;
+  const sep = sepEl;
+  const t = table;
+  if (!host || !sep || !t) return;
+  const hostRect = host.getBoundingClientRect();
+  const x = ev.clientX - hostRect.left;
+  const y = ev.clientY - hostRect.top;
+  if (x < 0 || y < 0) {
+    clearHeaderSeparators();
+    return;
+  }
+  // 表头区域判定：y 小于表头总高度（表头冻结，不随垂直滚动移动）
+  const headerLevels = t.columnHeaderLevelCount || 1;
+  let headerBottom = 0;
+  try {
+    headerBottom = t.getRowsHeight(0, headerLevels - 1);
+  } catch {
+    /* ignore */
+  }
+  if (y > headerBottom) {
+    clearHeaderSeparators();
+    return;
+  }
+  // 收集各列右边界 x（相对容器视口）
+  const bounds: number[] = [];
+  const colCount = t.colCount;
+  for (let c = 0; c < colCount; c++) {
+    try {
+      const r = t.getCellRelativeRect(c, 0) as { left?: number; width?: number };
+      if (r && typeof r.left === 'number' && typeof r.width === 'number' && r.width > 0) {
+        const right = r.left + r.width;
+        if (right > 0 && right <= host.clientWidth + 1) bounds.push(Math.round(right));
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  const uniq = [...new Set(bounds)];
+  if (!uniq.length) {
+    clearHeaderSeparators();
+    return;
+  }
+  // 分隔线仅在表头区域显示（高度=表头总高），不贯穿数据区
+  const headerHeight = headerBottom;
+  // 复用已有节点，避免高频 mousemove 频繁重建 DOM
+  let nodes = sep.children;
+  for (let i = 0; i < uniq.length; i++) {
+    let div = nodes[i] as HTMLElement | undefined;
+    if (!div) {
+      div = document.createElement('div');
+      div.className = 'sep';
+      sep.appendChild(div);
+    }
+    div.style.left = uniq[i] - 1 + 'px';
+    div.style.height = headerHeight + 'px';
+  }
+  while (sep.children.length > uniq.length) sep.removeChild(sep.lastChild!);
+  sep.classList.add('show');
+}
+
+function onHostMouseMove(ev: MouseEvent) {
+  cancelAnimationFrame(sepRaf);
+  sepRaf = requestAnimationFrame(() => updateHeaderSeparators(ev));
+}
+
+function onHostMouseLeave() {
+  cancelAnimationFrame(sepRaf);
+  clearHeaderSeparators();
+}
 
 function rowId(row: Record<string, unknown>): string {
   // 字段名大小写容错（rowKey 为 FieldMeta.name PascalCase，数据行 key 为 camelCase）
@@ -461,6 +563,8 @@ function mountTable() {
   table?.release();
   applying = true;
   table = new ListTable(hostRef.value, buildOption());
+  // VTable 构造会清空宿主容器（innerHTML=''），必须在创建后重建分隔线层
+  ensureSeparatorLayer();
   applying = false;
   bindEvents();
   if (!ro && typeof ResizeObserver !== 'undefined') {
@@ -492,10 +596,18 @@ function refreshOption() {
   applying = false;
 }
 
-onMounted(mountTable);
+onMounted(() => {
+  mountTable();
+  // 捕获阶段监听，避免 VTable 内部 stopPropagation 吞掉 mousemove
+  hostRef.value?.addEventListener('mousemove', onHostMouseMove, true);
+  hostRef.value?.addEventListener('mouseleave', onHostMouseLeave, true);
+});
 onBeforeUnmount(() => {
   ro?.disconnect();
   ro = null;
+  cancelAnimationFrame(sepRaf);
+  hostRef.value?.removeEventListener('mousemove', onHostMouseMove, true);
+  hostRef.value?.removeEventListener('mouseleave', onHostMouseLeave, true);
   table?.release();
   table = null;
 });
@@ -545,6 +657,7 @@ watch(
 
 <style scoped>
 .cube-list-table {
+  position: relative;
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -552,6 +665,33 @@ watch(
   border: none;
   overflow: hidden;
   background: var(--color-bg-2);
+  box-sizing: border-box;
+}
+
+/* hover 表头时的列边界分隔线层：JS 动态创建（无 scoped 属性），需 :deep 匹配；不拦截鼠标，浮于 VTable canvas 之上 */
+.cube-list-table :deep(.cube-table-separators) {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  display: none;
+}
+.cube-list-table :deep(.cube-table-separators.show) {
+  display: block;
+}
+.cube-list-table :deep(.cube-table-separators .sep) {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  /* 高度由 JS 设为表头高度（仅表头区域显示，不贯穿数据区） */
+  height: 100%;
+  /*
+   * 颜色跟随当前主题的 Secondary 色系（light/dark 自动切换）。
+   * 用 --color-secondary-hover 而非 --color-secondary：亮色主题下 secondary=#F2F3F5 与表头背景同色几乎不可见，
+   * hover 档更深一档，保证分隔线可辨识。
+   */
+  background: var(--color-secondary-hover);
+  border-left: 1px solid var(--color-secondary-hover);
   box-sizing: border-box;
 }
 </style>

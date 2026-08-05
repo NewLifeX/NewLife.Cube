@@ -124,6 +124,23 @@
             </a-radio-group>
           </a-space>
         </section>
+
+        <section class="cfg-block">
+          <div class="cfg-label">查询洞察</div>
+          <div class="switch-row">
+            <span>统计标签</span>
+            <a-switch v-model="localInsight.showStat" @change="emitInsight" />
+          </div>
+          <div class="switch-row">
+            <span>
+              固定图表
+              <a-tooltip content="随列表当前搜索条件显示一张固定图表；无图表端点权限时仅图表区降级">
+                <icon-info-circle class="hint-ico" />
+              </a-tooltip>
+            </span>
+            <a-switch v-model="localInsight.showChart" @change="emitInsight" />
+          </div>
+        </section>
       </a-tab-pane>
 
       <a-tab-pane key="custom" title="自定义配置">
@@ -600,9 +617,11 @@ import {
 } from '@arco-design/web-vue/es/icon';
 import {
   DEFAULT_CHROME,
+  normalizeInsight,
   type ColumnPref,
   type HeightMode,
   type ViewChrome,
+  type ViewInsight,
   type ViewKind,
   type ViewMapping,
   type ViewSort,
@@ -676,6 +695,7 @@ const props = withDefaults(
     viewKind?: ViewKind;
     fields?: FieldMeta[];
     mapping?: ViewMapping | null;
+    insight?: ViewInsight | null;
   }>(),
   {
     viewKind: 'table',
@@ -690,6 +710,7 @@ const emit = defineEmits<{
   'update:chrome': [chrome: ViewChrome];
   'update:name': [name: string];
   'update:mapping': [mapping: ViewMapping | undefined];
+  'update:insight': [insight: ViewInsight];
 }>();
 
 const activeTab = ref('basic');
@@ -700,6 +721,7 @@ const localColumns = ref<ColumnPref[]>([]);
 const localName = ref('');
 const localSort = ref<ViewSort | null>(null);
 const chrome = reactive<Required<ViewChrome>>({ ...DEFAULT_CHROME });
+const localInsight = ref<ViewInsight>({ showStat: false, showChart: false });
 const localMapping = reactive({
   titleField: '',
   imageField: undefined as string | undefined,
@@ -849,6 +871,7 @@ function syncFromProps() {
   localName.value = props.viewName || '';
   localSort.value = props.sort ? { ...props.sort } : null;
   Object.assign(chrome, DEFAULT_CHROME, props.chrome || {});
+  localInsight.value = normalizeInsight(props.insight);
   syncMappingFromProps();
 }
 
@@ -864,7 +887,17 @@ watch(
 );
 
 watch(
-  () => [props.columns, props.viewName, props.sort, props.chrome, props.mapping, props.viewKind, props.fields] as const,
+  () =>
+    [
+      props.columns,
+      props.viewName,
+      props.sort,
+      props.chrome,
+      props.mapping,
+      props.viewKind,
+      props.fields,
+      props.insight,
+    ] as const,
   () => {
     if (props.visible) syncFromProps();
   },
@@ -950,6 +983,11 @@ function onSortDir(v: string | number | boolean) {
 
 function emitChrome() {
   emit('update:chrome', { ...chrome });
+}
+
+/** 洞察开关变更：双开关独立或同时启用，无任意 option/数据源/多图表（OSC-0012） */
+function emitInsight() {
+  emit('update:insight', { ...localInsight.value });
 }
 
 function emitMapping() {

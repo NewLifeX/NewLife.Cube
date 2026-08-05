@@ -8,6 +8,7 @@ import {
   normalizeCardFieldOrientation,
   normalizeCardLayout,
   normalizeMapping,
+  normalizePageSize,
   resolveBatchDeleteState,
   resolveViewPageSize,
   seedMapping,
@@ -32,6 +33,24 @@ describe('resolveViewPageSize', () => {
     expect(resolveViewPageSize('calendar', 20, 300)).toBe(300);
     expect(resolveViewPageSize('gantt', 20, 900)).toBe(900);
     expect(resolveViewPageSize('gantt', 20, 2000)).toBe(1000);
+  });
+});
+
+describe('normalizePageSize', () => {
+  it('accepts PAGE_SIZE_OPTIONS values only', () => {
+    expect(normalizePageSize(20)).toBe(20);
+    expect(normalizePageSize(100)).toBe(100);
+    expect(normalizePageSize(1000)).toBe(1000);
+  });
+
+  it('normalizes invalid/negative/off-option/NaN to 0', () => {
+    expect(normalizePageSize(0)).toBe(0);
+    expect(normalizePageSize(-5)).toBe(0);
+    expect(normalizePageSize(30)).toBe(0);
+    expect(normalizePageSize(1001)).toBe(0);
+    expect(normalizePageSize('50')).toBe(50);
+    expect(normalizePageSize('abc')).toBe(0);
+    expect(normalizePageSize(undefined)).toBe(0);
   });
 });
 

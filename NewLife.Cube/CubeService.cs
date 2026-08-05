@@ -113,6 +113,9 @@ public static class CubeService
         services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
         {
             SystemJson.Apply(options.JsonSerializerOptions, true);
+            // 大小写不敏感绑定：兼容前端 api-core 的 camelCase 提交（如 /Cube/ViewProfile 的 typePath/formJson/filtersJson/pageSize）
+            // 与后端 PascalCase 实体属性；不影响既有 PascalCase 表单提交与 OSC-0008 枚举数值归一化
+            options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
             //#if NET7_0_OR_GREATER
             //            // 支持模型类中的DataMember特性
             //            options.JsonSerializerOptions.TypeInfoResolver = DataMemberResolver.Default;

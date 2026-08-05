@@ -62,6 +62,10 @@ pnpm build
 - Tab 工具条（`ViewTabsToolbar`）切换 / 新建 / 配置；映射存 `ViewsJson` 的 `NamedView.mapping`。
 - 列布局与命名视图经 `GET/PUT/DELETE /Cube/ViewProfile` 持久化。
 - 看板/日历/甘特使用较大 pageSize（约 200–500）；看板不拖拽写回。
+- **筛选记忆（OSC-0012）**：搜索条件按命名视图保存到 `ViewProfile.filtersJson`，仅显式点击「保存到此视图」写入；有效条件优先级为 URL 参数 > 已保存筛选 > 空条件，URL 不自动写回；可独立「清除默认筛选」。
+- **查询洞察面板（OSC-0012）**：搜索区与统计标签 / 一张固定图表合并为单一查询与洞察面板（`QueryInsightPanel`），统计与图表与列表共用同一搜索条件；命名视图配置抽屉可独立开关统计与图表，无数据 / 无权限 / 失败均非阻塞降级。
+- **页面级 PageSize（OSC-0012）**：每页条数按 `typePath` 保存到 `ViewProfile.pageSize`（仅接受 20/50/100/200/500/1000），切换实体互不影响；未配置时回落旧全局 `workspace.pageSize` 种子，分页器变更不再写全局偏好。
+- **受限表单布局（OSC-0013）**：`ViewProfile.formJson` 按「新增 / 编辑 / 详情」三模式独立保存字段顺序、显隐与 Category 折叠；列表顶栏「表单布局」入口可分别配置并恢复当前模式默认。仅展示偏好——字段权限、必填、校验与提交载荷仍由 GetPage / `prepareSubmitPayload` 权威决定，隐藏字段不能绕过。
 - 列表页顶部工具栏（筛选/搜索，table/tree 另有分组/排序）右侧「高级」菜单承载当前实体的导入/导出/批量删除；表格默认左侧勾选 + 表头全选，批量删除受删除权限、视图允许删除与选中行共同门禁（OSC-0007）。
 - 卡片视图支持**标准 / 偏大 / 整行**三种布局（`NamedView.mapping.layout`），并可配置正文字段列数与横/竖排版；整行布局窄屏自动回退纵向，多行/长文本字段自动占满整行。
 - 列表/树/卡片/看板视图中 `Enable` 字段徽标可点击，直接调用后端 `EnableSelect/DisableSelect`（`GET {type}/EnableSelect?keys=`）启停；非 Enable 的状态/枚举/值集徽标悬停光标不变（OSC-0009）。

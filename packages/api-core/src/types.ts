@@ -430,6 +430,13 @@ export interface ViewProfileModel {
   ganttJson?: string | null;
   cardJson?: string | null;
   filtersJson?: string | null;
+  /** 页面条数（typePath 级偏好）。0/null 表示未配置，回落全局 workspace.pageSize 种子 */
+  pageSize?: number;
+  /**
+   * 表单布局（系统全局唯一配置，仅管理员可写，作用于所有用户）。
+   * JSON：add/edit/detail 的字段顺序/显隐/分组折叠；空壳（无任何模式）等价于未配置。
+   */
+  formJson?: string | null;
   version?: number;
   remark?: string | null;
 }

@@ -55,6 +55,13 @@ export const LARGE_VIEW_PAGE_SIZE_DEFAULT = 200;
 /** 与 PAGE_SIZE_OPTIONS 上限对齐，便于工作台 pageSize 在大视图间复用 */
 export const LARGE_VIEW_PAGE_SIZE_MAX = 1000;
 
+/** 归一化页面条数（OSC-0012）：仅接受 PAGE_SIZE_OPTIONS 合法值；非法/负数/非选项值归一为 0（未配置） */
+export function normalizePageSize(raw: unknown): number {
+  const n = typeof raw === 'number' ? raw : Number(raw);
+  if (!Number.isInteger(n) || n <= 0) return 0;
+  return (PAGE_SIZE_OPTIONS as readonly number[]).includes(n) ? n : 0;
+}
+
 export function isLargePageViewKind(kind: ViewKind): boolean {
   return kind === 'kanban' || kind === 'calendar' || kind === 'gantt';
 }

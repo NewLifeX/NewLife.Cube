@@ -137,6 +137,17 @@ public partial class ViewProfile : Entity<ViewProfile>
     #endregion
 
     #region 业务操作
+    /// <summary>合法页面条数选项，与前端 PAGE_SIZE_OPTIONS 保持一致</summary>
+    private static readonly Int32[] _pageSizeOptions = [20, 50, 100, 200, 500, 1000];
+
+    /// <summary>归一化页面条数。仅接受选项内正整数，非法/负数/非选项值一律归一为 0（未配置）</summary>
+    /// <param name="size">原始页面条数</param>
+    private static Int32 NormalizePageSize(Int32 size)
+    {
+        if (size <= 0) return 0;
+        return Array.IndexOf(_pageSizeOptions, size) >= 0 ? size : 0;
+    }
+
     /// <summary>转为模型</summary>
     public ViewProfileModel ToModel()
     {
@@ -163,6 +174,9 @@ public partial class ViewProfile : Entity<ViewProfile>
             if (model.GanttJson != null) entity.GanttJson = model.GanttJson;
             if (model.CardJson != null) entity.CardJson = model.CardJson;
             if (model.FiltersJson != null) entity.FiltersJson = model.FiltersJson;
+            // PageSize：仅接受 PAGE_SIZE_OPTIONS 合法值，非法归一 0（未配置）；0/缺省不覆盖已有配置
+            if (model.PageSize > 0) entity.PageSize = NormalizePageSize(model.PageSize);
+            if (model.FormJson != null) entity.FormJson = model.FormJson;
             if (model.Version > 0) entity.Version = model.Version;
             else if (entity.Version <= 0) entity.Version = 1;
             if (model.Remark != null) entity.Remark = model.Remark;
@@ -185,6 +199,163 @@ public partial class ViewProfile : Entity<ViewProfile>
         if (entity == null) return false;
         entity.Delete();
         return true;
+    }
+
+    /// <summary>全局视图配置的用户标识。0 表示系统级（管理员定义的表单布局等）</summary>
+    public const Int32 GlobalUserId = 0;
+
+    /// <summary>查找全局视图配置（系统级，UserId=0）</summary>
+    /// <param name="typePath">实体路径。如 Admin/User</param>
+    public static ViewProfile FindGlobal(String typePath)
+    {
+        if (typePath.IsNullOrEmpty()) return null;
+        return FindByUserIdAndTypePath(GlobalUserId, typePath);
+    }
+
+    /// <summary>
+    /// 保存全局表单布局（仅管理员调用）。表单布局为系统全局唯一配置，作用于所有用户。
+    /// formJson 为空壳（无 add/edit/detail 模式）时删除全局布局（恢复默认）。
+    /// </summary>
+    /// <param name="typePath">实体路径</param>
+    /// <param name="formJson">表单布局 JSON</param>
+    public static ViewProfile SaveGlobalFormJson(String typePath, String formJson)
+    {
+        if (typePath.IsNullOrEmpty()) throw new ArgumentNullException(nameof(typePath));
+
+        // 空壳（无任何模式布局）等价于未配置：删除全局布局，恢复默认
+        if (IsEmptyFormJson(formJson))
+        {
+            DeleteGlobalFormJson(typePath);
+            return FindGlobal(typePath);
+        }
+
+        var entity = FindGlobal(typePath)
+            ?? new ViewProfile { UserId = GlobalUserId, TypePath = typePath };
+        entity.FormJson = formJson;
+        if (entity.Version <= 0) entity.Version = 1;
+        entity.Save();
+        return entity;
+    }
+
+    /// <summary>删除全局表单布局（恢复默认）</summary>
+    /// <param name="typePath">实体路径</param>
+    public static Boolean DeleteGlobalFormJson(String typePath)
+    {
+        if (typePath.IsNullOrEmpty()) return false;
+        var entity = FindGlobal(typePath);
+        if (entity == null) return false;
+        // 全局记录仅承载系统级配置（当前仅表单布局），无其他有效字段时整条删除
+        var hasOther = !entity.View.IsNullOrEmpty()
+            || !entity.ColumnsJson.IsNullOrEmpty()
+            || !entity.ViewsJson.IsNullOrEmpty()
+            || !entity.ActiveViewId.IsNullOrEmpty()
+            || !entity.GanttJson.IsNullOrEmpty()
+            || !entity.CardJson.IsNullOrEmpty()
+            || !entity.FiltersJson.IsNullOrEmpty()
+            || entity.PageSize > 0;
+        if (hasOther)
+            entity.FormJson = null;
+        else
+            entity.Delete();
+        return true;
+    }
+
+    /// <summary>
+    /// 保存全局模板（视图/筛选域，仅管理员调用）。模板为每个 typePath 一份的 UserId=0 全局记录，
+    /// 普通用户基于模板可创建个人配置域（个人 > 模板 > 系统默认）。
+    /// null 表示不覆盖该域；空串/空壳（无实际配置内容）表示清除该域（恢复默认）。
+    /// </summary>
+    /// <param name="typePath">实体路径</param>
+    /// <param name="viewsJson">视图域模板 JSON；null 不覆盖，空壳清除</param>
+    /// <param name="filtersJson">筛选域模板 JSON；null 不覆盖，空壳清除</param>
+    public static ViewProfile SaveGlobalTemplate(String typePath, String viewsJson, String filtersJson)
+    {
+        if (typePath.IsNullOrEmpty()) throw new ArgumentNullException(nameof(typePath));
+        if (viewsJson == null && filtersJson == null) return FindGlobal(typePath);
+
+        var entity = FindGlobal(typePath)
+            ?? new ViewProfile { UserId = GlobalUserId, TypePath = typePath };
+        if (viewsJson != null) entity.ViewsJson = IsEmptyTemplateJson(viewsJson, true) ? null : viewsJson;
+        if (filtersJson != null) entity.FiltersJson = IsEmptyTemplateJson(filtersJson, false) ? null : filtersJson;
+        if (entity.Version <= 0) entity.Version = 1;
+        entity.Save();
+        return entity;
+    }
+
+    /// <summary>删除全局模板（视图/筛选域，回落系统默认）。全局记录仍承载其他域（如表单布局）时保留记录。</summary>
+    /// <param name="typePath">实体路径</param>
+    public static Boolean DeleteGlobalTemplate(String typePath)
+    {
+        if (typePath.IsNullOrEmpty()) return false;
+        var entity = FindGlobal(typePath);
+        if (entity == null) return false;
+
+        entity.ViewsJson = null;
+        entity.FiltersJson = null;
+        var hasContent = !entity.View.IsNullOrEmpty()
+            || !entity.ColumnsJson.IsNullOrEmpty()
+            || !entity.ActiveViewId.IsNullOrEmpty()
+            || !entity.GanttJson.IsNullOrEmpty()
+            || !entity.CardJson.IsNullOrEmpty()
+            || !entity.FormJson.IsNullOrEmpty()
+            || entity.PageSize > 0;
+        if (hasContent)
+            entity.Save();
+        else
+            entity.Delete();
+        return true;
+    }
+
+    /// <summary>判断模板 JSON 是否为空壳（无实际配置内容）。视图域空数组/空对象、筛选域空 views map 均视为未配置。</summary>
+    /// <param name="json">模板 JSON</param>
+    /// <param name="isViews">是否视图域（ViewsJson）</param>
+    private static Boolean IsEmptyTemplateJson(String json, Boolean isViews)
+    {
+        if (json.IsNullOrWhiteSpace()) return true;
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            if (isViews)
+            {
+                // ViewsJson：命名视图数组，空数组视为未配置
+                if (root.ValueKind == System.Text.Json.JsonValueKind.Array) return root.GetArrayLength() == 0;
+                if (root.ValueKind == System.Text.Json.JsonValueKind.Object) return !root.EnumerateObject().Any();
+                return false;
+            }
+            // FiltersJson：views map 为空视为未配置
+            if (root.ValueKind == System.Text.Json.JsonValueKind.Object
+                && root.TryGetProperty("views", out var views)
+                && views.ValueKind == System.Text.Json.JsonValueKind.Object)
+                return !views.EnumerateObject().Any();
+            if (root.ValueKind == System.Text.Json.JsonValueKind.Object) return !root.EnumerateObject().Any();
+            return false;
+        }
+        catch
+        {
+            return true;
+        }
+    }
+
+    /// <summary>判断 FormJson 是否为空壳（无 add/edit/detail 任何模式布局）</summary>
+    /// <param name="json">表单布局 JSON</param>
+    private static Boolean IsEmptyFormJson(String json)
+    {
+        if (json.IsNullOrEmpty()) return true;
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            // 注意：XCode 实体有 _ 成员，不能用 out _ 弃元，改用具名变量
+            if (root.TryGetProperty("add", out var addEl)) return false;
+            if (root.TryGetProperty("edit", out var editEl)) return false;
+            if (root.TryGetProperty("detail", out var detailEl)) return false;
+            return true;
+        }
+        catch
+        {
+            return true;
+        }
     }
 
     #endregion

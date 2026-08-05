@@ -35,6 +35,8 @@
         :type-path="typePath"
         :mode="mode === 'add' ? 'add' : 'edit'"
         :field-errors="fieldErrors"
+        :layout="layout"
+        @toggle-collapse="emit('toggle-collapse', $event)"
       />
       <div v-else class="detail-grouped" :style="detailLabelCssVars">
         <section
@@ -42,8 +44,17 @@
           :key="group.category || '__default'"
           class="detail-group"
         >
-          <div v-if="group.title" class="detail-group__title">{{ group.title }}</div>
-          <div class="detail-fields">
+          <button
+            v-if="group.title"
+            type="button"
+            class="detail-group__title detail-group__collapse"
+            :aria-expanded="!detailCollapsed.has(group.category)"
+            @click="emit('toggle-collapse', group.category)"
+          >
+            <span>{{ group.title }}</span>
+            <icon-down class="detail-group__caret" :class="{ open: !detailCollapsed.has(group.category) }" />
+          </button>
+          <div v-show="!detailCollapsed.has(group.category)" class="detail-fields">
             <div v-for="field in group.fields" :key="field.name" class="detail-field">
               <div class="detail-field__label" :style="detailLabelStyle">
                 {{ field.displayName || field.name }}
@@ -91,6 +102,8 @@
           :type-path="typePath"
           mode="edit"
           :field-errors="fieldErrors"
+          :layout="layout"
+          @toggle-collapse="emit('toggle-collapse', $event)"
         />
         <div v-else class="detail-grouped" :style="detailLabelCssVars">
           <section
@@ -98,8 +111,17 @@
             :key="group.category || '__default'"
             class="detail-group"
           >
-            <div v-if="group.title" class="detail-group__title">{{ group.title }}</div>
-            <div class="detail-fields">
+            <button
+              v-if="group.title"
+              type="button"
+              class="detail-group__title detail-group__collapse"
+              :aria-expanded="!detailCollapsed.has(group.category)"
+              @click="emit('toggle-collapse', group.category)"
+            >
+              <span>{{ group.title }}</span>
+              <icon-down class="detail-group__caret" :class="{ open: !detailCollapsed.has(group.category) }" />
+            </button>
+            <div v-show="!detailCollapsed.has(group.category)" class="detail-fields">
               <div v-for="field in group.fields" :key="field.name" class="detail-field">
                 <div class="detail-field__label" :style="detailLabelStyle">
                   {{ field.displayName || field.name }}
@@ -341,9 +363,11 @@ import type { EntityCommentModel } from '@cube/api-core';
 import type { FieldMeta } from '@/core/types/field';
 import { getValueByKey } from '@/core/utils/url';
 import {
+  applyFormLayout,
   estimateDetailLabelWidth,
   groupFieldsByCategory,
 } from '@/core/utils/fieldGroups';
+import type { FormLayout } from '@/core/utils/viewProfile';
 import { formatApiError } from '@/core/utils/apiError';
 import { formatDateTime } from '@/core/utils/datetime';
 import {
@@ -376,8 +400,16 @@ const props = withDefaults(
     canNext?: boolean;
     /** 后端字段级错误（FieldErrors），映射到表单对应字段（OSC-0009） */
     fieldErrors?: { field: string; message: string }[];
+    /** 受限表单布局（OSC-0013）：当前 mode 的字段排序/显隐/Category 折叠 */
+    layout?: FormLayout | null;
   }>(),
-  { showHistoryTabs: true, canPrev: false, canNext: false, fieldErrors: () => [] },
+  {
+    showHistoryTabs: true,
+    canPrev: false,
+    canNext: false,
+    fieldErrors: () => [],
+    layout: null,
+  },
 );
 
 const emit = defineEmits<{
@@ -386,6 +418,7 @@ const emit = defineEmits<{
   edit: [];
   prev: [];
   next: [];
+  'toggle-collapse': [category: string];
 }>();
 
 const userStore = useUserStore();
@@ -435,7 +468,12 @@ const showSideTabs = computed(
 
 const showNav = computed(() => props.mode === 'edit' || props.mode === 'detail');
 
-const detailGroups = computed(() => groupFieldsByCategory(props.fields));
+/** 详情分组：应用受限布局的 hidden/order/Category 折叠（OSC-0013） */
+const detailApplied = computed(() =>
+  applyFormLayout(groupFieldsByCategory(props.fields), props.layout),
+);
+const detailGroups = computed(() => detailApplied.value.groups);
+const detailCollapsed = computed(() => new Set(detailApplied.value.collapsed));
 
 const detailLabelWidth = computed(() => estimateDetailLabelWidth(props.fields));
 const detailLabelStyle = computed(() => ({
@@ -758,6 +796,28 @@ defineExpose({ validate: () => formRef.value?.validate() });
   font-weight: 600;
   line-height: 22px;
   color: var(--color-text-1);
+}
+/* 详情分组标题可点击折叠（OSC-0013） */
+.detail-group__collapse {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+.detail-group__caret {
+  color: var(--color-text-3);
+  transition: transform 0.2s;
+  font-size: 12px;
+}
+.detail-group__caret.open {
+  transform: rotate(180deg);
 }
 .detail-fields {
   display: flex;

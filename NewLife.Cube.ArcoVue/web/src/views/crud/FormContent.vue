@@ -1,30 +1,45 @@
 <template>
   <a-form ref="formRef" :model="model" layout="vertical" :disabled="readonly">
     <div class="form-groups">
-      <section v-for="group in fieldGroups" :key="group.category || '__default'" class="form-group">
-        <div v-if="group.title" class="form-group__title">{{ group.title }}</div>
-        <a-row :gutter="16">
-          <a-col
-            v-for="field in group.fields"
-            :key="field.name"
-            :span="isFullWidthControl(resolveControl(field)) ? 24 : 12"
-          >
-            <a-form-item
-              :field="field.name"
-              :label="field.displayName || field.name"
-              :required="isFieldRequired(field)"
-              :rules="rulesFor(field)"
+      <section
+        v-for="group in visibleGroups"
+        :key="group.category || '__default'"
+        class="form-group"
+      >
+        <button
+          v-if="group.title"
+          type="button"
+          class="form-group__title form-group__collapse"
+          :aria-expanded="!collapsedSet.has(group.category)"
+          @click="$emit('toggle-collapse', group.category)"
+        >
+          <span>{{ group.title }}</span>
+          <icon-down class="form-group__caret" :class="{ open: !collapsedSet.has(group.category) }" />
+        </button>
+        <div v-show="!collapsedSet.has(group.category)" class="form-group__body">
+          <a-row :gutter="16">
+            <a-col
+              v-for="field in group.fields"
+              :key="field.name"
+              :span="isFullWidthControl(resolveControl(field)) ? 24 : 12"
             >
-              <FieldInput
-                :field="field"
-                :model-value="model[field.name]"
-                :disabled="readonly || !!field.readOnly || !!field.primaryKey"
-                :type-path="typePath"
-                @update:model-value="(v) => (model[field.name] = v)"
-              />
-            </a-form-item>
-          </a-col>
-        </a-row>
+              <a-form-item
+                :field="field.name"
+                :label="field.displayName || field.name"
+                :required="isFieldRequired(field)"
+                :rules="rulesFor(field)"
+              >
+                <FieldInput
+                  :field="field"
+                  :model-value="model[field.name]"
+                  :disabled="readonly || !!field.readOnly || !!field.primaryKey"
+                  :type-path="typePath"
+                  @update:model-value="(v) => (model[field.name] = v)"
+                />
+              </a-form-item>
+            </a-col>
+          </a-row>
+        </div>
       </section>
     </div>
   </a-form>
@@ -32,9 +47,11 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { IconDown } from '@arco-design/web-vue/es/icon';
 import type { FieldMeta } from '@/core/types/field';
 import { isAuditField, isFullWidthControl, resolveControl } from '@/core/utils/fieldControl';
-import { groupFieldsByCategory } from '@/core/utils/fieldGroups';
+import { applyFormLayout, groupFieldsByCategory } from '@/core/utils/fieldGroups';
+import type { FormLayout } from '@/core/utils/viewProfile';
 import { isFieldRequired } from '@/core/utils/submitPayload';
 import { fieldFormatRules } from '@/core/utils/validation';
 import FieldInput from '@/components/FieldInput.vue';
@@ -49,9 +66,15 @@ const props = withDefaults(
     mode?: 'add' | 'edit' | 'detail';
     /** 后端字段级错误（FieldErrors），映射到对应 a-form-item（OSC-0009） */
     fieldErrors?: { field: string; message: string }[];
+    /** 受限表单布局（OSC-0013）：字段排序/显隐/Category 折叠；null 表示元数据原序 */
+    layout?: FormLayout | null;
   }>(),
-  { mode: 'edit', fieldErrors: () => [] },
+  { mode: 'edit', fieldErrors: () => [], layout: null },
 );
+
+defineEmits<{
+  'toggle-collapse': [category: string];
+}>();
 
 const formRef = ref();
 
@@ -64,7 +87,13 @@ const visibleFields = computed(() => {
   return withoutAudit;
 });
 
-const fieldGroups = computed(() => groupFieldsByCategory(visibleFields.value));
+/** 应用受限布局：hidden 过滤 + order 排序 + Category 折叠（OSC-0013） */
+const appliedGroups = computed(() =>
+  applyFormLayout(groupFieldsByCategory(visibleFields.value), props.layout),
+);
+const visibleGroups = computed(() => appliedGroups.value.groups);
+const collapsed = computed(() => appliedGroups.value.collapsed);
+const collapsedSet = computed(() => new Set(collapsed.value));
 
 function rulesFor(field: FieldMeta) {
   const rules = [...fieldFormatRules(field)];
@@ -120,5 +149,30 @@ defineExpose({ validate, clearValidate });
   font-weight: 600;
   line-height: 22px;
   color: var(--color-text-1);
+}
+/* 分组标题可点击折叠（OSC-0013）；display:flex 去除 button 默认内边距 */
+.form-group__collapse {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+.form-group__caret {
+  color: var(--color-text-3);
+  transition: transform 0.2s;
+  font-size: 12px;
+}
+.form-group__caret.open {
+  transform: rotate(180deg);
+}
+.form-group__body {
+  min-width: 0;
 }
 </style>

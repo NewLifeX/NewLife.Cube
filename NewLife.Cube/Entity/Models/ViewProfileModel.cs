@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.Serialization;
@@ -41,6 +41,12 @@ public partial class ViewProfileModel
     /// <summary>筛选记忆。JSON</summary>
     public String FiltersJson { get; set; }
 
+    /// <summary>页面条数。每页显示记录数，0 表示未配置</summary>
+    public Int32 PageSize { get; set; }
+
+    /// <summary>表单布局。JSON：add/edit/detail 的字段顺序/显隐/分组折叠</summary>
+    public String FormJson { get; set; }
+
     /// <summary>版本。配置契约版本</summary>
     public Int32 Version { get; set; }
 
@@ -81,6 +87,8 @@ public partial class ViewProfileModel
         GanttJson = model.GanttJson;
         CardJson = model.CardJson;
         FiltersJson = model.FiltersJson;
+        PageSize = model.PageSize;
+        FormJson = model.FormJson;
         Version = model.Version;
         CreateUserId = model.CreateUserId;
         CreateTime = model.CreateTime;

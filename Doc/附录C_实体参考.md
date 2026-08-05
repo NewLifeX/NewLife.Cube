@@ -34,6 +34,9 @@
 | AccessRule | AccessRule | 访问规则 |
 | Tenant | Tenant | 租户 |
 | TenantUser | TenantUser | 租户用户 |
+| ViewProfile | ViewProfile | 实体视图配置：按用户 + typePath 的命名视图/列布局/筛选记忆（`FiltersJson`）与页面条数（`PageSize`，0=未配置，仅接受 20/50/100/200/500/1000）；`FormJson` 存 add/edit/detail 受限表单布局（字段顺序/显隐/分组折叠）。`UserId=0` 为受控全局模板（仅系统管理员经 `/Cube/ViewProfileTemplate` 管理）：`ViewsJson`/`FiltersJson` 为视图/筛选模板域，有效配置按 个人 > 模板 > 系统默认 解析；`FormJson` 为全局唯一表单布局（OSC-0013），所有用户共享 |
+| UserProfile | UserProfile | 用户呈现配置：布局/主题/工作台 JSON |
+| EntityComment | EntityComment | 实体评论：同表回复 ParentId/RootId/ReplyUser* |
 
 ---
 
