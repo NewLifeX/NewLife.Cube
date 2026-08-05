@@ -199,8 +199,12 @@ const cardCssVars = computed(() => ({
   word-break: break-all;
 }
 /* 状态/枚举/值集徽标（与列表徽章一致：浅底 + 同色文字）；Enable 徽标可点击 */
+/* align-self:flex-start 防止 vertical 布局下被 flex 交叉轴拉伸，宽度严格按文案自适应 */
 .record-card-badge {
   display: inline-block;
+  align-self: flex-start;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 2px 8px;
   border: 1px solid transparent;
   border-radius: 4px;

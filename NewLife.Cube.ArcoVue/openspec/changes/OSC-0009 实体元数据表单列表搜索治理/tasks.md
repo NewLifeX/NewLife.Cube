@@ -64,3 +64,9 @@
 - [x] 8.3 看板视图徽标与卡片视图保持一致（核验）：`KanbanBoard` 经 `RecordCard` 渲染 `CardBodyField.badge`（状态/枚举/值集），Enable 徽标可点击——上一轮 T7.4 已落地，本轮无回归。
 - [x] 8.4 卡片等高：`CardList` 挂载/数据或布局变化后测量所有 `.record-card` 最大高度，以 `min-height` 统一下发（`RecordCard` 增 `minHeight` prop，并入 `cardCssVars`），使所有卡片高度=后端返回全量对象中最高者；操作区仍经 grid 末行 + `margin-top:auto` 固定左下。
 - [x] 8.5 测试：api-core `api.spec.ts` 改/增 `enableSelect`、`disableSelect` 用例（2 条）；web 24 files / 173 tests、api-core 6 tests 全过；`npm run build` 与 `dotnet build NewLife.Cube`（0 错误）通过。
+
+## T9 看板/卡片徽标宽度自适应
+
+- [x] 9.1 `RecordCard` 徽标样式：`.record-card-badge` 增 `align-self: flex-start` + `max-width: 100%` + `box-sizing: border-box`——修复 vertical 布局（flex `column`）下交叉轴 `stretch` 把徽标拉伸到整行宽的问题；结合 `inline-block` + `white-space: nowrap`，徽标宽度严格按文案自适应。
+- [x] 9.2 看板视图与卡片视图共用 `RecordCard`，样式修复同时作用于两者；Enable 徽标点击切换行为不受影响。
+- [x] 9.3 纯样式调整，无逻辑变更；`npm run build`（vue-tsc + vite）成功。
