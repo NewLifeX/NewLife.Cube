@@ -11,12 +11,37 @@ import { fileURLToPath } from 'node:url';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const webRoot = path.resolve(scriptDir, '..');
-const epDir = path.join(webRoot, 'node_modules', 'element-plus');
 
-if (!fs.existsSync(epDir)) {
-  console.error(`[gen-element-tokens] 未找到 element-plus，期望路径: ${epDir}\n请先执行 pnpm install。`);
-  process.exit(1);
+/**
+ * 从起始目录开始向上搜索，找到第一个包含 node_modules/element-plus 的目录。
+ * 适配 pnpm monorepo 场景：pnpm install 在根目录执行，依赖可能被 hoist 到上方。
+ * @param {string} fromDir 起始搜索目录
+ * @returns {string|null} element-plus 目录的绝对路径，或 null
+ */
+function findElementPlus(fromDir) {
+  let current = path.resolve(fromDir);
+  const root = path.parse(current).root;
+  while (true) {
+    const candidate = path.join(current, 'node_modules', 'element-plus');
+    if (fs.existsSync(candidate)) return candidate;
+    if (current === root) break;
+    current = path.dirname(current);
+  }
+  return null;
 }
+
+// 先查 webRoot 本级，再逐级向上搜索（适配 pnpm hoist）
+let epDir = path.join(webRoot, 'node_modules', 'element-plus');
+if (!fs.existsSync(epDir)) {
+  epDir = findElementPlus(webRoot);
+}
+
+if (!epDir) {
+  console.log(`[gen-element-tokens] 未找到 element-plus（已从 ${webRoot} 向上搜索至根目录），跳过。`);
+  process.exit(0);
+}
+
+console.log(`[gen-element-tokens] 使用 element-plus 路径: ${epDir}`);
 
 const tokens = new Set();
 
