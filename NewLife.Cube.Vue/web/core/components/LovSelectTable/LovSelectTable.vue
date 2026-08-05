@@ -430,7 +430,7 @@ function rowClassName(row: { row: Record<string, unknown> }): string {
   width: 100%;
 }
 .lst-selected-count {
-  color: #909399;
+  color: var(--el-text-color-secondary);
   font-size: 12px;
 }
 .lst-footer-buttons {
