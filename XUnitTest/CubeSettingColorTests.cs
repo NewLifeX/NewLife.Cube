@@ -14,9 +14,9 @@ public class CubeSettingColorTests
     {
         var set = new CubeSetting();
 
-        Assert.Equal("靛蓝紫", set.AIColorScheme);
-        Assert.Equal("#667eea", set.AIPrimaryColor);
-        Assert.Equal("#764ba2", set.AISecondaryColor);
+        Assert.Equal("新生命绿", set.AIColorScheme);
+        Assert.Equal("#2ecc71", set.AIPrimaryColor);
+        Assert.Equal("#1e8e3e", set.AISecondaryColor);
     }
 
     [Fact]

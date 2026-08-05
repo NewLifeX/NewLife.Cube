@@ -7,14 +7,33 @@
   <div v-if="enabled" class="ai-assistant" :style="aiStyle">
     <!-- 悬浮球 -->
     <div class="ai-fab" :title="'AI 助手'" @click="visible = !visible">
-      <el-icon :size="22" color="#fff"><MagicStick /></el-icon>
+      <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+        <g fill="#2ecc71">
+          <circle cx="12" cy="7" r="4.6" />
+          <circle cx="17" cy="12" r="4.6" />
+          <circle cx="12" cy="17" r="4.6" />
+          <circle cx="7" cy="12" r="4.6" />
+        </g>
+        <circle cx="12" cy="12" r="2.6" fill="#ffffff" />
+      </svg>
     </div>
 
     <!-- 对话面板 -->
     <Transition name="ai-fade">
       <div v-if="visible" class="ai-panel">
         <div class="ai-panel-header">
-          <span class="ai-title"><el-icon :size="16" color="#fff"><MagicStick /></el-icon> AI 助手</span>
+          <span class="ai-title">
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <g fill="#2ecc71">
+                <circle cx="12" cy="7" r="4.6" />
+                <circle cx="17" cy="12" r="4.6" />
+                <circle cx="12" cy="17" r="4.6" />
+                <circle cx="7" cy="12" r="4.6" />
+              </g>
+              <circle cx="12" cy="12" r="2.6" fill="#ffffff" />
+            </svg>
+            AI 助手
+          </span>
           <div class="ai-actions">
             <el-button text size="small" title="清空会话" @click="clear"><el-icon><Delete /></el-icon></el-button>
             <el-button text size="small" title="收起" @click="visible = false"><el-icon><Close /></el-icon></el-button>
@@ -68,7 +87,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import { MagicStick, Delete, Close, Promotion } from '@element-plus/icons-vue';
+import { Delete, Close, Promotion } from '@element-plus/icons-vue';
 import { Session } from '/@/utils/storage';
 
 interface Props {
@@ -111,8 +130,8 @@ const think = ref(false);
 
 /** AI 助手开关与配色（来自 /Cube/GetAiConfig，CubeSetting 配置） */
 const enabled = ref(false);
-const primaryColor = ref('#667eea');
-const secondaryColor = ref('#764ba2');
+const primaryColor = ref('#2ecc71');
+const secondaryColor = ref('#1e8e3e');
 
 /** 根元素 CSS 变量，驱动全部浮窗配色 */
 const aiStyle = computed(() => ({

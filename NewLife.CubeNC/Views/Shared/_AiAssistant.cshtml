@@ -9,11 +9,30 @@
     @* AI 助手：右下角悬浮球 + 对话面板。所有 MVC 主题共享 *@
     <div id="aiAssistant" class="ai-assistant">
         <button type="button" id="aiAssistantFab" class="ai-fab" title="AI 助手">
-            <i class="ace-icon fa fa-magic"></i>
+            <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+                <g fill="#2ecc71">
+                    <circle cx="12" cy="7" r="4.6" />
+                    <circle cx="17" cy="12" r="4.6" />
+                    <circle cx="12" cy="17" r="4.6" />
+                    <circle cx="7" cy="12" r="4.6" />
+                </g>
+                <circle cx="12" cy="12" r="2.6" fill="#ffffff" />
+            </svg>
         </button>
         <div class="ai-panel" id="aiAssistantPanel" style="display:none;">
             <div class="ai-panel-header">
-                <span><i class="ace-icon fa fa-magic"></i> AI 助手</span>
+                <span>
+                    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                        <g fill="#2ecc71">
+                            <circle cx="12" cy="7" r="4.6" />
+                            <circle cx="17" cy="12" r="4.6" />
+                            <circle cx="12" cy="17" r="4.6" />
+                            <circle cx="7" cy="12" r="4.6" />
+                        </g>
+                        <circle cx="12" cy="12" r="2.6" fill="#ffffff" />
+                    </svg>
+                    AI 助手
+                </span>
                 <div class="ai-panel-actions">
                     <button type="button" id="aiClearChat" title="清空会话"><i class="ace-icon fa fa-trash"></i></button>
                     <button type="button" id="aiClosePanel" title="收起"><i class="ace-icon fa fa-times"></i></button>

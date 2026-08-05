@@ -56,10 +56,10 @@ public sealed class AiAssistantTests : IAsyncLifetime
             return;
         }
 
-        // 0. 配色由 CubeSetting 注入 CSS 变量（默认靛蓝紫渐变）
+        // 0. 配色由 CubeSetting 注入 CSS 变量（默认新生命绿）
         var primary = await _page.Locator("#aiAssistant")
             .EvaluateAsync<String>("el => getComputedStyle(el).getPropertyValue('--ai-primary').trim()");
-        Assert.Equal("#667eea", primary, ignoreCase: true);
+        Assert.Equal("#2ecc71", primary, ignoreCase: true);
 
         // 1. 点击悬浮球，面板打开
         await fab.ClickAsync();

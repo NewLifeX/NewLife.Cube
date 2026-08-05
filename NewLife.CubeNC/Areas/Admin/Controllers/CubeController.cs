@@ -18,14 +18,18 @@ public class CubeController : ConfigController<CubeSetting>
     private Boolean _has;
     private readonly UIService _uIService;
 
-    /// <summary>AI 助手主题色方案。键为方案名，值为"主色,辅色"</summary>
+    /// <summary>AI 助手主题色方案。键为方案名，值为"主色,辅色"，首个为默认方案</summary>
     private static readonly Dictionary<String, String> _colorSchemes = new()
     {
+        ["新生命绿"] = "#2ecc71,#1e8e3e",
         ["靛蓝紫"] = "#667eea,#764ba2",
         ["翠绿"] = "#10b981,#059669",
         ["天青蓝"] = "#0ea5e9,#0369a1",
+        ["湖青"] = "#06b6d4,#0e7490",
         ["琥珀橙"] = "#f59e0b,#ea580c",
         ["玫瑰红"] = "#f43f5e,#be123c",
+        ["藤萝紫"] = "#8b5cf6,#6d28d9",
+        ["樱花粉"] = "#f472b6,#db2777",
         ["石墨黑"] = "#475569,#0f172a",
     };
 

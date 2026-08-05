@@ -387,20 +387,20 @@ public class CubeSetting : Config<CubeSetting>
     [Category("AI")]
     public Boolean AIDefaultThink { get; set; }
 
-    /// <summary>AI 助手主题色方案。预设方案联动填充主色/辅色，可再手动微调，默认靛蓝紫</summary>
-    [Description("AI 助手主题色方案。预设方案联动填充主色/辅色，可再手动微调，默认靛蓝紫")]
+    /// <summary>AI 助手主题色方案。预设方案联动填充主色/辅色，可再手动微调，默认新生命绿</summary>
+    [Description("AI 助手主题色方案。预设方案联动填充主色/辅色，可再手动微调，默认新生命绿")]
     [Category("AI")]
-    public String AIColorScheme { get; set; } = "靛蓝紫";
+    public String AIColorScheme { get; set; } = "新生命绿";
 
-    /// <summary>AI 助手主色。悬浮球、面板头、用户气泡等主色调，默认靛蓝#667eea</summary>
-    [Description("AI 助手主色。悬浮球、面板头、用户气泡等主色调，默认靛蓝#667eea")]
+    /// <summary>AI 助手主色。悬浮球、面板头、用户气泡等主色调，默认新生命绿#2ecc71</summary>
+    [Description("AI 助手主色。悬浮球、面板头、用户气泡等主色调，默认新生命绿#2ecc71")]
     [Category("AI")]
-    public String AIPrimaryColor { get; set; } = "#667eea";
+    public String AIPrimaryColor { get; set; } = "#2ecc71";
 
-    /// <summary>AI 助手辅色。主色渐变终点色，默认紫色#764ba2</summary>
-    [Description("AI 助手辅色。主色渐变终点色，默认紫色#764ba2")]
+    /// <summary>AI 助手辅色。主色渐变终点色，默认深绿#1e8e3e</summary>
+    [Description("AI 助手辅色。主色渐变终点色，默认深绿#1e8e3e")]
     [Category("AI")]
-    public String AISecondaryColor { get; set; } = "#764ba2";
+    public String AISecondaryColor { get; set; } = "#1e8e3e";
     #endregion
 
     #region 系统功能
