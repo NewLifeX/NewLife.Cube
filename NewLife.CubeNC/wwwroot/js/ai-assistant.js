@@ -8,8 +8,50 @@
 
     var CubeAI = window.CubeAI || {};
 
-    /* ================= 轻量 Markdown 渲染 ================= */
+    /* ================= Markdown 渲染（marked 库，未加载时回退轻量渲染） ================= */
+    /** HTML 转义，防止 AI 输出的 raw HTML 注入（XSS） */
+    function escapeHtml(s) {
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    /** 初始化 marked：GFM + 单换行断行 + XSS 防护 */
+    var _markedReady = false;
+    (function initMarked() {
+        if (typeof window.marked === 'undefined' || !window.marked.parse) return;
+        _markedReady = true;
+        window.marked.use({
+            gfm: true,
+            breaks: true, // 单换行 → <br>，AI 流式输出友好
+            renderer: {
+                // 安全：AI 输出中的 raw HTML 一律转义显示，防止 XSS
+                html: function (token) { return escapeHtml(token.text); },
+                // 代码块：语言徽标 + 内容转义 + 深色样式
+                code: function (token) {
+                    var lang = (token.lang || '').match(/^\S+/);
+                    lang = lang ? lang[0] : '';
+                    var label = lang ? '<span class="ai-code-lang">' + escapeHtml(lang) + '</span>' : '';
+                    var text = String(token.text).replace(/\n+$/, '');
+                    return '<pre>' + label + '<code class="language-' + escapeHtml(lang) + '">' + escapeHtml(text) + '</code></pre>';
+                }
+            }
+        });
+    })();
+
+    /** Markdown 渲染主入口：优先 marked 库，未加载时回退轻量渲染 */
     function renderMarkdown(text) {
+        if (!text) return '';
+        if (_markedReady && window.marked && window.marked.parse) {
+            try { return window.marked.parse(text); } catch (e) { /* 解析失败回退 */ }
+        }
+        return renderMarkdownLight(text);
+    }
+
+    /* ================= 轻量 Markdown 渲染（marked 未加载时的回退） ================= */
+    function renderMarkdownLight(text) {
         if (!text) return '';
 
         // 表格：先于行级替换处理多行块（| 表头 | + | --- | 分隔行 + 数据行）

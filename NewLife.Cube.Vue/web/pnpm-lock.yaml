@@ -38,6 +38,9 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.18.1
+      marked:
+        specifier: ^18.0.9
+        version: 18.0.9
       md-editor-v3:
         specifier: ^4.19.1
         version: 4.21.3(vue@3.5.35(typescript@5.8.3))
@@ -3248,6 +3251,11 @@ packages:
 
   markdown-it@14.3.0:
     resolution: {integrity: sha512-RCEsPjR+sr0x+AuYp601tKTkgFG4YEPLCzHST3cQ/fhlJkqAkz1L2/Qbp1j9qw5SBwQHFBoW8+hoN5xssOF0Tw==}
+    hasBin: true
+
+  marked@18.0.9:
+    resolution: {integrity: sha512-/Sa4qiiHZxf0/FQdBBowr9q4r10krCwMvpK48FUBdXdUXScDxiQGR9zCPrFgRVR5LU3iySOiIjy09ZQvADir1w==}
+    engines: {node: '>= 20'}
     hasBin: true
 
   math-intrinsics@1.1.0:
@@ -7454,6 +7462,8 @@ snapshots:
       mdurl: 2.0.0
       punycode.js: 2.3.1
       uc.micro: 2.1.0
+
+  marked@18.0.9: {}
 
   math-intrinsics@1.1.0: {}
 

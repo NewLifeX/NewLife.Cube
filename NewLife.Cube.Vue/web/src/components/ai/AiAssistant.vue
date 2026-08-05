@@ -88,6 +88,7 @@
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { Delete, Close, Promotion } from '@element-plus/icons-vue';
+import { marked } from 'marked';
 import { Session } from '/@/utils/storage';
 
 interface Props {
@@ -151,24 +152,33 @@ if (!sessionId) {
   localStorage.setItem('cube-ai-session', sessionId);
 }
 
-/** 轻量 Markdown 渲染 */
+/** HTML 转义，防止 AI 输出的 raw HTML 注入（XSS） */
+function escapeHtml(s: string): string {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/** Markdown 渲染：marked 库（GFM + 单换行断行 + XSS 防护） */
 function renderMarkdown(text: string): string {
-  let html = text
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
-    .replace(/^---$/gm, '<hr>')
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/\n/g, '<br>');
-  html = '<p>' + html + '</p>';
-  html = html.replace(/((?:<li>.*?<\/li><br>)+)/g, (m) => '<ul>' + m.replace(/<br>/g, '') + '</ul>');
-  return html;
+  if (!text) return '';
+  return marked.parse(text, {
+    gfm: true,
+    breaks: true, // 单换行 → <br>，AI 流式输出友好
+    renderer: {
+      // 安全：AI 输出中的 raw HTML 一律转义显示，防止 XSS
+      html: ({ text: t }) => escapeHtml(t),
+      // 代码块：语言徽标 + 内容转义 + 深色样式
+      code: ({ text: t, lang }) => {
+        const l = (lang || '').match(/^\S+/)?.[0] || '';
+        const label = l ? `<span class="ai-code-lang">${escapeHtml(l)}</span>` : '';
+        const body = String(t).replace(/\n+$/, '');
+        return `<pre>${label}<code class="language-${escapeHtml(l)}">${escapeHtml(body)}</code></pre>`;
+      },
+    } as any,
+  });
 }
 
 function scrollBottom() {
@@ -486,7 +496,7 @@ onMounted(loadConfig);
   color: #333;
   border-top-left-radius: 2px;
 }
-.ai-assistant .ai-bubble :deep(h1), .ai-assistant .ai-bubble :deep(h2), .ai-assistant .ai-bubble :deep(h3) {
+.ai-assistant .ai-bubble :deep(h1), .ai-assistant .ai-bubble :deep(h2), .ai-assistant .ai-bubble :deep(h3), .ai-assistant .ai-bubble :deep(h4) {
   margin: 8px 0 4px;
 }
 .ai-assistant .ai-bubble :deep(p) {
@@ -496,7 +506,66 @@ onMounted(loadConfig);
   background: #e9e9e9;
   padding: 1px 4px;
   border-radius: 3px;
+  font-family: Consolas, Monaco, 'Courier New', monospace;
   font-size: 90%;
+}
+.ai-assistant .ai-bubble :deep(pre) {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 10px 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 6px 0;
+  position: relative;
+}
+.ai-assistant .ai-bubble :deep(pre code) {
+  background: none;
+  padding: 0;
+  color: inherit;
+  font-size: 90%;
+}
+.ai-assistant .ai-bubble :deep(.ai-code-lang) {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  font-size: 10px;
+  color: #888;
+  text-transform: uppercase;
+  user-select: none;
+}
+.ai-assistant .ai-bubble :deep(table) {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 6px 0;
+}
+.ai-assistant .ai-bubble :deep(th),
+.ai-assistant .ai-bubble :deep(td) {
+  border: 1px solid #ddd;
+  padding: 4px 6px;
+  font-size: 12px;
+}
+.ai-assistant .ai-bubble :deep(th) {
+  background: #f5f5f5;
+}
+.ai-assistant .ai-bubble :deep(a) {
+  color: var(--ai-primary);
+  text-decoration: underline;
+}
+.ai-assistant .ai-bubble :deep(hr) {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 8px 0;
+}
+.ai-assistant .ai-bubble :deep(ul),
+.ai-assistant .ai-bubble :deep(ol) {
+  padding-left: 18px;
+  margin: 4px 0;
+}
+.ai-assistant .ai-bubble :deep(li) {
+  margin: 2px 0;
+}
+.ai-assistant .ai-bubble :deep(input[type='checkbox']) {
+  margin-right: 4px;
 }
 .ai-assistant .ai-bubble :deep(blockquote) {
   border-left: 3px solid var(--ai-primary);

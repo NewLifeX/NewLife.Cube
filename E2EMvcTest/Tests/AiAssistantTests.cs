@@ -352,8 +352,14 @@ public sealed class AiAssistantTests : IAsyncLifetime
                     '  </div>' +
                     '</div>';
                 document.body.appendChild(div);
+                // 与 _AiAssistant.cshtml 一致：先加载 marked 库，再加载助手脚本（async=false 保证顺序）
+                var s1 = document.createElement('script');
+                s1.src = '/Content/marked/marked.min.js';
+                s1.async = false;
+                document.body.appendChild(s1);
                 var s = document.createElement('script');
                 s.src = '/js/ai-assistant.js';
+                s.async = false;
                 document.body.appendChild(s);
             })()
         ");

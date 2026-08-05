@@ -58,6 +58,7 @@
             </div>
         </div>
     </div>
+    <script src="~/Content/marked/marked.min.js"></script>
     <script src="~/js/ai-assistant.js"></script>
     <style>
         /* AI 助手浮窗样式（主题无关），主色/辅色由 CubeSetting 配置 */
@@ -94,16 +95,31 @@
         .ai-msg-user { justify-content: flex-end; }
         .ai-bubble {
             max-width: 82%; padding: 8px 12px; border-radius: 8px; line-height: 1.6;
-            background: #fff; border: 1px solid #e4e7f0; white-space: pre-wrap; word-break: break-word;
+            background: #fff; border: 1px solid #e4e7f0; white-space: normal; word-break: break-word;
         }
-        .ai-msg-user .ai-bubble { background: var(--ai-primary); color: #fff; border-color: var(--ai-primary); }
-        .ai-bubble h1, .ai-bubble h2, .ai-bubble h3 { font-size: 14px; margin: 6px 0; }
+        .ai-bubble p { margin: 4px 0; }
+        .ai-msg-user .ai-bubble { background: var(--ai-primary); color: #fff; border-color: var(--ai-primary); white-space: pre-wrap; }
+        .ai-bubble h1, .ai-bubble h2, .ai-bubble h3, .ai-bubble h4 { font-size: 14px; margin: 8px 0 4px; }
         .ai-bubble table { border-collapse: collapse; width: 100%; margin: 6px 0; }
         .ai-bubble table th, .ai-bubble table td { border: 1px solid #ddd; padding: 4px 6px; font-size: 12px; }
         .ai-bubble table th { background: #f5f5f5; }
-        .ai-bubble code { background: #f0f0f0; padding: 1px 4px; border-radius: 3px; }
-        .ai-bubble pre { background: #f8f8f8; padding: 8px; border-radius: 4px; overflow-x: auto; }
+        .ai-bubble a { color: var(--ai-primary); text-decoration: underline; }
+        .ai-bubble hr { border: none; border-top: 1px solid #e4e7f0; margin: 8px 0; }
+        .ai-bubble code { background: #f0f0f0; padding: 1px 4px; border-radius: 3px; font-family: Consolas, Monaco, "Courier New", monospace; font-size: 12px; }
+        .ai-bubble pre {
+            background: #1e1e1e; color: #d4d4d4; padding: 10px 12px; border-radius: 6px;
+            overflow-x: auto; margin: 6px 0; position: relative;
+        }
+        .ai-bubble pre code { background: none; padding: 0; color: inherit; font-size: 12px; }
+        .ai-bubble .ai-code-lang {
+            position: absolute; top: 4px; right: 8px; font-size: 10px; color: #888;
+            text-transform: uppercase; user-select: none;
+        }
+        .ai-bubble pre::-webkit-scrollbar { height: 6px; }
+        .ai-bubble pre::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
         .ai-bubble ul, .ai-bubble ol { padding-left: 18px; margin: 4px 0; }
+        .ai-bubble li { margin: 2px 0; }
+        .ai-bubble input[type="checkbox"] { margin-right: 4px; }
         .ai-bubble blockquote { border-left: 3px solid var(--ai-primary); padding: 2px 10px; margin: 6px 0; background: color-mix(in srgb, var(--ai-primary) 6%, #fff); }
         .ai-tool {
             margin: 4px 0; padding: 6px 10px; border-radius: 6px; font-size: 12px;
