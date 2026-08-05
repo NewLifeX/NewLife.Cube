@@ -94,19 +94,25 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <param name="isEnable">启用/禁用</param>
     /// <param name="reason">操作原因</param>
     /// <returns></returns>
-    protected virtual Int32 EnableOrDisableSelect(Boolean isEnable, String reason)
-    {
-        var count = 0;
-        // 主键可能是 Int64 雪花 ID（Int64AsString 序列化为字符串）。
-        // SplitAsInt 按 Int32 解析，超范围片段会被过滤为空数组 → 实际未更新却返回“共禁用[0]个”成功码，前端误报成功。
-        // 改用手动 Int64 解析（ToLong 无效返回 0，再过滤）。
-        var ids = GetRequest("keys")
+    /// <summary>解析 keys 主键集合（逗号分隔，支持 Int64 雪花 ID；无效片段过滤）</summary>
+    /// <param name="keys">主键集合字符串</param>
+    /// <returns></returns>
+    private static Int64[] ParseKeys(String keys) =>
+        (keys + "")
             .Split(",")
             .Select(e => e.Trim())
             .Where(e => !e.IsNullOrEmpty())
             .Select(e => e.ToLong())
             .Where(e => e > 0)
             .ToArray();
+
+    protected virtual Int32 EnableOrDisableSelect(Boolean isEnable, String reason)
+    {
+        var count = 0;
+        // 主键可能是 Int64 雪花 ID（Int64AsString 序列化为字符串）。
+        // SplitAsInt 按 Int32 解析，超范围片段会被过滤为空数组 → 实际未更新却返回“共禁用[0]个”成功码，前端误报成功。
+        // 改用手动 Int64 解析（ToLong 无效返回 0，再过滤）。
+        var ids = ParseKeys(GetRequest("keys"));
         var fields = Factory.AllFields;
         if (ids.Length > 0 && fields.Any(f => f.Name.EqualIgnoreCase("enable")))
         {
@@ -121,6 +127,41 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
                     count += entity.Update();
                 }
+            }
+        }
+
+        return count;
+    }
+
+    /// <summary>批量设置指定 Boolean 字段（如“可见/启用”等状态开关），供 SPA 徽标点击切换</summary>
+    /// <param name="keys">主键集合，逗号分隔</param>
+    /// <param name="field">字段名</param>
+    /// <param name="value">目标值</param>
+    /// <param name="reason">操作原因</param>
+    /// <returns>更新条数</returns>
+    protected virtual Int32 SetFieldSelect(String keys, String field, Boolean value, String reason)
+    {
+        if (field.IsNullOrEmpty()) return 0;
+
+        // 字段必须存在且为 Boolean 类型
+        var fi = Factory.AllFields.FirstOrDefault(f => f.Name.EqualIgnoreCase(field));
+        if (fi == null || fi.Type != typeof(Boolean)) return 0;
+
+        var count = 0;
+        // Int64 雪花 ID 兼容（SplitAsInt 会溢出过滤）
+        var ids = ParseKeys(keys);
+        if (ids.Length == 0) return 0;
+
+        var log = LogProvider.Provider;
+        foreach (var id in ids)
+        {
+            var entity = Factory.Find("ID", id);
+            if (OnSetField(entity as TEntity, fi.Name, value))
+            {
+                log.WriteLog("Update", entity);
+                log.WriteLog(entity.GetType(), $"{fi.Name}={(value ? 1 : 0)}", true, reason);
+
+                count += entity.Update();
             }
         }
 

@@ -75,6 +75,19 @@ describe('createPageApi', () => {
       }),
     );
   });
+
+  it('setField hits GET /Admin/User/SetField with keys/field/value', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: {} });
+    const api = createPageApi(request);
+    await api.setField('/Admin/User', [7, 8], 'Visible', true);
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Admin/User/SetField',
+        method: 'get',
+        params: { keys: '7,8', field: 'Visible', value: 'true' },
+      }),
+    );
+  });
 });
 
 describe('createProfileApi', () => {

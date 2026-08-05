@@ -71,7 +71,7 @@ const emit = defineEmits<{
   columnsChange: [cols: ColumnPref[]];
   sortChange: [payload: { field: string; desc: boolean } | null];
   action: [payload: { action: 'detail' | 'edit' | 'delete'; row: Record<string, unknown> }];
-  toggleEnable: [row: Record<string, unknown>];
+  toggleEnable: [row: Record<string, unknown>, field: string];
 }>();
 
 const hostRef = ref<HTMLElement | null>(null);
@@ -390,10 +390,10 @@ function bindEvents() {
       if (action) emit('action', { action, row });
       return;
     }
-    // 「启用/Enable」徽标：直接切换启用/禁用（须父级授权 Update）
+    // Boolean 徽标（Enable 及任意 Boolean 字段）：可点击切换（须父级授权 Update）；携带字段名供切换对应字段
     const colDef = props.columns.find((c) => c.pref.key === field);
     if (colDef?.enableToggle && colDef.badge) {
-      emit('toggleEnable', row);
+      emit('toggleEnable', row, colDef.pref.key);
       return;
     }
     emit('rowClick', row);

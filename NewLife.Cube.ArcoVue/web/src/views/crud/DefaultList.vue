@@ -309,6 +309,7 @@ import { resolveListControl } from '@/core/utils/fieldControl';
 import {
   defaultBadgeColumnWidth,
   isBadgeField,
+  isBooleanToggleField,
   isEnableField,
   isTruthy,
   resolveCellBadge,
@@ -610,8 +611,8 @@ const tableColumns = computed(() =>
       pref: width && !pref.width ? { ...pref, width } : pref,
       title: pref.title?.trim() || field?.displayName || pref.key,
       badge,
-      // 启用/Enable 徽标：有 Update 权限时可点击切换启停
-      enableToggle: !!field && isEnableField(field) && flags.value.canEdit,
+      // Boolean 字段徽标（Enable 及任意 Boolean 字段）：有 Update 权限时可点击切换状态
+      enableToggle: !!field && isBooleanToggleField(field) && flags.value.canEdit,
       badgeOf: field
         ? (row: Record<string, unknown>) => {
             const raw = getValueByKey(row, field.name);
@@ -897,27 +898,39 @@ function onTableAction(payload: { action: 'detail' | 'edit' | 'delete'; row: Rec
 }
 
 /**
- * 点击「启用/Enable」徽标：受 Update 权限控制（flags.canEdit）。
- * 先乐观更新本地行——按切换后的实际值即时展示（启用→success 徽标、停用→danger 徽标，双向而非单一禁用态），
- * 再调后端 EnableSelect/DisableSelect 确认；成功后 loadData 权威刷新，失败回滚并提示。
+ * 点击 Boolean 字段徽标（Enable 及任意 Boolean 字段）：受 Update 权限控制（flags.canEdit）。
+ * fieldName 由列表/树视图点击携带；卡片/看板未携带时回退到 Enable 字段（兼容）。
+ * 先乐观更新本地行——按切换后的实际值即时展示（开→success 徽标、关→danger 徽标，双向而非单一禁用态），
+ * 再调后端接口确认；成功后 loadData 权威刷新，失败回滚并提示。Enable 字段走既有 enableSelect/disableSelect，其余走 setField。
  */
-async function onToggleEnable(row: Record<string, unknown>) {
-  const field = listFields.value.find((f) => isEnableField(f));
-  if (!field || !flags.value.canEdit) return;
+async function onToggleEnable(row: Record<string, unknown>, fieldName?: string) {
+  if (!flags.value.canEdit) return;
+  const field = fieldName
+    ? listFields.value.find(
+        (f) => f.name === fieldName || f.name.toLowerCase() === (fieldName || '').toLowerCase(),
+      )
+    : listFields.value.find((f) => isEnableField(f));
+  if (!field) return;
   const id = getValueByKey(row, pkField.value);
   if (id == null || id === '') return;
   // 防并发：切换请求进行中忽略再次点击，避免快速双击并发回跳
   if (enableBusy.value) return;
   enableBusy.value = true;
   const oldRaw = getValueByKey(row, field.name);
-  const enable = !isTruthy(oldRaw);
+  const target = !isTruthy(oldRaw);
   // 按字段类型写切换后的实际值（Boolean→true/false，数值→1/0），ListTable deep watch 即时重绘徽标
-  const newRaw = field.typeName === 'Boolean' ? enable : enable ? 1 : 0;
+  const newRaw = field.typeName === 'Boolean' ? target : target ? 1 : 0;
   setValueByKey(row, field.name, newRaw);
+  const label = field.displayName || field.name;
   try {
-    if (enable) await cubeApi.page.enableSelect(typePath.value, [id as string | number]);
-    else await cubeApi.page.disableSelect(typePath.value, [id as string | number]);
-    Message.success(enable ? '启用成功' : '禁用成功');
+    if (field.name.toLowerCase() === 'enable') {
+      if (target) await cubeApi.page.enableSelect(typePath.value, [id as string | number]);
+      else await cubeApi.page.disableSelect(typePath.value, [id as string | number]);
+      Message.success(target ? '启用成功' : '禁用成功');
+    } else {
+      await cubeApi.page.setField(typePath.value, [id as string | number], field.name, target);
+      Message.success(target ? `${label}：已开启` : `${label}：已关闭`);
+    }
     // 后端权威刷新，保证展示与后端一致（含筛选/排序/统计）
     await loadData();
   } catch (err) {
