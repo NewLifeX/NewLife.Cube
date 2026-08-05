@@ -310,10 +310,11 @@ import {
   defaultBadgeColumnWidth,
   isBadgeField,
   isEnableField,
+  isTruthy,
   resolveCellBadge,
 } from '@/core/utils/fieldBadge';
 import { resolveCrudFlags } from '@/core/utils/permissions';
-import { getValueByKey, normalizeKeysByFields } from '@/core/utils/url';
+import { getValueByKey, normalizeKeysByFields, setValueByKey } from '@/core/utils/url';
 import { formatFieldValue } from '@/core/utils/fieldFormat';
 import {
   enrichFieldsWithEnumDataSource,
@@ -384,6 +385,8 @@ const pkField = ref('id');
 
 const tableData = ref<Record<string, unknown>[]>([]);
 const loading = ref(false);
+/** Enable 徽标切换请求进行中：防止快速双击并发回跳 */
+const enableBusy = ref(false);
 const selectedKeys = ref<(string | number)[]>([]);
 const statData = ref<Record<string, unknown> | null>(null);
 const labelCache = reactive<Record<string, Record<string, string>>>({});
@@ -893,20 +896,36 @@ function onTableAction(payload: { action: 'detail' | 'edit' | 'delete'; row: Rec
   } else openDetail(payload.row);
 }
 
-/** 点击「启用/Enable」徽标：复用后端 EnableOrDisableSelect 切换启停后刷新列表 */
+/**
+ * 点击「启用/Enable」徽标：受 Update 权限控制（flags.canEdit）。
+ * 先乐观更新本地行——按切换后的实际值即时展示（启用→success 徽标、停用→danger 徽标，双向而非单一禁用态），
+ * 再调后端 EnableSelect/DisableSelect 确认；成功后 loadData 权威刷新，失败回滚并提示。
+ */
 async function onToggleEnable(row: Record<string, unknown>) {
   const field = listFields.value.find((f) => isEnableField(f));
   if (!field || !flags.value.canEdit) return;
   const id = getValueByKey(row, pkField.value);
   if (id == null || id === '') return;
-  const enable = !getValueByKey(row, field.name);
+  // 防并发：切换请求进行中忽略再次点击，避免快速双击并发回跳
+  if (enableBusy.value) return;
+  enableBusy.value = true;
+  const oldRaw = getValueByKey(row, field.name);
+  const enable = !isTruthy(oldRaw);
+  // 按字段类型写切换后的实际值（Boolean→true/false，数值→1/0），ListTable deep watch 即时重绘徽标
+  const newRaw = field.typeName === 'Boolean' ? enable : enable ? 1 : 0;
+  setValueByKey(row, field.name, newRaw);
   try {
     if (enable) await cubeApi.page.enableSelect(typePath.value, [id as string | number]);
     else await cubeApi.page.disableSelect(typePath.value, [id as string | number]);
     Message.success(enable ? '启用成功' : '禁用成功');
+    // 后端权威刷新，保证展示与后端一致（含筛选/排序/统计）
     await loadData();
   } catch (err) {
+    // 失败回滚：恢复原状态展示
+    setValueByKey(row, field.name, oldRaw);
     Message.error(formatApiError(err, '操作失败'));
+  } finally {
+    enableBusy.value = false;
   }
 }
 

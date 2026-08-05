@@ -66,6 +66,34 @@ export function getValueByKey(data: Record<string, unknown>, key: string): unkno
   return undefined;
 }
 
+/** 容错赋值（大小写）：与 getValueByKey 对称，找到实际键后写入；找不到则按原键写入 */
+export function setValueByKey(data: Record<string, unknown>, key: string, value: unknown): void {
+  if (key in data) {
+    data[key] = value;
+    return;
+  }
+  const flipped = toPascalAndCamel(key);
+  if (flipped !== key && flipped in data) {
+    data[flipped] = value;
+    return;
+  }
+  if (key === key.toUpperCase() && key !== key.toLowerCase()) {
+    const lowerKey = key.toLowerCase();
+    if (lowerKey in data) {
+      data[lowerKey] = value;
+      return;
+    }
+  }
+  if (key === key.toLowerCase() && /[a-z]/.test(key)) {
+    const upperKey = key.toUpperCase();
+    if (upperKey in data) {
+      data[upperKey] = value;
+      return;
+    }
+  }
+  data[key] = value;
+}
+
 /**
  * 按字段元数据把数据键归一化到 FieldMeta.name（PascalCase）。
  * GetPage 返回字段名为 PascalCase，而 GetList/Detail 返回数据为 camelCase；

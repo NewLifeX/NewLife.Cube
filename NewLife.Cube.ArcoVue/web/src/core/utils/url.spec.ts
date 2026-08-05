@@ -4,6 +4,7 @@ import {
   normalizeKeysByFields,
   normalizeMenuUrl,
   routeToApiPrefix,
+  setValueByKey,
   toKebabCase,
   toPascalCase,
 } from './url';
@@ -27,6 +28,26 @@ describe('url utils', () => {
   it('getValueByKey tolerates case', () => {
     expect(getValueByKey({ Id: 1 }, 'id')).toBe(1);
     expect(getValueByKey({ id: 2 }, 'Id')).toBe(2);
+  });
+
+  it('setValueByKey writes to existing camelCase key', () => {
+    const data: Record<string, unknown> = { enable: false };
+    setValueByKey(data, 'Enable', true);
+    expect(data.enable).toBe(true);
+    expect(Object.keys(data)).toEqual(['enable']);
+  });
+
+  it('setValueByKey writes to existing PascalCase key', () => {
+    const data: Record<string, unknown> = { Enable: false };
+    setValueByKey(data, 'enable', true);
+    expect(data.Enable).toBe(true);
+    expect(Object.keys(data)).toEqual(['Enable']);
+  });
+
+  it('setValueByKey falls back to raw key when absent', () => {
+    const data: Record<string, unknown> = {};
+    setValueByKey(data, 'Enable', 1);
+    expect(data.Enable).toBe(1);
   });
 
   it('normalizeKeysByFields maps camelCase data to FieldMeta.name keys', () => {
