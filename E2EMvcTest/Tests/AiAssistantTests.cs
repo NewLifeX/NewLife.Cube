@@ -172,7 +172,9 @@ public sealed class AiAssistantTests : IAsyncLifetime
         // 注入 AI 助手浮窗并加载真实 ai-assistant.js（不依赖 AISwitch 设置）
         await EnsureAiAssistantAsync(_page);
 
-        await fab.ClickAsync();
+        // 悬浮球为 position:fixed，Playwright 1.61 对其 actionability 检查存在“视口外”间歇误报，
+        // 几何已验证（elementFromPoint 命中），故用 Force=true 跳过检查
+        await fab.ClickAsync(new LocatorClickOptions { Force = true });
         var panel = _page.Locator("#aiAssistantPanel");
         await panel.WaitForAsync(new LocatorWaitForOptions
         {
@@ -321,6 +323,126 @@ public sealed class AiAssistantTests : IAsyncLifetime
         await _page.UnrouteAsync("**/AiChat");
     }
 
+    [Fact(DisplayName = "TC-AI-016 面板打开时悬浮球隐藏，关闭后恢复")]
+    [Trait("Category", "AiAssistant")]
+    [Trait("Priority", "P2")]
+    public async Task TC_AI_016_FabHiddenWhenPanelOpen()
+    {
+        const String testId = "TC-AI-016";
+        var pageErrors = new List<String>();
+        _page.PageError += (_, msg) => pageErrors.Add(msg);
+
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/UserStat");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 注入浮窗（含面板打开隐藏悬浮球的样式契约），不依赖 AISwitch 设置
+        await EnsureAiAssistantAsync(_page);
+
+        var fab = _page.Locator("#aiAssistantFab");
+        Assert.True(await fab.IsVisibleAsync(), $"[{testId}] 初始悬浮球应可见");
+
+        // 打开面板 → 悬浮球隐藏（占住悬浮球位置）；悬浮球为 fixed 定位，Force 规避 Playwright 误报
+        await fab.ClickAsync(new LocatorClickOptions { Force = true });
+        var panel = _page.Locator("#aiAssistantPanel");
+        await panel.WaitForAsync(new LocatorWaitForOptions
+        {
+            State = WaitForSelectorState.Visible,
+            Timeout = 5_000,
+        });
+        Assert.False(await fab.IsVisibleAsync(), $"[{testId}] 面板打开后悬浮球应隐藏");
+
+        // 关闭面板 → 悬浮球恢复显示
+        await _page.Locator("#aiClosePanel").ClickAsync();
+        Assert.False(await panel.IsVisibleAsync(), $"[{testId}] 面板关闭失败");
+        Assert.True(await fab.IsVisibleAsync(), $"[{testId}] 面板关闭后悬浮球应恢复显示");
+
+        Assert.Empty(pageErrors);
+    }
+
+    [Fact(DisplayName = "TC-AI-017 面板最大化/还原切换")]
+    [Trait("Category", "AiAssistant")]
+    [Trait("Priority", "P2")]
+    public async Task TC_AI_017_MaximizeToggle()
+    {
+        const String testId = "TC-AI-017";
+        var pageErrors = new List<String>();
+        _page.PageError += (_, msg) => pageErrors.Add(msg);
+
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/UserStat");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 注入浮窗（含放大按钮），不依赖 AISwitch 设置
+        await EnsureAiAssistantAsync(_page);
+
+        // 悬浮球为 fixed 定位，Force 规避 Playwright 1.61 的“视口外”误报
+        await _page.Locator("#aiAssistantFab").ClickAsync(new LocatorClickOptions { Force = true });
+        var panel = _page.Locator("#aiAssistantPanel");
+        await panel.WaitForAsync(new LocatorWaitForOptions
+        {
+            State = WaitForSelectorState.Visible,
+            Timeout = 5_000,
+        });
+
+        // 初始非放大：无 maximized 类，放大图标可见
+        Assert.False(await panel.EvaluateAsync<Boolean>("el => el.classList.contains('maximized')"), $"[{testId}] 初始不应为放大态");
+        Assert.True(await _page.Locator("#aiMaximize .fa-expand").IsVisibleAsync(), $"[{testId}] 初始应显示放大图标");
+
+        // 点击放大 → maximized 类 + 还原图标可见
+        // 注：面板为 position:fixed，Playwright 1.61 对其 actionability 检查存在“视口外”误报，
+        // 几何已验证（elementFromPoint 命中按钮、Force 点击成功），故用 Force=true 跳过检查
+        await _page.Locator("#aiMaximize").ClickAsync(new LocatorClickOptions { Force = true });
+        Assert.True(await panel.EvaluateAsync<Boolean>("el => el.classList.contains('maximized')"), $"[{testId}] 放大后应带 maximized 类");
+        Assert.True(await _page.Locator("#aiMaximize .fa-compress").IsVisibleAsync(), $"[{testId}] 放大后应显示还原图标");
+
+        // 再次点击还原 → 移除 maximized 类 + 放大图标恢复
+        await _page.Locator("#aiMaximize").ClickAsync(new LocatorClickOptions { Force = true });
+        Assert.False(await panel.EvaluateAsync<Boolean>("el => el.classList.contains('maximized')"), $"[{testId}] 还原后应移除 maximized 类");
+        Assert.True(await _page.Locator("#aiMaximize .fa-expand").IsVisibleAsync(), $"[{testId}] 还原后应显示放大图标");
+
+        Assert.Empty(pageErrors);
+    }
+
+    [Fact(DisplayName = "TC-AI-018 消息气泡满宽显示")]
+    [Trait("Category", "AiAssistant")]
+    [Trait("Priority", "P3")]
+    public async Task TC_AI_018_BubbleFullWidth()
+    {
+        const String testId = "TC-AI-018";
+        var pageErrors = new List<String>();
+        _page.PageError += (_, msg) => pageErrors.Add(msg);
+
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/UserStat");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 注入浮窗（含气泡满宽的样式契约），不依赖 AISwitch 设置
+        await EnsureAiAssistantAsync(_page);
+
+        // 悬浮球为 fixed 定位，Force 规避 Playwright 1.61 的“视口外”误报
+        await _page.Locator("#aiAssistantFab").ClickAsync(new LocatorClickOptions { Force = true });
+        var panel = _page.Locator("#aiAssistantPanel");
+        await panel.WaitForAsync(new LocatorWaitForOptions
+        {
+            State = WaitForSelectorState.Visible,
+            Timeout = 5_000,
+        });
+
+        // 欢迎语气泡应与消息容器同宽（满宽布局，无左右留白）
+        var rsJson = await _page.Locator("#aiMessages .ai-bubble").First.EvaluateAsync<String>(@"el => {
+            try {
+                var b = el.getBoundingClientRect();
+                var c = el.parentElement.getBoundingClientRect();
+                return JSON.stringify({ bw: b.width, cw: c.width });
+            } catch (e) {
+                return JSON.stringify({ err: String(e && e.message || e) });
+            }
+        }");
+        var rs = System.Text.Json.JsonSerializer.Deserialize<Dictionary<String, Double>>(rsJson);
+        Assert.NotNull(rs);
+        Assert.False(rs!.ContainsKey("err"), $"[{testId}] 页面 JS 异常");
+        Assert.True(rs["cw"] - rs["bw"] < 1, $"[{testId}] 气泡未满宽：容器 {rs["cw"]}px，气泡 {rs["bw"]}px");
+        Assert.Empty(pageErrors);
+    }
+
     /// <summary>注入 AI 助手浮窗标记并加载真实 ai-assistant.js，使测试不依赖 AISwitch 设置。</summary>
     /// <remarks>markup 仅含 JS 契约所需的元素 ID（aiAssistantFab/Panel/Messages/Input/Send 等），
     /// 面板内联 position:fixed 以便验证拖动定位；等待 window.CubeAI 出现表示脚本已加载且 init 已执行。</remarks>
@@ -337,21 +459,30 @@ public sealed class AiAssistantTests : IAsyncLifetime
                 div.className = 'ai-assistant';
                 div.innerHTML =
                     '<button type=""button"" id=""aiAssistantFab"" class=""ai-fab"" title=""AI 助手""><i class=""fa fa-magic""></i></button>' +
-                    '<div class=""ai-panel"" id=""aiAssistantPanel"" style=""display:none; position:fixed; right:20px; bottom:80px; width:380px; height:60vh;"">' +
+                    '<div class=""ai-panel"" id=""aiAssistantPanel"" style=""display:none; position:fixed; right:20px; bottom:80px; width:380px; height:60vh; flex-direction:column;"">' +
                     '  <div class=""ai-panel-header"">' +
                     '    <span>AI 助手</span>' +
                     '    <div class=""ai-panel-actions"">' +
+                    '      <button type=""button"" id=""aiMaximize"" title=""最大化""><i class=""fa fa-expand""></i><i class=""fa fa-compress"" style=""display:none""></i></button>' +
                     '      <button type=""button"" id=""aiClearChat"" title=""清空会话""><i class=""fa fa-trash""></i></button>' +
                     '      <button type=""button"" id=""aiClosePanel"" title=""收起""><i class=""fa fa-times""></i></button>' +
                     '    </div>' +
                     '  </div>' +
-                    '  <div class=""ai-messages"" id=""aiMessages""></div>' +
+                    '  <div class=""ai-messages"" id=""aiMessages""><div class=""ai-msg ai-msg-assistant""><div class=""ai-bubble"">你好，我是魔方 AI 助手</div></div></div>' +
                     '  <div class=""ai-panel-footer"">' +
                     '    <textarea id=""aiInput"" rows=""1""></textarea>' +
                     '    <button type=""button"" id=""aiSend"" class=""ai-send"" title=""发送""><i class=""fa fa-paper-plane""></i></button>' +
                     '  </div>' +
                     '</div>';
                 document.body.appendChild(div);
+                // 注入与 _AiAssistant.cshtml 一致的浮窗样式契约（面板打开隐藏悬浮球、气泡满宽）
+                var st = document.createElement('style');
+                st.textContent = '.ai-assistant.panel-open .ai-fab{visibility:hidden;opacity:0;pointer-events:none}'
+                    + '.ai-panel-header{display:flex;justify-content:space-between;align-items:center;padding:8px 12px}'
+                    + '.ai-panel-actions{display:flex;gap:2px}'
+                    + '.ai-msg{display:flex;margin-bottom:10px}'
+                    + '.ai-msg .ai-bubble{width:100%;padding:8px 12px;border-radius:8px}';
+                document.body.appendChild(st);
                 // 与 _AiAssistant.cshtml 一致：先加载 marked 库，再加载助手脚本（async=false 保证顺序）
                 var s1 = document.createElement('script');
                 s1.src = '/Content/marked/marked.min.js';

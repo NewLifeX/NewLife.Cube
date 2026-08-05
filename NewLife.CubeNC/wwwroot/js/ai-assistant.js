@@ -485,6 +485,8 @@
         header.addEventListener('mousedown', function (e) {
             // 排除清空/关闭等按钮
             if (e.target.closest('button')) return;
+            // 全屏放大态不参与拖动
+            if (panel.classList.contains('maximized')) return;
             dragging = true;
             var rect = panel.getBoundingClientRect();
             startX = e.clientX;
@@ -511,19 +513,84 @@
         document.addEventListener('mouseup', function () { dragging = false; });
     }
 
+    /* ================= 面板开关与最大化 ================= */
+    /**
+     * 打开面板：显示面板、隐藏悬浮球并下沉占位（panel-open 类），恢复上次最大化状态
+     * @param {HTMLElement} panel 面板元素
+     * @param {HTMLElement} container 悬浮球容器
+     */
+    function openPanel(panel, container) {
+        panel.style.display = 'flex';
+        container.classList.add('panel-open');
+        // 重开面板恢复上次最大化状态
+        var maximized = localStorage.getItem('cube-ai-maximized') === '1';
+        panel.classList.toggle('maximized', maximized);
+        var max = getEl('aiMaximize');
+        if (max) {
+            var expand = max.querySelector('.fa-expand');
+            var compress = max.querySelector('.fa-compress');
+            if (expand) expand.style.display = maximized ? 'none' : '';
+            if (compress) compress.style.display = maximized ? '' : 'none';
+        }
+        scrollBottom();
+    }
+
+    /**
+     * 关闭面板：隐藏面板，恢复悬浮球显示
+     * @param {HTMLElement} panel 面板元素
+     * @param {HTMLElement} container 悬浮球容器
+     */
+    function closePanel(panel, container) {
+        panel.style.display = 'none';
+        container.classList.remove('panel-open');
+    }
+
+    /**
+     * 切换面板最大化状态：全屏占满视口（inset 20px）↔ 还原到默认右下角定位。
+     * 状态写入 localStorage，重开面板自动恢复。
+     * @param {HTMLElement} panel 面板元素
+     * @param {Boolean} maximized 是否最大化
+     */
+    function toggleMaximize(panel, maximized) {
+        // 清理拖动遗留的 inline 定位，避免与 CSS 定位冲突
+        panel.style.left = '';
+        panel.style.top = '';
+        panel.style.right = '';
+        panel.style.bottom = '';
+        panel.classList.toggle('maximized', maximized);
+        // 切换放大/还原图标
+        var max = getEl('aiMaximize');
+        if (max) {
+            var expand = max.querySelector('.fa-expand');
+            var compress = max.querySelector('.fa-compress');
+            if (expand) expand.style.display = maximized ? 'none' : '';
+            if (compress) compress.style.display = maximized ? '' : 'none';
+        }
+        localStorage.setItem('cube-ai-maximized', maximized ? '1' : '0');
+        scrollBottom();
+    }
+
     /* ================= 初始化 ================= */
     function init() {
         var fab = getEl('aiAssistantFab');
         var panel = getEl('aiAssistantPanel');
         if (!fab || !panel) return;
+        var container = getEl('aiAssistant');
 
         fab.addEventListener('click', function () {
-            panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+            if (panel.style.display === 'none' || !panel.style.display) openPanel(panel, container);
+            else closePanel(panel, container);
         });
         var close = getEl('aiClosePanel');
-        if (close) close.addEventListener('click', function () { panel.style.display = 'none'; });
+        if (close) close.addEventListener('click', function () { closePanel(panel, container); });
 
-        // 面板拖动：拖标题栏移动对话窗口位置
+        // 最大化/还原
+        var maximize = getEl('aiMaximize');
+        if (maximize) maximize.addEventListener('click', function () {
+            toggleMaximize(panel, !panel.classList.contains('maximized'));
+        });
+
+        // 面板拖动：拖标题栏移动对话窗口位置（全屏态不参与拖动）
         var header = panel.querySelector('.ai-panel-header');
         if (header) initPanelDrag(panel, header);
 

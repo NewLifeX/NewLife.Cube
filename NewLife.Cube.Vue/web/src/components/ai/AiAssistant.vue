@@ -4,7 +4,7 @@
  * 协议与 MVC 版 ai-assistant.js 一致：POST {url}/AiChat → SSE {type:text|tool|error|done}
  -->
 <template>
-  <div v-if="enabled" class="ai-assistant" :style="aiStyle">
+  <div v-if="enabled" class="ai-assistant" :class="{ 'panel-open': visible }" :style="aiStyle">
     <!-- 悬浮球 -->
     <div class="ai-fab" :title="'AI 助手'" @click="visible = !visible">
       <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
@@ -20,7 +20,7 @@
 
     <!-- 对话面板 -->
     <Transition name="ai-fade">
-      <div v-if="visible" class="ai-panel">
+      <div v-if="visible" class="ai-panel" :class="{ maximized }">
         <div class="ai-panel-header">
           <span class="ai-title">
             <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
@@ -35,6 +35,7 @@
             AI 助手
           </span>
           <div class="ai-actions">
+            <el-button text size="small" :title="maximized ? '还原' : '最大化'" @click="toggleMaximize"><el-icon><FullScreen v-if="!maximized" /><CopyDocument v-else /></el-icon></el-button>
             <el-button text size="small" title="清空会话" @click="clear"><el-icon><Delete /></el-icon></el-button>
             <el-button text size="small" title="收起" @click="visible = false"><el-icon><Close /></el-icon></el-button>
           </div>
@@ -87,7 +88,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Delete, Close, Promotion } from '@element-plus/icons-vue';
+import { Delete, Close, Promotion, FullScreen, CopyDocument } from '@element-plus/icons-vue';
 import { marked } from 'marked';
 import { Session } from '/@/utils/storage';
 
@@ -128,6 +129,8 @@ interface ToolCard {
 
 const visible = ref(false);
 const think = ref(false);
+/** 全屏放大状态，localStorage 持久化，重开面板自动恢复 */
+const maximized = ref(localStorage.getItem('cube-ai-maximized') === '1');
 
 /** AI 助手开关与配色（来自 /Cube/GetAiConfig，CubeSetting 配置） */
 const enabled = ref(false);
@@ -185,6 +188,13 @@ function scrollBottom() {
   nextTick(() => {
     if (msgBox.value) msgBox.value.scrollTop = msgBox.value.scrollHeight;
   });
+}
+
+/** 切换全屏放大：占满视口留 20px 边距，状态持久化，重开面板自动恢复 */
+function toggleMaximize() {
+  maximized.value = !maximized.value;
+  localStorage.setItem('cube-ai-maximized', maximized.value ? '1' : '0');
+  scrollBottom();
 }
 
 function appendUser(text: string) {
@@ -414,6 +424,10 @@ onMounted(loadConfig);
   bottom: 24px;
   z-index: 3000;
 }
+.ai-assistant.panel-open .ai-fab {
+  /* 面板打开时隐藏悬浮球，关闭后恢复显示 */
+  display: none;
+}
 .ai-fab {
   width: 52px;
   height: 52px;
@@ -433,14 +447,30 @@ onMounted(loadConfig);
   position: absolute;
   right: 0;
   bottom: 64px;
-  width: 380px;
-  height: 520px;
+  width: 460px;
+  height: 70vh;
+  min-height: 400px;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+.ai-assistant.panel-open .ai-panel {
+  /* 面板打开时下沉到悬浮球位置，多占约 64px 高度 */
+  bottom: 0;
+}
+.ai-panel.maximized {
+  /* 全屏放大态：占满视口留 20px 边距 */
+  position: fixed;
+  left: 20px;
+  top: 20px;
+  right: 20px;
+  bottom: 20px;
+  width: auto;
+  height: auto;
+  border-radius: 12px;
 }
 .ai-panel-header {
   display: flex;
@@ -475,11 +505,9 @@ onMounted(loadConfig);
   margin-bottom: 10px;
   display: flex;
 }
-.ai-msg.ai-user {
-  justify-content: flex-end;
-}
+/* 用户/AI 消息气泡满宽，仅靠颜色区分，避免左右留白浪费 */
 .ai-msg .ai-bubble {
-  max-width: 85%;
+  width: 100%;
   padding: 8px 12px;
   border-radius: 10px;
   font-size: 13px;
