@@ -7,7 +7,7 @@
     <Description>魔方Swagger接口文档扩展包，支持按区域(Area)自动分组生成API文档。提供标准化的接口描述、请求响应模型展示、在线调试功能，便于前后端对接和第三方集成。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 NewLife</Copyright>
-    <VersionPrefix>6.13</VersionPrefix>
+    <VersionPrefix>6.14</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
@@ -32,7 +32,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>新增 AI 数据洞察，列表页一键 AI 分析，支持 SSE 流式与深度推理；安全加固：Token 端点仅 POST、刷新令牌独立防重放、密码学安全验证码；优化 SSO /sso/userinfo 响应体量，Scopes/OAuths 双层控制；修复 Swagger OAuth 配置与编译问题；新增 8 套新一代前端皮肤；升级 XCode、NewLife.MySql 等核心依赖</PackageReleaseNotes>
+    <PackageReleaseNotes>新增 AI 对话助手及工具集，支持多轮对话、浏览器操作与主题色配置；AI 洞察合并至对话助手，后端重构增强安全与流式输出；AI 表单助手支持 ItemType 与编辑器填充优化；修复 403 无权限清除 Token、角色初始化权限等问题；优化上传流释放与 OAuth 性别字段解析</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
