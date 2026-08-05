@@ -173,7 +173,8 @@ function buildColumns(): any[] {
         showSort: props.enableSort,
         dragHeader: true,
         cellType: 'button',
-        disable: true,
+        // 勿用列级 disable:true——VTable 会强制渲染禁用态（not-allowed 光标），且覆盖下方 style.cursor；
+        // 徽标是否可点由 click_cell 按 enableToggle 分发（非 Enable 徽标点击仍走 rowClick，不启停）
         fieldFormat: (rec: Record<string, unknown>) => {
           const b = c.badgeOf?.(rec);
           if (b) return b.label;
@@ -206,7 +207,7 @@ function buildColumns(): any[] {
           return {
             textAlign: 'center',
             color: badge?.textColor || '#4b5563',
-            // 仅「启用/Enable」徽标可点击（pointer）；其它状态/枚举/值集徽标悬停不变（default）
+            // 仅「启用/Enable」徽标可点击（pointer）；其它状态/枚举/值集徽标正常指示（default）
             cursor: c.enableToggle ? 'pointer' : 'default',
             buttonStyle,
           };
