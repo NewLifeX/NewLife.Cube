@@ -228,7 +228,13 @@
             }
             // 高亮被填充字段
             el.classList.add('ai-field-highlight');
-            setTimeout(function () { el.classList.remove('ai-field-highlight'); }, 3000);
+            // 用 IIFE 捕获当前元素：var 循环变量被所有 setTimeout 共享，循环末尾若遇无控件字段 continue 后 el 变为 null，
+            // 3 秒后全部回调读取 null 抛异常（Cannot read properties of null (reading 'classList')）
+            (function (target) {
+                setTimeout(function () {
+                    if (target) target.classList.remove('ai-field-highlight');
+                }, 3000);
+            })(el);
             count++;
             names.push(name);
         }

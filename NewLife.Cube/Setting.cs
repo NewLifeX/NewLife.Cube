@@ -384,6 +384,21 @@ public class CubeSetting : Config<CubeSetting>
     [Description("AI 默认深度推理。AI 分析与对话默认是否启用深度推理（think），默认false即快速")]
     [Category("AI")]
     public Boolean AIDefaultThink { get; set; }
+
+    /// <summary>AI 助手主题色方案。预设方案联动填充主色/辅色，可再手动微调，默认靛蓝紫</summary>
+    [Description("AI 助手主题色方案。预设方案联动填充主色/辅色，可再手动微调，默认靛蓝紫")]
+    [Category("AI")]
+    public String AIColorScheme { get; set; } = "靛蓝紫";
+
+    /// <summary>AI 助手主色。悬浮球、面板头、用户气泡等主色调，默认靛蓝#667eea</summary>
+    [Description("AI 助手主色。悬浮球、面板头、用户气泡等主色调，默认靛蓝#667eea")]
+    [Category("AI")]
+    public String AIPrimaryColor { get; set; } = "#667eea";
+
+    /// <summary>AI 助手辅色。主色渐变终点色，默认紫色#764ba2</summary>
+    [Description("AI 助手辅色。主色渐变终点色，默认紫色#764ba2")]
+    [Category("AI")]
+    public String AISecondaryColor { get; set; } = "#764ba2";
     #endregion
 
     #region 系统功能

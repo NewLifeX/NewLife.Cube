@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using NewLife;
 using NewLife.Cube.Services;
 using NewLife.Cube.ViewModels;
+using NewLife.Serialization;
 
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
@@ -15,6 +17,17 @@ public class CubeController : ConfigController<CubeSetting>
 {
     private Boolean _has;
     private readonly UIService _uIService;
+
+    /// <summary>AI 助手主题色方案。键为方案名，值为"主色,辅色"</summary>
+    private static readonly Dictionary<String, String> _colorSchemes = new()
+    {
+        ["靛蓝紫"] = "#667eea,#764ba2",
+        ["翠绿"] = "#10b981,#059669",
+        ["天青蓝"] = "#0ea5e9,#0369a1",
+        ["琥珀橙"] = "#f59e0b,#ea580c",
+        ["玫瑰红"] = "#f43f5e,#be123c",
+        ["石墨黑"] = "#475569,#0f172a",
+    };
 
     /// <summary>实例化</summary>
     /// <param name="uIService"></param>
@@ -48,6 +61,24 @@ public class CubeController : ConfigController<CubeSetting>
                 df.Description = $"可选主题 {themes.Join("/")}";
                 themes.Insert(0, "default");
                 df.DataSource = e => themes.ToDictionary(e => e, e => e);
+            }
+
+            // AI 助手配色：主题色方案下拉联动主色/辅色，主色/辅色渲染为颜色选择器
+            df = list.FirstOrDefault(e => e.Name == "AIColorScheme");
+            if (df != null)
+            {
+                df.Description = "选择预设主题色方案后自动填充主色/辅色，可再手动微调";
+                df.ItemType = "singleSelect";
+                df.DataSource = e => _colorSchemes.Keys.ToDictionary(e => e, e => e);
+                // 联动映射传给前端：方案名 → "主色,辅色"
+                df.Properties["ColorMap"] = JsonHelper.ToJson(_colorSchemes);
+                df.Properties["ColorTargets"] = "AIPrimaryColor,AISecondaryColor";
+            }
+
+            foreach (var name in new[] { "AIPrimaryColor", "AISecondaryColor" })
+            {
+                df = list.FirstOrDefault(e => e.Name == name);
+                if (df != null) df.ItemType = "color";
             }
 
             _has = true;

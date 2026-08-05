@@ -2,6 +2,7 @@
 @using System.ComponentModel;
 @using System.Reflection;
 @using NewLife.Reflection;
+@using NewLife.Serialization;
 @{
     // 强制设置Layout，因为最终项目可能给前端设置Layout，会覆盖影响魔方内部页面
     var theme = NewLife.Cube.CubeSetting.Current.Theme;
@@ -67,7 +68,7 @@
                                                 }
                                                 else
                                                 {
-                                                    @await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.Type))
+                                                    @await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.Type) { ItemType = pi.ItemType })
                                                 }
                                                 @Html.ValidationMessage(name)
                                             </div>
@@ -109,7 +110,7 @@
                                     }
                                     else
                                     {
-                                        @await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.Type))
+                                        @await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.Type) { ItemType = pi.ItemType })
                                     }
                                     @Html.ValidationMessage(name)
                                 </div>
@@ -130,3 +131,33 @@
         </div>
     </div>
 </div>
+@{
+    // 主题色方案联动：字段带 ColorMap 时，选择方案自动填充目标颜色输入框
+    var schemeField = list.FirstOrDefault(e => e.Properties.ContainsKey("ColorMap"));
+}
+@if (schemeField != null)
+{
+    var colorMap = schemeField.Properties["ColorMap"];
+    var colorTargets = (schemeField.Properties["ColorTargets"] + "").Split(',', StringSplitOptions.RemoveEmptyEntries).Select(e => "#" + e.Trim()).ToArray();
+    <script>
+        (function () {
+            var map = @Html.Raw(colorMap);
+            var targets = @Html.Raw(JsonHelper.ToJson(colorTargets));
+            var sel = document.getElementById('@schemeField.Name');
+            if (!sel) return;
+            var apply = function (key) {
+                var v = map[key];
+                if (!v) return;
+                var colors = String(v).split(',');
+                targets.forEach(function (id, i) {
+                    var el = document.getElementById(id);
+                    if (el) el.value = (colors[i] || '').trim();
+                    var txt = document.getElementById(id + '_text');
+                    if (txt) txt.value = (colors[i] || '').trim();
+                });
+            };
+            apply(sel.value);
+            sel.addEventListener('change', function () { apply(this.value); });
+        })();
+    </script>
+}

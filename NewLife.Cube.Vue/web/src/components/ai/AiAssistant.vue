@@ -4,7 +4,7 @@
  * 协议与 MVC 版 ai-assistant.js 一致：POST {url}/AiChat → SSE {type:text|tool|error|done}
  -->
 <template>
-  <div class="ai-assistant">
+  <div v-if="enabled" class="ai-assistant" :style="aiStyle">
     <!-- 悬浮球 -->
     <div class="ai-fab" :title="'AI 助手'" @click="visible = !visible">
       <el-icon :size="22" color="#fff"><MagicStick /></el-icon>
@@ -14,7 +14,7 @@
     <Transition name="ai-fade">
       <div v-if="visible" class="ai-panel">
         <div class="ai-panel-header">
-          <span class="ai-title"><el-icon :size="16" color="#667eea"><MagicStick /></el-icon> AI 助手</span>
+          <span class="ai-title"><el-icon :size="16" color="#fff"><MagicStick /></el-icon> AI 助手</span>
           <div class="ai-actions">
             <el-button text size="small" title="清空会话" @click="clear"><el-icon><Delete /></el-icon></el-button>
             <el-button text size="small" title="收起" @click="visible = false"><el-icon><Close /></el-icon></el-button>
@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { MagicStick, Delete, Close, Promotion } from '@element-plus/icons-vue';
 import { Session } from '/@/utils/storage';
@@ -108,6 +108,17 @@ interface ToolCard {
 
 const visible = ref(false);
 const think = ref(false);
+
+/** AI 助手开关与配色（来自 /Cube/GetAiConfig，CubeSetting 配置） */
+const enabled = ref(false);
+const primaryColor = ref('#667eea');
+const secondaryColor = ref('#764ba2');
+
+/** 根元素 CSS 变量，驱动全部浮窗配色 */
+const aiStyle = computed(() => ({
+  '--ai-primary': primaryColor.value,
+  '--ai-secondary': secondaryColor.value,
+}));
 const input = ref('');
 const streaming = ref(false);
 const messages = ref<Msg[]>([]);
@@ -345,6 +356,26 @@ function clear() {
   sessionId = 's' + Date.now() + Math.random().toString(16).substring(2, 8);
   localStorage.setItem('cube-ai-session', sessionId);
 }
+
+/** 加载 AI 助手配置：开关控制渲染，配色注入 CSS 变量 */
+async function loadConfig() {
+  try {
+    const resp = await fetch('/Cube/GetAiConfig', {
+      headers: Session.get('token') ? { Authorization: `${Session.get('token')}` } : {},
+    });
+    if (!resp.ok) return;
+    const json = await resp.json();
+    const data = json?.data;
+    if (data) {
+      enabled.value = !!data.AISwitch;
+      if (data.AIPrimaryColor) primaryColor.value = data.AIPrimaryColor;
+      if (data.AISecondaryColor) secondaryColor.value = data.AISecondaryColor;
+    }
+  } catch {
+    // 配置获取失败时保持默认配色，且不显示浮窗（AISwitch 默认关闭）
+  }
+}
+onMounted(loadConfig);
 </script>
 
 <style scoped>
@@ -358,8 +389,8 @@ function clear() {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 4px 14px rgba(102, 126, 234, 0.5);
+  background: linear-gradient(135deg, var(--ai-primary) 0%, var(--ai-secondary) 100%);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--ai-primary) 50%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -387,7 +418,7 @@ function clear() {
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--ai-primary) 0%, var(--ai-secondary) 100%);
   color: #fff;
   font-weight: 600;
 }
@@ -427,7 +458,7 @@ function clear() {
   word-break: break-word;
 }
 .ai-user .ai-bubble {
-  background: #667eea;
+  background: var(--ai-primary);
   color: #fff;
   border-top-right-radius: 2px;
 }
@@ -449,10 +480,10 @@ function clear() {
   font-size: 90%;
 }
 .ai-assistant .ai-bubble :deep(blockquote) {
-  border-left: 3px solid #667eea;
+  border-left: 3px solid var(--ai-primary);
   margin: 6px 0;
   padding: 4px 10px;
-  background: #f8f8ff;
+  background: color-mix(in srgb, var(--ai-primary) 6%, #fff);
   color: #555;
 }
 .ai-tool {

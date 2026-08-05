@@ -41,14 +41,15 @@
     </div>
     <script src="~/js/ai-assistant.js"></script>
     <style>
-        /* AI 助手浮窗样式（主题无关） */
+        /* AI 助手浮窗样式（主题无关），主色/辅色由 CubeSetting 配置 */
+        #aiAssistant { --ai-primary: @set.AIPrimaryColor; --ai-secondary: @set.AISecondaryColor; }
         .ai-assistant { font-size: 13px; }
         .ai-fab {
             position: fixed; right: 20px; bottom: 20px; z-index: 9998;
             width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer;
             color: #fff; font-size: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, .45);
+            background: linear-gradient(135deg, var(--ai-primary) 0%, var(--ai-secondary) 100%);
+            box-shadow: 0 4px 12px color-mix(in srgb, var(--ai-primary) 45%, transparent);
         }
         .ai-fab:hover { transform: scale(1.06); }
         .ai-panel {
@@ -61,7 +62,7 @@
         .ai-panel-header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 10px 14px; color: #fff; font-weight: 600;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--ai-primary) 0%, var(--ai-secondary) 100%);
             cursor: move; user-select: none;
         }
         .ai-panel-header .ai-panel-actions button {
@@ -76,7 +77,7 @@
             max-width: 82%; padding: 8px 12px; border-radius: 8px; line-height: 1.6;
             background: #fff; border: 1px solid #e4e7f0; white-space: pre-wrap; word-break: break-word;
         }
-        .ai-msg-user .ai-bubble { background: #667eea; color: #fff; border-color: #667eea; }
+        .ai-msg-user .ai-bubble { background: var(--ai-primary); color: #fff; border-color: var(--ai-primary); }
         .ai-bubble h1, .ai-bubble h2, .ai-bubble h3 { font-size: 14px; margin: 6px 0; }
         .ai-bubble table { border-collapse: collapse; width: 100%; margin: 6px 0; }
         .ai-bubble table th, .ai-bubble table td { border: 1px solid #ddd; padding: 4px 6px; font-size: 12px; }
@@ -84,19 +85,19 @@
         .ai-bubble code { background: #f0f0f0; padding: 1px 4px; border-radius: 3px; }
         .ai-bubble pre { background: #f8f8f8; padding: 8px; border-radius: 4px; overflow-x: auto; }
         .ai-bubble ul, .ai-bubble ol { padding-left: 18px; margin: 4px 0; }
-        .ai-bubble blockquote { border-left: 3px solid #667eea; padding: 2px 10px; margin: 6px 0; background: #f2f3ff; }
+        .ai-bubble blockquote { border-left: 3px solid var(--ai-primary); padding: 2px 10px; margin: 6px 0; background: color-mix(in srgb, var(--ai-primary) 6%, #fff); }
         .ai-tool {
             margin: 4px 0; padding: 6px 10px; border-radius: 6px; font-size: 12px;
-            background: #eef0ff; border: 1px solid #dfe3ff; color: #555;
+            background: color-mix(in srgb, var(--ai-primary) 8%, #fff); border: 1px solid color-mix(in srgb, var(--ai-primary) 18%, #fff); color: #555;
         }
         .ai-tool.ai-tool-done { background: #eefaf0; border-color: #d4f0da; color: #2e7d32; }
         .ai-tool.ai-tool-error { background: #fdeeee; border-color: #f5d4d4; color: #c62828; }
         .ai-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0 8px; }
         .ai-chip {
-            border: 1px solid #667eea; color: #667eea; background: #fff; border-radius: 14px;
+            border: 1px solid var(--ai-primary); color: var(--ai-primary); background: #fff; border-radius: 14px;
             padding: 4px 10px; font-size: 12px; cursor: pointer;
         }
-        .ai-chip:hover { background: #667eea; color: #fff; }
+        .ai-chip:hover { background: var(--ai-primary); color: #fff; }
         .ai-panel-footer {
             display: flex; align-items: flex-end; gap: 6px; padding: 8px 10px; border-top: 1px solid #e4e7f0; background: #fff;
         }
@@ -106,9 +107,9 @@
             font-size: 13px; max-height: 90px; outline: none;
         }
         .ai-send {
-            border: none; background: #667eea; color: #fff; border-radius: 6px;
+            border: none; background: var(--ai-primary); color: #fff; border-radius: 6px;
             width: 36px; height: 32px; cursor: pointer;
         }
-        .ai-field-highlight { box-shadow: 0 0 0 2px #667eea !important; border-color: #667eea !important; transition: box-shadow .3s; }
+        .ai-field-highlight { box-shadow: 0 0 0 2px var(--ai-primary) !important; border-color: var(--ai-primary) !important; transition: box-shadow .3s; }
     </style>
 }
