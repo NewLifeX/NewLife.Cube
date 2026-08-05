@@ -156,6 +156,27 @@ public class AiFormHelperTests
     }
 
     [Fact]
+    [DisplayName("BuildSchema - 空字符串值归一为 null（引导 AI 生成而非回显空串）")]
+    public void BuildSchema_EmptyStringToNull()
+    {
+        var factory = new Entity<AiFormTestEntity>.DefaultEntityFactory();
+        var fields = new FieldCollection(factory, ViewKinds.AddForm);
+        var values = new Dictionary<String, Object?>
+        {
+            ["Name"] = "",
+            ["Status"] = StatusKinds.启用,
+        };
+        var schema = AiFormHelper.BuildSchema(fields, values);
+
+        // 空字符串 → null，LLM 能识别该字段为空、需生成值
+        var name = schema.First(f => f.Name == "Name");
+        Assert.Null(name.Value);
+        // 非空值保持原样
+        var status = schema.First(f => f.Name == "Status");
+        Assert.Equal(StatusKinds.启用, status.Value);
+    }
+
+    [Fact]
     [DisplayName("CoerceValue - 枚举合法值转换，非法值返回 null")]
     public void CoerceValue_Enum_ValidAndInvalid()
     {
@@ -183,6 +204,66 @@ public class AiFormHelperTests
         Assert.Equal(new DateTime(2026, 1, 1, 10, 0, 0), dt);
         // 空字符串 → null
         Assert.Null(AiFormHelper.CoerceValue("", ct));
+    }
+
+    [Fact]
+    [DisplayName("ParseFieldValues - JSON 对象格式解析")]
+    public void ParseFieldValues_ObjectFormat()
+    {
+        var dic = AiFormHelper.ParseFieldValues("{\"Name\":\"张三\",\"Status\":1}");
+        Assert.NotNull(dic);
+        Assert.Equal(2, dic!.Count);
+        Assert.Equal("张三", dic["Name"]);
+        Assert.Equal(1L, dic["Status"].ToLong());
+    }
+
+    [Fact]
+    [DisplayName("ParseFieldValues - 扁平数组格式兼容（LLM 误生成键值数组）")]
+    public void ParseFieldValues_ArrayFormat()
+    {
+        var dic = AiFormHelper.ParseFieldValues("[\"Name\",\"张三\",\"Status\",1,\"Enable\",true]");
+        Assert.NotNull(dic);
+        Assert.Equal(3, dic!.Count);
+        Assert.Equal("张三", dic["Name"]);
+        Assert.Equal(1L, dic["Status"].ToLong());
+        Assert.True(dic["Enable"].ToBoolean());
+    }
+
+    [Fact]
+    [DisplayName("ParseFieldValues - 非法/空参数返回 null 而非抛异常")]
+    public void ParseFieldValues_InvalidReturnsNull()
+    {
+        Assert.Null(AiFormHelper.ParseFieldValues(null));
+        Assert.Null(AiFormHelper.ParseFieldValues(""));
+        Assert.Null(AiFormHelper.ParseFieldValues("not-json"));
+        Assert.Null(AiFormHelper.ParseFieldValues("{}"));
+        Assert.Null(AiFormHelper.ParseFieldValues("[]"));
+        Assert.Null(AiFormHelper.ParseFieldValues("{\"a\":}"));
+    }
+
+    [Fact]
+    [DisplayName("IsAutoField - 系统维护字段扩充后不可填，业务字段可填")]
+    public void IsAutoField_ExpandedList()
+    {
+        // 审计字段（创建/更新/注册/登录）
+        Assert.True(AiFormHelper.IsAutoField("UpdateUserID"));
+        Assert.True(AiFormHelper.IsAutoField("CreateUserID"));
+        Assert.True(AiFormHelper.IsAutoField("RegisterTime"));
+        Assert.True(AiFormHelper.IsAutoField("RegisterIP"));
+        Assert.True(AiFormHelper.IsAutoField("LastLogin"));
+        Assert.True(AiFormHelper.IsAutoField("LastLoginIP"));
+        // 统计/在线字段
+        Assert.True(AiFormHelper.IsAutoField("Logins"));
+        Assert.True(AiFormHelper.IsAutoField("Online"));
+        Assert.True(AiFormHelper.IsAutoField("OnlineTime"));
+        // 原有字段仍生效
+        Assert.True(AiFormHelper.IsAutoField("CreateTime"));
+        Assert.True(AiFormHelper.IsAutoField("UpdateUser"));
+        Assert.True(AiFormHelper.IsAutoField("UpdateIP"));
+        // 业务字段不受影响
+        Assert.False(AiFormHelper.IsAutoField("Name"));
+        Assert.False(AiFormHelper.IsAutoField("Enable"));
+        Assert.False(AiFormHelper.IsAutoField("Sex"));
     }
     #endregion
 }

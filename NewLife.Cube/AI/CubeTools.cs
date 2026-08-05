@@ -74,13 +74,14 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
     [ToolDescription("fill_form")]
     [DisplayName("回填表单")]
     [Description("生成表单字段值并回填到前端表单。不写数据库，由用户确认后提交")]
-    public virtual IToolResult FillForm([Description("字段值字典，键为字段名，值为要填入的值，如 {\"Name\":\"张三\"}")] IDictionary<String, Object> values, [Description("表单模式：add 新增 / edit 编辑")] String mode = "add")
+    public virtual IToolResult FillForm([Description("字段值 JSON 字符串，键为字段名，值为要填入的值，如 {\"Name\":\"张三\",\"Status\":1}")] String values, [Description("表单模式：add 新增 / edit 编辑")] String mode = "add")
     {
-        // 参数防御：LLM 未传字段值或格式错误时返回友好错误，避免空引用导致工具执行失败
-        if (values == null || values.Count == 0)
+        // 参数解析：兼容 JSON 对象与扁平键值数组两种格式（部分 LLM 会生成扁平数组），解析失败返回友好错误而非抛异常
+        var dic = AiFormHelper.ParseFieldValues(values);
+        if (dic == null || dic.Count == 0)
         {
             var err = new { kind = "fill_form", count = 0, message = "未收到有效的字段值字典" }.ToJson();
-            return new ToolResult(ToolContent.ForUser(err), ToolContent.ForLlm("[fill_form 参数错误] 未收到字段值字典。请先调用 get_form_schema 获取字段结构，再以 {\"字段名\":值} 形式传入 values 参数。"))
+            return new ToolResult(ToolContent.ForUser(err), ToolContent.ForLlm("[fill_form 参数错误] 未收到有效的字段值字典。请先调用 get_form_schema 获取字段结构，再以 {\"字段名\":值} 形式传入 values 参数。"))
             {
                 IsError = true
             };
@@ -91,7 +92,7 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
         var rs = new Dictionary<String, Object?>();
         var skipped = new List<String>();
         var errors = new List<String>();
-        foreach (var kv in values)
+        foreach (var kv in dic)
         {
             var field = fields.FirstOrDefault(f => f.Name.EqualIgnoreCase(kv.Key));
             if (field == null)
@@ -109,6 +110,12 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
             if (val == null)
             {
                 errors.Add(kv.Key);
+                continue;
+            }
+            // 空字符串视为 AI 未生成值（编辑模式回显空值），不预填，避免"已预填但实际为空"的误导
+            if (val is String s && s.IsNullOrEmpty())
+            {
+                skipped.Add(kv.Key);
                 continue;
             }
             rs[field.Name] = val;

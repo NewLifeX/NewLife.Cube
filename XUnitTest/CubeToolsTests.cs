@@ -120,7 +120,7 @@ public class CubeToolsTests
             ["Status"] = "启用",
             ["Password"] = "secret123",
             ["NotExist"] = "xx",
-        });
+        }.ToJson());
 
         Assert.False(result.IsError);
         var user = result.Contents.First(c => c.Audience.HasFlag(ToolAudience.User)).Data + "";
@@ -141,7 +141,7 @@ public class CubeToolsTests
         var result = tools.FillForm(new Dictionary<String, Object>
         {
             ["Status"] = "不存在的状态",
-        });
+        }.ToJson());
 
         var user = result.Contents.First(c => c.Audience.HasFlag(ToolAudience.User)).Data + "";
         Assert.Contains("errors", user);
@@ -172,11 +172,37 @@ public class CubeToolsTests
     }
 
     [Fact]
+    [DisplayName("FillForm - 空字符串值视为未生成，跳过不预填")]
+    public void FillForm_EmptyString_Skipped()
+    {
+        var tools = CreateTools();
+        var result = tools.FillForm(new Dictionary<String, Object>
+        {
+            ["Name"] = "张三",
+            ["Code"] = "",   // 空字符串 → 视为未生成，跳过
+        }.ToJson());
+
+        Assert.False(result.IsError);
+        var user = result.Contents.First(c => c.Audience.HasFlag(ToolAudience.User)).Data + "";
+        Assert.Contains("\"Name\":\"张三\"", user);
+
+        // values 部分不含空串字段（Code 不出现在 values 里）
+        var vIdx = user.IndexOf("\"values\"");
+        var skipIdx = user.IndexOf("\"skipped\"");
+        Assert.True(vIdx >= 0 && skipIdx > vIdx, $"[{nameof(FillForm_EmptyString_Skipped)}] JSON 结构异常: {user}");
+        var valuesPart = user.Substring(vIdx, skipIdx - vIdx);
+        Assert.DoesNotContain("Code", valuesPart);
+        // 但 Code 出现在 skipped 列表，如实告知未填
+        Assert.Contains("\"skipped\"", user);
+        Assert.Contains("Code", user.Substring(skipIdx));
+    }
+
+    [Fact]
     [DisplayName("FillForm - 空值字典返回错误而非抛异常")]
     public void FillForm_NullValues_ReturnsError()
     {
         var tools = CreateTools();
-        var result = tools.FillForm(null!);
+        var result = tools.FillForm(null);
 
         Assert.True(result.IsError);
         var user = result.Contents.First(c => c.Audience.HasFlag(ToolAudience.User)).Data + "";

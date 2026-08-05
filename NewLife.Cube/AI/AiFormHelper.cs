@@ -1,4 +1,6 @@
-﻿using NewLife.Cube.ViewModels;
+﻿using NewLife;
+using NewLife.Cube.ViewModels;
+using NewLife.Serialization;
 
 namespace NewLife.Cube.AI;
 
@@ -36,13 +38,62 @@ public class AiFormField
 /// <summary>AI 表单助手。收集表单字段元数据与类型转换，供 AI 工具 get_form_schema / fill_form 使用</summary>
 public static class AiFormHelper
 {
-    /// <summary>自动维护字段。由框架自动填充，不允许 AI 填写</summary>
-    private static readonly String[] _autoFields = ["CreateTime", "CreateUser", "CreateIP", "UpdateTime", "UpdateUser", "UpdateIP"];
+    /// <summary>自动维护字段。由框架自动填充，不允许 AI 填写。含审计（创建/更新/注册/登录）与统计（在线/次数）字段</summary>
+    private static readonly String[] _autoFields = [
+        // 创建/更新审计
+        "CreateTime", "CreateUser", "CreateUserID", "CreateIP",
+        "UpdateTime", "UpdateUser", "UpdateUserID", "UpdateIP",
+        // 注册/登录审计
+        "RegisterTime", "RegisterUser", "RegisterUserID", "RegisterIP",
+        "LastLogin", "LastLoginIP", "LastLoginTime",
+        // 在线状态与统计
+        "Online", "OnlineTime", "Logins",
+    ];
 
     /// <summary>判断是否为自动维护字段</summary>
     /// <param name="name">字段名</param>
     /// <returns></returns>
     public static Boolean IsAutoField(String name) => _autoFields.Any(e => name.EqualIgnoreCase(e));
+
+    /// <summary>解析 fill_form 的字段值参数。兼容 JSON 对象 {\"Name\":\"张三\"} 与扁平键值数组 [\"Name\",\"张三\"] 两种格式</summary>
+    /// <remarks>
+    /// 部分 LLM 会将对象参数生成为扁平键值数组，导致后端按 IDictionary 绑定直接抛异常。
+    /// 改为 String 参数后在此统一解析，任何格式都能得到友好结果而非执行异常。
+    /// </remarks>
+    /// <param name="values">工具参数原始 JSON 字符串</param>
+    /// <returns>字段名→值字典；解析失败或为空时返回 null</returns>
+    public static IDictionary<String, Object>? ParseFieldValues(String? values)
+    {
+        if (values.IsNullOrWhiteSpace()) return null;
+
+        try
+        {
+            var json = values.Trim();
+            // 扁平数组格式：["Name","张三","Age",18] → 两两配对转字典
+            if (json.StartsWith("["))
+            {
+                var arr = json.ToJsonEntity<Object[]>();
+                if (arr == null || arr.Length == 0) return null;
+
+                var dic = new Dictionary<String, Object>();
+                for (var i = 0; i + 1 < arr.Length; i += 2)
+                {
+                    var k = arr[i] + "";
+                    if (k.IsNullOrEmpty() || dic.ContainsKey(k)) continue;
+                    dic[k] = arr[i + 1];
+                }
+                return dic.Count > 0 ? dic : null;
+            }
+
+            // JSON 对象格式
+            var obj = json.ToJsonEntity<Dictionary<String, Object>>();
+            return obj is { Count: > 0 } ? obj : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
     /// <summary>构建表单字段 Schema，供 AI 识别字段结构与约束</summary>
     /// <param name="fields">表单字段集合</param>
@@ -71,9 +122,10 @@ public static class AiFormHelper
             // 可填：非敏感 + 非自动维护 + 非只读
             fi.Fillable = !IsAutoField(item.Name) && AiDataHelper.IsSafeFieldName(item.Name) && !item.ReadOnly;
 
-            // 编辑模式已有值并入（仅安全字段才有值）
+            // 编辑模式已有值并入（仅安全字段才有值）。空字符串归一为 null，
+            // 引导 AI 对空的可填字段生成合理值，而非回显空串（否则用户看到"已预填"但实际为空）
             if (values != null && values.TryGetValue(item.Name, out var v))
-                fi.Value = v;
+                fi.Value = v is String s && s.IsNullOrEmpty() ? null : v;
 
             list.Add(fi);
         }

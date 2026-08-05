@@ -1,4 +1,4 @@
-using NewLife.AI.Models;
+﻿using NewLife.AI.Models;
 using NewLife.AI.Tools;
 using NewLife.Caching;
 using NewLife.Collections;
@@ -126,7 +126,7 @@ public class CubeAIChatService : IAIChatService
         }
 
         // 保存助手回复到会话历史
-        var reply = sb.Put(true);
+        var reply = sb.Return(true);
         if (!reply.IsNullOrEmpty())
         {
             history.Add(new ChatMessage { Role = "assistant", Content = reply });
