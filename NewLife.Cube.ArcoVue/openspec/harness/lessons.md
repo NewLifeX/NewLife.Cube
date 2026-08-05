@@ -87,7 +87,8 @@
 
 ## OSC-0009 — 2026-08-05
 
-- **Enable 启停复用既有批量接口**（`EnableOrDisableSelect` 暴露 `EnableSelect/DisableSelect`）优于新造 `SetEnable`：少一条 API 路径、与 CubeNC 双栈对齐；验收前会话窗口小任务应并入相似任务或新增任务项，保持单 OSC 追踪闭环。
+- **Enable 启停复用既有批量接口**（`EnableOrDisableSelect` 暴露 `EnableSelect/DisableSelect`）优于新造 `SetEnable`：少一条 API 路径、与 CubeNC 双栈对齐。
+- **会话小任务补录固化**：验收前/复盘归档前，通过会话窗口完成但不在 OSC 计划内的事项/重构/修复，须按「独立 → 新增任务项、相似 → 并入已有任务项」补录到 `tasks.md`（已固化进 `openspec-verify`/`openspec-retro` 智能体动作）。
 - 徽标在 flex column 交叉轴会被 `stretch` 拉伸成整行宽，需 `align-self:flex-start` + `max-width:100%` + `box-sizing:border-box`；横向排版需 `align-self:center` 防文本基线下沉。
 - 卡片等高用「测量最大高度 → min-height 统一下发」而非 flex stretch，避免视觉拉伸；操作区以 grid 末行 + `margin-top:auto` 固定左下。
 - 枚举/值集徽标悬停光标：列表 VTable badge 列 style 控制 `cursor:default`（非 Enable 不可点）；Enable 列才 `pointer` + `@click.stop` 防冒泡。
