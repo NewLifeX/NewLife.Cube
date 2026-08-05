@@ -432,21 +432,16 @@ files: [二进制文件2]
 
 ### 批量启用/禁用
 
-**POST** `/School/Student/SetEnable`
+**GET** `/School/Student/EnableSelect?keys=1,2,3`（启用）
+**GET** `/School/Student/DisableSelect?keys=1,2,3`（禁用）
 
-请求：
-```json
-{
-  "ids": [1, 2, 3],
-  "enable": true
-}
-```
+请求参数：`keys`（主键集合，逗号分隔）、`reason`（可选，操作原因）。要求实体有 `Enable` 字段，需 `Update` 权限。内部复用 `EnableOrDisableSelect`（OnSetField + 日志 + 批量）。
 
 响应：
 ```json
 {
   "code": 0,
-  "message": "成功更新 3 条数据"
+  "message": "共启用[3]个"
 }
 ```
 

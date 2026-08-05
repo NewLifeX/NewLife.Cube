@@ -85,6 +85,16 @@
 - **watch 对象引用 vs 原地赋值**：抽屉切换记录时父组件 `Object.assign` 原地改 `formModel`，`watch(model)` 不触发；须 watch 主键值（`getValueByKey(model, pkField)`）驱动历史/评论重载。
 - 抽屉「上一条/下一条」用 Arco `IconUp`/`IconDown` 图标 + `:disabled` 禁用态；切换记录同时清空未提交回复编辑状态。
 
+## OSC-0009 — 2026-08-05
+
+- **Enable 启停复用既有批量接口**（`EnableOrDisableSelect` 暴露 `EnableSelect/DisableSelect`）优于新造 `SetEnable`：少一条 API 路径、与 CubeNC 双栈对齐；验收前会话窗口小任务应并入相似任务或新增任务项，保持单 OSC 追踪闭环。
+- 徽标在 flex column 交叉轴会被 `stretch` 拉伸成整行宽，需 `align-self:flex-start` + `max-width:100%` + `box-sizing:border-box`；横向排版需 `align-self:center` 防文本基线下沉。
+- 卡片等高用「测量最大高度 → min-height 统一下发」而非 flex stretch，避免视觉拉伸；操作区以 grid 末行 + `margin-top:auto` 固定左下。
+- 枚举/值集徽标悬停光标：列表 VTable badge 列 style 控制 `cursor:default`（非 Enable 不可点）；Enable 列才 `pointer` + `@click.stop` 防冒泡。
+- 日期/时间前端必须按「壁钟时间」解析（忽略 `Z`/时区标识），否则 UTC 串被本地化换算造成时区漂移；按 `inferDateKind` 选 date/datetime/time 组件。
+- 验收三步（实现审计 → 代码审查 → 文档同步）发现文档残留 `SetEnable` 旧接口描述：归档前必须修事实错误（附录B/实体控制器等），避免错误文档长期生效。
+- 卡片间距/徽标等纯样式微调不新建任务，并入相似任务（T8/T9）即可；纯样式变更以构建成功为门禁，无需重跑全量单测。
+
 ## 待办 — 字体规范（Harness）
 
 - 后续按现代中后台常见 **组件/场景**（列表表头、单元格、表单标签、抽屉标题、徽章等）在 Harness 建立统一的 **字体 / 字号 / 字重** 规范，并替换各处临时字重（如 VTable `headerStyle.fontWeight: 400`）。

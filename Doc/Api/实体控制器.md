@@ -406,23 +406,14 @@ protected override IDictionary<String, Object> GetStatistics(IEnumerable<Product
 
 ```csharp
 // 控制器中自动支持批量启用/禁用
-// 要求实体有 Enable 字段
+// 要求实体有 Enable 字段，需 Update 权限
 
-// 自定义批量启用逻辑
-[EntityAuthorize(PermissionFlags.Update)]
-public ActionResult SetEnable(Boolean enable)
-{
-    var ids = GetIds();
-    var list = Product.FindByIds(ids);
-    
-    foreach (var item in list)
-    {
-        item.Enable = enable;
-        item.Update();
-    }
-    
-    return JsonRefresh($"已{(enable ? "启用" : "禁用")} {list.Count} 条记录");
-}
+// 内置批量启用/禁用（WebAPI 版）
+// GET /{area}/{controller}/EnableSelect?keys=1,2,3
+// GET /{area}/{controller}/DisableSelect?keys=1,2,3
+// 复用 EnableOrDisableSelect（OnSetField + 日志 + 批量），返回“共启用[N]个”
+
+// 如需自定义批量启用逻辑，可重写 OnSetField / OnUpdate 钩子
 ```
 
 ### 批量删除

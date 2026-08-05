@@ -33,6 +33,17 @@
 - [x] AC-16：ArcoVue web 与 `NewLife.Cube` 构建成功无错误；仅既有 chunk 体积警告。
 - [x] AC-17：迁移方案（OSC-0009 行、编号顺延、差距表#11）与 web README 已事实性回写；核心接口架构/附录B 无 LOV 段落、功能清单无新增后端能力项，均无需改动。
 
+### 补充迭代 AC（T6~T9，验收前会话窗口完成的小任务）
+
+- [x] AC-18：搜索框值集（如角色）LIST 单选直显首页数据 +「更多」打开高级表格；enum/select 移除 `allow-search`，单/多选不再显示编辑光标（T6.1）。
+- [x] AC-19：手机/电话/邮件/邮箱/网址通用字段按元数据自动格式校验，空值不触发（validation.spec 7 用例）（T6.2）。
+- [x] AC-20：`ItemType=area4`/`area`/`cascader` 字段渲染 Arco Cascader，懒加载 `/Cube/Area` 子级并回溯路径回显；后端 MVC `UserController` 为 `AreaId` 补 `ItemType=area4`（T6.3）。
+- [x] AC-21：日期/时间/日期时间按 itemType 推断 date/datetime/time 组件；壁钟时间解析避免 UTC `Z` 串时区漂移（datetime.spec 18 用例）（T6.4）。
+- [x] AC-22：列表/卡片/看板经 `formatFieldValue` 同步展示日期/字典/布尔/LOV/地区叶子（T6.5）。
+- [x] AC-23：Enable 徽标（列表/树/卡片/看板）可点击，调后端 `EnableSelect/DisableSelect`（GET {type}/EnableSelect?keys=）启停；非 Enable 徽标悬停光标 default（T7/T8，api.spec 2 用例）。
+- [x] AC-24：卡片/看板状态/枚举/值集渲染徽标且宽度按文案自适应；卡片视图高度统一为全量对象最高者（min-height 下发）、操作区固定左下；横向排版徽标与标签垂直居中对齐（T9）。
+- [x] AC-25：卡片内部间距收紧（grid gap 8→4px、操作区 padding-top 4→2px），纯样式（T8.6）。
+
 ## 自动化门禁
 
 ```powershell
@@ -56,8 +67,30 @@ dotnet build "魔方.sln" --no-restore
 
 | 项 | 结果 |
 | --- | --- |
-| ArcoVue 单元/组件测试 | `npm run test` 22 files / 142 tests passed（新增 fieldParts 4、detailFormat 4、fieldControl 增补 3） |
+| ArcoVue 单元/组件测试 | `npm run test -- --run` 24 files / 173 tests passed（T1~T9 累计：fieldParts 4、detailFormat 4、fieldControl 增补、datetime 18、fieldFormat 7、validation 7、fieldBadge 4 等） |
+| api-core 测试 | `npm run test` 1 file / 6 tests passed（enableSelect/disableSelect 2 用例） |
 | 后端 XUnit | **受限**：`XUnitTest` 项目引用 `NewLife.CubeNC` 而非 MVC 版 `NewLife.Cube`，且 `BatchLabel` LIST 反查依赖远端 HTTP；以 `dotnet build NewLife.Cube`（0 错误）+ 前端 BatchLabel 消费链路验证替代 |
 | ArcoVue 构建 | `npm run build` vue-tsc + vite 成功（仅 chunk 体积警告，非阻断） |
-| .NET 构建 | `dotnet build NewLife.Cube.csproj` 0 错误 / 157 既有警告 |
-| 手工冒烟 | 待可运行的真实 MVC 后端环境（新增/编辑/详情/搜索/六视图 × Enum/状态/LIST/Int64/字段错误） |
+| .NET 构建 | `dotnet build NewLife.Cube.csproj` 0 错误（增量，0 警告/0 错误） |
+| 手工冒烟 | 待可运行的真实 MVC 后端环境（新增/编辑/详情/搜索/六视图 × Enum/状态/LIST/Int64/字段错误）——已如实记录，不阻塞归档 |
+
+## 验收编排摘要（2026-08-05）
+
+| 步骤 | 结果 |
+| --- | --- |
+| 实现审计 implementation-audit | ✅ **无缺口**：T1~T9 逐条核验代码真实存在且完整；确认前端调用 `enableSelect/disableSelect`（无 setEnable 残留）、`RecordCard.minHeight` + `CardList.measureTallest` 等高、`CascaderField` 懒加载 `/Cube/Area`、后端 `EnableSelect/DisableSelect` 带 `[EntityAuthorize(Update)]` |
+| 代码审查 code-review | ✅ **无高危**：授权、XSS（无 v-html 注入）、壁钟时间、Int64 精度、徽标事件冒泡、NewLife 规范（正式类型名/XML 注释/防御性注释）均通过；8 项中/低问题记入下方风险 |
+| 文档同步 doc-sync | ✅ 修正 3 处 `SetEnable` 残留（附录B_API参考 / Api·实体控制器 / DATA-实体控制器）+ web README 补 T6~T9 说明；tasks/status 与代码一致 |
+
+## 风险与残留
+
+| 级别 | 问题 | 处置 |
+| --- | --- | --- |
+| 中 | `EnableOrDisableSelect` 实体无 Enable 字段或 keys 为空时返回 `Code=0 共启用[0]个`，前端仍提示成功 | 记残留，建议另立 OSC 增强错误反馈 |
+| 低 | `EnableSelect/DisableSelect` 的 `keys` 参数声明未使用（实际走 `GetRequest("keys")`） | 记残留 |
+| 低 | `SplitAsInt()` 仅 Int32，Int64 雪花主键会丢精度 | 当前实体多为 Int32，记残留 |
+| 低 | `datetime.ts` `split(/[\\/\\]/)[0]` 与注释声明的斜杠日期支持不一致 | 记残留 |
+| 低 | `DefaultList.onToggleEnable` 无 loading 锁，快速双击可能并发回跳 | 记残留 |
+| 低 | `CascaderField` watch 重复 resolvePath 请求、模块级 areaCache 跨实例共享 | 记残留 |
+| 低 | 卡片 `enableToggle` 未带 `flags.canEdit` 权限判断（仅 UX 不一致） | 记残留 |
+| — | T5.3 / 手工冒烟矩阵：真实 MVC 环境待验证 | 不阻塞归档，已记录 |
