@@ -138,7 +138,7 @@
 @if (schemeField != null)
 {
     var colorMap = schemeField.Properties["ColorMap"];
-    var colorTargets = (schemeField.Properties["ColorTargets"] + "").Split(',', StringSplitOptions.RemoveEmptyEntries).Select(e => "#" + e.Trim()).ToArray();
+    var colorTargets = (schemeField.Properties["ColorTargets"] + "").Split(',', StringSplitOptions.RemoveEmptyEntries).Select(e => e.Trim()).ToArray();
     <script>
         (function () {
             var map = @Html.Raw(colorMap);
