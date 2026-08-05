@@ -16,6 +16,9 @@ public class AiFormField
     /// <summary>类型名</summary>
     public String Type { get; set; } = null!;
 
+    /// <summary>元素类型。如 html、markdown、image 等，供 AI 判断生成内容的格式</summary>
+    public String? ItemType { get; set; }
+
     /// <summary>字段说明</summary>
     public String? Description { get; set; }
 
@@ -112,6 +115,7 @@ public static class AiFormHelper
                 Name = item.Name,
                 DisplayName = item.DisplayName,
                 Type = item.Type?.Name ?? "unknown",
+                ItemType = item.ItemType,
                 Description = item.Description,
                 Required = item.Required || !item.Nullable,
                 Length = item.Length,

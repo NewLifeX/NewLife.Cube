@@ -191,7 +191,8 @@
             var el = document.querySelector(
                 'input[name="' + name + '"]:not([type=hidden]),' +
                 'select[name="' + name + '"],' +
-                'textarea[name="' + name + '"]'
+                'textarea[name="' + name + '"],' +
+                'input[name="' + name + '"][type=hidden]'
             );
             if (!el) continue;
 
@@ -216,25 +217,40 @@
                 syncSelectPlugin($el);
             } else if (el.tagName === 'TEXTAREA') {
                 el.value = v == null ? '' : String(v);
-                // 富文本编辑器实例同步（summernote 等）
-                if (jQuery && jQuery.fn && jQuery.fn.summernote && $el.is(':hidden') && $el.next('.note-editor').length) {
+                // EasyMDE（Markdown 编辑器）实例同步：原 textarea 被隐藏后仅改 value 不刷新 CodeMirror，
+                // 且提交时 EasyMDE 会用自身内容覆盖 textarea，必须调用实例方法
+                if (el._easymde) {
+                    el._easymde.value(el.value);
+                } else if (jQuery && jQuery.fn && jQuery.fn.summernote && $el.is(':hidden') && $el.next('.note-editor').length) {
+                    // 富文本编辑器实例同步（summernote 等）
                     $el.summernote('code', el.value);
                 } else if (jQuery) {
                     $el.trigger('change');
                 }
+            } else if (el.type === 'hidden') {
+                // Quill（HTML 编辑器）：表单字段是隐藏域，值为 HTML。提交时 _HtmlEditor 会用
+                // q.root.innerHTML 覆盖隐藏域，因此必须同步 Quill 实例，否则 AI 填入的值会丢失
+                el.value = v == null ? '' : String(v);
+                var container = document.getElementById('html_' + name);
+                if (container && container._quill) {
+                    container._quill.clipboard.dangerouslyPasteHTML(el.value || '<p><br></p>');
+                }
+                if (jQuery) $el.trigger('change');
             } else {
                 el.value = v == null ? '' : String(v);
                 if (jQuery) $el.trigger('change');
             }
-            // 高亮被填充字段
-            el.classList.add('ai-field-highlight');
+            // 高亮被填充字段。隐藏域（Quill）高亮其编辑器容器，更直观；其余高亮控件本身
+            var hl = el.type === 'hidden' ? document.getElementById('html_' + name) : el;
+            if (!hl) hl = el;
+            hl.classList.add('ai-field-highlight');
             // 用 IIFE 捕获当前元素：var 循环变量被所有 setTimeout 共享，循环末尾若遇无控件字段 continue 后 el 变为 null，
             // 3 秒后全部回调读取 null 抛异常（Cannot read properties of null (reading 'classList')）
             (function (target) {
                 setTimeout(function () {
                     if (target) target.classList.remove('ai-field-highlight');
                 }, 3000);
-            })(el);
+            })(hl);
             count++;
             names.push(name);
         }

@@ -44,6 +44,20 @@ public class AiFormHelperTests
         [DataObjectField(false, false, false, 50)]
         public String Password { get => _Password; set { if (OnPropertyChanging("Password", value)) { _Password = value; OnPropertyChanged("Password"); } } }
 
+        private String _Remark;
+        /// <summary>备注（HTML 富文本）</summary>
+        [BindColumn("Remark", "备注", "", ItemType = "html")]
+        [DisplayName("备注")]
+        [DataObjectField(false, false, false, 500)]
+        public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
+
+        private String _Content;
+        /// <summary>内容（Markdown）</summary>
+        [BindColumn("Content", "内容", "", ItemType = "markdown")]
+        [DisplayName("内容")]
+        [DataObjectField(false, false, false, 500)]
+        public String Content { get => _Content; set { if (OnPropertyChanging("Content", value)) { _Content = value; OnPropertyChanged("Content"); } } }
+
         private DateTime _CreateTime;
         /// <summary>创建时间（自动维护字段）</summary>
         [DisplayName("创建时间")]
@@ -60,6 +74,8 @@ public class AiFormHelperTests
                 "Status" => _Status,
                 "Password" => _Password,
                 "CreateTime" => _CreateTime,
+                "Remark" => _Remark,
+                "Content" => _Content,
                 _ => base[name],
             };
             set
@@ -71,6 +87,8 @@ public class AiFormHelperTests
                     case "Status": _Status = (StatusKinds)value.ToInt(); break;
                     case "Password": _Password = value + ""; break;
                     case "CreateTime": _CreateTime = value.ToDateTime(); break;
+                    case "Remark": _Remark = value + ""; break;
+                    case "Content": _Content = value + ""; break;
                     default: base[name] = value; break;
                 }
             }
@@ -129,6 +147,29 @@ public class AiFormHelperTests
         Assert.NotNull(status.EnumValues);
         Assert.Contains("启用", status.EnumValues);
         Assert.Contains("禁用", status.EnumValues);
+    }
+
+    [Fact]
+    [DisplayName("BuildSchema - 输出 ItemType，供 AI 判断生成内容格式")]
+    public void BuildSchema_ItemType()
+    {
+        var factory = new Entity<AiFormTestEntity>.DefaultEntityFactory();
+        var fields = new FieldCollection(factory, ViewKinds.AddForm);
+        var schema = AiFormHelper.BuildSchema(fields);
+
+        // HTML 富文本字段
+        var remark = schema.FirstOrDefault(f => f.Name == "Remark");
+        Assert.NotNull(remark);
+        Assert.Equal("html", remark.ItemType);
+
+        // Markdown 字段
+        var content = schema.FirstOrDefault(f => f.Name == "Content");
+        Assert.NotNull(content);
+        Assert.Equal("markdown", content.ItemType);
+
+        // 普通字符串字段无 ItemType
+        var name = schema.First(f => f.Name == "Name");
+        Assert.Null(name.ItemType);
     }
 
     [Fact]
