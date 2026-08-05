@@ -10,7 +10,8 @@
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
-    "dev": "tsup src/index.ts --format esm,cjs --dts --watch"
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "postinstall": "pnpm build"
   },
   "dependencies": {
     "@cube/api-core": "workspace:*"
