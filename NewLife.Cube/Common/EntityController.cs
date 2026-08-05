@@ -66,23 +66,6 @@ public partial class EntityController<TEntity, TModel>
         return new ApiResponse<TEntity> { Code = 0, Message = $"共禁用[{count}]个" };
     }
 
-    /// <summary>批量设置指定 Boolean 字段（如“可见/启用”等状态开关），供 SPA 徽标点击切换。须有 Update 权限</summary>
-    /// <param name="keys">主键集合，逗号分隔</param>
-    /// <param name="field">字段名（需为 Boolean 类型）</param>
-    /// <param name="value">目标值（true/false）</param>
-    /// <param name="reason">操作原因</param>
-    /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Update)]
-    [DisplayName("设置{type}字段")]
-    [HttpGet]
-    public virtual ApiResponse<TEntity> SetField(String keys, String field, Boolean value, String reason = null)
-    {
-        var count = SetFieldSelect(keys, field, value, reason);
-        if (count <= 0)
-            return new ApiResponse<TEntity> { Code = 500, Message = $"未找到可更新的记录（keys/{field} 无效或非 Boolean 字段）" };
-        return new ApiResponse<TEntity> { Code = 0, Message = $"共更新[{count}]个" };
-    }
-
     /// <summary>添加数据</summary>
     /// <param name="model"></param>
     /// <returns></returns>

@@ -65,11 +65,6 @@ export function isEnableField(field: FieldMeta): boolean {
   return (field.name || '').toLowerCase() === 'enable';
 }
 
-/** 是否 Boolean 类型字段（徽标可点击切换状态；受 Update 权限控制） */
-export function isBooleanToggleField(field: FieldMeta): boolean {
-  return field.typeName === 'Boolean' || resolveListControl(field) === 'boolean';
-}
-
 /** 从 dataSource / 布尔约定解析显示文案（不发起网络请求） */
 export function resolveCellLabel(field: FieldMeta, raw: unknown): string {
   if (raw == null || raw === '') return '-';

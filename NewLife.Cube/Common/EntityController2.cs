@@ -88,12 +88,6 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
     private static FieldItem GetDeleteField() => Factory.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Deleted", "IsDelete", "IsDeleted") && e.Type == typeof(Boolean));
 
-    /// <summary>
-    /// 批量启用或禁用
-    /// </summary>
-    /// <param name="isEnable">启用/禁用</param>
-    /// <param name="reason">操作原因</param>
-    /// <returns></returns>
     /// <summary>解析 keys 主键集合（逗号分隔，支持 Int64 雪花 ID；无效片段过滤）</summary>
     /// <param name="keys">主键集合字符串</param>
     /// <returns></returns>
@@ -106,6 +100,10 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             .Where(e => e > 0)
             .ToArray();
 
+    /// <summary>批量启用或禁用</summary>
+    /// <param name="isEnable">启用/禁用</param>
+    /// <param name="reason">操作原因</param>
+    /// <returns>更新条数</returns>
     protected virtual Int32 EnableOrDisableSelect(Boolean isEnable, String reason)
     {
         var count = 0;
@@ -127,41 +125,6 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
                     count += entity.Update();
                 }
-            }
-        }
-
-        return count;
-    }
-
-    /// <summary>批量设置指定 Boolean 字段（如“可见/启用”等状态开关），供 SPA 徽标点击切换</summary>
-    /// <param name="keys">主键集合，逗号分隔</param>
-    /// <param name="field">字段名</param>
-    /// <param name="value">目标值</param>
-    /// <param name="reason">操作原因</param>
-    /// <returns>更新条数</returns>
-    protected virtual Int32 SetFieldSelect(String keys, String field, Boolean value, String reason)
-    {
-        if (field.IsNullOrEmpty()) return 0;
-
-        // 字段必须存在且为 Boolean 类型
-        var fi = Factory.AllFields.FirstOrDefault(f => f.Name.EqualIgnoreCase(field));
-        if (fi == null || fi.Type != typeof(Boolean)) return 0;
-
-        var count = 0;
-        // Int64 雪花 ID 兼容（SplitAsInt 会溢出过滤）
-        var ids = ParseKeys(keys);
-        if (ids.Length == 0) return 0;
-
-        var log = LogProvider.Provider;
-        foreach (var id in ids)
-        {
-            var entity = Factory.Find("ID", id);
-            if (OnSetField(entity as TEntity, fi.Name, value))
-            {
-                log.WriteLog("Update", entity);
-                log.WriteLog(entity.GetType(), $"{fi.Name}={(value ? 1 : 0)}", true, reason);
-
-                count += entity.Update();
             }
         }
 

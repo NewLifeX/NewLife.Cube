@@ -185,19 +185,6 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
         params: { keys: keys.join(','), ...(reason ? { reason } : {}) },
       }),
 
-    /** 批量设置指定 Boolean 字段（如“可见/启用”等状态开关；须有 Update 权限；field 需为 Boolean 类型） */
-    setField: (type: string, keys: (number | string)[], field: string, value: boolean, reason?: string) =>
-      request<unknown>({
-        url: `${type}/SetField`,
-        method: 'get',
-        params: {
-          keys: keys.join(','),
-          field,
-          value: value ? 'true' : 'false',
-          ...(reason ? { reason } : {}),
-        },
-      }),
-
     /**
      * 批量删除，默认使用重复参数 id=1&id=2 （文档标准）。
      * 若后端仅支持逗号形式，可传入 compatCommaJoin: true 切换为兼容模式。
