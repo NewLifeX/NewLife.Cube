@@ -22,6 +22,7 @@ description: >-
 1. 写 `retro.md`。
 2. 追加 `openspec/harness/lessons.md`。
 3. 目录移至 `openspec/changes/archive/OSC-00xx <简洁中文描述>/`（与进行中变更同一命名规则，保持原文件夹名整体搬迁即可）。
+   - **归档后校验（防竞态残留）**：确认 `openspec/changes/` 下该变更目录已消失；若旧路径残留文件（编辑工具与文件移动竞态导致，0008/0009 曾复现），先与 `archive/` 同名文件比对哈希，一致则删除残留，不一致则保留并人工确认。
 4. `status.md`：`state: Done`。
 5. **提交本轮修改**：复盘归档完成后，按仓库 git 提交规范创建一次（或按 OSC 惯例一条）commit，纳入本 OSC 业务代码、OpenSpec 归档、`harness/lessons.md`、相关文档与必要构建产物；**排除**与本 OSC 无关的 WIP（如临时 patch、他皮肤误改）。提交信息对齐近期风格（如 `feat(arco): OSC-00xx …`）。用户已说「验收并复盘」或「复盘」且未禁止提交时，本步默认执行，无需再单独要一句「请提交」。
 
