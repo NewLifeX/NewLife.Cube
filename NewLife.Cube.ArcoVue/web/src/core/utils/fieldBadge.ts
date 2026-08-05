@@ -60,6 +60,11 @@ export function isBadgeField(field: FieldMeta): boolean {
   return kind === 'boolean' || kind === 'select' || kind === 'lov';
 }
 
+/** 是否为「启用/Enable」字段（可点击徽标切换启用/禁用） */
+export function isEnableField(field: FieldMeta): boolean {
+  return (field.name || '').toLowerCase() === 'enable';
+}
+
 /** 从 dataSource / 布尔约定解析显示文案（不发起网络请求） */
 export function resolveCellLabel(field: FieldMeta, raw: unknown): string {
   if (raw == null || raw === '') return '-';

@@ -22,6 +22,7 @@
       @detail="$emit('detail', $event)"
       @edit="$emit('edit', $event)"
       @delete="$emit('delete', $event)"
+      @toggle-enable="$emit('toggleEnable', $event)"
     />
     <a-empty v-if="!records.length" description="暂无数据" />
   </div>
@@ -99,6 +100,7 @@ defineEmits<{
   detail: [row: Record<string, unknown>];
   edit: [row: Record<string, unknown>];
   delete: [row: Record<string, unknown>];
+  toggleEnable: [row: Record<string, unknown>];
 }>();
 
 const exclude = computed(() =>
@@ -136,6 +138,8 @@ function bodyOf(row: Record<string, unknown>) {
   gap: 12px;
   padding: 4px 0 12px;
   align-content: start;
+  /* 卡片高度按所显示字段自动伸缩，不做等高拉伸；操作区仍固定在各卡片左下 */
+  align-items: start;
 }
 .card-list--standard {
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

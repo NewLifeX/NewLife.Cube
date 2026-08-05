@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createCommentApi, createProfileApi } from './api';
+import { createCommentApi, createPageApi, createProfileApi } from './api';
 import type { ApiResponse, EntityCommentModel, ViewProfileModel } from './types';
 
 vi.mock('axios', () => ({
@@ -44,6 +44,21 @@ describe('createCommentApi', () => {
         url: '/Cube/EntityComment',
         method: 'delete',
         params: { id: 9 },
+      }),
+    );
+  });
+});
+
+describe('createPageApi', () => {
+  it('setEnable hits GET /Admin/User/SetEnable with id+enable', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: {} });
+    const api = createPageApi(request);
+    await api.setEnable('/Admin/User', 7, false);
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Admin/User/SetEnable',
+        method: 'get',
+        params: { id: 7, enable: false },
       }),
     );
   });

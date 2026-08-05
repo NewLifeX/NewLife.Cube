@@ -28,6 +28,8 @@ export interface ListTableColumnDef {
     buttonBorderColor: string;
     textColor: string;
   } | null;
+  /** 启用/Enable 徽标：可点击切换启用/禁用（悬停显示 pointer） */
+  enableToggle?: boolean;
 }
 
 const props = withDefaults(
@@ -69,6 +71,7 @@ const emit = defineEmits<{
   columnsChange: [cols: ColumnPref[]];
   sortChange: [payload: { field: string; desc: boolean } | null];
   action: [payload: { action: 'detail' | 'edit' | 'delete'; row: Record<string, unknown> }];
+  toggleEnable: [row: Record<string, unknown>];
 }>();
 
 const hostRef = ref<HTMLElement | null>(null);
@@ -203,6 +206,8 @@ function buildColumns(): any[] {
           return {
             textAlign: 'center',
             color: badge?.textColor || '#4b5563',
+            // 仅「启用/Enable」徽标可点击（pointer）；其它状态/枚举/值集徽标悬停不变（default）
+            cursor: c.enableToggle ? 'pointer' : 'default',
             buttonStyle,
           };
         },
@@ -382,6 +387,12 @@ function bindEvents() {
     if (field === '__ops') {
       const action = resolveOpsClick(args);
       if (action) emit('action', { action, row });
+      return;
+    }
+    // 「启用/Enable」徽标：直接切换启用/禁用（须父级授权 Update）
+    const colDef = props.columns.find((c) => c.pref.key === field);
+    if (colDef?.enableToggle && colDef.badge) {
+      emit('toggleEnable', row);
       return;
     }
     emit('rowClick', row);

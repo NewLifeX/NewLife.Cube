@@ -163,6 +163,7 @@
               @columns-change="onColumnsChange"
               @sort-change="onSortChange"
               @action="onTableAction"
+              @toggle-enable="onToggleEnable"
             />
             <a-empty v-else description="暂无列表字段（GetPage.list 为空）" />
           </template>
@@ -186,6 +187,7 @@
             @detail="openDetail"
             @edit="openEdit"
             @delete="onCardDelete"
+            @toggle-enable="onToggleEnable"
           />
 
           <KanbanBoard
@@ -203,6 +205,7 @@
             @detail="openDetail"
             @edit="openEdit"
             @delete="onCardDelete"
+            @toggle-enable="onToggleEnable"
           />
 
           <CalendarMonth
@@ -306,6 +309,7 @@ import { resolveListControl } from '@/core/utils/fieldControl';
 import {
   defaultBadgeColumnWidth,
   isBadgeField,
+  isEnableField,
   resolveCellBadge,
 } from '@/core/utils/fieldBadge';
 import { resolveCrudFlags } from '@/core/utils/permissions';
@@ -603,6 +607,8 @@ const tableColumns = computed(() =>
       pref: width && !pref.width ? { ...pref, width } : pref,
       title: pref.title?.trim() || field?.displayName || pref.key,
       badge,
+      // 启用/Enable 徽标：有 Update 权限时可点击切换启停
+      enableToggle: !!field && isEnableField(field) && flags.value.canEdit,
       badgeOf: field
         ? (row: Record<string, unknown>) => {
             const raw = getValueByKey(row, field.name);
@@ -885,6 +891,23 @@ function onTableAction(payload: { action: 'detail' | 'edit' | 'delete'; row: Rec
       onOk: () => handleDelete(payload.row),
     });
   } else openDetail(payload.row);
+}
+
+/** 点击「启用/Enable」徽标：调用后端 SetEnable 切换启停后刷新列表 */
+async function onToggleEnable(row: Record<string, unknown>) {
+  const field = listFields.value.find((f) => isEnableField(f));
+  if (!field || !flags.value.canEdit) return;
+  const id = getValueByKey(row, pkField.value);
+  if (id == null || id === '') return;
+  const current = !!getValueByKey(row, field.name);
+  const enable = !current;
+  try {
+    await cubeApi.page.setEnable(typePath.value, id as string | number, enable);
+    Message.success(enable ? '启用成功' : '禁用成功');
+    await loadData();
+  } catch (err) {
+    Message.error(formatApiError(err, '操作失败'));
+  }
 }
 
 function clearModel() {

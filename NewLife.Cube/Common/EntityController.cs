@@ -36,6 +36,37 @@ public partial class EntityController<TEntity, TModel>
         }
     }
 
+    /// <summary>启用 或 禁用。供 SPA 列表启用徽标点击切换；仅支持包含 Enable 字段的实体</summary>
+    /// <param name="id">主键</param>
+    /// <param name="enable">是否启用</param>
+    /// <returns></returns>
+    [EntityAuthorize(PermissionFlags.Update)]
+    [DisplayName("启用{type}")]
+    [HttpGet]
+    public virtual ApiResponse<TEntity> SetEnable(Int64 id = 0, Boolean enable = true)
+    {
+        var fi = Factory.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Enable"));
+        if (fi == null) throw new InvalidOperationException($"启用/禁用仅支持Enable字段。");
+
+        var entity = FindData(id) ?? throw new ArgumentNullException(nameof(id), "找不到数据 " + id);
+        try
+        {
+            if (OnSetField(entity, fi.Name, enable))
+                OnUpdate(entity);
+
+            return new ApiResponse<TEntity>
+            {
+                Code = 0,
+                Message = enable ? "启用成功！" : "禁用成功！",
+                Data = entity,
+            };
+        }
+        catch (Exception ex)
+        {
+            return BuildFailResponse(ex, enable ? "启用" : "禁用", entity);
+        }
+    }
+
     /// <summary>添加数据</summary>
     /// <param name="model"></param>
     /// <returns></returns>

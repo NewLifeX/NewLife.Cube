@@ -21,7 +21,16 @@
         :class="{ 'record-card-field--full': item.fullRow }"
       >
         <span class="label">{{ item.label }}</span>
-        <span class="value">{{ item.value }}</span>
+        <span
+          v-if="item.badge"
+          class="record-card-badge"
+          :class="{ 'record-card-badge--toggle': item.enableToggle }"
+          :style="badgeStyle(item)"
+          @click.stop="item.enableToggle && $emit('toggleEnable', record)"
+        >
+          {{ item.badge.label }}
+        </span>
+        <span v-else class="value">{{ item.value }}</span>
       </div>
     </div>
     <div class="record-card-ops">
@@ -68,6 +77,24 @@ const props = withDefaults(
   },
 );
 
+/** 徽标样式：浅底 + 同色文字（与列表徽章一致） */
+function badgeStyle(item: CardBodyField): Record<string, string> | undefined {
+  const b = item.badge;
+  if (!b) return undefined;
+  return {
+    backgroundColor: b.buttonColor,
+    borderColor: b.buttonBorderColor,
+    color: b.textColor,
+  };
+}
+
+defineEmits<{
+  detail: [row: Record<string, unknown>];
+  edit: [row: Record<string, unknown>];
+  delete: [row: Record<string, unknown>];
+  toggleEnable: [row: Record<string, unknown>];
+}>();
+
 const cols = computed(() => {
   const n = props.bodyColumns;
   return n === 1 || n === 3 ? n : 2;
@@ -82,12 +109,6 @@ const orientationClass = computed(
 const cardCssVars = computed(() => ({
   '--record-card-cols': String(cols.value),
 }));
-
-defineEmits<{
-  detail: [row: Record<string, unknown>];
-  edit: [row: Record<string, unknown>];
-  delete: [row: Record<string, unknown>];
-}>();
 </script>
 
 <style scoped>
@@ -171,9 +192,25 @@ defineEmits<{
   color: var(--color-text-1);
   word-break: break-all;
 }
+/* 状态/枚举/值集徽标（与列表徽章一致：浅底 + 同色文字）；Enable 徽标可点击 */
+.record-card-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: var(--cube-font-size-meta);
+  line-height: 1.6;
+  white-space: nowrap;
+  cursor: default;
+  user-select: none;
+}
+.record-card-badge--toggle {
+  cursor: pointer;
+}
 .record-card-ops {
   grid-area: ops;
   display: flex;
+  justify-content: flex-start;
   gap: 6px;
   margin-top: auto;
   padding-top: 4px;

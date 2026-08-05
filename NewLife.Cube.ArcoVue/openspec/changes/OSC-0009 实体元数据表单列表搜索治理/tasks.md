@@ -47,3 +47,12 @@
 - [x] 6.4 日期时间：`datetime.ts` 重写为壁钟时间解析（`parseWallClock`/`formatDate`/`formatTime`/`formatDateTime`/`inferDateKind`/`toPickerValue`/`fromPickerValue`），避免 UTC 'Z' 串被换算到本地时区；`FieldInput` 按 `inferDateKind` 选择 date/datetime/time 组件与 `value-format`；`resolveSearchControl` 按 itemType 返回 `dateRange`/`datetimeRange`/`timeRange`。
 - [x] 6.5 列表多维视图同步：新增 `fieldFormat.ts` `formatFieldValue`（日期/时间/字典/布尔/LOV 缓存/地区叶子），`DefaultList.renderCell` 改用它，CardList/KanbanBoard/ListTable 经 `format-cell` 同步；`detailFormat.detailText` 增日期格式化。
 - [x] 6.6 测试：`datetime.spec.ts`（18）、`fieldFormat.spec.ts`（7）、`validation.spec.ts`（7）、`fieldControl.spec.ts` 增补 cascader/date 推断（+1 文件级用例）；全量 24 files / 172 tests 通过；`npm run build` 与 `dotnet build NewLife.Cube` 均成功。
+
+## T7 徽标交互：Enable 点击启停 / 悬停光标 / 卡片看板徽标与高度
+
+- [x] 7.1 后端 `EntityController` 新增 `SetEnable(Int64 id, Boolean enable)` action（`[HttpGet]`、`[EntityAuthorize(Update)]`，按 Enable 字段 `OnSetField` + `OnUpdate`，返回 `ApiResponse<TEntity>`）；`api-core.page.setEnable` 封装 `GET {type}/SetEnable?id=&enable=`。
+- [x] 7.2 列表/树视图：`ListTable` 列定义增 `enableToggle`，Enable 徽标 `cursor: pointer` 且点击 emit `toggleEnable`（不进 `rowClick`）；`DefaultList` 标记 `enableToggle = isEnableField && canEdit` 并 `onToggleEnable` 调 `setEnable` 后刷新。
+- [x] 7.3 列表/树视图：非 Enable 的状态/枚举/值集徽标 `cursor: default`——悬停鼠标不变（VTable badge 列 style 增加光标控制）。
+- [x] 7.4 卡片/看板：`cardHelpers.CardBodyField` 增 `badge`（`resolveCellBadge`）与 `enableToggle`（`isEnableField`）；`RecordCard` 渲染徽标（浅底+同色文字），Enable 徽标可点击；`CardList`/`KanbanBoard` 透传 `toggleEnable` 至 `DefaultList`。
+- [x] 7.5 卡片高度：`.card-list` 改 `align-items: start`，卡片高度按所显示字段自动伸缩；操作区以 grid 末行 + `margin-top:auto` + `justify-content:flex-start` 固定于各卡片左下角。
+- [x] 7.6 测试：`fieldBadge.spec.ts` 增 `isEnableField`（4 断言）；api-core `api.spec.ts` 增 `setEnable` URL（1 用例）；web 24 files / 173 tests、api-core 5 tests 全过；`npm run build` 与 `dotnet build NewLife.Cube`（0 错误）通过。

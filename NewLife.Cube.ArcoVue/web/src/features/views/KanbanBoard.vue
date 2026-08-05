@@ -19,6 +19,7 @@
           @detail="$emit('detail', $event)"
           @edit="$emit('edit', $event)"
           @delete="$emit('delete', $event)"
+          @toggle-enable="$emit('toggleEnable', $event)"
         />
       </div>
     </div>
@@ -52,6 +53,7 @@ defineEmits<{
   detail: [row: Record<string, unknown>];
   edit: [row: Record<string, unknown>];
   delete: [row: Record<string, unknown>];
+  toggleEnable: [row: Record<string, unknown>];
 }>();
 
 const columns = computed(() => {

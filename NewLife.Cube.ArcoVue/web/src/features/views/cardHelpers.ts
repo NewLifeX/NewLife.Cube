@@ -1,6 +1,6 @@
 import type { FieldMeta } from '@/core/types/field';
 import type { ColumnPref } from '@/core/utils/viewProfile';
-import { resolveCellLabel } from '@/core/utils/fieldBadge';
+import { isEnableField, resolveCellBadge, resolveCellLabel, type CellBadge } from '@/core/utils/fieldBadge';
 import { getValueByKey } from '@/core/utils/url';
 import type { CardMapping, KanbanMapping } from '@/core/utils/viewMapping';
 
@@ -10,6 +10,10 @@ export type CardBodyField = {
   value: string;
   /** 长文本/多行文本独占整行 */
   fullRow: boolean;
+  /** 状态/枚举/值集徽标（卡片/看板也显示徽章）；null 表示纯文本 */
+  badge?: CellBadge | null;
+  /** 启用/Enable 徽标：可点击切换启用/禁用 */
+  enableToggle?: boolean;
 };
 
 /** 多行/富文本控件判定集；命中即整行，与文本长度无关 */
@@ -46,6 +50,7 @@ export function buildCardBodyFields(
     const field = fields.find((f) => f.name === col.key);
     const label = col.title?.trim() || field?.displayName || col.key;
     let value = '-';
+    let badge: CellBadge | null = null;
     if (field && format) value = format(field, record);
     else if (field) {
       const raw = getValueByKey(record, field.name);
@@ -54,7 +59,19 @@ export function buildCardBodyFields(
       const raw = getValueByKey(record, col.key);
       value = raw == null || raw === '' ? '-' : String(raw);
     }
-    out.push({ key: col.key, label, value, fullRow: isCardBodyFieldFullRow(field, value) });
+    // 状态/枚举/值集字段在卡片/看板也渲染为徽标（与列表一致）
+    if (field) {
+      const raw = getValueByKey(record, field.name);
+      if (raw != null && raw !== '') badge = resolveCellBadge(field, raw);
+    }
+    out.push({
+      key: col.key,
+      label,
+      value,
+      fullRow: isCardBodyFieldFullRow(field, value),
+      badge,
+      enableToggle: !!field && isEnableField(field),
+    });
     if (out.length >= 8) break;
   }
   return out;
