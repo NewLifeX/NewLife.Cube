@@ -513,7 +513,7 @@ export const useViewProfileStore = defineStore('viewProfile', {
       // 表单布局为系统全局唯一配置（管理员定义，作用于所有用户）：
       // 仅管理员保存时提交；非管理员不发送，避免把全局布局写回或触发后端 403
       const userStore = useUserStore();
-      if ((userStore.userInfo?.roleName ?? '') === '管理员') {
+      if (userStore.userInfo?.isSystem === true) {
         payload.formJson = serializeFormJson(entry.formJson);
       }
       try {

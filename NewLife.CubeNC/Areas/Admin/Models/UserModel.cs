@@ -186,6 +186,9 @@ public class UserInfo
     /// </summary>
     public String RoleNames { get; set; }
 
+    /// <summary>是否系统管理员。角色中包含 IsSystem 标识即为管理员</summary>
+    public Boolean IsSystem { get; set; }
+
     /// <summary>部门。组织机构</summary>
     public Int32 DepartmentID { get; set; }
 
@@ -296,5 +299,6 @@ public class UserInfo
         if (!RoleNames.IsNullOrWhiteSpace()) return;
 
         RoleNames = roles.Select(s => s.Name).Join();
+        IsSystem = roles.Any(e => e.IsSystem);
     }
 }

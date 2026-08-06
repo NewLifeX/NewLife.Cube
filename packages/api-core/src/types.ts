@@ -184,6 +184,8 @@ export interface UserInfo {
   avatar?: string;
   roleID?: number;
   roleName?: string;
+  /** 是否系统管理员。角色中包含 IsSystem 标识即为管理员 */
+  isSystem?: boolean;
   online?: boolean;
   enable?: boolean;
   logins?: number;

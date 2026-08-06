@@ -457,11 +457,8 @@ const flags = computed(() =>
   resolveCrudFlags(userStore.getMenuPermission(typePath.value), pageSetting.value),
 );
 
-/** 仅管理员角色可使用表单布局（OSC-0013）：admin 用户主角色名为「管理员」 */
-const isAdmin = computed(() => {
-  const role = userStore.userInfo?.roleName ?? '';
-  return role === '管理员';
-});
+/** 仅管理员角色可使用表单布局和管理模板（与后端 Roles.Any(e => e.IsSystem) 对齐） */
+const isAdmin = computed(() => userStore.userInfo?.isSystem === true);
 
 /** 只读实体列表页不展示历史与评论（新建由表单 mode 自行隐藏） */
 const showHistoryTabs = computed(() => pageSetting.value?.isReadOnly !== true);

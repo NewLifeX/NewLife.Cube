@@ -47,7 +47,7 @@ import { useViewProfileStore } from './viewProfile';
 // 默认模拟管理员身份（全局布局的唯一可写者），各 describe 的 beforeEach 会重置 API mock 但不重置身份
 beforeEach(() => {
   mockUserStore.mockReset();
-  mockUserStore.mockReturnValue({ userInfo: { roleName: '管理员' } });
+  mockUserStore.mockReturnValue({ userInfo: { isSystem: true } });
   // 默认无全局模板（视图/筛选域回落 system），保证既有测试语义不变
   getViewProfileTemplate.mockReset();
   getViewProfileTemplate.mockResolvedValue({ data: null });
@@ -377,7 +377,7 @@ describe('viewProfile store formJson (OSC-0013)', () => {
   });
 
   it('non-admin saveNow omits formJson (global layout is admin-only)', async () => {
-    mockUserStore.mockReturnValue({ userInfo: { roleName: '普通用户' } });
+    mockUserStore.mockReturnValue({ userInfo: { isSystem: false } });
     getViewProfile.mockResolvedValue({
       data: { typePath: 'Admin/User', view: 'table', activeViewId: 'default' },
     });
