@@ -441,17 +441,9 @@ public partial class ReadOnlyEntityController<TEntity>
     [HttpPost]
     public async Task<ActionResult> AiChat()
     {
-        var set = CubeSetting.Current;
-        if (!set.AISwitch) return Json(500, null, "AI 未启用，请联系系统管理员开启 AISwitch");
-
-        var svc = HttpContext.RequestServices.GetService<IAIChatService>();
-        if (svc == null) return Json(500, null, "AI 对话服务未注册");
-
-        // 读取 JSON 请求体
-        var body = await new StreamReader(Request.Body).ReadToEndAsync();
-        if (body.IsNullOrEmpty()) return Json(500, null, "请求体为空");
-        var req = body.ToJsonEntity<AiChatRequest>();
-        if (req == null || req.Message.IsNullOrEmpty()) return Json(500, null, "消息不能为空");
+        // 请求校验（AISwitch/服务注册/请求体）与 SSE 输出管道由 AiChatEndpoint 统一提供
+        var (error, svc, req) = await AiChatEndpoint.ParseAsync(this);
+        if (error != null || svc == null || req == null) return error!;
 
         // 当前查询条件（_query Base64 解码）
         var pager = default(Pager);
@@ -466,33 +458,17 @@ public partial class ReadOnlyEntityController<TEntity>
             catch (Exception ex) { XTrace.WriteLine("AiChat 解析 _query 失败：{0}", ex.Message); }
         }
 
-        // 构建工具：当前实体上下文 + 内置工具 + 浏览器操作工具。CreateCubeTools 可重载以定制工具与数据逻辑
+        // 构建工具：当前实体上下文 + 内置工具。CreateCubeTools 可重载以定制工具与数据逻辑
         var tools = CreateCubeTools(pager, req.Id);
         var registry = new ToolRegistry();
         registry.AddTools(tools);
         registry.AddTools(new BuiltinToolService());
 
-        // SSE 写回调：ChatAsync 与浏览器工具服务共用，浏览器工具经它下发 run_js 事件到前端
-        Func<String, Task> writeEvent = async json =>
-        {
-            await Response.WriteAsync($"data: {json}\n\n", HttpContext.RequestAborted);
-            await Response.Body.FlushAsync(HttpContext.RequestAborted);
-        };
-
-        // 浏览器工具服务：run_js 等工具经页面检查点服务下发脚本到前端执行，结果回传后端继续对话（全局 AiController.OperationResult 端点回传）
-        var user = HttpContext.User.Identity as IUser;
-        registry.AddTools(new BrowserToolService(user?.ID ?? 0) { Writer = writeEvent });
-
         // 系统提示词：注入页面上下文，保留子类重载
         var systemPrompt = BuildChatSystemPrompt(req, pager);
 
-        // SSE 输出
-        Response.Headers["Content-Type"] = "text/event-stream; charset=utf-8";
-        Response.Headers["Cache-Control"] = "no-cache";
-        Response.Headers["X-Accel-Buffering"] = "no";
-
-        // 对话核心逻辑下沉到全局服务：会话管理、工具循环、SSE 事件、空响应兜底
-        await svc.ChatAsync(req, systemPrompt, [registry], writeEvent, HttpContext.RequestAborted);
+        // SSE 输出（含浏览器操作工具注册）
+        await AiChatEndpoint.RunSseAsync(this, svc, req, systemPrompt, registry);
 
         return new EmptyResult();
     }

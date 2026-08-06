@@ -326,6 +326,19 @@
     }
 
     /**
+     * 获取 AI 对话端点 URL。
+     * 实体页面由服务端注入 data-ai-url 为空，走实体控制器路径 {控制器}/AiChat（带数据上下文工具）；
+     * 非实体页面（魔方设置/首页/系统信息等）服务端注入全局端点 {area}/Ai/AiChat（通用工具），
+     * 避免拼出不存在的端点导致 404 报错。
+     */
+    function getAiChatUrl() {
+        var container = getEl('aiAssistant');
+        var injected = container ? container.getAttribute('data-ai-url') : '';
+        if (injected) return injected;
+        return getAiBasePath() + '/AiChat';
+    }
+
+    /**
      * 获取浏览器操作回传端点：魔方后台区域前缀（如 /Admin）+ 全局 AI 控制器 OperationResult，
      * 所有实体页面共用，不在各实体控制器上重复增加接口
      */
@@ -396,9 +409,8 @@
         var bubble = appendAssistant();
         var full = '';
 
-        // 构造 AiChat 端点：控制器路径 + /AiChat（去掉当前页面动作段）
-        var path = getAiBasePath();
-        var url = path + '/AiChat';
+        // 构造 AiChat 端点：实体页面走控制器路径，非实体页面走服务端注入的全局端点
+        var url = getAiChatUrl();
 
         fetch(url, {
             method: 'POST',
@@ -415,11 +427,18 @@
             })
         }).then(function (response) {
             if (!response.ok) {
-                return response.json().then(function (data) {
-                    throw new Error((data && data.data) || ('HTTP ' + response.status));
-                }).catch(function (e) {
-                    if (e && e.message) throw e;
-                    throw new Error('HTTP ' + response.status);
+                // 用 text() 读取并手动解析，避免非 JSON 响应体（如 404 的 HTML 错误页、空响应）
+                // 触发 "Unexpected end of JSON input" 这类解析异常，只向用户展示可读错误
+                return response.text().then(function (text) {
+                    var msg = 'HTTP ' + response.status;
+                    if (text) {
+                        try {
+                            var data = JSON.parse(text);
+                            var d = data && (data.data || data.message);
+                            if (typeof d === 'string' && d) msg = d;
+                        } catch (e) { /* 非 JSON 响应体，保留 HTTP 状态码 */ }
+                    }
+                    throw new Error(msg);
                 });
             }
             var reader = response.body.getReader();

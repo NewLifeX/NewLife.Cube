@@ -1,13 +1,25 @@
+@using Microsoft.AspNetCore.Mvc.Controllers
 @using NewLife.Cube;
 @using XCode.Membership
 @{
     var set = CubeSetting.Current;
     var user = Context.User.Identity as IUser;
+
+    // 实体页面（EntityController）自带 AiChat 动作，走实体控制器路径；其余页面（魔方设置/首页/系统信息等）
+    // 回退到全局 AI 控制器 {area}/Ai/AiChat，避免前端拼出不存在的端点导致 404
+    var ad = ViewContext.ActionDescriptor as ControllerActionDescriptor;
+    var hasAiChat = ad?.ControllerTypeInfo != null && ad.ControllerTypeInfo.AsType().GetMethod("AiChat") != null;
+    var aiUrl = "";
+    if (!hasAiChat)
+    {
+        var area = ViewContext.RouteData.Values["area"] + "";
+        aiUrl = (area.IsNullOrEmpty() ? "" : "/" + area) + "/Ai/AiChat";
+    }
 }
 @if (set.AISwitch && user != null)
 {
     @* AI 助手：右下角悬浮球 + 对话面板。所有 MVC 主题共享 *@
-    <div id="aiAssistant" class="ai-assistant">
+    <div id="aiAssistant" class="ai-assistant" data-ai-url="@aiUrl">
         <button type="button" id="aiAssistantFab" class="ai-fab" title="AI 助手">
             <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
                 <g fill="#2ecc71">

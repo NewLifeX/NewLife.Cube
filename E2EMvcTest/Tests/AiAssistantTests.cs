@@ -443,6 +443,115 @@ public sealed class AiAssistantTests : IAsyncLifetime
         Assert.Empty(pageErrors);
     }
 
+    [Fact(DisplayName = "TC-AI-019 非实体页面 AI 对话路由到全局端点")]
+    [Trait("Category", "AiAssistant")]
+    [Trait("Priority", "P2")]
+    public async Task TC_AI_019_NonEntityPageRoutesToGlobalEndpoint()
+    {
+        const String testId = "TC-AI-019";
+        var pageErrors = new List<String>();
+        _page.PageError += (_, msg) => pageErrors.Add(msg);
+
+        // 魔方设置页（ConfigController）为典型非实体页面，无 {controller}/AiChat 端点
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/Cube");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 服务端注入验证：AISwitch 开启时真实浮窗渲染，data-ai-url 应指向全局端点
+        var real = _page.Locator("#aiAssistant");
+        if (await real.CountAsync() > 0)
+        {
+            var injected = await real.GetAttributeAsync("data-ai-url");
+            Assert.Equal("/Admin/Ai/AiChat", injected);
+        }
+
+        // 注入浮窗并强制 data-ai-url 指向全局端点（不依赖 AISwitch 设置）
+        await EnsureAiAssistantWithUrlAsync(_page, "/Admin/Ai/AiChat");
+
+        // 拦截全局端点，记录请求 URL 并返回假 SSE
+        var requestUrl = "";
+        var sse = "data: {\"type\":\"text\",\"content\":\"全局端点可达\"}\n\n";
+        await _page.RouteAsync("**/Ai/AiChat", async route =>
+        {
+            requestUrl = route.Request.Url;
+            await route.FulfillAsync(new RouteFulfillOptions
+            {
+                Status = 200,
+                ContentType = "text/event-stream",
+                Body = sse,
+            });
+        });
+
+        await _page.Locator("#aiAssistantFab").ClickAsync(new LocatorClickOptions { Force = true });
+        var panel = _page.Locator("#aiAssistantPanel");
+        await panel.WaitForAsync(new LocatorWaitForOptions
+        {
+            State = WaitForSelectorState.Visible,
+            Timeout = 5_000,
+        });
+
+        await _page.Locator("#aiInput").FillAsync("检查系统状态");
+        await _page.Locator("#aiSend").ClickAsync();
+
+        await WaitForBubbleTextAsync(_page, "全局端点可达");
+
+        // 请求应打到全局端点而非不存在的 {controller}/AiChat
+        Assert.True(requestUrl.Contains("/Admin/Ai/AiChat"), $"[{testId}] 非实体页未路由到全局端点：{requestUrl}");
+
+        var text = await panel.Locator(".ai-bubble").Last.InnerTextAsync();
+        Assert.True(text.Contains("全局端点可达"), $"[{testId}] 未收到全局端点回复：'{text}'");
+        Assert.Empty(pageErrors);
+
+        await _page.UnrouteAsync("**/Ai/AiChat");
+    }
+
+    [Fact(DisplayName = "TC-AI-020 非实体页 404 响应不显示 JSON 解析异常")]
+    [Trait("Category", "AiAssistant")]
+    [Trait("Priority", "P2")]
+    public async Task TC_AI_020_NonEntityPageErrorHandling()
+    {
+        const String testId = "TC-AI-020";
+        var pageErrors = new List<String>();
+        _page.PageError += (_, msg) => pageErrors.Add(msg);
+
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/Cube");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 注入浮窗并强制 data-ai-url（不依赖 AISwitch 设置）
+        await EnsureAiAssistantWithUrlAsync(_page, "/Admin/Ai/AiChat");
+
+        // 模拟旧行为：端点返回 404 HTML 错误页（非 JSON 响应体）
+        await _page.RouteAsync("**/Ai/AiChat", async route =>
+        {
+            await route.FulfillAsync(new RouteFulfillOptions
+            {
+                Status = 404,
+                ContentType = "text/html",
+                Body = "<html><head><title>404 Not Found</title></head><body>Not Found</body></html>",
+            });
+        });
+
+        await _page.Locator("#aiAssistantFab").ClickAsync(new LocatorClickOptions { Force = true });
+        var panel = _page.Locator("#aiAssistantPanel");
+        await panel.WaitForAsync(new LocatorWaitForOptions
+        {
+            State = WaitForSelectorState.Visible,
+            Timeout = 5_000,
+        });
+
+        await _page.Locator("#aiInput").FillAsync("检查系统状态");
+        await _page.Locator("#aiSend").ClickAsync();
+
+        // 气泡应显示可读的 HTTP 错误，而非 "Unexpected end of JSON input"
+        await WaitForBubbleTextAsync(_page, "404");
+
+        var text = await panel.Locator(".ai-bubble").Last.InnerTextAsync();
+        Assert.True(text.Contains("404"), $"[{testId}] 未显示 HTTP 状态码：'{text}'");
+        Assert.False(text.Contains("Unexpected end of JSON"), $"[{testId}] 暴露了 JSON 解析异常：'{text}'");
+        Assert.Empty(pageErrors);
+
+        await _page.UnrouteAsync("**/Ai/AiChat");
+    }
+
     /// <summary>注入 AI 助手浮窗标记并加载真实 ai-assistant.js，使测试不依赖 AISwitch 设置。</summary>
     /// <remarks>markup 仅含 JS 契约所需的元素 ID（aiAssistantFab/Panel/Messages/Input/Send 等），
     /// 面板内联 position:fixed 以便验证拖动定位；等待 window.CubeAI 出现表示脚本已加载且 init 已执行。</remarks>
@@ -497,5 +606,33 @@ public sealed class AiAssistantTests : IAsyncLifetime
 
         // 等待真实 ai-assistant.js 加载并完成 init（脚本末尾设置 window.CubeAI）
         await page.WaitForFunctionAsync("() => window.CubeAI !== undefined", null, new PageWaitForFunctionOptions { Timeout = 5_000 });
+    }
+
+    /// <summary>注入 AI 助手浮窗并强制 data-ai-url 指向指定端点（模拟服务端注入，不依赖 AISwitch 设置）</summary>
+    /// <param name="page">当前页面</param>
+    /// <param name="url">全局对话端点 URL（如 /Admin/Ai/AiChat）</param>
+    private static async Task EnsureAiAssistantWithUrlAsync(IPage page, String url)
+    {
+        await EnsureAiAssistantAsync(page);
+        await page.EvaluateAsync($@"
+            (function () {{
+                var c = document.getElementById('aiAssistant');
+                if (c) c.setAttribute('data-ai-url', '{url}');
+            }})()
+        ");
+    }
+
+    /// <summary>等待最后一个 AI 气泡包含指定关键词（SSE/错误异步写入后文本才出现）</summary>
+    /// <param name="page">当前页面</param>
+    /// <param name="keyword">期望出现的关键词</param>
+    private static async Task WaitForBubbleTextAsync(IPage page, String keyword)
+    {
+        await page.WaitForFunctionAsync($@"
+            (function () {{
+                var bubbles = document.querySelectorAll('#aiMessages .ai-bubble');
+                var last = bubbles[bubbles.length - 1];
+                return last && last.textContent.indexOf('{keyword}') >= 0;
+            }})()
+        ", null, new PageWaitForFunctionOptions { Timeout = 5_000 });
     }
 }
