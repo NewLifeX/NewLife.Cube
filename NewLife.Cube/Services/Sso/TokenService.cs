@@ -104,14 +104,14 @@ public class TokenService : ITokenService
     }
 
     /// <summary>根据授权码获取令牌</summary>
-    /// <remarks>授权码对应一条 AppLog 记录，5 分钟内有效，只可使用一次（Action 会更新为 GetToken）</remarks>
+    /// <remarks>授权码对应一条 AppLog 记录，自发放（GetResult）起 1 分钟内有效，只可使用一次（Action 会更新为 GetToken）</remarks>
     /// <param name="code">授权码，即 AppLog.Id 的字符串形式</param>
     /// <returns>包含 AccessToken、RefreshToken 和有效秒数的令牌模型</returns>
     public virtual TokenModel GetToken(String code)
     {
         var log = AppLog.FindById(code.ToLong());
         if (log == null) throw new ArgumentOutOfRangeException(nameof(code), "Code无效！");
-        if (log.CreateTime.AddMinutes(5) < DateTime.Now) throw new ArgumentOutOfRangeException(nameof(code), "Code已过期！");
+        if (log.UpdateTime.AddMinutes(1) < DateTime.Now) throw new ArgumentOutOfRangeException(nameof(code), "Code已过期！");
 
         WriteLog("Token appid={0} code={1} token={2} {3}", log.AppName, code, log.AccessToken, log.CreateUser);
 

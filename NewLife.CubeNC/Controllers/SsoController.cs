@@ -294,6 +294,18 @@ public class SsoController : ControllerBaseX
 
             return Redirect(url);
         }
+        catch (InvalidOperationException ex) when (OAuthHelper.IsCodeExpired(ex))
+        {
+            // 授权码已过期或无效（如停留在SSO登录页过久），自动重跳SSO重新授权，避免用户看到错误页
+            XTrace.WriteLine("[{0}]授权码已过期，自动重跳SSO重新授权 code={1} state={2} {3}", id, code, state, ex.Message);
+            XTrace.WriteLine(Request.GetRawUrl() + "");
+
+            log.Success = false;
+            log.Remark = $"授权码已过期，自动重新授权: {ex.Message}";
+            log.Update();
+
+            return Redirect(OnLogin(client, null, returnUrl, null));
+        }
         catch (Exception ex)
         {
             if (log.Remark.IsNullOrEmpty()) log.Remark = ex.ToString();
