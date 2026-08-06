@@ -1,12 +1,19 @@
 # Status
 
 - id: OSC-0015
-- state: Implementing
-- updated: 2026-08-06T12:55:00+08:00
+- state: Validated
+- updated: 2026-08-06T22:10:00+08:00
 - approvedBy: openspec-approve
 - trigger: "批准并执行 OSC-0015。"
 - checklist: passed
 - executor: openspec-apply
+
+## 验收记录（2026-08-06）
+
+- 全量 Vitest：26 文件 / 266 用例全部通过；vue-tsc + vite 构建通过（`npm run build` EXIT=0）。
+- 浏览器冒烟（部门页 admin）：筛选构建器「类型=公司」6→2 条 + 徽标 + 刷新持久化 + 清除恢复；分组组标题「📁 公司 (2)」+ checkbox 级联 + 折叠/展开；搜索面板「展开更多 N」；与「保存到此视图」并存。详见 verify.md。
+- tasks.md 全项勾选；verify.md 验收标准已按最终实现（纯前端过滤）对齐并逐项勾选；retro.md 完成复盘。
+- 冒烟副作用数据已清除。
 
 ## 测试记录
 
