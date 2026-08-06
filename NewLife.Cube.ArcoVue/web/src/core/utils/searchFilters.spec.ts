@@ -201,4 +201,16 @@ describe('matchesViewFilter (OSC-0015)', () => {
   it('empty filter always matches', () => {
     expect(matchesViewFilter({}, { logic: 'all', conditions: [] }, [])).toBe(true);
   });
+
+  it('枚举下拉字符串值匹配数字行值（GetList camelCase 行 + 值集 select 传值）', () => {
+    // 后端 Department 返回 type=1（数字），筛选构建器值控件 select 提交字符串 '1'
+    const f = {
+      logic: 'all' as const,
+      conditions: [{ field: 'Type', op: 'eq' as const, value: '1' }],
+    };
+    expect(matchesViewFilter({ type: 1, name: '公司' }, f, [])).toBe(true);
+    expect(matchesViewFilter({ type: 2, name: '部门' }, f, [])).toBe(false);
+    // PascalCase 行也能匹配（容错）
+    expect(matchesViewFilter({ Type: 1, Name: '公司' }, f, [])).toBe(true);
+  });
 });

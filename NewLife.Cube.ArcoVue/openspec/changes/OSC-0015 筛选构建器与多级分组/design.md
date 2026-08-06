@@ -74,10 +74,10 @@ type ViewGroup = string[]
 | `between` | 数值/日期范围字段 | `{ [field+'_min']: value, [field+'_max']: value2 }` | 与 `_min/_max` 提交一致；仅单侧填值则只输出对应参数 |
 | 任一 | — | 结果并入 `cleanSearchParams(…, keys)` | 未知字段/空值在最终请求前再次清理 |
 
-**逻辑合并（AND/OR）**：后端 `Search` 对多个字段参数天然是 AND（`whereExpression &= field.Equal(...)`）。因此：
+**逻辑合并（AND/OR）与客户端过滤兜底**：后端 `Search` 对多个字段参数天然是 AND（`whereExpression &= field.Equal(...)`）。因此：
 - `logic='all'`：全部条件参数直接并入 → 后端 AND，语义一致。
 - `logic='any'`：后端无法表达跨字段 OR。**处理**：`any` 仅在第一版构建器中保留 UI 语义，应用时若为 `any` 且条件数 > 1，回退为**前端对已加载数据二次过滤**（在 AND 请求结果之上），并在构建器内提示「或(OR) 仅作用于当前页已加载数据」；若条件数 = 1，`any` 与 `all` 等价，直接并入请求。
-  - 这是唯一引入前端二次过滤的点，且仅限 `any` 多条件场景，作为明确声明的降级。
+- **通用客户端过滤兜底**：业务重写 `Search(Pager)` 的控制器（如 `Department.Search` 仅处理 `id/parentId/enable/visible`）与树控制器不应用通用等值过滤。因此**只要 `viewFilter` 有条件，前端即对已加载数据做客户端复核**（`matchesViewFilter`，eq/between/all/any 全支持）：重写/树控制器场景使筛选真正生效，普通控制器后端已过滤时幂等。本页已加载全部数据且发生删减时纠正分页 total 反映过滤结果。
 
 ## 4. 状态与优先级
 
@@ -122,10 +122,10 @@ type ViewGroup = string[]
 
 | 操作 | 行为 |
 | --- | --- |
-| 应用 | `emit('apply', viewFilter)` → DefaultList 更新 `viewFilter` → 触发 `loadData()`；关闭弹层 |
+| 应用 | `emit('apply', viewFilter)` → DefaultList 写 store `patchActiveFilter` **持久化**（刷新/下次打开保留）→ 触发 `loadData()`；关闭弹层 |
 | 保存到此视图 | `emit('save', viewFilter)` → store `patchActiveFilter` 持久化；不立即刷新（下次打开/刷新自动应用）；toast 成功 |
 | 重置 | 清空全部条件行（保留弹层打开） |
-| 清除（工具栏标签） | 清空 `viewFilter` 并 reload，回到无筛选状态 |
+| 清除（工具栏标签） | 清空 `viewFilter`（写空方案持久化）并 reload，回到无筛选状态 |
 | 无 active view | 保存按钮禁用并提示（与 OSC-0012 一致） |
 | 关闭 | 点击按钮再次点击 / 点击弹层外空白关闭（`trigger=click` 默认）；关闭不丢弃未应用编辑（下次打开仍保留会话内编辑，除非点「重置」） |
 
@@ -137,7 +137,7 @@ type ViewGroup = string[]
 
 - 候选字段 = `listFields` 中可分组字段（有 dataSource 的枚举/布尔/单值 Lov/状态字段，及 `groupFieldCandidates` 现有语义）。
 - 已选分组字段有序列表，最多 3 个；每项显示字段名 + `上移/下移/删除` 按钮（按钮，非拖拽）。
-- 操作：应用（更新 `viewGroup` 并本地重分组）/ 保存到此视图 / 清除 / 取消；关闭不丢弃未应用编辑。
+- 操作：应用（写 store `patchActiveGroup` **持久化**并本地重分组）/ 保存到此视图 / 清除（写空方案持久化）/ 取消；关闭不丢弃未应用编辑。
 
 ### 5.4 表格分组渲染（ListTable grouped 模式）
 

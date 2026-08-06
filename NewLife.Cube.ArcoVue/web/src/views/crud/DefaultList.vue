@@ -1009,16 +1009,27 @@ async function loadData() {
       ...effectiveSearch.value,
     });
     let rows = (res.data as Record<string, unknown>[]) || [];
-    // any 多条件降级：后端仅表达 AND，需对已加载数据做 OR 二次过滤（OSC-0015）
-    if (viewFilterParams.value.clientOnly) {
-      rows = rows.filter((r) =>
-        matchesViewFilter(r, viewFilter.value, filterFields.value),
-      );
-    }
     tableData.value = rows;
     statData.value = (res.stat as Record<string, unknown>) ?? null;
     if (res.page) pagination.total = res.page.totalCount || 0;
-    await hydrateLovLabels(rows);
+    // 筛选构建器客户端复核（OSC-0015）：业务重写 Search 的控制器（如 Department.Search
+    // 仅处理 id/parentId/enable/visible）与树控制器可能不应用通用等值过滤，对已加载数据
+    // 兜底过滤保证筛选生效；普通控制器后端已过滤时此处幂等。同时覆盖 any 多条件 OR 降级。
+    if (viewFilter.value.conditions.length) {
+      const rawCount = rows.length;
+      tableData.value = rows.filter((r) =>
+        matchesViewFilter(r, viewFilter.value, filterFields.value),
+      );
+      // 本页已加载全部数据且后端未按筛选过滤（发生删减）时，纠正 total 反映过滤结果
+      if (
+        tableData.value.length !== rawCount &&
+        pagination.total > 0 &&
+        rawCount >= pagination.total
+      ) {
+        pagination.total = tableData.value.length;
+      }
+    }
+    await hydrateLovLabels(tableData.value);
   } finally {
     loading.value = false;
     // 洞察图表与列表同源（同一 effectiveSearch），随列表刷新；竞态由 chartSeq 保护
@@ -1341,8 +1352,9 @@ function onGroupPopoverVisible(v: boolean) {
   activePopover.value = v ? 'group' : null;
 }
 
-/** 应用筛选方案：仅更新会话内存并重新请求（不持久化，OSC-0015 5.2） */
+/** 应用筛选方案：写入 store 持久化（刷新/下次打开保留）并重新请求 */
 function onFilterApply(filter: ViewFilter) {
+  evpStore.updateFilter(typePath.value, filter);
   localFilter.value = filter;
   pagination.current = 1;
   loadData();
@@ -1355,16 +1367,18 @@ function onFilterSave(filter: ViewFilter) {
   Message.success('筛选方案已保存到此视图');
 }
 
-/** 清除筛选方案（工具栏标签）：清空会话内存并重新请求（不持久化） */
+/** 清除筛选方案（工具栏标签）：写入空方案持久化并重新请求 */
 function onClearFilter() {
+  evpStore.updateFilter(typePath.value, emptyViewFilter());
   localFilter.value = emptyViewFilter();
   pagination.current = 1;
   loadData();
   Message.success('已清除筛选');
 }
 
-/** 应用分组方案：仅更新会话内存（纯前端重分组，OSC-0015 5.3） */
+/** 应用分组方案：写入 store 持久化（刷新保留）并本地重分组 */
 function onGroupApply(group: ViewGroup) {
+  evpStore.updateGroup(typePath.value, group);
   localGroup.value = group;
 }
 
@@ -1375,8 +1389,9 @@ function onGroupSave(group: ViewGroup) {
   Message.success('分组方案已保存到此视图');
 }
 
-/** 清除分组方案：清空会话内存 */
+/** 清除分组方案：写入空方案持久化 */
 function onClearGroup() {
+  evpStore.updateGroup(typePath.value, []);
   localGroup.value = [];
   Message.success('已清除分组');
 }
