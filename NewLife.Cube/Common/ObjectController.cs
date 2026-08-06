@@ -23,7 +23,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     /// <summary>显示对象</summary>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
-    [HttpGet("/[area]/[controller]")]
+    [HttpGet("api/[area]/[controller]")]
     public TObject Index() => Value;
 
     /// <summary>保存对象</summary>
@@ -32,7 +32,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     //[HttpPost]
     //[DisplayName("修改")]
     [EntityAuthorize(PermissionFlags.Update)]
-    [HttpPut("/[area]/[controller]")]
+    [HttpPut("api/[area]/[controller]")]
     public virtual TObject Update([FromBody] TObject obj)
     {
         WriteLog(obj, UserHost);

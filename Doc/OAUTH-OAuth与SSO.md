@@ -223,13 +223,28 @@ services.AddOAuth<IdentityServer4Client>(options =>
 
 ```csharp
 // 回调地址格式
-// https://your-domain.com/Sso/LoginCallback/{provider}
+// https://your-domain.com/Sso/LoginInfo/{provider}
 
 // 示例
-// QQ：https://your-domain.com/Sso/LoginCallback/QQ
-// 微信：https://your-domain.com/Sso/LoginCallback/Weixin
-// GitHub：https://your-domain.com/Sso/LoginCallback/GitHub
+// QQ：https://your-domain.com/Sso/LoginInfo/QQ
+// 微信：https://your-domain.com/Sso/LoginInfo/Weixin
+// GitHub：https://your-domain.com/Sso/LoginInfo/GitHub
 ```
+
+### 前后端分离部署与 /api 前缀
+
+> **WebAPI 版**（前后端分离，新一代前端皮肤）中，实体/后台控制器路由**固定**为 `/api/{area}/{controller}/{action}`（写死，不再配置）；**`/Sso`、`/Cube`、`/Auth` 等服务控制器保持不带前缀**。**第二代魔方 MVC 版**不使用 `/api` 前缀，前后端一致路由 `/{area}/{controller}/{action}`。
+
+| 控制器 | 路由 |
+|--------|------|
+| 实体/后台控制器（User/Role/App 等，位于 `{area}` 内） | `/api/{area}/{controller}/{action}`，如 `/api/Admin/User/Index` |
+| 服务控制器（Sso/Cube/Auth/Mfa） | `/Sso/Login`、`/Cube/MenuTree`、`/Auth/Login` 等，**不带 `/api`** |
+
+SSO 相关端点均在 `/Sso` 下（无前缀）：`/Sso/Login`、`/Sso/LoginInfo/{provider}`、`/Sso/Authorize`、`/Sso/Auth2`、`/Sso/Logout`、`/Sso/Access_Token`、`/Sso/UserInfo` 等。
+
+菜单存储前端路由（无 `/api`），扫描实体控制器时自动去掉开头的 `/api`；前端刷新 `/Admin/User/...` 等前端路由时，由前端皮肤（`UseVue`/`UseReact` 的 `MapFallbackToFile`）回退到 SPA 外壳。无中间件、无额外配置。
+
+> 注意：登录成功后的最终跳转目标（如 `returnUrl`、`~/Admin`）为前端路由，不带 `/api`。
 
 ---
 
@@ -577,6 +592,8 @@ public ActionResult RestoreUser()
     </div>
 </div>
 ```
+
+> 提示：SSO 入口在 `/Sso` 路由（不带 `/api`，见 13.3「前后端分离部署与 /api 前缀」）。自定义登录页可调用 `OAuthHelper.GetLoginUrl(name, returnUrl)` 统一构建登录链接。
 
 ---
 

@@ -1,7 +1,6 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.AI;
-using NewLife.Cube.Areas.Admin;
 using NewLife.Serialization;
 using XCode.Membership;
 
@@ -14,7 +13,6 @@ namespace NewLife.Cube.Controllers;
 /// 经 <see cref="PageCheckpointService"/> 解除对应工具调用的挂起等待。
 /// </remarks>
 [DisplayName("AI")]
-[AdminArea]
 public class AiController : ControllerBaseX
 {
     /// <summary>浏览器操作结果回传。前端执行 run_js 脚本后回传结果，完成等待中的工具调用</summary>

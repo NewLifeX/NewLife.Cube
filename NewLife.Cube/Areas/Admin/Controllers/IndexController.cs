@@ -41,11 +41,12 @@ public class IndexController : ControllerBaseX
     /// <returns></returns>
     //[EntityAuthorize(PermissionFlags.Detail)]
     [AllowAnonymous]
-    [HttpGet("/[area]/[controller]")]
+    [HttpGet("api/[area]/[controller]")]
     public ActionResult Index()
     {
         var user = ManageProvider.Provider.TryLogin(HttpContext);
-        if (user == null) return RedirectToAction("Login", "User", new { r = Request.Path + "" });
+        // WebAPI版实体路由带 /api 前缀，回跳地址需还原为前端路由
+        if (user == null) return RedirectToAction("Login", "User", new { r = (Request.Path + "").TrimApiPrefix() });
 
         //ViewBag.User = ManageProvider.User;
         //ViewBag.Config = SysConfig.Current;

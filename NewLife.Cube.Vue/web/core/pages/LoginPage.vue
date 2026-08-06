@@ -125,9 +125,6 @@ const route = useRoute();
 const router = useRouter();
 const config = getConfig();
 
-/** 后端 API 基础地址 */
-const baseUrl: string = config.request.baseUrl || '';
-
 // ── 响应式状态 ──────────────────────────────────────────────────────
 /** 配置加载中 */
 const loading = ref<boolean>(true);
@@ -180,6 +177,8 @@ const backgroundStyle = computed<Record<string, string>>(() => {
 /**
  * 解析 Logo / 背景图 URL
  * 后端返回的路径可能是相对路径（如 /sso/github.png）或绝对 URL
+ *
+ * 静态资源与 Sso 服务接口均在根路径（无 /api 前缀），故不拼接实体 baseUrl。
  * @param logo 后端返回的资源路径
  * @returns 完整 URL
  */
@@ -187,15 +186,15 @@ function resolveLogo(logo: string): string {
   if (!logo) return '';
   if (/^https?:\/\//i.test(logo)) return logo;
   if (logo.startsWith('//')) return `${window.location.protocol}${logo}`;
-  return `${baseUrl}${logo.startsWith('/') ? '' : '/'}${logo}`;
+  return logo;
 }
 
 /**
  * 构建 OAuth 跳转 URL
- * 统一格式：{baseUrl}/Sso/Login/{name}?source=front-end&redirect_uri={encodedRedirect}
+ * 统一格式：/Sso/Login/{name}?source=front-end&redirect_uri={encodedRedirect}
  */
 function buildOAuthUrl(name: string, redirectUri: string): string {
-  return `${baseUrl}/Sso/Login/${name}?source=front-end&redirect_uri=${encodeURIComponent(redirectUri)}`;
+  return `/Sso/Login/${name}?source=front-end&redirect_uri=${encodeURIComponent(redirectUri)}`;
 }
 
 /**
@@ -229,7 +228,7 @@ function handleOAuth(name: string): void {
 async function handleLogin(payload: { username: string; password: string }): Promise<void> {
   submitting.value = true;
   try {
-    const res = await loginByPassword(baseUrl, payload.username, payload.password);
+    const res = await loginByPassword(payload.username, payload.password);
 
     if (res.code === 0 && res.data?.accessToken) {
       // 登录成功：写入 token
@@ -522,7 +521,7 @@ onMounted(async () => {
   initParticleSystem();
 
   try {
-    const res = await fetchLoginConfig(baseUrl);
+    const res = await fetchLoginConfig();
 
     if (res.code === 0 && res.data) {
       loginConfig.value = res.data;

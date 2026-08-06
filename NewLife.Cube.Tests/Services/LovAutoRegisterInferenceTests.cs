@@ -339,18 +339,8 @@ public class LovAutoRegisterInferenceTests
         var methodInfo = type.GetMethod("InferLovList", PrivateStatic, [typeof(LovListAttribute), typeof(MethodInfo)]);
         Assert.NotNull(methodInfo);
 
-        // 保存原有的 ApiPrefixes，测试完后恢复
-        var set = CubeSetting.Current;
-        var savedPrefixes = set.ApiPrefixes;
-        try
-        {
-            set.ApiPrefixes = "/api";
-            methodInfo!.Invoke(null, [attr, method]);
-        }
-        finally
-        {
-            set.ApiPrefixes = savedPrefixes;
-        }
+        // API前缀在WebAPI版固定为 /api（写死到LOV路由推断），无需配置
+        methodInfo!.Invoke(null, [attr, method]);
     }
 
     #endregion

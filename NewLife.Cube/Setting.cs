@@ -478,18 +478,6 @@ public class CubeSetting : Config<CubeSetting>
     public Int32 MaxBackup { get; set; } = 10_000_000;
     #endregion
 
-    #region API前缀
-    /// <summary>API前缀。多个前缀用逗号或分号分隔，如 /api,/api/v1。请求路径命中前缀时自动去掉前缀并转发到真实路由</summary>
-    [Description("API前缀。多个前缀用逗号或分号分隔，如 /api,/api/v1。请求路径命中前缀时自动去掉前缀并转发到真实路由")]
-    [Category("API前缀")]
-    public String ApiPrefixes { get; set; } = "/api";
-
-    /// <summary>SPA 默认页文件名。配置 API 前缀后，未命中前缀的 GET 请求（无文件扩展名）回退到该页面，用于支持历史模式前端刷新。默认 index.html</summary>
-    [Description("SPA 默认页文件名。配置 API 前缀后，未命中前缀的 GET 请求（无文件扩展名）回退到该页面，用于支持历史模式前端刷新。默认 index.html")]
-    [Category("API前缀")]
-    public String SpaDefaultPage { get; set; } = "index.html";
-    #endregion
-
     #region 方法
     /// <summary>实例化</summary>
     public CubeSetting() { }

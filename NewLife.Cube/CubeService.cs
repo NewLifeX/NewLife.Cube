@@ -301,11 +301,6 @@ public static class CubeService
         // 配置静态Http上下文访问器
         app.UseStaticHttpContext();
 
-        // API 前缀重写：配置了前缀的请求自动去掉前缀，转发到真实路由
-        // 必须放在静态文件/鉴权/路由之前，保证后续管道看到的是去前缀后的路径
-        if (!set.ApiPrefixes.IsNullOrWhiteSpace())
-            app.UseApiPrefixRewrite();
-
         // 注册中间件
 
         // 服务魔方内嵌静态资源（wwwroot），支持物理目录覆盖
@@ -361,7 +356,7 @@ public static class CubeService
 
             endpoints.MapControllerRoute(
                 "CubeAreas",
-                "{area}/{controller=Index}/{action=Index}/{id?}");
+                "api/{area}/{controller=Index}/{action=Index}/{id?}");
         });
 
         //ManageProvider2.EndpointRoute = (IEndpointRouteBuilder)app.Properties["__EndpointRouteBuilder"];

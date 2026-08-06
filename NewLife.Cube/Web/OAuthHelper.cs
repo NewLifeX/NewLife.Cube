@@ -14,7 +14,10 @@ public static class OAuthHelper
         var url = "Sso/Login?name=" + name;
         if (!returnUrl.IsNullOrEmpty()) url += "&r=" + HttpUtility.UrlEncode(returnUrl);
 
-        url = NewLife.Web.HttpContext.Current.Request.Host + NewLife.Web.HttpContext.Current.Request.PathBase + url;
+        var req = NewLife.Web.HttpContext.Current.Request;
+
+        // 拼接 Scheme://Host + PathBase + /Sso/Login。SSO入口与服务控制器均在 /Sso 路由，不使用API前缀
+        url = req.Scheme + "://" + req.Host + req.PathBase + "/" + url;
 
         return url;
     }

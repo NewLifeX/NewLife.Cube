@@ -8,6 +8,9 @@
 // 核心工厂
 export { createCubeApi, type CubeApi, type CubeApiOptions } from './cube';
 
+// 服务接口识别（/Auth /Sso /Cube 等不带 /api 前缀）
+export { isServiceApiPath, getServiceBaseUrl } from './service-path';
+
 // 底层构建块（高级用法）
 export { createApiClient, createRequest, type ApiClientOptions } from './client';
 export { TokenManager, type TokenStorage } from './token';

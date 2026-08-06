@@ -105,7 +105,7 @@
     <el-dialog v-model="showAvatarDialog" title="上传头像" width="400px">
       <el-upload
         ref="avatarUploadRef"
-        action="/Admin/File/UploadAvatar"
+        :action="uploadAvatarAction"
         :auto-upload="false"
         :show-file-list="true"
         :limit="1"
@@ -134,6 +134,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import { Plus, Refresh } from '@element-plus/icons-vue'
 import { request } from '@newlifex/cube-vue/core/utils/request'
+import { getConfig } from '@newlifex/cube-vue/core/configure'
 
 // 文件信息接口
 interface FileInfo {
@@ -173,8 +174,9 @@ const loading = reactive({
 const uploadRef = ref()
 const avatarUploadRef = ref()
 
-// 上传地址
-const uploadAction = '/Admin/File/Upload'
+// 上传地址（Admin 区域实体接口，带 /api 前缀）
+const uploadAction = (getConfig().request.baseUrl || '') + '/Admin/File/Upload'
+const uploadAvatarAction = (getConfig().request.baseUrl || '') + '/Admin/File/UploadAvatar'
 
 // 获取文件列表
 const getFileList = async () => {

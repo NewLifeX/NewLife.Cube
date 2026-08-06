@@ -51,7 +51,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("{type}管理")]
-    [HttpGet("/[area]/[controller]")]
+    [HttpGet("api/[area]/[controller]")]
     public virtual ApiListResponse<TEntity> Index()
     {
         var p = new Pager(WebHelper.Params)

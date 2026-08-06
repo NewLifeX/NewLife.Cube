@@ -489,14 +489,8 @@ public class LovAutoRegisterService
 
         var path = String.Join("/", segments);
 
-        // 拼接 API 前缀
-        var set = CubeSetting.Current;
-        if (!set.ApiPrefixes.IsNullOrEmpty())
-        {
-            var firstPrefix = set.ApiPrefixes.Split(',', ';', '|', ' ')[0].Trim().Trim('/');
-            if (!firstPrefix.IsNullOrEmpty())
-                path = $"{firstPrefix}/{path}";
-        }
+        // 拼接 API 前缀（WebAPI版固定 /api，写死不配置）
+        path = $"api/{path}";
 
         return "/" + path;
     }
