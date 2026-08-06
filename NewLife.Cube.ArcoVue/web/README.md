@@ -60,7 +60,7 @@ pnpm build
 ## 列表与 ViewProfile
 
 - 默认列表支持多视图：`table` / `tree`（VTable）、`card` / `kanban` / `calendar` / `gantt`（`features/views/*`）。
-- Tab 工具条（`ViewTabsToolbar`）切换 / 新建 / 配置；映射存 `ViewsJson` 的 `NamedView.mapping`。
+- Tab 工具条（`ViewTabsToolbar`）切换 / 新建 / 配置；选中 Tab 显示主题浅色底纹 + 底部主题主色滑动指示器（切换视图时平滑滑动过渡）；新建 / 重命名视图使用居中 Arco Modal（跟随主题，替代原生 `prompt`）；映射存 `ViewsJson` 的 `NamedView.mapping`。
 - 列布局与命名视图经 `GET/PUT/DELETE /Cube/ViewProfile` 持久化。
 - 看板/日历/甘特使用较大 pageSize（约 200–500）；看板不拖拽写回。
 - **筛选记忆（OSC-0012）**：搜索条件按命名视图保存到 `ViewProfile.filtersJson`，仅显式点击「保存到此视图」写入；有效条件优先级为 URL 参数 > 已保存筛选 > 空条件，URL 不自动写回；可独立「清除默认筛选」。

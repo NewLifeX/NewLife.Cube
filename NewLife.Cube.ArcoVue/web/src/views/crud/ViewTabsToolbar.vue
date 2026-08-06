@@ -1,6 +1,15 @@
 <template>
   <div class="view-tabs-toolbar">
-    <div class="view-tabs">
+    <div ref="tabsRef" class="view-tabs">
+      <!-- 选中视图滑动指示器（OSC 视图 Tab 交互）：transform 滑动到当前激活 Tab，宽度随 Tab 变化 -->
+      <span
+        class="view-tab-indicator"
+        :style="{
+          transform: `translateX(${indicator.x}px)`,
+          width: `${indicator.width}px`,
+          opacity: indicator.visible ? 1 : 0,
+        }"
+      />
       <div
         v-for="v in views"
         :key="v.id"
@@ -46,11 +55,28 @@
         </a-doption>
       </template>
     </a-dropdown>
+
+    <!-- 视图命名弹层：相对主界面居中、跟随主题（Arco Modal）；替代原生 prompt（无法居中/主题化） -->
+    <a-modal
+      :visible="nameModalVisible"
+      :title="nameModalTitle"
+      :width="360"
+      unmount-on-close
+      @cancel="closeNameModal"
+      @ok="submitName"
+    >
+      <a-input
+        v-model="nameDraft"
+        :max-length="32"
+        placeholder="请输入视图名称"
+        @keyup.enter="submitName"
+      />
+    </a-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { IconMoreVertical } from '@arco-design/web-vue/es/icon';
 import type { FieldMeta } from '@/core/types/field';
 import type { NamedView, ViewKind } from '@/core/utils/viewProfile';
@@ -95,12 +121,53 @@ function kindLabel(kind: ViewKind): string {
   return VIEW_KIND_LABEL[kind] || kind;
 }
 
+/** 视图命名弹层（创建/重命名共用）：相对主界面居中、Arco 组件自动跟随主题 */
+const nameModalVisible = ref(false);
+const nameModalTitle = ref('新建视图');
+const nameDraft = ref('');
+/** 'create' 或 'rename' */
+const nameMode = ref<'create' | 'rename'>('create');
+const nameKind = ref<ViewKind>('table');
+const nameTargetId = ref('');
+
+function openCreateModal(kind: ViewKind) {
+  nameMode.value = 'create';
+  nameKind.value = kind;
+  nameModalTitle.value = `新建${viewKindCreateLabel(kind)}`;
+  nameDraft.value = viewKindCreateLabel(kind);
+  nameTargetId.value = '';
+  nameModalVisible.value = true;
+}
+
+function openRenameModal(id: string) {
+  const cur = props.views.find((v) => v.id === id);
+  if (!cur) return;
+  nameMode.value = 'rename';
+  nameTargetId.value = id;
+  nameModalTitle.value = '重命名视图';
+  nameDraft.value = cur.name || '';
+  nameModalVisible.value = true;
+}
+
+function closeNameModal() {
+  nameModalVisible.value = false;
+}
+
+function submitName() {
+  const name = nameDraft.value.trim();
+  if (!name) return;
+  if (nameMode.value === 'create') {
+    emit('create', nameKind.value, name);
+  } else {
+    emit('rename', nameTargetId.value, name);
+  }
+  closeNameModal();
+}
+
 function onMenuSelect(val: string | number | Record<string, unknown> | undefined) {
   const key = String(val);
   if (key === 'rename') {
-    const cur = props.views.find((v) => v.id === props.activeId);
-    const name = window.prompt('重命名视图', cur?.name || '');
-    if (name) emit('rename', props.activeId, name);
+    openRenameModal(props.activeId);
     return;
   }
   if (key === 'config') {
@@ -124,10 +191,45 @@ function onCreateSelect(val: string | number | Record<string, unknown> | undefin
   const kind = String(val) as ViewKind;
   const opt = createOptions.value.find((o) => o.kind === kind);
   if (!opt?.ok) return;
-  const defaultName = viewKindCreateLabel(kind);
-  const name = window.prompt(`新建${defaultName}名称`, defaultName);
-  if (name) emit('create', kind, name);
+  openCreateModal(kind);
 }
+
+/** 选中 Tab 滑动指示器位置（transform 平滑过渡） */
+const tabsRef = ref<HTMLElement | null>(null);
+const indicator = ref({ x: 0, width: 0, visible: false });
+let indicatorRo: ResizeObserver | null = null;
+
+function updateIndicator() {
+  void nextTick(() => {
+    const tabs = tabsRef.value;
+    if (!tabs) return;
+    const el = tabs.querySelector<HTMLElement>('.view-tab.active');
+    if (!el) {
+      indicator.value = { x: 0, width: 0, visible: false };
+      return;
+    }
+    indicator.value = { x: el.offsetLeft, width: el.offsetWidth, visible: true };
+  });
+}
+
+watch(() => props.activeId, updateIndicator, { immediate: true });
+watch(
+  () => props.views.map((v) => v.name).join(','),
+  () => updateIndicator(),
+);
+
+onBeforeUnmount(() => {
+  indicatorRo?.disconnect();
+  indicatorRo = null;
+});
+
+onMounted(() => {
+  updateIndicator();
+  if (typeof ResizeObserver !== 'undefined') {
+    indicatorRo = new ResizeObserver(() => updateIndicator());
+    if (tabsRef.value) indicatorRo.observe(tabsRef.value);
+  }
+});
 </script>
 
 <style scoped>
@@ -144,6 +246,22 @@ function onCreateSelect(val: string | number | Record<string, unknown> | undefin
   gap: 2px;
   flex-wrap: wrap;
   min-width: 0;
+  position: relative;
+}
+/* 选中视图滑动指示器：transform 平滑滑动到激活 Tab（需求：切换滑动效果） */
+.view-tab-indicator {
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: rgb(var(--primary-6));
+  transition:
+    transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s;
+  pointer-events: none;
+  z-index: 1;
 }
 .view-tab {
   display: inline-flex;
@@ -159,11 +277,13 @@ function onCreateSelect(val: string | number | Record<string, unknown> | undefin
   color: var(--color-text-1);
 }
 .view-tab.active {
+  /* 选中底纹：主题浅色阶（暗色下为主色半透明），配合下方滑动指示器 */
+  background: var(--color-primary-light-1);
   color: rgb(var(--primary-6));
   font-weight: 500;
 }
 .view-tab.active:hover {
-  background: var(--color-fill-2);
+  background: var(--color-primary-light-2);
   color: rgb(var(--primary-6));
 }
 .view-tab-main {
