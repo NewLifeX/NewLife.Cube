@@ -21,10 +21,11 @@
 ## T3 多级分组
 
 - [x] 3.1 新增 `GroupPopover.vue`（a-popover 锚定「分组」按钮）：分组候选字段（listFields∩可分组）、有序增删（最多 3）、上移/下移、应用/保存/清除、与筛选弹层互斥。
-- [x] 3.2 `ListTable.vue` 增加 `grouped` 模式：组头行渲染（label+count）、组内行、VTable hierarchy 复用、组头折叠、多级嵌套、空数据回退。
-- [x] 3.3 `DefaultList.vue` 接入分组数据（`groupRows` 结果喂给 ListTable）、「已按 X 分组」标签、折叠 key 会话内存、切换视图重置。
+- [x] 3.2 `ListTable.vue` 分组改用 **VTable 原生 `groupConfig.groupBy`**（参考官方 list-table-group-checkbox）：checkbox 置于 `rowSeriesNumber`（每行最前面）、`titleCheckbox: true` 组标题行 checkbox、`enableCheckboxCascade` 级联；组标题文本「📁 label (count)」（`titleFieldFormat` + dataSource 翻译）、`groupTitleStyle` 浅灰底；**不再用 tree/hierarchy 渲染分组**（tree 模式下 checkbox 列被自动置为 tree 列导致勾选异常）。
+- [x] 3.3 `DefaultList.vue` 分组直接传原始行（`displayRows = treeRows`），传 `groupFields`/`groupLabelOf` 给 ListTable 由 VTable 内部分组；工具条分组按钮徽标/底纹/点击撤销。
 - [x] 3.4 store 新增 `patchActiveGroup`；加载视图自动应用。
 - [x] 3.5 补测试：groupRows 输入到 ListTable 组头/折叠、GroupPopover 上限与排序、弹层互斥、store 保存/回滚/隔离。
+- [x] 3.6 分组后勾选框修复：`checkbox_state_change` 延后到宏任务遍历展示行读取状态（规避 VTable 内部级联监听注册时序导致的状态重置）；组标题 checkbox 与子行级联勾选/取消、表头全选/取消、数据行单独勾选均验证通过。
 
 ## T4 搜索面板折叠与 LOV 远程搜索
 

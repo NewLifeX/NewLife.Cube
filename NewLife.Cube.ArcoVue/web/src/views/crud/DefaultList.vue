@@ -56,19 +56,21 @@
               @apply="onFilterApply"
               @save="onFilterSave"
             >
-              <a-space :size="4" class="tb-popover-anchor">
-                <a-button v-if="chrome.showFilter" type="text">
-                  筛选
-                </a-button>
-                <a-tag
+              <!-- 有筛选条件时按钮显示底纹，右上角主题主色圆形徽标（数字=条件数），点击徽标清除 -->
+              <div
+                class="tb-act"
+                :class="{ 'is-active': viewFilter.conditions.length > 0 }"
+              >
+                <a-button v-if="chrome.showFilter" type="text">筛选</a-button>
+                <span
                   v-if="viewFilter.conditions.length"
-                  color="arcoblue"
-                  class="tb-tag"
+                  class="tb-count"
+                  title="清除筛选"
                   @click.stop="onClearFilter"
                 >
-                  {{ viewFilter.conditions.length }} 条
-                </a-tag>
-              </a-space>
+                  {{ viewFilter.conditions.length }}
+                </span>
+              </div>
             </FilterBuilderPopover>
 
             <GroupPopover
@@ -80,22 +82,26 @@
               @apply="onGroupApply"
               @save="onGroupSave"
             >
-              <a-space :size="4" class="tb-popover-anchor">
+              <!-- 仅表格视图支持分组（树状视图不允许，OSC-0015）；有分组时按钮底纹 + 右上角徽标（数字=分组字段数） -->
+              <div
+                class="tb-act"
+                :class="{ 'is-active': viewGroup.length > 0 }"
+              >
                 <a-button
-                  v-if="isTableLikeViewKind(activeViewKind) && chrome.showGroup"
+                  v-if="activeViewKind === 'table' && chrome.showGroup"
                   type="text"
                 >
                   分组
                 </a-button>
-                <a-tag
+                <span
                   v-if="viewGroup.length"
-                  color="arcoblue"
-                  class="tb-tag"
+                  class="tb-count"
+                  title="清除分组"
                   @click.stop="onClearGroup"
                 >
-                  按 {{ groupLabel }}
-                </a-tag>
-              </a-space>
+                  {{ viewGroup.length }}
+                </span>
+              </div>
             </GroupPopover>
 
             <a-button
@@ -180,6 +186,8 @@
               :sort-state="activeSort"
               :hierarchy="activeViewKind === 'tree' && treeDataDetected"
               :grouped="isGrouped"
+              :group-fields="viewGroup"
+              :group-label-of="groupLabelOf"
               :height="resolvedTableHeight"
               @row-dbl-click="openDetail"
               @selection-change="onSelectionChange"
@@ -397,7 +405,6 @@ import {
   parseViewKind,
   resolveBatchDeleteState,
   resolveViewPageSize,
-  groupRows,
   type CalendarMapping,
   type CardMapping,
   type GanttMapping,
@@ -736,25 +743,22 @@ const filterFields = computed<FieldMeta[]>(() => {
   return [...visibleFields, ...hiddenPerson];
 });
 
-/** 分组展示：仅 table/tree 视图且配置了分组字段 */
+/** 分组展示：仅表格视图且配置了分组字段（树状视图不允许分组，OSC-0015） */
 const isGrouped = computed(
-  () => viewGroup.value.length > 0 && isTableLikeViewKind(activeViewKind.value),
-);
-
-/** 分组标签文案：字段显示名用 / 连接 */
-const groupLabel = computed(() =>
-  viewGroup.value
-    .map((name) => {
-      const f = listFields.value.find((x) => x.name === name);
-      return f?.displayName || name;
-    })
-    .join(' / '),
+  () => viewGroup.value.length > 0 && activeViewKind.value === 'table',
 );
 
 /** 表格数据：分组视图时对 treeRows 做多级分组（组头节点 + 数据行） */
-const displayRows = computed(() =>
-  isGrouped.value ? groupRows(treeRows.value, viewGroup.value, listFields.value) : treeRows.value,
-);
+/** 展示行：分组改由 ListTable 内 VTable 原生 groupBy 完成（OSC-0015 重构，参考官方 list-table-group-checkbox），
+ *  此处始终传原始行（groupBy 在表格内部按分组字段重组并渲染组标题行） */
+const displayRows = computed(() => treeRows.value);
+
+/** 分组值显示标签：按分组字段 dataSource 枚举翻译（OSC-0015）；无映射回落显示原值 */
+function groupLabelOf(field: string, value: unknown): string | undefined {
+  const fm = listFields.value.find((f) => f.name === field);
+  if (fm?.dataSource && value != null) return fm.dataSource[String(value)];
+  return undefined;
+}
 
 const listShellStyle = computed(() => {
   const c = chrome.value;
@@ -1643,14 +1647,38 @@ onMounted(bootstrap);
   display: block;
   width: 100%;
 }
-/* 筛选/分组弹层锚点与已应用标签（OSC-0015） */
-.tb-popover-anchor {
+/* 筛选/分组弹层锚点与激活底纹/徽标（OSC-0015） */
+.tb-act {
+  position: relative;
   display: inline-flex;
   align-items: center;
 }
-.tb-tag {
+/* 有筛选/分组条件时按钮显示主色底纹 */
+.tb-act.is-active :deep(.arco-btn) {
+  background: var(--color-primary-light-1);
+  color: var(--color-primary-6);
+  font-weight: 500;
+}
+/* 右上角主题主色圆形徽标（数字=条件数/分组字段数），点击清除 */
+.tb-count {
+  position: absolute;
+  top: -5px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--color-primary-6);
+  color: #fff;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
   cursor: pointer;
   user-select: none;
+  box-sizing: border-box;
+}
+.tb-count:hover {
+  background: var(--color-primary-5);
 }
 .list-pager {
   margin-top: 12px;

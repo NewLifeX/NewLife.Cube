@@ -52,6 +52,11 @@ const props = withDefaults(
     hierarchy?: boolean;
     /** 分组视图（OSC-0015）：records 含 __groupHeader 组头节点行，组头跨列显示并浅色区分 */
     grouped?: boolean;
+    /** 分组字段名列表（OSC-0015 重构）：非空时启用 VTable 原生 groupBy 分组（参考官方 list-table-group-checkbox），
+     *  checkbox 置于 rowSeriesNumber 列（每行最前面），组标题行左侧显示 checkbox 并与子行选中状态级联同步 */
+    groupFields?: string[];
+    /** 分组值显示标签翻译（OSC-0015：如 dataSource 枚举翻译）；返回 undefined 则回落显示原值 */
+    groupLabelOf?: (field: string, value: unknown) => string | undefined;
   }>(),
   {
     selectedKeys: () => [],
@@ -237,6 +242,8 @@ function resolveOpsClick(args: {
 }
 
 function leadingCount(): number {
+  // 分组模式（groupBy + rowSeriesNumber checkbox）：不使用前置 checkbox/expand 数据列
+  if (props.groupFields?.length) return 0;
   return (props.showCheckbox ? 1 : 0) + (props.showExpand ? 1 : 0);
 }
 
@@ -244,7 +251,9 @@ function buildColumns(): any[] {
   const cols: any[] = [];
   /** 数据列计数（用于组头行跨列显示：仅首数据列显示 label） */
   let dataColCount = 0;
-  if (props.showExpand) {
+  // 分组模式（groupBy + rowSeriesNumber checkbox）：不添加前置 expand/checkbox 数据列
+  const groupedMode = !!props.groupFields?.length;
+  if (props.showExpand && !groupedMode) {
     cols.push({
       field: '__expand',
       title: '',
@@ -255,7 +264,7 @@ function buildColumns(): any[] {
       fieldFormat: () => '›',
     });
   }
-  if (props.showCheckbox) {
+  if (props.showCheckbox && !groupedMode) {
     // VTable 要求 cellType/headerType，误用 type 会把勾选图标渲染成截断文本（如 "f..."）
     cols.push({
       field: '__checked',
@@ -379,10 +388,15 @@ function frozenCount(): number {
 
 function withChecks(records: Record<string, unknown>[]) {
   const selected = new Set((props.selectedKeys || []).map(String));
+  // 分组模式（OSC-0015 重构：VTable 原生 groupBy + rowSeriesNumber checkbox）：
+  // 勾选初值写回记录 `_vtable_rowSeries_number` 字段，供 VTable 初始化行号列 checkbox
+  if (props.groupFields?.length) {
+    return records.map((r) => ({ ...r, _vtable_rowSeries_number: selected.has(rowId(r)) }));
+  }
   return records.map((r) => ({
     ...r,
-    // 组头行不参与勾选
-    __checked: r.__groupHeader ? false : selected.has(rowId(r)),
+    // 组头行不参与勾选：渲染为禁用态（VTable checkbox 列支持 {checked, disable} 对象值）
+    __checked: r.__groupHeader ? { checked: false, disable: true } : selected.has(rowId(r)),
   }));
 }
 
@@ -393,20 +407,38 @@ function groupHeaderFormat(rec: Record<string, unknown> | undefined, isFirstData
   return isFirstDataCol ? `📁 ${gh.label ?? ''} (${rec?.count ?? 0})` : '';
 }
 
-/** 组头行背景浅色 + 加粗，与普通行区分 */
+/** 组头行背景浅色 + 加粗，与普通行区分（tree 模式组头；groupBy 组标题由 groupTitleStyle 定制） */
 function groupHeaderStyle(rec: Record<string, unknown> | undefined): Record<string, unknown> | null {
   if (!rec?.__groupHeader) return null;
   return { bgColor: '#F7F8FA', color: '#1D2129', fontWeight: 600 };
 }
 
+/** groupBy 组标题行文本：`📁 label (count)`；label 按分组字段 dataSource 翻译（OSC-0015） */
+function groupTitleFormat(
+  record: Record<string, unknown> | undefined,
+  col?: number,
+  row?: number,
+  t?: { getGroupTitleLevel?: (c?: number, r?: number) => number | undefined },
+): string {
+  const level = (t?.getGroupTitleLevel?.(col, row) as number | undefined) ?? 0;
+  const field = props.groupFields?.[level];
+  const value = (record as { vtableMergeName?: unknown })?.vtableMergeName;
+  const label = field && props.groupLabelOf ? props.groupLabelOf(field, value) : undefined;
+  return `📁 ${label ?? (value == null ? '未分组' : String(value))} (${(record as { children?: unknown[] })?.children?.length ?? 0})`;
+}
+
+/** groupBy 字段名与数据字段名匹配：视图分组字段为 PascalCase（FieldMeta.name），数据行字段为 camelCase */
+function toDataField(field: string): string {
+  if (!field) return field;
+  return field.charAt(0).toLowerCase() + field.slice(1);
+}
+
 function buildOption(): any {
   const cols = buildColumns();
-  if (props.hierarchy && cols.length) {
-    const firstData = cols.find((c: { field?: string }) => c.field && c.field !== '__check' && c.field !== '__ops' && c.field !== '__expand');
-    if (firstData) (firstData as { tree?: boolean }).tree = true;
-  }
-  // 分组视图：组头节点行含 children，同样以 hierarchy 渲染；默认展开一级
-  if (props.grouped) {
+  const groupedMode = !!props.groupFields?.length;
+  // 树视图仍用 VTable hierarchy；分组视图不再设 tree（VTable 会把 checkbox 列自动设为 tree 列导致渲染异常），
+  // 改用 VTable 原生 groupBy + rowSeriesNumber checkbox（OSC-0015 重构，参考官方 list-table-group-checkbox demo）
+  if (!groupedMode && props.hierarchy && cols.length) {
     const firstData = cols.find((c: { field?: string }) => c.field && c.field !== '__check' && c.field !== '__ops' && c.field !== '__expand');
     if (firstData) (firstData as { tree?: boolean }).tree = true;
   }
@@ -419,6 +451,25 @@ function buildOption(): any {
     columns: cols,
     frozenColCount: frozenCount(),
     rightFrozenColCount: props.canViewDetail || props.canEdit || props.canDelete ? 1 : 0,
+    ...(groupedMode
+      ? {
+          // 官方分组复选框方案：checkbox 置于 rowSeriesNumber（每行最前面），
+          // groupConfig.titleCheckbox 让组标题行左侧显示 checkbox，enableCheckboxCascade 级联同步子行
+          groupConfig: {
+            // groupBy 需与数据字段名匹配（camelCase）；groupLabelOf 仍用 PascalCase 字段名查翻译
+            groupBy: (props.groupFields || []).map(toDataField),
+            titleCheckbox: true,
+            titleFieldFormat: groupTitleFormat,
+          },
+          rowSeriesNumber: {
+            width: 48,
+            format: () => '',
+            cellType: 'checkbox',
+            headerType: 'checkbox',
+          },
+          enableCheckboxCascade: true,
+        }
+      : {}),
     widthMode: 'standard',
     columnResizeMode: 'all',
     hover: { highlightMode: 'row', disableHeaderHover: true },
@@ -443,6 +494,15 @@ function buildOption(): any {
         bgColor: '#F2F3F5',
         color: '#4E5969',
         fontWeight: 500,
+        fontSize: 13,
+        borderColor: '#E5E6EB',
+        borderLineWidth: [1, 0, 0, 0],
+      },
+      // 分组标题行样式（groupBy）：浅灰底 + 加粗，与普通行区分（OSC-0015）
+      groupTitleStyle: {
+        bgColor: '#F7F8FA',
+        color: '#1D2129',
+        fontWeight: 600,
         fontSize: 13,
         borderColor: '#E5E6EB',
         borderLineWidth: [1, 0, 0, 0],
@@ -509,8 +569,21 @@ function fieldKey(field: unknown): string {
 function bindEvents() {
   if (!table) return;
 
-  function resolveBodyRow(args: { row?: number; cellLocation?: string }) {
+  function resolveBodyRow(args: { col?: number; row?: number; cellLocation?: string }) {
     if (args.cellLocation === 'columnHeader') return null;
+    // groupBy 分组模式：展示行含组标题行，与 props.records 错位，须用 getCellOriginRecord 取原始记录
+    try {
+      const rec = table!.getCellOriginRecord?.(args.col ?? 0, args.row ?? 0) as
+        | Record<string, unknown>
+        | null
+        | undefined;
+      if (rec && typeof rec === 'object' && !(rec as { vtableMerge?: unknown }).vtableMerge) {
+        return rec;
+      }
+      return null;
+    } catch {
+      /* fall through */
+    }
     const headerLevels = table!.columnHeaderLevelCount || 1;
     return props.records[(args.row ?? 0) - headerLevels] || null;
   }
@@ -518,9 +591,9 @@ function bindEvents() {
   table.on('click_cell', ((args: any) => {
     const row = resolveBodyRow(args);
     if (!row) return;
-    if (row.__groupHeader) return; // 组头行不响应点击
+    if (row.__groupHeader || row.vtableMerge) return; // 组头/组标题行不响应点击
     const field = fieldKey(args.field);
-    if (field === '__checked') return;
+    if (field === '__checked' || field === '_vtable_rowSeries_number') return;
     // 单击仅处理操作列 / 展开列；数据行单击不打开详情
     if (field === '__expand') {
       if (props.canViewDetail) emit('action', { action: 'detail', row });
@@ -543,34 +616,53 @@ function bindEvents() {
   table.on('dblclick_cell', ((args: any) => {
     const row = resolveBodyRow(args);
     if (!row) return;
-    if (row.__groupHeader) return; // 组头行不响应双击
+    if (row.__groupHeader || row.vtableMerge) return; // 组头/组标题行不响应双击
     const field = fieldKey(args.field);
-    if (field === '__checked' || field === '__ops' || field === '__expand') return;
+    if (
+      field === '__checked' ||
+      field === '_vtable_rowSeries_number' ||
+      field === '__ops' ||
+      field === '__expand'
+    )
+      return;
     if (props.canViewDetail) emit('rowDblClick', row);
   }) as any);
 
   table.on('checkbox_state_change', (() => {
-    // VTable 勾选状态在 stateManager，不一定回写 records.__checked
-    const records = (table!.records || []) as Record<string, unknown>[];
-    let states: unknown;
-    try {
-      states = table!.getCheckboxState('__checked');
-    } catch {
-      states = undefined;
-    }
-    const out: (string | number)[] = [];
-    for (let i = 0; i < records.length; i++) {
-      const rec = records[i];
-      if ((rec as { __groupHeader?: unknown })?.__groupHeader) continue; // 组头行不参与勾选
-      const checked =
-        Array.isArray(states) && i < states.length
-          ? !!states[i]
-          : !!(rec as { __checked?: unknown })?.__checked;
-      if (!checked) continue;
-      const id = rowId(rec);
-      if (id) out.push(/^\d+$/.test(id) ? Number(id) : id);
-    }
-    emit('selectionChange', out);
+    // 延后到宏任务读取：VTable 内部级联监听（bindGroupTitleCheckboxChange/bindGroupCheckboxTreeChange）在
+    // setTimeout(0) 中注册，晚于本监听。若同步读取会拿到级联前的旧状态并 emit 空 → 父级清空 selectedKeys →
+    // 触发 setRecords 重置全部勾选态，导致分组/树级联失效（OSC-0015 分组后勾选框不可用根因）。
+    // groupBy 下 getCheckboxState 返回按原始 record 索引的稀疏数组，改用遍历展示行读取状态。
+    setTimeout(() => {
+      if (!table) return;
+      const out: (string | number)[] = [];
+      const headerLevels = table.columnHeaderLevelCount || 1;
+      for (let row = headerLevels; row < table.rowCount; row++) {
+        let rec: Record<string, unknown> | null = null;
+        try {
+          rec = table.getCellOriginRecord(0, row) as Record<string, unknown> | null;
+        } catch {
+          rec = null;
+        }
+        if (
+          !rec ||
+          (rec as { vtableMerge?: unknown }).vtableMerge ||
+          (rec as { __groupHeader?: unknown }).__groupHeader
+        ) {
+          continue; // 组标题/组头行不参与勾选
+        }
+        let checked = false;
+        try {
+          checked = !!table.getCellCheckboxState(0, row);
+        } catch {
+          checked = false;
+        }
+        if (!checked) continue;
+        const id = rowId(rec);
+        if (id) out.push(/^\d+$/.test(id) ? Number(id) : id);
+      }
+      emit('selectionChange', out);
+    }, 0);
   }) as any);
 
   table.on(
@@ -668,6 +760,7 @@ watch(
     props.sortState?.desc,
     props.hierarchy,
     props.grouped,
+    props.groupFields,
   ],
   () => refreshOption(),
   { deep: true },

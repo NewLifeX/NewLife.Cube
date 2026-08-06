@@ -67,7 +67,7 @@ pnpm build
 - **页面级 PageSize（OSC-0012）**：每页条数按 `typePath` 保存到 `ViewProfile.pageSize`（仅接受 20/50/100/200/500/1000），切换实体互不影响；未配置时回落旧全局 `workspace.pageSize` 种子，分页器变更不再写全局偏好。
 - **受限表单布局（OSC-0013）**：`ViewProfile.formJson` 按「新增 / 编辑 / 详情」三模式独立保存字段顺序、显隐与 Category 折叠；列表顶栏「表单布局」入口可分别配置并恢复当前模式默认。仅展示偏好——字段权限、必填、校验与提交载荷仍由 GetPage / `prepareSubmitPayload` 权威决定，隐藏字段不能绕过。
 - **筛选构建器（OSC-0015）**：工具栏「筛选」打开 Popover 弹层（非 Drawer），条件行竖排增删、AND/OR 切换；**纯前端过滤**——条件不并入后端请求，对已加载数据本地过滤、翻页继续过滤；操作符按字段类别开放：枚举/值集（等于/不等于/为空/不为空）、字符（+包含/不包含）、人员（创建者/更新者等，等于/不等于 + 用户实体下拉）、数字（+大于/大于或等于/小于/小于或等于）、日期时间（晚于/早于）；条件组保存到 `NamedView.filter`（`ViewsJson`）随视图自动应用（应用即持久化，刷新/下次打开保留）；本页全量加载且发生删减时纠正分页 total。「已筛选 N 条」标签可一键清除。
-- **多级分组（OSC-0015）**：工具栏「分组」打开 Popover，按 `listFields` 可分组字段有序增删（最多 3 个）并上移/下移，保存到 `NamedView.group`；table/tree 视图按 `groupRows` 分组为树（组头行显示 `label (count)`，dataSource 翻译、空值「未分组」），组头点击折叠/展开（折叠集为会话内存）。筛选/分组弹层互斥展开。
+- **多级分组（OSC-0015）**：工具栏「分组」打开 Popover，按 `listFields` 可分组字段有序增删（最多 3 个）并上移/下移，保存到 `NamedView.group`；table 视图分组采用 **VTable 原生 `groupConfig.groupBy`**（官方 list-table-group-checkbox 方案，组标题行显示 `📁 label (count)`，dataSource 翻译），**勾选 checkbox 置于 rowSeriesNumber（每行最前面）**，组标题行 checkbox 与组内子行级联勾选/取消（`titleCheckbox` + `enableCheckboxCascade`），表头全选/取消；分组按钮带底纹与条件数徽标，点击徽标清除分组；树视图不允许分组操作。筛选/分组弹层互斥展开。
 - **搜索面板一行折叠（OSC-0015）**：搜索字段容器默认一行，溢出时底部显示「展开更多 N」/「收起」（`offsetHeight > clientHeight` 判定），字段增删后重置折叠态。
 - **LOV LIST 远程搜索（OSC-0015）**：LIST 单选下拉支持输入关键字远程搜索（防抖 300ms，携带 `q` 参数调 `/Admin/Lov/ListData`），空输入回首页；ENUM 与「更多」高级表格入口不变。
 - 列表页顶部工具栏（筛选/搜索，table/tree 另有分组/排序）右侧「高级」菜单承载当前实体的导入/导出/批量删除；表格默认左侧勾选 + 表头全选，批量删除受删除权限、视图允许删除与选中行共同门禁（OSC-0007）。

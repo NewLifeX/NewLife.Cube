@@ -153,13 +153,16 @@ type ViewGroup = string[]
 - 已选分组字段有序列表，最多 3 个；每项显示字段名 + `上移/下移/删除` 按钮（按钮，非拖拽）。
 - 操作：应用（写 store `patchActiveGroup` **持久化**并本地重分组）/ 保存到此视图 / 清除（写空方案持久化）/ 取消；关闭不丢弃未应用编辑。
 
-### 5.4 表格分组渲染（ListTable grouped 模式）
+### 5.4 表格分组渲染（ListTable groupBy 模式）
 
-- 数据输入：`groupRows(tableData, groupFields, fields, dataSource)` → `GroupNode[]`（组头节点 `{ __group: true, label, count, children, path }`，叶为原数据行）。
-- VTable `hierarchy: true` 复用：组头为父节点行（渲染「📁 label (count)」），组内行为 children；`hierarchyExpandLevel: 2` 默认展开一级。
-- 组头行点击 = VTable hierarchy 折叠/展开（复用树视图能力）；折叠 key 记录到 `collapsedGroupKeys`（会话内存）。
-- 多级分组：一级组头下嵌套二级组头（children 中仍有 `__group` 节点）。
-- 空数据：组头不渲染，保持既有 `a-empty`。
+- 数据输入：直接传原始行（`treeRows`/`tableData`），由 VTable `groupConfig.groupBy` 原生分组（参考官方 [list-table-group-checkbox](https://visactor.com/vtable/demo/table-type/list-table-group-checkbox) demo）；不再手工 `groupRows` 组装组头节点。
+- `groupConfig`：`groupBy`（分组字段数组，转 camelCase 与数据行字段匹配）、`titleCheckbox: true`（组标题行左侧显示 checkbox，与组内子行选中状态级联同步）、`titleFieldFormat`（组标题文本「📁 label (count)」，label 按分组字段 dataSource 翻译）。
+- checkbox 置于 `rowSeriesNumber`（行号列，`cellType/headerType: 'checkbox'`，width 48，format 空串）——位于每行最前面；`enableCheckboxCascade: true` 使组标题 checkbox 与组内子行级联勾选/取消。
+- 组标题行样式由 `theme.groupTitleStyle` 定制（浅灰底 #F7F8FA + 加粗），不再依赖组头行 `__groupHeader` 标记。
+- **不使用 VTable `hierarchy`（tree）渲染分组**：tree 模式下 VTable 会把 checkbox 列自动置为 tree 列，导致 checkbox 图标不渲染、勾选态与选中集不同步（OSC-0015 分组后勾选框不可用根因）。
+- 多级分组：`groupBy` 支持字段数组，VTable 逐级生成组标题。
+- 勾选态读取：`checkbox_state_change` 延后到宏任务遍历展示行（`getCellOriginRecord` 取记录 + `getCellCheckboxState` 取状态）——VTable 内部级联监听在 setTimeout(0) 注册，同步读取会拿到级联前旧状态并触发父级清空重置。
+- 空数据：组标题不渲染，保持既有 `a-empty`。
 
 ### 5.5 QueryInsightPanel 一行折叠
 
