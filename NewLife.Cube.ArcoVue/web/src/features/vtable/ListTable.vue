@@ -439,7 +439,24 @@ function groupTitleFormat(
 /** groupBy 字段名与数据字段名匹配：视图分组字段为 PascalCase（FieldMeta.name），数据行字段为 camelCase */
 function toDataField(field: string): string {
   if (!field) return field;
-  return field.charAt(0).toLowerCase() + field.slice(1);
+  // 与后端 System.Text.Json 默认 camelCase 输出对齐（.NET JsonNamingPolicy.CamelCase）：
+  // Type→type、ParentID→parentID、ID→id、URL→url；仅首字母小写无法处理全大写缩写字段
+  const chars = field.split('');
+  if (chars.length > 0 && isUpperChar(chars[0])) {
+    for (let i = 0; i < chars.length; i++) {
+      // 首字符后紧跟小写：只小写首字符即可（ParentID→parentID）
+      if (i === 1 && !isUpperChar(chars[i])) break;
+      const hasNext = i + 1 < chars.length;
+      // 大写组后跟小写：停止（保持该大写后的原样）
+      if (i > 0 && hasNext && !isUpperChar(chars[i + 1])) break;
+      chars[i] = chars[i].toLowerCase();
+    }
+  }
+  return chars.join('');
+}
+
+function isUpperChar(c: string): boolean {
+  return c >= 'A' && c <= 'Z';
 }
 
 function buildOption(): any {

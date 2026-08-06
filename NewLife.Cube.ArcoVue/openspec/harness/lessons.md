@@ -118,6 +118,17 @@
 - **多域共存于同一 UserId=0 记录**：模板域（ViewsJson/FiltersJson）与全局唯一表单布局（FormJson，OSC-0013）共享同一条 `ViewProfile.UserId=0` 记录；删除/清空某一域时须判断 `hasContent` 保留其他域，避免误删共存数据。
 - **三层解析按域整体选取**（`personal > template > system default`）：ViewsJson 与 FiltersJson 两域独立、不做跨域或字段级 merge；personal 仅 contentless 时回落 template；域整体覆盖比 JSON patch 可预测性高得多。
 - **materialize 首次保存即提升为 personal**：前端 store 通过 `carryViews`/`carryFilters` 控制——仅在 source=personal 或 dirty 时才提交域 JSON；保存成功后 `viewsSource`/`filtersSource` 永久提升，后续不自动继承模板更新。
+
+## OSC-0015 — 2026-08-06
+
+- **筛选与搜索职责分离**：搜索 = 并入请求的关键字/字段条件（`effectiveSearch`，OSC-0012 不变）；筛选 = 对已返回数据的前端 `matchesViewFilter` 过滤（纯前端、不并发）。筛选为空时请求与基线完全一致，回归安全；对业务重写 `Search(Pager)`（如 Department 仅处理部分字段）的控制器前端兜底过滤保证生效。
+- **比较运算符对空值必须显式语义**：`gte`/`lte` 用「非 lt / 非 gt」反推会把空值行（`compareValues` 返回 `'na'`）误判为命中，与 `isNull` 语义冲突；`>=`/`<=` 应显式 `==='gt'||'eq'` / `==='lt'||'eq'`，与 `gt`/`lt` 严格对称，并补空值边界单测。
+- **视图门控要落到数据传递层**：UI 隐藏按钮 ≠ 状态不残留——`group-fields` 这类跨视图数据传递必须按当前视图能力（`isGrouped`）过滤，否则表格配置分组后切树视图，残留分组字段使 ListTable 进 groupedMode 跳过 hierarchy → 树结构丢失。
+- **字段名转换对齐后端序列化**：前端把 PascalCase 字段名匹配后端 camelCase 数据 key 时须按 .NET `JsonNamingPolicy.CamelCase` 实现（`Type→type`、`ParentID→parentID`、`ID→id`、`URL→url`），仅首字母小写处理不了全大写缩写。
+- **VTable 分组勾选**：分组场景 checkbox 必须走 `rowSeriesNumber(cellType/headerType:'checkbox')` + `groupConfig(groupBy/titleCheckbox/enableCheckboxCascade)`，勿用 tree/hierarchy 渲染分组（tree 模式会把 checkbox 列自动置为 tree 列）；级联状态读取须 `setTimeout(0)` 延后宏任务（VTable 内部级联监听在 setTimeout(0) 注册，同步读会拿到旧状态触发重置）。
+- **异步请求序号 + 卸载清理**：防抖/远程搜索类组件（LOV LIST）需 `seq` 丢弃过期响应 + `onBeforeUnmount` 清理 timer，避免慢响应覆盖新结果与写已卸载组件；`watch(immediate)` 已覆盖 `onMounted` 时勿重复调用 load。
+- **受控下拉误选同名选项**：冒烟脚本点击 Arco `a-select` 下拉选项时，页面可能存在多个同值选项（搜索面板/构建器的「公司」等），须作用域到**当前打开的 popup**（`.arco-trigger-popup`）精确点击。
+- **验收标准须随实现演进同步**：verify.md 初版基于「筛选并入后端」方案，实现改为纯前端后若不同步更新会产生按旧标准验收失败/误判；验收前先对齐验收标准与最终实现（本号 AC-02/03/04 已重写）。
 - **表单域不参与三层解析**：FormJson 为全局唯一（OSC-0013），所有人共享读取，与模板互不干扰，减少概念混淆。
 - **前端 isAdmin 判定**（`roleName === '管理员'`）与后端 `Roles.Any(e => e.IsSystem)` 不完全对齐：安全关键路径在后端 403 拒绝，前端仅 UI 可见性控制；跨部署环境若角色名非"管理员"则管理入口不显示，建议后续对齐为菜单权限位判定。
 

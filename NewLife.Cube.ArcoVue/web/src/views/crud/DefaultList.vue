@@ -181,7 +181,7 @@
               :sort-state="activeSort"
               :hierarchy="activeViewKind === 'tree' && treeDataDetected"
               :grouped="isGrouped"
-              :group-fields="viewGroup"
+              :group-fields="isGrouped ? viewGroup : []"
               :group-label-of="groupLabelOf"
               :height="resolvedTableHeight"
               @row-dbl-click="openDetail"

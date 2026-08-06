@@ -71,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch, onMounted } from 'vue';
+import { computed, reactive, ref, watch, onBeforeUnmount } from 'vue';
 import {
   fetchBatchLabel,
   fetchLovListData,
@@ -149,6 +149,7 @@ async function loadMeta() {
 
 /** 按 Meta 的 valueField/labelField 映射 ListData 行为下拉选项；keyword 非空时携带 q 远程搜索（OSC-0015 5.6） */
 async function loadInlineOptions(meta: LovListMeta | null, keyword = '') {
+  const seq = ++loadSeq;
   const valueField = (meta?.valueField || 'id').trim();
   const labelField = (meta?.labelField || 'name').trim();
   loadingOptions.value = true;
@@ -161,6 +162,7 @@ async function loadInlineOptions(meta: LovListMeta | null, keyword = '') {
       pageSize: 200,
       pageNum: 1,
     });
+    if (seq !== loadSeq) return; // 过期响应丢弃
     const rows = Array.isArray(res?.data) ? res.data : [];
     inlineOptions.value = rows
       .map((r) => {
@@ -175,14 +177,17 @@ async function loadInlineOptions(meta: LovListMeta | null, keyword = '') {
       })
       .filter((x): x is LovEnumOption => x != null);
   } catch {
+    if (seq !== loadSeq) return;
     inlineOptions.value = [];
   } finally {
-    loadingOptions.value = false;
+    if (seq === loadSeq) loadingOptions.value = false;
   }
 }
 
 /** 远程搜索防抖计时器（OSC-0015 5.6：300ms） */
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
+/** 加载序号：防抖/下拉打开并发请求时丢弃过期响应，避免慢响应覆盖新结果 */
+let loadSeq = 0;
 
 /** 下拉输入关键字 → 防抖 300ms 后携带 q 远程搜索 */
 function onRemoteSearch(keyword: string) {
@@ -268,7 +273,15 @@ watch(
   },
   { deep: true },
 );
-onMounted(loadMeta);
+
+onBeforeUnmount(() => {
+  // 卸载清理防抖计时器，避免卸载后仍发起远程搜索写已销毁组件
+  if (searchTimer) {
+    clearTimeout(searchTimer);
+    searchTimer = null;
+  }
+  loadSeq++;
+});
 </script>
 
 <style scoped>

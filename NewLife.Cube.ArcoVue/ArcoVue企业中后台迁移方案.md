@@ -526,7 +526,7 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
 | OSC-0012 | 筛选记忆 + 单一洞察区 | `FiltersJson` 按命名视图保存；`insight.showStat`/`showChart` 双开关独立（可同时），始终使用当前实体与筛选条件 |
 | OSC-0013 | 受限表单布局 | ViewProfile 增 `FormJson`；RecordDrawer 支持字段顺序、显隐、Category 分组折叠与恢复默认 |
 | OSC-0014 | 全局只读模板 | `UserId=0` 模板读写 API、权限与审计；个人覆盖/恢复模板；不做角色、租户与协同编辑 |
-| OSC-0015 | 筛选构建器 + 多级分组 | 工具栏 Popover（非 Drawer）构建筛选（eq/between，AND/OR）保存到 `NamedView.filter` 随视图自动应用、并入搜索请求；多级分组（≤3 字段）保存到 `NamedView.group`，table/tree 按 `groupRows` 树渲染、组头折叠；搜索面板一行折叠 + LOV LIST 远程搜索 |
+| OSC-0015 | 筛选构建器 + 多级分组 | 工具栏 Popover（非 Drawer）构建筛选（操作符按字段类别矩阵 eq/neq/contains/isNull/gt/gte/lt/lte/after/before，AND/OR）保存到 `NamedView.filter` 随视图自动应用、**纯前端过滤**（不并入后端请求）；多级分组（≤3 字段）保存到 `NamedView.group`，**table 用 VTable 原生 groupBy 渲染组头折叠 + checkbox 级联、树视图不允许分组**；搜索面板一行折叠 + LOV LIST 远程搜索 |
 
 #### 8.2.6 验收与非目标
 
@@ -761,11 +761,11 @@ Draft → Accepted → Implementing → Validating → Done
 |---|------|:---:|----------|
 | 1 | ~~评论 Tab 前端未接线~~（OSC-0008 已接线：api-core comment API + RecordDrawer 评论 Tab） | P0 | ✅ 已解决 |
 | 2 | ~~`UserProfile.workspace.defaultView / pageSize` 已建模未消费~~（OSC-0012：无 ViewProfile 时回落默认视图；页面级 PageSize 已按 typePath 接入，旧全局值仅作种子） | P0 | ✅ 已解决 |
-| 3 | ~~筛选记忆未持久化（filtersJson 预留未用；分组为占位）~~（OSC-0012：仅保存当前实体、当前命名视图的搜索条件；不做通用数据范围引擎。OSC-0015：筛选构建器 eq/between 保存到 `NamedView.filter`；多级分组 ≤3 字段保存到 `NamedView.group`，table/tree 树渲染） | P1 | ✅ 已解决 |
+| 3 | ~~筛选记忆未持久化（filtersJson 预留未用；分组为占位）~~（OSC-0012：仅保存当前实体、当前命名视图的搜索条件；不做通用数据范围引擎。OSC-0015：筛选构建器条件组保存到 `NamedView.filter` 纯前端过滤；多级分组 ≤3 字段保存到 `NamedView.group`，table 用 VTable 原生 groupBy、树视图不允许分组） | P1 | ✅ 已解决 |
 | 4 | 列 frozen 仅 left/false，无 right | P1 | 补充右冻结 |
 | 5 | 角色/租户级配置层未实现（仅系统默认+用户两级，§5.1） | P1 | 分层扩展 |
 | 6 | 组件测试缺失（仅纯逻辑单测） | P1 | `@vue/test-utils` + happy-dom 覆盖关键组件 |
-| 7 | ~~table/tree 分组入口 `Message.info` 占位~~（OSC-0015 已实现 GroupPopover 多级分组；排序仍走表头，工具栏排序按钮为提示占位）、`NamedViewsToolbar.vue` 无引用 | P2 | 清理或实现 |
+| 7 | ~~table/tree 分组入口 `Message.info` 占位~~（OSC-0015 已实现 GroupPopover 多级分组；排序走表头，工具栏排序按钮已移除）、`NamedViewsToolbar.vue` 无引用 | P2 | 清理或实现 |
 | 8 | `ListTable` 树列标记排除条件写 `__check`（实际复选框列为 `__checked`），showCheckbox+hierarchy 同时开启时 tree:true 可能标错列 | P2 | 修正排除条件 |
 | 9 | i18n 未实现（矩阵目标 ✅ 但实际无文案外置） | P1 | 文案外置 |
 | 10 | MFA UI / FlowGram / E2E 冒烟 | P1/P2 | 后续 OSC（0010/0011） |

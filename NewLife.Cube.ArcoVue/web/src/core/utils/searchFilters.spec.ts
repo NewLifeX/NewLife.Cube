@@ -120,6 +120,26 @@ describe('matchesViewFilter (OSC-0015)', () => {
     expect(matchesViewFilter({ createTime: '2025-06-01' }, df, [])).toBe(false);
   });
 
+  it('gte/lte 空值行不命中（空值返回 na，不得纳入 >=/<=，与 isNull 语义区分）', () => {
+    const gte = {
+      logic: 'all' as const,
+      conditions: [{ field: 'Age', op: 'gte' as const, value: 18 }],
+    };
+    expect(matchesViewFilter({ age: 20 }, gte, [])).toBe(true);
+    expect(matchesViewFilter({ age: 10 }, gte, [])).toBe(false);
+    expect(matchesViewFilter({ age: null }, gte, [])).toBe(false);
+    expect(matchesViewFilter({ age: '' }, gte, [])).toBe(false);
+    expect(matchesViewFilter({}, gte, [])).toBe(false);
+    const lte = {
+      logic: 'all' as const,
+      conditions: [{ field: 'Age', op: 'lte' as const, value: 18 }],
+    };
+    expect(matchesViewFilter({ age: 10 }, lte, [])).toBe(true);
+    expect(matchesViewFilter({ age: 20 }, lte, [])).toBe(false);
+    expect(matchesViewFilter({ age: null }, lte, [])).toBe(false);
+    expect(matchesViewFilter({ age: '' }, lte, [])).toBe(false);
+  });
+
   it('empty filter always matches', () => {
     expect(matchesViewFilter({}, { logic: 'all', conditions: [] }, [])).toBe(true);
   });

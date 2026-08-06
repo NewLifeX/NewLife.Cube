@@ -129,12 +129,17 @@ function matchCondition(row: Record<string, unknown>, cond: ViewFilterCondition)
       return raw != null && raw !== '';
     case 'gt':
       return compareValues(raw, cond.value) === 'gt';
-    case 'gte':
-      return compareValues(raw, cond.value) !== 'lt';
+    case 'gte': {
+      // 空值行返回 'na'，不得把空值纳入「大于等于」（与 isNull 语义区分）
+      const cmp = compareValues(raw, cond.value);
+      return cmp === 'gt' || cmp === 'eq';
+    }
     case 'lt':
       return compareValues(raw, cond.value) === 'lt';
-    case 'lte':
-      return compareValues(raw, cond.value) !== 'gt';
+    case 'lte': {
+      const cmp = compareValues(raw, cond.value);
+      return cmp === 'lt' || cmp === 'eq';
+    }
     case 'after':
       return compareValues(raw, cond.value) === 'gt';
     case 'before':
