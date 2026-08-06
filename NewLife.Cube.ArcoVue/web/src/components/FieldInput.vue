@@ -52,12 +52,12 @@
       @update:model-value="onSelect"
     >
       <a-option
-        v-for="(label, key) in field.dataSource || {}"
-        :key="key"
-        :value="String(key)"
-        :label="label"
+        v-for="opt in selectOptions"
+        :key="opt.value"
+        :value="opt.value"
+        :label="opt.label"
       >
-        {{ label }}
+        {{ opt.label }}
       </a-option>
     </a-select>
     <CascaderField
@@ -128,6 +128,7 @@ import {
   resolveNumberPrecision,
   resolveNumberStep,
 } from '@/core/utils/fieldControl';
+import { normalizeDataSource } from '@/core/utils/viewMapping';
 import {
   type DateKind,
   fromPickerValue,
@@ -164,9 +165,19 @@ const numValue = computed(() => {
 const displayText = computed(() => strValue.value || '-');
 const precision = computed(() => resolveNumberPrecision(props.field));
 const step = computed(() => resolveNumberStep(props.field));
-const selectValue = computed(() =>
-  props.modelValue == null || props.modelValue === '' ? undefined : String(props.modelValue),
+/** 枚举/状态字典：按 label 去重并优先数字键（后端 PrepareForApi 同时物化数字键与名称键） */
+const dsNorm = computed(() =>
+  props.field.dataSource && Object.keys(props.field.dataSource).length
+    ? normalizeDataSource(props.field.dataSource)
+    : null,
 );
+const selectOptions = computed(() => dsNorm.value?.options ?? []);
+const selectValue = computed(() => {
+  if (props.modelValue == null || props.modelValue === '') return undefined;
+  const s = String(props.modelValue);
+  // 回显兼容：名称键（如「男」）映射回规范数字键（如「1」），避免选中态丢失
+  return dsNorm.value?.canonicalByKey.get(s) ?? s;
+});
 
 /** 日期种类与 picker 字符串值：壁钟时间，避免时区漂移 */
 const dateKind = computed<DateKind>(() =>

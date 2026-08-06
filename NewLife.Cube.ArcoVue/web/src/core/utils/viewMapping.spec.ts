@@ -7,6 +7,7 @@ import {
   normalizeCardBodyColumns,
   normalizeCardFieldOrientation,
   normalizeCardLayout,
+  normalizeDataSource,
   normalizeMapping,
   normalizePageSize,
   resolveBatchDeleteState,
@@ -344,5 +345,46 @@ describe('bucketKanban', () => {
     );
     expect(buckets.map((b) => b.key)).toEqual(['high', 'low']);
     expect(buckets[0].rows).toHaveLength(2);
+  });
+});
+
+describe('normalizeDataSource', () => {
+  it('数字键与名称键同标签时按 label 去重并优先数字键', () => {
+    const { options } = normalizeDataSource({
+      '0': '未知',
+      '1': '男',
+      '2': '女',
+      未知: '未知',
+      男: '男',
+      女: '女',
+    });
+    expect(options).toEqual([
+      { value: '0', label: '未知' },
+      { value: '1', label: '男' },
+      { value: '2', label: '女' },
+    ]);
+  });
+
+  it('canonicalByKey 把名称键映射回数字键，供表单回显选中态', () => {
+    const { canonicalByKey } = normalizeDataSource({
+      '0': '未知',
+      '1': '男',
+      '2': '女',
+      未知: '未知',
+      男: '男',
+      女: '女',
+    });
+    expect(canonicalByKey.get('男')).toBe('1');
+    expect(canonicalByKey.get('女')).toBe('2');
+    expect(canonicalByKey.get('1')).toBe('1');
+  });
+
+  it('纯名称键字典（无数字键）按原键去重保留', () => {
+    const { options, canonicalByKey } = normalizeDataSource({ high: '高', low: '低' });
+    expect(options).toEqual([
+      { value: 'high', label: '高' },
+      { value: 'low', label: '低' },
+    ]);
+    expect(canonicalByKey.get('high')).toBe('high');
   });
 });
