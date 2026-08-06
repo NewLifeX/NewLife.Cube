@@ -586,9 +586,24 @@ export const VIEW_KIND_LABEL: Record<ViewKind, string> = {
   gantt: '甘特图',
 };
 
+/** 视图类型 → 默认视图名称（「保存视图为默认XX视图」文案；需求：列表/看板/卡片/树状/日历/甘特） */
+export const DEFAULT_VIEW_KIND_NAME: Record<ViewKind, string> = {
+  table: '列表',
+  tree: '树状',
+  card: '卡片',
+  kanban: '看板',
+  calendar: '日历',
+  gantt: '甘特',
+};
+
 /** 「+」新建视图菜单文案（类型名 +「视图」） */
 export function viewKindCreateLabel(kind: ViewKind): string {
   return `${VIEW_KIND_LABEL[kind]}视图`;
+}
+
+/** 「保存视图为默认XX视图」文案；未知类型回落「列表」 */
+export function defaultViewKindName(kind: ViewKind): string {
+  return DEFAULT_VIEW_KIND_NAME[kind] || '列表';
 }
 
 export function parseViewKind(raw: unknown): ViewKind {

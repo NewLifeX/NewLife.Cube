@@ -3,6 +3,7 @@ import type { FieldMeta } from '@/core/types/field';
 import {
   bucketKanban,
   canCreateViewKind,
+  defaultViewKindName,
   groupHeaderCell,
   groupRows,
   isGroupHeaderRow,
@@ -498,5 +499,16 @@ describe('分组草稿操作 (OSC-0015)', () => {
   it('nextGroupFieldNames 排除已选并受上限约束', () => {
     expect(nextGroupFieldNames(['A', 'B', 'C'], ['A'])).toEqual(['B', 'C']);
     expect(nextGroupFieldNames(['A', 'B', 'C'], ['A', 'B', 'C'])).toEqual([]);
+  });
+});
+
+describe('defaultViewKindName（保存视图为默认XX视图文案）', () => {
+  it('六种视图类型映射到默认视图名称', () => {
+    expect(defaultViewKindName('table')).toBe('列表');
+    expect(defaultViewKindName('tree')).toBe('树状');
+    expect(defaultViewKindName('card')).toBe('卡片');
+    expect(defaultViewKindName('kanban')).toBe('看板');
+    expect(defaultViewKindName('calendar')).toBe('日历');
+    expect(defaultViewKindName('gantt')).toBe('甘特');
   });
 });

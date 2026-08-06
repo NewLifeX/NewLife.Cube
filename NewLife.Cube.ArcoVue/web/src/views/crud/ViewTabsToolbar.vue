@@ -33,6 +33,9 @@
             <a-doption value="config">自定义配置</a-doption>
             <a-doption value="duplicate">复制</a-doption>
             <a-doption value="delete" :disabled="views.length <= 1">删除</a-doption>
+            <a-doption divider v-if="isAdmin" value="saveAsDefault">
+              保存视图为默认{{ defaultViewKindName(activeViewKind) }}视图
+            </a-doption>
             <a-doption value="reset">恢复默认</a-doption>
           </template>
         </a-dropdown>
@@ -83,6 +86,7 @@ import type { NamedView, ViewKind } from '@/core/utils/viewProfile';
 import {
   VIEW_KIND_LABEL,
   canCreateViewKind,
+  defaultViewKindName,
   viewKindCreateLabel,
 } from '@/core/utils/viewMapping';
 
@@ -91,6 +95,8 @@ const props = defineProps<{
   activeId: string;
   fields: FieldMeta[];
   typePath: string;
+  /** 系统管理员可把当前视图保存为该实体默认（全局模板）视图 */
+  isAdmin?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -101,7 +107,14 @@ const emit = defineEmits<{
   duplicate: [id: string];
   reset: [];
   openConfig: [];
+  saveAsDefault: [];
 }>();
+
+/** 当前激活视图的类型（决定「保存视图为默认XX视图」文案） */
+const activeViewKind = computed<ViewKind>(() => {
+  const v = props.views.find((x) => x.id === props.activeId);
+  return v?.view ?? 'table';
+});
 
 const createKinds: ViewKind[] = ['table', 'tree', 'card', 'kanban', 'calendar', 'gantt'];
 
@@ -180,6 +193,10 @@ function onMenuSelect(val: string | number | Record<string, unknown> | undefined
   }
   if (key === 'delete') {
     if (window.confirm('删除当前视图？')) emit('remove', props.activeId);
+    return;
+  }
+  if (key === 'saveAsDefault') {
+    emit('saveAsDefault');
     return;
   }
   if (key === 'reset') {

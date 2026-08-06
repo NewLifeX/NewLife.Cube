@@ -33,12 +33,14 @@
             :active-id="viewState.activeViewId"
             :fields="listFields"
             :type-path="typePath"
+            :is-admin="isAdmin"
             @switch="onSwitchView"
             @create="onCreateView"
             @rename="onRenameView"
             @remove="onRemoveView"
             @duplicate="onDuplicateView"
             @reset="onResetViews"
+            @save-as-default="onSaveAsDefault"
             @open-config="configDrawerVisible = true"
           />
         </div>
@@ -379,6 +381,7 @@ import {
   mergeColumns,
   resolveChrome,
   emptyViewFilter,
+  serializeNamedView,
   type ColumnPref,
   type EntityViewState,
   type FormLayout,
@@ -1168,6 +1171,28 @@ async function onResetViews() {
   selectedKeys.value = [];
   pagination.current = 1;
   loadData();
+}
+
+/** 系统管理员：将当前视图方案发布为全局模板（该实体默认视图；回落用户可见） */
+async function onSaveAsDefault() {
+  const st = evpStore.getState(typePath.value);
+  if (!st?.views?.length) {
+    Message.warning('当前无视图可保存');
+    return;
+  }
+  if (!window.confirm('将当前视图方案保存为该实体默认视图？未个性化用户将默认看到此方案。')) return;
+  try {
+    await cubeApi.profile.putViewProfileTemplate({
+      typePath: typePath.value,
+      viewsJson: JSON.stringify(st.views.map(serializeNamedView)),
+    });
+    Message.success('已保存为默认视图');
+    // 重新加载刷新模板来源域（管理员个人视图域不受影响）
+    const entry = evpStore.byType[typePath.value];
+    if (entry) await evpStore.load(typePath.value, entry.metaKeys);
+  } catch (err) {
+    Message.error(formatApiError(err, '保存默认视图失败'));
+  }
 }
 
 function onTableAction(payload: { action: 'detail' | 'edit' | 'delete'; row: Record<string, unknown> }) {
