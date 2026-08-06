@@ -374,14 +374,18 @@ describe('normalizeFilter / normalizeGroup (OSC-0015)', () => {
       logic: 'any',
       conditions: [
         { field: 'Status', op: 'eq', value: 1 },
-        { field: 'Age', op: 'between', value: 18, value2: 60 },
+        { field: 'Age', op: 'gte', value: 18 },
+        { field: 'Name', op: 'contains', value: 'a' },
+        { field: 'Enable', op: 'isNull' },
       ],
     });
     expect(f).toEqual({
       logic: 'any',
       conditions: [
         { field: 'Status', op: 'eq', value: 1 },
-        { field: 'Age', op: 'between', value: 18, value2: 60 },
+        { field: 'Age', op: 'gte', value: 18 },
+        { field: 'Name', op: 'contains', value: 'a' },
+        { field: 'Enable', op: 'isNull' },
       ],
     });
   });
@@ -391,15 +395,15 @@ describe('normalizeFilter / normalizeGroup (OSC-0015)', () => {
       logic: 'xor',
       conditions: [
         { field: '', op: 'eq', value: 1 },
-        { field: 'B', op: 'contains', value: 'x' },
+        { field: 'B', op: 'between', value: 1, value2: 2 },
         { field: 'C', op: 'eq', value: undefined },
         { field: 'D', op: 'eq', value: false },
         { field: 'E', op: 'eq', value: 0 },
-        { field: 'F', op: 'between', value: null, value2: null },
+        { field: 'F', op: 'notNull' },
       ],
     });
     expect(f.logic).toBe('all');
-    expect(f.conditions.map((c) => c.field)).toEqual(['D', 'E']);
+    expect(f.conditions.map((c) => c.field)).toEqual(['D', 'E', 'F']);
   });
 
   it('round-trips filter via serializeNamedView', () => {

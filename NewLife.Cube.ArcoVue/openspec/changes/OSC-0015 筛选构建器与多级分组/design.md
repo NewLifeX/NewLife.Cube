@@ -2,31 +2,40 @@
 
 ## 1. 目标与契约边界
 
-本号纯前端扩展。`NamedView`（存 `ViewsJson`）新增两个域：`filter`（筛选构建器方案）与 `group`（多级分组字段列表）。筛选条件应用时序列化为与搜索表单一致的扁平参数并入 `effectiveSearch` 触发 `GetList`；分组对已返回 `tableData` 纯前端分组展示。**后端零改动**：不新增 API、不改 `Search(Pager)` 语义、不动 ViewProfile 线协议。
+本号纯前端扩展。`NamedView`（存 `ViewsJson`）新增两个域：`filter`（筛选构建器方案）与 `group`（多级分组字段列表）。**筛选为纯前端过滤**：条件不并入后端请求，对已返回 `tableData` 按筛选条件本地过滤，翻页时对每页已加载数据继续过滤；分组对已返回 `tableData` 纯前端分组展示。**后端零改动**：不新增 API、不改 `Search(Pager)` 语义、不动 ViewProfile 线协议。
 
-后端 `ReadOnlyEntityController.Search(Pager)` 的搜索能力是操作符集合的硬约束：
+**筛选与搜索职责分离**：
+- **搜索** = 关键字向后端获取数据的查询条件（搜索面板，`effectiveSearch` 并入请求，OSC-0012 不变）。
+- **筛选** = 对后端返回的数据在前端按「筛选条件」本地过滤；翻页时依然使用当前筛选条件对本地数据过滤。
 
-- `p[字段]` 有值 → `field.Equal(val)`：**等值**（含多选字段逗号分隔字符串）。
-- `p["Q"]` → `Entity.SearchWhereByKeys`：**全局关键字模糊**（非按字段，语义与字段级包含不同）。
-- `p[字段_min]` / `p[字段_max]`：仅重写 `Search` 的控制器支持**范围**（与现有搜索表单 `_min/_max` 提交完全一致）。
+**操作符按字段类别开放**（纯前端匹配，不依赖后端算子）：
 
-因此本号筛选操作符 = `等于` + `范围`，与现有搜索表单能力严格一致；筛选构建器的价值在于**多条件可视化组合（AND/OR）**，而非新增后端不支持的算子。
+| 字段类别 | 可用操作符 | 说明 |
+| --- | --- | --- |
+| 状态 / 枚举 / 值集 | 等于 / 不等于 / 为空 / 不为空 | Boolean、Enum、dataSource 物化、LOV 值集 |
+| 字符 | 等于 / 不等于 / 包含 / 不包含 / 为空 / 不为空 | String 等 |
+| 人员（创建者/更新者/创建人员/更新人员） | 等于 / 不等于 | 值控件为**用户实体下拉**（数据源 `/Admin/User`） |
+| 数字（整数/小数/浮点/双精度等） | 等于 / 不等于 / 大于 / 大于或等于 / 小于 / 小于或等于 / 为空 / 不为空 | **不含范围** |
+| 日期 / 时间 / 日期时间 | 等于 / 晚于 / 早于 / 为空 / 不为空 | 晚于=after、早于=before |
+
+字段类别判定（`resolveFieldFilterKind`）：人员名（Creator/Updater/创建者/更新者…）→ 枚举/值集（Boolean/Enum/dataSource/LOV）→ 数字（数值 typeName）→ 日期时间（DateTime 等）→ 字符。
 
 ## 2. 文件级改动地图
 
 | 文件 | 计划改动 | 保留不动 |
 | --- | --- | --- |
-| `web/src/core/utils/viewProfile.ts` | `NamedView` 增加 `filter?`/`group?`；新增 `ViewFilter`/`ViewFilterCondition` 类型与 `normalizeFilter`（宽容解析、非法归一、未知字段保留）；`serializeNamedView`/`parseNamedViews` 透传两个域 | 既有 columns/sort/chrome/mapping/insight 结构与 `_raw` round-trip |
-| `web/src/core/utils/searchFilters.ts` | 新增 `filterToSearchParams(filter, fields, keys)`：条件 → 扁平搜索参数 | 既有 `cleanSearchParams`/`collectSearchKeys`/`parseUrlSearch` |
+| `web/src/core/utils/viewProfile.ts` | `NamedView` 增加 `filter?`/`group?`；新增 `ViewFilter`/`ViewFilterCondition` 类型（12 个操作符）与 `normalizeFilter`（宽容解析、非法归一、未知字段保留）；`serializeNamedView`/`parseNamedViews` 透传两个域 | 既有 columns/sort/chrome/mapping/insight 结构与 `_raw` round-trip |
+| `web/src/core/utils/filterBuilder.ts` | `resolveFieldFilterKind` 字段类别、`FILTER_OPS_BY_KIND` 操作符矩阵、`FILTER_OP_LABELS`、draft ↔ filter 转换 | — |
+| `web/src/core/utils/searchFilters.ts` | `matchesViewFilter` 支持全部新操作符（eq/neq/contains/notContains/isNull/notNull/gt/gte/lt/lte/after/before） | 既有 `cleanSearchParams`/`collectSearchKeys`/`parseUrlSearch` |
 | `web/src/core/utils/viewMapping.ts` | 新增 `groupRows(records, groupFields, fields, dataSource)` 与 `GroupNode` 类型 | 既有 bucketKanban/normalizeDataSource 等 |
-| `web/src/views/crud/FilterBuilderPopover.vue`（新增） | 条件构建器弹层 UI：字段/操作符/值/删除、AND-OR 切换、应用/保存/清除；锚定工具栏「筛选」按钮 | — |
+| `web/src/views/crud/FilterBuilderPopover.vue`（新增） | 条件构建器弹层 UI：字段/操作符（按类别）/值控件（按类别与操作符）/删除、AND-OR 切换、应用/保存/清除；人员字段用户下拉；锚定工具栏「筛选」按钮 | — |
 | `web/src/views/crud/GroupPopover.vue`（新增） | 多级分组字段选择弹层（有序增删）；锚定工具栏「分组」按钮 | — |
-| `web/src/views/crud/DefaultList.vue` | 「筛选」按钮改为展开 FilterBuilderPopover；「分组」按钮改为展开 GroupPopover；`effectiveSearch` 合并 `viewFilterParams`；分组数据渲染分支；已筛选/已分组标签；两弹层互斥 | GetPage/字段分区、CRUD、分页、RecordDrawer、既有搜索逻辑 |
+| `web/src/views/crud/DefaultList.vue` | 「筛选」按钮改为展开 FilterBuilderPopover；「分组」按钮改为展开 GroupPopover；`filterFields`=可见列∪人员字段；loadData 后对已加载数据 `matchesViewFilter` 本地过滤（分页/翻页继续过滤），全量加载时纠正 total；两弹层互斥 | GetPage/字段分区、CRUD、分页、RecordDrawer、既有搜索逻辑 |
 | `web/src/stores/viewProfile.ts` | `patchActiveFilter`/`patchActiveGroup` 保存域；加载视图自动应用 | 400ms debounce、失败回滚、既有各域保存 |
 | `web/src/features/search/QueryInsightPanel.vue` | 搜索字段容器默认一行、超行折叠「展开更多 N」 | 搜索/重置/保存/清除 emits 与 stat/chart 区 |
 | `web/src/features/vtable/ListTable.vue` | 新增 `grouped` 模式：组头行渲染 + 组内行（VTable hierarchy 复用）+ 组头折叠 | 既有 records/columns/hierarchy 表视图语义 |
 | `web/src/components/LovSelect.vue` | LOV LIST 模式：下拉支持远程搜索（输入过滤）+ 已选标签 | ENUM 模式与「更多」表格 |
-| `web/src/**/*.spec.ts` | 补 filter 解析/序列化、groupRows、折叠逻辑、组件用例 | 既有测试断言 |
+| `web/src/**/*.spec.ts` | 补字段类别/操作符矩阵、matchesViewFilter 全操作符、groupRows、折叠逻辑、组件用例 | 既有测试断言 |
 | `NewLife.Cube.ArcoVue/web/README.md`、`Doc/功能清单.md`、`Doc/Api/ArcoVue企业中后台迁移方案.md` | 事实性登记 OSC-0015 | — |
 
 ## 3. JSON schema 与兼容
@@ -34,6 +43,10 @@
 ### 3.1 NamedView 新增域
 
 ```ts
+type ViewFilterOp =
+  | 'eq' | 'neq' | 'contains' | 'notContains' | 'isNull' | 'notNull'
+  | 'gt' | 'gte' | 'lt' | 'lte' | 'after' | 'before'
+
 interface ViewFilter {
   /** 条件组逻辑：all=且(AND)，any=或(OR) */
   logic: 'all' | 'any'
@@ -42,13 +55,13 @@ interface ViewFilter {
 }
 
 interface ViewFilterCondition {
-  /** 字段名（listFields 中可搜索字段的 canonical name） */
+  /** 字段名（filterFields 中 canonical name） */
   field: string
-  /** 操作符：仅 eq / between */
-  op: 'eq' | 'between'
-  /** 值；eq 时可为标量或数组（多选字段），between 时为下界 */
+  /** 操作符（按字段类别开放，见 filterBuilder.FILTER_OPS_BY_KIND） */
+  op: ViewFilterOp
+  /** 值；isNull/notNull 无值；eq/neq 可为标量或数组（多选字段） */
   value?: unknown
-  /** between 上界 */
+  /** 保留字段（历史 between 上界；新操作符不再使用） */
   value2?: unknown
 }
 
@@ -59,39 +72,40 @@ type ViewGroup = string[]
 **归一化规则（`normalizeFilter`）**：
 - `filter` 缺失 / 非对象 / 非法：归一为 `{ logic: 'all', conditions: [] }`。
 - `logic` 非 `'all'|'any'`：归一为 `'all'`。
-- `conditions` 非数组：归一为 `[]`；逐条过滤非法项——`field` 非字符串丢弃；`op` 非 `'eq'|'between'` 丢弃；`op='between'` 且 `value`/`value2` 均为空丢弃；`op='eq'` 且 `value` 为空（null/undefined/''/空数组）丢弃（`false`/`0` 合法保留，与 `cleanSearchParams` 语义一致）。
-- 读取后按当前 `listFields` 可搜索字段集清理未知 `field`（与 `cleanSearchParams` 的合法 key 集同理）。
-- **round-trip**：`NamedView` 的未知顶层属性与 `filter` 内部未知扩展字段（如未来算子）在序列化时原样保留；本号只读写 `logic`/`conditions`/`field`/`op`/`value`/`value2` 已知域，禁止删除未知键。
+- `conditions` 非数组：归一为 `[]`；逐条过滤非法项——`field` 非字符串丢弃；`op` 不在 12 个合法集合内丢弃；`isNull`/`notNull` 无值要求；其余操作符 `value` 为空（null/undefined/''/空数组）丢弃（`false`/`0` 合法保留）。
+- 读取后按当前 `filterFields` 字段集清理未知 `field`。
+- **round-trip**：`NamedView` 的未知顶层属性与 `filter` 内部未知扩展字段（如未来算子）在序列化时原样保留；本号只读写已知域，禁止删除未知键。
 
-### 3.2 序列化到搜索参数
+### 3.2 纯前端匹配（替代后端并入）
 
-`filterToSearchParams(filter, fields, keys): Record<string, unknown>`：
+筛选条件**不序列化进请求**。`matchesViewFilter(row, filter, fields)` 对单行匹配：
 
-| 条件 op | 字段控件类型 | 输出参数 | 说明 |
-| --- | --- | --- | --- |
-| `eq` | 标量字段 | `{ [field]: value }` | 与搜索表单等值提交一致；`value` 标量化（数组→逗号分隔字符串） |
-| `eq` | 多选字段（`SearchField.Multiple` / itemType `multipleselect`） | `{ [field]: 'a,b' }` | 逗号分隔，后端 Multiple 处理 |
-| `between` | 数值/日期范围字段 | `{ [field+'_min']: value, [field+'_max']: value2 }` | 与 `_min/_max` 提交一致；仅单侧填值则只输出对应参数 |
-| 任一 | — | 结果并入 `cleanSearchParams(…, keys)` | 未知字段/空值在最终请求前再次清理 |
+| 操作符 | 匹配规则 |
+| --- | --- |
+| eq / neq | 等值宽松比较（数组多选任一命中；枚举字符串值 vs 数字行值按 String 比较） |
+| contains / notContains | 字符串包含 |
+| isNull / notNull | 行值为 null / '' / 缺失 |
+| gt / gte / lt / lte | 数值优先比较，日期/字符串按字典序 |
+| after / before | 日期/字符串字典序比较（晚于/早于） |
 
-**逻辑合并（AND/OR）与客户端过滤兜底**：后端 `Search` 对多个字段参数天然是 AND（`whereExpression &= field.Equal(...)`）。因此：
-- `logic='all'`：全部条件参数直接并入 → 后端 AND，语义一致。
-- `logic='any'`：后端无法表达跨字段 OR。**处理**：`any` 仅在第一版构建器中保留 UI 语义，应用时若为 `any` 且条件数 > 1，回退为**前端对已加载数据二次过滤**（在 AND 请求结果之上），并在构建器内提示「或(OR) 仅作用于当前页已加载数据」；若条件数 = 1，`any` 与 `all` 等价，直接并入请求。
-- **通用客户端过滤兜底**：业务重写 `Search(Pager)` 的控制器（如 `Department.Search` 仅处理 `id/parentId/enable/visible`）与树控制器不应用通用等值过滤。因此**只要 `viewFilter` 有条件，前端即对已加载数据做客户端复核**（`matchesViewFilter`，eq/between/all/any 全支持）：重写/树控制器场景使筛选真正生效，普通控制器后端已过滤时幂等。本页已加载全部数据且发生删减时纠正分页 total 反映过滤结果。
+匹配对 GetList 返回的 camelCase 行做 `getValueByKey` 大小写容错。
+
+**逻辑合并（AND/OR）**：`logic='all'` 要求全部条件命中（`every`）；`logic='any'` 任一命中（`some`）。纯前端匹配，无后端表达限制。
+
+**客户端过滤兜底**：业务重写 `Search(Pager)` 的控制器（如 `Department.Search` 仅处理 `id/parentId/enable/visible`）与树控制器不应用通用等值过滤。因此**只要 `viewFilter` 有条件，前端即对已加载数据做 `matchesViewFilter` 过滤**（eq/neq/contains/notContains/isNull/notNull/gt/gte/lt/lte/after/before 全支持）：重写/树控制器场景使筛选真正生效，普通控制器后端无筛选参数时同样由前端过滤。本页已加载全部数据且发生删减时纠正分页 total 反映过滤结果。
 
 ## 4. 状态与优先级
 
-`DefaultList` 唯一搜索状态仍是 `effectiveSearch`，新增一个派生来源：
+`DefaultList` 搜索状态仍为 `effectiveSearch`（搜索面板条件，OSC-0012 不变）；**筛选为独立前端状态，不并入请求**：
 
-| 条件 | effectiveSearch 来源 | 说明 |
+| 状态 | 来源 | 说明 |
 | --- | --- | --- |
-| 会话内已点「搜索/重置」 | `cleanSearchParams({...searchForm})` | 表单权威（OSC-0012 现有） |
-| 未点搜索 | `baseSearch`（URL → saved → 空） | 现有 |
-| 任意时刻 | `{ ...有效搜索, ...filterToSearchParams(viewFilter, fields, keys) }` | **本号新增**：构建器条件叠加，最后应用 |
+| 搜索条件 | `effectiveSearch`（表单 / baseSearch） | 关键字向后端取数（OSC-0012 现有） |
+| 筛选条件 | `viewFilter`（NamedView.filter，会话/持久化） | **本号新增**：对已加载数据前端过滤，翻页继续过滤 |
 
-优先级：`searchForm`（或 baseSearch）为搜索基准，`filter` 条件**覆盖/叠加**同名字段（filter 优先）；最终再经 `cleanSearchParams(…, keys)` 清理未知/空值。`filter` 为空（`conditions: []`）时对请求零影响。
+筛选与搜索叠加生效：请求按搜索条件取数，返回数据再按筛选条件前端过滤。`filter` 为空（`conditions: []`）时过滤零影响。
 
-分组是独立于 `effectiveSearch` 的展示状态：`viewGroup = NamedView.group`（字段列表）；对 `tableData` 分组渲染；组折叠状态为**会话内存** `collapsedGroupKeys: Set<string>`（key = 逐级字段值路径），不持久化、不并入请求。切换视图后按新 `group` 重新分组，折叠集清空。
+分组是独立于筛选/搜索的展示状态：`viewGroup = NamedView.group`（字段列表）；对 `tableData` 分组渲染；组折叠状态为**会话内存** `collapsedGroupKeys: Set<string>`（key = 逐级字段值路径），不持久化、不并入请求。切换视图后按新 `group` 重新分组，折叠集清空。
 
 ## 5. UI 及交互矩阵
 
@@ -112,9 +126,9 @@ type ViewGroup = string[]
 **DOM/视觉顺序**（弹层内）：标题「筛选」→ 条件组逻辑切换（`且(AND)` / `或(OR)` 单选按钮组）→ 条件行列表（**竖排**，每条件一行）→ 「+ 添加条件」→ 底部操作（重置 / 保存到此视图 / 应用 / 取消）。
 
 **条件行**：`字段下拉` → `操作符下拉` → `值控件` → `删除按钮(×)`，单行横排，行间竖排堆叠。
-- 字段下拉：候选 = **当前视图所有可见字段**（`activeColumns` 可见列 ∩ `listFields`，排除无操作符可用的纯展示字段）。
-- 操作符下拉：`等于`（所有候选字段）；`在范围之间`（仅数值/日期/时间/日期时间范围候选字段，即 `resolveSearchControl` ∈ `numberRange/dateRange/datetimeRange/timeRange` 的字段）。
-- 值控件：复用 `SearchFieldInput`（按字段类型渲染 select/Lov/input/date-picker 等）；`between` 用范围控件（`_min/_max`）。
+- 字段下拉：候选 = **当前视图可见字段 ∪ 人员字段**（`activeColumns` 可见列 ∩ `listFields`，另加隐藏的创建者/更新者人员字段；排除无操作符可用的纯展示字段）。
+- 操作符下拉：按字段类别开放（`FILTER_OPS_BY_KIND`）——枚举/值集：等于/不等于/为空/不为空；字符：等于/不等于/包含/不包含/为空/不为空；人员：等于/不等于；数字：等于/不等于/大于/大于或等于/小于/小于或等于/为空/不为空；日期时间：等于/晚于/早于/为空/不为空。
+- 值控件：按类别与操作符渲染——为空/不为空无值控件；人员为**用户实体下拉**（懒加载 `/Admin/User` 前 500 条）；枚举/值集为 dataSource 下拉（无物化 dataSource 的 LOV 用 LovSelect）；数字为输入框；日期时间为日期选择；字符为输入框。
 - 空字段/空值条件行不参与应用；用户未填值的条件行以弱化样式显示。
 - 条件行较多时弹层内部 `max-height: 320px; overflow-y: auto`。
 
@@ -164,7 +178,7 @@ type ViewGroup = string[]
 
 **无后端 API 变更**。筛选条件通过既有 `GetList` 查询参数提交：
 
-- `getList(type, params)` 的 `params` 合并 `{ ...effectiveSearch, ...filterToSearchParams(...) }`，走既有 query serializer（数组逗号分隔沿用现有约定）。
+- 筛选为纯前端过滤：`getList` 仅携带 `effectiveSearch`（搜索条件），筛选条件不并入请求；已加载数据经 `matchesViewFilter` 本地过滤，翻页继续过滤。
 - 服务端路径、权限、返回结构不变；不调用 `GetChartData` 相关变更。
 
 ## 7. 适用框架与官方资料
@@ -187,7 +201,7 @@ type ViewGroup = string[]
 | 目标 | 自动化证据 |
 | --- | --- |
 | ViewFilter 解析 | 缺失/损坏/非法 logic/非法 op/空条件/false/0、多视图隔离、未知字段清理、round-trip 未知键保留 |
-| filterToSearchParams | eq 标量/数组/多选逗号分隔、between 单双侧、AND 全并入、any 多条件降级标记、空 filter 零影响、未知 key 清理 |
+| matchesViewFilter | eq/neq/contains/notContains/isNull/notNull/gt/gte/lt/lte/after/before 全操作符、all/any 逻辑、camelCase 行容错、空 filter 恒真 |
 | groupRows | 单字段/多级分组、计数正确、dataSource 翻译、未分组项、未知分组字段回退、空数据 |
 | 折叠 | 「展开更多」溢出判定、展开/收起切换、字段变化重置 |
 | store | patchActiveFilter/patchActiveGroup 保存、加载视图自动应用、失败回滚、切换视图隔离 |
@@ -199,7 +213,7 @@ type ViewGroup = string[]
 | 风险 | 缓解 |
 | --- | --- |
 | 后端不支持跨字段 OR | `any` 多条件降级为前端二次过滤并明确提示；单条件等价 AND；文档声明 |
-| 后端不支持不等于/包含 | 操作符仅 eq/between；构建器字段/操作符候选由能力矩阵生成，不暴露不可用算子 |
+| 后端不支持新算子 | 筛选为纯前端匹配，不依赖后端；操作符按字段类别矩阵开放，不暴露不可用算子 |
 | 分组对大数据量性能 | 仅对当前页已加载数据分组（`tableData`），不跨页；计数为本地计数 |
 | filter 与搜索字段冲突 | filter 参数覆盖同名字段并在序列化后统一 `cleanSearchParams`；构建器内展示覆盖提示 |
 | JSON round-trip 丢未来字段 | `normalizeFilter` 只读写已知域，未知键保留 |

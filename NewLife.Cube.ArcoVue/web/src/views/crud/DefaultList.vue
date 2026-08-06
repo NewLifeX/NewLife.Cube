@@ -406,10 +406,10 @@ import {
 import {
   cleanSearchParams,
   collectSearchKeys,
-  filterToSearchParams,
   matchesViewFilter,
   parseUrlSearch,
 } from '@/core/utils/searchFilters';
+import { isPersonField } from '@/core/utils/filterBuilder';
 import { detectTreeData } from '@/core/utils/tree';
 import { buildTree, canBuildTree } from '@/core/utils/treeBuilder';
 import QueryInsightPanel from '@/features/search/QueryInsightPanel.vue';
@@ -597,13 +597,11 @@ const baseSearch = computed(() => {
   return {};
 });
 
-/** 唯一有效搜索条件：会话内未搜索时取基准，搜索/重置后取表单正规化结果；
- *  叠加筛选构建器扁平参数（filter 覆盖同名字段，OSC-0015） */
+/** 唯一有效搜索条件：会话内未搜索时取基准，搜索/重置后取表单正规化结果（OSC-0012）。
+ *  筛选构建器为纯前端过滤，不并入后端请求（OSC-0015） */
 const effectiveSearch = computed(() => {
-  const base = searchTouched.value
-    ? cleanSearchParams({ ...searchForm }, searchKeys.value)
-    : baseSearch.value;
-  return { ...base, ...viewFilterParams.value.params };
+  if (!searchTouched.value) return baseSearch.value;
+  return cleanSearchParams({ ...searchForm }, searchKeys.value);
 });
 
 /** 条件来源提示（不显示内部 JSON 或字段值） */
@@ -726,21 +724,17 @@ const viewFilter = computed<ViewFilter>(() => localFilter.value);
 const localGroup = ref<ViewGroup>([]);
 const viewGroup = computed<ViewGroup>(() => localGroup.value);
 
-/** 筛选构建器候选字段 = 当前视图所有可见列（OSC-0015：按本视图可见字段筛选） */
+/** 筛选构建器候选字段 = 当前视图可见列 ∪ 人员字段（创建者/更新者等即使列隐藏也可筛选，OSC-0015） */
 const filterFields = computed<FieldMeta[]>(() => {
   const visible = new Set(
     activeColumns.value.filter((c) => c.visible).map((c) => c.key),
   );
-  return listFields.value.filter((f) => visible.has(f.name));
+  const visibleFields = listFields.value.filter((f) => visible.has(f.name));
+  const hiddenPerson = listFields.value.filter(
+    (f) => !visible.has(f.name) && isPersonField(f),
+  );
+  return [...visibleFields, ...hiddenPerson];
 });
-
-/** 筛选构建器合法 key（含范围字段 _min/_max 后缀） */
-const filterKeys = computed(() => collectSearchKeys(filterFields.value));
-
-/** 筛选条件 → 扁平请求参数（OSC-0015）；any 多条件时标记需客户端二次过滤 */
-const viewFilterParams = computed(() =>
-  filterToSearchParams(viewFilter.value, filterFields.value, filterKeys.value),
-);
 
 /** 分组展示：仅 table/tree 视图且配置了分组字段 */
 const isGrouped = computed(

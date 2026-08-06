@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   cleanSearchParams,
   collectSearchKeys,
-  filterToSearchParams,
   matchesViewFilter,
   parseUrlSearch,
   resolveStatEntries,
@@ -81,83 +80,6 @@ describe('resolveStatEntries', () => {
   });
 });
 
-describe('filterToSearchParams (OSC-0015)', () => {
-  const keys = new Set(['Status', 'Name', 'Age_min', 'Age_max']);
-
-  it('empty filter yields no params', () => {
-    expect(filterToSearchParams(null, [], keys)).toEqual({ params: {}, clientOnly: false });
-    expect(filterToSearchParams({ logic: 'all', conditions: [] }, [], keys)).toEqual({
-      params: {},
-      clientOnly: false,
-    });
-  });
-
-  it('eq emits field=value and array joins by comma', () => {
-    const r = filterToSearchParams(
-      {
-        logic: 'all',
-        conditions: [
-          { field: 'Status', op: 'eq', value: 1 },
-          { field: 'Role', op: 'eq', value: ['a', 'b'] },
-        ],
-      },
-      [],
-      new Set(['Status', 'Role']),
-    );
-    expect(r.params).toEqual({ Status: 1, Role: 'a,b' });
-    expect(r.clientOnly).toBe(false);
-  });
-
-  it('between emits _min/_max and supports one-sided', () => {
-    const r = filterToSearchParams(
-      {
-        logic: 'all',
-        conditions: [{ field: 'Age', op: 'between', value: 18, value2: 60 }],
-      },
-      [],
-      keys,
-    );
-    expect(r.params).toEqual({ Age_min: 18, Age_max: 60 });
-    const one = filterToSearchParams(
-      { logic: 'all', conditions: [{ field: 'Age', op: 'between', value: 18 }] },
-      [],
-      keys,
-    );
-    expect(one.params).toEqual({ Age_min: 18 });
-  });
-
-  it('unknown fields are stripped by keys and empty values dropped', () => {
-    const r = filterToSearchParams(
-      {
-        logic: 'all',
-        conditions: [
-          { field: 'Unknown', op: 'eq', value: 1 },
-          { field: 'Name', op: 'eq', value: '' },
-        ],
-      },
-      [],
-      keys,
-    );
-    expect(r.params).toEqual({});
-  });
-
-  it('logic=any with >1 conditions flags clientOnly', () => {
-    const r = filterToSearchParams(
-      {
-        logic: 'any',
-        conditions: [
-          { field: 'Status', op: 'eq', value: 1 },
-          { field: 'Name', op: 'eq', value: 'x' },
-        ],
-      },
-      [],
-      keys,
-    );
-    expect(r.params).toEqual({ Status: 1, Name: 'x' });
-    expect(r.clientOnly).toBe(true);
-  });
-});
-
 describe('matchesViewFilter (OSC-0015)', () => {
   it('any logic passes when at least one condition matches', () => {
     const f = {
@@ -183,16 +105,16 @@ describe('matchesViewFilter (OSC-0015)', () => {
     expect(matchesViewFilter({ status: 1, name: 'y' }, f, [])).toBe(false);
   });
 
-  it('between matches numeric and date-string ranges', () => {
+  it('gt/lte 数字与 after/before 日期比较（替代旧 between）', () => {
     const f = {
       logic: 'all' as const,
-      conditions: [{ field: 'Age', op: 'between' as const, value: 18, value2: 60 }],
+      conditions: [{ field: 'Age', op: 'gte' as const, value: 18 }],
     };
     expect(matchesViewFilter({ age: 20 }, f, [])).toBe(true);
     expect(matchesViewFilter({ age: 10 }, f, [])).toBe(false);
     const df = {
       logic: 'all' as const,
-      conditions: [{ field: 'CreateTime', op: 'between' as const, value: '2026-01-01', value2: '2026-12-31' }],
+      conditions: [{ field: 'CreateTime', op: 'after' as const, value: '2026-01-01' }],
     };
     expect(matchesViewFilter({ createTime: '2026-06-01' }, df, [])).toBe(true);
     expect(matchesViewFilter({ createTime: '2025-06-01' }, df, [])).toBe(false);
@@ -212,5 +134,52 @@ describe('matchesViewFilter (OSC-0015)', () => {
     expect(matchesViewFilter({ type: 2, name: '部门' }, f, [])).toBe(false);
     // PascalCase 行也能匹配（容错）
     expect(matchesViewFilter({ Type: 1, Name: '公司' }, f, [])).toBe(true);
+  });
+
+  it('neq 反义匹配', () => {
+    const f = { logic: 'all' as const, conditions: [{ field: 'Type', op: 'neq' as const, value: '1' }] };
+    expect(matchesViewFilter({ type: 1 }, f, [])).toBe(false);
+    expect(matchesViewFilter({ type: 2 }, f, [])).toBe(true);
+  });
+
+  it('contains / notContains 字符包含', () => {
+    const f = { logic: 'all' as const, conditions: [{ field: 'Name', op: 'contains' as const, value: '公司' }] };
+    expect(matchesViewFilter({ name: '上海分公司' }, f, [])).toBe(true);
+    expect(matchesViewFilter({ name: '行政部' }, f, [])).toBe(false);
+    const g = { logic: 'all' as const, conditions: [{ field: 'Name', op: 'notContains' as const, value: '公司' }] };
+    expect(matchesViewFilter({ name: '行政部' }, g, [])).toBe(true);
+    expect(matchesViewFilter({ name: '上海分公司' }, g, [])).toBe(false);
+  });
+
+  it('isNull / notNull 空值判定', () => {
+    const nullF = { logic: 'all' as const, conditions: [{ field: 'Manager', op: 'isNull' as const }] };
+    expect(matchesViewFilter({ manager: null }, nullF, [])).toBe(true);
+    expect(matchesViewFilter({ manager: '' }, nullF, [])).toBe(true);
+    expect(matchesViewFilter({ manager: 5 }, nullF, [])).toBe(false);
+    const notNullF = { logic: 'all' as const, conditions: [{ field: 'Manager', op: 'notNull' as const }] };
+    expect(matchesViewFilter({ manager: 5 }, notNullF, [])).toBe(true);
+    expect(matchesViewFilter({ manager: null }, notNullF, [])).toBe(false);
+  });
+
+  it('gt/gte/lt/lte 数字比较（不含范围）', () => {
+    const gt = { logic: 'all' as const, conditions: [{ field: 'Age', op: 'gt' as const, value: 18 }] };
+    expect(matchesViewFilter({ age: 20 }, gt, [])).toBe(true);
+    expect(matchesViewFilter({ age: 18 }, gt, [])).toBe(false);
+    const gte = { logic: 'all' as const, conditions: [{ field: 'Age', op: 'gte' as const, value: 18 }] };
+    expect(matchesViewFilter({ age: 18 }, gte, [])).toBe(true);
+    const lt = { logic: 'all' as const, conditions: [{ field: 'Age', op: 'lt' as const, value: 18 }] };
+    expect(matchesViewFilter({ age: 10 }, lt, [])).toBe(true);
+    expect(matchesViewFilter({ age: 18 }, lt, [])).toBe(false);
+    const lte = { logic: 'all' as const, conditions: [{ field: 'Age', op: 'lte' as const, value: 18 }] };
+    expect(matchesViewFilter({ age: 18 }, lte, [])).toBe(true);
+  });
+
+  it('after / before 日期字符串字典序比较', () => {
+    const after = { logic: 'all' as const, conditions: [{ field: 'CreateTime', op: 'after' as const, value: '2026-01-01' }] };
+    expect(matchesViewFilter({ createTime: '2026-06-01' }, after, [])).toBe(true);
+    expect(matchesViewFilter({ createTime: '2025-12-31' }, after, [])).toBe(false);
+    const before = { logic: 'all' as const, conditions: [{ field: 'CreateTime', op: 'before' as const, value: '2026-01-01' }] };
+    expect(matchesViewFilter({ createTime: '2025-12-31' }, before, [])).toBe(true);
+    expect(matchesViewFilter({ createTime: '2026-06-01' }, before, [])).toBe(false);
   });
 });

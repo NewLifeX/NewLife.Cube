@@ -7,13 +7,13 @@
 - [x] 1.1 在 `viewProfile.ts` 定义 `ViewFilter`、`ViewFilterCondition`、`ViewGroup` 类型；`NamedView` 增加 `filter?`/`group?`。
 - [x] 1.2 实现 `normalizeFilter(raw)`：宽容解析、非法归一（logic/conditions/op/value 规则）、按可搜索字段集清理未知 field、round-trip 保留未知键。
 - [x] 1.3 `serializeNamedView`/`parseNamedViews` 透传 filter/group 域（含 `_raw` 兼容）。
-- [x] 1.4 在 `searchFilters.ts` 实现 `filterToSearchParams(filter, fields, keys)`：eq 标量/数组/多选逗号分隔、between `_min/_max` 单双侧、空条件零输出、any 多条件降级标记。
+- [x] 1.4 在 `searchFilters.ts` 实现 `matchesViewFilter`（eq/neq/contains/notContains/isNull/notNull/gt/gte/lt/lte/after/before 全操作符、all/any、camelCase 容错）；`filterBuilder.ts` 提供字段类别 → 操作符矩阵。
 - [x] 1.5 在 `viewMapping.ts` 实现 `groupRows(records, groupFields, fields, dataSource)` 与 `GroupNode`：单字段/多级分组、计数、dataSource 翻译、未分组项、未知字段回退。
-- [x] 1.6 补 Vitest：ViewFilter 解析/归一/round-trip、filterToSearchParams 全矩阵、groupRows 分组/计数/回退。
+- [x] 1.6 补 Vitest：ViewFilter 解析/归一/round-trip、字段类别/操作符矩阵、matchesViewFilter 全操作符、groupRows 分组/计数/回退。
 
 ## T2 筛选构建器 UI
 
-- [x] 2.1 新增 `FilterBuilderPopover.vue`（a-popover 锚定「筛选」按钮）：字段下拉（当前视图可见字段∩可操作符）、操作符下拉（eq 全字段 / between 仅范围字段）、值控件复用 `SearchFieldInput`、条件行竖排增删、AND/OR 切换、互斥展开。
+- [x] 2.1 新增 `FilterBuilderPopover.vue`（a-popover 锚定「筛选」按钮）：字段下拉（可见字段∪人员字段）、操作符下拉（按字段类别矩阵）、值控件按类别渲染（人员用户下拉/枚举/数字/日期/字符）、条件行竖排增删、AND/OR 切换、互斥展开。
 - [x] 2.2 接入 `DefaultList.vue`：「筛选」按钮打开构建器；`viewFilter` 并入 `effectiveSearch`（filter 覆盖同名字段、统一 clean）；「已筛选 N 条」标签与清除。
 - [x] 2.3 store 新增 `patchActiveFilter`/读取当前视图 filter；应用/保存/清除/无 active view 交互矩阵落地。
 - [x] 2.4 补组件/逻辑测试：构建器增删条件、逻辑切换、值控件、保存/清除、覆盖同名参数、any 降级提示、弹层互斥/关闭不丢弃编辑。

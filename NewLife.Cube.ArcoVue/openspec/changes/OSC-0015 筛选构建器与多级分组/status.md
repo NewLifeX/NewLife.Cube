@@ -11,9 +11,9 @@
 ## 测试记录
 
 - 命令：`npm.cmd --prefix NewLife.Cube.ArcoVue/web run test`
-- 结果：26 文件 / 261 用例全部通过（含新增 filterBuilder 8 例、store filter/group 5 例、viewMapping 组头/分组草稿 9 例、matchesViewFilter 枚举字符串匹配 1 例）
+- 结果：26 文件 / 263 用例全部通过（含字段类别/操作符矩阵、matchesViewFilter 全操作符、ViewFilter 归一、store filter/group、groupRows、viewMapping 组头/分组草稿）
 - 命令：`npm.cmd --prefix NewLife.Cube.ArcoVue/web run build`（vue-tsc + vite）
 - 结果：产物生成成功，vue-tsc 类型检查通过（Windows libuv 收尾崩溃不影响产物；退出码以 vue-tsc 为准）
-- 浏览器冒烟：部门页「类型=公司」筛选应用后表格 6→2 条、分页 total 纠正为 2、刷新后筛选/分组保留（应用即持久化）、清除后刷新恢复 6 条、筛选字段候选为本视图可见列、搜索面板折叠、无 JS 错误
+- 浏览器冒烟：部门页「类型=公司」过滤 6→2 条、total 纠正；字符「名称包含公司」→2 条；「为空」无值控件且过滤生效；数字「排序>1」操作符集合正确；审计日志「创建者」等于/不等于 + 用户实体下拉（smokeuser/admin）；筛选应用即持久化、刷新保留、清除恢复；筛选为纯前端过滤（请求不含筛选参数）；无 JS 错误
 - api-core：未改动，无独立构建变更
 

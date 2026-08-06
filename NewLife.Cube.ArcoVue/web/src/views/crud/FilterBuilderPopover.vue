@@ -27,7 +27,7 @@
               v-model="row.cond.field"
               placeholder="字段"
               allow-clear
-              :style="{ width: '112px' }"
+              :style="{ width: '110px' }"
               size="small"
               @change="onFieldChange(row)"
             >
@@ -38,19 +38,99 @@
                 :label="f.displayName || f.name"
               />
             </a-select>
-            <a-select v-model="row.cond.op" :style="{ width: '96px' }" size="small">
-              <a-option value="eq" label="等于" />
-              <a-option v-if="isRangeField(row.cond.field)" value="between" label="范围" />
+            <a-select
+              v-model="row.cond.op"
+              :style="{ width: '104px' }"
+              size="small"
+              @change="onOpChange(row)"
+            >
+              <a-option
+                v-for="op in opsOf(row)"
+                :key="op"
+                :value="op"
+                :label="FILTER_OP_LABELS[op]"
+              />
             </a-select>
             <div class="fb-value">
-              <SearchFieldInput
-                v-if="row.cond.field"
-                :field="condFieldOf(row.cond.field)"
-                :model-value="row.cond.op === 'between' ? undefined : row.cond.value"
-                :form="row.form"
-                @update:model-value="(v) => (row.cond.value = v)"
-                @update:key="(k, v) => onCondKey(row, k, v)"
-              />
+              <!-- 为空/不为空：无值控件 -->
+              <template v-if="row.cond.field && opNeedsValue(row.cond.op)">
+                <!-- 人员：用户实体下拉 -->
+                <a-select
+                  v-if="kindOfName(row.cond.field) === 'person'"
+                  :model-value="row.cond.value"
+                  placeholder="请选择人员"
+                  allow-clear
+                  :loading="userLoading"
+                  size="small"
+                  style="width: 132px"
+                  @update:model-value="onCondValue(row, $event)"
+                >
+                  <a-option
+                    v-for="u in userOptions"
+                    :key="u.value"
+                    :value="u.value"
+                    :label="u.label"
+                  >
+                    {{ u.label }}
+                  </a-option>
+                </a-select>
+                <!-- 枚举/值集：dataSource 已物化优先本地下拉 -->
+                <a-select
+                  v-else-if="kindOfName(row.cond.field) === 'enum' && enumOptionsOf(row).length"
+                  :model-value="row.cond.value"
+                  placeholder="请选择"
+                  allow-clear
+                  size="small"
+                  style="width: 132px"
+                  @update:model-value="onCondValue(row, $event)"
+                >
+                  <a-option
+                    v-for="o in enumOptionsOf(row)"
+                    :key="o.value"
+                    :value="o.value"
+                    :label="o.label"
+                  >
+                    {{ o.label }}
+                  </a-option>
+                </a-select>
+                <!-- 枚举/值集：无 dataSource 的 LOV 值集 -->
+                <LovSelect
+                  v-else-if="kindOfName(row.cond.field) === 'enum' && !!condFieldOf(row.cond.field)?.lovCode"
+                  :code="condFieldOf(row.cond.field)!.lovCode!"
+                  :model-value="row.cond.value as string | number | null"
+                  size="small"
+                  style="width: 132px"
+                  @update:model-value="onCondValue(row, $event)"
+                />
+                <!-- 数字 -->
+                <a-input-number
+                  v-else-if="kindOfName(row.cond.field) === 'number'"
+                  :model-value="row.cond.value"
+                  placeholder="数值"
+                  size="small"
+                  style="width: 132px"
+                  @update:model-value="onCondValue(row, $event)"
+                />
+                <!-- 日期/时间 -->
+                <a-date-picker
+                  v-else-if="kindOfName(row.cond.field) === 'datetime'"
+                  :model-value="row.cond.value"
+                  placeholder="日期"
+                  size="small"
+                  style="width: 132px"
+                  value-format="YYYY-MM-DD"
+                  @update:model-value="onCondValue(row, $event)"
+                />
+                <!-- 字符 -->
+                <a-input
+                  v-else
+                  :model-value="row.cond.value"
+                  :placeholder="kindOfName(row.cond.field) === 'string' ? '值' : '请输入'"
+                  size="small"
+                  style="width: 132px"
+                  @update:model-value="onCondValue(row, $event)"
+                />
+              </template>
             </div>
             <a-button type="text" size="mini" class="fb-del" @click="removeCond(i)">
               <IconClose />
@@ -83,27 +163,29 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { IconClose } from '@arco-design/web-vue/es/icon';
 import type { FieldMeta } from '@/core/types/field';
-import { resolveSearchControl } from '@/core/utils/fieldControl';
-import { normalizeFilter, type ViewFilter } from '@/core/utils/viewProfile';
+import { normalizeFilter, type ViewFilter, type ViewFilterOp } from '@/core/utils/viewProfile';
 import {
-  isRangeControl,
+  resolveFieldFilterKind,
+  FILTER_OPS_BY_KIND,
+  FILTER_OP_LABELS,
+  opNeedsValue,
   newFilterDraftRow,
-  buildCondForm,
-  applyCondKey,
   resetCondForField,
   draftToFilter,
   filterToDraftRows,
   type FilterDraftRow,
 } from '@/core/utils/filterBuilder';
-import SearchFieldInput from '@/components/SearchFieldInput.vue';
+import { normalizeDataSource } from '@/core/utils/viewMapping';
+import cubeApi from '@/api';
+import LovSelect from '@/components/LovSelect.vue';
 
 const props = defineProps<{
   /** 弹层是否可见（由父级管理，与分组弹层互斥） */
   visible: boolean;
-  /** search 分区字段 */
+  /** 筛选候选字段（当前视图可见字段） */
   fields: FieldMeta[];
   /** 当前筛选方案（父级 viewProfile.getFilter） */
   modelValue: ViewFilter;
@@ -117,14 +199,49 @@ const emit = defineEmits<{
   save: [ViewFilter];
 }>();
 
-function condFieldOf(name: string): FieldMeta {
-  return props.fields.find((f) => f.name === name)!;
+function condFieldOf(name: string): FieldMeta | undefined {
+  return props.fields.find((f) => f.name === name);
 }
 
-/** 范围型搜索控件判断（委托 filterBuilder.isRangeControl，与 searchFilters 一致） */
-function isRangeField(name: string): boolean {
-  if (!name) return false;
-  return isRangeControl(resolveSearchControl(condFieldOf(name)));
+/** 字段筛选类别（枚举/字符/人员/数字/日期） */
+function kindOfName(name: string): ReturnType<typeof resolveFieldFilterKind> {
+  const f = condFieldOf(name);
+  return f ? resolveFieldFilterKind(f) : 'string';
+}
+
+/** 该行当前字段可用的操作符 */
+function opsOf(row: FilterDraftRow): readonly ViewFilterOp[] {
+  return row.cond.field ? FILTER_OPS_BY_KIND[kindOfName(row.cond.field)] : ['eq'];
+}
+
+/** 枚举/值集下拉选项（dataSource 物化；无则空） */
+function enumOptionsOf(row: FilterDraftRow): { value: string; label: string }[] {
+  const f = row.cond.field ? condFieldOf(row.cond.field) : undefined;
+  if (f?.dataSource && Object.keys(f.dataSource).length) {
+    return normalizeDataSource(f.dataSource).options;
+  }
+  return [];
+}
+
+/** 人员字段值控件需要用户实体下拉：懒加载 /Admin/User 前 500 条 */
+const userOptions = ref<{ value: string; label: string }[]>([]);
+const userLoading = ref(false);
+async function ensureUserOptions() {
+  if (userOptions.value.length || userLoading.value) return;
+  userLoading.value = true;
+  try {
+    const res = await cubeApi.page.getList('/Admin/User', { pageIndex: 0, pageSize: 500 });
+    const rows = (res.data as Record<string, unknown>[]) || [];
+    userOptions.value = rows.map((u) => {
+      const id = u.id ?? u.Id;
+      const name = u.name ?? u.Name ?? u.account ?? u.Account;
+      return { value: String(id), label: String(name ?? id) };
+    });
+  } catch {
+    /* 忽略：下拉保持空 */
+  } finally {
+    userLoading.value = false;
+  }
 }
 
 const fieldCandidates = computed(() => props.fields.filter((f) => !!f.name));
@@ -149,14 +266,21 @@ function removeCond(i: number) {
 }
 
 function onFieldChange(row: FilterDraftRow) {
-  // 字段切换后 op 重置；非范围字段仅支持等于
-  resetCondForField(row.cond, isRangeField(row.cond.field));
-  row.form = buildCondForm(row.cond);
+  // 字段切换：op 重置为该类别默认（eq）并清空值
+  resetCondForField(row.cond, kindOfName(row.cond.field));
+  // 人员字段首次使用时懒加载用户下拉
+  if (row.cond.field && kindOfName(row.cond.field) === 'person') void ensureUserOptions();
 }
 
-function onCondKey(row: FilterDraftRow, key: string, value: unknown) {
-  applyCondKey(row.cond, key, value);
-  row.form[key] = value;
+function onOpChange(row: FilterDraftRow) {
+  // 操作符切换后清空旧值（如 isNull ↔ eq 之间的值残留）
+  row.cond.value = undefined;
+  row.cond.value2 = undefined;
+}
+
+/** 值控件统一写回（各控件类型 emit 的 value 直接落到条件值） */
+function onCondValue(row: FilterDraftRow, v: unknown) {
+  row.cond.value = v;
 }
 
 function resetDraft() {

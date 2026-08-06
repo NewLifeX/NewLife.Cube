@@ -419,7 +419,7 @@ describe('viewProfile store filter/group (OSC-0015)', () => {
       logic: 'all',
       conditions: [
         { field: 'Name', op: 'eq', value: 'a' },
-        { field: 'Enable', op: 'between', value: 1, value2: 5 },
+        { field: 'Enable', op: 'gte', value: 1 },
       ],
     };
     store.updateFilter('Admin/User', filter, true);

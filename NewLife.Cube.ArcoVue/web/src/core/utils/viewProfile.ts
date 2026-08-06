@@ -75,18 +75,46 @@ export interface ViewInsight {
   showChart: boolean;
 }
 
-/** 筛选条件操作符（OSC-0015）：仅后端 Search(Pager) 可表达的能力 */
-export type ViewFilterOp = 'eq' | 'between';
+/** 筛选条件操作符（OSC-0015 纯前端过滤）：按字段类别开放可用集合 */
+export type ViewFilterOp =
+  | 'eq' // 等于
+  | 'neq' // 不等于
+  | 'contains' // 包含（字符）
+  | 'notContains' // 不包含（字符）
+  | 'isNull' // 为空
+  | 'notNull' // 不为空
+  | 'gt' // 大于
+  | 'gte' // 大于或等于
+  | 'lt' // 小于
+  | 'lte' // 小于或等于
+  | 'after' // 晚于（日期）
+  | 'before'; // 早于（日期）
+
+/** 全部合法操作符（normalizeFilter 校验用） */
+export const FILTER_OPS: readonly ViewFilterOp[] = [
+  'eq',
+  'neq',
+  'contains',
+  'notContains',
+  'isNull',
+  'notNull',
+  'gt',
+  'gte',
+  'lt',
+  'lte',
+  'after',
+  'before',
+];
 
 /** 筛选构建器单个条件（OSC-0015） */
 export interface ViewFilterCondition {
-  /** 字段名（searchFields 中 canonical name） */
+  /** 字段名（filterFields 中 canonical name） */
   field: string;
-  /** 操作符：eq=等于（含多选逗号分隔）；between=范围（_min/_max） */
+  /** 操作符（按字段类别开放，见 filterBuilder.FILTER_OPS_BY_KIND） */
   op: ViewFilterOp;
-  /** 值；eq 时可为标量或数组（多选字段），between 时为下界 */
+  /** 值；isNull/notNull 无值；eq/neq 可为标量或数组（多选字段） */
   value?: unknown;
-  /** between 上界 */
+  /** 保留字段（历史 between 上界；新操作符不再使用） */
   value2?: unknown;
 }
 
@@ -131,10 +159,12 @@ export function normalizeFilter(raw: unknown): ViewFilter {
       const co = c as Record<string, unknown>;
       const field = typeof co.field === 'string' ? co.field.trim() : '';
       if (!field) continue;
-      const op = co.op === 'between' ? 'between' : co.op === 'eq' ? 'eq' : null;
+      const op = (FILTER_OPS as readonly string[]).includes(co.op as string)
+        ? (co.op as ViewFilterOp)
+        : null;
       if (!op) continue;
-      if (op === 'between' && isFilterValueEmpty(co.value) && isFilterValueEmpty(co.value2)) continue;
-      if (op === 'eq' && isFilterValueEmpty(co.value)) continue;
+      // 为空/不为空无值要求；其余操作符需要非空值
+      if (op !== 'isNull' && op !== 'notNull' && isFilterValueEmpty(co.value)) continue;
       const cond: ViewFilterCondition = { field, op };
       if (co.value !== undefined) cond.value = co.value;
       if (co.value2 !== undefined) cond.value2 = co.value2;
