@@ -267,11 +267,13 @@
               <span>筛选</span>
               <a-switch v-model="chrome.showFilter" @change="emitChrome" />
             </div>
-            <div v-if="isTableLikeViewKind(props.viewKind)" class="switch-row">
+            <div v-if="props.viewKind === 'table'" class="switch-row">
+              <!-- 分组仅表格视图支持（OSC-0015：树状视图工具栏不提供分组） -->
               <span>分组</span>
               <a-switch v-model="chrome.showGroup" @change="emitChrome" />
             </div>
             <div v-if="isTableLikeViewKind(props.viewKind)" class="switch-row">
+              <!-- 排序仅控制列表/树状视图标题栏（表头）排序图标，工具栏不显示排序按钮（OSC-0015） -->
               <span>排序</span>
               <a-switch v-model="chrome.showSort" @change="emitChrome" />
             </div>

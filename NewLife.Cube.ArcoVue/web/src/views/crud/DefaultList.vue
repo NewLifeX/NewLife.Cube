@@ -105,13 +105,6 @@
             </GroupPopover>
 
             <a-button
-              v-if="isTableLikeViewKind(activeViewKind) && chrome.showSort"
-              type="text"
-              @click="onToolbarSort"
-            >
-              排序
-            </a-button>
-            <a-button
               v-if="chrome.showSearch"
               type="text"
               @click="searchPanelOpen = !searchPanelOpen"
@@ -399,7 +392,6 @@ import {
 } from '@/core/utils/viewProfile';
 import {
   isLargePageViewKind,
-  isTableLikeViewKind,
   normalizePageSize,
   PAGE_SIZE_OPTIONS,
   parseViewKind,
@@ -1336,10 +1328,6 @@ async function navigateRecord(delta: -1 | 1) {
   await loadRecordIntoDrawer(row, mode);
 }
 
-function onToolbarSort() {
-  Message.info('请点击表头进行排序');
-}
-
 /** 筛选弹层可见性（互斥：打开筛选关闭分组） */
 function onFilterPopoverVisible(v: boolean) {
   activePopover.value = v ? 'filter' : null;
@@ -1653,13 +1641,14 @@ onMounted(bootstrap);
   display: inline-flex;
   align-items: center;
 }
-/* 有筛选/分组条件时按钮显示主色底纹 */
+/* 有筛选/分组条件时按钮显示主题浅色底纹；文字用当前主题 Primary 色（--cube-primary，外观设置可换） */
 .tb-act.is-active :deep(.arco-btn) {
-  background: var(--color-primary-light-1);
-  color: var(--color-primary-6);
+  background: color-mix(in srgb, var(--cube-primary) 10%, #fff);
+  color: var(--cube-primary);
   font-weight: 500;
 }
-/* 右上角主题主色圆形徽标（数字=条件数/分组字段数），点击清除 */
+/* 右上角圆形徽标（数字=条件数/分组字段数），点击清除；底色 = 当前主题 Primary 色
+   注意：勿用 --color-primary-6（Arco 未定义该变量，会解析为透明）；--cube-primary 由 tokens 注入 html 并跟随主题 */
 .tb-count {
   position: absolute;
   top: -5px;
@@ -1668,7 +1657,7 @@ onMounted(bootstrap);
   height: 16px;
   padding: 0 4px;
   border-radius: 8px;
-  background: var(--color-primary-6);
+  background: var(--cube-primary);
   color: #fff;
   font-size: 11px;
   line-height: 16px;
@@ -1678,7 +1667,7 @@ onMounted(bootstrap);
   box-sizing: border-box;
 }
 .tb-count:hover {
-  background: var(--color-primary-5);
+  background: color-mix(in srgb, var(--cube-primary) 85%, #000);
 }
 .list-pager {
   margin-top: 12px;
