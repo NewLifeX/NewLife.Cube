@@ -499,6 +499,20 @@ function buildOption(): any {
         borderColor: themeColor('--color-border-2', '#E5E6EB'),
         borderLineWidth: [1, 0, 0, 0],
       },
+      // 功能图标（展开/折叠箭头、排序等）颜色：VTable 默认 #141414 深黑，暗色下深底不可见
+      // 读取 Arco 文字色 token，随亮/暗主题自动切换
+      functionalIconsStyle: {
+        expand_color: themeColor('--color-text-3', '#86909C'),
+        collapse_color: themeColor('--color-text-3', '#86909C'),
+        sort_color: themeColor('--color-text-3', '#86909C'),
+      },
+      // 勾选框（rowSeriesNumber checkbox / 组标题行 titleCheckbox）：VTable 默认边框暗色下偏深不可见，
+      // 读 Arco 边框/主色 token 适配；选中填充用主色
+      checkboxStyle: {
+        defaultStroke: themeColor('--color-border-3', '#C9CDD4'),
+        checkedFill: themeColor('--primary-6', '22, 93, 255'),
+        checkedStroke: themeColor('--primary-6', '22, 93, 255'),
+      },
       headerStyle: {
         bgColor: themeColor('--color-fill-2', '#F2F3F5'),
         color: themeColor('--color-text-2', '#4E5969'),
