@@ -12,6 +12,7 @@
 import request from '@newlifex/cube-vue/core/utils/request';
 import type {
   LovMetaResponse,
+  LovListConfig,
   LovListDataRequest,
   LovListDataResponse,
   LovBatchLabelRequest,
@@ -138,8 +139,8 @@ export async function fetchLovListDataDirect(
 
   // 分页参数
   if (config.pageable) {
-    if (requestParams.pageNum > 0 && config.pageNumField) params[config.pageNumField] = requestParams.pageNum;
-    if (requestParams.pageSize > 0 && config.pageSizeField) params[config.pageSizeField] = requestParams.pageSize;
+    if ((requestParams.pageNum ?? 0) > 0 && config.pageNumField) params[config.pageNumField] = requestParams.pageNum;
+    if ((requestParams.pageSize ?? 0) > 0 && config.pageSizeField) params[config.pageSizeField] = requestParams.pageSize;
   }
   // 固定参数（不覆盖已存在的搜索参数）
   for (const [k, v] of Object.entries(fixedParams)) {
