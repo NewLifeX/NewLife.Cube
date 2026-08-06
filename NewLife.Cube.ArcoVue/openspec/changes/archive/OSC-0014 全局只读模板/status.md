@@ -1,8 +1,8 @@
 # Status
 
 - id: OSC-0014
-- state: Implementing
-- updated: 2026-08-05T00:00:00+08:00
+- state: Done
+- updated: 2026-08-06T09:35:00+08:00
 - approvedBy: openspec-approve
 - trigger: "批准并执行 OSC-0014。"
 - checklist: passed

@@ -112,6 +112,15 @@
 - **判定技巧**：涉及 `[FromBody]` DTO 与前端 camelCase 交互时，用 XUnitTest 复刻 `SystemJson.Apply(options, true)` 反序列化 camelCase JSON 并断言属性绑定成功，避免「前端提示保存成功、后端未落库」的伪联调。
 - 配置抽屉类 UI 的字段列表样式应与既有 `ViewConfigDrawer` 字段配置保持统一（`.field-list` 边框容器/max-height、`.field-item` border-bottom、`.drag-handle`、隐藏项 `muted` 变灰），避免同一产品两套视觉。
 
+## OSC-0014 — 2026-08-06
+
+- **模板 API 与个人 API 分离**（`/Cube/ViewProfileTemplate` vs `/Cube/ViewProfile`）：专用 endpoint + `Roles.Any(e => e.IsSystem)` 授权 + 固定 UserId=0，杜绝个人路径越权 body.userId=0 写入模板。
+- **多域共存于同一 UserId=0 记录**：模板域（ViewsJson/FiltersJson）与全局唯一表单布局（FormJson，OSC-0013）共享同一条 `ViewProfile.UserId=0` 记录；删除/清空某一域时须判断 `hasContent` 保留其他域，避免误删共存数据。
+- **三层解析按域整体选取**（`personal > template > system default`）：ViewsJson 与 FiltersJson 两域独立、不做跨域或字段级 merge；personal 仅 contentless 时回落 template；域整体覆盖比 JSON patch 可预测性高得多。
+- **materialize 首次保存即提升为 personal**：前端 store 通过 `carryViews`/`carryFilters` 控制——仅在 source=personal 或 dirty 时才提交域 JSON；保存成功后 `viewsSource`/`filtersSource` 永久提升，后续不自动继承模板更新。
+- **表单域不参与三层解析**：FormJson 为全局唯一（OSC-0013），所有人共享读取，与模板互不干扰，减少概念混淆。
+- **前端 isAdmin 判定**（`roleName === '管理员'`）与后端 `Roles.Any(e => e.IsSystem)` 不完全对齐：安全关键路径在后端 403 拒绝，前端仅 UI 可见性控制；跨部署环境若角色名非"管理员"则管理入口不显示，建议后续对齐为菜单权限位判定。
+
 ## 待办 — 字体规范（Harness）
 
 - 后续按现代中后台常见 **组件/场景**（列表表头、单元格、表单标签、抽屉标题、徽章等）在 Harness 建立统一的 **字体 / 字号 / 字重** 规范，并替换各处临时字重（如 VTable `headerStyle.fontWeight: 400`）。
