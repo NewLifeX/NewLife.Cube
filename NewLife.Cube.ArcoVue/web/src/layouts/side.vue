@@ -87,7 +87,7 @@ function toggleCollapsed() {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: var(--color-text-1);
   font-weight: bold;
   font-size: 16px;
 }

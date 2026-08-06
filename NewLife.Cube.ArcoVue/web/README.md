@@ -53,6 +53,7 @@ pnpm build
 
 - 布局由 `userProfile.layout.mode`（`side` / `top` / `mix`）经 `layouts/RootLayout.vue` 动态切换。
 - 主题 / 密度写入 CSS 变量与 `arco-theme`，持久化到 `GET/PUT /Cube/UserProfile`。
+- **主题主色治理**：`theme/tokens.ts` 按主色（`--cube-primary`）生成 Arco `--primary-1~10` 色阶与 `--color-primary-light-1~4`（亮色 1 浅→10 深；暗色方向反转、浅色阶为主色半透明），`applyTheme` 写入 `body` 覆盖 Arco 默认，使按钮/链接/选中态等 Arco 组件主色跟随用户主题。VTable / Gantt 为 canvas 渲染不支持 CSS 变量，经 `core/utils/themeColor.ts` 读取 Arco 语义 token（`--color-text-*`/`--color-fill-*`/`--color-border-*`/`--color-bg-*`）并监听 body 主题变化重建表格。
 - 外观设置：`/settings/appearance`；顶栏提供主题、密度、设置入口。
 - CRUD 页面不读取壳偏好 store（契约隔离）。
 

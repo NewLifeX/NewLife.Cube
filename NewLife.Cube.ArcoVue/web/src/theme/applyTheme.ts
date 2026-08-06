@@ -39,6 +39,19 @@ export function applyTheme(theme: ThemePrefs, prefersDark = prefersDarkNow()): v
     root.style.setProperty(k, v);
   }
 
+  // Arco 在 body 上定义 --primary-1~10 / --color-primary-light-1~4（RGB 三元组），root 内联无法覆盖后代。
+  // 将主题主色色阶写到 body，使 Arco 组件（按钮/链接/选中态）主色跟随用户主题（OSC 主题治理）
+  const bodyPrimary: Record<string, string> = {};
+  tokens.primaryScale.forEach((v, i) => {
+    bodyPrimary[`--primary-${i + 1}`] = v;
+  });
+  tokens.primaryLight.forEach((v, i) => {
+    bodyPrimary[`--color-primary-light-${i + 1}`] = v;
+  });
+  for (const [k, v] of Object.entries(bodyPrimary)) {
+    body.style.setProperty(k, v);
+  }
+
   for (const c of DENSITY_CLASSES) root.classList.remove(c);
   root.classList.add(tokens.densityClass);
 }

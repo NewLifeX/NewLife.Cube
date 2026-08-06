@@ -14,6 +14,7 @@ import type { FieldMeta } from '@/core/types/field';
 import type { GanttMapping } from '@/core/utils/viewMapping';
 import { resolveCellBadge } from '@/core/utils/fieldBadge';
 import { getValueByKey } from '@/core/utils/url';
+import { themeColor } from '@/core/utils/themeColor';
 
 const props = withDefaults(
   defineProps<{
@@ -54,7 +55,7 @@ function buildRecords() {
     const rawId = getValueByKey(row, props.rowKey);
     const id = rawId == null || rawId === '' ? idx : rawId;
     const titleRaw = getValueByKey(row, m.titleField);
-    let barColor = '#165DFF';
+    let barColor = themeColor('--primary-6', '22, 93, 255');
     if (colorField) {
       const badge = resolveCellBadge(colorField, getValueByKey(row, colorField.name));
       if (badge) barColor = badge.textColor;
@@ -100,17 +101,17 @@ async function mountGantt() {
       scheduleCreatable: false,
       barStyle: {
         width: 18,
-        barColor: '#165DFF',
-        completedBarColor: '#165DFF',
-        borderColor: '#165DFF',
+        barColor: themeColor('--primary-6', '22, 93, 255'),
+        completedBarColor: themeColor('--primary-6', '22, 93, 255'),
+        borderColor: themeColor('--primary-6', '22, 93, 255'),
         borderLineWidth: 0,
       },
     },
     timelineHeader: {
       colWidth: 60,
-      backgroundColor: '#F2F3F5',
-      horizontalLine: { lineWidth: 1, lineColor: '#E5E6EB' },
-      verticalLine: { lineWidth: 1, lineColor: '#E5E6EB' },
+      backgroundColor: themeColor('--color-fill-2', '#F2F3F5'),
+      horizontalLine: { lineWidth: 1, lineColor: themeColor('--color-border-2', '#E5E6EB') },
+      verticalLine: { lineWidth: 1, lineColor: themeColor('--color-border-2', '#E5E6EB') },
       scales: [
         {
           unit: 'day',
@@ -120,9 +121,9 @@ async function mountGantt() {
           },
           style: {
             fontSize: 12,
-            color: '#4E5969',
+            color: themeColor('--color-text-2', '#4E5969'),
             textAlign: 'center',
-            backgroundColor: '#F2F3F5',
+            backgroundColor: themeColor('--color-fill-2', '#F2F3F5'),
           },
         },
       ],
@@ -130,13 +131,13 @@ async function mountGantt() {
     frame: {
       outerFrameStyle: {
         borderLineWidth: 1,
-        borderColor: '#E5E6EB',
+        borderColor: themeColor('--color-border-2', '#E5E6EB'),
         cornerRadius: 6,
       },
     },
     grid: {
-      verticalLine: { lineWidth: 1, lineColor: '#E5E6EB' },
-      horizontalLine: { lineWidth: 1, lineColor: '#E5E6EB' },
+      verticalLine: { lineWidth: 1, lineColor: themeColor('--color-border-2', '#E5E6EB') },
+      horizontalLine: { lineWidth: 1, lineColor: themeColor('--color-border-2', '#E5E6EB') },
     },
     headerRowHeight: 36,
     rowHeight: 36,

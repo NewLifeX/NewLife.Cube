@@ -10,6 +10,7 @@ import type { ColumnPref } from '@/core/utils/viewProfile';
 import { frozenLeftCount } from '@/core/utils/viewProfile';
 import { BADGE_BORDER_RADIUS, BADGE_PADDING } from '@/core/utils/fieldBadge';
 import { getValueByKey } from '@/core/utils/url';
+import { themeColor } from '@/core/utils/themeColor';
 import {
   buildOpsParts,
   formatOpsLabel,
@@ -88,6 +89,8 @@ let table: InstanceType<typeof ListTable> | null = null;
 let applying = false;
 let ro: ResizeObserver | null = null;
 let sepRaf = 0;
+/** 主题（外观/主色）变化监听：VTable canvas 色值需在主题变更后重建读取 */
+let themeObserver: MutationObserver | null = null;
 /** 分隔线层由 JS 动态创建：VTable 构造时会清空宿主容器，模板子元素会被删除 */
 let sepEl: HTMLElement | null = null;
 
@@ -318,17 +321,18 @@ function buildColumns(): any[] {
                 buttonTextDisableColor: badge.textColor,
               }
             : {
-                buttonColor: '#F2F3F5',
-                buttonBorderColor: '#F2F3F5',
+                // 非徽标字段的普通按钮底色/文字跟随主题（VTable canvas 读 Arco token）
+                buttonColor: themeColor('--color-fill-2', '#F2F3F5'),
+                buttonBorderColor: themeColor('--color-fill-2', '#F2F3F5'),
                 buttonBorderRadius: BADGE_BORDER_RADIUS,
                 buttonPadding: BADGE_PADDING,
-                buttonDisableColor: '#F2F3F5',
-                buttonDisableBorderColor: '#F2F3F5',
-                buttonTextDisableColor: '#4E5969',
+                buttonDisableColor: themeColor('--color-fill-2', '#F2F3F5'),
+                buttonDisableBorderColor: themeColor('--color-fill-2', '#F2F3F5'),
+                buttonTextDisableColor: themeColor('--color-text-2', '#4E5969'),
               };
           return {
             textAlign: 'center',
-            color: badge?.textColor || '#4b5563',
+            color: badge?.textColor || themeColor('--color-text-1', '#4b5563'),
             // 仅「启用/Enable」徽标可点击（pointer）；其它状态/枚举/值集徽标正常指示（default）
             cursor: c.enableToggle ? 'pointer' : 'default',
             buttonStyle,
@@ -372,7 +376,8 @@ function buildColumns(): any[] {
       disableColumnResize: true,
       fieldFormat: () => opsLabel(),
       style: {
-        color: '#165DFF',
+        // 操作列链接色跟随主题主色（--primary-6 由 applyTheme 写入 body 为 RGB 三元组）
+        color: themeColor('--primary-6', '22, 93, 255'),
         cursor: 'pointer',
         textAlign: 'center',
       },
@@ -410,7 +415,11 @@ function groupHeaderFormat(rec: Record<string, unknown> | undefined, isFirstData
 /** 组头行背景浅色 + 加粗，与普通行区分（tree 模式组头；groupBy 组标题由 groupTitleStyle 定制） */
 function groupHeaderStyle(rec: Record<string, unknown> | undefined): Record<string, unknown> | null {
   if (!rec?.__groupHeader) return null;
-  return { bgColor: '#F7F8FA', color: '#1D2129', fontWeight: 600 };
+  return {
+    bgColor: themeColor('--color-fill-1', '#F7F8FA'),
+    color: themeColor('--color-text-1', '#1D2129'),
+    fontWeight: 600,
+  };
 }
 
 /** groupBy 组标题行文本：`📁 label (count)`；label 按分组字段 dataSource 翻译（OSC-0015） */
@@ -482,41 +491,41 @@ function buildOption(): any {
       ? // VTable 的 hierarchyExpandLevel>1 时根节点才默认展开；设为 2 使树视图默认显示第一层子节点
         { hierarchyExpandLevel: 2, hierarchyIndent: 16 }
       : {}),
-    // 默认表头与数据行区分；字体规范待 Harness「组件/场景」体系落地
+    // 默认表头与数据行区分；颜色经 themeColor 读取 Arco 语义 token（canvas 不支持 CSS 变量，随亮/暗主题与用户主色）
     theme: {
       // 默认 cellBorderClipDirection=top-left 会裁掉底/右边；行分隔须用顶边
       // borderLineWidth: [上, 右, 下, 左] — 仅行分隔，无列分隔
       defaultStyle: {
-        borderColor: '#E5E6EB',
+        borderColor: themeColor('--color-border-2', '#E5E6EB'),
         borderLineWidth: [1, 0, 0, 0],
       },
       headerStyle: {
-        bgColor: '#F2F3F5',
-        color: '#4E5969',
+        bgColor: themeColor('--color-fill-2', '#F2F3F5'),
+        color: themeColor('--color-text-2', '#4E5969'),
         fontWeight: 500,
         fontSize: 13,
-        borderColor: '#E5E6EB',
+        borderColor: themeColor('--color-border-2', '#E5E6EB'),
         borderLineWidth: [1, 0, 0, 0],
       },
       // 分组标题行样式（groupBy）：浅灰底 + 加粗，与普通行区分（OSC-0015）
       groupTitleStyle: {
-        bgColor: '#F7F8FA',
-        color: '#1D2129',
+        bgColor: themeColor('--color-fill-1', '#F7F8FA'),
+        color: themeColor('--color-text-1', '#1D2129'),
         fontWeight: 600,
         fontSize: 13,
-        borderColor: '#E5E6EB',
+        borderColor: themeColor('--color-border-2', '#E5E6EB'),
         borderLineWidth: [1, 0, 0, 0],
       },
       bodyStyle: {
-        bgColor: '#FFFFFF',
-        color: '#1D2129',
+        bgColor: themeColor('--color-bg-2', '#FFFFFF'),
+        color: themeColor('--color-text-1', '#1D2129'),
         fontWeight: 400,
         fontSize: 13,
-        borderColor: '#E5E6EB',
+        borderColor: themeColor('--color-border-2', '#E5E6EB'),
         borderLineWidth: [1, 0, 0, 0],
         hover: {
-          cellBgColor: '#F7F8FA',
-          inlineRowBgColor: '#F7F8FA',
+          cellBgColor: themeColor('--color-fill-1', '#F7F8FA'),
+          inlineRowBgColor: themeColor('--color-fill-1', '#F7F8FA'),
         },
       },
       frameStyle: {
@@ -734,8 +743,24 @@ onMounted(() => {
   // 捕获阶段监听，避免 VTable 内部 stopPropagation 吞掉 mousemove
   hostRef.value?.addEventListener('mousemove', onHostMouseMove, true);
   hostRef.value?.addEventListener('mouseleave', onHostMouseLeave, true);
+  // 主题（外观/主色）变化时重建表格：VTable canvas 颜色在 buildOption 时快照，需重新读取 Arco token
+  if (typeof MutationObserver !== 'undefined') {
+    themeObserver = new MutationObserver(() => {
+      try {
+        refreshOption();
+      } catch {
+        /* ignore */
+      }
+    });
+    themeObserver.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['style', 'arco-theme'],
+    });
+  }
 });
 onBeforeUnmount(() => {
+  themeObserver?.disconnect();
+  themeObserver = null;
   ro?.disconnect();
   ro = null;
   cancelAnimationFrame(sepRaf);

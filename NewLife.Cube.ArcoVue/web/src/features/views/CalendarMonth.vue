@@ -22,7 +22,7 @@
           :key="ev.key"
           type="button"
           class="cal-event"
-          :style="{ background: ev.color }"
+          :style="{ background: ev.color, color: eventTextColor(ev.color) }"
           :title="ev.title"
           @click="$emit('detail', ev.row)"
         >
@@ -97,6 +97,26 @@ type CalEvent = {
   start: Date;
   end: Date;
 };
+
+/** 事件标签文字颜色：按背景亮度选深/浅字（浅色背景（徽标浅色/主题浅色阶）用深字，深背景用白字） */
+function eventTextColor(bg: string): string {
+  let r = 255;
+  let g = 255;
+  let b = 255;
+  const hex = /#([0-9a-fA-F]{6})/.exec(bg);
+  const rgb = /rgba?\(\s*(\d+)[^,]*,\s*(\d+)[^,]*,\s*(\d+)/.exec(bg);
+  if (hex) {
+    r = parseInt(hex[1].slice(0, 2), 16);
+    g = parseInt(hex[1].slice(2, 4), 16);
+    b = parseInt(hex[1].slice(4, 6), 16);
+  } else if (rgb) {
+    r = Number(rgb[1]);
+    g = Number(rgb[2]);
+    b = Number(rgb[3]);
+  }
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 160 ? 'var(--color-text-1)' : '#fff';
+}
 
 const events = computed<CalEvent[]>(() => {
   const m = props.mapping;

@@ -234,7 +234,12 @@ function oauthLogin(name: string) {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #165dff 0%, #722ed1 100%);
+  /* 登录页渐变跟随主题主色（主色 → 混黑深一阶）；勿硬编码 Arco 默认蓝 */
+  background: linear-gradient(
+    135deg,
+    var(--cube-primary) 0%,
+    color-mix(in srgb, var(--cube-primary) 55%, #1d2129) 100%
+  );
 }
 .login-card {
   width: 440px;
@@ -254,7 +259,7 @@ function oauthLogin(name: string) {
   font-size: 20px;
 }
 .login-tip {
-  color: #999;
+  color: var(--color-text-3);
   font-size: 13px;
   margin: 0;
 }
@@ -274,7 +279,7 @@ function oauthLogin(name: string) {
   text-decoration: none;
 }
 .oauth-item:hover .oauth-name {
-  color: var(--primary-6, #165dff);
+  color: rgb(var(--primary-6, 22, 93, 255));
 }
 .oauth-logo {
   width: 36px;
@@ -286,7 +291,7 @@ function oauthLogin(name: string) {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #e4e6f0;
+  background: var(--color-fill-2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -306,20 +311,20 @@ function oauthLogin(name: string) {
   text-align: center;
   margin-top: 12px;
   font-size: 13px;
-  color: #86909c;
+  color: var(--color-text-3);
 }
 .login-footer {
   text-align: center;
   margin-top: 16px;
   font-size: 12px;
-  color: #86909c;
+  color: var(--color-text-3);
 }
 .login-footer a {
-  color: #86909c;
+  color: var(--color-text-3);
   text-decoration: none;
 }
 .login-footer a:hover {
-  color: var(--primary-6, #165dff);
+  color: rgb(var(--primary-6, 22, 93, 255));
 }
 </style>
 

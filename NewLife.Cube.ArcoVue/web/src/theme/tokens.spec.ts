@@ -5,7 +5,6 @@ import {
   densityClassName,
   resolveEffectiveAppearance,
 } from './tokens';
-
 describe('resolveEffectiveAppearance', () => {
   it('maps system via prefersDark', () => {
     expect(resolveEffectiveAppearance('system', true)).toBe('dark');
@@ -62,5 +61,38 @@ describe('buildThemeTokens', () => {
     expect(scaled.cssVars['--cube-font-size-title']).toBe(`${16 * 1.25}px`);
     expect(scaled.cssVars['--cube-font-weight-normal']).toBe('400');
     expect(scaled.cssVars['--cube-font-weight-medium']).toBe('500');
+  });
+
+  it('生成 Arco primary 1-10 色阶与浅色阶（6 为主色，1 最浅 10 最深）', () => {
+    const t = buildThemeTokens(
+      { ...SYSTEM_DEFAULT_PROFILE.theme, primaryColor: '#165DFF' },
+      false,
+    );
+    expect(t.primaryScale).toHaveLength(10);
+    expect(t.primaryScale[5]).toBe('22,93,255'); // 主色 RGB 三元组
+    expect(t.primaryScale[0]).toBe('231,238,255'); // primary-1（官方 #E8F3FF 近似）
+    expect(t.primaryScale[9]).toBe('0,24,78'); // primary-10（官方 #000D4D 近似）
+    expect(t.primaryLight).toHaveLength(4);
+    expect(t.cssVars['--primary-1']).toBe('231,238,255');
+    expect(t.cssVars['--color-primary-light-1']).toBe('rgb(231,238,255)');
+    // 主色变更时色阶跟随（6 恒为主色）
+    const orange = buildThemeTokens(
+      { ...SYSTEM_DEFAULT_PROFILE.theme, primaryColor: '#ffc014' },
+      false,
+    );
+    expect(orange.primaryScale[5]).toBe('255,192,20');
+    expect(orange.cssVars['--primary-6']).toBe('255,192,20'); // RGB 三元组（Arco 组件经 rgb(var(--primary-6)) 消费）
+  });
+
+  it('暗色模式生成反向色阶（1 最深 10 最浅，浅色阶为主色半透明）', () => {
+    const t = buildThemeTokens(
+      { ...SYSTEM_DEFAULT_PROFILE.theme, appearance: 'dark', primaryColor: '#165DFF' },
+      false,
+    );
+    expect(t.primaryScale[5]).toBe('22,93,255'); // 主色恒在 6
+    expect(t.primaryScale[0]).toBe('0,24,78'); // primary-1 最深（暗色反转）
+    expect(t.primaryScale[9]).toBe('190,210,255'); // primary-10 最浅
+    expect(t.primaryLight[0]).toMatch(/^rgba\(/); // 暗色浅色阶为主色半透明
+    expect(t.cssVars['--color-primary-light-1']).toMatch(/^rgba\(/);
   });
 });

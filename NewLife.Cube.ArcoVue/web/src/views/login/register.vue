@@ -176,8 +176,8 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.register-wrap { display:flex; justify-content:center; align-items:center; min-height:100vh; background:linear-gradient(135deg,#165dff 0%, #722ed1 100%); }
+.register-wrap { display:flex; justify-content:center; align-items:center; min-height:100vh; background:linear-gradient(135deg, var(--cube-primary) 0%, color-mix(in srgb, var(--cube-primary) 55%, #1d2129) 100%); }
 .register-card { width: 460px; border-radius: 8px; }
 .register-header { text-align:center; margin-bottom: 12px; }
-.register-footer-link { text-align:center; margin-top: 8px; color:#86909c; }
+.register-footer-link { text-align:center; margin-top: 8px; color: var(--color-text-3); }
 </style>
