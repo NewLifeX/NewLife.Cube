@@ -83,11 +83,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, reactive, watch } from 'vue';
 import { IconClose } from '@arco-design/web-vue/es/icon';
 import type { FieldMeta } from '@/core/types/field';
 import { resolveSearchControl } from '@/core/utils/fieldControl';
-import { normalizeFilter, emptyViewFilter, type ViewFilter, type ViewFilterCondition } from '@/core/utils/viewProfile';
+import { normalizeFilter, type ViewFilter } from '@/core/utils/viewProfile';
 import {
   isRangeControl,
   newFilterDraftRow,

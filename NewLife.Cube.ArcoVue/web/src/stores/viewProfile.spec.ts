@@ -43,6 +43,7 @@ vi.mock('./user', () => ({
 }));
 
 import { useViewProfileStore } from './viewProfile';
+import type { ViewFilter } from '@/core/utils/viewProfile';
 
 // 默认模拟管理员身份（全局布局的唯一可写者），各 describe 的 beforeEach 会重置 API mock 但不重置身份
 beforeEach(() => {
@@ -414,13 +415,13 @@ describe('viewProfile store filter/group (OSC-0015)', () => {
     putViewProfile.mockResolvedValue({ data: {} });
     const store = useViewProfileStore();
     await store.load('Admin/User', ['Name']);
-    const filter = {
+    const filter: ViewFilter = {
       logic: 'all',
       conditions: [
         { field: 'Name', op: 'eq', value: 'a' },
         { field: 'Enable', op: 'between', value: 1, value2: 5 },
       ],
-    } as const;
+    };
     store.updateFilter('Admin/User', filter, true);
     expect(store.getFilter('Admin/User')).toEqual(filter);
     expect(putViewProfile).toHaveBeenCalledWith(

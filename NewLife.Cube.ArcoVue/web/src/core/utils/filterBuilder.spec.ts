@@ -7,7 +7,9 @@ import {
   resetCondForField,
   draftToFilter,
   filterToDraftRows,
+  type FilterDraftRow,
 } from './filterBuilder';
+import type { ViewFilterCondition } from './viewProfile';
 
 describe('filterBuilder 筛选构建器草稿逻辑 (OSC-0015)', () => {
   it('isRangeControl 识别范围型搜索控件', () => {
@@ -33,7 +35,7 @@ describe('filterBuilder 筛选构建器草稿逻辑 (OSC-0015)', () => {
   });
 
   it('applyCondKey 按 _min/_max 同步条件值', () => {
-    const cond = { field: 'Age', op: 'between', value: undefined, value2: undefined };
+    const cond: ViewFilterCondition = { field: 'Age', op: 'between', value: undefined, value2: undefined };
     applyCondKey(cond, 'Age_min', 3);
     applyCondKey(cond, 'Age_max', 9);
     expect(cond.value).toBe(3);
@@ -44,13 +46,13 @@ describe('filterBuilder 筛选构建器草稿逻辑 (OSC-0015)', () => {
   });
 
   it('resetCondForField 非范围字段重置为 eq 并清值', () => {
-    const cond = { field: 'Age', op: 'between', value: 1, value2: 5 };
+    const cond: ViewFilterCondition = { field: 'Age', op: 'between', value: 1, value2: 5 };
     resetCondForField(cond, false);
     expect(cond).toEqual({ field: 'Age', op: 'eq', value: undefined, value2: undefined });
   });
 
   it('resetCondForField 范围字段保留 op（仅清值）', () => {
-    const cond = { field: 'Age', op: 'between', value: 1, value2: 5 };
+    const cond: ViewFilterCondition = { field: 'Age', op: 'between', value: 1, value2: 5 };
     resetCondForField(cond, true);
     expect(cond.op).toBe('between');
     expect(cond.value).toBeUndefined();
@@ -58,7 +60,7 @@ describe('filterBuilder 筛选构建器草稿逻辑 (OSC-0015)', () => {
   });
 
   it('draftToFilter 丢弃空条件并归一化逻辑', () => {
-    const rows = [
+    const rows: FilterDraftRow[] = [
       { cond: { field: 'Name', op: 'eq', value: 'a' }, form: {} },
       { cond: { field: '', op: 'eq', value: undefined }, form: {} },
       { cond: { field: 'Age', op: 'between', value: 1, value2: 5 }, form: {} },

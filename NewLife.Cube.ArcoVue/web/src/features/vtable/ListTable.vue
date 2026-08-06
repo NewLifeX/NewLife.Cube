@@ -667,7 +667,20 @@ watch(
     props.sortState?.field,
     props.sortState?.desc,
     props.hierarchy,
-      props.grouped,
+    props.grouped,
+  ],
+  () => refreshOption(),
+  { deep: true },
+);
+
+/** 父级清空选择时同步勾选 UI（不整表 refresh，避免打断勾选交互） */
+watch(
+  () => props.selectedKeys,
+  (keys) => {
+    if (!table || applying) return;
+    if ((keys?.length ?? 0) > 0) return;
+    applying = true;
+    try {
       table.setRecords?.(withChecks(props.records), { sortState: null });
       if (props.sortState?.field) {
         table.updateSortState?.(

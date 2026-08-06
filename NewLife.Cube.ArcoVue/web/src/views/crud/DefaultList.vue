@@ -718,11 +718,13 @@ const groupPopoverVisible = computed({
   },
 });
 
-/** 当前命名视图的筛选构建器方案（OSC-0015） */
-const viewFilter = computed<ViewFilter>(() => evpStore.getFilter(typePath.value));
+/** 当前命名视图的筛选构建器方案（OSC-0015）：会话内存状态，应用仅改本地、保存才写 store 持久化 */
+const localFilter = ref<ViewFilter>(emptyViewFilter());
+const viewFilter = computed<ViewFilter>(() => localFilter.value);
 
-/** 当前命名视图的多级分组字段（OSC-0015） */
-const viewGroup = computed<ViewGroup>(() => evpStore.getGroup(typePath.value));
+/** 当前命名视图的多级分组字段（OSC-0015）：同筛选，应用仅改本地、保存才写 store */
+const localGroup = ref<ViewGroup>([]);
+const viewGroup = computed<ViewGroup>(() => localGroup.value);
 
 /** 筛选条件 → 扁平请求参数（OSC-0015）；any 多条件时标记需客户端二次过滤 */
 const viewFilterParams = computed(() =>
@@ -1039,6 +1041,9 @@ async function loadChart() {
 
 function syncLocalState() {
   viewState.value = evpStore.getState(typePath.value);
+  // 会话内筛选/分组与 store（含已保存配置）对齐（OSC-0015）
+  localFilter.value = evpStore.getFilter(typePath.value);
+  localGroup.value = evpStore.getGroup(typePath.value);
 }
 
 function onColumnsChange(cols: ColumnPref[]) {
@@ -1325,41 +1330,43 @@ function onGroupPopoverVisible(v: boolean) {
   activePopover.value = v ? 'group' : null;
 }
 
-/** 应用筛选方案：更新视图状态并重新请求（翻页完整） */
+/** 应用筛选方案：仅更新会话内存并重新请求（不持久化，OSC-0015 5.2） */
 function onFilterApply(filter: ViewFilter) {
-  evpStore.updateFilter(typePath.value, filter);
+  localFilter.value = filter;
   pagination.current = 1;
   loadData();
 }
 
-/** 保存筛选方案到当前命名视图（不立即刷新，下次打开自动应用） */
+/** 保存筛选方案到当前命名视图：写 store 持久化；不立即刷新（下次打开/刷新自动应用） */
 function onFilterSave(filter: ViewFilter) {
   evpStore.updateFilter(typePath.value, filter);
+  localFilter.value = filter;
   Message.success('筛选方案已保存到此视图');
 }
 
-/** 清除筛选方案：清空并重新请求 */
+/** 清除筛选方案（工具栏标签）：清空会话内存并重新请求（不持久化） */
 function onClearFilter() {
-  evpStore.updateFilter(typePath.value, emptyViewFilter());
+  localFilter.value = emptyViewFilter();
   pagination.current = 1;
   loadData();
   Message.success('已清除筛选');
 }
 
-/** 应用分组方案：更新视图状态（纯前端，无需重新请求） */
+/** 应用分组方案：仅更新会话内存（纯前端重分组，OSC-0015 5.3） */
 function onGroupApply(group: ViewGroup) {
-  evpStore.updateGroup(typePath.value, group);
+  localGroup.value = group;
 }
 
-/** 保存分组方案到当前命名视图 */
+/** 保存分组方案到当前命名视图：写 store 持久化 */
 function onGroupSave(group: ViewGroup) {
   evpStore.updateGroup(typePath.value, group);
+  localGroup.value = group;
   Message.success('分组方案已保存到此视图');
 }
 
-/** 清除分组方案 */
+/** 清除分组方案：清空会话内存 */
 function onClearGroup() {
-  evpStore.updateGroup(typePath.value, []);
+  localGroup.value = [];
   Message.success('已清除分组');
 }
 
@@ -1521,6 +1528,7 @@ function onSelectionChange(keys: (string | number)[]) {
 async function bootstrap() {
   await loadFields();
   await loadProfile();
+  syncLocalState();
   applyWorkspacePrefs();
   // 初始回填 URL→已保存基准条件到搜索表单（OSC-0012）
   applySearchToForm(baseSearch.value);

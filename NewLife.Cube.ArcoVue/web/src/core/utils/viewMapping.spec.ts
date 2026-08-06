@@ -3,7 +3,6 @@ import type { FieldMeta } from '@/core/types/field';
 import {
   bucketKanban,
   canCreateViewKind,
-  groupFieldCandidates,
   groupHeaderCell,
   groupRows,
   isGroupHeaderRow,
