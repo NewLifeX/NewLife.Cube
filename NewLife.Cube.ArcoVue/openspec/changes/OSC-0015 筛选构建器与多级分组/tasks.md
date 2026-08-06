@@ -13,7 +13,7 @@
 
 ## T2 筛选构建器 UI
 
-- [x] 2.1 新增 `FilterBuilderPopover.vue`（a-popover 锚定「筛选」按钮）：字段下拉（searchFields∩可操作符）、操作符下拉（eq 全字段 / between 仅范围字段）、值控件复用 `SearchFieldInput`、条件行竖排增删、AND/OR 切换、互斥展开。
+- [x] 2.1 新增 `FilterBuilderPopover.vue`（a-popover 锚定「筛选」按钮）：字段下拉（当前视图可见字段∩可操作符）、操作符下拉（eq 全字段 / between 仅范围字段）、值控件复用 `SearchFieldInput`、条件行竖排增删、AND/OR 切换、互斥展开。
 - [x] 2.2 接入 `DefaultList.vue`：「筛选」按钮打开构建器；`viewFilter` 并入 `effectiveSearch`（filter 覆盖同名字段、统一 clean）；「已筛选 N 条」标签与清除。
 - [x] 2.3 store 新增 `patchActiveFilter`/读取当前视图 filter；应用/保存/清除/无 active view 交互矩阵落地。
 - [x] 2.4 补组件/逻辑测试：构建器增删条件、逻辑切换、值控件、保存/清除、覆盖同名参数、any 降级提示、弹层互斥/关闭不丢弃编辑。

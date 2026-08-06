@@ -49,7 +49,7 @@
           <a-space>
             <FilterBuilderPopover
               :visible="filterPopoverVisible"
-              :fields="searchFields"
+              :fields="filterFields"
               :model-value="viewFilter"
               :can-save="!!activeViewId"
               @update:visible="onFilterPopoverVisible"
@@ -726,9 +726,20 @@ const viewFilter = computed<ViewFilter>(() => localFilter.value);
 const localGroup = ref<ViewGroup>([]);
 const viewGroup = computed<ViewGroup>(() => localGroup.value);
 
+/** 筛选构建器候选字段 = 当前视图所有可见列（OSC-0015：按本视图可见字段筛选） */
+const filterFields = computed<FieldMeta[]>(() => {
+  const visible = new Set(
+    activeColumns.value.filter((c) => c.visible).map((c) => c.key),
+  );
+  return listFields.value.filter((f) => visible.has(f.name));
+});
+
+/** 筛选构建器合法 key（含范围字段 _min/_max 后缀） */
+const filterKeys = computed(() => collectSearchKeys(filterFields.value));
+
 /** 筛选条件 → 扁平请求参数（OSC-0015）；any 多条件时标记需客户端二次过滤 */
 const viewFilterParams = computed(() =>
-  filterToSearchParams(viewFilter.value, searchFields.value, searchKeys.value),
+  filterToSearchParams(viewFilter.value, filterFields.value, filterKeys.value),
 );
 
 /** 分组展示：仅 table/tree 视图且配置了分组字段 */
@@ -1001,7 +1012,7 @@ async function loadData() {
     // any 多条件降级：后端仅表达 AND，需对已加载数据做 OR 二次过滤（OSC-0015）
     if (viewFilterParams.value.clientOnly) {
       rows = rows.filter((r) =>
-        matchesViewFilter(r, viewFilter.value, searchFields.value),
+        matchesViewFilter(r, viewFilter.value, filterFields.value),
       );
     }
     tableData.value = rows;

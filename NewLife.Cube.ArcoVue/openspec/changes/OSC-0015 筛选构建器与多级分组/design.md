@@ -112,7 +112,7 @@ type ViewGroup = string[]
 **DOM/视觉顺序**（弹层内）：标题「筛选」→ 条件组逻辑切换（`且(AND)` / `或(OR)` 单选按钮组）→ 条件行列表（**竖排**，每条件一行）→ 「+ 添加条件」→ 底部操作（重置 / 保存到此视图 / 应用 / 取消）。
 
 **条件行**：`字段下拉` → `操作符下拉` → `值控件` → `删除按钮(×)`，单行横排，行间竖排堆叠。
-- 字段下拉：候选 = `searchFields`（GetPage search 分区，排除无操作符可用的纯展示字段）。
+- 字段下拉：候选 = **当前视图所有可见字段**（`activeColumns` 可见列 ∩ `listFields`，排除无操作符可用的纯展示字段）。
 - 操作符下拉：`等于`（所有候选字段）；`在范围之间`（仅数值/日期/时间/日期时间范围候选字段，即 `resolveSearchControl` ∈ `numberRange/dateRange/datetimeRange/timeRange` 的字段）。
 - 值控件：复用 `SearchFieldInput`（按字段类型渲染 select/Lov/input/date-picker 等）；`between` 用范围控件（`_min/_max`）。
 - 空字段/空值条件行不参与应用；用户未填值的条件行以弱化样式显示。
