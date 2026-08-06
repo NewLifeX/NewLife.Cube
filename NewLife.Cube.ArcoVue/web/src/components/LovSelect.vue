@@ -15,7 +15,8 @@
       </a-option>
     </a-select>
 
-    <!-- LIST 单选：下拉直接展示首页数据（角色列表等），“更多”按钮打开高级表格 -->
+    <!-- LIST 单选：下拉直接展示首页数据（角色列表等），“更多”按钮打开高级表格；
+         输入关键字触发远程搜索（OSC-0015 5.6） -->
     <a-input-group v-else-if="!multiple" class="lov-select--single">
       <a-select
         :model-value="singleSelectValue"
@@ -23,7 +24,11 @@
         :disabled="disabled"
         :loading="loadingOptions"
         allow-clear
+        filterable
+        :filter-option="false"
         style="flex: 1; min-width: 0"
+        @search="onRemoteSearch"
+        @dropdown-visible-change="onDropdownVisible"
         @update:model-value="onInlineSelect"
       >
         <a-option
@@ -142,14 +147,17 @@ async function loadMeta() {
   ensureLabels(values.value);
 }
 
-/** 按 Meta 的 valueField/labelField 映射 ListData 行为下拉选项 */
-async function loadInlineOptions(meta: LovListMeta | null) {
+/** 按 Meta 的 valueField/labelField 映射 ListData 行为下拉选项；keyword 非空时携带 q 远程搜索（OSC-0015 5.6） */
+async function loadInlineOptions(meta: LovListMeta | null, keyword = '') {
   const valueField = (meta?.valueField || 'id').trim();
   const labelField = (meta?.labelField || 'name').trim();
   loadingOptions.value = true;
+  const params: Record<string, unknown> = {};
+  if (keyword) params.q = keyword;
   try {
     const res = await fetchLovListData({
       lovCode: props.code,
+      params,
       pageSize: 200,
       pageNum: 1,
     });
@@ -171,6 +179,24 @@ async function loadInlineOptions(meta: LovListMeta | null) {
   } finally {
     loadingOptions.value = false;
   }
+}
+
+/** 远程搜索防抖计时器（OSC-0015 5.6：300ms） */
+let searchTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** 下拉输入关键字 → 防抖 300ms 后携带 q 远程搜索 */
+function onRemoteSearch(keyword: string) {
+  if (searchTimer) clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    searchTimer = null;
+    void loadInlineOptions(listMeta.value, keyword.trim());
+  }, 300);
+}
+
+/** 下拉打开：加载首页数据（输入框清空态；搜索由 @search 独立驱动） */
+function onDropdownVisible(open: boolean) {
+  if (!open) return;
+  void loadInlineOptions(listMeta.value, '');
 }
 
 /** 对缺失标签的 value 调用 BatchLabel 权威反查（LIST 值集） */

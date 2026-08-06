@@ -61,6 +61,10 @@ export interface NamedView {
   mapping?: ViewMapping;
   /** 受限洞察配置（OSC-0012）：每个命名视图仅一个，可独立启用统计标签与一张固定图表 */
   insight?: ViewInsight;
+  /** 筛选构建器方案（OSC-0015）：多条件等于/范围，AND/OR 逻辑；随视图保存并并入请求 */
+  filter?: ViewFilter;
+  /** 多级分组字段列表（OSC-0015）：有序、最多 3 个；随视图保存并纯前端分组 */
+  group?: ViewGroup;
   /** 原始线缆对象（保留未知顶层属性，round-trip 不丢后续 OSC 字段） */
   _raw?: Record<string, unknown>;
 }
@@ -69,6 +73,93 @@ export interface NamedView {
 export interface ViewInsight {
   showStat: boolean;
   showChart: boolean;
+}
+
+/** 筛选条件操作符（OSC-0015）：仅后端 Search(Pager) 可表达的能力 */
+export type ViewFilterOp = 'eq' | 'between';
+
+/** 筛选构建器单个条件（OSC-0015） */
+export interface ViewFilterCondition {
+  /** 字段名（searchFields 中 canonical name） */
+  field: string;
+  /** 操作符：eq=等于（含多选逗号分隔）；between=范围（_min/_max） */
+  op: ViewFilterOp;
+  /** 值；eq 时可为标量或数组（多选字段），between 时为下界 */
+  value?: unknown;
+  /** between 上界 */
+  value2?: unknown;
+}
+
+/** 筛选构建器方案（OSC-0015）：条件组 + 组级逻辑 */
+export interface ViewFilter {
+  /** 条件组逻辑：all=且(AND)，any=或(OR) */
+  logic: 'all' | 'any';
+  /** 条件列表；空数组表示无筛选 */
+  conditions: ViewFilterCondition[];
+}
+
+/** 多级分组字段列表（OSC-0015）：有序、最多 3 个；空数组表示无分组 */
+export type ViewGroup = string[];
+
+/** 空筛选方案（无任何条件） */
+export function emptyViewFilter(): ViewFilter {
+  return { logic: 'all', conditions: [] };
+}
+
+/** 条件值是否为空（与 cleanSearchParams 语义一致：false/0 合法保留） */
+function isFilterValueEmpty(v: unknown): boolean {
+  if (v == null) return true;
+  if (typeof v === 'string') return v.length === 0;
+  if (Array.isArray(v)) return v.length === 0;
+  return false;
+}
+
+/**
+ * 宽容归一化筛选方案（OSC-0015）。
+ * 缺失/非法 → 空方案；logic 非 all/any → all；conditions 逐条过滤非法项。
+ * 未知顶层属性与未知条件扩展字段在 round-trip 时由调用方保留（serializeNamedView 透传 _raw）。
+ * 字段有效性清理由 filterToSearchParams 在应用时按合法 key 集完成。
+ */
+export function normalizeFilter(raw: unknown): ViewFilter {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return emptyViewFilter();
+  const o = raw as Record<string, unknown>;
+  const logic = o.logic === 'any' ? 'any' : 'all';
+  const conditions: ViewFilterCondition[] = [];
+  if (Array.isArray(o.conditions)) {
+    for (const c of o.conditions) {
+      if (!c || typeof c !== 'object' || Array.isArray(c)) continue;
+      const co = c as Record<string, unknown>;
+      const field = typeof co.field === 'string' ? co.field.trim() : '';
+      if (!field) continue;
+      const op = co.op === 'between' ? 'between' : co.op === 'eq' ? 'eq' : null;
+      if (!op) continue;
+      if (op === 'between' && isFilterValueEmpty(co.value) && isFilterValueEmpty(co.value2)) continue;
+      if (op === 'eq' && isFilterValueEmpty(co.value)) continue;
+      const cond: ViewFilterCondition = { field, op };
+      if (co.value !== undefined) cond.value = co.value;
+      if (co.value2 !== undefined) cond.value2 = co.value2;
+      conditions.push(cond);
+    }
+  }
+  return { logic, conditions };
+}
+
+/**
+ * 归一化分组字段列表（OSC-0015）：仅保留非空字符串、去重、上限 3 个。
+ */
+export function normalizeGroup(raw: unknown): ViewGroup {
+  if (!Array.isArray(raw)) return [];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const f of raw) {
+    if (typeof f !== 'string' || !f.trim()) continue;
+    const name = f.trim();
+    if (seen.has(name)) continue;
+    seen.add(name);
+    out.push(name);
+    if (out.length >= 3) break;
+  }
+  return out;
 }
 
 /** FiltersJson 线缆格式（OSC-0012）。key 为 NamedView.id，值为经过搜索正规化的平坦搜索参数 */
@@ -266,11 +357,24 @@ export function serializeNamedView(v: NamedView): Record<string, unknown> {
   if (v.chrome) raw.chrome = v.chrome;
   if (v.mapping !== undefined) raw.mapping = v.mapping;
   if (v.insight) raw.insight = serializeInsight(v.insight, v._raw?.insight);
+  if (v.filter) raw.filter = { ...v.filter, conditions: v.filter.conditions.map((c) => ({ ...c })) };
+  if (v.group && v.group.length) raw.group = [...v.group];
   return raw;
 }
 
 /** 本号管理的命名视图键；序列化时优先由状态对象覆盖 */
-const MANAGED_VIEW_KEYS = new Set(['id', 'name', 'view', 'columns', 'sort', 'chrome', 'mapping', 'insight']);
+const MANAGED_VIEW_KEYS = new Set([
+  'id',
+  'name',
+  'view',
+  'columns',
+  'sort',
+  'chrome',
+  'mapping',
+  'insight',
+  'filter',
+  'group',
+]);
 
 /** 空 FiltersJson 线缆 */
 export function emptySavedFilters(): SavedFiltersWire {
@@ -527,6 +631,8 @@ export function parseNamedViews(
       chrome: normalizeChrome(o.chrome) ?? { ...DEFAULT_CHROME },
       mapping,
       insight: normalizeInsight(o.insight),
+      filter: normalizeFilter(o.filter),
+      group: normalizeGroup(o.group),
       // 保留原始线缆对象，round-trip 不丢未知顶层属性（后续 OSC 扩展字段）
       _raw: o,
     });
@@ -766,6 +872,42 @@ export function patchActiveInsight(
     views: state.views.map((v) =>
       v.id === state.activeViewId ? { ...v, insight: { ...insight } } : v,
     ),
+  };
+}
+
+/** 更新当前命名视图的筛选构建器方案（OSC-0015）；空方案等价清除 */
+export function patchActiveFilter(
+  state: EntityViewState,
+  filter: ViewFilter,
+): EntityViewState {
+  const next = normalizeFilter(filter);
+  const hasFilter = next.conditions.length > 0;
+  return {
+    ...state,
+    views: state.views.map((v) => {
+      if (v.id !== state.activeViewId) return v;
+      if (!hasFilter) {
+        const { filter: _f, ...rest } = v;
+        return rest as NamedView;
+      }
+      return { ...v, filter: next };
+    }),
+  };
+}
+
+/** 更新当前命名视图的多级分组字段（OSC-0015）；空数组等价清除 */
+export function patchActiveGroup(state: EntityViewState, group: ViewGroup): EntityViewState {
+  const next = normalizeGroup(group);
+  return {
+    ...state,
+    views: state.views.map((v) => {
+      if (v.id !== state.activeViewId) return v;
+      if (!next.length) {
+        const { group: _g, ...rest } = v;
+        return rest as NamedView;
+      }
+      return { ...v, group: next };
+    }),
   };
 }
 

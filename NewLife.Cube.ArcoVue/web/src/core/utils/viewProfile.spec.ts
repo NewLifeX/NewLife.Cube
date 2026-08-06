@@ -12,6 +12,8 @@ import {
   getFormModeLayout,
   getSavedViewFilters,
   mergeColumns,
+  normalizeFilter,
+  normalizeGroup,
   normalizeInsight,
   parseFormJson,
   parseSavedFilters,
@@ -355,5 +357,76 @@ describe('FormJson (OSC-0013)', () => {
       detail: emptyFormLayout(),
     });
     expect(wire).toEqual({ version: 1 });
+  });
+});
+
+describe('normalizeFilter / normalizeGroup (OSC-0015)', () => {
+  it('normalizes missing/invalid filter to empty', () => {
+    expect(normalizeFilter(undefined)).toEqual({ logic: 'all', conditions: [] });
+    expect(normalizeFilter(null)).toEqual({ logic: 'all', conditions: [] });
+    expect(normalizeFilter('x')).toEqual({ logic: 'all', conditions: [] });
+    expect(normalizeFilter([])).toEqual({ logic: 'all', conditions: [] });
+    expect(normalizeFilter({})).toEqual({ logic: 'all', conditions: [] });
+  });
+
+  it('normalizes logic and keeps valid conditions', () => {
+    const f = normalizeFilter({
+      logic: 'any',
+      conditions: [
+        { field: 'Status', op: 'eq', value: 1 },
+        { field: 'Age', op: 'between', value: 18, value2: 60 },
+      ],
+    });
+    expect(f).toEqual({
+      logic: 'any',
+      conditions: [
+        { field: 'Status', op: 'eq', value: 1 },
+        { field: 'Age', op: 'between', value: 18, value2: 60 },
+      ],
+    });
+  });
+
+  it('drops invalid logic/op/empty conditions but keeps false/0', () => {
+    const f = normalizeFilter({
+      logic: 'xor',
+      conditions: [
+        { field: '', op: 'eq', value: 1 },
+        { field: 'B', op: 'contains', value: 'x' },
+        { field: 'C', op: 'eq', value: undefined },
+        { field: 'D', op: 'eq', value: false },
+        { field: 'E', op: 'eq', value: 0 },
+        { field: 'F', op: 'between', value: null, value2: null },
+      ],
+    });
+    expect(f.logic).toBe('all');
+    expect(f.conditions.map((c) => c.field)).toEqual(['D', 'E']);
+  });
+
+  it('round-trips filter via serializeNamedView', () => {
+    const v = {
+      id: 'v1',
+      name: '视图',
+      view: 'table' as const,
+      columns: [],
+      filter: normalizeFilter({
+        logic: 'any',
+        conditions: [{ field: 'Status', op: 'eq', value: 2 }],
+      }),
+    };
+    const raw = serializeNamedView(v);
+    expect(raw.filter).toEqual({
+      logic: 'any',
+      conditions: [{ field: 'Status', op: 'eq', value: 2 }],
+    });
+  });
+
+  it('normalizeGroup dedupes, trims, caps at 3, drops non-strings', () => {
+    expect(normalizeGroup(undefined)).toEqual([]);
+    expect(normalizeGroup('x')).toEqual([]);
+    expect(normalizeGroup(['Status', ' Status ', 'Status', 'Enable', 'Dept', 'Role', 1])).toEqual([
+      'Status',
+      'Enable',
+      'Dept',
+    ]);
   });
 });

@@ -50,6 +50,8 @@ const props = withDefaults(
     sortState?: { field: string; desc: boolean } | null;
     /** 树视图：启用 VTable hierarchy（行含 children） */
     hierarchy?: boolean;
+    /** 分组视图（OSC-0015）：records 含 __groupHeader 组头节点行，组头跨列显示并浅色区分 */
+    grouped?: boolean;
   }>(),
   {
     selectedKeys: () => [],
@@ -62,6 +64,7 @@ const props = withDefaults(
     enableSort: true,
     sortState: null,
     hierarchy: false,
+    grouped: false,
   },
 );
 
@@ -239,6 +242,8 @@ function leadingCount(): number {
 
 function buildColumns(): any[] {
   const cols: any[] = [];
+  /** 数据列计数（用于组头行跨列显示：仅首数据列显示 label） */
+  let dataColCount = 0;
   if (props.showExpand) {
     cols.push({
       field: '__expand',
@@ -265,6 +270,8 @@ function buildColumns(): any[] {
   }
 
   for (const c of props.columns.filter((x) => x.pref.visible)) {
+    const isFirstDataCol = dataColCount === 0;
+    dataColCount += 1;
     if (c.badge && c.badgeOf) {
       cols.push({
         field: c.pref.key,
@@ -278,6 +285,8 @@ function buildColumns(): any[] {
         // 勿用列级 disable:true——VTable 会强制渲染禁用态（not-allowed 光标），且覆盖下方 style.cursor；
         // 徽标是否可点由 click_cell 按 enableToggle 分发（非 Enable 徽标点击仍走 rowClick，不启停）
         fieldFormat: (rec: Record<string, unknown>) => {
+          const gh = groupHeaderFormat(rec, isFirstDataCol);
+          if (gh !== undefined) return gh;
           const b = c.badgeOf?.(rec);
           if (b) return b.label;
           return c.format ? c.format(rec) : '-';
@@ -286,6 +295,8 @@ function buildColumns(): any[] {
           const record = args.table?.getRecordByCell?.(args.col, args.row) as
             | Record<string, unknown>
             | undefined;
+          const ghs = groupHeaderStyle(record);
+          if (ghs) return ghs;
           const badge = record ? c.badgeOf?.(record) : null;
           const buttonStyle = badge
             ? {
@@ -326,9 +337,17 @@ function buildColumns(): any[] {
       dragHeader: true,
       disableColumnResize: false,
       fieldFormat: (rec: Record<string, unknown>) => {
+        const gh = groupHeaderFormat(rec, isFirstDataCol);
+        if (gh !== undefined) return gh;
         if (c.format) return c.format(rec);
         const v = rec[c.pref.key];
         return v == null || v === '' ? '-' : String(v);
+      },
+      style: (args: { table?: any; col?: number; row?: number }) => {
+        const record = args.table?.getRecordByCell?.(args.col, args.row) as
+          | Record<string, unknown>
+          | undefined;
+        return groupHeaderStyle(record) ?? undefined;
       },
     });
   }
@@ -362,13 +381,32 @@ function withChecks(records: Record<string, unknown>[]) {
   const selected = new Set((props.selectedKeys || []).map(String));
   return records.map((r) => ({
     ...r,
-    __checked: selected.has(rowId(r)),
+    // 组头行不参与勾选
+    __checked: r.__groupHeader ? false : selected.has(rowId(r)),
   }));
+}
+
+/** 组头行显示文本（首数据列）或空串（其余列）；count 取组头节点自身字段 */
+function groupHeaderFormat(rec: Record<string, unknown> | undefined, isFirstDataCol: boolean): string | undefined {
+  const gh = rec?.__groupHeader as { label?: string } | undefined;
+  if (!gh) return undefined;
+  return isFirstDataCol ? `📁 ${gh.label ?? ''} (${rec?.count ?? 0})` : '';
+}
+
+/** 组头行背景浅色 + 加粗，与普通行区分 */
+function groupHeaderStyle(rec: Record<string, unknown> | undefined): Record<string, unknown> | null {
+  if (!rec?.__groupHeader) return null;
+  return { bgColor: '#F7F8FA', color: '#1D2129', fontWeight: 600 };
 }
 
 function buildOption(): any {
   const cols = buildColumns();
   if (props.hierarchy && cols.length) {
+    const firstData = cols.find((c: { field?: string }) => c.field && c.field !== '__check' && c.field !== '__ops' && c.field !== '__expand');
+    if (firstData) (firstData as { tree?: boolean }).tree = true;
+  }
+  // 分组视图：组头节点行含 children，同样以 hierarchy 渲染；默认展开一级
+  if (props.grouped) {
     const firstData = cols.find((c: { field?: string }) => c.field && c.field !== '__check' && c.field !== '__ops' && c.field !== '__expand');
     if (firstData) (firstData as { tree?: boolean }).tree = true;
   }
@@ -389,7 +427,7 @@ function buildOption(): any {
     tooltip: { isShowOverflowTextTooltip: true },
     // 服务端排序：图标状态由 sortState 驱动，数据不走 VTable 内部排序
     sortState,
-    ...(props.hierarchy
+    ...(props.hierarchy || props.grouped
       ? // VTable 的 hierarchyExpandLevel>1 时根节点才默认展开；设为 2 使树视图默认显示第一层子节点
         { hierarchyExpandLevel: 2, hierarchyIndent: 16 }
       : {}),
@@ -480,6 +518,7 @@ function bindEvents() {
   table.on('click_cell', ((args: any) => {
     const row = resolveBodyRow(args);
     if (!row) return;
+    if (row.__groupHeader) return; // 组头行不响应点击
     const field = fieldKey(args.field);
     if (field === '__checked') return;
     // 单击仅处理操作列 / 展开列；数据行单击不打开详情
@@ -504,6 +543,7 @@ function bindEvents() {
   table.on('dblclick_cell', ((args: any) => {
     const row = resolveBodyRow(args);
     if (!row) return;
+    if (row.__groupHeader) return; // 组头行不响应双击
     const field = fieldKey(args.field);
     if (field === '__checked' || field === '__ops' || field === '__expand') return;
     if (props.canViewDetail) emit('rowDblClick', row);
@@ -521,6 +561,7 @@ function bindEvents() {
     const out: (string | number)[] = [];
     for (let i = 0; i < records.length; i++) {
       const rec = records[i];
+      if ((rec as { __groupHeader?: unknown })?.__groupHeader) continue; // 组头行不参与勾选
       const checked =
         Array.isArray(states) && i < states.length
           ? !!states[i]
@@ -626,19 +667,7 @@ watch(
     props.sortState?.field,
     props.sortState?.desc,
     props.hierarchy,
-  ],
-  () => refreshOption(),
-  { deep: true },
-);
-
-/** 父级清空选择时同步勾选 UI（不整表 refresh，避免打断勾选交互） */
-watch(
-  () => props.selectedKeys,
-  (keys) => {
-    if (!table || applying) return;
-    if ((keys?.length ?? 0) > 0) return;
-    applying = true;
-    try {
+      props.grouped,
       table.setRecords?.(withChecks(props.records), { sortState: null });
       if (props.sortState?.field) {
         table.updateSortState?.(

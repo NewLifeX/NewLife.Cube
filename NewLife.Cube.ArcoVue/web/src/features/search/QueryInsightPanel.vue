@@ -2,39 +2,53 @@
   <div class="query-insight-panel list-panel">
     <!-- 上部：搜索字段与操作（OSC-0012 单一查询面板，不复刻第二份搜索状态） -->
     <div class="qip-search">
-      <a-form :model="model" layout="inline" @submit.prevent="$emit('search')">
-        <a-form-item
-          v-for="field in fields"
-          :key="field.name"
-          :label="field.displayName || field.name"
-        >
-          <SearchFieldInput
-            :field="field"
-            :model-value="model[field.name]"
-            :form="model"
-            @update:model-value="(v) => (model[field.name] = v)"
-            @update:key="(k, v) => (model[k] = v)"
-            @search="$emit('search')"
-          />
-        </a-form-item>
-        <a-form-item>
-          <a-space :size="8" wrap>
-            <a-button type="primary" html-type="submit">搜索</a-button>
-            <a-button @click="$emit('reset')">重置</a-button>
-            <a-tooltip :content="canSave ? '将当前条件保存为命名视图默认筛选' : '当前无命名视图'">
-              <a-button :disabled="!canSave" @click="$emit('save')">保存到此视图</a-button>
-            </a-tooltip>
-            <a-tooltip content="清除当前命名视图的已保存默认筛选">
-              <a-button :disabled="!canSave" @click="$emit('clear')">清除默认筛选</a-button>
-            </a-tooltip>
-          </a-space>
-        </a-form-item>
+      <!-- 字段容器：默认一行、溢出折叠「展开更多 N」（OSC-0015 5.5） -->
+      <div
+        ref="fieldGridRef"
+        class="qip-field-wrap"
+        :class="{ 'qip-field-collapsed': overflow && !expanded }"
+        :style="overflow && !expanded ? { maxHeight: `${rowHeight}px` } : undefined"
+      >
+        <a-form :model="model" layout="inline" @submit.prevent="$emit('search')">
+          <a-form-item
+            v-for="field in fields"
+            :key="field.name"
+            :label="field.displayName || field.name"
+          >
+            <SearchFieldInput
+              :field="field"
+              :model-value="model[field.name]"
+              :form="model"
+              @update:model-value="(v) => (model[field.name] = v)"
+              @update:key="(k, v) => (model[k] = v)"
+              @search="$emit('search')"
+            />
+          </a-form-item>
+        </a-form>
+      </div>
+      <!-- 溢出时显示展开/收起（N = 溢出字段数） -->
+      <div v-if="overflow" class="qip-expand-row">
+        <a-button type="text" size="mini" @click="expanded = !expanded">
+          {{ expanded ? '收起' : `展开更多 ${hiddenCount}` }}
+        </a-button>
+      </div>
+      <div class="qip-actions">
+        <a-space :size="8" wrap>
+          <a-button type="primary" html-type="submit" @click="$emit('search')">搜索</a-button>
+          <a-button @click="$emit('reset')">重置</a-button>
+          <a-tooltip :content="canSave ? '将当前条件保存为命名视图默认筛选' : '当前无命名视图'">
+            <a-button :disabled="!canSave" @click="$emit('save')">保存到此视图</a-button>
+          </a-tooltip>
+          <a-tooltip content="清除当前命名视图的已保存默认筛选">
+            <a-button :disabled="!canSave" @click="$emit('clear')">清除默认筛选</a-button>
+          </a-tooltip>
+        </a-space>
         <a-form-item v-if="sourceLabel" class="qip-source-item">
           <a-typography-text type="secondary" class="qip-source">
             {{ sourceLabel }}
           </a-typography-text>
         </a-form-item>
-      </a-form>
+      </div>
     </div>
 
     <!-- 下部：可选结果区（统计标签 + 一张固定图表，均与列表同源） -->
@@ -74,7 +88,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, markRaw, nextTick, onBeforeUnmount, watch } from 'vue';
+import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import * as echarts from 'echarts';
 import SearchFieldInput from '@/components/SearchFieldInput.vue';
 import { resolveStatEntries } from '@/core/utils/searchFilters';
@@ -150,6 +164,49 @@ watch(
 );
 
 onBeforeUnmount(disposeCharts);
+
+// ---------- 一行折叠（OSC-0015 5.5） ----------
+const fieldGridRef = ref<HTMLElement | null>(null);
+
+/** 字段容器是否溢出（需要折叠） */
+const overflow = ref(false);
+/** 是否已展开全部字段 */
+const expanded = ref(false);
+/** 首行高度（折叠态 max-height，px） */
+const rowHeight = ref(0);
+/** 首行容纳的字段数（用于计算溢出数 N） */
+const firstRowCount = ref(0);
+
+/** 溢出字段数 = 总数 - 首行数 */
+const hiddenCount = computed(() => Math.max(0, props.fields.length - firstRowCount.value));
+
+/** 测量字段容器：统计首行字段数、行高、是否溢出；字段变化后重置折叠态 */
+function measureFieldGrid() {
+  const grid = fieldGridRef.value;
+  if (!grid) return;
+  const items = Array.from(grid.querySelectorAll<HTMLElement>('.arco-form-item'));
+  if (!items.length) return;
+  const firstTop = items[0].offsetTop;
+  let n = 0;
+  for (const el of items) {
+    if (el.offsetTop === firstTop) n++;
+    else break;
+  }
+  firstRowCount.value = n;
+  rowHeight.value = items[0].offsetHeight;
+  overflow.value = n < items.length;
+  expanded.value = false;
+}
+
+onMounted(() => {
+  nextTick(measureFieldGrid);
+});
+
+// 字段增删（视图切换等）后重置折叠态
+watch(
+  () => props.fields,
+  () => nextTick(measureFieldGrid),
+);
 </script>
 
 <style scoped>
@@ -168,6 +225,29 @@ onBeforeUnmount(disposeCharts);
 .qip-search {
   min-width: 0;
   max-width: 100%;
+}
+/* 字段容器：min-width:0 让 inline form 能换行；折叠态裁剪为一行（OSC-0015） */
+.qip-field-wrap {
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+  transition: max-height 0.2s ease;
+}
+.qip-field-collapsed {
+  overflow: hidden;
+}
+.qip-expand-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -8px;
+  margin-bottom: 8px;
+}
+.qip-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .qip-search :deep(.arco-form-item) {
   margin-bottom: 12px;

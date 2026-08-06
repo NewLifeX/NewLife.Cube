@@ -3,13 +3,21 @@ import type { FieldMeta } from '@/core/types/field';
 import {
   bucketKanban,
   canCreateViewKind,
+  groupFieldCandidates,
+  groupHeaderCell,
+  groupRows,
+  isGroupHeaderRow,
   isTableLikeViewKind,
+  moveGroupField,
+  nextGroupFieldNames,
   normalizeCardBodyColumns,
   normalizeCardFieldOrientation,
   normalizeCardLayout,
   normalizeDataSource,
   normalizeMapping,
   normalizePageSize,
+  pushGroupField,
+  removeGroupField,
   resolveBatchDeleteState,
   resolveViewPageSize,
   seedMapping,
@@ -386,5 +394,110 @@ describe('normalizeDataSource', () => {
       { value: 'low', label: '低' },
     ]);
     expect(canonicalByKey.get('high')).toBe('high');
+  });
+});
+
+describe('groupRows (OSC-0015)', () => {
+  const fields = [
+    { name: 'Status', displayName: '状态', typeName: 'Int32', dataSource: { '1': '启用', '2': '停用' } },
+    { name: 'Dept', displayName: '部门', typeName: 'String' },
+  ];
+
+  it('empty groupFields returns original records', () => {
+    const rows = [{ name: 'a' }];
+    expect(groupRows(rows, [], fields)).toBe(rows);
+  });
+
+  it('single-level grouping with dataSource label and count', () => {
+    const rows = [
+      { status: '1', name: 'a' },
+      { status: '1', name: 'b' },
+      { status: '2', name: 'c' },
+    ];
+    const groups = groupRows(rows, ['Status'], fields);
+    expect(groups.map((g) => g.label)).toEqual(['启用', '停用']);
+    expect(groups[0].count).toBe(2);
+    expect(groups[0].children).toHaveLength(2);
+    expect(groups[1].count).toBe(1);
+  });
+
+  it('multi-level grouping nests children and recomputes counts', () => {
+    const rows = [
+      { status: '1', dept: '甲', name: 'a' },
+      { status: '1', dept: '乙', name: 'b' },
+      { status: '1', dept: '乙', name: 'c' },
+    ];
+    const groups = groupRows(rows, ['Status', 'Dept'], fields);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].count).toBe(3);
+    const depts = groups[0].children as typeof groups;
+    expect(depts.map((d) => d.label)).toEqual(['甲', '乙']);
+    expect(depts[1].count).toBe(2);
+  });
+
+  it('empty value groups into 未分组 and unknown field too', () => {
+    const rows = [
+      { status: '', name: 'a' },
+      { name: 'b' },
+    ];
+    const groups = groupRows(rows, ['Status'], fields);
+    expect(groups[0].label).toBe('未分组');
+    expect(groups[0].count).toBe(2);
+    expect(groups[0].path).toBe('');
+  });
+
+  it('builds nested path for collapse keys', () => {
+    const rows = [{ status: '1', dept: '甲', name: 'a' }];
+    const groups = groupRows(rows, ['Status', 'Dept'], fields);
+    expect(groups[0].path).toBe('1');
+    expect((groups[0].children as typeof groups)[0].path).toBe('1::甲');
+  });
+});
+
+describe('isGroupHeaderRow / groupHeaderCell (OSC-0015)', () => {
+  it('识别组头节点', () => {
+    expect(isGroupHeaderRow({ __group: true, __groupHeader: { label: '启用', path: '1' }, count: 2 })).toBe(true);
+    expect(isGroupHeaderRow({ name: 'a' })).toBe(false);
+    expect(isGroupHeaderRow({ __group: false })).toBe(false);
+  });
+
+  it('groupHeaderCell 输出 label (count)；非组头返回 null', () => {
+    const node = {
+      __group: true,
+      __groupHeader: { label: '启用', path: '1' },
+      label: '启用',
+      count: 3,
+    };
+    expect(groupHeaderCell(node)).toBe('启用 (3)');
+    expect(groupHeaderCell({ name: 'a' })).toBeNull();
+  });
+});
+
+describe('分组草稿操作 (OSC-0015)', () => {
+  it('pushGroupField 去重 + 上限 3', () => {
+    expect(pushGroupField([], 'Dept')).toEqual(['Dept']);
+    expect(pushGroupField(['Dept'], 'Dept')).toEqual(['Dept']);
+    expect(pushGroupField(['A', 'B'], 'C')).toEqual(['A', 'B', 'C']);
+    expect(pushGroupField(['A', 'B', 'C'], 'D')).toEqual(['A', 'B', 'C']);
+    expect(pushGroupField(['A'], '')).toEqual(['A']);
+  });
+
+  it('moveGroupField 上移/下移，越界或非法返回原数组', () => {
+    expect(moveGroupField(['A', 'B', 'C'], 1, -1)).toEqual(['B', 'A', 'C']);
+    expect(moveGroupField(['A', 'B', 'C'], 1, 1)).toEqual(['A', 'C', 'B']);
+    expect(moveGroupField(['A', 'B', 'C'], 0, -1)).toEqual(['A', 'B', 'C']);
+    expect(moveGroupField(['A', 'B', 'C'], 2, 1)).toEqual(['A', 'B', 'C']);
+    expect(moveGroupField(['A'], 0, 1)).toEqual(['A']);
+  });
+
+  it('removeGroupField 删除指定下标', () => {
+    expect(removeGroupField(['A', 'B', 'C'], 1)).toEqual(['A', 'C']);
+    expect(removeGroupField(['A'], 0)).toEqual([]);
+    expect(removeGroupField(['A'], 5)).toEqual(['A']);
+  });
+
+  it('nextGroupFieldNames 排除已选并受上限约束', () => {
+    expect(nextGroupFieldNames(['A', 'B', 'C'], ['A'])).toEqual(['B', 'C']);
+    expect(nextGroupFieldNames(['A', 'B', 'C'], ['A', 'B', 'C'])).toEqual([]);
   });
 });

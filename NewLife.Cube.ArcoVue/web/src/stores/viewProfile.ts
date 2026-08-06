@@ -12,6 +12,7 @@ import {
   duplicateView,
   emptyFormJson,
   emptySavedFilters,
+  emptyViewFilter,
   getActiveView,
   hasFiltersDomain,
   hasViewsDomain,
@@ -21,6 +22,8 @@ import {
   parseSavedFilters,
   patchActiveChrome,
   patchActiveColumns,
+  patchActiveFilter,
+  patchActiveGroup,
   patchActiveInsight,
   patchActiveMapping,
   patchActiveSort,
@@ -44,6 +47,8 @@ import {
   type SavedFiltersWire,
   type ViewChrome,
   type ViewDomainSource,
+  type ViewFilter,
+  type ViewGroup,
   type ViewInsight,
   type ViewKind,
   type ViewMapping,
@@ -282,6 +287,36 @@ export const useViewProfileStore = defineStore('viewProfile', {
       const entry = this.byType[typePath];
       if (!entry) return;
       this.setState(typePath, patchActiveInsight(entry.state, insight), immediate);
+    },
+
+    /** 更新当前命名视图的筛选构建器方案（OSC-0015）；空方案等价清除 */
+    updateFilter(typePath: string, filter: ViewFilter, immediate = true) {
+      const entry = this.byType[typePath];
+      if (!entry) return;
+      this.setState(typePath, patchActiveFilter(entry.state, filter), immediate);
+    },
+
+    /** 读取当前命名视图的筛选构建器方案（OSC-0015） */
+    getFilter(typePath: string): ViewFilter {
+      const entry = this.byType[typePath];
+      if (!entry) return emptyViewFilter();
+      const v = getActiveView(entry.state);
+      return v?.filter ?? emptyViewFilter();
+    },
+
+    /** 更新当前命名视图的多级分组字段（OSC-0015）；空数组等价清除 */
+    updateGroup(typePath: string, group: ViewGroup, immediate = true) {
+      const entry = this.byType[typePath];
+      if (!entry) return;
+      this.setState(typePath, patchActiveGroup(entry.state, group), immediate);
+    },
+
+    /** 读取当前命名视图的多级分组字段（OSC-0015） */
+    getGroup(typePath: string): ViewGroup {
+      const entry = this.byType[typePath];
+      if (!entry) return [];
+      const v = getActiveView(entry.state);
+      return v?.group ?? [];
     },
 
     /** 读取当前 typePath 的已保存筛选线缆（FiltersJson，OSC-0012） */

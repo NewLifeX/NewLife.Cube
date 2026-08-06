@@ -431,6 +431,152 @@ export function bucketKanban(
   return result;
 }
 
+/**
+ * 多级分组节点（OSC-0015）。组头节点 `__group=true` 且带 `__groupHeader`（ListTable 识别）/label/count/path/children；
+ * 数据行节点 `__group` 缺失且为原记录对象。
+ */
+export interface GroupNode {
+  /** 是否为组头节点 */
+  __group: boolean;
+  /** 组头标记（ListTable 识别组头行；含 label 与多级折叠 path） */
+  __groupHeader?: { label: string; path: string };
+  /** 分组字段名（组头） */
+  groupField?: string;
+  /** 组值显示标签（组头，已按 dataSource 翻译；空值→未分组） */
+  label?: string;
+  /** 组内行数（组头，含子孙分组） */
+  count?: number;
+  /** 组原始值（组头） */
+  value?: unknown;
+  /** 分组路径（组头，多级折叠 key：`v1::v2`） */
+  path?: string;
+  /** 子节点：下级组头或数据行（组头） */
+  children?: GroupNode[];
+  [key: string]: unknown;
+}
+
+/** 按字段逐级分组的递归实现（OSC-0015）；空 groupFields 直接返回原行 */
+function groupLevel(
+  rows: Record<string, unknown>[],
+  groupFields: string[],
+  level: number,
+  meta: Map<string, FieldMeta>,
+  parentPath: string,
+): GroupNode[] {
+  if (level >= groupFields.length) return rows as GroupNode[];
+
+  const fieldName = groupFields[level];
+  const fm = meta.get(fieldName);
+  const groups = new Map<string, GroupNode>();
+
+  for (const row of rows) {
+    const raw = getValueByKey(row, fieldName);
+    const value = raw == null ? '' : String(raw);
+    const label = value === '' ? '未分组' : (fm?.dataSource?.[value] ?? value);
+    let node = groups.get(value);
+    if (!node) {
+      node = {
+        __group: true,
+        __groupHeader: { label, path: parentPath ? `${parentPath}::${value}` : value },
+        groupField: fieldName,
+        label,
+        value,
+        path: parentPath ? `${parentPath}::${value}` : value,
+        count: 0,
+        children: [],
+      };
+      groups.set(value, node);
+    }
+    node.children!.push(row as GroupNode);
+    node.count! += 1;
+  }
+
+  const out: GroupNode[] = [];
+  for (const node of groups.values()) {
+    // 多级：对组内行再按下一字段分组；count 重算为子节点总和
+    if (level + 1 < groupFields.length) {
+      node.children = groupLevel(node.children!, groupFields, level + 1, meta, node.path!);
+      node.count = (node.children as GroupNode[]).reduce(
+        (acc, c) => acc + (c.__group ? (c.count ?? 0) : 1),
+        0,
+      );
+    }
+    out.push(node);
+  }
+  return out;
+}
+
+/**
+ * 多字段多级分组（OSC-0015）。对已加载数据按 groupFields 逐级分组为树结构，
+ * 组头含 label（dataSource 翻译）、count（含子孙）与 path（折叠 key）。
+ * 空 groupFields / 空数据 / 未知分组字段：安全回退（未知字段按空值进「未分组」）。
+ */
+export function groupRows(
+  records: Record<string, unknown>[],
+  groupFields: string[],
+  fields: FieldMeta[],
+): GroupNode[] {
+  if (!records.length || !groupFields.length) return records as GroupNode[];
+  const meta = new Map(fields.map((f) => [f.name, f]));
+  return groupLevel(records, groupFields, 0, meta, '');
+}
+
+/** 是否为多级分组组头节点（OSC-0015；ListTable 识别组头行） */
+export function isGroupHeaderRow(row: Record<string, unknown>): boolean {
+  return (row as GroupNode).__group === true;
+}
+
+/** 组头行首列显示文案：`label (count)`；非组头行返回 null（OSC-0015） */
+export function groupHeaderCell(row: Record<string, unknown>): string | null {
+  const node = row as GroupNode;
+  if (node.__group !== true) return null;
+  return `${node.__groupHeader?.label ?? node.label ?? ''} (${node.count ?? 0})`;
+}
+
+/** 分组字段上限（OSC-0015：≤3 字段） */
+export const GROUP_FIELDS_LIMIT = 3;
+
+/** 可继续添加的分组字段候选：未选、且未达上限（OSC-0015） */
+export function nextGroupFieldNames(
+  allFields: string[],
+  selected: readonly string[],
+  limit = GROUP_FIELDS_LIMIT,
+): string[] {
+  if (selected.length >= limit) return [];
+  const chosen = new Set(selected);
+  return allFields.filter((f) => !chosen.has(f));
+}
+
+/** 添加分组字段：去重 + 上限保护；非法返回原数组（OSC-0015） */
+export function pushGroupField(
+  group: readonly string[],
+  field: string,
+  limit = GROUP_FIELDS_LIMIT,
+): string[] {
+  if (!field || group.includes(field) || group.length >= limit) return [...group];
+  return [...group, field];
+}
+
+/** 上移（dir=-1）/下移（dir=1）；越界或非法返回原数组（OSC-0015） */
+export function moveGroupField(
+  group: readonly string[],
+  index: number,
+  dir: -1 | 1,
+): string[] {
+  const target = index + dir;
+  if (index < 0 || index >= group.length || target < 0 || target >= group.length) {
+    return [...group];
+  }
+  const next = [...group];
+  [next[index], next[target]] = [next[target], next[index]];
+  return next;
+}
+
+/** 删除指定下标分组字段（OSC-0015） */
+export function removeGroupField(group: readonly string[], index: number): string[] {
+  return group.filter((_, i) => i !== index);
+}
+
 export const VIEW_KIND_LABEL: Record<ViewKind, string> = {
   table: '表格',
   tree: '树状',

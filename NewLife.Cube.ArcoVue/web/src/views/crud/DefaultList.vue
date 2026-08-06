@@ -47,20 +47,57 @@
             <a-button v-if="flags.canAdd" type="primary" @click="openAdd">+ 添加记录</a-button>
           </a-space>
           <a-space>
-            <a-button
-              v-if="chrome.showFilter"
-              type="text"
-              @click="filterPanelOpen = !filterPanelOpen"
+            <FilterBuilderPopover
+              :visible="filterPopoverVisible"
+              :fields="searchFields"
+              :model-value="viewFilter"
+              :can-save="!!activeViewId"
+              @update:visible="onFilterPopoverVisible"
+              @apply="onFilterApply"
+              @save="onFilterSave"
             >
-              筛选
-            </a-button>
-            <a-button
-              v-if="isTableLikeViewKind(activeViewKind) && chrome.showGroup"
-              type="text"
-              @click="onToolbarGroup"
+              <a-space :size="4" class="tb-popover-anchor">
+                <a-button v-if="chrome.showFilter" type="text">
+                  筛选
+                </a-button>
+                <a-tag
+                  v-if="viewFilter.conditions.length"
+                  color="arcoblue"
+                  class="tb-tag"
+                  @click.stop="onClearFilter"
+                >
+                  {{ viewFilter.conditions.length }} 条
+                </a-tag>
+              </a-space>
+            </FilterBuilderPopover>
+
+            <GroupPopover
+              :visible="groupPopoverVisible"
+              :fields="listFields"
+              :model-value="viewGroup"
+              :can-save="!!activeViewId"
+              @update:visible="onGroupPopoverVisible"
+              @apply="onGroupApply"
+              @save="onGroupSave"
             >
-              分组
-            </a-button>
+              <a-space :size="4" class="tb-popover-anchor">
+                <a-button
+                  v-if="isTableLikeViewKind(activeViewKind) && chrome.showGroup"
+                  type="text"
+                >
+                  分组
+                </a-button>
+                <a-tag
+                  v-if="viewGroup.length"
+                  color="arcoblue"
+                  class="tb-tag"
+                  @click.stop="onClearGroup"
+                >
+                  按 {{ groupLabel }}
+                </a-tag>
+              </a-space>
+            </GroupPopover>
+
             <a-button
               v-if="isTableLikeViewKind(activeViewKind) && chrome.showSort"
               type="text"
@@ -130,7 +167,7 @@
             </a-alert>
             <ListTable
               v-if="tableColumns.length"
-              :records="treeRows"
+              :records="displayRows"
               :columns="tableColumns"
               :row-key="pkField"
               :selected-keys="selectedKeys"
@@ -142,6 +179,7 @@
               :enable-sort="chrome.showSort"
               :sort-state="activeSort"
               :hierarchy="activeViewKind === 'tree' && treeDataDetected"
+              :grouped="isGrouped"
               :height="resolvedTableHeight"
               @row-dbl-click="openDetail"
               @selection-change="onSelectionChange"
@@ -339,10 +377,13 @@ import {
   getActiveView,
   mergeColumns,
   resolveChrome,
+  emptyViewFilter,
   type ColumnPref,
   type EntityViewState,
   type FormLayout,
   type ViewChrome,
+  type ViewFilter,
+  type ViewGroup,
   type ViewInsight,
   type ViewKind,
   type ViewMapping,
@@ -356,12 +397,19 @@ import {
   parseViewKind,
   resolveBatchDeleteState,
   resolveViewPageSize,
+  groupRows,
   type CalendarMapping,
   type CardMapping,
   type GanttMapping,
   type KanbanMapping,
 } from '@/core/utils/viewMapping';
-import { cleanSearchParams, collectSearchKeys, parseUrlSearch } from '@/core/utils/searchFilters';
+import {
+  cleanSearchParams,
+  collectSearchKeys,
+  filterToSearchParams,
+  matchesViewFilter,
+  parseUrlSearch,
+} from '@/core/utils/searchFilters';
 import { detectTreeData } from '@/core/utils/tree';
 import { buildTree, canBuildTree } from '@/core/utils/treeBuilder';
 import QueryInsightPanel from '@/features/search/QueryInsightPanel.vue';
@@ -377,6 +425,8 @@ import FormLayoutDrawer from './FormLayoutDrawer.vue';
 import TemplateManageDrawer from './TemplateManageDrawer.vue';
 import ViewTabsToolbar from './ViewTabsToolbar.vue';
 import ViewConfigDrawer from './ViewConfigDrawer.vue';
+import FilterBuilderPopover from './FilterBuilderPopover.vue';
+import GroupPopover from './GroupPopover.vue';
 
 const props = defineProps<{
   type: string;
@@ -547,10 +597,13 @@ const baseSearch = computed(() => {
   return {};
 });
 
-/** 唯一有效搜索条件：会话内未搜索时取基准，搜索/重置后取表单正规化结果 */
+/** 唯一有效搜索条件：会话内未搜索时取基准，搜索/重置后取表单正规化结果；
+ *  叠加筛选构建器扁平参数（filter 覆盖同名字段，OSC-0015） */
 const effectiveSearch = computed(() => {
-  if (!searchTouched.value) return baseSearch.value;
-  return cleanSearchParams({ ...searchForm }, searchKeys.value);
+  const base = searchTouched.value
+    ? cleanSearchParams({ ...searchForm }, searchKeys.value)
+    : baseSearch.value;
+  return { ...base, ...viewFilterParams.value.params };
 });
 
 /** 条件来源提示（不显示内部 JSON 或字段值） */
@@ -648,8 +701,53 @@ const advancedVisible = computed(
     isAdmin.value,
 );
 
-const filterPanelOpen = ref(false);
 const searchPanelOpen = ref(true);
+
+/** 筛选/分组弹层互斥：同一时刻只展示一个（OSC-0015） */
+const activePopover = ref<'filter' | 'group' | null>(null);
+const filterPopoverVisible = computed({
+  get: () => activePopover.value === 'filter',
+  set: (v: boolean) => {
+    activePopover.value = v ? 'filter' : null;
+  },
+});
+const groupPopoverVisible = computed({
+  get: () => activePopover.value === 'group',
+  set: (v: boolean) => {
+    activePopover.value = v ? 'group' : null;
+  },
+});
+
+/** 当前命名视图的筛选构建器方案（OSC-0015） */
+const viewFilter = computed<ViewFilter>(() => evpStore.getFilter(typePath.value));
+
+/** 当前命名视图的多级分组字段（OSC-0015） */
+const viewGroup = computed<ViewGroup>(() => evpStore.getGroup(typePath.value));
+
+/** 筛选条件 → 扁平请求参数（OSC-0015）；any 多条件时标记需客户端二次过滤 */
+const viewFilterParams = computed(() =>
+  filterToSearchParams(viewFilter.value, searchFields.value, searchKeys.value),
+);
+
+/** 分组展示：仅 table/tree 视图且配置了分组字段 */
+const isGrouped = computed(
+  () => viewGroup.value.length > 0 && isTableLikeViewKind(activeViewKind.value),
+);
+
+/** 分组标签文案：字段显示名用 / 连接 */
+const groupLabel = computed(() =>
+  viewGroup.value
+    .map((name) => {
+      const f = listFields.value.find((x) => x.name === name);
+      return f?.displayName || name;
+    })
+    .join(' / '),
+);
+
+/** 表格数据：分组视图时对 treeRows 做多级分组（组头节点 + 数据行） */
+const displayRows = computed(() =>
+  isGrouped.value ? groupRows(treeRows.value, viewGroup.value, listFields.value) : treeRows.value,
+);
 
 const listShellStyle = computed(() => {
   const c = chrome.value;
@@ -692,8 +790,8 @@ const listSurfaceStyle = computed(() => {
 const showSearchPanel = computed(
   () =>
     searchFields.value.length > 0 &&
-    ((chrome.value.showSearch && searchPanelOpen.value) ||
-      (chrome.value.showFilter && filterPanelOpen.value)),
+    chrome.value.showSearch &&
+    searchPanelOpen.value,
 );
 
 const resolvedTableHeight = computed(() => {
@@ -897,7 +995,13 @@ async function loadData() {
       ...sort,
       ...effectiveSearch.value,
     });
-    const rows = (res.data as Record<string, unknown>[]) || [];
+    let rows = (res.data as Record<string, unknown>[]) || [];
+    // any 多条件降级：后端仅表达 AND，需对已加载数据做 OR 二次过滤（OSC-0015）
+    if (viewFilterParams.value.clientOnly) {
+      rows = rows.filter((r) =>
+        matchesViewFilter(r, viewFilter.value, searchFields.value),
+      );
+    }
     tableData.value = rows;
     statData.value = (res.stat as Record<string, unknown>) ?? null;
     if (res.page) pagination.total = res.page.totalCount || 0;
@@ -1207,12 +1311,56 @@ async function navigateRecord(delta: -1 | 1) {
   await loadRecordIntoDrawer(row, mode);
 }
 
-function onToolbarGroup() {
-  Message.info('分组能力将在后续版本提供');
-}
-
 function onToolbarSort() {
   Message.info('请点击表头进行排序');
+}
+
+/** 筛选弹层可见性（互斥：打开筛选关闭分组） */
+function onFilterPopoverVisible(v: boolean) {
+  activePopover.value = v ? 'filter' : null;
+}
+
+/** 分组弹层可见性（互斥：打开分组关闭筛选） */
+function onGroupPopoverVisible(v: boolean) {
+  activePopover.value = v ? 'group' : null;
+}
+
+/** 应用筛选方案：更新视图状态并重新请求（翻页完整） */
+function onFilterApply(filter: ViewFilter) {
+  evpStore.updateFilter(typePath.value, filter);
+  pagination.current = 1;
+  loadData();
+}
+
+/** 保存筛选方案到当前命名视图（不立即刷新，下次打开自动应用） */
+function onFilterSave(filter: ViewFilter) {
+  evpStore.updateFilter(typePath.value, filter);
+  Message.success('筛选方案已保存到此视图');
+}
+
+/** 清除筛选方案：清空并重新请求 */
+function onClearFilter() {
+  evpStore.updateFilter(typePath.value, emptyViewFilter());
+  pagination.current = 1;
+  loadData();
+  Message.success('已清除筛选');
+}
+
+/** 应用分组方案：更新视图状态（纯前端，无需重新请求） */
+function onGroupApply(group: ViewGroup) {
+  evpStore.updateGroup(typePath.value, group);
+}
+
+/** 保存分组方案到当前命名视图 */
+function onGroupSave(group: ViewGroup) {
+  evpStore.updateGroup(typePath.value, group);
+  Message.success('分组方案已保存到此视图');
+}
+
+/** 清除分组方案 */
+function onClearGroup() {
+  evpStore.updateGroup(typePath.value, []);
+  Message.success('已清除分组');
 }
 
 async function handleSave() {
@@ -1466,6 +1614,15 @@ onMounted(bootstrap);
 .advanced-upload-option :deep(.arco-upload) {
   display: block;
   width: 100%;
+}
+/* 筛选/分组弹层锚点与已应用标签（OSC-0015） */
+.tb-popover-anchor {
+  display: inline-flex;
+  align-items: center;
+}
+.tb-tag {
+  cursor: pointer;
+  user-select: none;
 }
 .list-pager {
   margin-top: 12px;

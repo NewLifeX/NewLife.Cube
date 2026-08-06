@@ -66,6 +66,10 @@ pnpm build
 - **查询洞察面板（OSC-0012）**：搜索区与统计标签 / 一张固定图表合并为单一查询与洞察面板（`QueryInsightPanel`），统计与图表与列表共用同一搜索条件；命名视图配置抽屉可独立开关统计与图表，无数据 / 无权限 / 失败均非阻塞降级。
 - **页面级 PageSize（OSC-0012）**：每页条数按 `typePath` 保存到 `ViewProfile.pageSize`（仅接受 20/50/100/200/500/1000），切换实体互不影响；未配置时回落旧全局 `workspace.pageSize` 种子，分页器变更不再写全局偏好。
 - **受限表单布局（OSC-0013）**：`ViewProfile.formJson` 按「新增 / 编辑 / 详情」三模式独立保存字段顺序、显隐与 Category 折叠；列表顶栏「表单布局」入口可分别配置并恢复当前模式默认。仅展示偏好——字段权限、必填、校验与提交载荷仍由 GetPage / `prepareSubmitPayload` 权威决定，隐藏字段不能绕过。
+- **筛选构建器（OSC-0015）**：工具栏「筛选」打开 Popover 弹层（非 Drawer），条件行竖排增删、AND/OR 切换、操作符仅 `eq`（全字段）/ `between`（范围字段）；`eq` 扁平为 `字段=值`、`between` 扁平为 `字段_min/字段_max` 并入搜索请求，条件组保存到 `NamedView.filter`（`ViewsJson`）随视图自动应用；AND 多条件后端原生表达，OR 多条件标记客户端二次过滤（后端仅 AND 语义）。「已筛选 N 条」标签可一键清除。
+- **多级分组（OSC-0015）**：工具栏「分组」打开 Popover，按 `listFields` 可分组字段有序增删（最多 3 个）并上移/下移，保存到 `NamedView.group`；table/tree 视图按 `groupRows` 分组为树（组头行显示 `label (count)`，dataSource 翻译、空值「未分组」），组头点击折叠/展开（折叠集为会话内存）。筛选/分组弹层互斥展开。
+- **搜索面板一行折叠（OSC-0015）**：搜索字段容器默认一行，溢出时底部显示「展开更多 N」/「收起」（`offsetHeight > clientHeight` 判定），字段增删后重置折叠态。
+- **LOV LIST 远程搜索（OSC-0015）**：LIST 单选下拉支持输入关键字远程搜索（防抖 300ms，携带 `q` 参数调 `/Admin/Lov/ListData`），空输入回首页；ENUM 与「更多」高级表格入口不变。
 - 列表页顶部工具栏（筛选/搜索，table/tree 另有分组/排序）右侧「高级」菜单承载当前实体的导入/导出/批量删除；表格默认左侧勾选 + 表头全选，批量删除受删除权限、视图允许删除与选中行共同门禁（OSC-0007）。
 - 卡片视图支持**标准 / 偏大 / 整行**三种布局（`NamedView.mapping.layout`），并可配置正文字段列数与横/竖排版；整行布局窄屏自动回退纵向，多行/长文本字段自动占满整行。
 - 列表/树/卡片/看板视图中 `Enable` 字段徽标可点击，直接调用后端 `EnableSelect/DisableSelect`（`GET {type}/EnableSelect?keys=`）启停；非 Enable 的状态/枚举/值集徽标悬停光标不变（OSC-0009）。

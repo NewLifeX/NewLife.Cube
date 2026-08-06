@@ -246,13 +246,7 @@ describe('viewProfile store filters & pageSize (OSC-0012)', () => {
 });
 
 describe('viewProfile store formJson (OSC-0013)', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia());
-    getViewProfile.mockReset();
-    putViewProfile.mockReset();
-    deleteViewProfile.mockReset();
-    messageError.mockReset();
-  });
+
 
   it('loads formJson from wire and exposes mode layouts', async () => {
     getViewProfile.mockResolvedValue({
@@ -397,7 +391,135 @@ describe('viewProfile store formJson (OSC-0013)', () => {
   });
 });
 
+describe('viewProfile store filter/group (OSC-0015)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    getViewProfile.mockReset();
+    putViewProfile.mockReset();
+    deleteViewProfile.mockReset();
+    messageError.mockReset();
+  });
+
+  it('updateFilter/getFilter round-trip 并持久化到 viewsJson', async () => {
+    getViewProfile.mockResolvedValue({
+      data: {
+        typePath: 'Admin/User',
+        view: 'table',
+        activeViewId: 'default',
+        viewsJson: JSON.stringify([
+          { id: 'default', name: '默认列表', view: 'table', columns: [{ key: 'Name', visible: true }] },
+        ]),
+      },
+    });
+    putViewProfile.mockResolvedValue({ data: {} });
+    const store = useViewProfileStore();
+    await store.load('Admin/User', ['Name']);
+    const filter = {
+      logic: 'all',
+      conditions: [
+        { field: 'Name', op: 'eq', value: 'a' },
+        { field: 'Enable', op: 'between', value: 1, value2: 5 },
+      ],
+    } as const;
+    store.updateFilter('Admin/User', filter, true);
+    expect(store.getFilter('Admin/User')).toEqual(filter);
+    expect(putViewProfile).toHaveBeenCalledWith(
+      expect.objectContaining({
+        typePath: 'Admin/User',
+        viewsJson: expect.stringContaining('"filter"'),
+      }),
+    );
+  });
+
+  it('updateFilter 空方案等价清除（filter 字段被移除）', async () => {
+    getViewProfile.mockResolvedValue({
+      data: {
+        typePath: 'Admin/User',
+        view: 'table',
+        activeViewId: 'default',
+        viewsJson: JSON.stringify([
+          {
+            id: 'default',
+            name: '默认列表',
+            view: 'table',
+            columns: [{ key: 'Name', visible: true }],
+            filter: { logic: 'all', conditions: [{ field: 'Name', op: 'eq', value: 'a' }] },
+          },
+        ]),
+      },
+    });
+    putViewProfile.mockResolvedValue({ data: {} });
+    const store = useViewProfileStore();
+    await store.load('Admin/User', ['Name']);
+    expect(store.getFilter('Admin/User').conditions).toHaveLength(1);
+    store.updateFilter('Admin/User', { logic: 'all', conditions: [] }, true);
+    expect(store.getFilter('Admin/User').conditions).toEqual([]);
+  });
+
+  it('updateGroup/getGroup round-trip 并持久化到 viewsJson', async () => {
+    getViewProfile.mockResolvedValue({
+      data: {
+        typePath: 'Admin/User',
+        view: 'table',
+        activeViewId: 'default',
+        viewsJson: JSON.stringify([
+          { id: 'default', name: '默认列表', view: 'table', columns: [{ key: 'Name', visible: true }] },
+        ]),
+      },
+    });
+    putViewProfile.mockResolvedValue({ data: {} });
+    const store = useViewProfileStore();
+    await store.load('Admin/User', ['Name']);
+    const group = ['DepartmentId', 'RoleId'];
+    store.updateGroup('Admin/User', group, true);
+    expect(store.getGroup('Admin/User')).toEqual(group);
+    expect(putViewProfile).toHaveBeenCalledWith(
+      expect.objectContaining({
+        viewsJson: expect.stringContaining('"group"'),
+      }),
+    );
+  });
+
+  it('updateGroup 空数组清除分组', async () => {
+    getViewProfile.mockResolvedValue({
+      data: {
+        typePath: 'Admin/User',
+        view: 'table',
+        activeViewId: 'default',
+        viewsJson: JSON.stringify([
+          {
+            id: 'default',
+            name: '默认列表',
+            view: 'table',
+            columns: [{ key: 'Name', visible: true }],
+            group: ['DepartmentId'],
+          },
+        ]),
+      },
+    });
+    putViewProfile.mockResolvedValue({ data: {} });
+    const store = useViewProfileStore();
+    await store.load('Admin/User', ['Name']);
+    expect(store.getGroup('Admin/User')).toEqual(['DepartmentId']);
+    store.updateGroup('Admin/User', [], true);
+    expect(store.getGroup('Admin/User')).toEqual([]);
+  });
+
+  it('getFilter/getGroup 未加载时返回安全空值', () => {
+    const store = useViewProfileStore();
+    expect(store.getFilter('Admin/None')).toEqual({ logic: 'all', conditions: [] });
+    expect(store.getGroup('Admin/None')).toEqual([]);
+  });
+});
+
 describe('viewProfile store template domains (OSC-0014)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    getViewProfile.mockReset();
+    putViewProfile.mockReset();
+    deleteViewProfile.mockReset();
+    messageError.mockReset();
+  });
   const viewsTemplate = JSON.stringify([
     {
       id: 'default',

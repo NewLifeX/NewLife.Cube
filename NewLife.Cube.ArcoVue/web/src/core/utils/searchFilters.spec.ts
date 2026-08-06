@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   cleanSearchParams,
   collectSearchKeys,
+  filterToSearchParams,
+  matchesViewFilter,
   parseUrlSearch,
   resolveStatEntries,
 } from './searchFilters';
@@ -76,5 +78,127 @@ describe('resolveStatEntries', () => {
 
   it('returns empty array when stat is null', () => {
     expect(resolveStatEntries(null)).toEqual([]);
+  });
+});
+
+describe('filterToSearchParams (OSC-0015)', () => {
+  const keys = new Set(['Status', 'Name', 'Age_min', 'Age_max']);
+
+  it('empty filter yields no params', () => {
+    expect(filterToSearchParams(null, [], keys)).toEqual({ params: {}, clientOnly: false });
+    expect(filterToSearchParams({ logic: 'all', conditions: [] }, [], keys)).toEqual({
+      params: {},
+      clientOnly: false,
+    });
+  });
+
+  it('eq emits field=value and array joins by comma', () => {
+    const r = filterToSearchParams(
+      {
+        logic: 'all',
+        conditions: [
+          { field: 'Status', op: 'eq', value: 1 },
+          { field: 'Role', op: 'eq', value: ['a', 'b'] },
+        ],
+      },
+      [],
+      new Set(['Status', 'Role']),
+    );
+    expect(r.params).toEqual({ Status: 1, Role: 'a,b' });
+    expect(r.clientOnly).toBe(false);
+  });
+
+  it('between emits _min/_max and supports one-sided', () => {
+    const r = filterToSearchParams(
+      {
+        logic: 'all',
+        conditions: [{ field: 'Age', op: 'between', value: 18, value2: 60 }],
+      },
+      [],
+      keys,
+    );
+    expect(r.params).toEqual({ Age_min: 18, Age_max: 60 });
+    const one = filterToSearchParams(
+      { logic: 'all', conditions: [{ field: 'Age', op: 'between', value: 18 }] },
+      [],
+      keys,
+    );
+    expect(one.params).toEqual({ Age_min: 18 });
+  });
+
+  it('unknown fields are stripped by keys and empty values dropped', () => {
+    const r = filterToSearchParams(
+      {
+        logic: 'all',
+        conditions: [
+          { field: 'Unknown', op: 'eq', value: 1 },
+          { field: 'Name', op: 'eq', value: '' },
+        ],
+      },
+      [],
+      keys,
+    );
+    expect(r.params).toEqual({});
+  });
+
+  it('logic=any with >1 conditions flags clientOnly', () => {
+    const r = filterToSearchParams(
+      {
+        logic: 'any',
+        conditions: [
+          { field: 'Status', op: 'eq', value: 1 },
+          { field: 'Name', op: 'eq', value: 'x' },
+        ],
+      },
+      [],
+      keys,
+    );
+    expect(r.params).toEqual({ Status: 1, Name: 'x' });
+    expect(r.clientOnly).toBe(true);
+  });
+});
+
+describe('matchesViewFilter (OSC-0015)', () => {
+  it('any logic passes when at least one condition matches', () => {
+    const f = {
+      logic: 'any' as const,
+      conditions: [
+        { field: 'Status', op: 'eq' as const, value: 1 },
+        { field: 'Name', op: 'eq' as const, value: 'x' },
+      ],
+    };
+    expect(matchesViewFilter({ status: 2, name: 'x' }, f, [])).toBe(true);
+    expect(matchesViewFilter({ status: 2, name: 'y' }, f, [])).toBe(false);
+  });
+
+  it('all logic requires every condition', () => {
+    const f = {
+      logic: 'all' as const,
+      conditions: [
+        { field: 'Status', op: 'eq' as const, value: 1 },
+        { field: 'Name', op: 'eq' as const, value: 'x' },
+      ],
+    };
+    expect(matchesViewFilter({ status: 1, name: 'x' }, f, [])).toBe(true);
+    expect(matchesViewFilter({ status: 1, name: 'y' }, f, [])).toBe(false);
+  });
+
+  it('between matches numeric and date-string ranges', () => {
+    const f = {
+      logic: 'all' as const,
+      conditions: [{ field: 'Age', op: 'between' as const, value: 18, value2: 60 }],
+    };
+    expect(matchesViewFilter({ age: 20 }, f, [])).toBe(true);
+    expect(matchesViewFilter({ age: 10 }, f, [])).toBe(false);
+    const df = {
+      logic: 'all' as const,
+      conditions: [{ field: 'CreateTime', op: 'between' as const, value: '2026-01-01', value2: '2026-12-31' }],
+    };
+    expect(matchesViewFilter({ createTime: '2026-06-01' }, df, [])).toBe(true);
+    expect(matchesViewFilter({ createTime: '2025-06-01' }, df, [])).toBe(false);
+  });
+
+  it('empty filter always matches', () => {
+    expect(matchesViewFilter({}, { logic: 'all', conditions: [] }, [])).toBe(true);
   });
 });
