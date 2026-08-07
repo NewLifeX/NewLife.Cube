@@ -49,7 +49,7 @@ export default defineConfigWithVueTs(
 
   {
     ...pluginVitest.configs.recommended,
-    files: ['src/**/__tests__/*'],
+    files: ['**/__tests__/*'],
   },
 
   ...oxlint.configs['flat/recommended'],

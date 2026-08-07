@@ -90,7 +90,7 @@ import { computed, nextTick, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { Delete, Close, Promotion, FullScreen, CopyDocument } from '@element-plus/icons-vue';
 import { marked } from 'marked';
-import { Session } from '/@/utils/storage';
+import { getAccessToken } from '../../utils/token';
 
 interface Props {
   /** 页面类型：list / form / detail */
@@ -268,7 +268,7 @@ async function postOperationResult(checkpointId: string, result: string) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(Session.get('token') ? { Authorization: `${Session.get('token')}` } : {}),
+        ...(getAccessToken() ? { Authorization: `${getAccessToken()}` } : {}),
       },
       body: JSON.stringify({ checkpointId, result }),
     });
@@ -317,7 +317,7 @@ async function send() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(Session.get('token') ? { Authorization: `${Session.get('token')}` } : {}),
+        ...(getAccessToken() ? { Authorization: `${getAccessToken()}` } : {}),
       },
       body: JSON.stringify({
         sessionId,
@@ -407,7 +407,7 @@ function clear() {
 async function loadConfig() {
   try {
     const resp = await fetch('/Cube/GetAiConfig', {
-      headers: Session.get('token') ? { Authorization: `${Session.get('token')}` } : {},
+      headers: getAccessToken() ? { Authorization: `${getAccessToken()}` } : {},
     });
     if (!resp.ok) return;
     const json = await resp.json();
