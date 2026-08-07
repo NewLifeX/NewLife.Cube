@@ -269,15 +269,15 @@ public class LovAutoRegisterService
     /// <returns>是否成功注册或更新</returns>
     private static Boolean RegisterList(LovListAttribute attr, MethodInfo method)
     {
+        // 零参数 [LovList]：先自动推断 LovCode（含区域段），再校验前缀
+        InferLovList(attr, method);
+
         if (attr.LovCode.IsNullOrEmpty())
             return false;
 
         // 校验前缀：列表型值集 LovCode 必须以 List. 开头
         if (!attr.LovCode.StartsWith("List.", StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException($"LovList 特性的 LovCode 必须以 'List.' 开头：{attr.LovCode}");
-
-        // 自动推断未指定的属性（RequestUrl、Method、Name）
-        InferLovList(attr, method);
 
         var def = LovDefinition.Find(LovDefinition._.LovCode == attr.LovCode);
         if (def == null)
@@ -397,6 +397,39 @@ public class LovAutoRegisterService
         {
             var controllerName = method.DeclaringType?.Name.Replace("Controller", "");
             attr.Name = $"{controllerName}.{method.Name}";
+        }
+
+        // 推断 LovCode：零参数 [LovList] 时自动推断为 List.{Area}.{Controller}.{Action}
+        // 控制器无区域（AreaAttribute / AreaBase）则跳过区域段，退化为 List.{Controller}.{Action}
+        if (attr.LovCode.IsNullOrEmpty())
+        {
+            var controllerType = method.DeclaringType;
+            var controllerName = controllerType?.Name.Replace("Controller", "");
+
+            // 从控制器类的 AreaAttribute（AreaBase 继承该特性）反射获取区域段；无则跳过
+            String area = null;
+            if (controllerType != null)
+            {
+                var areaAttr = controllerType.GetCustomAttributes(inherit: true)
+                    .FirstOrDefault(a =>
+                    {
+                        var t = a.GetType();
+                        var baseFullName = t.BaseType?.FullName;
+                        return t.FullName == "Microsoft.AspNetCore.Mvc.AreaAttribute"
+                            || baseFullName == "Microsoft.AspNetCore.Mvc.AreaAttribute"
+                            || t.Name == "AreaBase"
+                            || (baseFullName != null && baseFullName.EndsWith("AreaBase"));
+                    });
+                if (areaAttr != null)
+                {
+                    area = GetAttributeProperty(areaAttr, "RouteValue") as String;
+                    if (area.IsNullOrEmpty()) area = GetAttributeProperty(areaAttr, "Name") as String;
+                }
+            }
+
+            attr.LovCode = area.IsNullOrEmpty()
+                ? $"List.{controllerName}.{method.Name}"
+                : $"List.{area}.{controllerName}.{method.Name}";
         }
 
         // 推断请求地址
