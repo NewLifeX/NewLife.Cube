@@ -458,10 +458,11 @@ public partial class ReadOnlyEntityController<TEntity>
             catch (Exception ex) { XTrace.WriteLine("AiChat 解析 _query 失败：{0}", ex.Message); }
         }
 
-        // 构建工具：当前实体上下文 + 内置工具。CreateCubeTools 可重载以定制工具与数据逻辑
+        // 构建工具：当前实体上下文 + 通用系统信息 + 内置工具。CreateCubeTools 可重载以定制工具与数据逻辑
         var tools = CreateCubeTools(pager, req.Id);
         var registry = new ToolRegistry();
         registry.AddTools(tools);
+        registry.AddTools(new SystemInfoToolService());
         registry.AddTools(new BuiltinToolService());
 
         // 系统提示词：注入页面上下文，保留子类重载

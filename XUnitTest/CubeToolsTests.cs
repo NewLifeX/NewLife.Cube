@@ -209,15 +209,5 @@ public class CubeToolsTests
         Assert.Contains("fill_form", user);
     }
 
-    [Fact]
-    [DisplayName("GetSystemInfo - 返回服务器运行指标")]
-    public void GetSystemInfo_ReturnsMetrics()
-    {
-        var tools = CreateTools();
-        var json = tools.GetSystemInfo();
-
-        Assert.Contains("cpu", json);
-        Assert.Contains("machineName", json);
-    }
     #endregion
 }

@@ -4,6 +4,7 @@ using NewLife.AI.Tools;
 using NewLife.Collections;
 using NewLife.Common;
 using NewLife.Cube.AI;
+using NewLife.Cube.Areas.Admin;
 using NewLife.Serialization;
 using XCode.Membership;
 
@@ -15,8 +16,11 @@ namespace NewLife.Cube.Controllers;
 /// 非实体页面（首页、魔方设置、系统信息、系统诊断等）无此端点，由本控制器提供全局 <c>{area}/Ai/AiChat</c>，
 /// 注册系统信息与浏览器操作等通用工具，SSE 流式返回，与实体端点共用 <see cref="AiChatEndpoint"/> 输出管道。
 /// 浏览器操作回传亦放全局控制器而非各实体控制器，避免为每个实体页面重复增加接口。
+/// 注意：必须标记 <see cref="AdminArea"/>，否则非区域控制器无法命中约定路由 <c>{area}/{controller}/{action}</c>，
+/// 前端拼出的 <c>/Admin/Ai/AiChat</c> 等地址将返回 404。消费方均在 Admin 区域（首页/魔方设置/系统信息等）。
 /// </remarks>
 [DisplayName("AI")]
+[AdminArea]
 public class AiController : ControllerBaseX
 {
     /// <summary>AI 对话（全局）。供非实体页面使用的通用对话端点，SSE 流式返回</summary>
@@ -29,8 +33,11 @@ public class AiController : ControllerBaseX
         var (error, svc, req) = await AiChatEndpoint.ParseAsync(this);
         if (error != null || svc == null || req == null) return error!;
 
-        // 通用工具：系统信息 + 浏览器操作，无实体上下文工具
+        // 通用工具：系统信息 + 浏览器操作，无实体上下文工具。
+        // get_system_info 由 SystemInfoToolService 提供（与实体工具集 CubeTools 共用实现），
+        // 供"系统诊断"等场景采集服务器指标；内置工具另含 get_current_time / calculate。
         var registry = new ToolRegistry();
+        registry.AddTools(new SystemInfoToolService());
         registry.AddTools(new BuiltinToolService());
 
         var systemPrompt = BuildChatSystemPrompt(req);

@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
 using NewLife.AI.Tools;
 using NewLife.Cube.ViewModels;
 using NewLife.Serialization;
@@ -12,7 +11,8 @@ namespace NewLife.Cube.AI;
 /// <typeparam name="TEntity">实体类型</typeparam>
 /// <remarks>
 /// 实例化魔方工具集。
-/// 对外暴露 4 个 AI 工具：get_data_context（当前数据上下文）/ get_form_schema（表单结构）/ fill_form（回填表单）/ get_system_info（服务器状态）。
+/// 对外暴露 3 个实体上下文工具：get_data_context（当前数据上下文）/ get_form_schema（表单结构）/ fill_form（回填表单）。
+/// 系统信息工具 get_system_info 由 <see cref="SystemInfoToolService"/> 统一提供（实体与全局端点共用），不再包含在本工具集。
 /// 工具方法均为 virtual；数据收集方法 GetListContext / GetRecordContext 为 protected virtual，
 /// 二次开发者可继承本类重写数据收集逻辑（如调整洞察范围、表单字段、记录字段），
 /// 也可由控制器重写 <c>CreateCubeTools</c> 返回自定义工具集。
@@ -126,27 +126,6 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
         return new ToolResult(ToolContent.ForUser(user), ToolContent.ForLlm(llm));
     }
 
-    /// <summary>收集服务器运行指标，供系统健康诊断使用</summary>
-    [ToolDescription("get_system_info", ReadOnly = true)]
-    [DisplayName("获取系统状态")]
-    [Description("获取当前服务器运行指标，包括 CPU 使用率、内存、进程工作集、系统信息等，供系统健康诊断使用")]
-    public virtual String GetSystemInfo()
-    {
-        var mi = MachineInfo.Current ?? new MachineInfo();
-        var process = Process.GetCurrentProcess();
-        var sysInfo = new
-        {
-            cpu = $"{mi.CpuRate:P0}",
-            temperature = mi.Temperature,
-            memoryAvailable = $"{mi.AvailableMemory / 1024 / 1024:N0}M",
-            memoryTotal = $"{mi.Memory / 1024 / 1024:N0}M",
-            workingSet = $"{process.WorkingSet64 / 1024 / 1024:N0}M",
-            openTime = TimeSpan.FromMilliseconds(Environment.TickCount64).ToString(@"dd\.hh\:mm\:ss"),
-            os = mi.OSName + " " + mi.OSVersion,
-            machineName = Environment.MachineName,
-        };
-        return sysInfo.ToJson();
-    }
     #endregion
 
     #region 数据收集

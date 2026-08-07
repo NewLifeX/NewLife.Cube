@@ -75,6 +75,7 @@
     <Compile Include="..\NewLife.Cube\AI\IAIChatService.cs" Link="AI\IAIChatService.cs" />
     <Compile Include="..\NewLife.Cube\AI\CubeAIChatService.cs" Link="AI\CubeAIChatService.cs" />
     <Compile Include="..\NewLife.Cube\AI\AiChatEndpoint.cs" Link="AI\AiChatEndpoint.cs" />
+    <Compile Include="..\NewLife.Cube\AI\SystemInfoToolService.cs" Link="AI\SystemInfoToolService.cs" />
     <Compile Include="..\NewLife.Cube\AI\Jobs\AISecurityReportJob.cs" Link="AI\Jobs\AISecurityReportJob.cs" />
   </ItemGroup>
 
