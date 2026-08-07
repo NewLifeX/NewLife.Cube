@@ -8,7 +8,7 @@ namespace NewLife.Cube.AI;
 /// <summary>AI 对话端点公共逻辑。实体控制器（带实体工具）与全局控制器（通用工具）共用请求解析与 SSE 输出管道</summary>
 /// <remarks>
 /// 实体页面对话走 <c>{控制器}/AiChat</c>（实体控制器自带数据上下文工具），
-/// 非实体页面（首页、魔方设置、系统信息等）走全局 <c>{area}/Ai/AiChat</c>（通用工具）。
+/// 非实体页面（首页、魔方设置、系统信息等）走全局 <c>/Ai/AiChat</c>（通用工具）。
 /// 两个宿主共用本类的请求校验与 SSE 流式输出逻辑，避免重复实现。
 /// </remarks>
 public static class AiChatEndpoint

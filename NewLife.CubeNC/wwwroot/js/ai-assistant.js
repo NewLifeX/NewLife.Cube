@@ -316,35 +316,21 @@
 
     /* ================= 浏览器操作（run_js） ================= */
     /**
-     * 获取 AI 端点基础路径：去掉当前页面动作段（/Index /Add /Edit /Detail/{id}），
-     * 得到控制器路径；否则在表单/详情页会拼出 /Admin/User/Add/AiChat 这类错误路由
-     */
-    function getAiBasePath() {
-        return location.pathname
-            .replace(/\/Index$/i, '')
-            .replace(/\/(?:Add|Edit|Detail)(?:\/\d+)?$/i, '');
-    }
-
-    /**
-     * 获取 AI 对话端点 URL。
-     * 实体页面由服务端注入 data-ai-url 为空，走实体控制器路径 {控制器}/AiChat（带数据上下文工具）；
-     * 非实体页面（魔方设置/首页/系统信息等）服务端注入全局端点 {area}/Ai/AiChat（通用工具），
-     * 避免拼出不存在的端点导致 404 报错。
+     * 获取 AI 对话端点 URL：由服务端注入 data-ai-url
+     * （实体页面 {area}/{controller}/AiChat 带数据上下文工具，非实体页面 /Ai/AiChat 通用工具），
+     * 前端直接读取，不再自行拼接端点地址。
      */
     function getAiChatUrl() {
         var container = getEl('aiAssistant');
-        var injected = container ? container.getAttribute('data-ai-url') : '';
-        if (injected) return injected;
-        return getAiBasePath() + '/AiChat';
+        return container ? (container.getAttribute('data-ai-url') || '') : '';
     }
 
     /**
-     * 获取浏览器操作回传端点：魔方后台区域前缀（如 /Admin）+ 全局 AI 控制器 OperationResult，
+     * 获取浏览器操作回传端点：全局 AI 控制器 OperationResult（统一无区域前缀），
      * 所有实体页面共用，不在各实体控制器上重复增加接口
      */
     function getAiOperationUrl() {
-        var m = location.pathname.match(/^\/([^\/]+)/);
-        return (m ? '/' + m[1] : '') + '/Ai/OperationResult';
+        return '/Ai/OperationResult';
     }
 
     /** 序列化脚本执行结果，处理循环引用/函数等无法 JSON 化的值 */

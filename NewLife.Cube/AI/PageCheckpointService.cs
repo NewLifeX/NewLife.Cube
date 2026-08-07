@@ -9,7 +9,7 @@ namespace NewLife.Cube.AI;
 /// <list type="number">
 /// <item>工具调用 <see cref="NewCheckpointId"/> 生成检查点编号，经自身持有的 SSE 写回调下发 run_js 事件给前端</item>
 /// <item>工具调用 <see cref="WaitForChoiceAsync"/> 以检查点编号挂起等待（最长 30 秒）</item>
-/// <item>前端执行脚本后 <c>POST /Admin/Ai/OperationResult</c> 回传，<see cref="Respond"/> 解除等待</item>
+/// <item>前端执行脚本后 <c>POST /Ai/OperationResult</c> 回传，<see cref="Respond"/> 解除等待</item>
 /// <item>工具返回执行结果，LLM 继续推理</item>
 /// </list>
 /// 挂起状态存进程内（跨请求共享，回传是独立 HTTP 请求）；检查点记录绑定当前用户，防止跨用户串扰；

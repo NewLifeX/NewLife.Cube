@@ -5,15 +5,17 @@
     var set = CubeSetting.Current;
     var user = Context.User.Identity as IUser;
 
-    // 实体页面（EntityController）自带 AiChat 动作，走实体控制器路径；其余页面（魔方设置/首页/系统信息等）
-    // 回退到全局 AI 控制器 {area}/Ai/AiChat，避免前端拼出不存在的端点导致 404
+    // 实体页面（EntityController）自带 AiChat 动作，注入实体控制器端点 {area}/{controller}/AiChat（带数据上下文工具）；
+    // 其余页面（魔方设置/首页/系统信息等）注入全局 AI 控制器 /Ai/AiChat（通用工具）。
+    // 统一由服务端注入完整 data-ai-url，前端直接读取，不再自行拼接端点地址。
     var ad = ViewContext.ActionDescriptor as ControllerActionDescriptor;
     var hasAiChat = ad?.ControllerTypeInfo != null && ad.ControllerTypeInfo.AsType().GetMethod("AiChat") != null;
-    var aiUrl = "";
-    if (!hasAiChat)
+    var aiUrl = "/Ai/AiChat";
+    if (hasAiChat)
     {
         var area = ViewContext.RouteData.Values["area"] + "";
-        aiUrl = (area.IsNullOrEmpty() ? "" : "/" + area) + "/Ai/AiChat";
+        var controller = ViewContext.RouteData.Values["controller"] + "";
+        aiUrl = (area.IsNullOrEmpty() ? "" : "/" + area) + "/" + controller + "/AiChat";
     }
 }
 @if (set.AISwitch && user != null)

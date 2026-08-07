@@ -111,7 +111,8 @@ public sealed class AiAssistantTests : IAsyncLifetime
         var fab = _page.Locator("#aiAssistantFab");
 
         // 注入 AI 助手浮窗并加载真实 ai-assistant.js（不依赖 AISwitch 设置）
-        await EnsureAiAssistantAsync(_page);
+        // 注入浮窗并指向实体控制器对话端点（/Admin/UserStat 为实体页，自带 AiChat 数据上下文工具）
+        await EnsureAiAssistantWithUrlAsync(_page, "/Admin/UserStat/AiChat");
 
         // 拦截 AiChat 返回含 Markdown 表格的假 SSE
         var content = "| 名称 | 值 |\n|---|---|\n| 维度 | 123 |";
@@ -461,11 +462,11 @@ public sealed class AiAssistantTests : IAsyncLifetime
         if (await real.CountAsync() > 0)
         {
             var injected = await real.GetAttributeAsync("data-ai-url");
-            Assert.Equal("/Admin/Ai/AiChat", injected);
+            Assert.Equal("/Ai/AiChat", injected);
         }
 
         // 注入浮窗并强制 data-ai-url 指向全局端点（不依赖 AISwitch 设置）
-        await EnsureAiAssistantWithUrlAsync(_page, "/Admin/Ai/AiChat");
+        await EnsureAiAssistantWithUrlAsync(_page, "/Ai/AiChat");
 
         // 拦截全局端点，记录请求 URL 并返回假 SSE
         var requestUrl = "";
@@ -495,7 +496,7 @@ public sealed class AiAssistantTests : IAsyncLifetime
         await WaitForBubbleTextAsync(_page, "全局端点可达");
 
         // 请求应打到全局端点而非不存在的 {controller}/AiChat
-        Assert.True(requestUrl.Contains("/Admin/Ai/AiChat"), $"[{testId}] 非实体页未路由到全局端点：{requestUrl}");
+        Assert.True(requestUrl.Contains("/Ai/AiChat"), $"[{testId}] 非实体页未路由到全局端点：{requestUrl}");
 
         var text = await panel.Locator(".ai-bubble").Last.InnerTextAsync();
         Assert.True(text.Contains("全局端点可达"), $"[{testId}] 未收到全局端点回复：'{text}'");
@@ -517,7 +518,7 @@ public sealed class AiAssistantTests : IAsyncLifetime
         await PageHelpers.AssertNoServerErrorAsync(_page, testId);
 
         // 注入浮窗并强制 data-ai-url（不依赖 AISwitch 设置）
-        await EnsureAiAssistantWithUrlAsync(_page, "/Admin/Ai/AiChat");
+        await EnsureAiAssistantWithUrlAsync(_page, "/Ai/AiChat");
 
         // 模拟旧行为：端点返回 404 HTML 错误页（非 JSON 响应体）
         await _page.RouteAsync("**/Ai/AiChat", async route =>
@@ -610,7 +611,7 @@ public sealed class AiAssistantTests : IAsyncLifetime
 
     /// <summary>注入 AI 助手浮窗并强制 data-ai-url 指向指定端点（模拟服务端注入，不依赖 AISwitch 设置）</summary>
     /// <param name="page">当前页面</param>
-    /// <param name="url">全局对话端点 URL（如 /Admin/Ai/AiChat）</param>
+    /// <param name="url">全局对话端点 URL（如 /Ai/AiChat）</param>
     private static async Task EnsureAiAssistantWithUrlAsync(IPage page, String url)
     {
         await EnsureAiAssistantAsync(page);

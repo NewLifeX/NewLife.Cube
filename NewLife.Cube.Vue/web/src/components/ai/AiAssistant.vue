@@ -256,10 +256,9 @@ function serializeResult(v: any): string {
   return JSON.stringify(v);
 }
 
-/** 获取浏览器操作回传端点：区域前缀 + 全局 AI 控制器 OperationResult，所有实体页面共用 */
+/** 获取浏览器操作回传端点：全局 AI 控制器 OperationResult（统一无区域前缀），所有实体页面共用 */
 function getAiOperationUrl(): string {
-  const seg = props.url.split('/')[0];
-  return (seg ? seg + '/Ai/OperationResult' : 'Ai/OperationResult');
+  return 'Ai/OperationResult';
 }
 
 /** 回传浏览器操作结果到全局 AI 控制器，完成等待中的工具调用 */

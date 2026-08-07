@@ -4,7 +4,6 @@ using NewLife.AI.Tools;
 using NewLife.Collections;
 using NewLife.Common;
 using NewLife.Cube.AI;
-using NewLife.Cube.Areas.Admin;
 using NewLife.Serialization;
 using XCode.Membership;
 
@@ -13,14 +12,15 @@ namespace NewLife.Cube.Controllers;
 /// <summary>AI 全局接口。承载与实体无关的 AI 辅助端点，如通用对话与浏览器操作结果回传</summary>
 /// <remarks>
 /// 实体页面（EntityController）自带 <c>{控制器}/AiChat</c> 对话端点（含数据上下文工具）；
-/// 非实体页面（首页、魔方设置、系统信息、系统诊断等）无此端点，由本控制器提供全局 <c>{area}/Ai/AiChat</c>，
+/// 非实体页面（首页、魔方设置、系统信息、系统诊断等）无此端点，由本控制器提供全局 <c>/Ai/AiChat</c>，
 /// 注册系统信息与浏览器操作等通用工具，SSE 流式返回，与实体端点共用 <see cref="AiChatEndpoint"/> 输出管道。
 /// 浏览器操作回传亦放全局控制器而非各实体控制器，避免为每个实体页面重复增加接口。
-/// 注意：必须标记 <see cref="AdminArea"/>，否则非区域控制器无法命中约定路由 <c>{area}/{controller}/{action}</c>，
-/// 前端拼出的 <c>/Admin/Ai/AiChat</c> 等地址将返回 404。消费方均在 Admin 区域（首页/魔方设置/系统信息等）。
+/// 本控制器为全局控制器（不标记 <see cref="AdminArea"/>），路由统一为 <c>/Ai/[action]</c>（无区域前缀），
+/// 所有调用方（MVC _AiAssistant / ai-assistant.js / Vue AiAssistant.vue）统一使用该地址；
+/// 非区域控制器命中不了 <c>{area}/{controller}/{action}</c> 约定路由，只能靠属性路由显式声明。
 /// </remarks>
 [DisplayName("AI")]
-[AdminArea]
+[Route("Ai/[action]")]
 public class AiController : ControllerBaseX
 {
     /// <summary>AI 对话（全局）。供非实体页面使用的通用对话端点，SSE 流式返回</summary>

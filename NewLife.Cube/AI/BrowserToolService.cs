@@ -11,7 +11,7 @@ namespace NewLife.Cube.AI;
 /// 工具调用时生成检查点编号并经 <see cref="PageCheckpointService"/> 挂起等待，
 /// 同时经 <see cref="Writer"/>（SSE 写回调，由宿主在构造后注入）下发
 /// <c>{"type":"run_js","checkpointId":...,"script":...}</c> 事件；
-/// 前端以 <c>new Function(script)</c> 执行后 <c>POST /Admin/Ai/OperationResult</c> 回传结果，
+/// 前端以 <c>new Function(script)</c> 执行后 <c>POST /Ai/OperationResult</c> 回传结果，
 /// 工具返回给 LLM 继续对话。脚本运行在用户自己浏览器、自己登录会话内，等价用户在 DevTools 中执行。
 /// 工具实例为每请求新建，Writer 为实例属性（请求内隔离，无全局可变状态）。
 /// run_js 是首个浏览器工具，后续可在此类追加 read_element / write_element / click 等页面操作工具。
