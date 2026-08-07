@@ -100,7 +100,8 @@ function normalizeLoginResult(data: LoginResult): LoginResult {
  *
  * 返回前对 data 做字段名归一化（oAuth / providers → oauth）。
  *
- * AuthController 路由不带 /api 前缀，直接请求 /Auth/LoginConfig。
+ * AuthController 路由不带 /api 前缀，统一经请求层拼接 baseUrl（API_HOST）转发；
+ * 请确保 baseUrl 能到达 Auth 服务。
  *
  * @returns 登录配置响应
  * @throws 网络错误或 HTTP 状态码非 200 时抛出异常
@@ -128,7 +129,7 @@ export async function fetchLoginConfig(): Promise<ApiResponse<LoginConfig>> {
  * 返回前对 data 做字段名归一化
  * （access_token / Token → accessToken，兼容 snake_case 和 PascalCase）。
  *
- * AuthController 路由不带 /api 前缀，直接请求 /Auth/Login。
+ * AuthController 路由不带 /api 前缀，统一经请求层拼接 baseUrl（API_HOST）转发。
  *
  * @param username 用户名
  * @param password 密码（明文，通过 HTTPS 传输）

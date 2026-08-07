@@ -174,9 +174,9 @@ const loading = reactive({
 const uploadRef = ref()
 const avatarUploadRef = ref()
 
-// 上传地址（Admin 区域实体接口，带 /api 前缀）
-const uploadAction = (getConfig().request.baseUrl || '') + '/Admin/File/Upload'
-const uploadAvatarAction = (getConfig().request.baseUrl || '') + '/Admin/File/UploadAvatar'
+// 上传地址（Admin 区域实体接口，baseUrl 仅主机、不内含 /api，故路径自带 /api 前缀）
+const uploadAction = (getConfig().request.baseUrl || '') + '/api/Admin/File/Upload'
+const uploadAvatarAction = (getConfig().request.baseUrl || '') + '/api/Admin/File/UploadAvatar'
 
 // 获取文件列表
 const getFileList = async () => {
