@@ -32,6 +32,28 @@ const BASE_PATH = '';
 const INDEX_ROUTE_PATH = '/';
 
 /**
+ * 为实体/区域请求路径补齐 /api 前缀（幂等）。
+ *
+ * 早期 /api 由 API_HOST(baseUrl) 统一携带；现 baseUrl 只承载主机、不再内含 /api，
+ * 故由各请求路径自行决定前缀。本函数作为请求层兜底，对「未自带 /api 的相对路径」
+ * 统一补 /api，等同于旧逻辑 `baseUrl 含 /api` 时的效果：
+ *
+ *   - 服务接口（/Auth /Sso /Mfa /OAuth 及 /Cube 服务动作 Info/Apis/...）：
+ *     后端本就无 /api 前缀，`isServiceApiPath` 判定为服务接口，原样返回、不补；
+ *   - 已自带 /api 的路径（如 routeToApiPrefix 派生、或 Lov/Uploader 显式写）：
+ *     原样返回、不重复补；
+ *   - 其余相对路径（实体/区域控制器 /Admin/*、/Cube/App 等）：
+ *     统一补 /api，最终拼接为 `${API_HOST}/api/...`。
+ *
+ * @param url 相对路径（非 http(s):// 绝对地址）
+ */
+function ensureApiPrefix(url: string): string {
+  if (isServiceApiPath(url)) return url;
+  if (url.startsWith('/api')) return url;
+  return `/api${url}`;
+}
+
+/**
  * 重定向到登录页
  * @param {Object} options - 配置选项
  * @param {string} options.loginPageUrl - 可选的登录页URL
@@ -75,9 +97,11 @@ notWithTokenAxios.interceptors.request.use((config) => {
     request: { baseUrl: API_HOST },
   } = getConfig();
   let { url = '' } = config;
-  // 服务接口（/Auth /Sso /Cube 等）无 /api 前缀，不拼接 API_HOST；其余实体接口拼接
-  if (url.indexOf('://') === -1 && !url.startsWith('/_api') && !isServiceApiPath(url)) {
-    url = `${API_HOST}${url}`;
+  // 统一拼接 API_HOST：所有相对路径（非 http(s):// 绝对地址）都经 baseUrl 转发，
+  // 由 baseUrl 决定实际后端地址；绝对地址按接口自身指定，不拼接。
+  // 各接口自行决定路径是否带 /api 前缀；兜底补全：非服务接口且未自带 /api 的相对路径统一补 /api。
+  if (url.indexOf('://') === -1) {
+    url = `${API_HOST}${ensureApiPrefix(url)}`;
   }
   return {
     ...config,
@@ -348,9 +372,11 @@ function handleRequestConfig(config: InternalAxiosRequestConfig) {
   const { baseUrl: API_HOST, requestInterceptor, additionalRequestHeader: additionalRequestHeaderConfig } = requestConfig;
   let { url = '' } = config || {};
 
-  // 服务接口（/Auth /Sso /Cube 等）无 /api 前缀，不拼接 API_HOST；其余实体接口拼接
-  if (url.indexOf('://') === -1 && !url.startsWith('/_api') && !isServiceApiPath(url)) {
-    url = `${API_HOST}${url}`;
+  // 统一拼接 API_HOST：所有相对路径（非 http(s):// 绝对地址）都经 baseUrl 转发，
+  // 由 baseUrl 决定实际后端地址；绝对地址按接口自身指定，不拼接。
+  // 各接口自行决定路径是否带 /api 前缀；兜底补全：非服务接口且未自带 /api 的相对路径统一补 /api。
+  if (url.indexOf('://') === -1) {
+    url = `${API_HOST}${ensureApiPrefix(url)}`;
   }
 
   // 添加额外的请求头

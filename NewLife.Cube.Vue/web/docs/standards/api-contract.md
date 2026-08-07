@@ -4,7 +4,26 @@
 
 所有业务 HTTP 请求通过 `core/utils/request.ts`。它负责基地址、认证、401 跳转、网络错误通知、响应拦截和标准响应的失败处理。
 
-相对 URL 会与 `getConfig().request.baseUrl` 拼接；以 `/_api` 开头或绝对 URL 不会被拼接。
+相对 URL 统一与 `getConfig().request.baseUrl` 拼接；以 `http(s)://` 开头的绝对地址不拼接（按接口自身指定主机）。`baseUrl` 只承载主机，**不再内含 `/api` 前缀**。
+
+各请求路径自行决定是否带 `/api` 前缀，请求层不再按前缀猜测是否拼接：
+
+- **实体 / 区域控制器**（如 `/Cube/App`、`/Admin/Lov`、`/Admin/User`）：路由派生自页面路由，由 `routeToApiPrefix()` 统一拼 `/api`，如 `/device/device-profile` → `/api/Device/DeviceProfile`。
+- **服务控制器**（Auth / Sso / Mfa / OAuth 及 `/Cube` 的服务动作）：后端无 `/api` 前缀，由各自硬编码路径直接写 `/Auth/Login`、`/Sso/Login` 等，不流经 `routeToApiPrefix`。注意 `/Cube` **不是整类服务接口**——仅 Info/Apis/UserSearch/GetArea/GetPageConfig/SaveLayout/Lookup/MenuTree/Setting/File 等少数服务动作不带 `/api`，其余 `/Cube/App` 等实体仍带 `/api`。
+
+### 兜底补全（request.ts）
+
+`core/utils/request.ts` 拦截器统一拼接 `API_HOST` 后，经 `ensureApiPrefix(url)` 兜底：
+
+- 服务接口（`isServiceApiPath`，即 /Auth /Sso /Mfa /OAuth 及 /Cube 服务动作）→ 原样、不补 /api；
+- 已以 `/api` 开头 → 原样、不重复补；
+- 其余相对路径（实体 / 区域）→ 统一补 `/api`，最终 `${API_HOST}/api/...`。
+
+等价旧 `baseUrl 内含 /api` 行为，apps 下硬编码的 `/Admin/*`、`/Cube/App` 等无需逐一改。
+
+### 另一条链路：cubeApi（@cube/api-core）
+
+`core/composables/useCubeApi.ts` 的 `cubeApi`（含 `page`/`client`/`user`/`menu`/`config`）是 `@cube/api-core` 的 `createCubeApi` 实例，**不经过 request.ts 拦截器**。其 `createCubeApi` 约定 `baseURL` 为「实体 base（含 /api）」，服务客户端由 `getServiceBaseUrl` 自动去 /api 派生。故 `useCubeApi.ts` 在调用时把 `cfg.request.baseUrl`（现仅主机、不含 /api）补回 `/api` 再传入（`API_BASE`），确保 `page`/`client` 实体请求 `/api/{area}/...`，`user`/`menu`/`config` 服务请求经派生后不带 /api。`usePageApi('Admin','Lov')`、`cubeApi.client.request('/Admin/Lov/SaveConfig')` 均走此链路，务必保持 `API_BASE` 补 /api。
 
 ## 标准响应
 

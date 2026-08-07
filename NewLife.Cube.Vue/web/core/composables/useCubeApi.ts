@@ -25,6 +25,18 @@ import type { ApiResponse, PageParams } from '@cube/api-core';
 
 const cfg = getConfig();
 
+// baseUrl 现仅承载主机、不再内含 /api（与 request.ts 的请求层模型一致）。
+// createCubeApi 的实体客户端(entityClient)期望 baseURL 为「实体 base（含 /api）」，
+// 服务客户端(serviceClient)由其经 getServiceBaseUrl 自动去掉 /api 派生。
+// 故此处把 /api 补回再传入，确保实体接口（page/client）请求 /api/{area}/...，
+// 服务接口（user/menu/config：/Auth /Cube /Sso 等）经派生后不带 /api。
+const API_BASE = (() => {
+  const raw = (cfg.request.baseUrl ?? '').replace(/\/+$/, '');
+  if (!raw) return '/api';
+  if (/\/api$/i.test(raw)) return raw;
+  return `${raw}/api`;
+})();
+
 /**
  * cubeApi 全局实例
  *
@@ -33,7 +45,7 @@ const cfg = getConfig();
  * Token 存储使用 localStorage（与 @newlifex/cube-vue core/utils/token.ts 一致）。
  */
 const cubeApi = createCubeApi({
-  baseURL: cfg.request.baseUrl,
+  baseURL: API_BASE,
   tokenStorage: 'localStorage',
   onFieldError: (fieldErrors) => {
     // 统一展示字段级验证错误（如"编码不可以为空！"），无需每个页面单独处理

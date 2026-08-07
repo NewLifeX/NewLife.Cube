@@ -33,7 +33,7 @@ import type {
  * ```
  */
 export async function fetchLovMeta(lovCode: string): Promise<LovMetaResponse> {
-  const res = await request.get('/Admin/Lov/Meta', { params: { lovCode } });
+  const res = await request.get('/api/Admin/Lov/Meta', { params: { lovCode } });
   return res.data;
 }
 
@@ -56,7 +56,7 @@ export async function fetchLovMeta(lovCode: string): Promise<LovMetaResponse> {
 export async function fetchLovListData<T = Record<string, unknown>>(
   requestParams: LovListDataRequest,
 ): Promise<LovListDataResponse<T>> {
-  const res = await request.post('/Admin/Lov/ListData', requestParams);
+  const res = await request.post('/api/Admin/Lov/ListData', requestParams);
   // 后端返回结构：{ data: [...], total: number }
   const body = res.data;
   return {
@@ -80,7 +80,7 @@ export async function fetchLovListData<T = Record<string, unknown>>(
 export async function fetchBatchLabel(
   requestParams: LovBatchLabelRequest,
 ): Promise<LovBatchLabelResponse> {
-  const res = await request.post('/Admin/Lov/BatchLabel', requestParams);
+  const res = await request.post('/api/Admin/Lov/BatchLabel', requestParams);
   return res.data;
 }
 
