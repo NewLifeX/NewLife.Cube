@@ -141,7 +141,11 @@
             var m = location.pathname.match(/\/(?:Detail|Edit)\/(\d+)/i);
             if (m) id = parseInt(m[1], 10);
         }
-        return { page: page, mode: mode, query: query, id: id };
+        // 目标页面标识：由服务端 data-ai-area / data-ai-controller 注入，全局 AiController 据此解析目标控制器能力
+        var container = getEl('aiAssistant');
+        var area = container ? (container.getAttribute('data-ai-area') || '') : '';
+        var controller = container ? (container.getAttribute('data-ai-controller') || '') : '';
+        return { page: page, mode: mode, query: query, id: id, area: area, controller: controller };
     }
 
     /* ================= 会话 UI ================= */
@@ -316,9 +320,8 @@
 
     /* ================= 浏览器操作（run_js） ================= */
     /**
-     * 获取 AI 对话端点 URL：由服务端注入 data-ai-url
-     * （实体页面 {area}/{controller}/AiChat 带数据上下文工具，非实体页面 /Ai/AiChat 通用工具），
-     * 前端直接读取，不再自行拼接端点地址。
+     * 获取 AI 对话端点 URL：统一由服务端注入 data-ai-url（恒为全局端点 /Ai/AiChat），
+     * 目标页面标识经 data-ai-area / data-ai-controller 注入，POST 时随请求体发送。
      */
     function getAiChatUrl() {
         var container = getEl('aiAssistant');
@@ -409,6 +412,8 @@
                 mode: ctx.mode,
                 id: ctx.id,
                 query: ctx.query,
+                area: ctx.area,
+                controller: ctx.controller,
                 think: think
             })
         }).then(function (response) {

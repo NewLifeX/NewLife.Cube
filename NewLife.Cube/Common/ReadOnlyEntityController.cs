@@ -4,9 +4,8 @@ using System.Reflection;
 using System.Xml.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NewLife.Cube.Extensions;
+using NewLife.Cube.AI;
 using NewLife.Cube.ViewModels;
-using NewLife.Data;
 using NewLife.Log;
 using NewLife.Serialization;
 using NewLife.Web;
@@ -18,7 +17,7 @@ namespace NewLife.Cube;
 
 /// <summary>只读实体控制器基类</summary>
 /// <typeparam name="TEntity"></typeparam>
-public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity : Entity<TEntity>, new()
+public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntityAiContext where TEntity : Entity<TEntity>, new()
 {
     #region 构造
     /// <summary>动作执行前</summary>

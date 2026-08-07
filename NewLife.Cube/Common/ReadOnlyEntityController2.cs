@@ -434,45 +434,8 @@ public partial class ReadOnlyEntityController<TEntity>
     #endregion
 
     #region AI 对话
-    /// <summary>AI 对话助手。通过工具调用完成数据分析、表单填写等操作，SSE 流式返回</summary>
-    /// <returns></returns>
-    [DisplayName("AI 对话")]
-    [EntityAuthorize(PermissionFlags.Detail)]
-    [HttpPost]
-    public async Task<ActionResult> AiChat()
-    {
-        // 请求校验（AISwitch/服务注册/请求体）与 SSE 输出管道由 AiChatEndpoint 统一提供
-        var (error, svc, req) = await AiChatEndpoint.ParseAsync(this);
-        if (error != null || svc == null || req == null) return error!;
-
-        // 当前查询条件（_query Base64 解码）
-        var pager = default(Pager);
-        if (!req.Query.IsNullOrEmpty())
-        {
-            try
-            {
-                var queryData = req.Query.ToBase64().ToStr();
-                pager = new Pager();
-                pager.Parse(queryData);
-            }
-            catch (Exception ex) { XTrace.WriteLine("AiChat 解析 _query 失败：{0}", ex.Message); }
-        }
-
-        // 构建工具：当前实体上下文 + 通用系统信息 + 内置工具。CreateCubeTools 可重载以定制工具与数据逻辑
-        var tools = CreateCubeTools(pager, req.Id);
-        var registry = new ToolRegistry();
-        registry.AddTools(tools);
-        registry.AddTools(new SystemInfoToolService());
-        registry.AddTools(new BuiltinToolService());
-
-        // 系统提示词：注入页面上下文，保留子类重载
-        var systemPrompt = BuildChatSystemPrompt(req, pager);
-
-        // SSE 输出（含浏览器操作工具注册）
-        await AiChatEndpoint.RunSseAsync(this, svc, req, systemPrompt, registry);
-
-        return new EmptyResult();
-    }
+    // AI 对话端点已统一收拢到全局 AiController（/Ai/AiChat）。
+    // 本控制器实现 IEntityAiContext 能力接口，向全局端点提供数据查询（SearchData）、工具集（CreateCubeTools）与提示词（BuildChatSystemPrompt）等重载点。
 
     /// <summary>创建 AI 工具集。二次开发者可重载，返回自定义工具集以调整 AI 使用的数据逻辑</summary>
     /// <remarks>
@@ -536,6 +499,16 @@ public partial class ReadOnlyEntityController<TEntity>
         return sb.Return(true);
     }
 
+    #region 能力接口
+    // IEntityAiContext：向全局 AiController 暴露实体 AI 重载点（仿 IPageDataContext 能力接口模式），子类重载经 virtual 委托生效
+    IEntityFactory IEntityAiContext.Factory => Factory;
+
+    IEnumerable<Object> IEntityAiContext.SearchData(Pager p) => SearchData(p).Cast<Object>();
+
+    Object IEntityAiContext.CreateCubeTools(Pager? pager, Int64 entityId) => CreateCubeTools(pager, entityId);
+
+    String IEntityAiContext.BuildChatSystemPrompt(AiChatRequest req, Pager? pager) => BuildChatSystemPrompt(req, pager);
+    #endregion
     #endregion
 
     #region 实体操作重载

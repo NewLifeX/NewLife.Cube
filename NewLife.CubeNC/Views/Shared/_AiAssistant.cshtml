@@ -1,27 +1,19 @@
-@using Microsoft.AspNetCore.Mvc.Controllers
 @using NewLife.Cube;
 @using XCode.Membership
 @{
     var set = CubeSetting.Current;
     var user = Context.User.Identity as IUser;
 
-    // 实体页面（EntityController）自带 AiChat 动作，注入实体控制器端点 {area}/{controller}/AiChat（带数据上下文工具）；
-    // 其余页面（魔方设置/首页/系统信息等）注入全局 AI 控制器 /Ai/AiChat（通用工具）。
-    // 统一由服务端注入完整 data-ai-url，前端直接读取，不再自行拼接端点地址。
-    var ad = ViewContext.ActionDescriptor as ControllerActionDescriptor;
-    var hasAiChat = ad?.ControllerTypeInfo != null && ad.ControllerTypeInfo.AsType().GetMethod("AiChat") != null;
-    var aiUrl = "/Ai/AiChat";
-    if (hasAiChat)
-    {
-        var area = ViewContext.RouteData.Values["area"] + "";
-        var controller = ViewContext.RouteData.Values["controller"] + "";
-        aiUrl = (area.IsNullOrEmpty() ? "" : "/" + area) + "/" + controller + "/AiChat";
-    }
+    // 所有页面统一走全局 AI 控制器 /Ai/AiChat（实体页含数据上下文工具），
+    // 服务端依据 area/controller 解析目标页面控制器并调用其 AI 能力接口。
+    // 统一由服务端注入端点地址与目标页面标识（data-ai-area / data-ai-controller），前端直接读取，不再自行拼接端点地址。
+    var area = ViewContext.RouteData.Values["area"] + "";
+    var controller = ViewContext.RouteData.Values["controller"] + "";
 }
 @if (set.AISwitch && user != null)
 {
     @* AI 助手：右下角悬浮球 + 对话面板。所有 MVC 主题共享 *@
-    <div id="aiAssistant" class="ai-assistant" data-ai-url="@aiUrl">
+    <div id="aiAssistant" class="ai-assistant" data-ai-url="/Ai/AiChat" data-ai-area="@area" data-ai-controller="@controller">
         <button type="button" id="aiAssistantFab" class="ai-fab" title="AI 助手">
             <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
                 <g fill="#2ecc71">

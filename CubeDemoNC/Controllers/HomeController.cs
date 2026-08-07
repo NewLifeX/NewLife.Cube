@@ -6,7 +6,7 @@ using NewLife.Serialization;
 namespace CubeDemo.Controllers
 {
     /// <summary>主页面。实现 <see cref="IPageDataContext"/> 演示非实体页面为 AI 助手提供服务端数据上下文（get_page_context 工具优先调用）</summary>
-    public class HomeController : AiPageControllerBase, IPageDataContext
+    public class HomeController : ControllerBaseX, IPageDataContext
     {
         /// <summary>主页面</summary>
         /// <returns></returns>

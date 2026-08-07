@@ -1,7 +1,7 @@
 <!--
  * 魔方 AI 助手（Vue 版）悬浮窗
  * 右下角对话面板：SSE 流式对话 + 工具调用可视化 + 表单智能填充
- * 协议与 MVC 版 ai-assistant.js 一致：POST {url}/AiChat → SSE {type:text|tool|error|done}
+ * 协议与 MVC 版 ai-assistant.js 一致：POST /Ai/AiChat（body 携带 area/controller 目标页面）→ SSE {type:text|tool|error|done}
  -->
 <template>
   <div v-if="enabled" class="ai-assistant" :class="{ 'panel-open': visible }" :style="aiStyle">
@@ -101,7 +101,7 @@ interface Props {
   id?: number;
   /** 列表页查询条件（_query Base64），表单页可空 */
   query?: string;
-  /** AI 对话端点基础路径，如 'Admin/User'，请求 `${url}/AiChat` */
+  /** 目标页面控制器路径，如 'Admin/User' 或 'User'。请求统一走全局端点 /Ai/AiChat，经 area/controller 解析目标控制器能力 */
   url: string;
 }
 const props = withDefaults(defineProps<Props>(), {
@@ -306,8 +306,14 @@ async function send() {
   const am = appendAssistant();
   let full = '';
 
+  // 解析目标页面标识：url 如 'Admin/User' → area='Admin', controller='User'；'User' → area=''
+  const urlParts = (props.url || '').split('/');
+  const targetController = urlParts[urlParts.length - 1] || '';
+  const targetArea = urlParts.length > 1 ? urlParts.slice(0, -1).join('/') : '';
+
   try {
-    const resp = await fetch(`${props.url}/AiChat`, {
+    // 统一走全局 AI 端点，服务端按 area/controller 解析目标控制器能力（实体数据工具/页面上下文/通用工具）
+    const resp = await fetch('/Ai/AiChat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -320,6 +326,8 @@ async function send() {
         mode: props.mode,
         id: props.id || 0,
         query: props.query || '',
+        area: targetArea,
+        controller: targetController,
         think: think.value,
       }),
     });

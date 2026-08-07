@@ -21,6 +21,12 @@ public class AiChatRequest
     /// <summary>查询条件 Base64（_query）</summary>
     public String? Query { get; set; }
 
+    /// <summary>目标页面区域。如 Admin；非区域页面为空</summary>
+    public String? Area { get; set; }
+
+    /// <summary>目标页面控制器名。如 User，由前端从路由注入，全局 AiController 据此解析目标控制器</summary>
+    public String? Controller { get; set; }
+
     /// <summary>是否深度推理</summary>
     public Boolean Think { get; set; }
 

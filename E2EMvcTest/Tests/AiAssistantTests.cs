@@ -111,8 +111,8 @@ public sealed class AiAssistantTests : IAsyncLifetime
         var fab = _page.Locator("#aiAssistantFab");
 
         // 注入 AI 助手浮窗并加载真实 ai-assistant.js（不依赖 AISwitch 设置）
-        // 注入浮窗并指向实体控制器对话端点（/Admin/UserStat 为实体页，自带 AiChat 数据上下文工具）
-        await EnsureAiAssistantWithUrlAsync(_page, "/Admin/UserStat/AiChat");
+        // 实体页 /Admin/UserStat 统一走全局端点 /Ai/AiChat（服务端经 IEntityAiContext 提供数据上下文工具）
+        await EnsureAiAssistantWithUrlAsync(_page, "/Ai/AiChat");
 
         // 拦截 AiChat 返回含 Markdown 表格的假 SSE
         var content = "| 名称 | 值 |\n|---|---|\n| 维度 | 123 |";
@@ -453,16 +453,20 @@ public sealed class AiAssistantTests : IAsyncLifetime
         var pageErrors = new List<String>();
         _page.PageError += (_, msg) => pageErrors.Add(msg);
 
-        // 魔方设置页（ConfigController）为典型非实体页面，无 {controller}/AiChat 端点
+        // 魔方设置页（ConfigController）为典型非实体页面，统一走全局端点 /Ai/AiChat
         await PageHelpers.GotoAndWaitAsync(_page, "/Admin/Cube");
         await PageHelpers.AssertNoServerErrorAsync(_page, testId);
 
-        // 服务端注入验证：AISwitch 开启时真实浮窗渲染，data-ai-url 应指向全局端点
+        // 服务端注入验证：AISwitch 开启时真实浮窗渲染，data-ai-url 应指向全局端点，且注入目标页面标识供全局端点解析
         var real = _page.Locator("#aiAssistant");
         if (await real.CountAsync() > 0)
         {
             var injected = await real.GetAttributeAsync("data-ai-url");
             Assert.Equal("/Ai/AiChat", injected);
+            var area = await real.GetAttributeAsync("data-ai-area");
+            var controller = await real.GetAttributeAsync("data-ai-controller");
+            Assert.Equal("Admin", area);
+            Assert.Equal("Cube", controller);
         }
 
         // 注入浮窗并强制 data-ai-url 指向全局端点（不依赖 AISwitch 设置）
@@ -567,6 +571,10 @@ public sealed class AiAssistantTests : IAsyncLifetime
                 var div = document.createElement('div');
                 div.id = 'aiAssistant';
                 div.className = 'ai-assistant';
+                // 与 _AiAssistant.cshtml 服务端注入一致：全局端点 + 目标页面标识（不依赖 AISwitch 渲染真实浮窗）
+                div.setAttribute('data-ai-url', '/Ai/AiChat');
+                div.setAttribute('data-ai-area', 'Admin');
+                div.setAttribute('data-ai-controller', 'UserStat');
                 div.innerHTML =
                     '<button type=""button"" id=""aiAssistantFab"" class=""ai-fab"" title=""AI 助手""><i class=""fa fa-magic""></i></button>' +
                     '<div class=""ai-panel"" id=""aiAssistantPanel"" style=""display:none; position:fixed; right:20px; bottom:80px; width:380px; height:60vh; flex-direction:column;"">' +
@@ -609,9 +617,9 @@ public sealed class AiAssistantTests : IAsyncLifetime
         await page.WaitForFunctionAsync("() => window.CubeAI !== undefined", null, new PageWaitForFunctionOptions { Timeout = 5_000 });
     }
 
-    /// <summary>注入 AI 助手浮窗并强制 data-ai-url 指向指定端点（模拟服务端注入，不依赖 AISwitch 设置）</summary>
+    /// <summary>注入 AI 助手浮窗并强制 data-ai-url 指向全局端点（模拟服务端注入，不依赖 AISwitch 设置）</summary>
     /// <param name="page">当前页面</param>
-    /// <param name="url">全局对话端点 URL（如 /Ai/AiChat）</param>
+    /// <param name="url">全局对话端点 URL（恒为 /Ai/AiChat）</param>
     private static async Task EnsureAiAssistantWithUrlAsync(IPage page, String url)
     {
         await EnsureAiAssistantAsync(page);

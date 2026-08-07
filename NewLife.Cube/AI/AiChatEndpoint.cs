@@ -1,15 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
+using NewLife;
 using NewLife.AI.Tools;
+using NewLife.Log;
 using NewLife.Serialization;
+using NewLife.Web;
 using XCode.Membership;
 
 namespace NewLife.Cube.AI;
 
-/// <summary>AI 对话端点公共逻辑。实体控制器（带实体工具）与全局控制器（通用工具）共用请求解析与 SSE 输出管道</summary>
+/// <summary>AI 对话端点公共逻辑。全局 <see cref="Controllers.AiController"/>（实体工具/通用工具）共用请求解析与 SSE 输出管道</summary>
 /// <remarks>
-/// 实体页面对话走 <c>{控制器}/AiChat</c>（实体控制器自带数据上下文工具），
-/// 非实体页面（首页、魔方设置、系统信息等）走全局 <c>/Ai/AiChat</c>（通用工具）。
-/// 两个宿主共用本类的请求校验与 SSE 流式输出逻辑，避免重复实现。
+/// 所有页面统一走全局 <c>/Ai/AiChat</c> 端点：请求携带目标页面（area/controller），
+/// 由 <see cref="Controllers.AiController"/> 解析目标控制器能力（IEntityAiContext/IPageDataContext）后，
+/// 再经本类的请求校验与 SSE 流式输出逻辑执行对话，避免各宿主重复实现。
 /// </remarks>
 public static class AiChatEndpoint
 {
@@ -33,13 +36,35 @@ public static class AiChatEndpoint
         return (null, svc, req);
     }
 
+    /// <summary>解析对话请求中的查询条件（_query Base64 解码），失败返回 null</summary>
+    /// <param name="req">对话请求</param>
+    /// <returns>分页查询条件；无查询或解析失败时返回 null</returns>
+    public static Pager? DecodePager(AiChatRequest req)
+    {
+        if (req.Query.IsNullOrEmpty()) return null;
+
+        try
+        {
+            var queryData = req.Query.ToBase64().ToStr();
+            var pager = new Pager();
+            pager.Parse(queryData);
+            return pager;
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteLine("AiChat 解析 _query 失败：{0}", ex.Message);
+            return null;
+        }
+    }
+
     /// <summary>执行 SSE 流式对话。设置响应头、注册浏览器工具、调用对话服务</summary>
     /// <param name="ctrl">当前控制器</param>
     /// <param name="svc">AI 对话服务</param>
     /// <param name="req">对话请求</param>
     /// <param name="systemPrompt">系统提示词（由宿主构建以保留子类重载）</param>
     /// <param name="registry">工具注册表（宿主可先追加实体上下文工具与内置工具）</param>
-    public static async Task RunSseAsync(ControllerBaseX ctrl, IAIChatService svc, AiChatRequest req, String systemPrompt, ToolRegistry registry)
+    /// <param name="contextCtrl">目标页面控制器。用于 get_page_context 检测 <see cref="IPageDataContext"/> 服务端实现；为空时回退 ctrl</param>
+    public static async Task RunSseAsync(ControllerBaseX ctrl, IAIChatService svc, AiChatRequest req, String systemPrompt, ToolRegistry registry, ControllerBaseX? contextCtrl = null)
     {
         // SSE 写回调：ChatAsync 与浏览器工具服务共用，浏览器工具经它下发 run_js 事件到前端
         Func<String, Task> writeEvent = async json =>
@@ -55,8 +80,8 @@ public static class AiChatEndpoint
         var browser = new BrowserToolService(user?.ID ?? 0) { Writer = writeEvent, CheckpointService = cp };
         registry.AddTools(browser);
 
-        // 页面数据上下文工具：优先宿主控制器服务端实现（IPageDataContext），否则浏览器采集兜底。所有端点统一注册
-        registry.AddTools(new PageDataContextToolService(ctrl, browser));
+        // 页面数据上下文工具：优先目标页面控制器服务端实现（IPageDataContext），否则浏览器采集兜底。所有端点统一注册
+        registry.AddTools(new PageDataContextToolService(contextCtrl ?? ctrl, browser));
 
         // SSE 输出
         ctrl.Response.Headers["Content-Type"] = "text/event-stream; charset=utf-8";
