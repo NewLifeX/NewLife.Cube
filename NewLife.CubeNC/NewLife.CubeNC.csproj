@@ -64,7 +64,6 @@
     <Compile Include="..\NewLife.Cube\AI\AIService.cs" Link="AI\AIService.cs" />
     <Compile Include="..\NewLife.Cube\AI\AIPlugin.cs" Link="AI\AIPlugin.cs" />
     <Compile Include="..\NewLife.Cube\AI\Jobs\AILogSummaryJob.cs" Link="AI\Jobs\AILogSummaryJob.cs" />
-    <Compile Include="..\NewLife.Cube\AI\AIVisibleAttribute.cs" Link="AI\AIVisibleAttribute.cs" />
     <Compile Include="..\NewLife.Cube\AI\AiDataHelper.cs" Link="AI\AiDataHelper.cs" />
     <Compile Include="..\NewLife.Cube\AI\AiFormHelper.cs" Link="AI\AiFormHelper.cs" />
     <Compile Include="..\NewLife.Cube\AI\AiInsightHelper.cs" Link="AI\AiInsightHelper.cs" />
@@ -74,7 +73,6 @@
     <Compile Include="..\NewLife.Cube\AI\CubeTools.cs" Link="AI\CubeTools.cs" />
     <Compile Include="..\NewLife.Cube\AI\IAIChatService.cs" Link="AI\IAIChatService.cs" />
     <Compile Include="..\NewLife.Cube\AI\CubeAIChatService.cs" Link="AI\CubeAIChatService.cs" />
-    <Compile Include="..\NewLife.Cube\AI\AiChatEndpoint.cs" Link="AI\AiChatEndpoint.cs" />
     <Compile Include="..\NewLife.Cube\AI\SystemInfoToolService.cs" Link="AI\SystemInfoToolService.cs" />
     <Compile Include="..\NewLife.Cube\AI\IPageDataContext.cs" Link="AI\IPageDataContext.cs" />
     <Compile Include="..\NewLife.Cube\AI\IEntityAiContext.cs" Link="AI\IEntityAiContext.cs" />
@@ -95,7 +93,7 @@
     <Compile Include="..\NewLife.Cube\Common\ValidFormatHelper.cs" Link="Common\ValidFormatHelper.cs" />
     <Compile Include="..\NewLife.Cube\Common\EntityPageRegistry.cs" Link="Common\EntityPageRegistry.cs" />
     <Compile Include="..\NewLife.Cube\Common\ViewHelper.cs" Link="Common\ViewHelper.cs" />
-    <Compile Include="..\NewLife.Cube\Controllers\AiController.cs" Link="Controllers\AiController.cs" />
+    <Compile Include="..\NewLife.Cube\AI\AiController.cs" Link="AI\AiController.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\AccessRuleModel.cs" Link="Entity\Models\AccessRuleModel.cs" />
      <Compile Include="..\NewLife.Cube\Entity\Models\AppLogModel.cs" Link="Entity\Models\AppLogModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\AppModel.cs" Link="Entity\Models\AppModel.cs" />

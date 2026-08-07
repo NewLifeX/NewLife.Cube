@@ -109,7 +109,7 @@ XCode教程：<https://newlifex.com/xcode>
 - ApiResponse：标准响应包装 code / data / page / stat。  
 - IModule：启动模块注入服务和静态资源（主题、Swagger 等）。  
 - **AI 对话助手**：全局 `AiController` 统一 `AiChat` 端点（`/Ai/AiChat`）+ `IAIChatService` 服务下沉（会话管理/工具循环/SSE 事件）。实体控制器经 `IEntityAiContext` 能力接口向全局端点暴露数据查询/工具集/提示词重载点（保留子类重载 `SearchData`/`CreateCubeTools`/`BuildChatSystemPrompt`）。工具集含 `get_data_context`（数据上下文）/`get_form_schema`（编辑模式带已有值）/`fill_form`（智能填表）/`get_page_context`（页面上下文，`IPageDataContext` 服务端优先/浏览器采集兜底）/`get_system_info`（系统诊断）/`run_js`（页面脚本执行，SSE 下发 + 前端回传，检查点经事件总线广播支持分布式集群），均带中文描述供 LLM 决策。SSE 事件驱动前端填表与工具卡片展示，MVC 与 Vue 双端浮窗。
-- **AI 洞察（已合并）**：原 `AiInsight` 独立端点已合并到 AI 对话助手，数据收集保留 `AiInsightHelper`（14 类敏感字段黑名单 + `[AIVisible]` 白名单）。
+- **AI 洞察（已合并）**：原 `AiInsight` 独立端点已合并到 AI 对话助手，数据收集保留 `AiInsightHelper`（14 类敏感字段黑名单）。
 
 ---
 ## 快速拥有

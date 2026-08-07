@@ -193,7 +193,7 @@ public static class PageContextCollector
 /// <item>否则（或服务端抛异常）→ 经 <see cref="BrowserToolService.CollectPageContextAsync"/> 在用户浏览器执行标准采集脚本抓取页面主要数据</item>
 /// </list>
 /// 浏览器层复用 run_js 检查点管道（SSE 下发 + POST 回传 + 事件总线广播），任何页面零后端改动即可获得"当前页面数据"。
-/// 由 <see cref="AiChatEndpoint.RunSseAsync"/> 统一注册到实体/全局/新基类所有端点。
+/// 由 <see cref="Controllers.AiController"/> 统一注册到所有端点。
 /// 工具方法为 virtual，二次开发者可继承重写。
 /// </remarks>
 /// <param name="ctrl">宿主控制器（当前页面控制器），用于检测 <see cref="IPageDataContext"/> 实现</param>

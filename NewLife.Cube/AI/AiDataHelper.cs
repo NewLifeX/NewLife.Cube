@@ -87,45 +87,15 @@ public static class AiDataHelper
         return true;
     }
 
-    /// <summary>判断实体属性是否为 AI 可见</summary>
-    /// <param name="entityType">实体类型</param>
-    /// <param name="propertyName">属性名</param>
-    /// <returns>true=标记了 [AIVisible]</returns>
-    public static Boolean HasAIVisible(Type entityType, String propertyName)
-    {
-        if (entityType == null || propertyName.IsNullOrEmpty()) return false;
-
-        var pi = entityType.GetProperty(propertyName);
-        if (pi == null) return false;
-
-        return pi.GetCustomAttributes(typeof(AIVisibleAttribute), true).Length > 0;
-    }
-
-    /// <summary>实体是否有任意字段标记了 [AIVisible]</summary>
-    /// <param name="entityType">实体类型</param>
-    /// <returns></returns>
-    public static Boolean HasAnyAIVisible(Type entityType)
-    {
-        if (entityType == null) return false;
-
-        return entityType.GetProperties().Any(p => p.GetCustomAttributes(typeof(AIVisibleAttribute), true).Length > 0);
-    }
-
-    /// <summary>过滤实体字段，仅保留 AI 可用的安全字段</summary>
+    /// <summary>过滤实体字段，仅保留 AI 可用的安全字段（敏感黑名单过滤）</summary>
     /// <param name="allFields">实体所有字段</param>
-    /// <param name="entityType">实体类型（用于读取 [AIVisible]）</param>
+    /// <param name="entityType">实体类型（预留，保持签名兼容）</param>
     /// <returns>安全字段列表</returns>
     public static IList<FieldItem> FilterSafeFields(FieldItem[] allFields, Type entityType)
     {
         if (allFields == null || allFields.Length == 0) return [];
 
-        // 若实体有 [AIVisible] 标记，仅发送标记字段
-        if (HasAnyAIVisible(entityType))
-        {
-            return allFields.Where(f => HasAIVisible(entityType, f.Name)).ToList();
-        }
-
-        // 否则使用黑名单过滤
+        // 黑名单过滤：字段名/ItemType 命中敏感模式则排除
         return allFields.Where(IsSafeField).ToList();
     }
 
