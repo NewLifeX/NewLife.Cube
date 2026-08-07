@@ -16,6 +16,7 @@ using NewLife.Cube.Services;
 using NewLife.Cube.WebMiddleware;
 using NewLife.IP;
 using NewLife.Log;
+using NewLife.Messaging;
 using NewLife.Serialization;
 using NewLife.Web;
 using Stardust;
@@ -193,6 +194,9 @@ public static class CubeService
 
         //默认注入缓存实现
         services.TryAddSingleton<ICacheProvider, CacheProvider>();
+
+        // 页面检查点服务：以缓存提供者为事件总线工厂（MemoryCache=进程内；FullRedis=Redis 广播，跨实例匹配检查点）
+        services.TryAddSingleton<PageCheckpointService>(sp => new PageCheckpointService((sp.GetService<ICacheProvider>()?.Cache as IEventBusFactory)));
 
         // 服务
         services.AddSingleton<PasswordService>();

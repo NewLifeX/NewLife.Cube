@@ -35,18 +35,20 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
 
     #region 工具
     /// <summary>获取当前页面数据上下文：有当前记录时返回该记录的值与字段元数据，否则返回当前查询条件下的数据摘要与样本</summary>
+    /// <param name="context">工具调用上下文（由框架注入，当前无需使用，预留扩展）</param>
     [ToolDescription("get_data_context", ReadOnly = true)]
     [DisplayName("获取数据上下文")]
     [Description("获取当前页面数据上下文：有当前记录时返回该记录的值与字段元数据，否则返回当前查询条件下的数据摘要与样本，供分析使用")]
-    public virtual String GetDataContext()
+    public virtual String GetDataContext(ToolCallContext? context = null)
         => entityId > 0 ? GetRecordContext() : GetListContext();
 
     /// <summary>获取当前实体的表单字段结构，包含字段名、类型、枚举值、必填、说明与已有值（编辑模式），供生成表单值使用</summary>
     /// <param name="mode">表单模式：add 新增 / edit 编辑，默认 add</param>
+    /// <param name="context">工具调用上下文（由框架注入，当前无需使用，预留扩展）</param>
     [ToolDescription("get_form_schema", ReadOnly = true)]
     [DisplayName("获取表单字段结构")]
     [Description("获取当前实体的表单字段结构，包含字段名、类型、枚举值、必填、说明与已有值（编辑模式），供生成表单值使用")]
-    public virtual String GetFormSchema([Description("表单模式：add 新增 / edit 编辑")] String mode = "add")
+    public virtual String GetFormSchema([Description("表单模式：add 新增 / edit 编辑")] String mode = "add", ToolCallContext? context = null)
     {
         var fields = mode.EqualIgnoreCase("edit") ? EditFields : AddFields;
         var schema = AiFormHelper.BuildSchema(fields);
@@ -71,10 +73,11 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
     /// <summary>生成表单字段值并回填到前端表单。不写数据库，由用户确认后提交</summary>
     /// <param name="values">字段值字典，键为字段名，值为要填入的值</param>
     /// <param name="mode">表单模式：add 新增 / edit 编辑，默认 add</param>
+    /// <param name="context">工具调用上下文（由框架注入，当前无需使用，预留扩展）</param>
     [ToolDescription("fill_form")]
     [DisplayName("回填表单")]
     [Description("生成表单字段值并回填到前端表单。不写数据库，由用户确认后提交")]
-    public virtual IToolResult FillForm([Description("字段值 JSON 字符串，键为字段名，值为要填入的值，如 {\"Name\":\"张三\",\"Status\":1}")] String values, [Description("表单模式：add 新增 / edit 编辑")] String mode = "add")
+    public virtual IToolResult FillForm([Description("字段值 JSON 字符串，键为字段名，值为要填入的值，如 {\"Name\":\"张三\",\"Status\":1}")] String values, [Description("表单模式：add 新增 / edit 编辑")] String mode = "add", ToolCallContext? context = null)
     {
         // 参数解析：兼容 JSON 对象与扁平键值数组两种格式（部分 LLM 会生成扁平数组），解析失败返回友好错误而非抛异常
         var dic = AiFormHelper.ParseFieldValues(values);

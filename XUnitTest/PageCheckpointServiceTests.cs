@@ -1,12 +1,13 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using NewLife.AI.Tools;
 using NewLife.Cube.AI;
 using Xunit;
 
 namespace XUnitTest;
 
-/// <summary>页面检查点服务单元测试 — 挂起等待、结果回传、超时、用户绑定、一次性消费</summary>
+/// <summary>页面检查点服务单元测试 — 挂起等待、结果回传、超时、用户绑定、一次性消费、ToolCallContext 通道</summary>
 public class PageCheckpointServiceTests
 {
     /// <summary>从 run_js 事件 JSON 提取检查点编号</summary>
@@ -36,7 +37,7 @@ public class PageCheckpointServiceTests
 
         // 前端回传结果，完成等待中的工具调用
         var checkpointId = GetCheckpointId(ev!);
-        Assert.True(PageCheckpointService.Instance.Respond(checkpointId, 1, "{\"ok\":true,\"value\":\"魔方\"}"));
+        Assert.True(await PageCheckpointService.Instance.Respond(checkpointId, 1, "{\"ok\":true,\"value\":\"魔方\"}"));
 
         var result = await task;
         Assert.Contains("\"ok\":true", result);
@@ -57,8 +58,8 @@ public class PageCheckpointServiceTests
     }
 
     [Fact]
-    [DisplayName("Respond_用户不匹配_返回false")]
-    public async Task Respond_UserMismatch_ReturnsFalse()
+    [DisplayName("Respond_用户不匹配_等待不被完成")]
+    public async Task Respond_UserMismatch_WaitNotCompleted()
     {
         var svc = new BrowserToolService(1);
         String? ev = null;
@@ -68,12 +69,14 @@ public class PageCheckpointServiceTests
         await Task.Delay(50);
 
         var checkpointId = GetCheckpointId(ev!);
-        // 其它用户回传被拒绝
-        Assert.False(PageCheckpointService.Instance.Respond(checkpointId, 999, "{\"ok\":true}"));
+        // 其它用户回传：事件发布成功但被等待方忽略（跨用户防串扰），等待不被完成
+        Assert.True(await PageCheckpointService.Instance.Respond(checkpointId, 999, "{\"ok\":true}"));
+        Assert.False(task.IsCompleted);
 
-        // 原用户回传成功
-        Assert.True(PageCheckpointService.Instance.Respond(checkpointId, 1, "{\"ok\":true}"));
-        await task;
+        // 原用户回传成功完成等待
+        Assert.True(await PageCheckpointService.Instance.Respond(checkpointId, 1, "{\"ok\":true}"));
+        var result = await task;
+        Assert.Contains("\"ok\":true", result);
     }
 
     [Fact]
@@ -88,9 +91,9 @@ public class PageCheckpointServiceTests
         await Task.Delay(50);
 
         var checkpointId = GetCheckpointId(ev!);
-        Assert.True(PageCheckpointService.Instance.Respond(checkpointId, 1, "{\"ok\":true}"));
-        // 已完成的操作再次回传被拒绝
-        Assert.False(PageCheckpointService.Instance.Respond(checkpointId, 1, "{\"ok\":true}"));
+        Assert.True(await PageCheckpointService.Instance.Respond(checkpointId, 1, "{\"ok\":true}"));
+        // 已完成的操作再次回传被拒绝（一次性订阅已退订）
+        Assert.False(await PageCheckpointService.Instance.Respond(checkpointId, 1, "{\"ok\":true}"));
         await task;
     }
 
@@ -117,5 +120,59 @@ public class PageCheckpointServiceTests
 
         Assert.Contains("\"ok\":false", result);
         Assert.Contains("Writer 未注入", result);
+    }
+
+    [Fact]
+    [DisplayName("RunJs_ToolCallContext_检查点编号使用ToolCallId")]
+    public async Task RunJs_Context_ToolCallId()
+    {
+        var svc = new BrowserToolService(1) { TimeoutSeconds = 1 };
+        String? ev = null;
+        svc.Writer = json => { ev = json; return Task.CompletedTask; };
+
+        // 框架注入的上下文携带 ToolCallId，检查点编号与其一致（前端 tool 事件一一对应）
+        var ctx = new ToolCallContext { ToolCallId = "call_123" };
+        var result = await svc.RunJs("1", ctx);
+
+        Assert.NotNull(ev);
+        Assert.Contains("\"checkpointId\":\"call_123\"", ev);
+        Assert.Contains("超时", result);
+    }
+
+    [Fact]
+    [DisplayName("RunJs_ToolCallContext_经Items读取浏览器通道")]
+    public async Task RunJs_Context_ChannelFromItems()
+    {
+        // 实例未注入 Writer，但上下文经 Items 携带 CubeBrowserContext → 应从上下文读取通道
+        var svc = new BrowserToolService(0) { TimeoutSeconds = 1 };
+        String? ev = null;
+
+        var bc = new CubeBrowserContext
+        {
+            Writer = json => { ev = json; return Task.CompletedTask; },
+            UserId = 9,
+            TimeoutSeconds = 1,
+        };
+        var ctx = new ToolCallContext { ToolCallId = "call_ch" };
+        ctx[CubeBrowserContext.BrowserContextKey] = bc;
+
+        var result = await svc.RunJs("1", ctx);
+
+        Assert.NotNull(ev);
+        Assert.Contains("call_ch", ev);
+        Assert.Contains("超时", result);
+    }
+
+    [Fact]
+    [DisplayName("PageContextCollector_BuildScript_包含关键选择器")]
+    public void PageContextCollector_BuildScript_ContainsSelectors()
+    {
+        var script = PageContextCollector.BuildScript();
+
+        Assert.False(String.IsNullOrEmpty(script));
+        Assert.Contains("document.title", script);
+        Assert.Contains("querySelectorAll('table')", script);
+        Assert.Contains("querySelectorAll('input,select,textarea')", script);
+        Assert.Contains("data-ai-context", script);
     }
 }

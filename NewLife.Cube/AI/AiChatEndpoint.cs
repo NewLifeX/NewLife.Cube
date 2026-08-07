@@ -48,9 +48,15 @@ public static class AiChatEndpoint
             await ctrl.Response.Body.FlushAsync(ctrl.HttpContext.RequestAborted);
         };
 
-        // 浏览器工具服务：run_js 等工具经页面检查点服务下发脚本到前端执行，结果回传后端继续对话（全局 AiController.OperationResult 端点回传）
+        // 浏览器工具服务：run_js 等工具经页面检查点服务下发脚本到前端执行，结果回传后端继续对话（全局 AiController.OperationResult 端点回传）。
+        // 检查点服务优先取 DI（事件总线广播，支持分布式集群），兜底进程内实例。
         var user = ctrl.HttpContext.User.Identity as IUser;
-        registry.AddTools(new BrowserToolService(user?.ID ?? 0) { Writer = writeEvent });
+        var cp = ctrl.HttpContext.RequestServices.GetService<PageCheckpointService>();
+        var browser = new BrowserToolService(user?.ID ?? 0) { Writer = writeEvent, CheckpointService = cp };
+        registry.AddTools(browser);
+
+        // 页面数据上下文工具：优先宿主控制器服务端实现（IPageDataContext），否则浏览器采集兜底。所有端点统一注册
+        registry.AddTools(new PageDataContextToolService(ctrl, browser));
 
         // SSE 输出
         ctrl.Response.Headers["Content-Type"] = "text/event-stream; charset=utf-8";

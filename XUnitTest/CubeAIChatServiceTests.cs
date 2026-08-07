@@ -67,6 +67,12 @@ public class CubeAIChatServiceTests
     #endregion
 
     #region 辅助
+    /// <summary>最小服务提供者，任何服务均返回 null（检查点服务兜底到 Instance）</summary>
+    private sealed class EmptyProvider : IServiceProvider
+    {
+        public Object? GetService(Type serviceType) => null;
+    }
+
     /// <summary>执行一次对话并收集全部事件 JSON</summary>
     private static async Task<List<String>> RunAsync(CubeAIChatService svc, AiChatRequest req, String systemPrompt = "系统提示词")
     {
@@ -95,7 +101,7 @@ public class CubeAIChatServiceTests
     public async Task AISwitchOff_ErrorEvent()
     {
         var stub = new StubAIService();
-        var svc = new CubeAIChatService(stub, CreateSetting(false));
+        var svc = new CubeAIChatService(stub, CreateSetting(false), new EmptyProvider());
 
         var events = await RunAsync(svc, new AiChatRequest { SessionId = "s1", Message = "你好" });
 
@@ -113,7 +119,7 @@ public class CubeAIChatServiceTests
         {
             StreamResponses = [TextResponse("分析结果")],
         };
-        var svc = new CubeAIChatService(stub, CreateSetting());
+        var svc = new CubeAIChatService(stub, CreateSetting(), new EmptyProvider());
 
         var events = await RunAsync(svc, new AiChatRequest { SessionId = "s2", Message = "分析一下", Stream = true });
 
@@ -139,7 +145,7 @@ public class CubeAIChatServiceTests
                 new ChatResponse { ToolCallEvents = [new ToolCallEventInfo("done", "c1", "get_form_schema", "{\"mode\":\"add\"}")] },
             ],
         };
-        var svc = new CubeAIChatService(stub, CreateSetting());
+        var svc = new CubeAIChatService(stub, CreateSetting(), new EmptyProvider());
 
         var events = await RunAsync(svc, new AiChatRequest { SessionId = "s3", Message = "帮我填表", Stream = true });
 
@@ -153,7 +159,7 @@ public class CubeAIChatServiceTests
     {
         // 流式返回空块
         var stub = new StubAIService { StreamResponses = [] };
-        var svc = new CubeAIChatService(stub, CreateSetting());
+        var svc = new CubeAIChatService(stub, CreateSetting(), new EmptyProvider());
 
         var events = await RunAsync(svc, new AiChatRequest { SessionId = "s4", Message = "分析", Stream = true });
 
@@ -170,7 +176,7 @@ public class CubeAIChatServiceTests
         {
             StreamResponses = [TextResponse("第一次回复")],
         };
-        var svc = new CubeAIChatService(stub, CreateSetting());
+        var svc = new CubeAIChatService(stub, CreateSetting(), new EmptyProvider());
 
         var req = new AiChatRequest { SessionId = "s5", Message = "你好", Stream = true };
         await RunAsync(svc, req);
@@ -196,7 +202,7 @@ public class CubeAIChatServiceTests
         {
             SyncResponse = TextResponse("完整回复"),
         };
-        var svc = new CubeAIChatService(stub, CreateSetting());
+        var svc = new CubeAIChatService(stub, CreateSetting(), new EmptyProvider());
 
         var events = await RunAsync(svc, new AiChatRequest { SessionId = "s6", Message = "总结", Stream = false });
 

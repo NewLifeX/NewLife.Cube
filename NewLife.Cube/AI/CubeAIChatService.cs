@@ -4,28 +4,18 @@ using NewLife.Caching;
 using NewLife.Collections;
 using NewLife.Log;
 using NewLife.Serialization;
+using XCode.Membership;
+using ILog = NewLife.Log.ILog;
 
 namespace NewLife.Cube.AI;
 
 /// <summary>AI 对话服务实现。负责 AI 助手对话的会话管理与 LLM 调用编排，产出 SSE 事件 JSON</summary>
-public class CubeAIChatService : IAIChatService
+/// <remarks>实例化 AI 对话服务</remarks>
+/// <param name="ai">底层 AI 服务（含工具调用能力）</param>
+/// <param name="setting">系统配置</param>
+/// <param name="services">服务提供者，用于解析检查点服务等</param>
+public class CubeAIChatService(IAIService ai, CubeSetting setting, IServiceProvider services) : IAIChatService
 {
-    #region 属性
-    private readonly IAIService _ai;
-    private readonly CubeSetting _setting;
-    #endregion
-
-    #region 构造
-    /// <summary>实例化 AI 对话服务</summary>
-    /// <param name="ai">底层 AI 服务（含工具调用能力）</param>
-    /// <param name="setting">系统配置</param>
-    public CubeAIChatService(IAIService ai, CubeSetting setting)
-    {
-        _ai = ai;
-        _setting = setting;
-    }
-    #endregion
-
     #region 方法
     /// <summary>执行 AI 对话（含工具调用）。管理会话历史，流式/非流式调用 LLM，产出 SSE 事件 JSON</summary>
     /// <param name="req">对话请求（含会话编号、消息、页面上下文）</param>
@@ -36,7 +26,7 @@ public class CubeAIChatService : IAIChatService
     public async Task ChatAsync(AiChatRequest req, String systemPrompt, IList<IToolProvider> providers, Func<String, Task> writeEvent, CancellationToken cancellationToken = default)
     {
         // AISwitch 检查：统一由服务保障，任何宿主（实体控制器/全局控制器/Vue）都无需重复检查
-        if (!_setting.AISwitch)
+        if (!setting.AISwitch)
         {
             await writeEvent(new { type = "error", message = "AI 未启用，请联系系统管理员开启 AISwitch" }.ToJson());
             return;
@@ -54,14 +44,25 @@ public class CubeAIChatService : IAIChatService
         };
         messages.AddRange(history.TakeLast(30));
 
-        var think = req.Think || _setting.AIDefaultThink;
+        var think = req.Think || setting.AIDefaultThink;
         var options = new ChatOptions
         {
             EnableThinking = think,
             Temperature = think ? 0.5 : 0.3,
         };
 
-        await writeEvent(new { type = "meta", model = _setting.AIModel, thinking = think }.ToJson());
+        // 注入浏览器通道上下文：工具经 ToolCallContext.Items 读取（SSE 写回调/检查点服务/用户编号），实现工具与宿主的松耦合
+        var cp = services.GetService<PageCheckpointService>() ?? PageCheckpointService.Instance;
+        var uid = ManageProvider.User?.ID ?? 0;
+        options.Items[CubeBrowserContext.BrowserContextKey] = new CubeBrowserContext
+        {
+            Writer = writeEvent,
+            CheckpointService = cp,
+            UserId = uid,
+            TimeoutSeconds = 30,
+        };
+
+        await writeEvent(new { type = "meta", model = setting.AIModel, thinking = think }.ToJson());
 
         var sb = Pool.StringBuilder.Get();
         var hasText = false;
@@ -71,7 +72,7 @@ public class CubeAIChatService : IAIChatService
             if (!req.Stream)
             {
                 // 非流式：一次返回完整响应（含工具调用事件与文本）
-                var response = await _ai.ChatAgentAsync(messages, providers, options, cancellationToken);
+                var response = await ai.ChatAgentAsync(messages, providers, options, cancellationToken);
                 if (response is ChatResponse cr && cr.ToolCallEvents != null)
                 {
                     foreach (var ev in cr.ToolCallEvents)
@@ -89,7 +90,7 @@ public class CubeAIChatService : IAIChatService
             }
             else
             {
-                await foreach (var chunk in _ai.ChatAgentStreamAsync(messages, providers, options, cancellationToken))
+                await foreach (var chunk in ai.ChatAgentStreamAsync(messages, providers, options, cancellationToken))
                 {
                     // 文本增量
                     var text = chunk?.Text;

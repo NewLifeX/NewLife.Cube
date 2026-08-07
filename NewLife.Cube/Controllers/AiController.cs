@@ -59,15 +59,15 @@ public class AiController : ControllerBaseX
         var sb = Pool.StringBuilder.Get();
         sb.AppendLine($"你是{sysName}的 AI 助手，正在协助管理员操作当前页面。");
         sb.AppendLine();
-        sb.AppendLine("当前页面不属于实体数据页面（可能是系统设置、首页或系统信息等），没有可分析的数据表上下文。");
+        sb.AppendLine("当前页面不属于实体数据页面（可能是系统设置、首页或系统信息等），无实体表上下文。");
         sb.AppendLine();
-        sb.AppendLine("可用工具：get_system_info / run_js（详细说明见函数定义，按需调用）");
+        sb.AppendLine("可用工具：get_page_context / get_system_info / run_js（详细说明见函数定义，按需调用）");
         sb.AppendLine();
         sb.AppendLine("规则：");
         sb.AppendLine("1. 使用简体中文回答，语言简洁专业");
-        sb.AppendLine("2. 用户询问系统状态/诊断时，调用 get_system_info 获取数据，再给出分析结论与建议");
-        sb.AppendLine("3. 用户要求读取或操作当前页面元素（填写输入框、点击按钮、读取标题等）时，可调用 run_js 执行 JavaScript；脚本在用户浏览器当前页面执行，可用 document.querySelector 等定位元素；修改页面内容或提交表单等写操作前，先向用户说明将执行的操作");
-        sb.AppendLine("4. 用户要求分析数据或填写表单时，说明当前页面没有可分析的数据上下文");
+        sb.AppendLine("2. 用户询问当前页面内容/数据/结构时，调用 get_page_context 获取页面上下文（自动采集用户浏览器当前页面内容），再给出分析与结论");
+        sb.AppendLine("3. 用户询问系统状态/诊断时，调用 get_system_info 获取数据，再给出分析结论与建议");
+        sb.AppendLine("4. 用户要求读取或操作当前页面元素（填写输入框、点击按钮、读取标题等）时，可调用 run_js 执行 JavaScript；脚本在用户浏览器当前页面执行，可用 document.querySelector 等定位元素；修改页面内容或提交表单等写操作前，先向用户说明将执行的操作");
         sb.AppendLine("5. 不要编造数据；信息不足时主动询问用户澄清");
 
         return sb.Return(true);
@@ -85,8 +85,10 @@ public class AiController : ControllerBaseX
         var req = body.ToJsonEntity<BrowserOpResult>();
         if (req == null || req.CheckpointId.IsNullOrEmpty()) return Json(500, null, "参数错误");
 
+        // 分布式：经 DI 解析检查点服务（事件总线广播，POST 命中任意实例都能唤醒等待方），兜底进程内实例
+        var cp = HttpContext.RequestServices.GetService<PageCheckpointService>() ?? PageCheckpointService.Instance;
         var user = HttpContext.User.Identity as IUser;
-        var ok = PageCheckpointService.Instance.Respond(req.CheckpointId, user?.ID ?? 0, req.Result ?? "{}");
+        var ok = await cp.Respond(req.CheckpointId, user?.ID ?? 0, req.Result ?? "{}");
 
         return ok ? Json(0, null, "ok") : Json(500, null, "操作不存在或已过期");
     }

@@ -43,7 +43,7 @@ public class CubeToolsOverrideTests
         public MyCubeTools(IEntityFactory factory, Pager? pager, Int64 entityId, Func<Pager, IList<AiToolOverrideEntity>> queryData)
             : base(factory, pager, entityId, queryData) { }
 
-        public override String GetFormSchema(String mode = "add")
+        public override String GetFormSchema(String mode = "add", ToolCallContext? context = null)
             => new { mode, custom = true, note = "自定义字段结构" }.ToJson();
 
         protected override String GetListContext()

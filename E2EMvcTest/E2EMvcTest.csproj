@@ -29,4 +29,9 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- 引用框架以复用页面上下文采集脚本（PageContextCollector.BuildScript），保持单一事实源 -->
+    <ProjectReference Include="..\NewLife.CubeNC\NewLife.CubeNC.csproj" />
+  </ItemGroup>
+
 </Project>
