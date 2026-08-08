@@ -132,6 +132,16 @@
 - **表单域不参与三层解析**：FormJson 为全局唯一（OSC-0013），所有人共享读取，与模板互不干扰，减少概念混淆。
 - **前端 isAdmin 判定**（`roleName === '管理员'`）与后端 `Roles.Any(e => e.IsSystem)` 不完全对齐：安全关键路径在后端 403 拒绝，前端仅 UI 可见性控制；跨部署环境若角色名非"管理员"则管理入口不显示，建议后续对齐为菜单权限位判定。
 
+## OSC-0016 — 2026-08-08
+
+- **会话小任务必须即时补录**：T13/T14/T15（UserController 兼容、面板抽屉重构、GetPage 元数据）执行期直接完成但未即时登记 tasks.md，验收补录才发现 `UserController.Search` 重写有 3 处回归（🔴 空引用、🟡 Code 缺失、🟡 roleIds 多值语义）。执行期每完成一件计划外事项应立即补录 tasks.md + status.md。
+- **重写"对齐原语义"的搜索方法必须逐项对照原实现**：XCode 原 `User.Search` 关键字模糊含 `Code`（登录名）、roleIds 多值逐 rid `Contains(","+rid+",")`、先判空后解引用——任一被"简化"都是静默语义漂移；此类业务重写应补针对性单测（本号靠代码审查兜住）。
+- **`entity:` 内部值集协议**：LovController 内部实体查询不经 HTTP 外环，直走 EntityFactory 分页 + Q 模糊（`SearchWhereByKeys` 反射调用须缓存 MethodInfo + 校验参数签名 + try/catch 解包降级，勿每请求反射、勿裸 Invoke）；`Entity.` 值集 LovCode 命名（`"Entity." + FullName`）与手工 LovCode 并存时，`FixSearchMapCandidates` 用「值集是否已注册」哨兵缓存（`LovRegistered:` "1"/"0"）判定覆盖，避免逐字段查库。
+- **分页偏移防溢出**：对外接口的 `(pageNum-1)*pageSize` 必须设 pageNum 上限（本号 100_000），否则 Int32 静默溢出产生异常 SQL。
+- **Map 搜索候选分层**：小表（≤`CubeSetting.MaxDropDownList`）内联 `DataSourceMap`、大表注册 `Entity.` 值集走 LOV 远程搜索、手工已设 LovCode/DataSourceMap 优先不覆盖——三态决策矩阵必须在 design 写清，避免前端数字框裸输入。
+- **`GetPage` 高频接口禁止逐字段查库**：值集注册判定（`LovRegistered:`）、目标表行数判定（`LovMapCount:`）均走 MemoryCache 60s；负结果（未注册/空表）也应缓存哨兵，否则高频接口每请求回源。
+- **"清空查询参数" vs "重置查询参数"术语**：菜单项最终命名以代码为准（`__reset` IconRefresh「重置查询参数」），proposal/verify/README/功能清单四处文档曾残留旧名「清空」，归档前须统一术语（doc-sync 审计兜住）。
+
 ## 待办 — 字体规范（Harness）
 
 - 后续按现代中后台常见 **组件/场景**（列表表头、单元格、表单标签、抽屉标题、徽章等）在 Harness 建立统一的 **字体 / 字号 / 字重** 规范，并替换各处临时字重（如 VTable `headerStyle.fontWeight: 400`）。

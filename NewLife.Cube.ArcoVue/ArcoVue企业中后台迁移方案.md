@@ -278,7 +278,7 @@ Agent / Copilot 实施约定：OSC-0002 的 `tasks.md` 首项应为「编辑 Cub
 | Table | 关键列（示意） | 索引 |
 |-------|----------------|------|
 | UserProfile | Id；UserId；LayoutJson / ThemeJson / WorkspaceJson（或单一 ProfileJson）；Version；Enable；Create*/Update* | Unique(UserId) |
-| ViewProfile | Id；UserId；TypePath；View；ColumnsJson；**ViewsJson**；**ActiveViewId**；GanttJson；CardJson；FiltersJson；**FormJson**；Version；Create*/Update* | Unique(UserId, TypePath)；命名视图存 ViewsJson；`UserId=0` 表示管理员发布的全局只读模板；FormJson 存受限表单布局 |
+| ViewProfile | Id；UserId；TypePath；View；ColumnsJson；**ViewsJson**；**ActiveViewId**；GanttJson；CardJson；FiltersJson；QueriesJson；**FormJson**；Version；Create*/Update* | Unique(UserId, TypePath)；命名视图存 ViewsJson；`UserId=0` 表示管理员发布的全局只读模板；FormJson 存受限表单布局；QueriesJson 存实体级预定义查询（OSC-0016，不走模板） |
 | EntityComment | Id；Category；LinkId；**ParentId / RootId / ReplyUserId / ReplyUser**；Content；CreateUser/Id/IP/Time；Update* | (Category, LinkId)；ParentId；RootId；CreateUserID |
 
 嵌套配置（layout/theme/columns 等）以 **JSON 文本列** 落库，与 §5.2 逻辑模型对应；API 层序列化为前端 TypeScript 形状。
@@ -492,7 +492,7 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
 每个实体路由默认仍是一个固定的 **DefaultList 容器**：
 
 1. `GetPage` 是字段、权限、表单和统计的唯一元数据来源；`GetList`、`GetDetail` 与 CRUD API 仍是唯一数据/写入通道。
-2. 容器固定顺序为：可选**洞察区** → 搜索区 → 命名视图 Tab/工具栏 → 当前数据视图 → 分页 → 右侧 `RecordDrawer`。不允许用户新增、删除、拖动或嵌套页面区块。
+2. 容器固定顺序为：可选**洞察区** → 搜索区 → 命名视图 Tab/工具栏 → 当前数据视图 → 分页 → 右侧 `RecordDrawer`。不允许用户新增、删除、拖动或嵌套页面区块。（注：搜索已随 OSC-0016 改为工具栏「搜索」按钮打开的右侧抽屉 `SearchDrawer`，非容器内联区块；洞察区 `InsightPanel` 暂隐藏，待简易图表看板设计时再启用。）
 3. 洞察区最多一个：统计标签与一张固定图表（`insight.showStat` / `showChart` 两个独立开关）可单独或同时启用；图表仍按当前实体和当前筛选条件取数，不支持用户录入 ECharts option。
 4. NamedView 继续承载 table/tree/card/kanban/calendar/gantt 的列、映射、排序和工具栏外观；现有 `widthMode` / `heightMode` 只表示当前视图的容器尺寸，不升级为通用 Widget 尺寸系统。
 
@@ -527,6 +527,7 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
 | OSC-0013 | 受限表单布局 | ViewProfile 增 `FormJson`；RecordDrawer 支持字段顺序、显隐、Category 分组折叠与恢复默认 |
 | OSC-0014 | 全局只读模板 | `UserId=0` 模板读写 API、权限与审计；个人覆盖/恢复模板；不做角色、租户与协同编辑 |
 | OSC-0015 | 筛选构建器 + 多级分组 | 工具栏 Popover（非 Drawer）构建筛选（操作符按字段类别矩阵 eq/neq/contains/isNull/gt/gte/lt/lte/after/before，AND/OR）保存到 `NamedView.filter` 随视图自动应用、**纯前端过滤**（不并入后端请求）；多级分组（≤3 字段）保存到 `NamedView.group`，**table 用 VTable 原生 groupBy 渲染组头折叠 + checkbox 级联、树视图不允许分组**；搜索面板一行折叠 + LOV LIST 远程搜索 |
+| OSC-0016 | 通用查询 + 预定义查询 | 搜索栏改**右侧抽屉**（`SearchDrawer`，标题「高级搜索」、宽 300（240+60）、无关闭按钮、无底部确定/取消、点击其它区域关闭、每条件一行、Q 第一、其余按 GetPage `Search` 顺序、查询组合按钮在抽屉右上角文字在前箭头在右）；原 `QueryInsightPanel` 更名 `InsightPanel` 暂隐藏（待简易图表看板）；日期数值时间搜索改**单值等值控件**（不再产生 `_min/_max`）；Map 字段候选自动填充（小表内联 / 大表 `Entity.` 值集远程搜索）；预定义查询存 `ViewProfile.QueriesJson`（实体级个人配置，保存/应用/重命名/删除/清空，刷新恢复） |
 
 #### 8.2.6 验收与非目标
 
