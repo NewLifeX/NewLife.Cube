@@ -22,7 +22,7 @@
           <div class="cfg-label">
             数据表
             <a-tooltip content="当前实体列表的数据来源（只读）">
-              <icon-info-circle class="hint-ico" />
+              <icon-park type="info" class="hint-ico" />
             </a-tooltip>
           </div>
           <a-input :model-value="typePath" disabled />
@@ -60,7 +60,7 @@
                 title="拖动排序"
                 @dragstart="onDragStart(idx, $event)"
               >
-                <icon-drag-dot-vertical />
+                <icon-park type="drag" />
               </span>
               <a-input
                 class="field-title-input"
@@ -79,7 +79,7 @@
                 :title="col.frozen === 'left' ? '取消左冻结' : '左冻结至此列'"
                 @click="toggleFreeze(col)"
               >
-                <icon-pushpin />
+                <icon-park type="pin" />
               </a-button>
               <a-button
                 type="text"
@@ -87,8 +87,8 @@
                 :title="col.visible ? '隐藏' : '显示'"
                 @click="toggleVisible(col)"
               >
-                <icon-eye v-if="col.visible" />
-                <icon-eye-invisible v-else />
+                <icon-park v-if="col.visible" type="preview-open" />
+                <icon-park v-else type="preview-close" />
               </a-button>
             </li>
           </ul>
@@ -135,7 +135,7 @@
             <span>
               固定图表
               <a-tooltip content="随列表当前搜索条件显示一张固定图表；无图表端点权限时仅图表区降级">
-                <icon-info-circle class="hint-ico" />
+                <icon-park type="info" class="hint-ico" />
               </a-tooltip>
             </span>
             <a-switch v-model="localInsight.showChart" @change="emitInsight" />
@@ -156,7 +156,7 @@
           >
             <span class="color-chip" :style="chipStyle(chrome.bgPreset === 'custom' ? chrome.bgColor : null)" />
             <span class="color-trigger-text">{{ bgTriggerLabel }}</span>
-            <icon-down :class="{ open: openPanel === 'bg' }" />
+            <icon-park type="down" :class="{ open: openPanel === 'bg' }" />
           </button>
           <div v-if="openPanel === 'bg'" class="color-panel">
             <a-button long class="restore-btn" @click="restoreBgDefault">恢复默认</a-button>
@@ -172,7 +172,7 @@
                 :title="c.label"
                 @click="pickBgSwatch(c)"
               >
-                <icon-check v-if="isBgSwatchSelected(c)" class="swatch-check" />
+                <icon-park v-if="isBgSwatchSelected(c)" type="check" class="swatch-check" />
               </button>
             </div>
             <div class="color-section-title">更多颜色</div>
@@ -260,7 +260,7 @@
         <section class="cfg-block">
           <button type="button" class="collapse-head" @click="topBarOpen = !topBarOpen">
             <span>工具栏</span>
-            <icon-down :class="{ open: topBarOpen }" />
+            <icon-park type="down" :class="{ open: topBarOpen }" />
           </button>
           <div v-show="topBarOpen" class="collapse-body">
             <div class="switch-row">
@@ -288,7 +288,7 @@
         <section class="cfg-block">
           <button type="button" class="collapse-head" @click="listAreaOpen = !listAreaOpen">
             <span>{{ listAreaLabel }}</span>
-            <icon-down :class="{ open: listAreaOpen }" />
+            <icon-park type="down" :class="{ open: listAreaOpen }" />
           </button>
           <div v-show="listAreaOpen" class="collapse-body">
             <template v-if="viewKind === 'table' || viewKind === 'tree'">
@@ -300,7 +300,7 @@
                 <span>
                   允许查看记录详情
                   <a-tooltip content="关闭后点击行与「详情」入口将不可用">
-                    <icon-info-circle class="hint-ico" />
+                    <icon-park type="info" class="hint-ico" />
                   </a-tooltip>
                 </span>
                 <a-switch v-model="chrome.allowViewDetail" @change="emitChrome" />
@@ -309,7 +309,7 @@
                 <span>
                   允许删除记录
                   <a-tooltip content="仍受菜单权限约束；关闭后隐藏删除入口">
-                    <icon-info-circle class="hint-ico" />
+                    <icon-park type="info" class="hint-ico" />
                   </a-tooltip>
                 </span>
                 <a-switch v-model="chrome.allowDelete" @change="emitChrome" />
@@ -318,7 +318,7 @@
                 <span>
                   展开行记录
                   <a-tooltip content="在表格左侧显示展开列，点击可查看详情">
-                    <icon-info-circle class="hint-ico" />
+                    <icon-park type="info" class="hint-ico" />
                   </a-tooltip>
                 </span>
                 <a-switch v-model="chrome.expandRow" @change="emitChrome" />
@@ -608,15 +608,6 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
-import {
-  IconCheck,
-  IconDown,
-  IconDragDotVertical,
-  IconEye,
-  IconEyeInvisible,
-  IconInfoCircle,
-  IconPushpin,
-} from '@arco-design/web-vue/es/icon';
 import {
   DEFAULT_CHROME,
   normalizeInsight,
@@ -1220,13 +1211,13 @@ function setHeight(mode: HeightMode) {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.color-trigger .arco-icon {
+.color-trigger svg {
   color: inherit;
   opacity: 0.65;
   transition: transform 0.2s;
   flex-shrink: 0;
 }
-.color-trigger .arco-icon.open {
+.color-trigger svg.open {
   transform: rotate(180deg);
 }
 
@@ -1410,11 +1401,11 @@ function setHeight(mode: HeightMode) {
   font-weight: var(--cube-font-weight-medium);
   color: var(--color-text-1);
 }
-.collapse-head .arco-icon {
+.collapse-head svg {
   color: var(--color-text-3);
   transition: transform 0.2s;
 }
-.collapse-head .arco-icon.open {
+.collapse-head svg.open {
   transform: rotate(180deg);
 }
 .collapse-body {

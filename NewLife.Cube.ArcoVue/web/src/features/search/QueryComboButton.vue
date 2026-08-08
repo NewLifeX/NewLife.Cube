@@ -2,22 +2,25 @@
   <div class="query-combo-button">
     <!-- 主按钮：点击直接执行查询（OSC-0016） -->
     <a-button type="primary" class="qcb-search" @click="emit('search')">
-      <template #icon><IconSearch /></template>
+      <template #icon><icon-park type="search" /></template>
       查询
     </a-button>
     <!-- 下拉按钮：重置查询参数 / 预定义查询等更多操作 -->
     <a-dropdown trigger="click" @select="onSelect">
       <a-button type="primary" class="qcb-more">
-        <IconDown />
+        <icon-park type="down" />
       </a-button>
       <template #content>
         <div class="qcb-menu">
           <a-doption value="__reset">
-            <template #icon><IconRefresh /></template>
+            <template #icon><icon-park type="refresh" /></template>
             重置查询参数
           </a-doption>
           <a-doption v-if="hasMoreFields" value="__toggle">
-            <template #icon><IconUp v-if="expanded" /><IconDown v-else /></template>
+            <template #icon>
+              <icon-park v-if="expanded" type="up" />
+              <icon-park v-else type="down" />
+            </template>
             {{ expanded ? '收起条件' : `展开更多条件（${moreFieldCount}）` }}
           </a-doption>
 
@@ -32,12 +35,12 @@
               :class="{ 'qcb-applied': isApplied(q.id) }"
             >
               <span class="qcb-item">
-                <IconCheck v-if="isApplied(q.id)" class="qcb-check" />
+                <icon-park v-if="isApplied(q.id)" type="check" class="qcb-check" />
                 {{ q.name }}
               </span>
               <template #suffix>
                 <a-popconfirm content="确认删除该预定义查询？" @ok="onDelete(q.id)">
-                  <IconDelete class="qcb-del" @click.stop />
+                  <icon-park type="delete" class="qcb-del" @click.stop />
                 </a-popconfirm>
               </template>
             </a-doption>
@@ -45,15 +48,15 @@
 
           <a-divider class="qcb-divider" />
           <a-doption value="__save" :disabled="!canSave">
-            <template #icon><IconSave /></template>
+            <template #icon><icon-park type="save" /></template>
             保存当前查询为预定义…
           </a-doption>
           <a-doption value="__rename" :disabled="!canRename">
-            <template #icon><IconEdit /></template>
+            <template #icon><icon-park type="edit" /></template>
             重命名当前查询
           </a-doption>
           <a-doption value="__delete" :disabled="!canRename">
-            <template #icon><IconDelete /></template>
+            <template #icon><icon-park type="delete" /></template>
             删除当前查询
           </a-doption>
         </div>
@@ -80,16 +83,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Message } from '@arco-design/web-vue';
-import {
-  IconCheck,
-  IconDelete,
-  IconDown,
-  IconEdit,
-  IconRefresh,
-  IconSave,
-  IconSearch,
-  IconUp,
-} from '@arco-design/web-vue/es/icon';
 import type { SavedQuery } from '@/core/utils/viewProfile';
 
 /** 查询组合按钮（OSC-0016 + 面板重构）：无状态组件，全部状态由 SearchDrawer / InsightPanel / DefaultList / viewProfile store 持有。 */

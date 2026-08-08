@@ -69,7 +69,10 @@
                 class="tb-act"
                 :class="{ 'is-active': viewFilter.conditions.length > 0 }"
               >
-                <a-button v-if="chrome.showFilter" type="text">筛选</a-button>
+                <a-button v-if="chrome.showFilter" type="text">
+                  <icon-park type="filter" />
+                  筛选
+                </a-button>
                 <span
                   v-if="viewFilter.conditions.length"
                   class="tb-count"
@@ -99,6 +102,7 @@
                   v-if="activeViewKind === 'table' && chrome.showGroup"
                   type="text"
                 >
+                  <icon-park type="group" />
                   分组
                 </a-button>
                 <span
@@ -117,10 +121,13 @@
               type="text"
               @click="searchPanelOpen = !searchPanelOpen"
             >
+              <icon-park type="search" />
               搜索
             </a-button>
             <a-dropdown v-if="advancedVisible" trigger="click">
-              <a-button>高级 <IconDown /></a-button>
+              <a-button>
+                高级 <icon-park type="down" />
+              </a-button>
               <template #content>
                 <a-doption v-if="flags.canImport" class="advanced-upload-option">
                   <a-upload
@@ -129,12 +136,18 @@
                     class="advanced-upload"
                   >
                     <template #upload-button>
-                      <span class="advanced-menu-label">导入</span>
+                      <span class="advanced-menu-label">
+                        <icon-park type="download" />
+                        导入
+                      </span>
                     </template>
                   </a-upload>
                 </a-doption>
                 <a-dsubmenu v-if="flags.canExport" value="export">
-                  <template #default>导出</template>
+                  <template #default>
+                    <icon-park type="export" />
+                    导出
+                  </template>
                   <template #content>
                     <a-doption
                       v-for="f in exportFormats"
@@ -150,13 +163,12 @@
                   :disabled="batchDeleteState.disabled"
                   @click="confirmBatchDelete"
                 >
+                  <icon-park type="delete" />
                   批量删除
                 </a-doption>
                 <a-doption v-if="isAdmin" @click="formLayoutDrawerVisible = true">
+                  <icon-park type="layout-one" />
                   表单布局
-                </a-doption>
-                <a-doption v-if="isAdmin" @click="templateDrawerVisible = true">
-                  管理模板
                 </a-doption>
               </template>
             </a-dropdown>
@@ -356,12 +368,6 @@
       :detail-fields="detailFields"
       :can-configure="isAdmin"
     />
-
-    <TemplateManageDrawer
-      v-if="viewState"
-      v-model:visible="templateDrawerVisible"
-      :type-path="typePath"
-    />
   </div>
 </template>
 
@@ -379,7 +385,6 @@ import {
 } from 'vue';
 import { useRoute } from 'vue-router';
 import { Message, Modal } from '@arco-design/web-vue';
-import { IconDown } from '@arco-design/web-vue/es/icon';
 import { ApiError, type PageSetting } from '@cube/api-core';
 import { EXPORT_FORMATS } from '@cube/page-utils';
 import cubeApi from '@/api';
@@ -461,7 +466,6 @@ const GanttView = defineAsyncComponent(() => import('@/features/views/GanttView.
 import RecordDrawer from './RecordDrawer.vue';
 import ListChartModal from './ListChartModal.vue';
 import FormLayoutDrawer from './FormLayoutDrawer.vue';
-import TemplateManageDrawer from './TemplateManageDrawer.vue';
 import ViewTabsToolbar from './ViewTabsToolbar.vue';
 import ViewConfigDrawer from './ViewConfigDrawer.vue';
 import FilterBuilderPopover from './FilterBuilderPopover.vue';
@@ -493,7 +497,6 @@ const selectedKeys = ref<(string | number)[]>([]);
 const statData = ref<Record<string, unknown> | null>(null);
 const labelCache = reactive<Record<string, Record<string, string>>>({});
 const configDrawerVisible = ref(false);
-const templateDrawerVisible = ref(false);
 const viewState = ref<EntityViewState | null>(null);
 
 const pagination = reactive({
@@ -551,7 +554,7 @@ const flags = computed(() =>
   resolveCrudFlags(userStore.getMenuPermission(typePath.value), pageSetting.value),
 );
 
-/** 仅管理员角色可使用表单布局和管理模板（与后端 Roles.Any(e => e.IsSystem) 对齐） */
+/** 仅管理员角色可使用表单布局（与后端 Roles.Any(e => e.IsSystem) 对齐） */
 const isAdmin = computed(() => userStore.userInfo?.isSystem === true);
 
 /** 只读实体列表页不展示历史与评论（新建由表单 mode 自行隐藏） */

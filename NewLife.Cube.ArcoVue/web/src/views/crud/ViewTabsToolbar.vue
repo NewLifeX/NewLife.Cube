@@ -17,7 +17,9 @@
         :class="{ active: v.id === activeId }"
       >
         <button type="button" class="view-tab-main" @click="$emit('switch', v.id)">
-          <span class="view-tab-kind">{{ kindLabel(v.view) }}</span>
+          <a-tooltip :content="VIEW_KIND_LABEL[v.view] || v.view">
+            <icon-park :type="VIEW_KIND_ICONS[v.view]" class="view-tab-kind" />
+          </a-tooltip>
           <span class="view-tab-name">{{ v.name }}</span>
         </button>
         <a-dropdown
@@ -26,17 +28,33 @@
           @select="onMenuSelect"
         >
           <button type="button" class="view-tab-menu" title="视图菜单" @click.stop>
-            <icon-more-vertical />
+            <icon-park type="more-one" />
           </button>
           <template #content>
-            <a-doption value="rename">重命名</a-doption>
-            <a-doption value="config">自定义配置</a-doption>
-            <a-doption value="duplicate">复制</a-doption>
-            <a-doption value="delete" :disabled="views.length <= 1">删除</a-doption>
+            <a-doption value="rename">
+              <icon-park type="edit" class="menu-item-icon" />
+              重命名
+            </a-doption>
+            <a-doption value="config">
+              <icon-park type="setting" class="menu-item-icon" />
+              自定义配置
+            </a-doption>
+            <a-doption value="duplicate">
+              <icon-park type="copy" class="menu-item-icon" />
+              复制
+            </a-doption>
+            <a-doption value="delete" :disabled="views.length <= 1">
+              <icon-park type="delete" class="menu-item-icon" />
+              删除
+            </a-doption>
             <a-doption divider v-if="isAdmin" value="saveAsDefault">
+              <icon-park type="save" class="menu-item-icon" />
               存为默认{{ defaultViewKindName(activeViewKind) }}视图
             </a-doption>
-            <a-doption value="reset">恢复默认</a-doption>
+            <a-doption value="reset">
+              <icon-park type="undo" class="menu-item-icon" />
+              恢复默认
+            </a-doption>
           </template>
         </a-dropdown>
       </div>
@@ -80,7 +98,6 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { IconMoreVertical } from '@arco-design/web-vue/es/icon';
 import type { FieldMeta } from '@/core/types/field';
 import type { NamedView, ViewKind } from '@/core/utils/viewProfile';
 import {
@@ -89,6 +106,7 @@ import {
   defaultViewKindName,
   viewKindCreateLabel,
 } from '@/core/utils/viewMapping';
+import { VIEW_KIND_ICONS } from '@/core/utils/iconRegistry';
 
 const props = defineProps<{
   views: NamedView[];
@@ -129,10 +147,6 @@ const createOptions = computed(() =>
     };
   }),
 );
-
-function kindLabel(kind: ViewKind): string {
-  return VIEW_KIND_LABEL[kind] || kind;
-}
 
 /** 视图命名弹层（创建/重命名共用）：相对主界面居中、Arco 组件自动跟随主题 */
 const nameModalVisible = ref(false);
@@ -318,8 +332,11 @@ onMounted(() => {
   padding-right: 12px;
 }
 .view-tab-kind {
-  font-size: 11px;
-  opacity: 0.7;
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  opacity: 0.75;
+  line-height: 1;
 }
 .view-tab-menu {
   display: inline-flex;
@@ -334,6 +351,14 @@ onMounted(() => {
   font-size: 14px;
   line-height: 1;
   opacity: 0.65;
+}
+/* 视图菜单项图标：与文字水平居中对齐 */
+.menu-item-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 6px;
+  font-size: 14px;
+  vertical-align: -2px;
 }
 .view-tab-menu:hover {
   opacity: 1;

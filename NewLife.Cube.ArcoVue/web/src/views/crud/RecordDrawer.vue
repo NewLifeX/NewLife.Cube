@@ -12,12 +12,12 @@
         <a-space v-if="showNav" :size="2" class="drawer-nav">
           <a-tooltip content="上一条">
             <a-button type="text" size="mini" :disabled="!canPrev" @click="emit('prev')">
-              <template #icon><IconUp /></template>
+              <template #icon><icon-park type="up" /></template>
             </a-button>
           </a-tooltip>
           <a-tooltip content="下一条">
             <a-button type="text" size="mini" :disabled="!canNext" @click="emit('next')">
-              <template #icon><IconDown /></template>
+              <template #icon><icon-park type="down" /></template>
             </a-button>
           </a-tooltip>
         </a-space>
@@ -52,11 +52,12 @@
             @click="emit('toggle-collapse', group.category)"
           >
             <span>{{ group.title }}</span>
-            <icon-down class="detail-group__caret" :class="{ open: !detailCollapsed.has(group.category) }" />
+            <icon-park type="down" class="detail-group__caret" :class="{ open: !detailCollapsed.has(group.category) }" />
           </button>
           <div v-show="!detailCollapsed.has(group.category)" class="detail-fields">
             <div v-for="field in group.fields" :key="field.name" class="detail-field">
               <div class="detail-field__label" :style="detailLabelStyle">
+                <icon-park :type="fieldIcon(field)" class="detail-field__icon" />
                 {{ field.displayName || field.name }}
               </div>
               <div class="detail-field__value">
@@ -119,11 +120,12 @@
               @click="emit('toggle-collapse', group.category)"
             >
               <span>{{ group.title }}</span>
-              <icon-down class="detail-group__caret" :class="{ open: !detailCollapsed.has(group.category) }" />
+              <icon-park type="down" class="detail-group__caret" :class="{ open: !detailCollapsed.has(group.category) }" />
             </button>
             <div v-show="!detailCollapsed.has(group.category)" class="detail-fields">
               <div v-for="field in group.fields" :key="field.name" class="detail-field">
                 <div class="detail-field__label" :style="detailLabelStyle">
+                  <icon-park :type="fieldIcon(field)" class="detail-field__icon" />
                   {{ field.displayName || field.name }}
                 </div>
                 <div class="detail-field__value">
@@ -358,7 +360,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { Message, Modal } from '@arco-design/web-vue';
-import { IconDown, IconUp } from '@arco-design/web-vue/es/icon';
 import type { EntityCommentModel } from '@cube/api-core';
 import type { FieldMeta } from '@/core/types/field';
 import { getValueByKey } from '@/core/utils/url';
@@ -367,6 +368,7 @@ import {
   estimateDetailLabelWidth,
   groupFieldsByCategory,
 } from '@/core/utils/fieldGroups';
+import { fieldIcon } from '@/core/utils/iconRegistry';
 import type { FormLayout } from '@/core/utils/viewProfile';
 import { formatApiError } from '@/core/utils/apiError';
 import { formatDateTime } from '@/core/utils/datetime';
@@ -852,13 +854,25 @@ defineExpose({ validate: () => formRef.value?.validate() });
 .detail-field__label {
   flex: 0 0 auto;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  gap: 6px;
   padding: 8px 12px;
-  background-color: var(--color-fill-3);
+  background-color: var(--color-primary-light-1);
   color: var(--color-text-2);
   text-align: left;
   line-height: 22px;
+  white-space: nowrap;
   box-sizing: border-box;
+  border-right: 1px solid var(--color-border-2);
+}
+.detail-field__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  line-height: 22px;
+  opacity: 0.65;
+  color: var(--color-text-3);
 }
 .detail-field__value {
   flex: 1;

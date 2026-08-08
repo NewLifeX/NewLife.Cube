@@ -53,8 +53,11 @@ pnpm build
 
 - 布局由 `userProfile.layout.mode`（`side` / `top` / `mix`）经 `layouts/RootLayout.vue` 动态切换。
 - 主题 / 密度写入 CSS 变量与 `arco-theme`，持久化到 `GET/PUT /Cube/UserProfile`。
+- **侧栏 header 间隙（OSC-0017）**：side 布局 `.layout-header` 显式 `height: 60px` + `border-bottom` + `gap`，面包屑与右上角按钮垂直居中、顶部有合理间隙；top/mix 布局无回归。
 - **主题主色治理**：`theme/tokens.ts` 按主色（`--cube-primary`）生成 Arco `--primary-1~10` 色阶与 `--color-primary-light-1~4`（亮色 1 浅→10 深；暗色方向反转、浅色阶为主色半透明），`applyTheme` 写入 `body` 覆盖 Arco 默认，使按钮/链接/选中态等 Arco 组件主色跟随用户主题。VTable / Gantt 为 canvas 渲染不支持 CSS 变量，经 `core/utils/themeColor.ts` 读取 Arco 语义 token（`--color-text-*`/`--color-fill-*`/`--color-border-*`/`--color-bg-*`）并监听 body 主题变化重建表格。
 - 外观设置：`/settings/appearance`；顶栏提供主题、密度、设置入口。
+- **主题预置色（OSC-0017）**：「外观设置」主色为 13 个 Arco 官方品牌色预置色板（`core/utils/presetColors.ts`，官方中文命名，默认「极客蓝」`#165DFF` 高亮）+ 自定义色区；选预置色即写 `primaryColor` 并持久化。
+- **统一图标体系（OSC-0017）**：全项目图标统一为 IconPark（`@icon-park/vue-next`），`main.ts` 注册全局 `<icon-park type>` 聚合组件；图标组件**按需引入**于 `core/utils/iconComponents.ts`（仅打包用到的图标，避免全量 `install` 膨胀 bundle）；业务图标名集中注册于 `core/utils/iconRegistry.ts`（视图类型 / 外观 / 字段类型 `fieldIcon` / 菜单 `menuIcon`（fa-xxx 映射 + 名称关键词 + 默认三态兜底）），不残留 Arco 图标。
 - CRUD 页面不读取壳偏好 store（契约隔离）。
 
 ## 列表与 ViewProfile
@@ -73,6 +76,7 @@ pnpm build
 - **LOV LIST 远程搜索（OSC-0015）**：LIST 单选下拉支持输入关键字远程搜索（防抖 300ms，携带 `q` 参数调 `/Admin/Lov/ListData`），空输入回首页；ENUM 与「更多」高级表格入口不变。
 - **通用查询与预定义查询（OSC-0016）**：搜索栏为**右侧抽屉**（`SearchDrawer`，标题「高级搜索」，宽 300 = 外观设置抽屉 480 的一半 + 60，**无关闭按钮**、**无底部确定/取消**、点击界面其它区域关闭），**每个查询条件占一行**——关键字 Q 作为第一个条件，其余按 GetPage `Search` 列表顺序依次排列（主时间范围 `dtStart/dtEnd` 单独一行）；**查询组合按钮放抽屉右上角**（文字在前、向下箭头在右），「查询 ▾」下拉集中承载执行查询、重置与预定义查询管理（保存为预定义/应用/重命名/删除/重置查询参数）（「保存到此视图 / 清除默认筛选」菜单项已移除）；日期/数值/时间搜索字段为**单值等值控件**（提交字段名=值，后端 Equal 命中，不再产生 `_min/_max`）；Map 外键字段自动出候选（小表内联 `dataSourceMap` 下拉 / 大表 `Entity.` 值集远程搜索）；预定义查询为**实体级个人配置**存 `ViewProfile.queriesJson`（不随模板），刷新恢复。
 - 列表页顶部工具栏（筛选/搜索，table 另有分组）右侧「高级」菜单承载当前实体的导入/导出/批量删除；排序不设工具栏按钮，由列表/树视图标题栏（表头）排序图标承担（受自定义配置「工具栏/排序」开关控制）；表格默认左侧勾选 + 表头全选，批量删除受删除权限、视图允许删除与选中行共同门禁（OSC-0007）。
+- **图标化与模板入口移除（OSC-0017）**：视图 Tab 类型文字改为 IconPark 类型图标（tooltip 显示类型名）；工具栏「筛选/分组/搜索/高级」及高级菜单项（导入/导出/批量删除/表单布局）带图标；详情抽屉字段标签前按字段类型显示图标（`fieldIcon`）；导航菜单（side/top/mix）显示统一图标（`menuIcon` fa 映射 / 关键词 / 默认三态兜底）；「高级/管理模板」入口与 `TemplateManageDrawer.vue` 已移除（视图模板发布仍走视图 Tab「存为默认XX视图」）。
 - 卡片视图支持**标准 / 偏大 / 整行**三种布局（`NamedView.mapping.layout`），并可配置正文字段列数与横/竖排版；整行布局窄屏自动回退纵向，多行/长文本字段自动占满整行。
 - 列表/树/卡片/看板视图中 `Enable` 字段徽标可点击，直接调用后端 `EnableSelect/DisableSelect`（`GET {type}/EnableSelect?keys=`）启停；非 Enable 的状态/枚举/值集徽标悬停光标不变（OSC-0009）。
 - 状态/枚举/值集字段在列表/树/卡片/看板渲染为徽标，宽度按文案自适应；卡片视图高度统一为全量对象最高者（`min-height` 下发），操作区固定左下（OSC-0009）。

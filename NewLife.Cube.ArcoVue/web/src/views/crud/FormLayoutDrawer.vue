@@ -23,7 +23,7 @@
       <div class="fl-label">
         字段设置
         <a-tooltip content="仅调整展示顺序与显隐；不能绕过字段权限、必填或校验">
-          <icon-info-circle class="fl-hint" />
+          <icon-park type="info" class="fl-hint" />
         </a-tooltip>
       </div>
       <a-empty v-if="!orderedFields.length" description="暂无字段可配置" />
@@ -38,7 +38,7 @@
           @drop="onDrop(idx)"
         >
           <span class="fl-drag-handle" title="拖动排序">
-            <icon-drag-dot-vertical />
+            <icon-park type="drag" />
           </span>
           <span class="fl-field-name" :class="{ muted: isHidden(f.name) }">
             {{ f.displayName || f.name }}
@@ -49,8 +49,8 @@
             :title="isHidden(f.name) ? '显示' : '隐藏'"
             @click="setHidden(f.name, !isHidden(f.name))"
           >
-            <icon-eye v-if="!isHidden(f.name)" />
-            <icon-eye-invisible v-else />
+            <icon-park v-if="!isHidden(f.name)" type="preview-open" />
+            <icon-park v-else type="preview-close" />
           </a-button>
         </li>
       </ul>
@@ -87,12 +87,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { Message } from '@arco-design/web-vue';
-import {
-  IconDragDotVertical,
-  IconEye,
-  IconEyeInvisible,
-  IconInfoCircle,
-} from '@arco-design/web-vue/es/icon';
 import type { FieldMeta } from '@/core/types/field';
 import { isAuditField } from '@/core/utils/fieldControl';
 import { normalizeFormLayout } from '@/core/utils/fieldGroups';

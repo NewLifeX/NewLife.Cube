@@ -103,7 +103,7 @@ function orderFields(fields: FieldMeta[], orderMap: Map<string, number>): FieldM
   return [...ordered, ...rest];
 }
 
-/** 估算详情标签列统一宽度（px），按整页最宽标签 */
+/** 估算详情标签列统一宽度（px），按整页最宽标签；含字段类型图标占位（14px 图标 + 6px gap） */
 export function estimateDetailLabelWidth(fields: FieldMeta[]): number {
   let max = 0;
   for (const f of fields) {
@@ -114,5 +114,6 @@ export function estimateDetailLabelWidth(fields: FieldMeta[]): number {
     }
     max = Math.max(max, w);
   }
-  return Math.max(96, Math.min(220, max + 24));
+  // 图标占位 20（14 图标 + 6 gap）+ 左右 padding 24
+  return Math.max(120, Math.min(240, max + 20 + 24));
 }

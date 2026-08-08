@@ -142,6 +142,18 @@
 - **`GetPage` 高频接口禁止逐字段查库**：值集注册判定（`LovRegistered:`）、目标表行数判定（`LovMapCount:`）均走 MemoryCache 60s；负结果（未注册/空表）也应缓存哨兵，否则高频接口每请求回源。
 - **"清空查询参数" vs "重置查询参数"术语**：菜单项最终命名以代码为准（`__reset` IconRefresh「重置查询参数」），proposal/verify/README/功能清单四处文档曾残留旧名「清空」，归档前须统一术语（doc-sync 审计兜住）。
 
+## OSC-0017 — 2026-08-08
+
+- **图标库全量 install 会显著膨胀 bundle，须量化后按需引入**：`@icon-park/vue-next` 全量 `install(app,'icon')` 实测 +387KB gzip（主包 682→324KB）。落地：`iconComponents.ts` 唯一按需具名引入点 + `main.ts` 自定义 `<icon-park>` 聚合组件（按 `type` 查表、未命中回退 `FALLBACK_ICON` 不抛错）。design §10 预置风险后应在 T1 立即量化验证，不要等验收。
+- **图标注册表双源分层 + 单测双向锁死**：`iconRegistry.ts` 只存 kebab-case 名字串（纯函数可测）+ `iconComponents.ts` 只存 名→组件 映射；`iconRegistry.spec.ts` 用 `ICON_COMPONENTS` 覆盖断言，把「名字 ↔ 组件」双向锁死，新增图标漏登记会被测试拦截。
+- **IconPark 全局聚合组件需自定义注册**：`es/all` 的 `install(app, 'icon')` 只注册各 `icon-xxx` 单组件，**不注册** `<icon-park>` 聚合组件；须 `app.component('icon-park', IconPark)` 手动注册才能用动态 `type` 渲染（design 与实际包行为差异，执行期修正）。
+- **动态组件透传 props 要排除内部消费键**：自定义 `<icon-park>` 把 `{...attrs, ...props}` 透传时，`type` 会被当作普通 attribute 渲染到 SVG 根元素（`<svg type="...">` 冗余 DOM）；须解构剔除仅用于查表的 `type`，只透传图标有效 props。
+- **fa 图标类名兼容多 token**：后端 `Icon` 可能是 `fa fa-user`（空格多类名）或 `fas fa-user`，`icon.replace(/^fa-/,'')` 只剥离一个前缀无法命中；先 `split(/\s+/)[0]` 取首 token 再查表，兜底（`fas` miss → 关键词/默认）保证不崩。
+- **批量替换后自检格式与注释**：T4 替换 Arco 图标后遗留缩进瑕疵 + 头注释残留「install(app,'icon')」旧描述，验收代码审查才捕获；替换完成后应 grep 关键注释关键词 + 检查 diff 缩进一致性。
+- **涉及既有控件形态的设计先与用户对齐最终形态**：「高级」按钮设计基线（文字前 more 图标）执行期被用户改右侧 down 箭头并撤销 min-width，来回 2 次；自定义主色布局也 3 次调整（独立行→第三行→徽标在标签下方）。此类视觉微调宜 demo 时给 2~3 个候选一次性对齐，避免逐轮会话往返。
+- **删除登记同步清理 spec**：T4 后 `more` 不再使用但 iconComponents 保留登记 + spec 覆盖列表含 `more`，验收审查才删；替换完成后 grep 使用点同步清理未用登记与其 spec 条目。
+- **外观设置动态保存即可删除「立即保存」**：`patchLayout/patchTheme → markDirtyAndSchedule(400ms) → saveNow` 自动持久化，显式保存按钮冗余；UI 保留「恢复默认」+ 同步状态标签即可（review 确认无手动保存诉求）。
+
 ## 待办 — 字体规范（Harness）
 
 - 后续按现代中后台常见 **组件/场景**（列表表头、单元格、表单标签、抽屉标题、徽章等）在 Harness 建立统一的 **字体 / 字号 / 字重** 规范，并替换各处临时字重（如 VTable `headerStyle.fontWeight: 400`）。

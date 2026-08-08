@@ -20,13 +20,13 @@
             <span class="gp-item-name">{{ labelOf(f) }}</span>
             <a-space :size="2" class="gp-item-ops">
               <a-button type="text" size="mini" :disabled="i === 0" @click="move(i, -1)">
-                <IconUp />
+                <icon-park type="up" />
               </a-button>
               <a-button type="text" size="mini" :disabled="i === draft.length - 1" @click="move(i, 1)">
-                <IconDown />
+                <icon-park type="down" />
               </a-button>
               <a-button type="text" size="mini" status="danger" @click="removeAt(i)">
-                <IconClose />
+                <icon-park type="close" />
               </a-button>
             </a-space>
           </div>
@@ -69,7 +69,6 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { IconUp, IconDown, IconClose } from '@arco-design/web-vue/es/icon';
 import type { FieldMeta } from '@/core/types/field';
 import {
   groupFieldCandidates,

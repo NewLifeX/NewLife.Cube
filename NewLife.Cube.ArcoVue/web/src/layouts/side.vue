@@ -24,8 +24,8 @@
         <div class="layout-header__left">
           <a-button type="text" @click="toggleCollapsed">
             <template #icon>
-              <icon-menu-fold v-if="!collapsed" />
-              <icon-menu-unfold v-else />
+              <icon-park v-if="!collapsed" type="menu-fold" />
+              <icon-park v-else type="menu-unfold" />
             </template>
           </a-button>
           <a-breadcrumb>
@@ -45,7 +45,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { IconMenuFold, IconMenuUnfold } from '@arco-design/web-vue/es/icon';
 import type { MenuItem } from '@cube/api-core';
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
@@ -92,13 +91,16 @@ function toggleCollapsed() {
   font-size: 16px;
 }
 .layout-header {
+  height: 60px;
   background: var(--color-bg-2);
   padding: 0 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
   box-sizing: border-box;
   min-width: 0;
+  border-bottom: 1px solid var(--color-border);
 }
 .layout-header__left {
   display: flex;

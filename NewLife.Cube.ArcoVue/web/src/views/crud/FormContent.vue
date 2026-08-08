@@ -14,7 +14,7 @@
           @click="$emit('toggle-collapse', group.category)"
         >
           <span>{{ group.title }}</span>
-          <icon-down class="form-group__caret" :class="{ open: !collapsedSet.has(group.category) }" />
+          <icon-park type="down" class="form-group__caret" :class="{ open: !collapsedSet.has(group.category) }" />
         </button>
         <div v-show="!collapsedSet.has(group.category)" class="form-group__body">
           <a-row :gutter="16">
@@ -47,7 +47,6 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { IconDown } from '@arco-design/web-vue/es/icon';
 import type { FieldMeta } from '@/core/types/field';
 import { isAuditField, isFullWidthControl, resolveControl } from '@/core/utils/fieldControl';
 import { applyFormLayout, groupFieldsByCategory } from '@/core/utils/fieldGroups';

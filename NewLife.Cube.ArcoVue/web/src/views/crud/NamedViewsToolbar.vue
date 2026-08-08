@@ -3,12 +3,12 @@
     <a-dropdown trigger="click" @select="onSelect">
       <a-button>
         {{ activeName }}
-        <icon-down />
+        <icon-park type="down" />
       </a-button>
       <template #content>
         <a-doption v-for="v in views" :key="v.id" :value="`switch:${v.id}`">
           <span>{{ v.name }}</span>
-          <icon-check v-if="v.id === activeId" style="margin-left: 8px" />
+          <icon-park v-if="v.id === activeId" type="check" style="margin-left: 8px" />
         </a-doption>
         <a-doption value="new">新建视图…</a-doption>
         <a-doption value="rename" :disabled="!activeId">重命名当前…</a-doption>
@@ -22,7 +22,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { IconCheck, IconDown } from '@arco-design/web-vue/es/icon';
 import { DEFAULT_VIEW_NAME, type NamedView } from '@/core/utils/viewProfile';
 
 const props = defineProps<{

@@ -56,13 +56,43 @@
           </a-radio-group>
         </a-form-item>
         <a-form-item label="主色">
-          <input
-            type="color"
-            :value="form.theme.primaryColor"
-            class="color-input"
-            @input="onPrimaryInput"
-          />
-          <span class="color-text">{{ form.theme.primaryColor }}</span>
+          <div class="preset-swatches">
+            <button
+              v-for="c in PRESET_THEME_COLORS"
+              :key="c.key"
+              type="button"
+              class="preset-swatch"
+              :class="{ selected: isPresetSelected(c) }"
+              :style="{ background: c.color }"
+              :title="c.name"
+              @click="pickPresetColor(c)"
+            >
+              <icon-park v-if="isPresetSelected(c)" type="check" class="preset-swatch__check" />
+            </button>
+            <div class="custom-color-block">
+              <span class="custom-label">自定义主色</span>
+              <div class="custom-color-row">
+                <button
+                  type="button"
+                  class="preset-swatch custom-swatch"
+                  :class="{ selected: !isPresetColorActive() }"
+                  :style="{ background: form.theme.primaryColor }"
+                  title="选择自定义主色"
+                  @click="openCustomColorPicker"
+                >
+                  <icon-park v-if="!isPresetColorActive()" type="check" class="preset-swatch__check" />
+                </button>
+                <input
+                  ref="customColorRef"
+                  type="color"
+                  :value="form.theme.primaryColor"
+                  class="color-input-hidden"
+                  @input="onPrimaryInput"
+                />
+                <span class="color-text">{{ form.theme.primaryColor }}</span>
+              </div>
+            </div>
+          </div>
         </a-form-item>
         <a-form-item label="圆角">
           <a-slider
@@ -88,7 +118,6 @@
 
     <template #footer>
       <a-space>
-        <a-button type="primary" :loading="profileStore.saving" @click="saveNow">立即保存</a-button>
         <a-button :loading="profileStore.saving" @click="reset">恢复默认</a-button>
         <a-tag v-if="profileStore.dirty" color="orangered">有未同步更改</a-tag>
         <a-tag v-else-if="profileStore.saving" color="arcoblue">同步中…</a-tag>
@@ -100,10 +129,11 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import { Message } from '@arco-design/web-vue';
 import { useUserProfileStore } from '@/stores/userProfile';
 import { cloneProfile, type UserProfilePrefs } from '@/core/utils/userProfile';
+import { PRESET_THEME_COLORS, type PresetThemeColor } from '@/core/utils/presetColors';
 
 defineOptions({ name: 'AppearanceDrawer' });
 
@@ -137,9 +167,27 @@ function onPrimaryInput(e: Event) {
   onThemeChange();
 }
 
-async function saveNow() {
-  await profileStore.saveNow();
-  if (!profileStore.saveError) Message.success('已保存');
+/** 当前主色是否为该预置色（大小写不敏感比对） */
+function isPresetSelected(c: PresetThemeColor): boolean {
+  return form.theme.primaryColor.toLowerCase() === c.color.toLowerCase();
+}
+
+/** 当前主色是否命中任一预置色（命中时自定义徽标不显示选中态，避免与预置色选中二义） */
+function isPresetColorActive(): boolean {
+  return PRESET_THEME_COLORS.some((c) => isPresetSelected(c));
+}
+
+/** 点击预置色 → 写 primaryColor 并走统一主题变更链路（patchTheme + debounce 持久化） */
+function pickPresetColor(c: PresetThemeColor) {
+  form.theme.primaryColor = c.color;
+  onThemeChange();
+}
+
+/** 隐藏的原生颜色选择器（由自定义主色徽标触发） */
+const customColorRef = ref<HTMLInputElement | null>(null);
+/** 点击自定义主色徽标 → 唤起原生颜色选择器 */
+function openCustomColorPicker() {
+  customColorRef.value?.click();
 }
 
 async function reset() {
@@ -164,18 +212,68 @@ async function reset() {
   color: rgb(var(--red-6));
   margin-top: 8px;
 }
-.color-input {
-  width: 42px;
-  height: 32px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  vertical-align: middle;
-  cursor: pointer;
+.color-input-hidden {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
 }
 .color-text {
   margin-left: 8px;
   color: var(--color-text-2);
   font-size: 13px;
 }
+/* 自定义主色（OSC-0017 细化）：并入预置色板网格第三行，徽标置于标签下方 */
+.custom-color-block {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+  margin-top: 2px;
+}
+.custom-label {
+  color: var(--color-text-3);
+  font-size: 13px;
+}
+.custom-color-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* 预置色板（OSC-0017）：13 官方品牌色 swatch-grid，选中主题主色描边 + check 角标 */
+.preset-swatches {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+  width: 100%;
+}
+.preset-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-2);
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+.preset-swatch:hover {
+  box-shadow: 0 0 0 2px rgb(var(--primary-6));
+}
+.preset-swatch.selected {
+  box-shadow: 0 0 0 2px rgb(var(--primary-6));
+}
+.preset-swatch__check {
+  color: #fff;
+  font-size: 14px;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.45));
+}
+
 </style>

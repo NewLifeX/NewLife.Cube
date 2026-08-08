@@ -27,8 +27,8 @@
         <div class="sider-toggle">
           <a-button type="text" @click="toggleCollapsed">
             <template #icon>
-              <icon-menu-fold v-if="!collapsed" />
-              <icon-menu-unfold v-else />
+              <icon-park v-if="!collapsed" type="menu-fold" />
+              <icon-park v-else type="menu-unfold" />
             </template>
           </a-button>
         </div>
@@ -51,7 +51,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { IconMenuFold, IconMenuUnfold } from '@arco-design/web-vue/es/icon';
 import type { MenuItem } from '@cube/api-core';
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';

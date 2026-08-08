@@ -1,0 +1,12 @@
+# Status
+- id: OSC-0017
+- state: Done
+- updated: 2026-08-08T16:30:00+08:00
+- approvedBy: openspec-approve
+- trigger: "ArcoVue 主题与图标优化方案执行：严格按照 openspec 规范，批准并执行 OSC-0017。"
+- checklist: passed
+- note: Draft 创建。用户澄清已确认：①13 色 = Arco 官方 13 品牌色（不含中性灰 gray）；②图标体系安装 @icon-park/vue-next（Vue 3 包，@icon-park/vue 为 Vue 2 不可用）全局替换；③视图 Tab 类型文字替换为仅图标（tooltip 显示类型名）；④『管理模板』抽屉删除，搜索模板管理一并移除；⑤独立『外观设置』按钮删除，完整入口保留在用户下拉菜单；⑥导航菜单图标用内置映射表（fa-xxx）+ 名称关键词兜底 + 默认图标兜底；⑦需求 6『自定义实体列表/表单设计方案』另立 OSC-0018，本号只做 1~5。
+- approvalNote: 批准检查表全部通过：范围单一；依赖 OSC-0005/0006/0013/0016 均 Done；proposal 含不做什么+测试范围；design 含技术方案+文档影响+测试设计；tasks 可勾选且含文档同步与测试项；无 ui/ 目录；与既有矩阵无冲突。
+- executionNote: T1~T11 已完成：IconPark 按需引入（iconComponents.ts 唯一登记 + main.ts 自定义 <icon-park> 动态组件，全量 install 膨胀已降级，见 design §10/§2.2）；13 预置色板 + 自定义色区；12 文件 Arco 图标全量替换清零；视图 Tab 图标 + tooltip；工具栏/高级菜单图标；TemplateManageDrawer 删除（web/src+packages 0 命中）；详情字段类型图标；右上角主题图标按钮；side header 显式 60px + border-bottom + gap；三布局菜单图标；文档与 openspec README 登记完成。全量 Vitest 295 通过 + build 通过（主包 682→324KB gzip）。
+- validationNote: 验收 17/17 AC 通过（checklist passed）：三步检查（实现审计 11✅/1⚠️用户决策、代码审查 0🔴+6🟡全修、文档同步 2✅/1🟡已修）；自动化门禁 Vitest 295/295 + vue-tsc + vite build 通过；执行期 3 轮会话细化已补录 tasks T2/T5/T6/T7；「立即保存」按钮因动态防抖持久化确认冗余已删除。
+- retroNote: 复盘完成（retro.md + lessons.md OSC-0017）；遗留项：fa 前缀 `fas ` 双 token 兼容（🟢）、标签列宽下限 120px 取舍（🟢），均不阻塞。

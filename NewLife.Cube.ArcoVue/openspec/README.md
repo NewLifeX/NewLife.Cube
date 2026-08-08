@@ -35,8 +35,11 @@ ArcoVue 前端实现按场景固定使用以下框架；实现细节、组件 AP
 | 场景 | 框架 | 官方资料 |
 | --- | --- | --- |
 | 设计系统、应用壳、表单及通用 UI | 字节跳动 Arco Design Vue | [快速上手](https://arco.design/vue/docs/start) |
+| 图标（全局 `<icon-park type>`） | IconPark `@icon-park/vue-next` | [官方图标库](https://iconpark.oceanengine.com/official) · GitHub [bytedance/IconPark](https://github.com/bytedance/IconPark)（vue-next README） |
 | 多维数据视图 | VisActor VTable | [教程](https://arco.design/vue/docs/start) · [ListTable 配置](https://visactor.com/vtable/option/ListTable) · [实例接口](https://visactor.com/vtable/api/Methods) |
 | 工作流 | FlowGram.AI | [指引](https://flowgram.ai/guide/getting-started/introduction.html) · [例子](https://flowgram.ai/examples/index.html) · [API](https://flowgram.ai/api/index.html) |
+
+> 图标名以 IconPark `IconType` 为准，统一注册于 `web/src/core/utils/iconRegistry.ts`（唯一事实源）；新图标必须先经 IconPark 站点确认存在再注册。
 
 创建 OSC 时，应在 `design.md` 标明适用框架及需查阅的官方资料；执行 OSC 时，`openspec-apply` 负责落实本规则。
 

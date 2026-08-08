@@ -1,12 +1,11 @@
 <template>
   <div class="shell-toolbar">
     <a-space>
-      <a-tooltip content="主题">
+      <a-tooltip :content="appearanceLabel">
         <a-button type="text" size="small" @click="cycleAppearance">
-          {{ appearanceLabel }}
+          <icon-park :type="APPEARANCE_ICONS[profileStore.theme.appearance]" />
         </a-button>
       </a-tooltip>
-      <a-button type="text" size="small" @click="goAppearance">外观设置</a-button>
       <a-dropdown>
         <a-button type="text">
           <a-avatar :size="28">{{ userStore.displayName?.charAt(0) || 'U' }}</a-avatar>
@@ -29,6 +28,7 @@ import { useUserProfileStore } from '@/stores/userProfile';
 import { useAppStore } from '@/stores/app';
 import { useTagsViewStore } from '@/stores/tagsView';
 import { resetMenuRoutesFlag } from '@/router';
+import { APPEARANCE_ICONS } from '@/core/utils/iconRegistry';
 import type { Appearance } from '@/core/utils/userProfile';
 
 const router = useRouter();

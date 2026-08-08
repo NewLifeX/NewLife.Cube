@@ -133,7 +133,7 @@
               </template>
             </div>
             <a-button type="text" size="mini" class="fb-del" @click="removeCond(i)">
-              <IconClose />
+              <icon-park type="close" />
             </a-button>
           </div>
 
@@ -164,7 +164,6 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
-import { IconClose } from '@arco-design/web-vue/es/icon';
 import type { FieldMeta } from '@/core/types/field';
 import { normalizeFilter, type ViewFilter, type ViewFilterOp } from '@/core/utils/viewProfile';
 import {
