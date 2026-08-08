@@ -2,16 +2,13 @@
   <div class="default-list" :style="listShellStyle">
     <component :is="headerSection" v-if="headerSection" />
 
-    <!-- 视图背景色覆盖：分布 + 搜索 + 表格（含视图 Tab） -->
+    <!-- 视图背景色覆盖：洞察（暂隐藏）+ 表格（含视图 Tab） -->
     <div class="list-surface" :class="{ 'list-surface--chrome': hasChromeBg }" :style="listSurfaceStyle">
-      <!-- 查询与洞察面板（OSC-0012）：搜索字段/操作在上，统计标签与固定图表作为下方可选结果区 -->
-      <QueryInsightPanel
-        v-if="showSearchPanel && searchFields.length"
+      <!-- 洞察面板（原 QueryInsightPanel，更名 InsightPanel）：暂隐藏不渲染（v-if=false），等简易图表看板设计时启用；统计/图表状态由 DefaultList 持续维护 -->
+      <InsightPanel
+        v-if="false"
         :fields="searchFields"
         :model="searchForm"
-        :source="searchSource"
-        :source-label="searchSourceLabel"
-        :can-save="!!activeViewId"
         :show-stat="insight.showStat"
         :show-chart="insight.showChart"
         :stat-data="statData"
@@ -19,14 +16,23 @@
         :chart-data="chartData"
         :chart-loading="chartLoading"
         :chart-error="chartError"
+        :master-time-name="masterTimeName"
+        :master-time-display-name="masterTimeDisplayName"
+        :enable-key="enableKey"
+        :queries="savedQueries"
+        :active-query-id="appliedQueryId"
+        :params-dirty="queryParamsDirty"
+        :can-save-query="queryHasParams"
         @search="handleSearch"
         @reset="handleReset"
-        @save="handleSaveFilters"
-        @clear="handleClearFilters"
+        @apply="handleApplyQuery"
+        @save-query="handleSaveQuery"
+        @rename-query="handleRenameQuery"
+        @delete-query="handleDeleteQuery"
       />
 
       <!-- 表格面板：视图 Tab + 工具栏 + 表格 + 分页 -->
-      <div class="list-panel list-panel--table">
+      <div ref="tablePanelRef" class="list-panel list-panel--table">
         <div v-if="viewState" class="list-view-tabs">
           <ViewTabsToolbar
             :views="viewState.views"
@@ -321,6 +327,26 @@
 
     <ListChartModal v-model:visible="chartVisible" :charts="chartList" />
 
+    <!-- 搜索抽屉（OSC-0016 面板重构）：右侧抽屉承载全部查询条件，每行一个；Q 第一、查询按钮右上角 -->
+    <SearchDrawer
+      v-model:visible="searchPanelOpen"
+      :fields="searchFields"
+      :model="searchForm"
+      :master-time-name="masterTimeName"
+      :master-time-display-name="masterTimeDisplayName"
+      :enable-key="enableKey"
+      :queries="savedQueries"
+      :active-query-id="appliedQueryId"
+      :params-dirty="queryParamsDirty"
+      :can-save="queryHasParams"
+      @search="handleSearch"
+      @reset="handleReset"
+      @apply="handleApplyQuery"
+      @save-query="handleSaveQuery"
+      @rename-query="handleRenameQuery"
+      @delete-query="handleDeleteQuery"
+    />
+
     <FormLayoutDrawer
       v-if="viewState"
       v-model:visible="formLayoutDrawerVisible"
@@ -340,7 +366,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, reactive, ref, watch, type Component } from 'vue';
+import {
+  computed,
+  defineAsyncComponent,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  reactive,
+  ref,
+  watch,
+  type Component,
+} from 'vue';
 import { useRoute } from 'vue-router';
 import { Message, Modal } from '@arco-design/web-vue';
 import { IconDown } from '@arco-design/web-vue/es/icon';
@@ -414,7 +450,8 @@ import {
 import { isPersonField } from '@/core/utils/filterBuilder';
 import { detectTreeData } from '@/core/utils/tree';
 import { buildTree, canBuildTree } from '@/core/utils/treeBuilder';
-import QueryInsightPanel from '@/features/search/QueryInsightPanel.vue';
+import SearchDrawer from '@/features/search/SearchDrawer.vue';
+import InsightPanel from '@/features/search/InsightPanel.vue';
 /** VTable / 多视图异步加载，降低 DynamicPage 首包 */
 const ListTable = defineAsyncComponent(() => import('@/features/vtable/ListTable.vue'));
 const CardList = defineAsyncComponent(() => import('@/features/views/CardList.vue'));
@@ -482,6 +519,11 @@ const effectivePageSizePref = computed(() => {
 });
 
 const searchForm = reactive<Record<string, unknown>>({});
+/** 主时间字段信息（OSC-0016）：GetPage setting 透传 */
+const masterTimeName = ref<string | null>(null);
+const masterTimeDisplayName = ref<string | null>(null);
+/** 关键字 Q 启用（OSC-0016）；缺省 true */
+const enableKey = ref(true);
 /** 当前会话是否已显式执行过搜索/重置；未执行时有效条件取 URL→已保存基准（OSC-0012） */
 const searchTouched = ref(false);
 const route = useRoute();
@@ -585,13 +627,6 @@ const savedSearch = computed(() => {
   );
 });
 
-/** 条件来源：URL > 已保存 > 空（OSC-0012） */
-const searchSource = computed<'url' | 'saved' | 'none'>(() => {
-  if (Object.keys(urlSearch.value).length) return 'url';
-  if (Object.keys(savedSearch.value).length) return 'saved';
-  return 'none';
-});
-
 /** 未显式搜索时的基准条件：URL → 已保存 → 空 */
 const baseSearch = computed(() => {
   if (Object.keys(urlSearch.value).length) return urlSearch.value;
@@ -604,13 +639,6 @@ const baseSearch = computed(() => {
 const effectiveSearch = computed(() => {
   if (!searchTouched.value) return baseSearch.value;
   return cleanSearchParams({ ...searchForm }, searchKeys.value);
-});
-
-/** 条件来源提示（不显示内部 JSON 或字段值） */
-const searchSourceLabel = computed(() => {
-  if (searchSource.value === 'url') return '来自 URL 参数';
-  if (searchSource.value === 'saved') return '来自已保存筛选';
-  return '未保存筛选';
 });
 
 /** 当前命名视图的受限洞察配置（OSC-0012） */
@@ -701,7 +729,8 @@ const advancedVisible = computed(
     isAdmin.value,
 );
 
-const searchPanelOpen = ref(true);
+/** 搜索抽屉开关：默认收起，点击工具栏「搜索」打开 */
+const searchPanelOpen = ref(false);
 
 /** 筛选/分组弹层互斥：同一时刻只展示一个（OSC-0015） */
 const activePopover = ref<'filter' | 'group' | null>(null);
@@ -793,20 +822,62 @@ const listSurfaceStyle = computed(() => {
   return style;
 });
 
-const showSearchPanel = computed(
-  () =>
-    searchFields.value.length > 0 &&
-    chrome.value.showSearch &&
-    searchPanelOpen.value,
+/** 预定义查询列表（OSC-0016）：实体级个人配置 */
+const savedQueries = computed(() => evpStore.getQueries(typePath.value).queries);
+/** 当前应用的预定义查询 id（会话内存，刷新后为 null） */
+const appliedQueryId = computed(() => evpStore.getActiveQueryId(typePath.value));
+/** 当前表单参数（cleanSearchParams 后）是否有任一非空键（含 Q/dtStart/dtEnd） */
+const queryHasParams = computed(
+  () => Object.keys(cleanSearchParams({ ...searchForm }, searchKeys.value)).length > 0,
 );
+/** 当前表单参数与 activeQuery 是否不一致（OSC-0016：不一致时条目不显示 ✓，应用标记保留） */
+const queryParamsDirty = computed(() => {
+  const id = appliedQueryId.value;
+  if (!id) return false;
+  const q = savedQueries.value.find((x) => x.id === id);
+  if (!q) return false;
+  const cur = cleanSearchParams({ ...searchForm }, searchKeys.value);
+  return JSON.stringify(cur) !== JSON.stringify(q.params);
+});
+
+/** 列表面板引用：用于测量表格可用高度，保证分页器与外壳底部在首屏可见 */
+const tablePanelRef = ref<HTMLElement | null>(null);
+/** 动态测量的表格可用高度（default/fill 模式）；测量前回落固定 tableHeight */
+const measuredTableHeight = ref(tableHeight);
+
+/** 测量表格可用高度：scroll 可视区底 - 面板顶 - 面板内非表格固定部分（Tab/工具栏/分页器/padding）
+ *  预留 16px 底部 gutter（= scroll padding-bottom），使底部间隙与左右上三边一致 */
+function measureTableHeight() {
+  if (typeof window === 'undefined') return;
+  // fit 模式按内容自适应（分页器随内容在下方），无需测量
+  if (chrome.value.heightMode === 'fit') return;
+  const scroll = document.querySelector<HTMLElement>('.layout-content__scroll');
+  const panel = tablePanelRef.value;
+  if (!scroll || !panel) return;
+  const sr = scroll.getBoundingClientRect();
+  const pr = panel.getBoundingClientRect();
+  // 非表格固定部分 = 面板总高 - 当前表格高；表格高度更新后面板高随之变化，该差值保持稳定
+  const nonTableH = pr.height - measuredTableHeight.value;
+  const avail = Math.floor(sr.bottom - pr.top - nonTableH - 16);
+  measuredTableHeight.value = Math.max(240, avail);
+}
+
+/** scroll 容器尺寸变化（窗口/布局调整/侧栏折叠）时重测 */
+let tableResizeObserver: ResizeObserver | null = null;
+function observeTableHeight() {
+  tableResizeObserver?.disconnect();
+  tableResizeObserver = null;
+  const scroll = document.querySelector<HTMLElement>('.layout-content__scroll');
+  if (!scroll || typeof ResizeObserver === 'undefined') return;
+  tableResizeObserver = new ResizeObserver(() => nextTick(measureTableHeight));
+  tableResizeObserver.observe(scroll);
+}
 
 const resolvedTableHeight = computed(() => {
   const mode = chrome.value.heightMode;
   if (mode === 'fit') return Math.max(240, 48 + tableData.value.length * 40);
-  if (mode === 'fill' && typeof window !== 'undefined') {
-    return Math.max(400, window.innerHeight - 360);
-  }
-  return tableHeight;
+  // default/fill：动态填满可视空间，分页器与外壳底部保持在首屏内
+  return measuredTableHeight.value;
 });
 
 const tableColumns = computed(() =>
@@ -886,6 +957,10 @@ async function loadFields() {
     (meta.setting as PageSetting | undefined) ??
     (meta.pageSetting as PageSetting | undefined) ??
     null;
+  // 主时间字段与关键字开关（OSC-0016）：setting 透传搜索面板固定控件
+  masterTimeName.value = pageSetting.value?.masterTimeName ?? null;
+  masterTimeDisplayName.value = pageSetting.value?.masterTimeDisplayName ?? null;
+  enableKey.value = pageSetting.value?.enableKey !== false;
   let list = toFieldMetas(
     (meta.list as never) || ((meta.fields as { list?: never })?.list),
   ).filter((f) => !!f.name);
@@ -1027,6 +1102,8 @@ async function loadData() {
     loading.value = false;
     // 洞察图表与列表同源（同一 effectiveSearch），随列表刷新；竞态由 chartSeq 保护
     void loadChart();
+    // 数据/分页器渲染完成后重测表格高度（default/fill 模式填满可视区，分页器保持可见）
+    nextTick(measureTableHeight);
   }
 }
 
@@ -1512,37 +1589,43 @@ function handleSearch() {
 }
 function handleReset() {
   Object.keys(searchForm).forEach((k) => delete searchForm[k]);
+  // 重置查询参数：一并清除当前应用的预定义查询标记（与删除的「清空查询参数」合并）
+  evpStore.clearActiveQuery(typePath.value);
   searchTouched.value = true;
   pagination.current = 1;
   loadData();
 }
 
-/** 将当前表单正规化结果显式保存为当前命名视图的默认筛选（OSC-0012） */
-function handleSaveFilters() {
-  if (!activeViewId.value) return;
-  const filters = cleanSearchParams({ ...searchForm }, searchKeys.value);
-  if (Object.keys(filters).length) {
-    evpStore.saveViewFilters(typePath.value, activeViewId.value, filters, true);
-  } else {
-    // 保存空条件等价于清除当前视图 key
-    evpStore.clearViewFilters(typePath.value, activeViewId.value, true);
-  }
-  // 保存后基准=saved=表单内容，刷新展示
-  searchTouched.value = false;
+/** 应用预定义查询（OSC-0016）：整体回填 searchForm（无残留键）→ 执行 → activeQueryId 由 store 设置 */
+function handleApplyQuery(id: string) {
+  const params = evpStore.applyQuery(typePath.value, id);
+  if (!params) return;
+  applySearchToForm(params);
+  searchTouched.value = true;
   pagination.current = 1;
   loadData();
-  Message.success('已保存到此视图');
 }
 
-/** 清除当前命名视图的已保存默认筛选（OSC-0012） */
-function handleClearFilters() {
-  if (!activeViewId.value) return;
-  evpStore.clearViewFilters(typePath.value, activeViewId.value, true);
+/** 保存当前查询为预定义（OSC-0016）：store 新增条目并指向，随后自动执行一次查询 */
+function handleSaveQuery(name: string) {
+  const params = cleanSearchParams({ ...searchForm }, searchKeys.value);
+  evpStore.saveQueryAs(typePath.value, name, params);
+  Message.success('已保存为预定义查询');
   searchTouched.value = true;
-  applySearchToForm({});
   pagination.current = 1;
   loadData();
-  Message.success('已清除默认筛选');
+}
+
+/** 重命名当前查询（OSC-0016） */
+function handleRenameQuery(id: string, name: string) {
+  evpStore.renameQuery(typePath.value, id, name);
+  Message.success('已重命名');
+}
+
+/** 删除预定义查询（OSC-0016）：删除后当前表单参数保留 */
+function handleDeleteQuery(id: string) {
+  evpStore.deleteQuery(typePath.value, id);
+  Message.success('已删除');
 }
 
 function onPageChange(page: number) {
@@ -1598,7 +1681,29 @@ watch(
   },
 );
 
-onMounted(bootstrap);
+// 视图/高度模式切换后重测表格可用高度（分页器与外壳底部保持在首屏内）。
+// 视图组件（VTable/CardList 等）为异步加载，渲染完成后延迟多次重测直至高度收敛。
+watch(
+  () => [viewState.value?.view, chrome.value.heightMode] as const,
+  () => {
+    nextTick(measureTableHeight);
+    window.setTimeout(measureTableHeight, 200);
+    window.setTimeout(measureTableHeight, 600);
+  },
+);
+
+onMounted(() => {
+  bootstrap();
+  // 初始渲染完成后测量表格可用高度，并监听 scroll 容器尺寸变化（窗口/侧栏/布局调整）
+  nextTick(() => {
+    measureTableHeight();
+    observeTableHeight();
+  });
+});
+
+onBeforeUnmount(() => {
+  tableResizeObserver?.disconnect();
+});
 </script>
 
 <style scoped>

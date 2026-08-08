@@ -174,6 +174,7 @@ public partial class ViewProfile : Entity<ViewProfile>
             if (model.GanttJson != null) entity.GanttJson = model.GanttJson;
             if (model.CardJson != null) entity.CardJson = model.CardJson;
             if (model.FiltersJson != null) entity.FiltersJson = model.FiltersJson;
+            if (model.QueriesJson != null) entity.QueriesJson = model.QueriesJson;
             // PageSize：仅接受 PAGE_SIZE_OPTIONS 合法值，非法归一 0（未配置）；0/缺省不覆盖已有配置
             if (model.PageSize > 0) entity.PageSize = NormalizePageSize(model.PageSize);
             if (model.FormJson != null) entity.FormJson = model.FormJson;

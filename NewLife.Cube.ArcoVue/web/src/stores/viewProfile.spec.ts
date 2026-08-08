@@ -645,3 +645,109 @@ describe('viewProfile store template domains (OSC-0014)', () => {
     expect(store.getViewFilters('Admin/User', 'default')).toEqual({ Enable: true });
   });
 });
+
+// ---------- OSC-0016：预定义查询动作 ----------
+describe('viewProfile store queries (OSC-0016)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    getViewProfile.mockReset();
+    putViewProfile.mockReset();
+    getViewProfileTemplate.mockReset();
+    getViewProfileTemplate.mockResolvedValue({ data: null });
+    putViewProfile.mockResolvedValue({ data: {} });
+  });
+
+  it('loads personal queriesJson; activeQueryId is session-only (null after load)', async () => {
+    getViewProfile.mockResolvedValue({
+      data: {
+        typePath: 'Admin/User',
+        view: 'table',
+        queriesJson: JSON.stringify({
+          version: 1,
+          queries: [{ id: 'q_1', name: '昨日新增客户', params: { Q: '客户' } }],
+        }),
+      },
+    });
+    const store = useViewProfileStore();
+    await store.load('Admin/User', ['Name']);
+    expect(store.getQueries('Admin/User').queries).toEqual([
+      { id: 'q_1', name: '昨日新增客户', params: { Q: '客户' } },
+    ]);
+    expect(store.getActiveQueryId('Admin/User')).toBeNull();
+  });
+
+  it('saveQueryAs appends entry, sets activeQueryId and PUTs queriesJson', async () => {
+    getViewProfile.mockResolvedValue({ data: { typePath: 'Admin/User' } });
+    const store = useViewProfileStore();
+    await store.load('Admin/User', ['Name', 'Q']);
+    const id = store.saveQueryAs('Admin/User', '  本月大额订单  ', { Q: '订单', Status: 1 });
+    expect(id).toMatch(/^q_/);
+    expect(store.getQueries('Admin/User').queries.length).toBe(1);
+    expect(store.getQueries('Admin/User').queries[0]).toEqual({
+      id,
+      name: '本月大额订单', // trim
+      params: { Q: '订单', Status: 1 },
+    });
+    expect(store.getActiveQueryId('Admin/User')).toBe(id);
+    expect(putViewProfile).toHaveBeenCalledWith(
+      expect.objectContaining({
+        typePath: 'Admin/User',
+        queriesJson: JSON.stringify({
+          version: 1,
+          queries: [{ id, name: '本月大额订单', params: { Q: '订单', Status: 1 } }],
+        }),
+      }),
+    );
+  });
+
+  it('renameQuery / deleteQuery mutate list and PUT; delete clears active mark only for that id', async () => {
+    getViewProfile.mockResolvedValue({
+      data: {
+        typePath: 'Admin/User',
+        queriesJson: JSON.stringify({
+          version: 1,
+          queries: [
+            { id: 'q_a', name: 'A', params: { Q: 'a' } },
+            { id: 'q_b', name: 'B', params: { Q: 'b' } },
+          ],
+        }),
+      },
+    });
+    const store = useViewProfileStore();
+    await store.load('Admin/User', ['Q']);
+    store.applyQuery('Admin/User', 'q_a');
+    expect(store.getActiveQueryId('Admin/User')).toBe('q_a');
+    // applyQuery 返回 params 副本
+    expect(store.applyQuery('Admin/User', 'q_a')).toEqual({ Q: 'a' });
+
+    store.renameQuery('Admin/User', 'q_a', '  A改  ');
+    expect(store.getQueries('Admin/User').queries[0].name).toBe('A改');
+
+    store.deleteQuery('Admin/User', 'q_a');
+    expect(store.getQueries('Admin/User').queries.map((q) => q.id)).toEqual(['q_b']);
+    expect(store.getActiveQueryId('Admin/User')).toBeNull();
+
+    // 删除非当前应用条目不清应用标记
+    store.applyQuery('Admin/User', 'q_b');
+    store.deleteQuery('Admin/User', 'q_b');
+    expect(store.getActiveQueryId('Admin/User')).toBeNull();
+  });
+
+  it('clearActiveQuery clears session mark without touching queries list', async () => {
+    getViewProfile.mockResolvedValue({
+      data: {
+        typePath: 'Admin/User',
+        queriesJson: JSON.stringify({
+          version: 1,
+          queries: [{ id: 'q_a', name: 'A', params: { Q: 'a' } }],
+        }),
+      },
+    });
+    const store = useViewProfileStore();
+    await store.load('Admin/User', ['Q']);
+    store.applyQuery('Admin/User', 'q_a');
+    store.clearActiveQuery('Admin/User');
+    expect(store.getActiveQueryId('Admin/User')).toBeNull();
+    expect(store.getQueries('Admin/User').queries.length).toBe(1);
+  });
+});

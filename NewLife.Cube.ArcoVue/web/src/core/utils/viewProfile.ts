@@ -1,5 +1,6 @@
 import type { ViewProfileModel } from '@cube/api-core';
 import type { FieldMeta } from '@/core/types/field';
+import { cleanSearchParams, collectSearchKeys } from '@/core/utils/searchFilters';
 import {
   normalizeMapping,
   parseViewKind,
@@ -190,6 +191,95 @@ export function normalizeGroup(raw: unknown): ViewGroup {
     if (out.length >= 3) break;
   }
   return out;
+}
+
+/** 预定义查询条目（OSC-0016） */
+export interface SavedQuery {
+  /** 唯一 id；生成规则 `q_` + Date.now().toString(36) + 4 位随机 base36 */
+  id: string;
+  /** 查询名；trim 后 1~50 字符 */
+  name: string;
+  /** 查询参数：经 cleanSearchParams 清理的平坦键值（含 Q/dtStart/dtEnd 保留键） */
+  params: Record<string, unknown>;
+}
+
+/** QueriesJson 线缆格式（OSC-0016） */
+export interface SavedQueriesWire {
+  version: 1;
+  queries: SavedQuery[];
+}
+
+export const SAVED_QUERIES_VERSION = 1;
+
+/** 生成预定义查询条目 id：`q_` + 时间戳 base36 + 4 位随机 base36 */
+export function generateQueryId(): string {
+  const rand = Math.floor(Math.random() * 36 ** 4)
+    .toString(36)
+    .padStart(4, '0');
+  return `q_${Date.now().toString(36)}${rand}`;
+}
+
+/** 空 QueriesJson 线缆 */
+export function emptySavedQueries(): SavedQueriesWire {
+  return { version: SAVED_QUERIES_VERSION, queries: [] };
+}
+
+/** 归一化单条预定义查询；非法/空参数/空名称返回 null（OSC-0016 §3.1） */
+export function normalizeSavedQuery(
+  raw: unknown,
+  searchFields: FieldMeta[],
+  usedIds?: Set<string>,
+): SavedQuery | null {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const o = raw as Record<string, unknown>;
+  const name = typeof o.name === 'string' ? o.name.trim() : '';
+  if (!name) return null;
+  const params = cleanSearchParams(
+    o.params && typeof o.params === 'object' && !Array.isArray(o.params)
+      ? (o.params as Record<string, unknown>)
+      : {},
+    collectSearchKeys(searchFields),
+  );
+  if (Object.keys(params).length === 0) return null;
+  const id =
+    typeof o.id === 'string' && o.id && !usedIds?.has(o.id) ? o.id : generateQueryId();
+  usedIds?.add(id);
+  return { id, name: name.slice(0, 50), params };
+}
+
+/**
+ * 宽容解析 QueriesJson（OSC-0016）。
+ * 缺失/空串/解析失败/非对象/version 不符 → 空列表；queries 非数组 → []；
+ * 逐条：非对象/空 name/空 params 丢弃，name 截断 50，id 非法或重复重新生成。
+ */
+export function parseQueriesWire(
+  raw: string | null | undefined,
+  searchFields: FieldMeta[],
+): SavedQueriesWire {
+  if (!raw || typeof raw !== 'string') return emptySavedQueries();
+  let v: unknown;
+  try {
+    v = JSON.parse(raw);
+  } catch {
+    return emptySavedQueries();
+  }
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return emptySavedQueries();
+  const o = v as Record<string, unknown>;
+  if (o.version !== SAVED_QUERIES_VERSION) return emptySavedQueries();
+  const queries: SavedQuery[] = [];
+  if (Array.isArray(o.queries)) {
+    const usedIds = new Set<string>();
+    for (const q of o.queries) {
+      const saved = normalizeSavedQuery(q, searchFields, usedIds);
+      if (saved) queries.push(saved);
+    }
+  }
+  return { version: SAVED_QUERIES_VERSION, queries };
+}
+
+/** 序列化 QueriesJson 线缆；空列表序列化为 {"version":1,"queries":[]} */
+export function serializeQueriesWire(wire: SavedQueriesWire): string {
+  return JSON.stringify(wire);
 }
 
 /** FiltersJson 线缆格式（OSC-0012）。key 为 NamedView.id，值为经过搜索正规化的平坦搜索参数 */

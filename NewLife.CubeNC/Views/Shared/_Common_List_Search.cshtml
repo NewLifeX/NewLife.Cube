@@ -76,6 +76,24 @@
                 </div>
             }
         }
+        else if (field.DataSourceMap != null && field.DataSourceMap.Count > 0)
+        {
+            // Map 外键搜索候选（OSC-0016）：小表内联下拉；键数超 MaxDropDownList 退回文本框（守卫，防大表候选灌入 MVC 下拉）
+            if (field.DataSourceMap.Count <= CubeSetting.Current.MaxDropDownList)
+            {
+                <div class="form-group">
+                    <label for="@name" class="control-label">@field.DisplayName：</label>
+                    @Html.ForDropDownList(name, field.DataSourceMap, page[name], "全部", true)
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label for="@name" class="control-label">@field.DisplayName：</label>
+                    @Html.TextBox(name, page[name], null, atts)
+                </div>
+            }
+        }
     }
     // else if (field.Type == typeof(String))
     // {

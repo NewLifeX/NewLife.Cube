@@ -13,7 +13,7 @@ function field(name: string, extra: Partial<FieldMeta> = {}): FieldMeta {
 }
 
 describe('collectSearchKeys', () => {
-  it('collects single key for scalar fields and _min/_max for range fields', () => {
+  it('collects field keys plus reserved Q/dtStart/dtEnd, no more _min/_max (OSC-0016)', () => {
     const keys = collectSearchKeys([
       field('Name'),
       field('Age', { typeName: 'Int32' }),
@@ -21,12 +21,18 @@ describe('collectSearchKeys', () => {
       field('On', { typeName: 'Boolean' }),
     ]);
     expect(keys.has('Name')).toBe(true);
-    expect(keys.has('Age_min')).toBe(true);
-    expect(keys.has('Age_max')).toBe(true);
-    expect(keys.has('Birth_min')).toBe(true);
-    expect(keys.has('Birth_max')).toBe(true);
+    expect(keys.has('Age')).toBe(true);
+    expect(keys.has('Birth')).toBe(true);
     expect(keys.has('On')).toBe(true);
-    expect(keys.has('Age')).toBe(false);
+    // 不再产生 _min/_max 假范围键
+    expect(keys.has('Age_min')).toBe(false);
+    expect(keys.has('Age_max')).toBe(false);
+    expect(keys.has('Birth_min')).toBe(false);
+    expect(keys.has('Birth_max')).toBe(false);
+    // 保留键（OSC-0016）
+    expect(keys.has('Q')).toBe(true);
+    expect(keys.has('dtStart')).toBe(true);
+    expect(keys.has('dtEnd')).toBe(true);
   });
 });
 

@@ -24,10 +24,10 @@ export type ControlType =
 
 export type SearchControlType =
   | 'text'
-  | 'numberRange'
-  | 'dateRange'
-  | 'datetimeRange'
-  | 'timeRange'
+  | 'number'
+  | 'date'
+  | 'datetime'
+  | 'time'
   | 'lov'
   | 'lovMulti'
   | 'switch'

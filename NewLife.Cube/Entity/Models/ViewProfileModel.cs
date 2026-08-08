@@ -41,6 +41,9 @@ public partial class ViewProfileModel
     /// <summary>筛选记忆。JSON</summary>
     public String FiltersJson { get; set; }
 
+    /// <summary>预定义查询。JSON</summary>
+    public String QueriesJson { get; set; }
+
     /// <summary>页面条数。每页显示记录数，0 表示未配置</summary>
     public Int32 PageSize { get; set; }
 
@@ -87,6 +90,7 @@ public partial class ViewProfileModel
         GanttJson = model.GanttJson;
         CardJson = model.CardJson;
         FiltersJson = model.FiltersJson;
+        QueriesJson = model.QueriesJson;
         PageSize = model.PageSize;
         FormJson = model.FormJson;
         Version = model.Version;

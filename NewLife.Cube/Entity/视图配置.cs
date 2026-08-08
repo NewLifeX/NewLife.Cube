@@ -102,6 +102,14 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
     [BindColumn("FiltersJson", "筛选记忆。JSON", "")]
     public String FiltersJson { get => _FiltersJson; set { if (OnPropertyChanging("FiltersJson", value)) { _FiltersJson = value; OnPropertyChanged("FiltersJson"); } } }
 
+    private String _QueriesJson;
+    /// <summary>预定义查询。JSON</summary>
+    [DisplayName("预定义查询")]
+    [Description("预定义查询。JSON")]
+    [DataObjectField(false, false, true, -1)]
+    [BindColumn("QueriesJson", "预定义查询。JSON", "")]
+    public String QueriesJson { get => _QueriesJson; set { if (OnPropertyChanging("QueriesJson", value)) { _QueriesJson = value; OnPropertyChanged("QueriesJson"); } } }
+
     private Int32 _PageSize;
     /// <summary>页面条数。每页显示记录数，0 表示未配置</summary>
     [DisplayName("页面条数")]
@@ -205,6 +213,7 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
         GanttJson = model.GanttJson;
         CardJson = model.CardJson;
         FiltersJson = model.FiltersJson;
+        QueriesJson = model.QueriesJson;
         PageSize = model.PageSize;
         FormJson = model.FormJson;
         Version = model.Version;
@@ -236,6 +245,7 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
             "GanttJson" => _GanttJson,
             "CardJson" => _CardJson,
             "FiltersJson" => _FiltersJson,
+            "QueriesJson" => _QueriesJson,
             "PageSize" => _PageSize,
             "FormJson" => _FormJson,
             "Version" => _Version,
@@ -262,6 +272,7 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
                 case "GanttJson": _GanttJson = Convert.ToString(value); break;
                 case "CardJson": _CardJson = Convert.ToString(value); break;
                 case "FiltersJson": _FiltersJson = Convert.ToString(value); break;
+                case "QueriesJson": _QueriesJson = Convert.ToString(value); break;
                 case "PageSize": _PageSize = value.ToInt(); break;
                 case "FormJson": _FormJson = Convert.ToString(value); break;
                 case "Version": _Version = value.ToInt(); break;
@@ -383,6 +394,9 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
         /// <summary>筛选记忆。JSON</summary>
         public static readonly Field FiltersJson = FindByName("FiltersJson");
 
+        /// <summary>预定义查询。JSON</summary>
+        public static readonly Field QueriesJson = FindByName("QueriesJson");
+
         /// <summary>页面条数。每页显示记录数，0 表示未配置</summary>
         public static readonly Field PageSize = FindByName("PageSize");
 
@@ -448,6 +462,9 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
 
         /// <summary>筛选记忆。JSON</summary>
         public const String FiltersJson = "FiltersJson";
+
+        /// <summary>预定义查询。JSON</summary>
+        public const String QueriesJson = "QueriesJson";
 
         /// <summary>页面条数。每页显示记录数，0 表示未配置</summary>
         public const String PageSize = "PageSize";

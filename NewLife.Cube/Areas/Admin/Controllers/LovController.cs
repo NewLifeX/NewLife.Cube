@@ -1,4 +1,6 @@
+using System.Collections.Concurrent;
 using System.ComponentModel;
+using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
@@ -7,6 +9,7 @@ using NewLife.Log;
 using NewLife.Serialization;
 using NewLife.Web;
 using XCode;
+using XCode.DataAccessLayer;
 using XCode.Membership;
 
 namespace NewLife.Cube.Areas.Admin.Controllers;
@@ -304,9 +307,16 @@ public class LovController : EntityController<LovDefinition>
         Int32 pageNum,
         Int32 pageSize)
     {
+        var url = config.RequestUrl;
+
+        // 内部实体数据源（entity: 协议，OSC-0016）：不经 HTTP，直接查 EntityFactory
+        if (url.StartsWith("entity:"))
+        {
+            return FetchEntityList(url, extraParams, pageNum, pageSize);
+        }
+
         using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
 
-        var url = config.RequestUrl;
         var method = (config.Method ?? "GET").ToUpper();
 
         HttpResponseMessage httpResponse;
@@ -425,6 +435,105 @@ public class LovController : EntityController<LovDefinition>
         }
 
         return (rows, total);
+    }
+
+    /// <summary>内部实体值集查询（entity: 协议，OSC-0016）。按名称解析已注册 EntityFactory，Q 模糊 + 分页，行输出 {值字段: 主键值, 标签字段: ToString}</summary>
+    /// <param name="url">entity:{EntityTypeName} 数据源地址</param>
+    /// <param name="extraParams">查询参数（含 Q 关键字）</param>
+    /// <param name="pageNum">页码，从 1 起</param>
+    /// <param name="pageSize">每页条数，缺省 20、上限 500</param>
+    /// <returns>行数据列表与总数</returns>
+    private static (List<Dictionary<String, Object>> Rows, Int32 Total) FetchEntityList(
+        String url,
+        Dictionary<String, Object>? extraParams,
+        Int32 pageNum,
+        Int32 pageSize)
+    {
+        var typeName = url.Substring("entity:".Length).Trim();
+        if (typeName.IsNullOrEmpty())
+            throw new InvalidOperationException("值集内部实体数据源缺少实体名");
+
+        // 按名称解析已注册实体工厂（大小写不敏感）；未注册抛异常（HTTP 500 由既有异常处理承接，不泄露堆栈）
+        var fact = EntityFactory.Entities.Values.FirstOrDefault(e => e.EntityType?.Name.EqualIgnoreCase(typeName) == true);
+        if (fact == null)
+            throw new InvalidOperationException($"内部实体数据源 {typeName} 未注册");
+
+        // Q 关键字（extraParams 兼容大小写）
+        var q = "";
+        if (extraParams != null)
+        {
+            foreach (var kv in extraParams)
+            {
+                if (kv.Value != null && kv.Key.EqualIgnoreCase("Q")) { q = kv.Value.ToString(); break; }
+            }
+        }
+
+        // pageNum 从 1 起，上限 100000 防 Int32 分页偏移溢出；pageSize 缺省 20、上限 500
+        if (pageNum < 1) pageNum = 1;
+        if (pageNum > 100_000) pageNum = 100_000;
+        if (pageSize <= 0) pageSize = 20;
+        if (pageSize > 500) pageSize = 500;
+
+        // Q 模糊表达式（等价 Entity{T}.SearchWhereByKeys，保证与后端 Search 语义一致）
+        Expression exp = null;
+        if (!q.IsNullOrEmpty())
+        {
+            var method = GetSearchWhereByKeys(fact.EntityType);
+            if (method == null)
+                XTrace.WriteLine("entity: 值集 {0} 未找到 SearchWhereByKeys 方法，Q 过滤失效", typeName);
+            else
+            {
+                try
+                {
+                    exp = method.Invoke(null, [q, null, null]) as Expression;
+                }
+                catch (TargetInvocationException ex)
+                {
+                    // 反射包装：解包内部异常并降级为无 Q 过滤，避免整个查询 500
+                    XTrace.WriteException(ex.InnerException ?? ex);
+                }
+            }
+        }
+
+        var unique = fact.Unique;
+        var valueField = unique?.Name ?? "Id";
+        var labelField = fact.Master?.Name ?? valueField;
+        var order = unique?.Name;
+
+        var startRow = (pageNum - 1) * pageSize;
+        var list = fact.FindAll(exp, order, null, startRow, pageSize);
+        var total = exp == null ? fact.Session.Count : (Int32)fact.FindCount(exp);
+
+        var rows = new List<Dictionary<String, Object>>();
+        foreach (var entity in list)
+        {
+            var row = new Dictionary<String, Object>(StringComparer.OrdinalIgnoreCase)
+            {
+                [valueField] = entity[valueField],
+            };
+            // 标签字段与值字段不同名时输出 ToString 显示串；同名时前端回退值字段
+            if (!labelField.EqualIgnoreCase(valueField))
+                row[labelField] = entity.ToString();
+            rows.Add(row);
+        }
+
+        return (rows, total);
+    }
+
+    /// <summary>SearchWhereByKeys 方法缓存，避免每请求反射（GetMethods 仅执行一次）</summary>
+    private static readonly ConcurrentDictionary<Type, MethodInfo> _searchWhereByKeysCache = new();
+
+    /// <summary>获取实体类型对应的 SearchWhereByKeys 静态方法（三参数签名，缓存）</summary>
+    /// <param name="entityType">实体类型</param>
+    /// <returns>方法信息；不存在返回 null</returns>
+    private static MethodInfo? GetSearchWhereByKeys(Type entityType)
+    {
+        return _searchWhereByKeysCache.GetOrAdd(entityType, static t =>
+        {
+            var genType = typeof(Entity<>).MakeGenericType(t);
+            return genType.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                .FirstOrDefault(m => m.Name == "SearchWhereByKeys" && m.GetParameters().Length == 3);
+        });
     }
 
     /// <summary>解析 JSON 路径表达式（如 data.records）</summary>

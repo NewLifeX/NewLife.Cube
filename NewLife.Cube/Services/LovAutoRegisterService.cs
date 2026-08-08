@@ -3,6 +3,7 @@ using NewLife.Cube.Entity;
 using NewLife.Cube.Enums;
 using NewLife.Log;
 using XCode;
+using XCode.Configuration;
 using XCode.DataAccessLayer;
 
 namespace NewLife.Cube.Services;
@@ -46,7 +47,98 @@ public class LovAutoRegisterService
             }
         }
 
+        // 大表 Map 目标实体自动注册 Entity. 值集（OSC-0016）
+        count += ScanAndRegisterMapLovs();
+
         return count;
+    }
+
+    /// <summary>扫描已注册实体工厂中 Map 外键的目标实体，为行数超过 MaxDropDownList 的大表自动注册 Entity. 值集</summary>
+    /// <returns>新注册值集数量</returns>
+    public Int32 ScanAndRegisterMapLovs()
+    {
+        if (!Enabled) return 0;
+
+        using var span = DefaultTracer.Instance?.NewSpan(nameof(ScanAndRegisterMapLovs));
+
+        var count = 0;
+        // 收集所有 Map 目标实体（去重）；仅注册已注册工厂的实体，避免误扫未使用类型
+        var targets = new HashSet<Type>();
+        foreach (var fact in EntityFactory.Entities.Values)
+        {
+            var entityType = fact.EntityType;
+            if (entityType == null) continue;
+            foreach (var field in fact.AllFields)
+            {
+                var target = field.Map?.Provider?.EntityType;
+                if (target == null) continue;
+                if (EntityFactory.Entities.ContainsKey(target))
+                    targets.Add(target);
+            }
+        }
+
+        foreach (var target in targets)
+        {
+            if (RegisterMapLov(target)) count++;
+        }
+
+        return count;
+    }
+
+    /// <summary>为单个 Map 目标实体注册 Entity. 值集（LIST/AUTO）与列表配置；目标表行数不超过阈值或已存在手工定义时跳过</summary>
+    /// <param name="entityType">目标实体类型</param>
+    /// <returns>是否新增注册</returns>
+    private static Boolean RegisterMapLov(Type entityType)
+    {
+        var lovCode = "Entity." + entityType.FullName;
+
+        // 行数不超过阈值的小表由搜索面板内联下拉承担，无需远程值集
+        var fact = EntityFactory.CreateFactory(entityType);
+        Int32 rows;
+        try { rows = fact.Session.Count; } catch { return false; }
+        if (rows <= CubeSetting.Current.MaxDropDownList) return false;
+
+        var def = LovDefinition.Find(LovDefinition._.LovCode == lovCode);
+        if (def != null && def.Source != "AUTO") return false; // 手工管理跳过
+
+        var unique = fact.Unique;
+        var uniqueName = unique?.Name ?? "Id";
+        // 值字段=唯一键；标签字段=业务主字段（无则唯一键，行输出回退 ToString）
+        var labelField = fact.Master?.Name ?? uniqueName;
+
+        if (def == null)
+        {
+            def = new LovDefinition
+            {
+                LovCode = lovCode,
+                Name = entityType.Name,
+                Type = "LIST",
+                Source = "AUTO",
+                ValueField = uniqueName,
+                LabelField = labelField,
+                Enabled = true,
+            };
+            def.Insert();
+            XTrace.WriteLine("Lov: 自动注册内部实体值集 {0}（{1} 行）", lovCode, rows);
+        }
+
+        // 列表配置：entity: 协议，走 LovController 内部实体查询
+        var cfg = LovListConfig.FindByLovDefId(def.Id);
+        if (cfg == null)
+        {
+            cfg = new LovListConfig
+            {
+                LovDefId = def.Id,
+                RequestUrl = "entity:" + entityType.Name,
+                Method = "GET",
+                Pageable = true,
+                PageNumField = "pageNum",
+                PageSizeField = "pageSize",
+            };
+            cfg.Insert();
+        }
+
+        return true;
     }
 
     /// <summary>根据命名空间前缀获取匹配的程序集</summary>

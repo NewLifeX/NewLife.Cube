@@ -10,6 +10,7 @@ using NewLife.Cube.Extensions;
 using NewLife.Cube.Models;
 using NewLife.Cube.Services;
 using NewLife.Cube.ViewModels;
+using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
@@ -124,35 +125,27 @@ public class UserController : EntityController<User, UserModel>
         {
             var list = new List<User>();
             var entity = FindByID(id);
-            entity.Password = null;
-            if (entity != null) list.Add(entity);
+            if (entity != null)
+            {
+                entity.Password = null;
+                list.Add(entity);
+            }
             return list;
         }
 
-        //var roleId = p["roleId"].ToInt(-1);
+        // 兼容搜索抽屉提交的标准字段名（GetPage search 字段名），与自定义参数互备：
+        // roleIds(复数,多角色) ↔ RoleID(单选)；departmentId ↔ DepartmentID；enable ↔ Enable；q ↔ Q
         var roleIds = p["roleIds"].SplitAsInt();
-        //var departmentId = p["departmentId"].ToInt(-1);
+        if (roleIds.Length == 0 && !p["RoleID"].IsNullOrWhiteSpace()) roleIds = p["RoleID"].SplitAsInt();
         var departmentIds = p["departmentId"].SplitAsInt();
+        if (departmentIds.Length == 0 && !p["DepartmentID"].IsNullOrWhiteSpace()) departmentIds = p["DepartmentID"].SplitAsInt();
         var areaIds = p["areaId"].SplitAsInt("/");
         var enable = p["enable"]?.ToBoolean();
+        if (enable == null && !p["Enable"].IsNullOrWhiteSpace()) enable = p["Enable"].ToBoolean();
         var start = p["dtStart"].ToDateTime();
         var end = p["dtEnd"].ToDateTime();
         var key = p["q"];
-
-        //p.RetrieveState = true;
-
-        //return XCode.Membership.User.Search(roleId, departmentId, enable, start, end, key, p);
-
-        //var exp = new WhereExpression();
-        //if (roleId >= 0) exp &= _.RoleID == roleId | _.RoleIds.Contains("," + roleId + ",");
-        //if (roleIds != null && roleIds.Length > 0) exp &= _.RoleID.In(roleIds) | _.RoleIds.Contains("," + roleIds.Join(",") + ",");
-        //if (departmentId >= 0) exp &= _.DepartmentID == departmentId;
-        //if (departmentIds != null && departmentIds.Length > 0) exp &= _.DepartmentID.In(departmentIds);
-        //if (enable != null) exp &= _.Enable == enable.Value;
-        //exp &= _.LastLogin.Between(start, end);
-        //if (!key.IsNullOrEmpty()) exp &= _.Code.StartsWith(key) | _.Name.StartsWith(key) | _.DisplayName.StartsWith(key) | _.Mobile.StartsWith(key) | _.Mail.StartsWith(key);
-
-        //var list2 = XCode.Membership.User.FindAll(exp, p);
+        if (key.IsNullOrEmpty()) key = p["Q"];
 
         if (areaIds.Length > 0)
         {
@@ -172,10 +165,40 @@ public class UserController : EntityController<User, UserModel>
             areaIds = rs.ToArray();
         }
 
-        //if (roleId > 0) roleIds.Add(roleId);
-        //if (departmentId > 0) departmentIds.Add(departmentId);
-        var list2 = XCode.Membership.User.Search(roleIds, departmentIds, areaIds, enable, start, end, key, p);
+        // 组装条件（对齐原 XCode.User.Search 语义：roleIds 匹配 RoleID 或 RoleIds 包含；LastLogin 时间范围；关键字模糊含 Code 登录名）
+        var exp = new WhereExpression();
+        if (roleIds != null && roleIds.Length > 0)
+        {
+            // 主角色 RoleID 命中其一，或任意角色在其角色串中（逐 rid Contains，与 XCode 原语义对齐）
+            var exp2 = _.RoleID.In(roleIds);
+            foreach (var rid in roleIds)
+                exp2 |= _.RoleIds.Contains("," + rid + ",");
+            exp &= exp2;
+        }
+        if (departmentIds != null && departmentIds.Length > 0)
+            exp &= _.DepartmentID.In(departmentIds);
+        var areaField = Factory.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("AreaID", "AreaId"));
+        if (areaField != null && areaIds.Length > 0)
+            exp &= areaField.In(areaIds);
+        if (enable != null)
+            exp &= _.Enable == enable.Value;
+        if (start > DateTime.MinValue || end > DateTime.MinValue)
+            exp &= _.LastLogin.Between(start, end);
+        if (!key.IsNullOrEmpty())
+            exp &= _.Code.Contains(key) | _.Name.Contains(key) | _.DisplayName.Contains(key) | _.Mobile.Contains(key) | _.Mail.Contains(key);
 
+        // 其余通用搜索字段（Sex/MailVerified/MobileVerified/Online/Name 等）等值过滤，
+        // 兼容搜索抽屉中任意查询条件（GetPage search 列表字段）；已由上面处理者跳过
+        // Q 关键字为模糊匹配（Code/Name/DisplayName/Mobile/Mail），与这些字段的精确等值过滤互补
+        foreach (var field in Factory.Fields)
+        {
+            var val = p[field.Name];
+            if (val.IsNullOrWhiteSpace()) continue;
+            if (field.Name.EqualIgnoreCase("RoleID", "RoleIds", "DepartmentID", "DepartmentId", "AreaID", "AreaId", "Enable", "LastLogin", "Code")) continue;
+            exp &= field.Equal(val.ChangeType(field.Type));
+        }
+
+        var list2 = XCode.Membership.User.FindAll(exp, p);
         foreach (var user in list2)
             user.Password = null;
 

@@ -34,7 +34,7 @@
             <a-doption value="duplicate">复制</a-doption>
             <a-doption value="delete" :disabled="views.length <= 1">删除</a-doption>
             <a-doption divider v-if="isAdmin" value="saveAsDefault">
-              保存视图为默认{{ defaultViewKindName(activeViewKind) }}视图
+              存为默认{{ defaultViewKindName(activeViewKind) }}视图
             </a-doption>
             <a-doption value="reset">恢复默认</a-doption>
           </template>

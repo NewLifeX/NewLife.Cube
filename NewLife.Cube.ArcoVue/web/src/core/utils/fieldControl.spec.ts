@@ -31,7 +31,7 @@ describe('fieldControl', () => {
   });
 
   it('search / list controls', () => {
-    expect(resolveSearchControl(base({ name: 'Age', typeName: 'Int32' }))).toBe('numberRange');
+    expect(resolveSearchControl(base({ name: 'Age', typeName: 'Int32' }))).toBe('number');
     expect(resolveListControl(base({ name: 'Enable', typeName: 'Boolean' }))).toBe('boolean');
     expect(
       resolveListControl(base({ name: 'Kind', typeName: 'Int32', lovCode: 'Enum.Kind' })),
@@ -121,11 +121,14 @@ describe('fieldControl', () => {
     expect(resolveSearchControl(base({ name: 'AreaId', typeName: 'Int32', itemType: 'area4' }))).toBe('cascader');
     expect(resolveListControl(base({ name: 'AreaId', typeName: 'Int32', itemType: 'area4' }))).toBe('text');
 
-    // 日期 / 时间 itemType 推断
+    // 日期 / 时间 itemType 推断（OSC-0016：单值等值控件）
     expect(resolveControl(base({ name: 'Birthday', typeName: 'DateTime', itemType: 'date' }))).toBe('datePicker');
     expect(resolveControl(base({ name: 'WorkTime', typeName: 'DateTime', itemType: 'time' }))).toBe('timePicker');
-    expect(resolveSearchControl(base({ name: 'Birthday', typeName: 'DateTime', itemType: 'date' }))).toBe('dateRange');
-    expect(resolveSearchControl(base({ name: 'CreateTime', typeName: 'DateTime' }))).toBe('datetimeRange');
+    expect(resolveSearchControl(base({ name: 'Birthday', typeName: 'DateTime', itemType: 'date' }))).toBe('date');
+    expect(resolveSearchControl(base({ name: 'Birthday', typeName: 'DateTime', itemType: 'datetime' }))).toBe('datetime');
+    expect(resolveSearchControl(base({ name: 'CreateTime', typeName: 'DateTime' }))).toBe('datetime');
+    expect(resolveSearchControl(base({ name: 'WorkTime', typeName: 'DateTime', itemType: 'time' }))).toBe('time');
+    expect(resolveSearchControl(base({ name: 'Duration', typeName: 'TimeSpan' }))).toBe('time');
     expect(resolveListControl(base({ name: 'Birthday', typeName: 'DateTime', itemType: 'date' }))).toBe('date');
     expect(resolveListControl(base({ name: 'WorkTime', typeName: 'DateTime', itemType: 'time' }))).toBe('time');
   });

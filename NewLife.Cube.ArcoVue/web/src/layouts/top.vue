@@ -1,5 +1,5 @@
 <template>
-  <a-layout class="layout layout-top" style="min-height: 100vh">
+  <a-layout class="layout layout-top" style="height: 100vh">
     <a-layout-header class="layout-header">
       <div class="layout-header__brand">{{ productName }}</div>
       <a-menu

@@ -12,13 +12,16 @@ import {
   duplicateView,
   emptyFormJson,
   emptySavedFilters,
+  emptySavedQueries,
   emptyViewFilter,
+  generateQueryId,
   getActiveView,
   hasFiltersDomain,
   hasViewsDomain,
   getFormModeLayout,
   mergeColumns,
   parseFormJson,
+  parseQueriesWire,
   parseSavedFilters,
   patchActiveChrome,
   patchActiveColumns,
@@ -33,6 +36,7 @@ import {
   renameView,
   serializeFormJson,
   serializeNamedView,
+  serializeQueriesWire,
   serializeSavedFilters,
   setFormModeLayout,
   setSavedViewFilters,
@@ -45,6 +49,7 @@ import {
   type FormLayout,
   type FormMode,
   type SavedFiltersWire,
+  type SavedQueriesWire,
   type ViewChrome,
   type ViewDomainSource,
   type ViewFilter,
@@ -87,6 +92,11 @@ type CacheEntry = {
   viewsDirty: boolean;
   /** 筛选域本会话是否修改 */
   filtersDirty: boolean;
+  /** 预定义查询（QueriesJson，OSC-0016）：实体级个人配置，不走模板域 */
+  queries: SavedQueriesWire;
+  committedQueries: SavedQueriesWire;
+  /** 当前应用的预定义查询 id（会话内存，不持久化；刷新后为 null） */
+  activeQueryId: string | null;
   /** 个人视图域原始 ViewsJson；null=无个人域（回落模板/系统） */
   personalViewsJson: string | null;
   /** 全局模板视图域原始 ViewsJson；null=无模板 */
@@ -123,6 +133,9 @@ export const useViewProfileStore = defineStore('viewProfile', {
           timer: null,
           filters: emptySavedFilters(),
           committedFilters: emptySavedFilters(),
+          queries: emptySavedQueries(),
+          committedQueries: emptySavedQueries(),
+          activeQueryId: null,
           pageSize: 0,
           committedPageSize: 0,
           formJson: emptyFormJson(),
@@ -200,6 +213,9 @@ export const useViewProfileStore = defineStore('viewProfile', {
 
       entry.pageSize = normalizePageSize(personal?.pageSize);
       entry.formJson = parseFormJson(personal?.formJson);
+      // 预定义查询为实体级个人配置（OSC-0016）：仅个人域，不走模板回退；activeQueryId 会话态不持久化
+      entry.queries = parseQueriesWire(personal?.queriesJson ?? null, entry.fields);
+      entry.activeQueryId = null;
       entry.viewsDirty = false;
       entry.filtersDirty = false;
       entry.dirty = false;
@@ -209,6 +225,7 @@ export const useViewProfileStore = defineStore('viewProfile', {
       }
       entry.committedState = cloneState(entry.state);
       entry.committedFilters = entry.filters;
+      entry.committedQueries = entry.queries;
       entry.committedPageSize = entry.pageSize;
       entry.committedFormJson = entry.formJson;
       return this.rematch(typePath, metaKeys);
@@ -420,6 +437,86 @@ export const useViewProfileStore = defineStore('viewProfile', {
       this.scheduleSave(typePath, immediate);
     },
 
+    /** 读取当前 typePath 的预定义查询列表（QueriesJson，OSC-0016） */
+    getQueries(typePath: string): SavedQueriesWire {
+      return this.byType[typePath]?.queries ?? emptySavedQueries();
+    },
+
+    /** 读取当前应用的预定义查询 id（会话内存） */
+    getActiveQueryId(typePath: string): string | null {
+      return this.byType[typePath]?.activeQueryId ?? null;
+    },
+
+    /** 将当前查询保存为预定义查询：新增条目、activeQueryId 指向新条目并立即保存 */
+    saveQueryAs(
+      typePath: string,
+      name: string,
+      params: Record<string, unknown>,
+    ): string | null {
+      const entry = this.byType[typePath];
+      if (!entry) return null;
+      const trimmed = name.trim();
+      if (!trimmed) return null;
+      const id = generateQueryId();
+      entry.queries = {
+        version: 1,
+        queries: [
+          ...entry.queries.queries,
+          { id, name: trimmed.slice(0, 50), params: { ...params } },
+        ],
+      };
+      entry.activeQueryId = id;
+      entry.dirty = true;
+      this.scheduleSave(typePath, true);
+      return id;
+    },
+
+    /** 重命名当前应用的预定义查询（仅作用于 activeQueryId 对应条目） */
+    renameQuery(typePath: string, id: string, name: string) {
+      const entry = this.byType[typePath];
+      if (!entry) return;
+      const trimmed = name.trim();
+      if (!trimmed) return;
+      entry.queries = {
+        ...entry.queries,
+        queries: entry.queries.queries.map((q) =>
+          q.id === id ? { ...q, name: trimmed.slice(0, 50) } : q,
+        ),
+      };
+      entry.dirty = true;
+      this.scheduleSave(typePath, true);
+    },
+
+    /** 删除指定预定义查询；若为当前应用条目则清除应用标记（不清空表单参数） */
+    deleteQuery(typePath: string, id: string) {
+      const entry = this.byType[typePath];
+      if (!entry) return;
+      entry.queries = {
+        ...entry.queries,
+        queries: entry.queries.queries.filter((q) => q.id !== id),
+      };
+      if (entry.activeQueryId === id) entry.activeQueryId = null;
+      entry.dirty = true;
+      this.scheduleSave(typePath, true);
+    },
+
+    /** 应用预定义查询：设置 activeQueryId 并返回该条目 params（供 DefaultList 整体回填后执行） */
+    applyQuery(typePath: string, id: string): Record<string, unknown> | null {
+      const entry = this.byType[typePath];
+      if (!entry) return null;
+      const q = entry.queries.queries.find((x) => x.id === id);
+      if (!q) return null;
+      entry.activeQueryId = id;
+      return { ...q.params };
+    },
+
+    /** 清除当前应用标记（会话内存，不持久化） */
+    clearActiveQuery(typePath: string) {
+      const entry = this.byType[typePath];
+      if (!entry) return;
+      entry.activeQueryId = null;
+    },
+
     switchView(typePath: string, viewId: string) {
       const entry = this.byType[typePath];
       if (!entry || !entry.state.views.some((v) => v.id === viewId)) return;
@@ -525,6 +622,7 @@ export const useViewProfileStore = defineStore('viewProfile', {
       }
       const rollback = cloneState(entry.committedState);
       const rollbackFilters = entry.committedFilters;
+      const rollbackQueries = entry.committedQueries;
       const rollbackPageSize = entry.committedPageSize;
       const rollbackFormJson = entry.committedFormJson;
       const rollbackViewsSource = entry.viewsSource;
@@ -545,6 +643,8 @@ export const useViewProfileStore = defineStore('viewProfile', {
         payload.filtersJson = serializeSavedFilters(entry.filters);
       }
       payload.pageSize = entry.pageSize || 0;
+      // 预定义查询为实体级个人配置，始终随保存提交（OSC-0016）
+      payload.queriesJson = serializeQueriesWire(entry.queries);
       // 表单布局为系统全局唯一配置（管理员定义，作用于所有用户）：
       // 仅管理员保存时提交；非管理员不发送，避免把全局布局写回或触发后端 403
       const userStore = useUserStore();
@@ -556,6 +656,7 @@ export const useViewProfileStore = defineStore('viewProfile', {
         entry.dirty = false;
         entry.committedState = cloneState(entry.state);
         entry.committedFilters = entry.filters;
+        entry.committedQueries = entry.queries;
         entry.committedPageSize = entry.pageSize;
         entry.committedFormJson = entry.formJson;
         // materialize 成功后提升为个人域（OSC-0014）
@@ -571,6 +672,7 @@ export const useViewProfileStore = defineStore('viewProfile', {
       } catch (err) {
         entry.state = rollback;
         entry.filters = rollbackFilters;
+        entry.queries = rollbackQueries;
         entry.pageSize = rollbackPageSize;
         entry.formJson = rollbackFormJson;
         entry.viewsSource = rollbackViewsSource;

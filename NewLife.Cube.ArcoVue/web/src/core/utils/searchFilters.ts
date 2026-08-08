@@ -4,30 +4,20 @@
  * 供 DefaultList 的 effectiveSearch 与 FiltersJson 保存/读取共用。
  */
 import type { FieldMeta } from '@/core/types/field';
-import { resolveSearchControl } from '@/core/utils/fieldControl';
 import { getValueByKey } from '@/core/utils/url';
 import type { ViewFilter, ViewFilterCondition } from '@/core/utils/viewProfile';
 
-/** 范围型搜索控件：以 `字段_min`/`字段_max` 两个 key 提交，其余以字段名一个 key 提交 */
-const RANGE_CONTROLS: ReadonlySet<string> = new Set([
-  'numberRange',
-  'dateRange',
-  'datetimeRange',
-  'timeRange',
-]);
+/** 保留搜索键（OSC-0016）：Q=全字段模糊，dtStart/dtEnd=主时间区间（后端 Search(Pager) 内置通用参数） */
+export const RESERVED_SEARCH_KEYS: readonly string[] = ['Q', 'dtStart', 'dtEnd'];
 
-/** 收集当前 search 字段的合法搜索 key 集合（含范围字段的 _min/_max 后缀） */
+/** 收集当前 search 字段的合法搜索 key 集合（字段名 ∪ 保留键 Q/dtStart/dtEnd） */
 export function collectSearchKeys(fields: FieldMeta[]): Set<string> {
   const keys = new Set<string>();
   for (const f of fields) {
     if (!f.name) continue;
-    if (RANGE_CONTROLS.has(resolveSearchControl(f))) {
-      keys.add(`${f.name}_min`);
-      keys.add(`${f.name}_max`);
-    } else {
-      keys.add(f.name);
-    }
+    keys.add(f.name);
   }
+  for (const k of RESERVED_SEARCH_KEYS) keys.add(k);
   return keys;
 }
 
@@ -77,7 +67,7 @@ export function parseUrlSearch(
 
 /**
  * 统计标签条目：仅保留 stat 中非 null 的字段（空 stat 返回空数组，展示「暂无统计」而非编造 0）。
- * 供 QueryInsightPanel 洞察统计区展示。
+ * 供 InsightPanel 洞察统计区展示。
  */
 export function resolveStatEntries(
   statData: Record<string, unknown> | null,

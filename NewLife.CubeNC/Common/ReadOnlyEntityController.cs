@@ -996,6 +996,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
     [AllowAnonymous]
     public virtual ActionResult GetPage()
     {
+        // 主时间字段信息（OSC-0016）：供 SPA 搜索面板渲染主时间范围控件；无 MasterTime 时两键为 null
+        var masterTime = Factory.MasterTime;
         var setting = new
         {
             PageSetting.NavView,
@@ -1009,6 +1011,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
             PageSetting.EnableTableDoubleClick,
             PageSetting.OrderByKey,
             PageSetting.DoubleDelete,
+            masterTimeName = masterTime?.Name,
+            masterTimeDisplayName = masterTime?.DisplayName,
         };
 
         var list = PrepareFieldsForApi(OnGetFields(ViewKinds.List, null));

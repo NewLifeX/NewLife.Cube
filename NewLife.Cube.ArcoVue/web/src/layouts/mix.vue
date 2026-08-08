@@ -1,5 +1,5 @@
 <template>
-  <a-layout class="layout layout-mix" style="min-height: 100vh">
+  <a-layout class="layout layout-mix" style="height: 100vh">
     <a-layout-header class="layout-header">
       <div class="layout-header__brand">{{ productName }}</div>
       <a-menu
@@ -15,7 +15,7 @@
       <ShellToolbar />
     </a-layout-header>
 
-    <a-layout>
+    <a-layout class="layout-mix__body">
       <a-layout-sider
         v-if="sideMenus.length"
         :collapsed="collapsed"
@@ -161,9 +161,18 @@ function toggleCollapsed() {
   align-items: center;
   justify-content: center;
 }
+.layout-mix__body {
+  flex: 1;
+  min-height: 0;
+}
 .layout-mix__main {
   flex: 1;
   min-width: 0;
+  min-height: 0;
   overflow: hidden;
+}
+/* 隐藏侧边栏底部折叠触发器（白色横条）；:trigger=null 在 Arco 下仍渲染，折叠功能由 sider 顶部按钮承担 */
+.layout-mix :deep(.arco-layout-sider-trigger) {
+  display: none;
 }
 </style>

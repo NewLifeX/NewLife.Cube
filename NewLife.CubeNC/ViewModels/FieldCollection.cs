@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
+using NewLife.Caching;
 using NewLife.Cube.ViewModels;
 using NewLife.Data;
 using NewLife.Reflection;
@@ -116,6 +117,9 @@ public class FieldCollection : List<DataField>
                         sf.Multiple = true;
                     }
 
+                    // Map 外键字段自动填充搜索候选（小表内联 / 大表 Entity. 值集）
+                    FillMapCandidates(sf, field);
+
                     Add(sf);
                 }
                 break;
@@ -144,6 +148,51 @@ public class FieldCollection : List<DataField>
         if (field != null) df.Fill(field);
 
         return df;
+    }
+
+    /// <summary>为 Map 外键搜索字段自动填充候选。小表目标（行数 ≤ MaxDropDownList）内联 DataSourceMap，大表目标注册 Entity. 值集；手工已设 LovCode/DataSourceMap 优先不覆盖</summary>
+    /// <param name="sf">搜索字段</param>
+    /// <param name="field">表字段</param>
+    private static void FillMapCandidates(SearchField sf, FieldItem field)
+    {
+        var map = field.Map;
+        if (map == null) return;
+        // 手工已设 LovCode/DataSourceMap 优先，不覆盖
+        if (!sf.LovCode.IsNullOrEmpty()) return;
+        if (sf.DataSourceMap != null && sf.DataSourceMap.Count > 0) return;
+
+        var provider = map.Provider;
+        if (provider == null || provider.EntityType == null) return;
+
+        var entityType = provider.EntityType;
+        // 行数判断走 MemoryCache 60s，避免每个请求都 Count
+        var cacheKey = "LovMapCount:" + entityType.FullName;
+        var count = MemoryCache.Instance.Get<Int32>(cacheKey);
+        if (count <= 0)
+        {
+            var fact = EntityFactory.CreateFactory(entityType);
+            count = fact.Session.Count;
+            MemoryCache.Instance.Set(cacheKey, count, 60);
+        }
+
+        if (count <= CubeSetting.Current.MaxDropDownList)
+        {
+            // 小表：内联数据源，前端渲染本地下拉
+            var dic = provider.GetDataSource();
+            if (dic == null) return;
+            var map2 = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
+            foreach (var de in dic)
+            {
+                if (de.Key == null) continue;
+                map2[de.Key + ""] = de.Value + "";
+            }
+            if (map2.Count > 0) sf.DataSourceMap = map2;
+        }
+        else
+        {
+            // 大表：注册 Entity. 值集，前端 LovSelect 远程搜索
+            sf.LovCode = "Entity." + entityType.FullName;
+        }
     }
 
     /// <summary>为指定字段创建数据字段</summary>

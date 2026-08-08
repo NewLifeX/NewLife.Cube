@@ -763,6 +763,7 @@
         <Column Name="GanttJson" DataType="String" Length="-1" Description="甘特映射。JSON" />
         <Column Name="CardJson" DataType="String" Length="-1" Description="卡片映射。JSON" />
         <Column Name="FiltersJson" DataType="String" Length="-1" Description="筛选记忆。JSON" />
+        <Column Name="QueriesJson" DataType="String" Length="-1" Description="预定义查询。JSON" />
         <Column Name="PageSize" DataType="Int32" Description="页面条数。每页显示记录数，0 表示未配置" />
         <Column Name="FormJson" DataType="String" Length="-1" Description="表单布局。JSON：add/edit/detail 的字段顺序/显隐/分组折叠" />
         <Column Name="Version" DataType="Int32" Description="版本。配置契约版本" />

@@ -192,12 +192,13 @@ export function resolveSearchControl(field: FieldMeta): SearchControlType {
   // Cube.Vue：未知 typeName（SexKinds 等）→ 下拉，由 Lookup / PrepareForApi 灌选项
   if (isEnumLikeTypeName(field)) return 'select';
 
-  // 日期 / 时间：按 itemType 推断 date/datetime/time 范围
-  if (itemType === 'date') return 'dateRange';
-  if (itemType === 'time') return 'timeRange';
-  if (typeName === 'DateTime') return 'datetimeRange';
-  if (typeName === 'TimeSpan') return 'timeRange';
-  if (NUMERIC_TYPES.has(typeName)) return 'numberRange';
+  // 日期 / 时间 / 数值（OSC-0016）：单值等值控件，提交字段名=值（不再产生 _min/_max 假范围）
+  if (itemType === 'date') return 'date';
+  if (itemType === 'datetime') return 'datetime';
+  if (itemType === 'time') return 'time';
+  if (typeName === 'DateTime') return 'datetime';
+  if (typeName === 'TimeSpan') return 'time';
+  if (NUMERIC_TYPES.has(typeName)) return 'number';
 
   return 'text';
 }

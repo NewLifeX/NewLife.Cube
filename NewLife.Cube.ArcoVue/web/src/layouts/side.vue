@@ -1,5 +1,5 @@
 <template>
-  <a-layout class="layout layout-side" style="min-height: 100vh">
+  <a-layout class="layout layout-side" style="height: 100vh">
     <a-layout-sider
       :collapsed="collapsed"
       collapsible
@@ -19,7 +19,7 @@
       </a-menu>
     </a-layout-sider>
 
-    <a-layout>
+    <a-layout class="layout-side__body">
       <a-layout-header class="layout-header">
         <div class="layout-header__left">
           <a-button type="text" @click="toggleCollapsed">
@@ -104,5 +104,13 @@ function toggleCollapsed() {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+.layout-side__body {
+  min-height: 0;
+  overflow: hidden;
+}
+/* 隐藏侧边栏底部折叠触发器（白色横条）；:trigger=null 在 Arco 下仍渲染，折叠功能由 header 按钮承担 */
+.layout-side :deep(.arco-layout-sider-trigger) {
+  display: none;
 }
 </style>

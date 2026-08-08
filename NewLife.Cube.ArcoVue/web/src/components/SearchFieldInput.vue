@@ -10,62 +10,44 @@
       @press-enter="$emit('search')"
     />
 
-    <!-- 数值范围 -->
-    <a-space v-else-if="searchType === 'numberRange'" :size="4">
-      <a-input-number
-        :model-value="numOf(`${field.name}_min`)"
-        placeholder="最小值"
-        hide-button
-        style="width: 90px"
-        @update:model-value="(v: unknown) => emitKey(`${field.name}_min`, v)"
-      />
-      <span class="range-sep">~</span>
-      <a-input-number
-        :model-value="numOf(`${field.name}_max`)"
-        placeholder="最大值"
-        hide-button
-        style="width: 90px"
-        @update:model-value="(v: unknown) => emitKey(`${field.name}_max`, v)"
-      />
-    </a-space>
+    <!-- 数值（单值等值，OSC-0016） -->
+    <a-input-number
+      v-else-if="searchType === 'number'"
+      :model-value="numOfField"
+      placeholder="请输入数值"
+      hide-button
+      style="width: 100%"
+      @update:model-value="emitScalar"
+    />
 
-    <!-- 日期范围 -->
-    <a-range-picker
-      v-else-if="searchType === 'dateRange'"
-      :model-value="rangeValue"
+    <!-- 日期（单值等值） -->
+    <a-date-picker
+      v-else-if="searchType === 'date'"
+      :model-value="strOrUndef(modelValue)"
       value-format="YYYY-MM-DD"
       style="width: 100%"
       @update:model-value="emitScalar"
     />
 
-    <!-- 日期时间范围 -->
-    <a-range-picker
-      v-else-if="searchType === 'datetimeRange'"
+    <!-- 日期时间（单值等值） -->
+    <a-date-picker
+      v-else-if="searchType === 'datetime'"
       show-time
-      :model-value="rangeValue"
+      :model-value="strOrUndef(modelValue)"
       value-format="YYYY-MM-DDTHH:mm:ss"
-      style="width: 100%; min-width: 280px"
+      style="width: 100%; min-width: 200px"
       @update:model-value="emitScalar"
     />
 
-    <!-- 时间范围 -->
-    <a-space v-else-if="searchType === 'timeRange'" :size="4">
-      <a-time-picker
-        :model-value="strOf(`${field.name}_min`)"
-        placeholder="起"
-        value-format="HH:mm:ss"
-        style="width: 100px"
-        @update:model-value="(v: unknown) => emitKey(`${field.name}_min`, v)"
-      />
-      <span class="range-sep">~</span>
-      <a-time-picker
-        :model-value="strOf(`${field.name}_max`)"
-        placeholder="止"
-        value-format="HH:mm:ss"
-        style="width: 100px"
-        @update:model-value="(v: unknown) => emitKey(`${field.name}_max`, v)"
-      />
-    </a-space>
+    <!-- 时间（单值等值） -->
+    <a-time-picker
+      v-else-if="searchType === 'time'"
+      :model-value="strOrUndef(modelValue)"
+      placeholder="请选择时间"
+      value-format="HH:mm:ss"
+      style="width: 100%"
+      @update:model-value="emitScalar"
+    />
 
     <!-- 布尔 / 附件存在性：下拉可读标签 -->
     <a-select
@@ -170,10 +152,18 @@ const selectValue = computed(() =>
     ? undefined
     : String(props.modelValue),
 );
-const rangeValue = computed(() => {
+
+/** 单值日期/时间控件取值：null/空串归一 undefined */
+function strOrUndef(v: unknown): string | undefined {
+  return v == null || v === '' ? undefined : String(v);
+}
+
+/** 单值数值控件取值：null/空串/非法数字归一 undefined */
+const numOfField = computed(() => {
   const v = props.modelValue;
-  if (Array.isArray(v) && v.length === 2) return v as string[];
-  return undefined;
+  if (v == null || v === '') return undefined;
+  const n = Number(v);
+  return Number.isNaN(n) ? undefined : n;
 });
 
 const dataSourceOptions = computed(() =>
@@ -198,22 +188,8 @@ const boolOptions = computed(() => {
   ];
 });
 
-function strOf(key: string): string | undefined {
-  const v = props.form?.[key];
-  return v == null || v === '' ? undefined : String(v);
-}
-function numOf(key: string): number | undefined {
-  const v = props.form?.[key];
-  if (v == null || v === '') return undefined;
-  const n = Number(v);
-  return Number.isNaN(n) ? undefined : n;
-}
-
 function emitScalar(v: unknown) {
   emit('update:modelValue', v);
-}
-function emitKey(key: string, value: unknown) {
-  emit('update:key', key, value);
 }
 
 function onSelect(v: unknown) {

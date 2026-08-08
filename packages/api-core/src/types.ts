@@ -131,6 +131,10 @@ export interface PageSetting {
   enableTableDoubleClick?: boolean;
   orderByKey?: boolean;
   doubleDelete?: boolean;
+  /** 主时间字段名（OSC-0016）；无 MasterTime 时缺省 */
+  masterTimeName?: string | null;
+  /** 主时间字段显示名（OSC-0016） */
+  masterTimeDisplayName?: string | null;
 }
 
 /** GetPage 聚合元数据 */
@@ -432,6 +436,8 @@ export interface ViewProfileModel {
   ganttJson?: string | null;
   cardJson?: string | null;
   filtersJson?: string | null;
+  /** 预定义查询（OSC-0016）。JSON：{version, queries:[{id,name,params}]}；空串表示清除该域 */
+  queriesJson?: string | null;
   /** 页面条数（typePath 级偏好）。0/null 表示未配置，回落全局 workspace.pageSize 种子 */
   pageSize?: number;
   /**
