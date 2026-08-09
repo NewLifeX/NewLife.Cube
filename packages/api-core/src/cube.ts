@@ -41,11 +41,15 @@ export function createCubeApi(options: CubeApiOptions = {}): CubeApi {
   const { tokenStorage, ...clientOpts } = options;
   const tokenManager = new TokenManager(tokenStorage);
 
-  // 实体/页面接口：带 baseURL（如 /api 或 http://host/api，对应后端实体路由 /api/{area}/...）
+  // 实体/页面接口：带 baseURL（http://host 或 http://host/api，对应后端实体路由 /api/{area}/...）
   const entityClient = createApiClient({ ...clientOpts, tokenManager });
   // 服务接口（Auth/Cube/Sso/Mfa，后端路由不带 /api）：由实体 baseURL 去掉 /api 路径前缀派生。
   // 跨域部署 http://host/api → http://host；同域部署 /api 或 '' → ''
-  const serviceClient = createApiClient({ ...clientOpts, baseURL: getServiceBaseUrl(options.baseURL), tokenManager });
+  const serviceClient = createApiClient({
+    ...clientOpts,
+    baseURL: getServiceBaseUrl(options.baseURL),
+    tokenManager,
+  });
 
   const request = createRequest(entityClient);
   const serviceRequest = createRequest(serviceClient);
@@ -55,6 +59,7 @@ export function createCubeApi(options: CubeApiOptions = {}): CubeApi {
     tokenManager,
     user: createUserApi(serviceRequest),
     menu: createMenuApi(serviceRequest),
+    // 导出下载 URL 不走 axios，需直接拼完整地址；createPageApi 内部经 resolveRequestUrl 统一补 /api
     page: createPageApi(request, options.baseURL),
     config: createConfigApi(serviceRequest),
   };

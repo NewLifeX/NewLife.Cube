@@ -25,17 +25,9 @@ import type { ApiResponse, PageParams } from '@cube/api-core';
 
 const cfg = getConfig();
 
-// baseUrl 现仅承载主机、不再内含 /api（与 request.ts 的请求层模型一致）。
-// createCubeApi 的实体客户端(entityClient)期望 baseURL 为「实体 base（含 /api）」，
-// 服务客户端(serviceClient)由其经 getServiceBaseUrl 自动去掉 /api 派生。
-// 故此处把 /api 补回再传入，确保实体接口（page/client）请求 /api/{area}/...，
-// 服务接口（user/menu/config：/Auth /Cube /Sso 等）经派生后不带 /api。
-const API_BASE = (() => {
-  const raw = (cfg.request.baseUrl ?? '').replace(/\/+$/, '');
-  if (!raw) return '/api';
-  if (/\/api$/i.test(raw)) return raw;
-  return `${raw}/api`;
-})();
+// baseUrl 现仅承载主机（不含 /api）。api-core 的 createCubeApi 按 resolveRequestUrl 规则统一拼接：
+// 实体路径自动补 /api、服务接口（/Auth /Cube 服务等）不带 /api，与 request.ts 共用同一请求层，cube-vue 内请求逻辑统一。
+const API_HOST = (cfg.request.baseUrl ?? '').replace(/\/+$/, '');
 
 /**
  * cubeApi 全局实例
@@ -43,9 +35,13 @@ const API_BASE = (() => {
  * 基于 @cube/api-core 创建，提供通用 CRUD 及认证 API。
  * baseUrl 统一从 @newlifex/cube-vue 配置系统获取，
  * Token 存储使用 localStorage（与 @newlifex/cube-vue core/utils/token.ts 一致）。
+ *
+ * 返回值语义注意：`cubeApi.client` 是裸 axios 实例（unwrapResponse 默认 false），
+ * `cubeApi.client.request(...)` 返回完整 AxiosResponse，需自行 `.then(r => r.data)` 取 ApiResponse；
+ * 这与 `core/utils/request.ts` 的 `request`（unwrapResponse: true，直接返回 ApiResponse）不同，不要混用期望值。
  */
 const cubeApi = createCubeApi({
-  baseURL: API_BASE,
+  baseURL: API_HOST,
   tokenStorage: 'localStorage',
   onFieldError: (fieldErrors) => {
     // 统一展示字段级验证错误（如"编码不可以为空！"），无需每个页面单独处理
