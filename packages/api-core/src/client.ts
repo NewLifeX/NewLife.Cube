@@ -12,14 +12,31 @@ import qs from 'qs';
 import { resolveRequestUrl } from './service-path';
 
 /**
- * 将后端可能返回的大写字段名（Token/RefreshToken/ExpireIn）归一化为小驼峰。
- * 部分版本后端直接返回 C# 属性名，需在客户端兼容。
+ * 将后端可能返回的字段名归一化为小驼峰（accessToken）。
+ * 后端版本差异较大，需同时兼容三种命名：
+ * - snake_case：access_token / refresh_token / expire_in（Demo/新版常见）
+ * - PascalCase：Token / RefreshToken / ExpireIn（C# 属性名原样）
+ * - camelCase：accessToken / refreshToken / expireIn（标准）
+ *
+ * 注意：必须优先取 snake_case / PascalCase 原始字段，不能直接用 data.accessToken，
+ * 否则当后端仅返回 access_token 时（data 上无 accessToken 键）会丢失令牌。
  */
 function normalizeLoginResult(data: LoginResult): LoginResult {
+  const raw = data as unknown as Record<string, unknown>;
   return {
-    accessToken: data.accessToken ?? data.Token ?? '',
-    refreshToken: data.refreshToken ?? data.RefreshToken,
-    expireIn: data.expireIn ?? data.ExpireIn,
+    accessToken:
+      (raw.accessToken as string) ??
+      (raw.access_token as string) ??
+      (raw.Token as string) ??
+      '',
+    refreshToken:
+      (raw.refreshToken as string) ??
+      (raw.refresh_token as string) ??
+      (raw.RefreshToken as string),
+    expireIn:
+      (raw.expireIn as number) ??
+      (raw.expire_in as number) ??
+      (raw.ExpireIn as number),
   };
 }
 

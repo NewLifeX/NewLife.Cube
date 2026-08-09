@@ -308,6 +308,28 @@ test('登录结果字段归一化：大写 Token/RefreshToken/ExpireIn → 小�
   assert.equal(res.data.expireIn, 3600);
 });
 
+test('登录结果字段归一化：snake_case access_token/refresh_token/expire_in → 小驼峰（真实后端 Demo 返回）', async () => {
+  const { adapter } = capturingAdapter(() => ({
+    data: { code: 0, data: { access_token: 'at-xyz', refresh_token: 'rt-xyz', expire_in: 7200 } },
+  }));
+  const { client } = makeClient({ baseURL: 'http://host:5000', unwrapResponse: true });
+  client.defaults.adapter = adapter;
+  const res = await client.post('/Auth/Login');
+  assert.equal(res.data.accessToken, 'at-xyz', 'snake_case access_token 必须归一为 accessToken');
+  assert.equal(res.data.refreshToken, 'rt-xyz');
+  assert.equal(res.data.expireIn, 7200);
+});
+
+test('登录结果字段归一化：snake_case 缺失 access_token 时回退空串，不误取 undefined', async () => {
+  const { adapter } = capturingAdapter(() => ({
+    data: { code: 0, data: { code: 0, message: 'ok' } }, // 无令牌字段（异常登录响应）
+  }));
+  const { client } = makeClient({ baseURL: 'http://host:5000', unwrapResponse: true });
+  client.defaults.adapter = adapter;
+  const res = await client.post('/Auth/Login');
+  assert.equal(res.data.accessToken, '', '无令牌时应回退空串而非 undefined');
+});
+
 test('content-type text 分支：非字符串 data 经 JSON.stringify 透传', async () => {
   const payload = { a: 1, b: 'x' };
   const { adapter } = capturingAdapter(() => ({ data: payload, headers: { 'content-type': 'text' } }));
