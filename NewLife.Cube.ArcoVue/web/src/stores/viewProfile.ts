@@ -528,7 +528,12 @@ export const useViewProfileStore = defineStore('viewProfile', {
       );
     },
 
-    addView(typePath: string, name: string, kind: ViewKind = 'table') {
+    addView(
+      typePath: string,
+      name: string,
+      kind: ViewKind = 'table',
+      chromeOverride?: Partial<ViewChrome>,
+    ) {
       const entry = this.byType[typePath];
       if (!entry) return;
       const gate = canCreateViewKind(kind, entry.fields, typePath);
@@ -539,7 +544,14 @@ export const useViewProfileStore = defineStore('viewProfile', {
       try {
         this.setState(
           typePath,
-          createNamedView(entry.state, name, kind, entry.metaKeys, entry.fields),
+          createNamedView(
+            entry.state,
+            name,
+            kind,
+            entry.metaKeys,
+            entry.fields,
+            chromeOverride,
+          ),
           true,
         );
       } catch (e) {

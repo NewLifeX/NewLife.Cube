@@ -1,7 +1,7 @@
 <template>
   <a-popover
     :popup-visible="visible"
-    position="br"
+    position="bottom"
     trigger="click"
     class="filter-builder-popover"
     @popup-visible-change="onVisibleChange"

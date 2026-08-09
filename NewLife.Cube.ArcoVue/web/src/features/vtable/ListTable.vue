@@ -6,17 +6,13 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { ListTable } from '@visactor/vtable';
+import { createGroup, createText } from '@visactor/vtable/es/vrender';
 import type { ColumnPref } from '@/core/utils/viewProfile';
 import { frozenLeftCount } from '@/core/utils/viewProfile';
 import { BADGE_BORDER_RADIUS, BADGE_PADDING } from '@/core/utils/fieldBadge';
 import { getValueByKey } from '@/core/utils/url';
 import { themeColor } from '@/core/utils/themeColor';
-import {
-  buildOpsParts,
-  formatOpsLabel,
-  resolveOpsActionByRatio,
-  type OpsAction,
-} from '@/core/utils/opsAction';
+import { buildOpsParts, opsActionColor, OPS_ACTION_LABELS } from '@/core/utils/opsAction';
 
 export interface ListTableColumnDef {
   pref: ColumnPref;
@@ -206,42 +202,79 @@ function opsFlags() {
   };
 }
 
-function opsLabel(): string {
-  return formatOpsLabel(buildOpsParts(opsFlags()));
-}
-
 function opsColumnWidth(): number {
   const n = buildOpsParts(opsFlags()).length;
-  if (n <= 0) return 80;
-  return Math.min(220, Math.max(72, n * 56));
+  if (n <= 0) return 88;
+  // 独立链接每项约 56px（文本 + 内边距），末项略窄
+  return Math.min(240, Math.max(88, n * 56 + 16));
 }
 
-/** 按点击在操作列内的横向位置解析动作 */
-function resolveOpsClick(args: {
-  col?: number;
-  row?: number;
-  event?: MouseEvent | PointerEvent | TouchEvent;
-}): OpsAction | null {
-  const flags = opsFlags();
-  const parts = buildOpsParts(flags);
-  if (!parts.length) return null;
-  if (parts.length === 1 || !table || args.col == null || args.row == null) {
-    return resolveOpsActionByRatio(0, flags);
+/**
+ * 操作列独立链接（customLayout）：每个动作一个可点击链接文本，取代按横向位置命中动作。
+ * 组头（树）/组标题（groupBy）行不渲染操作。链接用主题主色，hover 变色 + 下划线。
+ */
+function renderOpsLayout(args: any) {
+  const t = table;
+  if (!t || !hostRef.value) return undefined;
+  const { col, row } = args;
+  const rect = (args.rect as { width?: number; height?: number } | undefined) ??
+    (t.getCellRect(col, row) as { width: number; height: number });
+  const record = t.getCellOriginRecord?.(col, row) as
+    | Record<string, unknown>
+    | undefined;
+  // 组头（树视图）/组标题（groupBy 分组）行不渲染操作
+  if (
+    !record ||
+    (record as { vtableMerge?: unknown }).vtableMerge ||
+    (record as { __groupHeader?: unknown }).__groupHeader
+  ) {
+    return undefined;
   }
-  try {
-    const rect = table.getCellRect(args.col, args.row) as {
-      left?: number;
-      width?: number;
+  const parts = buildOpsParts(opsFlags());
+  if (!parts.length) return undefined;
+
+  const container = createGroup({
+    height: rect.height,
+    width: rect.width,
+    display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'nowrap',
+    alignItems: 'center',
+  });
+
+  parts.forEach((action, i) => {
+    const isLast = i === parts.length - 1;
+    // 链接配色：详情/编辑=主色、删除=警示色、其余系统自定义=链接色（需求 OSC）
+    const color = opsActionColor(action);
+    const link = createText({
+      text: OPS_ACTION_LABELS[action] ?? String(action),
+      fontSize: 13,
+      fontFamily: 'sans-serif',
+      fill: themeColor(color.token, color.fallback),
+      cursor: 'pointer',
+      boundsPadding: [0, isLast ? 0 : 10, 0, 10],
+    });
+    link.states = {
+      hover: {
+        fill: themeColor(color.hoverToken, color.hoverFallback),
+        underline: 1,
+      },
     };
-    const ev = args.event as MouseEvent | undefined;
-    if (rect && typeof rect.left === 'number' && typeof rect.width === 'number' && ev?.clientX != null) {
-      const ratio = (ev.clientX - rect.left) / Math.max(1, rect.width);
-      return resolveOpsActionByRatio(ratio, flags);
-    }
-  } catch {
-    /* fall through */
-  }
-  return resolveOpsActionByRatio(0, flags);
+    link.addEventListener('mouseenter', () => {
+      link.addState('hover', true, false);
+      t.scenegraph?.updateNextFrame?.();
+    });
+    link.addEventListener('mouseleave', () => {
+      link.removeState('hover', false);
+      t.scenegraph?.updateNextFrame?.();
+    });
+    link.addEventListener('click', () => {
+      emit('action', { action, row: record });
+    });
+    container.add(link);
+  });
+
+  return { rootContainer: container, renderDefault: false };
 }
 
 function leadingCount(): number {
@@ -374,11 +407,8 @@ function buildColumns(): any[] {
       sort: false,
       showSort: false,
       disableColumnResize: true,
-      fieldFormat: () => opsLabel(),
+      customLayout: renderOpsLayout,
       style: {
-        // 操作列链接色跟随主题主色（--primary-6 由 applyTheme 写入 body 为 RGB 三元组）
-        color: themeColor('--primary-6', '22, 93, 255'),
-        cursor: 'pointer',
         textAlign: 'center',
       },
     });
@@ -578,19 +608,34 @@ function syncFromTable(colWidths?: number[]) {
   const byKey = new Map(next.map((c) => [c.key, c]));
   const orderedVisible: ColumnPref[] = [];
 
+  // 分组模式（groupBy + rowSeriesNumber checkbox）：VTable 实际渲染列 = rowSeriesNumber(48) + 数据列 + __ops，
+  // 而 table.columns 定义数组不含 rowSeriesNumber；colWidths / getColWidth 按实际列索引（含该列）取值，
+  // 因此数据列的实际列索引 = columns 数组索引 + 1，否则列宽整体错位 1 位（拖动一列导致其它列宽度乱变）
+  const offset = props.groupFields?.length ? 1 : 0;
+
   define.forEach((col, idx) => {
     const field = String(col.field ?? '');
     if (!field || field === '__checked' || field === '__ops' || field === '__expand') return;
     const pref = byKey.get(field);
     if (!pref) return;
     pref.visible = true;
-    const fromEvent = colWidths?.[idx];
-    const w =
+    const realIdx = idx + offset;
+    const fromEvent = colWidths?.[realIdx];
+    let w =
       typeof fromEvent === 'number' && fromEvent > 0
         ? fromEvent
         : typeof col.width === 'number'
           ? col.width
           : undefined;
+    // 兜底：直接从实际列读取最新宽度（不依赖事件参数结构，含 rowSeriesNumber 偏移）
+    if (!(typeof w === 'number' && w > 0)) {
+      try {
+        const cw = table!.getColWidth(realIdx);
+        if (typeof cw === 'number' && cw > 0) w = cw;
+      } catch {
+        /* ignore */
+      }
+    }
     if (typeof w === 'number' && w > 0) pref.width = Math.round(w);
     orderedVisible.push(pref);
   });
@@ -640,8 +685,7 @@ function bindEvents() {
       return;
     }
     if (field === '__ops') {
-      const action = resolveOpsClick(args);
-      if (action) emit('action', { action, row });
+      // 操作列改为 customLayout 独立链接：动作由各链接元素 click 事件触发，此处不按位置命中
       return;
     }
     // Boolean 徽标（Enable 及任意 Boolean 字段）：可点击切换（须父级授权 Update）；携带字段名供切换对应字段

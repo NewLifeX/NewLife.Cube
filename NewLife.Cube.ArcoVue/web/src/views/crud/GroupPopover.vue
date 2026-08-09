@@ -1,7 +1,7 @@
 <template>
   <a-popover
     :popup-visible="visible"
-    position="br"
+    position="bottom"
     trigger="click"
     class="group-popover"
     @popup-visible-change="onVisibleChange"

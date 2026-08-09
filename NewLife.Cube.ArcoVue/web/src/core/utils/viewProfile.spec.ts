@@ -4,6 +4,7 @@ import {
   buildSortPayload,
   clearFormModeLayout,
   clearSavedViewFilters,
+  createNamedView,
   createTableView,
   emptyFormJson,
   emptyFormLayout,
@@ -70,6 +71,50 @@ describe('namedViews', () => {
     expect(v.view).toBe('table');
   });
 
+  it('seeds default view with allowDelete enabled (delete visible for permitted users)', () => {
+    const v = seedDefaultView(['Name']);
+    expect(v.chrome?.allowDelete).toBe(true);
+  });
+
+  it('normalizes legacy chrome allowDelete to true when unset', () => {
+    // 旧数据 chrome 未含 allowDelete（或缺失）→ 归一化后默认允许删除
+    const s = stateFromWire(
+      {
+        viewsJson: JSON.stringify([
+          {
+            id: 'default',
+            name: '默认列表',
+            view: 'table',
+            columns: [{ key: 'Name', visible: true }],
+            chrome: { showPager: false },
+          },
+        ]),
+        activeViewId: 'default',
+      },
+      ['Name'],
+    );
+    expect(s.views[0].chrome?.allowDelete).toBe(true);
+  });
+
+  it('keeps explicit allowDelete=false from user config', () => {
+    const s = stateFromWire(
+      {
+        viewsJson: JSON.stringify([
+          {
+            id: 'default',
+            name: '默认列表',
+            view: 'table',
+            columns: [{ key: 'Name', visible: true }],
+            chrome: { allowDelete: false },
+          },
+        ]),
+        activeViewId: 'default',
+      },
+      ['Name'],
+    );
+    expect(s.views[0].chrome?.allowDelete).toBe(false);
+  });
+
   it('uses workspace defaultView when seeding empty state', () => {
     const s = stateFromWire(null, ['Name'], { defaultView: 'card' });
     expect(s.view).toBe('card');
@@ -97,6 +142,16 @@ describe('namedViews', () => {
     s = removeView(s, s.views[1].id);
     expect(s.views).toHaveLength(1);
     expect(() => removeView(s, s.views[0].id)).toThrow(/至少保留/);
+  });
+
+  it('createNamedView applies chromeOverride (allowDelete by permission)', () => {
+    let s = stateFromWire(null, ['Name']);
+    // 有删除权限：创建视图默认允许删除
+    s = createNamedView(s, '可删', 'table', ['Name'], undefined, { allowDelete: true });
+    expect(s.views.at(-1)?.chrome?.allowDelete).toBe(true);
+    // 无删除权限：创建视图默认不允许删除
+    s = createNamedView(s, '只读', 'card', ['Name'], undefined, { allowDelete: false });
+    expect(s.views.at(-1)?.chrome?.allowDelete).toBe(false);
   });
 
   it('wire round-trip includes viewsJson', () => {

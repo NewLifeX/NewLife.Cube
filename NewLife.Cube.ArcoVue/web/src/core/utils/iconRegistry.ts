@@ -115,6 +115,12 @@ export const FA_ICON_MAP: Record<string, string> = {
   grid: 'grid-four',
 };
 
+/** 菜单显示名 → 图标（精确匹配，优先级最高；用于 fa 语义与产品命名不符的场景） */
+const MENU_NAME_ICONS: Record<string, string> = {
+  // 魔方管理顶级菜单：后端 Icon=fa-tachometer（仪表盘），产品命名宜用立方体图标
+  魔方管理: 'cube-three',
+};
+
 /** 名称关键词兜底（menuIcon 未命中 FA_ICON_MAP 时按 displayName/name 匹配） */
 const MENU_KEYWORD_FALLBACK: ReadonlyArray<readonly [RegExp, string]> = [
   [/用户|成员|账户|账号|个人/, 'people'],
@@ -144,6 +150,11 @@ export const DEFAULT_MENU_ICON = 'application';
  * @param item 菜单项（icon 为后端 fa-xxx 类名；displayName/name 用于关键词兜底）
  */
 export function menuIcon(item: { icon?: string; displayName?: string; name: string }): string {
+  // 显示名精确匹配优先（产品命名与 fa 语义不符时用专用映射）
+  const nameKey = (item.displayName || item.name || '').trim();
+  const nameHit = MENU_NAME_ICONS[nameKey];
+  if (nameHit) return nameHit;
+
   const icon = (item.icon ?? '').trim().toLowerCase();
   if (icon) {
     // 兼容 'fa fa-user' 空格多类名：取首个 token 查表（如 fa-user / fa-user-o）

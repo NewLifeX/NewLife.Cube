@@ -306,7 +306,7 @@ export const DEFAULT_CHROME: Required<ViewChrome> = {
   customButton: false,
   showPager: true,
   allowViewDetail: true,
-  allowDelete: false,
+  allowDelete: true,
   expandRow: false,
 };
 
@@ -425,7 +425,7 @@ function normalizeChrome(raw: unknown): ViewChrome | undefined {
     customButton: boolOr(o.customButton, false),
     showPager: boolOr(o.showPager, true),
     allowViewDetail: boolOr(o.allowViewDetail, true),
-    allowDelete: boolOr(o.allowDelete, false),
+    allowDelete: boolOr(o.allowDelete, true),
     expandRow: boolOr(o.expandRow, false),
   };
 }
@@ -861,6 +861,7 @@ export function createNamedView(
   kind: ViewKind,
   metaKeys: string[],
   fields?: FieldMeta[],
+  chromeOverride?: Partial<ViewChrome>,
 ): EntityViewState {
   const trimmed = name.trim() || '未命名';
   if (state.views.some((v) => v.name === trimmed)) {
@@ -876,7 +877,8 @@ export function createNamedView(
     view: kind,
     columns: mergeColumns(metaKeys, active.columns.map((c) => ({ ...c }))),
     sort: active.sort ? { ...active.sort } : null,
-    chrome: { ...(active.chrome || DEFAULT_CHROME) },
+    // chromeOverride 用于创建时按用户权限覆盖默认（如 allowDelete=用户是否有删除权限）
+    chrome: { ...(active.chrome || DEFAULT_CHROME), ...(chromeOverride || {}) },
     mapping,
   };
   return {

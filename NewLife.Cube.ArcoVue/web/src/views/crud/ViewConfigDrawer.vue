@@ -326,6 +326,15 @@
             </template>
 
             <template v-else-if="viewKind === 'card'">
+              <div class="switch-row">
+                <span>
+                  允许删除记录
+                  <a-tooltip content="仍受菜单权限约束；关闭后隐藏删除入口">
+                    <icon-park type="info" class="hint-ico" />
+                  </a-tooltip>
+                </span>
+                <a-switch v-model="chrome.allowDelete" @change="emitChrome" />
+              </div>
               <div class="nested-field">
                 <div class="cfg-label">卡片标题</div>
                 <a-select
@@ -412,6 +421,15 @@
             </template>
 
             <template v-else-if="viewKind === 'kanban'">
+              <div class="switch-row">
+                <span>
+                  允许删除记录
+                  <a-tooltip content="仍受菜单权限约束；关闭后隐藏删除入口">
+                    <icon-park type="info" class="hint-ico" />
+                  </a-tooltip>
+                </span>
+                <a-switch v-model="chrome.allowDelete" @change="emitChrome" />
+              </div>
               <div class="nested-field">
                 <div class="cfg-label">分组依据</div>
                 <a-select

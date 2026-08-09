@@ -115,4 +115,9 @@ function toggleCollapsed() {
 .layout-side :deep(.arco-layout-sider-trigger) {
   display: none;
 }
+/* 根因修复（OSC-0017 后续）：trigger 隐藏后 Arco 仍给 sider 保留 has-trigger 的 padding-bottom:48px，
+   导致滚动容器 .arco-layout-sider-children 高度少 48px、滚动条无法到底（底部留空白）；置 0 恢复全高滚动 */
+.layout-side :deep(.arco-layout-sider-has-trigger) {
+  padding-bottom: 0;
+}
 </style>

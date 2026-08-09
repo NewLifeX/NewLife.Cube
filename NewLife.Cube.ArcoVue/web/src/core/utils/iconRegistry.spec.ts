@@ -112,7 +112,7 @@ describe('ICON_COMPONENTS 覆盖', () => {
     // 工具栏 / 视图配置硬编码图标
     [
       'filter',
-      'group',
+      'connection-box',
       'search',
       'more-one',
       'download',
@@ -136,6 +136,8 @@ describe('ICON_COMPONENTS 覆盖', () => {
       'preview-close',
       'pin',
     ].forEach((x) => all.add(x));
+    // 产品命名专用
+    all.add('cube-three');
     assertAllValid([...all]);
   });
 });
@@ -143,6 +145,11 @@ describe('ICON_COMPONENTS 覆盖', () => {
 describe('FA_ICON_MAP + menuIcon', () => {
   it('FA_ICON_MAP 全部图标名有效', () => {
     assertAllValid(Object.values(FA_ICON_MAP));
+  });
+
+  it('菜单显示名精确匹配优先（魔方管理 → cube-three）', () => {
+    // fa-tachometer 虽映射 dashboard，但显示名「魔方管理」命中 MENU_NAME_ICONS 优先
+    expect(menuIcon({ icon: 'fa-tachometer', displayName: '魔方管理', name: 'Cube' })).toBe('cube-three');
   });
 
   it('FA_ICON_MAP 命中（含 fa- 前缀）', () => {

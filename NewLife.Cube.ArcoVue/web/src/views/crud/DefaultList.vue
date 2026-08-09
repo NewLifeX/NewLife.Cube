@@ -1,5 +1,9 @@
 <template>
-  <div class="default-list" :style="listShellStyle">
+  <div
+    class="default-list"
+    :class="{ 'default-list--fullscreen': fullscreen }"
+    :style="listShellStyle"
+  >
     <component :is="headerSection" v-if="headerSection" />
 
     <!-- 视图背景色覆盖：洞察（暂隐藏）+ 表格（含视图 Tab） -->
@@ -40,6 +44,7 @@
             :fields="listFields"
             :type-path="typePath"
             :is-admin="isAdmin"
+            :fullscreen="fullscreen"
             @switch="onSwitchView"
             @create="onCreateView"
             @rename="onRenameView"
@@ -48,6 +53,7 @@
             @reset="onResetViews"
             @save-as-default="onSaveAsDefault"
             @open-config="configDrawerVisible = true"
+            @toggle-fullscreen="onToggleFullscreen"
           />
         </div>
         <div class="list-topbar">
@@ -102,7 +108,7 @@
                   v-if="activeViewKind === 'table' && chrome.showGroup"
                   type="text"
                 >
-                  <icon-park type="group" />
+                  <icon-park type="connection-box" />
                   分组
                 </a-button>
                 <span
@@ -124,7 +130,7 @@
               <icon-park type="search" />
               搜索
             </a-button>
-            <a-dropdown v-if="advancedVisible" trigger="click">
+            <a-dropdown v-if="advancedVisible" trigger="click" position="bottom">
               <a-button>
                 高级 <icon-park type="down" />
               </a-button>
@@ -845,6 +851,8 @@ const queryParamsDirty = computed(() => {
 
 /** 列表面板引用：用于测量表格可用高度，保证分页器与外壳底部在首屏可见 */
 const tablePanelRef = ref<HTMLElement | null>(null);
+/** 当前视图是否全屏展示（固定铺满视口，覆盖顶部及左侧导航栏） */
+const fullscreen = ref(false);
 /** 动态测量的表格可用高度（default/fill 模式）；测量前回落固定 tableHeight */
 const measuredTableHeight = ref(tableHeight);
 
@@ -854,15 +862,35 @@ function measureTableHeight() {
   if (typeof window === 'undefined') return;
   // fit 模式按内容自适应（分页器随内容在下方），无需测量
   if (chrome.value.heightMode === 'fit') return;
-  const scroll = document.querySelector<HTMLElement>('.layout-content__scroll');
   const panel = tablePanelRef.value;
-  if (!scroll || !panel) return;
-  const sr = scroll.getBoundingClientRect();
+  if (!panel) return;
   const pr = panel.getBoundingClientRect();
   // 非表格固定部分 = 面板总高 - 当前表格高；表格高度更新后面板高随之变化，该差值保持稳定
   const nonTableH = pr.height - measuredTableHeight.value;
-  const avail = Math.floor(sr.bottom - pr.top - nonTableH - 16);
+  let avail: number;
+  if (fullscreen.value) {
+    // 全屏：面板固定铺满视口（顶部贴近视口），可用高度 = 视口高 - 面板顶 - 非表格部分 - gutter
+    avail = Math.floor(window.innerHeight - pr.top - nonTableH - 16);
+  } else {
+    const scroll = document.querySelector<HTMLElement>('.layout-content__scroll');
+    if (!scroll) return;
+    const sr = scroll.getBoundingClientRect();
+    avail = Math.floor(sr.bottom - pr.top - nonTableH - 16);
+  }
   measuredTableHeight.value = Math.max(240, avail);
+}
+
+/** 切换全屏/默认展示；布局变化后延迟多次重测表格高度，确保面板尺寸稳定后再填满 */
+function onToggleFullscreen() {
+  fullscreen.value = !fullscreen.value;
+  nextTick(measureTableHeight);
+  window.setTimeout(measureTableHeight, 200);
+  window.setTimeout(measureTableHeight, 600);
+}
+
+/** Esc 退出全屏 */
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && fullscreen.value) onToggleFullscreen();
 }
 
 /** scroll 容器尺寸变化（窗口/布局调整/侧栏折叠）时重测 */
@@ -1209,7 +1237,10 @@ function onSwitchView(id: string) {
 }
 
 function onCreateView(kind: ViewKind, name: string) {
-  evpStore.addView(typePath.value, name, kind);
+  // 创建视图时按用户删除权限设置默认「允许删除记录」：有删除权限 → true，无 → false（需求 OSC）
+  evpStore.addView(typePath.value, name, kind, {
+    allowDelete: flags.value.canDelete,
+  });
   syncLocalState();
   selectedKeys.value = [];
   pagination.current = 1;
@@ -1697,6 +1728,8 @@ watch(
 
 onMounted(() => {
   bootstrap();
+  // Esc 退出全屏
+  window.addEventListener('keydown', onKeydown);
   // 初始渲染完成后测量表格可用高度，并监听 scroll 容器尺寸变化（窗口/侧栏/布局调整）
   nextTick(() => {
     measureTableHeight();
@@ -1706,6 +1739,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   tableResizeObserver?.disconnect();
+  window.removeEventListener('keydown', onKeydown);
 });
 </script>
 
@@ -1717,6 +1751,15 @@ onBeforeUnmount(() => {
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
+}
+/* 全屏：固定铺满视口，覆盖系统顶部及左侧导航栏；
+   z-index 低于 Arco 弹层（1000+），全屏期间的抽屉/弹窗/气泡仍可正常显示 */
+.default-list--fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  overflow: auto;
+  background: var(--color-fill-2);
 }
 .list-surface {
   display: flex;
@@ -1745,7 +1788,7 @@ onBeforeUnmount(() => {
 .list-view-tabs {
   margin-bottom: 8px;
   padding-bottom: 4px;
-  border-bottom: 1px solid var(--color-border-2);
+  /* 横线由 Tab 组件自身（.arco-tabs-nav 下边框）提供，此处不额外加分隔线 */
 }
 .list-topbar {
   display: flex;

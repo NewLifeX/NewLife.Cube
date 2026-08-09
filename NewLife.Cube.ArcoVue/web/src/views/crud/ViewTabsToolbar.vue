@@ -1,67 +1,84 @@
 <template>
   <div class="view-tabs-toolbar">
-    <div ref="tabsRef" class="view-tabs">
-      <!-- 选中视图滑动指示器（OSC 视图 Tab 交互）：transform 滑动到当前激活 Tab，宽度随 Tab 变化 -->
-      <span
-        class="view-tab-indicator"
-        :style="{
-          transform: `translateX(${indicator.x}px)`,
-          width: `${indicator.width}px`,
-          opacity: indicator.visible ? 1 : 0,
-        }"
-      />
-      <div
-        v-for="v in views"
-        :key="v.id"
-        class="view-tab"
-        :class="{ active: v.id === activeId }"
-      >
-        <button type="button" class="view-tab-main" @click="$emit('switch', v.id)">
-          <a-tooltip :content="VIEW_KIND_LABEL[v.view] || v.view">
-            <icon-park :type="VIEW_KIND_ICONS[v.view]" class="view-tab-kind" />
-          </a-tooltip>
-          <span class="view-tab-name">{{ v.name }}</span>
-        </button>
-        <a-dropdown
-          v-if="v.id === activeId"
-          trigger="click"
-          @select="onMenuSelect"
-        >
-          <button type="button" class="view-tab-menu" title="视图菜单" @click.stop>
-            <icon-park type="more-one" />
-          </button>
-          <template #content>
-            <a-doption value="rename">
-              <icon-park type="edit" class="menu-item-icon" />
-              重命名
-            </a-doption>
-            <a-doption value="config">
-              <icon-park type="setting" class="menu-item-icon" />
-              自定义配置
-            </a-doption>
-            <a-doption value="duplicate">
-              <icon-park type="copy" class="menu-item-icon" />
-              复制
-            </a-doption>
-            <a-doption value="delete" :disabled="views.length <= 1">
-              <icon-park type="delete" class="menu-item-icon" />
-              删除
-            </a-doption>
-            <a-doption divider v-if="isAdmin" value="saveAsDefault">
-              <icon-park type="save" class="menu-item-icon" />
-              存为默认{{ defaultViewKindName(activeViewKind) }}视图
-            </a-doption>
-            <a-doption value="reset">
-              <icon-park type="undo" class="menu-item-icon" />
-              恢复默认
-            </a-doption>
-          </template>
-        </a-dropdown>
-      </div>
-    </div>
+    <!-- 视图 Tab：使用 Arco Tabs；新建视图（+）在最后一个 Tab 页签旁（editable add 按钮），全屏开关在 #extra 附加区最右 -->
+    <a-tabs
+      class="view-tabs"
+      :active-key="activeId"
+      editable
+      show-add-button
+      @change="onTabChange"
+      @add="onAddClick"
+    >
+      <a-tab-pane v-for="v in views" :key="v.id" :closable="false">
+        <template #title>
+          <span class="view-tab-inner">
+            <a-tooltip :content="VIEW_KIND_LABEL[v.view] || v.view">
+              <icon-park :type="VIEW_KIND_ICONS[v.view]" class="view-tab-kind" />
+            </a-tooltip>
+            <span class="view-tab-name">{{ v.name }}</span>
+            <a-dropdown v-if="v.id === activeId" trigger="click" @select="onMenuSelect">
+              <button type="button" class="view-tab-menu" title="视图菜单" @click.stop>
+                <icon-park type="more-one" />
+              </button>
+              <template #content>
+                <a-doption value="rename">
+                  <icon-park type="edit" class="menu-item-icon" />
+                  重命名
+                </a-doption>
+                <a-doption value="config">
+                  <icon-park type="setting" class="menu-item-icon" />
+                  自定义配置
+                </a-doption>
+                <a-doption value="duplicate">
+                  <icon-park type="copy" class="menu-item-icon" />
+                  复制
+                </a-doption>
+                <a-doption value="delete" :disabled="views.length <= 1">
+                  <icon-park type="delete" class="menu-item-icon" />
+                  删除
+                </a-doption>
+                <a-doption divider v-if="isAdmin" value="saveAsDefault">
+                  <icon-park type="save" class="menu-item-icon" />
+                  存为默认{{ defaultViewKindName(activeViewKind) }}视图
+                </a-doption>
+                <a-doption value="reset">
+                  <icon-park type="undo" class="menu-item-icon" />
+                  恢复默认
+                </a-doption>
+              </template>
+            </a-dropdown>
+          </span>
+        </template>
+      </a-tab-pane>
 
-    <a-dropdown trigger="click" @select="onCreateSelect">
-      <button type="button" class="view-add" title="添加视图">+</button>
+      <!-- 新建视图：放置在最后一个 Tab 页签旁边（Arco editable add 按钮） -->
+      <template #add-icon>
+        <span>+</span>
+      </template>
+
+      <!-- extra：全屏开关（Tab 组件附加区最右） -->
+      <template #extra>
+        <a-tooltip :content="fullscreen ? '退出全屏 (Esc)' : '全屏'">
+          <button
+            type="button"
+            class="view-fullscreen"
+            :class="{ active: fullscreen }"
+            @click="$emit('toggleFullscreen')"
+          >
+            <icon-park :type="fullscreen ? 'off-screen' : 'full-screen'" />
+          </button>
+        </a-tooltip>
+      </template>
+    </a-tabs>
+
+    <!-- 创建视图类型下拉：锚点定位到 add 按钮下方（保持"点 + → 选类型 → 命名"交互） -->
+    <a-dropdown
+      trigger="click"
+      :popup-visible="createPopupVisible"
+      @select="onCreateSelect"
+      @popup-visible-change="onCreatePopupChange"
+    >
+      <span ref="createAnchorRef" class="create-dropdown-anchor" />
       <template #content>
         <a-doption
           v-for="opt in createOptions"
@@ -69,6 +86,7 @@
           :value="opt.kind"
           :disabled="!opt.ok"
         >
+          <icon-park :type="VIEW_KIND_ICONS[opt.kind]" class="menu-item-icon" />
           <a-tooltip v-if="!opt.ok" :content="opt.reason || '不可创建'">
             <span>{{ opt.label }}</span>
           </a-tooltip>
@@ -97,7 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
 import type { NamedView, ViewKind } from '@/core/utils/viewProfile';
 import {
@@ -115,6 +133,8 @@ const props = defineProps<{
   typePath: string;
   /** 系统管理员可把当前视图保存为该实体默认（全局模板）视图 */
   isAdmin?: boolean;
+  /** 当前视图是否处于全屏展示状态（切换按钮图标/提示随之变化） */
+  fullscreen?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -126,6 +146,7 @@ const emit = defineEmits<{
   reset: [];
   openConfig: [];
   saveAsDefault: [];
+  toggleFullscreen: [];
 }>();
 
 /** 当前激活视图的类型（决定「保存视图为默认XX视图」文案） */
@@ -218,49 +239,38 @@ function onMenuSelect(val: string | number | Record<string, unknown> | undefined
   }
 }
 
+/** 创建视图类型下拉：受控弹出（锚点定位到 add 按钮下方） */
+const createPopupVisible = ref(false);
+const createAnchorRef = ref<HTMLElement | null>(null);
+
+/** 点击 Tab 条末尾 +（Arco editable add 按钮）：把锚点定位到按钮下方并弹出创建视图类型下拉 */
+function onAddClick(ev: MouseEvent) {
+  const btn = ev.currentTarget as HTMLElement | null;
+  const anchor = createAnchorRef.value;
+  if (!btn || !anchor) return;
+  const r = btn.getBoundingClientRect();
+  anchor.style.position = 'fixed';
+  anchor.style.left = `${r.left}px`;
+  anchor.style.top = `${r.bottom + 4}px`;
+  createPopupVisible.value = true;
+}
+
+function onCreatePopupChange(v: boolean) {
+  createPopupVisible.value = v;
+}
+
 function onCreateSelect(val: string | number | Record<string, unknown> | undefined) {
   const kind = String(val) as ViewKind;
   const opt = createOptions.value.find((o) => o.kind === kind);
   if (!opt?.ok) return;
+  createPopupVisible.value = false;
   openCreateModal(kind);
 }
 
-/** 选中 Tab 滑动指示器位置（transform 平滑过渡） */
-const tabsRef = ref<HTMLElement | null>(null);
-const indicator = ref({ x: 0, width: 0, visible: false });
-let indicatorRo: ResizeObserver | null = null;
-
-function updateIndicator() {
-  void nextTick(() => {
-    const tabs = tabsRef.value;
-    if (!tabs) return;
-    const el = tabs.querySelector<HTMLElement>('.view-tab.active');
-    if (!el) {
-      indicator.value = { x: 0, width: 0, visible: false };
-      return;
-    }
-    indicator.value = { x: el.offsetLeft, width: el.offsetWidth, visible: true };
-  });
+/** Tab 切换：Arco Tabs @change → 切换到指定视图 */
+function onTabChange(key: string | number) {
+  emit('switch', String(key));
 }
-
-watch(() => props.activeId, updateIndicator, { immediate: true });
-watch(
-  () => props.views.map((v) => v.name).join(','),
-  () => updateIndicator(),
-);
-
-onBeforeUnmount(() => {
-  indicatorRo?.disconnect();
-  indicatorRo = null;
-});
-
-onMounted(() => {
-  updateIndicator();
-  if (typeof ResizeObserver !== 'undefined') {
-    indicatorRo = new ResizeObserver(() => updateIndicator());
-    if (tabsRef.value) indicatorRo.observe(tabsRef.value);
-  }
-});
 </script>
 
 <style scoped>
@@ -268,68 +278,24 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 2px;
-  flex-wrap: wrap;
   min-width: 0;
 }
+/* Arco Tabs 容器：占满整个视图区宽度，使 nav 横线贯穿到视图右端（而非仅 Tab 页签宽度），
+   extra 的 +/全屏按钮保持在右端，Tab 数量多时 Arco 内部横向滚动 */
 .view-tabs {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  flex-wrap: wrap;
+  flex: 1;
   min-width: 0;
-  position: relative;
 }
-/* 选中视图滑动指示器：transform 平滑滑动到激活 Tab（需求：切换滑动效果） */
-.view-tab-indicator {
-  position: absolute;
-  bottom: -5px;
-  left: 0;
-  height: 2px;
-  border-radius: 1px;
-  background: rgb(var(--primary-6));
-  transition:
-    transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-    width 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.2s;
-  pointer-events: none;
-  z-index: 1;
-}
-.view-tab {
+/* Tab 标题：图标 + 名称 + 视图菜单，垂直居中对齐 */
+.view-tab-inner {
   display: inline-flex;
   align-items: center;
-  gap: 0;
-  border-radius: 6px;
-  color: var(--color-text-2);
-  font-size: 13px;
+  gap: 4px;
   line-height: 1.2;
 }
-.view-tab:hover {
-  background: var(--color-fill-2);
-  color: var(--color-text-1);
-}
-.view-tab.active {
-  /* 选中底纹：主题浅色阶（暗色下为主色半透明），配合下方滑动指示器 */
-  background: var(--color-primary-light-1);
-  color: rgb(var(--primary-6));
-  font-weight: 500;
-}
-.view-tab.active:hover {
-  background: var(--color-primary-light-2);
-  color: rgb(var(--primary-6));
-}
-.view-tab-main {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: none;
-  background: transparent;
-  padding: 6px 4px 6px 12px;
-  cursor: pointer;
-  color: inherit;
-  font: inherit;
-}
-.view-tab:not(.active) .view-tab-main {
-  padding-right: 12px;
+.view-tab-name {
+  font-size: 13px;
+  white-space: nowrap;
 }
 .view-tab-kind {
   display: inline-flex;
@@ -363,7 +329,40 @@ onMounted(() => {
 .view-tab-menu:hover {
   opacity: 1;
 }
-.view-add {
+/* Arco editable add 按钮（+）：样式与"全屏"按钮一致（透明圆角、15px 字号），
+   align-self:center 使其与全屏按钮水平位置对齐（nav 内垂直居中） */
+.view-tabs :deep(.arco-tabs-nav-add-btn) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: 4px;
+  padding: 0;
+  box-sizing: border-box;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--color-text-3);
+  font-size: 15px;
+  line-height: 1;
+  align-self: center;
+}
+.view-tabs :deep(.arco-tabs-nav-add-btn:hover) {
+  color: rgb(var(--primary-6));
+  background: var(--color-fill-2);
+}
+/* 创建视图类型下拉锚点：不可见定位元素（fixed 定位到 + 按钮下方） */
+.create-dropdown-anchor {
+  position: fixed;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 1000;
+}
+/* 全屏开关按钮：Tab 组件附加区（#extra）最右侧，激活态用主色强调 */
+.view-fullscreen {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -374,12 +373,30 @@ onMounted(() => {
   border-radius: 6px;
   cursor: pointer;
   color: var(--color-text-3);
-  font-size: 18px;
+  font-size: 15px;
   line-height: 1;
-  font-weight: 400;
 }
-.view-add:hover {
+.view-fullscreen:hover {
   color: rgb(var(--primary-6));
   background: var(--color-fill-2);
+}
+.view-fullscreen.active {
+  color: rgb(var(--primary-6));
+  background: var(--color-primary-light-1);
+}
+/* Arco Tabs 微调：extra 区（新建视图 +）与 Tab 垂直居中对齐 */
+.view-tabs :deep(.arco-tabs-nav-extra) {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 4px;
+}
+/* Tab 组件自身的横线：Arco Tabs nav 下边框，贯穿 Tab 组件（占满整个视图区）下方 */
+.view-tabs :deep(.arco-tabs-nav) {
+  border-bottom: 1px solid var(--color-border-2);
+}
+/* Arco Tabs 内容区：列表页 TabPane 无实际内容，去掉默认顶部内边距（避免多出空隙） */
+.view-tabs :deep(.arco-tabs-content) {
+  padding-top: 0;
 }
 </style>
