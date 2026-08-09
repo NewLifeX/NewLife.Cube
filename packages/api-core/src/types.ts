@@ -200,12 +200,18 @@ export interface LoginResult {
   /** 过期时间（秒） */
   expireIn?: number;
 
-  // ---- 后端字段别名（部分版本使用大写字段名，由 client.ts normalizeLoginResult 统一归一化） ----
-  /** @internal 后端兼容字段，请使用 accessToken */
+  // ---- 后端字段别名（由 client.ts normalizeLoginResult 统一归一化，请勿直接读取） ----
+  /** @internal 后端 snake_case 兼容字段，请使用 accessToken */
+  access_token?: string;
+  /** @internal 后端 PascalCase 兼容字段，请使用 accessToken */
   Token?: string;
-  /** @internal 后端兼容字段，请使用 refreshToken */
+  /** @internal 后端 snake_case 兼容字段，请使用 refreshToken */
+  refresh_token?: string;
+  /** @internal 后端 PascalCase 兼容字段，请使用 refreshToken */
   RefreshToken?: string;
-  /** @internal 后端兼容字段，请使用 expireIn */
+  /** @internal 后端 snake_case 兼容字段，请使用 expireIn */
+  expire_in?: number;
+  /** @internal 后端 PascalCase 兼容字段，请使用 expireIn */
   ExpireIn?: number;
 }
 
