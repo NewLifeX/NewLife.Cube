@@ -13,7 +13,7 @@
  */
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { h } from 'vue';
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import ElementPlus from 'element-plus';
 import type { FieldMeta } from '../types/field';
 
@@ -168,18 +168,22 @@ describe('FormContent 字段类型 → 控件渲染矩阵（§3.2 全矩阵）',
 
   it('ItemType=json → JsonEditor', () => {
     const w = mountField(fm({ name: 'JsonVal', typeName: 'String', itemType: 'json' }), '{"a":1}');
-    expect(w.findComponent(JsonEditor).exists()).toBe(true);
+    return flushPromises().then(() => {
+      expect(w.findComponent(JsonEditor).exists()).toBe(true);
+    });
   });
 
-  it('ItemType=html → RichEditor（mode=html）', () => {
+  it('ItemType=html → RichEditor（mode=html）', async () => {
     const w = mountField(fm({ name: 'HtmlVal', typeName: 'String', itemType: 'html' }), '<p>hi</p>');
+    await flushPromises();
     const re = w.findComponent(RichEditor);
     expect(re.exists()).toBe(true);
     expect(re.props('mode')).toBe('html');
   });
 
-  it('ItemType=markdown → RichEditor（mode=markdown）', () => {
+  it('ItemType=markdown → RichEditor（mode=markdown）', async () => {
     const w = mountField(fm({ name: 'MarkdownVal', typeName: 'String', itemType: 'markdown' }), '# hi');
+    await flushPromises();
     const re = w.findComponent(RichEditor);
     expect(re.exists()).toBe(true);
     expect(re.props('mode')).toBe('markdown');
@@ -191,8 +195,9 @@ describe('FormContent 字段类型 → 控件渲染矩阵（§3.2 全矩阵）',
     expect(w.find('.el-color-picker').exists()).toBe(true);
   });
 
-  it('ItemType=icon → IconSelector', () => {
+  it('ItemType=icon → IconSelector', async () => {
     const w = mountField(fm({ name: 'IconVal', typeName: 'String', itemType: 'icon' }), 'Edit');
+    await flushPromises();
     expect(w.findComponent(IconSelector).exists()).toBe(true);
   });
 
@@ -222,7 +227,7 @@ describe('FormContent 字段类型 → 控件渲染矩阵（§3.2 全矩阵）',
     expect(w.find('.el-input.is-disabled').exists()).toBe(true);
   });
 
-  it('全矩阵一次性挂载：19 类字段均产生唯一控件节点', () => {
+  it('全矩阵一次性挂载：19 类字段均产生唯一控件节点', async () => {
     const metas: FieldMeta[] = [
       fm({ name: 'ShortText', typeName: 'String', length: 50 }),
       fm({ name: 'LongText', typeName: 'String', length: 500 }),
@@ -250,6 +255,7 @@ describe('FormContent 字段类型 → 控件渲染矩阵（§3.2 全矩阵）',
       props: { fields: metas, modelValue: model },
       global: { plugins: [ElementPlus] },
     });
+    await flushPromises();
     expect(w.findAll('.fmc-field').length).toBe(19);
     // 关键控件组件数量
     expect(w.findComponent(LovSelect).exists()).toBe(true);

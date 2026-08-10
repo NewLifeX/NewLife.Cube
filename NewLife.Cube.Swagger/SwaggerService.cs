@@ -48,12 +48,13 @@ public static class SwaggerService
             });
 
             var oauthConfigs = OAuthConfig.GetValids(TenantContext.CurrentId, GrantTypes.AuthorizationCode);
-            if (oauthConfigs.Count > 0)
+            // 优先使用配置了服务器地址的，否则回退第一条；全部无Server时回退到JwtBearer
+            var cfg = oauthConfigs.FirstOrDefault(x => !String.IsNullOrWhiteSpace(x.Server)) ?? oauthConfigs.FirstOrDefault();
+            if (cfg != null && !cfg.Server.IsNullOrEmpty())
             {
-                var cfg = oauthConfigs.FirstOrDefault(x=>!String.IsNullOrWhiteSpace(x.Server));// 优先使用配置了服务器地址的 //oauthConfigs[0]
                 var flow = new OpenApiOAuthFlow //Yann 这个授权地址不一定对吧？
                 {
-                    AuthorizationUrl = new Uri(cfg?.Server + "/authorize"),
+                    AuthorizationUrl = new Uri(cfg.Server + "/authorize"),
                     TokenUrl = new Uri((!cfg.AccessServer.IsNullOrEmpty() ? cfg.AccessServer : cfg.Server) + "/access_token"),
                     //Scopes = new Dictionary<String, String>
                     //{
@@ -122,9 +123,10 @@ public static class SwaggerService
 
             // 设置OAuth2认证
             var oauthConfigs = OAuthConfig.GetValids(TenantContext.CurrentId, GrantTypes.AuthorizationCode);
-            if (oauthConfigs.Count > 0)
+            // 与 AddCubeSwagger 保持一致的选取逻辑：优先有Server的，否则第一条
+            var cfg = oauthConfigs.FirstOrDefault(x => !String.IsNullOrWhiteSpace(x.Server)) ?? oauthConfigs.FirstOrDefault();
+            if (cfg != null)
             {
-                var cfg = oauthConfigs[0];
                 //options.OAuthConfigObject = new()
                 //{
                 //    AppName = cfg.Name,

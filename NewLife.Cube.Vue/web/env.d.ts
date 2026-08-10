@@ -1,5 +1,4 @@
 /// <reference types="vite/client" />
-/// <reference types="cypress" />
 
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'

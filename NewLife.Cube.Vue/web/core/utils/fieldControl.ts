@@ -43,6 +43,8 @@ const ITEM_TYPE_TO_CONTROL: Record<string, ControlType> = {
   url: 'url',
   singleselect: 'lov',
   multipleselect: 'lovMulti',
+  lovtable: 'lov',
+  lovtablemulti: 'lovMulti',
 };
 
 /** 解析小写 ItemType */
@@ -108,6 +110,8 @@ export function resolveSearchControl(field: FieldMeta): SearchControlType {
   if (itemType === 'file' || itemType === 'image') return 'fileExists';
   if (itemType === 'singleselect') return 'lov';
   if (itemType === 'multipleselect') return 'lovMulti';
+  if (itemType === 'lovtable') return 'lov';
+  if (itemType === 'lovtablemulti') return 'lovMulti';
 
   const typeName = field.typeName;
 

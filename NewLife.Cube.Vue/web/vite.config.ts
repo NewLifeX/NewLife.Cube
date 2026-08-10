@@ -80,20 +80,28 @@ export default defineConfig(({ command, mode }) => {
       },
       build: {
         sourcemap: true, // Generates source maps for better debugging
-        outDir: '../wwwroot', emptyOutDir: true
+        outDir: '../wwwroot',
+        emptyOutDir: true,
+        commonjsOptions: {
+          strictRequires: false,
+          transformMixedEsModules: true,
+        },
+        rollupOptions: {
+          external: (id) => id.includes('@lezer/php'),
+        },
       },
       server: {
         port: 5187,
-        // Vite 代理已移除：前端 API 请求直连后端（由 VITE_API_URL 配置 baseUrl）
-        // proxy: {
-        //   '/Admin': { target: 'http://localhost:5000', changeOrigin: true },
-        //   '/Cube': { target: 'http://localhost:5000', changeOrigin: true },
-        //   '/Sso': { target: 'http://localhost:5000', changeOrigin: true },
-        //   '/Test': { target: 'http://localhost:5000', changeOrigin: true },
-        //   '/api': { target: 'http://localhost:5000', changeOrigin: true },
-        //   // 上传文件回显（TestUploadController 落盘到 wwwroot/upload/test/...）
-        //   '/upload': { target: 'http://localhost:5000', changeOrigin: true },
-        // },
+        // 前端 API 请求经 Vite 代理转发到本地 CubeDemo 后端（:5050，含本任务 LOV 特性）。
+        // .env.development 中 VITE_API_URL=http://localhost:5187/api，故所有请求带 /api 前缀，
+        // 这里剥离 /api 后转发到 :5050（:5050 自身无 /api 前缀路由）。
+        proxy: {
+          '/api': {
+            target: 'http://localhost:5050',
+            changeOrigin: true,
+            rewrite: (p) => p.replace(/^\/api/, ''),
+          },
+        },
       },
     };
   }

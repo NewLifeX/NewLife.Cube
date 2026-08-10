@@ -58,6 +58,18 @@ else if (name.EndsWithIgnoreCase("url") || Model.ItemType.EqualIgnoreCase("url")
         @Html.TextBox(name, value, atts)
     </div>
 }
+else if (Model.ItemType.EqualIgnoreCase("color"))
+{
+    // 颜色选择器：原生取色器 + 色值文本，取色器变更同步文本，点击文本再次弹出取色器
+    var cv = value.IsNullOrEmpty() ? "#000000" : value;
+    <div class="input-group">
+        <input type="color" id="@name" name="@name" value="@cv" style="width:44px;height:34px;padding:2px;border:none;background:none;" />
+        <input type="text" id="@(name)_text" name="@(name)_text" value="@value" class="form-control" readonly onclick="$('#@name').trigger('click');" />
+    </div>
+    <script>
+        $('#@name').on('change', function () { $('#@(name)_text').val(this.value); });
+    </script>
+}
 else if (length < 0 || length >= 300 || (length >= 200 && name.EqualIgnoreCase("Remark", "Description", "Comment")))
 {
     var row = (Int32)Math.Round(length / 100d);

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Security.Cryptography;
+using System.Text;
 using NewLife.Caching;
 using NewLife.Cube.Entity;
 using NewLife.Security;
@@ -92,27 +93,6 @@ public class MailService(ICacheProvider cacheProvider)
     public async Task<VerifyCodeRecord> SendVerifyCode(String action, String mail, String code, MailConfigModel config)
     {
         var key = $"MailVerify:{config.Provider}:{config.Id}";
-        var provider = cacheProvider.InnerCache.Get<IMailVerifyCode>(key);
-        if (provider == null)
-        {
-            // 根据配置创建邮件验证码提供者
-            if (config.Provider == "Smtp" || config.Provider.IsNullOrEmpty())
-            {
-                provider = new SmtpMailVerifyCode
-                {
-                    Server = config.Server,
-                    Port = config.Port > 0 ? config.Port : 25,
-                    EnableSsl = config.EnableSsl,
-                    From = config.FromMail,
-                    DisplayName = config.FromName,
-                    Username = config.UserName,
-                    Password = config.Password,
-                };
-
-                cacheProvider.InnerCache.Set(key, provider, 600);
-            }
-            provider = cacheProvider.InnerCache.Get<IMailVerifyCode>(key);
-        }
 
         var record = new VerifyCodeRecord
         {
@@ -129,6 +109,14 @@ public class MailService(ICacheProvider cacheProvider)
 
         try
         {
+            // 从缓存获取或创建邮件渠道，未知类型抛出明确异常（放入try内，失败记入记录）
+            var provider = cacheProvider.InnerCache.Get<IMailVerifyCode>(key);
+            if (provider == null)
+            {
+                provider = CreateProvider(config);
+                cacheProvider.InnerCache.Set(key, provider, 600);
+            }
+
             switch (action.ToLower())
             {
                 case "login":
@@ -161,6 +149,28 @@ public class MailService(ICacheProvider cacheProvider)
         return record;
     }
 
+    /// <summary>根据配置创建邮件验证码提供者，未知类型抛出明确异常</summary>
+    /// <param name="config">邮件配置</param>
+    /// <returns>邮件验证码提供者</returns>
+    private static IMailVerifyCode CreateProvider(MailConfigModel config)
+    {
+        if (config.Provider == "Smtp" || config.Provider.IsNullOrEmpty())
+        {
+            return new SmtpMailVerifyCode
+            {
+                Server = config.Server,
+                Port = config.Port > 0 ? config.Port : 25,
+                EnableSsl = config.EnableSsl,
+                From = config.FromMail,
+                DisplayName = config.FromName,
+                Username = config.UserName,
+                Password = config.Password,
+            };
+        }
+
+        throw new NotSupportedException($"不支持邮件渠道[{config.Provider}]");
+    }
+
     /// <summary>默认验证码长度</summary>
     public const Int32 DefaultCodeLength = 4;
 
@@ -174,13 +184,14 @@ public class MailService(ICacheProvider cacheProvider)
     {
         if (codeLength <= 0) codeLength = DefaultCodeLength;
 
-        var seed = $"{Rand.Next(Int32.MaxValue / 10, Int32.MaxValue)}";
+        // 使用密码学安全随机数逐位生成，避免验证码可预测
+        var buf = new Byte[codeLength];
+        RandomNumberGenerator.Fill(buf);
+
         var sb = new StringBuilder();
-        for (var i = 0; i < codeLength; i++)
+        foreach (var b in buf)
         {
-            var index = i % seed.Length;
-            var c = seed[index]; // 避免超长，超过长度时会循环取
-            sb.Append(c);
+            sb.Append((Char)('0' + b % 10));
         }
         return sb.ToString();
     }

@@ -258,7 +258,7 @@ public class UserBindingService : IUserBindingService
 
             if (user2.Mail.IsNullOrEmpty() || set.ForceBindUserMail && !client.Mail.IsNullOrEmpty()) user2.Mail = client.Mail;
 
-            if (client.Sex > 0) user2.Sex = (SexKinds)client.Sex;
+            if (client.Sex != SexKinds.未知) user2.Sex = client.Sex;
             if (!client.Detail.IsNullOrEmpty()) user2.Remark = client.Detail;
 
             FillRoles(client, user2, set);

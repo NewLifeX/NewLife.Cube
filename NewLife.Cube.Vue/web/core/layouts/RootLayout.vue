@@ -6,7 +6,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '../stores/user';
 import { useMenuStore } from '../stores/menu';
 import { useTabsStore } from '../stores/tabs';
-import { getUrlHashToken } from '../utils/token';
+import { getUrlHashToken, getAccessToken } from '../utils/token';
 import { useLayout } from '../composables/useLayout';
 import TabsView from '../components/TabsView.vue';
 import TopMenuLayout from './TopMenu/index.vue'; // 兜底默认布局
@@ -78,6 +78,10 @@ onBeforeMount(() => {
 onMounted(async () => {
   // 登录页、loading 页等不需要认证的页面，无需获取用户信息和菜单
   if (route.path === loginPageUrl || route.meta?.auth === false) {
+    return;
+  }
+  // 未登录时（无 token）不请求用户信息和菜单，避免 401 未授权报错弹窗
+  if (!getAccessToken()) {
     return;
   }
   try {

@@ -350,9 +350,12 @@ export default { configData, currentEnv };
     load(id: string) {
       if (id === resolvedVirtualModuleIdPrefix + sectionsName) {
         if (!sectionsConfig) return generateSectionsCode([]);
-        const viewsDir = resolveAppViewsDir(sectionsConfig.configFile, sectionsConfig.root);
-        if (!viewsDir) return generateSectionsCode([]);
-        const sections = scanSectionFiles(viewsDir);
+        const viewsDirs = resolveAppViewsDirs(sectionsConfig.configFile, sectionsConfig.root);
+        if (viewsDirs.length === 0) return generateSectionsCode([]);
+        const sections: Array<{ key: string; absPath: string }> = [];
+        for (const dir of viewsDirs) {
+          sections.push(...scanSectionFiles(dir));
+        }
         return generateSectionsCode(sections);
       }
     },
@@ -390,15 +393,79 @@ export default { configData, currentEnv };
  * @param root        Vite 解析后的 config.root（monorepo 根目录）
  * @returns 子应用 views 目录的绝对路径，若无法推断则返回 null
  */
+/**
+ * 解析所有子应用 views 目录（复数版本，遍历 resolveAppViewsDir 结果）
+ * 当前支持单应用场景，返回所有应用的 views 目录。
+ */
+function resolveAppViewsDirs(configFile: string | undefined, root: string): string[] {
+  const dirs: string[] = [];
+
+  if (!configFile) return dirs;
+  const configDir = path.dirname(configFile);
+  const rel = path.relative(root, configDir);
+  const parts = rel.split(path.sep);
+
+  if (parts.length >= 2 && parts[0] === 'apps') {
+    // 子项目模式：当前目录就是 apps/<name>/src/views/
+    const dir = path.join(configDir, 'src', 'views');
+    if (fs.existsSync(dir)) dirs.push(dir);
+  } else {
+    // 单体模式：扫描 root/apps/<appName>/src/views/ 下所有子目录
+    const appsDir = path.join(root, 'apps');
+    if (fs.existsSync(appsDir)) {
+      const appNames = fs.readdirSync(appsDir, { withFileTypes: true })
+        .filter((d) => d.isDirectory())
+        .map((d) => d.name);
+      for (const appName of appNames) {
+        const viewsDir = path.join(appsDir, appName, 'src', 'views');
+        if (fs.existsSync(viewsDir)) {
+          dirs.push(viewsDir);
+        }
+      }
+    }
+  }
+
+  return dirs;
+}
+
+/**
+ * 根据当前 configFile 路径推断子应用的 views 目录。
+ *
+ * 支持两种项目结构：
+ *   1. 子项目模式：vite.config.ts 位于 `<monorepo>/apps/<appName>/` 目录下，
+ *      views 目录为 `<monorepo>/apps/<appName>/src/views/`
+ *   2. 单体模式：vite.config.ts 位于项目根目录，apps/ 是子目录，
+ *      views 目录为 `<root>/apps/<appName>/src/views/`
+ *      遍历所有 apps/ 子目录统一收集。
+ *
+ * @param configFile  Vite 解析后的 config.configFile（绝对路径）
+ * @param root        Vite 解析后的 config.root（monorepo 根目录）
+ * @returns 子应用 views 目录的绝对路径，若无法推断则返回 null
+ */
 function resolveAppViewsDir(configFile: string | undefined, root: string): string | null {
   if (!configFile) return null;
   const configDir = path.dirname(configFile);
-  // 判断 vite.config.ts 是否位于 apps/<xxx>/ 目录
+  // 判断 vite.config.ts 是否位于 apps/<xxx>/ 目录（子项目模式）
   const rel = path.relative(root, configDir);
   // rel 在 Windows: "apps\cube-admin" / POSIX: "apps/cube-admin"
   const parts = rel.split(path.sep);
   if (parts.length >= 2 && parts[0] === 'apps') {
     return path.join(configDir, 'src', 'views');
+  }
+  // 单体模式：vite.config.ts 在根目录，apps/ 是子目录
+  // 扫描 root/apps/<appName>/src/views/ 下所有子目录
+  const appsDir = path.join(root, 'apps');
+  if (fs.existsSync(appsDir)) {
+    const appNames = fs.readdirSync(appsDir, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name);
+    // 遍历所有子应用，返回首个存在的 views 目录
+    for (const appName of appNames) {
+      const viewsDir = path.join(appsDir, appName, 'src', 'views');
+      if (fs.existsSync(viewsDir)) {
+        return viewsDir;
+      }
+    }
   }
   return null;
 }

@@ -330,6 +330,19 @@ public static class WebHelper
     }
     #endregion
 
+    #region API前缀
+    /// <summary>去掉URL开头的API前缀，还原为前端路由。WebAPI版实体/后台控制器路由固定 /api 前缀，菜单/权限/回跳地址需还原为前端路由 /{area}/{controller}/{action}；MVC版无前缀，为no-op</summary>
+    /// <param name="url">目标地址</param>
+    /// <returns>去掉 /api 前缀后的地址</returns>
+    public static String TrimApiPrefix(this String url)
+    {
+        if (!url.IsNullOrEmpty() && url.StartsWithIgnoreCase("/api/"))
+            return url[4..];
+
+        return url;
+    }
+    #endregion
+
     #region 辅助
 
     internal static Boolean ValidRobot(Microsoft.AspNetCore.Http.HttpContext ctx, UserAgentParser ua)

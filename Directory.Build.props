@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- 关闭 NuGet 审计：restore 查询漏洞库在网络慢时会导致长时间超时，本仓库项目统一关闭 -->
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+</Project>

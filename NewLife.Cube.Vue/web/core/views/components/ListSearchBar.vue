@@ -8,7 +8,7 @@
  */
 import { ref, reactive, computed } from 'vue';
 import { ArrowDown, ArrowUp, Search } from '@element-plus/icons-vue';
-import LovSelect from '../../components/LovSelect.vue';
+import LovSelect from '../../components/LovSelect/index.vue';
 import { resolveSearchControl } from '../../utils/fieldControl';
 import type { FieldMeta, SearchControlType } from '../../types/field';
 
@@ -425,7 +425,7 @@ function toggleCollapse() {
   }
 
   :deep(.el-input__inner) {
-    font-family: var(--el-font-family-mono);
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
     font-size: 13px;
     color: var(--el-text-color-primary);
     text-align: center;

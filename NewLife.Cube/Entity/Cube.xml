@@ -679,6 +679,7 @@
         <Column Name="DataPath" DataType="String" Description="数据路径。从响应中提取数据列表的JSON路径" />
         <Column Name="TotalPath" DataType="String" Description="总量路径。从响应中提取总数的JSON路径" />
         <Column Name="FixedParams" DataType="String" Length="2000" Description="固定参数。每次请求附加的固定参数，JSON格式" />
+        <Column Name="ProxyRequest" DataType="Boolean" Description="是否代理请求。true=后端代理转发；false=前端直连 RequestUrl" />
         <Column Name="CreateUserID" DataType="Int32" Description="创建用户" Category="扩展" />
         <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
         <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />

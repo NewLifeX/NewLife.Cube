@@ -1,0 +1,170 @@
+@using NewLife.Cube;
+@using XCode.Membership
+@{
+    var set = CubeSetting.Current;
+    var user = Context.User.Identity as IUser;
+
+    // 所有页面统一走全局 AI 控制器 /Ai/AiChat（实体页含数据上下文工具），
+    // 服务端依据 area/controller 解析目标页面控制器并调用其 AI 能力接口。
+    // 统一由服务端注入端点地址与目标页面标识（data-ai-area / data-ai-controller），前端直接读取，不再自行拼接端点地址。
+    var area = ViewContext.RouteData.Values["area"] + "";
+    var controller = ViewContext.RouteData.Values["controller"] + "";
+}
+@if (set.AISwitch && user != null)
+{
+    @* AI 助手：右下角悬浮球 + 对话面板。所有 MVC 主题共享 *@
+    <div id="aiAssistant" class="ai-assistant" data-ai-url="/Ai/AiChat" data-ai-area="@area" data-ai-controller="@controller">
+        <button type="button" id="aiAssistantFab" class="ai-fab" title="AI 助手">
+            <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+                <g fill="#2ecc71">
+                    <circle cx="12" cy="7" r="4.6" />
+                    <circle cx="17" cy="12" r="4.6" />
+                    <circle cx="12" cy="17" r="4.6" />
+                    <circle cx="7" cy="12" r="4.6" />
+                </g>
+                <circle cx="12" cy="12" r="2.6" fill="#ffffff" />
+            </svg>
+        </button>
+        <div class="ai-panel" id="aiAssistantPanel" style="display:none;">
+            <div class="ai-panel-header">
+                <span>
+                    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                        <g fill="#2ecc71">
+                            <circle cx="12" cy="7" r="4.6" />
+                            <circle cx="17" cy="12" r="4.6" />
+                            <circle cx="12" cy="17" r="4.6" />
+                            <circle cx="7" cy="12" r="4.6" />
+                        </g>
+                        <circle cx="12" cy="12" r="2.6" fill="#ffffff" />
+                    </svg>
+                    AI 助手
+                </span>
+                <div class="ai-panel-actions">
+                    <button type="button" id="aiMaximize" title="最大化"><i class="ace-icon fa fa-expand"></i><i class="ace-icon fa fa-compress" style="display:none"></i></button>
+                    <button type="button" id="aiClearChat" title="清空会话"><i class="ace-icon fa fa-trash"></i></button>
+                    <button type="button" id="aiClosePanel" title="收起"><i class="ace-icon fa fa-times"></i></button>
+                </div>
+            </div>
+            <div class="ai-messages" id="aiMessages">
+                <div class="ai-msg ai-msg-assistant">
+                    <div class="ai-bubble">你好，我是魔方 AI 助手 👋 我可以帮你分析当前数据、填写表单、检查系统状态。试试下面的快捷操作，或直接输入你的问题。</div>
+                </div>
+                <div class="ai-quick" id="aiQuickActions">
+                    <button type="button" class="ai-chip" data-prompt="分析当前列表数据">📊 分析当前数据</button>
+                    <button type="button" class="ai-chip" data-prompt="帮我填写当前表单">📝 帮我填表</button>
+                    <button type="button" class="ai-chip" data-prompt="分析当前记录">🔍 分析当前记录</button>
+                    <button type="button" class="ai-chip" data-prompt="检查系统运行状态">🩺 系统诊断</button>
+                </div>
+            </div>
+            <div class="ai-panel-footer">
+                <label class="ai-think" title="深度推理更准确，但耗时更长">
+                    <input type="checkbox" id="aiThink" @(set.AIDefaultThink ? "checked" : "") /> 深度
+                </label>
+                <textarea id="aiInput" rows="1" placeholder="输入问题，Enter 发送，Shift+Enter 换行"></textarea>
+                <button type="button" id="aiSend" class="ai-send" title="发送"><i class="ace-icon fa fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+    <script src="~/Content/marked/marked.min.js"></script>
+    <script src="~/js/ai-assistant.js"></script>
+    <style>
+        /* AI 助手浮窗样式（主题无关），主色/辅色由 CubeSetting 配置 */
+        #aiAssistant { --ai-primary: @set.AIPrimaryColor; --ai-secondary: @set.AISecondaryColor; }
+        .ai-assistant { font-size: 13px; }
+        .ai-assistant.panel-open .ai-fab {
+            /* 面板打开时隐藏悬浮球（保留占位避免跳动），关闭后恢复显示 */
+            visibility: hidden; opacity: 0; pointer-events: none;
+        }
+        .ai-fab {
+            position: fixed; right: 20px; bottom: 20px; z-index: 9998;
+            width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer;
+            color: #fff; font-size: 20px;
+            background: linear-gradient(135deg, var(--ai-primary) 0%, var(--ai-secondary) 100%);
+            box-shadow: 0 4px 12px color-mix(in srgb, var(--ai-primary) 45%, transparent);
+            transition: opacity .25s, visibility .25s;
+        }
+        .ai-fab:hover { transform: scale(1.06); }
+        .ai-panel {
+            position: fixed; right: 20px; bottom: 80px; z-index: 9999;
+            width: 460px; height: 70vh; min-height: 400px;
+            display: flex; flex-direction: column; overflow: hidden;
+            background: #fff; border-radius: 10px; border: 1px solid #e4e7f0;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .15);
+        }
+        /* 面板打开时下沉到悬浮球位置，多占约 60px 高度 */
+        .ai-assistant.panel-open .ai-panel { bottom: 20px; }
+        /* 全屏放大态：占满视口留 20px 边距；拖动仅限非全屏态 */
+        .ai-panel.maximized {
+            position: fixed; left: 20px; top: 20px; right: 20px; bottom: 20px;
+            width: auto; height: auto; border-radius: 12px;
+        }
+        .ai-panel.maximized .ai-panel-header { cursor: default; }
+        .ai-panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 14px; color: #fff; font-weight: 600;
+            background: linear-gradient(135deg, var(--ai-primary) 0%, var(--ai-secondary) 100%);
+            cursor: move; user-select: none;
+        }
+        .ai-panel-header .ai-panel-actions button {
+            background: none; border: none; color: #fff; cursor: pointer; padding: 2px 6px; font-size: 14px;
+        }
+        .ai-messages {
+            flex: 1; overflow-y: auto; padding: 12px; background: #f7f8fc;
+        }
+        .ai-msg { margin-bottom: 10px; display: flex; }
+        /* 用户/AI 消息气泡满宽，仅靠颜色区分，避免左右留白浪费 */
+        .ai-bubble {
+            width: 100%; padding: 8px 12px; border-radius: 8px; line-height: 1.6;
+            background: #fff; border: 1px solid #e4e7f0; white-space: normal; word-break: break-word;
+        }
+        .ai-bubble p { margin: 4px 0; }
+        .ai-msg-user .ai-bubble { background: var(--ai-primary); color: #fff; border-color: var(--ai-primary); white-space: pre-wrap; }
+        .ai-bubble h1, .ai-bubble h2, .ai-bubble h3, .ai-bubble h4 { font-size: 14px; margin: 8px 0 4px; }
+        .ai-bubble table { border-collapse: collapse; width: 100%; margin: 6px 0; }
+        .ai-bubble table th, .ai-bubble table td { border: 1px solid #ddd; padding: 4px 6px; font-size: 12px; }
+        .ai-bubble table th { background: #f5f5f5; }
+        .ai-bubble a { color: var(--ai-primary); text-decoration: underline; }
+        .ai-bubble hr { border: none; border-top: 1px solid #e4e7f0; margin: 8px 0; }
+        .ai-bubble code { background: #f0f0f0; padding: 1px 4px; border-radius: 3px; font-family: Consolas, Monaco, "Courier New", monospace; font-size: 12px; }
+        .ai-bubble pre {
+            background: #1e1e1e; color: #d4d4d4; padding: 10px 12px; border-radius: 6px;
+            overflow-x: auto; margin: 6px 0; position: relative;
+        }
+        .ai-bubble pre code { background: none; padding: 0; color: inherit; font-size: 12px; }
+        .ai-bubble .ai-code-lang {
+            position: absolute; top: 4px; right: 8px; font-size: 10px; color: #888;
+            text-transform: uppercase; user-select: none;
+        }
+        .ai-bubble pre::-webkit-scrollbar { height: 6px; }
+        .ai-bubble pre::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+        .ai-bubble ul, .ai-bubble ol { padding-left: 18px; margin: 4px 0; }
+        .ai-bubble li { margin: 2px 0; }
+        .ai-bubble input[type="checkbox"] { margin-right: 4px; }
+        .ai-bubble blockquote { border-left: 3px solid var(--ai-primary); padding: 2px 10px; margin: 6px 0; background: color-mix(in srgb, var(--ai-primary) 6%, #fff); }
+        .ai-tool {
+            margin: 4px 0; padding: 6px 10px; border-radius: 6px; font-size: 12px;
+            background: color-mix(in srgb, var(--ai-primary) 8%, #fff); border: 1px solid color-mix(in srgb, var(--ai-primary) 18%, #fff); color: #555;
+        }
+        .ai-tool.ai-tool-done { background: #eefaf0; border-color: #d4f0da; color: #2e7d32; }
+        .ai-tool.ai-tool-error { background: #fdeeee; border-color: #f5d4d4; color: #c62828; }
+        .ai-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0 8px; }
+        .ai-chip {
+            border: 1px solid var(--ai-primary); color: var(--ai-primary); background: #fff; border-radius: 14px;
+            padding: 4px 10px; font-size: 12px; cursor: pointer;
+        }
+        .ai-chip:hover { background: var(--ai-primary); color: #fff; }
+        .ai-panel-footer {
+            display: flex; align-items: flex-end; gap: 6px; padding: 8px 10px; border-top: 1px solid #e4e7f0; background: #fff;
+        }
+        .ai-think { font-size: 12px; color: #555; white-space: nowrap; padding-bottom: 8px; cursor: pointer; }
+        .ai-panel-footer textarea {
+            flex: 1; resize: none; border: 1px solid #ddd; border-radius: 6px; padding: 6px 8px;
+            font-size: 13px; max-height: 90px; outline: none;
+        }
+        .ai-send {
+            border: none; background: var(--ai-primary); color: #fff; border-radius: 6px;
+            width: 36px; height: 32px; cursor: pointer;
+        }
+        .ai-field-highlight { box-shadow: 0 0 0 2px var(--ai-primary) !important; border-color: var(--ai-primary) !important; transition: box-shadow .3s; }
+    </style>
+}

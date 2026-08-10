@@ -8,7 +8,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [DisplayName("角色")]
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
 [AdminArea]
-[Menu(90, true, Icon = "fa-user-plus")]
+[Menu(90, true, Icon = "CirclePlus")]
 public class RoleController : EntityController<Role, RoleModel>
 {
     static RoleController()
@@ -88,6 +88,15 @@ public class RoleController : EntityController<Role, RoleModel>
                     {
                         entity.Permissions.Remove(key);
                     }
+
+                    // 初始化权限：系统角色（管理员）新增时默认添加全部权限，非系统角色默认不添加任何权限
+                    if (entity.IsSystem && type == DataObjectMethodType.Insert)
+                    {
+                        foreach (var item in XCode.Membership.Menu.Root.AllChilds)
+                        {
+                            entity.Set(item.ID, PermissionFlags.All);
+                        }
+                    }
                 }
 
                 // JSON 模式仍需清空缓存，确保后续读取拿到最新数据
@@ -122,8 +131,8 @@ public class RoleController : EntityController<Role, RoleModel>
 
                         any |= has2;
                     }
-                    // 如果原来没有权限，这是首次授权，且右边没有勾选任何子项，则授权全部
-                    if (!any & !entity.Has(item.ID)) entity.Set(item.ID);
+                    // 首次授权：系统角色（管理员）默认添加全部权限；非系统角色默认不添加任何权限
+                    if (!any & !entity.Has(item.ID) & entity.IsSystem) entity.Set(item.ID);
                 }
             }
             // 删除已经被放弃权限的项

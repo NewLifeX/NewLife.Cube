@@ -16,6 +16,7 @@ using NewLife.Cube.Services;
 using NewLife.Cube.WebMiddleware;
 using NewLife.IP;
 using NewLife.Log;
+using NewLife.Messaging;
 using NewLife.Serialization;
 using NewLife.Web;
 using Stardust;
@@ -97,9 +98,6 @@ public static class CubeService
         {
             options.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All);
         });
-
-        // 添加管理提供者
-        services.AddManageProvider();
 
         // 添加数据保护，优先在外部支持Redis持久化，这里默认使用数据库持久化
         //if (services.Any(e => e.ServiceType == typeof(FullRedis) || e.ServiceType == typeof(ICacheProvider) && e.ImplementationType == typeof(RedisCacheProvider)))
@@ -199,6 +197,9 @@ public static class CubeService
 
         //默认注入缓存实现
         services.TryAddSingleton<ICacheProvider, CacheProvider>();
+
+        // 页面检查点服务：以缓存提供者为事件总线工厂（MemoryCache=进程内；FullRedis=Redis 广播，跨实例匹配检查点）
+        services.TryAddSingleton<PageCheckpointService>(sp => new PageCheckpointService((sp.GetService<ICacheProvider>()?.Cache as IEventBusFactory)));
 
         // 服务
         services.AddSingleton<PasswordService>();
@@ -307,11 +308,6 @@ public static class CubeService
         // 配置静态Http上下文访问器
         app.UseStaticHttpContext();
 
-        // API 前缀重写：配置了前缀的请求自动去掉前缀，转发到真实路由
-        // 必须放在静态文件/鉴权/路由之前，保证后续管道看到的是去前缀后的路径
-        if (!set.ApiPrefixes.IsNullOrWhiteSpace())
-            app.UseApiPrefixRewrite();
-
         // 注册中间件
 
         // 服务魔方内嵌静态资源（wwwroot），支持物理目录覆盖
@@ -367,7 +363,7 @@ public static class CubeService
 
             endpoints.MapControllerRoute(
                 "CubeAreas",
-                "{area}/{controller=Index}/{action=Index}/{id?}");
+                "api/{area}/{controller=Index}/{action=Index}/{id?}");
         });
 
         //ManageProvider2.EndpointRoute = (IEndpointRouteBuilder)app.Properties["__EndpointRouteBuilder"];

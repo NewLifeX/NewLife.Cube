@@ -1,0 +1,49 @@
+# AI 迭代工作流
+
+> 本指南把 [愿景与路线图](../product/vision-and-roadmap.md) 转成每次前端任务的执行顺序。AI 处理功能、页面、默认 CRUD 和修复任务时均适用。
+
+## 1. 先定位，不先生成
+
+1. 阅读 `docs/README.md`、相关 architecture/reference/standards，以及目标控制器、菜单、应用视图。
+2. 判断需求是否已有后端控制器、菜单与字段元数据。
+3. 把需求归类为：默认 CRUD 验证、CubeTable 插槽定制、完整页面、框架能力回流或后端契约缺口。
+4. 选择能验证结论的最窄检查：打开默认页面、检查菜单路径、运行单元测试或请求目标 API。
+
+没有完成这一步，不得直接生成整页 CRUD。
+
+## 2. 按最小扩展层实现
+
+| 情况                                   | 默认动作                                         |
+| -------------------------------------- | ------------------------------------------------ |
+| 控制器 + 菜单 + 元数据已满足           | 不写页面；验证默认 CRUD                          |
+| 仅需搜索、工具栏、表格、表单等局部差异 | 在应用 `views/<route>/index.vue` 用 `CubeTable` 具名插槽覆盖（见 [customize-page.md](../guides/customize-page.md)） |
+| 需要独特工作流、复杂视觉或跨实体协调   | 创建该路径的 `index.vue` 完整页面（可 `useCubeEngine` + `:context`） |
+| 多处重复的字段/交互/覆盖模式           | 改进 `core/components/CubeTable/`、`core/engine/` 或元数据契约 |
+| 缺少字段语义、权限或 API 能力          | 明确记录为后端契约缺口，先补后端而非伪造前端状态 |
+
+路径与插槽约定以 [route-conventions.md](../reference/route-conventions.md) 为准；旧 Section 覆盖（`SectionKeyMap`）为遗留机制，新页面不再使用。
+
+## 3. 实现时必须保留的边界
+
+- 不绕开 `core/utils/request.ts`、菜单动态路由、主题变量和权限守卫。
+- 不为单一实体复制默认列表/表单；优先覆盖最小 Section。
+- 页面级布局使用 Tailwind，交互组件使用 Element Plus，遵守 [UI 规范](../standards/ui-spec.md)。
+- 所有新业务状态明确处理加载、空态、错误和提交反馈。
+- 新的跨应用能力必须有测试，且在确认复用价值后才进入 `core/`。
+
+## 4. 验证与沉淀
+
+1. 验证菜单可见、首次直达、刷新访问和无权限行为。
+2. 验证 CRUD 或目标业务流程，至少覆盖成功、空态和失败分支。
+3. 运行与改动匹配的 `test:unit`、`type-check`、`lint:eslint` 或 Playwright 测试。
+4. 更新文档：当前实现写 reference，任务步骤写 guide，约束写 standard，取舍写 ADR。
+5. 若本次发现默认引擎重复缺口，回填 [路线图](../product/vision-and-roadmap.md) 的对应阶段或新增 ADR。
+
+## 5. 交付说明模板
+
+AI 每次交付应简明说明：
+
+- 选择的扩展层级：默认 CRUD / CubeTable 插槽 / 完整页面 / 框架回流。
+- 复用的控制器、菜单、默认能力和关键路径。
+- 验证结果与未执行项。
+- 已更新的文档或需要后端配合的契约缺口。

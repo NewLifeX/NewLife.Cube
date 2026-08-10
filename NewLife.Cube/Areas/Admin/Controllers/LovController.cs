@@ -12,12 +12,14 @@ using XCode;
 using XCode.DataAccessLayer;
 using XCode.Membership;
 
+using NewLife.Cube.Services;
+
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>值集管理。管理枚举型和列表型值集的定义、枚举值、列表配置、搜索字段与列字段</summary>
 [DisplayName("值集管理")]
 [AdminArea]
-[Menu(85, true, Icon = "fa-tasks")]
+[Menu(85, true, Icon = "Operation")]
 public class LovController : EntityController<LovDefinition>
 {
     static LovController()
@@ -159,6 +161,7 @@ public class LovController : EntityController<LovDefinition>
                         listConfig.DataPath,
                         listConfig.TotalPath,
                         listConfig.FixedParams,
+                        listConfig.ProxyRequest,
                     },
                     SearchFields = searchFields,
                     TableColumns = tableColumns,
@@ -191,12 +194,14 @@ public class LovController : EntityController<LovDefinition>
         if (config == null)
             throw new InvalidOperationException($"值集 {request.LovCode} 未配置列表数据源");
 
-        var (rows, total) = await FetchRemoteList(config, request.Params, request.PageNum, request.PageSize);
+        // 通过 IOC 获取列表数据代理实现（默认 DefaultLovListDataProxy，可被使用者覆盖）
+        var proxy = HttpContext.RequestServices.GetRequiredService<ILovListDataProxy>();
+        var result = await proxy.FetchAsync(config, request);
 
         return new
         {
-            Data = rows,
-            Total = total,
+            Data = result.Data,
+            Total = result.Total,
         };
     }
 
@@ -221,7 +226,6 @@ public class LovController : EntityController<LovDefinition>
 
         if (def.Type == "ENUM")
         {
-            // 枚举型：直接从 LovEnumItem 查询
             var values = request.Values.Select(v => v.ToString()).ToArray();
             var items = LovEnumItem.FindAllByLovDefId(def.Id).Where(e => e.Enabled && values.Contains(e.Value)).ToList();
             foreach (var item in items)
@@ -231,24 +235,20 @@ public class LovController : EntityController<LovDefinition>
         }
         else if (def.Type == "LIST")
         {
-            // 列表型：通过远端 ListData 按 ValueField/LabelField 权威反查，禁止以第一页内容猜测
             var config = LovListConfig.FindByLovDefId(def.Id);
             if (config != null && !def.ValueField.IsNullOrEmpty() && !def.LabelField.IsNullOrEmpty())
             {
-                // 去重待查值
                 var pending = request.Values
                     .Select(v => v?.ToString())
                     .Where(v => !v.IsNullOrEmpty())
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
-                // 大小写不敏感匹配：远端 value 与请求值可能大小写不一致（如字符串编号）
                 var pendingSet = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
                 foreach (var v in pending)
                 {
                     if (!pendingSet.ContainsKey(v)) pendingSet[v] = v;
                 }
 
-                // 远端接口支持分页时按页遍历，直到找全、取完或达到页数上限；不支持分页时一次取完
                 var pageSize = config.Pageable ? 500 : Math.Max(200, pending.Count);
                 var maxPages = 20;
                 for (var pageNum = 1; pageNum <= maxPages; pageNum++)
@@ -270,7 +270,6 @@ public class LovController : EntityController<LovDefinition>
                         }
                     }
 
-                    // 已全部找到，或远端不支持分页（一页即全部），或页数据不满一页（无更多数据）
                     if (pendingSet.Count == 0 || !config.Pageable || rows.Count < pageSize) break;
                 }
             }
@@ -284,7 +283,6 @@ public class LovController : EntityController<LovDefinition>
     {
         if (row == null || field.IsNullOrEmpty()) return null;
         if (row.TryGetValue(field, out var v)) return v;
-        // 大小写不敏感：遍历键匹配
         foreach (var kv in row)
         {
             if (kv.Key.EqualIgnoreCase(field)) return kv.Value;
@@ -294,13 +292,7 @@ public class LovController : EntityController<LovDefinition>
 
     /// <summary>
     /// 代理远端列表接口，返回解析后的行数据与总数。
-    /// 参数规则与 ListData 一致：额外参数 + 分页参数 + 固定参数（GET 拼接查询串，POST 放 Body）。
     /// </summary>
-    /// <param name="config">列表型值集配置</param>
-    /// <param name="extraParams">额外查询参数（搜索条件等）</param>
-    /// <param name="pageNum">页码，从 1 开始；非分页接口可忽略</param>
-    /// <param name="pageSize">每页条数</param>
-    /// <returns>解析后的行数据列表与总数</returns>
     private static async Task<(List<Dictionary<String, Object>> Rows, Int32 Total)> FetchRemoteList(
         LovListConfig config,
         Dictionary<String, Object>? extraParams,
@@ -309,7 +301,6 @@ public class LovController : EntityController<LovDefinition>
     {
         var url = config.RequestUrl;
 
-        // 内部实体数据源（entity: 协议，OSC-0016）：不经 HTTP，直接查 EntityFactory
         if (url.StartsWith("entity:"))
         {
             return FetchEntityList(url, extraParams, pageNum, pageSize);
@@ -323,7 +314,6 @@ public class LovController : EntityController<LovDefinition>
 
         if (method == "GET")
         {
-            // GET 请求：参数拼接到 URL
             var queryParams = new List<String>();
             if (extraParams != null)
             {
@@ -333,7 +323,6 @@ public class LovController : EntityController<LovDefinition>
                         queryParams.Add($"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value.ToString()!)}");
                 }
             }
-            // 分页参数
             if (config.Pageable)
             {
                 if (pageNum > 0 && !config.PageNumField.IsNullOrEmpty())
@@ -341,7 +330,6 @@ public class LovController : EntityController<LovDefinition>
                 if (pageSize > 0 && !config.PageSizeField.IsNullOrEmpty())
                     queryParams.Add($"{Uri.EscapeDataString(config.PageSizeField)}={pageSize}");
             }
-            // 固定参数
             if (!config.FixedParams.IsNullOrEmpty())
             {
                 var fixedParams = JsonParser.Decode(config.FixedParams) as IDictionary<String, Object>;
@@ -363,16 +351,12 @@ public class LovController : EntityController<LovDefinition>
         }
         else
         {
-            // POST 请求：参数放 Body
             var bodyParams = new Dictionary<String, Object>();
             if (extraParams != null)
             {
                 foreach (var kv in extraParams)
-                {
                     bodyParams[kv.Key] = kv.Value!;
-                }
             }
-            // 分页参数
             if (config.Pageable)
             {
                 if (pageNum > 0 && !config.PageNumField.IsNullOrEmpty())
@@ -380,16 +364,13 @@ public class LovController : EntityController<LovDefinition>
                 if (pageSize > 0 && !config.PageSizeField.IsNullOrEmpty())
                     bodyParams[config.PageSizeField] = pageSize;
             }
-            // 固定参数
             if (!config.FixedParams.IsNullOrEmpty())
             {
                 var fixedParams = JsonParser.Decode(config.FixedParams) as IDictionary<String, Object>;
                 if (fixedParams != null)
                 {
                     foreach (var kv in fixedParams)
-                    {
                         bodyParams[kv.Key] = kv.Value!;
-                    }
                 }
             }
 
@@ -401,20 +382,15 @@ public class LovController : EntityController<LovDefinition>
         var responseBody = await httpResponse.Content.ReadAsStringAsync();
 
         if (!httpResponse.IsSuccessStatusCode)
-        {
             throw new InvalidOperationException($"请求外部接口失败：{httpResponse.StatusCode} - {responseBody}");
-        }
 
-        // 解析响应
         using var doc = JsonDocument.Parse(responseBody);
         var root = doc.RootElement;
 
-        // 提取数据列表
         JsonElement? dataElement = !config.DataPath.IsNullOrEmpty()
             ? ResolveJsonPath(root, config.DataPath)
             : root;
 
-        // 提取总数
         Int32 total = 0;
         if (config.Pageable && !config.TotalPath.IsNullOrEmpty())
         {
@@ -536,23 +512,6 @@ public class LovController : EntityController<LovDefinition>
         });
     }
 
-    /// <summary>解析 JSON 路径表达式（如 data.records）</summary>
-    private static JsonElement? ResolveJsonPath(JsonElement root, String path)
-    {
-        if (path.IsNullOrEmpty()) return root;
-
-        var parts = path.Split('.', StringSplitOptions.RemoveEmptyEntries);
-        JsonElement current = root;
-
-        foreach (var part in parts)
-        {
-            if (current.ValueKind != JsonValueKind.Object) return null;
-            if (!current.TryGetProperty(part, out current)) return null;
-        }
-
-        return current;
-    }
-
     #endregion
 
     #region 配置管理（GetConfig / SaveConfig）
@@ -610,6 +569,7 @@ public class LovController : EntityController<LovDefinition>
                 ["dataPath"] = config.DataPath,
                 ["totalPath"] = config.TotalPath,
                 ["fixedParams"] = config.FixedParams,
+                ["proxyRequest"] = config.ProxyRequest,
             };
 
             var fields = LovSearchField.FindAllByLovDefId(def.Id)
@@ -707,6 +667,7 @@ public class LovController : EntityController<LovDefinition>
         entity.DataPath = config.TryGetProperty("dataPath", out var dp) ? dp.GetString() : null;
         entity.TotalPath = config.TryGetProperty("totalPath", out var tp) ? tp.GetString() : null;
         entity.FixedParams = config.TryGetProperty("fixedParams", out var fp) ? fp.GetString() : null;
+        entity.ProxyRequest = config.TryGetProperty("proxyRequest", out var pr) ? pr.GetBoolean() : false;
         LovListConfig.SaveByLovDefId(lovDefId, entity);
     }
 
@@ -779,28 +740,5 @@ public class LovController : EntityController<LovDefinition>
     #endregion
 }
 
-/// <summary>列表数据查询请求</summary>
-public class LovListDataRequest
-{
-    /// <summary>值集编码</summary>
-    public String LovCode { get; set; } = null!;
-
-    /// <summary>搜索参数</summary>
-    public Dictionary<String, Object>? Params { get; set; }
-
-    /// <summary>页码</summary>
-    public Int32 PageNum { get; set; } = 1;
-
-    /// <summary>每页条数</summary>
-    public Int32 PageSize { get; set; } = 20;
-}
-
-/// <summary>批量翻译请求</summary>
-public class LovBatchLabelRequest
-{
-    /// <summary>值集编码</summary>
-    public String LovCode { get; set; } = null!;
-
-    /// <summary>需要翻译的原始值列表</summary>
-    public String[]? Values { get; set; }
-}
+/// <summary>列表数据查询请求（类型转发至 NewLife.Cube.Services.LovListDataRequest，便于兼容旧引用）</summary>
+public class LovListDataRequest : NewLife.Cube.Services.LovListDataRequest;

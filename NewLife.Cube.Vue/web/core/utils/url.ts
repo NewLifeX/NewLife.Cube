@@ -118,14 +118,15 @@ export function isUrl(path: string) {
  * 将后端返回的资源地址（头像 / 图片 / 文件）解析为可访问的完整 URL。
  *
  * 后端上传 / 附件接口常返回以「/」开头的相对路径（如 `/cube/image?id=xxx.png`），
- * 而非完整 http 地址。前端展示时必须拼接配置的 baseUrl（请求前缀）才能正确加载：
+ * 而非完整 http 地址。前端展示时按以下规则处理：
  *
  *   - 空值                                    → 原样返回 ''
  *   - 已是完整/绝对地址（http(s)://、//、data:、blob:）→ 原样返回
- *   - 以「/」开头                              → `${baseUrl}${path}`
- *   - 其它相对地址                            → `${baseUrl}/${path}`
+ *   - baseUrl 为完整地址（跨域部署）          → `${baseUrl}${path}`
+ *   - baseUrl 为路径前缀（如 /api）或空        → 原样返回
  *
- * 当未配置 baseUrl（值为空）时，返回原始路径（相对站点根），适用于前后端同域部署。
+ * 说明：魔方 WebAPI 版实体接口带 /api 前缀，但资源（/cube/image、/Content、/Sso/Avatar 等）
+ * 由服务控制器 / 静态文件在根路径提供，不带 /api 前缀，故路径前缀型 baseUrl 不拼接。
  *
  * @param path 后端返回的资源路径
  */
@@ -138,11 +139,11 @@ export function resolveAssetUrl(path: string | null | undefined): string {
     return s;
   }
   const base = (getConfig().request.baseUrl ?? '').replace(/\/+$/, '');
-  if (!base) {
-    // 未配置 baseUrl 时返回原始路径（相对站点根，适用于前后端同域）
-    return s;
+  // 仅跨域部署（baseUrl 为完整地址）时拼接 origin；路径前缀（如 /api）与空值原样返回
+  if (/^https?:\/\//i.test(base)) {
+    return s.startsWith('/') ? `${base}${s}` : `${base}/${s}`;
   }
-  return s.startsWith('/') ? `${base}${s}` : `${base}/${s}`;
+  return s;
 }
 
 /**

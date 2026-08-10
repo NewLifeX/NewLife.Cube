@@ -112,12 +112,13 @@ function normalizeLoginResult(data: LoginResult): LoginResult {
  *
  * 返回前对 data 做字段名归一化（oAuth / providers → oauth）。
  *
- * @param baseUrl 后端 API 基础地址（如 https://localhost:7116）
+ * AuthController 路由不带 /api 前缀，直接请求 /Auth/LoginConfig。
+ *
  * @returns 登录配置响应
  * @throws 网络错误或 HTTP 状态码非 200 时抛出异常
  */
-export async function fetchLoginConfig(baseUrl: string): Promise<ApiResponse<LoginConfig>> {
-  const url = `${baseUrl}/Auth/LoginConfig`;
+export async function fetchLoginConfig(): Promise<ApiResponse<LoginConfig>> {
+  const url = `/Auth/LoginConfig`;
   const response = await fetchWithTimeout(url, {
     method: 'GET',
     headers: {
@@ -148,18 +149,18 @@ export async function fetchLoginConfig(baseUrl: string): Promise<ApiResponse<Log
  * 返回前对 data 做字段名归一化
  * （access_token / Token → accessToken，兼容 snake_case 和 PascalCase）。
  *
- * @param baseUrl 后端 API 基础地址（如 https://localhost:7116）
+ * AuthController 路由不带 /api 前缀，直接请求 /Auth/Login。
+ *
  * @param username 用户名
  * @param password 密码（明文，通过 HTTPS 传输）
  * @returns 登录结果响应，data.accessToken 为访问令牌
  * @throws 网络错误或 HTTP 状态码非 200 时抛出异常
  */
 export async function loginByPassword(
-  baseUrl: string,
   username: string,
   password: string,
 ): Promise<ApiResponse<LoginResult>> {
-  const url = `${baseUrl}/Auth/Login`;
+  const url = `/Auth/Login`;
   const response = await fetchWithTimeout(url, {
     method: 'POST',
     headers: {

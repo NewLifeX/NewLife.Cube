@@ -11,7 +11,7 @@
 import { computed, defineAsyncComponent } from 'vue';
 import type { FieldMeta, ControlType } from '../../types/field';
 import { resolveControl, isFullWidthControl, resolveNumberPrecision, resolveNumberStep } from '../../utils/fieldControl';
-import LovSelect from '../../components/LovSelect.vue';
+import LovSelect from '../../components/LovSelect/index.vue';
 import Uploader from '../../components/Uploader.vue';
 // 重型编辑器改为异步组件，仅在表单确有 json / 富文本字段时才按需加载，
 // 避免把 @wangeditor / md-editor-v3 / vanilla-jsoneditor 全部打进主表单 chunk。

@@ -8,6 +8,8 @@ import type { LoginConfig } from '@cube/api-core';
 const props = defineProps<{
   /** 后端登录配置（主要消费 security.passwordStrength 动态生成密码规则） */
   loginConfig?: LoginConfig;
+  /** 是否正在提交（由父组件控制，展示 loading 并禁用按钮） */
+  submitting?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -18,7 +20,6 @@ const emit = defineEmits<{
 // 表单状态（展示组件内部维护，不向上依赖）
 const form = ref<{ username: string; password: string }>({ username: '', password: '' });
 const errors = ref<{ username?: string; password?: string }>({});
-const submitting = ref<boolean>(false);
 
 // 密码规则：由 strength + 当前输入派生（逻辑来自 usePasswordRules，可独立单测）
 const { passwordRuleDefs, passwordRules, showPasswordHints } = usePasswordRules(
@@ -68,10 +69,17 @@ function handleSubmit(): void {
   // 校验通过，把凭据交给容器处理登录
   emit('submit', { username: form.value.username, password: form.value.password });
 }
+
+/** 是否有密码输入（用于控制回车触发的表单提交） */
+function onFormKeydown(e: KeyboardEvent): void {
+  if (e.key === 'Enter' && !props.submitting) {
+    handleSubmit();
+  }
+}
 </script>
 
 <template>
-  <form class="login-form" @submit.prevent="handleSubmit">
+  <form class="login-form" @submit.prevent="handleSubmit" @keydown="onFormKeydown">
     <!-- 用户名 -->
     <div class="input-group">
       <label class="input-label" for="login-username">用户名</label>
@@ -103,7 +111,6 @@ function handleSubmit(): void {
         show-password
         :class="{ 'is-error': !!errors.password }"
         @input="clearError('password')"
-        @keyup.enter="handleSubmit"
       />
       <span v-if="errors.password" class="input-error">{{ errors.password }}</span>
 

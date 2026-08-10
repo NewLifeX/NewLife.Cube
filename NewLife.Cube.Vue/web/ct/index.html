@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Component Test Gallery</title>
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #f5f7fa; }
+      #gallery-nav { position: fixed; left: 0; top: 0; bottom: 0; width: 250px; background: #fff;
+        border-right: 1px solid #e4e7ed; overflow: auto; padding: 12px; z-index: 9999; }
+      #gallery-nav h3 { margin: 0 0 10px; font-size: 14px; color: #303133; }
+      #gallery-nav ul { list-style: none; margin: 0; padding: 0; }
+      #gallery-nav li { padding: 7px 9px; border-radius: 4px; font-size: 13px; color: #606266;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+      #gallery-nav li:hover { background: #ecf5ff; }
+      #gallery-nav li.active { background: #409eff; color: #fff; }
+      /* 分组折叠侧栏：按 story id 的 '/' 前缀分组，避免故事多了太长 */
+      #gallery-nav .nav-group { margin-bottom: 4px; }
+      #gallery-nav .nav-group-header { display: flex; align-items: center; gap: 6px; padding: 6px 9px;
+        font-size: 13px; font-weight: 600; color: #303133; cursor: pointer; border-radius: 4px; }
+      #gallery-nav .nav-group-header:hover { background: #f0f2f5; }
+      #gallery-nav .nav-toggle { width: 12px; color: #909399; font-size: 11px; flex: none; }
+      #gallery-nav .nav-group-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #gallery-nav .nav-group-list { list-style: none; margin: 0; padding: 0 0 0 16px; }
+      #gallery-nav .nav-group-list li { padding: 6px 9px; border-radius: 4px; font-size: 13px; color: #606266;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+      #gallery-nav .nav-group-list li:hover { background: #ecf5ff; }
+      #gallery-nav .nav-group-list li.active { background: #409eff; color: #fff; }
+      /* 仅手动浏览模式（body.has-nav）下，把预览区让出左侧栏宽度 */
+      body.has-nav .gal-preview { margin-left: 250px; padding: 18px; }
+    </style>
+  </head>
+  <body>
+    <div id="gallery-nav"></div>
+    <div id="app"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

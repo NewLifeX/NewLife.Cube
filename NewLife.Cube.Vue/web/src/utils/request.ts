@@ -5,6 +5,7 @@ import { Session } from '/@/utils/storage';
 import qs from 'qs';
 import type { ApiResult } from '../model/api/common';
 import { getConfig } from '../../core/configure';
+import { isServiceApiPath } from '@cube/api-core';
 
 // 配置新建一个 axios 实例
 const cfg = getConfig();
@@ -22,6 +23,10 @@ const service: AxiosInstance = axios.create({
 // 添加请求拦截器
 service.interceptors.request.use(
   (config) => {
+    // 服务接口（/Auth /Sso /Cube 等）后端无 /api 前缀，跳过 baseURL
+    if (config.url && isServiceApiPath(config.url)) {
+      config.baseURL = '';
+    }
     // 在发送请求之前做些什么 token
     if (Session.get('token')) {
       config.headers!['Authorization'] = `${Session.get('token')}`;

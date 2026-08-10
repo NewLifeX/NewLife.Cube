@@ -91,6 +91,16 @@
               <el-radio value="POST">POST</el-radio>
             </el-radio-group>
           </el-form-item>
+          <el-form-item label="是否代理请求">
+            <el-switch v-model="form.listConfig.proxyRequest" :disabled="isSameAppUrl" />
+            <div class="form-tip">
+              开启后由后端 <code>/Admin/Lov/ListData</code> 代理转发外部数据源（地址对前端不可见、规避跨域）；
+              关闭则由前端直接请求上方「请求地址」。
+              <span v-if="isSameAppUrl" style="color: #e6a23c">
+                请求地址以 / 开头（同源同应用），已强制前端直连，不可开启代理。
+              </span>
+            </div>
+          </el-form-item>
           <el-form-item label="是否分页">
             <el-switch v-model="form.listConfig.pageable" />
           </el-form-item>
@@ -303,6 +313,7 @@ interface ListConfig {
   dataPath?: string;
   totalPath?: string;
   fixedParams?: string;
+  proxyRequest?: boolean;
 }
 
 interface SearchField {
@@ -372,7 +383,19 @@ const emptyListConfig = (): ListConfig => ({
   dataPath: 'data.list',
   totalPath: 'data.total',
   fixedParams: '',
+  proxyRequest: false,
 });
+
+// 请求地址以 / 开头（同源同应用）→ 强制前端直连，禁止代理
+const isSameAppUrl = ref(false);
+watch(
+  () => form.value.listConfig?.requestUrl,
+  (url) => {
+    isSameAppUrl.value = !!url && url.startsWith('/');
+    if (isSameAppUrl.value) form.value.listConfig.proxyRequest = false;
+  },
+  { immediate: true },
+);
 
 const form = ref<LovConfigForm>({
   id: 0,

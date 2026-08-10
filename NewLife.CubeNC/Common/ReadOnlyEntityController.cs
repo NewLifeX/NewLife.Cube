@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Common;
+using NewLife.Cube.AI;
 using NewLife.Cube.Charts;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
@@ -29,7 +30,7 @@ namespace NewLife.Cube;
 
 /// <summary>只读实体控制器基类</summary>
 /// <typeparam name="TEntity"></typeparam>
-public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity : Entity<TEntity>, new()
+public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntityAiContext where TEntity : Entity<TEntity>, new()
 {
     #region 构造
     /// <summary>动作执行前</summary>
@@ -254,6 +255,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
         else
         {
             var ut = UserToken.Valid(token, UserHost);
+            // 防御：Valid 内部已校验，此处再兜底避免空引用
+            if (ut == null || ut.User == null) throw new XException("令牌无效或已过期！");
             var user = ut.User;
 
             // 定位菜单页面

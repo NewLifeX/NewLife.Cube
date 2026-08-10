@@ -82,5 +82,14 @@ public partial interface I测试字段
 
     /// <summary>多选。multipleSelect，后端下发 lovCode 走 LOV 多选，存储逗号分隔的值</summary>
     String MultiVal { get; set; }
+
+    /// <summary>用户。singleSelect，后端下发 lovCode 走 LOV 单选</summary>
+    String UserId { get; set; }
+
+    /// <summary>下拉表格。lovTable，后端下发 List.* 类型 lovCode，走 LOV 弹窗表格选择</summary>
+    Int32 ListVal { get; set; }
+
+    /// <summary>下拉表格(多选)。lovTableMulti，后端下发 List.* 类型 lovCode，走 LOV 弹窗表格多选，存储逗号分隔的 id</summary>
+    String ListMVal { get; set; }
     #endregion
 }

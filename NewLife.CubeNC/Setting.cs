@@ -20,6 +20,21 @@ public class CubeSetting : Config<CubeSetting>
     #region 静态
     /// <summary>指向数据库参数字典表</summary>
     static CubeSetting() => Provider = new DbConfigProvider { UserId = 0, Category = "Cube" };
+
+    /// <summary>AI 助手主题色方案。键为方案名，值为"主色,辅色"，首个为默认方案</summary>
+    public static IDictionary<String, String> ColorSchemes { get; } = new Dictionary<String, String>
+    {
+        ["新生命绿"] = "#2ecc71,#1e8e3e",
+        ["靛蓝紫"] = "#667eea,#764ba2",
+        ["翠绿"] = "#10b981,#059669",
+        ["天青蓝"] = "#0ea5e9,#0369a1",
+        ["湖青"] = "#06b6d4,#0e7490",
+        ["琥珀橙"] = "#f59e0b,#ea580c",
+        ["玫瑰红"] = "#f43f5e,#be123c",
+        ["藤萝紫"] = "#8b5cf6,#6d28d9",
+        ["樱花粉"] = "#f472b6,#db2777",
+        ["石墨黑"] = "#475569,#0f172a",
+    };
     #endregion
 
     #region 通用
@@ -381,6 +396,41 @@ public class CubeSetting : Config<CubeSetting>
     [Description("AI 默认模型。NewLife 默认 newlife-flash")]
     [Category("AI")]
     public String AIModel { get; set; } = "newlife-flash";
+
+    /// <summary>AI 默认深度推理。AI 分析与对话默认是否启用深度推理（think），默认false即快速</summary>
+    [Description("AI 默认深度推理。AI 分析与对话默认是否启用深度推理（think），默认false即快速")]
+    [Category("AI")]
+    public Boolean AIDefaultThink { get; set; }
+
+    /// <summary>AI 助手主题色方案。预设方案联动填充主色/辅色，可再手动微调，默认新生命绿</summary>
+    [Description("AI 助手主题色方案。预设方案联动填充主色/辅色，可再手动微调，默认新生命绿")]
+    [Category("AI")]
+    public String AIColorScheme { get; set; } = "新生命绿";
+
+    /// <summary>AI 助手主色。悬浮球、面板头、用户气泡等主色调，默认新生命绿#2ecc71</summary>
+    [Description("AI 助手主色。悬浮球、面板头、用户气泡等主色调，默认新生命绿#2ecc71")]
+    [Category("AI")]
+    public String AIPrimaryColor { get; set; } = "#2ecc71";
+
+    /// <summary>AI 助手辅色。主色渐变终点色，默认深绿#1e8e3e</summary>
+    [Description("AI 助手辅色。主色渐变终点色，默认深绿#1e8e3e")]
+    [Category("AI")]
+    public String AISecondaryColor { get; set; } = "#1e8e3e";
+
+    /// <summary>主题方案联动填充主色/辅色。方案与旧值不同时采用新方案颜色，否则保留手动微调</summary>
+    /// <param name="oldScheme">原主题色方案</param>
+    public void ApplyColorScheme(String oldScheme)
+    {
+        if (String.IsNullOrEmpty(AIColorScheme) || AIColorScheme == oldScheme) return;
+        if (!ColorSchemes.TryGetValue(AIColorScheme, out var colors)) return;
+
+        var parts = colors.Split(',');
+        if (parts.Length >= 2)
+        {
+            AIPrimaryColor = parts[0].Trim();
+            AISecondaryColor = parts[1].Trim();
+        }
+    }
     #endregion
 
     #region 系统功能

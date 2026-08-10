@@ -36,7 +36,7 @@ import UserProfile from '@newlifex/cube-vue/core/components/UserProfile.vue';
 $brand-width: 220px;
 
 .navbar {
-  --navbar-bg: rgba(255, 255, 255, 0.82);
+  --navbar-bg: color-mix(in srgb, var(--el-bg-color-overlay) 82%, transparent);
   --navbar-border: var(--el-border-color-lighter);
   --navbar-text: var(--el-text-color-regular);
   --navbar-text-hover: var(--el-text-color-primary);

@@ -11,7 +11,7 @@ namespace NewLife.Cube.Areas.Admin;
     安全功能：审计日志、访问规则，保障系统安全。
     配套功能：租户、部门、字典参数、用户在线与统计、数据库管理、系统信息。
     """)]
-[Menu(-1, true, Icon = "fa-desktop", LastUpdate = "20240118")]
+[Menu(-1, true, Icon = "Monitor", LastUpdate = "20260731")]
 public class AdminArea : AreaBase
 {
     /// <inheritdoc />

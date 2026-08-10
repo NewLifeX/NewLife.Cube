@@ -398,7 +398,7 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
     180deg,
     var(--el-color-primary),
     transparent 50%,
-    var(--accent-secondary)
+    var(--el-color-primary-light-3)
   );
   opacity: 0.3;
   pointer-events: none;

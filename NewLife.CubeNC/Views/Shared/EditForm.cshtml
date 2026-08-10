@@ -18,6 +18,14 @@
     Object htmlAttributes = null;
     if (fields != null && fields.Any(e => e.IsAttachment())) htmlAttributes = new { enctype = "multipart/form-data" };
 }
+@* AI 助手页面上下文 *@
+@{
+    var aiFact = ViewBag.Factory as IEntityFactory;
+    var aiKey = aiFact != null && entity != null ? entity[aiFact.Unique.Name] : null;
+}
+<input type="hidden" id="aiPage" value="form" />
+<input type="hidden" id="aiMode" value="edit" />
+@if (aiKey != null) { <input type="hidden" id="aiId" value="@aiKey" /> }
 @if (!set.NavView.IsNullOrEmpty())
 {
     <div class="row">

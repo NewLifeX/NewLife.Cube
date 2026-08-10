@@ -6,10 +6,10 @@ using System.Xml.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Caching;
+using NewLife.Cube.AI;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
-using NewLife.Data;
 using NewLife.Log;
 using NewLife.Serialization;
 using NewLife.Web;
@@ -21,7 +21,7 @@ namespace NewLife.Cube;
 
 /// <summary>只读实体控制器基类</summary>
 /// <typeparam name="TEntity"></typeparam>
-public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity : Entity<TEntity>, new()
+public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntityAiContext where TEntity : Entity<TEntity>, new()
 {
     #region 构造
     /// <summary>动作执行前</summary>
@@ -54,7 +54,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("{type}管理")]
-    [HttpGet("/[area]/[controller]")]
+    [HttpGet("api/[area]/[controller]")]
     public virtual ApiListResponse<TEntity> Index()
     {
         var p = new Pager(WebHelper.Params)

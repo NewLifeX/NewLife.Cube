@@ -1,1 +1,45 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+/**
+ * Tailwind ↔ Element Plus 连接层
+ *
+ * 遵循 skills/cube-design 的"两套系统"心智模型：
+ * Element Plus 负责外观（颜色/圆角随主题切换），Tailwind 负责布局。
+ * 这里只做变量映射，不定义任何新的颜色/尺寸值——所有取值仍由
+ * core/global.css 与 core/themes/*.css 的 --el-* 变量决定。
+ *
+ * 用法：class="bg-bg-page text-text-primary border-border rounded-md"
+ * 切换 [data-theme] 后，这些 Tailwind class 自动跟随主题，无需改代码。
+ */
+@theme {
+  /* 语义色：跟随 --el-color-* 主题变量 */
+  --color-primary: var(--el-color-primary);
+  --color-primary-light: var(--el-color-primary-light-3);
+  --color-primary-lighter: var(--el-color-primary-light-8);
+  --color-success: var(--el-color-success);
+  --color-warning: var(--el-color-warning);
+  --color-danger: var(--el-color-danger);
+  --color-info: var(--el-color-info);
+
+  /* 背景层级 */
+  --color-bg: var(--el-bg-color);
+  --color-bg-page: var(--el-bg-color-page);
+  --color-bg-overlay: var(--el-bg-color-overlay);
+  --color-fill: var(--el-fill-color);
+  --color-fill-light: var(--el-fill-color-light);
+
+  /* 文字层级 */
+  --color-text-primary: var(--el-text-color-primary);
+  --color-text-regular: var(--el-text-color-regular);
+  --color-text-secondary: var(--el-text-color-secondary);
+  --color-text-placeholder: var(--el-text-color-placeholder);
+
+  /* 边框 */
+  --color-border: var(--el-border-color);
+  --color-border-light: var(--el-border-color-light);
+
+  /* 圆角：与 Element Plus 基础圆角保持一致，禁止自定义超过 12px 的大圆角 */
+  --radius-sm: var(--el-border-radius-small);
+  --radius-md: var(--el-border-radius-base);
+  --radius-lg: 12px;
+}

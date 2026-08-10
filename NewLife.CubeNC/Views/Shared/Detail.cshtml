@@ -13,6 +13,13 @@
     var fields = ViewBag.Fields as FieldCollection;
     var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 }
+@* AI 助手页面上下文 *@
+@{
+    var aiFact = ViewBag.Factory as IEntityFactory;
+    var aiKey = aiFact != null && entity != null ? entity[aiFact.Unique.Name] : null;
+}
+<input type="hidden" id="aiPage" value="detail" />
+@if (aiKey != null) { <input type="hidden" id="aiId" value="@aiKey" /> }
 @if (!set.NavView.IsNullOrEmpty())
 {
     <div class="row">

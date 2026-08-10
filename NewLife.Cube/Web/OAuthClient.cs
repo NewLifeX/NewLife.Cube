@@ -8,6 +8,7 @@ using NewLife.Log;
 using NewLife.Model;
 using NewLife.Reflection;
 using NewLife.Serialization;
+using SexKinds = XCode.Membership.SexKinds;
 
 namespace NewLife.Web;
 
@@ -321,8 +322,8 @@ public class OAuthClient
     /// <summary>昵称</summary>
     public String NickName { get; set; }
 
-    /// <summary>性别。0未知，1男，2女</summary>
-    public Int32 Sex { get; set; }
+    /// <summary>性别。未知、男、女</summary>
+    public SexKinds Sex { get; set; }
 
     /// <summary>用户代码</summary>
     public String UserCode { get; set; }
@@ -612,7 +613,7 @@ public class OAuthClient
         if (dic.TryGetValue("username", out str)) UserName = str.Trim();
         if (dic.TryGetValue("user_name", out str)) UserName = str.Trim();
 
-        if (dic.TryGetValue("sex", out str)) Sex = str.Trim().ToInt();
+        if (dic.TryGetValue("sex", out str)) Sex = ParseSex(str);
 
         if (dic.TryGetValue("nick", out str)) NickName = str.Trim();
         if (dic.TryGetValue("nickname", out str)) NickName = str.Trim();
@@ -708,6 +709,26 @@ public class OAuthClient
         }
 
         return av;
+    }
+
+    /// <summary>解析性别。兼容数字 0/1/2、中文 未知/男/女、英文 unknown/male/female 等写法</summary>
+    /// <param name="value">第三方返回的性别值</param>
+    /// <returns>本地性别。未知、男、女</returns>
+    protected virtual SexKinds ParseSex(String value)
+    {
+        if (value.IsNullOrEmpty()) return SexKinds.未知;
+
+        value = value.Trim();
+
+        // 优先数字解析，兼容 "1"/"2"/"0"
+        var n = value.ToInt();
+        if (n > 0) return (SexKinds)n;
+
+        // 兼容枚举字符串。中文枚举名 男/女
+        if (value.EqualIgnoreCase("男", "male", "m")) return SexKinds.男;
+        if (value.EqualIgnoreCase("女", "female", "f")) return SexKinds.女;
+
+        return SexKinds.未知;
     }
     #endregion
 

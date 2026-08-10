@@ -39,7 +39,7 @@ function goLogin() {
 <style scoped>
 .unauthorized-container {
   min-height: 100vh;
-  background: #f7f8fa;
+  background: var(--el-bg-color-page);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -59,7 +59,7 @@ function goLogin() {
 }
 .text-col {
   font-size: 28px;
-  color: #333;
+  color: var(--el-text-color-primary);
   margin-bottom: 32px;
 }
 .btn-col {

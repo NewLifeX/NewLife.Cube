@@ -159,7 +159,8 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         //var ctrl = act.ControllerDescriptor;
         var type = act.ControllerTypeInfo;
         var fullName = type.FullName + "." + act.ActionName;
-        var url = filterContext.HttpContext.Request.Path + "";
+        // WebAPI版实体/后台控制器路由固定 /api 前缀，菜单存前端路由，查找前去掉 /api
+        var url = NewLife.Web.WebHelper.TrimApiPrefix(filterContext.HttpContext.Request.Path + "");
 
         var ctx = filterContext.HttpContext;
         var mf = ManageProvider.Menu;

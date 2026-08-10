@@ -14,12 +14,13 @@ using IActionFilter = Microsoft.AspNetCore.Mvc.Filters.IActionFilter;
 
 namespace NewLife.Cube;
 
-/// <summary>控制器基类</summary>
+/// <summary>控制器基类。WebAPI版实体/后台控制器路由固定 /api 前缀；Sso/Cube/Auth 等服务控制器自带 [Route] 覆盖，不使用前缀</summary>
 [ApiController]
 [Produces("application/json")]
-[Route("[area]/[controller]/[action]")]
+[Route("api/[area]/[controller]/[action]")]
 public class ControllerBaseX : ControllerBase, IActionFilter
 {
+
     #region 属性
     /// <summary>临时会话扩展信息。仅限本地内存，不支持分布式共享</summary>
     public IDictionary<String, Object> Session { get; private set; }

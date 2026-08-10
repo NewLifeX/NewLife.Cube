@@ -38,5 +38,8 @@
     <script src="~/Content/js/jquery-3.6.0.min.js"></script>
     <script src="~/Content/bootstrap/js/bootstrap.min.js"></script>
     @RenderSection("scripts", required: false)
+
+    @* AI 助手浮窗 *@
+    @await Html.PartialAsync("_AiAssistant")
 </body>
 </html>

@@ -511,6 +511,20 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         return Json(0, "ok");
     }
 
+    /// <summary>获取 AI 助手配置。前端浮窗展示所需的开关与配色，由 CubeSetting 配置</summary>
+    /// <returns>返回 AISwitch 开关、主色 PrimaryColor 与辅色 SecondaryColor（默认靛蓝紫渐变）</returns>
+    [HttpGet]
+    public ActionResult GetAiConfig()
+    {
+        var set = CubeSetting.Current;
+        return Json(0, null, new
+        {
+            set.AISwitch,
+            set.AIPrimaryColor,
+            set.AISecondaryColor,
+        });
+    }
+
     /// <summary>获取页面配置信息。列表页、表单页所需显示字段，以及各字段显示方式</summary>
     /// <param name="kind">种类。用于区分不同的前端类型，如Vue/Antd/QuickVue</param>
     /// <param name="page">页面路径。如/admin/user</param>

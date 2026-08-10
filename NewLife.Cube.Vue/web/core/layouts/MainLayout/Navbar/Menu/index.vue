@@ -239,20 +239,20 @@ const onMenuClick = (menu: TreeMenuItem) => {
   width: 28px;
   height: 36px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #64748b;
+  background: color-mix(in srgb, var(--el-bg-color-overlay) 90%, transparent);
+  color: var(--el-text-color-secondary);
   cursor: pointer;
   z-index: 20;
   backdrop-filter: blur(6px);
-  border: 1px solid #e2e0dc;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--el-border-color);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--el-text-color-primary) 5%, transparent);
   transition: all 0.18s ease;
 
   &:hover {
-    background: #ffffff;
-    color: #1e40af;
-    border-color: #bfdbfe;
-    box-shadow: 0 2px 8px rgba(30, 64, 175, 0.1);
+    background: var(--el-bg-color-overlay);
+    color: var(--el-color-primary);
+    border-color: var(--el-color-primary-light-7);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--el-color-primary) 10%, transparent);
   }
 
   &--left {
@@ -303,7 +303,7 @@ const onMenuClick = (menu: TreeMenuItem) => {
     cursor: pointer;
     font-weight: 600;
     font-size: 14px;
-    color: #64748b;
+    color: var(--el-text-color-secondary);
     padding: 0 6px;
     position: relative;
     transition: color 0.2s ease;
@@ -316,20 +316,20 @@ const onMenuClick = (menu: TreeMenuItem) => {
       transform: translateX(-50%);
       width: 0;
       height: 2.5px;
-      background: linear-gradient(90deg, #1e40af, #2563eb);
+      background: linear-gradient(90deg, var(--el-color-primary-dark-2), var(--el-color-primary));
       border-radius: 2px 2px 0 0;
       transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     &--active {
-      color: #1e40af;
+      color: var(--el-color-primary);
       &::after {
         width: 100%;
       }
     }
 
     &:hover {
-      color: #1e40af;
+      color: var(--el-color-primary);
     }
   }
 }
@@ -347,7 +347,7 @@ const onMenuClick = (menu: TreeMenuItem) => {
   position: fixed;
   inset: 56px 0 0;
   z-index: 1080;
-  background: #0f172a;
+  background: color-mix(in srgb, var(--el-text-color-primary) 12%, transparent);
   opacity: 0.12;
   backdrop-filter: blur(1px);
 }

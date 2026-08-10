@@ -55,6 +55,7 @@ public class SsoServerService : ISsoServerService
             TraceId = DefaultSpan.Current?.TraceId,
             CreateIP = ip,
             CreateTime = DateTime.Now,
+            UpdateTime = DateTime.Now,
         };
 
         try
@@ -121,6 +122,11 @@ public class SsoServerService : ISsoServerService
                 throw new InvalidOperationException(log.Remark);
             }
         }
+
+        // 授权码有效期从“正式发放”这一刻（UpdateTime）起算，而不是从流程开始（Authorize 的 CreateTime）起算。
+        // 多级 SSO 链（如 子系统→中转站→外部OAuth）中，用户可能在下游登录页停留很久才完成认证，
+        // 若沿用 Authorize 创建时的时间，code 一发放就已超过 1 分钟有效期，导致回跳方换码失败。
+        log.UpdateTime = DateTime.Now;
 
         log.Update();
 

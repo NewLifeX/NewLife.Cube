@@ -64,19 +64,21 @@ public class TokenService : ITokenService
         var exp = DateTime.Now.AddSeconds(expire);
 
         // 颁发JWT令牌，优先应用密钥HS256，同时也是子应用请求sso的密钥。再使用全局密钥
+        // app 可能为 null（退回全局配置），因此 Secret/Audience 使用空条件访问
         var jwt = new JwtBuilder
         {
             Algorithm = "HS256",
-            Secret = app.Secret,
+            Secret = app?.Secret,
 
             Subject = name,
             Expire = exp,
             //Issuer = Environment.MachineName,
-            Audience = app.Name,
+            Audience = app?.Name,
         };
         if (jwt.Secret.IsNullOrEmpty())
         {
             var ss = set.JwtSecret.Split(':');
+            if (ss.Length != 2) throw new ArgumentException($"非法JwtSecret[{set.JwtSecret}]，应为“算法:密钥”格式");
             jwt.Algorithm = ss[0];
             jwt.Secret = ss[1];
         }
@@ -102,14 +104,14 @@ public class TokenService : ITokenService
     }
 
     /// <summary>根据授权码获取令牌</summary>
-    /// <remarks>授权码对应一条 AppLog 记录，5 分钟内有效，只可使用一次（Action 会更新为 GetToken）</remarks>
+    /// <remarks>授权码对应一条 AppLog 记录，自发放（GetResult）起 1 分钟内有效，只可使用一次（Action 会更新为 GetToken）</remarks>
     /// <param name="code">授权码，即 AppLog.Id 的字符串形式</param>
     /// <returns>包含 AccessToken、RefreshToken 和有效秒数的令牌模型</returns>
     public virtual TokenModel GetToken(String code)
     {
         var log = AppLog.FindById(code.ToLong());
         if (log == null) throw new ArgumentOutOfRangeException(nameof(code), "Code无效！");
-        if (log.CreateTime.AddMinutes(5) < DateTime.Now) throw new ArgumentOutOfRangeException(nameof(code), "Code已过期！");
+        if (log.UpdateTime.AddMinutes(1) < DateTime.Now) throw new ArgumentOutOfRangeException(nameof(code), "Code已过期！");
 
         WriteLog("Token appid={0} code={1} token={2} {3}", log.AppName, code, log.AccessToken, log.CreateUser);
 
@@ -513,7 +515,7 @@ public class TokenService : ITokenService
                 userid = user.ID,
                 username = user.Name,
                 nickname = user.NickName,
-                sex = user2.Sex,
+                sex = user2.Sex + "",
                 mail = user2.Mail,
                 mobile = user2.Mobile,
                 code = user2.Code,

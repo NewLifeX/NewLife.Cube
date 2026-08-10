@@ -4,12 +4,16 @@
       <slot :name="item.slot" :model="data.model" :prop="data.prop"></slot>
     </template>
   </Form>
+
+  <!-- AI 助手浮窗（表单页上下文，查看模式不显示） -->
+  <AiAssistant v-if="!myIsDetail" page="form" :mode="myIsUpdate ? 'edit' : 'add'" :id="Number(formData.value?.id || 0)" :url="props.type || ''" @fill-form="onFillForm" />
 </template>
 
 <script setup lang="ts">
 import { computed, inject, ref, watch } from 'vue';
 import { usePageApi } from '/@/api/page';
 import Form from '/@/components/form/index.vue';
+import AiAssistant from '../ai/AiAssistant.vue';
 import { ColumnConfig } from '../form/model/form';
 import { ElMessage } from 'element-plus';
 import { EditWrapper, UsePageProps } from './model';
@@ -61,6 +65,12 @@ const pageApi = usePageApi();
 const providePage = inject(providePageKey)
 const { onAddBefore, onAddAfter, onEditBefore, onEditAfter } = providePage?.pageProps || {}
 let { detailConfig, addConfig, editConfig } = providePage?.pageProps || ({} as UsePageProps)
+
+/** AI 填表：合并生成的字段值到表单 */
+function onFillForm(values: Record<string, any>) {
+  const merged = { ...(props.modelValue || {}), ...values };
+  emits('update:modelValue', merged);
+}
 
 const handleAdd = () => {
   if (myIsUpdate.value) {

@@ -16,6 +16,7 @@ import { gotoPage } from './router';
 import { getResponse } from './common';
 import { type ApiResponse } from './response';
 import notification from '../components/Notification';
+import { isServiceApiPath } from '@cube/api-core';
 
 import { intl } from '../i18n';
 
@@ -40,7 +41,8 @@ export function redirectToLogin({ loginPageUrl: loginPageUrl2 }: { loginPageUrl?
   removeAllCookie();
 
 
-  const LOGIN_URL = loginPageUrl2 || loginPageUrl || `${API_HOST}${oauthUrl}`;
+  // oauthUrl 为 /Sso/Login 等无 /api 前缀的服务地址，直接使用
+  const LOGIN_URL = loginPageUrl2 || loginPageUrl || oauthUrl || '/Sso/Login';
   console.log('redirectToLogin', LOGIN_URL);
 
   const sessionData = getSession('redirectUrl');
@@ -73,7 +75,8 @@ notWithTokenAxios.interceptors.request.use((config) => {
     request: { baseUrl: API_HOST },
   } = getConfig();
   let { url = '' } = config;
-  if (url.indexOf('://') === -1 && !url.startsWith('/_api')) {
+  // 服务接口（/Auth /Sso /Cube 等）无 /api 前缀，不拼接 API_HOST；其余实体接口拼接
+  if (url.indexOf('://') === -1 && !url.startsWith('/_api') && !isServiceApiPath(url)) {
     url = `${API_HOST}${url}`;
   }
   return {
@@ -345,7 +348,8 @@ function handleRequestConfig(config: InternalAxiosRequestConfig) {
   const { baseUrl: API_HOST, requestInterceptor, additionalRequestHeader: additionalRequestHeaderConfig } = requestConfig;
   let { url = '' } = config || {};
 
-  if (url.indexOf('://') === -1 && !url.startsWith('/_api')) {
+  // 服务接口（/Auth /Sso /Cube 等）无 /api 前缀，不拼接 API_HOST；其余实体接口拼接
+  if (url.indexOf('://') === -1 && !url.startsWith('/_api') && !isServiceApiPath(url)) {
     url = `${API_HOST}${url}`;
   }
 

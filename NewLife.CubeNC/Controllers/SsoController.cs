@@ -294,6 +294,18 @@ public class SsoController : ControllerBaseX
 
             return Redirect(url);
         }
+        catch (InvalidOperationException ex) when (OAuthHelper.IsCodeExpired(ex))
+        {
+            // 授权码已过期或无效（如停留在SSO登录页过久），自动重跳SSO重新授权，避免用户看到错误页
+            XTrace.WriteLine("[{0}]授权码已过期，自动重跳SSO重新授权 code={1} state={2} {3}", id, code, state, ex.Message);
+            XTrace.WriteLine(Request.GetRawUrl() + "");
+
+            log.Success = false;
+            log.Remark = $"授权码已过期，自动重新授权: {ex.Message}";
+            log.Update();
+
+            return Redirect(OnLogin(client, null, returnUrl, null));
+        }
         catch (Exception ex)
         {
             if (log.Remark.IsNullOrEmpty()) log.Remark = ex.ToString();
@@ -553,8 +565,8 @@ public class SsoController : ControllerBaseX
     /// <param name="refresh_token">刷新令牌</param>
     /// <param name="grant_type">授权类型</param>
     /// <returns></returns>
+    // 禁止 GET 传输密码，避免密码暴露在 Url/日志/浏览器历史中
     [AllowAnonymous]
-    [HttpGet]
     [HttpPost]
     public virtual ActionResult Token(String client_id, String client_secret, String username, String password, String refresh_token, String grant_type = null)
     {
@@ -613,8 +625,8 @@ public class SsoController : ControllerBaseX
     /// </remarks>
     /// <param name="model">请求模型</param>
     /// <returns></returns>
+    // 禁止 GET 传输密码，避免密码暴露在 Url/日志/浏览器历史中
     [AllowAnonymous]
-    [HttpGet]
     [HttpPost]
     public virtual ActionResult PasswordToken([FromBody] SsoTokenModel model)
     {
@@ -700,8 +712,8 @@ public class SsoController : ControllerBaseX
     /// <param name="grant_type">授权类型</param>
     /// <param name="refresh_token">刷新令牌</param>
     /// <returns></returns>
+    // 禁止 GET 传输刷新令牌，避免令牌暴露在 Url/日志/浏览器历史中
     [AllowAnonymous]
-    [HttpGet]
     [HttpPost]
     public virtual ActionResult Refresh_Token(String client_id, String grant_type, String refresh_token)
     {

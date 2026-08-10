@@ -122,7 +122,9 @@ const registry = inject(
   PageSectionRegistryKey,
   {} as Record<string, Record<string, () => Promise<{ default: unknown }>>>,
 );
-const pageOverrides = registry[route.path] ?? {};
+/** 将路由路径转为小写以匹配 Section 注册表键（文件系统路径为小写） */
+const normalizedRoutePath = route.path.toLowerCase();
+const pageOverrides = registry[normalizedRoutePath] ?? {};
 
 for (const [name, loader] of Object.entries(pageOverrides)) {
   const key = SectionKeyMap[name];
@@ -635,7 +637,7 @@ onMounted(async () => {
   }
 
   .lp-card {
-    border-radius: var(--el-border-radius-sm);
+    border-radius: var(--el-border-radius-small);
   }
 
   .lp-card-header {

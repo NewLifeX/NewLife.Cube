@@ -151,7 +151,7 @@ interface DataSetOptions<T, Q> {
  * @template T 数据类型
  * @template Q 查询参数类型
  */
-export class DataSet<T, Q> {
+export class DataSet<T extends Record<string, unknown> = Record<string, unknown>, Q extends Record<string, unknown> = Record<string, unknown>> {
   /** 响应式数据数组 */
   private readonly _data = ref<Array<T>>([]);
   /** 当前选中项的引用 */
