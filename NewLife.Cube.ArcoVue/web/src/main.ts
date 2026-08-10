@@ -2,6 +2,7 @@ import { createApp, defineComponent, h } from 'vue';
 import { createPinia } from 'pinia';
 import ArcoVue from '@arco-design/web-vue';
 import '@arco-design/web-vue/dist/arco.css';
+import '@/theme/base.css';
 import '@/theme/density.css';
 import App from './App.vue';
 import router from './router';

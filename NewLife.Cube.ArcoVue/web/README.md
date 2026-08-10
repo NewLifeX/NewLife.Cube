@@ -24,6 +24,8 @@ pnpm dev
 - **业务 Area 通配**：`/^/[A-Z]…/`（如 `/School/Class/GetPage`）
 - 浏览器 HTML 导航 `bypass` 回 SPA；XHR/fetch 转发后端
 
+前端 `createCubeApi({ baseURL: '/api' })`：实体/后台接口走 `/api/{Area}/...`（与后端 `api/[area]/[controller]/[action]` 对齐）；`/Auth`、`/Cube/MenuTree` 等服务动作由 `@cube/api-core` 去掉 `/api`。
+
 改代理后需**重启** `pnpm dev`。
 
 单元测试：
@@ -68,6 +70,7 @@ pnpm build
 - **视图切换 / 筛选复用数据**：切换视图、纯前端筛选变化（`viewFilter`）、恢复默认时**复用已加载原始数据**（`tableDataRaw`），仅在搜索/排序/加载量变化时才重新请求后端——避免同实体不同视图间重复请求造成的重绘卡顿。
 - **各视图渲染性能（千条数据）**：表格/树/甘特为 VTable Canvas 虚拟滚动（1000 条渲染约 27ms）；日历事件按天 Map 索引（`O(42×N)→O(N)`）；卡片图片 `loading=lazy decoding=async`；卡片等高测量只测前 200 张；表格 `overscrollBehavior:'none'`。**卡片/看板视图滚动懒加载**（`CardList.visibleCount` / `KanbanBoard.colVisible`）：首帧只渲染前 100 条（实测约 164ms），滚动接近底部（剩余 400px 内）动态追加下一批 100 条，直到全部渲染——避免 1000 条一次性渲染阻塞；触发方式为**底部哨兵 IntersectionObserver**（提前 400px 预加载）+ **滚动容器 scroll 事件兜底**（IO 在无头/受限环境可能不触发；卡片列表滚动容器为最近可滚动祖先，数据到达后重查并重新绑定），看板按**每列独立滚动容器**（`.kanban-col-body`）分别追加，列头计数仍显示该列总数。
 - **列表/树视图增量渲染（千条）**：`DefaultList` 新增 `tableVisibleCount`（初始 100），`displayRows` 对非分组视图 slice 前 N 条传 VTable，滚动接近底部（`ListTable` 监听 VTable `scroll` 事件、`getAllRowsHeight` 判断剩余不足 200px 时 `emit('scrollBottom')`）再追加下一批 100 条；**分组视图不做增量**（VTable 原生 groupBy 需完整数据统计）；树视图按**顶层节点** slice（`treeRows` 顶层数组）。**翻页/搜索/筛选/视图切换时 `loadData` 重置计数从头增量**。`ListTable` 数据更新由 `updateOption`（全量重建 columns/布局）改为 **`setRecords`（仅替换数据，保留滚动位置）** + watch 去 deep（千条数据全量深度遍历拖慢更新）；`scrollBottom` 对 `setRecords` 触发的 scroll 事件设 200ms 防抖窗口，避免增量追加循环；主题 `MutationObserver` 重建表格加 120ms 防抖合并。
+- **列表/树性能评审（对照 VTable 官方 100W demo）**：官方 100W demo「关键配置」为空——直接 `new ListTable(container, { records:100万, columns })`，VTable 虚拟滚动只画可视区（`guide/interaction/scroll`）。据此评审：①**数据更新已用 `setRecords` 单项更新**（官方 `update_option` 建议，多配置才用全量 `updateOption`）；②**补充官方异步大数据配置**（`guide/data/async_data`）——`resize.disableDblclickAutoResizeColWidth:true`（双击列间隔线自动算列宽会请求/计算全部数据）、`eventOptions.contextmenuReturnAllSelectedCells:false`（右键表头组织全部选中 cell 信息同理）；③**每 cell 格式化缓存**——`formatFieldValue` 内 `resolveListControl` 结果按字段引用缓存（WeakMap）、日期/时间/日期时间格式化按原始值缓存（Map，上限 5000 防膨胀），千条列表渲染每 cell 不再重复正则/字符串解析；④**实测**：表格数据替换（翻页）JS 阻塞 **600~1100ms → 约 406ms**；全量 1000 条 vs 增量 100 条替换耗时基本相同（421ms vs 406ms）——`setRecords` 非空替换为 VTable 库固定成本（本无头环境放大，真实浏览器 canvas 硬件加速更快），增量渲染价值在首帧数据量/滚动内存而非替换耗时。**结论**：官方「直接全量」适合一次性加载；本系统为后端分页 + 频繁替换，保留增量（用户需求）+ `setRecords` + 缓存为当前最优。
 - **卡片视图翻页性能（千条）**：翻页换数据需卸载旧卡片 + 渲染新卡片，已做三层优化——①`CardList` 懒加载 watch 去 `deep`（原每次数据变化对千条 records/columns 全量深度遍历）；②`RecordCard` 操作按钮由 Arco `a-button`（组件实例化/卸载成本高）改为**原生 `<button>`**（Arco secondary mini 视觉一致）；③等高测量 `measureTallest`（读 offsetHeight 强制同步布局）**延迟到首帧渲染后 50ms**（`setTimeout`，受限环境 rAF 不触发）。实测滚到底（1000 张 DOM）翻页 JS 阻塞 **845ms → 528ms**，普通翻页（未滚到底，100 张 DOM）**189ms**。
 - 列布局与命名视图经 `GET/PUT/DELETE /Cube/ViewProfile` 持久化。
 - 看板/日历/甘特使用较大 pageSize（约 200–500）；看板不拖拽写回。

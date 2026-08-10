@@ -2,7 +2,9 @@ import { createCubeApi } from '@cube/api-core';
 import { clearLocalProfile } from '@/core/utils/userProfile';
 
 const cubeApi = createCubeApi({
-  baseURL: '',
+  // WebAPI 版实体/后台接口固定 /api 前缀（如 /api/Admin/User/GetPage）；
+  // /Auth /Cube 服务动作由 api-core 去掉此前缀
+  baseURL: '/api',
   onUnauthorized() {
     // 全页跳转会丢内存 store；须清 localStorage，避免串用户壳偏好
     clearLocalProfile();

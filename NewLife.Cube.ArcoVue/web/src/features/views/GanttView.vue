@@ -372,6 +372,13 @@ async function mountGantt() {
       },
       // 表头/正文样式与列表视图（ListTable）一致：浅灰表头底 + 次要文字色 + 500 字重
       theme: {
+        underlayBackgroundColor: themeColor('--color-bg-2', '#FFFFFF'),
+        defaultStyle: {
+          bgColor: themeColor('--color-bg-2', '#FFFFFF'),
+          color: themeColor('--color-text-1', '#1D2129'),
+          borderColor: themeColor('--color-border-2', '#E5E6EB'),
+          borderLineWidth: [1, 0, 0, 0],
+        },
         headerStyle: {
           bgColor: themeColor('--color-fill-2', '#F2F3F5'),
           color: themeColor('--color-text-2', '#4E5969'),

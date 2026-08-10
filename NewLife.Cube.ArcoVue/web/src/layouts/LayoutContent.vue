@@ -50,6 +50,7 @@ const contentWidthClass = computed(() => {
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+  /* 内容区灰底：亮色为实色灰；暗色为半透明白，需叠在 --color-bg-1 上（见 theme/base.css） */
   background: var(--color-fill-2);
 }
 .layout-content__scroll {
@@ -60,6 +61,8 @@ const contentWidthClass = computed(() => {
   /* 水平 gutter 固定在滚动层，宽/流式时也不会被内部溢出吃掉 */
   padding: 16px;
   box-sizing: border-box;
+  /* 与父级同色，避免滚动层透明时透出未主题化的祖先底色 */
+  background: var(--color-fill-2);
 }
 .layout-content__body {
   min-width: 0;

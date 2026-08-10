@@ -1,0 +1,15 @@
+/**
+ * 页面根底色：Arco 暗色语义 fill（如 --color-fill-2 = rgba(255,255,255,0.08)）
+ * 依赖不透明底色叠加。未设 body 背景时会透出浏览器默认白底，内容区在暗色主题下仍显白。
+ * 变量定义在 body（Arco `body[arco-theme]`），故只给 body/#app 设底色。
+ */
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body,
+#app {
+  background-color: var(--color-bg-1);
+}

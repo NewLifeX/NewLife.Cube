@@ -534,6 +534,10 @@ function buildOption(): any {
       : {}),
     widthMode: 'standard',
     columnResizeMode: 'all',
+    // 官方异步大数据建议（visactor 性能指南 async_data）：
+    // 双击列间隔线自动计算列宽会请求/计算全部数据 → 禁用；右键表头组织全部选中 cell 信息同理
+    resize: { disableDblclickAutoResizeColWidth: true },
+    eventOptions: { contextmenuReturnAllSelectedCells: false },
     // 关闭浏览器滚动链/回弹（纯滚动行为优化，不影响功能）
     overscrollBehavior: 'none',
     hover: { highlightMode: 'row', disableHeaderHover: true },
@@ -548,9 +552,14 @@ function buildOption(): any {
       : {}),
     // 默认表头与数据行区分；颜色经 themeColor 读取 Arco 语义 token（canvas 不支持 CSS 变量，随亮/暗主题与用户主色）
     theme: {
+      // VTable DEFAULT 主题 underlay 为 #FFF：空数据区/表体空白会透白；须跟 body 底色
+      underlayBackgroundColor: themeColor('--color-bg-2', '#FFFFFF'),
       // 默认 cellBorderClipDirection=top-left 会裁掉底/右边；行分隔须用顶边
       // borderLineWidth: [上, 右, 下, 左] — 仅行分隔，无列分隔
+      // DEFAULT.defaultStyle.bgColor=#ECF1F5，未覆盖时暗色下仍呈浅蓝灰
       defaultStyle: {
+        bgColor: themeColor('--color-bg-2', '#FFFFFF'),
+        color: themeColor('--color-text-1', '#1D2129'),
         borderColor: themeColor('--color-border-2', '#E5E6EB'),
         borderLineWidth: [1, 0, 0, 0],
       },
@@ -561,12 +570,15 @@ function buildOption(): any {
         collapse_color: themeColor('--color-text-3', '#86909C'),
         sort_color: themeColor('--color-text-3', '#86909C'),
       },
-      // 勾选框（rowSeriesNumber checkbox / 组标题行 titleCheckbox）：VTable 默认边框暗色下偏深不可见，
-      // 读 Arco 边框/主色 token 适配；选中填充用主色
+      // 勾选框：VRender 默认 defaultFill 为白底，暗色表头上会整块发白；未选透明填充 + 描边，选中跟 Arco 主色
       checkboxStyle: {
+        defaultFill: 'transparent',
         defaultStroke: themeColor('--color-border-3', '#C9CDD4'),
+        disableFill: themeColor('--color-fill-2', '#F2F3F5'),
         checkedFill: themeColor('--primary-6', '22, 93, 255'),
         checkedStroke: themeColor('--primary-6', '22, 93, 255'),
+        disableCheckedFill: themeColor('--color-fill-3', '#E5E6EB'),
+        disableCheckedStroke: themeColor('--color-border-2', '#E5E6EB'),
       },
       headerStyle: {
         bgColor: themeColor('--color-fill-2', '#F2F3F5'),
@@ -604,6 +616,11 @@ function buildOption(): any {
       selectionStyle: {
         cellBorderLineWidth: 0,
         cellBgColor: 'transparent',
+      },
+      // 滚动条：DEFAULT 浅色轨在暗色下刺眼
+      scrollStyle: {
+        scrollRailColor: themeColor('--color-fill-2', '#F2F3F5'),
+        scrollSliderColor: themeColor('--color-fill-3', '#E5E6EB'),
       },
     },
   };

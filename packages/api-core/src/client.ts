@@ -2,6 +2,7 @@ import axios, { type AxiosInstance, type AxiosRequestConfig, type InternalAxiosR
 import { TokenManager } from './token';
 import type { ApiResponse, LoginResult } from './types';
 import { ApiError } from './types';
+import { isServiceApiPath } from './service-path';
 import qs from 'qs';
 
 /**
@@ -57,8 +58,12 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
     paramsSerializer: { serialize(params) { return qs.stringify(params, { allowDots: true }); } },
   });
 
-  // 请求拦截：注入 Token
+  // 请求拦截：服务接口去掉 /api baseURL；注入 Token
   client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+    // 实体 client 的 baseURL 多为 /api；Lookup/UserProfile 等 Cube 服务动作后端无此前缀
+    if (config.url && isServiceApiPath(config.url)) {
+      config.baseURL = '';
+    }
     const token = tm.getToken();
     if (token) {
       config.headers.set('Authorization', token);

@@ -61,7 +61,8 @@ export function createCubeApi(options: CubeApiOptions = {}): CubeApi {
     menu: createMenuApi(serviceRequest),
     page: createPageApi(request, options.baseURL),
     config: createConfigApi(serviceRequest),
-    profile: createProfileApi(request),
-    comment: createCommentApi(request),
+    // UserProfile / ViewProfile / EntityComment 挂在 CubeController（无 /api）
+    profile: createProfileApi(serviceRequest),
+    comment: createCommentApi(serviceRequest),
   };
 }

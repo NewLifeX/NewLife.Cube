@@ -29,6 +29,11 @@ const CUBE_SERVICE_ACTIONS = new Set([
   'Image',
   'File',
   'Setting',
+  // CubeController 呈现/评论（无 /api；区域实体如 /api/Cube/App 仍带前缀）
+  'UserProfile',
+  'ViewProfile',
+  'ViewProfileTemplate',
+  'EntityComment',
 ]);
 
 /**
