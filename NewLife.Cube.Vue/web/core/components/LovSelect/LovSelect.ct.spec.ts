@@ -22,9 +22,11 @@ async function openLovSelect(page: Page, id: string, mode: OpenMode = undefined)
     await page.waitForTimeout(300); // 等下拉动画稳定
   } else if (mode === 'dialog') {
     await page.waitForSelector('.lov-select');
-    await page.click('.lov-select .el-input-group__append .el-button');
-    await page.waitForSelector('.el-dialog');
-    await page.waitForSelector('.el-table__row');
+    // LIST 型：点击搜索图标（suffix）触发 el-select 的 toggleMenu → visible-change → 打开自定义弹窗
+    await page.waitForSelector('.lov-select .el-select__suffix');
+    await page.click('.lov-select .el-select__suffix');
+    await page.waitForSelector('.el-dialog', { timeout: 5000 });
+    await page.waitForSelector('.el-table__row', { timeout: 5000 });
     await page.waitForTimeout(400); // 等弹窗动画 + 列表数据渲染稳定
   } else {
     await page.waitForSelector('.lov-select');
@@ -74,4 +76,35 @@ test('EnumSingle 选择后回显数据正常', async ({ page }) => {
   await expect(page.locator('.el-select')).toContainText('启用');
   await page.waitForTimeout(200); // 等回显文本稳定
   await expect(page.locator('.lov-select')).toHaveScreenshot();
+});
+
+// 复现缺陷：LIST 多选，勾选若干行后点「确定」，回显必须是文本 label（管理员/普通用户），
+// 绝不能回显数字 id（1/2）。根因：onTableMultiConfirm 只 emit 纯 id，而 fetchListData 漏登记
+// 当前 lovCode 自身行 → getSelectedLabel 查不到 label → 回退数字。本测试断言文本以暴露缺陷。
+test('ListMulti 选择后回显文本(不应是数字)', async ({ page }) => {
+  await openLovSelect(page, 'LovSelect/ListMultiClosed', 'dialog');
+  const rows = page.locator('.el-table__row');
+  await rows.nth(0).locator('.el-checkbox').click(); // 勾选「管理员」
+  await rows.nth(1).locator('.el-checkbox').click(); // 勾选「普通用户」
+  await page.locator('.el-dialog .el-button:has-text("确定")').click();
+  await page.waitForSelector('.el-dialog', { state: 'hidden' });
+
+  // 回显标签必须包含文本 label，不得只是数字 id（缺陷态下 .el-select__selection 显示 1/2）
+  const selection = page.locator('.lov-select .el-select__selection');
+  await expect(selection).toContainText('管理员');
+  await expect(selection).toContainText('普通用户');
+  await expect(selection).not.toContainText('1');
+  await expect(selection).not.toContainText('2');
+});
+
+// 复现缺陷（与多选同根因，INV-1）：LIST 单选关闭态通过 modelValue 传入已选值（数字 id=1），
+// 组件必须回显文本 label「管理员」，绝不允许回退成数字 id「1」。
+// 根因：loadMeta 正常路径曾漏消费 inlineEnums → translateCache 为空 → listTags 回退数字。
+// 本测试断言文本，缺陷态下 .el-select__selection 显示裸 "1" → 变红。
+test('ListSingleEcho 回显文本(不应是数字)', async ({ page }) => {
+  await openLovSelect(page, 'LovSelect/ListSingleEcho');
+  const selection = page.locator('.lov-select .el-select__selection');
+  // 必须回显文本 label，而非原始数字 id
+  await expect(selection).toContainText('管理员');
+  await expect(selection).not.toContainText('1');
 });

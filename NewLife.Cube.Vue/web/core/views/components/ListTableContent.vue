@@ -11,7 +11,7 @@
 import { ref, reactive, computed, watch } from 'vue';
 import { getValueByKey, resolveAssetUrl } from '@newlifex/cube-vue/core/utils/url';
 import { resolveListControl } from '@newlifex/cube-vue/core/utils/fieldControl';
-import { fetchBatchLabel } from '@newlifex/cube-vue/core/utils/lov-api';
+import { getColumnLabel, resolveColumnLabels } from '@newlifex/cube-vue/core/components/LovSelect/lovStore';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import type { FieldMeta, ListControlType } from '@newlifex/cube-vue/core/types/field';
 
@@ -131,7 +131,7 @@ function normalizeMulti(raw: unknown): string[] {
   return [String(raw)];
 }
 
-/** 拉取所有 LOV 列的翻译字典 */
+/** 拉取所有 LOV 列的翻译字典（解耦：不再走 BatchLabel 端点，统一由 lovStore 本地映射） */
 async function loadLovLabels() {
   const tasks: Promise<void>[] = [];
   for (const col of renderColumns.value) {
@@ -142,15 +142,14 @@ async function loadLovLabels() {
       const raw = getValueByKey(row, col.key);
       for (const v of normalizeMulti(raw)) values.add(v);
     }
-    const uncached = [...values].filter((v) => !(lovCode + ':' + v in lovLabels));
+    // 本地缓存已命中的跳过；缺失的由 lovStore 异步兜底（ENUM 读 options / LIST 拉一次 listData）
+    const uncached = [...values].filter((v) => getColumnLabel(lovCode, v) === v);
     if (uncached.length === 0) continue;
     tasks.push(
       (async () => {
-        try {
-          const map = await fetchBatchLabel({ lovCode, values: uncached });
-          for (const [k, label] of Object.entries(map)) lovLabels[lovCode + ':' + k] = label;
-        } catch (e) {
-          console.error('ListTableContent: BatchLabel 失败', e);
+        for (const v of uncached) {
+          const label = await resolveColumnLabels(lovCode, v);
+          lovLabels[lovCode + ':' + v] = label;
         }
       })(),
     );

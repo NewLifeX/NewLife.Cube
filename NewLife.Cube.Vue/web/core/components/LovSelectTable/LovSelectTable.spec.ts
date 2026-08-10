@@ -84,11 +84,18 @@ vi.mock('@newlifex/cube-vue/core/utils/lov-api', () => ({
   fetchLovListDataDirect: vi.fn(
     async (_cfg?: unknown, req?: { lovCode?: string; pageNum?: number; pageSize?: number }) => resolveList(req),
   ),
-  fetchBatchLabel: vi.fn(async () => ({})),
+
   shouldDirectRequest: vi.fn(
     (config: { requestUrl?: string } | null | undefined) =>
       !!(config && config.requestUrl && config.requestUrl.startsWith('/')),
   ),
+}));
+
+// lovStore mock
+vi.mock('@newlifex/cube-vue/core/components/LovSelect/lovStore', () => ({
+  resolveColumnLabels: vi.fn(async (_lovCode, raw) => String(raw ?? '')),
+  getColumnLabel: vi.fn((_lovCode, value) => value),
+  registerRows: vi.fn(),
 }));
 
 // ── 测试夹具 ──

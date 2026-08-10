@@ -74,7 +74,7 @@ core/components/<ComponentName>/
 
 为任意 `<ComponentName>` 跑通整条闭环，按序执行（细节仍在各阶段 references，此处只给时序导航）：
 
-1. **填 Part A（开发前）**：按 `references/component-readme-template.md` 产出 §1~§7，评审通过再写代码（§七铁律）。
+1. **填 Part A（开发前）**：按 `references/component-readme-template.md` 产出 §1~§7，**重点补齐「能力维度矩阵」（防漏功能）与「不变量红线」（防假绿）**，评审通过再写代码（§七铁律）。详见 §十 测试完备性方法论。
 2. **写组件**：`<ComponentName>.vue`（薄壳 + emit）+ 必要的 `<ComponentName>.logic.ts`（纯函数 / `use*.ts` Hook）。关注点分离见 §五。
 3. **写 Vitest**：`<ComponentName>.spec.ts`，Mock 用别名导入（§三 / `references/vitest-strategy.md`），`pnpm test:unit` 全绿。
 4. **写 Story**：`<ComponentName>.story.ts` 声明 props 变体，`ct/stories.ts` 显式静态导入（§四 / `references/ct-gallery.md` §三）。
@@ -180,12 +180,14 @@ pnpm test:ct:update     # 更新基线截图（确认效果后）
 
 **Part A — 开发前必填（动手前产出）**
 1. 功能需求（FR）：角色 / 功能 / 价值，每条可验收
-2. 设计：定位、分层契约、交互模式、视觉要点
-3. 流程：用户操作流程、关键数据流、状态机
-4. 功能验证列表（Verification Checklist）：源于 FR，逐条可勾选，是完成定义也是类人验证输入
-5. 数据契约：依赖接口、字段与枚举映射、Mock 约定（确保不请求真实后端）
-6. 边界与异常：空 / 加载 / 错误 / 分页边界 / 超长 / 超大列表
-7. 待确认项（Open Questions）：开发前清零
+2. **能力维度矩阵（Completeness Matrix）**：枚举维度画矩阵，每个可达格 = 必实现且必测的能力（防漏功能，详见 §十）
+3. 设计：定位、分层契约、交互模式、视觉要点
+4. 流程：用户操作流程、关键数据流、状态机
+5. 功能验证列表（Verification Checklist / 故事清单）：源于 FR，逐条可勾选，是完成定义也是类人验证输入（= 最终走查闸门）
+6. **不变量红线（Invariants）**：开发前列出"容易破、破了用户立刻可见"的负向约束，每条必有守卫测试（防假绿，详见 §十）
+7. 数据契约：依赖接口、字段与枚举映射、Mock 约定（确保不请求真实后端）
+8. 边界与异常：空 / 加载 / 错误 / 分页边界 / 超长 / 超大列表
+9. 待确认项（Open Questions）：开发前清零
 
 **Part B — 开发中 / 后沉淀（闭环产出）**
 8. 功能 ↔ Story ↔ 测试 对应表（迭代导航图）
@@ -217,7 +219,26 @@ pnpm test:ct:update     # 更新基线截图（确认效果后）
 
 ---
 
-## 九、参考文档
+## 十、测试完备性方法论（理论指导：防漏功能 + 防假绿）
+
+> 深度展开见 `references/testing-completeness-methodology.md`。本技能之所以能"不漏功能、测试测得出问题、按故事逐一验收"，靠的是把成熟测试理论落到 README 三块载体 + 四阶段流程。
+
+**为什么需要它**：组件开发两类典型失败——① 漏功能（只做单选忘多选、列表回显显示数字）；② 假绿（所有测试全绿但线上有 bug）。两者都靠下面三块消除。
+
+**README 三大理论载体（开发前必填）**
+1. **能力维度矩阵（Completeness Matrix）**——枚举"形态 × 来源 × 状态 × 数据态 × 交互"等维度画矩阵，每个可达格 = 一个必须实现且测试的能力；空白格 = 漏了或不支持。→ 防漏功能。
+2. **不变量红线（Invariants）**——开发前列出"容易破、破了用户立刻可见"的负向约束（expect 绝不允许…），每条必有守卫断言测试。→ 防假绿。
+3. **故事清单（§4 验证列表）**——每个故事 = `?story=` 深链 + 操作步骤 + 期望；开发完按此逐项走查全 PASS 才算完成。→ 最终交付闸门。
+
+**四阶段流程**：Phase 0 写 README（矩阵+不变量+故事）→ Phase 1 派测试（故事→CT 语义断言；不变量→守卫测试；mock 掉的核心逻辑额外生成"真实契约测试+桩忠实性测试"双测）→ Phase 2 实现（红转绿、逻辑抽 `*.logic.ts`、别名导入）→ Phase 3 故事走查闸门（全 PASS 交付）。
+
+**防假绿纪律（本会话真实教训）**：① 截图只锁视觉不锁语义，用户可见文本必用 `toContainText` 断言；② 绝不在缺陷态更新截图基线（否则固化 bug）；③ mock 掉核心逻辑必须"真实模块契约测试 + 桩忠实性测试"双测，缺一即掩盖缺陷；④ 测试须先确认"能因正确原因变红"。
+
+> 真实案例：LovSelect 曾"LIST 回显显示数字"而所有测试全绿，正是四层原因全中（桩不忠实 / 只截图 / 单测 mock 掉核心逻辑 / 缺语义断言）。修复后补的双测即本方法论落地，见 `core/components/LovSelect/README.md` Part C。
+
+---
+
+## 十一、参考文档
 
 | 文档                                                          | 内容                                             |
 | ------------------------------------------------------------- | ------------------------------------------------ |
@@ -226,6 +247,7 @@ pnpm test:ct:update     # 更新基线截图（确认效果后）
 | `references/ct-gallery.md`                                    | Gallery 架构、开发循环命令、Story / CT 编写、Puppeteer 废弃 |
 | `references/mcp-playwright.md`                                | MCP Playwright 注册（按环境配置）、操作清单、读截图核对 |
 | `references/component-readme-template.md`                     | 组件 README 模板（Part A 开发前必填 + Part B 闭环沉淀） |
+| `references/testing-completeness-methodology.md`             | 测试完备性方法论（理论根基 / 矩阵 / 不变量 / 四阶段流程 / 防假绿纪律 / 真实案例） |
 | `docs/standards/testing-standard.md`                          | 测试分层、Mock 策略、覆盖率门槛、CT 架构         |
 | `docs/standards/frontend-testable-development.md`             | 团队规范总纲                                     |
 | `<web-root>/AGENTS.md`                                        | 硬约束（关注点分离、测试策略、命名约定）         |
