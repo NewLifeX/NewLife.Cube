@@ -47,7 +47,7 @@ const emit = defineEmits<{
       -->
       <el-table-column prop="kind" label="类别1" width="100" align="center">
         <template #default="scope">
-          <el-tag :type="getKind(scope.row.kind).type" effect="plain" round>
+          <el-tag :type="getKind(scope.row.kind).type || undefined" effect="plain" round>
             {{ getKind(scope.row.kind).text }}
           </el-tag>
         </template>

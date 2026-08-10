@@ -254,9 +254,13 @@ const callback = (e?: Record<string, unknown>) => {
 const getTenantUserList = async () => {
   try {
     loading.list = true
-    const data = await request.get('/Admin/TenantUser', {
+    const data = (await request.get('/Admin/TenantUser', {
       params: queryParams
-    })
+    })) as unknown as {
+      list?: TenantUser[];
+      page?: { totalCount?: number };
+      total?: number;
+    };
     if (data && typeof data === 'object' && 'list' in data && 'page' in data) {
       tableData.value = Array.isArray(data.list) ? data.list : [];
       queryParams.total = data.page?.totalCount || 0;
@@ -283,9 +287,9 @@ const getTenantUserDetail = async (id: number) => {
   try {
     loading.detail = true
 
-    const data = await request.get('/Admin/TenantUser/Detail', {
+    const data = (await request.get('/Admin/TenantUser/Detail', {
       params: { id }
-    })
+    })) as unknown as Partial<TenantUser> | null;
 
     if (data) {
       detailData.value = data || {}
@@ -432,7 +436,7 @@ const PageSizeChange = (size: number) => {
 };
 
 // 格式化日期
-const formatDate = (dateStr: string) => {
+const formatDate = (dateStr?: string) => {
   if (!dateStr) return ''
   const date = new Date(dateStr)
   return date.toLocaleString('zh-CN')

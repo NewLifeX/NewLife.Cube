@@ -14,7 +14,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ElMessage } from 'element-plus';
 import { openListFormDialog } from './openListFormDialog';
-import type { FieldMeta } from '../../types/field';
+import type { FieldMeta } from '../../../types/field';
 
 // ── Mock 依赖 ───────────────────────────────────────────────────
 

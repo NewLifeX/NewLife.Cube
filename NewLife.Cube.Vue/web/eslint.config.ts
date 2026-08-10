@@ -18,7 +18,7 @@ export default defineConfigWithVueTs(
 
   {
     name: 'app/files-to-ignore',
-    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**'],
+    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/temp/**', '**/test-results*/**'],
   },
 
   pluginVue.configs['flat/essential'],
@@ -48,11 +48,11 @@ export default defineConfigWithVueTs(
   },
 
   {
-    ...pluginVitest.configs.recommended,
+    ...(pluginVitest.configs.recommended as any),
     files: ['**/__tests__/*'],
   },
 
-  ...oxlint.configs['flat/recommended'],
+  ...(oxlint.configs['flat/recommended'] as any),
   skipFormatting,
   {
     settings: {

@@ -109,7 +109,7 @@ export function apiDataToSingle<T = Record<string, unknown>>(data: unknown): T |
   if (data && typeof data === 'object' && data !== null) {
     // 情况0: 处理 ApiResponse 标准包装格式 { code, data, page }
     // request.ts 拦截器直接返回完整 ApiResponse，需解包提取实际数据
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const obj = data as any;
     if ('code' in obj && 'data' in obj) {
       const inner = obj.data;

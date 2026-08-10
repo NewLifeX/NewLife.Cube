@@ -25,6 +25,7 @@ import {
 import type {
   LovMetaItem,
   LovEnumMeta,
+  LovEnumOption,
   LovListMeta,
   LovListDataResponse,
 } from '@newlifex/cube-vue/core/types/lov';

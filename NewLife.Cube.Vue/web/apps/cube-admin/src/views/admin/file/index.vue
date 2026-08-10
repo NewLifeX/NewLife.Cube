@@ -249,12 +249,12 @@ const handleAvatarUpload = async () => {
 const handleDownload = async (row: FileInfo) => {
   try {
     // 使用 request 发送下载请求，获取二进制数据
-    const blob = await request.post('/Admin/File/Download',
+    const blob = (await request.post('/Admin/File/Download',
       { r: row.path },
       {
         responseType: 'blob'
       }
-    )
+    )) as unknown as Blob
 
     // 创建下载链接
     const url = window.URL.createObjectURL(blob)
