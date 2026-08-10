@@ -123,7 +123,7 @@ public class FileController : ControllerBaseX
     /// <summary>文件管理主视图</summary>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
-    [HttpGet("api/[area]/[controller]")]
+    [HttpGet("/api/[area]/[controller]")]
     public ActionResult Index(String r, String sort, String message = "")
     {
         var di = GetDirectory(r) ?? Root.AsDirectory();
