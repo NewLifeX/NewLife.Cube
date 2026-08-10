@@ -129,9 +129,13 @@ const LovSelect = defineAsyncComponent(() => import('../LovSelect/index.vue'));
 import {
   fetchLovListData,
   fetchLovListDataDirect,
-  fetchBatchLabel,
   shouldDirectRequest,
 } from '@newlifex/cube-vue/core/utils/lov-api';
+import {
+  resolveColumnLabels,
+  getColumnLabel,
+  registerRows,
+} from '@newlifex/cube-vue/core/components/LovSelect/lovStore';
 import type {
   LovEnumOption,
   LovListMeta,
@@ -205,8 +209,8 @@ const selectedCountText = computed(() => {
 });
 
 /** 行唯一键（reserve-selection 跨页保留勾选所需） */
-function getRowKey(row: Record<string, unknown>): string | number {
-  return row[props.lovMeta?.valueField || 'id'] as string | number;
+function getRowKey(row: Record<string, unknown>): string {
+  return String(row[props.lovMeta?.valueField || 'id']);
 }
 
 /** 取行的值字段（单选 radio 的 value） */
@@ -285,40 +289,44 @@ async function fetchListData() {
     tableData.value = result.data || [];
     total.value = result.total || 0;
 
+    // 把当前 lovCode 自身的行登记进 labelCache（回显已选 textField 的天然翻译表，见 lovStore 设计文档第 2 条）。
+    // 单选已在 onTableSelect→registerSelectedRow 登记当前行；此处补全「整页行」映射，
+    // 使多选确认 / 跨页回显也能命中文本而非回退数字 id。
+    registerRows(props.lovCode, tableData.value);
+
     // 多选回显：根据已存储值勾选当前页行（reserve-selection 会跨页保留）
     if (props.multiple) {
       await nextTick();
       restoreSelection();
     }
 
-    // 批量翻译列表列中被引用的 List.xxx 值
+    // 批量翻译列表列中被引用的值集列（统一由 lovStore 本地映射，不再走 BatchLabel 端点）
     if (tableColumns.value.length > 0) {
-      const batchMap = new Map<string, string[]>();
+      // 先把当前页行数据登记到 lovStore（后续列翻译 / 回显直接读缓存）
       for (const col of tableColumns.value) {
         if (!col.refLovCode) continue;
-        if (props.inlineEnums[col.refLovCode]) continue;
-
-        const values = tableData.value
+        registerRows(col.refLovCode, tableData.value);
+      }
+      // 异步兜底：对缺失翻译的列触发 lovStore 拉取 listData
+      const tasks: Promise<void>[] = [];
+      for (const col of tableColumns.value) {
+        const lovCode = col.refLovCode;
+        if (!lovCode) continue;
+        const uncached = tableData.value
           .map((r) => r[col.field])
-          .filter((v) => v != null && v !== '')
+          .filter((v) => v != null && v !== '' && getColumnLabel(lovCode, String(v)) === String(v))
           .map(String);
-        if (values.length > 0) {
-          batchMap.set(col.refLovCode, [...new Set(values)]);
-        }
-      }
-
-      for (const [batchLovCode, values] of batchMap) {
-        const uncached = values.filter((v) => !props.translateCache.has(`${batchLovCode}:${v}`));
         if (uncached.length === 0) continue;
-        try {
-          const labelResult = await fetchBatchLabel({ lovCode: batchLovCode, values: uncached });
-          for (const [v, label] of Object.entries(labelResult)) {
-            props.translateCache.set(`${batchLovCode}:${v}`, label);
-          }
-        } catch (e) {
-          console.error('LovSelectTable: 批量翻译失败', e);
-        }
+        tasks.push(
+          (async () => {
+            for (const v of uncached) {
+              const label = await resolveColumnLabels(lovCode, v);
+              props.translateCache.set(`${lovCode}:${v}`, label);
+            }
+          })(),
+        );
       }
+      await Promise.all(tasks);
     }
   } catch (err) {
     console.error('LovSelectTable: 获取列表数据失败', err);
@@ -335,9 +343,18 @@ function getTranslatedText(row: Record<string, unknown>, col: LovTableColumn): s
 
   const cacheKey = `${col.refLovCode}:${value}`;
 
+  // 优先查本地 translateCache（含 lovStore 已同步的翻译）
   const cached = props.translateCache.get(cacheKey);
   if (cached) return cached;
 
+  // 查 lovStore 缓存（ENUM options / LIST listData 本地映射）
+  const storeLabel = getColumnLabel(col.refLovCode, String(value));
+  if (storeLabel !== String(value)) {
+    props.translateCache.set(cacheKey, storeLabel);
+    return storeLabel;
+  }
+
+  // 兜底：inlineEnums
   if (props.inlineEnums[col.refLovCode]) {
     const map = new Map(props.inlineEnums[col.refLovCode].map((e) => [String(e.value), e.label]));
     return map.get(String(value)) ?? String(value);
