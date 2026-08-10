@@ -34,6 +34,7 @@ import {
   rematchStateMappings,
   removeView,
   renameView,
+  restoreNamedView,
   serializeFormJson,
   serializeNamedView,
   serializeQueriesWire,
@@ -587,6 +588,21 @@ export const useViewProfileStore = defineStore('viewProfile', {
         this.setState(typePath, renameView(entry.state, id, name), true);
       } catch (e) {
         Message.warning(e instanceof Error ? e.message : '重命名失败');
+      }
+    },
+
+    /** 恢复视图：把指定视图重置为创建时的默认状态（保留 id/名称） */
+    restoreView(typePath: string, id: string) {
+      const entry = this.byType[typePath];
+      if (!entry) return;
+      try {
+        this.setState(
+          typePath,
+          restoreNamedView(entry.state, id, entry.metaKeys, entry.fields),
+          true,
+        );
+      } catch (e) {
+        Message.warning(e instanceof Error ? e.message : '恢复视图失败');
       }
     },
 

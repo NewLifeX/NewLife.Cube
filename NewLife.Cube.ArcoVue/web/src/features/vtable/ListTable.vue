@@ -78,6 +78,8 @@ const emit = defineEmits<{
   sortChange: [payload: { field: string; desc: boolean } | null];
   action: [payload: { action: 'detail' | 'edit' | 'delete'; row: Record<string, unknown> }];
   toggleEnable: [row: Record<string, unknown>, field: string];
+  /** 滚动接近底部（剩余不足 200px）时触发，供父级增量加载更多行（列表/树懒加载） */
+  scrollBottom: [];
 }>();
 
 const hostRef = ref<HTMLElement | null>(null);
@@ -87,6 +89,10 @@ let ro: ResizeObserver | null = null;
 let sepRaf = 0;
 /** 主题（外观/主色）变化监听：VTable canvas 色值需在主题变更后重建读取 */
 let themeObserver: MutationObserver | null = null;
+/** 主题刷新防抖计时器：body 属性变化可能一次操作多次触发，合并为一次全量重建 */
+let themeRefreshTimer = 0;
+/** 最近一次 setRecords 时间：setRecords 会触发 scroll 事件，需忽略以避免误报滚动到底导致增量追加循环 */
+let lastSetRecordsAt = 0;
 /** 分隔线层由 JS 动态创建：VTable 构造时会清空宿主容器，模板子元素会被删除 */
 let sepEl: HTMLElement | null = null;
 
@@ -528,6 +534,8 @@ function buildOption(): any {
       : {}),
     widthMode: 'standard',
     columnResizeMode: 'all',
+    // 关闭浏览器滚动链/回弹（纯滚动行为优化，不影响功能）
+    overscrollBehavior: 'none',
     hover: { highlightMode: 'row', disableHeaderHover: true },
     // 禁用单元格选中框；勾选列负责多选。Hover 用整行高亮
     select: { highlightMode: 'row', disableSelect: true, disableHeaderSelect: true },
@@ -813,19 +821,37 @@ function refreshOption() {
   applying = false;
 }
 
+/** 滚动接近底部（剩余不足 200px）时上报，父级据此增量加载更多行（列表/树懒加载，避免千条一次性传 VTable） */
+function onTableScroll(e: unknown) {
+  const t = table;
+  if (!t) return;
+  // setRecords 会触发 scroll 事件（保留滚动位置），忽略其后的短窗口以避免增量追加循环
+  if (Date.now() - lastSetRecordsAt < 200) return;
+  const ev = e as { scrollTop?: number } | null;
+  const top = ev?.scrollTop ?? t.getScrollTop();
+  const total = t.getAllRowsHeight();
+  const viewH = t.canvas?.height ?? hostRef.value?.clientHeight ?? 0;
+  if (total > viewH && top + viewH >= total - 200) emit('scrollBottom');
+}
+
 onMounted(() => {
   mountTable();
+  table?.on('scroll', onTableScroll);
   // 捕获阶段监听，避免 VTable 内部 stopPropagation 吞掉 mousemove
   hostRef.value?.addEventListener('mousemove', onHostMouseMove, true);
   hostRef.value?.addEventListener('mouseleave', onHostMouseLeave, true);
   // 主题（外观/主色）变化时重建表格：VTable canvas 颜色在 buildOption 时快照，需重新读取 Arco token
   if (typeof MutationObserver !== 'undefined') {
     themeObserver = new MutationObserver(() => {
-      try {
-        refreshOption();
-      } catch {
-        /* ignore */
-      }
+      // 防抖合并：body 属性变化（loading/布局等）可能频繁触发，只重建一次
+      clearTimeout(themeRefreshTimer);
+      themeRefreshTimer = window.setTimeout(() => {
+        try {
+          refreshOption();
+        } catch {
+          /* ignore */
+        }
+      }, 120);
     });
     themeObserver.observe(document.body, {
       attributes: true,
@@ -836,19 +862,49 @@ onMounted(() => {
 onBeforeUnmount(() => {
   themeObserver?.disconnect();
   themeObserver = null;
+  clearTimeout(themeRefreshTimer);
   ro?.disconnect();
   ro = null;
   cancelAnimationFrame(sepRaf);
   hostRef.value?.removeEventListener('mousemove', onHostMouseMove, true);
   hostRef.value?.removeEventListener('mouseleave', onHostMouseLeave, true);
+  table?.off('scroll', onTableScroll);
   table?.release();
   table = null;
 });
 
 // 注意：不要把 selectedKeys 放进全量 refresh 依赖——勾选后回写会 updateOption，冲掉 VTable 勾选态
+// （非 deep：records 为整体替换（翻页/加载新数组），引用变化即可触发；deep 会对千条记录全量深度遍历拖慢更新）
+/** 仅更新数据（setRecords）而非全量 updateOption：翻页/换数据时避免重建 columns/布局，
+ *  千条数据从 ~850ms 降至 setRecords 的数据替换开销（性能优化，不影响功能） */
+function applyRecords() {
+  if (!table) {
+    mountTable();
+    return;
+  }
+  applying = true;
+  lastSetRecordsAt = Date.now();
+  try {
+    table.setRecords?.(withChecks(props.records), { sortState: null });
+    if (props.sortState?.field) {
+      table.updateSortState?.(
+        { field: props.sortState.field, order: props.sortState.desc ? 'desc' : 'asc' },
+        false,
+      );
+    }
+  } catch {
+    refreshOption();
+  } finally {
+    applying = false;
+  }
+}
+
+// 数据变化：仅 setRecords（保留滚动位置，只替换数据不重建配置）
+watch(() => props.records, applyRecords);
+
+// 配置/交互能力/层级/分组变化：全量重建（updateOption）；sortState 由 applyRecords 内 updateSortState 处理
 watch(
   () => [
-    props.records,
     props.columns,
     props.showCheckbox,
     props.canEdit,
@@ -856,14 +912,11 @@ watch(
     props.canViewDetail,
     props.showExpand,
     props.enableSort,
-    props.sortState?.field,
-    props.sortState?.desc,
     props.hierarchy,
     props.grouped,
     props.groupFields,
   ],
   () => refreshOption(),
-  { deep: true },
 );
 
 /** 父级清空选择时同步勾选 UI（不整表 refresh，避免打断勾选交互） */
@@ -872,20 +925,7 @@ watch(
   (keys) => {
     if (!table || applying) return;
     if ((keys?.length ?? 0) > 0) return;
-    applying = true;
-    try {
-      table.setRecords?.(withChecks(props.records), { sortState: null });
-      if (props.sortState?.field) {
-        table.updateSortState?.(
-          { field: props.sortState.field, order: props.sortState.desc ? 'desc' : 'asc' },
-          false,
-        );
-      }
-    } catch {
-      refreshOption();
-    } finally {
-      applying = false;
-    }
+    applyRecords();
   },
 );
 </script>

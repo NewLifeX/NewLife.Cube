@@ -934,6 +934,40 @@ export function renameView(state: EntityViewState, id: string, name: string): En
   };
 }
 
+/**
+ * 恢复视图：把指定视图重置为创建时的默认状态（保留 id/名称/删除权限；
+ * 列/排序/映射/筛选/分组/洞察恢复默认，等价重新创建该类型视图的配置）。
+ */
+export function restoreNamedView(
+  state: EntityViewState,
+  id: string,
+  metaKeys: string[],
+  fields?: FieldMeta[],
+): EntityViewState {
+  const src = state.views.find((v) => v.id === id);
+  if (!src) throw new Error('视图不存在');
+  const mapping = fields && fields.length ? seedMapping(src.view, fields) : undefined;
+  const next: NamedView = {
+    id: src.id,
+    name: src.name,
+    view: src.view,
+    columns: mergeColumns(metaKeys, []),
+    sort: null,
+    // 删除权限为权限相关字段（创建时按用户删除权限写入），恢复时保留，其余外观回默认
+    chrome: {
+      ...DEFAULT_CHROME,
+      ...(src.chrome?.allowDelete !== undefined
+        ? { allowDelete: src.chrome.allowDelete }
+        : {}),
+    },
+    mapping,
+  };
+  return {
+    ...state,
+    views: state.views.map((v) => (v.id === id ? next : v)),
+  };
+}
+
 export function patchActiveColumns(
   state: EntityViewState,
   columns: ColumnPref[],

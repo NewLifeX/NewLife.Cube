@@ -23,6 +23,7 @@ import {
   parseSavedFilters,
   rematchStateColumns,
   removeView,
+  restoreNamedView,
   seedDefaultView,
   serializeFormJson,
   serializeNamedView,
@@ -32,6 +33,8 @@ import {
   setSavedViewFilters,
   stateFromWire,
   stateToWirePayload,
+  type ColumnPref,
+  type NamedView,
   type SavedQueriesWire,
 } from './viewProfile';
 import type { FieldMeta } from '@/core/types/field';
@@ -152,6 +155,63 @@ describe('namedViews', () => {
     // 无删除权限：创建视图默认不允许删除
     s = createNamedView(s, '只读', 'card', ['Name'], undefined, { allowDelete: false });
     expect(s.views.at(-1)?.chrome?.allowDelete).toBe(false);
+  });
+
+  it('restoreNamedView resets view to creation-time defaults', () => {
+    const fields: FieldMeta[] = [
+      { name: 'Title', displayName: '标题', typeName: 'String', primaryKey: false } as FieldMeta,
+      { name: 'Start', displayName: '开始', typeName: 'DateTime', primaryKey: false } as FieldMeta,
+      { name: 'End', displayName: '结束', typeName: 'DateTime', primaryKey: false } as FieldMeta,
+    ];
+    let s = stateFromWire(null, ['Name', 'Code']);
+    s = createNamedView(s, '甘特', 'gantt', ['Name', 'Code'], fields, { allowDelete: true });
+    const gantt = s.views.at(-1)!;
+    // 用户改乱了视图：列/排序/映射/筛选/洞察
+    s = {
+      ...s,
+      views: s.views.map(
+        (v): NamedView =>
+          v.id === gantt.id
+            ? ({
+                ...v,
+                columns: [{ key: 'Name', visible: false }] as ColumnPref[],
+                sort: { field: 'Name', desc: true },
+                mapping: {
+                  kind: 'gantt',
+                  titleField: 'Title',
+                  plannedStartField: 'Start',
+                  plannedEndField: 'End',
+                  barColor: '#FF0000',
+                },
+                filter: { logic: 'and' as const, conditions: [] },
+                insight: { showStat: true, showChart: false },
+              } as unknown as NamedView)
+            : v,
+      ),
+    };
+    const restored = restoreNamedView(s, gantt.id, ['Name', 'Code'], fields);
+    const rv = restored.views.find((v) => v.id === gantt.id)!;
+    expect(rv.id).toBe(gantt.id);
+    expect(rv.name).toBe('甘特');
+    expect(rv.view).toBe('gantt');
+    // 列重置为全量 meta
+    expect(rv.columns.map((c) => c.key)).toEqual(['Name', 'Code']);
+    expect(rv.sort).toBeNull();
+    // mapping 重新 seed
+    expect(rv.mapping?.kind).toBe('gantt');
+    expect((rv.mapping as { barColor?: string }).barColor).toBeUndefined();
+    // 删除权限保留，其余外观回默认
+    expect(rv.chrome?.allowDelete).toBe(true);
+    expect(rv.chrome?.showPager).toBe(true);
+    // 筛选/分组/洞察重置
+    expect(rv.filter).toBeUndefined();
+    expect(rv.group).toBeUndefined();
+    expect(rv.insight).toBeUndefined();
+  });
+
+  it('restoreNamedView throws for missing view', () => {
+    const s = stateFromWire(null, ['Name']);
+    expect(() => restoreNamedView(s, 'nope', ['Name'])).toThrow(/不存在/);
   });
 
   it('wire round-trip includes viewsJson', () => {

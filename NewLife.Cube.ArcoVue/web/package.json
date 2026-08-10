@@ -8,7 +8,8 @@
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run --config vitest.config.ts",
-    "test:watch": "vitest --config vitest.config.ts"
+    "test:watch": "vitest --config vitest.config.ts",
+    "postinstall": "node scripts/patch-vtable-gantt.js"
   },
   "dependencies": {
     "@arco-design/web-vue": "^2.56.0",

@@ -33,10 +33,20 @@ export type KanbanMapping = {
 };
 export type GanttMapping = {
   kind: 'gantt';
-  startField: string;
-  endField: string;
+  /** 标题字段 */
   titleField: string;
-  colorField?: string;
+  /** 计划开始字段（基线，必填） */
+  plannedStartField: string;
+  /** 计划结束字段（基线，必填） */
+  plannedEndField: string;
+  /** 实际开始字段（主条，可选；与 actualEndField 成对生效） */
+  actualStartField?: string;
+  /** 实际结束字段（主条，可选；与 actualStartField 成对生效） */
+  actualEndField?: string;
+  /** 固定任务条颜色（hex），缺省主题主色 */
+  barColor?: string;
+  /** 左侧表格宽度（拖拽持久化），缺省 380 */
+  tableWidth?: number;
 };
 export type CalendarMapping = {
   kind: 'calendar';
@@ -270,10 +280,9 @@ export function seedMapping(kind: ViewKind, fields: FieldMeta[]): ViewMapping | 
     if (!dates[0] || !dates[1] || !title) return undefined;
     return {
       kind: 'gantt',
-      startField: dates[0],
-      endField: dates[1],
       titleField: title,
-      colorField: colors[0],
+      plannedStartField: dates[0],
+      plannedEndField: dates[1],
     };
   }
   return undefined;
@@ -344,21 +353,45 @@ export function normalizeMapping(
 
   if (view === 'gantt' || kind === 'gantt') {
     const dates = dateFieldCandidates(fields);
-    const startField = pickFirst([String(o.startField || '')], names) || dates[0]?.name;
-    const endField =
-      pickFirst([String(o.endField || '')], names) ||
-      dates.find((f) => f.name !== startField)?.name ||
+    // 旧数据 startField/endField 迁移为计划字段（OSC-0019）
+    const plannedStart =
+      pickFirst([String(o.plannedStartField || ''), String(o.startField || '')], names) ||
+      dates[0]?.name;
+    const plannedEnd =
+      pickFirst([String(o.plannedEndField || ''), String(o.endField || '')], names) ||
+      dates.find((f) => f.name !== plannedStart)?.name ||
       dates[1]?.name;
     const titleField =
       pickFirst([String(o.titleField || '')], names) || titleFieldCandidates(fields)[0]?.name;
-    if (!startField || !endField || !titleField) return seedMapping('gantt', fields);
-    const colorRaw = typeof o.colorField === 'string' ? o.colorField : '';
+    if (!plannedStart || !plannedEnd || !titleField) return seedMapping('gantt', fields);
+
+    // 实际字段成对校验：仅配置一个视为未配置实际（OSC-0019）
+    const actualStartRaw = typeof o.actualStartField === 'string' ? o.actualStartField : '';
+    const actualEndRaw = typeof o.actualEndField === 'string' ? o.actualEndField : '';
+    const actualStart = actualStartRaw && names.has(actualStartRaw) ? actualStartRaw : '';
+    const actualEnd = actualEndRaw && names.has(actualEndRaw) ? actualEndRaw : '';
+    const hasActual = !!(actualStart && actualEnd);
+
+    // barColor：合法 hex 才保留；旧 colorField（按字段着色）直接忽略（行为变更 OSC-0019）
+    const barColorRaw = typeof o.barColor === 'string' ? o.barColor : '';
+    const barColor = /^#[0-9a-fA-F]{6}$/.test(barColorRaw) ? barColorRaw : undefined;
+
+    // tableWidth：合法正整数 280~640 夹取，否则缺省
+    let tableWidth: number | undefined;
+    const tw = Number(o.tableWidth);
+    if (Number.isFinite(tw) && tw > 0) {
+      tableWidth = Math.min(640, Math.max(280, Math.round(tw)));
+    }
+
     return {
       kind: 'gantt',
-      startField,
-      endField,
       titleField,
-      colorField: colorRaw && names.has(colorRaw) ? colorRaw : colorFieldCandidates(fields)[0]?.name,
+      plannedStartField: plannedStart,
+      plannedEndField: plannedEnd,
+      actualStartField: hasActual ? actualStart : undefined,
+      actualEndField: hasActual ? actualEnd : undefined,
+      barColor,
+      tableWidth,
     };
   }
 

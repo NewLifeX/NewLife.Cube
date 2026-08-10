@@ -8,7 +8,7 @@
     :style="{ minHeight: height + 'px' }"
   >
     <RecordCard
-      v-for="(row, idx) in records"
+      v-for="(row, idx) in visibleRecords"
       :key="rowKeyOf(row, idx)"
       :record="row"
       :title="titleOf(row)"
@@ -26,12 +26,14 @@
       @delete="$emit('delete', $event)"
       @toggle-enable="(row, field) => $emit('toggleEnable', row, field)"
     />
+    <!-- 懒加载哨兵：仅当还有未渲染数据时存在；进入视口附近即追加下一批（滚动动态加载，不一次性渲染全部） -->
+    <div v-if="visibleRecords.length < records.length" ref="sentinelRef" class="card-list-sentinel" />
     <a-empty v-if="!records.length" description="暂无数据" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
 import type { ColumnPref } from '@/core/utils/viewProfile';
 import type {
@@ -102,28 +104,128 @@ const layoutSignature = computed(
 const listRef = ref<HTMLElement | null>(null);
 const cardMinHeight = ref(0);
 
+/* ---------------- 滚动懒加载（1000 条及以上分批渲染） ---------------- */
+/** 初始渲染条数与滚动追加步长 */
+const INITIAL_VISIBLE = 100;
+const LOAD_STEP = 100;
+/** 当前已渲染条数（先 100，滚动接近底部动态追加，不一次性渲染全部） */
+const visibleCount = ref(INITIAL_VISIBLE);
+/** 底部哨兵：进入视口附近（提前 400px）触发追加 */
+const sentinelRef = ref<HTMLElement | null>(null);
+let sentinelIo: IntersectionObserver | null = null;
+/** 等高测量延迟计时器：卸载/重复触发时清理 */
+let measureTimer = 0;
+/** 当前应渲染的记录（slice） */
+const visibleRecords = computed(() => props.records.slice(0, visibleCount.value));
+
+function observeSentinel() {
+  sentinelIo?.disconnect();
+  sentinelIo = null;
+  if (!sentinelRef.value || visibleCount.value >= props.records.length) return;
+  sentinelIo = new IntersectionObserver(
+    (entries) => {
+      if (entries[0]?.isIntersecting && visibleCount.value < props.records.length) {
+        visibleCount.value = Math.min(props.records.length, visibleCount.value + LOAD_STEP);
+      }
+    },
+    { rootMargin: '400px 0px' },
+  );
+  sentinelIo.observe(sentinelRef.value);
+}
+
+/* scroll 兜底：IntersectionObserver 在部分环境（无头浏览器/嵌入渲染等）可能不触发，
+   监听最近滚动容器（含页面）接近底部时追加，保证滚动懒加载始终可用（与 IO 幂等） */
+let scrollParent: HTMLElement | Window | null = null;
+let scrollBound = false;
+
+function findScrollParent(el: HTMLElement | null): HTMLElement | Window | null {
+  let node = el?.parentElement ?? null;
+  while (node) {
+    const s = getComputedStyle(node);
+    if (/(auto|scroll|overlay)/.test(s.overflowY) && node.scrollHeight > node.clientHeight) return node;
+    node = node.parentElement;
+  }
+  return window;
+}
+
+function onScrollFallback() {
+  const sp = scrollParent;
+  if (!sp || visibleCount.value >= props.records.length) return;
+  const isWin = sp === window;
+  const el = sp as HTMLElement;
+  const scrollTop = isWin ? window.scrollY : el.scrollTop;
+  const clientH = isWin ? window.innerHeight : el.clientHeight;
+  const scrollH = isWin ? document.documentElement.scrollHeight : el.scrollHeight;
+  if (scrollTop + clientH >= scrollH - 400) {
+    visibleCount.value = Math.min(props.records.length, visibleCount.value + LOAD_STEP);
+  }
+}
+
+function bindScrollFallback() {
+  if (scrollBound) return;
+  scrollParent = findScrollParent(listRef.value);
+  if (!scrollParent) return;
+  scrollParent.addEventListener('scroll', onScrollFallback, { passive: true });
+  scrollBound = true;
+}
+
+function unbindScrollFallback() {
+  if (!scrollBound) return;
+  scrollParent?.removeEventListener('scroll', onScrollFallback);
+  scrollBound = false;
+  scrollParent = null;
+}
+
+watch(
+  () => [props.records, props.columns, layoutSignature.value] as const,
+  () => {
+    // 数据/排版变化 → 重置懒加载计数并重新观察哨兵；测高延迟到首帧渲染之后（读 offsetHeight 强制布局，避免阻塞首帧）
+    visibleCount.value = INITIAL_VISIBLE;
+    cardMinHeight.value = 0;
+    nextTick(() => {
+      observeSentinel();
+      // 数据到达后滚动容器才可能变为可滚动，需重查并重新绑定 scroll 兜底
+      unbindScrollFallback();
+      bindScrollFallback();
+      // setTimeout 而非 rAF：受限环境 rAF 可能不触发；50ms 后测高二次布局等高，首帧不被强制同步布局阻塞
+      clearTimeout(measureTimer);
+      measureTimer = window.setTimeout(() => void measureTallest(), 50);
+    });
+  },
+);
+
+onMounted(() => {
+  nextTick(() => {
+    observeSentinel();
+    bindScrollFallback();
+    // 初始测高同样延迟，避免首帧强制同步布局
+    clearTimeout(measureTimer);
+    measureTimer = window.setTimeout(() => void measureTallest(), 50);
+  });
+});
+
+onBeforeUnmount(() => {
+  sentinelIo?.disconnect();
+  sentinelIo = null;
+  clearTimeout(measureTimer);
+  unbindScrollFallback();
+});
+
 async function measureTallest() {
   await nextTick();
   const host = listRef.value;
   if (!host) return;
   const cards = host.querySelectorAll('.record-card');
+  // 性能：千条卡片时 offsetHeight 全量读取会强制全量布局，只测前 200 张代表
+  // （等高语义下卡片高度由字段/图片决定，前 200 张足够反映最高卡片）
+  const maxCards = 200;
   let max = 0;
-  cards.forEach((c) => {
-    max = Math.max(max, (c as HTMLElement).offsetHeight);
-  });
+  const count = Math.min(cards.length, maxCards);
+  for (let i = 0; i < count; i++) {
+    max = Math.max(max, (cards[i] as HTMLElement).offsetHeight);
+  }
   if (max > 0) cardMinHeight.value = max;
 }
-
-watch(
-  () => [props.records, props.columns, layoutSignature.value],
-  () => {
-    cardMinHeight.value = 0;
-    requestAnimationFrame(measureTallest);
-  },
-  { deep: true },
-);
-
-onMounted(measureTallest);
 
 defineEmits<{
   detail: [row: Record<string, unknown>];

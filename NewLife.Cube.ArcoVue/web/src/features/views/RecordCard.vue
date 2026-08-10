@@ -11,7 +11,8 @@
   >
     <div class="record-card-title">{{ title }}</div>
     <div v-if="imageUrl" class="record-card-image">
-      <img :src="imageUrl" alt="" />
+      <!-- 懒加载 + 异步解码：千条卡片时避免图片并发加载/解码阻塞首屏渲染 -->
+      <img :src="imageUrl" alt="" loading="lazy" decoding="async" />
     </div>
     <div class="record-card-fields">
       <div
@@ -34,16 +35,25 @@
       </div>
     </div>
     <div class="record-card-ops">
-      <a-button v-if="canViewDetail" size="mini" @click.stop="$emit('detail', record)">详情</a-button>
-      <a-button v-if="canEdit" size="mini" @click.stop="$emit('edit', record)">编辑</a-button>
-      <a-button
+      <button
+        v-if="canViewDetail"
+        type="button"
+        class="record-card-btn"
+        @click.stop="$emit('detail', record)"
+      >
+        详情
+      </button>
+      <button v-if="canEdit" type="button" class="record-card-btn" @click.stop="$emit('edit', record)">
+        编辑
+      </button>
+      <button
         v-if="canDelete"
-        size="mini"
-        status="danger"
+        type="button"
+        class="record-card-btn record-card-btn--danger"
         @click.stop="$emit('delete', record)"
       >
         删除
-      </a-button>
+      </button>
     </div>
   </div>
 </template>
@@ -229,6 +239,34 @@ const cardCssVars = computed(() => ({
   gap: 6px;
   margin-top: auto;
   padding-top: 2px;
+}
+
+/* 操作按钮：原生 button 替代 Arco a-button——组件实例化/卸载成本高，千条卡片翻页/懒加载重建时显著拖慢性能；
+   样式用 Arco 语义变量模拟 secondary mini 按钮（fill-2 底 + text-1 字），视觉保持一致 */
+.record-card-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 4px;
+  background: var(--color-fill-2);
+  color: var(--color-text-1);
+  font-size: var(--cube-font-size-meta);
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.2s, background-color 0.2s;
+}
+.record-card-btn:hover {
+  background: var(--color-fill-3);
+}
+.record-card-btn--danger {
+  color: rgb(var(--danger-6));
+}
+.record-card-btn--danger:hover {
+  color: rgb(var(--danger-6));
+  background: rgba(var(--danger-6), 0.08);
 }
 
 .record-card--row:not(.record-card--no-image) {

@@ -61,6 +61,28 @@
             <a-button v-if="flags.canAdd" type="primary" @click="openAdd">+ 添加记录</a-button>
           </a-space>
           <a-space>
+            <!-- 甘特图缩放控制（仅甘特图视图显示，位于筛选前）：− / 当前等级 / + 按钮切换等级，默认月·日 -->
+            <span v-if="activeViewKind === 'gantt'" class="tb-gantt-zoom">
+              <button
+                type="button"
+                class="tb-zoom-btn"
+                title="缩小"
+                :disabled="ganttZoomLevel <= 0"
+                @click="onGanttZoom(-1)"
+              >
+                −
+              </button>
+              <span class="tb-zoom-label">{{ ganttZoomLabel }}</span>
+              <button
+                type="button"
+                class="tb-zoom-btn"
+                title="放大"
+                :disabled="ganttZoomLevel >= 4"
+                @click="onGanttZoom(1)"
+              >
+                +
+              </button>
+            </span>
             <FilterBuilderPopover
               :visible="filterPopoverVisible"
               :fields="filterFields"
@@ -214,6 +236,7 @@
               @sort-change="onSortChange"
               @action="onTableAction"
               @toggle-enable="onToggleEnable"
+              @scroll-bottom="onTableScrollBottom"
             />
             <a-empty v-else description="暂无列表字段（GetPage.list 为空）" />
           </template>
@@ -275,7 +298,9 @@
             :mapping="activeGanttMapping"
             :row-key="pkField"
             :height="resolvedTableHeight"
+            :zoom-level="ganttZoomLevel"
             @detail="openDetail"
+            @mapping-change="onGanttMappingChange"
           />
 
           <a-empty v-else description="未知视图类型" />
@@ -284,9 +309,11 @@
         <div v-if="showPagerBar" class="list-pager">
           <a-pagination
             :current="pagination.current"
-            :page-size="pagination.pageSize"
+            :page-size="effectivePageSize"
             :total="pagination.total"
-            :page-size-options="[...PAGE_SIZE_OPTIONS]"
+            :page-size-options="
+              activeViewKind === 'gantt' ? GANTT_PAGE_SIZE_OPTIONS : [...PAGE_SIZE_OPTIONS]
+            "
             show-total
             show-page-size
             @change="onPageChange"
@@ -496,6 +523,8 @@ const pageSetting = ref<PageSetting | null>(null);
 const pkField = ref('id');
 
 const tableData = ref<Record<string, unknown>[]>([]);
+/** 后端原始数据（未应用视图级前端筛选 viewFilter）；视图切换/筛选变化时复用避免重复请求（重绘优化） */
+const tableDataRaw = ref<Record<string, unknown>[]>([]);
 const loading = ref(false);
 /** Enable 徽标切换请求进行中：防止快速双击并发回跳 */
 const enableBusy = ref(false);
@@ -617,6 +646,22 @@ const activeViewKind = computed<ViewKind>(() =>
   viewState.value ? getActiveView(viewState.value).view : 'table',
 );
 
+/** 甘特图缩放等级（zoomScale.levels 下标 0~4：年/年月/月·日/周·日/日·时），默认月·日 */
+const ganttZoomLevel = ref(2);
+/** 甘特图分页器可选条数（大视图 pageSize 钳制 200~1000，甘特图底部现可翻页） */
+const GANTT_PAGE_SIZE_OPTIONS = [200, 500, 1000];
+/** 甘特图缩放等级名称（与 GanttView.buildZoomLevels 下标一一对应） */
+const ganttZoomLabels = ['年', '年月', '月·日', '周·日', '日·时'];
+/** 当前缩放等级名称（−/+ 按钮中间标签显示） */
+const ganttZoomLabel = computed(
+  () => ganttZoomLabels[ganttZoomLevel.value] ?? `${ganttZoomLevel.value}`,
+);
+
+/** 甘特图缩放等级切换（− 缩小 / + 放大，0~4 夹取） */
+function onGanttZoom(delta: number) {
+  ganttZoomLevel.value = Math.min(4, Math.max(0, ganttZoomLevel.value + delta));
+}
+
 const activeViewId = computed(() => viewState.value?.activeViewId ?? '');
 
 /** 合法搜索 key（含范围字段 _min/_max 后缀，OSC-0012） */
@@ -698,7 +743,8 @@ const effectivePageSize = computed(() =>
 );
 
 const showPagerBar = computed(
-  () => chrome.value.showPager && !isLargePageView.value,
+  // 甘特图底部显示分页器可翻页（OSC-0019 后续）；看板/日历仍为大视图仅提示
+  () => chrome.value.showPager && (!isLargePageView.value || activeViewKind.value === 'gantt'),
 );
 
 /** 树数据可用：后端已返回 children 树，或扁平行可组装为树 */
@@ -784,7 +830,25 @@ const isGrouped = computed(
 /** 表格数据：分组视图时对 treeRows 做多级分组（组头节点 + 数据行） */
 /** 展示行：分组改由 ListTable 内 VTable 原生 groupBy 完成（OSC-0015 重构，参考官方 list-table-group-checkbox），
  *  此处始终传原始行（groupBy 在表格内部按分组字段重组并渲染组标题行） */
-const displayRows = computed(() => treeRows.value);
+/** 列表/树增量渲染：非分组视图先渲染前 N 条，滚动接近底部（ListTable scrollBottom）再追加；
+ *  分组视图需完整数据（VTable 内部 groupBy 分组统计），不做增量 */
+const TABLE_INITIAL_VISIBLE = 100;
+const TABLE_LOAD_STEP = 100;
+const tableVisibleCount = ref(TABLE_INITIAL_VISIBLE);
+
+const displayRows = computed(() => {
+  const rows = treeRows.value;
+  if (isGrouped.value) return rows;
+  return rows.slice(0, tableVisibleCount.value);
+});
+
+/** 列表/树滚动接近底部：追加下一批行（懒加载，避免千条一次性传 VTable） */
+function onTableScrollBottom() {
+  const rows = treeRows.value;
+  if (tableVisibleCount.value < rows.length) {
+    tableVisibleCount.value = Math.min(rows.length, tableVisibleCount.value + TABLE_LOAD_STEP);
+  }
+}
 
 /** 分组值显示标签：按分组字段 dataSource 枚举翻译（OSC-0015）；无映射回落显示原值 */
 function groupLabelOf(field: string, value: unknown): string | undefined {
@@ -1093,24 +1157,34 @@ function applySearchToForm(params: Record<string, unknown>) {
   Object.assign(searchForm, params);
 }
 
-async function loadData() {
+async function loadData(skipFetch = false) {
   // 翻页/重载后以当前页选择为准，避免旧主键残留导致批量删除误用
   selectedKeys.value = [];
   loading.value = true;
+  // 数据重载 → 列表/树增量渲染从头开始（前 100 条），滚动再追加
+  tableVisibleCount.value = TABLE_INITIAL_VISIBLE;
   try {
     const sort = buildSortPayload(activeSort.value);
     const pageSize = effectivePageSize.value;
-    const pageIndex = isLargePageView.value ? 0 : pagination.current - 1;
-    const res = await cubeApi.page.getList(typePath.value, {
-      pageIndex,
-      pageSize,
-      ...sort,
-      ...effectiveSearch.value,
-    });
-    let rows = (res.data as Record<string, unknown>[]) || [];
-    tableData.value = rows;
-    statData.value = (res.stat as Record<string, unknown>) ?? null;
-    if (res.page) pagination.total = res.page.totalCount || 0;
+    // 甘特图现可翻页（pageIndex 随分页器 current），看板/日历仍固定第一页大加载
+    const pageIndex =
+      isLargePageView.value && activeViewKind.value !== 'gantt' ? 0 : pagination.current - 1;
+    let rows: Record<string, unknown>[];
+    if (skipFetch && tableDataRaw.value.length) {
+      // 复用已加载原始数据（视图切换/纯前端筛选变化：搜索、排序、加载量未变，避免重复请求后端）
+      rows = tableDataRaw.value;
+    } else {
+      const res = await cubeApi.page.getList(typePath.value, {
+        pageIndex,
+        pageSize,
+        ...sort,
+        ...effectiveSearch.value,
+      });
+      rows = (res.data as Record<string, unknown>[]) || [];
+      tableDataRaw.value = rows;
+      statData.value = (res.stat as Record<string, unknown>) ?? null;
+      if (res.page) pagination.total = res.page.totalCount || 0;
+    }
     // 筛选构建器客户端复核（OSC-0015）：业务重写 Search 的控制器（如 Department.Search
     // 仅处理 id/parentId/enable/visible）与树控制器可能不应用通用等值过滤，对已加载数据
     // 兜底过滤保证筛选生效；普通控制器后端已过滤时此处幂等。同时覆盖 any 多条件 OR 降级。
@@ -1127,8 +1201,10 @@ async function loadData() {
       ) {
         pagination.total = tableData.value.length;
       }
+    } else {
+      tableData.value = rows;
     }
-    await hydrateLovLabels(tableData.value);
+    if (!skipFetch) await hydrateLovLabels(tableData.value);
   } finally {
     loading.value = false;
     // 洞察图表与列表同源（同一 effectiveSearch），随列表刷新；竞态由 chartSeq 保护
@@ -1196,6 +1272,12 @@ function onMappingChange(mapping: ViewMapping | undefined) {
   syncLocalState();
 }
 
+/** 甘特拖拽表格宽度上报：tableWidth 随 mapping 持久化到 ViewsJson（OSC-0019） */
+function onGanttMappingChange(mapping: GanttMapping) {
+  evpStore.updateMapping(typePath.value, mapping);
+  syncLocalState();
+}
+
 function onInsightChange(insight: ViewInsight) {
   evpStore.updateInsight(typePath.value, insight);
   syncLocalState();
@@ -1226,6 +1308,9 @@ function onConfigRename(name: string) {
 }
 
 function onSwitchView(id: string) {
+  const wasTouched = searchTouched.value;
+  const oldSort = JSON.stringify(buildSortPayload(activeSort.value));
+  const oldPageSize = effectivePageSize.value;
   evpStore.switchView(typePath.value, id);
   syncLocalState();
   selectedKeys.value = [];
@@ -1233,7 +1318,13 @@ function onSwitchView(id: string) {
   // 切换视图后重新计算条件来源并回填表单（OSC-0012）
   searchTouched.value = false;
   applySearchToForm(baseSearch.value);
-  loadData();
+  // 重绘优化：未显式搜索、且新视图加载量与排序与已加载数据一致时，复用数据避免重复请求后端
+  const canReuse =
+    !wasTouched &&
+    effectivePageSize.value === oldPageSize &&
+    JSON.stringify(buildSortPayload(activeSort.value)) === oldSort &&
+    tableDataRaw.value.length > 0;
+  loadData(canReuse);
 }
 
 function onCreateView(kind: ViewKind, name: string) {
@@ -1275,13 +1366,15 @@ function onCardDelete(row: Record<string, unknown>) {
   });
 }
 
-async function onResetViews() {
-  // 「恢复默认」= 恢复视图域：删除个人视图副本，回落管理员模板或系统默认（OSC-0014）
-  await evpStore.restoreViewDomain(typePath.value);
+function onResetViews() {
+  // 「恢复默认」= 当前视图恢复到创建时的默认状态（保留视图本身，仅重置配置；不删除用户自定义视图）
+  if (!activeViewId.value) return;
+  evpStore.restoreView(typePath.value, activeViewId.value);
   syncLocalState();
   selectedKeys.value = [];
   pagination.current = 1;
-  loadData();
+  // 恢复配置不改变数据源，复用已加载数据（避免重复请求后端）
+  loadData(true);
 }
 
 /** 系统管理员：将当前视图方案发布为全局模板（该实体默认视图；回落用户可见） */
@@ -1474,12 +1567,12 @@ function onGroupPopoverVisible(v: boolean) {
   activePopover.value = v ? 'group' : null;
 }
 
-/** 应用筛选方案：写入 store 持久化（刷新/下次打开保留）并重新请求 */
+/** 应用筛选方案：写入 store 持久化（刷新/下次打开保留）；筛选为纯前端过滤，复用已加载数据重过滤 */
 function onFilterApply(filter: ViewFilter) {
   evpStore.updateFilter(typePath.value, filter);
   localFilter.value = filter;
   pagination.current = 1;
-  loadData();
+  loadData(true);
 }
 
 /** 保存筛选方案到当前命名视图：写 store 持久化；不立即刷新（下次打开/刷新自动应用） */
@@ -1489,12 +1582,12 @@ function onFilterSave(filter: ViewFilter) {
   Message.success('筛选方案已保存到此视图');
 }
 
-/** 清除筛选方案（工具栏标签）：写入空方案持久化并重新请求 */
+/** 清除筛选方案（工具栏标签）：写入空方案持久化；筛选为纯前端过滤，复用已加载数据重过滤 */
 function onClearFilter() {
   evpStore.updateFilter(typePath.value, emptyViewFilter());
   localFilter.value = emptyViewFilter();
   pagination.current = 1;
-  loadData();
+  loadData(true);
   Message.success('已清除筛选');
 }
 
@@ -1668,8 +1761,8 @@ function onPageChange(page: number) {
 }
 function onPageSizeChange(size: number) {
   pagination.pageSize = size;
-  // 页面级 PageSize：仅普通视图（非大视图）保存到当前 typePath，不再写全局 workspace
-  if (!isLargePageView.value) {
+  // 页面级 PageSize：普通视图与甘特图（现可翻页）保存到当前 typePath，不再写全局 workspace
+  if (!isLargePageView.value || activeViewKind.value === 'gantt') {
     evpStore.setPageSize(typePath.value, normalizePageSize(size), true);
   }
   pagination.current = 1;
@@ -1816,6 +1909,44 @@ onBeforeUnmount(() => {
   position: relative;
   display: inline-flex;
   align-items: center;
+}
+/* 甘特图缩放控制（位于筛选前，仅甘特图视图显示）：− / 当前等级 / + 按钮 */
+.tb-gantt-zoom {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.tb-zoom-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--color-border-2);
+  background: var(--color-bg-2);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--color-text-3);
+  font-size: 16px;
+  line-height: 1;
+}
+.tb-zoom-btn:hover:not(:disabled) {
+  color: rgb(var(--primary-6));
+  border-color: rgb(var(--primary-6));
+  background: var(--color-fill-1);
+}
+.tb-zoom-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.tb-zoom-label {
+  min-width: 48px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-text-2);
+  white-space: nowrap;
 }
 /* 有筛选/分组条件时按钮显示主题浅色底纹；文字用当前主题 Primary 色（--cube-primary，外观设置可换） */
 .tb-act.is-active :deep(.arco-btn) {

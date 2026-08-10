@@ -235,7 +235,7 @@ function onMenuSelect(val: string | number | Record<string, unknown> | undefined
     return;
   }
   if (key === 'reset') {
-    if (window.confirm('恢复为默认「默认列表」视图并清除已保存配置？')) emit('reset');
+    if (window.confirm('将当前视图恢复到创建时的默认配置？')) emit('reset');
   }
 }
 

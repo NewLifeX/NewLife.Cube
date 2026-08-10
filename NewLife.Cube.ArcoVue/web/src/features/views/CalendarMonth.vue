@@ -158,30 +158,42 @@ const cells = computed(() => {
   const startPad = first.getDay();
   const today = new Date();
   const todayKey = dayKey(today);
+
+  // 事件按天索引（性能）：仅构建当月日历网格窗口 [gridStart, gridEnd] 的天→事件 Map，
+  // 每格 O(1) 查询，替代原每格 events.filter + 每事件多次 new Date（1000 事件约 12.6 万次 Date 分配）
+  const gridStart = new Date(y, m, 1 - startPad);
+  const gridEnd = new Date(y, m, 42 - startPad);
+  const byDay = new Map<string, CalEvent[]>();
+  for (const ev of events.value) {
+    const s = new Date(ev.start.getFullYear(), ev.start.getMonth(), ev.start.getDate());
+    const e = new Date(ev.end.getFullYear(), ev.end.getMonth(), ev.end.getDate());
+    // 与网格窗口无交集的事件跳过；遍历仅限窗口交集内天数（事件一般很短）
+    if (e < gridStart || s > gridEnd) continue;
+    const dStart = s < gridStart ? new Date(gridStart) : s;
+    const dEnd = e > gridEnd ? gridEnd : e;
+    for (let d = new Date(dStart); d <= dEnd; d.setDate(d.getDate() + 1)) {
+      const key = dayKey(d);
+      const arr = byDay.get(key);
+      if (arr) arr.push(ev);
+      else byDay.set(key, [ev]);
+    }
+  }
+
   const result: {
     day: number;
     inMonth: boolean;
     isToday: boolean;
     events: CalEvent[];
   }[] = [];
-
-  const gridStart = new Date(y, m, 1 - startPad);
   for (let i = 0; i < 42; i++) {
     const d = new Date(gridStart);
     d.setDate(gridStart.getDate() + i);
-    const inMonth = d.getMonth() === m;
     const key = dayKey(d);
-    const dayEvents = events.value.filter((ev) => {
-      const s = new Date(ev.start.getFullYear(), ev.start.getMonth(), ev.start.getDate());
-      const e = new Date(ev.end.getFullYear(), ev.end.getMonth(), ev.end.getDate());
-      const cur = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      return cur >= s && cur <= e;
-    });
     result.push({
       day: d.getDate(),
-      inMonth,
+      inMonth: d.getMonth() === m,
       isToday: key === todayKey,
-      events: dayEvents,
+      events: byDay.get(key) ?? [],
     });
   }
   return result;

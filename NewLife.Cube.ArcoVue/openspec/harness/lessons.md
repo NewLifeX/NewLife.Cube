@@ -154,6 +154,17 @@
 - **删除登记同步清理 spec**：T4 后 `more` 不再使用但 iconComponents 保留登记 + spec 覆盖列表含 `more`，验收审查才删；替换完成后 grep 使用点同步清理未用登记与其 spec 条目。
 - **外观设置动态保存即可删除「立即保存」**：`patchLayout/patchTheme → markDirtyAndSchedule(400ms) → saveNow` 自动持久化，显式保存按钮冗余；UI 保留「恢复默认」+ 同步状态标签即可（review 确认无手动保存诉求）。
 
+## OSC-0019 — 2026-08-10
+
+- **VTable Gantt 源码补丁用 postinstall 幂等脚本固化**：`switchToLevel`/`setMillisecondsPerPixel`/`updateScales` 三处冗余 `refreshAll` 去掉后切级 4→1 次全量重建；脚本内置版本检查告警，升级 `@visactor/vtable-gantt` 后自动提示核对。不用 patch-package（npm 不支持 `workspace:` 协议），不用 pnpm patch（避免重构 node_modules 风险）。
+- **VTable Gantt 无表格宽度调整事件**：`GANTT_EVENT_TYPE` 无 `resize_table_width`，`state-manager.ts` 的 `endResizeTableWidth` 不触发事件→需用轮询 `gantt.taskTableWidth` + 防抖兜底。
+- **VTable canvas 渲染与 Playwright 合成事件不兼容**：canvas 内部状态机（mousedown→pointermove 链）不响应 Playwright 派发的合成鼠标事件，canvas 交互类 AC 只能验证代码配置正确性，视觉效果需人工冒烟。涉及 VTable canvas 交互的 OSC 应在 verify 中提前声明此限制。
+- **`position: relative` 是 absolute 子元素的前提**：VTable 分割线（`verticalSplitResizeLine`）为 absolute 定位，宿主 `.gantt-host` 缺 `position: relative` 时分割线相对页面定位（被页头遮挡），导致拖拽不可用。涉及 absolute 定位子元素时，design 阶段应显式声明宿主定位上下文。
+- **同步 applyZoomLevel 消除两段式渲染跳动**：VTable Gantt `new Gantt()` 后 `ZoomScaleManager` 自动设初始级别（calculateInitialMillisecondsPerPixel），若异步延迟 `setZoomPosition` 会导致先渲染自动级别、再跳变目标级别。改为同步调用（`ZoomScaleManager` 在 `new Gantt()` 返回时已完整初始化），与实例创建同一渲染帧，消除跳动。
+- **单 OSC 增量增强不宜超过原始范围**：本号原始 4 项核心能力 + 9 项执行期增量，增量占比 >200%。大跨度增量应评估是否拆分为独立 OSC，保持单 OSC 范围可控、验收审查轻量。
+- **控件形态决策应在 design 阶段一次性确认**：缩放控件 3 次变更（选项框→移除滚动条→−/+ 按钮）与 OSC-0017「高级按钮形态」属同一教训——涉及控件形态的 UI 决策宜 demo 时给 2~3 个候选一次性对齐。
+- **ResizeObserver 回调需尺寸对比拦截**：VTable 缩放/时间轴总宽变化等内部布局变化也会触发 RO，不比较宿主尺寸直接重建会造成「重建→切级别→再重建」循环。增加 `lastHostW/H` 对比，真正变化才重建。
+
 ## 待办 — 字体规范（Harness）
 
 - 后续按现代中后台常见 **组件/场景**（列表表头、单元格、表单标签、抽屉标题、徽章等）在 Harness 建立统一的 **字体 / 字号 / 字重** 规范，并替换各处临时字重（如 VTable `headerStyle.fontWeight: 400`）。

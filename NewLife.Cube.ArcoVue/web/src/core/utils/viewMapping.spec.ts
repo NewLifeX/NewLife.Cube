@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { FieldMeta } from '@/core/types/field';
+import type { GanttMapping } from './viewMapping';
 import {
   bucketKanban,
   canCreateViewKind,
@@ -116,9 +117,16 @@ describe('normalizeMapping / seedMapping', () => {
     });
     expect(seedMapping('gantt', fields)).toMatchObject({
       kind: 'gantt',
-      startField: 'Start',
-      endField: 'End',
+      titleField: 'Name',
+      plannedStartField: 'Start',
+      plannedEndField: 'End',
     });
+    // 甘特新结构：实际/颜色/宽度缺省（OSC-0019）
+    const ganttSeed = seedMapping('gantt', fields) as GanttMapping;
+    expect(ganttSeed.actualStartField).toBeUndefined();
+    expect(ganttSeed.actualEndField).toBeUndefined();
+    expect(ganttSeed.barColor).toBeUndefined();
+    expect(ganttSeed.tableWidth).toBeUndefined();
   });
 
   it('drops illegal field names', () => {
@@ -184,6 +192,139 @@ describe('normalizeMapping / seedMapping', () => {
       layout: 'standard',
       bodyColumns: 2,
       fieldOrientation: 'vertical',
+    });
+  });
+
+  it('gantt normalize: 旧数据 startField/endField 迁移为 planned，colorField 忽略（OSC-0019）', () => {
+    const m = normalizeMapping(
+      'gantt',
+      {
+        kind: 'gantt',
+        titleField: 'Name',
+        startField: 'Start',
+        endField: 'End',
+        colorField: 'Status',
+      },
+      fields,
+    );
+    expect(m).toMatchObject({
+      kind: 'gantt',
+      titleField: 'Name',
+      plannedStartField: 'Start',
+      plannedEndField: 'End',
+    });
+    // colorField 忽略（行为变更：按字段着色 → 固定色）
+    expect((m as Record<string, unknown>)['colorField']).toBeUndefined();
+    expect((m as Record<string, unknown>)['startField']).toBeUndefined();
+    expect((m as Record<string, unknown>)['endField']).toBeUndefined();
+  });
+
+  it('gantt normalize: 新结构 round-trip（planned/actual/barColor/tableWidth）', () => {
+    const m = normalizeMapping(
+      'gantt',
+      {
+        kind: 'gantt',
+        titleField: 'Name',
+        plannedStartField: 'Start',
+        plannedEndField: 'End',
+        actualStartField: 'Start',
+        actualEndField: 'End',
+        barColor: '#FF6600',
+        tableWidth: 520,
+      },
+      fields,
+    );
+    expect(m).toEqual({
+      kind: 'gantt',
+      titleField: 'Name',
+      plannedStartField: 'Start',
+      plannedEndField: 'End',
+      actualStartField: 'Start',
+      actualEndField: 'End',
+      barColor: '#FF6600',
+      tableWidth: 520,
+    });
+  });
+
+  it('gantt normalize: 实际字段仅配一个视为未配置实际', () => {
+    const m = normalizeMapping(
+      'gantt',
+      {
+        kind: 'gantt',
+        titleField: 'Name',
+        plannedStartField: 'Start',
+        plannedEndField: 'End',
+        actualStartField: 'Start',
+      },
+      fields,
+    );
+    expect(m).toMatchObject({ plannedStartField: 'Start', plannedEndField: 'End' });
+    expect((m as Record<string, unknown>)['actualStartField']).toBeUndefined();
+    expect((m as Record<string, unknown>)['actualEndField']).toBeUndefined();
+  });
+
+  it('gantt normalize: barColor 非法 hex / tableWidth 越界非数均丢弃', () => {
+    const m = normalizeMapping(
+      'gantt',
+      {
+        kind: 'gantt',
+        titleField: 'Name',
+        plannedStartField: 'Start',
+        plannedEndField: 'End',
+        barColor: 'red',
+        tableWidth: 9999,
+      },
+      fields,
+    );
+    expect((m as Record<string, unknown>)['barColor']).toBeUndefined();
+    expect((m as Record<string, unknown>)['tableWidth']).toBe(640);
+
+    const m2 = normalizeMapping(
+      'gantt',
+      {
+        kind: 'gantt',
+        titleField: 'Name',
+        plannedStartField: 'Start',
+        plannedEndField: 'End',
+        barColor: '#12345',
+        tableWidth: 'abc',
+      },
+      fields,
+    );
+    expect((m2 as Record<string, unknown>)['barColor']).toBeUndefined();
+    expect((m2 as Record<string, unknown>)['tableWidth']).toBeUndefined();
+
+    const m3 = normalizeMapping(
+      'gantt',
+      {
+        kind: 'gantt',
+        titleField: 'Name',
+        plannedStartField: 'Start',
+        plannedEndField: 'End',
+        barColor: '#a1b2c3',
+        tableWidth: 100,
+      },
+      fields,
+    );
+    expect((m3 as Record<string, unknown>)['barColor']).toBe('#a1b2c3');
+    expect((m3 as Record<string, unknown>)['tableWidth']).toBe(280);
+  });
+
+  it('gantt normalize: 计划字段非法回落 seedMapping', () => {
+    const m = normalizeMapping(
+      'gantt',
+      {
+        kind: 'gantt',
+        titleField: 'Name',
+        plannedStartField: 'Nope',
+        plannedEndField: 'Nope2',
+      },
+      fields,
+    );
+    expect(m).toMatchObject({
+      kind: 'gantt',
+      plannedStartField: 'Start',
+      plannedEndField: 'End',
     });
   });
 });

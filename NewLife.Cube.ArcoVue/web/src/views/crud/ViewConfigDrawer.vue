@@ -552,38 +552,6 @@
 
             <template v-else-if="viewKind === 'gantt'">
               <div class="nested-field">
-                <div class="cfg-label">开始 *</div>
-                <a-select
-                  v-model="localMapping.startField"
-                  placeholder="选择开始日期字段"
-                  @change="emitMapping"
-                >
-                  <a-option
-                    v-for="f in dateCandidates"
-                    :key="f.name"
-                    :value="f.name"
-                  >
-                    {{ fieldLabel(f) }}
-                  </a-option>
-                </a-select>
-              </div>
-              <div class="nested-field">
-                <div class="cfg-label">结束 *</div>
-                <a-select
-                  v-model="localMapping.endField"
-                  placeholder="选择结束日期字段"
-                  @change="emitMapping"
-                >
-                  <a-option
-                    v-for="f in dateCandidates"
-                    :key="f.name"
-                    :value="f.name"
-                  >
-                    {{ fieldLabel(f) }}
-                  </a-option>
-                </a-select>
-              </div>
-              <div class="nested-field">
                 <div class="cfg-label">标题</div>
                 <a-select
                   v-model="localMapping.titleField"
@@ -600,21 +568,115 @@
                 </a-select>
               </div>
               <div class="nested-field">
-                <div class="cfg-label">颜色</div>
+                <div class="cfg-label">计划开始 *</div>
                 <a-select
-                  v-model="localMapping.colorField"
-                  allow-clear
-                  placeholder="无"
+                  v-model="localMapping.plannedStartField"
+                  placeholder="选择计划开始日期字段"
                   @change="emitMapping"
                 >
                   <a-option
-                    v-for="f in colorCandidates"
+                    v-for="f in dateCandidates"
                     :key="f.name"
                     :value="f.name"
                   >
                     {{ fieldLabel(f) }}
                   </a-option>
                 </a-select>
+              </div>
+              <div class="nested-field">
+                <div class="cfg-label">计划结束 *</div>
+                <a-select
+                  v-model="localMapping.plannedEndField"
+                  placeholder="选择计划结束日期字段"
+                  @change="emitMapping"
+                >
+                  <a-option
+                    v-for="f in dateCandidates"
+                    :key="f.name"
+                    :value="f.name"
+                  >
+                    {{ fieldLabel(f) }}
+                  </a-option>
+                </a-select>
+              </div>
+              <div class="nested-field">
+                <div class="cfg-label">实际开始</div>
+                <a-select
+                  v-model="localMapping.actualStartField"
+                  allow-clear
+                  placeholder="无（仅显示计划）"
+                  @change="emitMapping"
+                >
+                  <a-option
+                    v-for="f in dateCandidates"
+                    :key="f.name"
+                    :value="f.name"
+                  >
+                    {{ fieldLabel(f) }}
+                  </a-option>
+                </a-select>
+              </div>
+              <div class="nested-field">
+                <div class="cfg-label">实际结束</div>
+                <a-select
+                  v-model="localMapping.actualEndField"
+                  allow-clear
+                  placeholder="无（仅显示计划）"
+                  @change="emitMapping"
+                >
+                  <a-option
+                    v-for="f in dateCandidates"
+                    :key="f.name"
+                    :value="f.name"
+                  >
+                    {{ fieldLabel(f) }}
+                  </a-option>
+                </a-select>
+              </div>
+              <div class="nested-field">
+                <div class="cfg-label">任务条颜色</div>
+                <div class="gantt-color-panel">
+                  <!-- 预置色板 + 自定义色块（与外观设置「自定义主色」一致，OSC-0019 后续） -->
+                  <div class="gantt-preset-swatches">
+                    <button
+                      v-for="c in PRESET_THEME_COLORS"
+                      :key="c.key"
+                      type="button"
+                      class="gantt-preset-swatch"
+                      :class="{ selected: barColorShown.toLowerCase() === c.color.toLowerCase() }"
+                      :style="{ background: c.color }"
+                      :title="c.name"
+                      @click="pickBarPresetColor(c)"
+                    >
+                      <icon-park
+                        v-if="barColorShown.toLowerCase() === c.color.toLowerCase()"
+                        type="check"
+                        class="gantt-swatch-check"
+                      />
+                    </button>
+                    <!-- 自定义色块：当前值（含主题主色），非预置时显示选中态 -->
+                    <button
+                      type="button"
+                      class="gantt-preset-swatch gantt-custom-swatch"
+                      :class="{ selected: !isBarPresetActive() }"
+                      :style="{ background: barColorShown }"
+                      title="自定义任务条颜色"
+                      @click="openBarColorPicker"
+                    >
+                      <icon-park v-if="!isBarPresetActive()" type="check" class="gantt-swatch-check" />
+                    </button>
+                    <input
+                      ref="barColorInputRef"
+                      type="color"
+                      :value="barColorShown"
+                      class="gantt-color-input-hidden"
+                      @input="onBarColorInput"
+                    />
+                  </div>
+                  <div class="gantt-color-actions">
+                    <a-button size="mini" @click="clearBarColor">恢复默认</a-button>
+                  </div>
+                </div>
               </div>
             </template>
           </div>
@@ -653,6 +715,8 @@ import {
   type CardFieldOrientation,
   type CardLayout,
 } from '@/core/utils/viewMapping';
+import { useUserProfileStore } from '@/stores/userProfile';
+import { PRESET_THEME_COLORS, type PresetThemeColor } from '@/core/utils/presetColors';
 
 type Swatch = { key: string; label: string; color?: string; none?: boolean };
 
@@ -740,10 +804,26 @@ const localMapping = reactive({
   startField: '',
   endField: undefined as string | undefined,
   colorField: undefined as string | undefined,
+  // 甘特（OSC-0019）：计划/实际/固定颜色
+  plannedStartField: '',
+  plannedEndField: '',
+  actualStartField: undefined as string | undefined,
+  actualEndField: undefined as string | undefined,
+  barColor: undefined as string | undefined,
   layout: 'standard' as CardLayout,
   bodyColumns: 2 as CardBodyColumns,
   fieldOrientation: 'vertical' as CardFieldOrientation,
 });
+
+/** 当前主题主色（外观设置自定义主色 hex；缺省极客蓝） */
+const profileStore = useUserProfileStore();
+function currentPrimaryColor(): string {
+  return profileStore.prefs.theme.primaryColor || '#165DFF';
+}
+/** 任务条颜色缺省显示值：当前主题主色；选回该值视为恢复主题色（OSC-0019） */
+const barColorShown = ref(currentPrimaryColor());
+/** 自定义任务条颜色取色器（隐藏原生 color input，与外观设置「自定义主色」一致） */
+const barColorInputRef = ref<HTMLElement | null>(null);
 
 const cardLayouts: { value: CardLayout; label: string }[] = [
   { value: 'standard', label: '标准' },
@@ -844,6 +924,12 @@ function syncMappingFromProps() {
   localMapping.startField = '';
   localMapping.endField = undefined;
   localMapping.colorField = undefined;
+  localMapping.plannedStartField = '';
+  localMapping.plannedEndField = '';
+  localMapping.actualStartField = undefined;
+  localMapping.actualEndField = undefined;
+  localMapping.barColor = undefined;
+  barColorShown.value = currentPrimaryColor();
   localMapping.layout = 'standard';
   localMapping.bodyColumns = 2;
   localMapping.fieldOrientation = 'vertical';
@@ -870,10 +956,13 @@ function syncMappingFromProps() {
     localMapping.titleField = m.titleField;
     localMapping.colorField = m.colorField;
   } else if (m.kind === 'gantt') {
-    localMapping.startField = m.startField;
-    localMapping.endField = m.endField;
     localMapping.titleField = m.titleField;
-    localMapping.colorField = m.colorField;
+    localMapping.plannedStartField = m.plannedStartField;
+    localMapping.plannedEndField = m.plannedEndField;
+    localMapping.actualStartField = m.actualStartField;
+    localMapping.actualEndField = m.actualEndField;
+    localMapping.barColor = m.barColor;
+    barColorShown.value = m.barColor ?? currentPrimaryColor();
   }
 }
 
@@ -1044,15 +1133,61 @@ function emitMapping() {
     return;
   }
   if (kind === 'gantt') {
-    if (!localMapping.startField || !localMapping.endField || !localMapping.titleField) return;
+    if (!localMapping.plannedStartField || !localMapping.plannedEndField || !localMapping.titleField)
+      return;
+    // 实际字段成对生效：仅配一个视为未配置实际（OSC-0019）
+    const actualStart = localMapping.actualStartField || undefined;
+    const actualEnd = localMapping.actualEndField || undefined;
+    const hasActual = !!(actualStart && actualEnd);
     emit('update:mapping', {
       kind: 'gantt',
-      startField: localMapping.startField,
-      endField: localMapping.endField,
       titleField: localMapping.titleField,
-      colorField: localMapping.colorField || undefined,
+      plannedStartField: localMapping.plannedStartField,
+      plannedEndField: localMapping.plannedEndField,
+      actualStartField: hasActual ? actualStart : undefined,
+      actualEndField: hasActual ? actualEnd : undefined,
+      barColor: localMapping.barColor || undefined,
     });
   }
+}
+
+/** 当前任务条颜色是否落在预置色板（自定义色块选中态） */
+function isBarPresetActive(): boolean {
+  const v = barColorShown.value.toLowerCase();
+  return PRESET_THEME_COLORS.some((c) => c.color.toLowerCase() === v);
+}
+
+/** 点击预置色 → 写入任务条颜色并提交 */
+function pickBarPresetColor(c: PresetThemeColor) {
+  barColorShown.value = c.color;
+  onBarColorChange();
+}
+
+/** 打开自定义取色器（隐藏原生 color input，与外观设置一致） */
+function openBarColorPicker() {
+  barColorInputRef.value?.click();
+}
+
+/** 自定义取色器输入 → 写入任务条颜色并提交 */
+function onBarColorInput(e: Event) {
+  barColorShown.value = (e.target as HTMLInputElement).value;
+  onBarColorChange();
+}
+
+/** 任务条颜色变化：选回当前主题主色视为未配置（恢复主题色） */
+function onBarColorChange() {
+  localMapping.barColor =
+    barColorShown.value.toLowerCase() === currentPrimaryColor().toLowerCase()
+      ? undefined
+      : barColorShown.value;
+  emitMapping();
+}
+
+/** 恢复任务条颜色为当前主题主色（barColor = undefined） */
+function clearBarColor() {
+  barColorShown.value = currentPrimaryColor();
+  localMapping.barColor = undefined;
+  emitMapping();
 }
 
 function onCardLayoutChange() {
@@ -1299,6 +1434,58 @@ function setHeight(mode: HeightMode) {
 }
 .slider-val {
   color: var(--color-text-3);
+}
+
+/* 甘特任务条颜色：预置色板 + 自定义色块（与外观设置「自定义主色」一致，OSC-0019 后续） */
+.gantt-color-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+.gantt-preset-swatches {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+.gantt-preset-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-2);
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+.gantt-preset-swatch:hover {
+  box-shadow: 0 0 0 2px rgb(var(--primary-6));
+}
+.gantt-preset-swatch.selected {
+  box-shadow: 0 0 0 2px rgb(var(--primary-6));
+}
+.gantt-swatch-check {
+  color: #fff;
+  font-size: 14px;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.45));
+}
+/* 自定义色块：与预置色同尺寸，覆盖在色板网格最后一个格子 */
+.gantt-custom-swatch {
+  grid-column: span 1;
+}
+.gantt-color-input-hidden {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+.gantt-color-actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .seg-group {
