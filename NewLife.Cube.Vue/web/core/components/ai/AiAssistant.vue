@@ -457,9 +457,9 @@ onMounted(loadConfig);
   width: 460px;
   height: 70vh;
   min-height: 400px;
-  background: #fff;
+  background: var(--el-bg-color);
   border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 8px 30px color-mix(in srgb, var(--el-color-black) 18%, transparent);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -485,11 +485,11 @@ onMounted(loadConfig);
   justify-content: space-between;
   padding: 10px 14px;
   background: linear-gradient(135deg, var(--ai-primary) 0%, var(--ai-secondary) 100%);
-  color: #fff;
+  color: var(--el-color-white);
   font-weight: 600;
 }
 .ai-panel-header .el-button {
-  color: #fff;
+  color: var(--el-color-white);
 }
 .ai-messages {
   flex: 1;
@@ -497,7 +497,7 @@ onMounted(loadConfig);
   padding: 14px;
 }
 .ai-welcome {
-  color: #666;
+  color: var(--el-text-color-regular);
   font-size: 13px;
 }
 .ai-welcome p {
@@ -523,12 +523,12 @@ onMounted(loadConfig);
 }
 .ai-user .ai-bubble {
   background: var(--ai-primary);
-  color: #fff;
+  color: var(--el-color-white);
   border-top-right-radius: 2px;
 }
 .ai-assistant .ai-bubble {
-  background: #f2f3f5;
-  color: #333;
+  background: var(--el-fill-color);
+  color: var(--el-text-color-primary);
   border-top-left-radius: 2px;
 }
 .ai-assistant .ai-bubble :deep(h1), .ai-assistant .ai-bubble :deep(h2), .ai-assistant .ai-bubble :deep(h3), .ai-assistant .ai-bubble :deep(h4) {
@@ -538,15 +538,15 @@ onMounted(loadConfig);
   margin: 4px 0;
 }
 .ai-assistant .ai-bubble :deep(code) {
-  background: #e9e9e9;
+  background: var(--el-fill-color-darker);
   padding: 1px 4px;
   border-radius: 3px;
   font-family: Consolas, Monaco, 'Courier New', monospace;
   font-size: 90%;
 }
 .ai-assistant .ai-bubble :deep(pre) {
-  background: #1e1e1e;
-  color: #d4d4d4;
+  background: color-mix(in srgb, var(--el-color-black) 88%, transparent);
+  color: color-mix(in srgb, var(--el-color-white) 83%, transparent);
   padding: 10px 12px;
   border-radius: 6px;
   overflow-x: auto;
@@ -564,7 +564,7 @@ onMounted(loadConfig);
   top: 4px;
   right: 8px;
   font-size: 10px;
-  color: #888;
+  color: var(--el-text-color-secondary);
   text-transform: uppercase;
   user-select: none;
 }
@@ -575,12 +575,12 @@ onMounted(loadConfig);
 }
 .ai-assistant .ai-bubble :deep(th),
 .ai-assistant .ai-bubble :deep(td) {
-  border: 1px solid #ddd;
+  border: 1px solid var(--el-border-color);
   padding: 4px 6px;
   font-size: 12px;
 }
 .ai-assistant .ai-bubble :deep(th) {
-  background: #f5f5f5;
+  background: var(--el-fill-color-light);
 }
 .ai-assistant .ai-bubble :deep(a) {
   color: var(--ai-primary);
@@ -588,7 +588,7 @@ onMounted(loadConfig);
 }
 .ai-assistant .ai-bubble :deep(hr) {
   border: none;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--el-border-color-lighter);
   margin: 8px 0;
 }
 .ai-assistant .ai-bubble :deep(ul),
@@ -606,40 +606,40 @@ onMounted(loadConfig);
   border-left: 3px solid var(--ai-primary);
   margin: 6px 0;
   padding: 4px 10px;
-  background: color-mix(in srgb, var(--ai-primary) 6%, #fff);
-  color: #555;
+  background: color-mix(in srgb, var(--ai-primary) 6%, var(--el-color-white));
+  color: var(--el-text-color-regular);
 }
 .ai-tool {
   font-size: 12px;
-  color: #666;
-  background: #fafafa;
-  border: 1px solid #eee;
+  color: var(--el-text-color-regular);
+  background: var(--el-fill-color-lighter);
+  border: 1px solid var(--el-border-color-lighter);
   border-radius: 6px;
   padding: 6px 10px;
   margin-bottom: 6px;
 }
 .ai-tool-done {
-  color: #2e7d32;
-  border-color: #c8e6c9;
-  background: #f1f8f1;
+  color: var(--el-color-success-dark-2);
+  border-color: var(--el-color-success-light-7);
+  background: var(--el-color-success-light-9);
 }
 .ai-tool-error {
-  color: #c62828;
-  border-color: #ffcdd2;
-  background: #fff5f5;
+  color: var(--el-color-danger-dark-2);
+  border-color: var(--el-color-danger-light-7);
+  background: var(--el-color-danger-light-9);
 }
 .ai-panel-footer {
   display: flex;
   align-items: flex-end;
   gap: 8px;
   padding: 10px 12px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--el-border-color-lighter);
 }
 .ai-think {
   flex-shrink: 0;
   padding-bottom: 6px;
   font-size: 12px;
-  color: #666;
+  color: var(--el-text-color-regular);
 }
 .ai-panel-footer .el-textarea {
   flex: 1;
