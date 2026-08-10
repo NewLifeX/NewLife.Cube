@@ -184,9 +184,9 @@ const handleGetRequest = async () => {
   }
 
   try {
-    const response = await request.get('/Sso/Access_Token', {
+    const response = (await request.get('/Sso/Access_Token', {
       params: getForm,
-    });
+    })) as unknown as TokenResult;
 
     const result: TokenResult = {
       access_token: response.access_token,
@@ -224,9 +224,9 @@ const handlePostRequest = async () => {
   }
 
   try {
-    const response = await request.post('/Sso/Access_Token', null, {
+    const response = (await request.post('/Sso/Access_Token', null, {
       params: postForm,
-    });
+    })) as unknown as TokenResult;
 
     const result: TokenResult = {
       access_token: response.access_token,

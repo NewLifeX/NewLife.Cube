@@ -39,7 +39,7 @@
         </el-table-column>
         <el-table-column label="自动注册" width="100">
           <template #default="scope">
-            <el-tag :type="scope.row.autoRegister ? 'warning' : ''">
+            <el-tag :type="scope.row.autoRegister ? 'warning' : 'info'">
               {{ scope.row.autoRegister ? '是' : '否' }}
             </el-tag>
           </template>
@@ -173,6 +173,7 @@
 
 import { ref, reactive, onMounted } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus';
+import { ElMessageBox } from 'element-plus';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListToolbarSearch.vue';
 import CubeListPager from '@newlifex/cube-vue/core/components/CubeListPager.vue';
@@ -285,9 +286,12 @@ const callback = (e?: Record<string, unknown>) => {
 const loadData = async () => {
   loading.value = true;
   try {
-    const data = await request.get('/Admin/OAuthConfig', {
+    const data = (await request.get('/Admin/OAuthConfig', {
       params: queryParams
-    });
+    })) as unknown as {
+      data?: OAuthConfig[];
+      page?: { totalCount?: number };
+    };
     // 处理不同的响应格式
     if (data && typeof data === 'object' && 'data' in data && 'page' in data) {
       // 包含分页信息的响应

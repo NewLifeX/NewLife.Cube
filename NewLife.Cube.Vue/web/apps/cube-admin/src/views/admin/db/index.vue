@@ -157,12 +157,12 @@ const handleDownload = async () => {
     console.log('开始下载备份文件:', downloadForm.name)
 
     // 使用 request 发送下载请求，获取二进制数据
-    const blob = await request.get('/Admin/Db/Download',
+    const blob = (await request.get('/Admin/Db/Download',
       {
         params: { name: downloadForm.name },
         responseType: 'blob'
       }
-    )
+    )) as unknown as Blob
 
     // 创建下载链接
     const url = window.URL.createObjectURL(blob)

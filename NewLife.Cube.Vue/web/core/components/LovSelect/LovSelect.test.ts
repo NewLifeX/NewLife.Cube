@@ -23,7 +23,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { effectScope, ref, type EffectScope } from 'vue';
 import { flushPromises } from '@vue/test-utils';
 import { useLovSelect, type UseLovSelectOptions } from './useLovSelect';
-import type { LovMetaResponse, LovMetaItem, LovListMeta } from '../types/lov';
+import type { LovMetaResponse, LovMetaItem, LovListMeta } from '../../types/lov';
 // 桩掉 request 避免加载 universal-cookie 等缺失依赖（即便 lovStore 被 mock，导入链仍可能触发）
 vi.mock('@newlifex/cube-vue/core/utils/request', () => ({
   default: { get: vi.fn(), post: vi.fn() },

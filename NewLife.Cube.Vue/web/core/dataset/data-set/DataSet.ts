@@ -1,4 +1,4 @@
-import { ref, toRaw, type UnwrapRef } from 'vue';
+import { ref, shallowRef } from 'vue';
 import { type AxiosRequestConfig, type AxiosInstance } from 'axios';
 import axios from '../../utils/request';
 import { generateResponseData, getDataByKey } from '../../utils/common';
@@ -12,7 +12,7 @@ import type { VNode } from 'vue';
 export type TransportHookProps = {
   data?: object;
   params?: object;
-  dataSet?: DataSet;
+  dataSet?: DataSet<any, any>;
   [key: string]: object | undefined;
 };
 
@@ -153,9 +153,9 @@ interface DataSetOptions<T, Q> {
  */
 export class DataSet<T extends Record<string, unknown> = Record<string, unknown>, Q extends Record<string, unknown> = Record<string, unknown>> {
   /** 响应式数据数组 */
-  private readonly _data = ref<Array<T>>([]);
+  private readonly _data = shallowRef<Array<T>>([]);
   /** 当前选中项的引用 */
-  private readonly _current = ref<T | null>(null);
+  private readonly _current = shallowRef<T | null>(null);
   /** 数据项唯一标识字段名 */
   private readonly _idField: string;
   /** 可查询字段配置 */
@@ -342,9 +342,9 @@ export class DataSet<T extends Record<string, unknown> = Record<string, unknown>
         if (!fieldConfig) return true;
 
         if (fieldConfig.fuzzy && fieldConfig.type === 'string') {
-          return String(item[key as keyof Q]).includes(String(value));
+          return String((item as Record<string, unknown>)[key]).includes(String(value));
         }
-        return item[key as keyof Q] === value;
+        return (item as Record<string, unknown>)[key] === value;
       });
     });
   }

@@ -172,16 +172,16 @@ function renderMarkdown(text: string): string {
     breaks: true, // 单换行 → <br>，AI 流式输出友好
     renderer: {
       // 安全：AI 输出中的 raw HTML 一律转义显示，防止 XSS
-      html: ({ text: t }) => escapeHtml(t),
+      html: ({ text: t }: { text: string }) => escapeHtml(t),
       // 代码块：语言徽标 + 内容转义 + 深色样式
-      code: ({ text: t, lang }) => {
+      code: ({ text: t, lang }: { text: string; lang?: string }) => {
         const l = (lang || '').match(/^\S+/)?.[0] || '';
         const label = l ? `<span class="ai-code-lang">${escapeHtml(l)}</span>` : '';
         const body = String(t).replace(/\n+$/, '');
         return `<pre>${label}<code class="language-${escapeHtml(l)}">${escapeHtml(body)}</code></pre>`;
       },
     } as any,
-  });
+  }) as string;
 }
 
 function scrollBottom() {

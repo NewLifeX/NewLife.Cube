@@ -16,7 +16,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import ElementPlus from 'element-plus';
 import ListFormDialog from './ListFormDialog.vue';
-import type { FieldMeta } from '../../types/field';
+import type { FieldMeta } from '../../../types/field';
 
 // ── Mock FormContent ────────────────────────────────────────────
 // 避免依赖 FormContent 内部的控件渲染，只验证 ListFormDialog 的 props 传递逻辑

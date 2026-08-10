@@ -66,13 +66,13 @@ vi.mock('md-editor-v3', async () => ({
 }));
 
 // 关键组件（用于 findComponent 断言）
-import FormContent from '../views/components/FormContent';
-import LovSelect from '../components/LovSelect';
-import Uploader from '../components/Uploader';
-import JsonEditor from '../components/JsonEditor';
-import RichEditor from '../components/RichEditor';
-import ColorPicker from '../components/ColorPicker';
-import IconSelector from '../components/IconSelector';
+import FormContent from '../views/components/FormContent.vue';
+import LovSelect from '../components/LovSelect/index.vue';
+import Uploader from '../components/Uploader.vue';
+import JsonEditor from '../components/JsonEditor.vue';
+import RichEditor from '../components/RichEditor.vue';
+import ColorPicker from '../components/ColorPicker.vue';
+import IconSelector from '../components/IconSelector.vue';
 
 const ENUM_LOV = 'Enum.CubeDemo.Areas.Test.测试枚举';
 

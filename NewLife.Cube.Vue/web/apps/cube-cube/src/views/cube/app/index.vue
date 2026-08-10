@@ -16,8 +16,8 @@
     <!-- 表格卡片 -->
     <el-card class="box-card">
       <el-alert
-        v-if="queryParams.total > 0"
-        :title="`共找到 ${queryParams.total} 条应用记录`"
+        v-if="(queryParams.total ?? 0) > 0"
+        :title="`共找到 ${queryParams.total ?? 0} 条应用记录`"
         type="info"
         show-icon
         :closable="false"
@@ -66,7 +66,7 @@
       </el-table>
 
       <CubeListPager
-        :total="queryParams.total"
+        :total="queryParams.total ?? 0"
         :current-page="queryParams.pageIndex"
         :page-size="queryParams.pageSize"
         :on-current-change="CurrentPageChange"

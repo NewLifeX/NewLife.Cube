@@ -4,7 +4,7 @@
  * 纯函数测试，无需 DOM 环境，覆盖所有已知值+边界值。
  */
 import { describe, it, expect } from 'vitest';
-import { getKind } from '../../../apps/cube-admin/src/views/admin/parameter/parameter-kind';
+import { getKind } from '../../apps/cube-admin/src/views/admin/parameter/parameter-kind';
 
 describe('getKind()', () => {
   it('普通 (0)', () => {

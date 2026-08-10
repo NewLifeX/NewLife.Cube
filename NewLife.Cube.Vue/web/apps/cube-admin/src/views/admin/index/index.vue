@@ -24,7 +24,7 @@
               <el-descriptions-item
                 v-for="(value, key) in systemInfo"
                 :key="key"
-                :label="getSystemInfoLabel(key)"
+                :label="getSystemInfoLabel(String(key))"
               >
                 {{ formatSystemInfoValue(value) }}
               </el-descriptions-item>
@@ -427,7 +427,7 @@ const refreshSystemInfo = async () => {
 // 获取主要信息（系统信息）
 const getMainInfo = async () => {
   try {
-    const data = await request.get('/Admin/Index/Main')
+    const data = (await request.get('/Admin/Index/Main')) as unknown as Record<string, unknown>
 
     // 直接使用 API 返回的所有字段，不进行固定字段映射
     // 清空之前的数据
@@ -439,7 +439,7 @@ const getMainInfo = async () => {
     if (data && typeof data === 'object') {
       Object.keys(data).forEach(key => {
         if (data[key] !== null && data[key] !== undefined) {
-          systemInfo[key] = data[key]
+          systemInfo[key] = data[key] as string | number | boolean | null
         }
       })
     }
@@ -454,7 +454,10 @@ const getServerVarList = async () => {
   try {
     loading.serverVars = true
 
-    const data = await request.get('/Admin/Index/ServerVarList')
+    const data = (await request.get('/Admin/Index/ServerVarList')) as unknown as {
+      server?: Array<{ name?: string; value?: string }>;
+      request?: Array<{ name?: string; value?: string | number | boolean | object | null }>;
+    }
 
     if (data && typeof data === 'object') {
       // 处理服务器Headers数据
@@ -471,7 +474,7 @@ const getServerVarList = async () => {
       if (data.request && Array.isArray(data.request)) {
         requestInfo.value = data.request.map((item: { name?: string; value?: string | number | boolean | object | null }) => ({
           name: item.name || '',
-          value: item.value
+          value: item.value ?? ''
         }))
       } else {
         requestInfo.value = []
