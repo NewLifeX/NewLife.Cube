@@ -175,4 +175,43 @@ public class PageCheckpointServiceTests
         Assert.Contains("querySelectorAll('input,select,textarea')", script);
         Assert.Contains("data-ai-context", script);
     }
+
+    [Fact]
+    [DisplayName("CubeBrowserContext_含Writer_可被SystemTextJson序列化")]
+    public void CubeBrowserContext_WithWriter_Serializable()
+    {
+        // 回归：本类常驻 ChatOptions.Items，AI 客户端序列化请求体时会展开 Items 序列化本对象。
+        // Writer 为委托、CheckpointService 为服务实例，均不可序列化，必须被 [JsonIgnore] 跳过，否则抛 NotSupportedException（Path: $.Writer）
+        var bc = new CubeBrowserContext
+        {
+            Writer = json => Task.CompletedTask,
+            CheckpointService = PageCheckpointService.Instance,
+            UserId = 9,
+            TimeoutSeconds = 30,
+        };
+
+        var json = System.Text.Json.JsonSerializer.Serialize(bc);
+
+        Assert.DoesNotContain("Writer", json);
+        Assert.DoesNotContain("CheckpointService", json);
+        Assert.Contains("UserId", json);
+    }
+
+    [Fact]
+    [DisplayName("BrowserToolService_含Writer_可被SystemTextJson序列化")]
+    public void BrowserToolService_WithWriter_Serializable()
+    {
+        var svc = new BrowserToolService(9)
+        {
+            Writer = json => Task.CompletedTask,
+            CheckpointService = PageCheckpointService.Instance,
+            TimeoutSeconds = 30,
+        };
+
+        var json = System.Text.Json.JsonSerializer.Serialize(svc);
+
+        Assert.DoesNotContain("Writer", json);
+        Assert.DoesNotContain("CheckpointService", json);
+        Assert.Contains("TimeoutSeconds", json);
+    }
 }

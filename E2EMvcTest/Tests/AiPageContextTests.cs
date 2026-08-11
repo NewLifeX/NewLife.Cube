@@ -134,6 +134,11 @@ public sealed class AiPageContextTests : IAsyncLifetime
                 var div = document.createElement('div');
                 div.id = 'aiAssistant';
                 div.className = 'ai-assistant';
+                // 与 _AiAssistant.cshtml 服务端注入契约一致：全局端点 + 目标页面标识
+                // （缺失 data-ai-url 时前端 getAiChatUrl() 返回空，fetch('') 失败导致 run_js 链路断）
+                div.setAttribute('data-ai-url', '/Ai/AiChat');
+                div.setAttribute('data-ai-area', 'Admin');
+                div.setAttribute('data-ai-controller', 'UserStat');
                 div.innerHTML =
                     '<button type=""button"" id=""aiAssistantFab"" class=""ai-fab"" title=""AI 助手""><i class=""fa fa-magic""></i></button>' +
                     '<div class=""ai-panel"" id=""aiAssistantPanel"" style=""display:none; position:fixed; right:20px; bottom:80px; width:380px; height:60vh; flex-direction:column;"">' +
