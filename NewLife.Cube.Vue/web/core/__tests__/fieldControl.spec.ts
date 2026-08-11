@@ -259,13 +259,13 @@ describe('resolveListControl（列表渲染控件）', () => {
 
 describe('isFullWidthControl（全宽控件）', () => {
   it('textarea/json/richHtml/richMarkdown/upload/image/lovMulti 全宽', () => {
-    for (const c of ['textarea', 'json', 'richHtml', 'richMarkdown', 'upload', 'image', 'lovMulti']) {
+    for (const c of ['textarea', 'json', 'richHtml', 'richMarkdown', 'upload', 'image', 'lovMulti'] as const) {
       expect(isFullWidthControl(c), c).toBe(true);
     }
   });
 
   it('input/switch/datePicker 非全宽', () => {
-    for (const c of ['input', 'switch', 'datePicker', 'lov', 'color', 'icon']) {
+    for (const c of ['input', 'switch', 'datePicker', 'lov', 'color', 'icon'] as const) {
       expect(isFullWidthControl(c), c).toBe(false);
     }
   });

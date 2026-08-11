@@ -15,10 +15,12 @@
  *   - @newlifex/cube-vue/core/utils/request     → axios 实例桩（避免加载 universal-cookie 等缺失依赖）
  *   - @element-plus/icons-vue                   → Search 桩
  */
+import { describe, it, expect, vi } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import ElementPlus from 'element-plus';
 import LovSelectTable from './index.vue';
+import type { LovListMeta } from '../../types/lov';
 
 // ── jsdom 缺失的全局对象 polyfill ──
 (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver = class {
@@ -93,13 +95,13 @@ vi.mock('@newlifex/cube-vue/core/utils/lov-api', () => ({
 
 // lovStore mock
 vi.mock('@newlifex/cube-vue/core/components/LovSelect/lovStore', () => ({
-  resolveColumnLabels: vi.fn(async (_lovCode, raw) => String(raw ?? '')),
-  getColumnLabel: vi.fn((_lovCode, value) => value),
+  resolveColumnLabels: vi.fn(async (_lovCode: string, raw: unknown) => String(raw ?? '')),
+  getColumnLabel: vi.fn((_lovCode: string, value: unknown) => value),
   registerRows: vi.fn(),
 }));
 
 // ── 测试夹具 ──
-function buildLovMeta() {
+function buildLovMeta(): LovListMeta {
   return {
     lovCode: 'List.CubeDemo.Role',
     type: 'LIST',
@@ -110,14 +112,17 @@ function buildLovMeta() {
       requestUrl: '/Test/TestField/RoleList', // 以 / 开头 → shouldDirectRequest = true
       method: 'GET',
       pageable: true,
+      pageNumField: null,
+      pageSizeField: null,
       dataPath: 'data',
       totalPath: 'total',
+      fixedParams: null,
       proxyRequest: false,
     },
     searchFields: [],
     tableColumns: [
-      { field: 'id', title: '编号' },
-      { field: 'name', title: '角色名' },
+      { field: 'id', title: '编号', width: 80, align: 'left', sortable: false, refLovCode: null, formatType: null },
+      { field: 'name', title: '角色名', width: 120, align: 'left', sortable: false, refLovCode: null, formatType: null },
     ],
   };
 }
@@ -145,7 +150,7 @@ function footerCountText(): string {
   return (document.querySelector('.lst-selected-count')?.textContent || '').trim();
 }
 
-const baseProps = (multiple: boolean, modelValue?: unknown) => ({
+const baseProps = (multiple: boolean, modelValue?: string | number | string[]) => ({
   dialogVisible: false,
   lovCode: 'List.CubeDemo.Role',
   lovMeta: buildLovMeta(),

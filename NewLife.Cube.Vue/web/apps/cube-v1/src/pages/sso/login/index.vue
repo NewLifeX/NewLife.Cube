@@ -53,7 +53,7 @@ interface SsoLoginParams {
 interface LoginResult {
   success: boolean;
   message: string;
-  data?: Record<string, unknown>;
+  data?: Array<{ key: string; value: string }>;
 }
 
 // 登录表单
@@ -79,11 +79,11 @@ const handleLogin = async () => {
   loginResult.value = null;
 
   try {
-    const response = await request.get('/Sso/Login', {
+    const response = (await request.get('/Sso/Login', {
       params: {
         name: loginForm.name,
       },
-    });
+    })) as unknown as Record<string, unknown> | null;
 
     // 处理响应数据
     if (response) {

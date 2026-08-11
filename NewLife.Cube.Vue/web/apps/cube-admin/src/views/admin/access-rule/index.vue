@@ -216,13 +216,13 @@ const getActionKindText = (actionKind: number) => {
 };
 
 // 获取处理方式标签类型
-const getActionKindType = (actionKind: number) => {
-  const map: Record<number, string> = {
+const getActionKindType = (actionKind: number): 'success' | 'danger' | 'warning' | 'info' => {
+  const map: Record<number, 'success' | 'danger' | 'warning'> = {
     0: 'success',
     1: 'danger',
     2: 'warning'
   };
-  return map[actionKind] || '';
+  return map[actionKind] || 'info';
 };
 
 // 组件回调函数
