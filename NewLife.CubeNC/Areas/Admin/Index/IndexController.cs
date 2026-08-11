@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +21,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [DisplayName("首页")]
 [AdminArea]
 [Menu(0, false, Icon = "fa-home")]
-public class IndexController : ControllerBaseX
+public class IndexController : ControllerBaseX, IPageDataContext
 {
     private readonly IManageProvider _provider;
     private readonly IHostApplicationLifetime _applicationLifetime;
@@ -112,6 +114,34 @@ public class IndexController : ControllerBaseX
             "servervar" => View("ServerVar"),
             _ => View(),
         };
+    }
+
+    /// <summary>收集当前页面数据上下文（服务器信息），供 AI 分析当前页面。实现 <see cref="IPageDataContext"/>，get_page_context 优先调用服务端实现</summary>
+    /// <returns>服务器信息 JSON</returns>
+    public Task<String> GetPageDataContextAsync()
+    {
+        var mi = MachineInfo.Current ?? new MachineInfo();
+        var process = Process.GetCurrentProcess();
+        var asm = Assembly.GetExecutingAssembly();
+        var att = asm.GetCustomAttribute<TargetFrameworkAttribute>();
+        var ver = att?.FrameworkDisplayName ?? att?.FrameworkName;
+        var data = new
+        {
+            page = "服务器信息",
+            application = process.ProcessName,
+            applicationTitle = Environment.CommandLine,
+            version = ver,
+            os = mi.OSName,
+            osVersion = mi.OSVersion,
+            machineId = mi.UUID,
+            machineProduct = mi.Product,
+            cpu = mi.Processor + Environment.ProcessorCount + "核心 使用率" + mi.CpuRate.ToString("p0") + mi.Temperature + " ℃",
+            openTime = TimeSpan.FromMilliseconds(Environment.TickCount64).ToString(@"dd\.hh\:mm\:ss"),
+            serverTime = DateTime.Now,
+            memory = "物理：" + (mi.AvailableMemory / 1024 / 1024).ToString("n0") + "M/" + (mi.Memory / 1024 / 1024).ToString("n0") + "M    工作/提交: " + (process.WorkingSet64 / 1024 / 1024).ToString("n0") + "M/@" + (process.PrivateMemorySize64 / 1024 / 1024).ToString("n0") + "M   GC: " + (GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0") + "M",
+            processTime = process.TotalProcessorTime.TotalSeconds.ToString("N2") + "秒 启动于" + process.StartTime.ToLocalTime().ToFullString(),
+        }.ToJson();
+        return Task.FromResult(data);
     }
 
     #region AI 诊断

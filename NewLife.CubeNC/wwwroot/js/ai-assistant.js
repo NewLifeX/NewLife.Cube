@@ -611,9 +611,14 @@
             localStorage.setItem('cube-ai-session', sessionId);
             var box = getEl('aiMessages');
             if (box) {
-                box.innerHTML = '<div class="ai-msg ai-msg-assistant"><div class="ai-bubble">会话已清空，有什么可以帮你？</div></div>';
+                // 快捷指令容器（#aiQuickActions）是 #aiMessages 的子元素，直接替换 innerHTML 会把快捷指令一并销毁，
+                // 清空会话后快捷指令永久丢失。只移除消息气泡并插入欢迎语，保留快捷指令容器
+                var msgs = box.querySelectorAll('.ai-msg');
+                for (var i = 0; i < msgs.length; i++) msgs[i].remove();
+                box.insertAdjacentHTML('afterbegin', '<div class="ai-msg ai-msg-assistant"><div class="ai-bubble">会话已清空，有什么可以帮你？</div></div>');
                 var quick = getEl('aiQuickActions');
                 if (quick) quick.style.display = '';
+                refreshQuickActions();
             }
         });
 
@@ -641,6 +646,54 @@
                 sendMessage(this.getAttribute('data-prompt') || this.textContent);
             });
         }
+
+        // 按页面类型适配快捷指令可见性（实体列表/表单/详情 vs 非实体页面）
+        refreshQuickActions();
+    }
+
+    /**
+     * 按页面类型刷新快捷指令可见性，避免误导：
+     * - 实体列表页（#aiPage=list）：分析当前数据 / 系统诊断
+     * - 实体表单页（#aiPage=form）：帮我填表 /（编辑模式）分析当前记录 / 系统诊断
+     * - 实体详情页（#aiPage=detail）：分析当前记录 / 系统诊断
+     * - 非实体页面（无 #aiPage）：
+     *   - 含表单控件的配置表单页（如魔方设置）：帮我填表 / 分析当前数据（页面分析）/ 系统诊断
+     *   - 其他无表单页（如服务器信息/数据库信息）：分析当前数据（页面分析）/ 系统诊断
+     * 系统诊断在任何页面均可用。
+     */
+    function refreshQuickActions() {
+        var quick = getEl('aiQuickActions');
+        if (!quick) return;
+        var ctx = getPageContext();
+        var hasForm = hasFormControls();
+        var chips = quick.querySelectorAll('.ai-chip');
+        for (var i = 0; i < chips.length; i++) {
+            var c = chips[i];
+            var prompt = c.getAttribute('data-prompt') || '';
+            var show = true;
+            if (prompt === '分析当前列表数据') {
+                // 实体列表页或非实体页（无 #aiPage，按页面分析处理）；表单/详情页隐藏
+                show = (ctx.page === 'list' || ctx.page === '');
+                // 非实体页面：提示词改为"分析当前页面"，引导 LLM 调用 get_page_context 分析页面内容
+                c.setAttribute('data-prompt', ctx.page === '' ? '分析当前页面内容' : '分析当前列表数据');
+            } else if (prompt === '帮我填写当前表单') {
+                // 实体表单页，或含表单控件的非实体配置页（如魔方设置）——均为可填表单
+                show = (ctx.page === 'form' || (ctx.page === '' && hasForm));
+            } else if (prompt === '分析当前记录') {
+                // 详情页恒显示；编辑表单页显示（有当前记录）；新增表单与列表页隐藏
+                show = (ctx.page === 'detail' || (ctx.page === 'form' && ctx.mode === 'edit'));
+            }
+            c.style.display = show ? '' : 'none';
+        }
+    }
+
+    /**
+     * 检测当前页面是否含可填表单控件（input/select/textarea 且带 name）。
+     * 用于区分配置表单页（魔方设置等）与普通展示页（服务器信息/数据库信息）。
+     * @returns {Boolean} 是否含表单控件
+     */
+    function hasFormControls() {
+        return document.querySelectorAll('input[name], select[name], textarea[name]').length > 0;
     }
 
     if (document.readyState === 'loading') {

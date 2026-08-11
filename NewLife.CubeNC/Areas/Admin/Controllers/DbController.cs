@@ -4,9 +4,11 @@ using System.Data;
 using System.Diagnostics;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.AI;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Jobs;
 using NewLife.Reflection;
+using NewLife.Serialization;
 using XCode;
 using XCode.DataAccessLayer;
 using XCode.Membership;
@@ -18,12 +20,20 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [EntityAuthorize(PermissionFlags.Detail)]
 [AdminArea]
 [Menu(26, true, Icon = "fa-database")]
-public class DbController : ControllerBaseX
+public class DbController : ControllerBaseX, IPageDataContext
 {
     /// <summary>数据库列表</summary>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     public async Task<ActionResult> Index()
+    {
+        var list = await BuildDatabaseListAsync();
+        return View("Index", list);
+    }
+
+    /// <summary>收集数据库连接列表（供页面展示与 AI 页面上下文共用，避免重复逻辑）</summary>
+    /// <returns>数据库列表</returns>
+    private static async Task<List<DbItem>> BuildDatabaseListAsync()
     {
         var list = new List<DbItem>();
         var dir = NewLife.Setting.Current.BackupPath.GetBasePath().AsDirectory();
@@ -76,7 +86,26 @@ public class DbController : ControllerBaseX
             list.Add(di);
         }
 
-        return View("Index", list);
+        return list;
+    }
+
+    /// <summary>收集当前页面数据上下文（数据库列表），供 AI 分析当前页面。实现 <see cref="IPageDataContext"/>，get_page_context 优先调用服务端实现</summary>
+    /// <returns>数据库列表 JSON。不含连接字符串，避免泄露敏感信息</returns>
+    public async Task<String> GetPageDataContextAsync()
+    {
+        var list = await BuildDatabaseListAsync();
+        var data = list.Select(e => new
+        {
+            name = e.Name,
+            type = e.Type + "",
+            version = e.Version,
+            driver = e.Driver,
+            driverVersion = e.DriverVersion,
+            entities = e.Entities,
+            tables = e.Tables,
+            backups = e.Backups,
+        }).ToList();
+        return new { page = "数据库信息", databases = data }.ToJson();
     }
 
     /// <summary>压缩数据库（回收空闲空间）。对SQLite执行VACUUM</summary>

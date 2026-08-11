@@ -20,7 +20,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [DisplayName("首页")]
 [AdminArea]
 [Menu(0, false, Icon = "HomeFilled")]
-public class IndexController : ControllerBaseX
+public class IndexController : ControllerBaseX, IPageDataContext
 {
     private readonly IManageProvider _provider;
     private readonly IWebHostEnvironment _env;
@@ -68,8 +68,19 @@ public class IndexController : ControllerBaseX
     [HttpGet]
     public ActionResult Main()
     {
-        var req = HttpContext.Request;
-        var conn = HttpContext.Connection;
+        var result = BuildServerInfo(_env.ContentRootPath, HttpContext);
+        //var res = result.ToOkApiResponse();
+        return Json(0, null, result);
+    }
+
+    /// <summary>收集服务器信息（供页面展示与 AI 页面上下文共用，避免重复逻辑）</summary>
+    /// <param name="contentRootPath">应用内容根目录（<see cref="IWebHostEnvironment.ContentRootPath"/>）</param>
+    /// <param name="context">当前 HTTP 上下文，用于获取请求与连接信息</param>
+    /// <returns>服务器信息对象</returns>
+    private static Object BuildServerInfo(String contentRootPath, Microsoft.AspNetCore.Http.HttpContext context)
+    {
+        var req = context.Request;
+        var conn = context.Connection;
         var gc = $"IsServerGC={GCSettings.IsServerGC},LatencyMode={GCSettings.LatencyMode}";
         var mi = MachineInfo.Current ?? new MachineInfo();
         var process = Process.GetCurrentProcess();
@@ -80,11 +91,11 @@ public class IndexController : ControllerBaseX
         var addrRemote = conn.RemoteIpAddress;
         if (addrLocal != null && addrLocal.IsIPv4MappedToIPv6) addrLocal = addrLocal.MapToIPv4();
         if (addrRemote != null && addrRemote.IsIPv4MappedToIPv6) addrRemote = addrRemote.MapToIPv4();
-        var userHost = HttpContext.GetUserHost();
+        var userHost = context.GetUserHost();
         var result = new
         {
             system = req.GetRawUrl()?.AbsolutePath,
-            path = _env.ContentRootPath,
+            path = contentRootPath,
             host = req.Headers["Host"],
             local = addrLocal + ":" + conn.LocalPort,
             remote = addrRemote + ":" + conn.RemotePort,
@@ -103,9 +114,13 @@ public class IndexController : ControllerBaseX
             gc = gc,
             //startTime = ApplicationManager.Load().StartTime.ToLocalTime().ToFullString()
         };
-        //var res = result.ToOkApiResponse();
-        return Json(0, null, result);
+        return result;
     }
+
+    /// <summary>收集当前页面数据上下文（服务器信息），供 AI 分析当前页面。实现 <see cref="IPageDataContext"/>，get_page_context 优先调用服务端实现</summary>
+    /// <returns>服务器信息 JSON</returns>
+    public Task<String> GetPageDataContextAsync()
+        => Task.FromResult(BuildServerInfo(_env.ContentRootPath, HttpContext).ToJson());
 
     #region AI 诊断
     /// <summary>AI 系统诊断。根据服务器运行指标生成健康诊断报告</summary>
