@@ -905,17 +905,16 @@ public static class ViewHelper
 
         var fact = ManageProvider.Menu;
         var menus = fact.Root.Childs;
-        if (user?.Role != null)
-        {
-            menus = fact.GetMySubMenus(fact.Root.ID, user, true);
-        }
 
         // 如果顶级只有一层，并且至少有三级目录，则提升一级
         if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) { menus = menus[0].Childs; }
 
         var menuTree = MenuTree.GetMenuTree(pMenuTree =>
         {
-            var subMenus = fact.GetMySubMenus(pMenuTree.ID, user, true);
+            // 左侧菜单展示所有可见菜单，不按角色权限过滤
+            // 权限控制在 Controller/Action 层通过 EntityAuthorizeAttribute 实现
+            var parent = fact.FindByID(pMenuTree.ID);
+            var subMenus = parent?.Childs?.Where(m => m.Visible).ToList() as IList<IMenu> ?? [];
             return subMenus;
         }, list =>
         {

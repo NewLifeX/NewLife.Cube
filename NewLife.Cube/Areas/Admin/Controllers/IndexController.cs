@@ -303,14 +303,8 @@ public class IndexController : ControllerBaseX
 
     private IList<MenuTree> GetMenu(String module)
     {
-        var user = _provider.Current as IUser;
-
         var fact = ManageProvider.Menu;
         var menus = fact.Root.Childs;
-        if (user?.Role != null)
-        {
-            menus = fact.GetMySubMenus(fact.Root.ID, user, true);
-        }
 
         // 根据模块过滤菜单
         if (module.EqualIgnoreCase("base"))
@@ -330,22 +324,17 @@ public class IndexController : ControllerBaseX
         {
             menus = menus.FirstOrDefault(e => e.Name.EqualIgnoreCase(module))?.Childs ?? [];
         }
-        // module 为空时不做过滤，直接返回用户可访问的全部根级菜单
+        // module 为空时不做过滤，直接返回全部根级菜单
 
         // 如果顶级只有一层，并且至少有三级目录，则提升一级
         if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) { menus = menus[0].Childs; }
 
         var menuTree = MenuTree.GetMenuTree(pMenuTree =>
         {
-            // 优先通过角色权限资源列表获取子菜单
-            var subMenus = fact.GetMySubMenus(pMenuTree.ID, user, true);
-            if (subMenus.Count == 0)
-            {
-                // GetMySubMenus 返回空：角色的 Resources 中可能只有父级模块 ID，
-                // 子控制器 ID 未显式授权，此时回退到菜单树结构获取可见子菜单
-                var parent = fact.FindByID(pMenuTree.ID);
-                subMenus = parent?.Childs?.Where(m => m.Visible).ToList() as IList<IMenu> ?? [];
-            }
+            // 左侧菜单展示所有可见菜单，不按角色权限过滤
+            // 权限控制在 Controller/Action 层通过 EntityAuthorizeAttribute 实现
+            var parent = fact.FindByID(pMenuTree.ID);
+            var subMenus = parent?.Childs?.Where(m => m.Visible).ToList() as IList<IMenu> ?? [];
             return subMenus;
         }, list =>
         {
