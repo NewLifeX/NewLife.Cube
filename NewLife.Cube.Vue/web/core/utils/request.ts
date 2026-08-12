@@ -8,7 +8,7 @@
  * 本文件仅保留 cube-vue 特有、与 UI 强相关的逻辑：
  *   1. 401 跳转 / 导航（handleUnauthorized、redirectToLogin）；
  *   2. 错误与业务错误的弹窗展示（onBusinessError、onResponseError 回调）。
- * 其余配置（additionalRequestHeader / requestInterceptor / responseIntercept）均以回调形式接线，
+ * 其余配置（additionalRequestHeaders / requestInterceptor / responseIntercept）均以回调形式接线，
  * 机制在 api-core，取值来自 cube-vue 配置系统。
  *
  * 对外导出（request / cubeAxios / redirectToLogin / toReLogin）保持兼容，业务文件无需改动。

@@ -81,7 +81,7 @@ export interface RequestConfig {
   baseUrl: string;
   /** 请求超时时间 */
   timeout?: number;
-  /** 额外请求头。对应 api-core 的 additionalRequestHeaders（复数），静态对象或返回对象的函数 */
+  /** 额外请求头（静态对象或返回对象的函数），对应 api-core 的 additionalRequestHeaders */
   additionalRequestHeaders?: Record<string, string> | (() => Record<string, string>);
   /** 响应拦截器 */
   responseIntercept?: (response: AxiosResponse) => void;

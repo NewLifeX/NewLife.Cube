@@ -15,7 +15,6 @@ public class DataScopeMiddleware(RequestDelegate next)
     public async Task Invoke(HttpContext ctx)
     {
         // 找到租户，并设置上下文。该上下文将全局影响魔方和XCode
-        var tenantChanged = false;
         var dataScopeChanged = false;
         // 保存进入时的租户上下文，finally 无条件恢复，防止 AsyncLocal 跨请求/后台任务泄漏
         var oldTenant = TenantContext.Current;
@@ -44,7 +43,6 @@ public class DataScopeMiddleware(RequestDelegate next)
                     }
 
                     ctx.SetTenant(tenantId);
-                    tenantChanged = true;
                 }
                 else if (HasExplicitTenant(ctx))
                 {
