@@ -20,7 +20,7 @@ public partial class EntityController<TEntity, TModel>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Delete)]
     [DisplayName("删除{type}")]
-    [HttpDelete("/[area]/[controller]")]
+    [HttpDelete("/api/[area]/[controller]")]
     public virtual ApiResponse<TEntity> Delete([Required] String id)
     {
         var act = "删除";
@@ -41,7 +41,7 @@ public partial class EntityController<TEntity, TModel>
     /// <returns></returns>
     [DisplayName("添加{type}")]
     [EntityAuthorize(PermissionFlags.Insert)]
-    [HttpPost("/[area]/[controller]")]
+    [HttpPost("/api/[area]/[controller]")]
     public virtual async Task<ApiResponse<TEntity>> Insert(TModel model)
     {
         // 实例化实体对象，然后拷贝
@@ -124,7 +124,7 @@ public partial class EntityController<TEntity, TModel>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Update)]
     [DisplayName("更新{type}")]
-    [HttpPut("/[area]/[controller]")]
+    [HttpPut("/api/[area]/[controller]")]
     public virtual async Task<ApiResponse<TEntity>> Update(TModel model)
     {
         // 实例化实体对象，然后拷贝

@@ -73,11 +73,11 @@ const emit = defineEmits<{
 
   &--primary {
     background: var(--el-color-primary);
-    color: #fff;
+    color: var(--el-color-white);
     border: none;
 
     &:hover {
-      background: #165c32;
+      background: var(--el-color-primary-dark-2);
     }
   }
 
@@ -87,7 +87,7 @@ const emit = defineEmits<{
     border: 1px solid var(--el-color-primary-light-8);
 
     &:hover {
-      background: #c8e8d5;
+      background: var(--el-color-primary-light-8);
     }
   }
 

@@ -21,6 +21,8 @@ public static class AIServiceExtensions
 
         XTrace.WriteLine("AI 已启用，Provider={0} Model={1}", set.AIProvider, set.AIModel);
         services.AddSingleton<IAIService, AIService>();
+        // AI 对话服务：统一封装会话管理 + 工具循环 + SSE 事件，供实体控制器薄壳 / 全局控制器 / Vue 宿主复用
+        services.AddSingleton<IAIChatService, CubeAIChatService>();
 
         return services;
     }

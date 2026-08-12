@@ -46,7 +46,10 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     include: ['core/__tests__/**/*.{spec,test}.ts', 'core/**/*.{spec,test}.ts'],
-    exclude: ['**/node_modules/**', '**/dist/**', '**/cypress/**', 'e2e/**', '**/.{idea,git,cache}/**'],
+    // 重要：排除 Playwright 组件测试（*.ct.spec.ts）。
+    // 因 include 的 `*.{spec,test}.ts` 会误收 `*.ct.spec.ts`（以 .spec.ts 结尾），
+    // 不显式排除会导致 Vitest 尝试加载 @playwright/test 的 test，与 Playwright runner 串扰。
+    exclude: ['**/node_modules/**', '**/dist/**', 'e2e/**', '**/*.ct.spec.ts', '**/.{idea,git,cache}/**'],
     testTimeout: 20000,
     hookTimeout: 20000,
   },

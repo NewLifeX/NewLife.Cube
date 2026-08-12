@@ -101,6 +101,14 @@ public partial class LovListConfig : IEntity<LovListConfigModel>
     [BindColumn("FixedParams", "固定参数。每次请求附加的固定参数，JSON格式", "")]
     public String FixedParams { get => _FixedParams; set { if (OnPropertyChanging("FixedParams", value)) { _FixedParams = value; OnPropertyChanged("FixedParams"); } } }
 
+    private Boolean _ProxyRequest;
+    /// <summary>是否代理请求。true=后端代理转发；false=前端直连 RequestUrl</summary>
+    [DisplayName("是否代理请求")]
+    [Description("是否代理请求。true=后端代理转发；false=前端直连 RequestUrl")]
+    [DataObjectField(false, false, false, 0)]
+    [BindColumn("ProxyRequest", "是否代理请求。true=后端代理转发；false=前端直连 RequestUrl", "")]
+    public Boolean ProxyRequest { get => _ProxyRequest; set { if (OnPropertyChanging("ProxyRequest", value)) { _ProxyRequest = value; OnPropertyChanged("ProxyRequest"); } } }
+
     private Int32 _CreateUserID;
     /// <summary>创建用户</summary>
     [Category("扩展")]
@@ -180,6 +188,7 @@ public partial class LovListConfig : IEntity<LovListConfigModel>
         DataPath = model.DataPath;
         TotalPath = model.TotalPath;
         FixedParams = model.FixedParams;
+        ProxyRequest = model.ProxyRequest;
         CreateUserID = model.CreateUserID;
         CreateIP = model.CreateIP;
         CreateTime = model.CreateTime;
@@ -208,6 +217,7 @@ public partial class LovListConfig : IEntity<LovListConfigModel>
             "DataPath" => _DataPath,
             "TotalPath" => _TotalPath,
             "FixedParams" => _FixedParams,
+            "ProxyRequest" => _ProxyRequest,
             "CreateUserID" => _CreateUserID,
             "CreateIP" => _CreateIP,
             "CreateTime" => _CreateTime,
@@ -231,6 +241,7 @@ public partial class LovListConfig : IEntity<LovListConfigModel>
                 case "DataPath": _DataPath = Convert.ToString(value); break;
                 case "TotalPath": _TotalPath = Convert.ToString(value); break;
                 case "FixedParams": _FixedParams = Convert.ToString(value); break;
+                case "ProxyRequest": _ProxyRequest = value.ToBoolean(); break;
                 case "CreateUserID": _CreateUserID = value.ToInt(); break;
                 case "CreateIP": _CreateIP = Convert.ToString(value); break;
                 case "CreateTime": _CreateTime = value.ToDateTime(); break;
@@ -253,16 +264,18 @@ public partial class LovListConfig : IEntity<LovListConfigModel>
     #region 高级查询
     /// <summary>高级查询</summary>
     /// <param name="pageable">是否分页</param>
+    /// <param name="proxyRequest">是否代理请求。true=后端代理转发；false=前端直连 RequestUrl</param>
     /// <param name="start">更新时间开始</param>
     /// <param name="end">更新时间结束</param>
     /// <param name="key">关键字</param>
     /// <param name="page">分页参数信息。可携带统计和数据权限扩展查询等信息</param>
     /// <returns>实体列表</returns>
-    public static IList<LovListConfig> Search(Boolean? pageable, DateTime start, DateTime end, String key, PageParameter page)
+    public static IList<LovListConfig> Search(Boolean? pageable, Boolean? proxyRequest, DateTime start, DateTime end, String key, PageParameter page)
     {
         var exp = new WhereExpression();
 
         if (pageable != null) exp &= _.Pageable == pageable;
+        if (proxyRequest != null) exp &= _.ProxyRequest == proxyRequest;
         exp &= _.UpdateTime.Between(start, end);
         if (!key.IsNullOrEmpty()) exp &= SearchWhereByKeys(key);
 
@@ -303,6 +316,9 @@ public partial class LovListConfig : IEntity<LovListConfigModel>
 
         /// <summary>固定参数。每次请求附加的固定参数，JSON格式</summary>
         public static readonly Field FixedParams = FindByName("FixedParams");
+
+        /// <summary>是否代理请求。true=后端代理转发；false=前端直连 RequestUrl</summary>
+        public static readonly Field ProxyRequest = FindByName("ProxyRequest");
 
         /// <summary>创建用户</summary>
         public static readonly Field CreateUserID = FindByName("CreateUserID");
@@ -360,6 +376,9 @@ public partial class LovListConfig : IEntity<LovListConfigModel>
 
         /// <summary>固定参数。每次请求附加的固定参数，JSON格式</summary>
         public const String FixedParams = "FixedParams";
+
+        /// <summary>是否代理请求。true=后端代理转发；false=前端直连 RequestUrl</summary>
+        public const String ProxyRequest = "ProxyRequest";
 
         /// <summary>创建用户</summary>
         public const String CreateUserID = "CreateUserID";

@@ -3,10 +3,10 @@
   "include": [
     "vite.config.*",
     "vitest.config.*",
-    "cypress.config.*",
     "nightwatch.conf.*",
     "playwright.config.*",
-    "eslint.config.*"
+    "eslint.config.*",
+    "core/client.d.ts"
   ],
   "compilerOptions": {
     "noEmit": true,

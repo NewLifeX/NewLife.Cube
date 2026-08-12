@@ -1,9 +1,9 @@
 ﻿<template>
   <div class="page-not-found">
-    <h1>404</h1>
-    <h2>Page Not Found</h2>
-    <p>The page you are looking for does not exist or has been moved.</p>
-    <router-link to="/" class="home-link">Go to Home Page</router-link>
+    <div class="status-code">404</div>
+    <h1 class="title">页面不存在</h1>
+    <p class="desc">当前页面不存在或已被移动，请返回首页继续操作。</p>
+    <router-link to="/" class="home-link">返回首页</router-link>
   </div>
 </template>
 
@@ -15,42 +15,48 @@ export default {
 
 <style scoped>
 .page-not-found {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  gap: 12px;
   text-align: center;
-  padding: 0 20px;
+  padding: 24px;
+  background: var(--el-bg-color-page);
+  color: var(--el-text-color-primary);
 }
 
-h1 {
-  font-size: 6rem;
-  margin-bottom: 0;
-  color: #e74c3c;
+.status-code {
+  font-size: 5rem;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--el-color-danger);
 }
 
-h2 {
-  font-size: 2rem;
-  margin-top: 0;
-  margin-bottom: 20px;
+.title {
+  margin: 0;
+  font-size: 1.75rem;
 }
 
-p {
-  margin-bottom: 30px;
-  color: #666;
+.desc {
+  margin: 0 0 8px;
+  color: var(--el-text-color-secondary);
 }
 
 .home-link {
-  padding: 10px 20px;
-  background-color: #3498db;
-  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: var(--el-border-radius-base);
+  background: var(--el-color-primary);
+  color: var(--el-color-white);
   text-decoration: none;
-  border-radius: 4px;
-  transition: background-color 0.3s;
 }
 
 .home-link:hover {
-  background-color: #2980b9;
+  background: var(--el-color-primary-dark-2);
 }
 </style>

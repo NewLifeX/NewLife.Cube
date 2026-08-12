@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using SexKinds = XCode.Membership.SexKinds;
 
 namespace NewLife.Web.OAuth
 {
@@ -30,8 +31,8 @@ namespace NewLife.Web.OAuth
             if (dic.TryGetValue("realname", out str)) NickName = str.Trim();
             //if (dic.TryGetValue("userdetail", out str)) Detail = str.Trim();
 
-            // 修改性别数据，1男0女，而本地是1男2女
-            if (dic.TryGetValue("sex", out str)) Sex = str.ToInt() == 1 ? 1 : 2;
+            // 修改性别数据，1男0女，而本地是1男2女。0表示女，不能直接走通用解析（会把0当未知），故保留特殊映射
+            if (dic.TryGetValue("sex", out str)) Sex = str.ToInt() == 1 ? SexKinds.男 : SexKinds.女;
 
             // small image: http://tb.himg.baidu.com/sys/portraitn/item/{$portrait}
             // large image: http://tb.himg.baidu.com/sys/portrait/item/{$portrait}

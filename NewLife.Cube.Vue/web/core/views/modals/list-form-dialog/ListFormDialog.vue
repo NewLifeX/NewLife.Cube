@@ -42,7 +42,9 @@ const registry = inject(
   {} as Record<string, Record<string, () => Promise<{ default: unknown }>>>,
 );
 if (props.routePath) {
-  const pageOverrides = registry[props.routePath] ?? {};
+  /** 将路由路径转为小写以匹配 Section 注册表键 */
+  const normalizedPath = props.routePath.toLowerCase();
+  const pageOverrides = registry[normalizedPath] ?? {};
   for (const [name, loader] of Object.entries(pageOverrides)) {
     const key = SectionKeyMap[name];
     if (key) {

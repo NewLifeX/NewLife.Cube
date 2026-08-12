@@ -5,7 +5,7 @@ namespace NewLife.Cube.Areas.Cube.Controllers;
 
 /// <summary></summary>
 [CubeArea]
-[Menu(38, true, Icon = "fa-file-text")]
+[Menu(38, true, Icon = "Document")]
 public class OrderManagerController : EntityController<OrderManager, OrderManagerModel>
 {
     /// <summary>根据code获取指令集合</summary>

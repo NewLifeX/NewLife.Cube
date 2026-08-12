@@ -1,3 +1,0 @@
-<template>
-	<Page></Page>
-</template>

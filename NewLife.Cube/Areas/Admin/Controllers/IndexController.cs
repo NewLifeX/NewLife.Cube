@@ -19,8 +19,8 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 /// <summary>首页</summary>
 [DisplayName("首页")]
 [AdminArea]
-[Menu(0, false, Icon = "fa-home")]
-public class IndexController : ControllerBaseX
+[Menu(0, false, Icon = "HomeFilled")]
+public class IndexController : ControllerBaseX, IPageDataContext
 {
     private readonly IManageProvider _provider;
     private readonly IWebHostEnvironment _env;
@@ -41,11 +41,12 @@ public class IndexController : ControllerBaseX
     /// <returns></returns>
     //[EntityAuthorize(PermissionFlags.Detail)]
     [AllowAnonymous]
-    [HttpGet("/[area]/[controller]")]
+    [HttpGet("/api/[area]/[controller]")]
     public ActionResult Index()
     {
         var user = ManageProvider.Provider.TryLogin(HttpContext);
-        if (user == null) return RedirectToAction("Login", "User", new { r = Request.Path + "" });
+        // WebAPI版实体路由带 /api 前缀，回跳地址需还原为前端路由
+        if (user == null) return RedirectToAction("Login", "User", new { r = (Request.Path + "").TrimApiPrefix() });
 
         //ViewBag.User = ManageProvider.User;
         //ViewBag.Config = SysConfig.Current;
@@ -67,8 +68,19 @@ public class IndexController : ControllerBaseX
     [HttpGet]
     public ActionResult Main()
     {
-        var req = HttpContext.Request;
-        var conn = HttpContext.Connection;
+        var result = BuildServerInfo(_env.ContentRootPath, HttpContext);
+        //var res = result.ToOkApiResponse();
+        return Json(0, null, result);
+    }
+
+    /// <summary>收集服务器信息（供页面展示与 AI 页面上下文共用，避免重复逻辑）</summary>
+    /// <param name="contentRootPath">应用内容根目录（<see cref="IWebHostEnvironment.ContentRootPath"/>）</param>
+    /// <param name="context">当前 HTTP 上下文，用于获取请求与连接信息</param>
+    /// <returns>服务器信息对象</returns>
+    private static Object BuildServerInfo(String contentRootPath, Microsoft.AspNetCore.Http.HttpContext context)
+    {
+        var req = context.Request;
+        var conn = context.Connection;
         var gc = $"IsServerGC={GCSettings.IsServerGC},LatencyMode={GCSettings.LatencyMode}";
         var mi = MachineInfo.Current ?? new MachineInfo();
         var process = Process.GetCurrentProcess();
@@ -79,11 +91,11 @@ public class IndexController : ControllerBaseX
         var addrRemote = conn.RemoteIpAddress;
         if (addrLocal != null && addrLocal.IsIPv4MappedToIPv6) addrLocal = addrLocal.MapToIPv4();
         if (addrRemote != null && addrRemote.IsIPv4MappedToIPv6) addrRemote = addrRemote.MapToIPv4();
-        var userHost = HttpContext.GetUserHost();
+        var userHost = context.GetUserHost();
         var result = new
         {
             system = req.GetRawUrl()?.AbsolutePath,
-            path = _env.ContentRootPath,
+            path = contentRootPath,
             host = req.Headers["Host"],
             local = addrLocal + ":" + conn.LocalPort,
             remote = addrRemote + ":" + conn.RemotePort,
@@ -102,17 +114,22 @@ public class IndexController : ControllerBaseX
             gc = gc,
             //startTime = ApplicationManager.Load().StartTime.ToLocalTime().ToFullString()
         };
-        //var res = result.ToOkApiResponse();
-        return Json(0, null, result);
+        return result;
     }
+
+    /// <summary>收集当前页面数据上下文（服务器信息），供 AI 分析当前页面。实现 <see cref="IPageDataContext"/>，get_page_context 优先调用服务端实现</summary>
+    /// <returns>服务器信息 JSON</returns>
+    public Task<String> GetPageDataContextAsync()
+        => Task.FromResult(BuildServerInfo(_env.ContentRootPath, HttpContext).ToJson());
 
     #region AI 诊断
     /// <summary>AI 系统诊断。根据服务器运行指标生成健康诊断报告</summary>
+    /// <param name="stream">是否流式输出（SSE）</param>
     /// <returns></returns>
     [DisplayName("AI 系统诊断")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpGet]
-    public async Task<ActionResult> AiDiagnose()
+    public async Task<ActionResult> AiDiagnose(Boolean stream = true)
     {
         var set = CubeSetting.Current;
         if (!set.AISwitch) return Json(500, null, "AI 未启用，请在系统设置中开启");
@@ -140,9 +157,39 @@ public class IndexController : ControllerBaseX
             machineName = Environment.MachineName,
         }.ToJson();
 
-        var result = await _ai.DiagnoseSystemAsync(sysInfo);
+        if (stream)
+        {
+            // SSE 方式输出
+            Response.Headers["Content-Type"] = "text/event-stream; charset=utf-8";
+            Response.Headers["Cache-Control"] = "no-cache";
+            Response.Headers["X-Accel-Buffering"] = "no";
 
-        return Json(0, null, result);
+            // 发送元数据事件
+            var metaJson = new { type = "meta", model = set.AIModel, thinking = false }.ToJson();
+            await Response.WriteAsync($"data: {metaJson}\n\n", HttpContext.RequestAborted);
+            await Response.Body.FlushAsync(HttpContext.RequestAborted);
+
+            await foreach (var chunk in _ai.DiagnoseSystemStreamAsync(sysInfo, HttpContext.RequestAborted))
+            {
+                if (chunk.IsNullOrEmpty()) continue;
+                var eventJson = new { type = "text", content = chunk }.ToJson();
+                await Response.WriteAsync($"data: {eventJson}\n\n", HttpContext.RequestAborted);
+                await Response.Body.FlushAsync(HttpContext.RequestAborted);
+            }
+
+            // 发送结束事件
+            await Response.WriteAsync($"data: {{\"type\":\"done\"}}\n\n", HttpContext.RequestAborted);
+            await Response.Body.FlushAsync(HttpContext.RequestAborted);
+
+            return new EmptyResult();
+        }
+        else
+        {
+            // 一次性返回 JSON
+            var result = await _ai.DiagnoseSystemAsync(sysInfo);
+
+            return Json(0, null, result);
+        }
     }
     #endregion
 

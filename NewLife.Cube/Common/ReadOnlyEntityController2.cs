@@ -1,9 +1,17 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
+using NewLife;
+using NewLife.AI.Models;
+using NewLife.AI.Tools;
+using NewLife.Caching;
+using NewLife.Collections;
 using NewLife.Common;
+using NewLife.Cube.AI;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
 using NewLife.Reflection;
+using NewLife.Serialization;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -423,6 +431,84 @@ public partial class ReadOnlyEntityController<TEntity>
         // 回收内存
         GC.Collect();
     }
+    #endregion
+
+    #region AI 对话
+    // AI 对话端点已统一收拢到全局 AiController（/Ai/AiChat）。
+    // 本控制器实现 IEntityAiContext 能力接口，向全局端点提供数据查询（SearchData）、工具集（CreateCubeTools）与提示词（BuildChatSystemPrompt）等重载点。
+
+    /// <summary>创建 AI 工具集。二次开发者可重载，返回自定义工具集以调整 AI 使用的数据逻辑</summary>
+    /// <remarks>
+    /// 默认工具集 <see cref="CubeTools{TEntity}"/> 提供数据上下文、表单 Schema、回填表单等能力。
+    /// 重载时通常继承 <see cref="CubeTools{TEntity}"/> 并重写其 virtual 工具方法
+    /// （GetDataContext / GetFormSchema / FillForm），或重写数据收集方法（GetListContext / GetRecordContext），
+    /// 或返回全新的 IToolProvider 实现。数据查询委托默认走 SearchData（保留子类重载与数据权限）。
+    /// </remarks>
+    /// <param name="pager">当前查询条件（可为空）</param>
+    /// <param name="entityId">当前记录编号</param>
+    /// <returns>AI 工具集</returns>
+    protected virtual CubeTools<TEntity> CreateCubeTools(Pager? pager, Int64 entityId)
+        => new CubeTools<TEntity>(Factory, pager, entityId, p => SearchData(p).ToList());
+
+    /// <summary>构建 AI 对话系统提示词，注入当前页面上下文</summary>
+    /// <param name="req">对话请求</param>
+    /// <param name="pager">当前查询条件</param>
+    /// <returns></returns>
+    protected virtual String BuildChatSystemPrompt(AiChatRequest req, Pager? pager)
+    {
+        var tb = Factory.Table.DataTable;
+        var name = Factory.EntityType.GetDisplayName() ?? tb.DisplayName ?? Factory.EntityType.Name;
+        // 系统名称取系统设置里的配置，空值时兜底为默认名称
+        var sysName = SysConfig?.DisplayName;
+        if (sysName.IsNullOrEmpty()) sysName = "魔方后台管理系统";
+
+        var sb = Pool.StringBuilder.Get();
+        sb.AppendLine($"你是{sysName}的 AI 助手，正在协助管理员操作当前页面。");
+        sb.AppendLine();
+        sb.AppendLine($"当前实体：{name}（表 {tb.TableName}）");
+        if (!tb.Description.IsNullOrEmpty()) sb.AppendLine($"实体说明：{tb.Description}");
+        var pageName = req.Page switch
+        {
+            "form" => req.Mode.EqualIgnoreCase("edit") ? "编辑表单" : "新增表单",
+            "detail" => "详情页",
+            _ => "列表页",
+        };
+        sb.AppendLine($"页面类型：{pageName}");
+        if (req.Id > 0) sb.AppendLine($"当前记录编号：{req.Id}");
+        if (pager != null && pager.Params.Count > 0)
+        {
+            sb.AppendLine("当前查询条件：");
+            foreach (var kv in pager.Params.Where(e => !e.Key.EqualIgnoreCase("_query", "Sort", "Desc", "PageIndex", "PageSize")))
+            {
+                sb.AppendLine($"- {kv.Key}: {kv.Value}");
+            }
+        }
+
+        sb.AppendLine();
+        sb.AppendLine("可用工具：get_data_context / get_form_schema / fill_form / get_page_context / get_system_info / run_js（详细说明见函数定义，按需调用）");
+        sb.AppendLine();
+        sb.AppendLine("规则：");
+        sb.AppendLine("1. 使用简体中文回答，语言简洁专业");
+        sb.AppendLine("2. 用户要求分析/洞察当前数据或单条记录时，先调用 get_data_context 获取数据，再给出分析结论与建议");
+        sb.AppendLine("3. 用户要求新建/填写/补全表单时，先调用 get_form_schema 了解字段，再调用 fill_form 生成值（对 Value 为 null 的可填字段，若适合自动生成如编码 Code 类，应生成合理唯一值；对已有值的字段保持原值；不要编造邮箱/手机/生日等真实个人数据），最后提示用户检查后提交");
+        sb.AppendLine("4. 用户询问当前页面结构/页面元素（表格列、分页、可见数据行等 DOM 层信息）时，调用 get_page_context 采集浏览器当前页面内容");
+        sb.AppendLine("5. 用户询问系统状态/诊断时，调用 get_system_info");
+        sb.AppendLine("6. 用户要求读取或操作当前页面元素（填写输入框、点击按钮、读取标题等）时，可调用 run_js 执行 JavaScript；脚本在用户浏览器当前页面执行，可用 document.querySelector 等定位元素；修改页面内容或提交表单等写操作前，先向用户说明将执行的操作");
+        sb.AppendLine("7. 不要编造数据；信息不足时主动询问用户澄清");
+
+        return sb.Return(true);
+    }
+
+    #region 能力接口
+    // IEntityAiContext：向全局 AiController 暴露实体 AI 重载点（仿 IPageDataContext 能力接口模式），子类重载经 virtual 委托生效
+    IEntityFactory IEntityAiContext.Factory => Factory;
+
+    IEnumerable<Object> IEntityAiContext.SearchData(Pager p) => SearchData(p).Cast<Object>();
+
+    Object IEntityAiContext.CreateCubeTools(Pager? pager, Int64 entityId) => CreateCubeTools(pager, entityId);
+
+    String IEntityAiContext.BuildChatSystemPrompt(AiChatRequest req, Pager? pager) => BuildChatSystemPrompt(req, pager);
+    #endregion
     #endregion
 
     #region 实体操作重载

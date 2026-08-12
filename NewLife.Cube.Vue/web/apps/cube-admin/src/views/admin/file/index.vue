@@ -105,7 +105,7 @@
     <el-dialog v-model="showAvatarDialog" title="上传头像" width="400px">
       <el-upload
         ref="avatarUploadRef"
-        action="/Admin/File/UploadAvatar"
+        :action="uploadAvatarAction"
         :auto-upload="false"
         :show-file-list="true"
         :limit="1"
@@ -134,6 +134,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import { Plus, Refresh } from '@element-plus/icons-vue'
 import { request } from '@newlifex/cube-vue/core/utils/request'
+import { getConfig } from '@newlifex/cube-vue/core/configure'
 
 // 文件信息接口
 interface FileInfo {
@@ -173,8 +174,9 @@ const loading = reactive({
 const uploadRef = ref()
 const avatarUploadRef = ref()
 
-// 上传地址
-const uploadAction = '/Admin/File/Upload'
+// 上传地址（Admin 区域实体接口，baseUrl 仅主机、不内含 /api，故路径自带 /api 前缀）
+const uploadAction = (getConfig().request.baseUrl || '') + '/api/Admin/File/Upload'
+const uploadAvatarAction = (getConfig().request.baseUrl || '') + '/api/Admin/File/UploadAvatar'
 
 // 获取文件列表
 const getFileList = async () => {
@@ -247,12 +249,12 @@ const handleAvatarUpload = async () => {
 const handleDownload = async (row: FileInfo) => {
   try {
     // 使用 request 发送下载请求，获取二进制数据
-    const blob = await request.post('/Admin/File/Download',
+    const blob = (await request.post('/Admin/File/Download',
       { r: row.path },
       {
         responseType: 'blob'
       }
-    )
+    )) as unknown as Blob
 
     // 创建下载链接
     const url = window.URL.createObjectURL(blob)

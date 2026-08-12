@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
@@ -9,12 +9,14 @@ using NewLife.Web;
 using XCode;
 using XCode.Membership;
 
+using NewLife.Cube.Services;
+
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>值集管理。管理枚举型和列表型值集的定义、枚举值、列表配置、搜索字段与列字段</summary>
 [DisplayName("值集管理")]
 [AdminArea]
-[Menu(85, true, Icon = "fa-tasks")]
+[Menu(85, true, Icon = "Operation")]
 public class LovController : EntityController<LovDefinition>
 {
     static LovController()
@@ -156,6 +158,7 @@ public class LovController : EntityController<LovDefinition>
                         listConfig.DataPath,
                         listConfig.TotalPath,
                         listConfig.FixedParams,
+                        listConfig.ProxyRequest,
                     },
                     SearchFields = searchFields,
                     TableColumns = tableColumns,
@@ -188,125 +191,14 @@ public class LovController : EntityController<LovDefinition>
         if (config == null)
             throw new InvalidOperationException($"值集 {request.LovCode} 未配置列表数据源");
 
-        // 构建请求参数
-        using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-
-        var url = config.RequestUrl;
-        var method = (config.Method ?? "GET").ToUpper();
-
-        HttpResponseMessage httpResponse;
-
-        if (method == "GET")
-        {
-            // GET 请求：参数拼接到 URL
-            var queryParams = new List<String>();
-            if (request.Params != null)
-            {
-                foreach (var kv in request.Params)
-                {
-                    if (kv.Value != null)
-                        queryParams.Add($"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value.ToString()!)}");
-                }
-            }
-            // 分页参数
-            if (config.Pageable)
-            {
-                if (request.PageNum > 0 && !config.PageNumField.IsNullOrEmpty())
-                    queryParams.Add($"{Uri.EscapeDataString(config.PageNumField)}={request.PageNum}");
-                if (request.PageSize > 0 && !config.PageSizeField.IsNullOrEmpty())
-                    queryParams.Add($"{Uri.EscapeDataString(config.PageSizeField)}={request.PageSize}");
-            }
-            // 固定参数
-            if (!config.FixedParams.IsNullOrEmpty())
-            {
-                var fixedParams = JsonParser.Decode(config.FixedParams) as IDictionary<String, Object>;
-                if (fixedParams != null)
-                {
-                    foreach (var kv in fixedParams)
-                    {
-                        if (kv.Value != null)
-                            queryParams.Add($"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value.ToString()!)}");
-                    }
-                }
-            }
-
-            var queryString = String.Join("&", queryParams);
-            if (!queryString.IsNullOrEmpty())
-                url = url.Contains('?') ? $"{url}&{queryString}" : $"{url}?{queryString}";
-
-            httpResponse = await httpClient.GetAsync(url);
-        }
-        else
-        {
-            // POST 请求：参数放 Body
-            var bodyParams = new Dictionary<String, Object>();
-            if (request.Params != null)
-            {
-                foreach (var kv in request.Params)
-                {
-                    bodyParams[kv.Key] = kv.Value!;
-                }
-            }
-            // 分页参数
-            if (config.Pageable)
-            {
-                if (request.PageNum > 0 && !config.PageNumField.IsNullOrEmpty())
-                    bodyParams[config.PageNumField] = request.PageNum;
-                if (request.PageSize > 0 && !config.PageSizeField.IsNullOrEmpty())
-                    bodyParams[config.PageSizeField] = request.PageSize;
-            }
-            // 固定参数
-            if (!config.FixedParams.IsNullOrEmpty())
-            {
-                var fixedParams = JsonParser.Decode(config.FixedParams) as IDictionary<String, Object>;
-                if (fixedParams != null)
-                {
-                    foreach (var kv in fixedParams)
-                    {
-                        bodyParams[kv.Key] = kv.Value!;
-                    }
-                }
-            }
-
-            var json = bodyParams.ToJson();
-            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-            httpResponse = await httpClient.PostAsync(url, content);
-        }
-
-        var responseBody = await httpResponse.Content.ReadAsStringAsync();
-
-        if (!httpResponse.IsSuccessStatusCode)
-        {
-            throw new InvalidOperationException($"请求外部接口失败：{httpResponse.StatusCode} - {responseBody}");
-        }
-
-        // 解析响应
-        using var doc = JsonDocument.Parse(responseBody);
-        var root = doc.RootElement;
-
-        // 提取数据列表
-        JsonElement? dataElement = !config.DataPath.IsNullOrEmpty()
-            ? ResolveJsonPath(root, config.DataPath)
-            : root;
-
-        // 提取总数
-        Int32 total = 0;
-        if (config.Pageable && !config.TotalPath.IsNullOrEmpty())
-        {
-            var totalElement = ResolveJsonPath(root, config.TotalPath);
-            if (totalElement.HasValue)
-                total = totalElement.Value.GetInt32();
-        }
-
-        // 序列化数据
-        var dataList = dataElement.HasValue
-            ? JsonSerializer.Serialize(dataElement.Value)
-            : "[]";
+        // 通过 IOC 获取列表数据代理实现（默认 DefaultLovListDataProxy，可被使用者覆盖）
+        var proxy = HttpContext.RequestServices.GetRequiredService<ILovListDataProxy>();
+        var result = await proxy.FetchAsync(config, request);
 
         return new
         {
-            Data = JsonParser.Decode(dataList),
-            Total = total,
+            Data = result.Data,
+            Total = result.Total,
         };
     }
 
@@ -356,23 +248,6 @@ public class LovController : EntityController<LovDefinition>
         }
 
         return result;
-    }
-
-    /// <summary>解析 JSON 路径表达式（如 data.records）</summary>
-    private static JsonElement? ResolveJsonPath(JsonElement root, String path)
-    {
-        if (path.IsNullOrEmpty()) return root;
-
-        var parts = path.Split('.', StringSplitOptions.RemoveEmptyEntries);
-        JsonElement current = root;
-
-        foreach (var part in parts)
-        {
-            if (current.ValueKind != JsonValueKind.Object) return null;
-            if (!current.TryGetProperty(part, out current)) return null;
-        }
-
-        return current;
     }
 
     #endregion
@@ -432,6 +307,7 @@ public class LovController : EntityController<LovDefinition>
                 ["dataPath"] = config.DataPath,
                 ["totalPath"] = config.TotalPath,
                 ["fixedParams"] = config.FixedParams,
+                ["proxyRequest"] = config.ProxyRequest,
             };
 
             var fields = LovSearchField.FindAllByLovDefId(def.Id)
@@ -529,6 +405,7 @@ public class LovController : EntityController<LovDefinition>
         entity.DataPath = config.TryGetProperty("dataPath", out var dp) ? dp.GetString() : null;
         entity.TotalPath = config.TryGetProperty("totalPath", out var tp) ? tp.GetString() : null;
         entity.FixedParams = config.TryGetProperty("fixedParams", out var fp) ? fp.GetString() : null;
+        entity.ProxyRequest = config.TryGetProperty("proxyRequest", out var pr) ? pr.GetBoolean() : false;
         LovListConfig.SaveByLovDefId(lovDefId, entity);
     }
 
@@ -601,28 +478,5 @@ public class LovController : EntityController<LovDefinition>
     #endregion
 }
 
-/// <summary>列表数据查询请求</summary>
-public class LovListDataRequest
-{
-    /// <summary>值集编码</summary>
-    public String LovCode { get; set; } = null!;
-
-    /// <summary>搜索参数</summary>
-    public Dictionary<String, Object>? Params { get; set; }
-
-    /// <summary>页码</summary>
-    public Int32 PageNum { get; set; } = 1;
-
-    /// <summary>每页条数</summary>
-    public Int32 PageSize { get; set; } = 20;
-}
-
-/// <summary>批量翻译请求</summary>
-public class LovBatchLabelRequest
-{
-    /// <summary>值集编码</summary>
-    public String LovCode { get; set; } = null!;
-
-    /// <summary>需要翻译的原始值列表</summary>
-    public String[]? Values { get; set; }
-}
+/// <summary>列表数据查询请求（类型转发至 NewLife.Cube.Services.LovListDataRequest，便于兼容旧引用）</summary>
+public class LovListDataRequest : NewLife.Cube.Services.LovListDataRequest;

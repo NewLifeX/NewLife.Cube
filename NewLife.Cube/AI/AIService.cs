@@ -1,7 +1,8 @@
-using NewLife.AI;
+﻿using System.Runtime.CompilerServices;
 using NewLife.AI.Clients;
 using NewLife.AI.Clients.OpenAI;
 using NewLife.AI.Models;
+using NewLife.AI.Tools;
 using NewLife.Log;
 
 namespace NewLife.Cube.AI;
@@ -73,19 +74,6 @@ public class AIService : IAIService
     public Task<String> ChatAsync(String prompt, String data, CancellationToken cancellationToken = default)
         => ChatInternalAsync(prompt, data, null, cancellationToken);
 
-    /// <summary>分析错误日志（用户交互场景，快速）</summary>
-    public Task<String> AnalyzeLogsAsync(String logsJson, CancellationToken cancellationToken = default)
-    {
-        var prompt = @"你是系统运维专家。请分析以下错误日志，用中文给出：
-1. 错误类型归类（按频率排序）
-2. 最可能的根因
-3. 建议的排查步骤
-
-直接输出分析报告，不要加无关解释。";
-
-        return ChatFastAsync(prompt, logsJson, cancellationToken);
-    }
-
     /// <summary>润色通知内容（用户交互场景，快速）</summary>
     public Task<String> PolishNotificationAsync(String title, String content, String style, CancellationToken cancellationToken = default)
     {
@@ -99,12 +87,97 @@ public class AIService : IAIService
 
     /// <summary>系统健康诊断（用户交互场景，快速）</summary>
     public Task<String> DiagnoseSystemAsync(String sysInfoJson, CancellationToken cancellationToken = default)
+        => ChatFastAsync(BuildDiagnosePrompt(), sysInfoJson, cancellationToken);
+
+    /// <summary>系统健康诊断（流式输出）。逐块返回生成内容</summary>
+    public async IAsyncEnumerable<String> DiagnoseSystemStreamAsync(String sysInfoJson, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var prompt = @"你是系统运维专家。根据以下系统运行指标，给出健康诊断报告（中文）：
+        if (!_setting.AISwitch)
+        {
+            yield return "AI 未启用，请在系统设置中开启 AISwitch";
+            yield break;
+        }
+
+        var error = default(String);
+        IChatClient? client = null;
+
+        try
+        {
+            client = GetClient();
+            WriteLog("DiagnoseSystemStream 开始", sysInfoJson[..Math.Min(sysInfoJson.Length, 200)]);
+        }
+        catch (Exception ex)
+        {
+            WriteLog("DiagnoseSystemStream 失败", ex.ToString());
+            error = $"\n\n---\n>  AI 调用失败：{ex.Message}";
+        }
+
+        if (error != null)
+        {
+            yield return error;
+            yield break;
+        }
+
+        // 与 ChatInternalAsync 一致：提示词 + 数据拼接到一次对话
+        var content = BuildDiagnosePrompt();
+        if (!sysInfoJson.IsNullOrEmpty())
+            content = $"{content}\n\n数据：\n{sysInfoJson}";
+
+        await foreach (var chunk in client!.GetStreamingResponseAsync(content, _fastOptions, cancellationToken))
+        {
+            if (chunk?.Text != null)
+                yield return chunk.Text;
+        }
+
+        WriteLog("DiagnoseSystemStream 完成", "");
+    }
+
+    /// <summary>构建系统诊断提示词</summary>
+    private static String BuildDiagnosePrompt() => @"你是系统运维专家。根据以下系统运行指标，给出健康诊断报告（中文）：
 分析要点：是否存在瓶颈、是否需要扩容、是否需要关注的风险点。
 直接输出诊断报告，不要加无关解释。";
 
-        return ChatFastAsync(prompt, sysInfoJson, cancellationToken);
+    /// <summary>AI 对话（含工具调用）。使用 ToolChatClient 自动多轮工具循环，流式返回响应块</summary>
+    /// <remarks>
+    /// 工具调用事件通过 <see cref="IChatResponse.ToolCallEvents"/> 随流式块透传，供上层转换为 SSE 事件。
+    /// </remarks>
+    /// <param name="messages">完整消息历史（含 system 消息）</param>
+    /// <param name="providers">工具提供者列表（按工具名路由），可为空</param>
+    /// <param name="options">对话选项（模型、温度、思考模式等）</param>
+    /// <param name="cancellationToken">取消令牌</param>
+    /// <returns>流式响应块，含文本与工具调用事件</returns>
+    public IAsyncEnumerable<IChatResponse> ChatAgentStreamAsync(IList<ChatMessage> messages, IList<IToolProvider>? providers = null, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        var client = GetClient();
+        var toolClient = new ToolChatClient(client, [.. providers ?? []]);
+        toolClient.Log = Log;
+        toolClient.OnToolExecuted = e =>
+        {
+            WriteLog("工具调用", $"{e.ToolName} 参数={e.Arguments} 结果={e.ResultSummary} 耗时={e.ElapsedMs}ms 成功={!e.IsError}");
+            return Task.CompletedTask;
+        };
+
+        return toolClient.GetStreamingResponseAsync(messages, options, cancellationToken);
+    }
+
+    /// <summary>AI 对话（含工具调用）。非流式，一次返回完整响应（含文本与工具调用事件）</summary>
+    /// <param name="messages">完整消息历史（含 system 消息）</param>
+    /// <param name="providers">工具提供者列表（按工具名路由），可为空</param>
+    /// <param name="options">对话选项（模型、温度、思考模式等）</param>
+    /// <param name="cancellationToken">取消令牌</param>
+    /// <returns>完整响应，含文本与工具调用事件</returns>
+    public async Task<IChatResponse> ChatAgentAsync(IList<ChatMessage> messages, IList<IToolProvider>? providers = null, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        var client = GetClient();
+        var toolClient = new ToolChatClient(client, [.. providers ?? []]);
+        toolClient.Log = Log;
+        toolClient.OnToolExecuted = e =>
+        {
+            WriteLog("工具调用", $"{e.ToolName} 参数={e.Arguments} 结果={e.ResultSummary} 耗时={e.ElapsedMs}ms 成功={!e.IsError}");
+            return Task.CompletedTask;
+        };
+
+        return await toolClient.GetResponseAsync(ChatRequest.Create(messages, options, false), cancellationToken);
     }
 
     /// <summary>快速 AI 对话，关闭深度推理、低温度，适合用户交互场景</summary>

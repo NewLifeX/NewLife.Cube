@@ -315,7 +315,7 @@
         <div class="dialog-footer">
           <div>
             <el-button
-              v-if="formType === 'edit1111'"
+              v-if="formType === 'edit'"
               type="warning"
               size="small"
               @click="handleChangePasswordInEdit"
@@ -492,7 +492,7 @@ const searchQ = ref('');
 const avatarError = ref<Record<number, boolean>>({});
 
 // 时间友好格式化
-const formatTime = (time: string): string => {
+const formatTime = (time?: string): string => {
   if (!time) return '—';
   const d = new Date(time);
   if (isNaN(d.getTime())) return time;

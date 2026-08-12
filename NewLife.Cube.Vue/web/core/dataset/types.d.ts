@@ -2,7 +2,7 @@ import { DataSet } from './data-set/DataSet';
 
 declare module './data-set/DataSet' {
    
-  interface DataSet<T = any, Q = any> {
+  interface DataSet<T extends Record<string, unknown> = Record<string, unknown>, Q extends Record<string, unknown> = Record<string, unknown>> {
     /**
      * 获取数据集长度
      */

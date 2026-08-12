@@ -39,6 +39,13 @@ export interface LovListConfig {
   totalPath: string | null;
   /** 固定参数字典 */
   fixedParams: Record<string, string> | null;
+  /**
+   * 是否代理请求。
+   * - true：列表数据由后端 /Admin/Lov/ListData 代理转发外部数据源（地址对前端不可见、规避跨域）。
+   * - false/未设置：前端直接请求 requestUrl（直连），适用于同源/同应用接口。
+   * 注意：当 requestUrl 以 / 开头（同源同应用）时，前端强制直连、不得开启代理。
+   */
+  proxyRequest?: boolean;
 }
 
 /** 列表型值集的搜索字段配置（对应后端 LovSearchField） */
@@ -139,19 +146,6 @@ export interface LovListDataResponse<T = Record<string, unknown>> {
   /** 总条数 */
   total: number;
 }
-
-// ─── BatchLabel API 类型 ──────────────────────────────────
-
-/** BatchLabel 接口请求参数 */
-export interface LovBatchLabelRequest {
-  /** 值集编码 */
-  lovCode: string;
-  /** 需要翻译的原始值列表 */
-  values: string[];
-}
-
-/** BatchLabel 接口响应（value → label 映射） */
-export type LovBatchLabelResponse = Record<string, string>;
 
 // ─── 前端 LovSelect 组件 Props 类型 ───────────────────────
 

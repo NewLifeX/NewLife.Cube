@@ -9,7 +9,7 @@
     <Description>魔方MVC/Razor兼容层，支持ASP.NET Core MVC传统开发模式。提供用户权限管理、Razor视图模板、SSO登录、OAuth服务端、数据导出等功能，单表100亿级数据验证。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 NewLife</Copyright>
-    <VersionPrefix>6.12</VersionPrefix>
+    <VersionPrefix>6.14</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
@@ -34,7 +34,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>集成第三方外部认证服务；新增 LOV 值集系统；新增审计日志页面与 AI 日志诊断；升级 IP 封禁策略支持子网封禁；前端 API 层统一与字段约束验证；新增实体树控制器与全局实体链接字典；优化 SSO 角色规则与 Token 滑动刷新</PackageReleaseNotes>
+    <PackageReleaseNotes>新增 AI 对话助手及工具集，支持多轮对话、浏览器操作与主题色配置；AI 洞察合并至对话助手，后端重构增强安全与流式输出；AI 表单助手支持 ItemType 与编辑器填充优化；修复 403 无权限清除 Token、角色初始化权限等问题；优化上传流释放与 OAuth 性别字段解析</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -51,12 +51,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.AI" Version="1.4.2026.708" />
-    <PackageReference Include="NewLife.Core" Version="11.17.2026.715-beta1316" />
-    <PackageReference Include="NewLife.IP" Version="2.4.2026.501" />
-    <PackageReference Include="NewLife.Office" Version="1.2.2026.713-beta0858" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.9.2026.716-beta1411" />
-    <PackageReference Include="NewLife.XCode" Version="12.0.2026.716-beta0647" />
+    <PackageReference Include="NewLife.AI" Version="1.5.2026.804" />
+    <PackageReference Include="NewLife.Core" Version="11.18.2026.801" />
+    <PackageReference Include="NewLife.IP" Version="2.5.2026.804" />
+    <PackageReference Include="NewLife.Office" Version="1.3.2026.801" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.10.2026.801" />
+    <PackageReference Include="NewLife.XCode" Version="12.1.2026.801" />
   </ItemGroup>
 
   <ItemGroup>
@@ -64,6 +64,20 @@
     <Compile Include="..\NewLife.Cube\AI\AIService.cs" Link="AI\AIService.cs" />
     <Compile Include="..\NewLife.Cube\AI\AIPlugin.cs" Link="AI\AIPlugin.cs" />
     <Compile Include="..\NewLife.Cube\AI\Jobs\AILogSummaryJob.cs" Link="AI\Jobs\AILogSummaryJob.cs" />
+    <Compile Include="..\NewLife.Cube\AI\AiDataHelper.cs" Link="AI\AiDataHelper.cs" />
+    <Compile Include="..\NewLife.Cube\AI\AiFormHelper.cs" Link="AI\AiFormHelper.cs" />
+    <Compile Include="..\NewLife.Cube\AI\AiInsightHelper.cs" Link="AI\AiInsightHelper.cs" />
+    <Compile Include="..\NewLife.Cube\AI\AiChatRequest.cs" Link="AI\AiChatRequest.cs" />
+    <Compile Include="..\NewLife.Cube\AI\PageCheckpointService.cs" Link="AI\PageCheckpointService.cs" />
+    <Compile Include="..\NewLife.Cube\AI\BrowserToolService.cs" Link="AI\BrowserToolService.cs" />
+    <Compile Include="..\NewLife.Cube\AI\CubeTools.cs" Link="AI\CubeTools.cs" />
+    <Compile Include="..\NewLife.Cube\AI\IAIChatService.cs" Link="AI\IAIChatService.cs" />
+    <Compile Include="..\NewLife.Cube\AI\CubeAIChatService.cs" Link="AI\CubeAIChatService.cs" />
+    <Compile Include="..\NewLife.Cube\AI\SystemInfoToolService.cs" Link="AI\SystemInfoToolService.cs" />
+    <Compile Include="..\NewLife.Cube\AI\IPageDataContext.cs" Link="AI\IPageDataContext.cs" />
+    <Compile Include="..\NewLife.Cube\AI\IEntityAiContext.cs" Link="AI\IEntityAiContext.cs" />
+    <Compile Include="..\NewLife.Cube\AI\IFormAiContext.cs" Link="AI\IFormAiContext.cs" />
+    <Compile Include="..\NewLife.Cube\AI\ConfigFormToolService.cs" Link="AI\ConfigFormToolService.cs" />
     <Compile Include="..\NewLife.Cube\AI\Jobs\AISecurityReportJob.cs" Link="AI\Jobs\AISecurityReportJob.cs" />
   </ItemGroup>
 
@@ -81,6 +95,7 @@
     <Compile Include="..\NewLife.Cube\Common\ValidFormatHelper.cs" Link="Common\ValidFormatHelper.cs" />
     <Compile Include="..\NewLife.Cube\Common\EntityPageRegistry.cs" Link="Common\EntityPageRegistry.cs" />
     <Compile Include="..\NewLife.Cube\Common\ViewHelper.cs" Link="Common\ViewHelper.cs" />
+    <Compile Include="..\NewLife.Cube\AI\AiController.cs" Link="AI\AiController.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\AccessRuleModel.cs" Link="Entity\Models\AccessRuleModel.cs" />
      <Compile Include="..\NewLife.Cube\Entity\Models\AppLogModel.cs" Link="Entity\Models\AppLogModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\AppModel.cs" Link="Entity\Models\AppModel.cs" />
@@ -158,8 +173,6 @@
     <Compile Include="..\NewLife.Cube\Services\SmsService.cs" Link="Services\SmsService.cs" />
     <Compile Include="..\NewLife.Cube\Services\DrawingCaptchaService.cs" Link="Services\DrawingCaptchaService.cs" />
     <Compile Include="..\NewLife.Cube\Services\TotpMfaService.cs" Link="Services\TotpMfaService.cs" />
-    <Compile Include="..\NewLife.Cube\Services\LovAutoRegisterService.cs" Link="Services\LovAutoRegisterService.cs" />
-    <Compile Include="..\NewLife.Cube\Services\LovServiceExtensions.cs" Link="Services\LovServiceExtensions.cs" />
     <Compile Include="..\NewLife.Cube\Entity\值集定义.cs" Link="Entity\值集定义.cs" />
     <Compile Include="..\NewLife.Cube\Entity\值集定义.Biz.cs" Link="Entity\值集定义.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\值集枚举值.cs" Link="Entity\值集枚举值.cs" />

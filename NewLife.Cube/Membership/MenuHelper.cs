@@ -75,7 +75,8 @@ public static class MenuHelper
         foreach (var type in controllerTypes)
         {
             var name = type.Name.TrimSuffix("Controller");
-            var url = root.Url + "/" + name;
+            // 菜单URL统一为前端路由，去掉开头的 /api（WebAPI版实体路由固定 /api 前缀）
+            var url = NewLife.Web.WebHelper.TrimApiPrefix(root.Url + "/" + name);
             var node = root;
 
             // 添加Controller
@@ -264,7 +265,7 @@ public static class MenuHelper
                 // 添加系统信息菜单
                 var name = method.Name;
                 var m2 = menu.Parent.Childs.FirstOrDefault(_ => _.Name == name);
-                m2 ??= menu.Parent.Add(name, method.GetDisplayName(), $"{controllerType.FullName}.{name}", $"{menu.Url}/{name}");
+                m2 ??= menu.Parent.Add(name, method.GetDisplayName(), $"{controllerType.FullName}.{name}", NewLife.Web.WebHelper.TrimApiPrefix($"{menu.Url}/{name}"));
                 if (m2.Sort == 0) m2.Sort = attMenu.Order;
                 if (m2.Icon.IsNullOrEmpty()) m2.Icon = attMenu.Icon;
                 if (m2.FullName.IsNullOrEmpty()) m2.FullName = $"{controllerType.FullName}.{name}";

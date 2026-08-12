@@ -35,7 +35,7 @@ const handleMenuClick = (event: MouseEvent) => {
   margin-left: 12px;
   padding-left: 16px;
   padding-right: 8px;
-  color: #64748b;
+  color: var(--el-text-color-secondary);
   line-height: 34px;
   cursor: pointer;
   border-radius: 8px;
@@ -51,8 +51,8 @@ const handleMenuClick = (event: MouseEvent) => {
 
   &--active,
   &:hover {
-    color: #1e40af;
-    background: #eff6ff;
+    color: var(--el-color-primary);
+    background: var(--el-color-primary-light-9);
   }
 
   &--active {

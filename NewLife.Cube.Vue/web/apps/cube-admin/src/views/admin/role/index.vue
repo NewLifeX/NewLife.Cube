@@ -104,7 +104,7 @@
               }"
               class="perm-tree"
             >
-              <template #default="{ node, data }">
+              <template #default="{ data }">
                 <span class="perm-tree-node">
                   <span>{{ data.displayName || data.name }}</span>
                   <span v-if="data.icon" class="perm-tree-icon">{{ data.icon }}</span>
@@ -141,7 +141,7 @@ interface Role {
   name: string;
   enable: boolean;
   isSystem: boolean;
-  tenantId: number;
+  tenantId?: number;
   permission: string;
   sort: number;
   ex1: number;

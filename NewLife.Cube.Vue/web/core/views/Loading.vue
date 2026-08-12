@@ -41,13 +41,15 @@ onUnmounted(() => {
   justify-content: center;
   height: 100vh;
   width: 100vw;
+  background: var(--el-bg-color-page);
+  color: var(--el-text-color-primary);
 }
 
 .loading-spinner {
   width: 50px;
   height: 50px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #3498db;
+  border: 5px solid var(--el-border-color-light);
+  border-top: 5px solid var(--el-color-primary);
   border-radius: 50%;
   animation: spin 2s linear infinite;
   margin-bottom: 20px;
@@ -55,7 +57,7 @@ onUnmounted(() => {
 
 .loading-text {
   font-size: 16px;
-  color: #333;
+  color: var(--el-text-color-regular);
 }
 
 @keyframes spin {

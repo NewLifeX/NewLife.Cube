@@ -235,6 +235,33 @@ public partial class 测试字段 : I测试字段, IEntity<I测试字段>
     [DataObjectField(false, false, true, 200)]
     [BindColumn("MultiVal", "多选。multipleSelect，后端下发 lovCode 走 LOV 多选，存储逗号分隔的值", "", ItemType = "multipleSelect")]
     public String MultiVal { get => _MultiVal; set { if (OnPropertyChanging("MultiVal", value)) { _MultiVal = value; OnPropertyChanged("MultiVal"); } } }
+
+    private String _UserId;
+    /// <summary>用户。singleSelect，后端下发 lovCode 走 LOV 单选</summary>
+    [Category("值集")]
+    [DisplayName("用户")]
+    [Description("用户。singleSelect，后端下发 lovCode 走 LOV 单选")]
+    [DataObjectField(false, false, true, 200)]
+    [BindColumn("UserId", "用户。singleSelect，后端下发 lovCode 走 LOV 单选", "", ItemType = "singleSelect")]
+    public String UserId { get => _UserId; set { if (OnPropertyChanging("UserId", value)) { _UserId = value; OnPropertyChanged("UserId"); } } }
+
+    private Int32 _ListVal;
+    /// <summary>下拉表格。lovTable，后端下发 List.* 类型 lovCode，走 LOV 弹窗表格选择</summary>
+    [Category("值集")]
+    [DisplayName("下拉表格")]
+    [Description("下拉表格。lovTable，后端下发 List.* 类型 lovCode，走 LOV 弹窗表格选择")]
+    [DataObjectField(false, false, true, 0)]
+    [BindColumn("ListVal", "下拉表格。lovTable，后端下发 List.* 类型 lovCode，走 LOV 弹窗表格选择", "", ItemType = "lovTable")]
+    public Int32 ListVal { get => _ListVal; set { if (OnPropertyChanging("ListVal", value)) { _ListVal = value; OnPropertyChanged("ListVal"); } } }
+
+    private String _ListMVal;
+    /// <summary>下拉表格(多选)。lovTableMulti，后端下发 List.* 类型 lovCode，走 LOV 弹窗表格多选，存储逗号分隔的 id</summary>
+    [Category("值集")]
+    [DisplayName("下拉表格(多选)")]
+    [Description("下拉表格(多选)。lovTableMulti，后端下发 List.* 类型 lovCode，走 LOV 弹窗表格多选，存储逗号分隔的 id")]
+    [DataObjectField(false, false, true, 200)]
+    [BindColumn("ListMVal", "下拉表格(多选)。lovTableMulti，后端下发 List.* 类型 lovCode，走 LOV 弹窗表格多选，存储逗号分隔的 id", "", ItemType = "lovTableMulti")]
+    public String ListMVal { get => _ListMVal; set { if (OnPropertyChanging("ListMVal", value)) { _ListMVal = value; OnPropertyChanged("ListMVal"); } } }
     #endregion
 
     #region 拷贝
@@ -266,6 +293,9 @@ public partial class 测试字段 : I测试字段, IEntity<I测试字段>
         UrlVal = model.UrlVal;
         SingleVal = model.SingleVal;
         MultiVal = model.MultiVal;
+        UserId = model.UserId;
+        ListVal = model.ListVal;
+        ListMVal = model.ListMVal;
     }
     #endregion
 
@@ -301,6 +331,9 @@ public partial class 测试字段 : I测试字段, IEntity<I测试字段>
             "UrlVal" => _UrlVal,
             "SingleVal" => _SingleVal,
             "MultiVal" => _MultiVal,
+            "UserId" => _UserId,
+            "ListVal" => _ListVal,
+            "ListMVal" => _ListMVal,
             _ => base[name]
         };
         set
@@ -331,6 +364,9 @@ public partial class 测试字段 : I测试字段, IEntity<I测试字段>
                 case "UrlVal": _UrlVal = Convert.ToString(value); break;
                 case "SingleVal": _SingleVal = value.ToInt(); break;
                 case "MultiVal": _MultiVal = Convert.ToString(value); break;
+                case "UserId": _UserId = Convert.ToString(value); break;
+                case "ListVal": _ListVal = value.ToInt(); break;
+                case "ListMVal": _ListMVal = Convert.ToString(value); break;
                 default: base[name] = value; break;
             }
         }
@@ -441,6 +477,15 @@ public partial class 测试字段 : I测试字段, IEntity<I测试字段>
         /// <summary>多选。multipleSelect，后端下发 lovCode 走 LOV 多选，存储逗号分隔的值</summary>
         public static readonly Field MultiVal = FindByName("MultiVal");
 
+        /// <summary>用户。singleSelect，后端下发 lovCode 走 LOV 单选</summary>
+        public static readonly Field UserId = FindByName("UserId");
+
+        /// <summary>下拉表格。lovTable，后端下发 List.* 类型 lovCode，走 LOV 弹窗表格选择</summary>
+        public static readonly Field ListVal = FindByName("ListVal");
+
+        /// <summary>下拉表格(多选)。lovTableMulti，后端下发 List.* 类型 lovCode，走 LOV 弹窗表格多选，存储逗号分隔的 id</summary>
+        public static readonly Field ListMVal = FindByName("ListMVal");
+
         static Field FindByName(String name) => Meta.Table.FindByName(name);
     }
 
@@ -518,6 +563,15 @@ public partial class 测试字段 : I测试字段, IEntity<I测试字段>
 
         /// <summary>多选。multipleSelect，后端下发 lovCode 走 LOV 多选，存储逗号分隔的值</summary>
         public const String MultiVal = "MultiVal";
+
+        /// <summary>用户。singleSelect，后端下发 lovCode 走 LOV 单选</summary>
+        public const String UserId = "UserId";
+
+        /// <summary>下拉表格。lovTable，后端下发 List.* 类型 lovCode，走 LOV 弹窗表格选择</summary>
+        public const String ListVal = "ListVal";
+
+        /// <summary>下拉表格(多选)。lovTableMulti，后端下发 List.* 类型 lovCode，走 LOV 弹窗表格多选，存储逗号分隔的 id</summary>
+        public const String ListMVal = "ListMVal";
     }
     #endregion
 }

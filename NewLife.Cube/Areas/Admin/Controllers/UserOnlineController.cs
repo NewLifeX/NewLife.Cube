@@ -74,6 +74,7 @@ public class UserOnlineController : EntityController<UserOnline, UserOnlineModel
     /// <returns></returns>
     [DisplayName("强制下线")]
     [EntityAuthorize(PermissionFlags.Delete)]
+    [HttpPost]
     public ActionResult Kick(Int32 id)
     {
         var online = UserOnline.FindByID(id);

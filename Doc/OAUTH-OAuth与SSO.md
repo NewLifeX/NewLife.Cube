@@ -223,13 +223,28 @@ services.AddOAuth<IdentityServer4Client>(options =>
 
 ```csharp
 // 回调地址格式
-// https://your-domain.com/Sso/LoginCallback/{provider}
+// https://your-domain.com/Sso/LoginInfo/{provider}
 
 // 示例
-// QQ：https://your-domain.com/Sso/LoginCallback/QQ
-// 微信：https://your-domain.com/Sso/LoginCallback/Weixin
-// GitHub：https://your-domain.com/Sso/LoginCallback/GitHub
+// QQ：https://your-domain.com/Sso/LoginInfo/QQ
+// 微信：https://your-domain.com/Sso/LoginInfo/Weixin
+// GitHub：https://your-domain.com/Sso/LoginInfo/GitHub
 ```
+
+### 前后端分离部署与 /api 前缀
+
+> **WebAPI 版**（前后端分离，新一代前端皮肤）中，实体/后台控制器路由**固定**为 `/api/{area}/{controller}/{action}`（写死，不再配置）；**`/Sso`、`/Cube`、`/Auth` 等服务控制器保持不带前缀**。**第二代魔方 MVC 版**不使用 `/api` 前缀，前后端一致路由 `/{area}/{controller}/{action}`。
+
+| 控制器 | 路由 |
+|--------|------|
+| 实体/后台控制器（User/Role/App 等，位于 `{area}` 内） | `/api/{area}/{controller}/{action}`，如 `/api/Admin/User/Index` |
+| 服务控制器（Sso/Cube/Auth/Mfa） | `/Sso/Login`、`/Cube/MenuTree`、`/Auth/Login` 等，**不带 `/api`** |
+
+SSO 相关端点均在 `/Sso` 下（无前缀）：`/Sso/Login`、`/Sso/LoginInfo/{provider}`、`/Sso/Authorize`、`/Sso/Auth2`、`/Sso/Logout`、`/Sso/Access_Token`、`/Sso/UserInfo` 等。
+
+菜单存储前端路由（无 `/api`），扫描实体控制器时自动去掉开头的 `/api`；前端刷新 `/Admin/User/...` 等前端路由时，由前端皮肤（`UseVue`/`UseReact` 的 `MapFallbackToFile`）回退到 SPA 外壳。无中间件、无额外配置。
+
+> 注意：登录成功后的最终跳转目标（如 `returnUrl`、`~/Admin`）为前端路由，不带 `/api`。
 
 ---
 
@@ -318,6 +333,11 @@ services.AddOAuthServer(options =>
      │               │ 8.自动登录        │
      v               v                  v
 ```
+
+### 授权码有效期与过期处理
+
+- **有效期从发放起算**：OAuth 授权码（`code`）有效期为 1 分钟，从服务端**正式发放**（`GetResult`，用户完成认证后跳回子系统时）起算，而非授权流程开始时起算。多级 SSO 链（子系统 → 中转站 → 外部 OAuth）中，用户在下游登录页停留再久，也不影响上游最终换码。
+- **过期自动重新授权**：子系统 `SsoController.LoginInfo` 收到过期或无效的授权码时，不再展示错误页，而是自动重跳 SSO 重新授权（保留原始回跳地址）。若用户已在 SSO 保持登录，重授权过程几乎无感。
 
 ---
 
@@ -572,6 +592,8 @@ public ActionResult RestoreUser()
     </div>
 </div>
 ```
+
+> 提示：SSO 入口在 `/Sso` 路由（不带 `/api`，见 13.3「前后端分离部署与 /api 前缀」）。自定义登录页可调用 `OAuthHelper.GetLoginUrl(name, returnUrl)` 统一构建登录链接。
 
 ---
 

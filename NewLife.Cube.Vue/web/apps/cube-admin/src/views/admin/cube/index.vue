@@ -450,12 +450,6 @@
             <el-form-item label="最大备份行数" prop="maxBackup">
               <el-input-number v-model="form.maxBackup" :min="1" placeholder="默认10,000,000" />
             </el-form-item>
-            <el-form-item label="API前缀" prop="apiPrefixes">
-              <el-input
-                v-model="form.apiPrefixes"
-                placeholder="多个前缀用逗号或分号分隔，如 /api,/api/v1"
-              />
-            </el-form-item>
           </el-tab-pane>
         </el-tabs>
       </el-form>
@@ -552,7 +546,6 @@ interface CubeSetting {
   fileRetentionSize: number;
   maxExport: number;
   maxBackup: number;
-  apiPrefixes: string;
 }
 
 const loading = ref(false);
@@ -657,7 +650,6 @@ const form = reactive<CubeSetting>({
   fileRetentionSize: 1024,
   maxExport: 10000000,
   maxBackup: 10000000,
-  apiPrefixes: '',
 });
 
 // 加载配置数据

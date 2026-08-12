@@ -2,16 +2,20 @@
   "extends": "@vue/tsconfig/tsconfig.dom.json",
   "include": [
     "env.d.ts",
-    "./**/*.vue",
-    "./**/*.ts",
-    "./**/*.tsx",
-    "./**/*.d.ts",
+    "core/**/*.vue",
+    "core/**/*.ts",
+    "core/**/*.tsx",
+    "core/**/*.d.ts",
+    "apps/**/*.vue",
+    "apps/**/*.ts",
+    "apps/**/*.tsx",
+    "configs/**/*.ts",
     "configs/microAppConfig.js",
-    "core/pages/Login.ts"
+    "e2e/**/*.ts"
   ],
   "exclude": [
     "src/**",
-    "src/**/__tests__/*"
+    "src/**/__tests__/*",
   ],
   "compilerOptions": {
     "jsx": "preserve",

@@ -379,6 +379,26 @@ public class CubeSetting : Config<CubeSetting>
     [Description("AI 默认模型。NewLife 默认 newlife-flash")]
     [Category("AI")]
     public String AIModel { get; set; } = "newlife-flash";
+
+    /// <summary>AI 默认深度推理。AI 分析与对话默认是否启用深度推理（think），默认false即快速</summary>
+    [Description("AI 默认深度推理。AI 分析与对话默认是否启用深度推理（think），默认false即快速")]
+    [Category("AI")]
+    public Boolean AIDefaultThink { get; set; }
+
+    /// <summary>AI 助手主题色方案。预设方案联动填充主色/辅色，可再手动微调，默认新生命绿</summary>
+    [Description("AI 助手主题色方案。预设方案联动填充主色/辅色，可再手动微调，默认新生命绿")]
+    [Category("AI")]
+    public String AIColorScheme { get; set; } = "新生命绿";
+
+    /// <summary>AI 助手主色。悬浮球、面板头、用户气泡等主色调，默认新生命绿#2ecc71</summary>
+    [Description("AI 助手主色。悬浮球、面板头、用户气泡等主色调，默认新生命绿#2ecc71")]
+    [Category("AI")]
+    public String AIPrimaryColor { get; set; } = "#2ecc71";
+
+    /// <summary>AI 助手辅色。主色渐变终点色，默认深绿#1e8e3e</summary>
+    [Description("AI 助手辅色。主色渐变终点色，默认深绿#1e8e3e")]
+    [Category("AI")]
+    public String AISecondaryColor { get; set; } = "#1e8e3e";
     #endregion
 
     #region 系统功能
@@ -456,13 +476,6 @@ public class CubeSetting : Config<CubeSetting>
     [Description("最大备份行数。页面允许备份的最大行数，默认10_000_000")]
     [Category("系统功能")]
     public Int32 MaxBackup { get; set; } = 10_000_000;
-    #endregion
-
-    #region API前缀
-    /// <summary>API前缀。多个前缀用逗号或分号分隔，如 /api,/api/v1。请求路径命中前缀时自动去掉前缀并转发到真实路由</summary>
-    [Description("API前缀。多个前缀用逗号或分号分隔，如 /api,/api/v1。请求路径命中前缀时自动去掉前缀并转发到真实路由")]
-    [Category("API前缀")]
-    public String ApiPrefixes { get; set; } = "/api";
     #endregion
 
     #region 方法

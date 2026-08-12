@@ -1,4 +1,5 @@
 import type { AxiosRequestConfig } from 'axios';
+import { resolveRequestUrl } from './service-path';
 import type {
   ApiResponse,
   AuthCategory,
@@ -181,8 +182,8 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
 
     /** 获取导出 URL（直接下载，不走 ajax） */
     getExportUrl: (type: string, format: string): string => {
-      const base = baseApiUrl ?? '';
-      return `${base}/${type}/ExportFile?format=${encodeURIComponent(format)}`;
+      const url = resolveRequestUrl(baseApiUrl ?? '', `/${type}/ExportFile`);
+      return `${url}?format=${encodeURIComponent(format)}`;
     },
 
     /** 导入文件 */

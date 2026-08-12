@@ -7,7 +7,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 /// <summary>访问规则</summary>
 [DisplayName("访问规则")]
 [AdminArea]
-[Menu(0, false, Icon = "fa-star")]
+[Menu(0, false, Icon = "Star")]
 public class AccessRuleController : EntityController<AccessRule, AccessRuleModel>
 {
     static AccessRuleController()

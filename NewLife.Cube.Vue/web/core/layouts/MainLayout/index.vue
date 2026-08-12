@@ -47,7 +47,12 @@ $layout-max-width: 1100px;
   background:
     radial-gradient(ellipse 70% 50% at 15% 5%, var(--el-color-primary-light-9) 0%, transparent 55%),
     radial-gradient(ellipse 50% 40% at 85% 95%, var(--el-fill-color-light) 0%, transparent 55%),
-    linear-gradient(180deg, var(--el-bg-color-page) 0%, var(--el-fill-color-light) 50%, var(--el-bg-color-page) 100%);
+    linear-gradient(
+      180deg,
+      var(--el-bg-color-page) 0%,
+      var(--el-fill-color-light) 50%,
+      var(--el-bg-color-page) 100%
+    );
 }
 
 .layoutNavbar {
@@ -83,16 +88,19 @@ $layout-max-width: 1100px;
 
   .layoutContentWrapper {
     height: 100%;
-    background: rgba(255, 255, 255, 0.78);
+    /* 使用 Element Plus 主题 token 替代未定义的 --mainlayout-surface，自动跟随主题切换 */
+    background: var(--el-bg-color-overlay);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-radius: var(--el-border-radius-large, 16px);
+    border-radius: var(--el-border-radius-base);
     padding: 24px 16px 0 24px;
     box-sizing: border-box;
-    border: 1px solid rgba(255, 255, 255, 0.55);
+    /* 使用 --el-border-color-light 替代未定义的 --mainlayout-surface-border */
+    border: 1px solid var(--el-border-color-light);
+    /* 使用 --el-box-shadow-light 替代未定义的 --mainlayout-shadow-soft */
     box-shadow:
       0 4px 24px var(--el-box-shadow-light),
-      0 1px 3px rgba(0, 0, 0, 0.02);
+      0 1px 3px var(--el-box-shadow-light);
   }
 }
 </style>

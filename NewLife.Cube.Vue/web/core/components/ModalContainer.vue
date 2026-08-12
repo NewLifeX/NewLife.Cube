@@ -12,7 +12,11 @@
  */
 import { defineComponent, h, computed, ref, Teleport, type VNode, type Component } from 'vue';
 import { ElDialog, ElDrawer, ElButton } from 'element-plus';
-import { modals, closeModal as closeModalFn, handleConfirm as handleConfirmFn } from '../composables/useModal';
+import {
+  modals,
+  closeModal as closeModalFn,
+  handleConfirm as handleConfirmFn,
+} from '../composables/useModal';
 import type {
   ModalItem,
   ComponentModalOptions,
@@ -21,7 +25,9 @@ import type {
   ModalRenderContext,
   FooterButton,
 } from '../composables/useModal';
-import type { ColumnConfig } from '../../src/components/form/model/form';
+/* 使用 core/types/forms 的 FormColumnConfig 替代 src/ 层的 ColumnConfig，
+   消除 core/ 对 src/ 的跨层依赖，确保框架层不耦合旧版遗留代码 */
+import type { FormColumnConfig } from '../types/forms';
 
 export default defineComponent({
   name: 'ModalContainer',
@@ -50,7 +56,9 @@ export default defineComponent({
       const o = item.options as ComponentModalOptions;
       if (o.componentEvents) {
         for (const [key, value] of Object.entries(o.componentEvents)) {
-          const eventName = key.startsWith('on') ? key : `on${key.charAt(0).toUpperCase()}${key.slice(1)}`;
+          const eventName = key.startsWith('on')
+            ? key
+            : `on${key.charAt(0).toUpperCase()}${key.slice(1)}`;
           events[eventName] = value;
         }
       }
@@ -67,7 +75,9 @@ export default defineComponent({
         visible: computed(() => item.visible) as unknown as import('vue').Ref<boolean>,
         close: () => closeModalFn(item.id),
         confirm: (d?: unknown) => handleConfirmFn(item, d),
-        setConfirmLoading: (l: boolean) => { item.confirmLoading = l; },
+        setConfirmLoading: (l: boolean) => {
+          item.confirmLoading = l;
+        },
       };
     }
 
@@ -77,108 +87,150 @@ export default defineComponent({
     function buildFormFields(item: ModalItem): VNode[] {
       const o = item.options as FormModalOptions;
       const fd = item.formData ?? {};
-      return o.config.filter((c: ColumnConfig) => {
-        if (c.show === false) return false;
-        if (typeof (c as { if?: boolean }).if === 'boolean' && !(c as { if?: boolean }).if) return false;
-        return true;
-      }).map((c: ColumnConfig) => {
-        const prop = c.prop.toString();
-        const fieldProps = (c as { props?: Record<string, unknown> }).props || {};
-        const modelValue = (fd as Record<string, unknown>)[prop];
-        const updateModel = (v: unknown) => { (fd as Record<string, unknown>)[prop] = v; };
+      return o.config
+        .filter((c: FormColumnConfig) => {
+          if (c.show === false) return false;
+          if (typeof c.if === 'boolean' && !c.if) return false;
+          return true;
+        })
+        .map((c: FormColumnConfig) => {
+          const prop = c.prop.toString();
+          const fieldProps = c.props || {};
+          const modelValue = (fd as Record<string, unknown>)[prop];
+          const updateModel = (v: unknown) => {
+            (fd as Record<string, unknown>)[prop] = v;
+          };
 
-        let fieldVNode: VNode;
-        const componentType = c.component || 'input';
+          let fieldVNode: VNode;
+          const componentType = c.component || 'input';
 
-        switch (componentType) {
-          case 'select': {
-            const options = (fieldProps.options as Array<{ label: string; value: unknown }>) || [];
-            fieldVNode = h('el-select', {
-              modelValue,
-              'onUpdate:modelValue': updateModel,
-              ...fieldProps,
-            }, {
-              default: () => options.map((opt) => h('el-option', {
-                label: opt.label,
-                value: opt.value,
-              })),
-            });
-            break;
+          switch (componentType) {
+            case 'select': {
+              const options =
+                (fieldProps.options as Array<{ label: string; value: unknown }>) || [];
+              fieldVNode = h(
+                'el-select',
+                {
+                  modelValue,
+                  'onUpdate:modelValue': updateModel,
+                  ...fieldProps,
+                },
+                {
+                  default: () =>
+                    options.map((opt) =>
+                      h('el-option', {
+                        label: opt.label,
+                        value: opt.value,
+                      }),
+                    ),
+                },
+              );
+              break;
+            }
+            case 'input': {
+              fieldVNode = h('el-input', {
+                modelValue,
+                'onUpdate:modelValue': updateModel,
+                ...fieldProps,
+              });
+              break;
+            }
+            case 'switch': {
+              fieldVNode = h('el-switch', {
+                modelValue,
+                'onUpdate:modelValue': updateModel,
+                ...fieldProps,
+              });
+              break;
+            }
+            case 'inputNumber': {
+              fieldVNode = h('el-input-number', {
+                modelValue,
+                'onUpdate:modelValue': updateModel,
+                ...fieldProps,
+              });
+              break;
+            }
+            case 'radioGroup': {
+              const options =
+                (fieldProps.options as Array<{ label: string; value: unknown }>) || [];
+              fieldVNode = h(
+                'el-radio-group',
+                {
+                  modelValue,
+                  'onUpdate:modelValue': updateModel,
+                  ...fieldProps,
+                },
+                {
+                  default: () =>
+                    options.map((opt) =>
+                      h(
+                        'el-radio',
+                        {
+                          label: opt.value,
+                        },
+                        () => opt.label,
+                      ),
+                    ),
+                },
+              );
+              break;
+            }
+            case 'checkboxGroup': {
+              const options =
+                (fieldProps.options as Array<{ label: string; value: unknown }>) || [];
+              fieldVNode = h(
+                'el-checkbox-group',
+                {
+                  modelValue,
+                  'onUpdate:modelValue': updateModel,
+                  ...fieldProps,
+                },
+                {
+                  default: () =>
+                    options.map((opt) =>
+                      h(
+                        'el-checkbox',
+                        {
+                          label: opt.value,
+                        },
+                        () => opt.label,
+                      ),
+                    ),
+                },
+              );
+              break;
+            }
+            case 'datePicker': {
+              fieldVNode = h('el-date-picker', {
+                modelValue,
+                'onUpdate:modelValue': updateModel,
+                ...fieldProps,
+              });
+              break;
+            }
+            default: {
+              fieldVNode = h('el-input', {
+                modelValue,
+                'onUpdate:modelValue': updateModel,
+                ...fieldProps,
+              });
+              break;
+            }
           }
-          case 'input': {
-            fieldVNode = h('el-input', {
-              modelValue,
-              'onUpdate:modelValue': updateModel,
-              ...fieldProps,
-            });
-            break;
-          }
-          case 'switch': {
-            fieldVNode = h('el-switch', {
-              modelValue,
-              'onUpdate:modelValue': updateModel,
-              ...fieldProps,
-            });
-            break;
-          }
-          case 'inputNumber': {
-            fieldVNode = h('el-input-number', {
-              modelValue,
-              'onUpdate:modelValue': updateModel,
-              ...fieldProps,
-            });
-            break;
-          }
-          case 'radioGroup': {
-            const options = (fieldProps.options as Array<{ label: string; value: unknown }>) || [];
-            fieldVNode = h('el-radio-group', {
-              modelValue,
-              'onUpdate:modelValue': updateModel,
-              ...fieldProps,
-            }, {
-              default: () => options.map((opt) => h('el-radio', {
-                label: opt.value,
-              }, () => opt.label)),
-            });
-            break;
-          }
-          case 'checkboxGroup': {
-            const options = (fieldProps.options as Array<{ label: string; value: unknown }>) || [];
-            fieldVNode = h('el-checkbox-group', {
-              modelValue,
-              'onUpdate:modelValue': updateModel,
-              ...fieldProps,
-            }, {
-              default: () => options.map((opt) => h('el-checkbox', {
-                label: opt.value,
-              }, () => opt.label)),
-            });
-            break;
-          }
-          case 'datePicker': {
-            fieldVNode = h('el-date-picker', {
-              modelValue,
-              'onUpdate:modelValue': updateModel,
-              ...fieldProps,
-            });
-            break;
-          }
-          default: {
-            fieldVNode = h('el-input', {
-              modelValue,
-              'onUpdate:modelValue': updateModel,
-              ...fieldProps,
-            });
-            break;
-          }
-        }
 
-        return h('el-form-item', {
-          label: c.label ?? prop,
-          prop,
-          rules: c.required ? [{ required: true, message: `${c.label}不能为空`, trigger: 'blur' }] : [],
-        }, () => fieldVNode);
-      });
+          return h(
+            'el-form-item',
+            {
+              label: c.label ?? prop,
+              prop,
+              rules: c.required
+                ? [{ required: true, message: `${c.label}不能为空`, trigger: 'blur' }]
+                : [],
+            },
+            () => fieldVNode,
+          );
+        });
     }
 
     /**
@@ -209,7 +261,11 @@ export default defineComponent({
       // config 表单模式
       if ('config' in o && o.config) {
         const fields = buildFormFields(item);
-        return h('el-form', { model: item.formData, labelWidth: '120px' }, { default: () => fields });
+        return h(
+          'el-form',
+          { model: item.formData, labelWidth: '120px' },
+          { default: () => fields },
+        );
       }
       return null;
     }
@@ -220,38 +276,65 @@ export default defineComponent({
     function renderFooter(item: ModalItem): VNode | null {
       const o = item.options;
       if (o.showFooter === false) return null;
-      const style = 'text-align:right;padding:12px 20px;border-top:1px solid #e4e7ed;';
+      const style =
+        'text-align:right;padding:12px 20px;border-top:1px solid var(--el-border-color-light);';
 
       if (o.footerButtons?.length) {
-        return h('div', { class: 'modal-footer', style },
-          o.footerButtons.map((b: FooterButton) => h(ElButton, {
-            type: b.type ?? 'default',
-            loading: b.loading,
-            disabled: b.disabled,
-            onClick: () => b.onClick({
-              id: item.id,
-              type: item.type,
-              visible: computed(() => item.visible) as unknown as import('vue').Ref<boolean>,
-              confirmLoading: computed(() => item.confirmLoading) as unknown as import('vue').Ref<boolean>,
-              close: () => closeModalFn(item.id),
-              confirm: (d?: unknown) => handleConfirmFn(item, d),
-              setConfirmLoading: (l: boolean) => { item.confirmLoading = l; },
-              formData: item.formData ? computed(() => item.formData) as unknown as import('vue').Ref<Record<string, unknown>> : undefined,
-            }),
-          }, { default: () => b.text })),
+        return h(
+          'div',
+          { class: 'modal-footer', style },
+          o.footerButtons.map((b: FooterButton) =>
+            h(
+              ElButton,
+              {
+                type: b.type ?? 'default',
+                loading: b.loading,
+                disabled: b.disabled,
+                onClick: () =>
+                  b.onClick({
+                    id: item.id,
+                    type: item.type,
+                    visible: computed(() => item.visible) as unknown as import('vue').Ref<boolean>,
+                    confirmLoading: computed(
+                      () => item.confirmLoading,
+                    ) as unknown as import('vue').Ref<boolean>,
+                    close: () => closeModalFn(item.id),
+                    confirm: (d?: unknown) => handleConfirmFn(item, d),
+                    setConfirmLoading: (l: boolean) => {
+                      item.confirmLoading = l;
+                    },
+                    formData: item.formData
+                      ? (computed(() => item.formData) as unknown as import('vue').Ref<
+                          Record<string, unknown>
+                        >)
+                      : undefined,
+                  }),
+              },
+              { default: () => b.text },
+            ),
+          ),
         );
       }
 
       return h('div', { class: 'modal-footer', style }, [
-        h(ElButton, { onClick: () => handleCancel(item) }, { default: () => o.cancelText ?? '取消' }),
-        h(ElButton, {
-          type: 'primary',
-          loading: item.confirmLoading,
-          onClick: () => handleConfirmFn(
-            item,
-            'config' in o && o.config && item.formData ? item.formData : undefined
-          ),
-        }, { default: () => o.confirmText ?? '确定' }),
+        h(
+          ElButton,
+          { onClick: () => handleCancel(item) },
+          { default: () => o.cancelText ?? '取消' },
+        ),
+        h(
+          ElButton,
+          {
+            type: 'primary',
+            loading: item.confirmLoading,
+            onClick: () =>
+              handleConfirmFn(
+                item,
+                'config' in o && o.config && item.formData ? item.formData : undefined,
+              ),
+          },
+          { default: () => o.confirmText ?? '确定' },
+        ),
       ]);
     }
 
@@ -272,8 +355,17 @@ export default defineComponent({
         appendToBody: false,
         onClosed: () => handleClosed(),
       };
-      ['closeOnClickModal', 'closeOnPressEscape', 'lockScroll', 'modal', 'modalClass',
-        'zIndex', 'openDelay', 'closeDelay', 'showClose'].forEach((k) => {
+      [
+        'closeOnClickModal',
+        'closeOnPressEscape',
+        'lockScroll',
+        'modal',
+        'modalClass',
+        'zIndex',
+        'openDelay',
+        'closeDelay',
+        'showClose',
+      ].forEach((k) => {
         const obj = o as unknown as Record<string, unknown>;
         if (obj[k] !== undefined) p[k] = obj[k];
       });
@@ -282,37 +374,46 @@ export default defineComponent({
       if (item.type === 'dialog') {
         p.width = o.width ?? '50%';
         if (o.fullscreen !== undefined) p.fullscreen = o.fullscreen;
-        if ((o as { alignCenter?: boolean }).alignCenter !== undefined) p.alignCenter = (o as { alignCenter?: boolean }).alignCenter;
-        if ((o as { appendToBody?: boolean }).appendToBody !== undefined) p.appendToBody = (o as { appendToBody?: boolean }).appendToBody;
-        if ((o as { transition?: string }).transition !== undefined) p.transition = (o as { transition?: string }).transition;
+        if ((o as { alignCenter?: boolean }).alignCenter !== undefined)
+          p.alignCenter = (o as { alignCenter?: boolean }).alignCenter;
+        if ((o as { appendToBody?: boolean }).appendToBody !== undefined)
+          p.appendToBody = (o as { appendToBody?: boolean }).appendToBody;
+        if ((o as { transition?: string }).transition !== undefined)
+          p.transition = (o as { transition?: string }).transition;
       } else {
         p.size = o.size ?? '50%';
         p.direction = (o as { direction?: string }).direction ?? 'rtl';
-        if ((o as { resizable?: boolean }).resizable !== undefined) p.resizable = (o as { resizable?: boolean }).resizable;
-        if ((o as { withHeader?: boolean }).withHeader !== undefined) p.withHeader = (o as { withHeader?: boolean }).withHeader;
+        if ((o as { resizable?: boolean }).resizable !== undefined)
+          p.resizable = (o as { resizable?: boolean }).resizable;
+        if ((o as { withHeader?: boolean }).withHeader !== undefined)
+          p.withHeader = (o as { withHeader?: boolean }).withHeader;
       }
       if (o.attrs) Object.assign(p, o.attrs);
       return p;
     }
 
     return () => {
-      const dialogs = modals.filter((m) => m.type === 'dialog').map((item) => {
-        const content = renderContent(item);
-        const footer = renderFooter(item);
-        return h(ElDialog, buildDialogProps(item), {
-          default: () => content,
-          footer: () => footer,
+      const dialogs = modals
+        .filter((m) => m.type === 'dialog')
+        .map((item) => {
+          const content = renderContent(item);
+          const footer = renderFooter(item);
+          return h(ElDialog, buildDialogProps(item), {
+            default: () => content,
+            footer: () => footer,
+          });
         });
-      });
 
-      const drawers = modals.filter((m) => m.type === 'drawer').map((item) => {
-        const content = renderContent(item);
-        const footer = renderFooter(item);
-        return h(ElDrawer, buildDialogProps(item), {
-          default: () => content,
-          footer: () => footer,
+      const drawers = modals
+        .filter((m) => m.type === 'drawer')
+        .map((item) => {
+          const content = renderContent(item);
+          const footer = renderFooter(item);
+          return h(ElDrawer, buildDialogProps(item), {
+            default: () => content,
+            footer: () => footer,
+          });
         });
-      });
 
       return h(Teleport, { to: 'body' }, [...dialogs, ...drawers]);
     };

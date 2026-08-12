@@ -6,8 +6,9 @@
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "build": "pnpm build:packages",
+    "build:api": "dotnet build CubeDemo/CubeDemo.csproj",
     "build:all": "pnpm -r build",
-    "build:packages": "pnpm --filter @cube/api-core --filter @cube/auth-logic --filter @cube/field-mapping --filter @cube/page-logic --filter @cube/page-utils build",
+    "build:packages": "pnpm -r --filter @cube/api-core --filter @cube/page-utils --filter @cube/field-mapping --filter @cube/auth-logic --filter @cube/page-logic build",
     "build:vue": "pnpm --filter ./NewLife.Cube.Vue/web build",
     "build:react": "pnpm --filter ./NewLife.Cube.React/web build",
     "build:naive": "pnpm --filter ./NewLife.Cube.NaiveUI/web build",
@@ -18,9 +19,10 @@
     "build:vuetify": "pnpm --filter ./NewLife.Cube.Vuetify/web build",
     "build:svelte": "pnpm --filter ./NewLife.Cube.Svelte/web build",
     "build:tdesign": "pnpm --filter ./NewLife.Cube.TDesign/web build",
-    "dev": "pnpm dev:packages",
+    "dev": "pnpm dev:vue",
+    "dev:api": "dotnet run --project CubeDemo/CubeDemo.csproj --no-build",
     "dev:all": "pnpm -r dev",
-    "dev:packages": "pnpm --filter @cube/api-core --filter @cube/auth-logic --filter @cube/field-mapping --filter @cube/page-logic --filter @cube/page-utils dev",
+    "dev:packages": "pnpm -r --filter @cube/api-core --filter @cube/page-utils --filter @cube/field-mapping --filter @cube/auth-logic --filter @cube/page-logic dev",
     "dev:vue": "pnpm --filter ./NewLife.Cube.Vue/web dev",
     "dev:react": "pnpm --filter ./NewLife.Cube.React/web dev",
     "dev:naive": "pnpm --filter ./NewLife.Cube.NaiveUI/web dev",
@@ -37,7 +39,8 @@
     "test:component": "pnpm --filter ./NewLife.Cube.Vue/web run test:component",
     "test:component:dev": "pnpm --filter ./NewLife.Cube.Vue/web run test:component:dev",
     "test:playwright": "node NewLife.Cube.Vue/web/tests/e2e/all-field-crud-screenshots.cjs",
-    "test:playwright:login": "node NewLife.Cube.Vue/web/tests/e2e/login-screenshots.cjs"
+    "test:playwright:login": "node NewLife.Cube.Vue/web/tests/e2e/login-screenshots.cjs",
+    "check": "pnpm --filter ./NewLife.Cube.Vue/web check"
   },
   "license": "MIT"
 }

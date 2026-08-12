@@ -1,0 +1,16 @@
+{
+  "_comment": "项目已批准的设计系统自定义 token（非 --el- 前缀）。新增自定义 token 必须在此登记，否则 check-theme-tokens.mjs 会报错——以此及时发现未审批的随意 token。--el- 开头的 token 由 element-tokens.json 校验，不在此列。",
+  "prefixes": [
+    "--cube-layout-",
+    "--navbar-"
+  ],
+  "tokens": [
+    "--radius-md",
+    "--radius-sm",
+    "--shadow-lg",
+    "--ease",
+    "--layout-nav-height",
+    "--ai-primary",
+    "--ai-secondary"
+  ]
+}

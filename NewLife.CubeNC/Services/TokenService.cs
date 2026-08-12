@@ -12,23 +12,22 @@ public class TokenService
     /// <summary>根据名称查找</summary>
     /// <param name="name"></param>
     /// <returns></returns>
-    public App FindByName(String name)
-    {
-        var app = App.FindByName(name);
-        if (app == null) return null;
-
-        return app;
-    }
+    public App FindByName(String name) => App.FindByName(name);
 
     /// <summary>根据密钥查找</summary>
     /// <param name="appKey"></param>
     /// <returns></returns>
-    public App FindBySecret(String appKey)
-    {
-        var app = App.FindBySecret(appKey);
-        if (app == null) return null;
+    public App FindBySecret(String appKey) => App.FindBySecret(appKey);
 
-        return app;
+    /// <summary>解析“算法:密钥”格式，并校验完整性</summary>
+    /// <param name="secret"></param>
+    /// <returns></returns>
+    private static String[] ParseSecret(String secret)
+    {
+        var ss = secret.Split(':');
+        if (ss.Length != 2) throw new ArgumentException($"非法密钥[{secret}]，应为“算法:密钥”格式");
+
+        return ss;
     }
 
     /// <summary>验证应用密码，不存在时新增</summary>
@@ -74,7 +73,7 @@ public class TokenService
         if (id.IsNullOrEmpty()) id = Rand.NextString(8);
 
         // 颁发令牌
-        var ss = secret.Split(':');
+        var ss = ParseSecret(secret);
         var jwt = new JwtBuilder
         {
             Issuer = Assembly.GetEntryAssembly().GetName().Name,
@@ -86,12 +85,24 @@ public class TokenService
             Secret = ss[1],
         };
 
+        // 刷新令牌与访问令牌内容不同（独立Id、更长有效期），避免访问令牌泄露即可长期重放刷新
+        var refresh = new JwtBuilder
+        {
+            Issuer = jwt.Issuer,
+            Subject = name,
+            Id = Rand.NextString(8),
+            Expire = DateTime.Now.AddSeconds(expire + 7 * 86400),
+
+            Algorithm = ss[0],
+            Secret = ss[1],
+        };
+
         return new TokenModel
         {
             AccessToken = jwt.Encode(null),
             TokenType = jwt.Type ?? "JWT",
             ExpireIn = expire,
-            RefreshToken = jwt.Encode(null),
+            RefreshToken = refresh.Encode(null),
         };
     }
 
@@ -106,7 +117,7 @@ public class TokenService
         if (token.IsNullOrEmpty()) return null;
 
         // 令牌有效期检查，10分钟内过期者，重新颁发令牌
-        var ss = secret.Split(':');
+        var ss = ParseSecret(secret);
         var jwt = new JwtBuilder
         {
             Algorithm = ss[0],
@@ -126,7 +137,7 @@ public class TokenService
         if (token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(token));
 
         // 解码令牌
-        var ss = tokenSecret.Split(':');
+        var ss = ParseSecret(tokenSecret);
         var jwt = new JwtBuilder
         {
             Algorithm = ss[0],
@@ -148,7 +159,7 @@ public class TokenService
         if (token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(token));
 
         // 解码令牌
-        var ss = tokenSecret.Split(':');
+        var ss = ParseSecret(tokenSecret);
         var jwt = new JwtBuilder
         {
             Algorithm = ss[0],
@@ -173,7 +184,7 @@ public class TokenService
         if (token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(token));
 
         // 解码令牌
-        var ss = tokenSecret.Split(':');
+        var ss = ParseSecret(tokenSecret);
         var jwt = new JwtBuilder
         {
             Algorithm = ss[0],

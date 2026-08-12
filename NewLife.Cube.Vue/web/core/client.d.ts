@@ -1,17 +1,22 @@
 declare module 'virtual:@newlifex/cube-vue-app' {
-  import { DefineComponent } from 'vue';
+  import type { DefineComponent } from 'vue';
   const App: DefineComponent;
   export { App };
 }
 
 declare module 'virtual:@newlifex/cube-vue-routes' {
-  import { RouteRecordRaw } from 'vue-router';
+  import type { RouteRecordRaw } from 'vue-router';
   const routes: RouteRecordRaw[];
   export default routes;
 }
 
 declare module 'virtual:@newlifex/cube-vue-micro-apps' {
-  import type { MicroAppConfigItem } from './microAppRouter';
+  import type { ConfigRoute } from './typings';
+  interface MicroAppConfigItem {
+    name: string;
+    module: () => Promise<{ routes: ConfigRoute[] }>;
+    prefix?: string;
+  }
   const appConfigs: MicroAppConfigItem[];
   export default appConfigs;
 }
@@ -36,6 +41,10 @@ declare module 'virtual:@newlifex/cube-vue-sections' {
 interface Window {
   router: import('vue-router').Router;
   store: import('pinia').Pinia;
+  /** dva 应用句柄（SSO 场景注入），用于读取全局状态 */
+  getDvaApp?: () => { _store: { getState: () => any } };
+  /** 当前组织 ID（开发模式下注入） */
+  getCurrentOrganizationId?: () => string | undefined;
 }
 
 // declare module '@newlifex/cube-vue' {

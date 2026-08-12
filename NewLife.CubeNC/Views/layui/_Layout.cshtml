@@ -44,5 +44,8 @@
     <script src="@res/layui/layui.js"></script>
     <script src="@res/layui/layui_cube.js"></script>
     @RenderSection("scripts", required: false)
+
+    @* AI 助手浮窗 *@
+    @await Html.PartialAsync("_AiAssistant")
 </body>
 </html>

@@ -35,8 +35,8 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     #region 缓存Key前缀常量
     /// <summary>密码登录用户名错误次数缓存前缀</summary>
     private const String PasswordLoginUserPrefix = "CubeLogin:";
-    /// <summary>密码登录IP错误次数缓存前缀</summary>
-    private const String PasswordLoginIpPrefix = "CubeLogin:";
+    /// <summary>密码登录IP错误次数缓存前缀。与用户名前缀区分，避免用户名恰为IP字符串时缓存键冲突</summary>
+    private const String PasswordLoginIpPrefix = "CubeLogin:IP:";
     /// <summary>登录IP三段子网错误次数缓存前缀（/24 段，如103.125.146.*）</summary>
     private const String LoginIpSubnet24Prefix = "CubeLogin:subnet24:";
     /// <summary>登录IP两段子网错误次数缓存前缀（/16 段，如103.125.*.*）</summary>

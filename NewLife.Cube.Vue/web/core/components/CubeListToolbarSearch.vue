@@ -3,7 +3,7 @@
     <el-form-item label="关键词">
       <el-input v-model="searchForm.q" placeholder="关键词搜索" clearable>
         <template #prefix>
-          <span style="color: #bfbfbf; font-size: 14px;">&#128269;</span>
+          <span class="search-prefix">&#128269;</span>
         </template>
       </el-input>
     </el-form-item>
@@ -75,5 +75,10 @@ const handleReset = () => {
 .cube-search-form-right {
   display: flex;
   justify-content: flex-end;
+}
+
+.search-prefix {
+  color: var(--el-text-color-placeholder);
+  font-size: 14px;
 }
 </style>

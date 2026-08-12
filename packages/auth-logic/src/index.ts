@@ -7,7 +7,7 @@
 
 import { type AuthCategory, type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo, type MfaVerifyResult } from '@cube/api-core';
 import { findMenu, getMenuPermission } from '@cube/page-utils';
-import { encryptPassword } from '@cube/api-core';
+import { encryptPassword, getServiceBaseUrl } from '@cube/api-core';
 
 /** 认证状态快照 */
 export interface AuthState {
@@ -152,7 +152,9 @@ export class AuthLogic {
    * @param returnUrl 登录成功后回跳的前端路由，默认为当前页面
    */
   buildOAuthUrl(provider: string, returnUrl?: string): string {
-    const base = (this.api.client.defaults.baseURL ?? '').replace(/\/$/, '');
+    // SsoController 在 /Sso 路由（无 /api 前缀）：用实体 baseURL 去掉 /api 派生服务地址，
+    // 跨域部署 http://host/api → http://host/Sso/Login/...，同域部署 → /Sso/Login/...
+    const base = getServiceBaseUrl(this.api.client.defaults.baseURL ?? '').replace(/\/$/, '');
     const r = encodeURIComponent(returnUrl ?? window.location.href);
     return `${base}/Sso/Login/${provider}?r=${r}`;
   }

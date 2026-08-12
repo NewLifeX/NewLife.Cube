@@ -43,4 +43,12 @@ describe('resolveAssetUrl（资源地址拼接 baseUrl）', () => {
     expect(resolveAssetUrl('/cube/image.png')).toBe('/cube/image.png');
     state.baseUrl = 'http://localhost:5000';
   });
+
+  it('baseUrl 为路径前缀（如 /api）时原样返回（资源无 /api 前缀）', () => {
+    state.baseUrl = '/api';
+    expect(resolveAssetUrl('/cube/image.png')).toBe('/cube/image.png');
+    expect(resolveAssetUrl('/Content/images/logo.png')).toBe('/Content/images/logo.png');
+    expect(resolveAssetUrl('/Sso/Avatar?id=1')).toBe('/Sso/Avatar?id=1');
+    state.baseUrl = 'http://localhost:5000';
+  });
 });

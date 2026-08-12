@@ -8,7 +8,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 //[DataPermission(null, "ManagerID={#userId}")]
 [DisplayName("部门")]
 [AdminArea]
-[Menu(95, true, Icon = "fa-users")]
+[Menu(95, true, Icon = "UserFilled")]
 public class DepartmentController : EntityController<Department, DepartmentModel>
 {
     static DepartmentController()
