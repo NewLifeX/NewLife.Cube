@@ -547,19 +547,16 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         return Json(0, null, rs);
     }
 
-    /// <summary>获取菜单树，按当前用户权限过滤</summary>
-    /// <param name="module">模块名称，如 Admin；为空时返回全部可访问菜单</param>
+    /// <summary>获取菜单树</summary>
+    /// <param name="module">模块名称，如 Admin；为空时返回全部菜单</param>
     /// <returns>菜单树</returns>
     [HttpGet]
     public ActionResult MenuTree(String module) => Json(0, null, BuildMenuTree(module));
 
     private IList<MenuTree> BuildMenuTree(String module)
     {
-        var user = ManageProvider.User as IUser;
         var fact = ManageProvider.Menu;
         var menus = fact.Root.Childs;
-        if (user?.Role != null)
-            menus = fact.GetMySubMenus(fact.Root.ID, user, true);
 
         // 根据模块过滤菜单
         if (module.EqualIgnoreCase("base"))
@@ -580,14 +577,10 @@ public class CubeController(PageService pageService, TokenService tokenService, 
 
         var menuTree = ViewModels.MenuTree.GetMenuTree(pMenuTree =>
         {
-            var subMenus = fact.GetMySubMenus(pMenuTree.ID, user, true);
-            if (subMenus.Count == 0)
-            {
-                // GetMySubMenus 返回空：角色的 Resources 中可能只有父级模块 ID，
-                // 子控制器 ID 未显式授权，此时回退到菜单树结构获取可见子菜单
-                var parent = fact.FindByID(pMenuTree.ID);
-                subMenus = parent?.Childs?.Where(m => m.Visible).ToList() as IList<IMenu> ?? [];
-            }
+            // 左侧菜单展示所有可见菜单，不按角色权限过滤
+            // 权限控制在 Controller/Action 层通过 EntityAuthorizeAttribute 实现
+            var parent = fact.FindByID(pMenuTree.ID);
+            var subMenus = parent?.Childs?.Where(m => m.Visible).ToList() as IList<IMenu> ?? [];
             return subMenus;
         }, list =>
         {
