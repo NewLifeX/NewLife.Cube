@@ -8,17 +8,21 @@
 
 ### 用户认证接口
 
+> **注意**：新版认证接口统一走 `/Auth/*`（AuthController）与 `/Sso/*`（SsoController），旧 `/Admin/User/*` 认证路径仅 MVC 版兼容。
+
 | 接口 | 方法 | 路径 | 说明 |
 |------|------|------|------|
-| 登录 | POST | `/Admin/User/Login` | 用户名密码登录 |
-| 登出 | GET/POST | `/Admin/User/Logout` | 退出登录 |
-| 获取当前用户 | GET | `/Admin/User/Info` | 获取当前登录用户信息 |
-| 修改密码 | POST | `/Admin/User/ChangePassword` | 修改当前用户密码 |
-| 注册 | POST | `/Admin/User/Register` | 新用户注册 |
+| 登录 | POST | `/Auth/Login` | 用户名密码/验证码登录（`category` 区分） |
+| 登出 | GET/POST | `/Auth/Logout` | 退出登录 |
+| 获取当前用户 | GET | `/Auth/Info` | 获取当前登录用户信息 |
+| 刷新令牌 | POST | `/Auth/Refresh` | 刷新访问令牌 |
+| 注册 | POST | `/Auth/Register` | 新用户注册（多租户需带 X-App-Id/X-Tenant） |
+| 微信登录（小程序） | POST | `/Sso/WxMiniLogin` | `{ code, appId? }` |
+| 微信登录（App） | POST | `/Sso/WxAppLogin` | 同上 |
 
 ### 登录接口详情
 
-**POST** `/Admin/User/Login`
+**POST** `/Auth/Login`
 
 请求：
 ```json
@@ -341,6 +345,8 @@ Cookie: token=eyJhbGciOiJIUzI1NiIs...
 | X-Token | Token（兼容） |
 | Content-Type | 请求内容类型 |
 | X-Request-Id | 请求追踪 ID |
+| X-Tenant | 租户编码（Code），多租户开启时用于定位/校验租户（`X-Tenant-Id` 数字ID 已废弃兼容） |
+| X-App-Id | OAuth 应用 AppId，注册时定位所属租户、微信登录 appId 兜底 |
 
 ### 响应 Header
 
@@ -349,6 +355,7 @@ Cookie: token=eyJhbGciOiJIUzI1NiIs...
 | X-Run-Time | 运行时间（毫秒） |
 | X-Request-Id | 请求追踪 ID |
 | X-Server | 服务器标识 |
+| X-Tenant | 微信登录成功后返回租户编码，供客户端后续请求携带 |
 
 ---
 

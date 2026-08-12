@@ -246,6 +246,29 @@ SSO 相关端点均在 `/Sso` 下（无前缀）：`/Sso/Login`、`/Sso/LoginInf
 
 > 注意：登录成功后的最终跳转目标（如 `returnUrl`、`~/Admin`）为前端路由，不带 `/api`。
 
+### 微信小程序 / App 登录接口
+
+除浏览器跳转式 OAuth 外，魔方还提供面向小程序/App 的 API 登录：
+
+```http
+POST /Sso/WxMiniLogin     // 微信小程序
+POST /Sso/WxAppLogin      // 微信 App
+```
+
+请求体：
+
+```json
+{
+  "code": "wx.login() 返回的登录凭证",
+  "appId": "可选，对应小程序/APP的AppId"
+}
+```
+
+- **AppId 传递**：请求体 `appId` 优先；请求体未传时从请求头 `X-App-Id` 兜底；**两者同时存在且不一致时拒绝请求**（避免租户归属歧义）。
+- 按 `OAuthConfig.FindByAppId`（仅启用且未删除的配置）定位配置，并以其所属租户设置租户上下文；配置不存在或 Secret 未配置则报错。
+- 登录成功后通过**响应头 `X-Tenant`** 返回租户编码，客户端后续请求携带该头（或已废弃的 `X-Tenant-Id` 数字ID）保持租户。
+- 浏览器跳转式（`/Sso/Login/{provider}`）与 API 式（`/Sso/WxMiniLogin`）均按 OAuth 配置所属租户统一传播（`OAuthClient.Apply` 统一设置 `TenantId`）。
+
 ---
 
 ## 13.4 SSO 单点登录

@@ -47,6 +47,12 @@ let fieldErrorShown = false;
 const cubeApi = createCubeApi({
   baseURL: API_HOST,
   tokenStorage: 'localStorage',
+  // 与 core/utils/request.ts 一致，接入附加请求头（如多租户 X-Tenant），实体/服务两条链均生效
+  additionalRequestHeaders: () => {
+    const cfg = getConfig().request.additionalRequestHeaders;
+    if (!cfg) return {};
+    return typeof cfg === 'function' ? cfg() : cfg;
+  },
   onFieldError: (fieldErrors) => {
     // 统一展示字段级验证错误（如"编码不可以为空！"），无需每个页面单独处理
     fieldErrorShown = true;
@@ -180,7 +186,7 @@ export function usePageApi(area: string, controller: string) {
      * @example api.lookup('SmartMES.Data.Equipments.EquipmentKinds')
      */
     lookup: (codes: string) =>
-      cubeApi.page.lookup(codes) as Promise<ApiResponse<Record<string, Array<{ label: string; value: number }>>>>,
+      cubeApi.page.lookup(codes) as Promise<ApiResponse<Record<string, Array<{ label: string; value: number; }>>>>,
   };
 }
 

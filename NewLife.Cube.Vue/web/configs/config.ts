@@ -14,4 +14,9 @@ export const config: EnvConfig = {
       primaryColor: '#1890ff',
     },
   },
+  request: {
+    // 多租户：注入租户编码请求头。开启多租户后所有请求携带 X-Tenant，
+    // 后端按租户编码定位租户并校验归属；未开启多租户时可不配置
+    additionalRequestHeaders: () => ({ 'X-Tenant': '<租户编码>' }),
+  },
 };

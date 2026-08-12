@@ -155,8 +155,13 @@ public class TenantMiddleware
             if (tenant != null) return tenant.Id;
         }
         
-        // 方式3：从请求头识别
-        if (context.Request.Headers.TryGetValue("X-Tenant-Id", out var headerValue))
+        // 方式3：从请求头识别。优先 X-Tenant 租户编码，X-Tenant-Id 已废弃仅兼容
+        if (context.Request.Headers.TryGetValue("X-Tenant", out var headerValue))
+        {
+            var tenant = Tenant.FindByCode(headerValue.ToString());
+            if (tenant != null) return tenant.Id;
+        }
+        if (context.Request.Headers.TryGetValue("X-Tenant-Id", out headerValue))
         {
             return headerValue.ToString().ToInt();
         }
@@ -235,6 +240,12 @@ public ActionResult SwitchTenant(Int32 tenantId)
 ---
 
 ## 10.4 租户切换
+
+> **安全约定（本轮加固）**：
+> - 管理后台（租户0）**仅系统管理员**可切换（`IndexController ?TenantId=`），普通用户只能切换到其所属的有效租户。
+> - 租户设置接口（`UserController.TenantSetting`）写入 Cookie 前校验 `TenantUser` 归属。
+> - 租户 Cookie（`TenantId-{SysName}`）已设置 `HttpOnly`，防止 XSS 改写。
+> - 已认证用户在 token 校验层统一执行 `ValidateTenant`（fail-closed）：普通用户必须处于有效租户上下文，无有效租户拒绝访问（401/403）。
 
 ### 登录时选择租户
 
@@ -428,7 +439,7 @@ public enum TenantResolveMode
     /// <summary>子路径识别（/tenant/xxx/）</summary>
     Path,
     
-    /// <summary>请求头识别（X-Tenant-Id）</summary>
+    /// <summary>请求头识别（X-Tenant 租户编码，X-Tenant-Id 已废弃兼容）</summary>
     Header,
     
     /// <summary>查询参数识别（?tenantId=xxx）</summary>

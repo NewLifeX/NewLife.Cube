@@ -60,7 +60,17 @@ public class IndexController : ControllerBaseX, IPageDataContext
         {
             // 判断租户关系
             var list = TenantUser.FindAllByUserId(user.ID);
-            if (list.Any(e => e.TenantId == tenantId) || tenantId == 0)
+
+            // 管理后台（租户0）仅系统管理员可切换；普通用户仅能切换到其所属的有效租户
+            if (tenantId == 0)
+            {
+                if (user.Roles.Any(e => e.IsSystem))
+                {
+                    HttpContext.SaveTenant(0);
+                    return Redirect("/Admin");
+                }
+            }
+            else if (list.Any(e => e.TenantId == tenantId && e.Enable))
             {
                 var tenant = Tenant.FindById(tenantId);
 
@@ -395,6 +405,10 @@ public class IndexController : ControllerBaseX, IPageDataContext
                             }).ToList();
             return menuList.Count > 0 ? menuList : null;
         }, menus);
+
+        // 多租户开启时，按当前模式过滤菜单树（租户模式隐藏纯Admin菜单，管理后台隐藏纯Tenant菜单），与视图层 FilterByTenant 保持一致
+        if (CubeSetting.Current.EnableTenant)
+            menuTree = MenuHelper.FilterByTenant(menuTree, TenantContext.CurrentId > 0);
 
         return menuTree;
     }

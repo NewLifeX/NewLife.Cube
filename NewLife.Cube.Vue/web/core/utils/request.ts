@@ -44,7 +44,7 @@ const cubeTokenStorage: TokenStorage = {
  * 重定向到登录页
  * @param options.loginPageUrl - 可选的登录页URL
  */
-export function redirectToLogin({ loginPageUrl: loginPageUrl2 }: { loginPageUrl?: string } = {}) {
+export function redirectToLogin({ loginPageUrl: loginPageUrl2 }: { loginPageUrl?: string; } = {}) {
   removeAccessToken();
   removeAllCookie();
 
@@ -84,7 +84,7 @@ function handleUnauthorized(url?: string) {
 
   const setRedirectUrl = () => {
     let _cacheLocation = window.location.toString().replace('/unauthorized', '');
-    const basePath = (window as unknown as { routerBase?: string }).routerBase?.replace(/\/$/, '') || BASE_PATH;
+    const basePath = (window as unknown as { routerBase?: string; }).routerBase?.replace(/\/$/, '') || BASE_PATH;
     const url1 = new URL(_cacheLocation);
     let p = url1.pathname;
     if (basePath && p.startsWith(basePath)) {
@@ -177,7 +177,7 @@ const cubeAxios = createApiClient({
   // 非 UI 逻辑（下沉至 api-core）：
   withCredentials: true,
   additionalRequestHeaders: () => {
-    const cfg = getConfig().request.additionalRequestHeader;
+    const cfg = getConfig().request.additionalRequestHeaders;
     if (!cfg) return {};
     return typeof cfg === 'function' ? cfg() : cfg;
   },
