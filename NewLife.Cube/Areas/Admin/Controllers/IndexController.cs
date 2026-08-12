@@ -119,6 +119,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
 
     /// <summary>收集当前页面数据上下文（服务器信息），供 AI 分析当前页面。实现 <see cref="IPageDataContext"/>，get_page_context 优先调用服务端实现</summary>
     /// <returns>服务器信息 JSON</returns>
+    [HttpGet]
     public Task<String> GetPageDataContextAsync()
         => Task.FromResult(BuildServerInfo(_env.ContentRootPath, HttpContext).ToJson());
 

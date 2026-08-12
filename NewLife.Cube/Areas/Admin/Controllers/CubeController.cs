@@ -65,6 +65,7 @@ public class CubeController : ConfigController<CubeSetting>, IPageDataContext
 
     /// <summary>收集当前页面数据上下文（魔方设置配置摘要），供 AI 分析当前页面。实现 <see cref="IPageDataContext"/>，get_page_context 优先调用服务端实现</summary>
     /// <returns>配置摘要 JSON。敏感配置（ApiKey/Secret/Token 等）不向 AI 暴露</returns>
+    [HttpGet]
     public Task<String> GetPageDataContextAsync()
     {
         var set = CubeSetting.Current;

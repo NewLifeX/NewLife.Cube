@@ -1,4 +1,5 @@
-﻿using NewLife.AI.Tools;
+﻿using Microsoft.AspNetCore.Mvc;
+using NewLife.AI.Tools;
 using NewLife.Collections;
 using NewLife.Common;
 using NewLife.Configuration;
@@ -39,6 +40,7 @@ public class ConfigController<TConfig> : ObjectController<TConfig>, IFormAiConte
     /// <summary>获取当前配置表单的字段结构（含当前值与敏感过滤），供 AI 生成填表值</summary>
     /// <param name="mode">表单模式：add 新增 / edit 编辑，默认 edit（配置页恒为编辑既有配置）</param>
     /// <returns>表单字段结构 JSON：<c>{entity, description, mode, fields:[{name,displayName,type,description,value,fillable,...}]}</c></returns>
+    [HttpGet]
     public virtual String GetFormSchema(String mode = "edit")
     {
         var set = Config<TConfig>.Current;
@@ -81,6 +83,7 @@ public class ConfigController<TConfig> : ObjectController<TConfig>, IFormAiConte
     /// <param name="values">字段值 JSON 字符串，键为字段名，值为要填入的值，如 {"AIModel":"qwen3.7-plus"}</param>
     /// <param name="mode">表单模式：add 新增 / edit 编辑，默认 edit</param>
     /// <returns>工具结果，含回填值（供前端 applyFormValues 回填）与给 LLM 的说明</returns>
+    [HttpPost]
     public virtual IToolResult FillForm(String values, String mode = "edit")
     {
         // 参数解析：兼容 JSON 对象与扁平键值数组两种格式（部分 LLM 会生成扁平数组），解析失败返回友好错误而非抛异常
@@ -135,6 +138,7 @@ public class ConfigController<TConfig> : ObjectController<TConfig>, IFormAiConte
     /// <summary>构建 AI 对话系统提示词（配置表单上下文），引导 LLM 使用 get_form_schema / fill_form</summary>
     /// <param name="req">对话请求（含页面类型/模式等上下文）</param>
     /// <returns>系统提示词</returns>
+    [HttpPost]
     public virtual String BuildFormSystemPrompt(AiChatRequest req)
     {
         var sysName = SysConfig.Current?.DisplayName;

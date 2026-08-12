@@ -67,6 +67,7 @@ public class DbController : ControllerBaseX, IPageDataContext
 
     /// <summary>收集当前页面数据上下文（数据库列表），供 AI 分析当前页面。实现 <see cref="IPageDataContext"/>，get_page_context 优先调用服务端实现</summary>
     /// <returns>数据库列表 JSON。不含连接字符串，避免泄露敏感信息</returns>
+    [HttpGet]
     public Task<String> GetPageDataContextAsync()
     {
         var list = BuildDatabaseList();
