@@ -110,15 +110,17 @@ public static class ManagerProviderHelper
             // 如果Null直接返回
             if (user == null) return null;
 
-            // 设置前端当前用户
-            provider.SetPrincipal(serviceProvider);
-
-            // 处理租户相关信息（认证层 fail-closed：多租户开启时，已认证用户必须处于有效租户上下文，否则拒绝访问）
+            // 认证层租户校验（fail-closed）：多租户开启时，已认证用户必须处于有效租户上下文，否则拒绝访问。
+            // 校验失败时清除当前用户，避免 token 路径已 SetCurrent 的用户残留 session，导致下次请求跳过校验
             if (!context.ValidateTenant(user))
             {
                 XTrace.WriteLine("租户校验失败，拒绝访问：用户[{0}]没有可用的有效租户", user);
+                provider.SetCurrent(null, serviceProvider);
                 return null;
             }
+
+            // 设置前端当前用户
+            provider.SetPrincipal(serviceProvider);
 
             return user;
         }
@@ -340,6 +342,10 @@ public static class ManagerProviderHelper
             context.SetTenant(tenantId);
             return null;
         }
+
+        // 方式3：回退到已建立的租户上下文（Cookie/中间件）。兼容 MVC 表单注册等无法携带自定义请求头的场景，
+        // 此时租户已由 GetTenantId（Cookie）解析并校验过有效性，直接沿用
+        if (TenantContext.CurrentId > 0) return null;
 
         // 多租户开启时，注册必须携带租户信息，否则拒绝注册
         return "多租户模式下，注册必须携带X-App-Id或X-Tenant租户信息";

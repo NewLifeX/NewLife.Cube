@@ -12,7 +12,7 @@
 | `tokenHeaderPrefix` | Authorization 头前缀 | `'bearer '` |
 | `unwrapResponse` | 成功响应是否解包为 `ApiResponse`（response.data） | `true`（业务拿到的就是 ApiResponse） |
 | `withCredentials` | 跨域凭证 | `true` |
-| `additionalRequestHeaders` | 静态/函数式附加请求头 | 取自 `getConfig().request.additionalRequestHeader` |
+| `additionalRequestHeaders` | 静态/函数式附加请求头 | 取自 `getConfig().request.additionalRequestHeaders` |
 | `onRequestHook` | 请求钩子（同 axios 拦截器，可返回 Promise） | 接 `getConfig().request.requestInterceptor` |
 | `onResponseHook` | 响应钩子（成功/失败均触发，即 `responseIntercept`） | 接 `getConfig().request.responseIntercept` |
 | `onUnauthorized` | 401 回调（收到请求 url） | `handleUnauthorized`（跳转登录/未授权页） |
