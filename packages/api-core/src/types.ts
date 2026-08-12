@@ -323,6 +323,10 @@ export interface RegisterModel {
   password2?: string;
   code?: string;
   oauthToken?: string;
+  /** 多租户：OAuth 应用 AppId，请求时转为 X-App-Id 头，按 OAuth 配置定位租户（优先于 tenantCode） */
+  appId?: string;
+  /** 多租户：租户编码，请求时转为 X-Tenant 头，按编码查询租户 */
+  tenantCode?: string;
 }
 
 /** OAuth 回跳待注册信息 */

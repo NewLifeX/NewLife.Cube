@@ -201,24 +201,57 @@ public async Task Invoke(HttpContext ctx)
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 4.2 查询过滤逻辑
+### 4.2 查询过滤逻辑（fail-closed）
 
-`CreateWhere` 方法中的多租户处理逻辑：
+`CreateWhere` 方法中的多租户处理逻辑（**多租户开启且实体为租户数据源时 fail-closed，绝不静默全量**）：
 
 ```csharp
-// 启用多租户
-if (set.EnableTenant)
+if (set.EnableTenant && IsTenantSource)
 {
     var ctxTenant = TenantContext.Current;
-    if (ctxTenant != null && IsTenantSource)
+
+    // 无租户上下文（未设置/匿名请求）：拒绝查询，防止无租户场景看到全量数据
+    if (ctxTenant == null)
+        exp = "1=0";
+    else if (ctxTenant.TenantId == 0)
     {
-        // TenantId=0 时 tenant 为 null，不追加过滤条件
-        // 管理后台模式可以看到所有租户数据
-        var tenant = ctxTenant.Tenant;
-        if (tenant != null)
+        // 管理后台模式（TenantId=0）：不限制租户数据，管理后台要能看到所有租户的数据
+    }
+    else
+    {
+        // 租户模式（TenantId>0）：校验租户存在且启用，无效则 fail-closed
+        var tenant = ctxTenant.Tenant ?? Tenant.FindById(ctxTenant.TenantId);
+        if (tenant == null || !tenant.Enable)
+            exp = "1=0";   // 伪造/无效租户 → 空结果，而非全量
+        else
+            exp = "TenantId={#TenantId}";   // 追加租户过滤条件
+    }
+}
+```
+
+> **设计要点**：租户上下文缺失、租户不存在或已禁用时返回 `1=0` 空结果集（fail-closed），配合中间件的 400/403，杜绝"伪造租户ID绕过数据隔离"与"无租户上下文看到全量数据"两条泄漏路径。
+
+### 4.3 写路径归属校验
+
+控制器 `ReadOnlyEntityController2.Valid`（所有 Add/Edit/Delete/批量删除的统一写校验入口）在多租户开启且实体为租户数据源时强制校验归属：
+
+```csharp
+if (post && CubeSetting.Current.EnableTenant && IsTenantSource)
+{
+    var tenantId = TenantContext.CurrentId;
+    if (tenantId > 0)
+    {
+        var entityTenantId = (entity as IEntity)?["TenantId"].ToInt() ?? 0;
+        switch (type)
         {
-            // 追加租户过滤条件
-            exp = "TenantId={#TenantId}";
+            case DataObjectMethodType.Insert:
+                (entity as IEntity)["TenantId"] = tenantId;   // 新增强制归属当前租户
+                break;
+            case DataObjectMethodType.Update:
+            case DataObjectMethodType.Delete:
+                if (entityTenantId != tenantId)               // 修改/删除校验归属
+                    throw new NoPermissionException(...);
+                break;
         }
     }
 }
@@ -249,13 +282,16 @@ if (set.EnableTenant)
 
 ### 5.2 租户标识获取优先级
 
-`GetTenantId` 方法按以下顺序获取租户标识：
+`GetTenantId` 方法按以下顺序获取租户标识，**各来源语义不同**：
 
-1. **Header**：`X-Tenant-Id`（优先，适合前后端分离/小程序）
-2. **QueryString**：`tenantId`（用于调试/回调）
-3. **Cookie**：`TenantId-{SysName}`（兼容浏览器模式）
+1. **Header `X-Tenant`**（优先，**租户编码 Code**，适合前后端分离/小程序）→ 按 `Tenant.FindByCode` 解析
+2. **Header `X-Tenant-Id`**（已废弃，仅兼容老客户端，**数字ID**）→ 按 `Int32` 解析
+3. **QueryString `tenantId`**（用于调试/回调，**数字ID**）→ 按 `Int32` 解析
+4. **Cookie `TenantId-{SysName}`**（兼容浏览器模式，存的是**数字ID**）→ 按 `Int32` 解析
 
-支持传入租户ID或租户编码（Code）。
+> ⚠️ **语义约定**：`X-Tenant` 传**租户编码**（如 `abc`），`X-Tenant-Id` 传**数字ID**（如 `123`），两者不混用。租户编码即使为纯数字字符串（如 `"123"`）也会按编码 `FindByCode` 查询，不会误判为数字ID。
+
+多租户开启时，伪造、不存在或已禁用的租户标识会被拒绝（返回 400/403）；未开启多租户时不校验租户。
 
 ### 5.3 JWT 设计说明
 
@@ -263,6 +299,23 @@ JWT 令牌**不包含** TenantId，这是有意为之：
 - 用户可能属于多个租户
 - 登录后可以自由切换租户
 - 租户信息通过 Cookie/Header 携带
+
+**认证层租户校验（fail-closed）**：`TryLogin` 与 `Auth`（`ControllerBaseX`）在 token 校验通过后统一调用 `HttpContext.ValidateTenant(user)`：
+- 未开启多租户 → 直接放行
+- 系统管理员 → 可进入管理后台（租户0）
+- 普通用户 → 必须处于有效租户上下文（`TenantId > 0`），无有效租户则拒绝访问（401/403），防止落到租户0/空上下文看到全量数据
+
+**授权层模式校验**：`EntityAuthorizeAttribute` 在权限校验通过后按 `MenuHelper.CheckVisible(controllerType, isTenant)` 强制校验菜单模式——租户模式禁止访问纯 `MenuModes.Admin` 菜单（系统管理），管理后台禁止访问纯 `MenuModes.Tenant` 菜单（租户页面），URL 直达也会被拦截。
+
+### 5.4 租户切换与安全加固
+
+- **租户切换入口**（`IndexController ?TenantId=`）：管理后台（租户0）**仅系统管理员**可切换；普通用户仅能切换到其所属的有效租户（`TenantUser.Enable`）。
+- **租户设置接口**（`UserController.TenantSetting`）：写入租户 Cookie 前校验 `TenantUser` 归属，无权限租户直接拒绝。
+- **租户 Cookie 加固**：`SaveTenant` 写入的 `TenantId-{SysName}` Cookie 已设置 `HttpOnly`，禁止脚本读取，防止 XSS 改写租户。
+- **租户上下文生命周期**：`DataScopeMiddleware` 在请求进入时保存旧租户上下文，`finally` **无条件恢复**，防止 AsyncLocal 值跨请求/后台任务泄漏。
+- **注册入口统一**：`/Auth/Register`（UserService）与 `/Admin/User/Register`（表单）解析租户后均自动创建 `TenantUser` 绑定；未开启多租户时不解析也不设置租户上下文。
+- **菜单树接口过滤**：`IndexController.GetMenu/GetMenuTree` 返回的菜单树同样应用 `MenuHelper.FilterByTenant`，与视图层菜单显示一致，防止前端拿到不该显示的菜单。
+- **微信登录**：请求体 `appId` 与请求头 `X-App-Id` 同时存在且不一致时拒绝（避免租户归属歧义）；登录成功后通过响应头 `X-Tenant` 返回租户编码，供客户端后续请求携带。
 
 ---
 
@@ -404,7 +457,7 @@ await fetch('/Admin/Tenant/Switch?tenantId=123', { method: 'POST' });
 fetch('/api/orders', {
     headers: {
         'Authorization': 'Bearer ' + token,
-        'X-Tenant-Id': '123'  // 或租户编码
+        'X-Tenant': '123'  // 或租户编码
     }
 });
 ```

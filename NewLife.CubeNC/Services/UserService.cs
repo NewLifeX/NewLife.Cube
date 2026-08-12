@@ -510,8 +510,8 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     /// <returns>租户用户绑定记录，无需绑定时返回null</returns>
     private TenantUser EnsureTenantUser(HttpContext httpContext, Int32 userId, String ip)
     {
-        // 获取当前请求的租户ID（从Header、QueryString或Cookie）
-        var tenantId = httpContext.GetTenantId();
+        // 优先使用注册/登录前已解析的租户（X-App-Id / X-Tenant），否则从请求头/QueryString/Cookie获取
+        var tenantId = TenantContext.CurrentId > 0 ? TenantContext.CurrentId : httpContext.GetTenantId();
         if (tenantId <= 0 || userId <= 0) return null;
 
         // 检查是否已绑定
@@ -850,6 +850,10 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     {
         var set = CubeSetting.Current;
         if (!set.AllowRegister) return new ServiceResult<IToken> { IsSuccess = false, Message = "禁止注册" };
+
+        // 租户识别：优先X-App-Id（参考SSO登录按AppId查找OAuth配置取租户），其次X-Tenant租户编码；均未传时不强制，沿用原逻辑
+        var tenantError = httpContext.ResolveRegisterTenant();
+        if (tenantError != null) return new ServiceResult<IToken> { IsSuccess = false, Message = tenantError };
 
         // 图片验证码校验（场景位掩码 2 = 注册时需要验证码）
         if ((set.CaptchaScene & 2) != 0)

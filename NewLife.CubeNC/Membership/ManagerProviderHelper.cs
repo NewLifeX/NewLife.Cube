@@ -113,8 +113,12 @@ public static class ManagerProviderHelper
             // 设置前端当前用户
             provider.SetPrincipal(serviceProvider);
 
-            // 处理租户相关信息
-            context.ChooseTenant(user.ID);
+            // 处理租户相关信息（认证层 fail-closed：多租户开启时，已认证用户必须处于有效租户上下文，否则拒绝访问）
+            if (!context.ValidateTenant(user))
+            {
+                XTrace.WriteLine("租户校验失败，拒绝访问：用户[{0}]没有可用的有效租户", user);
+                return null;
+            }
 
             return user;
         }
@@ -201,32 +205,66 @@ public static class ManagerProviderHelper
          * 用户登录后的租户选择逻辑：
          *  已选租户且有效
          *      直接进入已选租户
-         *  已选管理后台
-         *      直接接入管理后台
+         *  已选管理后台（租户0）
+         *      系统管理员直接进入管理后台
+         *      普通用户强制进入第一个有效租户，无租户则不设置（防止越权看到全部数据）
          *  未选租户
          *      拥有租户
          *          进入第一个租户
          *      未有租户
-         *          进入管理后台
+         *          系统管理员进入管理后台，普通用户不设置
          */
         var tlist = TenantUser.FindAllByUserId(userId).Where(e => e.Enable).ToList();
         var tenantId = GetTenantId(context);
+
+        // 判断是否系统管理员，管理后台（租户0）仅系统管理员可进入
+        var user = User.FindByID(userId);
+        var isAdmin = user != null && user.Roles.Any(e => e.IsSystem);
 
         // 进入最后一次使用的租户
         if (tenantId > 0 && tlist.Any(e => e.TenantId == tenantId))
             SetTenant(context, tenantId); // 有效租户
         else if (tenantId == 0)
-            SetTenant(context, 0); // 管理后台
+        {
+            // 管理后台仅系统管理员可进入；普通用户请求管理后台时强制进入第一个有效租户
+            if (isAdmin)
+                SetTenant(context, 0); // 系统管理员进入管理后台
+            else if (tlist.Count > 0)
+                SaveTenant(context, tlist[0].TenantId); // 普通用户进入第一个租户
+        }
         else
         {
             // 如果 tenantId > 0 但无效，则重新选择租户
             if (tlist.Count > 0)
                 SaveTenant(context, tlist[0].TenantId); // 进入第一个租户
-            else
-                SaveTenant(context, 0); // 进入管理后台
+            else if (isAdmin)
+                SaveTenant(context, 0); // 系统管理员进入管理后台
+            // 普通用户无有效租户，不设置租户上下文，防止进入管理后台越权
         }
 
         CheckTenantRole();
+    }
+
+    /// <summary>校验租户合法性（认证层 fail-closed）。多租户开启时，已认证用户必须处于有效租户上下文，否则拒绝访问；未开启多租户不校验</summary>
+    /// <param name="context">HTTP上下文</param>
+    /// <param name="user">已认证用户</param>
+    /// <returns>是否允许继续访问</returns>
+    public static Boolean ValidateTenant(this HttpContext context, IManageUser user)
+    {
+        var set = CubeSetting.Current;
+        // 未开启多租户，不校验租户
+        if (!set.EnableTenant) return true;
+
+        if (user == null) return false;
+
+        // 先选择租户上下文：管理员可进入管理后台（租户0），普通用户进入有效租户或强制第一个租户
+        context.ChooseTenant(user.ID);
+
+        // 系统管理员可进入管理后台（租户0）
+        if (user is IUser u && u.Roles.Any(e => e.IsSystem)) return true;
+
+        // 普通用户必须拥有有效租户（TenantId>0），无租户则拒绝（fail-closed，防止落到租户0/空上下文看到全量数据）
+        return TenantContext.CurrentId > 0;
     }
 
     private static Int32 _checkRole;
@@ -256,6 +294,55 @@ public static class ManagerProviderHelper
 
         TenantContext.Current = new TenantContext { TenantId = tenantId };
         //ManageProvider.Provider.Tenant = Tenant.FindById(tenantId);
+    }
+
+    /// <summary>解析注册租户。优先X-App-Id（参考SSO登录按AppId查找OAuth配置取租户），其次X-Tenant（租户编码，与GetTenantId语义一致）。多租户开启时必须提供有效租户，未开启多租户时不解析也不设置租户</summary>
+    /// <param name="context">HTTP上下文</param>
+    /// <returns>错误信息，null表示成功</returns>
+    public static String ResolveRegisterTenant(this HttpContext context)
+    {
+        var req = context?.Request;
+        if (req == null) return null;
+
+        var set = CubeSetting.Current;
+
+        // 未开启多租户时不解析租户，保持原有注册逻辑，不设置租户上下文
+        if (!set.EnableTenant) return null;
+
+        // 方式1：X-App-Id，参考SSO登录逻辑，按AppId查找OAuth配置，取配置所属租户
+        var appId = req.Headers["X-App-Id"] + "";
+        if (!appId.IsNullOrEmpty())
+        {
+            var config = OAuthConfig.FindByAppId(appId);
+            if (config == null)
+                return $"应用{nameof(OAuthConfig.AppId)}未配置";
+
+            // 校验配置所属租户有效
+            if (config.TenantId > 0)
+            {
+                var tenant = Tenant.FindById(config.TenantId);
+                if (tenant == null || !tenant.Enable)
+                    return $"租户[{config.TenantId}]不存在或已禁用";
+            }
+
+            context.SetTenant(config.TenantId);
+            return null;
+        }
+
+        // 方式2：X-Tenant 租户编码（Code），与GetTenantId语义一致，内部已校验存在且启用
+        var tenantStr = req.Headers["X-Tenant"] + "";
+        if (!tenantStr.IsNullOrEmpty())
+        {
+            var tenantId = ResolveTenantByCode(tenantStr);
+            if (tenantId < 0)
+                return $"租户[{tenantStr}]不存在或已禁用";
+
+            context.SetTenant(tenantId);
+            return null;
+        }
+
+        // 多租户开启时，注册必须携带租户信息，否则拒绝注册
+        return "多租户模式下，注册必须携带X-App-Id或X-Tenant租户信息";
     }
 
     /// <summary>从当前请求的 JWT 中提取 jti（UserToken.Id），用于多设备模式精确吊销</summary>
@@ -603,6 +690,8 @@ public static class ManagerProviderHelper
         var option = new CookieOptions
         {
             SameSite = SameSiteMode.Unspecified,
+            // 租户Cookie仅服务端读取，禁止脚本访问，防止XSS改写租户
+            HttpOnly = true,
         };
         // https时，SameSite使用None，此时可以让cookie写入有最好的兼容性，跨域也可以读取
         if (context.Request.GetRawUrl().Scheme.EqualIgnoreCase("https"))
@@ -627,34 +716,59 @@ public static class ManagerProviderHelper
         var req = context?.Request;
         if (req == null) return -1;
 
-        // Header优先，兼容前后端分离/小程序等不稳定Cookie场景
-        var tenant = req.Headers["X-Tenant-Id"].ToString();
-        //if (tenant.IsNullOrEmpty()) tenant = req.Headers["X-Tenant"].ToString();
-        var id = ResolveTenantId(tenant);
-        if (id >= 0) return id;
+        // Header优先，兼容前后端分离/小程序等不稳定Cookie场景。
+        // X-Tenant 传租户编码（Code），X-Tenant-Id 传数字ID（已废弃兼容）
+        var tenant = req.Headers["X-Tenant"].ToString();
+        if (!tenant.IsNullOrEmpty()) return ResolveTenantByCode(tenant);
 
-        // QueryString兜底（一般用于调试/回调等），优先级低于Header/Cookie
-        tenant = req.Query["tenantId"].ToString();
-        //if (tenant.IsNullOrEmpty()) tenant = req.Query["tenant"].ToString();
-        id = ResolveTenantId(tenant);
-        if (id >= 0) return id;
+        // [已过期] X-Tenant-Id头已被X-Tenant租户编码替代，仅保留兼容读取，新客户端请改用X-Tenant
+        var idStr = req.Headers["X-Tenant-Id"].ToString();
+        if (!idStr.IsNullOrEmpty()) return ResolveTenantById(idStr);
 
-        // 最后从Cookie读取（兼容现有浏览器模式）
+        // QueryString兜底（一般用于调试/回调等），传数字ID
+        idStr = req.Query["tenantId"].ToString();
+        if (!idStr.IsNullOrEmpty()) return ResolveTenantById(idStr);
+
+        // 最后从Cookie读取（兼容现有浏览器模式），Cookie存的是数字ID
         var key = $"TenantId-{SysConfig.Current.Name}";
-        return req.Cookies[key].ToInt(-1);
+        return ResolveTenantById(req.Cookies[key].ToString());
     }
 
-    private static Int32 ResolveTenantId(String tenant)
+    /// <summary>按租户编码（Code）解析租户。X-Tenant 头专用，避免纯数字编码被误判为ID；多租户开启时校验存在且启用，无效返回-1</summary>
+    /// <param name="code">租户编码</param>
+    /// <returns>租户ID，无效返回-1</returns>
+    private static Int32 ResolveTenantByCode(String code)
     {
-        if (tenant.IsNullOrEmpty()) return -1;
+        if (code.IsNullOrEmpty()) return -1;
+        code = code.Trim();
+
+        var t = Tenant.FindByCode(code);
+        if (t == null) return -1;
+
+        // 多租户开启时，校验租户启用
+        if (CubeSetting.Current.EnableTenant && !t.Enable) return -1;
+        return t.Id;
+    }
+
+    /// <summary>按数字ID解析租户。X-Tenant-Id/Query/Cookie 专用；0表示管理后台；多租户开启时校验存在且启用，无效返回-1</summary>
+    /// <param name="idStr">租户数字ID</param>
+    /// <returns>租户ID，无效返回-1；0表示管理后台</returns>
+    private static Int32 ResolveTenantById(String idStr)
+    {
+        if (idStr.IsNullOrEmpty()) return -1;
 
         // 允许传 0（管理后台）
-        var id = tenant.ToInt(-1);
-        if (id >= 0) return id;
+        var id = idStr.ToInt(-1);
+        if (id == 0) return 0;
+        if (id < 0) return -1;
 
-        // 允许传租户名称
-        var t = Tenant.FindByCode(tenant);
-        return t != null ? t.Id : -1;
+        // 多租户开启时，校验租户存在且启用，防止伪造租户ID绕过数据隔离
+        if (CubeSetting.Current.EnableTenant)
+        {
+            var t = Tenant.FindById(id);
+            if (t == null || !t.Enable) return -1;
+        }
+        return id;
     }
     #endregion
 

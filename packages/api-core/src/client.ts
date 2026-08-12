@@ -41,7 +41,7 @@ function normalizeLoginResult(data: LoginResult): LoginResult {
 }
 
 /** 需要归一化登录结果的 URL 路径后缀 */
-const LOGIN_RESULT_PATHS = ['/Auth/Login', '/Auth/Register', '/Auth/Refresh'];
+const LOGIN_RESULT_PATHS = ['/Auth/Login', '/Auth/Register', '/Auth/Refresh', '/Sso/WxMiniLogin', '/Sso/WxAppLogin'];
 
 /**
  * 归一化后的错误描述（非 UI，纯数据）。由皮肤自行决定如何展示（弹窗/文案/本地化）。

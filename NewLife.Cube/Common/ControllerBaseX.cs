@@ -80,9 +80,9 @@ public class ControllerBaseX : ControllerBase, IActionFilter
             //}
         }
 
-        // 当前租户
+        // 当前租户。匿名请求没有用户时不查询租户关系，避免空引用
         var tid = TenantContext.CurrentId;
-        if (tid > 0)
+        if (tid > 0 && user != null)
         {
             var tus = TenantUser.FindAllByUserId(user.ID);
             CurrentTenant = tus.FirstOrDefault(e => e.TenantId == tid);
@@ -95,6 +95,12 @@ public class ControllerBaseX : ControllerBase, IActionFilter
             if (CurrentUser == null && !Token.IsNullOrEmpty())
             {
                 CurrentUser = ManagerProviderHelper.Auth(Token, ManageProvider.Provider);
+
+                // 认证层租户校验（fail-closed）：多租户开启时，已认证用户必须处于有效租户上下文，否则拒绝访问
+                if (CurrentUser != null && !HttpContext.ValidateTenant(CurrentUser))
+                {
+                    throw new ApiException(403, "无权限访问当前租户");
+                }
             }
 
             if (CurrentUser == null && context.ActionDescriptor is ControllerActionDescriptor act && !act.MethodInfo.IsDefined(typeof(AllowAnonymousAttribute)))

@@ -447,32 +447,60 @@ public class SsoController : ControllerBaseX
     /// <summary>微信小程序登录</summary>
     [AllowAnonymous]
     [HttpPost]
-    public virtual ApiResponse<TokenModel> WxMiniLogin(WxLoginModel model) => WxLogin(model.Code, model.AppId, "WxOpen").ToOkApiResponse();
+    public virtual ApiResponse<TokenModel> WxMiniLogin(WxLoginModel model)
+    {
+        if (model == null) throw new ApiException(CubeCode.ParamError.ToInt(), "参数错误：请求体不能为空");
+        return WxLogin(model.Code, model.AppId, "WxOpen").ToOkApiResponse();
+    }
 
     /// <summary>微信APP登录</summary>
     [AllowAnonymous]
     [HttpPost]
-    public virtual ApiResponse<TokenModel> WxAppLogin(WxLoginModel model) => WxLogin(model.Code, model.AppId, "WxApp").ToOkApiResponse();
+    public virtual ApiResponse<TokenModel> WxAppLogin(WxLoginModel model)
+    {
+        if (model == null) throw new ApiException(CubeCode.ParamError.ToInt(), "参数错误：请求体不能为空");
+        return WxLogin(model.Code, model.AppId, "WxApp").ToOkApiResponse();
+    }
 
     /// <summary>微信登录核心方法</summary>
     protected virtual TokenModel WxLogin(String code, String appId, String wxLoginType)
     {
         if (String.IsNullOrWhiteSpace(code))
             throw new ApiException(CubeCode.ParamError.ToInt(), $"参数错误：{nameof(code)}");
+
+        // 请求体未传AppId时，尝试从请求头X-App-Id获取
+        if (String.IsNullOrWhiteSpace(appId))
+            appId = Request.Headers["X-App-Id"] + "";
+        else
+        {
+            // 两者都传且不一致时，拒绝并提示，避免租户归属歧义
+            var headerAppId = Request.Headers["X-App-Id"] + "";
+            if (!headerAppId.IsNullOrEmpty() && !headerAppId.EqualIgnoreCase(appId))
+                throw new ApiException(CubeCode.ParamError.ToInt(),
+                    $"参数错误：请求体{nameof(appId)}与请求头X-App-Id不一致");
+        }
         if (String.IsNullOrWhiteSpace(appId))
             throw new ApiException(CubeCode.ParamError.ToInt(), $"参数错误：{nameof(appId)}");
 
         var client = CreateWxOpenClient(appId, wxLoginType);
         var tokenModel = ProcessWxLoginCore(client, code, $"{wxLoginType}", true);
+
+        // 登录成功后，通过响应头返回租户编码，供客户端后续请求携带 X-Tenant 保持租户
+        if (client.TenantId > 0)
+        {
+            var tenant = XCode.Membership.Tenant.FindById(client.TenantId);
+            if (tenant != null && !tenant.Code.IsNullOrEmpty())
+                Response.Headers["X-Tenant"] = tenant.Code;
+        }
+
         return tokenModel;
     }
 
     /// <summary>创建微信OAuth客户端</summary>
     protected virtual OAuthClient CreateWxOpenClient(String appId, String wxLoginType)
     {
-        var client = _clientService.GetClient(TenantContext.CurrentId, wxLoginType);
-        client.Init(GetUserAgent());
-
+        // 先按AppId解析配置（FindByAppId已过滤启用且未删除），再以配置租户创建客户端，
+        // 避免匿名请求租户上下文为空（TenantId=0）时GetClient按0租户找不到配置而失败
         OAuthConfig config = null;
         if (!String.IsNullOrWhiteSpace(appId))
             config = OAuthConfig.FindByAppId(appId);
@@ -483,9 +511,17 @@ public class SsoController : ControllerBaseX
             throw new ApiException(CubeCode.Exception.ToInt(),
                 $"应用{nameof(OAuthConfig.Secret)}未配置");
 
+        // 以配置所属租户创建客户端，保证微信登录落在正确租户
+        var client = _clientService.GetClient(config.TenantId, wxLoginType);
+        client.Init(GetUserAgent());
+
         client.Key = config.AppId;
         client.Secret = config.Secret;
         client.TenantId = config.TenantId;
+
+        // 设置租户上下文，后续绑定/注册/数据访问均落在该租户
+        HttpContext.SetTenant(config.TenantId);
+
         return client;
     }
 
@@ -526,6 +562,9 @@ public class SsoController : ControllerBaseX
             var user = ManageProvider.Provider.Current;
             if (user == null)
                 throw new ApiException(CubeCode.Failed.ToInt(), "登录失败，用户不存在");
+
+            // 登录成功后设置租户上下文，保证后续请求/数据访问落在正确租户
+            HttpContext.SetTenant(client.TenantId);
 
             log.ConnectId = uc.ID;
             log.UserId = uc.UserID;

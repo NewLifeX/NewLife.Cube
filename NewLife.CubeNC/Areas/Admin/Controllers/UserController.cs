@@ -906,6 +906,11 @@ public class UserController : EntityController<User, UserModel>
         var tenantId = TenantContext.CurrentId;
         try
         {
+            // 租户识别：优先X-App-Id（参考SSO登录按AppId查找OAuth配置取租户），其次X-Tenant租户编码；均未传时不强制，沿用原逻辑
+            var tenantError = HttpContext.ResolveRegisterTenant();
+            if (tenantError != null) throw new ArgumentException(tenantError, nameof(registerModel));
+            tenantId = TenantContext.CurrentId;
+
             //if (String.IsNullOrEmpty(email)) throw new ArgumentNullException("email", "邮箱地址不能为空！");
             if (String.IsNullOrEmpty(username)) throw new ArgumentNullException("username", "用户名不能为空！");
             if (String.IsNullOrEmpty(password)) throw new ArgumentNullException("password", "密码不能为空！");
@@ -939,6 +944,24 @@ public class UserController : EntityController<User, UserModel>
             //};
             //user.Register();
             var user2 = ManageProvider.Provider.Register(username, password, r.ID, true);
+
+            // 多租户开启且解析到租户时，自动绑定用户到该租户（与 /Auth/Register 的 EnsureTenantUser 行为一致）
+            if (set.EnableTenant && tenantId > 0 && user2 != null)
+            {
+                var tu = TenantUser.FindByTenantIdAndUserId(tenantId, user2.ID);
+                if (tu == null)
+                {
+                    tu = new TenantUser
+                    {
+                        TenantId = tenantId,
+                        UserId = user2.ID,
+                        Enable = true,
+                        CreateIP = HttpContext.GetUserHost(),
+                        CreateTime = DateTime.Now,
+                    };
+                    tu.Insert();
+                }
+            }
 
             // 注册成功
         }
@@ -1085,7 +1108,16 @@ public class UserController : EntityController<User, UserModel>
     {
         var tagTenantId = Request.Form["TagTenantId"].ToInt(-1);
 
-        if (tagTenantId > 0) HttpContext.SaveTenant(tagTenantId);
+        // 仅允许切换到当前用户所属的有效租户，防止越权写入任意租户Cookie
+        if (tagTenantId > 0)
+        {
+            var user = ManageProvider.User;
+            var tu = TenantUser.FindByTenantIdAndUserId(tagTenantId, user.ID);
+            if (tu == null || !tu.Enable)
+                throw new InvalidOperationException("无权切换到该租户！");
+
+            HttpContext.SaveTenant(tagTenantId);
+        }
 
         ViewBag.StatusMessage = "保存成功";
         if (IsJsonRequest) return Ok(ViewBag.StatusMessage);

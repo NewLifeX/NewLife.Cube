@@ -158,8 +158,8 @@ public class AppController : EntityController<App, AppModel>
 
 ---
 ## API 与前后端分离
-- 登录：`/Admin/User/Login` -> JWT Token（Header/Cookie/Query）。
-- 菜单：`/Admin/Index/GetMenuTree`。
+- 登录：`/Auth/Login` -> JWT Token（Header/Cookie/Query）。
+- 菜单：`/Cube/MenuTree`。
 - 字段：`/{Area}/{Controller}/GetFields?kind=1..4`。
 - 查询：主路由 + 动态参数（支持分页、排序、条件拼装）。
 - CRUD：`Detail` / `Insert` / `Update` / `Delete`。
@@ -307,9 +307,9 @@ https://github.com/NewLifeX/NewLife.CubeBlazor
 
 ### WebApi 接口说明（节选）
 1. 地址 https://cube3.newlifex.com/swagger/index.html  
-2. 登录 `/Admin/User/Login` 测试账号 `admin/admin` `test/test`  
+2. 登录 `/Auth/Login` 测试账号 `admin/admin` `test/test`  
 3. JWT：Header / Cookie / Query(token)  
-4. 菜单 `/Admin/Index/GetMenuTree`  
+4. 菜单 `/Cube/MenuTree`  
 5. 字段 `/{Area}/{Controller}/GetFields?kind=1` (`1=List 2=Detail 3=AddForm 4=EditForm`)  
 6. 列表：主路由 + 动态查询参数  
 7. `page`：分页信息  
