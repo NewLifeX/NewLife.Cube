@@ -81,11 +81,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { Message } from '@arco-design/web-vue';
 import type { SavedQuery } from '@/core/utils/viewProfile';
+import { useQueryComboButton } from './useQueryComboButton';
 
-/** 查询组合按钮（OSC-0016 + 面板重构）：无状态组件，全部状态由 SearchDrawer / InsightPanel / DefaultList / viewProfile store 持有。 */
 const props = defineProps<{
   /** 预定义查询列表 */
   queries: SavedQuery[];
@@ -114,67 +112,16 @@ const emit = defineEmits<{
   delete: [id: string];
 }>();
 
-const canRename = computed(() => !!props.activeQueryId);
-
-/** 已应用且参数一致时条目显示 ✓ */
-function isApplied(id: string): boolean {
-  return id === props.activeQueryId && !props.paramsDirty;
-}
-
-const modalVisible = ref(false);
-const modalTitle = ref('保存为预定义查询');
-const modalMode = ref<'save' | 'rename'>('save');
-const modalName = ref('');
-
-function openModal(mode: 'save' | 'rename') {
-  modalMode.value = mode;
-  modalTitle.value = mode === 'save' ? '保存为预定义查询' : '重命名查询';
-  modalName.value = '';
-  modalVisible.value = true;
-}
-
-function onSelect(value: string | number | Record<string, unknown> | undefined) {
-  const key = typeof value === 'string' ? value : '';
-  if (key === '__reset') {
-    emit('reset');
-    return;
-  }
-  if (key === '__toggle') {
-    emit('toggleExpand');
-    return;
-  }
-  if (key === '__save') {
-    openModal('save');
-    return;
-  }
-  if (key === '__rename') {
-    openModal('rename');
-    return;
-  }
-  if (key === '__delete') {
-    if (props.activeQueryId) emit('delete', props.activeQueryId);
-    return;
-  }
-  if (key.startsWith('__apply:')) {
-    emit('apply', key.slice('__apply:'.length));
-  }
-}
-
-function onModalOk(): boolean {
-  const name = modalName.value.trim();
-  if (!name) {
-    Message.warning('请输入查询名称');
-    return false;
-  }
-  if (modalMode.value === 'save') emit('save', name);
-  else if (props.activeQueryId) emit('rename', props.activeQueryId, name);
-  modalVisible.value = false;
-  return true;
-}
-
-function onDelete(id: string) {
-  emit('delete', id);
-}
+const {
+  canRename,
+  isApplied,
+  modalVisible,
+  modalTitle,
+  modalName,
+  onSelect,
+  onModalOk,
+  onDelete,
+} = useQueryComboButton(props, emit);
 </script>
 
 <style scoped>

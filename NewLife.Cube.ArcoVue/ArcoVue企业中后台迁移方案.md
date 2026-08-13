@@ -97,7 +97,7 @@
 | 逻辑复用 | `@cube/*`；接线模板优先对照 NaiveUI，能力验收对照 §3.1 矩阵 |
 | 呈现配置 | `UserProfile` + `ViewProfile`（后端独立交付，前端消费，见 §5 / §10.1） |
 | 扩展 | `registerSection` + `apps/` 整页覆写 |
-| 协作 | 恢复 `.github` Copilot 指令；OpenSpec（OSC-0000）；测试要求见 §9.3 |
+| 协作 | 恢复 `.github` Copilot 指令；OpenSpec（`openspec/`，新号 `OSC-YYMMDDxxxx`）；测试要求见 §9.3 |
 | 测试 | 对齐 `development.instructions.md`：实现功能默认同步补充测试 |
 
 ---
@@ -567,7 +567,9 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
 
 ### 9.2 轻量变更结构与状态机
 
-变更根目录：`NewLife.Cube.ArcoVue/openspec/`。编号 **OSC-0000** 按落地顺序严格递增，禁止为依赖预留空洞号。
+变更根目录：`NewLife.Cube.ArcoVue/openspec/`。
+
+**新变更编号 `OSC-YYMMDDxxxx`**（`YYMMDD` = 创建日 Asia/Shanghai；`xxxx` = 4 位随机小写 hex，紧接日期、中间无 `-`）。创建时在 `changes/` 与 `archive/` 查前缀唯一；冲突则重抽 hex。**禁止** `max+1`、按落地顺序递增、为依赖预留空洞号。历史 `OSC-0001` … `OSC-0019` 永不改名。
 
 ```
 NewLife.Cube.ArcoVue/openspec/
@@ -575,15 +577,16 @@ NewLife.Cube.ArcoVue/openspec/
 ├── agents/                   # 薄壳编排 Agent（openspec-*）
 ├── harness/lessons.md
 └── changes/
-    ├── OSC-0002 后端三实体/   # 命名：OSC-00xx + 空格 + 简洁中文描述
-    │   ├── status.md         # 状态机（必选）
+    ├── OSC-260813c3e9 页面TS抽离与协作编号/  # 新号：OSC-YYMMDDxxxx + 空格 + 中文简述
+    │   ├── status.md
     │   ├── proposal.md / design.md / tasks.md / verify.md / retro.md
     │   └── ui/               # 可选
+    ├── OSC-0018 实体界面自定义设计方案/       # 历史 OSC-00xx 豁免
     └── archive/
         └── OSC-0001 协作基线与通路/
 ```
 
-进行中与归档目录均使用 **`OSC-00xx <简洁中文描述>`**（禁止仅编号或英文 slug）。
+进行中与归档目录均使用 **`{OSC-ID} <简洁中文描述>`**（禁止仅编号或英文 slug）。
 
 | 产物 | 必选 |
 |------|------|
@@ -672,8 +675,8 @@ Draft → Accepted → Implementing → Validating → Done
 
 ### 10.1 编号与切片原则
 
-1. **顺序递增**：按计划落地次序编号 `OSC-0001`、`OSC-0002`…，不预留 0010 段给后端。  
-2. **依赖在前**：被依赖的 Cube 后端变更排在消费方前端变更之前。  
+1. **禁止抢号**：新变更用 `OSC-YYMMDDxxxx` 随机后缀，不按 `max+1`、不为 FlowGram 等预留空洞号。历史 `OSC-0001` … `OSC-0019` 保持原号。依赖关系写在 proposal「依赖」表，不用编号大小表达先后。  
+2. **依赖在前**：被依赖的 Cube 后端变更须已 `Done`（或联调条件已满足）后，消费方前端变更才可批准执行。  
 3. **范围适中**：单 OSC 聚焦一条可验收主线（例如「只做 UserProfile API」或「只做 VTable 表格+列布局」）；四视图、抽屉三 Tab 等拆开，避免一个变更塞满整个里程碑。
 
 ### 10.2 后端独立任务（NewLife.Cube，排在消费方之前）
@@ -808,7 +811,7 @@ Draft → Accepted → Implementing → Validating → Done
 
 ## 13. 附录：首批 OpenSpec 变更顺序表
 
-按 **落地顺序连续编号**；被依赖项在前。每号必选五件套（§9.3）；有界面则加 `ui/`。单号范围见「范围」列，避免回潮成「大而全」变更。
+下表为 **历史 `OSC-00xx` 落地记录**（豁免，不改名）。自 `OSC-260813c3e9` 起新变更使用 `OSC-YYMMDDxxxx`，不再连续占号。被依赖项须已 Done。每号必选五件套（§9.3）；有界面则加 `ui/`。单号范围见「范围」列，避免回潮成「大而全」变更。
 
 | 编号 | 主题 | 范围（控制） | 依赖 |
 |------|------|--------------|------|
@@ -830,4 +833,4 @@ Draft → Accepted → Implementing → Validating → Done
 
 ## 14. 小结
 
-本方案将 NewLife.Cube.ArcoVue 定位为 **WebAPI 版企业中后台默认皮肤**；协作增量在 **`NewLife.Cube.ArcoVue/openspec/`**（五壳 `openspec-*` 编排 NewLife.Skills；状态 `Draft → Accepted → Implementing → Validating → Done`，分支 `Rejected`；仅 Accepted/Implementing 可执行；触及前后端代码须跑单测，验收须本阶段新增单测全过且构建无错误；验收固定 audit→review→doc-sync）；三实体 OSC-0002 写入 Cube.xml 生成；编号严格递增。
+本方案将 NewLife.Cube.ArcoVue 定位为 **WebAPI 版企业中后台默认皮肤**；协作增量在 **`NewLife.Cube.ArcoVue/openspec/`**（五壳 `openspec-*` 编排 NewLife.Skills；状态 `Draft → Accepted → Implementing → Validating → Done`，分支 `Rejected`；仅 Accepted/Implementing 可执行；触及前后端代码须跑单测，验收须本阶段新增单测全过且构建无错误；验收固定 audit→review→doc-sync）；三实体 OSC-0002 写入 Cube.xml 生成；新变更编号 `OSC-YYMMDDxxxx`（历史 `OSC-00xx` 豁免）。

@@ -105,6 +105,14 @@ pnpm build
 - 历史 Tab：分页（20/页）+ 操作类型筛选（新增/更新/删除）+ 时间/操作人/成功失败徽章/换行（OSC-0008）。
 - 评论 Tab：顶层 + 一层回复 + 删除本人评论，消费 `/Cube/EntityComment`（OSC-0008）。
 
+## SFC 职责分离（OSC-260813c3e9）
+
+- `.vue` 只含 `<template>`、`<style>` 与构薄 `<script setup lang="ts">`：组件 import、`defineProps` / `defineEmits` / `defineExpose`、调用同目录 `useXxx(...)`、把返回值交给模板。
+- 除 import 与宏外，script 建议不超过约 20 行；**禁止**在 `.vue` 写业务 `ref`/`watch`/`onMounted`、`cubeApi.*`、领域计算函数。
+- 业务进同目录 `useFoo.ts`（`Foo.vue` → `useFoo.ts`）；无响应式的纯函数进 `core/utils/*.ts` 或 sibling `*Helpers.ts`；已足够薄的展示组件不造空 composable；不采用 `<script setup src>`。
+- 机械门禁 `src/core/utils/sfcThin.spec.ts` 扫描全部 `.vue` 的 `<script>` 禁止 token（`watch(`/`onMounted(`/`onBeforeUnmount(`/`onUnmounted(`/`cubeApi.`），`ALLOWLIST` 空数组为终态。
+- 存量 47 个 `.vue` 已全部抽离或审计（32 抽离 + 15 审计），`DefaultList.vue` 拆为 `listContext.ts` + `useListQuery/useListCrud/useListViews/useRecordNav.ts` + 组装器 `useDefaultList.ts`。
+
 ## 目录结构
 
 ```

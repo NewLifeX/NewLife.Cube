@@ -68,15 +68,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
-import {
-  groupFieldCandidates,
-  pushGroupField,
-  removeGroupField,
-  moveGroupField,
-} from '@/core/utils/viewMapping';
-import { normalizeGroup, type ViewGroup } from '@/core/utils/viewProfile';
+import type { ViewGroup } from '@/core/utils/viewProfile';
+import { useGroupPopover } from './useGroupPopover';
 
 const props = defineProps<{
   visible: boolean;
@@ -91,63 +85,19 @@ const emit = defineEmits<{
   save: [ViewGroup];
 }>();
 
-const draft = ref<ViewGroup>([]);
-
-const labelOf = (name: string): string => {
-  const f = props.fields.find((x) => x.name === name);
-  return f?.displayName || name;
-};
-
-const candidateFields = computed(() => {
-  const used = new Set(draft.value);
-  return groupFieldCandidates(props.fields).filter((f) => !used.has(f.name));
-});
-
-function syncDraftFromProps() {
-  draft.value = normalizeGroup(props.modelValue);
-}
-
-function addField(name: unknown) {
-  if (typeof name !== 'string' || !name) return;
-  draft.value = pushGroupField(draft.value, name);
-}
-
-function removeAt(i: number) {
-  draft.value = removeGroupField(draft.value, i);
-}
-
-function move(i: number, delta: -1 | 1) {
-  draft.value = moveGroupField(draft.value, i, delta);
-}
-
-function clearDraft() {
-  draft.value = [];
-}
-
-function emitApply() {
-  emit('apply', normalizeGroup(draft.value));
-  close();
-}
-
-function emitSave() {
-  emit('save', normalizeGroup(draft.value));
-}
-
-function close() {
-  emit('update:visible', false);
-}
-
-function onVisibleChange(v: boolean) {
-  if (v) syncDraftFromProps();
-  emit('update:visible', v);
-}
-
-watch(
-  () => props.visible,
-  (v) => {
-    if (v) syncDraftFromProps();
-  },
-);
+const {
+  draft,
+  labelOf,
+  candidateFields,
+  addField,
+  removeAt,
+  move,
+  clearDraft,
+  emitApply,
+  emitSave,
+  close,
+  onVisibleChange,
+} = useGroupPopover(props, emit);
 </script>
 
 <style scoped>

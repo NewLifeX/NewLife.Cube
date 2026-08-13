@@ -59,13 +59,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import type {
   CardBodyColumns,
   CardFieldOrientation,
   CardLayout,
 } from '@/core/utils/viewMapping';
 import type { CardBodyField } from './cardHelpers';
+import { useRecordCard } from './useRecordCard';
 
 const props = withDefaults(
   defineProps<{
@@ -90,17 +90,6 @@ const props = withDefaults(
   },
 );
 
-/** 徽标样式：浅底 + 同色文字（与列表徽章一致） */
-function badgeStyle(item: CardBodyField): Record<string, string> | undefined {
-  const b = item.badge;
-  if (!b) return undefined;
-  return {
-    backgroundColor: b.buttonColor,
-    borderColor: b.buttonBorderColor,
-    color: b.textColor,
-  };
-}
-
 defineEmits<{
   detail: [row: Record<string, unknown>];
   edit: [row: Record<string, unknown>];
@@ -108,23 +97,12 @@ defineEmits<{
   toggleEnable: [row: Record<string, unknown>, field: string];
 }>();
 
-const cols = computed(() => {
-  const n = props.bodyColumns;
-  return n === 1 || n === 3 ? n : 2;
-});
-
-const layoutClass = computed(() => `record-card--${props.layout || 'standard'}`);
-const orientationClass = computed(
-  () => `record-card--orient-${props.fieldOrientation === 'horizontal' ? 'horizontal' : 'vertical'}`,
-);
-
-/** 用 CSS 变量驱动列数，避免动态 class 未命中时样式不生效；同时下发等高 min-height */
-const cardCssVars = computed(() => ({
-  '--record-card-cols': String(cols.value),
-  ...(props.minHeight && props.minHeight > 0
-    ? { minHeight: `${props.minHeight}px` }
-    : {}),
-}));
+const {
+  badgeStyle,
+  layoutClass,
+  orientationClass,
+  cardCssVars,
+} = useRecordCard(props);
 </script>
 
 <style scoped>

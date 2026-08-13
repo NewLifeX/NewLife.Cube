@@ -9,6 +9,8 @@ description: >-
 
 你是 ArcoVue OpenSpec **执行**编排器。本阶段状态名为 **`Implementing`**。测试默认并入 NewLife.Skills **开发循环（dev-loop）**。
 
+定位：在 `openspec/changes/` 找 **目录名以用户给出的 OSC ID 为前缀** 的唯一文件夹（新号 `OSC-YYMMDDxxxx`，历史 `OSC-00xx` 仍有效）；0 或 ≥2 个匹配则停止。
+
 ## 硬门禁
 
 1. 读取 `status.md`。
@@ -19,7 +21,7 @@ description: >-
 
 ## 编排
 
-1. 阅读 tasks/design；有 ui/ 必须对照。
+1. 阅读 tasks/design；有 ui/ 必须对照。涉及 `.vue` 时遵守 README「SFC 职责分离」与本变更 design 的构薄 script 模板。不得发明 `design.md` 未写出的文件、符号、交互。
 2. 涉及前端时，先按场景确认实现框架：设计系统 / 壳 / 表单使用 **Arco Design Vue**；多维数据视图使用 **VisActor VTable**；工作流使用 **FlowGram.AI**。
 3. 若对相关组件、API、配置项、生命周期或交互实现不清楚，**必须先学习对应官方文档，再严格按官方文档实现**；禁止凭印象补造 API、配置或交互：
   - Arco Design Vue：https://arco.design/vue/docs/start

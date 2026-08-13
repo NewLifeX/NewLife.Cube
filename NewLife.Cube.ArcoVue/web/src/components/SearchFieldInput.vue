@@ -118,12 +118,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
-import { resolveSearchControl } from '@/core/utils/fieldControl';
-import { normalizeDataSource } from '@/core/utils/viewMapping';
 import LovSelect from './LovSelect.vue';
 import CascaderField from './CascaderField.vue';
+import { useSearchFieldInput } from './useSearchFieldInput';
 
 const props = defineProps<{
   field: FieldMeta;
@@ -138,85 +136,19 @@ const emit = defineEmits<{
   search: [];
 }>();
 
-const label = computed(() => props.field.displayName || props.field.name);
-const searchType = computed(() => resolveSearchControl(props.field));
-const hasDataSource = computed(
-  () => !!(props.field.dataSource && Object.keys(props.field.dataSource).length),
-);
-
-const strValue = computed(() =>
-  props.modelValue == null ? '' : String(props.modelValue),
-);
-const selectValue = computed(() =>
-  props.modelValue == null || props.modelValue === ''
-    ? undefined
-    : String(props.modelValue),
-);
-
-/** 单值日期/时间控件取值：null/空串归一 undefined */
-function strOrUndef(v: unknown): string | undefined {
-  return v == null || v === '' ? undefined : String(v);
-}
-
-/** 单值数值控件取值：null/空串/非法数字归一 undefined */
-const numOfField = computed(() => {
-  const v = props.modelValue;
-  if (v == null || v === '') return undefined;
-  const n = Number(v);
-  return Number.isNaN(n) ? undefined : n;
-});
-
-const dataSourceOptions = computed(() =>
-  hasDataSource.value ? normalizeDataSource(props.field.dataSource!).options : [],
-);
-
-const boolOptions = computed(() => {
-  if (searchType.value === 'fileExists') {
-    return [
-      { value: '', label: '全部' },
-      { value: 'true', label: '有' },
-      { value: 'false', label: '无' },
-    ];
-  }
-  if (hasDataSource.value) {
-    return [{ value: '', label: '全部' }, ...dataSourceOptions.value];
-  }
-  return [
-    { value: '', label: '全部' },
-    { value: 'true', label: '是' },
-    { value: 'false', label: '否' },
-  ];
-});
-
-function emitScalar(v: unknown) {
-  emit('update:modelValue', v);
-}
-
-function onSelect(v: unknown) {
-  if (v == null || v === '') {
-    emitScalar(undefined);
-    return;
-  }
-  const s = String(v);
-  const tn = props.field.typeName;
-  if (tn === 'Boolean' || searchType.value === 'switch' || searchType.value === 'fileExists') {
-    if (s === 'true' || s === '1') emitScalar(true);
-    else if (s === 'false' || s === '0') emitScalar(false);
-    else emitScalar(s);
-    return;
-  }
-  if (tn === 'Int64' || tn === 'UInt64') {
-    const n = Number(s);
-    emitScalar(/^-?\d+$/.test(s.trim()) && Number.isSafeInteger(n) ? n : s);
-    return;
-  }
-  if (tn === 'Int32' || tn === 'Decimal' || tn === 'Double' || tn === 'Single') {
-    const n = Number(s);
-    emitScalar(Number.isNaN(n) ? s : n);
-    return;
-  }
-  emitScalar(s);
-}
+const {
+  searchType,
+  strValue,
+  label,
+  emitScalar,
+  numOfField,
+  strOrUndef,
+  selectValue,
+  boolOptions,
+  onSelect,
+  dataSourceOptions,
+  hasDataSource,
+} = useSearchFieldInput(props, emit);
 </script>
 
 <style scoped>

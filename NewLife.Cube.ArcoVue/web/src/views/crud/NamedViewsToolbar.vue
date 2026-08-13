@@ -21,8 +21,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { DEFAULT_VIEW_NAME, type NamedView } from '@/core/utils/viewProfile';
+import type { NamedView } from '@/core/utils/viewProfile';
+import { useNamedViewsToolbar } from './useNamedViewsToolbar';
 
 const props = defineProps<{
   views: NamedView[];
@@ -38,33 +38,8 @@ const emit = defineEmits<{
   openConfig: [];
 }>();
 
-const activeName = computed(
-  () => props.views.find((v) => v.id === props.activeId)?.name || DEFAULT_VIEW_NAME,
-);
-
-function onSelect(val: string | number | Record<string, unknown> | undefined) {
-  const key = String(val);
-  if (key.startsWith('switch:')) {
-    emit('switch', key.slice('switch:'.length));
-    return;
-  }
-  if (key === 'new') {
-    const name = window.prompt('新视图名称（表格视图）', '未命名');
-    if (name) emit('create', name);
-    return;
-  }
-  if (key === 'rename') {
-    const cur = props.views.find((v) => v.id === props.activeId);
-    const name = window.prompt('重命名视图', cur?.name || '');
-    if (name) emit('rename', props.activeId, name);
-    return;
-  }
-  if (key === 'delete') {
-    if (window.confirm('删除当前视图？')) emit('remove', props.activeId);
-    return;
-  }
-  if (key === 'reset') {
-    if (window.confirm(`恢复为默认「${DEFAULT_VIEW_NAME}」视图并清除已保存配置？`)) emit('reset');
-  }
-}
+const {
+  activeName,
+  onSelect,
+} = useNamedViewsToolbar(props, emit);
 </script>

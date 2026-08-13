@@ -7,7 +7,9 @@ description: >-
 
 # openspec-approve（批准）
 
-你是 ArcoVue OpenSpec **批准**编排器。根据「批准 OSC-00xx」「推进 OSC-00xx 到 Accepted」「拒绝 OSC-00xx」等指令，**自动更新 `status.md`**。
+你是 ArcoVue OpenSpec **批准**编排器。根据「批准 OSC-YYMMDDxxxx / OSC-00xx」「推进 … 到 Accepted」「拒绝 …」等指令，**自动更新 `status.md`**。
+
+定位：在 `openspec/changes/`（及必要时 `archive/`）找 **目录名以用户给出的 OSC ID 为前缀** 的唯一文件夹；0 或 ≥2 个匹配则停止。
 
 ## 状态
 
@@ -33,6 +35,7 @@ Draft → Accepted → …
 - [ ] tasks 可勾选且含文档同步与测试项
 - [ ] UI 规则满足（有则 ui/，无则无空目录）
 - [ ] 与非目标 / 矩阵「➖」无冲突
+- [ ] 新变更 ID 为 `OSC-YYMMDDxxxx`（历史 `OSC-00xx` 豁免）；目录名含中文简述
 
 ## 动作
 
@@ -40,7 +43,7 @@ Draft → Accepted → …
 
 ```markdown
 # Status
-- id: OSC-00xx
+- id: OSC-YYMMDDxxxx
 - state: Accepted
 - updated: <ISO时间>
 - approvedBy: openspec-approve
@@ -48,11 +51,11 @@ Draft → Accepted → …
 - checklist: passed
 ```
 
-**不通过或「拒绝 OSC-00xx」：**
+**不通过或「拒绝 OSC-…」：**
 
 ```markdown
 # Status
-- id: OSC-00xx
+- id: OSC-YYMMDDxxxx
 - state: Rejected
 - updated: <ISO时间>
 - approvedBy: openspec-approve

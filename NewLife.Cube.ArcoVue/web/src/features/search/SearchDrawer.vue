@@ -75,11 +75,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import SearchFieldInput from '@/components/SearchFieldInput.vue';
 import QueryComboButton from './QueryComboButton.vue';
 import type { FieldMeta } from '@/core/types/field';
 import type { SavedQuery } from '@/core/utils/viewProfile';
+import { useSearchDrawer } from './useSearchDrawer';
 
 defineOptions({ name: 'SearchDrawer' });
 
@@ -120,29 +120,11 @@ const emit = defineEmits<{
   deleteQuery: [id: string];
 }>();
 
-/** 其余查询条件：主时间字段不重复渲染（单独特殊控件），其余按 GetPage Search 顺序 */
-const fieldItems = computed(() =>
-  props.fields.filter((f) => f.name !== props.masterTimeName),
-);
-
-/** 主时间范围值：dtStart/dtEnd 两键映射 [start, end] */
-const masterTimeRange = computed(() => {
-  const s = props.model?.dtStart;
-  const e = props.model?.dtEnd;
-  return s && e ? [String(s), String(e)] : undefined;
-});
-
-/** 主时间范围变更：写 dtStart/dtEnd，清空时删除两键 */
-function onMasterTimeChange(val: unknown) {
-  const arr = Array.isArray(val) ? val : [];
-  if (arr.length >= 2) {
-    props.model.dtStart = arr[0] ?? '';
-    props.model.dtEnd = arr[1] ?? '';
-  } else {
-    delete props.model.dtStart;
-    delete props.model.dtEnd;
-  }
-}
+const {
+  fieldItems,
+  masterTimeRange,
+  onMasterTimeChange,
+} = useSearchDrawer(props);
 </script>
 
 <style scoped>

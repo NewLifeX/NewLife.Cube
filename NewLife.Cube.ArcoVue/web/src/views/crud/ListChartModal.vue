@@ -13,8 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch, markRaw } from 'vue';
-import * as echarts from 'echarts';
+import { useListChartModal } from './useListChartModal';
 
 const props = defineProps<{
   visible: boolean;
@@ -23,34 +22,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{ 'update:visible': [boolean] }>();
 
-const visibleProxy = computed({
-  get: () => props.visible,
-  set: (v: boolean) => emit('update:visible', v),
-});
-
-const instances = ref<echarts.ECharts[]>([]);
-
-function setRef(el: HTMLElement | null, idx: number) {
-  if (!el) return;
-  nextTick(() => {
-    if (instances.value[idx]) instances.value[idx].dispose();
-    const inst = markRaw(echarts.init(el));
-    if (props.charts[idx]) inst.setOption(props.charts[idx] as echarts.EChartsOption);
-    instances.value[idx] = inst;
-  });
-}
-
-watch(
-  () => props.visible,
-  (v) => {
-    if (!v) {
-      for (const i of instances.value) i?.dispose();
-      instances.value = [];
-    }
-  },
-);
-
-onBeforeUnmount(() => {
-  for (const i of instances.value) i?.dispose();
-});
+const {
+  visibleProxy,
+  setRef,
+} = useListChartModal(props, emit);
 </script>

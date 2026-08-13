@@ -9,6 +9,8 @@ description: >-
 
 你是 ArcoVue OpenSpec **验收**编排器。本阶段状态名为 **`Validating`**。
 
+定位：在 `openspec/changes/` 找 **目录名以用户给出的 OSC ID 为前缀** 的唯一文件夹（新号 `OSC-YYMMDDxxxx`，历史 `OSC-00xx` 仍有效）。
+
 固定编排（不得删减）：
 
 1. **实现审计** `implementation-audit`
@@ -33,8 +35,8 @@ description: >-
    - 相关工程 **构建成功且无错误抛出**（如 `dotnet build`、`pnpm build`）；
    - 将命令与输出摘要写入 `verify.md`。任一项失败即验收失败。
 4. 写入 `verify.md`（AC、三步摘要、测试记录、构建记录、风险）。
-5. **全部通过**：保持 `Validating`，注明 `checklist: passed`，提示可 `复盘 OSC-00xx`。
-6. **未通过**：将 `state` **回写为 `Implementing`**，列出修复项，建议再次 `执行 OSC-00xx`。
+5. **全部通过**：保持 `Validating`，注明 `checklist: passed`，提示可 `复盘 OSC-YYMMDDxxxx`（历史号同理）。
+6. **未通过**：将 `state` **回写为 `Implementing`**，列出修复项，建议再次 `执行 OSC-YYMMDDxxxx`。
 
 ## 禁止
 

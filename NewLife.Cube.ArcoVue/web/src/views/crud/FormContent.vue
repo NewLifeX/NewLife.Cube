@@ -46,13 +46,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
-import { isAuditField, isFullWidthControl, resolveControl } from '@/core/utils/fieldControl';
-import { applyFormLayout, groupFieldsByCategory } from '@/core/utils/fieldGroups';
 import type { FormLayout } from '@/core/utils/viewProfile';
-import { isFieldRequired } from '@/core/utils/submitPayload';
-import { fieldFormatRules } from '@/core/utils/validation';
+import { useFormContent } from './useFormContent';
 import FieldInput from '@/components/FieldInput.vue';
 
 const props = withDefaults(
@@ -75,57 +71,17 @@ defineEmits<{
   'toggle-collapse': [category: string];
 }>();
 
-const formRef = ref();
-
-const visibleFields = computed(() => {
-  // 新增/编辑均隐藏审计字段（创建/更新用户、IP、时间），由后端自动维护
-  const withoutAudit = props.fields.filter((f) => !isAuditField(f));
-  if (props.mode === 'add') {
-    return withoutAudit.filter((f) => !f.primaryKey && !f.readOnly);
-  }
-  return withoutAudit;
-});
-
-/** 应用受限布局：hidden 过滤 + order 排序 + Category 折叠（OSC-0013） */
-const appliedGroups = computed(() =>
-  applyFormLayout(groupFieldsByCategory(visibleFields.value), props.layout),
-);
-const visibleGroups = computed(() => appliedGroups.value.groups);
-const collapsed = computed(() => appliedGroups.value.collapsed);
-const collapsedSet = computed(() => new Set(collapsed.value));
-
-function rulesFor(field: FieldMeta) {
-  const rules = [...fieldFormatRules(field)];
-  if (isFieldRequired(field)) {
-    rules.unshift({ required: true, message: `${field.displayName || field.name}不可以为空！` });
-  }
-  return rules.length ? rules : undefined;
-}
-
-/** 后端 FieldErrors 的 field 名（PascalCase）与表单字段名做大小写不敏感匹配后写入 Arco Form 字段错误 */
-function applyFieldErrors() {
-  const errs = props.fieldErrors;
-  if (!errs?.length || !formRef.value) return;
-  const names = new Set(visibleFields.value.map((f) => f.name));
-  const fields: Record<string, { status: 'error'; message: string }> = {};
-  for (const e of errs) {
-    const key = names.has(e.field)
-      ? e.field
-      : visibleFields.value.find((f) => f.name.toLowerCase() === e.field.toLowerCase())?.name;
-    if (key && !fields[key]) fields[key] = { status: 'error', message: e.message };
-  }
-  if (Object.keys(fields).length) formRef.value.setFields(fields);
-}
-
-watch(() => props.fieldErrors, applyFieldErrors);
-
-async function validate() {
-  return formRef.value?.validate();
-}
-
-function clearValidate() {
-  formRef.value?.clearValidate();
-}
+const {
+  formRef,
+  visibleGroups,
+  collapsedSet,
+  isFullWidthControl,
+  resolveControl,
+  isFieldRequired,
+  rulesFor,
+  validate,
+  clearValidate,
+} = useFormContent(props);
 
 defineExpose({ validate, clearValidate });
 </script>
