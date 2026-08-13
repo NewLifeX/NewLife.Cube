@@ -51,7 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.AI" Version="1.5.2026.804" />
+    <PackageReference Include="NewLife.AI" Version="1.5.2026.801" />
     <PackageReference Include="NewLife.Core" Version="11.18.2026.801" />
     <PackageReference Include="NewLife.IP" Version="2.5.2026.804" />
     <PackageReference Include="NewLife.Office" Version="1.3.2026.801" />

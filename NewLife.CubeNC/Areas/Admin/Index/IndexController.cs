@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using NewLife.Common;
 using NewLife.Cube.AI;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.Membership;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -64,7 +65,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
             // 管理后台（租户0）仅系统管理员可切换；普通用户仅能切换到其所属的有效租户
             if (tenantId == 0)
             {
-                if (user.Roles.Any(e => e.IsSystem))
+                if (user is IUser iu && iu.Roles != null && iu.Roles.Any(e => e.IsSystem))
                 {
                     HttpContext.SaveTenant(0);
                     return Redirect("/Admin");

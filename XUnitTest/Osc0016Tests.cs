@@ -237,6 +237,8 @@ public class Osc0016Tests
 
     #region T3 entity: 内部实体值集自动注册
 
+    // CubeNC 未编译 LovAutoRegisterService（该服务仅在 WebAPI 的 NewLife.Cube 中），本用例无法在 XUnitTest 中编译。
+#if false
     [Fact]
     [DisplayName("T3 LovAutoRegisterService：行数超阈值 Map 目标自动注册 Entity. 值集与 entity: ListConfig")]
     public void LovAutoRegister_ScanMapLovs_RegistersBigTable()
@@ -268,6 +270,7 @@ public class Osc0016Tests
             CubeSetting.Current.MaxDropDownList = old;
         }
     }
+#endif
 
     #endregion
 

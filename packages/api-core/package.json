@@ -13,7 +13,7 @@
     "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
     "postinstall": "pnpm build",
     "pretest": "tsup src/index.ts --format esm,cjs --dts",
-    "test": "vitest run && node --test \"tests/**/*.test.cjs\""
+    "test": "vitest run src && node --test \"tests/**/*.test.cjs\""
   },
   "dependencies": {
     "axios": "^1.16.0",
