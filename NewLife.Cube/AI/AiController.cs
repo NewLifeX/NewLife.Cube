@@ -21,9 +21,13 @@ namespace NewLife.Cube.Controllers;
 /// <remarks>
 /// 所有页面的 AI 对话统一走本控制器 <c>/Ai/AiChat</c> 端点（无区域前缀）：
 /// 请求体携带目标页面（area/controller），服务端解析并实例化目标控制器，
-/// 若其实现 <see cref="IEntityAiContext"/>（实体控制器）则注册实体数据上下文工具
-/// （get_data_context / get_form_schema / fill_form）并使用其定制提示词（保留子类重载 SearchData / CreateCubeTools / BuildChatSystemPrompt）；
-/// 否则注册通用工具（get_system_info / get_page_context / run_js）并使用通用提示词。
+/// 按能力接口分级注册工具：
+/// <list type="number">
+/// <item>实现 <see cref="IEntityAiContext"/>（实体控制器）：注册实体数据上下文工具
+/// （get_data_context / get_form_schema / fill_form）并使用其定制提示词（保留子类重载 SearchData / CreateCubeTools / BuildChatSystemPrompt）</item>
+/// <item>实现 <see cref="IFormAiContext"/>（配置表单页，如魔方设置）：注册表单工具（get_form_schema / fill_form）并使用表单提示词</item>
+/// <item>其他非实体页面：注册通用工具（get_system_info / get_page_context / run_js）并使用通用提示词</item>
+/// </list>
 /// 目标控制器实现 <see cref="IPageDataContext"/> 时，get_page_context 优先调用其服务端实现。
 /// 浏览器操作回传亦放本控制器（<see cref="OperationResult"/>），避免为每个页面重复增加接口。
 /// 本控制器为全局控制器（不标记 <see cref="AdminArea"/>），路由统一为 <c>/Ai/[action]</c>（无区域前缀），
@@ -68,9 +72,15 @@ public class AiController : ControllerBaseX
             registry.AddTools(eac.CreateCubeTools(pager, req.Id));
             systemPrompt = eac.BuildChatSystemPrompt(req, pager);
         }
+        else if (target is IFormAiContext fac)
+        {
+            // 配置表单页（如魔方设置）：注册表单工具（get_form_schema / fill_form）+ 表单提示词，支持 AI 填表
+            registry.AddTools(new ConfigFormToolService(fac));
+            systemPrompt = fac.BuildFormSystemPrompt(req);
+        }
         else
         {
-            // 非实体页面（或解析失败）：通用工具 + 通用提示词
+            // 其他非实体页面（或解析失败）：通用工具 + 通用提示词
             systemPrompt = BuildChatSystemPrompt(req);
         }
 

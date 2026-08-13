@@ -1,10 +1,12 @@
 /**
  * LOV 值集系统 API 请求封装
  *
- * 提供 LovSelect / LovSelectTable 组件所需的三个后端接口调用：
+ * 提供 LovSelect / LovSelectTable 组件所需的两个后端接口调用：
  *   - Meta：获取值集元数据（枚举选项 / 列表配置）
- *   - ListData：获取列表型值集的数据（代理查询）
- *   - BatchLabel：批量翻译值（value → label）
+ *   - ListData：获取列表型值集的数据（代理查询 / 前端直连）
+ *
+ * 注：原「BatchLabel 批量翻译端点」已废弃——列翻译 / 已选回显统一由 lovStore 本地映射
+ * （ENUM 取 options、LIST 取 listData）兜底，详见 LovSelect/lovStore.ts。
  *
  * 所有请求走 @newlifex/cube-vue 全局 Axios 实例（request），自动携带认证 Token。
  */
@@ -15,8 +17,6 @@ import type {
   LovListConfig,
   LovListDataRequest,
   LovListDataResponse,
-  LovBatchLabelRequest,
-  LovBatchLabelResponse,
 } from '@newlifex/cube-vue/core/types/lov';
 
 /**
@@ -33,7 +33,7 @@ import type {
  * ```
  */
 export async function fetchLovMeta(lovCode: string): Promise<LovMetaResponse> {
-  const res = await request.get('/Admin/Lov/Meta', { params: { lovCode } });
+  const res = await request.get('/api/Admin/Lov/Meta', { params: { lovCode } });
   return res.data;
 }
 
@@ -56,32 +56,13 @@ export async function fetchLovMeta(lovCode: string): Promise<LovMetaResponse> {
 export async function fetchLovListData<T = Record<string, unknown>>(
   requestParams: LovListDataRequest,
 ): Promise<LovListDataResponse<T>> {
-  const res = await request.post('/Admin/Lov/ListData', requestParams);
+  const res = await request.post('/api/Admin/Lov/ListData', requestParams);
   // 后端返回结构：{ data: [...], total: number }
   const body = res.data;
   return {
     data: body.data ?? [],
     total: body.total ?? 0,
   };
-}
-
-/**
- * 批量翻译值集原始值为显示文本。
- *
- * @param requestParams 包含 lovCode 和 values 数组
- * @returns value → label 映射字典
- *
- * @example
- * ```ts
- * const labels = await fetchBatchLabel({ lovCode: 'Enum.Status', values: ['0', '1', '2'] });
- * // labels => { '0': '草稿', '1': '试模中', '2': '试模合格待审批' }
- * ```
- */
-export async function fetchBatchLabel(
-  requestParams: LovBatchLabelRequest,
-): Promise<LovBatchLabelResponse> {
-  const res = await request.post('/Admin/Lov/BatchLabel', requestParams);
-  return res.data;
 }
 
 /**

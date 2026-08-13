@@ -56,10 +56,16 @@ public sealed class AiAssistantTests : IAsyncLifetime
             return;
         }
 
-        // 0. 配色由 CubeSetting 注入 CSS 变量（默认新生命绿）
+        // 0. 配色由 CubeSetting 注入 CSS 变量（默认为新生命绿，可在魔方设置中配置主题色方案）
+        // 只断言变量已注入且为合法颜色值，不绑定默认色（测试实例可能配置了自定义主题色）
         var primary = await _page.Locator("#aiAssistant")
             .EvaluateAsync<String>("el => getComputedStyle(el).getPropertyValue('--ai-primary').trim()");
-        Assert.Equal("#2ecc71", primary, ignoreCase: true);
+        Assert.True(primary.StartsWith("#") && primary.Length >= 7,
+            $"[{testId}] --ai-primary 未注入合法颜色值：'{primary}'");
+        var secondary = await _page.Locator("#aiAssistant")
+            .EvaluateAsync<String>("el => getComputedStyle(el).getPropertyValue('--ai-secondary').trim()");
+        Assert.True(secondary.StartsWith("#") && secondary.Length >= 7,
+            $"[{testId}] --ai-secondary 未注入合法颜色值：'{secondary}'");
 
         // 1. 点击悬浮球，面板打开
         await fab.ClickAsync();

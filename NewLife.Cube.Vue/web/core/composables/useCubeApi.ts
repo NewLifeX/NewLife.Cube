@@ -25,19 +25,50 @@ import type { ApiResponse, PageParams } from '@cube/api-core';
 
 const cfg = getConfig();
 
+// baseUrl 现仅承载主机（不含 /api）。api-core 的 createCubeApi 按 resolveRequestUrl 规则统一拼接：
+// 实体路径自动补 /api、服务接口（/Auth /Cube 服务等）不带 /api，与 request.ts 共用同一请求层，cube-vue 内请求逻辑统一。
+const API_HOST = (cfg.request.baseUrl ?? '').replace(/\/+$/, '');
+
 /**
  * cubeApi 全局实例
  *
  * 基于 @cube/api-core 创建，提供通用 CRUD 及认证 API。
  * baseUrl 统一从 @newlifex/cube-vue 配置系统获取，
  * Token 存储使用 localStorage（与 @newlifex/cube-vue core/utils/token.ts 一致）。
+ *
+ * 返回值语义注意：`cubeApi.client` 是裸 axios 实例（unwrapResponse 默认 false），
+ * `cubeApi.client.request(...)` 返回完整 AxiosResponse，需自行 `.then(r => r.data)` 取 ApiResponse；
+ * 这与 `core/utils/request.ts` 的 `request`（unwrapResponse: true，直接返回 ApiResponse）不同，不要混用期望值。
  */
+// 同一响应若携带 fieldErrors，onFieldError 会弹出更精确的字段提示；
+// 此处标记抑制紧随其后的 onBusinessError，避免"添加失败！xxx"与"xxx"重复弹出
+let fieldErrorShown = false;
+
 const cubeApi = createCubeApi({
-  baseURL: cfg.request.baseUrl,
+  baseURL: API_HOST,
   tokenStorage: 'localStorage',
+  // 与 core/utils/request.ts 一致，接入附加请求头（如多租户 X-Tenant），实体/服务两条链均生效
+  additionalRequestHeaders: () => {
+    const cfg = getConfig().request.additionalRequestHeaders;
+    if (!cfg) return {};
+    return typeof cfg === 'function' ? cfg() : cfg;
+  },
   onFieldError: (fieldErrors) => {
     // 统一展示字段级验证错误（如"编码不可以为空！"），无需每个页面单独处理
+    fieldErrorShown = true;
     ElMessage.error(fieldErrors.map(e => e.message).join('；'));
+  },
+  onBusinessError: (_code, message) => {
+    // 统一展示业务错误（如唯一键冲突、数据库异常等仅带 message 的错误），无需每个页面单独处理
+    // 微任务中执行：若同一响应已通过 onFieldError 弹出字段级错误则跳过，避免重复提示
+    Promise.resolve()
+      .then(() => {
+        if (fieldErrorShown) return;
+        ElMessage.error(message);
+      })
+      .finally(() => {
+        fieldErrorShown = false;
+      });
   },
   onUnauthorized: () => {
     // @newlifex/cube-vue 已处理 401 → 清除 token 并跳转登录页
@@ -155,7 +186,7 @@ export function usePageApi(area: string, controller: string) {
      * @example api.lookup('SmartMES.Data.Equipments.EquipmentKinds')
      */
     lookup: (codes: string) =>
-      cubeApi.page.lookup(codes) as Promise<ApiResponse<Record<string, Array<{ label: string; value: number }>>>>,
+      cubeApi.page.lookup(codes) as Promise<ApiResponse<Record<string, Array<{ label: string; value: number; }>>>>,
   };
 }
 

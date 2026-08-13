@@ -1,5 +1,5 @@
 import path from 'path';
-import { type PluginOption, type ResolvedConfig, type ViteDevServer } from 'vite';
+import type { PluginOption, ResolvedConfig, ViteDevServer } from 'vite';
 import type { ConfigRoute } from '../typings.d';
 import fs from 'fs';
 import type { MicroAppConfig } from '../microAppRouter';

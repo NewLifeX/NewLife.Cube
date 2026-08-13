@@ -208,19 +208,19 @@ export interface LoginResult {
   /** 过期时间（秒） */
   expireIn?: number;
 
-  // ---- 后端字段别名（部分版本使用大写字段名，由 client.ts normalizeLoginResult 统一归一化） ----
-  /** @internal 后端兼容字段，请使用 accessToken */
-  Token?: string;
-  /** @internal 后端兼容字段，请使用 refreshToken */
-  RefreshToken?: string;
-  /** @internal 后端兼容字段，请使用 expireIn */
-  ExpireIn?: number;
-  /** @internal 后端兼容字段（snake_case），请使用 accessToken */
+  // ---- 后端字段别名（由 client.ts normalizeLoginResult 统一归一化，请勿直接读取） ----
+  /** @internal 后端 snake_case 兼容字段，请使用 accessToken */
   access_token?: string;
-  /** @internal 后端兼容字段（snake_case），请使用 refreshToken */
+  /** @internal 后端 PascalCase 兼容字段，请使用 accessToken */
+  Token?: string;
+  /** @internal 后端 snake_case 兼容字段，请使用 refreshToken */
   refresh_token?: string;
-  /** @internal 后端兼容字段（snake_case），请使用 expireIn */
+  /** @internal 后端 PascalCase 兼容字段，请使用 refreshToken */
+  RefreshToken?: string;
+  /** @internal 后端 snake_case 兼容字段，请使用 expireIn */
   expire_in?: number;
+  /** @internal 后端 PascalCase 兼容字段，请使用 expireIn */
+  ExpireIn?: number;
 }
 
 /** OAuth 提供商 */
@@ -331,6 +331,10 @@ export interface RegisterModel {
   password2?: string;
   code?: string;
   oauthToken?: string;
+  /** 多租户：OAuth 应用 AppId，请求时转为 X-App-Id 头，按 OAuth 配置定位租户（优先于 tenantCode） */
+  appId?: string;
+  /** 多租户：租户编码，请求时转为 X-Tenant 头，按编码查询租户 */
+  tenantCode?: string;
 }
 
 /** OAuth 回跳待注册信息 */

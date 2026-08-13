@@ -372,6 +372,25 @@ public class TokenMiddleware
 }
 ```
 
+### 认证层租户校验（多租户）
+
+开启多租户（`CubeSetting.EnableTenant=true`）时，token 校验通过后统一执行租户校验（`TryLogin` 与 `ControllerBaseX` 的 `Auth` 路径均调用 `HttpContext.ValidateTenant(user)`）：
+
+- 未开启多租户 → 直接放行，不校验租户。
+- 系统管理员 → 可进入管理后台（租户0）。
+- 普通用户 → 必须处于有效租户上下文（`TenantId > 0`），无有效租户则拒绝访问（401/403），防止落到租户0/空上下文看到全量数据。
+
+租户标识来源（按优先级）：
+
+| 来源 | 语义 | 解析方式 |
+|------|------|----------|
+| 请求头 `X-Tenant` | **租户编码（Code）** | `Tenant.FindByCode` |
+| 请求头 `X-Tenant-Id`（已废弃兼容） | 数字ID | `Int32` 解析 |
+| QueryString `tenantId` | 数字ID | `Int32` 解析 |
+| Cookie `TenantId-{SysName}` | 数字ID | `Int32` 解析 |
+
+伪造、不存在或已禁用的租户会被拒绝（400/403）。
+
 ---
 
 ## 12.4 验证码

@@ -147,19 +147,6 @@ export interface LovListDataResponse<T = Record<string, unknown>> {
   total: number;
 }
 
-// ─── BatchLabel API 类型 ──────────────────────────────────
-
-/** BatchLabel 接口请求参数 */
-export interface LovBatchLabelRequest {
-  /** 值集编码 */
-  lovCode: string;
-  /** 需要翻译的原始值列表 */
-  values: string[];
-}
-
-/** BatchLabel 接口响应（value → label 映射） */
-export type LovBatchLabelResponse = Record<string, string>;
-
 // ─── 前端 LovSelect 组件 Props 类型 ───────────────────────
 
 /** LovSelect 组件属性 */

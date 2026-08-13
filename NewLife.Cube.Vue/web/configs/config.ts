@@ -14,4 +14,9 @@ export const config: EnvConfig = {
       primaryColor: '#1890ff',
     },
   },
+  request: {
+    // 多租户：可在此注入租户编码请求头。开启多租户后所有请求携带 X-Tenant，
+    // 后端按租户编码定位租户并校验归属；未配置时请求不带租户头（多租户开启时注册等接口会要求显式传租户）
+    // 示例：additionalRequestHeaders: () => ({ 'X-Tenant': localStorage.getItem('tenantCode') ?? '' })
+  },
 };

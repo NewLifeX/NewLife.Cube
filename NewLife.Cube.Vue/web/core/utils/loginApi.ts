@@ -1,36 +1,24 @@
 /**
  * 登录页 API 封装
  *
- * 使用原生 fetch 调用后端接口，不依赖 demo app 的 cubeApi 实例。
- * core 库作为通用库，不能依赖具体应用创建的 API 客户端。
+ * 基于 core 请求库（core/utils/request，axios 封装，含拦截器与全局错误处理）调用后端接口。
+ * core 库作为通用库，不依赖具体应用创建的 API 客户端；统一复用请求库的超时、拦截、401 处理。
  *
  * 类型定义复用 @cube/api-core 的 LoginConfig、LoginResult、ApiResponse。
  *
- * 注意：由于使用原生 fetch（不经 @cube/api-core 的 axios 拦截器），
- * 后端返回的字段名归一化需在本文件内手动完成：
+ * 字段名归一化说明：
+ * 请求库仅透传后端返回的 data，不做字段名归一化，因此以下变体仍需在本文件内手动归一：
  * - LoginConfig: oAuth / providers → oauth
  * - LoginResult: access_token / Token → accessToken（snake_case + PascalCase 兼容）
+ *
+ * 注意：请求库的响应拦截器会在 code !== 0/200 时自动弹出错误提示并抛异常，
+ * 业务调用方在 catch 中处理失败即可（无需自行弹错，避免重复提示）。
  */
+import request from './request';
 import type { ApiResponse, LoginConfig, LoginResult, OAuthProvider } from '@cube/api-core';
 
 /** 默认请求超时时间（毫秒） */
 const REQUEST_TIMEOUT = 15000;
-
-/**
- * 带超时的 fetch 封装
- * @param url 请求地址
- * @param init fetch 初始化配置
- * @returns fetch Response
- */
-async function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
-  try {
-    return await fetch(url, { ...init, signal: controller.signal });
-  } finally {
-    clearTimeout(timeoutId);
-  }
-}
 
 // ── 字段名归一化工具 ────────────────────────────────────────────────
 
@@ -112,28 +100,20 @@ function normalizeLoginResult(data: LoginResult): LoginResult {
  *
  * 返回前对 data 做字段名归一化（oAuth / providers → oauth）。
  *
- * AuthController 路由不带 /api 前缀，直接请求 /Auth/LoginConfig。
+ * AuthController 路由不带 /api 前缀，统一经请求层拼接 baseUrl（API_HOST）转发；
+ * 请确保 baseUrl 能到达 Auth 服务。
  *
  * @returns 登录配置响应
  * @throws 网络错误或 HTTP 状态码非 200 时抛出异常
  */
 export async function fetchLoginConfig(): Promise<ApiResponse<LoginConfig>> {
-  const url = `/Auth/LoginConfig`;
-  const response = await fetchWithTimeout(url, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`获取登录配置失败: HTTP ${response.status} ${response.statusText}`);
-  }
-
-  const json = (await response.json()) as ApiResponse<LoginConfig>;
+  // 请求库响应拦截器已展开为 ApiResponse（{ code, message, data }），此处断言其形态
+  const json = (await request.get('/Auth/LoginConfig', {
+    timeout: REQUEST_TIMEOUT,
+  })) as unknown as ApiResponse<LoginConfig>;
 
   // 归一化字段名（oAuth / providers → oauth）
-  if (json.data) {
+  if (json?.data) {
     json.data = normalizeLoginConfig(json.data);
   }
 
@@ -149,7 +129,7 @@ export async function fetchLoginConfig(): Promise<ApiResponse<LoginConfig>> {
  * 返回前对 data 做字段名归一化
  * （access_token / Token → accessToken，兼容 snake_case 和 PascalCase）。
  *
- * AuthController 路由不带 /api 前缀，直接请求 /Auth/Login。
+ * AuthController 路由不带 /api 前缀，统一经请求层拼接 baseUrl（API_HOST）转发。
  *
  * @param username 用户名
  * @param password 密码（明文，通过 HTTPS 传输）
@@ -160,23 +140,15 @@ export async function loginByPassword(
   username: string,
   password: string,
 ): Promise<ApiResponse<LoginResult>> {
-  const url = `/Auth/Login`;
-  const response = await fetchWithTimeout(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ username, password }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`登录请求失败: HTTP ${response.status} ${response.statusText}`);
-  }
-
-  const json = (await response.json()) as ApiResponse<LoginResult>;
+  // 请求库响应拦截器已展开为 ApiResponse（{ code, message, data }），此处断言其形态
+  const json = (await request.post(
+    '/Auth/Login',
+    { username, password },
+    { timeout: REQUEST_TIMEOUT },
+  )) as unknown as ApiResponse<LoginResult>;
 
   // 归一化字段名（snake_case / PascalCase → camelCase）
-  if (json.data) {
+  if (json?.data) {
     json.data = normalizeLoginResult(json.data);
   }
 

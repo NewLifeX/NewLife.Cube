@@ -57,7 +57,7 @@
       <div class="file-preview-container">
         <!-- 图片预览 -->
         <div v-if="isImageFile(selectedFile)" class="image-preview">
-          <img :src="selectedFile.url" :alt="selectedFile.name" class="preview-image" />
+          <img :src="selectedFile?.url" :alt="selectedFile?.name" class="preview-image" />
         </div>
         <!-- 文本文件预览 -->
         <div v-else-if="isTextFile(selectedFile)" class="text-preview">
@@ -72,13 +72,13 @@
         <!-- 其他文件类型 -->
         <div v-else class="other-file-preview">
           <el-empty description="该文件类型不支持预览">
-            <el-button type="primary" @click="downloadFile(selectedFile)">下载文件</el-button>
+            <el-button type="primary" @click="downloadFile(selectedFile!)">下载文件</el-button>
           </el-empty>
         </div>
       </div>
       <template #footer>
         <el-button @click="previewVisible = false">关闭</el-button>
-        <el-button type="primary" @click="downloadFile(selectedFile)">下载</el-button>
+        <el-button type="primary" @click="downloadFile(selectedFile!)">下载</el-button>
       </template>
     </el-dialog>
   </div>
@@ -129,11 +129,19 @@ const handleGetFile = async () => {
 
   loading.value = true;
   try {
-    const response = await request.get('/Cube/File', {
+    const response = (await request.get('/Cube/File', {
       params: {
         id: searchForm.id,
       },
-    });
+    })) as unknown as {
+      name?: string;
+      fileName?: string;
+      size?: number;
+      type?: string;
+      contentType?: string;
+      url?: string;
+      uploadTime?: string;
+    };
 
     // 处理响应数据
     if (response) {
@@ -222,9 +230,9 @@ const isTextFile = (file: FileData | null): boolean => {
 // 加载文本内容
 const loadTextContent = async (file: FileData) => {
   try {
-    const response = await request.get(file.url, {
+    const response = (await request.get(file.url, {
       responseType: 'text',
-    });
+    })) as unknown as string;
     fileContent.value = response;
   } catch {
     fileContent.value = '文本内容加载失败';

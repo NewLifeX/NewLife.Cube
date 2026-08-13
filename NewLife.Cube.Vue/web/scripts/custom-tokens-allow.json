@@ -9,6 +9,8 @@
     "--radius-sm",
     "--shadow-lg",
     "--ease",
-    "--layout-nav-height"
+    "--layout-nav-height",
+    "--ai-primary",
+    "--ai-secondary"
   ]
 }

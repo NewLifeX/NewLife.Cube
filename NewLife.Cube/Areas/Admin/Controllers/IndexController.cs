@@ -20,7 +20,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [DisplayName("首页")]
 [AdminArea]
 [Menu(0, false, Icon = "HomeFilled")]
-public class IndexController : ControllerBaseX
+public class IndexController : ControllerBaseX, IPageDataContext
 {
     private readonly IManageProvider _provider;
     private readonly IWebHostEnvironment _env;
@@ -68,8 +68,19 @@ public class IndexController : ControllerBaseX
     [HttpGet]
     public ActionResult Main()
     {
-        var req = HttpContext.Request;
-        var conn = HttpContext.Connection;
+        var result = BuildServerInfo(_env.ContentRootPath, HttpContext);
+        //var res = result.ToOkApiResponse();
+        return Json(0, null, result);
+    }
+
+    /// <summary>收集服务器信息（供页面展示与 AI 页面上下文共用，避免重复逻辑）</summary>
+    /// <param name="contentRootPath">应用内容根目录（<see cref="IWebHostEnvironment.ContentRootPath"/>）</param>
+    /// <param name="context">当前 HTTP 上下文，用于获取请求与连接信息</param>
+    /// <returns>服务器信息对象</returns>
+    private static Object BuildServerInfo(String contentRootPath, Microsoft.AspNetCore.Http.HttpContext context)
+    {
+        var req = context.Request;
+        var conn = context.Connection;
         var gc = $"IsServerGC={GCSettings.IsServerGC},LatencyMode={GCSettings.LatencyMode}";
         var mi = MachineInfo.Current ?? new MachineInfo();
         var process = Process.GetCurrentProcess();
@@ -80,11 +91,11 @@ public class IndexController : ControllerBaseX
         var addrRemote = conn.RemoteIpAddress;
         if (addrLocal != null && addrLocal.IsIPv4MappedToIPv6) addrLocal = addrLocal.MapToIPv4();
         if (addrRemote != null && addrRemote.IsIPv4MappedToIPv6) addrRemote = addrRemote.MapToIPv4();
-        var userHost = HttpContext.GetUserHost();
+        var userHost = context.GetUserHost();
         var result = new
         {
             system = req.GetRawUrl()?.AbsolutePath,
-            path = _env.ContentRootPath,
+            path = contentRootPath,
             host = req.Headers["Host"],
             local = addrLocal + ":" + conn.LocalPort,
             remote = addrRemote + ":" + conn.RemotePort,
@@ -103,9 +114,14 @@ public class IndexController : ControllerBaseX
             gc = gc,
             //startTime = ApplicationManager.Load().StartTime.ToLocalTime().ToFullString()
         };
-        //var res = result.ToOkApiResponse();
-        return Json(0, null, result);
+        return result;
     }
+
+    /// <summary>收集当前页面数据上下文（服务器信息），供 AI 分析当前页面。实现 <see cref="IPageDataContext"/>，get_page_context 优先调用服务端实现</summary>
+    /// <returns>服务器信息 JSON</returns>
+    [HttpGet]
+    public Task<String> GetPageDataContextAsync()
+        => Task.FromResult(BuildServerInfo(_env.ContentRootPath, HttpContext).ToJson());
 
     #region AI 诊断
     /// <summary>AI 系统诊断。根据服务器运行指标生成健康诊断报告</summary>
@@ -335,14 +351,8 @@ public class IndexController : ControllerBaseX
 
     private IList<MenuTree> GetMenu(String module)
     {
-        var user = _provider.Current as IUser;
-
         var fact = ManageProvider.Menu;
         var menus = fact.Root.Childs;
-        if (user?.Role != null)
-        {
-            menus = fact.GetMySubMenus(fact.Root.ID, user, true);
-        }
 
         // 根据模块过滤菜单
         if (module.EqualIgnoreCase("base"))
@@ -362,22 +372,17 @@ public class IndexController : ControllerBaseX
         {
             menus = menus.FirstOrDefault(e => e.Name.EqualIgnoreCase(module))?.Childs ?? [];
         }
-        // module 为空时不做过滤，直接返回用户可访问的全部根级菜单
+        // module 为空时不做过滤，直接返回全部根级菜单
 
         // 如果顶级只有一层，并且至少有三级目录，则提升一级
         if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) { menus = menus[0].Childs; }
 
         var menuTree = MenuTree.GetMenuTree(pMenuTree =>
         {
-            // 优先通过角色权限资源列表获取子菜单
-            var subMenus = fact.GetMySubMenus(pMenuTree.ID, user, true);
-            if (subMenus.Count == 0)
-            {
-                // GetMySubMenus 返回空：角色的 Resources 中可能只有父级模块 ID，
-                // 子控制器 ID 未显式授权，此时回退到菜单树结构获取可见子菜单
-                var parent = fact.FindByID(pMenuTree.ID);
-                subMenus = parent?.Childs?.Where(m => m.Visible).ToList() as IList<IMenu> ?? [];
-            }
+            // 左侧菜单展示所有可见菜单，不按角色权限过滤
+            // 权限控制在 Controller/Action 层通过 EntityAuthorizeAttribute 实现
+            var parent = fact.FindByID(pMenuTree.ID);
+            var subMenus = parent?.Childs?.Where(m => m.Visible).ToList() as IList<IMenu> ?? [];
             return subMenus;
         }, list =>
         {

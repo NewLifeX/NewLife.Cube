@@ -187,6 +187,9 @@ public class OAuthClient
         if (!mi.Scope.IsNullOrEmpty()) Scope = mi.Scope;
         if (!mi.FieldMap.IsNullOrEmpty()) FieldMap = JsonParser.Decode(mi.FieldMap);
 
+        // 统一携带配置所属租户，保证浏览器SSO与微信登录等所有路径租户传播一致
+        TenantId = mi.TenantId;
+
         Config = mi;
     }
 

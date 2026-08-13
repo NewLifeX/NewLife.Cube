@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 using NewLife.AI.Tools;
 using NewLife.Log;
 using NewLife.Serialization;
@@ -18,9 +19,12 @@ public class CubeBrowserContext
     public const String BrowserContextKey = "Cube.BrowserContext";
 
     /// <summary>SSE 写回调。下发 run_js 等事件到前端</summary>
+    // 委托不可被 System.Text.Json 序列化，标注忽略（本类常驻 ChatOptions.Items，会被 AI 客户端序列化）
+    [JsonIgnore]
     public Func<String, Task>? Writer { get; init; }
 
     /// <summary>页面检查点服务。挂起等待前端回传（经事件总线广播，支持分布式）</summary>
+    [JsonIgnore]
     public PageCheckpointService? CheckpointService { get; init; }
 
     /// <summary>当前用户编号。回传时校验防跨用户串扰</summary>
@@ -50,9 +54,12 @@ public class BrowserToolService(Int64 userId)
     public Int32 TimeoutSeconds { get; set; } = 30;
 
     /// <summary>SSE 写回调。由宿主（实体控制器 AiChat）在构造后注入，用于下发 run_js 事件到前端</summary>
+    // 委托不可被 System.Text.Json 序列化，标注忽略（防止被序列化时抛 NotSupportedException）
+    [JsonIgnore]
     public Func<String, Task>? Writer { get; set; }
 
     /// <summary>页面检查点服务。null 时使用 <see cref="PageCheckpointService.Instance"/>（进程内兜底）</summary>
+    [JsonIgnore]
     public PageCheckpointService? CheckpointService { get; set; }
 
     /// <summary>在当前页面执行 JavaScript 并返回结果。可读取或操作页面 DOM、调用页面脚本等</summary>

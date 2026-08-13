@@ -7,8 +7,8 @@
         <h3>路由初始化状态</h3>
       </template>
       <p>路由初始化状态: {{ routesInitialized ? '已初始化' : '未初始化' }}</p>
-      <p>当前路径: {{ $route.path }}</p>
-      <p>当前路由名称: {{ $route.name }}</p>
+      <p>当前路径: {{ route.path }}</p>
+      <p>当前路由名称: {{ route.name }}</p>
     </el-card>
 
     <el-card style="margin-bottom: 20px">
@@ -43,9 +43,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 const router = useRouter();
+const route = useRoute();
 const routesInitialized = ref(false);
 const routesList = ref<Array<{path: string, name: string | symbol | undefined, component: string}>>([]);
 const microAppsList = ref<Array<{name: string, prefix?: string, status: string, routeCount: number}>>([]);
@@ -64,7 +65,7 @@ const refreshStatus = () => {
     routesList.value = routes.map(route => ({
       path: route.path,
       name: route.name,
-      component: route.component ? route.component.name || 'Component' : 'No component'
+      component: route.components?.default ? (route.components.default as { name?: string }).name || 'Component' : 'No component'
     }));
 
     // 查找Cube相关路由

@@ -51,6 +51,33 @@ export function getServiceBaseUrl(baseUrl?: string): string {
 }
 
 /**
+ * 解析最终请求地址：合并 baseUrl（主机，可选带 /api 前缀）与相对 url，
+ * 按「baseUrl 是否含 /api」与「url 是否为服务接口」统一去重 / 补 /api。
+ *
+ * 规则：
+ * - baseUrl 含 /api（如 http://host:5000/api）：实体请求保留 /api、服务接口去掉 /api；
+ *   url 自身若已带 /api 则去重，避免得到 http://host/api/api/...。
+ * - baseUrl 不含 /api（如 http://host:5000，cube-vue 推荐只传纯主机）：
+ *   服务接口不补前缀；非服务接口已带 /api 的不重复补、缺 /api 则补。
+ * - 绝对地址（含协议或 //）原样返回。
+ *
+ * @param baseUrl 基础地址（如 'http://host:5000' 或 'http://host:5000/api'）
+ * @param url 相对请求路径
+ * @returns 完整请求地址
+ */
+export function resolveRequestUrl(baseUrl: string, url: string): string {
+  // 绝对地址（含协议或 //）原样返回
+  if (!url || /^(?:https?:)?\/\//i.test(url)) return url;
+  const base = (baseUrl ?? '').replace(/\/+$/, '');
+  const baseNoApi = base.replace(/\/api$/i, '');
+  if (isServiceApiPath(url)) {
+    return `${baseNoApi}${url}`;
+  }
+  const path = url.startsWith('/api') ? url.slice(4) : url;
+  return `${baseNoApi}/api${path}`;
+}
+
+/**
  * 判断请求路径是否为服务接口（后端路由不带 /api 前缀）
  *
  * 用于前端请求层决定是否拼接 /api 前缀：服务接口直接请求，实体接口由 baseURL 提供 /api。

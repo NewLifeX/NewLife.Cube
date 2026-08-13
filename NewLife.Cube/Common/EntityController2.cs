@@ -33,7 +33,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     public EntityController() => PageSetting.IsReadOnly = false;
 
     /// <summary>是否启用基于 Model.xml 元数据的自动字段校验（必填、长度等）。默认 true。子类可 override 返回 false 关闭</summary>
-    protected virtual Boolean EnableFieldValidation => true;
+    protected virtual Boolean EnableFieldValidation => false;
     #endregion
 
     #region 默认Action

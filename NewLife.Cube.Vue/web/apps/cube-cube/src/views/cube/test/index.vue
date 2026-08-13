@@ -2,14 +2,16 @@
   <div class="test-page">
     <h1>Cube-Cube 测试页面</h1>
     <p>如果你能看到这个页面，说明路由配置正确</p>
-    <p>当前路径: {{ $route.path }}</p>
+    <p>当前路径: {{ route.path }}</p>
     <p>当前时间: {{ currentTime }}</p>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 
+const route = useRoute();
 const currentTime = ref(new Date().toLocaleString());
 
 onMounted(() => {

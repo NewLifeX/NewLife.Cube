@@ -1,4 +1,5 @@
 import { isAxiosError, type AxiosRequestConfig } from 'axios';
+import { resolveRequestUrl } from './service-path';
 import type {
   ApiResponse,
   AuthCategory,
@@ -70,9 +71,22 @@ export function createUserApi(request: RequestFn) {
     getCaptcha: () =>
       request<CaptchaResult>({ url: '/Auth/Captcha', method: 'get' }),
 
-    /** 注册新用户 */
-    register: (data: RegisterModel & { captchaId?: string; captchaCode?: string }) =>
-      request<LoginResult>({ url: '/Auth/Register', method: 'post', data }),
+    /** 注册新用户。多租户场景可传 appId（转为 X-App-Id 头）或 tenantCode（转为 X-Tenant 头） */
+    register: (data: RegisterModel & { captchaId?: string; captchaCode?: string; appId?: string; tenantCode?: string }) => {
+      const { appId, tenantCode, ...rest } = data;
+      const headers: Record<string, string> = {};
+      if (appId) headers['X-App-Id'] = appId;
+      if (tenantCode) headers['X-Tenant'] = tenantCode;
+      return request<LoginResult>({ url: '/Auth/Register', method: 'post', data: rest, headers: Object.keys(headers).length > 0 ? headers : undefined });
+    },
+
+    /** 微信小程序登录。appId 可选，后端支持请求体或 X-App-Id 头兜底 */
+    wxMiniLogin: (data: { code: string; appId?: string }) =>
+      request<LoginResult>({ url: '/Sso/WxMiniLogin', method: 'post', data }),
+
+    /** 微信APP登录。appId 可选，后端支持请求体或 X-App-Id 头兜底 */
+    wxAppLogin: (data: { code: string; appId?: string }) =>
+      request<LoginResult>({ url: '/Sso/WxAppLogin', method: 'post', data }),
 
     /** 获取OAuth回跳待注册预填信息 */
     getOAuthPendingInfo: (token: string) =>
@@ -211,8 +225,8 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
 
     /** 获取导出 URL（直接下载，不走 ajax） */
     getExportUrl: (type: string, format: string): string => {
-      const base = baseApiUrl ?? '';
-      return `${base}/${type}/ExportFile?format=${encodeURIComponent(format)}`;
+      const url = resolveRequestUrl(baseApiUrl ?? '', `/${type}/ExportFile`);
+      return `${url}?format=${encodeURIComponent(format)}`;
     },
 
     /** 导入文件 */

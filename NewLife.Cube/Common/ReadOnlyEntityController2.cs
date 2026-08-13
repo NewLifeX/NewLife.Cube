@@ -219,15 +219,31 @@ public partial class ReadOnlyEntityController<TEntity>
 
         // 多租户
         var set = CubeSetting.Current;
-        if (set.EnableTenant)
+        if (set.EnableTenant && IsTenantSource)
         {
             var ctxTenant = TenantContext.Current;
-            if (ctxTenant != null && IsTenantSource)
+
+            // 无租户上下文（未设置/匿名请求）：fail-closed，拒绝查询，防止无租户场景看到全量数据
+            if (ctxTenant == null)
             {
-                // 启用多租户且进入管理后台（TenantId=0）时，不限制租户数据，管理后台要能看到所有租户的数据
+                XTrace.WriteLine($"多租户模式下缺少租户上下文，禁止查询{typeof(TEntity).Name}");
+                exp = "1=0";
+            }
+            else if (ctxTenant.TenantId == 0)
+            {
+                // 管理后台模式（TenantId=0），不限制租户数据，管理后台要能看到所有租户的数据
+            }
+            else
+            {
+                // 租户模式（TenantId>0）：校验租户存在且启用，无效则 fail-closed，防止伪造租户ID绕过数据隔离
                 var tenant = ctxTenant.Tenant;
                 tenant ??= Tenant.FindById(ctxTenant.TenantId);
-                if (tenant != null)
+                if (tenant == null || !tenant.Enable)
+                {
+                    XTrace.WriteLine($"多租户模式下租户[{ctxTenant.TenantId}]不存在或已禁用，禁止查询{typeof(TEntity).Name}");
+                    exp = "1=0";
+                }
+                else
                 {
                     // WhereBuilder 内部会从 HttpContext.Items 读取 TenantId
                     HttpContext.Items["TenantId"] = tenant.Id;
@@ -540,6 +556,30 @@ public partial class ReadOnlyEntityController<TEntity>
                 case DataObjectMethodType.Update when (entity as IEntity).HasDirty:
                     LogProvider.Provider.WriteLog(type + "", entity);
                     break;
+            }
+        }
+
+        // 多租户写路径归属校验：租户模式下，租户实体的新增/修改/删除必须归属当前租户
+        if (post && CubeSetting.Current.EnableTenant && IsTenantSource)
+        {
+            var tenantId = TenantContext.CurrentId;
+            if (tenantId > 0)
+            {
+                var ie = entity as IEntity;
+                var entityTenantId = ie?["TenantId"].ToInt() ?? 0;
+                switch (type)
+                {
+                    case DataObjectMethodType.Insert:
+                        // 新增强制归属当前租户
+                        if (ie != null) ie["TenantId"] = tenantId;
+                        break;
+                    case DataObjectMethodType.Update:
+                    case DataObjectMethodType.Delete:
+                        // 修改/删除校验归属，防止跨租户操作
+                        if (entityTenantId != tenantId)
+                            throw new NoPermissionException(PermissionFlags.None, $"无权操作其它租户的数据[{entityTenantId}]");
+                        break;
+                }
             }
         }
 

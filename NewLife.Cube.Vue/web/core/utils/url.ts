@@ -77,10 +77,20 @@ export function normalizeMenuUrl(url: string, style: RouteNamingStyle = 'pascal'
 
 /**
  * 根据路由路径获取 api 前缀
- * 示例：/device/device-profile → /Device/DeviceProfile
+ *
+ * 魔方 WebAPI 版实体/区域控制器路由固定带 /api 前缀（见后端 ControllerBaseX 的
+ * [Route("api/[area]/[controller]/[action]")] 与 CubeService 的约定路由
+ * "api/{area}/{controller=Index}/{action=Index}/{id?}"）。
+ *
+ * 早期 /api 由 API_HOST(baseUrl) 统一携带；现 baseUrl 只承载主机、不再内含 /api，
+ * 故由各请求路径自行决定前缀——本函数负责为「路由派生」的实体请求拼上 /api，
+ * 调用方无需关心。服务控制器（/Auth /Sso /Mfa /OAuth 及 /Cube 服务动作）不带前缀，
+ * 由各自硬编码路径处理，不流经本函数。
+ *
+ * 示例：/device/device-profile → /api/Device/DeviceProfile
  */
 export function routeToApiPrefix(path: string): string {
-  return '/' + path.split('/').filter(Boolean).map(toPascalCase).join('/');
+  return '/api/' + path.split('/').filter(Boolean).map(toPascalCase).join('/');
 }
 
 /**

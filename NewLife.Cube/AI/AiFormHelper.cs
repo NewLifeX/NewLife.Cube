@@ -1,4 +1,5 @@
-﻿using NewLife;
+﻿using System;
+using NewLife;
 using NewLife.Cube.ViewModels;
 using NewLife.Serialization;
 
@@ -57,6 +58,17 @@ public static class AiFormHelper
     /// <param name="name">字段名</param>
     /// <returns></returns>
     public static Boolean IsAutoField(String name) => _autoFields.Any(e => name.EqualIgnoreCase(e));
+
+    /// <summary>判断配置/表单字段是否为敏感字段（值不应向 AI 暴露）。ApiKey/Secret/Password/Token/连接串等</summary>
+    /// <param name="name">字段名</param>
+    /// <returns>是否敏感</returns>
+    public static Boolean IsSensitiveField(String name)
+        => name.EqualIgnoreCase("AIApiKey")
+           || name.EndsWith("Secret", StringComparison.OrdinalIgnoreCase)
+           || name.EndsWith("ApiKey", StringComparison.OrdinalIgnoreCase)
+           || name.EndsWith("Password", StringComparison.OrdinalIgnoreCase)
+           || name.EndsWith("Token", StringComparison.OrdinalIgnoreCase)
+           || name.EndsWith("ConnStr", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>解析 fill_form 的字段值参数。兼容 JSON 对象 {\"Name\":\"张三\"} 与扁平键值数组 [\"Name\",\"张三\"] 两种格式</summary>
     /// <remarks>

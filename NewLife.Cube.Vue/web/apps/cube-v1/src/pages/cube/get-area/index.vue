@@ -67,6 +67,8 @@ interface AreaData {
   name: string;
   fullName: string;
   parentId: number;
+  /** 后端兼容字段（大写 ID 写法） */
+  parentID?: number;
   level: number;
   code: string;
   pinyin: string;
@@ -91,11 +93,11 @@ const searchForm = reactive<AreaParams>({
 const loadData = async () => {
   loading.value = true;
   try {
-    const response = await request.get('/Cube/GetArea', {
+    const response = (await request.get('/Cube/GetArea', {
       params: {
         id: searchForm.id || undefined,
       },
-    });
+    })) as unknown as AreaData[] | AreaData;
 
     // 处理响应数据
     if (Array.isArray(response)) {

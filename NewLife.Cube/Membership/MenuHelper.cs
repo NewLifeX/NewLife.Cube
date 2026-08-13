@@ -12,6 +12,22 @@ namespace NewLife.Cube.Membership;
 /// </summary>
 public static class MenuHelper
 {
+    /// <summary>判断控制器菜单在指定模式下是否可见。租户模式（isTenant=true）仅放行含Tenant模式的菜单；管理后台仅放行含Admin模式或未声明模式的菜单</summary>
+    /// <param name="controllerType">控制器类型</param>
+    /// <param name="isTenant">是否租户模式（TenantId&gt;0）</param>
+    /// <returns>模式允许访问返回true，否则返回false（需拦截）</returns>
+    public static Boolean CheckVisible(Type controllerType, Boolean isTenant)
+    {
+        var att = controllerType?.GetCustomAttribute<MenuAttribute>();
+        if (att == null) return true;
+
+        // 租户模式：必须声明Tenant模式才可见
+        if (isTenant) return att.Mode.Has(MenuModes.Tenant);
+
+        // 管理后台：含Admin模式，或未声明任何模式（默认仅管理后台可见）才可见
+        return att.Mode.Has(MenuModes.Admin) || !att.Mode.Has(MenuModes.Tenant);
+    }
+
     /// <summary>扫描命名空间下的控制器并添加为菜单</summary>
     /// <param name="menuFactory">菜单工厂</param>
     /// <param name="rootName">根菜单名称，所有菜单附属在其下</param>
