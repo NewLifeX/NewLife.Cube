@@ -4,6 +4,7 @@
  * 只做「值 → 展示」的派生计算，不修改原始模型；HTML/Markdown 一律以纯文本输出，禁止原样渲染。
  */
 import type { FieldMeta } from '../types/field';
+import { isCascaderField } from './fieldControl';
 import { isTruthy } from './fieldBadge';
 import { formatDate, formatDateTime, formatTime, inferDateKind } from './datetime';
 
@@ -74,8 +75,16 @@ export function jsonPreview(raw: unknown, max = 200): string {
   return `${s.slice(0, max)}…`;
 }
 
+/** 详情文本可选缓存：LIST LOV 批量标签与地区/级联叶子标签（OSC-2608139feb） */
+export interface DetailTextCache {
+  /** lovCode → { value: label } */
+  labelCache?: Record<string, Record<string, string>>;
+  /** 地区/级联叶子值 → label */
+  areaLabelCache?: Record<string, string>;
+}
+
 /** 详情纯文本（模板 <div> 直接输出，安全）：dataSource/多选/Boolean/日期时间/JSON 摘要/常规字符串 */
-export function detailText(field: FieldMeta, raw: unknown): string {
+export function detailText(field: FieldMeta, raw: unknown, cache?: DetailTextCache): string {
   if (raw == null || raw === '') return '-';
   const itemType = itemTypeOf(field);
   if (itemType === 'json') return jsonPreview(raw);
@@ -95,6 +104,16 @@ export function detailText(field: FieldMeta, raw: unknown): string {
     return formatDateTime(raw);
   }
   if (field.typeName === 'TimeSpan') return formatTime(raw);
+  // 地区/级联叶子：缓存命中则显示地区名，未命中回退原始 ID
+  if (isCascaderField(field)) {
+    const areaLabel = cache?.areaLabelCache?.[String(raw)];
+    if (areaLabel) return areaLabel;
+  }
+  // LIST LOV 无 dataSource：批量标签缓存命中则显示标签
+  if (field.lovCode) {
+    const lov = cache?.labelCache?.[field.lovCode]?.[String(raw)];
+    if (lov) return lov;
+  }
   return String(raw);
 }
 

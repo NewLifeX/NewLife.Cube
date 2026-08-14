@@ -8,7 +8,8 @@
     :placeholder="placeholder"
     allow-search
     expand-trigger="click"
-    :path-mode="false"
+    :path-mode="true"
+    :load-more="loadMore"
     allow-clear
     style="width: 100%"
     @update:model-value="onChange"
@@ -34,5 +35,6 @@ const {
   pathValue,
   loading,
   onChange,
+  loadMore,
 } = useCascaderField(props, emit);
 </script>

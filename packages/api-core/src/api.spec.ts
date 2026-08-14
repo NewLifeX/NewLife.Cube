@@ -50,6 +50,37 @@ describe('createCommentApi', () => {
 });
 
 describe('createPageApi', () => {
+  it('getObject hits GET {type} without pagination params (OSC-2608139feb)', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: { Debug: false } });
+    const api = createPageApi(request);
+    await api.getObject('/Admin/Cube');
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Admin/Cube',
+        method: 'get',
+      }),
+    );
+  });
+
+  it('home dashboard APIs hit /Admin/Index/* (OSC-2608139feb)', async () => {
+    const request = vi.fn().mockResolvedValue({ code: 0, data: {} });
+    const api = createPageApi(request);
+    await api.getIndexMain();
+    expect(request).toHaveBeenCalledWith(expect.objectContaining({ url: '/Admin/Index/Main', method: 'get' }));
+    await api.getServerVarList();
+    expect(request).toHaveBeenCalledWith(expect.objectContaining({ url: '/Admin/Index/ServerVarList', method: 'get' }));
+    await api.getProcessList('All');
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({ url: '/Admin/Index/ProcessList', method: 'get', params: { model: 'All' } }),
+    );
+    await api.getAssemblyList();
+    expect(request).toHaveBeenCalledWith(expect.objectContaining({ url: '/Admin/Index/AssemblyList', method: 'get' }));
+    await api.memoryFree();
+    expect(request).toHaveBeenCalledWith(expect.objectContaining({ url: '/Admin/Index/MemoryFree', method: 'get' }));
+    await api.restart();
+    expect(request).toHaveBeenCalledWith(expect.objectContaining({ url: '/Admin/Index/Restart', method: 'post' }));
+  });
+
   it('enableSelect hits GET /Admin/User/EnableSelect with keys', async () => {
     const request = vi.fn().mockResolvedValueOnce({ code: 0, data: {} });
     const api = createPageApi(request);

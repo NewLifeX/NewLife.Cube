@@ -319,6 +319,10 @@ export function normalizeSubmitValue(field: FieldMeta | undefined, value: unknow
   if (typeName === 'Enum') {
     if (typeof value === 'string' && /^-?\d+$/.test(value.trim())) return Number(value);
   }
+  // 枚举类 typeName（SexKinds 等）：与 Enum 一致，纯数字字符串强制转 number
+  if (field && isEnumLikeTypeName(field)) {
+    if (typeof value === 'string' && /^-?\d+$/.test(value.trim())) return Number(value);
+  }
   return value;
 }
 

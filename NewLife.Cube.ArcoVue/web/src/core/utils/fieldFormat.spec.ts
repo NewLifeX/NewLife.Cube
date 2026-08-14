@@ -45,4 +45,12 @@ describe('formatFieldValue', () => {
     const opts = { labelCache: { Role: { '1': '管理员' } } };
     expect(formatFieldValue(f, { RoleId: 1 }, opts)).toBe('管理员');
   });
+
+  it('uses areaLabelCache for cascader leaf (OSC-2608139feb)', () => {
+    const f = base({ name: 'AreaId', typeName: 'Int32', itemType: 'area4' });
+    const opts = { areaLabelCache: { '110101': '东城区' } };
+    expect(formatFieldValue(f, { AreaId: 110101 }, opts)).toBe('东城区');
+    // 未命中回退原始 ID
+    expect(formatFieldValue(f, { AreaId: 999 }, opts)).toBe('999');
+  });
 });

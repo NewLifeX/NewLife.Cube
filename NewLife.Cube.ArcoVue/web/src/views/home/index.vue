@@ -1,25 +1,12 @@
 <template>
-  <div>
-    <a-page-header title="首页" subtitle="系统概览" :show-back="false" />
-    <a-grid :cols="{ xs: 1, sm: 2, md: 4 }" :col-gap="16" :row-gap="16" style="padding: 0 16px;">
-      <a-grid-item v-for="card in stats" :key="card.title">
-        <a-card hoverable>
-          <a-statistic :title="card.title" :value="card.value" />
-        </a-card>
-      </a-grid-item>
-    </a-grid>
-  </div>
+  <DefaultHome />
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+/**
+ * /home 薄壳（OSC-2608139feb）：直接复用 DefaultHome，与 /Admin/Index 同一实现。
+ */
+import DefaultHome from './DefaultHome.vue';
 
 defineOptions({ name: 'Home' });
-
-const stats = ref([
-  { title: '用户总数', value: 0 },
-  { title: '今日访问', value: 0 },
-  { title: '在线用户', value: 0 },
-  { title: '系统消息', value: 0 },
-]);
 </script>

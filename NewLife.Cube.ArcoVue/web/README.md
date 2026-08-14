@@ -34,6 +34,27 @@ pnpm dev
 pnpm test
 ```
 
+E2E（Playwright，需先启动后端 CubeDemo 与 `pnpm dev`）：
+
+```bash
+# 环境变量可选：PLAYWRIGHT_BASE_URL（默认 http://localhost:5183）、E2E_USER / E2E_PASSWORD（默认 admin/admin）
+pnpm test:e2e
+```
+
+## 动态页分发（OSC-2608139feb）
+
+`views/dynamic/DynamicPage.vue` 按后端契约探测页面种类并分发：
+
+| 种类 | 判定 | 宿主 |
+| --- | --- | --- |
+| entity | `GetPage` 返回有效实体元数据 | `DefaultList` |
+| object | `GetPage` 失败且 `GetFields` 为数组、`GET {type}` 为单对象 | `DefaultObject`（通用 ObjectController 页，Cube/Sys/Core/XCode/Star 共用） |
+| home | `Admin/Index` 短路 | `DefaultHome`（仪表盘，`/home` 同用） |
+| custom | `Admin/Db`、`Admin/File` 短路 | `views/admin/db`、`views/admin/file` 专用页 |
+| unknown | 全部探测失败 | `a-empty` |
+
+后端配套：`ObjectController.GetFields` 物化 `DataSourceMap`；`IndexController` 的 Main/ServerVarList/ProcessList/AssemblyList/MemoryFree/Restart 提供 JSON 仪表盘；`FileController` 的 `Index` 返回列表 JSON、动作返回 JSON。
+
 嵌入宿主（如 CubeDemo）需启用本皮肤：
 
 ```csharp

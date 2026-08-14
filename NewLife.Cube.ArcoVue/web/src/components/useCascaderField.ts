@@ -1,5 +1,6 @@
 import { onMounted, ref, watch } from 'vue';
 import cubeApi from '@/api';
+import { leafFromCascaderChange } from '@/core/utils/cascaderValue';
 
 /**
  * 地区级联选择（User.AreaId）。
@@ -159,15 +160,20 @@ export function useCascaderField(props: CascaderFieldProps, emit: CascaderFieldE
   }
 
   function onChange(val: unknown) {
-    if (val == null || !Array.isArray(val) || val.length === 0) {
-      pathValue.value = [];
-      emit('update:modelValue', undefined);
-      return;
-    }
-    pathValue.value = val as (number | string)[];
-    // 叶子值即最后一段；提交给实体的 AreaId
-    const leaf = (val as (number | string)[])[val.length - 1];
+    // 归一提交值：path-mode 下取末段叶子；清空/空数组发 undefined
+    const leaf = leafFromCascaderChange(val);
+    pathValue.value = Array.isArray(val)
+      ? (val as (number | string)[])
+      : leaf == null
+        ? []
+        : [leaf];
     emit('update:modelValue', leaf);
+  }
+
+  /** a-cascader load-more：展开节点时懒加载子级，无子则置 isLeaf */
+  async function loadMore(option: CascadeOption, done: (children: CascadeOption[]) => void) {
+    await ensureChildren(option);
+    done(option.children ?? []);
   }
 
   onMounted(async () => {
@@ -182,5 +188,6 @@ export function useCascaderField(props: CascaderFieldProps, emit: CascaderFieldE
     pathValue,
     loading,
     onChange,
+    loadMore,
   };
 }

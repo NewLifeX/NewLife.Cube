@@ -175,6 +175,13 @@
 - **大列表页先共享 context 再拆领域**：DefaultList 用 `createListContext` + deps 注入 `loadData`，避免四个 composable 各持一份 ref。
 - **编号规则变更与存量重构宜拆号**：本号同时改协作规范与 47 个 Vue，tasks 过长；以后流程 OSC 与代码 OSC 分开。
 
+## OSC-2608139feb — 2026-08-14
+
+- **页面种类用探测真值表，不要按菜单路径堆专用页**：`GetPage` 有效→entity，失败后再 `GetFields`+GET 对象→object；仅 Index/Db/File 因契约必然失败才短路。任意新 ObjectController 子类即可出配置页。
+- **Cascader / axios blob 的取值形状必须纯函数归一**：`path-mode` 数组 vs 标量、拦截器 `unwrapResponse=false` 下 xml 不会自动变 Blob。用 `leafFromCascaderChange` / `blobOf` 单测锁死，不要在组件里 `as Blob`。
+- **E2E 深度 2C 要把「无菜单 skip」写成用例而不是删路径**：宿主（CubeDemo vs CubeDemoNC）菜单与控制器集合不同；skip 须写原因，禁止为绿而删。须明确后端是带 `/Auth/Login` 的 CubeDemo。
+- **单 OSC 不要承接多轮「再改一下布局」**：本号在级联+Object+Home 之后又叠 Db/File、配置中心、表格列、工具栏位置多次往返。控件形态宜 demo 给 2～3 个候选一次对齐，或拆号。
+- **并行 OSC 时不要把 `wwwroot` 混进复盘提交**：`pnpm build` 会打进工作区其它号的 chunk；本号只提交本号源码与 OpenSpec 归档。
 
 ## 待办 — 字体规范（Harness）
 

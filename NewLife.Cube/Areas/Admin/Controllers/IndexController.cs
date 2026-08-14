@@ -335,7 +335,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
             XTrace.WriteException(ex);
         }
 
-        return RedirectToAction(nameof(Main));
+        return Json(0, "释放内存成功");
     }
 
     [DllImport("kernel32.dll")]

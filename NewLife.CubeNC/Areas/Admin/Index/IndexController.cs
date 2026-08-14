@@ -108,6 +108,10 @@ public class IndexController : ControllerBaseX, IPageDataContext
     [Menu(10, true, Icon = "fa-home")]
     public ActionResult Main(String id)
     {
+        // SPA/AJAX 请求直接返回 JSON（ArcoVue 主页仪表盘）
+        if (Request.IsAjaxRequest())
+            return Json(0, null, BuildServerInfo());
+
         ViewBag.Act = id;
         ViewBag.Config = SysConfig.Current;
         ViewBag.MyAsms = GetMyAssemblies().OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
@@ -129,30 +133,35 @@ public class IndexController : ControllerBaseX, IPageDataContext
 
     /// <summary>收集当前页面数据上下文（服务器信息），供 AI 分析当前页面。实现 <see cref="IPageDataContext"/>，get_page_context 优先调用服务端实现</summary>
     /// <returns>服务器信息 JSON</returns>
-    public Task<String> GetPageDataContextAsync()
+    public Task<String> GetPageDataContextAsync() => Task.FromResult(BuildServerInfo().ToJson());
+
+    /// <summary>组装服务器信息对象（Main 的 SPA/AJAX 分支与 AI 页面上下文共用）</summary>
+    /// <returns>服务器信息键值对象</returns>
+    private IDictionary<String, Object> BuildServerInfo()
     {
         var mi = MachineInfo.Current ?? new MachineInfo();
         var process = Process.GetCurrentProcess();
         var asm = Assembly.GetExecutingAssembly();
         var att = asm.GetCustomAttribute<TargetFrameworkAttribute>();
         var ver = att?.FrameworkDisplayName ?? att?.FrameworkName;
-        var data = new
+
+        return new Dictionary<String, Object>
         {
-            page = "服务器信息",
-            application = process.ProcessName,
-            applicationTitle = Environment.CommandLine,
-            version = ver,
-            os = mi.OSName,
-            osVersion = mi.OSVersion,
-            machineId = mi.UUID,
-            machineProduct = mi.Product,
-            cpu = mi.Processor + Environment.ProcessorCount + "核心 使用率" + mi.CpuRate.ToString("p0") + mi.Temperature + " ℃",
-            openTime = TimeSpan.FromMilliseconds(Environment.TickCount64).ToString(@"dd\.hh\:mm\:ss"),
-            serverTime = DateTime.Now,
-            memory = "物理：" + (mi.AvailableMemory / 1024 / 1024).ToString("n0") + "M/" + (mi.Memory / 1024 / 1024).ToString("n0") + "M    工作/提交: " + (process.WorkingSet64 / 1024 / 1024).ToString("n0") + "M/@" + (process.PrivateMemorySize64 / 1024 / 1024).ToString("n0") + "M   GC: " + (GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0") + "M",
-            processTime = process.TotalProcessorTime.TotalSeconds.ToString("N2") + "秒 启动于" + process.StartTime.ToLocalTime().ToFullString(),
-        }.ToJson();
-        return Task.FromResult(data);
+            ["page"] = "服务器信息",
+            ["application"] = process.ProcessName,
+            ["applicationTitle"] = Environment.CommandLine,
+            ["version"] = ver,
+            ["os"] = mi.OSName,
+            ["osVersion"] = mi.OSVersion,
+            ["machineId"] = mi.UUID,
+            ["machineName"] = Environment.MachineName,
+            ["machineProduct"] = mi.Product,
+            ["cpu"] = mi.Processor + Environment.ProcessorCount + "核心 使用率" + mi.CpuRate.ToString("p0") + mi.Temperature + " ℃",
+            ["openTime"] = TimeSpan.FromMilliseconds(Environment.TickCount64).ToString(@"dd\.hh\:mm\:ss"),
+            ["serverTime"] = DateTime.Now,
+            ["memory"] = "物理：" + (mi.AvailableMemory / 1024 / 1024).ToString("n0") + "M/" + (mi.Memory / 1024 / 1024).ToString("n0") + "M    工作/提交: " + (process.WorkingSet64 / 1024 / 1024).ToString("n0") + "M/@" + (process.PrivateMemorySize64 / 1024 / 1024).ToString("n0") + "M   GC: " + (GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0") + "M",
+            ["processTime"] = process.TotalProcessorTime.TotalSeconds.ToString("N2") + "秒 启动于" + process.StartTime.ToLocalTime().ToFullString(),
+        };
     }
 
     #region AI 诊断
@@ -325,11 +334,108 @@ public class IndexController : ControllerBaseX, IPageDataContext
             XTrace.WriteException(ex);
         }
 
-        return RedirectToAction(nameof(Main));
+        return JsonRefresh("释放内存成功");
     }
 
     [DllImport("kernel32.dll")]
     private static extern Boolean SetProcessWorkingSetSize(IntPtr proc, Int32 min, Int32 max);
+
+    /// <summary>服务器变量列表</summary>
+    /// <returns></returns>
+    [DisplayName("服务器变量列表")]
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet]
+    public ActionResult ServerVarList()
+    {
+        var req = HttpContext.Request;
+        var list = new List<dynamic>();
+        foreach (var kv in req.Headers)
+        {
+            var v = kv.Value.ToString();
+            var key = kv.Key;
+            list.Add(new { name = key, value = v });
+        }
+        var rqlist = new List<dynamic>();
+        foreach (var pi in req.GetType().GetProperties())
+        {
+            var type = pi.PropertyType;
+            if (pi.GetIndexParameters().Length > 0 || (type != typeof(String)
+                                                  && type != typeof(Uri)
+                                                  && type != typeof(PathString)
+                                                  && type != typeof(HostString)
+                                                  && !typeof(Boolean).IsAssignableFrom(type)
+                                                  && !typeof(String).IsAssignableFrom(type)))
+            {
+                continue;
+            }
+            rqlist.Add(new { name = pi.Name, value = req.GetValue(pi) });
+        }
+        return Json(0, null, new { server = list, requestName = req.GetType().FullName, request = rqlist });
+    }
+
+    /// <summary>进程模块列表</summary>
+    /// <param name="model">All全部,OnlyUser用户</param>
+    /// <returns></returns>
+    [DisplayName("进程模块列表")]
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet]
+    public ActionResult ProcessList(String model)
+    {
+        var isAll = String.Equals("All", model, StringComparison.OrdinalIgnoreCase);
+        var process = Process.GetCurrentProcess();
+        var result = new List<dynamic>();
+        foreach (ProcessModule item in process.Modules)
+        {
+            try
+            {
+                if (isAll || item.FileVersionInfo.CompanyName != "Microsoft Corporation")
+                {
+                    result.Add(new
+                    {
+                        name = item.ModuleName,
+                        companyName = item.FileVersionInfo.CompanyName,
+                        productName = item.FileVersionInfo.ProductName,
+                        description = item.FileVersionInfo.FileDescription,
+                        version = item.FileVersionInfo.FileVersion,
+                        size = item.ModuleMemorySize,
+                        fileName = item.FileName
+                    });
+                }
+            }
+            catch { }
+        }
+        return Json(0, null, result);
+    }
+
+    /// <summary>程序集列表</summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    [DisplayName("程序集列表")]
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet]
+    public ActionResult AssemblyList(String model)
+    {
+        var isAll = String.Equals("All", model, StringComparison.OrdinalIgnoreCase);
+        var result = new List<dynamic>();
+        AssemblyX[] asms = null;
+        if (isAll)
+            asms = AssemblyX.GetAssemblies(null).OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
+        else
+            asms = AssemblyX.GetMyAssemblies().OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
+        foreach (var assembly in asms)
+        {
+            result.Add(new
+            {
+                name = assembly.Name,
+                title = assembly.Title,
+                fileVersion = assembly.FileVersion,
+                version = assembly.Version,
+                compileTime = assembly.Compile.ToFullString(),
+                location = assembly.Asm.Location
+            });
+        }
+        return Json(0, null, result);
+    }
 
     /// <summary>
     /// 获取菜单树

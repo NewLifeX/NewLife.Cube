@@ -48,4 +48,16 @@ describe('menuRoutes B3', () => {
     const tree = [menu({ id: 1, name: 'X', url: '/Admin/X', visible: false })];
     expect(buildLeafRoutes(tree)).toHaveLength(0);
   });
+
+  it('同名菜单（不同 Area）路由名唯一，避免 addRoute 覆盖（OSC-2608139feb）', () => {
+    const tree = [
+      menu({ id: 11, name: 'Cube', url: '/vTest1/Cube' }),
+      menu({ id: 22, name: 'Cube', url: '/Admin/Cube' }),
+    ];
+    const routes = buildLeafRoutes(tree);
+    const names = routes.map((r) => r.name);
+    expect(names).toEqual(['menu-11', 'menu-22']);
+    expect(new Set(names).size).toBe(2);
+    expect(routes.map((r) => r.path)).toEqual(['vTest1/Cube', 'Admin/Cube']);
+  });
 });

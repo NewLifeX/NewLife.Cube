@@ -120,10 +120,9 @@ public class FileController : ControllerBaseX
     {
         var di = GetDirectory(r) ?? Root.AsDirectory();
 
-        // 计算当前路径
+        // 计算当前路径（SPA 面包屑；ViewBag 模式由 Json 返回取代）
         var fd = di.FullName;
         if (fd.StartsWith(Root)) fd = fd[Root.Length..];
-        ViewBag.Current = fd;
 
         // 遍历所有子目录
         var fis = di.GetFileSystemInfos();
@@ -161,11 +160,9 @@ public class FileController : ControllerBaseX
         }
 
         // 剪切板
-        ViewBag.Clip = GetClip();
-        // 提示信息
-        ViewBag.Message = message;
+        var clip = GetClip();
 
-        return View("Index", list);
+        return Json(0, null, new { current = fd, list, clip, message });
     }
 
     /// <summary>删除</summary>
@@ -192,7 +189,7 @@ public class FileController : ControllerBaseX
             di.Delete(true);
         }
 
-        return RedirectToAction("Index", new { r = p });
+        return Index(p, null);
     }
     #endregion
 
@@ -226,7 +223,7 @@ public class FileController : ControllerBaseX
             di.Compress(dst);
         }
 
-        return RedirectToAction("Index", new { r = p });
+        return Index(p, null);
     }
 
     /// <summary>解压缩</summary>
@@ -242,7 +239,7 @@ public class FileController : ControllerBaseX
         WriteLog("解压缩", true, fi.FullName);
         fi.Extract(fi.Directory.FullName, true);
 
-        return RedirectToAction("Index", new { r = p });
+        return Index(p, null);
     }
     #endregion
 

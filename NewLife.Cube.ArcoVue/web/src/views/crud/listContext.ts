@@ -85,6 +85,8 @@ export function createListContext(props: { type: string; authId?: number }) {
   const selectedKeys = ref<(string | number)[]>([]);
   const statData = ref<Record<string, unknown> | null>(null);
   const labelCache = reactive<Record<string, Record<string, string>>>({});
+  /** 地区/级联叶子值 → label 缓存（useListQuery.hydrateAreaLabels 维护，OSC-2608139feb） */
+  const areaLabelCache = reactive<Record<string, string>>({});
   const configDrawerVisible = ref(false);
   const viewState = ref<EntityViewState | null>(null);
 
@@ -488,7 +490,7 @@ export function createListContext(props: { type: string; authId?: number }) {
    * 且 tableColumns（本文件）与模板 :format-cell 均需使用，定义于此避免循环依赖。
    */
   function renderCell(field: FieldMeta, record: Record<string, unknown>): string {
-    return formatFieldValue(field, record, { labelCache });
+    return formatFieldValue(field, record, { labelCache, areaLabelCache });
   }
 
   const tableColumns = computed(() =>
@@ -545,6 +547,7 @@ export function createListContext(props: { type: string; authId?: number }) {
     selectedKeys,
     statData,
     labelCache,
+    areaLabelCache,
     configDrawerVisible,
     viewState,
     pagination,

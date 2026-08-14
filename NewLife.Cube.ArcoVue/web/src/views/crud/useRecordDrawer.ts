@@ -17,6 +17,9 @@ import {
   detailUrl,
   jsonPreview,
 } from '@/core/utils/detailFormat';
+import { isCascaderField } from '@/core/utils/fieldControl';
+import { fetchBatchLabel } from '@/core/utils/lov-api';
+import { mergeAreaLabel } from '@/core/utils/areaLabels';
 import { useUserStore } from '@/stores/user';
 import cubeApi from '@/api';
 import FormContent from './FormContent.vue';
@@ -144,9 +147,41 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
     return getValueByKey(props.model, field.name);
   }
 
+  /** 当前行地区叶子标签缓存（打开抽屉时补齐，OSC-2608139feb） */
+  const rowAreaLabels = ref<Record<string, string>>({});
+
   /** 详情纯文本（dataSource/布尔/多选/JSON 摘要/常规字符串，安全输出） */
   function formatDetail(field: FieldMeta): string {
-    return detailText(field, rawOf(field));
+    return detailText(field, rawOf(field), { areaLabelCache: rowAreaLabels.value });
+  }
+
+  /** 打开详情/编辑前补齐当前行标签：地区叶子 getDetail + LIST LOV BatchLabel（OSC-2608139feb） */
+  async function hydrateRowLabels() {
+    if (props.mode === 'add') return;
+    for (const f of props.fields) {
+      const v = rawOf(f);
+      if (v == null || v === '') continue;
+      if (isCascaderField(f)) {
+        if (rowAreaLabels.value[String(v)]) continue;
+        try {
+          const res = await cubeApi.page.getDetail<Record<string, unknown>>('/Cube/Area', v as number | string);
+          const data = (res as unknown as { data?: Record<string, unknown> })?.data ?? res;
+          if (data && typeof data === 'object') {
+            const rec = data as Record<string, unknown>;
+            mergeAreaLabel(rowAreaLabels.value, v, (rec.name ?? rec.Name) as unknown);
+          }
+        } catch {
+          /* ignore */
+        }
+      } else if (f.lovCode && !(f.dataSource && Object.keys(f.dataSource).length)) {
+        try {
+          const map = await fetchBatchLabel({ lovCode: f.lovCode, values: [String(v)] });
+          f.dataSource = { ...(f.dataSource || {}), ...map };
+        } catch {
+          /* ignore */
+        }
+      }
+    }
   }
 
   function detailImageOf(field: FieldMeta) {
@@ -385,6 +420,8 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
         commentReplyTarget.value = null;
         commentReplyText.value = '';
         lastHistoryId = null;
+        // 详情/编辑打开前补齐地区与 LOV 标签（OSC-2608139feb）
+        void hydrateRowLabels();
       }
     },
   );
@@ -415,6 +452,7 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
     commentTree,
     rawOf,
     formatDetail,
+    hydrateRowLabels,
     detailImageOf,
     detailUrlOf,
     detailFileOf,

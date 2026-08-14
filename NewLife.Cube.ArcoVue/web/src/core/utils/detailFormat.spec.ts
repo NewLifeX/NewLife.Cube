@@ -64,4 +64,16 @@ describe('detailFormat', () => {
     expect(detailFile(file, 'https://a.com/doc.pdf')?.text).toBe('doc.pdf');
     expect(detailFile(file, '/files/a.pdf')?.safe).toBe(false);
   });
+
+  it('cascader leaf reads areaLabelCache; falls back to raw ID (OSC-2608139feb)', () => {
+    const field = f({ name: 'AreaId', typeName: 'Int32', itemType: 'area4' });
+    expect(detailText(field, 110101, { areaLabelCache: { '110101': '东城区' } })).toBe('东城区');
+    expect(detailText(field, 999, { areaLabelCache: {} })).toBe('999');
+  });
+
+  it('LIST LOV without dataSource reads labelCache (OSC-2608139feb)', () => {
+    const field = f({ name: 'DeptId', typeName: 'Int32', lovCode: 'List.Dept' });
+    expect(detailText(field, 3, { labelCache: { 'List.Dept': { '3': '研发部' } } })).toBe('研发部');
+    expect(detailText(field, 4, { labelCache: {} })).toBe('4');
+  });
 });

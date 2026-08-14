@@ -11,6 +11,7 @@ import {
   enrichFieldsWithLookup,
   fetchBatchLabel,
 } from '@/core/utils/lov-api';
+import { collectCascaderIds, mergeAreaLabel } from '@/core/utils/areaLabels';
 import { buildSortPayload } from '@/core/utils/viewProfile';
 import { normalizePageSize } from '@/core/utils/viewMapping';
 import { cleanSearchParams, matchesViewFilter } from '@/core/utils/searchFilters';
@@ -38,6 +39,7 @@ export function useListQuery(ctx: ListContext) {
     selectedKeys,
     statData,
     labelCache,
+    areaLabelCache,
     pagination,
     searchForm,
     searchTouched,
@@ -94,6 +96,29 @@ export function useListQuery(ctx: ListContext) {
         labelCache[code] = { ...(labelCache[code] || {}), ...map };
         // 回写到字段，后续行/徽章不再重复请求
         f.dataSource = { ...(f.dataSource || {}), ...map };
+        // 回写同名 lov 字段到详情/编辑/添加分区，抽屉内直接命中 dataSource（OSC-2608139feb）
+        for (const pf of [...detailFields.value, ...editFields.value, ...addFields.value]) {
+          if (pf.lovCode === code) pf.dataSource = { ...(pf.dataSource || {}), ...map };
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  /** 地区/级联叶子批量补标签（OSC-2608139feb）：去重后逐 ID getDetail，单 ID 失败忽略不阻断列表 */
+  async function hydrateAreaLabels(rows: Record<string, unknown>[]) {
+    const ids = collectCascaderIds(listFields.value, rows);
+    for (const id of ids) {
+      if (areaLabelCache[String(id)]) continue;
+      try {
+        const res = await cubeApi.page.getDetail<Record<string, unknown>>('/Cube/Area', id);
+        const data = (res as unknown as { data?: Record<string, unknown> })?.data ?? res;
+        if (data && typeof data === 'object') {
+          const rec = data as Record<string, unknown>;
+          const name = (rec.name ?? rec.Name) as unknown;
+          mergeAreaLabel(areaLabelCache, id, name);
+        }
       } catch {
         /* ignore */
       }
@@ -244,7 +269,10 @@ export function useListQuery(ctx: ListContext) {
       } else {
         tableData.value = rows;
       }
-      if (!skipFetch) await hydrateLovLabels(tableData.value);
+      if (!skipFetch) {
+        await hydrateLovLabels(tableData.value);
+        await hydrateAreaLabels(tableData.value);
+      }
     } finally {
       loading.value = false;
       // 洞察图表与列表同源（同一 effectiveSearch），随列表刷新；竞态由 chartSeq 保护
@@ -349,6 +377,7 @@ export function useListQuery(ctx: ListContext) {
 
   return {
     hydrateLovLabels,
+    hydrateAreaLabels,
     loadFields,
     loadData,
     loadChart,

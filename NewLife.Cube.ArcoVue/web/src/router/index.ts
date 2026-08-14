@@ -38,6 +38,62 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '首页' },
       },
       {
+        /** 工作台首页（菜单 visible=false 不注册动态路由，此处静态兜底）；经 pageKind=home 复用 DefaultHome */
+        path: 'Admin/Index',
+        name: 'AdminIndex',
+        component: () => import('@/views/dynamic/DynamicPage.vue'),
+        meta: { title: '首页' },
+      },
+      {
+        /** 数据库管理（菜单可能不注册动态路由时兜底）；经 pageKind=custom 挂专用页 */
+        path: 'Admin/Db',
+        name: 'AdminDb',
+        component: () => import('@/views/dynamic/DynamicPage.vue'),
+        meta: { title: '数据库' },
+      },
+      {
+        /** 文件管理（菜单 visible=false）；经 pageKind=custom 挂专用页 */
+        path: 'Admin/File',
+        name: 'AdminFile',
+        component: () => import('@/views/dynamic/DynamicPage.vue'),
+        meta: { title: '文件' },
+      },
+      {
+        /** 星尘设置（菜单 visible=false）；经探测落入 DefaultObject */
+        path: 'Admin/Star',
+        name: 'AdminStar',
+        component: () => import('@/views/dynamic/DynamicPage.vue'),
+        meta: { title: '星尘设置' },
+      },
+      {
+        /** 魔方设置（ConfigController<CubeSetting>）；经探测落入 DefaultObject */
+        path: 'Admin/Cube',
+        name: 'AdminCube',
+        component: () => import('@/views/dynamic/DynamicPage.vue'),
+        meta: { title: '魔方设置' },
+      },
+      {
+        /** 系统设置（有控制器则渲染，无则 unknown 空状态） */
+        path: 'Admin/Sys',
+        name: 'AdminSys',
+        component: () => import('@/views/dynamic/DynamicPage.vue'),
+        meta: { title: '系统设置' },
+      },
+      {
+        /** 核心设置（有控制器则渲染，无则 unknown 空状态） */
+        path: 'Admin/Core',
+        name: 'AdminCore',
+        component: () => import('@/views/dynamic/DynamicPage.vue'),
+        meta: { title: '核心设置' },
+      },
+      {
+        /** XCode 设置（有控制器则渲染，无则 unknown 空状态） */
+        path: 'Admin/XCode',
+        name: 'AdminXCode',
+        component: () => import('@/views/dynamic/DynamicPage.vue'),
+        meta: { title: 'XCode 设置' },
+      },
+      {
         /** 兼容旧链接：打开外观抽屉并回首页，不占用内容页签 */
         path: 'settings/appearance',
         name: 'AppearanceSettings',

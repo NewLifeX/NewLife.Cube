@@ -77,6 +77,12 @@ public abstract class ObjectController<TObject> : ControllerBaseX
         //.GroupBy(e => e.Category + "")
         //.ToDictionary(e => e.Key, e => e.ToList());
 
+        // 为 SPA 物化数据源字典（布尔/枚举/DataSource 委托），前端无需反复请求；PrepareForApi 幂等
+        foreach (var df in list)
+        {
+            df.PrepareForApi();
+        }
+
         return list;
     }
 

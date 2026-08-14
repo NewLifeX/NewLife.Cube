@@ -114,6 +114,15 @@ describe('fieldControl', () => {
     ).toBe('lov');
   });
 
+  it('enum-like typeName submit converts numeric string to Number (OSC-2608139feb)', () => {
+    const sex = base({ name: 'Sex', typeName: 'SexKinds' });
+    expect(serializeSubmitModel({ Sex: '1' }, [sex])).toEqual({ Sex: 1 });
+    // 文本值不强制转换
+    expect(serializeSubmitModel({ Sex: 'male' }, [sex])).toEqual({ Sex: 'male' });
+    // 数字原样保留
+    expect(serializeSubmitModel({ Sex: 2 }, [sex])).toEqual({ Sex: 2 });
+  });
+
   it('cascader / date itemType inference (OSC-0009 续)', () => {
     // 地区/级联
     expect(resolveControl(base({ name: 'AreaId', typeName: 'Int32', itemType: 'area4' }))).toBe('cascader');

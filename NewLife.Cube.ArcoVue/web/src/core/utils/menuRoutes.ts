@@ -76,7 +76,9 @@ export function buildLeafRoutes(menus: MenuItem[]): RouteRecordRaw[] {
     seen.add(path.toLowerCase());
 
     const typePath = routeToApiPrefix(path);
-    const routeName = 'menu-' + (item.name || item.id);
+    // 路由名用唯一 id 兜底：不同 Area 可能存在同名菜单（如 vTest1/Cube 与 Admin/Cube），
+    // vue-router 同名 addRoute 会互相覆盖导致页面 404
+    const routeName = 'menu-' + (item.id ?? item.name);
     routes.push({
       path: path.replace(/^\//, ''),
       name: routeName,

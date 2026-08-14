@@ -159,6 +159,10 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
     getPage: (type: string) =>
       request<PageMeta>({ url: `${type}/GetPage`, method: 'get' }),
 
+    /** 获取单例对象（ObjectController GET type；非分页列表） */
+    getObject: (type: string) =>
+      request<Record<string, unknown>>({ url: type, method: 'get' }),
+
     /** 获取字段元数据 */
     getFields: (type: string, kind: FieldKind) =>
       request<DataField[]>({ url: `${type}/GetFields`, method: 'get', params: { kind } }),
@@ -261,6 +265,116 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
      */
     getChartData: (type: string, params?: Record<string, unknown>) =>
       request<unknown[]>({ url: `${type}/GetChartData`, method: 'get', params }),
+
+    /** 首页服务器信息（GET /Admin/Index/Main） */
+    getIndexMain: () =>
+      request<Record<string, unknown>>({ url: '/Admin/Index/Main', method: 'get' }),
+
+    /** 服务器变量列表（Headers + 请求属性） */
+    getServerVarList: () =>
+      request<{
+        server?: Array<{ name: string; value: string }>;
+        requestName?: string;
+        request?: Array<{ name: string; value: string }>;
+      }>({ url: '/Admin/Index/ServerVarList', method: 'get' }),
+
+    /** 进程模块列表；model=All 时含系统模块 */
+    getProcessList: (model?: string) =>
+      request<Array<Record<string, unknown>>>({
+        url: '/Admin/Index/ProcessList',
+        method: 'get',
+        params: model ? { model } : undefined,
+      }),
+
+    /** 程序集列表；model=All 时含全部程序集 */
+    getAssemblyList: (model?: string) =>
+      request<Array<Record<string, unknown>>>({
+        url: '/Admin/Index/AssemblyList',
+        method: 'get',
+        params: model ? { model } : undefined,
+      }),
+
+    /** 释放内存（GC + 工作集收缩） */
+    memoryFree: () =>
+      request<unknown>({ url: '/Admin/Index/MemoryFree', method: 'get' }),
+
+    /** 重启应用 */
+    restart: () =>
+      request<unknown>({ url: '/Admin/Index/Restart', method: 'post' }),
+
+    /** 数据库列表（GET /Admin/Db） */
+    getDbList: () =>
+      request<Array<Record<string, unknown>>>({ url: '/Admin/Db', method: 'get' }),
+
+    /** 备份数据库（留空 name 自动生成） */
+    backupDb: (name?: string) =>
+      request<unknown>({
+        url: '/Admin/Db/Backup',
+        method: 'post',
+        params: name ? { name } : undefined,
+      }),
+
+    /** 备份并压缩数据库 */
+    backupAndCompressDb: (name?: string) =>
+      request<unknown>({
+        url: '/Admin/Db/BackupAndCompress',
+        method: 'post',
+        params: name ? { name } : undefined,
+      }),
+
+    /** 文件列表（GET /Admin/File?r=&sort=） */
+    getFileList: (params?: { r?: string; sort?: string }) =>
+      request<{
+        current?: string;
+        list?: Array<Record<string, unknown>>;
+        clip?: Array<Record<string, unknown>>;
+        message?: string;
+      }>({ url: '/Admin/File', method: 'get', params }),
+
+    /** 上传文件到目录 r（FormData：file + r） */
+    uploadToDir: (r: string | undefined, file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      if (r) formData.append('r', r);
+      return request<unknown>({
+        url: '/Admin/File/Upload',
+        method: 'post',
+        headers: { 'Content-Type': 'multipart/form-data' },
+        data: formData,
+      });
+    },
+
+    /** 压缩文件或目录（r 为相对路径） */
+    compressFile: (r: string) =>
+      request<unknown>({ url: '/Admin/File/Compress', method: 'post', params: { r } }),
+
+    /** 解压缩（r 为相对路径） */
+    decompressFile: (r: string) =>
+      request<unknown>({ url: '/Admin/File/Decompress', method: 'post', params: { r } }),
+
+    /** 复制到剪切板（f 为相对路径名） */
+    copyFileToClip: (r: string | undefined, f: string) =>
+      request<unknown>({ url: '/Admin/File/Copy', method: 'post', params: { r, f } }),
+
+    /** 从剪切板移除 */
+    cancelCopyFile: (r: string | undefined, f: string) =>
+      request<unknown>({ url: '/Admin/File/CancelCopy', method: 'post', params: { r, f } }),
+
+    /** 粘贴剪切板到当前目录 */
+    pasteClip: (r: string | undefined) =>
+      request<unknown>({ url: '/Admin/File/Paste', method: 'post', params: { r } }),
+
+    /** 移动剪切板到当前目录 */
+    moveClip: (r: string | undefined) =>
+      request<unknown>({ url: '/Admin/File/Move', method: 'post', params: { r } }),
+
+    /** 清空剪切板 */
+    clearClipboard: (r: string | undefined) =>
+      request<unknown>({ url: '/Admin/File/ClearClipboard', method: 'post', params: { r } }),
+
+    /** 删除文件或目录（r 为相对路径） */
+    deleteFileRow: (r: string) =>
+      request<unknown>({ url: '/Admin/File/Delete', method: 'post', params: { r } }),
   };
 }
 
