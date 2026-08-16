@@ -4,6 +4,7 @@
     <AppearanceDrawer
       v-model:visible="appearanceVisible"
     />
+    <InboxDrawer v-model:visible="inboxVisible" />
   </a-config-provider>
 </template>
 
@@ -17,6 +18,7 @@ import SideLayout from './side.vue';
 import TopLayout from './top.vue';
 import MixLayout from './mix.vue';
 import AppearanceDrawer from '@/views/settings/AppearanceDrawer.vue';
+import InboxDrawer from '@/views/inbox/InboxDrawer.vue';
 
 useShellAuth();
 
@@ -38,6 +40,13 @@ const appearanceVisible = computed({
   get: () => appStore.appearanceDrawerVisible,
   set: (v: boolean) => {
     appStore.appearanceDrawerVisible = v;
+  },
+});
+
+const inboxVisible = computed({
+  get: () => appStore.inboxDrawerVisible,
+  set: (v: boolean) => {
+    appStore.inboxDrawerVisible = v;
   },
 });
 </script>

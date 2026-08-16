@@ -132,6 +132,7 @@ pnpm build
 - 日期/时间：按 itemType 推断 date/datetime/time 组件，壁钟时间（wall-clock）解析避免 UTC `Z` 串时区漂移（OSC-0009）。
 - 历史 Tab：分页（20/页）+ 操作类型筛选（新增/更新/删除）+ 时间/操作人/成功失败徽章/换行（OSC-0008）。
 - 评论 Tab：顶层 + 一层回复 + 删除本人评论，消费 `/Cube/EntityComment`（OSC-0008）。
+- **实体自动化（OSC-260815fa86）**：列表顶栏「自动化」打开飞书风「自动化中心」卡片（首卡新建 + 已有流程）；编辑为触发→动作左右布局，「运行日志」为编辑器 Tab（系统 `Log`）；记录抽屉不含自动化运行 Tab。API：`cubeApi.automation` → `/Cube/Automation*`。SFC：`views/crud/automation/`。**不是** FlowGram 运行时。
 
 ## SFC 职责分离（OSC-260813c3e9）
 
@@ -152,7 +153,7 @@ web/
 │   ├── theme/        # 主题 token / 密度 CSS
 │   ├── router/       # 路由配置
 │   ├── stores/       # Pinia（含 userProfile、tagsView）
-│   ├── views/        # 页面视图（含 settings/appearance）
+│   ├── views/        # 页面视图（含 settings/appearance、crud/automation）
 │   ├── App.vue
 │   └── main.ts
 ├── index.html

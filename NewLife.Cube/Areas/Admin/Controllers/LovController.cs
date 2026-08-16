@@ -388,13 +388,13 @@ public class LovController : EntityController<LovDefinition>
         var root = doc.RootElement;
 
         JsonElement? dataElement = !config.DataPath.IsNullOrEmpty()
-            ? ResolveJsonPath(root, config.DataPath)
+            ? DefaultLovListDataProxy.ResolveJsonPath(root, config.DataPath)
             : root;
 
         Int32 total = 0;
         if (config.Pageable && !config.TotalPath.IsNullOrEmpty())
         {
-            var totalElement = ResolveJsonPath(root, config.TotalPath);
+            var totalElement = DefaultLovListDataProxy.ResolveJsonPath(root, config.TotalPath);
             if (totalElement.HasValue)
                 total = totalElement.Value.GetInt32();
         }

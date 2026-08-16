@@ -152,6 +152,14 @@
               <icon-park type="search" />
               搜索
             </a-button>
+            <a-button
+              v-if="flags.canUpdate"
+              type="text"
+              @click="openAutomationDrawer"
+            >
+              <icon-park type="lightning" />
+              自动化
+            </a-button>
             <a-dropdown v-if="advancedVisible" trigger="click" position="bottom">
               <a-button>
                 高级 <icon-park type="down" />
@@ -222,6 +230,7 @@
               :can-edit="flags.canEdit"
               :can-delete="flags.canDelete && chrome.allowDelete"
               :can-view-detail="chrome.allowViewDetail"
+              :automation-buttons="automationButtons"
               :show-expand="chrome.expandRow"
               :enable-sort="chrome.showSort"
               :sort-state="activeSort"
@@ -349,6 +358,12 @@
       @update:name="onConfigRename"
     />
 
+    <AutomationDrawer
+      v-model:visible="automationDrawerVisible"
+      :type-path="typePath"
+      :fields="automationFields"
+    />
+
     <RecordDrawer
       v-model:visible="drawerVisible"
       :type-path="typePath"
@@ -405,7 +420,8 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
+import type { FieldMeta } from '@/core/types/field';
 import { useDefaultList } from './useDefaultList';
 /** VTable / 多视图异步加载，降低 DynamicPage 首包 */
 const ListTable = defineAsyncComponent(() => import('@/features/vtable/ListTable.vue'));
@@ -422,6 +438,7 @@ import ViewTabsToolbar from './ViewTabsToolbar.vue';
 import ViewConfigDrawer from './ViewConfigDrawer.vue';
 import FilterBuilderPopover from './FilterBuilderPopover.vue';
 import GroupPopover from './GroupPopover.vue';
+import AutomationDrawer from './automation/AutomationDrawer.vue';
 
 const props = defineProps<{
   type: string;
@@ -516,6 +533,9 @@ const {
   onTableAction,
   onToggleEnable,
   onTableScrollBottom,
+  automationDrawerVisible,
+  automationButtons,
+  openAutomationDrawer,
   cardListKey,
   activeCardMapping,
   activeColumns,
@@ -560,6 +580,15 @@ const {
   editFields,
   detailFields,
 } = useDefaultList(props);
+
+/** 自动化条件字段：合并列表/搜索/编辑字段，避免仅 list 列过少或未就绪 */
+const automationFields = computed(() => {
+  const map = new Map<string, FieldMeta>();
+  for (const f of [...listFields.value, ...searchFields.value, ...editFields.value]) {
+    if (f?.name && !map.has(f.name)) map.set(f.name, f);
+  }
+  return [...map.values()];
+});
 </script>
 
 <style scoped>

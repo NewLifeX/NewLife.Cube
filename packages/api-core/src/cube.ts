@@ -1,7 +1,7 @@
 import type { AxiosInstance } from 'axios';
 import { createApiClient, createRequest, type ApiClientOptions } from './client';
 import { TokenManager, type TokenStorage } from './token';
-import { createUserApi, createMenuApi, createPageApi, createConfigApi, createProfileApi, createCommentApi } from './api';
+import { createUserApi, createMenuApi, createPageApi, createConfigApi, createProfileApi, createCommentApi, createAutomationApi } from './api';
 import { getServiceBaseUrl } from './service-path';
 
 export interface CubeApiOptions extends ApiClientOptions {
@@ -26,6 +26,8 @@ export interface CubeApi {
   profile: ReturnType<typeof createProfileApi>;
   /** 实体评论 API */
   comment: ReturnType<typeof createCommentApi>;
+  /** 实体自动化流程 API */
+  automation: ReturnType<typeof createAutomationApi>;
 }
 
 /**
@@ -69,5 +71,6 @@ export function createCubeApi(options: CubeApiOptions = {}): CubeApi {
     // UserProfile / ViewProfile / EntityComment 挂在 CubeController（无 /api）
     profile: createProfileApi(serviceRequest),
     comment: createCommentApi(serviceRequest),
+    automation: createAutomationApi(serviceRequest),
   };
 }

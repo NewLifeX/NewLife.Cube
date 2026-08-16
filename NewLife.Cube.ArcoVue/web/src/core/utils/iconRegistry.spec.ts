@@ -114,6 +114,7 @@ describe('ICON_COMPONENTS 覆盖', () => {
       'filter',
       'connection-box',
       'search',
+      'more',
       'more-one',
       'download',
       'export',
@@ -122,6 +123,7 @@ describe('ICON_COMPONENTS 覆盖', () => {
       'down',
       'up',
       'refresh',
+      'remind',
       'check',
       'save',
       'edit',
@@ -135,6 +137,7 @@ describe('ICON_COMPONENTS 覆盖', () => {
       'preview-open',
       'preview-close',
       'pin',
+      'lightning',
     ].forEach((x) => all.add(x));
     // 产品命名专用
     all.add('cube-three');

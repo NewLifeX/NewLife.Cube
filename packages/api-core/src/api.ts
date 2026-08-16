@@ -501,3 +501,163 @@ export function createCommentApi(request: RequestFn) {
       request<unknown>({ url: '/Cube/EntityComment', method: 'delete', params: { id } }),
   };
 }
+
+/** 实体自动化流程列表项（不含 HookToken） */
+export interface EntityAutomationListItem {
+  id: number;
+  name: string;
+  enable: boolean;
+  priority?: number;
+  triggerKind: string;
+  version: number;
+  hasWebhook?: boolean;
+  buttonLabel?: string | null;
+  /** 最近一次终态运行时间 */
+  lastRunTime?: string | null;
+}
+
+/** 实体自动化流程详情 */
+export interface EntityAutomationDetail {
+  id: number;
+  typePath: string;
+  name: string;
+  enable: boolean;
+  priority?: number;
+  triggerKind: string;
+  triggerConfig?: string;
+  graphJson?: string;
+  hookToken?: string | null;
+  version: number;
+}
+
+/** 自动化运行记录 */
+export interface AutomationRunItem {
+  id: number;
+  automationId: number;
+  name?: string | null;
+  typePath?: string;
+  recordKey?: string | null;
+  triggerKind?: string;
+  status?: string;
+  error?: string | null;
+  /** 人类可读详情（触发+条件+动作） */
+  detail?: string | null;
+  nodes?: string | null;
+  success?: boolean;
+  createTime?: string;
+  updateTime?: string;
+}
+
+/** 自动化保存体（服务端按 filter+actions 编译 GraphJson） */
+export interface AutomationSaveBody {
+  id?: number;
+  typePath: string;
+  name: string;
+  enable?: boolean;
+  priority?: number;
+  triggerKind: string;
+  triggerConfig?: Record<string, unknown>;
+  version?: number;
+  filter?: { logic?: string; conditions?: { field: string; op: string; value?: unknown }[] };
+  actions?: { type: string; data?: Record<string, unknown> }[];
+  regenHook?: boolean;
+}
+
+export const AUTOMATION_HOOK_PATH = '/Cube/Automation/Hook';
+
+/**
+ * 实体自动化 API（OSC-260815fa86，消费 /Cube/Automation）
+ */
+export function createAutomationApi(request: RequestFn) {
+  return {
+    list: (params: { typePath: string; enable?: boolean; triggerKind?: string }) =>
+      request<EntityAutomationListItem[]>({ url: '/Cube/Automation', method: 'get', params }),
+
+    get: (id: number | string) =>
+      request<EntityAutomationDetail>({ url: `/Cube/Automation/${id}`, method: 'get' }),
+
+    create: (data: AutomationSaveBody) =>
+      request<EntityAutomationDetail>({ url: '/Cube/Automation', method: 'post', data }),
+
+    update: (data: AutomationSaveBody) =>
+      requestWithPostFallback<EntityAutomationDetail>(request, {
+        url: '/Cube/Automation/Update',
+        method: 'put',
+        data,
+      }),
+
+    remove: (id: number | string) =>
+      request<unknown>({ url: '/Cube/Automation', method: 'delete', params: { id } }),
+
+    runs: (params: {
+      typePath: string;
+      automationId?: number | string;
+      recordKey?: string | number;
+      pageIndex?: number;
+      pageSize?: number;
+    }) => request<AutomationRunItem[]>({ url: '/Cube/Automation/Runs', method: 'get', params }),
+
+    run: (data: { automationId: number | string; recordKey?: string | number }) =>
+      request<{ runId: number }>({ url: '/Cube/Automation/Run', method: 'post', data }),
+
+    meta: (typePath: string, params?: { kind?: 'all' | 'search' }) =>
+      request<{ name: string; displayName: string; typeName: string; primaryKey?: boolean; readOnly?: boolean }[]>({
+        url: '/Cube/Automation/Meta',
+        method: 'get',
+        params: { typePath, ...params },
+      }),
+
+    /** 有 update/insert 权限的实体列表 */
+    entities: (permission: 'update' | 'insert' = 'update') =>
+      request<AutomationEntityOption[]>({
+        url: '/Cube/Automation/Entities',
+        method: 'get',
+        params: { permission },
+      }),
+
+    /** 通知接收人搜索 */
+    recipients: (params: { kind: 'user' | 'role' | 'department'; key?: string }) =>
+      request<AutomationRecipientOption[]>({
+        url: '/Cube/Automation/Recipients',
+        method: 'get',
+        params,
+      }),
+
+    /** 当前用户站内信 */
+    inbox: (params?: { pageIndex?: number; pageSize?: number; unread?: boolean }) =>
+      request<InboxMessageItem[]>({
+        url: '/Cube/Automation/Inbox',
+        method: 'get',
+        params,
+      }),
+
+    inboxUnreadCount: () =>
+      request<{ count: number }>({ url: '/Cube/Automation/Inbox/UnreadCount', method: 'get' }),
+
+    markInboxRead: (data: { id?: number; all?: boolean }) =>
+      request<unknown>({ url: '/Cube/Automation/Inbox/Read', method: 'post', data }),
+  };
+}
+
+export interface AutomationEntityOption {
+  typePath: string;
+  displayName: string;
+  name?: string;
+}
+
+export interface AutomationRecipientOption {
+  id: number;
+  name?: string;
+  displayName?: string;
+}
+
+export interface InboxMessageItem {
+  id: number;
+  title?: string;
+  content?: string;
+  read?: boolean;
+  readTime?: string;
+  createTime?: string;
+  action?: string;
+  channel?: string;
+}

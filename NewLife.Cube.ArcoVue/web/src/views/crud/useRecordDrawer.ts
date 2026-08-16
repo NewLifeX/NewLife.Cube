@@ -64,12 +64,13 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
   const activeTab = ref('form');
   const formRef = ref<InstanceType<typeof FormContent>>();
 
-  // ---- 历史 Tab（M4a） ----
+    // ---- 历史 Tab（M4a）；Automation 写入系统 Log，可与增删改一并筛选 ----
   const historyActionOptions = [
     { value: '', label: '全部' },
     { value: 'Insert', label: '新增' },
     { value: 'Update', label: '更新' },
     { value: 'Delete', label: '删除' },
+    { value: 'Automation', label: '自动化' },
   ];
   const historyAction = ref('');
   const historyPage = ref(1);
@@ -220,7 +221,7 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
     historyLoading.value = true;
     try {
       const res = await cubeApi.page.getList('/Admin/Log', {
-        pageIndex: historyPage.value - 1,
+        pageIndex: historyPage.value,
         pageSize: 20,
         category: props.typePath.replace(/^\//, ''),
         linkId,
@@ -252,8 +253,31 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
   }
 
   function historyActionLabel(action: unknown): string {
-    const m = historyActionOptions.find((a) => a.value === String(action));
-    return m?.label ?? String(action ?? '-');
+    const raw = String(action ?? '-');
+    const m = historyActionOptions.find((a) => a.value === raw);
+    if (m) return m.label;
+    const lower = raw.toLowerCase();
+    if (lower === 'insert' || raw === '添加' || raw === '新增' || lower === 'add') return '新增';
+    if (lower === 'update' || raw === '修改' || raw === '编辑' || lower === 'edit') return '更新';
+    if (lower === 'delete' || raw === '删除') return '删除';
+    if (lower === 'automation' || raw === '自动化') return '自动化';
+    return raw;
+  }
+
+  /** 历史备注：自动化日志 Remark 为 JSON 时展示 detail */
+  function historyRemark(row: Record<string, unknown>): string {
+    const raw = String(row.remark ?? row.Remark ?? '');
+    if (!raw) return '';
+    const action = String(row.action ?? row.Action ?? '');
+    if (action.toLowerCase() !== 'automation' && action !== '自动化') return raw;
+    try {
+      const o = JSON.parse(raw) as { detail?: string; error?: string };
+      if (o?.detail) return o.detail;
+      if (o?.error) return o.error;
+    } catch {
+      /* 非 JSON 原样 */
+    }
+    return raw;
   }
 
   async function loadComments() {
@@ -461,6 +485,7 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
     onHistoryPageChange,
     historySuccess,
     historyActionLabel,
+    historyRemark,
     startCommentReply,
     cancelCommentReply,
     submitComment,

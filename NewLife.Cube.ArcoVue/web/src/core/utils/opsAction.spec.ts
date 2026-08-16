@@ -13,6 +13,23 @@ describe('opsAction', () => {
     expect(buildOpsParts({ canDelete: true })).toEqual(['delete']);
   });
 
+  it('appends up to 3 automation buttons after delete', () => {
+    expect(buildOpsParts({ canViewDetail: true, automationButtons: [] })).toEqual(['detail']);
+    const three = [
+      { id: 1, name: 'A' },
+      { id: 2, name: 'B' },
+      { id: 3, name: 'C' },
+    ];
+    expect(buildOpsParts({ canDelete: true, automationButtons: three })).toEqual([
+      'delete',
+      'auto:1',
+      'auto:2',
+      'auto:3',
+    ]);
+    const four = [...three, { id: 4, name: 'D' }];
+    expect(buildOpsParts({ automationButtons: four })).toEqual(['auto:1', 'auto:2', 'auto:3']);
+  });
+
   it('maps every action to a display label', () => {
     expect(OPS_ACTION_LABELS.detail).toBe('详情');
     expect(OPS_ACTION_LABELS.edit).toBe('编辑');

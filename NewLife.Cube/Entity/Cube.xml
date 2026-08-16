@@ -805,5 +805,54 @@
         <Index Columns="CreateUserId" />
       </Indexes>
     </Table>
+    <Table Name="EntityAutomation" Description="实体自动化流程。按实体配置的触发与动作规则，GraphJson 存线性图">
+      <Columns>
+        <Column Name="Id" DataType="Int64" PrimaryKey="True" DataScale="time" Description="编号" />
+        <Column Name="TenantId" DataType="Int32" Description="租户" />
+        <Column Name="TypePath" DataType="String" Length="100" Nullable="False" Description="实体路径。如 Admin/User" />
+        <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称" />
+        <Column Name="Enable" DataType="Boolean" Description="启用" />
+        <Column Name="Priority" DataType="Int32" Description="优先级。越小越先" />
+        <Column Name="TriggerKind" DataType="String" Length="32" Nullable="False" Description="触发种类" />
+        <Column Name="TriggerConfig" DataType="String" Length="-1" Description="触发配置。JSON" />
+        <Column Name="GraphJson" DataType="String" Length="-1" Description="流程图。nodes/edges JSON" />
+        <Column Name="HookToken" DataType="String" Length="64" Description="入站令牌。webhook 用" />
+        <Column Name="Version" DataType="Int32" Description="版本。乐观并发" />
+        <Column Name="CreateUser" DataType="String" Description="创建人" Category="扩展" />
+        <Column Name="CreateUserId" DataType="Int32" Description="创建者" Category="扩展" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+        <Column Name="UpdateUser" DataType="String" Description="更新人" Category="扩展" />
+        <Column Name="UpdateUserId" DataType="Int32" Description="更新者" Category="扩展" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+        <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="TenantId,TypePath,Enable" />
+        <Index Columns="HookToken" Unique="True" />
+      </Indexes>
+    </Table>
+    <Table Name="AutomationRun" Description="自动化运行。一次自动化执行，含队列与延时续跑状态" ConnName="Log">
+      <Columns>
+        <Column Name="Id" DataType="Int64" PrimaryKey="True" DataScale="time" Description="编号" />
+        <Column Name="TenantId" DataType="Int32" Description="租户。复制自规则" />
+        <Column Name="AutomationId" DataType="Int64" Description="规则" />
+        <Column Name="TypePath" DataType="String" Length="100" Description="实体路径" />
+        <Column Name="RecordKey" DataType="String" Length="50" Description="记录主键" />
+        <Column Name="TriggerKind" DataType="String" Length="32" Description="触发种类" />
+        <Column Name="Status" DataType="String" Length="20" Description="状态。queued/running/waiting/succeeded/failed/cancelled" />
+        <Column Name="Depth" DataType="Int32" Description="深度。runAutomation 递增" />
+        <Column Name="ResumeAt" DataType="DateTime" Description="续跑时间。delay 到期" />
+        <Column Name="NodeTrace" DataType="String" Length="-1" Description="节点轨迹。JSON" />
+        <Column Name="Error" DataType="String" Length="500" Description="错误摘要" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" />
+      </Columns>
+      <Indexes>
+        <Index Columns="AutomationId" />
+        <Index Columns="TypePath,RecordKey" />
+        <Index Columns="Status,ResumeAt" />
+      </Indexes>
+    </Table>
   </Tables>
 </EntityModel>

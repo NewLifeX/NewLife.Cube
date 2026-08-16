@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.Automation;
 using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode;
@@ -22,14 +23,6 @@ public class LogController : ReadOnlyEntityController<XLog>
         // 日志列表需要显示详细信息，不需要显示用户编号
         ListFields.AddDataField("Remark", null, "Action");
         ListFields.RemoveField("CreateUserID");
-        //FormFields.RemoveField("Remark");
-
-        //{
-        //    var df = ListFields.GetField("TraceId") as ListField;
-        //    df.DisplayName = "跟踪";
-        //    df.Url = StarHelper.BuildUrl("{TraceId}");
-        //    df.DataVisible = (e, f) => !(e as XLog).TraceId.IsNullOrEmpty();
-        //}
         {
             // 今天的时间不显示日期
             var df = ListFields.GetField("CreateTime") as ListField;
@@ -43,7 +36,8 @@ public class LogController : ReadOnlyEntityController<XLog>
     protected override IEnumerable<XLog> Search(Pager p)
     {
         var category = p["category"];
-        var action = p["act"];
+        // 前端历史 Tab 传 action；旧版/附近日志用 act
+        var action = p["action"] ?? p["act"];
         var success = p["success"]?.ToBoolean();
         var linkid = p["linkid"].ToInt(-1);
         var userid = p["userid"].ToInt(-1);
@@ -53,6 +47,7 @@ public class LogController : ReadOnlyEntityController<XLog>
 
         // 默认排序
         if (p.Sort.IsNullOrEmpty()) p.OrderBy = _.ID.Desc();
+        if (p.PageIndex <= 0) p.PageIndex = 1;
 
         // 附近日志
         if (key.IsNullOrEmpty() && userid < 0 && category.IsNullOrEmpty() && start.Year < 2000 && end.Year < 2000)
@@ -75,6 +70,10 @@ public class LogController : ReadOnlyEntityController<XLog>
                 }
             }
         }
+
+        // typePath / DisplayName / 中英 Action 别名（修复历史 Tab 查不到增删改/自动化）
+        if (!category.IsNullOrEmpty() || !action.IsNullOrEmpty())
+            return EntityAuditLog.Search(category, action, linkid, success, userid, start, end, key, p);
 
         return XLog.Search(category, action, linkid, success, userid, start, end, key, p);
     }

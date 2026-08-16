@@ -152,6 +152,8 @@
 | apps 自定义业务页 | cube-admin 等 | ✅ | 🟠 机制 + `_demo`（无真实业务案例） | 🟠 机制+高频页 | P1 |
 | 微前端多应用运行时 | Vue microApp | ✅ | ➖（未做） | ➖ | — |
 | FlowGram 工作流画布 | 本方案 | ❌ | ❌（未做） | ✅ 样例 | P1 |
+
+> **实体自动化 ≠ FlowGram。** OSC-260815fa86 已交付飞书多维表格风格的「自动化」（线性 GraphJson + C# `AutomationExecutor`）。FlowGram 仍只用于后期「工作流」画布样例，**不是**本自动化运行时。
 | 字段级变更 diff | 相对 Log | ❌ | ❌ | ➖ 一期 / P2 二期 | P2 |
 | 单元/组件测试体系 | Vue Vitest 等 | ✅ | 🟠（逻辑单测 88 用例；无组件测试） | ✅ 关键路径 | P0 |
 | E2E（Cypress 级） | Vue | ✅ | ❌ | 🟠 冒烟即可 | P2 |
@@ -738,6 +740,7 @@ Draft → Accepted → Implementing → Validating → Done
 ### M5 — FlowGram 样例 → **OSC-0010**
 
 - 单一样例 + 文档；不扩平台级流程引擎。
+- **实体自动化已由 OSC-260815fa86 交付**（GraphJson + C# 执行器）。不得把自动化实现成 FlowGram 运行时；本里程碑仍只做画布样例。
 
 ### M6 — 硬化 → **OSC-0011**（收口）
 

@@ -196,6 +196,7 @@ public static class CubeService
 
         //services.AddHostedService<JobService>();
         services.AddHostedService<DataRetentionService>();
+        services.AddHostedService<NewLife.Cube.Automation.AutomationWorker>();
 
         // 添加定时作业
         services.AddCubeJob();
@@ -374,6 +375,8 @@ public static class CubeService
             EntityFactory.InitAll();
         else
             EntityFactory.InitAllAsync();
+
+        NewLife.Cube.Automation.AutomationHost.Register(provider);
 
         // 调整魔方表名
         FixAppTableName();

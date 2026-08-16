@@ -6,7 +6,7 @@ import { frozenLeftCount } from '@/core/utils/viewProfile';
 import { BADGE_BORDER_RADIUS, BADGE_PADDING } from '@/core/utils/fieldBadge';
 import { getValueByKey } from '@/core/utils/url';
 import { themeColor } from '@/core/utils/themeColor';
-import { buildOpsParts, opsActionColor, OPS_ACTION_LABELS } from '@/core/utils/opsAction';
+import { buildOpsParts, opsActionColor, OPS_ACTION_LABELS, type OpsAction, type OpsAutomationButton } from '@/core/utils/opsAction';
 
 export interface ListTableColumnDef {
   pref: ColumnPref;
@@ -37,6 +37,8 @@ interface ListTableProps {
   canViewDetail?: boolean;
   showExpand?: boolean;
   enableSort?: boolean;
+  /** 行操作列额外按钮（自动化 button 规则，最多 3 个） */
+  automationButtons?: OpsAutomationButton[];
   /** 服务端排序状态；用于表头升/降序图标（不走 VTable 内部排序） */
   sortState?: { field: string; desc: boolean } | null;
   /** 树视图：启用 VTable hierarchy（行含 children） */
@@ -57,7 +59,7 @@ interface ListTableEmits {
   selectionChange: [keys: (string | number)[]];
   columnsChange: [cols: ColumnPref[]];
   sortChange: [payload: { field: string; desc: boolean } | null];
-  action: [payload: { action: 'detail' | 'edit' | 'delete'; row: Record<string, unknown> }];
+  action: [payload: { action: string; row: Record<string, unknown> }];
   toggleEnable: [row: Record<string, unknown>, field: string];
   /** 滚动接近底部（剩余不足 200px）时触发，供父级增量加载更多行（列表/树懒加载） */
   scrollBottom: [];
@@ -190,14 +192,23 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       canViewDetail: props.canViewDetail,
       canEdit: props.canEdit,
       canDelete: props.canDelete,
+      automationButtons: props.automationButtons,
     };
+  }
+
+  function opsLabel(action: string): string {
+    if (action.startsWith('auto:')) {
+      const id = action.slice(5);
+      const b = (props.automationButtons ?? []).find((x) => String(x.id) === id);
+      return b?.name || '运行';
+    }
+    return OPS_ACTION_LABELS[action as OpsAction] ?? action;
   }
 
   function opsColumnWidth(): number {
     const n = buildOpsParts(opsFlags()).length;
     if (n <= 0) return 88;
-    // 独立链接每项约 56px（文本 + 内边距），末项略窄
-    return Math.min(240, Math.max(88, n * 56 + 16));
+    return Math.max(88, n * 56 + 16);
   }
 
   /**
@@ -238,7 +249,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       // 链接配色：详情/编辑=主色、删除=警示色、其余系统自定义=链接色（需求 OSC）
       const color = opsActionColor(action);
       const link = createText({
-        text: OPS_ACTION_LABELS[action] ?? String(action),
+        text: opsLabel(action),
         fontSize: 13,
         fontFamily: 'sans-serif',
         fill: themeColor(color.token, color.fallback),
@@ -389,7 +400,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       });
     }
 
-    if (props.canViewDetail || props.canEdit || props.canDelete) {
+    if (buildOpsParts(opsFlags()).length) {
       cols.push({
         field: '__ops',
         title: '操作',
@@ -497,7 +508,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       records: withChecks(props.records),
       columns: cols,
       frozenColCount: frozenCount(),
-      rightFrozenColCount: props.canViewDetail || props.canEdit || props.canDelete ? 1 : 0,
+      rightFrozenColCount: buildOpsParts(opsFlags()).length ? 1 : 0,
       ...(groupedMode
         ? {
             // 官方分组复选框方案：checkbox 置于 rowSeriesNumber（每行最前面），
@@ -914,6 +925,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       props.canViewDetail,
       props.showExpand,
       props.enableSort,
+      props.automationButtons,
       props.hierarchy,
       props.grouped,
       props.groupFields,

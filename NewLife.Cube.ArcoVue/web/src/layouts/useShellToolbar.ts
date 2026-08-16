@@ -1,6 +1,7 @@
 import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { Message } from '@arco-design/web-vue';
+import { storeToRefs } from 'pinia';
 import { useUserStore } from '@/stores/user';
 import { useUserProfileStore } from '@/stores/userProfile';
 import { useAppStore } from '@/stores/app';
@@ -11,7 +12,7 @@ import { APPEARANCE_ICONS } from '@/core/utils/iconRegistry';
 import type { Appearance } from '@/core/utils/userProfile';
 import { clearSession } from '@/views/login/sessionTokens';
 
-/** 顶栏：外观、租户切换、账号菜单 */
+/** 顶栏：外观、租户切换、站内通知、账号菜单 */
 export function useShellToolbar() {
   const router = useRouter();
   const userStore = useUserStore();
@@ -19,9 +20,13 @@ export function useShellToolbar() {
   const appStore = useAppStore();
   const tagsStore = useTagsViewStore();
   const tenantStore = useTenantStore();
+  const { inboxUnreadCount } = storeToRefs(appStore);
 
   onMounted(() => {
-    if (userStore.isLoggedIn) void tenantStore.load();
+    if (userStore.isLoggedIn) {
+      void tenantStore.load();
+      void appStore.refreshInboxUnread();
+    }
   });
 
   const appearanceLabel = computed(() => {
@@ -37,6 +42,10 @@ export function useShellToolbar() {
 
   function goAppearance() {
     appStore.openAppearanceDrawer();
+  }
+
+  function goInbox() {
+    appStore.openInboxDrawer();
   }
 
   function goSecurity() {
@@ -71,8 +80,10 @@ export function useShellToolbar() {
     profileStore,
     appearanceLabel,
     APPEARANCE_ICONS,
+    inboxUnreadCount,
     cycleAppearance,
     goAppearance,
+    goInbox,
     goSecurity,
     onSwitchTenant,
     handleLogout,

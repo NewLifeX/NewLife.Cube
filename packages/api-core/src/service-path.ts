@@ -34,6 +34,8 @@ const CUBE_SERVICE_ACTIONS = new Set([
   'ViewProfile',
   'ViewProfileTemplate',
   'EntityComment',
+  // 独立 AutomationController（[Route("Cube/Automation")]，无 /api）
+  'Automation',
 ]);
 
 /**

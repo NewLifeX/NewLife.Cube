@@ -39,7 +39,8 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
   } = ctx;
   const { loadData, openEdit, openDetail } = deps;
 
-  function onTableAction(payload: { action: 'detail' | 'edit' | 'delete'; row: Record<string, unknown> }) {
+  function onTableAction(payload: { action: string; row: Record<string, unknown> }) {
+    if (payload.action.startsWith('auto:')) return;
     if (payload.action === 'edit') openEdit(payload.row);
     else if (payload.action === 'delete') {
       if (!chrome.value.allowDelete) return;

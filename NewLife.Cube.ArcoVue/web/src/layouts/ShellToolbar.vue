@@ -18,6 +18,14 @@
         </template>
       </a-dropdown>
 
+      <a-tooltip content="站内通知">
+        <a-badge :count="inboxUnreadCount" :max-count="99">
+          <a-button type="text" size="small" @click="goInbox">
+            <icon-park type="remind" />
+          </a-button>
+        </a-badge>
+      </a-tooltip>
+
       <a-tooltip :content="appearanceLabel">
         <a-button type="text" size="small" @click="cycleAppearance">
           <icon-park :type="APPEARANCE_ICONS[profileStore.theme.appearance]" />
@@ -47,8 +55,10 @@ const {
   profileStore,
   appearanceLabel,
   APPEARANCE_ICONS,
+  inboxUnreadCount,
   cycleAppearance,
   goAppearance,
+  goInbox,
   goSecurity,
   onSwitchTenant,
   handleLogout,

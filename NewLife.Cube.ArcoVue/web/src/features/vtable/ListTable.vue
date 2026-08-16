@@ -21,6 +21,8 @@ const props = withDefaults(
     canViewDetail?: boolean;
     showExpand?: boolean;
     enableSort?: boolean;
+    /** 行操作列额外按钮（自动化 button 规则） */
+    automationButtons?: { id: number | string; name: string }[];
     /** 服务端排序状态；用于表头升/降序图标（不走 VTable 内部排序） */
     sortState?: { field: string; desc: boolean } | null;
     /** 树视图：启用 VTable hierarchy（行含 children） */
@@ -42,6 +44,7 @@ const props = withDefaults(
     canViewDetail: true,
     showExpand: false,
     enableSort: true,
+    automationButtons: () => [],
     sortState: null,
     hierarchy: false,
     grouped: false,
@@ -54,7 +57,7 @@ const emit = defineEmits<{
   selectionChange: [keys: (string | number)[]];
   columnsChange: [cols: ColumnPref[]];
   sortChange: [payload: { field: string; desc: boolean } | null];
-  action: [payload: { action: 'detail' | 'edit' | 'delete'; row: Record<string, unknown> }];
+  action: [payload: { action: string; row: Record<string, unknown> }];
   toggleEnable: [row: Record<string, unknown>, field: string];
   /** 滚动接近底部（剩余不足 200px）时触发，供父级增量加载更多行（列表/树懒加载） */
   scrollBottom: [];

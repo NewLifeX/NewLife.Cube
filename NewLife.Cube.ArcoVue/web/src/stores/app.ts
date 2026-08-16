@@ -8,6 +8,10 @@ export const useAppStore = defineStore('app', {
     loginConfig: null as LoginConfig | null,
     /** 外观设置抽屉（不用路由页签） */
     appearanceDrawerVisible: false,
+    /** 站内通知抽屉 */
+    inboxDrawerVisible: false,
+    /** 站内信未读数 */
+    inboxUnreadCount: 0,
   }),
   actions: {
     async fetchLoginConfig() {
@@ -19,6 +23,20 @@ export const useAppStore = defineStore('app', {
     },
     closeAppearanceDrawer() {
       this.appearanceDrawerVisible = false;
+    },
+    openInboxDrawer() {
+      this.inboxDrawerVisible = true;
+    },
+    closeInboxDrawer() {
+      this.inboxDrawerVisible = false;
+    },
+    async refreshInboxUnread() {
+      try {
+        const res = await cubeApi.automation.inboxUnreadCount();
+        this.inboxUnreadCount = Number(res.data?.count ?? 0);
+      } catch {
+        this.inboxUnreadCount = 0;
+      }
     },
   },
 });

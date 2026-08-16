@@ -6,6 +6,7 @@ import { useListQuery } from './useListQuery';
 import { useListCrud } from './useListCrud';
 import { useListViews } from './useListViews';
 import { useRecordNav } from './useRecordNav';
+import { useListAutomation } from './useListAutomation';
 
 /**
  * DefaultList 组装器（OSC-260813c3e9）：创建共享上下文，组装四个领域 composable，
@@ -24,6 +25,15 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     loadData: query.loadData,
     applySearchToForm: query.applySearchToForm,
   });
+  const auto = useListAutomation(ctx);
+
+  function onTableAction(payload: { action: string; row: Record<string, unknown> }) {
+    if (payload.action.startsWith('auto:')) {
+      void auto.runAutomationButton(payload);
+      return;
+    }
+    crud.onTableAction(payload);
+  }
 
   async function bootstrap() {
     await query.loadFields();
@@ -92,6 +102,8 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     ...ctx,
     ...query,
     ...crud,
+    onTableAction,
+    ...auto,
     ...views,
     ...nav,
     PAGE_SIZE_OPTIONS,

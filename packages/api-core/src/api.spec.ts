@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createCommentApi, createPageApi, createProfileApi } from './api';
+import { createCommentApi, createPageApi, createProfileApi, createAutomationApi } from './api';
 import type { ApiResponse, EntityCommentModel, ViewProfileModel } from './types';
 
 vi.mock('axios', () => ({
@@ -44,6 +44,88 @@ describe('createCommentApi', () => {
         url: '/Cube/EntityComment',
         method: 'delete',
         params: { id: 9 },
+      }),
+    );
+  });
+});
+
+describe('createAutomationApi', () => {
+  it('list hits GET /Cube/Automation with typePath', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: [] });
+    const api = createAutomationApi(request);
+    await api.list({ typePath: 'Admin/User', enable: true, triggerKind: 'button' });
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Cube/Automation',
+        method: 'get',
+        params: { typePath: 'Admin/User', enable: true, triggerKind: 'button' },
+      }),
+    );
+  });
+
+  it('create posts filter+actions body', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: {} });
+    const api = createAutomationApi(request);
+    const body = {
+      typePath: 'Admin/User',
+      name: '新增通知',
+      triggerKind: 'insert',
+      filter: { logic: 'all', conditions: [] },
+      actions: [{ type: 'notify', data: { channel: 'InApp' } }],
+    };
+    await api.create(body);
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Cube/Automation',
+        method: 'post',
+        data: body,
+      }),
+    );
+  });
+
+  it('update puts /Cube/Automation/Update and falls back to POST on 405', async () => {
+    const ok = { code: 0, data: { id: 3 } };
+    const request = vi.fn()
+      .mockRejectedValueOnce({ isAxiosError: true, response: { status: 405 } })
+      .mockResolvedValueOnce(ok);
+    const api = createAutomationApi(request);
+    const body = { id: 3, typePath: 'Admin/User', name: '改名', triggerKind: 'insert', version: 1 };
+    const result = await api.update(body);
+    expect(result).toBe(ok);
+    expect(request).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      url: '/Cube/Automation/Update',
+      method: 'put',
+      data: body,
+    }));
+    expect(request).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      url: '/Cube/Automation/Update',
+      method: 'post',
+      data: body,
+    }));
+  });
+
+  it('run posts POST /Cube/Automation/Run', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: { runId: 1 } });
+    const api = createAutomationApi(request);
+    await api.run({ automationId: 8, recordKey: '12' });
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Cube/Automation/Run',
+        method: 'post',
+        data: { automationId: 8, recordKey: '12' },
+      }),
+    );
+  });
+
+  it('runs hits GET /Cube/Automation/Runs', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: [] });
+    const api = createAutomationApi(request);
+    await api.runs({ typePath: 'Admin/User', recordKey: 7 });
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Cube/Automation/Runs',
+        method: 'get',
+        params: { typePath: 'Admin/User', recordKey: 7 },
       }),
     );
   });

@@ -179,7 +179,7 @@
                 </a-tag>
                 <span class="history-user">{{ row.createUser ?? row.CreateUser }}</span>
               </div>
-              <div class="history-remark">{{ row.remark ?? row.Remark }}</div>
+              <div class="history-remark">{{ historyRemark(row) }}</div>
             </a-timeline-item>
           </a-timeline>
           <a-pagination
@@ -437,6 +437,7 @@ const {
   onHistoryPageChange,
   historySuccess,
   historyActionLabel,
+  historyRemark,
   startCommentReply,
   cancelCommentReply,
   submitComment,
