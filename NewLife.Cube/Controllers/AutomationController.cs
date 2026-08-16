@@ -238,7 +238,7 @@ public class AutomationController(TokenService tokenService) : ControllerBaseX
         return Json(0, "ok");
     }
 
-    /// <summary>运行历史（读系统审计 Log，Action=Automation；队列态落库 AutomationRun 表）</summary>
+    /// <summary>运行历史（读系统审计 Log，Action=Automation；运行态为内存队列）</summary>
     [HttpGet("Runs")]
     public ActionResult Runs(String typePath, Int64 automationId = 0, String recordKey = null, Int32 pageIndex = 1, Int32 pageSize = 20)
     {

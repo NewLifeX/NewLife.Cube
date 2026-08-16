@@ -223,33 +223,6 @@ public class Osc260815AutomationTests
         }
     }
 
-    [Fact(DisplayName = "AutomationRun 落库：入队可查、waiting 到期续跑、终态持久化")]
-    public void Run_Persisted_QueueAndResume()
-    {
-        var rule = InsertRule("OscAutoItem", "insert");
-        var run = AutomationRun.Enqueue(rule, "7", "insert", 0, DateTime.MinValue, "queued");
-        Assert.True(run.Id > 0);
-        var got = AutomationRun.FindById(run.Id);
-        Assert.NotNull(got);
-        Assert.Equal("queued", got.Status);
-        Assert.Equal(rule.Id, got.AutomationId);
-        Assert.Equal("OscAutoItem", got.TypePath);
-
-        // waiting 到期续跑（重启后仍可由 Tick 拾取）
-        var w = AutomationRun.Enqueue(rule, "8", "insert", 0, DateTime.Now.AddMinutes(-1), "waiting");
-        var due = AutomationRun.FindDueWaiting(DateTime.Now);
-        Assert.Contains(due, e => e.Id == w.Id);
-
-        // once 查重路径
-        var by = AutomationRun.FindAllByTypePathAndRecordKey("OscAutoItem", "7");
-        Assert.Contains(by, e => e.Id == run.Id);
-
-        // 终态更新落库
-        got.Status = "succeeded";
-        got.Update();
-        Assert.Equal("succeeded", AutomationRun.FindById(run.Id).Status);
-    }
-
     [Fact(DisplayName = "流程日志 Remark JSON 往返（写入系统 Log 不改表结构）")]
     public void FlowLog_Remark_Roundtrip()
     {

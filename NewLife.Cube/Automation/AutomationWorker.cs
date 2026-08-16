@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using NewLife.Cube.Entity;
 using NewLife.Log;
 using NewLife.Threading;
 
