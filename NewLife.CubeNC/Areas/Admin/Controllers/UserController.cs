@@ -57,6 +57,7 @@ public class UserController : EntityController<User, UserModel>
     private readonly UserService _userService;
     private readonly ITracer _tracer;
     private readonly ISmsVerifyCode _smsVerifyCode;
+    private readonly ITenantContext _tenantContext;
 
     private Boolean _isMobile { get; set; } = false;
 
@@ -159,13 +160,15 @@ public class UserController : EntityController<User, UserModel>
     /// <param name="cacheProvider"></param>
     /// <param name="userService"></param>
     /// <param name="tracer"></param>
+    /// <param name="tenantContext">租户上下文</param>
     /// <param name="smsVerifyCode"></param>
-    public UserController(PasswordService passwordService, ICacheProvider cacheProvider, UserService userService, ITracer tracer, ISmsVerifyCode smsVerifyCode = null)
+    public UserController(PasswordService passwordService, ICacheProvider cacheProvider, UserService userService, ITracer tracer, ITenantContext tenantContext, ISmsVerifyCode smsVerifyCode = null)
     {
         _passwordService = passwordService;
         _cache = cacheProvider.Cache;
         _userService = userService;
         _tracer = tracer;
+        _tenantContext = tenantContext;
         _smsVerifyCode = smsVerifyCode;
     }
 
@@ -220,7 +223,7 @@ public class UserController : EntityController<User, UserModel>
 
         // 只读取租户相关的用户
         //var tencentId = ManagerProviderHelper.GetTenantId(HttpContext);
-        var tencentId = TenantContext.CurrentId;
+        var tencentId = _tenantContext.TenantId;
         if (tencentId > 0)
         {
             list2 = XCode.Membership.User.SearchWithTenant(tencentId, roleIds, departmentIds, areaIds, enable, start, end, key, p);
@@ -256,7 +259,7 @@ public class UserController : EntityController<User, UserModel>
         {
             // 非系统管理员，禁止修改任何人的角色
             var user = ManageProvider.User;
-            if (TenantContext.CurrentId == 0)//非租户验证
+            if (_tenantContext.TenantId == 0)//非租户验证
             {
                 if (!user.Roles.Any(e => e.IsSystem) && entity is IEntity entity2)
                 {
@@ -305,7 +308,7 @@ public class UserController : EntityController<User, UserModel>
         var logId = Session["Cube_OAuthId"].ToLong();
 
         // 如果禁用本地登录，且只有一个第三方登录，直接跳转，构成单点登录
-        var tenantId = TenantContext.CurrentId;
+        var tenantId = _tenantContext.TenantId;
         var ms = OAuthConfig.GetValids(tenantId, GrantTypes.AuthorizationCode);
         var set = CubeSetting.Current;
         if (ms != null && !set.AllowLogin)
@@ -456,7 +459,7 @@ public class UserController : EntityController<User, UserModel>
 
         var model = GetViewModel(returnUrl);
         model.LoginTip = result?.Message;
-        model.OAuthItems = OAuthConfig.GetVisibles(TenantContext.CurrentId);
+        model.OAuthItems = OAuthConfig.GetVisibles(_tenantContext.TenantId);
 
         return _isMobile ? View("MLogin", model) : View(model);
     }
@@ -875,7 +878,7 @@ public class UserController : EntityController<User, UserModel>
 
         // 第三方绑定
         var ucs = UserConnect.FindAllByUserID(user.ID);
-        var ms = OAuthConfig.GetValids(TenantContext.CurrentId, GrantTypes.AuthorizationCode);
+        var ms = OAuthConfig.GetValids(_tenantContext.TenantId, GrantTypes.AuthorizationCode);
 
         var model = new BindsModel
         {
@@ -903,13 +906,13 @@ public class UserController : EntityController<User, UserModel>
         var set = CubeSetting.Current;
         if (!set.AllowRegister) throw new Exception("禁止注册！");
 
-        var tenantId = TenantContext.CurrentId;
+        var tenantId = _tenantContext.TenantId;
         try
         {
             // 租户识别：优先X-App-Id（参考SSO登录按AppId查找OAuth配置取租户），其次X-Tenant租户编码；均未传时不强制，沿用原逻辑
             var tenantError = HttpContext.ResolveRegisterTenant();
             if (tenantError != null) throw new ArgumentException(tenantError, nameof(registerModel));
-            tenantId = TenantContext.CurrentId;
+            tenantId = _tenantContext.TenantId;
 
             //if (String.IsNullOrEmpty(email)) throw new ArgumentNullException("email", "邮箱地址不能为空！");
             if (String.IsNullOrEmpty(username)) throw new ArgumentNullException("username", "用户名不能为空！");
@@ -1038,7 +1041,7 @@ public class UserController : EntityController<User, UserModel>
         //var tid = HttpContext.GetTenantId();
         //var t = Tenant.FindById(tid);
 
-        ViewData["TenantId"] = TenantContext.CurrentId;
+        ViewData["TenantId"] = _tenantContext.TenantId;
 
         return View(model);
     }
@@ -1048,11 +1051,11 @@ public class UserController : EntityController<User, UserModel>
     {
         var ef = base.OnInsert(entity);
 
-        if (TenantContext.CurrentId > 0)//默认插入当前租户下的用户
+        if (_tenantContext.TenantId > 0)//默认插入当前租户下的用户
         {
             var tu = new TenantUser
             {
-                TenantId = TenantContext.CurrentId,
+                TenantId = _tenantContext.TenantId,
                 UserId = entity.ID,
                 CreateIP = entity.RegisterIP,
                 Enable = entity.Enable,

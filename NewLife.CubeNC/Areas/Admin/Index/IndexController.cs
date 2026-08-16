@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using NewLife.Common;
 using NewLife.Cube.AI;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.Membership;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -61,10 +62,10 @@ public class IndexController : ControllerBaseX, IPageDataContext
             // 判断租户关系
             var list = TenantUser.FindAllByUserId(user.ID);
 
-            // 管理后台（租户0）仅系统管理员可切换；普通用户仅能切换到其所属的有效租户
-            if (tenantId == 0)
+            // 管理后台（AdminBackend）仅系统管理员可切换；普通用户仅能切换到其所属的有效租户
+            if (tenantId.GetTenantMode() == TenantMode.AdminBackend)
             {
-                if (user.Roles.Any(e => e.IsSystem))
+                if (user is IUser iu && iu.Roles.Any(e => e.IsSystem))
                 {
                     HttpContext.SaveTenant(0);
                     return Redirect("/Admin");
@@ -408,7 +409,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
 
         // 多租户开启时，按当前模式过滤菜单树（租户模式隐藏纯Admin菜单，管理后台隐藏纯Tenant菜单），与视图层 FilterByTenant 保持一致
         if (CubeSetting.Current.EnableTenant)
-            menuTree = MenuHelper.FilterByTenant(menuTree, TenantContext.CurrentId > 0);
+            menuTree = MenuHelper.FilterByTenant(menuTree, TenantContext.Current.GetTenantMode() == TenantMode.Tenant);
 
         return menuTree;
     }

@@ -81,7 +81,7 @@ public class ControllerBaseX : ControllerBase, IActionFilter
         }
 
         // 当前租户。匿名请求没有用户时不查询租户关系，避免空引用
-        var tid = TenantContext.CurrentId;
+        var tid = ModelExtension.GetService<ITenantContext>(HttpContext.RequestServices)?.TenantId ?? 0;
         if (tid > 0 && user != null)
         {
             var tus = TenantUser.FindAllByUserId(user.ID);
