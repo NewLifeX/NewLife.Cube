@@ -49,6 +49,11 @@ NewLife.Cube.Angular/wwwroot/
 **/components.d.ts
 **/*.tsbuildinfo
 
+# Playwright 运行产物
+NewLife.Cube.ArcoVue/web/playwright/.auth/
+NewLife.Cube.ArcoVue/web/playwright-report/
+NewLife.Cube.ArcoVue/web/test-results/
+
 # 前端编译输出（各皮肤 wwwroot 生成子目录）
 NewLife.Cube.ArcoVue/wwwroot/assets/
 NewLife.Cube.Svelte/wwwroot/_app/

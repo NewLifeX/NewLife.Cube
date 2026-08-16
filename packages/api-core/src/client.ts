@@ -41,7 +41,14 @@ function normalizeLoginResult(data: LoginResult): LoginResult {
 }
 
 /** 需要归一化登录结果的 URL 路径后缀 */
-const LOGIN_RESULT_PATHS = ['/Auth/Login', '/Auth/Register', '/Auth/Refresh', '/Sso/WxMiniLogin', '/Sso/WxAppLogin'];
+const LOGIN_RESULT_PATHS = [
+  '/Auth/Login',
+  '/Auth/Register',
+  '/Auth/Refresh',
+  '/Mfa/Verify',
+  '/Sso/WxMiniLogin',
+  '/Sso/WxAppLogin',
+];
 
 /**
  * 归一化后的错误描述（非 UI，纯数据）。由皮肤自行决定如何展示（弹窗/文案/本地化）。
@@ -130,6 +137,11 @@ export interface ApiClientOptions {
   onFieldError?: (fieldErrors: { field: string; message: string }[]) => void;
   /** 非 401 的响应错误回调（网络/4xx/5xx）。传入已归一化的错误描述，由皮肤决定如何展示 */
   onResponseError?: (info: ResponseErrorInfo) => void;
+  /**
+   * 401 时尝试刷新 accessToken（返回新 token 则自动重试原请求一次）。
+   * 刷新失败或返回 null 时再走 onUnauthorized。
+   */
+  tryRefreshToken?: () => Promise<string | null>;
 }
 
 /**
@@ -152,8 +164,20 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
     onBusinessError,
     onFieldError,
     onResponseError,
+    tryRefreshToken,
   } = options;
   const tm = tokenManager ?? new TokenManager();
+  let refreshing: Promise<string | null> | null = null;
+
+  async function refreshOnce(): Promise<string | null> {
+    if (!tryRefreshToken) return null;
+    if (!refreshing) {
+      refreshing = tryRefreshToken().finally(() => {
+        refreshing = null;
+      });
+    }
+    return refreshing;
+  }
 
   const client = axios.create({
     baseURL,
@@ -191,10 +215,20 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
 
   // 响应拦截：统一错误处理 + 登录结果字段归一化 + content-type 透传 + traceId + 钩子
   client.interceptors.response.use(
-    (response) => {
+    async (response) => {
       const res = response.data as ApiResponse;
       if (res.code && res.code !== 0) {
         if (res.code === 401 || res.code === 4001) {
+          const cfg = response.config as InternalAxiosRequestConfig & { _cubeRetried?: boolean };
+          if (!cfg._cubeRetried && tryRefreshToken) {
+            const newToken = await refreshOnce();
+            if (newToken) {
+              tm.setToken(newToken);
+              cfg._cubeRetried = true;
+              cfg.headers.set('Authorization', `${tokenHeaderPrefix}${newToken}`);
+              return client.request(cfg);
+            }
+          }
           tm.clearToken();
           if (onUnauthorized) {
             onUnauthorized(response.config?.url);
@@ -250,7 +284,7 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
       if (unwrapResponse) return response.data;
       return response;
     },
-    (error) => {
+    async (error) => {
       // 业务错误（ApiError，code 非 0）已由成功拦截器经 onBusinessError 处理并 reject，
       // 此处直接透传，避免重复弹窗或将 ApiResponse 误当 axios 响应传入 onResponseHook
       if (error instanceof ApiError) {
@@ -261,6 +295,16 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
       // 只有 401（未登录/登录过期）才清除 Token 并触发重新登录
       const { response } = error;
       if (response?.status === 401) {
+        const cfg = error.config as InternalAxiosRequestConfig & { _cubeRetried?: boolean };
+        if (cfg && !cfg._cubeRetried && tryRefreshToken) {
+          const newToken = await refreshOnce();
+          if (newToken) {
+            tm.setToken(newToken);
+            cfg._cubeRetried = true;
+            cfg.headers.set('Authorization', `${tokenHeaderPrefix}${newToken}`);
+            return client.request(cfg);
+          }
+        }
         tm.clearToken();
         if (onUnauthorized) {
           onUnauthorized(error.config?.url);

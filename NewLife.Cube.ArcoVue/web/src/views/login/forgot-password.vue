@@ -1,58 +1,62 @@
 <template>
-  <div class="forgot-wrap">
-    <a-card class="forgot-card" :bordered="false">
-      <div class="forgot-header">
-        <h2>重置密码</h2>
+  <div class="auth-shell">
+    <aside class="auth-brand">
+      <div class="brand-inner">
+        <h1 class="brand-name">重置密码</h1>
+        <p class="brand-tip">通过短信或邮箱验证码设置新密码</p>
       </div>
+    </aside>
+    <main class="auth-main">
+      <div class="auth-panel">
+        <h2 class="panel-title">重置密码</h2>
 
-      <!-- 步骤一：输入账号并获取验证码 -->
-      <a-form v-if="step === 'input'" :model="form" layout="vertical" @submit.prevent="onSendCode">
-        <a-form-item label="手机号或邮箱" :rules="[{ required: true, message: '请输入手机号或邮箱' }]" field="username">
-          <a-input v-model="form.username" placeholder="请输入手机号或邮箱" allow-clear />
-        </a-form-item>
-        <a-form-item label="验证渠道">
-          <a-radio-group v-model="form.channel" type="button">
-            <a-radio value="Sms">短信</a-radio>
-            <a-radio value="Mail">邮箱</a-radio>
-          </a-radio-group>
-        </a-form-item>
-        <a-form-item>
-          <a-button type="primary" long html-type="submit" :loading="sending">发送验证码</a-button>
-        </a-form-item>
-        <a-form-item>
-          <a-link @click="router.push('/login')">返回登录</a-link>
-        </a-form-item>
-      </a-form>
-
-      <!-- 步骤二：输入验证码和新密码 -->
-      <a-form v-else :model="form" layout="vertical" @submit.prevent="onConfirmReset">
-        <a-form-item label="验证码" :rules="[{ required: true, message: '请输入验证码' }]" field="code">
-          <a-input-group>
-            <a-input v-model="form.code" placeholder="请输入验证码" style="flex: 1" allow-clear />
-            <a-button :disabled="countdown > 0" :loading="sending" @click="onResend">
-              {{ countdown > 0 ? `${countdown}s` : '重新发送' }}
-            </a-button>
-          </a-input-group>
-        </a-form-item>
-        <a-form-item label="新密码" :rules="[{ required: true, message: '请输入新密码' }, { minLength: 6, message: '密码不少于6位' }]" field="newPassword">
-          <a-input-password v-model="form.newPassword" placeholder="请输入新密码" allow-clear />
-        </a-form-item>
-        <a-form-item label="确认密码" :rules="[{ required: true, message: '请再次输入密码' }, { validator: confirmPwdValidator }]" field="confirmPassword">
-          <a-input-password v-model="form.confirmPassword" placeholder="请再次输入新密码" allow-clear />
-        </a-form-item>
-        <a-alert v-if="error" type="error" :content="error" class="forgot-error" />
-        <a-form-item>
-          <a-button type="primary" long html-type="submit" :loading="submitting">确认重置</a-button>
-        </a-form-item>
-        <a-form-item>
-          <a-space>
-            <a-link @click="step = 'input'">上一步</a-link>
-            <a-divider direction="vertical" />
+        <a-form v-if="step === 'input'" :model="form" layout="vertical" @submit.prevent="onSendCode">
+          <a-form-item label="手机号或邮箱" field="username">
+            <a-input v-model="form.username" placeholder="请输入手机号或邮箱" allow-clear />
+          </a-form-item>
+          <a-form-item label="验证渠道">
+            <a-radio-group v-model="form.channel" type="button">
+              <a-radio value="Sms">短信</a-radio>
+              <a-radio value="Mail">邮箱</a-radio>
+            </a-radio-group>
+          </a-form-item>
+          <a-form-item>
+            <a-button type="primary" long html-type="submit" :loading="sending">发送验证码</a-button>
+          </a-form-item>
+          <a-form-item>
             <a-link @click="router.push('/login')">返回登录</a-link>
-          </a-space>
-        </a-form-item>
-      </a-form>
-    </a-card>
+          </a-form-item>
+        </a-form>
+
+        <a-form v-else :model="form" layout="vertical" @submit.prevent="onConfirmReset">
+          <a-form-item label="验证码" field="code">
+            <a-input-group>
+              <a-input v-model="form.code" placeholder="请输入验证码" style="flex: 1" allow-clear />
+              <a-button :disabled="countdown > 0" :loading="sending" @click="onResend">
+                {{ countdown > 0 ? `${countdown}s` : '重新发送' }}
+              </a-button>
+            </a-input-group>
+          </a-form-item>
+          <a-form-item label="新密码" field="newPassword">
+            <a-input-password v-model="form.newPassword" placeholder="请输入新密码" allow-clear />
+          </a-form-item>
+          <a-form-item label="确认密码" field="confirmPassword">
+            <a-input-password v-model="form.confirmPassword" placeholder="请再次输入新密码" allow-clear />
+          </a-form-item>
+          <a-alert v-if="error" type="error" :content="error" style="margin-bottom: 12px" />
+          <a-form-item>
+            <a-button type="primary" long html-type="submit" :loading="submitting">确认重置</a-button>
+          </a-form-item>
+          <a-form-item>
+            <a-space>
+              <a-link @click="step = 'input'">上一步</a-link>
+              <a-divider direction="vertical" />
+              <a-link @click="router.push('/login')">返回登录</a-link>
+            </a-space>
+          </a-form-item>
+        </a-form>
+      </div>
+    </main>
   </div>
 </template>
 
@@ -70,28 +74,55 @@ const {
   onSendCode,
   onResend,
   onConfirmReset,
-  confirmPwdValidator,
 } = useForgotPassword();
 </script>
 
 <style scoped>
-.forgot-wrap {
+.auth-shell {
   display: flex;
-  justify-content: center;
-  align-items: center;
   min-height: 100vh;
-  background: var(--color-bg-2, #f0f2f5);
+  background: var(--color-bg-1);
 }
-.forgot-card {
-  width: 400px;
-  padding: 16px;
+.auth-brand {
+  display: none;
+  flex: 1;
+  background: linear-gradient(
+    145deg,
+    var(--cube-primary) 0%,
+    color-mix(in srgb, var(--cube-primary) 50%, #1d2129) 100%
+  );
+  color: #fff;
+  padding: 48px 40px;
+  align-items: center;
 }
-.forgot-header h2 {
-  font-size: 22px;
-  font-weight: 700;
-  margin-bottom: 24px;
+.brand-name {
+  margin: 0 0 12px;
+  font-size: 28px;
+  font-weight: 600;
 }
-.forgot-error {
-  margin-bottom: 16px;
+.brand-tip {
+  margin: 0;
+  opacity: 0.85;
+}
+.auth-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+}
+.auth-panel {
+  width: 100%;
+  max-width: 400px;
+}
+.panel-title {
+  margin: 0 0 16px;
+  font-size: 24px;
+  font-weight: 600;
+}
+@media (min-width: 992px) {
+  .auth-brand {
+    display: flex;
+  }
 }
 </style>

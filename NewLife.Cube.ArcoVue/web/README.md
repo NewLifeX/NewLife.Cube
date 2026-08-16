@@ -72,6 +72,13 @@ app.UseArcoVue(builder.Environment);
 pnpm build
 ```
 
+## 认证、SSO 与多租户（OSC-260813397e）
+
+- **登录页**（飞书风左右栏）：`views/login/`，能力来自嵌套 `LoginConfig.login/oauth/security/register`；SSO 须 `source=front-end`，回跳 `#token=` 由路由解析。
+- **Token**：access 存 cookie；refresh / 登录名存 localStorage；401 自动 `/Auth/Refresh` 一次。
+- **账号安全**：用户菜单 → `/account/security`（MFA Setup/Activate/Disable + `/Auth/Binds` 绑定/解绑）。
+- **租户**：顶栏下拉；请求头 `X-Tenant`；接口 `/Auth/Tenants`、`/Auth/SwitchTenant`。新实体接入见 [docs/多租户新实体接入.md](./docs/多租户新实体接入.md)。
+
 ## 壳与 UserProfile
 
 - 布局由 `userProfile.layout.mode`（`side` / `top` / `mix`）经 `layouts/RootLayout.vue` 动态切换。

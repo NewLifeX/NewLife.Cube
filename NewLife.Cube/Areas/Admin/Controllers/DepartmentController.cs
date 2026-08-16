@@ -5,10 +5,9 @@ using XCode.Membership;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>部门</summary>
-//[DataPermission(null, "ManagerID={#userId}")]
 [DisplayName("部门")]
 [AdminArea]
-[Menu(95, true, Icon = "UserFilled")]
+[Menu(95, true, Icon = "UserFilled", Mode = MenuModes.Admin | MenuModes.Tenant)]
 public class DepartmentController : EntityController<Department, DepartmentModel>
 {
     static DepartmentController()
@@ -22,8 +21,6 @@ public class DepartmentController : EntityController<Department, DepartmentModel
     }
 
     /// <summary>搜索数据集</summary>
-    /// <param name="p"></param>
-    /// <returns></returns>
     protected override IEnumerable<Department> Search(Pager p)
     {
         var id = p["id"].ToInt(-1);
@@ -40,5 +37,17 @@ public class DepartmentController : EntityController<Department, DepartmentModel
         var visible = p["visible"]?.ToBoolean();
 
         return Department.Search(parentId, enable, visible, p["Q"], p);
+    }
+
+    /// <summary>验证数据：插入时盖章 TenantId</summary>
+    protected override Boolean Valid(Department entity, DataObjectMethodType type, Boolean post)
+    {
+        if (type == DataObjectMethodType.Insert)
+        {
+            if (entity.TenantId == 0) entity.TenantId = TenantContext.CurrentId;
+            if (entity.ManagerId == 0) entity.ManagerId = ManageProvider.Provider.Current.ID;
+        }
+
+        return base.Valid(entity, type, post);
     }
 }

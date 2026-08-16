@@ -21,6 +21,8 @@ import type {
   UserProfileModel,
   ViewProfileModel,
   EntityCommentModel,
+  AuthBindItem,
+  TenantListResult,
 } from './types';
 
 type RequestFn = <T>(config: AxiosRequestConfig) => Promise<ApiResponse<T>>;
@@ -134,6 +136,22 @@ export function createUserApi(request: RequestFn) {
      */
     resetPassword: (data: ResetPasswordModel) =>
       request<boolean>({ url: '/Auth/ResetPassword', method: 'post', data }),
+
+    /** 当前用户第三方绑定列表 */
+    listBinds: () =>
+      request<{ providers: AuthBindItem[] }>({ url: '/Auth/Binds', method: 'get' }),
+
+    /** 解除第三方绑定（OAuthConfig.Id） */
+    unbindOAuth: (id: number | string) =>
+      request<unknown>({ url: `/Sso/UnBind/${id}`, method: 'get' }),
+
+    /** 可切换租户列表 */
+    listTenants: () =>
+      request<TenantListResult>({ url: '/Auth/Tenants', method: 'get' }),
+
+    /** 切换当前租户 */
+    switchTenant: (tenantId: number) =>
+      request<TenantListResult>({ url: '/Auth/SwitchTenant', method: 'post', data: { tenantId } }),
   };
 }
 

@@ -390,10 +390,36 @@ export interface MfaVerifyResult {
 
 /** MFA 初始化结果 */
 export interface MfaSetupResult {
-  /** Authenticator App 二维码 URI */
-  qrCodeUri: string;
+  /** Authenticator App 二维码 URI（后端可能返回 totpUri 或 qrCodeUri） */
+  qrCodeUri?: string;
+  totpUri?: string;
   /** 密钥（手动输入用） */
   secret: string;
+}
+
+/** 第三方绑定项（GET /Auth/Binds） */
+export interface AuthBindItem {
+  id: number;
+  name?: string;
+  nickName?: string;
+  logo?: string;
+  bound?: boolean;
+  connectId?: number;
+  connectNickName?: string;
+}
+
+/** 租户列表项 */
+export interface TenantItem {
+  id: number;
+  code?: string;
+  name?: string;
+}
+
+/** GET /Auth/Tenants · POST /Auth/SwitchTenant 返回 */
+export interface TenantListResult {
+  currentId: number;
+  currentCode?: string;
+  items: TenantItem[];
 }
 
 /** 菜单树节点 */

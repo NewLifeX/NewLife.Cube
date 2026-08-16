@@ -230,3 +230,39 @@ describe('createProfileApi', () => {
     );
   });
 });
+
+describe('createUserApi auth extensions', () => {
+  it('listBinds hits GET /Auth/Binds', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: { providers: [] } });
+    const { createUserApi } = await import('./api');
+    const api = createUserApi(request);
+    await api.listBinds();
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({ url: '/Auth/Binds', method: 'get' }),
+    );
+  });
+
+  it('listTenants hits GET /Auth/Tenants', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: { currentId: 0, items: [] } });
+    const { createUserApi } = await import('./api');
+    const api = createUserApi(request);
+    await api.listTenants();
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({ url: '/Auth/Tenants', method: 'get' }),
+    );
+  });
+
+  it('switchTenant posts tenantId', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: { currentId: 2, items: [] } });
+    const { createUserApi } = await import('./api');
+    const api = createUserApi(request);
+    await api.switchTenant(2);
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Auth/SwitchTenant',
+        method: 'post',
+        data: { tenantId: 2 },
+      }),
+    );
+  });
+});

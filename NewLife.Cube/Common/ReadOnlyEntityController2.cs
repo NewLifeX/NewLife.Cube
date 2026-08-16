@@ -662,6 +662,13 @@ public partial class ReadOnlyEntityController<TEntity>
             }
         }
 
+        // 租户模式：隐藏 ITenantScope 实体的 TenantId，避免租户用户改隔离键
+        if (CubeSetting.Current.EnableTenant && TenantContext.CurrentId > 0 && IsTenantSource
+            && (kind == ViewKinds.AddForm || kind == ViewKinds.EditForm || kind == ViewKinds.Detail))
+        {
+            fields.RemoveField("TenantId", "TenantName");
+        }
+
         return fields;
     }
 

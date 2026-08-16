@@ -24,7 +24,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [DisplayName("用户")]
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
 [AdminArea]
-[Menu(100, true, Icon = "User")]
+[Menu(100, true, Icon = "User", Mode = MenuModes.Admin | MenuModes.Tenant)]
 public class UserController : EntityController<User, UserModel>
 {
     /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
@@ -165,44 +165,79 @@ public class UserController : EntityController<User, UserModel>
             areaIds = rs.ToArray();
         }
 
-        // 组装条件（对齐原 XCode.User.Search 语义：roleIds 匹配 RoleID 或 RoleIds 包含；LastLogin 时间范围；关键字模糊含 Code 登录名）
-        var exp = new WhereExpression();
-        if (roleIds != null && roleIds.Length > 0)
+        IList<User> list2;
+        var tenantId = TenantContext.CurrentId;
+        if (tenantId > 0)
         {
-            // 主角色 RoleID 命中其一，或任意角色在其角色串中（逐 rid Contains，与 XCode 原语义对齐）
-            var exp2 = _.RoleID.In(roleIds);
-            foreach (var rid in roleIds)
-                exp2 |= _.RoleIds.Contains("," + rid + ",");
-            exp &= exp2;
+            // 租户模式：仅返回本租户关联用户（与 MVC 齐平）
+            list2 = XCode.Membership.User.SearchWithTenant(tenantId, roleIds, departmentIds, areaIds, enable, start, end, key, p);
         }
-        if (departmentIds != null && departmentIds.Length > 0)
-            exp &= _.DepartmentID.In(departmentIds);
-        var areaField = Factory.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("AreaID", "AreaId"));
-        if (areaField != null && areaIds.Length > 0)
-            exp &= areaField.In(areaIds);
-        if (enable != null)
-            exp &= _.Enable == enable.Value;
-        if (start > DateTime.MinValue || end > DateTime.MinValue)
-            exp &= _.LastLogin.Between(start, end);
-        if (!key.IsNullOrEmpty())
-            exp &= _.Code.Contains(key) | _.Name.Contains(key) | _.DisplayName.Contains(key) | _.Mobile.Contains(key) | _.Mail.Contains(key);
-
-        // 其余通用搜索字段（Sex/MailVerified/MobileVerified/Online/Name 等）等值过滤，
-        // 兼容搜索抽屉中任意查询条件（GetPage search 列表字段）；已由上面处理者跳过
-        // Q 关键字为模糊匹配（Code/Name/DisplayName/Mobile/Mail），与这些字段的精确等值过滤互补
-        foreach (var field in Factory.Fields)
+        else
         {
-            var val = p[field.Name];
-            if (val.IsNullOrWhiteSpace()) continue;
-            if (field.Name.EqualIgnoreCase("RoleID", "RoleIds", "DepartmentID", "DepartmentId", "AreaID", "AreaId", "Enable", "LastLogin", "Code")) continue;
-            exp &= field.Equal(val.ChangeType(field.Type));
+            // 组装条件（对齐原 XCode.User.Search 语义：roleIds 匹配 RoleID 或 RoleIds 包含；LastLogin 时间范围；关键字模糊含 Code 登录名）
+            var exp = new WhereExpression();
+            if (roleIds != null && roleIds.Length > 0)
+            {
+                var exp2 = _.RoleID.In(roleIds);
+                foreach (var rid in roleIds)
+                    exp2 |= _.RoleIds.Contains("," + rid + ",");
+                exp &= exp2;
+            }
+            if (departmentIds != null && departmentIds.Length > 0)
+                exp &= _.DepartmentID.In(departmentIds);
+            var areaField = Factory.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("AreaID", "AreaId"));
+            if (areaField != null && areaIds.Length > 0)
+                exp &= areaField.In(areaIds);
+            if (enable != null)
+                exp &= _.Enable == enable.Value;
+            if (start > DateTime.MinValue || end > DateTime.MinValue)
+                exp &= _.LastLogin.Between(start, end);
+            if (!key.IsNullOrEmpty())
+                exp &= _.Code.Contains(key) | _.Name.Contains(key) | _.DisplayName.Contains(key) | _.Mobile.Contains(key) | _.Mail.Contains(key);
+
+            foreach (var field in Factory.Fields)
+            {
+                var val = p[field.Name];
+                if (val.IsNullOrWhiteSpace()) continue;
+                if (field.Name.EqualIgnoreCase("RoleID", "RoleIds", "DepartmentID", "DepartmentId", "AreaID", "AreaId", "Enable", "LastLogin", "Code")) continue;
+                exp &= field.Equal(val.ChangeType(field.Type));
+            }
+
+            list2 = XCode.Membership.User.FindAll(exp, p);
         }
 
-        var list2 = XCode.Membership.User.FindAll(exp, p);
         foreach (var user in list2)
             user.Password = null;
 
         return list2;
+    }
+
+    /// <summary>插入用户后绑定当前租户</summary>
+    protected override Int32 OnInsert(User entity)
+    {
+        var rs = base.OnInsert(entity);
+        EnsureTenantUser(entity);
+        return rs;
+    }
+
+    /// <summary>多租户开启且当前为租户模式时，确保存在 TenantUser</summary>
+    private static void EnsureTenantUser(User entity)
+    {
+        if (!CubeSetting.Current.EnableTenant) return;
+        var tenantId = TenantContext.CurrentId;
+        if (tenantId <= 0 || entity == null || entity.ID <= 0) return;
+
+        var tu = TenantUser.FindByTenantIdAndUserId(tenantId, entity.ID);
+        if (tu != null) return;
+
+        tu = new TenantUser
+        {
+            TenantId = tenantId,
+            UserId = entity.ID,
+            CreateIP = entity.RegisterIP,
+            Enable = entity.Enable,
+        };
+        tu.Insert();
     }
 
     /// <summary>验证实体对象</summary>

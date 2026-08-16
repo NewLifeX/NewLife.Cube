@@ -94,6 +94,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'XCode 设置' },
       },
       {
+        path: 'account/security',
+        name: 'AccountSecurity',
+        component: () => import('@/views/account/SecuritySettings.vue'),
+        meta: { title: '账号安全' },
+      },
+      {
         /** 兼容旧链接：打开外观抽屉并回首页，不占用内容页签 */
         path: 'settings/appearance',
         name: 'AppearanceSettings',
@@ -119,6 +125,19 @@ export function resetMenuRoutesFlag() {
 }
 
 router.beforeEach(async (to, _from, next) => {
+  // SSO 回跳：#token= / #refreshToken=
+  if (typeof window !== 'undefined' && window.location.hash) {
+    const { parseHashTokens } = await import('@/views/login/loginConfig');
+    const { persistSession } = await import('@/views/login/sessionTokens');
+    const tokens = parseHashTokens(window.location.hash);
+    if (tokens.token) {
+      persistSession(tokens.token, tokens.refreshToken);
+      const url = new URL(window.location.href);
+      url.hash = '';
+      window.history.replaceState(null, '', url.pathname + url.search);
+    }
+  }
+
   const isPublic = !!to.meta.public;
   const token = cubeApi.tokenManager.getToken();
 

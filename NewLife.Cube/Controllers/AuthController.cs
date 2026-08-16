@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Caching;
 using NewLife.Cube.Areas.Admin.Models;
+using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Models;
 using NewLife.Cube.Services;
@@ -247,4 +248,105 @@ public class AuthController : ControllerBaseX
         res.RefreshToken = registerResult.Data.RefreshToken;
         return res.ToOkApiResponse(registerResult.Message ?? "注册成功");
     }
+
+    /// <summary>当前用户第三方绑定列表（可见 OAuth ⟕ UserConnect）</summary>
+    [HttpGet]
+    [EntityAuthorize]
+    public ActionResult Binds()
+    {
+        if (ManageProvider.User is not User user) return Json(-1, "未登录");
+
+        user = XCode.Membership.User.FindByKeyForEdit(user.ID);
+        if (user == null) return Json(-1, "无效用户");
+
+        var connects = UserConnect.FindAllByUserID(user.ID);
+        var oauthItems = OAuthConfig.GetValids(TenantContext.CurrentId, GrantTypes.AuthorizationCode);
+
+        var providers = oauthItems.Select(o =>
+        {
+            var conn = connects.FirstOrDefault(c => c.Provider.EqualIgnoreCase(o.Name));
+            return new
+            {
+                id = o.ID,
+                name = o.Name,
+                nickName = o.NickName,
+                logo = o.Logo,
+                bound = conn != null && conn.Enable,
+                connectId = conn?.ID ?? 0,
+                connectNickName = conn?.NickName,
+            };
+        }).ToList();
+
+        return Json(0, "ok", new { providers });
+    }
+
+    /// <summary>当前用户可切换的租户列表</summary>
+    [HttpGet]
+    [EntityAuthorize]
+    public ActionResult Tenants()
+    {
+        if (ManageProvider.User is not User user) return Json(-1, "未登录");
+        return Json(0, "ok", BuildTenantList(user));
+    }
+
+    /// <summary>切换当前租户</summary>
+    [HttpPost]
+    [EntityAuthorize]
+    public ActionResult SwitchTenant([FromBody] SwitchTenantModel model)
+    {
+        if (ManageProvider.User is not User user) return Json(-1, "未登录");
+        if (!CubeSetting.Current.EnableTenant) return Json(-1, "未开启多租户");
+
+        var tenantId = model?.TenantId ?? -1;
+        var isAdmin = user.Roles != null && user.Roles.Any(e => e.IsSystem);
+        var list = TenantUser.FindAllByUserId(user.ID).Where(e => e.Enable).ToList();
+
+        if (tenantId == 0)
+        {
+            if (!isAdmin) return Json(-1, "无权切换到平台");
+        }
+        else if (tenantId > 0)
+        {
+            if (!list.Any(e => e.TenantId == tenantId)) return Json(-1, "无权切换到该租户");
+        }
+        else
+        {
+            return Json(-1, "无效租户");
+        }
+
+        HttpContext.SaveTenant(tenantId);
+        return Json(0, "ok", BuildTenantList(user));
+    }
+
+    private static Object BuildTenantList(User user)
+    {
+        var currentId = TenantContext.CurrentId;
+        var current = Tenant.FindById(currentId);
+        var isAdmin = user.Roles != null && user.Roles.Any(e => e.IsSystem);
+        var items = new List<Object>();
+
+        if (isAdmin)
+            items.Add(new { id = 0, code = "", name = "平台" });
+
+        foreach (var tu in TenantUser.FindAllByUserId(user.ID).Where(e => e.Enable))
+        {
+            var t = Tenant.FindById(tu.TenantId);
+            if (t == null || !t.Enable) continue;
+            items.Add(new { id = t.Id, code = t.Code ?? "", name = t.Name });
+        }
+
+        return new
+        {
+            currentId,
+            currentCode = current?.Code ?? "",
+            items,
+        };
+    }
+}
+
+/// <summary>切换租户请求</summary>
+public class SwitchTenantModel
+{
+    /// <summary>目标租户 Id；0 表示平台（仅系统管理员）</summary>
+    public Int32 TenantId { get; set; }
 }

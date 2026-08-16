@@ -39,6 +39,9 @@ export type {
   UserProfileModel,
   ViewProfileModel,
   EntityCommentModel,
+  AuthBindItem,
+  TenantItem,
+  TenantListResult,
 } from './types';
 export { FieldKind, Auth, ApiError } from './types';
 
