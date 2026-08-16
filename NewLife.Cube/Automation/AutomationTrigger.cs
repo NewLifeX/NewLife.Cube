@@ -145,6 +145,13 @@ public static class AutomationTrigger
         var now = DateTime.UtcNow.Ticks;
         if (_debounce.TryGetValue(key, out var last) && (now - last) < TimeSpan.FromMilliseconds(AutomationRuntime.DebounceMs).Ticks)
             return true;
+        // design：3 秒内已有 queued/running 则跳过（进程重启后内存字典丢失时仍生效）
+        try
+        {
+            if (AutomationRun.HasRecentActive(automationId, recordKey, AutomationRuntime.DebounceMs))
+                return true;
+        }
+        catch { /* 查询失败不挡入队 */ }
         _debounce[key] = now;
         return false;
     }

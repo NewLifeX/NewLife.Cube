@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using NewLife.Cube.Entity;
 using NewLife.Log;
 using NewLife.Threading;
 
@@ -39,6 +40,10 @@ public class AutomationWorker : IHostedService
 
     void DoWork(Object state)
     {
+        // 补挂启动后新注册的工厂，缩小「首次写入漏触发」窗口
+        try { AutomationHost.WrapAll(); }
+        catch (Exception ex) { XTrace.WriteException(ex); }
+
         var n = 0;
         while (n++ < 20 && _queue.TryDequeue(out var id))
         {
@@ -47,6 +52,23 @@ public class AutomationWorker : IHostedService
                 var run = AutomationRun.FindById(id);
                 if (run != null && run.Status.EqualIgnoreCase("queued"))
                     AutomationExecutor.Execute(run);
+            }
+            catch (Exception ex)
+            {
+                XTrace.WriteException(ex);
+            }
+        }
+
+        // 进程重启后内存队列为空：从 Log 库捞 queued
+        if (n <= 1)
+        {
+            try
+            {
+                foreach (var run in AutomationRun.FindQueued(10))
+                {
+                    if (run.Status.EqualIgnoreCase("queued"))
+                        AutomationExecutor.Execute(run);
+                }
             }
             catch (Exception ex)
             {

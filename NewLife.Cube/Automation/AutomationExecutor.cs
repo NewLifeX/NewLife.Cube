@@ -62,22 +62,90 @@ public static class AutomationExecutor
                 var graph = AutomationGraph.Parse(rule.GraphJson);
                 var nodes = AutomationGraph.LinearNodes(graph);
                 var skip = !ctx.ResumeAfter.IsNullOrEmpty();
-                for (var i = 0; i < nodes.Count; i++)
+                for (var i = 0; i < nodes.Count; )
                 {
-                    var (id, type, data) = nodes[i];
+                    var (id, type, dataObj) = nodes[i];
+                    var data = dataObj as JsonObject ?? new JsonObject();
                     if (skip)
                     {
                         if (id.EqualIgnoreCase(ctx.ResumeAfter)) skip = false;
+                        i++;
                         continue;
                     }
-                    var ok = RunNode(ctx, id, type, data as JsonObject ?? new JsonObject(), out var delayMinutes, out var detail);
+
+                    // found 连续段：对每条 found 整段执行（design §4.4）；空 found 则跳过整段不失败
+                    if (IsFoundTargetNode(type, data))
+                    {
+                        var seg = new List<(String id, String type, JsonObject data)>();
+                        var j = i;
+                        while (j < nodes.Count)
+                        {
+                            var (sid, stype, sdataObj) = nodes[j];
+                            var sdata = sdataObj as JsonObject ?? new JsonObject();
+                            if (!IsFoundTargetNode(stype, sdata)) break;
+                            seg.Add((sid, stype, sdata));
+                            j++;
+                        }
+                        if (ctx.Found is not { Count: > 0 })
+                        {
+                            foreach (var (sid, stype, _) in seg)
+                            {
+                                ctx.Trace.Add(new JsonObject
+                                {
+                                    ["nodeId"] = sid,
+                                    ["type"] = stype,
+                                    ["at"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                                    ["ok"] = true,
+                                    ["detail"] = "found empty skip",
+                                });
+                            }
+                            i = j;
+                            continue;
+                        }
+                        var segFailed = false;
+                        String segFailDetail = null;
+                        foreach (var rec in ctx.Found)
+                        {
+                            ctx.FoundCurrent = rec;
+                            foreach (var (sid, stype, sdata) in seg)
+                            {
+                                var ok = AutomationActions.Run(ctx, stype, sdata, out var detail);
+                                ctx.Trace.Add(new JsonObject
+                                {
+                                    ["nodeId"] = sid,
+                                    ["type"] = stype,
+                                    ["at"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                                    ["ok"] = ok,
+                                    ["detail"] = detail,
+                                    ["foundKey"] = AutomationPaths.RecordKey(rec),
+                                });
+                                if (!ok && !stype.EqualIgnoreCase("notify"))
+                                {
+                                    segFailed = true;
+                                    segFailDetail = detail;
+                                    break;
+                                }
+                            }
+                            if (segFailed) break;
+                        }
+                        ctx.FoundCurrent = null;
+                        if (segFailed)
+                        {
+                            Finish(rule, run, "failed", (segFailDetail + "").Cut(500), ctx.Trace.ToJsonString());
+                            return;
+                        }
+                        i = j;
+                        continue;
+                    }
+
+                    var okNode = RunNode(ctx, id, type, data, out var delayMinutes, out var detailNode);
                     ctx.Trace.Add(new JsonObject
                     {
                         ["nodeId"] = id,
                         ["type"] = type,
                         ["at"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                        ["ok"] = ok,
-                        ["detail"] = detail,
+                        ["ok"] = okNode,
+                        ["detail"] = detailNode,
                     });
                     if (delayMinutes > 0)
                     {
@@ -87,16 +155,17 @@ public static class AutomationExecutor
                         run.Update();
                         return;
                     }
-                    if (!ok && type.EqualIgnoreCase("filter"))
+                    if (!okNode && type.EqualIgnoreCase("filter"))
                     {
                         Finish(rule, run, "succeeded", "条件未匹配", ctx.Trace.ToJsonString());
                         return;
                     }
-                    if (!ok && !type.EqualIgnoreCase("notify"))
+                    if (!okNode && !type.EqualIgnoreCase("notify"))
                     {
-                        Finish(rule, run, "failed", (detail + "").Cut(500), ctx.Trace.ToJsonString());
+                        Finish(rule, run, "failed", (detailNode + "").Cut(500), ctx.Trace.ToJsonString());
                         return;
                     }
+                    i++;
                 }
                 Finish(rule, run, "succeeded", null, ctx.Trace.ToJsonString());
             }
@@ -190,23 +259,14 @@ public static class AutomationExecutor
             return true;
         }
 
-        // found 连续段：当前节点 target=found 时对每条 found 执行
-        var target = data["target"]?.ToString();
-        if (target.EqualIgnoreCase("found") && ctx.Found != null && ctx.Found.Count > 0
-            && type.EqualIgnoreCase("updateRecord", "notify", "addComment"))
-        {
-            var allOk = true;
-            foreach (var rec in ctx.Found)
-            {
-                ctx.FoundCurrent = rec;
-                if (!AutomationActions.Run(ctx, type, data, out var d)) allOk = false;
-                detail = d;
-            }
-            ctx.FoundCurrent = null;
-            return allOk;
-        }
-
+        // found 连续段已在 Execute 外层处理；此处仅单次执行
         return AutomationActions.Run(ctx, type, data, out detail);
+    }
+
+    static Boolean IsFoundTargetNode(String type, JsonObject data)
+    {
+        if (!type.EqualIgnoreCase("updateRecord", "notify", "addComment")) return false;
+        return data?["target"]?.ToString().EqualIgnoreCase("found") == true;
     }
 
     /// <summary>模板替换</summary>
@@ -250,9 +310,35 @@ static class FilterJson
             {
                 Field = c["field"]?.ToString(),
                 Op = c["op"]?.ToString(),
-                Value = c["value"] is JsonValue v ? v.ToString() : c["value"],
+                Value = ReadFilterValue(c["value"]),
             });
         }
         return dto;
+    }
+
+    static Object ReadFilterValue(JsonNode node)
+    {
+        if (node is null) return null;
+        if (node is JsonValue v)
+        {
+            try
+            {
+                if (v.TryGetValue<Int64>(out var l)) return l;
+            }
+            catch { /* */ }
+            try
+            {
+                if (v.TryGetValue<Double>(out var d)) return d;
+            }
+            catch { /* */ }
+            try
+            {
+                if (v.TryGetValue<Boolean>(out var b)) return b;
+            }
+            catch { /* */ }
+            return v.ToString();
+        }
+        if (node is JsonArray arr) return arr.Select(ReadFilterValue).ToList();
+        return node.ToString();
     }
 }

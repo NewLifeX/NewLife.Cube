@@ -159,7 +159,8 @@ public class AutomationController(TokenService tokenService) : ControllerBaseX
             Filter = model.Filter,
             Actions = model.Actions,
         });
-        var err = AutomationGraph.ValidateForSave(graph);
+        var selfId = create ? 0 : model.Id;
+        var err = AutomationGraph.ValidateForSave(graph, selfId);
         if (err != null) return Json(400, err);
 
         EntityAutomation entity;
@@ -238,7 +239,7 @@ public class AutomationController(TokenService tokenService) : ControllerBaseX
         return Json(0, "ok");
     }
 
-    /// <summary>运行历史（读系统审计 Log，Action=Automation；运行态为内存队列）</summary>
+    /// <summary>运行历史（读 AutomationRun 表，ConnName=Log）</summary>
     [HttpGet("Runs")]
     public ActionResult Runs(String typePath, Int64 automationId = 0, String recordKey = null, Int32 pageIndex = 1, Int32 pageSize = 20)
     {
@@ -248,46 +249,59 @@ public class AutomationController(TokenService tokenService) : ControllerBaseX
         if (typePath.IsNullOrEmpty()) return Json(400, "typePath 不能为空");
         if (!AutomationAuth.CanViewRuns(user, typePath)) return Json(403, "无权查看");
         var page = new PageParameter { PageIndex = pageIndex <= 0 ? 1 : pageIndex, PageSize = pageSize <= 0 ? 20 : pageSize };
-        var linkId = recordKey.ToLong(-1);
-        // 先按 Category+Action(+LinkID) 拉审计日志；automationId 在 Remark JSON 内二次过滤
-        var logs = EntityAuditLog.Search(typePath, AutomationFlowLog.ActionName, linkId, null, -1,
-            DateTime.MinValue, DateTime.MinValue, null, page);
-        var data = new List<Object>();
-        foreach (var log in logs)
+        var list = AutomationRun.SearchRuns(typePath, automationId, recordKey, page);
+        var names = new Dictionary<Int64, String>();
+        var data = list.Select(run =>
         {
-            AutomationFlowLog.TryParseRemark(log.Remark, out var row);
-            if (automationId > 0 && (row == null || row.AutomationId != automationId)) continue;
-            data.Add(new
+            if (!names.TryGetValue(run.AutomationId, out var name))
             {
-                id = row?.RunId > 0 ? row.RunId : log.ID,
-                automationId = row?.AutomationId ?? 0,
-                name = row?.Name,
-                typePath,
-                recordKey = row?.RecordKey ?? (log.LinkID > 0 ? log.LinkID + "" : recordKey),
-                triggerKind = row?.TriggerKind,
-                status = row?.Status ?? (log.Success ? "succeeded" : "failed"),
-                error = row?.Error,
-                detail = row != null && !row.Detail.IsNullOrEmpty()
-                    ? row.Detail
-                    : FallbackDetail(row, log.Success),
-                nodes = row?.Nodes,
-                success = log.Success,
-                createTime = log.CreateTime,
-                updateTime = log.CreateTime,
-            });
-        }
+                name = EntityAutomation.FindById(run.AutomationId)?.Name;
+                names[run.AutomationId] = name;
+            }
+            return (Object)new
+            {
+                id = run.Id,
+                automationId = run.AutomationId,
+                name,
+                typePath = run.TypePath,
+                recordKey = run.RecordKey,
+                triggerKind = run.TriggerKind,
+                status = run.Status,
+                error = run.Error,
+                detail = RunDetail(name, run),
+                nodes = SummarizeNodes(run.NodeTrace),
+                success = run.Status.EqualIgnoreCase("succeeded"),
+                createTime = run.CreateTime,
+                updateTime = run.UpdateTime,
+            };
+        }).ToList();
         return Json(0, null, data, new { page = new { page.PageIndex, page.PageSize, page.TotalCount } });
     }
 
-    static String FallbackDetail(AutomationFlowLogRow row, Boolean success)
+    static String RunDetail(String name, AutomationRun run)
     {
-        if (row == null) return success ? "自动化执行成功" : "自动化执行失败";
-        var name = row.Name.IsNullOrEmpty() ? "流程" : $"流程「{row.Name}」";
-        var kind = row.TriggerKind.IsNullOrEmpty() ? "" : $"（{row.TriggerKind}）";
-        var record = row.RecordKey.IsNullOrEmpty() ? "" : $"，记录 #{row.RecordKey}";
-        if (!row.Error.IsNullOrEmpty()) return $"{name}{kind}执行失败{record}：{row.Error}";
-        if (!row.Nodes.IsNullOrEmpty()) return $"{name}{kind}已执行：{row.Nodes}{record}。";
-        return success ? $"{name}{kind}执行成功{record}。" : $"{name}{kind}执行失败{record}。";
+        var title = name.IsNullOrEmpty() ? "流程" : $"流程「{name}」";
+        var kind = run.TriggerKind.IsNullOrEmpty() ? "" : $"（{run.TriggerKind}）";
+        var record = run.RecordKey.IsNullOrEmpty() ? "" : $"，记录 #{run.RecordKey}";
+        if (!run.Error.IsNullOrEmpty()) return $"{title}{kind}执行失败{record}：{run.Error}";
+        if (run.Status.EqualIgnoreCase("succeeded")) return $"{title}{kind}执行成功{record}。";
+        if (run.Status.EqualIgnoreCase("waiting")) return $"{title}{kind}等待续跑{record}。";
+        if (run.Status.EqualIgnoreCase("queued") || run.Status.EqualIgnoreCase("running"))
+            return $"{title}{kind}执行中{record}。";
+        return $"{title}{kind}状态 {run.Status}{record}。";
+    }
+
+    static String SummarizeNodes(String nodeTrace)
+    {
+        if (nodeTrace.IsNullOrEmpty()) return null;
+        try
+        {
+            var n = System.Text.Json.Nodes.JsonNode.Parse(nodeTrace);
+            var items = n?["items"] as System.Text.Json.Nodes.JsonArray ?? n as System.Text.Json.Nodes.JsonArray;
+            if (items == null || items.Count == 0) return null;
+            return String.Join(" → ", items.Select(x => x?["type"]?.ToString()).Where(s => !s.IsNullOrEmpty()).Take(12));
+        }
+        catch { return null; }
     }
 
     /// <summary>按钮手动跑</summary>
@@ -508,10 +522,11 @@ public class AutomationController(TokenService tokenService) : ControllerBaseX
     public async Task<ActionResult> Hook(String token)
     {
         if (token.IsNullOrEmpty()) return Json(404, "不存在");
-        if (!AutomationHookRate.TryAcquire(token)) return Json(429, "过于频繁");
         var rule = EntityAutomation.FindByHookToken(token);
         if (rule == null || !rule.Enable || !rule.TriggerKind.EqualIgnoreCase("webhook"))
             return Json(404, "不存在");
+        // 先校验再限流，避免无效 token 撑大限流字典
+        if (!AutomationHookRate.TryAcquire(token)) return Json(429, "过于频繁");
         Request.EnableBuffering();
         using var reader = new StreamReader(Request.Body, Encoding.UTF8, leaveOpen: true);
         var raw = await reader.ReadToEndAsync();

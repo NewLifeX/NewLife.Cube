@@ -142,8 +142,8 @@ public static class AutomationGraph
         };
     }
 
-    /// <summary>保存校验：线性链、version≤1、无预留/未知 type</summary>
-    public static String ValidateForSave(JsonNode graph)
+    /// <summary>保存校验：线性链、version≤1、无预留/未知 type；runAutomation 禁止指向自身</summary>
+    public static String ValidateForSave(JsonNode graph, Int64 selfAutomationId = 0)
     {
         if (graph is not JsonObject obj) return "图必须是对象";
         var ver = obj["version"]?.GetValue<Int32>() ?? 1;
@@ -161,6 +161,21 @@ public static class AutomationGraph
             if (type.IsNullOrEmpty()) return "节点 type 为空";
             if (ReservedTypes.Contains(type) || !ImplementedTypes.Contains(type))
                 return $"节点类型未实现或不允许保存：{type}";
+            if (type.EqualIgnoreCase("runAutomation"))
+            {
+                var data = no["data"] as JsonObject;
+                var aid = data?["automationId"]?.GetValue<Int64>() ?? 0;
+                if (aid <= 0) return "runAutomation 需要有效 automationId";
+                if (selfAutomationId > 0 && aid == selfAutomationId)
+                    return "runAutomation 不能指向自身";
+            }
+            // 废弃 target=created：保存时归一
+            if (type.EqualIgnoreCase("updateRecord", "notify", "addComment"))
+            {
+                var data = no["data"] as JsonObject;
+                if (data?["target"]?.ToString().EqualIgnoreCase("created") == true)
+                    data["target"] = "current";
+            }
         }
         // 线性：每个非 end 出度 1，无环
         var outgoing = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);

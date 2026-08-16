@@ -15,8 +15,6 @@ namespace NewLife.Cube.Automation;
 /// <summary>动作实现</summary>
 public static class AutomationActions
 {
-    static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(15) };
-
     /// <summary>执行一个动作节点</summary>
     public static Boolean Run(AutomationContext ctx, String type, JsonObject data, out String detail)
     {
@@ -50,7 +48,8 @@ public static class AutomationActions
     {
         var t = data["target"]?.ToString();
         if (t.EqualIgnoreCase("found")) return ctx.FoundCurrent ?? ctx.Found?.FirstOrDefault();
-        if (t.EqualIgnoreCase("created")) return ctx.Created;
+        // design §4.2：废弃 created，归一为 current（禁止跨租户误用新建行）
+        if (t.EqualIgnoreCase("created")) return ctx.Current;
         return ctx.Current;
     }
 
@@ -208,7 +207,7 @@ public static class AutomationActions
         void AddUsers()
         {
             foreach (var id in ReadIntArray(to["users"]))
-                if (id > 0) ids.Add(id);
+                if (id > 0 && UserInRuleTenant(id, ctx.Rule?.TenantId ?? 0)) ids.Add(id);
         }
         void AddRoles()
         {
@@ -219,7 +218,7 @@ public static class AutomationActions
                 exp |= User._.RoleIds.Contains("," + rid + ",");
             exp &= User._.Enable == true;
             foreach (var u in User.FindAll(exp, null, null, 0, 500))
-                if (u.ID > 0) ids.Add(u.ID);
+                if (u.ID > 0 && UserInRuleTenant(u.ID, ctx.Rule?.TenantId ?? 0)) ids.Add(u.ID);
         }
         void AddDepts()
         {
@@ -227,7 +226,7 @@ public static class AutomationActions
             if (deptIds.Length == 0) return;
             var exp = User._.DepartmentID.In(deptIds) & User._.Enable == true;
             foreach (var u in User.FindAll(exp, null, null, 0, 500))
-                if (u.ID > 0) ids.Add(u.ID);
+                if (u.ID > 0 && UserInRuleTenant(u.ID, ctx.Rule?.TenantId ?? 0)) ids.Add(u.ID);
         }
 
         if (kind is "user" or "users") AddUsers();
@@ -260,6 +259,13 @@ public static class AutomationActions
         }
 
         return ids;
+    }
+
+    /// <summary>开启租户时，角色/部门展开与显式用户均须属于规则租户</summary>
+    static Boolean UserInRuleTenant(Int32 userId, Int32 tenantId)
+    {
+        if (!CubeSetting.Current.EnableTenant || tenantId <= 0) return true;
+        return TenantUser.FindByTenantIdAndUserId(tenantId, userId) != null;
     }
 
     static IEnumerable<Int32> ReadIntArray(JsonNode node)
@@ -326,19 +332,54 @@ public static class AutomationActions
         if (limit < 1) limit = 1;
         if (limit > 100) limit = 100;
         var filter = (data["filter"] as JsonObject).DeserializeFilter();
-        var list = fact.FindAll(null, null, null, 0, Math.Min(500, limit * 5));
-        ctx.Found = list.Where(e => AutomationFilter.Match(e, filter)).Take(limit).ToList();
+        ctx.Found = QueryFound(fact, filter, limit);
         detail = "found " + ctx.Found.Count;
         return true;
+    }
+
+    /// <summary>查找记录：优先 SQL Where；无法下推时分页扫描直至凑满 limit（避免只扫前缀漏匹配）</summary>
+    static IList<IEntity> QueryFound(IEntityFactory fact, ViewFilterDto filter, Int32 limit)
+    {
+        if (fact == null) return [];
+        if (filter == null || filter.Conditions == null || filter.Conditions.Count == 0)
+            return fact.FindAll(null, null, null, 0, limit);
+
+        var where = AutomationFilter.TryBuildWhere(fact, filter);
+        if (where != null)
+            return fact.FindAll(where, null, null, 0, limit);
+
+        // 分页扫描：每批 200，最多扫 50 批（1 万行）
+        var found = new List<IEntity>();
+        const Int32 batch = 200;
+        for (var start = 0; start < 10_000 && found.Count < limit; start += batch)
+        {
+            var page = fact.FindAll(null, null, null, start, batch);
+            if (page == null || page.Count == 0) break;
+            foreach (var e in page)
+            {
+                if (!AutomationFilter.Match(e, filter)) continue;
+                found.Add(e);
+                if (found.Count >= limit) break;
+            }
+            if (page.Count < batch) break;
+        }
+        return found;
+    }
+
+    static readonly HttpClient Http = CreateHttp();
+
+    static HttpClient CreateHttp()
+    {
+        var handler = new HttpClientHandler { AllowAutoRedirect = false };
+        return new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(15) };
     }
 
     static Boolean HttpRequest(AutomationContext ctx, JsonObject data, out String detail)
     {
         var url = AutomationExecutor.ApplyTemplate(data["url"]?.ToString() ?? "", ctx);
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
-            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        if (!TryValidatePublicHttpUrl(url, out var uri, out var why))
         {
-            detail = "非法 URL";
+            detail = why;
             return false;
         }
         var method = (data["method"]?.ToString() ?? "POST").ToUpperInvariant();
@@ -350,7 +391,7 @@ public static class AutomationActions
             foreach (var kv in headers)
             {
                 if (n++ >= 16) break;
-                if (kv.Key.EqualIgnoreCase("Authorization")) continue; // 不进 trace；仍发送
+                if (kv.Key.EqualIgnoreCase("Authorization")) continue;
                 req.Headers.TryAddWithoutValidation(kv.Key, AutomationExecutor.ApplyTemplate(kv.Value?.ToString(), ctx));
             }
             if (headers["Authorization"] != null)
@@ -364,6 +405,60 @@ public static class AutomationActions
         if (text != null && text.Length > 64 * 1024) text = text[..(64 * 1024)];
         detail = ((Int32)resp.StatusCode) + " " + (text ?? "").Cut(200);
         return resp.IsSuccessStatusCode;
+    }
+
+    /// <summary>仅允许公网 http(s)；拒绝 loopback/私网/链路本地（防 SSRF）</summary>
+    public static Boolean TryValidatePublicHttpUrl(String url, out Uri uri, out String error)
+    {
+        uri = null;
+        error = null;
+        if (!Uri.TryCreate(url, UriKind.Absolute, out uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            error = "非法 URL";
+            return false;
+        }
+        if (uri.IsLoopback) { error = "禁止访问本机地址"; return false; }
+        var host = uri.DnsSafeHost;
+        if (host.EqualIgnoreCase("localhost", "metadata.google.internal"))
+        { error = "禁止访问受限主机"; return false; }
+        try
+        {
+            if (IPAddress.TryParse(host, out var ip))
+            {
+                if (IsPrivateOrLocal(ip)) { error = "禁止访问私网地址"; return false; }
+            }
+            else
+            {
+                var addrs = Dns.GetHostAddresses(host);
+                if (addrs.Length == 0) { error = "无法解析主机"; return false; }
+                if (addrs.Any(IsPrivateOrLocal)) { error = "禁止访问私网地址"; return false; }
+            }
+        }
+        catch
+        {
+            error = "无法解析主机";
+            return false;
+        }
+        return true;
+    }
+
+    static Boolean IsPrivateOrLocal(IPAddress ip)
+    {
+        if (IPAddress.IsLoopback(ip)) return true;
+        if (ip.IsIPv6LinkLocal || ip.IsIPv6SiteLocal) return true;
+        var b = ip.GetAddressBytes();
+        if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork && b.Length >= 4)
+        {
+            // 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, 127.0.0.0/8
+            if (b[0] == 10) return true;
+            if (b[0] == 127) return true;
+            if (b[0] == 192 && b[1] == 168) return true;
+            if (b[0] == 169 && b[1] == 254) return true;
+            if (b[0] == 172 && b[1] >= 16 && b[1] <= 31) return true;
+            if (b[0] == 0) return true;
+        }
+        return false;
     }
 
     static Boolean RunAutomation(AutomationContext ctx, JsonObject data, out String detail)

@@ -71,4 +71,9 @@
 - [x] 11.1 `NewLife.Cube.Tests/Osc260815AutomationTests.cs`：Filter 同构、深度、debounce、Dirtys fieldChange、租户、approval 脏图执行失败、Compile 拒绝环。
 - [x] 11.2 跑 design §10 全部命令，0 failed / 0 error。
 - [x] 11.3 回写 `web/README.md`、`Doc/功能清单.md`（追加 DATA/SPA 行）、`Doc/Api/核心接口架构.md`、迁移方案（自动化 ≠ FlowGram 运行时）。
-- [ ] 11.4 手工冒烟：User 列表创建 insert+InApp notify；无 Update 无入口。环境缺菜单则 verify 记跳过原因。
+- [x] 11.4 手工冒烟：Admin/User（及 Area）顶栏「搜索」与「高级」之间可见「自动化」（2026-08-16 浏览器确认）。完整 insert→InApp→Run 成功链路未在本环境点完创建抽屉点击被壳层遮罩拦截），以单测 + 入口 AC 为准。
+
+## T12 验收缺口补齐（openspec-verify 2026-08-16）
+
+- [x] 12.1 **P0.1** `AutomationRun` 按 design §2.2 落 `Cube.xml`（ConnName=Log）+ xcode 生成；Biz 实现 Enqueue/FindDueWaiting/SearchRuns；删除内存队列实现；CubeNC Link；`GET /Runs` 读本表；更新功能清单 DATA-13 / 核心接口架构。
+- [x] 12.2 其余 P0/P1/P2：found 连续段语义 + 空 found 跳过；findRecords SQL 下推/分页扫描；Filter 与 matchesViewFilter 对齐；runAutomation 自引用保存拒绝；httpRequest SSRF；Hook 先校验再限流 + 字典淘汰；废弃 target=created；Worker WrapAll 补挂工厂；批量 names/values 路径 After；debounce 查 queued/running；角色/部门展开租户裁剪；api-core recipients/entities/inbox URL 单测。

@@ -157,6 +157,9 @@ public static class AutomationHookRate
     /// <summary>每令牌每分钟上限</summary>
     public static Int32 Limit { get; set; } = 60;
 
+    /// <summary>字典上限；超出时淘汰过期窗口</summary>
+    public static Int32 MaxKeys { get; set; } = 2048;
+
     /// <summary>测试重置</summary>
     public static void Reset() => Hits.Clear();
 
@@ -164,6 +167,7 @@ public static class AutomationHookRate
     public static Boolean TryAcquire(String token)
     {
         if (token.IsNullOrEmpty()) return false;
+        if (Hits.Count > MaxKeys) TrimExpired();
         var now = DateTime.UtcNow.Ticks;
         var win = TimeSpan.FromMinutes(1).Ticks;
         var next = Hits.AddOrUpdate(token, _ => (now, 1), (_, s) =>
@@ -172,6 +176,21 @@ public static class AutomationHookRate
             return (s.Window, s.Count + 1);
         });
         return next.Count <= Limit;
+    }
+
+    static void TrimExpired()
+    {
+        var now = DateTime.UtcNow.Ticks;
+        var win = TimeSpan.FromMinutes(1).Ticks;
+        foreach (var kv in Hits)
+        {
+            if (now - kv.Value.Window > win)
+                Hits.TryRemove(kv.Key, out _);
+        }
+        // 仍过大：丢掉最旧一半
+        if (Hits.Count <= MaxKeys) return;
+        foreach (var key in Hits.OrderBy(x => x.Value.Window).Take(Hits.Count / 2).Select(x => x.Key).ToArray())
+            Hits.TryRemove(key, out _);
     }
 
     /// <summary>HMAC-SHA256 hex（小写）</summary>

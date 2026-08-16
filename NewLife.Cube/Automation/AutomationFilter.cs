@@ -7,6 +7,65 @@ namespace NewLife.Cube.Automation;
 /// <summary>与前端 matchesViewFilter 同构的 C# 匹配</summary>
 public static class AutomationFilter
 {
+    /// <summary>尝试下推为 SQL Where；任一条件无法下推则返回 null（调用方改分页内存过滤）</summary>
+    public static Expression TryBuildWhere(IEntityFactory fact, ViewFilterDto filter)
+    {
+        if (fact == null || filter?.Conditions == null || filter.Conditions.Count == 0) return null;
+        var any = (filter.Logic + "").EqualIgnoreCase("any");
+        Expression exp = null;
+        foreach (var c in filter.Conditions)
+        {
+            var piece = TryBuildCondition(fact, c);
+            if (piece == null) return null;
+            exp = exp == null ? piece : (any ? (exp | piece) : (exp & piece));
+        }
+        return exp;
+    }
+
+    static Expression TryBuildCondition(IEntityFactory fact, ViewFilterConditionDto c)
+    {
+        if (c == null || c.Field.IsNullOrEmpty()) return null;
+        var fi = fact.Fields?.FirstOrDefault(f => f.Name.EqualIgnoreCase(c.Field));
+        if (fi == null) return null;
+        var op = (c.Op + "").Trim().ToLowerInvariant();
+        var val = Unwrap(c.Value);
+        try
+        {
+            return op switch
+            {
+                "eq" => fi.Equal(val),
+                "neq" => fi.NotEqual(val),
+                "isnull" => fi.IsNull(),
+                "notnull" => fi.NotIsNull(),
+                "gt" => fi > val,
+                "gte" => fi >= val,
+                "lt" => fi < val,
+                "lte" => fi <= val,
+                "contains" => fi.Contains("" + val),
+                "after" => fi > val,
+                "before" => fi < val,
+                _ => null,
+            };
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    static Object Unwrap(Object value)
+    {
+        if (value is JsonElement je) return JsonValue(je);
+        if (value is String s)
+        {
+            if (Decimal.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out var n) &&
+                s.IndexOfAny(['.', 'e', 'E']) < 0 && n == Decimal.Truncate(n) && n <= Int64.MaxValue && n >= Int64.MinValue)
+                return (Int64)n;
+            return s;
+        }
+        return value;
+    }
+
     /// <summary>空条件恒 true</summary>
     public static Boolean Match(IEntity entity, ViewFilterDto filter)
     {
@@ -35,22 +94,29 @@ public static class AutomationFilter
         if (c == null || c.Field.IsNullOrEmpty()) return false;
         var op = (c.Op + "").Trim();
         if (op.IsNullOrEmpty()) return false;
-        // 与前端 matchesViewFilter 对齐：未知字段 → 条件恒 false
-        if (!TryGet(row, c.Field, out var raw)) return false;
+        // 与前端 matchesViewFilter：缺键时 raw==null → isNull 为 true；其它 op 未知字段恒 false
+        if (!TryGet(row, c.Field, out var raw))
+        {
+            if (op.EqualIgnoreCase("isNull")) return true;
+            if (op.EqualIgnoreCase("notNull")) return false;
+            return false;
+        }
         return op.ToLowerInvariant() switch
         {
             "eq" => Eq(raw, c.Value),
             "neq" => !Eq(raw, c.Value),
-            "contains" => Contains(raw, c.Value, true),
-            "notcontains" => !Contains(raw, c.Value, true),
+            // 与前端 String.includes：大小写敏感
+            "contains" => Contains(raw, c.Value, false),
+            "notcontains" => !Contains(raw, c.Value, false),
             "isnull" => IsNull(raw),
             "notnull" => !IsNull(raw),
             "gt" => Cmp(raw, c.Value) is { } r1 && r1 > 0,
             "gte" => Cmp(raw, c.Value) is { } r2 && r2 >= 0,
             "lt" => Cmp(raw, c.Value) is { } r3 && r3 < 0,
             "lte" => Cmp(raw, c.Value) is { } r4 && r4 <= 0,
-            "after" => CmpDate(raw, c.Value) > 0,
-            "before" => CmpDate(raw, c.Value) < 0,
+            // after/before：优先日期，否则与前端 compareValues 一样走可解析比较
+            "after" => CmpFlexible(raw, c.Value) > 0,
+            "before" => CmpFlexible(raw, c.Value) < 0,
             _ => false,
         };
     }
@@ -115,6 +181,14 @@ public static class AutomationFilter
     {
         if (!TryDate(raw, out var a) || !TryDate(expected, out var b)) return 0;
         return a.CompareTo(b);
+    }
+
+    /// <summary>日期优先；否则数字/字符串比较（对齐前端 compareValues）</summary>
+    static Int32 CmpFlexible(Object raw, Object expected)
+    {
+        if (TryDate(raw, out var da) && TryDate(expected, out var db)) return da.CompareTo(db);
+        if (Cmp(raw, expected) is { } n) return n;
+        return String.Compare(raw + "", expected + "", StringComparison.Ordinal);
     }
 
     static Boolean TryNum(Object v, out Decimal n)

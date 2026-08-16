@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using NewLife.Cube;
 using NewLife.Cube.Automation;
 using NewLife.Cube.Entity;
@@ -69,15 +70,128 @@ public class Osc260815AutomationTests
         var eqStr = F("all", C("Type", "eq", "1"));
         Assert.True(AutomationFilter.Match(new Dictionary<String, Object> { ["type"] = 1 }, eqStr));
 
-        // 未知字段恒 false（含 neq/isNull，与前端 matchesViewFilter 对齐）
+        // 未知字段：isNull 为 true（与 matchesViewFilter undefined）；其它 op 恒 false
         Assert.False(AutomationFilter.Match(new Dictionary<String, Object> { ["name"] = "x" }, F("all", C("Ghost", "neq", 1))));
-        Assert.False(AutomationFilter.Match(new Dictionary<String, Object> { ["name"] = "x" }, F("all", C("Ghost", "isNull"))));
+        Assert.True(AutomationFilter.Match(new Dictionary<String, Object> { ["name"] = "x" }, F("all", C("Ghost", "isNull"))));
+        Assert.False(AutomationFilter.Match(new Dictionary<String, Object> { ["name"] = "x" }, F("all", C("Ghost", "notNull"))));
         Assert.False(AutomationFilter.Match(new Dictionary<String, Object> { ["name"] = "x" }, F("all", C("Ghost", "eq", null))));
+
+        // contains 大小写敏感（与前端 includes）
+        Assert.False(AutomationFilter.Match(new Dictionary<String, Object> { ["name"] = "ABC" }, F("all", C("Name", "contains", "abc"))));
+        Assert.True(AutomationFilter.Match(new Dictionary<String, Object> { ["name"] = "ABC" }, F("all", C("Name", "contains", "AB"))));
 
         // 非数字 lt/lte 不再恒 true
         Assert.False(AutomationFilter.Match(new Dictionary<String, Object> { ["age"] = "abc" }, F("all", C("Age", "lt", 10))));
         Assert.False(AutomationFilter.Match(new Dictionary<String, Object> { ["age"] = "abc" }, F("all", C("Age", "lte", 10))));
         Assert.False(AutomationFilter.Match(new Dictionary<String, Object> { ["age"] = null }, F("all", C("Age", "lt", 10))));
+    }
+
+    [Fact(DisplayName = "found 连续段：空跳过 + 有数据时每条执行整段")]
+    public void Executor_FoundSegment_RunsPerRecord()
+    {
+        foreach (var r in EntityAutomation.FindAll())
+        {
+            if (!r.Enable) continue;
+            r.Enable = false;
+            r.Update();
+        }
+
+        // 空 found：连续 found 段跳过，不 failed
+        EntityPageRegistry.Register(typeof(NotificationRecord), "Cube/NotificationRecord", "Id");
+        var emptyRule = InsertRule("Cube/NotificationRecord", "insert");
+        emptyRule.Enable = false;
+        emptyRule.GraphJson =
+            "{\"version\":1,\"nodes\":[" +
+            "{\"id\":\"n0\",\"type\":\"start\",\"data\":{}}," +
+            "{\"id\":\"n1\",\"type\":\"findRecords\",\"data\":{\"typePath\":\"Cube/NotificationRecord\",\"limit\":10,\"filter\":{\"logic\":\"all\",\"conditions\":[{\"field\":\"Title\",\"op\":\"eq\",\"value\":\"__no_such_seg__\"}]}}}," +
+            "{\"id\":\"n2\",\"type\":\"updateRecord\",\"data\":{\"target\":\"found\",\"fields\":[{\"name\":\"Title\",\"value\":\"x\"}]}}," +
+            "{\"id\":\"n3\",\"type\":\"end\",\"data\":{}}" +
+            "],\"edges\":[{\"id\":\"e0\",\"source\":\"n0\",\"target\":\"n1\"},{\"id\":\"e1\",\"source\":\"n1\",\"target\":\"n2\"},{\"id\":\"e2\",\"source\":\"n2\",\"target\":\"n3\"}]}";
+        emptyRule.Update();
+        var emptyRun = AutomationRun.Enqueue(emptyRule, "0", "insert");
+        AutomationExecutor.Execute(emptyRun);
+        emptyRun = AutomationRun.FindById(emptyRun.Id);
+        Assert.True(emptyRun.Status == "succeeded", emptyRun.Status + ": " + emptyRun.Error + "\n" + emptyRun.NodeTrace);
+        Assert.Contains("found empty skip", emptyRun.NodeTrace);
+
+        // 有 found：用 NotificationRecord（Log 库真实表）插 3 条
+        AutomationRuntime.Immediate = false;
+        try
+        {
+            var prefix = "seg-" + Guid.NewGuid().ToString("N")[..8];
+            var ids = new List<Int64>();
+            for (var i = 0; i < 3; i++)
+            {
+                var rec = new NotificationRecord
+                {
+                    Action = "Notify",
+                    Channel = "InApp",
+                    UserId = 1,
+                    Title = prefix + "-" + i,
+                    Content = "c",
+                    Success = true,
+                };
+                Assert.True(rec.Insert() > 0, "NotificationRecord.Insert 失败");
+                ids.Add(rec.Id);
+            }
+
+            var rule = InsertRule("Cube/NotificationRecord", "insert");
+            rule.Enable = false;
+            rule.GraphJson =
+                "{\"version\":1,\"nodes\":[" +
+                "{\"id\":\"n0\",\"type\":\"start\",\"data\":{}}," +
+                "{\"id\":\"n1\",\"type\":\"findRecords\",\"data\":{\"typePath\":\"Cube/NotificationRecord\",\"limit\":10,\"filter\":{\"logic\":\"all\",\"conditions\":[{\"field\":\"Title\",\"op\":\"contains\",\"value\":\"" + prefix + "\"}]}}}," +
+                "{\"id\":\"n2\",\"type\":\"updateRecord\",\"data\":{\"target\":\"found\",\"fields\":[{\"name\":\"Content\",\"value\":\"done\"}]}}," +
+                "{\"id\":\"n3\",\"type\":\"updateRecord\",\"data\":{\"target\":\"found\",\"fields\":[{\"name\":\"Title\",\"value\":\"done\"}]}}," +
+                "{\"id\":\"n4\",\"type\":\"end\",\"data\":{}}" +
+                "],\"edges\":[" +
+                "{\"id\":\"e0\",\"source\":\"n0\",\"target\":\"n1\"},{\"id\":\"e1\",\"source\":\"n1\",\"target\":\"n2\"}," +
+                "{\"id\":\"e2\",\"source\":\"n2\",\"target\":\"n3\"},{\"id\":\"e3\",\"source\":\"n3\",\"target\":\"n4\"}" +
+                "]}";
+            rule.Update();
+            var run = AutomationRun.Enqueue(rule, ids[0] + "", "insert");
+            AutomationExecutor.Execute(run);
+            run = AutomationRun.FindById(run.Id);
+            Assert.True(run.Status == "succeeded", run.Status + ": " + run.Error + "\n" + run.NodeTrace);
+            Assert.Contains("found 3", run.NodeTrace);
+            var updates = 0;
+            var foundKeys = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
+            foreach (var x in System.Text.Json.Nodes.JsonNode.Parse(run.NodeTrace)!.AsArray())
+            {
+                if (x?["type"]?.ToString() != "updateRecord") continue;
+                Assert.True(x?["ok"]?.GetValue<Boolean>() == true, x?.ToJsonString());
+                updates++;
+                var fk = x?["foundKey"]?.ToString();
+                if (!fk.IsNullOrEmpty()) foundKeys.Add(fk);
+            }
+            Assert.Equal(6, updates);
+            Assert.Equal(3, foundKeys.Count);
+        }
+        finally
+        {
+            AutomationRuntime.Immediate = true;
+        }
+    }
+
+    [Fact(DisplayName = "runAutomation 指向自身保存拒绝；SSRF 拒绝 localhost")]
+    public void Graph_SelfRef_And_HttpSsrf()
+    {
+        var self = AutomationGraph.Parse("""
+            {"version":1,"nodes":[
+              {"id":"n0","type":"start","data":{}},
+              {"id":"n1","type":"runAutomation","data":{"automationId":42}},
+              {"id":"n2","type":"end","data":{}}
+            ],"edges":[{"id":"e0","source":"n0","target":"n1"},{"id":"e1","source":"n1","target":"n2"}]}
+            """);
+        Assert.Contains("自身", AutomationGraph.ValidateForSave(self, 42));
+        Assert.Null(AutomationGraph.ValidateForSave(self, 7));
+
+        Assert.False(AutomationActions.TryValidatePublicHttpUrl("http://127.0.0.1/x", out _, out var err1));
+        Assert.Contains("本机", err1);
+        Assert.False(AutomationActions.TryValidatePublicHttpUrl("http://localhost/x", out _, out _));
+        Assert.False(AutomationActions.TryValidatePublicHttpUrl("http://192.168.1.1/x", out _, out var err2));
+        Assert.Contains("私网", err2);
+        Assert.False(AutomationActions.TryValidatePublicHttpUrl("file:///etc/passwd", out _, out _));
     }
 
     [Fact(DisplayName = "Compile 拒绝环与预留 type")]

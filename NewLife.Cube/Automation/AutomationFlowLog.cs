@@ -8,8 +8,8 @@ namespace NewLife.Cube.Automation;
 /// <summary>
 /// 实体自动化「流程日志」写入系统审计表 <see cref="Log"/>（不改 Log 表结构）。
 /// <para>
-/// <see cref="AutomationRun"/> 为内存队列/续跑状态机；对外可查的流程日志以 Log 为准：
-/// Category=规范化 TypePath（与记录抽屉「历史」一致）、Action=Automation、LinkID=记录主键。
+/// <see cref="AutomationRun"/> 落 Log 库（ConnName=Log）作为队列与状态机；Runs API 以 AutomationRun 为准。
+/// 终态亦可写系统 Log：Category=规范化 TypePath、Action=Automation、LinkID=记录主键（抽屉历史筛选）。
 /// </para>
 /// </summary>
 public static class AutomationFlowLog

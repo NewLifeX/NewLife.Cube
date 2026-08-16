@@ -183,6 +183,16 @@
 - **单 OSC 不要承接多轮「再改一下布局」**：本号在级联+Object+Home 之后又叠 Db/File、配置中心、表格列、工具栏位置多次往返。控件形态宜 demo 给 2～3 个候选一次对齐，或拆号。
 - **并行 OSC 时不要把 `wwwroot` 混进复盘提交**：`pnpm build` 会打进工作区其它号的 chunk；本号只提交本号源码与 OpenSpec 归档。
 
+## OSC-260815fa86 — 2026-08-16
+
+- **队列/运行态必须按 design 首日落库**：`AutomationRun` 初版用内存字典与 design §2.2（ConnName=Log）漂移，验收才补 T12.1。涉及「可重启续跑 / Runs API / once」的状态禁止先内存后补表。
+- **实体写路径自动化挂 Persistence 包装，不要只挂钩 Controller.OnInsert**：导入、批量启用、业务直接 `Insert` 都必须能入队；字符串级 `Update(where)` 无实体实例可另记残余。
+- **前后端 Filter 同构要单测锁死边角**：缺字段 `isNull`、`contains` 大小写、非数字比较、after/before 灵活比较；勿假设 C# 与 `matchesViewFilter`「差不多」。
+- **found 循环语义要「连续段」不是「单节点 foreach」**：design 锁定后对每条 found 执行紧邻的 update/notify/addComment 整段；空 found 跳过段，勿对 target=found 报「无目标」失败。
+- **全量 xcode 整份 Cube.xml 会再生重复中文文件名**：只增量目标表或生成后立即清理重复 `*流程`/`*配置` 副本，避免污染 git。
+- **Webhook 限流字典先校验 token 再 TryAcquire**：无效 token 不要撑大 ConcurrentDictionary；并做过期/超量淘汰。
+- **httpRequest 默认要 SSRF 基线**：仅 http(s)、拒 loopback/私网/链路本地；单测覆盖 localhost/192.168/file。
+
 ## 待办 — 字体规范（Harness）
 
 - 后续按现代中后台常见 **组件/场景**（列表表头、单元格、表单标签、抽屉标题、徽章等）在 Harness 建立统一的 **字体 / 字号 / 字重** 规范，并替换各处临时字重（如 VTable `headerStyle.fontWeight: 400`）。

@@ -832,5 +832,27 @@
         <Index Columns="HookToken" Unique="True" />
       </Indexes>
     </Table>
+    <Table Name="AutomationRun" Description="自动化运行。一次触发的执行队列与状态，ConnName=Log" ConnName="Log">
+      <Columns>
+        <Column Name="Id" DataType="Int64" PrimaryKey="True" DataScale="time" Description="编号" />
+        <Column Name="TenantId" DataType="Int32" Description="租户。复制自规则" />
+        <Column Name="AutomationId" DataType="Int64" Description="规则编号" />
+        <Column Name="TypePath" DataType="String" Length="100" Description="实体路径" />
+        <Column Name="RecordKey" DataType="String" Description="记录主键。定时/Webhook 可空" />
+        <Column Name="TriggerKind" DataType="String" Length="32" Description="触发种类" />
+        <Column Name="Status" DataType="String" Length="20" Description="状态。queued/running/waiting/succeeded/failed/cancelled" />
+        <Column Name="Depth" DataType="Int32" Description="调用深度。runAutomation +1" />
+        <Column Name="ResumeAt" DataType="DateTime" Description="延时续跑时间。非 waiting 为 MinValue" />
+        <Column Name="NodeTrace" DataType="String" Length="-1" Description="节点轨迹。JSON" />
+        <Column Name="Error" DataType="String" Length="500" Description="错误摘要" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="AutomationId" />
+        <Index Columns="TypePath,RecordKey" />
+        <Index Columns="Status,ResumeAt" />
+      </Indexes>
+    </Table>
   </Tables>
 </EntityModel>

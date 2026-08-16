@@ -195,6 +195,9 @@
     <Compile Include="..\NewLife.Cube\Entity\实体自动化.cs" Link="Entity\实体自动化.cs" />
     <Compile Include="..\NewLife.Cube\Entity\实体自动化.Biz.cs" Link="Entity\实体自动化.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\EntityAutomationModel.cs" Link="Entity\Models\EntityAutomationModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\自动化运行.cs" Link="Entity\自动化运行.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\自动化运行.Biz.cs" Link="Entity\自动化运行.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\AutomationRunModel.cs" Link="Entity\Models\AutomationRunModel.cs" />
     <Compile Include="..\NewLife.Cube\Automation\*.cs" Link="Automation\%(Filename)%(Extension)" />
     <Compile Include="..\NewLife.Cube\Controllers\AutomationController.cs" Link="Controllers\AutomationController.cs" />
     <Compile Include="..\NewLife.Cube\Web\AttachmentProvider.cs" Link="Web\AttachmentProvider.cs" />

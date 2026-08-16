@@ -117,7 +117,7 @@ describe('createAutomationApi', () => {
     );
   });
 
-  it('runs hits GET /Cube/Automation/Runs', async () => {
+    it('runs hits GET /Cube/Automation/Runs', async () => {
     const request = vi.fn().mockResolvedValueOnce({ code: 0, data: [] });
     const api = createAutomationApi(request);
     await api.runs({ typePath: 'Admin/User', recordKey: 7 });
@@ -128,6 +128,54 @@ describe('createAutomationApi', () => {
         params: { typePath: 'Admin/User', recordKey: 7 },
       }),
     );
+  });
+
+  it('entities hits GET /Cube/Automation/Entities', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: [] });
+    const api = createAutomationApi(request);
+    await api.entities('insert');
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Cube/Automation/Entities',
+        method: 'get',
+        params: { permission: 'insert' },
+      }),
+    );
+  });
+
+  it('recipients hits GET /Cube/Automation/Recipients', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: [] });
+    const api = createAutomationApi(request);
+    await api.recipients({ kind: 'role', key: 'admin' });
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Cube/Automation/Recipients',
+        method: 'get',
+        params: { kind: 'role', key: 'admin' },
+      }),
+    );
+  });
+
+  it('inbox / unread / markRead hit Inbox routes', async () => {
+    const request = vi.fn().mockResolvedValue({ code: 0, data: {} });
+    const api = createAutomationApi(request);
+    await api.inbox({ pageIndex: 1, unread: true });
+    await api.inboxUnreadCount();
+    await api.markInboxRead({ all: true });
+    expect(request).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      url: '/Cube/Automation/Inbox',
+      method: 'get',
+      params: { pageIndex: 1, unread: true },
+    }));
+    expect(request).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      url: '/Cube/Automation/Inbox/UnreadCount',
+      method: 'get',
+    }));
+    expect(request).toHaveBeenNthCalledWith(3, expect.objectContaining({
+      url: '/Cube/Automation/Inbox/Read',
+      method: 'post',
+      data: { all: true },
+    }));
   });
 });
 

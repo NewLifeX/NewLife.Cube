@@ -152,12 +152,12 @@
 | apps 自定义业务页 | cube-admin 等 | ✅ | 🟠 机制 + `_demo`（无真实业务案例） | 🟠 机制+高频页 | P1 |
 | 微前端多应用运行时 | Vue microApp | ✅ | ➖（未做） | ➖ | — |
 | FlowGram 工作流画布 | 本方案 | ❌ | ❌（未做） | ✅ 样例 | P1 |
-
-> **实体自动化 ≠ FlowGram。** OSC-260815fa86 已交付飞书多维表格风格的「自动化」（线性 GraphJson + C# `AutomationExecutor`）。FlowGram 仍只用于后期「工作流」画布样例，**不是**本自动化运行时。
 | 字段级变更 diff | 相对 Log | ❌ | ❌ | ➖ 一期 / P2 二期 | P2 |
 | 单元/组件测试体系 | Vue Vitest 等 | ✅ | 🟠（逻辑单测 88 用例；无组件测试） | ✅ 关键路径 | P0 |
 | E2E（Cypress 级） | Vue | ✅ | ❌ | 🟠 冒烟即可 | P2 |
 | 嵌入 NuGet / UseArcoVue | SPA-2/3/7 | ✅ UseVue | ✅ | ✅ | P0 |
+
+> **实体自动化 ≠ FlowGram。** OSC-260815fa86 已交付飞书多维表格风格的「自动化」（线性 GraphJson + C# `AutomationExecutor`）。FlowGram 仍只用于后期「工作流」画布样例，**不是**本自动化运行时。
 
 > 注：以上「ArcoVue 现状」列已于 2026-08-02 对照代码实测刷新（OSC-0001~0006 已归档后）。刷新依据见 §10.4 审查结论。
 

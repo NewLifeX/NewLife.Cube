@@ -85,20 +85,97 @@ public sealed class AutomationPersistence : IEntityPersistence
     }
 
     /// <inheritdoc />
-    public Int32 Insert(IEntitySession session, String[] names, Object[] values) => _inner.Insert(session, names, values);
+    public Int32 Insert(IEntitySession session, String[] names, Object[] values)
+    {
+        var rs = _inner.Insert(session, names, values);
+        if (rs > 0) TryAfterNamesValues(DataMethod.Insert, names, values);
+        return rs;
+    }
 
     /// <inheritdoc />
-    public Int32 Update(IEntitySession session, String setClause, String whereClause) => _inner.Update(session, setClause, whereClause);
+    public Int32 Update(IEntitySession session, String setClause, String whereClause) =>
+        _inner.Update(session, setClause, whereClause);
 
     /// <inheritdoc />
-    public Int32 Update(IEntitySession session, String[] setNames, Object[] setValues, String[] whereNames, Object[] whereValues) =>
-        _inner.Update(session, setNames, setValues, whereNames, whereValues);
+    public Int32 Update(IEntitySession session, String[] setNames, Object[] setValues, String[] whereNames, Object[] whereValues)
+    {
+        var affected = LoadByNames(whereNames, whereValues);
+        var rs = _inner.Update(session, setNames, setValues, whereNames, whereValues);
+        if (rs > 0 && affected != null)
+        {
+            foreach (var e in affected)
+            {
+                ApplyNames(e, setNames, setValues);
+                After(e, DataMethod.Update, setNames ?? []);
+            }
+        }
+        return rs;
+    }
 
     /// <inheritdoc />
-    public Int32 Delete(IEntitySession session, String whereClause, Int32 maximumRows = 0) => _inner.Delete(session, whereClause, maximumRows);
+    public Int32 Delete(IEntitySession session, String whereClause, Int32 maximumRows = 0) =>
+        _inner.Delete(session, whereClause, maximumRows);
 
     /// <inheritdoc />
-    public Int32 Delete(IEntitySession session, String[] names, Object[] values) => _inner.Delete(session, names, values);
+    public Int32 Delete(IEntitySession session, String[] names, Object[] values)
+    {
+        var affected = LoadByNames(names, values);
+        var rs = _inner.Delete(session, names, values);
+        if (rs > 0 && affected != null)
+        {
+            foreach (var e in affected)
+                After(e, DataMethod.Delete, names ?? []);
+        }
+        return rs;
+    }
+
+    void TryAfterNamesValues(DataMethod method, String[] names, Object[] values)
+    {
+        try
+        {
+            var fact = Factory;
+            if (fact == null || AutomationTrigger.ShouldSkip(fact.EntityType)) return;
+            var entity = fact.Create() as IEntity;
+            if (entity == null) return;
+            ApplyNames(entity, names, values);
+            After(entity, method, names ?? []);
+        }
+        catch (Exception ex) { XTrace.WriteException(ex); }
+    }
+
+    IList<IEntity> LoadByNames(String[] names, Object[] values)
+    {
+        try
+        {
+            var fact = Factory;
+            if (fact == null || names == null || values == null || names.Length == 0) return null;
+            if (AutomationTrigger.ShouldSkip(fact.EntityType)) return null;
+            Expression exp = null;
+            for (var i = 0; i < names.Length && i < values.Length; i++)
+            {
+                var fi = fact.Fields?.FirstOrDefault(f => f.Name.EqualIgnoreCase(names[i]));
+                if (fi == null) return null;
+                var piece = fi.Equal(values[i]);
+                exp = exp == null ? piece : (exp & piece);
+            }
+            if (exp == null) return null;
+            return fact.FindAll(exp, null, null, 0, 50);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    static void ApplyNames(IEntity entity, String[] names, Object[] values)
+    {
+        if (entity == null || names == null || values == null) return;
+        for (var i = 0; i < names.Length && i < values.Length; i++)
+        {
+            try { entity.SetItem(names[i], values[i]); }
+            catch { /* 忽略单字段 */ }
+        }
+    }
 
     /// <inheritdoc />
     public WhereExpression GetPrimaryCondition(IEntity entity) => _inner.GetPrimaryCondition(entity);
@@ -134,7 +211,7 @@ public static class AutomationHost
         Interlocked.Exchange(ref _registered, 1);
     }
 
-    /// <summary>懒补挂单个工厂（启动后注册的实体由触发侧调用；幂等，跳过类型不包装）</summary>
+    /// <summary>懒补挂单个工厂（启动后注册的实体由触发侧/Worker 调用；幂等，跳过类型不包装）</summary>
     /// <param name="fact">实体工厂</param>
     /// <returns>是否完成包装</returns>
     public static Boolean Ensure(IEntityFactory fact)

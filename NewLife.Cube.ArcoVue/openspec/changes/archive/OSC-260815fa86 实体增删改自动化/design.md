@@ -4,7 +4,7 @@
 
 | 场景 | 框架 | 资料 | 本号用法 |
 | --- | --- | --- | --- |
-| 壳/抽屉/分步表单/开关/空态 | Arco Design Vue | https://arco.design/vue/docs/start ；Drawer / Steps / Form / Select / Switch / Empty / Message / Modal | 配置 UI |
+| 壳/抽屉/表单/开关/空态 | Arco Design Vue | https://arco.design/vue/docs/start ；Drawer / Form / Select / Switch / Empty / Message / Modal / Tabs / Timeline | 配置 UI（飞书双栏，**不用** Steps） |
 | 列表多维表（本号只加操作列按钮，不改视图引擎） | VisActor VTable | 教程：https://arco.design/vue/docs/start ；配置：https://visactor.com/vtable/option/ListTable ；接口：https://visactor.com/vtable/api/Methods | 扩展 `__ops` 自定义按钮 |
 | 工作流画布 | FlowGram.AI | 指引：https://flowgram.ai/guide/getting-started/introduction.html ；例子：https://flowgram.ai/examples/index.html ；API：https://flowgram.ai/api/index.html | **只查阅、不引入**。本号执行器是 C#；画布留给后续「工作流」OSC |
 | 图标 | IconPark | 先查站点再写入 `iconRegistry.ts` / `iconComponents.ts` | 自动化入口 `lightning`；站内通知 `remind`；动作菜单 `more`（横向 ⋯） |
@@ -86,6 +86,8 @@ flowchart TB
 | CreateTime / UpdateTime | DateTime | |
 
 索引：`AutomationId`；`(TypePath, RecordKey)`；`(Status, ResumeAt)`。
+
+**实现锁定（2026-08-16 验收补齐 P0.1）：** 必须经 `Cube.xml` + xcode 生成实体（`自动化运行.cs`），**禁止**内存字典队列。Worker 除内存 Post 外，定时捞库中 `Status=queued` 以支持进程重启。终态可另写系统 `Log`（Action=`Automation`）供抽屉历史筛选，**不改 Log 表结构**。`GET /Runs` 以本表为准。
 
 ### 2.3 JSON 未知字段
 
