@@ -30,7 +30,8 @@ namespace NewLife.Cube.Services;
 /// <param name="mfaService">MFA 服务</param>
 /// <param name="tracer">追踪器</param>
 /// <param name="bindingService">用户绑定服务</param>
-public class UserService(SmsService smsService, MailService mailService, PasswordService passwordService, ICacheProvider cacheProvider, ICaptchaService captchaService, IMfaService mfaService, ITracer tracer, IUserBindingService bindingService)
+/// <param name="tenantContext">租户上下文</param>
+public class UserService(SmsService smsService, MailService mailService, PasswordService passwordService, ICacheProvider cacheProvider, ICaptchaService captchaService, IMfaService mfaService, ITracer tracer, IUserBindingService bindingService, ITenantContext tenantContext)
 {
     #region 缓存Key前缀常量
     /// <summary>密码登录用户名错误次数缓存前缀</summary>
@@ -128,6 +129,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     private readonly ICache _cache = cacheProvider.Cache;
     private readonly ICaptchaService _captcha = captchaService;
     private readonly IMfaService _mfa = mfaService;
+    private readonly ITenantContext _tenantContext = tenantContext;
     #endregion
 
     #region 登录
@@ -476,6 +478,10 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         // 设置租户
         httpContext.ChooseTenant(user.ID);
 
+        // 登录/注册时显式持久化选中的租户到 Cookie（认证路径的 ChooseTenant 不再写 Cookie，消除认证副作用）
+        if (_tenantContext.Mode != TenantMode.None)
+            httpContext.SaveTenant(_tenantContext.TenantId);
+
         LogProvider.Provider.WriteLog(typeof(User), action, true, $"用户：{username}", user.ID, user + "", ip);
 
         // MFA 拦截：账密通过但用户已开启 MFA，不下发正式令牌，改为下发挂起令牌
@@ -510,13 +516,22 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     /// <returns>租户用户绑定记录，无需绑定时返回null</returns>
     private TenantUser EnsureTenantUser(HttpContext httpContext, Int32 userId, String ip)
     {
-        // 优先使用注册/登录前已解析的租户（X-App-Id / X-Tenant），否则从请求头/QueryString/Cookie获取
-        var tenantId = TenantContext.CurrentId > 0 ? TenantContext.CurrentId : httpContext.GetTenantId();
+        // 规则B（永久能力，非影子期兼容）：优先 X-App-Id（OAuth 配置租户），其次 X-Tenant/Query/Cookie；
+        // 有有效租户标识且用户未绑定时自动补建绑定。无租户标识返回 -1，不处理。
+        var tenantId = httpContext.ResolveTenantForLogin();
         if (tenantId <= 0 || userId <= 0) return null;
 
-        // 检查是否已绑定
+        // 检查是否已绑定到该租户
         var tenantUser = TenantUser.FindByTenantIdAndUserId(tenantId, userId);
         if (tenantUser != null) return tenantUser;
+
+        // 规则B 收紧：仅"存量无有效绑定用户"（无任何 Enable=true 的 TenantUser）才自动绑定。
+        // 已属于其它租户的用户不自动自建加入，防止带可猜编码的水平越权；多租户归属走显式管理动作。
+        if (TenantUser.FindAllByUserId(userId).Any(e => e.Enable))
+        {
+            XTrace.WriteLine("[TenantBind] 用户[{0}]已有有效租户归属，拒绝自动绑定到租户[{1}]", userId, tenantId);
+            return null;
+        }
 
         // 自动创建绑定关系
         tenantUser = new TenantUser
@@ -529,7 +544,9 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         };
         tenantUser.Insert();
 
+        // 审计：自动绑定租户（规则B），写入审计日志便于追溯自建绑定行为（P2-5）
         XTrace.WriteLine($"[{userId}]用户自动绑定到租户[{tenantId}]");
+        LogProvider.Provider.WriteLog(typeof(TenantUser), "自动绑定", true, $"用户[{userId}]自动绑定到租户[{tenantId}]", userId, userId + "", ip);
         return tenantUser;
     }
 
@@ -685,7 +702,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         var set = CubeSetting.Current;
         if (!set.EnableSms) throw new XException("短信验证码功能未启用");
 
-        var config = smsService.GetConfig(TenantContext.CurrentId, model.Action);
+        var config = smsService.GetConfig(_tenantContext.TenantId, model.Action);
         if (config == null) throw new XException("短信服务未配置");
 
         // 检查短信配置是否完整
@@ -757,7 +774,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         var set = CubeSetting.Current;
         if (!set.EnableMail) throw new XException("邮件验证码功能未启用");
 
-        var config = mailService.GetConfig(TenantContext.CurrentId, model.Action);
+        var config = mailService.GetConfig(_tenantContext.TenantId, model.Action);
         //if (config == null) throw new XException("邮件服务未配置");
 
 
@@ -1049,7 +1066,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     {
         var set = CubeSetting.Current;
 
-        foreach (var item in OAuthConfig.GetValids(TenantContext.CurrentId))
+        foreach (var item in OAuthConfig.GetValids(_tenantContext.TenantId))
         {
             if (username.StartsWithIgnoreCase($"{item.Name}_"))
                 throw new ArgumentException($"禁止使用[{item.Name}_]前缀！", nameof(username));

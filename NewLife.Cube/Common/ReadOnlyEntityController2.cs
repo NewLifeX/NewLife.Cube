@@ -223,15 +223,29 @@ public partial class ReadOnlyEntityController<TEntity>
         {
             var ctxTenant = TenantContext.Current;
 
-            // 无租户上下文（未设置/匿名请求）：fail-closed，拒绝查询，防止无租户场景看到全量数据
-            if (ctxTenant == null)
+            // 无租户上下文（未设置/匿名请求）：
+            // [TenantCompat] 影子期规则A：不加租户过滤（等同多租户开启前），仅记录影子日志；
+            // Enforce 严格 fail-closed，返回 1=0 空集，防止无租户场景看到全量数据。
+            if (ctxTenant.GetTenantMode() == TenantMode.None)
             {
-                XTrace.WriteLine($"多租户模式下缺少租户上下文，禁止查询{typeof(TEntity).Name}");
-                exp = "1=0";
+                if (set.TenantEnforceMode == TenantEnforceModes.Shadow)
+                {
+                    XTrace.WriteLine($"[TenantCompat] 无租户上下文，兼容放行不加过滤：{typeof(TEntity).Name}");
+                }
+                else if (set.TenantQueryPolicy == TenantQueryPolicies.ThrowOnMissingTenant)
+                {
+                    // 对外 API 可配置为显式抛错，而不是"假空数据"（P2-7）
+                    throw new NoPermissionException(PermissionFlags.None, $"缺少租户上下文，禁止查询{typeof(TEntity).Name}");
+                }
+                else
+                {
+                    XTrace.WriteLine($"多租户模式下缺少租户上下文，禁止查询{typeof(TEntity).Name}");
+                    exp = "1=0";
+                }
             }
-            else if (ctxTenant.TenantId == 0)
+            else if (ctxTenant.GetTenantMode() == TenantMode.AdminBackend)
             {
-                // 管理后台模式（TenantId=0），不限制租户数据，管理后台要能看到所有租户的数据
+                // 管理后台模式，不限制租户数据，管理后台要能看到所有租户的数据
             }
             else
             {
@@ -563,7 +577,7 @@ public partial class ReadOnlyEntityController<TEntity>
         if (post && CubeSetting.Current.EnableTenant && IsTenantSource)
         {
             var tenantId = TenantContext.CurrentId;
-            if (tenantId > 0)
+            if (tenantId.GetTenantMode() == TenantMode.Tenant)
             {
                 var ie = entity as IEntity;
                 var entityTenantId = ie?["TenantId"].ToInt() ?? 0;

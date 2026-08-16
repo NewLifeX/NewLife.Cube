@@ -9,6 +9,8 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [Menu(75, true, Icon = "fa-user-circle", Mode = MenuModes.Admin | MenuModes.Tenant)]
 public class TenantController : EntityController<Tenant, TenantModel>
 {
+    private readonly ITenantContext _tenantContext;
+
     static TenantController()
     {
         LogOnChange = true;
@@ -39,6 +41,13 @@ public class TenantController : EntityController<Tenant, TenantModel>
         }
     }
 
+    /// <summary>实例化</summary>
+    /// <param name="tenantContext">租户上下文</param>
+    public TenantController(ITenantContext tenantContext)
+    {
+        _tenantContext = tenantContext;
+    }
+
     /// <summary>搜索数据集</summary>
     /// <param name="p"></param>
     /// <returns></returns>
@@ -51,7 +60,7 @@ public class TenantController : EntityController<Tenant, TenantModel>
             if (entity != null) return new[] { entity };
         }
 
-        if (TenantContext.CurrentId > 0) PageSetting.EnableAdd = false;
+        if (_tenantContext.TenantId > 0) PageSetting.EnableAdd = false;
 
         var managerId = p["managerId"].ToInt(-1);
         //var roleIds = p["roleIds"].SplitAsInt();

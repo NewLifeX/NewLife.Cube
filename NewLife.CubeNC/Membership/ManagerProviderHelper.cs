@@ -224,23 +224,23 @@ public static class ManagerProviderHelper
         var isAdmin = user != null && user.Roles.Any(e => e.IsSystem);
 
         // 进入最后一次使用的租户
-        if (tenantId > 0 && tlist.Any(e => e.TenantId == tenantId))
+        if (tenantId.GetTenantMode() == TenantMode.Tenant && tlist.Any(e => e.TenantId == tenantId))
             SetTenant(context, tenantId); // 有效租户
-        else if (tenantId == 0)
+        else if (tenantId.GetTenantMode() == TenantMode.AdminBackend)
         {
             // 管理后台仅系统管理员可进入；普通用户请求管理后台时强制进入第一个有效租户
             if (isAdmin)
                 SetTenant(context, 0); // 系统管理员进入管理后台
             else if (tlist.Count > 0)
-                SaveTenant(context, tlist[0].TenantId); // 普通用户进入第一个租户
+                SetTenant(context, tlist[0].TenantId); // 普通用户进入第一个租户
         }
         else
         {
             // 如果 tenantId > 0 但无效，则重新选择租户
             if (tlist.Count > 0)
-                SaveTenant(context, tlist[0].TenantId); // 进入第一个租户
+                SetTenant(context, tlist[0].TenantId); // 进入第一个租户
             else if (isAdmin)
-                SaveTenant(context, 0); // 系统管理员进入管理后台
+                SetTenant(context, 0); // 系统管理员进入管理后台
             // 普通用户无有效租户，不设置租户上下文，防止进入管理后台越权
         }
 
@@ -259,15 +259,136 @@ public static class ManagerProviderHelper
 
         if (user == null) return false;
 
-        // 先选择租户上下文：管理员可进入管理后台（租户0），普通用户进入有效租户或强制第一个租户
-        context.ChooseTenant(user.ID);
+        // 显式标识优先校验（2026-08-16）：请求显式携带租户标识（X-Tenant/X-App-Id/Query/Cookie）时，
+        // 按所带租户校验成员——管理员豁免但上下文用所带租户（可进任意租户，数据按所带租户过滤，不落管理后台看全量）；
+        // 普通用户必须是所带租户成员，非成员拒绝（403）。杜绝"请求 t2 被静默换 t1"（原 ChooseTenant 回落吞掉显式标识）。
+        var resolution = context.ResolveTenant();
+        if (resolution.HasIdentifier || context.HasExplicitTenantHeader())
+        {
+            // 显式但解析无效（X-Tenant 不存在/已禁用、X-App-Id 未配置等）→ 拒绝。
+            // 生产路径中 X-Tenant/X-Tenant-Id/Query/Cookie 无效由 DataScopeMiddleware 先以 400 拦截，
+            // 此处兜底 X-App-Id 未配置等中间件不解析的场景，及绕过中间件的直接调用。
+            if (!resolution.IsValid)
+            {
+                XTrace.WriteLine("租户校验失败：显式租户标识无效，拒绝访问：用户[{0}] resolution={1}", user, resolution.TenantId);
+                return false;
+            }
 
-        // 系统管理员可进入管理后台（租户0）
-        if (user is IUser u && u.Roles.Any(e => e.IsSystem)) return true;
+            // 系统管理员豁免成员校验，但上下文用所带租户
+            if (user is IUser su && su.Roles.Any(e => e.IsSystem))
+            {
+                context.SetTenant(resolution.TenantId);
+                return true;
+            }
 
-        // 普通用户必须拥有有效租户（TenantId>0），无租户则拒绝（fail-closed，防止落到租户0/空上下文看到全量数据）
-        return TenantContext.CurrentId > 0;
+            // 普通用户：必须是所带租户的成员（管理后台 tenantId=0 由 IsMember 拒绝，普通用户进不了管理后台）
+            if (!TenantAccessPolicy.IsMember(resolution.TenantId, user))
+            {
+                XTrace.WriteLine("租户校验失败：用户[{0}]不是租户[{1}]成员，拒绝访问", user, resolution.TenantId);
+                return false;
+            }
+
+            context.SetTenant(resolution.TenantId);
+            return true;
+        }
+
+        // 无租户标识：
+        // [TenantCompat] 影子期规则A：旧客户端无租户标识时跳过 fail-closed 直接放行，仅记录影子日志。
+        // 已绑定用户仍需 ChooseTenant 回落到第一个绑定租户（方案 5.2），避免看到未过滤数据。
+        // 切 Enforce 并稳定后移除该兼容分支（见评审方案 5.5）
+        if (set.TenantEnforceMode == TenantEnforceModes.Shadow)
+        {
+            context.ChooseTenant(user.ID);
+            XTrace.WriteLine("[TenantCompat] 旧客户端无租户标识，兼容放行：{0} 用户[{1}]", context.Request.Path, user);
+            return true;
+        }
+
+        // Enforce + 无租户标识：管理员本身不属任何租户、无需租户标识（直接进管理后台）；
+        // 普通用户必须携带租户标识，否则拒绝。
+        if (user is IUser au && au.Roles.Any(e => e.IsSystem))
+        {
+            context.SetTenant(0); // 管理员进管理后台，无需租户标识
+            return true;
+        }
+        return false; // 普通用户缺租户标识，拒绝
     }
+
+    /// <summary>是否显式提供了租户信息（请求头/查询参数/Cookie 非空即算，不校验有效性）。用于认证层区分"显式但无效"与"完全无标识"</summary>
+    private static Boolean HasExplicitTenantHeader(this HttpContext context)
+    {
+        var req = context?.Request;
+        if (req == null) return false;
+
+        return !req.Headers["X-Tenant"].ToString().IsNullOrEmpty()
+            || !req.Headers["X-Tenant-Id"].ToString().IsNullOrEmpty()
+            || !req.Headers["X-App-Id"].ToString().IsNullOrEmpty()
+            || !req.Query["tenantId"].ToString().IsNullOrEmpty()
+            || !req.Cookies[$"TenantId-{SysConfig.Current.Name}"].IsNullOrEmpty();
+    }
+
+    /// <summary>解析 X-App-Id 到租户ID（OAuth 配置租户，校验存在且启用）。无 appId 或无效返回 -1</summary>
+    private static Int32 ResolveTenantByAppId(String appId)
+    {
+        if (appId.IsNullOrEmpty()) return -1;
+        var config = OAuthConfig.FindByAppId(appId);
+        return config != null && IsValidTenant(config.TenantId) ? config.TenantId : -1;
+    }
+
+    /// <summary>单一租户解析入口：优先 X-App-Id（OAuth 配置租户），其次 X-Tenant/Query/Cookie，返回结构化结果</summary>
+    /// <param name="context">HTTP上下文</param>
+    /// <returns>租户解析结果</returns>
+    public static TenantResolution ResolveTenant(this HttpContext context)
+    {
+        var req = context?.Request;
+        if (req == null) return default;
+
+        var appId = req.Headers["X-App-Id"] + "";
+        if (!appId.IsNullOrEmpty())
+        {
+            var tid = ResolveTenantByAppId(appId);
+            return new TenantResolution { HasIdentifier = true, TenantId = tid };
+        }
+
+        var id = context.GetTenantId();
+        return new TenantResolution { HasIdentifier = id >= 0, TenantId = id };
+    }
+
+    /// <summary>解析登录/绑定租户：优先已建立的租户上下文，其次单一解析入口（X-App-Id / X-Tenant/Query/Cookie）。返回 -1 表示未解析到有效租户</summary>
+    /// <param name="context">HTTP上下文</param>
+    /// <returns>租户ID，未解析到返回 -1</returns>
+    public static Int32 ResolveTenantForLogin(this HttpContext context)
+    {
+        if (context == null) return -1;
+
+        // 已建立的租户上下文优先
+        if (TenantContext.Current.GetTenantMode() == TenantMode.Tenant) return TenantContext.CurrentId;
+
+        return context.ResolveTenant().TenantId;
+    }
+
+    /// <summary>校验租户ID是否存在且启用。0（管理后台）视为无效租户；未开启多租户时仅要求大于0</summary>
+    /// <param name="tenantId">租户ID</param>
+    /// <returns>有效返回true</returns>
+    private static Boolean IsValidTenant(Int32 tenantId)
+    {
+        if (tenantId <= 0) return false;
+        if (!CubeSetting.Current.EnableTenant) return true;
+
+        var t = Tenant.FindById(tenantId);
+        return t != null && t.Enable;
+    }
+
+    /// <summary>获取租户上下文模式（用枚举消灭 0/null 魔法数字，P1-5）</summary>
+    /// <param name="tc">租户上下文</param>
+    /// <returns>租户模式</returns>
+    public static TenantMode GetTenantMode(this TenantContext tc)
+        => tc == null ? TenantMode.None : tc.TenantId > 0 ? TenantMode.Tenant : tc.TenantId == 0 ? TenantMode.AdminBackend : TenantMode.None;
+
+    /// <summary>获取租户ID对应模式。&gt;0=租户，0=管理后台，负=未提供</summary>
+    /// <param name="tenantId">租户ID</param>
+    /// <returns>租户模式</returns>
+    public static TenantMode GetTenantMode(this Int32 tenantId)
+        => tenantId > 0 ? TenantMode.Tenant : tenantId == 0 ? TenantMode.AdminBackend : TenantMode.None;
 
     private static Int32 _checkRole;
     /// <summary>检查并添加租户管理员角色</summary>
@@ -298,7 +419,8 @@ public static class ManagerProviderHelper
         //ManageProvider.Provider.Tenant = Tenant.FindById(tenantId);
     }
 
-    /// <summary>解析注册租户。优先X-App-Id（参考SSO登录按AppId查找OAuth配置取租户），其次X-Tenant（租户编码，与GetTenantId语义一致）。多租户开启时必须提供有效租户，未开启多租户时不解析也不设置租户</summary>
+    /// <summary>解析注册租户。优先X-App-Id（参考SSO登录按AppId查找OAuth配置取租户），其次X-Tenant（租户编码，与GetTenantId语义一致）。
+    /// Shadow 期（默认）：无租户标识的注册与登录规则A一致，兼容放行不绑定，仅记日志；Enforce 才强制要求有效租户。未开启多租户不解析</summary>
     /// <param name="context">HTTP上下文</param>
     /// <returns>错误信息，null表示成功</returns>
     public static String ResolveRegisterTenant(this HttpContext context)
@@ -345,9 +467,17 @@ public static class ManagerProviderHelper
 
         // 方式3：回退到已建立的租户上下文（Cookie/中间件）。兼容 MVC 表单注册等无法携带自定义请求头的场景，
         // 此时租户已由 GetTenantId（Cookie）解析并校验过有效性，直接沿用
-        if (TenantContext.CurrentId > 0) return null;
+        if (TenantContext.Current.GetTenantMode() == TenantMode.Tenant) return null;
 
-        // 多租户开启时，注册必须携带租户信息，否则拒绝注册
+        // [TenantCompat] Shadow 期规则A：旧客户端无租户标识注册，与登录一致兼容放行（不绑定），仅记录影子日志。
+        // 切 Enforce 并稳定后移除该兼容分支（见评审方案 5.5）
+        if (set.TenantEnforceMode == TenantEnforceModes.Shadow)
+        {
+            XTrace.WriteLine("[TenantCompat] 旧客户端无租户标识注册，兼容放行：{0}", context.Request.Path);
+            return null;
+        }
+
+        // Enforce：注册必须携带租户信息，否则拒绝注册
         return "多租户模式下，注册必须携带X-App-Id或X-Tenant租户信息";
     }
 
@@ -470,6 +600,12 @@ public static class ManagerProviderHelper
     /// <returns>令牌模型</returns>
     public static TokenModel IssueLoginToken(this HttpContext context, IManageUser user, TimeSpan expire)
     {
+        // 幂等：同一请求内已颁发过登录令牌时直接复用，避免重复插入 UserToken 产生孤儿记录（P2-10）
+        var existingAccess = context.Items["jwtToken"] as String;
+        var existingRefresh = context.Items["refreshToken"] as String;
+        if (!existingAccess.IsNullOrEmpty() && !existingRefresh.IsNullOrEmpty())
+            return new TokenModel { AccessToken = existingAccess, RefreshToken = existingRefresh, ExpireIn = expire.TotalSeconds.ToInt() };
+
         // 1. 创建刷新令牌（纯字符串，尚未入库）
         var refreshToken = CreateRefreshToken(user, DateTime.Now.AddDays(7));
 
@@ -500,6 +636,7 @@ public static class ManagerProviderHelper
             accessToken = jwt.Encode(null);
         }
         context.Items["jwtToken"] = accessToken;
+        context.Items["refreshToken"] = refreshToken;
 
         return new TokenModel
         {
@@ -737,7 +874,8 @@ public static class ManagerProviderHelper
 
         // 最后从Cookie读取（兼容现有浏览器模式），Cookie存的是数字ID
         var key = $"TenantId-{SysConfig.Current.Name}";
-        return ResolveTenantById(req.Cookies[key].ToString());
+        var str = req.Cookies[key];
+        return str.IsNullOrEmpty() ? -1 : ResolveTenantById(str);
     }
 
     /// <summary>按租户编码（Code）解析租户。X-Tenant 头专用，避免纯数字编码被误判为ID；多租户开启时校验存在且启用，无效返回-1</summary>
@@ -806,5 +944,101 @@ public static class ManagerProviderHelper
         //EntityFactory.InitConnection("Membership");
         //EntityFactory.InitConnection("Log");
         //EntityFactory.InitConnection("Cube");
+    }
+}
+
+/// <summary>租户模式。用枚举表达 0/null/&gt;0 三态，避免魔法数字（P1-5）</summary>
+public enum TenantMode
+{
+    /// <summary>未设置/未启用租户上下文</summary>
+    None = 0,
+
+    /// <summary>管理后台（租户0，不过滤数据）</summary>
+    AdminBackend = 1,
+
+    /// <summary>租户模式（TenantId&gt;0）</summary>
+    Tenant = 2,
+}
+
+/// <summary>多租户强制模式</summary>
+public enum TenantEnforceModes
+{
+    /// <summary>兼容观察期：旧客户端无租户标识时放行并记录影子日志（过渡期使用，后期移除）</summary>
+    Shadow = 0,
+
+    /// <summary>严格执行：fail-closed，无租户标识一律拒绝（最终稳定态）</summary>
+    Enforce = 1,
+}
+
+/// <summary>多租户查询策略</summary>
+public enum TenantQueryPolicies
+{
+    /// <summary>无租户上下文返回空集（fail-closed，默认）</summary>
+    DenyWithEmpty = 0,
+
+    /// <summary>无租户上下文显式抛错，适合对外 API</summary>
+    ThrowOnMissingTenant = 1,
+}
+
+/// <summary>租户解析结果。单一解析入口的返回值（P1 结果对象）</summary>
+public readonly struct TenantResolution
+{
+    /// <summary>是否携带租户标识（无论有效与否）</summary>
+    public Boolean HasIdentifier { get; init; }
+
+    /// <summary>解析到的租户ID。&gt;0=租户，0=管理后台，-1=未解析到有效租户</summary>
+    public Int32 TenantId { get; init; }
+
+    /// <summary>租户模式</summary>
+    public TenantMode Mode => TenantId.GetTenantMode();
+
+    /// <summary>是否解析到有效租户（含管理后台 0）</summary>
+    public Boolean IsValid => TenantId >= 0;
+}
+
+/// <summary>租户上下文（DI scoped）。封装静态 AsyncLocal，供 ASP.NET 组件读取；XCode 层由中间件同步 AsyncLocal 后读取（P2-6）</summary>
+public interface ITenantContext
+{
+    /// <summary>租户模式</summary>
+    TenantMode Mode { get; }
+
+    /// <summary>租户ID。0=管理后台，&gt;0=租户</summary>
+    Int32 TenantId { get; }
+
+    /// <summary>租户</summary>
+    ITenant Tenant { get; }
+}
+
+/// <summary>租户上下文实现。包装静态 <see cref="TenantContext"/>，后续逐步把 ASP.NET 读站点迁移到 DI（P2-6）</summary>
+public class TenantContextService : ITenantContext
+{
+    /// <summary>租户模式</summary>
+    public TenantMode Mode => TenantContext.Current.GetTenantMode();
+
+    /// <summary>租户ID</summary>
+    public Int32 TenantId => TenantContext.CurrentId;
+
+    /// <summary>租户</summary>
+    public ITenant Tenant => TenantContext.Current?.Tenant;
+}
+
+/// <summary>租户成员授权统一授权点（三段式之③"成员授权"，方案§4.2）。管理员豁免；普通用户须有指定租户的有效 TenantUser 绑定。
+/// 认证层 ValidateTenant 与（未来的）授权过滤器共用此唯一逻辑，语义只有一份</summary>
+public static class TenantAccessPolicy
+{
+    /// <summary>校验用户是否属于指定租户。管理员豁免（可进管理后台及任意租户）；普通用户须有有效 TenantUser 绑定，且不能进管理后台（tenantId=0）</summary>
+    /// <param name="tenantId">租户ID（&gt;0 为租户；0 为管理后台，仅管理员）</param>
+    /// <param name="user">已认证用户</param>
+    /// <returns>属于该租户返回true</returns>
+    public static Boolean IsMember(Int32 tenantId, IManageUser user)
+    {
+        if (user == null) return false;
+        // 系统管理员豁免：可进管理后台（tenantId=0）及任意租户
+        if (user is IUser u && u.Roles.Any(e => e.IsSystem)) return true;
+        // 普通用户不能进管理后台（tenantId<=0）
+        if (tenantId <= 0) return false;
+
+        var tu = TenantUser.FindByTenantIdAndUserId(tenantId, user.ID);
+        return tu != null && tu.Enable;
     }
 }

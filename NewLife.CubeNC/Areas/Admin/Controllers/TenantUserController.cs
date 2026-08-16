@@ -12,6 +12,8 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [Menu(10, false, Icon = "fa-users", Mode = MenuModes.Admin | MenuModes.Tenant)]
 public class TenantUserController : EntityController<TenantUser, TenantUserModel>
 {
+    private readonly ITenantContext _tenantContext;
+
     static TenantUserController()
     {
         LogOnChange = true;
@@ -51,9 +53,11 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
     }
 
     /// <summary>实例化</summary>
-    public TenantUserController()
+    /// <param name="tenantContext">租户上下文</param>
+    public TenantUserController(ITenantContext tenantContext)
     {
-        var tenantId = TenantContext.CurrentId;
+        _tenantContext = tenantContext;
+        var tenantId = _tenantContext.TenantId;
         var tenant = Tenant.FindById(tenantId);
         var roleIds = tenant?.RoleIds.SplitAsInt(",");
         // 新增界面
@@ -113,7 +117,7 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
     {
         var rs = base.OnGetFields(kind, model);
 
-        if (TenantContext.CurrentId > 0)
+        if (_tenantContext.TenantId > 0)
         {
             switch (kind)
             {
@@ -143,7 +147,7 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
         var start = p["dtStart"].ToDateTime();
         var end = p["dtEnd"].ToDateTime();
 
-        var tenantId = TenantContext.CurrentId;
+        var tenantId = _tenantContext.TenantId;
 
         tenantId = tenantId == 0 ? p["tenantId"].ToInt(-1) : tenantId;
 
@@ -159,7 +163,7 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
     {
         if (type == DataObjectMethodType.Insert)
         {
-            if (entity.TenantId == 0) entity.TenantId = TenantContext.CurrentId;
+            if (entity.TenantId == 0) entity.TenantId = _tenantContext.TenantId;
             if (entity.UserId == 0) entity.UserId = ManageProvider.Provider.Current.ID;
         }
 

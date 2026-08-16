@@ -29,6 +29,7 @@ public class UserController : EntityController<User, UserModel>
     private readonly ICache _cache;
     private readonly UserService _userService;
     private readonly PasswordService _passwordService;
+    private readonly ITenantContext _tenantContext;
 
     static UserController()
     {
@@ -100,11 +101,13 @@ public class UserController : EntityController<User, UserModel>
     /// <param name="passwordService"></param>
     /// <param name="cacheProvider"></param>
     /// <param name="smsVerifyCode"></param>
-    public UserController(UserService userService, PasswordService passwordService, ICacheProvider cacheProvider)
+    /// <param name="tenantContext">租户上下文</param>
+    public UserController(UserService userService, PasswordService passwordService, ICacheProvider cacheProvider, ITenantContext tenantContext)
     {
         _userService = userService;
         _passwordService = passwordService;
         _cache = cacheProvider.Cache;
+        _tenantContext = tenantContext;
     }
 
     /// <summary>搜索数据集</summary>
@@ -459,7 +462,7 @@ public class UserController : EntityController<User, UserModel>
 
         // 第三方绑定
         var ucs = UserConnect.FindAllByUserID(user.ID);
-        var ms = OAuthConfig.GetValids(TenantContext.CurrentId, GrantTypes.AuthorizationCode);
+        var ms = OAuthConfig.GetValids(_tenantContext.TenantId, GrantTypes.AuthorizationCode);
 
         var model = new BindsModel
         {
@@ -485,7 +488,7 @@ public class UserController : EntityController<User, UserModel>
         var set = CubeSetting.Current;
         if (!set.AllowRegister) throw new Exception("禁止注册！");
 
-        var tenantId = TenantContext.CurrentId;
+        var tenantId = _tenantContext.TenantId;
         try
         {
             //if (String.IsNullOrEmpty(email)) throw new ArgumentNullException("email", "邮箱地址不能为空！");

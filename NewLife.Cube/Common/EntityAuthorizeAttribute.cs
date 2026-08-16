@@ -92,9 +92,9 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
 
         // 多租户模式隔离：租户模式禁止访问纯Admin菜单，管理后台禁止访问纯Tenant菜单
         var set = CubeSetting.Current;
-        if (set.EnableTenant && menu != null && TenantContext.Current != null)
+        if (set.EnableTenant && menu != null && TenantContext.Current.GetTenantMode() != TenantMode.None)
         {
-            var isTenant = TenantContext.CurrentId > 0;
+            var isTenant = TenantContext.Current.GetTenantMode() == TenantMode.Tenant;
             if (!MenuHelper.CheckVisible(ctrl.ControllerTypeInfo, isTenant))
                 HandleUnauthorizedRequest(filterContext, menu, user);
         }
