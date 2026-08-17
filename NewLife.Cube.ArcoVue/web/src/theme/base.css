@@ -13,3 +13,13 @@ body,
 #app {
   background-color: var(--color-bg-1);
 }
+
+/** 列表各视图（卡片/看板/甘特/缺字段等）空态：在可用高度内水平垂直居中 */
+.view-empty-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 240px;
+}

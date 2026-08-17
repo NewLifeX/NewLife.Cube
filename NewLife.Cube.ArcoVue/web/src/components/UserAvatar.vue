@@ -8,11 +8,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { avatarInitial } from '@/core/utils/avatar';
+import { useAppStore } from '@/stores/app';
 
 /**
  * 用户头像徽章
  *
- * 有头像时展示图片；无头像时回落为用户名首字符（中文取首字，英文取首字母大写）。
+ * 有头像时展示图片；无头像时回落为用户名缩写（字数取自魔方设置 AvatarChars）。
  */
 const props = withDefaults(
   defineProps<{
@@ -26,7 +27,10 @@ const props = withDefaults(
   { name: '', avatar: '', size: 32 },
 );
 
-const initial = computed(() => avatarInitial(props.name));
+const appStore = useAppStore();
+const initial = computed(() =>
+  avatarInitial(props.name, appStore.loginConfig?.avatarChars ?? 1),
+);
 </script>
 
 <style scoped>

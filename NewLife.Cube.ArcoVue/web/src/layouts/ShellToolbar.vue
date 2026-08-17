@@ -38,18 +38,21 @@
             </a-doption>
           </a-dgroup>
 
-          <a-doption @click="goSecurity">
-            <span class="user-menu-item">
-              <icon-park type="permissions" class="user-menu-icon" />
-              <span class="user-menu-text">账号安全</span>
-            </span>
-          </a-doption>
-          <a-doption @click="goAppearance">
-            <span class="user-menu-item">
-              <icon-park type="setting" class="user-menu-icon" />
-              <span class="user-menu-text">外观设置</span>
-            </span>
-          </a-doption>
+          <a-dgroup :title="`账号 · ${userStore.displayName || '当前用户'}`">
+            <a-doption @click="goSecurity">
+              <span class="user-menu-item">
+                <icon-park type="permissions" class="user-menu-icon" />
+                <span class="user-menu-text">账号安全</span>
+              </span>
+            </a-doption>
+            <a-doption @click="goAppearance">
+              <span class="user-menu-item">
+                <icon-park type="setting" class="user-menu-icon" />
+                <span class="user-menu-text">外观设置</span>
+              </span>
+            </a-doption>
+          </a-dgroup>
+
           <a-doption @click="handleLogout">
             <span class="user-menu-item">
               <icon-park type="logout" class="user-menu-icon" />

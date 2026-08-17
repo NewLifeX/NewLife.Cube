@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
+using NewLife;
 using NewLife.Collections;
 using XCode;
 using XCode.Configuration;
@@ -39,10 +40,24 @@ public class DataField
 
     /// <summary>属性类型</summary>
     [XmlIgnore, IgnoreDataMember, JsonIgnore]
-    public Type Type { get; set; }
+    public Type Type
+    {
+        get => _type;
+        set
+        {
+            _type = value;
+            // Type 不序列化；始终同步 TypeName 供 SPA GetFields/GetPage 消费（布尔→开关、枚举→下拉）
+            if (value != null)
+            {
+                var t = System.Nullable.GetUnderlyingType(value) ?? value;
+                TypeName = t.Name;
+            }
+        }
+    }
+    private Type _type;
 
-    /// <summary>属性类型</summary>
-    public String TypeName => Type?.Name;
+    /// <summary>属性类型名（可序列化；与 Type 同步，避免 get-only 在部分序列化器下丢失）</summary>
+    public String TypeName { get; set; }
 
     /// <summary>元素类型。image,file-zip,html,singleSelect,multipleSelect</summary>
     public String ItemType { get; set; }

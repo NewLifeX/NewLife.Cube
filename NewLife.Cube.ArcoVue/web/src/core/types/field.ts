@@ -7,6 +7,7 @@ export type ControlType =
   | 'datePicker'
   | 'timePicker'
   | 'select'
+  | 'selectMulti'
   | 'lov'
   | 'lovMulti'
   | 'cascader'

@@ -16,7 +16,16 @@
       </template>
       <a-alert v-if="mainError" type="warning" show-icon class="home-alert">{{ mainError }}</a-alert>
       <a-empty v-else-if="!mainEntriesComputed.length" description="暂无系统信息" />
-      <a-descriptions v-else :column="2" size="medium" bordered>
+      <a-descriptions
+        v-else
+        class="sys-info-desc"
+        :column="2"
+        table-layout="fixed"
+        size="medium"
+        bordered
+        :label-style="{ width: '12%' }"
+        :value-style="{ width: '38%' }"
+      >
         <a-descriptions-item v-for="e in mainEntriesComputed" :key="e.label" :label="e.label">
           {{ e.value }}
         </a-descriptions-item>
@@ -183,5 +192,9 @@ const assemblyColumns = [
 }
 .home-alert {
   margin-bottom: 12px;
+}
+.sys-info-desc :deep(.arco-descriptions-item-value-block) {
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 </style>

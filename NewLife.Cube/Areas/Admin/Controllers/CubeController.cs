@@ -91,6 +91,19 @@ public class CubeController : ConfigController<CubeSetting>, IPageDataContext
             df = list.FirstOrDefault(e => e.Name == name);
             if (df != null) df.ItemType = "color";
         }
+
+        // 验证码场景：位掩码多选（1=登录 / 2=注册 / 4=发码），空选=0 不启用
+        df = list.FirstOrDefault(e => e.Name == nameof(CubeSetting.CaptchaScene));
+        if (df != null)
+        {
+            df.ItemType = "multipleSelect";
+            df.DataSource = _ => new Dictionary<String, String>
+            {
+                ["1"] = "登录",
+                ["2"] = "注册",
+                ["4"] = "发验证码（防短信轰炸）",
+            };
+        }
     }
 
     /// <summary>

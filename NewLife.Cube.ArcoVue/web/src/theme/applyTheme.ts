@@ -30,13 +30,17 @@ export function applyTheme(theme: ThemePrefs, prefersDark = prefersDarkNow()): v
   }
 
   for (const [k, v] of Object.entries(tokens.cssVars)) {
-    if (k === 'zoom') {
-      // zoom 整体缩放界面（Arco 字号多为 px，仅改 root font-size 无效）
-      if (v === 'normal' || v === '1') root.style.removeProperty('zoom');
-      else (root.style as CSSStyleDeclaration & { zoom: string }).zoom = v;
-      continue;
-    }
     root.style.setProperty(k, v);
+  }
+
+  // 清理历史 CSS zoom（曾用于 fontScale，会导致底部留白或工具栏/分页被裁切）
+  const scaleEl = document.getElementById('cube-scale-root');
+  for (const el of [root, scaleEl].filter(Boolean) as HTMLElement[]) {
+    el.style.removeProperty('zoom');
+    if (el === scaleEl) {
+      el.style.height = '100%';
+      el.style.width = '100%';
+    }
   }
 
   // Arco 在 body 上定义 --primary-1~10 / --color-primary-light-1~4（RGB 三元组），root 内联无法覆盖后代。

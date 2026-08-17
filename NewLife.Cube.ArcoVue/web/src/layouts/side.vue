@@ -1,5 +1,5 @@
 <template>
-  <a-layout class="layout layout-side" style="height: 100vh">
+  <a-layout class="layout layout-side">
     <a-layout-sider
       :collapsed="collapsed"
       collapsible
@@ -8,7 +8,7 @@
       :collapsed-width="48"
     >
       <div class="logo">
-        {{ collapsed ? '魔' : productName }}
+        <ShellBrand :collapsed="collapsed" />
       </div>
       <a-menu
         :selected-keys="selectedKeys"
@@ -46,21 +46,19 @@
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { MenuItem } from '@cube/api-core';
-import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
 import { useUserProfileStore } from '@/stores/userProfile';
 import { normalizeMenuUrl } from '@/core/utils/url';
 import SidebarMenuNodes from './SidebarMenuNodes.vue';
+import ShellBrand from './ShellBrand.vue';
 import ShellToolbar from './ShellToolbar.vue';
 import LayoutContent from './LayoutContent.vue';
 
 const route = useRoute();
 const router = useRouter();
-const appStore = useAppStore();
 const userStore = useUserStore();
 const profileStore = useUserProfileStore();
 
-const productName = computed(() => appStore.loginConfig?.name || '魔方管理平台');
 const collapsed = computed(() => profileStore.layout.siderCollapsed);
 const siderWidth = computed(() => profileStore.layout.siderWidth || 220);
 
@@ -81,14 +79,12 @@ function toggleCollapsed() {
 </script>
 
 <style scoped>
+.layout-side {
+  height: 100%;
+}
 .logo {
   height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-1);
-  font-weight: bold;
-  font-size: 16px;
+  box-sizing: border-box;
 }
 .layout-header {
   height: 60px;

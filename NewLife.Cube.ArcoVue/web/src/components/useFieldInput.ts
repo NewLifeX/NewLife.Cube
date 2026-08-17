@@ -12,6 +12,7 @@ import {
   inferDateKind,
   toPickerValue,
 } from '@/core/utils/datetime';
+import { bitmaskToKeys, isBitmaskMultiSelect, keysToBitmask } from '@/core/utils/bitmaskSelect';
 import cubeApi from '@/api';
 
 /** FieldInput 组件 props 类型（与 FieldInput.vue defineProps 泛型逐字一致） */
@@ -54,6 +55,18 @@ export function useFieldInput(props: FieldInputProps, emit: FieldInputEmit) {
   );
   const selectOptions = computed(() => dsNorm.value?.options ?? []);
   const selectValue = computed(() => {
+    if (control.value === 'selectMulti') {
+      if (isBitmaskMultiSelect(props.field)) {
+        const keys = selectOptions.value.map((o) => String(o.value));
+        return bitmaskToKeys(props.modelValue, keys);
+      }
+      if (Array.isArray(props.modelValue)) return props.modelValue.map(String);
+      if (props.modelValue == null || props.modelValue === '') return [];
+      return String(props.modelValue)
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
     if (props.modelValue == null || props.modelValue === '') return undefined;
     const s = String(props.modelValue);
     // 回显兼容：名称键（如「男」）映射回规范数字键（如「1」），避免选中态丢失
@@ -115,6 +128,14 @@ export function useFieldInput(props: FieldInputProps, emit: FieldInputEmit) {
 
   /** 下拉值尽量还原数值/布尔，兼容实体字段类型；Int64 超安全整数保留字符串避免精度丢失（OSC-0009） */
   function onSelect(v: unknown) {
+    if (control.value === 'selectMulti') {
+      if (isBitmaskMultiSelect(props.field)) {
+        emitValue(keysToBitmask(v));
+        return;
+      }
+      emitValue(Array.isArray(v) ? v.map(String) : []);
+      return;
+    }
     if (v == null || v === '') {
       emitValue(undefined);
       return;

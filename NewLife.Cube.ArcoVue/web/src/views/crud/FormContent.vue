@@ -57,7 +57,7 @@ const props = withDefaults(
     model: Record<string, unknown>;
     typePath: string;
     readonly?: boolean;
-    /** 新增时隐藏主键/只读（对齐 Cube.Vue） */
+    /** 新增时隐藏主键/只读；编辑默认隐藏主键「编号」（对齐 Cube.Vue） */
     mode?: 'add' | 'edit' | 'detail';
     /** 后端字段级错误（FieldErrors），映射到对应 a-form-item（OSC-0009） */
     fieldErrors?: { field: string; message: string }[];

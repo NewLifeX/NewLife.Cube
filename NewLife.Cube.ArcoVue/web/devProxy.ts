@@ -12,6 +12,8 @@ export const DEV_PROXY_PREFIXES = [
   '/Cube',
   '/Sso',
   '/api',
+  '/Uploads',
+  '/Content',
 ] as const;
 
 export type DevProxyPrefix = (typeof DEV_PROXY_PREFIXES)[number];

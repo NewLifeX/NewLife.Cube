@@ -1,8 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, afterEach } from 'vitest';
 import { ApiError } from '@cube/api-core';
-import { formatApiError } from './apiError';
+import { formatApiError, setStarWebResolver } from './apiError';
 
 describe('formatApiError', () => {
+  afterEach(() => setStarWebResolver(null));
+
   it('prefers fieldErrors then message', () => {
     const err = new ApiError({
       code: -2,
@@ -14,6 +16,17 @@ describe('formatApiError', () => {
       ],
     });
     expect(formatApiError(err)).toBe('代码不可以为空！；名称不可以为空！');
+  });
+
+  it('appends star trace when configured', () => {
+    setStarWebResolver(() => 'https://star.example.com');
+    const err = new ApiError({
+      code: -1,
+      data: null,
+      message: '失败',
+      traceId: 'abc',
+    });
+    expect(formatApiError(err)).toBe('失败（追踪 https://star.example.com/trace?id=abc）');
   });
 
   it('falls back', () => {

@@ -29,4 +29,13 @@ describe('objectForm', () => {
     // 原对象不被就地修改
     expect(original.Debug).toBe(false);
   });
+
+  it('mergeObjectModel 大小写容错：表单 PascalCase 覆盖原对象 camelCase', () => {
+    const original = { name: 'old', displayName: '旧', keep: 1 };
+    const form = { Name: 'new', DisplayName: '新' };
+    const out = mergeObjectModel(original, form);
+    expect(out).toEqual({ name: 'new', displayName: '新', keep: 1 });
+    expect(out).not.toHaveProperty('Name');
+    expect(out).not.toHaveProperty('DisplayName');
+  });
 });

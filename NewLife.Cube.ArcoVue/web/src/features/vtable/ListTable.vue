@@ -19,6 +19,8 @@ const props = withDefaults(
     canEdit?: boolean;
     canDelete?: boolean;
     canViewDetail?: boolean;
+    /** 魔方设置 EnableTableDoubleClick；false 时禁用双击进详情（默认 true） */
+    enableTableDoubleClick?: boolean;
     showExpand?: boolean;
     enableSort?: boolean;
     /** 行操作列额外按钮（自动化 button 规则） */
@@ -50,6 +52,7 @@ const props = withDefaults(
     canEdit: false,
     canDelete: false,
     canViewDetail: true,
+    enableTableDoubleClick: true,
     showExpand: false,
     enableSort: true,
     automationButtons: () => [],

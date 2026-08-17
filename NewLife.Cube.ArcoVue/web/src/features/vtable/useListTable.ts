@@ -46,6 +46,8 @@ interface ListTableProps {
   canEdit?: boolean;
   canDelete?: boolean;
   canViewDetail?: boolean;
+  /** 魔方设置 EnableTableDoubleClick；false 时禁用双击进详情 */
+  enableTableDoubleClick?: boolean;
   showExpand?: boolean;
   enableSort?: boolean;
   /** 行操作列额外按钮（自动化 button 规则，最多 3 个） */
@@ -784,7 +786,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
         field === '__expand'
       )
         return;
-      if (props.canViewDetail) emit('rowDblClick', row);
+      if (props.canViewDetail && props.enableTableDoubleClick !== false) emit('rowDblClick', row);
     }) as any);
 
     table.on('checkbox_state_change', (() => {

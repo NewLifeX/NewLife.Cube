@@ -1,43 +1,45 @@
 <template>
   <div class="calendar-month" :style="{ minHeight: height + 'px' }">
-    <div class="cal-toolbar">
-      <a-button size="small" @click="shiftMonth(-1)">上一月</a-button>
-      <span class="cal-title">{{ year }}年{{ month + 1 }}月</span>
-      <a-button size="small" @click="shiftMonth(1)">下一月</a-button>
-      <a-button size="small" type="text" @click="goToday">今天</a-button>
-    </div>
-    <div class="cal-weekhead">
-      <div v-for="d in weekLabels" :key="d">{{ d }}</div>
-    </div>
-    <div class="cal-grid">
-      <div
-        v-for="(cell, idx) in cells"
-        :key="idx"
-        class="cal-cell"
-        :class="{ muted: !cell.inMonth, today: cell.isToday }"
-      >
-        <div class="cal-day">{{ cell.day }}</div>
-        <button
-          v-for="ev in cell.events.slice(0, 3)"
-          :key="ev.key"
-          type="button"
-          class="cal-event"
-          :style="{ background: ev.color, color: eventTextColor(ev.color) }"
-          :title="ev.title"
-          @click="$emit('detail', ev.row)"
-        >
-          {{ ev.title }}
-        </button>
-        <div v-if="cell.events.length > 3" class="cal-more">+{{ cell.events.length - 3 }}</div>
-      </div>
-    </div>
-    <a-alert
+    <div
       v-if="!mapping?.startField"
-      type="warning"
-      style="margin-top: 8px"
+      class="view-empty-wrap"
+      :style="{ minHeight: (height || 240) + 'px' }"
     >
-      请在自定义配置中设置日历开始日期字段
-    </a-alert>
+      <a-alert type="warning">请在自定义配置中设置日历开始日期字段</a-alert>
+    </div>
+    <template v-else>
+      <div class="cal-toolbar">
+        <a-button size="small" @click="shiftMonth(-1)">上一月</a-button>
+        <span class="cal-title">{{ year }}年{{ month + 1 }}月</span>
+        <a-button size="small" @click="shiftMonth(1)">下一月</a-button>
+        <a-button size="small" type="text" @click="goToday">今天</a-button>
+      </div>
+      <div class="cal-weekhead">
+        <div v-for="d in weekLabels" :key="d">{{ d }}</div>
+      </div>
+      <div class="cal-grid">
+        <div
+          v-for="(cell, idx) in cells"
+          :key="idx"
+          class="cal-cell"
+          :class="{ muted: !cell.inMonth, today: cell.isToday }"
+        >
+          <div class="cal-day">{{ cell.day }}</div>
+          <button
+            v-for="ev in cell.events.slice(0, 3)"
+            :key="ev.key"
+            type="button"
+            class="cal-event"
+            :style="{ background: ev.color, color: eventTextColor(ev.color) }"
+            :title="ev.title"
+            @click="$emit('detail', ev.row)"
+          >
+            {{ ev.title }}
+          </button>
+          <div v-if="cell.events.length > 3" class="cal-more">+{{ cell.events.length - 3 }}</div>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
 

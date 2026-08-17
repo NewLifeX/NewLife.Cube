@@ -1,7 +1,9 @@
 <template>
-  <a-layout class="layout layout-top" style="height: 100vh">
+  <a-layout class="layout layout-top">
     <a-layout-header class="layout-header">
-      <div class="layout-header__brand">{{ productName }}</div>
+      <div class="layout-header__brand">
+        <ShellBrand />
+      </div>
       <a-menu
         mode="horizontal"
         :selected-keys="selectedKeys"
@@ -20,19 +22,17 @@
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { MenuItem } from '@cube/api-core';
-import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
 import { normalizeMenuUrl } from '@/core/utils/url';
 import SidebarMenuNodes from './SidebarMenuNodes.vue';
+import ShellBrand from './ShellBrand.vue';
 import ShellToolbar from './ShellToolbar.vue';
 import LayoutContent from './LayoutContent.vue';
 
 const route = useRoute();
 const router = useRouter();
-const appStore = useAppStore();
 const userStore = useUserStore();
 
-const productName = computed(() => appStore.loginConfig?.name || '魔方管理平台');
 const visibleMenus = computed(() =>
   (userStore.menus || []).filter((m: MenuItem) => m.visible !== false),
 );
@@ -44,6 +44,9 @@ function onMenuClick(key: string) {
 </script>
 
 <style scoped>
+.layout-top {
+  height: 100%;
+}
 .layout-header {
   background: var(--color-bg-2);
   padding: 0 16px;
@@ -53,9 +56,9 @@ function onMenuClick(key: string) {
   border-bottom: 1px solid var(--color-border);
 }
 .layout-header__brand {
-  font-weight: 700;
-  white-space: nowrap;
   flex-shrink: 0;
+  max-width: 220px;
+  height: 48px;
 }
 .layout-top__menu {
   flex: 1;

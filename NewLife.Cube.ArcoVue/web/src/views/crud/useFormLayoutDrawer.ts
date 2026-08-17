@@ -1,7 +1,7 @@
 import { computed, ref, watch } from 'vue';
 import { Message } from '@arco-design/web-vue';
 import type { FieldMeta } from '@/core/types/field';
-import { isAuditField } from '@/core/utils/fieldControl';
+import { isAuditField, isTenantField } from '@/core/utils/fieldControl';
 import { normalizeFormLayout } from '@/core/utils/fieldGroups';
 import {
   buildFormJsonWire,
@@ -10,6 +10,7 @@ import {
   type FormMode,
 } from '@/core/utils/viewProfile';
 import { useViewProfileStore } from '@/stores/viewProfile';
+import { useTenantStore } from '@/stores/tenant';
 
 /** FormLayoutDrawer 组件 props 类型（与 FormLayoutDrawer.vue defineProps 泛型逐字一致） */
 interface FormLayoutDrawerProps {
@@ -32,6 +33,7 @@ type FormLayoutDrawerEmit = <K extends keyof FormLayoutDrawerEmits>(event: K, ..
 /** FormLayoutDrawer 组件全部业务 TS：三模式表单布局本地编辑与手动保存（自 FormLayoutDrawer.vue script setup 原样搬移） */
 export function useFormLayoutDrawer(props: FormLayoutDrawerProps, emit: FormLayoutDrawerEmit) {
   const evpStore = useViewProfileStore();
+  const tenantStore = useTenantStore();
 
   const modeOptions: { value: FormMode; label: string }[] = [
     { value: 'add', label: '新增' },
@@ -54,7 +56,7 @@ export function useFormLayoutDrawer(props: FormLayoutDrawerProps, emit: FormLayo
     typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : 420,
   );
 
-  /** 当前模式可配置字段：与 FormContent 同源过滤（审计字段；add 另去 PK/readOnly） */
+  /** 当前模式可配置字段：与 FormContent 同源过滤（审计/租户字段；add 另去 PK/readOnly） */
   function modeFields(mode: FormMode): FieldMeta[] {
     const raw =
       mode === 'add'
@@ -62,11 +64,17 @@ export function useFormLayoutDrawer(props: FormLayoutDrawerProps, emit: FormLayo
         : mode === 'edit'
           ? props.editFields
           : props.detailFields;
-    const withoutAudit = raw.filter((f) => !isAuditField(f));
-    if (mode === 'add') {
-      return withoutAudit.filter((f) => !f.primaryKey && !f.readOnly);
+    let list = raw.filter((f) => !isAuditField(f));
+    if (!tenantStore.enableTenant) {
+      list = list.filter((f) => !isTenantField(f));
     }
-    return withoutAudit;
+    if (mode === 'add') {
+      return list.filter((f) => !f.primaryKey && !f.readOnly);
+    }
+    if (mode === 'edit') {
+      return list.filter((f) => !f.primaryKey);
+    }
+    return list;
   }
 
   /** 按本地 order 排序后的展示字段：order 前 + 未列按元数据原序追加 */

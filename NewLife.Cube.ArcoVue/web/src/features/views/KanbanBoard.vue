@@ -1,5 +1,12 @@
 <template>
-  <div class="kanban-board" :style="{ minHeight: height + 'px' }">
+  <div
+    v-if="!columns.length"
+    class="view-empty-wrap"
+    :style="{ minHeight: (height || 240) + 'px' }"
+  >
+    <a-empty description="暂无看板数据或未配置分组字段" />
+  </div>
+  <div v-else class="kanban-board" :style="{ minHeight: height + 'px' }">
     <div v-for="col in columns" :key="col.key" class="kanban-col">
       <div class="kanban-col-head">
         <span class="kanban-col-title">{{ col.label }}</span>
@@ -14,6 +21,7 @@
           :image-url="resolveImageUrl(row, mapping?.imageField)"
           :body-fields="bodyOf(row)"
           :can-view-detail="canViewDetail"
+          :enable-table-double-click="enableTableDoubleClick"
           :can-edit="canEdit"
           :can-delete="canDelete"
           :ops-custom-links="opsCustomLinks"
@@ -25,7 +33,6 @@
         />
       </div>
     </div>
-    <a-empty v-if="!columns.length" description="暂无看板数据或未配置分组字段" />
   </div>
 </template>
 
@@ -46,12 +53,14 @@ const props = withDefaults(
     rowKey: string;
     height?: number;
     canViewDetail: boolean;
+    enableTableDoubleClick?: boolean;
     canEdit: boolean;
     canDelete: boolean;
     opsCustomLinks?: OpsCustomLink[];
     formatCell?: (field: FieldMeta, record: Record<string, unknown>) => string;
   }>(),
   {
+    enableTableDoubleClick: true,
     opsCustomLinks: () => [],
   },
 );

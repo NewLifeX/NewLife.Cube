@@ -7,7 +7,7 @@
       { 'record-card--no-image': !imageUrl },
     ]"
     :style="cardCssVars"
-    @dblclick="$emit('detail', record)"
+    @dblclick="onDblClick"
   >
     <div class="record-card-title">{{ title }}</div>
     <div v-if="imageUrl" class="record-card-image">
@@ -98,6 +98,8 @@ const props = withDefaults(
     imageUrl?: string;
     bodyFields: CardBodyField[];
     canViewDetail: boolean;
+    /** 魔方设置 EnableTableDoubleClick；false 时禁用双击进详情 */
+    enableTableDoubleClick?: boolean;
     canEdit: boolean;
     canDelete: boolean;
     opsCustomLinks?: OpsCustomLink[];
@@ -112,17 +114,24 @@ const props = withDefaults(
     bodyColumns: 2,
     fieldOrientation: 'vertical',
     minHeight: 0,
+    enableTableDoubleClick: true,
     opsCustomLinks: () => [],
   },
 );
 
-defineEmits<{
+const emit = defineEmits<{
   detail: [row: Record<string, unknown>];
   edit: [row: Record<string, unknown>];
   delete: [row: Record<string, unknown>];
   toggleEnable: [row: Record<string, unknown>, field: string];
   opsLink: [link: OpsCustomLink, row: Record<string, unknown>];
 }>();
+
+function onDblClick() {
+  if (props.canViewDetail && props.enableTableDoubleClick !== false) {
+    emit('detail', props.record);
+  }
+}
 
 const {
   badgeStyle,

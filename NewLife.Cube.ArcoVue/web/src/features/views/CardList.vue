@@ -1,6 +1,14 @@
 <template>
   <!-- key 强制在列数/排版变更时整表重挂，避免 scoped 样式缓存导致无感 -->
   <div
+    v-if="!records.length"
+    class="view-empty-wrap"
+    :style="{ minHeight: (height || 240) + 'px' }"
+  >
+    <a-empty description="暂无数据" />
+  </div>
+  <div
+    v-else
     ref="listRef"
     class="card-list"
     :key="layoutSignature"
@@ -19,6 +27,7 @@
       :field-orientation="resolvedFieldOrientation"
       :min-height="cardMinHeight"
       :can-view-detail="canViewDetail"
+      :enable-table-double-click="enableTableDoubleClick"
       :can-edit="canEdit"
       :can-delete="canDelete"
       :ops-custom-links="opsCustomLinks"
@@ -30,7 +39,6 @@
     />
     <!-- 懒加载哨兵：仅当还有未渲染数据时存在；进入视口附近即追加下一批（滚动动态加载，不一次性渲染全部） -->
     <div v-if="visibleRecords.length < records.length" ref="sentinelRef" class="card-list-sentinel" />
-    <a-empty v-if="!records.length" description="暂无数据" />
   </div>
 </template>
 
@@ -60,6 +68,8 @@ const props = withDefaults(
     bodyColumns?: CardBodyColumns;
     fieldOrientation?: CardFieldOrientation;
     canViewDetail: boolean;
+    /** 魔方设置 EnableTableDoubleClick；false 时卡片/看板禁用双击进详情 */
+    enableTableDoubleClick?: boolean;
     canEdit: boolean;
     canDelete: boolean;
     opsCustomLinks?: OpsCustomLink[];
@@ -69,6 +79,7 @@ const props = withDefaults(
     layout: 'standard',
     bodyColumns: 2,
     fieldOrientation: 'vertical',
+    enableTableDoubleClick: true,
     opsCustomLinks: () => [],
   },
 );

@@ -43,10 +43,11 @@
       @update:model-value="onPickerChange"
     />
     <a-select
-      v-else-if="control === 'select'"
+      v-else-if="control === 'select' || control === 'selectMulti'"
       :model-value="selectValue"
       :disabled="disabled"
       :placeholder="`请选择${field.displayName || field.name}`"
+      :multiple="control === 'selectMulti'"
       allow-clear
       allow-search
       style="width: 100%"

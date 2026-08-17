@@ -11,6 +11,7 @@ import type {
   SearchControlType,
   ListControlType,
 } from '../types/field';
+import { isBitmaskMultiSelect, keysToBitmask } from './bitmaskSelect';
 
 /** 已知 CLR 数值类型（搜索用范围、表单用数字框） */
 const NUMERIC_TYPES: ReadonlySet<string> = new Set([
@@ -132,7 +133,8 @@ export function resolveControl(field: FieldMeta): ControlType {
   // 静态字典（GetPage/GetFields 已物化 dataSource / dataSourceMap）→ 本地下拉
   // 必须先于 itemType=singleSelect→lov，否则 Object/Config 有字典仍走远程 Lov
   if (field.dataSource && Object.keys(field.dataSource).length > 0) {
-    return 'select';
+    const multi = !!field.multiple || normalizeItemType(field) === 'multipleselect';
+    return multi ? 'selectMulti' : 'select';
   }
 
   if (itemType && ITEM_TYPE_TO_CONTROL[itemType]) {
@@ -359,11 +361,16 @@ export function serializeSubmitModel(
   );
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(model)) {
+    const field = fieldMap.get(k);
     if (multiNames.has(k) && Array.isArray(v)) {
-      // XCode 多选约定：逗号分隔字符串
-      out[k] = (v as unknown[]).map(String).join(',');
+      if (field && isBitmaskMultiSelect(field)) {
+        out[k] = keysToBitmask(v);
+      } else {
+        // XCode 多选约定：逗号分隔字符串
+        out[k] = (v as unknown[]).map(String).join(',');
+      }
     } else {
-      out[k] = normalizeSubmitValue(fieldMap.get(k), v);
+      out[k] = normalizeSubmitValue(field, v);
     }
   }
   return out;

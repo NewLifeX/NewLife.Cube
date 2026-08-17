@@ -130,8 +130,8 @@ export function buildThemeTokens(
       '--cube-font-size-title': `${16 * scale}px`,
       '--cube-font-weight-normal': '400',
       '--cube-font-weight-medium': '500',
-      /* Arco 组件多为 px 字号，靠 zoom 整体缩放才生效 */
-      zoom: scale === 1 ? 'normal' : String(scale),
+      /* 字号缩放只用 CSS 变量，禁止对布局根使用 CSS zoom：
+       * zoom 会改变绘制/布局比例，易在视口留白或被 overflow 裁切工具栏/分页（且 html zoom 会导致弹层偏移） */
       'font-size': `${14 * scale}px`,
     },
     primaryScale,

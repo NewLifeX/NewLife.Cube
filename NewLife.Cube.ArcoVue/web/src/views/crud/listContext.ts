@@ -151,6 +151,9 @@ export function createListContext(props: { type: string; authId?: number }) {
 
   /** 只读实体列表页不展示历史与评论（新建由表单 mode 自行隐藏） */
   const showHistoryTabs = computed(() => pageSetting.value?.isReadOnly !== true);
+  /** 魔方设置 EnableTableDoubleClick：默认 true；显式 false 时禁用列表/卡片双击进详情 */
+  const enableTableDoubleClick = computed(() => pageSetting.value?.enableTableDoubleClick !== false);
+
 
   /** 表单字段分区唯一入口：展示、回填、保存共用同一字段来源（OSC-0009） */
   const fieldParts = computed(() => ({
@@ -591,6 +594,7 @@ export function createListContext(props: { type: string; authId?: number }) {
     flags,
     isAdmin,
     showHistoryTabs,
+    enableTableDoubleClick,
     fieldParts,
     drawerFields,
     drawerFormLayout,

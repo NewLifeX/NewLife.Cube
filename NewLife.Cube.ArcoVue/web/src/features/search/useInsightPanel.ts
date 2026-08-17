@@ -1,6 +1,7 @@
 import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import * as echarts from 'echarts';
 import { resolveStatEntries } from '@/core/utils/searchFilters';
+import { ensureEchartsTheme, initEcharts } from '@/core/utils/echartsTheme';
+import { useAppStore } from '@/stores/app';
 import type { FieldMeta } from '@/core/types/field';
 import type { SavedQuery } from '@/core/utils/viewProfile';
 
@@ -40,6 +41,7 @@ interface InsightPanelProps {
 
 /** InsightPanel 组件全部业务 TS：主时间/统计/图表/两行布局测量（自 InsightPanel.vue script setup 原样搬移；emits 仅模板 $emit 使用） */
 export function useInsightPanel(props: InsightPanelProps) {
+  const appStore = useAppStore();
   /** 主时间范围值：dtStart/dtEnd 两键映射 [start, end] */
   const masterTimeRange = computed(() => {
     const s = props.model?.dtStart;
@@ -66,16 +68,18 @@ export function useInsightPanel(props: InsightPanelProps) {
   /** 仅展示 stat 中非 null 的条目；无 stat 时展示「暂无统计」而非编造 0 */
   const statEntries = computed(() => resolveStatEntries(props.statData));
 
-  const chartInstances: echarts.ECharts[] = [];
+  const chartInstances: ReturnType<typeof initEcharts>[] = [];
 
   function setChartRef(el: HTMLElement | null, idx: number) {
     if (!el) return;
-    nextTick(() => {
+    nextTick(async () => {
       if (chartInstances[idx]) chartInstances[idx].dispose();
-      const inst = markRaw(echarts.init(el));
+      const theme = appStore.loginConfig?.echartsTheme;
+      await ensureEchartsTheme(theme);
+      const inst = markRaw(initEcharts(el, theme));
       const option = props.chartData[idx];
       if (option && typeof option === 'object') {
-        inst.setOption(option as echarts.EChartsOption);
+        inst.setOption(option as import('echarts').EChartsOption);
       }
       chartInstances[idx] = inst;
     });

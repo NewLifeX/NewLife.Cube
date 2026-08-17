@@ -50,3 +50,6 @@ app.component('icon-park', IconPark);
 useUserProfileStore(pinia).bootstrapLocal();
 
 app.mount('#app');
+
+// mount 后 #cube-scale-root 已存在，再刷一次主题（清理历史 zoom、同步 CSS 变量）
+useUserProfileStore(pinia).applyVisual();

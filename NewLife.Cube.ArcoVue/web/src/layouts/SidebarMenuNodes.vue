@@ -1,15 +1,19 @@
 <template>
   <template v-for="item in items" :key="item.id">
     <a-sub-menu v-if="item.children?.length && visible(item)" :key="'sub-' + item.id">
+      <template #icon>
+        <icon-park :type="menuIcon(item)" />
+      </template>
       <template #title>
-        <icon-park :type="menuIcon(item)" class="menu-node-icon" />
-        <span class="menu-node-label">{{ item.displayName || item.name }}</span>
+        {{ item.displayName || item.name }}
       </template>
       <SidebarMenuNodes :items="item.children" />
     </a-sub-menu>
     <a-menu-item v-else-if="item.url && visible(item)" :key="normalize(item.url)">
-      <icon-park :type="menuIcon(item)" class="menu-node-icon" />
-      <span class="menu-node-label">{{ item.displayName || item.name }}</span>
+      <template #icon>
+        <icon-park :type="menuIcon(item)" />
+      </template>
+      {{ item.displayName || item.name }}
     </a-menu-item>
   </template>
 </template>
@@ -30,13 +34,3 @@ function normalize(url: string) {
   return normalizeMenuUrl(url, 'pascal');
 }
 </script>
-
-<style scoped>
-.menu-node-icon {
-  display: inline-flex;
-  align-items: center;
-  margin-right: 8px;
-  font-size: 14px;
-  vertical-align: -2px;
-}
-</style>

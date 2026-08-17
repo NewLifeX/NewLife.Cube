@@ -1,7 +1,6 @@
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { MenuItem } from '@cube/api-core';
-import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
 import { useUserProfileStore } from '@/stores/userProfile';
 import { normalizeMenuUrl } from '@/core/utils/url';
@@ -10,11 +9,9 @@ import { normalizeMenuUrl } from '@/core/utils/url';
 export function useMixLayout() {
   const route = useRoute();
   const router = useRouter();
-  const appStore = useAppStore();
   const userStore = useUserStore();
   const profileStore = useUserProfileStore();
 
-  const productName = computed(() => appStore.loginConfig?.name || '魔方管理平台');
   const collapsed = computed(() => profileStore.layout.siderCollapsed);
   const siderWidth = computed(() => profileStore.layout.siderWidth || 220);
 
@@ -83,7 +80,6 @@ export function useMixLayout() {
   }
 
   return {
-    productName,
     collapsed,
     siderWidth,
     topMenus,

@@ -72,6 +72,27 @@ public class CubeController : ConfigController<CubeSetting>, IPageDataContext
                 if (df != null) df.ItemType = "color";
             }
 
+            // 默认角色：存 Name；候选为已启用角色，多租户下按当前租户 RoleIds 过滤
+            df = list.FirstOrDefault(e => e.Name == nameof(CubeSetting.DefaultRole));
+            if (df != null)
+            {
+                df.ItemType = "singleSelect";
+                df.DataSource = _ => BuildDefaultRoleOptions();
+            }
+
+            // 验证码场景：位掩码多选（1=登录 / 2=注册 / 4=发码）
+            df = list.FirstOrDefault(e => e.Name == nameof(CubeSetting.CaptchaScene));
+            if (df != null)
+            {
+                df.ItemType = "multipleSelect";
+                df.DataSource = _ => new Dictionary<String, String>
+                {
+                    ["1"] = "登录",
+                    ["2"] = "注册",
+                    ["4"] = "发验证码（防短信轰炸）",
+                };
+            }
+
             _has = true;
         }
 
@@ -81,11 +102,68 @@ public class CubeController : ConfigController<CubeSetting>, IPageDataContext
     }
 
     /// <summary>
-    /// 获取登录设置
+    /// 默认角色候选项：键值均为角色 Name（与 FindByName / GetOrAdd 一致）。
+    /// EnableTenant 且当前租户 Id&gt;0 时，仅保留租户 RoleIds 内且已启用的角色。
+    /// </summary>
+    private static System.Collections.IDictionary BuildDefaultRoleOptions()
+    {
+        var roles = XCode.Membership.Role.FindAllWithCache().Where(e => e.Enable).OrderByDescending(e => e.Sort).ToList();
+        if (CubeSetting.Current.EnableTenant)
+        {
+            var tenantId = XCode.Membership.TenantContext.CurrentId;
+            if (tenantId > 0)
+            {
+                var tenant = XCode.Membership.Tenant.FindById(tenantId);
+                var ids = tenant?.RoleIds.SplitAsInt(",") ?? [];
+                roles = roles.Where(e => ids.Contains(e.ID)).ToList();
+            }
+        }
+
+        var dic = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
+        foreach (var r in roles)
+        {
+            if (r.Name.IsNullOrEmpty()) continue;
+            dic[r.Name] = r.Name;
+        }
+
+        var cur = CubeSetting.Current.DefaultRole;
+        if (!cur.IsNullOrEmpty() && !dic.ContainsKey(cur))
+            dic[cur] = cur;
+
+        return dic;
+    }
+
+    /// <summary>
+    /// 获取登录设置（与 /Auth/LoginConfig 对齐：附加开关与 StartPage；oauth 不绑 EnableOAuthServer）
     /// </summary>
     /// <returns></returns>
     [AllowAnonymous]
-    public ActionResult GetLoginConfig() => Ok(data: new LoginConfigModel());
+    public ActionResult GetLoginConfig()
+    {
+        var model = new LoginConfigModel();
+        var set = CubeSetting.Current;
+        return Ok(data: new
+        {
+            model.Code,
+            model.Name,
+            model.Copyright,
+            model.Registration,
+            model.Logo,
+            model.LoginTip,
+            model.LoginLogo,
+            model.LoginBackground,
+            model.Login,
+            model.Register,
+            model.OAuth,
+            model.Security,
+            EnableTenant = set.EnableTenant,
+            EnableOAuthServer = set.EnableOAuthServer,
+            StartPage = set.StartPage,
+            EChartsTheme = set.EChartsTheme,
+            AvatarChars = set.AvatarChars,
+            StarWeb = set.StarWeb,
+        });
+    }
 
     /// <summary>更新时触发</summary>
     /// <param name="obj"></param>

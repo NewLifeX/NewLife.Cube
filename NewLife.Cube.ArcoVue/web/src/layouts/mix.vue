@@ -1,7 +1,9 @@
 <template>
-  <a-layout class="layout layout-mix" style="height: 100vh">
+  <a-layout class="layout layout-mix">
     <a-layout-header class="layout-header">
-      <div class="layout-header__brand">{{ productName }}</div>
+      <div class="layout-header__brand">
+        <ShellBrand />
+      </div>
       <a-menu
         mode="horizontal"
         :selected-keys="[String(activeTopId)]"
@@ -50,12 +52,12 @@
 
 <script setup lang="ts">
 import SidebarMenuNodes from './SidebarMenuNodes.vue';
+import ShellBrand from './ShellBrand.vue';
 import ShellToolbar from './ShellToolbar.vue';
 import LayoutContent from './LayoutContent.vue';
 import { useMixLayout } from './useMixLayout';
 
 const {
-  productName,
   collapsed,
   siderWidth,
   topMenus,
@@ -69,6 +71,9 @@ const {
 </script>
 
 <style scoped>
+.layout-mix {
+  height: 100%;
+}
 .layout-header {
   background: var(--color-bg-2);
   padding: 0 16px;
@@ -78,9 +83,9 @@ const {
   border-bottom: 1px solid var(--color-border);
 }
 .layout-header__brand {
-  font-weight: 700;
-  white-space: nowrap;
   flex-shrink: 0;
+  max-width: 220px;
+  height: 48px;
 }
 .layout-mix__top-menu {
   flex: 1;

@@ -1,10 +1,11 @@
 import { computed, ref, watch } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
-import { isAuditField, isFullWidthControl, resolveControl } from '@/core/utils/fieldControl';
+import { isAuditField, isFullWidthControl, isTenantField, resolveControl } from '@/core/utils/fieldControl';
 import { applyFormLayout, groupFieldsByCategory } from '@/core/utils/fieldGroups';
 import type { FormLayout } from '@/core/utils/viewProfile';
 import { isFieldRequired } from '@/core/utils/submitPayload';
 import { fieldFormatRules } from '@/core/utils/validation';
+import { useTenantStore } from '@/stores/tenant';
 
 /** FormContent 组件 props 类型（与 FormContent.vue defineProps 泛型逐字一致） */
 interface FormContentProps {
@@ -12,7 +13,7 @@ interface FormContentProps {
   model: Record<string, unknown>;
   typePath: string;
   readonly?: boolean;
-  /** 新增时隐藏主键/只读（对齐 Cube.Vue） */
+  /** 新增时隐藏主键/只读；编辑默认隐藏主键「编号」（对齐 Cube.Vue） */
   mode?: 'add' | 'edit' | 'detail';
   /** 后端字段级错误（FieldErrors），映射到对应 a-form-item（OSC-0009） */
   fieldErrors?: { field: string; message: string }[];
@@ -23,14 +24,23 @@ interface FormContentProps {
 /** FormContent 组件全部业务 TS：字段分组可见性、校验规则与 FieldErrors 映射（自 FormContent.vue script setup 原样搬移） */
 export function useFormContent(props: FormContentProps) {
   const formRef = ref();
+  const tenantStore = useTenantStore();
 
   const visibleFields = computed(() => {
     // 新增/编辑均隐藏审计字段（创建/更新用户、IP、时间），由后端自动维护
-    const withoutAudit = props.fields.filter((f) => !isAuditField(f));
-    if (props.mode === 'add') {
-      return withoutAudit.filter((f) => !f.primaryKey && !f.readOnly);
+    let list = props.fields.filter((f) => !isAuditField(f));
+    // 多租户关闭：隐藏 TenantId 等，避免表单/详情出现租户控件
+    if (!tenantStore.enableTenant) {
+      list = list.filter((f) => !isTenantField(f));
     }
-    return withoutAudit;
+    if (props.mode === 'add') {
+      return list.filter((f) => !f.primaryKey && !f.readOnly);
+    }
+    // 编辑默认不显示主键「编号」（系统自动生成）；详情仍展示便于核对
+    if (props.mode === 'edit') {
+      return list.filter((f) => !f.primaryKey);
+    }
+    return list;
   });
 
   /** 应用受限布局：hidden 过滤 + order 排序 + Category 折叠（OSC-0013） */

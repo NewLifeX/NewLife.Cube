@@ -342,6 +342,19 @@ public static class CubeService
             });
         }
 
+        // 上传目录（登录背景/Logo 等）：与 CubeController.UploadFile 落盘路径一致，映射为 /{UploadPath}/...
+        if (!set.UploadPath.IsNullOrWhiteSpace())
+        {
+            var uploadRoot = set.UploadPath.GetFullPath();
+            uploadRoot.EnsureDirectory(false);
+            var reqPath = "/" + set.UploadPath.Trim('/', '\\').Replace('\\', '/');
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(uploadRoot),
+                RequestPath = reqPath
+            });
+        }
+
         app.UseCookiePolicy();
         //app.UseSession();
         app.UseAuthentication();

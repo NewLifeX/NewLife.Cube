@@ -31,17 +31,19 @@ describe('buildThemeTokens', () => {
     expect(t.cssVars['--cube-primary']).toBe('#165DFF');
     expect(t.cssVars['--cube-radius']).toBe('4px');
     expect(t.cssVars['--cube-font-scale']).toBe('1');
-    expect(t.cssVars.zoom).toBe('normal');
+    expect(t.cssVars['font-size']).toBe('14px');
+    expect(t.cssVars.zoom).toBeUndefined();
   });
 
-  it('scales zoom when fontScale != 1', () => {
+  it('scales font tokens when fontScale != 1 (no CSS zoom)', () => {
     const t = buildThemeTokens(
       { ...SYSTEM_DEFAULT_PROFILE.theme, fontScale: 1.1 },
       false,
     );
     expect(t.cssVars['--cube-font-scale']).toBe('1.1');
-    expect(t.cssVars.zoom).toBe('1.1');
+    expect(t.cssVars.zoom).toBeUndefined();
     expect(t.cssVars['--cube-font-size']).toBe(`${14 * 1.1}px`);
+    expect(t.cssVars['font-size']).toBe(`${14 * 1.1}px`);
   });
 
   it('exposes semantic font tokens scaled by fontScale', () => {

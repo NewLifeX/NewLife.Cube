@@ -35,6 +35,7 @@ import { getValueByKey, normalizeKeysByFields } from '@/core/utils/url';
 import type { FieldMeta } from '@/core/types/field';
 import { useAppStore } from '@/stores/app';
 import { useTenantStore } from '@/stores/tenant';
+import { ensureEchartsTheme } from '@/core/utils/echartsTheme';
 
 /** DefaultObject 组件 props 类型（与 DefaultObject.vue defineProps 泛型逐字一致） */
 interface DefaultObjectProps {
@@ -304,6 +305,7 @@ export function useDefaultObject(props: DefaultObjectProps) {
       if (key === 'admin/cube' || key === 'admin/sys' || key.endsWith('/sys')) {
         try {
           await appStore.fetchLoginConfig();
+          void ensureEchartsTheme(appStore.loginConfig?.echartsTheme);
           if (key === 'admin/cube') {
             tenantStore.applyFeatureFlag(appStore.loginConfig?.enableTenant);
             await tenantStore.load();

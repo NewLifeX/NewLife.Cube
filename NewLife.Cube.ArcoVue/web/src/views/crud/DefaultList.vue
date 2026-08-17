@@ -230,6 +230,7 @@
               :can-edit="flags.canEdit"
               :can-delete="flags.canDelete && chrome.allowDelete"
               :can-view-detail="chrome.allowViewDetail"
+              :enable-table-double-click="enableTableDoubleClick"
               :automation-buttons="automationButtons"
               :ops-custom-links="opsCustomLinks"
               :show-expand="chrome.expandRow"
@@ -249,7 +250,13 @@
               @toggle-enable="onToggleEnable"
               @scroll-bottom="onTableScrollBottom"
             />
-            <a-empty v-else description="暂无列表字段（GetPage.list 为空）" />
+            <div
+              v-else
+              class="view-empty-wrap"
+              :style="{ minHeight: resolvedTableHeight + 'px' }"
+            >
+              <a-empty description="暂无列表字段（GetPage.list 为空）" />
+            </div>
           </template>
 
           <CardList
@@ -265,6 +272,7 @@
             :row-key="pkField"
             :height="resolvedTableHeight"
             :can-view-detail="chrome.allowViewDetail"
+            :enable-table-double-click="enableTableDoubleClick"
             :can-edit="flags.canEdit"
             :can-delete="flags.canDelete && chrome.allowDelete"
             :ops-custom-links="opsCustomLinks"
@@ -285,6 +293,7 @@
             :row-key="pkField"
             :height="resolvedTableHeight"
             :can-view-detail="chrome.allowViewDetail"
+            :enable-table-double-click="enableTableDoubleClick"
             :can-edit="flags.canEdit"
             :can-delete="flags.canDelete && chrome.allowDelete"
             :ops-custom-links="opsCustomLinks"
@@ -318,7 +327,13 @@
             @mapping-change="onGanttMappingChange"
           />
 
-          <a-empty v-else description="未知视图类型" />
+          <div
+            v-else
+            class="view-empty-wrap"
+            :style="{ minHeight: resolvedTableHeight + 'px' }"
+          >
+            <a-empty description="未知视图类型" />
+          </div>
         </a-spin>
 
         <div v-if="showPagerBar" class="list-pager">
@@ -567,6 +582,7 @@ const {
   moreMenu,
   closeMoreMenu,
   opsCustomLinks,
+  enableTableDoubleClick,
   onToggleEnable,
   onTableScrollBottom,
   automationDrawerVisible,

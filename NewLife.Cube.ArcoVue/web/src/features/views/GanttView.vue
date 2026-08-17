@@ -1,18 +1,26 @@
 <template>
   <div class="gantt-view">
-    <div ref="host" class="gantt-host" :style="{ height: height + 'px' }" />
-    <!-- 等级切换/时间轴重绘等待遮罩：等级改变重绘 canvas 时给用户反馈（列数差异大时重绘可能耗时） -->
-    <div v-if="zooming" class="gantt-zoom-mask">
-      <a-spin />
-    </div>
-    <a-alert
+    <div
       v-if="!mapping?.plannedStartField || !mapping?.plannedEndField"
-      type="warning"
-      style="margin-top: 8px"
+      class="view-empty-wrap"
+      :style="{ minHeight: height + 'px' }"
     >
-      请在自定义配置中设置计划开始/结束日期字段
-    </a-alert>
-    <a-empty v-else-if="!records.length" description="暂无数据" />
+      <a-alert type="warning">请在自定义配置中设置计划开始/结束日期字段</a-alert>
+    </div>
+    <div
+      v-else-if="!records.length"
+      class="view-empty-wrap"
+      :style="{ minHeight: height + 'px' }"
+    >
+      <a-empty description="暂无数据" />
+    </div>
+    <template v-else>
+      <div ref="host" class="gantt-host" :style="{ height: height + 'px' }" />
+      <!-- 等级切换/时间轴重绘等待遮罩：等级改变重绘 canvas 时给用户反馈（列数差异大时重绘可能耗时） -->
+      <div v-if="zooming" class="gantt-zoom-mask">
+        <a-spin />
+      </div>
+    </template>
   </div>
 </template>
 
