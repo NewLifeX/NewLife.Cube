@@ -29,6 +29,7 @@ const CUBE_SERVICE_ACTIONS = new Set([
   'Image',
   'File',
   'Setting',
+  'Avatar'
 ]);
 
 /**

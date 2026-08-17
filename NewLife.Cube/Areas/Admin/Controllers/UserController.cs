@@ -360,65 +360,65 @@ public class UserController : EntityController<User, UserModel>
     /// <summary>更新用户资料</summary>
     /// <param name="user"></param>
     /// <returns></returns>
-        [HttpPost]
-        [EntityAuthorize]
-        public ActionResult Info(User user)
+    [HttpPost]
+    [EntityAuthorize]
+    public ActionResult Info(User user)
+    {
+        var cur = ManageProvider.User;
+        if (cur == null) return RedirectToAction("Login");
+
+        if (user.ID != cur.ID) throw new Exception("禁止修改非当前登录用户资料");
+
+        var entity = user as IEntity;
+        // 自助更新：仅当用户名实际变更时才拦截。
+        // 原逻辑「请求出现 Name 字段即拦」会与移动端回传当前用户名冲突，导致昵称无法保存。
+        // 改为值比对：Name 与当前登录用户名一致则放行。
+        if (entity.Dirtys["Name"] && !user.Name.EqualIgnoreCase(cur.Name))
+            throw new Exception("禁止修改用户名！");
+        if (entity.Dirtys["RoleID"]) throw new Exception("禁止修改角色！");
+        if (entity.Dirtys["Enable"]) throw new Exception("禁止修改禁用！");
+
+        // 头像上传已拆分为独立接口 UploadFile（POST /Admin/User/UploadFile），
+        // 本接口仅负责文本字段更新（昵称/邮箱/手机等）以及 avatar 字段回填。
+        // 前端在上传头像后，将 UploadFile 返回的文件路径回填到 avatar 字段再调用本接口持久化。
+        user.Update();
+
+        return Json(0, null, user);
+    }
+
+    /// <summary>上传头像。复用基类 UploadFile（SaveFile 核心一致），仅做三件事：
+    /// 1) 增加登录鉴权（基类 UploadFile 无 [EntityAuthorize]，直接复用会变成未登录可访问的上传端点）；
+    /// 2) 强制 id 等于当前登录用户，防止越权给其它用户上传头像；
+    /// 3) 仅允许图片类型（覆写 ValidateUploadFile，在基类「非空 + 危险扩展名黑名单」基础上加图片白名单）。
+    /// 返回附件信息 { attId, filePath, contentType }，前端再调用 Info(avatar=filePath) 持久化头像。</summary>
+    [HttpPost]
+    [EntityAuthorize]
+    public override async Task<ActionResult> UploadFile(IFormFile file, String id = null, String title = null)
+    {
+        var cur = ManageProvider.User;
+        if (cur == null) return RedirectToAction("Login");
+
+        // 强制只能为当前登录用户上传头像，避免越权
+        var targetId = id.IsNullOrEmpty() ? cur.ID + "" : id;
+        if (!targetId.EqualIgnoreCase(cur.ID + ""))
+            return new JsonResult(new { error = "只能为当前登录用户上传头像！" });
+
+        return await base.UploadFile(file, cur.ID + "", title);
+    }
+
+    /// <summary>头像上传校验：在基类「非空 + 危险扩展名黑名单」基础上，限制仅图片类型</summary>
+    protected override Boolean ValidateUploadFile(IFormFile file, out String error)
+    {
+        if (!base.ValidateUploadFile(file, out error)) return false;
+
+        var ext = Path.GetExtension(file.FileName);
+        if (!ext.EqualIgnoreCase(".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".svg"))
         {
-            var cur = ManageProvider.User;
-            if (cur == null) return RedirectToAction("Login");
-
-            if (user.ID != cur.ID) throw new Exception("禁止修改非当前登录用户资料");
-
-            var entity = user as IEntity;
-            // 自助更新：仅当用户名实际变更时才拦截。
-            // 原逻辑「请求出现 Name 字段即拦」会与移动端回传当前用户名冲突，导致昵称无法保存。
-            // 改为值比对：Name 与当前登录用户名一致则放行。
-            if (entity.Dirtys["Name"] && !user.Name.EqualIgnoreCase(cur.Name))
-                throw new Exception("禁止修改用户名！");
-            if (entity.Dirtys["RoleID"]) throw new Exception("禁止修改角色！");
-            if (entity.Dirtys["Enable"]) throw new Exception("禁止修改禁用！");
-
-            // 头像上传已拆分为独立接口 UploadFile（POST /Admin/User/UploadFile），
-            // 本接口仅负责文本字段更新（昵称/邮箱/手机等）以及 avatar 字段回填。
-            // 前端在上传头像后，将 UploadFile 返回的文件路径回填到 avatar 字段再调用本接口持久化。
-            user.Update();
-
-            return Json(0, null, user);
+            error = "仅支持上传图片文件！";
+            return false;
         }
-
-        /// <summary>上传头像。复用基类 UploadFile（SaveFile 核心一致），仅做三件事：
-        /// 1) 增加登录鉴权（基类 UploadFile 无 [EntityAuthorize]，直接复用会变成未登录可访问的上传端点）；
-        /// 2) 强制 id 等于当前登录用户，防止越权给其它用户上传头像；
-        /// 3) 仅允许图片类型（覆写 ValidateUploadFile，在基类「非空 + 危险扩展名黑名单」基础上加图片白名单）。
-        /// 返回附件信息 { attId, filePath, contentType }，前端再调用 Info(avatar=filePath) 持久化头像。</summary>
-        [HttpPost]
-        [EntityAuthorize]
-        public override async Task<ActionResult> UploadFile(IFormFile file, String id = null, String title = null)
-        {
-            var cur = ManageProvider.User;
-            if (cur == null) return RedirectToAction("Login");
-
-            // 强制只能为当前登录用户上传头像，避免越权
-            var targetId = id.IsNullOrEmpty() ? cur.ID + "" : id;
-            if (!targetId.EqualIgnoreCase(cur.ID + ""))
-                return new JsonResult(new { error = "只能为当前登录用户上传头像！" });
-
-            return await base.UploadFile(file, cur.ID + "", title);
-        }
-
-        /// <summary>头像上传校验：在基类「非空 + 危险扩展名黑名单」基础上，限制仅图片类型</summary>
-        protected override Boolean ValidateUploadFile(IFormFile file, out String error)
-        {
-            if (!base.ValidateUploadFile(file, out error)) return false;
-
-            var ext = Path.GetExtension(file.FileName);
-            if (!ext.EqualIgnoreCase(".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".svg"))
-            {
-                error = "仅支持上传图片文件！";
-                return false;
-            }
-            return true;
-        }
+        return true;
+    }
 
     ///// <summary>保存文件</summary>
     ///// <param name="entity">实体对象</param>
