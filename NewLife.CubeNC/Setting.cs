@@ -469,8 +469,8 @@ public class CubeSetting : Config<CubeSetting>
     [Category("系统功能")]
     public Int32 CaptchaScene { get; set; }
 
-    /// <summary>启用MFA。是否允许用户开启多因素认证（TOTP），增强版功能，默认false</summary>
-    [Description("启用MFA。是否允许用户开启多因素认证（TOTP），增强版功能，默认false")]
+    /// <summary>启用MFA。开启后用户可在「账号安全」绑定 Authenticator；已绑定用户登录时必须二步验证。仅开此开关不会对未绑定用户强制 MFA</summary>
+    [Description("启用MFA。开启后用户可在「账号安全」绑定 Authenticator；已绑定用户登录时必须二步验证。仅开此开关不会对未绑定用户强制 MFA")]
     [Category("系统功能")]
     public Boolean EnableMfa { get; set; }
 

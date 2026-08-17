@@ -11,8 +11,8 @@ Cube WebAPI 已具备密码 / 短信 / 邮箱登录、图片验证码、RSA Chal
 | # | 决策 |
 | --- | --- |
 | 1 | **一个实现 OSC**：登录/SSO/MFA + 第三方绑定 + 租户切换/管理齐平 + 新实体隔离（文档 + 基类藏 TenantId）。 |
-| 2 | **飞书风登录页**：左品牌（logo/背景/版权）+ 右表单；可选租户 Code；Tab 由 `login.password/sms/mail` 决定；底部 `oauth[]` 图标。 |
-| 3 | SSO 首次登录保持后端 **AutoRegister / 已有匹配绑定**；**不**移植 CubeNC `OAuthPending` → SPA 注册。 |
+| 2 | **飞书风登录页**：左品牌（logo/背景/版权）+ 右表单；可选租户 Code；Tab 由 `login.password/sms/mail` 决定；底部 `oauth[]` 图标（**不**绑 `EnableOAuthServer`；该开关仅表示 Cube 作 OAuth 服务端）。 |
+| 3 | SSO 首次登录保持后端 **AutoRegister / 已有匹配绑定**；**不**移植 CubeNC `OAuthPending` → SPA 注册（ForceBind* 另案）。 |
 | 4 | MFA **仅 TOTP**（`/Mfa/*`）。短信/邮箱只作登录验证码，不作第二因子。 |
 | 5 | 多租户维持 **共享库 + TenantId**。不实现 `DatabaseName` 分库、域名路由、配额强制。 |
 | 6 | JWT **不**携带 TenantId；每请求 `X-Tenant`（Code）优先，兼容 `X-Tenant-Id` / cookie。 |

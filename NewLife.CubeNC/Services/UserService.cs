@@ -478,16 +478,20 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
         LogProvider.Provider.WriteLog(typeof(User), action, true, $"用户：{username}", user.ID, user + "", ip);
 
-        // MFA 拦截：账密通过但用户已开启 MFA，不下发正式令牌，改为下发挂起令牌
-        if (set.EnableMfa && _mfa != null && user is IUser iuser && _mfa.IsEnabled(iuser))
+        // MFA 拦截：须用库中最新 User（含 Ex4/Ex5/Ex6），避免会话对象无持久化扩展字段
+        if (set.EnableMfa && _mfa != null)
         {
-            var mfaToken = _mfa.IssuePendingToken(user.ID);
-            return new ServiceResult<IToken>
+            var mfaUser = (user as User) ?? User.FindByID(user.ID);
+            if (mfaUser != null && _mfa.IsEnabled(mfaUser))
             {
-                IsSuccess = true,
-                Message = "mfa_required",
-                MfaToken = mfaToken,
-            };
+                var mfaToken = _mfa.IssuePendingToken(user.ID);
+                return new ServiceResult<IToken>
+                {
+                    IsSuccess = true,
+                    Message = "mfa_required",
+                    MfaToken = mfaToken,
+                };
+            }
         }
 
         // 先颁发令牌，JWT 缓存在 context.Items["jwtToken"]

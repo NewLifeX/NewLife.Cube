@@ -8,10 +8,10 @@ namespace NewLife.Cube.Services;
 
 /// <summary>内置 TOTP MFA 服务。遵循 RFC 6238，与 Google/Microsoft Authenticator 兼容，零外部依赖</summary>
 /// <remarks>
-/// MFA 数据全部存储在 User.Extends 字典中，key 约定如下：
-/// - <c>MfaTotpSecret</c>：Base32 格式的 TOTP 密钥（仅未激活时存在）
-/// - <c>MfaEnabled</c>：Boolean，true 表示已激活
-/// - <c>MfaBackupCodes</c>：JSON 数组，存储最多 10 个一次性备用码（明文，一经使用立即删除）
+/// MFA 数据持久化到 User 扩展列（避免写入 Entity._Items 仅内存、Update 不落库导致登录永不触发 MFA）：
+/// - <c>Ex4</c>：Base32 TOTP 密钥（<see cref="ExtSecret"/>）
+/// - <c>Ex5</c>：已激活标记，值为 true（<see cref="ExtEnabled"/>）
+/// - <c>Ex6</c>：一次性备用码，逗号分隔（<see cref="ExtBackupCodes"/>）
 /// </remarks>
 public class TotpMfaService : IMfaService
 {
@@ -206,17 +206,40 @@ public class TotpMfaService : IMfaService
     private static String GetExtend(IUser user, String key)
     {
         if (user is not User u) return null;
+        // 优先读持久化列；兼容同进程内旧版 _Items 内存键
+        var fromCol = key switch
+        {
+            ExtSecret => u.Ex4,
+            ExtEnabled => u.Ex5,
+            ExtBackupCodes => u.Ex6,
+            _ => null
+        };
+        if (!fromCol.IsNullOrEmpty()) return fromCol;
         return u[key] as String;
     }
 
     private static void SetExtend(IUser user, String key, String value)
     {
-        if (user is User u) u[key] = value;
+        if (user is not User u) return;
+        switch (key)
+        {
+            case ExtSecret: u.Ex4 = value; break;
+            case ExtEnabled: u.Ex5 = value; break;
+            case ExtBackupCodes: u.Ex6 = value; break;
+            default: u[key] = value; break;
+        }
     }
 
     private static void RemoveExtend(IUser user, String key)
     {
-        if (user is User u) u[key] = null;
+        if (user is not User u) return;
+        switch (key)
+        {
+            case ExtSecret: u.Ex4 = null; break;
+            case ExtEnabled: u.Ex5 = null; break;
+            case ExtBackupCodes: u.Ex6 = null; break;
+            default: u[key] = null; break;
+        }
     }
 
     private static void SaveExtends(IUser user)

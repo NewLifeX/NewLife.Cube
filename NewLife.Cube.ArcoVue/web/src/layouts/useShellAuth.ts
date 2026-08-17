@@ -3,6 +3,8 @@ import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
 import { useUserProfileStore } from '@/stores/userProfile';
 import { useTenantStore } from '@/stores/tenant';
+import { setStarWebResolver } from '@/core/utils/apiError';
+import { ensureEchartsTheme } from '@/core/utils/echartsTheme';
 
 /** 布局挂载时：登录配置 + 会话恢复 + UserProfile + 租户 */
 export function useShellAuth() {
@@ -13,7 +15,11 @@ export function useShellAuth() {
   const tenantStore = useTenantStore();
 
   profileStore.bootstrapLocal();
-  appStore.fetchLoginConfig();
+  setStarWebResolver(() => appStore.loginConfig?.starWeb);
+  appStore.fetchLoginConfig().then(() => {
+    tenantStore.applyFeatureFlag(appStore.loginConfig?.enableTenant);
+    void ensureEchartsTheme(appStore.loginConfig?.echartsTheme);
+  });
 
   const ensureProfile = () => {
     if (!profileStore.loaded) void profileStore.loadFromServer();

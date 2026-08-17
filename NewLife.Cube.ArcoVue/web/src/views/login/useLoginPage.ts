@@ -1,43 +1,56 @@
 /**
  * 登录页业务：嵌套 LoginConfig、验证码、Challenge、MFA 二步、OAuth source=front-end。
  */
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Message } from '@arco-design/web-vue';
 import { encryptPassword, type LoginConfig, type OAuthProvider } from '@cube/api-core';
 import cubeApi from '@/api';
+import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
 import { useUserProfileStore } from '@/stores/userProfile';
 import {
   buildSsoLoginUrl,
   extractMfaToken,
+  isOAuthLoginEnabled,
   isRegisterEnabled,
   needChallenge,
   needLoginCaptcha,
+  needSendCodeCaptcha,
+  resolveLoginLogoUrl,
   resolveLoginTabs,
   resolveOAuthProviders,
+  resolveStartPage,
+  normalizeLoginAssetUrl,
   type LoginTabKey,
 } from './loginConfig';
+import { normalizeCaptchaImageHtml } from './captchaImage';
 import { persistSession } from './sessionTokens';
+import { useTenantStore } from '@/stores/tenant';
 
 export function useLoginPage() {
   const router = useRouter();
   const route = useRoute();
+  const appStore = useAppStore();
   const userStore = useUserStore();
   const profileStore = useUserProfileStore();
+  const tenantStore = useTenantStore();
 
   const screen = ref<'form' | 'mfa'>('form');
   const mfaToken = ref('');
   const mfaCode = ref('');
   const mfaLoading = ref(false);
 
-  const tenantCode = ref('');
   const loginConfig = ref<LoginConfig | null>(null);
   const oauthProviders = ref<OAuthProvider[]>([]);
   const tabs = computed(() => resolveLoginTabs(loginConfig.value));
   const activeTab = ref<LoginTabKey>('password');
   const showRegister = computed(() => isRegisterEnabled(loginConfig.value));
+  /** 密码登录场景图片验证码（CaptchaScene 位 1） */
   const showCaptcha = computed(() => needLoginCaptcha(loginConfig.value));
+  /** 发短信/邮件验证码前图片验证码（CaptchaScene 位 4） */
+  const showSendCodeCaptcha = computed(() => needSendCodeCaptcha(loginConfig.value));
+  const showOAuth = computed(() => isOAuthLoginEnabled(loginConfig.value));
 
   const form = reactive({ username: '', password: '' });
   const codeForm = reactive({ username: '', code: '' });
@@ -53,20 +66,21 @@ export function useLoginPage() {
   const mailCountdown = ref(0);
 
   const brandName = computed(() => loginConfig.value?.name || '魔方管理平台');
-  const logoSrc = computed(
-    () => loginConfig.value?.loginLogo || loginConfig.value?.logo || '',
-  );
+  const logoSrc = computed(() => resolveLoginLogoUrl(loginConfig.value));
   const bgStyle = computed(() => {
-    const bg = loginConfig.value?.loginBackground;
+    const bg = normalizeLoginAssetUrl(loginConfig.value?.loginBackground);
     if (!bg) return {};
+    // 图片叠在默认渐变上：图片 404 时仍保留品牌色，避免左侧纯白
+    const safe = bg.replace(/\\/g, '/').replace(/"/g, '');
     return {
-      backgroundImage: `url(${bg})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
+      backgroundImage: `url("${safe}"), linear-gradient(145deg, var(--cube-primary) 0%, color-mix(in srgb, var(--cube-primary) 50%, #1d2129) 100%)`,
+      backgroundSize: 'cover, cover',
+      backgroundPosition: 'center, center',
+      backgroundRepeat: 'no-repeat, no-repeat',
     };
   });
   const noLoginChannel = computed(
-    () => tabs.value.length === 0 && oauthProviders.value.length === 0,
+    () => tabs.value.length === 0 && !showOAuth.value,
   );
 
   async function afterLoginSuccess() {
@@ -80,8 +94,8 @@ export function useLoginPage() {
   }
 
   function redirectAfterLogin() {
-    const r = (route.query.redirect as string) || '/home';
-    router.replace(r.startsWith('/') ? r : '/home');
+    const target = resolveStartPage(loginConfig.value, route.query.redirect as string | undefined);
+    router.replace(target);
   }
 
   function pickAccessToken(data?: Record<string, unknown> | null): string {
@@ -111,14 +125,18 @@ export function useLoginPage() {
     return true;
   }
 
-  async function loadConfig(tenant?: string) {
+  async function loadConfig() {
     try {
-      const configRes = await cubeApi.user.getLoginConfig(tenant || undefined);
+      const configRes = await cubeApi.user.getLoginConfig();
       loginConfig.value = configRes.data;
+      if (configRes.data) appStore.loginConfig = configRes.data;
       oauthProviders.value = resolveOAuthProviders(configRes.data);
+      tenantStore.applyFeatureFlag(configRes.data?.enableTenant);
       const t = resolveLoginTabs(configRes.data);
       if (t.length) activeTab.value = t[0].key;
-      if (needLoginCaptcha(configRes.data)) await refreshCaptcha();
+      if (needLoginCaptcha(configRes.data) || needSendCodeCaptcha(configRes.data)) {
+        await refreshCaptcha();
+      }
     } catch {
       /* ignore */
     }
@@ -128,18 +146,13 @@ export function useLoginPage() {
     try {
       const res = await cubeApi.user.getCaptcha();
       captchaId.value = res.data?.captchaId || '';
-      captchaImage.value = res.data?.image || '';
+      captchaImage.value = normalizeCaptchaImageHtml(res.data?.image);
       captchaCode.value = '';
     } catch {
       captchaId.value = '';
       captchaImage.value = '';
     }
   }
-
-  watch(tenantCode, (v) => {
-    const t = v.trim();
-    if (t.length >= 2 || t.length === 0) loadConfig(t || undefined);
-  });
 
   onMounted(() => loadConfig());
 
@@ -231,13 +244,18 @@ export function useLoginPage() {
     }
   }
 
+  function sendCodeCaptchaPayload(): { captchaId?: string; captchaCode?: string } {
+    if (!showSendCodeCaptcha.value) return {};
+    return { captchaId: captchaId.value, captchaCode: captchaCode.value };
+  }
+
   async function sendCode(channel: 'Sms' | 'Mail', username?: string) {
     const name = username ?? codeForm.username;
     if (!name) {
       Message.warning(channel === 'Sms' ? '请输入手机号' : '请输入邮箱地址');
       return;
     }
-    if (showCaptcha.value && !captchaCode.value) {
+    if (showSendCodeCaptcha.value && !captchaCode.value) {
       Message.warning('请输入验证码');
       return;
     }
@@ -246,7 +264,7 @@ export function useLoginPage() {
         channel,
         username: name,
         action: 'login',
-        ...captchaPayload(),
+        ...sendCodeCaptchaPayload(),
       });
       Message.success(channel === 'Sms' ? '验证码已发送' : '验证码已发送至您的邮箱');
       const countRef = channel === 'Sms' ? smsCountdown : mailCountdown;
@@ -255,9 +273,10 @@ export function useLoginPage() {
         countRef.value--;
         if (countRef.value <= 0) clearInterval(timer);
       }, 1000);
+      if (showSendCodeCaptcha.value) await refreshCaptcha();
     } catch (err: unknown) {
       Message.error((err as { message?: string })?.message || '发送失败');
-      if (showCaptcha.value) await refreshCaptcha();
+      if (showSendCodeCaptcha.value) await refreshCaptcha();
     }
   }
 
@@ -342,12 +361,13 @@ export function useLoginPage() {
     logoSrc,
     bgStyle,
     loginConfig,
-    tenantCode,
+    showOAuth,
     tabs,
     activeTab,
     noLoginChannel,
     showRegister,
     showCaptcha,
+    showSendCodeCaptcha,
     captchaImage,
     captchaCode,
     refreshCaptcha,

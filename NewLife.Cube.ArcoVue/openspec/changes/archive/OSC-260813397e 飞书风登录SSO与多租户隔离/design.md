@@ -47,7 +47,9 @@ flowchart LR
 
 左栏（`min-width: 0`，`≥992px` 占 50%）：`loginBackground` 为背景；居中 `loginLogo`/`logo`；`name`；`loginTip`；底部 `copyright` + `registration`（copyright 允许后端已替换的 HTML，用 `v-html` **仅此字段**，来自受信 API）。
 
-右栏：可选「租户 Code」输入（有值则 `getLoginConfig(tenant)` 重拉）；标题「登录」；Tabs（仅显示 `login.*===true` 的通道）；表单；主按钮「登录」；「忘记密码」「注册」按 `register.enabled`；分隔文案「其他登录方式」+ `oauth[]` 图标按钮（`logo`+`nickName`）。
+右栏：标题「登录」；Tabs（仅显示 `login.*===true` 的通道）；表单；主按钮「登录」；「忘记密码」「注册」按 `register.enabled`；分隔文案「第三方登录」+ `oauth[]` 徽标（`logo`，悬停 Tooltip=`remark`/`nickName`）。
+
+> **勘误（T8 / 2026-08-17）**：初版「可选租户 Code → getLoginConfig(tenant)」已取消；多租户改登录后用户菜单切换，更贴近飞书「先登录再选组织」。
 
 `<992px`：隐藏左栏或缩为顶 logo，右栏全宽。
 
@@ -60,12 +62,16 @@ flowchart LR
 | `login.password` | 密码 Tab：用户名+密码 |
 | `login.sms` | 短信 Tab：手机+验证码+发送 |
 | `login.mail` | 邮箱 Tab：邮箱+验证码+发送 |
-| `login.captcha` | 密码/发码前展示 SVG，提交带 `captchaId/captchaCode` |
+| `login.captcha` | 密码登录展示 SVG，提交带 `captchaId/captchaCode`（CaptchaScene 位 1） |
+| `login.sendCodeCaptcha` | 发短信/邮件验证码前展示 SVG（CaptchaScene 位 4，防轰炸） |
 | `register.enabled` | 显示注册链到 `/register` |
-| `oauth[]` | 底栏图标；点击 `oauthStart(name)` |
+| `oauth[]` | 底栏「第三方登录」图标；**仅**可见 OAuthConfig；与 `EnableOAuthServer`（Cube 作 OAuth 服务端）无关 |
+| `enableOAuthServer` | 信息字段；**不**控制登录页第三方入口 / 账号绑定列表 |
+| `enableTenant` | 关则全局隐藏租户 UI；开则用户菜单提供租户分组切换 |
+| `startPage` | 登录成功落地（优先 `?redirect=`；过滤 `/Admin*` 等 MVC 路径，回退 `/home`） |
 | `security.challengeRequired` | 密码登录先 `getChallenge`，用公钥加密后再 `login(..., challengeId)` |
 | `security.mfaAvailable` | 不单独出入口；登录遇 `mfa_required` 进二步 |
-| `security.passwordStrength` | 注册/重置客户端提示，服务端仍为准 |
+| `security.passwordStrength` | 注册/重置客户端提示与校验；服务端仍为准 |
 
 默认 Tab：第一个为 true 的 password → sms → mail。
 
@@ -73,7 +79,7 @@ flowchart LR
 
 | 状态 | 屏幕 | 成功 | 失败 |
 | --- | --- | --- | --- |
-| `form` | 账号表单 | 有 accessToken → 落 token+refresh → afterLogin → `/home` 或 `redirect` | `mfa_required` → `mfa`；其它 Message.error |
+| `form` | 账号表单 | 有 accessToken → 落 token+refresh → afterLogin → `resolveStartPage(cfg, redirect)` | `mfa_required` → `mfa`；其它 Message.error |
 | `mfa` | 6 位/备用码 | `/Mfa/Verify` 得 token → 同成功 | 错码停留 mfa |
 | `oauth` | 整页跳转 | 回站 `#token=` | 无 token 回 form |
 
@@ -112,7 +118,7 @@ Challenge 实现：优先复用 `@cube/auth-logic` 已有加密；若包内缺 W
 | 状态 | Enable |
 | 操作 | 未绑：打开 `/Sso/Bind/{id}`（需登录 cookie/token，同窗或新窗）；已绑：`UnBind` 确认后刷新 |
 
-`id` 为 **OAuthConfig.Id**（与 `/Sso/Bind/{id}` 一致）。列表 = 可见 OAuth 配置 ⟕ 当前用户 UserConnect。
+`id`/`name`：跳转 `/Sso/Bind/{name}`（与后端 `GetClient` 按 **OAuthConfig.Name** 解析一致；列表项优先 `name`，缺省回落 `id`）。列表 = 可见 OAuth 配置 ⟕ 当前用户 UserConnect。
 
 若 `GET /api/Admin/UserConnect` 因菜单权限对普通用户 403：新增 `GET /Auth/Binds` 返回 `{ providers: [{ id, name, nickName, logo, bound, connectId }] }`（仅当前用户）。优先走此接口以免租户用户看不到 Admin 菜单。
 
@@ -139,7 +145,9 @@ Challenge 实现：优先复用 `@cube/auth-logic` 已有加密；若包内缺 W
 | GET | `/Auth/Tenants` | 已登录 | `{ currentId, currentCode, items:[{ id, code, name }] }`；管理员额外可含 `{ id:0, code:'', name:'平台' }` |
 | POST | `/Auth/SwitchTenant` | 已登录 | body `{ tenantId }`；校验 TenantUser 或管理员；`SetTenant`+`SaveTenant`；返回与 GET 相同形 |
 
-前端：顶栏下拉（`layouts` 已有用户区右侧）。切换成功后 `reload` 菜单+当前页（`fetchMenus` + `router.go(0)` 或清列表缓存后重入）。
+前端：用户弹出菜单分组（`a-dgroup`，在「账号安全」之上）。切换成功后 `reload` 菜单+当前页（`fetchMenus` + `router.go(0)`）。
+
+> **勘误（T8）**：初版「顶栏下拉」已迁入用户菜单，避免与通知/外观工具条抢位。
 
 ### 4.3 WebAPI 齐平 MVC（必须改的 C#）
 
@@ -194,7 +202,7 @@ CubeDemo `Class`/`Student` 已是 `ITenantSource`：文档引用为样例，不�
 
 | 文件 | 用例 |
 | --- | --- |
-| `loginConfig.spec.ts` | 仅 password；三通道；无通道；oauth URL 含 `source=front-end` |
+| `loginConfig.spec.ts` | 仅 password；三通道；无通道；oauth 不绑 EnableOAuthServer；sendCodeCaptcha；passwordStrength；startPage 过滤 MVC；oauth URL 含 `source=front-end` |
 | `mfaMessage.spec.ts` | `mfa_required:abc` 提取；普通错误不提取 |
 | `tenantHeader.spec.ts` | 有 code 带头；平台空 |
 | 后端 | Tenant insert 后存在 TenantUser；非管理员 Search User 不含外租户（能构造则测） |

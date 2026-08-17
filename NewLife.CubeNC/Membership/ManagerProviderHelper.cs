@@ -737,7 +737,10 @@ public static class ManagerProviderHelper
 
         // 最后从Cookie读取（兼容现有浏览器模式），Cookie存的是数字ID
         var key = $"TenantId-{SysConfig.Current.Name}";
-        return ResolveTenantById(req.Cookies[key].ToString());
+        var cookie = req.Cookies[key];
+        if (!cookie.IsNullOrEmpty()) return ResolveTenantById(cookie);
+
+        return -1;
     }
 
     /// <summary>按租户编码（Code）解析租户。X-Tenant 头专用，避免纯数字编码被误判为ID；多租户开启时校验存在且启用，无效返回-1</summary>

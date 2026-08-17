@@ -20,10 +20,6 @@
         </div>
 
         <template v-if="screen === 'form'">
-          <a-form-item label="租户 Code" class="tenant-field">
-            <a-input v-model="tenantCode" placeholder="可选，按租户加载品牌与注册域" allow-clear />
-          </a-form-item>
-
           <h2 class="panel-title">登录</h2>
 
           <a-empty v-if="noLoginChannel" description="未开放登录" />
@@ -46,8 +42,8 @@
                 <a-input-password v-model="form.password" placeholder="请输入密码" allow-clear @press-enter="handleLogin" />
               </a-form-item>
               <a-form-item v-if="showCaptcha" label="验证码">
-                <a-input-group>
-                  <a-input v-model="captchaCode" placeholder="计算结果" style="flex: 1" @press-enter="handleLogin" />
+                <a-input-group class="captcha-group">
+                  <a-input v-model="captchaCode" placeholder="计算结果" @press-enter="handleLogin" />
                   <span class="captcha-img" title="点击刷新" @click="refreshCaptcha" v-html="captchaImage" />
                 </a-input-group>
               </a-form-item>
@@ -58,15 +54,15 @@
               <a-form-item label="手机号">
                 <a-input v-model="codeForm.username" placeholder="请输入手机号" allow-clear />
               </a-form-item>
-              <a-form-item v-if="showCaptcha" label="验证码">
-                <a-input-group>
-                  <a-input v-model="captchaCode" placeholder="计算结果" style="flex: 1" />
+              <a-form-item v-if="showSendCodeCaptcha" label="验证码">
+                <a-input-group class="captcha-group">
+                  <a-input v-model="captchaCode" placeholder="计算结果" />
                   <span class="captcha-img" @click="refreshCaptcha" v-html="captchaImage" />
                 </a-input-group>
               </a-form-item>
               <a-form-item label="短信验证码">
-                <a-input-group>
-                  <a-input v-model="codeForm.code" placeholder="请输入验证码" style="flex: 1" />
+                <a-input-group class="captcha-group">
+                  <a-input v-model="codeForm.code" placeholder="请输入验证码" />
                   <a-button :disabled="smsCountdown > 0" @click="sendCode('Sms')">
                     {{ smsCountdown > 0 ? `${smsCountdown}s` : '获取验证码' }}
                   </a-button>
@@ -79,15 +75,15 @@
               <a-form-item label="邮箱">
                 <a-input v-model="emailForm.username" placeholder="请输入邮箱" allow-clear />
               </a-form-item>
-              <a-form-item v-if="showCaptcha" label="验证码">
-                <a-input-group>
-                  <a-input v-model="captchaCode" placeholder="计算结果" style="flex: 1" />
+              <a-form-item v-if="showSendCodeCaptcha" label="验证码">
+                <a-input-group class="captcha-group">
+                  <a-input v-model="captchaCode" placeholder="计算结果" />
                   <span class="captcha-img" @click="refreshCaptcha" v-html="captchaImage" />
                 </a-input-group>
               </a-form-item>
               <a-form-item label="邮箱验证码">
-                <a-input-group>
-                  <a-input v-model="emailForm.code" placeholder="请输入验证码" style="flex: 1" />
+                <a-input-group class="captcha-group">
+                  <a-input v-model="emailForm.code" placeholder="请输入验证码" />
                   <a-button :disabled="mailCountdown > 0" @click="sendCode('Mail', emailForm.username)">
                     {{ mailCountdown > 0 ? `${mailCountdown}s` : '获取验证码' }}
                   </a-button>
@@ -101,21 +97,23 @@
               <a-link v-if="showRegister" @click="router.push('/register')">注册账号</a-link>
             </div>
 
-            <template v-if="oauthProviders.length">
-              <a-divider orientation="center">其他登录方式</a-divider>
+            <template v-if="showOAuth && oauthProviders.length">
+              <a-divider orientation="center">第三方登录</a-divider>
               <div class="oauth-list">
-                <button
+                <a-tooltip
                   v-for="p in oauthProviders"
                   :key="p.name"
-                  type="button"
-                  class="oauth-item"
-                  :title="p.nickName || p.name"
-                  @click="oauthLogin(p.name!)"
+                  :content="oauthTip(p)"
                 >
-                  <img v-if="p.logo" :src="p.logo" class="oauth-logo" alt="" />
-                  <span v-else class="oauth-fallback">{{ (p.nickName || p.name || '?').charAt(0) }}</span>
-                  <span class="oauth-name">{{ p.nickName || p.name }}</span>
-                </button>
+                  <button
+                    type="button"
+                    class="oauth-item"
+                    @click="oauthLogin(p.name!)"
+                  >
+                    <img v-if="p.logo" :src="p.logo" class="oauth-logo" alt="" />
+                    <span v-else class="oauth-fallback">{{ (p.nickName || p.name || '?').charAt(0) }}</span>
+                  </button>
+                </a-tooltip>
               </div>
             </template>
           </template>
@@ -140,6 +138,7 @@
 </template>
 
 <script setup lang="ts">
+import type { OAuthProvider } from '@cube/api-core';
 import { useLoginPage } from './useLoginPage';
 
 const {
@@ -148,12 +147,13 @@ const {
   logoSrc,
   bgStyle,
   loginConfig,
-  tenantCode,
+  showOAuth,
   tabs,
   activeTab,
   noLoginChannel,
   showRegister,
   showCaptcha,
+  showSendCodeCaptcha,
   captchaImage,
   captchaCode,
   refreshCaptcha,
@@ -176,6 +176,11 @@ const {
   handleMfaVerify,
   backToForm,
 } = useLoginPage();
+
+/** 徽标悬停说明：优先 Remark，回落显示名 */
+function oauthTip(p: OAuthProvider) {
+  return (p.remark || p.nickName || p.name || '').trim();
+}
 </script>
 
 <style scoped>
@@ -254,9 +259,6 @@ const {
   font-size: 24px;
   font-weight: 600;
 }
-.tenant-field {
-  margin-bottom: 8px;
-}
 .panel-links {
   display: flex;
   justify-content: space-between;
@@ -272,9 +274,9 @@ const {
   border: none;
   background: transparent;
   cursor: pointer;
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   color: var(--color-text-2);
   padding: 4px;
 }
@@ -292,22 +294,33 @@ const {
   justify-content: center;
   font-weight: 600;
 }
-.oauth-name {
-  font-size: 12px;
-  margin-top: 4px;
-  max-width: 64px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.captcha-group {
+  width: 100%;
+  display: inline-flex;
+}
+.captcha-group :deep(.arco-input-wrapper),
+.captcha-group :deep(.arco-input-outer) {
+  flex: 1;
+  min-width: 0;
 }
 .captcha-img {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   min-width: 100px;
   height: 32px;
   cursor: pointer;
   background: var(--color-fill-2);
-  padding: 0 8px;
+  padding: 0 4px;
+  overflow: hidden;
+}
+.captcha-img :deep(img),
+.captcha-img :deep(svg) {
+  display: block;
+  height: 28px;
+  width: auto;
+  max-width: 160px;
 }
 .mfa-hint {
   color: var(--color-text-3);

@@ -10,9 +10,15 @@
             <a-button type="primary" @click="startSetup">开启 MFA</a-button>
           </template>
           <template v-else-if="step === 'setup'">
-            <p class="hint">用 Authenticator App 扫描下方 URI，或手动输入密钥。</p>
+            <p class="hint">用 Authenticator App 扫描二维码，或手动输入密钥。</p>
+            <div v-if="setupQrDataUrl" class="qr-wrap">
+              <img :src="setupQrDataUrl" alt="MFA QR" width="180" height="180" />
+            </div>
             <a-textarea :model-value="setupUri" :auto-size="{ minRows: 2, maxRows: 4 }" readonly />
-            <p v-if="setupSecret" class="secret">密钥：{{ setupSecret }}</p>
+            <p v-if="setupSecret" class="secret">
+              密钥：{{ setupSecret }}
+              <a-button type="text" size="mini" @click="copySecret">复制</a-button>
+            </p>
             <a-form-item label="验证码" style="margin-top: 12px">
               <a-input v-model="activateCode" placeholder="6 位验证码" style="max-width: 200px" />
             </a-form-item>
@@ -35,7 +41,7 @@
         </template>
       </a-card>
 
-      <a-card title="第三方账号绑定" class="sec-card">
+      <a-card v-if="oauthEnabled" title="第三方账号绑定" class="sec-card">
         <a-empty v-if="!binds.length" description="暂无可用的第三方登录" />
         <a-list v-else :bordered="false">
           <a-list-item v-for="item in binds" :key="item.id">
@@ -71,10 +77,12 @@ const {
   mfaEnabled,
   setupUri,
   setupSecret,
+  setupQrDataUrl,
   activateCode,
   disableCode,
   backupCodes,
   binds,
+  oauthEnabled,
   step,
   startSetup,
   activate,
@@ -82,6 +90,7 @@ const {
   bindProvider,
   unbindProvider,
   copyBackup,
+  copySecret,
 } = useSecuritySettings();
 </script>
 
@@ -102,6 +111,13 @@ const {
   margin: 8px 0 0;
   font-family: ui-monospace, monospace;
   font-size: 13px;
+}
+.qr-wrap {
+  margin: 8px 0 12px;
+  padding: 8px;
+  display: inline-block;
+  background: #fff;
+  border-radius: 4px;
 }
 .backup-list {
   columns: 2;

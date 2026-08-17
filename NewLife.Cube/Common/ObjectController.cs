@@ -147,12 +147,14 @@ public abstract class ObjectController<TObject> : ControllerBaseX
                 dis = dis.Substring(null, "。");
             }
 
+            var propType = Nullable.GetUnderlyingType(pi.PropertyType) ?? pi.PropertyType;
             var df = new DataField
             {
                 Name = pi.Name,
                 DisplayName = dis ?? pi.Name,
                 Description = des,
                 Type = pi.PropertyType,
+                TypeName = propType.Name,
                 //DataType = pi.PropertyType.FullName,
                 Category = category,
             };

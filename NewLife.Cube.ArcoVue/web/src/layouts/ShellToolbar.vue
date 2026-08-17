@@ -1,23 +1,6 @@
 <template>
   <div class="shell-toolbar">
     <a-space>
-      <a-dropdown v-if="tenantStore.enabled" trigger="click">
-        <a-button type="text" size="small">
-          {{ tenantStore.currentLabel }}
-          <icon-park type="down" style="margin-left: 4px" />
-        </a-button>
-        <template #content>
-          <a-doption
-            v-for="t in tenantStore.items"
-            :key="t.id"
-            :value="t.id"
-            @click="onSwitchTenant(t.id)"
-          >
-            {{ t.name || t.code || (t.id === 0 ? '平台' : t.id) }}
-          </a-doption>
-        </template>
-      </a-dropdown>
-
       <a-tooltip content="站内通知">
         <a-badge :count="inboxUnreadCount" :max-count="99">
           <a-button type="text" size="small" @click="goInbox">
@@ -31,15 +14,48 @@
           <icon-park :type="APPEARANCE_ICONS[profileStore.theme.appearance]" />
         </a-button>
       </a-tooltip>
-      <a-dropdown>
-        <a-button type="text">
+
+      <a-dropdown trigger="hover" position="br">
+        <a-button type="text" class="shell-toolbar__user">
           <a-avatar :size="28">{{ userStore.displayName?.charAt(0) || 'U' }}</a-avatar>
-          <span style="margin-left: 8px;">{{ userStore.displayName }}</span>
+          <span class="shell-toolbar__user-name">{{ userStore.displayName }}</span>
         </a-button>
         <template #content>
-          <a-doption @click="goSecurity">账号安全</a-doption>
-          <a-doption @click="goAppearance">外观设置</a-doption>
-          <a-doption @click="handleLogout">退出登录</a-doption>
+          <a-dgroup v-if="tenantStore.enabled" :title="`租户 · ${tenantStore.currentLabel}`">
+            <a-doption
+              v-for="t in tenantStore.items"
+              :key="t.id"
+              :class="{ 'is-active-tenant': t.id === tenantStore.currentId }"
+              @click="onSwitchTenant(t.id)"
+            >
+              <span class="user-menu-item">
+                <icon-park
+                  :type="t.id === tenantStore.currentId ? 'check' : 'building-one'"
+                  class="user-menu-icon"
+                />
+                <span class="user-menu-text">{{ tenantOptionLabel(t) }}</span>
+              </span>
+            </a-doption>
+          </a-dgroup>
+
+          <a-doption @click="goSecurity">
+            <span class="user-menu-item">
+              <icon-park type="permissions" class="user-menu-icon" />
+              <span class="user-menu-text">账号安全</span>
+            </span>
+          </a-doption>
+          <a-doption @click="goAppearance">
+            <span class="user-menu-item">
+              <icon-park type="setting" class="user-menu-icon" />
+              <span class="user-menu-text">外观设置</span>
+            </span>
+          </a-doption>
+          <a-doption @click="handleLogout">
+            <span class="user-menu-item">
+              <icon-park type="logout" class="user-menu-icon" />
+              <span class="user-menu-text">退出登录</span>
+            </span>
+          </a-doption>
         </template>
       </a-dropdown>
     </a-space>
@@ -60,6 +76,7 @@ const {
   goAppearance,
   goInbox,
   goSecurity,
+  tenantOptionLabel,
   onSwitchTenant,
   handleLogout,
 } = useShellToolbar();
@@ -69,5 +86,30 @@ const {
 .shell-toolbar {
   display: flex;
   align-items: center;
+}
+.shell-toolbar__user {
+  display: inline-flex;
+  align-items: center;
+}
+.shell-toolbar__user-name {
+  margin-left: 8px;
+}
+.user-menu-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.user-menu-icon {
+  flex-shrink: 0;
+  font-size: 14px;
+}
+.user-menu-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.is-active-tenant {
+  color: rgb(var(--primary-6));
 }
 </style>

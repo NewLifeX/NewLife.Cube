@@ -4,6 +4,8 @@
 > 
 > 支持微信、QQ、钉钉、GitHub 等多种第三方登录，以及企业内部的 SSO 集成。
 
+> **配置辨析**：系统功能中的 `EnableOAuthServer`（OAuth 服务）表示 **Cube 作为 OAuth2 服务端**，为其它应用提供 SSO（`/Sso/Authorize` 等）。登录页「第三方登录」与账号绑定列表 **仅** 由可见的 `OAuthConfig`（`LoginConfig.oauth[]`）决定，二者勿混用。
+
 ---
 
 ## 13.1 OAuth 概述

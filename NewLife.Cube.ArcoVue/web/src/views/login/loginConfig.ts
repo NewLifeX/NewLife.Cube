@@ -34,14 +34,49 @@ export function resolveLoginTabs(cfg: LoginConfig | null | undefined): LoginTabS
   return tabs;
 }
 
-/** OAuth 列表：优先 oauth[]；后端 CamelCase 把 OAuth 序列化为 oAuth */
+/** 从 LoginConfig 读取布尔功能开关（兼容 camelCase / PascalCase） */
+function pickFeatureFlag(
+  cfg: LoginConfig | null | undefined,
+  camel: 'enableTenant',
+  pascal: 'EnableTenant',
+): boolean | undefined {
+  if (!cfg) return undefined;
+  const raw = cfg as LoginConfig & Record<string, unknown>;
+  const v = raw[camel] ?? raw[pascal];
+  if (typeof v === 'boolean') return v;
+  return undefined;
+}
+
+/** 登录页是否显示租户 Code（魔方设置 EnableTenant） */
+export function isTenantLoginEnabled(cfg: LoginConfig | null | undefined): boolean {
+  return pickFeatureFlag(cfg, 'enableTenant', 'EnableTenant') === true;
+}
+
+/**
+ * 登录页是否显示第三方登录：仅看可见 oauth 列表。
+ * EnableOAuthServer 表示 Cube 作 OAuth 服务端，不控制客户端第三方登录。
+ */
+export function isOAuthLoginEnabled(cfg: LoginConfig | null | undefined): boolean {
+  return resolveOAuthProviders(cfg).length > 0;
+}
+
+/** OAuth 列表：优先 oauth[]；兼容 oAuth / providers / Remark */
 export function resolveOAuthProviders(cfg: LoginConfig | null | undefined): OAuthProvider[] {
   if (!cfg) return [];
+
   const raw = cfg as LoginConfig & { oAuth?: OAuthProvider[] };
-  if (Array.isArray(cfg.oauth) && cfg.oauth.length) return cfg.oauth;
-  if (Array.isArray(raw.oAuth) && raw.oAuth.length) return raw.oAuth;
-  if (Array.isArray(cfg.providers) && cfg.providers.length) return cfg.providers;
-  return [];
+  let list: OAuthProvider[] = [];
+  if (Array.isArray(cfg.oauth) && cfg.oauth.length) list = cfg.oauth;
+  else if (Array.isArray(raw.oAuth) && raw.oAuth.length) list = raw.oAuth;
+  else if (Array.isArray(cfg.providers) && cfg.providers.length) list = cfg.providers;
+  return list.map((p) => {
+    const ext = p as OAuthProvider & { Remark?: string; NickName?: string };
+    return {
+      ...p,
+      nickName: p.nickName || ext.NickName,
+      remark: p.remark || ext.Remark,
+    };
+  });
 }
 
 export function isRegisterEnabled(cfg: LoginConfig | null | undefined): boolean {
@@ -54,8 +89,36 @@ export function needLoginCaptcha(cfg: LoginConfig | null | undefined): boolean {
   return !!cfg?.login?.captcha;
 }
 
+/** 发短信/邮件验证码前是否需要图片验证码（CaptchaScene 位 4） */
+export function needSendCodeCaptcha(cfg: LoginConfig | null | undefined): boolean {
+  const login = cfg?.login as { sendCodeCaptcha?: boolean; SendCodeCaptcha?: boolean } | undefined;
+  return !!(login?.sendCodeCaptcha ?? login?.SendCodeCaptcha);
+}
+
 export function needChallenge(cfg: LoginConfig | null | undefined): boolean {
   return !!cfg?.security?.challengeRequired;
+}
+
+export { resolveStartPage, mapStartPageToSpa, toSpaPath } from './startPage';
+
+/**
+ * 客户端校验密码强度。pattern 为空或 `*` 表示不限制；非法正则时跳过客户端校验。
+ * @returns 错误文案；通过则 null
+ */
+export function validatePasswordStrength(
+  password: string,
+  pattern?: string | null,
+): string | null {
+  if (!password) return '请输入密码';
+  const raw = (pattern ?? '').trim();
+  if (!raw || raw === '*') return null;
+  try {
+    const re = new RegExp(raw);
+    if (!re.test(password)) return '密码不符合系统强度要求';
+  } catch {
+    return null;
+  }
+  return null;
 }
 
 /**
@@ -79,6 +142,24 @@ export function extractMfaToken(message?: string | null): string | null {
   if (!message) return null;
   const m = message.match(/mfa_required:(\S+)/);
   return m?.[1] ?? null;
+}
+
+/**
+ * 归一化登录页 Logo/背景资源 URL：补全前导 /、统一斜杠；已是绝对地址则原样返回。
+ */
+export function normalizeLoginAssetUrl(raw: string | null | undefined): string {
+  if (!raw || typeof raw !== 'string') return '';
+  const s = raw.trim().replace(/\\/g, '/');
+  if (!s) return '';
+  if (/^(https?:|data:|blob:)/i.test(s)) return s;
+  if (s.startsWith('//')) return s;
+  return s.startsWith('/') ? s : `/${s}`;
+}
+
+/** 登录页 Logo（魔方设置 LoginLogo；兼容旧字段 logo） */
+export function resolveLoginLogoUrl(cfg: LoginConfig | null | undefined): string {
+  if (!cfg) return '';
+  return normalizeLoginAssetUrl(cfg.loginLogo || cfg.logo || '');
 }
 
 /** 解析 location.hash 中的 token / refreshToken */

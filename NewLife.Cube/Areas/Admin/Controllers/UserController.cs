@@ -169,8 +169,8 @@ public class UserController : EntityController<User, UserModel>
         var tenantId = TenantContext.CurrentId;
         if (tenantId > 0)
         {
-            // 租户模式：仅返回本租户关联用户（与 MVC 齐平）
-            list2 = XCode.Membership.User.SearchWithTenant(tenantId, roleIds, departmentIds, areaIds, enable, start, end, key, p);
+            // 租户模式：仅返回本租户关联用户（UserTenantSearch 避免 JOIN 列名歧义）
+            list2 = UserTenantSearch.Search(tenantId, roleIds, departmentIds, areaIds, enable, start, end, key, p);
         }
         else
         {

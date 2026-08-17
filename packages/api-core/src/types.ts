@@ -228,6 +228,8 @@ export interface OAuthProvider {
   name: string;
   logo?: string;
   nickName?: string;
+  /** 说明（悬停徽标 Tooltip；来自 OAuth 配置 Remark） */
+  remark?: string;
 }
 
 /** 登录配置 */
@@ -239,8 +241,10 @@ export interface LoginAbility {
   sms?: boolean;
   /** 允许邮箱验证码登录 */
   mail?: boolean;
-  /** 登录时需要图片验证码 */
+  /** 登录时需要图片验证码（CaptchaScene 位 1） */
   captcha?: boolean;
+  /** 发送短信/邮件验证码时需要图片验证码（CaptchaScene 位 4） */
+  sendCodeCaptcha?: boolean;
 }
 
 /** 注册能力配置 */
@@ -285,11 +289,26 @@ export interface LoginConfig {
   loginLogo?: string;
   /** 登录页背景图，空则使用皮肤内置默认 */
   loginBackground?: string;
+  /** 是否启用多租户（魔方设置/系统功能） */
+  enableTenant?: boolean;
+  /**
+   * Cube 作为 OAuth2 **服务端**（为其它应用提供 SSO）是否开启。
+   * 与登录页「第三方登录」无关；第三方入口仅看 oauth[] 可见列表。
+   */
+  enableOAuthServer?: boolean;
+  /** 工作台/登录后默认内容页（SPA 会映射 MVC 遗留路径） */
+  startPage?: string;
+  /** ECharts 主题名（魔方设置 EChartsTheme；default 或空=默认主题） */
+  echartsTheme?: string;
+  /** 文字头像字符数（魔方设置 AvatarChars；1 或 2） */
+  avatarChars?: number;
+  /** 星尘 Web 根地址（魔方设置 StarWeb；空则无追踪深链） */
+  starWeb?: string;
   /** 登录能力配置 */
   login?: LoginAbility;
   /** 注册能力配置 */
   register?: RegisterAbility;
-  /** OAuth 提供商列表 */
+  /** OAuth 提供商列表（可见 OAuthConfig；与 enableOAuthServer 无关） */
   oauth?: OAuthProvider[];
   /** 安全策略 */
   security?: SecurityConfig;
@@ -378,7 +397,10 @@ export interface ChallengeResult {
 export interface CaptchaResult {
   /** 验证码 ID，登录/注册时原样传回 captchaId 字段 */
   captchaId: string;
-  /** SVG 图片内容（算数题） */
+  /**
+   * 图片数据：SVG 文本，或 `data:image/png;base64,...`（DrawingCaptcha）。
+   * 前端展示前经 normalizeCaptchaImageHtml 再 v-html。
+   */
   image: string;
 }
 
@@ -417,6 +439,8 @@ export interface TenantItem {
 
 /** GET /Auth/Tenants · POST /Auth/SwitchTenant 返回 */
 export interface TenantListResult {
+  /** 魔方设置 EnableTenant；false 时 items 为空且前端隐藏租户 UI */
+  enableTenant?: boolean;
   currentId: number;
   currentCode?: string;
   items: TenantItem[];

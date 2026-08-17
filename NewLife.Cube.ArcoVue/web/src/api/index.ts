@@ -1,6 +1,6 @@
 import { createCubeApi } from '@cube/api-core';
 import { clearLocalProfile } from '@/core/utils/userProfile';
-import { resolveTenantHeader } from '@/stores/tenantHeader';
+import { clearTenantSession, resolveTenantHeader } from '@/stores/tenantHeader';
 import { clearSession, getRefreshToken, getTokenUserName, persistSession } from '@/views/login/sessionTokens';
 
 async function tryRefreshAccessToken(): Promise<string | null> {
@@ -43,6 +43,7 @@ const cubeApi = createCubeApi({
   onUnauthorized() {
     clearSession();
     clearLocalProfile();
+    clearTenantSession();
     if (!window.location.pathname.startsWith('/login')) {
       window.location.href = '/login';
     }

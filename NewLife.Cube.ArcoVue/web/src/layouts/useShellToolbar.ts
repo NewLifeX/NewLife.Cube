@@ -52,7 +52,12 @@ export function useShellToolbar() {
     router.push('/account/security');
   }
 
+  function tenantOptionLabel(t: { id: number; name?: string | null; code?: string | null }) {
+    return t.name || t.code || (t.id === 0 ? '平台' : String(t.id));
+  }
+
   async function onSwitchTenant(id: number) {
+    if (id === tenantStore.currentId) return;
     try {
       await tenantStore.switchTo(id);
       resetMenuRoutesFlag();
@@ -85,6 +90,7 @@ export function useShellToolbar() {
     goAppearance,
     goInbox,
     goSecurity,
+    tenantOptionLabel,
     onSwitchTenant,
     handleLogout,
   };

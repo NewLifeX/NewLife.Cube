@@ -49,18 +49,7 @@ public class TenantController : EntityController<Tenant, TenantModel>
     protected override Int32 OnInsert(Tenant entity)
     {
         var result = base.OnInsert(entity);
-
-        var tuEntity = TenantUser.FindByTenantIdAndUserId(entity.Id, entity.ManagerId);
-        tuEntity ??= new TenantUser
-        {
-            TenantId = entity.Id,
-            UserId = entity.ManagerId
-        };
-
-        tuEntity.Enable = true;
-        tuEntity.RoleIds = entity.RoleIds;
-        tuEntity.Save();
-
+        TenantManagerHelper.EnsureManagerTenantUser(entity, true);
         return result;
     }
 
@@ -76,16 +65,7 @@ public class TenantController : EntityController<Tenant, TenantModel>
             tuEntity.Save();
         }
 
-        var newTuEntity = TenantUser.FindByTenantIdAndUserId(entity.Id, entity.ManagerId);
-        newTuEntity ??= new TenantUser
-        {
-            TenantId = entity.Id,
-            UserId = entity.ManagerId
-        };
-
-        newTuEntity.Enable = entity.Enable;
-        newTuEntity.RoleIds = entity.RoleIds;
-        newTuEntity.Save();
+        TenantManagerHelper.EnsureManagerTenantUser(entity, entity.Enable);
 
         return base.OnUpdate(entity);
     }

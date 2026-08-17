@@ -148,7 +148,39 @@ public class AuthController : ControllerBaseX
             else
                 t = Tenant.FindByCode(tenant) ?? Tenant.Find(Tenant._.Name == tenant);
         }
-        return Json(0, null, new LoginConfigModel(t));
+        // 不改 LoginConfigModel 形状：在 Auth 层附加 EnableTenant / EnableOAuthServer / StartPage（增量字段）
+        return Json(0, null, BuildLoginConfigPayload(t));
+    }
+
+    /// <summary>
+    /// 组装登录页 payload：沿用 LoginConfigModel；oauth 始终来自可见 OAuthConfig（与 EnableOAuthServer 无关）。
+    /// EnableOAuthServer 仅表示 Cube 作为 OAuth 服务端；StartPage 供 SPA 登录后落地页。
+    /// </summary>
+    private static Object BuildLoginConfigPayload(Tenant tenant)
+    {
+        var model = new LoginConfigModel(tenant);
+        var set = CubeSetting.Current;
+        return new
+        {
+            model.Code,
+            model.Name,
+            model.Copyright,
+            model.Registration,
+            model.Logo,
+            model.LoginTip,
+            model.LoginLogo,
+            model.LoginBackground,
+            model.Login,
+            model.Register,
+            model.OAuth,
+            model.Security,
+            EnableTenant = set.EnableTenant,
+            EnableOAuthServer = set.EnableOAuthServer,
+            StartPage = set.StartPage,
+            EChartsTheme = set.EChartsTheme,
+            AvatarChars = set.AvatarChars,
+            StarWeb = set.StarWeb,
+        };
     }
 
     /// <summary>获取当前登录用户信息</summary>
@@ -320,6 +352,18 @@ public class AuthController : ControllerBaseX
 
     private static Object BuildTenantList(User user)
     {
+        // 多租户关闭：不返回可切换列表，前端据此隐藏顶栏/表单租户 UI
+        if (!CubeSetting.Current.EnableTenant)
+        {
+            return new
+            {
+                enableTenant = false,
+                currentId = 0,
+                currentCode = "",
+                items = Array.Empty<Object>(),
+            };
+        }
+
         var currentId = TenantContext.CurrentId;
         var current = Tenant.FindById(currentId);
         var isAdmin = user.Roles != null && user.Roles.Any(e => e.IsSystem);
@@ -337,6 +381,7 @@ public class AuthController : ControllerBaseX
 
         return new
         {
+            enableTenant = true,
             currentId,
             currentCode = current?.Code ?? "",
             items,

@@ -201,6 +201,14 @@
 - **卡片底栏宽度不足时动态收缩直出**：VTable 固定直出上限；卡片用 `ResizeObserver` 按 ops 区宽计算可放个数，溢出进「更多」+ `nowrap`，否则窄卡竖排/折行。
 - **验收并复盘时剔除同会话无关 WIP**：文档标题、悬停阴影等不进本号 commit；并行 `wwwroot` 全量构建产物勿混提（沿用 fa86 lessons）。
 
+## OSC-260813397e — 2026-08-17
+
+- **多租户中间件路径要冒烟匿名接口**：`GetTenantId` 读 Cookie 时 `Cookies[key]` 可为 null，禁止 `.ToString()`；EnableTenant 打开后 `/Auth/LoginConfig` 必须 200。
+- **验证码 image 载荷要归一再展示**：DrawingCaptcha 常回 `data:image/png;base64,…`，按 SVG 直接 `v-html` 会成乱码；统一 `normalizeCaptchaImageHtml`。
+- **租户切换放登录后用户菜单，勿登录页 Code + 顶栏双入口**：飞书路径是先登录再选组织；顶栏下拉与工具条抢位，终验改为用户菜单 `a-dgroup`。
+- **401 必须清租户会话**：`clearTenantSession` 与 token 一并清，避免下一用户沿用旧 `X-Tenant` 被 EnsureTenantUser 串绑。
+- **租户用户列表勿死等 NuGet JOIN**：Cube 侧 `UserTenantSearch` 绕开歧义；单测锁「外租户不可见」。
+
 ## 待办 — 字体规范（Harness）
 
 - 后续按现代中后台常见 **组件/场景**（列表表头、单元格、表单标签、抽屉标题、徽章等）在 Harness 建立统一的 **字体 / 字号 / 字重** 规范，并替换各处临时字重（如 VTable `headerStyle.fontWeight: 400`）。

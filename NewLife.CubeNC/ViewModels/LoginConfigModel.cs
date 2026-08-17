@@ -18,6 +18,9 @@ public class LoginAbilityModel
 
     /// <summary>登录时需要图片验证码</summary>
     public Boolean Captcha { get; set; }
+
+    /// <summary>发送短信/邮件验证码时需要图片验证码（CaptchaScene 位 4，防轰炸）</summary>
+    public Boolean SendCodeCaptcha { get; set; }
 }
 
 /// <summary>注册能力配置</summary>
@@ -112,6 +115,7 @@ public class LoginConfigModel
         Sms = _set.EnableSms,
         Mail = _set.EnableMail,
         Captcha = (_set.CaptchaScene & 1) != 0,
+        SendCodeCaptcha = (_set.CaptchaScene & 4) != 0,
     };
 
     /// <summary>注册能力配置</summary>

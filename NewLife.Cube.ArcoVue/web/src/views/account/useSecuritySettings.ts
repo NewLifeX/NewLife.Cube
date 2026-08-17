@@ -1,33 +1,46 @@
 /**
  * 账号安全：MFA + 第三方绑定
  */
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { Message, Modal } from '@arco-design/web-vue';
 import type { AuthBindItem } from '@cube/api-core';
 import cubeApi from '@/api';
+import { useAppStore } from '@/stores/app';
+import { isOAuthLoginEnabled } from '@/views/login/loginConfig';
+import { buildTotpQrDataUrl, resolveOAuthBindKey } from './mfaQr';
 
 export function useSecuritySettings() {
+  const appStore = useAppStore();
   const loading = ref(false);
   const mfaAvailable = ref(false);
   const mfaEnabled = ref(false);
   const setupUri = ref('');
   const setupSecret = ref('');
+  const setupQrDataUrl = ref('');
   const activateCode = ref('');
   const disableCode = ref('');
   const backupCodes = ref<string[]>([]);
   const binds = ref<AuthBindItem[]>([]);
   const step = ref<'idle' | 'setup' | 'backup'>('idle');
+  /** 有可见第三方提供商时显示绑定区（与登录页同源：oauth 列表，不绑 EnableOAuthServer） */
+  const oauthEnabled = computed(() => {
+    const cfg = appStore.loginConfig;
+    if (!cfg) return true;
+    return isOAuthLoginEnabled(cfg);
+  });
 
   async function loadStatus() {
     loading.value = true;
     try {
-      const [st, bd] = await Promise.all([
-        cubeApi.user.mfaStatus(),
-        cubeApi.user.listBinds(),
-      ]);
+      const st = await cubeApi.user.mfaStatus();
       mfaAvailable.value = !!st.data?.available;
       mfaEnabled.value = !!st.data?.enabled;
-      binds.value = bd.data?.providers || [];
+      if (oauthEnabled.value) {
+        const bd = await cubeApi.user.listBinds();
+        binds.value = bd.data?.providers || [];
+      } else {
+        binds.value = [];
+      }
     } catch (e: unknown) {
       Message.error((e as { message?: string })?.message || '加载失败');
     } finally {
@@ -41,6 +54,7 @@ export function useSecuritySettings() {
       setupUri.value = res.data?.totpUri || res.data?.qrCodeUri || '';
       setupSecret.value = res.data?.secret || '';
       activateCode.value = '';
+      setupQrDataUrl.value = setupUri.value ? await buildTotpQrDataUrl(setupUri.value) : '';
       step.value = 'setup';
     } catch (e: unknown) {
       Message.error((e as { message?: string })?.message || '初始化失败');
@@ -80,12 +94,12 @@ export function useSecuritySettings() {
   }
 
   function bindProvider(item: AuthBindItem) {
-    const key = item.name || String(item.id);
+    const key = resolveOAuthBindKey(item);
     window.location.href = `/Sso/Bind/${encodeURIComponent(key)}`;
   }
 
   function unbindProvider(item: AuthBindItem) {
-    const key = item.name || String(item.id);
+    const key = resolveOAuthBindKey(item);
     Modal.confirm({
       title: '解除绑定',
       content: `确定解除与「${item.nickName || item.name}」的绑定？`,
@@ -107,6 +121,12 @@ export function useSecuritySettings() {
     Message.success('已复制备用码');
   }
 
+  function copySecret() {
+    if (!setupSecret.value && !setupUri.value) return;
+    void navigator.clipboard?.writeText(setupSecret.value || setupUri.value);
+    Message.success('已复制');
+  }
+
   onMounted(loadStatus);
 
   return {
@@ -115,10 +135,12 @@ export function useSecuritySettings() {
     mfaEnabled,
     setupUri,
     setupSecret,
+    setupQrDataUrl,
     activateCode,
     disableCode,
     backupCodes,
     binds,
+    oauthEnabled,
     step,
     startSetup,
     activate,
@@ -126,5 +148,6 @@ export function useSecuritySettings() {
     bindProvider,
     unbindProvider,
     copyBackup,
+    copySecret,
   };
 }
