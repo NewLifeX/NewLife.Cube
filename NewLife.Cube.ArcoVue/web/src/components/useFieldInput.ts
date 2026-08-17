@@ -1,4 +1,4 @@
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import type { ControlType, FieldMeta } from '@/core/types/field';
 import {
   resolveControl,
@@ -92,6 +92,18 @@ export function useFieldInput(props: FieldInputProps, emit: FieldInputEmit) {
     emit('update:modelValue', v);
   }
 
+  /** 颜色控件：色块 + 隐藏 native color input + 色号（对齐外观设置自定义主色） */
+  const colorInputRef = ref<HTMLInputElement | null>(null);
+  const colorValue = computed(() => strValue.value || '#000000');
+  function openColorPicker() {
+    if (props.disabled) return;
+    colorInputRef.value?.click();
+  }
+  function onColorInput(e: Event) {
+    const v = (e.target as HTMLInputElement).value;
+    emitValue(v);
+  }
+
   /** picker 输出 → naive 本地字符串提交后端 */
   function onPickerChange(v: unknown) {
     if (v == null || v === '') {
@@ -134,10 +146,19 @@ export function useFieldInput(props: FieldInputProps, emit: FieldInputEmit) {
     }
     try {
       const res = await cubeApi.page.uploadFile(props.typePath, file, { id: 0 });
-      const url = (res.data as Record<string, unknown>)?.url
-        ?? (res.data as Record<string, unknown>)?.path
-        ?? res.data;
-      emitValue(url);
+      const data = (res.data || {}) as Record<string, unknown>;
+      const url =
+        data.url ??
+        data.filePath ??
+        data.path ??
+        data.Url ??
+        data.FilePath ??
+        (typeof res.data === 'string' ? res.data : null);
+      if (!url) {
+        option.onError();
+        return;
+      }
+      emitValue(String(url));
       option.onSuccess();
     } catch {
       option.onError();
@@ -161,5 +182,9 @@ export function useFieldInput(props: FieldInputProps, emit: FieldInputEmit) {
     onSelect,
     onUpload,
     inputType,
+    colorInputRef,
+    colorValue,
+    openColorPicker,
+    onColorInput,
   };
 }

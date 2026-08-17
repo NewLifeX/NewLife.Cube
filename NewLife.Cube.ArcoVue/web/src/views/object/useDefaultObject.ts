@@ -3,12 +3,12 @@
  *
  * 通用 ObjectController 配置中心：
  * - GET {type} + GetFields + enrich + FieldInput + PUT
- * - 左列表右配置：菜单树自动发现 Object 配置页（会话级探测缓存），统一入口
+ * - 左列表右配置：菜单树自动发现 Object 配置页（sessionStorage 探测缓存 + 菜单指纹失效），统一入口
  * - Category 作为当前对象（如魔方设置）的子菜单管理；右侧按分组不折叠、流式 6/12
  * - description 经 form-item tooltip 展示
  * 权限不足/GET 失败 → 表单 disabled、保存隐藏、a-alert 说明。
  */
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { Message } from '@arco-design/web-vue';
 import { FieldKind, type MenuItem } from '@cube/api-core';
 import cubeApi from '@/api';
@@ -18,13 +18,23 @@ import { toFieldMetas } from '@/core/utils/fieldNormalize';
 import { serializeSubmitModel } from '@/core/utils/fieldControl';
 import { groupFieldsByCategory, mergeObjectModel } from '@/core/utils/objectForm';
 import { collectObjectCandidates, type ObjectPageRef } from '@/core/utils/objectPages';
+import {
+  fingerprintMenus,
+  hydrateObjectKindCache,
+  normalizeObjectTypeKey,
+  persistObjectKindCache,
+} from '@/core/utils/objectKindCache';
 import { detectPageKind, type PageKind } from '@/core/utils/pageKind';
 import {
   enrichFieldsWithEnumDataSource,
   enrichFieldsWithLookup,
 } from '@/core/utils/lov-api';
+import { enrichDefaultRoleField } from '@/core/utils/defaultRoleField';
 import { formatApiError } from '@/core/utils/apiError';
+import { getValueByKey, normalizeKeysByFields } from '@/core/utils/url';
 import type { FieldMeta } from '@/core/types/field';
+import { useAppStore } from '@/stores/app';
+import { useTenantStore } from '@/stores/tenant';
 
 /** DefaultObject 组件 props 类型（与 DefaultObject.vue defineProps 泛型逐字一致） */
 interface DefaultObjectProps {
@@ -40,7 +50,7 @@ function unwrapData(res: unknown): unknown {
   return res;
 }
 
-/** Object 页探测结果会话级缓存：同 type 只探测一次 */
+/** Object 页探测结果：内存 + sessionStorage（菜单指纹绑定） */
 const objectKindCache = new Map<string, boolean>();
 
 /** 菜单名（displayName 优先）；未命中回落 type 末段 */
@@ -65,6 +75,8 @@ function menuNameOf(menus: MenuItem[], type: string): string {
 /** DefaultObject 组件全部业务 TS：加载/切换/分组折叠/对象发现/保存（薄 SFC 宿主） */
 export function useDefaultObject(props: DefaultObjectProps) {
   const userStore = useUserStore();
+  const appStore = useAppStore();
+  const tenantStore = useTenantStore();
 
   /** 当前配置对象类型（左侧切换后加载对应对象） */
   const currentType = ref(props.type);
@@ -73,6 +85,8 @@ export function useDefaultObject(props: DefaultObjectProps) {
     { type: props.type, name: menuNameOf(userStore.menus, props.type) },
   ]);
   const pagesLoading = ref(false);
+  /** 发现进行中又遇菜单变更时，结束后再跑一轮 */
+  let discoverDirty = false;
 
   const loading = ref(true);
   const loadError = ref('');
@@ -121,6 +135,9 @@ export function useDefaultObject(props: DefaultObjectProps) {
   /** 菜单名作页头标题；无菜单回落 type 末段 */
   const title = computed(() => menuNameOf(userStore.menus, currentType.value));
 
+  /** 当前菜单指纹（增删改后变化，驱动缓存失效与重发现） */
+  const menusFingerprint = computed(() => fingerprintMenus(userStore.menus || []));
+
   function resetFormFrom(obj: Record<string, unknown>) {
     Object.keys(form).forEach((k) => delete form[k]);
     Object.assign(form, obj);
@@ -139,14 +156,16 @@ export function useDefaultObject(props: DefaultObjectProps) {
       const obj = body as Record<string, unknown>;
       Object.keys(model).forEach((k) => delete model[k]);
       Object.assign(model, obj);
-      resetFormFrom(obj);
 
       const fres = await cubeApi.page.getFields(type, FieldKind.List);
       const flist = unwrapData(fres);
       const metas = toFieldMetas((Array.isArray(flist) ? flist : []) as never);
       await enrichFieldsWithEnumDataSource(metas);
       await enrichFieldsWithLookup(metas);
+      await enrichDefaultRoleField(metas, obj);
       fields.value = metas;
+      // GetFields 字段名为 PascalCase，GET 对象多为 camelCase；归一化后再绑 form[field.name]
+      resetFormFrom(normalizeKeysByFields(obj, metas));
       // 分组就绪后默认选中第一个分组（多分组子菜单）；无分组回落空串
       activeCategory.value = groups.value[0]?.category ?? '';
       // 配置项菜单自动全部展开
@@ -156,6 +175,7 @@ export function useDefaultObject(props: DefaultObjectProps) {
       fields.value = [];
     } finally {
       loading.value = false;
+      syncDocumentTitle();
     }
   }
 
@@ -173,37 +193,49 @@ export function useDefaultObject(props: DefaultObjectProps) {
 
   /**
    * 自动发现 Object 配置页并注入左侧列表：菜单树两层 URL 候选逐个探测，
-   * 结果会话级缓存；探测失败忽略（不阻断当前页）。
+   * 结果写入 sessionStorage；菜单指纹变化时整表失效并重探。
    */
   async function discoverObjectPages() {
-    if (pagesLoading.value) return;
+    if (pagesLoading.value) {
+      discoverDirty = true;
+      return;
+    }
     pagesLoading.value = true;
     try {
-      const candidates = collectObjectCandidates(userStore.menus, props.type);
-      const found: ObjectPageRef[] = [
-        { type: props.type, name: menuNameOf(userStore.menus, props.type) },
-      ];
-      for (const c of candidates) {
-        const cached = objectKindCache.get(c.type);
-        if (cached === false) continue;
-        if (cached === true) {
-          found.push(c);
-          continue;
-        }
-        try {
-          const kind = await probeKind(c.type);
-          if (kind === 'object') {
-            objectKindCache.set(c.type, true);
+      do {
+        discoverDirty = false;
+        const menus = (userStore.menus || []) as MenuItem[];
+        const fingerprint = fingerprintMenus(menus);
+        hydrateObjectKindCache(fingerprint, objectKindCache);
+
+        const candidates = collectObjectCandidates(menus, props.type);
+        const found: ObjectPageRef[] = [
+          { type: props.type, name: menuNameOf(menus, props.type) },
+        ];
+        for (const c of candidates) {
+          const cacheKey = normalizeObjectTypeKey(c.type);
+          const cached = objectKindCache.get(cacheKey);
+          if (cached === false) continue;
+          if (cached === true) {
             found.push(c);
-          } else {
-            objectKindCache.set(c.type, false);
+            continue;
           }
-        } catch {
-          /* 探测失败忽略 */
+          try {
+            const kind = await probeKind(c.type);
+            if (kind === 'object') {
+              objectKindCache.set(cacheKey, true);
+              found.push(c);
+            } else {
+              objectKindCache.set(cacheKey, false);
+            }
+          } catch {
+            /* 探测失败忽略 */
+          }
         }
-      }
-      // 稳定顺序：按名称排序（中文环境 localeCompare）
-      objectPages.value = [...found].sort((a, b) => a.name.localeCompare(b.name, 'zh'));
+        // 稳定顺序：按名称排序（中文环境 localeCompare）
+        objectPages.value = [...found].sort((a, b) => a.name.localeCompare(b.name, 'zh'));
+        persistObjectKindCache(fingerprint, objectKindCache);
+      } while (discoverDirty);
     } finally {
       pagesLoading.value = false;
     }
@@ -222,6 +254,33 @@ export function useDefaultObject(props: DefaultObjectProps) {
     if (categories.value.includes(category)) activeCategory.value = category;
   }
 
+  /** 当前配置页是否为系统设置（SysConfig，含 DisplayName） */
+  function isSysConfigType(type: string): boolean {
+    const k = normalizeObjectTypeKey(type);
+    return k === 'admin/sys' || k.endsWith('/sys');
+  }
+
+  /** 同步浏览器标题：配置项名 / 显示名称（左侧选中项优先，避免路由仍为 Core 时用「核心设置」） */
+  function syncDocumentTitle() {
+    const typeKey = normalizeObjectTypeKey(currentType.value);
+    const fromPages = objectPages.value.find((p) => normalizeObjectTypeKey(p.type) === typeKey)?.name;
+    const page = (fromPages || title.value || '').trim() || null;
+    let sys: string | null | undefined = undefined;
+    if (isSysConfigType(currentType.value)) {
+      const raw = getValueByKey(form, 'DisplayName');
+      if (raw != null && String(raw).trim()) {
+        sys = String(raw).trim();
+      } else {
+        // 表单未就绪时用 loginConfig.name（即 Sys.DisplayName），勿清空覆盖
+        sys = appStore.loginConfig?.name?.trim() || null;
+      }
+      appStore.setDocumentTitleParts(page || '系统设置', sys);
+      return;
+    }
+    // 其它配置页：只覆盖页名前段，显示名称回落 loginConfig
+    appStore.setDocumentTitleParts(page, null);
+  }
+
   async function save() {
     const type = currentType.value;
     saving.value = true;
@@ -233,10 +292,27 @@ export function useDefaultObject(props: DefaultObjectProps) {
       const body = unwrapData(res);
       if (body && typeof body === 'object' && !Array.isArray(body)) {
         const obj = body as Record<string, unknown>;
+        Object.keys(model).forEach((k) => delete model[k]);
         Object.assign(model, obj);
-        resetFormFrom(obj);
+        resetFormFrom(normalizeKeysByFields(obj, fields.value));
       }
       Message.success('保存成功');
+      // 魔方设置可能改动 EnableTenant 等：立即同步登录配置与租户态
+      // （第三方登录看 oauth[]，不依赖 EnableOAuthServer）
+      // 系统设置改 DisplayName：刷新 loginConfig.name 供全局标题/品牌
+      const key = normalizeObjectTypeKey(type);
+      if (key === 'admin/cube' || key === 'admin/sys' || key.endsWith('/sys')) {
+        try {
+          await appStore.fetchLoginConfig();
+          if (key === 'admin/cube') {
+            tenantStore.applyFeatureFlag(appStore.loginConfig?.enableTenant);
+            await tenantStore.load();
+          }
+          syncDocumentTitle();
+        } catch {
+          /* 同步失败不阻断保存成功提示 */
+        }
+      }
     } catch (err) {
       Message.error(formatApiError(err, '保存失败'));
     } finally {
@@ -248,6 +324,24 @@ export function useDefaultObject(props: DefaultObjectProps) {
     void load();
     // 后台自动发现其它 Object 配置页，不阻塞当前页渲染
     void discoverObjectPages();
+    syncDocumentTitle();
+  });
+
+  onBeforeUnmount(() => {
+    appStore.clearDocumentTitleParts();
+  });
+
+  watch([title, currentType, objectPages], () => syncDocumentTitle());
+  watch(
+    () => [getValueByKey(form, 'DisplayName'), form.DisplayName, form.displayName],
+    () => {
+      if (isSysConfigType(currentType.value)) syncDocumentTitle();
+    },
+  );
+
+  // 菜单增删改（含 fetchMenus 刷新）→ 指纹变化 → 失效缓存并重发现
+  watch(menusFingerprint, (fp, prev) => {
+    if (prev !== undefined && fp !== prev) void discoverObjectPages();
   });
 
   return {

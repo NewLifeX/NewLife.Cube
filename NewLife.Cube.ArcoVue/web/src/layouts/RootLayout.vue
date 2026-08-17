@@ -1,11 +1,9 @@
 <template>
-  <a-config-provider :update-at-scroll="true">
-    <component :is="layoutComp" />
-    <AppearanceDrawer
-      v-model:visible="appearanceVisible"
-    />
-    <InboxDrawer v-model:visible="inboxVisible" />
-  </a-config-provider>
+  <component :is="layoutComp" />
+  <AppearanceDrawer
+    v-model:visible="appearanceVisible"
+  />
+  <InboxDrawer v-model:visible="inboxVisible" />
 </template>
 
 <script setup lang="ts">
@@ -14,6 +12,7 @@ import { resolveLayoutMode } from '@/core/utils/userProfile';
 import { useUserProfileStore } from '@/stores/userProfile';
 import { useAppStore } from '@/stores/app';
 import { useShellAuth } from './useShellAuth';
+import { useDocumentTitle } from './useDocumentTitle';
 import SideLayout from './side.vue';
 import TopLayout from './top.vue';
 import MixLayout from './mix.vue';
@@ -21,6 +20,7 @@ import AppearanceDrawer from '@/views/settings/AppearanceDrawer.vue';
 import InboxDrawer from '@/views/inbox/InboxDrawer.vue';
 
 useShellAuth();
+useDocumentTitle();
 
 const profileStore = useUserProfileStore();
 const appStore = useAppStore();

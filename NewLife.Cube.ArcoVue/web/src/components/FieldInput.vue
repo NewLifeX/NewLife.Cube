@@ -48,6 +48,7 @@
       :disabled="disabled"
       :placeholder="`请选择${field.displayName || field.name}`"
       allow-clear
+      allow-search
       style="width: 100%"
       @update:model-value="onSelect"
     >
@@ -75,19 +76,32 @@
       :disabled="disabled"
       @update:model-value="emitValue"
     />
-    <a-upload
-      v-else-if="control === 'upload' || control === 'image'"
-      :custom-request="onUpload"
-      :show-file-list="false"
-      :disabled="disabled"
-    >
-      <template #upload-button>
-        <a-space>
-          <a-button>{{ control === 'image' ? '上传图片' : '上传文件' }}</a-button>
-          <a-link v-if="strValue" :href="strValue" target="_blank">已上传</a-link>
-        </a-space>
-      </template>
-    </a-upload>
+    <div v-else-if="control === 'upload' || control === 'image'" class="field-upload">
+      <a-input
+        :model-value="strValue"
+        :disabled="disabled"
+        :placeholder="control === 'image' ? '图片路径，如 /Uploads/Cube/xxx.png' : '文件路径'"
+        allow-clear
+        @update:model-value="emitValue"
+      >
+        <template #append>
+          <a-upload
+            :custom-request="onUpload"
+            :show-file-list="false"
+            :disabled="disabled"
+            :accept="control === 'image' ? 'image/*' : undefined"
+          >
+            <template #upload-button>
+              <a-button type="primary" :disabled="disabled">上传</a-button>
+            </template>
+          </a-upload>
+        </template>
+      </a-input>
+      <div v-if="control === 'image' && strValue" class="field-upload__preview-row">
+        <img :src="strValue" alt="" class="field-upload-preview" />
+        <a-link :href="strValue" target="_blank">预览</a-link>
+      </div>
+    </div>
     <JsonEditor
       v-else-if="control === 'json'"
       :model-value="modelValue"
@@ -100,14 +114,25 @@
       :disabled="disabled"
       @update:model-value="emitValue"
     />
-    <a-input
-      v-else-if="control === 'color'"
-      type="color"
-      :model-value="strValue || '#000000'"
-      :disabled="disabled"
-      style="width: 64px"
-      @update:model-value="emitValue"
-    />
+    <div v-else-if="control === 'color'" class="field-color-row">
+      <button
+        type="button"
+        class="field-color-swatch"
+        :style="{ background: colorValue }"
+        :disabled="disabled"
+        :title="`选择${field.displayName || field.name}`"
+        @click="openColorPicker"
+      />
+      <input
+        ref="colorInputRef"
+        type="color"
+        :value="colorValue"
+        class="field-color-input-hidden"
+        :disabled="disabled"
+        @input="onColorInput"
+      />
+      <span class="field-color-text">{{ colorValue }}</span>
+    </div>
     <a-input
       v-else
       :model-value="strValue"
@@ -156,5 +181,74 @@ const {
   onSelect,
   onUpload,
   inputType,
+  colorInputRef,
+  colorValue,
+  openColorPicker,
+  onColorInput,
 } = useFieldInput(props, emit);
 </script>
+
+<style scoped>
+.field-upload {
+  width: 100%;
+}
+.field-upload :deep(.arco-upload),
+.field-upload :deep(.arco-upload-trigger) {
+  display: inline-flex;
+  vertical-align: middle;
+}
+.field-upload :deep(.arco-input-append) {
+  padding: 0;
+}
+.field-upload :deep(.arco-input-append .arco-btn) {
+  border-radius: 0;
+  height: 100%;
+}
+.field-upload__preview-row {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.field-upload-preview {
+  max-width: 120px;
+  max-height: 48px;
+  object-fit: contain;
+  border: 1px solid var(--color-border-2);
+  border-radius: 4px;
+  background: var(--color-fill-1);
+}
+.field-color-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.field-color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-2);
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  background: transparent;
+}
+.field-color-swatch:hover:not(:disabled) {
+  box-shadow: 0 0 0 2px rgb(var(--primary-6));
+}
+.field-color-swatch:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.field-color-input-hidden {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+.field-color-text {
+  color: var(--color-text-2);
+  font-size: 13px;
+}
+</style>
