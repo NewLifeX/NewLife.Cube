@@ -6,7 +6,16 @@ import { frozenLeftCount } from '@/core/utils/viewProfile';
 import { BADGE_BORDER_RADIUS, BADGE_PADDING } from '@/core/utils/fieldBadge';
 import { getValueByKey } from '@/core/utils/url';
 import { themeColor } from '@/core/utils/themeColor';
-import { buildOpsParts, opsActionColor, OPS_ACTION_LABELS, type OpsAction, type OpsAutomationButton } from '@/core/utils/opsAction';
+import {
+  buildOpsPartsWithLinks,
+  opsActionColor,
+  OPS_ACTION_LABELS,
+  OPS_LINK_COLOR,
+  type OpsAction,
+  type OpsAutomationButton,
+  type OpsCustomLink,
+} from '@/core/utils/opsAction';
+import { OPS_LINK_INLINE_MAX } from '@/core/utils/listLinkFields';
 
 export interface ListTableColumnDef {
   pref: ColumnPref;
@@ -22,6 +31,8 @@ export interface ListTableColumnDef {
   } | null;
   /** 启用/Enable 徽标：可点击切换启用/禁用（悬停显示 pointer） */
   enableToggle?: boolean;
+  /** 字段挂 Url：单元格可点导航（OSC-2608178bdb） */
+  cellLink?: { url: string; target?: string };
 }
 
 /** ListTable 组件 props 类型（与 ListTable.vue defineProps 泛型逐字一致） */
@@ -39,6 +50,8 @@ interface ListTableProps {
   enableSort?: boolean;
   /** 行操作列额外按钮（自动化 button 规则，最多 3 个） */
   automationButtons?: OpsAutomationButton[];
+  /** GetPage 合成 Url/dataAction 自定义链接（OSC-2608178bdb） */
+  opsCustomLinks?: OpsCustomLink[];
   /** 服务端排序状态；用于表头升/降序图标（不走 VTable 内部排序） */
   sortState?: { field: string; desc: boolean } | null;
   /** 树视图：启用 VTable hierarchy（行含 children） */
@@ -59,7 +72,14 @@ interface ListTableEmits {
   selectionChange: [keys: (string | number)[]];
   columnsChange: [cols: ColumnPref[]];
   sortChange: [payload: { field: string; desc: boolean } | null];
-  action: [payload: { action: string; row: Record<string, unknown> }];
+  action: [payload: {
+    action: string;
+    row: Record<string, unknown>;
+    clientX?: number;
+    clientY?: number;
+  }];
+  /** 单元格字段挂链接点击 */
+  cellLink: [payload: { url: string; target?: string; row: Record<string, unknown> }];
   toggleEnable: [row: Record<string, unknown>, field: string];
   /** 滚动接近底部（剩余不足 200px）时触发，供父级增量加载更多行（列表/树懒加载） */
   scrollBottom: [];
@@ -187,26 +207,34 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
     return v == null ? '' : String(v);
   }
 
-  function opsFlags() {
-    return {
+  function opsBundle() {
+    return buildOpsPartsWithLinks({
       canViewDetail: props.canViewDetail,
       canEdit: props.canEdit,
       canDelete: props.canDelete,
       automationButtons: props.automationButtons,
-    };
+      opsLinks: props.opsCustomLinks,
+      inlineMax: OPS_LINK_INLINE_MAX,
+    });
   }
 
   function opsLabel(action: string): string {
+    if (action === 'more') return '更多';
     if (action.startsWith('auto:')) {
       const id = action.slice(5);
       const b = (props.automationButtons ?? []).find((x) => String(x.id) === id);
       return b?.name || '运行';
     }
+    if (action.startsWith('link:')) {
+      const name = action.slice(5);
+      const l = (props.opsCustomLinks ?? []).find((x) => x.name === name);
+      return l?.label || name;
+    }
     return OPS_ACTION_LABELS[action as OpsAction] ?? action;
   }
 
   function opsColumnWidth(): number {
-    const n = buildOpsParts(opsFlags()).length;
+    const n = opsBundle().parts.length;
     if (n <= 0) return 88;
     return Math.max(88, n * 56 + 16);
   }
@@ -232,7 +260,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
     ) {
       return undefined;
     }
-    const parts = buildOpsParts(opsFlags());
+    const parts = opsBundle().parts;
     if (!parts.length) return undefined;
 
     const container = createGroup({
@@ -247,7 +275,10 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
     parts.forEach((action, i) => {
       const isLast = i === parts.length - 1;
       // 链接配色：详情/编辑=主色、删除=警示色、其余系统自定义=链接色（需求 OSC）
-      const color = opsActionColor(action);
+      const color =
+        action === 'more' || action.startsWith('link:')
+          ? OPS_LINK_COLOR
+          : opsActionColor(action);
       const link = createText({
         text: opsLabel(action),
         fontSize: 13,
@@ -270,8 +301,14 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
         link.removeState('hover', false);
         t.scenegraph?.updateNextFrame?.();
       });
-      link.addEventListener('click', () => {
-        emit('action', { action, row: record });
+      link.addEventListener('click', (evt: any) => {
+        const pe = evt?.nativeEvent ?? evt?.event ?? evt;
+        emit('action', {
+          action,
+          row: record,
+          clientX: typeof pe?.clientX === 'number' ? pe.clientX : undefined,
+          clientY: typeof pe?.clientY === 'number' ? pe.clientY : undefined,
+        });
       });
       container.add(link);
     });
@@ -395,12 +432,21 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
           const record = args.table?.getRecordByCell?.(args.col, args.row) as
             | Record<string, unknown>
             | undefined;
-          return groupHeaderStyle(record) ?? undefined;
+          const ghs = groupHeaderStyle(record);
+          if (ghs) return ghs;
+          if (c.cellLink) {
+            return {
+              color: themeColor(OPS_LINK_COLOR.token, '#165DFF'),
+              cursor: 'pointer',
+              textDecoration: 'underline',
+            };
+          }
+          return undefined;
         },
       });
     }
 
-    if (buildOpsParts(opsFlags()).length) {
+    if (opsBundle().parts.length) {
       cols.push({
         field: '__ops',
         title: '操作',
@@ -508,7 +554,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       records: withChecks(props.records),
       columns: cols,
       frozenColCount: frozenCount(),
-      rightFrozenColCount: buildOpsParts(opsFlags()).length ? 1 : 0,
+      rightFrozenColCount: opsBundle().parts.length ? 1 : 0,
       ...(groupedMode
         ? {
             // 官方分组复选框方案：checkbox 置于 rowSeriesNumber（每行最前面），
@@ -713,6 +759,14 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       const colDef = props.columns.find((c) => c.pref.key === field);
       if (colDef?.enableToggle && colDef.badge) {
         emit('toggleEnable', row, colDef.pref.key);
+        return;
+      }
+      if (colDef?.cellLink) {
+        emit('cellLink', {
+          url: colDef.cellLink.url,
+          target: colDef.cellLink.target,
+          row,
+        });
         return;
       }
       emit('rowClick', row);
@@ -926,6 +980,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       props.showExpand,
       props.enableSort,
       props.automationButtons,
+      props.opsCustomLinks,
       props.hierarchy,
       props.grouped,
       props.groupFields,

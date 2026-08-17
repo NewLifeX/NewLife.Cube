@@ -133,6 +133,7 @@
 | 导入导出 | DATA-9 | ✅ | ✅ | ✅ | P0 |
 | 批量删除 | DATA-10 | ✅ | ✅ | ✅ | P0 |
 | 批量其它操作（启用/禁用等） | 工具条扩展 | ✅ | ❌（工具栏占位） | 🟠 | P2 |
+| ListField.Url / dataAction 自定义链接 | 单元格 + 操作列分流 | ✅（Bootstrap 单元格 / Metronic 更多） | ✅（OSC-2608178bdb 方案 E） | 🟢 | Done |
 | 图表 GetChartData | SPA-15 | ✅ | ✅（后端 option 渲染壳，无前端配置） | ✅ | P1 |
 | 字段控件矩阵（含上传/JSON/富文本等） | DATA-11 等 | 🟠～✅ | ✅（20+ 控件，FieldInput） | ✅ | P0 |
 | LOV 选择器 | SYS-16～20 | ✅ | ✅（LovSelect + lov-api） | ✅ | P1 |

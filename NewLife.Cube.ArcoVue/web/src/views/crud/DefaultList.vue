@@ -231,6 +231,7 @@
               :can-delete="flags.canDelete && chrome.allowDelete"
               :can-view-detail="chrome.allowViewDetail"
               :automation-buttons="automationButtons"
+              :ops-custom-links="opsCustomLinks"
               :show-expand="chrome.expandRow"
               :enable-sort="chrome.showSort"
               :sort-state="activeSort"
@@ -244,6 +245,7 @@
               @columns-change="onColumnsChange"
               @sort-change="onSortChange"
               @action="onTableAction"
+              @cell-link="onCellLink"
               @toggle-enable="onToggleEnable"
               @scroll-bottom="onTableScrollBottom"
             />
@@ -265,10 +267,12 @@
             :can-view-detail="chrome.allowViewDetail"
             :can-edit="flags.canEdit"
             :can-delete="flags.canDelete && chrome.allowDelete"
+            :ops-custom-links="opsCustomLinks"
             :format-cell="renderCell"
             @detail="openDetail"
             @edit="openEdit"
             @delete="onCardDelete"
+            @ops-link="onOpsLinkClick"
             @toggle-enable="onToggleEnable"
           />
 
@@ -283,10 +287,12 @@
             :can-view-detail="chrome.allowViewDetail"
             :can-edit="flags.canEdit"
             :can-delete="flags.canDelete && chrome.allowDelete"
+            :ops-custom-links="opsCustomLinks"
             :format-cell="renderCell"
             @detail="openDetail"
             @edit="openEdit"
             @delete="onCardDelete"
+            @ops-link="onOpsLinkClick"
             @toggle-enable="onToggleEnable"
           />
 
@@ -378,12 +384,37 @@
       :can-next="drawerCanNext"
       :field-errors="fieldErrors"
       :layout="drawerFormLayout"
+      :ops-custom-links="opsCustomLinks"
       @toggle-collapse="onToggleCollapse"
       @save="handleSave"
       @edit="drawerMode = 'edit'"
       @prev="navigateRecord(-1)"
       @next="navigateRecord(1)"
+      @ops-link="(link) => formModel && onOpsLinkClick(link, formModel)"
     />
+
+    <!-- 操作列「更多」溢出（VTable canvas 外挂） -->
+    <div
+      v-if="moreMenu.visible"
+      class="ops-more-backdrop"
+      @click="closeMoreMenu"
+      @contextmenu.prevent="closeMoreMenu"
+    />
+    <div
+      v-if="moreMenu.visible && moreMenu.row"
+      class="ops-more-menu"
+      :style="{ left: `${moreMenu.x}px`, top: `${moreMenu.y}px` }"
+    >
+      <button
+        v-for="link in moreMenu.links"
+        :key="link.name"
+        type="button"
+        class="ops-more-menu__item"
+        @click="onOpsLinkClick(link, moreMenu.row!)"
+      >
+        {{ link.label }}
+      </button>
+    </div>
 
     <ListChartModal v-model:visible="chartVisible" :charts="chartList" />
 
@@ -531,6 +562,11 @@ const {
   onColumnsChange,
   onSortChange,
   onTableAction,
+  onCellLink,
+  onOpsLinkClick,
+  moreMenu,
+  closeMoreMenu,
+  opsCustomLinks,
   onToggleEnable,
   onTableScrollBottom,
   automationDrawerVisible,
@@ -736,6 +772,36 @@ const automationFields = computed(() => {
   display: flex;
   justify-content: flex-end;
 }
+.ops-more-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+.ops-more-menu {
+  position: fixed;
+  z-index: 1001;
+  min-width: 140px;
+  padding: 4px 0;
+  background: var(--color-bg-popup);
+  border: 1px solid var(--color-border-2);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+.ops-more-menu__item {
+  display: block;
+  width: 100%;
+  padding: 6px 12px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  font-size: 13px;
+  color: rgb(var(--link-6));
+  cursor: pointer;
+}
+.ops-more-menu__item:hover {
+  background: var(--color-fill-2);
+}
+
 .list-pager-hint {
   font-size: var(--cube-font-size-meta);
   font-weight: var(--cube-font-weight-normal);

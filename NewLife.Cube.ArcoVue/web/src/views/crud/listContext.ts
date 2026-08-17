@@ -17,6 +17,7 @@ import { getValueByKey } from '@/core/utils/url';
 import { formatFieldValue } from '@/core/utils/fieldFormat';
 import { getSectionLoader } from '@/core/composables/useSections';
 import { selectListColumns } from '@/core/utils/listColumns';
+import { classifyListLink, partitionListFields } from '@/core/utils/listLinkFields';
 import { resolveFieldsForKind } from '@/core/utils/fieldParts';
 import {
   defaultBadgeColumnWidth,
@@ -173,6 +174,9 @@ export function createListContext(props: { type: string; authId?: number }) {
   const formLayoutDrawerVisible = ref(false);
 
   const metaKeys = computed(() => selectListColumns(listFields.value).map((f) => f.name));
+
+  /** GetPage 合成 Url/dataAction → 操作列（OSC-2608178bdb） */
+  const opsCustomLinks = computed(() => partitionListFields(listFields.value).opsLinks);
 
   const columnTitles = computed(() => {
     const m: Record<string, string> = {};
@@ -500,6 +504,10 @@ export function createListContext(props: { type: string; authId?: number }) {
       const width =
         pref.width ||
         (field && badge ? defaultBadgeColumnWidth(field) : undefined);
+      const cellLink =
+        field && classifyListLink(field) === 'cell' && field.url?.trim()
+          ? { url: field.url.trim(), target: field.target }
+          : undefined;
       return {
         pref: width && !pref.width ? { ...pref, width } : pref,
         title: pref.title?.trim() || field?.displayName || pref.key,
@@ -512,8 +520,15 @@ export function createListContext(props: { type: string; authId?: number }) {
               return resolveCellBadge(field, raw);
             }
           : undefined,
-        format: (row: Record<string, unknown>) =>
-          field ? renderCell(field, row) : String(row[pref.key] ?? '-'),
+        format: (row: Record<string, unknown>) => {
+          if (!field) return String(row[pref.key] ?? '-');
+          const text = renderCell(field, row);
+          if (cellLink && (!text || text === '-')) {
+            return field.displayName || field.name;
+          }
+          return text;
+        },
+        cellLink,
       };
     }),
   );
@@ -534,6 +549,7 @@ export function createListContext(props: { type: string; authId?: number }) {
     evpStore,
     typePath,
     listFields,
+    opsCustomLinks,
     searchFields,
     addFields,
     editFields,

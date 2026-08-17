@@ -34,7 +34,7 @@
         <span v-else class="value">{{ item.value }}</span>
       </div>
     </div>
-    <div class="record-card-ops">
+    <div ref="opsRef" class="record-card-ops">
       <button
         v-if="canViewDetail"
         type="button"
@@ -54,6 +54,29 @@
       >
         删除
       </button>
+      <button
+        v-for="link in inlineOpsLinks"
+        :key="link.name"
+        type="button"
+        class="record-card-btn record-card-btn--link"
+        @click.stop="$emit('opsLink', link, record)"
+      >
+        {{ link.label }}
+      </button>
+      <a-dropdown v-if="overflowOpsLinks.length" trigger="click" @click.stop>
+        <button type="button" class="record-card-btn record-card-btn--link" @click.stop>
+          更多
+        </button>
+        <template #content>
+          <a-doption
+            v-for="link in overflowOpsLinks"
+            :key="link.name"
+            @click="$emit('opsLink', link, record)"
+          >
+            {{ link.label }}
+          </a-doption>
+        </template>
+      </a-dropdown>
     </div>
   </div>
 </template>
@@ -64,6 +87,7 @@ import type {
   CardFieldOrientation,
   CardLayout,
 } from '@/core/utils/viewMapping';
+import type { OpsCustomLink } from '@/core/utils/opsAction';
 import type { CardBodyField } from './cardHelpers';
 import { useRecordCard } from './useRecordCard';
 
@@ -76,6 +100,7 @@ const props = withDefaults(
     canViewDetail: boolean;
     canEdit: boolean;
     canDelete: boolean;
+    opsCustomLinks?: OpsCustomLink[];
     layout?: CardLayout;
     bodyColumns?: CardBodyColumns;
     fieldOrientation?: CardFieldOrientation;
@@ -87,6 +112,7 @@ const props = withDefaults(
     bodyColumns: 2,
     fieldOrientation: 'vertical',
     minHeight: 0,
+    opsCustomLinks: () => [],
   },
 );
 
@@ -95,6 +121,7 @@ defineEmits<{
   edit: [row: Record<string, unknown>];
   delete: [row: Record<string, unknown>];
   toggleEnable: [row: Record<string, unknown>, field: string];
+  opsLink: [link: OpsCustomLink, row: Record<string, unknown>];
 }>();
 
 const {
@@ -102,6 +129,9 @@ const {
   layoutClass,
   orientationClass,
   cardCssVars,
+  opsRef,
+  inlineOpsLinks,
+  overflowOpsLinks,
 } = useRecordCard(props);
 </script>
 
@@ -120,6 +150,15 @@ const {
     'image'
     'fields'
     'ops';
+  /* 与 Admin/Db a-card hoverable 同源：悬停抬升阴影 */
+  transition: box-shadow 0.2s cubic-bezier(0, 0, 1, 1);
+}
+.record-card:hover {
+  z-index: 1;
+  box-shadow: 0 4px 10px rgb(var(--gray-2));
+}
+:global(body[arco-theme='dark']) .record-card:hover {
+  box-shadow: 0 4px 10px rgba(var(--gray-1), 40%);
 }
 .record-card-title {
   grid-area: title;
@@ -213,10 +252,14 @@ const {
 .record-card-ops {
   grid-area: ops;
   display: flex;
+  flex-wrap: nowrap;
   justify-content: flex-start;
+  align-items: center;
   gap: 6px;
   margin-top: auto;
   padding-top: 2px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 /* 操作按钮：原生 button 替代 Arco a-button——组件实例化/卸载成本高，千条卡片翻页/懒加载重建时显著拖慢性能；
@@ -225,6 +268,7 @@ const {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   height: 24px;
   padding: 0 12px;
   border: none;
@@ -233,6 +277,7 @@ const {
   color: var(--color-text-1);
   font-size: var(--cube-font-size-meta);
   line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
   transition: color 0.2s, background-color 0.2s;
 }
@@ -245,6 +290,13 @@ const {
 .record-card-btn--danger:hover {
   color: rgb(var(--danger-6));
   background: rgba(var(--danger-6), 0.08);
+}
+.record-card-btn--link {
+  color: rgb(var(--link-6));
+}
+.record-card-btn--link:hover {
+  color: rgb(var(--link-5));
+  background: rgba(var(--link-6), 0.08);
 }
 
 .record-card--row:not(.record-card--no-image) {

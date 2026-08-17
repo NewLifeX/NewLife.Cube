@@ -193,6 +193,14 @@
 - **Webhook 限流字典先校验 token 再 TryAcquire**：无效 token 不要撑大 ConcurrentDictionary；并做过期/超量淘汰。
 - **httpRequest 默认要 SSRF 基线**：仅 http(s)、拒 loopback/私网/链路本地；单测覆盖 localhost/192.168/file。
 
+## OSC-2608178bdb — 2026-08-17
+
+- **Url 模板占位与行 JSON 键必须大小写容错**：后端常写 `{ID}`/`{Id}`，GetPage 行多为 camelCase `id`；`resolveUrl` 仅做 Pascal↔camel 首字母翻转不够（`ID`→`iD`）。应在 page-utils 提供 `lookupRowField`（忽略大小写 / 全大写缩写），并在冒烟首日用真实链接验参。
+- **ListField 分流先锁纯函数真值表再接线 UI**：`classifyListLink`（url / dataAction / hasTypeName）单测钉死后，表格/卡片/看板只消费 `partitionListFields`，避免各视图各写一套「算不算合成列」。
+- **操作列配额与自动化分离**：自定义链接直出 `OPS_LINK_INLINE_MAX`、自动化直出仍 3，顺序 detail→edit→delete→自定义→auto→更多；勿让一类挤掉另一类语义。
+- **卡片底栏宽度不足时动态收缩直出**：VTable 固定直出上限；卡片用 `ResizeObserver` 按 ops 区宽计算可放个数，溢出进「更多」+ `nowrap`，否则窄卡竖排/折行。
+- **验收并复盘时剔除同会话无关 WIP**：文档标题、悬停阴影等不进本号 commit；并行 `wwwroot` 全量构建产物勿混提（沿用 fa86 lessons）。
+
 ## 待办 — 字体规范（Harness）
 
 - 后续按现代中后台常见 **组件/场景**（列表表头、单元格、表单标签、抽屉标题、徽章等）在 Harness 建立统一的 **字体 / 字号 / 字重** 规范，并替换各处临时字重（如 VTable `headerStyle.fontWeight: 400`）。

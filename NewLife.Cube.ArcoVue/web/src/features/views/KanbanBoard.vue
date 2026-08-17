@@ -16,9 +16,11 @@
           :can-view-detail="canViewDetail"
           :can-edit="canEdit"
           :can-delete="canDelete"
+          :ops-custom-links="opsCustomLinks"
           @detail="$emit('detail', $event)"
           @edit="$emit('edit', $event)"
           @delete="$emit('delete', $event)"
+          @ops-link="(link, row) => $emit('opsLink', link, row)"
           @toggle-enable="(row, field) => $emit('toggleEnable', row, field)"
         />
       </div>
@@ -31,27 +33,35 @@
 import type { FieldMeta } from '@/core/types/field';
 import type { ColumnPref } from '@/core/utils/viewProfile';
 import type { KanbanMapping } from '@/core/utils/viewMapping';
+import type { OpsCustomLink } from '@/core/utils/opsAction';
 import RecordCard from './RecordCard.vue';
 import { useKanbanBoard } from './useKanbanBoard';
 
-const props = defineProps<{
-  records: Record<string, unknown>[];
-  columns: ColumnPref[];
-  fields: FieldMeta[];
-  mapping?: KanbanMapping | null;
-  rowKey: string;
-  height?: number;
-  canViewDetail: boolean;
-  canEdit: boolean;
-  canDelete: boolean;
-  formatCell?: (field: FieldMeta, record: Record<string, unknown>) => string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    records: Record<string, unknown>[];
+    columns: ColumnPref[];
+    fields: FieldMeta[];
+    mapping?: KanbanMapping | null;
+    rowKey: string;
+    height?: number;
+    canViewDetail: boolean;
+    canEdit: boolean;
+    canDelete: boolean;
+    opsCustomLinks?: OpsCustomLink[];
+    formatCell?: (field: FieldMeta, record: Record<string, unknown>) => string;
+  }>(),
+  {
+    opsCustomLinks: () => [],
+  },
+);
 
 defineEmits<{
   detail: [row: Record<string, unknown>];
   edit: [row: Record<string, unknown>];
   delete: [row: Record<string, unknown>];
   toggleEnable: [row: Record<string, unknown>, field: string];
+  opsLink: [link: OpsCustomLink, row: Record<string, unknown>];
 }>();
 
 const {

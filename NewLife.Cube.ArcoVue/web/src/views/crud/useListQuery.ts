@@ -3,7 +3,7 @@ import { Message } from '@arco-design/web-vue';
 import { FieldKind, type PageSetting } from '@cube/api-core';
 import cubeApi from '@/api';
 import { toFieldMetas } from '@/core/utils/fieldNormalize';
-import { resolveListControl } from '@/core/utils/fieldControl';
+import { isTenantField, resolveListControl } from '@/core/utils/fieldControl';
 import { getValueByKey } from '@/core/utils/url';
 import { formatApiError } from '@/core/utils/apiError';
 import {
@@ -15,12 +15,20 @@ import { collectCascaderIds, mergeAreaLabel } from '@/core/utils/areaLabels';
 import { buildSortPayload } from '@/core/utils/viewProfile';
 import { normalizePageSize } from '@/core/utils/viewMapping';
 import { cleanSearchParams, matchesViewFilter } from '@/core/utils/searchFilters';
+import { useTenantStore } from '@/stores/tenant';
 import type { ListContext } from './listContext';
+import type { FieldMeta } from '@/core/types/field';
 
 /**
  * DefaultList 查询领域（OSC-260813c3e9）：查询 / 分页 / LOV 水合 / 预定义查询 / 图表加载。
  */
 export function useListQuery(ctx: ListContext) {
+  const tenantStore = useTenantStore();
+
+  function withoutTenant(fields: FieldMeta[]): FieldMeta[] {
+    if (tenantStore.enableTenant) return fields;
+    return fields.filter((f) => !isTenantField(f));
+  }
   const {
     typePath,
     listFields,
@@ -213,11 +221,12 @@ export function useListQuery(ctx: ListContext) {
     const allFields = [...list, ...search, ...add, ...edit, ...detail];
     await enrichFieldsWithEnumDataSource(allFields);
     await enrichFieldsWithLookup(allFields);
-    listFields.value = list;
-    searchFields.value = search;
-    addFields.value = add;
-    editFields.value = edit;
-    detailFields.value = detail;
+    // 多租户关闭：列表/搜索/表单/多维映射均不再暴露租户字段
+    listFields.value = withoutTenant(list);
+    searchFields.value = withoutTenant(search);
+    addFields.value = withoutTenant(add);
+    editFields.value = withoutTenant(edit);
+    detailFields.value = withoutTenant(detail);
     const pk = listFields.value.find((f) => f.primaryKey);
     pkField.value = pk?.name || 'id';
   }

@@ -122,20 +122,21 @@ export function isEnumLikeTypeName(field: FieldMeta): boolean {
 
 export function resolveControl(field: FieldMeta): ControlType {
   const itemType = normalizeItemType(field);
-  if (itemType && ITEM_TYPE_TO_CONTROL[itemType]) {
-    return ITEM_TYPE_TO_CONTROL[itemType];
-  }
-
   const typeName = field.typeName;
 
   if (typeName === 'Guid') return 'readonly';
 
-  // 布尔优先开关（即使已物化 dataSourceMap）
-  if (typeName === 'Boolean') return 'switch';
+  // 布尔优先开关（即使已物化 dataSourceMap；TypeName 丢失时用字典形态推断）
+  if (typeName === 'Boolean' || isBooleanDataSource(field.dataSource)) return 'switch';
 
-  // 静态字典（GetPage 已物化 dataSource）优先本地下拉，避免自动 Enum lovCode 抢占导致多余 Meta 请求
+  // 静态字典（GetPage/GetFields 已物化 dataSource / dataSourceMap）→ 本地下拉
+  // 必须先于 itemType=singleSelect→lov，否则 Object/Config 有字典仍走远程 Lov
   if (field.dataSource && Object.keys(field.dataSource).length > 0) {
     return 'select';
+  }
+
+  if (itemType && ITEM_TYPE_TO_CONTROL[itemType]) {
+    return ITEM_TYPE_TO_CONTROL[itemType];
   }
 
   if (field.lovCode) {
@@ -258,8 +259,6 @@ const FULL_WIDTH_CONTROLS: ReadonlySet<ControlType> = new Set([
   'json',
   'richHtml',
   'richMarkdown',
-  'upload',
-  'image',
   'lovMulti',
 ]);
 
@@ -282,6 +281,27 @@ const AUDIT_FIELD_NAMES = new Set([
 /** 是否为审计字段（创建/更新的用户、IP、时间），按字段名小写匹配 */
 export function isAuditField(field: Pick<FieldMeta, 'name'>): boolean {
   return AUDIT_FIELD_NAMES.has((field.name || '').toLowerCase());
+}
+
+/** 租户隔离字段（多租户关闭时全站隐藏） */
+const TENANT_FIELD_NAMES = new Set(['tenantid', 'tenantname', 'tenant']);
+
+/** 是否为租户相关字段（TenantId / TenantName 等） */
+export function isTenantField(field: Pick<FieldMeta, 'name' | 'displayName'>): boolean {
+  const n = (field.name || '').toLowerCase();
+  if (TENANT_FIELD_NAMES.has(n)) return true;
+  const dn = (field.displayName || '').trim();
+  return dn === '租户' || dn === '租户编号' || dn === '租户名称';
+}
+
+/**
+ * 物化 dataSource 是否为布尔字典（PrepareForApi 对 Boolean 写入 true/false，并常附带 1/0）
+ * 仅 0/1 不足以判定（性别等枚举也常用），必须含 true/false 键。
+ */
+export function isBooleanDataSource(ds: Record<string, string> | undefined | null): boolean {
+  if (!ds) return false;
+  const keys = new Set(Object.keys(ds).map((k) => k.toLowerCase()));
+  return keys.has('true') && keys.has('false');
 }
 
 /**

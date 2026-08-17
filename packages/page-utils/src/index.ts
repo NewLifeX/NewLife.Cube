@@ -54,6 +54,9 @@ export const EXPORT_FORMATS: ExportFormat[] = [
 /**
  * URL 变量替换：将 `/path/{Id}` 替换为 `/path/123`
  *
+ * 占位符键与行数据键做大小写容错（`{ID}` ↔ `id` / `Id`），对齐后端 ListField.GetUrl
+ * 与 SPA camelCase JSON（System.Text.Json）常见输出。
+ *
  * @param url - 含变量占位符的 URL 模板
  * @param row - 数据行对象
  * @returns 替换后的 URL
@@ -61,12 +64,38 @@ export const EXPORT_FORMATS: ExportFormat[] = [
  * @example
  * resolveUrl('/Admin/User/Detail?id={Id}', { Id: 42 })
  * // => '/Admin/User/Detail?id=42'
+ * resolveUrl('/Cube/Area?parentId={ID}', { id: 110000 })
+ * // => '/Cube/Area?parentId=110000'
  */
 export function resolveUrl(url: string, row: Record<string, unknown>): string {
   return url.replace(/\{(\w+)\}/g, (_, key: string) => {
-    const val = row[key] ?? row[toCamelCase(key)];
+    const val = lookupRowField(row, key);
     return val !== undefined && val !== null ? encodeURIComponent(String(val)) : '';
   });
+}
+
+/** 行字段查找：精确 → 首字母翻转 camel → 全大写缩写小写 → 大小写不敏感扫描 */
+export function lookupRowField(
+  row: Record<string, unknown>,
+  key: string,
+): unknown {
+  if (!row || !key) return undefined;
+  if (Object.prototype.hasOwnProperty.call(row, key) || key in row) {
+    const direct = row[key];
+    if (direct !== undefined) return direct;
+  }
+  const camel = toCamelCase(key);
+  if (camel !== key && camel in row && row[camel] !== undefined) return row[camel];
+  // ID → id（全大写缩写）；toCamelCase('ID') 仅为 'iD'，不足以命中 JSON 的 id
+  if (key === key.toUpperCase() && /[A-Z]/.test(key)) {
+    const lower = key.toLowerCase();
+    if (lower in row && row[lower] !== undefined) return row[lower];
+  }
+  const lowerKey = key.toLowerCase();
+  for (const k of Object.keys(row)) {
+    if (k.toLowerCase() === lowerKey && row[k] !== undefined) return row[k];
+  }
+  return undefined;
 }
 
 /**

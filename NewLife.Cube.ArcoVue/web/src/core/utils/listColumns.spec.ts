@@ -12,4 +12,13 @@ describe('selectListColumns', () => {
     const cols = selectListColumns(fields);
     expect(cols.map((c) => c.name)).toEqual(['Id', 'Name']);
   });
+
+  it('excludes synthetic Url/dataAction ops link columns (OSC-2608178bdb)', () => {
+    const fields: FieldMeta[] = [
+      { name: 'Name', typeName: 'String', hasTypeName: true, url: '/d?id={Id}' },
+      { name: 'Log', typeName: 'String', hasTypeName: false, url: '/log?id={Id}' },
+      { name: 'Run', typeName: 'String', hasTypeName: false, url: '/run', dataAction: 'action' },
+    ];
+    expect(selectListColumns(fields).map((c) => c.name)).toEqual(['Name']);
+  });
 });

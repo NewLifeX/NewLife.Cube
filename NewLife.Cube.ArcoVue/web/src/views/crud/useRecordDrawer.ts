@@ -43,6 +43,8 @@ interface RecordDrawerProps {
   fieldErrors?: { field: string; message: string }[];
   /** 受限表单布局（OSC-0013）：当前 mode 的字段排序/显隐/Category 折叠 */
   layout?: FormLayout | null;
+  /** 日历/甘特等：详情内展示自定义链接（OSC-2608178bdb） */
+  opsCustomLinks?: import('@/core/utils/opsAction').OpsCustomLink[];
 }
 
 /** RecordDrawer 组件 emits 类型（与 RecordDrawer.vue defineEmits 泛型逐字一致） */
@@ -53,6 +55,7 @@ interface RecordDrawerEmits {
   prev: [];
   next: [];
   'toggle-collapse': [category: string];
+  'ops-link': [link: import('@/core/utils/opsAction').OpsCustomLink];
 }
 
 type RecordDrawerEmit = <K extends keyof RecordDrawerEmits>(event: K, ...args: RecordDrawerEmits[K]) => void;

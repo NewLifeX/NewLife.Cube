@@ -17,6 +17,16 @@ const base = (partial: Partial<FieldMeta> & Pick<FieldMeta, 'name' | 'typeName'>
 describe('fieldControl', () => {
   it('maps boolean / datetime / textarea / lovCode', () => {
     expect(resolveControl(base({ name: 'Enable', typeName: 'Boolean' }))).toBe('switch');
+    // TypeName 丢失但 dataSource 为布尔字典 → 仍为开关
+    expect(
+      resolveControl(
+        base({
+          name: 'Develop',
+          typeName: 'String',
+          dataSource: { true: '是', false: '否', '1': '是', '0': '否' },
+        }),
+      ),
+    ).toBe('switch');
     expect(resolveControl(base({ name: 'CreateTime', typeName: 'DateTime' }))).toBe('datePicker');
     expect(resolveControl(base({ name: 'Remark', typeName: 'String', length: 500 }))).toBe('textarea');
     expect(resolveControl(base({ name: 'Kind', typeName: 'Int32', lovCode: 'Enum.Kind' }))).toBe('lov');
@@ -26,6 +36,19 @@ describe('fieldControl', () => {
     expect(
       resolveControl(
         base({ name: 'Sex', typeName: 'Int32', dataSource: { '1': '男', '0': '女' } }),
+      ),
+    ).toBe('select');
+  });
+
+  it('singleSelect itemType with dataSource prefers local select over lov', () => {
+    expect(
+      resolveControl(
+        base({
+          name: 'DefaultRole',
+          typeName: 'String',
+          itemType: 'singleSelect',
+          dataSource: { 普通用户: '普通用户' },
+        }),
       ),
     ).toBe('select');
   });

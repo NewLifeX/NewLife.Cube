@@ -81,6 +81,10 @@ export interface FieldMeta {
   maxWidth?: number;
   url?: string;
   target?: string;
+  /** 数据动作：非空时走 AJAX（如 action），见 ListField.DataAction */
+  dataAction?: string;
+  /** 后端是否给出 TypeName（合成 AddListField 为空；归一前判定，勿被 String 回落抹掉） */
+  hasTypeName?: boolean;
 }
 
 export interface SearchFieldMeta extends FieldMeta {

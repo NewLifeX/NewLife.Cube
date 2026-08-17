@@ -1,18 +1,28 @@
-import { nextTick, onBeforeUnmount, onMounted, watch } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { getActiveView } from '@/core/utils/viewProfile';
 import { PAGE_SIZE_OPTIONS } from '@/core/utils/viewMapping';
+import {
+  buildOpsPartsWithLinks,
+  isOpsLinkKey,
+  parseOpsLinkKey,
+  type OpsCustomLink,
+} from '@/core/utils/opsAction';
+import { OPS_LINK_INLINE_MAX } from '@/core/utils/listLinkFields';
 import { createListContext } from './listContext';
 import { useListQuery } from './useListQuery';
 import { useListCrud } from './useListCrud';
 import { useListViews } from './useListViews';
 import { useRecordNav } from './useRecordNav';
 import { useListAutomation } from './useListAutomation';
+import { runCellFieldLink, runOpsCustomLink } from './useListOpsLinks';
 
 /**
  * DefaultList 组装器（OSC-260813c3e9）：创建共享上下文，组装四个领域 composable，
  * 保留原 watch / onMounted / onBeforeUnmount / bootstrap 生命周期。
  */
 export function useDefaultList(props: { type: string; authId?: number }) {
+  const router = useRouter();
   const ctx = createListContext(props);
   const query = useListQuery(ctx);
   const nav = useRecordNav(ctx);
@@ -27,12 +37,84 @@ export function useDefaultList(props: { type: string; authId?: number }) {
   });
   const auto = useListAutomation(ctx);
 
-  function onTableAction(payload: { action: string; row: Record<string, unknown> }) {
+  /** 操作列「更多」溢出菜单（VTable canvas 外挂） */
+  const moreMenu = ref<{
+    visible: boolean;
+    x: number;
+    y: number;
+    row: Record<string, unknown> | null;
+    links: OpsCustomLink[];
+  }>({ visible: false, x: 0, y: 0, row: null, links: [] });
+
+  function closeMoreMenu() {
+    moreMenu.value = { visible: false, x: 0, y: 0, row: null, links: [] };
+  }
+
+  async function onTableAction(payload: {
+    action: string;
+    row: Record<string, unknown>;
+    clientX?: number;
+    clientY?: number;
+  }) {
     if (payload.action.startsWith('auto:')) {
       void auto.runAutomationButton(payload);
       return;
     }
+    if (payload.action === 'more') {
+      const { overflowLinks } = buildOpsPartsWithLinks({
+        canViewDetail: ctx.chrome.value.allowViewDetail,
+        canEdit: ctx.flags.value.canEdit,
+        canDelete: ctx.flags.value.canDelete && ctx.chrome.value.allowDelete,
+        automationButtons: auto.automationButtons.value,
+        opsLinks: ctx.opsCustomLinks.value,
+        inlineMax: OPS_LINK_INLINE_MAX,
+      });
+      moreMenu.value = {
+        visible: true,
+        x: payload.clientX ?? 0,
+        y: payload.clientY ?? 0,
+        row: payload.row,
+        links: overflowLinks,
+      };
+      return;
+    }
+    if (isOpsLinkKey(payload.action)) {
+      const name = parseOpsLinkKey(payload.action);
+      const link = ctx.opsCustomLinks.value.find((l) => l.name === name);
+      if (link) {
+        await runOpsCustomLink({
+          link,
+          row: payload.row,
+          router,
+          onDone: () => query.loadData(),
+        });
+      }
+      return;
+    }
     crud.onTableAction(payload);
+  }
+
+  async function onCellLink(payload: {
+    url: string;
+    target?: string;
+    row: Record<string, unknown>;
+  }) {
+    await runCellFieldLink({
+      urlTemplate: payload.url,
+      target: payload.target,
+      row: payload.row,
+      router,
+    });
+  }
+
+  async function onOpsLinkClick(link: OpsCustomLink, row: Record<string, unknown>) {
+    closeMoreMenu();
+    await runOpsCustomLink({
+      link,
+      row,
+      router,
+      onDone: () => query.loadData(),
+    });
   }
 
   async function bootstrap() {
@@ -103,6 +185,10 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     ...query,
     ...crud,
     onTableAction,
+    onCellLink,
+    onOpsLinkClick,
+    moreMenu,
+    closeMoreMenu,
     ...auto,
     ...views,
     ...nav,

@@ -22,6 +22,15 @@
           </a-tooltip>
         </a-space>
         <span class="drawer-title__text">{{ title }}</span>
+        <a-space v-if="mode === 'detail' && opsCustomLinks.length" :size="8" class="drawer-ops-links">
+          <a-link
+            v-for="link in opsCustomLinks"
+            :key="link.name"
+            @click="emit('ops-link', link)"
+          >
+            {{ link.label }}
+          </a-link>
+        </a-space>
       </div>
     </template>
 
@@ -361,6 +370,7 @@
 import type { FieldMeta } from '@/core/types/field';
 import { fieldIcon } from '@/core/utils/iconRegistry';
 import type { FormLayout } from '@/core/utils/viewProfile';
+import type { OpsCustomLink } from '@/core/utils/opsAction';
 import { formatDateTime } from '@/core/utils/datetime';
 import CommentReplyEditor from '@/components/CommentReplyEditor.vue';
 import UserAvatar from '@/components/UserAvatar.vue';
@@ -386,6 +396,8 @@ const props = withDefaults(
     fieldErrors?: { field: string; message: string }[];
     /** 受限表单布局（OSC-0013）：当前 mode 的字段排序/显隐/Category 折叠 */
     layout?: FormLayout | null;
+    /** 日历/甘特等：详情内展示自定义链接（OSC-2608178bdb） */
+    opsCustomLinks?: OpsCustomLink[];
   }>(),
   {
     showHistoryTabs: true,
@@ -393,6 +405,7 @@ const props = withDefaults(
     canNext: false,
     fieldErrors: () => [],
     layout: null,
+    opsCustomLinks: () => [],
   },
 );
 
@@ -403,6 +416,7 @@ const emit = defineEmits<{
   prev: [];
   next: [];
   'toggle-collapse': [category: string];
+  'ops-link': [link: OpsCustomLink];
 }>();
 
 const {
@@ -468,6 +482,10 @@ defineExpose({ validate: () => formRef.value?.validate() });
 }
 .drawer-title__text {
   font-weight: 500;
+}
+.drawer-ops-links {
+  flex-shrink: 0;
+  margin-left: 4px;
 }
 
 .detail-grouped {

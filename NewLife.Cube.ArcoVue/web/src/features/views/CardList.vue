@@ -21,9 +21,11 @@
       :can-view-detail="canViewDetail"
       :can-edit="canEdit"
       :can-delete="canDelete"
+      :ops-custom-links="opsCustomLinks"
       @detail="$emit('detail', $event)"
       @edit="$emit('edit', $event)"
       @delete="$emit('delete', $event)"
+      @ops-link="(link, row) => $emit('opsLink', link, row)"
       @toggle-enable="(row, field) => $emit('toggleEnable', row, field)"
     />
     <!-- 懒加载哨兵：仅当还有未渲染数据时存在；进入视口附近即追加下一批（滚动动态加载，不一次性渲染全部） -->
@@ -41,6 +43,7 @@ import type {
   CardLayout,
   CardMapping,
 } from '@/core/utils/viewMapping';
+import type { OpsCustomLink } from '@/core/utils/opsAction';
 import RecordCard from './RecordCard.vue';
 import { resolveImageUrl } from './cardHelpers';
 import { useCardList } from './useCardList';
@@ -59,12 +62,14 @@ const props = withDefaults(
     canViewDetail: boolean;
     canEdit: boolean;
     canDelete: boolean;
+    opsCustomLinks?: OpsCustomLink[];
     formatCell?: (field: FieldMeta, record: Record<string, unknown>) => string;
   }>(),
   {
     layout: 'standard',
     bodyColumns: 2,
     fieldOrientation: 'vertical',
+    opsCustomLinks: () => [],
   },
 );
 
@@ -73,6 +78,7 @@ defineEmits<{
   edit: [row: Record<string, unknown>];
   delete: [row: Record<string, unknown>];
   toggleEnable: [row: Record<string, unknown>, field: string];
+  opsLink: [link: OpsCustomLink, row: Record<string, unknown>];
 }>();
 
 const {
