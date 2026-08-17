@@ -118,11 +118,11 @@ export function createUserApi(request: RequestFn) {
 
     /** 激活 MFA（输入扫码后第一个验证码），返回备用码 */
     mfaActivate: (code: string) =>
-      request<{ backupCodes: string[] }>({ url: '/Mfa/Activate', method: 'post', data: { code } }),
+      request<{ backupCodes: string[] }>({ url: '/Mfa/Activate', method: 'post', params: { code } }),
 
     /** 禁用 MFA */
     mfaDisable: (code: string) =>
-      request<void>({ url: '/Mfa/Disable', method: 'post', data: { code } }),
+      request<void>({ url: '/Mfa/Disable', method: 'post', params: { code } }),
 
     /** 查询 MFA 开启状态 */
     mfaStatus: () =>

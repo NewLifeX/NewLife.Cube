@@ -7,7 +7,8 @@ import type { AuthBindItem } from '@cube/api-core';
 import cubeApi from '@/api';
 import { useAppStore } from '@/stores/app';
 import { isOAuthLoginEnabled } from '@/views/login/loginConfig';
-import { buildTotpQrDataUrl, resolveOAuthBindKey } from './mfaQr';
+import { buildTotpQrDataUrl } from './mfaQr';
+import { resolveOAuthBindKey } from './oauthBind';
 
 export function useSecuritySettings() {
   const appStore = useAppStore();
@@ -115,16 +116,32 @@ export function useSecuritySettings() {
     });
   }
 
-  function copyBackup() {
+  async function copyBackup() {
     const text = backupCodes.value.join('\n');
-    void navigator.clipboard?.writeText(text);
-    Message.success('已复制备用码');
+    if (!navigator.clipboard?.writeText) {
+      Message.warning('当前环境不支持剪贴板，请手动复制');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      Message.success('已复制备用码');
+    } catch {
+      Message.warning('复制失败，请手动复制');
+    }
   }
 
-  function copySecret() {
+  async function copySecret() {
     if (!setupSecret.value && !setupUri.value) return;
-    void navigator.clipboard?.writeText(setupSecret.value || setupUri.value);
-    Message.success('已复制');
+    if (!navigator.clipboard?.writeText) {
+      Message.warning('当前环境不支持剪贴板，请手动复制');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(setupSecret.value || setupUri.value);
+      Message.success('已复制');
+    } catch {
+      Message.warning('复制失败，请手动复制');
+    }
   }
 
   onMounted(loadStatus);

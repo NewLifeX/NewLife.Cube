@@ -395,4 +395,56 @@ describe('createUserApi auth extensions', () => {
       }),
     );
   });
+
+  it('mfaActivate passes code as query param（后端 [ApiController] 简单类型推断 [FromQuery]，非 body）', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: { backupCodes: ['1234567890'] } });
+    const { createUserApi } = await import('./api');
+    const api = createUserApi(request);
+    await api.mfaActivate('123456');
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Mfa/Activate',
+        method: 'post',
+        params: { code: '123456' },
+      }),
+    );
+  });
+
+  it('mfaDisable passes code as query param', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: undefined });
+    const { createUserApi } = await import('./api');
+    const api = createUserApi(request);
+    await api.mfaDisable('654321');
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Mfa/Disable',
+        method: 'post',
+        params: { code: '654321' },
+      }),
+    );
+  });
+
+  it('mfaVerify posts body with mfaToken + code（复杂类型走 body）', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: { accessToken: 'a', refreshToken: 'r' } });
+    const { createUserApi } = await import('./api');
+    const api = createUserApi(request);
+    await api.mfaVerify({ mfaToken: 'tok', code: '123456' });
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Mfa/Verify',
+        method: 'post',
+        data: { mfaToken: 'tok', code: '123456' },
+      }),
+    );
+  });
+
+  it('mfaSetup / mfaStatus hit GET endpoints', async () => {
+    const request = vi.fn().mockResolvedValue({ code: 0, data: {} });
+    const { createUserApi } = await import('./api');
+    const api = createUserApi(request);
+    await api.mfaSetup();
+    expect(request).toHaveBeenNthCalledWith(1, expect.objectContaining({ url: '/Mfa/Setup', method: 'get' }));
+    await api.mfaStatus();
+    expect(request).toHaveBeenNthCalledWith(2, expect.objectContaining({ url: '/Mfa/Status', method: 'get' }));
+  });
 });

@@ -335,12 +335,20 @@ export function useLoginPage() {
       if (access) {
         await applyTokens(access, refresh, form.username || codeForm.username || emailForm.username);
       } else {
-        Message.error(res.message || '验证失败');
+        handleMfaError(res.message || '验证失败');
       }
     } catch (err: unknown) {
-      Message.error((err as { message?: string })?.message || '验证码错误');
+      handleMfaError((err as { message?: string })?.message || '验证码错误');
     } finally {
       mfaLoading.value = false;
+    }
+  }
+
+  /** MFA 二步验证错误处理：mfaToken 一次性且 300s 过期，失效后无法继续二步验证，需返回表单重新登录 */
+  function handleMfaError(msg: string) {
+    Message.error(msg);
+    if (msg.includes('无效或已过期') || msg.includes('已过期')) {
+      backToForm();
     }
   }
 
