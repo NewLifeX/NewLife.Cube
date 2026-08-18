@@ -61,7 +61,7 @@ public class DataRetentionService(CubeSetting setting, ITracer tracer) : IHosted
         using var span = tracer?.NewSpan("DataRetention", new { time });
         try
         {
-            var rs = OAuthLog.DeleteBefore(time);
+            var rs = OAuthLog.DeleteBefore(time, 10000);
             XTrace.WriteLine("删除[{0}]之前的 OAuthLog 共：{1:n0}", time.ToFullString(), rs);
 
             rs = AppLog.DeleteBefore(time);
