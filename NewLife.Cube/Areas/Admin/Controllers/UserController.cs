@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -367,7 +367,7 @@ public class UserController : EntityController<User, UserModel>
         var cur = ManageProvider.User;
         if (cur == null) return RedirectToAction("Login");
 
-        if (user.ID != cur.ID) throw new Exception("禁止修改非当前登录用户资料");
+            if (user.ID != cur.ID) throw new Exception("禁止修改非当前登录用户资料");
 
         var entity = user as IEntity;
         // 自助更新：仅当用户名实际变更时才拦截。
