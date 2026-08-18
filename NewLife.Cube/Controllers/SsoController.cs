@@ -519,6 +519,8 @@ public class SsoController : ControllerBaseX
                 $"应用{nameof(OAuthConfig.Secret)}未配置");
 
         // 以配置所属租户创建客户端，保证微信登录落在正确租户
+        // wxLoginType 登录类型，用于取oauh2客户端，不能用配置的Name
+        // 如果用配置的Name则必须设置成WxOpen，但是难免不会有人写成别的值，导致解析到的oauth客户端不对
         var client = _clientService.GetClient(config.TenantId, wxLoginType);
         client.Init(GetUserAgent());
 

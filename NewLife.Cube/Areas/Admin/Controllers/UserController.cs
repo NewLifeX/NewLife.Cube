@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -23,7 +23,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [DisplayName("用户")]
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
 [AdminArea]
-[Menu(100, true, Icon = "User")]
+[Menu(100, true, Icon = "User", Mode = MenuModes.Admin | MenuModes.Tenant)]
 public class UserController : EntityController<User, UserModel>
 {
     /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
@@ -367,7 +367,7 @@ public class UserController : EntityController<User, UserModel>
         var cur = ManageProvider.User;
         if (cur == null) return RedirectToAction("Login");
 
-            if (user.ID != cur.ID) throw new Exception("禁止修改非当前登录用户资料");
+        if (user.ID != cur.ID) throw new Exception("禁止修改非当前登录用户资料");
 
         var entity = user as IEntity;
         // 自助更新：仅当用户名实际变更时才拦截。

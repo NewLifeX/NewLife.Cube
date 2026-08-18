@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Caching;
@@ -22,6 +22,7 @@ namespace NewLife.Cube.Controllers;
 [ApiController]
 [Produces("application/json")]
 [Route("[controller]/[action]")]
+[Menu(0, false, Mode = MenuModes.Admin | MenuModes.Tenant)]
 public class AuthController : ControllerBaseX
 {
     private const String OAuthPendingPrefix = "OAuthPending:";
@@ -154,6 +155,7 @@ public class AuthController : ControllerBaseX
     /// <returns>用户信息，包含权限和角色</returns>
     [HttpGet]
     [EntityAuthorize]
+    [Menu(0, false, Mode = MenuModes.Admin | MenuModes.Tenant)]
     public ActionResult Info()
     {
         if (ManageProvider.User is not User user) throw new Exception("当前登录用户无效！");
