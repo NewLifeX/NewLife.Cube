@@ -86,7 +86,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { Delete, Close, Promotion, FullScreen, CopyDocument } from '@element-plus/icons-vue';
 import { marked } from 'marked';
@@ -149,10 +150,39 @@ const toolCards = ref<ToolCard[]>([]);
 const msgBox = ref<HTMLElement>();
 
 let seq = 0;
-let sessionId = localStorage.getItem('cube-ai-session') || '';
-if (!sessionId) {
-  sessionId = 's' + Date.now() + Math.random().toString(16).substring(2, 8);
-  localStorage.setItem('cube-ai-session', sessionId);
+
+/** 页面标识：会话按页面隔离。不同页面互不串话，同页多轮共享，刷新/返回恢复 */
+const pageKey = ref(location.pathname || '/');
+const sessionKey = () => 'cube-ai-session:' + pageKey.value;
+
+/** 读取或创建当前页面的会话号（sessionStorage 按标签页×页面隔离） */
+function loadSessionId(): string {
+  let sid = sessionStorage.getItem(sessionKey());
+  if (!sid) {
+    sid = 's' + Date.now() + Math.random().toString(16).substring(2, 8);
+    sessionStorage.setItem(sessionKey(), sid);
+  }
+  return sid;
+}
+let sessionId = loadSessionId();
+
+// SPA 路由切换（组件常驻不重挂载）时切换会话：按新页面路径读取/创建会话号
+let route: { path: string } | undefined;
+try {
+  route = useRoute();
+} catch {
+  /* 非路由上下文（独立挂载）时忽略 */
+}
+if (route) {
+  watch(
+    () => route!.path,
+    (path) => {
+      if (path && path !== pageKey.value) {
+        pageKey.value = path;
+        sessionId = loadSessionId();
+      }
+    },
+  );
 }
 
 /** HTML 转义，防止 AI 输出的 raw HTML 注入（XSS） */
@@ -330,6 +360,7 @@ async function send() {
         query: props.query || '',
         area: targetArea,
         controller: targetController,
+        url: location.pathname,
         think: think.value,
       }),
     });
@@ -402,12 +433,12 @@ function quick(prompt: string) {
   send();
 }
 
-/** 清空会话 */
+/** 清空会话（仅当前页面，不影响其他页面） */
 function clear() {
   messages.value = [];
   toolCards.value = [];
-  sessionId = 's' + Date.now() + Math.random().toString(16).substring(2, 8);
-  localStorage.setItem('cube-ai-session', sessionId);
+  sessionStorage.removeItem(sessionKey());
+  sessionId = loadSessionId();
 }
 
 /** 加载 AI 助手配置：开关控制渲染，配色注入 CSS 变量 */

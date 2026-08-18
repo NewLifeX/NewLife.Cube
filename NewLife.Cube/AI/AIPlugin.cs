@@ -24,7 +24,8 @@ public static class AIServiceExtensions
         XTrace.WriteLine("AI 已启用，Provider={0} Model={1}", set.AIProvider, set.AIModel);
         services.AddSingleton<IAIService, AIService>();
 
-        // 对话会话历史：单例存储（NewLife.AI 内置 MemoryCacheSessionStore，1h 过期）。AiController 每请求用当前客户端创建 AiChatService 并复用本会话服务
+        // 对话会话历史：单例存储（NewLife.AI 内置 MemoryCacheSessionStore，1h 过期；后续将由上游升级为 ICacheProvider 版本支持分布式）。
+        // AiController 每请求用当前客户端创建 AiChatService 并复用本会话服务，会话键已按用户+页面作用域隔离
         services.AddSingleton<IChatSessionStore, MemoryCacheSessionStore>();
         services.AddSingleton<ChatSessionService>();
 

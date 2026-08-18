@@ -120,10 +120,12 @@
 
     /* ================= 状态 ================= */
     var streaming = false;
-    var sessionId = localStorage.getItem('cube-ai-session');
+    // 会话按页面隔离：sessionStorage（每标签页独立）+ 页面路径作用域。不同页面互不串话，同页多轮共享，刷新/返回恢复
+    var sessionKey = 'cube-ai-session:' + (location.pathname || '/');
+    var sessionId = sessionStorage.getItem(sessionKey);
     if (!sessionId) {
         sessionId = 's' + Date.now() + Math.random().toString(16).substring(2, 8);
-        localStorage.setItem('cube-ai-session', sessionId);
+        sessionStorage.setItem(sessionKey, sessionId);
     }
 
     /* ================= 页面上下文 ================= */
@@ -414,6 +416,7 @@
                 query: ctx.query,
                 area: ctx.area,
                 controller: ctx.controller,
+                url: location.pathname,
                 think: think
             })
         }).then(function (response) {
@@ -611,9 +614,10 @@
 
         var clear = getEl('aiClearChat');
         if (clear) clear.addEventListener('click', function () {
-            localStorage.removeItem('cube-ai-session');
+            // 清空仅作用于当前页面会话，不影响其他页面
+            sessionStorage.removeItem(sessionKey);
             sessionId = 's' + Date.now() + Math.random().toString(16).substring(2, 8);
-            localStorage.setItem('cube-ai-session', sessionId);
+            sessionStorage.setItem(sessionKey, sessionId);
             var box = getEl('aiMessages');
             if (box) {
                 // 快捷指令容器（#aiQuickActions）是 #aiMessages 的子元素，直接替换 innerHTML 会把快捷指令一并销毁，

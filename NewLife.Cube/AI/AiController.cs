@@ -67,6 +67,11 @@ public class AiController : ControllerBaseX
         var (error, req) = await ParseAsync(this);
         if (error != null || req == null) return error!;
 
+        // 会话键按用户+页面作用域：前端 sessionId 已按页面生成（sessionStorage），此处纵深防御，防止跨用户/跨页面串话。内联构建，不新增类型
+        var uid = HttpContext.User.Identity is IUser u ? u.ID : 0;
+        if (!req.SessionId.IsNullOrEmpty())
+            req.SessionId = $"ai:{uid}:{req.Url}:{req.SessionId}";
+
         // 当前查询条件（_query Base64 解码）
         var pager = DecodePager(req);
 

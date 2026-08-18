@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using NewLife;
+using NewLife.AI.Models;
 using NewLife.Cube;
 using NewLife.Cube.AI;
 using NewLife.Web;
