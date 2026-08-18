@@ -1,7 +1,7 @@
 <!--
  * 魔方 AI 助手（Vue 版）悬浮窗
  * 右下角对话面板：SSE 流式对话 + 工具调用可视化 + 表单智能填充
- * 协议与 MVC 版 ai-assistant.js 一致：POST /Ai/AiChat（body 携带 area/controller 目标页面）→ SSE {type:text|tool|error|done}
+ * 协议与 MVC 版 ai-assistant.js 一致：POST /Ai/AiChat（body 携带 area/controller 目标页面）→ SSE {type:content_delta|tool_call_start|tool_call_done|tool_call_error|run_js|error}
  -->
 <template>
   <div v-if="enabled" class="ai-assistant" :class="{ 'panel-open': visible }" :style="aiStyle">
@@ -208,22 +208,24 @@ function appendAssistant(): Msg {
   return m;
 }
 
-/** 处理工具事件 */
-function handleTool(json: any) {
-  let card = toolCards.value.find((t) => t.id === json.id);
+/** 处理工具事件（规范协议：tool_call_start / tool_call_done / tool_call_error，工具编号字段 toolCallId） */
+function handleTool(status: 'start' | 'done' | 'error', json: any) {
+  const id = json.toolCallId || '';
+  const name = json.name || '';
+  let card = toolCards.value.find((t) => t.id === id);
   if (!card) {
-    card = { id: json.id || '', name: json.name || '', status: 'start' };
+    card = { id, name, status: 'start' };
     toolCards.value.push(card);
   }
-  if (json.event === 'start') {
-    card.name = json.name || card.name;
+  if (status === 'start') {
+    card.name = name || card.name;
     card.status = 'start';
-  } else if (json.event === 'done') {
+  } else if (status === 'done') {
     card.status = 'done';
-    // fill_form 完成 → 表单值交给宿主合并
-    if (json.name === 'fill_form' && json.value) {
+    // fill_form 完成 → 表单值交给宿主合并（结果字段 result）
+    if (name === 'fill_form' && json.result) {
       try {
-        const data = JSON.parse(json.value);
+        const data = JSON.parse(json.result);
         if (data && data.kind === 'fill_form' && data.values) {
           emit('fill-form', data.values as Record<string, any>);
           const names = Object.keys(data.values).join('、');
@@ -258,7 +260,7 @@ function serializeResult(v: any): string {
 
 /** 获取浏览器操作回传端点：全局 AI 控制器 OperationResult（统一无区域前缀），所有实体页面共用 */
 function getAiOperationUrl(): string {
-  return 'Ai/OperationResult';
+  return '/Ai/OperationResult';
 }
 
 /** 回传浏览器操作结果到全局 AI 控制器，完成等待中的工具调用 */
@@ -361,18 +363,23 @@ async function send() {
           continue;
         }
         if (!json) continue;
-        if (json.type === 'text') {
+        if (json.type === 'content_delta') {
           full += json.content || '';
           am.html = renderMarkdown(full);
           scrollBottom();
-        } else if (json.type === 'tool') {
-          handleTool(json);
+        } else if (json.type === 'tool_call_start') {
+          handleTool('start', json);
+        } else if (json.type === 'tool_call_done') {
+          handleTool('done', json);
+        } else if (json.type === 'tool_call_error') {
+          handleTool('error', json);
         } else if (json.type === 'run_js') {
           handleRunJs(json);
         } else if (json.type === 'error') {
           am.html = `<span style="color:#c62828">⚠️ ${json.message || 'AI 调用失败'}</span>`;
           scrollBottom();
         }
+        // message_start / message_done / thinking_delta / heartbeat 规范事件无需处理，忽略
       }
     }
   } catch (err: any) {
