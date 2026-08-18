@@ -458,19 +458,24 @@
                         var json = null;
                         try { json = JSON.parse(line.substring(6)); } catch (e) { continue; }
                         if (!json) continue;
-                        if (json.type === 'text') {
+                        if (json.type === 'content_delta') {
                             if (isFirst) { bubble.innerHTML = ''; isFirst = false; }
                             full += json.content || '';
                             bubble.innerHTML = renderMarkdown(full);
                             scrollBottom();
-                        } else if (json.type === 'tool') {
-                            appendTool(json.event, json.id, json.name, json.value);
+                        } else if (json.type === 'tool_call_start') {
+                            appendTool('start', json.toolCallId, json.name, json.arguments);
+                        } else if (json.type === 'tool_call_done') {
+                            appendTool('done', json.toolCallId, json.name, json.result);
+                        } else if (json.type === 'tool_call_error') {
+                            appendTool('error', json.toolCallId, json.name, json.error);
                         } else if (json.type === 'run_js') {
                             handleRunJs(json);
                         } else if (json.type === 'error') {
                             if (isFirst) { bubble.innerHTML = ''; isFirst = false; }
                             bubble.innerHTML = '<span style="color:#c62828">⚠️ ' + (json.message || 'AI 调用失败') + '</span>';
                         }
+                        // message_start / message_done / thinking_delta / heartbeat 规范事件无需处理，忽略
                     }
                     return processChunk();
                 });

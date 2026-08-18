@@ -497,14 +497,19 @@ public partial class ReadOnlyEntityController<TEntity>
         sb.AppendLine();
         sb.AppendLine($"当前实体：{name}（表 {tb.TableName}）");
         if (!tb.Description.IsNullOrEmpty()) sb.AppendLine($"实体说明：{tb.Description}");
-        var pageName = req.Page switch
+        var pageName = "列表页";
+        if (req is CubeAiChatRequest cubeReq)
         {
-            "form" => req.Mode.EqualIgnoreCase("edit") ? "编辑表单" : "新增表单",
-            "detail" => "详情页",
-            _ => "列表页",
-        };
+            // 页面字段由魔方请求（CubeAiChatRequest）承载，NAI 通用请求不含
+            pageName = cubeReq.Page switch
+            {
+                "form" => cubeReq.Mode.EqualIgnoreCase("edit") ? "编辑表单" : "新增表单",
+                "detail" => "详情页",
+                _ => "列表页",
+            };
+        }
         sb.AppendLine($"页面类型：{pageName}");
-        if (req.Id > 0) sb.AppendLine($"当前记录编号：{req.Id}");
+        if (req is CubeAiChatRequest cube && cube.Id > 0) sb.AppendLine($"当前记录编号：{cube.Id}");
         if (pager != null && pager.Params.Count > 0)
         {
             sb.AppendLine("当前查询条件：");

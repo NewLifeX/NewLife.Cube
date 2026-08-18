@@ -1,8 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using NewLife.AI.Clients;
-using NewLife.AI.Clients.OpenAI;
 using NewLife.AI.Models;
-using NewLife.AI.Tools;
 using NewLife.Log;
 
 namespace NewLife.Cube.AI;
@@ -15,6 +13,8 @@ public class AIService : IAIService
     private IChatClient _client;
     private String _lastProvider;
     private String _lastModel;
+    private String _lastEndpoint;
+    private String _lastApiKey;
     #endregion
 
     #region 构造
@@ -34,6 +34,9 @@ public class AIService : IAIService
         Temperature = 0.3,
     };
 
+    /// <summary>获取或创建当前配置的 AI 客户端（含工具调用能力）。按配置惰性创建并复用</summary>
+    public IChatClient Client => GetClient();
+
     /// <summary>获取或创建客户端，按需延迟初始化</summary>
     private IChatClient GetClient()
     {
@@ -42,52 +45,36 @@ public class AIService : IAIService
         var endpoint = _setting.AIEndpoint;
         var apiKey = _setting.AIApiKey;
 
-        // 配置未变则复用
-        if (_client != null && _lastProvider == provider && _lastModel == model)
+        // 配置未变则复用（provider/model/endpoint/apiKey 任一变化都重建，保证运行中修改配置即时生效）
+        if (_client != null && _lastProvider == provider && _lastModel == model && _lastEndpoint == endpoint && _lastApiKey == apiKey)
             return _client;
 
         _client = CreateClient(provider, apiKey, model, endpoint);
         _lastProvider = provider;
         _lastModel = model;
+        _lastEndpoint = endpoint;
+        _lastApiKey = apiKey;
 
         return _client;
     }
 
-    /// <summary>根据配置创建对应的 AI 客户端</summary>
-    /// <remarks>
-    /// 优先从 <see cref="AiClientRegistry"/> 查找已注册服务商（OpenAI / DeepSeek / DashScope 等），
-    /// 未注册的服务商（如 NewLife 自定义网关）作为 OpenAI 兼容协议处理。
-    /// </remarks>
+    /// <summary>根据配置创建对应的 AI 客户端。未注册的服务商直接抛异常，让管理员修正配置（不静默回退 OpenAI 兼容，避免掩盖协议不匹配）</summary>
+    /// <param name="provider">服务商编码</param>
+    /// <param name="apiKey">API 密钥</param>
+    /// <param name="model">默认模型</param>
+    /// <param name="endpoint">API 地址</param>
+    /// <returns>已绑定连接参数的客户端实例</returns>
+    /// <exception cref="ArgumentException">服务商未注册时抛出</exception>
     private static IChatClient CreateClient(String provider, String apiKey, String model, String endpoint)
     {
         if (provider.IsNullOrEmpty()) provider = "NewLifeAI";
 
-        // 已注册的服务商走注册表工厂
-        if (AiClientRegistry.Default.GetDescriptor(provider) != null)
-            return AiClientRegistry.Default.CreateClient(provider, apiKey, model, endpoint);
-
-        // 未注册的服务商作为 OpenAI 兼容协议处理
-        return new OpenAIChatClient(apiKey, model, endpoint);
+        return AiClientRegistry.Default.CreateClient(provider, apiKey, model, endpoint);
     }
 
     /// <summary>通用 AI 对话（后台任务），保留模型默认推理行为，适合 CronJob 等不赶时间的场景</summary>
     public Task<String> ChatAsync(String prompt, String data, CancellationToken cancellationToken = default)
         => ChatInternalAsync(prompt, data, null, cancellationToken);
-
-    /// <summary>润色通知内容（用户交互场景，快速）</summary>
-    public Task<String> PolishNotificationAsync(String title, String content, String style, CancellationToken cancellationToken = default)
-    {
-        var prompt = $@"你是文案专家。请将以下通知改写为{style}风格，保持原意不变，直接输出改写后的内容（不要加解释）：
-
-标题：{title}
-内容：{content}";
-
-        return ChatFastAsync(prompt, String.Empty, cancellationToken);
-    }
-
-    /// <summary>系统健康诊断（用户交互场景，快速）</summary>
-    public Task<String> DiagnoseSystemAsync(String sysInfoJson, CancellationToken cancellationToken = default)
-        => ChatFastAsync(BuildDiagnosePrompt(), sysInfoJson, cancellationToken);
 
     /// <summary>系统健康诊断（流式输出）。逐块返回生成内容</summary>
     public async IAsyncEnumerable<String> DiagnoseSystemStreamAsync(String sysInfoJson, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -136,53 +123,6 @@ public class AIService : IAIService
     private static String BuildDiagnosePrompt() => @"你是系统运维专家。根据以下系统运行指标，给出健康诊断报告（中文）：
 分析要点：是否存在瓶颈、是否需要扩容、是否需要关注的风险点。
 直接输出诊断报告，不要加无关解释。";
-
-    /// <summary>AI 对话（含工具调用）。使用 ToolChatClient 自动多轮工具循环，流式返回响应块</summary>
-    /// <remarks>
-    /// 工具调用事件通过 <see cref="IChatResponse.ToolCallEvents"/> 随流式块透传，供上层转换为 SSE 事件。
-    /// </remarks>
-    /// <param name="messages">完整消息历史（含 system 消息）</param>
-    /// <param name="providers">工具提供者列表（按工具名路由），可为空</param>
-    /// <param name="options">对话选项（模型、温度、思考模式等）</param>
-    /// <param name="cancellationToken">取消令牌</param>
-    /// <returns>流式响应块，含文本与工具调用事件</returns>
-    public IAsyncEnumerable<IChatResponse> ChatAgentStreamAsync(IList<ChatMessage> messages, IList<IToolProvider>? providers = null, ChatOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        var client = GetClient();
-        var toolClient = new ToolChatClient(client, [.. providers ?? []]);
-        toolClient.Log = Log;
-        toolClient.OnToolExecuted = e =>
-        {
-            WriteLog("工具调用", $"{e.ToolName} 参数={e.Arguments} 结果={e.ResultSummary} 耗时={e.ElapsedMs}ms 成功={!e.IsError}");
-            return Task.CompletedTask;
-        };
-
-        return toolClient.GetStreamingResponseAsync(messages, options, cancellationToken);
-    }
-
-    /// <summary>AI 对话（含工具调用）。非流式，一次返回完整响应（含文本与工具调用事件）</summary>
-    /// <param name="messages">完整消息历史（含 system 消息）</param>
-    /// <param name="providers">工具提供者列表（按工具名路由），可为空</param>
-    /// <param name="options">对话选项（模型、温度、思考模式等）</param>
-    /// <param name="cancellationToken">取消令牌</param>
-    /// <returns>完整响应，含文本与工具调用事件</returns>
-    public async Task<IChatResponse> ChatAgentAsync(IList<ChatMessage> messages, IList<IToolProvider>? providers = null, ChatOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        var client = GetClient();
-        var toolClient = new ToolChatClient(client, [.. providers ?? []]);
-        toolClient.Log = Log;
-        toolClient.OnToolExecuted = e =>
-        {
-            WriteLog("工具调用", $"{e.ToolName} 参数={e.Arguments} 结果={e.ResultSummary} 耗时={e.ElapsedMs}ms 成功={!e.IsError}");
-            return Task.CompletedTask;
-        };
-
-        return await toolClient.GetResponseAsync(ChatRequest.Create(messages, options, false), cancellationToken);
-    }
-
-    /// <summary>快速 AI 对话，关闭深度推理、低温度，适合用户交互场景</summary>
-    private Task<String> ChatFastAsync(String prompt, String data, CancellationToken cancellationToken = default)
-        => ChatInternalAsync(prompt, data, _fastOptions, cancellationToken);
 
     /// <summary>内部 AI 对话，支持自定义选项</summary>
     private async Task<String> ChatInternalAsync(String prompt, String data, ChatOptions? options, CancellationToken cancellationToken)

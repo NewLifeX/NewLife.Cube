@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using NewLife.AI.Models;
+using Microsoft.AspNetCore.Mvc;
 using NewLife.AI.Tools;
 using NewLife.Collections;
 using NewLife.Common;

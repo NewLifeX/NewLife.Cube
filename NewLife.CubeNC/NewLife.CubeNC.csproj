@@ -51,12 +51,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.AI" Version="1.5.2026.801" />
-    <PackageReference Include="NewLife.Core" Version="11.18.2026.801" />
+    <PackageReference Include="NewLife.AI" Version="1.5.2026.818-beta0226" />
+    <PackageReference Include="NewLife.Core" Version="11.18.2026.817-beta0647" />
     <PackageReference Include="NewLife.IP" Version="2.5.2026.804" />
-    <PackageReference Include="NewLife.Office" Version="1.3.2026.801" />
+    <PackageReference Include="NewLife.Office" Version="1.3.2026.810-beta1534" />
     <PackageReference Include="NewLife.Stardust.Extensions" Version="3.10.2026.801" />
-    <PackageReference Include="NewLife.XCode" Version="12.1.2026.801" />
+    <PackageReference Include="NewLife.XCode" Version="12.1.2026.807-beta0759" />
   </ItemGroup>
 
   <ItemGroup>
@@ -67,12 +67,10 @@
     <Compile Include="..\NewLife.Cube\AI\AiDataHelper.cs" Link="AI\AiDataHelper.cs" />
     <Compile Include="..\NewLife.Cube\AI\AiFormHelper.cs" Link="AI\AiFormHelper.cs" />
     <Compile Include="..\NewLife.Cube\AI\AiInsightHelper.cs" Link="AI\AiInsightHelper.cs" />
-    <Compile Include="..\NewLife.Cube\AI\AiChatRequest.cs" Link="AI\AiChatRequest.cs" />
+    <Compile Include="..\NewLife.Cube\AI\CubeAiChatRequest.cs" Link="AI\CubeAiChatRequest.cs" />
     <Compile Include="..\NewLife.Cube\AI\PageCheckpointService.cs" Link="AI\PageCheckpointService.cs" />
     <Compile Include="..\NewLife.Cube\AI\BrowserToolService.cs" Link="AI\BrowserToolService.cs" />
     <Compile Include="..\NewLife.Cube\AI\CubeTools.cs" Link="AI\CubeTools.cs" />
-    <Compile Include="..\NewLife.Cube\AI\IAIChatService.cs" Link="AI\IAIChatService.cs" />
-    <Compile Include="..\NewLife.Cube\AI\CubeAIChatService.cs" Link="AI\CubeAIChatService.cs" />
     <Compile Include="..\NewLife.Cube\AI\SystemInfoToolService.cs" Link="AI\SystemInfoToolService.cs" />
     <Compile Include="..\NewLife.Cube\AI\IPageDataContext.cs" Link="AI\IPageDataContext.cs" />
     <Compile Include="..\NewLife.Cube\AI\IEntityAiContext.cs" Link="AI\IEntityAiContext.cs" />
