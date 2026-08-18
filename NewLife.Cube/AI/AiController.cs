@@ -64,19 +64,19 @@ public class AiController : ControllerBaseX
     public async Task<ActionResult> AiChat()
     {
         // 请求校验（AISwitch/请求体）与 SSE 输出管道由本控制器公共逻辑统一提供
-        var (error, req) = await ParseAsync(this);
-        if (error != null || req == null) return error!;
+        var (error, request) = await ParseAsync(this);
+        if (error != null || request == null) return error!;
 
         // 会话键按用户+页面作用域：前端 sessionId 已按页面生成（sessionStorage），此处纵深防御，防止跨用户/跨页面串话。内联构建，不新增类型
         var uid = HttpContext.User.Identity is IUser u ? u.ID : 0;
-        if (!req.SessionId.IsNullOrEmpty())
-            req.SessionId = $"ai:{uid}:{req.Url}:{req.SessionId}";
+        if (!request.SessionId.IsNullOrEmpty())
+            request.SessionId = $"ai:{uid}:{request.Url}:{request.SessionId}";
 
         // 当前查询条件（_query Base64 解码）
-        var pager = DecodePager(req);
+        var pager = DecodePager(request);
 
         // 解析目标页面控制器：实现 IEntityAiContext 则使用实体工具与定制提示词，否则通用
-        var target = ResolveTarget(req);
+        var target = ResolveTarget(request, pager);
 
         var registry = new ToolRegistry();
         registry.AddTools(new SystemInfoToolService());
@@ -91,23 +91,23 @@ public class AiController : ControllerBaseX
             if (!CheckEntityPermission(target.GetType())) return Json(403, null, "无权访问该页面数据");
 
             // 实体上下文工具集由目标控制器自建（保留子类重载 CreateCubeTools），数据查询委托走其 SearchData
-            registry.AddTools(eac.CreateCubeTools(pager, req.Id));
-            systemPrompt = eac.BuildChatSystemPrompt(req, pager);
+            registry.AddTools(eac.CreateCubeTools(pager, request.Id));
+            systemPrompt = eac.BuildChatSystemPrompt(request, pager);
         }
         else if (target is IFormAiContext fac)
         {
             // 配置表单页（如魔方设置）：注册表单工具（get_form_schema / fill_form）+ 表单提示词，支持 AI 填表
             registry.AddTools(new ConfigFormToolService(fac));
-            systemPrompt = fac.BuildFormSystemPrompt(req);
+            systemPrompt = fac.BuildFormSystemPrompt(request);
         }
         else
         {
             // 其他非实体页面（或解析失败）：通用工具 + 通用提示词
-            systemPrompt = BuildChatSystemPrompt(req);
+            systemPrompt = BuildChatSystemPrompt(request);
         }
 
         // SSE 输出（含浏览器操作工具注册；get_page_context 以目标控制器为宿主检测 IPageDataContext）
-        await RunSseAsync(this, req, systemPrompt, registry, target);
+        await RunSseAsync(this, request, systemPrompt, registry, target);
 
         return new EmptyResult();
     }
@@ -168,7 +168,7 @@ public class AiController : ControllerBaseX
         try
         {
             var queryData = req.Query.ToBase64().ToStr();
-            var pager = new Pager();
+            var pager = new Pager(WebHelper.Params);
             pager.Parse(queryData);
             return pager;
         }
@@ -249,11 +249,12 @@ public class AiController : ControllerBaseX
     private static readonly ConcurrentDictionary<String, (Type Type, ControllerActionDescriptor? Descriptor)> _targets = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>解析对话请求的目标页面控制器，并初始化其实例（共享当前请求上下文）</summary>
-    /// <param name="req">对话请求</param>
+    /// <param name="request">对话请求</param>
+    /// <param name="pager">分页信息</param>
     /// <returns>目标控制器实例；解析或初始化失败返回 null（按通用流程处理）</returns>
-    private ControllerBaseX? ResolveTarget(CubeAiChatRequest req)
+    private ControllerBaseX? ResolveTarget(CubeAiChatRequest request, Pager pager)
     {
-        var (type, ad) = ResolveTargetInfo(req);
+        var (type, ad) = ResolveTargetInfo(request);
         if (type == null) return null;
 
         try
@@ -264,8 +265,8 @@ public class AiController : ControllerBaseX
 
             // 共享当前请求上下文：HttpContext 复用，路由数据与动作描述符指向目标控制器
             var routeData = new RouteData();
-            if (!req.Area.IsNullOrEmpty()) routeData.Values["area"] = req.Area;
-            routeData.Values["controller"] = req.Controller;
+            if (!request.Area.IsNullOrEmpty()) routeData.Values["area"] = request.Area;
+            routeData.Values["controller"] = request.Controller;
             ctrl.ControllerContext = new ControllerContext
             {
                 HttpContext = HttpContext,
@@ -279,7 +280,8 @@ public class AiController : ControllerBaseX
             };
 
             // 初始化控制器状态（Session/Menu/CurrentUser/Token），与 MVC 动作执行前一致
-            ctrl.OnActionExecuting(new ActionExecutingContext(ctrl.ControllerContext, [], new Dictionary<String, Object?>(), ctrl));
+            var ps = new Dictionary<String, Object?> { ["p"] = pager };
+            ctrl.OnActionExecuting(new ActionExecutingContext(ctrl.ControllerContext, [], ps, ctrl));
 
             return ctrl;
         }
