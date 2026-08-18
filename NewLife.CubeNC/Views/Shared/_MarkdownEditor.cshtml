@@ -27,7 +27,10 @@
     .CodeMirror {
         max-height: 600px;
     }
+    /* 必须约束真正的滚动容器 CodeMirror-scroll，否则其高度随内容增长（height:100% 在父级 auto 时解析为 auto），
+       内部滚动条永不出现，超出部分被外层 CodeMirror 的 overflow:hidden 裁剪 */
     .CodeMirror-scroll {
+        max-height: 600px;
         overflow-y: auto !important;
         overflow-x: hidden !important;
     }
