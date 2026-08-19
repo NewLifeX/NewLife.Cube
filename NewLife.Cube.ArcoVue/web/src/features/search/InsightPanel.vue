@@ -1,7 +1,8 @@
 <template>
-  <div class="query-insight-panel list-panel">
+  <!-- 默认隐藏：统计/图表开关均关时不渲染面板；任一开启（ViewConfigDrawer 统计标签/固定图表开关）后显示 -->
+  <div v-if="showStat || showChart" class="query-insight-panel list-panel">
     <!-- 简易看板/图表展示区（OSC-0012 / OSC-260819e483 P5）：不含搜索表单——查询统一走工具栏「搜索」抽屉 SearchDrawer -->
-    <div v-if="showStat || showChart" class="qip-result">
+    <div class="qip-result">
       <div v-if="showStat" class="qip-stat">
         <div v-if="statEntries.length" class="list-dist">
           <div v-for="e in statEntries" :key="e.key" class="list-dist-item">
