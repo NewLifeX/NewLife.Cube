@@ -791,9 +791,9 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
         return Json(0, null, list.Select(e => e.ToModel()).ToList());
     }
 
-    /// <summary>发表实体评论或回复（body.ParentId&gt;0 为回复）</summary>
+    /// <summary>发表实体评论或回复（body.ParentId&gt;0 为回复；可选 mentionUserIds 提及用户，OSC-260819e483 P4）</summary>
     [HttpPost]
-    public ActionResult EntityComment([FromBody] EntityCommentModel model)
+    public ActionResult EntityComment([FromBody] EntityCommentPostModel model)
     {
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");
@@ -805,11 +805,51 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
         {
             var entity = global::NewLife.Cube.Entity.EntityComment.AddComment(
                 user.ID, user.Name, model.Category, model.LinkId, model.Content, model.ParentId);
+            // 提及通知：评论成功后再写站内信；无 mentionUserIds 则与今日一致；通知失败不回滚评论
+            if (model.MentionUserIds != null && model.MentionUserIds.Count > 0)
+                SendMentionNotification(user.ID, user.Name, model.Category, model.LinkId, model.Content, model.MentionUserIds);
             return Json(0, null, entity.ToModel());
         }
         catch (ArgumentException ex)
         {
             return Json(400, ex.Message);
+        }
+    }
+
+    /// <summary>评论提及站内信（OSC-260819e483 P4）：最多 20、去重；非法/禁用/自己跳过；单条通知失败不回滚评论、不 500</summary>
+    /// <param name="currentUserId">当前用户 ID</param>
+    /// <param name="currentUserName">当前用户名</param>
+    /// <param name="category">评论分类（typePath）</param>
+    /// <param name="linkId">评论关联主键</param>
+    /// <param name="content">评论正文（截断 ≤200 字）</param>
+    /// <param name="userIds">被提及用户 ID 列表</param>
+    private static void SendMentionNotification(Int32 currentUserId, String currentUserName, String category, Int64 linkId, String content, IEnumerable<Int32> userIds)
+    {
+        var targets = userIds.Distinct().Take(20).ToList();
+        if (targets.Count == 0) return;
+
+        var title = $"{currentUserName} 在评论中提到了你";
+        var body = content.Length > 200 ? content[..200] : content;
+        var target = $"{category}#{linkId}";
+        foreach (var uid in targets)
+        {
+            if (uid <= 0 || uid == currentUserId) continue;
+            var u = XCode.Membership.User.FindByID(uid);
+            if (u == null || !u.Enable) continue;
+            try
+            {
+                new NotificationRecord
+                {
+                    Channel = "InApp",
+                    Action = "Mention",
+                    Title = title,
+                    Content = body,
+                    Target = target,
+                    UserId = uid,
+                    Success = true,
+                }.Insert();
+            }
+            catch { /* 单条通知失败不回滚评论、不 500 */ }
         }
     }
 
@@ -829,5 +869,12 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
         return Json(0, "ok");
     }
     #endregion
+}
+
+/// <summary>评论发表请求（OSC-260819e483 P4）：继承 EntityCommentModel，仅多可选 mentionUserIds 提及用户；不改评论表与 AddComment 签名</summary>
+public class EntityCommentPostModel : EntityCommentModel
+{
+    /// <summary>被提及用户 ID 列表（最多 20、去重；非法/禁用/自己跳过）</summary>
+    public List<Int32> MentionUserIds { get; set; }
 }
 

@@ -20,6 +20,7 @@ import {
 import { isCascaderField } from '@/core/utils/fieldControl';
 import { fetchBatchLabel } from '@/core/utils/lov-api';
 import { mergeAreaLabel } from '@/core/utils/areaLabels';
+import { parseRemarkDiff, type RemarkDiff } from '@/core/utils/logRemarkDiff';
 import { useUserStore } from '@/stores/user';
 import cubeApi from '@/api';
 import FormContent from './FormContent.vue';
@@ -283,6 +284,19 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
     return raw;
   }
 
+  /**
+   * 历史字段 diff（OSC-260819e483 P4）：Update/修改/Edit 动作解析 Remark 为字段新旧值表。
+   * 用抽屉已有 fields 作锚点（长名优先、忽略大小写）；失败回落 null → 模板显示 historyRemark 原文。
+   */
+  function historyDiff(row: Record<string, unknown>): RemarkDiff[] | null {
+    const raw = String(row.remark ?? row.Remark ?? '');
+    if (!raw) return null;
+    const action = String(row.action ?? row.Action ?? '');
+    const lower = action.toLowerCase();
+    if (lower !== 'update' && action !== '修改' && action !== '编辑' && lower !== 'edit') return null;
+    return parseRemarkDiff(raw, props.fields);
+  }
+
   async function loadComments() {
     const id = getValueByKey(props.model, props.pkField);
     if (id == null || props.mode === 'add') {
@@ -489,6 +503,7 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
     historySuccess,
     historyActionLabel,
     historyRemark,
+    historyDiff,
     startCommentReply,
     cancelCommentReply,
     submitComment,

@@ -6,6 +6,7 @@ import type {
   CaptchaResult,
   DataField,
   FieldKind,
+  FieldPatchResult,
   MfaSetupResult,
   MfaVerifyResult,
   PageMeta,
@@ -200,6 +201,20 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
     /** 编辑 */
     update: (type: string, data: Record<string, unknown>) =>
       request<unknown>({ url: type, method: 'put', data }),
+
+    /** PATCH 局部字段更新（OSC-260819e483 P3）：只改白名单字段，避免 PUT 绑默认值打脏未提交列 */
+    patchFields: (
+      type: string,
+      body: { id: number | string; values: Record<string, unknown> },
+    ) =>
+      request<FieldPatchResult>({ url: type, method: 'patch', data: body }),
+
+    /** 批量改字段（OSC-260819e483 P3）：对全部 keys 逐行 Valid+OnUpdate，部分失败返回 ok/fail/errors */
+    batchUpdateFields: (
+      type: string,
+      body: { keys: string; field: string; value: unknown },
+    ) =>
+      request<FieldPatchResult>({ url: `${type}/BatchUpdateFields`, method: 'post', data: body }),
 
     /** 删除单条 */
     remove: (type: string, id: number | string) =>

@@ -84,6 +84,8 @@ interface ViewConfigDrawerProps {
   fields: FieldMeta[];
   mapping?: ViewMapping | null;
   insight?: ViewInsight | null;
+  /** 当前列表行（图表配置预览用，OSC-260819e483 P5） */
+  chartRows?: Record<string, unknown>[];
 }
 
 /** ViewConfigDrawer 组件 emits 类型（与 ViewConfigDrawer.vue defineEmits 泛型逐字一致） */
@@ -403,6 +405,23 @@ export function useViewConfigDrawer(props: ViewConfigDrawerProps, emit: ViewConf
     emit('update:insight', { ...localInsight.value });
   }
 
+  // ---- 图表配置（OSC-260819e483 P5）：ViewConfigDrawer 内「配置图表」与 InsightPanel 同一套 chartOption ----
+  const chartConfigVisible = ref(false);
+
+  function openChartConfig() {
+    chartConfigVisible.value = true;
+  }
+
+  function onChartConfigSave(option: unknown) {
+    localInsight.value = { ...localInsight.value, chartOption: option };
+    emitInsight();
+  }
+
+  function onChartConfigClear() {
+    localInsight.value = { ...localInsight.value, chartOption: undefined };
+    emitInsight();
+  }
+
   function emitMapping() {
     const kind = props.viewKind;
     if (kind === 'table' || kind === 'tree') {
@@ -614,5 +633,9 @@ export function useViewConfigDrawer(props: ViewConfigDrawerProps, emit: ViewConf
     onBgColorPick,
     setWidth,
     setHeight,
+    chartConfigVisible,
+    openChartConfig,
+    onChartConfigSave,
+    onChartConfigClear,
   };
 }

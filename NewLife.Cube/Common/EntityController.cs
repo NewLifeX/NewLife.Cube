@@ -230,9 +230,18 @@ public partial class EntityController<TEntity, TModel>
     #endregion
 
     #region 辅助方法
-    /// <summary>是否启用字段级校验：EnableFieldValidation 为 true，或写请求携带校验头 X-Cube-Field-Validation（1/true/yes，忽略大小写）时启用（OSC-260819e483 P1）。读请求/GetPage/GetList 不加该头，外部客户端不带头则与今日一致</summary>
-    protected Boolean EnableFieldValidationRequested =>
-        EnableFieldValidation || Request.Headers.TryGetValue("X-Cube-Field-Validation", out var vs) && vs.ToString().EqualIgnoreCase("1", "true", "yes");
+    /// <summary>是否启用字段级校验：EnableFieldValidation 为 true，或写请求携带校验头 X-Cube-Field-Validation（1/true/yes，忽略大小写）时启用（OSC-260819e483 P1）。读请求/GetPage/GetList 不加该头，外部客户端不带头则与今日一致。Request 为 null（单元测试直调控制器）时视为无头</summary>
+    protected Boolean EnableFieldValidationRequested
+    {
+        get
+        {
+            if (EnableFieldValidation) return true;
+            var req = Request;
+            return req != null &&
+                req.Headers.TryGetValue("X-Cube-Field-Validation", out var vs) &&
+                vs.ToString().EqualIgnoreCase("1", "true", "yes");
+        }
+    }
 
     /// <summary>根据字段名查找实体元数据中的 DisplayName（中文显示名）</summary>
     /// <param name="fieldName">字段名</param>

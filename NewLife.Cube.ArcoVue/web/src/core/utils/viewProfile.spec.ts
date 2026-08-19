@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  applyChartData,
   buildFormJsonWire,
   buildSortPayload,
+  CHART_OPTION_MAX_BYTES,
   clearFormModeLayout,
   clearSavedViewFilters,
   createNamedView,
@@ -33,6 +35,7 @@ import {
   setSavedViewFilters,
   stateFromWire,
   stateToWirePayload,
+  stripChartData,
   type ColumnPref,
   type NamedView,
   type SavedQueriesWire,
@@ -312,6 +315,87 @@ describe('normalizeInsight', () => {
     expect(normalizeInsight({ mode: 'chart' })).toEqual({ showStat: false, showChart: true });
     expect(normalizeInsight({ mode: 'none' })).toEqual({ showStat: false, showChart: false });
     expect(normalizeInsight({ mode: 'x' })).toEqual({ showStat: false, showChart: false });
+  });
+
+  it('P5 reads back chartOption object; non-object normalized away', () => {
+    const opt = { xAxis: { type: 'category' }, series: [{ type: 'bar' }] };
+    expect(normalizeInsight({ showChart: true, chartOption: opt })).toEqual({
+      showStat: false,
+      showChart: true,
+      chartOption: opt,
+    });
+    // 非法：非对象 / 数组 / 字符串 → 归一化为缺省（不 round-trip）
+    expect(normalizeInsight({ showChart: true, chartOption: 'str' })).toEqual({
+      showStat: false,
+      showChart: true,
+    });
+    expect(normalizeInsight({ showChart: true, chartOption: [1, 2] })).toEqual({
+      showStat: false,
+      showChart: true,
+    });
+    // mode=chart 草案同样读回 chartOption
+    expect(normalizeInsight({ mode: 'chart', chartOption: opt })).toEqual({
+      showStat: false,
+      showChart: true,
+      chartOption: opt,
+    });
+    // 无 chartOption 与今日一致（仅开关）
+    expect(normalizeInsight({ showStat: true, showChart: true })).toEqual({
+      showStat: true,
+      showChart: true,
+    });
+  });
+});
+
+describe('P5 chartOption 清洗与填充（OSC-260819e483）', () => {
+  it('stripChartData 剔除 dataset.source 与 series[].data，深拷贝不动原对象', () => {
+    const opt = {
+      dataset: { source: [[1, 2]], dimensions: ['a', 'b'] },
+      series: [{ type: 'bar', data: [1, 2], name: 's' }],
+      tooltip: { show: true },
+    };
+    const clean = stripChartData(opt) as Record<string, unknown>;
+    // 原对象不被改动
+    expect((opt.dataset as Record<string, unknown>).source).toEqual([[1, 2]]);
+    // 清洗后数据键被剔除，非数据键保留
+    expect(clean.dataset).toEqual({ dimensions: ['a', 'b'] });
+    expect(clean.series).toEqual([{ type: 'bar', name: 's' }]);
+    expect((clean.tooltip as Record<string, unknown>).show).toBe(true);
+  });
+
+  it('applyChartData 写入 dataset.source 为当前列表行；无 dataset 时补上', () => {
+    const rows = [{ Name: 'a', Enable: true }, { Name: 'b', Enable: false }];
+    const withDs = applyChartData({ dataset: { dimensions: ['Name'] }, series: [{ type: 'bar' }] }, rows);
+    expect(withDs.dataset).toEqual({ dimensions: ['Name'], source: rows });
+    const noDs = applyChartData({ series: [{ type: 'pie' }] }, rows);
+    expect(noDs.dataset).toEqual({ source: rows });
+    expect(noDs.series).toEqual([{ type: 'pie' }]);
+  });
+
+  it('serializeNamedView 保存前剔除数据；超 32KB 拒绝保存并抛错', () => {
+    const created = createNamedView(stateFromWire(null, ['Name', 'Enable']), 'v', 'table', [
+      'Name',
+      'Enable',
+    ]);
+    const v = created.views[created.views.length - 1];
+    v.insight = {
+      showStat: false,
+      showChart: true,
+      chartOption: {
+        dataset: { source: [[1, 2]], dimensions: ['a', 'b'] },
+        series: [{ type: 'bar', data: [1, 2] }],
+      },
+    };
+    const raw = serializeNamedView(v) as Record<string, unknown>;
+    const saved = raw.insight as Record<string, unknown>;
+    expect(saved.showChart).toBe(true);
+    expect((saved.chartOption as Record<string, unknown>).dataset).toEqual({ dimensions: ['a', 'b'] });
+    expect((saved.chartOption as Record<string, unknown>).series).toEqual([{ type: 'bar' }]);
+
+    // 超 32KB：拒绝保存（data 会被剔除，故用非 data 大字段构造）
+    const bigText = 'x'.repeat(CHART_OPTION_MAX_BYTES + 1);
+    v.insight = { showStat: false, showChart: true, chartOption: { title: { text: bigText } } };
+    expect(() => serializeNamedView(v)).toThrow(/32KB|32K|限制/);
   });
 });
 

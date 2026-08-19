@@ -8,9 +8,8 @@
 
     <!-- 视图背景色覆盖：洞察（暂隐藏）+ 表格（含视图 Tab） -->
     <div class="list-surface" :class="{ 'list-surface--chrome': hasChromeBg }" :style="listSurfaceStyle">
-      <!-- 洞察面板（原 QueryInsightPanel，更名 InsightPanel）：暂隐藏不渲染（v-if=false），等简易图表看板设计时启用；统计/图表状态由 DefaultList 持续维护 -->
+      <!-- 洞察面板（原 QueryInsightPanel，更名 InsightPanel）：搜索 + 统计 + 一张固定图表（OSC-260819e483 P5 启用图表配置） -->
       <InsightPanel
-        v-if="false"
         :fields="searchFields"
         :model="searchForm"
         :show-stat="insight.showStat"
@@ -20,6 +19,8 @@
         :chart-data="chartData"
         :chart-loading="chartLoading"
         :chart-error="chartError"
+        :chart-option="insight.chartOption"
+        :chart-rows="tableData"
         :master-time-name="masterTimeName"
         :master-time-display-name="masterTimeDisplayName"
         :enable-key="enableKey"
@@ -33,6 +34,7 @@
         @save-query="handleSaveQuery"
         @rename-query="handleRenameQuery"
         @delete-query="handleDeleteQuery"
+        @chart-option-change="onChartOptionChange"
       />
 
       <!-- 表格面板：视图 Tab + 工具栏 + 表格 + 分页 -->
@@ -202,6 +204,14 @@
                   <icon-park type="delete" />
                   批量删除
                 </a-doption>
+                <a-doption
+                  v-if="flags.canEdit"
+                  :disabled="selectedKeys.length === 0"
+                  @click="openBatchEdit"
+                >
+                  <icon-park type="edit" />
+                  批量修改
+                </a-doption>
                 <a-doption v-if="isAdmin" @click="formLayoutDrawerVisible = true">
                   <icon-park type="layout-one" />
                   表单布局
@@ -210,6 +220,36 @@
             </a-dropdown>
           </a-space>
         </div>
+
+        <a-modal
+          v-model:visible="batchEditVisible"
+          :title="`批量修改（已选 ${selectedKeys.length} 条）`"
+          :on-before-ok="confirmBatchEdit"
+        >
+          <a-form layout="vertical">
+            <a-form-item label="字段">
+              <a-select v-model="batchEditField" :options="batchEditFieldOptions" />
+            </a-form-item>
+            <a-form-item label="值">
+              <a-input v-model="batchEditValue" placeholder="请输入要设置的字段值" />
+            </a-form-item>
+          </a-form>
+        </a-modal>
+
+        <a-modal
+          v-model:visible="cellEditVisible"
+          :title="`编辑字段：${cellEditFieldLabel}`"
+          :on-before-ok="confirmCellEdit"
+        >
+          <a-form layout="vertical">
+            <a-form-item label="字段">
+              <a-input :model-value="cellEditField" disabled />
+            </a-form-item>
+            <a-form-item label="值">
+              <a-input v-model="cellEditValue" placeholder="输入新值，保存后仅更新该字段" />
+            </a-form-item>
+          </a-form>
+        </a-modal>
 
         <a-spin :loading="loading" style="width: 100%">
           <template v-if="activeViewKind === 'table' || activeViewKind === 'tree'">
@@ -248,6 +288,7 @@
               @action="onTableAction"
               @cell-link="onCellLink"
               @toggle-enable="onToggleEnable"
+              @cell-edit="onCellEdit"
               @scroll-bottom="onTableScrollBottom"
             />
             <div
@@ -371,6 +412,7 @@
       :chrome="getActiveView(viewState).chrome"
       :mapping="getActiveView(viewState).mapping"
       :insight="getActiveView(viewState).insight ?? null"
+      :chart-rows="tableData"
       @update:columns="onColumnsChange"
       @update:sort="onConfigSort"
       @update:chrome="onChromeChange"
@@ -560,6 +602,18 @@ const {
   handleExport,
   batchDeleteState,
   confirmBatchDelete,
+  batchEditVisible,
+  batchEditField,
+  batchEditValue,
+  batchEditFieldOptions,
+  openBatchEdit,
+  confirmBatchEdit,
+  cellEditVisible,
+  cellEditField,
+  cellEditFieldLabel,
+  cellEditValue,
+  onCellEdit,
+  confirmCellEdit,
   formLayoutDrawerVisible,
   loading,
   tableData,
@@ -631,7 +685,14 @@ const {
   addFields,
   editFields,
   detailFields,
+  loadChart,
 } = useDefaultList(props);
+
+/** 图表配置保存/清除（OSC-260819e483 P5）：更新当前命名视图 insight.chartOption 并刷新图表 */
+function onChartOptionChange(option: unknown) {
+  onInsightChange({ ...insight.value, chartOption: option });
+  void loadChart();
+}
 
 /** 自动化条件字段：合并列表/搜索/编辑字段，避免仅 list 列过少或未就绪 */
 const automationFields = computed(() => {

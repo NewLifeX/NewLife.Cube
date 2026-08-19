@@ -139,6 +139,13 @@
               </a-tooltip>
             </span>
             <a-switch v-model="localInsight.showChart" @change="emitInsight" />
+            <a-button
+              v-if="localInsight.showChart"
+              size="mini"
+              @click="openChartConfig"
+            >
+              配置图表
+            </a-button>
           </div>
         </section>
       </a-tab-pane>
@@ -683,6 +690,16 @@
         </section>
       </a-tab-pane>
     </a-tabs>
+
+    <!-- 图表配置（OSC-260819e483 P5）：与 InsightPanel 同一套 chartOption -->
+    <ChartOptionEditor
+      :visible="chartConfigVisible"
+      :chart-option="localInsight.chartOption"
+      :rows="chartRows ?? []"
+      @update:visible="(v: boolean) => (chartConfigVisible = v)"
+      @save="onChartConfigSave"
+      @clear="onChartConfigClear"
+    />
   </a-drawer>
 </template>
 
@@ -698,6 +715,7 @@ import type {
   ViewSort,
 } from '@/core/utils/viewProfile';
 import { PRESET_THEME_COLORS } from '@/core/utils/presetColors';
+import ChartOptionEditor from '@/features/search/ChartOptionEditor.vue';
 import { useViewConfigDrawer } from './useViewConfigDrawer';
 
 const props = withDefaults(
@@ -713,6 +731,7 @@ const props = withDefaults(
     fields?: FieldMeta[];
     mapping?: ViewMapping | null;
     insight?: ViewInsight | null;
+    chartRows?: Record<string, unknown>[];
   }>(),
   {
     viewKind: 'table',
@@ -786,6 +805,10 @@ const {
   onBgColorPick,
   setWidth,
   setHeight,
+  chartConfigVisible,
+  openChartConfig,
+  onChartConfigSave,
+  onChartConfigClear,
 } = useViewConfigDrawer(props, emit);
 </script>
 

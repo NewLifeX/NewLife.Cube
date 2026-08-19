@@ -19,10 +19,14 @@ interface InsightPanelProps {
   statData: Record<string, unknown> | null;
   /** 统计标签显示名映射（按 listFields 构造；缺省回落字段名） */
   statLabels?: Record<string, string>;
-  /** GetChartData 返回的 ECharts option 数组 */
+  /** 图表数据：开发者 GetChartData 非空数组，或用户 chartOption applyChartData 后的单元素数组（OSC-260819e483 P5） */
   chartData: unknown[];
   chartLoading: boolean;
   chartError: string;
+  /** 用户配置的 ECharts option（OSC-260819e483 P5）；无则 undefined */
+  chartOption?: unknown;
+  /** 当前列表行（图表配置预览用） */
+  chartRows?: Record<string, unknown>[];
   /** 主时间字段名（OSC-0016）；无 MasterTime 时不渲染主时间范围 */
   masterTimeName?: string | null;
   /** 主时间字段显示名（OSC-0016） */
@@ -39,8 +43,25 @@ interface InsightPanelProps {
   canSaveQuery: boolean;
 }
 
+/** InsightPanel 组件 emits 类型（与 InsightPanel.vue defineEmits 泛型逐字一致） */
+interface InsightPanelEmits {
+  search: [];
+  reset: [];
+  apply: [id: string];
+  saveQuery: [name: string];
+  renameQuery: [id: string, name: string];
+  deleteQuery: [id: string];
+  /** 图表配置保存/清除（OSC-260819e483 P5）：父级走 updateInsight */
+  chartOptionChange: [option: unknown];
+}
+
+type InsightPanelEmit = <K extends keyof InsightPanelEmits>(
+  event: K,
+  ...args: InsightPanelEmits[K]
+) => void;
+
 /** InsightPanel 组件全部业务 TS：主时间/统计/图表/两行布局测量（自 InsightPanel.vue script setup 原样搬移；emits 仅模板 $emit 使用） */
-export function useInsightPanel(props: InsightPanelProps) {
+export function useInsightPanel(props: InsightPanelProps, emit: InsightPanelEmit) {
   const appStore = useAppStore();
   /** 主时间范围值：dtStart/dtEnd 两键映射 [start, end] */
   const masterTimeRange = computed(() => {
@@ -163,6 +184,24 @@ export function useInsightPanel(props: InsightPanelProps) {
     resizeObserver?.disconnect();
   });
 
+  // ---------- 图表配置（OSC-260819e483 P5）：空态/有图时打开 JSON 编辑器，保存/清除走 chartOptionChange ----------
+  const chartConfigVisible = ref(false);
+
+  /** 打开图表配置弹窗 */
+  function openChartConfig() {
+    chartConfigVisible.value = true;
+  }
+
+  /** 保存（含清除：option=undefined）；父级走 updateInsight 并刷新图表 */
+  function onChartConfigSave(option: unknown) {
+    emit('chartOptionChange', option);
+  }
+
+  /** 清除：chartOption=null，开关可仍为 true（回到空态 + 配置入口） */
+  function onChartConfigClear() {
+    emit('chartOptionChange', undefined);
+  }
+
   return {
     mainFields,
     extraFields,
@@ -173,5 +212,9 @@ export function useInsightPanel(props: InsightPanelProps) {
     setChartRef,
     measureRef,
     expanded,
+    chartConfigVisible,
+    openChartConfig,
+    onChartConfigSave,
+    onChartConfigClear,
   };
 }

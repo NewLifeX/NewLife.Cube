@@ -264,6 +264,35 @@ describe('createPageApi', () => {
       }),
     );
   });
+
+  it('patchFields hits PATCH /Admin/User with {id,values}', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: { ok: 1, fail: 0, errors: [] } });
+    const api = createPageApi(request);
+    const result = await api.patchFields('/Admin/User', { id: '7', values: { Name: 'x' } });
+    expect(result.data.ok).toBe(1);
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Admin/User',
+        method: 'patch',
+        data: { id: '7', values: { Name: 'x' } },
+      }),
+    );
+  });
+
+  it('batchUpdateFields hits POST /Admin/User/BatchUpdateFields with {keys,field,value}', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: { ok: 2, fail: 1, errors: [{ id: '9', message: '数据不存在' }] } });
+    const api = createPageApi(request);
+    const result = await api.batchUpdateFields('/Admin/User', { keys: '7,8,9', field: 'Name', value: 'x' });
+    expect(result.data.ok).toBe(2);
+    expect(result.data.errors[0].id).toBe('9');
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Admin/User/BatchUpdateFields',
+        method: 'post',
+        data: { keys: '7,8,9', field: 'Name', value: 'x' },
+      }),
+    );
+  });
 });
 
 describe('createProfileApi', () => {

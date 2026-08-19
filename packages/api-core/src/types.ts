@@ -68,6 +68,16 @@ export interface PageParams {
   [key: string]: unknown;
 }
 
+/** PATCH/批量改字段结果（OSC-260819e483 P3）：部分失败仍 Code=0，由 Ok/Fail/Errors 表达 */
+export interface FieldPatchResult {
+  /** 成功行数 */
+  ok: number;
+  /** 失败行数 */
+  fail: number;
+  /** 失败明细 */
+  errors: { id: string; message: string }[];
+}
+
 /** 字段元数据（对应后端 DataField） */
 export interface DataField {
   /** 字段名 */

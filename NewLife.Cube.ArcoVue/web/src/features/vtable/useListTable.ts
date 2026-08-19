@@ -83,6 +83,8 @@ interface ListTableEmits {
   /** 单元格字段挂链接点击 */
   cellLink: [payload: { url: string; target?: string; row: Record<string, unknown> }];
   toggleEnable: [row: Record<string, unknown>, field: string];
+  /** 双击可编辑普通字段（OSC-260819e483 P3.5）：父级决定打开字段编辑（PatchFields）或详情 */
+  cellEdit: [payload: { row: Record<string, unknown>; field: string; value: unknown }];
   /** 滚动接近底部（剩余不足 200px）时触发，供父级增量加载更多行（列表/树懒加载） */
   scrollBottom: [];
 }
@@ -786,6 +788,15 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
         field === '__expand'
       )
         return;
+      // 单元格编辑（OSC-260819e483 P3.5）：canEdit 时双击普通字段（非徽标/链接/启停列）发出 cellEdit，
+      // 由父级判断是否进入字段编辑（PatchFields）；徽标/链接/启停仍走双击详情/单击交互
+      const colDef = props.columns.find((c) => c.pref.key === field);
+      const plainEditable =
+        props.canEdit && colDef && !colDef.badge && !colDef.cellLink && !colDef.enableToggle;
+      if (plainEditable) {
+        emit('cellEdit', { row, field, value: row[field] });
+        return;
+      }
       if (props.canViewDetail && props.enableTableDoubleClick !== false) emit('rowDblClick', row);
     }) as any);
 

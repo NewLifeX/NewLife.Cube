@@ -70,11 +70,18 @@ export interface NamedView {
   _raw?: Record<string, unknown>;
 }
 
-/** 受限洞察配置。双开关均为 false 表示关闭；仅一个为 true 表示单项；均为 true 表示统计+图表同显 */
+/** 受限洞察配置。双开关均为 false 表示关闭；仅一个为 true 表示单项；均为 true 表示统计+图表同显。
+ *  `chartOption` 为用户在 InsightPanel 配置的一张 ECharts option 模板（OSC-260819e483 P5），
+ *  保存前剔除运行时数据（dataset.source / series[].data）；不持久化列表快照。 */
 export interface ViewInsight {
   showStat: boolean;
   showChart: boolean;
+  /** 用户配置的 ECharts option 模板；无图或缺省为 undefined */
+  chartOption?: unknown;
 }
+
+/** chartOption 清洗后最大字节数（OSC-260819e483 P5）；超限拒绝保存 */
+export const CHART_OPTION_MAX_BYTES = 32 * 1024;
 
 /** 筛选条件操作符（OSC-0015 纯前端过滤）：按字段类别开放可用集合 */
 export type ViewFilterOp =
@@ -433,22 +440,68 @@ function normalizeChrome(raw: unknown): ViewChrome | undefined {
 /**
  * 归一化受限洞察配置（OSC-0012）。
  * 缺失/非法 → 双开关关闭；兼容早期草案 `mode`：stat→仅 showStat，chart→仅 showChart，none/其他→都关闭。
+ * `chartOption`（OSC-260819e483 P5）：仅接受 JSON 对象；非对象归一化为缺省。
  */
 export function normalizeInsight(raw: unknown): ViewInsight {
   if (!raw || typeof raw !== 'object') return { showStat: false, showChart: false };
   const o = raw as Record<string, unknown>;
+  const opt = validChartOption(o.chartOption);
   if (typeof o.mode === 'string') {
     if (o.mode === 'stat') return { showStat: true, showChart: false };
-    if (o.mode === 'chart') return { showStat: false, showChart: true };
+    if (o.mode === 'chart')
+      return { showStat: false, showChart: true, ...(opt !== undefined ? { chartOption: opt } : {}) };
     return { showStat: false, showChart: false };
   }
   return {
     showStat: o.showStat === true,
     showChart: o.showChart === true,
+    ...(opt !== undefined ? { chartOption: opt } : {}),
   };
 }
 
-/** 序列化 insight：保留原始未知扩展字段，仅覆盖本号管理的双开关 */
+/** chartOption 合法值：非数组 JSON 对象；其余归一化为缺省（design：禁止函数，JSON 本无函数） */
+function validChartOption(v: unknown): unknown {
+  return v && typeof v === 'object' && !Array.isArray(v) ? v : undefined;
+}
+
+/**
+ * 深拷贝并剔除 ECharts option 中的运行时数据：`dataset.source` 与每个 `series[i].data`。
+ * 禁止把列表快照写进 Profile（OSC-260819e483 P5）。
+ */
+export function stripChartData(option: unknown): unknown {
+  if (Array.isArray(option)) return option.map((x) => stripChartData(x));
+  if (!option || typeof option !== 'object') return option;
+  const obj = option as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    // dataset.source：运行时列表数据
+    if (k === 'source') continue;
+    // series[i].data：运行时序列数据
+    if (k === 'data' && Array.isArray(v)) continue;
+    out[k] = stripChartData(v);
+  }
+  return out;
+}
+
+/**
+ * 用当前列表行填充 ECharts option 模板（OSC-260819e483 P5）：
+ * 写入 `dataset.source = rows`（行对象键 = GetPage 列表字段名）；无 `dataset` 则补上。
+ * 数据随当前 GetList（含 search/viewFilter），不另开大通道。
+ */
+export function applyChartData(option: unknown, rows: Record<string, unknown>[]): Record<string, unknown> {
+  const copy = (option && typeof option === 'object'
+    ? JSON.parse(JSON.stringify(option))
+    : {}) as Record<string, unknown>;
+  const ds =
+    copy.dataset && typeof copy.dataset === 'object' && !Array.isArray(copy.dataset)
+      ? (copy.dataset as Record<string, unknown>)
+      : {};
+  ds.source = rows;
+  copy.dataset = ds;
+  return copy;
+}
+
+/** 序列化 insight：保留原始未知扩展字段，仅覆盖本号管理的双开关与 chartOption（OSC-260819e483 P5） */
 function serializeInsight(insight: ViewInsight | undefined, raw: unknown): Record<string, unknown> {
   const base: Record<string, unknown> =
     raw && typeof raw === 'object' && !Array.isArray(raw)
@@ -457,6 +510,16 @@ function serializeInsight(insight: ViewInsight | undefined, raw: unknown): Recor
   delete base.mode;
   base.showStat = insight?.showStat === true;
   base.showChart = insight?.showChart === true;
+  if (insight?.chartOption !== undefined) {
+    // 保存前清洗：剔除 dataset.source / series[].data；清洗后超 32KB 拒绝保存（不截断半写）
+    const clean = stripChartData(insight.chartOption);
+    if (JSON.stringify(clean).length > CHART_OPTION_MAX_BYTES) {
+      throw new Error(`图表配置超过 ${Math.floor(CHART_OPTION_MAX_BYTES / 1024)}KB 限制，保存已取消`);
+    }
+    base.chartOption = clean;
+  } else {
+    delete base.chartOption;
+  }
   return base;
 }
 

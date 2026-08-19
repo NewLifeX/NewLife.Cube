@@ -140,8 +140,29 @@
               class="qip-chart-item"
             />
           </div>
-          <a-empty v-else-if="!chartLoading && !chartError" description="暂无图表数据" />
+          <!-- 空态：无开发者图且无用户 option 时提供配置入口（OSC-260819e483 P5） -->
+          <div v-else-if="!chartLoading" class="qip-chart-empty">
+            <a-empty description="暂无图表数据" />
+            <a-button size="small" @click="openChartConfig">配置图表</a-button>
+          </div>
         </a-spin>
+        <!-- 有用户 option 时提供修改入口 -->
+        <a-button
+          v-if="showChart && !chartLoading && !chartError && chartData.length"
+          class="qip-chart-config"
+          size="small"
+          @click="openChartConfig"
+        >
+          配置图表
+        </a-button>
+        <ChartOptionEditor
+          :visible="chartConfigVisible"
+          :chart-option="chartOption"
+          :rows="chartRows ?? []"
+          @update:visible="(v: boolean) => (chartConfigVisible = v)"
+          @save="onChartConfigSave"
+          @clear="onChartConfigClear"
+        />
       </div>
     </div>
   </div>
@@ -150,6 +171,7 @@
 <script setup lang="ts">
 import SearchFieldInput from '@/components/SearchFieldInput.vue';
 import QueryComboButton from './QueryComboButton.vue';
+import ChartOptionEditor from './ChartOptionEditor.vue';
 import type { FieldMeta } from '@/core/types/field';
 import type { SavedQuery } from '@/core/utils/viewProfile';
 import { useInsightPanel } from './useInsightPanel';
@@ -169,10 +191,14 @@ const props = defineProps<{
   statData: Record<string, unknown> | null;
   /** 统计标签显示名映射（按 listFields 构造；缺省回落字段名） */
   statLabels?: Record<string, string>;
-  /** GetChartData 返回的 ECharts option 数组 */
+  /** 图表数据：开发者 GetChartData 非空数组，或用户 chartOption applyChartData 后的单元素数组（OSC-260819e483 P5） */
   chartData: unknown[];
   chartLoading: boolean;
   chartError: string;
+  /** 用户配置的 ECharts option（OSC-260819e483 P5）；无则 undefined */
+  chartOption?: unknown;
+  /** 当前列表行（图表配置预览用） */
+  chartRows?: Record<string, unknown>[];
   /** 主时间字段名（OSC-0016）；无 MasterTime 时不渲染主时间范围 */
   masterTimeName?: string | null;
   /** 主时间字段显示名（OSC-0016） */
@@ -189,7 +215,7 @@ const props = defineProps<{
   canSaveQuery: boolean;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   search: [];
   reset: [];
   /** 应用预定义查询（OSC-0016） */
@@ -200,6 +226,8 @@ defineEmits<{
   renameQuery: [id: string, name: string];
   /** 删除预定义查询（OSC-0016） */
   deleteQuery: [id: string];
+  /** 图表配置保存/清除（OSC-260819e483 P5）：父级走 updateInsight */
+  chartOptionChange: [option: unknown];
 }>();
 
 const {
@@ -212,7 +240,11 @@ const {
   setChartRef,
   measureRef,
   expanded,
-} = useInsightPanel(props);
+  chartConfigVisible,
+  openChartConfig,
+  onChartConfigSave,
+  onChartConfigClear,
+} = useInsightPanel(props, emit);
 </script>
 
 <style scoped>
@@ -330,6 +362,7 @@ const {
 .qip-chart {
   min-width: 0;
   max-width: 100%;
+  position: relative;
 }
 .qip-chart-body {
   width: 100%;
@@ -340,5 +373,19 @@ const {
 }
 .qip-chart-error {
   padding: 8px 0;
+}
+/* 空态 + 配置入口（OSC-260819e483 P5） */
+.qip-chart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+.qip-chart-config {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
 }
 </style>

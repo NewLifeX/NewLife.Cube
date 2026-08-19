@@ -188,7 +188,17 @@
                 </a-tag>
                 <span class="history-user">{{ row.createUser ?? row.CreateUser }}</span>
               </div>
-              <div class="history-remark">{{ historyRemark(row) }}</div>
+              <template v-if="historyDiff(row)?.length">
+                <div class="history-diff">
+                  <div v-for="(d, di) in historyDiff(row)!" :key="di" class="history-diff-item">
+                    <span class="history-diff-field">{{ d.displayName }}</span>
+                    <span class="history-diff-old">{{ d.oldValue }}</span>
+                    <span class="history-diff-arrow">→</span>
+                    <span class="history-diff-new">{{ d.newValue }}</span>
+                  </div>
+                </div>
+              </template>
+              <div v-else class="history-remark">{{ historyRemark(row) }}</div>
             </a-timeline-item>
           </a-timeline>
           <a-pagination
@@ -452,6 +462,7 @@ const {
   historySuccess,
   historyActionLabel,
   historyRemark,
+  historyDiff,
   startCommentReply,
   cancelCommentReply,
   submitComment,
@@ -622,6 +633,36 @@ defineExpose({ validate: () => formRef.value?.validate() });
   font-size: var(--cube-font-size-body);
   color: var(--color-text-1);
   white-space: pre-wrap;
+  word-break: break-word;
+}
+/* 历史字段 diff（OSC-260819e483 P4） */
+.history-diff {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.history-diff-item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: var(--cube-font-size-body);
+  line-height: 20px;
+  flex-wrap: wrap;
+}
+.history-diff-field {
+  color: var(--color-text-2);
+  min-width: 0;
+}
+.history-diff-old {
+  color: var(--color-text-3);
+  text-decoration: line-through;
+  word-break: break-word;
+}
+.history-diff-arrow {
+  color: var(--color-text-4);
+}
+.history-diff-new {
+  color: var(--color-text-1);
   word-break: break-word;
 }
 

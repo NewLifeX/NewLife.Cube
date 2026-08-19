@@ -12,9 +12,9 @@ import {
   fetchBatchLabel,
 } from '@/core/utils/lov-api';
 import { collectCascaderIds, mergeAreaLabel } from '@/core/utils/areaLabels';
-import { buildSortPayload } from '@/core/utils/viewProfile';
+import { buildSortPayload, applyChartData } from '@/core/utils/viewProfile';
 import { normalizePageSize } from '@/core/utils/viewMapping';
-import { cleanSearchParams, matchesViewFilter } from '@/core/utils/searchFilters';
+import { buildViewFilterParam, cleanSearchParams, matchesViewFilter } from '@/core/utils/searchFilters';
 import { useTenantStore } from '@/stores/tenant';
 import type { ListContext } from './listContext';
 import type { FieldMeta } from '@/core/types/field';
@@ -248,11 +248,15 @@ export function useListQuery(ctx: ListContext) {
         // 复用已加载原始数据（视图切换/纯前端筛选变化：搜索、排序、加载量未变，避免重复请求后端）
         rows = tableDataRaw.value;
       } else {
+        // 视图筛选下推（OSC-260819e483 P2）：有条件才传 viewFilter，后端 SearchData 可下推时服务端过滤；
+        // 无法下推时忽略服务端过滤，本页仍由下方 matchesViewFilter 复核（翻页不完整为已知限制）
+        const vf = buildViewFilterParam(viewFilter.value);
         const res = await cubeApi.page.getList(typePath.value, {
           pageIndex,
           pageSize,
           ...sort,
           ...effectiveSearch.value,
+          ...(vf ? { viewFilter: vf } : {}),
         });
         rows = (res.data as Record<string, unknown>[]) || [];
         tableDataRaw.value = rows;
@@ -291,7 +295,8 @@ export function useListQuery(ctx: ListContext) {
     }
   }
 
-  /** 加载固定图表（OSC-0012）：showChart 时带有效搜索请求 GetChartData；过期响应丢弃 */
+  /** 加载固定图表（OSC-0012 + OSC-260819e483 P5）：showChart 时带有效搜索请求 GetChartData；过期响应丢弃。
+   *  渲染优先级：开发者 GetChartData 非空数组 → 开发者图；否则用户 chartOption → applyChartData 当前列表行；否则空态 */
   async function loadChart() {
     if (!insight.value.showChart) {
       chartData.value = [];
@@ -303,9 +308,22 @@ export function useListQuery(ctx: ListContext) {
     chartLoading.value = true;
     chartError.value = '';
     try {
-      const res = await cubeApi.page.getChartData(typePath.value, effectiveSearch.value);
+      const vf = buildViewFilterParam(viewFilter.value);
+      const res = await cubeApi.page.getChartData(typePath.value, {
+        ...effectiveSearch.value,
+        ...(vf ? { viewFilter: vf } : {}),
+      });
       if (seq !== chartSeq.value) return;
-      chartData.value = Array.isArray(res.data) ? res.data : [];
+      const dev = Array.isArray(res.data) ? res.data : [];
+      if (dev.length) {
+        // 开发者图优先（不改 GetChartData 签名；子类非空数组仍优先于用户 option）
+        chartData.value = dev;
+      } else if (insight.value.chartOption !== undefined) {
+        // 用户 option：applyChartData 当前列表行（数据随当前 GetList，含 search/viewFilter）
+        chartData.value = [applyChartData(insight.value.chartOption, tableData.value)];
+      } else {
+        chartData.value = [];
+      }
     } catch (err) {
       if (seq !== chartSeq.value) return;
       chartData.value = [];

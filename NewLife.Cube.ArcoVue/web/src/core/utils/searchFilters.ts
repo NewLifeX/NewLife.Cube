@@ -10,6 +10,16 @@ import type { ViewFilter, ViewFilterCondition } from '@/core/utils/viewProfile';
 /** 保留搜索键（OSC-0016）：Q=全字段模糊，dtStart/dtEnd=主时间区间（后端 Search(Pager) 内置通用参数） */
 export const RESERVED_SEARCH_KEYS: readonly string[] = ['Q', 'dtStart', 'dtEnd'];
 
+/**
+ * 序列化视图筛选为后端 viewFilter 查询参数（OSC-260819e483 P2）：
+ * 与后端 ViewFilterDto 同构（logic=all/any，conditions 无嵌套），
+ * 空条件返回 undefined（不传该键，服务端与今日一致）。
+ */
+export function buildViewFilterParam(filter: ViewFilter | null | undefined): string | undefined {
+  if (!filter || !filter.conditions || filter.conditions.length === 0) return undefined;
+  return JSON.stringify(filter);
+}
+
 /** 收集当前 search 字段的合法搜索 key 集合（字段名 ∪ 保留键 Q/dtStart/dtEnd） */
 export function collectSearchKeys(fields: FieldMeta[]): Set<string> {
   const keys = new Set<string>();

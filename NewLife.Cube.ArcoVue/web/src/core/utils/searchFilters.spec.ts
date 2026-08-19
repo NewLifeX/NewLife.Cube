@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildViewFilterParam,
   cleanSearchParams,
   collectSearchKeys,
   matchesViewFilter,
@@ -7,10 +8,40 @@ import {
   resolveStatEntries,
 } from './searchFilters';
 import type { FieldMeta } from '@/core/types/field';
+import type { ViewFilter } from './viewProfile';
 
 function field(name: string, extra: Partial<FieldMeta> = {}): FieldMeta {
   return { name, displayName: name, typeName: 'String', ...extra } as FieldMeta;
 }
+
+describe('buildViewFilterParam (OSC-260819e483 P2)', () => {
+  it('empty filter → undefined (不传键，服务端与今日一致)', () => {
+    expect(buildViewFilterParam(null)).toBeUndefined();
+    expect(buildViewFilterParam(undefined)).toBeUndefined();
+    expect(buildViewFilterParam({ logic: 'all', conditions: [] })).toBeUndefined();
+  });
+
+  it('non-empty filter → JSON string with logic=all/any, conditions camelCase', () => {
+    const s = buildViewFilterParam({
+      logic: 'any',
+      conditions: [
+        { field: 'Name', op: 'contains', value: '公司' },
+        { field: 'Enable', op: 'eq', value: true },
+      ],
+    });
+    expect(s).toBe(
+      '{"logic":"any","conditions":[{"field":"Name","op":"contains","value":"公司"},{"field":"Enable","op":"eq","value":true}]}',
+    );
+  });
+
+  it('round-trip: 后端 ParseViewFilter 能按同构结构消费', () => {
+    const filter: ViewFilter = { logic: 'all', conditions: [{ field: 'Sort', op: 'gt', value: 1 }] };
+    const s = buildViewFilterParam(filter)!;
+    const parsed = JSON.parse(s);
+    expect(parsed.logic).toBe('all');
+    expect(parsed.conditions[0]).toEqual({ field: 'Sort', op: 'gt', value: 1 });
+  });
+});
 
 describe('collectSearchKeys', () => {
   it('collects field keys plus reserved Q/dtStart/dtEnd, no more _min/_max (OSC-0016)', () => {
