@@ -1,5 +1,11 @@
 # OSC-260815fa86 Design — 实体增删改自动化
 
+> **现行约束（2026-08-19 修订，覆盖下文 2026-08-16「P0.1 必须落库」锁定）：**  
+> `AutomationRun` **不是** XCode 实体、**不得**再写入 `Cube.xml`、**不得**再生成 `自动化运行.cs`。  
+> 队列 = 进程内内存 POCO（`NewLife.Cube/Automation/AutomationRun.cs`）。  
+> 终态审计 = 系统 `Log`（Action=`Automation`）。`GET /Runs` 只读该 Log。  
+> 实现审计时勿把 §2.2 历史「ConnName=Log 表」或 tasks T12.1 改回来。
+
 ## 0. 适用框架与官方资料
 
 | 场景 | 框架 | 资料 | 本号用法 |
@@ -37,8 +43,8 @@ flowchart TB
 | 状态 | 来源 | 禁止 |
 | --- | --- | --- |
 | 规则定义 | `EntityAutomation` 行（含 GraphJson） | 前端另存一份「运行时图」 |
-| 一次运行队列 | `AutomationRun` 行（queued/running/waiting） | 只写文件日志不落库 |
-| 流程审计日志 | 系统 `Log`（Category=TypePath，Action=`Automation`，Remark=JSON 摘要；**不改 Log 表结构**） | 另造审计表或扩展 Log 列 |
+| 一次运行队列 | 内存 `AutomationRun` POCO（queued/running/waiting）；**不落库** | 再建 `AutomationRun` 实体表 / 写回 `Cube.xml` |
+| 流程审计日志 | 系统 `Log`（Category=TypePath，Action=`Automation`，Remark=JSON 摘要；**不改 Log 表结构**）。`GET /Runs` 只读此源 | 另造审计表、扩展 Log 列、或用独立运行表充当 Runs |
 | 列表是否显示配置按钮 | `flags.canUpdate`（GetPage 权限） | 前端自造管理员角色判断 |
 | 行按钮清单 | `GET /Cube/Automation?typePath=&triggerKind=button&enable=true` | 写死在 DefaultList |
 | 站内未读数 | `GET /Cube/Automation/Inbox/UnreadCount` → `appStore.inboxUnreadCount` | 前端假计数 |
@@ -46,7 +52,7 @@ flowchart TB
 
 ## 2. 数据模型
 
-先改 `NewLife.Cube/Entity/Cube.xml`，再 xcode 生成。禁止手写 `实体自动化.cs` 骨架。Biz 只补查询/编译校验/token。CubeNC csproj **必须 Link** 新实体 + Model（同 EntityComment）。
+先改 `NewLife.Cube/Entity/Cube.xml` **仅**增加 `EntityAutomation`，再 xcode 生成。禁止手写 `实体自动化.cs` 骨架。Biz 只补查询/编译校验/token。CubeNC csproj **必须 Link** 该实体 + Model（同 EntityComment）。**禁止**再为运行队列增加 xml 表或 Link `自动化运行.*`。
 
 ### 2.1 EntityAutomation（ConnName=Cube）
 
@@ -68,26 +74,19 @@ flowchart TB
 
 索引：`(TenantId, TypePath, Enable)`；`HookToken` Unique（允许多个 NULL，实现时用过滤唯一或保存前查重）。
 
-### 2.2 AutomationRun（ConnName=Log）
+### 2.2 AutomationRun（内存队列 POCO，非实体）
 
-| 列 | 类型 | 说明 |
-| --- | --- | --- |
-| Id | Int64 PK time | |
-| TenantId | Int32 | 复制自规则 |
-| AutomationId | Int64 | 索引 |
-| TypePath | String(100) | |
-| RecordKey | String(50) | 触发记录主键字符串；定时/Webhook 无记录时为空 |
-| TriggerKind | String(32) | |
-| Status | String(20) | `queued` / `running` / `waiting` / `succeeded` / `failed` / `cancelled` |
-| Depth | Int32 | 默认 0；runAutomation +1 |
-| ResumeAt | DateTime | delay 到期时间；非 waiting 为 MinValue |
-| NodeTrace | String(-1) | JSON 数组，见 §4.4 |
-| Error | String(500) | 失败摘要 |
-| CreateTime / UpdateTime | DateTime | |
+类路径：`NewLife.Cube/Automation/AutomationRun.cs`。**禁止** `Cube.xml` 表、**禁止** xcode 生成 `自动化运行.*`。
 
-索引：`AutomationId`；`(TypePath, RecordKey)`；`(Status, ResumeAt)`。
+字段语义（进程内）：Id、AutomationId、TypePath、RecordKey、TriggerKind、Status（`queued` / `running` / `waiting`）、Depth、Error、StartedAt/FinishedAt、ResumeAt、WaitKind、WaitPayload、TenantId、TraceId、CreateUser、CreateTime。`Enqueue` / `FindQueued` / `FindDueWaiting` / `HasRecentActive` 为静态方法。NodeTrace 写入系统 Log Remark，不单独建表。
 
-**实现锁定（2026-08-16 验收补齐 P0.1）：** 必须经 `Cube.xml` + xcode 生成实体（`自动化运行.cs`），**禁止**内存字典队列。Worker 除内存 Post 外，定时捞库中 `Status=queued` 以支持进程重启。终态可另写系统 `Log`（Action=`Automation`）供抽屉历史筛选，**不改 Log 表结构**。`GET /Runs` 以本表为准。
+**终态：** `AutomationFlowLog.WriteTerminal` 写系统 `Log`（Action=`Automation`，Remark=JSON）。**不改 Log 表结构。**
+
+**`GET /Runs`：** `AutomationFlowLog.SearchRuns` 解析系统 Log；**不**读运行表。
+
+**进程语义：** 重启丢失 in-flight queued/waiting；delay 只在本进程续跑。可接受。Worker 扫内存 queued / 到期 waiting，不捞库。
+
+**历史（已废止，勿回滚）：** 2026-08-16 T12.1 曾把同名表写入 `Cube.xml`（ConnName=Log）并生成 `自动化运行.cs`，当时锁定「禁止内存队列、`GET /Runs` 以本表为准」。2026-08-19 删除：与系统 Log 重复，且与 §1「流程审计日志 = 系统 Log」冲突。
 
 ### 2.3 JSON 未知字段
 
@@ -118,7 +117,7 @@ flowchart TB
 | fieldChange | `watchFields` | string[] | `[]` | 空数组则等价 update（任意字段变化都触发）；元素 trim，去空，最多 32 个，须属于该实体字段名（保存时用 GetPage 字段校验，未知名剔除并 Message） |
 | dateArrive | `field` | string | 必填 | 必须是 DateTime 类字段 |
 | dateArrive | `offsetMinutes` | int | 0 | 范围 -10080…10080（±7 天）；超界夹紧 |
-| dateArrive | `once` | bool | true | 同一记录同一规则只成功跑一次（用 Run 表 Status=succeeded 查重） |
+| dateArrive | `once` | bool | true | 同一记录同一规则只成功跑一次（`AutomationFlowLog.HasSucceeded` 查系统 Log，**不**查运行表） |
 | schedule | `cron` | string | 必填 | 5 或 6 段 Quartz/NewLife Cron；解析失败 400 |
 | button | `label` | string | 「运行」 | trim，1–12 字 |
 | button | `requirePermission` | `detail`\|`update` | `detail` | 非法→detail |
@@ -142,7 +141,7 @@ flowchart TB
 | Delete | 其它 | | 否 |
 | 任意 | schedule / dateArrive / button / webhook | | 拦截器 **否**（由 Cron/API） |
 
-**跳过工厂（硬编码类型名，大小写不敏感）：** `EntityAutomation`、`AutomationRun`、`CronJob`、`NotificationRecord`、`EntityComment`（评论由 addComment 写入，避免评论再引爆评论流；若未来要对评论自动化，另开 OSC）。
+**跳过工厂（硬编码类型名，大小写不敏感）：** `EntityAutomation`、`CronJob`、`NotificationRecord`、`EntityComment`（评论由 addComment 写入，避免评论再引爆评论流；若未来要对评论自动化，另开 OSC）。内存 `AutomationRun` 不是实体，无需列入。
 
 **租户匹配：** `EnableTenant=false` 或规则 TenantId=0：匹配全部。否则规则 TenantId 必须等于 `TenantContext` 当前租户；平台管理员 TenantId=0 的规则仅在当前租户为 0 时跑（避免平台规则打进租户数据）。实施时用与 `DataScopeMiddleware` 相同的当前租户读取方式。
 
@@ -245,21 +244,21 @@ findRecords 之后、直到下一个 findRecords/end：若 target=found，对 `f
 
 | 文件 | 动作 | 冻结不动 |
 | --- | --- | --- |
-| `NewLife.Cube/Entity/Cube.xml` | 加两表 | 不改既有表结构 |
-| xcode 生成的 `实体自动化*.cs` / `自动化运行*.cs` + Models | 生成 | Biz 外不手改生成区 |
+| `NewLife.Cube/Entity/Cube.xml` | **仅**增加 `EntityAutomation`。**禁止**再增加 `AutomationRun` / `自动化运行` 表 | 不改既有表结构 |
+| xcode 生成的 `实体自动化*.cs` + Models | 生成 | Biz 外不手改生成区；**禁止**再生成 `自动化运行.*` |
 | `NewLife.Cube/Entity/实体自动化.Biz.cs` | FindByTypePath、EnsureHookToken、SaveCompiled | |
-| `NewLife.Cube/Entity/自动化运行.Biz.cs` | Enqueue、Search、Debounce | |
+| `NewLife.Cube/Automation/AutomationRun.cs` | 内存队列 POCO：Enqueue、FindQueued、FindDueWaiting、HasRecentActive | **不是** Entity；勿放到 `Entity/` |
 | `NewLife.Cube/Automation/AutomationModule.cs` | EntityModule：Valid 快照 Dirtys；Insert/Update/Delete 成功后 Enqueue | 不改 UserModule |
 | `NewLife.Cube/Automation/AutomationTrigger.cs` | Collect 匹配矩阵 | |
 | `NewLife.Cube/Automation/AutomationFilter.cs` | `Match(IEntity\|IDictionary, ViewFilterDto)` 与 searchFilters 对齐 | |
 | `NewLife.Cube/Automation/AutomationGraph.cs` | Compile/Validate/Parse | |
 | `NewLife.Cube/Automation/AutomationExecutor.cs` | 跑图 | |
 | `NewLife.Cube/Automation/AutomationActions.cs` | 各动作实现 | |
-| `NewLife.Cube/Automation/AutomationWorker.cs` | IHostedService 消费 queued | |
+| `NewLife.Cube/Automation/AutomationWorker.cs` | IHostedService 消费内存 queued / 到期 waiting | |
 | `NewLife.Cube/Automation/EntityAutomationJob.cs` | `[CronJob("EntityAutomationTick", "0 * * * * ?", Enable=true)]` | 不改 JobService 调度算法 |
 | `NewLife.Cube/Controllers/AutomationController.cs` | 见 §6 | 不把 8+ Action 塞进已膨胀的 CubeController |
 | `NewLife.Cube/CubeService.cs` | UseCube 后 `AutomationModule.RegisterAllFactories()`；DI Worker | 不改登录/租户中间件 |
-| `NewLife.CubeNC/*.csproj` | Link 实体、Model、Automation 目录、Controller（MVC 可不暴露 SPA 路由，但拦截器要挂） | |
+| `NewLife.CubeNC/*.csproj` | Link `EntityAutomation`、Model、Automation 目录、Controller（MVC 可不暴露 SPA 路由，但拦截器要挂）。**不** Link `自动化运行.*` | |
 | `NewLife.Cube.Tests/Osc260815AutomationTests.cs` | 见测试设计 | |
 
 拦截注册：`UseCube` 内 `EntityFactory.InitAll` 之后遍历 `EntityFactory.Entities`，对每个 factory `Modules.Add(new AutomationModule())`（若已添加则跳过）。再找 XCode 是否有全局 Persistence 包装；**以「任意 IEntity.Insert 成功都能入队」为准**，实施时对照 `XCode.EntityModule` / `IEntityPersistence` 实际 API，不得退化为只改 `EntityController2`。
@@ -325,7 +324,7 @@ findRecords 之后、直到下一个 findRecords/end：若 target=found，对 `f
 | POST | `/Cube/Automation` | 可配置 | body：Name, Enable, Priority, TypePath, TriggerKind, TriggerConfig, filter, actions | 服务端编译；201 |
 | PUT | `/Cube/Automation` | 可配置 | 同 POST + Id + Version | 409 若 Version 不匹配 |
 | DELETE | `/Cube/Automation?id=` | 可配置 | | 204 |
-| GET | `/Cube/Automation/Runs` | 可看 | `typePath`；可选 `automationId`、`recordKey`、分页 | 列表，无敏感头 |
+| GET | `/Cube/Automation/Runs` | 可看 | `typePath`；可选 `automationId`、`recordKey`、分页 | 列表来自系统 Log（Action=`Automation`），无敏感头 |
 | POST | `/Cube/Automation/Run` | 按钮权限 | `{ automationId, recordKey }` | 入队 Run Id |
 | POST | `/Cube/Automation/Hook/{token}` | 匿名 | raw JSON body | 200 `{ runId }`；token 无效 404（不暴露是否曾存在）；签名失败 401 |
 | GET | `/Cube/Automation/Meta?typePath=` | 可配置 | 可选 kind | 字段名/显示名/typeName，供选择器 |

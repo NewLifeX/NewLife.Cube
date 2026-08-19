@@ -8,6 +8,7 @@ using NewLife.Caching;
 using NewLife.Collections;
 using NewLife.Common;
 using NewLife.Cube.AI;
+using NewLife.Cube.Automation;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -117,6 +118,38 @@ public partial class ReadOnlyEntityController<TEntity>
         {
             builder.Data2 ??= p.Items;
             p.State = builder;
+        }
+
+        // 视图筛选下推（OSC-260819e483 P2）：复用 AutomationFilter/ViewFilterDto（logic=all/any 与 OSC-0015 同构）。
+        // 任一条件无法下推（未知字段/不支持操作符）则整段返回 null，忽略服务端过滤——前端 matchesViewFilter 仍在，
+        // 翻页不完整为已知限制（只保证本页复核），不 500。
+        // 数据权限表达式（builder）始终保留：logic=any 只 OR 筛选条件，不得放大 CreateWhere 权限范围。
+        var viewFilter = p["viewFilter"];
+        if (!viewFilter.IsNullOrEmpty())
+        {
+            var filter = AutomationFilter.ParseViewFilter(viewFilter);
+            var viewExp = AutomationFilter.TryBuildWhere(Factory, filter);
+            if (viewExp != null)
+            {
+                // WhereBuilder.GetExpression() 对含常量/占位符无法解析的表达式（如多租户 fail-closed "1=0"）会抛异常，
+                // 此时放弃 viewFilter 下推（State 保持原 WhereBuilder，FindAll 仍按既有路径消费），前端 matchesViewFilter 兜底，不 500
+                try
+                {
+                    if (builder != null)
+                    {
+                        builder.Factory ??= Factory;
+                        p.State = builder.GetExpression() & viewExp;
+                    }
+                    else
+                    {
+                        p.State = viewExp;
+                    }
+                }
+                catch
+                {
+                    if (builder == null) p.State = null;
+                }
+            }
         }
 
         // 数字型主键，默认降序

@@ -1,5 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using NewLife.Remoting;
 using XCode;
 
 namespace NewLife.Cube.Automation;
@@ -7,6 +9,23 @@ namespace NewLife.Cube.Automation;
 /// <summary>与前端 matchesViewFilter 同构的 C# 匹配</summary>
 public static class AutomationFilter
 {
+    /// <summary>解析 viewFilter 查询参数（OSC-260819e483 P2）：空返回 null；长度 &gt;4096 或 JSON 损坏抛 ApiException(400)，不执行半截 AST</summary>
+    /// <param name="viewFilter">查询参数原文</param>
+    /// <returns>筛选条件；空为 null</returns>
+    public static ViewFilterDto ParseViewFilter(String viewFilter)
+    {
+        if (viewFilter.IsNullOrEmpty()) return null;
+        if (viewFilter.Length > 4096) throw new ApiException(400, "筛选条件过长");
+        try
+        {
+            return JsonNode.Parse(viewFilter).DeserializeFilter();
+        }
+        catch
+        {
+            throw new ApiException(400, "筛选条件无效");
+        }
+    }
+
     /// <summary>尝试下推为 SQL Where；任一条件无法下推则返回 null（调用方改分页内存过滤）</summary>
     public static Expression TryBuildWhere(IEntityFactory fact, ViewFilterDto filter)
     {
@@ -42,6 +61,7 @@ public static class AutomationFilter
                 "lt" => fi < val,
                 "lte" => fi <= val,
                 "contains" => fi.Contains("" + val),
+                "notcontains" => fi.NotContains("" + val),
                 "after" => fi > val,
                 "before" => fi < val,
                 _ => null,

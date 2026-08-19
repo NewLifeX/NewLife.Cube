@@ -14,7 +14,7 @@ public static class AutomationTrigger
     static readonly ConcurrentDictionary<String, Int64> _debounce = new(StringComparer.OrdinalIgnoreCase);
     static readonly HashSet<String> SkipTypes = new(StringComparer.OrdinalIgnoreCase)
     {
-        nameof(EntityAutomation), nameof(AutomationRun), nameof(CronJob),
+        nameof(EntityAutomation), nameof(CronJob),
         nameof(NotificationRecord), nameof(EntityComment),
     };
 

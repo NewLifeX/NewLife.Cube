@@ -1,6 +1,7 @@
 # NewLife.Cube.ArcoVue 企业中后台迁移与产品化方案
 
 > 版本：2026-08-02（修订：看板分组字段取值修复；`EntityViewProfile`→`ViewProfile` 前后端统一重构；§8 收敛为「固定 CRUD 容器 + 有限用户运行时自定义」）
+> 版本：2026-08-18（复审：§3.1 矩阵现状列按代码实测刷新至全部已归档 OSC；§10.4 差距表补复审状态；§13 附录补全已归档变更记录）
 > 状态：可落地执行稿  
 > 适用范围：以 NewLife.Cube（WebAPI）为后端，将 NewLife.Cube.ArcoVue 建设为默认企业中后台皮肤；复用 NewLife.Cube.Vue 能力成果，对接字节官方组件栈，支持用户级呈现配置与 AI（OpenSpec）协作。
 
@@ -59,7 +60,7 @@
 | 开箱即用后台 | 登录、菜单、权限、用户/角色/菜单/日志等内置模块可用 | P0 |
 | 元数据驱动业务页 | 新实体配置字段与菜单后自动出页 | P0 |
 | 多视图工作台 | table / tree / card / gantt 可切换，默认视图可记 | P0 |
-| 记录抽屉 | 左抽屉：表单 / 历史 / 评论 | P0 |
+| 记录抽屉 | 右抽屉：表单 / 历史 / 评论 | P0 |
 | 个性化工作台 | 每用户布局、主题、视图偏好独立 | P0 |
 | 覆写扩展 | Section / 整页 / FlowGram 流程页 | P1 |
 | 工作流画布 | FlowGram 审批/业务流样例 | P1 |
@@ -128,39 +129,39 @@
 | 菜单驱动路由 + 鉴权守卫 | PERM-3，SPA-1 | ✅ | ✅ | ✅ | P0 |
 | 登录（密码/验证码/OAuth） | AUTH-2/6/8，OAUTH-1 | ✅ | ✅ | ✅ | P0 |
 | Token 刷新 / 登出 | AUTH-3 | ✅ | ✅ | ✅ | P0 |
-| MFA 二步验证 UI | AUTH-10，`/Mfa/*` | ✅ | ❌（api-core 已封装 `/Mfa/*`，UI 未做） | ✅ | P1 |
-| Challenge / 验证码登录增强 | AUTH-4/5 | ✅ | 🟠（api 已封装，UI 未完整） | ✅ | P1 |
+| MFA 二步验证 UI | AUTH-10，`/Mfa/*` | ✅ | ✅（登录二步屏 + 安全设置开启/关闭，`/Mfa/*`） | ✅ | P1 |
+| Challenge / 验证码登录增强 | AUTH-4/5 | ✅ | ✅（needChallenge + getChallenge 加密提交 + 图形验证码） | ✅ | P1 |
 | 导入导出 | DATA-9 | ✅ | ✅ | ✅ | P0 |
 | 批量删除 | DATA-10 | ✅ | ✅ | ✅ | P0 |
 | 批量其它操作（启用/禁用等） | 工具条扩展 | ✅ | ❌（工具栏占位） | 🟠 | P2 |
 | ListField.Url / dataAction 自定义链接 | 单元格 + 操作列分流 | ✅（Bootstrap 单元格 / Metronic 更多） | ✅（OSC-2608178bdb 方案 E） | 🟢 | Done |
-| 图表 GetChartData | SPA-15 | ✅ | ✅（后端 option 渲染壳，无前端配置） | ✅ | P1 |
+| 图表 GetChartData | SPA-15 | ✅ | 🟠（后端 option 渲染壳有；洞察面板暂隐藏待简易图表看板，OSC-0016） | ✅ | P1 |
 | 字段控件矩阵（含上传/JSON/富文本等） | DATA-11 等 | 🟠～✅ | ✅（20+ 控件，FieldInput） | ✅ | P0 |
 | LOV 选择器 | SYS-16～20 | ✅ | ✅（LovSelect + lov-api） | ✅ | P1 |
 | 多页签 TagsView | 壳 | ✅ | ✅ | ✅ | P0 |
 | 多布局（侧/顶/混合）可配置 | → UserProfile | ✅ 多布局 | ✅ 配置化（RootLayout 动态组件） | ✅ 配置化 | P0 |
-| 主题/密度/i18n | 壳 | ✅ | 🟠 主题/密度 ✅；i18n ❌ | ✅ | P0 |
-| UserProfile 持久化 | **后端新建** | ➖/局部 | ✅（localStorage + 后端双通道；`workspace.defaultView/pageSize` 未消费） | ✅ | P0 |
-| ViewProfile（列/视图） | **后端新建** | ➖/局部 | ✅（直接后端权威，命名视图/列/sort/chrome/mapping 全落地） | ✅ | P0 |
+| 主题/密度/i18n | 壳 | ✅ | 🟠 主题/密度/预置色板 ✅（OSC-0017）；i18n ❌ | ✅ | P0 |
+| UserProfile 持久化 | **后端新建** | ➖/局部 | ✅（localStorage + 后端双通道；`workspace.defaultView/pageSize` 已消费：无 ViewProfile 回落默认视图、页面级 PageSize，OSC-0012） | ✅ | P0 |
+| ViewProfile（列/视图） | **后端新建** | ➖/局部 | ✅（直接后端权威：命名视图/列/sort/chrome/mapping + 筛选记忆 + 受限表单布局 FormJson + 全局只读模板 + 实体级预定义查询，OSC-0012~0016） | ✅ | P0 |
 | VTable 表格+自定义列 | 本方案增强 | 🟠 DOM 表 | ✅ | ✅ | P0 |
 | 树表视图 | DATA-3 | 🟠 部分页 | ✅（treeBuilder 组装 + VTable hierarchy） | ✅ | P0 |
 | 卡片视图 | Vue 有未接线 stub | ❌ | ✅（CardList/RecordCard） | ✅ | P0 |
-| 甘特视图 | 本方案新建 | ❌ | ✅ 只读（vtable-gantt，无拖拽写回） | ✅ | P0 |
-| 左侧记录抽屉 | 本方案 | ❌ 多为弹层 | 🟠 右抽屉（表单/历史 ✅；评论 stub 待接线） | ✅ | P0 |
+| 甘特视图 | 本方案新建 | ❌ | ✅ 只读（vtable-gantt 计划/实际双条重叠对比 + 任务条定位图标 + 表宽拖拽持久化 + 固定色，OSC-0019；无拖拽写回） | ✅ | P0 |
+| 右侧记录抽屉 | 本方案 | ❌ 多为弹层 | ✅ 右抽屉（表单/历史/评论全接线，OSC-0008） | ✅ | P0 |
 | 修改历史（Log 筛选） | SYS-3 | 🟠 独立日志页 | ✅（抽屉内 timeline，无分页/无 diff） | ✅ 抽屉 Tab | P0 |
-| 实体评论 EntityComment | **后端新建** | ❌ | ❌（后端 OSC-0002 ✅，前端未接线） | ✅ | P0 |
+| 实体评论 EntityComment | **后端新建** | ❌ | ✅（OSC-0008 接线：api-core comment API + 抽屉评论 Tab 顶层/回复/删除本人） | ✅ | P0 |
 | Section 页面覆写 | Vue skills | ✅ | ✅ 机制（useSections，仅 `_demo` 案例） | ✅ | P1 |
-| apps 自定义业务页 | cube-admin 等 | ✅ | 🟠 机制 + `_demo`（无真实业务案例） | 🟠 机制+高频页 | P1 |
+| apps 自定义业务页 | cube-admin 等 | ✅ | 🟠 机制 + `_demo` + Admin/Db、Admin/File 专用页（detectPageKind custom） | 🟠 机制+高频页 | P1 |
 | 微前端多应用运行时 | Vue microApp | ✅ | ➖（未做） | ➖ | — |
 | FlowGram 工作流画布 | 本方案 | ❌ | ❌（未做） | ✅ 样例 | P1 |
 | 字段级变更 diff | 相对 Log | ❌ | ❌ | ➖ 一期 / P2 二期 | P2 |
-| 单元/组件测试体系 | Vue Vitest 等 | ✅ | 🟠（逻辑单测 88 用例；无组件测试） | ✅ 关键路径 | P0 |
-| E2E（Cypress 级） | Vue | ✅ | ❌ | 🟠 冒烟即可 | P2 |
+| 单元/组件测试体系 | Vue Vitest 等 | ✅ | 🟠（逻辑单测 495 用例全过；组件测试仍缺） | ✅ 关键路径 | P0 |
+| E2E（Cypress 级） | Vue | ✅ | 🟠 Playwright 冒烟 3 spec（认证/实体表单/对象主页，OSC-2608139feb） | 🟠 冒烟即可 | P2 |
 | 嵌入 NuGet / UseArcoVue | SPA-2/3/7 | ✅ UseVue | ✅ | ✅ | P0 |
 
 > **实体自动化 ≠ FlowGram。** OSC-260815fa86 已交付飞书多维表格风格的「自动化」（线性 GraphJson + C# `AutomationExecutor`）。FlowGram 仍只用于后期「工作流」画布样例，**不是**本自动化运行时。
 
-> 注：以上「ArcoVue 现状」列已于 2026-08-02 对照代码实测刷新（OSC-0001~0006 已归档后）。刷新依据见 §10.4 审查结论。
+> 注：以上「ArcoVue 现状」列已于 2026-08-18 对照代码复审刷新（OSC-0001~0019 与 OSC-2608 号全部归档后）。刷新依据见 §10.4 审查结论。
 
 矩阵随里程碑更新「ArcoVue 现状」列；目标为 ➖ 的项不得在 OSC 中膨胀为必做范围。
 
@@ -219,7 +220,7 @@ NewLife.Cube.ArcoVue/web/src/
 ├── features/
 │   ├── multi-view/           # 视图切换编排
 │   ├── vtable/               # VTable / Gantt 适配
-│   ├── record-drawer/        # 左抽屉三 Tab
+│   ├── record-drawer/        # 右抽屉三 Tab
 │   └── flowgram/             # 工作流（后期）
 ├── views/dynamic/
 ├── views/login/
@@ -484,7 +485,7 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
 | 飞书能力 | 本方案处理 | 原因 |
 |----------|------------|------|
 | 同一数据源的列表、卡片、详情、筛选、排序 | **采用**：复用命名视图、6 类视图、右侧 RecordDrawer | 当前 `DefaultList` 已具备，用户收益直接 |
-| 固定区域展示统计/图表 | **有限采用**：列表顶部可选一个洞察区 | 复用 `GetPage.stat` / `GetChartData`，不引入区块编排 |
+| 固定区域展示统计/图表 | **有限采用**：列表顶部可选一个洞察区 | 统计走 `GetList.stat`；用户图走 ViewProfile `insight.chartOption`；子类 `GetChartData` 非空时仍可用 |
 | 字段显示与表单组织 | **采用**：仅顺序、显隐、按现有 Category 分组折叠 | 不改变 Cube 元数据、字段控件、校验和权限 |
 | 管理员发布默认界面 | **采用**：每实体一个全局只读模板，个人可覆盖 | 满足统一体验，避免首期角色/租户优先级与协作编辑 |
 | 任意画布、拖拽区块、组合布局、嵌套标签页 | **不做** | 会新增 Widget 生命周期、布局引擎、移动端和性能问题 |
@@ -496,7 +497,7 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
 
 1. `GetPage` 是字段、权限、表单和统计的唯一元数据来源；`GetList`、`GetDetail` 与 CRUD API 仍是唯一数据/写入通道。
 2. 容器固定顺序为：可选**洞察区** → 搜索区 → 命名视图 Tab/工具栏 → 当前数据视图 → 分页 → 右侧 `RecordDrawer`。不允许用户新增、删除、拖动或嵌套页面区块。（注：搜索已随 OSC-0016 改为工具栏「搜索」按钮打开的右侧抽屉 `SearchDrawer`，非容器内联区块；洞察区 `InsightPanel` 暂隐藏，待简易图表看板设计时再启用。）
-3. 洞察区最多一个：统计标签与一张固定图表（`insight.showStat` / `showChart` 两个独立开关）可单独或同时启用；图表仍按当前实体和当前筛选条件取数，不支持用户录入 ECharts option。
+3. 洞察区最多一个：统计标签与一张图表（`insight.showStat` / `showChart` 可同时）。图表 option 由用户在 InsightPanel 配置，写入当前 NamedView 的 `insight.chartOption`（ViewProfile `ViewsJson`）；数据来自当前列表，保存时不写入 `series.data`/`dataset.source`。开发者重写 `OnGetChartData` 且返回非空时仍优先。不做多图看板或拖拽布局。
 4. NamedView 继续承载 table/tree/card/kanban/calendar/gantt 的列、映射、排序和工具栏外观；现有 `widthMode` / `heightMode` 只表示当前视图的容器尺寸，不升级为通用 Widget 尺寸系统。
 
 #### 8.2.3 受限配置模型
@@ -505,7 +506,7 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
 |------|------|--------------|----------|
 | 命名视图 | `ViewsJson` / `ActiveViewId` / `ColumnsJson` | 视图类型、列显隐/顺序/宽度/标题、排序、已有 mapping/chrome | 自定义 SQL、跨实体数据源、绕过字段权限 |
 | 筛选记忆 | `FiltersJson` | 当前实体的搜索字段条件；可选择保存为该命名视图默认条件 | 新增后端未声明的查询字段或表达式 |
-| 洞察区 | `ViewsJson` 中当前 NamedView 的 `insight` 子配置 | `showStat` / `showChart` 两个独立开关（可同时）；仅保存展示偏好 | 任意图表 option、多个图表或拖拽位置 |
+| 洞察区 | `ViewsJson` 中当前 NamedView 的 `insight` | `showStat` / `showChart`；可选一张 `chartOption`（ECharts JSON 模板） | 多图看板、拖拽位置、option 内脚本/函数、把列表快照写进 Profile |
 | 表单布局 | **新增 `FormJson`** | add/edit/detail 的字段顺序、显隐、按 GetPage `Category` 的分组折叠 | 新字段、字段类型/控件、默认值、校验、必填、权限、提交动作 |
 
 `FormJson` 仅是前端呈现偏好；字段是否存在、是否可编辑、是否必填以及提交载荷仍由 GetPage 与 `prepareSubmitPayload` 判定。配置中出现已删除字段时静默忽略；元数据中新字段按所属分组追加且默认可见，保证升级后仍能操作。
@@ -747,21 +748,21 @@ Draft → Accepted → Implementing → Validating → Done
 
 - 矩阵现状列、功能清单回写、冒烟、harness；无大功能开发。另清理 §10.4 所列占位/死代码。
 
-### 总验收清单（2026-08-02 刷新）
+### 总验收清单（2026-08-02 刷新；2026-08-18 复审）
 
 - [x] 仅 `UseArcoVue`：Admin + 新业务实体自动 CRUD  
 - [x] **OSC-0002** 三实体后端已合并且带 XUnitTest  
 - [x] 布局/主题来自 UserProfile（OSC-0004）；列表视图/列来自 ViewProfile（OSC-0005+）  
 - [x] 六视图（table/tree/card/kanban/calendar/gantt）✅；右抽屉表单/历史 ✅；**评论 Tab 已随 OSC-0008 接线**
-- [ ] §3.1 矩阵 P0 目标：大部分达成；书面豁免 = i18n、组件测试（评论接线已随 OSC-0008 完成）
-- [ ] 功能清单可追溯；各 OSC 含测试设计与 verify 记录  
+- [ ] §3.1 矩阵 P0 目标：大部分达成；残留缺口 = i18n、组件测试（2026-08-18 复审确认仍缺，未做书面豁免）
+- [x] 功能清单可追溯；各 OSC 含测试设计与 verify 记录（21 个已归档 OSC 均有 verify.md 与测试；功能清单已回写 OSC 编号）  
 - [x] OSC 编号连续（0001~0006 已归档）、依赖方编号大于被依赖方  
 
-### 10.4 代码审查结论（2026-08-02）
+### 10.4 代码审查结论（2026-08-02；2026-08-18 复审）
 
-对照本方案对 NewLife.Cube.ArcoVue 全量代码审查（OSC-0001~0006 归档后），「ArcoVue 现状」列已按实测刷新（§3.1）。
+对照本方案对 NewLife.Cube.ArcoVue 全量代码审查（OSC-0001~0006 归档后），「ArcoVue 现状」列已按实测刷新（§3.1）。**2026-08-18 复审**（OSC-0001~0019 与 OSC-2608 号全部归档后）再次按代码实测刷新矩阵与差距表。
 
-**达成度高**：零配置 CRUD、6 视图工作台（table/tree/card/kanban/calendar/gantt）、UserProfile 双通道消费（布局/主题/密度）、ViewProfile 直接后端权威（命名视图/列/sort/chrome/mapping）、apps 两级覆写（整页+Section）、树形组装与 VTable hierarchy，均落地并带单测（16 spec / 88 用例）。
+**达成度高**：零配置 CRUD、6 视图工作台（table/tree/card/kanban/calendar/gantt）、UserProfile 双通道消费（布局/主题/密度）、ViewProfile 直接后端权威（命名视图/列/sort/chrome/mapping）、apps 两级覆写（整页+Section）、树形组装与 VTable hierarchy，均落地并带单测。**2026-08-18 实测：55 spec / 495 用例全过 + Playwright E2E 3 spec**。
 
 **差距与后续规划**：
 
@@ -770,13 +771,13 @@ Draft → Accepted → Implementing → Validating → Done
 | 1 | ~~评论 Tab 前端未接线~~（OSC-0008 已接线：api-core comment API + RecordDrawer 评论 Tab） | P0 | ✅ 已解决 |
 | 2 | ~~`UserProfile.workspace.defaultView / pageSize` 已建模未消费~~（OSC-0012：无 ViewProfile 时回落默认视图；页面级 PageSize 已按 typePath 接入，旧全局值仅作种子） | P0 | ✅ 已解决 |
 | 3 | ~~筛选记忆未持久化（filtersJson 预留未用；分组为占位）~~（OSC-0012：仅保存当前实体、当前命名视图的搜索条件；不做通用数据范围引擎。OSC-0015：筛选构建器条件组保存到 `NamedView.filter` 纯前端过滤；多级分组 ≤3 字段保存到 `NamedView.group`，table 用 VTable 原生 groupBy、树视图不允许分组） | P1 | ✅ 已解决 |
-| 4 | 列 frozen 仅 left/false，无 right | P1 | 补充右冻结 |
-| 5 | 角色/租户级配置层未实现（仅系统默认+用户两级，§5.1） | P1 | 分层扩展 |
-| 6 | 组件测试缺失（仅纯逻辑单测） | P1 | `@vue/test-utils` + happy-dom 覆盖关键组件 |
-| 7 | ~~table/tree 分组入口 `Message.info` 占位~~（OSC-0015 已实现 GroupPopover 多级分组；排序走表头，工具栏排序按钮已移除）、`NamedViewsToolbar.vue` 无引用 | P2 | 清理或实现 |
-| 8 | `ListTable` 树列标记排除条件写 `__check`（实际复选框列为 `__checked`），showCheckbox+hierarchy 同时开启时 tree:true 可能标错列 | P2 | 修正排除条件 |
-| 9 | i18n 未实现（矩阵目标 ✅ 但实际无文案外置） | P1 | 文案外置 |
-| 10 | MFA UI / FlowGram / E2E 冒烟 | P1/P2 | 后续 OSC（0010/0011） |
+| 4 | 列 frozen 仅 left/false，无 right（2026-08-18 复审仍未做） | P1 | 补充右冻结 |
+| 5 | 角色/租户级配置层未实现（仅系统默认+用户两级，§5.1；2026-08-18 复审仍未做） | P1 | 分层扩展 |
+| 6 | 组件测试缺失（仅纯逻辑单测；2026-08-18 复审：495 单测全过但组件测试仍为 0） | P1 | `@vue/test-utils` + happy-dom 覆盖关键组件 |
+| 7 | ~~table/tree 分组入口 `Message.info` 占位~~（OSC-0015 已实现 GroupPopover 多级分组；排序走表头，工具栏排序按钮已移除）、`NamedViewsToolbar.vue` 无引用（2026-08-18 复审仍未清理） | P2 | 清理或实现 |
+| 8 | `ListTable` 树列标记排除条件写 `__check`（实际复选框列为 `__checked`），showCheckbox+hierarchy 同时开启时 tree:true 可能标错列（2026-08-18 复审仍未修） | P2 | 修正排除条件 |
+| 9 | i18n 未实现（矩阵目标 ✅ 但实际无文案外置；2026-08-18 复审仍缺，未做书面豁免） | P1 | 文案外置 |
+| 10 | ~~MFA UI~~（已实现：登录二步屏 + 安全设置开启/关闭，`/Mfa/*`）、~~E2E 冒烟~~（Playwright 3 spec，OSC-2608139feb）；FlowGram 未做 | P1/P2 | FlowGram 归 OSC-0010 |
 | 11 | ~~通用实体表单/列表/搜索元数据治理~~（OSC-0009 已落地：GetPage 分区统一回退、静态字典优先、Int64 精度、LIST LOV 权威反查 `BatchLabel`、详情/搜索/六视图共享 label、字段级错误映射） | P0 | ✅ 已解决；Cube.Vue core 对齐另行立项 |
 
 **文档一致性修正**：§7 与 §6.3 的「左侧抽屉」表述与本方案 §8.1 契约（`placement="right"`）及实际实现（右侧抽屉）不一致，本审查统一为「右侧抽屉」，并保留「飞书多维表为左抽屉」的范式差异说明。
@@ -830,8 +831,20 @@ Draft → Accepted → Implementing → Validating → Done
 | OSC-0009 ✅ | 实体元数据表单、列表与搜索治理：GetPage 分区统一回退与回填同源；静态字典优先控件；Int64 精度保护；LIST LOV 按 `valueField/labelField` 权威反查（后端 `BatchLabel` 增强）；详情/搜索/六视图共享 label resolver；字段级错误映射 | 仅 ArcoVue + `LovController.BatchLabel`；不含 Cube.Vue 前端 | OSC-0003、OSC-0008 |
 | OSC-0010 | FlowGram 单一样例 | 不扩流程平台 | — |
 | OSC-0011 | 收口：矩阵/功能清单/冒烟/harness + 清理 §10.4 占位/死代码 | 无新功能 | 建议前述 P0 已完成 |
+| OSC-0012 ✅ | 筛选记忆与单一洞察区：无 ViewProfile 回落默认视图、页面级 PageSize、查询洞察面板（GetChartData） | 仅 ArcoVue | OSC-0002、OSC-0005 |
+| OSC-0013 ✅ | 受限表单布局（FormJson 系统全局唯一、仅管理员可写） | 仅 ArcoVue | OSC-0002、OSC-0012 |
+| OSC-0014 ✅ | 全局只读模板（UserId=0、仅管理员、个人>模板>系统默认解析与来源展示） | 仅 ArcoVue | OSC-0002 |
+| OSC-0015 ✅ | 筛选构建器与多级分组（条件组保存 NamedView.filter 纯前端过滤；≤3 字段 NamedView.group，table VTable groupBy、树视图禁分组；搜索面板折叠） | 仅 ArcoVue | OSC-0012 |
+| OSC-0016 ✅ | 通用查询与预定义查询（右抽屉「高级搜索」；实体级个人预定义查询 QueriesJson） | 仅 ArcoVue | OSC-0012、OSC-0015 |
+| OSC-0017 ✅ | 主题预置色与图标体系统一（13 个 Arco 官方预置色板；IconPark 全局注册） | 仅 ArcoVue | OSC-0004 |
+| OSC-0019 ✅ | 甘特图视图增强（计划/实际双条重叠对比、任务条定位图标、表宽拖拽持久化、固定色） | 仅 ArcoVue | OSC-0006 |
+| OSC-260813397e ✅ | 飞书风登录 SSO 与多租户隔离 | 仅 ArcoVue | — |
+| OSC-2608139feb ✅ | 表单值集级联与通用对象主页（DefaultObject/DefaultHome、Cascader path-mode、Playwright E2E） | 仅 ArcoVue | OSC-0003 |
+| OSC-260813c3e9 ✅ | 页面 TS 抽离与协作编号（OSC-YYMMDDxxxx 规则） | 协作治理 | — |
+| OSC-260815fa86 ✅ | 实体增删改自动化（GraphJson + C# AutomationExecutor；非 FlowGram 运行时） | Cube + ArcoVue | OSC-0003 |
+| OSC-2608178bdb ✅ | 列表自定义链接分流放置（方案 E：Url/dataAction 按单元格 vs 操作列分流） | 仅 ArcoVue | OSC-0007 |
 
-后续能力（**有限视图/表单自定义 OSC-0012~0014**、MFA UI、i18n、组件测试、角色/租户配置层、E2E 冒烟等）自 **OSC-0012** 起顺延新增，仍保持「依赖在前、一号一事」；LOV 已在 OSC-0006 前落地，不再列为后续；筛选记忆（FiltersJson）归入 OSC-0012，受限表单布局（FormJson）归入 OSC-0013，全局只读模板归入 OSC-0014。
+截至 2026-08-18 已归档 21 号（0001~0019 中 0010/0011 从未创建、0018 未完成，另有 OSC-2608 号五单）。剩余待办：**OSC-0010** FlowGram 样例、**OSC-0011** 收口（矩阵/功能清单/冒烟/harness + 清理 §10.4 占位/死代码）、**OSC-0018** 实体界面自定义设计方案（Draft 进行中）、i18n、组件测试、角色/租户配置层。
 
 ---
 

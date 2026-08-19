@@ -239,7 +239,7 @@ public class AutomationController(TokenService tokenService) : ControllerBaseX
         return Json(0, "ok");
     }
 
-    /// <summary>运行历史（读 AutomationRun 表，ConnName=Log）</summary>
+    /// <summary>运行历史（读系统审计 Log，Action=Automation）</summary>
     [HttpGet("Runs")]
     public ActionResult Runs(String typePath, Int64 automationId = 0, String recordKey = null, Int32 pageIndex = 1, Int32 pageSize = 20)
     {
@@ -249,59 +249,35 @@ public class AutomationController(TokenService tokenService) : ControllerBaseX
         if (typePath.IsNullOrEmpty()) return Json(400, "typePath 不能为空");
         if (!AutomationAuth.CanViewRuns(user, typePath)) return Json(403, "无权查看");
         var page = new PageParameter { PageIndex = pageIndex <= 0 ? 1 : pageIndex, PageSize = pageSize <= 0 ? 20 : pageSize };
-        var list = AutomationRun.SearchRuns(typePath, automationId, recordKey, page);
+        var list = AutomationFlowLog.SearchRuns(typePath, automationId, recordKey, page);
         var names = new Dictionary<Int64, String>();
-        var data = list.Select(run =>
+        var data = list.Select(item =>
         {
-            if (!names.TryGetValue(run.AutomationId, out var name))
+            var log = item.Log;
+            var row = item.Row;
+            if (!names.TryGetValue(row.AutomationId, out var name))
             {
-                name = EntityAutomation.FindById(run.AutomationId)?.Name;
-                names[run.AutomationId] = name;
+                name = row.Name.IsNullOrEmpty() ? EntityAutomation.FindById(row.AutomationId)?.Name : row.Name;
+                names[row.AutomationId] = name;
             }
             return (Object)new
             {
-                id = run.Id,
-                automationId = run.AutomationId,
+                id = log.ID,
+                automationId = row.AutomationId,
                 name,
-                typePath = run.TypePath,
-                recordKey = run.RecordKey,
-                triggerKind = run.TriggerKind,
-                status = run.Status,
-                error = run.Error,
-                detail = RunDetail(name, run),
-                nodes = SummarizeNodes(run.NodeTrace),
-                success = run.Status.EqualIgnoreCase("succeeded"),
-                createTime = run.CreateTime,
-                updateTime = run.UpdateTime,
+                typePath,
+                recordKey = row.RecordKey,
+                triggerKind = row.TriggerKind,
+                status = row.Status,
+                error = row.Error,
+                detail = row.Detail,
+                nodes = row.Nodes,
+                success = log.Success || (row.Status + "").EqualIgnoreCase("succeeded"),
+                createTime = log.CreateTime,
+                updateTime = log.CreateTime,
             };
         }).ToList();
         return Json(0, null, data, new { page = new { page.PageIndex, page.PageSize, page.TotalCount } });
-    }
-
-    static String RunDetail(String name, AutomationRun run)
-    {
-        var title = name.IsNullOrEmpty() ? "流程" : $"流程「{name}」";
-        var kind = run.TriggerKind.IsNullOrEmpty() ? "" : $"（{run.TriggerKind}）";
-        var record = run.RecordKey.IsNullOrEmpty() ? "" : $"，记录 #{run.RecordKey}";
-        if (!run.Error.IsNullOrEmpty()) return $"{title}{kind}执行失败{record}：{run.Error}";
-        if (run.Status.EqualIgnoreCase("succeeded")) return $"{title}{kind}执行成功{record}。";
-        if (run.Status.EqualIgnoreCase("waiting")) return $"{title}{kind}等待续跑{record}。";
-        if (run.Status.EqualIgnoreCase("queued") || run.Status.EqualIgnoreCase("running"))
-            return $"{title}{kind}执行中{record}。";
-        return $"{title}{kind}状态 {run.Status}{record}。";
-    }
-
-    static String SummarizeNodes(String nodeTrace)
-    {
-        if (nodeTrace.IsNullOrEmpty()) return null;
-        try
-        {
-            var n = System.Text.Json.Nodes.JsonNode.Parse(nodeTrace);
-            var items = n?["items"] as System.Text.Json.Nodes.JsonArray ?? n as System.Text.Json.Nodes.JsonArray;
-            if (items == null || items.Count == 0) return null;
-            return String.Join(" → ", items.Select(x => x?["type"]?.ToString()).Where(s => !s.IsNullOrEmpty()).Take(12));
-        }
-        catch { return null; }
     }
 
     /// <summary>按钮手动跑</summary>

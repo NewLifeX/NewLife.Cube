@@ -69,7 +69,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         {
             Data = list.ToList(),
             Page = p.ToModel(),
-            Stat = (TEntity)p.State,
+            // p.State 可能是 WhereBuilder（无 RetrieveState 时）或统计实体（RetrieveState 时），
+            // 仅当其为 TEntity 时才作为 Stat 输出，否则为 null，不得抛 InvalidCastException（OSC-260819e483 P1）
+            Stat = p.State as TEntity,
             TraceId = DefaultSpan.Current?.TraceId,
         };
     }
@@ -234,8 +236,21 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     protected virtual IList<DataField> PrepareFieldsForApi(IList<DataField> fields)
     {
         if (fields == null) return fields;
-        foreach (var df in fields) df?.PrepareForApi();
+        foreach (var df in fields)
+        {
+            if (df == null) continue;
+            df.PrepareForApi();
+            ApplyRequired(df);
+        }
         return fields;
+    }
+
+    /// <summary>按 Required 矩阵设置必填（OSC-260819e483 P1）：字段为 null 跳过；主键/只读/可空=false；其余（含布尔 NOT NULL）为 true。不在 Fill 内写，避免影响 MVC 校验语义；布尔 false、数字 0 不视为空，校验器已如此</summary>
+    /// <param name="df">字段</param>
+    protected static void ApplyRequired(DataField df)
+    {
+        if (df == null) return;
+        df.Required = !df.PrimaryKey && !df.ReadOnly && !df.Nullable;
     }
     #endregion
 

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.Automation;
 using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
@@ -75,15 +76,28 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
         // 一页显示全部菜单，取自缓存
         p.PageSize = 10000;
 
+        IEnumerable<TEntity> list;
         var set = GetSetting();
         if (set != null && !set.Parent.IsNullOrEmpty())
         {
             var pkey = p[set.Parent].ToInt(-1);
-            if (pkey >= 0)
-                return EntityTree<TEntity>.FindAllChildsByParent(pkey);
+            list = pkey >= 0 ? EntityTree<TEntity>.FindAllChildsByParent(pkey) : EntityTree<TEntity>.Root.AllChilds;
+        }
+        else
+        {
+            list = EntityTree<TEntity>.Root.AllChilds;
         }
 
-        return EntityTree<TEntity>.Root.AllChilds;
+        // 视图筛选内存过滤（OSC-260819e483 P2）：树数据来自缓存不走 FindAll，无法下推 SQL，直接在缓存列表上 Match
+        var viewFilter = p["viewFilter"];
+        if (!viewFilter.IsNullOrEmpty())
+        {
+            var filter = AutomationFilter.ParseViewFilter(viewFilter);
+            if (filter.Conditions != null && filter.Conditions.Count > 0)
+                list = list.Where(e => AutomationFilter.Match(e, filter));
+        }
+
+        return list;
     }
 
     ///// <summary>要导出Xml的对象</summary>

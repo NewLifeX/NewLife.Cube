@@ -6,7 +6,7 @@
 
 ## T1 实体与生成
 
-- [x] 1.1 `Cube.xml` 按 design §2.1 §2.2 增加 `EntityAutomation`（默认 ConnName=Cube）、`AutomationRun`（表级 `ConnName="Log"`，同 NotificationRecord）；列名、索引、DataScale 与 xml 一致。
+- [x] 1.1 `Cube.xml` 按 design §2.1 增加 `EntityAutomation`（默认 ConnName=Cube）；列名、索引、DataScale 与 xml 一致。~~曾含 `AutomationRun` ConnName=Log~~ → **2026-08-19 已从 xml 删除，禁止加回**（现行见 design 文首修订）。
 - [x] 1.2 xcode 生成；Biz 实现 `FindAllByTypePath`、`FindByHookToken`、`EnsureHookToken`（保存走 Controller 编译，不另开 SaveCompiled 入口）。
 - [x] 1.3 `NewLife.CubeNC.csproj` Link 实体 cs、Biz、Model（与 EntityComment 相同模式）。
 
@@ -75,5 +75,6 @@
 
 ## T12 验收缺口补齐（openspec-verify 2026-08-16）
 
-- [x] 12.1 **P0.1** `AutomationRun` 按 design §2.2 落 `Cube.xml`（ConnName=Log）+ xcode 生成；Biz 实现 Enqueue/FindDueWaiting/SearchRuns；删除内存队列实现；CubeNC Link；`GET /Runs` 读本表；更新功能清单 DATA-13 / 核心接口架构。
-- [x] 12.2 其余 P0/P1/P2：found 连续段语义 + 空 found 跳过；findRecords SQL 下推/分页扫描；Filter 与 matchesViewFilter 对齐；runAutomation 自引用保存拒绝；httpRequest SSRF；Hook 先校验再限流 + 字典淘汰；废弃 target=created；Worker WrapAll 补挂工厂；批量 names/values 路径 After；debounce 查 queued/running；角色/部门展开租户裁剪；api-core recipients/entities/inbox URL 单测。
+- [x] 12.1 **P0.1（历史，已废止）** 2026-08-16 曾将 `AutomationRun` 落入 `Cube.xml`（ConnName=Log）。**后续实现禁止按本条把表加回。**
+- [x] 12.2 其余 P0/P1/P2：found 连续段语义 + 空 found 跳过；findRecords SQL 下推/分页扫描；Filter 与 matchesViewFilter 对齐；runAutomation 自引用保存拒绝；httpRequest SSRF；Hook 先校验再限流 + 字典淘汰；废弃 target=created；Worker WrapAll 补挂工厂；批量 names/values 路径 After；debounce 查内存 queued/running；角色/部门展开租户裁剪；api-core recipients/entities/inbox URL 单测。
+- [x] 12.3 **2026-08-19 现行**：删除 `Cube.xml` `AutomationRun` 表与 `自动化运行.*` / CubeNC Link；队列改为 `Automation/AutomationRun.cs` 内存 POCO；`GET /Runs` 与 dateArrive `once` 改读系统 Log（`AutomationFlowLog`）。禁止再 xcode 生成该表。

@@ -110,8 +110,8 @@ public partial class EntityController<TEntity, TModel>
                 throw new Exception("验证失败");
 
             // 基于 Model.xml 元数据的字段级校验（必填、长度等），提前发现问题返回明确错误
-            // 子类可通过 override EnableFieldValidation => false 关闭
-            if (EnableFieldValidation)
+            // 子类可通过 override EnableFieldValidation => false 关闭；写请求携带 X-Cube-Field-Validation 头也可选择加入（OSC-260819e483 P1）
+            if (EnableFieldValidationRequested)
             {
                 var fieldErrors = ValidateEntityFields(entity, DataObjectMethodType.Insert);
                 if (fieldErrors != null)
@@ -193,8 +193,8 @@ public partial class EntityController<TEntity, TModel>
                 throw new Exception("验证失败");
 
             // 基于 Model.xml 元数据的字段级校验（必填、长度等），提前发现问题返回明确错误
-            // 子类可通过 override EnableFieldValidation => false 关闭
-            if (EnableFieldValidation)
+            // 子类可通过 override EnableFieldValidation => false 关闭；写请求携带 X-Cube-Field-Validation 头也可选择加入（OSC-260819e483 P1）
+            if (EnableFieldValidationRequested)
             {
                 var fieldErrors = ValidateEntityFields(entity, DataObjectMethodType.Update);
                 if (fieldErrors != null)
@@ -230,6 +230,10 @@ public partial class EntityController<TEntity, TModel>
     #endregion
 
     #region 辅助方法
+    /// <summary>是否启用字段级校验：EnableFieldValidation 为 true，或写请求携带校验头 X-Cube-Field-Validation（1/true/yes，忽略大小写）时启用（OSC-260819e483 P1）。读请求/GetPage/GetList 不加该头，外部客户端不带头则与今日一致</summary>
+    protected Boolean EnableFieldValidationRequested =>
+        EnableFieldValidation || Request.Headers.TryGetValue("X-Cube-Field-Validation", out var vs) && vs.ToString().EqualIgnoreCase("1", "true", "yes");
+
     /// <summary>根据字段名查找实体元数据中的 DisplayName（中文显示名）</summary>
     /// <param name="fieldName">字段名</param>
     /// <returns>DisplayName，找不到时返回原字段名</returns>

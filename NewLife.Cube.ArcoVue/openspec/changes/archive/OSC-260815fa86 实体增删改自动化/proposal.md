@@ -49,7 +49,7 @@ Cube 实体增删改（含导入、启用禁用、作业、`entity.Insert()`）�
 
 ## 3. 做什么
 
-1. `Cube.xml` 增加 `EntityAutomation`（ConnName=Cube）与 `AutomationRun`（ConnName=Log），xcode 生成；CubeNC `Link` 同步。
+1. `Cube.xml` **只**增加 `EntityAutomation`（ConnName=Cube），xcode 生成；CubeNC `Link` 同步。运行队列用内存 `AutomationRun` POCO；终态与 `GET /Runs` 走系统 `Log`（Action=`Automation`）。**禁止**再增加 `AutomationRun` 实体表（2026-08-16 曾落库，2026-08-19 已删除，勿回滚）。
 2. 全局持久化拦截：Insert/Update/Delete 成功后按 TypePath 匹配启用规则并入队；Update 前快照 Dirtys。
 3. C# 图执行器：实现 start/filter/notify/updateRecord/createRecord/findRecords/httpRequest/delay/runAutomation/addComment/aiText/end。
 4. Cube API：CRUD 规则、运行历史、按钮手动跑、入站 Hook、字段 Meta、实体列表（Entities）、接收人搜索（Recipients）、站内信 Inbox。

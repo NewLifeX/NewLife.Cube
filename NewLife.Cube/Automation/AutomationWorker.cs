@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using NewLife.Cube.Entity;
 using NewLife.Log;
 using NewLife.Threading;
 
@@ -59,7 +58,7 @@ public class AutomationWorker : IHostedService
             }
         }
 
-        // 进程重启后内存队列为空：从 Log 库捞 queued
+        // 进程内残留 queued（Worker 漏消费时补捞）
         if (n <= 1)
         {
             try

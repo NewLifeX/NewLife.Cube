@@ -88,4 +88,15 @@ describe('isFieldRequired', () => {
     expect(isFieldRequired(f({ name: 'Remark', typeName: 'String', nullable: true }))).toBe(false);
     expect(isFieldRequired(f({ name: 'Id', typeName: 'Int32', primaryKey: true, nullable: false }))).toBe(false);
   });
+
+  it('honors explicit required===true (OSC-260819e483 P1)', () => {
+    // 后端 PrepareFieldsForApi 写 Required：非 PK/非只读/非可空 → required:true
+    expect(isFieldRequired(f({ name: 'Name', typeName: 'String', nullable: true, required: true }))).toBe(true);
+    // 显式 required:false 且 nullable:true → 非必填
+    expect(isFieldRequired(f({ name: 'Remark', typeName: 'String', nullable: true, required: false }))).toBe(false);
+    // 两者皆缺 → 非必填
+    expect(isFieldRequired(f({ name: 'Opt', typeName: 'String' }))).toBe(false);
+    // 主键显式 required:true 仍视为必填（后端矩阵主键始终 false，此处兜底）
+    expect(isFieldRequired(f({ name: 'Id', typeName: 'Int32', primaryKey: true, nullable: true, required: true }))).toBe(true);
+  });
 });

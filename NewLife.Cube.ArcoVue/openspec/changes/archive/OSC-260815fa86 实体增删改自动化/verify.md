@@ -8,13 +8,14 @@
 ## 执行阶段记录（openspec-apply）
 
 - 2026-08-15 Implementing：后端拦截+执行器+API、api-core、ArcoVue 抽屉/行按钮/Runs Tab、XUnit/Vitest/构建已通过。
-- 2026-08-16 T12：P0.1 AutomationRun 落 Log 库；P0.2–P0.6 / P1 / P2 缺口全部补齐（见 tasks T12.2）。
+- 2026-08-16 T12：P0.1 当时将 AutomationRun 落入 Log 库；P0.2–P0.6 / P1 / P2 缺口全部补齐（见 tasks T12.2）。
+- 2026-08-19 事后修订（T12.3）：删除 `AutomationRun` 实体表；队列改回内存 POCO；`GET /Runs` / dateArrive once 只读系统 Log。**验收实现时以 design 文首现行约束为准，勿按 08-16 审计条目把表加回。**
 
 ## 验收阶段记录（openspec-verify）
 
 ### implementation-audit
 
-- design §2.2 `AutomationRun`：`Cube.xml` ConnName=Log + 实体 `自动化运行.*`；内存队列已删；Worker 捞 `queued`。
+- design §2.2 `AutomationRun`：**现行**内存 POCO + 系统 Log 审计（2026-08-19）。2026-08-16 验收曾记「xml ConnName=Log + 实体 `自动化运行.*`」，该项已废止，禁止按当时记录回滚。
 - design §4.4 found 连续段：`AutomationExecutor` 对每条 found 执行整段 update/notify/addComment；空 found 跳过不 failed。
 - findRecords：SQL `TryBuildWhere` 下推，否则分页扫描至 limit。
 - Filter：缺字段 isNull、contains 大小写敏感、after/before CmpFlexible，与 `matchesViewFilter` 对齐。
@@ -23,7 +24,7 @@
 - Hook：先查规则再限流；字典 Trim。
 - target=created：保存归一 current；运行时不再取 Created。
 - 工厂补挂：Worker 周期 `WrapAll`；批量 names/values Update/Delete/Insert After。
-- debounce：内存 + DB `queued|running` 窗口。
+- debounce：内存 `queued|running` 窗口（不查运行表）。
 - 通知展开：EnableTenant 时按 `TenantUser` 裁剪。
 - 前端：飞书双栏、Recipients、Inbox remind、菜单无 runAutomation — 与 design/IA 一致。
 
@@ -36,6 +37,7 @@
 
 - 已有：`web/README.md`、`Doc/功能清单.md` DATA-13/SPA-20、`Doc/Api/核心接口架构.md`、迁移方案「自动化 ≠ FlowGram」。
 - 本轮：`tasks.md` T11.4/T12.2 勾选；本 verify 成文。
+- 2026-08-19：归档 design/proposal/tasks/verify/retro/IA 与 `harness/lessons.md` 同步现行约束（T12.3）；DATA-13 / 核心接口架构已写「Runs 读系统 Log」。
 
 ### 愿景对照
 

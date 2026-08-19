@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using NewLife.Cube.Entity;
+using NewLife.Data;
 using NewLife.Log;
 using XCode.Membership;
 
@@ -7,10 +8,8 @@ namespace NewLife.Cube.Automation;
 
 /// <summary>
 /// 实体自动化「流程日志」写入系统审计表 <see cref="Log"/>（不改 Log 表结构）。
-/// <para>
-/// <see cref="AutomationRun"/> 落 Log 库（ConnName=Log）作为队列与状态机；Runs API 以 AutomationRun 为准。
-/// 终态亦可写系统 Log：Category=规范化 TypePath、Action=Automation、LinkID=记录主键（抽屉历史筛选）。
-/// </para>
+/// 运行中队列仅内存；终态 Category=规范化 TypePath、Action=Automation、LinkID=记录主键。
+/// GET /Runs 与编辑器「运行日志」读本表，不再使用独立 AutomationRun 实体。
 /// </summary>
 public static class AutomationFlowLog
 {
@@ -67,7 +66,7 @@ public static class AutomationFlowLog
         ["notin"] = "不属于",
     };
 
-    /// <summary>仅在终态（succeeded/failed）写入 Log；waiting/queued/running 仍留在内存队列</summary>
+    /// <summary>仅在终态（succeeded/failed）写入 Log；waiting/queued/running 仅在内存队列</summary>
     public static void WriteTerminal(EntityAutomation rule, AutomationRun run)
     {
         if (rule == null || run == null) return;
@@ -140,6 +139,59 @@ public static class AutomationFlowLog
         if (err.Contains("条件未匹配"))
             return $"流程「{name}」在{trigger}时{condPart}未匹配条件，已跳过后续动作{record}。";
         return $"流程「{name}」在{trigger}时{condPart}，已执行：{actions}{record}。";
+    }
+
+    /// <summary>dateArrive once：系统 Log 是否已有该规则+记录的成功终态</summary>
+    public static Boolean HasSucceeded(Int64 automationId, String typePath, String recordKey)
+    {
+        if (automationId <= 0 || recordKey.IsNullOrEmpty()) return false;
+        try
+        {
+            var page = new PageParameter { PageIndex = 1, PageSize = 80, RetrieveTotalCount = false };
+            var logs = EntityAuditLog.Search(typePath, ActionName, ParseLinkId(recordKey), true, 0, DateTime.MinValue, DateTime.MinValue, null, page);
+            foreach (var log in logs)
+            {
+                if (!TryParseRemark(log.Remark, out var row)) continue;
+                if (row.AutomationId == automationId && (row.RecordKey + "").EqualIgnoreCase(recordKey)
+                    && (row.Status + "").EqualIgnoreCase("succeeded"))
+                    return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteException(ex);
+        }
+        return false;
+    }
+
+    /// <summary>运行日志列表（读系统 Log）</summary>
+    public static IList<(XCode.Membership.Log Log, AutomationFlowLogRow Row)> SearchRuns(String typePath, Int64 automationId, String recordKey, PageParameter page)
+    {
+        var pageSize = page?.PageSize > 0 ? page.PageSize : 20;
+        var pageIndex = page?.PageIndex > 0 ? page.PageIndex : 1;
+        var fetch = new PageParameter
+        {
+            PageIndex = 1,
+            PageSize = Math.Min(Math.Max(pageSize * pageIndex + pageSize, 80), 400),
+            RetrieveTotalCount = false,
+        };
+        var linkId = ParseLinkId(recordKey);
+        var logs = EntityAuditLog.Search(typePath, ActionName, linkId, null, 0, DateTime.MinValue, DateTime.MinValue, null, fetch);
+        var rows = new List<(XCode.Membership.Log, AutomationFlowLogRow)>();
+        foreach (var log in logs)
+        {
+            if (!TryParseRemark(log.Remark, out var row)) continue;
+            if (automationId > 0 && row.AutomationId != automationId) continue;
+            if (!recordKey.IsNullOrEmpty()
+                && !(row.RecordKey + "").EqualIgnoreCase(recordKey)
+                && (linkId <= 0 || log.LinkID != linkId))
+                continue;
+            rows.Add((log, row));
+        }
+        if (page != null) page.TotalCount = rows.Count;
+        var skip = (pageIndex - 1) * pageSize;
+        if (skip < 0) skip = 0;
+        return rows.Skip(skip).Take(pageSize).ToList();
     }
 
     /// <summary>从 Remark 解析 Runs API 行</summary>

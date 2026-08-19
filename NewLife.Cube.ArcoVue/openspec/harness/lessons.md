@@ -185,7 +185,7 @@
 
 ## OSC-260815fa86 — 2026-08-16
 
-- **队列/运行态必须按 design 首日落库**：`AutomationRun` 初版用内存字典与 design §2.2（ConnName=Log）漂移，验收才补 T12.1。涉及「可重启续跑 / Runs API / once」的状态禁止先内存后补表。
+- **禁止再把 `AutomationRun` 加回 `Cube.xml`**：终态审计只写系统 `Log`（Action=`Automation`）；队列用内存 POCO（`Automation/AutomationRun.cs`）；`GET /Runs` 与 dateArrive `once` 读 Log。2026-08-16 T12.1 曾为对齐当时 design 落独立表，与 Log 双写；2026-08-19 已删。实现审计勿把归档 tasks T12.1 / 旧 §2.2「必须落库」当现行约束。
 - **实体写路径自动化挂 Persistence 包装，不要只挂钩 Controller.OnInsert**：导入、批量启用、业务直接 `Insert` 都必须能入队；字符串级 `Update(where)` 无实体实例可另记残余。
 - **前后端 Filter 同构要单测锁死边角**：缺字段 `isNull`、`contains` 大小写、非数字比较、after/before 灵活比较；勿假设 C# 与 `matchesViewFilter`「差不多」。
 - **found 循环语义要「连续段」不是「单节点 foreach」**：design 锁定后对每条 found 执行紧邻的 update/notify/addComment 整段；空 found 跳过段，勿对 target=found 报「无目标」失败。

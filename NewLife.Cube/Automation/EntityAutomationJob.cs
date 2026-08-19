@@ -108,9 +108,9 @@ public class EntityAutomationJob : CubeJobBase
                     var key = AutomationPaths.RecordKey(e);
                     if (once)
                     {
-                        var existed = AutomationRun.FindAllByTypePathAndRecordKey(rule.TypePath, key)
-                            .Any(r => r.AutomationId == rule.Id && r.Status == "succeeded");
-                        if (existed) continue;
+                        var inflight = AutomationRun.FindAllByTypePathAndRecordKey(rule.TypePath, key)
+                            .Any(r => r.AutomationId == rule.Id);
+                        if (inflight || AutomationFlowLog.HasSucceeded(rule.Id, rule.TypePath, key)) continue;
                     }
                     var run = AutomationRun.Enqueue(rule, key, "dateArrive");
                     AutomationWorker.Post(run.Id);

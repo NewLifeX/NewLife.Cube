@@ -39,6 +39,15 @@ const cubeApi = createCubeApi({
       return {};
     }
   },
+  onRequestHook(config) {
+    // 实体写请求（POST/PUT/PATCH，带 /api 前缀）附带字段校验头（OSC-260819e483 P1）；
+    // 读请求（GET）、服务接口（/Auth /Cube 评论/Profile 等，无 /api）不加，无头行为与今日一致
+    const method = (config.method ?? '').toLowerCase();
+    if ((method === 'post' || method === 'put' || method === 'patch') && (config.url ?? '').startsWith('/api/')) {
+      config.headers.set('X-Cube-Field-Validation', '1');
+    }
+    return config;
+  },
   tryRefreshToken: tryRefreshAccessToken,
   onUnauthorized() {
     clearSession();

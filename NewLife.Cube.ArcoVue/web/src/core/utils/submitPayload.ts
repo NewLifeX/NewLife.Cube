@@ -43,7 +43,7 @@ export function prepareSubmitPayload(
   return out;
 }
 
-/** 与后端 ValidateEntityFields 一致：非空列（非主键）视为必填 */
+/** 与后端 Required 矩阵（OSC-260819e483 P1）一致：required===true 或（非主键且 nullable===false）视为必填；两者皆缺/false → 非必填 */
 export function isFieldRequired(field: FieldMeta): boolean {
-  return !field.primaryKey && field.nullable === false;
+  return field.required === true || (!field.primaryKey && field.nullable === false);
 }
