@@ -231,7 +231,45 @@
               <a-select v-model="batchEditField" :options="batchEditFieldOptions" />
             </a-form-item>
             <a-form-item label="值">
-              <a-input v-model="batchEditValue" placeholder="请输入要设置的字段值" />
+              <!-- 状态/枚举/值集：下拉框，选项来自字段元数据 dataSource/options 或 lovCode 远程值集 -->
+              <a-select
+                v-if="batchEditIsSelect"
+                v-model="batchEditValue"
+                :options="batchEditOptions"
+                :loading="batchEditOptionsLoading"
+                allow-clear
+                placeholder="请选择要设置的字段值"
+              />
+              <a-input-number
+                v-else-if="batchEditControlType === 'inputNumber'"
+                v-model="batchEditNumberText"
+                style="width: 100%"
+                placeholder="请输入数值"
+              />
+              <a-date-picker
+                v-else-if="batchEditControlType === 'datePicker'"
+                v-model="batchEditDateText"
+                style="width: 100%"
+                value-format="YYYY-MM-DD HH:mm:ss"
+                placeholder="请选择日期"
+              />
+              <a-time-picker
+                v-else-if="batchEditControlType === 'timePicker'"
+                v-model="batchEditDateText"
+                style="width: 100%"
+                placeholder="请选择时间"
+              />
+              <a-textarea
+                v-else-if="batchEditControlType === 'textarea'"
+                v-model="batchEditValue"
+                :auto-size="{ minRows: 2, maxRows: 4 }"
+                placeholder="请输入要设置的字段值"
+              />
+              <a-input
+                v-else
+                v-model="batchEditValue"
+                placeholder="请输入要设置的字段值"
+              />
             </a-form-item>
           </a-form>
         </a-modal>
@@ -606,6 +644,12 @@ const {
   batchEditField,
   batchEditValue,
   batchEditFieldOptions,
+  batchEditControlType,
+  batchEditIsSelect,
+  batchEditOptions,
+  batchEditOptionsLoading,
+  batchEditDateText,
+  batchEditNumberText,
   openBatchEdit,
   confirmBatchEdit,
   cellEditVisible,

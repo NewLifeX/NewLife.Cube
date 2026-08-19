@@ -5,6 +5,9 @@ import cubeApi from '@/api';
 import { formatApiError } from '@/core/utils/apiError';
 import { getActiveView } from '@/core/utils/viewProfile';
 import { PAGE_SIZE_OPTIONS } from '@/core/utils/viewMapping';
+import { resolveControl } from '@/core/utils/fieldControl';
+import { fetchLovMeta } from '@/core/utils/lov-api';
+import type { FieldMeta, FieldOption, ControlType } from '@/core/types/field';
 import {
   buildOpsPartsWithLinks,
   isOpsLinkKey,
@@ -132,10 +135,92 @@ export function useDefaultList(props: { type: string; authId?: number }) {
       .map((f) => ({ label: f.displayName || f.name, value: f.name })),
   );
 
+  /** 当前批量修改选中的字段元数据（驱动值控件与选项） */
+  const batchEditFieldMeta = computed<FieldMeta | undefined>(() =>
+    ctx.editFields.value.find((f) => f.name === batchEditField.value),
+  );
+
+  /** 值控件类型：按字段 typeName 经 resolveControl 判定（状态/枚举/值集 → 下拉，数值 → 数字框，日期/时间 → 对应选择器） */
+  const batchEditControlType = computed<ControlType>(() => {
+    const f = batchEditFieldMeta.value;
+    return f ? resolveControl(f) : 'input';
+  });
+
+  /** 日期选择器值（value-format 返回 string，与 batchEditValue 的 string|number 解耦） */
+  const batchEditDateText = computed({
+    get: () => String(batchEditValue.value ?? ''),
+    set: (v: string) => (batchEditValue.value = v),
+  });
+
+  /** 数字输入框值（a-input-number 期望 number；提交仍转字符串） */
+  const batchEditNumberText = computed({
+    get: () => {
+      const t = batchEditValue.value.trim();
+      return t === '' ? undefined : Number(t);
+    },
+    set: (v: number | undefined) => (batchEditValue.value = v === undefined ? '' : String(v)),
+  });
+
+  /** 是否为下拉类控件（枚举/值集/字典/lov/级联）；多选字段仍按单选设置（BatchUpdateFields 值为单值） */
+  const batchEditIsSelect = computed(() =>
+    ['select', 'selectMulti', 'lov', 'lovMulti', 'cascader'].includes(batchEditControlType.value),
+  );
+
+  /** 下拉选项：优先字段元数据 dataSource/options；lovCode 远程值集经 fetchLovMeta 填充 */
+  const batchEditOptions = ref<FieldOption[]>([]);
+  const batchEditOptionsLoading = ref(false);
+
+  /** 按字段元数据填充下拉选项（GetPage 已物化 dataSource；无则走 lovCode 远程） */
+  async function loadBatchEditOptions(field?: FieldMeta) {
+    batchEditOptionsLoading.value = false;
+    if (!field) {
+      batchEditOptions.value = [];
+      return;
+    }
+    // 静态字典（GetPage/GetFields 已物化）优先：key=存储值、label=显示名
+    if (field.dataSource && Object.keys(field.dataSource).length > 0) {
+      batchEditOptions.value = Object.entries(field.dataSource).map(([value, label]) => ({
+        value,
+        label,
+      }));
+      return;
+    }
+    if (field.options && field.options.length > 0) {
+      batchEditOptions.value = field.options.map((o) => ({ value: String(o.value), label: o.label }));
+      return;
+    }
+    // lovCode 远程值集：Enum.* 或 Lov 定义
+    if (field.lovCode) {
+      batchEditOptionsLoading.value = true;
+      try {
+        const meta = await fetchLovMeta(field.lovCode);
+        const item = meta.meta?.find((m) => m.lovCode === field.lovCode);
+        const opts =
+          item && item.type === 'ENUM'
+            ? item.options
+            : meta.inlineEnums?.[field.lovCode] ?? [];
+        batchEditOptions.value = opts.map((o) => ({ value: String(o.value), label: o.label }));
+      } catch {
+        batchEditOptions.value = [];
+      } finally {
+        batchEditOptionsLoading.value = false;
+      }
+      return;
+    }
+    batchEditOptions.value = [];
+  }
+
+  // 字段切换：重置值并加载对应控件选项
+  watch(batchEditField, (name) => {
+    batchEditValue.value = '';
+    void loadBatchEditOptions(ctx.editFields.value.find((f) => f.name === name));
+  });
+
   function openBatchEdit() {
     batchEditField.value = batchEditFieldOptions.value[0]?.value ?? '';
     batchEditValue.value = '';
     batchEditVisible.value = true;
+    void loadBatchEditOptions(batchEditFieldMeta.value);
   }
 
   async function confirmBatchEdit() {
@@ -145,7 +230,7 @@ export function useDefaultList(props: { type: string; authId?: number }) {
       const res = await cubeApi.page.batchUpdateFields(ctx.typePath.value, {
         keys,
         field: batchEditField.value,
-        value: batchEditValue.value,
+        value: String(batchEditValue.value),
       });
       const { ok = 0, fail = 0 } = res.data ?? {};
       if (fail > 0) {
@@ -281,6 +366,13 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     batchEditField,
     batchEditValue,
     batchEditFieldOptions,
+    batchEditFieldMeta,
+    batchEditControlType,
+    batchEditIsSelect,
+    batchEditOptions,
+    batchEditOptionsLoading,
+    batchEditDateText,
+    batchEditNumberText,
     openBatchEdit,
     confirmBatchEdit,
     cellEditVisible,
