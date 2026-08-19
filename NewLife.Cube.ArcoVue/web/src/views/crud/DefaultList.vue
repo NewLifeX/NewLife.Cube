@@ -8,10 +8,8 @@
 
     <!-- 视图背景色覆盖：洞察（暂隐藏）+ 表格（含视图 Tab） -->
     <div class="list-surface" :class="{ 'list-surface--chrome': hasChromeBg }" :style="listSurfaceStyle">
-      <!-- 洞察面板（原 QueryInsightPanel，更名 InsightPanel）：搜索 + 统计 + 一张固定图表（OSC-260819e483 P5 启用图表配置） -->
+      <!-- 洞察面板（原 QueryInsightPanel，更名 InsightPanel）：仅统计标签 + 一张固定图表看板（OSC-260819e483）；搜索统一走工具栏「搜索」抽屉 SearchDrawer -->
       <InsightPanel
-        :fields="searchFields"
-        :model="searchForm"
         :show-stat="insight.showStat"
         :show-chart="insight.showChart"
         :stat-data="statData"
@@ -21,19 +19,6 @@
         :chart-error="chartError"
         :chart-option="insight.chartOption"
         :chart-rows="tableData"
-        :master-time-name="masterTimeName"
-        :master-time-display-name="masterTimeDisplayName"
-        :enable-key="enableKey"
-        :queries="savedQueries"
-        :active-query-id="appliedQueryId"
-        :params-dirty="queryParamsDirty"
-        :can-save-query="queryHasParams"
-        @search="handleSearch"
-        @reset="handleReset"
-        @apply="handleApplyQuery"
-        @save-query="handleSaveQuery"
-        @rename-query="handleRenameQuery"
-        @delete-query="handleDeleteQuery"
         @chart-option-change="onChartOptionChange"
       />
 

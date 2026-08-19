@@ -1,6 +1,7 @@
 import { computed } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
 import type { SavedQuery } from '@/core/utils/viewProfile';
+import { useMasterTimeRange } from '@/core/composables/useMasterTimeRange';
 
 /** SearchDrawer 组件 props 类型（与 SearchDrawer.vue defineProps 泛型逐字一致） */
 interface SearchDrawerProps {
@@ -33,24 +34,8 @@ export function useSearchDrawer(props: SearchDrawerProps) {
     props.fields.filter((f) => f.name !== props.masterTimeName),
   );
 
-  /** 主时间范围值：dtStart/dtEnd 两键映射 [start, end] */
-  const masterTimeRange = computed(() => {
-    const s = props.model?.dtStart;
-    const e = props.model?.dtEnd;
-    return s && e ? [String(s), String(e)] : undefined;
-  });
-
-  /** 主时间范围变更：写 dtStart/dtEnd，清空时删除两键 */
-  function onMasterTimeChange(val: unknown) {
-    const arr = Array.isArray(val) ? val : [];
-    if (arr.length >= 2) {
-      props.model.dtStart = arr[0] ?? '';
-      props.model.dtEnd = arr[1] ?? '';
-    } else {
-      delete props.model.dtStart;
-      delete props.model.dtEnd;
-    }
-  }
+  // 主时间范围双向映射（与历史 InsightPanel 共用同一实现，避免两份漂移）
+  const { masterTimeRange, onMasterTimeChange } = useMasterTimeRange(props.model);
 
   return {
     fieldItems,
