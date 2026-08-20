@@ -92,6 +92,7 @@ import { ElMessage } from 'element-plus';
 import { Delete, Close, Promotion, FullScreen, CopyDocument } from '@element-plus/icons-vue';
 import { marked } from 'marked';
 import { getAccessToken } from '../../utils/token';
+import { renderMermaidBlocks } from './mermaidRenderer';
 
 interface Props {
   /** 页面类型：list / form / detail */
@@ -137,6 +138,8 @@ const maximized = ref(localStorage.getItem('cube-ai-maximized') === '1');
 const enabled = ref(false);
 const primaryColor = ref('#2ecc71');
 const secondaryColor = ref('#1e8e3e');
+/** Mermaid 图表库 CDN 地址（来自 GetAiConfig，首次遇到图表才懒加载） */
+const mermaidUrl = ref('');
 
 /** 根元素 CSS 变量，驱动全部浮窗配色 */
 const aiStyle = computed(() => ({
@@ -424,6 +427,8 @@ async function send() {
       }
     }
     streaming.value = false;
+    // AI 回复结束后渲染 Mermaid 图表（流式期间保持源码展示，避免逐字重渲染）
+    nextTick(() => renderMermaidBlocks(msgBox.value, mermaidUrl.value));
   }
 }
 
@@ -454,6 +459,7 @@ async function loadConfig() {
       enabled.value = !!data.AISwitch;
       if (data.AIPrimaryColor) primaryColor.value = data.AIPrimaryColor;
       if (data.AISecondaryColor) secondaryColor.value = data.AISecondaryColor;
+      if (data.MermaidUrl) mermaidUrl.value = data.MermaidUrl;
     }
   } catch {
     // 配置获取失败时保持默认配色，且不显示浮窗（AISwitch 默认关闭）
@@ -596,6 +602,24 @@ onMounted(loadConfig);
   padding: 0;
   color: inherit;
   font-size: 90%;
+}
+.ai-assistant .ai-bubble :deep(.ai-mermaid) {
+  overflow-x: auto;
+  margin: 6px 0;
+}
+.ai-assistant .ai-bubble :deep(.ai-mermaid svg) {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+.ai-assistant .ai-bubble :deep(.ai-mermaid details) {
+  margin-top: 6px;
+}
+.ai-assistant .ai-bubble :deep(.ai-mermaid summary) {
+  cursor: pointer;
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+  user-select: none;
 }
 .ai-assistant .ai-bubble :deep(.ai-code-lang) {
   position: absolute;

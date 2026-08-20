@@ -58,6 +58,16 @@ public class CubeSetting : Config<CubeSetting>
     [Category("通用")]
     public String ResourceUrl { get; set; }
 
+    /// <summary>获取 Mermaid 图表库地址。配置 ResourceUrl 时使用自建 CDN（与 echarts 同约定 /mermaid/mermaid.min.js），否则使用公共 CDN（npmmirror，国内访问稳定）</summary>
+    /// <returns>Mermaid 脚本完整地址</returns>
+    public String GetMermaidUrl()
+    {
+        var res = ResourceUrl;
+        if (!String.IsNullOrEmpty(res)) return res.TrimEnd('/') + "/mermaid/mermaid.min.js";
+
+        return "https://registry.npmmirror.com/mermaid/11.12.3/files/dist/mermaid.min.js";
+    }
+
     /// <summary>跨域来源。允许其它源访问当前域，指定其它源http地址，*表示任意域</summary>
     [Description("跨域来源。允许其它源访问当前域，指定其它源http地址，*表示任意域")]
     [Category("通用")]
