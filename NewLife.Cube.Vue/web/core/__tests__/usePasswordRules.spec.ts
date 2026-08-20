@@ -118,4 +118,24 @@ describe('usePasswordRules 组合式', () => {
     );
     expect(showPasswordHints.value).toBe(true);
   });
+
+  it('enabled=false（复杂密码校验开关关闭）时返回空规则，不展示提示', () => {
+    const password = ref('ab');
+    const { passwordRuleDefs, passwordRules, showPasswordHints } = usePasswordRules(
+      () => '.{6,}',
+      password,
+      () => false,
+    );
+    expect(passwordRuleDefs.value).toHaveLength(0);
+    expect(passwordRules.value).toHaveLength(0);
+    expect(showPasswordHints.value).toBe(false);
+  });
+
+  it('enabled 默认 true，保持原有复杂度校验行为', () => {
+    const password = ref('abc');
+    const { passwordRuleDefs, passwordRules } = usePasswordRules(() => '.{6,}', password);
+    expect(passwordRuleDefs.value).toHaveLength(1);
+    expect(passwordRules.value).toHaveLength(1);
+    expect(passwordRuleDefs.value[0].test('abcdef')).toBe(true);
+  });
 });

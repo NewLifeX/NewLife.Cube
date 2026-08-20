@@ -21,11 +21,11 @@ const SCENARIOS: Scenario[] = [
   { key: 'E', strength: '^[a-z]+$', failingPwd: 'abc123', validPwd: 'abc', hintCount: 1, expectedError: '密码需符合密码安全规则' },
 ];
 
-function mountForm(strength: string) {
+function mountForm(strength: string, passwordComplexity = true) {
   return mount(LoginForm, {
     props: {
       loginConfig: {
-        security: { passwordStrength: strength },
+        security: { passwordStrength: strength, passwordComplexity },
       } as LoginConfig,
     },
     global: {
@@ -63,5 +63,18 @@ describe('LoginForm 密码规则动态校验', () => {
       expect(wrapper.emitted('submit')).toBeTruthy();
       expect(wrapper.emitted('submit')?.[0]?.[0]).toEqual({ username: 'admin', password: scenario.validPwd });
     });
+  });
+
+  it('场景 F：复杂密码校验开关关闭时不校验复杂度，弱密码直接提交', async () => {
+    const wrapper = mountForm('^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$', false);
+    await setLoginCredentials(wrapper, 'admin', 'weak');
+
+    // 不展示任何密码复杂度提示
+    expect(wrapper.findAll('.password-hint-item').length).toBe(0);
+    await wrapper.find('form').trigger('submit.prevent');
+    await flushPromises();
+    // 复杂度不拦截，直接提交
+    expect(wrapper.emitted('submit')).toBeTruthy();
+    expect(wrapper.emitted('submit')?.[0]?.[0]).toEqual({ username: 'admin', password: 'weak' });
   });
 });

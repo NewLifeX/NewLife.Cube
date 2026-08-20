@@ -110,13 +110,19 @@ export function parsePasswordRules(strength?: string): PasswordRuleDef[] {
  *
  * @param strength 后端下发的 passwordStrength（响应式或 getter）
  * @param password 当前密码输入（响应式或 getter）
+ * @param enabled 是否启用密码复杂度校验。false 时返回空规则（不做任何复杂度校验与提示），默认 true
  */
 export function usePasswordRules(
   strength: MaybeRefOrGetter<string | undefined>,
   password: MaybeRefOrGetter<string>,
+  enabled: MaybeRefOrGetter<boolean> = true,
 ) {
   /** 当前密码强度规则（统一来源），用于实时提示与提交校验 */
-  const passwordRuleDefs = computed<PasswordRuleDef[]>(() => parsePasswordRules(toValue(strength)));
+  const passwordRuleDefs = computed<PasswordRuleDef[]>(() => {
+    // 开关关闭时不做密码复杂度校验，返回空规则（登录页仅要求密码非空）
+    if (!toValue(enabled)) return [];
+    return parsePasswordRules(toValue(strength));
+  });
 
   /** 实时提示用的规则列表（带 satisfied 状态） */
   const passwordRules = computed<PasswordRule[]>(() => {

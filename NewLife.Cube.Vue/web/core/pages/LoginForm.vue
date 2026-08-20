@@ -21,10 +21,12 @@ const emit = defineEmits<{
 const form = ref<{ username: string; password: string }>({ username: '', password: '' });
 const errors = ref<{ username?: string; password?: string }>({});
 
-// 密码规则：由 strength + 当前输入派生（逻辑来自 usePasswordRules，可独立单测）
+// 密码规则：由 strength + 当前输入派生（逻辑来自 usePasswordRules，可独立单测）。
+// 复杂密码校验开关（security.passwordComplexity）为 false 时不做复杂度校验，仅要求非空。
 const { passwordRuleDefs, passwordRules, showPasswordHints } = usePasswordRules(
   () => props.loginConfig?.security?.passwordStrength,
   () => form.value.password,
+  () => props.loginConfig?.security?.passwordComplexity !== false,
 );
 
 function clearError(field: 'username' | 'password'): void {

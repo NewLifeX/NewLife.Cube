@@ -133,6 +133,11 @@ public class CubeSetting : Config<CubeSetting>
     [Category("用户登录")]
     public String PaswordStrength { get; set; } = @"^.{5,32}$";
 
+    /// <summary>复杂密码校验。启用后登录页校验密码复杂度（按密码强度），禁用后登录页仅要求密码非空，默认true</summary>
+    [Description("复杂密码校验。启用后登录页校验密码复杂度（按密码强度），禁用后登录页仅要求密码非空，默认true")]
+    [Category("用户登录")]
+    public Boolean EnablePasswordComplexity { get; set; } = true;
+
     /// <summary>登录失败次数。短时间内，相同用户或IP地址连续登录错误次数达到该值后禁止登录，默认5</summary>
     [Description("登录失败次数。短时间内，相同用户或IP地址连续登录错误次数达到该值后禁止登录，默认5")]
     [Category("用户登录")]

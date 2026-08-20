@@ -255,6 +255,8 @@ export interface SecurityConfig {
   challengeRequired?: boolean;
   /** 是否开放 MFA 功能 */
   mfaAvailable?: boolean;
+  /** 是否启用密码复杂度校验。false 时登录页仅要求密码非空，不做复杂度校验 */
+  passwordComplexity?: boolean;
   /** 密码强度正则。* 表示无限制，客户端可用于校验提示 */
   passwordStrength?: string;
 }
