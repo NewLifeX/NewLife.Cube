@@ -48,6 +48,7 @@ public class Osc260819P3Controller : EntityController<NotificationRecord>
 }
 
 /// <summary>OSC-260819e483 P3 PATCH 与批量改字段</summary>
+[Collection("Osc260819")]
 public class Osc260819P3Tests
 {
     private readonly ITestOutputHelper _output;
@@ -193,5 +194,143 @@ public class Osc260819P3Tests
         Assert.Single(res.Data.Errors);
         Assert.Equal("999999", res.Data.Errors[0].Id);
         Assert.Equal(1, c.UpdateCount);
+    }
+}
+
+/// <summary>P3 修复回归控制器：EntityAutomation（含必填 String Name），可模拟校验头开启（EnableFieldValidation override）</summary>
+public class Osc260819P3AutoController : EntityController<EntityAutomation>
+{
+    /// <summary>内存数据存储（主键 → 实体）</summary>
+    public Dictionary<String, EntityAutomation> Store { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>OnUpdate 调用次数</summary>
+    public Int32 UpdateCount { get; private set; }
+
+    /// <summary>测试开关：模拟写请求携带 X-Cube-Field-Validation 头</summary>
+    public static Boolean ForceFieldValidation { get; set; }
+
+    /// <summary>按模拟头开关启用字段级校验</summary>
+    protected override Boolean EnableFieldValidation => ForceFieldValidation;
+
+    /// <summary>数据权限默认放行</summary>
+    protected override Boolean ValidPermission(EntityAutomation entity, DataObjectMethodType type, Boolean post) => true;
+
+    /// <summary>绕过基类 Valid 的 HttpContext/租户/日志逻辑</summary>
+    protected override Boolean Valid(EntityAutomation entity, DataObjectMethodType type, Boolean post) => true;
+
+    /// <summary>无数据权限（测试无 HttpContext）</summary>
+    protected override WhereBuilder CreateWhere() => null;
+
+    /// <summary>从内存存储查找</summary>
+    /// <param name="key">主键</param>
+    /// <returns></returns>
+    protected override EntityAutomation Find(Object key) => Store.TryGetValue(key + "", out var e) ? e : null;
+
+    /// <summary>记录更新（不落库）</summary>
+    /// <param name="entity">实体</param>
+    /// <returns></returns>
+    protected override Int32 OnUpdate(EntityAutomation entity)
+    {
+        UpdateCount++;
+        return 1;
+    }
+}
+
+/// <summary>OSC-260819e483 P3 修复：局部更新只校验被改字段（避免整实体其它空必填字段误伤）</summary>
+[Collection("Osc260819")]
+public class Osc260819P3FixTests
+{
+    public Osc260819P3FixTests()
+    {
+        DAL.AddConnStr("Cube", "Data Source=Osc260819P3Fix;Mode=Memory;Cache=Shared", null, "SQLite");
+    }
+
+    static Osc260819P3AutoController Ctrl() => new();
+
+    [Fact(DisplayName = "P3 修复：校验头开启时批量改字段，其它必填空字段（Name=null）不误伤 → Ok=1")]
+    public void BatchUpdateFields_OnlyValidates_TouchedField()
+    {
+        Osc260819P3AutoController.ForceFieldValidation = true;
+        try
+        {
+            var c = Ctrl();
+            // Name 为必填 String（NOT NULL）但值为 null；改 Priority 应成功（只校验被改字段）
+            var e = new EntityAutomation
+            {
+                Id = 100,
+                Name = null,
+                Enable = true,
+                Priority = 100,
+                TypePath = "Cube/Test",
+            };
+            c.Store["100"] = e;
+
+            var res = c.BatchUpdateFields(new Osc260819P3AutoController.BatchUpdateFieldsRequest
+            {
+                Keys = "100",
+                Field = "Priority",
+                Value = "200",
+            });
+
+            Assert.Equal(0, res.Code);
+            Assert.Equal(1, res.Data.Ok);
+            Assert.Equal(0, res.Data.Fail);
+            Assert.Empty(res.Data.Errors);
+            Assert.Equal(200, e.Priority);
+            Assert.Equal(1, c.UpdateCount);
+        }
+        finally
+        {
+            Osc260819P3AutoController.ForceFieldValidation = false;
+        }
+    }
+
+    [Fact(DisplayName = "P3 修复：校验头开启时把必填字段本身置空 → 仍报错 Fail=1（校验被改字段语义保留）")]
+    public void BatchUpdateFields_EmptyRequiredField_StillFails()
+    {
+        Osc260819P3AutoController.ForceFieldValidation = true;
+        try
+        {
+            var c = Ctrl();
+            var e = new EntityAutomation { Id = 101, Name = "ok", Enable = true, Priority = 100, TypePath = "Cube/Test" };
+            c.Store["101"] = e;
+
+            var res = c.BatchUpdateFields(new Osc260819P3AutoController.BatchUpdateFieldsRequest
+            {
+                Keys = "101",
+                Field = "Name",
+                Value = "",
+            });
+
+            Assert.Equal(0, res.Code);
+            Assert.Equal(0, res.Data.Ok);
+            Assert.Equal(1, res.Data.Fail);
+            Assert.Contains("不可以为空", res.Data.Errors[0].Message);
+            Assert.Equal(0, c.UpdateCount);
+        }
+        finally
+        {
+            Osc260819P3AutoController.ForceFieldValidation = false;
+        }
+    }
+
+    [Fact(DisplayName = "P3 修复：无校验头时行为与今日一致（整表单校验不启用），批量改成功")]
+    public void BatchUpdateFields_NoHeader_Ok()
+    {
+        Osc260819P3AutoController.ForceFieldValidation = false;
+        var c = Ctrl();
+        var e = new EntityAutomation { Id = 102, Name = "ok", Enable = true, Priority = 100, TypePath = "Cube/Test" };
+        c.Store["102"] = e;
+
+        var res = c.BatchUpdateFields(new Osc260819P3AutoController.BatchUpdateFieldsRequest
+        {
+            Keys = "102",
+            Field = "Priority",
+            Value = "300",
+        });
+
+        Assert.Equal(0, res.Code);
+        Assert.Equal(1, res.Data.Ok);
+        Assert.Equal(300, e.Priority);
     }
 }

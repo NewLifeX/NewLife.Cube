@@ -15,6 +15,11 @@ import {
   type OpsCustomLink,
 } from '@/core/utils/opsAction';
 import { OPS_LINK_INLINE_MAX } from '@/core/utils/listLinkFields';
+import { encodeQueryB64, mapPageKindToAiPage } from '@/core/utils/aiChatContext';
+import { mergeFillFormValues } from '@/core/utils/aiFill';
+import { resolveFieldsForKind } from '@/core/utils/fieldParts';
+import { getValueByKey } from '@/core/utils/url';
+import { useAppStore } from '@/stores/app';
 import { createListContext } from './listContext';
 import { useListQuery } from './useListQuery';
 import { useListCrud } from './useListCrud';
@@ -29,6 +34,7 @@ import { runCellFieldLink, runOpsCustomLink } from './useListOpsLinks';
  */
 export function useDefaultList(props: { type: string; authId?: number }) {
   const router = useRouter();
+  const appStore = useAppStore();
   const ctx = createListContext(props);
   const query = useListQuery(ctx);
   const nav = useRecordNav(ctx);
@@ -232,9 +238,15 @@ export function useDefaultList(props: { type: string; authId?: number }) {
         field: batchEditField.value,
         value: String(batchEditValue.value),
       });
-      const { ok = 0, fail = 0 } = res.data ?? {};
+      const { ok = 0, fail = 0, errors = [] } = res.data ?? {};
       if (fail > 0) {
-        Message.warning(`批量修改完成：成功 ${ok} 条，失败 ${fail} 条`);
+        // 展示首条失败明细，便于定位（如必填/类型转换失败）
+        const first = errors[0];
+        Message.warning(
+          first
+            ? `批量修改：成功 ${ok} 条，失败 ${fail} 条（${first.message}）`
+            : `批量修改：成功 ${ok} 条，失败 ${fail} 条`,
+        );
       } else {
         Message.success(`已批量修改 ${ok} 条`);
       }
@@ -337,6 +349,44 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     },
   );
 
+  function applyAiFill(values: Record<string, unknown>) {
+    if (!ctx.drawerVisible.value || (ctx.drawerMode.value !== 'add' && ctx.drawerMode.value !== 'edit')) {
+      Message.info('请先打开添加或编辑');
+      return;
+    }
+    const fields = resolveFieldsForKind(ctx.drawerMode.value, ctx.fieldParts.value);
+    const filled = mergeFillFormValues(ctx.formModel, values, fields);
+    if (filled.length) {
+      Message.success(`AI 已预填 ${filled.length} 个字段（${filled.join('、')}），请检查后保存`);
+    }
+  }
+
+  function syncAiContext() {
+    const drawer = ctx.drawerVisible.value ? ctx.drawerMode.value : null;
+    const idRaw = getValueByKey(ctx.formModel, ctx.pkField.value);
+    const idNum = Number(idRaw);
+    appStore.patchAiContext({
+      page: mapPageKindToAiPage('entity', drawer),
+      mode: ctx.drawerMode.value === 'edit' ? 'edit' : 'add',
+      id: Number.isFinite(idNum) ? idNum : 0,
+      typePath: ctx.typePath.value,
+      queryB64: encodeQueryB64(ctx.effectiveSearch.value as Record<string, unknown>),
+      applyFill: applyAiFill,
+    });
+  }
+
+  watch(
+    () => [
+      ctx.drawerVisible.value,
+      ctx.drawerMode.value,
+      ctx.typePath.value,
+      ctx.effectiveSearch.value,
+      ctx.pkField.value,
+    ],
+    syncAiContext,
+    { immediate: true, deep: true },
+  );
+
   onMounted(() => {
     bootstrap();
     // Esc 退出全屏
@@ -351,6 +401,7 @@ export function useDefaultList(props: { type: string; authId?: number }) {
   onBeforeUnmount(() => {
     ctx.tableResizeObserver.value?.disconnect();
     window.removeEventListener('keydown', views.onKeydown);
+    appStore.clearAiPageContext();
   });
 
   return {

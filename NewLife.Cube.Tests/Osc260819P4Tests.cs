@@ -12,6 +12,7 @@ using Xunit;
 namespace NewLife.Cube.Tests;
 
 /// <summary>OSC-260819e483 P4.5：评论提及站内信边界（最多 20、Distinct；非法/禁用/自己跳过；正文截断；不抛）</summary>
+[Collection("Osc260819")]
 public class Osc260819P4Tests
 {
     public Osc260819P4Tests()

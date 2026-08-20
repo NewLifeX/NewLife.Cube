@@ -256,8 +256,9 @@ public partial class EntityController<TEntity, TModel>
     /// <summary>基于实体字段元数据（Model.xml）校验必填、长度等约束，返回字段级错误列表</summary>
     /// <param name="entity">待校验的实体对象</param>
     /// <param name="type">操作类型（Insert使用AddFormFields，Update使用EditFormFields）</param>
+    /// <param name="onlyFields">仅校验指定字段（PATCH/批量局部更新）；null 时校验全部表单字段（Insert/Update 整表单）</param>
     /// <returns>字段错误列表，无错误时返回null</returns>
-    private static List<FieldError> ValidateEntityFields(TEntity entity, DataObjectMethodType type)
+    private static List<FieldError> ValidateEntityFields(TEntity entity, DataObjectMethodType type, IEnumerable<String> onlyFields = null)
     {
         var fields = type == DataObjectMethodType.Insert ? AddFormFields : EditFormFields;
         var errors = new List<FieldError>();
@@ -266,6 +267,10 @@ public partial class EntityController<TEntity, TModel>
         {
             // 跳过主键和只读字段
             if (df.PrimaryKey || df.ReadOnly) continue;
+
+            // 局部更新（PATCH/批量改字段）只校验本次提交字段：其它字段保持数据库原值，
+            // 若因整实体必填校验（如某必填 String 原值为空串）而误伤，则改一个字段也会失败（OSC-260819e483 修复）
+            if (onlyFields != null && !onlyFields.Any(f => f.EqualIgnoreCase(df.Name))) continue;
 
             var value = entity[df.Name];
             var displayName = df.DisplayName ?? df.Name;

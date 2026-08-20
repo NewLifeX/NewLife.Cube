@@ -95,10 +95,11 @@ public partial class EntityController<TEntity, TModel>
 
             if (!Valid(entity, DataObjectMethodType.Update, true)) throw new Exception("验证失败");
 
-            // 校验头或 EnableFieldValidation 为真时走现有 ValidateEntityFields（与 Insert/Update 同规则）
+            // 校验头或 EnableFieldValidation 为真时走现有 ValidateEntityFields（与 Insert/Update 同规则）；
+            // 局部更新仅校验本次提交字段，避免整实体其它空必填字段误伤
             if (EnableFieldValidationRequested)
             {
-                var fieldErrors = ValidateEntityFields(entity, DataObjectMethodType.Update);
+                var fieldErrors = ValidateEntityFields(entity, DataObjectMethodType.Update, request.Values.Keys);
                 if (fieldErrors != null) throw new Exception(fieldErrors[0].Message);
             }
 
@@ -177,7 +178,8 @@ public partial class EntityController<TEntity, TModel>
 
                 if (EnableFieldValidationRequested)
                 {
-                    var fieldErrors = ValidateEntityFields(entity, DataObjectMethodType.Update);
+                    // 局部更新仅校验本次提交字段（batch 单字段），避免整实体其它空必填字段误伤
+                    var fieldErrors = ValidateEntityFields(entity, DataObjectMethodType.Update, [request.Field]);
                     if (fieldErrors != null) throw new Exception(fieldErrors[0].Message);
                 }
 

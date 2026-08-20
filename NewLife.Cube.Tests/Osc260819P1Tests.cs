@@ -30,6 +30,7 @@ public class Osc260819P1Controller : EntityController<Osc260819P1Item>
 }
 
 /// <summary>OSC-260819e483 P1 契约加固：校验头选择加入 / Stat 安全转换</summary>
+[Collection("Osc260819")]
 public class Osc260819P1Tests
 {
     public Osc260819P1Tests()
