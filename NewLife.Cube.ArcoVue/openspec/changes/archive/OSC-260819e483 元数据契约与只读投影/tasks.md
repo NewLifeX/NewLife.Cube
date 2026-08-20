@@ -76,4 +76,4 @@
 
 - [x] C.1 竞品分析 §8.6 与本号 design 一致（diff=解析现有 Remark；前端单列 sort；PATCH 仅 WebAPI；图表=ViewProfile 非 autoChart）
 - [x] C.2 本 OSC 新增单测 + 构建 `NewLife.Cube` + `NewLife.CubeNC` + arco-vue 无错误
-- [ ] C.3 `verify.md` 勾选后方可 Validating / Done
+- [x] C.3 `verify.md` 勾选后方可 Validating / Done（用户决策「仅记录不补齐」放行 S.1–S.7 浏览器冒烟）

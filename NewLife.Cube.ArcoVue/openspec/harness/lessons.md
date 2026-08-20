@@ -209,6 +209,21 @@
 - **401 必须清租户会话**：`clearTenantSession` 与 token 一并清，避免下一用户沿用旧 `X-Tenant` 被 EnsureTenantUser 串绑。
 - **租户用户列表勿死等 NuGet JOIN**：Cube 侧 `UserTenantSearch` 绕开歧义；单测锁「外租户不可见」。
 
+## OSC-26081903c0 — 2026-08-20
+
+- **SFC 薄壳内所有 `ref` + `watch` 组合一律进 composable**：无论多小的 UI 状态（如 `openColorIdx` + `watch(visible)` 重置），都不允许留在 `.vue` 文件内。`sfcThin.spec.ts` 门禁只检 `watch(`/`onMounted(`/`cubeApi.`，但 `ref` 本身虽不禁止，搭配 `watch` 时仍构成"业务逻辑"，应进 composable。验收阶段检出返工成本高——实施期即应遵守。
+- **竞品截图对照表是范围蠕变的最强防线**：design §2.0 把「抄什么/砍什么」逐行锁定（标题不改、历史不做、搭建不做、回形针不做），执行期零蠕变。以后涉及竞品参考的 OSC，design 必须逐截图行给「做/不做/留给别号」三列。
+- **AI 类 OSC 的协议对齐优先于 UI 对齐**：本号 AI 浮窗 UI 抄竞品右侧停靠布局，但协议（SSE type/body/fill_form/run_js）严格对齐 Cube.Vue 既有实现。UI 可创新，协议必须兼容——否则后端 API 碎片化。
+- **填色规则「一条一条件」是正确的复杂度截断**：曾考虑 AND/OR 多条件组合，最终以「一条规则 = 一个条件」截断。50 条上限 × 4 种范围 × 单条件，已覆盖 90%+ 场景；多条件应另号评估。
+
+## OSC-260819e483 — 2026-08-21
+
+- **局部更新必须只校验提交字段**：PATCH / BatchUpdateFields 走 `ValidateEntityFields(..., onlyFields)`；整表单校验会把未提交必填打成失败，表现为「确定后不成功」。写路径改动阶段内应用真实表单冒烟，勿只跑单测。
+- **复用 AutomationFilter / NotificationRecord / 现有 Log.Remark，禁止平行造轮子**：viewFilter、评论提及、历史 diff 均接线现码；不新增 AST / MentionsJson / LogProvider 装饰器。
+- **双栈：共享文件改一处，非 Link 文件改两处；PATCH 勿进被 Link 的 EntityController2**：PrepareFieldsForApi / EntityTree / 评论 POST 各改 WebAPI+CubeNC；新写 Action 用 WebAPI-only `partial`。
+- **浏览器冒烟勿整包留到验收**：S.1–S.7 类真实环境项宜阶段间穿插；否则只能「仅记录不补齐」放行。tasks 与 verify 冒烟项勿双份勾选。
+- **必填语义三处同源**：后端 `PrepareFieldsForApi`、`X-Cube-Field-Validation`、前端 `isFieldRequired`；改字段元数据语义须同步三处并跑三套测试。
+
 ## 待办 — 字体规范（Harness）
 
 - 后续按现代中后台常见 **组件/场景**（列表表头、单元格、表单标签、抽屉标题、徽章等）在 Harness 建立统一的 **字体 / 字号 / 字重** 规范，并替换各处临时字重（如 VTable `headerStyle.fontWeight: 400`）。
