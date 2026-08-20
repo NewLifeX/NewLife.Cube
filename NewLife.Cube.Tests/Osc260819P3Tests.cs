@@ -333,4 +333,74 @@ public class Osc260819P3FixTests
         Assert.Equal(1, res.Data.Ok);
         Assert.Equal(300, e.Priority);
     }
+
+    [Fact(DisplayName = "P3 多字段：Fields 一次改多个字段（Name/Enable/Priority），全部应用成功")]
+    public void BatchUpdateFields_MultiField_Ok()
+    {
+        Osc260819P3AutoController.ForceFieldValidation = true;
+        try
+        {
+            var c = Ctrl();
+            var e = new EntityAutomation { Id = 200, Name = "旧名", Enable = false, Priority = 1, TypePath = "Cube/Test" };
+            c.Store["200"] = e;
+
+            var res = c.BatchUpdateFields(new Osc260819P3AutoController.BatchUpdateFieldsRequest
+            {
+                Keys = "200",
+                Fields =
+                [
+                    new() { Field = "Name", Value = "新名" },
+                    new() { Field = "Enable", Value = true },
+                    new() { Field = "Priority", Value = "500" },
+                ],
+            });
+
+            Assert.Equal(0, res.Code);
+            Assert.Equal(1, res.Data.Ok);
+            Assert.Equal(0, res.Data.Fail);
+            Assert.Equal("新名", e.Name);
+            Assert.True(e.Enable);
+            Assert.Equal(500, e.Priority);
+            Assert.Equal(1, c.UpdateCount);
+        }
+        finally
+        {
+            Osc260819P3AutoController.ForceFieldValidation = false;
+        }
+    }
+
+    [Fact(DisplayName = "P3 多字段：Fields 含未知字段 → 400 整单拒绝")]
+    public void BatchUpdateFields_MultiField_UnknownField_400()
+    {
+        var c = Ctrl();
+        var e = new EntityAutomation { Id = 201, Name = "x", Enable = true, Priority = 1, TypePath = "Cube/Test" };
+        c.Store["201"] = e;
+
+        var ex = Assert.Throws<ApiException>(() => c.BatchUpdateFields(new Osc260819P3AutoController.BatchUpdateFieldsRequest
+        {
+            Keys = "201",
+            Fields =
+            [
+                new() { Field = "Name", Value = "a" },
+                new() { Field = "Ghost", Value = 1 },
+            ],
+        }));
+        Assert.Equal(CubeCode.ParamError.ToInt(), ex.Code);
+        Assert.Equal(0, c.UpdateCount);
+    }
+
+    [Fact(DisplayName = "P3 多字段：Fields 超 50 个 → 400")]
+    public void BatchUpdateFields_MultiField_TooMany_400()
+    {
+        var c = Ctrl();
+        var many = Enumerable.Range(0, 51)
+            .Select(i => new Osc260819P3AutoController.BatchFieldValue { Field = i % 2 == 0 ? "Name" : "Enable", Value = "x" })
+            .ToList();
+        var ex = Assert.Throws<ApiException>(() => c.BatchUpdateFields(new Osc260819P3AutoController.BatchUpdateFieldsRequest
+        {
+            Keys = "1",
+            Fields = many,
+        }));
+        Assert.Equal(CubeCode.ParamError.ToInt(), ex.Code);
+    }
 }

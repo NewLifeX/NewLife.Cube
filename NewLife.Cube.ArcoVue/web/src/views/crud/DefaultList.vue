@@ -131,6 +131,34 @@
               </div>
             </GroupPopover>
 
+            <FormatPopover
+              :visible="formatPopoverVisible"
+              :fields="filterFields"
+              :model-value="viewFormat"
+              :view-kind="activeViewKind"
+              @update:visible="onFormatPopoverVisible"
+              @change="onFormatChange"
+            >
+              <div
+                v-if="formatButtonVisible"
+                class="tb-act"
+                :class="{ 'is-active': viewFormat.length > 0 }"
+              >
+                <a-button type="text">
+                  <icon-park type="background-color" />
+                  填色
+                </a-button>
+                <span
+                  v-if="viewFormat.length"
+                  class="tb-count"
+                  title="清除填色"
+                  @click.stop="onClearFormat"
+                >
+                  {{ viewFormat.length }}
+                </span>
+              </div>
+            </FormatPopover>
+
             <a-button
               v-if="chrome.showSearch"
               type="text"
@@ -182,6 +210,22 @@
                   </template>
                 </a-dsubmenu>
                 <a-doption
+                  v-if="batchEnableState.visible"
+                  :disabled="batchEnableState.disabled"
+                  @click="confirmBatchEnable(true)"
+                >
+                  <icon-park type="preview-open" />
+                  批量启用
+                </a-doption>
+                <a-doption
+                  v-if="batchEnableState.visible"
+                  :disabled="batchEnableState.disabled"
+                  @click="confirmBatchEnable(false)"
+                >
+                  <icon-park type="preview-close" />
+                  批量禁用
+                </a-doption>
+                <a-doption
                   v-if="batchDeleteState.visible"
                   :disabled="batchDeleteState.disabled"
                   @click="confirmBatchDelete"
@@ -211,52 +255,35 @@
           :title="`批量修改（已选 ${selectedKeys.length} 条）`"
           :on-before-ok="confirmBatchEdit"
         >
-          <a-form layout="vertical">
-            <a-form-item label="字段">
-              <a-select v-model="batchEditField" :options="batchEditFieldOptions" />
-            </a-form-item>
-            <a-form-item label="值">
-              <!-- 状态/枚举/值集：下拉框，选项来自字段元数据 dataSource/options 或 lovCode 远程值集 -->
+          <!-- 多字段行：可添加/删除待修改字段，一次应用到全部选中记录（对齐筛选/填色弹窗交互） -->
+          <div class="batch-edit-rows">
+            <div v-for="(row, i) in batchEditRows" :key="i" class="batch-edit-row">
               <a-select
-                v-if="batchEditIsSelect"
-                v-model="batchEditValue"
-                :options="batchEditOptions"
-                :loading="batchEditOptionsLoading"
-                allow-clear
-                placeholder="请选择要设置的字段值"
+                :model-value="row.field"
+                :options="batchEditFieldOptions"
+                placeholder="字段"
+                style="width: 140px"
+                @update:model-value="(v: unknown) => { row.field = String(v ?? ''); onBatchRowFieldChange(row); }"
               />
-              <a-input-number
-                v-else-if="batchEditControlType === 'inputNumber'"
-                v-model="batchEditNumberText"
-                style="width: 100%"
-                placeholder="请输入数值"
-              />
-              <a-date-picker
-                v-else-if="batchEditControlType === 'datePicker'"
-                v-model="batchEditDateText"
-                style="width: 100%"
-                value-format="YYYY-MM-DD HH:mm:ss"
-                placeholder="请选择日期"
-              />
-              <a-time-picker
-                v-else-if="batchEditControlType === 'timePicker'"
-                v-model="batchEditDateText"
-                style="width: 100%"
-                placeholder="请选择时间"
-              />
-              <a-textarea
-                v-else-if="batchEditControlType === 'textarea'"
-                v-model="batchEditValue"
-                :auto-size="{ minRows: 2, maxRows: 4 }"
-                placeholder="请输入要设置的字段值"
-              />
-              <a-input
-                v-else
-                v-model="batchEditValue"
-                placeholder="请输入要设置的字段值"
-              />
-            </a-form-item>
-          </a-form>
+              <div class="batch-edit-row-value">
+                <BatchEditValueInput
+                  :control-type="batchRowControlType(row)"
+                  :is-select="batchRowIsSelect(row)"
+                  :options="row.options"
+                  :options-loading="row.optionsLoading"
+                  :model-value="row.value"
+                  @update:model-value="(v: string) => (row.value = v)"
+                />
+              </div>
+              <a-button type="text" size="mini" title="删除此行" @click="removeBatchEditRow(i)">
+                <icon-park type="delete" />
+              </a-button>
+            </div>
+          </div>
+          <a-button type="text" size="small" @click="addBatchEditRow">
+            <icon-park type="plus" />
+            添加字段
+          </a-button>
         </a-modal>
 
         <a-modal
@@ -303,6 +330,8 @@
               :grouped="isGrouped"
               :group-fields="isGrouped ? viewGroup : []"
               :group-label-of="groupLabelOf"
+              :format-rules="viewFormat"
+              :format-fields="listFields"
               :height="resolvedTableHeight"
               @row-dbl-click="openDetail"
               @selection-change="onSelectionChange"
@@ -341,6 +370,7 @@
             :can-delete="flags.canDelete && chrome.allowDelete"
             :ops-custom-links="opsCustomLinks"
             :format-cell="renderCell"
+            :format-rules="viewFormat"
             @detail="openDetail"
             @edit="openEdit"
             @delete="onCardDelete"
@@ -362,6 +392,7 @@
             :can-delete="flags.canDelete && chrome.allowDelete"
             :ops-custom-links="opsCustomLinks"
             :format-cell="renderCell"
+            :format-rules="viewFormat"
             @detail="openDetail"
             @edit="openEdit"
             @delete="onCardDelete"
@@ -542,6 +573,7 @@ const CalendarMonth = defineAsyncComponent(() => import('@/features/views/Calend
 const GanttView = defineAsyncComponent(() => import('@/features/views/GanttView.vue'));
 import SearchDrawer from '@/features/search/SearchDrawer.vue';
 import InsightPanel from '@/features/search/InsightPanel.vue';
+import BatchEditValueInput from './BatchEditValueInput.vue';
 import RecordDrawer from './RecordDrawer.vue';
 import ListChartModal from './ListChartModal.vue';
 import FormLayoutDrawer from './FormLayoutDrawer.vue';
@@ -549,6 +581,7 @@ import ViewTabsToolbar from './ViewTabsToolbar.vue';
 import ViewConfigDrawer from './ViewConfigDrawer.vue';
 import FilterBuilderPopover from './FilterBuilderPopover.vue';
 import GroupPopover from './GroupPopover.vue';
+import FormatPopover from './FormatPopover.vue';
 import AutomationDrawer from './automation/AutomationDrawer.vue';
 
 const props = defineProps<{
@@ -618,23 +651,29 @@ const {
   onGroupApply,
   onGroupSave,
   onClearGroup,
+  formatPopoverVisible,
+  viewFormat,
+  formatButtonVisible,
+  onFormatPopoverVisible,
+  onFormatChange,
+  onClearFormat,
   searchPanelOpen,
   advancedVisible,
   handleImport,
   exportFormats,
   handleExport,
+  batchEnableState,
+  confirmBatchEnable,
   batchDeleteState,
   confirmBatchDelete,
   batchEditVisible,
-  batchEditField,
-  batchEditValue,
+  batchEditRows,
   batchEditFieldOptions,
-  batchEditControlType,
-  batchEditIsSelect,
-  batchEditOptions,
-  batchEditOptionsLoading,
-  batchEditDateText,
-  batchEditNumberText,
+  batchRowControlType,
+  batchRowIsSelect,
+  onBatchRowFieldChange,
+  addBatchEditRow,
+  removeBatchEditRow,
   openBatchEdit,
   confirmBatchEdit,
   cellEditVisible,
@@ -800,6 +839,24 @@ const automationFields = computed(() => {
 .advanced-upload-option :deep(.arco-upload) {
   display: block;
   width: 100%;
+}
+/* 批量修改多字段行（OSC-260819e483）：每行 = 字段下拉 + 值控件 + 删除 */
+.batch-edit-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.batch-edit-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.batch-edit-row-value {
+  flex: 1;
+  min-width: 0;
 }
 /* 筛选/分组弹层锚点与激活底纹/徽标（OSC-0015） */
 .tb-act {

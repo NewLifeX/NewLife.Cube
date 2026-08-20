@@ -115,10 +115,12 @@ pnpm build
 - **元数据必填契约与字段校验头（OSC-260819e483）**：GetPage 字段新增 `required`（`nullable===false` 且非只读且非主键）；写请求（POST/PUT/PATCH）携带 `X-Cube-Field-Validation: 1` 时按 `required` 校验缺失必填（前端 `isFieldRequired` 与后端同矩阵，`onRequestHook` 自动附带该头）；不带头与历史行为一致。
 - **视图筛选下推（OSC-260819e483）**：筛选构建器有条件时以 `viewFilter` 参数（JSON，≤4KB）传给 getList/getChartData；后端可下推时并入查询（数据权限表达式仍生效）且翻页完整，无法下推时忽略服务端过滤（前端 `matchesViewFilter` 兜底，翻页不完整为已知限制）。
 - **单列排序（OSC-260819e483）**：排序维持单列（`sort` + `desc`），不做多列排序 UI。
-- **PATCH / 批量改字段（OSC-260819e483，仅 WebAPI）**：高级菜单「批量修改」调 `BatchUpdateFields`（POST `{keys,field,value}`，≤500 条）；双击可编辑单元格打开字段编辑弹窗调 `PatchFields`（PATCH `{id,values}`，白名单=EditForm∩非只读∩非主键）；布尔字段仍走 EnableSelect 徽标。
+- **PATCH / 批量改字段（OSC-260819e483，仅 WebAPI）**：高级菜单「批量修改」弹窗支持**多字段行**（像筛选/填色弹窗一样添加/删除待修改字段，每行按字段 typeName 自适应值控件），一次调 `BatchUpdateFields`（POST `{keys,fields[]}`，≤500 条、≤50 字段；兼容单字段 `{keys,field,value}`）；双击可编辑单元格打开字段编辑弹窗调 `PatchFields`（PATCH `{id,values}`，白名单=EditForm∩非只读∩非主键）；布尔字段仍走 EnableSelect 徽标。
 - **评论提及与历史 diff（OSC-260819e483）**：评论提交可带 `mentionUserIds`（≤20，去重；非法/禁用/自己跳过；成功后写站内信，通知失败不回滚评论）；历史 Tab 对 Update 动作解析 `Field=old -> new` 为字段 diff 表（长名优先、忽略大小写，失败回落原文；自动化 JSON 仍走 detail）。
 - **用户图表配置（OSC-260819e483）**：`ViewInsight` 增 `chartOption`（一张 ECharts option 模板，≤32KB，保存前剔除 `dataset.source` / `series[].data`）；InsightPanel 图表区与 ViewConfigDrawer「固定图表」开关旁可配置同一 option；渲染优先级：开发者 `OnGetChartData` 非空 > 用户 `chartOption`（`applyChartData` 当前列表行）> 空态配置入口。
-- 列表页顶部工具栏（筛选/搜索，table 另有分组）右侧「高级」菜单承载当前实体的导入/导出/批量删除；排序不设工具栏按钮，由列表/树视图标题栏（表头）排序图标承担（受自定义配置「工具栏/排序」开关控制）；表格默认左侧勾选 + 表头全选，批量删除受删除权限、视图允许删除与选中行共同门禁（OSC-0007）。
+- 列表页顶部工具栏顺序：**筛选** → **分组**（仅 table）→ **填色**（table/tree/card；看板/日历/甘特不显示按钮）→ **搜索** → 自动化 → **高级**。填色弹层「设置填色条件」改即写入 `NamedView.format`（最多 50 条；打开时若无规则则用第一字段种一条；范围单元格/行侧边/整行/整列；**整列只选字段、无条件铺满该列**；色块为 3×10 预置板含红橙绿蓝紫，可勾选文字加粗；卡片仅行侧边+整行），无应用/保存页脚；表格数据列铺背景、实体行最左 3px 竖条；卡片左缘竖条 + 标题行底色（OSC-26081903c0）。
+- 高级菜单顺序：导入 → 导出 → **批量启用 / 批量禁用**（仅 table，Enable 字段 + Update 权限，一次最多 200 条）→ 批量删除 → 批量修改 → 表单布局。排序不设工具栏按钮，由列表/树视图标题栏（表头）排序图标承担。表格默认左侧勾选 + 表头全选。
+- **AI 助手浮窗（OSC-26081903c0）**：登录壳 `RootLayout` 挂载；`GetAiConfig.AISwitch` 为真时右下 FAB，打开后右侧停靠 380px 全高面板（最大化 inset 20px）。协议 `POST /Ai/AiChat` SSE + `POST /Ai/OperationResult`（绝对路径）；`fill_form` 只写入当前 add/edit 可写字段。登录页不挂。
 - **图标化与模板入口移除（OSC-0017）**：视图 Tab 类型文字改为 IconPark 类型图标（tooltip 显示类型名）；工具栏「筛选/分组/搜索/高级」及高级菜单项（导入/导出/批量删除/表单布局）带图标；详情抽屉字段标签前按字段类型显示图标（`fieldIcon`）；导航菜单（side/top/mix）显示统一图标（`menuIcon` fa 映射 / 关键词 / 默认三态兜底）；「高级/管理模板」入口与 `TemplateManageDrawer.vue` 已移除（视图模板发布仍走视图 Tab「存为默认XX视图」）。
 - 卡片视图支持**标准 / 偏大 / 整行**三种布局（`NamedView.mapping.layout`），并可配置正文字段列数与横/竖排版；整行布局窄屏自动回退纵向，多行/长文本字段自动占满整行。
 - 列表/树/卡片/看板视图中 `Enable` 字段徽标可点击，直接调用后端 `EnableSelect/DisableSelect`（`GET {type}/EnableSelect?keys=`）启停；非 Enable 的状态/枚举/值集徽标悬停光标不变（OSC-0009）。

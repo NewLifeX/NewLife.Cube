@@ -209,10 +209,12 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
     ) =>
       request<FieldPatchResult>({ url: type, method: 'patch', data: body }),
 
-    /** 批量改字段（OSC-260819e483 P3）：对全部 keys 逐行 Valid+OnUpdate，部分失败返回 ok/fail/errors */
+    /** 批量改字段（OSC-260819e483 P3）：对全部 keys 逐行应用字段变更，部分失败返回 ok/fail/errors；多字段用 fields（≤50），单字段兼容 field/value */
     batchUpdateFields: (
       type: string,
-      body: { keys: string; field: string; value: unknown },
+      body:
+        | { keys: string; field: string; value: unknown }
+        | { keys: string; fields: { field: string; value: unknown }[] },
     ) =>
       request<FieldPatchResult>({ url: `${type}/BatchUpdateFields`, method: 'post', data: body }),
 
@@ -423,6 +425,13 @@ export function createConfigApi(request: RequestFn) {
     /** 获取系统配置 */
     getSetting: () =>
       request<Record<string, unknown>>({ url: '/Cube/Setting', method: 'get' }),
+
+    /** AI 助手开关与配色（CubeSetting；登录即可） */
+    getAiConfig: () =>
+      request<{ AISwitch?: boolean; AIPrimaryColor?: string; AISecondaryColor?: string }>({
+        url: '/Cube/GetAiConfig',
+        method: 'get',
+      }),
 
     /** 更新系统配置 */
     updateSetting: (data: Record<string, unknown>) =>

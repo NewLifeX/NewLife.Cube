@@ -129,10 +129,22 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     });
   }
 
-  /** 高级菜单「批量修改」弹窗状态（OSC-260819e483 P3.5）：BatchUpdateFields 对选中 keys 改单个字段 */
+  /** 高级菜单「批量修改」弹窗状态（OSC-260819e483 P3.5）：BatchUpdateFields 对选中 keys 改字段；支持多行字段（像筛选/填色弹窗一样增删行，一次应用多字段） */
   const batchEditVisible = ref(false);
-  const batchEditField = ref('');
-  const batchEditValue = ref('');
+
+  /** 批量修改单行：字段 + 值 + 该字段下拉选项（按字段 typeName 自适应值控件） */
+  interface BatchEditRow {
+    field: string;
+    value: string;
+    options: FieldOption[];
+    optionsLoading: boolean;
+  }
+
+  const batchEditRows = ref<BatchEditRow[]>([]);
+
+  function newBatchEditRow(field = ''): BatchEditRow {
+    return { field, value: '', options: [], optionsLoading: false };
+  }
 
   /** 批量修改可选字段：EditFormFields ∩ !PK ∩ !只读 ∩ 非布尔（布尔仍走 EnableSelect 徽标） */
   const batchEditFieldOptions = computed(() =>
@@ -141,63 +153,44 @@ export function useDefaultList(props: { type: string; authId?: number }) {
       .map((f) => ({ label: f.displayName || f.name, value: f.name })),
   );
 
-  /** 当前批量修改选中的字段元数据（驱动值控件与选项） */
-  const batchEditFieldMeta = computed<FieldMeta | undefined>(() =>
-    ctx.editFields.value.find((f) => f.name === batchEditField.value),
-  );
+  /** 行的字段元数据（驱动值控件与选项） */
+  function batchRowMeta(row: BatchEditRow): FieldMeta | undefined {
+    return ctx.editFields.value.find((f) => f.name === row.field);
+  }
 
-  /** 值控件类型：按字段 typeName 经 resolveControl 判定（状态/枚举/值集 → 下拉，数值 → 数字框，日期/时间 → 对应选择器） */
-  const batchEditControlType = computed<ControlType>(() => {
-    const f = batchEditFieldMeta.value;
+  /** 行的值控件类型：按字段 typeName 经 resolveControl 判定（状态/枚举/值集 → 下拉，数值 → 数字框，日期/时间 → 对应选择器） */
+  function batchRowControlType(row: BatchEditRow): ControlType {
+    const f = batchRowMeta(row);
     return f ? resolveControl(f) : 'input';
-  });
-
-  /** 日期选择器值（value-format 返回 string，与 batchEditValue 的 string|number 解耦） */
-  const batchEditDateText = computed({
-    get: () => String(batchEditValue.value ?? ''),
-    set: (v: string) => (batchEditValue.value = v),
-  });
-
-  /** 数字输入框值（a-input-number 期望 number；提交仍转字符串） */
-  const batchEditNumberText = computed({
-    get: () => {
-      const t = batchEditValue.value.trim();
-      return t === '' ? undefined : Number(t);
-    },
-    set: (v: number | undefined) => (batchEditValue.value = v === undefined ? '' : String(v)),
-  });
+  }
 
   /** 是否为下拉类控件（枚举/值集/字典/lov/级联）；多选字段仍按单选设置（BatchUpdateFields 值为单值） */
-  const batchEditIsSelect = computed(() =>
-    ['select', 'selectMulti', 'lov', 'lovMulti', 'cascader'].includes(batchEditControlType.value),
-  );
+  function batchRowIsSelect(row: BatchEditRow): boolean {
+    return ['select', 'selectMulti', 'lov', 'lovMulti', 'cascader'].includes(
+      batchRowControlType(row),
+    );
+  }
 
-  /** 下拉选项：优先字段元数据 dataSource/options；lovCode 远程值集经 fetchLovMeta 填充 */
-  const batchEditOptions = ref<FieldOption[]>([]);
-  const batchEditOptionsLoading = ref(false);
-
-  /** 按字段元数据填充下拉选项（GetPage 已物化 dataSource；无则走 lovCode 远程） */
-  async function loadBatchEditOptions(field?: FieldMeta) {
-    batchEditOptionsLoading.value = false;
+  /** 按行字段元数据填充下拉选项（GetPage 已物化 dataSource；无则走 lovCode 远程） */
+  async function loadBatchRowOptions(row: BatchEditRow) {
+    const field = batchRowMeta(row);
+    row.optionsLoading = false;
     if (!field) {
-      batchEditOptions.value = [];
+      row.options = [];
       return;
     }
     // 静态字典（GetPage/GetFields 已物化）优先：key=存储值、label=显示名
     if (field.dataSource && Object.keys(field.dataSource).length > 0) {
-      batchEditOptions.value = Object.entries(field.dataSource).map(([value, label]) => ({
-        value,
-        label,
-      }));
+      row.options = Object.entries(field.dataSource).map(([value, label]) => ({ value, label }));
       return;
     }
     if (field.options && field.options.length > 0) {
-      batchEditOptions.value = field.options.map((o) => ({ value: String(o.value), label: o.label }));
+      row.options = field.options.map((o) => ({ value: String(o.value), label: o.label }));
       return;
     }
     // lovCode 远程值集：Enum.* 或 Lov 定义
     if (field.lovCode) {
-      batchEditOptionsLoading.value = true;
+      row.optionsLoading = true;
       try {
         const meta = await fetchLovMeta(field.lovCode);
         const item = meta.meta?.find((m) => m.lovCode === field.lovCode);
@@ -205,39 +198,46 @@ export function useDefaultList(props: { type: string; authId?: number }) {
           item && item.type === 'ENUM'
             ? item.options
             : meta.inlineEnums?.[field.lovCode] ?? [];
-        batchEditOptions.value = opts.map((o) => ({ value: String(o.value), label: o.label }));
+        row.options = opts.map((o) => ({ value: String(o.value), label: o.label }));
       } catch {
-        batchEditOptions.value = [];
+        row.options = [];
       } finally {
-        batchEditOptionsLoading.value = false;
+        row.optionsLoading = false;
       }
       return;
     }
-    batchEditOptions.value = [];
+    row.options = [];
   }
 
-  // 字段切换：重置值并加载对应控件选项
-  watch(batchEditField, (name) => {
-    batchEditValue.value = '';
-    void loadBatchEditOptions(ctx.editFields.value.find((f) => f.name === name));
-  });
+  /** 行字段切换：重置值并加载对应控件选项 */
+  function onBatchRowFieldChange(row: BatchEditRow) {
+    row.value = '';
+    void loadBatchRowOptions(row);
+  }
+
+  function addBatchEditRow() {
+    batchEditRows.value.push(newBatchEditRow());
+  }
+
+  function removeBatchEditRow(idx: number) {
+    batchEditRows.value.splice(idx, 1);
+  }
 
   function openBatchEdit() {
-    batchEditField.value = batchEditFieldOptions.value[0]?.value ?? '';
-    batchEditValue.value = '';
+    batchEditRows.value = [newBatchEditRow(batchEditFieldOptions.value[0]?.value ?? '')];
+    void loadBatchRowOptions(batchEditRows.value[0]);
     batchEditVisible.value = true;
-    void loadBatchEditOptions(batchEditFieldMeta.value);
   }
 
   async function confirmBatchEdit() {
     const keys = ctx.selectedKeys.value.join(',');
-    if (!keys || !batchEditField.value) return;
+    // 有效行：字段已选且值非空（空值行跳过，避免误设空）
+    const fields = batchEditRows.value
+      .filter((r) => r.field && r.value !== '')
+      .map((r) => ({ field: r.field, value: String(r.value) }));
+    if (!keys || !fields.length) return;
     try {
-      const res = await cubeApi.page.batchUpdateFields(ctx.typePath.value, {
-        keys,
-        field: batchEditField.value,
-        value: String(batchEditValue.value),
-      });
+      const res = await cubeApi.page.batchUpdateFields(ctx.typePath.value, { keys, fields });
       const { ok = 0, fail = 0, errors = [] } = res.data ?? {};
       if (fail > 0) {
         // 展示首条失败明细，便于定位（如必填/类型转换失败）
@@ -414,16 +414,13 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     moreMenu,
     closeMoreMenu,
     batchEditVisible,
-    batchEditField,
-    batchEditValue,
+    batchEditRows,
     batchEditFieldOptions,
-    batchEditFieldMeta,
-    batchEditControlType,
-    batchEditIsSelect,
-    batchEditOptions,
-    batchEditOptionsLoading,
-    batchEditDateText,
-    batchEditNumberText,
+    batchRowControlType,
+    batchRowIsSelect,
+    onBatchRowFieldChange,
+    addBatchEditRow,
+    removeBatchEditRow,
     openBatchEdit,
     confirmBatchEdit,
     cellEditVisible,

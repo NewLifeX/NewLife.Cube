@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createCommentApi, createPageApi, createProfileApi, createAutomationApi } from './api';
+import { createCommentApi, createPageApi, createProfileApi, createAutomationApi, createConfigApi } from './api';
 import type { ApiResponse, EntityCommentModel, ViewProfileModel } from './types';
 
 vi.mock('axios', () => ({
@@ -293,6 +293,25 @@ describe('createPageApi', () => {
       }),
     );
   });
+
+  it('batchUpdateFields supports multi-field {keys,fields} payload', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: { ok: 1, fail: 0, errors: [] } });
+    const api = createPageApi(request);
+    await api.batchUpdateFields('/Admin/User', {
+      keys: '7,8',
+      fields: [
+        { field: 'Name', value: 'n' },
+        { field: 'Enable', value: true },
+      ],
+    });
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Admin/User/BatchUpdateFields',
+        method: 'post',
+        data: { keys: '7,8', fields: [{ field: 'Name', value: 'n' }, { field: 'Enable', value: true }] },
+      }),
+    );
+  });
 });
 
 describe('createProfileApi', () => {
@@ -475,5 +494,21 @@ describe('createUserApi auth extensions', () => {
     expect(request).toHaveBeenNthCalledWith(1, expect.objectContaining({ url: '/Mfa/Setup', method: 'get' }));
     await api.mfaStatus();
     expect(request).toHaveBeenNthCalledWith(2, expect.objectContaining({ url: '/Mfa/Status', method: 'get' }));
+  });
+});
+
+describe('createConfigApi', () => {
+  it('getAiConfig hits GET /Cube/GetAiConfig without /api prefix', async () => {
+    const ok = { code: 0, data: { AISwitch: true, AIPrimaryColor: '#2ecc71' } };
+    const request = vi.fn().mockResolvedValueOnce(ok);
+    const api = createConfigApi(request);
+    const result = await api.getAiConfig();
+    expect(result).toBe(ok);
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Cube/GetAiConfig',
+        method: 'get',
+      }),
+    );
   });
 });
