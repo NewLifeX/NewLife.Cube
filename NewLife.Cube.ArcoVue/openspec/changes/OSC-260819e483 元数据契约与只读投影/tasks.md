@@ -54,6 +54,24 @@
 - [x] P5.4 `GetChartData` / `OnGetChartData` **不改签名**；子类非空数组仍优先于用户 option
 - [ ] P5.5 跑测 + 冒烟：配置一张柱状 option → 刷新后仍在；改搜索后图随当前页数据变；超大 JSON 保存失败；开发者 OnGetChartData 非空的实体仍走后端图
 
+## 会话小任务（验收阶段补录）
+
+- [x] T1 批量修改弹层值控件按字段 typeName 自适应（状态/枚举/值集→下拉，元数据 dataSource/options/lovCode 自动填充）
+- [x] T2 InsightPanel 改为仅看板/图表展示区（移除内联搜索，搜索统一走 SearchDrawer）+ 提取共享 composable（useMasterTimeRange）
+- [x] T3 默认隐藏 InsightPanel 面板（showStat/showChart 任一打开时显示）
+- [x] T4 修复批量修改"确定"后不成功（ValidateEntityFields 增加 onlyFields 参数，局部更新只校验提交字段）
+- [x] T5 批量修改支持多字段同时更新（添加/删除待修改字段行，前端多行 UI + 后端 Fields[] 扩展）
+
+## 冒烟验收（验收阶段缺口）
+
+- [ ] S.1 已 `LogOnChange=true` 实体改一字段 → 历史 Tab 出字段 diff 表（长名优先、忽略大小写）
+- [ ] S.2 评论 @ 人 → 有站内信（`NotificationRecord`，Channel=InApp，Action=Mention）；不 @ 与今日一致
+- [ ] S.3 筛选构建器条件 → 默认列表可下推翻页；`notContains` 不 500；`logic=any` 不放大权限范围
+- [ ] S.4 高级菜单「批量修改」→ 多字段行可用（添加/删除行、typeName 自适应控件、元数据 dataSource/lovCode 自动填充下拉）；确定后一次性更新
+- [ ] S.5 双击可编辑单元格 → 字段编辑弹窗调 PatchFields；布尔仍走 EnableSelect 徽标
+- [ ] S.6 配置一张柱状 option → 刷新后仍在；改搜索后图随当前页数据变；超大 JSON（>32KB）保存失败有提示；开发者 `OnGetChartData` 非空的实体仍走后端图
+- [ ] S.7 PUT / EnableSelect（GET）/ 无校验头写入与改前一致（回归确认）
+
 ## 收尾
 
 - [x] C.1 竞品分析 §8.6 与本号 design 一致（diff=解析现有 Remark；前端单列 sort；PATCH 仅 WebAPI；图表=ViewProfile 非 autoChart）

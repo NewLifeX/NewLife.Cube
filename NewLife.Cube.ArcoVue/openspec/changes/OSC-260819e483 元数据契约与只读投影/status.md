@@ -1,8 +1,8 @@
 # Status
 - id: OSC-260819e483
-- state: Validating
-- updated: 2026-08-19T22:20:00+08:00
+- state: Implementing
+- updated: 2026-08-20T17:15:00+08:00
 - approvedBy: openspec-approve
 - trigger: "批准并执行 OSC-260819e483 变更。"
-- checklist: passed
-- note: P1–P5 全部实现并提交（34 文件，1710+ 行）。测试门禁：XUnitTest 8/8、NewLife.Cube.Tests 15/15、arco-vue 510、双栈构建 0 错误。文档已同步（核心接口架构/功能清单/web README/迁移方案 §8.2.2/§8.2.3/§8.2.6/竞品分析 §8.6）。verify.md ACs 已按单测/构建勾选；冒烟项（真实运行环境）待用户验收后转 Done。
+- checklist: pending
+- note: 验收阶段发现缺口（冒烟项 S.1-S.7 待真实运行环境验证），用户决策补齐缺口，回写 Implementing。补录会话小任务 T1-T5（批量多字段、InsightPanel 瘦身、默认隐藏等）。外部 WIP 文件（FormatPopover.vue/useFormatPopover.ts）sfcThin 违规非本 OSC 代码，已在 verify.md 记录风险。
