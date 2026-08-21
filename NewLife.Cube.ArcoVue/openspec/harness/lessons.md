@@ -224,6 +224,15 @@
 - **浏览器冒烟勿整包留到验收**：S.1–S.7 类真实环境项宜阶段间穿插；否则只能「仅记录不补齐」放行。tasks 与 verify 冒烟项勿双份勾选。
 - **必填语义三处同源**：后端 `PrepareFieldsForApi`、`X-Cube-Field-Validation`、前端 `isFieldRequired`；改字段元数据语义须同步三处并跑三套测试。
 
+## OSC-26082097c1 — 2026-08-21
+
+- **纯文档 OSC 的审计基线在 Draft 期固化**：四套枚举映射表与目录 A/B 写入 design.md，执行期只复核不重猜，是文档号理想节奏；执行期自审一轮抓出 7 处潜在错误（Int32+TimeSpan、duration 先于数值、formula 模糊命中收窄等）。
+- **TimeSpan ≠ 时钟**：`typeName=TimeSpan` 或 `itemType` 以 TimeSpan 开头（含 Int32 秒如 OnlineTime）→ `duration`，展示友好中文省略零档；`itemType=time`/`Time:*` 才是时刻。duration 解析必须先于数值，否则秒字段变数字框。详情图标 duration=`timer`，禁与 DateTime 共用 `time`。
+- **只读公式/查找的边界**：formula 仅 `itemType∈{formula,compute,computed}`（无「只读且不在表单」模糊规则）、值必须已在实体 JSON；lookup 仅 Map+BatchLabel 显示关联名；可写外键（RoleId/DepartmentId）不是 lookup；二者不进提交体；禁 projections、双向写回、浏览器求值。
+- **名称启发式白名单词干 + Id/Ids 推断单多选**：`RoleId` 单选 / `RoleIds` 多选；主键恰好 `Id` 不误判；`CreateUser` 字符串快照列不是人员选择器；`Vip` 不是 ip——终端 IP 仅 `CreateIP`/`UpdateIP` 与显示名「创建地址/更新地址」，不是地图。审计字段（创建/更新用户、IP、时间）仍不进新增/编辑表单。
+- **交叉核对 grep 必须锚定定义上下文**：`ITEM_TYPE_TO_CONTROL` 核对曾误把函数参数 `model:`/`fields:` 当映射键、无引号映射键被当缺失——脚本模式应限定定义块内，或核对后读源码二次确认，勿「False 即缺口」。
+- **规范文档引用的图标名须当场核对 `iconComponents.ts` 登记**：`font-size-two` 未登记名在执行期纠错为 `font-size`（T7 补录）；实现号消费 labelIcon 前先跑登记断言。
+
 ## 待办 — 字体规范（Harness）
 
 - 后续按现代中后台常见 **组件/场景**（列表表头、单元格、表单标签、抽屉标题、徽章等）在 Harness 建立统一的 **字体 / 字号 / 字重** 规范，并替换各处临时字重（如 VTable `headerStyle.fontWeight: 400`）。

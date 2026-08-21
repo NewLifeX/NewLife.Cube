@@ -79,6 +79,11 @@ pnpm build
 - **账号安全**：用户菜单 → `/account/security`（MFA Setup/Activate/Disable + `/Auth/Binds` 绑定/解绑）。
 - **租户**：顶栏下拉；请求头 `X-Tenant`；接口 `/Auth/Tenants`、`/Auth/SwitchTenant`。新实体接入见 [docs/多租户新实体接入.md](./docs/多租户新实体接入.md)。
 
+## 字段组件规范（OSC-26082097c1）
+
+- 统一 FieldKind 注册表契约（编辑/展示/搜索/筛选）：见 [docs/字段组件规范.md](./docs/字段组件规范.md)。
+- 本号为**纯文档**；运行时 `FieldWidget` / `resolveFieldKind` / DurationInput 等由后续实现 OSC 落地。
+
 ## 壳与 UserProfile
 
 - 布局由 `userProfile.layout.mode`（`side` / `top` / `mix`）经 `layouts/RootLayout.vue` 动态切换。
