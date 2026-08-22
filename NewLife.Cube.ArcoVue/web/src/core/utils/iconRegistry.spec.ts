@@ -112,6 +112,7 @@ describe('ICON_COMPONENTS 覆盖', () => {
     // 工具栏 / 视图配置硬编码图标
     [
       'filter',
+      'background-color',
       'connection-box',
       'search',
       'more',
@@ -136,8 +137,15 @@ describe('ICON_COMPONENTS 覆盖', () => {
       'drag',
       'preview-open',
       'preview-close',
-      'pin',
+      'left-bar',
+      'right-bar',
       'lightning',
+      'robot-one',
+      'send',
+      'file-addition',
+      'plus',
+      'full-screen',
+      'off-screen',
     ].forEach((x) => all.add(x));
     // 产品命名专用
     all.add('cube-three');

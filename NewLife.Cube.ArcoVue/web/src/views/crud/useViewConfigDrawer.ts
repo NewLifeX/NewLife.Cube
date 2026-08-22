@@ -1,5 +1,8 @@
 import { computed, reactive, ref, watch } from 'vue';
 import {
+  applyFrozenLeftTo,
+  applyFrozenRightTo,
+  arrangeFrozenColumns,
   DEFAULT_CHROME,
   normalizeInsight,
   type ColumnPref,
@@ -320,6 +323,7 @@ export function useViewConfigDrawer(props: ViewConfigDrawerProps, emit: ViewConf
   );
 
   function commitColumns() {
+    arrangeFrozenColumns(localColumns.value);
     emit(
       'update:columns',
       localColumns.value.map((c) => ({ ...c })),
@@ -346,18 +350,15 @@ export function useViewConfigDrawer(props: ViewConfigDrawerProps, emit: ViewConf
     commitColumns();
   }
 
-  /** 左冻结：前缀连续冻结。钉住=冻结到该列（含之前可见列）；再点=自该列起解冻 */
+  /** 左冻结：钉住该列并归到最左；再点取消 */
   function toggleFreeze(col: ColumnPref) {
-    const cols = localColumns.value;
-    const idx = cols.findIndex((c) => c.key === col.key);
-    if (idx < 0) return;
-    if (col.frozen === 'left') {
-      for (let i = idx; i < cols.length; i++) cols[i].frozen = false;
-    } else {
-      for (let i = 0; i <= idx; i++) {
-        if (cols[i].visible) cols[i].frozen = 'left';
-      }
-    }
+    applyFrozenLeftTo(localColumns.value, col.key);
+    commitColumns();
+  }
+
+  /** 右冻结：钉住该列并归到最右；再点取消 */
+  function toggleFreezeRight(col: ColumnPref) {
+    applyFrozenRightTo(localColumns.value, col.key);
     commitColumns();
   }
 
@@ -611,6 +612,7 @@ export function useViewConfigDrawer(props: ViewConfigDrawerProps, emit: ViewConf
     onTitleEdit,
     toggleVisible,
     toggleFreeze,
+    toggleFreezeRight,
     onDragStart,
     onDrop,
     onSortField,

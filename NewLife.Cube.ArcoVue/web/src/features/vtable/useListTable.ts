@@ -1,11 +1,19 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { ListTable } from '@visactor/vtable';
 import { createGroup, createText } from '@visactor/vtable/es/vrender';
-import type { ColumnPref } from '@/core/utils/viewProfile';
-import { frozenLeftCount } from '@/core/utils/viewProfile';
+import type { FieldMeta } from '@/core/types/field';
+import type { ColumnPref, ViewFormatRule } from '@/core/utils/viewProfile';
+import { frozenLeftCount, frozenRightCount } from '@/core/utils/viewProfile';
+import {
+  resolveCellFormat,
+  resolveRowFormat,
+  resolveRowSideColor,
+  ROW_SIDE_WIDTH_PX,
+} from '@/core/utils/viewFormat';
 import { BADGE_BORDER_RADIUS, BADGE_PADDING } from '@/core/utils/fieldBadge';
 import { getValueByKey } from '@/core/utils/url';
 import { themeColor } from '@/core/utils/themeColor';
+import { customFreezeSides, freezeLineHeight, freezeLineXs } from './freezeLines';
 import {
   buildOpsPartsWithLinks,
   opsActionColor,
@@ -65,6 +73,10 @@ interface ListTableProps {
   groupFields?: string[];
   /** 分组值显示标签翻译（OSC-0015：如 dataSource 枚举翻译）；返回 undefined 则回落显示原值 */
   groupLabelOf?: (field: string, value: unknown) => string | undefined;
+  /** 条件填色规则（NamedView.format） */
+  formatRules?: ViewFormatRule[];
+  /** 填色命中用字段元数据 */
+  formatFields?: FieldMeta[];
 }
 
 /** ListTable 组件 emits 类型（与 ListTable.vue defineEmits 泛型逐字一致） */
@@ -106,6 +118,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
   let lastSetRecordsAt = 0;
   /** 分隔线层由 JS 动态创建：VTable 构造时会清空宿主容器，模板子元素会被删除 */
   let sepEl: HTMLElement | null = null;
+  let freezeEl: HTMLElement | null = null;
 
   /** 确保分隔线层存在（VTable 创建/重建后调用） */
   function ensureSeparatorLayer(): HTMLElement | null {
@@ -120,6 +133,89 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
     }
     sepEl = el;
     return el;
+  }
+
+  function ensureFreezeLineLayer(): HTMLElement | null {
+    const host = hostRef.value;
+    if (!host) return null;
+    let el = host.querySelector<HTMLElement>('.cube-table-freeze-lines');
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'cube-table-freeze-lines';
+      el.setAttribute('aria-hidden', 'true');
+      const left = document.createElement('div');
+      left.className = 'freeze-line freeze-line--left';
+      const right = document.createElement('div');
+      right.className = 'freeze-line freeze-line--right';
+      el.append(left, right);
+      host.appendChild(el);
+    }
+    freezeEl = el;
+    return el;
+  }
+
+  function updateFreezeLines() {
+    const host = hostRef.value;
+    const layer = ensureFreezeLineLayer();
+    const t = table;
+    if (!host || !layer || !t) return;
+    const prefs = props.columns.map((c) => c.pref);
+    const sides = customFreezeSides(prefs);
+    const leftEl = layer.querySelector<HTMLElement>('.freeze-line--left');
+    const rightEl = layer.querySelector<HTMLElement>('.freeze-line--right');
+    if (!sides.left && !sides.right) {
+      leftEl?.classList.remove('is-on');
+      rightEl?.classList.remove('is-on');
+      return;
+    }
+    let frozenBlockRight = 0;
+    let rightFrozenBlockLeft = 0;
+    try {
+      frozenBlockRight = t.getFrozenColsWidth?.() ?? 0;
+    } catch {
+      /* ignore */
+    }
+    try {
+      const tw = t.tableNoFrameWidth ?? 0;
+      const rw = t.getRightFrozenColsWidth?.() ?? 0;
+      const tx = typeof t.tableX === 'number' ? t.tableX : 0;
+      if (rw > 0) rightFrozenBlockLeft = tx + tw - rw;
+    } catch {
+      /* ignore */
+    }
+    const xs = freezeLineXs({
+      showLeft: sides.left,
+      showRight: sides.right,
+      frozenBlockRight,
+      rightFrozenBlockLeft,
+    });
+    let contentH = 0;
+    try {
+      const rows = t.rowCount ?? 0;
+      if (rows > 0) contentH = t.getRowsHeight(0, rows - 1);
+      if (!(contentH > 0)) contentH = t.getAllRowsHeight?.() ?? 0;
+    } catch {
+      /* ignore */
+    }
+    const h = freezeLineHeight(contentH, host.clientHeight);
+    if (leftEl) {
+      if (xs.left != null && h > 0) {
+        leftEl.style.left = `${xs.left - 1}px`;
+        leftEl.style.height = `${h}px`;
+        leftEl.classList.add('is-on');
+      } else {
+        leftEl.classList.remove('is-on');
+      }
+    }
+    if (rightEl) {
+      if (xs.right != null && h > 0) {
+        rightEl.style.left = `${xs.right}px`;
+        rightEl.style.height = `${h}px`;
+        rightEl.classList.add('is-on');
+      } else {
+        rightEl.classList.remove('is-on');
+      }
+    }
   }
 
   /** 清除表头分隔线 */
@@ -274,6 +370,8 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       flexDirection: 'row',
       flexWrap: 'nowrap',
       alignItems: 'center',
+      // 勿实心填充：整行填色走单元格 bgColor，否则会挡住 hover/选择态底色
+      fill: false,
     });
 
     parts.forEach((action, i) => {
@@ -341,6 +439,14 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
         sort: false,
         showSort: false,
         fieldFormat: () => '›',
+        style: (args: { table?: any; col?: number; row?: number }) => {
+          if (!isFormatBodyRow(args)) return undefined;
+          const record = recordOf(args);
+          return {
+            ...rowChromeFillPatch(record),
+            ...sideBarPatch(record),
+          };
+        },
       });
     }
     if (props.showCheckbox && !groupedMode) {
@@ -354,6 +460,15 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
         dragHeader: false,
         sort: false,
         showSort: false,
+        style: (args: { table?: any; col?: number; row?: number }) => {
+          if (!isFormatBodyRow(args)) return undefined;
+          const record = recordOf(args);
+          const fill = rowChromeFillPatch(record);
+          // 有 expand 时侧边画在最左 expand 列
+          const side = props.showExpand ? undefined : sideBarPatch(record);
+          if (!fill && !side) return undefined;
+          return { ...fill, ...side };
+        },
       });
     }
 
@@ -409,9 +524,12 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
             return {
               textAlign: 'center',
               color: badge?.textColor || themeColor('--color-text-1', '#4b5563'),
-              // 仅「启用/Enable」徽标可点击（pointer）；其它状态/枚举/值集徽标正常指示（default）
               cursor: c.enableToggle ? 'pointer' : 'default',
               buttonStyle,
+              ...(isFormatBodyRow(args) ? cellBgPatch(record, c.pref.key) : {}),
+              ...(isFormatBodyRow(args) && isFirstDataCol && !chromeHasLeftBar()
+                ? sideBarPatch(record)
+                : {}),
             };
           },
         });
@@ -438,14 +556,22 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
             | undefined;
           const ghs = groupHeaderStyle(record);
           if (ghs) return ghs;
+          const fmt =
+            isFormatBodyRow(args)
+              ? {
+                  ...cellBgPatch(record, c.pref.key),
+                  ...(isFirstDataCol && !chromeHasLeftBar() ? sideBarPatch(record) : {}),
+                }
+              : undefined;
           if (c.cellLink) {
             return {
               color: themeColor(OPS_LINK_COLOR.token, '#165DFF'),
               cursor: 'pointer',
               textDecoration: 'underline',
+              ...fmt,
             };
           }
-          return undefined;
+          return fmt;
         },
       });
     }
@@ -460,8 +586,10 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
         showSort: false,
         disableColumnResize: true,
         customLayout: renderOpsLayout,
-        style: {
-          textAlign: 'center',
+        style: (args: { table?: any; col?: number; row?: number }) => {
+          const base = { textAlign: 'center' as const };
+          if (!isFormatBodyRow(args)) return base;
+          return { ...base, ...rowChromeFillPatch(recordOf(args)) };
         },
       });
     }
@@ -471,6 +599,11 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
 
   function frozenCount(): number {
     return leadingCount() + frozenLeftCount(props.columns.map((c) => c.pref));
+  }
+
+  function rightFrozenCount(): number {
+    const ops = opsBundle().parts.length ? 1 : 0;
+    return ops + frozenRightCount(props.columns.map((c) => c.pref));
   }
 
   function withChecks(records: Record<string, unknown>[]) {
@@ -501,6 +634,61 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       bgColor: themeColor('--color-fill-1', '#F7F8FA'),
       color: themeColor('--color-text-1', '#1D2129'),
       fontWeight: 600,
+    };
+  }
+
+  function isFormatBodyRow(args: { table?: any; col?: number; row?: number }): boolean {
+    const t = args.table;
+    if (!t) return true;
+    const header = t.columnHeaderLevelCount || 1;
+    if (typeof args.row === 'number' && args.row < header) return false;
+    try {
+      const lv = t.getGroupTitleLevel?.(args.col, args.row);
+      if (lv != null && lv >= 0) return false;
+    } catch {
+      /* ignore */
+    }
+    return true;
+  }
+
+  function recordOf(args: { table?: any; col?: number; row?: number }): Record<string, unknown> | undefined {
+    return args.table?.getRecordByCell?.(args.col, args.row) as Record<string, unknown> | undefined;
+  }
+
+  function chromeHasLeftBar(): boolean {
+    if (props.groupFields?.length) return true;
+    return !!props.showCheckbox || !!props.showExpand;
+  }
+
+  function sideBarPatch(record: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
+    if (!record || record.__groupHeader) return undefined;
+    const color = resolveRowSideColor(record, props.formatRules || [], props.formatFields || []);
+    if (!color) return undefined;
+    const edge = themeColor('--color-border-2', '#E5E6EB');
+    return {
+      borderLineWidth: [1, 0, 0, ROW_SIDE_WIDTH_PX],
+      borderColor: [edge, edge, edge, color],
+    };
+  }
+
+  function cellBgPatch(record: Record<string, unknown> | undefined, columnField: string): Record<string, unknown> | undefined {
+    if (!record || record.__groupHeader) return undefined;
+    const fmt = resolveCellFormat(record, columnField, props.formatRules || [], props.formatFields || []);
+    if (!fmt) return undefined;
+    return {
+      ...(fmt.color ? { bgColor: fmt.color } : {}),
+      ...(fmt.bold ? { fontWeight: 700 } : {}),
+    };
+  }
+
+  /** 整行填色铺到勾选 / 展开 / 操作等 chrome 列（单元格/整列规则不涂这些列） */
+  function rowChromeFillPatch(record: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
+    if (!record || record.__groupHeader) return undefined;
+    const fmt = resolveRowFormat(record, props.formatRules || [], props.formatFields || []);
+    if (!fmt) return undefined;
+    return {
+      ...(fmt.color ? { bgColor: fmt.color } : {}),
+      ...(fmt.bold ? { fontWeight: 700 } : {}),
     };
   }
 
@@ -558,7 +746,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       records: withChecks(props.records),
       columns: cols,
       frozenColCount: frozenCount(),
-      rightFrozenColCount: opsBundle().parts.length ? 1 : 0,
+      rightFrozenColCount: Math.min(rightFrozenCount(), Math.max(0, cols.length - frozenCount())),
       ...(groupedMode
         ? {
             // 官方分组复选框方案：checkbox 置于 rowSeriesNumber（每行最前面），
@@ -574,6 +762,14 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
               format: () => '',
               cellType: 'checkbox',
               headerType: 'checkbox',
+              style: (args: { table?: any; col?: number; row?: number }) => {
+                if (!isFormatBodyRow(args)) return undefined;
+                const record = recordOf(args);
+                return {
+                  ...rowChromeFillPatch(record),
+                  ...sideBarPatch(record),
+                };
+              },
             },
             enableCheckboxCascade: true,
           }
@@ -655,6 +851,19 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
             inlineRowBgColor: themeColor('--color-fill-1', '#F7F8FA'),
           },
         },
+        // 右冻结操作列与表体共用 hover，避免整行填色后操作区选择态发花
+        rightFrozenStyle: {
+          bgColor: themeColor('--color-bg-2', '#FFFFFF'),
+          color: themeColor('--color-text-1', '#1D2129'),
+          fontWeight: 400,
+          fontSize: 13,
+          borderColor: themeColor('--color-border-2', '#E5E6EB'),
+          borderLineWidth: [1, 0, 0, 0],
+          hover: {
+            cellBgColor: themeColor('--color-fill-1', '#F7F8FA'),
+            inlineRowBgColor: themeColor('--color-fill-1', '#F7F8FA'),
+          },
+        },
         frameStyle: {
           borderColor: 'transparent',
           borderLineWidth: 0,
@@ -662,6 +871,15 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
         selectionStyle: {
           cellBorderLineWidth: 0,
           cellBgColor: 'transparent',
+        },
+        // 关掉 VTable 默认冻结阴影；自定义示意线仅在用户钉了左/右冻结时由 overlay 绘制
+        frozenColumnLine: {
+          shadow: {
+            width: 0,
+            startColor: 'rgba(0,0,0,0)',
+            endColor: 'rgba(0,0,0,0)',
+            visible: 'scrolling',
+          },
         },
         // 滚动条：DEFAULT 浅色轨在暗色下刺眼
         scrollStyle: {
@@ -841,6 +1059,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       'resize_column_end',
       ((args: { col?: number; colWidths?: number[] }) => {
         syncFromTable(args?.colWidths);
+        updateFreezeLines();
       }) as any,
     );
     table.on('change_header_position', (() => syncFromTable()) as any);
@@ -870,6 +1089,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
     table = new ListTable(hostRef.value, buildOption());
     // VTable 构造会清空宿主容器（innerHTML=''），必须在创建后重建分隔线层
     ensureSeparatorLayer();
+    updateFreezeLines();
     applying = false;
     bindEvents();
     if (!ro && typeof ResizeObserver !== 'undefined') {
@@ -879,6 +1099,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
         } catch {
           /* ignore */
         }
+        updateFreezeLines();
       });
       ro.observe(hostRef.value);
     }
@@ -888,6 +1109,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       } catch {
         /* ignore */
       }
+      updateFreezeLines();
     });
   }
 
@@ -899,6 +1121,8 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
     applying = true;
     table.updateOption(buildOption());
     applying = false;
+    ensureSeparatorLayer();
+    updateFreezeLines();
   }
 
   /** 滚动接近底部（剩余不足 200px）时上报，父级据此增量加载更多行（列表/树懒加载，避免千条一次性传 VTable） */
@@ -976,6 +1200,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       refreshOption();
     } finally {
       applying = false;
+      updateFreezeLines();
     }
   }
 
@@ -997,6 +1222,8 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       props.hierarchy,
       props.grouped,
       props.groupFields,
+      props.formatRules,
+      props.formatFields,
     ],
     () => refreshOption(),
   );

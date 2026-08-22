@@ -1,5 +1,5 @@
 /** 解析颜色为 [r,g,b]：支持 #hex、rgb()、rgba() */
-function parseColor(str: string): [number, number, number] | null {
+export function parseColor(str: string): [number, number, number] | null {
   const hex = /#([0-9a-fA-F]{6})/.exec(str);
   if (hex) {
     const n = parseInt(hex[1], 16);
@@ -8,6 +8,14 @@ function parseColor(str: string): [number, number, number] | null {
   const rgb = /(\d+)[^,]*,\s*(\d+)[^,]*,\s*(\d+)/.exec(str);
   if (rgb) return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];
   return null;
+}
+
+/** 给已解析色值加透明度，供 canvas 渐变（如冻结列示意线） */
+export function withAlpha(color: string, alpha: number): string {
+  const rgb = parseColor(color);
+  if (!rgb) return color;
+  const a = Math.min(1, Math.max(0, alpha));
+  return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${a})`;
 }
 
 /**

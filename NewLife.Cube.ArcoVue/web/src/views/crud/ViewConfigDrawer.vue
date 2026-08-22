@@ -54,14 +54,15 @@
               @dragover.prevent
               @drop="onDrop(idx)"
             >
-              <span
-                class="drag-handle"
-                draggable="true"
-                title="拖动排序"
-                @dragstart="onDragStart(idx, $event)"
-              >
-                <icon-park type="drag" />
-              </span>
+              <a-tooltip content="拖动排序">
+                <span
+                  class="drag-handle"
+                  draggable="true"
+                  @dragstart="onDragStart(idx, $event)"
+                >
+                  <icon-park type="drag" />
+                </span>
+              </a-tooltip>
               <a-input
                 class="field-title-input"
                 size="mini"
@@ -71,25 +72,40 @@
                 @update:model-value="(v: string) => onTitleEdit(col, v)"
                 @press-enter="(e: KeyboardEvent) => (e.target as HTMLInputElement)?.blur()"
               />
-              <a-button
-                type="text"
-                size="mini"
-                class="freeze-btn"
-                :class="{ 'is-frozen': col.frozen === 'left' }"
-                :title="col.frozen === 'left' ? '取消左冻结' : '左冻结至此列'"
-                @click="toggleFreeze(col)"
-              >
-                <icon-park type="pin" />
-              </a-button>
-              <a-button
-                type="text"
-                size="mini"
-                :title="col.visible ? '隐藏' : '显示'"
-                @click="toggleVisible(col)"
-              >
-                <icon-park v-if="col.visible" type="preview-open" />
-                <icon-park v-else type="preview-close" />
-              </a-button>
+              <template v-if="isTableLikeViewKind(props.viewKind)">
+                <a-tooltip :content="col.frozen === 'left' ? '取消左冻结' : '左冻结此列'">
+                  <a-button
+                    type="text"
+                    size="mini"
+                    class="freeze-btn"
+                    :class="{ 'is-frozen': col.frozen === 'left' }"
+                    @click="toggleFreeze(col)"
+                  >
+                    <icon-park type="left-bar" />
+                  </a-button>
+                </a-tooltip>
+                <a-tooltip :content="col.frozen === 'right' ? '取消右冻结' : '右冻结此列'">
+                  <a-button
+                    type="text"
+                    size="mini"
+                    class="freeze-btn"
+                    :class="{ 'is-frozen': col.frozen === 'right' }"
+                    @click="toggleFreezeRight(col)"
+                  >
+                    <icon-park type="right-bar" />
+                  </a-button>
+                </a-tooltip>
+              </template>
+              <a-tooltip :content="col.visible ? '隐藏' : '显示'">
+                <a-button
+                  type="text"
+                  size="mini"
+                  @click="toggleVisible(col)"
+                >
+                  <icon-park v-if="col.visible" type="preview-open" />
+                  <icon-park v-else type="preview-close" />
+                </a-button>
+              </a-tooltip>
             </li>
           </ul>
         </section>
@@ -783,6 +799,7 @@ const {
   onTitleEdit,
   toggleVisible,
   toggleFreeze,
+  toggleFreezeRight,
   onDragStart,
   onDrop,
   onSortField,

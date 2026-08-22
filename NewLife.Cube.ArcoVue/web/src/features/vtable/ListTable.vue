@@ -4,7 +4,8 @@
 </template>
 
 <script setup lang="ts">
-import type { ColumnPref } from '@/core/utils/viewProfile';
+import type { FieldMeta } from '@/core/types/field';
+import type { ColumnPref, ViewFormatRule } from '@/core/utils/viewProfile';
 import type { ListTableColumnDef } from './useListTable';
 import { useListTable } from './useListTable';
 
@@ -44,6 +45,9 @@ const props = withDefaults(
     groupFields?: string[];
     /** 分组值显示标签翻译（OSC-0015：如 dataSource 枚举翻译）；返回 undefined 则回落显示原值 */
     groupLabelOf?: (field: string, value: unknown) => string | undefined;
+    /** 条件填色规则 */
+    formatRules?: ViewFormatRule[];
+    formatFields?: FieldMeta[];
   }>(),
   {
     selectedKeys: () => [],
@@ -124,5 +128,23 @@ const { hostRef } = useListTable(props, emit);
   background: var(--color-secondary-hover);
   border-left: 1px solid var(--color-secondary-hover);
   box-sizing: border-box;
+}
+
+/* 用户自定义左/右冻结时的边界示意线：1px、无阴影；默认冻结（勾选/操作列）不画 */
+.cube-list-table :deep(.cube-table-freeze-lines) {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9;
+}
+.cube-list-table :deep(.cube-table-freeze-lines .freeze-line) {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  background: var(--color-border-2);
+  display: none;
+}
+.cube-list-table :deep(.cube-table-freeze-lines .freeze-line.is-on) {
+  display: block;
 }
 </style>

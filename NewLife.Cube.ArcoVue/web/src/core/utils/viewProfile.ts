@@ -11,11 +11,13 @@ import {
 
 export type { ViewKind, ViewMapping } from '@/core/utils/viewMapping';
 
+export type ColumnFrozen = 'left' | 'right' | false;
+
 export interface ColumnPref {
   key: string;
   visible: boolean;
   width?: number;
-  frozen?: 'left' | false;
+  frozen?: ColumnFrozen;
   /** 自定义列头标签；空则回落元数据 displayName */
   title?: string;
 }
@@ -66,6 +68,8 @@ export interface NamedView {
   filter?: ViewFilter;
   /** 多级分组字段列表（OSC-0015）：有序、最多 3 个；随视图保存并纯前端分组 */
   group?: ViewGroup;
+  /** 条件填色规则（OSC-26081903c0）：单条件；空/缺省表示无填色 */
+  format?: ViewFormatRule[];
   /** 原始线缆对象（保留未知顶层属性，round-trip 不丢后续 OSC 字段） */
   _raw?: Record<string, unknown>;
 }
@@ -136,6 +140,72 @@ export interface ViewFilter {
 
 /** 多级分组字段列表（OSC-0015）：有序、最多 3 个；空数组表示无分组 */
 export type ViewGroup = string[];
+
+/** 填色作用范围（OSC-26081903c0）；下拉顺序 cell → side → row → column */
+export type FormatApply = 'cell' | 'side' | 'row' | 'column';
+
+export const FORMAT_APPLIES: readonly FormatApply[] = ['cell', 'side', 'row', 'column'];
+
+export interface ViewFormatRule {
+  id: string;
+  apply: FormatApply;
+  color: string;
+  field: string;
+  op: ViewFilterOp;
+  value?: unknown;
+  /** 命中单元格/行文字加粗；缺省 false */
+  bold?: boolean;
+}
+
+const FORMAT_COLOR_RE = /^#[0-9A-Fa-f]{6}$/;
+const MAX_FORMAT_RULES = 50;
+
+export function generateFormatId(): string {
+  const rand = Math.floor(Math.random() * 36 ** 4)
+    .toString(36)
+    .padStart(4, '0');
+  return `f_${Date.now().toString(36)}${rand}`;
+}
+
+function canonicalMetaKey(name: string, metaKeys: string[]): string {
+  const hit = metaKeys.find((k) => k.toLowerCase() === name.toLowerCase());
+  return hit || name;
+}
+
+/**
+ * 宽容归一化填色规则。非数组→[]；含嵌套 filter 的条目丢弃；非法 apply/color 丢弃；
+ * op 非法改为 eq；最多 50；缺 field 仍保留。
+ */
+export function normalizeFormat(raw: unknown, metaKeys: string[] = []): ViewFormatRule[] {
+  if (!Array.isArray(raw)) return [];
+  const used = new Set<string>();
+  const out: ViewFormatRule[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
+    const o = item as Record<string, unknown>;
+    if (o.filter && typeof o.filter === 'object') continue;
+    const apply = (FORMAT_APPLIES as readonly string[]).includes(o.apply as string)
+      ? (o.apply as FormatApply)
+      : null;
+    if (!apply) continue;
+    const color = typeof o.color === 'string' ? o.color : '';
+    if (!FORMAT_COLOR_RE.test(color)) continue;
+    const fieldRaw = typeof o.field === 'string' ? o.field.trim() : '';
+    const field = fieldRaw ? canonicalMetaKey(fieldRaw, metaKeys) : '';
+    const op = (FILTER_OPS as readonly string[]).includes(o.op as string)
+      ? (o.op as ViewFilterOp)
+      : 'eq';
+    let id = typeof o.id === 'string' && o.id && !used.has(o.id) ? o.id : generateFormatId();
+    if (used.has(id)) id = generateFormatId();
+    used.add(id);
+    const rule: ViewFormatRule = { id, apply, color, field, op };
+    if (o.value !== undefined) rule.value = o.value;
+    if (o.bold === true) rule.bold = true;
+    out.push(rule);
+    if (out.length >= MAX_FORMAT_RULES) break;
+  }
+  return out;
+}
 
 /** 空筛选方案（无任何条件） */
 export function emptyViewFilter(): ViewFilter {
@@ -355,7 +425,7 @@ export function normalizeColumn(raw: unknown): ColumnPref | null {
     key,
     visible: o.visible !== false,
     width: typeof o.width === 'number' && o.width > 0 ? o.width : undefined,
-    frozen: o.frozen === 'left' ? 'left' : false,
+    frozen: o.frozen === 'left' || o.frozen === 'right' ? o.frozen : false,
     title,
   };
 }
@@ -388,7 +458,7 @@ export function mergeColumns(
       ordered.push({ key, visible: true, frozen: false });
     }
   }
-  return ordered;
+  return arrangeFrozenColumns(ordered);
 }
 
 /** 用最新元数据重合并所有命名视图的列（修复空 columns 脏数据） */
@@ -542,6 +612,20 @@ export function serializeNamedView(v: NamedView): Record<string, unknown> {
   if (v.insight) raw.insight = serializeInsight(v.insight, v._raw?.insight);
   if (v.filter) raw.filter = { ...v.filter, conditions: v.filter.conditions.map((c) => ({ ...c })) };
   if (v.group && v.group.length) raw.group = [...v.group];
+  if (v.format && v.format.length) {
+    raw.format = v.format.map((r) => {
+      const o: Record<string, unknown> = {
+        id: r.id,
+        apply: r.apply,
+        color: r.color,
+        field: r.field,
+        op: r.op,
+      };
+      if (r.value !== undefined) o.value = r.value;
+      if (r.bold) o.bold = true;
+      return o;
+    });
+  }
   return raw;
 }
 
@@ -557,6 +641,7 @@ const MANAGED_VIEW_KEYS = new Set([
   'insight',
   'filter',
   'group',
+  'format',
 ]);
 
 /** 空 FiltersJson 线缆 */
@@ -816,6 +901,10 @@ export function parseNamedViews(
       insight: normalizeInsight(o.insight),
       filter: normalizeFilter(o.filter),
       group: normalizeGroup(o.group),
+      format: (() => {
+        const f = normalizeFormat(o.format, metaKeys);
+        return f.length ? f : undefined;
+      })(),
       // 保留原始线缆对象，round-trip 不丢未知顶层属性（后续 OSC 扩展字段）
       _raw: o,
     });
@@ -891,15 +980,58 @@ export function getActiveView(state: EntityViewState): NamedView {
   return state.views.find((v) => v.id === state.activeViewId) || state.views[0];
 }
 
-/** 左冻结列数（不含 checkbox；含连续 frozen:left 的可见列） */
+/** 左冻结列数（可见且 frozen:left；调用方须先 arrangeFrozenColumns 以保证这些列在最左） */
 export function frozenLeftCount(columns: ColumnPref[]): number {
   let n = 0;
   for (const c of columns) {
-    if (!c.visible) continue;
-    if (c.frozen === 'left') n += 1;
-    else break;
+    if (c.visible && c.frozen === 'left') n += 1;
   }
   return n;
+}
+
+/** 右冻结列数（可见且 frozen:right；调用方须先 arrangeFrozenColumns 以保证这些列在最右） */
+export function frozenRightCount(columns: ColumnPref[]): number {
+  let n = 0;
+  for (const c of columns) {
+    if (c.visible && c.frozen === 'right') n += 1;
+  }
+  return n;
+}
+
+/**
+ * 可见列分区：左冻结 → 未冻结 → 右冻结，隐藏列置末。
+ * 组内保持原相对顺序。
+ */
+export function arrangeFrozenColumns(columns: ColumnPref[]): ColumnPref[] {
+  const left: ColumnPref[] = [];
+  const mid: ColumnPref[] = [];
+  const right: ColumnPref[] = [];
+  const hidden: ColumnPref[] = [];
+  for (const c of columns) {
+    if (!c.visible) hidden.push(c);
+    else if (c.frozen === 'left') left.push(c);
+    else if (c.frozen === 'right') right.push(c);
+    else mid.push(c);
+  }
+  columns.length = 0;
+  columns.push(...left, ...mid, ...right, ...hidden);
+  return columns;
+}
+
+/** 切换该列左冻结（与右冻结互斥），并归位到最左 */
+export function applyFrozenLeftTo(columns: ColumnPref[], key: string): ColumnPref[] {
+  const col = columns.find((c) => c.key === key);
+  if (!col) return columns;
+  col.frozen = col.frozen === 'left' ? false : 'left';
+  return arrangeFrozenColumns(columns);
+}
+
+/** 切换该列右冻结（与左冻结互斥），并归位到最右 */
+export function applyFrozenRightTo(columns: ColumnPref[], key: string): ColumnPref[] {
+  const col = columns.find((c) => c.key === key);
+  if (!col) return columns;
+  col.frozen = col.frozen === 'right' ? false : 'right';
+  return arrangeFrozenColumns(columns);
 }
 
 export function buildSortPayload(sort: ViewSort | null | undefined): {
@@ -1126,6 +1258,22 @@ export function patchActiveGroup(state: EntityViewState, group: ViewGroup): Enti
         return rest as NamedView;
       }
       return { ...v, group: next };
+    }),
+  };
+}
+
+/** 更新当前命名视图的填色规则；空数组等价清除 */
+export function patchActiveFormat(state: EntityViewState, format: ViewFormatRule[]): EntityViewState {
+  const next = normalizeFormat(format);
+  return {
+    ...state,
+    views: state.views.map((v) => {
+      if (v.id !== state.activeViewId) return v;
+      if (!next.length) {
+        const { format: _f, ...rest } = v;
+        return rest as NamedView;
+      }
+      return { ...v, format: next };
     }),
   };
 }

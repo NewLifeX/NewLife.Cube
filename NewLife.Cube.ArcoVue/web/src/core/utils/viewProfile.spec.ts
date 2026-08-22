@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyChartData,
+  applyFrozenLeftTo,
+  applyFrozenRightTo,
+  arrangeFrozenColumns,
   buildFormJsonWire,
   buildSortPayload,
   CHART_OPTION_MAX_BYTES,
@@ -13,9 +16,11 @@ import {
   emptySavedFilters,
   emptySavedQueries,
   frozenLeftCount,
+  frozenRightCount,
   getFormModeLayout,
   getSavedViewFilters,
   mergeColumns,
+  normalizeColumn,
   normalizeFilter,
   normalizeGroup,
   normalizeInsight,
@@ -36,6 +41,7 @@ import {
   stateFromWire,
   stateToWirePayload,
   stripChartData,
+  normalizeFormat,
   type ColumnPref,
   type NamedView,
   type SavedQueriesWire,
@@ -49,9 +55,18 @@ describe('mergeColumns', () => {
       { key: 'A', visible: true, width: 120 },
       { key: 'Z', visible: true },
     ]);
-    expect(m.map((x) => x.key)).toEqual(['B', 'A', 'C']);
+    expect(m.map((x) => x.key)).toEqual(['A', 'C', 'B']);
     expect(m.find((x) => x.key === 'B')?.visible).toBe(false);
     expect(m.find((x) => x.key === 'A')?.width).toBe(120);
+  });
+
+  it('keeps right freeze from prefs', () => {
+    const m = mergeColumns(['A', 'B'], [
+      { key: 'A', visible: true, frozen: 'left' },
+      { key: 'B', visible: true, frozen: 'right' },
+    ]);
+    expect(m.find((x) => x.key === 'A')?.frozen).toBe('left');
+    expect(m.find((x) => x.key === 'B')?.frozen).toBe('right');
   });
 
   it('rematch fills empty dirty columns from meta', () => {
@@ -234,6 +249,7 @@ describe('namedViews', () => {
       ['Name', 'Code'],
     );
     expect(s.views[0].columns[0].title).toBe('姓名');
+    expect(s.views[0].columns[0].frozen).toBe('left');
     const payload = stateToWirePayload('Admin/User', s);
     expect(payload.typePath).toBe('Admin/User');
     expect(payload.activeViewId).toBe('default');
@@ -270,7 +286,7 @@ describe('namedViews', () => {
   });
 });
 
-describe('buildSortPayload / frozenLeftCount', () => {
+describe('buildSortPayload / frozenLeftCount / frozenRightCount', () => {
   it('sort shape', () => {
     expect(buildSortPayload({ field: 'Name', desc: true })).toEqual({
       sort: 'Name',
@@ -279,14 +295,122 @@ describe('buildSortPayload / frozenLeftCount', () => {
     expect(buildSortPayload(null)).toEqual({});
   });
 
-  it('counts leading left-frozen visible cols', () => {
+  it('counts all visible left-frozen cols', () => {
     expect(
       frozenLeftCount([
         { key: 'a', visible: true, frozen: 'left' },
+        { key: 'b', visible: true, frozen: false },
+        { key: 'c', visible: true, frozen: 'left' },
+      ]),
+    ).toBe(2);
+  });
+
+  it('skips hidden cols when counting left freeze', () => {
+    expect(
+      frozenLeftCount([
+        { key: 'a', visible: true, frozen: 'left' },
+        { key: 'h', visible: false, frozen: 'left' },
         { key: 'b', visible: true, frozen: 'left' },
         { key: 'c', visible: true, frozen: false },
       ]),
     ).toBe(2);
+  });
+
+  it('counts all visible right-frozen cols', () => {
+    expect(
+      frozenRightCount([
+        { key: 'a', visible: true, frozen: 'right' },
+        { key: 'b', visible: true, frozen: false },
+        { key: 'c', visible: true, frozen: 'right' },
+      ]),
+    ).toBe(2);
+  });
+
+  it('skips hidden cols when counting right freeze', () => {
+    expect(
+      frozenRightCount([
+        { key: 'a', visible: true, frozen: false },
+        { key: 'b', visible: true, frozen: 'right' },
+        { key: 'h', visible: false, frozen: 'right' },
+        { key: 'c', visible: true, frozen: 'right' },
+      ]),
+    ).toBe(2);
+  });
+
+  it('normalizeColumn keeps left and right freeze', () => {
+    expect(normalizeColumn({ key: 'a', frozen: 'left' })?.frozen).toBe('left');
+    expect(normalizeColumn({ key: 'a', frozen: 'right' })?.frozen).toBe('right');
+    expect(normalizeColumn({ key: 'a', frozen: true })?.frozen).toBe(false);
+    expect(normalizeColumn({ key: 'a' })?.frozen).toBe(false);
+  });
+});
+
+describe('applyFrozenLeftTo / applyFrozenRightTo / arrangeFrozenColumns', () => {
+  function cols(
+    flags: Array<ColumnPref['frozen']>,
+  ): ColumnPref[] {
+    return flags.map((frozen, i) => ({
+      key: String.fromCharCode(97 + i),
+      visible: true,
+      frozen,
+    }));
+  }
+
+  it('left freeze pins only that column and moves it to the start', () => {
+    const next = applyFrozenLeftTo(cols([false, false, false]), 'b');
+    expect(next.map((c) => c.key)).toEqual(['b', 'a', 'c']);
+    expect(next.map((c) => c.frozen)).toEqual(['left', false, false]);
+  });
+
+  it('left unfreeze clears only that column', () => {
+    const next = applyFrozenLeftTo(cols(['left', 'left', false]), 'b');
+    expect(next.map((c) => c.key)).toEqual(['a', 'b', 'c']);
+    expect(next.map((c) => c.frozen)).toEqual(['left', false, false]);
+  });
+
+  it('right freeze pins only that column and moves it to the end', () => {
+    const next = applyFrozenRightTo(cols([false, false, false]), 'b');
+    expect(next.map((c) => c.key)).toEqual(['a', 'c', 'b']);
+    expect(next.map((c) => c.frozen)).toEqual([false, false, 'right']);
+  });
+
+  it('right unfreeze clears only that column', () => {
+    const next = applyFrozenRightTo(cols([false, 'right', 'right']), 'b');
+    expect(next.map((c) => c.key)).toEqual(['a', 'b', 'c']);
+    expect(next.map((c) => c.frozen)).toEqual([false, false, 'right']);
+  });
+
+  it('right freeze overwrites left on that column and regroups', () => {
+    const next = applyFrozenRightTo(cols(['left', 'left', false]), 'b');
+    expect(next.map((c) => c.key)).toEqual(['a', 'c', 'b']);
+    expect(next.map((c) => c.frozen)).toEqual(['left', false, 'right']);
+  });
+
+  it('left freeze overwrites right on that column and regroups', () => {
+    const next = applyFrozenLeftTo(cols([false, 'right', 'right']), 'b');
+    expect(next.map((c) => c.key)).toEqual(['b', 'a', 'c']);
+    expect(next.map((c) => c.frozen)).toEqual(['left', false, 'right']);
+  });
+
+  it('arrange groups left / mid / right / hidden', () => {
+    const next = arrangeFrozenColumns([
+      { key: 'm', visible: true, frozen: false },
+      { key: 'r', visible: true, frozen: 'right' },
+      { key: 'l', visible: true, frozen: 'left' },
+      { key: 'h', visible: false, frozen: 'left' },
+    ]);
+    expect(next.map((c) => c.key)).toEqual(['l', 'm', 'r', 'h']);
+  });
+
+  it('skips hidden when applying freeze and keeps it at the end', () => {
+    const hidden: ColumnPref[] = [
+      { key: 'a', visible: true, frozen: false },
+      { key: 'h', visible: false, frozen: false },
+      { key: 'c', visible: true, frozen: false },
+    ];
+    applyFrozenRightTo(hidden, 'a');
+    expect(hidden.map((c) => c.key)).toEqual(['c', 'a', 'h']);
+    expect(hidden.map((c) => c.frozen)).toEqual([false, 'right', false]);
   });
 });
 
@@ -704,5 +828,66 @@ describe('QueriesJson wire (OSC-0016)', () => {
     const a = normalizeSavedQuery({ id: 'q_same', name: 'A', params: { Name: '1' } }, qFields, used);
     const b = normalizeSavedQuery({ id: 'q_same', name: 'B', params: { Name: '2' } }, qFields, used);
     expect(a?.id).not.toBe(b?.id);
+  });
+});
+
+describe('normalizeFormat (OSC-26081903c0)', () => {
+  it('缺省与非数组 → []', () => {
+    expect(normalizeFormat(undefined)).toEqual([]);
+    expect(normalizeFormat(null)).toEqual([]);
+    expect(normalizeFormat({})).toEqual([]);
+  });
+
+  it('非法色、未知 apply、嵌套 filter 丢弃；>50 截断', () => {
+    const rules = normalizeFormat(
+      [
+        { apply: 'row', color: 'red', field: 'Name', op: 'eq', value: 'a' },
+        { apply: 'row', color: '#FFF7E8', field: 'Name', op: 'eq', value: 'a', filter: { logic: 'all', conditions: [] } },
+        { apply: 'edge', color: '#FFF7E8', field: 'Name', op: 'eq' },
+        { apply: 'side', color: '#FF0000', field: 'name', op: 'bogus', value: 1 },
+        ...Array.from({ length: 60 }, (_, i) => ({
+          apply: 'cell',
+          color: '#E8FFFB',
+          field: 'Name',
+          op: 'eq',
+          value: i,
+        })),
+      ],
+      ['Name'],
+    );
+    expect(rules.length).toBe(50);
+    expect(rules[0].apply).toBe('side');
+    expect(rules[0].field).toBe('Name');
+    expect(rules[0].op).toBe('eq');
+    expect(rules[0].color).toBe('#FF0000');
+  });
+
+  it('bold 仅 true 保留', () => {
+    const [yes] = normalizeFormat([{ apply: 'row', color: '#FFF7E8', field: 'Name', op: 'eq', bold: true }]);
+    const [no] = normalizeFormat([{ apply: 'row', color: '#FFF7E8', field: 'Name', op: 'eq', bold: false }]);
+    expect(yes.bold).toBe(true);
+    expect(no.bold).toBeUndefined();
+  });
+
+  it('serializeNamedView 仅在有规则时写出 format', () => {
+    const empty = serializeNamedView({
+      id: 'v1',
+      name: '视图',
+      view: 'table',
+      columns: [],
+    });
+    expect(empty.format).toBeUndefined();
+    const raw = serializeNamedView({
+      id: 'v1',
+      name: '视图',
+      view: 'table',
+      columns: [],
+      format: [
+        { id: 'f_1', apply: 'row', color: '#FFF7E8', field: 'Enable', op: 'eq', value: false, bold: true },
+      ],
+    });
+    expect(raw.format).toEqual([
+      { id: 'f_1', apply: 'row', color: '#FFF7E8', field: 'Enable', op: 'eq', value: false, bold: true },
+    ]);
   });
 });
