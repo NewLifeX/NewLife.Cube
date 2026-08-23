@@ -23,16 +23,17 @@
         border-collapse: initial;
     }
 
-    /* 限制编辑器高度，超出滚动 */
-    .CodeMirror {
-        max-height: 600px;
-    }
-    /* 必须约束真正的滚动容器 CodeMirror-scroll，否则其高度随内容增长（height:100% 在父级 auto 时解析为 auto），
-       内部滚动条永不出现，超出部分被外层 CodeMirror 的 overflow:hidden 裁剪 */
+    /* 限制编辑器高度，超出滚动。
+       必须约束滚动容器 CodeMirror-scroll 本身（其 height:100% 在父级 auto 时解析为 auto）。
+       外层 .CodeMirror 不再限高：它带 border-box + padding:10px，若也限高，滚动到底时最后一行会被外层裁剪半截 */
     .CodeMirror-scroll {
         max-height: 600px;
         overflow-y: auto !important;
         overflow-x: hidden !important;
+        /* 移除 CodeMirror 核心 CSS 的 padding-bottom:50px / margin-bottom:-50px 底部留白 hack，
+           否则滚动容器高于外层可视区，滚动到底最后一行仍显示不全 */
+        padding-bottom: 0 !important;
+        margin-bottom: 0 !important;
     }
 </style>
 <script>

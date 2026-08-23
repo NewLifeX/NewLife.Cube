@@ -498,6 +498,45 @@ public class UserController : EntityController<User, UserModel>
         return Json(0, null, model);
     }
 
+    private Int32 ResolveRegisterTenantId()
+    {
+        var set = CubeSetting.Current;
+        if (!set.EnableTenant) return 0;
+
+        var appId = HttpContext.Request.Headers["X-App-Id"] + "";
+        if (!appId.IsNullOrEmpty())
+        {
+            var config = OAuthConfig.FindByAppId(appId);
+            if (config == null) throw new ArgumentException($"应用{nameof(OAuthConfig.AppId)}未配置", nameof(appId));
+
+            if (config.TenantId > 0)
+            {
+                var tenant = Tenant.FindById(config.TenantId);
+                if (tenant == null || !tenant.Enable)
+                    throw new ArgumentException($"租户[{config.TenantId}]不存在或已禁用", nameof(appId));
+            }
+
+            return config.TenantId;
+        }
+
+        var tenantStr = HttpContext.Request.Headers["X-Tenant"] + "";
+        if (!tenantStr.IsNullOrEmpty())
+        {
+            var tenant = Tenant.FindByCode(tenantStr);
+            if (tenant == null || !tenant.Enable)
+                throw new ArgumentException($"租户[{tenantStr}]不存在或已禁用", nameof(tenantStr));
+
+            return tenant.Id;
+        }
+
+        if (TenantContext.Current.GetTenantMode() == TenantMode.Tenant) return TenantContext.CurrentId;
+
+        // Shadow 期：无租户标识注册兼容放行，不自动绑定；Enforce 期：必须显式带租户
+        if (set.TenantEnforceMode == TenantEnforceModes.Shadow) return 0;
+
+        throw new ArgumentException("多租户模式下，注册必须携带X-App-Id或X-Tenant租户信息");
+    }
+
     /// <summary>注册</summary>
     /// <returns></returns>
     [HttpPost]
@@ -515,6 +554,9 @@ public class UserController : EntityController<User, UserModel>
         var tenantId = _tenantContext.TenantId;
         try
         {
+            tenantId = ResolveRegisterTenantId();
+            if (tenantId > 0) TenantContext.Current = new TenantContext { TenantId = tenantId };
+
             //if (String.IsNullOrEmpty(email)) throw new ArgumentNullException("email", "邮箱地址不能为空！");
             if (String.IsNullOrEmpty(username)) throw new ArgumentNullException("username", "用户名不能为空！");
             if (String.IsNullOrEmpty(password)) throw new ArgumentNullException("password", "密码不能为空！");
@@ -539,6 +581,53 @@ public class UserController : EntityController<User, UserModel>
 
             var r = Role.GetOrAdd(set.DefaultRole);
             var user2 = ManageProvider.Provider.Register(username, password, r.ID, true);
+
+            if (user2 != null && user2 is User user3)
+            {
+                var changed = false;
+                if (!email.IsNullOrEmpty() && !email.EqualIgnoreCase(user3.Mail))
+                {
+                    user3.Mail = email;
+                    // user3.MailVerified = true;
+                    changed = true;
+                }
+
+                if (user3.RegisterIP.IsNullOrEmpty())
+                {
+                    user3.RegisterIP = UserHost;
+                    changed = true;
+                }
+                if (user3.RegisterTime.Year < 2000)
+                {
+                    user3.RegisterTime = DateTime.Now;
+                    changed = true;
+                }
+
+                if (changed) user3.Update();
+            }
+
+            // 多租户开启且解析到租户时，自动绑定用户到该租户（参考 SSO 登录的租户绑定流程）
+            if (set.EnableTenant && tenantId > 0 && user2 != null)
+            {
+                var tenantUser = TenantUser.FindByTenantIdAndUserId(tenantId, user2.ID);
+                if (tenantUser == null)
+                {
+                    tenantUser = new TenantUser
+                    {
+                        TenantId = tenantId,
+                        UserId = user2.ID,
+                        Enable = true,
+                        CreateIP = UserHost,
+                        CreateTime = DateTime.Now,
+                    };
+                    tenantUser.Insert();
+                }
+                else if (!tenantUser.Enable)
+                {
+                    tenantUser.Enable = true;
+                    tenantUser.Update();
+                }
+            }
 
             // 注册成功
         }

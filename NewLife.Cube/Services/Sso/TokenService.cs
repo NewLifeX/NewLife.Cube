@@ -529,6 +529,7 @@ public class TokenService : ITokenService
                 tenantcode = tenantCode,
                 tenantname = tenantName,
                 areaid = user2.AreaId,
+                areaName = user2.Area?.Path,
                 deviceid = online?.DeviceId,
                 avatar = avatarUrl,
                 birthday = user2.Birthday.ToString("yyyy-MM-dd", ""),

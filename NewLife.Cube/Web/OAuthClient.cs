@@ -653,6 +653,16 @@ public class OAuthClient
         if (dic.TryGetValue("city", out str)) city += "/" + str.Trim();
         if (!city.IsNullOrEmpty() && city != "/") AreaName = city.Trim('/');
 
+        // 地区编码。行政区划代码，如 310116，可直接作为 User.AreaId 使用
+        if (dic.TryGetValue("areaid", out str)) AreaId = str.ToInt();
+        if (dic.TryGetValue("area_id", out str)) AreaId = str.ToInt();
+        if (dic.TryGetValue("areacode", out str)) AreaId = str.ToInt();
+        if (dic.TryGetValue("area_code", out str)) AreaId = str.ToInt();
+
+        // 地区名。多级路径用 / 分隔，如 上海市/金山区，供按名称匹配 Area
+        if (dic.TryGetValue("areaName", out str)) AreaName = str.Trim();
+        if (dic.TryGetValue("area_name", out str)) AreaName = str.Trim();
+
         // 生日
         if (dic.TryGetValue("birthday", out str))
         {

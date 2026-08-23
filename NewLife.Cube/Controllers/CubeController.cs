@@ -533,7 +533,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     }
 
     /// <summary>获取 AI 助手配置。前端浮窗展示所需的开关与配色，由 CubeSetting 配置</summary>
-    /// <returns>返回 AISwitch 开关、主色 PrimaryColor 与辅色 SecondaryColor（默认靛蓝紫渐变）</returns>
+    /// <returns>返回 AISwitch 开关、主色 PrimaryColor 与辅色 SecondaryColor、Mermaid 图表库地址（默认靛蓝紫渐变）</returns>
     [HttpGet]
     public ActionResult GetAiConfig()
     {
@@ -543,6 +543,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
             set.AISwitch,
             set.AIPrimaryColor,
             set.AISecondaryColor,
+            MermaidUrl = set.GetMermaidUrl(),
         });
     }
 
