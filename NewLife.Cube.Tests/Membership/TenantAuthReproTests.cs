@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using NewLife.Caching;
@@ -97,14 +96,12 @@ public class TenantAuthFixture : IDisposable
         sc.AddSingleton<IHttpContextAccessor>(Accessor);
         Services = sc.BuildServiceProvider();
 
-        // 4. 装配管理提供者。生产环境由 UseManagerProvider 完成同样两步，
-        //    ManageProvider2.Context 为 internal static，测试中经反射注入。
-        //    建议后续为主程序集添加 InternalsVisibleTo("NewLife.Cube.Tests") 测试接缝以去掉反射
+        // 4. 装配管理提供者。生产环境由 UseManagerProvider 完成同样两步。
+        //    ManageProvider2.Context 为 internal static，经主程序集
+        //    InternalsVisibleTo("NewLife.Cube.Tests") 测试接缝直接可见，无需反射
         Provider = new ManageProvider2();
         ManageProvider.Provider = Provider;
-        typeof(ManageProvider2)
-            .GetField("Context", BindingFlags.NonPublic | BindingFlags.Static)!
-            .SetValue(null, Accessor);
+        ManageProvider2.Context = Accessor;
 
         // 5. 驱动真实登录管线的用户服务。注入内存缓存与密码服务（注册路径的密码强度校验会用到），
         //    其余依赖（短信/邮件/验证码/MFA/追踪/绑定）在账号密码登录/注册路径不会被使用

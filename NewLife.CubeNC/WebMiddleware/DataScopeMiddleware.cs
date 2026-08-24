@@ -49,6 +49,8 @@ public class DataScopeMiddleware(RequestDelegate next, ITenantContext tenantCont
                     // [TenantCompat] 影子期规则A：旧客户端无租户标识，兼容放行（不设租户上下文），仅记录影子日志。
                     // 切 Enforce 后该分支不再需要，等待移除（见评审方案 5.5）
                     XTrace.WriteLine("[TenantCompat] 旧客户端无租户标识，兼容放行：{0}", ctx.Request.Path);
+                    // 数据日志（CreateLog 落库）；中间件在认证前无用户上下文
+                    ManagerProviderHelper.WriteTenantCompatDataLog("影子兼容放行", $"旧客户端无租户标识，兼容放行 路径[{ctx.Request.Path}]", null, ctx.Connection.RemoteIpAddress + "");
                 }
                 // Enforce + 无租户标识：不在此拦截，交由认证层 ValidateTenant 处理——
                 // 管理员本身不属任何租户、无需租户标识（进管理后台），普通用户缺标识才被拒。

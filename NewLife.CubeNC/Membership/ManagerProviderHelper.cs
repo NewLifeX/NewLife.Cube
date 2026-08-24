@@ -270,6 +270,18 @@ public static class ManagerProviderHelper
             // 此处兜底 X-App-Id 未配置等中间件不解析的场景，及绕过中间件的直接调用。
             if (!resolution.IsValid)
             {
+                // [TenantCompat] 影子期：X-App-Id 应用已配置但未设置租户（存量小程序过渡态）→ 兼容放行。
+                // 应用未配置（真无效）或租户已禁用仍拒绝；切 Enforce 并稳定后移除该兼容分支（见评审方案 5.5）。
+                var appId = context.Request.Headers["X-App-Id"].ToString();
+                if (!appId.IsNullOrEmpty() && IsAppIdConfiguredWithoutTenant(appId) && set.TenantEnforceMode == TenantEnforceModes.Shadow)
+                {
+                    context.ChooseTenant(user.ID); // 已绑定回落第一个租户；未绑定不设上下文（防看全量）
+                    XTrace.WriteLine("[TenantCompat] 应用[{0}]已配置但未设置租户，影子期兼容放行：{1} 用户[{2}]", appId, context.Request.Path, user);
+                    // 数据日志（CreateLog 落库，管理后台审计日志可查）
+                    WriteTenantCompatDataLog("影子兼容放行", $"应用[{appId}]已配置但未设置租户，影子期兼容放行 用户[{user}]", user, context.GetUserHost());
+                    return true;
+                }
+
                 XTrace.WriteLine("租户校验失败：显式租户标识无效，拒绝访问：用户[{0}] resolution={1}", user, resolution.TenantId);
                 return false;
             }
@@ -300,6 +312,7 @@ public static class ManagerProviderHelper
         {
             context.ChooseTenant(user.ID);
             XTrace.WriteLine("[TenantCompat] 旧客户端无租户标识，兼容放行：{0} 用户[{1}]", context.Request.Path, user);
+            WriteTenantCompatDataLog("影子兼容放行", $"旧客户端无租户标识，兼容放行 路径[{context.Request.Path}] 用户[{user}]", user, context.GetUserHost());
             return true;
         }
 
@@ -311,6 +324,26 @@ public static class ManagerProviderHelper
             return true;
         }
         return false; // 普通用户缺租户标识，拒绝
+    }
+
+    /// <summary>记录影子期兼容放行的数据日志（CreateLog 落库，管理后台审计日志可查），与 [TenantCompat] 影子日志配套，供观察期统计存量无租户请求。
+    /// 注：影子日志在观察期为高频路径（每个无标识请求一条），落库会持续产生数据，切 Enforce 或移除兼容分支时应一并评估</summary>
+    /// <param name="scene">场景动作名</param>
+    /// <param name="remark">详情</param>
+    /// <param name="user">当前用户（无租户上下文的中间件/数据层场景可为 null）</param>
+    /// <param name="ip">客户端IP</param>
+    public static void WriteTenantCompatDataLog(String scene, String remark, IManageUser user, String ip)
+    {
+        try
+        {
+            var log = LogProvider.Provider.CreateLog("租户", scene, true, remark, user?.ID ?? 0, user + "", ip);
+            log?.SaveAsync();
+        }
+        catch (Exception ex)
+        {
+            // 影子日志不应影响主流程，落库失败仅记跟踪日志
+            XTrace.WriteLine("影子数据日志写入失败：{0}", ex.Message);
+        }
     }
 
     /// <summary>是否显式提供了租户信息（请求头/查询参数/Cookie 非空即算，不校验有效性）。用于认证层区分"显式但无效"与"完全无标识"</summary>
@@ -332,6 +365,16 @@ public static class ManagerProviderHelper
         if (appId.IsNullOrEmpty()) return -1;
         var config = OAuthConfig.FindByAppId(appId);
         return config != null && IsValidTenant(config.TenantId) ? config.TenantId : -1;
+    }
+
+    /// <summary>X-App-Id 对应的应用（OAuthConfig）已配置但未设置租户（TenantId&le;0）。存量小程序过渡态，供影子期兼容放行判断。应用未配置返回 false</summary>
+    /// <param name="appId">应用标识</param>
+    /// <returns>应用存在且租户未设置返回 true</returns>
+    private static Boolean IsAppIdConfiguredWithoutTenant(String appId)
+    {
+        if (appId.IsNullOrEmpty()) return false;
+        var config = OAuthConfig.FindByAppId(appId);
+        return config != null && config.TenantId <= 0;
     }
 
     /// <summary>单一租户解析入口：优先 X-App-Id（OAuth 配置租户），其次 X-Tenant/Query/Cookie，返回结构化结果</summary>
@@ -441,13 +484,23 @@ public static class ManagerProviderHelper
             if (config == null)
                 return $"应用{nameof(OAuthConfig.AppId)}未配置";
 
-            // 校验配置所属租户有效
-            if (config.TenantId > 0)
+            // 应用已配置但租户未设置（存量小程序过渡态）：与访问路径 ValidateTenant 一致——
+            // Shadow 兼容放行（不设租户上下文，避免误落管理后台）；Enforce 拒绝。切 Enforce 前须为应用设置租户。
+            if (config.TenantId <= 0)
             {
-                var tenant = Tenant.FindById(config.TenantId);
-                if (tenant == null || !tenant.Enable)
-                    return $"租户[{config.TenantId}]不存在或已禁用";
+                if (set.TenantEnforceMode == TenantEnforceModes.Shadow)
+                {
+                    XTrace.WriteLine("[TenantCompat] 应用[{0}]已配置但未设置租户，注册影子期兼容放行：{1}", appId, context.Request.Path);
+                    WriteTenantCompatDataLog("影子兼容放行", $"应用[{appId}]已配置但未设置租户，注册影子期兼容放行 路径[{context.Request.Path}]", null, context.GetUserHost());
+                    return null;
+                }
+                return $"应用[{appId}]未配置租户，无法注册";
             }
+
+            // 校验配置所属租户有效
+            var tenant = Tenant.FindById(config.TenantId);
+            if (tenant == null || !tenant.Enable)
+                return $"租户[{config.TenantId}]不存在或已禁用";
 
             context.SetTenant(config.TenantId);
             return null;
@@ -474,6 +527,7 @@ public static class ManagerProviderHelper
         if (set.TenantEnforceMode == TenantEnforceModes.Shadow)
         {
             XTrace.WriteLine("[TenantCompat] 旧客户端无租户标识注册，兼容放行：{0}", context.Request.Path);
+            WriteTenantCompatDataLog("影子兼容放行", $"旧客户端无租户标识注册，兼容放行 路径[{context.Request.Path}]", null, context.GetUserHost());
             return null;
         }
 

@@ -226,6 +226,8 @@ public partial class ReadOnlyEntityController<TEntity>
                 if (set.TenantEnforceMode == TenantEnforceModes.Shadow)
                 {
                     XTrace.WriteLine($"[TenantCompat] 无租户上下文，兼容放行不加过滤：{typeof(TEntity).Name}");
+                    // 数据日志（CreateLog 落库）；无租户上下文场景用户信息非重点
+                    ManagerProviderHelper.WriteTenantCompatDataLog("影子兼容放行", $"无租户上下文，兼容放行不加过滤 实体[{typeof(TEntity).Name}]", null, HttpContext.Connection.RemoteIpAddress + "");
                 }
                 else if (set.TenantQueryPolicy == TenantQueryPolicies.ThrowOnMissingTenant)
                 {

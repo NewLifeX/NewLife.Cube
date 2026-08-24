@@ -15,6 +15,9 @@ public class OAuthLogRetentionTests
     public void DeleteBefore_DeletesOldRowsInBatches()
     {
         var dbFile = Path.Combine(Path.GetTempPath(), $"OAuthLogRetentionTests_{Guid.NewGuid():N}.db");
+        // 本测试会临时覆写全局 Cube 连接串：先记录原值，结束后恢复，避免污染其它测试的 Cube/Log→Membership 映射
+        String? oldCube = null;
+        var hadCube = DAL.ConnStrs != null && DAL.ConnStrs.TryGetValue("Cube", out oldCube);
         try
         {
             DAL.AddConnStr("Cube", $"Data Source={dbFile}", null, "SQLite");
@@ -60,6 +63,14 @@ public class OAuthLogRetentionTests
         }
         finally
         {
+            // 恢复被覆写的全局 Cube 连接串：MapTo 类字符串按 XCode 约定直接写回 ConnStrs；再重置该连接名缓存的 DAL 实例，使映射在下次使用时重新解析（Reset 为实例方法）
+            if (DAL.ConnStrs != null)
+            {
+                if (hadCube) DAL.ConnStrs["Cube"] = oldCube!;
+                else DAL.ConnStrs.TryRemove("Cube", out _);
+            }
+            DAL.Create("Cube").Reset();
+
             try
             {
                 if (File.Exists(dbFile)) File.Delete(dbFile);

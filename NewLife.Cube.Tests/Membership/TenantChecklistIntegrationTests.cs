@@ -67,6 +67,25 @@ public class TenantChecklistIntegrationTests
         return cfg;
     }
 
+    /// <summary>确保"配置合法但租户未设置（TenantId=0）"的 OAuthConfig 存在（幂等）。模拟存量小程序过渡态</summary>
+    private OAuthConfig EnsureOAuthConfigWithoutTenant()
+    {
+        const String appId = "app-it-notenant";
+        var cfg = OAuthConfig.FindByAppId(appId);
+        if (cfg == null)
+        {
+            cfg = new OAuthConfig
+            {
+                AppId = appId,
+                Name = "集成测试无租户应用",
+                TenantId = 0, // 关键：应用已配置但未设置租户
+                Enable = true,
+            };
+            cfg.Insert();
+        }
+        return cfg;
+    }
+
     /// <summary>注册并返回结果（真实管线：Register → ResolveRegisterTenant → RegisterByPassword → CompleteLogin）</summary>
     private ServiceResult Register(HttpContext ctx, String username)
     {
@@ -382,6 +401,89 @@ public class TenantChecklistIntegrationTests
             {
                 Restore();
             }
+        }
+    }
+
+    [Fact(DisplayName = "M8b：X-App-Id 应用已配置但租户未设置 → Shadow 兼容放行、Enforce 拒绝、未配置仍拒绝（存量小程序过渡态）")]
+    public void M8b_AppId_Configured_Without_Tenant_Shadow_Pass_Enforce_Reject()
+    {
+        EnsureOAuthConfigWithoutTenant();
+        EnableTenant(TenantEnforceModes.Shadow);
+        try
+        {
+            // 准备：无标识注册 → 无绑定存量用户，拿令牌
+            var regCtx = _fx.CreateContext();
+            var username = NewUser("m8bu");
+            Assert.True(Register(regCtx, username).IsSuccess);
+            var token = regCtx.Items["jwtToken"] as String;
+            Assert.False(String.IsNullOrEmpty(token));
+
+            // Shadow：带"配置合法但租户未设置"的 X-App-Id 访问 → 兼容放行（不再被当无效租户拒绝）
+            TenantContext.Current = null!;
+            var ctx = _fx.CreateContext();
+            ctx.Request.Headers["Authorization"] = $"Bearer {token}";
+            ctx.Request.Headers["X-App-Id"] = "app-it-notenant";
+            Assert.NotNull(_fx.Provider.TryLogin(ctx));
+
+            // 对照：未配置的 X-App-Id（Shadow）仍拒绝——区分"配置合法无租户"与"未配置"
+            TenantContext.Current = null!;
+            var ctxNoCfg = _fx.CreateContext();
+            ctxNoCfg.Request.Headers["Authorization"] = $"Bearer {token}";
+            ctxNoCfg.Request.Headers["X-App-Id"] = "app-not-exist";
+            Assert.Null(_fx.Provider.TryLogin(ctxNoCfg));
+
+            // Enforce：配置合法但租户未设置 → 拒绝（切严格后不再兼容）
+            CubeSetting.Current.TenantEnforceMode = TenantEnforceModes.Enforce;
+            TenantContext.Current = null!;
+            var ctxEnf = _fx.CreateContext();
+            ctxEnf.Request.Headers["Authorization"] = $"Bearer {token}";
+            ctxEnf.Request.Headers["X-App-Id"] = "app-it-notenant";
+            Assert.Null(_fx.Provider.TryLogin(ctxEnf));
+        }
+        finally
+        {
+            Restore();
+        }
+    }
+
+    [Fact(DisplayName = "M6b：注册带 X-App-Id（应用已配置但租户未设置）→ Shadow 兼容放行不绑定、Enforce 拒绝")]
+    public void M6b_Register_With_AppId_Configured_Without_Tenant_Shadow_Pass_Enforce_Reject()
+    {
+        EnsureOAuthConfigWithoutTenant();
+
+        // Shadow：注册成功、不建绑定、不落管理后台
+        EnableTenant(TenantEnforceModes.Shadow);
+        try
+        {
+            var ctx = _fx.CreateContext();
+            ctx.Request.Headers["X-App-Id"] = "app-it-notenant";
+            var username = NewUser("m6bu");
+            var result = Register(ctx, username);
+            Assert.True(result.IsSuccess, result.Message);
+            var user = User.FindByName(username);
+            Assert.NotNull(user);
+            Assert.Empty(TenantUser.FindAllByUserId(user.ID)); // 未设租户 → 不绑定
+        }
+        finally
+        {
+            Restore();
+        }
+
+        // Enforce：拒绝且不建用户
+        EnableTenant(TenantEnforceModes.Enforce);
+        try
+        {
+            var ctx = _fx.CreateContext();
+            ctx.Request.Headers["X-App-Id"] = "app-it-notenant";
+            var username = NewUser("m6beu");
+            var result = Register(ctx, username);
+            Assert.False(result.IsSuccess);
+            Assert.Contains("租户", result.Message);
+            Assert.Null(User.FindByName(username));
+        }
+        finally
+        {
+            Restore();
         }
     }
 

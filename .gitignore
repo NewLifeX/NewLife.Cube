@@ -58,3 +58,25 @@ NewLife.Cube.Vuetify/wwwroot/assets/
 .shot/
 */memory/*.md
 TODO.md
+.codegraph/
+.serena/
+*/wwwroot/Content/
+
+# ===== 第三方主题静态资源 / 构建工具：移出版本库（不应入库） =====
+# 老皮肤项目的 wwwroot：均为第三方主题包、字体、vendored JS（echarts/element/bootstrap 等），
+# 非本仓库源码构建产物。新 Vue 皮肤的 wwwroot 已在上方忽略。
+/NewLife.Cube.Metronic/wwwroot/
+/NewLife.Cube.Metronic8/wwwroot/
+/NewLife.Cube.LayuiAdmin/wwwroot/
+/NewLife.Cube.Tabler/wwwroot/
+/NewLife.Cube.AdminLTE/wwwroot/
+/NewLife.Cube.Blazor/wwwroot/
+/NewLife.Cube.ElementUI/wwwroot/
+/NewLife.CubeNC/wwwroot/
+
+# 构建工具 XCode 实体生成器：应通过发布包/下载分发，不入库
+xcodetool.exe
+
+# 历史曾提交过的大二进制目录护栏（已在 HEAD 删除，防止被重新加回）
+/DLL/
+/DLL20/
