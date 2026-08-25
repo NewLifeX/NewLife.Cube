@@ -35,6 +35,15 @@
         padding-bottom: 0 !important;
         margin-bottom: 0 !important;
     }
+    /* 隐藏 CodeMirror 的水平滚动条高度测量元素（无类名 div，内联 position:absolute + border-bottom:0 solid transparent），
+       否则它会在内容下方预留约一个滚动条高度的空白，滚动到底时最后一行下方空白过大 */
+    .CodeMirror-scroll > div[style*="border-bottom: 0px solid transparent"] {
+        height: 0 !important;
+    }
+    /* 最后一行下方保留合理留白 */
+    .EasyMDEContainer .CodeMirror-lines {
+        padding-bottom: 12px;
+    }
 </style>
 <script>
     (function () {
@@ -46,7 +55,7 @@
                 element: ta,
                 spellChecker: false,
                 autoDownloadFontAwesome: false,
-                minHeight: '200px',
+                minHeight: '120px',
                 status: false,
                 uploadImage: true,
                 imageUploadFunction: function(file, onSuccess, onError) {
