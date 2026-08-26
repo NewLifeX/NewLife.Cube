@@ -182,9 +182,6 @@ public static class CubeService
         services.AddSingleton<UserService>();
         services.AddSingleton<AccessService>();
         services.AddSingleton<TokenService>();
-        services.AddSingleton<SmsService>();
-        services.AddSingleton<MailService>();
-        services.TryAddSingleton<ICaptchaService, DrawingCaptchaService>();
         services.TryAddSingleton<IMfaService, TotpMfaService>();
 
         // SSO 服务

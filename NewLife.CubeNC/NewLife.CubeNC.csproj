@@ -234,6 +234,8 @@
     <Compile Remove="Services\AliyunClient.cs" />
     <Compile Remove="ViewModels\FieldModel.cs" />
     <Compile Remove="WebMiddleware\TracerMiddleware.cs" />
+    <Compile Remove="Services\Auth\AuthEnhancedService.cs" />
+    <Compile Remove="Services\Auth\VerifyCodeService.cs" />
   </ItemGroup>
 
   <ItemGroup>

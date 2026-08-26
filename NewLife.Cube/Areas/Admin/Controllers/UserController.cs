@@ -1,9 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Web;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using NewLife.Caching;
 using NewLife.Common;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Entity;
@@ -19,19 +17,19 @@ using static XCode.Membership.User;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>用户控制器</summary>
+/// <remarks>实例化用户控制器</remarks>
+/// <param name="userService"></param>
+/// <param name="verifyCode">验证码服务</param>
+/// <param name="authEnhanced">增强认证服务</param>
+/// <param name="passwordService"></param>
+/// <param name="tenantContext">租户上下文</param>
 [DataPermission(null, "ID={#userId}")]
 [DisplayName("用户")]
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
 [AdminArea]
 [Menu(100, true, Icon = "User", Mode = MenuModes.Admin | MenuModes.Tenant)]
-public class UserController : EntityController<User, UserModel>
+public class UserController(UserService userService, VerifyCodeService verifyCode, AuthEnhancedService authEnhanced, PasswordService passwordService, ITenantContext tenantContext) : EntityController<User, UserModel>
 {
-    /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
-    private readonly ICache _cache;
-    private readonly UserService _userService;
-    private readonly PasswordService _passwordService;
-    private readonly ITenantContext _tenantContext;
-
     static UserController()
     {
         ListFields.RemoveField("Avatar", "RoleIds", "Online", "Age", "Birthday", "LastLoginIP", "RegisterIP", "RegisterTime");
@@ -95,20 +93,6 @@ public class UserController : EntityController<User, UserModel>
         {
             AddFormFields.GroupVisible = (entity, group) => (entity as User).ID == 0 && group != "扩展";
         }
-    }
-
-    /// <summary>实例化用户控制器</summary>
-    /// <param name="userService"></param>
-    /// <param name="passwordService"></param>
-    /// <param name="cacheProvider"></param>
-    /// <param name="smsVerifyCode"></param>
-    /// <param name="tenantContext">租户上下文</param>
-    public UserController(UserService userService, PasswordService passwordService, ICacheProvider cacheProvider, ITenantContext tenantContext)
-    {
-        _userService = userService;
-        _passwordService = passwordService;
-        _cache = cacheProvider.Cache;
-        _tenantContext = tenantContext;
     }
 
     /// <summary>搜索数据集</summary>
@@ -261,7 +245,7 @@ public class UserController : EntityController<User, UserModel>
 
         try
         {
-            var loginResult = _userService.Login(model, HttpContext);
+            var loginResult = authEnhanced.Login(model, HttpContext);
             if (loginResult?.Data == null || loginResult.Data.AccessToken.IsNullOrEmpty())
                 return res.ToFailApiResponse(loginResult?.Message); //登录失败
 
@@ -447,7 +431,7 @@ public class UserController : EntityController<User, UserModel>
         if (model.NewPassword2.IsNullOrWhiteSpace()) throw new ArgumentException($"确认密码不能为 Null 或空白", nameof(model.NewPassword2));
         if (model.NewPassword != model.NewPassword2) throw new ArgumentException($"两次输入密码不一致", nameof(model.NewPassword));
 
-        if (!_passwordService.Valid(model.NewPassword)) throw new ArgumentException($"密码太弱，要求8位起且包含数字大小写字母和符号", nameof(model.NewPassword));
+        if (!passwordService.Valid(model.NewPassword)) throw new ArgumentException($"密码太弱，要求8位起且包含数字大小写字母和符号", nameof(model.NewPassword));
 
         // SSO 登录不需要知道原密码就可以修改，原则上更相信外方，同时也避免了直接第三方登录没有设置密码的尴尬
         var ssoName = Session["Cube_Sso"] as String;
@@ -486,7 +470,7 @@ public class UserController : EntityController<User, UserModel>
 
         // 第三方绑定
         var ucs = UserConnect.FindAllByUserID(user.ID);
-        var ms = OAuthConfig.GetValids(_tenantContext.TenantId, GrantTypes.AuthorizationCode);
+        var ms = OAuthConfig.GetValids(tenantContext.TenantId, GrantTypes.AuthorizationCode);
 
         var model = new BindsModel
         {
@@ -551,7 +535,7 @@ public class UserController : EntityController<User, UserModel>
         var set = CubeSetting.Current;
         if (!set.AllowRegister) throw new Exception("禁止注册！");
 
-        var tenantId = _tenantContext.TenantId;
+        var tenantId = tenantContext.TenantId;
         try
         {
             tenantId = ResolveRegisterTenantId();
@@ -563,7 +547,7 @@ public class UserController : EntityController<User, UserModel>
             if (String.IsNullOrEmpty(password2)) throw new ArgumentNullException("password2", "重复密码不能为空！");
             if (password != password2) throw new ArgumentOutOfRangeException("password2", "两次密码必须一致！");
 
-            if (!_passwordService.Valid(password)) throw new ArgumentException($"密码太弱，要求8位起且包含数字大小写字母和符号", nameof(password));
+            if (!passwordService.Valid(password)) throw new ArgumentException($"密码太弱，要求8位起且包含数字大小写字母和符号", nameof(password));
 
             // 不得使用OAuth前缀
             foreach (var item in OAuthConfig.GetValids(tenantId))
@@ -693,7 +677,7 @@ public class UserController : EntityController<User, UserModel>
         try
         {
             var ip = UserHost;
-            var result = await _userService.SendVerifyCode(model, ip);
+            var result = await verifyCode.SendVerifyCode(model, ip);
             return result.Id.ToOkApiResponse("验证码已发送");
         }
         catch (Exception ex)
@@ -715,7 +699,7 @@ public class UserController : EntityController<User, UserModel>
         var currentUser = ManageProvider.User;
         var ip = UserHost;
 
-        var result = _userService.BindByVerifyCode(mobile, code, currentUser, ip);
+        var result = authEnhanced.BindByVerifyCode(mobile, code, currentUser, ip);
         return result.IsSuccess ? true.ToOkApiResponse(result.Message) : false.ToFailApiResponse(result.Message);
     }
     #endregion
@@ -734,7 +718,7 @@ public class UserController : EntityController<User, UserModel>
         var confirmPassword = model.ConfirmPassword?.Trim() ?? "";
         var ip = UserHost;
 
-        var result = _userService.ResetPassword(mobile, code, newPassword, confirmPassword, "", ip);
+        var result = authEnhanced.ResetPassword(mobile, code, newPassword, confirmPassword, "", ip);
         return result.IsSuccess ? true.ToOkApiResponse(result.Message) : false.ToFailApiResponse(result.Message);
     }
     #endregion

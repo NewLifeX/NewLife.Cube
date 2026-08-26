@@ -105,7 +105,7 @@ public class TenantAuthFixture : IDisposable
 
         // 5. 驱动真实登录管线的用户服务。注入内存缓存与密码服务（注册路径的密码强度校验会用到），
         //    其余依赖（短信/邮件/验证码/MFA/追踪/绑定）在账号密码登录/注册路径不会被使用
-        UserService = new UserService(null!, null!, new PasswordService(), new TestCacheProvider(), null!, null!, null!, null!, new TenantContextService());
+        UserService = new UserService(new PasswordService(), new TestCacheProvider(), null!, null!, null!, new TenantContextService());
 
         Seed();
     }

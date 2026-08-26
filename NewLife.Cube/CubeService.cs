@@ -204,6 +204,8 @@ public static class CubeService
         // 服务
         services.AddSingleton<PasswordService>();
         services.AddSingleton<UserService>();
+        services.AddSingleton<VerifyCodeService>();
+        services.AddSingleton<AuthEnhancedService>();
         services.AddSingleton<AccessService>();
         services.AddSingleton<PageService>();
         services.AddSingleton<TokenService>();

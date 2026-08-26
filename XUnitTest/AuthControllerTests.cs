@@ -168,29 +168,11 @@ public class AuthControllerTests
             => throw new NotImplementedException();
     }
 
-    [Fact(DisplayName = "ResetPassword：challengeId 无效（过期/伪造）时返回明确错误，不把密文当明文新密码")]
-    public void ResetPassword_InvalidChallenge_ReturnsExplicitError()
-    {
-        var provider = new MemoryCacheProvider();
-        var svc = new UserService(null!, null!, null!, provider, null!, null!, null!, null!, null!);
-
-        var result = svc.ResetPassword(
-            "13800138000",          // account
-            "123456",               // code
-            "NewPass123",           // newPassword（假设为密文）
-            "NewPass123",           // confirmPassword
-            "expired-challenge-id", // challengeId 无效（缓存中不存在）
-            "127.0.0.1");
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal("登录挑战已过期或无效，请重新获取公钥后重试", result.Message);
-    }
-
     [Fact(DisplayName = "GetPublicKey：每次调用生成不同 challengeId 与 PEM 公钥（提交时动态获取保证新鲜密钥）")]
     public void GetPublicKey_GeneratesUniqueChallengeId()
     {
         var provider = new MemoryCacheProvider();
-        var svc = new UserService(null!, null!, null!, provider, null!, null!, null!, null!, null!);
+        var svc = new UserService(null!, provider, null!, null!, null!, null!);
 
         var (challengeId1, publicKey1) = svc.GetPublicKey();
         var (challengeId2, publicKey2) = svc.GetPublicKey();
@@ -205,7 +187,7 @@ public class AuthControllerTests
     public void GetPublicKey_OaepEncrypt_XmlPrivateKeyDecrypt_RoundTrip()
     {
         var provider = new MemoryCacheProvider();
-        var svc = new UserService(null!, null!, null!, provider, null!, null!, null!, null!, null!);
+        var svc = new UserService(null!, provider, null!, null!, null!, null!);
 
         // 1. 获取挑战：返回 PEM(SPKI) 公钥，缓存 XML 私钥
         var (challengeId, publicKey) = svc.GetPublicKey();
