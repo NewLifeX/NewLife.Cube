@@ -33,30 +33,11 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [Menu(100, true, Icon = "fa-user", HelpUrl = "https://newlifex.com/cube/cube_security", Mode = MenuModes.Admin | MenuModes.Tenant)]
 public class UserController : EntityController<User, UserModel>
 {
-    #region 短信验证码缓存Key前缀常量
-    // 登录相关的缓存Key已移至UserService中统一管理
-
-    /// <summary>短信绑定手机IP发送限制缓存前缀</summary>
-    private const String SmsBindIpPrefix = "SmsBind:IP:";
-    /// <summary>短信绑定手机最后发送时间缓存前缀</summary>
-    private const String SmsBindLastSendPrefix = "SmsBind:LastSend:";
-    /// <summary>短信绑定手机验证码缓存前缀</summary>
-    private const String SmsBindCodePrefix = "SmsBind:Code:";
-
-    /// <summary>短信重置密码IP发送限制缓存前缀</summary>
-    private const String SmsResetIpPrefix = "SmsReset:IP:";
-    /// <summary>短信重置密码最后发送时间缓存前缀</summary>
-    private const String SmsResetLastSendPrefix = "SmsReset:LastSend:";
-    /// <summary>短信重置密码验证码缓存前缀</summary>
-    private const String SmsResetCodePrefix = "SmsReset:Code:";
-    #endregion
-
     /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
     private readonly ICache _cache;
     private readonly PasswordService _passwordService;
     private readonly UserService _userService;
     private readonly ITracer _tracer;
-    private readonly ISmsVerifyCode _smsVerifyCode;
     private readonly ITenantContext _tenantContext;
 
     private Boolean _isMobile { get; set; } = false;
@@ -161,15 +142,13 @@ public class UserController : EntityController<User, UserModel>
     /// <param name="userService"></param>
     /// <param name="tracer"></param>
     /// <param name="tenantContext">租户上下文</param>
-    /// <param name="smsVerifyCode"></param>
-    public UserController(PasswordService passwordService, ICacheProvider cacheProvider, UserService userService, ITracer tracer, ITenantContext tenantContext, ISmsVerifyCode smsVerifyCode = null)
+    public UserController(PasswordService passwordService, ICacheProvider cacheProvider, UserService userService, ITracer tracer, ITenantContext tenantContext)
     {
         _passwordService = passwordService;
         _cache = cacheProvider.Cache;
         _userService = userService;
         _tracer = tracer;
         _tenantContext = tenantContext;
-        _smsVerifyCode = smsVerifyCode;
     }
 
     /// <summary>搜索数据集</summary>
@@ -387,13 +366,6 @@ public class UserController : EntityController<User, UserModel>
             //OAuthItems = ms,
         };
 
-        // 图片验证码状态：CaptchaScene 强制 或 风险自适应（按当前请求环境动态判定）
-        var ip = HttpContext.GetUserHost();
-        var deviceId = Request.Cookies["CubeDeviceId"];
-        if (deviceId.IsNullOrEmpty()) deviceId = Request.Cookies["CubeDeviceId0"];
-        model.RequireCaptcha = _userService.RequireCaptcha(1, ip, null, deviceId);
-        model.RequireCaptchaRegister = _userService.RequireCaptcha(2, ip, null, deviceId);
-
         // 默认登录提示，没有新用户之前
         if (model.LoginTip.IsNullOrEmpty() && XCode.Membership.User.Meta.Count <= 1)
             model.LoginTip = "首个注册登录用户成为管理员，默认用户admin/admin，推荐第三方登录";
@@ -411,17 +383,6 @@ public class UserController : EntityController<User, UserModel>
         }
 
         return model;
-    }
-
-    /// <summary>获取图片验证码（登录/注册/发码场景）</summary>
-    /// <remarks>当 CaptchaScene 强制或风险自适应触发时需要验证码，前端先调用本接口获取，再随登录/注册/发码请求提交 captchaId+captchaCode</remarks>
-    /// <returns>captchaId（校验时回传）和 image（base64 PNG）</returns>
-    [HttpGet]
-    [AllowAnonymous]
-    public ActionResult Captcha()
-    {
-        var result = _userService.GenerateCaptcha();
-        return Json(0, null, result);
     }
 
     /// <summary>密码登录</summary>
@@ -564,73 +525,7 @@ public class UserController : EntityController<User, UserModel>
     }
     #endregion
 
-    #region 验证码登录
-    /// <summary>发送登录短信验证码</summary>
-    /// <param name="model"></param>
-    /// <returns></returns>
-    [HttpPost]
-    [AllowAnonymous]
-    public async Task<ActionResult> SendVerifyCode(VerifyCodeModel model)
-    {
-        var ip = UserHost;
-        try
-        {
-            var result = await _userService.SendVerifyCode(model, ip);
-
-            return Json(0, "验证码已发送");
-        }
-        catch (Exception ex)
-        {
-            return Json(500, "发送失败：" + ex.Message);
-        }
-    }
-
-    /// <summary>短信验证码登录</summary>
-    /// <param name="mobile">手机号</param>
-    /// <param name="code">验证码</param>
-    /// <param name="remember">记住登录</param>
-    /// <returns></returns>
-    [HttpPost]
-    [AllowAnonymous]
-    [Obsolete($"=>{nameof(Login)}")]
-    public ActionResult SmsLogin(String mobile, String code, Boolean remember = false)
-    {
-        // 构造登录模型，设置登录类型为手机验证码登录
-        var loginModel = new LoginModel
-        {
-            Username = mobile,
-            Password = code,
-            Remember = remember,
-        };
-
-        return Login(loginModel);
-    }
-    #endregion
-
-    #region 绑定手机号  
-    /// <summary>绑定手机号或邮箱到当前登录用户（支持更换绑定，验证码校验新号所有权）</summary>
-    /// <param name="account">手机号或邮箱</param>
-    /// <param name="code">验证码</param>
-    /// <returns></returns>
-    [HttpPost]
-    [EntityAuthorize]
-    public ActionResult BindByVerifyCode(String account, String code)
-    {
-        account = account?.Trim() ?? "";
-        code = code?.Trim() ?? "";
-
-        // 1. 检查当前用户是否已登录
-        var currentUser = ManageProvider.User as User;
-        if (currentUser == null || currentUser.ID <= 0) return Json(500, "用户未登录，请先登录");
-
-        // 2. 委托 UserService 按账号格式分发（手机→短信、邮箱→邮件），支持绑定与更换
-        var ip = UserHost;
-        using var span = _tracer?.NewSpan(nameof(BindByVerifyCode), new { account, ip });
-
-        var result = _userService.BindByVerifyCode(account, code, currentUser, ip);
-        return result.IsSuccess ? Json(0, result.Message) : Json(500, result.Message);
-    }
-
+    #region 账号管理
     /// <summary>注销账号（依据《个人信息保护法》提供账号注销功能）。禁用账号并清空个性化数据，吊销令牌、解绑三方</summary>
     /// <returns></returns>
     [HttpPost]
@@ -710,110 +605,6 @@ public class UserController : EntityController<User, UserModel>
         var fileName = $"{user.Name}-个人数据-{DateTime.Now:yyyyMMdd}.json";
 
         return File(bytes, "application/json; charset=utf-8", fileName);
-    }
-    #endregion
-
-    #region 手机验证码重置密码 
-
-    /// <summary>通过手机验证码重置密码</summary>
-    /// <param name="mobile">手机号</param>
-    /// <param name="code">验证码</param>
-    /// <param name="newPassword">新密码</param>
-    /// <param name="confirmPassword">确认密码</param>
-    /// <returns></returns>
-    [HttpPost]
-    [AllowAnonymous]
-    public ActionResult ResetByVerifyCode(String mobile, String code, String newPassword, String confirmPassword)
-    {
-        mobile = mobile?.Trim() ?? String.Empty;
-        code = code?.Trim() ?? String.Empty;
-        newPassword = newPassword?.Trim() ?? String.Empty;
-        confirmPassword = confirmPassword?.Trim() ?? String.Empty;
-
-        // 1. 验证手机号格式
-        if (mobile.IsNullOrEmpty())
-            return Json(500, "手机号不能为空");
-        if (!ValidFormatHelper.IsMobile(mobile))
-            return Json(500, "手机号格式不正确");
-
-        // 2. 验证验证码不能为空
-        if (code.IsNullOrEmpty())
-            return Json(500, "验证码不能为空");
-
-        // 3. 验证新密码不能为空
-        if (newPassword.IsNullOrEmpty())
-            return Json(500, "新密码不能为空");
-
-        // 4. 验证确认密码
-        if (!confirmPassword.IsNullOrEmpty() && newPassword != confirmPassword)
-            return Json(500, "两次输入密码不一致");
-
-        // 5. 验证密码强度
-        if (!_passwordService.Valid(newPassword)) return Json(500, "密码太弱");
-
-        // 6. 检查短信服务是否启用
-        var set = CubeSetting.Current;
-        if (!set.EnableSms) return Json(500, "短信验证码功能未启用");
-
-        var ip = UserHost;
-
-        using var span = _tracer?.NewSpan(nameof(ResetByVerifyCode), new { mobile, ip });
-
-        // 7. 验证验证码
-        var codeKey = $"{SmsResetCodePrefix}{mobile}";
-        var cachedCode = _cache.Get<String>(codeKey);
-
-        if (cachedCode.IsNullOrEmpty()) return Json(500, "验证码已过期或不存在，请重新获取");
-        if (!cachedCode.EqualIgnoreCase(code)) return Json(500, "验证码错误");
-
-        // 8. 查找用户并更新密码
-        var user = XCode.Membership.User.FindByMobile(mobile);
-        if (user == null || user.ID <= 0) return Json(500, "该手机号未注册");
-
-        var newPassHash = ManageProvider.Provider?.PasswordProvider.Hash(newPassword);
-        if (user.Password != newPassHash)
-        {
-            user.Password = newPassHash;
-            var updated = user.Update();
-            if (updated <= 0) return Json(500, "密码重置失败，请重试");
-        }
-
-        // 9. 验证成功后删除缓存验证码，防止重复使用
-        _cache.Remove(codeKey);
-
-        LogProvider.Provider.WriteLog(typeof(User), "重置密码", true, $"手机号：{mobile}", user.ID, user + "", ip);
-
-        return Json(0, "密码重置成功");
-    }
-    #endregion
-
-    #region 忘记密码（手机/邮箱验证码重置）
-    /// <summary>忘记密码：手机或邮箱验证码重置密码</summary>
-    /// <remarks>前端分两步：先调用 SendVerifyCode（action=reset）发送验证码，再提交本接口。
-    /// Username 为手机号或邮箱（按格式自动识别通道）；新密码支持 ChallengeId + RSA 加密传输。</remarks>
-    /// <param name="model">重置密码模型</param>
-    /// <returns></returns>
-    [HttpPost]
-    [AllowAnonymous]
-    public ActionResult ForgetPassword(ResetPwdModel model)
-    {
-        var ip = UserHost;
-        try
-        {
-            var result = _userService.ResetPassword(
-                model.Username?.Trim() ?? "",
-                model.Code?.Trim() ?? "",
-                model.NewPassword?.Trim() ?? "",
-                model.ConfirmPassword?.Trim() ?? "",
-                model.ChallengeId,
-                ip);
-
-            return result.IsSuccess ? Json(0, result.Message) : Json(500, result.Message);
-        }
-        catch (Exception ex)
-        {
-            return Json(500, "重置失败：" + ex.Message);
-        }
     }
     #endregion
 

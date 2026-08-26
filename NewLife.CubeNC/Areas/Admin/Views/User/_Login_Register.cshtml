@@ -4,13 +4,6 @@
     var set = Model;
 }
 <div class="tab-pane fade" id="Register">
-    <!-- 注册方式子 Tab：用户名 / 手机验证码 / 邮箱验证码，对应 AuthCategory.Password/Mobile/Mail -->
-    <div class="reg-modes">
-        <a class="active" data-reg-tab="reg-pwd">用户名注册</a>
-        <a data-reg-tab="reg-mobile">手机注册</a>
-        <a data-reg-tab="reg-mail">邮箱注册</a>
-    </div>
-
     <!-- 用户名注册：用户名 + 密码 -->
     <form action="@Url.Action("Register", "User", new { r = set.ReturnUrl })" class="cube-login reg-form active" method="post" id="reg-pwd" novalidate>
         <input type="hidden" name="category" value="Password" />
@@ -33,90 +26,6 @@
             <div class="input-icon">
                 <i class="glyphicon glyphicon-lock"></i>
                 <input type="password" class="form-control" id="reg_pwd_password2" name="confirmPassword" placeholder="重复密码" autocomplete="new-password">
-            </div>
-        </div>
-        <p class="form-tip reg-agreement" style="text-align:left;">
-            <label class="checkbox-custom">
-                <input type="checkbox" name="agreement" value="true" />
-                <span class="box"></span>我已阅读并同意<a href="#" class="forgot-link" target="_blank">《用户协议》</a>和<a href="#" class="forgot-link" target="_blank">《隐私政策》</a>
-            </label>
-        </p>
-        <button type="submit" class="btn-login">注 册</button>
-    </form>
-
-    <!-- 手机验证码注册：手机号 + 验证码 + 密码（密码可选） -->
-    <form action="@Url.Action("Register", "User", new { r = set.ReturnUrl })" class="cube-login reg-form" method="post" id="reg-mobile" novalidate>
-        <input type="hidden" name="category" value="Mobile" />
-        @Html.ValidationSummary()
-        <div class="form-group">
-            <div class="input-group">
-                <div class="input-icon">
-                    <i class="glyphicon glyphicon-phone"></i>
-                    <input type="tel" class="form-control" id="reg_mobile_mobile" name="mobile" placeholder="手机号" maxlength="11" autocomplete="tel">
-                </div>
-                <button type="button" class="btn-code" data-send="reg_mobile_mobile" data-channel="Sms" data-action="register">发送验证码</button>
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="input-icon">
-                <i class="glyphicon glyphicon-qrcode"></i>
-                <input type="text" class="form-control" id="reg_mobile_code" name="code" placeholder="短信验证码" autocomplete="off">
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="input-icon">
-                <i class="glyphicon glyphicon-lock"></i>
-                <input type="password" class="form-control has-toggle" id="reg_mobile_password" name="password" data-pwd placeholder="密码（选填，留空仅验证码登录）" autocomplete="new-password">
-                <span class="pwd-toggle" data-target="reg_mobile_password" title="显示/隐藏密码"><i class="glyphicon glyphicon-eye-open"></i></span>
-            </div>
-            <p class="field-tip" data-tip-for="reg_mobile_password"></p>
-        </div>
-        <div class="form-group">
-            <div class="input-icon">
-                <i class="glyphicon glyphicon-lock"></i>
-                <input type="password" class="form-control" id="reg_mobile_password2" name="confirmPassword" placeholder="重复密码（选填）" autocomplete="new-password">
-            </div>
-        </div>
-        <p class="form-tip reg-agreement" style="text-align:left;">
-            <label class="checkbox-custom">
-                <input type="checkbox" name="agreement" value="true" />
-                <span class="box"></span>我已阅读并同意<a href="#" class="forgot-link" target="_blank">《用户协议》</a>和<a href="#" class="forgot-link" target="_blank">《隐私政策》</a>
-            </label>
-        </p>
-        <button type="submit" class="btn-login">注 册</button>
-    </form>
-
-    <!-- 邮箱验证码注册：邮箱 + 验证码 + 密码（密码可选） -->
-    <form action="@Url.Action("Register", "User", new { r = set.ReturnUrl })" class="cube-login reg-form" method="post" id="reg-mail" novalidate>
-        <input type="hidden" name="category" value="Mail" />
-        @Html.ValidationSummary()
-        <div class="form-group">
-            <div class="input-group">
-                <div class="input-icon">
-                    <i class="glyphicon glyphicon-envelope"></i>
-                    <input type="email" class="form-control" id="reg_mail_email" name="email" placeholder="邮箱" autocomplete="email">
-                </div>
-                <button type="button" class="btn-code" data-send="reg_mail_email" data-channel="Mail" data-action="register">发送验证码</button>
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="input-icon">
-                <i class="glyphicon glyphicon-qrcode"></i>
-                <input type="text" class="form-control" id="reg_mail_code" name="code" placeholder="邮箱验证码" autocomplete="off">
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="input-icon">
-                <i class="glyphicon glyphicon-lock"></i>
-                <input type="password" class="form-control has-toggle" id="reg_mail_password" name="password" data-pwd placeholder="密码（选填，留空仅验证码登录）" autocomplete="new-password">
-                <span class="pwd-toggle" data-target="reg_mail_password" title="显示/隐藏密码"><i class="glyphicon glyphicon-eye-open"></i></span>
-            </div>
-            <p class="field-tip" data-tip-for="reg_mail_password"></p>
-        </div>
-        <div class="form-group">
-            <div class="input-icon">
-                <i class="glyphicon glyphicon-lock"></i>
-                <input type="password" class="form-control" id="reg_mail_password2" name="confirmPassword" placeholder="重复密码（选填）" autocomplete="new-password">
             </div>
         </div>
         <p class="form-tip reg-agreement" style="text-align:left;">

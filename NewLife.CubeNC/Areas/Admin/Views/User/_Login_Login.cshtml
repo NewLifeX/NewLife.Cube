@@ -12,15 +12,6 @@
     var value = challengeDic.Value;
 }
 <div class="tab-pane fade in active" id="Login">
-    <!-- 登录子 Tab：密码 / 手机验证码 / 邮箱验证码（按开关显示） -->
-    @if (set.AllowLogin || set.EnableSms || set.EnableMail)
-    {
-        <div class="login-modes">
-            @if (set.AllowLogin) { <a class="active" data-login-tab="login-pwd">密码登录</a> }
-            @if (set.EnableSms)  { <a class="@(!set.AllowLogin ? "active" : "")" data-login-tab="login-sms">手机验证码</a> }
-            @if (set.EnableMail) { <a class="@(!set.AllowLogin && !set.EnableSms ? "active" : "")" data-login-tab="login-mail">邮箱验证码</a> }
-        </div>
-    }
     @Html.ValidationSummary()
 
     <!-- 密码登录（RSA 加密） -->
@@ -47,60 +38,11 @@
                     <input type="checkbox" id="remember" name="remember" value="true" checked="checked" />
                     <span class="box"></span>记住我
                 </label>
-                <a class="forgot-link" data-tab-link="Forgot">忘记密码？</a>
             </div>
             <input name="challengeId" value="@key" style="display:none;" />
             <input type="text" name="pubKey" style="display:none" />
             <input id="pwd" style="display:none" name="password" />
             <button type="button" id="login-btn" class="btn-login">登 录</button>
-        </form>
-    }
-
-    <!-- 手机验证码登录 -->
-    @if (set.EnableSms)
-    {
-        <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" class="cube-login login-form @(!set.AllowLogin ? "active" : "")" method="post" id="login-sms" novalidate>
-            <input type="hidden" name="category" value="Mobile" />
-            <div class="form-group">
-                <div class="input-group">
-                    <div class="input-icon">
-                        <i class="glyphicon glyphicon-phone"></i>
-                        <input type="tel" class="form-control" id="login_sms_mobile" name="username" placeholder="手机号" maxlength="11" autocomplete="tel">
-                    </div>
-                    <button type="button" class="btn-code" data-login-send="login_sms_mobile" data-channel="Sms">发送验证码</button>
-                </div>
-            </div>
-            <div class="form-group">
-                <div class="input-icon">
-                    <i class="glyphicon glyphicon-qrcode"></i>
-                    <input type="text" class="form-control" id="login_sms_code" name="password" placeholder="短信验证码" autocomplete="off">
-                </div>
-            </div>
-            <button type="submit" class="btn-login">登 录</button>
-        </form>
-    }
-
-    <!-- 邮箱验证码登录 -->
-    @if (set.EnableMail)
-    {
-        <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" class="cube-login login-form @(!set.AllowLogin && !set.EnableSms ? "active" : "")" method="post" id="login-mail" novalidate>
-            <input type="hidden" name="category" value="Mail" />
-            <div class="form-group">
-                <div class="input-group">
-                    <div class="input-icon">
-                        <i class="glyphicon glyphicon-envelope"></i>
-                        <input type="email" class="form-control" id="login_mail_mail" name="username" placeholder="邮箱" autocomplete="email">
-                    </div>
-                    <button type="button" class="btn-code" data-login-send="login_mail_mail" data-channel="Mail">发送验证码</button>
-                </div>
-            </div>
-            <div class="form-group">
-                <div class="input-icon">
-                    <i class="glyphicon glyphicon-qrcode"></i>
-                    <input type="text" class="form-control" id="login_mail_code" name="password" placeholder="邮箱验证码" autocomplete="off">
-                </div>
-            </div>
-            <button type="submit" class="btn-login">登 录</button>
         </form>
     }
 </div>

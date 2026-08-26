@@ -460,13 +460,11 @@
                 {
                     <a data-tab="Register">注册</a>
                 }
-                <a data-tab="Forgot">忘记密码</a>
             </div>
 
             <!-- 面板 -->
             <div class="tab-content">
                 @await Html.PartialAsync("_Login_Login", Model)@*登录页*@
-                @await Html.PartialAsync("_Login_Forgot", Model)@*找回密码页*@
                 @await Html.PartialAsync("_Login_Register", Model)@*注册页*@
             </div>
 
