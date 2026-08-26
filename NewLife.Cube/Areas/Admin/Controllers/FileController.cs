@@ -65,55 +65,58 @@ public class FileController : ControllerBaseX
 
     private FileItem GetItem(String r)
     {
-        var inf = GetFile(r) as FileSystemInfo ?? GetDirectory(r);
+        FileSystemInfo inf;
+        try
+        {
+            inf = GetFile(r) as FileSystemInfo ?? GetDirectory(r);
+        }
+        catch (Exception ex) when (FileManagerIo.IsIoAccess(ex))
+        {
+            return null;
+        }
         if (inf == null) return null;
 
-        var fi = new FileItem
+        FileItem fi;
+        try
         {
-            Name = inf.Name,
-            FullName = GetFullName(inf.FullName),
-            Raw = inf.FullName,
-            Directory = inf is DirectoryInfo,
-            LastWrite = inf.LastWriteTime
-        };
-
-        if (inf is FileInfo)
-        {
-            var f = inf as FileInfo;
-            if (f.Length < 1024)
-                fi.Size = $"{f.Length:n0}";
-            else if (f.Length < 1024 * 1024)
-                fi.Size = $"{(Double)f.Length / 1024:n2}K";
-            else if (f.Length < 1024 * 1024 * 1024)
-                fi.Size = $"{(Double)f.Length / 1024 / 1024:n2}M";
-            else if (f.Length < 1024L * 1024 * 1024 * 1024)
-                fi.Size = $"{(Double)f.Length / 1024 / 1024 / 1024:n2}G";
+            fi = new FileItem
+            {
+                Name = inf.Name,
+                FullName = GetFullName(inf.FullName),
+                Raw = inf.FullName,
+                Directory = inf is DirectoryInfo,
+                LastWrite = inf.LastWriteTime
+            };
         }
-        else if (inf is DirectoryInfo di)
+        catch (Exception ex) when (FileManagerIo.IsIoAccess(ex))
         {
-            fi.Size = GetSize(di, 3).ToGMK();
+            return null;
+        }
+
+        try
+        {
+            if (inf is FileInfo f)
+            {
+                if (f.Length < 1024)
+                    fi.Size = $"{f.Length:n0}";
+                else if (f.Length < 1024 * 1024)
+                    fi.Size = $"{(Double)f.Length / 1024:n2}K";
+                else if (f.Length < 1024 * 1024 * 1024)
+                    fi.Size = $"{(Double)f.Length / 1024 / 1024:n2}M";
+                else if (f.Length < 1024L * 1024 * 1024 * 1024)
+                    fi.Size = $"{(Double)f.Length / 1024 / 1024 / 1024:n2}G";
+            }
+            else if (inf is DirectoryInfo di)
+            {
+                fi.Size = FileManagerIo.GetDirectorySize(di, 3).ToGMK();
+            }
+        }
+        catch (Exception ex) when (FileManagerIo.IsIoAccess(ex))
+        {
+            // 损坏链接：仍展示条目，大小留空
         }
 
         return fi;
-    }
-
-    private Int64 GetSize(DirectoryInfo di, Int32 level)
-    {
-        var size = 0L;
-        foreach (var item in di.GetFiles())
-        {
-            size += item.Length;
-        }
-
-        if (level > 1)
-        {
-            foreach (var item in di.GetDirectories())
-            {
-                size += GetSize(item, level - 1);
-            }
-        }
-
-        return size;
     }
 
     private String GetFullName(String r) => r.TrimStart(Root).TrimStart(Root.TrimEnd(Path.DirectorySeparatorChar));
@@ -132,14 +135,18 @@ public class FileController : ControllerBaseX
         var fd = di.FullName;
         if (fd.StartsWith(Root)) fd = fd[Root.Length..];
 
-        // 遍历所有子目录
-        var fis = di.GetFileSystemInfos();
+        // 遍历所有子目录（损坏 junction / 无权限项跳过，避免整页失败）
+        var fis = FileManagerIo.GetChildren(di);
         var list = new List<FileItem>();
         foreach (var item in fis)
         {
-            if (item.Attributes.Has(FileAttributes.Hidden)) continue;
+            FileAttributes attrs;
+            try { attrs = item.Attributes; }
+            catch (Exception ex) when (FileManagerIo.IsIoAccess(ex)) { continue; }
+            if (attrs.Has(FileAttributes.Hidden)) continue;
 
             var fi = GetItem(item.FullName);
+            if (fi == null) continue;
 
             list.Add(fi);
         }

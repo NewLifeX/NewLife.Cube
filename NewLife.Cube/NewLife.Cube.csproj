@@ -110,6 +110,7 @@
     <Compile Include="..\NewLife.CubeNC\Services\UserService.cs" Link="Services\UserService.cs" />
     <Compile Include="..\NewLife.CubeNC\Session\SessionProvider.cs" Link="Session\SessionProvider.cs" />
     <Compile Include="..\NewLife.CubeNC\Extensions\CubeEmbeddedFileProvider.cs" Link="Extensions\CubeEmbeddedFileProvider.cs" />
+    <Compile Include="..\NewLife.CubeNC\Common\FileManagerIo.cs" Link="Common\FileManagerIo.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\DataField.cs" Link="ViewModels\DataField.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\ErrorModel.cs" Link="ViewModels\ErrorModel.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\ExpandField.cs" Link="ViewModels\ExpandField.cs" />
