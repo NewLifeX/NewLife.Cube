@@ -1,6 +1,16 @@
 <template>
   <div class="field-input" style="width: 100%">
-    <template v-if="control === 'readonly'">
+    <RolePermTree
+      v-if="isRolePerm"
+      :model-value="modelValue"
+      :disabled="disabled"
+      @update:model-value="emitValue"
+    />
+    <div v-else-if="isMenuPerm" class="field-menu-perm">
+      <a-textarea :model-value="strValue" readonly disabled :auto-size="{ minRows: 2, maxRows: 6 }" />
+      <p class="field-menu-perm__hint">{{ menuPermHint }}</p>
+    </div>
+    <template v-else-if="control === 'readonly'">
       <a-input :model-value="displayText" readonly disabled />
     </template>
     <a-textarea
@@ -152,6 +162,7 @@ import LovSelect from './LovSelect.vue';
 import CascaderField from './CascaderField.vue';
 import JsonEditor from './JsonEditor.vue';
 import RichEditor from './RichEditor.vue';
+import RolePermTree from '@/views/crud/RolePermTree.vue';
 import { useFieldInput } from './useFieldInput';
 
 const props = defineProps<{
@@ -166,6 +177,9 @@ const props = defineProps<{
 const emit = defineEmits<{ 'update:modelValue': [unknown] }>();
 
 const {
+  isRolePerm,
+  isMenuPerm,
+  menuPermHint,
   control,
   displayText,
   strValue,
@@ -251,5 +265,10 @@ const {
 .field-color-text {
   color: var(--color-text-2);
   font-size: 13px;
+}
+.field-menu-perm__hint {
+  margin: 6px 0 0;
+  font-size: var(--cube-font-size-meta, 12px);
+  color: var(--color-text-3);
 }
 </style>

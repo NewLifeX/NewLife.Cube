@@ -10,8 +10,11 @@ import { isOAuthLoginEnabled } from '@/views/login/loginConfig';
 import { buildTotpQrDataUrl } from './mfaQr';
 import { resolveOAuthBindKey } from './oauthBind';
 
-export function useSecuritySettings() {
+export function useSecuritySettings(props?: { section?: 'mfa' | 'binds' | 'all' }) {
   const appStore = useAppStore();
+  const section = computed(() => props?.section ?? 'all');
+  const showMfa = computed(() => section.value === 'all' || section.value === 'mfa');
+  const showBinds = computed(() => section.value === 'all' || section.value === 'binds');
   const loading = ref(false);
   const mfaAvailable = ref(false);
   const mfaEnabled = ref(false);
@@ -33,10 +36,12 @@ export function useSecuritySettings() {
   async function loadStatus() {
     loading.value = true;
     try {
-      const st = await cubeApi.user.mfaStatus();
-      mfaAvailable.value = !!st.data?.available;
-      mfaEnabled.value = !!st.data?.enabled;
-      if (oauthEnabled.value) {
+      if (showMfa.value) {
+        const st = await cubeApi.user.mfaStatus();
+        mfaAvailable.value = !!st.data?.available;
+        mfaEnabled.value = !!st.data?.enabled;
+      }
+      if (showBinds.value && oauthEnabled.value) {
         const bd = await cubeApi.user.listBinds();
         binds.value = bd.data?.providers || [];
       } else {
@@ -159,6 +164,8 @@ export function useSecuritySettings() {
     binds,
     oauthEnabled,
     step,
+    showMfa,
+    showBinds,
     startSetup,
     activate,
     disable,

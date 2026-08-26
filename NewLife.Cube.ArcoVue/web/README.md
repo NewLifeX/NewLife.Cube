@@ -76,7 +76,8 @@ pnpm build
 
 - **登录页**（飞书风左右栏）：`views/login/`，能力来自嵌套 `LoginConfig.login/oauth/security/register`；SSO 须 `source=front-end`，回跳 `#token=` 由路由解析。
 - **Token**：access 存 cookie；refresh / 登录名存 localStorage；401 自动 `/Auth/Refresh` 一次。
-- **账号安全**：用户菜单 → `/account/security`（MFA Setup/Activate/Disable + `/Auth/Binds` 绑定/解绑）。
+- **账号中心**：`/account`（资料 / 密码 / 安全 / 绑定）；`/account/security` 重定向到 `?tab=security`。SSO 开启且用户中心为 http(s) 时，资料/改密外跳 `{ssoUserCenter}/Admin/User/Info` 与 `ChangePassword`。
+- **账号安全**：用户菜单「账号安全」进入安全 Tab（MFA Setup/Activate/Disable）；绑定 Tab 走 `/Auth/Binds`。
 - **租户**：顶栏下拉；请求头 `X-Tenant`；接口 `/Auth/Tenants`、`/Auth/SwitchTenant`。新实体接入见 [docs/多租户新实体接入.md](./docs/多租户新实体接入.md)。
 
 ## 字段组件规范（OSC-26082097c1）

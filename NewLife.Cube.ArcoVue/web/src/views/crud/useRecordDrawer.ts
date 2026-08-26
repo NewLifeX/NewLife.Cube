@@ -3,6 +3,8 @@ import { Message, Modal } from '@arco-design/web-vue';
 import type { EntityCommentModel } from '@cube/api-core';
 import type { FieldMeta } from '@/core/types/field';
 import { getValueByKey } from '@/core/utils/url';
+import { isIamRowActionDisabled } from '@/core/utils/iamGuards';
+import { isRolePermissionField } from '@/core/utils/rolePermission';
 import {
   applyFormLayout,
   estimateDetailLabelWidth,
@@ -67,6 +69,15 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
 
   const activeTab = ref('form');
   const formRef = ref<InstanceType<typeof FormContent>>();
+  /** 抽屉无实体删除按钮；与列表一致：系统角色禁止删除 */
+  const entityDeleteLocked = computed(() =>
+    isIamRowActionDisabled(props.typePath, props.model, 'delete'),
+  );
+
+  /** 角色 Permission：详情与编辑/添加共用菜单树 */
+  function isRolePermField(field: FieldMeta) {
+    return isRolePermissionField(props.typePath, field);
+  }
 
     // ---- 历史 Tab（M4a）；Automation 写入系统 Log，可与增删改一并筛选 ----
   const historyActionOptions = [
@@ -513,5 +524,7 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
     canDeleteComment,
     removeComment,
     onSave,
+    entityDeleteLocked,
+    isRolePermField,
   };
 }

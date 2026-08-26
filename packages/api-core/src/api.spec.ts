@@ -495,6 +495,26 @@ describe('createUserApi auth extensions', () => {
     await api.mfaStatus();
     expect(request).toHaveBeenNthCalledWith(2, expect.objectContaining({ url: '/Mfa/Status', method: 'get' }));
   });
+
+  it('profile / updateProfile / changePassword hit User Info and ChangePassword', async () => {
+    const request = vi.fn().mockResolvedValue({ code: 0, data: {} });
+    const { createUserApi } = await import('./api');
+    const api = createUserApi(request);
+    await api.profile();
+    expect(request).toHaveBeenNthCalledWith(1, expect.objectContaining({ url: '/Admin/User/Info', method: 'get' }));
+    await api.updateProfile({ id: 1, displayName: 'n' });
+    expect(request).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      url: '/Admin/User/Info',
+      method: 'post',
+      data: { id: 1, displayName: 'n' },
+    }));
+    await api.changePassword({ oldPassword: 'a', newPassword: 'b', newPassword2: 'b' });
+    expect(request).toHaveBeenNthCalledWith(3, expect.objectContaining({
+      url: '/Admin/User/ChangePassword',
+      method: 'post',
+      data: { oldPassword: 'a', newPassword: 'b', newPassword2: 'b' },
+    }));
+  });
 });
 
 describe('createConfigApi', () => {

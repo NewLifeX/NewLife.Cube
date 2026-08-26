@@ -153,6 +153,18 @@ export function createUserApi(request: RequestFn) {
     /** 切换当前租户 */
     switchTenant: (tenantId: number) =>
       request<TenantListResult>({ url: '/Auth/SwitchTenant', method: 'post', data: { tenantId } }),
+
+    /** 当前登录用户资料（可写字段见 User/Info） */
+    profile: () =>
+      request<Record<string, unknown>>({ url: '/Admin/User/Info', method: 'get' }),
+
+    /** 更新当前用户资料 */
+    updateProfile: (data: Record<string, unknown>) =>
+      request<Record<string, unknown>>({ url: '/Admin/User/Info', method: 'post', data }),
+
+    /** 修改当前用户密码 */
+    changePassword: (data: { oldPassword?: string; newPassword: string; newPassword2: string }) =>
+      request<unknown>({ url: '/Admin/User/ChangePassword', method: 'post', data }),
   };
 }
 

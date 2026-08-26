@@ -180,6 +180,8 @@ public class AuthController : ControllerBaseX
             EChartsTheme = set.EChartsTheme,
             AvatarChars = set.AvatarChars,
             StarWeb = set.StarWeb,
+            SsoUserCenter = set.SsoUserCenter,
+            RedirectUserToSso = set.RedirectUserToSso,
         };
     }
 

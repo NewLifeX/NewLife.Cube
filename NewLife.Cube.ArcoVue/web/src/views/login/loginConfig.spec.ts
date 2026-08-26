@@ -143,3 +143,12 @@ describe('resolveLoginLogoUrl', () => {
     expect(resolveLoginLogoUrl(null)).toBe('');
   });
 });
+
+describe('SSO account fields default', () => {
+  it('missing sso fields do not redirect', async () => {
+    const { resolveSsoAccountUrl } = await import('@/core/utils/accountCenter');
+    const cfg: LoginConfig = { login: { password: true } };
+    expect(resolveSsoAccountUrl(cfg, 'profile')).toBeNull();
+    expect(resolveSsoAccountUrl(cfg, 'password')).toBeNull();
+  });
+});

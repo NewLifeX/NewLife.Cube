@@ -187,6 +187,8 @@ public class CubeController : ConfigController<CubeSetting>, IPageDataContext
             EnableTenant = set.EnableTenant,
             EnableOAuthServer = set.EnableOAuthServer,
             StartPage = set.StartPage,
+            SsoUserCenter = set.SsoUserCenter,
+            RedirectUserToSso = set.RedirectUserToSso,
         });
     }
 

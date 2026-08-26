@@ -21,7 +21,7 @@
             <a-col
               v-for="field in group.fields"
               :key="field.name"
-              :span="isFullWidthControl(resolveControl(field)) ? 24 : 12"
+              :span="fieldFullWidth(field) ? 24 : 12"
             >
               <a-form-item
                 :field="field.name"
@@ -32,7 +32,7 @@
                 <FieldInput
                   :field="field"
                   :model-value="model[field.name]"
-                  :disabled="readonly || !!field.readOnly || !!field.primaryKey"
+                  :disabled="fieldDisabled(field)"
                   :type-path="typePath"
                   @update:model-value="(v) => (model[field.name] = v)"
                 />
@@ -75,10 +75,10 @@ const {
   formRef,
   visibleGroups,
   collapsedSet,
-  isFullWidthControl,
-  resolveControl,
   isFieldRequired,
   rulesFor,
+  fieldDisabled,
+  fieldFullWidth,
   validate,
   clearValidate,
 } = useFormContent(props);

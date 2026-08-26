@@ -10,6 +10,8 @@ import { useTenantStore } from '@/stores/tenant';
 import { resetMenuRoutesFlag } from '@/router';
 import { APPEARANCE_ICONS } from '@/core/utils/iconRegistry';
 import type { Appearance } from '@/core/utils/userProfile';
+import { formatInboxBadgeCount } from '@/core/utils/inboxBadge';
+import { resolveSsoAccountUrl } from '@/core/utils/accountCenter';
 import { clearSession } from '@/views/login/sessionTokens';
 
 /** 顶栏：外观、租户切换、站内通知、账号菜单 */
@@ -21,6 +23,7 @@ export function useShellToolbar() {
   const tagsStore = useTagsViewStore();
   const tenantStore = useTenantStore();
   const { inboxUnreadCount } = storeToRefs(appStore);
+  const inboxBadgeCount = computed(() => formatInboxBadgeCount(inboxUnreadCount.value));
 
   onMounted(() => {
     if (userStore.isLoggedIn) {
@@ -46,6 +49,15 @@ export function useShellToolbar() {
 
   function goInbox() {
     appStore.openInboxDrawer();
+  }
+
+  function goProfile() {
+    const url = resolveSsoAccountUrl(appStore.loginConfig, 'profile');
+    if (url) {
+      window.location.assign(url);
+      return;
+    }
+    router.push('/account?tab=profile');
   }
 
   function goSecurity() {
@@ -86,9 +98,11 @@ export function useShellToolbar() {
     appearanceLabel,
     APPEARANCE_ICONS,
     inboxUnreadCount,
+    inboxBadgeCount,
     cycleAppearance,
     goAppearance,
     goInbox,
+    goProfile,
     goSecurity,
     tenantOptionLabel,
     onSwitchTenant,

@@ -203,6 +203,16 @@ public class CubeSetting : Config<CubeSetting>
     [Category("用户登录")]
     public Boolean LogoutAll { get; set; } = true;
 
+    /// <summary>SSO用户中心。子应用资料/改密外跳根地址，无尾斜杠亦可</summary>
+    [Description("SSO用户中心。子应用资料/改密外跳根地址，如 https://sso.example.com")]
+    [Category("用户登录")]
+    public String SsoUserCenter { get; set; }
+
+    /// <summary>跳转用户中心。true时资料与改密跳转到SsoUserCenter，默认false</summary>
+    [Description("跳转用户中心。true时资料与改密跳转到SsoUserCenter对应页面，默认false")]
+    [Category("用户登录")]
+    public Boolean RedirectUserToSso { get; set; }
+
     /// <summary>允许多设备登录。false时同一账号新登录会踢掉旧设备，注销时吊销该账号所有令牌；true时仅吊销当前会话令牌，默认true</summary>
     [Description("允许多设备登录。false时同一账号新登录会踢掉旧设备，注销时吊销该账号所有令牌；true时仅吊销当前会话令牌，默认true")]
     [Category("用户登录")]

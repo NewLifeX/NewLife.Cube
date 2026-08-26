@@ -95,9 +95,13 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'account/security',
-        name: 'AccountSecurity',
-        component: () => import('@/views/account/SecuritySettings.vue'),
-        meta: { title: '账号安全' },
+        redirect: { path: '/account', query: { tab: 'security' } },
+      },
+      {
+        path: 'account',
+        name: 'AccountCenter',
+        component: () => import('@/views/account/AccountCenter.vue'),
+        meta: { title: '个人信息' },
       },
       {
         /** 兼容旧链接：打开外观抽屉并回首页，不占用内容页签 */

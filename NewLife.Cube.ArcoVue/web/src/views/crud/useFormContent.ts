@@ -1,6 +1,8 @@
 import { computed, ref, watch } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
 import { isAuditField, isFullWidthControl, isTenantField, resolveControl } from '@/core/utils/fieldControl';
+import { isIamPermissionFullWidth } from '@/core/utils/rolePermission';
+import { isSystemRoleFlagLocked, isSystemRoleNameLocked } from '@/core/utils/iamGuards';
 import { applyFormLayout, groupFieldsByCategory } from '@/core/utils/fieldGroups';
 import type { FormLayout } from '@/core/utils/viewProfile';
 import { isFieldRequired } from '@/core/utils/submitPayload';
@@ -51,9 +53,14 @@ export function useFormContent(props: FormContentProps) {
   const collapsed = computed(() => appliedGroups.value.collapsed);
   const collapsedSet = computed(() => new Set(collapsed.value));
 
+  function fieldRequired(field: FieldMeta): boolean {
+    if (isTenantField(field) && !tenantStore.enableTenant) return false;
+    return isFieldRequired(field);
+  }
+
   function rulesFor(field: FieldMeta) {
     const rules = [...fieldFormatRules(field)];
-    if (isFieldRequired(field)) {
+    if (fieldRequired(field)) {
       rules.unshift({ required: true, message: `${field.displayName || field.name}不可以为空！` });
     }
     return rules.length ? rules : undefined;
@@ -84,13 +91,27 @@ export function useFormContent(props: FormContentProps) {
     formRef.value?.clearValidate();
   }
 
+  function fieldDisabled(field: FieldMeta): boolean {
+    if (props.readonly || !!field.readOnly || !!field.primaryKey) return true;
+    if (isSystemRoleNameLocked(props.typePath, props.model, field.name)) return true;
+    if (isSystemRoleFlagLocked(props.typePath, props.model, field.name, props.mode)) return true;
+    return false;
+  }
+
+  function fieldFullWidth(field: FieldMeta): boolean {
+    if (isIamPermissionFullWidth(props.typePath, field)) return true;
+    return isFullWidthControl(resolveControl(field));
+  }
+
   return {
     formRef,
     visibleGroups,
     collapsedSet,
     isFullWidthControl,
     resolveControl,
-    isFieldRequired,
+    fieldDisabled,
+    fieldFullWidth,
+    isFieldRequired: fieldRequired,
     rulesFor,
     validate,
     clearValidate,

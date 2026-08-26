@@ -5,6 +5,7 @@
     unmount-on-close
     placement="right"
     class="record-drawer"
+    :class="{ 'record-drawer--no-entity-delete': entityDeleteLocked }"
     @update:visible="(v: boolean) => emit('update:visible', v)"
   >
     <template #title>
@@ -63,15 +64,28 @@
             <span>{{ group.title }}</span>
             <icon-park type="down" class="detail-group__caret" :class="{ open: !detailCollapsed.has(group.category) }" />
           </button>
-          <div v-show="!detailCollapsed.has(group.category)" class="detail-fields">
-            <div v-for="field in group.fields" :key="field.name" class="detail-field">
-              <div class="detail-field__label" :style="detailLabelStyle">
+            <div v-show="!detailCollapsed.has(group.category)" class="detail-fields">
+            <div
+              v-for="field in group.fields"
+              :key="field.name"
+              class="detail-field"
+              :class="{ 'detail-field--perm': isRolePermField(field) }"
+            >
+              <div class="detail-field__label" :style="isRolePermField(field) ? undefined : detailLabelStyle">
                 <icon-park :type="fieldIcon(field)" class="detail-field__icon" />
                 {{ field.displayName || field.name }}
               </div>
-              <div class="detail-field__value">
+              <div
+                class="detail-field__value"
+                :class="{ 'detail-field__value--perm': isRolePermField(field) }"
+              >
+                <RolePermTree
+                  v-if="isRolePermField(field)"
+                  :model-value="model[field.name]"
+                  disabled
+                />
                 <img
-                  v-if="detailImageOf(field)"
+                  v-else-if="detailImageOf(field)"
                   :src="detailImageOf(field)!.href"
                   class="detail-image"
                   :alt="detailImageOf(field)!.text"
@@ -98,9 +112,9 @@
               </div>
             </div>
           </div>
-        </section>
-      </div>
-    </template>
+          </section>
+        </div>
+      </template>
 
     <a-tabs v-else v-model:active-key="activeTab">
       <a-tab-pane key="form" :title="mode === 'edit' ? '编辑' : '详情'">
@@ -132,14 +146,27 @@
               <icon-park type="down" class="detail-group__caret" :class="{ open: !detailCollapsed.has(group.category) }" />
             </button>
             <div v-show="!detailCollapsed.has(group.category)" class="detail-fields">
-              <div v-for="field in group.fields" :key="field.name" class="detail-field">
-                <div class="detail-field__label" :style="detailLabelStyle">
+              <div
+                v-for="field in group.fields"
+                :key="field.name"
+                class="detail-field"
+                :class="{ 'detail-field--perm': isRolePermField(field) }"
+              >
+                <div class="detail-field__label" :style="isRolePermField(field) ? undefined : detailLabelStyle">
                   <icon-park :type="fieldIcon(field)" class="detail-field__icon" />
                   {{ field.displayName || field.name }}
                 </div>
-                <div class="detail-field__value">
+                <div
+                  class="detail-field__value"
+                  :class="{ 'detail-field__value--perm': isRolePermField(field) }"
+                >
+                  <RolePermTree
+                    v-if="isRolePermField(field)"
+                    :model-value="model[field.name]"
+                    disabled
+                  />
                   <img
-                    v-if="detailImageOf(field)"
+                    v-else-if="detailImageOf(field)"
                     :src="detailImageOf(field)!.href"
                     class="detail-image"
                     :alt="detailImageOf(field)!.text"
@@ -385,6 +412,7 @@ import { formatDateTime } from '@/core/utils/datetime';
 import CommentReplyEditor from '@/components/CommentReplyEditor.vue';
 import UserAvatar from '@/components/UserAvatar.vue';
 import FormContent from './FormContent.vue';
+import RolePermTree from './RolePermTree.vue';
 import { useRecordDrawer } from './useRecordDrawer';
 
 const props = withDefaults(
@@ -472,6 +500,8 @@ const {
   canDeleteComment,
   removeComment,
   onSave,
+  entityDeleteLocked,
+  isRolePermField,
 } = useRecordDrawer(props, emit);
 
 defineExpose({ validate: () => formRef.value?.validate() });
@@ -604,6 +634,22 @@ defineExpose({ validate: () => formRef.value?.validate() });
   color: var(--color-text-1);
   line-height: 22px;
   word-break: break-word;
+}
+
+.detail-field--perm {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.detail-field--perm .detail-field__label {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  border-right: none;
+  border-bottom: 1px solid var(--color-border-2);
+}
+.detail-field__value--perm {
+  padding: 12px;
 }
 
 /* 历史 Tab */

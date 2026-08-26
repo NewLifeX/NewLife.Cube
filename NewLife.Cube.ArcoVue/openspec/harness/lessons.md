@@ -233,6 +233,14 @@
 - **交叉核对 grep 必须锚定定义上下文**：`ITEM_TYPE_TO_CONTROL` 核对曾误把函数参数 `model:`/`fields:` 当映射键、无引号映射键被当缺失——脚本模式应限定定义块内，或核对后读源码二次确认，勿「False 即缺口」。
 - **规范文档引用的图标名须当场核对 `iconComponents.ts` 登记**：`font-size-two` 未登记名在执行期纠错为 `font-size`（T7 补录）；实现号消费 labelIcon 前先跑登记断言。
 
+## OSC-260824fc7c — 2026-08-26
+
+- **授权目录必须用未裁剪的菜单列表**：`/Cube/MenuTree` 已按当前用户裁剪，不能当角色授权数据源；用 `GET /Admin/Menu` 分页全量。无查看权则树空并提示，禁止把原 Permission 清成空。
+- **Role.Permission 与 Menu.Permission 禁止共用解析器**：前者 `menuId#flags`，后者 `flag#name`；目录空才回退 1/2/4/8。
+- **详情抽屉若不用 FormContent，只读控件必须单独接线**：design 写「readonly 时树 disabled」不够；`RecordDrawer` 详情走 `formatDetail` 会把权限显示成编码串。
+- **Cube / CubeNC 非 Link 控制器要 tasks 点名两处**：本号 Menu ReadOnly / Role 去列表列只改了 WebAPI；CubeDemo 不受影响，MVC 宿主会漏。
+- **复盘提交遇到并行未入库 OSC 时宁缺列表壳、勿混打**：03c0 源码仍 untracked，与本号 B.4/B.5/D.1 同文件；独立 AI/填色/wwwroot 排除（沿用 fa86/8bdb）。
+
 ## 待办 — 字体规范（Harness）
 
 - 后续按现代中后台常见 **组件/场景**（列表表头、单元格、表单标签、抽屉标题、徽章等）在 Harness 建立统一的 **字体 / 字号 / 字重** 规范，并替换各处临时字重（如 VTable `headerStyle.fontWeight: 400`）。

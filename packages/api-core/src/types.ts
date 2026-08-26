@@ -314,6 +314,10 @@ export interface LoginConfig {
   avatarChars?: number;
   /** 星尘 Web 根地址（魔方设置 StarWeb；空则无追踪深链） */
   starWeb?: string;
+  /** SSO 用户中心根 URL（魔方设置 SsoUserCenter） */
+  ssoUserCenter?: string;
+  /** 资料/改密是否外跳用户中心（魔方设置 RedirectUserToSso） */
+  redirectUserToSso?: boolean;
   /** 登录能力配置 */
   login?: LoginAbility;
   /** 注册能力配置 */

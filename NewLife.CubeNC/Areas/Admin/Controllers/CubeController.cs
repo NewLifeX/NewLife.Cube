@@ -162,6 +162,8 @@ public class CubeController : ConfigController<CubeSetting>, IPageDataContext
             EChartsTheme = set.EChartsTheme,
             AvatarChars = set.AvatarChars,
             StarWeb = set.StarWeb,
+            SsoUserCenter = set.SsoUserCenter,
+            RedirectUserToSso = set.RedirectUserToSso,
         });
     }
 

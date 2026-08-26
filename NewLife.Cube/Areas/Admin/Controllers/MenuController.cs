@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using NewLife.Cube.ViewModels;
 using XCode.Membership;
 
 namespace NewLife.Cube.Areas.Admin.Controllers;
@@ -15,6 +16,21 @@ public class MenuController : EntityTreeController<Menu, MenuModel>
         // 过滤要显示的字段
         ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6");
         ListFields.RemoveField("Remark");
+    }
+
+    /// <summary>表单/详情中权限目录只读，避免与角色授权串混淆</summary>
+    /// <param name="kind">视图种类</param>
+    /// <param name="model">当前模型</param>
+    /// <returns>字段集合</returns>
+    protected override FieldCollection OnGetFields(ViewKinds kind, Object model)
+    {
+        var fields = base.OnGetFields(kind, model);
+        if (kind is ViewKinds.AddForm or ViewKinds.EditForm or ViewKinds.Detail)
+        {
+            var df = fields.GetField("Permission");
+            if (df != null) df.ReadOnly = true;
+        }
+        return fields;
     }
 
     /// <summary>验证实体对象</summary>

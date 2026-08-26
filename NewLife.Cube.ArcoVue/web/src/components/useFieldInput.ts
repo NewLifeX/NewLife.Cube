@@ -14,6 +14,11 @@ import {
 } from '@/core/utils/datetime';
 import { bitmaskToKeys, isBitmaskMultiSelect, keysToBitmask } from '@/core/utils/bitmaskSelect';
 import cubeApi from '@/api';
+import {
+  isMenuPermissionField,
+  isRolePermissionField,
+  MENU_PERMISSION_HINT,
+} from '@/core/utils/rolePermission';
 
 /** FieldInput 组件 props 类型（与 FieldInput.vue defineProps 泛型逐字一致） */
 interface FieldInputProps {
@@ -34,6 +39,9 @@ type FieldInputEmit = <K extends keyof FieldInputEmits>(event: K, ...args: Field
 
 /** FieldInput 组件全部业务 TS：控件解析、取值回写与上传（自 FieldInput.vue script setup 原样搬移） */
 export function useFieldInput(props: FieldInputProps, emit: FieldInputEmit) {
+  const isRolePerm = computed(() => isRolePermissionField(props.typePath, props.field));
+  const isMenuPerm = computed(() => isMenuPermissionField(props.typePath, props.field));
+  const menuPermHint = MENU_PERMISSION_HINT;
   const control = computed(
     () => props.controlOverride ?? resolveControl(props.field),
   );
@@ -187,6 +195,9 @@ export function useFieldInput(props: FieldInputProps, emit: FieldInputEmit) {
   }
 
   return {
+    isRolePerm,
+    isMenuPerm,
+    menuPermHint,
     control,
     displayText,
     strValue,

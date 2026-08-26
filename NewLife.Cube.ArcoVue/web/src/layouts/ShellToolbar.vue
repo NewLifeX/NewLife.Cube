@@ -2,8 +2,8 @@
   <div class="shell-toolbar">
     <a-space>
       <a-tooltip content="站内通知">
-        <a-badge :count="inboxUnreadCount" :max-count="99">
-          <a-button type="text" size="small" @click="goInbox">
+        <a-badge :count="inboxBadgeCount" class="shell-toolbar__inbox-badge">
+          <a-button type="text" size="small" class="shell-toolbar__inbox-btn" @click="goInbox">
             <icon-park type="remind" />
           </a-button>
         </a-badge>
@@ -39,6 +39,12 @@
           </a-dgroup>
 
           <a-dgroup :title="`账号 · ${userStore.displayName || '当前用户'}`">
+            <a-doption @click="goProfile">
+              <span class="user-menu-item">
+                <icon-park type="user" class="user-menu-icon" />
+                <span class="user-menu-text">个人信息</span>
+              </span>
+            </a-doption>
             <a-doption @click="goSecurity">
               <span class="user-menu-item">
                 <icon-park type="permissions" class="user-menu-icon" />
@@ -74,10 +80,11 @@ const {
   profileStore,
   appearanceLabel,
   APPEARANCE_ICONS,
-  inboxUnreadCount,
+  inboxBadgeCount,
   cycleAppearance,
   goAppearance,
   goInbox,
+  goProfile,
   goSecurity,
   tenantOptionLabel,
   onSwitchTenant,
@@ -89,6 +96,20 @@ const {
 .shell-toolbar {
   display: flex;
   align-items: center;
+  overflow: visible;
+}
+.shell-toolbar__inbox-badge {
+  line-height: 1;
+}
+.shell-toolbar__inbox-btn {
+  overflow: visible;
+}
+.shell-toolbar__inbox-badge :deep(.arco-badge-number) {
+  font-size: 10px;
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
+  padding: 0 4px;
 }
 .shell-toolbar__user {
   display: inline-flex;
