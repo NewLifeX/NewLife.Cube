@@ -4,16 +4,139 @@
     var set = Model;
 }
 <div class="tab-pane fade" id="Forgot">
-    <!-- 登录-->
-    @using (Html.BeginForm("ForgetPassword", "User", new { r = set.ReturnUrl }, FormMethod.Post, true, new { @class = "cube-login" }))
-    {
-        @Html.ValidationSummary()
+    <!-- 第 1 步：输入账号（手机号自动走短信、邮箱自动走邮件验证码） -->
+    <form class="cube-login" method="post" id="cube-forgot-step1" novalidate>
         <div class="form-group">
-            <div class="input-icon">
-                <i class="glyphicon glyphicon-envelope"></i>
-                <input type="email" class="form-control" id="email" name="email" placeholder="输入你的邮箱地址" autocomplete="email">
+            <div class="input-group">
+                <div class="input-icon">
+                    <i class="glyphicon glyphicon-user"></i>
+                    <input type="text" class="form-control" id="forgot_account" placeholder="手机号或邮箱" autocomplete="username">
+                </div>
+                <button type="button" class="btn-code" id="forgot_send_btn">发送验证码</button>
             </div>
         </div>
-        <button type="submit" class="btn-login">发送重置邮件</button>
-    }
+        <button type="button" class="btn-login" id="forgot_next_btn">下一步</button>
+    </form>
+
+    <!-- 第 2 步：验证码 + 新密码（新密码经 RSA 加密提交） -->
+    <form action="@Url.Action("ForgetPassword", "User", new { r = set.ReturnUrl })" class="cube-login" method="post" id="cube-forgot-step2" style="display:none;" novalidate>
+        @Html.ValidationSummary()
+        <input type="hidden" name="challengeId" id="forgot_challengeId" />
+        <input type="hidden" name="newPassword" id="forgot_newPassword" />
+        <input type="hidden" name="confirmPassword" id="forgot_confirmPassword" />
+        <div class="form-group">
+            <div class="input-icon">
+                <i class="glyphicon glyphicon-qrcode"></i>
+                <input type="text" class="form-control" id="forgot_code" name="code" placeholder="验证码" autocomplete="off">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="input-icon">
+                <i class="glyphicon glyphicon-lock"></i>
+                <input type="password" class="form-control has-toggle" id="forgot_password" data-pwd placeholder="新密码" autocomplete="new-password">
+                <span class="pwd-toggle" data-target="forgot_password" title="显示/隐藏密码"><i class="glyphicon glyphicon-eye-open"></i></span>
+            </div>
+            <p class="field-tip" data-tip-for="forgot_password"></p>
+        </div>
+        <div class="form-group">
+            <div class="input-icon">
+                <i class="glyphicon glyphicon-lock"></i>
+                <input type="password" class="form-control" id="forgot_password2" placeholder="确认新密码" autocomplete="new-password">
+            </div>
+        </div>
+        <button type="submit" class="btn-login">确认重置</button>
+        <p class="form-tip"><a href="#" class="forgot-link" id="forgot_back">上一步</a></p>
+    </form>
 </div>
+
+<script>
+    // jQuery 在页面底部加载，这里需等待其就绪后再绑定事件
+    (function () {
+        function init() {
+            if (typeof jQuery === 'undefined') { setTimeout(init, 100); return; }
+            jQuery(function () {
+        // ========== 发送验证码（action=reset；手机号走短信、邮箱走邮件） ==========
+        function forgotSendCode(btn) {
+            var account = $('#forgot_account').val();
+            if (!account) { alert('请输入手机号或邮箱'); return; }
+            var channel = /^1\d{10}$/.test(account) ? 'Sms' : 'Mail';
+            $.ajax({
+                url: '@Url.Action("SendVerifyCode", "User", new { area = "Admin" })',
+                type: 'POST',
+                data: { channel: channel, username: account, action: 'reset' },
+                dataType: 'json'
+            }).done(function (data) {
+                if (data && data.code == 0) {
+                    var sec = 60;
+                    btn.prop('disabled', true);
+                    var timer = setInterval(function () {
+                        sec--;
+                        btn.text(sec + 's 后重发');
+                        if (sec <= 0) {
+                            clearInterval(timer);
+                            btn.prop('disabled', false).text('发送验证码');
+                        }
+                    }, 1000);
+                } else {
+                    alert((data && data.message) || '验证码发送失败');
+                }
+            }).fail(function () {
+                alert('验证码发送失败，请稍后重试');
+            });
+        }
+        $('#forgot_send_btn').on('click', function () { forgotSendCode($(this)); });
+
+        // ========== 两步切换 ==========
+        $('#forgot_next_btn').on('click', function () {
+            if (!$('#forgot_account').val()) { alert('请输入手机号或邮箱'); return; }
+            $('#cube-forgot-step1').hide();
+            $('#cube-forgot-step2').show();
+        });
+        $('#forgot_back').on('click', function () {
+            $('#cube-forgot-step2').hide();
+            $('#cube-forgot-step1').show();
+            return false;
+        });
+
+        // ========== 提交：密码强度校验 + RSA 加密新密码（对齐登录 RSA 链路） ==========
+        // 密码强度规则与注册页一致（_Login_Register.cshtml 已绑定 [data-pwd] 的 input/blur）
+        $('#cube-forgot-step2').on('submit', function () {
+            var code = $('#forgot_code').val();
+            var pwd = $('#forgot_password').val();
+            var pwd2 = $('#forgot_password2').val();
+            if (!code) { alert('请输入验证码'); return false; }
+            if (!pwd) { alert('请输入新密码'); return false; }
+            if (pwd !== pwd2) { alert('两次密码不一致'); return false; }
+
+            var $form = $(this);
+            $.ajax({
+                url: '@Url.Action("GetLoginKey", "User", new { area = "Admin" })',
+                type: 'GET',
+                dataType: 'json'
+            }).done(function (data) {
+                if (data && data.code == 0 && data.data) {
+                    var rsa = new JSEncrypt();
+                    rsa.setPublicKey(data.data.publicKey);
+                    $('#forgot_challengeId').val(data.data.challengeId);
+                    $('#forgot_newPassword').val(rsa.encrypt(pwd));
+                    $('#forgot_confirmPassword').val(rsa.encrypt(pwd2));
+                } else {
+                    // 拿不到密钥时降级明文（AllowPlainPassword=true 默认允许）
+                    $('#forgot_challengeId').val('');
+                    $('#forgot_newPassword').val(pwd);
+                    $('#forgot_confirmPassword').val(pwd2);
+                }
+                $form.off('submit').submit();
+            }).fail(function () {
+                $('#forgot_challengeId').val('');
+                $('#forgot_newPassword').val(pwd);
+                $('#forgot_confirmPassword').val(pwd2);
+                $form.off('submit').submit();
+            });
+            return false;
+        });
+            });
+        }
+        init();
+    })();
+</script>

@@ -148,6 +148,11 @@ public class CubeSetting : Config<CubeSetting>
     [Category("用户登录")]
     public Boolean AllowRegister { get; set; } = true;
 
+    /// <summary>注册须同意协议。依据《个人信息保护法》要求，注册前须勾选同意《用户协议》和《隐私政策》，默认true</summary>
+    [Description("注册须同意协议。依据《个人信息保护法》要求，注册前须勾选同意《用户协议》和《隐私政策》，默认true")]
+    [Category("用户登录")]
+    public Boolean RequireAgreement { get; set; } = true;
+
     /// <summary>自动注册。默认true，SSO登录后，如果本地未登录，自动注册新用户。全局设置和OAuth应用设置只要有一个启用则表示使用</summary>
     [Description("自动注册。默认true，SSO登录后，如果本地未登录，自动注册新用户。全局设置和OAuth应用设置只要有一个启用则表示使用")]
     [Category("用户登录")]

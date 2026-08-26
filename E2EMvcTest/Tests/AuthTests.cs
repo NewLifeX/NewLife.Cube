@@ -45,12 +45,12 @@ public sealed class AuthTests : IAsyncLifetime
 
         await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Login");
         // 切到注册标签
-        await _page.ClickAsync("a[href='#Register']");
+        await _page.ClickAsync(".login-tabs a[data-tab=Register]");
         await _page.WaitForSelectorAsync("#Register.active, #Register.in");
 
-        await _page.FillAsync("#reg_username", _registeredUsername);
-        await _page.FillAsync("#reg_password", "Test@2026!");
-        await _page.FillAsync("#reg_password2", "Test@2026!");
+        await _page.FillAsync("#reg_pwd_username", _registeredUsername);
+        await _page.FillAsync("#reg_pwd_password", "Test@2026!");
+        await _page.FillAsync("#reg_pwd_password2", "Test@2026!");
         await _page.ClickAsync("#Register button[type=submit]");
         await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
@@ -74,12 +74,12 @@ public sealed class AuthTests : IAsyncLifetime
         var dupName = _registeredUsername ?? AppFixture.AdminUser;
 
         await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Login");
-        await _page.ClickAsync("a[href='#Register']");
+        await _page.ClickAsync(".login-tabs a[data-tab=Register]");
         await _page.WaitForSelectorAsync("#Register.active, #Register.in");
 
-        await _page.FillAsync("#reg_username", dupName);
-        await _page.FillAsync("#reg_password", "Test@2026!");
-        await _page.FillAsync("#reg_password2", "Test@2026!");
+        await _page.FillAsync("#reg_pwd_username", dupName);
+        await _page.FillAsync("#reg_pwd_password", "Test@2026!");
+        await _page.FillAsync("#reg_pwd_password2", "Test@2026!");
         await _page.ClickAsync("#Register button[type=submit]");
         await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
@@ -107,12 +107,12 @@ public sealed class AuthTests : IAsyncLifetime
         };
 
         await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Login");
-        await _page.ClickAsync("a[href='#Register']");
+        await _page.ClickAsync(".login-tabs a[data-tab=Register]");
         await _page.WaitForSelectorAsync("#Register.active, #Register.in");
 
-        await _page.FillAsync("#reg_username", username);
-        await _page.FillAsync("#reg_password", "Test@2026!");
-        await _page.FillAsync("#reg_password2", "Test@2026!");
+        await _page.FillAsync("#reg_pwd_username", username);
+        await _page.FillAsync("#reg_pwd_password", "Test@2026!");
+        await _page.FillAsync("#reg_pwd_password2", "Test@2026!");
         await _page.ClickAsync("#Register button[type=submit]");
         await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 

@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -198,6 +199,53 @@ public class AuthControllerTests
         Assert.False(String.IsNullOrEmpty(publicKey1));
         Assert.StartsWith("-----BEGIN PUBLIC KEY-----", publicKey1);
         Assert.NotEqual(publicKey1, publicKey2);
+    }
+
+    [Fact(DisplayName = "GetPublicKey：PEM 公钥 OAEP 加密后，缓存的 XML 私钥可解密还原（WebAPI 链路）")]
+    public void GetPublicKey_OaepEncrypt_XmlPrivateKeyDecrypt_RoundTrip()
+    {
+        var provider = new MemoryCacheProvider();
+        var svc = new UserService(null!, null!, null!, provider, null!, null!, null!, null!, null!);
+
+        // 1. 获取挑战：返回 PEM(SPKI) 公钥，缓存 XML 私钥
+        var (challengeId, publicKey) = svc.GetPublicKey();
+
+        // 2. 用 PEM 公钥以 RSA-OAEP/SHA-256 加密密码（模拟前端 Web Crypto）
+        var pem = publicKey
+            .Replace("-----BEGIN PUBLIC KEY-----", "")
+            .Replace("-----END PUBLIC KEY-----", "")
+            .Replace("\r", "")
+            .Replace("\n", "");
+        using var pubRsa = RSA.Create();
+        pubRsa.ImportSubjectPublicKeyInfo(Convert.FromBase64String(pem), out _);
+        var plain = "P@ssw0rd!123";
+        var cipher = Convert.ToBase64String(
+            pubRsa.Encrypt(Encoding.UTF8.GetBytes(plain), RSAEncryptionPadding.OaepSHA256));
+
+        // 3. 从缓存取 XML 私钥，反射调 DecryptByPrivateKey 解密（应走 OAEP 分支）
+        var tuple = provider.Cache.Get<Tuple<String, String>>(challengeId);
+        Assert.NotNull(tuple);
+
+        var method = typeof(UserService).GetMethod("DecryptByPrivateKey", BindingFlags.NonPublic | BindingFlags.Static)!;
+        var decrypted = (String)method.Invoke(null, [tuple!.Item2, cipher])!;
+
+        Assert.Equal(plain, decrypted);
+    }
+
+    [Fact(DisplayName = "DecryptByPrivateKey：PEM 私钥走 PKCS1v15 解密（MVC JSEncrypt 链路）")]
+    public void DecryptByPrivateKey_PemPrivateKey_Pkcs1v15()
+    {
+        using var rsa = RSA.Create(2048);
+        var pemPrivate = rsa.ExportPkcs8PrivateKeyPem(); // -----BEGIN PRIVATE KEY-----
+
+        var plain = "P@ssw0rd!123";
+        var cipher = Convert.ToBase64String(
+            rsa.Encrypt(Encoding.UTF8.GetBytes(plain), RSAEncryptionPadding.Pkcs1));
+
+        var method = typeof(UserService).GetMethod("DecryptByPrivateKey", BindingFlags.NonPublic | BindingFlags.Static)!;
+        var decrypted = (String)method.Invoke(null, [pemPrivate, cipher])!;
+
+        Assert.Equal(plain, decrypted);
     }
 
     #endregion

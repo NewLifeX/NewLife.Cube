@@ -120,7 +120,8 @@
         }
 
         /* ========== 面板 ========== */
-        .pane { display: none; padding: 24px 40px 0; }
+        /* 底部保留内边距，避免注册/忘记密码提交按钮紧贴卡片下沿 */
+        .pane { display: none; padding: 24px 40px 28px; }
         .pane.active { display: block; }
 
         /* 输入框：左侧图标 + 圆角 */
@@ -261,6 +262,66 @@
             margin: -6px 0 14px;
         }
 
+        /* ========== 注册方式子 Tab（用户名/手机/邮箱） ========== */
+        .reg-modes {
+            display: flex;
+            margin: 0 -40px 18px;
+            padding: 0 40px;
+            border-bottom: 1px solid #eef1f4;
+        }
+        .reg-modes a {
+            flex: 1;
+            text-align: center;
+            padding: 8px 0 10px;
+            font-size: 13px;
+            color: #7a8087;
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: color .2s, border-color .2s;
+            cursor: pointer;
+        }
+        .reg-modes a:hover { color: #2b7dbc; }
+        .reg-modes a.active {
+            color: #2b7dbc;
+            font-weight: 700;
+            border-bottom-color: #2b7dbc;
+        }
+        .reg-form { display: none; }
+        .reg-form.active { display: block; }
+
+        /* 发送验证码按钮（手机/邮箱注册、忘记密码共用） */
+        .input-group { display: flex; gap: 8px; }
+        .input-group .input-icon { flex: 1; }
+        .btn-code {
+            width: 116px;
+            height: 44px;
+            flex: none;
+            border: 1px solid #2b7dbc;
+            border-radius: 8px;
+            background: #fff;
+            color: #2b7dbc;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all .2s;
+            white-space: nowrap;
+        }
+        .btn-code:hover { background: #eef4fb; }
+        .btn-code:disabled { opacity: .5; cursor: not-allowed; }
+
+        /* 密码强度 / 字段校验提示 */
+        .field-tip {
+            font-size: 12px;
+            line-height: 1.6;
+            margin: 6px 0 0;
+            display: none;
+        }
+        .field-tip.show { display: block; }
+        .field-tip.ok { color: #3aa76d; }
+        .field-tip.error { color: #e14b4b; }
+        .input-icon input.error { border-color: #e14b4b; }
+        .input-icon input.ok { border-color: #3aa76d; }
+
         /* ========== 第三方登录 ========== */
         .third-party { padding: 22px 40px 30px; }
         .divider {
@@ -309,6 +370,8 @@
         .oauth-github   { background: #24292e; }   /* GitHub */
         .oauth-weibo    { background: #e6162d; }   /* 微博 */
         .oauth-windows  { background: #00a4ef; }   /* 微软 */
+        .oauth-dingtalk { background: #007fff; }   /* 钉钉 */
+        .oauth-taobao   { background: #ff5000; }   /* 淘宝 */
 
         /* ========== 页脚 ========== */
         .login-footer {
@@ -320,10 +383,11 @@
 
         /* ========== 响应式 ========== */
         @media (max-width: 480px) {
-            .pane { padding: 20px 24px 0; }
+            .pane { padding: 20px 24px 24px; }
             .third-party { padding: 18px 24px 24px; }
             .brand { padding: 28px 20px 6px; }
             .login-tabs { margin: 18px 24px 0; }
+            .reg-modes { margin: 0 -24px 16px; padding: 0 24px; }
             .oauth-icons { gap: 12px; }
             .login-tip { padding: 0 40px; line-height: 34px; font-size: 12px; }
         }
@@ -394,53 +458,149 @@
 
             <!-- ========== 注册面板 ========== -->
             <div class="pane" id="pane-register">
-                <form id="cube-register" action="#" method="post" novalidate>
+                <!-- 注册方式子 Tab：用户名 / 手机验证码 / 邮箱验证码，
+                     对应后端 AuthCategory.Password / Mobile / Mail -->
+                <div class="reg-modes">
+                    <a class="active" data-reg-tab="reg-pwd">用户名注册</a>
+                    <a data-reg-tab="reg-mobile">手机注册</a>
+                    <a data-reg-tab="reg-mail">邮箱注册</a>
+                </div>
+
+                <!-- 用户名注册：用户名 + 密码 -->
+                <form id="reg-pwd" class="reg-form active" action="#" method="post" novalidate>
                     <div class="form-group">
                         <div class="input-icon">
                             <i class="fa fa-user-o"></i>
-                            <input type="text" id="reg_username" name="username" placeholder="用户名" required="required" autocomplete="username">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="input-icon">
-                            <i class="fa fa-envelope-o"></i>
-                            <input type="email" id="reg_email" name="email" placeholder="邮箱（选填）" autocomplete="email">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="input-icon">
-                            <i class="fa fa-mobile"></i>
-                            <input type="tel" id="reg_mobile" name="mobile" placeholder="手机号（选填）" maxlength="11" autocomplete="tel">
+                            <input type="text" id="reg_pwd_username" name="username" placeholder="用户名" required="required" autocomplete="username">
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="input-icon">
                             <i class="fa fa-lock"></i>
-                            <input type="password" id="reg_password" name="password" class="has-toggle" placeholder="密码" autocomplete="new-password">
-                            <span class="pwd-toggle" data-target="reg_password" title="显示/隐藏密码"><i class="fa fa-eye"></i></span>
+                            <input type="password" id="reg_pwd_password" name="password" class="has-toggle" data-pwd placeholder="密码" autocomplete="new-password">
+                            <span class="pwd-toggle" data-target="reg_pwd_password" title="显示/隐藏密码"><i class="fa fa-eye"></i></span>
+                        </div>
+                        <p class="field-tip" data-tip-for="reg_pwd_password"></p>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-icon">
+                            <i class="fa fa-lock"></i>
+                            <input type="password" id="reg_pwd_password2" name="password2" placeholder="重复密码" autocomplete="new-password">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-submit">注 册</button>
+                </form>
+
+                <!-- 手机验证码注册：手机号 + 验证码 + 密码 -->
+                <form id="reg-mobile" class="reg-form" action="#" method="post" novalidate>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-icon">
+                                <i class="fa fa-mobile"></i>
+                                <input type="tel" id="reg_mobile_mobile" name="mobile" placeholder="手机号" maxlength="11" autocomplete="tel">
+                            </div>
+                            <button type="button" class="btn-code" data-send="reg_mobile_mobile" data-channel="Sms" data-action="register">发送验证码</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-icon">
+                            <i class="fa fa-shield"></i>
+                            <input type="text" id="reg_mobile_code" name="code" placeholder="短信验证码" autocomplete="off">
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="input-icon">
                             <i class="fa fa-lock"></i>
-                            <input type="password" id="reg_password2" name="password2" placeholder="重复密码" autocomplete="new-password">
+                            <input type="password" id="reg_mobile_password" name="password" class="has-toggle" data-pwd placeholder="密码" autocomplete="new-password">
+                            <span class="pwd-toggle" data-target="reg_mobile_password" title="显示/隐藏密码"><i class="fa fa-eye"></i></span>
+                        </div>
+                        <p class="field-tip" data-tip-for="reg_mobile_password"></p>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-icon">
+                            <i class="fa fa-lock"></i>
+                            <input type="password" id="reg_mobile_password2" name="password2" placeholder="重复密码" autocomplete="new-password">
                         </div>
                     </div>
-                    <p class="form-tip">用户名必填，邮箱或手机至少填写一项</p>
+                    <button type="submit" class="btn-submit">注 册</button>
+                </form>
+
+                <!-- 邮箱验证码注册：邮箱 + 验证码 + 密码 -->
+                <form id="reg-mail" class="reg-form" action="#" method="post" novalidate>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-icon">
+                                <i class="fa fa-envelope-o"></i>
+                                <input type="email" id="reg_mail_email" name="email" placeholder="邮箱" autocomplete="email">
+                            </div>
+                            <button type="button" class="btn-code" data-send="reg_mail_email" data-channel="Mail" data-action="register">发送验证码</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-icon">
+                            <i class="fa fa-shield"></i>
+                            <input type="text" id="reg_mail_code" name="code" placeholder="邮箱验证码" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-icon">
+                            <i class="fa fa-lock"></i>
+                            <input type="password" id="reg_mail_password" name="password" class="has-toggle" data-pwd placeholder="密码" autocomplete="new-password">
+                            <span class="pwd-toggle" data-target="reg_mail_password" title="显示/隐藏密码"><i class="fa fa-eye"></i></span>
+                        </div>
+                        <p class="field-tip" data-tip-for="reg_mail_password"></p>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-icon">
+                            <i class="fa fa-lock"></i>
+                            <input type="password" id="reg_mail_password2" name="password2" placeholder="重复密码" autocomplete="new-password">
+                        </div>
+                    </div>
                     <button type="submit" class="btn-submit">注 册</button>
                 </form>
             </div>
 
             <!-- ========== 忘记密码面板 ========== -->
             <div class="pane" id="pane-forgot">
-                <form id="cube-forgot" action="#" method="post" novalidate>
+                <!-- 第 1 步：输入账号（手机号自动走短信，邮箱自动走邮件验证码） -->
+                <form id="cube-forgot-step1" action="#" method="post" novalidate>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-icon">
+                                <i class="fa fa-user-o"></i>
+                                <input type="text" id="forgot_account" name="account" placeholder="手机号或邮箱" autocomplete="username">
+                            </div>
+                            <button type="button" class="btn-code" id="forgot_send_btn">发送验证码</button>
+                        </div>
+                        <p class="field-tip" data-tip-for="forgot_account"></p>
+                    </div>
+                    <button type="submit" class="btn-submit">下一步</button>
+                </form>
+
+                <!-- 第 2 步：验证码 + 新密码 -->
+                <form id="cube-forgot-step2" action="#" method="post" novalidate style="display:none;">
                     <div class="form-group">
                         <div class="input-icon">
-                            <i class="fa fa-envelope-o"></i>
-                            <input type="email" id="email" name="email" placeholder="输入你的邮箱地址" autocomplete="email">
+                            <i class="fa fa-shield"></i>
+                            <input type="text" id="forgot_code" name="code" placeholder="验证码" autocomplete="off">
                         </div>
                     </div>
-                    <button type="submit" class="btn-submit">发送重置邮件</button>
+                    <div class="form-group">
+                        <div class="input-icon">
+                            <i class="fa fa-lock"></i>
+                            <input type="password" id="forgot_password" name="password" class="has-toggle" data-pwd placeholder="新密码" autocomplete="new-password">
+                            <span class="pwd-toggle" data-target="forgot_password" title="显示/隐藏密码"><i class="fa fa-eye"></i></span>
+                        </div>
+                        <p class="field-tip" data-tip-for="forgot_password"></p>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-icon">
+                            <i class="fa fa-lock"></i>
+                            <input type="password" id="forgot_password2" name="password2" placeholder="确认新密码" autocomplete="new-password">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-submit">确认重置</button>
+                    <p class="form-tip"><a href="#" class="forgot-link" id="forgot_back">上一步</a></p>
                 </form>
             </div>
 
@@ -448,13 +608,17 @@
             <div class="third-party" id="thirdParty">
                 <div class="divider"><span>第三方登录</span></div>
                 <div class="oauth-icons">
-                    <!-- 实际为 OAuthConfig 动态渲染，url = /Sso/Login?name=xxx -->
+                    <!-- 实际为 OAuthConfig 动态渲染，url = /Sso/Login?name=xxx；
+                         超过一行自动换行并居中（flex-wrap + justify-content:center），
+                         本页放 8 个示例演示换行效果 -->
                     <a class="oauth-icon oauth-weixin" href="#" title="微信"><i class="fa fa-weixin"></i></a>
                     <a class="oauth-icon oauth-qyweixin" href="#" title="企业微信"><i class="fa fa-weixin"></i></a>
                     <a class="oauth-icon oauth-qq" href="#" title="QQ"><i class="fa fa-qq"></i></a>
                     <a class="oauth-icon oauth-github" href="#" title="GitHub"><i class="fa fa-github"></i></a>
                     <a class="oauth-icon oauth-weibo" href="#" title="微博"><i class="fa fa-weibo"></i></a>
                     <a class="oauth-icon oauth-windows" href="#" title="微软"><i class="fa fa-windows"></i></a>
+                    <a class="oauth-icon oauth-dingtalk" href="#" title="钉钉"><i class="fa fa-commenting"></i></a>
+                    <a class="oauth-icon oauth-taobao" href="#" title="淘宝"><i class="fa fa-shopping-bag"></i></a>
                 </div>
             </div>
         </div>
@@ -485,6 +649,130 @@
             var isPwd = target.attr('type') === 'password';
             target.attr('type', isPwd ? 'text' : 'password');
             $(this).find('i').toggleClass('fa-eye fa-eye-slash');
+        });
+
+        // ========== 注册方式子 Tab 切换 ==========
+        $('.reg-modes a').on('click', function () {
+            var tab = $(this).data('reg-tab');
+            $('.reg-modes a').removeClass('active')
+                .filter('[data-reg-tab="' + tab + '"]').addClass('active');
+            $('.reg-form').removeClass('active')
+                .filter('#' + tab).addClass('active');
+        });
+
+        // ========== 密码强度动态校验（对齐 CubeSetting.PaswordStrength） ==========
+        // 默认正则与魔方配置一致：8-32 位，需包含大小写字母、数字和符号。
+        // 真实页面中：若 EnablePasswordComplexity 关闭或 PaswordStrength 为空/*，前端跳过校验
+        var PWD_REGEX = /^(?=.*\d.*)(?=.*[a-z].*)(?=.*[A-Z].*)(?=.*[^(0-9a-zA-Z)].*).{8,32}$/;
+        var PWD_HINT = '8-32位，需包含大小写字母、数字和符号';
+
+        function validatePwd(input) {
+            var val = input.val();
+            var tip = $('[data-tip-for="' + input.attr('id') + '"]');
+            if (!val) {
+                input.removeClass('ok error');
+                tip.removeClass('show');
+                return true;
+            }
+            if (PWD_REGEX.test(val)) {
+                input.removeClass('error').addClass('ok');
+                tip.removeClass('error').addClass('ok').text('密码强度符合要求').addClass('show');
+                return true;
+            }
+            input.removeClass('ok').addClass('error');
+            tip.removeClass('ok').addClass('error').text(PWD_HINT).addClass('show');
+            return false;
+        }
+        $('[data-pwd]').on('input blur', function () { validatePwd($(this)); });
+
+        // ========== 发送验证码（演示倒计时；真实页面调用 User/SendVerifyCode） ==========
+        function startCountdown(btn) {
+            var sec = 60;
+            btn.prop('disabled', true);
+            var timer = setInterval(function () {
+                sec--;
+                btn.text(sec + 's 后重发');
+                if (sec <= 0) {
+                    clearInterval(timer);
+                    btn.prop('disabled', false).text('发送验证码');
+                }
+            }, 1000);
+        }
+        $('[data-send]').on('click', function () {
+            var btn = $(this);
+            var account = $('#' + btn.data('send')).val();
+            var channel = btn.data('channel');
+            if (!account) {
+                alert('请先输入' + (channel === 'Sms' ? '手机号' : '邮箱'));
+                return;
+            }
+            // 设计稿演示：真实页面 POST User/SendVerifyCode { channel, username, action }
+            alert('已向 ' + account + ' 发送' + (channel === 'Sms' ? '短信' : '邮箱') + '验证码（演示）');
+            startCountdown(btn);
+        });
+
+        // ========== 注册提交（设计稿演示校验） ==========
+        function pwdMatchCheck(input1, input2) {
+            if (input1.val() !== input2.val()) {
+                alert('两次密码不一致');
+                return false;
+            }
+            return true;
+        }
+        $('#reg-pwd').on('submit', function () {
+            if (!$('#reg_pwd_username').val()) { alert('请输入用户名'); return false; }
+            if (!validatePwd($('#reg_pwd_password'))) return false;
+            if (!pwdMatchCheck($('#reg_pwd_password'), $('#reg_pwd_password2'))) return false;
+            alert('用户名注册成功（设计稿演示）');
+            return false;
+        });
+        $('#reg-mobile').on('submit', function () {
+            var m = $('#reg_mobile_mobile').val();
+            if (!m) { alert('请输入手机号'); return false; }
+            if (!/^1\d{10}$/.test(m)) { alert('手机号格式不正确'); return false; }
+            if (!$('#reg_mobile_code').val()) { alert('请输入短信验证码'); return false; }
+            if (!validatePwd($('#reg_mobile_password'))) return false;
+            if (!pwdMatchCheck($('#reg_mobile_password'), $('#reg_mobile_password2'))) return false;
+            alert('手机注册成功（设计稿演示）');
+            return false;
+        });
+        $('#reg-mail').on('submit', function () {
+            var e = $('#reg_mail_email').val();
+            if (!e) { alert('请输入邮箱'); return false; }
+            if (!/^[\w.+-]+@[\w-]+(\.[\w-]+)+$/.test(e)) { alert('邮箱格式不正确'); return false; }
+            if (!$('#reg_mail_code').val()) { alert('请输入邮箱验证码'); return false; }
+            if (!validatePwd($('#reg_mail_password'))) return false;
+            if (!pwdMatchCheck($('#reg_mail_password'), $('#reg_mail_password2'))) return false;
+            alert('邮箱注册成功（设计稿演示）');
+            return false;
+        });
+
+        // ========== 忘记密码两步流程（设计稿演示） ==========
+        $('#forgot_send_btn').on('click', function () {
+            var account = $('#forgot_account').val();
+            if (!account) { alert('请输入手机号或邮箱'); return; }
+            // 手机号走短信、邮箱走邮件；真实页面按格式自动识别通道后调用 SendVerifyCode
+            alert('已向 ' + account + ' 发送验证码（演示）');
+            startCountdown($(this));
+        });
+        $('#cube-forgot-step1').on('submit', function () {
+            var account = $('#forgot_account').val();
+            if (!account) { alert('请输入手机号或邮箱'); return false; }
+            $('#cube-forgot-step1').hide();
+            $('#cube-forgot-step2').show();
+            return false;
+        });
+        $('#forgot_back').on('click', function () {
+            $('#cube-forgot-step2').hide();
+            $('#cube-forgot-step1').show();
+            return false;
+        });
+        $('#cube-forgot-step2').on('submit', function () {
+            if (!$('#forgot_code').val()) { alert('请输入验证码'); return false; }
+            if (!validatePwd($('#forgot_password'))) return false;
+            if (!pwdMatchCheck($('#forgot_password'), $('#forgot_password2'))) return false;
+            alert('密码重置成功（设计稿演示）');
+            return false;
         });
 
         // ========== RSA 非对称加密（保留原逻辑） ==========

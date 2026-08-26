@@ -129,7 +129,8 @@
         }
 
         /* ========== 面板 ========== */
-        .tab-content .tab-pane { display: none; padding: 24px 40px 0; }
+        /* 底部保留内边距，避免注册/忘记密码提交按钮紧贴卡片下沿 */
+        .tab-content .tab-pane { display: none; padding: 24px 40px 28px; }
         .tab-content .tab-pane.active { display: block; }
 
         /* 输入框：左侧图标 + 圆角 */
@@ -261,6 +262,94 @@
             margin: -6px 0 14px;
         }
 
+        /* ========== 注册方式子 Tab（用户名/手机/邮箱） ========== */
+        .reg-modes {
+            display: flex;
+            margin: 0 -40px 18px;
+            padding: 0 40px;
+            border-bottom: 1px solid #eef1f4;
+        }
+        .reg-modes a {
+            flex: 1;
+            text-align: center;
+            padding: 8px 0 10px;
+            font-size: 13px;
+            color: #7a8087;
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: color .2s, border-color .2s;
+            cursor: pointer;
+        }
+        .reg-modes a:hover { color: #2b7dbc; }
+        .reg-modes a.active {
+            color: #2b7dbc;
+            font-weight: 700;
+            border-bottom-color: #2b7dbc;
+        }
+        .reg-form { display: none; }
+        .reg-form.active { display: block; }
+
+        /* ========== 登录方式子 Tab（密码/手机/邮箱） ========== */
+        .login-modes {
+            display: flex;
+            margin: 0 -40px 18px;
+            padding: 0 40px;
+            border-bottom: 1px solid #eef1f4;
+        }
+        .login-modes a {
+            flex: 1;
+            text-align: center;
+            padding: 8px 0 10px;
+            font-size: 13px;
+            color: #7a8087;
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: color .2s, border-color .2s;
+            cursor: pointer;
+        }
+        .login-modes a:hover { color: #2b7dbc; }
+        .login-modes a.active {
+            color: #2b7dbc;
+            font-weight: 700;
+            border-bottom-color: #2b7dbc;
+        }
+        .login-form { display: none; }
+        .login-form.active { display: block; }
+
+        /* 发送验证码按钮（手机/邮箱注册、忘记密码共用） */
+        .input-group { display: flex; gap: 8px; }
+        .input-group .input-icon { flex: 1; }
+        .btn-code {
+            width: 116px;
+            height: 44px;
+            flex: none;
+            border: 1px solid #2b7dbc;
+            border-radius: 8px;
+            background: #fff;
+            color: #2b7dbc;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all .2s;
+            white-space: nowrap;
+        }
+        .btn-code:hover { background: #eef4fb; }
+        .btn-code:disabled { opacity: .5; cursor: not-allowed; }
+
+        /* 密码强度 / 字段校验提示 */
+        .field-tip {
+            font-size: 12px;
+            line-height: 1.6;
+            margin: 6px 0 0;
+            display: none;
+        }
+        .field-tip.show { display: block; }
+        .field-tip.ok { color: #3aa76d; }
+        .field-tip.error { color: #e14b4b; }
+        .input-icon input.error { border-color: #e14b4b; }
+        .input-icon input.ok { border-color: #3aa76d; }
+
         /* ========== 第三方登录 ========== */
         .third-party { padding: 22px 40px 30px; }
         .divider {
@@ -313,10 +402,12 @@
 
         /* ========== 响应式 ========== */
         @@media (max-width: 480px) {
-            .tab-content .tab-pane { padding: 20px 24px 0; }
+            .tab-content .tab-pane { padding: 20px 24px 24px; }
             .third-party { padding: 18px 24px 24px; }
             .brand { padding: 28px 20px 6px; }
             .login-tabs { margin: 18px 24px 0; }
+            .reg-modes { margin: 0 -24px 16px; padding: 0 24px; }
+            .login-modes { margin: 0 -24px 16px; padding: 0 24px; }
             .oauth-icons { gap: 12px; }
             .login-tip { padding: 0 40px; line-height: 34px; font-size: 12px; }
         }
@@ -409,15 +500,50 @@
                 $(this).find('i').toggleClass('glyphicon-eye-open glyphicon-eye-close');
             });
 
-            // ========== 注册校验：邮箱或手机二选一 ==========
-            $('#cube-register').on('submit', function () {
-                var email = $('#reg_email').val();
-                var mobile = $('#reg_mobile').val();
-                if ((!email || email.trim() == '') && (!mobile || mobile.trim() == '')) {
-                    alert('邮箱或手机至少填写一项！');
-                    return false;
+            // ========== 登录方式子 Tab 切换（密码/手机/邮箱） ==========
+            $('.login-modes a').on('click', function () {
+                var tab = $(this).data('login-tab');
+                $('.login-modes a').removeClass('active')
+                    .filter('[data-login-tab="' + tab + '"]').addClass('active');
+                $('.login-form').removeClass('active')
+                    .filter('#' + tab).addClass('active');
+            });
+
+            // ========== 发送验证码（登录场景 action=Login，手机走短信、邮箱走邮件） ==========
+            function startLoginCountdown(btn) {
+                var sec = 60;
+                btn.prop('disabled', true);
+                var timer = setInterval(function () {
+                    sec--;
+                    btn.text(sec + 's 后重发');
+                    if (sec <= 0) {
+                        clearInterval(timer);
+                        btn.prop('disabled', false).text('发送验证码');
+                    }
+                }, 1000);
+            }
+            $('[data-login-send]').on('click', function () {
+                var btn = $(this);
+                var account = $('#' + btn.data('login-send')).val();
+                var channel = btn.data('channel');
+                if (!account) {
+                    alert('请先输入' + (channel === 'Sms' ? '手机号' : '邮箱'));
+                    return;
                 }
-                return true;
+                $.ajax({
+                    url: '@Url.Action("SendVerifyCode", "User", new { area = "Admin" })',
+                    type: 'POST',
+                    data: { channel: channel, username: account, action: 'Login' },
+                    dataType: 'json'
+                }).done(function (data) {
+                    if (data && data.code == 0) {
+                        startLoginCountdown(btn);
+                    } else {
+                        alert((data && data.message) || '验证码发送失败');
+                    }
+                }).fail(function () {
+                    alert('验证码发送失败，请稍后重试');
+                });
             });
 
             // ========== 登录：保留 RSA 非对称加密 ==========
@@ -476,7 +602,7 @@
                     $('#pwd').val(password);
                 }
 
-                $("#cube-login").submit();
+                $("#login-pwd").submit();
             }
 
             function encryptPwd(p) {

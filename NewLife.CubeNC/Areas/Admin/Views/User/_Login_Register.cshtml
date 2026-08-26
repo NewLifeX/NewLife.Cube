@@ -2,45 +2,263 @@
 @using NewLife.Common
 @{
     var set = Model;
-    //var returnUrl = (String)ViewBag.ReturnUrl;
-    //var url = Url.Action("Register", "User", new { r = returnUrl });
 }
 <div class="tab-pane fade" id="Register">
-    <!-- 登录-->
-    <form action="@Url.Action("Register", "User", new { r = set.ReturnUrl })" class="cube-login" method="post" id="cube-register">
+    <!-- 注册方式子 Tab：用户名 / 手机验证码 / 邮箱验证码，对应 AuthCategory.Password/Mobile/Mail -->
+    <div class="reg-modes">
+        <a class="active" data-reg-tab="reg-pwd">用户名注册</a>
+        <a data-reg-tab="reg-mobile">手机注册</a>
+        <a data-reg-tab="reg-mail">邮箱注册</a>
+    </div>
+
+    <!-- 用户名注册：用户名 + 密码 -->
+    <form action="@Url.Action("Register", "User", new { r = set.ReturnUrl })" class="cube-login reg-form active" method="post" id="reg-pwd" novalidate>
+        <input type="hidden" name="category" value="Password" />
         @Html.ValidationSummary()
         <div class="form-group">
             <div class="input-icon">
                 <i class="glyphicon glyphicon-user"></i>
-                <input type="text" class="form-control" id="reg_username" name="username" placeholder="用户名" required="required" autocomplete="username">
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="input-icon">
-                <i class="glyphicon glyphicon-envelope"></i>
-                <input type="email" class="form-control" id="reg_email" name="email" placeholder="邮箱（选填）" autocomplete="email">
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="input-icon">
-                <i class="glyphicon glyphicon-phone"></i>
-                <input type="tel" class="form-control" id="reg_mobile" name="mobile" placeholder="手机号（选填）" maxlength="11" autocomplete="tel">
+                <input type="text" class="form-control" id="reg_pwd_username" name="username" placeholder="用户名" required="required" autocomplete="username">
             </div>
         </div>
         <div class="form-group">
             <div class="input-icon">
                 <i class="glyphicon glyphicon-lock"></i>
-                <input type="password" class="form-control has-toggle" id="reg_password" name="password" placeholder="密码" autocomplete="off">
-                <span class="pwd-toggle" data-target="reg_password" title="显示/隐藏密码"><i class="glyphicon glyphicon-eye-open"></i></span>
+                <input type="password" class="form-control has-toggle" id="reg_pwd_password" name="password" data-pwd placeholder="密码" autocomplete="new-password">
+                <span class="pwd-toggle" data-target="reg_pwd_password" title="显示/隐藏密码"><i class="glyphicon glyphicon-eye-open"></i></span>
+            </div>
+            <p class="field-tip" data-tip-for="reg_pwd_password"></p>
+        </div>
+        <div class="form-group">
+            <div class="input-icon">
+                <i class="glyphicon glyphicon-lock"></i>
+                <input type="password" class="form-control" id="reg_pwd_password2" name="confirmPassword" placeholder="重复密码" autocomplete="new-password">
+            </div>
+        </div>
+        <p class="form-tip reg-agreement" style="text-align:left;">
+            <label class="checkbox-custom">
+                <input type="checkbox" name="agreement" value="true" />
+                <span class="box"></span>我已阅读并同意<a href="#" class="forgot-link" target="_blank">《用户协议》</a>和<a href="#" class="forgot-link" target="_blank">《隐私政策》</a>
+            </label>
+        </p>
+        <button type="submit" class="btn-login">注 册</button>
+    </form>
+
+    <!-- 手机验证码注册：手机号 + 验证码 + 密码（密码可选） -->
+    <form action="@Url.Action("Register", "User", new { r = set.ReturnUrl })" class="cube-login reg-form" method="post" id="reg-mobile" novalidate>
+        <input type="hidden" name="category" value="Mobile" />
+        @Html.ValidationSummary()
+        <div class="form-group">
+            <div class="input-group">
+                <div class="input-icon">
+                    <i class="glyphicon glyphicon-phone"></i>
+                    <input type="tel" class="form-control" id="reg_mobile_mobile" name="mobile" placeholder="手机号" maxlength="11" autocomplete="tel">
+                </div>
+                <button type="button" class="btn-code" data-send="reg_mobile_mobile" data-channel="Sms" data-action="register">发送验证码</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="input-icon">
+                <i class="glyphicon glyphicon-qrcode"></i>
+                <input type="text" class="form-control" id="reg_mobile_code" name="code" placeholder="短信验证码" autocomplete="off">
             </div>
         </div>
         <div class="form-group">
             <div class="input-icon">
                 <i class="glyphicon glyphicon-lock"></i>
-                <input type="password" class="form-control" id="reg_password2" name="password2" placeholder="重复密码" autocomplete="off">
+                <input type="password" class="form-control has-toggle" id="reg_mobile_password" name="password" data-pwd placeholder="密码（选填，留空仅验证码登录）" autocomplete="new-password">
+                <span class="pwd-toggle" data-target="reg_mobile_password" title="显示/隐藏密码"><i class="glyphicon glyphicon-eye-open"></i></span>
+            </div>
+            <p class="field-tip" data-tip-for="reg_mobile_password"></p>
+        </div>
+        <div class="form-group">
+            <div class="input-icon">
+                <i class="glyphicon glyphicon-lock"></i>
+                <input type="password" class="form-control" id="reg_mobile_password2" name="confirmPassword" placeholder="重复密码（选填）" autocomplete="new-password">
             </div>
         </div>
-        <p class="form-tip">用户名必填，邮箱或手机至少填写一项</p>
+        <p class="form-tip reg-agreement" style="text-align:left;">
+            <label class="checkbox-custom">
+                <input type="checkbox" name="agreement" value="true" />
+                <span class="box"></span>我已阅读并同意<a href="#" class="forgot-link" target="_blank">《用户协议》</a>和<a href="#" class="forgot-link" target="_blank">《隐私政策》</a>
+            </label>
+        </p>
+        <button type="submit" class="btn-login">注 册</button>
+    </form>
+
+    <!-- 邮箱验证码注册：邮箱 + 验证码 + 密码（密码可选） -->
+    <form action="@Url.Action("Register", "User", new { r = set.ReturnUrl })" class="cube-login reg-form" method="post" id="reg-mail" novalidate>
+        <input type="hidden" name="category" value="Mail" />
+        @Html.ValidationSummary()
+        <div class="form-group">
+            <div class="input-group">
+                <div class="input-icon">
+                    <i class="glyphicon glyphicon-envelope"></i>
+                    <input type="email" class="form-control" id="reg_mail_email" name="email" placeholder="邮箱" autocomplete="email">
+                </div>
+                <button type="button" class="btn-code" data-send="reg_mail_email" data-channel="Mail" data-action="register">发送验证码</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="input-icon">
+                <i class="glyphicon glyphicon-qrcode"></i>
+                <input type="text" class="form-control" id="reg_mail_code" name="code" placeholder="邮箱验证码" autocomplete="off">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="input-icon">
+                <i class="glyphicon glyphicon-lock"></i>
+                <input type="password" class="form-control has-toggle" id="reg_mail_password" name="password" data-pwd placeholder="密码（选填，留空仅验证码登录）" autocomplete="new-password">
+                <span class="pwd-toggle" data-target="reg_mail_password" title="显示/隐藏密码"><i class="glyphicon glyphicon-eye-open"></i></span>
+            </div>
+            <p class="field-tip" data-tip-for="reg_mail_password"></p>
+        </div>
+        <div class="form-group">
+            <div class="input-icon">
+                <i class="glyphicon glyphicon-lock"></i>
+                <input type="password" class="form-control" id="reg_mail_password2" name="confirmPassword" placeholder="重复密码（选填）" autocomplete="new-password">
+            </div>
+        </div>
+        <p class="form-tip reg-agreement" style="text-align:left;">
+            <label class="checkbox-custom">
+                <input type="checkbox" name="agreement" value="true" />
+                <span class="box"></span>我已阅读并同意<a href="#" class="forgot-link" target="_blank">《用户协议》</a>和<a href="#" class="forgot-link" target="_blank">《隐私政策》</a>
+            </label>
+        </p>
         <button type="submit" class="btn-login">注 册</button>
     </form>
 </div>
+
+<script>
+    // jQuery 在页面底部加载，这里需等待其就绪后再绑定事件
+    (function () {
+        function init() {
+            if (typeof jQuery === 'undefined') { setTimeout(init, 100); return; }
+            jQuery(function () {
+        // ========== 注册方式子 Tab 切换 ==========
+        $('.reg-modes a').on('click', function () {
+            var tab = $(this).data('reg-tab');
+            $('.reg-modes a').removeClass('active')
+                .filter('[data-reg-tab="' + tab + '"]').addClass('active');
+            $('.reg-form').removeClass('active')
+                .filter('#' + tab).addClass('active');
+        });
+
+        // ========== 密码强度动态校验（对齐 CubeSetting.PaswordStrength） ==========
+        // EnablePasswordComplexity 关闭或 PaswordStrength 为空/* 时，前端跳过复杂度校验
+        var pwdRegex = @Html.Raw(Json.Serialize(set.PasswordStrength));
+        var pwdComplexity = @Html.Raw(Json.Serialize(set.EnablePasswordComplexity));
+        var PWD_HINT = '8-32位，需包含大小写字母、数字和符号';
+        var PWD_REGEX = null;
+        if (pwdComplexity && pwdRegex && pwdRegex != '' && pwdRegex != '*') {
+            try { PWD_REGEX = new RegExp(pwdRegex); } catch (e) { PWD_REGEX = null; }
+        }
+
+        function validatePwd(input) {
+            var val = input.val();
+            var tip = $('[data-tip-for="' + input.attr('id') + '"]');
+            if (!PWD_REGEX) {
+                input.removeClass('ok error');
+                tip.removeClass('show');
+                return true;
+            }
+            if (!val) {
+                input.removeClass('ok error');
+                tip.removeClass('show');
+                return true;
+            }
+            if (PWD_REGEX.test(val)) {
+                input.removeClass('error').addClass('ok');
+                tip.removeClass('error').addClass('ok').text('密码强度符合要求').addClass('show');
+                return true;
+            }
+            input.removeClass('ok').addClass('error');
+            tip.removeClass('ok').addClass('error').text(PWD_HINT).addClass('show');
+            return false;
+        }
+        $('[data-pwd]').on('input blur', function () { validatePwd($(this)); });
+
+        // ========== 发送验证码（倒计时） ==========
+        function startCountdown(btn) {
+            var sec = 60;
+            btn.prop('disabled', true);
+            var timer = setInterval(function () {
+                sec--;
+                btn.text(sec + 's 后重发');
+                if (sec <= 0) {
+                    clearInterval(timer);
+                    btn.prop('disabled', false).text('发送验证码');
+                }
+            }, 1000);
+        }
+        $('[data-send]').on('click', function () {
+            var btn = $(this);
+            var account = $('#' + btn.data('send')).val();
+            var channel = btn.data('channel');
+            var action = btn.data('action');
+            if (!account) {
+                alert('请先输入' + (channel === 'Sms' ? '手机号' : '邮箱'));
+                return;
+            }
+            $.ajax({
+                url: '@Url.Action("SendVerifyCode", "User", new { area = "Admin" })',
+                type: 'POST',
+                data: { channel: channel, username: account, action: action },
+                dataType: 'json'
+            }).done(function (data) {
+                if (data && data.code == 0) {
+                    startCountdown(btn);
+                } else {
+                    alert((data && data.message) || '验证码发送失败');
+                }
+            }).fail(function () {
+                alert('验证码发送失败，请稍后重试');
+            });
+        });
+
+        // ========== 注册提交前端前置校验（最终以后端为准） ==========
+        function pwdMatchCheck(input1, input2) {
+            if (input1.val() !== input2.val()) {
+                alert('两次密码不一致');
+                return false;
+            }
+            return true;
+        }
+        $('#reg-pwd').on('submit', function () {
+            if (!$('#reg_pwd_username').val()) { alert('请输入用户名'); return false; }
+            if (!validatePwd($('#reg_pwd_password'))) return false;
+            if (!pwdMatchCheck($('#reg_pwd_password'), $('#reg_pwd_password2'))) return false;
+            if (!$('#reg-pwd input[name="agreement"]').is(':checked')) { alert('请先阅读并同意《用户协议》和《隐私政策》'); return false; }
+            return true;
+        });
+        $('#reg-mobile').on('submit', function () {
+            var m = $('#reg_mobile_mobile').val();
+            if (!m) { alert('请输入手机号'); return false; }
+            if (!/^1\d{10}$/.test(m)) { alert('手机号格式不正确'); return false; }
+            if (!$('#reg_mobile_code').val()) { alert('请输入短信验证码'); return false; }
+            // 密码可选：留空则不校验（仅验证码登录，登录后可再设置密码）
+            if ($('#reg_mobile_password').val()) {
+                if (!validatePwd($('#reg_mobile_password'))) return false;
+                if (!pwdMatchCheck($('#reg_mobile_password'), $('#reg_mobile_password2'))) return false;
+            }
+            if (!$('#reg-mobile input[name="agreement"]').is(':checked')) { alert('请先阅读并同意《用户协议》和《隐私政策》'); return false; }
+            return true;
+        });
+        $('#reg-mail').on('submit', function () {
+            var e = $('#reg_mail_email').val();
+            if (!e) { alert('请输入邮箱'); return false; }
+            if (!/^[\w.+-]+@@[\w-]+(\.[\w-]+)+$/.test(e)) { alert('邮箱格式不正确'); return false; }
+            if (!$('#reg_mail_code').val()) { alert('请输入邮箱验证码'); return false; }
+            // 密码可选：留空则不校验（仅验证码登录，登录后可再设置密码）
+            if ($('#reg_mail_password').val()) {
+                if (!validatePwd($('#reg_mail_password'))) return false;
+                if (!pwdMatchCheck($('#reg_mail_password'), $('#reg_mail_password2'))) return false;
+            }
+            if (!$('#reg-mail input[name="agreement"]').is(':checked')) { alert('请先阅读并同意《用户协议》和《隐私政策》'); return false; }
+            return true;
+        });
+            });
+        }
+        init();
+    })();
+</script>

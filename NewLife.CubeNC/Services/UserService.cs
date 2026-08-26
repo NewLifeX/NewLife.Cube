@@ -222,7 +222,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
                 var rsaKey = pdic?.Item2;
                 if (rsaKey.IsNullOrEmpty())
                     throw new InvalidOperationException("登录挑战已过期或无效，请重新获取公钥后重试");
-                password = DecryptPkcs1v15(rsaKey, password);
+                password = DecryptByPrivateKey(rsaKey, password);
             }
 
             var provider = ManageProvider.Provider;
@@ -639,6 +639,20 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         return Encoding.UTF8.GetString(decrypted);
     }
 
+    /// <summary>按私钥格式自动分派解密。PEM 私钥用 PKCS1v15（对应前端 JSEncrypt），XML 私钥用 OAEP/SHA-256（对应前端 Web Crypto RSA-OAEP）</summary>
+    /// <remarks>
+    /// MVC 版登录页（GetLoginKey）缓存 PEM 密钥对，前端 JSEncrypt 以 PKCS1v15 加密；
+    /// WebAPI 版（GetPublicKey）缓存 XML 密钥对，前端 @cube/api-core 以 RSA-OAEP/SHA-256 加密。
+    /// 两者共用本方法按私钥前缀分派，避免 ImportFromPem 解析 XML 私钥报错。
+    /// </remarks>
+    /// <param name="privateKey">PEM 或 XML 格式 RSA 私钥</param>
+    /// <param name="base64Encrypted">前端用公钥加密后的 Base64 密文</param>
+    /// <returns>解密后的原始密码</returns>
+    private static String DecryptByPrivateKey(String privateKey, String base64Encrypted)
+        => privateKey.StartsWith("-----BEGIN")
+            ? DecryptPkcs1v15(privateKey, base64Encrypted)
+            : DecryptOAEP(privateKey, base64Encrypted);
+
     /// <summary>生成RSA密钥对并缓存，返回挑战标识和PEM格式公钥。客户端用公钥加密密码后携带 challengeId 提交登录</summary>
     /// <param name="ttl">密钥有效期（秒），默认300秒</param>
     /// <returns>挑战标识和PEM格式RSA公钥</returns>
@@ -873,6 +887,10 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         var set = CubeSetting.Current;
         if (!set.AllowRegister) return new ServiceResult<IToken> { IsSuccess = false, Message = "禁止注册" };
 
+        // 合规要求：注册须同意《用户协议》和《隐私政策》（CubeSetting.RequireAgreement 可关闭）
+        if (set.RequireAgreement && (model == null || !model.Agreement))
+            return new ServiceResult<IToken> { IsSuccess = false, Message = "请先阅读并同意《用户协议》和《隐私政策》" };
+
         // 租户识别：优先X-App-Id（参考SSO登录按AppId查找OAuth配置取租户），其次X-Tenant租户编码；均未传时不强制，沿用原逻辑
         var tenantError = httpContext.ResolveRegisterTenant();
         if (tenantError != null) return new ServiceResult<IToken> { IsSuccess = false, Message = tenantError };
@@ -932,8 +950,9 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         if (!ValidFormatHelper.IsMobile(mobile)) return new ServiceResult<IToken> { IsSuccess = false, Message = "手机号格式不正确" };
         if (model.Code.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码不能为空" };
 
-        var check = ValidatePasswordAndConfirm(model.Password, model.ConfirmPassword);
-        if (!check.IsSuccess) return new ServiceResult<IToken> { IsSuccess = false, Message = check.Message };
+        // 密码可选：留空则生成随机密码（无法密码登录，仅验证码登录，登录后可再设置密码）
+        var pwd = ResolveRegisterPassword(model);
+        if (!pwd.IsSuccess) return new ServiceResult<IToken> { IsSuccess = false, Message = pwd.Message };
 
         var set = CubeSetting.Current;
         if (!set.EnableSms) return new ServiceResult<IToken> { IsSuccess = false, Message = "短信验证码功能未启用" };
@@ -949,7 +968,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         var duplicate = CheckDuplicate(username, model.Email?.Trim(), mobile);
         if (!duplicate.IsSuccess) return new ServiceResult<IToken> { IsSuccess = false, Message = duplicate.Message };
 
-        var user = CreateUserAndBindContact(username, model.Password, model.Email?.Trim(), mobile, ip);
+        var user = CreateUserAndBindContact(username, pwd.Data, model.Email?.Trim(), mobile, ip, false, true);
 
         _cache.Remove(codeKey);
         LogProvider.Provider.WriteLog(typeof(User), "手机注册", true, $"手机号：{mobile}", user.ID, user + "", ip);
@@ -964,8 +983,9 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         if (!ValidFormatHelper.IsEmail(mail)) return new ServiceResult<IToken> { IsSuccess = false, Message = "邮箱格式不正确" };
         if (model.Code.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码不能为空" };
 
-        var check = ValidatePasswordAndConfirm(model.Password, model.ConfirmPassword);
-        if (!check.IsSuccess) return new ServiceResult<IToken> { IsSuccess = false, Message = check.Message };
+        // 密码可选：留空则生成随机密码（无法密码登录，仅验证码登录，登录后可再设置密码）
+        var pwd = ResolveRegisterPassword(model);
+        if (!pwd.IsSuccess) return new ServiceResult<IToken> { IsSuccess = false, Message = pwd.Message };
 
         var set = CubeSetting.Current;
         if (!set.EnableMail) return new ServiceResult<IToken> { IsSuccess = false, Message = "邮件验证码功能未启用" };
@@ -981,7 +1001,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         var duplicate = CheckDuplicate(username, mail, model.Mobile?.Trim());
         if (!duplicate.IsSuccess) return new ServiceResult<IToken> { IsSuccess = false, Message = duplicate.Message };
 
-        var user = CreateUserAndBindContact(username, model.Password, mail, model.Mobile?.Trim(), ip);
+        var user = CreateUserAndBindContact(username, pwd.Data, mail, model.Mobile?.Trim(), ip, true, false);
 
         _cache.Remove(codeKey);
         LogProvider.Provider.WriteLog(typeof(User), "邮箱注册", true, $"邮箱：{mail}", user.ID, user + "", ip);
@@ -999,8 +1019,9 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         if (pending == null)
             return new ServiceResult<IToken> { IsSuccess = false, Message = "OAuth回跳信息已过期，请重新发起第三方登录" };
 
-        var check = ValidatePasswordAndConfirm(model.Password, model.ConfirmPassword);
-        if (!check.IsSuccess) return new ServiceResult<IToken> { IsSuccess = false, Message = check.Message };
+        // 密码可选：留空则生成随机密码（三方登录用户无需密码，登录后可再设置）
+        var pwd = ResolveRegisterPassword(model);
+        if (!pwd.IsSuccess) return new ServiceResult<IToken> { IsSuccess = false, Message = pwd.Message };
 
         var username = model.Username?.Trim();
         if (username.IsNullOrEmpty()) username = pending.Username?.Trim();
@@ -1024,7 +1045,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         var duplicate = CheckDuplicate(username, email, mobile);
         if (!duplicate.IsSuccess) return new ServiceResult<IToken> { IsSuccess = false, Message = duplicate.Message };
 
-        var user = CreateUserAndBindContact(username, model.Password, email, mobile, ip);
+        var user = CreateUserAndBindContact(username, pwd.Data, email, mobile, ip);
         var result = CompleteLogin(user, httpContext, false, "OAuth回跳注册", username, ip);
 
         var oauthId = httpContext.Session?.GetString("Cube_OAuthId").ToLong() ?? 0;
@@ -1053,6 +1074,24 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         return new ServiceResult { IsSuccess = true };
     }
 
+    /// <summary>注册密码解析：留空生成随机密码（验证码/OAuth 注册无需密码，仅验证码/三方登录，登录后可再设置），非空则校验强度与一致性</summary>
+    /// <param name="model">注册模型</param>
+    /// <returns>解析后的密码；失败时 Message 为错误信息</returns>
+    private ServiceResult<String> ResolveRegisterPassword(AuthRegisterModel model)
+    {
+        var password = model.Password?.Trim();
+        if (password.IsNullOrEmpty())
+        {
+            // 未设置密码：生成随机密码，该账号无法使用密码登录，仅支持验证码/三方登录，后续可主动设置密码
+            return new ServiceResult<String> { IsSuccess = true, Data = Rand.NextString(16) };
+        }
+
+        var check = ValidatePasswordAndConfirm(model.Password, model.ConfirmPassword);
+        if (!check.IsSuccess) return new ServiceResult<String> { IsSuccess = false, Message = check.Message };
+
+        return new ServiceResult<String> { IsSuccess = true, Data = password };
+    }
+
     private ServiceResult CheckDuplicate(String username, String email, String mobile)
     {
         if (!username.IsNullOrEmpty() && User.FindByName(username) != null)
@@ -1067,7 +1106,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         return new ServiceResult { IsSuccess = true };
     }
 
-    private IManageUser CreateUserAndBindContact(String username, String password, String email, String mobile, String ip)
+    private IManageUser CreateUserAndBindContact(String username, String password, String email, String mobile, String ip, Boolean mailVerified = false, Boolean mobileVerified = false)
     {
         var set = CubeSetting.Current;
 
@@ -1085,16 +1124,18 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         if (user == null) throw new InvalidOperationException("注册失败，请稍后重试");
 
         var changed = false;
+        // 只有经过验证码校验的联系方式才标记为已验证（mailVerified/mobileVerified 由各注册路径传入），
+        // 用户名密码注册携带的联系方式未经校验，保持未验证状态，防止"未验证却标已验证"
         if (!email.IsNullOrEmpty() && !email.EqualIgnoreCase(user.Mail))
         {
             user.Mail = email;
-            user.MailVerified = true;
+            if (mailVerified) user.MailVerified = true;
             changed = true;
         }
         if (!mobile.IsNullOrEmpty() && !mobile.EqualIgnoreCase(user.Mobile))
         {
             user.Mobile = mobile;
-            user.MobileVerified = true;
+            if (mobileVerified) user.MobileVerified = true;
             changed = true;
         }
         if (user.RegisterIP.IsNullOrEmpty())
@@ -1111,6 +1152,58 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         if (changed) user.Update();
 
         return user;
+    }
+    #endregion
+
+    #region 账号管理（注销 / 导出）
+    /// <summary>注销账号：禁用账号并清空个性化数据（依据《个人信息保护法》提供账号注销功能）</summary>
+    /// <remarks>
+    /// 软删除：保留 ID/Name（防重名、可审计），Enable=false 禁用；
+    /// 清空 Mail/Mobile/DisplayName/Avatar/Password 等敏感字段；
+    /// 吊销全部令牌、解绑第三方、清理在线记录。
+    /// </remarks>
+    /// <param name="user">当前用户</param>
+    /// <param name="ip">客户端IP</param>
+    /// <returns>注销结果</returns>
+    public ServiceResult CloseAccount(IUser user, String ip)
+    {
+        using var span = tracer?.NewSpan(nameof(CloseAccount), new { user?.ID, ip });
+
+        if (user == null || user.ID <= 0) return new ServiceResult { IsSuccess = false, Message = "用户未登录" };
+
+        // 吊销全部令牌，使其立即失效
+        UserToken.RevokeByUser(user.ID);
+
+        // 解绑第三方
+        var ucs = UserConnect.FindAllByUserID(user.ID);
+        if (ucs.Count > 0) ucs.Delete();
+
+        // 清理在线记录
+        var onlines = UserOnline.FindAllByUserID(user.ID);
+        if (onlines.Count > 0) onlines.Delete();
+
+        // 禁用账号并清空个性化数据（保留 ID/Name 防重名与审计）
+        var entity = User.FindByID(user.ID);
+        if (entity != null)
+        {
+            entity.Enable = false;
+            entity.Password = null;
+            entity.Mail = null;
+            entity.MailVerified = false;
+            entity.Mobile = null;
+            entity.MobileVerified = false;
+            entity.DisplayName = null;
+            entity.Avatar = null;
+            entity.Code = null;
+            entity.Age = 0;
+            entity.Birthday = DateTime.MinValue;
+            entity.LastLoginIP = null;
+            entity.Update();
+        }
+
+        LogProvider.Provider.WriteLog(typeof(User), "注销账号", true, $"用户：{user}", user.ID, user + "", ip);
+
+        return new ServiceResult { IsSuccess = true, Message = "账号已注销" };
     }
     #endregion
 
@@ -1556,9 +1649,9 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
             if (rsaKey.IsNullOrEmpty())
                 return new ServiceResult { IsSuccess = false, Message = "登录挑战已过期或无效，请重新获取公钥后重试" };
 
-            newPassword = DecryptPkcs1v15(rsaKey, newPassword);
+            newPassword = DecryptByPrivateKey(rsaKey, newPassword);
             if (!confirmPassword.IsNullOrEmpty())
-                confirmPassword = DecryptPkcs1v15(rsaKey, confirmPassword);
+                confirmPassword = DecryptByPrivateKey(rsaKey, confirmPassword);
 
             // 移除挑战私钥信息，避免重放
             _cache.Remove(challengeId);
