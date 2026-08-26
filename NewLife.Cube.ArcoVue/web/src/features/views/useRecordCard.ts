@@ -6,6 +6,7 @@ import type {
 } from '@/core/utils/viewMapping';
 import type { OpsCustomLink } from '@/core/utils/opsAction';
 import type { CardBodyField } from './cardHelpers';
+import { ROW_SIDE_WIDTH_PX } from '@/core/utils/viewFormat';
 
 /** RecordCard 组件 props 类型（与 RecordCard.vue defineProps 泛型逐字一致） */
 interface RecordCardProps {
@@ -22,6 +23,9 @@ interface RecordCardProps {
   fieldOrientation?: CardFieldOrientation;
   /** 等高：所有卡片统一最小高度（由 CardList 取最高卡片下发） */
   minHeight?: number;
+  titleFormatColor?: string;
+  titleFormatBold?: boolean;
+  sideFormatColor?: string;
 }
 
 const OPS_GAP = 6;
@@ -94,6 +98,13 @@ export function useRecordCard(props: RecordCardProps) {
       : {}),
   }));
 
+  const cardShellStyle = computed(() => ({
+    ...cardCssVars.value,
+    ...(props.sideFormatColor
+      ? { borderLeft: `${ROW_SIDE_WIDTH_PX}px solid ${props.sideFormatColor}` }
+      : {}),
+  }));
+
   const opsRef = ref<HTMLElement | null>(null);
   const inlineLinkCount = ref(0);
   let ro: ResizeObserver | null = null;
@@ -107,6 +118,14 @@ export function useRecordCard(props: RecordCardProps) {
   });
 
   const allOpsLinks = computed(() => props.opsCustomLinks ?? []);
+
+  const hasActions = computed(
+    () =>
+      props.canViewDetail ||
+      props.canEdit ||
+      props.canDelete ||
+      allOpsLinks.value.length > 0,
+  );
 
   function recomputeInline() {
     const el = opsRef.value;
@@ -153,11 +172,23 @@ export function useRecordCard(props: RecordCardProps) {
     { deep: true },
   );
 
+  watch(hasActions, (visible) => {
+    nextTick(() => {
+      recomputeInline();
+      if (visible && !ro && opsRef.value && typeof ResizeObserver !== 'undefined') {
+        ro = new ResizeObserver(() => recomputeInline());
+        ro.observe(opsRef.value);
+      }
+    });
+  });
+
   return {
     badgeStyle,
     layoutClass,
     orientationClass,
     cardCssVars,
+    cardShellStyle,
+    hasActions,
     opsRef,
     inlineOpsLinks,
     overflowOpsLinks,

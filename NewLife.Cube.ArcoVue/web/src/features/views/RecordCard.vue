@@ -4,37 +4,44 @@
     :class="[
       layoutClass,
       orientationClass,
-      { 'record-card--no-image': !imageUrl },
+      { 'record-card--no-image': !imageUrl, 'record-card--side': !!sideFormatColor },
     ]"
-    :style="cardCssVars"
+    :style="cardShellStyle"
     @dblclick="onDblClick"
   >
-    <div class="record-card-title">{{ title }}</div>
-    <div v-if="imageUrl" class="record-card-image">
-      <!-- 懒加载 + 异步解码：千条卡片时避免图片并发加载/解码阻塞首屏渲染 -->
-      <img :src="imageUrl" alt="" loading="lazy" decoding="async" />
+    <div class="record-card-header" :style="headerFormatStyle">
+      <div class="record-card-title" :style="titleTextStyle" :title="title">{{ title }}</div>
     </div>
-    <div class="record-card-fields">
-      <div
-        v-for="item in bodyFields"
-        :key="item.key"
-        class="record-card-field"
-        :class="{ 'record-card-field--full': item.fullRow }"
-      >
-        <span class="label">{{ item.label }}</span>
-        <span
-          v-if="item.badge"
-          class="record-card-badge"
-          :class="{ 'record-card-badge--toggle': item.enableToggle }"
-          :style="badgeStyle(item)"
-          @click.stop="item.enableToggle && $emit('toggleEnable', record, item.key)"
+    <div class="record-card-body">
+      <div v-if="imageUrl" class="record-card-image">
+        <!-- 懒加载 + 异步解码：千条卡片时避免图片并发加载/解码阻塞首屏渲染 -->
+        <img :src="imageUrl" alt="" loading="lazy" decoding="async" />
+      </div>
+      <div class="record-card-fields">
+        <div
+          v-for="item in bodyFields"
+          :key="item.key"
+          class="record-card-field"
+          :class="{
+            'record-card-field--full': item.fullRow,
+            'record-card-field--badge': !!item.badge,
+          }"
         >
-          {{ item.badge.label }}
-        </span>
-        <span v-else class="value">{{ item.value }}</span>
+          <span class="label">{{ item.label }}</span>
+          <span
+            v-if="item.badge"
+            class="record-card-badge"
+            :class="{ 'record-card-badge--toggle': item.enableToggle }"
+            :style="badgeStyle(item)"
+            @click.stop="item.enableToggle && $emit('toggleEnable', record, item.key)"
+          >
+            {{ item.badge.label }}
+          </span>
+          <span v-else class="value">{{ item.value }}</span>
+        </div>
       </div>
     </div>
-    <div ref="opsRef" class="record-card-ops">
+    <div v-if="hasActions" ref="opsRef" class="record-card-actions record-card-ops">
       <button
         v-if="canViewDetail"
         type="button"
@@ -82,6 +89,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import type {
   CardBodyColumns,
   CardFieldOrientation,
@@ -108,6 +116,9 @@ const props = withDefaults(
     fieldOrientation?: CardFieldOrientation;
     /** 等高：所有卡片统一最小高度（由 CardList 取最高卡片下发） */
     minHeight?: number;
+    titleFormatColor?: string;
+    titleFormatBold?: boolean;
+    sideFormatColor?: string;
   }>(),
   {
     layout: 'standard',
@@ -133,11 +144,22 @@ function onDblClick() {
   }
 }
 
+const headerFormatStyle = computed(() => {
+  if (!props.titleFormatColor) return undefined;
+  return { backgroundColor: props.titleFormatColor };
+});
+
+const titleTextStyle = computed(() => {
+  if (!props.titleFormatBold) return undefined;
+  return { fontWeight: '700' };
+});
+
 const {
   badgeStyle,
   layoutClass,
   orientationClass,
-  cardCssVars,
+  cardShellStyle,
+  hasActions,
   opsRef,
   inlineOpsLinks,
   overflowOpsLinks,
@@ -145,21 +167,23 @@ const {
 </script>
 
 <style scoped>
+/* 结构对齐 Arco Card：标题栏 / 内容区 / 脚注栏，栏与内容用分隔线切开。
+   不用 <a-card>：千条卡片实例化成本过高，视觉与 Admin/Db hoverable 同源。 */
 .record-card {
+  position: relative;
   border: 1px solid var(--color-border-2);
-  border-radius: 8px;
-  padding: 12px;
+  border-radius: var(--border-radius-medium, 8px);
+  padding: 0;
+  overflow: hidden;
   background: var(--color-bg-2);
   display: grid;
-  /* 紧凑排版：收紧标题/图片/字段/操作区之间的间隙 */
-  gap: 4px;
+  gap: 0;
   min-width: 0;
   grid-template-areas:
-    'title'
-    'image'
-    'fields'
-    'ops';
-  /* 与 Admin/Db a-card hoverable 同源：悬停抬升阴影 */
+    'header'
+    'body'
+    'actions';
+  grid-template-rows: auto 1fr auto;
   transition: box-shadow 0.2s cubic-bezier(0, 0, 1, 1);
 }
 .record-card:hover {
@@ -169,15 +193,35 @@ const {
 :global(body[arco-theme='dark']) .record-card:hover {
   box-shadow: 0 4px 10px rgba(var(--gray-1), 40%);
 }
+.record-card-header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-border-2);
+  box-sizing: border-box;
+}
 .record-card-title {
-  grid-area: title;
+  flex: 1;
+  min-width: 0;
   font-size: var(--cube-font-size-body);
   font-weight: var(--cube-font-weight-medium);
   color: var(--color-text-1);
-  word-break: break-all;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.record-card-body {
+  grid-area: body;
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  padding: 12px 16px;
+  box-sizing: border-box;
 }
 .record-card-image {
-  grid-area: image;
   width: 100%;
   overflow: hidden;
   border-radius: 6px;
@@ -193,7 +237,6 @@ const {
   height: 180px;
 }
 .record-card-fields {
-  grid-area: fields;
   display: grid;
   grid-template-columns: repeat(var(--record-card-cols, 2), minmax(0, 1fr));
   gap: 6px 12px;
@@ -217,9 +260,18 @@ const {
   align-items: baseline;
   gap: 8px;
 }
+.record-card--orient-horizontal .record-card-field--badge {
+  /* 标签与状态徽标同一水平中线，避免徽标 padding 相对基线下沉/上浮 */
+  align-items: center;
+}
 .record-card--orient-horizontal .record-card-field .label {
   flex-shrink: 0;
   min-width: 3em;
+}
+.record-card--orient-horizontal .record-card-field--badge .label {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.6;
 }
 .record-card--orient-horizontal .record-card-field .label::after {
   content: '：';
@@ -228,9 +280,10 @@ const {
   flex: 1;
   min-width: 0;
 }
-.record-card--orient-horizontal .record-card-field .record-card-badge {
-  /* 横向排版：徽标与前方标签垂直居中对齐，不随文本基线下沉 */
+.record-card--orient-horizontal .record-card-field--badge .record-card-badge {
   align-self: center;
+  display: inline-flex;
+  align-items: center;
 }
 .record-card-field .label {
   color: var(--color-text-3);
@@ -258,17 +311,18 @@ const {
 .record-card-badge--toggle {
   cursor: pointer;
 }
-.record-card-ops {
-  grid-area: ops;
+.record-card-actions {
+  grid-area: actions;
   display: flex;
   flex-wrap: nowrap;
   justify-content: flex-start;
   align-items: center;
   gap: 6px;
-  margin-top: auto;
-  padding-top: 2px;
   min-width: 0;
   overflow: hidden;
+  padding: 8px 16px;
+  border-top: 1px solid var(--color-border-2);
+  box-sizing: border-box;
 }
 
 /* 操作按钮：原生 button 替代 Arco a-button——组件实例化/卸载成本高，千条卡片翻页/懒加载重建时显著拖慢性能；
@@ -308,13 +362,10 @@ const {
   background: rgba(var(--link-6), 0.08);
 }
 
-.record-card--row:not(.record-card--no-image) {
+.record-card--row:not(.record-card--no-image) .record-card-body {
   grid-template-columns: 180px 1fr;
-  grid-template-areas:
-    'image title'
-    'image fields'
-    'image ops';
   align-items: start;
+  gap: 12px;
 }
 .record-card--row .record-card-image img {
   width: 180px;
@@ -322,13 +373,8 @@ const {
 }
 
 @media (max-width: 639px) {
-  .record-card--row:not(.record-card--no-image) {
+  .record-card--row:not(.record-card--no-image) .record-card-body {
     grid-template-columns: 1fr;
-    grid-template-areas:
-      'title'
-      'image'
-      'fields'
-      'ops';
   }
   .record-card--row .record-card-image img {
     width: 100%;
