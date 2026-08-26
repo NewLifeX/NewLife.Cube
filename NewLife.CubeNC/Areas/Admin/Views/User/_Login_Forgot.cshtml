@@ -60,10 +60,17 @@
             var account = $('#forgot_account').val();
             if (!account) { alert('请输入手机号或邮箱'); return; }
             var channel = /^1\d{10}$/.test(account) ? 'Sms' : 'Mail';
+            var form = btn.closest('form');
+            // 验证码行可见时须先填写图形验证码（发码场景防短信轰炸）
+            if (typeof CubeCaptcha !== 'undefined' && !CubeCaptcha.fill(form)) return;
             $.ajax({
                 url: '@Url.Action("SendVerifyCode", "User", new { area = "Admin" })',
                 type: 'POST',
-                data: { channel: channel, username: account, action: 'reset' },
+                data: {
+                    channel: channel, username: account, action: 'reset',
+                    captchaId: form.find('[data-captcha-id]').val(),
+                    captchaCode: form.find('[data-captcha-code]').val()
+                },
                 dataType: 'json'
             }).done(function (data) {
                 if (data && data.code == 0) {
@@ -78,6 +85,9 @@
                         }
                     }, 1000);
                 } else {
+                    // 服务端要求验证码时，显示验证码行并刷新
+                    if (typeof CubeCaptcha !== 'undefined' && data && data.message && data.message.indexOf('验证码') >= 0)
+                        CubeCaptcha.show(form.find('[data-captcha]'));
                     alert((data && data.message) || '验证码发送失败');
                 }
             }).fail(function () {

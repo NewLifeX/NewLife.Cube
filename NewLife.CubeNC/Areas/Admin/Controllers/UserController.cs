@@ -387,6 +387,13 @@ public class UserController : EntityController<User, UserModel>
             //OAuthItems = ms,
         };
 
+        // 图片验证码状态：CaptchaScene 强制 或 风险自适应（按当前请求环境动态判定）
+        var ip = HttpContext.GetUserHost();
+        var deviceId = Request.Cookies["CubeDeviceId"];
+        if (deviceId.IsNullOrEmpty()) deviceId = Request.Cookies["CubeDeviceId0"];
+        model.RequireCaptcha = _userService.RequireCaptcha(1, ip, null, deviceId);
+        model.RequireCaptchaRegister = _userService.RequireCaptcha(2, ip, null, deviceId);
+
         // 默认登录提示，没有新用户之前
         if (model.LoginTip.IsNullOrEmpty() && XCode.Membership.User.Meta.Count <= 1)
             model.LoginTip = "首个注册登录用户成为管理员，默认用户admin/admin，推荐第三方登录";
@@ -404,6 +411,17 @@ public class UserController : EntityController<User, UserModel>
         }
 
         return model;
+    }
+
+    /// <summary>获取图片验证码（登录/注册/发码场景）</summary>
+    /// <remarks>当 CaptchaScene 强制或风险自适应触发时需要验证码，前端先调用本接口获取，再随登录/注册/发码请求提交 captchaId+captchaCode</remarks>
+    /// <returns>captchaId（校验时回传）和 image（base64 PNG）</returns>
+    [HttpGet]
+    [AllowAnonymous]
+    public ActionResult Captcha()
+    {
+        var result = _userService.GenerateCaptcha();
+        return Json(0, null, result);
     }
 
     /// <summary>密码登录</summary>

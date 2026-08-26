@@ -216,7 +216,7 @@ UserService.Register
 - 用户名 / 邮箱 / 手机 均查重
 - 密码强度：`PasswordService.Valid`（`PaswordStrength` 正则，空/`*` 不校验）
 - **密码可选（手机/邮箱/OAuth 回跳注册）**：密码留空则生成**随机密码**，该账号无法使用密码登录（仅验证码/三方登录），登录后可再主动设置密码，不打扰用户；用户名注册仍须设置密码
-- **协议勾选（合规）**：`RequireAgreement=true`（默认）时，注册须同意《用户协议》《隐私政策》（`AuthRegisterModel.Agreement=true`），未勾选拒绝注册
+- **协议勾选（合规，强制）**：前端注册表单须勾选同意《用户协议》《隐私政策》（未勾选前端拦截，不提交）；后端不再校验（纯前端强制）
 - **联系方式验证状态**：只有验证码校验通过才标 `MailVerified/MobileVerified=true`；用户名注册填写的联系方式**保持未验证**（防"未验证却标已验证"）
 - 注册成功后自动登录（`CompleteLogin` 写 Cookie/返回 Token），MVC 版落回登录页
 
@@ -303,9 +303,15 @@ UserService.ResetPassword
 
 ### 5.2 图片验证码（Captcha）
 
-- `GET /Auth/Captcha` → 返回 `captchaId` + SVG
-- `CaptchaScene` 位掩码：`1`=登录、`2`=注册、`4`=发验证码
+- `GET /Admin/User/Captcha`（MVC）/ `GET /Auth/Captcha`（API）→ 返回 `captchaId` + PNG base64 图片（`DrawingCaptchaService` 算术题，TTL 300 秒）
+- **场景强制（`CaptchaScene` 位掩码）**：`1`=登录、`2`=注册、`4`=发验证码，可组合（如 `3`=登录+注册）；强制要求**不受**自适应豁免
+- **风险自适应（`CaptchaRisk`，默认 true）**：CaptchaScene 未覆盖的场景按"机器安全度"动态决定——内网/可信设备/无异常免验证码，公网+近期登录失败/封禁中要求验证码（`UserService.RequireCaptcha`）
+  - 风险评分：`0`=内网（127/10/172.16-31/192.168/::1），`1`=公网，`2`=公网+近期登录失败（IP/账号/子网维度），`3`=封禁中（达到 `MaxLoginError`/子网阈值）
+  - `CaptchaRiskThreshold`（默认 2）：风险评分达到该值要求验证码
+  - **可信设备**：登录/注册成功后标记设备（`CubeDeviceId` Cookie 指纹），有效期内（`TrustedDeviceDays`，默认 30 天）免**自适应**验证码；换 IP 视为不可信；`CaptchaScene` 强制场景**不豁免**
+  - 发码场景（防短信轰炸）**不豁免**可信设备
 - 校验成功立即失效（防重放）
+- 前端 MVC：登录/注册页按服务端 `RequireCaptcha`/`RequireCaptchaRegister` 初始显示验证码行（动态注入）；提交/发码被拒（"验证码错误或已过期"）时自动显示并刷新验证码，保证动态风险生效
 
 ### 5.3 RSA Challenge（密码加密传输）
 
@@ -318,8 +324,8 @@ UserService.ResetPassword
 
 ### 5.4 登录配置
 
-- API：`GET /Auth/LoginConfig?tenant=` → `{ name, copyright, registration, loginTip, loginLogo, loginBackground, login{password,sms,mail,captcha}, register{enabled,password,sms,mail,captcha}, oauth[], security{challengeRequired,mfaAvailable,passwordComplexity,passwordStrength} }`
-- MVC：`LoginViewModel` 服务端填充（`DisplayName/AllowLogin/AllowRegister/EnableSms/EnableMail/EnablePasswordComplexity/PasswordStrength/OAuthItems/...`）
+- API：`GET /Auth/LoginConfig?tenant=` → `{ name, copyright, registration, loginTip, loginLogo, loginBackground, login{password,sms,mail,captcha,sendCode}, register{enabled,password,sms,mail,captcha}, oauth[], security{challengeRequired,mfaAvailable,passwordComplexity,passwordStrength} }`；`login.captcha`/`register.captcha`/`login.sendCode` 按当前请求环境**动态判定**（CaptchaScene 强制 + 风险自适应），非静态位掩码
+- MVC：`LoginViewModel` 服务端填充（`DisplayName/AllowLogin/AllowRegister/EnableSms/EnableMail/EnablePasswordComplexity/PasswordStrength/RequireCaptcha/RequireCaptchaRegister/OAuthItems/...`）
 
 ### 5.5 令牌与会话
 
@@ -355,14 +361,16 @@ UserService.ResetPassword
 |--------|------|------|
 | `AllowLogin` | true | 允许密码登录 |
 | `AllowRegister` | true | 允许注册 |
-| `RequireAgreement` | true | 注册须同意《用户协议》《隐私政策》（合规要求，依据《个保法》） |
 | `EnableSms` | false | 短信验证码：手机登录/注册/找回通道 |
 | `EnableMail` | false | 邮件验证码：邮箱登录/注册/找回通道 |
 | `AutoRegister` | — | 手机/邮箱验证码登录时未注册自动建号 |
 | `AllowPlainPassword` | true | 允许明文密码；false 强制 RSA 加密传输 |
 | `PaswordStrength` | 强密码正则 | 密码强度正则（空/`*` 不校验），注意拼写 |
 | `EnablePasswordComplexity` | true | 是否启用密码复杂度校验 |
-| `CaptchaScene` | 0 | 图片验证码场景位（1=登录,2=注册,4=发码） |
+| `CaptchaScene` | 0 | 图片验证码**场景强制**位（1=登录,2=注册,4=发码，可组合；强制不受自适应豁免） |
+| `CaptchaRisk` | true | 风险自适应验证码：自动感知机器安全度，不安全环境要求验证码 |
+| `CaptchaRiskThreshold` | 2 | 风险阈值（0=内网,1=公网,2=公网+失败,3=封禁），达到该值要求验证码 |
+| `TrustedDeviceDays` | 30 | 可信设备有效期（天），期内免**自适应**验证码 |
 | `MaxLoginError` / `LoginForbiddenTime` | — | 防爆破：错误次数 / 锁定秒数 |
 | `MaxLoginErrorBySubnet24/16` | — | 子网级防爆破 |
 | `EnableMfa` | false | 开放 MFA（TOTP）能力 |
@@ -379,7 +387,7 @@ UserService.ResetPassword
 | 业务 | MVC | API |
 |------|-----|-----|
 | 登录页/配置 | `GET /Admin/User/Login` | `GET /Auth/LoginConfig` |
-| 图片验证码 | `GET /Auth/Captcha` | `GET /Auth/Captcha` |
+| 图片验证码 | `GET /Admin/User/Captcha` | `GET /Auth/Captcha` |
 | RSA 公钥 | `GET /Admin/User/GetLoginKey` | `GET /Auth/Challenge` |
 | 登录 | `POST /Admin/User/Login` | `POST /Auth/Login` |
 | 发送验证码 | `POST /Admin/User/SendVerifyCode` | `POST /Auth/SendCode` |
@@ -410,11 +418,13 @@ UserService.ResetPassword
 │   ├── 密码登录：用户名 + 密码 + 记住我 + 忘记密码链接 + 登录按钮（RSA 加密）
 │   ├── 手机验证码：手机号 + [发送验证码] + 验证码 + 登录按钮
 │   └── 邮箱验证码：邮箱 + [发送验证码] + 验证码 + 登录按钮
+│   └── 图形验证码：任一登录表单在 `RequireCaptcha`（CaptchaScene 强制或风险自适应）时显示"图片+输入框"，点击图片刷新，提交/发码被拒时自动显示
 ├── 注册面板
 │   ├── 子 Tab：用户名注册 | 手机注册 | 邮箱注册
 │   ├── 用户名注册：用户名 + 密码 + 确认密码（协议勾选）
 │   ├── 手机/邮箱注册：账号(+验证码) + 密码(选填) + 确认密码 + 协议勾选（留空密码=仅验证码登录）
 │   └── 协议勾选：已阅读并同意《用户协议》《隐私政策》
+│   └── 图形验证码：`RequireCaptchaRegister` 时同样显示
 ├── 忘记密码面板（两步）
 │   ├── Step1：手机号/邮箱 + [发送验证码]
 │   └── Step2：验证码 + 新密码 + 确认新密码（RSA 加密提交）

@@ -123,6 +123,9 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     private const String MailNotifyLastSendPrefix = "MailNotify:LastSend:";
     /// <summary>邮件通知验证码缓存前缀</summary>
     private const String MailNotifyCodePrefix = "MailNotify:Code:";
+
+    /// <summary>可信设备缓存前缀。值=设备首次可信时的IP，用于防止设备ID被复制跨IP滥用</summary>
+    private const String TrustedDevicePrefix = "TrustedDevice:";
     #endregion
 
     #region 属性
@@ -130,6 +133,132 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     private readonly ICaptchaService _captcha = captchaService;
     private readonly IMfaService _mfa = mfaService;
     private readonly ITenantContext _tenantContext = tenantContext;
+    #endregion
+
+    #region 风险自适应验证码
+    /// <summary>生成图片验证码</summary>
+    /// <returns>验证码 ID（校验时回传）和图片数据（base64 PNG）</returns>
+    public CaptchaResult GenerateCaptcha() => _captcha.Generate();
+
+    /// <summary>判断指定场景是否需要图片验证码。CaptchaScene 强制要求或风险自适应触发</summary>
+    /// <param name="scene">场景位掩码，1=登录，2=注册，4=发验证码</param>
+    /// <param name="ip">客户端IP</param>
+    /// <param name="username">用户名，用于判断账号维度的登录失败记录，可为空</param>
+    /// <param name="deviceId">设备ID，可信设备可豁免风险自适应验证码，可为空</param>
+    /// <returns>需要验证码返回 true</returns>
+    public Boolean RequireCaptcha(Int32 scene, String ip, String username = null, String deviceId = null)
+    {
+        var set = CubeSetting.Current;
+
+        // 场景强制：管理员明确要求，不受自适应豁免
+        if ((set.CaptchaScene & scene) != 0) return true;
+
+        // 风险自适应：仅当开启且非可信设备时按风险评分决定
+        if (!set.CaptchaRisk) return false;
+        if (!deviceId.IsNullOrEmpty() && IsTrustedDevice(deviceId, ip)) return false;
+
+        return GetRiskLevel(ip, username) >= set.CaptchaRiskThreshold;
+    }
+
+    /// <summary>计算当前请求环境的风险等级。0=内网，1=公网，2=公网+近期登录失败，3=封禁中</summary>
+    /// <param name="ip">客户端IP</param>
+    /// <param name="username">用户名，用于判断账号维度的登录失败记录，可为空</param>
+    /// <returns>风险等级 0~3</returns>
+    public Int32 GetRiskLevel(String ip, String username)
+    {
+        var level = IsInnerIp(ip) ? 0 : 1;
+
+        // 近期登录失败记录（IP/账号/子网）提升风险
+        var fail = _cache.Get<Int32>($"{PasswordLoginIpPrefix}{ip}");
+        if (!username.IsNullOrEmpty()) fail += _cache.Get<Int32>($"{PasswordLoginUserPrefix}{username}");
+        var ip24 = GetSubnet24(ip);
+        var ip16 = GetSubnet16(ip);
+        if (!ip24.IsNullOrEmpty()) fail += _cache.Get<Int32>($"{LoginIpSubnet24Prefix}{ip24}");
+        if (!ip16.IsNullOrEmpty()) fail += _cache.Get<Int32>($"{LoginIpSubnet16Prefix}{ip16}");
+        if (fail > 0) level++;
+
+        // 达到封禁阈值视为高风险
+        var set = CubeSetting.Current;
+        if (set.MaxLoginError > 0)
+        {
+            if (_cache.Get<Int32>($"{PasswordLoginIpPrefix}{ip}") >= set.MaxLoginError) level = 3;
+            if (!username.IsNullOrEmpty() && _cache.Get<Int32>($"{PasswordLoginUserPrefix}{username}") >= set.MaxLoginError) level = 3;
+        }
+
+        return level > 3 ? 3 : level;
+    }
+
+    /// <summary>判断IP是否为内网/本机地址</summary>
+    /// <param name="ip">客户端IP</param>
+    /// <returns>内网地址返回 true</returns>
+    private static Boolean IsInnerIp(String ip)
+    {
+        if (ip.IsNullOrEmpty()) return false;
+
+        // 去除IPv6端口与IPv4映射前缀
+        var p = ip.Trim();
+        var idx = p.IndexOf(':');
+        if (idx > 0 && p.IndexOf('.') < 0) p = p.Substring(0, idx);
+        if (p.StartsWith("::ffff:")) p = p.Substring(7);
+
+        if (p == "::1" || p == "127.0.0.1") return true;
+
+        // IPv4 私有网段：10.*、172.16-31.*、192.168.*、127.*
+        var ss = p.Split('.');
+        if (ss.Length != 4) return false;
+        if (!Int32.TryParse(ss[0], out var a) || !Int32.TryParse(ss[1], out var b)) return false;
+        if (a == 10) return true;
+        if (a == 172 && b >= 16 && b <= 31) return true;
+        if (a == 192 && b == 168) return true;
+        if (a == 127) return true;
+
+        return false;
+    }
+
+    /// <summary>判断设备是否可信。设备ID在可信缓存中且记录的可信IP与当前IP一致</summary>
+    /// <param name="deviceId">设备ID</param>
+    /// <param name="ip">当前IP</param>
+    /// <returns>可信返回 true</returns>
+    public Boolean IsTrustedDevice(String deviceId, String ip)
+    {
+        if (deviceId.IsNullOrEmpty()) return false;
+
+        var set = CubeSetting.Current;
+        if (set.TrustedDeviceDays <= 0) return false;
+
+        var key = $"{TrustedDevicePrefix}{deviceId}";
+        var value = _cache.Get<String>(key);
+        if (value.IsNullOrEmpty()) return false;
+
+        // 可信IP与当前IP不一致时视为不可信，防止设备ID被复制跨IP滥用
+        return value.EqualIgnoreCase(ip);
+    }
+
+    /// <summary>标记设备为可信设备。登录/注册成功后调用，有效期内免自适应验证码</summary>
+    /// <param name="deviceId">设备ID</param>
+    /// <param name="ip">当前IP</param>
+    public void SetTrustedDevice(String deviceId, String ip)
+    {
+        if (deviceId.IsNullOrEmpty()) return;
+
+        var set = CubeSetting.Current;
+        if (set.TrustedDeviceDays <= 0) return;
+
+        var key = $"{TrustedDevicePrefix}{deviceId}";
+        _cache.Set(key, ip, set.TrustedDeviceDays * 24 * 3600);
+    }
+
+    /// <summary>获取设备ID。优先从 Cookie 读取，未携带时返回空</summary>
+    /// <param name="httpContext">HTTP上下文</param>
+    /// <returns>设备ID，无 Cookie 时返回空</returns>
+    private static String GetDeviceId(HttpContext httpContext)
+    {
+        if (httpContext == null || httpContext.Request == null) return null;
+
+        var id = httpContext.Request.Cookies["CubeDeviceId"];
+        if (id.IsNullOrEmpty()) id = httpContext.Request.Cookies["CubeDeviceId0"];
+        return id;
+    }
     #endregion
 
     #region 登录
@@ -142,9 +271,9 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     /// <exception cref="XException"></exception>
     public ServiceResult<IToken> Login(LoginModel loginModel, HttpContext httpContext)
     {
-        // 图片验证码校验（场景位掩码 1 = 登录时需要验证码）
-        var captchaSet = CubeSetting.Current;
-        if ((captchaSet.CaptchaScene & 1) != 0)
+        // 图片验证码校验（场景强制 CaptchaScene 或 风险自适应 CaptchaRisk）
+        var ip = httpContext.GetUserHost();
+        if (RequireCaptcha(1, ip, loginModel.Username, GetDeviceId(httpContext)))
         {
             if (!_captcha.Validate(loginModel.CaptchaId, loginModel.CaptchaCode))
                 return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码错误或已过期，请刷新后重试" };
@@ -462,6 +591,9 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     {
         var set = CubeSetting.Current;
 
+        // 登录/注册成功，标记设备可信，有效期内免自适应验证码
+        SetTrustedDevice(GetDeviceId(httpContext), ip);
+
         // 头像为空时，自动设置基于用户ID的默认头像
         if (user is User userAv && userAv.Avatar.IsNullOrEmpty())
         {
@@ -685,9 +817,8 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     /// <summary>发送登录验证码</summary>
     public async Task<VerifyCodeRecord> SendVerifyCode(VerifyCodeModel model, String ip)
     {
-        // 图片验证码校验（场景位掩码 4 = 发送验证码时需要图片验证码，防短信轰炸）
-        var captchaSet = CubeSetting.Current;
-        if ((captchaSet.CaptchaScene & 4) != 0)
+        // 图片验证码校验（场景强制 CaptchaScene 或 风险自适应 CaptchaRisk；发码场景可信设备不豁免，防短信轰炸）
+        if (RequireCaptcha(4, ip, model.Username, null))
         {
             if (!_captcha.Validate(model.CaptchaId, model.CaptchaCode))
                 throw new XException("图片验证码错误或已过期，请刷新后重试");
@@ -886,23 +1017,19 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     {
         var set = CubeSetting.Current;
         if (!set.AllowRegister) return new ServiceResult<IToken> { IsSuccess = false, Message = "禁止注册" };
-
-        // 合规要求：注册须同意《用户协议》和《隐私政策》（CubeSetting.RequireAgreement 可关闭）
-        if (set.RequireAgreement && (model == null || !model.Agreement))
-            return new ServiceResult<IToken> { IsSuccess = false, Message = "请先阅读并同意《用户协议》和《隐私政策》" };
+        if (model == null) return new ServiceResult<IToken> { IsSuccess = false, Message = "注册参数不能为空" };
 
         // 租户识别：优先X-App-Id（参考SSO登录按AppId查找OAuth配置取租户），其次X-Tenant租户编码；均未传时不强制，沿用原逻辑
         var tenantError = httpContext.ResolveRegisterTenant();
         if (tenantError != null) return new ServiceResult<IToken> { IsSuccess = false, Message = tenantError };
 
-        // 图片验证码校验（场景位掩码 2 = 注册时需要验证码）
-        if ((set.CaptchaScene & 2) != 0)
+        // 图片验证码校验（场景强制 CaptchaScene 或 风险自适应 CaptchaRisk）
+        var regIp = httpContext.GetUserHost();
+        if (RequireCaptcha(2, regIp, model.Username, GetDeviceId(httpContext)))
         {
             if (!_captcha.Validate(model.CaptchaId, model.CaptchaCode))
                 return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码错误或已过期，请刷新后重试" };
         }
-
-        if (model == null) return new ServiceResult<IToken> { IsSuccess = false, Message = "注册参数不能为空" };
 
         var ip = httpContext.GetUserHost();
         using var span = tracer?.NewSpan(nameof(Register), new { model.Category, model.Username, model.Mobile, model.Email, ip });

@@ -100,9 +100,6 @@ public class AuthRegisterModel : ICubeModel
     /// <summary>图片验证码答案</summary>
     public String CaptchaCode { get; set; }
 
-    /// <summary>是否已阅读并同意《用户协议》和《隐私政策》。合规要求，注册时须为 true（CubeSetting.RequireAgreement 可关闭校验）</summary>
-    public Boolean Agreement { get; set; }
-
     /// <summary>兼容旧版字段，建议改用 ConfirmPassword</summary>
     [Obsolete("Use ConfirmPassword instead")]
     public String Password2 { get => ConfirmPassword; set => ConfirmPassword = value; }

@@ -120,7 +120,7 @@ public class AuthController : ControllerBaseX
 
     /// <summary>获取图片验证码</summary>
     /// <remarks>
-    /// 当 CubeSetting.CaptchaScene 中包含对应场景位时，前端须先调用本接口获取验证码，
+    /// 当 CubeSetting.CaptchaScene 中包含对应场景位或风险自适应触发时，前端须先调用本接口获取验证码，
     /// 再将 captchaId 和用户填写的 captchaCode 随请求一并提交。
     /// 验证码 TTL 为 300 秒，校验成功后立即失效（防重放）。
     /// </remarks>
@@ -148,7 +148,19 @@ public class AuthController : ControllerBaseX
             else
                 t = Tenant.FindByCode(tenant) ?? Tenant.Find(Tenant._.Name == tenant);
         }
-        return Json(0, null, new LoginConfigModel(t));
+
+        var model = new LoginConfigModel(t);
+
+        // 风险自适应验证码：按当前请求环境动态判定（CaptchaScene 强制 或 风险触发）
+        var ip = HttpContext.GetUserHost();
+        var deviceId = HttpContext.Request.Cookies["CubeDeviceId"];
+        if (deviceId.IsNullOrEmpty()) deviceId = HttpContext.Request.Cookies["CubeDeviceId0"];
+        model.ApplyRiskCaptcha(
+            _userService.RequireCaptcha(1, ip, null, deviceId),
+            _userService.RequireCaptcha(2, ip, null, deviceId),
+            _userService.RequireCaptcha(4, ip, null, null));
+
+        return Json(0, null, model);
     }
 
     /// <summary>获取当前登录用户信息</summary>

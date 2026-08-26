@@ -431,6 +431,26 @@ public sealed class AuthTests : IAsyncLifetime
     }
 
     #endregion
+
+    #region A.5 图形验证码（风险自适应）
+
+    [Fact(DisplayName = "TC-AUTH-050 默认配置登录页不显示图形验证码")]
+    [Trait("Category", "Auth")]
+    [Trait("Priority", "P2")]
+    public async Task TC_AUTH_050_LoginPageNoCaptchaByDefault()
+    {
+        const String testId = "TC-AUTH-050";
+
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Login");
+        await _page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+
+        // 默认配置（CaptchaScene=0 + 内网低风险）下登录表单不显示图形验证码行
+        var captchaRow = _page.Locator("#login-pwd [data-captcha]");
+        var visible = await captchaRow.CountAsync() > 0 && await captchaRow.IsVisibleAsync();
+        Assert.False(visible, $"[{testId}] 默认配置下登录页不应显示图形验证码（CaptchaScene=0 + 内网低风险）");
+    }
+
+    #endregion
 }
 
 /// <summary>xUnit Collection 定义，所有 E2E 测试共享同一个 AppFixture 实例</summary>
