@@ -12,14 +12,32 @@ namespace NewLife.Cube.Automation;
 public static class AutomationTrigger
 {
     static readonly ConcurrentDictionary<String, Int64> _debounce = new(StringComparer.OrdinalIgnoreCase);
-    static readonly HashSet<String> SkipTypes = new(StringComparer.OrdinalIgnoreCase)
+    /// <summary>自身写入会再引爆自动化的实体：永不挂钩 Persistence</summary>
+    static readonly HashSet<String> LoopSkipTypes = new(StringComparer.OrdinalIgnoreCase)
     {
-        nameof(EntityAutomation), nameof(CronJob),
-        nameof(NotificationRecord), nameof(EntityComment),
+        nameof(EntityAutomation), nameof(NotificationRecord), nameof(EntityComment),
     };
 
-    /// <summary>是否跳过该实体类型</summary>
-    public static Boolean ShouldSkip(Type type) => type != null && SkipTypes.Contains(type.Name);
+    /// <summary>
+    /// 作业心跳字段。JobService 每轮只改这些列；用户改名称/Cron/启用等仍应触发。
+    /// 审计列一并列入，避免拦截器脏字段把心跳误判成业务更新。
+    /// </summary>
+    static readonly HashSet<String> CronJobRuntimeFields = new(StringComparer.OrdinalIgnoreCase)
+    {
+        nameof(CronJob.LastTime), nameof(CronJob.NextTime), nameof(CronJob.Data),
+        nameof(CronJob.UpdateTime), nameof(CronJob.UpdateUserID), nameof(CronJob.UpdateIP),
+    };
+
+    /// <summary>是否跳过该实体类型（循环实体不包装 Persistence）</summary>
+    public static Boolean ShouldSkip(Type type) => type != null && LoopSkipTypes.Contains(type.Name);
+
+    /// <summary>Update 是否仅为作业心跳/审计字段（定时作业心跳不入队）</summary>
+    public static Boolean IsRuntimeOnlyUpdate(Type type, String[] dirtys)
+    {
+        if (type == null || !type.Name.EqualIgnoreCase(nameof(CronJob))) return false;
+        if (dirtys == null || dirtys.Length == 0) return true;
+        return dirtys.All(d => CronJobRuntimeFields.Contains(d));
+    }
 
     /// <summary>SQL 成功后入队</summary>
     public static void OnPersisted(IEntity entity, DataMethod method, String[] dirtys)
@@ -27,6 +45,7 @@ public static class AutomationTrigger
         if (entity == null) return;
         var type = entity.GetType();
         if (ShouldSkip(type)) return;
+        if (method == DataMethod.Update && IsRuntimeOnlyUpdate(type, dirtys)) return;
 
         // 启动后动态注册的工厂：首次写入时懒补挂（本次已过，从下一次写入开始拦截）
         try { AutomationHost.Ensure(EntityFactory.CreateFactory(type)); }

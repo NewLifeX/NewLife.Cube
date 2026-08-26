@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   compileAutomationGraph,
+  isAutomationSkipTypePath,
   normalizeTriggerConfig,
   parseAutomationGraph,
   validateFoundTargetChain,
@@ -107,7 +108,18 @@ describe('normalizeTriggerConfig', () => {
     });
     expect(g.nodes.find((n) => n.type === 'delay')?.data?.minutes).toBe(10080);
   });
+});
 
+describe('isAutomationSkipTypePath', () => {
+  it('marks loop entities and allows CronJob', () => {
+    expect(isAutomationSkipTypePath('Cube/NotificationRecord')).toBe(true);
+    expect(isAutomationSkipTypePath('/Cube/EntityComment')).toBe(true);
+    expect(isAutomationSkipTypePath('Cube/CronJob')).toBe(false);
+    expect(isAutomationSkipTypePath('Admin/User')).toBe(false);
+  });
+});
+
+describe('validateFoundTargetChain', () => {
   it('validateFoundTargetChain requires findRecords before found target', () => {
     expect(
       validateFoundTargetChain([{ type: 'addComment', data: { target: 'found' } }], {

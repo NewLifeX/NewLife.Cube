@@ -309,6 +309,46 @@ public class Osc260815AutomationTests
         Assert.Contains("未实现", run.Error);
     }
 
+    [Fact(DisplayName = "循环实体仍跳过；CronJob 用户改名称入队、心跳字段不入队")]
+    public void Trigger_CronJob_UserEdit_Enqueues_RuntimeSkip()
+    {
+        Assert.True(AutomationTrigger.ShouldSkip(typeof(EntityAutomation)));
+        Assert.True(AutomationTrigger.ShouldSkip(typeof(NotificationRecord)));
+        Assert.True(AutomationTrigger.ShouldSkip(typeof(EntityComment)));
+        Assert.False(AutomationTrigger.ShouldSkip(typeof(CronJob)));
+        Assert.True(AutomationTrigger.IsRuntimeOnlyUpdate(typeof(CronJob), ["LastTime", "NextTime", "UpdateTime"]));
+        Assert.False(AutomationTrigger.IsRuntimeOnlyUpdate(typeof(CronJob), ["Name", "LastTime"]));
+
+        EntityPageRegistry.Register(typeof(CronJob), "Cube/CronJob", "Id");
+        var rule = InsertRule("Cube/CronJob", "update");
+        try
+        {
+            var job = new CronJob { Id = 1, Name = "实体自动化流程调度" };
+            AutomationTrigger.ResetDebounce();
+            AutomationTrigger.OnPersisted(job, DataMethod.Update, ["LastTime", "NextTime", "UpdateTime", "UpdateUserID"]);
+            Assert.Empty(AutomationRun.FindAllByAutomationId(rule.Id));
+
+            AutomationTrigger.ResetDebounce();
+            AutomationTrigger.OnPersisted(job, DataMethod.Update, ["Name", "UpdateTime", "UpdateUserID"]);
+            Assert.NotEmpty(AutomationRun.FindAllByAutomationId(rule.Id));
+        }
+        finally
+        {
+            rule.Enable = false;
+            rule.Update();
+        }
+    }
+
+    [Fact(DisplayName = "模板 {{Name}} 与 {{显示名}} 均可替换")]
+    public void Executor_ApplyTemplate_DisplayName()
+    {
+        var e = new CronJob { Name = "备份数据库" };
+        var ctx = new AutomationContext { Current = e };
+        Assert.Equal("定时作业 备份数据库 修改了名称！", AutomationExecutor.ApplyTemplate("定时作业 {{Name}} 修改了名称！", ctx));
+        Assert.Equal("定时作业 备份数据库 修改了名称！", AutomationExecutor.ApplyTemplate("定时作业 {{名称}} 修改了名称！", ctx));
+        Assert.Equal("定时作业 备份数据库 修改了名称！", AutomationExecutor.ApplyTemplate("定时作业 {{trigger.Name}} 修改了名称！", ctx));
+    }
+
     [Fact(DisplayName = "TypePath 前导斜杠与触发路径归一后仍能入队")]
     public void Trigger_TypePath_SlashNormalized()
     {

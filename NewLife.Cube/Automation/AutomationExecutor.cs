@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using NewLife.Cube.Entity;
 using NewLife.Log;
 using XCode;
+using XCode.Configuration;
 
 namespace NewLife.Cube.Automation;
 
@@ -34,7 +35,7 @@ public class AutomationContext
 /// <summary>顺序执行 GraphJson</summary>
 public static class AutomationExecutor
 {
-    static readonly Regex Tpl = new(@"\{\{([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)?)\}\}", RegexOptions.Compiled);
+    static readonly Regex Tpl = new(@"\{\{\s*([^\{\}]+?)\s*\}\}", RegexOptions.Compiled);
 
     /// <summary>执行一条 Run</summary>
     public static void Execute(AutomationRun run, JsonObject webhook = null)
@@ -275,11 +276,12 @@ public static class AutomationExecutor
         if (tpl.IsNullOrEmpty()) return tpl;
         return Tpl.Replace(tpl, m =>
         {
-            var path = m.Groups[1].Value;
+            var path = (m.Groups[1].Value + "").Trim();
+            if (path.IsNullOrEmpty()) return "";
             var parts = path.Split('.');
             if (parts.Length == 1) return ReadField(ctx.Current, parts[0]);
-            var head = parts[0];
-            var field = parts[1];
+            var head = parts[0].Trim();
+            var field = parts[1].Trim();
             if (head.EqualIgnoreCase("trigger")) return ReadField(ctx.Current, field);
             if (head.EqualIgnoreCase("found")) return ReadField(ctx.FoundCurrent ?? ctx.Found?.FirstOrDefault(), field);
             if (head.EqualIgnoreCase("webhook")) return ctx.Webhook?[field]?.ToString() ?? "";
@@ -290,8 +292,25 @@ public static class AutomationExecutor
     static String ReadField(IEntity entity, String field)
     {
         if (entity == null || field.IsNullOrEmpty()) return "";
-        try { return entity[field] + ""; }
+        try
+        {
+            var fi = ResolveField(entity, field);
+            if (fi != null) return entity[fi.Name] + "";
+            return entity[field] + "";
+        }
         catch { return ""; }
+    }
+
+    /// <summary>按属性名、列名或显示名解析字段（模板 {{Name}} / {{名称}} 均可）</summary>
+    static FieldItem ResolveField(IEntity entity, String field)
+    {
+        var fact = EntityFactory.CreateFactory(entity.GetType());
+        var fields = fact?.Fields;
+        if (fields == null || field.IsNullOrEmpty()) return null;
+        return fields.FirstOrDefault(f =>
+            f.Name.EqualIgnoreCase(field)
+            || (f.ColumnName + "").EqualIgnoreCase(field)
+            || (f.DisplayName + "").EqualIgnoreCase(field));
     }
 }
 

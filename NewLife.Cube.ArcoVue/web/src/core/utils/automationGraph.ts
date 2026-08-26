@@ -28,6 +28,15 @@ export const AUTOMATION_MENU_ACTION_TYPES = [
   'aiText',
 ] as const;
 
+/** 自身写入会再引爆自动化：不挂钩记录增删改（CronJob 已改为仅跳过心跳字段） */
+export const AUTOMATION_SKIP_TYPE_NAMES = ['EntityAutomation', 'NotificationRecord', 'EntityComment'] as const;
+
+/** 当前实体路径是否属于循环跳过类型 */
+export function isAutomationSkipTypePath(typePath: string | null | undefined): boolean {
+  const last = (typePath || '').replace(/^\/+|\/+$/g, '').split('/').pop() || '';
+  return AUTOMATION_SKIP_TYPE_NAMES.some((x) => x.toLowerCase() === last.toLowerCase());
+}
+
 export const AUTOMATION_TRIGGER_KINDS = [
   'insert',
   'update',

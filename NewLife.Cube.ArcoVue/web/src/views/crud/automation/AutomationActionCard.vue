@@ -81,10 +81,10 @@
           </div>
         </a-form-item>
         <a-form-item label="标题">
-          <a-input v-model="data.title" :max-length="200" placeholder="支持 {{字段名}}" />
+          <a-input v-model="data.title" :max-length="200" placeholder="支持 {{Name}} 或 {{名称}}" />
         </a-form-item>
         <a-form-item label="正文">
-          <a-textarea v-model="data.body" :max-length="2000" placeholder="支持 {{字段名}}" />
+          <a-textarea v-model="data.body" :max-length="2000" placeholder="支持 {{Name}} 或 {{名称}}" />
         </a-form-item>
       </template>
 

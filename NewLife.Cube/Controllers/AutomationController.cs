@@ -432,8 +432,10 @@ public class AutomationController(TokenService tokenService) : ControllerBaseX
         if (pageIndex < 1) pageIndex = 1;
         if (pageSize < 1) pageSize = 20;
         if (pageSize > 50) pageSize = 50;
-        var page = new PageParameter { PageIndex = pageIndex, PageSize = pageSize, Sort = "Id", Desc = true };
-        var list = NotificationRecord.Search(0, "InApp", user.ID, null, unread, true, DateTime.MinValue, DateTime.MinValue, null, page);
+        var page = new PageParameter { PageIndex = pageIndex, PageSize = pageSize, Sort = "Id", Desc = true, RetrieveTotalCount = true };
+        // Search 第 5 参是 read；接口入参 unread=true 表示未读，需取反
+        Boolean? read = unread == null ? null : !unread.Value;
+        var list = NotificationRecord.Search(0, "InApp", user.ID, null, read, true, DateTime.MinValue, DateTime.MinValue, null, page);
         var data = list.Select(e => new
         {
             e.Id,
@@ -454,7 +456,7 @@ public class AutomationController(TokenService tokenService) : ControllerBaseX
     {
         var user = ManageProvider.User as IUser;
         if (user == null) return Json(401, "未授权");
-        var page = new PageParameter { PageIndex = 1, PageSize = 1 };
+        var page = new PageParameter { PageIndex = 1, PageSize = 1, RetrieveTotalCount = true };
         NotificationRecord.Search(0, "InApp", user.ID, null, false, true, DateTime.MinValue, DateTime.MinValue, null, page);
         return Json(0, null, new { count = page.TotalCount });
     }

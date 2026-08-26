@@ -3,6 +3,9 @@
     <a-tabs v-model:active-key="mainTab" class="auto-ed-tabs">
       <a-tab-pane key="edit" title="编辑">
         <a-alert v-if="parseError" type="warning" class="auto-ed-alert">{{ parseError }}</a-alert>
+        <a-alert v-if="skipPersistTrigger" type="warning" class="auto-ed-alert">
+          该实体的写入由自动化自身产生（规则 / 通知 / 评论），记录增删改不会触发流程，请改用按钮、定时或 Webhook。
+        </a-alert>
 
         <div class="auto-ed-panel">
           <a-form layout="vertical" class="auto-ed-form">
@@ -260,6 +263,7 @@ const {
   mainTab,
   loading,
   parseError,
+  skipPersistTrigger,
   name,
   triggerKind,
   triggerConfig,

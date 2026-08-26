@@ -9,6 +9,7 @@ import {
   AUTOMATION_TRIGGER_KINDS,
   clampDelayMinutes,
   compileAutomationGraph,
+  isAutomationSkipTypePath,
   normalizeTriggerConfig,
   parseAutomationGraph,
   validateFoundTargetChain,
@@ -161,6 +162,7 @@ export function useAutomationEditor(props: EditorProps, emit: Emit) {
   const runs = ref<(AutomationRunItem & { timeText?: string })[]>([]);
 
   const isNew = computed(() => props.editId === 'new');
+  const skipPersistTrigger = computed(() => isAutomationSkipTypePath(props.typePath));
   const canViewRuns = computed(() => !isNew.value);
   const hookUrl = computed(() =>
     hookToken.value ? `${window.location.origin}/Cube/Automation/Hook/${hookToken.value}` : '',
@@ -654,6 +656,7 @@ export function useAutomationEditor(props: EditorProps, emit: Emit) {
     filterRows,
     actions,
     isNew,
+    skipPersistTrigger,
     canViewRuns,
     summaryText,
     runs,
