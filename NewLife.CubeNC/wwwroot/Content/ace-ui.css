@@ -21,10 +21,6 @@
     --cube-radius-lg: 10px;
     --cube-shadow: 0 1px 3px rgba(0, 0, 0, .06), 0 1px 2px rgba(0, 0, 0, .04);
     --cube-shadow-lg: 0 6px 20px rgba(43, 125, 188, .10), 0 2px 6px rgba(0, 0, 0, .06);
-    --sidebar-bg: #1f2937;
-    --sidebar-bg-hover: #28354a;
-    --sidebar-active: #2b7dbc;
-    --navbar-h: 52px;
 }
 
 /* ========== 基础 ========== */
@@ -59,32 +55,6 @@ select.form-control {
     border-radius: var(--cube-radius) !important;
 }
 
-/* ACE 主题按钮统一主色蓝：覆盖 ace.min.css 的 .btn-purple 背景 !important */
-.btn-purple {
-    background-color: var(--cube-primary) !important;
-    border-color: var(--cube-primary) !important;
-    color: #fff !important;
-}
-
-    .btn-purple:hover,
-    .btn-purple:focus,
-    .btn-purple:active,
-    .open > .btn-purple.dropdown-toggle {
-        background-color: var(--cube-primary-dark) !important;
-        border-color: var(--cube-primary-dark) !important;
-        color: #fff !important;
-    }
-
-    /* 禁用态（ace.min.css 的 .btn-purple[disabled] 特异性更高，需同层覆盖） */
-    .btn-purple[disabled],
-    .btn-purple.disabled,
-    fieldset[disabled] .btn-purple {
-        background-color: var(--cube-primary) !important;
-        border-color: var(--cube-primary) !important;
-        color: #fff !important;
-        opacity: .55;
-    }
-
 .form-control {
     border-radius: var(--cube-radius);
     box-shadow: none;
@@ -110,188 +80,25 @@ select.form-control {
     box-shadow: 0 6px 20px rgba(0, 0, 0, .10);
 }
 
-/* ========== 顶部导航 ========== */
-#navbar.navbar {
-    height: var(--navbar-h);
-    min-height: var(--navbar-h);
-    background: #fff;
-    border: none;
-    border-bottom: 1px solid var(--cube-border-light);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
-    z-index: 1030;
+/* ========== 主框架回归 ACE/Bootstrap 原生 ========== */
+/* 顶部导航栏、侧边栏菜单均使用 ACE 原生样式（蓝色导航 #438eb9、浅色侧边栏、白色菜单条、蓝色文字），
+   老用户零适应成本；此处仅保留功能修复与内容区轻微美化 */
+
+/* 二级菜单图标显示（ACE 原生隐藏了 submenu 图标，仅显示文字；菜单管理里已配置 Icon 应展示） */
+#sidebar .nav-list .submenu > li > a .menu-icon {
+    display: inline-block;
+    width: 16px;
+    margin-right: 4px;
+    font-size: 12px;
+    text-align: center;
+    color: #6fb3e0;
 }
 
-#navbar .navbar-container {
-    height: var(--navbar-h);
-    min-height: var(--navbar-h);
+/* 有头像时图标强制隐藏（功能修复：防止头像 img 与 fa-user-circle 图标同时显示两个圈；
+   头像加载失败时 onerror 移除 hidden-icon 类，图标兑底显示） */
+#navbar .navbar-buttons .ace-nav .nav-user-photo-icon.hidden-icon {
+    display: none !important;
 }
-
-/* 品牌区 */
-#navbar .navbar-brand {
-    padding: 0 18px;
-    line-height: var(--navbar-h);
-    height: var(--navbar-h);
-    color: var(--cube-text-title);
-    font-size: 18px;
-    font-weight: 700;
-}
-
-    #navbar .navbar-brand small {
-        font-size: 18px;
-        color: var(--cube-primary);
-    }
-
-    #navbar .navbar-brand:hover, #navbar .navbar-brand:focus {
-        color: var(--cube-primary);
-    }
-
-/* 模块菜单（PC 端横向） */
-#navbar .module-menu-horizontal li a {
-    color: #4a5560;
-    font-size: 14px;
-}
-
-    #navbar .module-menu-horizontal li a:hover {
-        background-color: var(--cube-primary-light);
-        color: var(--cube-primary);
-    }
-
-#navbar .module-menu-horizontal li.active a {
-    background-color: var(--cube-primary);
-    color: #fff;
-}
-
-/* 右侧用户/租户区 */
-#navbar .navbar-buttons .ace-nav > li > a {
-    color: #4a5560;
-    height: var(--navbar-h);
-    line-height: var(--navbar-h);
-    padding: 0 12px;
-}
-
-    #navbar .navbar-buttons .ace-nav > li > a:hover,
-    #navbar .navbar-buttons .ace-nav > li.open > a {
-        background-color: var(--cube-primary-light);
-        color: var(--cube-primary);
-    }
-
-#navbar .navbar-buttons .ace-nav .nav-user-photo {
-    border-radius: 50%;
-    border: 2px solid var(--cube-primary-light);
-}
-
-/* 下拉菜单 */
-#navbar .dropdown-menu {
-    border: 1px solid var(--cube-border-light);
-    border-radius: var(--cube-radius-lg);
-    box-shadow: var(--cube-shadow-lg);
-    margin-top: 6px;
-}
-
-    #navbar .dropdown-menu li a {
-        padding: 9px 18px;
-        color: var(--cube-text);
-        font-size: 13px;
-    }
-
-        #navbar .dropdown-menu li a:hover {
-            background-color: var(--cube-primary-light);
-            color: var(--cube-primary);
-        }
-
-    #navbar .dropdown-menu li.divider {
-        background-color: var(--cube-border-light);
-    }
-
-/* 移动端下拉 */
-#module-menu-dropdown {
-    border-radius: 0 0 var(--cube-radius) var(--cube-radius);
-    box-shadow: var(--cube-shadow-lg);
-}
-
-/* ========== 侧边栏 ========== */
-#sidebar {
-    background: var(--sidebar-bg);
-    box-shadow: inset -1px 0 0 rgba(255, 255, 255, .04);
-}
-
-    /* 菜单项 */
-    #sidebar .nav-list > li > a {
-        color: #c4ccd6;
-        padding: 0 14px;
-        height: 44px;
-        line-height: 44px;
-        font-size: 14px;
-        border-bottom: 1px solid rgba(255, 255, 255, .04);
-        transition: background .15s ease, color .15s ease, padding-left .15s ease;
-    }
-
-        #sidebar .nav-list > li > a .menu-icon {
-            font-size: 15px;
-            color: #7d8aa0;
-            transition: color .15s ease;
-        }
-
-    #sidebar .nav-list > li > a:hover,
-    #sidebar .nav-list > li:hover > a {
-        background: var(--sidebar-bg-hover);
-        color: #fff;
-        padding-left: 18px;
-    }
-
-        #sidebar .nav-list > li > a:hover .menu-icon,
-        #sidebar .nav-list > li:hover > a .menu-icon {
-            color: var(--cube-primary);
-        }
-
-    /* 当前激活菜单 */
-    #sidebar .nav-list > li.active > a,
-    #sidebar .nav-list > li.open.active > a {
-        background: var(--sidebar-active);
-        color: #fff;
-        box-shadow: inset 3px 0 0 rgba(255, 255, 255, .25);
-    }
-
-        #sidebar .nav-list > li.active > a .menu-icon {
-            color: #fff;
-        }
-
-    /* 子菜单 */
-    #sidebar .nav-list .submenu {
-        background: rgba(0, 0, 0, .18);
-    }
-
-        #sidebar .nav-list .submenu > li > a {
-            color: #aab4c2;
-            font-size: 13px;
-            padding: 0 0 0 42px;
-            height: 38px;
-            line-height: 38px;
-            transition: background .15s ease, color .15s ease, padding-left .15s ease;
-        }
-
-            #sidebar .nav-list .submenu > li > a:hover {
-                background: rgba(43, 125, 188, .18);
-                color: #fff;
-                padding-left: 48px;
-            }
-
-        #sidebar .nav-list .submenu > li.active > a {
-            color: #fff;
-            font-weight: 600;
-            border-left: 3px solid var(--cube-primary);
-        }
-
-    /* 折叠按钮 */
-    #sidebar .sidebar-toggle {
-        background: var(--sidebar-bg);
-        border-top: 1px solid rgba(255, 255, 255, .08);
-        color: #7d8aa0;
-    }
-
-        #sidebar .sidebar-toggle:hover {
-            color: #fff;
-        }
 
 /* ========== 面包屑 ========== */
 .breadcrumbs {
@@ -382,15 +189,7 @@ body > .panel.panel-default {
 
 .tableTools-container .input-group-btn .btn {
     border-radius: 0 var(--cube-radius) var(--cube-radius) 0;
-    border: 1px solid var(--cube-primary);
-    background: var(--cube-primary);
-    color: #fff;
 }
-
-    .tableTools-container .input-group-btn .btn:hover {
-        background: var(--cube-primary-dark);
-        border-color: var(--cube-primary-dark);
-    }
 
 /* 表格 */
 .table-responsive {
@@ -414,7 +213,6 @@ body > .panel.panel-default {
         color: var(--cube-text-title);
         font-weight: 600;
         font-size: 13px;
-        padding: 10px 8px;
         white-space: nowrap;
     }
 
@@ -427,7 +225,7 @@ body > .panel.panel-default {
             }
 
     .table-data-list > tbody > tr > td {
-        padding: 8px;
+        /* 不覆盖 padding：沿用 Bootstrap 原生 table-condensed(5px) 紧凑密度 */
         font-size: 13px;
         border-color: #f0f2f5;
         vertical-align: middle;

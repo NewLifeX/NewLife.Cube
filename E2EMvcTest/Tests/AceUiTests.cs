@@ -101,6 +101,30 @@ public sealed class AceUiTests : IAsyncLifetime
         await PageHelpers.GotoAndWaitAsync(_page, "/Admin");
         await PageHelpers.AssertNoServerErrorAsync(_page, testId);
 
+        // 导航栏为 ACE 原生蓝色（#438eb9）
+        var navbarBg = await _page.EvaluateAsync<String>("getComputedStyle(document.querySelector('#navbar')).backgroundColor");
+        Assert.Equal("rgb(67, 142, 185)", navbarBg);
+
+        // 用户/租户菜单项为 ACE 原生浅蓝（#62a8d1，未展开状态下）
+        var userABg = await _page.EvaluateAsync<String>(
+            "getComputedStyle(document.querySelector('#navbar .ace-nav > li.light-blue > a')).backgroundColor");
+        Assert.Equal("rgb(98, 168, 209)", userABg);
+
+        // 侧边栏为 ACE 原生浅灰（#f2f2f2）
+        var sidebarBg = await _page.EvaluateAsync<String>("getComputedStyle(document.querySelector('#sidebar')).backgroundColor");
+        Assert.Equal("rgb(242, 242, 242)", sidebarBg);
+
+        // 一级菜单项为 ACE 原生浅灰背景（#f8f8f8）
+        var topBg = await _page.EvaluateAsync<String>(
+            "(() => { const a = document.querySelector('#sidebar .nav-list > li:not(.active) > a'); return a ? getComputedStyle(a).backgroundColor : ''; })()");
+        Assert.Equal("rgb(248, 248, 248)", topBg);
+
+        // 二级菜单图标显示（功能修复：ACE 原生隐藏了 submenu 图标）
+        var subIconDisplay = await _page.EvaluateAsync<String>(
+            "(() => { const el = document.querySelector('#sidebar .submenu > li > a .menu-icon'); return el ? getComputedStyle(el).display : ''; })()");
+        Assert.True(!String.IsNullOrEmpty(subIconDisplay) && subIconDisplay != "none",
+            $"[{testId}] 二级菜单图标未显示（display={subIconDisplay}）");
+
         // 用户菜单下拉可用（点击后出现菜单项）
         var userMenu = _page.Locator("#navbar .navbar-buttons .ace-nav > li:last-child > a");
         Assert.True(await userMenu.IsVisibleAsync(), $"[{testId}] 导航栏用户菜单不存在");
@@ -108,19 +132,10 @@ public sealed class AceUiTests : IAsyncLifetime
         await _page.WaitForTimeoutAsync(300);
         Assert.True(await _page.IsVisibleAsync("#navbar .dropdown-menu"), $"[{testId}] 用户菜单下拉未展开");
 
-        // 侧边栏深色背景（#1f2937）
-        var sidebarBg = await _page.EvaluateAsync<String>("getComputedStyle(document.querySelector('#sidebar')).backgroundColor");
-        Assert.Equal("rgb(31, 41, 55)", sidebarBg);
-
-        // 侧边栏菜单可展开：定位第一个含直接子菜单的一级菜单并展开（用 :has 避免嵌套 submenu 冲突）
-        var menuWithSub = _page.Locator("#sidebar .nav-list > li:has(> .submenu)").First;
-        if (await menuWithSub.CountAsync() > 0)
-        {
-            await menuWithSub.Locator(":scope > a").EvaluateAsync("el => el.click()");
-            await _page.WaitForTimeoutAsync(300);
-            var sub = menuWithSub.Locator(":scope > .submenu").First;
-            Assert.True(await sub.IsVisibleAsync(), $"[{testId}] 侧边栏子菜单未能展开");
-        }
+        // 侧边栏菜单展开态：ACE 默认首个一级菜单 active open，断言存在可见子菜单（nav-show）
+        var visibleSub = _page.Locator("#sidebar .submenu.nav-show").First;
+        Assert.True(await visibleSub.CountAsync() > 0 && await visibleSub.IsVisibleAsync(),
+            $"[{testId}] 侧边栏无可见子菜单");
     }
 
     #endregion
@@ -204,10 +219,10 @@ public sealed class AceUiTests : IAsyncLifetime
         var opRadius = await _page.EvaluateAsync<Int32>(
             "(() => { const el = document.querySelector('.op-btn'); return el ? parseFloat(getComputedStyle(el).borderRadius) || 0 : 0; })()");
         Assert.True(opRadius > 0, $"[{testId}] 操作按钮圆角为 0");
-        // 查询按钮主色蓝（#2b7dbc）
+        // 查询按钮回归 ACE 原生 btn-purple 紫色（#9583bf）
         var searchBg = await _page.EvaluateAsync<String>(
             "(() => { const el = document.querySelector('.input-group-btn .btn'); return el ? getComputedStyle(el).backgroundColor : ''; })()");
-        Assert.Equal("rgb(43, 125, 188)", searchBg);
+        Assert.Equal("rgb(149, 133, 191)", searchBg);
     }
 
     #endregion
