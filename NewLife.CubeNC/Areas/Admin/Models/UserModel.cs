@@ -47,6 +47,11 @@ public class RegisterModel : ICubeModel
     public String Email { get; set; }
 
     /// <summary>
+    /// 手机号
+    /// </summary>
+    public String Mobile { get; set; }
+
+    /// <summary>
     /// 用户名
     /// </summary>
     public String Username { get; set; }

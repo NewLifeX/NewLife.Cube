@@ -210,15 +210,20 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
             if (!ip16Key.IsNullOrEmpty() && ip16Errors >= set.MaxLoginErrorBySubnet16 && set.MaxLoginErrorBySubnet16 > 0)
                 throw new InvalidOperationException($"IP段[{ip16}.*.*]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
 
-                        // 安全登录检查：若禁止明文密码且未携带挑战标识，则拒绝
-                        if (loginModel.ChallengeId.IsNullOrEmpty() && !set.AllowPlainPassword)
+            // 安全登录检查：若禁止明文密码且未携带挑战标识，则拒绝
+            if (loginModel.ChallengeId.IsNullOrEmpty() && !set.AllowPlainPassword)
                 throw new InvalidOperationException("禁止明文传输密码，请先调用 GET /Auth/Challenge 获取公钥进行加密登录");
 
-                        var pdic = loginModel.ChallengeId.IsNullOrEmpty()
-              ? new Tuple<String, String>(null, null)
-                            : _cache.Get<Tuple<String, String>>(loginModel.ChallengeId);
-            var rsaKey = pdic?.Item2;
-            password = rsaKey.IsNullOrEmpty() ? password : DecryptPkcs1v15(rsaKey, password);
+            // 携带 challengeId 时必须能取到私钥；取不到（过期/伪造）时明确报错，
+            // 避免把密文当明文密码验证，导致"密码不正确"掩盖密钥过期根因
+            if (!loginModel.ChallengeId.IsNullOrEmpty())
+            {
+                var pdic = _cache.Get<Tuple<String, String>>(loginModel.ChallengeId);
+                var rsaKey = pdic?.Item2;
+                if (rsaKey.IsNullOrEmpty())
+                    throw new InvalidOperationException("登录挑战已过期或无效，请重新获取公钥后重试");
+                password = DecryptPkcs1v15(rsaKey, password);
+            }
 
             var provider = ManageProvider.Provider;
             if (provider.Login(username, password, remember) == null)
@@ -1542,20 +1547,21 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         if (challengeId.IsNullOrEmpty() && !set.AllowPlainPassword)
             return new ServiceResult { IsSuccess = false, Message = "禁止明文传输密码，请先获取公钥加密" };
 
-        // 挑战解密
+        // 挑战解密：携带 challengeId 时必须能取到私钥；取不到（过期/伪造）时明确报错，
+        // 禁止把密文当作明文新密码继续落库
         if (!challengeId.IsNullOrEmpty())
         {
             var pdic = _cache.Get<Tuple<String, String>>(challengeId);
             var rsaKey = pdic?.Item2;
-            if (!rsaKey.IsNullOrEmpty())
-            {
-                newPassword = DecryptPkcs1v15(rsaKey, newPassword);
-                if (!confirmPassword.IsNullOrEmpty())
-                    confirmPassword = DecryptPkcs1v15(rsaKey, confirmPassword);
+            if (rsaKey.IsNullOrEmpty())
+                return new ServiceResult { IsSuccess = false, Message = "登录挑战已过期或无效，请重新获取公钥后重试" };
 
-                // 移除挑战私钥信息，避免重放
-                _cache.Remove(challengeId);
-            }
+            newPassword = DecryptPkcs1v15(rsaKey, newPassword);
+            if (!confirmPassword.IsNullOrEmpty())
+                confirmPassword = DecryptPkcs1v15(rsaKey, confirmPassword);
+
+            // 移除挑战私钥信息，避免重放
+            _cache.Remove(challengeId);
         }
 
         if (!confirmPassword.IsNullOrEmpty() && newPassword != confirmPassword)

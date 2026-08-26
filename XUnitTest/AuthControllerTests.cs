@@ -2,6 +2,8 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using NewLife.Caching;
+using NewLife.Cube.Services;
 using Xunit;
 
 namespace XUnitTest;
@@ -136,6 +138,66 @@ public class AuthControllerTests
         }
         var score = (hasUpper ? 1 : 0) + (hasLower ? 1 : 0) + (hasDigit ? 1 : 0);
         return score >= 2;
+    }
+
+    #endregion
+
+    #region 登录挑战（Challenge）无效处理
+
+    /// <summary>简单内存缓存提供者，用于单元测试隔离</summary>
+    private class MemoryCacheProvider : ICacheProvider
+    {
+        public ICache Cache { get; set; }
+        public ICache InnerCache { get; set; }
+
+        public MemoryCacheProvider()
+        {
+            var cache = new MemoryCache();
+            Cache = cache;
+            InnerCache = cache;
+        }
+
+        public IProducerConsumer<T> GetQueue<T>(String name, String? topic = null)
+            => throw new NotImplementedException();
+
+        public IProducerConsumer<T> GetInnerQueue<T>(String name)
+            => throw new NotImplementedException();
+
+        public IDisposable AcquireLock(String name, Int32 msTimeout)
+            => throw new NotImplementedException();
+    }
+
+    [Fact(DisplayName = "ResetPassword：challengeId 无效（过期/伪造）时返回明确错误，不把密文当明文新密码")]
+    public void ResetPassword_InvalidChallenge_ReturnsExplicitError()
+    {
+        var provider = new MemoryCacheProvider();
+        var svc = new UserService(null!, null!, null!, provider, null!, null!, null!, null!, null!);
+
+        var result = svc.ResetPassword(
+            "13800138000",          // account
+            "123456",               // code
+            "NewPass123",           // newPassword（假设为密文）
+            "NewPass123",           // confirmPassword
+            "expired-challenge-id", // challengeId 无效（缓存中不存在）
+            "127.0.0.1");
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("登录挑战已过期或无效，请重新获取公钥后重试", result.Message);
+    }
+
+    [Fact(DisplayName = "GetPublicKey：每次调用生成不同 challengeId 与 PEM 公钥（提交时动态获取保证新鲜密钥）")]
+    public void GetPublicKey_GeneratesUniqueChallengeId()
+    {
+        var provider = new MemoryCacheProvider();
+        var svc = new UserService(null!, null!, null!, provider, null!, null!, null!, null!, null!);
+
+        var (challengeId1, publicKey1) = svc.GetPublicKey();
+        var (challengeId2, publicKey2) = svc.GetPublicKey();
+
+        Assert.NotEqual(challengeId1, challengeId2);
+        Assert.False(String.IsNullOrEmpty(publicKey1));
+        Assert.StartsWith("-----BEGIN PUBLIC KEY-----", publicKey1);
+        Assert.NotEqual(publicKey1, publicKey2);
     }
 
     #endregion

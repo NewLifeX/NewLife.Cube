@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="新生命团队,NewLife,魔方,Cube,XCode - 登录页设计稿" />
+    <title>登录 - 魔方用户中心</title>
+
+    <!-- 独立设计稿：CDN 引入 Bootstrap3 + FontAwesome + JSEncrypt，双击即可预览 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+
+    <style>
+        /* ========== 设计语言：延续 ACE 主题 + 现代登录卡片 ==========
+           主色 #2b7dbc（ACE 默认蓝）、卡片白底、圆角、柔和阴影 */
+        * { box-sizing: border-box; }
+
+        html, body { height: 100%; }
+
+        body {
+            margin: 0;
+            font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+            color: #3a3f44;
+            /* 背景：浅蓝灰渐变，居中留白 */
+            background: linear-gradient(160deg, #eef4fb 0%, #f0f2f5 45%, #e8eef6 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+        }
+
+        /* 登录提示条（对应 LoginTip，如"建议先注册账号再绑定第三方"） */
+        .login-tip {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: #fff8e6;
+            border-bottom: 1px solid #f0e3b5;
+            color: #8a6d3b;
+            font-size: 13px;
+            line-height: 40px;
+            text-align: center;
+            padding: 0 48px;
+        }
+        .login-tip .close-tip {
+            position: absolute;
+            right: 16px;
+            top: 0;
+            color: #b8a25e;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .login-wrapper { width: 100%; max-width: 440px; }
+
+        /* ========== 登录卡片 ========== */
+        .login-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(43, 125, 188, .12), 0 2px 8px rgba(0, 0, 0, .06);
+            overflow: hidden;
+        }
+
+        /* 品牌区 */
+        .brand {
+            padding: 34px 32px 10px;
+            text-align: center;
+        }
+        .brand-logo {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 12px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #2b7dbc, #1f5f8e);
+            color: #fff;
+            font-size: 34px;
+            line-height: 64px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(43, 125, 188, .35);
+        }
+        .brand h1 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+            color: #262a2e;
+        }
+        .brand p {
+            margin: 4px 0 0;
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* ========== Tab 切换（登录 / 注册 / 忘记密码） ========== */
+        .login-tabs {
+            display: flex;
+            margin: 22px 40px 0;
+            border-bottom: 1px solid #eef1f4;
+        }
+        .login-tabs a {
+            flex: 1;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 14px;
+            color: #7a8087;
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: color .2s, border-color .2s;
+            cursor: pointer;
+        }
+        .login-tabs a:hover { color: #2b7dbc; }
+        .login-tabs a.active {
+            color: #2b7dbc;
+            font-weight: 700;
+            border-bottom-color: #2b7dbc;
+        }
+
+        /* ========== 面板 ========== */
+        .pane { display: none; padding: 24px 40px 0; }
+        .pane.active { display: block; }
+
+        /* 输入框：左侧图标 + 圆角 */
+        .form-group { margin-bottom: 18px; position: relative; }
+        .input-icon { position: relative; }
+        .input-icon > i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a8b3bf;
+            font-size: 15px;
+            transition: color .2s;
+            pointer-events: none;
+        }
+        .input-icon input {
+            width: 100%;
+            height: 44px;
+            padding: 0 42px 0 40px;
+            border: 1px solid #dde3ea;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #3a3f44;
+            background: #fafbfc;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s, background .2s;
+        }
+        .input-icon input:focus {
+            border-color: #2b7dbc;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(43, 125, 188, .12);
+        }
+        .input-icon input::placeholder { color: #b0b8c2; }
+
+        /* 密码可见切换 */
+        .pwd-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a8b3bf;
+            cursor: pointer;
+            font-size: 15px;
+            padding: 4px;
+        }
+        .pwd-toggle:hover { color: #2b7dbc; }
+        .input-icon input.has-toggle { padding-right: 40px; }
+
+        /* 记住我 + 忘记密码 */
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+        .form-options .checkbox-custom {
+            display: inline-flex;
+            align-items: center;
+            color: #6a6f75;
+            cursor: pointer;
+            user-select: none;
+        }
+        .form-options .checkbox-custom input { display: none; }
+        .form-options .checkbox-custom .box {
+            width: 16px;
+            height: 16px;
+            border: 1px solid #c6ced8;
+            border-radius: 4px;
+            margin-right: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #fff;
+            background: #fff;
+            transition: all .2s;
+        }
+        .form-options .checkbox-custom input:checked + .box {
+            background: #2b7dbc;
+            border-color: #2b7dbc;
+        }
+        .form-options .checkbox-custom input:checked + .box:after {
+            content: "\f00c";
+            font-family: FontAwesome;
+        }
+        .form-options .forgot-link {
+            color: #2b7dbc;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .form-options .forgot-link:hover { text-decoration: underline; }
+
+        /* 主按钮 */
+        .btn-login {
+            width: 100%;
+            height: 44px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #2b7dbc, #1f5f8e);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(43, 125, 188, .3);
+            transition: all .2s;
+        }
+        .btn-login:hover {
+            box-shadow: 0 6px 16px rgba(43, 125, 188, .42);
+            transform: translateY(-1px);
+        }
+        .btn-login:active { transform: translateY(0); }
+        .btn-login:disabled { opacity: .6; cursor: not-allowed; }
+
+        /* 其他提交按钮（注册/找回） */
+        .btn-submit {
+            width: 100%;
+            height: 44px;
+            border: none;
+            border-radius: 8px;
+            background: #2b7dbc;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: background .2s;
+            margin-top: 4px;
+        }
+        .btn-submit:hover { background: #1f5f8e; }
+
+        /* 表单提示 */
+        .form-tip {
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+            margin: -6px 0 14px;
+        }
+
+        /* ========== 第三方登录 ========== */
+        .third-party { padding: 22px 40px 30px; }
+        .divider {
+            display: flex;
+            align-items: center;
+            color: #b0b8c2;
+            font-size: 12px;
+            margin-bottom: 18px;
+        }
+        .divider:before, .divider:after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #eef1f4;
+        }
+        .divider span { padding: 0 14px; }
+
+        .oauth-icons {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+        .oauth-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 20px;
+            text-decoration: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, .12);
+            transition: transform .2s, box-shadow .2s;
+        }
+        .oauth-icon:hover {
+            transform: translateY(-3px) scale(1.06);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, .18);
+        }
+
+        /* 各第三方品牌色 */
+        .oauth-weixin   { background: #07c160; }   /* 微信 */
+        .oauth-qyweixin { background: #2e9fff; }   /* 企业微信 */
+        .oauth-qq       { background: #12b7f5; }   /* QQ */
+        .oauth-github   { background: #24292e; }   /* GitHub */
+        .oauth-weibo    { background: #e6162d; }   /* 微博 */
+        .oauth-windows  { background: #00a4ef; }   /* 微软 */
+
+        /* ========== 页脚 ========== */
+        .login-footer {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 12px;
+            color: #9aa5b1;
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 480px) {
+            .pane { padding: 20px 24px 0; }
+            .third-party { padding: 18px 24px 24px; }
+            .brand { padding: 28px 20px 6px; }
+            .login-tabs { margin: 18px 24px 0; }
+            .oauth-icons { gap: 12px; }
+            .login-tip { padding: 0 40px; line-height: 34px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 登录提示条（对应 set.LoginTip，可关闭） -->
+    <div class="login-tip" id="loginTip">
+        建议先注册账号再绑定第三方，技术QQ群 1600800
+        <span class="close-tip" onclick="document.getElementById('loginTip').style.display='none'">&times;</span>
+    </div>
+
+    <div class="login-wrapper">
+        <div class="login-card">
+
+            <!-- 品牌区 -->
+            <div class="brand">
+                <div class="brand-logo"><i class="fa fa-cloud"></i></div>
+                <h1>魔方用户中心</h1>
+                <p>登录后即可访问管理后台</p>
+            </div>
+
+            <!-- Tab 切换：登录 / 注册 / 忘记密码 -->
+            <div class="login-tabs">
+                <a class="active" data-tab="login">登录</a>
+                <a data-tab="register">注册</a>
+                <a data-tab="forgot">忘记密码</a>
+            </div>
+
+            <!-- ========== 登录面板 ========== -->
+            <div class="pane active" id="pane-login">
+                <!-- 保留 RSA 非对称加密：challenge_id_container 存服务端下发的 RSA 公钥(PEM)，
+                     challengeId 存挑战标识；提交时用 JSEncrypt 加密密码写入 #pwd（name=password），
+                     后端用私钥解密。详情见 UserController.Login 的 ChallengeKey 下发。
+                     以下为设计稿演示用的合法 RSA-1024 密钥对（仅演示，实际由服务端动态生成下发）。 -->
+                <input id="challenge_id_container" type="hidden"
+                       value="-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDSBNwMwwY8PmvGi8aFA7Jcxymj\niPAXfWWlzJNIFMaHcxoI60nRXxhItwkB0xkQ9g498hwz/rwVGtk0NKr7tQs1E/VF\nGsrO0IAB0P+/sbmMaXaFK7kmDAwbIDeuFFeZNu8So6YWtde2mrLg7KqhbrZjiJSf\n8B0VFK2ZF2roRD5ZtwIDAQAB\n-----END PUBLIC KEY-----" />
+                <input name="challengeId" type="hidden" value="demo-challenge-key" />
+                <input name="pubKey" type="hidden" />
+                <input name="password" type="hidden" id="pwd" />
+
+                <form id="cube-login" action="#" method="post" novalidate>
+                    <div class="form-group">
+                        <div class="input-icon">
+                            <i class="fa fa-user-o"></i>
+                            <input type="text" id="username" name="username" placeholder="用户名 / 邮箱 / 手机 / 编码" autocomplete="username">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-icon">
+                            <i class="fa fa-lock"></i>
+                            <input type="password" id="password" class="has-toggle" placeholder="密码" autocomplete="current-password">
+                            <span class="pwd-toggle" data-target="password" title="显示/隐藏密码"><i class="fa fa-eye"></i></span>
+                        </div>
+                    </div>
+                    <div class="form-options">
+                        <label class="checkbox-custom">
+                            <input type="checkbox" id="remember" name="remember" checked>
+                            <span class="box"></span>
+                            记住我
+                        </label>
+                        <a class="forgot-link" data-tab-link="forgot">忘记密码？</a>
+                    </div>
+                    <button type="button" id="login-btn" class="btn-login">登 录</button>
+                </form>
+            </div>
+
+            <!-- ========== 注册面板 ========== -->
+            <div class="pane" id="pane-register">
+                <form id="cube-register" action="#" method="post" novalidate>
+                    <div class="form-group">
+                        <div class="input-icon">
+                            <i class="fa fa-user-o"></i>
+                            <input type="text" id="reg_username" name="username" placeholder="用户名" required="required" autocomplete="username">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-icon">
+                            <i class="fa fa-envelope-o"></i>
+                            <input type="email" id="reg_email" name="email" placeholder="邮箱（选填）" autocomplete="email">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-icon">
+                            <i class="fa fa-mobile"></i>
+                            <input type="tel" id="reg_mobile" name="mobile" placeholder="手机号（选填）" maxlength="11" autocomplete="tel">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-icon">
+                            <i class="fa fa-lock"></i>
+                            <input type="password" id="reg_password" name="password" class="has-toggle" placeholder="密码" autocomplete="new-password">
+                            <span class="pwd-toggle" data-target="reg_password" title="显示/隐藏密码"><i class="fa fa-eye"></i></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-icon">
+                            <i class="fa fa-lock"></i>
+                            <input type="password" id="reg_password2" name="password2" placeholder="重复密码" autocomplete="new-password">
+                        </div>
+                    </div>
+                    <p class="form-tip">用户名必填，邮箱或手机至少填写一项</p>
+                    <button type="submit" class="btn-submit">注 册</button>
+                </form>
+            </div>
+
+            <!-- ========== 忘记密码面板 ========== -->
+            <div class="pane" id="pane-forgot">
+                <form id="cube-forgot" action="#" method="post" novalidate>
+                    <div class="form-group">
+                        <div class="input-icon">
+                            <i class="fa fa-envelope-o"></i>
+                            <input type="email" id="email" name="email" placeholder="输入你的邮箱地址" autocomplete="email">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-submit">发送重置邮件</button>
+                </form>
+            </div>
+
+            <!-- ========== 第三方登录（仅登录面板下方） ========== -->
+            <div class="third-party" id="thirdParty">
+                <div class="divider"><span>第三方登录</span></div>
+                <div class="oauth-icons">
+                    <!-- 实际为 OAuthConfig 动态渲染，url = /Sso/Login?name=xxx -->
+                    <a class="oauth-icon oauth-weixin" href="#" title="微信"><i class="fa fa-weixin"></i></a>
+                    <a class="oauth-icon oauth-qyweixin" href="#" title="企业微信"><i class="fa fa-weixin"></i></a>
+                    <a class="oauth-icon oauth-qq" href="#" title="QQ"><i class="fa fa-qq"></i></a>
+                    <a class="oauth-icon oauth-github" href="#" title="GitHub"><i class="fa fa-github"></i></a>
+                    <a class="oauth-icon oauth-weibo" href="#" title="微博"><i class="fa fa-weibo"></i></a>
+                    <a class="oauth-icon oauth-windows" href="#" title="微软"><i class="fa fa-windows"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <div class="login-footer">©2002-2026 NewLife 沪ICP备2025143774号-1</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsencrypt@3.3.2/bin/jsencrypt.min.js"></script>
+
+    <script>
+        // ========== Tab 切换 ==========
+        $('.login-tabs a, [data-tab-link]').on('click', function () {
+            var tab = $(this).data('tab') || $(this).data('tab-link');
+            $('.login-tabs a').removeClass('active')
+                .filter('[data-tab="' + tab + '"]').addClass('active');
+            $('.pane').removeClass('active')
+                .filter('#pane-' + tab).addClass('active');
+
+            // 第三方登录只在登录面板显示
+            $('#thirdParty').toggle(tab === 'login');
+        });
+
+        // ========== 密码可见切换 ==========
+        $('.pwd-toggle').on('click', function () {
+            var target = $('#' + $(this).data('target'));
+            var isPwd = target.attr('type') === 'password';
+            target.attr('type', isPwd ? 'text' : 'password');
+            $(this).find('i').toggleClass('fa-eye fa-eye-slash');
+        });
+
+        // ========== RSA 非对称加密（保留原逻辑） ==========
+        // 密码经 JSEncrypt 使用服务端下发的 RSA 公钥加密后放入 #pwd（name=password）
+        // 服务端对应私钥解密。此逻辑与 _Login_Login.cshtml 的 encryptPwd 一致。
+        // 注意：HTML 属性值中的 \n 是字面字符，需替换为真实换行才能被 JSEncrypt 解析
+        function encryptPwd(p) {
+            var rsa = new JSEncrypt();
+            var key = $('#challenge_id_container').val().replace(/\\n/g, '\n');
+            rsa.setPublicKey(key);
+            return rsa.encrypt(p);
+        }
+
+        // 设计稿演示用私钥（仅用于本地验证加密链路，服务端不会下发私钥）
+        var DEMO_PRIVATE_KEY = '-----BEGIN RSA PRIVATE KEY-----\nMIICXwIBAAKBgQDSBNwMwwY8PmvGi8aFA7JcxymjiPAXfWWlzJNIFMaHcxoI60nR\nXxhItwkB0xkQ9g498hwz/rwVGtk0NKr7tQs1E/VFGsrO0IAB0P+/sbmMaXaFK7km\nDAwbIDeuFFeZNu8So6YWtde2mrLg7KqhbrZjiJSf8B0VFK2ZF2roRD5ZtwIDAQAB\nAoGBAKhTysbTvPimEx20Q+2yc8+WtVHkXIKHN+Q2XklklWZUo6ZIZwbPkBgf07FJ\nr4p/nBScK2ylG7xSo4oLOIu7pHl3VErjNN0iW6DZVX8QzZokn04XIgF/1lKJLPN2\nCQL9+zh8sYGFKwFO/4X0bhivNCTbY5JoapDroFiuo1yfqkvBAkEA8Db7sbwS4Gf8\nLyiCs7lrjvaAvcPmyOCyY2L2LCbe6+nVQ3oy7k2wpXpaAVKB6Ot7+eAbAQOpA4y/\nogTVHgOkYQJBAN/R6DtHvq0A/OsQ8hKMsMW2LNILIvntwBYTUVhilxmnZQnC1OMW\naEyQG3vqvNQ9gQgy+k1WRLiBArbi3nvytRcCQQCc5t0aJ8WQrHstdmGA8REPTXWj\n/eylsxbyEfbHuhALui2hqJTR0Q8b10Io8PKH6CCPg1FAJVrlRa76LfviYfChAkEA\n0e8SM6A80gsOL/IqDIoYOKqCadV2ThTZyhr+frei4LYpSDmN8x6OX9n/XYC08yJp\nR+aA7k9Pj/u6Lw6m/n2NqwJBALCLSCRMBZnSWZs9RweiM3TW33SiLLoX667+88dK\nTcfd89d0fatv8dMg/pmyu27TsZSqW93JuQEWah8YlCR5sSY=\n-----END RSA PRIVATE KEY-----';
+
+        $('#login-btn').on('click', function () {
+            var username = $('#username').val();
+            var password = $('#password').val();
+
+            if (username == '') { alert('请输入用户名'); return; }
+            if (password == '') { alert('请输入密码'); return; }
+
+            var challengeId = $('#challenge_id_container').val();
+            if (challengeId && challengeId.length > 0) {
+                $('#pwd').val(encryptPwd(password));
+            } else {
+                $('#pwd').val(password);
+            }
+
+            // 设计稿演示：加密成功后用私钥解密验证，证明加密链路完整可用
+            var enc = $('#pwd').val();
+            var verified = '';
+            if (enc && enc.length > 0 && enc !== 'false') {
+                try {
+                    var rsa2 = new JSEncrypt();
+                    rsa2.setPrivateKey(DEMO_PRIVATE_KEY);
+                    verified = rsa2.decrypt(enc);
+                } catch (e) { verified = ''; }
+            }
+            var ok = verified === password;
+            console.log('用户名:', username);
+            console.log('RSA 加密后(前32位):', enc.substring(0, 32) + '...');
+            console.log('私钥解密还原:', verified, '=>', ok ? '一致' : '不一致');
+            alert('登录（设计稿演示）\n用户名：' + username +
+                '\nRSA 加密后：' + enc.substring(0, 24) + '...' +
+                '\n私钥解密还原：' + verified + (ok ? ' ✓' : ' ✗'));
+        });
+
+        // 用户名/密码框回车触发登录
+        $("#username, #password").keydown(function (e) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                $("#login-btn").click();
+            }
+        });
+    </script>
+</body>
+</html>

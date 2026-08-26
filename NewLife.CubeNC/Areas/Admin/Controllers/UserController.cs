@@ -465,10 +465,12 @@ public class UserController : EntityController<User, UserModel>
     }
 
     /// <summary>获取登录密钥</summary>
+    /// <remarks>对齐 WebAPI 版 GET /Auth/Challenge：返回新鲜的 challengeId 和 RSA 公钥。
+    /// 公钥为公开信息，无需鉴权；前端应在提交登录前动态获取，避免页面停留过久导致密钥过期。</remarks>
     /// <returns>返回 challengeId 和 publicKey</returns>
     [AllowAnonymous]
     [HttpGet]
-    public ActionResult GetLoginKey(String token)
+    public ActionResult GetLoginKey()
     {
         if (ManageProvider.User != null)
         {
@@ -476,16 +478,6 @@ public class UserController : EntityController<User, UserModel>
             {
                 code = 500,
                 message = "已登录，无需获取密钥"
-            });
-        }
-        var validToken = "5tU3Xr6PkF6AHfdCu7Sr";
-
-        if (token != validToken)
-        {
-            return Json(new
-            {
-                code = 500,
-                message = "非法请求，token错误"
             });
         }
         try
@@ -898,7 +890,8 @@ public class UserController : EntityController<User, UserModel>
     [AllowAnonymous]
     public ActionResult Register(RegisterModel registerModel)
     {
-        var email = registerModel.Email;
+        var email = registerModel.Email?.Trim();
+        var mobile = registerModel.Mobile?.Trim();
         var username = registerModel.Username;
         var password = registerModel.Password;
         var password2 = registerModel.Password2;
@@ -914,8 +907,12 @@ public class UserController : EntityController<User, UserModel>
             if (tenantError != null) throw new ArgumentException(tenantError, nameof(registerModel));
             tenantId = _tenantContext.TenantId;
 
-            //if (String.IsNullOrEmpty(email)) throw new ArgumentNullException("email", "邮箱地址不能为空！");
+            // 用户名必填；邮箱或手机至少填一个
             if (String.IsNullOrEmpty(username)) throw new ArgumentNullException("username", "用户名不能为空！");
+            if (String.IsNullOrEmpty(email) && String.IsNullOrEmpty(mobile)) throw new ArgumentNullException("email", "邮箱或手机至少填写一项！");
+            if (!email.IsNullOrEmpty() && !ValidFormatHelper.IsEmail(email)) throw new ArgumentException("邮箱格式不正确！", nameof(email));
+            if (!mobile.IsNullOrEmpty() && !ValidFormatHelper.IsMobile(mobile)) throw new ArgumentException("手机号格式不正确！", nameof(mobile));
+
             if (String.IsNullOrEmpty(password)) throw new ArgumentNullException("password", "密码不能为空！");
             if (String.IsNullOrEmpty(password2)) throw new ArgumentNullException("password2", "重复密码不能为空！");
             if (password != password2) throw new ArgumentOutOfRangeException("password2", "两次密码必须一致！");
@@ -933,8 +930,16 @@ public class UserController : EntityController<User, UserModel>
             var user = FindByName(username);
             if (user != null) throw new ArgumentException(nameof(username), $"用户[{username}]已存在！");
 
-            user = FindByMail(email);
-            if (user != null) throw new ArgumentException(nameof(email), $"邮箱[{email}]已存在！");
+            if (!email.IsNullOrEmpty())
+            {
+                user = FindByMail(email);
+                if (user != null) throw new ArgumentException(nameof(email), $"邮箱[{email}]已存在！");
+            }
+            if (!mobile.IsNullOrEmpty())
+            {
+                user = FindByMobile(mobile);
+                if (user != null) throw new ArgumentException(nameof(mobile), $"手机号[{mobile}]已存在！");
+            }
 
             var r = Role.GetOrAdd(set.DefaultRole);
             //user = new User()
@@ -947,6 +952,29 @@ public class UserController : EntityController<User, UserModel>
             //};
             //user.Register();
             var user2 = ManageProvider.Provider.Register(username, password, r.ID, true);
+
+            // 保存邮箱/手机联系方式
+            if (user2 != null)
+            {
+                var usr = user2 as XCode.Membership.User ?? FindByID(user2.ID);
+                if (usr != null)
+                {
+                    var changed = false;
+                    if (!email.IsNullOrEmpty() && !email.EqualIgnoreCase(usr.Mail))
+                    {
+                        usr.Mail = email;
+                        usr.MailVerified = true;
+                        changed = true;
+                    }
+                    if (!mobile.IsNullOrEmpty() && !mobile.EqualIgnoreCase(usr.Mobile))
+                    {
+                        usr.Mobile = mobile;
+                        usr.MobileVerified = true;
+                        changed = true;
+                    }
+                    if (changed) usr.Update();
+                }
+            }
 
             // 多租户开启且解析到租户时，自动绑定用户到该租户（与 /Auth/Register 的 EnsureTenantUser 行为一致）
             if (set.EnableTenant && tenantId > 0 && user2 != null)

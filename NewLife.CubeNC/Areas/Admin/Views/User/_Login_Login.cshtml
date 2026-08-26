@@ -12,88 +12,36 @@
     var value = challengeDic.Value;
 }
 <div class="tab-pane fade in active" id="Login">
-    <!-- Logo-->
-    <div class="row text-center">
-        @if (!set.Logo.IsNullOrEmpty())
-        {
-            <img src="@set.Logo" alt="@set.DisplayName" />
-        }
-        else
-        {
-            <i class="glyphicon glyphicon-cloud login-logo center-block" style="display: inline-block;"></i>
-        }
-    </div>
     <!-- 登录-->
     <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" class="cube-login" method="post" id="cube-login">
         <input id="challenge_id_container" style="display:none;" value="@value" />
         @Html.ValidationSummary()
-        <span class="heading text-primary">@set.DisplayName 登录</span>
         @if (set.AllowLogin)
         {
             <div class="form-group">
-                <input type="text" class="form-control" name="pubKey" style="display:none" />
-            </div>
-            <div class="form-group">
-                <input type="text" class="form-control" id="username" name="username" placeholder="用户名 / 邮箱 / 手机 / 编码">
-                <i class="glyphicon glyphicon-user"></i>
-            </div>
-            <div class="form-group">
-                <input name="challengeId" value="@key" style="display:none;" />
-                <input type="password" class="form-control" id="password" placeholder="密码" autocomplete="off">
-                <input id="pwd" style="display:none" name="password" />
-                <i class="glyphicon glyphicon-lock"></i>
-                @*<a href="#Forgot" data-toggle="tab" class="glyphicon glyphicon-question-sign"></a>*@
-            </div>
-            <div class="form-group clear-fix">
-                <div class="main-checkbox">
-                    <input type="checkbox" value="true" id="remember" name="remember" />
-                    <label for="remember"></label>
+                <div class="input-icon">
+                    <i class="glyphicon glyphicon-user"></i>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="用户名 / 邮箱 / 手机 / 编码" autocomplete="username">
                 </div>
-                <label class="text text-primary" for="remember">记住我</label>
-                @if (set.AllowRegister)
-                {
-                    @*<div class="toolbar clearfix text-center">
-                        <div class="row" style="padding:30px 60px 0 60px;">*@
-                    @*@if (true)
-                        {
-                            <a href="#Forgot" data-toggle="tab" style="float: left">
-                                <i class="glyphicon glyphicon-info-sign"></i>
-                                忘记密码？
-                            </a>
-                        }*@
-
-                    if (set.AllowRegister)
-                    {
-                        <div style="display: inline-block; margin-top: 5px; float: right;">
-                            @*<span style="margin-left: auto; margin-right: auto; margin-top: 5px;">没有账号？</span>*@
-                            <a href="#Register" data-toggle="tab" style="margin-left: auto; margin-right: auto;position: static; font-size: 15px; margin-top: 5px;">
-                                @*<i class="glyphicon glyphicon-menu-right"></i>*@
-                                <span>我要注册</span>
-                            </a>
-                        </div>
-                    }
-                    @*</div>
-                        </div>*@
-                }
-                @* <button type="submit" class="btn btn-default" style="margin: 5px 0 15px 0;width: 100%;">登录</button> *@
-                <a id="login-btn" href="#" class="btn btn-default" style="margin: 5px 0 15px 0;width: 100%;position:relative;color:white;font-size:14px;">登录</a>
             </div>
-
-            @if (!set.LoginTip.IsNullOrEmpty())
-            {
-                <h4 class="header blue lighter bigger">
-                    <i class="ace-icon fa fa-coffee green"></i>
-                </h4>
-
-                <div class="space-6"></div>
-
-                <nav class="navbar navbar-fixed-top">
-                    <div class="alert alert-warning alert-dismissible text-center" role="alert" style="margin-bottom:0px;">
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        @Html.Raw(set.LoginTip)
-                    </div>
-                </nav>
-            }
+            <div class="form-group">
+                <div class="input-icon">
+                    <i class="glyphicon glyphicon-lock"></i>
+                    <input type="password" class="form-control has-toggle" id="password" placeholder="密码" autocomplete="off">
+                    <span class="pwd-toggle" data-target="password" title="显示/隐藏密码"><i class="glyphicon glyphicon-eye-open"></i></span>
+                </div>
+            </div>
+            <div class="form-options">
+                <label class="checkbox-custom">
+                    <input type="checkbox" id="remember" name="remember" value="true" checked="checked" />
+                    <span class="box"></span>记住我
+                </label>
+                <a class="forgot-link" data-tab-link="Forgot">忘记密码？</a>
+            </div>
+            <input name="challengeId" value="@key" style="display:none;" />
+            <input type="text" name="pubKey" style="display:none" />
+            <input id="pwd" style="display:none" name="password" />
+            <button type="button" id="login-btn" class="btn-login">登 录</button>
         }
     </form>
 </div>
