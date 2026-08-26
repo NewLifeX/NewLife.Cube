@@ -3,10 +3,12 @@ import { ApiError } from '@cube/api-core';
 import cubeApi from '@/api';
 import type { FieldMeta } from '@/core/types/field';
 import { isEnableField, isTruthy } from '@/core/utils/fieldBadge';
+import { BATCH_ENABLE_MAX } from '@/core/utils/viewMapping';
 import { getValueByKey, normalizeKeysByFields, setValueByKey } from '@/core/utils/url';
 import { formatApiError } from '@/core/utils/apiError';
 import { resolveFieldsForKind } from '@/core/utils/fieldParts';
 import { prepareSubmitPayload } from '@/core/utils/submitPayload';
+import { isIamBatchDeleteBlocked, isIamRowActionDisabled } from '@/core/utils/iamGuards';
 import type { ListContext } from './listContext';
 
 interface ListCrudDeps {
@@ -33,17 +35,28 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
     drawerVisible,
     formModel,
     batchDeleteState,
+    batchEnableState,
     selectedKeys,
+    tableData,
     chartVisible,
     chartList,
   } = ctx;
   const { loadData, openEdit, openDetail } = deps;
+
+  function selectedRowsForKeys(): Record<string, unknown>[] {
+    const keys = new Set(selectedKeys.value.map((k) => String(k)));
+    return tableData.value.filter((row) => {
+      const id = getValueByKey(row, pkField.value);
+      return id != null && id !== '' && keys.has(String(id));
+    });
+  }
 
   function onTableAction(payload: { action: string; row: Record<string, unknown> }) {
     if (payload.action.startsWith('auto:')) return;
     if (payload.action === 'edit') openEdit(payload.row);
     else if (payload.action === 'delete') {
       if (!chrome.value.allowDelete) return;
+      if (isIamRowActionDisabled(typePath.value, payload.row, 'delete')) return;
       Modal.confirm({
         title: '确认删除？',
         content: '删除后不可恢复',
@@ -162,6 +175,7 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
   }
 
   async function handleDelete(row: Record<string, unknown>) {
+    if (isIamRowActionDisabled(typePath.value, row, 'delete')) return;
     const id = getValueByKey(row, pkField.value);
     await cubeApi.page.remove(typePath.value, id as string | number);
     Message.success('删除成功');
@@ -171,6 +185,10 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
   function confirmBatchDelete() {
     if (!batchDeleteState.value.visible || batchDeleteState.value.disabled) return;
     if (!selectedKeys.value.length) return;
+    if (isIamBatchDeleteBlocked(typePath.value, selectedRowsForKeys())) {
+      Message.error('含系统角色，无法批量删除');
+      return;
+    }
     const count = selectedKeys.value.length;
     Modal.confirm({
       title: '确认批量删除？',
@@ -182,10 +200,49 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
   async function handleBatchDelete() {
     if (!batchDeleteState.value.visible || batchDeleteState.value.disabled) return;
     if (!selectedKeys.value.length) return;
+    if (isIamBatchDeleteBlocked(typePath.value, selectedRowsForKeys())) {
+      Message.error('含系统角色，无法批量删除');
+      return;
+    }
     await cubeApi.page.deleteSelect(typePath.value, selectedKeys.value);
     Message.success('批量删除成功');
     selectedKeys.value = [];
     loadData();
+  }
+
+  function confirmBatchEnable(enable: boolean) {
+    if (!batchEnableState.value.visible || batchEnableState.value.disabled) return;
+    const n = selectedKeys.value.length;
+    if (n > BATCH_ENABLE_MAX) {
+      Message.error('一次最多启用/禁用 200 条');
+      return;
+    }
+    Modal.confirm({
+      title: enable ? `确认启用已选 ${n} 条？` : `确认禁用已选 ${n} 条？`,
+      content: enable ? '启用后记录将恢复可用。' : '禁用后记录将不可用。',
+      onOk: () => handleBatchEnable(enable),
+    });
+  }
+
+  async function handleBatchEnable(enable: boolean) {
+    if (!batchEnableState.value.visible) return;
+    const n = selectedKeys.value.length;
+    if (n <= 0) return;
+    if (n > BATCH_ENABLE_MAX) {
+      Message.error('一次最多启用/禁用 200 条');
+      return;
+    }
+    try {
+      const res = enable
+        ? await cubeApi.page.enableSelect(typePath.value, selectedKeys.value)
+        : await cubeApi.page.disableSelect(typePath.value, selectedKeys.value);
+      const msg = (res as { message?: string })?.message;
+      Message.success(msg || (enable ? '启用成功' : '禁用成功'));
+      selectedKeys.value = [];
+      await loadData();
+    } catch (err) {
+      Message.error(formatApiError(err, enable ? '批量启用失败' : '批量禁用失败'));
+    }
   }
 
   function handleExport(format: string | number | Record<string, unknown> | undefined) {
@@ -216,6 +273,7 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
 
   function onCardDelete(row: Record<string, unknown>) {
     if (!chrome.value.allowDelete) return;
+    if (isIamRowActionDisabled(typePath.value, row, 'delete')) return;
     Modal.confirm({
       title: '确认删除？',
       content: '删除后不可恢复',
@@ -246,6 +304,7 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
     handleSave,
     handleDelete,
     confirmBatchDelete,
+    confirmBatchEnable,
     handleBatchDelete,
     handleExport,
     handleImport,

@@ -62,7 +62,7 @@ export const useUserProfileStore = defineStore('userProfile', {
       this.loadError = '';
       try {
         const res = await cubeApi.profile.getUserProfile();
-        this.prefs = prefsFromWire(res.data);
+        this.prefs = prefsFromWire(res);
         this.dirty = false;
         this.loaded = true;
         this.persistLocal();

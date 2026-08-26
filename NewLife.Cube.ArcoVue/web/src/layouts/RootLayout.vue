@@ -4,6 +4,7 @@
     v-model:visible="appearanceVisible"
   />
   <InboxDrawer v-model:visible="inboxVisible" />
+  <AiAssistant />
 </template>
 
 <script setup lang="ts">
@@ -18,6 +19,7 @@ import TopLayout from './top.vue';
 import MixLayout from './mix.vue';
 import AppearanceDrawer from '@/views/settings/AppearanceDrawer.vue';
 import InboxDrawer from '@/views/inbox/InboxDrawer.vue';
+import AiAssistant from '@/views/ai/AiAssistant.vue';
 
 useShellAuth();
 useDocumentTitle();

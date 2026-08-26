@@ -132,13 +132,20 @@ public partial class UserProfile : Entity<UserProfile>
     #endregion
 
     #region 业务操作
-    /// <summary>转为模型</summary>
+    /// <summary>转为模型（显式拷贝 Json 列，避免 Copy(this) 漏字段导致 GET 丢外观）</summary>
     public UserProfileModel ToModel()
     {
-        var model = new UserProfileModel();
-        model.Copy(this);
-
-        return model;
+        return new UserProfileModel
+        {
+            Id = Id,
+            UserId = UserId,
+            LayoutJson = LayoutJson,
+            ThemeJson = ThemeJson,
+            WorkspaceJson = WorkspaceJson,
+            Version = Version,
+            Enable = Enable,
+            Remark = Remark,
+        };
     }
 
     /// <summary>为指定用户 upsert 呈现配置（强制绑定 userId，忽略模型中的他人 UserId）</summary>

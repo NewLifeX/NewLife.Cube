@@ -14,6 +14,7 @@ import { useViewProfileStore } from '@/stores/viewProfile';
 import type { FieldMeta } from '@/core/types/field';
 import { resolveCrudFlags } from '@/core/utils/permissions';
 import { getValueByKey } from '@/core/utils/url';
+import { selfOnlyUserAlertText, shouldShowSelfOnlyUserAlert } from '@/core/utils/iamGuards';
 import { formatFieldValue } from '@/core/utils/fieldFormat';
 import { getSectionLoader } from '@/core/composables/useSections';
 import { selectListColumns } from '@/core/utils/listColumns';
@@ -23,6 +24,7 @@ import {
   defaultBadgeColumnWidth,
   isBadgeField,
   isBooleanToggleField,
+  isEnableField,
   resolveCellBadge,
 } from '@/core/utils/fieldBadge';
 import {
@@ -34,6 +36,7 @@ import {
   type EntityViewState,
   type FormLayout,
   type ViewFilter,
+  type ViewFormatRule,
   type ViewGroup,
   type ViewInsight,
   type ViewKind,
@@ -43,6 +46,7 @@ import {
   isLargePageViewKind,
   parseViewKind,
   resolveBatchDeleteState,
+  resolveBatchEnableState,
   resolveViewPageSize,
   type CalendarMapping,
   type CardMapping,
@@ -333,20 +337,34 @@ export function createListContext(props: { type: string; authId?: number }) {
     }),
   );
 
-  /** 「高级」菜单仅在有可见操作（导入/导出/批量删除/管理员表单布局）时出现 */
+  const hasEnableField = computed(() => listFields.value.some((f) => isEnableField(f)));
+
+  const batchEnableState = computed(() =>
+    resolveBatchEnableState({
+      viewKind: activeViewKind.value,
+      canEdit: flags.value.canEdit,
+      enableSelect: pageSetting.value?.enableSelect,
+      hasEnableField: hasEnableField.value,
+      selectedCount: selectedKeys.value.length,
+    }),
+  );
+
+  /** 「高级」菜单：导入/导出/删除/启停/修改/管理员表单布局 */
   const advancedVisible = computed(
     () =>
       flags.value.canImport ||
       flags.value.canExport ||
       batchDeleteState.value.visible ||
+      batchEnableState.value.visible ||
+      flags.value.canEdit ||
       isAdmin.value,
   );
 
   /** 搜索抽屉开关：默认收起，点击工具栏「搜索」打开 */
   const searchPanelOpen = ref(false);
 
-  /** 筛选/分组弹层互斥：同一时刻只展示一个（OSC-0015） */
-  const activePopover = ref<'filter' | 'group' | null>(null);
+  /** 筛选/分组/填色弹层互斥 */
+  const activePopover = ref<'filter' | 'group' | 'format' | null>(null);
   const filterPopoverVisible = computed({
     get: () => activePopover.value === 'filter',
     set: (v: boolean) => {
@@ -359,6 +377,12 @@ export function createListContext(props: { type: string; authId?: number }) {
       activePopover.value = v ? 'group' : null;
     },
   });
+  const formatPopoverVisible = computed({
+    get: () => activePopover.value === 'format',
+    set: (v: boolean) => {
+      activePopover.value = v ? 'format' : null;
+    },
+  });
 
   /** 当前命名视图的筛选构建器方案（OSC-0015）：会话内存状态，应用仅改本地、保存才写 store 持久化 */
   const localFilter = ref<ViewFilter>(emptyViewFilter());
@@ -367,6 +391,13 @@ export function createListContext(props: { type: string; authId?: number }) {
   /** 当前命名视图的多级分组字段（OSC-0015）：同筛选，应用仅改本地、保存才写 store */
   const localGroup = ref<ViewGroup>([]);
   const viewGroup = computed<ViewGroup>(() => localGroup.value);
+
+  const localFormat = ref<ViewFormatRule[]>([]);
+  const viewFormat = computed<ViewFormatRule[]>(() => localFormat.value);
+  const formatButtonVisible = computed(() => {
+    const k = activeViewKind.value;
+    return k === 'table' || k === 'tree' || k === 'card';
+  });
 
   /** 筛选构建器候选字段 = 当前视图可见列 ∪ 人员字段（创建者/更新者等即使列隐藏也可筛选，OSC-0015） */
   const filterFields = computed<FieldMeta[]>(() => {
@@ -479,7 +510,10 @@ export function createListContext(props: { type: string; authId?: number }) {
       const sr = scroll.getBoundingClientRect();
       avail = Math.floor(sr.bottom - pr.top - nonTableH - 16);
     }
-    measuredTableHeight.value = Math.max(240, avail);
+    const next = Math.max(240, avail);
+    // 1px 滚动条/亚像素抖动会改 height → 甘特整表重建闪烁；小于 2px 忽略
+    if (Math.abs(measuredTableHeight.value - next) < 2) return;
+    measuredTableHeight.value = next;
   }
 
   const resolvedTableHeight = computed(() => {
@@ -545,6 +579,17 @@ export function createListContext(props: { type: string; authId?: number }) {
       drawerRowIndex.value >= 0 &&
       drawerRowIndex.value < tableData.value.length - 1,
   );
+
+  const showSelfOnlyUserAlert = computed(() =>
+    shouldShowSelfOnlyUserAlert({
+      typePath: typePath.value,
+      isSystemUser: userStore.userInfo?.isSystem,
+      total: pagination.total,
+      rows: tableData.value,
+      currentUserId: userStore.userInfo?.id,
+    }),
+  );
+  const selfOnlyUserAlertMessage = selfOnlyUserAlertText();
 
   return {
     userStore,
@@ -633,15 +678,20 @@ export function createListContext(props: { type: string; authId?: number }) {
     treeRows,
     chrome,
     batchDeleteState,
+    batchEnableState,
     advancedVisible,
     searchPanelOpen,
     activePopover,
     filterPopoverVisible,
     groupPopoverVisible,
+    formatPopoverVisible,
     localFilter,
     viewFilter,
     localGroup,
     viewGroup,
+    localFormat,
+    viewFormat,
+    formatButtonVisible,
     filterFields,
     isGrouped,
     tableVisibleCount,
@@ -665,6 +715,8 @@ export function createListContext(props: { type: string; authId?: number }) {
     tableResizeObserver,
     drawerCanPrev,
     drawerCanNext,
+    showSelfOnlyUserAlert,
+    selfOnlyUserAlertMessage,
   };
 }
 

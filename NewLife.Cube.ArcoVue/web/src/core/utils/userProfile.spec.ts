@@ -75,8 +75,42 @@ describe('prefsFromWire / prefsToWirePayload', () => {
     expect(prefs.workspace.pageSize).toBe(50);
   });
 
+  it('workspace.aiFab 往返', () => {
+    const prefs = prefsFromWire({
+      workspaceJson: '{"defaultView":"table","pageSize":20,"aiFab":{"x":120,"y":80}}',
+    });
+    expect(prefs.workspace.aiFab).toEqual({ x: 120, y: 80 });
+    const payload = prefsToWirePayload(prefs);
+    expect(JSON.parse(payload.workspaceJson!)).toMatchObject({ aiFab: { x: 120, y: 80 } });
+  });
+
+  it('workspace.aiPanel 往返含宽高', () => {
+    const prefs = prefsFromWire({
+      workspaceJson: '{"aiPanel":{"x":40,"y":60,"w":400,"h":520}}',
+    });
+    expect(prefs.workspace.aiPanel).toEqual({ x: 40, y: 60, w: 400, h: 520 });
+    expect(JSON.parse(prefsToWirePayload(prefs).workspaceJson!)).toMatchObject({
+      aiPanel: { x: 40, y: 60, w: 400, h: 520 },
+    });
+  });
+
   it('null wire → defaults', () => {
     expect(prefsFromWire(null)).toEqual(SYSTEM_DEFAULT_PROFILE);
+  });
+
+  it('FastJson / PascalCase 列名 + Axios 嵌套仍能还原外观', () => {
+    const theme = '{"Appearance":"dark","PrimaryColor":"#00B42A"}';
+    const prefs = prefsFromWire({
+      status: 200,
+      data: {
+        code: 0,
+        data: { tHemeJson: theme, LayoutJson: '{"Mode":"mix"}', WorkspaceJson: '{"PageSize":30}' },
+      },
+    });
+    expect(prefs.theme.appearance).toBe('dark');
+    expect(prefs.theme.primaryColor).toBe('#00B42A');
+    expect(prefs.layout.mode).toBe('mix');
+    expect(prefs.workspace.pageSize).toBe(30);
   });
 
   it('save payload shape contains three Json strings', () => {

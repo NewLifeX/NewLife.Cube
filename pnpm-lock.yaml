@@ -110,6 +110,9 @@ importers:
       echarts:
         specifier: ^5.6.0
         version: 5.6.0
+      marked:
+        specifier: ^18.0.9
+        version: 18.0.9
       pinia:
         specifier: ^3.0.0
         version: 3.0.4(typescript@5.7.3)(vue@3.5.32(typescript@5.7.3))

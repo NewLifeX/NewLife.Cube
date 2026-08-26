@@ -11,6 +11,7 @@ import {
 import type {
   ViewChrome,
   ViewFilter,
+  ViewFormatRule,
   ViewGroup,
   ViewInsight,
   ViewKind,
@@ -59,6 +60,7 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
     ganttZoomLevel,
     localFilter,
     localGroup,
+    localFormat,
     activeViewId,
     flags,
     drawerMode,
@@ -128,6 +130,7 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
     // 会话内筛选/分组与 store（含已保存配置）对齐（OSC-0015）
     localFilter.value = evpStore.getFilter(typePath.value);
     localGroup.value = evpStore.getGroup(typePath.value);
+    localFormat.value = evpStore.getFormat(typePath.value);
   }
 
   function onColumnsChange(cols: ColumnPref[]) {
@@ -285,6 +288,21 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
     ctx.activePopover.value = v ? 'group' : null;
   }
 
+  function onFormatPopoverVisible(v: boolean) {
+    ctx.activePopover.value = v ? 'format' : null;
+  }
+
+  function onFormatChange(format: ViewFormatRule[]) {
+    evpStore.updateFormat(typePath.value, format);
+    localFormat.value = format;
+  }
+
+  function onClearFormat() {
+    evpStore.updateFormat(typePath.value, []);
+    localFormat.value = [];
+    Message.success('已清除填色');
+  }
+
   /** 应用筛选方案：写入 store 持久化（刷新/下次打开保留）；筛选为纯前端过滤，复用已加载数据重过滤 */
   function onFilterApply(filter: ViewFilter) {
     evpStore.updateFilter(typePath.value, filter);
@@ -357,12 +375,15 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
     onSaveAsDefault,
     onFilterPopoverVisible,
     onGroupPopoverVisible,
+    onFormatPopoverVisible,
     onFilterApply,
     onFilterSave,
     onClearFilter,
     onGroupApply,
     onGroupSave,
     onClearGroup,
+    onFormatChange,
+    onClearFormat,
   };
 }
 

@@ -24,6 +24,7 @@ import {
   type OpsCustomLink,
 } from '@/core/utils/opsAction';
 import { OPS_LINK_INLINE_MAX } from '@/core/utils/listLinkFields';
+import { isIamRowActionDisabled } from '@/core/utils/iamGuards';
 
 export interface ListTableColumnDef {
   pref: ColumnPref;
@@ -68,15 +69,11 @@ interface ListTableProps {
   hierarchy?: boolean;
   /** 分组视图（OSC-0015）：records 含 __groupHeader 组头节点行，组头跨列显示并浅色区分 */
   grouped?: boolean;
-  /** 分组字段名列表（OSC-0015 重构）：非空时启用 VTable 原生 groupBy 分组（参考官方 list-table-group-checkbox），
-   *  checkbox 置于 rowSeriesNumber 列（每行最前面），组标题行左侧显示 checkbox 并与子行选中状态级联同步 */
   groupFields?: string[];
-  /** 分组值显示标签翻译（OSC-0015：如 dataSource 枚举翻译）；返回 undefined 则回落显示原值 */
   groupLabelOf?: (field: string, value: unknown) => string | undefined;
-  /** 条件填色规则（NamedView.format） */
   formatRules?: ViewFormatRule[];
-  /** 填色命中用字段元数据 */
   formatFields?: FieldMeta[];
+  typePath?: string;
 }
 
 /** ListTable 组件 emits 类型（与 ListTable.vue defineEmits 泛型逐字一致） */
@@ -95,8 +92,6 @@ interface ListTableEmits {
   /** 单元格字段挂链接点击 */
   cellLink: [payload: { url: string; target?: string; row: Record<string, unknown> }];
   toggleEnable: [row: Record<string, unknown>, field: string];
-  /** 双击可编辑普通字段（OSC-260819e483 P3.5）：父级决定打开字段编辑（PatchFields）或详情 */
-  cellEdit: [payload: { row: Record<string, unknown>; field: string; value: unknown }];
   /** 滚动接近底部（剩余不足 200px）时触发，供父级增量加载更多行（列表/树懒加载） */
   scrollBottom: [];
 }
@@ -118,7 +113,6 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
   let lastSetRecordsAt = 0;
   /** 分隔线层由 JS 动态创建：VTable 构造时会清空宿主容器，模板子元素会被删除 */
   let sepEl: HTMLElement | null = null;
-  let freezeEl: HTMLElement | null = null;
 
   /** 确保分隔线层存在（VTable 创建/重建后调用） */
   function ensureSeparatorLayer(): HTMLElement | null {
@@ -150,7 +144,6 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       el.append(left, right);
       host.appendChild(el);
     }
-    freezeEl = el;
     return el;
   }
 
@@ -374,8 +367,11 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       fill: false,
     });
 
-    parts.forEach((action, i) => {
-      const isLast = i === parts.length - 1;
+    const visibleParts = parts.filter(
+      (action) => !(action === 'delete' && isIamRowActionDisabled(props.typePath, record, 'delete')),
+    );
+    visibleParts.forEach((action, i) => {
+      const isLast = i === visibleParts.length - 1;
       // 链接配色：详情/编辑=主色、删除=警示色、其余系统自定义=链接色（需求 OSC）
       const color =
         action === 'more' || action.startsWith('link:')
@@ -1006,15 +1002,6 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
         field === '__expand'
       )
         return;
-      // 单元格编辑（OSC-260819e483 P3.5）：canEdit 时双击普通字段（非徽标/链接/启停列）发出 cellEdit，
-      // 由父级判断是否进入字段编辑（PatchFields）；徽标/链接/启停仍走双击详情/单击交互
-      const colDef = props.columns.find((c) => c.pref.key === field);
-      const plainEditable =
-        props.canEdit && colDef && !colDef.badge && !colDef.cellLink && !colDef.enableToggle;
-      if (plainEditable) {
-        emit('cellEdit', { row, field, value: row[field] });
-        return;
-      }
       if (props.canViewDetail && props.enableTableDoubleClick !== false) emit('rowDblClick', row);
     }) as any);
 
@@ -1224,6 +1211,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       props.groupFields,
       props.formatRules,
       props.formatFields,
+      props.typePath,
     ],
     () => refreshOption(),
   );

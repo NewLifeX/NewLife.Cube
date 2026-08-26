@@ -2,6 +2,7 @@ import { onMounted, ref, watch } from 'vue';
 import type { InboxMessageItem } from '@cube/api-core';
 import cubeApi from '@/api';
 import { formatDateTime } from '@/core/utils/datetime';
+import { parseInboxUnreadCount, resolveInboxTotal } from '@/core/utils/inboxBadge';
 import { useAppStore } from '@/stores/app';
 
 export type InboxRow = InboxMessageItem & { timeText: string };
@@ -18,7 +19,7 @@ export function useInboxDrawer(visible: { value: boolean }) {
   async function refreshUnread() {
     try {
       const res = await cubeApi.automation.inboxUnreadCount();
-      unreadCount.value = Number(res.data?.count ?? 0);
+      unreadCount.value = parseInboxUnreadCount(res.data);
       appStore.inboxUnreadCount = unreadCount.value;
     } catch {
       unreadCount.value = 0;
@@ -35,8 +36,13 @@ export function useInboxDrawer(visible: { value: boolean }) {
         ...m,
         timeText: formatDateTime(m.createTime) || '',
       }));
-      total.value = Number(res.page?.totalCount ?? list.length);
+      total.value = resolveInboxTotal(res.page, list.length);
       await refreshUnread();
+      const unreadInPage = list.filter((m) => !m.read).length;
+      if (!unreadCount.value && unreadInPage) {
+        unreadCount.value = unreadInPage;
+        appStore.inboxUnreadCount = unreadInPage;
+      }
     } catch {
       items.value = [];
     } finally {

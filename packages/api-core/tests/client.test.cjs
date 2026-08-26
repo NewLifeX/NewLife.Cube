@@ -90,6 +90,23 @@ test('additionalRequestHeaders 支持函数式', async () => {
   assert.equal(captured.config.headers['X-Tenant'], 't1');
 });
 
+test('additionalRequestHeaders 合并后 headers.set 仍可用', async () => {
+  const { adapter, captured } = capturingAdapter();
+  const { client } = makeClient({
+    baseURL: 'http://host:5000',
+    additionalRequestHeaders: { 'X-App': 'cube' },
+    onRequestHook(config) {
+      config.headers.set('X-Cube-Field-Validation', '1');
+      return config;
+    },
+  });
+  client.defaults.adapter = adapter;
+  await client.put('/Admin/Cube', { copyright: 'x' });
+  assert.equal(captured.config.headers['X-App'], 'cube');
+  assert.equal(captured.config.headers['X-Cube-Field-Validation'], '1');
+  assert.equal(typeof captured.config.headers.set, 'function');
+});
+
 test('withCredentials 透传', async () => {
   const { adapter, captured } = capturingAdapter();
   const { client } = makeClient({ baseURL: 'http://host:5000', withCredentials: true });

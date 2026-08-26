@@ -48,6 +48,8 @@ const props = withDefaults(
     /** 条件填色规则 */
     formatRules?: ViewFormatRule[];
     formatFields?: FieldMeta[];
+    /** 用于系统角色隐藏删除（OSC-260824fc7c） */
+    typePath?: string;
   }>(),
   {
     selectedKeys: () => [],
@@ -81,8 +83,6 @@ const emit = defineEmits<{
   }];
   cellLink: [payload: { url: string; target?: string; row: Record<string, unknown> }];
   toggleEnable: [row: Record<string, unknown>, field: string];
-  /** 双击可编辑普通字段（OSC-260819e483 P3.5）：父级决定打开字段编辑（PatchFields）或详情 */
-  cellEdit: [payload: { row: Record<string, unknown>; field: string; value: unknown }];
   /** 滚动接近底部（剩余不足 200px）时触发，供父级增量加载更多行（列表/树懒加载） */
   scrollBottom: [];
 }>();

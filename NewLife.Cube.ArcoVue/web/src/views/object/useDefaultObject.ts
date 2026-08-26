@@ -34,6 +34,7 @@ import { formatApiError } from '@/core/utils/apiError';
 import { getValueByKey, normalizeKeysByFields } from '@/core/utils/url';
 import type { FieldMeta } from '@/core/types/field';
 import { useAppStore } from '@/stores/app';
+import { mergeFillFormValues } from '@/core/utils/aiFill';
 import { useTenantStore } from '@/stores/tenant';
 import { ensureEchartsTheme } from '@/core/utils/echartsTheme';
 
@@ -309,6 +310,7 @@ export function useDefaultObject(props: DefaultObjectProps) {
           if (key === 'admin/cube') {
             tenantStore.applyFeatureFlag(appStore.loginConfig?.enableTenant);
             await tenantStore.load();
+            await appStore.fetchAiConfig();
           }
           syncDocumentTitle();
         } catch {
@@ -322,18 +324,41 @@ export function useDefaultObject(props: DefaultObjectProps) {
     }
   }
 
+  function applyAiFill(values: Record<string, unknown>) {
+    const filled = mergeFillFormValues(form, values, fields.value);
+    if (filled.length) {
+      Message.success(`AI 已预填 ${filled.length} 个字段（${filled.join('、')}），请检查后保存`);
+    }
+  }
+
+  function syncAiContext() {
+    appStore.patchAiContext({
+      page: 'object',
+      mode: 'edit',
+      id: 0,
+      typePath: currentType.value,
+      queryB64: '',
+      applyFill: applyAiFill,
+    });
+  }
+
   onMounted(() => {
     void load();
     // 后台自动发现其它 Object 配置页，不阻塞当前页渲染
     void discoverObjectPages();
     syncDocumentTitle();
+    syncAiContext();
   });
 
   onBeforeUnmount(() => {
     appStore.clearDocumentTitleParts();
+    appStore.clearAiPageContext();
   });
 
-  watch([title, currentType, objectPages], () => syncDocumentTitle());
+  watch([title, currentType, objectPages], () => {
+    syncDocumentTitle();
+    syncAiContext();
+  });
   watch(
     () => [getValueByKey(form, 'DisplayName'), form.DisplayName, form.displayName],
     () => {

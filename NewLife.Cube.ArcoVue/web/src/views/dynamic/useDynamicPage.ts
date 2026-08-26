@@ -5,6 +5,8 @@ import cubeApi from '@/api';
 import { getSectionLoader } from '@/core/composables/useSections';
 import { routeToApiPrefix } from '@/core/utils/url';
 import { detectPageKind, type PageKind } from '@/core/utils/pageKind';
+import { mapPageKindToAiPage } from '@/core/utils/aiChatContext';
+import { useAppStore } from '@/stores/app';
 
 /** DynamicPage 组件 props 类型（与 DynamicPage.vue defineProps 泛型逐字一致） */
 interface DynamicPageProps {
@@ -21,6 +23,7 @@ const pageKindCache = new Map<string, PageKind>();
  */
 export function useDynamicPage(props: DynamicPageProps) {
   const route = useRoute();
+  const appStore = useAppStore();
 
   const typePath = computed(() => {
     if (props.type) return props.type;
@@ -80,6 +83,22 @@ export function useDynamicPage(props: DynamicPageProps) {
       if (!overrideComp.value) await resolveKind();
     },
     { immediate: true },
+  );
+
+  watch(
+    pageKind,
+    (k) => {
+      if (k === 'home' || k === 'custom' || k === 'unknown') {
+        appStore.patchAiContext({
+          page: mapPageKindToAiPage(k),
+          mode: 'add',
+          id: 0,
+          typePath: typePath.value,
+          queryB64: '',
+          applyFill: undefined,
+        });
+      }
+    },
   );
 
   return {

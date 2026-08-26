@@ -1,4 +1,5 @@
 import type { UserProfileModel } from '@cube/api-core';
+import { normalizeAiFab, normalizeAiPanel, type AiFabPos, type AiPanelPref } from './aiFab';
 
 export type LayoutMode = 'side' | 'top' | 'mix';
 /** 内容区宽度：标准 / 较宽 / 流式（适配不同分辨率） */
@@ -25,6 +26,10 @@ export interface ThemePrefs {
 export interface WorkspacePrefs {
   defaultView: string;
   pageSize: number;
+  /** AI 悬浮球视口坐标（left/top）；缺省则右下角 */
+  aiFab?: AiFabPos;
+  /** AI 卡片浮窗位置与尺寸；缺省贴悬浮球 / 默认卡片 */
+  aiPanel?: AiPanelPref;
 }
 
 export interface UserProfilePrefs {
@@ -111,28 +116,72 @@ function resolveFontScale(v: unknown): number {
   return SYSTEM_DEFAULT_PROFILE.theme.fontScale;
 }
 
+function pickIgnoreCase(obj: Record<string, unknown>, name: string): unknown {
+  const want = name.toLowerCase();
+  const hit = Object.keys(obj).find((k) => k.toLowerCase() === want);
+  return hit !== undefined ? obj[hit] : undefined;
+}
+
+function asRecord(v: unknown): Record<string, unknown> | null {
+  if (v && typeof v === 'object' && !Array.isArray(v)) return v as Record<string, unknown>;
+  return null;
+}
+
+function asJsonObject(v: unknown): Record<string, unknown> | null {
+  if (typeof v === 'string') return parseJsonObject(v);
+  return asRecord(v);
+}
+
+function hasProfileJsonKey(obj: Record<string, unknown>): boolean {
+  return Object.keys(obj).some((k) => {
+    const n = k.toLowerCase();
+    return n === 'layoutjson' || n === 'themejson' || n === 'workspacejson';
+  });
+}
+
+/** 兼容 Axios / ApiResponse 嵌套，以及 FastJson 首字母小写（ThemeJson → tHemeJson） */
+function unwrapProfileWire(raw: unknown): Record<string, unknown> | null {
+  const seen = new Set<unknown>();
+  let cur: unknown = raw;
+  for (let i = 0; i < 4; i++) {
+    const rec = asRecord(cur);
+    if (!rec || seen.has(rec)) break;
+    seen.add(rec);
+    if (hasProfileJsonKey(rec)) return rec;
+    if ('data' in rec) {
+      cur = rec.data;
+      continue;
+    }
+    return rec;
+  }
+  return asRecord(cur);
+}
+
 function mergeLayout(partial?: Partial<LayoutPrefs> | Record<string, unknown> | null): LayoutPrefs {
   const d = SYSTEM_DEFAULT_PROFILE.layout;
   const p = (partial || {}) as Record<string, unknown>;
+  const siderWidth = pickIgnoreCase(p, 'siderWidth');
+  const siderCollapsed = pickIgnoreCase(p, 'siderCollapsed');
+  const showTabs = pickIgnoreCase(p, 'showTabs');
   return {
-    mode: resolveLayoutMode(p.mode ?? d.mode),
-    siderCollapsed: typeof p.siderCollapsed === 'boolean' ? p.siderCollapsed : d.siderCollapsed,
-    siderWidth:
-      typeof p.siderWidth === 'number' && p.siderWidth >= 48 ? p.siderWidth : d.siderWidth,
-    showTabs: typeof p.showTabs === 'boolean' ? p.showTabs : d.showTabs,
-    contentWidth: resolveContentWidth(p.contentWidth ?? d.contentWidth),
+    mode: resolveLayoutMode(pickIgnoreCase(p, 'mode') ?? d.mode),
+    siderCollapsed: typeof siderCollapsed === 'boolean' ? siderCollapsed : d.siderCollapsed,
+    siderWidth: typeof siderWidth === 'number' && siderWidth >= 48 ? siderWidth : d.siderWidth,
+    showTabs: typeof showTabs === 'boolean' ? showTabs : d.showTabs,
+    contentWidth: resolveContentWidth(pickIgnoreCase(p, 'contentWidth') ?? d.contentWidth),
   };
 }
 
 function mergeTheme(partial?: Partial<ThemePrefs> | Record<string, unknown> | null): ThemePrefs {
   const d = SYSTEM_DEFAULT_PROFILE.theme;
   const p = (partial || {}) as Record<string, unknown>;
+  const primaryColor = pickIgnoreCase(p, 'primaryColor');
   return {
-    appearance: resolveAppearance(p.appearance),
-    primaryColor: typeof p.primaryColor === 'string' && p.primaryColor ? p.primaryColor : d.primaryColor,
-    radius: resolveRadius(p.radius),
-    density: resolveDensity(p.density),
-    fontScale: resolveFontScale(p.fontScale),
+    appearance: resolveAppearance(pickIgnoreCase(p, 'appearance')),
+    primaryColor: typeof primaryColor === 'string' && primaryColor ? primaryColor : d.primaryColor,
+    radius: resolveRadius(pickIgnoreCase(p, 'radius')),
+    density: resolveDensity(pickIgnoreCase(p, 'density')),
+    fontScale: resolveFontScale(pickIgnoreCase(p, 'fontScale')),
   };
 }
 
@@ -141,9 +190,15 @@ function mergeWorkspace(
 ): WorkspacePrefs {
   const d = SYSTEM_DEFAULT_PROFILE.workspace;
   const p = (partial || {}) as Record<string, unknown>;
+  const aiFab = normalizeAiFab(pickIgnoreCase(p, 'aiFab'));
+  const aiPanel = normalizeAiPanel(pickIgnoreCase(p, 'aiPanel'));
+  const defaultView = pickIgnoreCase(p, 'defaultView');
+  const pageSize = pickIgnoreCase(p, 'pageSize');
   return {
-    defaultView: typeof p.defaultView === 'string' && p.defaultView ? p.defaultView : d.defaultView,
-    pageSize: typeof p.pageSize === 'number' && p.pageSize > 0 ? p.pageSize : d.pageSize,
+    defaultView: typeof defaultView === 'string' && defaultView ? defaultView : d.defaultView,
+    pageSize: typeof pageSize === 'number' && pageSize > 0 ? pageSize : d.pageSize,
+    ...(aiFab ? { aiFab } : {}),
+    ...(aiPanel ? { aiPanel } : {}),
   };
 }
 
@@ -158,13 +213,14 @@ export function mergeProfile(
   };
 }
 
-/** 线缆模型 → 前端偏好（JSON 列 parse + 默认回落） */
-export function prefsFromWire(model: UserProfileModel | null | undefined): UserProfilePrefs {
-  if (!model) return mergeProfile(null);
+/** 线缆模型 → 前端偏好（JSON 列 parse + 默认回落）。可传入 Axios/ApiResponse 整包。 */
+export function prefsFromWire(model: UserProfileModel | null | undefined | unknown): UserProfilePrefs {
+  const obj = unwrapProfileWire(model);
+  if (!obj) return mergeProfile(null);
   return {
-    layout: mergeLayout(parseJsonObject(model.layoutJson)),
-    theme: mergeTheme(parseJsonObject(model.themeJson)),
-    workspace: mergeWorkspace(parseJsonObject(model.workspaceJson)),
+    layout: mergeLayout(asJsonObject(pickIgnoreCase(obj, 'layoutJson'))),
+    theme: mergeTheme(asJsonObject(pickIgnoreCase(obj, 'themeJson'))),
+    workspace: mergeWorkspace(asJsonObject(pickIgnoreCase(obj, 'workspaceJson'))),
   };
 }
 

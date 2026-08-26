@@ -258,50 +258,6 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     }
   }
 
-  /** 单元格编辑弹窗（OSC-260819e483 P3.5）：双击可编辑普通字段 → PatchFields 单字段更新，避免整单 PUT 打脏未提交列 */
-  const cellEditVisible = ref(false);
-  const cellEditRow = ref<Record<string, unknown> | null>(null);
-  const cellEditField = ref('');
-  const cellEditValue = ref('');
-
-  const cellEditFieldLabel = computed(() => {
-    const meta = ctx.editFields.value.find((f) => f.name === cellEditField.value);
-    return meta?.displayName || cellEditField.value;
-  });
-
-  function onCellEdit(payload: { row: Record<string, unknown>; field: string; value: unknown }) {
-    // 仅 EditFormFields 可编辑字段（非 PK/只读/布尔）进入编辑；布尔仍走 EnableSelect 徽标；其余回落详情
-    const meta = ctx.editFields.value.find((f) => f.name === payload.field);
-    if (!meta || meta.primaryKey || meta.readOnly || meta.typeName === 'Boolean') {
-      void nav.openDetail(payload.row);
-      return;
-    }
-    cellEditRow.value = payload.row;
-    cellEditField.value = payload.field;
-    cellEditValue.value = (payload.value ?? '') as string;
-    cellEditVisible.value = true;
-  }
-
-  async function confirmCellEdit() {
-    const row = cellEditRow.value;
-    const field = cellEditField.value;
-    if (!row || !field) return;
-    const key = ctx.pkField.value;
-    const id = row[key] ?? row.id ?? row.ID;
-    if (id == null) return;
-    try {
-      await cubeApi.page.patchFields(ctx.typePath.value, {
-        id: String(id),
-        values: { [field]: cellEditValue.value },
-      });
-      Message.success('已保存');
-      cellEditVisible.value = false;
-      await query.loadData();
-    } catch (err) {
-      Message.error(formatApiError(err, '保存失败'));
-    }
-  }
-
   async function bootstrap() {
     await query.loadFields();
     await views.loadProfile();
@@ -423,12 +379,6 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     removeBatchEditRow,
     openBatchEdit,
     confirmBatchEdit,
-    cellEditVisible,
-    cellEditField,
-    cellEditFieldLabel,
-    cellEditValue,
-    onCellEdit,
-    confirmCellEdit,
     ...auto,
     ...views,
     ...nav,

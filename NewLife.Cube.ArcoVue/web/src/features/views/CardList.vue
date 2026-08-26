@@ -29,8 +29,11 @@
       :can-view-detail="canViewDetail"
       :enable-table-double-click="enableTableDoubleClick"
       :can-edit="canEdit"
-      :can-delete="canDelete"
+      :can-delete="canDelete && !isIamRowActionDisabled(typePath, row, 'delete')"
       :ops-custom-links="opsCustomLinks"
+      :title-format-color="titleFormatColorOf(row)"
+      :title-format-bold="titleFormatBoldOf(row)"
+      :side-format-color="sideFormatColorOf(row)"
       @detail="$emit('detail', $event)"
       @edit="$emit('edit', $event)"
       @delete="$emit('delete', $event)"
@@ -55,6 +58,8 @@ import type { OpsCustomLink } from '@/core/utils/opsAction';
 import RecordCard from './RecordCard.vue';
 import { resolveImageUrl } from './cardHelpers';
 import { useCardList } from './useCardList';
+import type { ViewFormatRule } from '@/core/utils/viewProfile';
+import { isIamRowActionDisabled } from '@/core/utils/iamGuards';
 
 const props = withDefaults(
   defineProps<{
@@ -72,8 +77,10 @@ const props = withDefaults(
     enableTableDoubleClick?: boolean;
     canEdit: boolean;
     canDelete: boolean;
+    typePath?: string;
     opsCustomLinks?: OpsCustomLink[];
     formatCell?: (field: FieldMeta, record: Record<string, unknown>) => string;
+    formatRules?: ViewFormatRule[];
   }>(),
   {
     layout: 'standard',
@@ -105,6 +112,9 @@ const {
   rowKeyOf,
   titleOf,
   bodyOf,
+  titleFormatColorOf,
+  titleFormatBoldOf,
+  sideFormatColorOf,
 } = useCardList(props);
 </script>
 

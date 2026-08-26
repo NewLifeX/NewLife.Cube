@@ -4,6 +4,8 @@ import type { ColumnPref } from '@/core/utils/viewProfile';
 import { bucketKanban, type KanbanMapping } from '@/core/utils/viewMapping';
 import { getValueByKey } from '@/core/utils/url';
 import { buildCardBodyFields, cardExcludeKeys, resolveImageUrl } from './cardHelpers';
+import type { ViewFormatRule } from '@/core/utils/viewProfile';
+import { resolveCardTitleFormat, resolveRowSideColor } from '@/core/utils/viewFormat';
 
 /** KanbanBoard 组件 props 类型（与 KanbanBoard.vue defineProps 泛型逐字一致） */
 interface KanbanBoardProps {
@@ -16,7 +18,9 @@ interface KanbanBoardProps {
   canViewDetail: boolean;
   canEdit: boolean;
   canDelete: boolean;
+  typePath?: string;
   formatCell?: (field: FieldMeta, record: Record<string, unknown>) => string;
+  formatRules?: ViewFormatRule[];
 }
 
 /* ---------------- 滚动懒加载（每列先渲染 100 条，列内滚动到底动态追加） ---------------- */
@@ -88,6 +92,18 @@ export function useKanbanBoard(props: KanbanBoardProps) {
     );
   }
 
+  function titleFormatColorOf(row: Record<string, unknown>) {
+    return resolveCardTitleFormat(row, props.formatRules || [], props.fields)?.color;
+  }
+
+  function titleFormatBoldOf(row: Record<string, unknown>) {
+    return !!resolveCardTitleFormat(row, props.formatRules || [], props.fields)?.bold;
+  }
+
+  function sideFormatColorOf(row: Record<string, unknown>) {
+    return resolveRowSideColor(row, props.formatRules || [], props.fields);
+  }
+
   return {
     columns,
     INITIAL_VISIBLE,
@@ -96,6 +112,9 @@ export function useKanbanBoard(props: KanbanBoardProps) {
     rowKeyOf,
     titleOf,
     bodyOf,
+    titleFormatColorOf,
+    titleFormatBoldOf,
+    sideFormatColorOf,
     resolveImageUrl,
   };
 }

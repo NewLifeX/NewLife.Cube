@@ -44,7 +44,9 @@ const cubeApi = createCubeApi({
     // 读请求（GET）、服务接口（/Auth /Cube 评论/Profile 等，无 /api）不加，无头行为与今日一致
     const method = (config.method ?? '').toLowerCase();
     if ((method === 'post' || method === 'put' || method === 'patch') && (config.url ?? '').startsWith('/api/')) {
-      config.headers.set('X-Cube-Field-Validation', '1');
+      const headers = config.headers as { set?: (k: string, v: string) => void } & Record<string, string>;
+      if (typeof headers?.set === 'function') headers.set('X-Cube-Field-Validation', '1');
+      else headers['X-Cube-Field-Validation'] = '1';
     }
     return config;
   },

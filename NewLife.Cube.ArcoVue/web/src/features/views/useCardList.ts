@@ -9,6 +9,8 @@ import type {
 } from '@/core/utils/viewMapping';
 import { getValueByKey } from '@/core/utils/url';
 import { buildCardBodyFields, cardExcludeKeys } from './cardHelpers';
+import type { ViewFormatRule } from '@/core/utils/viewProfile';
+import { resolveCardTitleFormat, resolveRowSideColor } from '@/core/utils/viewFormat';
 
 /** CardList 组件 props 类型（与 CardList.vue defineProps 泛型逐字一致） */
 interface CardListProps {
@@ -24,7 +26,9 @@ interface CardListProps {
   canViewDetail: boolean;
   canEdit: boolean;
   canDelete: boolean;
+  typePath?: string;
   formatCell?: (field: FieldMeta, record: Record<string, unknown>) => string;
+  formatRules?: ViewFormatRule[];
 }
 
 /** CardList 组件全部业务 TS：卡片布局/等高测量/滚动懒加载（自 CardList.vue script setup 原样搬移；本组件 emits 仅模板 $emit 使用，composable 无需 emit） */
@@ -215,6 +219,18 @@ export function useCardList(props: CardListProps) {
     );
   }
 
+  function titleFormatColorOf(row: Record<string, unknown>) {
+    return resolveCardTitleFormat(row, props.formatRules || [], props.fields)?.color;
+  }
+
+  function titleFormatBoldOf(row: Record<string, unknown>) {
+    return !!resolveCardTitleFormat(row, props.formatRules || [], props.fields)?.bold;
+  }
+
+  function sideFormatColorOf(row: Record<string, unknown>) {
+    return resolveRowSideColor(row, props.formatRules || [], props.fields);
+  }
+
   return {
     listRef,
     layoutSignature,
@@ -228,5 +244,8 @@ export function useCardList(props: CardListProps) {
     rowKeyOf,
     titleOf,
     bodyOf,
+    titleFormatColorOf,
+    titleFormatBoldOf,
+    sideFormatColorOf,
   };
 }

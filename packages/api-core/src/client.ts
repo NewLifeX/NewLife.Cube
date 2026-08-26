@@ -144,6 +144,26 @@ export interface ApiClientOptions {
   tryRefreshToken?: () => Promise<string | null>;
 }
 
+/** 在保留 AxiosHeaders.set 的前提下补充缺失头 */
+function mergeRequestHeaders(
+  config: InternalAxiosRequestConfig,
+  extra: Record<string, string> | undefined,
+) {
+  if (!extra) return;
+  const headers = config.headers;
+  if (!headers) return;
+  for (const [key, value] of Object.entries(extra)) {
+    if (value == null || value === '') continue;
+    if (typeof headers?.has === 'function') {
+      if (!headers.has(key)) headers.set(key, value);
+      continue;
+    }
+    const plain = headers as unknown as Record<string, string>;
+    const hit = Object.keys(plain).find((k) => k.toLowerCase() === key.toLowerCase());
+    if (!hit) plain[key] = value;
+  }
+}
+
 /**
  * 创建统一的 API 客户端实例
  * @param options 配置选项
@@ -199,12 +219,14 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
     if (withCredentials) {
       config.withCredentials = true;
     }
-    // 合并附加请求头（config 既有头优先，附加头仅补充缺失键）
+    // 合并附加请求头（config 既有头优先，附加头仅补充缺失键）。
+    // 必须走 AxiosHeaders.set：对象展开会丢掉 .set，导致后续钩子抛出
+    // `config.headers.set is not a function`（魔方设置 PUT / 实体写请求）。
     if (additionalRequestHeaders) {
       const extra = typeof additionalRequestHeaders === 'function'
         ? additionalRequestHeaders()
         : additionalRequestHeaders;
-      config.headers = { ...extra, ...(config.headers as Record<string, string>) } as InternalAxiosRequestConfig['headers'];
+      mergeRequestHeaders(config, extra);
     }
     // 皮肤自定义请求钩子
     if (onRequestHook) {

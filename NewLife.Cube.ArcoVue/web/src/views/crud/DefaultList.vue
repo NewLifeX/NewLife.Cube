@@ -250,6 +250,14 @@
           </a-space>
         </div>
 
+        <a-alert
+          v-if="showSelfOnlyUserAlert"
+          type="warning"
+          class="list-self-only-alert"
+        >
+          {{ selfOnlyUserAlertMessage }}
+        </a-alert>
+
         <a-modal
           v-model:visible="batchEditVisible"
           :title="`批量修改（已选 ${selectedKeys.length} 条）`"
@@ -286,21 +294,6 @@
           </a-button>
         </a-modal>
 
-        <a-modal
-          v-model:visible="cellEditVisible"
-          :title="`编辑字段：${cellEditFieldLabel}`"
-          :on-before-ok="confirmCellEdit"
-        >
-          <a-form layout="vertical">
-            <a-form-item label="字段">
-              <a-input :model-value="cellEditField" disabled />
-            </a-form-item>
-            <a-form-item label="值">
-              <a-input v-model="cellEditValue" placeholder="输入新值，保存后仅更新该字段" />
-            </a-form-item>
-          </a-form>
-        </a-modal>
-
         <a-spin :loading="loading" style="width: 100%">
           <template v-if="activeViewKind === 'table' || activeViewKind === 'tree'">
             <a-alert
@@ -333,6 +326,7 @@
               :format-rules="viewFormat"
               :format-fields="listFields"
               :height="resolvedTableHeight"
+              :type-path="typePath"
               @row-dbl-click="openDetail"
               @selection-change="onSelectionChange"
               @columns-change="onColumnsChange"
@@ -340,7 +334,6 @@
               @action="onTableAction"
               @cell-link="onCellLink"
               @toggle-enable="onToggleEnable"
-              @cell-edit="onCellEdit"
               @scroll-bottom="onTableScrollBottom"
             />
             <div
@@ -368,6 +361,7 @@
             :enable-table-double-click="enableTableDoubleClick"
             :can-edit="flags.canEdit"
             :can-delete="flags.canDelete && chrome.allowDelete"
+            :type-path="typePath"
             :ops-custom-links="opsCustomLinks"
             :format-cell="renderCell"
             :format-rules="viewFormat"
@@ -390,6 +384,7 @@
             :enable-table-double-click="enableTableDoubleClick"
             :can-edit="flags.canEdit"
             :can-delete="flags.canDelete && chrome.allowDelete"
+            :type-path="typePath"
             :ops-custom-links="opsCustomLinks"
             :format-cell="renderCell"
             :format-rules="viewFormat"
@@ -621,6 +616,8 @@ const {
   listFields,
   typePath,
   isAdmin,
+  showSelfOnlyUserAlert,
+  selfOnlyUserAlertMessage,
   onSwitchView,
   onCreateView,
   onRenameView,
@@ -676,12 +673,6 @@ const {
   removeBatchEditRow,
   openBatchEdit,
   confirmBatchEdit,
-  cellEditVisible,
-  cellEditField,
-  cellEditFieldLabel,
-  cellEditValue,
-  onCellEdit,
-  confirmCellEdit,
   formLayoutDrawerVisible,
   loading,
   tableData,
@@ -826,6 +817,9 @@ const automationFields = computed(() => {
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 12px;
+}
+.list-self-only-alert {
+  margin: 0 0 8px;
 }
 .advanced-upload {
   display: block;

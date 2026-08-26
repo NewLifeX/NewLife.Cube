@@ -26,6 +26,7 @@ import {
   patchActiveChrome,
   patchActiveColumns,
   patchActiveFilter,
+  patchActiveFormat,
   patchActiveGroup,
   patchActiveInsight,
   patchActiveMapping,
@@ -54,6 +55,7 @@ import {
   type ViewChrome,
   type ViewDomainSource,
   type ViewFilter,
+  type ViewFormatRule,
   type ViewGroup,
   type ViewInsight,
   type ViewKind,
@@ -335,6 +337,20 @@ export const useViewProfileStore = defineStore('viewProfile', {
       if (!entry) return [];
       const v = getActiveView(entry.state);
       return v?.group ?? [];
+    },
+
+    /** 更新当前命名视图的填色规则；空数组等价清除 */
+    updateFormat(typePath: string, format: ViewFormatRule[], immediate = true) {
+      const entry = this.byType[typePath];
+      if (!entry) return;
+      this.setState(typePath, patchActiveFormat(entry.state, format), immediate);
+    },
+
+    getFormat(typePath: string): ViewFormatRule[] {
+      const entry = this.byType[typePath];
+      if (!entry) return [];
+      const v = getActiveView(entry.state);
+      return v?.format ?? [];
     },
 
     /** 读取当前 typePath 的已保存筛选线缆（FiltersJson，OSC-0012） */

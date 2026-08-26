@@ -511,6 +511,57 @@ describe('viewProfile store filter/group (OSC-0015)', () => {
     expect(store.getFilter('Admin/None')).toEqual({ logic: 'all', conditions: [] });
     expect(store.getGroup('Admin/None')).toEqual([]);
   });
+
+  it('updateFormat/getFormat round-trip 并持久化到 viewsJson', async () => {
+    getViewProfile.mockResolvedValue({
+      data: {
+        typePath: 'Admin/User',
+        view: 'table',
+        activeViewId: 'default',
+        viewsJson: JSON.stringify([
+          { id: 'default', name: '默认列表', view: 'table', columns: [{ key: 'Name', visible: true }] },
+        ]),
+      },
+    });
+    putViewProfile.mockResolvedValue({ data: {} });
+    const store = useViewProfileStore();
+    await store.load('Admin/User', ['Name']);
+    const format = [
+      { id: 'f_1', apply: 'row' as const, color: '#FFF7E8', field: 'Name', op: 'eq' as const, value: 'a' },
+    ];
+    store.updateFormat('Admin/User', format, true);
+    expect(store.getFormat('Admin/User')).toEqual(format);
+    expect(putViewProfile).toHaveBeenCalledWith(
+      expect.objectContaining({
+        viewsJson: expect.stringContaining('"format"'),
+      }),
+    );
+  });
+
+  it('updateFormat 空数组清除 format', async () => {
+    getViewProfile.mockResolvedValue({
+      data: {
+        typePath: 'Admin/User',
+        view: 'table',
+        activeViewId: 'default',
+        viewsJson: JSON.stringify([
+          {
+            id: 'default',
+            name: '默认列表',
+            view: 'table',
+            columns: [{ key: 'Name', visible: true }],
+            format: [{ id: 'f_1', apply: 'side', color: '#FF0000', field: 'Name', op: 'eq', value: 'a' }],
+          },
+        ]),
+      },
+    });
+    putViewProfile.mockResolvedValue({ data: {} });
+    const store = useViewProfileStore();
+    await store.load('Admin/User', ['Name']);
+    expect(store.getFormat('Admin/User')).toHaveLength(1);
+    store.updateFormat('Admin/User', [], true);
+    expect(store.getFormat('Admin/User')).toEqual([]);
+  });
 });
 
 describe('viewProfile store template domains (OSC-0014)', () => {

@@ -23,6 +23,7 @@
     "@visactor/vtable": "^1.26.5",
     "@visactor/vtable-gantt": "^1.26.5",
     "echarts": "^5.6.0",
+    "marked": "^18.0.9",
     "pinia": "^3.0.0",
     "qrcode": "^1.5.4",
     "vue": "^3.5.0",

@@ -40,6 +40,12 @@ public class ProfileCommentEntityTests
         Assert.NotNull(found);
         Assert.Equal(uid, found.UserId);
         Assert.Null(UserProfile.FindByUserId(uid + 99));
+
+        var wire = found.ToModel();
+        Assert.Equal(uid, wire.UserId);
+        Assert.Equal(model.ThemeJson, wire.ThemeJson);
+        Assert.Equal(model.LayoutJson, wire.LayoutJson);
+        Assert.Equal(model.WorkspaceJson, wire.WorkspaceJson);
     }
 
     [Fact(DisplayName = "ViewProfile：按 typePath 隔离，Delete 后找不到")]

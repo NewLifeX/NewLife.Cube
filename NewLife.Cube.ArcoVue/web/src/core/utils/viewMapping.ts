@@ -98,6 +98,7 @@ export function normalizeCardFieldOrientation(raw: unknown): CardFieldOrientatio
 }
 
 export type BatchDeleteState = { visible: boolean; disabled: boolean };
+export type BatchEnableState = { visible: boolean; disabled: boolean };
 
 /**
  * 批量删除菜单门禁：仅表格视图 + 最终删除权限 + 视图允许删除 + 至少选中一行。
@@ -113,6 +114,30 @@ export function resolveBatchDeleteState(args: {
     return { visible: false, disabled: true };
   }
   return { visible: true, disabled: args.selectedCount <= 0 };
+}
+
+/** 一次最多启用/禁用条数（GET keys 查询串） */
+export const BATCH_ENABLE_MAX = 200;
+
+/**
+ * 批量启停菜单门禁：仅 table + Update + EnableSelect≠false + 有 Enable 列。
+ * 0 选中：可见但 disabled；>200：可见但 disabled（点击也拦截）。
+ */
+export function resolveBatchEnableState(args: {
+  viewKind: ViewKind;
+  canEdit: boolean;
+  enableSelect: boolean | undefined;
+  hasEnableField: boolean;
+  selectedCount: number;
+}): BatchEnableState {
+  const enableOn = args.enableSelect !== false;
+  if (args.viewKind !== 'table' || !args.canEdit || !enableOn || !args.hasEnableField) {
+    return { visible: false, disabled: true };
+  }
+  if (args.selectedCount <= 0 || args.selectedCount > BATCH_ENABLE_MAX) {
+    return { visible: true, disabled: true };
+  }
+  return { visible: true, disabled: false };
 }
 
 export function resolveViewPageSize(

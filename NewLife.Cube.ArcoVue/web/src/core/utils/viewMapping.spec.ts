@@ -18,8 +18,9 @@ import {
   normalizeMapping,
   normalizePageSize,
   pushGroupField,
-  removeGroupField,
   resolveBatchDeleteState,
+  resolveBatchEnableState,
+  removeGroupField,
   resolveViewPageSize,
   seedMapping,
 } from './viewMapping';
@@ -430,6 +431,55 @@ describe('resolveBatchDeleteState', () => {
         selectedCount: 5,
       }),
     ).toEqual({ visible: true, disabled: false });
+  });
+});
+
+describe('resolveBatchEnableState', () => {
+  const base = {
+    viewKind: 'table' as const,
+    canEdit: true,
+    enableSelect: true as boolean | undefined,
+    hasEnableField: true,
+    selectedCount: 2,
+  };
+
+  it('hidden outside table / no edit / enableSelect false / no Enable', () => {
+    for (const kind of ['tree', 'card', 'kanban', 'calendar', 'gantt'] as const) {
+      expect(resolveBatchEnableState({ ...base, viewKind: kind })).toEqual({
+        visible: false,
+        disabled: true,
+      });
+    }
+    expect(resolveBatchEnableState({ ...base, canEdit: false })).toEqual({
+      visible: false,
+      disabled: true,
+    });
+    expect(resolveBatchEnableState({ ...base, enableSelect: false })).toEqual({
+      visible: false,
+      disabled: true,
+    });
+    expect(resolveBatchEnableState({ ...base, hasEnableField: false })).toEqual({
+      visible: false,
+      disabled: true,
+    });
+  });
+
+  it('enableSelect 缺省 true', () => {
+    expect(resolveBatchEnableState({ ...base, enableSelect: undefined })).toEqual({
+      visible: true,
+      disabled: false,
+    });
+  });
+
+  it('0 选中可见但 disabled；>200 disabled', () => {
+    expect(resolveBatchEnableState({ ...base, selectedCount: 0 })).toEqual({
+      visible: true,
+      disabled: true,
+    });
+    expect(resolveBatchEnableState({ ...base, selectedCount: 201 })).toEqual({
+      visible: true,
+      disabled: true,
+    });
   });
 });
 
