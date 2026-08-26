@@ -55,6 +55,7 @@ const { host, zooming } = useGanttView(props, emit);
 .gantt-view {
   position: relative;
   width: 100%;
+  overflow: hidden;
 }
 /* 等级切换/时间轴重绘等待遮罩：半透明覆盖甘特图区域，居中等待图标 */
 .gantt-zoom-mask {
@@ -74,5 +75,6 @@ const { host, zooming } = useGanttView(props, emit);
   position: relative;
   width: 100%;
   min-height: 240px;
+  overflow: hidden;
 }
 </style>

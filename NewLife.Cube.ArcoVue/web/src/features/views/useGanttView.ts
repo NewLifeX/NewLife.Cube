@@ -3,6 +3,11 @@ import type { FieldMeta } from '@/core/types/field';
 import type { GanttMapping } from '@/core/utils/viewMapping';
 import { getValueByKey } from '@/core/utils/url';
 import { themeColor } from '@/core/utils/themeColor';
+import {
+  ganttMappingSignature,
+  ganttRecordsSignature,
+  nearlySame,
+} from './ganttLayout';
 
 /** GanttView 组件 props 类型（与 GanttView.vue defineProps 泛型逐字一致） */
 interface GanttViewProps {
@@ -41,6 +46,10 @@ export function useGanttView(props: GanttViewProps, emit: GanttViewEmit) {
   /** 宿主上次记录的尺寸：ResizeObserver 回调先对比尺寸，真正变化才重建（VTable 缩放等内部布局变化也会触发 RO，避免无谓重建） */
   let lastHostW = 0;
   let lastHostH = 0;
+  /** 异步 mount 世代：重叠调用只让最后一次落地，避免 import 竞态反复拆建 */
+  let mountGen = 0;
+  /** 已应用到宿主的高度，仅差值超阈值才改尺寸 */
+  let lastAppliedHeight = 0;
   /** 缩放级别应用兜底重试标记（正常同步一次成功；极端未就绪时延迟单次重试） */
   let zoomApplyTimer = 0;
   let zoomApplyRetry = 0;
@@ -110,13 +119,17 @@ export function useGanttView(props: GanttViewProps, emit: GanttViewEmit) {
   function startWidthWatch() {
     stopWidthWatch();
     widthTimer = window.setInterval(() => {
-      const w = gantt?.taskTableWidth as number | undefined;
-      if (typeof w !== 'number' || w === lastWidth) return;
+      const raw = gantt?.taskTableWidth as number | undefined;
+      if (typeof raw !== 'number' || !Number.isFinite(raw)) return;
+      const w = Math.round(raw);
+      if (nearlySame(w, lastWidth)) return;
       lastWidth = w;
       if (widthDebounce) window.clearTimeout(widthDebounce);
       widthDebounce = window.setTimeout(() => {
         if (!props.mapping) return;
-        emit('mapping-change', { ...props.mapping, tableWidth: w });
+        const tableWidth = Math.min(640, Math.max(280, w));
+        if (nearlySame(tableWidth, props.mapping.tableWidth ?? 380)) return;
+        emit('mapping-change', { ...props.mapping, tableWidth });
       }, 300);
     }, 300);
   }
@@ -182,7 +195,7 @@ export function useGanttView(props: GanttViewProps, emit: GanttViewEmit) {
         if (!host.value) return;
         const w = host.value.offsetWidth;
         const h = host.value.offsetHeight;
-        if (w === lastHostW && h === lastHostH) return;
+        if (nearlySame(w, lastHostW) && nearlySame(h, lastHostH)) return;
         lastHostW = w;
         lastHostH = h;
         void mountGantt();
@@ -317,10 +330,15 @@ export function useGanttView(props: GanttViewProps, emit: GanttViewEmit) {
   }
 
   async function mountGantt() {
+    const gen = ++mountGen;
     stopWidthWatch();
     stopResizeWatch();
+    if (zoomApplyTimer) window.clearTimeout(zoomApplyTimer);
+    zoomApplyTimer = 0;
+    zooming.value = false;
     if (!host.value || !props.mapping?.plannedStartField || !props.mapping?.plannedEndField) return;
     const { Gantt } = await import('@visactor/vtable-gantt');
+    if (gen !== mountGen || !host.value) return;
     gantt?.release?.();
     gantt = null;
     host.value.innerHTML = '';
@@ -328,6 +346,7 @@ export function useGanttView(props: GanttViewProps, emit: GanttViewEmit) {
     if (!records.length) return;
 
     lastWidth = props.mapping.tableWidth ?? 380;
+    lastAppliedHeight = props.height ?? 520;
     // 记录当前宿主尺寸，供 ResizeObserver 尺寸变化判定（避免缩放等内部布局变化误触发重建）
     lastHostW = host.value.offsetWidth;
     lastHostH = host.value.offsetHeight;
@@ -467,12 +486,14 @@ export function useGanttView(props: GanttViewProps, emit: GanttViewEmit) {
       overscrollBehavior: 'none',
     };
     gantt = new Gantt(host.value, option as never);
-    // 创建后立即同步应用目标缩放级别（默认月·日；父级工具栏切换后经 watch 重新应用）——
-    // 同步 setZoomPosition 与实例创建同一渲染帧，消除“先自动初始级别、再跳变”的跳动
-    applyZoomLevel(props.zoomLevel ?? 2);
+    // 创建后立即同步套上目标等级：Gantt 构造函数会先落到自动初始级别（年），
+    // 若再延迟 setZoomPosition，每次重建都会「年→月·日」闪一帧。工具栏切级仍走 applyZoomLevel 遮罩。
+    doSetZoomLevel(props.zoomLevel ?? 2);
     startWidthWatch();
     startResizeWatch();
-    // 初始定位：等缩放级别重绘完成后滚动时间轴使第一条任务条贴左表格区（40ms > applyZoomLevel 的 20ms）
+    lastHostW = host.value.offsetWidth;
+    lastHostH = host.value.offsetHeight;
+    // 初始定位：缩放已同步完成，稍候一帧再滚到首条任务
     if (firstTaskScrollTimer) window.clearTimeout(firstTaskScrollTimer);
     firstTaskScrollTimer = window.setTimeout(scrollToFirstTask, 40);
 
@@ -499,6 +520,19 @@ export function useGanttView(props: GanttViewProps, emit: GanttViewEmit) {
     }
   }
 
+  function applyHostSize(height: number) {
+    if (!host.value) return;
+    host.value.style.height = `${height}px`;
+    lastAppliedHeight = height;
+    try {
+      gantt?._updateSize?.();
+    } catch {
+      /* 无 _updateSize 时保持当前画布，避免为 1～2px 测高抖动整表重建 */
+    }
+    lastHostW = host.value.offsetWidth;
+    lastHostH = host.value.offsetHeight;
+  }
+
   onMounted(() => {
     // 捕获阶段拦截 Ctrl+滚轮，避免 VTable 内部缩放（Capture 先于 VTable 内部 wheel 监听）
     host.value?.addEventListener('wheel', onWheelCapture, true);
@@ -506,11 +540,20 @@ export function useGanttView(props: GanttViewProps, emit: GanttViewEmit) {
   });
 
   watch(
-    () => [props.records, props.mapping, props.height] as const,
-    () => {
+    () => ({
+      rec: ganttRecordsSignature(props.records, props.mapping, props.rowKey),
+      map: ganttMappingSignature(props.mapping),
+      h: props.height ?? 520,
+    }),
+    (next, prev) => {
+      if (!prev) return;
+      if (next.rec === prev.rec && next.map === prev.map) {
+        if (nearlySame(next.h, lastAppliedHeight || prev.h)) return;
+        applyHostSize(next.h);
+        return;
+      }
       void mountGantt();
     },
-    { deep: true },
   );
 
   // 父级工具栏缩放按钮（−/+）切换 → 重新应用缩放级别
@@ -522,6 +565,7 @@ export function useGanttView(props: GanttViewProps, emit: GanttViewEmit) {
   );
 
   onBeforeUnmount(() => {
+    mountGen += 1;
     host.value?.removeEventListener('wheel', onWheelCapture, true);
     stopWidthWatch();
     stopResizeWatch();
