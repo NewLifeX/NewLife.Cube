@@ -2,6 +2,8 @@
 @using NewLife.Web;
 @{
     var pager = ViewBag.Page as Pager;
+    // GetPageUrl 默认返回完整 <a> 标签（PageUrlTemplate），此处仅需纯链接 URL 填入 href
+    pager.PageUrlTemplate = "{链接}";
 
     var act = Context.Request.Path + "";
     if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
