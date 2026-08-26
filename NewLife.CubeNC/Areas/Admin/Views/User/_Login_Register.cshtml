@@ -44,15 +44,6 @@
         function init() {
             if (typeof jQuery === 'undefined') { setTimeout(init, 100); return; }
             jQuery(function () {
-        // ========== 注册方式子 Tab 切换 ==========
-        $('.reg-modes a').on('click', function () {
-            var tab = $(this).data('reg-tab');
-            $('.reg-modes a').removeClass('active')
-                .filter('[data-reg-tab="' + tab + '"]').addClass('active');
-            $('.reg-form').removeClass('active')
-                .filter('#' + tab).addClass('active');
-        });
-
         // ========== 密码强度动态校验（对齐 CubeSetting.PaswordStrength） ==========
         // EnablePasswordComplexity 关闭或 PaswordStrength 为空/* 时，前端跳过复杂度校验
         var pwdRegex = @Html.Raw(Json.Serialize(set.PasswordStrength));
@@ -87,54 +78,6 @@
         }
         $('[data-pwd]').on('input blur', function () { validatePwd($(this)); });
 
-        // ========== 发送验证码（倒计时） ==========
-        function startCountdown(btn) {
-            var sec = 60;
-            btn.prop('disabled', true);
-            var timer = setInterval(function () {
-                sec--;
-                btn.text(sec + 's 后重发');
-                if (sec <= 0) {
-                    clearInterval(timer);
-                    btn.prop('disabled', false).text('发送验证码');
-                }
-            }, 1000);
-        }
-        $('[data-send]').on('click', function () {
-            var btn = $(this);
-            var account = $('#' + btn.data('send')).val();
-            var channel = btn.data('channel');
-            var action = btn.data('action');
-            if (!account) {
-                alert('请先输入' + (channel === 'Sms' ? '手机号' : '邮箱'));
-                return;
-            }
-            var form = btn.closest('form');
-            // 验证码行可见时须先填写图形验证码（发码场景防短信轰炸）
-            if (typeof CubeCaptcha !== 'undefined' && !CubeCaptcha.fill(form)) return;
-            $.ajax({
-                url: '@Url.Action("SendVerifyCode", "User", new { area = "Admin" })',
-                type: 'POST',
-                data: {
-                    channel: channel, username: account, action: action,
-                    captchaId: form.find('[data-captcha-id]').val(),
-                    captchaCode: form.find('[data-captcha-code]').val()
-                },
-                dataType: 'json'
-            }).done(function (data) {
-                if (data && data.code == 0) {
-                    startCountdown(btn);
-                } else {
-                    // 服务端要求验证码时，显示验证码行并刷新
-                    if (typeof CubeCaptcha !== 'undefined' && data && data.message && data.message.indexOf('验证码') >= 0)
-                        CubeCaptcha.show(form.find('[data-captcha]'));
-                    alert((data && data.message) || '验证码发送失败');
-                }
-            }).fail(function () {
-                alert('验证码发送失败，请稍后重试');
-            });
-        });
-
         // ========== 注册提交前端前置校验（最终以后端为准） ==========
         function pwdMatchCheck(input1, input2) {
             if (input1.val() !== input2.val()) {
@@ -148,32 +91,6 @@
             if (!validatePwd($('#reg_pwd_password'))) return false;
             if (!pwdMatchCheck($('#reg_pwd_password'), $('#reg_pwd_password2'))) return false;
             if (!$('#reg-pwd input[name="agreement"]').is(':checked')) { alert('请先阅读并同意《用户协议》和《隐私政策》'); return false; }
-            return true;
-        });
-        $('#reg-mobile').on('submit', function () {
-            var m = $('#reg_mobile_mobile').val();
-            if (!m) { alert('请输入手机号'); return false; }
-            if (!/^1\d{10}$/.test(m)) { alert('手机号格式不正确'); return false; }
-            if (!$('#reg_mobile_code').val()) { alert('请输入短信验证码'); return false; }
-            // 密码可选：留空则不校验（仅验证码登录，登录后可再设置密码）
-            if ($('#reg_mobile_password').val()) {
-                if (!validatePwd($('#reg_mobile_password'))) return false;
-                if (!pwdMatchCheck($('#reg_mobile_password'), $('#reg_mobile_password2'))) return false;
-            }
-            if (!$('#reg-mobile input[name="agreement"]').is(':checked')) { alert('请先阅读并同意《用户协议》和《隐私政策》'); return false; }
-            return true;
-        });
-        $('#reg-mail').on('submit', function () {
-            var e = $('#reg_mail_email').val();
-            if (!e) { alert('请输入邮箱'); return false; }
-            if (!/^[\w.+-]+@@[\w-]+(\.[\w-]+)+$/.test(e)) { alert('邮箱格式不正确'); return false; }
-            if (!$('#reg_mail_code').val()) { alert('请输入邮箱验证码'); return false; }
-            // 密码可选：留空则不校验（仅验证码登录，登录后可再设置密码）
-            if ($('#reg_mail_password').val()) {
-                if (!validatePwd($('#reg_mail_password'))) return false;
-                if (!pwdMatchCheck($('#reg_mail_password'), $('#reg_mail_password2'))) return false;
-            }
-            if (!$('#reg-mail input[name="agreement"]').is(':checked')) { alert('请先阅读并同意《用户协议》和《隐私政策》'); return false; }
             return true;
         });
             });

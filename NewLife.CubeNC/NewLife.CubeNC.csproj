@@ -166,6 +166,8 @@
     <Compile Include="..\NewLife.Cube\Models\TokenInModel.cs" Link="Models\TokenInModel.cs" />
     <Compile Include="..\NewLife.Cube\Models\VerifyCodeModel.cs" Link="Models\VerifyCodeModel.cs" />
     <Compile Include="..\NewLife.Cube\Services\ICaptchaService.cs" Link="Services\ICaptchaService.cs" />
+    <Compile Include="..\NewLife.Cube\Services\Auth\AuthCacheKeys.cs" Link="Services\Auth\AuthCacheKeys.cs" />
+    <Compile Include="..\NewLife.Cube\Services\Auth\AuthHelper.cs" Link="Services\Auth\AuthHelper.cs" />
     <Compile Include="..\NewLife.Cube\Services\IMfaService.cs" Link="Services\IMfaService.cs" />
     <Compile Include="..\NewLife.Cube\Services\MailService.cs" Link="Services\MailService.cs" />
     <Compile Include="..\NewLife.Cube\Services\SmsService.cs" Link="Services\SmsService.cs" />
@@ -234,8 +236,6 @@
     <Compile Remove="Services\AliyunClient.cs" />
     <Compile Remove="ViewModels\FieldModel.cs" />
     <Compile Remove="WebMiddleware\TracerMiddleware.cs" />
-    <Compile Remove="Services\Auth\AuthEnhancedService.cs" />
-    <Compile Remove="Services\Auth\VerifyCodeService.cs" />
   </ItemGroup>
 
   <ItemGroup>

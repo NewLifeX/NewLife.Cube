@@ -32,12 +32,6 @@ public class LoginViewModel
     /// <summary>密码强度正则。* 表示无限制，前端可用于客户端校验提示</summary>
     public String PasswordStrength { get; set; }
 
-    /// <summary>登录时是否需要图片验证码。CaptchaScene 强制 或 风险自适应触发</summary>
-    public Boolean RequireCaptcha { get; set; }
-
-    /// <summary>注册时是否需要图片验证码。CaptchaScene 强制 或 风险自适应触发</summary>
-    public Boolean RequireCaptchaRegister { get; set; }
-
     ///// <summary>自动注册</summary>
     //public Boolean AutoRegister { get; set; }
 

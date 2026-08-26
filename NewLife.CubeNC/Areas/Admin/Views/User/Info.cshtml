@@ -279,52 +279,6 @@
 <div class="form-section">
     <div class="form-section-title"><i class="fa fa-lock"></i>安全中心</div>
     <div class="form-section-body">
-        <!-- 更换手机 -->
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="form-group">
-                    <label class="control-label col-sm-4">手机号</label>
-                    <div class="col-sm-8">
-                        <p class="form-value" id="sec_mobile_show">@(user.Mobile.IsNullOrEmpty() ? "未绑定" : user.Mobile)</p>
-                        <div id="sec_mobile_edit" style="display:none; max-width:420px;" class="input-group">
-                            <input type="tel" class="form-control" id="sec_mobile_new" placeholder="新手机号" maxlength="11" />
-                            <span class="input-group-btn"><button type="button" class="btn btn-default" id="sec_mobile_send">发送验证码</button></span>
-                        </div>
-                        <div id="sec_mobile_code" style="display:none; max-width:420px; margin-top:6px;" class="input-group">
-                            <input type="text" class="form-control" id="sec_mobile_code_input" placeholder="短信验证码" />
-                            <span class="input-group-btn"><button type="button" class="btn btn-success" id="sec_mobile_confirm">确认绑定</button></span>
-                        </div>
-                        <div style="margin-top:6px;">
-                            <button type="button" class="btn btn-sm btn-default" id="sec_mobile_toggle"><i class="fa fa-exchange"></i> @(user.Mobile.IsNullOrEmpty() ? "绑定" : "更换")</button>
-                            <span class="help-text">更换后旧手机号不再可用，新手机号需短信验证码验证</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- 更换邮箱 -->
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="form-group">
-                    <label class="control-label col-sm-4">邮箱</label>
-                    <div class="col-sm-8">
-                        <p class="form-value" id="sec_mail_show">@(user.Mail.IsNullOrEmpty() ? "未绑定" : user.Mail)</p>
-                        <div id="sec_mail_edit" style="display:none; max-width:420px;" class="input-group">
-                            <input type="email" class="form-control" id="sec_mail_new" placeholder="新邮箱" />
-                            <span class="input-group-btn"><button type="button" class="btn btn-default" id="sec_mail_send">发送验证码</button></span>
-                        </div>
-                        <div id="sec_mail_code" style="display:none; max-width:420px; margin-top:6px;" class="input-group">
-                            <input type="text" class="form-control" id="sec_mail_code_input" placeholder="邮箱验证码" />
-                            <span class="input-group-btn"><button type="button" class="btn btn-success" id="sec_mail_confirm">确认绑定</button></span>
-                        </div>
-                        <div style="margin-top:6px;">
-                            <button type="button" class="btn btn-sm btn-default" id="sec_mail_toggle"><i class="fa fa-exchange"></i> @(user.Mail.IsNullOrEmpty() ? "绑定" : "更换")</button>
-                            <span class="help-text">更换后旧邮箱不再可用，新邮箱需邮件验证码验证</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
         <!-- 导出个人数据 -->
         <div class="row">
             <div class="col-sm-12">
@@ -358,66 +312,6 @@
         function init() {
             if (typeof jQuery === 'undefined') { setTimeout(init, 100); return; }
             jQuery(function () {
-                // ========== 更换手机（验证码绑定） ==========
-                $('#sec_mobile_toggle').on('click', function () { $('#sec_mobile_edit').toggle(); });
-                $('#sec_mobile_send').on('click', function () {
-                    var m = $('#sec_mobile_new').val();
-                    if (!m || !/^1\d{10}$/.test(m)) { alert('请输入正确的手机号'); return; }
-                    $.ajax({
-                        url: '@Url.Action("SendVerifyCode", "User", new { area = "Admin" })',
-                        type: 'POST',
-                        data: { channel: 'Sms', username: m, action: 'Bind' },
-                        dataType: 'json'
-                    }).done(function (d) {
-                        if (d && d.code == 0) { $('#sec_mobile_code').show(); } else { alert((d && d.message) || '发送失败'); }
-                    }).fail(function () { alert('发送失败，请稍后重试'); });
-                });
-                $('#sec_mobile_confirm').on('click', function () {
-                    var m = $('#sec_mobile_new').val();
-                    var code = $('#sec_mobile_code_input').val();
-                    if (!m) { alert('请输入手机号'); return; }
-                    if (!code) { alert('请输入验证码'); return; }
-                    $.ajax({
-                        url: '@Url.Action("BindByVerifyCode", "User", new { area = "Admin" })',
-                        type: 'POST',
-                        data: { account: m, code: code },
-                        dataType: 'json'
-                    }).done(function (d) {
-                        if (d && d.code == 0) { alert('手机号绑定成功'); location.reload(); }
-                        else { alert((d && d.message) || '绑定失败'); }
-                    }).fail(function () { alert('绑定失败，请稍后重试'); });
-                });
-
-                // ========== 更换邮箱（验证码绑定） ==========
-                $('#sec_mail_toggle').on('click', function () { $('#sec_mail_edit').toggle(); });
-                $('#sec_mail_send').on('click', function () {
-                    var m = $('#sec_mail_new').val();
-                    if (!m || !/^[\w.+-]+@@[\w-]+(\.[\w-]+)+$/.test(m)) { alert('请输入正确的邮箱'); return; }
-                    $.ajax({
-                        url: '@Url.Action("SendVerifyCode", "User", new { area = "Admin" })',
-                        type: 'POST',
-                        data: { channel: 'Mail', username: m, action: 'Bind' },
-                        dataType: 'json'
-                    }).done(function (d) {
-                        if (d && d.code == 0) { $('#sec_mail_code').show(); } else { alert((d && d.message) || '发送失败'); }
-                    }).fail(function () { alert('发送失败，请稍后重试'); });
-                });
-                $('#sec_mail_confirm').on('click', function () {
-                    var m = $('#sec_mail_new').val();
-                    var code = $('#sec_mail_code_input').val();
-                    if (!m) { alert('请输入邮箱'); return; }
-                    if (!code) { alert('请输入验证码'); return; }
-                    $.ajax({
-                        url: '@Url.Action("BindByVerifyCode", "User", new { area = "Admin" })',
-                        type: 'POST',
-                        data: { account: m, code: code },
-                        dataType: 'json'
-                    }).done(function (d) {
-                        if (d && d.code == 0) { alert('邮箱绑定成功'); location.reload(); }
-                        else { alert((d && d.message) || '绑定失败'); }
-                    }).fail(function () { alert('绑定失败，请稍后重试'); });
-                });
-
                 // ========== 注销账号 ==========
                 $('#sec_close_btn').on('click', function () {
                     if (!confirm('确定要注销账号吗？注销后账号将被禁用，个性化数据将清空且不可恢复。')) return;

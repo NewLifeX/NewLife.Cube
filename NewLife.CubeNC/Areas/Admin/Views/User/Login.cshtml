@@ -490,77 +490,7 @@
 
     <script>
         $(function () {
-            // ========== 图片验证码（登录/注册/忘记密码/发码，动态注入表单） ==========
-            var captchaApi = '@Url.Action("Captcha", "User", new { area = "Admin" })';
-            var loginCaptcha = @Html.Raw(Json.Serialize(Model.RequireCaptcha));
-            var registerCaptcha = @Html.Raw(Json.Serialize(Model.RequireCaptchaRegister));
-            window.CubeCaptcha = {
-                // 加载验证码图片到指定验证码行
-                load: function (row) {
-                    var $row = $(row);
-                    $.getJSON(captchaApi, function (data) {
-                        if (data && data.code == 0 && data.data) {
-                            $row.find('[data-captcha-img]').attr('src', data.data.image);
-                            $row.find('[data-captcha-id]').val(data.data.captchaId);
-                            $row.find('[data-captcha-input]').val('');
-                        }
-                    });
-                },
-                // 显示验证码行并加载图片
-                show: function (row) {
-                    var $row = $(row);
-                    if (!$row.length) return;
-                    $row.show();
-                    if (!$row.find('[data-captcha-id]').val()) CubeCaptcha.load($row);
-                },
-                // 表单可见验证码校验并填充 hidden 字段；通过返回 true
-                fill: function (form) {
-                    var $row = $(form).find('[data-captcha]');
-                    if (!$row.length || !$row.is(':visible')) return true;
-                    var code = $row.find('[data-captcha-input]').val();
-                    if (!code) { alert('请输入图形验证码'); return false; }
-                    $row.find('[data-captcha-code]').val(code);
-                    return true;
-                }
-            };
-            // 为表单注入验证码行（幂等）
-            function ensureCaptchaRow($form) {
-                if ($form.find('[data-captcha]').length) return $form.find('[data-captcha]');
-                var $row = $(
-                    '<div class="form-group captcha-row" data-captcha style="display:none;">' +
-                    '<div class="input-group">' +
-                    '<div class="input-icon">' +
-                    '<i class="glyphicon glyphicon-picture"></i>' +
-                    '<input type="text" class="form-control" data-captcha-input placeholder="图形验证码" autocomplete="off" />' +
-                    '</div>' +
-                    '<img data-captcha-img class="captcha-img" src="" alt="验证码" title="点击刷新" />' +
-                    '</div>' +
-                    '<input type="hidden" data-captcha-id name="captchaId" />' +
-                    '<input type="hidden" data-captcha-code name="captchaCode" />' +
-                    '</div>'
-                );
-                $form.append($row);
-                return $row;
-            }
-            // 点击验证码图片刷新
-            $(document).on('click', '[data-captcha-img]', function () {
-                CubeCaptcha.load($(this).closest('[data-captcha]'));
-            });
-            // 表单提交前校验图形验证码（登录/注册/忘记密码）
-            $(document).on('submit', '.cube-login', function () {
-                return CubeCaptcha.fill(this);
-            });
-            // 初始按服务端判定显示验证码（CaptchaScene 强制 或 风险自适应）
-            if (loginCaptcha) {
-                $('#Login .cube-login').each(function () { CubeCaptcha.show(ensureCaptchaRow($(this))); });
-            }
-            if (registerCaptcha) {
-                $('#Register .cube-login').each(function () { CubeCaptcha.show(ensureCaptchaRow($(this))); });
-            }
-            // 忘记密码表单预留验证码行（发码被拒后动态显示）
-            ensureCaptchaRow($('#cube-forgot-step1'));
-
-            // ========== Tab 切换（登录/注册/忘记密码） ==========
+            // ========== Tab 切换（登录/注册） ==========
             $('.login-tabs a, [data-tab-link]').on('click', function () {
                 var tab = $(this).data('tab') || $(this).data('tab-link');
                 $('.login-tabs a').removeClass('active')
@@ -578,62 +508,6 @@
                 var isPwd = target.attr('type') === 'password';
                 target.attr('type', isPwd ? 'text' : 'password');
                 $(this).find('i').toggleClass('glyphicon-eye-open glyphicon-eye-close');
-            });
-
-            // ========== 登录方式子 Tab 切换（密码/手机/邮箱） ==========
-            $('.login-modes a').on('click', function () {
-                var tab = $(this).data('login-tab');
-                $('.login-modes a').removeClass('active')
-                    .filter('[data-login-tab="' + tab + '"]').addClass('active');
-                $('.login-form').removeClass('active')
-                    .filter('#' + tab).addClass('active');
-            });
-
-            // ========== 发送验证码（登录场景 action=Login，手机走短信、邮箱走邮件） ==========
-            function startLoginCountdown(btn) {
-                var sec = 60;
-                btn.prop('disabled', true);
-                var timer = setInterval(function () {
-                    sec--;
-                    btn.text(sec + 's 后重发');
-                    if (sec <= 0) {
-                        clearInterval(timer);
-                        btn.prop('disabled', false).text('发送验证码');
-                    }
-                }, 1000);
-            }
-            $('[data-login-send]').on('click', function () {
-                var btn = $(this);
-                var account = $('#' + btn.data('login-send')).val();
-                var channel = btn.data('channel');
-                if (!account) {
-                    alert('请先输入' + (channel === 'Sms' ? '手机号' : '邮箱'));
-                    return;
-                }
-                var form = btn.closest('form');
-                // 验证码行可见时须先填写图形验证码（发码场景防短信轰炸）
-                if (typeof CubeCaptcha !== 'undefined' && !CubeCaptcha.fill(form)) return;
-                $.ajax({
-                    url: '@Url.Action("SendVerifyCode", "User", new { area = "Admin" })',
-                    type: 'POST',
-                    data: {
-                        channel: channel, username: account, action: 'Login',
-                        captchaId: form.find('[data-captcha-id]').val(),
-                        captchaCode: form.find('[data-captcha-code]').val()
-                    },
-                    dataType: 'json'
-                }).done(function (data) {
-                    if (data && data.code == 0) {
-                        startLoginCountdown(btn);
-                    } else {
-                        // 服务端要求验证码时，显示验证码行并刷新
-                        if (typeof CubeCaptcha !== 'undefined' && data && data.message && data.message.indexOf('验证码') >= 0)
-                            CubeCaptcha.show(form.find('[data-captcha]'));
-                        alert((data && data.message) || '验证码发送失败');
-                    }
-                }).fail(function () {
-                    alert('验证码发送失败，请稍后重试');
-                });
             });
 
             // ========== 登录：保留 RSA 非对称加密 ==========
