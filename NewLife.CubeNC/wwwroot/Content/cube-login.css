@@ -110,7 +110,9 @@ body {
 /* ========== 面板 ========== */
 /* 底部保留内边距，避免注册提交按钮紧贴卡片下沿 */
 .tab-content .tab-pane { display: none; padding: 24px 40px 28px; }
-.tab-content .tab-pane.active { display: block; }
+/* Bootstrap .fade 默认 opacity:0（需 .in 才显示），Tab 切换仅加 .active 控制 display，
+   故 .active 时必须强制 opacity:1，否则注册面板透明不可见 */
+.tab-content .tab-pane.active { display: block; opacity: 1; }
 
 /* 输入框：左侧图标 + 圆角 */
 .cube-login .form-group { margin-bottom: 18px; position: relative; }
