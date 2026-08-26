@@ -1,0 +1,75 @@
+@using NewLife;
+@using NewLife.Web;
+@{
+    var pager = ViewBag.Page as Pager;
+
+    var act = Context.Request.Path + "";
+    if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
+}
+@* ACE 主题覆盖：分页器按钮化（保留 PageIndex/PageSize 提交逻辑） *@
+@if (pager.TotalCount > 0)
+{<text><form action="@act?@pager.GetBaseUrl(true, true, false)" method="post" role="form">
+            <span class="pager-info">共 <b>@pager.TotalCount.ToString("n0")</b> 条 · 每页 <b>@pager.PageSize</b> 条 · 第 <b>@pager.PageIndex.ToString("n0")</b>/<b>@pager.PageCount.ToString("n0")</b> 页</span>
+            <span class="pager-btns">
+                @if (pager.PageIndex > 1)
+                {
+                    <a class="pager-btn" href="@pager.GetPageUrl("首页", 1)" title="首页"><i class="glyphicon glyphicon-step-backward"></i></a>
+                    <a class="pager-btn" href="@pager.GetPageUrl("上一页", pager.PageIndex - 1)" title="上一页"><i class="glyphicon glyphicon-chevron-left"></i></a>
+                }
+                else
+                {
+                    <span class="pager-btn disabled" title="首页"><i class="glyphicon glyphicon-step-backward"></i></span>
+                    <span class="pager-btn disabled" title="上一页"><i class="glyphicon glyphicon-chevron-left"></i></span>
+                }
+                @{
+                    var len = 7;
+                    var left = (len - 1) / 2;
+                    var right = len - left - 1;
+                    var start = pager.PageIndex - left;
+                    var end = pager.PageIndex + right;
+                    if (start < 1) start = 1;
+                    if (end > pager.PageCount) end = (Int32)pager.PageCount;
+                }
+                @for (var i = start; i <= end; i++)
+                {
+                    if (i == pager.PageIndex)
+                    {
+                        <span class="pager-btn pager-btn-current">@i</span>
+                    }
+                    else
+                    {
+                        <a class="pager-btn" href="@pager.GetPageUrl(i.ToString(), i)">@i</a>
+                    }
+                }
+                @if (pager.PageIndex < pager.PageCount)
+                {
+                    <a class="pager-btn" href="@pager.GetPageUrl("下一页", pager.PageIndex + 1)" title="下一页"><i class="glyphicon glyphicon-chevron-right"></i></a>
+                    <a class="pager-btn" href="@pager.GetPageUrl("尾页", pager.PageCount)" title="尾页"><i class="glyphicon glyphicon-step-forward"></i></a>
+                }
+                else
+                {
+                    <span class="pager-btn disabled" title="下一页"><i class="glyphicon glyphicon-chevron-right"></i></span>
+                    <span class="pager-btn disabled" title="尾页"><i class="glyphicon glyphicon-step-forward"></i></span>
+                }
+            </span>
+            <span class="pager-jump">
+                转到第<input name="PageIndex" type="text" value="@pager.PageIndex" class="input-sm" style="width:44px;text-align:center;" />页
+                <button type="submit" class="btn btn-default btn-sm">GO</button>
+                每页
+                <select id="PageSize" name="PageSize" onchange="$(this).parents('form').submit();">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="500">500</option>
+                    <option value="1000">1000</option>
+                </select>
+                <script type="text/javascript">
+        $(function () {
+            $('#PageSize').val(@pager.PageSize);
+        });
+                </script>
+            </span>
+        </form></text>}

@@ -1,0 +1,14 @@
+@using XCode
+@using XCode.Membership;
+@{
+    var entity = Model as IEntity;
+    var isNew = entity.IsNullKey;
+}
+@* ACE 主题覆盖：按钮区现代化（去掉 grid 占位 label，取消按钮中性色） *@
+@if (this.Has(PermissionFlags.Insert, PermissionFlags.Update))
+{
+    <div class="clearfix form-actions">
+        <button type="submit" class="btn btn-success btn-sm"><i class="glyphicon glyphicon-@(isNew ? "plus" : "save")"></i><strong>@(isNew ? "新增" : "保存")</strong></button>
+        <button type="button" class="btn btn-default btn-sm" onclick="history.go(-1);"><i class="glyphicon glyphicon-remove"></i><strong>取消</strong></button>
+    </div>
+}

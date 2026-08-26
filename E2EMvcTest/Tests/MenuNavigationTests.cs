@@ -275,7 +275,8 @@ public sealed class MenuNavigationTests : IAsyncLifetime
         if (await searchInput.CountAsync() > 0)
         {
             await searchInput.First.FillAsync("admin");
-            await _page.Keyboard.PressAsync("Enter");
+            // Enter 在个别浏览器/布局下不触发表单提交，改用 requestSubmit 确保 POST 提交
+            await searchInput.First.EvaluateAsync("el => el.closest('form')?.requestSubmit()");
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }
         else
