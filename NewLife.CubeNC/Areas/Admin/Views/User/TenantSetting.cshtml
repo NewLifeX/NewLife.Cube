@@ -7,37 +7,46 @@
 @using NewLife.Cube.Areas.Admin.Models;
 @{
     var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(null);
-    atts.Add("class", "multiselect");
+    atts.Add("class", "multiselect form-control");
     atts.Add("id", "Tenants");
 
     var tenantId = ViewData["TenantId"]?.ToInt();
 }
-<div class="row">
+<div class="profile-wrap">
     @await Html.PartialAsync("_User_Nav")
-</div>
-<div class="row">
-    <div class="col-md-12">
-        <div class="form-horizontal">
-            @using (Html.BeginForm("TenantSetting", "User"))
-            {
-                <div class="form-group">
-                    <label class="control-label col-md-2">用户名</label>
-                    <div class="input-group col-md-6">
-                        <input value="@Model.UserName" class="col-xs-12 col-sm-8 col-md-6 col-lg-4" disabled="disabled" />
+
+    @using (Html.BeginForm("TenantSetting", "User", null, FormMethod.Post, null, new { @class = "form-horizontal" }))
+{
+    <div class="form-section">
+        <div class="form-section-title"><i class="fa fa-building-o"></i>租户信息</div>
+        <div class="form-section-body">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">用户名</label>
+                        <div class="col-sm-8">
+                            <input value="@Model.UserName" class="form-control" disabled="disabled" />
+                        </div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="control-label col-md-2">当前租户</label>
-                    <div class="input-group col-md-6">
-                        @Html.DropDownList("TagTenantId",new SelectList(Model.Tenants, "Key", "Value", tenantId),"请选择",atts)
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">当前租户</label>
+                        <div class="col-sm-8">
+                            @Html.DropDownList("TagTenantId", new SelectList(Model.Tenants, "Key", "Value", tenantId), "请选择", atts)
+                            <span class="help-text">切换后仅显示该租户下的数据</span>
+                        </div>
                     </div>
                 </div>
-                <div class="clearfix form-actions">
-                    <label class="control-label col-sm-4"></label>
-                    <button type="submit" class="btn btn-success btn-sm"><i class="glyphicon glyphicon-save"></i><strong>保存</strong></button>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="history.go(-1);"><i class="glyphicon glyphicon-remove"></i><strong>取消</strong></button>
-                </div>
-            }
+            </div>
         </div>
     </div>
+
+    <div class="profile-actions">
+        <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> 保存</button>
+        <button type="button" class="btn btn-default" onclick="history.go(-1);"><i class="fa fa-times"></i> 取消</button>
+    </div>
+}
 </div>

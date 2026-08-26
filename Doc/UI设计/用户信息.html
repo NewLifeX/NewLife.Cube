@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="新生命团队,NewLife,魔方,Cube,XCode - 用户信息页设计稿" />
+    <title>基本信息 - 用户信息页设计稿</title>
+
+    <!-- 独立设计稿：CDN 引入 Bootstrap3 + FontAwesome，双击即可预览 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+
+    <style>
+        /* ========== 设计语言：延续 ACE 主题 ==========
+           主色 #2b7dbc（ACE 默认蓝）、卡片白底 #fff、细边框 #e4e6e9、
+           页面底 #f0f2f5、辅助文字 #999 */
+        body {
+            background: #f0f2f5;
+            color: #3a3f44;
+            font-size: 14px;
+        }
+
+        /* 顶部简单导航栏（设计稿示意，实际由 _Layout 提供） */
+        .demo-navbar {
+            background: #fff;
+            border-bottom: 1px solid #e4e6e9;
+            height: 52px;
+            line-height: 52px;
+            padding: 0 24px;
+            margin-bottom: 20px;
+        }
+        .demo-navbar .demo-brand {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2b7dbc;
+        }
+        .demo-navbar .demo-brand i {
+            margin-right: 6px;
+        }
+
+        .cube-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px 30px;
+        }
+
+        /* ========== 个人信息头卡 ========== */
+        .profile-card {
+            background: #fff;
+            border: 1px solid #e4e6e9;
+            border-top: 4px solid #2b7dbc;
+            border-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+            margin-bottom: 16px;
+        }
+        .profile-head {
+            display: flex;
+            align-items: center;
+            padding: 24px 28px 18px;
+        }
+        .profile-avatar {
+            position: relative;
+            width: 96px;
+            height: 96px;
+            flex: 0 0 96px;
+            margin-right: 24px;
+        }
+        .profile-avatar img {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
+            background: #dfe7f0;
+        }
+        .profile-avatar .avatar-camera {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #2b7dbc;
+            color: #fff;
+            font-size: 13px;
+            line-height: 30px;
+            text-align: center;
+            border: 2px solid #fff;
+            cursor: pointer;
+        }
+        .profile-avatar .avatar-camera:hover {
+            background: #1f5f8e;
+        }
+        .profile-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .profile-name {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #262a2e;
+        }
+        .profile-name .profile-username {
+            font-size: 14px;
+            font-weight: 400;
+            color: #999;
+            margin-left: 8px;
+        }
+        .profile-badges {
+            margin-bottom: 10px;
+        }
+        .profile-badges .label {
+            font-size: 12px;
+            font-weight: 400;
+            padding: 4px 10px;
+            margin-right: 6px;
+            border-radius: 10px;
+        }
+        .profile-stats {
+            display: flex;
+            border-top: 1px solid #f0f2f5;
+            background: #fafbfc;
+            border-radius: 0 0 4px 4px;
+            padding: 14px 28px;
+        }
+        .profile-stats .stat-item {
+            flex: 1;
+            text-align: center;
+            border-right: 1px solid #e4e6e9;
+        }
+        .profile-stats .stat-item:last-child {
+            border-right: none;
+        }
+        .profile-stats .stat-num {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2b7dbc;
+        }
+        .profile-stats .stat-label {
+            font-size: 12px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        /* ========== Tab 导航 ========== */
+        .profile-tabs {
+            background: #fff;
+            border: 1px solid #e4e6e9;
+            border-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+            margin-bottom: 16px;
+            padding: 0 12px;
+        }
+        .profile-tabs .nav-tabs {
+            border-bottom: none;
+        }
+        .profile-tabs .nav-tabs > li {
+            margin-bottom: 0;
+        }
+        .profile-tabs .nav-tabs > li > a {
+            border: none;
+            border-radius: 0;
+            color: #6a6f75;
+            padding: 12px 14px;
+            margin-right: 2px;
+            border-bottom: 3px solid transparent;
+            transition: color .2s, border-color .2s, background .2s;
+        }
+        .profile-tabs .nav-tabs > li > a:hover {
+            background: #f5f8fb;
+            color: #2b7dbc;
+        }
+        .profile-tabs .nav-tabs > li.active > a,
+        .profile-tabs .nav-tabs > li.active > a:hover,
+        .profile-tabs .nav-tabs > li.active > a:focus {
+            border: none;
+            border-bottom: 3px solid #2b7dbc;
+            color: #2b7dbc;
+            font-weight: 700;
+            background: transparent;
+        }
+        .profile-tabs .nav-tabs > li > a i {
+            margin-right: 4px;
+            color: #9aa5b1;
+        }
+        .profile-tabs .nav-tabs > li.active > a i {
+            color: #2b7dbc;
+        }
+
+        /* ========== 分组表单卡片 ========== */
+        .form-section {
+            background: #fff;
+            border: 1px solid #e4e6e9;
+            border-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+            margin-bottom: 16px;
+        }
+        .form-section-title {
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #3a3f44;
+            border-bottom: 1px solid #f0f2f5;
+            background: #fafbfc;
+            border-radius: 4px 4px 0 0;
+        }
+        .form-section-title i {
+            color: #2b7dbc;
+            margin-right: 8px;
+        }
+        .form-section-body {
+            padding: 20px 24px 6px;
+        }
+        .form-section-body .form-group {
+            margin-bottom: 18px;
+        }
+        .form-section-body .control-label {
+            font-weight: 600;
+            color: #555;
+            padding-top: 7px;
+        }
+        .form-section-body .form-control {
+            border-radius: 3px;
+            box-shadow: none;
+            border-color: #d9dee4;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .form-section-body .form-control:focus {
+            border-color: #2b7dbc;
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .05), 0 0 4px rgba(43, 125, 188, .25);
+        }
+        .form-section-body .form-control[disabled],
+        .form-section-body .form-control[readonly] {
+            background: #f5f6f8;
+            color: #777;
+        }
+        .help-text {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+            display: block;
+        }
+        .form-value {
+            padding-top: 7px;
+            color: #3a3f44;
+            word-break: break-all;
+        }
+        .form-value i {
+            color: #b6bec7;
+            margin-right: 6px;
+        }
+
+        /* 头像上传 */
+        .avatar-upload .avatar-thumb {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 2px dashed #d9dee4;
+            background: #fafbfc;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 16px;
+            overflow: hidden;
+            text-align: center;
+            line-height: 76px;
+            color: #b6bec7;
+            font-size: 28px;
+        }
+        .avatar-upload .avatar-thumb img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+        .avatar-upload .upload-box {
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .avatar-upload .btn-file {
+            position: relative;
+            overflow: hidden;
+        }
+        .avatar-upload .btn-file input[type=file] {
+            position: absolute;
+            top: 0;
+            right: 0;
+            opacity: 0;
+            font-size: 100px;
+            cursor: pointer;
+        }
+
+        /* 操作栏 */
+        .form-actions {
+            background: #fff;
+            border: 1px solid #e4e6e9;
+            border-radius: 4px;
+            padding: 16px 24px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+        }
+        .form-actions .btn {
+            min-width: 100px;
+            border-radius: 3px;
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 767px) {
+            .profile-head {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px 16px;
+            }
+            .profile-avatar {
+                margin: 0 0 16px;
+            }
+            .profile-stats {
+                flex-wrap: wrap;
+                padding: 10px 8px;
+            }
+            .profile-stats .stat-item {
+                flex: 0 0 50%;
+                border-right: none;
+                padding: 8px 0;
+            }
+            .profile-tabs .nav-tabs > li > a {
+                padding: 10px 8px;
+                font-size: 13px;
+            }
+            .form-section-body {
+                padding: 16px 16px 2px;
+            }
+            .form-section-body .control-label {
+                padding-top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 顶部导航（设计稿示意） -->
+    <div class="demo-navbar">
+        <span class="demo-brand"><i class="fa fa-cube"></i>魔方管理后台</span>
+        <span class="pull-right hidden-xs" style="color:#999;font-size:12px;">用户信息页设计稿 · 对应 Info.cshtml</span>
+    </div>
+
+    <div class="cube-container">
+        <!-- 状态消息（对应 ViewBag.StatusMessage，默认隐藏） -->
+        <div class="alert alert-success alert-dismissible text-center" role="alert" style="display:none;">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <strong>保存成功！</strong>
+        </div>
+
+        <!-- ========== 个人信息头卡 ========== -->
+        <div class="profile-card">
+            <div class="profile-head">
+                <div class="profile-avatar">
+                    <!-- 头像：实际替换为 @user.GetAvatarUrl()；无头像时用首字占位 -->
+                    <img src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='96'%20height='96'%3E%3Crect%20width='96'%20height='96'%20fill='%232b7dbc'/%3E%3Ctext%20x='48'%20y='58'%20font-size='38'%20fill='%23fff'%20text-anchor='middle'%20font-family='Microsoft%20YaHei'%3E石%3C/text%3E%3C/svg%3E" alt="头像">
+                    <a class="avatar-camera" href="#avatar" title="更换头像"><i class="fa fa-camera"></i></a>
+                </div>
+                <div class="profile-info">
+                    <div class="profile-name">
+                        大石头
+                        <span class="profile-username"><i class="fa fa-user-o"></i> Stone</span>
+                    </div>
+                    <div class="profile-badges">
+                        <span class="label label-primary">新生命</span>
+                        <span class="label label-success">管理员</span>
+                        <span class="label label-info">普通用户</span>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <div class="stat-num">13133</div>
+                    <div class="stat-label">登录次数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">2026-08-26 08:31:45</div>
+                    <div class="stat-label">最后登录</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">新生命团队</div>
+                    <div class="stat-label">所属部门</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">58.246.155.222</div>
+                    <div class="stat-label">最后登录IP</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== Tab 导航（复用 _User_Nav 全部项） ========== -->
+        <div class="profile-tabs">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="/Admin/User/Info"><i class="fa fa-user"></i>基本信息</a></li>
+                <li role="presentation"><a href="/Admin/User/ChangePassword"><i class="fa fa-key"></i>修改密码</a></li>
+                <li role="presentation"><a href="/Admin/User/Binds"><i class="fa fa-plug"></i>第三方授权</a></li>
+                <li role="presentation"><a href="/Admin/User/TenantSetting"><i class="fa fa-building-o"></i>租户信息</a></li>
+                <li role="presentation"><a href="/Admin/User/Edit?Id=4"><i class="fa fa-pencil-square-o"></i>大石头</a></li>
+                <li role="presentation"><a href="/Admin/UserConnect?userId=4"><i class="fa fa-link"></i>三方链接</a></li>
+                <li role="presentation"><a href="/Admin/UserToken?userId=4"><i class="fa fa-ticket"></i>令牌</a></li>
+                <li role="presentation"><a href="/Admin/OAuthLog?userId=4"><i class="fa fa-history"></i>OAuth日志</a></li>
+                <li role="presentation"><a href="/Admin/Log?userId=4"><i class="fa fa-list-alt"></i>日志</a></li>
+                <li role="presentation"><a href="/Admin/NotificationRecord?userId=4"><i class="fa fa-bell-o"></i>通知记录</a></li>
+            </ul>
+        </div>
+
+        <!-- ========== 表单 ========== -->
+        <form method="post" action="/Admin/User/Info" enctype="multipart/form-data" class="form-horizontal">
+
+            <!-- 基础信息 -->
+            <div class="form-section">
+                <div class="form-section-title"><i class="fa fa-id-card-o"></i>基础信息</div>
+                <div class="form-section-body">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">名称</label>
+                                <div class="col-sm-8">
+                                    <input class="form-control" value="Stone" disabled="disabled" />
+                                    <span class="help-text">登录名，不可修改</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">显示名</label>
+                                <div class="col-sm-8">
+                                    <input class="form-control" value="大石头" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">性别</label>
+                                <div class="col-sm-8">
+                                    <select class="form-control">
+                                        <option value="未知">未知</option>
+                                        <option value="男" selected="selected">男</option>
+                                        <option value="女">女</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">生日</label>
+                                <div class="col-sm-8">
+                                    <input class="form-control" type="date" value="1984-06-23" />
+                                    <span class="help-text">公历年月日</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 联系方式 -->
+            <div class="form-section">
+                <div class="form-section-title"><i class="fa fa-envelope-o"></i>联系方式</div>
+                <div class="form-section-body">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">邮件</label>
+                                <div class="col-sm-8">
+                                    <input class="form-control" value="nnhy@vip.qq.com" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">手机</label>
+                                <div class="col-sm-8">
+                                    <input class="form-control" value="17621214776" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 身份信息 -->
+            <div class="form-section">
+                <div class="form-section-title"><i class="fa fa-shield"></i>身份信息</div>
+                <div class="form-section-body">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">代码</label>
+                                <div class="col-sm-8">
+                                    <input class="form-control" value="452525" />
+                                    <span class="help-text">身份证、员工编码等，支持登录</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">角色</label>
+                                <div class="col-sm-8">
+                                    <p class="form-value">
+                                        <span class="label label-primary">新生命</span>
+                                        <span class="label label-success">管理员</span>
+                                        <span class="label label-info">普通用户</span>
+                                    </p>
+                                    <span class="help-text">主要角色与次要角色</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">部门</label>
+                                <div class="col-sm-8">
+                                    <p class="form-value"><i class="fa fa-sitemap"></i>新生命团队</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">头像</label>
+                                <div class="col-sm-8 avatar-upload">
+                                    <span class="avatar-thumb"><i class="fa fa-user"></i></span>
+                                    <span class="upload-box">
+                                        <span class="btn btn-sm btn-default btn-file">
+                                            <i class="fa fa-upload"></i> 选择文件
+                                            <input type="file" name="Avatar" accept="image/*" />
+                                        </span>
+                                        <span class="help-text">支持 jpg / png，建议 200×200</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 登录信息（只读） -->
+            <div class="form-section">
+                <div class="form-section-title"><i class="fa fa-clock-o"></i>登录信息</div>
+                <div class="form-section-body">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">登录次数</label>
+                                <div class="col-sm-8">
+                                    <p class="form-value"><i class="fa fa-sign-in"></i>13133</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">最后登录</label>
+                                <div class="col-sm-8">
+                                    <p class="form-value"><i class="fa fa-calendar-o"></i>2026-08-26 08:31:45</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">最后登录IP</label>
+                                <div class="col-sm-8">
+                                    <p class="form-value"><i class="fa fa-globe"></i>58.246.155.222</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">备注</label>
+                                <div class="col-sm-8">
+                                    <textarea class="form-control" rows="3" placeholder="补充说明信息"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作栏 -->
+            <div class="form-actions text-center">
+                <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> 保存</button>
+                <button type="button" class="btn btn-default" onclick="history.go(-1);"><i class="fa fa-times"></i> 取消</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"></script>
+</body>
+</html>

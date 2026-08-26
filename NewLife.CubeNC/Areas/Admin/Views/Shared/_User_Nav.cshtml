@@ -27,15 +27,34 @@
     dic["OAuth日志"] = $"/Admin/OAuthLog?userId={userId}";
     dic["日志"] = $"/Admin/Log?userId={userId}";
     dic["通知记录"] = $"/Admin/NotificationRecord?userId={userId}";
+
+    // Tab 图标
+    var icons = new Dictionary<String, String>
+    {
+        ["基本信息"] = "fa-user",
+        ["修改密码"] = "fa-key",
+        ["第三方授权"] = "fa-plug",
+        ["租户信息"] = "fa-building-o",
+        ["三方链接"] = "fa-link",
+        ["令牌"] = "fa-ticket",
+        ["OAuth日志"] = "fa-history",
+        ["日志"] = "fa-list-alt",
+        ["通知记录"] = "fa-bell-o",
+    };
 }
-<div class="navbar-collapse" style="text-align:center">
-    <ul class="nav nav-pills" style="margin-bottom: 10px; display: inline-block;float: none;">
+@* 用户中心页面专用样式：仅在此 partial 渲染的页面加载，避免污染全局 Cube.css *@
+<link rel="stylesheet" href="~/Content/profile.css?v=20260826" />
+<div class="profile-tabs">
+    <ul class="nav nav-tabs" role="tablist">
         @foreach (var item in dic)
         {
             var url = item.Value + "";
             var p = url.IndexOf('?');
             var v = p > 0 ? url.Substring(0, p) : url;
-            <li role="presentation" class="@(path.EqualIgnoreCase(v) ? "active" : "")"><a href="@url">@item.Key</a></li>
+            var icon = icons.ContainsKey(item.Key) ? icons[item.Key] : "fa-pencil-square-o";
+            <li role="presentation" class="@(path.EqualIgnoreCase(v) ? "active" : "")">
+                <a href="@url"><i class="fa @icon"></i>@item.Key</a>
+            </li>
         }
     </ul>
 </div>

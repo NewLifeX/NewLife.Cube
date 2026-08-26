@@ -60,7 +60,6 @@ NewLife.Cube.Vuetify/wwwroot/assets/
 TODO.md
 .codegraph/
 .serena/
-*/wwwroot/Content/
 
 # ===== 第三方主题静态资源 / 构建工具：移出版本库（不应入库） =====
 # 老皮肤项目的 wwwroot：均为第三方主题包、字体、vendored JS（echarts/element/bootstrap 等），
@@ -72,7 +71,6 @@ TODO.md
 /NewLife.Cube.AdminLTE/wwwroot/
 /NewLife.Cube.Blazor/wwwroot/
 /NewLife.Cube.ElementUI/wwwroot/
-/NewLife.CubeNC/wwwroot/
 
 # 构建工具 XCode 实体生成器：应通过发布包/下载分发，不入库
 xcodetool.exe
