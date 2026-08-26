@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   isAuditField,
+  isTenantField,
+  parseFkName,
   resolveControl,
   resolveListControl,
   resolveSearchControl,
@@ -178,5 +180,72 @@ describe('fieldControl', () => {
     expect(isAuditField(base({ name: 'Name', typeName: 'String' }))).toBe(false);
     expect(isAuditField(base({ name: 'LastLogin', typeName: 'DateTime' }))).toBe(false);
     expect(isAuditField(base({ name: 'Remark', typeName: 'String' }))).toBe(false);
+  });
+
+  it('isTenantField matches TenantId / TenantName / displayName 租户', () => {
+    expect(isTenantField(base({ name: 'TenantId', typeName: 'Int32' }))).toBe(true);
+    expect(isTenantField(base({ name: 'TenantName', typeName: 'String' }))).toBe(true);
+    expect(isTenantField(base({ name: 'RoleId', typeName: 'Int32', displayName: '租户' }))).toBe(true);
+    expect(isTenantField(base({ name: 'Name', typeName: 'String' }))).toBe(false);
+  });
+
+  it('OSC-26082097c1 FK name heuristics: AreaId / RoleId / RoleIds / DepartmentId / UserId', () => {
+    expect(parseFkName('Id')).toBeNull();
+    expect(parseFkName('RoleID')).toEqual({ stem: 'role', multi: false });
+    expect(parseFkName('RoleIds')).toEqual({ stem: 'role', multi: true });
+    expect(parseFkName('DepartmentID')).toEqual({ stem: 'department', multi: false });
+    expect(parseFkName('CreateUserID')).toEqual({ stem: 'createuser', multi: false });
+
+    // 无 ItemType 的 AreaId 也走级联，禁止数字框 / 普通下拉
+    expect(resolveControl(base({ name: 'AreaId', typeName: 'Int32' }))).toBe('cascader');
+    expect(resolveSearchControl(base({ name: 'AreaId', typeName: 'Int32' }))).toBe('cascader');
+    expect(
+      resolveControl(
+        base({
+          name: 'AreaId',
+          typeName: 'Int32',
+          dataSource: { '110000': '北京市' },
+        }),
+      ),
+    ).toBe('cascader');
+
+    expect(
+      resolveControl(
+        base({ name: 'RoleID', typeName: 'Int32', dataSource: { '1': '管理员' } }),
+      ),
+    ).toBe('select');
+    expect(
+      resolveControl(
+        base({ name: 'RoleIds', typeName: 'String', dataSource: { '1': '管理员', '2': '访客' } }),
+      ),
+    ).toBe('selectMulti');
+    expect(resolveControl(base({ name: 'RoleID', typeName: 'Int32', lovCode: 'Entity.Role' }))).toBe(
+      'lov',
+    );
+    expect(resolveControl(base({ name: 'RoleIds', typeName: 'String', lovCode: 'Entity.Role' }))).toBe(
+      'lovMulti',
+    );
+    expect(
+      resolveControl(
+        base({ name: 'DepartmentID', typeName: 'Int32', dataSource: { '1': '研发' } }),
+      ),
+    ).toBe('select');
+    expect(
+      resolveControl(base({ name: 'CreateUserID', typeName: 'Int32', lovCode: 'Entity.User' })),
+    ).toBe('lov');
+    expect(resolveSearchControl(base({ name: 'RoleID', typeName: 'Int32', lovCode: 'Role' }))).toBe(
+      'lov',
+    );
+
+    // 普通数值不受影响
+    expect(resolveControl(base({ name: 'Age', typeName: 'Int32' }))).toBe('inputNumber');
+    expect(resolveControl(base({ name: 'Logins', typeName: 'Int32' }))).toBe('inputNumber');
+
+    expect(
+      serializeSubmitModel(
+        { RoleIds: ['1', '2'] },
+        [base({ name: 'RoleIds', typeName: 'String' })],
+      ),
+    ).toEqual({ RoleIds: '1,2' });
   });
 });

@@ -121,6 +121,7 @@
     <Compile Include="..\NewLife.CubeNC\ViewModels\ListBoxModel.cs" Link="ViewModels\ListBoxModel.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\ListField.cs" Link="ViewModels\ListField.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\LoginConfigModel.cs" Link="ViewModels\LoginConfigModel.cs" />
+    <Compile Include="..\NewLife.CubeNC\ViewModels\MapCandidateFiller.cs" Link="ViewModels\MapCandidateFiller.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\MenuTree.cs" Link="ViewModels\MenuTree.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\SearchField.cs" Link="ViewModels\SearchField.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\TextAligns.cs" Link="ViewModels\TextAligns.cs" />

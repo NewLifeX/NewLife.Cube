@@ -403,4 +403,32 @@ public class Osc260819P3FixTests
         }));
         Assert.Equal(CubeCode.ParamError.ToInt(), ex.Code);
     }
+
+    [Fact(DisplayName = "多租户关闭：TenantId=0 时查找列 TenantName 为空，不报「租户不可以为空」")]
+    public void ValidateEntityFields_EmptyTenantName_NotRequired()
+    {
+        var old = CubeSetting.Current.EnableTenant;
+        CubeSetting.Current.EnableTenant = false;
+        try
+        {
+            var mi = typeof(EntityController<EntityAutomation, EntityAutomation>)
+                .GetMethod("ValidateEntityFields", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(mi);
+            var entity = new EntityAutomation
+            {
+                Id = 401,
+                Name = "ok",
+                Enable = true,
+                TenantId = 0,
+                TypePath = "Cube/Test",
+                TriggerKind = "created",
+            };
+            var errors = mi.Invoke(null, [entity, DataObjectMethodType.Update, null]) as IList<FieldError>;
+            Assert.DoesNotContain(errors ?? [], e => (e.Message ?? "").Contains("租户"));
+        }
+        finally
+        {
+            CubeSetting.Current.EnableTenant = old;
+        }
+    }
 }

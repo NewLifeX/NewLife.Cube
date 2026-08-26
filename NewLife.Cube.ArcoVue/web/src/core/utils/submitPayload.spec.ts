@@ -98,5 +98,7 @@ describe('isFieldRequired', () => {
     expect(isFieldRequired(f({ name: 'Opt', typeName: 'String' }))).toBe(false);
     // 主键显式 required:true 仍视为必填（后端矩阵主键始终 false，此处兜底）
     expect(isFieldRequired(f({ name: 'Id', typeName: 'Int32', primaryKey: true, nullable: true, required: true }))).toBe(true);
+    // 显式 required:false 覆盖 nullable:false（多租户关闭时 TenantId 仍 NOT NULL，0 表示全局）
+    expect(isFieldRequired(f({ name: 'TenantId', typeName: 'Int32', nullable: false, required: false }))).toBe(false);
   });
 });

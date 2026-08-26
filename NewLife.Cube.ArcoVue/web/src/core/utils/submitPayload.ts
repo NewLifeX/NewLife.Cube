@@ -43,7 +43,9 @@ export function prepareSubmitPayload(
   return out;
 }
 
-/** 与后端 Required 矩阵（OSC-260819e483 P1）一致：required===true 或（非主键且 nullable===false）视为必填；两者皆缺/false → 非必填 */
+/** 与后端 Required 矩阵（OSC-260819e483 P1）一致：显式 required 优先；未下发时非主键且 nullable===false 视为必填 */
 export function isFieldRequired(field: FieldMeta): boolean {
-  return field.required === true || (!field.primaryKey && field.nullable === false);
+  if (field.required === true) return true;
+  if (field.required === false) return false;
+  return !field.primaryKey && field.nullable === false;
 }

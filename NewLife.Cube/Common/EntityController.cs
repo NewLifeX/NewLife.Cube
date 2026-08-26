@@ -272,6 +272,9 @@ public partial class EntityController<TEntity, TModel>
             // 若因整实体必填校验（如某必填 String 原值为空串）而误伤，则改一个字段也会失败（OSC-260819e483 修复）
             if (onlyFields != null && !onlyFields.Any(f => f.EqualIgnoreCase(df.Name))) continue;
 
+            // 租户字段：关闭多租户或 TenantId=0（全局角色）时查找列 TenantName 为空，不能报「租户不可以为空」
+            if (df.IsTenantScopeField()) continue;
+
             var value = entity[df.Name];
             var displayName = df.DisplayName ?? df.Name;
 

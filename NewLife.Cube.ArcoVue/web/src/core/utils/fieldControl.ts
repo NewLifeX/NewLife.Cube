@@ -100,9 +100,52 @@ const ITEM_TYPE_TO_CONTROL: Record<string, ControlType> = {
 /** 地区/级联 ItemType：后端 User.AreaId 使用 area4，地区实体为系统内置 Area */
 const CASCADER_ITEM_TYPES: ReadonlySet<string> = new Set(['area', 'area4', 'cascader']);
 
+/** OSC-26082097c1 §5.3 白名单词干（Id/Ids 后缀才绑专用件） */
+const FK_STEMS: ReadonlySet<string> = new Set([
+  'role',
+  'user',
+  'person',
+  'department',
+  'area',
+  'menu',
+  'createuser',
+  'updateuser',
+  'creator',
+  'updater',
+]);
+
+/**
+ * 解析外键字段名：RoleId → { stem: role, multi: false }；RoleIds → multi。
+ * 主键恰好 Id/ID 不命中。
+ */
+export function parseFkName(name: string | undefined | null): { stem: string; multi: boolean } | null {
+  const n = (name || '').replace(/_/g, '').toLowerCase();
+  if (!n || n === 'id') return null;
+  let multi = false;
+  let stem = n;
+  if (n.endsWith('ids')) {
+    multi = true;
+    stem = n.slice(0, -3);
+  } else if (n.endsWith('id')) {
+    stem = n.slice(0, -2);
+  } else {
+    return null;
+  }
+  if (!FK_STEMS.has(stem)) return null;
+  return { stem, multi };
+}
+
+/** 地区字段：AreaId / AreaIds / 裸名 Area（SetRelation 导航属性） */
+export function isAreaFieldName(name: string | undefined | null): boolean {
+  const n = (name || '').replace(/_/g, '').toLowerCase();
+  if (n === 'area') return true;
+  return parseFkName(name)?.stem === 'area';
+}
+
 /** 是否为地区/级联字段（用于表单 Cascader 与列表/搜索适配） */
-export function isCascaderField(field: Pick<FieldMeta, 'itemType'>): boolean {
-  return CASCADER_ITEM_TYPES.has((field.itemType ?? '').trim().toLowerCase());
+export function isCascaderField(field: Pick<FieldMeta, 'itemType' | 'name'>): boolean {
+  if (CASCADER_ITEM_TYPES.has((field.itemType ?? '').trim().toLowerCase())) return true;
+  return isAreaFieldName(field.name);
 }
 
 function normalizeItemType(field: FieldMeta): string {
@@ -130,10 +173,23 @@ export function resolveControl(field: FieldMeta): ControlType {
   // 布尔优先开关（即使已物化 dataSourceMap；TypeName 丢失时用字典形态推断）
   if (typeName === 'Boolean' || isBooleanDataSource(field.dataSource)) return 'switch';
 
+  // 名称启发式先于 dataSource（OSC-26082097c1）：AreaId 即使有字典也走 Cascader，禁止普通下拉
+  if (isAreaFieldName(field.name) || CASCADER_ITEM_TYPES.has(itemType)) return 'cascader';
+
+  const fk = parseFkName(field.name);
+  const fkMulti = !!(fk?.multi || field.multiple || itemType === 'multipleselect');
+  // RoleIds / UserIds 等：有候选时强制多选（后端 FormField 无 Multiple 属性）
+  if (fk && fk.stem !== 'area') {
+    if (field.dataSource && Object.keys(field.dataSource).length > 0) {
+      return fkMulti ? 'selectMulti' : 'select';
+    }
+    if (field.lovCode) return fkMulti ? 'lovMulti' : 'lov';
+  }
+
   // 静态字典（GetPage/GetFields 已物化 dataSource / dataSourceMap）→ 本地下拉
   // 必须先于 itemType=singleSelect→lov，否则 Object/Config 有字典仍走远程 Lov
   if (field.dataSource && Object.keys(field.dataSource).length > 0) {
-    const multi = !!field.multiple || normalizeItemType(field) === 'multipleselect';
+    const multi = !!field.multiple || itemType === 'multipleselect';
     return multi ? 'selectMulti' : 'select';
   }
 
@@ -166,8 +222,8 @@ export function resolveSearchControl(field: FieldMeta): SearchControlType {
   const itemType = normalizeItemType(field);
 
   if (itemType === 'file' || itemType === 'image') return 'fileExists';
-  // 地区/级联：搜索也用 Cascader，便于按省市区逐级过滤
-  if (CASCADER_ITEM_TYPES.has(itemType)) return 'cascader';
+  // 地区/级联：搜索也用 Cascader（含 AreaId 名称启发式）
+  if (isAreaFieldName(field.name) || CASCADER_ITEM_TYPES.has(itemType)) return 'cascader';
   if (itemType === 'singleselect') {
     // GetPage 已物化 dataSource 时优先本地下拉，避免再走 Lov Meta
     if (field.dataSource && Object.keys(field.dataSource).length > 0) return 'select';
@@ -182,6 +238,13 @@ export function resolveSearchControl(field: FieldMeta): SearchControlType {
 
   if (typeName === 'Guid') return 'text';
   if (typeName === 'Boolean') return 'switch';
+
+  const fk = parseFkName(field.name);
+  const fkMulti = !!(fk?.multi || field.multiple || itemType === 'multipleselect');
+  if (fk && fk.stem !== 'area') {
+    if (field.dataSource && Object.keys(field.dataSource).length > 0) return 'select';
+    if (field.lovCode) return fkMulti ? 'lovMulti' : 'lov';
+  }
 
   // 搜索优先使用 GetPage 物化的 dataSource（枚举/委托字典），直接展示可读标签
   if (field.dataSource && Object.keys(field.dataSource).length > 0) {
@@ -355,8 +418,13 @@ export function serializeSubmitModel(
   const fieldMap = new Map(fields.map((f) => [f.name, f]));
   const multiNames = new Set(
     fields
-      // itemType 大小写不敏感（MultipleSelect / multipleselect 等价）
-      .filter((f) => f.multiple || normalizeItemType(f) === 'multipleselect')
+      // itemType 大小写不敏感（MultipleSelect / multipleselect 等价）；RoleIds 等 Ids 后缀
+      .filter(
+        (f) =>
+          f.multiple ||
+          normalizeItemType(f) === 'multipleselect' ||
+          !!parseFkName(f.name)?.multi,
+      )
       .map((f) => f.name),
   );
   const out: Record<string, unknown> = {};

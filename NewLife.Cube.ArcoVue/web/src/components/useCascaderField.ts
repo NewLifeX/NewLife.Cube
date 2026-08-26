@@ -1,13 +1,20 @@
 import { onMounted, ref, watch } from 'vue';
 import cubeApi from '@/api';
-import { leafFromCascaderChange } from '@/core/utils/cascaderValue';
+import {
+  formatAreaPathLabel,
+  isAreaLeaf,
+  isEmptyAreaId,
+  leafFromCascaderChange,
+  pathFromCascaderOption,
+} from '@/core/utils/cascaderValue';
 
 /**
  * 地区级联选择（User.AreaId）。
  *
  * 后端使用系统内置地区实体 Area（XCode.Membership.Area），层级为
  * 省/市/区，通过 ParentID 组织树。组件懒加载子级（点击展开时按 parentId 拉取），
- * 提交值为叶子节点 ID（绑定到实体的 AreaId 整型字段，与历史 area4 行为一致）。
+ * 单击展开下级；乡镇（Level≥4）单击即可选定；任意层级双击完成选择并收起。
+ * 提交值为当前选中节点 ID（绑定 AreaId）。
  *
  * 编辑回显：给定叶子 AreaId 时，逐级向上查 ParentID 还原整条路径，避免一次性拉全量。
  */
@@ -19,7 +26,10 @@ interface CascadeOption {
 }
 
 /** 模块级缓存：id → area 记录，避免重复请求同一节点 */
-const areaCache = new Map<string, { id: number | string; name: string; parentId: number | string }>();
+const areaCache = new Map<
+  string,
+  { id: number | string; name: string; parentId: number | string; level?: unknown }
+>();
 
 /** CascaderField 组件 props 类型（与 CascaderField.vue defineProps 泛型逐字一致） */
 interface CascaderFieldProps {
@@ -40,13 +50,20 @@ export function useCascaderField(props: CascaderFieldProps, emit: CascaderFieldE
   const options = ref<CascadeOption[]>([]);
   const pathValue = ref<(number | string)[]>([]);
   const loading = ref(false);
+  const popupVisible = ref(false);
 
-  function toArea(rec: Record<string, unknown>): { id: number | string; name: string; parentId: number | string } {
+  function toArea(rec: Record<string, unknown>): {
+    id: number | string;
+    name: string;
+    parentId: number | string;
+    level?: unknown;
+  } {
     // 兼容 camelCase / PascalCase / Int64AsString
     const id = (rec.id ?? rec.Id ?? rec.ID) as number | string;
     const name = (rec.name ?? rec.Name) as string;
     const parentId = (rec.parentId ?? rec.ParentId ?? rec.ParentID ?? rec.parentID) as number | string;
-    return { id, name: String(name ?? ''), parentId: parentId ?? 0 };
+    const level = rec.level ?? rec.Level;
+    return { id, name: String(name ?? ''), parentId: parentId ?? 0, level };
   }
 
   async function loadChildren(parentId: number | string): Promise<CascadeOption[]> {
@@ -62,7 +79,8 @@ export function useCascaderField(props: CascaderFieldProps, emit: CascaderFieldE
         return {
           value: a.id,
           label: a.name,
-          isLeaf: false, // 地区最多 4 级，懒加载时再判定
+          // 乡镇/9 位编码为叶子，单击即可选定；其余单击展开、双击选定
+          isLeaf: isAreaLeaf(a.id, a.level),
         };
       });
     } catch {
@@ -150,7 +168,7 @@ export function useCascaderField(props: CascaderFieldProps, emit: CascaderFieldE
   }
 
   async function refreshPathFromModel() {
-    if (props.modelValue == null || props.modelValue === '') {
+    if (isEmptyAreaId(props.modelValue) || props.modelValue == null) {
       pathValue.value = [];
       return;
     }
@@ -170,6 +188,28 @@ export function useCascaderField(props: CascaderFieldProps, emit: CascaderFieldE
     emit('update:modelValue', leaf);
   }
 
+  function nameOfArea(id: string | number): string | undefined {
+    return areaCache.get(String(id))?.name;
+  }
+
+  /** 非叶子选定后 Arco fallback 会拼编码；用缓存名称统一成字符路径 */
+  function fallbackLabel(value: unknown): string {
+    return formatAreaPathLabel(value, nameOfArea);
+  }
+
+  /** Arco Cascader 只发 popupVisibleChange，不发 update:popupVisible；必须用该事件做受控同步，否则面板无法打开 */
+  function onPopupVisibleChange(visible: boolean) {
+    popupVisible.value = visible;
+  }
+
+  /** 双击任意层级完成选择并收起（对齐 city-picker：非叶子也可选定） */
+  function onOptionDblClick(data: unknown) {
+    const path = pathFromCascaderOption(data);
+    if (!path.length) return;
+    onChange(path);
+    popupVisible.value = false;
+  }
+
   /** a-cascader load-more：展开节点时懒加载子级，无子则置 isLeaf */
   async function loadMore(option: CascadeOption, done: (children: CascadeOption[]) => void) {
     await ensureChildren(option);
@@ -187,7 +227,11 @@ export function useCascaderField(props: CascaderFieldProps, emit: CascaderFieldE
     options,
     pathValue,
     loading,
+    popupVisible,
     onChange,
+    fallbackLabel,
+    onPopupVisibleChange,
+    onOptionDblClick,
     loadMore,
   };
 }

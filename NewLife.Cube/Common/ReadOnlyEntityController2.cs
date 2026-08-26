@@ -695,8 +695,13 @@ public partial class ReadOnlyEntityController<TEntity>
             }
         }
 
+        // 多租户关闭：表单/列表不再暴露租户字段（TenantId=0 表示全局，无需填写）
+        if (!CubeSetting.Current.EnableTenant)
+        {
+            fields.RemoveField("TenantId", "TenantName", "Tenant");
+        }
         // 租户模式：隐藏 ITenantScope 实体的 TenantId，避免租户用户改隔离键
-        if (CubeSetting.Current.EnableTenant && TenantContext.CurrentId > 0 && IsTenantSource
+        else if (TenantContext.CurrentId > 0 && IsTenantSource
             && (kind == ViewKinds.AddForm || kind == ViewKinds.EditForm || kind == ViewKinds.Detail))
         {
             fields.RemoveField("TenantId", "TenantName");

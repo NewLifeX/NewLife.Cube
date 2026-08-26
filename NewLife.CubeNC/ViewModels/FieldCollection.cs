@@ -150,16 +150,16 @@ public class FieldCollection : List<DataField>
         return df;
     }
 
-    /// <summary>为 Map 外键搜索字段自动填充候选。小表目标（行数 ≤ MaxDropDownList）内联 DataSourceMap，大表目标注册 Entity. 值集；手工已设 LovCode/DataSourceMap 优先不覆盖</summary>
-    /// <param name="sf">搜索字段</param>
+    /// <summary>为 Map 外键字段自动填充候选。小表目标（行数 ≤ MaxDropDownList）内联 DataSourceMap，大表目标注册 Entity. 值集；手工已设 LovCode/DataSourceMap 优先不覆盖</summary>
+    /// <param name="df">数据字段（搜索/表单均可）</param>
     /// <param name="field">表字段</param>
-    private static void FillMapCandidates(SearchField sf, FieldItem field)
+    private static void FillMapCandidates(DataField df, FieldItem field)
     {
         var map = field.Map;
         if (map == null) return;
         // 手工已设 LovCode/DataSourceMap 优先，不覆盖
-        if (!sf.LovCode.IsNullOrEmpty()) return;
-        if (sf.DataSourceMap != null && sf.DataSourceMap.Count > 0) return;
+        if (!df.LovCode.IsNullOrEmpty()) return;
+        if (df.DataSourceMap != null && df.DataSourceMap.Count > 0) return;
 
         var provider = map.Provider;
         if (provider == null || provider.EntityType == null) return;
@@ -186,12 +186,12 @@ public class FieldCollection : List<DataField>
                 if (de.Key == null) continue;
                 map2[de.Key + ""] = de.Value + "";
             }
-            if (map2.Count > 0) sf.DataSourceMap = map2;
+            if (map2.Count > 0) df.DataSourceMap = map2;
         }
         else
         {
             // 大表：注册 Entity. 值集，前端 LovSelect 远程搜索
-            sf.LovCode = "Entity." + entityType.FullName;
+            df.LovCode = "Entity." + entityType.FullName;
         }
     }
 

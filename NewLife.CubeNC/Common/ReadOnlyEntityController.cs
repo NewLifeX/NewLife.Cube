@@ -1019,10 +1019,10 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         };
 
         var list = PrepareFieldsForApi(OnGetFields(ViewKinds.List, null));
-        var addForm = PrepareFieldsForApi(OnGetFields(ViewKinds.AddForm, null));
-        var editForm = PrepareFieldsForApi(OnGetFields(ViewKinds.EditForm, null));
-        var detail = PrepareFieldsForApi(OnGetFields(ViewKinds.Detail, null));
-        var search = PrepareFieldsForApi(OnGetFields(ViewKinds.Search, null));
+        var addForm = PrepareMapViewFields(ViewKinds.AddForm);
+        var editForm = PrepareMapViewFields(ViewKinds.EditForm);
+        var detail = PrepareMapViewFields(ViewKinds.Detail);
+        var search = PrepareMapViewFields(ViewKinds.Search);
 
         var data = new
         {
@@ -1045,11 +1045,23 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     [AllowAnonymous]
     public virtual ActionResult GetFields(ViewKinds kind)
     {
-        var fields = PrepareFieldsForApi(OnGetFields(kind, null));
+        var raw = OnGetFields(kind, null);
+        if (kind is ViewKinds.Search or ViewKinds.AddForm or ViewKinds.EditForm or ViewKinds.Detail)
+            MapCandidateFiller.Apply(raw, Factory);
+        var fields = PrepareFieldsForApi(raw);
 
         Object data = new { code = 0, message = "", data = fields };
 
         return new JsonResult(data);
+    }
+
+    /// <summary>先还原 Map 物理列并补全候选，再 PrepareForApi（必填/枚举字典依赖还原后的 Type）</summary>
+    [NonAction]
+    protected virtual IList<DataField> PrepareMapViewFields(ViewKinds kind)
+    {
+        var fields = OnGetFields(kind, null);
+        MapCandidateFiller.Apply(fields, Factory);
+        return PrepareFieldsForApi(fields);
     }
 
     /// <summary>物化字段数据源字典，供 SPA 列表徽章/表单下拉复用，避免反复拉值集</summary>
@@ -1066,11 +1078,16 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         return fields;
     }
 
-    /// <summary>按 Required 矩阵设置必填（OSC-260819e483 P1，与 WebAPI 同源）：字段为 null 跳过；主键/只读/可空=false；其余（含布尔 NOT NULL）为 true。不在 Fill 内写，避免影响 MVC 校验语义</summary>
+    /// <summary>按 Required 矩阵设置必填（OSC-260819e483 P1，与 WebAPI 同源）：字段为 null 跳过；主键/只读/可空=false；其余（含布尔 NOT NULL）为 true。不在 Fill 内写，避免影响 MVC 校验语义。多租户关闭时租户字段非必填（0 表示全局）。</summary>
     /// <param name="df">字段</param>
     protected static void ApplyRequired(DataField df)
     {
         if (df == null) return;
+        if (df.IsTenantScopeField() && !CubeSetting.Current.EnableTenant)
+        {
+            df.Required = false;
+            return;
+        }
         df.Required = !df.PrimaryKey && !df.ReadOnly && !df.Nullable;
     }
     #endregion

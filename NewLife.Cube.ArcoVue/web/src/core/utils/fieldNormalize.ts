@@ -1,6 +1,6 @@
 import type { DataField } from '@cube/api-core';
 import type { FieldMeta, FieldOption } from '../types/field';
-import { isBooleanDataSource } from './fieldControl';
+import { isAreaFieldName, isBooleanDataSource, parseFkName } from './fieldControl';
 import { applyDescriptionDataSourceIfNeeded } from './descriptionDataSource';
 
 function pickDataSource(field: DataField & Record<string, unknown>): Record<string, string> | undefined {
@@ -77,7 +77,7 @@ export function toFieldMeta(field: DataField): FieldMeta {
     displayName: field.displayName || ext.DisplayName || name,
     category: field.category || ext.Category || undefined,
     typeName,
-    itemType: field.itemType || ext.ItemType,
+    itemType: field.itemType || ext.ItemType || (isAreaFieldName(name) ? 'area4' : undefined),
     length: field.length,
     precision: field.precision,
     scale: field.scale,
@@ -88,7 +88,7 @@ export function toFieldMeta(field: DataField): FieldMeta {
     visible: field.visible,
     description,
     lovCode: ext.lovCode || ext.LovCode,
-    multiple: ext.multiple,
+    multiple: ext.multiple || !!parseFkName(name)?.multi,
     options: ext.options,
     dataSource,
     maxWidth: field.maxWidth,

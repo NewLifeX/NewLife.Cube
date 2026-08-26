@@ -269,6 +269,17 @@ public class DataField
     /// <returns></returns>
     public Boolean IsAttachment() => ItemType.EqualIgnoreCase("file", "image") || ItemType.StartsWithIgnoreCase("file-", "image-");
 
+    /// <summary>是否租户隔离字段（TenantId / TenantName 及 Map 查找列）。
+    /// SetRelation 会把 TenantId 换成 TenantName；TenantName 有 Map.Provider 时 FieldItem.ReadOnly 仍为 false，
+    /// TenantId=0（全局角色）时查找值为空，不能当必填失败。</summary>
+    public Boolean IsTenantScopeField()
+    {
+        if (Name.EqualIgnoreCase("TenantId", "TenantName", "Tenant")) return true;
+        if (!MapField.IsNullOrEmpty() && MapField.EqualIgnoreCase("TenantId")) return true;
+        var dn = DisplayName?.Trim();
+        return dn == "租户" || dn == "租户编号" || dn == "租户名称";
+    }
+
     /// <summary>格式化数据用于显示</summary>
     /// <param name="value"></param>
     /// <returns></returns>

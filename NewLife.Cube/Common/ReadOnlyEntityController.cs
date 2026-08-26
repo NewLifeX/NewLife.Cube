@@ -122,12 +122,10 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         };
 
         var list = PrepareFieldsForApi(OnGetFields(ViewKinds.List, null));
-        var addForm = PrepareFieldsForApi(OnGetFields(ViewKinds.AddForm, null));
-        var editForm = PrepareFieldsForApi(OnGetFields(ViewKinds.EditForm, null));
-        var detail = PrepareFieldsForApi(OnGetFields(ViewKinds.Detail, null));
-        var search = PrepareFieldsForApi(OnGetFields(ViewKinds.Search, null));
-        // Map 外键字段候选补全：SearchBuilder 仅输出表字段（Map 关联多在扩展属性上），外键字段（如 User.DepartmentID）无候选
-        FixSearchMapCandidates(search);
+        var addForm = PrepareMapViewFields(ViewKinds.AddForm);
+        var editForm = PrepareMapViewFields(ViewKinds.EditForm);
+        var detail = PrepareMapViewFields(ViewKinds.Detail);
+        var search = PrepareMapViewFields(ViewKinds.Search);
 
         var data = new
         {
@@ -153,83 +151,25 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     [HttpGet]
     public virtual List<DataField> GetFields(ViewKinds kind)
     {
-        var fields = PrepareFieldsForApi(OnGetFields(kind, null)).ToList();
-        // 搜索字段同样补全 Map 外键候选，与 GetPage 保持一致
-        if (kind == ViewKinds.Search) FixSearchMapCandidates(fields);
-        return fields;
+        var fields = OnGetFields(kind, null);
+        if (kind is ViewKinds.Search or ViewKinds.AddForm or ViewKinds.EditForm or ViewKinds.Detail)
+            FixSearchMapCandidates(fields);
+        return PrepareFieldsForApi(fields).ToList();
     }
 
-    /// <summary>补全搜索字段的 Map 外键候选。SearchBuilder 仅输出表字段，而 Map 关联多在扩展属性上
-    /// （如 User.DepartmentID 的 [Map] 标在 User.Department 扩展属性），导致外键字段无候选、前端渲染数字框。
-    /// 这里从 Factory.AllFields 找 MapField 匹配的扩展字段补全：小表（≤MaxDropDownList）内联 DataSourceMap，大表注册 Entity. 值集；手工已设 LovCode/DataSourceMap 优先不覆盖。</summary>
-    /// <param name="search">GetPage/GetFields 返回的搜索字段列表</param>
-    protected virtual void FixSearchMapCandidates(IList<DataField> search)
+    /// <summary>先还原 Map 物理列并补全候选，再 PrepareForApi（必填/枚举字典依赖还原后的 Type）</summary>
+    [NonAction]
+    protected virtual IList<DataField> PrepareMapViewFields(ViewKinds kind)
     {
-        if (search == null || search.Count == 0) return;
-
-        // MapField(表字段名，如 DepartmentID) → 扩展字段（带 Map 的实体属性，如 User.Department）
-        var mapFields = Factory.AllFields
-            .Where(e => e.Map != null && !e.Map.Name.IsNullOrEmpty())
-            .GroupBy(e => e.Map.Name, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
-        if (mapFields.Count == 0) return;
-
-        foreach (var df in search)
-        {
-            if (df is not SearchField sf) continue;
-            if (!mapFields.TryGetValue(sf.Name, out var ext)) continue;
-
-            var provider = ext.Map.Provider;
-            if (provider == null || provider.EntityType == null) continue;
-
-            // 手工已设 LovCode 且值集已注册 → 优先保留；值集未配置（如 UserController 手动设的 "Role" 但未注册）→ 用 Map 实体候选覆盖
-            if (!sf.LovCode.IsNullOrEmpty())
-            {
-                // 值集是否已注册走 MemoryCache 60s（"1"=已注册，"0"=未注册），GetPage 高频接口避免逐字段查库
-                var lovKey = "LovRegistered:" + sf.LovCode;
-                var mark = MemoryCache.Instance.Get<String>(lovKey);
-                if (mark.IsNullOrEmpty())
-                {
-                    var lov = LovDefinition.Find(LovDefinition._.LovCode == sf.LovCode);
-                    mark = lov != null ? "1" : "0";
-                    MemoryCache.Instance.Set(lovKey, mark, 60);
-                }
-                if (mark == "1") continue;
-            }
-            // 已内联 DataSourceMap → 保留
-            if (sf.DataSourceMap != null && sf.DataSourceMap.Count > 0) continue;
-
-            var entityType = provider.EntityType;
-            // 行数判断走 MemoryCache 60s，避免每个请求都 Count
-            var cacheKey = "LovMapCount:" + entityType.FullName;
-            var count = MemoryCache.Instance.Get<Int32>(cacheKey);
-            if (count <= 0)
-            {
-                var fact = EntityFactory.CreateFactory(entityType);
-                count = fact.Session.Count;
-                MemoryCache.Instance.Set(cacheKey, count, 60);
-            }
-
-            if (count <= CubeSetting.Current.MaxDropDownList)
-            {
-                // 小表：内联数据源，前端渲染本地下拉
-                var dic = provider.GetDataSource();
-                if (dic == null) continue;
-                var map2 = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
-                foreach (var de in dic)
-                {
-                    if (de.Key == null) continue;
-                    map2[de.Key + ""] = de.Value + "";
-                }
-                if (map2.Count > 0) sf.DataSourceMap = map2;
-            }
-            else
-            {
-                // 大表：注册 Entity. 值集，前端 LovSelect 远程搜索
-                sf.LovCode = "Entity." + entityType.FullName;
-            }
-        }
+        var fields = OnGetFields(kind, null);
+        FixSearchMapCandidates(fields);
+        return PrepareFieldsForApi(fields);
     }
+
+    /// <summary>补全 Map 外键候选（搜索 + 添加/编辑/详情）。见 <see cref="MapCandidateFiller"/>。</summary>
+    /// <param name="search">GetPage/GetFields 返回的字段列表</param>
+    protected virtual void FixSearchMapCandidates(IList<DataField> search) =>
+        MapCandidateFiller.Apply(search, Factory);
 
     /// <summary>物化字段数据源字典，供 SPA 列表徽章/表单下拉复用，避免反复拉值集</summary>
     [NonAction]
@@ -245,11 +185,16 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         return fields;
     }
 
-    /// <summary>按 Required 矩阵设置必填（OSC-260819e483 P1）：字段为 null 跳过；主键/只读/可空=false；其余（含布尔 NOT NULL）为 true。不在 Fill 内写，避免影响 MVC 校验语义；布尔 false、数字 0 不视为空，校验器已如此</summary>
+    /// <summary>按 Required 矩阵设置必填（OSC-260819e483 P1）：字段为 null 跳过；主键/只读/可空=false；其余（含布尔 NOT NULL）为 true。不在 Fill 内写，避免影响 MVC 校验语义；布尔 false、数字 0 不视为空，校验器已如此。多租户关闭时租户字段非必填（0 表示全局）。</summary>
     /// <param name="df">字段</param>
     protected static void ApplyRequired(DataField df)
     {
         if (df == null) return;
+        if (df.IsTenantScopeField() && !CubeSetting.Current.EnableTenant)
+        {
+            df.Required = false;
+            return;
+        }
         df.Required = !df.PrimaryKey && !df.ReadOnly && !df.Nullable;
     }
     #endregion

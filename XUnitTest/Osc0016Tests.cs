@@ -233,6 +233,85 @@ public class Osc0016Tests
         Assert.Null(sf.DataSourceMap);
     }
 
+    [Fact]
+    [DisplayName("T2 Map 候选：FormField 小表目标同样内联 DataSourceMap")]
+    public void FieldCollection_Form_MapCandidates_SmallTable()
+    {
+        new OscSmallTarget { Name = "表单目标A" }.Insert();
+
+        var fact = EntityFactory.CreateFactory(typeof(OscSmallSource));
+        var field = fact.Table.FindByName("TargetId");
+        var ff = new FormField { Name = "TargetId" };
+        var mi = typeof(FieldCollection).GetMethod("FillMapCandidates", BindingFlags.NonPublic | BindingFlags.Static);
+        Assert.NotNull(mi);
+        mi.Invoke(null, [ff, field]);
+
+        Assert.True(ff.DataSourceMap != null && ff.DataSourceMap.Count > 0, "表单 Map 外键应内联 DataSourceMap");
+        Assert.True(ff.LovCode.IsNullOrEmpty());
+    }
+
+    [Fact]
+    [DisplayName("T2 Map 候选：GetPage 表单字段补全（不再要求 SearchField）")]
+    public void FixSearchMapCandidates_FormField_SmallTable()
+    {
+        new OscSmallTarget { Name = "探针目标" }.Insert();
+        var ff = new FormField { Name = "TargetId" };
+        MapCandidateFiller.Apply(new List<DataField> { ff }, EntityFactory.CreateFactory(typeof(OscSmallSource)));
+        Assert.True(ff.DataSourceMap != null && ff.DataSourceMap.Count > 0);
+    }
+
+    [Fact]
+    [DisplayName("T2 Map 候选：AreaId 表单字段标记 area4，不内联成下拉")]
+    public void FixSearchMapCandidates_AreaId_SetsArea4()
+    {
+        var ff = new FormField { Name = "AreaId", Type = typeof(Int32) };
+        MapCandidateFiller.Apply(new List<DataField> { ff }, EntityFactory.CreateFactory(typeof(OscSmallSource)));
+        Assert.Equal("area4", ff.ItemType);
+        Assert.True(ff.DataSourceMap == null || ff.DataSourceMap.Count == 0);
+    }
+
+    [Fact]
+    [DisplayName("T2 Map 候选：导航属性名还原为物理列（Role → RoleID）")]
+    public void FixSearchMapCandidates_RestoresPhysicalColumnName()
+    {
+        new OscSmallTarget { Name = "导航目标" }.Insert();
+        var fact = EntityFactory.CreateFactory(typeof(OscSmallSource));
+        var fi = fact.Table.FindByName("TargetId");
+        var ff = new FormField
+        {
+            Name = "Target",
+            MapField = "TargetId",
+            Type = typeof(OscSmallTarget),
+            MapProvider = fi.Map.Provider,
+        };
+        MapCandidateFiller.Apply(new List<DataField> { ff }, fact);
+        Assert.Equal("TargetId", ff.Name);
+        Assert.Equal(typeof(Int32), ff.Type);
+        Assert.True(ff.DataSourceMap != null && ff.DataSourceMap.Count > 0);
+    }
+
+    [Fact]
+    [DisplayName("T2 Map 候选：String 查找列 RoleName/AreaPath 还原为可写物理列并取消 ReadOnly")]
+    public void FixSearchMapCandidates_RestoresStringLookupColumn()
+    {
+        new OscSmallTarget { Name = "查找列目标" }.Insert();
+        var fact = EntityFactory.CreateFactory(typeof(OscSmallSource));
+        var fi = fact.Table.FindByName("TargetId");
+        var ff = new FormField
+        {
+            Name = "TargetName",
+            MapField = "TargetId",
+            Type = typeof(String),
+            ReadOnly = true,
+            MapProvider = fi.Map.Provider,
+        };
+        MapCandidateFiller.Apply(new List<DataField> { ff }, fact);
+        Assert.Equal("TargetId", ff.Name);
+        Assert.Equal(typeof(Int32), ff.Type);
+        Assert.False(ff.ReadOnly);
+        Assert.True(ff.DataSourceMap != null && ff.DataSourceMap.Count > 0);
+    }
+
     #endregion
 
     #region T3 entity: 内部实体值集自动注册
@@ -308,6 +387,22 @@ public class Osc0016Tests
         var display = setting.GetType().GetProperty("masterTimeDisplayName")?.GetValue(setting);
         Assert.Null(name);
         Assert.Null(display);
+    }
+
+    #endregion
+
+    #region 租户字段识别（多租户关闭时不可把 TenantName 空串当必填）
+
+    [Fact]
+    [DisplayName("租户字段：TenantId / TenantName / MapField / 显示名「租户」")]
+    public void DataField_IsTenantScopeField()
+    {
+        Assert.True(new DataField { Name = "TenantId" }.IsTenantScopeField());
+        Assert.True(new DataField { Name = "TenantName" }.IsTenantScopeField());
+        Assert.True(new FormField { Name = "TenantName", MapField = "TenantId" }.IsTenantScopeField());
+        Assert.True(new DataField { Name = "X", DisplayName = "租户" }.IsTenantScopeField());
+        Assert.False(new DataField { Name = "Name", DisplayName = "名称" }.IsTenantScopeField());
+        Assert.False(new DataField { Name = "AreaId" }.IsTenantScopeField());
     }
 
     #endregion
