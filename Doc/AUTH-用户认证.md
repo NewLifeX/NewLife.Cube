@@ -31,17 +31,19 @@
 | 业务 | 方式 | MVC | API | 后端核心 | 状态 |
 |------|------|-----|-----|---------|------|
 | 登录 | 密码登录 | ✅ | ✅ | `UserService.LoginByPassword` | 完整 |
-| 登录 | 手机验证码 | ✅ | ✅ | `UserService.LoginBySms` | 完整 |
-| 登录 | 邮箱验证码 | ✅ | ✅ | `UserService.LoginByMail` | 完整 |
+| 登录 | 手机验证码 | — | ✅ | `UserService.LoginBySms` | 完整（MVC 页面不提供） |
+| 登录 | 邮箱验证码 | — | ✅ | `UserService.LoginByMail` | 完整（MVC 页面不提供） |
 | 登录 | 三方登录 | ✅ | ✅（全页跳转） | `SsoController` | 完整 |
 | 登录 | 微信登录 | — | ✅ | `SsoController.WxMiniLogin/WxAppLogin` | 完整 |
 | 注册 | 用户名注册 | ✅ | ✅ | `UserService.RegisterByPassword` | 完整 |
-| 注册 | 手机注册 | ✅ | ✅ | `UserService.RegisterByPhoneCode` | 完整 |
-| 注册 | 邮箱注册 | ✅ | ✅ | `UserService.RegisterByMailCode` | 完整 |
+| 注册 | 手机注册 | — | ✅ | `UserService.RegisterByPhoneCode` | 完整（MVC 页面不提供） |
+| 注册 | 邮箱注册 | — | ✅ | `UserService.RegisterByMailCode` | 完整（MVC 页面不提供） |
 | 注册 | 三方回跳 | — | ✅ | `UserService.RegisterByOAuthBind` | 完整 |
-| 忘记密码 | 手机取回 | ✅ | ✅ | `UserService.ResetBySmsCode` | 完整 |
-| 忘记密码 | 邮箱取回 | ✅ | ✅ | `UserService.ResetByMailCode` | 完整 |
+| 忘记密码 | 手机取回 | — | ✅ | `UserService.ResetBySmsCode` | 完整（MVC 页面不提供） |
+| 忘记密码 | 邮箱取回 | — | ✅ | `UserService.ResetByMailCode` | 完整（MVC 页面不提供） |
 | 忘记密码 | 验证问题取回 | ❌ | ❌ | 实体无此字段，未实现 | 未实现 |
+
+> **MVC 版简化（2026-08）**：MVC 登录页仅提供 **密码登录 + 用户名注册 + 第三方登录**；手机/邮箱验证码登录、手机/邮箱注册、忘记密码均不在 MVC 页面提供（后端 `UserService` 能力保留，API 版全部可用）。设计参考：`Doc/UI设计/登录页-MVC版.html`（二代简化版）/ `Doc/UI设计/登录页-API版.html`（完整版）。
 
 ### 1.2 接入方式差异
 
@@ -303,7 +305,7 @@ UserService.ResetPassword
 
 ### 5.2 图片验证码（Captcha）
 
-- `GET /Admin/User/Captcha`（MVC）/ `GET /Auth/Captcha`（API）→ 返回 `captchaId` + PNG base64 图片（`DrawingCaptchaService` 算术题，TTL 300 秒）
+- `GET /Auth/Captcha`（API）→ 返回 `captchaId` + PNG base64 图片（`DrawingCaptchaService` 算术题，TTL 300 秒）。**MVC 端点未实现**：CubeNC `UserController` 无 `Captcha` action、`ICaptchaService` 未在 CubeNC DI 注册、`UserService` 无验证码校验 → MVC 登录页不提供图形验证码；如需启用需补齐上述后端
 - **场景强制（`CaptchaScene` 位掩码）**：`1`=登录、`2`=注册、`4`=发验证码，可组合（如 `3`=登录+注册）；强制要求**不受**自适应豁免
 - **风险自适应（`CaptchaRisk`，默认 true）**：CaptchaScene 未覆盖的场景按"机器安全度"动态决定——内网/可信设备/无异常免验证码，公网+近期登录失败/封禁中要求验证码（`UserService.RequireCaptcha`）
   - 风险评分：`0`=内网（127/10/172.16-31/192.168/::1），`1`=公网，`2`=公网+近期登录失败（IP/账号/子网维度），`3`=封禁中（达到 `MaxLoginError`/子网阈值）
@@ -311,7 +313,7 @@ UserService.ResetPassword
   - **可信设备**：登录/注册成功后标记设备（`CubeDeviceId` Cookie 指纹），有效期内（`TrustedDeviceDays`，默认 30 天）免**自适应**验证码；换 IP 视为不可信；`CaptchaScene` 强制场景**不豁免**
   - 发码场景（防短信轰炸）**不豁免**可信设备
 - 校验成功立即失效（防重放）
-- 前端 MVC：登录/注册页按服务端 `RequireCaptcha`/`RequireCaptchaRegister` 初始显示验证码行（动态注入）；提交/发码被拒（"验证码错误或已过期"）时自动显示并刷新验证码，保证动态风险生效
+- 前端（API 皮肤）：按登录配置 `login.captcha`/`register.captcha` 动态显示验证码行；提交/发码被拒（"验证码错误或已过期"）时自动显示并刷新验证码，保证动态风险生效。MVC 登录页不提供
 
 ### 5.3 RSA Challenge（密码加密传输）
 
@@ -405,33 +407,28 @@ UserService.ResetPassword
 
 ---
 
-## 8. MVC 登录页设计（2026-08 版）
+## 8. MVC 登录页设计（2026-08 二代简化版）
 
-登录页采用"三大面板 + 登录内子 Tab"结构（`~/Admin/User/Login`，ACE 风格）：
+MVC 登录页采用"两大面板"结构（`~/Admin/User/Login`，ACE 风格，设计参考 `Doc/UI设计/登录页-MVC版.html`）：
 
 ```
 登录卡片
 ├── 品牌区（Logo / 系统名 / 副标题）
-├── 主 Tab：登录 | 注册(可选) | 忘记密码
+├── 主 Tab：登录 | 注册(可选)
 ├── 登录面板
-│   ├── 子 Tab：密码登录(AllowLogin) | 手机验证码(EnableSms) | 邮箱验证码(EnableMail)
-│   ├── 密码登录：用户名 + 密码 + 记住我 + 忘记密码链接 + 登录按钮（RSA 加密）
-│   ├── 手机验证码：手机号 + [发送验证码] + 验证码 + 登录按钮
-│   └── 邮箱验证码：邮箱 + [发送验证码] + 验证码 + 登录按钮
-│   └── 图形验证码：任一登录表单在 `RequireCaptcha`（CaptchaScene 强制或风险自适应）时显示"图片+输入框"，点击图片刷新，提交/发码被拒时自动显示
+│   └── 密码登录：用户名 + 密码 + 记住我 + 登录按钮（RSA 加密，`GetLoginKey` 新鲜公钥）
 ├── 注册面板
-│   ├── 子 Tab：用户名注册 | 手机注册 | 邮箱注册
-│   ├── 用户名注册：用户名 + 密码 + 确认密码（协议勾选）
-│   ├── 手机/邮箱注册：账号(+验证码) + 密码(选填) + 确认密码 + 协议勾选（留空密码=仅验证码登录）
-│   └── 协议勾选：已阅读并同意《用户协议》《隐私政策》
-│   └── 图形验证码：`RequireCaptchaRegister` 时同样显示
-├── 忘记密码面板（两步）
-│   ├── Step1：手机号/邮箱 + [发送验证码]
-│   └── Step2：验证码 + 新密码 + 确认新密码（RSA 加密提交）
+│   └── 用户名注册：用户名 + 密码 + 确认密码 + 协议勾选（密码强度动态校验）
 └── 第三方登录（OAuthConfig.Visible 图标列表，flex 换行居中）
 ```
 
-要点：子 Tab / 验证码按钮 / 密码校验提示样式统一；密码强度正则由 `CubeSetting.PaswordStrength` 下发前端动态校验（空/`*` 跳过）；所有密码框支持 RSA 加密传输。
+要点：
+
+- **MVC 版定位简化**：不支持手机/邮箱验证码登录、无忘记密码面板；注册仅用户名方式（手机/邮箱注册需验证码，MVC 页面不提供）
+- 图形验证码 MVC 后端未实现（见 §5.2），登录页不提供
+- 密码强度正则由 `CubeSetting.PaswordStrength` 下发前端动态校验（空/`*` 跳过）；所有密码框支持 RSA 加密传输
+- 样式独立于 `Cube.css`（`@res/cube-login.css`），图标用 FontAwesome；`MLogin.cshtml`（移动版）与桌面版同构
+- 完整功能参考（API 版）：`Doc/UI设计/登录页-API版.html`（含 密码/手机/邮箱 登录子Tab、三方式注册、忘记密码、第三方登录）
 
 ---
 

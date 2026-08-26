@@ -4,27 +4,27 @@
     var set = Model;
 }
 <div class="tab-pane fade" id="Register">
-    <!-- 用户名注册：用户名 + 密码 -->
-    <form action="@Url.Action("Register", "User", new { r = set.ReturnUrl })" class="cube-login reg-form active" method="post" id="reg-pwd" novalidate>
+    <!-- 用户名注册：用户名 + 密码（MVC 版仅提供用户名注册，无手机/邮箱验证码） -->
+    <form action="@Url.Action("Register", "User", new { r = set.ReturnUrl })" class="cube-login" method="post" id="reg-pwd" novalidate>
         <input type="hidden" name="category" value="Password" />
         @Html.ValidationSummary()
         <div class="form-group">
             <div class="input-icon">
-                <i class="glyphicon glyphicon-user"></i>
+                <i class="fa fa-user-o"></i>
                 <input type="text" class="form-control" id="reg_pwd_username" name="username" placeholder="用户名" required="required" autocomplete="username">
             </div>
         </div>
         <div class="form-group">
             <div class="input-icon">
-                <i class="glyphicon glyphicon-lock"></i>
+                <i class="fa fa-lock"></i>
                 <input type="password" class="form-control has-toggle" id="reg_pwd_password" name="password" data-pwd placeholder="密码" autocomplete="new-password">
-                <span class="pwd-toggle" data-target="reg_pwd_password" title="显示/隐藏密码"><i class="glyphicon glyphicon-eye-open"></i></span>
+                <span class="pwd-toggle" data-target="reg_pwd_password" title="显示/隐藏密码"><i class="fa fa-eye"></i></span>
             </div>
             <p class="field-tip" data-tip-for="reg_pwd_password"></p>
         </div>
         <div class="form-group">
             <div class="input-icon">
-                <i class="glyphicon glyphicon-lock"></i>
+                <i class="fa fa-lock"></i>
                 <input type="password" class="form-control" id="reg_pwd_password2" name="confirmPassword" placeholder="重复密码" autocomplete="new-password">
             </div>
         </div>
@@ -44,55 +44,55 @@
         function init() {
             if (typeof jQuery === 'undefined') { setTimeout(init, 100); return; }
             jQuery(function () {
-        // ========== 密码强度动态校验（对齐 CubeSetting.PaswordStrength） ==========
-        // EnablePasswordComplexity 关闭或 PaswordStrength 为空/* 时，前端跳过复杂度校验
-        var pwdRegex = @Html.Raw(Json.Serialize(set.PasswordStrength));
-        var pwdComplexity = @Html.Raw(Json.Serialize(set.EnablePasswordComplexity));
-        var PWD_HINT = '8-32位，需包含大小写字母、数字和符号';
-        var PWD_REGEX = null;
-        if (pwdComplexity && pwdRegex && pwdRegex != '' && pwdRegex != '*') {
-            try { PWD_REGEX = new RegExp(pwdRegex); } catch (e) { PWD_REGEX = null; }
-        }
+                // ========== 密码强度动态校验（对齐 CubeSetting.PaswordStrength） ==========
+                // EnablePasswordComplexity 关闭或 PaswordStrength 为空/* 时，前端跳过复杂度校验
+                var pwdRegex = @Html.Raw(Json.Serialize(set.PasswordStrength));
+                var pwdComplexity = @Html.Raw(Json.Serialize(set.EnablePasswordComplexity));
+                var PWD_HINT = '8-32位，需包含大小写字母、数字和符号';
+                var PWD_REGEX = null;
+                if (pwdComplexity && pwdRegex && pwdRegex != '' && pwdRegex != '*') {
+                    try { PWD_REGEX = new RegExp(pwdRegex); } catch (e) { PWD_REGEX = null; }
+                }
 
-        function validatePwd(input) {
-            var val = input.val();
-            var tip = $('[data-tip-for="' + input.attr('id') + '"]');
-            if (!PWD_REGEX) {
-                input.removeClass('ok error');
-                tip.removeClass('show');
-                return true;
-            }
-            if (!val) {
-                input.removeClass('ok error');
-                tip.removeClass('show');
-                return true;
-            }
-            if (PWD_REGEX.test(val)) {
-                input.removeClass('error').addClass('ok');
-                tip.removeClass('error').addClass('ok').text('密码强度符合要求').addClass('show');
-                return true;
-            }
-            input.removeClass('ok').addClass('error');
-            tip.removeClass('ok').addClass('error').text(PWD_HINT).addClass('show');
-            return false;
-        }
-        $('[data-pwd]').on('input blur', function () { validatePwd($(this)); });
+                function validatePwd(input) {
+                    var val = input.val();
+                    var tip = $('[data-tip-for="' + input.attr('id') + '"]');
+                    if (!PWD_REGEX) {
+                        input.removeClass('ok error');
+                        tip.removeClass('show');
+                        return true;
+                    }
+                    if (!val) {
+                        input.removeClass('ok error');
+                        tip.removeClass('show');
+                        return true;
+                    }
+                    if (PWD_REGEX.test(val)) {
+                        input.removeClass('error').addClass('ok');
+                        tip.removeClass('error').addClass('ok').text('密码强度符合要求').addClass('show');
+                        return true;
+                    }
+                    input.removeClass('ok').addClass('error');
+                    tip.removeClass('ok').addClass('error').text(PWD_HINT).addClass('show');
+                    return false;
+                }
+                $('[data-pwd]').on('input blur', function () { validatePwd($(this)); });
 
-        // ========== 注册提交前端前置校验（最终以后端为准） ==========
-        function pwdMatchCheck(input1, input2) {
-            if (input1.val() !== input2.val()) {
-                alert('两次密码不一致');
-                return false;
-            }
-            return true;
-        }
-        $('#reg-pwd').on('submit', function () {
-            if (!$('#reg_pwd_username').val()) { alert('请输入用户名'); return false; }
-            if (!validatePwd($('#reg_pwd_password'))) return false;
-            if (!pwdMatchCheck($('#reg_pwd_password'), $('#reg_pwd_password2'))) return false;
-            if (!$('#reg-pwd input[name="agreement"]').is(':checked')) { alert('请先阅读并同意《用户协议》和《隐私政策》'); return false; }
-            return true;
-        });
+                // ========== 注册提交前端前置校验（最终以后端为准） ==========
+                function pwdMatchCheck(input1, input2) {
+                    if (input1.val() !== input2.val()) {
+                        alert('两次密码不一致');
+                        return false;
+                    }
+                    return true;
+                }
+                $('#reg-pwd').on('submit', function () {
+                    if (!$('#reg_pwd_username').val()) { alert('请输入用户名'); return false; }
+                    if (!validatePwd($('#reg_pwd_password'))) return false;
+                    if (!pwdMatchCheck($('#reg_pwd_password'), $('#reg_pwd_password2'))) return false;
+                    if (!$('#reg-pwd input[name="agreement"]').is(':checked')) { alert('请先阅读并同意《用户协议》和《隐私政策》'); return false; }
+                    return true;
+                });
             });
         }
         init();

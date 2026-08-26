@@ -1,11 +1,7 @@
 ﻿@model LoginViewModel
 @using NewLife.Common
 @{
-    //var set = NewLife.Cube.Setting.Current;
     var set = Model;
-
-    //var returnUrl = (String)ViewBag.ReturnUrl;
-    //var url = Url.Action("Login", "User", new { r = returnUrl });
 
     var challengeDic = ViewData["ChallengeKey"] == null ? new KeyValuePair<string, string>() : (KeyValuePair<String, String>)ViewData["ChallengeKey"];
     var key = challengeDic.Key;
@@ -17,20 +13,20 @@
     <!-- 密码登录（RSA 加密） -->
     @if (set.AllowLogin)
     {
-        <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" class="cube-login login-form active" method="post" id="login-pwd" novalidate>
+        <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" class="cube-login" method="post" id="login-pwd" novalidate>
             <input type="hidden" name="category" value="Password" />
             <input id="challenge_id_container" style="display:none;" value="@value" />
             <div class="form-group">
                 <div class="input-icon">
-                    <i class="glyphicon glyphicon-user"></i>
+                    <i class="fa fa-user-o"></i>
                     <input type="text" class="form-control" id="username" name="username" placeholder="用户名 / 邮箱 / 手机 / 编码" autocomplete="username">
                 </div>
             </div>
             <div class="form-group">
                 <div class="input-icon">
-                    <i class="glyphicon glyphicon-lock"></i>
+                    <i class="fa fa-lock"></i>
                     <input type="password" class="form-control has-toggle" id="password" placeholder="密码" autocomplete="off">
-                    <span class="pwd-toggle" data-target="password" title="显示/隐藏密码"><i class="glyphicon glyphicon-eye-open"></i></span>
+                    <span class="pwd-toggle" data-target="password" title="显示/隐藏密码"><i class="fa fa-eye"></i></span>
                 </div>
             </div>
             <div class="form-options">
