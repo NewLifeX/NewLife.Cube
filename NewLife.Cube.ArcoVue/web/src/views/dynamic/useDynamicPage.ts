@@ -39,7 +39,7 @@ export function useDynamicPage(props: DynamicPageProps) {
   /** 页面种类（entity/object/home/custom/unknown）；探测完成前为 null */
   const pageKind = ref<PageKind | null>(null);
 
-  /** custom 短路的专用页判定（Admin/Db、Admin/File） */
+  /** custom 短路：Admin/Db、Admin/File；其余 custom 为服务控制器页 */
   const normalizedPath = computed(() => typePath.value.replace(/^\/+/, '').toLowerCase());
   const isDbPage = computed(() => normalizedPath.value === 'admin/db');
   const isFilePage = computed(() => normalizedPath.value === 'admin/file');

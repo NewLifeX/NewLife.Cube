@@ -50,7 +50,7 @@ pnpm test:e2e
 | entity | `GetPage` 返回有效实体元数据 | `DefaultList` |
 | object | `GetPage` 失败且 `GetFields` 为数组、`GET {type}` 为单对象 | `DefaultObject`（通用 ObjectController 页，Cube/Sys/Core/XCode/Star 共用） |
 | home | `Admin/Index` 短路 | `DefaultHome`（仪表盘，`/home` 同用） |
-| custom | `Admin/Db`、`Admin/File` 短路 | `views/admin/db`、`views/admin/file` 专用页 |
+| custom | `Admin/Db`、`Admin/File` 短路；Auth/Sso/Mfa/AI/Automation/CubeController（含 `/vTest1/Auth`） | `views/admin/db`、`views/admin/file`、`views/service/ServiceApiPage` |
 | unknown | 全部探测失败 | `a-empty` |
 
 后端配套：`ObjectController.GetFields` 物化 `DataSourceMap`；`IndexController` 的 Main/ServerVarList/ProcessList/AssemblyList/MemoryFree/Restart 提供 JSON 仪表盘；`FileController` 的 `Index` 返回列表 JSON、动作返回 JSON。

@@ -3,11 +3,14 @@
  *
  * DynamicPage 按 typePath 探测后端契约种类：
  * - home：Admin/Index 短路（主页仪表盘，不请求任何探测）
- * - custom：Admin/Db、Admin/File 短路（专用页，GetPage/对象双探必然失败）
+ * - custom：Admin/Db、Admin/File，以及 Auth/Sso/Mfa/AI/Automation/CubeController 等服务控制器
+ *   （菜单可挂在任意 Area，如 /vTest1/Auth；无 GetPage）
  * - entity：GetPage 返回有效实体元数据 → DefaultList
  * - object：GetPage 失败且 GetFields 为数组、GET body 为对象且非分页形 → DefaultObject
  * - unknown：全部失败 → a-empty
  */
+
+import { isServiceControllerPath } from './servicePage';
 
 export type PageKind = 'home' | 'custom' | 'entity' | 'object' | 'unknown';
 
@@ -67,7 +70,7 @@ function unwrap(v: unknown): unknown {
 export async function detectPageKind(typePath: string, probes: PageKindProbes): Promise<PageKind> {
   const p = normalizePath(typePath);
   if (HOME_TYPES.has(p)) return 'home';
-  if (CUSTOM_TYPES.has(p)) return 'custom';
+  if (CUSTOM_TYPES.has(p) || isServiceControllerPath(typePath)) return 'custom';
 
   let page: unknown = null;
   try {

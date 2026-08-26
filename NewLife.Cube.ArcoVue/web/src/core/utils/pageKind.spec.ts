@@ -47,6 +47,35 @@ describe('detectPageKind', () => {
     expect(await detectPageKind('admin/file', probes())).toBe('custom');
   });
 
+  it('服务控制器（含 vTest1 前缀）→ custom，不发探测', async () => {
+    let called = false;
+    const p = probes({
+      getPage: async () => {
+        called = true;
+        return null;
+      },
+    });
+    expect(await detectPageKind('/vTest1/Auth', p)).toBe('custom');
+    expect(await detectPageKind('/vTest1/Cube', p)).toBe('custom');
+    expect(await detectPageKind('/vTest1/Mfa', p)).toBe('custom');
+    expect(await detectPageKind('/vTest1/Sso', p)).toBe('custom');
+    expect(await detectPageKind('/vTest1/Ai', p)).toBe('custom');
+    expect(await detectPageKind('/vTest1/Automation', p)).toBe('custom');
+    expect(called).toBe(false);
+  });
+
+  it('Admin/Cube 不走服务控制器短路，继续探测', async () => {
+    let called = false;
+    const p = probes({
+      getPage: async () => {
+        called = true;
+        throw new Error('404');
+      },
+    });
+    expect(await detectPageKind('/Admin/Cube', p)).toBe('unknown');
+    expect(called).toBe(true);
+  });
+
   it('GetPage 有效元数据 → entity', async () => {
     const p = probes({ getPage: async () => ({ data: { list: [], setting: {} } }) });
     expect(await detectPageKind('/Admin/User', p)).toBe('entity');
