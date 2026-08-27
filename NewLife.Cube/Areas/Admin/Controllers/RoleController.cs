@@ -53,49 +53,15 @@ public class RoleController : EntityController<Role, RoleModel>
             // 此处需解析字符串并通过 entity.Set() 同步更新 Permissions 字典，确保保存时不会丢失
             if (Request.ContentType != null && Request.ContentType.Contains("application/json"))
             {
-                // 收集现有权限键，用于后续清理已移除的项
-                var oldKeys = entity.Permissions.Keys.ToList();
+                // 解析权限字符串并通过 entity.Set() 同步更新 Permissions 字典，确保保存时不会丢失
+                RolePermissionHelper.Apply(entity, entity.Permission);
 
-                // 解析权限字符串 "MenuID#Flags,MenuID#Flags" 并通过 entity.Set() 设置
-                var permStr = entity.Permission;
-                if (!permStr.IsNullOrEmpty())
+                // 初始化权限：系统角色（管理员）新增时默认添加全部权限，非系统角色默认不添加任何权限
+                if (entity.IsSystem && type == DataObjectMethodType.Insert && entity.Permission.IsNullOrEmpty())
                 {
-                    var newKeys = new List<Int32>();
-                    foreach (var part in permStr.Split(','))
+                    foreach (var item in XCode.Membership.Menu.Root.AllChilds)
                     {
-                        var kv = part.Split('#');
-                        if (kv.Length == 2 &&
-                            Int32.TryParse(kv[0], out var menuId) &&
-                            Int32.TryParse(kv[1], out var flag) &&
-                            flag > 0)
-                        {
-                            entity.Set(menuId, (PermissionFlags)flag);
-                            newKeys.Add(menuId);
-                        }
-                    }
-
-                    // 移除不在新权限中的旧项
-                    foreach (var key in oldKeys)
-                    {
-                        if (!newKeys.Contains(key))
-                            entity.Permissions.Remove(key);
-                    }
-                }
-                else
-                {
-                    // 权限字符串为空，清空所有权限
-                    foreach (var key in oldKeys)
-                    {
-                        entity.Permissions.Remove(key);
-                    }
-
-                    // 初始化权限：系统角色（管理员）新增时默认添加全部权限，非系统角色默认不添加任何权限
-                    if (entity.IsSystem && type == DataObjectMethodType.Insert)
-                    {
-                        foreach (var item in XCode.Membership.Menu.Root.AllChilds)
-                        {
-                            entity.Set(item.ID, PermissionFlags.All);
-                        }
+                        entity.Set(item.ID, PermissionFlags.All);
                     }
                 }
 
