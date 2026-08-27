@@ -1,0 +1,34 @@
+@model dynamic
+@{
+    var d = Model;
+}
+<div class="widget-stats">
+    <div class="stat-item">
+        <div class="stat-icon stat-icon-cpu"><i class="fa fa-tachometer"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">@(((Double)d.CpuRate * 100).ToString("0.0"))%</div>
+            <div class="stat-label">CPU 使用率</div>
+        </div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-icon stat-icon-mem"><i class="fa fa-bar-chart"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">@(((Double)d.MemoryUsedRate * 100).ToString("0.0"))%</div>
+            <div class="stat-label">内存 @((Int64)d.MemoryUsed)M / @((Int64)d.MemoryTotal)M</div>
+        </div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-icon stat-icon-disk"><i class="fa fa-database"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">@(((Double)d.DiskUsedRate * 100).ToString("0.0"))%</div>
+            <div class="stat-label">磁盘 @((Int64)d.DiskFree)G / @((Int64)d.DiskTotal)G</div>
+        </div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-icon stat-icon-time"><i class="fa fa-clock-o"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">@d.Uptime</div>
+            <div class="stat-label">运行时长</div>
+        </div>
+    </div>
+</div>

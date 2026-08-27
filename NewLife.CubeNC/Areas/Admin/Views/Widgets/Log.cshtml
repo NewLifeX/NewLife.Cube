@@ -1,0 +1,54 @@
+@model dynamic
+@using NewLife;
+@using NewLife.Web;
+@{
+    var d = Model;
+    var maxCount = 0;
+    foreach (dynamic item in d.Trend)
+    {
+        var c = (Int32)item.count;
+        if (c > maxCount) maxCount = c;
+    }
+    if (maxCount <= 0) maxCount = 1;
+}
+<div class="widget-log">
+    <div class="widget-summary">
+        <div class="summary-item">
+            <span class="summary-num">@d.Total24h</span>
+            <span class="summary-label">24h 日志</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-num text-danger">@d.Error24h</span>
+            <span class="summary-label">24h 异常</span>
+        </div>
+    </div>
+
+    <div class="widget-sub-title">最近7天日志量</div>
+    <div class="mini-bars">
+        @foreach (dynamic item in d.Trend)
+        {
+            <div class="mini-bar" title="@item.day：@item.count 条">
+                <div class="mini-bar-fill" style="height:@((Int32)item.count * 100 / maxCount)%"></div>
+                <div class="mini-bar-label">@item.day</div>
+            </div>
+        }
+    </div>
+
+    <div class="widget-sub-title">最近异常</div>
+    <ul class="widget-list">
+        @foreach (dynamic item in d.RecentErrors)
+        {
+            <li title="@item.Action @item.Remark">
+                <span class="list-time">@(((DateTime)item.CreateTime).ToString("MM-dd HH:mm"))</span>
+                <span class="list-action">@item.Action</span>
+                <span class="list-remark">@item.Remark</span>
+            </li>
+        }
+        @if (!((IEnumerable<Object>)d.RecentErrors).Any())
+        {
+            <li class="list-empty">最近24h无异常记录</li>
+        }
+    </ul>
+
+    <div class="widget-more"><a href="/Admin/Log" target="_blank">查看全部日志 »</a></div>
+</div>

@@ -1,0 +1,35 @@
+@model dynamic
+@using NewLife;
+@using NewLife.Web;
+@{
+    var d = Model;
+}
+<table class="table table-condensed widget-table">
+    <tbody>
+        <tr>
+            <td class="w-name">操作系统</td>
+            <td class="w-value">@d.OSName @d.OSVersion</td>
+        </tr>
+        <tr>
+            <td class="w-name">机器</td>
+            <td class="w-value">@d.MachineName / @d.UserName</td>
+        </tr>
+        <tr>
+            <td class="w-name">处理器</td>
+            <td class="w-value">@d.Processor，@d.CoreCount 核心</td>
+        </tr>
+        <tr>
+            <td class="w-name">运行时</td>
+            <td class="w-value">@d.Framework</td>
+        </tr>
+        <tr>
+            <td class="w-name">应用</td>
+            <td class="w-value">@d.ProcessName，程序集 @d.AssemblyCount 个</td>
+        </tr>
+        <tr>
+            <td class="w-name">启动时间</td>
+            <td class="w-value">@d.StartTime</td>
+        </tr>
+    </tbody>
+</table>
+<div class="widget-more"><a href="@d.FullUrl" target="_blank">查看完整服务器信息 »</a></div>

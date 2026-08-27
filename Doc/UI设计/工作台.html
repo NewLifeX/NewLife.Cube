@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="新生命团队,NewLife,魔方,Cube - 工作台（Dashboard）设计稿" />
+    <title>工作台设计稿 - 魔方</title>
+
+    <!-- 独立设计稿：CDN 引入 Bootstrap3 + FontAwesome + ECharts，双击即可预览
+         本文件为工作台（Dashboard）UI 草稿，待确认后实施。
+         顶部演示条可切换 管理员视图 / 普通用户视图。
+         区块右上角标注了与现有 Widget 系统的映射（如 【StatCards】）。 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
+    <style>
+        /* ========== 设计语言：对齐 ace-ui.css 设计令牌 ==========
+           主色 #2b7dbc、白卡片、圆角 10px、柔和阴影、背景 #f0f2f5 */
+        :root {
+            --p: #2b7dbc;
+            --p-dark: #1f5f8e;
+            --p-light: #e8f1f9;
+            --bg: #f0f2f5;
+            --card: #fff;
+            --border: #e4e6e9;
+            --border-l: #eef1f4;
+            --text: #3a3f44;
+            --text-title: #262a2e;
+            --text-muted: #8a9199;
+            --radius: 6px;
+            --radius-lg: 10px;
+            --shadow: 0 1px 3px rgba(0, 0, 0, .06), 0 1px 2px rgba(0, 0, 0, .04);
+            --shadow-lg: 0 6px 20px rgba(43, 125, 188, .10), 0 2px 6px rgba(0, 0, 0, .06);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+            padding-bottom: 40px;
+        }
+        a { color: var(--p); text-decoration: none; }
+        a:hover { color: var(--p-dark); }
+
+        /* ========== 顶部演示条（非产品 UI） ========== */
+        .demo-bar {
+            position: sticky; top: 0; z-index: 999;
+            background: #262a2e; color: #e8eef4; font-size: 13px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 20px;
+        }
+        .demo-bar b { color: #fff; margin-right: 12px; }
+        .demo-bar .seg { display: inline-flex; border: 1px solid #4a5058; border-radius: 6px; overflow: hidden; }
+        .demo-bar .seg button {
+            background: transparent; color: #c7ced6; border: none; padding: 6px 18px; cursor: pointer; font-size: 13px;
+        }
+        .demo-bar .seg button.on { background: var(--p); color: #fff; }
+
+        /* ========== 工作台容器 ========== */
+        .workbench { max-width: 1440px; margin: 0 auto; padding: 18px 20px; }
+
+        /* ========== 欢迎横幅 ========== */
+        .wb-banner {
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+            background: linear-gradient(120deg, var(--p) 0%, #4a95c9 60%, #7fb3dd 100%);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 20px 24px;
+            margin-bottom: 16px;
+            color: #fff;
+        }
+        .wb-banner-left { display: flex; align-items: center; gap: 16px; }
+        .wb-banner-avatar {
+            width: 56px; height: 56px; border-radius: 50%;
+            background: rgba(255, 255, 255, .2); border: 2px solid rgba(255, 255, 255, .5);
+            display: flex; align-items: center; justify-content: center; font-size: 26px;
+        }
+        .wb-banner-greet { font-size: 20px; font-weight: 600; line-height: 1.4; }
+        .wb-banner-sub { font-size: 13px; opacity: .9; margin-top: 2px; }
+        .wb-banner-right { display: flex; align-items: center; gap: 10px; }
+        .wb-banner-right .btn {
+            background: rgba(255, 255, 255, .16); border: 1px solid rgba(255, 255, 255, .35);
+            color: #fff; border-radius: 6px; padding: 7px 16px; font-size: 13px;
+        }
+        .wb-banner-right .btn:hover { background: rgba(255, 255, 255, .28); color: #fff; }
+        .wb-banner-right .btn-solid { background: #fff; color: var(--p); border: none; }
+        .wb-banner-right .btn-solid:hover { background: #eef4fa; color: var(--p-dark); }
+
+        /* ========== 通用卡片 ========== */
+        .wb-card {
+            background: var(--card);
+            border: 1px solid var(--border-l);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            display: flex; flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+        .wb-card-hd {
+            display: flex; align-items: center; padding: 12px 16px;
+            border-bottom: 1px solid var(--border-l);
+            background: linear-gradient(180deg, #fafbfc, #f4f6f8);
+        }
+        .wb-card-hd i { color: var(--p); margin-right: 8px; }
+        .wb-card-title { flex: 1; font-weight: 600; font-size: 14px; color: var(--text-title); }
+        .wb-card-more { font-size: 12px; color: var(--text-muted); }
+        .wb-card-more:hover { color: var(--p); }
+        .wb-card-bd { padding: 16px; flex: 1; }
+        .wb-src {
+            font-size: 11px; color: #b7c0ca; font-weight: 400; margin-left: 8px;
+        }
+
+        /* ========== KPI 指标卡 ========== */
+        .wb-kpi-row { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 16px; }
+        .wb-kpi {
+            flex: 1 1 0; min-width: 158px;
+            background: var(--card); border: 1px solid var(--border-l);
+            border-radius: var(--radius-lg); box-shadow: var(--shadow);
+            padding: 14px 16px;
+            display: flex; align-items: center; gap: 14px;
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+        .wb-kpi:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .wb-kpi-icon {
+            width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff;
+        }
+        .k-blue   { background: #2b7dbc; }
+        .k-green  { background: #27ae60; }
+        .k-cyan   { background: #17a2b8; }
+        .k-orange { background: #e67e22; }
+        .k-red    { background: #d9534f; }
+        .k-purple { background: #7d6bc4; }
+        .k-grey   { background: #95a5a6; }
+        .wb-kpi-val { font-size: 26px; font-weight: 700; color: var(--text-title); line-height: 1.1; }
+        .wb-kpi-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+        .wb-kpi-foot { font-size: 11px; color: #b0b8c0; margin-top: 2px; }
+        .wb-kpi-foot .up { color: #27ae60; }
+        .wb-kpi-foot .down { color: #d9534f; }
+
+        /* ========== 性能监控 ========== */
+        #chartPerf { width: 100%; height: 280px; }
+
+        /* ========== 快捷链接 ========== */
+        .wb-links { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .wb-link {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px; border: 1px solid var(--border-l); border-radius: var(--radius);
+            color: var(--text); font-size: 13px; transition: all .15s ease;
+        }
+        .wb-link:hover { border-color: var(--p); color: var(--p); background: var(--p-light); }
+        .wb-link i {
+            width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 15px; color: var(--p);
+            background: var(--p-light);
+        }
+
+        /* ========== 日志中心 ========== */
+        .wb-log-sum { display: flex; gap: 24px; margin-bottom: 12px; }
+        .wb-log-sum .num { font-size: 24px; font-weight: 700; color: var(--text-title); }
+        .wb-log-sum .num.danger { color: #d9534f; }
+        .wb-log-sum .lbl { font-size: 12px; color: var(--text-muted); }
+        .wb-mini-title { font-size: 12px; color: var(--text-muted); margin: 12px 0 8px; }
+        .wb-mini-bars { display: flex; align-items: flex-end; gap: 6px; height: 52px; }
+        .wb-mini-bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 3px; }
+        .wb-mini-bar .fill { width: 100%; background: var(--p-light); border-radius: 3px 3px 0 0; }
+        .wb-mini-bar .fill.hot { background: var(--p); }
+        .wb-mini-bar .day { font-size: 10px; color: var(--text-muted); }
+        .wb-log-list { list-style: none; margin: 0; padding: 0; max-height: 150px; overflow: auto; }
+        .wb-log-list li {
+            display: flex; gap: 10px; font-size: 12px; padding: 5px 4px;
+            border-bottom: 1px dashed var(--border-l); color: var(--text-muted);
+        }
+        .wb-log-list li b { color: #d9534f; font-weight: 600; }
+        .wb-log-list .t { color: #b0b8c0; flex-shrink: 0; }
+
+        /* ========== 键值表格 ========== */
+        .wb-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .wb-table td { padding: 6px 4px; border-bottom: 1px dashed var(--border-l); vertical-align: top; }
+        .wb-table td:first-child { color: var(--text-muted); width: 84px; white-space: nowrap; }
+        .wb-table tr:last-child td { border-bottom: none; }
+
+        /* ========== 个人信息 ========== */
+        .wb-profile-main { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+        .wb-avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--p-light); color: var(--p); font-size: 24px; display: flex; align-items: center; justify-content: center; }
+        .wb-name { font-size: 16px; font-weight: 600; color: var(--text-title); }
+        .wb-role { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+        .wb-tag { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; background: var(--p-light); color: var(--p); margin-right: 6px; }
+
+        /* ========== 区块间隔 ========== */
+        .wb-row { display: flex; flex-wrap: wrap; margin: 0 -8px 16px; }
+        .wb-row > div { padding: 0 8px; }
+        .col-8 { width: 66.6666%; }
+        .col-7 { width: 58.3333%; }
+        .col-6 { width: 50%; }
+        .col-5 { width: 41.6666%; }
+        .col-4 { width: 33.3333%; }
+        .col-12 { width: 100%; }
+        @media (max-width: 992px) {
+            .col-8, .col-7, .col-6, .col-5, .col-4 { width: 100%; }
+        }
+
+        /* 普通用户视图默认隐藏 */
+        .view-user { display: none; }
+        body.user .view-user { display: block; }
+        body.user .view-admin { display: none; }
+
+        /* ========== 普通用户视图专用 ========== */
+        .wb-steps { display: flex; gap: 10px; }
+        .wb-step { flex: 1; text-align: center; padding: 12px 8px; border: 1px solid var(--border-l); border-radius: var(--radius); background: #fbfcfd; }
+        .wb-step .n { font-size: 20px; font-weight: 700; color: var(--p); }
+        .wb-step .l { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+        .wb-news { list-style: none; margin: 0; padding: 0; }
+        .wb-news li { display: flex; gap: 10px; padding: 8px 4px; border-bottom: 1px dashed var(--border-l); font-size: 13px; }
+        .wb-news li:last-child { border-bottom: none; }
+        .wb-news .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--p); margin-top: 6px; flex-shrink: 0; }
+        .wb-news .date { color: #b0b8c0; font-size: 12px; flex-shrink: 0; }
+    </style>
+</head>
+<body>
+
+    <!-- 顶部演示条：仅设计稿预览用，非产品 UI -->
+    <div class="demo-bar">
+        <div><b>工作台 UI 草稿</b>管理员视图 / 普通用户视图对比预览 · 设计令牌对齐 ace-ui.css（主色 #2b7dbc）</div>
+        <div class="seg">
+            <button id="btn-admin" class="on" onclick="switchView('admin')">管理员视图</button>
+            <button id="btn-user" onclick="switchView('user')">普通用户视图</button>
+        </div>
+    </div>
+
+    <div class="workbench">
+
+        <!-- ============================================================
+             管理员视图（系统监控 + 运营指标）
+             ============================================================ -->
+        <div class="view-admin">
+
+            <!-- 欢迎横幅（改造自当前 workbench-header） -->
+            <div class="wb-banner">
+                <div class="wb-banner-left">
+                    <div class="wb-banner-avatar"><i class="fa fa-user"></i></div>
+                    <div>
+                        <div class="wb-banner-greet">早上好，王小明</div>
+                        <div class="wb-banner-sub">欢迎回到魔方工作台 · 今天是 2026年8月27日 星期四 · 系统运行正常</div>
+                    </div>
+                </div>
+                <div class="wb-banner-right">
+                    <button class="btn"><i class="fa fa-refresh"></i> 刷新</button>
+                    <button class="btn"><i class="fa fa-user-circle"></i> 个人中心</button>
+                    <button class="btn btn-solid"><i class="fa fa-heartbeat"></i> AI 系统诊断</button>
+                </div>
+            </div>
+
+            <!-- KPI 指标行（对应 StatCards 扩展：按角色拆分） -->
+            <div class="wb-kpi-row">
+                <div class="wb-kpi">
+                    <div class="wb-kpi-icon k-blue"><i class="fa fa-users"></i></div>
+                    <div>
+                        <div class="wb-kpi-val">1,286</div>
+                        <div class="wb-kpi-label">用户总数</div>
+                        <div class="wb-kpi-foot"><span class="up">↑ 2.4%</span> 较上周</div>
+                    </div>
+                </div>
+                <div class="wb-kpi">
+                    <div class="wb-kpi-icon k-green"><i class="fa fa-sign-in"></i></div>
+                    <div>
+                        <div class="wb-kpi-val">186</div>
+                        <div class="wb-kpi-label">今日登录</div>
+                        <div class="wb-kpi-foot">昨日 154</div>
+                    </div>
+                </div>
+                <div class="wb-kpi">
+                    <div class="wb-kpi-icon k-cyan"><i class="fa fa-user-circle-o"></i></div>
+                    <div>
+                        <div class="wb-kpi-val">23</div>
+                        <div class="wb-kpi-label">在线用户</div>
+                        <div class="wb-kpi-foot"><a href="/Admin/UserOnline">查看在线 »</a></div>
+                    </div>
+                </div>
+                <div class="wb-kpi">
+                    <div class="wb-kpi-icon k-grey"><i class="fa fa-file-text-o"></i></div>
+                    <div>
+                        <div class="wb-kpi-val">4,582</div>
+                        <div class="wb-kpi-label">24h 日志</div>
+                        <div class="wb-kpi-foot"><a href="/Admin/Log">查看日志 »</a></div>
+                    </div>
+                </div>
+                <div class="wb-kpi">
+                    <div class="wb-kpi-icon k-red"><i class="fa fa-exclamation-triangle"></i></div>
+                    <div>
+                        <div class="wb-kpi-val">12</div>
+                        <div class="wb-kpi-label">24h 异常</div>
+                        <div class="wb-kpi-foot"><span class="down">↓ 8</span> 较昨日</div>
+                    </div>
+                </div>
+                <div class="wb-kpi">
+                    <div class="wb-kpi-icon k-orange"><i class="fa fa-tachometer"></i></div>
+                    <div>
+                        <div class="wb-kpi-val">36.5%</div>
+                        <div class="wb-kpi-label">CPU 使用率</div>
+                        <div class="wb-kpi-foot">内存 61.2%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 性能监控 + 快捷链接 -->
+            <div class="wb-row">
+                <div class="col-8">
+                    <div class="wb-card">
+                        <div class="wb-card-hd">
+                            <i class="fa fa-line-chart"></i>
+                            <span class="wb-card-title">性能监控 <span class="wb-src">【Monitor】</span></span>
+                            <a class="wb-card-more" href="javascript:;" onclick="refreshChart()"><i class="fa fa-refresh"></i> 刷新</a>
+                        </div>
+                        <div class="wb-card-bd"><div id="chartPerf"></div></div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="wb-card">
+                        <div class="wb-card-hd">
+                            <i class="fa fa-th-large"></i>
+                            <span class="wb-card-title">快捷链接 <span class="wb-src">【QuickLink】</span></span>
+                        </div>
+                        <div class="wb-card-bd">
+                            <div class="wb-links">
+                                <a class="wb-link" href="#"><i class="fa fa-users"></i>用户管理</a>
+                                <a class="wb-link" href="#"><i class="fa fa-key"></i>角色权限</a>
+                                <a class="wb-link" href="#"><i class="fa fa-sitemap"></i>菜单管理</a>
+                                <a class="wb-link" href="#"><i class="fa fa-file-text-o"></i>系统日志</a>
+                                <a class="wb-link" href="#"><i class="fa fa-database"></i>数据字典</a>
+                                <a class="wb-link" href="#"><i class="fa fa-cog"></i>系统设置</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 日志中心 + 系统信息 -->
+            <div class="wb-row">
+                <div class="col-7">
+                    <div class="wb-card">
+                        <div class="wb-card-hd">
+                            <i class="fa fa-list-alt"></i>
+                            <span class="wb-card-title">日志中心 <span class="wb-src">【Log】</span></span>
+                            <a class="wb-card-more" href="/Admin/Log">查看全部 »</a>
+                        </div>
+                        <div class="wb-card-bd">
+                            <div class="wb-log-sum">
+                                <div><div class="num">4,582</div><div class="lbl">24h 日志</div></div>
+                                <div><div class="num danger">12</div><div class="lbl">24h 异常</div></div>
+                            </div>
+                            <div class="wb-mini-title">最近 7 天日志量</div>
+                            <div class="wb-mini-bars">
+                                <div class="wb-mini-bar"><div class="fill" style="height:30%"></div><div class="day">周四</div></div>
+                                <div class="wb-mini-bar"><div class="fill" style="height:45%"></div><div class="day">周五</div></div>
+                                <div class="wb-mini-bar"><div class="fill" style="height:38%"></div><div class="day">周六</div></div>
+                                <div class="wb-mini-bar"><div class="fill" style="height:52%"></div><div class="day">周日</div></div>
+                                <div class="wb-mini-bar"><div class="fill" style="height:60%"></div><div class="day">周一</div></div>
+                                <div class="wb-mini-bar"><div class="fill hot" style="height:78%"></div><div class="day">周二</div></div>
+                                <div class="wb-mini-bar"><div class="fill hot" style="height:64%"></div><div class="day">今天</div></div>
+                            </div>
+                            <div class="wb-mini-title">最近异常</div>
+                            <ul class="wb-log-list">
+                                <li><span class="t">08-27 10:32</span><b>Login</b><span>密码错误次数超限，IP 119.32.x.x</span></li>
+                                <li><span class="t">08-27 09:58</span><b>Delete</b><span>删除用户失败：外键约束</span></li>
+                                <li><span class="t">08-27 08:41</span><b>Api</b><span>接口 /Cube/Image 超时</span></li>
+                                <li><span class="t">08-26 22:15</span><b>Login</b><span>不存在账号尝试登录，IP 45.14.x.x</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-5">
+                    <div class="wb-card">
+                        <div class="wb-card-hd">
+                            <i class="fa fa-server"></i>
+                            <span class="wb-card-title">服务器信息 <span class="wb-src">【SysInfo】</span></span>
+                            <a class="wb-card-more" href="/Admin/Index/Main">完整信息 »</a>
+                        </div>
+                        <div class="wb-card-bd">
+                            <table class="wb-table">
+                                <tr><td>操作系统</td><td>Windows 11 Pro 64 位</td></tr>
+                                <tr><td>机器</td><td>PC-2026 / Administrator</td></tr>
+                                <tr><td>处理器</td><td>Intel Core i7-13700K，16 核心</td></tr>
+                                <tr><td>运行时</td><td>.NET 9.0.0</td></tr>
+                                <tr><td>应用</td><td>魔方用户中心，程序集 128 个</td></tr>
+                                <tr><td>启动时间</td><td>2026-08-27 08:12:36</td></tr>
+                                <tr><td>运行时长</td><td>2 天 03:42:15</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 个人信息 + 最近登录 -->
+            <div class="wb-row">
+                <div class="col-6">
+                    <div class="wb-card">
+                        <div class="wb-card-hd">
+                            <i class="fa fa-user-circle"></i>
+                            <span class="wb-card-title">个人信息 <span class="wb-src">【Profile】</span></span>
+                            <a class="wb-card-more" href="/Admin/User/Info">个人中心 »</a>
+                        </div>
+                        <div class="wb-card-bd">
+                            <div class="wb-profile-main">
+                                <div class="wb-avatar"><i class="fa fa-user"></i></div>
+                                <div>
+                                    <div class="wb-name">王小明 <span class="wb-tag">管理员</span><span class="wb-tag">系统</span></div>
+                                    <div class="wb-role">账号 admin · 当前在线</div>
+                                </div>
+                            </div>
+                            <table class="wb-table">
+                                <tr><td>登录次数</td><td>326 次</td></tr>
+                                <tr><td>上次登录</td><td>2026-08-27 08:12:36</td></tr>
+                                <tr><td>上次地址</td><td>127.0.0.1</td></tr>
+                                <tr><td>注册时间</td><td>2024-03-15</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="wb-card">
+                        <div class="wb-card-hd">
+                            <i class="fa fa-history"></i>
+                            <span class="wb-card-title">最近登录 <span class="wb-src">【LoginLog】</span></span>
+                            <a class="wb-card-more" href="/Admin/UserToken">更多 »</a>
+                        </div>
+                        <div class="wb-card-bd">
+                            <ul class="wb-news">
+                                <li><span class="dot"></span><span>08-27 08:12 登录成功，IP 127.0.0.1</span><span class="date">今天</span></li>
+                                <li><span class="dot"></span><span>08-26 18:40 退出登录，在线时长 6h</span><span class="date">昨天</span></li>
+                                <li><span class="dot"></span><span>08-26 09:03 登录成功，IP 119.32.88.1</span><span class="date">昨天</span></li>
+                                <li><span class="dot"></span><span>08-25 20:12 密码修改成功</span><span class="date">2 天前</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             普通用户视图（个人工作台，无系统监控）
+             ============================================================ -->
+        <div class="view-user">
+
+            <!-- 欢迎横幅（个人版） -->
+            <div class="wb-banner">
+                <div class="wb-banner-left">
+                    <div class="wb-banner-avatar"><i class="fa fa-user"></i></div>
+                    <div>
+                        <div class="wb-banner-greet">你好，李四</div>
+                        <div class="wb-banner-sub">欢迎回到魔方工作台 · 今天是 2026年8月27日 星期四</div>
+                    </div>
+                </div>
+                <div class="wb-banner-right">
+                    <button class="btn"><i class="fa fa-user-circle"></i> 个人中心</button>
+                    <button class="btn btn-solid"><i class="fa fa-plus"></i> 发起申请</button>
+                </div>
+            </div>
+
+            <!-- 我的概览（4 个步骤式指标） -->
+            <div class="wb-steps" style="margin-bottom:16px;">
+                <div class="wb-step"><div class="n">128</div><div class="l">我的登录次数</div></div>
+                <div class="wb-step"><div class="n">3</div><div class="l">我的角色</div></div>
+                <div class="wb-step"><div class="n">886</div><div class="l">注册天数</div></div>
+                <div class="wb-step"><div class="n">2</div><div class="l">待处理事项</div></div>
+            </div>
+
+            <!-- 快捷链接（宽）+ 个人信息（窄） -->
+            <div class="wb-row">
+                <div class="col-8">
+                    <div class="wb-card">
+                        <div class="wb-card-hd">
+                            <i class="fa fa-th-large"></i>
+                            <span class="wb-card-title">快捷导航 <span class="wb-src">【QuickLink】</span></span>
+                        </div>
+                        <div class="wb-card-bd">
+                            <div class="wb-links" style="grid-template-columns:repeat(4,1fr);">
+                                <a class="wb-link" href="#"><i class="fa fa-file-text-o"></i>我的申请</a>
+                                <a class="wb-link" href="#"><i class="fa fa-calendar"></i>我的日程</a>
+                                <a class="wb-link" href="#"><i class="fa fa-inbox"></i>消息中心</a>
+                                <a class="wb-link" href="#"><i class="fa fa-user"></i>个人信息</a>
+                                <a class="wb-link" href="#"><i class="fa fa-lock"></i>修改密码</a>
+                                <a class="wb-link" href="#"><i class="fa fa-question-circle"></i>帮助中心</a>
+                                <a class="wb-link" href="#"><i class="fa fa-download"></i>资料下载</a>
+                                <a class="wb-link" href="#"><i class="fa fa-star"></i>常用收藏</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="wb-card">
+                        <div class="wb-card-hd">
+                            <i class="fa fa-user-circle"></i>
+                            <span class="wb-card-title">我的信息 <span class="wb-src">【Profile】</span></span>
+                            <a class="wb-card-more" href="/Admin/User/Info">个人中心 »</a>
+                        </div>
+                        <div class="wb-card-bd">
+                            <div class="wb-profile-main">
+                                <div class="wb-avatar"><i class="fa fa-user"></i></div>
+                                <div>
+                                    <div class="wb-name">李四 <span class="wb-tag">普通用户</span></div>
+                                    <div class="wb-role">账号 lisi · 在线</div>
+                                </div>
+                            </div>
+                            <table class="wb-table">
+                                <tr><td>上次登录</td><td>2026-08-27 08:30</td></tr>
+                                <tr><td>上次地址</td><td>192.168.1.8</td></tr>
+                                <tr><td>注册时间</td><td>2024-03-20</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 最近动态 -->
+            <div class="wb-row">
+                <div class="col-12">
+                    <div class="wb-card">
+                        <div class="wb-card-hd">
+                            <i class="fa fa-bell-o"></i>
+                            <span class="wb-card-title">最近动态 <span class="wb-src">【LoginLog】复用</span></span>
+                        </div>
+                        <div class="wb-card-bd">
+                            <ul class="wb-news">
+                                <li><span class="dot"></span><span>系统将于本周六 00:00-02:00 停机维护，请提前保存工作</span><span class="date">08-26</span></li>
+                                <li><span class="dot"></span><span>你的申请《服务器资源扩容》已审批通过</span><span class="date">08-25</span></li>
+                                <li><span class="dot"></span><span>你的申请《外网访问权限》正在审批中</span><span class="date">08-24</span></li>
+                                <li><span class="dot"></span><span>密码安全策略已更新，请定期修改密码</span><span class="date">08-22</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 视图切换（设计稿演示用）
+        function switchView(v) {
+            document.body.classList.toggle('user', v === 'user');
+            document.getElementById('btn-admin').classList.toggle('on', v === 'admin');
+            document.getElementById('btn-user').classList.toggle('on', v === 'user');
+            if (v === 'admin') initChart();
+        }
+
+        // 性能曲线（设计稿演示数据）
+        var perfChart = null;
+        function initChart() {
+            if (perfChart) { perfChart.dispose(); perfChart = null; }
+            var el = document.getElementById('chartPerf');
+            if (!el || el.clientWidth === 0) return;
+            perfChart = echarts.init(el);
+            var xs = [], cpu = [], mem = [];
+            var now = new Date();
+            for (var i = 59; i >= 0; i--) {
+                var t = new Date(now.getTime() - i * 5000);
+                xs.push((t.getHours() < 10 ? '0' : '') + t.getHours() + ':' + (t.getMinutes() < 10 ? '0' : '') + t.getMinutes() + ':' + (t.getSeconds() < 10 ? '0' : '') + t.getSeconds());
+                cpu.push(25 + Math.sin(i / 5) * 12 + (Math.random() * 8 - 4));
+                mem.push(58 + Math.cos(i / 7) * 6 + (Math.random() * 3 - 1.5));
+            }
+            perfChart.setOption({
+                tooltip: { trigger: 'axis' },
+                legend: { data: ['CPU %', '内存 %'], top: 0, right: 0, textStyle: { color: '#3a3f44', fontSize: 12 } },
+                grid: { left: 40, right: 16, top: 34, bottom: 24 },
+                xAxis: { type: 'category', data: xs, boundaryGap: false, axisLine: { lineStyle: { color: '#e4e6e9' } }, axisLabel: { color: '#8a9199', fontSize: 11 } },
+                yAxis: { type: 'value', min: 0, max: 100, axisLabel: { color: '#8a9199', fontSize: 11, formatter: '{value}%' }, splitLine: { lineStyle: { color: '#eef1f4' } } },
+                series: [
+                    { name: 'CPU %', type: 'line', smooth: true, showSymbol: false, data: cpu,
+                      lineStyle: { width: 2, color: '#2b7dbc' }, itemStyle: { color: '#2b7dbc' },
+                      areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(43,125,188,.25)' }, { offset: 1, color: 'rgba(43,125,188,0)' }]) } },
+                    { name: '内存 %', type: 'line', smooth: true, showSymbol: false, data: mem,
+                      lineStyle: { width: 2, color: '#27ae60' }, itemStyle: { color: '#27ae60' },
+                      areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(39,174,96,.22)' }, { offset: 1, color: 'rgba(39,174,96,0)' }]) } }
+                ]
+            });
+        }
+        function refreshChart() { initChart(); }
+        window.addEventListener('resize', function () { if (perfChart) perfChart.resize(); });
+        initChart();
+    </script>
+</body>
+</html>

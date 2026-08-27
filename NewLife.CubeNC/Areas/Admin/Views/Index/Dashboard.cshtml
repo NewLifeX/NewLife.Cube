@@ -1,0 +1,102 @@
+@using NewLife.Cube.Widgets
+@using NewLife;
+@using NewLife.Web;
+@using XCode.Membership;
+@{
+    ViewBag.Title = "工作台";
+
+    var widgets = ViewBag.Widgets as IList<WidgetData> ?? new List<WidgetData>();
+    var user = ManageProvider.User;
+    var isAdmin = user?.Roles.Any(e => e.IsSystem) == true;
+
+    var set = NewLife.Cube.CubeSetting.Current;
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/Content";
+    res = res.TrimEnd('/');
+}
+<div class="cube-workbench">
+    <div class="workbench-header">
+        <div class="workbench-title">
+            <i class="fa fa-dashboard"></i>
+            <span>工作台</span>
+            <small>欢迎回来，@user?.Name</small>
+        </div>
+        <div class="workbench-actions">
+            <button type="button" id="btn-widget-refresh" class="btn btn-sm btn-white" title="刷新数据"><i class="fa fa-refresh"></i> 刷新</button>
+            <button type="button" id="btn-widget-reset" class="btn btn-sm btn-white" title="恢复默认排序"><i class="fa fa-undo"></i> 恢复默认</button>
+        </div>
+    </div>
+
+    <div class="widget-grid" id="widget-grid">
+        @foreach (var item in widgets)
+        {
+            var info = item.Info;
+            var viewName = !info.ViewName.IsNullOrEmpty() ? info.ViewName : $"~/Areas/Admin/Views/Widgets/{info.Name}.cshtml";
+            <div class="widget-col" style="width:@((info.Cols * 100 / 12.0).ToString("0.#"))%;" data-name="@info.Name">
+                <div class="widget-card">
+                    <div class="widget-header">
+                        <i class="fa @info.Icon"></i>
+                        <span class="widget-title">@info.Title</span>
+                        <span class="widget-drag" title="拖拽排序"><i class="fa fa-arrows"></i></span>
+                    </div>
+                    <div class="widget-body">
+                        @try
+                        {
+                            await Html.RenderPartialAsync(viewName, item.Data);
+                        }
+                        catch (Exception ex)
+                        {
+                            <div class="widget-error">组件加载失败：@ex.Message</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <script src="@res/js/jquery-ui.custom.min.js"></script>
+    <script>
+        $(function () {
+            // 按 Cookie 保存的顺序重排组件（每用户独立）
+            var order = '';
+            try {
+                var m = document.cookie.match(/(?:^|;\s*)cube\.widgets\.order=([^;]*)/);
+                if (m) order = decodeURIComponent(m[1]);
+            } catch (e) { }
+            if (order) {
+                try {
+                    var names = JSON.parse(order);
+                    var $grid = $('#widget-grid');
+                    for (var i = 0; i < names.length; i++) {
+                        $grid.find('.widget-col[data-name="' + names[i] + '"]').appendTo($grid);
+                    }
+                } catch (e) { }
+            }
+
+            // 拖拽排序
+            $('#widget-grid').sortable({
+                handle: '.widget-header',
+                placeholder: 'widget-col widget-placeholder',
+                forcePlaceholderSize: true,
+                tolerance: 'pointer',
+                stop: function () {
+                    var names = $('#widget-grid .widget-col').map(function () { return $(this).attr('data-name'); }).get();
+                    var expires = new Date();
+                    expires.setTime(expires.getTime() + 30 * 24 * 60 * 60 * 1000);
+                    document.cookie = 'cube.widgets.order=' + encodeURIComponent(JSON.stringify(names)) + '; expires=' + expires.toUTCString() + '; path=/';
+                }
+            });
+
+            // 刷新数据
+            $('#btn-widget-refresh').click(function () { location.reload(); });
+
+            // 恢复默认排序
+            $('#btn-widget-reset').click(function () {
+                document.cookie = 'cube.widgets.order=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+                location.reload();
+            });
+        });
+    </script>
+}

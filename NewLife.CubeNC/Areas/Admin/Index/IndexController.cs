@@ -8,9 +8,11 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Common;
 using NewLife.Cube.AI;
+using NewLife.Cube.Charts;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Membership;
 using NewLife.Cube.ViewModels;
+using NewLife.Cube.Widgets;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Serialization;
@@ -100,12 +102,66 @@ public class IndexController : ControllerBaseX, IPageDataContext
         return isMobile ? View("MCubeIndex") : View("CubeIndex");
     }
 
+    /// <summary>工作台。聚合注册的工作台组件（Widget）渲染仪表盘首页，所有登录用户可访问，组件内按角色过滤</summary>
+    /// <returns></returns>
+    [DisplayName("工作台")]
+    // 工作台是登录后的首页，普通用户也需访问；组件内容由 WidgetManager 按角色过滤
+    [EntityAuthorize]
+    [Menu(10, true, Icon = "fa-home", LastUpdate = "20260827")]
+    public ActionResult Dashboard()
+    {
+        var user = _provider.Current as IUser;
+        var roleNames = user?.Roles?.Select(e => e.Name).ToList();
+        // 系统角色（IsSystem）可见系统监控组件，普通用户仅看个人工作台
+        var isAdmin = user?.Roles.Any(e => e.IsSystem) == true;
+
+        var widgets = WidgetManager.Instance.GetWidgets(roleNames, isAdmin);
+
+        // 预取组件数据，并收集图表组件以触发布局加载 echarts.min.js
+        var charts = new List<ECharts>();
+        var list = new List<WidgetData>();
+        foreach (var info in widgets)
+        {
+            var data = WidgetManager.Instance.GetData(info);
+            list.Add(new WidgetData { Info = info, Data = data });
+
+            if (data is ECharts chart)
+                charts.Add(chart);
+            else if (data is IEnumerable<ECharts> charts2)
+                charts.AddRange(charts2);
+        }
+
+        ViewBag.Widgets = list;
+        ViewBag.Charts = charts;
+
+        return View();
+    }
+
+    /// <summary>监控数据。工作台性能曲线轮询接口，返回CPU/内存快照</summary>
+    /// <returns></returns>
+    [DisplayName("监控数据")]
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet]
+    public ActionResult MonitorData()
+    {
+        var mi = MachineInfo.Current ?? new MachineInfo();
+        var process = Process.GetCurrentProcess();
+
+        return Json(new
+        {
+            time = DateTime.Now.ToString("HH:mm:ss"),
+            cpu = Math.Round(mi.CpuRate * 100, 1),
+            memUsed = (mi.Memory - mi.AvailableMemory) / 1024 / 1024,
+            memTotal = mi.Memory / 1024 / 1024,
+        });
+    }
+
     /// <summary>服务器信息</summary>
     /// <param name="id"></param>
     /// <returns></returns>
     [DisplayName("服务器信息")]
     [EntityAuthorize(PermissionFlags.Detail)]
-    [Menu(10, true, Icon = "fa-home")]
+    [Menu(0, false, Icon = "fa-home", LastUpdate = "20260827")]
     public ActionResult Main(String id)
     {
         ViewBag.Act = id;

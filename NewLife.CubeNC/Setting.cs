@@ -564,7 +564,7 @@ public class CubeSetting : Config<CubeSetting>
     /// <summary>加载时触发</summary>
     protected override void OnLoaded()
     {
-        if (StartPage.IsNullOrEmpty()) StartPage = "/Admin/User/Info";
+        if (StartPage.IsNullOrEmpty()) StartPage = "/Admin/Index/Dashboard";
 
         var web = Runtime.IsWeb;
 
