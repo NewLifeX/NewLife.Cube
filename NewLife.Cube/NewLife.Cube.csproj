@@ -99,6 +99,7 @@
     <Compile Include="..\NewLife.CubeNC\Widgets\System\LoginLogWidget.cs" Link="Widgets\System\LoginLogWidget.cs" />
     <Compile Include="..\NewLife.CubeNC\Widgets\System\SysInfoWidget.cs" Link="Widgets\System\SysInfoWidget.cs" />
     <Compile Include="..\NewLife.CubeNC\Widgets\System\QuickLinkWidget.cs" Link="Widgets\System\QuickLinkWidget.cs" />
+    <Compile Include="..\NewLife.CubeNC\Widgets\System\RecentVisit.cs" Link="Widgets\System\RecentVisit.cs" />
     <Compile Include="..\NewLife.CubeNC\Widgets\System\ProfileWidget.cs" Link="Widgets\System\ProfileWidget.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\AccessService.cs" Link="Services\AccessService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\AliyunClient.cs" Link="Services\AliyunClient.cs" />

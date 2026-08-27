@@ -1424,6 +1424,30 @@ body.skin-3 {
         transform: translateY(-2px);
     }
 
+/* 最近访问 */
+.quicklink-recent {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--cube-border-light);
+}
+
+.quicklink-recent-title {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--cube-text-muted);
+    margin-bottom: 8px;
+}
+
+.quicklink-recent-item {
+    background: #f7f9fb;
+}
+
+    .quicklink-recent-item i {
+        font-size: 16px;
+    }
+
 /* ========== 响应式微调 ========== */
 @media (max-width: 767px) {
     .breadcrumbs {
