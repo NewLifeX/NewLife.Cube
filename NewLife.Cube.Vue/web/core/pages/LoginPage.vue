@@ -148,7 +148,7 @@ const oauthProviders = computed<OAuthProvider[]>(() => {
 
 /** 系统名称 */
 const systemName = computed<string>(() => {
-  return loginConfig.value?.displayName || loginConfig.value?.name;
+  return loginConfig.value?.displayName || loginConfig.value?.name || '';
 });
 
 /** 登录页 Logo 地址（优先 loginLogo，其次 logo） */
