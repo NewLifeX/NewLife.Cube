@@ -132,8 +132,18 @@
                     <a data-toggle="dropdown" href="~/Admin/User/Info" class="dropdown-toggle" target="main">
                         @if (user != null && !user.Avatar.IsNullOrEmpty())
                         {
-                            <img class="nav-user-photo" src="@user.GetAvatarUrl()" alt="@user" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden-icon');" />
-                            <i class="ace-icon fa fa-user-circle nav-user-photo-icon hidden-icon"></i>
+                            var avatarUrl = user.GetAvatarUrl();
+                            if (!avatarUrl.IsNullOrEmpty())
+                            {
+                                // 内联样式控制显隐，避免 CSS 类在部分移动端状态下不生效导致双头像
+                                // onload 兜底：图片真实加载成功后强制只显头像，消除 onerror 竞态
+                                <img class="nav-user-photo" src="@avatarUrl" alt="@user" onload="this.style.display=''; this.nextElementSibling.style.display='none';" onerror="this.style.display='none'; this.nextElementSibling.style.display='';" />
+                                <i class="ace-icon fa fa-user-circle nav-user-photo-icon" style="display:none;"></i>
+                            }
+                            else
+                            {
+                                <i class="ace-icon fa fa-user-circle nav-user-photo-icon"></i>
+                            }
                         }
                         else
                         {

@@ -173,35 +173,140 @@ body > .panel.panel-default {
     margin-bottom: 14px;
 }
 
-    .tableTools-container .form-inline .form-group {
-        margin-right: 10px;
-        margin-bottom: 6px;
+    /* 工具栏 flex 布局：按钮/搜索控件垂直居中，一行放不下时整齐换行 */
+    .tableTools-container form {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 12px;
     }
 
+    /* 批量按钮组（批量启用/禁用/下载模版等） */
+    .tableTools-container .toolbar-batch {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+    }
+
+    /* 右侧搜索区：右对齐（ACE 经典两端布局）。左侧只放操作按钮/批量处理，
+       margin-left:auto 将搜索区推到右侧；flex 容器内 float 被忽略，显式覆盖 Bootstrap 以防万一 */
+    .tableTools-container .pull-right.form-group {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 12px;
+        float: none !important;
+        margin-left: auto !important;
+        margin-right: 0;
+        margin-bottom: 0;
+    }
+
+    /* 单个搜索字段组：标签+控件垂直居中 */
+    .tableTools-container .form-group {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-bottom: 0;
+    }
+
+        .tableTools-container .form-group .control-label {
+            margin-bottom: 0;
+            white-space: nowrap;
+        }
+
+        /* _SelectDepartment 内部 col-lg-12 撑满整行会破坏换行，还原为自适应 */
+        .tableTools-container .col-lg-12 {
+            float: none;
+            width: auto;
+            padding: 0;
+        }
+
+    /* 工具栏按钮统一高度：覆盖 a/button、图标、input-group 等造成的视觉高度差异 */
     .tableTools-container .btn {
         border-radius: var(--cube-radius);
-        /* 统一工具栏按钮高度：覆盖 a/button、图标、input-group 等造成的视觉高度差异 */
         height: 30px;
         line-height: 18px;
         padding: 4px 12px;
         border-width: 1px;
         vertical-align: middle;
+        white-space: nowrap;
     }
 
-/* 搜索框。输入框/前缀图标与按钮同高，避免 input-group 撑高整行 */
-.tableTools-container .input-group .form-control {
-    border-radius: var(--cube-radius) 0 0 var(--cube-radius);
-    height: 30px;
-    padding: 4px 10px;
-}
+    /* 工具栏输入控件统一高度（select/input/日期等），避免撑高整行 */
+    .tableTools-container .form-control {
+        border-radius: var(--cube-radius);
+        height: 30px;
+        padding: 4px 10px;
+        box-shadow: none;
+        border-color: #d5dbe3;
+    }
 
-.tableTools-container .input-group-addon {
-    height: 30px;
-    padding: 4px 10px;
-}
+    /* 关键字输入框缩短（用 max-width 约束，避免 input-group 表格布局拉伸单元格） */
+    .tableTools-container input[name=q] {
+        width: 100%;
+        max-width: 150px;
+    }
 
-.tableTools-container .input-group-btn .btn {
-    border-radius: 0 var(--cube-radius) var(--cube-radius) 0;
+    .tableTools-container .input-group .form-control {
+        border-radius: var(--cube-radius) 0 0 var(--cube-radius);
+        height: 30px;
+        padding: 4px 10px;
+    }
+
+    .tableTools-container .input-group-addon {
+        height: 30px;
+        padding: 4px 10px;
+    }
+
+    .tableTools-container .input-group-btn .btn {
+        border-radius: 0 var(--cube-radius) var(--cube-radius) 0;
+    }
+
+    /* 工具栏文件上传输入框（部门页批量导入）统一高度 */
+    .tableTools-container .input-group input[type=file] {
+        height: 30px;
+        padding: 2px 4px;
+        font-size: 12px;
+    }
+
+    /* 城市选择控件（city-picker）圆角与高度 */
+    .tableTools-container .city-picker-span {
+        height: 30px;
+        line-height: 28px;
+        border-radius: var(--cube-radius);
+        border-color: #d5dbe3;
+    }
+
+        .tableTools-container .city-picker-span > .title {
+            padding: 0 8px;
+        }
+
+    /* 用户在线/用户统计等页内链接（chip 样式，随 flex 垂直居中对齐） */
+    .tableTools-container .toolbar-link {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 10px;
+        border: 1px solid var(--cube-border);
+        border-radius: 14px;
+        color: var(--cube-primary);
+        background: #f7fafd;
+        font-size: 12px;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: all .15s ease;
+    }
+
+        .tableTools-container .toolbar-link:hover {
+            color: #fff;
+            background: var(--cube-primary);
+            border-color: var(--cube-primary);
+        }
+
+/* 城市选择控件（city-picker）统一圆角与边框色（列表页与表单页一致） */
+.city-picker-span {
+    border-radius: var(--cube-radius);
+    border-color: #d5dbe3;
 }
 
 /* 表格 */

@@ -430,5 +430,100 @@ public sealed class AceUiTests : IAsyncLifetime
         Assert.Equal("30px", inputHeight);
     }
 
+    [Fact(DisplayName = "TC-ACE-043 工具栏 flex 布局垂直居中 + 关键字框去图标缩短")]
+    [Trait("Category", "AceUi")]
+    [Trait("Priority", "P1")]
+    public async Task TC_ACE_043_ToolbarFlexAndKeyword()
+    {
+        const String testId = "TC-ACE-043";
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 工具栏 form 为 flex 布局（垂直居中 + 整齐换行）
+        var formDisplay = await _page.EvaluateAsync<String>(
+            "(() => { const el = document.querySelector('.tableTools-container form'); return el ? getComputedStyle(el).display : ''; })()");
+        Assert.Equal("flex", formDisplay);
+
+        // 关键字输入框：不再有左侧打勾图标（input-group-addon 内 fa-check）
+        var checkIcon = await _page.Locator(".tableTools-container .input-group-addon .fa-check").CountAsync();
+        Assert.Equal(0, checkIcon);
+        // 关键字输入框缩短为 150px
+        var kwWidth = await _page.EvaluateAsync<String>(
+            "(() => { const el = document.querySelector('.tableTools-container input[name=q]'); return el ? getComputedStyle(el).width : ''; })()");
+        Assert.Equal("150px", kwWidth);
+
+        // 用户在线/用户统计 chip 链接存在（toolbar-link）
+        var chipCount = await _page.Locator(".tableTools-container .toolbar-link").CountAsync();
+        Assert.True(chipCount >= 2, $"[{testId}] 用户在线/用户统计 chip 链接缺失: {chipCount}");
+    }
+
+    [Fact(DisplayName = "TC-ACE-044 导航栏头像单显（PC 与移动端刷新均无双头像）")]
+    [Trait("Category", "AceUi")]
+    [Trait("Priority", "P1")]
+    public async Task TC_ACE_044_NavbarAvatarSingle()
+    {
+        const String testId = "TC-ACE-044";
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // PC：只显示一个（头像 img 或 fallback 图标，绝不同时）
+        await AssertSingleAvatarAsync(testId + "-PC");
+
+        // 切手机模式（CDP 模拟 UA/DPR/触屏）并刷新，仍应单显
+        var cdp = await _page.Context.NewCDPSessionAsync(_page);
+        await cdp.SendAsync("Network.setUserAgentOverride", new System.Collections.Generic.Dictionary<String, Object>
+        {
+            ["userAgent"] = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+            ["platform"] = "iPhone",
+        });
+        await cdp.SendAsync("Emulation.setDeviceMetricsOverride", new System.Collections.Generic.Dictionary<String, Object>
+        {
+            ["width"] = 375,
+            ["height"] = 667,
+            ["deviceScaleFactor"] = 3,
+            ["mobile"] = true,
+            ["screenWidth"] = 375,
+            ["screenHeight"] = 667,
+        });
+        await _page.ReloadAsync();
+        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await _page.WaitForTimeoutAsync(800);
+        await AssertSingleAvatarAsync(testId + "-Mobile");
+    }
+
+    private async Task AssertSingleAvatarAsync(String tag)
+    {
+        var state = await _page.EvaluateAsync<String>(
+            "() => { const img = document.querySelector('#navbar .nav-user-photo'); const icon = document.querySelector('#navbar .nav-user-photo-icon'); const imgVisible = img ? getComputedStyle(img).display !== 'none' : false; const iconVisible = icon ? getComputedStyle(icon).display !== 'none' : false; return JSON.stringify({ imgVisible, iconVisible, imgCount: document.querySelectorAll('#navbar .nav-user-photo').length, iconCount: document.querySelectorAll('#navbar .nav-user-photo-icon').length }); }");
+        var json = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(state);
+        Assert.True(json.GetProperty("imgCount").GetInt32() <= 1, $"[{tag}] 头像 img 数量异常: {state}");
+        Assert.True(json.GetProperty("iconCount").GetInt32() <= 1, $"[{tag}] 图标数量异常: {state}");
+        var imgVisible = json.GetProperty("imgVisible").GetBoolean();
+        var iconVisible = json.GetProperty("iconVisible").GetBoolean();
+        Assert.True(imgVisible != iconVisible, $"[{tag}] 双头像（img 与图标同时可见）: {state}");
+    }
+
+    [Fact(DisplayName = "TC-ACE-045 工具栏两端布局（左操作按钮 + 右搜索区右对齐）")]
+    [Trait("Category", "AceUi")]
+    [Trait("Priority", "P1")]
+    public async Task TC_ACE_045_ToolbarTwoZone()
+    {
+        const String testId = "TC-ACE-045";
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User");
+        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await _page.WaitForTimeoutAsync(400);
+
+        var info = await _page.EvaluateAsync<String>(
+            "() => { const pull = document.querySelector('.tableTools-container .pull-right'); const container = document.querySelector('.tableTools-container'); const add = document.querySelector('.tableTools-container a.btn-success'); if (!pull || !container) return JSON.stringify({ error: 'not found' }); const pr = pull.getBoundingClientRect(); const cr = container.getBoundingClientRect(); return JSON.stringify({ pullRight: Math.round(pr.right), containerRight: Math.round(cr.right), rightGap: Math.round(cr.right - pr.right), addX: add ? Math.round(add.getBoundingClientRect().x) : null }); }");
+        var json = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(info);
+        Assert.True(!json.TryGetProperty("error", out var _), $"[{testId}] 工具栏元素缺失: {info}");
+        // 添加按钮在左侧
+        var addX = json.GetProperty("addX").GetInt32();
+        Assert.True(addX < 100, $"[{testId}] 添加按钮未在左侧: {info}");
+        // 搜索区右对齐：右边缘贴近工具栏容器右边缘（gap 很小，说明被推到了右侧而非左对齐）
+        var rightGap = json.GetProperty("rightGap").GetInt32();
+        Assert.True(rightGap >= 0 && rightGap <= 40, $"[{testId}] 搜索区未右对齐（右缘与容器右缘差 {rightGap}px）: {info}");
+    }
+
     #endregion
 }
