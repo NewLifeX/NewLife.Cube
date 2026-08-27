@@ -1,7 +1,8 @@
 # NewLife.Cube.ArcoVue 企业中后台迁移与产品化方案
 
 > 版本：2026-08-02（修订：看板分组字段取值修复；`EntityViewProfile`→`ViewProfile` 前后端统一重构；§8 收敛为「固定 CRUD 容器 + 有限用户运行时自定义」）
-> 版本：2026-08-18（复审：§3.1 矩阵现状列按代码实测刷新至全部已归档 OSC；§10.4 差距表补复审状态；§13 附录补全已归档变更记录）
+> 版本：2026-08-19（复审：§3.1 矩阵现状列按代码实测刷新；§10.4 差距表补 OSC-26081903c0 启停/填色/AI 浮窗）
+> 版本：2026-08-21（增补 §8.5：自定义工作台、页面仪表盘与流程引擎；改写 §5.1 / §8.2 与「搜索 / 一张图 / FlowGram 样例」终态表述。口径与 [架构分享-预读.md](./架构分享-预读.md) 一致）
 > 状态：可落地执行稿  
 > 适用范围：以 NewLife.Cube（WebAPI）为后端，将 NewLife.Cube.ArcoVue 建设为默认企业中后台皮肤；复用 NewLife.Cube.Vue 能力成果，对接字节官方组件栈，支持用户级呈现配置与 AI（OpenSpec）协作。
 
@@ -22,7 +23,7 @@
 
 1. **零配置自动 CRUD**：宿主仅 `UseArcoVue` 时，内置 Admin/Cube 与新增业务 `EntityController` 自动获得完整管理界面。
 2. **飞书式多维数据工作台**：表格（自定义列）/ 树表 / 卡片 / 甘特；记录以**右侧抽屉**编辑（飞书多维表为左侧记录栏，本实现按 §8.1 契约用右侧），并含修改历史、用户评论。
-3. **用户级可配置呈现**：导航布局、主题样式、列表默认视图与列布局等**禁止写死**，按用户（及可选租户/角色默认）配置生效。
+3. **可配置呈现**：导航布局、主题、列表默认视图与列布局等**禁止写死**。实体视图按个人 > 全局模板 > 系统默认；**首页工作台**按 **用户 > 主角色 > 系统默认**（不做租户层工作台）。
 4. **现代扁平视觉**：参考苹果 Human Interface / 飞书与 [Arco Design](https://arco.design/) 的扁平、留白、低噪点风格。
 5. **业务增量开发模型**：新业务 = 新 .NET 项目 + 实体控制器；仅特殊页覆写前端。
 6. **AI 协作可落地**：复用现有 GitHub Copilot 指令；OpenSpec 轻量变更；同时适配 VS Code Copilot 与 Cursor。
@@ -33,6 +34,10 @@
 - 不整仓搬运 Cube.Vue 的 Element Plus 组件与微前端工程。
 - 不改写已有 `.github/instructions` 组织级指令正文（只增量新增）。
 - Cube.Vue 微前端多应用运行时、Cypress 全量套件、Element 主题体系等：见 §3.1 能力矩阵中目标为「➖」的项。
+- 不做整页画布、第三方 Widget 市场、用户脚本公式；洞察槽内允许跨实体**平台部件**（须授权查询），见 §8.5。
+- 不做把 FlowGram 当流程执行器、不让浏览器跑流程；运行时若立项则在 Cube 独立模块。
+- 不做租户层首页工作台；实体 ViewProfile 首期仍无角色层（与首页分层分开）。
+- 演化后不再保留独立「搜索」产品面（SearchDrawer / `Q` / 预定义查询），见 §8.5.4。
 
 ### 1.4 与 [功能清单.md](../功能清单.md) 的关系
 
@@ -57,19 +62,21 @@
 
 | 能力 | 描述 | 优先级 |
 |------|------|--------|
-| 开箱即用后台 | 登录、菜单、权限、用户/角色/菜单/日志等内置模块可用 | P0 |
+| 开箱即用后台 | 登录、菜单、权限（角色抽屉授权树已接线，不改容器模型）、用户/角色/菜单/日志等内置模块可用 | P0 |
 | 元数据驱动业务页 | 新实体配置字段与菜单后自动出页 | P0 |
 | 多视图工作台 | table / tree / card / gantt 可切换，默认视图可记 | P0 |
 | 记录抽屉 | 右抽屉：表单 / 历史 / 评论 | P0 |
-| 个性化工作台 | 每用户布局、主题、视图偏好独立 | P0 |
-| 覆写扩展 | Section / 整页 / FlowGram 流程页 | P1 |
-| 工作流画布 | FlowGram 审批/业务流样例 | P1 |
+| 个性化工作台 | 壳：布局/主题；首页槽位：用户 > 主角色 > 系统 | P0 |
+| 实体页小仪表盘 | InsightPanel：指标卡 / 只读迷你看板 / 筛选联动；可绑已授权其它实体 | P1 |
+| 查询收口 | 只留筛选构建器，条件必须后端查询；退役搜索抽屉与预定义查询 | P1 |
+| 覆写扩展 | Section / 整页；流程设计器页（非执行器） | P1 |
+| 流程引擎 | Cube 独立模块：定义 / 实例 / 待办；FlowGram 仅设计器 | P1 |
 | 字段级变更 diff | 结构化历史（相对 Log.Remark） | P2 |
 
 **成功标准（产品）：**
 
 - 业务研发零前端即可交付 80% 管理页。
-- 不同角色用户打开同一系统，可看到各自布局/主题/默认列表视图。
+- 不同用户打开同一系统，壳与首页工作台按用户覆盖主角色；实体列表视图仍按个人覆盖全局模板。
 - 视觉与交互达到「现代扁平、低干扰、高信息密度可控」。
 
 ### 2.2 用户视角
@@ -94,7 +101,7 @@
 | 维度 | 决策 |
 |------|------|
 | 后端契约 | 最小集见 [核心接口架构.md](./核心接口架构.md)；MFA 见 [认证接口设计.md](./认证接口设计.md) `/Mfa/*`（AUTH-10）；Profile/Comment 见独立后端任务 |
-| UI 栈 | Arco Design Vue（壳/表单）+ VisActor VTable（多维视图）+ FlowGram.AI（流程，后期） |
+| UI 栈 | Arco Design Vue（壳/表单）+ VisActor VTable（多维视图）+ FlowGram.AI（流程**设计器**，运行时见 §8.5.5） |
 | 逻辑复用 | `@cube/*`；接线模板优先对照 NaiveUI，能力验收对照 §3.1 矩阵 |
 | 呈现配置 | `UserProfile` + `ViewProfile`（后端独立交付，前端消费，见 §5 / §10.1） |
 | 扩展 | `registerSection` + `apps/` 整页覆写 |
@@ -133,7 +140,7 @@
 | Challenge / 验证码登录增强 | AUTH-4/5 | ✅ | ✅（needChallenge + getChallenge 加密提交 + 图形验证码） | ✅ | P1 |
 | 导入导出 | DATA-9 | ✅ | ✅ | ✅ | P0 |
 | 批量删除 | DATA-10 | ✅ | ✅ | ✅ | P0 |
-| 批量其它操作（启用/禁用等） | 工具条扩展 | ✅ | ❌（工具栏占位） | 🟠 | P2 |
+| 批量其它操作（启用/禁用等） | 工具条扩展 | ✅ | ✅（OSC-26081903c0 高级菜单批量启用/禁用；批量改字段见 e483） | 🟠 | P2 |
 | ListField.Url / dataAction 自定义链接 | 单元格 + 操作列分流 | ✅（Bootstrap 单元格 / Metronic 更多） | ✅（OSC-2608178bdb 方案 E） | 🟢 | Done |
 | 图表 GetChartData | SPA-15 | ✅ | 🟠（后端 option 渲染壳有；洞察面板暂隐藏待简易图表看板，OSC-0016） | ✅ | P1 |
 | 字段控件矩阵（含上传/JSON/富文本等） | DATA-11 等 | 🟠～✅ | ✅（20+ 控件，FieldInput） | ✅ | P0 |
@@ -153,13 +160,13 @@
 | Section 页面覆写 | Vue skills | ✅ | ✅ 机制（useSections，仅 `_demo` 案例） | ✅ | P1 |
 | apps 自定义业务页 | cube-admin 等 | ✅ | 🟠 机制 + `_demo` + Admin/Db、Admin/File 专用页（detectPageKind custom） | 🟠 机制+高频页 | P1 |
 | 微前端多应用运行时 | Vue microApp | ✅ | ➖（未做） | ➖ | — |
-| FlowGram 工作流画布 | 本方案 | ❌ | ❌（未做） | ✅ 样例 | P1 |
+| FlowGram 工作流画布 | 本方案 | ❌ | ❌（未做） | ✅ 设计器；运行时见 §8.5.5 | P1 |
 | 字段级变更 diff | 相对 Log | ❌ | ❌ | ➖ 一期 / P2 二期 | P2 |
 | 单元/组件测试体系 | Vue Vitest 等 | ✅ | 🟠（逻辑单测 495 用例全过；组件测试仍缺） | ✅ 关键路径 | P0 |
 | E2E（Cypress 级） | Vue | ✅ | 🟠 Playwright 冒烟 3 spec（认证/实体表单/对象主页，OSC-2608139feb） | 🟠 冒烟即可 | P2 |
 | 嵌入 NuGet / UseArcoVue | SPA-2/3/7 | ✅ UseVue | ✅ | ✅ | P0 |
 
-> **实体自动化 ≠ FlowGram。** OSC-260815fa86 已交付飞书多维表格风格的「自动化」（线性 GraphJson + C# `AutomationExecutor`）。FlowGram 仍只用于后期「工作流」画布样例，**不是**本自动化运行时。
+> **实体自动化 ≠ 流程引擎 ≠ FlowGram。** OSC-260815fa86 已交付线性「自动化」（GraphJson + C# `AutomationExecutor`）。FlowGram 只做设计器；审批/待办运行时若立项则在 Cube `IModule`（§8.5.5），**禁止**把自动化实现成浏览器画布执行器。
 
 > 注：以上「ArcoVue 现状」列已于 2026-08-18 对照代码复审刷新（OSC-0001~0019 与 OSC-2608 号全部归档后）。刷新依据见 §10.4 审查结论。
 
@@ -235,7 +242,7 @@ NewLife.Cube.ArcoVue/web/src/
 |------|------|------|
 | 设计系统 / 壳 / 表单 | [Arco Design Vue](https://arco.design/) | 布局容器、导航、页签、登录、抽屉、表单控件、反馈 |
 | 多维数据视图 | [VisActor VTable](https://visactor.com/vtable)（+ gantt） | 表格列布局、树表、卡片式布局、甘特；禁止长期以 `a-table` 做主多维表 |
-| 工作流 | [FlowGram.AI](https://flowgram.ai/) | 审批/业务流程图（M5） |
+| 工作流设计器 | [FlowGram.AI](https://flowgram.ai/) | 只读写流程定义；运行时禁止放在浏览器（§8.5.5） |
 | 领域逻辑 | `@cube/*` | API、认证、列表状态机、字段映射 |
 
 ---
@@ -246,14 +253,15 @@ NewLife.Cube.ArcoVue/web/src/
 
 ### 5.1 配置分层
 
-| 层级 | 作用 | 覆盖关系 |
-|------|------|----------|
-| 系统默认 | 产品出厂默认（扁平浅色、侧栏布局、表格视图） | 最低 |
-| 租户/应用默认（可选） | 企业品牌色、默认布局 | 覆盖系统 |
-| 角色默认（可选） | 如运营角色默认紧凑密度 | 覆盖租户 |
-| **UserProfile / ViewProfile** | 个人最终呈现与实体视图 | **最高** |
+两套读取顺序，不要混用。
 
-读取顺序：`用户 > 角色 > 租户 > 系统`。
+| 对象 | 读取顺序 | 说明 |
+|------|----------|------|
+| **首页工作台**（平台槽位） | **用户 > 主角色 > 系统默认** | 已拍板。用户 `UserProfile.workspace` 有有效槽位配置则整份采用，改角色默认不覆盖已个性化用户。角色层只看会员体系 **主角色**（`RoleId`），附加 `RoleIds` 不合并。管理员写角色工作台；用户只写自己的 Profile。聚合 API 按当前用户解析后下发。**不做租户层工作台。** |
+| **实体视图**（ViewProfile） | **个人 > 全局模板（UserId=0）> 系统默认** | 已交付（OSC-0014）。**不做角色层**，除非另立。 |
+| 壳布局 / 主题 | 仍走 UserProfile 个人配置 | 与首页槽位同实体，但字段不同 |
+
+壳与首页槽位都在 UserProfile 上；角色工作台建议挂 Role 扩展 JSON 或独立 RoleWorkspace，避免用 `UserId=0` 模板表硬塞角色维。详情见 §8.5.2。
 
 ### 5.2 对象模型
 
@@ -282,7 +290,7 @@ Agent / Copilot 实施约定：OSC-0002 的 `tasks.md` 首项应为「编辑 Cub
 | Table | 关键列（示意） | 索引 |
 |-------|----------------|------|
 | UserProfile | Id；UserId；LayoutJson / ThemeJson / WorkspaceJson（或单一 ProfileJson）；Version；Enable；Create*/Update* | Unique(UserId) |
-| ViewProfile | Id；UserId；TypePath；View；ColumnsJson；**ViewsJson**；**ActiveViewId**；GanttJson；CardJson；FiltersJson；QueriesJson；**FormJson**；Version；Create*/Update* | Unique(UserId, TypePath)；命名视图存 ViewsJson；`UserId=0` 表示管理员发布的全局只读模板；FormJson 存受限表单布局；QueriesJson 存实体级预定义查询（OSC-0016，不走模板） |
+| ViewProfile | Id；UserId；TypePath；View；ColumnsJson；**ViewsJson**；**ActiveViewId**；GanttJson；CardJson；FiltersJson；QueriesJson；**FormJson**；**DashboardJson**（演化，§8.5.3）；Version；Create*/Update* | Unique(UserId, TypePath)；命名视图存 ViewsJson；`UserId=0` 为全局只读模板；FormJson 存受限表单布局；QueriesJson 为 OSC-0016 预定义查询（**演化退役**，§8.5.4）；DashboardJson 为实体级页面仪表盘，不跟命名视图走 |
 | EntityComment | Id；Category；LinkId；**ParentId / RootId / ReplyUserId / ReplyUser**；Content；CreateUser/Id/IP/Time；Update* | (Category, LinkId)；ParentId；RootId；CreateUserID |
 
 嵌套配置（layout/theme/columns 等）以 **JSON 文本列** 落库，与 §5.2 逻辑模型对应；API 层序列化为前端 TypeScript 形状。
@@ -478,48 +486,50 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
 
 ### 8.2 固定视图/表单容器与有限用户运行时自定义（飞书应用模式）
 
-> 研究依据：飞书帮助中心「应用模式」及其列表、标签页、尺寸文档。飞书的应用页可以自由编排跨表组件；其前提是完整的数据源、页面、权限和自动化平台。ArcoVue 的定位是 **Cube 的默认 CRUD 皮肤**，而非低代码平台，因此只借鉴“同源数据多种呈现、配置与使用分离、用户可恢复默认”的体验，不复制画布与组件市场。
+> 研究依据：飞书帮助中心「应用模式」及其列表、标签页、尺寸文档。飞书的应用页可以自由编排跨表组件；其前提是完整的数据源、页面、权限和自动化平台。ArcoVue 的定位是 **Cube 的默认 CRUD 皮肤**，而非低代码平台，因此只借鉴“同源数据多种呈现、配置与使用分离、用户可恢复默认”的体验，不复制整页画布与第三方组件市场。洞察槽内的页面级小仪表盘、首页工作台与流程引擎见 **§8.5**（演化目标）；本节 8.2.2–8.2.6 先记录 **e483 已交付上限**，避免把现状写成终点。
 
 #### 8.2.1 评审结论与边界
 
 | 飞书能力 | 本方案处理 | 原因 |
 |----------|------------|------|
 | 同一数据源的列表、卡片、详情、筛选、排序 | **采用**：复用命名视图、6 类视图、右侧 RecordDrawer | 当前 `DefaultList` 已具备，用户收益直接 |
-| 固定区域展示统计/图表 | **有限采用**：列表顶部可选一个洞察区 | 统计走 `GetList.stat`；用户图走 ViewProfile `insight.chartOption`；子类 `GetChartData` 非空时仍可用 |
+| 固定区域展示统计/图表 | **已交付有限采用**；**演化**为页面级小仪表盘（§8.5.3） | e483：`GetList.stat` + 一张 `insight.chartOption`；第一期改为指标卡 / 只读迷你看板 / 筛选联动 |
 | 字段显示与表单组织 | **采用**：仅顺序、显隐、按现有 Category 分组折叠 | 不改变 Cube 元数据、字段控件、校验和权限 |
-| 管理员发布默认界面 | **采用**：每实体一个全局只读模板，个人可覆盖 | 满足统一体验，避免首期角色/租户优先级与协作编辑 |
-| 任意画布、拖拽区块、组合布局、嵌套标签页 | **不做** | 会新增 Widget 生命周期、布局引擎、移动端和性能问题 |
-| 跨实体数据源、文本/图片/按钮组件、工作流执行 | **不做** | 脱离 GetPage 与 Cube 权限契约，属于独立低代码产品范围 |
+| 管理员发布默认界面 | **采用**：每实体一个全局只读模板，个人可覆盖 | 实体视图不做角色层；**首页工作台**按用户 > 主角色（§5.1 / §8.5.2） |
+| 任意整页画布、拖拽增删页面区块、嵌套标签页、第三方 Widget | **不做** | 会新增 Widget 生命周期、布局引擎、移动端和性能问题 |
+| 跨实体文本/图片/按钮块、用户脚本、浏览器跑流程 | **不做** | 脱离 GetPage 与 Cube 权限契约 |
+| 洞察槽内跨实体平台部件 | **演化允许**（§8.5.3） | 每张源表走已授权 GetList；禁止前端拼 SQL |
 
 #### 8.2.2 容器契约（复用而非重建）
 
 每个实体路由默认仍是一个固定的 **DefaultList 容器**：
 
 1. `GetPage` 是字段、权限、表单和统计的唯一元数据来源；`GetList`、`GetDetail` 与 CRUD API 仍是唯一数据/写入通道。
-2. 容器固定顺序为：可选**洞察区** → 搜索区 → 命名视图 Tab/工具栏 → 当前数据视图 → 分页 → 右侧 `RecordDrawer`。不允许用户新增、删除、拖动或嵌套页面区块。（注：搜索统一由工具栏「搜索」按钮打开的右侧抽屉 `SearchDrawer` 承载，非容器内联区块；洞察区 `InsightPanel` 自 OSC-260819e483 起启用，**仅作简易看板/图表展示区**——统计标签 + 一张固定图表，不含搜索表单。）
-3. 洞察区最多一个：统计标签与一张图表（`insight.showStat` / `showChart` 可同时）。图表 option 由用户在 InsightPanel 配置，写入当前 NamedView 的 `insight.chartOption`（ViewProfile `ViewsJson`）；数据来自当前列表，保存时不写入 `series.data`/`dataset.source`。开发者重写 `OnGetChartData` 且返回非空时仍优先。不做多图看板或拖拽布局。**InsightPanel 不提供搜索入口；搜索/预定义查询管理只走 `SearchDrawer`。**
-4. NamedView 继续承载 table/tree/card/kanban/calendar/gantt 的列、映射、排序和工具栏外观；现有 `widthMode` / `heightMode` 只表示当前视图的容器尺寸，不升级为通用 Widget 尺寸系统。
+2. 容器固定顺序为：可选**洞察槽** → 命名视图 Tab/工具栏 → 当前数据视图 → 分页 → 右侧 `RecordDrawer`。不允许用户新增、删除、拖动或嵌套**页面**区块；只允许在洞察槽**内部**增删/排序平台部件（§8.5.3）。
+3. **已交付（OSC-260819e483）**：洞察区统计标签与一张图表（`insight.showStat` / `showChart`）；`chartOption` 写在当前 NamedView；数据来自当前列表，保存时不写入 `series.data`/`dataset.source`。开发者 `OnGetChartData` 非空仍优先。搜索由工具栏「搜索」打开的 `SearchDrawer` 承载；InsightPanel 不含搜索表单。**此为已交付上限，不是演化终点**——演化见 §8.5.3 / §8.5.4。
+4. NamedView 继续承载 table/tree/card/kanban/calendar/gantt 的列、映射、排序和工具栏外观；现有 `widthMode` / `heightMode` 只表示当前视图的容器尺寸，不升级为通用 Widget 尺寸系统。**看板视图 ≠ InsightPanel**：前者是六视图之一，只呈现当前实体当前筛选；后者是页面级小仪表盘。
 
 #### 8.2.3 受限配置模型
 
 | 配置 | 存储 | 允许用户改变 | 明确禁止 |
 |------|------|--------------|----------|
 | 命名视图 | `ViewsJson` / `ActiveViewId` / `ColumnsJson` | 视图类型、列显隐/顺序/宽度/标题、排序、已有 mapping/chrome | 自定义 SQL、跨实体数据源、绕过字段权限 |
-| 筛选记忆 | `FiltersJson` | 当前实体的搜索字段条件；可选择保存为该命名视图默认条件 | 新增后端未声明的查询字段或表达式 |
-| 洞察区 | `ViewsJson` 中当前 NamedView 的 `insight` | `showStat` / `showChart`；可选一张 `chartOption`（ECharts JSON 模板） | 多图看板、拖拽位置、option 内脚本/函数、把列表快照写进 Profile |
-| 表单布局 | **新增 `FormJson`** | add/edit/detail 的字段顺序、显隐、按 GetPage `Category` 的分组折叠 | 新字段、字段类型/控件、默认值、校验、必填、权限、提交动作 |
+| 筛选记忆 | `FiltersJson` | 当前实体筛选条件，保存为该命名视图默认（演化后为**唯一**查询入口） | 用户脚本/SQL；把筛选当成数据权限 |
+| 洞察区（已交付） | `ViewsJson` 中当前 NamedView 的 `insight` | `showStat` / `showChart`；可选一张 `chartOption` | option 内脚本/函数、把列表快照写进 Profile |
+| 页面仪表盘（演化） | ViewProfile 实体级 `DashboardJson` | 平台部件：指标卡、只读迷你看板；可绑已授权 `sourceTypePath` | 第三方 Widget、迷你表格/多图（第一期不做）、拖拽写回 |
+| 表单布局 | **`FormJson`** | add/edit/detail 的字段顺序、显隐、按 GetPage `Category` 的分组折叠 | 新字段、字段类型/控件、默认值、校验、必填、权限、提交动作 |
 
 `FormJson` 仅是前端呈现偏好；字段是否存在、是否可编辑、是否必填以及提交载荷仍由 GetPage 与 `prepareSubmitPayload` 判定。配置中出现已删除字段时静默忽略；元数据中新字段按所属分组追加且默认可见，保证升级后仍能操作。
 
 #### 8.2.4 模板与优先级
 
-首期不实现角色/租户模板或多人协同编辑。对每个 `typePath` 最多存在两层配置：
+实体 ViewProfile 仍是两层（OSC-0014 已交付），**不做角色/租户模板**：
 
 1. **个人 ViewProfile**：`UserId = 当前用户`，可编辑，优先级最高。
 2. **全局只读模板**：`UserId = 0`，由具备管理权限的管理员发布；普通用户仅可“基于模板开始自定义”，首次保存时创建个人 Profile。
 3. **系统默认**：没有模板或个人配置时，由 GetPage 和 `seedDefaultView` 生成。
 
-读取为“个人配置覆盖模板，模板覆盖系统默认”的字段级合并，而非整份 JSON 互相替换；个人删除某项配置应回落模板。管理员模板的发布、恢复及审计必须复用 Cube 的权限与日志，不能向普通用户暴露 `UserId=0` 的写接口。
+读取为“个人配置覆盖模板，模板覆盖系统默认”的字段级合并。首页工作台分层见 §5.1 / §8.5.2，不要套用本小节。
 
 开发者扩展优先级保持不变：整页 `apps/*/index.vue` 覆写直接接管页面；未整页覆写时，Section 可局部替换容器插槽；只有默认容器才消费上述用户配置。业务覆写不必兼容通用配置协议，避免运行时互相干扰。
 
@@ -530,17 +540,100 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
 | OSC-0012 | 筛选记忆 + 单一洞察区 | `FiltersJson` 按命名视图保存；`insight.showStat`/`showChart` 双开关独立（可同时），始终使用当前实体与筛选条件 |
 | OSC-0013 | 受限表单布局 | ViewProfile 增 `FormJson`；RecordDrawer 支持字段顺序、显隐、Category 分组折叠与恢复默认 |
 | OSC-0014 | 全局只读模板 | `UserId=0` 模板读写 API、权限与审计；个人覆盖/恢复模板；不做角色、租户与协同编辑 |
-| OSC-0015 | 筛选构建器 + 多级分组 | 工具栏 Popover（非 Drawer）构建筛选（操作符按字段类别矩阵 eq/neq/contains/isNull/gt/gte/lt/lte/after/before，AND/OR）保存到 `NamedView.filter` 随视图自动应用、**纯前端过滤**（不并入后端请求）；多级分组（≤3 字段）保存到 `NamedView.group`，**table 用 VTable 原生 groupBy 渲染组头折叠 + checkbox 级联、树视图不允许分组**；搜索面板一行折叠 + LOV LIST 远程搜索 |
-| OSC-0016 | 通用查询 + 预定义查询 | 搜索栏改**右侧抽屉**（`SearchDrawer`，标题「高级搜索」、宽 300（240+60）、无关闭按钮、无底部确定/取消、点击其它区域关闭、每条件一行、Q 第一、其余按 GetPage `Search` 顺序、查询组合按钮在抽屉右上角文字在前箭头在右）；原 `QueryInsightPanel` 更名 `InsightPanel`（OSC-260819e483 起启用，**仅作简易看板/图表展示区**，不含搜索表单）；日期数值时间搜索改**单值等值控件**（不再产生 `_min/_max`）；Map 字段候选自动填充（小表内联 / 大表 `Entity.` 值集远程搜索）；预定义查询存 `ViewProfile.QueriesJson`（实体级个人配置，保存/应用/重命名/删除/清空，刷新恢复） |
+| OSC-0015 | 筛选构建器 + 多级分组 | **已交付**：条件组保存到 `NamedView.filter`；e483 起可下推 `viewFilter`，无法下推则忽略服务端过滤（前端当前页兜底，**已知限制**）。**演化**：必须后端查询，禁止假筛选，见 §8.5.4 |
+| OSC-0016 | 通用查询 + 预定义查询 | **已交付**：`SearchDrawer` + `QueriesJson`。**演化退役**：不再保留独立搜索与预定义查询，见 §8.5.4 |
 
 #### 8.2.6 验收与非目标
 
 - 新实体仍只需实体 + `EntityController` + 菜单即可获得完整页面；没有任何 Profile 时与当前行为一致。
 - 用户可以保存一个命名视图的筛选、洞察展示和表单呈现；恢复默认后回落全局模板或系统默认。
 - 管理员发布模板后，未个性化用户立即使用；已个性化用户不被覆盖。
-- 图表（OSC-260819e483）：当前 NamedView 允许持久化**一张**用户 ECharts option（`insight.chartOption`，≤32KB）；数据来自当前列表（`applyChartData` 写入 `dataset.source`，保存时剔除）；开发者 `OnGetChartData` 返回非空时仍优先；仍禁止多图看板、拖拽布局与 option 内脚本/函数。
+- 图表（OSC-260819e483 **已交付**）：当前 NamedView 允许持久化**一张**用户 ECharts option（`insight.chartOption`，≤32KB）；数据来自当前列表；开发者 `OnGetChartData` 非空仍优先。**演化**见 §8.5.3，单图保留兼容，不当第一期主交付。
 - 查找展示沿用现有 `MapField` / `DataSourceMap` / `lovCode` 字段配置（`fetchBatchLabel` 已接线），不新增查找协议；只读公式使用 C# 扩展属性（与 Map 扩展同类），禁止用户 JS/SQL、双向写回。
-- 不新增画布、Widget 注册表、通用拖拽/缩放、页内标签容器、跨实体查询、文本/图片/按钮组件、用户自定义工作流或公式字段。这些能力若未来确有需求，应以独立产品立项并先补齐数据源、权限和审计模型。
+- 不新增整页画布、第三方 Widget 注册表、页内标签容器、跨实体文本/图片/按钮块、用户脚本公式。洞察槽跨实体平台部件、首页槽位、流程运行时按 §8.5 立项，不混进本小节的「已交付验收」。
+
+### 8.5 自定义工作台、页面仪表盘与流程引擎
+
+> 2026-08-21 产品口径。L0 仍是零配置实体 CRUD（§8.1–8.2）。往上只加三类后端，不要并成「再做一个飞书」。实现另开 OSC；值集消费契约（含 `entity:` ListData）未收口前，跨实体选表与仪表盘实现应一并看待。口径长文见 [架构分享-预读.md](./架构分享-预读.md)。
+
+三条产品边界必须分开：
+
+| 表面 | 对标 | 不是什么 |
+|------|------|----------|
+| **看板视图** | 飞书看板视图 | DefaultList **六视图之一**；只呈现当前实体、当前筛选；列=分组字段；只读、无拖拽写回。不承担跨表看数。 |
+| **InsightPanel** | 飞书仪表盘（缩小版） | 挂在实体页**固定洞察槽**，不是独立菜单、不是整页画布。每 `typePath` 一份配置；平台部件可绑**已授权**其它实体。 |
+| **首页工作台** | 「我的工作台」 | 平台槽位（待办、快捷入口、KPI）。今日 Index/Main 是监控页，不是这份工作台。 |
+
+```
+DefaultList 固定容器
+  InsightPanel（页面仪表盘：指标卡 / 只读迷你看板）
+  → 命名视图与工具栏（查询入口只留筛选）
+  → 六视图（含看板视图）
+  → 分页 → 右侧 RecordDrawer
+
+数据：当前实体 GetList ──筛选联动──► 仪表盘部件
+      其它 typePath 授权 GetList ──────────► 仪表盘部件
+```
+
+用户不能增删整页区块；只在洞察槽内部增删、排序平台部件。
+
+#### 8.5.1 分层（后端已有 vs 要补）
+
+| 层 | 内容 |
+|----|------|
+| L0 实体内核 | GetPage / CRUD / 行级权限 / 值集。缺：字段级 ACL（写入与导出对称）。 |
+| L1 呈现 | UserProfile 壳；ViewProfile 命名视图；**首页槽位用户>主角色**；**Insight DashboardJson**。 |
+| L2 协作 | 实体自动化（线性 GraphJson + `AutomationExecutor`）；站内信 Inbox。 |
+| L3 流程引擎（待建） | 定义、实例、待办任务；FlowGram **仅设计器**。 |
+
+基础设施（认证、RBAC、多租户、`IModule`、通知、AI）复用，不平行造会话。
+
+#### 8.5.2 首页工作台：用户 > 主角色（已拍板）
+
+不是 Widget 市场：槽位由平台注册。读取**整份**配置（与「已个性化不覆盖」同构）：
+
+1. 用户 `UserProfile.workspace` 有有效首页槽位 → 用用户的。
+2. 否则主角色（`RoleId`）上的工作台 JSON → 用角色的；`RoleIds` 附加角色不参与、不合并。
+3. 否则系统默认槽位枚举。
+
+写入：用户只写自己的 UserProfile；角色工作台仅管理员写。聚合 API（待办数、快捷菜单、授权内 KPI）按当前用户解析后下发，前端不自己选角色。与 Db/进程监控页分离。不做租户层。
+
+#### 8.5.3 第一期 Insight 仪表盘（已拍板）
+
+| 部件 | 数据 | 约束 |
+|------|------|------|
+| 指标卡 | 源实体 `GetList.stat` 或分页 `total`（计数/求和/均值） | `sourceTypePath` 须有查看权；禁止 SQL/脚本 |
+| 迷你看板 | 源实体 `GetList` 卡片（分组字段 + 标题字段，条数上限） | **只读**；不是切到看板视图；不写回、不拖拽 |
+| 筛选联动 | 宿主列表后端筛选变化后部件重查 | 同源 AND；跨实体须声明字段映射，禁止隐式 JOIN。绑筛选构建器，不绑搜索抽屉 |
+
+不进第一期：多图 ECharts、迷你表格。旧 `NamedView.insight.showStat/showChart/chartOption` 只读迁移兼容。配置建议落 ViewProfile **实体级** `DashboardJson`（与 `ViewsJson` 平级），不跟命名视图走。
+
+安全：每个部件单独走源实体鉴权与 `DataPermission`；字段级 ACL 立项前，可见列与打开该实体列表时一致。不新造查询引擎；过重时再补按 `typePath` 鉴权的只读聚合（count/sum/group）。仪表盘与列表共用同一套后端筛选契约（§8.5.4）。
+
+#### 8.5.4 查询演化：只留筛选，全部走后端（已拍板）
+
+| 今日双轨 | 演化 |
+|----------|------|
+| `SearchDrawer` + `Q` / `dtStart`/`dtEnd` / GetPage `Search` 字段 + `QueriesJson` 预定义查询 | **取消**独立搜索产品面；预定义查询**一并去掉**（不改成已存筛选） |
+| `NamedView.filter` / `viewFilter`：能下推则并入查询，不能则忽略服务端、只滤当前页 | **唯一入口**；条件必须编译成后端 Where；无法翻译则拒绝或提示，**禁止**当前页假筛选 |
+
+翻页、导出、统计、Insight 部件、看板视图共用同一结果集。`GetList` 以结构化筛选为权威参数。GetPage `Search` 分区改为可筛字段元数据，值集远程候选仍给筛选控件。筛选不是权限：`DataPermission` 与租户 Where 先于用户筛选。
+
+#### 8.5.5 流程引擎 ≠ 实体自动化
+
+| | 实体自动化（已有） | 流程引擎（要补） |
+|--|-------------------|------------------|
+| 触发 | 增删改 / 定时 / 按钮 / Webhook | 人工提交、节点到达、超时 |
+| 状态 | 跑完即终态 | 实例持久化：进行中 / 驳回 / 撤销 |
+| 人 | notify | 待办：候选人、认领、转办、会签 |
+| 图 | 线性 GraphJson | 网关/分支/回退；设计器可用 FlowGram |
+| 与实体 | OnUpdate 钩子入队 | 绑定 `typePath+id`；节点锁字段（依赖字段级权限） |
+
+企微 `ApprovalInfo` 只是 OAuth 补卡 DTO，不是魔方审批引擎。最小集合建议独立 `IModule`：定义 JSON（禁止任意 SQL）、实例、任务（与 Inbox 打通）、服务端状态机 + Job 超时。未引用模块时皮肤隐藏待办槽与设计器入口（能力探测类似 `GetAiConfig`）。OSC-0010 从「样例页」升级为「设计器对接定义 API」，仍不是把自动化换成画布执行器。
+
+#### 8.5.6 建议立项切分
+
+首页「用户 > 主角色」规则已定，不再作为拍板题。实现建议另开 OSC（可与仪表盘、查询收口合并或拆开，由委员会按 [架构分享-开场.md](./架构分享-开场.md) 拍板第 4～5 条决定）。
 
 ### 8.3 业务侧日常开发
 
@@ -550,7 +643,7 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
 4. 默认零前端；需要时：
    - **Section 覆写**：Search / Toolbar / View / DrawerTabs
    - **整页覆写**：`apps/{biz}/...`
-   - **流程页**：FlowGram 画布
+   - **流程页**：未引入流程模块时无入口；引入后走平台待办页或整页覆写，FlowGram 只出现在设计器，不当 DefaultList 内嵌执行器
 
 ### 8.4 Cube.Vue 成果复用边界
 
@@ -741,10 +834,10 @@ Draft → Accepted → Implementing → Validating → Done
 
 - 消费 EntityComment。后端 OSC-0002 已就绪（`GET/POST/DELETE /Cube/EntityComment`，同表回复）：api-core 增 `createCommentApi`（`cubeApi.comment.*`）+ `RecordDrawer` 评论 Tab 真实实现（顶层 + 一层回复缩进、发表/回复/删除本人）。
 
-### M5 — FlowGram 样例 → **OSC-0010**
+### M5 — 流程设计器 → **OSC-0010**（口径 2026-08-21 修订）
 
-- 单一样例 + 文档；不扩平台级流程引擎。
-- **实体自动化已由 OSC-260815fa86 交付**（GraphJson + C# 执行器）。不得把自动化实现成 FlowGram 运行时；本里程碑仍只做画布样例。
+- **实体自动化已由 OSC-260815fa86 交付**（GraphJson + C# 执行器）。不得把自动化实现成 FlowGram 运行时。
+- 本里程碑：FlowGram **设计器**对接流程定义 API（无模块则隐藏入口）。运行时（实例/待办/驳回）属独立流程模块，见 §8.5.5，不藏在皮肤样例页里。
 
 ### M6 — 硬化 → **OSC-0011**（收口）
 
@@ -774,13 +867,16 @@ Draft → Accepted → Implementing → Validating → Done
 | 2 | ~~`UserProfile.workspace.defaultView / pageSize` 已建模未消费~~（OSC-0012：无 ViewProfile 时回落默认视图；页面级 PageSize 已按 typePath 接入，旧全局值仅作种子） | P0 | ✅ 已解决 |
 | 3 | ~~筛选记忆未持久化（filtersJson 预留未用；分组为占位）~~（OSC-0012：仅保存当前实体、当前命名视图的搜索条件；不做通用数据范围引擎。OSC-0015：筛选构建器条件组保存到 `NamedView.filter` 纯前端过滤；多级分组 ≤3 字段保存到 `NamedView.group`，table 用 VTable 原生 groupBy、树视图不允许分组） | P1 | ✅ 已解决 |
 | 4 | 列 frozen 仅 left/false，无 right（2026-08-18 复审仍未做） | P1 | 补充右冻结 |
-| 5 | 角色/租户级配置层未实现（仅系统默认+用户两级，§5.1；2026-08-18 复审仍未做） | P1 | 分层扩展 |
+| 5 | 首页工作台角色层未实现（§5.1 / §8.5.2 已定为用户>主角色；实体 ViewProfile 仍无角色层） | P1 | 角色工作台存储 + 聚合 API；与实体视图角色层分开 |
 | 6 | 组件测试缺失（仅纯逻辑单测；2026-08-18 复审：495 单测全过但组件测试仍为 0） | P1 | `@vue/test-utils` + happy-dom 覆盖关键组件 |
 | 7 | ~~table/tree 分组入口 `Message.info` 占位~~（OSC-0015 已实现 GroupPopover 多级分组；排序走表头，工具栏排序按钮已移除）、`NamedViewsToolbar.vue` 无引用（2026-08-18 复审仍未清理） | P2 | 清理或实现 |
 | 8 | `ListTable` 树列标记排除条件写 `__check`（实际复选框列为 `__checked`），showCheckbox+hierarchy 同时开启时 tree:true 可能标错列（2026-08-18 复审仍未修） | P2 | 修正排除条件 |
 | 9 | i18n 未实现（矩阵目标 ✅ 但实际无文案外置；2026-08-18 复审仍缺，未做书面豁免） | P1 | 文案外置 |
-| 10 | ~~MFA UI~~（已实现：登录二步屏 + 安全设置开启/关闭，`/Mfa/*`）、~~E2E 冒烟~~（Playwright 3 spec，OSC-2608139feb）；FlowGram 未做 | P1/P2 | FlowGram 归 OSC-0010 |
-| 11 | ~~通用实体表单/列表/搜索元数据治理~~（OSC-0009 已落地：GetPage 分区统一回退、静态字典优先、Int64 精度、LIST LOV 权威反查 `BatchLabel`、详情/搜索/六视图共享 label、字段级错误映射） | P0 | ✅ 已解决；Cube.Vue core 对齐另行立项 |
+| 10 | ~~MFA UI~~（已实现）、~~E2E 冒烟~~（Playwright 3 spec）；FlowGram 设计器未做；流程运行时未建 | P1/P2 | 设计器 OSC-0010；运行时 §8.5.5 独立模块 |
+| 11 | ~~通用实体表单/列表/搜索元数据治理~~（OSC-0009 已落地） | P0 | ✅ 已解决；查询收口见 §8.5.4 |
+| 12 | ~~批量启停工具栏占位、AI 浮窗未接线、条件填色缺失~~（OSC-26081903c0） | P2 | ✅ 已解决；智能配色/日历甘特填色/会话历史另号 |
+| 13 | Insight 仍为 e483 单图上限，非页面级仪表盘 | P1 | §8.5.3 第一期 |
+| 14 | 查询双轨（SearchDrawer + 筛选；无法下推则当前页假筛选） | P1 | §8.5.4 退役搜索、筛选全后端 |
 
 **文档一致性修正**：§7 与 §6.3 的「左侧抽屉」表述与本方案 §8.1 契约（`placement="right"`）及实际实现（右侧抽屉）不一致，本审查统一为「右侧抽屉」，并保留「飞书多维表为左抽屉」的范式差异说明。
 
@@ -807,10 +903,11 @@ Draft → Accepted → Implementing → Validating → Done
 | [NewLife.Cube.ArcoVue/web/README.md](../../NewLife.Cube.ArcoVue/web/README.md) | 皮肤开发入口 |
 | [`NewLife.Cube/Entity/Cube.xml`](../../NewLife.Cube/Entity/Cube.xml) | 三实体 Table 定义（生成源） |
 | 拟建 `NewLife.Cube.ArcoVue/web/docs/` | Pref 消费、多视图、覆写、测试约定 |
-| [内置前端皮肤.md](./内置前端皮肤.md) | SPA-7 能力矩阵 |
-| [前端对接指南.md](./前端对接指南.md) | Profile / Comment 对接 |
-| [核心接口架构.md](./核心接口架构.md) | 高级接口：UserProfile、ViewProfile、EntityComment；**建议**增加 MFA → 认证接口设计 交叉引用 |
-| [认证接口设计.md](./认证接口设计.md) | `/Mfa/*` 权威定义（AUTH-10） |
+| [架构分享-预读.md](./架构分享-预读.md) / [架构分享-开场.md](./架构分享-开场.md) | 技委会口径；与 §8.5 同步 |
+| [内置前端皮肤.md](../Doc/Api/内置前端皮肤.md) | SPA-7 能力矩阵 |
+| [前端对接指南.md](../Doc/Api/前端对接指南.md) | Profile / Comment 对接 |
+| [核心接口架构.md](../Doc/Api/核心接口架构.md) | 高级接口：UserProfile、ViewProfile、EntityComment |
+| [认证接口设计.md](../Doc/Api/认证接口设计.md) | `/Mfa/*` 权威定义（AUTH-10） |
 | [功能清单.md](../功能清单.md) | 新增 Profile/Comment 编码；更新 SPA-7/测试列 |
 | 根 README 皮肤表/端口 | 若脚本或默认皮肤变化 |
 
@@ -831,7 +928,7 @@ Draft → Accepted → Implementing → Validating → Done
 | OSC-0007 ✅ | 视图工具栏与卡片布局：图表入口按钮暂移除（图表区留待后续 OSC）、「高级」菜单（导入/导出/批量删除 + 表格全选门禁）、工具栏精简（去添加记录/自定义按钮）、卡片三布局/正文列数与排版、字体 Token | 不含图表区完善、抽屉评论；列表/树拖拽排序未纳入本号 | OSC-0003/0005/0006 |
 | OSC-0008 ✅ | 表单提交归一化（枚举/Lov 字符串→number，对齐 MVC 版 System.Text.Json 绑定）+ 抽屉历史增强（分页/筛选/展示）+ 评论 Tab 接线 | 不含字段 diff、恢复版本、评论附件 | OSC-0002 ✅、OSC-0003 |
 | OSC-0009 ✅ | 实体元数据表单、列表与搜索治理：GetPage 分区统一回退与回填同源；静态字典优先控件；Int64 精度保护；LIST LOV 按 `valueField/labelField` 权威反查（后端 `BatchLabel` 增强）；详情/搜索/六视图共享 label resolver；字段级错误映射 | 仅 ArcoVue + `LovController.BatchLabel`；不含 Cube.Vue 前端 | OSC-0003、OSC-0008 |
-| OSC-0010 | FlowGram 单一样例 | 不扩流程平台 | — |
+| OSC-0010 | FlowGram **设计器**对接流程定义 API | 非运行时；无流程模块则隐藏入口。运行时见 §8.5.5 | — |
 | OSC-0011 | 收口：矩阵/功能清单/冒烟/harness + 清理 §10.4 占位/死代码 | 无新功能 | 建议前述 P0 已完成 |
 | OSC-0012 ✅ | 筛选记忆与单一洞察区：无 ViewProfile 回落默认视图、页面级 PageSize、查询洞察面板（GetChartData） | 仅 ArcoVue | OSC-0002、OSC-0005 |
 | OSC-0013 ✅ | 受限表单布局（FormJson 系统全局唯一、仅管理员可写） | 仅 ArcoVue | OSC-0002、OSC-0012 |
@@ -846,10 +943,10 @@ Draft → Accepted → Implementing → Validating → Done
 | OSC-260815fa86 ✅ | 实体增删改自动化（GraphJson + C# AutomationExecutor；非 FlowGram 运行时） | Cube + ArcoVue | OSC-0003 |
 | OSC-2608178bdb ✅ | 列表自定义链接分流放置（方案 E：Url/dataAction 按单元格 vs 操作列分流） | 仅 ArcoVue | OSC-0007 |
 
-截至 2026-08-18 已归档 21 号（0001~0019 中 0010/0011 从未创建、0018 未完成，另有 OSC-2608 号五单）。剩余待办：**OSC-0010** FlowGram 样例、**OSC-0011** 收口（矩阵/功能清单/冒烟/harness + 清理 §10.4 占位/死代码）、**OSC-0018** 实体界面自定义设计方案（Draft 进行中）、i18n、组件测试、角色/租户配置层。
+截至 2026-08-18 已归档 21 号（0001~0019 中 0010/0011 从未创建、0018 未完成，另有 OSC-2608 号五单）。剩余待办：**OSC-0010** 流程设计器（§8.5.5）、**OSC-0011** 收口、**OSC-0018** 实体界面自定义设计方案（Draft）、i18n、组件测试、**§8.5** 首页工作台用户>主角色 / Insight 第一期 / 查询收口 / 流程运行时模块。
 
 ---
 
 ## 14. 小结
 
-本方案将 NewLife.Cube.ArcoVue 定位为 **WebAPI 版企业中后台默认皮肤**；协作增量在 **`NewLife.Cube.ArcoVue/openspec/`**（五壳 `openspec-*` 编排 NewLife.Skills；状态 `Draft → Accepted → Implementing → Validating → Done`，分支 `Rejected`；仅 Accepted/Implementing 可执行；触及前后端代码须跑单测，验收须本阶段新增单测全过且构建无错误；验收固定 audit→review→doc-sync）；三实体 OSC-0002 写入 Cube.xml 生成；新变更编号 `OSC-YYMMDDxxxx`（历史 `OSC-00xx` 豁免）。
+本方案将 NewLife.Cube.ArcoVue 定位为 **WebAPI 版企业中后台默认皮肤**。默认容器之上的工作台、页面仪表盘与流程引擎见 **§8.5**。协作增量在 **`NewLife.Cube.ArcoVue/openspec/`**（五壳 `openspec-*` 编排 NewLife.Skills；状态 `Draft → Accepted → Implementing → Validating → Done`，分支 `Rejected`；仅 Accepted/Implementing 可执行；触及前后端代码须跑单测，验收须本阶段新增单测全过且构建无错误；验收固定 audit→review→doc-sync）；三实体 OSC-0002 写入 Cube.xml 生成；新变更编号 `OSC-YYMMDDxxxx`（历史 `OSC-00xx` 豁免）。

@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../../NewLife.Skills"
+		},
+		{
+			"path": "../../NewLife.XCode"
 		}
 	],
 	"settings": {}

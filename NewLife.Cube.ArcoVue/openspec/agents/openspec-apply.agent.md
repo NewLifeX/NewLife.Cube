@@ -45,9 +45,9 @@ dev-loop 将 `tasks.md` 全部任务勾选完成后，**必须**按以下顺序�
    - 纯样式等可并入相似任务的微调，不得为凑数新建任务项；
    - 补录后在 `status.md` note 注明「会话小任务已补录」；`openspec-verify` 的核对动作据此确认，无需重复新建。
 2. **代码审查**：委托 `NewLife.Skills/.github/agents/code-review.agent.md`（读取该文件并按之执行；或提示用户切换到「代码审查」agent），对本次变更触及的全部文件按 🔴 必须修复 / 🟡 建议修复 / 🟢 信息提示输出审查报告。
-3. **实现审计**：委托 `NewLife.Skills/.github/agents/implementation-audit.agent.md`，对照 proposal / design / tasks（涉及功能清单的同步对照 `Doc/功能清单.md`），输出缺口清单与修复优先级；缺口按该 agent 规则写入功能清单说明列。
+3. **实现审计**：委托 `NewLife.Skills/.github/agents/implementation-audit.agent.md`，对照 proposal / design / tasks（涉及功能清单的同步对照 `Doc/功能清单.md`），输出缺口清单与修复优先级；缺口按该 agent 规则补充写入或修改 'tasks.md' 任务项。
 4. **dev-loop 补齐**：合并步骤 2 的 🔴 项与步骤 3 的缺口清单，委托 `NewLife.Skills/.github/agents/dev-loop.agent.md` 逐项修复（三步验证铁律：编译 → 测试 → 需求对照自检）；修复完成后勾选 `tasks.md` 对应（含补录）任务项。
-5. **循环直至对齐**：补齐后重跑步骤 2、3；仅当 **无 🔴 项、无实现缺口**（🟡/🟢 可接受；无法闭环的缺口须在 `status.md` 记录为后续 OSC 或待确认项）时收尾通过，循环次数不设上限。
+5. **循环直至对齐**：补齐后重跑步骤 2、3；仅当 **无 🔴 项、无实现缺口**（🟡/🟢 可接受；无法闭环的缺口须在 `status.md` 记录为后续 OSC 或待确认项）时收尾通过，循环次数最多 4 次。
 6. 在 `status.md` 追加收尾 note、`verify.md` 补充 AC 与测试/构建记录后，方可提示用户 `验收 OSC-…`。
 
 ## 禁止
