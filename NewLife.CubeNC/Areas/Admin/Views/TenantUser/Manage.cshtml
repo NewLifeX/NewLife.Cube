@@ -1,0 +1,163 @@
+@model IEnumerable<TenantUser>
+@using NewLife;
+@using NewLife.Cube.ViewModels;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Membership;
+@{
+    var tenant = ViewBag.Tenant as Tenant;
+    var tid = (Int32)(ViewBag.TenantId ?? 0);
+
+    // 租户可用角色（租户未配置角色时展示全部角色）
+    var tenantRoleIds = new Int32[0];
+    if (tenant != null && !tenant.RoleIds.IsNullOrEmpty()) tenantRoleIds = tenant.RoleIds.SplitAsInt(",");
+    var roles = Role.FindAllWithCache()
+        .Where(e => tenantRoleIds.Length == 0 || tenantRoleIds.Contains(e.ID))
+        .OrderByDescending(e => e.Sort)
+        .ToList();
+
+    ViewBag.Title = $"租户「{tenant?.Name}」成员管理";
+}
+<div class="page-header">
+    <h3><i class="fa fa-users"></i> 租户「@(tenant?.Name)」成员管理
+        <small>@(tenant?.Code)</small>
+        <span class="pull-right">
+            <a class="btn btn-sm btn-default" href="/Admin/Tenant"><i class="fa fa-list"></i> 返回租户</a>
+            <a class="btn btn-sm btn-default" href="/Admin/TenantUser?tenantId=@tid"><i class="fa fa-table"></i> 标准列表</a>
+        </span>
+    </h3>
+</div>
+
+@if (tid > 0)
+{
+    <div class="well well-sm">
+        <form id="addMemberForm" class="form-inline" onsubmit="return false;">
+            <input type="hidden" name="tenantId" value="@tid" />
+            <div class="form-group" style="min-width:320px;vertical-align:top;">
+                @await Html.PartialAsync("_SelectUser", new SelectUserModel { Id = "userId", UserId = 0 })
+            </div>
+            <div class="form-group">
+                <select id="roleIds" name="roleIds" class="form-control" multiple="multiple" style="min-width:180px;height:38px;" title="可多选角色">
+                    @foreach (var role in roles)
+                    {
+                        <option value="@role.ID">@role.Name</option>
+                    }
+                </select>
+            </div>
+            <button type="button" class="btn btn-success" onclick="addMember()"><i class="fa fa-plus"></i> 添加成员</button>
+            <span class="help-block">搜索用户后添加到当前租户，可同时分配角色</span>
+        </form>
+    </div>
+}
+
+<table class="table table-bordered table-hover table-striped table-condensed">
+    <thead>
+        <tr>
+            <th>用户</th>
+            <th>角色</th>
+            <th>状态</th>
+            <th>加入时间</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var tu in Model)
+        {
+            var user = XCode.Membership.User.FindByID(tu.UserId);
+            <tr>
+                <td>@(user?.ToString())</td>
+                <td>@tu.RoleNames</td>
+                <td>
+                    @if (tu.Enable)
+                    {
+                        <span class="label label-success">正常</span>
+                    }
+                    else
+                    {
+                        <span class="label label-default">禁用</span>
+                    }
+                </td>
+                <td>@tu.CreateTime.ToFullString()</td>
+                <td>
+                    @if (tenant == null || tenant.ManagerId != tu.UserId)
+                    {
+                        <button type="button" class="btn btn-xs btn-warning" onclick="toggleMember(@tu.Id, @(!tu.Enable))">@(tu.Enable ? "禁用" : "启用")</button>
+                        <button type="button" class="btn btn-xs btn-danger" onclick="removeMember(@tu.Id)">移除</button>
+                    }
+                    else
+                    {
+                        <span class="text-muted">租户管理员</span>
+                    }
+                </td>
+            </tr>
+        }
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="5" class="text-center text-muted">暂无成员，请在下方搜索用户添加</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script type="text/javascript">
+    function addMember() {
+        var userId = $('#userId').val();
+        if (!userId) { alert('请先搜索并选择用户'); return; }
+        $.ajax({
+            url: '/Admin/TenantUser/AddMember',
+            type: 'POST',
+            data: $('#addMemberForm').serialize(),
+            dataType: 'json',
+            success: function (json) {
+                if (json && json.code === 0) {
+                    location.reload();
+                } else {
+                    alert((json && json.message) || '添加失败');
+                }
+            },
+            error: function (xhr) {
+                alert('请求失败：' + (xhr.statusText || ''));
+            }
+        });
+    }
+
+    function toggleMember(id, enable) {
+        $.ajax({
+            url: '/Admin/TenantUser/ToggleMember',
+            type: 'POST',
+            data: { id: id, enable: enable },
+            dataType: 'json',
+            success: function (json) {
+                if (json && json.code === 0) {
+                    location.reload();
+                } else {
+                    alert((json && json.message) || '操作失败');
+                }
+            },
+            error: function (xhr) {
+                alert('请求失败：' + (xhr.statusText || ''));
+            }
+        });
+    }
+
+    function removeMember(id) {
+        if (!confirm('确定移除该成员？')) return;
+        $.ajax({
+            url: '/Admin/TenantUser/RemoveMember',
+            type: 'POST',
+            data: { id: id },
+            dataType: 'json',
+            success: function (json) {
+                if (json && json.code === 0) {
+                    location.reload();
+                } else {
+                    alert((json && json.message) || '操作失败');
+                }
+            },
+            error: function (xhr) {
+                alert('请求失败：' + (xhr.statusText || ''));
+            }
+        });
+    }
+</script>

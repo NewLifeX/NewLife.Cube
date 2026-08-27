@@ -20,9 +20,10 @@ public class TenantController : EntityController<Tenant, TenantModel>
             .RemoveField("CreateUserId", "CreateTime", "CreateIP", "UpdateUserId", "UpdateTime", "UpdateIP");
 
         {
+            // 成员管理友好界面入口；标准列表可通过管理页内链接访问
             var df = ListFields.AddListField("Users", null, "ManagerName");
-            df.DisplayName = "用户";
-            df.Url = "/Admin/TenantUser?tenantId={Id}";
+            df.DisplayName = "成员";
+            df.Url = "/Admin/TenantUser/Manage?tenantId={Id}";
         }
 
         {
