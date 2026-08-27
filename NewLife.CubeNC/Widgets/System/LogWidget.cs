@@ -5,7 +5,7 @@ using XLog = XCode.Membership.Log;
 namespace NewLife.Cube.Widgets.System;
 
 /// <summary>系统日志统计。24h日志量、最近7天趋势、最近异常记录</summary>
-[Widget("Log", "系统日志", Icon = "fa-list-alt", Cols = 6, Sort = 30, Category = "系统", AdminOnly = true)]
+[Widget("Log", "系统日志", Icon = "fa-list-alt", Cols = 7, Sort = 90, Category = "系统", AdminOnly = true)]
 public class LogWidget : IWidget
 {
     /// <summary>获取组件数据</summary>
@@ -14,22 +14,24 @@ public class LogWidget : IWidget
     {
         var now = DateTime.Now;
         var start = now.AddHours(-24);
+        // Log.Id 是雪花Id，带时间信息，用 Id 时间范围过滤
+        var snow = XLog.Meta.Factory.Snow;
 
         // 24h 统计
-        var total = XLog.FindCount(XLog._.CreateTime >= start & XLog._.CreateTime <= now);
-        var error = XLog.FindCount(XLog._.CreateTime >= start & XLog._.CreateTime <= now & XLog._.Success == false);
+        var total = XLog.FindCount(XLog._.ID.Between(start, now, snow));
+        var error = XLog.FindCount(XLog._.ID.Between(start, now, snow) & XLog._.Success == false);
 
         // 最近7天日志趋势
         var trend = new List<Object>();
         for (var i = 6; i >= 0; i--)
         {
             var day = now.Date.AddDays(-i);
-            var count = XLog.FindCount(XLog._.CreateTime >= day & XLog._.CreateTime < day.AddDays(1));
+            var count = XLog.FindCount(XLog._.ID.Between(day, day.AddDays(1), snow));
             trend.Add(new { day = day.ToString("MM-dd"), count });
         }
 
         // 最近异常
-        var recent = XLog.FindAll(XLog._.Success == false & XLog._.CreateTime >= start, "CreateTime desc", null, 0, 10);
+        var recent = XLog.FindAll(XLog._.Success == false & XLog._.ID.Between(start, now, snow), "CreateTime desc", null, 0, 10);
 
         return new
         {

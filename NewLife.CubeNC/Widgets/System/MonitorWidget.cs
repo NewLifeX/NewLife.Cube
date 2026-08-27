@@ -4,7 +4,7 @@ using NewLife.Cube.Charts;
 namespace NewLife.Cube.Widgets.System;
 
 /// <summary>性能监控。CPU/内存实时曲线，由视图定时轮询 <c>/Admin/Index/MonitorData</c> 刷新</summary>
-[Widget("Monitor", "性能监控", Icon = "fa-line-chart", Cols = 12, Sort = 20, Category = "系统", AdminOnly = true)]
+[Widget("Monitor", "性能监控", Icon = "fa-line-chart", Cols = 8, Sort = 70, Category = "系统", AdminOnly = true)]
 public class MonitorWidget : IWidget
 {
     /// <summary>获取组件数据。返回 ECharts 图表对象，由工作台收集到 ViewBag.Charts 触发布局加载 echarts</summary>

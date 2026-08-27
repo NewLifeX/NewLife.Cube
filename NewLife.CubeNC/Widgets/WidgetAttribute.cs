@@ -13,13 +13,13 @@ public class WidgetAttribute : Attribute
     /// <summary>图标。FontAwesome 图标名，如 fa-tachometer</summary>
     public String Icon { get; set; }
 
-    /// <summary>栅格宽度。1-12，默认6</summary>
+    /// <summary>栅格宽度。1-12，默认6。小于等于3时按 KPI 小卡渲染</summary>
     public Int32 Cols { get; set; } = 6;
 
-    /// <summary>排序。越小越靠前，默认0</summary>
+    /// <summary>排序。越小越靠前，默认0。运行时由用户拖拽配置覆盖</summary>
     public Int32 Sort { get; set; }
 
-    /// <summary>分类。系统/业务等</summary>
+    /// <summary>分类。系统/个人/通用等，KPI 行按分类与角色分流</summary>
     public String Category { get; set; }
 
     /// <summary>可见角色。逗号分隔的角色名，空表示所有登录用户可见</summary>
@@ -28,8 +28,11 @@ public class WidgetAttribute : Attribute
     /// <summary>仅系统角色可见。true 时普通用户看不到该组件，常用于系统监控类组件</summary>
     public Boolean AdminOnly { get; set; }
 
-    /// <summary>组件局部视图路径。默认 ~/Areas/Admin/Views/Widgets/{Name}.cshtml</summary>
-    public String ViewName { get; set; }
+    /// <summary>KPI 卡配色。blue/green/cyan/orange/red/purple/grey，默认主色</summary>
+    public String Color { get; set; }
+
+    /// <summary>组件类型。WidgetManager 扫描时填充</summary>
+    public Type Type { get; set; }
 
     /// <summary>实例化组件特性</summary>
     /// <param name="name">名称</param>

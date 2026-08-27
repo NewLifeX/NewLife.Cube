@@ -1,0 +1,20 @@
+@model dynamic
+@using NewLife;
+@{
+    var d = Model;
+}
+<ul class="widget-news">
+    @foreach (dynamic item in d.Items)
+    {
+        <li title="@item.Action @item.Remark">
+            <span class="news-time">@(((DateTime)item.CreateTime).ToString("MM-dd HH:mm"))</span>
+            <span class="news-action">@item.Action</span>
+            <span class="news-remark">@item.Remark</span>
+        </li>
+    }
+    @if (!((IEnumerable<Object>)d.Items).Any())
+    {
+        <li class="list-empty">最近7天暂无动态</li>
+    }
+</ul>
+<div class="widget-more"><a href="/Admin/Log" target="_blank">查看全部动态 »</a></div>

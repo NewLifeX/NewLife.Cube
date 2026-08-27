@@ -457,16 +457,43 @@
                 </div>
                 <div class="wb-banner-right">
                     <button class="btn"><i class="fa fa-user-circle"></i> 个人中心</button>
-                    <button class="btn btn-solid"><i class="fa fa-plus"></i> 发起申请</button>
                 </div>
             </div>
 
-            <!-- 我的概览（4 个步骤式指标） -->
-            <div class="wb-steps" style="margin-bottom:16px;">
-                <div class="wb-step"><div class="n">128</div><div class="l">我的登录次数</div></div>
-                <div class="wb-step"><div class="n">3</div><div class="l">我的角色</div></div>
-                <div class="wb-step"><div class="n">886</div><div class="l">注册天数</div></div>
-                <div class="wb-step"><div class="n">2</div><div class="l">待处理事项</div></div>
+            <!-- 我的概览（KPI 卡样式，与管理员 KPI 卡一致） -->
+            <div class="wb-kpi-row">
+                <div class="wb-kpi">
+                    <div class="wb-kpi-icon k-green"><i class="fa fa-sign-in"></i></div>
+                    <div>
+                        <div class="wb-kpi-val">128</div>
+                        <div class="wb-kpi-label">我的登录</div>
+                        <div class="wb-kpi-foot">累计登录次数</div>
+                    </div>
+                </div>
+                <div class="wb-kpi">
+                    <div class="wb-kpi-icon k-purple"><i class="fa fa-key"></i></div>
+                    <div>
+                        <div class="wb-kpi-val">3</div>
+                        <div class="wb-kpi-label">我的角色</div>
+                        <div class="wb-kpi-foot">普通用户 / 访客 / 审批</div>
+                    </div>
+                </div>
+                <div class="wb-kpi">
+                    <div class="wb-kpi-icon k-blue"><i class="fa fa-calendar"></i></div>
+                    <div>
+                        <div class="wb-kpi-val">886</div>
+                        <div class="wb-kpi-label">注册天数</div>
+                        <div class="wb-kpi-foot">加入魔方以来</div>
+                    </div>
+                </div>
+                <div class="wb-kpi">
+                    <div class="wb-kpi-icon k-cyan"><i class="fa fa-user-circle-o"></i></div>
+                    <div>
+                        <div class="wb-kpi-val">在线</div>
+                        <div class="wb-kpi-label">在线状态</div>
+                        <div class="wb-kpi-foot">当前账号状态</div>
+                    </div>
+                </div>
             </div>
 
             <!-- 快捷链接（宽）+ 个人信息（窄） -->

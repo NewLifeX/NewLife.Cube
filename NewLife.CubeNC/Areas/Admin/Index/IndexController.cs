@@ -29,6 +29,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     private readonly IManageProvider _provider;
     private readonly IHostApplicationLifetime _applicationLifetime;
     private readonly IAIService _ai;
+    private readonly WidgetManager _widgetManager;
 
     static IndexController() => MachineInfo.RegisterAsync();
 
@@ -38,11 +39,13 @@ public class IndexController : ControllerBaseX, IPageDataContext
     /// <param name="manageProvider"></param>
     /// <param name="appLifetime"></param>
     /// <param name="ai"></param>
-    public IndexController(IManageProvider manageProvider, IHostApplicationLifetime appLifetime, IAIService ai) : this()
+    /// <param name="widgetManager">工作台组件管理器</param>
+    public IndexController(IManageProvider manageProvider, IHostApplicationLifetime appLifetime, IAIService ai, WidgetManager widgetManager) : this()
     {
         _provider = manageProvider;
         _applicationLifetime = appLifetime;
         _ai = ai;
+        _widgetManager = widgetManager;
     }
 
     /// <summary>首页</summary>
@@ -115,15 +118,16 @@ public class IndexController : ControllerBaseX, IPageDataContext
         // 系统角色（IsSystem）可见系统监控组件，普通用户仅看个人工作台
         var isAdmin = user?.Roles.Any(e => e.IsSystem) == true;
 
-        var widgets = WidgetManager.Instance.GetWidgets(roleNames, isAdmin);
+        // 按用户排序与全局启停过滤，返回组件元数据
+        var widgets = _widgetManager.GetWidgets(roleNames, isAdmin, user?.ID ?? 0);
 
         // 预取组件数据，并收集图表组件以触发布局加载 echarts.min.js
         var charts = new List<ECharts>();
-        var list = new List<WidgetData>();
+        var list = new List<(WidgetAttribute Info, Object Data)>();
         foreach (var info in widgets)
         {
-            var data = WidgetManager.Instance.GetData(info);
-            list.Add(new WidgetData { Info = info, Data = data });
+            var data = _widgetManager.GetData(info);
+            list.Add((info, data));
 
             if (data is ECharts chart)
                 charts.Add(chart);
@@ -133,8 +137,32 @@ public class IndexController : ControllerBaseX, IPageDataContext
 
         ViewBag.Widgets = list;
         ViewBag.Charts = charts;
+        ViewBag.IsAdmin = isAdmin;
 
         return View();
+    }
+
+    /// <summary>保存工作台组件排序（按用户存 Parameter 表，分类 Widget.Order）</summary>
+    /// <param name="order">组件名数组，按显示顺序</param>
+    /// <returns></returns>
+    [DisplayName("保存排序")]
+    [EntityAuthorize]
+    [HttpPost]
+    public ActionResult SaveOrder(String[] order)
+    {
+        var user = _provider.Current as IUser;
+        if (user == null) return Json(401, "未登录");
+
+        if (order == null || order.Length == 0) return Json(0, null, "无排序数据");
+
+        // 按显示顺序生成排序值
+        var dic = new Dictionary<String, Int32>();
+        for (var i = 0; i < order.Length; i++)
+            dic[order[i]] = i;
+
+        _widgetManager.SetOrders(user.ID, dic);
+
+        return Json(0, null, "排序已保存");
     }
 
     /// <summary>监控数据。工作台性能曲线轮询接口，返回CPU/内存快照</summary>

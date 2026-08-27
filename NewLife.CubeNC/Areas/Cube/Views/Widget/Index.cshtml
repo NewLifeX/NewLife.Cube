@@ -1,0 +1,58 @@
+@using NewLife.Cube.Widgets
+@using NewLife;
+@{
+    ViewBag.Title = "工作台部件";
+
+    var list = ViewBag.Widgets as IList<WidgetAttribute> ?? new List<WidgetAttribute>();
+    var enabled = ViewBag.Enabled as IDictionary<String, Boolean> ?? new Dictionary<String, Boolean>();
+}
+<div class="page-header">
+    <h1>
+        工作台部件
+        <small>启用后显示在工作台，禁用后立即隐藏（全局配置，存 Parameter 表）</small>
+    </h1>
+</div>
+<table class="table table-bordered table-hover table-striped table-condensed table-data-list">
+    <thead>
+        <tr>
+            <th>名称</th>
+            <th>标题</th>
+            <th>图标</th>
+            <th style="width:60px;">宽度</th>
+            <th>分类</th>
+            <th>可见性</th>
+            <th style="width:80px;">状态</th>
+            <th style="width:90px;">操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in list)
+        {
+            var enable = enabled.TryGetValue(item.Name, out var en) ? en : true;
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.Title</td>
+                <td><i class="fa @item.Icon"></i> <span class="text-muted">@item.Icon</span></td>
+                <td class="text-center">@item.Cols</td>
+                <td>@item.Category</td>
+                <td>@(item.AdminOnly ? "仅管理员" : (item.Permission.IsNullOrEmpty() ? "所有用户" : item.Permission))</td>
+                <td class="text-center">@(enable ? "✅ 启用" : "⛔ 禁用")</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm @(enable ? "btn-danger" : "btn-success")" onclick="toggle('@item.Name', @(!enable ? "true" : "false"))">
+                        @(enable ? "禁用" : "启用")
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section scripts {
+    <script>
+        function toggle(name, enable) {
+            $.post('@Url.Action("Enable")', { name: name, enable: enable }, function () {
+                location.reload();
+            });
+        }
+    </script>
+}

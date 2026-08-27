@@ -3,7 +3,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Widgets.System;
 
 /// <summary>个人信息。当前登录用户的账号信息，所有用户可见，普通用户工作台的默认首页组件</summary>
-[Widget("Profile", "个人信息", Icon = "fa-user-circle", Cols = 6, Sort = 5, Category = "个人")]
+[Widget("Profile", "个人信息", Icon = "fa-user-circle", Cols = 6, Sort = 110, Category = "个人")]
 public class ProfileWidget : IWidget
 {
     /// <summary>获取组件数据</summary>

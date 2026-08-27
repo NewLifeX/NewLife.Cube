@@ -1,7 +1,7 @@
 namespace NewLife.Cube.Widgets.System;
 
 /// <summary>快捷入口。常用功能链接，管理员专属链接由视图按角色过滤</summary>
-[Widget("QuickLink", "快捷入口", Icon = "fa-th-large", Cols = 6, Sort = 60, Category = "系统")]
+[Widget("QuickLink", "快捷入口", Icon = "fa-th-large", Cols = 4, Sort = 80, Category = "通用")]
 public class QuickLinkWidget : IWidget
 {
     /// <summary>获取组件数据</summary>

@@ -5,98 +5,127 @@
 @{
     ViewBag.Title = "工作台";
 
-    var widgets = ViewBag.Widgets as IList<WidgetData> ?? new List<WidgetData>();
+    var widgets = ViewBag.Widgets as IList<(WidgetAttribute Info, Object Data)> ?? new List<(WidgetAttribute, Object)>();
+    var isAdmin = ViewBag.IsAdmin as Boolean? ?? false;
     var user = ManageProvider.User;
-    var isAdmin = user?.Roles.Any(e => e.IsSystem) == true;
 
     var set = NewLife.Cube.CubeSetting.Current;
     var res = set.ResourceUrl;
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
+
+    // 问候语
+    var hour = DateTime.Now.Hour;
+    var greet = hour < 6 ? "夜深了" : hour < 12 ? "早上好" : hour < 14 ? "中午好" : hour < 18 ? "下午好" : "晚上好";
 }
 <div class="cube-workbench">
-    <div class="workbench-header">
-        <div class="workbench-title">
-            <i class="fa fa-dashboard"></i>
-            <span>工作台</span>
-            <small>欢迎回来，@user?.Name</small>
+
+    <!-- 欢迎横幅 -->
+    <div class="wb-banner">
+        <div class="wb-banner-left">
+            <div class="wb-banner-avatar"><i class="fa fa-user"></i></div>
+            <div>
+                <div class="wb-banner-greet">@greet，@(user?.DisplayName ?? user?.Name)</div>
+                <div class="wb-banner-sub">欢迎回到魔方工作台 · @DateTime.Now.ToString("yyyy年M月d日 dddd")</div>
+            </div>
         </div>
-        <div class="workbench-actions">
-            <button type="button" id="btn-widget-refresh" class="btn btn-sm btn-white" title="刷新数据"><i class="fa fa-refresh"></i> 刷新</button>
-            <button type="button" id="btn-widget-reset" class="btn btn-sm btn-white" title="恢复默认排序"><i class="fa fa-undo"></i> 恢复默认</button>
+        <div class="wb-banner-right">
+            @if (isAdmin)
+            {
+                <button type="button" class="btn" id="btn-widget-refresh" title="刷新数据"><i class="fa fa-refresh"></i> 刷新</button>
+                <button type="button" class="btn btn-solid" onclick="window.CubeAI && CubeAI.diagnose()" title="AI 系统诊断"><i class="fa fa-heartbeat"></i> AI 诊断</button>
+            }
+            <a class="btn" href="/Admin/User/Info"><i class="fa fa-user-circle"></i> 个人中心</a>
         </div>
     </div>
 
+    <!-- 部件栅格（可拖拽，排序按用户保存到服务端） -->
     <div class="widget-grid" id="widget-grid">
         @foreach (var item in widgets)
         {
             var info = item.Info;
-            var viewName = !info.ViewName.IsNullOrEmpty() ? info.ViewName : $"~/Areas/Admin/Views/Widgets/{info.Name}.cshtml";
-            <div class="widget-col" style="width:@((info.Cols * 100 / 12.0).ToString("0.#"))%;" data-name="@info.Name">
-                <div class="widget-card">
-                    <div class="widget-header">
-                        <i class="fa @info.Icon"></i>
-                        <span class="widget-title">@info.Title</span>
+            // 栅格宽度预计算百分比，微减余量避免 6 个 KPI 卡因舍入超 100% 换行
+            var width = (info.Cols * 100 / 12.0 - 0.01).ToString("0.##") + "%";
+            // 个人 KPI 卡（Category=个人 且小卡）仅普通用户显示；管理员只看系统 KPI 卡
+            if (isAdmin && info.Cols <= 3 && info.Category == "个人") continue;
+
+            if (info.Cols <= 3)
+            {
+                // KPI 小卡
+                dynamic d = item.Data;
+                <div class="widget-col widget-col-kpi" style="width:@width;" data-name="@info.Name">
+                    <div class="widget-kpi">
                         <span class="widget-drag" title="拖拽排序"><i class="fa fa-arrows"></i></span>
-                    </div>
-                    <div class="widget-body">
-                        @try
+                        <div class="widget-kpi-icon k-@(info.Color ?? "primary")"><i class="fa @info.Icon"></i></div>
+                        <div class="widget-kpi-info">
+                            <div class="widget-kpi-value">@d.Value</div>
+                            <div class="widget-kpi-label">@info.Title</div>
+                            @if (d.Trend != null) { <div class="widget-kpi-trend">@Html.Raw(d.Trend.ToString())</div> }
+                        </div>
+                        @if (d.Url != null && !String.IsNullOrEmpty(d.Url.ToString()))
                         {
-                            await Html.RenderPartialAsync(viewName, item.Data);
-                        }
-                        catch (Exception ex)
-                        {
-                            <div class="widget-error">组件加载失败：@ex.Message</div>
+                            <a class="widget-kpi-link" href="@d.Url" title="@info.Title"></a>
                         }
                     </div>
                 </div>
-            </div>
+            }
+            else
+            {
+                // 内容卡
+                <div class="widget-col" style="width:@width;" data-name="@info.Name">
+                    <div class="widget-card">
+                        <div class="widget-header">
+                            <i class="fa @info.Icon"></i>
+                            <span class="widget-title">@info.Title</span>
+                            <span class="widget-drag" title="拖拽排序"><i class="fa fa-arrows"></i></span>
+                        </div>
+                        <div class="widget-body">
+                            @try
+                            {
+                                await Html.RenderPartialAsync($"~/Areas/Admin/Views/Widgets/{info.Name}.cshtml", item.Data);
+                            }
+                            catch (Exception ex)
+                            {
+                                <div class="widget-error">组件加载失败：@ex.Message</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
         }
     </div>
 </div>
+
+@if (isAdmin)
+{
+    @await Html.PartialAsync("_AiDiagnoseModal")
+}
 
 @section scripts {
     <script src="@res/js/jquery-ui.custom.min.js"></script>
     <script>
         $(function () {
-            // 按 Cookie 保存的顺序重排组件（每用户独立）
-            var order = '';
-            try {
-                var m = document.cookie.match(/(?:^|;\s*)cube\.widgets\.order=([^;]*)/);
-                if (m) order = decodeURIComponent(m[1]);
-            } catch (e) { }
-            if (order) {
-                try {
-                    var names = JSON.parse(order);
-                    var $grid = $('#widget-grid');
-                    for (var i = 0; i < names.length; i++) {
-                        $grid.find('.widget-col[data-name="' + names[i] + '"]').appendTo($grid);
-                    }
-                } catch (e) { }
-            }
+            // 初始顺序，用于判断拖拽后是否真正变化
+            var initialOrder = $('#widget-grid .widget-col').map(function () { return $(this).attr('data-name'); }).get();
 
-            // 拖拽排序
+            // 拖拽排序 → 服务端按用户保存（Parameter 表，分类 Widget.Order）
             $('#widget-grid').sortable({
-                handle: '.widget-header',
+                handle: '.widget-header, .widget-drag',
                 placeholder: 'widget-col widget-placeholder',
                 forcePlaceholderSize: true,
                 tolerance: 'pointer',
                 stop: function () {
                     var names = $('#widget-grid .widget-col').map(function () { return $(this).attr('data-name'); }).get();
-                    var expires = new Date();
-                    expires.setTime(expires.getTime() + 30 * 24 * 60 * 60 * 1000);
-                    document.cookie = 'cube.widgets.order=' + encodeURIComponent(JSON.stringify(names)) + '; expires=' + expires.toUTCString() + '; path=/';
+                    // 仅顺序真正变化时保存，避免布局重排等误触发
+                    if (initialOrder.join(',') === names.join(',')) return;
+
+                    $.post('@Url.Action("SaveOrder")', { order: names }, function () { });
                 }
             });
 
             // 刷新数据
             $('#btn-widget-refresh').click(function () { location.reload(); });
-
-            // 恢复默认排序
-            $('#btn-widget-reset').click(function () {
-                document.cookie = 'cube.widgets.order=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
-                location.reload();
-            });
         });
     </script>
 }
+
