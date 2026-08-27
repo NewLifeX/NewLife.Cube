@@ -530,7 +530,7 @@ const callback = (e?: Record<string, unknown>) => {
 const queryUser = async () => {
   loading.value = true;
   try {
-    const c = await request.get('/Admin/User/', { params: queryParams });
+    const c = await request.get('/Admin/User', { params: queryParams });
     const { list, page } = apiDataToList<User>(c);
     tableData.value = list;
     queryParams.total = page?.totalCount; // 更新总数
@@ -562,12 +562,8 @@ const userFormRules = reactive<FormRules>({
     { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' },
     { max: 50, message: '长度不能超过 50 个字符', trigger: 'blur' },
   ],
-  roleID: [
-    { required: true, message: '请选择角色', trigger: 'change' },
-  ],
-  departmentID: [
-    { required: true, message: '请选择部门', trigger: 'change' },
-  ],
+  roleID: [{ required: true, message: '请选择角色', trigger: 'change' }],
+  departmentID: [{ required: true, message: '请选择部门', trigger: 'change' }],
   code: [{ max: 50, message: '长度不能超过 50 个字符', trigger: 'blur' }],
   avatar: [{ max: 200, message: '长度不能超过 200 个字符', trigger: 'blur' }],
   roleIds: [{ max: 200, message: '长度不能超过 200 个字符', trigger: 'blur' }],

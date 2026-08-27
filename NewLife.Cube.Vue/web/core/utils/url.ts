@@ -132,11 +132,13 @@ export function isUrl(path: string) {
  *
  *   - 空值                                    → 原样返回 ''
  *   - 已是完整/绝对地址（http(s)://、//、data:、blob:）→ 原样返回
- *   - baseUrl 为完整地址（跨域部署）          → `${baseUrl}${path}`
+ *   - baseUrl 为完整地址（跨域部署）          → 剥离末尾 /api 后拼接 origin
  *   - baseUrl 为路径前缀（如 /api）或空        → 原样返回
  *
  * 说明：魔方 WebAPI 版实体接口带 /api 前缀，但资源（/cube/image、/Content、/Sso/Avatar 等）
- * 由服务控制器 / 静态文件在根路径提供，不带 /api 前缀，故路径前缀型 baseUrl 不拼接。
+ * 由服务控制器 / 静态文件在根路径提供，不带 /api 前缀。因此完整地址型 baseUrl 若带 /api
+ * 路径（如 http://host:5000/api）需先剥离再拼接，规则与 api-core 的 resolveRequestUrl 一致，
+ * 避免生成 http://host:5000/api/cube/image 这类无效地址。
  *
  * @param path 后端返回的资源路径
  */
@@ -149,10 +151,12 @@ export function resolveAssetUrl(path: string | null | undefined): string {
     return s;
   }
   const base = (getConfig().request.baseUrl ?? '').replace(/\/+$/, '');
-  // 仅跨域部署（baseUrl 为完整地址）时拼接 origin；路径前缀（如 /api）与空值原样返回
+  // 仅跨域部署（baseUrl 为完整地址）时拼接 origin；资源由根路径提供，需剥离末尾 /api 路径前缀
   if (/^https?:\/\//i.test(base)) {
-    return s.startsWith('/') ? `${base}${s}` : `${base}/${s}`;
+    const baseNoApi = base.replace(/\/api$/i, '');
+    return s.startsWith('/') ? `${baseNoApi}${s}` : `${baseNoApi}/${s}`;
   }
+  // 路径前缀（如 /api）与空值原样返回
   return s;
 }
 

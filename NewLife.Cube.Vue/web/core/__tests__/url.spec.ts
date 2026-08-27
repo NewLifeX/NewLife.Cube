@@ -38,6 +38,15 @@ describe('resolveAssetUrl（资源地址拼接 baseUrl）', () => {
     state.baseUrl = 'http://localhost:5000';
   });
 
+  it('baseUrl 为完整地址且带 /api 前缀时，剥离 /api 再拼接（资源走根路径）', () => {
+    state.baseUrl = 'http://localhost:6100/api';
+    expect(resolveAssetUrl('/cube/image?id=1.png')).toBe('http://localhost:6100/cube/image?id=1.png');
+    expect(resolveAssetUrl('/Content/images/logo.png')).toBe('http://localhost:6100/Content/images/logo.png');
+    expect(resolveAssetUrl('/Sso/Avatar?id=1')).toBe('http://localhost:6100/Sso/Avatar?id=1');
+    expect(resolveAssetUrl('cube/image.png')).toBe('http://localhost:6100/cube/image.png');
+    state.baseUrl = 'http://localhost:5000';
+  });
+
   it('baseUrl 为空时返回原始路径（前后端同域回退）', () => {
     state.baseUrl = '';
     expect(resolveAssetUrl('/cube/image.png')).toBe('/cube/image.png');
