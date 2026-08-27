@@ -17,52 +17,52 @@ public class WidgetDataCollection : ICollectionFixture<WidgetDataFixture>
 }
 
 /// <summary>
-/// Widget 数据测试夹具：创建 SQLite 数据库（Membership 连接，Log 映射到 Membership），
-/// 建表并播种固定日志/在线数据。共享夹具避免每个测试重建数据库导致实体工厂缓存污染。
+/// Widget 数据测试夹具：独立 SQLite 连接（Log/UserOnline 实体在测试类构造函数按线程重映射），自动迁移建表并播种固定数据。
+/// 使用独立连接名绕开共享 Membership/Log 连接的 DAL 全局缓存（跨测试集合污染根因）。
 /// </summary>
 public class WidgetDataFixture : IDisposable
 {
+    /// <summary>独立连接名。避免与其它测试集合共享的 Membership/Log 连接缓存冲突</summary>
+    public const String ConnName = "WidgetData";
+
     /// <summary>数据库文件</summary>
     public String DbFile { get; }
-
-    private readonly String? _oldMembership;
-    private readonly Boolean _hadLog;
 
     public WidgetDataFixture()
     {
         var dir = Path.Combine(AppContext.BaseDirectory, "Data");
         Directory.CreateDirectory(dir);
         DbFile = Path.Combine(dir, "WidgetDataTests.db");
-        if (File.Exists(DbFile)) File.Delete(DbFile);
 
-        // 记录并覆写全局连接串：Membership 指向 SQLite，Log 映射到 Membership（与生产 AddCube 一致）
-        _oldMembership = DAL.ConnStrs != null && DAL.ConnStrs.TryGetValue("Membership", out var v) ? v : null;
-        _hadLog = DAL.ConnStrs != null && DAL.ConnStrs.ContainsKey("Log");
+        // 清理历史库文件（含 WAL/SHM 残留），保证每次运行干净，避免上一轮数据影响断言
+        foreach (var f in Directory.GetFiles(dir, "WidgetDataTests.db*"))
+        {
+            try { File.Delete(f); } catch { }
+        }
 
-        DAL.AddConnStr("Membership", $"Data Source={DbFile}", null, "SQLite");
-        if (!_hadLog) DAL.ConnStrs!.TryAdd("Log", "MapTo=Membership");
+        // 注册独立连接；实体重映射在测试类构造函数按测试线程执行（Meta.ConnName 线程级）
+        DAL.AddConnStr(ConnName, $"Data Source={DbFile}", null, "SQLite");
 
-        DAL.CreateTable();
+        // 本线程（fixture 线程）重映射后播种，确保种子数据落入独立库
+        XLog.Meta.ConnName = ConnName;
+        UserOnline.Meta.ConnName = ConnName;
 
         Seed();
     }
 
     public void Dispose()
     {
-        // 恢复被覆写的全局连接串，并重置 DAL 缓存，避免污染其它测试集合
-        if (DAL.ConnStrs != null)
-        {
-            if (_oldMembership != null) DAL.ConnStrs["Membership"] = _oldMembership;
-            else DAL.ConnStrs.TryRemove("Membership", out _);
+        // 释放连接、移除独立连接，避免影响其它测试集合
+        try { DAL.Create(ConnName).Reset(); } catch { }
+        DAL.ConnStrs?.TryRemove(ConnName, out _);
 
-            if (!_hadLog) DAL.ConnStrs.TryRemove("Log", out _);
-        }
-        DAL.Create("Membership").Reset();
-        DAL.Create("Log").Reset();
-
+        // 清理库文件（含 WAL/SHM 残留），避免下次运行脏数据
         try
         {
-            if (File.Exists(DbFile)) File.Delete(DbFile);
+            foreach (var f in Directory.GetFiles(Path.GetDirectoryName(DbFile)!, "WidgetDataTests.db*"))
+            {
+                File.Delete(f);
+            }
         }
         catch
         {
@@ -103,8 +103,28 @@ public class WidgetDataFixture : IDisposable
 
 /// <summary>覆盖内置系统组件的数据查询。利用 XCode SQLite 抽象做轻量集成测试，验证统计口径</summary>
 [Collection("WidgetData")]
-public class WidgetDataTests
+public class WidgetDataTests : IDisposable
 {
+    private readonly String _oldLog;
+    private readonly String _oldOnline;
+
+    /// <summary>每个测试实例在自己的执行线程上重映射 Log/UserOnline 到独立连接。
+    /// Meta.ConnName 是线程级配置，fixture 线程设置不作用于测试线程，故须在测试构造函数中设置</summary>
+    public WidgetDataTests()
+    {
+        _oldLog = XLog.Meta.ConnName;
+        _oldOnline = UserOnline.Meta.ConnName;
+        XLog.Meta.ConnName = WidgetDataFixture.ConnName;
+        UserOnline.Meta.ConnName = WidgetDataFixture.ConnName;
+    }
+
+    public void Dispose()
+    {
+        // 恢复实体连接映射，避免影响其它测试集合
+        XLog.Meta.ConnName = _oldLog;
+        UserOnline.Meta.ConnName = _oldOnline;
+    }
+
     [Fact(DisplayName = "LoginLogWidget_返回最近登录与在线明细")]
     public void LoginLogWidget_ReturnsDetails()
     {

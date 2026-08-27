@@ -16,7 +16,7 @@ public class WidgetManagerTests
         var widgets = _manager.Scan();
 
         // 内置组件随 NewLife.Cube（API版）编译；Monitor 依赖 Charts、KPI 部件属 MVC 工作台，仅 MVC 版存在，这里不校验
-        Assert.Contains("Log", widgets.Keys);
+        // LogWidget 已删除（与 KPI 24h 数字重复），不再断言
         Assert.Contains("LoginLog", widgets.Keys);
         Assert.Contains("SysInfo", widgets.Keys);
         Assert.Contains("Profile", widgets.Keys);
@@ -59,7 +59,6 @@ public class WidgetManagerTests
 
         Assert.True(_manager.IsVisible(dic["Profile"], new List<String> { "普通用户" }, false));
         Assert.True(_manager.IsVisible(dic["QuickLink"], new List<String> { "普通用户" }, false));
-        Assert.False(_manager.IsVisible(dic["Log"], new List<String> { "普通用户" }, false));
         Assert.False(_manager.IsVisible(dic["LoginLog"], new List<String> { "普通用户" }, false));
         Assert.False(_manager.IsVisible(dic["SysInfo"], new List<String> { "普通用户" }, false));
     }
@@ -69,7 +68,6 @@ public class WidgetManagerTests
     {
         var dic = _manager.Scan();
 
-        Assert.True(_manager.IsVisible(dic["Log"], new List<String> { "系统管理员" }, true));
         Assert.True(_manager.IsVisible(dic["LoginLog"], new List<String> { "系统管理员" }, true));
         Assert.True(_manager.IsVisible(dic["SysInfo"], new List<String> { "系统管理员" }, true));
         Assert.True(_manager.IsVisible(dic["Profile"], new List<String> { "系统管理员" }, true));

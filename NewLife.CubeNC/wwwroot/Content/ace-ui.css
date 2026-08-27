@@ -773,6 +773,69 @@ body.skin-3 {
         color: var(--cube-primary);
     }
 
+/* 卡片操作菜单（⋯ 始终轻微可见保证发现性，悬停加深；点开菜单再选"隐藏"两步操作防误触） */
+.widget-menu-wrap {
+    position: relative;
+    display: inline-block;
+    margin-left: 6px;
+}
+
+.widget-menu {
+    border: none;
+    background: transparent;
+    color: #8a939c;
+    font-size: 13px;
+    padding: 0 4px;
+    cursor: pointer;
+    opacity: .5;
+    transition: opacity .15s ease;
+}
+
+/* 悬停卡片时 ⋯ 加深为清晰可见 */
+.widget-card:hover .widget-menu,
+.widget-kpi:hover .widget-menu {
+    opacity: 1;
+}
+
+.widget-menu:hover {
+    color: var(--cube-primary);
+    opacity: 1;
+}
+
+.widget-menu-drop {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 30;
+    min-width: 110px;
+    background: var(--cube-card);
+    border: 1px solid var(--cube-border-light);
+    border-radius: var(--cube-radius);
+    box-shadow: var(--cube-shadow);
+    padding: 4px 0;
+}
+
+.widget-menu-drop a {
+    display: block;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: var(--cube-text-title);
+    white-space: nowrap;
+}
+
+.widget-menu-drop a:hover {
+    background: var(--cube-primary-light);
+    color: var(--cube-primary);
+}
+
+/* KPI 小卡：菜单靠右上角，与拖拽柄同排 */
+.widget-menu-kpi {
+    position: absolute;
+    top: 8px;
+    right: 22px;
+    z-index: 3;
+}
+
 .widget-body {
     padding: 14px;
     flex: 1;
@@ -990,6 +1053,67 @@ body.skin-3 {
     opacity: 1;
     color: var(--cube-primary);
 }
+
+/* ========== 工作台：已隐藏卡片恢复面板 ========== */
+.wb-hidden-pop {
+    position: relative;
+    z-index: 40;
+    max-width: 420px;
+    margin: -8px 0 12px auto;
+    background: var(--cube-card);
+    border: 1px solid var(--cube-border-light);
+    border-radius: var(--cube-radius-lg);
+    box-shadow: var(--cube-shadow-lg);
+}
+
+.wb-hidden-title {
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cube-text-title);
+    border-bottom: 1px solid var(--cube-border-light);
+}
+
+.wb-hidden-list {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+    max-height: 260px;
+    overflow: auto;
+}
+
+.wb-hidden-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+.wb-hidden-list li:hover {
+    background: var(--cube-primary-light);
+}
+
+.wb-hidden-list .btn {
+    padding: 2px 10px;
+    font-size: 12px;
+}
+
+.wb-hidden-foot {
+    padding: 6px 12px;
+    border-top: 1px solid var(--cube-border-light);
+    text-align: right;
+}
+
+.wb-hidden-foot a {
+    font-size: 12px;
+    color: var(--cube-text-muted);
+}
+
+    .wb-hidden-foot a:hover {
+        color: var(--cube-primary);
+    }
 
 /* ========== 工作台：我的动态 ========== */
 .widget-news {

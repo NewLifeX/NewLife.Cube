@@ -94,6 +94,7 @@
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleManager.cs" Link="Modules\ModuleManager.cs" />
     <Compile Include="..\NewLife.CubeNC\Widgets\IWidget.cs" Link="Widgets\IWidget.cs" />
     <Compile Include="..\NewLife.CubeNC\Widgets\WidgetAttribute.cs" Link="Widgets\WidgetAttribute.cs" />
+    <Compile Include="..\NewLife.CubeNC\Widgets\WidgetLayout.cs" Link="Widgets\WidgetLayout.cs" />
     <Compile Include="..\NewLife.CubeNC\Widgets\WidgetManager.cs" Link="Widgets\WidgetManager.cs" />
     <Compile Include="..\NewLife.CubeNC\Widgets\System\LoginLogWidget.cs" Link="Widgets\System\LoginLogWidget.cs" />
     <Compile Include="..\NewLife.CubeNC\Widgets\System\SysInfoWidget.cs" Link="Widgets\System\SysInfoWidget.cs" />

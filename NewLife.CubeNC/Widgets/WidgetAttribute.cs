@@ -38,7 +38,7 @@ public class WidgetAttribute : Attribute
     /// <summary>排序。越小越靠前，默认0。运行时由用户拖拽配置覆盖</summary>
     public Int32 Sort { get; set; }
 
-    /// <summary>分类。系统/个人/通用等，KPI 行按分类与角色分流</summary>
+    /// <summary>分组/分类。兼作模块归属与默认排序分组键（系统/个人/通用/业务模块名），同组卡片默认聚合显示；KPI 行按分类与角色分流</summary>
     public String Category { get; set; }
 
     /// <summary>可见角色。逗号分隔的角色名，空表示所有登录用户可见</summary>
