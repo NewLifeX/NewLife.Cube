@@ -1,10 +1,8 @@
-using XCode;
-using XLog = XCode.Membership.Log;
-using static XCode.Membership.Log;
+using NewLife.Cube.Entity;
 
 namespace NewLife.Cube.Widgets.System;
 
-/// <summary>今日登录。工作台 KPI 指标，统计今日登录成功次数</summary>
+/// <summary>今日登录。工作台 KPI 指标，统计今日登录成功次数（取自 UserStat 每日统计）</summary>
 [Widget("TodayLogin", "今日登录", Icon = "fa-sign-in", Cols = 2, Sort = 20, Category = "系统", AdminOnly = true, Color = "green")]
 public class TodayLoginWidget : IWidget
 {
@@ -12,9 +10,9 @@ public class TodayLoginWidget : IWidget
     public Object GetData()
     {
         var now = DateTime.Now;
-        // Log.Id 是雪花Id，带时间信息，直接用时间范围过滤，避免依赖 CreateTime 列
-        var snow = XLog.Meta.Factory.Snow;
-        var count = XLog.FindCount(_.Action == "登录" & _.ID.Between(DateTime.Today, now, snow));
+        // 今日登录次数直接取自 UserStat 每日统计（本地/SSO 登录时累加 Logins），比扫日志高效
+        var stat = UserStat.FindByDate(DateTime.Today);
+        var count = stat?.Logins ?? 0;
 
         return new
         {
