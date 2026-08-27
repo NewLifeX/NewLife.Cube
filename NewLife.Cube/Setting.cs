@@ -492,6 +492,41 @@ public class CubeSetting : Config<CubeSetting>
     [Category("系统功能")]
     public Boolean FileStorageFetch { get; set; } = true;
 
+    /// <summary>文件存储拉取超时。下载本地缺失文件时等待其他节点同步的最大时间（毫秒），默认5000</summary>
+    [Description("文件存储拉取超时。下载本地缺失文件时等待其他节点同步的最大时间（毫秒），默认5000")]
+    [Category("系统功能")]
+    public Int32 FileStorageFetchTimeout { get; set; } = 5_000;
+
+    /// <summary>附件存储类型。Local本地磁盘，Oss阿里云，Cos腾讯云，Qiniu七牛，EasyIO易对象，默认Local</summary>
+    [Description("附件存储类型。Local本地磁盘，Oss阿里云，Cos腾讯云，Qiniu七牛，EasyIO易对象，默认Local")]
+    [Category("系统功能")]
+    public String AttachmentStorage { get; set; } = "Local";
+
+    /// <summary>对象存储服务器。OSS/COS/七牛S3兼容端点，如 oss-cn-beijing.aliyuncs.com</summary>
+    [Description("对象存储服务器。OSS/COS/七牛S3兼容端点，如 oss-cn-beijing.aliyuncs.com")]
+    [Category("系统功能")]
+    public String ObjectStorageServer { get; set; }
+
+    /// <summary>对象存储桶。OSS/COS/七牛存储桶名称</summary>
+    [Description("对象存储桶。OSS/COS/七牛存储桶名称")]
+    [Category("系统功能")]
+    public String ObjectStorageBucket { get; set; }
+
+    /// <summary>对象存储区域。用于S3签名作用域，如 cn-beijing / ap-beijing / cn-east-1</summary>
+    [Description("对象存储区域。用于S3签名作用域，如 cn-beijing / ap-beijing / cn-east-1")]
+    [Category("系统功能")]
+    public String ObjectStorageRegion { get; set; } = "cn-north-1";
+
+    /// <summary>对象存储应用标识。AccessKeyId</summary>
+    [Description("对象存储应用标识。AccessKeyId")]
+    [Category("系统功能")]
+    public String ObjectStorageAppId { get; set; }
+
+    /// <summary>对象存储应用密钥。AccessKeySecret</summary>
+    [Description("对象存储应用密钥。AccessKeySecret")]
+    [Category("系统功能")]
+    public String ObjectStorageSecret { get; set; }
+
     /// <summary>数据保留时间。审计日志与OAuth日志，默认30天</summary>
     [Description("数据保留时间。审计日志与OAuth日志，默认30天")]
     [Category("系统功能")]

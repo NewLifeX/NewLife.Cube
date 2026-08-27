@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Areas.Cube.Controllers;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
+using NewLife.Cube.Web;
 using NewLife.Data;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -655,6 +656,14 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         att.LastDownload = DateTime.Now;
         att.SaveAsync(5_000);
 
+        // 云存储附件：直接返回预签名Url
+        if (!att.IsLocalStorage())
+        {
+            var url = AttachmentProvider.Provider.GetUrl(att.FilePath);
+            if (url.IsNullOrEmpty()) return NotFound("找不到附件文件");
+            return Redirect(url);
+        }
+
         // 如果附件不存在，则抓取
         var filePath = att.GetFilePath();
         if (filePath.IsNullOrEmpty() || !System.IO.File.Exists(filePath))
@@ -699,6 +708,14 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         att.Downloads++;
         att.LastDownload = DateTime.Now;
         att.SaveAsync(5_000);
+
+        // 云存储附件：直接返回预签名Url
+        if (!att.IsLocalStorage())
+        {
+            var url = AttachmentProvider.Provider.GetUrl(att.FilePath);
+            if (url.IsNullOrEmpty()) return NotFound("找不到附件文件");
+            return Redirect(url);
+        }
 
         // 如果附件不存在，则抓取
         var filePath = att.GetFilePath();
