@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife;
 using NewLife.Cube;
 using NewLife.Log;
@@ -30,6 +31,16 @@ public class StudentController : EntityController<Student, StudentModel>
     protected override Student Find(Object key)
     {
         return base.Find(key);
+    }
+
+    /// <summary>执行前。演示海量数据免查总数分页</summary>
+    /// <param name="filterContext"></param>
+    public override void OnActionExecuting(ActionExecutingContext filterContext)
+    {
+        // 海量数据列表页跳过SelectCount总数查询，仅显示上一页/下一页
+        PageSetting.EnableTotalCount = false;
+
+        base.OnActionExecuting(filterContext);
     }
 
     protected override IEnumerable<Student> Search(Pager p)

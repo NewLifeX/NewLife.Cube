@@ -114,17 +114,21 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     /// <returns></returns>
     protected virtual ActionResult IndexView(Pager p)
     {
-        // 需要总记录数来分页
-        p.RetrieveTotalCount = true;
+        // 需要总记录数来分页；海量数据可关闭，免查总数后仅提供上一页/下一页
+        var needCount = PageSetting.EnableTotalCount;
+        if (needCount)
+            p.RetrieveTotalCount = true;
 
-        var list = SearchData(p);
+        // 免查总数模式：多取一条探测是否存在下一页
+        var list = SearchData(p, needCount, out var hasNext);
 
         // 用于显示的列
         ViewBag.Fields = OnGetFields(ViewKinds.List, list);
         ViewBag.SearchFields = OnGetFields(ViewKinds.Search, list);
+        ViewBag.HasNext = hasNext;
 
         // Json输出
-        if (IsJsonRequest) return Json(0, null, list, new { page = p });
+        if (IsJsonRequest) return Json(0, null, list, new { page = p, hasNext });
 
         return View("List", list);
     }
@@ -198,10 +202,10 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         {
             var issuer = ValidToken(token);
 
-            // 需要总记录数来分页
-            p.RetrieveTotalCount = true;
-
-            var list = SearchData(p);
+            // 需要总记录数来分页；海量数据可关闭，免查总数后仅提供上一页/下一页
+            var needCount = PageSetting.EnableTotalCount;
+            var list = SearchData(p, needCount, out var hasNext);
+            ViewBag.HasNext = hasNext;
 
             return View("List", list);
         }
@@ -223,13 +227,12 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         {
             var issuer = ValidToken(token);
 
-            // 需要总记录数来分页
-            p.RetrieveTotalCount = true;
-
-            var list = SearchData(p);
+            // 需要总记录数来分页；海量数据可关闭，免查总数后仅提供上一页/下一页
+            var needCount = PageSetting.EnableTotalCount;
+            var list = SearchData(p, needCount, out var hasNext);
 
             // Json输出
-            return Json(0, null, list, new { issuer, page = p });
+            return Json(0, null, list, new { issuer, page = p, hasNext });
         }
         catch (Exception ex)
         {
