@@ -31,14 +31,12 @@ public class ThemeViewLocationExpander : IViewLocationExpander
         if (theme.IsNullOrEmpty()) return viewLocations;
 
         var vs = viewLocations.ToList();
-
-        var p = vs.IndexOf("/Views/Shared/{0}.cshtml");
-        if (p >= 0) vs.Insert(p, "/Views/" + theme + "/{0}.cshtml");
-
-        p = vs.IndexOf("/Areas/{2}/Views/Shared/{0}.cshtml");
-        if (p >= 0) vs.Insert(p, "/Areas/{2}/Views/" + theme + "/{0}.cshtml");
-        p = vs.IndexOf("/Areas/{2}/Views/{1}/{0}.cshtml");
-        if (p >= 0) vs.Insert(p, "/Areas/{2}/Views/{1}_" + theme + "/{0}.cshtml");
+        // 主题路径插入规则与 ViewLocationHelper 共享，保证视图引擎与诊断工具一致
+        foreach (var item in ViewLocationHelper.GetThemeInsertRules(theme))
+        {
+            var p = vs.IndexOf(item.Key);
+            if (p >= 0) vs.Insert(p, item.Value);
+        }
 
         return vs;
     }

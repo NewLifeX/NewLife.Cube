@@ -79,6 +79,9 @@
             <li>
                 <a href="@Url.Action("Develop", new { act = "MakeBatch" })">生成批处理</a>
             </li>
+            <li>
+                <a href="@Url.Action("Index", "ViewTrace", new { area = "Cube" })" target="_blank" title="查看视图查找路径与实际命中，排查覆盖不生效">视图解析诊断</a>
+            </li>
         }
     </ul>
 </div><!-- /.btn-group -->

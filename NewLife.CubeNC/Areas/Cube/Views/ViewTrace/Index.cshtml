@@ -1,0 +1,108 @@
+@using Microsoft.AspNetCore.Mvc.ViewEngines
+@using NewLife
+@{
+    var area = ViewBag.Area + "";
+    var controller = ViewBag.Controller + "";
+    var view = ViewBag.View + "";
+    var theme = ViewBag.Theme + "";
+
+    var candidates = ViewBag.Candidates as String[];
+    var physical = ViewBag.Physical as Boolean[];
+    var result = ViewBag.Result as ViewEngineResult;
+
+    var hitPath = result != null && result.Success ? result.View.Path : null;
+}
+@section css {
+    <style>
+        .vt-table { font-size: 13px; }
+        .vt-phy { background: #d9f7be !important; }
+        .vt-hit { background: #ffd591 !important; font-weight: bold; }
+    </style>
+}
+<div class="page-header">
+    <h1>
+        视图解析诊断
+        <small>排查视图覆盖不生效</small>
+    </h1>
+</div>
+
+<form class="form-inline" method="get" action="@Url.Action("Index")">
+    <div class="form-group">
+        <label for="area">区域</label>
+        <input type="text" class="form-control input-sm" id="area" name="area" value="@area" placeholder="Admin" />
+    </div>
+    <div class="form-group">
+        <label for="controller">控制器</label>
+        <input type="text" class="form-control input-sm" id="controller" name="controller" value="@controller" placeholder="User" />
+    </div>
+    <div class="form-group">
+        <label for="view">视图</label>
+        <input type="text" class="form-control input-sm" id="view" name="view" value="@view" placeholder="_List_Search" />
+    </div>
+    <div class="form-group">
+        <label for="theme">主题</label>
+        <input type="text" class="form-control input-sm" id="theme" name="theme" value="@theme" placeholder="ACE" />
+    </div>
+    <button type="submit" class="btn btn-sm btn-primary"><i class="fa fa-search"></i> 解析</button>
+</form>
+
+@if (candidates != null)
+{
+    <h3>① 理论候选路径（ViewLocationHelper，7 级优先级）</h3>
+    <table class="table table-bordered table-hover table-condensed vt-table">
+        <thead>
+            <tr>
+                <th style="width:60px;">优先级</th>
+                <th>候选路径</th>
+                <th style="width:100px;">物理文件</th>
+                <th style="width:100px;">实际命中</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (var i = 0; i < candidates.Length; i++)
+            {
+                var cls = physical[i] ? "vt-phy" : "";
+                if (hitPath != null && hitPath.EqualIgnoreCase(candidates[i])) cls += " vt-hit";
+                <tr class="@cls">
+                    <td class="text-center">@(i + 1)</td>
+                    <td>@candidates[i]</td>
+                    <td class="text-center">@(physical[i] ? "✅ 存在" : "—")</td>
+                    <td class="text-center">@(hitPath != null && hitPath.EqualIgnoreCase(candidates[i]) ? "⭐ 命中" : "—")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h3>② 视图引擎实际查找结果</h3>
+@if (result == null)
+{
+    <div class="alert alert-warning">暂无结果</div>
+}
+else if (result.Success)
+{
+    <div class="alert alert-success">
+        <strong>命中：</strong>@result.View.Path
+    </div>
+}
+else
+{
+    <div class="alert alert-danger"><strong>未命中！</strong>以下位置均未找到视图。</div>
+    <table class="table table-bordered table-hover table-condensed vt-table">
+        <thead>
+            <tr><th>实际查找位置（按顺序）</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var item in result.SearchedLocations)
+            {
+                <tr><td>@item</td></tr>
+            }
+        </tbody>
+    </table>
+}
+
+<div class="alert alert-info">
+    <strong>提示：</strong>
+    绿色行 = 物理文件存在（放对了位置）；橙色行 = 与视图引擎实际命中一致。
+    覆盖不生效时，先看 ① 中你的文件是否出现、是否被更高优先级遮蔽，再看 ② 实际命中结果。
+</div>
