@@ -354,4 +354,81 @@ public sealed class AceUiTests : IAsyncLifetime
     }
 
     #endregion
+
+    #region D.6 列表页优化回归（菜单按钮化/表格细线/工具栏统一）
+
+    [Fact(DisplayName = "TC-ACE-040 菜单树形表操作按钮按钮化样式生效")]
+    [Trait("Category", "AceUi")]
+    [Trait("Priority", "P1")]
+    public async Task TC_ACE_040_MenuOpBtnStyled()
+    {
+        const String testId = "TC-ACE-040";
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/Menu");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 树形表（无 table-data-list 类）操作按钮存在且已按钮化：op-btn 样式不限定 table-data-list
+        var opCount = await _page.Locator(".op-btn").CountAsync();
+        Assert.True(opCount > 0, $"[{testId}] 菜单页无 .op-btn 操作按钮");
+        var display = await _page.EvaluateAsync<String>(
+            "(() => { const el = document.querySelector('.op-btn'); return el ? getComputedStyle(el).display : ''; })()");
+        Assert.Equal("inline-flex", display);
+        var radius = await _page.EvaluateAsync<Int32>(
+            "(() => { const el = document.querySelector('.op-btn'); return el ? parseFloat(getComputedStyle(el).borderRadius) || 0 : 0; })()");
+        Assert.True(radius > 0, $"[{testId}] 菜单页操作按钮圆角为 0（op-btn 样式未生效）");
+        // 操作按钮有内边距（按钮化而非纯文字链接）
+        var pad = await _page.EvaluateAsync<String>(
+            "(() => { const el = document.querySelector('.op-btn'); return el ? getComputedStyle(el).paddingTop : ''; })()");
+        Assert.True(pad != "0px", $"[{testId}] 菜单页操作按钮无内边距（未按钮化）");
+    }
+
+    [Fact(DisplayName = "TC-ACE-041 数据列表表格细分割线（无双重边框）")]
+    [Trait("Category", "AceUi")]
+    [Trait("Priority", "P1")]
+    public async Task TC_ACE_041_TableThinDividers()
+    {
+        const String testId = "TC-ACE-041";
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // tbody 单元格上/左边框应为 none（消除 separate 模式双重分割线），右/下保留 1px 单线
+        var borderTop = await _page.EvaluateAsync<String>(
+            "(() => { const el = document.querySelector('.table-data-list tbody tr td'); return el ? getComputedStyle(el).borderTopWidth : ''; })()");
+        Assert.Equal("0px", borderTop);
+        var borderLeft = await _page.EvaluateAsync<String>(
+            "(() => { const el = document.querySelector('.table-data-list tbody tr td'); return el ? getComputedStyle(el).borderLeftWidth : ''; })()");
+        Assert.Equal("0px", borderLeft);
+        var borderRight = await _page.EvaluateAsync<String>(
+            "(() => { const el = document.querySelector('.table-data-list tbody tr td'); return el ? getComputedStyle(el).borderRightWidth : ''; })()");
+        Assert.Equal("1px", borderRight);
+        var borderBottom = await _page.EvaluateAsync<String>(
+            "(() => { const el = document.querySelector('.table-data-list tbody tr td'); return el ? getComputedStyle(el).borderBottomWidth : ''; })()");
+        Assert.Equal("1px", borderBottom);
+    }
+
+    [Fact(DisplayName = "TC-ACE-042 工具栏按钮统一高度（添加/批量/查询/高级同高）")]
+    [Trait("Category", "AceUi")]
+    [Trait("Priority", "P1")]
+    public async Task TC_ACE_042_ToolbarButtonsUniformHeight()
+    {
+        const String testId = "TC-ACE-042";
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 收集工具栏所有按钮高度（添加/批量启用/批量禁用/查询/高级）。
+        // 注意：EvaluateAllAsync<T> 的 T 是返回值整体类型（数组），不能写 String
+        var heights = await _page.EvaluateAsync<String[]>(
+            "() => Array.from(document.querySelectorAll('.tableTools-container .btn')).map(el => getComputedStyle(el).height)");
+        Assert.True(heights.Length >= 4, $"[{testId}] 工具栏按钮数量异常: {heights.Length}");
+        // 全部同高且为 30px
+        foreach (var h in heights)
+        {
+            Assert.Equal("30px", h);
+        }
+        // 搜索输入框与按钮同高，避免 input-group 撑高整行
+        var inputHeight = await _page.EvaluateAsync<String>(
+            "(() => { const el = document.querySelector('.tableTools-container .input-group .form-control'); return el ? getComputedStyle(el).height : ''; })()");
+        Assert.Equal("30px", inputHeight);
+    }
+
+    #endregion
 }

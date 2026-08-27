@@ -180,11 +180,24 @@ body > .panel.panel-default {
 
     .tableTools-container .btn {
         border-radius: var(--cube-radius);
+        /* 统一工具栏按钮高度：覆盖 a/button、图标、input-group 等造成的视觉高度差异 */
+        height: 30px;
+        line-height: 18px;
+        padding: 4px 12px;
+        border-width: 1px;
+        vertical-align: middle;
     }
 
-/* 搜索框 */
+/* 搜索框。输入框/前缀图标与按钮同高，避免 input-group 撑高整行 */
 .tableTools-container .input-group .form-control {
     border-radius: var(--cube-radius) 0 0 var(--cube-radius);
+    height: 30px;
+    padding: 4px 10px;
+}
+
+.tableTools-container .input-group-addon {
+    height: 30px;
+    padding: 4px 10px;
 }
 
 .tableTools-container .input-group-btn .btn {
@@ -207,6 +220,15 @@ body > .panel.panel-default {
     margin-bottom: 0;
 }
 
+    /* 消除 table-bordered 四边边框在 separate 模式下相邻单元格叠加的双重分割线（2px），
+       仅保留下/右边框形成单线网格，外框由 .table-data-list 自身 border 提供 */
+    .table-data-list.table-bordered > thead > tr > th,
+    .table-data-list.table-bordered > tbody > tr > td,
+    .table-data-list.table-bordered > tfoot > tr > td {
+        border-top: none;
+        border-left: none;
+    }
+
     .table-data-list > thead > tr > th {
         background: #f5f8fc;
         border-bottom: 1px solid var(--cube-border);
@@ -214,6 +236,7 @@ body > .panel.panel-default {
         font-weight: 600;
         font-size: 13px;
         white-space: nowrap;
+        padding: 6px 8px;
     }
 
         .table-data-list > thead > tr > th a {
@@ -225,7 +248,8 @@ body > .panel.panel-default {
             }
 
     .table-data-list > tbody > tr > td {
-        /* 不覆盖 padding：沿用 Bootstrap 原生 table-condensed(5px) 紧凑密度 */
+        /* 紧凑密度：在 table-condensed(5px) 基础上收紧，配合细边框提升紧凑感 */
+        padding: 4px 8px;
         font-size: 13px;
         border-color: #f0f2f5;
         vertical-align: middle;
@@ -253,13 +277,14 @@ body > .panel.panel-default {
     text-align: right;
 }
 
-/* 操作列按钮化（配合 _List_Data_Action 覆盖） */
-.table-data-list .op-btn {
+/* 操作列按钮化（配合 _List_Data_Action 覆盖）。
+   不限定 table-data-list：树形表（如菜单页 _ListTree_Data）与自定义列表同样生效 */
+.op-btn {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3px 10px;
-    margin: 2px;
+    padding: 2px 8px;
+    margin: 1px 2px;
     font-size: 12px;
     line-height: 1.4;
     border-radius: 14px;
@@ -268,7 +293,7 @@ body > .panel.panel-default {
     transition: all .15s ease;
 }
 
-    .table-data-list .op-btn i {
+    .op-btn i {
         font-size: 12px;
         margin-right: 2px;
     }
