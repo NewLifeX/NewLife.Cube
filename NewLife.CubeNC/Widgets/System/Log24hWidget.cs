@@ -5,7 +5,7 @@ using static XCode.Membership.Log;
 namespace NewLife.Cube.Widgets.System;
 
 /// <summary>24h日志量。工作台 KPI 指标</summary>
-[Widget("Log24h", "24h日志", Icon = "fa-file-text-o", Cols = 2, Sort = 40, Category = "系统", AdminOnly = true, Color = "grey")]
+[Widget("Log24h", "24h日志", Icon = "fa-file-text-o", Cols = 2, Sort = 40, Category = "系统", AdminOnly = true, Color = "grey", WidgetType = WidgetTypes.Kpi)]
 public class Log24hWidget : IWidget
 {
     /// <summary>获取组件数据</summary>

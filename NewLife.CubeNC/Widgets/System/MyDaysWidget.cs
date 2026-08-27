@@ -3,7 +3,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Widgets.System;
 
 /// <summary>注册天数。普通用户工作台 KPI 指标</summary>
-[Widget("MyDays", "注册天数", Icon = "fa-calendar", Cols = 3, Sort = 30, Category = "个人", Color = "blue")]
+[Widget("MyDays", "注册天数", Icon = "fa-calendar", Cols = 3, Sort = 30, Category = "个人", Color = "blue", WidgetType = WidgetTypes.Kpi)]
 public class MyDaysWidget : IWidget
 {
     /// <summary>获取组件数据</summary>

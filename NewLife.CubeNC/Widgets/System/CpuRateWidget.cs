@@ -3,7 +3,7 @@ using NewLife;
 namespace NewLife.Cube.Widgets.System;
 
 /// <summary>CPU使用率。工作台 KPI 指标</summary>
-[Widget("CpuRate", "CPU使用率", Icon = "fa-tachometer", Cols = 2, Sort = 60, Category = "系统", AdminOnly = true, Color = "orange")]
+[Widget("CpuRate", "CPU使用率", Icon = "fa-tachometer", Cols = 2, Sort = 60, Category = "系统", AdminOnly = true, Color = "orange", WidgetType = WidgetTypes.Kpi)]
 public class CpuRateWidget : IWidget
 {
     /// <summary>获取组件数据</summary>

@@ -7,7 +7,7 @@ using static XCode.Membership.Log;
 namespace NewLife.Cube.Widgets.System;
 
 /// <summary>登录与在线。最近登录记录、当前在线用户（KPI 已提供登录/在线计数，此处仅展示明细）</summary>
-[Widget("LoginLog", "登录与在线", Icon = "fa-users", Cols = 4, Sort = 120, Category = "系统", AdminOnly = true)]
+[Widget("LoginLog", "登录与在线", Icon = "fa-users", Cols = 4, Sort = 120, Category = "系统", AdminOnly = true, WidgetType = WidgetTypes.Content)]
 public class LoginLogWidget : IWidget
 {
     /// <summary>获取组件数据</summary>

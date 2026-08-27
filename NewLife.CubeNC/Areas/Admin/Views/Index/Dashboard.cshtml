@@ -2,12 +2,16 @@
 @using NewLife;
 @using NewLife.Web;
 @using XCode.Membership;
+@using NewLife.Common;
+@using NewLife.Cube.Charts;
 @{
     ViewBag.Title = "工作台";
 
     var widgets = ViewBag.Widgets as IList<(WidgetAttribute Info, Object Data)> ?? new List<(WidgetAttribute, Object)>();
     var isAdmin = ViewBag.IsAdmin as Boolean? ?? false;
     var user = ManageProvider.User;
+    // 系统名称取自 SysConfig，不硬编码
+    var sysName = SysConfig.Current.DisplayName;
 
     var set = NewLife.Cube.CubeSetting.Current;
     var res = set.ResourceUrl;
@@ -29,7 +33,7 @@
             </div>
             <div>
                 <div class="wb-banner-greet">@greet，@(user?.DisplayName ?? user?.Name)</div>
-                <div class="wb-banner-sub">欢迎回到工作台 · @DateTime.Now.ToString("yyyy年M月d日 dddd")</div>
+                <div class="wb-banner-sub">欢迎回到 @sysName · @DateTime.Now.ToString("yyyy年M月d日 dddd")</div>
             </div>
         </div>
         <div class="wb-banner-right">
@@ -49,10 +53,10 @@
             var info = item.Info;
             // 栅格宽度预计算百分比，微减余量避免 6 个 KPI 卡因舍入超 100% 换行
             var width = (info.Cols * 100 / 12.0 - 0.01).ToString("0.##") + "%";
-            // 个人 KPI 卡（Category=个人 且小卡）仅普通用户显示；管理员只看系统 KPI 卡
-            if (isAdmin && info.Cols <= 3 && info.Category == "个人") continue;
+            // 个人 KPI 卡仅普通用户显示；管理员只看系统 KPI 卡
+            if (isAdmin && info.WidgetType == WidgetTypes.Kpi && info.Category == "个人") continue;
 
-            if (info.Cols <= 3)
+            if (info.WidgetType == WidgetTypes.Kpi)
             {
                 // KPI 小卡
                 dynamic d = item.Data;
@@ -74,7 +78,7 @@
             }
             else
             {
-                // 内容卡
+                // 内容卡框架（KPI 以外所有类型共用卡头/卡体，按 WidgetType 分发渲染方式）
                 <div class="widget-col" style="width:@width;" data-name="@info.Name">
                     <div class="widget-card">
                         <div class="widget-header">
@@ -83,13 +87,71 @@
                             <span class="widget-drag" title="拖拽排序"><i class="fa fa-arrows"></i></span>
                         </div>
                         <div class="widget-body">
-                            @try
+                            @switch (info.WidgetType)
                             {
-                                await Html.RenderPartialAsync($"~/Areas/Admin/Views/Widgets/{info.Name}.cshtml", item.Data);
-                            }
-                            catch (Exception ex)
-                            {
-                                <div class="widget-error">组件加载失败：@ex.Message</div>
+                                case WidgetTypes.Html:
+                                    // HTML 卡：widget 输出 HTML 字符串，固定渲染
+                                    @Html.Raw(item.Data)
+                                    break;
+                                case WidgetTypes.Kv:
+                                    // KV 卡：widget 输出键值字典，固定表格渲染；值为 HTML 时原样输出
+                                    <table class="table table-condensed widget-table">
+                                        <tbody>
+                                            @foreach (var kv in (IDictionary<String, Object>)item.Data)
+                                            {
+                                                <tr>
+                                                    <td class="w-name">@kv.Key</td>
+                                                    <td class="w-value">@Html.Raw(kv.Value)</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                    break;
+                                case WidgetTypes.Chart:
+                                    // 图表卡：widget 输出 ECharts 数据；配置 ChartUrl 后定时刷新追加
+                                    if (item.Data is ECharts chart)
+                                    {
+                                        @await Html.PartialAsync("_ECharts", chart)
+                                        if (!info.ChartUrl.IsNullOrEmpty())
+                                        {
+                                            <script>
+                                                $(function () {
+                                                    var chart = chart_@(chart.Name);
+                                                    if (!chart) return;
+                                                    var max = 60;
+                                                    // 刷新间隔（秒）由部件元数据声明，内联到 JS
+                                                    var interval = @(info.ChartInterval > 0 ? info.ChartInterval : 5);
+                                                    setInterval(function () {
+                                                        $.get('@info.ChartUrl', function (data) {
+                                                            if (!data || !data.xs || !data.xs.length) return;
+                                                            var opt = chart.getOption();
+                                                            var xs = opt.xAxis[0].data;
+                                                            data.xs.forEach(function (x) { xs.push(x); if (xs.length > max) xs.shift(); });
+                                                            (data.series || []).forEach(function (arr, i) {
+                                                                var s = opt.series[i].data;
+                                                                arr.forEach(function (v) { s.push(v); if (s.length > max) s.shift(); });
+                                                            });
+                                                            chart.setOption({ xAxis: { data: xs }, series: opt.series.map(function (s) { return { data: s.data }; }) });
+                                                        });
+                                                    }, interval * 1000);
+                                                });
+                                            </script>
+                                        }
+                                    }
+                                    break;
+                                default:
+                                    // 内容卡：自定义视图，ViewPath 指定路径，默认约定目录
+                                    var viewPath = info.ViewPath;
+                                    if (String.IsNullOrEmpty(viewPath)) viewPath = $"~/Areas/Admin/Views/Widgets/{info.Name}.cshtml";
+                                    @try
+                                    {
+                                        await Html.RenderPartialAsync(viewPath, item.Data);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        <div class="widget-error">组件加载失败：@ex.Message</div>
+                                    }
+                                    break;
                             }
                         </div>
                     </div>

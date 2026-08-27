@@ -175,12 +175,19 @@ public class IndexController : ControllerBaseX, IPageDataContext
         var mi = MachineInfo.Current ?? new MachineInfo();
         var process = Process.GetCurrentProcess();
 
+        var cpu = Math.Round(mi.CpuRate * 100, 1);
+        // 内存使用率百分比，与曲线单 Y 轴（0~100%）同尺度
+        var memPct = mi.Memory > 0 ? Math.Round((mi.Memory - mi.AvailableMemory) * 100.0 / mi.Memory, 1) : 0;
+
+        // 图表卡轮询契约：xs 为 X 轴新点数组，series 为各系列新数据数组，固定视图定时追加
         return Json(new
         {
-            time = DateTime.Now.ToString("HH:mm:ss"),
-            cpu = Math.Round(mi.CpuRate * 100, 1),
-            // 内存使用率百分比，与曲线单 Y 轴（0~100%）同尺度
-            memPct = mi.Memory > 0 ? Math.Round((mi.Memory - mi.AvailableMemory) * 100.0 / mi.Memory, 1) : 0,
+            xs = new[] { DateTime.Now.ToString("HH:mm:ss") },
+            series = new[]
+            {
+                new[] { cpu },
+                new[] { memPct },
+            },
             memUsed = (mi.Memory - mi.AvailableMemory) / 1024 / 1024,
             memTotal = mi.Memory / 1024 / 1024,
         });
