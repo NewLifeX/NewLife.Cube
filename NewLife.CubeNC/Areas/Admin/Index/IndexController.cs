@@ -179,6 +179,8 @@ public class IndexController : ControllerBaseX, IPageDataContext
         {
             time = DateTime.Now.ToString("HH:mm:ss"),
             cpu = Math.Round(mi.CpuRate * 100, 1),
+            // 内存使用率百分比，与曲线单 Y 轴（0~100%）同尺度
+            memPct = mi.Memory > 0 ? Math.Round((mi.Memory - mi.AvailableMemory) * 100.0 / mi.Memory, 1) : 0,
             memUsed = (mi.Memory - mi.AvailableMemory) / 1024 / 1024,
             memTotal = mi.Memory / 1024 / 1024,
         });

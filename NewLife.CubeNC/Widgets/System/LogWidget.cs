@@ -1,6 +1,7 @@
 using XCode;
 using XCode.Membership;
 using XLog = XCode.Membership.Log;
+using static XCode.Membership.Log;
 
 namespace NewLife.Cube.Widgets.System;
 
@@ -18,20 +19,20 @@ public class LogWidget : IWidget
         var snow = XLog.Meta.Factory.Snow;
 
         // 24h 统计
-        var total = XLog.FindCount(XLog._.ID.Between(start, now, snow));
-        var error = XLog.FindCount(XLog._.ID.Between(start, now, snow) & XLog._.Success == false);
+        var total = XLog.FindCount(_.ID.Between(start, now, snow));
+        var error = XLog.FindCount(_.ID.Between(start, now, snow) & _.Success == false);
 
         // 最近7天日志趋势
         var trend = new List<Object>();
         for (var i = 6; i >= 0; i--)
         {
             var day = now.Date.AddDays(-i);
-            var count = XLog.FindCount(XLog._.ID.Between(day, day.AddDays(1), snow));
+            var count = XLog.FindCount(_.ID.Between(day, day.AddDays(1), snow));
             trend.Add(new { day = day.ToString("MM-dd"), count });
         }
 
-        // 最近异常
-        var recent = XLog.FindAll(XLog._.Success == false & XLog._.ID.Between(start, now, snow), "CreateTime desc", null, 0, 10);
+        // 最近异常。雪花Id，按 Id 降序
+        var recent = XLog.FindAll(_.Success == false & _.ID.Between(start, now, snow), "ID desc", null, 0, 10);
 
         return new
         {

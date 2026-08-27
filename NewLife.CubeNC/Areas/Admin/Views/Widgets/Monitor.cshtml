@@ -24,7 +24,7 @@
                 if (cpu.length > 60) cpu.shift();
 
                 var mem = (opt.series && opt.series[1] && opt.series[1].data) || [];
-                mem.push(data.memUsed);
+                mem.push(data.memPct);
                 if (mem.length > 60) mem.shift();
 
                 chart.setOption({ xAxis: { data: xs }, series: [{ data: cpu }, { data: mem }] });

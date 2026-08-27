@@ -1,5 +1,6 @@
 using XCode;
 using XLog = XCode.Membership.Log;
+using static XCode.Membership.Log;
 
 namespace NewLife.Cube.Widgets.System;
 
@@ -13,13 +14,14 @@ public class Log24hWidget : IWidget
         var now = DateTime.Now;
         // Log.Id 是雪花Id，带时间信息，用 Id 时间范围过滤
         var snow = XLog.Meta.Factory.Snow;
-        var count = XLog.FindCount(XLog._.ID.Between(now.AddHours(-24), now, snow));
+        var count = XLog.FindCount(_.ID.Between(now.AddHours(-24), now, snow));
 
         return new
         {
             Value = count.ToString("n0"),
             Trend = "最近24小时",
-            Url = "/Admin/Log",
+            // 跳转日志页带参数：24小时内日志
+            Url = $"/Admin/Log?dtStart={now.AddHours(-24):yyyy-MM-dd HH:mm:ss}&dtEnd={now:yyyy-MM-dd HH:mm:ss}",
         };
     }
 }

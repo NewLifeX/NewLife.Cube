@@ -1,6 +1,7 @@
 using XCode;
 using XCode.Membership;
 using XLog = XCode.Membership.Log;
+using static XCode.Membership.Log;
 
 namespace NewLife.Cube.Widgets.System;
 
@@ -17,7 +18,8 @@ public class MyActivityWidget : IWidget
         // Log.Id 是雪花Id，带时间信息，用 Id 时间范围过滤
         var snow = XLog.Meta.Factory.Snow;
 
-        var list = XLog.FindAll(XLog._.UserName == name & XLog._.ID.Between(now.AddDays(-7), now, snow), "CreateTime desc", null, 0, 10);
+        // 雪花Id，按 Id 降序
+        var list = XLog.FindAll(_.UserName == name & _.ID.Between(now.AddDays(-7), now, snow), "ID desc", null, 0, 10);
 
         return new
         {
