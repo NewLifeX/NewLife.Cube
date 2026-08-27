@@ -21,230 +21,63 @@
     <link href="@res/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
     <!-- 自定义样式-->
     <link href="@res/Cube.css" rel="stylesheet" />
-    <!-- 仅用于过渡期兼容-->
-    <style>
-        .login-logo {
-            width: 130px;
-            font-size: 130px;
-            color: #4CA6FF;
-            margin-top: 50px;
-        }
-
-        .cube-login {
-            background: #fff;
-            padding-bottom: 0;
-            border-radius: 15px;
-            text-align: center;
-        }
-
-            .cube-login .heading {
-                display: block;
-                font-size: 24px;
-                font-weight: 700;
-                padding: 5px 0;
-                margin-bottom: 20px;
-            }
-
-            .cube-login .form-group {
-                padding: 0 40px;
-                margin: 0 0 25px 0;
-                position: relative;
-                display: block;
-            }
-
-                .cube-login .form-group.clear-fix {
-                    overflow: hidden;
-                    clear: both;
-                }
-
-            .cube-login .form-control {
-                border-radius: 20px;
-                box-shadow: none;
-                padding: 0 20px 0 45px;
-                height: 40px;
-                transition: all 0.3s ease 0s;
-            }
-
-                .cube-login .form-control:focus {
-                    background: #e0e0e0;
-                    box-shadow: none;
-                    outline: 0 none;
-                }
-
-            .cube-login .form-group i {
-                position: absolute;
-                top: 12px;
-                left: 60px;
-                font-size: 17px;
-                color: #c8c8c8;
-                transition: all 0.5s ease 0s;
-            }
-
-            .cube-login .form-group a {
-                position: absolute;
-                top: 12px;
-                right: 0px;
-                font-size: 17px;
-                color: #c8c8c8;
-                transition: all 0.5s ease 0s;
-                color: #4CA6FF;
-            }
-
-            .cube-login .form-control:focus + i {
-                color: #00b4ef;
-            }
-
-            .cube-login .fa-question-circle {
-                display: inline-block;
-                position: absolute;
-                top: 12px;
-                right: 60px;
-                font-size: 20px;
-                color: #808080;
-                transition: all 0.5s ease 0s;
-            }
-
-                .cube-login .fa-question-circle:hover {
-                    color: #000;
-                }
-
-            .cube-login .main-checkbox {
-                float: left;
-                width: 20px;
-                height: 20px;
-                background: #11a3fc;
-                border-radius: 50%;
-                position: relative;
-                margin: 5px 0 0 5px;
-                border: 1px solid #11a3fc;
-            }
-
-                .cube-login .main-checkbox label {
-                    width: 20px;
-                    height: 20px;
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    cursor: pointer;
-                }
-
-                    .cube-login .main-checkbox label:after {
-                        content: "";
-                        width: 10px;
-                        height: 5px;
-                        position: absolute;
-                        top: 5px;
-                        left: 4px;
-                        border: 3px solid #fff;
-                        border-top: none;
-                        border-right: none;
-                        background: transparent;
-                        opacity: 0;
-                        -webkit-transform: rotate(-45deg);
-                        transform: rotate(-45deg);
-                    }
-
-                .cube-login .main-checkbox input[type=checkbox] {
-                    visibility: hidden;
-                }
-
-                    .cube-login .main-checkbox input[type=checkbox]:checked + label:after {
-                        opacity: 1;
-                    }
-
-            .cube-login .text {
-                float: left;
-                margin-left: 7px;
-                line-height: 20px;
-                padding-top: 5px;
-                text-transform: capitalize;
-            }
-
-            .cube-login .btn {
-                float: right;
-                font-size: 14px;
-                color: #fff;
-                background: #00b4ef;
-                border-radius: 30px;
-                padding: 8px 50px;
-                border: none;
-                text-transform: capitalize;
-                transition: all 0.5s ease 0s;
-            }
-
-        .ui.divider {
-            margin: 1rem 0rem;
-            line-height: 1;
-            height: 0em;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: rgba(0, 0, 0, 0.85);
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            -webkit-tap-highlight-color: rgba(0, 0, 0, 0)
-        }
-
-        .ui.horizontal.divider {
-            display: table;
-            white-space: nowrap;
-            height: auto;
-            line-height: 1;
-            text-align: center
-        }
-
-            .ui.horizontal.divider:before,
-            .ui.horizontal.divider:after {
-                content: '';
-                display: table-cell;
-                position: relative;
-                top: 50%;
-                width: 50%;
-                background-repeat: no-repeat
-            }
-
-            .ui.horizontal.divider:before {
-                background-position: right 1em top 50%;
-            }
-
-            .ui.horizontal.divider:after {
-                background-position: left 1em top 50%
-            }
-
-        .ui.divider > .icon {
-            margin: 0rem;
-            font-size: 1rem;
-            height: 1em;
-            vertical-align: middle
-        }
-
-        .ui.divider {
-            font-size: 1rem
-        }
-
-        .ui.horizontal.divider:before,
-        .ui.horizontal.divider:after {
-            background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABaAAAAACCAYAAACuTHuKAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyFpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDE0IDc5LjE1MTQ4MSwgMjAxMy8wMy8xMy0xMjowOToxNSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChXaW5kb3dzKSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo1OThBRDY4OUNDMTYxMUU0OUE3NUVGOEJDMzMzMjE2NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo1OThBRDY4QUNDMTYxMUU0OUE3NUVGOEJDMzMzMjE2NyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjU5OEFENjg3Q0MxNjExRTQ5QTc1RUY4QkMzMzMyMTY3IiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU5OEFENjg4Q0MxNjExRTQ5QTc1RUY4QkMzMzMyMTY3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+VU513gAAADVJREFUeNrs0DENACAQBDBIWLGBJQby/mUcJn5sJXQmOQMAAAAAAJqt+2prAAAAAACg2xdgANk6BEVuJgyMAAAAAElFTkSuQmCC");
-        }
-    </style>
+    <!-- 登录页样式（独立 css，避免与 Cube.css 旧 .cube-login 样式冲突） -->
+    <link href="@res/cube-login.css" rel="stylesheet" />
+    <!-- 图标：FontAwesome（本地） -->
+    <link href="@res/bootstrap/css/font-awesome.min.css" rel="stylesheet" />
 </head>
 <body>
-    <!--布局容器-->
-    <div class="container">
-        <div class="row">
-            <div class="col-md-6 col-md-offset-3">
-                <div class="tab-content">
-                    @*<partial name="_Login_Login"/>*@
-                    @await Html.PartialAsync("_Login_Login", Model)@*登录页*@
-                    @await Html.PartialAsync("_Login_Forgot", Model)@*找回密码页*@
-                    @await Html.PartialAsync("_Login_Register", Model)@*注册页*@
-                    @await Html.PartialAsync("_Login_Login3", Model)@*第三方登录*@
+    <!-- 登录提示条（对应 LoginTip，可关闭） -->
+    @if (!Model.LoginTip.IsNullOrEmpty())
+    {
+        <div class="login-tip" id="loginTip">
+            @Html.Raw(Model.LoginTip)
+            <span class="close-tip" onclick="document.getElementById('loginTip').style.display='none'">&times;</span>
+        </div>
+    }
+
+    <div class="login-wrapper">
+        <div class="login-card">
+            <!-- 品牌区 -->
+            <div class="brand">
+                <div class="brand-logo">
+                    @if (!Model.Logo.IsNullOrEmpty())
+                    {
+                        <img src="@Model.Logo" alt="@Model.DisplayName" />
+                    }
+                    else
+                    {
+                        <i class="fa fa-cloud"></i>
+                    }
                 </div>
+                <h1>@Model.DisplayName</h1>
+                <p>登录后即可访问管理后台</p>
+            </div>
+
+            <!-- Tab 切换：登录 / 注册 -->
+            <div class="login-tabs">
+                <a class="active" data-tab="Login">登录</a>
+                @if (Model.AllowRegister)
+                {
+                    <a data-tab="Register">注册</a>
+                }
+            </div>
+
+            <!-- 面板 -->
+            <div class="tab-content">
+                @await Html.PartialAsync("_Login_Login", Model)@*登录页*@
+                @await Html.PartialAsync("_Login_Register", Model)@*注册页*@
+            </div>
+
+            <!-- 第三方登录（仅登录面板显示） -->
+            <div id="thirdParty">
+                @await Html.PartialAsync("_Login_Login3", Model)@*第三方登录*@
             </div>
         </div>
+
+        <!-- 页脚（由 _Footer 提供） -->
     </div>
+
     <!-- JQuery作为一等公民，页面内部随时可能使用 -->
     <script src="@res/js/jquery-3.6.0.min.js"></script>
     <script src="@res/bootstrap/js/bootstrap.min.js"></script>
@@ -258,24 +91,84 @@
 
     <script>
         $(function () {
+            // ========== Tab 切换（登录/注册） ==========
+            $('.login-tabs a, [data-tab-link]').on('click', function () {
+                var tab = $(this).data('tab') || $(this).data('tab-link');
+                $('.login-tabs a').removeClass('active')
+                    .filter('[data-tab="' + tab + '"]').addClass('active');
+                $('.tab-content .tab-pane').removeClass('active')
+                    .filter('#' + tab).addClass('active');
+
+                // 第三方登录只在登录面板显示
+                $('#thirdParty').toggle(tab === 'Login');
+            });
+
+            // ========== 密码可见切换 ==========
+            $('.pwd-toggle').on('click', function () {
+                var target = $('#' + $(this).data('target'));
+                var isPwd = target.attr('type') === 'password';
+                target.attr('type', isPwd ? 'text' : 'password');
+                $(this).find('i').toggleClass('fa-eye fa-eye-slash');
+            });
+
+            // ========== 登录：保留 RSA 非对称加密 ==========
+            // 在用户名和密码框按回车时触发登录
+            $("#username, #password").keydown(function (e) {
+                if (e.key === 'Enter' || e.keyCode === 13) {
+                    $("#login-btn").click();
+                }
+            });
+
+            // 提交前动态获取新鲜 RSA 密钥，避免页面停留过久导致密钥过期
+            // 对齐 WebAPI 版 GET /Auth/Challenge 语义
+            function fetchLoginKey() {
+                return $.ajax({
+                    url: '@Url.Action("GetLoginKey", "User", new { area = "Admin" })',
+                    type: 'GET',
+                    dataType: 'json'
+                });
+            }
+
             $("#login-btn").click(function () {
                 var username = $("#username").val();
                 var password = $("#password").val();
 
-                if(username == ''){
+                if (username == '') {
                     alert('请输入用户名');
                     return;
                 }
-                if(password == ''){
+                if (password == '') {
                     alert('请输入密码');
                     return;
                 }
 
-                var resultPWD=encryptPwd(password);
+                var btn = $(this);
+                btn.prop('disabled', true);
 
-                $('#pwd').val(resultPWD);
-                $("#cube-login").submit();
+                // 先获取新密钥，成功则用新公钥加密；失败降级为页面初始公钥
+                fetchLoginKey().done(function (data) {
+                    if (data && data.code == 0 && data.data) {
+                        $('#challenge_id_container').val(data.data.publicKey);
+                        $('input[name="challengeId"]').val(data.data.challengeId);
+                    }
+                    submitLogin(password, btn);
+                }).fail(function () {
+                    submitLogin(password, btn);
+                });
             });
+
+            function submitLogin(password, btn) {
+                var challengeId = $('#challenge_id_container').val();
+
+                if (challengeId && challengeId.length > 0) {
+                    var resultPWD = encryptPwd(password);
+                    $('#pwd').val(resultPWD);
+                } else {
+                    $('#pwd').val(password);
+                }
+
+                $("#login-pwd").submit();
+            }
 
             function encryptPwd(p) {
                 var rsa = new JSEncrypt();

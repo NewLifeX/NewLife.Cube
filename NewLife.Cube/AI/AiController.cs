@@ -1,11 +1,16 @@
 ﻿using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Reflection;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using NewLife;
+using NewLife.AI.Models;
+using NewLife.AI.Services;
 using NewLife.AI.Tools;
 using NewLife.Collections;
 using NewLife.Common;
@@ -40,6 +45,16 @@ namespace NewLife.Cube.Controllers;
 [Route("Ai/[action]")]
 public class AiController : ControllerBaseX
 {
+    /// <summary>SSE 事件的 JSON 序列化选项（规范协议，camelCase + 忽略 null + 中文直出 + Int64 超 JS 安全整数转字符串）</summary>
+    private static readonly JsonSerializerOptions _sseJsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        // 允许中文等非 ASCII 字符直接输出，避免 SSE 数据中出现 \uXXXX 转义
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        Converters = { new SafeInt64Converter() },
+    };
+
     #region AI 对话
     /// <summary>AI 对话（全局统一端点）。按请求目标解析页面控制器能力，SSE 流式返回</summary>
     /// <returns></returns>
@@ -48,19 +63,26 @@ public class AiController : ControllerBaseX
     [HttpPost]
     public async Task<ActionResult> AiChat()
     {
-        // 请求校验（AISwitch/服务注册/请求体）与 SSE 输出管道由本控制器公共逻辑统一提供
-        var (error, svc, req) = await ParseAsync(this);
-        if (error != null || svc == null || req == null) return error!;
+        // 请求校验（AISwitch/请求体）与 SSE 输出管道由本控制器公共逻辑统一提供
+        var (error, request) = await ParseAsync(this);
+        if (error != null || request == null) return error!;
+
+        // 会话键按用户+页面作用域：前端 sessionId 已按页面生成（sessionStorage），此处纵深防御，防止跨用户/跨页面串话。内联构建，不新增类型
+        var uid = HttpContext.User.Identity is IUser u ? u.ID : 0;
+        if (!request.SessionId.IsNullOrEmpty())
+            request.SessionId = $"ai:{uid}:{request.Url}:{request.SessionId}";
 
         // 当前查询条件（_query Base64 解码）
-        var pager = DecodePager(req);
+        var pager = DecodePager(request);
 
         // 解析目标页面控制器：实现 IEntityAiContext 则使用实体工具与定制提示词，否则通用
-        var target = ResolveTarget(req);
+        var target = ResolveTarget(request, pager);
 
         var registry = new ToolRegistry();
         registry.AddTools(new SystemInfoToolService());
         registry.AddTools(new BuiltinToolService());
+        // 联网工具：网页抓取/搜索/IP 归属地/天气/翻译（NewLife.AI 内置，经 DI 解析免费实现）
+        registry.AddTools(new NetworkToolService(HttpContext.RequestServices));
 
         String systemPrompt;
         if (target is IEntityAiContext eac)
@@ -69,23 +91,23 @@ public class AiController : ControllerBaseX
             if (!CheckEntityPermission(target.GetType())) return Json(403, null, "无权访问该页面数据");
 
             // 实体上下文工具集由目标控制器自建（保留子类重载 CreateCubeTools），数据查询委托走其 SearchData
-            registry.AddTools(eac.CreateCubeTools(pager, req.Id));
-            systemPrompt = eac.BuildChatSystemPrompt(req, pager);
+            registry.AddTools(eac.CreateCubeTools(pager, request.Id));
+            systemPrompt = eac.BuildChatSystemPrompt(request, pager);
         }
         else if (target is IFormAiContext fac)
         {
             // 配置表单页（如魔方设置）：注册表单工具（get_form_schema / fill_form）+ 表单提示词，支持 AI 填表
             registry.AddTools(new ConfigFormToolService(fac));
-            systemPrompt = fac.BuildFormSystemPrompt(req);
+            systemPrompt = fac.BuildFormSystemPrompt(request);
         }
         else
         {
             // 其他非实体页面（或解析失败）：通用工具 + 通用提示词
-            systemPrompt = BuildChatSystemPrompt(req);
+            systemPrompt = BuildChatSystemPrompt(request);
         }
 
         // SSE 输出（含浏览器操作工具注册；get_page_context 以目标控制器为宿主检测 IPageDataContext）
-        await RunSseAsync(this, svc, req, systemPrompt, registry, target);
+        await RunSseAsync(this, request, systemPrompt, registry, target);
 
         return new EmptyResult();
     }
@@ -121,35 +143,32 @@ public class AiController : ControllerBaseX
 
     /// <summary>解析并校验 AI 对话请求</summary>
     /// <param name="ctrl">当前控制器</param>
-    /// <returns>校验失败返回错误响应与空值；成功返回 <see cref="IAIChatService"/> 与对话请求</returns>
-    private static async Task<(ActionResult? Error, IAIChatService? Svc, AiChatRequest? Req)> ParseAsync(ControllerBaseX ctrl)
+    /// <returns>校验失败返回错误响应与空值；成功返回对话请求</returns>
+    private static async Task<(ActionResult? Error, CubeAiChatRequest? Req)> ParseAsync(ControllerBaseX ctrl)
     {
         var set = CubeSetting.Current;
-        if (!set.AISwitch) return (ctrl.Json(500, null, "AI 未启用，请联系系统管理员开启 AISwitch"), null, null);
-
-        var svc = ctrl.HttpContext.RequestServices.GetService<IAIChatService>();
-        if (svc == null) return (ctrl.Json(500, null, "AI 对话服务未注册"), null, null);
+        if (!set.AISwitch) return (ctrl.Json(500, null, "AI 未启用，请联系系统管理员开启 AISwitch"), null);
 
         // 读取 JSON 请求体
         var body = await new StreamReader(ctrl.Request.Body).ReadToEndAsync();
-        if (body.IsNullOrEmpty()) return (ctrl.Json(500, null, "请求体为空"), null, null);
-        var req = body.ToJsonEntity<AiChatRequest>();
-        if (req == null || req.Message.IsNullOrEmpty()) return (ctrl.Json(500, null, "消息不能为空"), null, null);
+        if (body.IsNullOrEmpty()) return (ctrl.Json(500, null, "请求体为空"), null);
+        var req = body.ToJsonEntity<CubeAiChatRequest>();
+        if (req == null || req.Message.IsNullOrEmpty()) return (ctrl.Json(500, null, "消息不能为空"), null);
 
-        return (null, svc, req);
+        return (null, req);
     }
 
     /// <summary>解析对话请求中的查询条件（_query Base64 解码），失败返回 null</summary>
     /// <param name="req">对话请求</param>
     /// <returns>分页查询条件；无查询或解析失败时返回 null</returns>
-    private static Pager? DecodePager(AiChatRequest req)
+    private static Pager? DecodePager(CubeAiChatRequest req)
     {
         if (req.Query.IsNullOrEmpty()) return null;
 
         try
         {
             var queryData = req.Query.ToBase64().ToStr();
-            var pager = new Pager();
+            var pager = new Pager(WebHelper.Params);
             pager.Parse(queryData);
             return pager;
         }
@@ -160,16 +179,15 @@ public class AiController : ControllerBaseX
         }
     }
 
-    /// <summary>执行 SSE 流式对话。设置响应头、注册浏览器工具、调用对话服务</summary>
+    /// <summary>执行 SSE 流式对话。设置响应头、注册浏览器工具、内联对话核心逻辑（原 CubeAIChatService 合并）</summary>
     /// <param name="ctrl">当前控制器</param>
-    /// <param name="svc">AI 对话服务</param>
     /// <param name="req">对话请求</param>
     /// <param name="systemPrompt">系统提示词（由宿主构建以保留子类重载）</param>
     /// <param name="registry">工具注册表（宿主可先追加实体上下文工具与内置工具）</param>
     /// <param name="contextCtrl">目标页面控制器。用于 get_page_context 检测 <see cref="IPageDataContext"/> 服务端实现；为空时回退 ctrl</param>
-    private static async Task RunSseAsync(ControllerBaseX ctrl, IAIChatService svc, AiChatRequest req, String systemPrompt, ToolRegistry registry, ControllerBaseX? contextCtrl = null)
+    private static async Task RunSseAsync(ControllerBaseX ctrl, AiChatRequest req, String systemPrompt, ToolRegistry registry, ControllerBaseX? contextCtrl = null)
     {
-        // SSE 写回调：ChatAsync 与浏览器工具服务共用，浏览器工具经它下发 run_js 事件到前端
+        // SSE 写回调：浏览器工具服务经它下发 run_js 事件到前端，对话事件同样经它输出
         Func<String, Task> writeEvent = async json =>
         {
             await ctrl.Response.WriteAsync($"data: {json}\n\n", ctrl.HttpContext.RequestAborted);
@@ -191,8 +209,39 @@ public class AiController : ControllerBaseX
         ctrl.Response.Headers["Cache-Control"] = "no-cache";
         ctrl.Response.Headers["X-Accel-Buffering"] = "no";
 
-        // 对话核心逻辑下沉到全局服务：会话管理、工具循环、SSE 事件、空响应兜底
-        await svc.ChatAsync(req, systemPrompt, [registry], writeEvent, ctrl.HttpContext.RequestAborted);
+        // 对话核心：NAI 轻量编排服务（会话历史 + 工具循环 + 空响应兜底 + 规范事件流）。会话存储经 DI 单例（MemoryCache 1h 过期）
+        var set = CubeSetting.Current;
+        var think = req.Think || set.AIDefaultThink;
+
+        // 浏览器通道上下文：工具经 ToolCallContext.Items 读取（SSE 写回调/检查点服务/用户编号），实现工具与宿主的松耦合
+        var options = new ChatOptions
+        {
+            Model = set.AIModel,
+            EnableThinking = think,
+            Temperature = think ? 0.5 : 0.3,
+        };
+        options.Items[CubeBrowserContext.BrowserContextKey] = new CubeBrowserContext
+        {
+            Writer = writeEvent,
+            CheckpointService = cp,
+            UserId = user?.ID ?? 0,
+            TimeoutSeconds = 30,
+        };
+
+        var aiSvc = ctrl.HttpContext.RequestServices.GetService<IAIService>();
+        if (aiSvc == null)
+        {
+            await writeEvent(new { type = "error", message = "AI 服务未注册" }.ToJson());
+            return;
+        }
+        // 每请求以当前配置创建编排服务（AI 客户端随配置变化重建，运行中修改配置即时生效）；会话历史经单例 ChatSessionService 保持
+        var sessions = ctrl.HttpContext.RequestServices.GetService<ChatSessionService>();
+        var ai = new AiChatService(aiSvc.Client, sessions);
+
+        await foreach (var ev in ai.ChatAsync(req, systemPrompt, [registry], options, ctrl.HttpContext.RequestAborted))
+        {
+            await writeEvent(JsonSerializer.Serialize(ev, _sseJsonOptions));
+        }
     }
     #endregion
 
@@ -200,11 +249,12 @@ public class AiController : ControllerBaseX
     private static readonly ConcurrentDictionary<String, (Type Type, ControllerActionDescriptor? Descriptor)> _targets = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>解析对话请求的目标页面控制器，并初始化其实例（共享当前请求上下文）</summary>
-    /// <param name="req">对话请求</param>
+    /// <param name="request">对话请求</param>
+    /// <param name="pager">分页信息</param>
     /// <returns>目标控制器实例；解析或初始化失败返回 null（按通用流程处理）</returns>
-    private ControllerBaseX? ResolveTarget(AiChatRequest req)
+    private ControllerBaseX? ResolveTarget(CubeAiChatRequest request, Pager pager)
     {
-        var (type, ad) = ResolveTargetInfo(req);
+        var (type, ad) = ResolveTargetInfo(request);
         if (type == null) return null;
 
         try
@@ -215,8 +265,8 @@ public class AiController : ControllerBaseX
 
             // 共享当前请求上下文：HttpContext 复用，路由数据与动作描述符指向目标控制器
             var routeData = new RouteData();
-            if (!req.Area.IsNullOrEmpty()) routeData.Values["area"] = req.Area;
-            routeData.Values["controller"] = req.Controller;
+            if (!request.Area.IsNullOrEmpty()) routeData.Values["area"] = request.Area;
+            routeData.Values["controller"] = request.Controller;
             ctrl.ControllerContext = new ControllerContext
             {
                 HttpContext = HttpContext,
@@ -230,7 +280,8 @@ public class AiController : ControllerBaseX
             };
 
             // 初始化控制器状态（Session/Menu/CurrentUser/Token），与 MVC 动作执行前一致
-            ctrl.OnActionExecuting(new ActionExecutingContext(ctrl.ControllerContext, [], new Dictionary<String, Object?>(), ctrl));
+            var ps = new Dictionary<String, Object?> { ["p"] = pager };
+            ctrl.OnActionExecuting(new ActionExecutingContext(ctrl.ControllerContext, [], ps, ctrl));
 
             return ctrl;
         }
@@ -245,7 +296,7 @@ public class AiController : ControllerBaseX
     /// <summary>按区域与控制器名解析目标控制器类型与动作描述符</summary>
     /// <param name="req">对话请求</param>
     /// <returns>控制器类型与描述符；未找到返回空</returns>
-    private (Type? Type, ControllerActionDescriptor? Descriptor) ResolveTargetInfo(AiChatRequest req)
+    private (Type? Type, ControllerActionDescriptor? Descriptor) ResolveTargetInfo(CubeAiChatRequest req)
     {
         if (req.Controller.IsNullOrEmpty()) return (null, null);
 

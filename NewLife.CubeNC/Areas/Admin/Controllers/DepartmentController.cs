@@ -15,6 +15,8 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [Menu(95, true, Icon = "fa-users", Mode = MenuModes.Admin | MenuModes.Tenant)]
 public class DepartmentController : EntityController<Department, DepartmentModel>
 {
+    private readonly ITenantContext _tenantContext;
+
     static DepartmentController()
     {
         LogOnChange = true;
@@ -29,6 +31,13 @@ public class DepartmentController : EntityController<Department, DepartmentModel
         //AddFormFields.RemoveUpdateField();
     }
 
+    /// <summary>实例化</summary>
+    /// <param name="tenantContext">租户上下文</param>
+    public DepartmentController(ITenantContext tenantContext)
+    {
+        _tenantContext = tenantContext;
+    }
+
     /// <summary>获取字段信息</summary>
     /// <param name="kind"></param>
     /// <param name="model"></param>
@@ -37,7 +46,7 @@ public class DepartmentController : EntityController<Department, DepartmentModel
     {
         var rs = base.OnGetFields(kind, model);
 
-        if (TenantContext.CurrentId > 0)
+        if (_tenantContext.TenantId > 0)
         {
             switch (kind)
             {
@@ -84,7 +93,7 @@ public class DepartmentController : EntityController<Department, DepartmentModel
     {
         if (/*!post &&*/ type == DataObjectMethodType.Insert)
         {
-            if (entity.TenantId == 0) entity.TenantId = TenantContext.CurrentId;
+            if (entity.TenantId == 0) entity.TenantId = _tenantContext.TenantId;
             if (entity.ManagerId == 0) entity.ManagerId = ManageProvider.Provider.Current.ID;
         }
 

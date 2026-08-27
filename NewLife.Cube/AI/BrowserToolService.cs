@@ -9,7 +9,7 @@ namespace NewLife.Cube.AI;
 /// <summary>浏览器通道上下文。宿主在对话请求 <c>Items</c> 中注入（键 <see cref="BrowserContextKey"/>），
 /// 经 <see cref="ToolCallContext.Items"/> 透传给浏览器工具，实现宿主与工具的松耦合</summary>
 /// <remarks>
-/// 对话服务（<see cref="CubeAIChatService"/>）在发起 LLM 调用前写入 ChatOptions.Items，
+/// 宿主（<see cref="Controllers.AiController"/>）在发起 LLM 调用前把浏览器通道上下文写入 ChatOptions.Items，
 /// NewLife.AI 框架把请求级 Items 播种进每次工具调用的 ToolCallContext，
 /// 工具方法经 <c>context?[BrowserContextKey]</c> 读取，无需在构造工具实例时逐个注入。
 /// </remarks>

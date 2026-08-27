@@ -1,6 +1,5 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc.Filters;
-using NewLife;
+﻿using Microsoft.AspNetCore.Mvc.Filters;
+using NewLife.AI.Models;
 using NewLife.AI.Tools;
 using NewLife.Collections;
 using NewLife.Common;
@@ -79,6 +78,7 @@ public class ConfigController<TConfig> : ObjectController<TConfig>, IFormAiConte
         var name = typeof(TConfig).GetDisplayName() ?? typeof(TConfig).Name;
         return new { entity = name, description = "系统配置，可按分类查看各项设置项", mode, fields }.ToJson();
     }
+    #endregion
 
     /// <summary>生成配置字段值并回填前端表单。不写数据库，由用户确认后提交</summary>
     /// <param name="values">字段值 JSON 字符串，键为字段名，值为要填入的值，如 {"AIModel":"qwen3.7-plus"}</param>
@@ -160,7 +160,6 @@ public class ConfigController<TConfig> : ObjectController<TConfig>, IFormAiConte
 
         return sb.Return(true);
     }
-    #endregion
 
     /// <summary>已重载</summary>
     /// <param name="filterContext"></param>

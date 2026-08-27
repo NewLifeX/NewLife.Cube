@@ -58,6 +58,7 @@ public class SsoController : ControllerBaseX
     private readonly ITokenService _tokenService;
     private readonly IOAuthAppService _appService;
     private readonly IUserBindingService _bindingService;
+    private readonly ITenantContext _tenantContext;
 
     /// <summary>实例化单点登录控制器</summary>
     /// <param name="setting"></param>
@@ -67,9 +68,10 @@ public class SsoController : ControllerBaseX
     /// <param name="tokenService"></param>
     /// <param name="appService"></param>
     /// <param name="bindingService"></param>
+    /// <param name="tenantContext">租户上下文</param>
     public SsoController(CubeSetting setting, ICacheProvider cacheProvider,
         ISsoClientService clientService, ISsoServerService serverService,
-        ITokenService tokenService, IOAuthAppService appService, IUserBindingService bindingService)
+        ITokenService tokenService, IOAuthAppService appService, IUserBindingService bindingService, ITenantContext tenantContext)
     {
         _cache = cacheProvider.Cache;
         _setting = setting;
@@ -78,6 +80,7 @@ public class SsoController : ControllerBaseX
         _tokenService = tokenService;
         _appService = appService;
         _bindingService = bindingService;
+        _tenantContext = tenantContext;
 
         ((OAuthAppService)_appService).Setting = _setting;
 
@@ -110,7 +113,7 @@ public class SsoController : ControllerBaseX
 
         try
         {
-            var client = _clientService.GetClient(TenantContext.CurrentId, name);
+            var client = _clientService.GetClient(_tenantContext.TenantId, name);
             client.Init(GetUserAgent());
 
             return base.Redirect(OnLogin(client, null, rurl, null));
@@ -160,7 +163,7 @@ public class SsoController : ControllerBaseX
         if (id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(id));
 
         var name = id;
-        var client = _clientService.GetClient(TenantContext.CurrentId, name);
+        var client = _clientService.GetClient(_tenantContext.TenantId, name);
         client.Init(GetUserAgent());
 
         client.WriteLog("LoginInfo name={0} code={1} state={2} {3}", name, code, state, Request.GetRawUrl());
@@ -286,6 +289,10 @@ public class SsoController : ControllerBaseX
 
             HttpContext.ChooseTenant(user.ID);
 
+            // SSO 登录显式持久化选中的租户到 Cookie（与 CompleteLogin 一致，认证路径不再写 Cookie）
+            if (_tenantContext.Mode != TenantMode.None)
+                HttpContext.SaveTenant(_tenantContext.TenantId);
+
             // 防御性加固：确保 .Cube.Session cookie 已发送，防止外部OAuth回调后 Session ID 漂移
             var sessionKey = ".Cube.Session";
             var sid = Request.Cookies[sessionKey];
@@ -329,7 +336,7 @@ public class SsoController : ControllerBaseX
         // 先读Session，待会会清空
         var name = GetRequest("name");
         if (name.IsNullOrEmpty()) name = Session["Cube_Sso"] as String;
-        var client = _clientService.GetClient(TenantContext.CurrentId, name);
+        var client = _clientService.GetClient(_tenantContext.TenantId, name);
         client.Init(GetUserAgent());
 
         _bindingService.Logout();
@@ -396,7 +403,7 @@ public class SsoController : ControllerBaseX
         }
 
         var url = _clientService.GetReturnUrl(Request, true);
-        var client = _clientService.GetClient(TenantContext.CurrentId, id);
+        var client = _clientService.GetClient(_tenantContext.TenantId, id);
         client.Init(GetUserAgent());
 
         var redirect = _clientService.GetRedirect(Request, "~/Sso/LoginInfo/" + client.Name, client.Name);

@@ -100,6 +100,9 @@ public static class CubeService
         var set = CubeSetting.Current;
         services.AddSingleton(set);
 
+        // 租户上下文。封装静态 AsyncLocal 的无状态门面，注册为 Singleton 以避免被 Singleton 服务（如 UserService）捕获 scoped 依赖；租户状态本身由 AsyncLocal 按请求隔离
+        services.AddSingleton<ITenantContext, TenantContextService>();
+
         // 配置跨域处理，允许所有来源
         // CORS，全称 Cross-Origin Resource Sharing （跨域资源共享），是一种允许当前域的资源能被其他域访问的机制
         if (set.CorsOrigins == "*")
@@ -182,9 +185,6 @@ public static class CubeService
         services.AddSingleton<UserService>();
         services.AddSingleton<AccessService>();
         services.AddSingleton<TokenService>();
-        services.AddSingleton<SmsService>();
-        services.AddSingleton<MailService>();
-        services.TryAddSingleton<ICaptchaService, DrawingCaptchaService>();
         services.TryAddSingleton<IMfaService, TotpMfaService>();
 
         // SSO 服务

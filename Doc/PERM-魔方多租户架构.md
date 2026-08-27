@@ -134,33 +134,34 @@ XCode 实体类的全局拦截器，在数据增删改时自动处理租户逻�
 
 **注意**：当 `TenantContext.Current=null` 或 `TenantId=0`（管理后台）时，不执行校验。
 
-### 3.4 TenantMiddleware（租户中间件）
+### 3.4 DataScopeMiddleware（租户/数据权限中间件）
 
-位置：`NewLife.Cube.WebMiddleware.TenantMiddleware`
+位置：`NewLife.Cube.WebMiddleware.DataScopeMiddleware`（文件 `NewLife.CubeNC/WebMiddleware/DataScopeMiddleware.cs`，两工程链接共享）
 
-ASP.NET Core 中间件，负责在请求入口设置租户上下文：
+ASP.NET Core 中间件，负责在请求入口解析并设置租户上下文、校验租户归属，并在 finally 无条件恢复上下文（防 AsyncLocal 跨请求泄漏）：
 
 ```csharp
 public async Task Invoke(HttpContext ctx)
 {
-    var changed = false;
+    var oldTenant = TenantContext.Current;
     try
     {
         var set = CubeSetting.Current;
-        if (set.EnableTenant && TenantContext.Current == null)
+        if (set.EnableTenant && TenantContext.Current.GetTenantMode() == TenantMode.None)
         {
-            var tenantId = ctx.GetTenantId();  // 从 Header/Query/Cookie 获取
-            if (tenantId >= 0)
+            var tenantId = ctx.GetTenantId();  // X-Tenant(编码)/X-Tenant-Id/Query/Cookie
+            if (tenantId.GetTenantMode() != TenantMode.None)
             {
+                // 非管理员校验归属：管理后台仅系统管理员可进，普通用户须是成员
                 ctx.SetTenant(tenantId);
-                changed = true;
             }
+            // Shadow 期无标识兼容放行；Enforce 无标识（带令牌）400/403
         }
         await _next.Invoke(ctx);
     }
     finally
     {
-        if (changed) TenantContext.Current = null;
+        TenantContext.Current = oldTenant;  // 无条件恢复
     }
 }
 ```
@@ -537,7 +538,7 @@ public static IList<MyConfig> GetValids(Int32 tenantId)
 | TenantContext | `XCode/Membership/ITenantSource.cs` |
 | ITenantSource | `XCode/Membership/ITenantSource.cs` |
 | TenantModule | `XCode/Membership/ITenantSource.cs` |
-| TenantMiddleware | `NewLife.CubeNC/WebMiddleware/TenantMiddleware.cs` |
+| TenantMiddleware | `NewLife.CubeNC/WebMiddleware/DataScopeMiddleware.cs` |
 | ManagerProviderHelper | `NewLife.CubeNC/Membership/ManagerProviderHelper.cs` |
 | CreateWhere | `NewLife.Cube/Common/ReadOnlyEntityController2.cs` |
 | WhereBuilder | `XCode/Model/WhereBuilder.cs` |

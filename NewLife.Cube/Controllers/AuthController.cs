@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Caching;
@@ -19,28 +19,20 @@ namespace NewLife.Cube.Controllers;
 /// 旧版 UserController 的登录等接口保持不变，供 SSO 回调和旧版前后端分离项目使用。
 /// 本控制器与 UserController 共享 UserService 业务层，不重复实现认证逻辑。
 /// </remarks>
+/// <remarks>实例化认证控制器</remarks>
+/// <param name="userService">用户服务</param>
+/// <param name="verifyCode">验证码服务</param>
+/// <param name="authEnhanced">增强认证服务</param>
+/// <param name="cacheProvider">缓存提供者</param>
 [DisplayName("认证")]
 [ApiController]
 [Produces("application/json")]
 [Route("[controller]/[action]")]
-public class AuthController : ControllerBaseX
+[Menu(0, false, Mode = MenuModes.Admin | MenuModes.Tenant)]
+public class AuthController(UserService userService, VerifyCodeService verifyCode, AuthEnhancedService authEnhanced, ICacheProvider cacheProvider) : ControllerBaseX
 {
     private const String OAuthPendingPrefix = "OAuthPending:";
-
-    private readonly UserService _userService;
-    private readonly ICache _cache;
-    private readonly ICaptchaService _captcha;
-
-    /// <summary>实例化认证控制器</summary>
-    /// <param name="userService">用户服务</param>
-    /// <param name="cacheProvider">缓存提供者</param>
-    /// <param name="captchaService">验证码服务</param>
-    public AuthController(UserService userService, ICacheProvider cacheProvider, ICaptchaService captchaService)
-    {
-        _userService = userService;
-        _cache = cacheProvider.Cache;
-        _captcha = captchaService;
-    }
+    private readonly ICache _cache = cacheProvider.Cache;
 
     /// <summary>密码登录</summary>
     /// <param name="model">登录模型，包含用户名和密码</param>
@@ -57,7 +49,7 @@ public class AuthController : ControllerBaseX
 
         try
         {
-            var loginResult = _userService.Login(model, HttpContext);
+            var loginResult = authEnhanced.Login(model, HttpContext);
             // MFA 拦截：账密通过但需要二步验证
             if (loginResult != null && !loginResult.MfaToken.IsNullOrEmpty())
                 return res.ToFailApiResponse($"mfa_required:{loginResult.MfaToken}");
@@ -84,7 +76,7 @@ public class AuthController : ControllerBaseX
         try
         {
             var ip = UserHost;
-            var result = await _userService.SendVerifyCode(model, ip);
+            var result = await verifyCode.SendVerifyCode(model, ip);
             return result.Id.ToOkApiResponse("验证码已发送");
         }
         catch (Exception ex)
@@ -120,7 +112,7 @@ public class AuthController : ControllerBaseX
 
     /// <summary>获取图片验证码</summary>
     /// <remarks>
-    /// 当 CubeSetting.CaptchaScene 中包含对应场景位时，前端须先调用本接口获取验证码，
+    /// 当 CubeSetting.CaptchaScene 中包含对应场景位或风险自适应触发时，前端须先调用本接口获取验证码，
     /// 再将 captchaId 和用户填写的 captchaCode 随请求一并提交。
     /// 验证码 TTL 为 300 秒，校验成功后立即失效（防重放）。
     /// </remarks>
@@ -129,7 +121,7 @@ public class AuthController : ControllerBaseX
     [AllowAnonymous]
     public ActionResult Captcha()
     {
-        var result = _captcha.Generate();
+        var result = verifyCode.GenerateCaptcha();
         return Json(0, null, result);
     }
 
@@ -148,17 +140,27 @@ public class AuthController : ControllerBaseX
             else
                 t = Tenant.FindByCode(tenant) ?? Tenant.Find(Tenant._.Name == tenant);
         }
+        var model = new LoginConfigModel(t);
+
+        // 风险自适应验证码：按当前请求环境动态判定（CaptchaScene 强制 或 风险触发）
+        var ip = HttpContext.GetUserHost();
+        var deviceId = HttpContext.Request.Cookies["CubeDeviceId"];
+        if (deviceId.IsNullOrEmpty()) deviceId = HttpContext.Request.Cookies["CubeDeviceId0"];
+        model.ApplyRiskCaptcha(
+            verifyCode.RequireCaptcha(1, ip, null, deviceId),
+            verifyCode.RequireCaptcha(2, ip, null, deviceId),
+            verifyCode.RequireCaptcha(4, ip, null, null));
+
         // 不改 LoginConfigModel 形状：在 Auth 层附加 EnableTenant / EnableOAuthServer / StartPage（增量字段）
-        return Json(0, null, BuildLoginConfigPayload(t));
+        return Json(0, null, BuildLoginConfigPayload(model));
     }
 
     /// <summary>
     /// 组装登录页 payload：沿用 LoginConfigModel；oauth 始终来自可见 OAuthConfig（与 EnableOAuthServer 无关）。
     /// EnableOAuthServer 仅表示 Cube 作为 OAuth 服务端；StartPage 供 SPA 登录后落地页。
     /// </summary>
-    private static Object BuildLoginConfigPayload(Tenant tenant)
+    private static Object BuildLoginConfigPayload(LoginConfigModel model)
     {
-        var model = new LoginConfigModel(tenant);
         var set = CubeSetting.Current;
         return new
         {
@@ -189,6 +191,7 @@ public class AuthController : ControllerBaseX
     /// <returns>用户信息，包含权限和角色</returns>
     [HttpGet]
     [EntityAuthorize]
+    [Menu(0, false, Mode = MenuModes.Admin | MenuModes.Tenant)]
     public ActionResult Info()
     {
         if (ManageProvider.User is not User user) throw new Exception("当前登录用户无效！");
@@ -226,7 +229,7 @@ public class AuthController : ControllerBaseX
     [AllowAnonymous]
     public ActionResult Challenge()
     {
-        var (challengeId, publicKey) = _userService.GetPublicKey();
+        var (challengeId, publicKey) = userService.GetPublicKey();
         return Json(0, null, new { challengeId, publicKey });
     }
 
@@ -238,7 +241,7 @@ public class AuthController : ControllerBaseX
     public ApiResponse<Boolean> ResetPassword(ResetPwdModel model)
     {
         var ip = UserHost;
-        var result = _userService.ResetPassword(
+        var result = authEnhanced.ResetPassword(
             model.Username?.Trim() ?? "",
             model.Code?.Trim() ?? "",
             model.NewPassword?.Trim() ?? "",
@@ -274,7 +277,7 @@ public class AuthController : ControllerBaseX
     public ApiResponse<TokenModel> Register(AuthRegisterModel model)
     {
         var res = new TokenModel();
-        var registerResult = _userService.Register(model, HttpContext);
+        var registerResult = authEnhanced.Register(model, HttpContext);
         if (!registerResult.IsSuccess || registerResult.Data == null)
             return res.ToFailApiResponse(registerResult.Message);
 

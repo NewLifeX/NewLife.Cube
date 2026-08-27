@@ -13,7 +13,7 @@
     var uploadUrl = Url.Action("UploadFile");
     var entityId = (ViewContext.RouteData.Values["id"]?.ToString() ?? Context.Request.Query["id"].FirstOrDefault()) ?? "";
 }
-<div id="@editorId" style="min-height:250px;max-height:600px;overflow:hidden;background:#fff;resize:vertical"></div>
+<div id="@editorId" style="min-height:250px;max-height:600px;overflow-y:auto;overflow-x:hidden;background:#fff;resize:vertical"></div>
 <input type="hidden" id="@(name)_hidden" name="@name" value="@value" />
 <script>
     (function () {

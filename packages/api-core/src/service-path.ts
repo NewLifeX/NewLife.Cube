@@ -36,6 +36,7 @@ const CUBE_SERVICE_ACTIONS = new Set([
   'EntityComment',
   // 独立 AutomationController（[Route("Cube/Automation")]，无 /api）
   'Automation',
+  'Avatar'
 ]);
 
 /**

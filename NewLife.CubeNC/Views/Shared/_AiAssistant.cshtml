@@ -65,6 +65,7 @@
             </div>
         </div>
     </div>
+    <script>window.CubeAI_MermaidUrl = '@set.GetMermaidUrl()';</script>
     <script src="~/Content/marked/marked.min.js"></script>
     <script src="~/js/ai-assistant.js"></script>
     <style>
@@ -137,6 +138,11 @@
         }
         .ai-bubble pre::-webkit-scrollbar { height: 6px; }
         .ai-bubble pre::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+        /* Mermaid 图表：横向滚动容器 + 自适应宽度 SVG + 源码切换 */
+        .ai-bubble .ai-mermaid { overflow-x: auto; margin: 6px 0; }
+        .ai-bubble .ai-mermaid svg { max-width: 100%; height: auto; display: block; }
+        .ai-bubble .ai-mermaid details { margin-top: 6px; }
+        .ai-bubble .ai-mermaid summary { cursor: pointer; color: #888; font-size: 12px; user-select: none; }
         .ai-bubble ul, .ai-bubble ol { padding-left: 18px; margin: 4px 0; }
         .ai-bubble li { margin: 2px 0; }
         .ai-bubble input[type="checkbox"] { margin-right: 4px; }

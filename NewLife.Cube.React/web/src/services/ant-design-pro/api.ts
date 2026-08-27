@@ -6,6 +6,7 @@
  * 保持原有函数签名不变，方便存量页面零改动迁移。
  */
 import cubeApi from '@/services/cubeApi';
+import { encryptPassword, type AuthCategory } from '@cube/api-core';
 
 export async function currentUser() {
   return cubeApi.user.info();
@@ -15,7 +16,31 @@ export async function outLogin() {
   return cubeApi.user.logout();
 }
 
-export async function login(body: { username: string; password: string; challengeId?: string }) {
+export async function login(body: {
+  username: string;
+  password: string;
+  type?: string;
+  category?: AuthCategory;
+  challengeId?: string;
+  captchaId?: string;
+  captchaCode?: string;
+}) {
+  // 密码登录时，提交前动态获取 RSA 公钥加密密码（与 @cube/auth-logic 语义一致，避免明文传输）
+  // 手机/邮箱验证码登录传的是验证码，无需加密
+  const category = body.category || body.type || 'account';
+  if (category === 'account') {
+    try {
+      const cr = await cubeApi.user.getChallenge();
+      if (cr.data?.publicKey) {
+        const encrypted = await encryptPassword(body.password, cr.data.publicKey);
+        if (encrypted) {
+          body = { ...body, password: encrypted, challengeId: cr.data.challengeId };
+        }
+      }
+    } catch {
+      // Challenge 接口不可达或加密失败，降级明文（需服务端 AllowPlainPassword=true）
+    }
+  }
   return cubeApi.user.login(body);
 }
 

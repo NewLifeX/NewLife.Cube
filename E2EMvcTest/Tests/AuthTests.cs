@@ -45,12 +45,14 @@ public sealed class AuthTests : IAsyncLifetime
 
         await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Login");
         // 切到注册标签
-        await _page.ClickAsync("a[href='#Register']");
+        await _page.ClickAsync(".login-tabs a[data-tab=Register]");
         await _page.WaitForSelectorAsync("#Register.active, #Register.in");
 
-        await _page.FillAsync("#reg_username", _registeredUsername);
-        await _page.FillAsync("#reg_password", "Test@2026!");
-        await _page.FillAsync("#reg_password2", "Test@2026!");
+        await _page.FillAsync("#reg_pwd_username", _registeredUsername);
+        await _page.FillAsync("#reg_pwd_password", "Test@2026!");
+        await _page.FillAsync("#reg_pwd_password2", "Test@2026!");
+        // 前端强制勾选《用户协议》《隐私政策》，未勾选提交被拦截（自定义复选框隐藏原生 input，直接设值）
+        await _page.Locator("#reg-pwd input[name=agreement]").EvaluateAsync("el => el.checked = true");
         await _page.ClickAsync("#Register button[type=submit]");
         await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
@@ -74,12 +76,14 @@ public sealed class AuthTests : IAsyncLifetime
         var dupName = _registeredUsername ?? AppFixture.AdminUser;
 
         await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Login");
-        await _page.ClickAsync("a[href='#Register']");
+        await _page.ClickAsync(".login-tabs a[data-tab=Register]");
         await _page.WaitForSelectorAsync("#Register.active, #Register.in");
 
-        await _page.FillAsync("#reg_username", dupName);
-        await _page.FillAsync("#reg_password", "Test@2026!");
-        await _page.FillAsync("#reg_password2", "Test@2026!");
+        await _page.FillAsync("#reg_pwd_username", dupName);
+        await _page.FillAsync("#reg_pwd_password", "Test@2026!");
+        await _page.FillAsync("#reg_pwd_password2", "Test@2026!");
+        // 前端强制勾选《用户协议》《隐私政策》，未勾选提交被拦截（自定义复选框隐藏原生 input，直接设值）
+        await _page.Locator("#reg-pwd input[name=agreement]").EvaluateAsync("el => el.checked = true");
         await _page.ClickAsync("#Register button[type=submit]");
         await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
@@ -107,12 +111,14 @@ public sealed class AuthTests : IAsyncLifetime
         };
 
         await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Login");
-        await _page.ClickAsync("a[href='#Register']");
+        await _page.ClickAsync(".login-tabs a[data-tab=Register]");
         await _page.WaitForSelectorAsync("#Register.active, #Register.in");
 
-        await _page.FillAsync("#reg_username", username);
-        await _page.FillAsync("#reg_password", "Test@2026!");
-        await _page.FillAsync("#reg_password2", "Test@2026!");
+        await _page.FillAsync("#reg_pwd_username", username);
+        await _page.FillAsync("#reg_pwd_password", "Test@2026!");
+        await _page.FillAsync("#reg_pwd_password2", "Test@2026!");
+        // 前端强制勾选《用户协议》《隐私政策》，未勾选提交被拦截（自定义复选框隐藏原生 input，直接设值）
+        await _page.Locator("#reg-pwd input[name=agreement]").EvaluateAsync("el => el.checked = true");
         await _page.ClickAsync("#Register button[type=submit]");
         await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
@@ -376,58 +382,49 @@ public sealed class AuthTests : IAsyncLifetime
 
     #region A.5 忘记密码
 
-    [Fact(DisplayName = "TC-AUTH-040 忘记密码页面可正常打开")]
+    [Fact(DisplayName = "TC-AUTH-040 登录页无忘记密码入口（MVC 版简化）")]
     [Trait("Category", "Auth")]
     [Trait("Priority", "P1")]
-    public async Task TC_AUTH_040_ForgotPasswordPageOpens()
+    public async Task TC_AUTH_040_ForgotPasswordNotOnLoginPage()
     {
-        const String testId = "TC-AUTH-040";
-
         await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Login");
 
-        // 点击"忘记密码"链接（Bootstrap tab）
+        // MVC 版简化：登录页不应有"忘记密码"链接/Tab（后端 UserController 亦无 Forgot/ForgetPassword 页面）
         var forgotLink = _page.Locator("a[href='#Forgot'], a:has-text('忘记密码')");
-        if (await forgotLink.CountAsync() > 0)
-        {
-            await forgotLink.First.ClickAsync();
-            await _page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
-        }
-        else
-        {
-            // 部分主题以独立页面实现
-            await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Forgot");
-        }
-
-        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+        Assert.Equal(0, await forgotLink.CountAsync());
     }
 
-    [Fact(DisplayName = "TC-AUTH-042 发送验证码按钮存在")]
+    [Fact(DisplayName = "TC-AUTH-042 登录页无发送验证码按钮（MVC 版简化）")]
     [Trait("Category", "Auth")]
     [Trait("Priority", "P2")]
-    public async Task TC_AUTH_042_ForgotPasswordHasSendCodeButton()
+    public async Task TC_AUTH_042_NoSendCodeButtonOnLoginPage()
     {
-        const String testId = "TC-AUTH-042";
-
         await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Login");
-        var forgotLink = _page.Locator("a[href='#Forgot'], a:has-text('忘记密码')");
-        if (await forgotLink.CountAsync() > 0)
-            await forgotLink.First.ClickAsync();
-        else
-            await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Forgot");
-
         await _page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
 
-        // 忘记密码表单提交按钮文本为「发送」，匹配实际渲染的 HTML
-        var hasBtn = await _page.IsVisibleAsync("button:has-text('发送')")
-                  || await _page.IsVisibleAsync("a:has-text('发送验证码')")
-                  || await _page.IsVisibleAsync("input[value*='发送']");
+        // MVC 版简化：登录/注册页均不应有"发送验证码"按钮（无手机/邮箱验证码登录、无忘记密码）
+        var sendBtn = _page.Locator("button:has-text('发送验证码'), a:has-text('发送验证码')");
+        Assert.Equal(0, await sendBtn.CountAsync());
+    }
 
-        if (!hasBtn)
-        {
-            // 此版本忘记密码页面未实现发送验证码功能，跳过而不失败
-            await PageHelpers.TakeScreenshotAsync(_page, testId);
-            return;
-        }
+    #endregion
+
+    #region A.5 图形验证码（风险自适应）
+
+    [Fact(DisplayName = "TC-AUTH-050 默认配置登录页不显示图形验证码")]
+    [Trait("Category", "Auth")]
+    [Trait("Priority", "P2")]
+    public async Task TC_AUTH_050_LoginPageNoCaptchaByDefault()
+    {
+        const String testId = "TC-AUTH-050";
+
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Login");
+        await _page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+
+        // 默认配置（CaptchaScene=0 + 内网低风险）下登录表单不显示图形验证码行
+        var captchaRow = _page.Locator("#login-pwd [data-captcha]");
+        var visible = await captchaRow.CountAsync() > 0 && await captchaRow.IsVisibleAsync();
+        Assert.False(visible, $"[{testId}] 默认配置下登录页不应显示图形验证码（CaptchaScene=0 + 内网低风险）");
     }
 
     #endregion

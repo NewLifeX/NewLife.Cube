@@ -142,6 +142,14 @@
                 placeholder="*表示无限制，简易版默认5~32位，不限制字符类型"
               />
             </el-form-item>
+            <el-form-item label="复杂密码校验" prop="enablePasswordComplexity">
+              <el-switch
+                v-model="form.enablePasswordComplexity"
+                :active-value="true"
+                :inactive-value="false"
+              />
+              <div class="field-tip">启用后登录页校验密码复杂度（按密码强度），禁用后仅要求密码非空</div>
+            </el-form-item>
             <el-form-item label="登录失败次数" prop="maxLoginError">
               <el-input-number v-model="form.maxLoginError" :min="1" placeholder="默认5次" />
             </el-form-item>
@@ -486,6 +494,7 @@ interface CubeSetting {
   allowPlainPassword: boolean;
   autoRegister: boolean;
   paswordStrength: string;
+  enablePasswordComplexity: boolean;
   maxLoginError: number;
   loginForbiddenTime: number;
   maxLoginErrorBySubnet24: number;
@@ -590,6 +599,7 @@ const form = reactive<CubeSetting>({
   allowPlainPassword: true,
   autoRegister: true,
   paswordStrength: '',
+  enablePasswordComplexity: true,
   maxLoginError: 5,
   loginForbiddenTime: 300,
   maxLoginErrorBySubnet24: 10,

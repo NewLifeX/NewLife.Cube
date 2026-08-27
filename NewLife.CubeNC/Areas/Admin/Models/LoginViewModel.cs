@@ -26,6 +26,12 @@ public class LoginViewModel
     /// <summary>启用邮箱验证码登录</summary>
     public Boolean EnableMail { get; set; }
 
+    /// <summary>是否启用密码复杂度校验。false 时前端仅要求密码非空，不做复杂度校验</summary>
+    public Boolean EnablePasswordComplexity { get; set; }
+
+    /// <summary>密码强度正则。* 表示无限制，前端可用于客户端校验提示</summary>
+    public String PasswordStrength { get; set; }
+
     ///// <summary>自动注册</summary>
     //public Boolean AutoRegister { get; set; }
 

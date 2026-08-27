@@ -5,50 +5,97 @@
 @using XCode.Configuration
 @using NewLife.Cube.Entity;
 @using NewLife.Cube.Areas.Admin.Models;
+@using NewLife.Cube.Web;
 @{
     var ms = Model.OAuthItems;
     var binds = Model.Connects;
+
+    // 已绑定平台数
+    var boundCount = ms.Count(mi => binds.Any(e => e.Enable && e.Provider.EqualIgnoreCase(mi.Name)));
 }
-<div class="row">
+<div class="profile-wrap">
     @await Html.PartialAsync("_User_Nav")
-</div>
-<div class="row">
-    <div class="col-md-12">
-        <div class="form-horizontal">
-            <div class="form-group">
-                <label class="control-label col-md-2">名称</label>
-                <div class="input-group col-md-6">
-                    <input value="@Model.Name" class="col-xs-12 col-sm-8 col-md-6 col-lg-4" disabled="disabled" />
-                </div>
-            </div>
-            @if (ms.Count > 0)
-            {
+
+    <div class="form-section">
+    <div class="form-section-title">
+        <i class="fa fa-plug"></i>第三方授权
+        @if (ms.Count > 0)
+        {
+            <span class="label label-success" style="margin-left: 8px;"><i class="fa fa-link"></i> 已绑定 @boundCount 个平台</span>
+        }
+    </div>
+    <div class="form-section-body">
+        <div class="row">
+            <div class="col-sm-6">
                 <div class="form-group">
-                    <label class="control-label col-md-2">第三方绑定</label>
-                    <div class="input-group col-md-6">
-                        <ul>
-                            @foreach (var mi in ms)
-                            {
-                                var uc = binds.FirstOrDefault(e => e.Enable && e.Provider.EqualIgnoreCase(mi.Name));
-                                if (uc != null)
-                                {
-                                    <li>
-                                        <span>@mi.Name（已绑定）</span>
-                                        <a href="~/Sso/UnBind/@mi.Name" title="取消绑定 @mi.Name">取消绑定</a>
-                                    </li>
-                                }
-                                else
-                                {
-                                    <li>
-                                        <span>@mi.Name（未绑定）</span>
-                                        <a href="~/Sso/Bind/@mi.Name" target="_blank" title="绑定 @mi.Name">去绑定</a>
-                                    </li>
-                                }
-                            }
-                        </ul>
+                    <label class="control-label col-sm-4">名称</label>
+                    <div class="col-sm-8">
+                        <input value="@Model.Name" class="form-control" disabled="disabled" />
+                        <span class="help-text">绑定第三方平台后，可直接使用第三方账号一键登录</span>
                     </div>
                 </div>
-            }
+            </div>
         </div>
+        @if (ms.Count > 0)
+        {
+            <div class="row">
+                <div class="col-sm-8 col-sm-offset-4" style="padding-left: 15px; padding-right: 15px;">
+                    <ul class="oauth-list">
+                        @foreach (var mi in ms)
+                        {
+                            var uc = binds.FirstOrDefault(e => e.Enable && e.Provider.EqualIgnoreCase(mi.Name));
+                            var nickName = !mi.NickName.IsNullOrEmpty() ? mi.NickName : mi.Name;
+                            var logo = !mi.Logo.IsNullOrEmpty() ? mi.Logo : ViewHelper.GetLogo(mi.Name);
+                            if (uc != null)
+                            {
+                                <li>
+                                    <span class="oauth-logo">
+                                        @if (!logo.IsNullOrEmpty())
+                                        {
+                                            <img src="@logo" alt="@nickName" />
+                                        }
+                                        else
+                                        {
+                                            <i class="fa fa-share-alt"></i>
+                                        }
+                                    </span>
+                                    <span class="oauth-name">
+                                        @nickName
+                                        <span class="oauth-nick"><i class="fa fa-user-o"></i> @(uc.NickName ?? uc.UserName) · 绑定于 @uc.CreateTime.ToFullString("yyyy-MM-dd")</span>
+                                    </span>
+                                    <span class="label label-success oauth-status"><i class="fa fa-check"></i> 已绑定</span>
+                                    <a href="~/Sso/UnBind/@mi.Name" class="btn btn-danger btn-sm oauth-action" title="取消绑定 @nickName" onclick="return confirm('确定取消绑定「@nickName」吗？');"><i class="fa fa-unlink"></i> 取消绑定</a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li>
+                                    <span class="oauth-logo">
+                                        @if (!logo.IsNullOrEmpty())
+                                        {
+                                            <img src="@logo" alt="@nickName" />
+                                        }
+                                        else
+                                        {
+                                            <i class="fa fa-share-alt"></i>
+                                        }
+                                    </span>
+                                    <span class="oauth-name">@nickName</span>
+                                    <span class="label label-default oauth-status"><i class="fa fa-circle-o"></i> 未绑定</span>
+                                    <a href="~/Sso/Bind/@mi.Name" target="_blank" class="btn btn-primary btn-sm oauth-action" title="绑定 @nickName"><i class="fa fa-link"></i> 去绑定</a>
+                                </li>
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="text-center" style="color: #999; padding: 20px 0;">
+                <i class="fa fa-info-circle"></i> 暂无可用的第三方登录平台，请在「魔方设置 → OAuth设置」中配置
+            </div>
+        }
     </div>
+</div>
 </div>

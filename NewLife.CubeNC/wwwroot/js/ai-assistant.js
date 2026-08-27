@@ -118,12 +118,286 @@
         return html;
     }
 
+    /* ================= Mermaid 图表渲染（CDN 懒加载，移植 StarChat mermaidHelper） ================= */
+    /** 修复 LLM 生成的 `&amp;` HTML 实体，在 Mermaid 代码中还原为 `&` */
+    function fixAmpersandEntities(code) {
+        return code.replace(/&amp;/g, '&');
+    }
+    /** 移除 LLM 生成的 `&nbsp;` HTML 实体（Mermaid 语法位置的无效 token） */
+    function fixNbspInCode(code) {
+        return code.replace(/&nbsp;/g, ' ');
+    }
+    /** 修复 LLM 将 Markdown 表格管道 `|` 与 Mermaid 连线 `-->` 混淆（行首 |--> → -->） */
+    function fixPipeArrowConfusion(code) {
+        return code.replace(/^(\s*)\|-->/gm, '$1-->');
+    }
+    /** 删除 LLM 幻想的"布局控制"伪指令行，如 layoutTB[隐藏默认连线方向] */
+    function removePseudoLayoutDirectives(code) {
+        return code.replace(/^\s*layout(?:TB|LR|RL|BT)\s*\[[^\n]*\n?/gim, '');
+    }
+    /** 修复 classDef 中 stroke-dasharray 值含空格的问题（保留第一个数值） */
+    function fixClassDefStrokeDasharray(code) {
+        return code.replace(/(stroke-dasharray)\s*:\s*(\d+(?:\.\d+)?)(?:\s+[\d.]+)+/g, '$1:$2');
+    }
+    /** 修复 classDef 应用语法（:::）中多余冒号和前导空格，`A[Node] :::::className` → `A[Node]:::className` */
+    function fixClassApplicationColons(code) {
+        return code.replace(/\s*(:{3,})\s*(\w+)/g, ':::$2');
+    }
+    /** 修复节点标签 [...] 中含有 `|` 的情况（PIPE 解析错误），自动包裹为 ["..."] */
+    function fixPipesInNodeLabels(code) {
+        return code.replace(/\[([^\[\]"]*\|[^\[\]"]*)\]/g, function (_, content) {
+            return '["' + content + '"]';
+        });
+    }
+    /** 将节点标签和边标签内的字面量 \n（反斜杠+n）转换为 <br/>，配合 htmlLabels 产生换行 */
+    function fixNewlinesInLabels(code) {
+        var br = '<br/>';
+        return code
+            .replace(/\(\(([^()]*)\)\)/g, function (_, c) { return '((' + c.replace(/\\n/g, br) + '))'; })
+            .replace(/\(([^()]*)\)/g, function (_, c) { return '(' + c.replace(/\\n/g, br) + ')'; })
+            .replace(/\["([^"]*)"\]/g, function (_, c) { return '["' + c.replace(/\\n/g, br) + '"]'; })
+            .replace(/\[([^\[\]"]*)\]/g, function (_, c) { return '[' + c.replace(/\\n/g, br) + ']'; })
+            .replace(/\|([^|]*)\|/g, function (_, c) { return '|' + c.replace(/\\n/g, br) + '|'; });
+    }
+    /** 移除 classDef 中 Mermaid 不支持的 SVG 几何属性（rx、ry 等） */
+    function fixClassDefInvalidProps(code) {
+        return code.replace(/^(\s*classDef\b[^\n]*)/gm, function (line) {
+            return line.replace(/,\s*r[xy]\s*:\s*[\d.]+/g, '');
+        });
+    }
+    /** 修复 LLM 将 <br/> 及追加文本写在节点标签括号之外的问题，收纳回括号内 */
+    function fixBrAfterNodeLabel(code) {
+        return code.replace(/\[([^\[\]"]+)\](<br\/>)([^:\n\[\]{}|]*)(:::[\w]+)?/g, function (_m, label, br, extra, cls) {
+            return '["' + label + br + String(extra).trimEnd() + '"]' + (cls || '');
+        });
+    }
+    /** 修复 LLM 在方括号节点标签内嵌入双引号的问题，替换为单引号 */
+    function fixQuotesInBracketLabels(code) {
+        return code.replace(/\[([^"\[\]\n{}<>|][^\[\]\n{}<>]*)\]/g, function (m, label) {
+            return label.indexOf('"') >= 0 ? '[' + label.replace(/"/g, "'") + ']' : m;
+        });
+    }
+    /** 修复 gantt 图的纯时间 dateFormat（如 HH:mm），补虚拟日期 2000-01-01，配合 axisFormat %H:%M 只显示时间 */
+    function fixGanttTimeFormat(code) {
+        if (!/^\s*gantt\b/m.test(code)) return code;
+        var dfMatch = code.match(/^(\s*dateFormat\s+)(.+)$/m);
+        if (!dfMatch) return code;
+        var fmt = dfMatch[2].trim();
+        if (/[YMDd]/.test(fmt)) return code;
+        var dummyDate = '2000-01-01';
+        var nextDate = '2000-01-02';
+        code = code.replace(/^(\s*dateFormat\s+).+$/m, '$1YYYY-MM-DD ' + fmt);
+        var lines = code.split('\n');
+        var result = [];
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i];
+            // 用 lastIndexOf 精准定位任务名与属性的分隔符 " :"
+            var sepIdx = line.lastIndexOf(' :');
+            if (sepIdx < 0) { result.push(line); continue; }
+            var desc = line.substring(0, sepIdx);
+            var attrs = line.substring(sepIdx + 2);
+            // 收集属性中所有裸 HH:MM 及其位置
+            var timeRe = /\b(\d{1,2}:\d{2})\b/g;
+            var matches = [];
+            var m;
+            while ((m = timeRe.exec(attrs)) !== null) {
+                matches.push({ full: m[0], time: m[1], index: m.index });
+            }
+            if (matches.length === 0) { result.push(line); continue; }
+            // 最后一个时间 < 倒数第二个时视为跨午夜，用翌日
+            var lastDate = dummyDate;
+            if (matches.length >= 2) {
+                var prev = matches[matches.length - 2].time;
+                var last = matches[matches.length - 1].time;
+                if (last < prev) lastDate = nextDate;
+            }
+            // 从右向左替换，避免 index 偏移
+            var fixedAttrs = attrs;
+            for (var j = matches.length - 1; j >= 0; j--) {
+                var t = matches[j];
+                var date = (j === matches.length - 1 && matches.length >= 2) ? lastDate : dummyDate;
+                var replacement = date + ' ' + t.time;
+                fixedAttrs = fixedAttrs.substring(0, t.index) + replacement + fixedAttrs.substring(t.index + t.full.length);
+            }
+            result.push(desc + ' : ' + fixedAttrs);
+        }
+        return result.join('\n');
+    }
+    /** 字符级扫描：转义标签上下文（引号/边标签/方括号/圆括号）内的花括号 {}，防止被误判为菱形节点 */
+    function escapeBracesInLabels(code) {
+        var stack = [];
+        var result = '';
+        for (var i = 0; i < code.length; i++) {
+            var ch = code[i];
+            var top = stack[stack.length - 1];
+            var inQuoted = top === '"';
+            if (ch === '"') {
+                if (top === '"') stack.pop(); else stack.push('"');
+                result += ch;
+                continue;
+            }
+            if (inQuoted) {
+                result += ch === '{' ? '&#123;' : (ch === '}' ? '&#125;' : ch);
+                continue;
+            }
+            if (ch === '|') {
+                if (top === '|') stack.pop(); else stack.push('|');
+                result += ch;
+                continue;
+            }
+            if (ch === '[' || ch === '(') { stack.push(ch); result += ch; continue; }
+            if (ch === ']' && top === '[') { stack.pop(); result += ch; continue; }
+            if (ch === ')' && top === '(') { stack.pop(); result += ch; continue; }
+            if ((ch === '{' || ch === '}') && stack.length > 0) {
+                result += ch === '{' ? '&#123;' : '&#125;';
+                continue;
+            }
+            result += ch;
+        }
+        return result;
+    }
+    /** 规范化 Mermaid 代码：修复 LLM 常见生成缺陷（与 StarChat mermaidHelper.normalizeMermaidCode 同套） */
+    function normalizeMermaidCode(code) {
+        code = fixGanttTimeFormat(code);
+        code = fixAmpersandEntities(code);
+        code = fixNbspInCode(code);
+        code = fixPipeArrowConfusion(code);
+        code = removePseudoLayoutDirectives(code);
+        code = fixClassDefStrokeDasharray(code);
+        code = fixClassApplicationColons(code);
+        code = fixClassDefInvalidProps(code);
+        code = fixPipesInNodeLabels(code);
+        code = fixNewlinesInLabels(code);
+        code = fixBrAfterNodeLabel(code);
+        code = fixQuotesInBracketLabels(code);
+        code = escapeBracesInLabels(code);
+        return code;
+    }
+    /** XSS 防护：剥离 Mermaid 代码中的 script/iframe 等标签与 on* 事件属性（securityLevel 为 loose 时允许 HTML） */
+    function sanitizeMermaidCode(code) {
+        return String(code)
+            .replace(/<\/?(?:script|iframe|object|embed|form|base|link|meta|applet)(\s[^>]*)?>/gi, '')
+            .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+    }
+    /* Mermaid 库懒加载状态：只加载一次，多个图表块并发共享 */
+    var _mermaidLoading = null;
+    var _mermaidInit = false;
+    /** 按需从 CDN 加载 mermaid 并执行一次性初始化（地址来自服务端注入的 CubeAI_MermaidUrl） */
+    function getMermaid() {
+        if (window.mermaid && window.mermaid.render) return Promise.resolve(window.mermaid);
+        if (_mermaidLoading) return _mermaidLoading;
+        var url = window.CubeAI_MermaidUrl || 'https://registry.npmmirror.com/mermaid/11.12.3/files/dist/mermaid.min.js';
+        _mermaidLoading = new Promise(function (resolve, reject) {
+            var s = document.createElement('script');
+            s.src = url;
+            s.async = true;
+            s.onload = function () {
+                try {
+                    if (!window.mermaid) throw new Error('mermaid 未暴露全局变量');
+                    if (!_mermaidInit) {
+                        window.mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
+                        _mermaidInit = true;
+                    }
+                    resolve(window.mermaid);
+                } catch (e) { _mermaidLoading = null; reject(e); }
+            };
+            s.onerror = function () { _mermaidLoading = null; reject(new Error('mermaid 加载失败: ' + url)); };
+            document.head.appendChild(s);
+        });
+        return _mermaidLoading;
+    }
+    /** 解析可渲染的 Mermaid 代码：先原始、后规范化，用 mermaid.parse 校验，均失败返回 null */
+    function resolveRenderableMermaidCode(mermaid, code) {
+        var candidates = [code];
+        var normalized = normalizeMermaidCode(code);
+        if (normalized !== code) candidates.push(normalized);
+        var chain = Promise.resolve(null);
+        for (var i = 0; i < candidates.length; i++) {
+            (function (candidate) {
+                chain = chain.then(function (found) {
+                    if (found) return found;
+                    return mermaid.parse(candidate, { suppressErrors: true }).then(function (ok) {
+                        // parse 对非法代码解析为 false（不抛异常），必须校验布尔结果
+                        return ok ? candidate : null;
+                    }).catch(function () { return null; });
+                });
+            })(candidates[i]);
+        }
+        return chain;
+    }
+    var _mermaidSeq = 0;
+    /** 回退：将图表占位还原为源码代码块展示 */
+    function restoreMermaidSource(holder, raw) {
+        var pre = document.createElement('pre');
+        var code = document.createElement('code');
+        code.className = 'language-mermaid';
+        code.textContent = raw;
+        pre.appendChild(code);
+        holder.parentNode.replaceChild(pre, holder);
+    }
+    /** 渲染单个 mermaid 代码块为 SVG，失败回退源码 */
+    function renderMermaidBlock(codeEl, mermaid) {
+        var pre = codeEl.parentNode;
+        if (!pre) return;
+        var raw = (codeEl.textContent || '').replace(/\n+$/, '');
+        var holder = document.createElement('div');
+        holder.className = 'ai-mermaid';
+        holder.textContent = '⏳ 图表渲染中...';
+        pre.parentNode.replaceChild(holder, pre);
+
+        resolveRenderableMermaidCode(mermaid, sanitizeMermaidCode(raw)).then(function (renderable) {
+            if (!renderable) { restoreMermaidSource(holder, raw); return; }
+            var id = 'ai-mermaid-' + (++_mermaidSeq);
+            mermaid.render(id, renderable).then(function (rs) {
+                var svg = rs && rs.svg;
+                if (!svg) { restoreMermaidSource(holder, raw); return; }
+                holder.innerHTML = svg;
+                var svgEl = holder.querySelector('svg');
+                if (svgEl && svgEl.getAttribute) {
+                    // 从 viewBox 推算自然宽度，避免 SVG 被强制拉伸到容器宽度
+                    var vb = (svgEl.getAttribute('viewBox') || '').trim().split(/[\s,]+/);
+                    if (vb.length >= 4) {
+                        var w = parseFloat(vb[2]);
+                        if (w > 0) svgEl.setAttribute('width', String(Math.ceil(w)));
+                    }
+                    svgEl.style.maxWidth = '100%';
+                    svgEl.style.height = 'auto';
+                    svgEl.style.display = 'block';
+                }
+                // 源码切换：<details> 展开查看原始 mermaid 源码
+                var details = document.createElement('details');
+                var summary = document.createElement('summary');
+                summary.textContent = '查看源码';
+                details.appendChild(summary);
+                var src = document.createElement('pre');
+                src.textContent = raw;
+                details.appendChild(src);
+                holder.appendChild(details);
+            }).catch(function () { restoreMermaidSource(holder, raw); });
+        });
+    }
+    /** 渲染容器内所有 mermaid 代码块为 SVG。CDN 加载失败时保持源码块展示 */
+    function renderMermaidBlocks(container) {
+        if (!container) return;
+        var codes = container.querySelectorAll('pre code.language-mermaid');
+        if (!codes.length) return;
+        getMermaid().then(function (mermaid) {
+            for (var i = 0; i < codes.length; i++) {
+                renderMermaidBlock(codes[i], mermaid);
+            }
+        }).catch(function () {
+            // CDN 加载失败：保持源码块展示，无需额外处理
+        });
+    }
+
     /* ================= 状态 ================= */
     var streaming = false;
-    var sessionId = localStorage.getItem('cube-ai-session');
+    // 会话按页面隔离：sessionStorage（每标签页独立）+ 页面路径作用域。不同页面互不串话，同页多轮共享，刷新/返回恢复
+    var sessionKey = 'cube-ai-session:' + (location.pathname || '/');
+    var sessionId = sessionStorage.getItem(sessionKey);
     if (!sessionId) {
         sessionId = 's' + Date.now() + Math.random().toString(16).substring(2, 8);
-        localStorage.setItem('cube-ai-session', sessionId);
+        sessionStorage.setItem(sessionKey, sessionId);
     }
 
     /* ================= 页面上下文 ================= */
@@ -414,6 +688,7 @@
                 query: ctx.query,
                 area: ctx.area,
                 controller: ctx.controller,
+                url: location.pathname,
                 think: think
             })
         }).then(function (response) {
@@ -447,6 +722,8 @@
                             pending[i].classList.add('ai-tool-error');
                             pending[i].innerHTML = '<span>⚠️ 工具调用中断（当前 AI 服务商可能不支持函数调用）</span>';
                         }
+                        // AI 回复结束后渲染 Mermaid 图表（流式期间保持源码展示，避免逐字重渲染）
+                        renderMermaidBlocks(bubble);
                         return;
                     }
                     buffer += decoder.decode(r.value, { stream: true });
@@ -458,19 +735,24 @@
                         var json = null;
                         try { json = JSON.parse(line.substring(6)); } catch (e) { continue; }
                         if (!json) continue;
-                        if (json.type === 'text') {
+                        if (json.type === 'content_delta') {
                             if (isFirst) { bubble.innerHTML = ''; isFirst = false; }
                             full += json.content || '';
                             bubble.innerHTML = renderMarkdown(full);
                             scrollBottom();
-                        } else if (json.type === 'tool') {
-                            appendTool(json.event, json.id, json.name, json.value);
+                        } else if (json.type === 'tool_call_start') {
+                            appendTool('start', json.toolCallId, json.name, json.arguments);
+                        } else if (json.type === 'tool_call_done') {
+                            appendTool('done', json.toolCallId, json.name, json.result);
+                        } else if (json.type === 'tool_call_error') {
+                            appendTool('error', json.toolCallId, json.name, json.error);
                         } else if (json.type === 'run_js') {
                             handleRunJs(json);
                         } else if (json.type === 'error') {
                             if (isFirst) { bubble.innerHTML = ''; isFirst = false; }
                             bubble.innerHTML = '<span style="color:#c62828">⚠️ ' + (json.message || 'AI 调用失败') + '</span>';
                         }
+                        // message_start / message_done / thinking_delta / heartbeat 规范事件无需处理，忽略
                     }
                     return processChunk();
                 });
@@ -606,9 +888,10 @@
 
         var clear = getEl('aiClearChat');
         if (clear) clear.addEventListener('click', function () {
-            localStorage.removeItem('cube-ai-session');
+            // 清空仅作用于当前页面会话，不影响其他页面
+            sessionStorage.removeItem(sessionKey);
             sessionId = 's' + Date.now() + Math.random().toString(16).substring(2, 8);
-            localStorage.setItem('cube-ai-session', sessionId);
+            sessionStorage.setItem(sessionKey, sessionId);
             var box = getEl('aiMessages');
             if (box) {
                 // 快捷指令容器（#aiQuickActions）是 #aiMessages 的子元素，直接替换 innerHTML 会把快捷指令一并销毁，

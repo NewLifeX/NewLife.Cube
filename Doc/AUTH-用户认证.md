@@ -1,829 +1,446 @@
-﻿# 第12章 用户认证
+﻿# 用户登录验证（登录 / 注册 / 忘记密码）
 
-> 本章介绍魔方的用户认证机制，包括本地登录、JWT 令牌和验证码服务。
-> 
-> 详细教程：https://newlifex.com/cube/cube_auth
-
----
-
-## 12.1 魔方登录验证机制
-
-### 认证方式概览
-
-魔方支持多种认证方式：
-
-| 方式 | 适用场景 | 特点 |
-|------|---------|------|
-| 密码登录 | Web 页面登录 | 传统方式，简单可靠 |
-| 外部验证 | 集成企业认证系统 | 本地失败时调用外部接口验证，自动同步用户 |
-| SSO 登录 | 多系统集成 | 单点登录，统一身份 |
-| JWT 令牌 | API 调用 | 无状态，适合前后端分离 |
-| OAuth 登录 | 第三方登录 | 微信/QQ/钉钉等 |
-
-### 认证流程
-
-```
-┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐
-│  用户   │────>│  登录   │────>│  验证   │────>│ 创建会话│
-│         │     │  请求   │     │ 凭证   │     │/令牌    │
-└─────────┘     └─────────┘     └─────────┘     └─────────┘
-                                     │
-                     ┌───────────────┼───────────────┐
-                     v               v               v
-                ┌─────────┐    ┌─────────┐    ┌─────────┐
-                │密码验证 │    │SSO验证  │    │OAuth验证│
-                └─────────┘    └─────────┘    └─────────┘
-```
+> 本文档是魔方用户验证业务的**权威总览**，同时覆盖 **MVC（服务端渲染）** 与 **API（前后端分离）** 两种接入方式。
+> 登录、注册、忘记密码三大业务，及其下所有登录/注册/找回方式，均在此完整定义。
 
 ---
 
-## 12.2 本地登录
+## 1. 业务全景
 
-### 用户名密码登录
-
-```csharp
-public class UserController : Controller
-{
-    [HttpPost]
-    [AllowAnonymous]
-    public ActionResult Login(String username, String password, Boolean remember = false)
-    {
-        // 验证验证码
-        if (!ValidateCaptcha())
-            return Json(new { code = 500, msg = "验证码错误" });
-        
-        // 检查账户锁定
-        if (LoginAttemptService.IsLocked(username))
-            return Json(new { code = 500, msg = "账户已锁定，请稍后再试" });
-        
-        // 查找用户
-        var user = User.FindByName(username);
-        if (user == null)
-        {
-            LoginAttemptService.RecordFailure(username);
-            return Json(new { code = 500, msg = "用户名或密码错误" });
-        }
-        
-        // 验证密码
-        if (!user.VerifyPassword(password))
-        {
-            LoginAttemptService.RecordFailure(username);
-            return Json(new { code = 500, msg = "用户名或密码错误" });
-        }
-        
-        // 检查用户状态
-        if (!user.Enable)
-            return Json(new { code = 500, msg = "账户已禁用" });
-        
-        // 登录成功
-        LoginAttemptService.ClearAttempts(username);
-        
-        // 创建会话
-        ManageProvider.Provider.Current = user;
-        
-        // 更新登录信息
-        user.LastLogin = DateTime.Now;
-        user.LastLoginIP = WebHelper.UserHost;
-        user.Logins++;
-        user.Update();
-        
-        // 记录登录日志
-        WriteLoginLog(user, true, "登录成功");
-        
-        // 返回结果
-        if (remember)
-        {
-            // 设置持久化 Cookie
-            SetRememberMeCookie(user);
-        }
-        
-        return Json(new { code = 0, msg = "登录成功", url = "/" });
-    }
-}
+```
+用户验证业务
+├── 登录
+│   ├── 密码登录（RSA 加密传输 + 防爆破 + 外部验证）
+│   ├── 手机验证码登录（支持自动注册）
+│   ├── 邮箱验证码登录（支持自动注册）
+│   ├── 三方登录（OAuth2.0：微信/QQ/钉钉/GitHub 等，全页跳转）
+│   └── 微信登录（小程序 / App，API 专用）
+├── 注册
+│   ├── 用户名注册（用户名 + 密码）
+│   ├── 手机注册（手机号 + 短信验证码 + 密码）
+│   ├── 邮箱注册（邮箱 + 邮件验证码 + 密码）
+│   └── 三方回跳注册/绑定（OAuth 登录后补全资料）
+└── 忘记密码（重置密码）
+    ├── 手机取回（手机号 + 短信验证码）
+    ├── 邮箱取回（邮箱 + 邮件验证码）
+    └── 验证问题取回（密保 Q&A）※ 未实现，见 §4.2
 ```
 
-### 登录接口 /Admin/User/Login
+### 1.1 功能矩阵（实现状态）
 
-MVC 版魔方的标准登录接口：
+| 业务 | 方式 | MVC | API | 后端核心 | 状态 |
+|------|------|-----|-----|---------|------|
+| 登录 | 密码登录 | ✅ | ✅ | `UserService.LoginByPassword` | 完整 |
+| 登录 | 手机验证码 | — | ✅ | `UserService.LoginBySms` | 完整（MVC 页面不提供） |
+| 登录 | 邮箱验证码 | — | ✅ | `UserService.LoginByMail` | 完整（MVC 页面不提供） |
+| 登录 | 三方登录 | ✅ | ✅（全页跳转） | `SsoController` | 完整 |
+| 登录 | 微信登录 | — | ✅ | `SsoController.WxMiniLogin/WxAppLogin` | 完整 |
+| 注册 | 用户名注册 | ✅ | ✅ | `UserService.RegisterByPassword` | 完整 |
+| 注册 | 手机注册 | — | ✅ | `UserService.RegisterByPhoneCode` | 完整（MVC 页面不提供） |
+| 注册 | 邮箱注册 | — | ✅ | `UserService.RegisterByMailCode` | 完整（MVC 页面不提供） |
+| 注册 | 三方回跳 | — | ✅ | `UserService.RegisterByOAuthBind` | 完整 |
+| 忘记密码 | 手机取回 | — | ✅ | `UserService.ResetBySmsCode` | 完整（MVC 页面不提供） |
+| 忘记密码 | 邮箱取回 | — | ✅ | `UserService.ResetByMailCode` | 完整（MVC 页面不提供） |
+| 忘记密码 | 验证问题取回 | ❌ | ❌ | 实体无此字段，未实现 | 未实现 |
 
-```csharp
-// 登录页面
-[HttpGet]
-[AllowAnonymous]
-public ActionResult Login(String returnUrl = null)
-{
-    ViewBag.ReturnUrl = returnUrl;
-    return View();
-}
+> **MVC 版简化（2026-08）**：MVC 登录页仅提供 **密码登录 + 用户名注册 + 第三方登录**；手机/邮箱验证码登录、手机/邮箱注册、忘记密码均不在 MVC 页面提供（后端 `UserService` 能力保留，API 版全部可用）。设计参考：`Doc/UI设计/登录页-MVC版.html`（二代简化版）/ `Doc/UI设计/登录页-API版.html`（完整版）。
 
-// 登录处理
-[HttpPost]
-[AllowAnonymous]
-public ActionResult Login(LoginModel model)
-{
-    // 处理登录逻辑
-}
-```
+### 1.2 接入方式差异
 
-### 密码强度策略
+| 维度 | MVC（服务端渲染） | API（前后端分离） |
+|------|------------------|------------------|
+| 登录页 | `~/Admin/User/Login`（Razor 视图 + Bootstrap Tab） | 皮肤自带 `/login` 路由（Vue/React 等） |
+| 端点前缀 | `/Admin/User/*`、`/Sso/*` | `/Auth/*`、`/Sso/*` |
+| 请求格式 | HTML 表单 POST（`application/x-www-form-urlencoded`） | JSON（`application/json`） |
+| 登录状态 | Cookie 会话（`token-{系统名}`）+ 自动跳转 | `accessToken/refreshToken`（前端自行保存） |
+| 密码加密 | `GET /Admin/User/GetLoginKey` + JSEncrypt（PKCS#1v1.5） | `GET /Auth/Challenge` + Web Crypto（RSA-OAEP/SHA-256） |
+| 验证码发送 | `POST /Admin/User/SendVerifyCode` | `POST /Auth/SendCode` |
+| 登录配置 | `LoginViewModel`（服务端填充） | `GET /Auth/LoginConfig`（JSON） |
+| 业务逻辑 | 两者**共用同一套** `UserService` / `SsoController`，不重复实现 | 同左 |
 
-```csharp
-public class PasswordPolicy
-{
-    /// <summary>验证密码强度</summary>
-    public static (Boolean Valid, String Message) Validate(String password)
-    {
-        var setting = CubeSetting.Current;
-        
-        if (password.Length < setting.PasswordMinLength)
-            return (false, $"密码长度不能少于{setting.PasswordMinLength}位");
-        
-        if (setting.PasswordRequireUppercase && !password.Any(Char.IsUpper))
-            return (false, "密码必须包含大写字母");
-        
-        if (setting.PasswordRequireLowercase && !password.Any(Char.IsLower))
-            return (false, "密码必须包含小写字母");
-        
-        if (setting.PasswordRequireDigit && !password.Any(Char.IsDigit))
-            return (false, "密码必须包含数字");
-        
-        return (true, "密码强度符合要求");
-    }
-    
-    /// <summary>计算密码强度分数</summary>
-    public static Int32 GetStrength(String password)
-    {
-        var score = 0;
-        
-        if (password.Length >= 8) score += 20;
-        if (password.Length >= 12) score += 10;
-        if (password.Any(Char.IsUpper)) score += 20;
-        if (password.Any(Char.IsLower)) score += 20;
-        if (password.Any(Char.IsDigit)) score += 20;
-        if (password.Any(c => !Char.IsLetterOrDigit(c))) score += 10;
-        
-        return score;
-    }
-}
-```
-
-### 登录失败限制
-
-```csharp
-public class LoginAttemptService
-{
-    private readonly ICache _cache;
-    
-    /// <summary>记录登录失败</summary>
-    public void RecordFailure(String username)
-    {
-        var key = $"login:fail:{username}";
-        var count = _cache.Increment(key, 1);
-        _cache.SetExpire(key, TimeSpan.FromMinutes(30));
-        
-        // 超过限制，锁定账户
-        if (count >= CubeSetting.Current.LoginMaxAttempts)
-        {
-            Lock(username);
-        }
-    }
-    
-    /// <summary>锁定账户</summary>
-    public void Lock(String username)
-    {
-        var key = $"login:lock:{username}";
-        _cache.Set(key, true, CubeSetting.Current.LoginLockMinutes * 60);
-    }
-    
-    /// <summary>检查是否锁定</summary>
-    public Boolean IsLocked(String username)
-    {
-        var key = $"login:lock:{username}";
-        return _cache.Get<Boolean>(key);
-    }
-    
-    /// <summary>清除失败记录</summary>
-    public void Clear(String username)
-    {
-        _cache.Remove($"login:fail:{username}");
-        _cache.Remove($"login:lock:{username}");
-    }
-}
-```
+> 核心原则：**业务逻辑全部收敛在 `UserService`**（登录/注册/重置/发码），MVC 控制器与 API 控制器都是薄封装。
 
 ---
 
-## 12.3 JWT 令牌
+## 2. 登录
 
-### JWT 配置（JwtSecret）
-
-```json
-// appsettings.json
-{
-  "Cube": {
-    "JwtSecret": "your-secret-key-at-least-32-characters",
-    "JwtIssuer": "CubeApp",
-    "JwtAudience": "CubeApi",
-    "JwtExpireMinutes": 120,
-    "RefreshTokenExpireDays": 7
-  }
-}
-```
-
-### 令牌生成
-
-```csharp
-public class TokenService
-{
-    private readonly CubeSetting _setting;
-    
-    /// <summary>生成访问令牌</summary>
-    public String GenerateAccessToken(User user)
-    {
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Name),
-            new Claim("DisplayName", user.DisplayName ?? user.Name),
-            new Claim("RoleId", user.RoleId.ToString()),
-            new Claim("TenantId", user.TenantId.ToString())
-        };
-        
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_setting.JwtSecret));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        
-        var token = new JwtSecurityToken(
-            issuer: _setting.JwtIssuer,
-            audience: _setting.JwtAudience,
-            claims: claims,
-            expires: DateTime.Now.AddMinutes(_setting.JwtExpireMinutes),
-            signingCredentials: creds
-        );
-        
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-    
-    /// <summary>生成刷新令牌</summary>
-    public String GenerateRefreshToken()
-    {
-        var randomBytes = new Byte[64];
-        using var rng = RandomNumberGenerator.Create();
-        rng.GetBytes(randomBytes);
-        return Convert.ToBase64String(randomBytes);
-    }
-}
-```
-
-### 令牌有效期
-
-```csharp
-// 访问令牌有效期（默认2小时）
-public Int32 JwtExpireMinutes { get; set; } = 120;
-
-// 刷新令牌有效期（默认7天）
-public Int32 RefreshTokenExpireDays { get; set; } = 7;
-```
-
-### 令牌刷新机制
-
-```csharp
-[HttpPost]
-[AllowAnonymous]
-public ActionResult RefreshToken(String refreshToken)
-{
-    // 验证刷新令牌
-    var token = UserToken.FindByToken(refreshToken);
-    if (token == null || token.ExpireTime < DateTime.Now)
-        return Json(new { code = 401, msg = "刷新令牌无效或已过期" });
-    
-    // 获取用户
-    var user = User.FindById(token.UserId);
-    if (user == null || !user.Enable)
-        return Json(new { code = 401, msg = "用户不存在或已禁用" });
-    
-    // 生成新的访问令牌
-    var accessToken = _tokenService.GenerateAccessToken(user);
-    
-    // 可选：生成新的刷新令牌
-    var newRefreshToken = _tokenService.GenerateRefreshToken();
-    token.Token = newRefreshToken;
-    token.ExpireTime = DateTime.Now.AddDays(CubeSetting.Current.RefreshTokenExpireDays);
-    token.Update();
-    
-    return Json(new
-    {
-        code = 0,
-        data = new
-        {
-            accessToken,
-            refreshToken = newRefreshToken,
-            expiresIn = CubeSetting.Current.JwtExpireMinutes * 60
-        }
-    });
-}
-```
-
-### 令牌传递方式
-
-令牌可以通过多种方式传递：
-
-```csharp
-// 方式1：Authorization Header（推荐）
-// Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
-
-// 方式2：Cookie
-// Cookie: token=eyJhbGciOiJIUzI1NiIs...
-
-// 方式3：Query String（不推荐，仅用于特殊场景）
-// GET /api/data?token=eyJhbGciOiJIUzI1NiIs...
-
-// 令牌解析中间件
-public class TokenMiddleware
-{
-    public async Task InvokeAsync(HttpContext context)
-    {
-        var token = GetToken(context);
-        if (!token.IsNullOrEmpty())
-        {
-            var user = ValidateToken(token);
-            if (user != null)
-            {
-                context.User = new ClaimsPrincipal(new ClaimsIdentity(user.ToClaims()));
-            }
-        }
-        
-        await _next(context);
-    }
-    
-    private String GetToken(HttpContext context)
-    {
-        // 优先从 Header 获取
-        var auth = context.Request.Headers["Authorization"].ToString();
-        if (auth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-            return auth.Substring(7);
-        
-        // 其次从 Cookie 获取
-        if (context.Request.Cookies.TryGetValue("token", out var cookieToken))
-            return cookieToken;
-        
-        // 最后从 Query 获取
-        return context.Request.Query["token"];
-    }
-}
-```
-
-### 认证层租户校验（多租户）
-
-开启多租户（`CubeSetting.EnableTenant=true`）时，token 校验通过后统一执行租户校验（`TryLogin` 与 `ControllerBaseX` 的 `Auth` 路径均调用 `HttpContext.ValidateTenant(user)`）：
-
-- 未开启多租户 → 直接放行，不校验租户。
-- 系统管理员 → 可进入管理后台（租户0）。
-- 普通用户 → 必须处于有效租户上下文（`TenantId > 0`），无有效租户则拒绝访问（401/403），防止落到租户0/空上下文看到全量数据。
-
-租户标识来源（按优先级）：
-
-| 来源 | 语义 | 解析方式 |
-|------|------|----------|
-| 请求头 `X-Tenant` | **租户编码（Code）** | `Tenant.FindByCode` |
-| 请求头 `X-Tenant-Id`（已废弃兼容） | 数字ID | `Int32` 解析 |
-| QueryString `tenantId` | 数字ID | `Int32` 解析 |
-| Cookie `TenantId-{SysName}` | 数字ID | `Int32` 解析 |
-
-伪造、不存在或已禁用的租户会被拒绝（400/403）。
-
----
-
-## 12.4 验证码
-
-### 图形验证码
-
-```csharp
-public class CaptchaController : Controller
-{
-    [HttpGet]
-    [AllowAnonymous]
-    public ActionResult GetCaptcha()
-    {
-        // 生成验证码
-        var code = Rand.NextString(4, true);
-        
-        // 存储到 Session
-        HttpContext.Session.SetString("Captcha", code.ToLower());
-        
-        // 生成图片
-        var image = GenerateCaptchaImage(code);
-        
-        return File(image, "image/png");
-    }
-    
-    private Byte[] GenerateCaptchaImage(String code)
-    {
-        using var bitmap = new Bitmap(120, 40);
-        using var graphics = Graphics.FromImage(bitmap);
-        
-        // 背景
-        graphics.Clear(Color.White);
-        
-        // 干扰线
-        var random = new Random();
-        for (int i = 0; i < 5; i++)
-        {
-            var x1 = random.Next(bitmap.Width);
-            var y1 = random.Next(bitmap.Height);
-            var x2 = random.Next(bitmap.Width);
-            var y2 = random.Next(bitmap.Height);
-            graphics.DrawLine(Pens.Gray, x1, y1, x2, y2);
-        }
-        
-        // 验证码文字
-        using var font = new Font("Arial", 20, FontStyle.Bold);
-        using var brush = new SolidBrush(Color.Blue);
-        graphics.DrawString(code, font, brush, 20, 5);
-        
-        // 输出
-        using var ms = new MemoryStream();
-        bitmap.Save(ms, ImageFormat.Png);
-        return ms.ToArray();
-    }
-    
-    /// <summary>验证验证码</summary>
-    public Boolean Validate(String input)
-    {
-        var code = HttpContext.Session.GetString("Captcha");
-        HttpContext.Session.Remove("Captcha");  // 一次性使用
-        
-        return code?.Equals(input, StringComparison.OrdinalIgnoreCase) ?? false;
-    }
-}
-```
-
-### 短信验证码
-
-```csharp
-public class SmsVerifyService
-{
-    private readonly ICache _cache;
-    private readonly ISmsService _smsService;
-    
-    /// <summary>发送短信验证码</summary>
-    public async Task<Boolean> SendCodeAsync(String phone)
-    {
-        // 防止频繁发送
-        var key = $"sms:limit:{phone}";
-        if (_cache.Get<Boolean>(key))
-            throw new Exception("发送太频繁，请稍后再试");
-        
-        // 生成验证码
-        var code = Rand.Next(100000, 999999).ToString();
-        
-        // 存储验证码（5分钟有效）
-        _cache.Set($"sms:code:{phone}", code, 300);
-        
-        // 发送限制（60秒）
-        _cache.Set(key, true, 60);
-        
-        // 发送短信
-        return await _smsService.SendAsync(phone, $"您的验证码是：{code}，5分钟内有效。");
-    }
-    
-    /// <summary>验证短信验证码</summary>
-    public Boolean Verify(String phone, String code)
-    {
-        var key = $"sms:code:{phone}";
-        var stored = _cache.Get<String>(key);
-        
-        if (stored == code)
-        {
-            _cache.Remove(key);  // 一次性使用
-            return true;
-        }
-        
-        return false;
-    }
-}
-```
-
-### 验证码服务配置
-
-```json
-// appsettings.json
-{
-  "Captcha": {
-    "Length": 4,
-    "Width": 120,
-    "Height": 40,
-    "ExpireSeconds": 300
-  },
-  "Sms": {
-    "Provider": "Aliyun",
-    "AccessKeyId": "your-access-key",
-    "AccessKeySecret": "your-secret",
-    "SignName": "魔方",
-    "TemplateCode": "SMS_123456"
-  }
-}
-```
-
----
-
-## 登录流程最佳实践
-
-### 1. 完整登录流程
-
-```csharp
-[HttpPost]
-[AllowAnonymous]
-public async Task<ActionResult> Login(LoginRequest request)
-{
-    // 1. 验证码校验
-    if (!_captchaService.Validate(request.Captcha))
-        return Fail("验证码错误");
-    
-    // 2. 账户锁定检查
-    if (_loginAttempt.IsLocked(request.Username))
-        return Fail("账户已锁定，请30分钟后再试");
-    
-    // 3. 查找用户
-    var user = User.FindByName(request.Username);
-    if (user == null)
-    {
-        _loginAttempt.RecordFailure(request.Username);
-        return Fail("用户名或密码错误");
-    }
-    
-    // 4. 密码验证
-    if (!user.VerifyPassword(request.Password))
-    {
-        _loginAttempt.RecordFailure(request.Username);
-        return Fail("用户名或密码错误");
-    }
-    
-    // 5. 用户状态检查
-    if (!user.Enable)
-        return Fail("账户已禁用");
-    
-    // 6. 密码过期检查
-    if (user.PasswordExpired)
-        return Json(new { code = 1001, msg = "密码已过期，请修改密码" });
-    
-    // 7. 双因素认证（可选）
-    if (CubeSetting.Current.TwoFactorEnabled)
-    {
-        await _twoFactor.SendCodeAsync(user);
-        return Json(new { code = 1002, msg = "请输入短信验证码", userId = user.Id });
-    }
-    
-    // 8. 登录成功
-    return await CompleteLogin(user, request.Remember);
-}
-
-private async Task<ActionResult> CompleteLogin(User user, Boolean remember)
-{
-    // 清除失败记录
-    _loginAttempt.Clear(user.Name);
-    
-    // 创建会话
-    ManageProvider.Provider.Current = user;
-    
-    // 生成令牌
-    var accessToken = _tokenService.GenerateAccessToken(user);
-    var refreshToken = _tokenService.GenerateRefreshToken();
-    
-    // 保存刷新令牌
-    SaveRefreshToken(user, refreshToken);
-    
-    // 更新用户信息
-    user.LastLogin = DateTime.Now;
-    user.LastLoginIP = WebHelper.UserHost;
-    user.Logins++;
-    user.Update();
-    
-    // 记录日志
-    WriteLoginLog(user, true, "登录成功");
-    
-    return Json(new
-    {
-        code = 0,
-        msg = "登录成功",
-        data = new
-        {
-            accessToken,
-            refreshToken,
-            expiresIn = CubeSetting.Current.JwtExpireMinutes * 60,
-            user = new { user.Id, user.Name, user.DisplayName }
-        }
-    });
-}
-```
-
-### 2. 退出登录
-
-```csharp
-[HttpPost]
-public ActionResult Logout()
-{
-    var user = ManageProvider.User as User;
-    
-    // 清除会话
-    ManageProvider.Provider.Current = null;
-    
-    // 作废刷新令牌
-    UserToken.DeleteByUserId(user.Id);
-    
-    // 记录日志
-    WriteLoginLog(user, true, "退出登录");
-    
-    return Json(new { code = 0, msg = "退出成功" });
-}
-```
-
----
-
-## 12.7 外部验证服务
-
-### 概述
-
-魔方支持集成外部验证服务，用户输入用户名密码登录时，若本地验证失败，可自动调用外部接口进行二次验证。验证成功后，外部用户信息会自动同步并写入魔方本地用户表，从而实现与企业已有认证体系的无缝集成。
-
-**适用场景**：
-- 企业已有独立的用户认证系统（如 LDAP、AD、HR系统）
-- 希望魔方与现有认证体系对接，而不需要双向同步用户数据
-- 需要统一登录入口，但用户数据存储在第三方系统中
-
-### 验证流程
+登录入口统一为 `UserService.Login(LoginModel, HttpContext)`，按 `LoginModel.Category` 分发：
 
 ```
-用户输入 用户名/密码
-        │
-        ▼
-  本地验证（ManageProvider）
-        │
-  验证失败？ ──否──> 本地登录成功
-        │
-        是
-        │
-        ▼
-  调用 ExternalAuthUrl（POST JSON）
-        │
-  返回成功？ ──否──> 登录失败
-        │
-        是
-        │
-        ▼
-  创建/更新本地用户（ExternalAuthHelper.CreateOrUpdateUser）
-        │
-        ▼
-  完成登录，颁发令牌
+UserService.Login
+├── Category=Password（默认） → LoginByPassword   （密码 + RSA 解密 + 防爆破 + 外部验证）
+├── Category=Mobile           → LoginBySms        （手机号 + 短信验证码，未注册可自动建号）
+└── Category=Mail             → LoginByMail       （邮箱 + 邮件验证码，未注册可自动建号）
 ```
 
-### 配置方法
+`LoginModel` 关键字段：
 
-在 `CubeSetting`（魔方配置）中设置 `ExternalAuthUrl`：
+| 字段 | 说明 |
+|------|------|
+| `Username` | 用户名 / 手机号 / 邮箱（按 Category 语义） |
+| `Password` | 密码，或 RSA 加密后的 Base64 密文；验证码登录时即验证码 |
+| `Category` | `AuthCategory` 枚举：`Password=0 / Mobile=1 / Mail=2 / OAuth=3` |
+| `Remember` | 记住登录（MVC 写长 Cookie，API 影响令牌有效期） |
+| `ChallengeId` | RSA 挑战标识，非空时后端解密 `Password` |
+| `CaptchaId/CaptchaCode` | 图片验证码（`CaptchaScene & 1` 启用时必填） |
 
-**方式一：配置文件（appsettings.json 或 Cube.json）**
+登录成功后统一走 `CompleteLogin`：记录登录统计 → 自动绑定租户 → 颁发 JWT → 写 Cookie / 返回 Token；用户开启 MFA 时中断返回挂起令牌。
 
-```json
-{
-  "Cube": {
-    "ExternalAuthUrl": "https://auth.yourcompany.com/api/validate"
-  }
-}
+### 2.1 密码登录
+
+**流程**
+
+```
+① GET 登录页/登录配置
+② （可选）GET Challenge/GetLoginKey 获取 RSA 公钥 → JSEncrypt/WebCrypto 加密密码
+③ POST Login（category 缺省=Password），携带 username / 加密密码 / challengeId
+④ 服务端：校验图片验证码（如启用）→ 防爆破计数检查 → 私钥解密密码 → 本地验证
+    │        ├─ 失败 → 尝试外部验证服务（ExternalAuthUrl，可自动同步用户）
+    │        └─ 成功 → CompleteLogin 颁发令牌 / 写 Cookie
+⑤ 前端跳转 ReturnUrl 或首页
 ```
 
-**方式二：魔方管理后台**
-
-进入 `系统管理 → 魔方设置 → 用户登录` 分类，找到"外部验证地址"字段，填入验证服务 URL 即可。
-
-### 外部验证接口协议
-
-魔方以 POST 方式调用外部接口，请求体为 JSON 格式：
-
-**请求**
+**MVC**
 
 ```http
-POST https://auth.yourcompany.com/api/validate
+GET  /Admin/User/Login?r={returnUrl}            # 登录页（含 challengeId + 公钥）
+POST /Admin/User/Login                          # 表单：username/password/challengeId/remember
+GET  /Admin/User/GetLoginKey                    # 获取新鲜 RSA 公钥（登录提交前调用）
+```
+
+**API**
+
+```http
+GET  /Auth/LoginConfig?tenant={tenant}          # 登录配置（含 login.password/captcha）
+GET  /Auth/Challenge                            # 获取 challengeId + publicKey（RSA-OAEP/SHA-256）
+POST /Auth/Login
 Content-Type: application/json
-
-{
-  "username": "zhangsan",
-  "password": "your_password"
-}
+{ "username": "admin", "password": "<明文或密文>", "challengeId": "", "captchaId": "", "captchaCode": "" }
 ```
 
-**响应（验证成功）**
+**安全要点**
 
-```json
-{
-  "code": 0,
-  "data": {
-    "username": "zhangsan",
-    "displayName": "张三",
-    "mail": "zhangsan@company.com",
-    "mobile": "13800138000",
-    "roleName": "普通用户",
-    "avatar": "https://cdn.example.com/avatar/zhangsan.jpg",
-    "code": "EMP001"
-  }
-}
+- `AllowPlainPassword=false` 时强制加密传输，未带 `challengeId` 直接拒绝；`challengeId` 无效（过期/伪造）明确报错，不静默降级明文
+- Challenge 有效期 300 秒、一次性使用（防重放）；前端必须**提交时**获取新鲜公钥，禁止预取缓存复用
+- 防爆破：用户名 / IP / 子网(24/16) 三级连续错误计数，超过 `MaxLoginError` 锁定 `LoginForbiddenTime` 秒
+
+### 2.2 手机验证码登录
+
+**流程**
+
+```
+① POST SendCode { channel: "Sms", username: 手机号, action: "Login" }  → 下发短信验证码
+② POST Login { username: 手机号, password: 验证码, category: "mobile" }
+③ 服务端：校验验证码（SmsLoginCodePrefix 缓存）→ 查 User.FindByMobile
+    │        ├─ 不存在 → 若 AutoRegister=true 自动建号（Name=P{手机号}，MobileVerified=true）
+    │        └─ 存在 → 检查 Enable → CompleteLogin
 ```
 
-**响应（验证失败）**
-
-```json
-{
-  "code": 401,
-  "message": "用户名或密码错误"
-}
-```
-
-> **说明**：`code` 字段为 `0` 表示成功，非 `0` 表示失败。也支持 `success: true/false` 格式。
-
-### 响应字段映射
-
-| 外部字段（大小写不敏感） | 映射到本地字段 |
-|------------------------|------------|
-| `username` / `userName` / `name` | 用户名（Name） |
-| `displayName` / `nickName` | 显示名称（DisplayName） |
-| `mail` / `email` | 邮箱（Mail） |
-| `mobile` / `phone` | 手机（Mobile） |
-| `avatar` | 头像（Avatar） |
-| `roleName` / `role` | 角色名（用于查找或分配角色） |
-| `code` | 用户代码（工号/身份证等） |
-
-### 本地用户同步规则
-
-1. **查找本地用户**：依次按用户名、手机、邮箱在本地表中查找
-2. **用户不存在**：自动注册新用户，使用外部返回的用户信息填充，角色优先使用 `roleName`，若无则使用魔方配置的默认角色
-3. **用户已存在**：仅更新有值的字段（DisplayName、Mail、Mobile、Avatar、Code），不强制覆盖已有数据
-4. **账号禁用**：若本地用户被禁用，即使外部验证通过也拒绝登录
-
-### 自定义外部验证服务示例
-
-以下是一个 ASP.NET Core 外部验证接口的实现示例：
-
-```csharp
-[HttpPost("validate")]
-[AllowAnonymous]
-public IActionResult Validate([FromBody] ValidateRequest req)
-{
-    // 调用内部认证逻辑（如 LDAP、数据库等）
-    var user = _authService.Validate(req.Username, req.Password);
-    if (user == null)
-        return Ok(new { code = 401, message = "用户名或密码错误" });
-
-    return Ok(new
-    {
-        code = 0,
-        data = new
-        {
-            username = user.LoginName,
-            displayName = user.FullName,
-            mail = user.Email,
-            mobile = user.Phone,
-            roleName = user.DefaultRole,
-            avatar = user.AvatarUrl,
-            code = user.EmployeeNo,
-        }
-    });
-}
-
-public class ValidateRequest
-{
-    public String Username { get; set; }
-    public String Password { get; set; }
-}
-```
-
-### OAuth 密码授权模式支持
-
-外部验证同样适用于 OAuth 2.0 的密码授权（`grant_type=password`）流程。当 OAuth 客户端通过密码凭证请求访问令牌时，若本地验证失败，魔方也会尝试调用外部验证接口。
+**MVC**（登录面板"手机验证码"子 Tab）
 
 ```http
-POST /Sso/Token
-Content-Type: application/x-www-form-urlencoded
-
-grant_type=password&client_id=your_app&username=zhangsan&password=your_password
+POST /Admin/User/SendVerifyCode   # { channel:"Sms", username, action:"Login" }
+POST /Admin/User/Login            # 表单：username=手机号, password=验证码, category=Mobile
 ```
 
+**API**
+
+```http
+POST /Auth/SendCode   # { "channel": "Sms", "username": "13800138000", "action": "Login" }
+POST /Auth/Login      # { "username": "13800138000", "password": "1234", "category": "mobile" }
+```
+
+> 手机/邮箱验证码登录的 `password` 字段是**验证码**，不做 RSA 加密。
+
+### 2.3 邮箱验证码登录
+
+与手机验证码登录同构：`channel: "Mail"`、`category: "mail"`、按 `User.FindByMail` 查用户，未注册自动建号（`Name=邮箱前缀`，`MailVerified=true`）。
+
+### 2.4 三方登录（OAuth）
+
+**流程（全页跳转，MVC 与 API 皮肤通用）**
+
+```
+① 登录页点击三方图标 → GET /Sso/Login?name={provider}&r={returnUrl}
+② 记录 OAuthLog（state=log.Id）→ 重定向到提供商授权页
+③ 用户授权 → 提供商回调 GET /Sso/LoginInfo/{provider}?code=&state=
+④ 用 code 换 accessToken → 取用户信息（OpenID/UserName/Avatar...）
+⑤ 按 OpenID 找 UserConnect：
+    ├─ 已绑定 → 直接登录该本地用户
+    ├─ 未绑定且用户已登录 → 绑定到当前用户
+    ├─ 未绑定且未登录 → 自动注册（OAuthConfig.AutoRegister）或跳转补全资料页（OAuth 回跳注册）
+    └─ 绑定后写 UserConnect + CompleteLogin
+```
+
+**入口**
+
+| 场景 | 端点 |
+|------|------|
+| 发起三方登录 | `GET /Sso/Login?name={provider}&r={returnUrl}` |
+| 授权回调 | `GET /Sso/LoginInfo/{provider}?code=&state=` |
+| 绑定/取消绑定（已登录） | `POST /Admin/User/Binds`、`/Sso/Bind`、`/Sso/UnBind` |
+| 回跳待注册预填信息 | `GET /Auth/OAuthPendingInfo?token=` |
+| 回跳注册 | `POST /Auth/Register { category:"oauth", oauthToken, ... }` |
+
+**说明**
+
+- 提供商配置见 `OAuthConfig` 表（后台 系统管理 → OAuth配置），`Visible` 控制登录页显示
+- 登录页仅显示 `Visible=true` 的提供商；`AutoRegister` 控制未绑定用户是否自动建号
+- 单点登录场景：禁用本地登录且仅一个三方 → 登录页直接跳转该三方；多个三方 → 展示图标供选择
+- 微信小程序/App 走专用端点 `POST /Sso/WxMiniLogin`、`POST /Sso/WxAppLogin`（`code` + `appId`），不走浏览器跳转
+
+### 2.5 MFA 二步验证
+
+`CubeSetting.EnableMfa=true` 且用户自助开启 TOTP 后：账密通过但不下发正式令牌，`Login` 响应 `message` 以 `mfa_required:` 开头并携带挂起令牌，前端引导进入 `/Auth/Mfa/*` 二步验证流程。
+
 ---
 
-## 本章小结
+## 3. 注册
 
-通过本章学习，你应该掌握了：
+注册入口统一为 `UserService.Register(AuthRegisterModel, HttpContext)`，按 `Category` 分发：
 
-1. **认证方式**：密码登录、外部验证、SSO、JWT、OAuth
-2. **本地登录**：用户名密码验证、失败限制
-3. **外部验证**：集成第三方认证系统，自动同步用户信息
-4. **JWT 令牌**：生成、验证、刷新机制
-5. **验证码**：图形验证码和短信验证码
+```
+UserService.Register
+├── Category=Password → RegisterByPassword   （用户名 + 密码，邮箱/手机可选填，不校验验证码）
+├── Category=Mobile   → RegisterByPhoneCode  （手机号 + 短信验证码 + 密码，须已发过验证码）
+├── Category=Mail     → RegisterByMailCode   （邮箱 + 邮件验证码 + 密码）
+└── Category=OAuth    → RegisterByOAuthBind  （三方回跳补全资料绑定）
+```
 
-**下一步**：
+`AuthRegisterModel` 关键字段：`Username / Email / Mobile / Password / ConfirmPassword / Code（验证码）/ Category / OAuthToken / CaptchaId/CaptchaCode`。
 
-- 学习 [OAuth 与 SSO](OAUTH-OAuth与SSO.md) 了解第三方登录
-- 了解 [视图体系](MVC-视图体系.md) 的登录页面定制
+**统一规则**
+
+- `AllowRegister=false` 禁止注册
+- 图片验证码：`CaptchaScene & 2` 启用时注册须携带 captcha
+- 租户：多租户下须携带 `X-App-Id` 或 `X-Tenant` 头
+- 禁止使用 OAuth 前缀用户名（`{provider}_`）
+- 用户名 / 邮箱 / 手机 均查重
+- 密码强度：`PasswordService.Valid`（`PaswordStrength` 正则，空/`*` 不校验）
+- **密码可选（手机/邮箱/OAuth 回跳注册）**：密码留空则生成**随机密码**，该账号无法使用密码登录（仅验证码/三方登录），登录后可再主动设置密码，不打扰用户；用户名注册仍须设置密码
+- **协议勾选（合规，强制）**：前端注册表单须勾选同意《用户协议》《隐私政策》（未勾选前端拦截，不提交）；后端不再校验（纯前端强制）
+- **联系方式验证状态**：只有验证码校验通过才标 `MailVerified/MobileVerified=true`；用户名注册填写的联系方式**保持未验证**（防"未验证却标已验证"）
+- 注册成功后自动登录（`CompleteLogin` 写 Cookie/返回 Token），MVC 版落回登录页
+
+### 3.1 用户名注册
+
+用户名 + 密码 + 确认密码；邮箱/手机**可选填**（不校验验证码，保持未验证状态）。
+
+**MVC**：登录页"注册"面板 → "用户名注册"子 Tab，`POST /Admin/User/Register { category:Password, username, password, confirmPassword }`。
+**API**：`POST /Auth/Register { category:"", username, email?, mobile?, password, confirmPassword }`。
+
+### 3.2 手机注册
+
+手机号 + 短信验证码 + 密码（**可选**）+ 确认密码。须先 `SendCode(action=Register)` 发送验证码，后端校验 `SmsRegisterCodePrefix` 缓存。密码留空则随机密码（仅验证码登录，登录后可再设置）。
+
+**MVC**：注册面板"手机注册"子 Tab，`POST /Admin/User/Register { category:Mobile, mobile, code, password, confirmPassword }`。
+**API**：`POST /Auth/Register { category:"mobile", mobile, code, password, confirmPassword }`。
+
+### 3.3 邮箱注册
+
+邮箱 + 邮件验证码 + 密码（**可选**）+ 确认密码。校验 `MailRegisterCodePrefix` 缓存。密码留空则随机密码（仅验证码登录，登录后可再设置）。
+
+**MVC**：注册面板"邮箱注册"子 Tab，`POST /Admin/User/Register { category:Mail, email, code, password, confirmPassword }`。
+**API**：`POST /Auth/Register { category:"mail", email, code, password, confirmPassword }`。
+
+### 3.4 三方回跳注册/绑定
+
+三方登录后用户不存在且未自动注册时，跳转补全资料页：`GET /Auth/OAuthPendingInfo?token=` 取预填信息（建议用户名/邮箱/手机/头像），提交 `POST /Auth/Register { category:"oauth", oauthToken, username?, password, confirmPassword }` 完成建号 + 绑定。
 
 ---
 
-## 参考资源
+## 4. 忘记密码（重置密码）
 
-- [魔方登录验证机制](https://newlifex.com/cube/cube_auth)
+重置入口统一为 `UserService.ResetPassword(account, code, newPassword, confirmPassword, challengeId, ip)`，按账号格式自动分发：
+
+```
+UserService.ResetPassword
+├── 账号是手机号 → ResetBySmsCode   （SmsResetCodePrefix 缓存校验）
+└── 账号是邮箱   → ResetByMailCode  （MailResetCodePrefix 缓存校验）
+```
+
+**流程（两步）**
+
+```
+① POST SendCode { channel: Sms|Mail, username: 手机号|邮箱, action: "ResetPassword" } → 下发验证码
+② POST ResetPassword { username: 手机号|邮箱, code, newPassword, confirmPassword, challengeId? }
+    → 校验验证码 → 查用户 → 校验密码强度 → 更新密码 → 删除验证码缓存
+```
+
+**MVC**：登录页"忘记密码"面板两步表单（账号+发送验证码 → 验证码+新密码+确认），提交 `POST /Admin/User/ForgetPassword`（`ResetPwdModel`，新密码支持 GetLoginKey+RSA）。
+**API**：`POST /Auth/ResetPassword`（JSON，新密码支持 Challenge 加密）。
+
+**安全要点**
+
+- 新密码同样受 `PasswordService.Valid` 强度校验
+- `AllowPlainPassword=false` 时重置须带 `challengeId`（新密码加密传输）
+- 验证码一次性、防重放；重置成功后删除验证码缓存
+- 发送验证码按 IP 限频（`SmsResetIpPrefix` 等）
+
+### 4.1 手机取回 / 邮箱取回
+
+两者流程完全一致，仅通道不同：手机号 → 短信，邮箱 → 邮件。前端按输入格式自动识别通道（或提供通道切换按钮）。
+
+### 4.2 验证问题取回（密保 Q&A）—— 未实现
+
+- **`XCode.Membership.User` 实体没有 `Question` / `Answer` 字段**（已核实 `用户.cs` 实体与 `Member.xml` 模型，字段仅含 Name/Password/Mail/Mobile 等），密保功能**完全不存在**，管理端 `UserController` 里的 `RemoveField("Question","Answer")` 只是对不存在的历史字段的防御性清理
+- **不建议实现**：验证码取回（短信/邮件）是主流且更安全，密保答案易泄露/遗忘
+- 若未来需要，需先在 XCode 的 `Member.xml` 增加 `Question`/`Answer` 字段并重新生成实体，再补充 Q&A 流程设计（校验答案 → 直接重置密码，注意 Answer 需加密存储）
+
+---
+
+## 5. 支撑能力
+
+### 5.1 发送验证码
+
+| 端点 | 参数 |
+|------|------|
+| MVC `POST /Admin/User/SendVerifyCode` | `channel`(Sms/Mail)、`username`(手机号/邮箱)、`action`(Login/Register/ResetPassword/Bind/Notify)、`captchaId/captchaCode` |
+| API `POST /Auth/SendCode` | 同上（JSON） |
+
+- 通道实现：`ISmsVerifyCode`（阿里云短信）/ `IMailVerifyCode`（SMTP），后台"系统管理→短信配置/邮件配置"管理
+- 按 IP + 账号限频（发送间隔、10 分钟累计次数）
+- 验证码缓存前缀：`Sms{Action}CodePrefix` / `Mail{Action}CodePrefix`，过期自动失效
+- `CaptchaScene & 4` 启用时发送验证码前须过图片验证码
+
+### 5.2 图片验证码（Captcha）
+
+- `GET /Auth/Captcha`（API）→ 返回 `captchaId` + PNG base64 图片（`DrawingCaptchaService` 算术题，TTL 300 秒）。**MVC 端点未实现**：CubeNC `UserController` 无 `Captcha` action、`ICaptchaService` 未在 CubeNC DI 注册、`UserService` 无验证码校验 → MVC 登录页不提供图形验证码；如需启用需补齐上述后端
+- **场景强制（`CaptchaScene` 位掩码）**：`1`=登录、`2`=注册、`4`=发验证码，可组合（如 `3`=登录+注册）；强制要求**不受**自适应豁免
+- **风险自适应（`CaptchaRisk`，默认 true）**：CaptchaScene 未覆盖的场景按"机器安全度"动态决定——内网/可信设备/无异常免验证码，公网+近期登录失败/封禁中要求验证码（`UserService.RequireCaptcha`）
+  - 风险评分：`0`=内网（127/10/172.16-31/192.168/::1），`1`=公网，`2`=公网+近期登录失败（IP/账号/子网维度），`3`=封禁中（达到 `MaxLoginError`/子网阈值）
+  - `CaptchaRiskThreshold`（默认 2）：风险评分达到该值要求验证码
+  - **可信设备**：登录/注册成功后标记设备（`CubeDeviceId` Cookie 指纹），有效期内（`TrustedDeviceDays`，默认 30 天）免**自适应**验证码；换 IP 视为不可信；`CaptchaScene` 强制场景**不豁免**
+  - 发码场景（防短信轰炸）**不豁免**可信设备
+- 校验成功立即失效（防重放）
+- 前端（API 皮肤）：按登录配置 `login.captcha`/`register.captcha` 动态显示验证码行；提交/发码被拒（"验证码错误或已过期"）时自动显示并刷新验证码，保证动态风险生效。MVC 登录页不提供
+
+### 5.3 RSA Challenge（密码加密传输）
+
+| MVC | API | 算法 | 用途 |
+|-----|-----|------|------|
+| `GET /Admin/User/GetLoginKey` | `GET /Auth/Challenge` | 服务端 RSA 密钥对 | 登录密码 / 重置新密码 |
+
+- MVC 用 JSEncrypt（PKCS#1v1.5），API 用 Web Crypto（RSA-OAEP/SHA-256，公钥 PKCS#8 SPKI）
+- 挑战 300 秒有效、一次性
+
+### 5.4 登录配置
+
+- API：`GET /Auth/LoginConfig?tenant=` → `{ name, copyright, registration, loginTip, loginLogo, loginBackground, login{password,sms,mail,captcha,sendCode}, register{enabled,password,sms,mail,captcha}, oauth[], security{challengeRequired,mfaAvailable,passwordComplexity,passwordStrength} }`；`login.captcha`/`register.captcha`/`login.sendCode` 按当前请求环境**动态判定**（CaptchaScene 强制 + 风险自适应），非静态位掩码
+- MVC：`LoginViewModel` 服务端填充（`DisplayName/AllowLogin/AllowRegister/EnableSms/EnableMail/EnablePasswordComplexity/PasswordStrength/RequireCaptcha/RequireCaptchaRegister/OAuthItems/...`）
+
+### 5.5 令牌与会话
+
+- JWT：`accessToken` + `refreshToken`；`POST /Auth/Refresh` 刷新（自动轮换 + 旧令牌黑名单防重放）
+- MVC Cookie：`token-{系统名}`（`TokenCookie` 控制）；`LogoutAll` 支持全局注销
+- `POST /Auth/Logout` / `GET /Admin/User/Logout` 注销
+- `TokenExpire` / `SessionTimeout` 控制有效期
+
+### 5.6 多租户
+
+- 注册/登录通过 `X-App-Id`（OAuth 应用租户）或 `X-Tenant`（租户编码）定位租户
+- 登录/注册成功后自动绑定租户（`EnsureTenantUser`）并写租户 Cookie
+
+### 5.7 外部验证
+
+`ExternalAuthUrl` 配置后，本地密码验证失败自动转外部认证服务（企业统一认证），验证成功自动创建/同步本地用户（`ExternalAuthHelper`）。
+
+### 5.8 账号管理（更换绑定 / 注销 / 导出）
+
+| 功能 | MVC | 说明 |
+|------|-----|------|
+| 更换手机/邮箱 | `POST /Admin/User/BindByVerifyCode { account, code }` | 验证码校验**新号**所有权后绑定/更换（按格式分发手机/邮箱），旧号自动失效；API 可复用 `UserService.BindByVerifyCode` |
+| 注销账号 | `POST /Admin/User/CloseAccount` | 软删除：`Enable=false` 禁用 + 清空敏感字段（Mail/Mobile/DisplayName/Avatar/Password 等）+ 吊销全部令牌 + 解绑三方 + 清理在线记录，保留 ID/Name 防重名与审计 |
+| 导出个人数据 | `GET /Admin/User/ExportData` | JSON 文件下载：个人资料 + 第三方绑定 + 令牌记录 |
+
+> 注销与导出均依据《中华人民共和国个人信息保护法》要求提供（注销对应删除权、导出对应数据可携带权），前端入口位于用户信息页"安全中心"区块，页面文案已标注。
+
+---
+
+## 6. 配置项（CubeSetting）速查
+
+| 配置项 | 默认 | 说明 |
+|--------|------|------|
+| `AllowLogin` | true | 允许密码登录 |
+| `AllowRegister` | true | 允许注册 |
+| `EnableSms` | false | 短信验证码：手机登录/注册/找回通道 |
+| `EnableMail` | false | 邮件验证码：邮箱登录/注册/找回通道 |
+| `AutoRegister` | — | 手机/邮箱验证码登录时未注册自动建号 |
+| `AllowPlainPassword` | true | 允许明文密码；false 强制 RSA 加密传输 |
+| `PaswordStrength` | 强密码正则 | 密码强度正则（空/`*` 不校验），注意拼写 |
+| `EnablePasswordComplexity` | true | 是否启用密码复杂度校验 |
+| `CaptchaScene` | 0 | 图片验证码**场景强制**位（1=登录,2=注册,4=发码，可组合；强制不受自适应豁免） |
+| `CaptchaRisk` | true | 风险自适应验证码：自动感知机器安全度，不安全环境要求验证码 |
+| `CaptchaRiskThreshold` | 2 | 风险阈值（0=内网,1=公网,2=公网+失败,3=封禁），达到该值要求验证码 |
+| `TrustedDeviceDays` | 30 | 可信设备有效期（天），期内免**自适应**验证码 |
+| `MaxLoginError` / `LoginForbiddenTime` | — | 防爆破：错误次数 / 锁定秒数 |
+| `MaxLoginErrorBySubnet24/16` | — | 子网级防爆破 |
+| `EnableMfa` | false | 开放 MFA（TOTP）能力 |
+| `TokenCookie` | — | MVC 是否写令牌 Cookie |
+| `TokenExpire` / `SessionTimeout` | — | 令牌 / 会话有效期 |
+| `DefaultRole` | — | 注册默认角色 |
+| `ExternalAuthUrl` | 空 | 外部验证服务地址 |
+| `LoginTip` / `LoginLogo` / `LoginBackground` / `Copyright` / `Registration` | — | 登录页展示配置 |
+
+---
+
+## 7. 端点对照总表
+
+| 业务 | MVC | API |
+|------|-----|-----|
+| 登录页/配置 | `GET /Admin/User/Login` | `GET /Auth/LoginConfig` |
+| 图片验证码 | `GET /Admin/User/Captcha` | `GET /Auth/Captcha` |
+| RSA 公钥 | `GET /Admin/User/GetLoginKey` | `GET /Auth/Challenge` |
+| 登录 | `POST /Admin/User/Login` | `POST /Auth/Login` |
+| 发送验证码 | `POST /Admin/User/SendVerifyCode` | `POST /Auth/SendCode` |
+| 注册 | `POST /Admin/User/Register` | `POST /Auth/Register` |
+| 重置密码 | `POST /Admin/User/ForgetPassword` | `POST /Auth/ResetPassword` |
+| 令牌刷新 | `POST /Admin/User/RefreshToken` | `POST /Auth/Refresh` |
+| 当前用户 | `GET /Admin/User/Info` | `GET /Auth/Info` |
+| 注销 | `GET /Admin/User/Logout` | `POST /Auth/Logout` |
+| 三方登录 | `GET /Sso/Login` / `GET /Sso/LoginInfo` | 同左（全页跳转） |
+| 微信登录 | — | `POST /Sso/WxMiniLogin` / `POST /Sso/WxAppLogin` |
+| 绑定 | `POST /Admin/User/BindByVerifyCode`、`/Sso/Bind` | `POST /Auth/Register(category=oauth)` |
+| 更换手机/邮箱 | `POST /Admin/User/BindByVerifyCode` | 复用 `UserService.BindByVerifyCode` |
+| 注销账号 | `POST /Admin/User/CloseAccount` | 复用 `UserService.CloseAccount` |
+| 导出个人数据 | `GET /Admin/User/ExportData` | 复用 `UserService` 数据组装 |
+
+---
+
+## 8. MVC 登录页设计（2026-08 二代简化版）
+
+MVC 登录页采用"两大面板"结构（`~/Admin/User/Login`，ACE 风格，设计参考 `Doc/UI设计/登录页-MVC版.html`）：
+
+```
+登录卡片
+├── 品牌区（Logo / 系统名 / 副标题）
+├── 主 Tab：登录 | 注册(可选)
+├── 登录面板
+│   └── 密码登录：用户名 + 密码 + 记住我 + 登录按钮（RSA 加密，`GetLoginKey` 新鲜公钥）
+├── 注册面板
+│   └── 用户名注册：用户名 + 密码 + 确认密码 + 协议勾选（密码强度动态校验）
+└── 第三方登录（OAuthConfig.Visible 图标列表，flex 换行居中）
+```
+
+要点：
+
+- **MVC 版定位简化**：不支持手机/邮箱验证码登录、无忘记密码面板；注册仅用户名方式（手机/邮箱注册需验证码，MVC 页面不提供）
+- 图形验证码 MVC 后端未实现（见 §5.2），登录页不提供
+- 密码强度正则由 `CubeSetting.PaswordStrength` 下发前端动态校验（空/`*` 跳过）；所有密码框支持 RSA 加密传输
+- 样式独立于 `Cube.css`（`@res/cube-login.css`），图标用 FontAwesome；`MLogin.cshtml`（移动版）与桌面版同构
+- 完整功能参考（API 版）：`Doc/UI设计/登录页-API版.html`（含 密码/手机/邮箱 登录子Tab、三方式注册、忘记密码、第三方登录）
+
+---
+
+## 9. 常见问题
+
+- **注册后是否自动登录？** MVC 版注册成功落回登录页（历史行为，需手动登录）；API 版 `/Auth/Register` 直接返回 Token。
+- **手机/邮箱验证码登录提示"验证码已过期"？** 发送验证码与登录间隔超过有效期（默认 10 分钟），重新发送即可。
+- **验证码登录提示"用户不存在"？** 未开启 `AutoRegister`；开启后首次验证码登录自动建号。
+- **`AllowPlainPassword=false` 但登录报"禁止明文"？** 前端未走 Challenge 流程，检查是否调用 `GetLoginKey`/`Challenge` 并携带 `challengeId`。
+- **密保问题找回可用吗？** 未实现，请使用手机/邮箱验证码取回。
+
+---
+
+
+    

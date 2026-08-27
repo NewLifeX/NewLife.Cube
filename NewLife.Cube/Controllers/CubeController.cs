@@ -407,6 +407,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     /// <summary>获取用户头像。头像文件不存在时根据昵称和性别自动生成 SVG 文字头像</summary>
     /// <param name="id">用户编号</param>
     /// <returns></returns>
+    [AllowAnonymous]
     [HttpGet]
     public virtual ActionResult Avatar(Int32 id)
     {
@@ -428,6 +429,27 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         {
             var (found, _) = SvgAvatarService.FindAvatarFile(set.AvatarPath, user.ID);
             av = found;
+        }
+
+        // 兼容头像地址为附件接口 URL 的情况（如 /cube/image?id=xxx.png）：
+        // 解析编号找到附件文件路径，作为普通头像文件路径复用下方逻辑，不经过附件接口
+        if (av.IsNullOrEmpty() && !user.Avatar.IsNullOrEmpty() && user.Avatar.StartsWith("/cube/image?"))
+        {
+            var p = user.Avatar.IndexOf("?id=");
+            if (p >= 0)
+            {
+                var attId = user.Avatar[(p + 4)..];
+                var q = attId.IndexOf('&');
+                if (q >= 0) attId = attId[..q];
+
+                // 去掉仅用于装饰的后缀名
+                var e = attId.IndexOf('.');
+                if (e > 0) attId = attId[..e];
+
+                var att = Attachment.FindById(attId.ToLong());
+                av = att?.GetFilePath();
+                if (!av.IsNullOrEmpty() && !System.IO.File.Exists(av)) av = null;
+            }
         }
 
         // 头像文件不存在时，根据昵称和性别生成 SVG 文字头像
@@ -512,7 +534,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     }
 
     /// <summary>获取 AI 助手配置。前端浮窗展示所需的开关与配色，由 CubeSetting 配置</summary>
-    /// <returns>返回 AISwitch 开关、主色 PrimaryColor 与辅色 SecondaryColor（默认靛蓝紫渐变）</returns>
+    /// <returns>返回 AISwitch 开关、主色 PrimaryColor 与辅色 SecondaryColor、Mermaid 图表库地址（默认靛蓝紫渐变）</returns>
     [HttpGet]
     public ActionResult GetAiConfig()
     {
@@ -522,6 +544,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
             set.AISwitch,
             set.AIPrimaryColor,
             set.AISecondaryColor,
+            MermaidUrl = set.GetMermaidUrl(),
         });
     }
 

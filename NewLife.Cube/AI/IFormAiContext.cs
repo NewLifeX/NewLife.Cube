@@ -1,3 +1,4 @@
+using NewLife.AI.Models;
 using NewLife.AI.Tools;
 
 namespace NewLife.Cube.AI;

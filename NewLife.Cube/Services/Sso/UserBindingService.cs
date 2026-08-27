@@ -497,6 +497,10 @@ public class UserBindingService : IUserBindingService
         // 未开启多租户时跳过，避免自动创建租户关系导致 ChooseTenant 切入租户模式
         if (!CubeSetting.Current.EnableTenant) return;
 
+        // 仅影子模式（兼容观察期）才自动按所带租户标识绑定租户；
+        // 非影子（Enforce 严格执行）不自动建绑定，租户归属走显式管理动作（邀请/后台分配）
+        if (CubeSetting.Current.TenantEnforceMode != TenantEnforceModes.Shadow) return;
+
         var log = LogProvider.Provider;
 
         if (!client.TenantCode.IsNullOrEmpty() && !client.TenantName.IsNullOrEmpty())

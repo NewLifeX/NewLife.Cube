@@ -1,14 +1,11 @@
+using NewLife.AI.Models;
+
 namespace NewLife.Cube.AI;
 
-/// <summary>AI 对话请求</summary>
-public class AiChatRequest
+/// <summary>魔方 AI 对话请求。继承 NAI 通用请求（SessionId/Message/Think/Stream），
+/// 附加魔方页面上下文字段（目标页面/记录/查询条件），供全局 <see cref="Controllers.AiController"/> 解析目标控制器使用</summary>
+public class CubeAiChatRequest : AiChatRequest
 {
-    /// <summary>会话编号。前端生成并持久化到本地存储</summary>
-    public String? SessionId { get; set; }
-
-    /// <summary>用户消息</summary>
-    public String? Message { get; set; }
-
     /// <summary>页面类型：list / form / detail</summary>
     public String? Page { get; set; }
 
@@ -27,11 +24,8 @@ public class AiChatRequest
     /// <summary>目标页面控制器名。如 User，由前端从路由注入，全局 AiController 据此解析目标控制器</summary>
     public String? Controller { get; set; }
 
-    /// <summary>是否深度推理</summary>
-    public Boolean Think { get; set; }
-
-    /// <summary>是否流式输出（SSE）。默认 true</summary>
-    public Boolean Stream { get; set; } = true;
+    /// <summary>目标页面路径。如 /Admin/UserStat；由前端从 location.pathname 注入，后端按用户+页面作用域隔离会话</summary>
+    public String? Url { get; set; }
 }
 
 /// <summary>浏览器操作回传结果。前端执行 run_js 脚本后 POST 到全局 AiController.OperationResult 端点</summary>

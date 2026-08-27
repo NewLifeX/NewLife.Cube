@@ -58,6 +58,16 @@ public class CubeSetting : Config<CubeSetting>
     [Category("通用")]
     public String ResourceUrl { get; set; }
 
+    /// <summary>获取 Mermaid 图表库地址。配置 ResourceUrl 时使用自建 CDN（与 echarts 同约定 /mermaid/mermaid.min.js），否则使用公共 CDN（npmmirror，国内访问稳定）</summary>
+    /// <returns>Mermaid 脚本完整地址</returns>
+    public String GetMermaidUrl()
+    {
+        var res = ResourceUrl;
+        if (!String.IsNullOrEmpty(res)) return res.TrimEnd('/') + "/mermaid/mermaid.min.js";
+
+        return "https://registry.npmmirror.com/mermaid/11.12.3/files/dist/mermaid.min.js";
+    }
+
     /// <summary>跨域来源。允许其它源访问当前域，指定其它源http地址，*表示任意域</summary>
     [Description("跨域来源。允许其它源访问当前域，指定其它源http地址，*表示任意域")]
     [Category("通用")]
@@ -132,6 +142,11 @@ public class CubeSetting : Config<CubeSetting>
     [Description("密码强度。*表示无限制，简易版默认5~32位，不限制字符类型。完整版默认8位起，数字大小写字母和符号。完整版^(?=.*\\d.*)(?=.*[a-z].*)(?=.*[A-Z].*)(?=.*[^(0-9a-zA-Z)].*).{8,32}$")]
     [Category("用户登录")]
     public String PaswordStrength { get; set; } = @"^.{5,32}$";
+
+    /// <summary>复杂密码校验。启用后登录页校验密码复杂度（按密码强度），禁用后登录页仅要求密码非空，默认true</summary>
+    [Description("复杂密码校验。启用后登录页校验密码复杂度（按密码强度），禁用后登录页仅要求密码非空，默认true")]
+    [Category("用户登录")]
+    public Boolean EnablePasswordComplexity { get; set; } = true;
 
     /// <summary>登录失败次数。短时间内，相同用户或IP地址连续登录错误次数达到该值后禁止登录，默认5</summary>
     [Description("登录失败次数。短时间内，相同用户或IP地址连续登录错误次数达到该值后禁止登录，默认5")]
@@ -422,6 +437,16 @@ public class CubeSetting : Config<CubeSetting>
     [Category("系统功能")]
     public Boolean EnableTenant { get; set; }
 
+    /// <summary>多租户强制模式。Shadow=兼容观察期（旧客户端无租户标识放行并记录影子日志，过渡期使用，后期移除），Enforce=严格执行fail-closed。默认Shadow</summary>
+    [Description("多租户强制模式。Shadow=兼容观察期（旧客户端无租户标识放行并记录影子日志，过渡期使用，后期移除），Enforce=严格执行fail-closed")]
+    [Category("系统功能")]
+    public TenantEnforceModes TenantEnforceMode { get; set; } = TenantEnforceModes.Shadow;
+
+    /// <summary>多租户查询策略。DenyWithEmpty=无租户上下文返回空集（fail-closed），ThrowOnMissingTenant=显式抛错。默认DenyWithEmpty</summary>
+    [Description("多租户查询策略。DenyWithEmpty=无租户上下文返回空集，ThrowOnMissingTenant=显式抛错")]
+    [Category("系统功能")]
+    public TenantQueryPolicies TenantQueryPolicy { get; set; } = TenantQueryPolicies.DenyWithEmpty;
+
     /// <summary>用户在线。是否记录用户在线信息，0表示不记录，1表示仅记录已登录用户，2表示记录所有访客。默认2</summary>
     [Description("用户在线。是否记录用户在线信息，0表示不记录，1表示仅记录已登录用户，2表示记录所有访客。默认2")]
     [Category("系统功能")]
@@ -442,10 +467,25 @@ public class CubeSetting : Config<CubeSetting>
     [Category("系统功能")]
     public Boolean EnableMail { get; set; }
 
-    /// <summary>验证码场景。位掩码控制图片验证码出现的场景：0=不启用，1=登录时，2=注册时，4=发验证码时（防短信轰炸），可组合，如3=登录+注册均需验证码，默认0</summary>
-    [Description("验证码场景。位掩码：0=不启用，1=登录，2=注册，4=发验证码（防短信轰炸），可组合，如3=登录+注册均需验证码，默认0")]
+    /// <summary>验证码场景。位掩码强制指定需要图片验证码的场景：0=不启用，1=登录，2=注册，4=发验证码（防短信轰炸），可组合，如3=登录+注册均需验证码。该开关为强制要求，不受风险自适应豁免，默认0</summary>
+    [Description("验证码场景。位掩码强制：0=不启用，1=登录，2=注册，4=发验证码（防短信轰炸），可组合，如3=登录+注册均需验证码。强制要求不受自适应豁免，默认0")]
     [Category("系统功能")]
     public Int32 CaptchaScene { get; set; }
+
+    /// <summary>风险自适应验证码。自动感知当前请求环境安全度（内网/可信设备/登录失败历史），不安全时即使 CaptchaScene 未覆盖也要求图片验证码，默认true</summary>
+    [Description("风险自适应验证码。自动感知当前机器是否安全，不安全环境要求图片验证码，默认true")]
+    [Category("系统功能")]
+    public Boolean CaptchaRisk { get; set; } = true;
+
+    /// <summary>验证码风险阈值。风险评分达到该值要求验证码：0=内网，1=公网，2=公网+近期登录失败，3=封禁中。默认2</summary>
+    [Description("验证码风险阈值。风险评分达到该值要求验证码：0=内网，1=公网，2=公网+近期登录失败，3=封禁中。默认2")]
+    [Category("系统功能")]
+    public Int32 CaptchaRiskThreshold { get; set; } = 2;
+
+    /// <summary>可信设备有效期。曾成功登录的设备在有效期内免自适应验证码（天），默认30</summary>
+    [Description("可信设备有效期。曾成功登录的设备在有效期内免自适应验证码（天），默认30")]
+    [Category("系统功能")]
+    public Int32 TrustedDeviceDays { get; set; } = 30;
 
     /// <summary>启用MFA。开启后用户可在「账号安全」绑定 Authenticator；已绑定用户登录时必须二步验证。仅开此开关不会对未绑定用户强制 MFA</summary>
     [Description("启用MFA。开启后用户可在「账号安全」绑定 Authenticator；已绑定用户登录时必须二步验证。仅开此开关不会对未绑定用户强制 MFA")]

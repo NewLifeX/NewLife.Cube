@@ -7,139 +7,326 @@
 @{
     var fact = EntityFactory.CreateFactory(ViewData.ModelMetadata.ModelType);
     var user = Model as IUser;
-}
-<div class="row">
-    @await Html.PartialAsync("_User_Nav")
-</div>
-<div class="row">
-    <label class="control-label hiddex-xs col-sm-2"></label>
-    <div class="col-xs-12 col-sm-8">
-        <div class="form-horizontal">
-            @if (ViewBag.StatusMessage != null)
-            {
-                <div class="alert alert-success alert-dismissible text-center" role="alert">
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <strong>@ViewBag.StatusMessage</strong>
-                </div>
-            }
-            @using (Html.BeginForm("Info", null, new { id = Model[fact.Unique.Name] }, FormMethod.Post, null, new { enctype = "multipart/form-data" }))
-            {
-                @Html.ValidationSummary()
-                if (!user.Avatar.IsNullOrEmpty())
-                {
-                    <div class="form-group">
-                        <label class="control-label col-xs-3 col-sm-3"></label>
-                        <div class="input-group col-xs-9 col-sm-5">
-                            <img src="@user.GetAvatarUrl()" style="max-width: 400px; max-height: 400px" />
-                        </div>
-                    </div>
-                }
-                <div class="form-group">
-                    <label class="control-label col-xs-3 col-sm-3">名称</label>
-                    <div class="input-group col-xs-9 col-sm-5">
-                        <input value="@user.Name" class="col-xs-12 col-sm-8 col-sm-6 col-lg-4" disabled="disabled" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-xs-3 col-sm-3">显示名</label>
-                    <div class="input-group col-xs-9 col-sm-5">
-                        @Html.ForEditor("DisplayName")
-                        @Html.ForDescription("DisplayName")
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-xs-3 col-sm-3">性别</label>
-                    <div class="input-group col-xs-9 col-sm-5">
-                        @Html.ForEditor("Sex", user.Sex)
-                        @Html.ForDescription("Sex")
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-xs-3 col-sm-3">邮件</label>
-                    <div class="input-group col-xs-9 col-sm-5">
-                        @Html.ForEditor("Mail")
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-xs-3 col-sm-3">手机</label>
-                    <div class="input-group col-xs-9 col-sm-5">
-                        @Html.ForEditor("Mobile")
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-xs-3 col-sm-3">代码</label>
-                    <div class="input-group col-xs-9 col-sm-5">
-                        @Html.ForEditor("Code")
-                    </div>
-                    <span class="hidden-xs col-sm-4">
-                        <span class="middle">@Html.ForDescription("Code")</span>
-                    </span>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-xs-3 col-sm-3">生日</label>
-                    <div class="input-group col-xs-9 col-sm-5">
-                        @Html.ForEditor("Birthday")
-                    </div>
-                    <span class="hidden-xs col-sm-4">
-                        <span class="middle">@Html.ForDescription("Birthday")</span>
-                    </span>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-xs-3 col-sm-3">角色</label>
-                    <div class="input-group col-xs-9 col-sm-5">
-                        @(user.Roles.Join(",", r => r + ""))
-                    </div>
-                    <span class="hidden-xs col-sm-4">
-                        <span class="middle">主要角色与次要角色</span>
-                    </span>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-xs-3 col-sm-3">部门</label>
-                    <div class="input-group col-xs-9 col-sm-5">
-                        @((user as User).DepartmentName)
-                    </div>
-                    <span class="hidden-xs col-sm-4">
-                        <span class="middle">@Html.ForDescription("Department")</span>
-                    </span>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-xs-3 col-sm-3">头像</label>
-                    <div class="input-group col-sm-2">
-                        <label class="">@user.Avatar</label> &nbsp;
-                        <input accept="image/*" id="Avatar" name="Avatar" type="file" />
-                    </div>
+    var user2 = user as User;
 
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-xs-3 col-sm-3">登录次数</label>
-                    <div class="input-group col-sm-2">
-                        @user.Logins
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-xs-3 col-sm-3">最后登录</label>
-                    <div class="input-group col-sm-2">
-                        @user.LastLogin.ToFullString("")
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-xs-3 col-sm-3">最后登录IP</label>
-                    <div class="input-group col-xs-9 col-sm-5">
-                        @user.LastLoginIP
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-xs-3 col-sm-3">备注</label>
-                    <div class="input-group col-xs-9 col-sm-5">
-                        @Html.ForEditor("Remark")
-                    </div>
-                </div>
-                <div class="clearfix form-actions">
-                    <label class="control-label col-sm-4"></label>
-                    <button type="submit" class="btn btn-success btn-sm"><i class="glyphicon glyphicon-save"></i><strong>保存</strong></button>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="history.go(-1);"><i class="glyphicon glyphicon-remove"></i><strong>取消</strong></button>
-                </div>
+    // 角色徽章配色
+    var roleColors = new[] { "label-primary", "label-success", "label-info", "label-warning", "label-danger" };
+    var roles = user?.Roles;
+    var idx = 0;
+}
+<div class="profile-wrap">
+    @await Html.PartialAsync("_User_Nav")
+
+    @if (ViewBag.StatusMessage != null)
+{
+    <div class="alert alert-success alert-dismissible text-center" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <strong>@ViewBag.StatusMessage</strong>
+    </div>
+}
+
+<!-- 个人信息头卡 -->
+<div class="profile-card">
+    <div class="profile-head">
+        <div class="profile-avatar">
+            @if (!user.Avatar.IsNullOrEmpty())
+            {
+                <img src="@user.GetAvatarUrl()" alt="头像" />
+            }
+            else
+            {
+                <span class="avatar-fallback"><i class="fa fa-user"></i></span>
             }
         </div>
+        <div class="profile-info">
+            <div class="profile-name">
+                @user.DisplayName
+                <span class="profile-username"><i class="fa fa-user-o"></i> @user.Name</span>
+            </div>
+            <div class="profile-badges">
+                @if (roles != null)
+                {
+                    foreach (var r in roles)
+                    {
+                        var cls = roleColors[idx++ % roleColors.Length];
+                        <span class="label @cls">@r</span>
+                    }
+                }
+            </div>
+        </div>
     </div>
+    <div class="profile-stats">
+        <div class="stat-item">
+            <div class="stat-num">@user.Logins</div>
+            <div class="stat-label">登录次数</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">@user.LastLogin.ToFullString("")</div>
+            <div class="stat-label">最后登录</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">@(user2?.DepartmentName)</div>
+            <div class="stat-label">所属部门</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">@user.LastLoginIP</div>
+            <div class="stat-label">最后登录IP</div>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("Info", null, new { id = Model[fact.Unique.Name] }, FormMethod.Post, null, new { enctype = "multipart/form-data", @class = "form-horizontal" }))
+{
+    @Html.ValidationSummary()
+
+    <!-- 基础信息 -->
+    <div class="form-section">
+        <div class="form-section-title"><i class="fa fa-id-card-o"></i>基础信息</div>
+        <div class="form-section-body">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">名称</label>
+                        <div class="col-sm-8">
+                            <input value="@user.Name" class="form-control" disabled="disabled" />
+                            <span class="help-text">登录名，不可修改</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">显示名</label>
+                        <div class="col-sm-8">
+                            @Html.ForEditor("DisplayName")
+                            @Html.ForDescription("DisplayName")
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">性别</label>
+                        <div class="col-sm-8">
+                            @Html.ForEditor("Sex", user.Sex)
+                            @Html.ForDescription("Sex")
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">生日</label>
+                        <div class="col-sm-8">
+                            <div class="input-group">
+                                @Html.ForEditor("Birthday")
+                            </div>
+                            <span class="help-text">@Html.ForDescription("Birthday")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 联系方式 -->
+    <div class="form-section">
+        <div class="form-section-title"><i class="fa fa-envelope-o"></i>联系方式</div>
+        <div class="form-section-body">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">邮件</label>
+                        <div class="col-sm-8">
+                            @Html.ForEditor("Mail")
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">手机</label>
+                        <div class="col-sm-8">
+                            @Html.ForEditor("Mobile")
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 身份信息 -->
+    <div class="form-section">
+        <div class="form-section-title"><i class="fa fa-shield"></i>身份信息</div>
+        <div class="form-section-body">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">代码</label>
+                        <div class="col-sm-8">
+                            @Html.ForEditor("Code")
+                            <span class="help-text">@Html.ForDescription("Code")</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">角色</label>
+                        <div class="col-sm-8">
+                            <p class="form-value">
+                                @if (roles != null)
+                                {
+                                    foreach (var r in roles)
+                                    {
+                                        <span class="label label-primary">@r</span>
+                                    }
+                                }
+                            </p>
+                            <span class="help-text">主要角色与次要角色</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">部门</label>
+                        <div class="col-sm-8">
+                            <p class="form-value"><i class="fa fa-sitemap"></i>@(user2?.DepartmentName)</p>
+                            <span class="help-text">@Html.ForDescription("Department")</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">头像</label>
+                        <div class="col-sm-8 avatar-upload">
+                            <span class="avatar-thumb">
+                                @if (!user.Avatar.IsNullOrEmpty())
+                                {
+                                    <img src="@user.GetAvatarUrl()" />
+                                }
+                                else
+                                {
+                                    <i class="fa fa-user"></i>
+                                }
+                            </span>
+                            <span class="upload-box">
+                                <span class="btn btn-sm btn-default btn-file">
+                                    <i class="fa fa-upload"></i> 选择文件
+                                    <input type="file" name="Avatar" accept="image/*" />
+                                </span>
+                                <span class="help-text">@user.Avatar</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录信息 -->
+    <div class="form-section">
+        <div class="form-section-title"><i class="fa fa-clock-o"></i>登录信息</div>
+        <div class="form-section-body">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">登录次数</label>
+                        <div class="col-sm-8">
+                            <p class="form-value"><i class="fa fa-sign-in"></i>@user.Logins</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">最后登录</label>
+                        <div class="col-sm-8">
+                            <p class="form-value"><i class="fa fa-calendar-o"></i>@user.LastLogin.ToFullString("")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">最后登录IP</label>
+                        <div class="col-sm-8">
+                            <p class="form-value"><i class="fa fa-globe"></i>@user.LastLoginIP</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label class="control-label col-sm-2">备注</label>
+                        <div class="col-sm-10">
+                            @Html.ForEditor("Remark")
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 操作栏 -->
+    <div class="profile-actions">
+        <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> 保存</button>
+        <button type="button" class="btn btn-default" onclick="history.go(-1);"><i class="fa fa-times"></i> 取消</button>
+    </div>
+}
+
+<!-- 安全中心：更换绑定 / 导出数据 / 注销账号（依据《个人信息保护法》） -->
+<div class="form-section">
+    <div class="form-section-title"><i class="fa fa-lock"></i>安全中心</div>
+    <div class="form-section-body">
+        <!-- 导出个人数据 -->
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <label class="control-label col-sm-4">个人数据</label>
+                    <div class="col-sm-8">
+                        <a href="@Url.Action("ExportData")" class="btn btn-sm btn-info"><i class="fa fa-download"></i> 导出个人数据</a>
+                        <span class="help-text">依据《中华人民共和国个人信息保护法》提供数据可携带权，导出 JSON 文件</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 注销账号 -->
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <label class="control-label col-sm-4">注销账号</label>
+                    <div class="col-sm-8">
+                        <button type="button" class="btn btn-sm btn-danger" id="sec_close_btn"><i class="fa fa-times-circle"></i> 注销账号</button>
+                        <span class="help-text">依据《中华人民共和国个人信息保护法》提供账号注销。注销后账号禁用，个性化数据将清空且不可恢复</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // jQuery 在页面底部加载，这里需等待其就绪后再绑定事件
+    (function () {
+        function init() {
+            if (typeof jQuery === 'undefined') { setTimeout(init, 100); return; }
+            jQuery(function () {
+                // ========== 注销账号 ==========
+                $('#sec_close_btn').on('click', function () {
+                    if (!confirm('确定要注销账号吗？注销后账号将被禁用，个性化数据将清空且不可恢复。')) return;
+                    $.ajax({
+                        url: '@Url.Action("CloseAccount", "User", new { area = "Admin" })',
+                        type: 'POST',
+                        dataType: 'json'
+                    }).done(function (d) {
+                        if (d && d.code == 0) { alert('账号已注销'); location.href = '@Url.Action("Login", "User", new { area = "Admin" })'; }
+                        else { alert((d && d.message) || '注销失败'); }
+                    }).fail(function () { alert('注销失败，请稍后重试'); });
+                });
+            });
+        }
+        init();
+    })();
+</script>
 </div>

@@ -19,8 +19,8 @@ public class LoginAbilityModel
     /// <summary>登录时需要图片验证码</summary>
     public Boolean Captcha { get; set; }
 
-    /// <summary>发送短信/邮件验证码时需要图片验证码（CaptchaScene 位 4，防轰炸）</summary>
-    public Boolean SendCodeCaptcha { get; set; }
+    /// <summary>发送验证码时需要图片验证码（防短信轰炸）</summary>
+    public Boolean SendCode { get; set; }
 }
 
 /// <summary>注册能力配置</summary>
@@ -51,6 +51,9 @@ public class SecurityConfigModel
     /// <summary>是否开放 MFA 功能。true 时允许用户在个人设置中开启 TOTP</summary>
     public Boolean MfaAvailable { get; set; }
 
+    /// <summary>是否启用密码复杂度校验。false 时登录页仅要求密码非空，不做复杂度校验</summary>
+    public Boolean PasswordComplexity { get; set; } = true;
+
     /// <summary>密码强度正则。* 表示无限制，前端可用于客户端校验提示</summary>
     public String PasswordStrength { get; set; }
 }
@@ -74,6 +77,26 @@ public class LoginConfigModel
     private readonly CubeSetting _set;
     private readonly SysConfig _sys;
     private readonly Tenant _tenant;
+
+    /// <summary>风险自适应验证码判定结果（登录场景）。null 表示未注入，回退 CaptchaScene</summary>
+    private Boolean? _riskLogin;
+
+    /// <summary>风险自适应验证码判定结果（注册场景）。null 表示未注入，回退 CaptchaScene</summary>
+    private Boolean? _riskRegister;
+
+    /// <summary>风险自适应验证码判定结果（发码场景）。null 表示未注入，回退 CaptchaScene</summary>
+    private Boolean? _riskSendCode;
+
+    /// <summary>应用风险自适应的验证码判定结果。由控制器按当前请求环境计算后注入；未注入时回退 CaptchaScene 位掩码</summary>
+    /// <param name="login">登录场景是否需要验证码</param>
+    /// <param name="register">注册场景是否需要验证码</param>
+    /// <param name="sendCode">发码场景是否需要验证码</param>
+    public void ApplyRiskCaptcha(Boolean login, Boolean register, Boolean sendCode)
+    {
+        _riskLogin = login;
+        _riskRegister = register;
+        _riskSendCode = sendCode;
+    }
 
     /// <summary>实例化登录配置模型</summary>
     /// <param name="tenant">当前租户，为 null 时读取全局配置</param>
@@ -114,8 +137,8 @@ public class LoginConfigModel
         Password = _set.AllowLogin,
         Sms = _set.EnableSms,
         Mail = _set.EnableMail,
-        Captcha = (_set.CaptchaScene & 1) != 0,
-        SendCodeCaptcha = (_set.CaptchaScene & 4) != 0,
+        Captcha = _riskLogin ?? (_set.CaptchaScene & 1) != 0,
+        SendCode = _riskSendCode ?? (_set.CaptchaScene & 4) != 0,
     };
 
     /// <summary>注册能力配置</summary>
@@ -125,7 +148,7 @@ public class LoginConfigModel
         Password = _set.AllowRegister && _set.AllowLogin,
         Sms = _set.AllowRegister && _set.EnableSms,
         Mail = _set.AllowRegister && _set.EnableMail,
-        Captcha = (_set.CaptchaScene & 2) != 0,
+        Captcha = _riskRegister ?? (_set.CaptchaScene & 2) != 0,
     };
 
     /// <summary>OAuth 提供商列表。仅返回当前租户可见的提供商</summary>
@@ -142,6 +165,7 @@ public class LoginConfigModel
     {
         ChallengeRequired = !_set.AllowPlainPassword,
         MfaAvailable = _set.EnableMfa,
+        PasswordComplexity = _set.EnablePasswordComplexity,
         PasswordStrength = _set.PaswordStrength,
     };
 }

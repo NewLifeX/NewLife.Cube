@@ -72,6 +72,7 @@ public class SsoController : ControllerBaseX
     private readonly ITokenService _tokenService;
     private readonly IOAuthAppService _appService;
     private readonly IUserBindingService _bindingService;
+    private readonly ITenantContext _tenantContext;
 
     /// <summary>实例化单点登录控制器</summary>
     /// <param name="setting"></param>
@@ -81,9 +82,10 @@ public class SsoController : ControllerBaseX
     /// <param name="tokenService">令牌服务</param>
     /// <param name="appService">应用验证服务</param>
     /// <param name="bindingService">用户绑定服务</param>
+    /// <param name="tenantContext">租户上下文</param>
     public SsoController(CubeSetting setting, ICacheProvider cacheProvider,
         ISsoClientService clientService, ISsoServerService serverService,
-        ITokenService tokenService, IOAuthAppService appService, IUserBindingService bindingService)
+        ITokenService tokenService, IOAuthAppService appService, IUserBindingService bindingService, ITenantContext tenantContext)
     {
         _cache = cacheProvider.Cache;
         _setting = setting;
@@ -92,6 +94,7 @@ public class SsoController : ControllerBaseX
         _tokenService = tokenService;
         _appService = appService;
         _bindingService = bindingService;
+        _tenantContext = tenantContext;
 
         // 设置应用验证服务的CubeSetting
         ((OAuthAppService)_appService).Setting = _setting;
@@ -117,7 +120,7 @@ public class SsoController : ControllerBaseX
     [HttpGet("{name}")]
     public virtual ActionResult Login([FromRoute][FromQuery] String name)
     {
-        var client = _clientService.GetClient(TenantContext.CurrentId, name);
+        var client = _clientService.GetClient(_tenantContext.TenantId, name);
         client.Init(GetUserAgent());
 
         var rurl = _clientService.GetReturnUrl(Request, true);
@@ -167,7 +170,7 @@ public class SsoController : ControllerBaseX
         if (id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(id));
 
         var name = id;
-        var client = _clientService.GetClient(TenantContext.CurrentId, name);
+        var client = _clientService.GetClient(_tenantContext.TenantId, name);
         client.Init(GetUserAgent());
 
         client.WriteLog("LoginInfo name={0} code={1} state={2} {3}", name, code, state, Request.GetRawUrl());
@@ -290,6 +293,10 @@ public class SsoController : ControllerBaseX
             // 设置租户
             HttpContext.ChooseTenant(user.ID);
 
+            // SSO 登录显式持久化选中的租户到 Cookie（与 CompleteLogin 一致，认证路径不再写 Cookie）
+            if (_tenantContext.Mode != TenantMode.None)
+                HttpContext.SaveTenant(_tenantContext.TenantId);
+
             return Redirect(url);
         }
         catch (InvalidOperationException ex) when (OAuthHelper.IsCodeExpired(ex))
@@ -328,7 +335,7 @@ public class SsoController : ControllerBaseX
         // 先读Session，待会会清空
         var name = GetRequest("name");
         if (name.IsNullOrEmpty()) name = Session["Cube_Sso"] as String;
-        var client = _clientService.GetClient(TenantContext.CurrentId, name);
+        var client = _clientService.GetClient(_tenantContext.TenantId, name);
         client.Init(GetUserAgent());
 
         _bindingService.Logout();
@@ -393,7 +400,7 @@ public class SsoController : ControllerBaseX
         }
 
         var url = _clientService.GetReturnUrl(Request, true);
-        var client = _clientService.GetClient(TenantContext.CurrentId, id);
+        var client = _clientService.GetClient(_tenantContext.TenantId, id);
         client.Init(GetUserAgent());
 
         var redirect = _clientService.GetRedirect(Request, "~/Sso/LoginInfo/" + client.Name, client.Name);
@@ -512,6 +519,8 @@ public class SsoController : ControllerBaseX
                 $"应用{nameof(OAuthConfig.Secret)}未配置");
 
         // 以配置所属租户创建客户端，保证微信登录落在正确租户
+        // wxLoginType 登录类型，用于取oauh2客户端，不能用配置的Name
+        // 如果用配置的Name则必须设置成WxOpen，但是难免不会有人写成别的值，导致解析到的oauth客户端不对
         var client = _clientService.GetClient(config.TenantId, wxLoginType);
         client.Init(GetUserAgent());
 

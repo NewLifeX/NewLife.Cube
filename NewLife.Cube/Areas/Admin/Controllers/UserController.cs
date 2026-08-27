@@ -2,7 +2,6 @@
 using System.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NewLife.Caching;
 using NewLife.Common;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Entity;
@@ -20,18 +19,19 @@ using static XCode.Membership.User;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>用户控制器</summary>
+/// <remarks>实例化用户控制器</remarks>
+/// <param name="userService"></param>
+/// <param name="verifyCode">验证码服务</param>
+/// <param name="authEnhanced">增强认证服务</param>
+/// <param name="passwordService"></param>
+/// <param name="tenantContext">租户上下文</param>
 [DataPermission(null, "ID={#userId}")]
 [DisplayName("用户")]
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
 [AdminArea]
 [Menu(100, true, Icon = "User", Mode = MenuModes.Admin | MenuModes.Tenant)]
-public class UserController : EntityController<User, UserModel>
+public class UserController(UserService userService, VerifyCodeService verifyCode, AuthEnhancedService authEnhanced, PasswordService passwordService, ITenantContext tenantContext) : EntityController<User, UserModel>
 {
-    /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
-    private readonly ICache _cache;
-    private readonly UserService _userService;
-    private readonly PasswordService _passwordService;
-
     static UserController()
     {
         ListFields.RemoveField("Avatar", "RoleIds", "Online", "Age", "Birthday", "LastLoginIP", "RegisterIP", "RegisterTime");
@@ -101,18 +101,6 @@ public class UserController : EntityController<User, UserModel>
         {
             AddFormFields.GroupVisible = (entity, group) => (entity as User).ID == 0 && group != "扩展";
         }
-    }
-
-    /// <summary>实例化用户控制器</summary>
-    /// <param name="userService"></param>
-    /// <param name="passwordService"></param>
-    /// <param name="cacheProvider"></param>
-    /// <param name="smsVerifyCode"></param>
-    public UserController(UserService userService, PasswordService passwordService, ICacheProvider cacheProvider)
-    {
-        _userService = userService;
-        _passwordService = passwordService;
-        _cache = cacheProvider.Cache;
     }
 
     /// <summary>搜索数据集</summary>
@@ -322,7 +310,7 @@ public class UserController : EntityController<User, UserModel>
 
         try
         {
-            var loginResult = _userService.Login(model, HttpContext);
+            var loginResult = authEnhanced.Login(model, HttpContext);
             if (loginResult?.Data == null || loginResult.Data.AccessToken.IsNullOrEmpty())
                 return res.ToFailApiResponse(loginResult?.Message); //登录失败
 
@@ -423,7 +411,7 @@ public class UserController : EntityController<User, UserModel>
     /// <returns></returns>
     [HttpPost]
     [EntityAuthorize]
-    public async Task<ActionResult> Info(User user)
+    public ActionResult Info(User user)
     {
         var cur = ManageProvider.User;
         if (cur == null) return RedirectToAction("Login");
@@ -431,31 +419,54 @@ public class UserController : EntityController<User, UserModel>
         if (user.ID != cur.ID) throw new Exception("禁止修改非当前登录用户资料");
 
         var entity = user as IEntity;
-        if (entity.Dirtys["Name"]) throw new Exception("禁止修改用户名！");
+        // 自助更新：仅当用户名实际变更时才拦截。
+        // 原逻辑「请求出现 Name 字段即拦」会与移动端回传当前用户名冲突，导致昵称无法保存。
+        // 改为值比对：Name 与当前登录用户名一致则放行。
+        if (entity.Dirtys["Name"] && !user.Name.EqualIgnoreCase(cur.Name))
+            throw new Exception("禁止修改用户名！");
         if (entity.Dirtys["RoleID"]) throw new Exception("禁止修改角色！");
         if (entity.Dirtys["Enable"]) throw new Exception("禁止修改禁用！");
 
-        var file = HttpContext.Request.Form.Files["avatar"];
-        if (file != null)
-        {
-            var ext = Path.GetExtension(file.FileName);
-            //if (ext.EqualIgnoreCase(".exe", ".bat", ".com", ".vbs", ".js", ".jar", ".msi", ".lnk"))
-            //    throw new Exception("禁止上传可执行文件！");
-            if (!ext.EqualIgnoreCase(".png", ".jpg", ".gif", ".bmp", ".tiff", ".svg"))
-                throw new Exception("仅支持上传图片文件！");
-
-            //var set = CubeSetting.Current;
-            //var fileName = user.ID + Path.GetExtension(file.FileName);
-            var att = await SaveFile(user, file, null, null);
-            if (att != null) user.Avatar = att.FilePath;
-        }
-
+        // 头像上传已拆分为独立接口 UploadFile（POST /Admin/User/UploadFile），
+        // 本接口仅负责文本字段更新（昵称/邮箱/手机等）以及 avatar 字段回填。
+        // 前端在上传头像后，将 UploadFile 返回的文件路径回填到 avatar 字段再调用本接口持久化。
         user.Update();
 
-        var user2 = user.CloneEntity();
-        user2.Password = null;
-
         return Json(0, null, user);
+    }
+
+    /// <summary>上传头像。复用基类 UploadFile（SaveFile 核心一致），仅做三件事：
+    /// 1) 增加登录鉴权（基类 UploadFile 无 [EntityAuthorize]，直接复用会变成未登录可访问的上传端点）；
+    /// 2) 强制 id 等于当前登录用户，防止越权给其它用户上传头像；
+    /// 3) 仅允许图片类型（覆写 ValidateUploadFile，在基类「非空 + 危险扩展名黑名单」基础上加图片白名单）。
+    /// 返回附件信息 { attId, filePath, contentType }，前端再调用 Info(avatar=filePath) 持久化头像。</summary>
+    [HttpPost]
+    [EntityAuthorize]
+    public override async Task<ActionResult> UploadFile(IFormFile file, String id = null, String title = null)
+    {
+        var cur = ManageProvider.User;
+        if (cur == null) return RedirectToAction("Login");
+
+        // 强制只能为当前登录用户上传头像，避免越权
+        var targetId = id.IsNullOrEmpty() ? cur.ID + "" : id;
+        if (!targetId.EqualIgnoreCase(cur.ID + ""))
+            return new JsonResult(new { error = "只能为当前登录用户上传头像！" });
+
+        return await base.UploadFile(file, cur.ID + "", title);
+    }
+
+    /// <summary>头像上传校验：在基类「非空 + 危险扩展名黑名单」基础上，限制仅图片类型</summary>
+    protected override Boolean ValidateUploadFile(IFormFile file, out String error)
+    {
+        if (!base.ValidateUploadFile(file, out error)) return false;
+
+        var ext = Path.GetExtension(file.FileName);
+        if (!ext.EqualIgnoreCase(".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".svg"))
+        {
+            error = "仅支持上传图片文件！";
+            return false;
+        }
+        return true;
     }
 
     ///// <summary>保存文件</summary>
@@ -485,7 +496,7 @@ public class UserController : EntityController<User, UserModel>
         if (model.NewPassword2.IsNullOrWhiteSpace()) throw new ArgumentException($"确认密码不能为 Null 或空白", nameof(model.NewPassword2));
         if (model.NewPassword != model.NewPassword2) throw new ArgumentException($"两次输入密码不一致", nameof(model.NewPassword));
 
-        if (!_passwordService.Valid(model.NewPassword)) throw new ArgumentException($"密码太弱，要求8位起且包含数字大小写字母和符号", nameof(model.NewPassword));
+        if (!passwordService.Valid(model.NewPassword)) throw new ArgumentException($"密码太弱，要求8位起且包含数字大小写字母和符号", nameof(model.NewPassword));
 
         // SSO 登录不需要知道原密码就可以修改，原则上更相信外方，同时也避免了直接第三方登录没有设置密码的尴尬
         var ssoName = Session["Cube_Sso"] as String;
@@ -524,7 +535,7 @@ public class UserController : EntityController<User, UserModel>
 
         // 第三方绑定
         var ucs = UserConnect.FindAllByUserID(user.ID);
-        var ms = OAuthConfig.GetValids(TenantContext.CurrentId, GrantTypes.AuthorizationCode);
+        var ms = OAuthConfig.GetValids(tenantContext.TenantId, GrantTypes.AuthorizationCode);
 
         var model = new BindsModel
         {
@@ -534,6 +545,45 @@ public class UserController : EntityController<User, UserModel>
         };
 
         return Json(0, null, model);
+    }
+
+    private Int32 ResolveRegisterTenantId()
+    {
+        var set = CubeSetting.Current;
+        if (!set.EnableTenant) return 0;
+
+        var appId = HttpContext.Request.Headers["X-App-Id"] + "";
+        if (!appId.IsNullOrEmpty())
+        {
+            var config = OAuthConfig.FindByAppId(appId);
+            if (config == null) throw new ArgumentException($"应用{nameof(OAuthConfig.AppId)}未配置", nameof(appId));
+
+            if (config.TenantId > 0)
+            {
+                var tenant = Tenant.FindById(config.TenantId);
+                if (tenant == null || !tenant.Enable)
+                    throw new ArgumentException($"租户[{config.TenantId}]不存在或已禁用", nameof(appId));
+            }
+
+            return config.TenantId;
+        }
+
+        var tenantStr = HttpContext.Request.Headers["X-Tenant"] + "";
+        if (!tenantStr.IsNullOrEmpty())
+        {
+            var tenant = Tenant.FindByCode(tenantStr);
+            if (tenant == null || !tenant.Enable)
+                throw new ArgumentException($"租户[{tenantStr}]不存在或已禁用", nameof(tenantStr));
+
+            return tenant.Id;
+        }
+
+        if (TenantContext.Current.GetTenantMode() == TenantMode.Tenant) return TenantContext.CurrentId;
+
+        // Shadow 期：无租户标识注册兼容放行，不自动绑定；Enforce 期：必须显式带租户
+        if (set.TenantEnforceMode == TenantEnforceModes.Shadow) return 0;
+
+        throw new ArgumentException("多租户模式下，注册必须携带X-App-Id或X-Tenant租户信息");
     }
 
     /// <summary>注册</summary>
@@ -550,16 +600,19 @@ public class UserController : EntityController<User, UserModel>
         var set = CubeSetting.Current;
         if (!set.AllowRegister) throw new Exception("禁止注册！");
 
-        var tenantId = TenantContext.CurrentId;
+        var tenantId = tenantContext.TenantId;
         try
         {
+            tenantId = ResolveRegisterTenantId();
+            if (tenantId > 0) TenantContext.Current = new TenantContext { TenantId = tenantId };
+
             //if (String.IsNullOrEmpty(email)) throw new ArgumentNullException("email", "邮箱地址不能为空！");
             if (String.IsNullOrEmpty(username)) throw new ArgumentNullException("username", "用户名不能为空！");
             if (String.IsNullOrEmpty(password)) throw new ArgumentNullException("password", "密码不能为空！");
             if (String.IsNullOrEmpty(password2)) throw new ArgumentNullException("password2", "重复密码不能为空！");
             if (password != password2) throw new ArgumentOutOfRangeException("password2", "两次密码必须一致！");
 
-            if (!_passwordService.Valid(password)) throw new ArgumentException($"密码太弱，要求8位起且包含数字大小写字母和符号", nameof(password));
+            if (!passwordService.Valid(password)) throw new ArgumentException($"密码太弱，要求8位起且包含数字大小写字母和符号", nameof(password));
 
             // 不得使用OAuth前缀
             foreach (var item in OAuthConfig.GetValids(tenantId))
@@ -577,6 +630,53 @@ public class UserController : EntityController<User, UserModel>
 
             var r = Role.GetOrAdd(set.DefaultRole);
             var user2 = ManageProvider.Provider.Register(username, password, r.ID, true);
+
+            if (user2 != null && user2 is User user3)
+            {
+                var changed = false;
+                if (!email.IsNullOrEmpty() && !email.EqualIgnoreCase(user3.Mail))
+                {
+                    user3.Mail = email;
+                    // user3.MailVerified = true;
+                    changed = true;
+                }
+
+                if (user3.RegisterIP.IsNullOrEmpty())
+                {
+                    user3.RegisterIP = UserHost;
+                    changed = true;
+                }
+                if (user3.RegisterTime.Year < 2000)
+                {
+                    user3.RegisterTime = DateTime.Now;
+                    changed = true;
+                }
+
+                if (changed) user3.Update();
+            }
+
+            // 多租户开启且解析到租户时，自动绑定用户到该租户（参考 SSO 登录的租户绑定流程）
+            if (set.EnableTenant && tenantId > 0 && user2 != null)
+            {
+                var tenantUser = TenantUser.FindByTenantIdAndUserId(tenantId, user2.ID);
+                if (tenantUser == null)
+                {
+                    tenantUser = new TenantUser
+                    {
+                        TenantId = tenantId,
+                        UserId = user2.ID,
+                        Enable = true,
+                        CreateIP = UserHost,
+                        CreateTime = DateTime.Now,
+                    };
+                    tenantUser.Insert();
+                }
+                else if (!tenantUser.Enable)
+                {
+                    tenantUser.Enable = true;
+                    tenantUser.Update();
+                }
+            }
 
             // 注册成功
         }
@@ -642,7 +742,7 @@ public class UserController : EntityController<User, UserModel>
         try
         {
             var ip = UserHost;
-            var result = await _userService.SendVerifyCode(model, ip);
+            var result = await verifyCode.SendVerifyCode(model, ip);
             return result.Id.ToOkApiResponse("验证码已发送");
         }
         catch (Exception ex)
@@ -664,7 +764,7 @@ public class UserController : EntityController<User, UserModel>
         var currentUser = ManageProvider.User;
         var ip = UserHost;
 
-        var result = _userService.BindByVerifyCode(mobile, code, currentUser, ip);
+        var result = authEnhanced.BindByVerifyCode(mobile, code, currentUser, ip);
         return result.IsSuccess ? true.ToOkApiResponse(result.Message) : false.ToFailApiResponse(result.Message);
     }
     #endregion
@@ -683,7 +783,7 @@ public class UserController : EntityController<User, UserModel>
         var confirmPassword = model.ConfirmPassword?.Trim() ?? "";
         var ip = UserHost;
 
-        var result = _userService.ResetPassword(mobile, code, newPassword, confirmPassword, "", ip);
+        var result = authEnhanced.ResetPassword(mobile, code, newPassword, confirmPassword, "", ip);
         return result.IsSuccess ? true.ToOkApiResponse(result.Message) : false.ToFailApiResponse(result.Message);
     }
     #endregion

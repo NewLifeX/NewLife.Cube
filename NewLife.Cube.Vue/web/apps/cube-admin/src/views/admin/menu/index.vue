@@ -311,15 +311,15 @@ const buildTreeData = (data: Menu[]): Menu[] => {
     if (node.children && node.children.length === 0) {
       delete node.children;
     } else if (node.children && node.children.length > 0) {
-      // 对子节点排序
-      node.children.sort((a, b) => a.sort - b.sort);
+      // 对子节点排序（按 Sort 倒序）
+      node.children.sort((a, b) => (Number(b.sort) || 0) - (Number(a.sort) || 0));
       // 递归处理子节点，深度+1
       node.children.forEach((child) => processNode(child, depth + 1));
     }
   };
 
-  // 对根节点排序
-  roots.sort((a, b) => a.sort - b.sort);
+  // 对根节点排序（按 Sort 倒序）
+  roots.sort((a, b) => (Number(b.sort) || 0) - (Number(a.sort) || 0));
 
   // 处理所有节点（根节点深度为0）
   roots.forEach((root) => processNode(root, 0));

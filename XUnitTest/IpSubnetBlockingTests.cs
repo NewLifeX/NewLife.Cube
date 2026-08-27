@@ -8,13 +8,16 @@ namespace XUnitTest;
 /// <summary>IP子网封禁策略单元测试</summary>
 public class IpSubnetBlockingTests
 {
-    #region 辅助：通过反射调用私有静态方法
+    #region 辅助：通过反射调用静态方法
 
-    private static readonly MethodInfo _getSubnet24 = typeof(UserService)
-        .GetMethod("GetSubnet24", BindingFlags.NonPublic | BindingFlags.Static)!;
+    // GetSubnet24/GetSubnet16 已从 UserService 移至 AuthHelper（internal 静态类），通过类型名反射获取
+    private static readonly Type _authHelperType = Type.GetType("NewLife.Cube.Services.AuthHelper, NewLife.Cube")!;
 
-    private static readonly MethodInfo _getSubnet16 = typeof(UserService)
-        .GetMethod("GetSubnet16", BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo _getSubnet24 = _authHelperType
+        .GetMethod("GetSubnet24", BindingFlags.Public | BindingFlags.Static)!;
+
+    private static readonly MethodInfo _getSubnet16 = _authHelperType
+        .GetMethod("GetSubnet16", BindingFlags.Public | BindingFlags.Static)!;
 
     private static String Subnet24(String ip) => (String)_getSubnet24.Invoke(null, [ip])!;
     private static String Subnet16(String ip) => (String)_getSubnet16.Invoke(null, [ip])!;
