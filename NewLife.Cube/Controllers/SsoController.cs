@@ -949,6 +949,34 @@ public class SsoController : ControllerBaseX
             return Json(0, null, ex);
         }
     }
+
+    /// <summary>OpenID Connect 发现文档</summary>
+    /// <returns></returns>
+    [AllowAnonymous]
+    [HttpGet]
+    [Route("/.well-known/openid-configuration")]
+    public virtual ActionResult OpenIdConfiguration()
+    {
+        var request = Request;
+        var baseUrl = $"{request.Scheme}://{request.Host}";
+
+        var rs = new
+        {
+            issuer = baseUrl,
+            authorization_endpoint = $"{baseUrl}/Sso/Authorize",
+            token_endpoint = $"{baseUrl}/Sso/Token",
+            userinfo_endpoint = $"{baseUrl}/Sso/UserInfo",
+            end_session_endpoint = $"{baseUrl}/Sso/Logout",
+            jwks_uri = $"{baseUrl}/Sso/GetKey",
+            response_types_supported = new[] { "code" },
+            grant_types_supported = new[] { "authorization_code", "password", "client_credentials", "refresh_token" },
+            subject_types_supported = new[] { "public" },
+            id_token_signing_alg_values_supported = new[] { "RS256" },
+            scopes_supported = new[] { "openid", "profile", "email" },
+        };
+
+        return new JsonResult(rs);
+    }
     #endregion
 
     #region 辅助
