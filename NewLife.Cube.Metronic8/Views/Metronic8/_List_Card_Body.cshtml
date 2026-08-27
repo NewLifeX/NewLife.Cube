@@ -145,10 +145,8 @@
                                     {
                                         if (fi.MapProvider != null)
                                         {
-                                            var name = fi.MapProvider.EntityType.Name;
-                                            var key = fi.MapProvider.Key;
-                                            val = entity[fi.MapField];
-                                            <td><a href="@name?@key=@val">@value</a></td>
+                                            var href = (fi as ListField)?.GetUrl(entity);
+                                            <td><a href="@href">@value</a></td>
                                         }
                                         else
                                         {
