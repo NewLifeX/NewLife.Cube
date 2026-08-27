@@ -6,7 +6,7 @@ using NewLife.Reflection;
 namespace NewLife.Cube.Widgets.System;
 
 /// <summary>系统信息摘要。操作系统/运行时/应用启动等，提供完整服务器信息页链接</summary>
-[Widget("SysInfo", "系统信息", Icon = "fa-server", Cols = 5, Sort = 100, Category = "系统", AdminOnly = true)]
+[Widget("SysInfo", "系统信息", Icon = "fa-server", Cols = 4, Sort = 100, Category = "系统", AdminOnly = true)]
 public class SysInfoWidget : IWidget
 {
     /// <summary>获取组件数据</summary>

@@ -5,17 +5,6 @@
     var d = Model;
 }
 <div class="widget-login">
-    <div class="widget-summary">
-        <div class="summary-item">
-            <span class="summary-num">@d.LoginCount24h</span>
-            <span class="summary-label">24h 登录</span>
-        </div>
-        <div class="summary-item">
-            <span class="summary-num">@d.OnlineCount</span>
-            <span class="summary-label">在线用户</span>
-        </div>
-    </div>
-
     <div class="widget-sub-title">最近登录</div>
     <ul class="widget-list">
         @foreach (dynamic item in d.Logins)

@@ -23,10 +23,13 @@
     <!-- 欢迎横幅 -->
     <div class="wb-banner">
         <div class="wb-banner-left">
-            <div class="wb-banner-avatar"><i class="fa fa-user"></i></div>
+            <div class="wb-banner-avatar">
+                <i class="fa fa-user"></i>
+                <img src="@user.GetAvatarUrl()" alt="@user" onerror="this.style.display='none'" />
+            </div>
             <div>
                 <div class="wb-banner-greet">@greet，@(user?.DisplayName ?? user?.Name)</div>
-                <div class="wb-banner-sub">欢迎回到魔方工作台 · @DateTime.Now.ToString("yyyy年M月d日 dddd")</div>
+                <div class="wb-banner-sub">欢迎回到工作台 · @DateTime.Now.ToString("yyyy年M月d日 dddd")</div>
             </div>
         </div>
         <div class="wb-banner-right">

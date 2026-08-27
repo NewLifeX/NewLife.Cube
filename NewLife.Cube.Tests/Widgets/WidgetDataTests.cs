@@ -105,67 +105,20 @@ public class WidgetDataFixture : IDisposable
 [Collection("WidgetData")]
 public class WidgetDataTests
 {
-    [Fact(DisplayName = "LogWidget_统计24h日志与异常数")]
-    public void LogWidget_ReturnsStats()
-    {
-        var widget = new LogWidget();
-        dynamic d = widget.GetData();
-
-        // 24h内：操作(成功) + 操作(异常) + 登录 = 3；异常 1
-        Assert.Equal(3, (Int32)d.Total24h);
-        Assert.Equal(1, (Int32)d.Error24h);
-    }
-
-    [Fact(DisplayName = "LogWidget_趋势含最近7天且按天统计")]
-    public void LogWidget_Trend_Has7Days()
-    {
-        var widget = new LogWidget();
-        dynamic d = widget.GetData();
-
-        var trend = (Object[])d.Trend;
-        Assert.Equal(7, trend.Length);
-
-        // 全部6条日志均在最近7天内，各天计数合计为6（不依赖运行时刻的跨天边界）
-        var total = 0;
-        Assert.All(trend, e =>
-        {
-            var item = (dynamic)e;
-            Assert.True((Int32)item.count >= 0);
-            Assert.False(String.IsNullOrEmpty((String)item.day));
-            total += (Int32)item.count;
-        });
-        Assert.Equal(6, total);
-    }
-
-    [Fact(DisplayName = "LogWidget_最近异常按时间倒序")]
-    public void LogWidget_RecentErrors_Desc()
-    {
-        var widget = new LogWidget();
-        dynamic d = widget.GetData();
-
-        var errors = (Object[])d.RecentErrors;
-        Assert.Single(errors);
-
-        dynamic first = errors[0];
-        Assert.Equal("操作", (String)first.Action);
-    }
-
-    [Fact(DisplayName = "LoginLogWidget_统计24h登录与在线用户")]
-    public void LoginLogWidget_ReturnsStats()
+    [Fact(DisplayName = "LoginLogWidget_返回最近登录与在线明细")]
+    public void LoginLogWidget_ReturnsDetails()
     {
         var widget = new LoginLogWidget();
         dynamic d = widget.GetData();
 
-        // 24h内登录 1 条（admin）；30分钟内在线 1 人
-        Assert.Equal(1, (Int32)d.LoginCount24h);
-        Assert.Equal(1, (Int32)d.OnlineCount);
-
+        // 24h内登录 1 条（admin）
         var logins = (Object[])d.Logins;
         Assert.Single(logins);
         dynamic login = logins[0];
         Assert.Equal("admin", (String)login.UserName);
 
+        // 当前在线：全部在线会话（非雪花表按 Id 降序），播种 2 条
         var onlines = (Object[])d.Onlines;
-        Assert.Single(onlines);
+        Assert.Equal(2, onlines.Length);
     }
 }

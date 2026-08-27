@@ -17,7 +17,7 @@ public class WidgetManagerTests
         var dic = _manager.Scan();
 
         // 核心部件应全部存在
-        foreach (var name in new[] { "UserCount", "TodayLogin", "OnlineCount", "Log24h", "Error24h", "CpuRate", "MyLogins", "MyDays", "Monitor", "QuickLink", "Profile", "Log", "SysInfo", "LoginLog" })
+        foreach (var name in new[] { "UserCount", "TodayLogin", "OnlineCount", "Log24h", "Error24h", "CpuRate", "MyLogins", "MyDays", "Monitor", "QuickLink", "Profile", "SysInfo", "LoginLog" })
         {
             Assert.True(dic.ContainsKey(name), $"未找到部件 {name}");
         }

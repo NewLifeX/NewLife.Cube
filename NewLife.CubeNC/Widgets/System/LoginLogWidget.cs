@@ -6,12 +6,12 @@ using static XCode.Membership.Log;
 
 namespace NewLife.Cube.Widgets.System;
 
-/// <summary>登录与在线。最近24h登录记录、当前在线用户</summary>
-[Widget("LoginLog", "登录与在线", Icon = "fa-users", Cols = 6, Sort = 120, Category = "系统", AdminOnly = true)]
+/// <summary>登录与在线。最近登录记录、当前在线用户（KPI 已提供登录/在线计数，此处仅展示明细）</summary>
+[Widget("LoginLog", "登录与在线", Icon = "fa-users", Cols = 4, Sort = 120, Category = "系统", AdminOnly = true)]
 public class LoginLogWidget : IWidget
 {
     /// <summary>获取组件数据</summary>
-    /// <returns>登录与在线统计匿名对象</returns>
+    /// <returns>登录与在线明细匿名对象</returns>
     public Object GetData()
     {
         var now = DateTime.Now;
@@ -21,16 +21,12 @@ public class LoginLogWidget : IWidget
         // 最近24h登录记录。雪花Id，按 Id 降序
         var start = now.AddHours(-24);
         var logins = XLog.FindAll(_.Action.Contains("登录") & _.ID.Between(start, now, snow), "ID desc", null, 0, 10);
-        var loginCount = XLog.FindCount(_.Action.Contains("登录") & _.ID.Between(start, now, snow));
 
         // 当前在线用户（UserOnline 由定时任务清理 20 分钟不活跃会话，表内即在线会话；非雪花表按自增 Id 降序取最新）
         var onlines = UserOnline.FindAll(null, "ID desc", null, 0, 10);
-        var onlineCount = UserOnline.FindCount();
 
         return new
         {
-            LoginCount24h = loginCount,
-            OnlineCount = onlineCount,
             Logins = logins.Select(e => new { e.CreateTime, e.UserName, e.Action, e.CreateIP }).ToArray(),
             Onlines = onlines.Select(e => new { e.Name, e.CreateTime, e.OAuthProvider }).ToArray(),
         };
