@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "React自托管调试": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "/",
+      "applicationUrl": "http://localhost:7081",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
