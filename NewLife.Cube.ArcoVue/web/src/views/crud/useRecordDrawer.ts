@@ -19,6 +19,7 @@ import {
   detailUrl,
   jsonPreview,
 } from '@/core/utils/detailFormat';
+import { filterDetailAuditFields } from '@/core/utils/auditDisplay';
 import { isCascaderField } from '@/core/utils/fieldControl';
 import { fetchBatchLabel } from '@/core/utils/lov-api';
 import { mergeAreaLabel } from '@/core/utils/areaLabels';
@@ -122,14 +123,17 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
 
   const showNav = computed(() => props.mode === 'edit' || props.mode === 'detail');
 
+  /** 详情展示字段：有名称快照时隐藏审计 ID 列（创建用户/更新用户） */
+  const detailViewFields = computed(() => filterDetailAuditFields(props.fields));
+
   /** 详情分组：应用受限布局的 hidden/order/Category 折叠（OSC-0013） */
   const detailApplied = computed(() =>
-    applyFormLayout(groupFieldsByCategory(props.fields), props.layout),
+    applyFormLayout(groupFieldsByCategory(detailViewFields.value), props.layout),
   );
   const detailGroups = computed(() => detailApplied.value.groups);
   const detailCollapsed = computed(() => new Set(detailApplied.value.collapsed));
 
-  const detailLabelWidth = computed(() => estimateDetailLabelWidth(props.fields));
+  const detailLabelWidth = computed(() => estimateDetailLabelWidth(detailViewFields.value));
   const detailLabelStyle = computed(() => ({
     width: `${detailLabelWidth.value}px`,
     minWidth: `${detailLabelWidth.value}px`,
