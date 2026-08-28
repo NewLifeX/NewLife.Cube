@@ -1,0 +1,236 @@
+/**
+ * 通用列表页（对齐 Vue 皮肤 core/views/index.vue）
+ *
+ * 自动模式下从后端 GetPage 拉取 list/search/addForm/editForm 字段元数据，
+ * 由 @cube/page-logic zustand store 驱动，分片渲染：
+ *   - SearchBar      动态搜索控件
+ *   - Toolbar        新增/删除/导出/导入/图表/刷新
+ *   - TableContent   动态列渲染
+ *   - ListPagination 分页 + 统计行
+ *   - FormDialog     命令式新增/编辑弹窗（FieldControl）
+ *   - ListChartDialog 图表弹窗（ECharts 懒加载）
+ */
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Card, message } from 'antd';
+import { useLocation } from 'react-router-dom';
+import { routeToApiPrefix, getValueByKey } from '@/utils/url';
+import { usePageStore } from '@/hooks/usePageStore';
+import SearchBar from './components/SearchBar';
+import Toolbar from './components/Toolbar';
+import TableContent from './components/TableContent';
+import ListPagination from './components/ListPagination';
+import ListChartDialog from './components/ListChartDialog';
+import FormDialog from '@/views/form/FormDialog';
+
+export interface DefaultListPageProps {
+  title?: string;
+}
+
+export default function DefaultListPage({ title }: DefaultListPageProps) {
+  const location = useLocation();
+  const type = routeToApiPrefix(location.pathname);
+  const store = usePageStore(type);
+
+  // 订阅 store 状态
+  const listFields = store((s) => s.listFields);
+  const searchFields = store((s) => s.searchFields);
+  const addFields = store((s) => s.addFields);
+  const editFields = store((s) => s.editFields);
+  const tableData = store((s) => s.tableData);
+  const statData = store((s) => s.statData);
+  const pagination = store((s) => s.pagination);
+  const loading = store((s) => s.loading);
+  const formLoading = store((s) => s.formLoading);
+  const pkField = store((s) => s.pkField);
+  const canAdd = store((s) => s.canAdd);
+  const canEdit = store((s) => s.canEdit);
+  const canDelete = store((s) => s.canDelete);
+  const canExport = store((s) => s.canExport);
+  const canImport = store((s) => s.canImport);
+
+  const [searchParams, setSearchParams] = useState<Record<string, unknown>>({});
+  const [selectedKeys, setSelectedKeys] = useState<React.Key[]>([]);
+  const [dialog, setDialog] = useState<{ open: boolean; mode: 'add' | 'edit'; row?: Record<string, unknown> | null }>({
+    open: false,
+    mode: 'add',
+  });
+  const [chartOpen, setChartOpen] = useState(false);
+  const importInputRef = useRef<HTMLInputElement>(null);
+
+  // 页面加载：拉字段元数据 + 列表数据
+  useEffect(() => {
+    let cancelled = false;
+    store
+      .getState()
+      .loadFields()
+      .then(() => {
+        if (!cancelled) return store.getState().loadData();
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type]);
+
+  const refresh = useCallback(() => {
+    return store.getState().loadData(searchParams).catch(() => {});
+  }, [store, searchParams]);
+
+  // ── 事件处理 ─────────────────────────────────────────
+  const handleSearch = (params: Record<string, unknown>) => {
+    setSearchParams(params);
+    store.getState().setPagination(1);
+    void store.getState().loadData(params);
+  };
+
+  const handleReset = () => {
+    setSearchParams({});
+    store.getState().setPagination(1);
+    void store.getState().loadData();
+  };
+
+  const handleNew = () => setDialog({ open: true, mode: 'add' });
+
+  const handleEditRow = (row: Record<string, unknown>) => setDialog({ open: true, mode: 'edit', row });
+
+  const handleDeleteRow = (row: Record<string, unknown>) => {
+    const id = getValueByKey(row, pkField) ?? getValueByKey(row, 'id');
+    void store
+      .getState()
+      .remove(String(id))
+      .then(() => {
+        message.success('删除成功');
+        void refresh();
+      });
+  };
+
+  const handleDeleteSelected = () => {
+    const keys = selectedKeys.map(String);
+    if (!keys.length) return;
+    void store
+      .getState()
+      .deleteSelect(keys)
+      .then(() => {
+        message.success('删除成功');
+        setSelectedKeys([]);
+        void refresh();
+      });
+  };
+
+  const handleExport = (format: string) => {
+    const url = store.getState().getExportUrl(format);
+    window.open(url, '_blank');
+  };
+
+  const handleImport = () => importInputRef.current?.click();
+
+  const onImportFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    void store
+      .getState()
+      .importFile(file)
+      .then(() => {
+        message.success('导入成功');
+        void refresh();
+      });
+  };
+
+  const handleChart = () => {
+    void store.getState().loadChart().then((list) => {
+      if (list.length) setChartOpen(true);
+      else message.info('暂无图表数据');
+    });
+  };
+
+  const handlePageChange = (page: number, pageSize?: number) => {
+    store.getState().setPagination(page, pageSize);
+    void store.getState().loadData(searchParams);
+  };
+
+  const handleSortChange = (sort?: string, desc?: boolean) => {
+    void store.getState().loadData({ ...searchParams, sort, desc });
+  };
+
+  const handleFormSubmit = async (data: Record<string, unknown>) => {
+    try {
+      if (dialog.mode === 'edit') {
+        await store.getState().update(data);
+      } else {
+        await store.getState().add(data);
+      }
+      message.success(dialog.mode === 'edit' ? '更新成功' : '新增成功');
+      setDialog({ open: false, mode: 'add', row: null });
+      void refresh();
+    } catch (err) {
+      message.error((err as Error)?.message || '保存失败');
+    }
+  };
+
+  const editFieldsForDialog = editFields.length ? editFields : addFields;
+  const formFields = dialog.mode === 'edit' ? editFieldsForDialog : addFields;
+
+  return (
+    <Card title={title} size="small" styles={{ body: { paddingTop: 12 } }}>
+      <SearchBar fields={searchFields} onSearch={handleSearch} onReset={handleReset} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <Toolbar
+          canAdd={canAdd}
+          canDelete={canDelete}
+          canExport={canExport}
+          canImport={canImport}
+          selectedCount={selectedKeys.length}
+          onNew={handleNew}
+          onDelete={handleDeleteSelected}
+          onExport={handleExport}
+          onImport={handleImport}
+          onChart={handleChart}
+          onRefresh={() => void refresh()}
+        />
+      </div>
+      <TableContent
+        fields={listFields}
+        data={tableData}
+        loading={loading}
+        pkField={pkField}
+        canEdit={canEdit}
+        canDelete={canDelete}
+        selectedKeys={selectedKeys}
+        onSelectChange={setSelectedKeys}
+        onEdit={handleEditRow}
+        onDelete={handleDeleteRow}
+        onSortChange={handleSortChange}
+      />
+      <div style={{ marginTop: 12 }}>
+        <ListPagination
+          total={pagination.totalCount}
+          current={pagination.pageIndex}
+          pageSize={pagination.pageSize}
+          statData={statData}
+          onChange={handlePageChange}
+        />
+      </div>
+
+      {/* 导入：隐藏文件选择框 */}
+      <input ref={importInputRef} type="file" accept=".xls,.xlsx,.csv,.json,.zip" style={{ display: 'none' }} onChange={onImportFileChange} />
+
+      {/* 新增/编辑弹窗 */}
+      <FormDialog
+        open={dialog.open}
+        title={dialog.mode === 'edit' ? '编辑' : '新增'}
+        mode={dialog.mode}
+        fields={formFields}
+        row={dialog.row}
+        apiPrefix={type}
+        submitting={formLoading}
+        onSubmit={handleFormSubmit}
+        onCancel={() => setDialog({ open: false, mode: 'add', row: null })}
+      />
+
+      {/* 图表弹窗 */}
+      <ListChartDialog open={chartOpen} charts={store((s) => s.chartList)} onClose={() => setChartOpen(false)} />
+    </Card>
+  );
+}

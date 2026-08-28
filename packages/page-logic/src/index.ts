@@ -69,8 +69,9 @@ export interface PageLogicOptions {
   update: PageStateUpdater;
   /** 默认每页大小 */
   defaultPageSize?: number;
-  /** 初始菜单权限（来自 auth-logic getMenuPermission），用于推断 canAdd/canEdit/canDelete 等 */
-  menuPermissions?: Record<string, string>;
+  /** 菜单权限（来自 auth-logic getMenuPermission），用于推断 canAdd/canEdit/canDelete 等；
+   *  可传静态对象或返回对象的函数（菜单异步加载后动态读取） */
+  menuPermissions?: Record<string, string> | (() => Record<string, string>);
 }
 
 // ======================== 核心逻辑 ========================
@@ -82,12 +83,16 @@ export class PageLogic {
   private api: CubeApi;
   private update: PageStateUpdater;
   private state: PageState;
-  private menuPermissions: Record<string, string>;
+  private getMenuPermissions: () => Record<string, string>;
 
   constructor(options: PageLogicOptions) {
     this.api = options.api;
     this.update = options.update;
-    this.menuPermissions = options.menuPermissions ?? {};
+    const mp = options.menuPermissions;
+    this.getMenuPermissions =
+      typeof mp === 'function'
+        ? (mp as () => Record<string, string>)
+        : () => (mp as Record<string, string> | undefined) ?? {};
     this.state = {
       listFields: [],
       searchFields: [],
@@ -140,7 +145,7 @@ export class PageLogic {
     const pageSetting = pageMeta.setting ?? pageMeta.pageSetting ?? null;
 
     // 计算权限标志（菜单权限 + 页面设置双重限制）
-    const perms = this.menuPermissions;
+    const perms = this.getMenuPermissions();
     const hasAdd = perms['Add'] !== undefined || Object.values(perms).some(v => v === '新增' || v === 'Add');
     const hasEdit = perms['Edit'] !== undefined || Object.values(perms).some(v => v === '编辑' || v === 'Edit');
     const hasDel = perms['Delete'] !== undefined || Object.values(perms).some(v => v === '删除' || v === 'Delete');

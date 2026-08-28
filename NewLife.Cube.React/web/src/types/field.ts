@@ -80,6 +80,8 @@ export interface FieldMeta {
   scale?: number;
   /** 是否允许空 */
   nullable?: boolean;
+  /** 是否必填 */
+  required?: boolean;
   /** 是否主键 */
   primaryKey?: boolean;
   /** 是否只读 */
@@ -116,6 +118,7 @@ export function toFieldMeta(field: DataField): FieldMeta {
     precision: field.precision,
     scale: field.scale,
     nullable: field.nullable,
+    required: field.required,
     primaryKey: field.primaryKey,
     readOnly: field.readOnly,
     description: field.description,

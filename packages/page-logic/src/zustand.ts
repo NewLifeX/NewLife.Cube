@@ -37,11 +37,13 @@ export interface ZustandPageState extends PageState {
  * @param api - CubeApi 实例
  * @param type - 路径前缀，如 `/Admin/User`
  * @param defaultPageSize - 默认每页大小
+ * @param menuPermissions - 菜单权限（对象或返回对象的函数），用于推断 canAdd/canEdit 等
  */
 export function createPageStore(
   api: CubeApi,
   type: string,
   defaultPageSize = 20,
+  menuPermissions?: Record<string, string> | (() => Record<string, string>),
 ): UseBoundStore<StoreApi<ZustandPageState>> {
   let logic: PageLogic;
 
@@ -50,6 +52,7 @@ export function createPageStore(
       api,
       update: (partial) => set(partial),
       defaultPageSize,
+      menuPermissions,
     });
 
     return {
