@@ -7,6 +7,7 @@
 import dayjs from 'dayjs';
 import { ColorPicker, DatePicker, Input, InputNumber, Switch, TimePicker } from 'antd';
 import LovSelect from './LovSelect';
+import LovSelectTable from './LovSelectTable';
 import Uploader from './Uploader';
 import JsonEditor from './JsonEditor';
 import IconSelector from './IconSelector';
@@ -100,6 +101,18 @@ export default function FieldControl({ field, value, onChange, apiPrefix, record
           />
         );
       case 'lov':
+        // 表格弹窗模式（itemType=lovtable）：LIST 型值集数据量大时用表格浏览选择
+        if ((field.itemType ?? '').toLowerCase() === 'lovtable') {
+          return (
+            <LovSelectTable
+              {...commonProps}
+              value={value as string}
+              onChange={(v) => onChange?.(v as string)}
+              lovCode={field.lovCode}
+              placeholder={placeholder}
+            />
+          );
+        }
         return (
           <LovSelect
             {...commonProps}
@@ -111,6 +124,19 @@ export default function FieldControl({ field, value, onChange, apiPrefix, record
           />
         );
       case 'lovMulti':
+        // 表格弹窗模式（itemType=lovtablemulti）
+        if ((field.itemType ?? '').toLowerCase() === 'lovtablemulti') {
+          return (
+            <LovSelectTable
+              {...commonProps}
+              value={value as string[]}
+              onChange={(v) => onChange?.(v as string[])}
+              lovCode={field.lovCode}
+              multiple
+              placeholder={placeholder}
+            />
+          );
+        }
         return (
           <LovSelect
             {...commonProps}
