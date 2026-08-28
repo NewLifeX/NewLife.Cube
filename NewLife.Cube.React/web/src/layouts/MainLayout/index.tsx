@@ -6,6 +6,7 @@ import { Layout, theme } from 'antd';
 import SiderMenu from './SiderMenu';
 import HeaderBar from './HeaderBar';
 import TabsView from '@/components/TabsView';
+import AiAssistant from '@/components/ai/AiAssistant';
 import { getConfig } from '@/configure';
 
 const { Sider, Content, Footer } = Layout;
@@ -42,6 +43,8 @@ export default function MainLayout({ children }: { children: ReactNode }) {
           </Footer>
         )}
       </Layout>
+      {/* AI 助手（全局悬浮） */}
+      <AiAssistant />
     </Layout>
   );
 }

@@ -10,6 +10,7 @@ import { getConfig } from '@/configure';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import ModeSwitcher from '@/components/ModeSwitcher';
 import LanguageSwitch from '@/components/LanguageSwitch';
+import NavbarSearch from '@/components/NavbarSearch';
 import UserMenu from '@/components/UserMenu';
 
 export default function HeaderBar() {
@@ -50,6 +51,7 @@ export default function HeaderBar() {
         <Breadcrumb items={crumbs} />
       </div>
       <Space size={4}>
+        <NavbarSearch />
         <LanguageSwitch />
         <ThemeSwitcher />
         <ModeSwitcher />

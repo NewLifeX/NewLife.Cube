@@ -28,6 +28,11 @@ export default defineConfig(() => {
           changeOrigin: true,
           rewrite: (p) => p.replace(/^\/api/, ''),
         },
+        // AI 服务接口（/Ai/AiChat）不带 /api 前缀
+        '/Ai': {
+          target: 'http://localhost:5050',
+          changeOrigin: true,
+        },
       },
     },
   };
