@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Models;
 using NewLife.Data;
@@ -13,7 +13,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
 [AdminArea]
 [Menu(90, true, Icon = "fa-user-plus")]
-public class RoleController : EntityController<Role, RoleModel>
+public class RoleController(ITenantContext tenantContext) : EntityController<Role, RoleModel>
 {
     static RoleController()
     {
@@ -69,6 +69,10 @@ public class RoleController : EntityController<Role, RoleModel>
     /// <returns></returns>
     protected override Boolean Valid(Role entity, DataObjectMethodType type, Boolean post)
     {
+        // 租户管理员创建角色时，强制填充角色所属租户，确保角色归属对应客户
+        if (post && type == DataObjectMethodType.Insert && entity.TenantId == 0)
+            entity.TenantId = tenantContext.TenantId;
+
         var rs = base.Valid(entity, type, post);
 
         if (post && type is DataObjectMethodType.Insert or DataObjectMethodType.Update)
@@ -104,7 +108,16 @@ public class RoleController : EntityController<Role, RoleModel>
                 var has = GetBool("p" + item.ID);
                 if (!has)
                 {
-                    dels.Add(item.ID);
+                    // 取消整项授权
+                    if (!restricted)
+                        dels.Add(item.ID);
+                    else
+                        // 受限管理员只回收自己拥有的权限子项，保留系统管理员授予的其它权限
+                        foreach (var pf in item.Permissions)
+                        {
+                            var flag = (PermissionFlags)pf.Key;
+                            if (current != null && current.Has(item, flag)) entity.Reset(item.ID, flag);
+                        }
                 }
                 else
                 {
@@ -112,17 +125,33 @@ public class RoleController : EntityController<Role, RoleModel>
                     var any = false;
                     foreach (var pf in item.Permissions)
                     {
+                        var flag = (PermissionFlags)pf.Key;
+
+                        // 防止越界授权：受限管理员只能管理自己拥有的权限子项，其它权限保持不变
+                        if (restricted && (current == null || !current.Has(item, flag))) continue;
+
                         var has2 = GetBool("pf" + item.ID + "_" + pf.Key);
 
                         if (has2)
-                            entity.Set(item.ID, (PermissionFlags)pf.Key);
+                            entity.Set(item.ID, flag);
                         else
-                            entity.Reset(item.ID, (PermissionFlags)pf.Key);
+                            entity.Reset(item.ID, flag);
 
                         any |= has2;
                     }
                     // 如果原来没有权限，这是首次授权，且右边没有勾选任何子项，则授权全部
-                    if (!any & !entity.Has(item.ID)) entity.Set(item.ID);
+                    if (!any & !entity.Has(item.ID))
+                    {
+                        if (!restricted)
+                            entity.Set(item.ID);
+                        else
+                            // 受限管理员默认只授予自己拥有的权限子项，杜绝借助默认全量越界
+                            foreach (var pf in item.Permissions)
+                            {
+                                var flag = (PermissionFlags)pf.Key;
+                                if (current != null && current.Has(item, flag)) entity.Set(item.ID, flag);
+                            }
+                    }
                 }
             }
             // 删除已经被放弃权限的项
