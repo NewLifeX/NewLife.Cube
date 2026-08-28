@@ -61,6 +61,18 @@ public static class ManagerProviderHelper
                 var (u, jwt) = provider.LoadUser(token);
                 if ((user = u) != null)
                 {
+                    // 分享短令牌 / Url 锁定令牌：限制可访问路径，防止横向越权
+                    var shareUt = UserToken.FindByToken(token);
+                    if (shareUt == null && jwt != null && !jwt.Id.IsNullOrEmpty())
+                        shareUt = UserToken.FindByID(jwt.Id.ToInt());
+                    if (shareUt != null && !(shareUt.Url + "").IsNullOrEmpty()
+                        && !IsShareRequestAllowed(context, shareUt))
+                    {
+                        span?.AppendTag($"分享令牌路径拒绝：{context.Request.Path}");
+                        provider.SetCurrent(null, serviceProvider);
+                        return null;
+                    }
+
                     provider.SetCurrent(user, serviceProvider);
 
                     // 滑动刷新：JWT 剩余有效期低于阈值时自动续期并写入 Cookie
@@ -146,6 +158,10 @@ public static class ManagerProviderHelper
         var jwt = GetJwt();
         if (!jwt.TryDecode(token, out var msg))
         {
+            // 回退：分享短令牌（UserToken.Token，非 JWT）
+            var shareUser = TryLoadShareUserToken(token, span);
+            if (shareUser != null) return (shareUser, null);
+
             span?.AppendTag($"令牌无效：{msg}");
             XTrace.WriteLine("令牌无效：{0}, token={1}", msg, token);
 
@@ -191,6 +207,52 @@ public static class ManagerProviderHelper
         span?.AppendTag($"用户：{u}");
 
         return (u, jwt);
+    }
+
+    /// <summary>从分享短令牌加载用户（Url 锁定的 UserToken.Token）</summary>
+    static IManageUser TryLoadShareUserToken(String token, ISpan span)
+    {
+        if (token.IsNullOrEmpty() || token.Contains('.')) return null;
+        var ut = UserToken.FindByToken(token);
+        if (ut == null || !ut.Enable) return null;
+        if ((ut.Url + "").StartsWithIgnoreCase("attachment:")) return null;
+        if (ut.Expire.Year > 2000 && ut.Expire < DateTime.Now) return null;
+        var user = ut.User as IManageUser;
+        if (user == null || !user.Enable) return null;
+        span?.AppendTag($"分享令牌用户：{user}");
+        return user;
+    }
+
+    /// <summary>分享令牌 Url 锁定：仅允许目标实体路径及仪表盘/视图配置相关服务接口</summary>
+    public static Boolean IsShareRequestAllowed(HttpContext context, UserToken ut)
+    {
+        if (ut == null) return false;
+        var utUrl = ut.Url + "";
+        if (utUrl.IsNullOrEmpty()) return true;
+        if (utUrl.StartsWithIgnoreCase("attachment:")) return false;
+
+        var tokenPath = utUrl.Split('?')[0].TrimEnd('/');
+        if (tokenPath.IsNullOrEmpty()) return true;
+        var req = context?.Request?.Path.Value + "";
+        if (req.IsNullOrEmpty()) return false;
+
+        if (req.StartsWithIgnoreCase("/api" + tokenPath) || req.StartsWithIgnoreCase(tokenPath))
+            return true;
+
+        // 分享页所需：Widget 查询、视图配置、菜单注册、登录态探测、当前用户 Info
+        if (req.StartsWithIgnoreCase("/Cube/Widget") ||
+            req.StartsWithIgnoreCase("/Cube/ViewProfile") ||
+            req.StartsWithIgnoreCase("/Cube/ViewProfileTemplate") ||
+            req.StartsWithIgnoreCase("/Cube/UserProfile") ||
+            req.StartsWithIgnoreCase("/Cube/MenuTree") ||
+            req.StartsWithIgnoreCase("/Cube/GetAiConfig") ||
+            req.StartsWithIgnoreCase("/Cube/GetLoginConfig") ||
+            req.StartsWithIgnoreCase("/Auth/") ||
+            req.EndsWithIgnoreCase("/User/Info") ||
+            req.EndsWithIgnoreCase("/User/GetLoginConfig"))
+            return true;
+
+        return false;
     }
 
     /// <summary>设置租户</summary>
@@ -587,34 +649,41 @@ public static class ManagerProviderHelper
     #region 用户Cookie
     /// <summary>从上下文加载令牌</summary>
     /// <param name="context">Http上下文，兼容NetCore</param>
-    /// <returns></returns>
+    /// <returns>JWT（三段）或分享短令牌（UserToken.Token，无点号）；无有效令牌时返回 null</returns>
+    /// <remarks>
+    /// 显式凭证（Authorization / X-Token / Query）优先于 Cookie，避免旧 Cookie JWT 盖住分享短令牌。
+    /// 分享页签发的是 Rand 短串而非 JWT；若此处只认三段 JWT，LoadUser/TryLoadShareUserToken 永远收不到令牌。
+    /// </remarks>
     public static String LoadToken(this HttpContext context)
     {
         //using var span = DefaultTracer.Instance?.NewSpan(nameof(LoadToken));
 
         var req = context?.Request;
-        var token = "";
 
-        // 尝试从头部获取token
-        if (token.IsNullOrEmpty() || token.Split(".").Length != 3)
-            token = req?.Headers[HeaderNames.Authorization].ToString().TrimPrefix("Bearer ");
-        if (token.IsNullOrEmpty() || token.Split(".").Length != 3)
-            token = req?.Headers["X-Token"].ToString().TrimPrefix("Bearer ");
+        static Boolean IsJwt(String t) => !t.IsNullOrEmpty() && t.Split('.').Length == 3;
+        // 分享 UserToken.Token / 刷新令牌等：无 '.' 的不透明串
+        static Boolean IsOpaque(String t) => !t.IsNullOrEmpty() && !t.Contains('.') && t.Length >= 8;
+        static Boolean IsAcceptable(String t) => IsJwt(t) || IsOpaque(t);
 
-        // 尝试从url中获取token
-        if (token.IsNullOrEmpty() || token.Split(".").Length != 3) token = req?.Query["token"];
-        if (token.IsNullOrEmpty() || token.Split(".").Length != 3) token = req?.Query["jwtToken"];
+        var auth = req?.Headers[HeaderNames.Authorization].ToString().TrimPrefix("Bearer ");
+        var xToken = req?.Headers["X-Token"].ToString().TrimPrefix("Bearer ");
+        var qToken = req?.Query["token"] + "";
+        var qJwt = req?.Query["jwtToken"] + "";
 
-        // 尝试从Cookie获取token
+        // 显式凭证优先（分享页前端把短令牌放在 Authorization / ?token=）
+        foreach (var t in new[] { auth, xToken, qToken, qJwt })
+        {
+            if (IsAcceptable(t)) return t;
+        }
+
         if (CubeSetting.Current.TokenCookie)
         {
             var key = $"token-{SysConfig.Current.Name}";
-            if (token.IsNullOrEmpty() || token.Split(".").Length != 3) token = req?.Cookies[key];
+            var cookie = req?.Cookies[key];
+            if (IsAcceptable(cookie)) return cookie;
         }
 
-        if (token.IsNullOrEmpty() || token.Split(".").Length != 3) return null;
-
-        return token;
+        return null;
     }
 
     /// <summary>给用户颁发令牌</summary>
@@ -814,6 +883,17 @@ public static class ManagerProviderHelper
             }
 
             return jwt.Subject;
+        }
+
+        // 分享短令牌（非 JWT）：UserToken.Token
+        var ut = UserToken.FindByToken(token);
+        if (ut != null && ut.Enable
+            && (ut.Expire.Year < 2000 || ut.Expire > DateTime.Now)
+            && !(ut.Url + "").StartsWithIgnoreCase("attachment:"))
+        {
+            jwt = null;
+            var name = ut.User?.Name;
+            if (!name.IsNullOrEmpty()) return name;
         }
 
         jwt = null;

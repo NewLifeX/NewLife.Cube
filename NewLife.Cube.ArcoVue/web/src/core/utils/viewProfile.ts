@@ -84,6 +84,13 @@ export interface ViewInsight {
   chartOption?: unknown;
 }
 
+export {
+  parseDashboardJson,
+  serializeDashboardJson,
+  hasDashboardDomain,
+  emptyDashboard,
+} from '@cube/api-core';
+
 /** chartOption 清洗后最大字节数（OSC-260819e483 P5）；超限拒绝保存 */
 export const CHART_OPTION_MAX_BYTES = 32 * 1024;
 

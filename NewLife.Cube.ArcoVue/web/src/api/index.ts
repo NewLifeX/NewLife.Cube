@@ -1,9 +1,12 @@
 import { createCubeApi } from '@cube/api-core';
 import { clearLocalProfile } from '@/core/utils/userProfile';
+import { isEmbedMode } from '@/core/utils/embedMode';
 import { clearTenantSession, resolveTenantHeader } from '@/stores/tenantHeader';
 import { clearSession, getRefreshToken, getTokenUserName, persistSession } from '@/views/login/sessionTokens';
 
 async function tryRefreshAccessToken(): Promise<string | null> {
+  // 分享短令牌无 refreshToken，禁止走 Refresh 以免误清会话
+  if (isEmbedMode()) return null;
   const refreshToken = getRefreshToken();
   const userName = getTokenUserName() || undefined;
   if (!refreshToken) return null;
@@ -52,9 +55,16 @@ const cubeApi = createCubeApi({
   },
   tryRefreshToken: tryRefreshAccessToken,
   onUnauthorized() {
+    // 分享页：保留短令牌与 URL，避免 401 误跳登录导致白屏/丢参
+    if (isEmbedMode()) return;
     clearSession();
     clearLocalProfile();
     clearTenantSession();
+    try {
+      sessionStorage.removeItem('cube.shareEmbed');
+    } catch {
+      /* ignore */
+    }
     if (!window.location.pathname.startsWith('/login')) {
       window.location.href = '/login';
     }

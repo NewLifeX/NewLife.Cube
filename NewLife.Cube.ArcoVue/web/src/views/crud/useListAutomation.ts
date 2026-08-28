@@ -2,6 +2,7 @@ import { ref, watch } from 'vue';
 import { Message } from '@arco-design/web-vue';
 import cubeApi from '@/api';
 import { formatApiError } from '@/core/utils/apiError';
+import { isEmbedMode } from '@/core/utils/embedMode';
 import { getValueByKey } from '@/core/utils/url';
 import type { OpsAutomationButton } from '@/core/utils/opsAction';
 import type { ListContext } from './listContext';
@@ -14,6 +15,11 @@ export function useListAutomation(ctx: ListContext) {
   const automationButtons = ref<OpsAutomationButton[]>([]);
 
   async function loadAutomationButtons() {
+    // 分享页只读：不拉 Automation，避免 Url 锁定令牌下无意义 401
+    if (isEmbedMode()) {
+      automationButtons.value = [];
+      return;
+    }
     const typePath = ctx.typePath.value;
     if (!typePath) {
       automationButtons.value = [];

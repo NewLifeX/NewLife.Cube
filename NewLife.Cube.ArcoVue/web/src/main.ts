@@ -7,10 +7,12 @@ import '@/theme/density.css';
 import App from './App.vue';
 import router from './router';
 import { registerPageSectionsFromGlob } from '@/core/composables/useSections';
+import { registerPlatformWidgets } from '@/features/widget';
 import { ICON_COMPONENTS, FALLBACK_ICON } from '@/core/utils/iconComponents';
 import { useUserProfileStore } from '@/stores/userProfile';
 
 registerPageSectionsFromGlob(import.meta.glob('./apps/*/src/views/**/[A-Z]*.vue'));
+registerPlatformWidgets();
 
 /**
  * 统一图标体系（OSC-0017）：全局 `<icon-park :type="kebab-case名" />` 动态渲染。

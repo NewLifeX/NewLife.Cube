@@ -126,6 +126,14 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
     [BindColumn("FormJson", "表单布局。JSON：add/edit/detail 的字段顺序/显隐/分组折叠", "")]
     public String FormJson { get => _FormJson; set { if (OnPropertyChanging("FormJson", value)) { _FormJson = value; OnPropertyChanged("FormJson"); } } }
 
+    private String _DashboardJson;
+    /// <summary>页面仪表盘。JSON：version+widgets（实体级，不跟命名视图走）</summary>
+    [DisplayName("页面仪表盘")]
+    [Description("页面仪表盘。JSON：version+widgets（实体级，不跟命名视图走）")]
+    [DataObjectField(false, false, true, -1)]
+    [BindColumn("DashboardJson", "页面仪表盘。JSON：version+widgets（实体级，不跟命名视图走）", "")]
+    public String DashboardJson { get => _DashboardJson; set { if (OnPropertyChanging("DashboardJson", value)) { _DashboardJson = value; OnPropertyChanged("DashboardJson"); } } }
+
     private Int32 _Version;
     /// <summary>版本。配置契约版本</summary>
     [DisplayName("版本")]
@@ -216,6 +224,7 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
         QueriesJson = model.QueriesJson;
         PageSize = model.PageSize;
         FormJson = model.FormJson;
+        DashboardJson = model.DashboardJson;
         Version = model.Version;
         CreateUserId = model.CreateUserId;
         CreateTime = model.CreateTime;
@@ -248,6 +257,7 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
             "QueriesJson" => _QueriesJson,
             "PageSize" => _PageSize,
             "FormJson" => _FormJson,
+            "DashboardJson" => _DashboardJson,
             "Version" => _Version,
             "CreateUserId" => _CreateUserId,
             "CreateTime" => _CreateTime,
@@ -275,6 +285,7 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
                 case "QueriesJson": _QueriesJson = Convert.ToString(value); break;
                 case "PageSize": _PageSize = value.ToInt(); break;
                 case "FormJson": _FormJson = Convert.ToString(value); break;
+                case "DashboardJson": _DashboardJson = Convert.ToString(value); break;
                 case "Version": _Version = value.ToInt(); break;
                 case "CreateUserId": _CreateUserId = value.ToInt(); break;
                 case "CreateTime": _CreateTime = value.ToDateTime(); break;
@@ -403,6 +414,9 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
         /// <summary>表单布局。JSON：add/edit/detail 的字段顺序/显隐/分组折叠</summary>
         public static readonly Field FormJson = FindByName("FormJson");
 
+        /// <summary>页面仪表盘。JSON：version+widgets（实体级，不跟命名视图走）</summary>
+        public static readonly Field DashboardJson = FindByName("DashboardJson");
+
         /// <summary>版本。配置契约版本</summary>
         public static readonly Field Version = FindByName("Version");
 
@@ -471,6 +485,9 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
 
         /// <summary>表单布局。JSON：add/edit/detail 的字段顺序/显隐/分组折叠</summary>
         public const String FormJson = "FormJson";
+
+        /// <summary>页面仪表盘。JSON：version+widgets（实体级，不跟命名视图走）</summary>
+        public const String DashboardJson = "DashboardJson";
 
         /// <summary>版本。配置契约版本</summary>
         public const String Version = "Version";

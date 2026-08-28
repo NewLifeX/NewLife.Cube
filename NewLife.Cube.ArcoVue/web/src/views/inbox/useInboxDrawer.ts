@@ -1,4 +1,4 @@
-import { onMounted, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import type { InboxMessageItem } from '@cube/api-core';
 import cubeApi from '@/api';
 import { formatDateTime } from '@/core/utils/datetime';
@@ -82,9 +82,7 @@ export function useInboxDrawer(visible: { value: boolean }) {
     },
   );
 
-  onMounted(() => {
-    void refreshUnread();
-  });
+  // 未读数由 ShellToolbar 统一拉取；抽屉仅在打开时 load，避免与顶栏双打 UnreadCount
 
   return {
     loading,

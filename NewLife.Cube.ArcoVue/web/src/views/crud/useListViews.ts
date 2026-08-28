@@ -19,6 +19,7 @@ import type {
   ViewSort,
 } from '@/core/utils/viewProfile';
 import type { GanttMapping } from '@/core/utils/viewMapping';
+import { readQueryEmbed } from '@/core/utils/embedMode';
 import type { ListContext } from './listContext';
 
 interface ListViewsDeps {
@@ -116,6 +117,14 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
     // 再 rematch 一次，确保与最新 listFields 对齐
     if (metaKeys.value.length) {
       viewState.value = evpStore.rematch(typePath.value, metaKeys.value);
+    }
+    // 分享链接 ?viewId= 打开指定命名视图
+    const { viewId } = readQueryEmbed();
+    if (viewId && viewState.value?.views?.some((v) => v.id === viewId)) {
+      if (viewState.value.activeViewId !== viewId) {
+        evpStore.switchView(typePath.value, viewId);
+        syncLocalState();
+      }
     }
   }
 

@@ -5,6 +5,7 @@ import { useUserProfileStore } from '@/stores/userProfile';
 import { useTenantStore } from '@/stores/tenant';
 import { setStarWebResolver } from '@/core/utils/apiError';
 import { ensureEchartsTheme } from '@/core/utils/echartsTheme';
+import { isEmbedMode } from '@/core/utils/embedMode';
 
 /** 布局挂载时：登录配置 + 会话恢复 + UserProfile + 租户 */
 export function useShellAuth() {
@@ -13,6 +14,7 @@ export function useShellAuth() {
   const userStore = useUserStore();
   const profileStore = useUserProfileStore();
   const tenantStore = useTenantStore();
+  const embed = isEmbedMode();
 
   profileStore.bootstrapLocal();
   setStarWebResolver(() => appStore.loginConfig?.starWeb);
@@ -28,20 +30,24 @@ export function useShellAuth() {
   const afterLogin = () => {
     userStore.fetchMenus();
     ensureProfile();
-    void tenantStore.load();
+    if (!embed) void tenantStore.load();
   };
 
   if (!userStore.isLoggedIn) {
     userStore.fetchUserInfo().then(() => {
       if (userStore.isLoggedIn) {
         afterLogin();
-      } else {
+      } else if (!embed) {
         router.push('/login');
+      } else {
+        // 分享令牌：仍尝试拉菜单以注册动态路由
+        void userStore.fetchMenus();
+        ensureProfile();
       }
     });
   } else {
     if (!userStore.menus?.length) userStore.fetchMenus();
     ensureProfile();
-    void tenantStore.load();
+    if (!embed) void tenantStore.load();
   }
 }

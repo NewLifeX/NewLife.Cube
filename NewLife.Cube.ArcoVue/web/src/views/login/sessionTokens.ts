@@ -1,5 +1,6 @@
 import cubeApi from '@/api';
 import { clearObjectKindCache } from '@/core/utils/objectKindCache';
+import { clearPageMetaCache } from '@/core/utils/pageMetaCache';
 
 const REFRESH_KEY = 'cube.refreshToken';
 const USER_KEY = 'cube.tokenUserName';
@@ -18,6 +19,7 @@ export function clearSession() {
   localStorage.removeItem(USER_KEY);
   // 探测缓存按菜单指纹绑定；登出清掉避免同标签切换账号残留
   clearObjectKindCache();
+  clearPageMetaCache();
 }
 
 export function getRefreshToken(): string | null {

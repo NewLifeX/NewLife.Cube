@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Areas.Cube.Controllers;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
+using NewLife.Cube.Widgets;
 using NewLife.Data;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -100,47 +101,28 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         // 其他附件接口（Avatar）使用全局附件验证开关
         if (!CubeSetting.Current.ValidateAttachment && _attachmentApis.Contains(actionName)) return true;
 
-        var logined = ManageProvider.User != null;
-        if (logined) return true;
+        // 统一登录 / 分享短令牌（含 Url 锁定白名单）
+        if (ManageProvider.Provider.TryLogin(HttpContext) != null) return true;
+        if (ManageProvider.User != null) return true;
 
         var token = GetToken(HttpContext);
         if (!token.IsNullOrEmpty())
         {
             var ap = tokenService.FindBySecret(token);
-            if (ap != null && ap.Enable)
-                logined = true;
-            else
-            {
-                var set = CubeSetting.Current;
-                var (app, ex) = tokenService.TryDecodeToken(token, set.JwtSecret);
-                if (app != null && app.Enable && ex != null) logined = true;
-            }
+            if (ap != null && ap.Enable) return true;
 
-            // 回退到 UserToken 验证，并校验 Url 防止水平越权
-            if (!logined)
-            {
-                var ut = UserToken.FindByToken(token);
-                if (ut != null && ut.Enable && ut.Expire > DateTime.Now)
-                {
-                    var utUrl = ut.Url + "";
-                    // attachment: 前缀令牌仅限附件访问（由 CheckAttachmentAccess 处理），此处不放行
-                    if (!utUrl.StartsWithIgnoreCase("attachment:"))
-                    {
-                        // 令牌未锁定 Url → 全局有效；锁定了 Url → 必须与当前请求路径匹配
-                        if (utUrl.IsNullOrEmpty())
-                            logined = true;
-                        else
-                        {
-                            var tokenPath = utUrl.Split('?')[0];
-                            var reqPath = HttpContext.Request.Path.Value + "";
-                            if (reqPath.EqualIgnoreCase(tokenPath)) logined = true;
-                        }
-                    }
-                }
-            }
+            var set = CubeSetting.Current;
+            var (app, ex) = tokenService.TryDecodeToken(token, set.JwtSecret);
+            if (app != null && app.Enable && ex != null) return true;
+
+            // 回退到 UserToken 验证，并校验 Url 防止水平越权（分享页允许 Widget/ViewProfile 等）
+            var ut = UserToken.FindByToken(token);
+            if (ut != null && ut.Enable && ut.Expire > DateTime.Now
+                && ManagerProviderHelper.IsShareRequestAllowed(HttpContext, ut))
+                return true;
         }
 
-        return logined;
+        return false;
     }
 
     /// <summary>从请求头中获取令牌</summary>
@@ -824,6 +806,8 @@ public class CubeController(PageService pageService, TokenService tokenService, 
 
         var model = entity?.ToModel() ?? new ViewProfileModel { TypePath = typePath };
         if (global?.FormJson != null) model.FormJson = global.FormJson;
+        if (!global::NewLife.Cube.Entity.ViewProfile.HasDashboardDomain(model.DashboardJson) && !String.IsNullOrWhiteSpace(global?.DashboardJson))
+            model.DashboardJson = global.DashboardJson;
         return Json(0, null, model);
     }
 
@@ -849,6 +833,13 @@ public class CubeController(PageService pageService, TokenService tokenService, 
             model.FormJson = null;
         }
 
+        if (model.DashboardJson != null && !model.DashboardJson.IsNullOrWhiteSpace())
+        {
+            if (!Widgets.DashboardJson.TryNormalize(model.DashboardJson, user as IUser, checkSources: true, out var normalized, out var error))
+                return Json(400, error);
+            model.DashboardJson = normalized;
+        }
+
         var entity = global::NewLife.Cube.Entity.ViewProfile.UpsertForUser(user.ID, typePath, model);
         return Json(0, null, entity.ToModel());
     }
@@ -871,14 +862,12 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         return Json(0, "ok");
     }
 
-    /// <summary>获取全局模板（视图/筛选域）。仅系统管理员。</summary>
+    /// <summary>获取全局模板（视图/筛选/仪表盘域）。登录用户可读，供个人未配置时回落；写入仍仅系统管理员。</summary>
     [HttpGet]
     public ActionResult ViewProfileTemplate(String typePath)
     {
         var user = CurrentUser;
         if (user == null) return Json(401, "未授权");
-        if (!(user is IUser iu) || iu.Roles == null || !iu.Roles.Any(e => e.IsSystem))
-            return Json(403, "仅系统管理员可管理模板");
         if (typePath.IsNullOrEmpty()) return Json(400, "typePath 不能为空");
 
         var entity = global::NewLife.Cube.Entity.ViewProfile.FindGlobal(typePath);
@@ -897,8 +886,14 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         var typePath = model?.TypePath;
         if (typePath.IsNullOrEmpty()) return Json(400, "typePath 不能为空");
 
-        // 模板域仅接受 ViewsJson/FiltersJson；FormJson 不属模板域（走 ViewProfile 全局唯一逻辑）
-        var entity = global::NewLife.Cube.Entity.ViewProfile.SaveGlobalTemplate(typePath, model.ViewsJson, model.FiltersJson);
+        // 模板域接受 ViewsJson/FiltersJson/DashboardJson；FormJson 不属模板域（走 ViewProfile 全局唯一逻辑）
+        if (model.DashboardJson != null && !model.DashboardJson.IsNullOrWhiteSpace())
+        {
+            if (!Widgets.DashboardJson.TryNormalize(model.DashboardJson, user as IUser, checkSources: false, out var normalized, out var error))
+                return Json(400, error);
+            model.DashboardJson = normalized;
+        }
+        var entity = global::NewLife.Cube.Entity.ViewProfile.SaveGlobalTemplate(typePath, model.ViewsJson, model.FiltersJson, model.DashboardJson);
         WriteLog("发布模板", true, $"typePath={typePath} 视图/筛选模板已发布");
         return Json(0, null, entity?.ToModel());
     }

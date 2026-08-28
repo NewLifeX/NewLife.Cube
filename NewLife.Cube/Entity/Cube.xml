@@ -767,6 +767,7 @@
         <Column Name="QueriesJson" DataType="String" Length="-1" Description="预定义查询。JSON" />
         <Column Name="PageSize" DataType="Int32" Description="页面条数。每页显示记录数，0 表示未配置" />
         <Column Name="FormJson" DataType="String" Length="-1" Description="表单布局。JSON：add/edit/detail 的字段顺序/显隐/分组折叠" />
+        <Column Name="DashboardJson" DataType="String" Length="-1" Description="页面仪表盘。JSON：version+widgets（实体级，不跟命名视图走）" />
         <Column Name="Version" DataType="Int32" Description="版本。配置契约版本" />
         <Column Name="CreateUserId" DataType="Int32" Description="创建者" Category="扩展" />
         <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />

@@ -15,6 +15,7 @@ import { collectCascaderIds, mergeAreaLabel } from '@/core/utils/areaLabels';
 import { buildSortPayload, applyChartData } from '@/core/utils/viewProfile';
 import { normalizePageSize } from '@/core/utils/viewMapping';
 import { buildViewFilterParam, cleanSearchParams, matchesViewFilter } from '@/core/utils/searchFilters';
+import { getPageCached } from '@/core/utils/pageMetaCache';
 import { useTenantStore } from '@/stores/tenant';
 import type { ListContext } from './listContext';
 import type { FieldMeta } from '@/core/types/field';
@@ -134,7 +135,9 @@ export function useListQuery(ctx: ListContext) {
   }
 
   async function loadFields() {
-    const page = await cubeApi.page.getPage(typePath.value);
+    const page = (await getPageCached(typePath.value, () =>
+      cubeApi.page.getPage(typePath.value),
+    )) as { data?: unknown } | null;
     // 开发代理未覆盖业务 Area 时，Vite 会返回 index.html 字符串，导致 list 为空
     if (!page || typeof page !== 'object' || Array.isArray(page)) {
       Message.error('GetPage 响应无效：请确认开发代理已转发业务 Area（如 /School）到后端');
@@ -298,6 +301,12 @@ export function useListQuery(ctx: ListContext) {
   /** 加载固定图表（OSC-0012 + OSC-260819e483 P5）：showChart 时带有效搜索请求 GetChartData；过期响应丢弃。
    *  渲染优先级：开发者 GetChartData 非空数组 → 开发者图；否则用户 chartOption → applyChartData 当前列表行；否则空态 */
   async function loadChart() {
+    if (evpStore.getDashboard(typePath.value) != null) {
+      chartData.value = [];
+      chartError.value = '';
+      chartLoading.value = false;
+      return;
+    }
     if (!insight.value.showChart) {
       chartData.value = [];
       chartError.value = '';

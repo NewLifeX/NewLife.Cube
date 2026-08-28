@@ -142,6 +142,21 @@ router.beforeEach(async (to, _from, next) => {
     }
   }
 
+  // 分享链接：?embed=1&token=xxx → 持久化短令牌并进入无导航壳
+  {
+    const { readQueryEmbed, enterEmbedMode } = await import('@/core/utils/embedMode');
+    const { persistSession } = await import('@/views/login/sessionTokens');
+    const q = readQueryEmbed(
+      typeof window !== 'undefined'
+        ? window.location.search
+        : new URLSearchParams(to.query as Record<string, string>).toString(),
+    );
+    if (q.embed) {
+      enterEmbedMode();
+      if (q.token) persistSession(q.token);
+    }
+  }
+
   const isPublic = !!to.meta.public;
   const token = cubeApi.tokenManager.getToken();
 
@@ -153,6 +168,8 @@ router.beforeEach(async (to, _from, next) => {
   if (token && !routesLoaded && !isPublic) {
     const userStore = useUserStore();
     const profileStore = useUserProfileStore();
+    const { isEmbedMode: embedNow } = await import('@/core/utils/embedMode');
+    let needsRefresh = false;
     try {
       if (!userStore.menus?.length) {
         await userStore.fetchMenus();
@@ -166,13 +183,19 @@ router.beforeEach(async (to, _from, next) => {
         userStore.menus || [],
         to.path,
       );
-      routesLoaded = true;
-      if (currentPathNeedsRefresh) {
-        next({ ...to, replace: true });
-        return;
-      }
+      needsRefresh = currentPathNeedsRefresh;
     } catch {
-      routesLoaded = true;
+      // 分享令牌可能拉菜单失败，下面统一 ensure 当前 path
+    }
+    // 分享/embed：菜单为空或不含当前页时仍注册 DynamicPage，避免白屏
+    if (embedNow()) {
+      const { ensureDynamicLeafRoute } = await import('@/core/utils/menuRoutes');
+      if (ensureDynamicLeafRoute(router, to.path)) needsRefresh = true;
+    }
+    routesLoaded = true;
+    if (needsRefresh) {
+      next({ ...to, replace: true });
+      return;
     }
   }
 

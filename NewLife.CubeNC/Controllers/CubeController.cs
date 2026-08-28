@@ -679,6 +679,8 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
 
         var model = entity?.ToModel() ?? new ViewProfileModel { TypePath = typePath };
         if (global?.FormJson != null) model.FormJson = global.FormJson;
+        if (!global::NewLife.Cube.Entity.ViewProfile.HasDashboardDomain(model.DashboardJson) && !String.IsNullOrWhiteSpace(global?.DashboardJson))
+            model.DashboardJson = global.DashboardJson;
         return Json(0, null, model);
     }
 
@@ -753,7 +755,7 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
         if (typePath.IsNullOrEmpty()) return Json(400, "typePath 不能为空");
 
         // 模板域仅接受 ViewsJson/FiltersJson；FormJson 不属模板域（走 ViewProfile 全局唯一逻辑）
-        var entity = global::NewLife.Cube.Entity.ViewProfile.SaveGlobalTemplate(typePath, model.ViewsJson, model.FiltersJson);
+        var entity = global::NewLife.Cube.Entity.ViewProfile.SaveGlobalTemplate(typePath, model.ViewsJson, model.FiltersJson, model.DashboardJson);
         WriteLog("发布模板", true, $"typePath={typePath} 视图/筛选模板已发布");
         return Json(0, null, entity?.ToModel());
     }

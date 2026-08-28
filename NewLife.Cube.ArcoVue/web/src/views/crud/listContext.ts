@@ -11,6 +11,7 @@ import { EXPORT_FORMATS } from '@cube/page-utils';
 import { useUserStore } from '@/stores/user';
 import { useUserProfileStore } from '@/stores/userProfile';
 import { useViewProfileStore } from '@/stores/viewProfile';
+import { isEmbedMode } from '@/core/utils/embedMode';
 import type { FieldMeta } from '@/core/types/field';
 import { resolveCrudFlags } from '@/core/utils/permissions';
 import { getValueByKey } from '@/core/utils/url';
@@ -349,16 +350,19 @@ export function createListContext(props: { type: string; authId?: number }) {
     }),
   );
 
-  /** 「高级」菜单：导入/导出/删除/启停/修改/管理员表单布局 */
-  const advancedVisible = computed(
-    () =>
+  /** 「高级」菜单：导入/导出 | 批量操作 | 自动化流程/表单布局（分享页不展示后两项） */
+  const advancedVisible = computed(() => {
+    const embed = isEmbedMode();
+    return (
       flags.value.canImport ||
       flags.value.canExport ||
       batchDeleteState.value.visible ||
       batchEnableState.value.visible ||
       flags.value.canEdit ||
-      isAdmin.value,
-  );
+      (!embed && flags.value.canUpdate) ||
+      (!embed && isAdmin.value)
+    );
+  });
 
   /** 搜索抽屉开关：默认收起，点击工具栏「搜索」打开 */
   const searchPanelOpen = ref(false);

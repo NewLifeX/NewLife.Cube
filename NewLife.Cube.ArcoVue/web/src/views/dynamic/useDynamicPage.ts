@@ -5,6 +5,7 @@ import cubeApi from '@/api';
 import { getSectionLoader } from '@/core/composables/useSections';
 import { routeToApiPrefix } from '@/core/utils/url';
 import { detectPageKind, type PageKind } from '@/core/utils/pageKind';
+import { getPageCached } from '@/core/utils/pageMetaCache';
 import { mapPageKindToAiPage } from '@/core/utils/aiChatContext';
 import { useAppStore } from '@/stores/app';
 
@@ -62,7 +63,7 @@ export function useDynamicPage(props: DynamicPageProps) {
       return;
     }
     const kind = await detectPageKind(tp, {
-      getPage: (t) => cubeApi.page.getPage(t),
+      getPage: (t) => getPageCached(t, () => cubeApi.page.getPage(t)),
       getObjectProbe: async (t) => {
         const fields = await cubeApi.page.getFields(t, FieldKind.List);
         const body = await cubeApi.page.getList(t, { pageIndex: 0, pageSize: 1 });

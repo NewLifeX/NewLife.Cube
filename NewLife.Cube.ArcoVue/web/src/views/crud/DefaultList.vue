@@ -10,16 +10,17 @@
     <div class="list-surface" :class="{ 'list-surface--chrome': hasChromeBg }" :style="listSurfaceStyle">
       <!-- 洞察面板（原 QueryInsightPanel，更名 InsightPanel）：仅统计标签 + 一张固定图表看板（OSC-260819e483）；搜索统一走工具栏「搜索」抽屉 SearchDrawer -->
       <InsightPanel
+        ref="insightPanelRef"
+        :type-path="typePath"
         :show-stat="insight.showStat"
         :show-chart="insight.showChart"
         :stat-data="statData"
-        :stat-labels="statLabels"
         :chart-data="chartData"
         :chart-loading="chartLoading"
         :chart-error="chartError"
         :chart-option="insight.chartOption"
-        :chart-rows="tableData"
-        @chart-option-change="onChartOptionChange"
+        :host-filter="viewFilter"
+        :list-fields="listFields"
       />
 
       <!-- 表格面板：视图 Tab + 工具栏 + 表格 + 分页 -->
@@ -167,14 +168,18 @@
               <icon-park type="search" />
               搜索
             </a-button>
-            <a-button
-              v-if="flags.canUpdate"
-              type="text"
-              @click="openAutomationDrawer"
+            <ShareViewPopover
+              v-if="!isEmbed"
+              :visible="sharePopoverVisible"
+              :type-path="typePath"
+              :view-id="activeViewId || ''"
+              @update:visible="sharePopoverVisible = $event"
             >
-              <icon-park type="lightning" />
-              自动化
-            </a-button>
+              <a-button type="text">
+                <icon-park type="share" />
+                分享
+              </a-button>
+            </ShareViewPopover>
             <a-dropdown v-if="advancedVisible" trigger="click" position="bottom">
               <a-button>
                 高级 <icon-park type="down" />
@@ -209,6 +214,10 @@
                     </a-doption>
                   </template>
                 </a-dsubmenu>
+                <div
+                  v-if="(flags.canImport || flags.canExport) && hasAdvancedBatchGroup"
+                  class="advanced-menu-divider"
+                />
                 <a-doption
                   v-if="batchEnableState.visible"
                   :disabled="batchEnableState.disabled"
@@ -241,7 +250,19 @@
                   <icon-park type="edit" />
                   批量修改
                 </a-doption>
-                <a-doption v-if="isAdmin" @click="formLayoutDrawerVisible = true">
+                <div
+                  v-if="hasAdvancedBatchGroup && hasAdvancedExtraGroup"
+                  class="advanced-menu-divider"
+                />
+                <div
+                  v-else-if="(flags.canImport || flags.canExport) && hasAdvancedExtraGroup && !hasAdvancedBatchGroup"
+                  class="advanced-menu-divider"
+                />
+                <a-doption v-if="flags.canUpdate && !isEmbed" @click="openAutomationDrawer">
+                  <icon-park type="lightning" />
+                  自动化流程
+                </a-doption>
+                <a-doption v-if="isAdmin && !isEmbed" @click="formLayoutDrawerVisible = true">
                   <icon-park type="layout-one" />
                   表单布局
                 </a-doption>
@@ -466,7 +487,7 @@
       @update:sort="onConfigSort"
       @update:chrome="onChromeChange"
       @update:mapping="onMappingChange"
-      @update:insight="onInsightChange"
+      @open-dashboard="openDashboard"
       @update:name="onConfigRename"
     />
 
@@ -557,7 +578,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent } from 'vue';
+import { computed, defineAsyncComponent, ref } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
 import { useDefaultList } from './useDefaultList';
 /** VTable / 多视图异步加载，降低 DynamicPage 首包 */
@@ -578,11 +599,16 @@ import FilterBuilderPopover from './FilterBuilderPopover.vue';
 import GroupPopover from './GroupPopover.vue';
 import FormatPopover from './FormatPopover.vue';
 import AutomationDrawer from './automation/AutomationDrawer.vue';
+import ShareViewPopover from './ShareViewPopover.vue';
+import { isEmbedMode } from '@/core/utils/embedMode';
 
 const props = defineProps<{
   type: string;
   authId?: number;
 }>();
+
+const sharePopoverVisible = ref(false);
+const isEmbed = isEmbedMode();
 
 const {
   headerSection,
@@ -594,7 +620,6 @@ const {
   searchForm,
   insight,
   statData,
-  statLabels,
   chartData,
   chartLoading,
   chartError,
@@ -724,7 +749,6 @@ const {
   onConfigSort,
   onChromeChange,
   onMappingChange,
-  onInsightChange,
   onConfigRename,
   drawerVisible,
   drawerFields,
@@ -744,14 +768,22 @@ const {
   addFields,
   editFields,
   detailFields,
-  loadChart,
 } = useDefaultList(props);
 
-/** 图表配置保存/清除（OSC-260819e483 P5）：更新当前命名视图 insight.chartOption 并刷新图表 */
-function onChartOptionChange(option: unknown) {
-  onInsightChange({ ...insight.value, chartOption: option });
-  void loadChart();
+const insightPanelRef = ref<{ openAdd?: () => void } | null>(null);
+function openDashboard() {
+  insightPanelRef.value?.openAdd?.();
 }
+
+const hasAdvancedBatchGroup = computed(
+  () =>
+    batchEnableState.value.visible ||
+    batchDeleteState.value.visible ||
+    flags.value.canEdit,
+);
+const hasAdvancedExtraGroup = computed(
+  () => !isEmbed && (flags.value.canUpdate || isAdmin.value),
+);
 
 /** 自动化条件字段：合并列表/搜索/编辑字段，避免仅 list 列过少或未就绪 */
 const automationFields = computed(() => {
@@ -780,6 +812,12 @@ const automationFields = computed(() => {
   z-index: 900;
   overflow: auto;
   background: var(--color-fill-2);
+  /* 全屏时无论是否有 chrome 背景，顶部仪表盘与视口边缘留白 */
+  padding: 12px;
+  box-sizing: border-box;
+}
+.default-list--fullscreen .list-surface {
+  padding-top: 0;
 }
 .list-surface {
   display: flex;
@@ -833,6 +871,11 @@ const automationFields = computed(() => {
 .advanced-upload-option :deep(.arco-upload) {
   display: block;
   width: 100%;
+}
+.advanced-menu-divider {
+  height: 1px;
+  margin: 4px 8px;
+  background: var(--color-border-2);
 }
 /* 批量修改多字段行（OSC-260819e483）：每行 = 字段下拉 + 值控件 + 删除 */
 .batch-edit-rows {

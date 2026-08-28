@@ -25,6 +25,12 @@ import type {
   AuthBindItem,
   TenantListResult,
 } from './types';
+import type {
+  WidgetCatalog,
+  WidgetQueryBody,
+  WidgetQueryResult,
+  WidgetSourceItem,
+} from './widget';
 
 type RequestFn = <T>(config: AxiosRequestConfig) => Promise<ApiResponse<T>>;
 
@@ -189,6 +195,17 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
     /** 获取页面元数据（setting + list/addForm/editForm/detail/search） */
     getPage: (type: string) =>
       request<PageMeta>({ url: `${type}/GetPage`, method: 'get' }),
+
+    /**
+     * 分享当前视图：签发 UserToken（可设有效期），返回短令牌供匿名打开 embed 页。
+     * 权限按分享者 Detail（及后续接口各自鉴权）执行。
+     */
+    share: (type: string, body: { viewId?: string; expireSeconds?: number }) =>
+      request<{ token: string; expire?: string; path?: string; url?: string }>({
+        url: `${type}/Share`,
+        method: 'post',
+        data: body,
+      }),
 
     /** 获取单例对象（ObjectController GET type；非分页列表） */
     getObject: (type: string) =>
@@ -696,4 +713,27 @@ export interface InboxMessageItem {
   createTime?: string;
   action?: string;
   channel?: string;
+}
+
+/**
+ * 页面仪表盘 Widget API（OSC-2608280e9e，消费 /Cube/Widget）
+ */
+export function createWidgetApi(request: RequestFn) {
+  return {
+    sources: () =>
+      request<WidgetSourceItem[]>({ url: '/Cube/Widget/Sources', method: 'get' }),
+
+    catalog: () =>
+      request<WidgetCatalog>({ url: '/Cube/Widget/Catalog', method: 'get' }),
+
+    query: (data: WidgetQueryBody) =>
+      request<WidgetQueryResult>({ url: '/Cube/Widget/Query', method: 'post', data }),
+
+    data: (name: string, opts?: { hostTypePath?: string }) =>
+      request<unknown>({
+        url: '/Cube/Widget/Data',
+        method: 'get',
+        params: { name, hostTypePath: opts?.hostTypePath },
+      }),
+  };
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createCommentApi, createPageApi, createProfileApi, createAutomationApi, createConfigApi } from './api';
+import { createCommentApi, createPageApi, createProfileApi, createAutomationApi, createConfigApi, createWidgetApi } from './api';
 import type { ApiResponse, EntityCommentModel, ViewProfileModel } from './types';
 
 vi.mock('axios', () => ({
@@ -175,6 +175,35 @@ describe('createAutomationApi', () => {
       url: '/Cube/Automation/Inbox/Read',
       method: 'post',
       data: { all: true },
+    }));
+  });
+});
+
+describe('createWidgetApi', () => {
+  it('sources catalog query data hit /Cube/Widget/*', async () => {
+    const request = vi.fn().mockResolvedValue({ code: 0, data: {} });
+    const api = createWidgetApi(request);
+    await api.sources();
+    await api.catalog();
+    await api.query({ typePath: 'Admin/User', mode: 'aggregate', measure: { fn: 'count' } });
+    await api.data('InboxUnread');
+    expect(request).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      url: '/Cube/Widget/Sources',
+      method: 'get',
+    }));
+    expect(request).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      url: '/Cube/Widget/Catalog',
+      method: 'get',
+    }));
+    expect(request).toHaveBeenNthCalledWith(3, expect.objectContaining({
+      url: '/Cube/Widget/Query',
+      method: 'post',
+      data: expect.objectContaining({ typePath: 'Admin/User' }),
+    }));
+    expect(request).toHaveBeenNthCalledWith(4, expect.objectContaining({
+      url: '/Cube/Widget/Data',
+      method: 'get',
+      params: { name: 'InboxUnread' },
     }));
   });
 });

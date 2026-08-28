@@ -178,6 +178,8 @@ public partial class ViewProfile : Entity<ViewProfile>
             // PageSize：仅接受 PAGE_SIZE_OPTIONS 合法值，非法归一 0（未配置）；0/缺省不覆盖已有配置
             if (model.PageSize > 0) entity.PageSize = NormalizePageSize(model.PageSize);
             if (model.FormJson != null) entity.FormJson = model.FormJson;
+            if (model.DashboardJson != null)
+                entity.DashboardJson = model.DashboardJson.IsNullOrWhiteSpace() ? null : model.DashboardJson;
             if (model.Version > 0) entity.Version = model.Version;
             else if (entity.Version <= 0) entity.Version = 1;
             if (model.Remark != null) entity.Remark = model.Remark;
@@ -253,6 +255,7 @@ public partial class ViewProfile : Entity<ViewProfile>
             || !entity.GanttJson.IsNullOrEmpty()
             || !entity.CardJson.IsNullOrEmpty()
             || !entity.FiltersJson.IsNullOrEmpty()
+            || !entity.DashboardJson.IsNullOrEmpty()
             || entity.PageSize > 0;
         if (hasOther)
             entity.FormJson = null;
@@ -262,22 +265,24 @@ public partial class ViewProfile : Entity<ViewProfile>
     }
 
     /// <summary>
-    /// 保存全局模板（视图/筛选域，仅管理员调用）。模板为每个 typePath 一份的 UserId=0 全局记录，
+    /// 保存全局模板（视图/筛选/仪表盘域，仅管理员调用）。模板为每个 typePath 一份的 UserId=0 全局记录，
     /// 普通用户基于模板可创建个人配置域（个人 > 模板 > 系统默认）。
     /// null 表示不覆盖该域；空串/空壳（无实际配置内容）表示清除该域（恢复默认）。
     /// </summary>
     /// <param name="typePath">实体路径</param>
     /// <param name="viewsJson">视图域模板 JSON；null 不覆盖，空壳清除</param>
     /// <param name="filtersJson">筛选域模板 JSON；null 不覆盖，空壳清除</param>
-    public static ViewProfile SaveGlobalTemplate(String typePath, String viewsJson, String filtersJson)
+    /// <param name="dashboardJson">仪表盘域模板 JSON；null 不覆盖，空壳清除</param>
+    public static ViewProfile SaveGlobalTemplate(String typePath, String viewsJson, String filtersJson, String dashboardJson = null)
     {
         if (typePath.IsNullOrEmpty()) throw new ArgumentNullException(nameof(typePath));
-        if (viewsJson == null && filtersJson == null) return FindGlobal(typePath);
+        if (viewsJson == null && filtersJson == null && dashboardJson == null) return FindGlobal(typePath);
 
         var entity = FindGlobal(typePath)
             ?? new ViewProfile { UserId = GlobalUserId, TypePath = typePath };
         if (viewsJson != null) entity.ViewsJson = IsEmptyTemplateJson(viewsJson, true) ? null : viewsJson;
         if (filtersJson != null) entity.FiltersJson = IsEmptyTemplateJson(filtersJson, false) ? null : filtersJson;
+        if (dashboardJson != null) entity.DashboardJson = IsEmptyDashboardJson(dashboardJson) ? null : dashboardJson;
         if (entity.Version <= 0) entity.Version = 1;
         entity.Save();
         return entity;
@@ -293,6 +298,7 @@ public partial class ViewProfile : Entity<ViewProfile>
 
         entity.ViewsJson = null;
         entity.FiltersJson = null;
+        entity.DashboardJson = null;
         var hasContent = !entity.View.IsNullOrEmpty()
             || !entity.ColumnsJson.IsNullOrEmpty()
             || !entity.ActiveViewId.IsNullOrEmpty()
@@ -356,6 +362,39 @@ public partial class ViewProfile : Entity<ViewProfile>
         catch
         {
             return true;
+        }
+    }
+
+    /// <summary>判断仪表盘 JSON 是否为空壳（空白视为未配置）</summary>
+    public static Boolean IsEmptyDashboardJson(String json)
+    {
+        if (json.IsNullOrWhiteSpace()) return true;
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            if (root.ValueKind != System.Text.Json.JsonValueKind.Object) return true;
+            if (!root.TryGetProperty("widgets", out var widgets)) return !root.EnumerateObject().Any();
+            return widgets.ValueKind == System.Text.Json.JsonValueKind.Array && widgets.GetArrayLength() == 0;
+        }
+        catch
+        {
+            return true;
+        }
+    }
+
+    /// <summary>个人 DashboardJson 是否有效配置（含显式空 widgets，不继承模板）</summary>
+    public static Boolean HasDashboardDomain(String json)
+    {
+        if (json.IsNullOrWhiteSpace()) return false;
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            return doc.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object;
+        }
+        catch
+        {
+            return false;
         }
     }
 

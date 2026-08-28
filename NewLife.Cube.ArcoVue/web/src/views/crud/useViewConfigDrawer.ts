@@ -99,7 +99,7 @@ interface ViewConfigDrawerEmits {
   'update:chrome': [chrome: ViewChrome];
   'update:name': [name: string];
   'update:mapping': [mapping: ViewMapping | undefined];
-  'update:insight': [insight: ViewInsight];
+  openDashboard: [];
 }
 
 type ViewConfigDrawerEmit = <K extends keyof ViewConfigDrawerEmits>(event: K, ...args: ViewConfigDrawerEmits[K]) => void;
@@ -401,9 +401,9 @@ export function useViewConfigDrawer(props: ViewConfigDrawerProps, emit: ViewConf
     emit('update:chrome', { ...chrome });
   }
 
-  /** 洞察开关变更：双开关独立或同时启用，无任意 option/数据源/多图表（OSC-0012） */
+  /** 洞察开关已迁至页面仪表盘，ViewConfigDrawer 不再写入 insight */
   function emitInsight() {
-    emit('update:insight', { ...localInsight.value });
+    /* no-op OSC-2608280e9e */
   }
 
   // ---- 图表配置（OSC-260819e483 P5）：ViewConfigDrawer 内「配置图表」与 InsightPanel 同一套 chartOption ----

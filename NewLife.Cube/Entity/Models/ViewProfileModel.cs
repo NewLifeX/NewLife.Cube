@@ -50,6 +50,9 @@ public partial class ViewProfileModel
     /// <summary>表单布局。JSON：add/edit/detail 的字段顺序/显隐/分组折叠</summary>
     public String FormJson { get; set; }
 
+    /// <summary>页面仪表盘。JSON：version+widgets（实体级，不跟命名视图走）</summary>
+    public String DashboardJson { get; set; }
+
     /// <summary>版本。配置契约版本</summary>
     public Int32 Version { get; set; }
 
@@ -93,6 +96,7 @@ public partial class ViewProfileModel
         QueriesJson = model.QueriesJson;
         PageSize = model.PageSize;
         FormJson = model.FormJson;
+        DashboardJson = model.DashboardJson;
         Version = model.Version;
         CreateUserId = model.CreateUserId;
         CreateTime = model.CreateTime;

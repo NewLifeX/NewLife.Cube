@@ -6,7 +6,7 @@
   >
     <a-empty description="暂无看板数据或未配置分组字段" />
   </div>
-  <div v-else class="kanban-board" :style="{ minHeight: height + 'px' }">
+  <div v-else class="kanban-board" :class="{ 'kanban-board--compact': compact }" :style="{ minHeight: height + 'px' }">
     <div v-for="col in columns" :key="col.key" class="kanban-col">
       <div class="kanban-col-head">
         <span class="kanban-col-title">{{ col.label }}</span>
@@ -20,10 +20,10 @@
           :title="titleOf(row)"
           :image-url="resolveImageUrl(row, mapping?.imageField)"
           :body-fields="bodyOf(row)"
-          :can-view-detail="canViewDetail"
-          :enable-table-double-click="enableTableDoubleClick"
-          :can-edit="canEdit"
-          :can-delete="canDelete && !isIamRowActionDisabled(typePath, row, 'delete')"
+        :can-view-detail="compact ? false : canViewDetail"
+          :enable-table-double-click="compact ? false : enableTableDoubleClick"
+          :can-edit="compact ? false : canEdit"
+          :can-delete="compact ? false : canDelete && !isIamRowActionDisabled(typePath, row, 'delete')"
           :ops-custom-links="opsCustomLinks"
           :title-format-color="titleFormatColorOf(row)"
           :title-format-bold="titleFormatBoldOf(row)"
@@ -65,10 +65,12 @@ const props = withDefaults(
     opsCustomLinks?: OpsCustomLink[];
     formatCell?: (field: FieldMeta, record: Record<string, unknown>) => string;
     formatRules?: ViewFormatRule[];
+    compact?: boolean;
   }>(),
   {
     enableTableDoubleClick: true,
     opsCustomLinks: () => [],
+    compact: false,
   },
 );
 
@@ -117,6 +119,10 @@ const {
   max-height: inherit;
   min-height: 240px;
   min-width: 0;
+}
+.kanban-board--compact .kanban-col {
+  flex-basis: 200px;
+  min-height: 160px;
 }
 .kanban-col-head {
   display: flex;

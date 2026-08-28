@@ -241,6 +241,14 @@
 - **Cube / CubeNC 非 Link 控制器要 tasks 点名两处**：本号 Menu ReadOnly / Role 去列表列只改了 WebAPI；CubeDemo 不受影响，MVC 宿主会漏。
 - **复盘提交遇到并行未入库 OSC 时宁缺列表壳、勿混打**：03c0 源码仍 untracked，与本号 B.4/B.5/D.1 同文件；独立 AI/填色/wwwroot 排除（沿用 fa86/8bdb）。
 
+## OSC-2608280e9e — 2026-08-28
+
+- **Widget Query 租户 Where 必须与 CreateWhere 同等并进 XUnit**：只写「fail-closed 无上下文」却漏租户模式 AND `TenantId`，多租户会跨租户泄数；验收审计才发现。
+- **分享短令牌不能只认 JWT**：`LoadToken` 末尾 `Split(".").Length != 3` 会丢掉 `UserToken.Token`；不透明串须可加载，且 Authorization/Query 优先于 Cookie。
+- **平台 kind 砍洞察槽交付时同步改 proposal/DASH/§8.5.3**：代码禁 miniKanban 而文档仍写三种 kind，会造成验收假通过。
+- **SFC 薄壳：分享弹层的 watch 必须在 composable**：验收门禁 `sfcThin` 会拦 `.vue` 内 `watch`；`ShareViewPopover` 曾因此红。
+- **EmbedLayout 必须 `height:100%` 锁视口**：仅 `min-height:100vh` 时内容被 `#app height:100%` 裁切，滚动条与底部分页器消失。
+
 ## 待办 — 字体规范（Harness）
 
 - 后续按现代中后台常见 **组件/场景**（列表表头、单元格、表单标签、抽屉标题、徽章等）在 Harness 建立统一的 **字体 / 字号 / 字重** 规范，并替换各处临时字重（如 VTable `headerStyle.fontWeight: 400`）。

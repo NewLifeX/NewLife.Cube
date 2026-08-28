@@ -128,3 +128,29 @@ export function registerLeafRoutes(
 
   return { registered, currentPathNeedsRefresh };
 }
+
+/**
+ * 分享页兜底：无菜单时仍把当前 path 注册为 DynamicPage 叶路由。
+ */
+export function ensureDynamicLeafRoute(router: Router, currentPath: string): boolean {
+  const path = normalizeMenuUrl(currentPath, 'pascal');
+  if (!path || path === '/' || path.toLowerCase() === '/home') return false;
+  const leafPath = path.replace(/^\//, '');
+  const norm = leafPath.toLowerCase();
+  const existing = new Set(
+    router.getRoutes().map((r) => String(r.path || '').replace(/^\//, '').toLowerCase()),
+  );
+  if (existing.has(norm)) return false;
+
+  const typePath = routeToApiPrefix(path);
+  const routeName = `share-${leafPath.replace(/\//g, '-')}`;
+  const leaf: RouteRecordRaw = {
+    path: leafPath,
+    name: routeName,
+    component: withRouteComponentName(resolvePageComponent(path), routeName),
+    props: { type: typePath, authId: 0 },
+    meta: { title: path, typePath, menuId: 0 },
+  };
+  router.addRoute('Layout', leaf);
+  return true;
+}

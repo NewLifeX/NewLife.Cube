@@ -142,7 +142,7 @@
 | 批量删除 | DATA-10 | ✅ | ✅ | ✅ | P0 |
 | 批量其它操作（启用/禁用等） | 工具条扩展 | ✅ | ✅（OSC-26081903c0 高级菜单批量启用/禁用；批量改字段见 e483） | 🟠 | P2 |
 | ListField.Url / dataAction 自定义链接 | 单元格 + 操作列分流 | ✅（Bootstrap 单元格 / Metronic 更多） | ✅（OSC-2608178bdb 方案 E） | 🟢 | Done |
-| 图表 GetChartData | SPA-15 | ✅ | 🟠（后端 option 渲染壳有；洞察面板暂隐藏待简易图表看板，OSC-0016） | ✅ | P1 |
+| 图表 GetChartData | SPA-15 | ✅ | ✅（OSC-2608280e9e：洞察槽 Widget 协议 + 迷你图平台模板；GetChartData 仅旧 insight 合成） | ✅ | P1 |
 | 字段控件矩阵（含上传/JSON/富文本等） | DATA-11 等 | 🟠～✅ | ✅（20+ 控件，FieldInput） | ✅ | P0 |
 | LOV 选择器 | SYS-16～20 | ✅ | ✅（LovSelect + lov-api） | ✅ | P1 |
 | 多页签 TagsView | 壳 | ✅ | ✅ | ✅ | P0 |
@@ -598,17 +598,20 @@ DefaultList 固定容器
 
 写入：用户只写自己的 UserProfile；角色工作台仅管理员写。聚合 API（待办数、快捷菜单、授权内 KPI）按当前用户解析后下发，前端不自己选角色。与 Db/进程监控页分离。不做租户层。
 
-#### 8.5.3 第一期 Insight 仪表盘（已拍板）
+#### 8.5.3 页面仪表盘 Widget 协议（OSC-2608280e9e）
+
+洞察槽是 **Widget 运行时**，不是单图开关。配置落 `ViewProfile.DashboardJson`（实体级，与 `ViewsJson` 分域；个人有效整份 > 模板 UserId=0 > 未配置）。
 
 | 部件 | 数据 | 约束 |
 |------|------|------|
-| 指标卡 | 源实体 `GetList.stat` 或分页 `total`（计数/求和/均值） | `sourceTypePath` 须有查看权；禁止 SQL/脚本 |
-| 迷你看板 | 源实体 `GetList` 卡片（分组字段 + 标题字段，条数上限） | **只读**；不是切到看板视图；不写回、不拖拽 |
-| 筛选联动 | 宿主列表后端筛选变化后部件重查 | 同源 AND；跨实体须声明字段映射，禁止隐式 JOIN。绑筛选构建器，不绑搜索抽屉 |
+| 指标卡 `metricCard` | `POST /Cube/Widget/Query` aggregate（count/sum/avg/min/max） | 源 `typePath` 须 Detail；禁止 SQL/脚本 |
+| 迷你图表 `miniChart` | 同上；平台模板 sparkline/line/bar/pie（时间分桶：SQLite/MySQL/SQLServer/PostgreSQL） | 禁止把用户自由 ECharts option 当新编 |
+| 迷你看板 `miniKanban` | Query `mode=list` + `KanbanBoard compact` | **洞察槽本号暂缓**（Catalog/PUT/Host 禁用）；留给首页工作台 OSC；协议与 compact 渲染器仍保留 |
+| 筛选联动 | 宿主 **筛选构建器** `hostFilter`；不绑 SearchDrawer | 同源 AND；跨实体须 `linkFilter`，无映射则「未联动」 |
 
-不进第一期：多图 ECharts、迷你表格。旧 `NamedView.insight.showStat/showChart/chartOption` 只读迁移兼容。配置建议落 ViewProfile **实体级** `DashboardJson`（与 `ViewsJson` 平级），不跟命名视图走。
+协议：`ICubeWidget` + `registerWidget`（C# 扫描 named；Vue `features/widget/registry.ts`）。聚合走 Query，禁止前端 N×GetList。上限 12 张 / 64KiB。`PUT dashboardJson: ""` 清除个人域并继承模板；显式 `{"version":1,"widgets":[]}` 表示用户清空、不继承。旧 `NamedView.insight` 仅在 DashboardJson 未配置时只读合成（`legacyChart` 禁止 PUT）。首页工作台不在本号。视图分享：embed 短令牌（`LoadToken` 接受非 JWT + Url 白名单）。
 
-安全：每个部件单独走源实体鉴权与 `DataPermission`；字段级 ACL 立项前，可见列与打开该实体列表时一致。不新造查询引擎；过重时再补按 `typePath` 鉴权的只读聚合（count/sum/group）。仪表盘与列表共用同一套后端筛选契约（§8.5.4）。
+安全：每部件单独鉴权 + `DataPermission` + 租户 Where（与 CreateWhere 同等）；无法翻译的 extraFilter → 400。Sources 只含 Detail 实体。未知 kind 占位；Query 403 → 锁卡，不跳登录。
 
 #### 8.5.4 查询演化：只留筛选，全部走后端（已拍板）
 
@@ -875,7 +878,7 @@ Draft → Accepted → Implementing → Validating → Done
 | 10 | ~~MFA UI~~（已实现）、~~E2E 冒烟~~（Playwright 3 spec）；FlowGram 设计器未做；流程运行时未建 | P1/P2 | 设计器 OSC-0010；运行时 §8.5.5 独立模块 |
 | 11 | ~~通用实体表单/列表/搜索元数据治理~~（OSC-0009 已落地） | P0 | ✅ 已解决；查询收口见 §8.5.4 |
 | 12 | ~~批量启停工具栏占位、AI 浮窗未接线、条件填色缺失~~（OSC-26081903c0） | P2 | ✅ 已解决；智能配色/日历甘特填色/会话历史另号 |
-| 13 | Insight 仍为 e483 单图上限，非页面级仪表盘 | P1 | §8.5.3 第一期 |
+| 13 | ~~Insight 仍为 e483 单图上限~~（OSC-2608280e9e：页面仪表盘 Widget 协议 + DashboardJson） | P1 | ✅ 已解决 |
 | 14 | 查询双轨（SearchDrawer + 筛选；无法下推则当前页假筛选） | P1 | §8.5.4 退役搜索、筛选全后端 |
 
 **文档一致性修正**：§7 与 §6.3 的「左侧抽屉」表述与本方案 §8.1 契约（`placement="right"`）及实际实现（右侧抽屉）不一致，本审查统一为「右侧抽屉」，并保留「飞书多维表为左抽屉」的范式差异说明。

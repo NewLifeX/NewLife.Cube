@@ -802,3 +802,54 @@ describe('viewProfile store queries (OSC-0016)', () => {
     expect(store.getQueries('Admin/User').queries.length).toBe(1);
   });
 });
+
+describe('viewProfile store dashboard (OSC-2608280e9e)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    getViewProfile.mockReset();
+    putViewProfile.mockReset();
+    getViewProfileTemplate.mockReset();
+    getViewProfileTemplate.mockResolvedValue({ data: null });
+    putViewProfile.mockResolvedValue({ data: {} });
+  });
+
+  it('null dashboardJson stays unconfigured; empty widgets is configured', async () => {
+    getViewProfile.mockResolvedValue({ data: { typePath: 'Admin/User' } });
+    const store = useViewProfileStore();
+    await store.load('Admin/User', ['Name']);
+    expect(store.getDashboard('Admin/User')).toBeNull();
+
+    getViewProfile.mockResolvedValue({
+      data: { typePath: 'Admin/User', dashboardJson: '{"version":1,"widgets":[]}' },
+    });
+    await store.load('Admin/User', ['Name']);
+    expect(store.getDashboard('Admin/User')?.widgets).toEqual([]);
+  });
+
+  it('updateDashboard PUTs dashboardJson only', async () => {
+    getViewProfile.mockResolvedValue({ data: { typePath: 'Admin/User' } });
+    const store = useViewProfileStore();
+    await store.load('Admin/User', ['Name']);
+    await store.updateDashboard('Admin/User', {
+      version: 1,
+      widgets: [
+        {
+          id: 'w1',
+          kind: 'metricCard',
+          title: '记录数',
+          layout: { w: 3, order: 0 },
+          source: { provider: 'entity.aggregate', typePath: 'Admin/User' },
+          query: { measure: { fn: 'count' } },
+        },
+      ],
+    });
+    expect(putViewProfile).toHaveBeenCalledWith(
+      expect.objectContaining({
+        typePath: 'Admin/User',
+        dashboardJson: expect.stringContaining('"w1"'),
+      }),
+    );
+    const payload = putViewProfile.mock.calls[0][0] as Record<string, unknown>;
+    expect(payload.viewsJson).toBeUndefined();
+  });
+});

@@ -1,6 +1,6 @@
 <template>
-  <div class="layout-content">
-    <TagsView />
+  <div class="layout-content" :class="{ 'layout-content--embed': embed }">
+    <TagsView v-if="!embed" />
     <!-- 滚动 + 外边距在外层，避免子内容撑宽后裁掉右侧 padding -->
     <div class="layout-content__scroll">
       <div class="layout-content__body" :class="contentWidthClass">
@@ -19,6 +19,7 @@ import { computed } from 'vue';
 import TagsView from '@/components/TagsView.vue';
 import { useTagsViewStore } from '@/stores/tagsView';
 import { useUserProfileStore } from '@/stores/userProfile';
+import { isEmbedMode } from '@/core/utils/embedMode';
 import type { ContentWidth } from '@/core/utils/userProfile';
 
 const props = defineProps<{
@@ -28,6 +29,7 @@ const props = defineProps<{
 
 const profileStore = useUserProfileStore();
 const tagsStore = useTagsViewStore();
+const embed = isEmbedMode();
 
 const contentWidth = computed<ContentWidth>(
   () => props.width || profileStore.layout.contentWidth,

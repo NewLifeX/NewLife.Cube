@@ -47,6 +47,8 @@ test('resolveRequestUrl: /Cube 实体（App）保留 /api', () => {
 test('resolveRequestUrl: /Cube 自动化服务去 /api', () => {
   assert.equal(resolveRequestUrl('http://host:5000/api', '/Cube/Automation'), 'http://host:5000/Cube/Automation');
   assert.equal(resolveRequestUrl('/api', '/Cube/Automation/Run'), '/Cube/Automation/Run');
+  assert.equal(resolveRequestUrl('http://host:5000/api', '/Cube/Widget/Query'), 'http://host:5000/Cube/Widget/Query');
+  assert.equal(resolveRequestUrl('/api', '/Cube/Widget/Sources'), '/Cube/Widget/Sources');
 });
 
 test('resolveRequestUrl: 绝对地址（含协议）原样返回', () => {
@@ -90,6 +92,8 @@ test('isServiceApiPath: /Cube 按动作区分', () => {
   assert.equal(isServiceApiPath('/Cube/Setting'), true);
   assert.equal(isServiceApiPath('/Cube/Automation'), true);
   assert.equal(isServiceApiPath('/Cube/Automation/Run'), true);
+  assert.equal(isServiceApiPath('/Cube/Widget'), true);
+  assert.equal(isServiceApiPath('/Cube/Widget/Query'), true);
   assert.equal(isServiceApiPath('/Cube/App'), false);
 });
 

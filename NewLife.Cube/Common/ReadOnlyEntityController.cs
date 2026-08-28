@@ -11,6 +11,7 @@ using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
+using NewLife.Security;
 using NewLife.Serialization;
 using NewLife.Web;
 using XCode;
@@ -140,6 +141,51 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         return new ApiResponse<Object>
         {
             Data = data,
+            TraceId = DefaultSpan.Current?.TraceId,
+        };
+    }
+
+    /// <summary>分享当前视图：签发 UserToken，供匿名以分享者权限打开（有效期可配）</summary>
+    /// <remarks>复用 Membership.UserToken + CubeSetting.ShareExpire；Url 锁定到本控制器路径（可带 viewId）。</remarks>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [DisplayName("分享")]
+    [HttpPost]
+    public virtual ApiResponse<Object> Share([FromBody] ShareViewRequest model)
+    {
+        var user = ManageProvider.User;
+        if (user == null)
+        {
+            return new ApiResponse<Object> { Code = 401, Message = "未授权" };
+        }
+
+        var expireSec = model?.ExpireSeconds > 0 ? model.ExpireSeconds : CubeSetting.Current.ShareExpire;
+        if (expireSec < 60) expireSec = 60;
+        // 最长 1 年（「长期」）；防止误配永久令牌
+        if (expireSec > 365 * 24 * 3600) expireSec = 365 * 24 * 3600;
+
+        var cs = GetControllerAction();
+        var path = cs[0].IsNullOrEmpty() ? $"/{cs[1]}" : $"/{cs[0]}/{cs[1]}";
+        var url = path;
+        if (model != null && !model.ViewId.IsNullOrEmpty()) url += "?viewId=" + model.ViewId;
+
+        var list = UserToken.FindAllByUserID(user.ID);
+        var ut = list.FirstOrDefault(e => e.Url.EqualIgnoreCase(url) && e.Enable && e.Expire > DateTime.Now);
+        ut ??= new UserToken { UserID = user.ID, Url = url };
+        if (ut.Token.IsNullOrEmpty()) ut.Token = Rand.NextString(16);
+        ut.Enable = true;
+        ut.Expire = DateTime.Now.AddSeconds(expireSec);
+        ut.Save();
+
+        WriteLog("分享", true, url);
+
+        return new ApiResponse<Object>
+        {
+            Data = new
+            {
+                token = ut.Token,
+                expire = ut.Expire,
+                path = url,
+            },
             TraceId = DefaultSpan.Current?.TraceId,
         };
     }

@@ -515,6 +515,11 @@ export interface ViewProfileModel {
    * JSON：add/edit/detail 的字段顺序/显隐/分组折叠；空壳（无任何模式）等价于未配置。
    */
   formJson?: string | null;
+  /**
+   * 页面仪表盘（OSC-2608280e9e）。JSON：{version:1, widgets:[]}；实体级，不跟命名视图走。
+   * 空串表示清除个人域（下次 GET 继承模板）；显式 `{"version":1,"widgets":[]}` 表示用户清空、不继承。
+   */
+  dashboardJson?: string | null;
   version?: number;
   remark?: string | null;
 }

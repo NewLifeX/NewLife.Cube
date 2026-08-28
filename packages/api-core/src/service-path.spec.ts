@@ -29,6 +29,9 @@ describe('isServiceApiPath', () => {
     expect(isServiceApiPath('/Cube/Automation')).toBe(true);
     expect(isServiceApiPath('/Cube/Automation/Run')).toBe(true);
     expect(isServiceApiPath('/Cube/Automation/Runs')).toBe(true);
+    expect(isServiceApiPath('/Cube/Widget')).toBe(true);
+    expect(isServiceApiPath('/Cube/Widget/Query')).toBe(true);
+    expect(isServiceApiPath('/Cube/Widget/Sources')).toBe(true);
   });
 
   it('treats Cube area entity controllers as non-service (need /api)', () => {

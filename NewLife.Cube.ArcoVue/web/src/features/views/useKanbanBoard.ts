@@ -21,6 +21,7 @@ interface KanbanBoardProps {
   typePath?: string;
   formatCell?: (field: FieldMeta, record: Record<string, unknown>) => string;
   formatRules?: ViewFormatRule[];
+  compact?: boolean;
 }
 
 /* ---------------- 滚动懒加载（每列先渲染 100 条，列内滚动到底动态追加） ---------------- */
@@ -83,6 +84,7 @@ export function useKanbanBoard(props: KanbanBoardProps) {
   }
 
   function bodyOf(row: Record<string, unknown>) {
+    if (props.compact) return [];
     return buildCardBodyFields(
       row,
       props.columns,

@@ -64,6 +64,14 @@ import {
   type ViewSort,
 } from '@/core/utils/viewProfile';
 import { canCreateViewKind, normalizePageSize } from '@/core/utils/viewMapping';
+import {
+  emptyDashboard,
+  hasDashboardDomain,
+  parseDashboardJson,
+  serializeDashboardJson,
+  validateDashboardForPut,
+  type DashboardConfig,
+} from '@cube/api-core';
 
 const SAVE_MS = 400;
 
@@ -100,6 +108,11 @@ type CacheEntry = {
   committedQueries: SavedQueriesWire;
   /** 当前应用的预定义查询 id（会话内存，不持久化；刷新后为 null） */
   activeQueryId: string | null;
+  /** 页面仪表盘（OSC-2608280e9e）：null=未配置（可合成旧 insight） */
+  dashboard: DashboardConfig | null;
+  committedDashboard: DashboardConfig | null;
+  dashboardDirty: boolean;
+  dashTimer: ReturnType<typeof setTimeout> | null;
   /** 个人视图域原始 ViewsJson；null=无个人域（回落模板/系统） */
   personalViewsJson: string | null;
   /** 全局模板视图域原始 ViewsJson；null=无模板 */
@@ -139,6 +152,10 @@ export const useViewProfileStore = defineStore('viewProfile', {
           queries: emptySavedQueries(),
           committedQueries: emptySavedQueries(),
           activeQueryId: null,
+          dashboard: null,
+          committedDashboard: null,
+          dashboardDirty: false,
+          dashTimer: null,
           pageSize: 0,
           committedPageSize: 0,
           formJson: emptyFormJson(),
@@ -219,6 +236,19 @@ export const useViewProfileStore = defineStore('viewProfile', {
       // 预定义查询为实体级个人配置（OSC-0016）：仅个人域，不走模板回退；activeQueryId 会话态不持久化
       entry.queries = parseQueriesWire(personal?.queriesJson ?? null, entry.fields);
       entry.activeQueryId = null;
+      // 仪表盘：个人 present > 系统管理员模板（ViewProfileTemplate / global）> null（再合成旧 insight）
+      // 后端 ViewProfile GET 也可能已把 global.DashboardJson 填入 personal；此处再兜底模板接口
+      const personalDash = hasDashboardDomain(personal?.dashboardJson)
+        ? parseDashboardJson(personal?.dashboardJson)
+        : null;
+      const templateDash = hasDashboardDomain(template?.dashboardJson)
+        ? parseDashboardJson(template?.dashboardJson)
+        : null;
+      entry.dashboard = personalDash ?? templateDash ?? null;
+      entry.committedDashboard = entry.dashboard
+        ? (JSON.parse(JSON.stringify(entry.dashboard)) as DashboardConfig)
+        : null;
+      entry.dashboardDirty = false;
       entry.viewsDirty = false;
       entry.filtersDirty = false;
       entry.dirty = false;
@@ -351,6 +381,101 @@ export const useViewProfileStore = defineStore('viewProfile', {
       if (!entry) return [];
       const v = getActiveView(entry.state);
       return v?.format ?? [];
+    },
+
+    /** 页面仪表盘：null 表示未配置（可合成旧 insight） */
+    getDashboard(typePath: string): DashboardConfig | null {
+      return this.byType[typePath]?.dashboard ?? null;
+    },
+
+    updateDashboard(typePath: string, cfg: DashboardConfig, immediate = true) {
+      const entry = this.byType[typePath];
+      if (!entry) return Promise.resolve();
+      entry.dashboard = cfg;
+      entry.dashboardDirty = true;
+      return this.scheduleDashboardSave(typePath, immediate);
+    },
+
+    scheduleDashboardSave(typePath: string, immediate?: boolean) {
+      const entry = this.byType[typePath];
+      if (!entry) return Promise.resolve();
+      if (entry.dashTimer) clearTimeout(entry.dashTimer);
+      if (immediate) return this.saveDashboardNow(typePath);
+      return new Promise<void>((resolve) => {
+        entry.dashTimer = setTimeout(() => {
+          entry.dashTimer = null;
+          void this.saveDashboardNow(typePath).then(() => resolve());
+        }, SAVE_MS);
+      });
+    },
+
+    async saveDashboardNow(typePath: string) {
+      const entry = this.byType[typePath];
+      if (!entry || !entry.dashboardDirty) return;
+      if (entry.dashTimer) {
+        clearTimeout(entry.dashTimer);
+        entry.dashTimer = null;
+      }
+      const rollback = entry.committedDashboard
+        ? (JSON.parse(JSON.stringify(entry.committedDashboard)) as DashboardConfig)
+        : null;
+      const json = serializeDashboardJson(entry.dashboard ?? emptyDashboard());
+      const valid = validateDashboardForPut(json);
+      if (!valid.ok) {
+        entry.dashboard = rollback;
+        entry.dashboardDirty = false;
+        Message.error(valid.error);
+        return;
+      }
+      try {
+        await cubeApi.profile.putViewProfile({ typePath, dashboardJson: valid.json });
+        // 系统管理员保存时同步写入全局模板，供其他用户未配置时回落
+        try {
+          const { useUserStore } = await import('@/stores/user');
+          if (useUserStore().userInfo?.isSystem) {
+            await cubeApi.profile.putViewProfileTemplate({
+              typePath,
+              dashboardJson: valid.json,
+            });
+          }
+        } catch {
+          /* 模板同步失败不阻断个人保存 */
+        }
+        entry.dashboardDirty = false;
+        entry.committedDashboard = entry.dashboard
+          ? (JSON.parse(JSON.stringify(entry.dashboard)) as DashboardConfig)
+          : emptyDashboard();
+      } catch (err) {
+        entry.dashboard = rollback;
+        entry.dashboardDirty = false;
+        Message.error(formatApiError(err, '保存仪表盘失败，已恢复上次配置'));
+      }
+    },
+
+    async restoreDashboardDomain(typePath: string) {
+      const entry = this.byType[typePath];
+      if (!entry) return;
+      try {
+        await cubeApi.profile.putViewProfile({ typePath, dashboardJson: '' });
+      } catch (err) {
+        Message.error(formatApiError(err, '恢复仪表盘失败'));
+        return;
+      }
+      // 清空个人域后回落系统管理员模板
+      let templateDash: DashboardConfig | null = null;
+      try {
+        const tpl = await cubeApi.profile.getViewProfileTemplate(typePath);
+        if (hasDashboardDomain(tpl.data?.dashboardJson)) {
+          templateDash = parseDashboardJson(tpl.data?.dashboardJson) ?? null;
+        }
+      } catch {
+        /* 无模板权限或失败 → null */
+      }
+      entry.dashboard = templateDash;
+      entry.committedDashboard = templateDash
+        ? (JSON.parse(JSON.stringify(templateDash)) as DashboardConfig)
+        : null;
+      entry.dashboardDirty = false;
     },
 
     /** 读取当前 typePath 的已保存筛选线缆（FiltersJson，OSC-0012） */
