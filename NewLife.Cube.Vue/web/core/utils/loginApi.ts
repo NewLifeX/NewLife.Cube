@@ -15,7 +15,7 @@
  * 业务调用方在 catch 中处理失败即可（无需自行弹错，避免重复提示）。
  */
 import request from './request';
-import type { ApiResponse, LoginConfig, LoginResult, OAuthProvider } from '@cube/api-core';
+import type { ApiResponse, LoginConfig, LoginResult, OAuthProvider, RegisterModel, VerifyStatus } from '@cube/api-core';
 
 /** 默认请求超时时间（毫秒） */
 const REQUEST_TIMEOUT = 15000;
@@ -64,6 +64,7 @@ function normalizeLoginConfig(data: LoginConfig): LoginConfig {
  *
  * 归一化后统一为 camelCase（accessToken / refreshToken / expireIn），
  * 与 @cube/api-core 的 LoginResult 类型定义一致。
+ * 注册待激活字段（pendingActivation/channels/targets）原样透传。
  *
  * @param data 后端原始返回的 LoginResult
  * @returns 归一化后的 LoginResult
@@ -84,6 +85,10 @@ function normalizeLoginResult(data: LoginResult): LoginResult {
       (raw.expireIn as number) ??
       (raw.expire_in as number) ??
       (raw.ExpireIn as number),
+    // 注册待激活透传
+    ...(raw.pendingActivation !== undefined ? { pendingActivation: !!raw.pendingActivation } : {}),
+    ...(raw.channels !== undefined ? { channels: raw.channels as string[] } : {}),
+    ...(raw.targets !== undefined ? { targets: raw.targets as string[] } : {}),
   };
 }
 
@@ -153,4 +158,121 @@ export async function loginByPassword(
   }
 
   return json;
+}
+
+// ── 注册 / 验证码 / 激活 / 安全中心 ─────────────────────────────────
+
+/**
+ * 注册新用户
+ *
+ * 调用 POST /Auth/Register。开启邮箱/手机验证时，
+ * 成功返回 data.pendingActivation=true（待激活），不返回 token。
+ *
+ * @param data 注册参数（category/username/email/mobile/password/confirmPassword/code/captchaId/captchaCode）
+ * @returns 注册结果：data.accessToken 表示已登录；data.pendingActivation 表示待激活
+ */
+export async function registerByForm(data: RegisterModel): Promise<ApiResponse<LoginResult>> {
+  const json = (await request.post(
+    '/Auth/Register',
+    data,
+    { timeout: REQUEST_TIMEOUT },
+  )) as unknown as ApiResponse<LoginResult>;
+
+  if (json?.data) {
+    json.data = normalizeLoginResult(json.data);
+  }
+
+  return json;
+}
+
+/**
+ * 发送验证码（注册/绑定等场景）
+ *
+ * @param channel 渠道：Sms / Mail
+ * @param username 手机号或邮箱
+ * @param action 场景：register / bind / reset / login
+ * @param captchaId 图片验证码 ID（LoginConfig.register.captcha / login.sendCode 为 true 时必填）
+ * @param captchaCode 图片验证码输入
+ */
+export async function sendCode(
+  channel: string,
+  username: string,
+  action: string,
+  captchaId?: string,
+  captchaCode?: string,
+): Promise<ApiResponse<number>> {
+  return (await request.post(
+    '/Auth/SendCode',
+    { channel, username, action, captchaId, captchaCode },
+    { timeout: REQUEST_TIMEOUT },
+  )) as unknown as ApiResponse<number>;
+}
+
+/**
+ * 获取图片验证码（SVG 算数题）
+ *
+ * 注册/发码需要图片验证码时（LoginConfig.register.captcha / login.sendCode），
+ * 先调用本接口获取 captchaId 与 SVG 文本，随提交请求一并回传。
+ */
+export async function fetchCaptcha(): Promise<ApiResponse<{ captchaId: string; image: string }>> {
+  return (await request.get('/Auth/Captcha', {
+    timeout: REQUEST_TIMEOUT,
+  })) as unknown as ApiResponse<{ captchaId: string; image: string }>;
+}
+
+/**
+ * 邮箱激活链接直达（激活邮件中的链接指向 /activate?token=&account=，激活页解析后调用）
+ */
+export async function activateByLink(
+  token: string,
+  account: string,
+): Promise<ApiResponse<{ activated: boolean }>> {
+  return (await request.get('/Auth/Activate', {
+    params: { token, account },
+    timeout: REQUEST_TIMEOUT,
+  })) as unknown as ApiResponse<{ activated: boolean }>;
+}
+
+/**
+ * 验证码激活（邮箱验证码/手机短信验证码）
+ */
+export async function activateByCode(
+  channel: string,
+  account: string,
+  code: string,
+): Promise<ApiResponse<{ activated: boolean }>> {
+  return (await request.post(
+    '/Auth/Activate',
+    { channel, account, code },
+    { timeout: REQUEST_TIMEOUT },
+  )) as unknown as ApiResponse<{ activated: boolean }>;
+}
+
+/**
+ * 重发激活。未激活账号重新发送激活邮件/短信（登录页「未激活？重新发送」）
+ */
+export async function sendActivateCode(
+  channel: string,
+  account: string,
+): Promise<ApiResponse<{ target: string }>> {
+  return (await request.post(
+    '/Auth/SendActivateCode',
+    { channel, username: account },
+    { timeout: REQUEST_TIMEOUT },
+  )) as unknown as ApiResponse<{ target: string }>;
+}
+
+/**
+ * 已登录用户验证/更换邮箱或手机（安全中心）。验证码经 sendCode(action=bind) 发送
+ */
+export async function verifyContact(
+  channel: string,
+  account: string,
+  code: string,
+): Promise<ApiResponse<VerifyStatus>> {
+  return (await request.post(
+    '/Auth/VerifyContact',
+    { channel, account, code },
+    { timeout: REQUEST_TIMEOUT },
+  )) as unknown as ApiResponse<VerifyStatus>;
 }

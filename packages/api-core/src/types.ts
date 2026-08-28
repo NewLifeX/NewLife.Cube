@@ -184,6 +184,10 @@ export interface UserInfo {
   roleName?: string;
   online?: boolean;
   enable?: boolean;
+  /** 邮箱已验证（安全中心展示验证状态） */
+  mailVerified?: boolean;
+  /** 手机已验证（安全中心展示验证状态） */
+  mobileVerified?: boolean;
   logins?: number;
   lastLogin?: string;
   lastLoginIP?: string;
@@ -199,6 +203,12 @@ export interface LoginResult {
   refreshToken?: string;
   /** 过期时间（秒） */
   expireIn?: number;
+  /** 是否待激活。true 表示注册成功但需先激活邮箱/手机才能登录（此时 accessToken 为空） */
+  pendingActivation?: boolean;
+  /** 已发送激活的渠道列表。mail/sms */
+  channels?: string[];
+  /** 对应渠道的脱敏目标 */
+  targets?: string[];
 
   // ---- 后端字段别名（由 client.ts normalizeLoginResult 统一归一化，请勿直接读取） ----
   /** @internal 后端 snake_case 兼容字段，请使用 accessToken */
@@ -247,6 +257,10 @@ export interface RegisterAbility {
   mail?: boolean;
   /** 注册时需要图片验证码 */
   captcha?: boolean;
+  /** 需要邮箱验证。注册后必须激活邮箱才能登录，注册表单须强制填写邮箱 */
+  requireMailVerify?: boolean;
+  /** 需要手机验证。注册后必须激活手机才能登录，注册表单须强制填写手机 */
+  requireMobileVerify?: boolean;
 }
 
 /** 安全策略配置 */
@@ -352,6 +366,34 @@ export interface ResetPasswordModel {
   confirmPassword: string;
   /** 挑战码标识 */
   challengeId?: string;
+}
+
+/** 激活参数。邮箱/手机验证码激活 */
+export interface ActivateModel {
+  /** 渠道。mail/sms */
+  channel: string;
+  /** 邮箱或手机号 */
+  account: string;
+  /** 验证码 */
+  code: string;
+}
+
+/** 验证联系方式参数。安全中心验证/更换邮箱或手机 */
+export interface VerifyContactModel {
+  /** 渠道。mail/sms */
+  channel: string;
+  /** 新邮箱或手机号 */
+  account: string;
+  /** 验证码（经 sendCode action=bind 发送） */
+  code: string;
+}
+
+/** 联系方式验证状态 */
+export interface VerifyStatus {
+  /** 邮箱已验证 */
+  mailVerified: boolean;
+  /** 手机已验证 */
+  mobileVerified: boolean;
 }
 
 /**

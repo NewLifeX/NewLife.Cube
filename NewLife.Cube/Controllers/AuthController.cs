@@ -23,12 +23,13 @@ namespace NewLife.Cube.Controllers;
 /// <param name="verifyCode">验证码服务</param>
 /// <param name="authEnhanced">增强认证服务</param>
 /// <param name="cacheProvider">缓存提供者</param>
+/// <param name="accountActivate">账号激活服务</param>
 [DisplayName("认证")]
 [ApiController]
 [Produces("application/json")]
 [Route("[controller]/[action]")]
 [Menu(0, false, Mode = MenuModes.Admin | MenuModes.Tenant)]
-public class AuthController(UserService userService, VerifyCodeService verifyCode, AuthEnhancedService authEnhanced, ICacheProvider cacheProvider) : ControllerBaseX
+public class AuthController(UserService userService, VerifyCodeService verifyCode, AuthEnhancedService authEnhanced, ICacheProvider cacheProvider, AccountActivateService accountActivate) : ControllerBaseX
 {
     private const String OAuthPendingPrefix = "OAuthPending:";
     private readonly ICache _cache = cacheProvider.Cache;
@@ -236,20 +237,84 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
         return data.ToOkApiResponse("ok");
     }
 
-    /// <summary>统一注册（用户名密码/手机验证码/邮箱验证码/OAuth回跳绑定）</summary>
+    /// <summary>统一注册（用户名密码/手机验证码/邮箱验证码/OAuth回跳绑定）。开启邮箱/手机验证时注册成功返回待激活信息，激活后方可登录</summary>
     /// <param name="model">注册模型</param>
-    /// <returns>注册并登录后的令牌</returns>
+    /// <returns>注册结果。正常返回访问令牌，待激活时返回 pendingActivation 信息</returns>
     [HttpPost]
     [AllowAnonymous]
-    public ApiResponse<TokenModel> Register(AuthRegisterModel model)
+    public async Task<ApiResponse<RegisterResult>> Register(AuthRegisterModel model)
     {
-        var res = new TokenModel();
-        var registerResult = authEnhanced.Register(model, HttpContext);
+        var res = new RegisterResult();
+        var registerResult = await authEnhanced.Register(model, HttpContext);
         if (!registerResult.IsSuccess || registerResult.Data == null)
             return res.ToFailApiResponse(registerResult.Message);
+
+        // 待激活：注册成功但需先激活邮箱/手机
+        if (registerResult.Data.PendingActivation)
+        {
+            res.PendingActivation = true;
+            res.Channels = registerResult.Data.Channels;
+            res.Targets = registerResult.Data.Targets;
+            res.ExpireIn = registerResult.Data.ExpireIn;
+            return res.ToOkApiResponse(registerResult.Message ?? "注册成功，请激活邮箱/手机");
+        }
 
         res.AccessToken = registerResult.Data.AccessToken;
         res.RefreshToken = registerResult.Data.RefreshToken;
         return res.ToOkApiResponse(registerResult.Message ?? "注册成功");
+    }
+
+    /// <summary>邮箱激活链接直达。激活邮件中的链接指向 {ActivateUrl}?token=&amp;account=，前端解析后调用本接口</summary>
+    /// <param name="token">一次性激活令牌</param>
+    /// <param name="account">邮箱</param>
+    /// <returns>激活结果，data 含 activated</returns>
+    [HttpGet]
+    [AllowAnonymous]
+    public ActionResult Activate(String token, String account)
+    {
+        var result = accountActivate.ActivateByMailToken(token, account, UserHost);
+        return Json(result.IsSuccess ? 0 : 1, result.Message, new { activated = result.IsSuccess });
+    }
+
+    /// <summary>验证码激活（邮箱验证码/手机短信验证码）</summary>
+    /// <param name="model">激活模型，channel 为 mail/sms，account 为邮箱或手机号</param>
+    /// <returns>激活结果，data 含 activated</returns>
+    [HttpPost]
+    [AllowAnonymous]
+    public ActionResult Activate(ActivateModel model)
+    {
+        var result = accountActivate.ActivateByCode(model.Channel, model.Account, model.Code, UserHost);
+        return Json(result.IsSuccess ? 0 : 1, result.Message, new { activated = result.IsSuccess });
+    }
+
+    /// <summary>重发激活。未激活账号重新发送激活邮件/短信（登录页「未激活？重新发送」入口）</summary>
+    /// <param name="model">验证码模型，channel 为 mail/sms，username 为邮箱或手机号</param>
+    /// <returns>发送结果，data 为脱敏目标</returns>
+    [HttpPost]
+    [AllowAnonymous]
+    public async Task<ActionResult> SendActivateCode(VerifyCodeModel model)
+    {
+        try
+        {
+            var result = await accountActivate.ResendActivation(model.Channel, model.Username, HttpContext, UserHost);
+            return Json(result.IsSuccess ? 0 : 1, result.Message, new { target = result.Data });
+        }
+        catch (Exception ex)
+        {
+            return Json(1, "发送失败：" + ex.Message);
+        }
+    }
+
+    /// <summary>已登录用户验证/更换邮箱或手机（安全中心）。验证码经 SendCode（action=bind）发送</summary>
+    /// <param name="model">验证模型，channel 为 mail/sms，account 为新邮箱或手机号，code 为验证码</param>
+    /// <returns>更新后的验证状态</returns>
+    [HttpPost]
+    [EntityAuthorize]
+    public ActionResult VerifyContact(VerifyContactModel model)
+    {
+        if (ManageProvider.User is not User user) throw new Exception("当前登录用户无效！");
+
+        var result = accountActivate.VerifyContact(user, model.Channel, model.Account, model.Code, UserHost);
+        return Json(result.IsSuccess ? 0 : 1, result.Message, result.Data);
     }
 }

@@ -457,6 +457,21 @@ public class CubeSetting : Config<CubeSetting>
     [Category("系统功能")]
     public Boolean EnableMail { get; set; }
 
+    /// <summary>需要邮箱验证。注册后必须激活邮箱才能登录，注册时必须提供邮箱，默认false</summary>
+    [Description("需要邮箱验证。注册后必须激活邮箱才能登录，注册时必须提供邮箱，默认false")]
+    [Category("系统功能")]
+    public Boolean RequireMailVerify { get; set; }
+
+    /// <summary>需要手机验证。注册后必须激活手机才能登录，注册时必须提供手机，默认false</summary>
+    [Description("需要手机验证。注册后必须激活手机才能登录，注册时必须提供手机，默认false")]
+    [Category("系统功能")]
+    public Boolean RequireMobileVerify { get; set; }
+
+    /// <summary>激活页地址。前端激活页URL，用于拼邮箱激活链接，如 https://xxx/activate；为空时按请求Host拼接/activate</summary>
+    [Description("激活页地址。前端激活页URL，用于拼邮箱激活链接，如 https://xxx/activate；为空时按请求Host拼接/activate")]
+    [Category("系统功能")]
+    public String ActivateUrl { get; set; }
+
     /// <summary>验证码场景。位掩码强制指定需要图片验证码的场景：0=不启用，1=登录，2=注册，4=发验证码（防短信轰炸），可组合，如3=登录+注册均需验证码。该开关为强制要求，不受风险自适应豁免，默认0</summary>
     [Description("验证码场景。位掩码强制：0=不启用，1=登录，2=注册，4=发验证码（防短信轰炸），可组合，如3=登录+注册均需验证码。强制要求不受自适应豁免，默认0")]
     [Category("系统功能")]

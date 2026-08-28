@@ -21,7 +21,8 @@ namespace NewLife.Cube.Services;
 /// <param name="passwordService">密码服务</param>
 /// <param name="tracer">追踪器</param>
 /// <param name="tenantContext">租户上下文</param>
-public class AuthEnhancedService(UserService userService, VerifyCodeService verifyCodeService, ICacheProvider cacheProvider, PasswordService passwordService, ITracer tracer, ITenantContext tenantContext)
+/// <param name="accountActivate">账号激活服务</param>
+public class AuthEnhancedService(UserService userService, VerifyCodeService verifyCodeService, ICacheProvider cacheProvider, PasswordService passwordService, ITracer tracer, ITenantContext tenantContext, AccountActivateService accountActivate)
 {
     #region 属性
     private readonly UserService _userService = userService;
@@ -29,6 +30,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
     private readonly ICache _cache = cacheProvider.Cache;
     private readonly PasswordService _passwordService = passwordService;
     private readonly ITenantContext _tenantContext = tenantContext;
+    private readonly AccountActivateService _accountActivate = accountActivate;
     #endregion
 
     #region 登录
@@ -263,26 +265,44 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
     #endregion
 
     #region 注册
-    /// <summary>统一注册入口，支持用户名密码、手机验证码、邮箱验证码注册。用户名/OAuth注册委托基础服务，验证码注册在本类实现</summary>
+    /// <summary>统一注册入口，支持用户名密码、手机验证码、邮箱验证码注册。用户名/OAuth注册委托基础服务，验证码注册在本类实现。开启邮箱/手机验证时走待激活流程</summary>
     /// <param name="model">注册模型</param>
     /// <param name="httpContext">HTTP上下文</param>
-    /// <returns>注册并登录结果</returns>
-    public ServiceResult<IToken> Register(AuthRegisterModel model, HttpContext httpContext)
+    /// <returns>注册结果。正常返回访问令牌，待激活时返回 pending 信息</returns>
+    public async Task<ServiceResult<RegisterResult>> Register(AuthRegisterModel model, HttpContext httpContext)
     {
         var set = CubeSetting.Current;
-        if (!set.AllowRegister) return new ServiceResult<IToken> { IsSuccess = false, Message = "禁止注册" };
-        if (model == null) return new ServiceResult<IToken> { IsSuccess = false, Message = "注册参数不能为空" };
+        if (!set.AllowRegister) return new ServiceResult<RegisterResult> { IsSuccess = false, Message = "禁止注册" };
+        if (model == null) return new ServiceResult<RegisterResult> { IsSuccess = false, Message = "注册参数不能为空" };
 
         // 租户识别：优先X-App-Id（参考SSO登录按AppId查找OAuth配置取租户），其次X-Tenant租户编码；均未传时不强制，沿用原逻辑
         var tenantError = httpContext.ResolveRegisterTenant();
-        if (tenantError != null) return new ServiceResult<IToken> { IsSuccess = false, Message = tenantError };
+        if (tenantError != null) return new ServiceResult<RegisterResult> { IsSuccess = false, Message = tenantError };
 
         // 图片验证码校验（场景强制 CaptchaScene 或 风险自适应 CaptchaRisk）
         var regIp = httpContext.GetUserHost();
         if (_verifyCode.RequireCaptcha(2, regIp, model?.Username, AuthHelper.GetDeviceId(httpContext)))
         {
             if (!_verifyCode.ValidateCaptcha(model.CaptchaId, model.CaptchaCode))
-                return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码错误或已过期，请刷新后重试" };
+                return new ServiceResult<RegisterResult> { IsSuccess = false, Message = "验证码错误或已过期，请刷新后重试" };
+        }
+
+        // 需要邮箱/手机验证：注册待激活（账号 Enable=false + 发送激活，不自动登录），激活后方可登录
+        if (set.RequireMailVerify || set.RequireMobileVerify)
+        {
+            var pending = await _accountActivate.RegisterPendingActivation(model, httpContext, regIp);
+            return new ServiceResult<RegisterResult>
+            {
+                IsSuccess = pending.IsSuccess,
+                Message = pending.Message,
+                Data = pending.IsSuccess ? new RegisterResult
+                {
+                    PendingActivation = true,
+                    Channels = pending.Data?.Channels,
+                    Targets = pending.Data?.Targets,
+                    ExpireIn = pending.Data?.ExpireIn ?? 0,
+                } : null,
+            };
         }
 
         var ip = httpContext.GetUserHost();
@@ -290,18 +310,26 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
 
         try
         {
-            return model.Category switch
+            var result = model.Category switch
             {
                 AuthCategory.Mobile => RegisterByPhoneCode(model, httpContext, ip),
                 AuthCategory.Mail => RegisterByMailCode(model, httpContext, ip),
                 AuthCategory.OAuth => _userService.RegisterByOAuthBind(model, httpContext, ip),
                 _ => _userService.RegisterByPassword(model, httpContext, ip),
             };
+
+            return new ServiceResult<RegisterResult>
+            {
+                IsSuccess = result.IsSuccess,
+                Message = result.Message,
+                MfaToken = result.MfaToken,
+                Data = result.Data == null ? null : new RegisterResult { AccessToken = result.Data.AccessToken, RefreshToken = result.Data.RefreshToken },
+            };
         }
         catch (Exception ex)
         {
             span?.SetError(ex, null);
-            return new ServiceResult<IToken> { IsSuccess = false, Message = ex.Message };
+            return new ServiceResult<RegisterResult> { IsSuccess = false, Message = ex.Message };
         }
     }
 

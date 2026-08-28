@@ -55,39 +55,102 @@
           </p>
         </div>
 
-        <!-- 密码登录表单（抽为独立展示组件，loginConfig 通过 prop 传入） -->
-        <LoginForm
-          v-if="showPasswordForm"
-          :login-config="loginConfig ?? undefined"
-          :submitting="submitting"
-          @submit="handleLogin"
-        />
+        <!-- 登录/注册 Tab -->
+        <div v-if="showPasswordForm || showRegister" class="login-tabs">
+          <button
+            type="button"
+            class="login-tab"
+            :class="{ active: activeTab === 'login' }"
+            data-tab="Login"
+            @click="switchTab('login')"
+          >
+            登 录
+          </button>
+          <button
+            v-if="showRegister"
+            type="button"
+            class="login-tab"
+            :class="{ active: activeTab === 'register' }"
+            data-tab="Register"
+            @click="switchTab('register')"
+          >
+            注 册
+          </button>
+        </div>
 
-        <!-- OAuth 第三方登录入口 -->
-        <div v-if="oauthProviders.length > 0" class="oauth-section">
-          <div v-if="showPasswordForm" class="oauth-divider">
-            <div class="divider-line"></div>
-            <span class="divider-text">其他登录方式</span>
-            <div class="divider-line"></div>
+        <!-- 注册成功待激活提示（开启邮箱/手机验证时注册后进入） -->
+        <div v-if="pendingActivation" class="pending-card">
+          <div class="pending-icon">✉</div>
+          <div class="pending-title">注册成功，请激活账号</div>
+          <div class="pending-desc">
+            激活{{ pendingActivation.channels?.includes('mail') ? '邮件' : '短信' }}已发送至
+            <strong>{{ pendingActivation.targets?.join('、') }}</strong>
+            ，请查收并完成激活。激活前无法登录。
           </div>
-          <div class="oauth-buttons">
+          <div class="pending-actions">
+            <button type="button" class="login-btn pending-btn" @click="backToLogin">返回登录</button>
             <button
-              v-for="item in oauthProviders"
-              :key="item.name"
+              v-if="pendingActivation.targets?.length"
               type="button"
-              class="oauth-btn"
-              @click="handleOAuth(item.name)"
+              class="link-btn"
+              @click="resendPending"
             >
-              <img
-                v-if="item.logo"
-                :src="resolveLogo(item.logo)"
-                class="oauth-logo"
-                :alt="item.nickName || item.name"
-              />
-              <span v-else class="oauth-name">{{ item.nickName || item.name }}</span>
+              重新发送
             </button>
           </div>
         </div>
+
+        <!-- 登录 -->
+        <template v-else-if="activeTab === 'login'">
+          <!-- 密码登录表单（抽为独立展示组件，loginConfig 通过 prop 传入） -->
+          <LoginForm
+            v-if="showPasswordForm"
+            :login-config="loginConfig ?? undefined"
+            :submitting="submitting"
+            @submit="handleLogin"
+          />
+
+          <!-- 未激活账号：重发激活入口 -->
+          <div v-if="notActivated" class="resend-row">
+            <span class="resend-text">账号未激活，请先激活后再登录</span>
+            <a class="resend-link" @click="openResend">重新发送激活</a>
+          </div>
+
+          <!-- OAuth 第三方登录入口 -->
+          <div v-if="oauthProviders.length > 0" class="oauth-section">
+            <div v-if="showPasswordForm" class="oauth-divider">
+              <div class="divider-line"></div>
+              <span class="divider-text">其他登录方式</span>
+              <div class="divider-line"></div>
+            </div>
+            <div class="oauth-buttons">
+              <button
+                v-for="item in oauthProviders"
+                :key="item.name"
+                type="button"
+                class="oauth-btn"
+                @click="handleOAuth(item.name)"
+              >
+                <img
+                  v-if="item.logo"
+                  :src="resolveLogo(item.logo)"
+                  class="oauth-logo"
+                  :alt="item.nickName || item.name"
+                />
+                <span v-else class="oauth-name">{{ item.nickName || item.name }}</span>
+              </button>
+            </div>
+          </div>
+        </template>
+
+        <!-- 注册 -->
+        <RegisterForm
+          v-else
+          :login-config="loginConfig ?? undefined"
+          :submitting="submitting"
+          @submit="handleRegister"
+          @send-code="handleSendCode"
+        />
 
         <!-- 配置加载失败提示 -->
         <div v-if="configError" class="config-error">
@@ -113,12 +176,19 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { getConfig } from '../configure';
 import { setAccessToken, setRefreshToken } from '../utils/token';
-import { fetchLoginConfig, loginByPassword } from '../utils/loginApi';
+import {
+  fetchLoginConfig,
+  loginByPassword,
+  registerByForm,
+  sendCode,
+  sendActivateCode,
+} from '../utils/loginApi';
 import LoginForm from './LoginForm.vue';
-import type { LoginConfig, OAuthProvider } from '@cube/api-core';
+import RegisterForm from './RegisterForm.vue';
+import type { LoginConfig, LoginResult, OAuthProvider } from '@cube/api-core';
 
 // ── 路由与配置 ──────────────────────────────────────────────────────
 const route = useRoute();
@@ -136,10 +206,21 @@ const loginConfig = ref<LoginConfig | null>(null);
 const configError = ref<string>('');
 /** 粒子画布引用 */
 const particleCanvas = ref<HTMLCanvasElement | null>(null);
+/** 当前 Tab：login / register */
+const activeTab = ref<'login' | 'register'>('login');
+/** 注册成功待激活信息（开启邮箱/手机验证时） */
+const pendingActivation = ref<LoginResult | null>(null);
+/** 登录时账号未激活（展示重发激活入口） */
+const notActivated = ref<boolean>(false);
+/** 未激活登录时记录的用户名，用于重发激活 */
+const notActivatedAccount = ref<string>('');
 
 // ── 计算属性 ────────────────────────────────────────────────────────
 /** 是否显示密码表单 */
 const showPasswordForm = computed<boolean>(() => loginConfig.value?.login?.password === true);
+
+/** 是否允许注册（显示注册 Tab） */
+const showRegister = computed<boolean>(() => loginConfig.value?.register?.enabled === true);
 
 /** OAuth 提供商列表 */
 const oauthProviders = computed<OAuthProvider[]>(() => {
@@ -148,7 +229,7 @@ const oauthProviders = computed<OAuthProvider[]>(() => {
 
 /** 系统名称 */
 const systemName = computed<string>(() => {
-  return loginConfig.value?.displayName || loginConfig.value?.name;
+  return loginConfig.value?.displayName || loginConfig.value?.name || '';
 });
 
 /** 登录页 Logo 地址（优先 loginLogo，其次 logo） */
@@ -240,6 +321,11 @@ async function handleLogin(payload: { username: string; password: string }): Pro
       const redirect = (route.query.redirect as string) || '/';
       router.push(redirect);
     } else {
+      // 账号未激活（需邮箱/手机验证）：展示重发激活入口
+      if (res.message?.includes('未激活')) {
+        notActivated.value = true;
+        notActivatedAccount.value = payload.username;
+      }
       ElMessage.error(res.message || '登录失败，请检查用户名和密码');
     }
   } catch (err: unknown) {
@@ -247,6 +333,146 @@ async function handleLogin(payload: { username: string; password: string }): Pro
     ElMessage.error(message);
   } finally {
     submitting.value = false;
+  }
+}
+
+// ── 注册 / 激活 / 重发 ──────────────────────────────────────────────
+
+/** 切换登录/注册 Tab */
+function switchTab(tab: 'login' | 'register'): void {
+  activeTab.value = tab;
+  notActivated.value = false;
+}
+
+/** 注册待激活后返回登录 */
+function backToLogin(): void {
+  pendingActivation.value = null;
+  activeTab.value = 'login';
+}
+
+/** 判断账号是邮箱还是手机号 */
+function detectChannel(account: string): 'mail' | 'sms' {
+  return /^1[3-9]\d{9}$/.test(account) ? 'sms' : 'mail';
+}
+
+/**
+ * 处理注册提交（容器层：仅负责与服务端交互）。
+ * 开启邮箱/手机验证时，注册成功返回 pendingActivation，展示待激活提示。
+ */
+async function handleRegister(payload: {
+  category: string;
+  username?: string;
+  email?: string;
+  mobile?: string;
+  password: string;
+  confirmPassword: string;
+  code?: string;
+}): Promise<void> {
+  submitting.value = true;
+  notActivated.value = false;
+  try {
+    // password 注册即默认用户名密码注册（category 缺省），邮箱/手机验证码注册传 mobile/mail
+    const category =
+      payload.category === 'password' ? undefined : (payload.category as 'mobile' | 'mail');
+    const res = await registerByForm({
+      category,
+      username: payload.username,
+      email: payload.email,
+      mobile: payload.mobile,
+      password: payload.password,
+      confirmPassword: payload.confirmPassword,
+      code: payload.code,
+    });
+
+    if (res.code === 0) {
+      if (res.data?.pendingActivation) {
+        // 待激活：展示激活邮件/短信已发送
+        pendingActivation.value = res.data;
+      } else if (res.data?.accessToken) {
+        // 注册成功已登录
+        setAccessToken(res.data.accessToken);
+        if (res.data.refreshToken) {
+          setRefreshToken(res.data.refreshToken);
+        }
+        ElMessage.success('注册成功，正在跳转...');
+        const redirect = (route.query.redirect as string) || '/';
+        router.push(redirect);
+      } else {
+        ElMessage.success(res.message || '注册成功');
+        activeTab.value = 'login';
+      }
+    } else {
+      ElMessage.error(res.message || '注册失败，请稍后重试');
+    }
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : '网络错误，请稍后重试';
+    ElMessage.error(message);
+  } finally {
+    submitting.value = false;
+  }
+}
+
+/**
+ * 处理注册表单发码（channel: mail/sms）
+ */
+async function handleSendCode(channel: 'mail' | 'sms', account: string): Promise<void> {
+  try {
+    const res = await sendCode(channel === 'mail' ? 'Mail' : 'Sms', account, 'register');
+    if (res.code === 0) {
+      ElMessage.success('验证码已发送，请查收');
+    } else {
+      ElMessage.error(res.message || '验证码发送失败');
+    }
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : '验证码发送失败';
+    ElMessage.error(message);
+  }
+}
+
+/**
+ * 未激活登录后「重新发送激活」：弹出输入框填写邮箱/手机号
+ */
+async function openResend(): Promise<void> {
+  try {
+    const { value } = await ElMessageBox.prompt(
+      '请输入注册时填写的邮箱或手机号',
+      '重新发送激活',
+      {
+        inputValue: notActivatedAccount.value || '',
+        inputPattern: /^([\w.+-]+@[\w-]+(\.[\w-]+)+|1[3-9]\d{9})$/,
+        inputErrorMessage: '请输入正确的邮箱或手机号',
+        confirmButtonText: '发送',
+        cancelButtonText: '取消',
+      },
+    );
+    if (value) {
+      await doResend(detectChannel(value), value.trim());
+    }
+  } catch {
+    // 用户取消
+  }
+}
+
+/** 注册待激活后「重新发送」 */
+async function resendPending(): Promise<void> {
+  const targets = pendingActivation.value?.targets ?? [];
+  if (targets.length === 0) return;
+  const account = targets[0];
+  await doResend(detectChannel(account), account);
+}
+
+/** 调用重发激活接口 */
+async function doResend(channel: 'mail' | 'sms', account: string): Promise<void> {
+  try {
+    const res = await sendActivateCode(channel === 'mail' ? 'Mail' : 'Sms', account);
+    if (res.code === 0) {
+      ElMessage.success(res.message || '激活邮件/短信已重新发送，请查收');
+    } else {
+      ElMessage.error(res.message || '重新发送失败');
+    }
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : '重新发送失败';
+    ElMessage.error(message);
   }
 }
 
@@ -697,6 +923,142 @@ onUnmounted(() => {
   margin: 8px 0 0;
   font-size: 15px;
   color: var(--el-text-color-regular);
+}
+
+/* ==================== 登录/注册 Tab ==================== */
+.login-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  padding: 4px;
+  background: var(--el-fill-color-light);
+  border-radius: 12px;
+}
+
+.login-tab {
+  flex: 1;
+  height: 38px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--el-text-color-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.login-tab.active {
+  background: var(--el-bg-color-overlay);
+  color: var(--el-color-primary);
+  box-shadow: var(--el-box-shadow-light);
+}
+
+.login-tab:hover:not(.active) {
+  color: var(--el-text-color-primary);
+}
+
+/* ==================== 待激活提示 ==================== */
+.pending-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 16px 0 4px;
+}
+
+.pending-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  border-radius: 50%;
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+}
+
+.pending-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+.pending-desc {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--el-text-color-regular);
+}
+
+.pending-desc strong {
+  color: var(--el-color-primary);
+  word-break: break-all;
+}
+
+.pending-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.pending-btn {
+  width: 100%;
+  height: 44px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--el-color-primary), var(--el-color-primary-dark-2));
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pending-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px var(--el-color-primary-light-5);
+}
+
+.link-btn {
+  border: none;
+  background: transparent;
+  color: var(--el-color-primary);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.link-btn:hover {
+  text-decoration: underline;
+}
+
+/* ==================== 未激活重发 ==================== */
+.resend-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 13px;
+}
+
+.resend-text {
+  color: var(--el-text-color-secondary);
+}
+
+.resend-link {
+  color: var(--el-color-primary);
+  cursor: pointer;
+}
+
+.resend-link:hover {
+  text-decoration: underline;
 }
 
 /* ==================== OAuth 区域 ==================== */

@@ -110,6 +110,34 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
         throw new NotSupportedException();
     }
 
+    /// <summary>发送激活验证码（邮箱激活链接+验证码，手机短信验证码）。用于账号激活与重发激活</summary>
+    /// <param name="channel">渠道。Sms/Mail</param>
+    /// <param name="account">邮箱或手机号</param>
+    /// <param name="link">激活链接。仅邮箱场景使用，含一次性令牌；手机场景传 null</param>
+    /// <param name="ip">客户端IP</param>
+    /// <returns>验证码记录</returns>
+    public async Task<VerifyCodeRecord> SendActivateCode(String channel, String account, String link, String ip)
+    {
+        if (account.IsNullOrEmpty()) throw new XException("邮箱/手机号不能为空");
+
+        var model = new VerifyCodeModel { Channel = channel, Username = account, Action = "activate" };
+
+        // 图片验证码校验（发码场景可信设备不豁免，防轰炸）
+        if (RequireCaptcha(4, ip, account, null))
+        {
+            if (!_captcha.Validate(model.CaptchaId, model.CaptchaCode))
+                throw new XException("图片验证码错误或已过期，请刷新后重试");
+        }
+
+        if (channel.EqualIgnoreCase("Mail") || ValidFormatHelper.IsEmail(account))
+            return await SendMailCode(model, ip, link);
+
+        if (channel.EqualIgnoreCase("Sms") || ValidFormatHelper.IsMobile(account))
+            return await SendSmsCode(model, ip);
+
+        throw new NotSupportedException($"不支持的激活渠道[{channel}]");
+    }
+
     /// <summary>短信验证码发送逻辑</summary>
     /// <param name="model">验证码模型</param>
     /// <param name="ip">客户端IP</param>
@@ -188,9 +216,10 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
     /// <summary>邮箱发送逻辑</summary>
     /// <param name="model">验证码模型</param>
     /// <param name="ip">客户端IP</param>
+    /// <param name="link">激活链接。仅 activate 场景使用</param>
     /// <returns></returns>
     /// <exception cref="XException"></exception>
-    private async Task<VerifyCodeRecord> SendMailCode(VerifyCodeModel model, String ip)
+    private async Task<VerifyCodeRecord> SendMailCode(VerifyCodeModel model, String ip, String link = null)
     {
         var mail = model.Username?.Trim() ?? "";
         if (mail.IsNullOrEmpty()) throw new XException("邮件地址不能为空");
@@ -222,7 +251,7 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
         {
             // 发送邮件验证码
             var code = MailService.GenerateVerifyCode();
-            var rs = await mailService.SendVerifyCode(model.Action, mail, code, config);
+            var rs = await mailService.SendVerifyCode(model.Action, mail, code, config, link);
             if (rs == null || !rs.Success) throw new XException("邮件发送失败");
 
             // 缓存验证码用于校验
@@ -249,7 +278,7 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
     }
 
     /// <summary>根据Action获取短信缓存前缀</summary>
-    /// <param name="action">操作类型：login/bind/reset</param>
+    /// <param name="action">操作类型：login/bind/reset/activate</param>
     /// <returns>IP前缀、最后发送前缀、验证码前缀</returns>
     private (String ipPrefix, String lastSendPrefix, String codePrefix) GetSmsCachePrefix(String action)
     {
@@ -259,13 +288,14 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
             "reset" => (AuthCacheKeys.SmsResetIpPrefix, AuthCacheKeys.SmsResetLastSendPrefix, AuthCacheKeys.SmsResetCodePrefix),
             "register" => (AuthCacheKeys.SmsRegisterIpPrefix, AuthCacheKeys.SmsRegisterLastSendPrefix, AuthCacheKeys.SmsRegisterCodePrefix),
             "login" => (AuthCacheKeys.SmsLoginIpPrefix, AuthCacheKeys.SmsLoginLastSendPrefix, AuthCacheKeys.SmsLoginCodePrefix),
+            "activate" => (AuthCacheKeys.SmsActivateIpPrefix, AuthCacheKeys.SmsActivateLastSendPrefix, AuthCacheKeys.SmsActivateCodePrefix),
             "notify" => (AuthCacheKeys.SmsNotifyIpPrefix, AuthCacheKeys.SmsNotifyLastSendPrefix, AuthCacheKeys.SmsNotifyCodePrefix),
             _ => (AuthCacheKeys.SmsNotifyIpPrefix, AuthCacheKeys.SmsNotifyLastSendPrefix, AuthCacheKeys.SmsNotifyCodePrefix),
         };
     }
 
     /// <summary>根据Action获取邮件缓存前缀</summary>
-    /// <param name="action">操作类型：login/bind/reset</param>
+    /// <param name="action">操作类型：login/bind/reset/activate</param>
     /// <returns>IP前缀、最后发送前缀、验证码前缀</returns>
     private (String ipPrefix, String lastSendPrefix, String codePrefix) GetMailCachePrefix(String action)
     {
@@ -275,6 +305,7 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
             "reset" => (AuthCacheKeys.MailResetIpPrefix, AuthCacheKeys.MailResetLastSendPrefix, AuthCacheKeys.MailResetCodePrefix),
             "register" => (AuthCacheKeys.MailRegisterIpPrefix, AuthCacheKeys.MailRegisterLastSendPrefix, AuthCacheKeys.MailRegisterCodePrefix),
             "login" => (AuthCacheKeys.MailLoginIpPrefix, AuthCacheKeys.MailLoginLastSendPrefix, AuthCacheKeys.MailLoginCodePrefix),
+            "activate" => (AuthCacheKeys.MailActivateIpPrefix, AuthCacheKeys.MailActivateLastSendPrefix, AuthCacheKeys.MailActivateCodePrefix),
             "notify" => (AuthCacheKeys.MailNotifyIpPrefix, AuthCacheKeys.MailNotifyLastSendPrefix, AuthCacheKeys.MailNotifyCodePrefix),
             _ => (AuthCacheKeys.MailNotifyIpPrefix, AuthCacheKeys.MailNotifyLastSendPrefix, AuthCacheKeys.MailNotifyCodePrefix),
         };
