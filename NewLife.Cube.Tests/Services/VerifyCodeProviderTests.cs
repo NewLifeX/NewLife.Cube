@@ -3,10 +3,10 @@ using System.Threading.Tasks;
 using NewLife.Cube.Services;
 using Xunit;
 
-namespace XUnitTest;
+namespace NewLife.Cube.Tests.Services;
 
-/// <summary>邮箱/手机验证（账号激活）模板单元测试。覆盖激活邮件/短信模板渲染；服务与模型测试见 NewLife.Cube.Tests（API 版）</summary>
-public class AccountActivateTests
+/// <summary>邮箱/手机验证码提供者模板单元测试。覆盖激活邮件/短信模板渲染；服务与模型测试见 AccountActivateTests</summary>
+public class VerifyCodeProviderTests
 {
     #region 激活邮件模板
     private class TestSmtpMail : SmtpMailVerifyCode

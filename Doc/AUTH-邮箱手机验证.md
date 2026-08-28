@@ -361,7 +361,7 @@ sequenceDiagram
 | `AuthController` | `NewLife.Cube/Controllers/AuthController.cs` | 暴露 §3 全部端点（薄封装） |
 | `MailService.SendActivate` | `NewLife.Cube/Services/MailService.cs` | 发送激活邮件（链接+验证码），记验证表 |
 | `SmsService.SendActivate` | `NewLife.Cube/Services/SmsService.cs` | 发送激活短信（验证码），记验证表 |
-| `IMailVerifyCode.SendActivate` / `SmtpMailVerifyCode` | `NewLife.CubeNC/Services/`（双编译共享） | 激活邮件提供者：`ActivateSubjectTemplate`/`ActivateBodyTemplate`，`{link}`/`{code}`/`{expire}` 占位 |
+| `IMailVerifyCode.SendActivate` / `SmtpMailVerifyCode` | `NewLife.Cube/Services/`（三代 API 原生，二代 MVC 不再包含） | 激活邮件提供者：`ActivateSubjectTemplate`/`ActivateBodyTemplate`，`{link}`/`{code}`/`{expire}` 占位 |
 | `ISmsVerifyCode.SendActivate` / `AliyunSmsVerifyCode` | 同上 | 激活短信模板 `100005` |
 | `CubeSetting` | `NewLife.Cube/Setting.cs` | 三个新配置项（§2.1） |
 | `LoginConfigModel` | `NewLife.CubeNC/ViewModels/LoginConfigModel.cs` | `Register.RequireMailVerify/RequireMobileVerify` 下发 |

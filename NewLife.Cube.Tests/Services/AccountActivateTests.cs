@@ -5,7 +5,7 @@ using Xunit;
 
 namespace NewLife.Cube.Tests.Services;
 
-/// <summary>邮箱/手机验证（账号激活）单元测试。覆盖联系方式脱敏与模型默认值（API 版）；激活邮件/短信模板测试见 XUnitTest</summary>
+/// <summary>邮箱/手机验证（账号激活）单元测试。覆盖联系方式脱敏与模型默认值（API 版）；激活邮件/短信模板测试见 VerifyCodeProviderTests</summary>
 public class AccountActivateTests
 {
     #region 脱敏

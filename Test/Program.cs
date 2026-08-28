@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using NewLife.Cube.Services;
 using NewLife.Data;
 using NewLife.Log;
 using NewLife.Serialization;
@@ -11,18 +10,9 @@ namespace Test
 {
     class Program
     {
-        static async Task Main(String[] args)
+        static void Main(String[] args)
         {
             XTrace.UseConsole();
-
-            try
-            {
-                await Test3();
-            }
-            catch (Exception ex)
-            {
-                XTrace.WriteException(ex);
-            }
 
             Console.WriteLine("OK!");
             Console.ReadKey();
@@ -80,17 +70,6 @@ namespace Test
 
             var html2 = await http.GetStringAsync(url2);
             XTrace.WriteLine(html2);
-        }
-
-        static async Task Test3()
-        {
-            var sms = new AliyunSmsVerifyCode();
-            sms.SignName = "速通互联验证码";
-            sms.Client.AccessKeyId = "";
-            sms.Client.AccessKeySecret = "";
-
-            var rs = await sms.SendBind("");
-            XTrace.WriteLine(rs);
         }
 
         /// <summary>分段下载</summary>
