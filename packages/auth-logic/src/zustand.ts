@@ -12,12 +12,18 @@
  */
 
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
-import { type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo } from '@cube/api-core';
+import { type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo, type ApiResponse, type LoginResult, type AuthCategory } from '@cube/api-core';
 import { AuthLogic, ForgotPasswordLogic, RegisterLogic, type AuthState, type ForgotPasswordState, type RegisterState } from './index';
 
 export interface ZustandAuthState extends AuthState {
   isLoggedIn: () => boolean;
-  login: (username: string, password: string) => Promise<void>;
+  /**
+   * 密码登录（自动尝试 RSA-OAEP Challenge 加密）。
+   * 返回完整响应供调用方检查 pendingActivation / mfa_required 等。
+   */
+  login: (username: string, password: string, captchaId?: string, captchaCode?: string) => Promise<ApiResponse<LoginResult>>;
+  /** 验证码登录（手机/邮箱，category 为 'mobile' | 'mail'） */
+  loginByCode: (username: string, code: string, category: AuthCategory, captchaId?: string, captchaCode?: string) => Promise<ApiResponse<LoginResult>>;
   logout: () => Promise<void>;
   fetchUserInfo: () => Promise<UserInfo>;
   fetchMenus: () => Promise<MenuItem[]>;
@@ -42,9 +48,11 @@ export function createZustandAuthStore(api: CubeApi): UseBoundStore<StoreApi<Zus
 
       isLoggedIn: () => !!api.tokenManager.getToken(),
 
-      login: async (username, password) => {
-        const res = await logic.login(username, password);
-      },
+      login: (username, password, captchaId, captchaCode) =>
+        logic.login(username, password, captchaId, captchaCode),
+
+      loginByCode: (username, code, category, captchaId, captchaCode) =>
+        logic.loginByCode(username, code, category, captchaId, captchaCode),
 
       logout: async () => {
         await logic.logout();
