@@ -68,6 +68,8 @@ export interface FieldMeta {
   name: string;
   /** 显示名（中文标签） */
   displayName?: string;
+  /** 分类（配置页表单分组，对应后端 [Category]） */
+  category?: string;
   /** CLR 类型名：String / Int32 / Int64 / Decimal / Double / Single / Boolean / DateTime / TimeSpan / Enum / Guid / 枚举真实类型名 */
   typeName: string;
   /** 后端 ItemType：image / file / json / html / markdown / color / icon / mail / mobile / url / singleSelect / multipleSelect / date / time 等 */
@@ -112,6 +114,7 @@ export function toFieldMeta(field: DataField): FieldMeta {
   return {
     name: field.name,
     displayName: field.displayName,
+    category: field.category,
     typeName: field.typeName ?? 'String',
     itemType: field.itemType,
     length: field.length,

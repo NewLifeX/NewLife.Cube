@@ -8,6 +8,8 @@
 [Rr]elease/
 [Rr]eleases/
 [Cc]onfig/
+# React 皮肤前端源码目录（配置页视图）放行，其余 Config 配置目录（XCode.config 等）继续忽略
+!NewLife.Cube.React/web/src/views/config/
 [Ll]og/
 x64/
 x86/

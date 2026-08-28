@@ -24,13 +24,14 @@ export default function HomePage() {
 
   // 常用菜单入口：递归收集任意层级的叶子菜单（children 为空且有 url），取前 12 个
   // 注：不能只取"无 children 的顶层菜单"——顶层通常都是分组（含子菜单），会导致入口永远为空
+  // 注：过滤后端区域根菜单（~/Ai 等，前端无对应页面，点击会 404）
   const topMenus = useMemo(() => {
     const leaves: MenuItem[] = [];
     const walk = (items: MenuItem[]) => {
       for (const item of items) {
         if (item.children?.length) {
           walk(item.children);
-        } else if (item.visible !== false && item.url) {
+        } else if (item.visible !== false && item.url && item.url !== '~' && !item.url.startsWith('~/')) {
           leaves.push(item);
         }
       }
