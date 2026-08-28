@@ -370,9 +370,12 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
         if (ValidFormatHelper.IsEmail(target))
         {
             var at = target.IndexOf('@');
+            if (at <= 0) return target;
+
+            // 本地部分至少保留首尾各 1 个字符；过短（≤2 字符）时整体脱敏，仅保留 @域名后缀
             if (at > 2)
                 return target[..1] + "***" + target[(at - 1)..];
-            return target;
+            return "***" + target[at..];
         }
 
         if (target.Length == 11)
