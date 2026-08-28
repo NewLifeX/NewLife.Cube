@@ -12,6 +12,12 @@
     //var role = Model.Role as Role;
     var menus = Menu.Root.AllChilds;
     //var pfs = EnumHelper.GetDescriptions<PermissionFlags>().Where(e => e.Key > PermissionFlags.None);
+
+    // 租户管理员（在租户上下文中操作、且本身不是系统管理员）只能看到并授予自己拥有的权限
+    var current = ManageProvider.User as IUser;
+    var restricted = TenantContext.CurrentId > 0 && (current == null || !current.Roles.Any(e => e.IsSystem));
+    // 判断当前操作者是否拥有某资源的某项权限（不受限时视为全部拥有）
+    Func<IMenu, PermissionFlags, Boolean> owns = (m, f) => !restricted || (current != null && current.Has(m, f));
 }
 <script type="text/javascript">
     $(function () {
@@ -136,6 +142,8 @@
             <tbody>
                 @foreach (var entity in menus)
                 {
+                    // 受限管理员：跳过自己无任何权限的叶子资源，不予展示
+                    if (restricted && entity.Childs.Count == 0 && !entity.Permissions.Any(e => owns(entity, (PermissionFlags)e.Key))) { continue; }
                     <tr>
                         <td>@entity.TreeNodeName</td>
                         <td>@entity.DisplayName</td>
@@ -145,6 +153,8 @@
                             {
                                 foreach (var item in entity.Permissions.OrderBy(e => e.Key))
                                 {
+                                    // 受限管理员：只展示自己拥有的权限子项，避免越界勾选
+                                    if (!owns(entity, (PermissionFlags)item.Key)) { continue; }
                                     var id = "pf" + entity.ID + "_" + ((Int32)item.Key);
                                     @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID, @proparentkey = "pro_" + item.Key + "_" + entity.ParentID, @prokey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.ParentID, @dataid = entity.ID })
                                     @Html.Label(id, item.Value)

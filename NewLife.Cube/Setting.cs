@@ -457,6 +457,21 @@ public class CubeSetting : Config<CubeSetting>
     [Category("系统功能")]
     public Boolean EnableMail { get; set; }
 
+    /// <summary>需要邮箱验证。注册后必须激活邮箱才能登录，注册时必须提供邮箱，默认false</summary>
+    [Description("需要邮箱验证。注册后必须激活邮箱才能登录，注册时必须提供邮箱，默认false")]
+    [Category("系统功能")]
+    public Boolean RequireMailVerify { get; set; }
+
+    /// <summary>需要手机验证。注册后必须激活手机才能登录，注册时必须提供手机，默认false</summary>
+    [Description("需要手机验证。注册后必须激活手机才能登录，注册时必须提供手机，默认false")]
+    [Category("系统功能")]
+    public Boolean RequireMobileVerify { get; set; }
+
+    /// <summary>激活页地址。前端激活页URL，用于拼邮箱激活链接，如 https://xxx/activate；为空时按请求Host拼接/activate</summary>
+    [Description("激活页地址。前端激活页URL，用于拼邮箱激活链接，如 https://xxx/activate；为空时按请求Host拼接/activate")]
+    [Category("系统功能")]
+    public String ActivateUrl { get; set; }
+
     /// <summary>验证码场景。位掩码强制指定需要图片验证码的场景：0=不启用，1=登录，2=注册，4=发验证码（防短信轰炸），可组合，如3=登录+注册均需验证码。该开关为强制要求，不受风险自适应豁免，默认0</summary>
     [Description("验证码场景。位掩码强制：0=不启用，1=登录，2=注册，4=发验证码（防短信轰炸），可组合，如3=登录+注册均需验证码。强制要求不受自适应豁免，默认0")]
     [Category("系统功能")]
@@ -491,6 +506,41 @@ public class CubeSetting : Config<CubeSetting>
     [Description("文件存储拉取文件。是否主动拉取其他节点发布的新文件，默认true")]
     [Category("系统功能")]
     public Boolean FileStorageFetch { get; set; } = true;
+
+    /// <summary>文件存储拉取超时。下载本地缺失文件时等待其他节点同步的最大时间（毫秒），默认5000</summary>
+    [Description("文件存储拉取超时。下载本地缺失文件时等待其他节点同步的最大时间（毫秒），默认5000")]
+    [Category("系统功能")]
+    public Int32 FileStorageFetchTimeout { get; set; } = 5_000;
+
+    /// <summary>附件存储类型。Local本地磁盘，Oss阿里云，Cos腾讯云，Qiniu七牛，EasyIO易对象，默认Local</summary>
+    [Description("附件存储类型。Local本地磁盘，Oss阿里云，Cos腾讯云，Qiniu七牛，EasyIO易对象，默认Local")]
+    [Category("系统功能")]
+    public String AttachmentStorage { get; set; } = "Local";
+
+    /// <summary>对象存储服务器。OSS/COS/七牛S3兼容端点，如 oss-cn-beijing.aliyuncs.com</summary>
+    [Description("对象存储服务器。OSS/COS/七牛S3兼容端点，如 oss-cn-beijing.aliyuncs.com")]
+    [Category("系统功能")]
+    public String ObjectStorageServer { get; set; }
+
+    /// <summary>对象存储桶。OSS/COS/七牛存储桶名称</summary>
+    [Description("对象存储桶。OSS/COS/七牛存储桶名称")]
+    [Category("系统功能")]
+    public String ObjectStorageBucket { get; set; }
+
+    /// <summary>对象存储区域。用于S3签名作用域，如 cn-beijing / ap-beijing / cn-east-1</summary>
+    [Description("对象存储区域。用于S3签名作用域，如 cn-beijing / ap-beijing / cn-east-1")]
+    [Category("系统功能")]
+    public String ObjectStorageRegion { get; set; } = "cn-north-1";
+
+    /// <summary>对象存储应用标识。AccessKeyId</summary>
+    [Description("对象存储应用标识。AccessKeyId")]
+    [Category("系统功能")]
+    public String ObjectStorageAppId { get; set; }
+
+    /// <summary>对象存储应用密钥。AccessKeySecret</summary>
+    [Description("对象存储应用密钥。AccessKeySecret")]
+    [Category("系统功能")]
+    public String ObjectStorageSecret { get; set; }
 
     /// <summary>数据保留时间。审计日志与OAuth日志，默认30天</summary>
     [Description("数据保留时间。审计日志与OAuth日志，默认30天")]

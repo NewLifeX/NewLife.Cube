@@ -12,6 +12,44 @@
         <small>启用后显示在工作台，禁用后立即隐藏（全局配置，存 Parameter 表）</small>
     </h1>
 </div>
+<div class="panel panel-default" style="max-width:760px;">
+    <div class="panel-heading">
+        <i class="fa fa-sort-amount-asc"></i> 分组显示顺序
+        <small class="text-muted">同组卡片默认聚合显示；未列出的组排到最后并按名称排序（逗号分隔，如：系统,个人,通用,IoT）</small>
+    </div>
+    <div class="panel-body">
+        <div class="input-group">
+            <input type="text" id="group-order" class="form-control" value="@(ViewBag.GroupOrder)" placeholder="系统,个人,通用" />
+            <span class="input-group-btn">
+                <button type="button" class="btn btn-primary" onclick="saveGroupOrder()">保存</button>
+            </span>
+        </div>
+    </div>
+</div>
+@{
+    var groupItems = ViewBag.GroupItems as IDictionary<String, IList<String>> ?? new Dictionary<String, IList<String>>();
+    var titles = list.ToDictionary(e => e.Name, e => e.Title, StringComparer.OrdinalIgnoreCase);
+}
+@if (groupItems.Count > 0)
+{
+    <div class="panel panel-default" style="max-width:760px;">
+        <div class="panel-heading">
+            <i class="fa fa-list-ol"></i> 组内默认顺序
+            <small class="text-muted">每组一行，逗号分隔部件名；未填写的组按部件 Sort 排序；新部件自动排到组内末尾</small>
+        </div>
+        <div class="panel-body">
+            @foreach (var kv in groupItems)
+            {
+                <div class="form-group" style="margin-bottom:8px;">
+                    <label style="font-weight:600;margin-bottom:2px;">@kv.Key</label>
+                    <input type="text" class="form-control group-item-order" data-group="@kv.Key"
+                           value="@(String.Join(",", kv.Value))" title="@(String.Join(", ", kv.Value.Select(n => titles.TryGetValue(n, out var t) ? $"{n}({t})" : n)))" />
+                </div>
+            }
+            <button type="button" class="btn btn-primary" onclick="saveGroupItems()">保存组内顺序</button>
+        </div>
+    </div>
+}
 <table class="table table-bordered table-hover table-striped table-condensed table-data-list">
     <thead>
         <tr>
@@ -53,6 +91,21 @@
             $.post('@Url.Action("Enable")', { name: name, enable: enable }, function () {
                 location.reload();
             });
+        }
+
+        function saveGroupOrder() {
+            $.post('@Url.Action("SaveGroupOrder")', { groups: $('#group-order').val() }, function () {
+                location.reload();
+            });
+        }
+
+        function saveGroupItems() {
+            // 等待所有组内顺序 POST 完成后再刷新，避免 reload 中断未完成的请求
+            var posts = [];
+            $('.group-item-order').each(function () {
+                posts.push($.post('@Url.Action("SaveGroupItemOrder")', { group: $(this).data('group'), names: $(this).val() }));
+            });
+            $.when.apply($, posts).then(function () { location.reload(); });
         }
     </script>
 }

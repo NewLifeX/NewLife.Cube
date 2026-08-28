@@ -154,6 +154,9 @@ public class SmsService(ICacheProvider cacheProvider)
                 case "reset":
                     record.Result = await provider.SendReset(mobile, code, config.Expire);
                     break;
+                case "activate":
+                    record.Result = await provider.SendActivate(mobile, code, config.Expire);
+                    break;
                 case "notify":
                 default://TODO 通知
                     //record.Result = await provider.SendNotify(mobile, code, config.Expire);

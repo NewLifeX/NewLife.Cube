@@ -20,6 +20,25 @@ const routes: ConfigRoute[] = [
     component: () => import('../pages/PageLogin'),
   },
   {
+    path: '/activate',
+    name: 'activate',
+    meta: {
+      title: '账号激活',
+      auth: false,
+      layout: false,
+    },
+    component: () => import('../pages/ActivatePage.vue'),
+  },
+  {
+    path: '/profile/security',
+    name: 'profile-security',
+    meta: {
+      title: '安全中心',
+      auth: true,
+    },
+    component: () => import('../pages/ProfileSecurity.vue'),
+  },
+  {
     path: '/unauthorized',
     name: 'unauthorized',
     meta: {

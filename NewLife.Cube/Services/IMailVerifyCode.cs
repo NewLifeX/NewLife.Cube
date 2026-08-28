@@ -33,4 +33,13 @@ public interface IMailVerifyCode
     /// <param name="options">可选项</param>
     /// <returns>发送结果</returns>
     Task<String> SendBind(String mail, String code, Int32 expire, MailVerifyCodeOptions options = null);
+
+    /// <summary>发送激活邮件。含激活链接与验证码</summary>
+    /// <param name="mail">邮箱地址</param>
+    /// <param name="link">激活链接</param>
+    /// <param name="code">验证码。未指定时内部生成</param>
+    /// <param name="expire">有效期。秒</param>
+    /// <param name="options">可选项</param>
+    /// <returns>发送结果</returns>
+    Task<String> SendActivate(String mail, String link, String code, Int32 expire, MailVerifyCodeOptions options = null);
 }

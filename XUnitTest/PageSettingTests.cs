@@ -24,6 +24,7 @@ public class PageSettingTests
         Assert.True(setting.EnableTableDoubleClick);
         Assert.True(setting.OrderByKey);
         Assert.True(setting.DoubleDelete);
+        Assert.True(setting.EnableTotalCount);
     }
 
     [Fact]
@@ -42,7 +43,8 @@ public class PageSettingTests
             IsReadOnly = true,
             EnableTableDoubleClick = false,
             OrderByKey = false,
-            DoubleDelete = false
+            DoubleDelete = false,
+            EnableTotalCount = false
         };
 
         Assert.Equal("_Nav", setting.NavView);
@@ -56,6 +58,7 @@ public class PageSettingTests
         Assert.False(setting.EnableTableDoubleClick);
         Assert.False(setting.OrderByKey);
         Assert.False(setting.DoubleDelete);
+        Assert.False(setting.EnableTotalCount);
     }
 
     [Fact]

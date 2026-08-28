@@ -136,6 +136,14 @@ public partial class Attachment : IEntity<AttachmentModel>
     [BindColumn("Source", "来源。用于远程抓取的附件来源地址，本地文件不存在时自动依次抓取", "")]
     public String Source { get => _Source; set { if (OnPropertyChanging("Source", value)) { _Source = value; OnPropertyChanged("Source"); } } }
 
+    private String _Storage;
+    /// <summary>存储类型。Local本地磁盘，Oss阿里云，Cos腾讯云，Qiniu七牛，EasyIO，默认Local</summary>
+    [DisplayName("存储类型")]
+    [Description("存储类型。Local本地磁盘，Oss阿里云，Cos腾讯云，Qiniu七牛，EasyIO，默认Local")]
+    [DataObjectField(false, false, true, 50)]
+    [BindColumn("Storage", "存储类型。Local本地磁盘，Oss阿里云，Cos腾讯云，Qiniu七牛，EasyIO，默认Local", "")]
+    public String Storage { get => _Storage; set { if (OnPropertyChanging("Storage", value)) { _Storage = value; OnPropertyChanged("Storage"); } } }
+
     private Int32 _Downloads;
     /// <summary>下载次数</summary>
     [DisplayName("下载次数")]
@@ -262,6 +270,7 @@ public partial class Attachment : IEntity<AttachmentModel>
         UploadTime = model.UploadTime;
         Url = model.Url;
         Source = model.Source;
+        Storage = model.Storage;
         Downloads = model.Downloads;
         LastDownload = model.LastDownload;
         TraceId = model.TraceId;
@@ -299,6 +308,7 @@ public partial class Attachment : IEntity<AttachmentModel>
             "UploadTime" => _UploadTime,
             "Url" => _Url,
             "Source" => _Source,
+            "Storage" => _Storage,
             "Downloads" => _Downloads,
             "LastDownload" => _LastDownload,
             "TraceId" => _TraceId,
@@ -331,6 +341,7 @@ public partial class Attachment : IEntity<AttachmentModel>
                 case "UploadTime": _UploadTime = value.ToDateTime(); break;
                 case "Url": _Url = Convert.ToString(value); break;
                 case "Source": _Source = Convert.ToString(value); break;
+                case "Storage": _Storage = Convert.ToString(value); break;
                 case "Downloads": _Downloads = value.ToInt(); break;
                 case "LastDownload": _LastDownload = value.ToDateTime(); break;
                 case "TraceId": _TraceId = Convert.ToString(value); break;
@@ -439,6 +450,9 @@ public partial class Attachment : IEntity<AttachmentModel>
         /// <summary>来源。用于远程抓取的附件来源地址，本地文件不存在时自动依次抓取</summary>
         public static readonly Field Source = FindByName("Source");
 
+        /// <summary>存储类型。Local本地磁盘，Oss阿里云，Cos腾讯云，Qiniu七牛，EasyIO，默认Local</summary>
+        public static readonly Field Storage = FindByName("Storage");
+
         /// <summary>下载次数</summary>
         public static readonly Field Downloads = FindByName("Downloads");
 
@@ -522,6 +536,9 @@ public partial class Attachment : IEntity<AttachmentModel>
 
         /// <summary>来源。用于远程抓取的附件来源地址，本地文件不存在时自动依次抓取</summary>
         public const String Source = "Source";
+
+        /// <summary>存储类型。Local本地磁盘，Oss阿里云，Cos腾讯云，Qiniu七牛，EasyIO，默认Local</summary>
+        public const String Storage = "Storage";
 
         /// <summary>下载次数</summary>
         public const String Downloads = "Downloads";

@@ -34,6 +34,12 @@ public class SmtpMailVerifyCode : IMailVerifyCode
 
     /// <summary>邮件正文模板。{code} 会被替换为验证码，{expire} 会被替换为有效期（分钟）</summary>
     public String BodyTemplate { get; set; } = "您的验证码是：{code}，有效期 {expire} 分钟。如非本人操作，请忽略此邮件。";
+
+    /// <summary>激活邮件主题模板</summary>
+    public String ActivateSubjectTemplate { get; set; } = "请激活您的账号";
+
+    /// <summary>激活邮件正文模板。{link} 激活链接，{code} 验证码，{expire} 有效期（分钟）</summary>
+    public String ActivateBodyTemplate { get; set; } = "请点击以下链接激活您的账号：{link}（有效期 {expire} 分钟）。如无法点击，请在激活页输入验证码：{code}。";
     #endregion
 
     #region 方法
@@ -44,14 +50,25 @@ public class SmtpMailVerifyCode : IMailVerifyCode
     /// <param name="expire">有效期。秒</param>
     /// <param name="options">可选项</param>
     /// <returns>发送结果</returns>
-    protected virtual async Task<String> SendAsync(String mail, String action, String code, Int32 expire, MailVerifyCodeOptions options = null)
+    protected virtual Task<String> SendAsync(String mail, String action, String code, Int32 expire, MailVerifyCodeOptions options = null)
     {
-        if (Server.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Server));
-        if (From.IsNullOrEmpty()) throw new ArgumentNullException(nameof(From));
-
         var expireMinutes = (expire + 59) / 60;
         var subject = SubjectTemplate.Replace("{action}", action);
         var body = BodyTemplate.Replace("{code}", code).Replace("{expire}", expireMinutes.ToString());
+
+        return SendCore(mail, subject, body, options);
+    }
+
+    /// <summary>核心发送。校验 SMTP 配置并发送邮件</summary>
+    /// <param name="mail">邮箱地址</param>
+    /// <param name="subject">邮件主题</param>
+    /// <param name="body">邮件正文</param>
+    /// <param name="options">可选项</param>
+    /// <returns>发送结果</returns>
+    protected virtual async Task<String> SendCore(String mail, String subject, String body, MailVerifyCodeOptions options = null)
+    {
+        if (Server.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Server));
+        if (From.IsNullOrEmpty()) throw new ArgumentNullException(nameof(From));
 
         using var client = new SmtpClient(Server, Port)
         {
@@ -99,5 +116,21 @@ public class SmtpMailVerifyCode : IMailVerifyCode
     /// <returns>发送结果</returns>
     public Task<String> SendBind(String mail, String code, Int32 expire, MailVerifyCodeOptions options = null) 
         => SendAsync(mail, "绑定邮箱", code, expire, options);
+
+    /// <summary>发送激活邮件。含激活链接与验证码</summary>
+    /// <param name="mail">邮箱地址</param>
+    /// <param name="link">激活链接</param>
+    /// <param name="code">验证码</param>
+    /// <param name="expire">有效期。秒</param>
+    /// <param name="options">可选项</param>
+    /// <returns>发送结果</returns>
+    public Task<String> SendActivate(String mail, String link, String code, Int32 expire, MailVerifyCodeOptions options = null)
+    {
+        var expireMinutes = (expire + 59) / 60;
+        var subject = ActivateSubjectTemplate;
+        var body = ActivateBodyTemplate.Replace("{link}", link).Replace("{code}", code).Replace("{expire}", expireMinutes.ToString());
+
+        return SendCore(mail, subject, body, options);
+    }
     #endregion
 }

@@ -33,4 +33,12 @@ public interface ISmsVerifyCode
     /// <param name="options">可选项</param>
     /// <returns>内部生成的验证码</returns>
     Task<String> SendBind(String mobile, String code, Int32 expire, SmsVerifyCodeOptions options = null);
+
+    /// <summary>发送激活验证码</summary>
+    /// <param name="mobile">手机号</param>
+    /// <param name="code">验证码。未指定时内部生成</param>
+    /// <param name="expire">有效期。秒</param>
+    /// <param name="options">可选项</param>
+    /// <returns>内部生成的验证码</returns>
+    Task<String> SendActivate(String mobile, String code, Int32 expire, SmsVerifyCodeOptions options = null);
 }

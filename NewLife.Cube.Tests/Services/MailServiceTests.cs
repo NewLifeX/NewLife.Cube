@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using NewLife.Cube.Services;
 using Xunit;
 
-namespace XUnitTest;
+namespace NewLife.Cube.Tests.Services;
 
 /// <summary>邮件服务单元测试。覆盖验证码生成逻辑</summary>
 public class MailServiceTests

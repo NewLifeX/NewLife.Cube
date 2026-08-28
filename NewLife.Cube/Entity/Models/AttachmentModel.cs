@@ -53,6 +53,9 @@ public partial class AttachmentModel
     /// <summary>来源。用于远程抓取的附件来源地址，本地文件不存在时自动依次抓取</summary>
     public String Source { get; set; }
 
+    /// <summary>存储类型。Local本地磁盘，Oss阿里云，Cos腾讯云，Qiniu七牛，EasyIO，默认Local</summary>
+    public String Storage { get; set; }
+
     /// <summary>下载次数</summary>
     public Int32 Downloads { get; set; }
 
@@ -109,6 +112,7 @@ public partial class AttachmentModel
         UploadTime = model.UploadTime;
         Url = model.Url;
         Source = model.Source;
+        Storage = model.Storage;
         Downloads = model.Downloads;
         LastDownload = model.LastDownload;
         TraceId = model.TraceId;

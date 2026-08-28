@@ -42,6 +42,7 @@ public class OAuthLogController : ReadOnlyEntityController<OAuthLog>
             PageSetting.NavView = "_User_Nav";
             PageSetting.EnableNavbar = false;
         }
+        PageSetting.EnableTotalCount = false;
     }
 
     /// <summary>搜索</summary>

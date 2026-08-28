@@ -205,6 +205,9 @@ public static class CubeService
         // 注册文件存储服务
         services.AddCubeFileStorage();
 
+        // 注册附件存储提供者。根据配置切换本地磁盘与对象存储（OSS/COS/七牛）
+        services.AddCubeAttachmentStorage(set);
+
         // 注册IP地址库
         IpResolver.Register();
 

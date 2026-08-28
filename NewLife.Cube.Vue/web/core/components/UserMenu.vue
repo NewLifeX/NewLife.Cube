@@ -7,6 +7,7 @@
  * - 点击展开下拉菜单，包含个人中心和退出选项
  */
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { useUserStore } from '@newlifex/cube-vue/core/stores/user';
 
 interface MenuOption {
@@ -17,6 +18,7 @@ interface MenuOption {
 }
 
 const userStore = useUserStore();
+const router = useRouter();
 
 const menuRef = ref<HTMLElement | null>(null);
 const menuOpen = ref(false);
@@ -29,6 +31,7 @@ const userName = computed(() => currentUser.value?.displayName || currentUser.va
 
 const menuOptions: MenuOption[] = [
   { id: 'profile', label: '个人中心', icon: 'user' },
+  { id: 'security', label: '安全中心', icon: 'lock' },
   { id: 'logout', label: '退出登录', icon: 'logout', danger: true },
 ];
 
@@ -45,6 +48,8 @@ function handleOptionClick(option: MenuOption) {
     userStore.logout();
   } else if (option.id === 'profile') {
     console.info('[UserMenu] Navigate to profile');
+  } else if (option.id === 'security') {
+    router.push('/profile/security');
   }
   closeMenu();
 }

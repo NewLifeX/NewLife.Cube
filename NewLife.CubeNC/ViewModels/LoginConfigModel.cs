@@ -40,6 +40,12 @@ public class RegisterAbilityModel
 
     /// <summary>注册时需要图片验证码</summary>
     public Boolean Captcha { get; set; }
+
+    /// <summary>需要邮箱验证。注册后必须激活邮箱才能登录，注册表单须强制填写邮箱</summary>
+    public Boolean RequireMailVerify { get; set; }
+
+    /// <summary>需要手机验证。注册后必须激活手机才能登录，注册表单须强制填写手机</summary>
+    public Boolean RequireMobileVerify { get; set; }
 }
 
 /// <summary>安全策略配置</summary>
@@ -149,6 +155,8 @@ public class LoginConfigModel
         Sms = _set.AllowRegister && _set.EnableSms,
         Mail = _set.AllowRegister && _set.EnableMail,
         Captcha = _riskRegister ?? (_set.CaptchaScene & 2) != 0,
+        RequireMailVerify = _set.RequireMailVerify,
+        RequireMobileVerify = _set.RequireMobileVerify,
     };
 
     /// <summary>OAuth 提供商列表。仅返回当前租户可见的提供商</summary>

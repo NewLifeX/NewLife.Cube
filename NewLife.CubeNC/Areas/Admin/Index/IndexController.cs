@@ -138,11 +138,13 @@ public class IndexController : ControllerBaseX, IPageDataContext
         ViewBag.Widgets = list;
         ViewBag.Charts = charts;
         ViewBag.IsAdmin = isAdmin;
+        // 用户已隐藏的组件（恢复面板用）
+        ViewBag.HiddenWidgets = _widgetManager.GetHiddenWidgets(user?.ID ?? 0, roleNames, isAdmin);
 
         return View();
     }
 
-    /// <summary>保存工作台组件排序（按用户存 Parameter 表，分类 Widget.Order）</summary>
+    /// <summary>保存工作台组件排序（按用户存 Parameter 表，分类 Widget.Layout 单行 JSON）</summary>
     /// <param name="order">组件名数组，按显示顺序</param>
     /// <returns></returns>
     [DisplayName("保存排序")]
@@ -155,14 +157,52 @@ public class IndexController : ControllerBaseX, IPageDataContext
 
         if (order == null || order.Length == 0) return Json(0, null, "无排序数据");
 
-        // 按显示顺序生成排序值
-        var dic = new Dictionary<String, Int32>();
+        // 按显示顺序生成排序值，合并进用户布局（保留隐藏状态）
+        var layout = _widgetManager.GetLayout(user.ID);
         for (var i = 0; i < order.Length; i++)
-            dic[order[i]] = i;
+        {
+            var name = order[i];
+            if (name.IsNullOrEmpty()) continue;
 
-        _widgetManager.SetOrders(user.ID, dic);
+            layout[name] = new WidgetLayout { Sort = i, Hide = false };
+        }
+
+        _widgetManager.SaveLayout(user.ID, layout);
 
         return Json(0, null, "排序已保存");
+    }
+
+    /// <summary>隐藏或恢复工作台组件（用户级布局，恢复后回到原排序位置）</summary>
+    /// <param name="name">组件名</param>
+    /// <param name="hide">是否隐藏</param>
+    /// <returns></returns>
+    [DisplayName("隐藏组件")]
+    [EntityAuthorize]
+    [HttpPost]
+    public ActionResult HideWidget(String name, Boolean hide)
+    {
+        var user = _provider.Current as IUser;
+        if (user == null) return Json(401, "未登录");
+        if (name.IsNullOrEmpty()) return Json(500, null, "缺少组件名");
+
+        _widgetManager.SetHidden(user.ID, name, hide);
+
+        return Json(0, null, hide ? "已隐藏" : "已恢复");
+    }
+
+    /// <summary>重置用户工作台布局为默认（删除布局配置，恢复出厂排序与显示）</summary>
+    /// <returns></returns>
+    [DisplayName("重置布局")]
+    [EntityAuthorize]
+    [HttpPost]
+    public ActionResult ResetLayout()
+    {
+        var user = _provider.Current as IUser;
+        if (user == null) return Json(401, "未登录");
+
+        _widgetManager.ResetLayout(user.ID);
+
+        return Json(0, null, "布局已重置");
     }
 
     /// <summary>监控数据。工作台性能曲线轮询接口，返回CPU/内存快照</summary>

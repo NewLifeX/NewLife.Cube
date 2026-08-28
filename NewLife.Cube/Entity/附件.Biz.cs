@@ -1,3 +1,4 @@
+using NewLife.Cube.Web;
 using NewLife.Data;
 using NewLife.Log;
 using XCode;
@@ -40,6 +41,16 @@ public partial class Attachment : Entity<Attachment>
         if (len > 0 && !Title.IsNullOrEmpty() && Title.Length > len) Title = Title[..len];
 
         base.Valid(isNew);
+    }
+
+    /// <summary>删除。同步删除存储文件（本地磁盘或云存储），避免遗留孤儿文件</summary>
+    /// <returns></returns>
+    protected override Int32 OnDelete()
+    {
+        // 删除低频操作，阻塞等待可接受；DeleteFileAsync内部已捕获异常，不影响记录删除
+        DeleteFileAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+
+        return base.OnDelete();
     }
     #endregion
 
@@ -104,22 +115,30 @@ public partial class Attachment : Entity<Attachment>
     #region 高级查询
     /// <summary>高级查询</summary>
     /// <param name="category">分类</param>
-    /// <param name="key">业务关键字</param>
     /// <param name="ext">扩展名</param>
-    /// <param name="start">关键字</param>
-    /// <param name="end">关键字</param>
     /// <param name="keyWord">关键字</param>
+    /// <param name="storage">存储类型。Local需兼容历史空值</param>
+    /// <param name="key">业务关键字</param>
+    /// <param name="start">开始时间</param>
+    /// <param name="end">结束时间</param>
     /// <param name="page">分页参数信息。可携带统计和数据权限扩展查询等信息</param>
     /// <returns>实体列表</returns>
-    public static IList<Attachment> Search(String category, String key, String ext, DateTime start, DateTime end, String keyWord, PageParameter page)
+    public static IList<Attachment> Search(String category, String ext, String keyWord, String storage, String key, DateTime start, DateTime end, PageParameter page)
     {
         var exp = new WhereExpression();
 
         if (!category.IsNullOrEmpty()) exp &= _.Category == category;
-        if (!key.IsNullOrEmpty()) exp &= _.Key == key;
         if (!ext.IsNullOrEmpty()) exp &= _.Extension == ext;
-        exp &= _.Id.Between(start, end, Meta.Factory.Snow);
         if (!keyWord.IsNullOrEmpty()) exp &= _.FileName == keyWord | _.Extension == keyWord | _.ContentType.Contains(keyWord) | _.FilePath.StartsWith(keyWord) | _.Title.Contains(keyWord);
+        if (!storage.IsNullOrEmpty())
+        {
+            if (storage.EqualIgnoreCase("Local"))
+                exp &= _.Storage.IsNullOrEmpty() | _.Storage == "Local";
+            else
+                exp &= _.Storage == storage;
+        }
+        if (!key.IsNullOrEmpty()) exp &= _.Key == key;
+        exp &= _.Id.Between(start, end, Meta.Factory.Snow);
 
         return FindAll(exp, page);
     }
@@ -197,41 +216,57 @@ public partial class Attachment : Entity<Attachment>
 
         Source = url;
 
-        if (uploadPath.IsNullOrEmpty()) uploadPath = CubeSetting.Current.UploadPath;
+        // 记录存储类型
+        var provider = AttachmentProvider.Provider;
+        Storage = provider.Name;
 
-        var fullFile = uploadPath.CombinePath(file).GetBasePath();
-        XTrace.WriteLine("抓取附件 {0}，保存到 {1}", url, file);
-
-        fullFile.EnsureDirectory(true);
-        //if (File.Exists(fullFile)) File.Delete(fullFile);
-
-        // 抓取并保存
+        // 抓取
         client ??= _client ??= new HttpClient();
-        var rs = await client.GetAsync(url);
+        using var rs = await client.GetAsync(url);
         var contentType = rs.Content.Headers.ContentType + "";
         if (!contentType.IsNullOrEmpty()) ContentType = contentType;
 
-        // 先写临时文件，再原子性重命名，避免分布式存储同步期间并发写入同一路径引发文件占用冲突
-        var tmpFile = fullFile + ".tmp";
-        try
+        var stream = await rs.Content.ReadAsStreamAsync();
+        if (provider.Storage.Local)
         {
-            {
-                using var fs = new FileStream(tmpFile, FileMode.Create, FileAccess.Write, FileShare.None);
-                await rs.Content.CopyToAsync(fs);
-            }
-            File.Move(tmpFile, fullFile, overwrite: true);
-        }
-        catch
-        {
-            if (File.Exists(tmpFile))
-                try { File.Delete(tmpFile); } catch { }
-            throw;
-        }
+            if (uploadPath.IsNullOrEmpty()) uploadPath = CubeSetting.Current.UploadPath;
 
-        // 记录文件信息
-        var fi = fullFile.AsFile();
-        Size = fi.Length;
-        Hash = fi.MD5().ToHex();
+            var fullFile = uploadPath.CombinePath(file).GetBasePath();
+            XTrace.WriteLine("抓取附件 {0}，保存到 {1}", url, file);
+
+            fullFile.EnsureDirectory(true);
+            //if (File.Exists(fullFile)) File.Delete(fullFile);
+
+            // 先写临时文件，再原子性重命名，避免分布式存储同步期间并发写入同一路径引发文件占用冲突
+            var tmpFile = fullFile + ".tmp";
+            try
+            {
+                {
+                    using var fs = new FileStream(tmpFile, FileMode.Create, FileAccess.Write, FileShare.None);
+                    await stream.CopyToAsync(fs);
+                }
+                File.Move(tmpFile, fullFile, overwrite: true);
+            }
+            catch
+            {
+                if (File.Exists(tmpFile))
+                    try { File.Delete(tmpFile); } catch { }
+                throw;
+            }
+
+            // 记录文件信息
+            var fi = fullFile.AsFile();
+            Size = fi.Length;
+            Hash = fi.MD5().ToHex();
+        }
+        else
+        {
+            // 对象存储：单遍计算哈希与大小
+            using var hashStream = new HashStream(stream);
+            await provider.WriteAsync(hashStream, file);
+            Size = hashStream.Length;
+            Hash = hashStream.Hash;
+        }
 
         //Save();
         if (isNew)
@@ -260,34 +295,49 @@ public partial class Attachment : Entity<Attachment>
         var file = BuildFilePath(filePath);
         if (file.IsNullOrEmpty()) return false;
 
-        if (uploadPath.IsNullOrEmpty()) uploadPath = CubeSetting.Current.UploadPath;
+        // 记录存储类型
+        var provider = AttachmentProvider.Provider;
+        Storage = provider.Name;
 
-        // 保存文件，优先原名字
-        var fullFile = uploadPath.CombinePath(file).GetBasePath();
-        fullFile.EnsureDirectory(true);
-        DefaultSpan.Current?.AppendTag($"fullFile={fullFile}");
-
-        // 先写临时文件，再原子性重命名，避免分布式存储同步期间并发写入同一路径引发文件占用冲突
-        var tmpFile = fullFile + ".tmp";
-        try
+        if (provider.Storage.Local)
         {
+            if (uploadPath.IsNullOrEmpty()) uploadPath = CubeSetting.Current.UploadPath;
+
+            // 保存文件，优先原名字
+            var fullFile = uploadPath.CombinePath(file).GetBasePath();
+            fullFile.EnsureDirectory(true);
+            DefaultSpan.Current?.AppendTag($"fullFile={fullFile}");
+
+            // 先写临时文件，再原子性重命名，避免分布式存储同步期间并发写入同一路径引发文件占用冲突
+            var tmpFile = fullFile + ".tmp";
+            try
             {
-                using var fs = new FileStream(tmpFile, FileMode.Create, FileAccess.Write, FileShare.None);
-                await stream.CopyToAsync(fs);
+                {
+                    using var fs = new FileStream(tmpFile, FileMode.Create, FileAccess.Write, FileShare.None);
+                    await stream.CopyToAsync(fs);
+                }
+                File.Move(tmpFile, fullFile, overwrite: true);
             }
-            File.Move(tmpFile, fullFile, overwrite: true);
-        }
-        catch
-        {
-            if (File.Exists(tmpFile))
-                try { File.Delete(tmpFile); } catch { }
-            throw;
-        }
+            catch
+            {
+                if (File.Exists(tmpFile))
+                    try { File.Delete(tmpFile); } catch { }
+                throw;
+            }
 
-        // 记录文件信息
-        var fi = fullFile.AsFile();
-        Size = fi.Length;
-        Hash = fi.MD5().ToHex();
+            // 记录文件信息
+            var fi = fullFile.AsFile();
+            Size = fi.Length;
+            Hash = fi.MD5().ToHex();
+        }
+        else
+        {
+            // 对象存储：单遍计算哈希与大小
+            using var hashStream = new HashStream(stream);
+            await provider.WriteAsync(hashStream, file);
+            Size = hashStream.Length;
+            Hash = hashStream.Hash;
+        }
 
         //Save();
         if (isNew)
@@ -309,6 +359,105 @@ public partial class Attachment : Entity<Attachment>
         if (uploadPath.IsNullOrEmpty()) uploadPath = CubeSetting.Current.UploadPath;
 
         return uploadPath.CombinePath(file).GetBasePath();
+    }
+
+    /// <summary>是否本地磁盘存储。历史附件未记录存储类型时按本地处理</summary>
+    /// <returns></returns>
+    public Boolean IsLocalStorage() => Storage.IsNullOrEmpty() || Storage.EqualIgnoreCase("Local");
+
+    /// <summary>存储类型名称。用于界面展示</summary>
+    public String StorageName => Storage switch
+    {
+        "Oss" => "阿里云OSS",
+        "Cos" => "腾讯云COS",
+        "Qiniu" => "七牛",
+        "EasyIO" => "EasyIO",
+        _ => "本地",
+    };
+
+    /// <summary>获取附件直接访问Url。本地存储返回null，云存储返回预签名Url</summary>
+    /// <returns>可直接访问的Url，本地存储返回null</returns>
+    public String GetUrl() => IsLocalStorage() ? null : AttachmentProvider.Provider.GetUrl(FilePath);
+
+    /// <summary>删除附件文件。同步清理本地磁盘或云存储中的文件</summary>
+    /// <returns></returns>
+    public async Task<Boolean> DeleteFileAsync()
+    {
+        var file = FilePath;
+        if (file.IsNullOrEmpty()) return false;
+
+        try
+        {
+            await AttachmentProvider.Provider.DeleteAsync(file);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteException(ex);
+            return false;
+        }
+    }
+    #endregion
+
+    #region 辅助
+    /// <summary>哈希流。读取数据时同步计算MD5哈希与总字节数，用于对象存储上传时单遍计算元数据</summary>
+    private class HashStream : Stream
+    {
+        private readonly Stream _stream;
+        private readonly System.Security.Cryptography.IncrementalHash _hash = System.Security.Cryptography.IncrementalHash.CreateHash(System.Security.Cryptography.HashAlgorithmName.MD5);
+        private Int64 _length;
+
+        public HashStream(Stream stream) => _stream = stream;
+
+        /// <summary>已读取字节数</summary>
+        public Int64 Length2 => _length;
+
+        /// <summary>MD5哈希（十六进制）。读取完成后有效</summary>
+        public String Hash => _hash.GetHashAndReset().ToHex();
+
+        public override Boolean CanRead => _stream.CanRead;
+        public override Boolean CanSeek => false;
+        public override Boolean CanWrite => false;
+        public override Int64 Length => _length;
+        public override Int64 Position { get => _length; set => throw new NotSupportedException(); }
+
+        public override Int32 Read(Span<Byte> buffer)
+        {
+            var n = _stream.Read(buffer);
+            if (n > 0)
+            {
+                _hash.AppendData(buffer[..n]);
+                _length += n;
+            }
+            return n;
+        }
+
+        public override Int32 Read(Byte[] buffer, Int32 offset, Int32 count) => Read(buffer.AsSpan(offset, count));
+
+        public override async ValueTask<Int32> ReadAsync(Memory<Byte> buffer, CancellationToken cancellationToken = default)
+        {
+            var n = await _stream.ReadAsync(buffer, cancellationToken);
+            if (n > 0)
+            {
+                _hash.AppendData(buffer.Span[..n]);
+                _length += n;
+            }
+            return n;
+        }
+
+        public override Task<Int32> ReadAsync(Byte[] buffer, Int32 offset, Int32 count, CancellationToken cancellationToken)
+            => ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+
+        public override void Flush() { }
+        public override Int64 Seek(Int64 offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(Int64 value) => throw new NotSupportedException();
+        public override void Write(Byte[] buffer, Int32 offset, Int32 count) => throw new NotSupportedException();
+
+        protected override void Dispose(Boolean disposing)
+        {
+            _hash.Dispose();
+            base.Dispose(disposing);
+        }
     }
     #endregion
 }

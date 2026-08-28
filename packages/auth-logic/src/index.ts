@@ -147,6 +147,41 @@ export class AuthLogic {
   }
 
   /**
+   * 注册新用户。开启邮箱/手机验证时，注册成功返回 pendingActivation（不写 token，需先激活）
+   */
+  async register(model: RegisterModel, captchaId?: string, captchaCode?: string) {
+    const res = await this.api.user.register({
+      ...model,
+      ...(captchaId ? { captchaId } : {}),
+      ...(captchaCode ? { captchaCode } : {}),
+    });
+    if (res.data?.accessToken) {
+      this.api.tokenManager.setToken(res.data.accessToken);
+    }
+    return res;
+  }
+
+  /** 邮箱激活链接直达（解析激活邮件链接后调用） */
+  async activateByLink(token: string, account: string) {
+    return this.api.user.activateByLink(token, account);
+  }
+
+  /** 验证码激活（邮箱验证码/手机短信验证码） */
+  async activateByCode(channel: string, account: string, code: string) {
+    return this.api.user.activateByCode({ channel, account, code });
+  }
+
+  /** 重发激活。未激活账号重新发送激活邮件/短信 */
+  async sendActivateCode(channel: string, account: string) {
+    return this.api.user.sendActivateCode(channel, account);
+  }
+
+  /** 已登录用户验证/更换邮箱或手机（安全中心） */
+  async verifyContact(channel: string, account: string, code: string) {
+    return this.api.user.verifyContact({ channel, account, code });
+  }
+
+  /**
    * 生成 OAuth 第三方登录跳转 URL
    * @param provider OAuth 提供商名，如 'github'、'wechat'
    * @param returnUrl 登录成功后回跳的前端路由，默认为当前页面
@@ -161,7 +196,7 @@ export class AuthLogic {
 }
 
 // 重新导出类型供适配器使用
-export type { UserInfo, MenuItem, CubeApi, ResetPasswordModel, RegisterModel, OAuthPendingInfo, MfaVerifyResult } from '@cube/api-core';
+export type { UserInfo, MenuItem, CubeApi, ResetPasswordModel, RegisterModel, OAuthPendingInfo, MfaVerifyResult, VerifyContactModel, VerifyStatus } from '@cube/api-core';
 export { findMenu, getMenuPermission, checkAuth, Auth } from '@cube/page-utils';
 export type { AuthCode } from '@cube/page-utils';
 

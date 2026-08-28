@@ -171,6 +171,15 @@
 | `UploadPath` | String | "Uploads" | 上传文件目录 |
 | `AvatarPath` | String | "Avatars" | 头像目录 |
 | `MaxUploadSize` | Int64 | 10485760 | 最大上传大小（字节） |
+| `FileStorageProvide` | Boolean | true | 文件存储提供服务。是否响应其他节点的文件下载请求 |
+| `FileStorageFetch` | Boolean | true | 文件存储拉取文件。是否主动拉取其他节点发布的新文件 |
+| `FileStorageFetchTimeout` | Int32 | 5000 | 文件存储拉取超时（毫秒）。下载本地缺失文件时等待其他节点同步的最大时间 |
+| `AttachmentStorage` | String | "Local" | 附件存储类型。Local本地磁盘，Oss阿里云，Cos腾讯云，Qiniu七牛，EasyIO易对象 |
+| `ObjectStorageServer` | String | "" | 对象存储服务器。OSS/COS/七牛S3兼容端点，如 oss-cn-beijing.aliyuncs.com |
+| `ObjectStorageBucket` | String | "" | 对象存储桶。OSS/COS/七牛存储桶名称 |
+| `ObjectStorageRegion` | String | "cn-north-1" | 对象存储区域。用于S3签名作用域，如 cn-beijing / ap-beijing / cn-east-1 |
+| `ObjectStorageAppId` | String | "" | 对象存储应用标识。AccessKeyId |
+| `ObjectStorageSecret` | String | "" | 对象存储应用密钥。AccessKeySecret |
 
 ### 其他设置
 

@@ -36,6 +36,9 @@ export type {
   OAuthPendingInfo,
   AuthCategory,
   MfaVerifyResult,
+  ActivateModel,
+  VerifyContactModel,
+  VerifyStatus,
 } from './types';
 export { FieldKind, Auth, ApiError } from './types';
 

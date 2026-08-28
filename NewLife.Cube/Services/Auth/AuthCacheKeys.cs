@@ -49,6 +49,12 @@ internal static class AuthCacheKeys
     public const String SmsNotifyLastSendPrefix = "SmsNotify:LastSend:";
     /// <summary>短信通知验证码缓存前缀</summary>
     public const String SmsNotifyCodePrefix = "SmsNotify:Code:";
+    /// <summary>短信激活IP发送限制缓存前缀</summary>
+    public const String SmsActivateIpPrefix = "SmsActivate:IP:";
+    /// <summary>短信激活最后发送时间缓存前缀</summary>
+    public const String SmsActivateLastSendPrefix = "SmsActivate:LastSend:";
+    /// <summary>短信激活验证码缓存前缀</summary>
+    public const String SmsActivateCodePrefix = "SmsActivate:Code:";
     #endregion
 
     #region 邮件验证码
@@ -86,5 +92,13 @@ internal static class AuthCacheKeys
     public const String MailNotifyLastSendPrefix = "MailNotify:LastSend:";
     /// <summary>邮件通知验证码缓存前缀</summary>
     public const String MailNotifyCodePrefix = "MailNotify:Code:";
+    /// <summary>邮件激活IP发送限制缓存前缀</summary>
+    public const String MailActivateIpPrefix = "MailActivate:IP:";
+    /// <summary>邮件激活最后发送时间缓存前缀</summary>
+    public const String MailActivateLastSendPrefix = "MailActivate:LastSend:";
+    /// <summary>邮件激活令牌缓存前缀</summary>
+    public const String MailActivateCodePrefix = "MailActivate:Code:";
+    /// <summary>邮件激活链接令牌缓存前缀。一次性，用于激活链接校验</summary>
+    public const String MailActivateLinkPrefix = "MailActivate:Link:";
     #endregion
 }

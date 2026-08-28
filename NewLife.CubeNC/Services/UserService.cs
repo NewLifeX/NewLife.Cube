@@ -142,6 +142,11 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
             var provider = ManageProvider.Provider;
             if (provider.Login(username, password, remember) == null)
             {
+                // 未激活账号（需邮箱/手机验证注册）：明确提示而非"密码错误"，前端据此提供重发激活入口
+                var u = User.FindByName(username) ?? User.FindByMail(username) ?? User.FindByMobile(username);
+                if (u != null && !u.Enable)
+                    return new ServiceResult<IToken> { IsSuccess = false, Message = "账号未激活，请先通过邮箱/手机激活后登录" };
+
                 // 本地验证失败，尝试外部验证服务
                 var extUser = ExternalAuthHelper.Validate(username, password, set.ExternalAuthUrl);
                 if (extUser == null)
@@ -520,7 +525,17 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         return new ServiceResult { IsSuccess = true };
     }
 
-    internal IManageUser CreateUserAndBindContact(String username, String password, String email, String mobile, String ip, Boolean mailVerified = false, Boolean mobileVerified = false)
+    /// <summary>创建用户并绑定联系方式</summary>
+    /// <param name="username">用户名</param>
+    /// <param name="password">密码</param>
+    /// <param name="email">邮箱</param>
+    /// <param name="mobile">手机</param>
+    /// <param name="ip">注册IP</param>
+    /// <param name="mailVerified">邮箱已验证（仅验证码注册路径传入 true）</param>
+    /// <param name="mobileVerified">手机已验证（仅验证码注册路径传入 true）</param>
+    /// <param name="enable">是否启用。false 表示待激活（需邮箱/手机验证），由账号激活服务使用</param>
+    /// <returns>新用户</returns>
+    internal IManageUser CreateUserAndBindContact(String username, String password, String email, String mobile, String ip, Boolean mailVerified = false, Boolean mobileVerified = false, Boolean enable = true)
     {
         var set = CubeSetting.Current;
 
@@ -532,7 +547,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
 
         var role = Role.GetOrAdd(set.DefaultRole);
         var provider = ManageProvider.Provider;
-        provider.Register(username, password, role?.ID ?? 0, true);
+        provider.Register(username, password, role?.ID ?? 0, enable);
 
         var user = provider.FindByName(username) as User ?? User.FindByName(username);
         if (user == null) throw new InvalidOperationException("注册失败，请稍后重试");
@@ -550,6 +565,11 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         {
             user.Mobile = mobile;
             if (mobileVerified) user.MobileVerified = true;
+            changed = true;
+        }
+        if (user.Enable != enable)
+        {
+            user.Enable = enable;
             changed = true;
         }
         if (user.RegisterIP.IsNullOrEmpty())

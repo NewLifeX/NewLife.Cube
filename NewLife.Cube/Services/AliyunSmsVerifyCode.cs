@@ -110,5 +110,13 @@ public class AliyunSmsVerifyCode : ISmsVerifyCode
     /// <param name="options">可选项</param>
     /// <returns>内部生成的验证码</returns>
     public Task<String> SendBind(String mobile, String code = null, Int32 expire = 300, SmsVerifyCodeOptions options = null) => SendAsync(mobile, "100004", code, expire, options);
+
+    /// <summary>发送激活验证码。模板 100005，需在服务商侧配置激活短信模板，参数 code/min</summary>
+    /// <param name="mobile">手机号</param>
+    /// <param name="code">验证码。未指定时内部生成</param>
+    /// <param name="expire">有效期。秒</param>
+    /// <param name="options">可选项</param>
+    /// <returns>内部生成的验证码</returns>
+    public Task<String> SendActivate(String mobile, String code = null, Int32 expire = 300, SmsVerifyCodeOptions options = null) => SendAsync(mobile, "100005", code, expire, options);
     #endregion
 }
