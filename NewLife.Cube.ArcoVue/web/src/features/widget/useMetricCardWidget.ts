@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router';
 import type { WidgetQueryResult } from '@cube/api-core';
 import { ensureEchartsTheme, initEcharts } from '@/core/utils/echartsTheme';
 import { themeColor } from '@/core/utils/themeColor';
+import { resolveWorkbenchIcon } from '@/core/utils/workbench';
 import type { WidgetCardProps } from './context';
 import { buildMiniChartOption } from './chartTemplates';
 import { normalizeTypePath } from './legacy';
@@ -29,6 +30,13 @@ export function useMetricCardWidget(props: WidgetCardProps) {
     if (v == null) return '—';
     return String(v);
   });
+  /** 数字下方标签：自定义指标用 style.badge；平台 named 用接口 trend */
+  const labelText = computed(() => {
+    const badge = (props.widget.style?.badge || '').trim();
+    if (badge) return badge;
+    const t = (props.result as WidgetQueryResult | undefined)?.trend;
+    return t == null || t === '' ? '' : String(t);
+  });
   const sparkItems = computed(() => (props.result as WidgetQueryResult | undefined)?.items ?? []);
   const sparkOption = computed(() =>
     sparkItems.value.length
@@ -40,7 +48,9 @@ export function useMetricCardWidget(props: WidgetCardProps) {
     if (!key || key === 'blue') return themeColor('--primary-6', 'rgb(22, 93, 255)');
     return COLORS[key] || themeColor('--primary-6', 'rgb(22, 93, 255)');
   });
-  const icon = computed(() => props.widget.style?.icon || 'dashboard');
+  const icon = computed(() =>
+    resolveWorkbenchIcon(props.widget.style?.icon, props.widget.source?.widgetName) || 'dashboard',
+  );
 
   watch(
     () => sparkOption.value,
@@ -60,7 +70,9 @@ export function useMetricCardWidget(props: WidgetCardProps) {
   });
 
   function onClick() {
-    const url = props.widget.style?.clickUrl;
+    const fromStyle = props.widget.style?.clickUrl;
+    const fromData = (props.result as WidgetQueryResult | undefined)?.url;
+    const url = (fromStyle || fromData || '').toString();
     if (url) {
       if (/^https?:/i.test(url)) window.open(url, '_blank');
       else router.push(url.startsWith('/') ? url : `/${url}`);
@@ -70,5 +82,5 @@ export function useMetricCardWidget(props: WidgetCardProps) {
     if (tp) router.push(`/${tp}`);
   }
 
-  return { valueText, sparkOption, color, icon, sparkEl, onClick };
+  return { valueText, labelText, sparkOption, color, icon, sparkEl, onClick };
 }

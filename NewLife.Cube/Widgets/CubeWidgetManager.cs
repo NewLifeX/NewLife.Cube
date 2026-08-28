@@ -37,19 +37,33 @@ public static class CubeWidgetManager
         return All.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
     }
 
-    /// <summary>当前用户可见的 named 目录</summary>
+    /// <summary>当前用户可见的 named 目录。无 surface 时不过滤 Surfaces。</summary>
     public static IList<CubeWidgetRegistration> CatalogFor(IUser user) =>
-        All.Where(e => Visible(e, user)).ToList();
+        CatalogFor(user, null);
+
+    /// <summary>当前用户可见且属于指定表面的 named 目录</summary>
+    public static IList<CubeWidgetRegistration> CatalogFor(IUser user, String surface) =>
+        All.Where(e => Visible(e, user) && MatchesSurface(e, surface)).ToList();
 
     /// <summary>是否对该用户可见</summary>
     public static Boolean Visible(CubeWidgetRegistration reg, IUser user)
     {
         if (reg == null || user == null) return false;
-        if (reg.AdminOnly && (user.Roles == null || !user.Roles.Any(r => r.IsSystem))) return false;
+        if (reg.AdminOnly && !WorkbenchResolver.IsSystem(user)) return false;
         if (reg.Permission.IsNullOrEmpty()) return true;
         var names = reg.Permission.Split(',', ';').Select(e => e.Trim()).Where(e => e.Length > 0).ToArray();
         if (names.Length == 0) return true;
         return user.Roles != null && user.Roles.Any(r => names.Contains(r.Name, StringComparer.OrdinalIgnoreCase));
+    }
+
+    /// <summary>表面是否匹配。空 Surfaces 仅 insight；无 surface 参数则全部通过。</summary>
+    public static Boolean MatchesSurface(CubeWidgetRegistration reg, String surface)
+    {
+        if (reg == null) return false;
+        if (surface.IsNullOrEmpty()) return true;
+        var raw = reg.Surfaces;
+        if (raw.IsNullOrEmpty()) return surface.EqualIgnoreCase(DashboardJson.SurfaceInsight);
+        return raw.Split(',', ';').Select(e => e.Trim()).Any(e => e.EqualIgnoreCase(surface));
     }
 
     static List<CubeWidgetRegistration> Scan()
@@ -75,6 +89,8 @@ public static class CubeWidgetManager
                     AdminOnly = att.AdminOnly,
                     Permission = att.Permission,
                     Surfaces = att.Surfaces,
+                    Color = att.Color,
+                    Icon = att.Icon,
                     Type = t,
                 });
             }
@@ -107,6 +123,12 @@ public sealed class CubeWidgetRegistration
 
     /// <summary>表面</summary>
     public String Surfaces { get; set; }
+
+    /// <summary>配色</summary>
+    public String Color { get; set; }
+
+    /// <summary>图标</summary>
+    public String Icon { get; set; }
 
     /// <summary>实现类型</summary>
     public Type Type { get; set; }

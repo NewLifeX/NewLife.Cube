@@ -18,6 +18,7 @@ import { OPS_LINK_INLINE_MAX } from '@/core/utils/listLinkFields';
 import { encodeQueryB64, mapPageKindToAiPage } from '@/core/utils/aiChatContext';
 import { mergeFillFormValues } from '@/core/utils/aiFill';
 import { resolveFieldsForKind } from '@/core/utils/fieldParts';
+import { parseUrlViewFilter } from '@/core/utils/searchFilters';
 import { getValueByKey } from '@/core/utils/url';
 import { useAppStore } from '@/stores/app';
 import { createListContext } from './listContext';
@@ -265,7 +266,14 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     views.applyWorkspacePrefs();
     // 初始回填 URL→已保存基准条件到搜索表单（OSC-0012）
     query.applySearchToForm(ctx.baseSearch.value);
+    // 部件下钻：URL viewFilter 覆盖本地筛选
+    applyUrlViewFilter();
     await query.loadData();
+  }
+
+  function applyUrlViewFilter() {
+    const vf = parseUrlViewFilter(ctx.route.query as Record<string, unknown>);
+    if (vf?.conditions?.length) ctx.localFilter.value = vf;
   }
 
   watch(ctx.typePath, () => {
@@ -280,6 +288,7 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     () => {
       ctx.searchTouched.value = false;
       query.applySearchToForm(ctx.baseSearch.value);
+      applyUrlViewFilter();
       ctx.pagination.current = 1;
       query.loadData();
     },

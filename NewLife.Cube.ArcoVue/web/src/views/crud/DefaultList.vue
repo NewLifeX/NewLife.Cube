@@ -266,6 +266,10 @@
                   <icon-park type="layout-one" />
                   表单布局
                 </a-doption>
+                <a-doption v-if="!isEmbed" @click="openDashboard">
+                  <icon-park type="workbench" />
+                  页面仪表盘
+                </a-doption>
               </template>
             </a-dropdown>
           </a-space>
@@ -781,9 +785,8 @@ const hasAdvancedBatchGroup = computed(
     batchDeleteState.value.visible ||
     flags.value.canEdit,
 );
-const hasAdvancedExtraGroup = computed(
-  () => !isEmbed && (flags.value.canUpdate || isAdmin.value),
-);
+/** 含页面仪表盘入口：非嵌入页始终有「高级」附加项 */
+const hasAdvancedExtraGroup = computed(() => !isEmbed);
 
 /** 自动化条件字段：合并列表/搜索/编辑字段，避免仅 list 列过少或未就绪 */
 const automationFields = computed(() => {

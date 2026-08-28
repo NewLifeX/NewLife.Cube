@@ -1,0 +1,97 @@
+/**
+ * 部件卡片共用：标题 body-3(14)；正文 body-1(12)。
+ * 内容区与标题同左右边距，占满宽度；过高内部滚动。
+ */
+.widget-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  /* 与快捷入口等部件卡片一致 */
+  padding: 10px 12px;
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-2);
+  border-radius: var(--cube-radius-md, 8px);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.widget-card-title {
+  flex-shrink: 0;
+  font-size: var(--font-size-body-3, 14px);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--color-text-2);
+  margin-bottom: 8px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.widget-card-body {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  overflow: auto;
+}
+
+.widget-card-spin {
+  display: block;
+  width: 100%;
+  min-height: 0;
+}
+
+.widget-card-spin.arco-spin,
+.widget-card-body.arco-spin {
+  display: block;
+  width: 100%;
+}
+
+.widget-card-spin .arco-spin-children,
+.widget-card-body .arco-spin-children {
+  width: 100%;
+}
+
+.widget-kv-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.widget-kv-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: var(--font-size-body-1, 12px);
+  line-height: 1.5;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--color-border-1);
+}
+
+.widget-kv-row:last-child {
+  border-bottom: none;
+}
+
+.widget-kv-label {
+  color: var(--color-text-3);
+  flex: 0 0 auto;
+}
+
+.widget-kv-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text-1);
+  font-size: var(--font-size-body-1, 12px);
+}

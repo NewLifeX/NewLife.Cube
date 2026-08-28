@@ -14,7 +14,7 @@ export { isServiceApiPath, getServiceBaseUrl, resolveRequestUrl } from './servic
 // 底层构建块（高级用法）
 export { createApiClient, createRequest, type ApiClientOptions, type ResponseErrorInfo } from './client';
 export { TokenManager, type TokenStorage } from './token';
-export { createUserApi, createMenuApi, createPageApi, createConfigApi, createProfileApi, createCommentApi, createAutomationApi, createWidgetApi, AUTOMATION_HOOK_PATH } from './api';
+export { createUserApi, createMenuApi, createPageApi, createConfigApi, createProfileApi, createCommentApi, createAutomationApi, createWidgetApi, createWorkbenchApi, AUTOMATION_HOOK_PATH } from './api';
 
 // 类型
 export type {
@@ -61,13 +61,19 @@ export type {
   WidgetKindMeta,
   WidgetNamedMeta,
   WidgetCatalog,
+  WidgetSurface,
+  WidgetWidth,
+  WorkbenchResolveResult,
 } from './widget';
 export {
   emptyDashboard,
   hasDashboardDomain,
   parseDashboardJson,
+  parseWorkbenchConfig,
   serializeDashboardJson,
   validateDashboardForPut,
+  widthsFor,
+  maxWidgetsFor,
 } from './widget';
 export type {
   EntityAutomationListItem,

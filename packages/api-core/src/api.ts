@@ -30,6 +30,8 @@ import type {
   WidgetQueryBody,
   WidgetQueryResult,
   WidgetSourceItem,
+  WidgetSurface,
+  WorkbenchResolveResult,
 } from './widget';
 
 type RequestFn = <T>(config: AxiosRequestConfig) => Promise<ApiResponse<T>>;
@@ -723,8 +725,12 @@ export function createWidgetApi(request: RequestFn) {
     sources: () =>
       request<WidgetSourceItem[]>({ url: '/Cube/Widget/Sources', method: 'get' }),
 
-    catalog: () =>
-      request<WidgetCatalog>({ url: '/Cube/Widget/Catalog', method: 'get' }),
+    catalog: (surface?: WidgetSurface) =>
+      request<WidgetCatalog>({
+        url: '/Cube/Widget/Catalog',
+        method: 'get',
+        params: surface ? { surface } : undefined,
+      }),
 
     query: (data: WidgetQueryBody) =>
       request<WidgetQueryResult>({ url: '/Cube/Widget/Query', method: 'post', data }),
@@ -734,6 +740,35 @@ export function createWidgetApi(request: RequestFn) {
         url: '/Cube/Widget/Data',
         method: 'get',
         params: { name, hostTypePath: opts?.hostTypePath },
+      }),
+  };
+}
+
+/**
+ * 首页工作台 API（OSC-26082815a1，消费 /Cube/Workbench）
+ */
+export function createWorkbenchApi(request: RequestFn) {
+  return {
+    get: () => request<WorkbenchResolveResult>({ url: '/Cube/Workbench', method: 'get' }),
+
+    put: (homeJson: string) =>
+      requestWithPostFallback<unknown>(request, {
+        url: '/Cube/Workbench',
+        method: 'put',
+        data: { homeJson },
+      }),
+
+    getRole: (roleId: number) =>
+      request<{ roleId: number; config: WorkbenchResolveResult['config'] }>({
+        url: `/Cube/Workbench/Role/${roleId}`,
+        method: 'get',
+      }),
+
+    putRole: (roleId: number, homeJson: string) =>
+      requestWithPostFallback<unknown>(request, {
+        url: `/Cube/Workbench/Role/${roleId}`,
+        method: 'put',
+        data: { homeJson },
       }),
   };
 }

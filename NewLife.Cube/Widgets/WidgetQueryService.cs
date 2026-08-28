@@ -135,12 +135,24 @@ public static class WidgetQueryService
         var where = BuildWhere(user, fact, ctrlType, entityType, req, typePath, ref hostApplied);
         var mode = (req.Mode + "").Trim().ToLowerInvariant();
         if (mode.IsNullOrEmpty()) mode = "aggregate";
-        var limit = req.Limit <= 0 ? 30 : req.Limit;
-        if (limit > 50) limit = 50;
+        // limit=-1：全部（XCode maximumRows=0 表示不截断）；其余默认 30、上限 300
+        Int32 limit;
+        Int64 fetchRows;
+        if (req.Limit == -1)
+        {
+            limit = -1;
+            fetchRows = 0;
+        }
+        else
+        {
+            limit = req.Limit <= 0 ? 30 : req.Limit;
+            if (limit > 300) limit = 300;
+            fetchRows = limit;
+        }
 
         if (mode == "list")
         {
-            var list = fact.FindAll(where, null, null, 0, limit);
+            var list = fact.FindAll(where, null, null, 0, fetchRows);
             var project = ListProjectionFields(fact);
             var rows = new List<IDictionary<String, Object>>();
             foreach (var e in list)
@@ -154,7 +166,8 @@ public static class WidgetQueryService
         }
 
         if (!req.GroupBy.IsNullOrEmpty())
-            return GroupAggregate(fact, where, req, limit, hostApplied);
+            // 聚合分组仍封顶；「全部」按上限 300 参与分组
+            return GroupAggregate(fact, where, req, limit == -1 ? 300 : limit, hostApplied);
         if (!req.TimeField.IsNullOrEmpty())
             return TimeBucketAggregate(fact, where, req, hostApplied);
 

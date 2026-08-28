@@ -5,25 +5,32 @@ import { expect, test } from '@playwright/test';
  * 前置：后端已启动且 Vite 代理命中 /api；登录态由 auth.setup 提供。
  */
 
-test('主页 /home 与 /Admin/Index 展示系统信息并带刷新', async ({ page }) => {
-  for (const path of ['/home', '/Admin/Index']) {
-    await page.goto(path);
-    await page.waitForTimeout(1500);
-    // 系统信息 descriptions：Arco 渲染为 table 结构（.arco-descriptions-item 或 td），
-    // 后端可达时至少 3 项非空；不可达时允许 empty（有错误提示）
-    const items = page.locator('.arco-descriptions-item, .arco-descriptions table td');
-    const visibleCount = await items.count();
-    if (visibleCount >= 1) {
-      expect(visibleCount).toBeGreaterThanOrEqual(3);
-    } else {
-      // 后端不可达时至少有错误提示或空状态，不静默通过
-      expect(
-        await page.locator('.arco-alert, .arco-empty').count(),
-      ).toBeGreaterThan(0);
-    }
-    // 刷新按钮存在
-    await expect(page.getByRole('button', { name: '刷新' }).first()).toBeVisible();
+test('主页 /home 展示工作台问候或 KPI', async ({ page }) => {
+  await page.goto('/home');
+  await page.waitForTimeout(1500);
+  const hello = page.locator('.wb-hello-title');
+  const kpi = page.locator('.metric-value, .metric-card');
+  const customBtn = page.getByRole('button', { name: /自定义工作台|完成/ });
+  const hits =
+    (await hello.count()) + (await kpi.count()) + (await customBtn.count());
+  if (hits === 0) {
+    expect(await page.locator('.arco-alert, .arco-empty, .wb-alert').count()).toBeGreaterThan(0);
+  } else {
+    expect(hits).toBeGreaterThan(0);
   }
+});
+
+test('监控页 /Admin/Index 展示系统信息并带刷新', async ({ page }) => {
+  await page.goto('/Admin/Index');
+  await page.waitForTimeout(1500);
+  const items = page.locator('.arco-descriptions-item, .arco-descriptions table td');
+  const visibleCount = await items.count();
+  if (visibleCount >= 1) {
+    expect(visibleCount).toBeGreaterThanOrEqual(3);
+  } else {
+    expect(await page.locator('.arco-alert, .arco-empty').count()).toBeGreaterThan(0);
+  }
+  await expect(page.getByRole('button', { name: '刷新' }).first()).toBeVisible();
 });
 
 /** 对象页：同一 DefaultObject 渲染并可保存（无「添加记录」表格按钮） */

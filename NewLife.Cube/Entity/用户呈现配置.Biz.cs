@@ -142,6 +142,7 @@ public partial class UserProfile : Entity<UserProfile>
             LayoutJson = LayoutJson,
             ThemeJson = ThemeJson,
             WorkspaceJson = WorkspaceJson,
+            HomeJson = HomeJson,
             Version = Version,
             Enable = Enable,
             Remark = Remark,
@@ -159,6 +160,7 @@ public partial class UserProfile : Entity<UserProfile>
             if (model.LayoutJson != null) entity.LayoutJson = model.LayoutJson;
             if (model.ThemeJson != null) entity.ThemeJson = model.ThemeJson;
             if (model.WorkspaceJson != null) entity.WorkspaceJson = model.WorkspaceJson;
+            if (model.HomeJson != null) entity.HomeJson = model.HomeJson;
             if (model.Version > 0) entity.Version = model.Version;
             else if (entity.Version <= 0) entity.Version = 1;
             if (model.Remark != null) entity.Remark = model.Remark;

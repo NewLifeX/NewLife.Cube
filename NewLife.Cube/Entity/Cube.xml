@@ -738,6 +738,7 @@
         <Column Name="LayoutJson" DataType="String" Length="-1" Description="布局。JSON：mode/siderCollapsed/siderWidth/showTabs/contentWidth" />
         <Column Name="ThemeJson" DataType="String" Length="-1" Description="主题。JSON：appearance/primaryColor/radius/density/fontScale" />
         <Column Name="WorkspaceJson" DataType="String" Length="-1" Description="工作台。JSON：defaultView/pageSize" />
+        <Column Name="HomeJson" DataType="String" Length="-1" Description="首页工作台。JSON：version+widgets" />
         <Column Name="Version" DataType="Int32" Description="版本。配置契约版本" />
         <Column Name="Enable" DataType="Boolean" Description="启用" />
         <Column Name="CreateUserId" DataType="Int32" Description="创建者" Category="扩展" />

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createCommentApi, createPageApi, createProfileApi, createAutomationApi, createConfigApi, createWidgetApi } from './api';
+import { createCommentApi, createPageApi, createProfileApi, createAutomationApi, createConfigApi, createWidgetApi, createWorkbenchApi } from './api';
 import type { ApiResponse, EntityCommentModel, ViewProfileModel } from './types';
 
 vi.mock('axios', () => ({
@@ -204,6 +204,42 @@ describe('createWidgetApi', () => {
       url: '/Cube/Widget/Data',
       method: 'get',
       params: { name: 'InboxUnread' },
+    }));
+  });
+
+  it('catalog with surface query', async () => {
+    const request = vi.fn().mockResolvedValue({ code: 0, data: {} });
+    const api = createWidgetApi(request);
+    await api.catalog('workbench');
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Cube/Widget/Catalog',
+        method: 'get',
+        params: { surface: 'workbench' },
+      }),
+    );
+  });
+});
+
+describe('createWorkbenchApi', () => {
+  it('hits /Cube/Workbench and Role', async () => {
+    const request = vi.fn().mockResolvedValue({ code: 0, data: {} });
+    const api = createWorkbenchApi(request);
+    await api.get();
+    await api.put('{"version":1,"widgets":[]}');
+    await api.getRole(1);
+    await api.putRole(1, '');
+    expect(request).toHaveBeenNthCalledWith(1, expect.objectContaining({ url: '/Cube/Workbench', method: 'get' }));
+    expect(request).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      url: '/Cube/Workbench',
+      method: 'put',
+      data: { homeJson: '{"version":1,"widgets":[]}' },
+    }));
+    expect(request).toHaveBeenNthCalledWith(3, expect.objectContaining({ url: '/Cube/Workbench/Role/1', method: 'get' }));
+    expect(request).toHaveBeenNthCalledWith(4, expect.objectContaining({
+      url: '/Cube/Workbench/Role/1',
+      method: 'put',
+      data: { homeJson: '' },
     }));
   });
 });

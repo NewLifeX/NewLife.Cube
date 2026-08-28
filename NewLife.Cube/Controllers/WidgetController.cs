@@ -78,19 +78,28 @@ public class WidgetController(TokenService tokenService) : ControllerBaseX
         return Json(0, null, data);
     }
 
-    /// <summary>平台 kind + 当前用户可见的 named Widget</summary>
+    /// <summary>平台 kind + 当前用户可见的 named Widget。surface 默认 insight。</summary>
     [HttpGet("Catalog")]
-    public ActionResult Catalog()
+    public ActionResult Catalog(String surface = "insight")
     {
         var user = Current;
         if (user == null) return Json(401, "未授权");
-        // 页面仪表盘 Catalog 不含迷你看板（Workbench 另议）
-        var kinds = new[]
-        {
-            new { kind = "metricCard", title = "指标卡", providers = new[] { "entity.aggregate", "named" }, defaultW = 3 },
-            new { kind = "miniChart", title = "迷你图表", providers = new[] { "entity.aggregate" }, defaultW = 6 },
-        };
-        var named = CubeWidgetManager.CatalogFor(user).Select(e => new
+        var workbench = DashboardJson.IsWorkbench(surface);
+        var kinds = workbench
+            ? new[]
+            {
+                new { kind = "metricCard", title = "指标卡", providers = new[] { "entity.aggregate", "named" }, defaultW = 3 },
+                new { kind = "miniChart", title = "迷你图表", providers = new[] { "entity.aggregate" }, defaultW = 6 },
+                new { kind = "miniKanban", title = "数据看板", providers = new[] { "entity.list" }, defaultW = 6 },
+                new { kind = "dataList", title = "数据列表", providers = new[] { "entity.list" }, defaultW = 6 },
+                new { kind = "dataCard", title = "数据卡片", providers = new[] { "entity.list" }, defaultW = 6 },
+            }
+            : new[]
+            {
+                new { kind = "metricCard", title = "指标卡", providers = new[] { "entity.aggregate", "named" }, defaultW = 3 },
+                new { kind = "miniChart", title = "迷你图表", providers = new[] { "entity.aggregate" }, defaultW = 6 },
+            };
+        var named = CubeWidgetManager.CatalogFor(user, workbench ? DashboardJson.SurfaceWorkbench : DashboardJson.SurfaceInsight).Select(e => new
         {
             e.Name,
             e.Title,
@@ -98,6 +107,8 @@ public class WidgetController(TokenService tokenService) : ControllerBaseX
             e.Cols,
             e.AdminOnly,
             e.Surfaces,
+            e.Color,
+            e.Icon,
         }).ToList();
         return Json(0, null, new { kinds, named });
     }

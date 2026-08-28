@@ -6,16 +6,26 @@ using XCode.Membership;
 
 namespace NewLife.Cube.Widgets;
 
-/// <summary>DashboardJson 解析与校验（OSC-2608280e9e）</summary>
+/// <summary>DashboardJson 解析与校验（OSC-2608280e9e / OSC-26082815a1）</summary>
 public static class DashboardJson
 {
     /// <summary>最大字节</summary>
     public const Int32 MaxBytes = 64 * 1024;
 
-    /// <summary>部件上限</summary>
+    /// <summary>洞察槽部件上限</summary>
     public const Int32 MaxWidgets = 12;
 
-    static readonly HashSet<Int32> Widths = [3, 4, 6, 12];
+    /// <summary>工作台部件上限</summary>
+    public const Int32 MaxWidgetsWorkbench = 16;
+
+    /// <summary>表面：insight / workbench</summary>
+    public const String SurfaceInsight = "insight";
+
+    /// <summary>工作台表面</summary>
+    public const String SurfaceWorkbench = "workbench";
+
+    static readonly HashSet<Int32> WidthsInsight = [3, 4, 6, 12];
+    static readonly HashSet<Int32> WidthsWorkbench = [2, 3, 4, 6, 8, 12];
     static readonly HashSet<String> PlatformKinds = new(StringComparer.OrdinalIgnoreCase)
     {
         "metricCard", "miniChart"
@@ -30,8 +40,16 @@ public static class DashboardJson
         WriteIndented = false,
     };
 
-    /// <summary>规范化并校验。失败返回 false 与错误文案。</summary>
-    public static Boolean TryNormalize(String json, IUser user, Boolean checkSources, out String normalized, out String error)
+    /// <summary>是否工作台表面</summary>
+    public static Boolean IsWorkbench(String surface) =>
+        !surface.IsNullOrEmpty() && surface.EqualIgnoreCase(SurfaceWorkbench);
+
+    /// <summary>规范化并校验。失败返回 false 与错误文案。默认 insight，保持 e9e 行为。</summary>
+    public static Boolean TryNormalize(String json, IUser user, Boolean checkSources, out String normalized, out String error) =>
+        TryNormalize(json, user, checkSources, SurfaceInsight, out normalized, out error);
+
+    /// <summary>规范化并校验。surface=workbench 时放宽栅格、上限，并允许 miniKanban。</summary>
+    public static Boolean TryNormalize(String json, IUser user, Boolean checkSources, String surface, out String normalized, out String error)
     {
         normalized = null;
         error = null;
@@ -75,9 +93,10 @@ public static class DashboardJson
             error = "widgets 必须为数组";
             return false;
         }
-        if (arr.Count > MaxWidgets)
+        var max = IsWorkbench(surface) ? MaxWidgetsWorkbench : MaxWidgets;
+        if (arr.Count > max)
         {
-            error = "部件数量不能超过 12";
+            error = $"部件数量不能超过 {max}";
             return false;
         }
 
@@ -91,7 +110,7 @@ public static class DashboardJson
                 error = "部件必须为对象";
                 return false;
             }
-            if (!NormalizeWidget(w, user, checkSources, order, ids, out error))
+            if (!NormalizeWidget(w, user, checkSources, order, ids, surface, out error))
                 return false;
             items.Add(w);
             order++;
@@ -124,7 +143,7 @@ public static class DashboardJson
         return true;
     }
 
-    static Boolean NormalizeWidget(JsonObject w, IUser user, Boolean checkSources, Int32 index, HashSet<String> ids, out String error)
+    static Boolean NormalizeWidget(JsonObject w, IUser user, Boolean checkSources, Int32 index, HashSet<String> ids, String surface, out String error)
     {
         error = null;
         w.Remove("data");
@@ -174,6 +193,16 @@ public static class DashboardJson
             error = "miniKanban 仅允许 entity.list";
             return false;
         }
+        if (kind.EqualIgnoreCase("dataList") && !provider.EqualIgnoreCase("entity.list"))
+        {
+            error = "dataList 仅允许 entity.list";
+            return false;
+        }
+        if (kind.EqualIgnoreCase("dataCard") && !provider.EqualIgnoreCase("entity.list"))
+        {
+            error = "dataCard 仅允许 entity.list";
+            return false;
+        }
 
         if (provider.StartsWithIgnoreCase("entity."))
         {
@@ -198,10 +227,12 @@ public static class DashboardJson
                 error = "named 部件必须指定 widgetName";
                 return false;
             }
+            var reg = CubeWidgetManager.Find(name);
+            if (reg != null && !reg.Kind.IsNullOrEmpty())
+                w["kind"] = reg.Kind;
             if (checkSources && user != null)
             {
-                var reg = CubeWidgetManager.Find(name);
-                if (reg == null || !CubeWidgetManager.Visible(reg, user))
+                if (reg == null || !CubeWidgetManager.Visible(reg, user) || !CubeWidgetManager.MatchesSurface(reg, surface))
                 {
                     error = $"无权引用部件 {name}";
                     return false;
@@ -209,9 +240,10 @@ public static class DashboardJson
             }
         }
 
+        var widths = IsWorkbench(surface) ? WidthsWorkbench : WidthsInsight;
         var layout = w["layout"] as JsonObject ?? new JsonObject();
         var ww = layout["w"]?.GetValue<Int32>() ?? 3;
-        if (!Widths.Contains(ww)) ww = 3;
+        if (!widths.Contains(ww)) ww = 3;
         var order = layout["order"]?.GetValue<Int32>() ?? index;
         layout["w"] = ww;
         layout["order"] = order;
@@ -240,12 +272,17 @@ public static class DashboardJson
             if (query["limit"] != null)
             {
                 var lim = query["limit"]!.GetValue<Int32>();
-                if (lim < 1) lim = 30;
-                if (lim > 50) lim = 50;
+                // -1 = 全部（不截断）；其余默认 30、上限 300
+                if (lim != -1)
+                {
+                    if (lim < 1) lim = 30;
+                    if (lim > 300) lim = 300;
+                }
                 query["limit"] = lim;
             }
         }
 
+        kind = w["kind"]?.GetValue<String>()?.Trim() ?? kind;
         if (kind.EqualIgnoreCase("miniChart"))
         {
             var chartType = w["style"]?["chartType"]?.GetValue<String>() ?? "bar";
@@ -261,10 +298,19 @@ public static class DashboardJson
                 return false;
             }
         }
-        // 页面仪表盘（ViewProfile.DashboardJson）本号不允许迷你看板
-        if (kind.EqualIgnoreCase("miniKanban"))
+        if (kind.EqualIgnoreCase("miniKanban") && !IsWorkbench(surface))
         {
-            error = "页面仪表盘不支持迷你看板";
+            error = "页面仪表盘不支持数据看板";
+            return false;
+        }
+        if (kind.EqualIgnoreCase("dataList") && !IsWorkbench(surface))
+        {
+            error = "页面仪表盘不支持数据列表";
+            return false;
+        }
+        if (kind.EqualIgnoreCase("dataCard") && !IsWorkbench(surface))
+        {
+            error = "页面仪表盘不支持数据卡片";
             return false;
         }
 

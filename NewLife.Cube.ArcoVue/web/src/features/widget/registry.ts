@@ -1,11 +1,11 @@
 import type { Component } from 'vue';
-import type { WidgetProvider } from '@cube/api-core';
+import type { WidgetProvider, WidgetWidth } from '@cube/api-core';
 
 export interface WidgetDefinition {
   kind: string;
   title: string;
   providers: WidgetProvider[];
-  defaultW: 3 | 4 | 6 | 12;
+  defaultW: WidgetWidth;
   component: Component;
 }
 

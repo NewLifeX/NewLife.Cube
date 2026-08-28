@@ -1,17 +1,27 @@
 import { computed, onBeforeUnmount, onMounted, ref, toRef } from 'vue';
 import type { WidgetInstance } from '@cube/api-core';
 
-/** 相对旧版 88/160/240/320 减半：指标卡默认 h=2→80，迷你图默认 h=3→120 */
-const HEIGHTS: Record<number, number> = { 1: 44, 2: 80, 3: 120, 4: 160 };
+/** 相对旧版 88/160/240/320 减半；h=3 给监控图 / 快捷入口足够绘图高度 */
+const HEIGHTS: Record<number, number> = { 1: 72, 2: 100, 3: 180, 4: 260 };
 
 export function minHeightOf(h?: number): number {
-  return HEIGHTS[h ?? 2] ?? 80;
+  return HEIGHTS[h ?? 2] ?? 100;
 }
 
 export function spanOf(w: number, narrow: boolean): number {
   if (narrow) return 12;
-  if (w === 4 || w === 6 || w === 12) return w;
+  if (w === 2 || w === 3 || w === 4 || w === 6 || w === 8 || w === 12) return w;
   return 3;
+}
+
+/** 未写 layout.h 时的默认行高 */
+export function fallbackHeightOf(kind: string): number {
+  if (kind === 'monitorChart' || kind === 'quickLinks') return 3;
+  // 数据列表默认 7 行视口，需要更高卡片
+  if (kind === 'dataList') return 4;
+  if (kind === 'miniChart' || kind === 'miniKanban' || kind === 'dataCard') return 3;
+  if (kind === 'metricCard') return 1;
+  return 2;
 }
 
 export function useWidgetGrid(props: { widgets: WidgetInstance[] }) {
@@ -42,12 +52,11 @@ export function useWidgetGrid(props: { widgets: WidgetInstance[] }) {
     [...(widgets.value ?? [])]
       .sort((a, b) => a.layout.order - b.layout.order)
       .map((w) => {
-        const fallbackH =
-          w.kind === 'miniChart' || w.kind === 'miniKanban' ? 3 : 2;
+        const h = w.layout.h ?? fallbackHeightOf(w.kind);
         return {
           widget: w,
           span: spanOf(Number(w.layout.w) || 3, narrow.value),
-          minHeight: minHeightOf(w.layout.h ?? fallbackH),
+          minHeight: minHeightOf(h),
         };
       }),
   );

@@ -127,6 +127,21 @@ public class Osc260828WidgetTests
 
         Assert.False(DashboardJson.TryNormalize("""{"version":1,"widgets":[{"id":"l","kind":"legacyChart","title":"t","layout":{"w":3,"order":0},"source":{"provider":"entity.aggregate","typePath":"Admin/Osc260828"}}]}""", null, false, out _, out var e2));
         Assert.Contains("legacyChart", e2, StringComparison.OrdinalIgnoreCase);
+
+        Assert.False(DashboardJson.TryNormalize("""{"version":1,"widgets":[{"id":"k","kind":"miniKanban","title":"t","layout":{"w":6,"order":0},"source":{"provider":"entity.list","typePath":"Admin/Osc260828"}}]}""", null, false, out _, out var e3));
+        Assert.Contains("数据看板", e3);
+
+        Assert.False(DashboardJson.TryNormalize("""{"version":1,"widgets":[{"id":"d","kind":"dataList","title":"t","layout":{"w":6,"order":0},"source":{"provider":"entity.list","typePath":"Admin/Osc260828"}}]}""", null, false, out _, out var e4));
+        Assert.Contains("数据列表", e4);
+
+        Assert.True(DashboardJson.TryNormalize("""{"version":1,"widgets":[{"id":"d","kind":"dataList","title":"t","layout":{"w":6,"order":0},"source":{"provider":"entity.list","typePath":"Admin/Osc260828"}}]}""", null, false, DashboardJson.SurfaceWorkbench, out var listJson, out var e5), e5);
+        Assert.Contains("dataList", listJson);
+
+        Assert.False(DashboardJson.TryNormalize("""{"version":1,"widgets":[{"id":"c","kind":"dataCard","title":"t","layout":{"w":6,"order":0},"source":{"provider":"entity.list","typePath":"Admin/Osc260828"}}]}""", null, false, out _, out var e6));
+        Assert.Contains("数据卡片", e6);
+
+        Assert.True(DashboardJson.TryNormalize("""{"version":1,"widgets":[{"id":"c","kind":"dataCard","title":"t","layout":{"w":6,"order":0},"source":{"provider":"entity.list","typePath":"Admin/Osc260828"}}]}""", null, false, DashboardJson.SurfaceWorkbench, out var cardJson, out var e7), e7);
+        Assert.Contains("dataCard", cardJson);
     }
 
     [Fact(DisplayName = "DashboardJson：合法配置归一化 order 且保留未知键")]

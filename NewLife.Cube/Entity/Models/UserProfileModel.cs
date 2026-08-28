@@ -26,6 +26,9 @@ public partial class UserProfileModel
     /// <summary>工作台。JSON：defaultView/pageSize</summary>
     public String WorkspaceJson { get; set; }
 
+    /// <summary>首页工作台。JSON：version+widgets</summary>
+    public String HomeJson { get; set; }
+
     /// <summary>版本。配置契约版本</summary>
     public Int32 Version { get; set; }
 
@@ -64,6 +67,7 @@ public partial class UserProfileModel
         LayoutJson = model.LayoutJson;
         ThemeJson = model.ThemeJson;
         WorkspaceJson = model.WorkspaceJson;
+        HomeJson = model.HomeJson;
         Version = model.Version;
         Enable = model.Enable;
         CreateUserId = model.CreateUserId;

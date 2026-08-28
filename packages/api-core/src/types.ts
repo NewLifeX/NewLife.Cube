@@ -486,6 +486,8 @@ export interface UserProfileModel {
   layoutJson?: string | null;
   themeJson?: string | null;
   workspaceJson?: string | null;
+  /** 首页工作台。JSON：version+widgets（OSC-26082815a1） */
+  homeJson?: string | null;
   version?: number;
   enable?: boolean;
   remark?: string | null;

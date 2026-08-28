@@ -1,6 +1,6 @@
 import { computed, inject, ref } from 'vue';
 import { Message } from '@arco-design/web-vue';
-import { emptyDashboard, type WidgetInstance } from '@cube/api-core';
+import { emptyDashboard, maxWidgetsFor, type WidgetInstance } from '@cube/api-core';
 import { WIDGET_SURFACE_KEY } from './context';
 import { getWidget } from './registry';
 import { isUnlinkedWidget } from './legacy';
@@ -9,19 +9,23 @@ import LockedWidget from './LockedWidget.vue';
 import UnknownWidget from './UnknownWidget.vue';
 import LegacyChartWidget from './LegacyChartWidget.vue';
 
-const MAX = 12;
-
 export function useWidgetHost() {
   const ctx = inject(WIDGET_SURFACE_KEY);
   const dashboard = computed(() => ctx?.dashboard ?? emptyDashboard());
+  const maxWidgets = computed(() => maxWidgetsFor(ctx?.surface));
   const widgets = computed(() => {
     let list = [...(dashboard.value.widgets ?? [])].sort((a, b) => a.layout.order - b.layout.order);
-    if (ctx?.surface === 'insight') list = list.filter((w) => w.kind !== 'miniKanban');
+    if (ctx?.surface === 'insight') {
+      list = list.filter(
+        (w) => w.kind !== 'miniKanban' && w.kind !== 'dataList' && w.kind !== 'dataCard',
+      );
+    }
     return list;
   });
   const hostTypePath = computed(() => ctx?.hostTypePath);
   const hostFilter = computed(() => ctx?.hostFilter ?? null);
   const canEdit = computed(() => !!ctx?.canEdit);
+  const isWorkbench = computed(() => ctx?.surface === 'workbench');
   const { states } = useWidgetQuery(widgets, hostTypePath, hostFilter);
 
   const configVisible = ref(false);
@@ -62,8 +66,8 @@ export function useWidgetHost() {
   }
 
   function openAdd() {
-    if (widgets.value.length >= MAX) {
-      Message.warning('部件数量不能超过 12');
+    if (widgets.value.length >= maxWidgets.value) {
+      Message.warning(`部件数量不能超过 ${maxWidgets.value}`);
       return;
     }
     editing.value = null;
@@ -90,7 +94,11 @@ export function useWidgetHost() {
   async function persist(next: WidgetInstance[]) {
     if (!ctx) return;
     const filtered =
-      ctx.surface === 'insight' ? next.filter((w) => w.kind !== 'miniKanban') : next;
+      ctx.surface === 'insight'
+        ? next.filter(
+            (w) => w.kind !== 'miniKanban' && w.kind !== 'dataList' && w.kind !== 'dataCard',
+          )
+        : next;
     const widgetsNext = filtered.map((w, i) => ({ ...w, layout: { ...w.layout, order: i } }));
     await ctx.saveDashboard({
       ...dashboard.value,
@@ -101,18 +109,43 @@ export function useWidgetHost() {
 
   async function onConfigSave(inst: WidgetInstance) {
     if (ctx?.surface === 'insight' && inst.kind === 'miniKanban') {
-      Message.error('页面仪表盘不支持迷你看板');
+      Message.error('页面仪表盘不支持数据看板');
       return;
     }
-    const exists = widgets.value.some((w) => w.id === inst.id);
-    const list = widgets.value.filter((w) => w.id !== inst.id);
-    if (!exists && list.length >= MAX) {
-      Message.warning('部件数量不能超过 12');
+    if (ctx?.surface === 'insight' && inst.kind === 'dataList') {
+      Message.error('页面仪表盘不支持数据列表');
       return;
     }
-    list.push(inst);
-    await persist(list);
-    configVisible.value = false;
+    if (ctx?.surface === 'insight' && inst.kind === 'dataCard') {
+      Message.error('页面仪表盘不支持数据卡片');
+      return;
+    }
+    const list = [...widgets.value];
+    const idx = list.findIndex((w) => w.id === inst.id);
+    if (idx >= 0) {
+      // 编辑：原地替换，保留 order / 相对位置
+      const prev = list[idx];
+      list[idx] = {
+        ...inst,
+        layout: {
+          ...inst.layout,
+          order: prev.layout.order,
+        },
+      };
+    } else {
+      if (list.length >= maxWidgets.value) {
+        Message.warning(`部件数量不能超过 ${maxWidgets.value}`);
+        return;
+      }
+      // 新增：追加到末尾
+      list.push(inst);
+    }
+    try {
+      await persist(list);
+      configVisible.value = false;
+    } catch (e) {
+      Message.error(e instanceof Error ? e.message : '保存部件失败');
+    }
   }
 
   async function removeWidget(id: string) {
@@ -135,11 +168,13 @@ export function useWidgetHost() {
     widgets,
     canEdit,
     hasWidgets,
+    isWorkbench,
     states,
     resolveComponent,
     cardProps,
     configVisible,
     editing,
+    maxWidgets,
     openAdd,
     openEdit,
     openUpgrade,

@@ -75,6 +75,23 @@ describe('parseDashboardJson / serializeDashboardJson', () => {
     expect(parsed.widgets.map((w) => w.layout.order)).toEqual([0, 1]);
   });
 
+  it('workbench surface keeps w=8 and maps illegal w=5 to 3', () => {
+    const keep = parseDashboardJson(
+      '{"version":1,"widgets":[{"id":"a","kind":"monitorChart","title":"m","layout":{"w":8,"order":0},"source":{"provider":"named","widgetName":"Monitor"}}]}',
+      'workbench',
+    );
+    expect(keep?.widgets[0].layout.w).toBe(8);
+    const bad = parseDashboardJson(
+      '{"version":1,"widgets":[{"id":"a","kind":"metricCard","title":"t","layout":{"w":5,"order":0},"source":{"provider":"named","widgetName":"MyLogins"}}]}',
+      'workbench',
+    );
+    expect(bad?.widgets[0].layout.w).toBe(3);
+    const insight = parseDashboardJson(
+      '{"version":1,"widgets":[{"id":"a","kind":"metricCard","title":"t","layout":{"w":2,"order":0},"source":{"provider":"named","widgetName":"UserCount"}}]}',
+    );
+    expect(insight?.widgets[0].layout.w).toBe(3);
+  });
+
   it('validateDashboardForPut rejects duplicate id, legacyChart, oversize', () => {
     expect(validateDashboardForPut('')).toEqual({ ok: true, json: '' });
     const dup = serializeDashboardJson({
@@ -102,6 +119,15 @@ describe('parseDashboardJson / serializeDashboardJson', () => {
     expect(r.ok).toBe(false);
     const legacy = '{"version":1,"widgets":[{"id":"l","kind":"legacyChart","title":"t","layout":{"w":3,"order":0},"source":{"provider":"entity.aggregate","typePath":"Admin/User"},"query":{}}]}';
     expect(validateDashboardForPut(legacy).ok).toBe(false);
+    const kanban = '{"version":1,"widgets":[{"id":"k","kind":"miniKanban","title":"t","layout":{"w":6,"order":0},"source":{"provider":"entity.list","typePath":"Admin/User"},"query":{}}]}';
+    expect(validateDashboardForPut(kanban).ok).toBe(false);
+    expect(validateDashboardForPut(kanban, 'workbench').ok).toBe(true);
+    const dataList = '{"version":1,"widgets":[{"id":"d","kind":"dataList","title":"t","layout":{"w":6,"order":0},"source":{"provider":"entity.list","typePath":"Admin/User"},"query":{}}]}';
+    expect(validateDashboardForPut(dataList).ok).toBe(false);
+    expect(validateDashboardForPut(dataList, 'workbench').ok).toBe(true);
+    const dataCard = '{"version":1,"widgets":[{"id":"c","kind":"dataCard","title":"t","layout":{"w":6,"order":0},"source":{"provider":"entity.list","typePath":"Admin/User"},"query":{}}]}';
+    expect(validateDashboardForPut(dataCard).ok).toBe(false);
+    expect(validateDashboardForPut(dataCard, 'workbench').ok).toBe(true);
     expect(emptyDashboard()).toEqual({ version: 1, widgets: [] });
   });
 });

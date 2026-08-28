@@ -249,6 +249,13 @@
 - **SFC 薄壳：分享弹层的 watch 必须在 composable**：验收门禁 `sfcThin` 会拦 `.vue` 内 `watch`；`ShareViewPopover` 曾因此红。
 - **EmbedLayout 必须 `height:100%` 锁视口**：仅 `min-height:100vh` 时内容被 `#app height:100%` 裁切，滚动条与底部分页器消失。
 
+## OSC-26082815a1 — 2026-08-29
+
+- **角色模板空 `widgets:[]` 是有效域，会阻断系统种子**：尚未配置时点保存会钉死空墙；空保存应 `Clear`（PUT `""`）或拒绝，并提供「清除模板」。
+- **三层优先级单测必须交叉压测**：只测「单层命中」不够；至少要有「用户合法压角色」与「空串 HomeJson + 角色 → role」。
+- **Arco Table + Scrollbar 勿用 scrollTop 做自动滚**：表体常无真实纵向滚动端口；离散数据窗口轮播更稳。
+- **insight 禁 kind 扩到 dataList/dataCard 时同步改 proposal 目标 4 / Catalog / PUT / Host**：只写 miniKanban 会漏。
+
 ## 待办 — 字体规范（Harness）
 
 - 后续按现代中后台常见 **组件/场景**（列表表头、单元格、表单标签、抽屉标题、徽章等）在 Harness 建立统一的 **字体 / 字号 / 字重** 规范，并替换各处临时字重（如 VTable `headerStyle.fontWeight: 400`）。

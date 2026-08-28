@@ -118,5 +118,14 @@ describe('prefsFromWire / prefsToWirePayload', () => {
     expect(JSON.parse(payload.layoutJson!)).toMatchObject({ mode: 'side' });
     expect(JSON.parse(payload.themeJson!)).toMatchObject({ appearance: 'light' });
     expect(JSON.parse(payload.workspaceJson!)).toMatchObject({ pageSize: 20 });
+    expect(payload).not.toHaveProperty('homeJson');
+  });
+
+  it('mergeWorkspace 丢弃 home 键', () => {
+    const m = mergeProfile({
+      workspace: { defaultView: 'card', pageSize: 30, home: { widgets: [] } } as never,
+    });
+    expect(m.workspace.defaultView).toBe('card');
+    expect(m.workspace).not.toHaveProperty('home');
   });
 });

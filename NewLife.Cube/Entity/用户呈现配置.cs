@@ -62,6 +62,14 @@ public partial class UserProfile : IEntity<UserProfileModel>
     [BindColumn("WorkspaceJson", "工作台。JSON：defaultView/pageSize", "")]
     public String WorkspaceJson { get => _WorkspaceJson; set { if (OnPropertyChanging("WorkspaceJson", value)) { _WorkspaceJson = value; OnPropertyChanged("WorkspaceJson"); } } }
 
+    private String _HomeJson;
+    /// <summary>首页工作台。JSON：version+widgets</summary>
+    [DisplayName("首页工作台")]
+    [Description("首页工作台。JSON：version+widgets")]
+    [DataObjectField(false, false, true, -1)]
+    [BindColumn("HomeJson", "首页工作台。JSON：version+widgets", "")]
+    public String HomeJson { get => _HomeJson; set { if (OnPropertyChanging("HomeJson", value)) { _HomeJson = value; OnPropertyChanged("HomeJson"); } } }
+
     private Int32 _Version;
     /// <summary>版本。配置契约版本</summary>
     [DisplayName("版本")]
@@ -152,6 +160,7 @@ public partial class UserProfile : IEntity<UserProfileModel>
         LayoutJson = model.LayoutJson;
         ThemeJson = model.ThemeJson;
         WorkspaceJson = model.WorkspaceJson;
+        HomeJson = model.HomeJson;
         Version = model.Version;
         Enable = model.Enable;
         CreateUserId = model.CreateUserId;
@@ -177,6 +186,7 @@ public partial class UserProfile : IEntity<UserProfileModel>
             "LayoutJson" => _LayoutJson,
             "ThemeJson" => _ThemeJson,
             "WorkspaceJson" => _WorkspaceJson,
+            "HomeJson" => _HomeJson,
             "Version" => _Version,
             "Enable" => _Enable,
             "CreateUserId" => _CreateUserId,
@@ -197,6 +207,7 @@ public partial class UserProfile : IEntity<UserProfileModel>
                 case "LayoutJson": _LayoutJson = Convert.ToString(value); break;
                 case "ThemeJson": _ThemeJson = Convert.ToString(value); break;
                 case "WorkspaceJson": _WorkspaceJson = Convert.ToString(value); break;
+                case "HomeJson": _HomeJson = Convert.ToString(value); break;
                 case "Version": _Version = value.ToInt(); break;
                 case "Enable": _Enable = value.ToBoolean(); break;
                 case "CreateUserId": _CreateUserId = value.ToInt(); break;
@@ -287,6 +298,9 @@ public partial class UserProfile : IEntity<UserProfileModel>
         /// <summary>工作台。JSON：defaultView/pageSize</summary>
         public static readonly Field WorkspaceJson = FindByName("WorkspaceJson");
 
+        /// <summary>首页工作台。JSON：version+widgets</summary>
+        public static readonly Field HomeJson = FindByName("HomeJson");
+
         /// <summary>版本。配置契约版本</summary>
         public static readonly Field Version = FindByName("Version");
 
@@ -334,6 +348,9 @@ public partial class UserProfile : IEntity<UserProfileModel>
 
         /// <summary>工作台。JSON：defaultView/pageSize</summary>
         public const String WorkspaceJson = "WorkspaceJson";
+
+        /// <summary>首页工作台。JSON：version+widgets</summary>
+        public const String HomeJson = "HomeJson";
 
         /// <summary>版本。配置契约版本</summary>
         public const String Version = "Version";

@@ -1,8 +1,11 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import type { WidgetQueryResult } from '@cube/api-core';
+import { buildDrillViewFilter } from '@/core/utils/searchFilters';
 import { ensureEchartsTheme, initEcharts } from '@/core/utils/echartsTheme';
 import type { WidgetCardProps } from './context';
 import { buildMiniChartOption, type ChartItem } from './chartTemplates';
-import { minHeightOf } from './useWidgetGrid';
+import { normalizeTypePath } from './legacy';
 
 /** 兼容 items/Items 与 key/Key 混用 */
 export function readChartItems(result: unknown): ChartItem[] {
@@ -20,7 +23,24 @@ export function readChartItems(result: unknown): ChartItem[] {
   });
 }
 
+/** 从 ECharts click 参数解析维度 key */
+export function resolveChartDimKey(
+  params: { dataIndex?: number; name?: string },
+  items: ChartItem[],
+): string {
+  const idx = params.dataIndex;
+  if (typeof idx === 'number' && idx >= 0 && idx < items.length) {
+    const it = items[idx];
+    return String(it.key || it.label || '').trim();
+  }
+  const name = (params.name || '').trim();
+  if (!name) return '';
+  const hit = items.find((i) => i.label === name || i.key === name);
+  return String(hit?.key || hit?.label || name).trim();
+}
+
 export function useMiniChartWidget(props: WidgetCardProps) {
+  const router = useRouter();
   const chartEl = ref<HTMLElement | null>(null);
   let chart: ReturnType<typeof initEcharts> | null = null;
   let ro: ResizeObserver | null = null;
@@ -31,9 +51,12 @@ export function useMiniChartWidget(props: WidgetCardProps) {
   const option = computed(() =>
     buildMiniChartOption(props.widget.style?.chartType ?? 'bar', items.value),
   );
-  const chartHeight = computed(() => {
-    const cell = minHeightOf(props.widget.layout.h ?? 3);
-    return Math.max(72, cell - 36);
+  const drillable = computed(() => {
+    const tp = normalizeTypePath(props.widget.source?.typePath);
+    const url =
+      props.widget.style?.clickUrl ||
+      (props.result as WidgetQueryResult | undefined)?.url;
+    return !!tp || !!url;
   });
 
   function disposeChart() {
@@ -41,22 +64,68 @@ export function useMiniChartWidget(props: WidgetCardProps) {
     raf = 0;
     ro?.disconnect();
     ro = null;
+    chart?.off('click');
     chart?.dispose();
     chart = null;
   }
 
+  function scheduleResize() {
+    const el = chartEl.value;
+    if (!el || !chart) return;
+    const paint = () => {
+      if (el.clientWidth > 0 && el.clientHeight > 0) chart?.resize();
+    };
+    paint();
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => {
+      paint();
+      raf = requestAnimationFrame(paint);
+    });
+  }
+
   function bindResize(el: HTMLElement) {
     if (ro || typeof ResizeObserver === 'undefined') return;
-    ro = new ResizeObserver(() => {
-      if (el.clientWidth > 0) chart?.resize();
-    });
+    ro = new ResizeObserver(() => scheduleResize());
     ro.observe(el);
+  }
+
+  function navigateDrill(dimKey?: string) {
+    const tp = normalizeTypePath(props.widget.source?.typePath);
+    const dimField =
+      (props.widget.query?.groupBy || props.widget.query?.timeField || '').trim();
+    const key = (dimKey || '').trim();
+
+    // 点击柱/点：写入 viewFilter（与筛选构建器同构），列表页从 URL 应用
+    if (tp && dimField && key && key !== '其它') {
+      const vf = buildDrillViewFilter(dimField, key);
+      void router.push({
+        path: `/${tp}`,
+        query: { viewFilter: JSON.stringify(vf) },
+      });
+      return;
+    }
+
+    const fromStyle = props.widget.style?.clickUrl;
+    const fromData = (props.result as WidgetQueryResult | undefined)?.url;
+    const url = (fromStyle || fromData || '').toString();
+    if (url) {
+      if (/^https?:/i.test(url)) window.open(url, '_blank');
+      else void router.push(url.startsWith('/') ? url : `/${url}`);
+      return;
+    }
+    if (tp) void router.push(`/${tp}`);
+  }
+
+  function onChartClick(params: { componentType?: string; dataIndex?: number; name?: string }) {
+    if (params.componentType && params.componentType !== 'series') return;
+    const key = resolveChartDimKey(params, items.value);
+    navigateDrill(key);
   }
 
   async function render() {
     await nextTick();
     const el = chartEl.value;
-    if (!el || props.loading || props.error || items.value.length === 0) {
+    if (!el || props.error || items.value.length === 0) {
       if (items.value.length === 0) disposeChart();
       return;
     }
@@ -65,17 +134,13 @@ export function useMiniChartWidget(props: WidgetCardProps) {
       if (!chart || chart.getDom() !== el) {
         chart?.dispose();
         chart = initEcharts(el);
+        bindResize(el);
       }
       chart.setOption(option.value, true);
-      const paint = () => {
-        if (el.clientWidth > 0) chart?.resize();
-      };
-      paint();
-      raf = requestAnimationFrame(() => {
-        paint();
-        raf = requestAnimationFrame(paint);
-      });
-      bindResize(el);
+      chart.off('click');
+      chart.on('click', onChartClick);
+      el.style.cursor = drillable.value ? 'pointer' : '';
+      scheduleResize();
     } catch (err) {
       console.error('[MiniChart] echarts render failed', err);
     }
@@ -89,10 +154,10 @@ export function useMiniChartWidget(props: WidgetCardProps) {
     [
       () => option.value,
       chartEl,
-      () => props.loading,
       () => props.error,
       () => items.value.length,
-      chartHeight,
+      () => [props.widget.layout?.w, props.widget.layout?.h] as const,
+      drillable,
     ],
     () => {
       void render();
@@ -101,5 +166,5 @@ export function useMiniChartWidget(props: WidgetCardProps) {
 
   onBeforeUnmount(() => disposeChart());
 
-  return { chartEl, chartHeight, option, empty, items };
+  return { chartEl, option, empty, items, drillable };
 }

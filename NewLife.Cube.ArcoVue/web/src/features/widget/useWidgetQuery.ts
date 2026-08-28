@@ -30,11 +30,26 @@ export function normalizeQueryResult(data: unknown): WidgetQueryResult | null {
     }
   }
   const rows = r.rows ?? r.Rows;
+  const itemsRaw = r.items ?? r.Items;
   return {
+    ...r,
     value: r.value ?? r.Value,
-    items: readChartItems(r),
+    trend: r.trend ?? r.Trend,
+    url: (r.url ?? r.Url) as string | undefined,
+    items: Array.isArray(itemsRaw)
+      ? (itemsRaw as WidgetQueryResult['items'])
+      : readChartItems(r),
     rows: Array.isArray(rows) ? (rows as Record<string, unknown>[]) : undefined,
     hostFilterApplied: Boolean(r.hostFilterApplied ?? r.HostFilterApplied),
+    links: r.links ?? r.Links,
+    logins: r.logins ?? r.Logins,
+    onlines: r.onlines ?? r.Onlines,
+    unread: r.unread ?? r.Unread,
+    cpu: r.cpu ?? r.Cpu,
+    mem: r.mem ?? r.Mem,
+    time: r.time ?? r.Time,
+    name: r.name ?? r.Name,
+    displayName: r.displayName ?? r.DisplayName,
   };
 }
 
@@ -72,7 +87,8 @@ export function buildQueryBody(
   const typePath = normalizeTypePath(widget.source?.typePath);
   if (!typePath) return null;
   const kind = widget.kind;
-  const mode: 'aggregate' | 'list' = kind === 'miniKanban' ? 'list' : 'aggregate';
+  const def = getWidget(kind);
+  const mode: 'aggregate' | 'list' = def?.providers.includes('entity.list') ? 'list' : 'aggregate';
   const q = widget.query ?? {};
   return {
     mode,
@@ -164,7 +180,7 @@ export function useWidgetQuery(
             states[w.id] = {
               loading: false,
               error: err instanceof Error ? err.message : '加载失败',
-              locked: code === 403,
+              locked: code === 403 || code === 404,
               result: null,
               unlinked,
             };
@@ -196,7 +212,7 @@ export function useWidgetQuery(
           states[w.id] = {
             loading: false,
             error: err instanceof Error ? err.message : '加载失败',
-            locked: code === 403,
+            locked: code === 403 || code === 404,
             result: null,
             unlinked,
           };

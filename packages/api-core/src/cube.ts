@@ -1,7 +1,7 @@
 import type { AxiosInstance } from 'axios';
 import { createApiClient, createRequest, type ApiClientOptions } from './client';
 import { TokenManager, type TokenStorage } from './token';
-import { createUserApi, createMenuApi, createPageApi, createConfigApi, createProfileApi, createCommentApi, createAutomationApi, createWidgetApi } from './api';
+import { createUserApi, createMenuApi, createPageApi, createConfigApi, createProfileApi, createCommentApi, createAutomationApi, createWidgetApi, createWorkbenchApi } from './api';
 import { getServiceBaseUrl } from './service-path';
 
 export interface CubeApiOptions extends ApiClientOptions {
@@ -30,6 +30,8 @@ export interface CubeApi {
   automation: ReturnType<typeof createAutomationApi>;
   /** 页面仪表盘 Widget API（OSC-2608280e9e） */
   widget: ReturnType<typeof createWidgetApi>;
+  /** 首页工作台 API（OSC-26082815a1） */
+  workbench: ReturnType<typeof createWorkbenchApi>;
 }
 
 /**
@@ -75,5 +77,6 @@ export function createCubeApi(options: CubeApiOptions = {}): CubeApi {
     comment: createCommentApi(serviceRequest),
     automation: createAutomationApi(serviceRequest),
     widget: createWidgetApi(serviceRequest),
+    workbench: createWorkbenchApi(serviceRequest),
   };
 }

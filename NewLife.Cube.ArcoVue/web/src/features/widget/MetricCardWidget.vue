@@ -20,12 +20,12 @@
         @click="startTitleEdit"
       >{{ widget.title || '未命名' }}</span>
       <WidgetLinkBadge :widget="widget" />
-      <a-tag v-if="widget.style?.badge" size="small" color="arcoblue">{{ widget.style.badge }}</a-tag>
     </div>
     <a-spin :loading="loading" class="metric-spin">
       <div v-if="error" class="metric-err">{{ error }}</div>
       <div v-else class="metric-body">
         <div class="metric-value" :style="{ color }">{{ valueText }}</div>
+        <div v-if="labelText" class="metric-label">{{ labelText }}</div>
       </div>
     </a-spin>
     <div v-if="sparkOption" ref="sparkEl" class="metric-spark" />
@@ -39,7 +39,7 @@ import { useMetricCardWidget } from './useMetricCardWidget';
 import { useWidgetTitleEdit } from './useWidgetTitleEdit';
 
 const props = defineProps<WidgetCardProps>();
-const { valueText, sparkOption, color, icon, sparkEl, onClick } = useMetricCardWidget(props);
+const { valueText, labelText, sparkOption, color, icon, sparkEl, onClick } = useMetricCardWidget(props);
 const {
   editing: titleEditing,
   draft: titleDraft,
@@ -80,7 +80,8 @@ function onCardClick() {
 }
 .metric-title {
   flex: 1;
-  font-size: 12px;
+  font-size: var(--font-size-body-3, 14px);
+  font-weight: 500;
   color: var(--color-text-2);
   min-width: 0;
   overflow: hidden;
@@ -117,9 +118,21 @@ function onCardClick() {
   flex: 1;
   width: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 36px;
+  gap: 4px;
+}
+.metric-label {
+  font-size: var(--font-size-body-1, 12px);
+  color: var(--color-text-3);
+  line-height: 1.2;
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .metric-value {
   font-size: 32px;

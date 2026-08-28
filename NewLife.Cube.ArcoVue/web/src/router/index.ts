@@ -35,10 +35,10 @@ const routes: RouteRecordRaw[] = [
         path: 'home',
         name: 'Home',
         component: () => import('@/views/home/index.vue'),
-        meta: { title: '首页' },
+        meta: { title: '工作台' },
       },
       {
-        /** 工作台首页（菜单 visible=false 不注册动态路由，此处静态兜底）；经 pageKind=home 复用 DefaultHome */
+        /** 系统监控页（菜单 visible=false 不注册动态路由，此处静态兜底）；pageKind=home → DefaultHome。自定义工作台在静态 /home */
         path: 'Admin/Index',
         name: 'AdminIndex',
         component: () => import('@/views/dynamic/DynamicPage.vue'),
@@ -111,6 +111,17 @@ const routes: RouteRecordRaw[] = [
         beforeEnter: (_to, _from, next) => {
           useAppStore().openAppearanceDrawer();
           next({ path: '/home', replace: true });
+        },
+      },
+      {
+        path: 'settings/workbench-role',
+        name: 'WorkbenchRole',
+        component: () => import('@/views/settings/WorkbenchRole.vue'),
+        meta: { title: '角色工作台' },
+        beforeEnter: (_to, _from, next) => {
+          const user = useUserStore().userInfo;
+          if (user?.isSystem) next();
+          else next({ path: '/home', replace: true });
         },
       },
     ],

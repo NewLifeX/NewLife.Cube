@@ -33,7 +33,8 @@ const { chartEl, loading, error } = useLegacyChartWidget(props);
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
-  font-size: 13px;
+  font-size: var(--font-size-body-3, 14px);
+  font-weight: 500;
   color: var(--color-text-2);
 }
 .legacy-chart-body {

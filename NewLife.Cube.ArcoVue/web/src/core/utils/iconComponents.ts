@@ -11,6 +11,8 @@ import type { Component } from 'vue';
 import {
   AddUser,
   Application,
+  ApplicationMenu,
+  Attention,
   BigClock,
   BackgroundColor,
   Blackboard,
@@ -64,6 +66,7 @@ import {
   ListCheckbox,
   ListNumbers,
   Lock,
+  Login,
   Logout,
   Mail,
   MenuFold,
@@ -91,6 +94,7 @@ import {
   Search,
   Send,
   Setting,
+  SettingConfig,
   Share,
   ShoppingBag,
   Star,
@@ -106,6 +110,7 @@ import {
   Up,
   Upload,
   User,
+  Workbench,
 } from '@icon-park/vue-next';
 
 /** kebab-case 图标名 → 组件（与 iconRegistry.ts 注册的图标名一一对应） */
@@ -145,6 +150,7 @@ export const ICON_COMPONENTS: Record<string, Component> = {
   lightning: Lightning,
   tool: Tool,
   setting: Setting,
+  'setting-config': SettingConfig,
   data: Data,
   history: History,
   'big-clock': BigClock,
@@ -153,6 +159,7 @@ export const ICON_COMPONENTS: Record<string, Component> = {
   home: Home,
   search: Search,
   dashboard: Dashboard,
+  workbench: Workbench,
   'chart-line': ChartLine,
   'chart-histogram': ChartHistogram,
   'chart-histogram-one': ChartHistogramOne,
@@ -170,6 +177,9 @@ export const ICON_COMPONENTS: Record<string, Component> = {
   box: Box,
   inbox: Inbox,
   application: Application,
+  'application-menu': ApplicationMenu,
+  login: Login,
+  attention: Attention,
   // 产品命名专用
   'cube-three': CubeThree,
   'connection-box': ConnectionBox,

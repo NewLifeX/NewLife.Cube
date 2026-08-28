@@ -1,5 +1,5 @@
 <template>
-  <!-- 有部件：网格；空且可编辑：添加入口；空且只读：不占高度 -->
+  <!-- 有部件才渲染墙面；insight 空墙不占位（入口在视图配置/高级菜单） -->
   <div v-if="hasWidgets" class="widget-host">
     <WidgetGrid :widgets="widgets">
       <template #default="{ widget }">
@@ -10,7 +10,7 @@
                 <a-button
                   type="text"
                   class="widget-ops-btn"
-                  :disabled="widgets.length >= 12"
+                  :disabled="widgets.length >= maxWidgets"
                   @click="openAdd"
                 >
                   <icon-park type="plus" :size="14" />
@@ -45,13 +45,14 @@
       </template>
     </WidgetGrid>
   </div>
-  <div v-else-if="canEdit" class="widget-host widget-host--empty">
+  <!-- 仅工作台保留空态添加入口；页面仪表盘空时不显示「+添加部件」 -->
+  <div v-else-if="canEdit && isWorkbench" class="widget-host widget-host--empty">
     <a-button type="dashed" long @click="openAdd">
       <icon-park type="plus" />
       添加部件
     </a-button>
   </div>
-  <!-- 抽屉始终挂载，供视图配置「打开页面仪表盘」在空槽时添加 -->
+  <!-- 抽屉始终挂载，供视图配置「打开页面仪表盘」/高级菜单在空槽时添加 -->
   <WidgetConfigDrawer
     v-model:visible="configVisible"
     :editing="editing"
@@ -72,10 +73,12 @@ const {
   widgets,
   canEdit,
   hasWidgets,
+  isWorkbench,
   resolveComponent,
   cardProps,
   configVisible,
   editing,
+  maxWidgets,
   openAdd,
   openEdit,
   openUpgrade,
@@ -102,7 +105,11 @@ defineExpose({ openAdd });
   position: relative;
   flex: 1;
   display: flex;
+  flex-direction: column;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 /* 与卡片内标题行水平对齐（卡片 padding-top: 10px，标题行高约 22px） */
 .widget-shell-ops {

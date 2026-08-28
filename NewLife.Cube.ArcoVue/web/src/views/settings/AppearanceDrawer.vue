@@ -118,6 +118,7 @@
 
     <template #footer>
       <a-space>
+        <a-button v-if="showRoleWorkbench" @click="goRoleWorkbench">角色工作台</a-button>
         <a-button :loading="profileStore.saving" @click="reset">恢复默认</a-button>
         <a-tag v-if="profileStore.dirty" color="orangered">有未同步更改</a-tag>
         <a-tag v-else-if="profileStore.saving" color="arcoblue">同步中…</a-tag>
@@ -129,7 +130,10 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAppearanceDrawer } from './useAppearanceDrawer';
+import { useUserStore } from '@/stores/user';
 
 defineOptions({ name: 'AppearanceDrawer' });
 
@@ -150,6 +154,14 @@ const {
   openCustomColorPicker,
   reset,
 } = useAppearanceDrawer();
+
+const router = useRouter();
+const userStore = useUserStore();
+const showRoleWorkbench = computed(() => userStore.userInfo?.isSystem === true);
+function goRoleWorkbench() {
+  emit('update:visible', false);
+  void router.push('/settings/workbench-role');
+}
 </script>
 
 <style scoped>

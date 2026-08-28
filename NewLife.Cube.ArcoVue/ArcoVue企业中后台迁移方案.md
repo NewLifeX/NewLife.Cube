@@ -257,11 +257,11 @@ NewLife.Cube.ArcoVue/web/src/
 
 | 对象 | 读取顺序 | 说明 |
 |------|----------|------|
-| **首页工作台**（平台槽位） | **用户 > 主角色 > 系统默认** | 已拍板。用户 `UserProfile.workspace` 有有效槽位配置则整份采用，改角色默认不覆盖已个性化用户。角色层只看会员体系 **主角色**（`RoleId`），附加 `RoleIds` 不合并。管理员写角色工作台；用户只写自己的 Profile。聚合 API 按当前用户解析后下发。**不做租户层工作台。** |
+| **首页工作台**（平台槽位） | **用户 > 主角色 > 系统默认** | OSC-26082815a1 已落地。用户 `UserProfile.HomeJson` 合法（含空 `widgets`）则整份采用，改角色默认不覆盖已个性化用户。角色层只看会员体系 **主角色**（`RoleId`），附加 `RoleIds` 不合并。管理员写 Parameter `Workbench.Role`；用户只写自己的 HomeJson。`GET /Cube/Workbench` 按当前用户解析下发。**不做租户层工作台。** |
 | **实体视图**（ViewProfile） | **个人 > 全局模板（UserId=0）> 系统默认** | 已交付（OSC-0014）。**不做角色层**，除非另立。 |
 | 壳布局 / 主题 | 仍走 UserProfile 个人配置 | 与首页槽位同实体，但字段不同 |
 
-壳与首页槽位都在 UserProfile 上；角色工作台建议挂 Role 扩展 JSON 或独立 RoleWorkspace，避免用 `UserId=0` 模板表硬塞角色维。详情见 §8.5.2。
+壳布局/主题仍在 UserProfile（`LayoutJson`/`ThemeJson`/`WorkspaceJson`）；首页槽位单独走 `HomeJson`。角色工作台用 Parameter `UserID=0` + `Category=Workbench.Role` + `LongValue`，**不**新建 `RoleWorkspace` 表。详情见 §8.5.2。
 
 ### 5.2 对象模型
 
@@ -588,15 +588,17 @@ DefaultList 固定容器
 
 基础设施（认证、RBAC、多租户、`IModule`、通知、AI）复用，不平行造会话。
 
-#### 8.5.2 首页工作台：用户 > 主角色（已拍板）
+#### 8.5.2 首页工作台：用户 > 主角色（OSC-26082815a1 已实现）
 
-不是 Widget 市场：槽位由平台注册。读取**整份**配置（与「已个性化不覆盖」同构）：
+不是 Widget 市场：named 目录为 CubeNC 13 个预定义部件的 SPA 对等实现（`ICubeWidget`，不引用 Razor `IWidget`）加 Inbox。读取**整份**配置：
 
-1. 用户 `UserProfile.workspace` 有有效首页槽位 → 用用户的。
-2. 否则主角色（`RoleId`）上的工作台 JSON → 用角色的；`RoleIds` 附加角色不参与、不合并。
-3. 否则系统默认槽位枚举。
+1. 用户 `UserProfile.HomeJson` 合法（含 `widgets:[]`）→ `source=user`。
+2. 否则主角色 `Parameter(UserID=0, Category=Workbench.Role, Name={roleId})` 的 **LongValue** → `source=role`；附加 `RoleIds` 不参与、不合并。
+3. 否则系统种子（`IsSystem` → admin 六 KPI+Monitor 等；否则 member）→ `source=system`。
 
-写入：用户只写自己的 UserProfile；角色工作台仅管理员写。聚合 API（待办数、快捷菜单、授权内 KPI）按当前用户解析后下发，前端不自己选角色。与 Db/进程监控页分离。不做租户层。
+写入：`PUT /Cube/Workbench` 只写当前用户 HomeJson（空串清除并继承）；`PUT /Cube/Workbench/Role/{id}` 仅系统角色。`WorkspaceJson` 仍是列表偏好，**禁止**塞首页布局。与 `/Admin/Index` 监控页分离。不做租户层、不做整页画布。
+
+洞察槽（§8.5.3）仍禁用 miniKanban、上限 12、`w∈{3,4,6,12}`。工作台开放看板，上限 16，`w∈{2,3,4,6,8,12}`。
 
 #### 8.5.3 页面仪表盘 Widget 协议（OSC-2608280e9e）
 
@@ -606,7 +608,7 @@ DefaultList 固定容器
 |------|------|------|
 | 指标卡 `metricCard` | `POST /Cube/Widget/Query` aggregate（count/sum/avg/min/max） | 源 `typePath` 须 Detail；禁止 SQL/脚本 |
 | 迷你图表 `miniChart` | 同上；平台模板 sparkline/line/bar/pie（时间分桶：SQLite/MySQL/SQLServer/PostgreSQL） | 禁止把用户自由 ECharts option 当新编 |
-| 迷你看板 `miniKanban` | Query `mode=list` + `KanbanBoard compact` | **洞察槽本号暂缓**（Catalog/PUT/Host 禁用）；留给首页工作台 OSC；协议与 compact 渲染器仍保留 |
+| 迷你看板 `miniKanban` | Query `mode=list` + `KanbanBoard compact` | **洞察槽禁用**；首页工作台 OSC-26082815a1 已开放 |
 | 筛选联动 | 宿主 **筛选构建器** `hostFilter`；不绑 SearchDrawer | 同源 AND；跨实体须 `linkFilter`，无映射则「未联动」 |
 
 协议：`ICubeWidget` + `registerWidget`（C# 扫描 named；Vue `features/widget/registry.ts`）。聚合走 Query，禁止前端 N×GetList。上限 12 张 / 64KiB。`PUT dashboardJson: ""` 清除个人域并继承模板；显式 `{"version":1,"widgets":[]}` 表示用户清空、不继承。旧 `NamedView.insight` 仅在 DashboardJson 未配置时只读合成（`legacyChart` 禁止 PUT）。首页工作台不在本号。视图分享：embed 短令牌（`LoadToken` 接受非 JWT + Url 白名单）。
@@ -636,7 +638,7 @@ DefaultList 固定容器
 
 #### 8.5.6 建议立项切分
 
-首页「用户 > 主角色」规则已定，不再作为拍板题。实现建议另开 OSC（可与仪表盘、查询收口合并或拆开，由委员会按 [架构分享-开场.md](./架构分享-开场.md) 拍板第 4～5 条决定）。
+首页「用户 > 主角色」已由 OSC-26082815a1 落地（`HomeJson` + Parameter `Workbench.Role` + `/Cube/Workbench`）。
 
 ### 8.3 业务侧日常开发
 
@@ -870,7 +872,7 @@ Draft → Accepted → Implementing → Validating → Done
 | 2 | ~~`UserProfile.workspace.defaultView / pageSize` 已建模未消费~~（OSC-0012：无 ViewProfile 时回落默认视图；页面级 PageSize 已按 typePath 接入，旧全局值仅作种子） | P0 | ✅ 已解决 |
 | 3 | ~~筛选记忆未持久化（filtersJson 预留未用；分组为占位）~~（OSC-0012：仅保存当前实体、当前命名视图的搜索条件；不做通用数据范围引擎。OSC-0015：筛选构建器条件组保存到 `NamedView.filter` 纯前端过滤；多级分组 ≤3 字段保存到 `NamedView.group`，table 用 VTable 原生 groupBy、树视图不允许分组） | P1 | ✅ 已解决 |
 | 4 | 列 frozen 仅 left/false，无 right（2026-08-18 复审仍未做） | P1 | 补充右冻结 |
-| 5 | 首页工作台角色层未实现（§5.1 / §8.5.2 已定为用户>主角色；实体 ViewProfile 仍无角色层） | P1 | 角色工作台存储 + 聚合 API；与实体视图角色层分开 |
+| 5 | ~~首页工作台角色层未实现~~（OSC-26082815a1：`HomeJson` + Parameter `Workbench.Role` + `/Cube/Workbench`；实体 ViewProfile 仍无角色层） | P1 | ✅ 已解决 |
 | 6 | 组件测试缺失（仅纯逻辑单测；2026-08-18 复审：495 单测全过但组件测试仍为 0） | P1 | `@vue/test-utils` + happy-dom 覆盖关键组件 |
 | 7 | ~~table/tree 分组入口 `Message.info` 占位~~（OSC-0015 已实现 GroupPopover 多级分组；排序走表头，工具栏排序按钮已移除）、`NamedViewsToolbar.vue` 无引用（2026-08-18 复审仍未清理） | P2 | 清理或实现 |
 | 8 | `ListTable` 树列标记排除条件写 `__check`（实际复选框列为 `__checked`），showCheckbox+hierarchy 同时开启时 tree:true 可能标错列（2026-08-18 复审仍未修） | P2 | 修正排除条件 |
@@ -946,7 +948,7 @@ Draft → Accepted → Implementing → Validating → Done
 | OSC-260815fa86 ✅ | 实体增删改自动化（GraphJson + C# AutomationExecutor；非 FlowGram 运行时） | Cube + ArcoVue | OSC-0003 |
 | OSC-2608178bdb ✅ | 列表自定义链接分流放置（方案 E：Url/dataAction 按单元格 vs 操作列分流） | 仅 ArcoVue | OSC-0007 |
 
-截至 2026-08-18 已归档 21 号（0001~0019 中 0010/0011 从未创建、0018 未完成，另有 OSC-2608 号五单）。剩余待办：**OSC-0010** 流程设计器（§8.5.5）、**OSC-0011** 收口、**OSC-0018** 实体界面自定义设计方案（Draft）、i18n、组件测试、**§8.5** 首页工作台用户>主角色 / Insight 第一期 / 查询收口 / 流程运行时模块。
+截至 2026-08-18 已归档 21 号（0001~0019 中 0010/0011 从未创建、0018 未完成，另有 OSC-2608 号五单）。剩余待办：**OSC-0010** 流程设计器（§8.5.5）、**OSC-0011** 收口、**OSC-0018** 实体界面自定义设计方案（Draft）、i18n、组件测试、**§8.5** 查询收口 / 流程运行时模块（首页工作台 OSC-26082815a1、Insight OSC-2608280e9e 已交付）。
 
 ---
 

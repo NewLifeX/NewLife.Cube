@@ -1,12 +1,12 @@
 <template>
-  <DefaultHome />
+  <Workbench />
 </template>
 
 <script setup lang="ts">
 /**
- * /home 薄壳（OSC-2608139feb）：直接复用 DefaultHome，与 /Admin/Index 同一实现。
+ * /home 工作台（OSC-26082815a1）。/Admin/Index 仍走 DefaultHome 监控页。
  */
-import DefaultHome from './DefaultHome.vue';
+import Workbench from './Workbench.vue';
 
 defineOptions({ name: 'Home' });
 </script>

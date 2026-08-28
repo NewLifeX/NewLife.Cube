@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { serializeDashboardJson } from '@cube/api-core';
 import { isUnlinkedWidget, normalizeSourceRows, synthesizeLegacyDashboard } from './legacy';
-import { resolveKanbanInteractive } from './useMiniKanbanWidget';
-import { readChartItems } from './useMiniChartWidget';
+import {
+  fallbackKanbanDisplayFields,
+  normalizeKanbanDisplayFields,
+  resolveKanbanInteractive,
+} from './useMiniKanbanWidget';
+import { readChartItems, resolveChartDimKey } from './useMiniChartWidget';
 import { normalizeQueryResult, shouldQueryWidget } from './useWidgetQuery';
 import { buildMiniChartOption } from './chartTemplates';
 import { getWidget, registerWidget } from './registry';
@@ -90,6 +94,22 @@ describe('readChartItems', () => {
   });
 });
 
+describe('resolveChartDimKey', () => {
+  const items = [
+    { key: '1', label: '部门', value: 4 },
+    { key: '2', label: '公司', value: 2 },
+  ];
+
+  it('uses dataIndex key', () => {
+    expect(resolveChartDimKey({ dataIndex: 0 }, items)).toBe('1');
+    expect(resolveChartDimKey({ dataIndex: 1 }, items)).toBe('2');
+  });
+
+  it('falls back to name match', () => {
+    expect(resolveChartDimKey({ name: '公司' }, items)).toBe('2');
+  });
+});
+
 describe('normalizeQueryResult', () => {
   it('unwraps ApiResponse envelope', () => {
     const r = normalizeQueryResult({
@@ -98,6 +118,15 @@ describe('normalizeQueryResult', () => {
     });
     expect(r?.items).toHaveLength(1);
     expect(r?.items?.[0].label).toBe('男');
+  });
+
+  it('reads Trend/trend and Url/url', () => {
+    expect(normalizeQueryResult({ Trend: '注册用户', Value: '12', Url: '/Admin/User' })).toMatchObject({
+      trend: '注册用户',
+      value: '12',
+      url: '/Admin/User',
+    });
+    expect(normalizeQueryResult({ trend: 'x', value: 1, url: '/a' })?.trend).toBe('x');
   });
 });
 
@@ -133,6 +162,31 @@ describe('isUnlinkedWidget', () => {
         'Admin/User',
       ),
     ).toBe(false);
+  });
+});
+
+describe('normalizeKanbanDisplayFields', () => {
+  it('dedupes, excludes title/group, caps at 8', () => {
+    expect(
+      normalizeKanbanDisplayFields(
+        ['Name', 'name', 'Code', 'Enable', 'Title', 'A', 'B', 'C', 'D', 'E', 'F'],
+        { groupField: 'Enable', titleField: 'Title' },
+      ),
+    ).toEqual(['Name', 'Code', 'A', 'B', 'C', 'D', 'E', 'F']);
+  });
+
+  it('empty mapping falls back to list data columns minus title/group', () => {
+    expect(
+      fallbackKanbanDisplayFields(
+        [
+          { name: 'Name', displayName: '名称', typeName: 'String' },
+          { name: 'RoleID', displayName: '角色', typeName: 'Int32' },
+          { name: 'Code', displayName: '编码', typeName: 'String' },
+          { name: 'Enable', displayName: '启用', typeName: 'Boolean' },
+        ],
+        { groupField: 'RoleID', titleField: 'Name' },
+      ),
+    ).toEqual(['Code', 'Enable']);
   });
 });
 
@@ -248,5 +302,22 @@ describe('Host isolation', () => {
     const p = resolve(fileURLToPath(import.meta.url), '..', 'useWidgetHost.ts');
     const src = readFileSync(p, 'utf8');
     expect(src).not.toMatch(/useListQuery/);
+  });
+});
+
+describe('workbench grid', () => {
+  it('spanOf accepts 2 and 8; narrow is 12', async () => {
+    const { spanOf, fallbackHeightOf, minHeightOf } = await import('./useWidgetGrid');
+    expect(spanOf(2, false)).toBe(2);
+    expect(spanOf(8, false)).toBe(8);
+    expect(spanOf(5, false)).toBe(3);
+    expect(spanOf(2, true)).toBe(12);
+    expect(fallbackHeightOf('monitorChart')).toBe(3);
+    expect(fallbackHeightOf('quickLinks')).toBe(3);
+    expect(fallbackHeightOf('dataList')).toBe(4);
+    expect(fallbackHeightOf('miniKanban')).toBe(3);
+    expect(fallbackHeightOf('dataCard')).toBe(3);
+    expect(minHeightOf(4)).toBe(260);
+    expect(minHeightOf(3)).toBe(180);
   });
 });

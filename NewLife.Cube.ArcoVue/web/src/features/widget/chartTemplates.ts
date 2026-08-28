@@ -6,6 +6,7 @@ export interface ChartItem {
   key: string;
   label: string;
   value: unknown;
+  [key: string]: unknown;
 }
 
 function num(v: unknown): number {
@@ -65,7 +66,7 @@ export function buildMiniChartOption(
     return {
       color: [c],
       tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-      grid: { left: 48, right: 36, top: 8, bottom: 8 },
+      grid: { left: 8, right: 28, top: 4, bottom: 4, containLabel: true },
       xAxis: {
         type: 'value',
         splitLine: noSplit,
@@ -94,11 +95,11 @@ export function buildMiniChartOption(
     return {
       color: [c],
       tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-      grid: { left: 8, right: 8, top: 28, bottom: 22 },
+      grid: { left: 4, right: 4, top: 22, bottom: 0, containLabel: true },
       xAxis: {
         type: 'category',
         data: labels,
-        axisLabel: { hideOverlap: true, fontSize: 11 },
+        axisLabel: { hideOverlap: true, fontSize: 11, margin: 4 },
         axisTick: { show: false },
         axisLine: { show: true },
         splitLine: noSplit,
@@ -128,19 +129,20 @@ export function buildMiniChartOption(
     tooltip: spark ? { show: false } : { trigger: 'axis' },
     grid: spark
       ? { left: 0, right: 0, top: 4, bottom: 0 }
-      : { left: 28, right: 8, top: 20, bottom: 22 },
+      : { left: 4, right: 4, top: 20, bottom: 0, containLabel: true },
     xAxis: {
       type: 'category',
       data: labels,
       show: !spark,
       boundaryGap: false,
       axisTick: { show: false },
+      axisLabel: { hideOverlap: true, fontSize: 11, margin: 4 },
       splitLine: noSplit,
     },
     yAxis: {
       type: 'value',
       show: !spark,
-      splitLine: spark ? noSplit : noSplit,
+      splitLine: noSplit,
       axisLine: { show: false },
       axisTick: { show: false },
     },

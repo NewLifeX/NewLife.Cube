@@ -25,6 +25,12 @@ public sealed class CubeWidgetAttribute : Attribute
     /// <summary>表面：insight,workbench</summary>
     public String Surfaces { get; set; } = "insight,workbench";
 
+    /// <summary>指标卡配色（blue/green/cyan/grey/red/orange）</summary>
+    public String Color { get; set; }
+
+    /// <summary>建议图标（fa-* 或 IconPark type）</summary>
+    public String Icon { get; set; }
+
     /// <summary>实例化</summary>
     public CubeWidgetAttribute(String name, String title)
     {

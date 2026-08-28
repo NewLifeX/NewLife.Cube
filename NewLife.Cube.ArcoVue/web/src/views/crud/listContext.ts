@@ -350,7 +350,7 @@ export function createListContext(props: { type: string; authId?: number }) {
     }),
   );
 
-  /** 「高级」菜单：导入/导出 | 批量操作 | 自动化流程/表单布局（分享页不展示后两项） */
+  /** 「高级」菜单：导入/导出 | 批量操作 | 自动化/表单布局/页面仪表盘（分享页不展示后几项） */
   const advancedVisible = computed(() => {
     const embed = isEmbedMode();
     return (
@@ -360,7 +360,8 @@ export function createListContext(props: { type: string; authId?: number }) {
       batchEnableState.value.visible ||
       flags.value.canEdit ||
       (!embed && flags.value.canUpdate) ||
-      (!embed && isAdmin.value)
+      (!embed && isAdmin.value) ||
+      !embed // 页面仪表盘入口
     );
   });
 
