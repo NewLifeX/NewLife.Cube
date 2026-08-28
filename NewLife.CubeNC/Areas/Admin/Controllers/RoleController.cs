@@ -77,14 +77,21 @@ public class RoleController(ITenantContext tenantContext) : EntityController<Rol
 
         if (post && type is DataObjectMethodType.Insert or DataObjectMethodType.Update)
         {
+            // 租户管理员（在租户上下文中操作、且本身不是系统管理员）只能授予自己拥有的权限，
+            // 提交时对越权勾选的权限进行拦截，避免越界授权
+            var current = ManageProvider.User as IUser;
+            var restricted = TenantContext.CurrentId > 0 && (current == null || !current.Roles.Any(e => e.IsSystem));
+
             // JSON API 请求：权限字符串由前端构建并通过模型绑定写入 entity.Permission
             // 此处需解析字符串并通过 entity.Set() 同步更新 Permissions 字典，确保保存时不会丢失
             if (Request.ContentType != null && Request.ContentType.Contains("application/json"))
             {
-                RolePermissionHelper.Apply(entity, entity.Permission);
+                // 解析权限字符串并通过 entity.Set() 同步更新 Permissions 字典，确保保存时不会丢失；
+                // 受限模式（租户管理员）只授予自己拥有的权限位，保留系统管理员授予的其它权限
+                RolePermissionHelper.Apply(entity, entity.Permission, current, restricted);
 
                 // 初始化权限：系统角色（管理员）新增时默认添加全部权限，非系统角色默认不添加任何权限
-                if (entity.IsSystem && type == DataObjectMethodType.Insert && entity.Permission.IsNullOrEmpty())
+                if (entity.IsSystem && type == DataObjectMethodType.Insert && !restricted && entity.Permission.IsNullOrEmpty())
                 {
                     foreach (var item in XCode.Membership.Menu.Root.AllChilds)
                     {
@@ -98,11 +105,6 @@ public class RoleController(ITenantContext tenantContext) : EntityController<Rol
             }
 
             // MVC 表单提交：通过 p{id} / pf{id}_{flag} 字段处理权限
-            // 租户管理员（在租户上下文中操作、且本身不是系统管理员）只能授予自己拥有的权限，
-            // 提交时对越权勾选的权限进行拦截，避免越界授权
-            var current = ManageProvider.User as IUser;
-            var restricted = TenantContext.CurrentId > 0 && (current == null || !current.Roles.Any(e => e.IsSystem));
-
             // 保存权限项
             var menus = XCode.Membership.Menu.Root.AllChilds;
             var dels = new List<Int32>();

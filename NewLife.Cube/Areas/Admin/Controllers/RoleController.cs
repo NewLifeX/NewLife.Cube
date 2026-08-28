@@ -62,11 +62,12 @@ public class RoleController : EntityController<Role, RoleModel>
             // 此处需解析字符串并通过 entity.Set() 同步更新 Permissions 字典，确保保存时不会丢失
             if (Request.ContentType != null && Request.ContentType.Contains("application/json"))
             {
-                // 解析权限字符串并通过 entity.Set() 同步更新 Permissions 字典，确保保存时不会丢失
-                RolePermissionHelper.Apply(entity, entity.Permission);
+                // 解析权限字符串并通过 entity.Set() 同步更新 Permissions 字典，确保保存时不会丢失；
+                // 受限模式（租户管理员）只授予自己拥有的权限位，保留系统管理员授予的其它权限
+                RolePermissionHelper.Apply(entity, entity.Permission, current, restricted);
 
                 // 初始化权限：系统角色（管理员）新增时默认添加全部权限，非系统角色默认不添加任何权限
-                if (entity.IsSystem && type == DataObjectMethodType.Insert && entity.Permission.IsNullOrEmpty())
+                if (entity.IsSystem && type == DataObjectMethodType.Insert && !restricted && entity.Permission.IsNullOrEmpty())
                 {
                     foreach (var item in XCode.Membership.Menu.Root.AllChilds)
                     {
@@ -135,24 +136,6 @@ public class RoleController : EntityController<Role, RoleModel>
         if (post) Role.Meta.Session.ClearCache($"{type}-{entity}", true);
 
         return rs;
-    }
-
-    /// <summary>计算指定用户在某资源上拥有的权限位集合，用于限制租户管理员的授权范围，防止越界授权</summary>
-    /// <param name="user">当前操作用户</param>
-    /// <param name="menu">资源菜单</param>
-    /// <returns>用户拥有的权限位组合</returns>
-    private static PermissionFlags OwnedFlags(IUser user, IMenu menu)
-    {
-        var owned = PermissionFlags.None;
-        if (user == null || menu == null) return owned;
-
-        foreach (var pf in menu.Permissions)
-        {
-            var flag = (PermissionFlags)pf.Key;
-            if (user.Has(menu, flag)) owned |= flag;
-        }
-
-        return owned;
     }
 
     private Boolean GetBool(String name)

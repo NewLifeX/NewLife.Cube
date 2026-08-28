@@ -140,4 +140,95 @@ public class TenantRoleAuthTests
             TenantContext.Current = oldTenant!;
         }
     }
+
+    [Fact]
+    public void TenantAdmin_Insert_Json_Blocks_Escalation()
+    {
+        var tag = "TRJ" + DateTime.Now.Ticks;
+        var menu = CreateMenu(tag + "Menu");
+
+        // 客户管理员角色：只拥有 查看+添加 权限
+        var adminRole = new Role { Name = tag + "客户管理员", Enable = true };
+        adminRole.Insert();
+        adminRole.Set(menu.ID, PermissionFlags.Detail | PermissionFlags.Insert);
+        adminRole.Save();
+
+        var user = new User
+        {
+            Name = tag + "cadmin",
+            DisplayName = tag + "cadmin",
+            RoleID = adminRole.ID,
+            Enable = true,
+            RegisterTime = DateTime.Now,
+        };
+        user.Insert();
+
+        var ctx = _fx.CreateContext();
+        ctx.Items["CurrentUser"] = user;
+        // JSON 请求：通过权限字符串尝试授予全部权限
+        ctx.Request.ContentType = "application/json";
+
+        var oldTenant = TenantContext.Current;
+        TenantContext.Current = new TenantContext { TenantId = _fx.Tenant1.Id };
+        try
+        {
+            // 全部权限位组合（15），模拟尝试授予 查看+添加+修改+删除
+            var allFlags = (Int32)(PermissionFlags.Detail | PermissionFlags.Insert | PermissionFlags.Update | PermissionFlags.Delete);
+            var role = new Role { Name = tag + "租户角色", Enable = true, Permission = $"{menu.ID}#{allFlags}" };
+            var controller = new TestRoleController
+            {
+                ControllerContext = new ControllerContext { HttpContext = ctx }
+            };
+
+            controller.Run(role, DataObjectMethodType.Insert);
+
+            // 强制填充租户标识
+            Assert.Equal(_fx.Tenant1.Id, role.TenantId);
+
+            // 越界的 修改/删除 被拦截
+            Assert.True(role.Has(menu.ID, PermissionFlags.Detail));
+            Assert.True(role.Has(menu.ID, PermissionFlags.Insert));
+            Assert.False(role.Has(menu.ID, PermissionFlags.Update));
+            Assert.False(role.Has(menu.ID, PermissionFlags.Delete));
+        }
+        finally
+        {
+            TenantContext.Current = oldTenant!;
+        }
+    }
+
+    [Fact]
+    public void TenantAdmin_Update_KeepsUnownedPermissions()
+    {
+        var tag = "TRU" + DateTime.Now.Ticks;
+        var menu = CreateMenu(tag + "Menu");
+
+        // 客户管理员角色：只拥有 查看 权限
+        var adminRole = new Role { Name = tag + "客户管理员", Enable = true };
+        adminRole.Insert();
+        adminRole.Set(menu.ID, PermissionFlags.Detail);
+        adminRole.Save();
+
+        var user = new User
+        {
+            Name = tag + "cadmin",
+            DisplayName = tag + "cadmin",
+            RoleID = adminRole.ID,
+            Enable = true,
+            RegisterTime = DateTime.Now,
+        };
+        user.Insert();
+
+        // 目标角色已有 查看+添加（添加由系统管理员授予）
+        var role = new Role { Name = tag + "租户角色", Enable = true };
+        role.Insert();
+        role.Set(menu.ID, PermissionFlags.Detail | PermissionFlags.Insert);
+        role.Save();
+
+        // 租户管理员以空权限字符串提交：受限模式只回收自己拥有的 查看，系统授予的 添加 保留
+        RolePermissionHelper.Apply(role, "", user, true);
+
+        Assert.False(role.Has(menu.ID, PermissionFlags.Detail));
+        Assert.True(role.Has(menu.ID, PermissionFlags.Insert));
+    }
 }
