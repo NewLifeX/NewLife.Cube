@@ -35,6 +35,17 @@ export default defineComponent({
     const contentRefs = ref<Record<string, unknown>>({});
 
     /**
+     * 待渲染的 dialog / drawer 列表（派生自 useModal 的全局 modals）
+     *
+     * 这里包一层 computed 有两个作用：
+     * 1. 依赖追踪与原来一致（render 期间读取 .value，仍由 modals 驱动更新）；
+     * 2. 使其成为本组件的 setup 状态，可在 Vue DevTools 的 <setup> 面板实时查看，
+     *    便于定位"弹窗为什么没渲染 / 卡在哪一步"。
+     */
+    const dialogModals = computed(() => modals.filter((m) => m.type === 'dialog'));
+    const drawerModals = computed(() => modals.filter((m) => m.type === 'drawer'));
+
+    /**
      * 处理取消操作（由用户点击关闭按钮/遮罩层触发）
      */
     function handleCancel(item: ModalItem) {
@@ -392,31 +403,49 @@ export default defineComponent({
       return p;
     }
 
-    return () => {
-      const dialogs = modals
-        .filter((m) => m.type === 'dialog')
-        .map((item) => {
-          const content = renderContent(item);
-          const footer = renderFooter(item);
-          return h(ElDialog, buildDialogProps(item), {
-            default: () => content,
-            footer: () => footer,
-          });
+    /**
+     * 渲染所有弹窗
+     *
+     * 通过 setup 返回的对象暴露给 options.render()，
+     * 使 modals 等状态同时成为组件可见的 setupState（DevTools 可调试）。
+     */
+    function renderNodes() {
+      const dialogs = dialogModals.value.map((item) => {
+        const content = renderContent(item);
+        const footer = renderFooter(item);
+        return h(ElDialog, buildDialogProps(item), {
+          default: () => content,
+          footer: () => footer,
         });
+      });
 
-      const drawers = modals
-        .filter((m) => m.type === 'drawer')
-        .map((item) => {
-          const content = renderContent(item);
-          const footer = renderFooter(item);
-          return h(ElDrawer, buildDialogProps(item), {
-            default: () => content,
-            footer: () => footer,
-          });
+      const drawers = drawerModals.value.map((item) => {
+        const content = renderContent(item);
+        const footer = renderFooter(item);
+        return h(ElDrawer, buildDialogProps(item), {
+          default: () => content,
+          footer: () => footer,
         });
+      });
 
       return h(Teleport, { to: 'body' }, [...dialogs, ...drawers]);
+    }
+
+    return {
+      /** 全局弹窗队列（来自 useModal，仅用于 DevTools 观察） */
+      modals,
+      /** 当前 dialog 类弹窗 */
+      dialogModals,
+      /** 当前 drawer 类弹窗 */
+      drawerModals,
+      /** 各弹窗内容组件实例引用 */
+      contentRefs,
+      renderNodes,
     };
+  },
+
+  render() {
+    return this.renderNodes();
   },
 });
 </script>
