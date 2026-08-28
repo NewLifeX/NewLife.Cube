@@ -193,9 +193,9 @@ export default function EntityListPage({ type, title }: EntityListPageProps) {
   const formFields = dialog.mode === 'edit' ? editFieldsForDialog : addFields;
 
   return (
-    <Card title={title} size="small" styles={{ body: { paddingTop: 12 } }}>
+    <Card className="cube-entity-card" title={title} size="small" styles={{ body: { paddingTop: 12 } }}>
       <SearchBar fields={searchFields} onSearch={handleSearch} onReset={handleReset} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+      <div className="cube-toolbar">
         <Toolbar
           canAdd={canAdd}
           canDelete={canDelete}
@@ -223,7 +223,7 @@ export default function EntityListPage({ type, title }: EntityListPageProps) {
         onDelete={handleDeleteRow}
         onSortChange={handleSortChange}
       />
-      <div style={{ marginTop: 12 }}>
+      <div className="cube-table-footer">
         <ListPagination
           total={pagination.totalCount}
           current={pagination.pageIndex}

@@ -13,15 +13,15 @@ export interface ListPaginationProps {
 
 export default function ListPagination({ total, current, pageSize, statData, onChange }: ListPaginationProps) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-      <Space size={16} wrap>
+    <div className="cube-pagination-bar">
+      <div className="cube-stat-list">
         {statData &&
           Object.entries(statData).map(([k, v]) => (
-            <span key={k} style={{ fontSize: 13, color: 'rgba(0,0,0,0.65)' }}>
+            <span key={k} className="cube-stat-chip">
               {k}: <strong>{String(v ?? '')}</strong>
             </span>
           ))}
-      </Space>
+      </div>
       <Pagination
         showSizeChanger
         showQuickJumper

@@ -61,7 +61,7 @@ export default function RootLayout({ children }: { children?: ReactNode }) {
   // 主布局页：等用户/菜单就绪
   if (!userInfo) {
     return (
-      <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="cube-fullscreen-center">
         <Spin size="large" />
       </div>
     );

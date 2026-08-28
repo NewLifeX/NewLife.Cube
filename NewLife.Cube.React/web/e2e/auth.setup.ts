@@ -23,9 +23,10 @@ setup('登录并保存会话', async ({ page }) => {
   await page.getByPlaceholder('请输入密码').fill(ADMIN_PASS);
   await page.getByRole('button', { name: '登 录' }).click();
 
-  // 登录成功后跳转首页
+  // 登录成功后跳转首页（新版工作台：欢迎横幅 + 常用菜单卡片）
   await page.waitForURL('**/');
-  await expect(page.locator('h2')).toBeVisible({ timeout: 10000 });
+  await expect(page.locator('.cube-home-hero')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByText('常用菜单')).toBeVisible({ timeout: 10000 });
 
   // 断言无 JS 错误
   expect(errors.filter((e) => !e.includes('favicon')), `控制台错误: ${errors.join('; ')}`).toEqual([]);

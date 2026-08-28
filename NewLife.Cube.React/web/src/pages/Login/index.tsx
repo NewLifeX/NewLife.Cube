@@ -9,9 +9,10 @@
  * 5. 账号未激活时展示重发激活入口
  */
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Button, Card, Form, Input, Space, Spin, Tabs, message } from 'antd';
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
+import { Alert, Button, Form, Input, Segmented, Spin, Tabs, message } from 'antd';
+import { AppstoreOutlined, LockOutlined, SafetyOutlined, ThunderboltOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import AuthLayout from '@/components/auth/AuthLayout';
 import { api } from '@/api';
 import { useUserStore } from '@/stores/user';
 import { useMenuStore } from '@/stores/menu';
@@ -158,213 +159,191 @@ export default function LoginPage() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="cube-fullscreen-center">
         <Spin size="large" />
       </div>
     );
   }
 
   return (
-    <div
-      style={{
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background:
-          config?.loginBackground || 'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)',
-        padding: 16,
-      }}
+    <AuthLayout
+      title="登 录"
+      description="登录后即可访问管理后台"
+      brandTitle={systemName}
+      brandSubtitle={config?.loginTip || '魔方快速开发平台'}
+      highlights={[
+        { icon: <SafetyOutlined />, title: '统一认证入口', description: '密码 / 短信 / 邮箱 / 第三方，安全策略内置' },
+        { icon: <AppstoreOutlined />, title: '权限菜单驱动', description: '登录后按角色自动生成管理导航' },
+        { icon: <ThunderboltOutlined />, title: '字段元数据驱动', description: '列表与表单由后端字段配置动态渲染' },
+      ]}
+      footer={config?.copyright ? <span dangerouslySetInnerHTML={{ __html: config.copyright }} /> : undefined}
     >
-      <Card style={{ width: 420, borderRadius: 12, boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
-        {/* 品牌区 */}
-        <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          {logoSrc ? (
-            <img src={logoSrc} alt="logo" style={{ height: 48, marginBottom: 8 }} />
-          ) : (
-            <div style={{ fontSize: 40, marginBottom: 8 }}>🧊</div>
-          )}
-          <h1 style={{ margin: 0, fontSize: 22 }}>{systemName}</h1>
-          {config?.loginTip && <p style={{ color: '#888', marginTop: 4 }}>{config.loginTip}</p>}
-        </div>
+      {configError && <Alert type="error" message={configError} />}
 
-        {configError && <Alert type="error" message={configError} style={{ marginBottom: 16 }} />}
-
-        {activation ? (
-          <div>
-            <Alert
-              type="warning"
-              showIcon
-              message="账号未激活"
-              description="请通过邮箱或手机验证激活账号后登录。"
-              style={{ marginBottom: 16 }}
-            />
-            {(activation.targets ?? []).map((target, i) => {
-              const channel = (activation.channels ?? [])[i] === 'sms' ? 'sms' : 'mail';
-              return (
-                <div key={i} style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span>{target}</span>
-                  <Button size="small" onClick={() => void handleResend(channel, target)}>
-                    重新发送
-                  </Button>
-                </div>
-              );
-            })}
-            <Button block onClick={() => setActivation(null)} style={{ marginTop: 8 }}>
-              返回登录
-            </Button>
-          </div>
-        ) : mfaToken ? (
-          <div>
-            <Alert type="info" showIcon message="双重验证" description="请输入身份验证器应用中的 6 位动态验证码。" style={{ marginBottom: 16 }} />
-            <Input
-              size="large"
-              placeholder="6 位动态验证码"
-              maxLength={6}
-              value={mfaCode}
-              onChange={(e) => setMfaCode(e.target.value)}
-              onPressEnter={() => void handleMfaVerify()}
-              style={{ marginBottom: 12 }}
-            />
-            <Button type="primary" block size="large" loading={mfaSubmitting} onClick={() => void handleMfaVerify()}>
-              验证
-            </Button>
-            <Button type="link" block onClick={() => setMfaToken('')} style={{ marginTop: 8 }}>
-              返回登录
-            </Button>
-          </div>
-        ) : (
-          <Tabs
-            activeKey={activeTab}
-            onChange={(k) => setActiveTab(k as 'login' | 'register')}
-            centered
-            items={[
-              {
-                key: 'login',
-                label: '登 录',
-                children: (
-                  <Form form={form} layout="vertical" requiredMark={false} initialValues={{ username: params.get('username') ?? '' }}>
-                    {/* 登录方式 Tab */}
-                    {(showSms || showMail) && (
-                      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-                        {showPassword && (
-                          <Button size="small" type={mode === 'password' ? 'primary' : 'default'} onClick={() => setMode('password')}>
-                            密码登录
-                          </Button>
-                        )}
-                        {showSms && (
-                          <Button size="small" type={mode === 'sms' ? 'primary' : 'default'} onClick={() => setMode('sms')}>
-                            短信登录
-                          </Button>
-                        )}
-                        {showMail && (
-                          <Button size="small" type={mode === 'mail' ? 'primary' : 'default'} onClick={() => setMode('mail')}>
-                            邮箱登录
-                          </Button>
-                        )}
-                      </div>
-                    )}
-
-                    <Form.Item name="username" label={mode === 'password' ? '用户名' : mode === 'sms' ? '手机号' : '邮箱'} rules={[{ required: true, message: '请输入' }]}>
-                      <Input size="large" prefix={<UserOutlined />} placeholder={mode === 'password' ? '用户名 / 邮箱 / 手机号' : mode === 'sms' ? '手机号' : '邮箱'} autoComplete="username" />
-                    </Form.Item>
-
-                    {mode === 'password' ? (
-                      <Form.Item name="password" label="密码" rules={[{ required: true, message: '请输入密码' }]}>
-                        <Input.Password
-                          size="large"
-                          prefix={<LockOutlined />}
-                          placeholder="请输入密码"
-                          autoComplete="current-password"
-                          onChange={() => form.validateFields(['password']).catch(() => {})}
-                        />
-                      </Form.Item>
-                    ) : (
-                      <Form.Item name="code" label="验证码" rules={[{ required: true, message: '请输入验证码' }]}>
-                        <Input size="large" placeholder="验证码" autoComplete="one-time-code" />
-                      </Form.Item>
-                    )}
-
-                    {/* 密码强度提示 */}
-                    {mode === 'password' && passwordRules.length > 0 && (
-                      <div style={{ marginBottom: 12, fontSize: 12, color: '#888' }}>
-                        {passwordRules.map((r, i) => (
-                          <div key={i} style={{ color: r.satisfied ? '#52c41a' : '#bbb' }}>
-                            {r.satisfied ? '✓' : '○'} {r.label}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* 图形验证码 */}
-                    {showCaptcha && (
-                      <Form.Item name="captchaCode" label="图形验证码" rules={[{ required: true, message: '请输入图形验证码' }]}>
-                        <Space.Compact style={{ width: '100%' }}>
-                          <Input size="large" placeholder="图形验证码" />
-                          {captcha?.image && (
-                            <img
-                              src={`data:image/svg+xml;utf8,${encodeURIComponent(captcha.image)}`}
-                              onClick={refresh}
-                              style={{ width: 110, height: 40, cursor: 'pointer', border: '1px solid #d9d9d9', borderRadius: 4 }}
-                              alt="captcha"
-                              title="点击刷新"
-                            />
-                          )}
-                        </Space.Compact>
-                      </Form.Item>
-                    )}
-
-                    <Button type="primary" block size="large" loading={submitting} onClick={() => void handleLogin()}>
-                      登 录
-                    </Button>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}>
-                      {showRegister ? (
-                        <Button type="link" size="small" onClick={() => setActiveTab('register')}>
-                          注册账号
-                        </Button>
-                      ) : (
-                        <span />
-                      )}
-                      <Button type="link" size="small" onClick={() => navigate('/forgot-password')}>
-                        忘记密码
-                      </Button>
-                    </div>
-                  </Form>
-                ),
-              },
-              ...(showRegister
-                ? [
-                    {
-                      key: 'register',
-                      label: '注 册',
-                      children: <RegisterPanel config={config!} onBack={() => setActiveTab('login')} />,
-                    },
-                  ]
-                : []),
-            ]}
+      {activation ? (
+        <div className="cube-auth-status-list">
+          <Alert
+            type="warning"
+            showIcon
+            message="账号未激活"
+            description="请通过邮箱或手机验证激活账号后登录。"
           />
-        )}
-
-        {/* OAuth 第三方登录 */}
-        {!mfaToken && !activation && oauthProviders.length > 0 && (
-          <div style={{ marginTop: 16 }}>
-            <div style={{ textAlign: 'center', color: '#aaa', fontSize: 12, marginBottom: 12 }}>———— 第三方登录 ————</div>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
-              {oauthProviders.map((p) => (
-                <Button key={p.name} onClick={() => handleOAuth(p.name)}>
-                  {p.logo ? <img src={p.logo} alt={p.name} style={{ width: 18, height: 18, marginRight: 6 }} /> : null}
-                  {p.nickName || p.name}
+          {(activation.targets ?? []).map((target, i) => {
+            const channel = (activation.channels ?? [])[i] === 'sms' ? 'sms' : 'mail';
+            return (
+              <div key={i} className="cube-auth-status-item">
+                <span>{target}</span>
+                <Button size="small" onClick={() => void handleResend(channel, target)}>
+                  重新发送
                 </Button>
-              ))}
-            </div>
-          </div>
-        )}
+              </div>
+            );
+          })}
+          <Button block onClick={() => setActivation(null)}>
+            返回登录
+          </Button>
+        </div>
+      ) : mfaToken ? (
+        <div style={{ display: 'grid', gap: 16 }}>
+          <Alert type="info" showIcon message="双重验证" description="请输入身份验证器应用中的 6 位动态验证码。" />
+          <Input
+            size="large"
+            placeholder="6 位动态验证码"
+            maxLength={6}
+            value={mfaCode}
+            onChange={(e) => setMfaCode(e.target.value)}
+            onPressEnter={() => void handleMfaVerify()}
+          />
+          <Button type="primary" block size="large" loading={mfaSubmitting} onClick={() => void handleMfaVerify()}>
+            验证
+          </Button>
+          <Button type="link" block onClick={() => setMfaToken('')}>
+            返回登录
+          </Button>
+        </div>
+      ) : (
+        <Tabs
+          className="cube-auth-tabs"
+          activeKey={activeTab}
+          onChange={(k) => setActiveTab(k as 'login' | 'register')}
+          centered
+          items={[
+            {
+              key: 'login',
+              label: '登 录',
+              children: (
+                <Form form={form} layout="vertical" requiredMark={false} initialValues={{ username: params.get('username') ?? '' }}>
+                  {/* 登录方式切换 */}
+                  {(showSms || showMail) && (
+                    <Segmented
+                      className="cube-auth-segment"
+                      value={mode}
+                      onChange={(v) => setMode(v as 'password' | 'sms' | 'mail')}
+                      options={[
+                        ...(showPassword ? [{ label: '密码登录', value: 'password' as const }] : []),
+                        ...(showSms ? [{ label: '短信登录', value: 'sms' as const }] : []),
+                        ...(showMail ? [{ label: '邮箱登录', value: 'mail' as const }] : []),
+                      ]}
+                    />
+                  )}
 
-        {config?.copyright && (
-          <div style={{ textAlign: 'center', color: '#aaa', fontSize: 12, marginTop: 16 }} dangerouslySetInnerHTML={{ __html: config.copyright }} />
-        )}
-      </Card>
-    </div>
+                  <Form.Item name="username" label={mode === 'password' ? '用户名' : mode === 'sms' ? '手机号' : '邮箱'} rules={[{ required: true, message: '请输入' }]}>
+                    <Input size="large" prefix={<UserOutlined />} placeholder={mode === 'password' ? '用户名 / 邮箱 / 手机号' : mode === 'sms' ? '手机号' : '邮箱'} autoComplete="username" />
+                  </Form.Item>
+
+                  {mode === 'password' ? (
+                    <Form.Item name="password" label="密码" rules={[{ required: true, message: '请输入密码' }]}>
+                      <Input.Password
+                        size="large"
+                        prefix={<LockOutlined />}
+                        placeholder="请输入密码"
+                        autoComplete="current-password"
+                        onChange={() => form.validateFields(['password']).catch(() => {})}
+                      />
+                    </Form.Item>
+                  ) : (
+                    <Form.Item name="code" label="验证码" rules={[{ required: true, message: '请输入验证码' }]}>
+                      <Input size="large" placeholder="验证码" autoComplete="one-time-code" />
+                    </Form.Item>
+                  )}
+
+                  {/* 密码强度提示 */}
+                  {mode === 'password' && passwordRules.length > 0 && (
+                    <div className="cube-auth-password-rules">
+                      {passwordRules.map((r, i) => (
+                        <div key={i} className={r.satisfied ? 'cube-auth-password-rule-ok' : ''}>
+                          {r.satisfied ? '✓' : '○'} {r.label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* 图形验证码 */}
+                  {showCaptcha && (
+                    <Form.Item name="captchaCode" label="图形验证码" rules={[{ required: true, message: '请输入图形验证码' }]}>
+                      <div className="cube-auth-captcha">
+                        <Input size="large" placeholder="图形验证码" />
+                        {captcha?.image && (
+                          <img
+                            src={`data:image/svg+xml;utf8,${encodeURIComponent(captcha.image)}`}
+                            onClick={refresh}
+                            className="cube-auth-captcha-image"
+                            alt="captcha"
+                            title="点击刷新"
+                          />
+                        )}
+                      </div>
+                    </Form.Item>
+                  )}
+
+                  <Button type="primary" block size="large" loading={submitting} onClick={() => void handleLogin()}>
+                    登 录
+                  </Button>
+
+                  <div className="cube-auth-inline-actions">
+                    {showRegister ? (
+                      <Button type="link" size="small" onClick={() => setActiveTab('register')}>
+                        注册账号
+                      </Button>
+                    ) : (
+                      <span />
+                    )}
+                    <Button type="link" size="small" onClick={() => navigate('/forgot-password')}>
+                      忘记密码
+                    </Button>
+                  </div>
+                </Form>
+              ),
+            },
+            ...(showRegister
+              ? [
+                  {
+                    key: 'register',
+                    label: '注 册',
+                    children: <RegisterPanel config={config!} onBack={() => setActiveTab('login')} />,
+                  },
+                ]
+              : []),
+          ]}
+        />
+      )}
+
+      {/* OAuth 第三方登录 */}
+      {!mfaToken && !activation && oauthProviders.length > 0 && (
+        <div className="cube-auth-provider-section">
+          <div className="cube-auth-provider-title">
+            <span>第三方登录</span>
+          </div>
+          <div className="cube-auth-provider-grid">
+            {oauthProviders.map((p) => (
+              <Button key={p.name} className="cube-auth-provider-button" onClick={() => handleOAuth(p.name)}>
+                {p.logo ? <img src={p.logo} alt={p.name} /> : null}
+                {p.nickName || p.name}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+    </AuthLayout>
   );
 }

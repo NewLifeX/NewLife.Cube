@@ -24,6 +24,7 @@ export default function NotificationBell({ showLabel, label = '通知', count = 
       {/* 可访问名：showLabel 时取文字标签，否则取默认“通知” */}
       <Button
         type="text"
+        className="cube-header-action"
         icon={<BellOutlined />}
         aria-label={showLabel ? label : '通知'}
         title="通知"

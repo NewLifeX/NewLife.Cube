@@ -1,4 +1,33 @@
-/* 全局基础样式 */
+@import './auth.css';
+@import './home.css';
+@import './entity.css';
+@import './ai.css';
+
+:root {
+  color-scheme: light;
+  --cube-primary: #1677ff;
+  --cube-primary-strong: #145bdb;
+  --cube-primary-soft: rgba(22, 119, 255, 0.12);
+  --cube-page-bg: #f4f7fb;
+  --cube-shell-bg: rgba(255, 255, 255, 0.68);
+  --cube-auth-bg: linear-gradient(135deg, #0f172a 0%, #14213d 45%, #1d4ed8 100%);
+  --cube-auth-surface: rgba(255, 255, 255, 0.78);
+  --cube-auth-glow: radial-gradient(circle, rgba(59, 130, 246, 0.42) 0%, rgba(59, 130, 246, 0) 68%);
+  --cube-hero-bg: linear-gradient(135deg, #1677ff 0%, #3b82f6 42%, #7c3aed 100%);
+  --cube-surface-bg: rgba(255, 255, 255, 0.92);
+  --cube-surface-elevated: rgba(255, 255, 255, 0.98);
+  --cube-surface-muted: rgba(15, 23, 42, 0.035);
+  --cube-border-soft: rgba(148, 163, 184, 0.22);
+  --cube-border-strong: rgba(148, 163, 184, 0.34);
+  --cube-text: #0f172a;
+  --cube-text-secondary: #475569;
+  --cube-text-muted: #64748b;
+  --cube-shadow-soft: 0 18px 46px rgba(15, 23, 42, 0.08);
+  --cube-success: #16a34a;
+  --cube-warning: #d97706;
+  --cube-danger: #dc2626;
+}
+
 html,
 body,
 #root {
@@ -7,9 +36,396 @@ body,
   padding: 0;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--cube-page-bg);
+}
+
 body {
   font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
     'Noto Sans SC', sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.5), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(191, 219, 254, 0.32), transparent 24%),
+    var(--cube-page-bg);
+  color: var(--cube-text);
+}
+
+body[data-cube-mode='dark'] {
+  color-scheme: dark;
+}
+
+body,
+.ant-app,
+#root {
+  color: var(--cube-text);
+}
+
+img {
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+#root {
+  overflow: hidden;
+}
+
+.cube-app {
+  min-height: 100%;
+}
+
+.cube-main-layout.ant-layout {
+  min-height: 100%;
+  background: transparent;
+}
+
+.cube-shell-sider.ant-layout-sider {
+  background: transparent !important;
+  border-right: 0 !important;
+}
+
+.cube-shell-sider-panel {
+  height: 100%;
+  margin: 16px 0 16px 16px;
+  border-radius: 28px;
+  background: var(--cube-shell-bg);
+  border: 1px solid var(--cube-border-strong);
+  box-shadow: var(--cube-shadow-soft);
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.cube-shell-brand {
+  padding: 20px 18px 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cube-shell-brand-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--cube-primary), var(--cube-primary-strong));
+  color: #fff;
+  font-size: 22px;
+  flex: none;
+  overflow: hidden;
+}
+
+.cube-shell-brand-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cube-shell-brand-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--cube-text);
+}
+
+.cube-shell-brand-subtitle {
+  margin-top: 2px;
+  color: var(--cube-text-muted);
+  font-size: 12px;
+}
+
+.cube-shell-menu-wrap {
+  flex: 1;
+  padding: 8px 12px 16px;
+  overflow: auto;
+}
+
+.cube-shell-menu.ant-menu {
+  background: transparent !important;
+  border-inline-end: 0 !important;
+}
+
+.cube-shell-menu .ant-menu-item,
+.cube-shell-menu .ant-menu-submenu-title {
+  margin-inline: 0 !important;
+  margin-block: 4px !important;
+  border-radius: 16px !important;
+  height: 42px !important;
+  line-height: 42px !important;
+}
+
+.cube-shell-menu .ant-menu-title-content {
+  min-width: 0;
+}
+
+.ant-layout-sider-collapsed .cube-shell-brand {
+  justify-content: center;
+  padding: 20px 0 10px;
+}
+
+.ant-layout-sider-collapsed .cube-shell-brand-copy,
+.ant-layout-sider-collapsed .cube-shell-menu-footer {
+  display: none;
+}
+
+.cube-shell-menu-footer {
+  padding: 14px 18px 18px;
+  border-top: 1px solid var(--cube-border-soft);
+  color: var(--cube-text-muted);
+  font-size: 12px;
+}
+
+.cube-main-content.ant-layout {
+  background: transparent;
+}
+
+.cube-shell-header.ant-layout-header {
+  height: auto !important;
+  line-height: normal !important;
+  padding: 16px 16px 0 !important;
+  background: transparent !important;
+}
+
+.cube-shell-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  border-radius: 26px;
+  background: var(--cube-shell-bg);
+  border: 1px solid var(--cube-border-strong);
+  box-shadow: var(--cube-shadow-soft);
+  backdrop-filter: blur(16px);
+}
+
+.cube-shell-header-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.cube-shell-sidebar-toggle.ant-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+}
+
+.cube-shell-header-copy {
+  min-width: 0;
+}
+
+.cube-shell-header-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cube-shell-header-title {
+  color: var(--cube-text);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.cube-shell-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.cube-header-action.ant-btn,
+.cube-header-action-trigger {
+  height: 40px;
+  border-radius: 14px;
+}
+
+.cube-header-action.ant-btn {
+  min-width: 40px;
+}
+
+.cube-header-action-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--cube-text-secondary);
+  transition: all 0.2s ease;
+}
+
+.cube-header-action-trigger:hover {
+  color: var(--cube-text);
+  border-color: var(--cube-border-soft);
+  background: var(--cube-surface-muted);
+}
+
+.cube-navbar-search {
+  width: min(320px, 100vw - 32px);
+}
+
+.cube-navbar-search .ant-input-affix-wrapper {
+  border-radius: 14px;
+  height: 40px;
+}
+
+.cube-user-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cube-user-trigger:hover {
+  background: var(--cube-surface-muted);
+}
+
+.cube-user-trigger-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.cube-user-trigger-name {
+  color: var(--cube-text);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.cube-user-trigger-role {
+  color: var(--cube-text-muted);
+  font-size: 12px;
+}
+
+.cube-shell-tabs {
+  padding: 14px 16px 0;
+}
+
+.cube-shell-tabs-inner {
+  padding: 0 10px;
+  border-radius: 20px;
+  background: var(--cube-shell-bg);
+  border: 1px solid var(--cube-border-strong);
+  box-shadow: var(--cube-shadow-soft);
+  backdrop-filter: blur(16px);
+}
+
+.cube-shell-tabs .ant-tabs-nav {
+  margin: 0 !important;
+}
+
+.cube-shell-tabs .ant-tabs-tab {
+  border-radius: 14px 14px 0 0 !important;
+}
+
+.cube-shell-body.ant-layout-content {
+  padding: 16px !important;
+  overflow-y: auto;
+  background: transparent !important;
+}
+
+.cube-shell-page-container {
+  width: min(1440px, 100%);
+  margin: 0 auto;
+}
+
+.cube-shell-footer.ant-layout-footer {
+  padding: 0 16px 16px !important;
+  background: transparent !important;
+}
+
+.cube-shell-footer-inner {
+  padding: 16px 22px;
+  border-radius: 22px;
+  text-align: center;
+  color: var(--cube-text-muted);
+  background: var(--cube-shell-bg);
+  border: 1px solid var(--cube-border-soft);
+  box-shadow: var(--cube-shadow-soft);
+}
+
+.cube-mobile-drawer .ant-drawer-content,
+.cube-mobile-drawer .ant-drawer-header {
+  background: var(--cube-surface-bg);
+}
+
+.cube-mobile-drawer .ant-drawer-header {
+  border-bottom-color: var(--cube-border-soft);
+}
+
+.ant-breadcrumb {
+  color: var(--cube-text-secondary);
+}
+
+.ant-result {
+  padding-inline: 0 !important;
+}
+
+.ant-table-wrapper .ant-table {
+  border-radius: 18px;
+}
+
+@media (max-width: 992px) {
+  .cube-shell-sider.ant-layout-sider {
+    display: none;
+  }
+
+  .cube-shell-header.ant-layout-header,
+  .cube-shell-tabs,
+  .cube-shell-body.ant-layout-content,
+  .cube-shell-footer.ant-layout-footer {
+    padding-inline: 12px !important;
+  }
+
+  .cube-shell-header-inner {
+    padding: 16px;
+  }
+
+  .cube-shell-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .cube-navbar-search {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .cube-shell-header-title {
+    font-size: 18px;
+  }
+
+  .cube-user-trigger-copy,
+  .cube-shell-brand-copy,
+  .cube-shell-header-breadcrumb {
+    display: none;
+  }
+
+  .cube-shell-header-inner {
+    gap: 12px;
+  }
 }

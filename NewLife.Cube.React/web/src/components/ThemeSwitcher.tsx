@@ -1,7 +1,7 @@
 /**
  * 主题切换器（下拉选择主题家族）
  */
-import { Dropdown } from 'antd';
+import { Button, Dropdown } from 'antd';
 import { BgColorsOutlined } from '@ant-design/icons';
 import { THEME_GROUPS, useThemeStore, type ThemeFamily } from '@/stores/theme';
 
@@ -17,7 +17,7 @@ export default function ThemeSwitcher() {
 
   return (
     <Dropdown menu={{ items, selectable: true, selectedKeys: [family] }} placement="bottomRight" trigger={['click']}>
-      <BgColorsOutlined style={{ fontSize: 16, cursor: 'pointer', padding: '0 8px' }} />
+      <Button type="text" className="cube-header-action" icon={<BgColorsOutlined />} aria-label="切换主题" />
     </Dropdown>
   );
 }

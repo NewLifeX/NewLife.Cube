@@ -23,6 +23,7 @@ export default function NavbarSearch() {
 
   return (
     <AutoComplete
+      className="cube-navbar-search"
       options={options}
       value={value}
       onChange={setValue}
@@ -30,7 +31,6 @@ export default function NavbarSearch() {
         navigate(path);
         setValue('');
       }}
-      style={{ width: 220 }}
     >
       <Input prefix={<SearchOutlined />} placeholder="搜索菜单" allowClear />
     </AutoComplete>

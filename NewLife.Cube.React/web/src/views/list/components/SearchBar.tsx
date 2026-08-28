@@ -199,16 +199,14 @@ export default function SearchBar({ fields, onSearch, onReset }: SearchBarProps)
   if (!fields.length) return null;
 
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end', marginBottom: 8 }}>
-      {fields.map((field) => {
-        const meta = toFieldMeta(field.field);
-        const control = resolveSearchControl(meta);
-        return (
-          <div key={field.field.name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 13, whiteSpace: 'nowrap', color: 'rgba(0,0,0,0.65)' }}>
-              {meta.displayName || meta.name}:
-            </span>
-            <div style={{ width: 200 }}>
+    <div className="cube-search-panel">
+      <div className="cube-search-grid">
+        {fields.map((field) => {
+          const meta = toFieldMeta(field.field);
+          const control = resolveSearchControl(meta);
+          return (
+            <div key={field.field.name} className="cube-search-item">
+              <span className="cube-search-label">{meta.displayName || meta.name}</span>
               <SearchControl
                 field={field}
                 control={control}
@@ -216,15 +214,15 @@ export default function SearchBar({ fields, onSearch, onReset }: SearchBarProps)
                 onChange={(v) => setValue(field.field.name, v)}
               />
             </div>
-          </div>
-        );
-      })}
-      <Space>
+          );
+        })}
+      </div>
+      <div className="cube-search-actions">
         <Button type="primary" onClick={handleSearch}>
           搜索
         </Button>
         <Button onClick={handleReset}>重置</Button>
-      </Space>
+      </div>
     </div>
   );
 }

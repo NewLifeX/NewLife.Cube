@@ -5,6 +5,7 @@
  * - AntApp：message/notification/modal 上下文
  * - RouterProvider：路由系统
  */
+import { useEffect } from 'react';
 import { App as AntApp, ConfigProvider, theme as antdTheme } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import { RouterProvider } from 'react-router-dom';
@@ -17,6 +18,11 @@ export default function App() {
   const family = useThemeStore((s) => s.family);
   const mode = useThemeStore((s) => s.mode);
 
+  // 同步 body 明暗属性，供全局 CSS 深浅色设计令牌切换
+  useEffect(() => {
+    document.body.dataset.cubeMode = mode;
+  }, [mode]);
+
   const themeConfig = buildThemeConfig(family, mode);
 
   return (
@@ -28,7 +34,9 @@ export default function App() {
       }}
     >
       <AntApp>
-        <RouterProvider router={router} />
+        <div className="cube-app">
+          <RouterProvider router={router} />
+        </div>
       </AntApp>
     </ConfigProvider>
   );

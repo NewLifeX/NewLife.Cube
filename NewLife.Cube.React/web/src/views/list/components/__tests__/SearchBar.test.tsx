@@ -21,8 +21,8 @@ function switchField(name: string, displayName: string): FieldMapping {
 describe('SearchBar 搜索栏', () => {
   it('按字段渲染搜索控件与标签', () => {
     render(<SearchBar fields={[textField('Name', '名称'), switchField('Enable', '启用')]} onSearch={() => {}} onReset={() => {}} />);
-    expect(screen.getByText(/名称:/)).toBeInTheDocument();
-    expect(screen.getByText(/启用:/)).toBeInTheDocument();
+    expect(screen.getByText('名称')).toBeInTheDocument();
+    expect(screen.getByText('启用')).toBeInTheDocument();
     // antd Button 中文自动插空格（"搜 索"），用空白正则匹配
     expect(screen.getByRole('button', { name: /搜\s*索/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /重\s*置/ })).toBeInTheDocument();

@@ -1,8 +1,9 @@
 /**
- * 顶栏（Logo + 面包屑 + 切换器 + 用户菜单）
+ * 顶栏（折叠按钮 + 页面标题 + 面包屑 + 切换器 + 用户菜单）
  */
 import { useMemo } from 'react';
-import { Breadcrumb, Layout, Space } from 'antd';
+import { Breadcrumb, Button, Layout } from 'antd';
+import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { useLocation } from 'react-router-dom';
 import { useUserStore } from '@/stores/user';
 import { useMenuStore } from '@/stores/menu';
@@ -14,7 +15,14 @@ import NavbarSearch from '@/components/NavbarSearch';
 import NotificationBell from '@/components/NotificationBell';
 import UserMenu from '@/components/UserMenu';
 
-export default function HeaderBar() {
+export interface HeaderBarProps {
+  /** 侧栏是否折叠 */
+  collapsed?: boolean;
+  /** 切换导航（桌面折叠 / 移动打开抽屉） */
+  onToggle?: () => void;
+}
+
+export default function HeaderBar({ collapsed, onToggle }: HeaderBarProps) {
   const location = useLocation();
   const flatMenus = useMenuStore((s) => s.flatMenus);
   const userInfo = useUserStore((s) => s.userInfo);
@@ -36,29 +44,40 @@ export default function HeaderBar() {
     return chain;
   }, [flatMenus, location.pathname, base.title]);
 
+  // 页面主标题：当前菜单名，未命中用系统名
+  const pageTitle = useMemo(() => {
+    const lower = location.pathname.toLowerCase();
+    const current = flatMenus.find((m) => m.path && lower.endsWith(m.path.toLowerCase()));
+    return current?.title || current?.name || base.title;
+  }, [flatMenus, location.pathname, base.title]);
+
   return (
-    <Layout.Header
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 16px',
-        height: 56,
-        lineHeight: '56px',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <span style={{ fontSize: 18, fontWeight: 600, color: 'inherit' }}>{base.title}</span>
-        <Breadcrumb items={crumbs} />
+    <Layout.Header className="cube-shell-header">
+      <div className="cube-shell-header-inner">
+        <div className="cube-shell-header-main">
+          <Button
+            className="cube-shell-sidebar-toggle"
+            type="text"
+            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={onToggle}
+            aria-label="切换导航"
+          />
+          <div className="cube-shell-header-copy">
+            <div className="cube-shell-header-title-row">
+              <span className="cube-shell-header-title">{pageTitle}</span>
+            </div>
+            <Breadcrumb className="cube-shell-header-breadcrumb" items={crumbs} />
+          </div>
+        </div>
+        <div className="cube-shell-header-actions">
+          <NavbarSearch />
+          <NotificationBell />
+          <LanguageSwitch />
+          <ThemeSwitcher />
+          <ModeSwitcher />
+          {userInfo && <UserMenu />}
+        </div>
       </div>
-      <Space size={4}>
-        <NavbarSearch />
-        <NotificationBell />
-        <LanguageSwitch />
-        <ThemeSwitcher />
-        <ModeSwitcher />
-        {userInfo && <UserMenu />}
-      </Space>
     </Layout.Header>
   );
 }

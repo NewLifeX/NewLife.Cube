@@ -1,7 +1,7 @@
 /**
  * 语言切换器
  */
-import { Dropdown } from 'antd';
+import { Button, Dropdown } from 'antd';
 import { GlobalOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 
@@ -21,7 +21,7 @@ export default function LanguageSwitch() {
 
   return (
     <Dropdown menu={{ items, selectable: true, selectedKeys: [i18n.language] }} placement="bottomRight" trigger={['click']}>
-      <GlobalOutlined style={{ fontSize: 16, cursor: 'pointer', padding: '0 8px' }} />
+      <Button type="text" className="cube-header-action" icon={<GlobalOutlined />} aria-label="切换语言" />
     </Dropdown>
   );
 }

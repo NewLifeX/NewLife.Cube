@@ -13,6 +13,7 @@ export default function ModeSwitcher() {
     <Tooltip title={mode === 'dark' ? '切换浅色' : '切换深色'}>
       <Button
         type="text"
+        className="cube-header-action"
         icon={mode === 'dark' ? <SunOutlined /> : <MoonOutlined />}
         onClick={toggleMode}
       />

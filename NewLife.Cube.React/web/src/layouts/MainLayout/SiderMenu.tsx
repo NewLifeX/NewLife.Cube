@@ -31,6 +31,7 @@ export default function SiderMenu() {
 
   return (
     <Menu
+      className="cube-shell-menu"
       mode="inline"
       items={items}
       selectedKeys={selectedKeys}

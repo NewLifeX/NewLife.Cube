@@ -183,86 +183,47 @@ export default function AiAssistant() {
         <Tooltip title="AI 助手">
           <Button
             type="primary"
+            className="cube-ai-fab"
             shape="circle"
-            size="large"
             icon={<RobotOutlined />}
             onClick={() => setOpen(true)}
-            style={{ position: 'fixed', right: 24, bottom: 24, zIndex: 1000, boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
           />
         </Tooltip>
       )}
 
       {/* 对话面板 */}
       {open && (
-        <div
-          style={{
-            position: 'fixed',
-            right: 24,
-            bottom: 24,
-            width: 420,
-            height: 560,
-            background: '#fff',
-            borderRadius: 12,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            zIndex: 1000,
-            border: '1px solid #eee',
-          }}
-        >
+        <div className="cube-ai-panel">
           {/* 头部 */}
-          <div
-            style={{
-              padding: '10px 16px',
-              background: 'linear-gradient(135deg, #1677ff, #0f62c0)',
-              color: '#fff',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <span>
+          <div className="cube-ai-header">
+            <span className="cube-ai-header-title">
               <RobotOutlined /> AI 助手
-              <span style={{ fontSize: 12, opacity: 0.8, marginLeft: 8 }}>{location.pathname}</span>
+              <span className="cube-ai-header-path">{location.pathname}</span>
             </span>
-            <Button type="text" size="small" icon={<CloseOutlined />} onClick={() => setOpen(false)} style={{ color: '#fff' }} />
+            <Button type="text" size="small" className="cube-ai-header-close" icon={<CloseOutlined />} onClick={() => setOpen(false)} />
           </div>
 
           {/* 消息区 */}
-          <div ref={bodyRef} style={{ flex: 1, overflowY: 'auto', padding: 12, background: '#f7f8fa' }}>
+          <div ref={bodyRef} className="cube-ai-body">
             {messages.length === 0 && (
-              <div style={{ textAlign: 'center', color: '#999', marginTop: 60 }}>
-                <RobotOutlined style={{ fontSize: 40, marginBottom: 8 }} />
+              <div className="cube-ai-empty">
+                <div className="cube-ai-empty-icon">
+                  <RobotOutlined />
+                </div>
                 <p>我是 AI 助手，可以回答关于当前页面的问题</p>
               </div>
             )}
             {messages.map((m) => (
-              <div
-                key={m.id}
-                style={{
-                  display: 'flex',
-                  justifyContent: m.type === 'user' ? 'flex-end' : 'flex-start',
-                  marginBottom: 10,
-                }}
-              >
+              <div key={m.id} className={`cube-ai-row ${m.type === 'user' ? 'user' : ''}`}>
                 <div
-                  style={{
-                    maxWidth: '85%',
-                    padding: '8px 12px',
-                    borderRadius: 10,
-                    background: m.type === 'user' ? '#1677ff' : '#fff',
-                    color: m.type === 'user' ? '#fff' : '#333',
-                    border: m.type === 'user' ? 'none' : '1px solid #e5e5e5',
-                    wordBreak: 'break-word',
-                  }}
+                  className={`cube-ai-bubble ${m.type === 'user' ? 'user' : 'assistant'}`}
                   dangerouslySetInnerHTML={{ __html: m.html || (m.type === 'assistant' && streaming ? '...' : '') }}
                 />
               </div>
             ))}
             {/* 工具卡片 */}
             {tools.map((t) => (
-              <div key={t.id} style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>
+              <div key={t.id} className="cube-ai-tool">
                 {t.status === 'start' ? '⏳' : t.status === 'done' ? '✅' : '❌'} <b>{t.name}</b>{' '}
                 {t.status === 'start' ? '调用中...' : t.status === 'done' ? '完成' : '失败'}
               </div>
@@ -270,7 +231,7 @@ export default function AiAssistant() {
           </div>
 
           {/* 输入区 */}
-          <div style={{ padding: 10, borderTop: '1px solid #eee', background: '#fff' }}>
+          <div className="cube-ai-input">
             <Space.Compact style={{ width: '100%' }}>
               <Input
                 value={input}

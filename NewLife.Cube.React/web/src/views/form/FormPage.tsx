@@ -103,6 +103,7 @@ export default function FormPage({ title }: FormPageProps) {
 
   return (
     <Card
+      className="cube-entity-card"
       title={
         <Space>
           <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} />
@@ -113,7 +114,7 @@ export default function FormPage({ title }: FormPageProps) {
     >
       <Spin spinning={detailLoading || formLoading}>
         <Form form={form} layout="vertical" requiredMark={false} style={{ maxWidth: 900 }}>
-          <Row gutter={16}>
+          <Row gutter={16} className="cube-form-grid">
             {metas.map((meta) => {
               const control = resolveControl(meta);
               const span = isFullWidthControl(control) ? 24 : 12;
@@ -134,12 +135,12 @@ export default function FormPage({ title }: FormPageProps) {
               );
             })}
           </Row>
-          <Space style={{ marginTop: 8 }}>
+          <div className="cube-form-actions">
             <Button type="primary" loading={submitting} onClick={() => void handleSubmit()}>
               保存
             </Button>
             <Button onClick={() => navigate(-1)}>返回</Button>
-          </Space>
+          </div>
         </Form>
       </Spin>
     </Card>
