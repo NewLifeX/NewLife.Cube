@@ -257,8 +257,8 @@ export default function HomePage() {
                       onClick={() => item.url && navigate(item.url)}
                       styles={{ body: { padding: '12px 16px' } }}
                     >
-                      <div style={{ fontWeight: 500 }}>{item.displayName || item.name}</div>
-                      <div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>{item.url}</div>
+                      <div className="cube-home-list-title">{item.displayName || item.name}</div>
+                      <div className="cube-home-list-url">{item.url}</div>
                     </Card>
                   </List.Item>
                 )}

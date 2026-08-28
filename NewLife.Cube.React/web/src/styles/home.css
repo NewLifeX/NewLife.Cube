@@ -245,6 +245,18 @@
   padding-inline: 0;
 }
 
+.cube-home-list-title {
+  font-weight: 600;
+  color: var(--cube-text);
+}
+
+.cube-home-list-url {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--cube-text-muted);
+  word-break: break-all;
+}
+
 .cube-home-online-tag {
   display: inline-flex;
   align-items: center;

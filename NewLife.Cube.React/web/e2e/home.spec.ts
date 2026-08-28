@@ -75,8 +75,9 @@ test.describe('用户菜单与登出（CMP-5）', () => {
     await page.goto('/');
     // 用户菜单（头像+用户名）
     await page.locator('.ant-dropdown-trigger').last().click();
-    await expect(page.getByText('安全中心')).toBeVisible({ timeout: 5000 });
-    await expect(page.getByText('退出登录')).toBeVisible();
+    // 首页 hero 也有“安全中心”按钮，需限定在用户菜单下拉内定位
+    await expect(page.locator('.ant-dropdown:visible').getByText('安全中心')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.ant-dropdown:visible').getByText('退出登录')).toBeVisible();
   });
 
   test('退出登录跳转登录页', async ({ browser }) => {
