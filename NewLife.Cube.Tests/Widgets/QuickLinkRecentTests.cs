@@ -65,7 +65,7 @@ public class QuickLinkRecentFixture : IDisposable
     }
 }
 
-/// <summary>最近访问存储集成测试（Parameter 表，SQLite）。覆盖记录置顶/计数/截断/空数据处理</summary>
+/// <summary>最近访问存储集成测试（Parameter 表，SQLite）。覆盖记录/置顶/延迟保存/截断/空数据处理</summary>
 [Collection("QuickLinkRecent")]
 public class QuickLinkRecentTests : IDisposable
 {
@@ -85,38 +85,76 @@ public class QuickLinkRecentTests : IDisposable
         Parameter.Meta.ConnName = _oldConn;
     }
 
-    [Fact(DisplayName = "RecordVisit_首次访问_置顶且计数为1")]
+    /// <summary>构造菜单对象（仅内存，不落库）</summary>
+    private static IMenu M(String name, String url, Boolean visible = true, String icon = null)
+        => new Menu { Name = name, Url = url, Visible = visible, Icon = icon };
+
+    [Fact(DisplayName = "RecordVisit_首次访问_置顶且立即落库")]
     public void RecordVisit_FirstVisit_InsertTop()
     {
         const Int32 userId = 301;
 
-        QuickLinkWidget.RecordVisit(userId, "用户管理", "/Admin/User", "fa-users");
-        QuickLinkWidget.RecordVisit(userId, "审计日志", "/Admin/Log", "fa-history");
+        QuickLinkWidget.RecordVisit(userId, M("用户", "/Admin/User", icon: "fa-user"));
+        QuickLinkWidget.RecordVisit(userId, M("审计日志", "/Admin/Log", icon: "fa-history"));
 
         var list = QuickLinkWidget.GetRecent(userId);
         Assert.Equal(2, list.Count);
         Assert.Equal("审计日志", list[0].Name);
         Assert.Equal("/Admin/Log", list[0].Url);
-        Assert.Equal("fa-history", list[0].Icon);
-        Assert.Equal(1, list[0].Count);
-        Assert.Equal("用户管理", list[1].Name);
+        Assert.Equal("/Admin/User", list[1].Url);
+
+        // 新增页面立即落库（新命名 Visit/Recent_Pages）
+        var p = Parameter.FindByUserIDAndCategoryAndName(userId, "Visit", "Recent_Pages");
+        Assert.NotNull(p);
+        Assert.Equal("Visit", p!.Category);
+        Assert.Equal("Recent_Pages", p.Name);
+        Assert.Equal(userId, p.UserID);
+
+        var json = p.Value ?? p.LongValue;
+        Assert.Contains("审计日志", json);
+        Assert.Contains("用户", json);
     }
 
-    [Fact(DisplayName = "RecordVisit_重复访问_置顶且计数递增")]
-    public void RecordVisit_Repeat_ReordersAndIncrements()
+    [Fact(DisplayName = "RecordVisit_重复访问_置顶")]
+    public void RecordVisit_Repeat_ReordersToTop()
     {
         const Int32 userId = 302;
 
-        QuickLinkWidget.RecordVisit(userId, "用户管理", "/Admin/User");
-        QuickLinkWidget.RecordVisit(userId, "审计日志", "/Admin/Log");
-        QuickLinkWidget.RecordVisit(userId, "用户管理", "/Admin/User");
+        QuickLinkWidget.RecordVisit(userId, M("用户", "/Admin/User"));
+        QuickLinkWidget.RecordVisit(userId, M("审计日志", "/Admin/Log"));
+
+        // 重复访问"用户"置顶（异步保存，不阻塞请求）
+        QuickLinkWidget.RecordVisit(userId, M("用户", "/Admin/User"));
 
         var list = QuickLinkWidget.GetRecent(userId);
         Assert.Equal(2, list.Count);
         Assert.Equal("/Admin/User", list[0].Url);
-        Assert.Equal(2, list[0].Count);
         Assert.Equal("/Admin/Log", list[1].Url);
-        Assert.Equal(1, list[1].Count);
+
+        // 数据已落库（新增即时保存，重复访问异步保存）
+        var p = Parameter.FindByUserIDAndCategoryAndName(userId, "Visit", "Recent_Pages");
+        Assert.NotNull(p);
+        var json = p!.Value ?? p.LongValue;
+        Assert.Contains("用户", json);
+        Assert.Contains("审计日志", json);
+    }
+
+    [Fact(DisplayName = "RecordVisit_重复访问顶部_不产生脏数据")]
+    public void RecordVisit_TopRepeat_NoDirty()
+    {
+        const Int32 userId = 306;
+
+        QuickLinkWidget.RecordVisit(userId, M("用户", "/Admin/User"));
+
+        var p = Parameter.FindByUserIDAndCategoryAndName(userId, "Visit", "Recent_Pages");
+        var json1 = p!.Value ?? p.LongValue;
+
+        // 已在顶部且无变化：不触发任何写入
+        QuickLinkWidget.RecordVisit(userId, M("用户", "/Admin/User"));
+
+        var p2 = Parameter.FindByUserIDAndCategoryAndName(userId, "Visit", "Recent_Pages");
+        var json2 = p2!.Value ?? p2.LongValue;
+        Assert.Equal(json1, json2);
     }
 
     [Fact(DisplayName = "RecordVisit_超过上限_截断最旧")]
@@ -125,10 +163,10 @@ public class QuickLinkRecentTests : IDisposable
         const Int32 userId = 303;
 
         for (var i = 1; i <= 12; i++)
-            QuickLinkWidget.RecordVisit(userId, $"页面{i}", $"/Admin/Page{i}");
+            QuickLinkWidget.RecordVisit(userId, M($"页面{i}", $"/Admin/Page{i}"));
 
         var list = QuickLinkWidget.GetRecent(userId);
-        Assert.Equal(QuickLinkWidget.MaxRecent, list.Count);
+        Assert.Equal(10, list.Count);
         // 最新在前，最旧的 页面1/页面2 被淘汰
         Assert.Equal("/Admin/Page12", list[0].Url);
         Assert.Equal("/Admin/Page3", list[^1].Url);
@@ -137,22 +175,21 @@ public class QuickLinkRecentTests : IDisposable
     [Fact(DisplayName = "GetRecent_无数据_返回空列表")]
     public void GetRecent_NoData_ReturnsEmpty()
     {
-        var list = QuickLinkWidget.GetRecent(999);
-        Assert.Empty(list);
+        Assert.Empty(QuickLinkWidget.GetRecent(999));
     }
 
     [Fact(DisplayName = "RecordVisit_无效参数_不写入")]
     public void RecordVisit_InvalidArgs_Skip()
     {
-        QuickLinkWidget.RecordVisit(0, "无用户", "/Admin/User");
-        QuickLinkWidget.RecordVisit(304, null, "/Admin/User");
-        QuickLinkWidget.RecordVisit(304, "无地址", null);
+        QuickLinkWidget.RecordVisit(0, M("无用户", "/Admin/User"));
+        QuickLinkWidget.RecordVisit(304, null!);
+        QuickLinkWidget.RecordVisit(304, M("隐藏页", "/Admin/Hidden", visible: false));
+        QuickLinkWidget.RecordVisit(304, M("无地址", null!));
 
-        Assert.Empty(QuickLinkWidget.GetRecent(0));
         Assert.Empty(QuickLinkWidget.GetRecent(304));
     }
 
-    [Fact(DisplayName = "GetData_未登录_最近访问为空")]
+    [Fact(DisplayName = "GetData_未登录_链接为空")]
     public void GetData_NoUser_RecentEmpty()
     {
         var manager = new WidgetManager();
@@ -161,7 +198,7 @@ public class QuickLinkRecentTests : IDisposable
         Assert.NotNull(data);
 
         dynamic d = data!;
-        var recent = (IEnumerable<dynamic>)d.Recent;
-        Assert.Empty(recent);
+        var links = (IEnumerable<dynamic>)d.Links;
+        Assert.Empty(links);
     }
 }

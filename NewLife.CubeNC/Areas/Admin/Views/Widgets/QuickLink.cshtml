@@ -1,33 +1,13 @@
 @model dynamic
-@using XCode.Membership;
 @{
     var d = Model;
-    var user = ManageProvider.User;
-    var isAdmin = user?.Roles.Any(e => e.IsSystem) == true;
-    var recent = d.Recent as IEnumerable<dynamic> ?? new List<dynamic>();
 }
 <div class="widget-quicklinks">
     @foreach (dynamic link in d.Links)
     {
-        if (link.AdminOnly && !isAdmin) continue;
         <a class="quicklink-item" href="@link.Url" title="@link.Name">
-            <i class="fa @link.Icon"></i>
+            <i class="fa @(String.IsNullOrEmpty(link.Icon) ? "fa-th-large" : link.Icon)"></i>
             <span>@link.Name</span>
         </a>
     }
 </div>
-@if (recent.Any())
-{
-    <div class="quicklink-recent">
-        <div class="quicklink-recent-title"><i class="fa fa-history"></i> 最近访问</div>
-        <div class="widget-quicklinks">
-            @foreach (dynamic link in recent)
-            {
-                <a class="quicklink-item quicklink-recent-item" href="@link.Url" title="@link.Name">
-                    <i class="fa @(String.IsNullOrEmpty(link.Icon) ? "fa-history" : link.Icon)"></i>
-                    <span>@link.Name</span>
-                </a>
-            }
-        </div>
-    </div>
-}

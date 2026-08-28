@@ -96,7 +96,7 @@ public class ControllerBaseX : Controller
             var act = GetControllerAction();
             var isDashboard = act.Length >= 3 && act[1].EqualIgnoreCase("Index") && act[2].EqualIgnoreCase("Dashboard");
             if (!isDashboard)
-                NewLife.Cube.Widgets.System.QuickLinkWidget.RecordVisit(user.ID, Menu.DisplayName ?? Menu.Name, Menu.Url, Menu.Icon);
+                NewLife.Cube.Widgets.System.QuickLinkWidget.RecordVisit(user.ID, Menu);
         }
 
         base.OnActionExecuted(context);
