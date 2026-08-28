@@ -184,4 +184,14 @@ test.describe('通用列表页（/Admin/User）', () => {
     await confirmBtn.click();
     await expect(page.locator('.ant-message')).toBeVisible({ timeout: 8000 });
   });
+
+  test('图表弹窗：有数据渲染弹窗，无数据友好提示', async ({ page }) => {
+    await page.goto('/Admin/User');
+    await page.waitForSelector('.ant-table-tbody tr', { timeout: TABLE_TIMEOUT });
+    await page.getByRole('button', { name: /图\s*表/ }).click();
+    // 有图表数据 → 弹窗；无数据 → message「暂无图表数据」；二者至少其一出现
+    await expect(
+      page.locator('.ant-modal:not([style*="display: none"]), .ant-message').first(),
+    ).toBeVisible({ timeout: 10000 });
+  });
 });
