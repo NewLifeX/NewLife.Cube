@@ -174,6 +174,10 @@
     <Compile Include="..\NewLife.Cube\Services\SmsService.cs" Link="Services\SmsService.cs" />
     <Compile Include="..\NewLife.Cube\Services\DrawingCaptchaService.cs" Link="Services\DrawingCaptchaService.cs" />
     <Compile Include="..\NewLife.Cube\Services\TotpMfaService.cs" Link="Services\TotpMfaService.cs" />
+    <Compile Include="..\NewLife.Cube\Services\IAttachmentStorage.cs" Link="Services\IAttachmentStorage.cs" />
+    <Compile Include="..\NewLife.Cube\Services\LocalAttachmentStorage.cs" Link="Services\LocalAttachmentStorage.cs" />
+    <Compile Include="..\NewLife.Cube\Services\ObjectAttachmentStorage.cs" Link="Services\ObjectAttachmentStorage.cs" />
+    <Compile Include="..\NewLife.Cube\Services\S3ObjectStorage.cs" Link="Services\S3ObjectStorage.cs" />
     <Compile Include="..\NewLife.Cube\Entity\值集定义.cs" Link="Entity\值集定义.cs" />
     <Compile Include="..\NewLife.Cube\Entity\值集定义.Biz.cs" Link="Entity\值集定义.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\值集枚举值.cs" Link="Entity\值集枚举值.cs" />

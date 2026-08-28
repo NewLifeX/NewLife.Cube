@@ -109,10 +109,6 @@
     <Compile Include="..\NewLife.CubeNC\Services\DbXmlRepository.cs" Link="Services\DbXmlRepository.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\ExternalAuthService.cs" Link="Services\ExternalAuthService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\FileStorageService.cs" Link="Services\FileStorageService.cs" />
-    <Compile Include="..\NewLife.CubeNC\Services\IAttachmentStorage.cs" Link="Services\IAttachmentStorage.cs" />
-    <Compile Include="..\NewLife.CubeNC\Services\LocalAttachmentStorage.cs" Link="Services\LocalAttachmentStorage.cs" />
-    <Compile Include="..\NewLife.CubeNC\Services\ObjectAttachmentStorage.cs" Link="Services\ObjectAttachmentStorage.cs" />
-    <Compile Include="..\NewLife.CubeNC\Services\S3ObjectStorage.cs" Link="Services\S3ObjectStorage.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\IMailVerifyCode.cs" Link="Services\IMailVerifyCode.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\ISmsVerifyCode.cs" Link="Services\ISmsVerifyCode.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\JobService.cs" Link="Services\JobService.cs" />
