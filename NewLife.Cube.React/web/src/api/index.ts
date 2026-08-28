@@ -6,9 +6,27 @@
  * - 服务接口（user/menu/config：/Auth /Cube /Sso）→ 同源不带 /api
  * - 统一错误处理：字段级错误 / 业务错误 / 401 未授权
  */
-import { createCubeApi, type CubeApi } from '@cube/api-core';
+import { createCubeApi, type CubeApi, type TokenStorage } from '@cube/api-core';
 import { getConfig } from '@/configure';
 import { message } from 'antd';
+
+/** Token 变更事件（登录/登出时派发，供响应式登录态使用） */
+export const CUBE_TOKEN_EVENT = 'cube:token-change';
+
+/**
+ * localStorage Token 存储（写操作派发事件，使登录态可被 UI 响应）
+ */
+const tokenStorage: TokenStorage = {
+  getToken: () => localStorage.getItem('token'),
+  setToken: (t) => {
+    localStorage.setItem('token', t);
+    window.dispatchEvent(new Event(CUBE_TOKEN_EVENT));
+  },
+  clearToken: () => {
+    localStorage.removeItem('token');
+    window.dispatchEvent(new Event(CUBE_TOKEN_EVENT));
+  },
+};
 
 // 同一响应若携带 fieldErrors，onFieldError 会弹出更精确的字段提示；
 // 此处标记抑制紧随其后的 onBusinessError，避免"操作失败！xxx"与"xxx"重复弹出
@@ -19,7 +37,7 @@ let fieldErrorShown = false;
  */
 export const api: CubeApi = createCubeApi({
   baseURL: getConfig().request.baseUrl,
-  tokenStorage: getConfig().request.tokenStorage ?? 'localStorage',
+  tokenStorage,
   tokenHeaderPrefix: getConfig().request.tokenHeaderPrefix ?? 'Bearer ',
   timeout: getConfig().request.timeout,
   // 接入附加请求头（如多租户 X-Tenant），实体/服务两条链均生效

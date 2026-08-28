@@ -40,7 +40,11 @@ export default function FormPage({ title }: FormPageProps) {
   const [submitting, setSubmitting] = useState(false);
 
   const fields = isEdit && editFields.length ? editFields : addFields;
-  const metas = useMemo(() => fields.map((f) => toFieldMeta(f.field)), [fields]);
+  // 过滤主键与只读字段（编辑时主键已随详情 setFieldsValue 保留）
+  const metas = useMemo(
+    () => fields.map((f) => toFieldMeta(f.field)).filter((f) => !f.primaryKey && !f.readOnly),
+    [fields],
+  );
 
   // 加载字段 + 详情
   useEffect(() => {

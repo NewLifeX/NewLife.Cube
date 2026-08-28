@@ -46,8 +46,14 @@ export default function FormDialog({
   const [form] = Form.useForm();
   const [detail, setDetail] = useState<Record<string, unknown>>({});
 
-  // 表单字段元数据
-  const metas = useMemo(() => fields.map((f) => toFieldMeta(f.field)), [fields]);
+  // 表单字段元数据（过滤主键与只读字段；编辑时主键已通过 setFieldsValue(row) 保留在表单中）
+  const metas = useMemo(
+    () =>
+      fields
+        .map((f) => toFieldMeta(f.field))
+        .filter((f) => !f.primaryKey && !f.readOnly),
+    [fields],
+  );
 
   // 打开时初始化表单值
   useEffect(() => {

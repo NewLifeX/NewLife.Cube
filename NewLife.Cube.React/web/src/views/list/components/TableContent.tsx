@@ -4,7 +4,7 @@
  * 每列按 resolveListControl 解析渲染类型：
  * 链接(resolveUrl)/布尔标签/日期/数值/图片缩略图/颜色色块/图标/LOV 翻译/JSON 摘要等。
  */
-import { Table, Tag, Tooltip } from 'antd';
+import { Table, Tag, Tooltip, Button } from 'antd';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import type { FieldMapping } from '@cube/field-mapping';
 import { resolveListControl } from '@/utils/fieldControl';
@@ -150,14 +150,14 @@ export default function TableContent({
       render: (_, row) => (
         <span>
           {canEdit && (
-            <a onClick={() => onEdit?.(row)} style={{ marginRight: 12 }}>
+            <Button type="link" size="small" onClick={() => onEdit?.(row)}>
               编辑
-            </a>
+            </Button>
           )}
           {canDelete && (
-            <a style={{ color: '#ff4d4f' }} onClick={() => onDelete?.(row)}>
+            <Button type="link" size="small" danger onClick={() => onDelete?.(row)}>
               删除
-            </a>
+            </Button>
           )}
         </span>
       ),

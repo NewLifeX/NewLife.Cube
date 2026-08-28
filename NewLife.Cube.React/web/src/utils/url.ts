@@ -22,21 +22,19 @@ export function toCamelCase(str: string): string {
 /** 翻转首字母大小写（PascalCase ↔ camelCase） */
 export function toPascalAndCamel(str: string): string {
   if (!str) return '';
-  return str.charAt(0).toUpperCase() + str.slice(1);
+  const first = str.charAt(0);
+  return (first === first.toUpperCase() ? first.toLowerCase() : first.toUpperCase()) + str.slice(1);
 }
 
 /**
- * 路由路径 → API 前缀
+ * 路由路径 → API 前缀（带前导斜杠，api-core resolveRequestUrl 依赖）
  *
  * 示例：/device/device-profile → /Device/DeviceProfile
- * （实体接口由 api-core 自动补 /api 前缀，这里只返回实体路径前缀）
+ * （实体接口由 api-core 自动补 /api 前缀）
  */
 export function routeToApiPrefix(path: string): string {
-  return path
-    .split('/')
-    .filter(Boolean)
-    .map(toPascalCase)
-    .join('/');
+  const parts = path.split('/').filter(Boolean).map(toPascalCase);
+  return parts.length ? `/${parts.join('/')}` : '/';
 }
 
 /**

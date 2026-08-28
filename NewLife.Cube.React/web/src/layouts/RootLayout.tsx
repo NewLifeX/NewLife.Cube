@@ -10,7 +10,7 @@ import { useEffect, type ReactNode } from 'react';
 import { Navigate, Outlet, useLocation, useMatches } from 'react-router-dom';
 import { Spin } from 'antd';
 import MainLayout from '@/layouts/MainLayout';
-import { useUserStore } from '@/stores/user';
+import { useUserStore, useIsLoggedIn } from '@/stores/user';
 import { useMenuStore } from '@/stores/menu';
 import { getConfig } from '@/configure';
 import type { RouteMeta } from '@/router';
@@ -26,14 +26,14 @@ export default function RootLayout({ children }: { children?: ReactNode }) {
   const userInfo = useUserStore((s) => s.userInfo);
   const menus = useUserStore((s) => s.menus);
   const setFlatMenus = useMenuStore((s) => s.setFlatMenus);
-  const isLoggedIn = useUserStore((s) => !!s.userInfo) || !!useUserStore.getState().isLoggedIn;
+  const isLoggedIn = useIsLoggedIn();
 
   const { loginPageUrl, redirectKey } = getConfig().auth;
 
-  // 初始化：登录态下加载用户信息与菜单（只加载一次）
+  // 初始化：登录态下加载用户信息与菜单（isLoggedIn 变化时触发，登录后自动加载）
   useEffect(() => {
+    if (!isLoggedIn) return;
     const store = useUserStore.getState();
-    if (!store.isLoggedIn()) return;
     if (!store.userInfo) {
       store.fetchUserInfo().catch(() => {});
     }
@@ -45,7 +45,7 @@ export default function RootLayout({ children }: { children?: ReactNode }) {
     } else if (!useMenuStore.getState().flatMenus.length) {
       setFlatMenus(store.menus);
     }
-  }, [setFlatMenus]);
+  }, [isLoggedIn, setFlatMenus]);
 
   // 认证守卫
   if (needAuth && !isLoggedIn) {

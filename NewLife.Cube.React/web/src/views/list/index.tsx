@@ -14,6 +14,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Card, message } from 'antd';
 import { useLocation } from 'react-router-dom';
 import { routeToApiPrefix, getValueByKey } from '@/utils/url';
+import { api } from '@/api';
 import { usePageStore } from '@/hooks/usePageStore';
 import SearchBar from './components/SearchBar';
 import Toolbar from './components/Toolbar';
@@ -102,6 +103,10 @@ export default function DefaultListPage({ title }: DefaultListPageProps) {
       .then(() => {
         message.success('删除成功');
         void refresh();
+      })
+      .catch((err) => {
+        // 业务错误已由 api-core 统一提示，这里兜底
+        message.error((err as Error)?.message || '删除失败');
       });
   };
 
@@ -115,12 +120,26 @@ export default function DefaultListPage({ title }: DefaultListPageProps) {
         message.success('删除成功');
         setSelectedKeys([]);
         void refresh();
+      })
+      .catch((err) => {
+        message.error((err as Error)?.message || '删除失败');
       });
   };
 
-  const handleExport = (format: string) => {
-    const url = store.getState().getExportUrl(format);
-    window.open(url, '_blank');
+  /** 导出：axios 携带 token 获取文件流后触发浏览器下载（对齐 Vue exportData，window.open 无法携带 Bearer 头） */
+  const handleExport = async (format: string) => {
+    try {
+      const res = await api.client.get(`${type}/ExportFile`, {
+        params: { format },
+        responseType: 'blob',
+      });
+      const blob = res.data as Blob;
+      const name = type.split('/').filter(Boolean).pop() || 'export';
+      downloadBlob(blob, `${name}_${dateStamp()}${blobExt(blob.type)}`);
+      message.success('导出成功');
+    } catch (err) {
+      message.error((err as Error)?.message || '导出失败');
+    }
   };
 
   const handleImport = () => importInputRef.current?.click();
@@ -233,4 +252,34 @@ export default function DefaultListPage({ title }: DefaultListPageProps) {
       <ListChartDialog open={chartOpen} charts={store((s) => s.chartList)} onClose={() => setChartOpen(false)} />
     </Card>
   );
+}
+
+// ── 导出辅助（对齐 Vue core/views/index.vue）──────────────────────
+
+/** 触发浏览器下载 Blob */
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/** 根据响应 content-type 推断导出文件扩展名 */
+function blobExt(contentType: string): string {
+  if (contentType.includes('csv')) return '.csv';
+  if (contentType.includes('json')) return '.json';
+  if (contentType.includes('xml')) return '.xml';
+  if (contentType.includes('excel')) return '.xlsx';
+  return '.bin';
+}
+
+/** 生成时间戳文件名片段（yyyyMMddHHmmss） */
+function dateStamp(): string {
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
 }
