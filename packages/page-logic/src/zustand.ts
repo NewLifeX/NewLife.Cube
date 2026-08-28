@@ -11,7 +11,7 @@
  * ```
  */
 
-import { create, type StoreApi } from 'zustand';
+import { create, type StoreApi, type UseBoundStore } from 'zustand';
 import type { CubeApi, ApiResponse } from '@cube/api-core';
 import { PageLogic, type PageState, type FieldMapping, type Pagination } from './index';
 
@@ -42,7 +42,7 @@ export function createPageStore(
   api: CubeApi,
   type: string,
   defaultPageSize = 20,
-): StoreApi<ZustandPageState> {
+): UseBoundStore<StoreApi<ZustandPageState>> {
   let logic: PageLogic;
 
   return create<ZustandPageState>((set) => {

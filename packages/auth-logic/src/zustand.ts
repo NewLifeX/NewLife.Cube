@@ -11,7 +11,7 @@
  * ```
  */
 
-import { create, type StoreApi } from 'zustand';
+import { create, type StoreApi, type UseBoundStore } from 'zustand';
 import { type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo } from '@cube/api-core';
 import { AuthLogic, ForgotPasswordLogic, RegisterLogic, type AuthState, type ForgotPasswordState, type RegisterState } from './index';
 
@@ -29,7 +29,7 @@ export interface ZustandAuthState extends AuthState {
  *
  * @param api - CubeApi 实例
  */
-export function createZustandAuthStore(api: CubeApi): StoreApi<ZustandAuthState> {
+export function createZustandAuthStore(api: CubeApi): UseBoundStore<StoreApi<ZustandAuthState>> {
   let logic: AuthLogic;
 
   return create<ZustandAuthState>((set, get) => {
@@ -83,7 +83,7 @@ export interface ZustandForgotPasswordState extends ForgotPasswordState {
  * export const useForgotPasswordStore = createZustandForgotPasswordStore(api);
  * ```
  */
-export function createZustandForgotPasswordStore(api: CubeApi): StoreApi<ZustandForgotPasswordState> {
+export function createZustandForgotPasswordStore(api: CubeApi): UseBoundStore<StoreApi<ZustandForgotPasswordState>> {
   let logic: ForgotPasswordLogic;
 
   return create<ZustandForgotPasswordState>((set) => {
@@ -116,7 +116,7 @@ export interface ZustandRegisterState extends RegisterState {
 }
 
 /** 创建 Zustand 注册 Store */
-export function createZustandRegisterStore(api: CubeApi): StoreApi<ZustandRegisterState> {
+export function createZustandRegisterStore(api: CubeApi): UseBoundStore<StoreApi<ZustandRegisterState>> {
   let logic: RegisterLogic;
 
   return create<ZustandRegisterState>((set) => {
