@@ -98,6 +98,11 @@ public class RoleController(ITenantContext tenantContext) : EntityController<Rol
             }
 
             // MVC 表单提交：通过 p{id} / pf{id}_{flag} 字段处理权限
+            // 租户管理员（在租户上下文中操作、且本身不是系统管理员）只能授予自己拥有的权限，
+            // 提交时对越权勾选的权限进行拦截，避免越界授权
+            var current = ManageProvider.User as IUser;
+            var restricted = TenantContext.CurrentId > 0 && (current == null || !current.Roles.Any(e => e.IsSystem));
+
             // 保存权限项
             var menus = XCode.Membership.Menu.Root.AllChilds;
             var dels = new List<Int32>();

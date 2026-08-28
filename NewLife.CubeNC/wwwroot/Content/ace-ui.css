@@ -101,16 +101,17 @@ select.form-control {
 }
 
 /* ========== 面包屑 ========== */
+/* 面包屑已移入内容卡（.content-wrapper）内部作为顶部条：白底由内容卡统一提供，不再独立成卡，消除卡间灰色缝隙 */
 .breadcrumbs {
-    background: var(--cube-card);
+    background: transparent;
     border: none;
     border-bottom: 1px solid var(--cube-border-light);
-    padding: 0 18px;
+    padding: 0;
     height: 46px;
     line-height: 46px;
-    margin-bottom: 18px;
-    box-shadow: var(--cube-shadow);
-    border-radius: var(--cube-radius);
+    margin-bottom: 12px;
+    box-shadow: none;
+    border-radius: 0;
 }
 
     .breadcrumbs .breadcrumb {
@@ -1433,7 +1434,7 @@ body.skin-3 {
     .breadcrumbs {
         height: 42px;
         line-height: 42px;
-        padding: 0 12px;
+        padding: 0;
         margin-bottom: 10px;
     }
 

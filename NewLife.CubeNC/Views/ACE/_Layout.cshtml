@@ -84,27 +84,27 @@
 </head>
 <body>
     <div class="panel panel-default">
-        @if (pageSetting.EnableNavbar)
-        {
-            var remark = (String)@ViewBag.HeaderContent;
-            <div class="breadcrumbs" id="breadcrumbs">
-                <ul class="breadcrumb">
-                    @await Html.PartialAsync("_Layout_Nav")
-                </ul>
-                <div class="hidden-xs" style="float: right; margin-left: 40px;max-width:1000px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@remark">
-                    @if (menu != null && !menu.Ex4.IsNullOrEmpty() && menu.Ex4.StartsWithIgnoreCase("http://", "https://"))
-                    {
-                        <a href="@(menu.Ex4)" target="_blank">@remark</a>
-                    }
-                    else
-                    {
-                        <text>@remark</text>
-                    }
-                </div>
-            </div>
-        }
         <div class="page-content">
             <section class="content-wrapper main-content clear-fix">
+                @if (pageSetting.EnableNavbar)
+                {
+                    var remark = (String)@ViewBag.HeaderContent;
+                    <div class="breadcrumbs" id="breadcrumbs">
+                        <ul class="breadcrumb">
+                            @await Html.PartialAsync("_Layout_Nav")
+                        </ul>
+                        <div class="hidden-xs" style="float: right; margin-left: 40px;max-width:1000px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@remark">
+                            @if (menu != null && !menu.Ex4.IsNullOrEmpty() && menu.Ex4.StartsWithIgnoreCase("http://", "https://"))
+                            {
+                                <a href="@(menu.Ex4)" target="_blank">@remark</a>
+                            }
+                            else
+                            {
+                                <text>@remark</text>
+                            }
+                        </div>
+                    </div>
+                }
                 @RenderBody()
             </section>
         </div>
