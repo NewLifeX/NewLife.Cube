@@ -1,13 +1,13 @@
 /**
  * 首页（站点信息 + 欢迎卡片 + 常用菜单入口）
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, Col, List, Row, Skeleton, Tag } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/api';
 import { useUserStore } from '@/stores/user';
 import { getConfig } from '@/configure';
-import type { LoginConfig } from '@cube/api-core';
+import type { LoginConfig, MenuItem } from '@cube/api-core';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -22,8 +22,22 @@ export default function HomePage() {
       .catch(() => {});
   }, []);
 
-  // 顶层菜单（常用入口）
-  const topMenus = menus.filter((m) => m.visible !== false && m.children?.length === 0 && m.url);
+  // 常用菜单入口：递归收集任意层级的叶子菜单（children 为空且有 url），取前 12 个
+  // 注：不能只取"无 children 的顶层菜单"——顶层通常都是分组（含子菜单），会导致入口永远为空
+  const topMenus = useMemo(() => {
+    const leaves: MenuItem[] = [];
+    const walk = (items: MenuItem[]) => {
+      for (const item of items) {
+        if (item.children?.length) {
+          walk(item.children);
+        } else if (item.visible !== false && item.url) {
+          leaves.push(item);
+        }
+      }
+    };
+    walk(menus);
+    return leaves.slice(0, 12);
+  }, [menus]);
 
   return (
     <div style={{ maxWidth: 960, margin: '0 auto' }}>

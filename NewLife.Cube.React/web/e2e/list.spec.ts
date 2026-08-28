@@ -125,4 +125,63 @@ test.describe('通用列表页（/Admin/User）', () => {
       await expect(page.locator('.ant-table-tbody').getByText(name).first()).toBeVisible({ timeout: 10000 });
     }
   });
+
+  test('分页器渲染且可翻页', async ({ page }) => {
+    await page.goto('/Admin/User');
+    await page.waitForSelector('.ant-table-tbody tr', { timeout: TABLE_TIMEOUT });
+    const pager = page.locator('.ant-pagination');
+    await expect(pager).toBeVisible();
+    // 数据量足够时有第 2 页，点击并断言激活页码
+    const page2 = pager.locator('.ant-pagination-item-2');
+    if (await page2.isVisible().catch(() => false)) {
+      await page2.click();
+      await page.waitForTimeout(800);
+      await expect(pager.locator('.ant-pagination-item-active')).toContainText('2');
+    }
+  });
+
+  test('新增弹窗空提交被校验拦截', async ({ page }) => {
+    await page.goto('/Admin/User');
+    await page.waitForSelector('.ant-table-tbody tr', { timeout: TABLE_TIMEOUT });
+    await page.getByRole('button', { name: /新增/ }).click();
+    await page.waitForSelector('.ant-modal:not([style*="display: none"])', { timeout: 8000 });
+    // 不填用户名直接保存 → 前端必填校验 或 后端错误提示（至少其一出现，拦截提交）
+    await page.getByRole('button', { name: /保\s*存/ }).click();
+    await expect(page.locator('.ant-form-item-explain-error, .ant-message').first()).toBeVisible({ timeout: 8000 });
+    // 弹窗未被关闭（说明未提交成功）
+    await expect(page.locator('.ant-modal:not([style*="display: none"])')).toBeVisible();
+  });
+
+  test('批量删除选中用户', async ({ page }) => {
+    await page.goto('/Admin/User');
+    await page.waitForSelector('.ant-table-tbody tr', { timeout: TABLE_TIMEOUT });
+    // 先新增两个测试用户
+    for (let i = 0; i < 2; i++) {
+      const name = `${PREFIX}-bd${i}`;
+      await page.getByRole('button', { name: /新增/ }).click();
+      await page.waitForSelector('.ant-modal:not([style*="display: none"])', { timeout: 8000 });
+      await page.locator('.ant-modal input').first().fill(name);
+      await page.getByRole('button', { name: /保\s*存/ }).click();
+      await expect(page.locator('.ant-message')).toBeVisible({ timeout: 8000 });
+    }
+    // 搜索定位目标（兼容分页）
+    const searchInput = page.locator('.ant-card input[type="text"], .ant-card input:not([type])').first();
+    if (await searchInput.isVisible().catch(() => false)) {
+      await searchInput.fill(PREFIX);
+      await page.getByRole('button', { name: /搜\s*索/ }).click();
+      await page.waitForTimeout(1000);
+    }
+    // 勾选前两行
+    const rows = page.locator('.ant-table-tbody tr');
+    const count = await rows.count();
+    expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < Math.min(2, count); i++) {
+      await rows.nth(i).locator('input[type="checkbox"]').check({ timeout: 5000 });
+    }
+    // 点击批量删除（Toolbar 删除按钮）→ Popconfirm 确认
+    await page.getByRole('button', { name: /删\s*除/ }).first().click();
+    const confirmBtn = page.locator('.ant-popover').getByRole('button', { name: /删\s*除/ }).first();
+    await confirmBtn.click();
+    await expect(page.locator('.ant-message')).toBeVisible({ timeout: 8000 });
+  });
 });
