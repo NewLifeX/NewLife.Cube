@@ -1,11 +1,13 @@
 /**
  * 富文本编辑器（markdown / html）
  *
- * 轻量实现：markdown 用文本域 + 简单预览；html 用文本域。
- * 完整编辑器（@wangeditor/react 等）在 CMP-3 阶段按选型替换，本组件保持接口不变。
+ * markdown 用文本域 + marked 渲染预览（复用 AI 助手同款 marked + DOMPurify，零新增依赖）；
+ * html 用文本域。完整 WYSIWYG 编辑器（@wangeditor/react 等）在 CMP-3 阶段按选型替换，本组件保持接口不变。
  */
 import { useState } from 'react';
 import { Input, Segmented } from 'antd';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 export interface RichEditorProps {
   value?: string;
@@ -16,18 +18,10 @@ export interface RichEditorProps {
   rows?: number;
 }
 
-/** 极简 markdown 渲染（标题/粗体/列表/代码块），仅供预览，完整渲染由 CMP-3 接管 */
+/** markdown → 安全 HTML（复用 marked + DOMPurify，与 AI 助手一致） */
 function renderMarkdown(src: string): string {
-  return src
-    .replace(/^### (.*)$/gm, '<h5>$1</h5>')
-    .replace(/^## (.*)$/gm, '<h4>$1</h4>')
-    .replace(/^# (.*)$/gm, '<h3>$1</h3>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/^- (.*)$/gm, '<li>$1</li>')
-    .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>')
-    .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-    .replace(/\n/g, '<br/>');
+  const html = marked.parse(src || '', { breaks: true, gfm: true }) as string;
+  return DOMPurify.sanitize(html);
 }
 
 export default function RichEditor({ value, onChange, markdown, placeholder, disabled, rows = 8 }: RichEditorProps) {
@@ -56,6 +50,7 @@ export default function RichEditor({ value, onChange, markdown, placeholder, dis
           />
         ) : (
           <div
+            data-preview
             dangerouslySetInnerHTML={{ __html: renderMarkdown(value ?? '') }}
             style={{ border: '1px solid #d9d9d9', borderRadius: 6, padding: 8, minHeight: 120 }}
           />

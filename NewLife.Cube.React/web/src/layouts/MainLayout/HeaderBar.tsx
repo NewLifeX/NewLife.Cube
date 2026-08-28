@@ -11,6 +11,7 @@ import ThemeSwitcher from '@/components/ThemeSwitcher';
 import ModeSwitcher from '@/components/ModeSwitcher';
 import LanguageSwitch from '@/components/LanguageSwitch';
 import NavbarSearch from '@/components/NavbarSearch';
+import NotificationBell from '@/components/NotificationBell';
 import UserMenu from '@/components/UserMenu';
 
 export default function HeaderBar() {
@@ -52,6 +53,7 @@ export default function HeaderBar() {
       </div>
       <Space size={4}>
         <NavbarSearch />
+        <NotificationBell />
         <LanguageSwitch />
         <ThemeSwitcher />
         <ModeSwitcher />
