@@ -17,6 +17,7 @@ using NewLife.Cube.Extensions;
 using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
 using NewLife.Cube.WebMiddleware;
+using NewLife.Cube.Widgets;
 using NewLife.IP;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -181,6 +182,7 @@ public static class CubeService
 
         // 服务
         services.AddSingleton<UIService>();
+        services.AddSingleton<WidgetManager>();
         services.AddSingleton<PasswordService>();
         services.AddSingleton<UserService>();
         services.AddSingleton<AccessService>();

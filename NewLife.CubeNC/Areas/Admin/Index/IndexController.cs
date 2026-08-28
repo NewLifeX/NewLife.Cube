@@ -8,9 +8,11 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Common;
 using NewLife.Cube.AI;
+using NewLife.Cube.Charts;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Membership;
 using NewLife.Cube.ViewModels;
+using NewLife.Cube.Widgets;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Serialization;
@@ -27,6 +29,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     private readonly IManageProvider _provider;
     private readonly IHostApplicationLifetime _applicationLifetime;
     private readonly IAIService _ai;
+    private readonly WidgetManager _widgetManager;
 
     static IndexController() => MachineInfo.RegisterAsync();
 
@@ -36,11 +39,13 @@ public class IndexController : ControllerBaseX, IPageDataContext
     /// <param name="manageProvider"></param>
     /// <param name="appLifetime"></param>
     /// <param name="ai"></param>
-    public IndexController(IManageProvider manageProvider, IHostApplicationLifetime appLifetime, IAIService ai) : this()
+    /// <param name="widgetManager">工作台组件管理器</param>
+    public IndexController(IManageProvider manageProvider, IHostApplicationLifetime appLifetime, IAIService ai, WidgetManager widgetManager) : this()
     {
         _provider = manageProvider;
         _applicationLifetime = appLifetime;
         _ai = ai;
+        _widgetManager = widgetManager;
     }
 
     /// <summary>首页</summary>
@@ -100,12 +105,140 @@ public class IndexController : ControllerBaseX, IPageDataContext
         return isMobile ? View("MCubeIndex") : View("CubeIndex");
     }
 
+    /// <summary>工作台。聚合注册的工作台组件（Widget）渲染仪表盘首页，所有登录用户可访问，组件内按角色过滤</summary>
+    /// <returns></returns>
+    [DisplayName("工作台")]
+    // 工作台是登录后的首页，普通用户也需访问；组件内容由 WidgetManager 按角色过滤
+    [EntityAuthorize]
+    [Menu(10, true, Icon = "fa-home", LastUpdate = "20260827")]
+    public ActionResult Dashboard()
+    {
+        var user = _provider.Current as IUser;
+        var roleNames = user?.Roles?.Select(e => e.Name).ToList();
+        // 系统角色（IsSystem）可见系统监控组件，普通用户仅看个人工作台
+        var isAdmin = user?.Roles.Any(e => e.IsSystem) == true;
+
+        // 按用户排序与全局启停过滤，返回组件元数据
+        var widgets = _widgetManager.GetWidgets(roleNames, isAdmin, user?.ID ?? 0);
+
+        // 预取组件数据，并收集图表组件以触发布局加载 echarts.min.js
+        var charts = new List<ECharts>();
+        var list = new List<(WidgetAttribute Info, Object Data)>();
+        foreach (var info in widgets)
+        {
+            var data = _widgetManager.GetData(info);
+            list.Add((info, data));
+
+            if (data is ECharts chart)
+                charts.Add(chart);
+            else if (data is IEnumerable<ECharts> charts2)
+                charts.AddRange(charts2);
+        }
+
+        ViewBag.Widgets = list;
+        ViewBag.Charts = charts;
+        ViewBag.IsAdmin = isAdmin;
+        // 用户已隐藏的组件（恢复面板用）
+        ViewBag.HiddenWidgets = _widgetManager.GetHiddenWidgets(user?.ID ?? 0, roleNames, isAdmin);
+
+        return View();
+    }
+
+    /// <summary>保存工作台组件排序（按用户存 Parameter 表，分类 Widget.Layout 单行 JSON）</summary>
+    /// <param name="order">组件名数组，按显示顺序</param>
+    /// <returns></returns>
+    [DisplayName("保存排序")]
+    [EntityAuthorize]
+    [HttpPost]
+    public ActionResult SaveOrder(String[] order)
+    {
+        var user = _provider.Current as IUser;
+        if (user == null) return Json(401, "未登录");
+
+        if (order == null || order.Length == 0) return Json(0, null, "无排序数据");
+
+        // 按显示顺序生成排序值，合并进用户布局（保留隐藏状态）
+        var layout = _widgetManager.GetLayout(user.ID);
+        for (var i = 0; i < order.Length; i++)
+        {
+            var name = order[i];
+            if (name.IsNullOrEmpty()) continue;
+
+            layout[name] = new WidgetLayout { Sort = i, Hide = false };
+        }
+
+        _widgetManager.SaveLayout(user.ID, layout);
+
+        return Json(0, null, "排序已保存");
+    }
+
+    /// <summary>隐藏或恢复工作台组件（用户级布局，恢复后回到原排序位置）</summary>
+    /// <param name="name">组件名</param>
+    /// <param name="hide">是否隐藏</param>
+    /// <returns></returns>
+    [DisplayName("隐藏组件")]
+    [EntityAuthorize]
+    [HttpPost]
+    public ActionResult HideWidget(String name, Boolean hide)
+    {
+        var user = _provider.Current as IUser;
+        if (user == null) return Json(401, "未登录");
+        if (name.IsNullOrEmpty()) return Json(500, null, "缺少组件名");
+
+        _widgetManager.SetHidden(user.ID, name, hide);
+
+        return Json(0, null, hide ? "已隐藏" : "已恢复");
+    }
+
+    /// <summary>重置用户工作台布局为默认（删除布局配置，恢复出厂排序与显示）</summary>
+    /// <returns></returns>
+    [DisplayName("重置布局")]
+    [EntityAuthorize]
+    [HttpPost]
+    public ActionResult ResetLayout()
+    {
+        var user = _provider.Current as IUser;
+        if (user == null) return Json(401, "未登录");
+
+        _widgetManager.ResetLayout(user.ID);
+
+        return Json(0, null, "布局已重置");
+    }
+
+    /// <summary>监控数据。工作台性能曲线轮询接口，返回CPU/内存快照</summary>
+    /// <returns></returns>
+    [DisplayName("监控数据")]
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet]
+    public ActionResult MonitorData()
+    {
+        var mi = MachineInfo.Current ?? new MachineInfo();
+        var process = Process.GetCurrentProcess();
+
+        var cpu = Math.Round(mi.CpuRate * 100, 1);
+        // 内存使用率百分比，与曲线单 Y 轴（0~100%）同尺度
+        var memPct = mi.Memory > 0 ? Math.Round((mi.Memory - mi.AvailableMemory) * 100.0 / mi.Memory, 1) : 0;
+
+        // 图表卡轮询契约：xs 为 X 轴新点数组，series 为各系列新数据数组，固定视图定时追加
+        return Json(new
+        {
+            xs = new[] { DateTime.Now.ToString("HH:mm:ss") },
+            series = new[]
+            {
+                new[] { cpu },
+                new[] { memPct },
+            },
+            memUsed = (mi.Memory - mi.AvailableMemory) / 1024 / 1024,
+            memTotal = mi.Memory / 1024 / 1024,
+        });
+    }
+
     /// <summary>服务器信息</summary>
     /// <param name="id"></param>
     /// <returns></returns>
     [DisplayName("服务器信息")]
     [EntityAuthorize(PermissionFlags.Detail)]
-    [Menu(10, true, Icon = "fa-home")]
+    [Menu(0, false, Icon = "fa-home", LastUpdate = "20260827")]
     public ActionResult Main(String id)
     {
         // SPA/AJAX 请求直接返回 JSON（ArcoVue 主页仪表盘）

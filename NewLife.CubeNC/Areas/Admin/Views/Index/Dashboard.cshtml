@@ -1,0 +1,275 @@
+@using NewLife.Cube.Widgets
+@using NewLife;
+@using NewLife.Web;
+@using XCode.Membership;
+@using NewLife.Common;
+@using NewLife.Cube.Charts;
+@{
+    ViewBag.Title = "工作台";
+
+    var widgets = ViewBag.Widgets as IList<(WidgetAttribute Info, Object Data)> ?? new List<(WidgetAttribute, Object)>();
+    var hiddenWidgets = ViewBag.HiddenWidgets as IList<WidgetAttribute> ?? new List<WidgetAttribute>();
+    var isAdmin = ViewBag.IsAdmin as Boolean? ?? false;
+    var user = ManageProvider.User;
+    // 系统名称取自 SysConfig，不硬编码
+    var sysName = SysConfig.Current.DisplayName;
+
+    var set = NewLife.Cube.CubeSetting.Current;
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/Content";
+    res = res.TrimEnd('/');
+
+    // 问候语
+    var hour = DateTime.Now.Hour;
+    var greet = hour < 6 ? "夜深了" : hour < 12 ? "早上好" : hour < 14 ? "中午好" : hour < 18 ? "下午好" : "晚上好";
+}
+<div class="cube-workbench">
+
+    <!-- 欢迎横幅 -->
+    <div class="wb-banner">
+        <div class="wb-banner-left">
+            <div class="wb-banner-avatar">
+                <i class="fa fa-user"></i>
+                <img src="@user.GetAvatarUrl()" alt="@user" onerror="this.style.display='none'" />
+            </div>
+            <div>
+                <div class="wb-banner-greet">@greet，@(user?.DisplayName ?? user?.Name)</div>
+                <div class="wb-banner-sub">欢迎回到 @sysName · @DateTime.Now.ToString("yyyy年M月d日 dddd")</div>
+            </div>
+        </div>
+        <div class="wb-banner-right">
+            @if (isAdmin)
+            {
+                <button type="button" class="btn" id="btn-widget-refresh" title="刷新数据"><i class="fa fa-refresh"></i> 刷新</button>
+                <button type="button" class="btn btn-solid" onclick="window.CubeAI && CubeAI.diagnose()" title="AI 系统诊断"><i class="fa fa-heartbeat"></i> AI 诊断</button>
+            }
+            @if (hiddenWidgets.Count > 0)
+            {
+                <button type="button" class="btn" id="btn-widget-hidden" title="查看已隐藏的卡片"><i class="fa fa-eye-slash"></i> 已隐藏 @hiddenWidgets.Count</button>
+            }
+            <a class="btn" href="/Admin/User/Info"><i class="fa fa-user-circle"></i> 个人中心</a>
+        </div>
+    </div>
+
+    <!-- 已隐藏卡片恢复面板 -->
+    <div class="wb-hidden-pop" id="wb-hidden-pop" style="display:none;">
+        <div class="wb-hidden-title">已隐藏卡片</div>
+        <ul class="wb-hidden-list">
+            @foreach (var h in hiddenWidgets)
+            {
+                <li>
+                    <span><i class="fa @h.Icon"></i> @h.Title</span>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="restoreWidget('@h.Name')">恢复</button>
+                </li>
+            }
+        </ul>
+        <div class="wb-hidden-foot"><a href="javascript:;" onclick="resetLayout()"><i class="fa fa-undo"></i> 恢复默认布局</a></div>
+    </div>
+
+    <!-- 部件栅格（可拖拽，排序按用户保存到服务端） -->
+    <div class="widget-grid" id="widget-grid">
+        @foreach (var item in widgets)
+        {
+            var info = item.Info;
+            // 栅格宽度预计算百分比，微减余量避免 6 个 KPI 卡因舍入超 100% 换行
+            var width = (info.Cols * 100 / 12.0 - 0.01).ToString("0.##") + "%";
+            // 个人 KPI 卡仅普通用户显示；管理员只看系统 KPI 卡
+            if (isAdmin && info.WidgetType == WidgetTypes.Kpi && info.Category == "个人") continue;
+
+            if (info.WidgetType == WidgetTypes.Kpi)
+            {
+                // KPI 小卡
+                dynamic d = item.Data;
+                <div class="widget-col widget-col-kpi" style="width:@width;" data-name="@info.Name">
+                    <div class="widget-kpi">
+                        <span class="widget-menu-wrap widget-menu-kpi">
+                            <button type="button" class="widget-menu" title="更多操作" onclick="toggleMenu(event, this)"><i class="fa fa-ellipsis-v"></i></button>
+                            <div class="widget-menu-drop" style="display:none;">
+                                <a href="javascript:;" onclick="hideWidget('@info.Name', this)"><i class="fa fa-eye-slash"></i> 隐藏卡片</a>
+                            </div>
+                        </span>
+                        <span class="widget-drag" title="拖拽排序"><i class="fa fa-arrows"></i></span>
+                        <div class="widget-kpi-icon k-@(info.Color ?? "primary")"><i class="fa @info.Icon"></i></div>
+                        <div class="widget-kpi-info">
+                            <div class="widget-kpi-value">@d.Value</div>
+                            <div class="widget-kpi-label">@info.Title</div>
+                            @if (d.Trend != null) { <div class="widget-kpi-trend">@Html.Raw(d.Trend.ToString())</div> }
+                        </div>
+                        @if (d.Url != null && !String.IsNullOrEmpty(d.Url.ToString()))
+                        {
+                            <a class="widget-kpi-link" href="@d.Url" title="@info.Title"></a>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                // 内容卡框架（KPI 以外所有类型共用卡头/卡体，按 WidgetType 分发渲染方式）
+                <div class="widget-col" style="width:@width;" data-name="@info.Name">
+                    <div class="widget-card">
+                        <div class="widget-header">
+                            <i class="fa @info.Icon"></i>
+                            <span class="widget-title">@info.Title</span>
+                            <span class="widget-menu-wrap">
+                                <button type="button" class="widget-menu" title="更多操作" onclick="toggleMenu(event, this)"><i class="fa fa-ellipsis-v"></i></button>
+                                <div class="widget-menu-drop" style="display:none;">
+                                    <a href="javascript:;" onclick="hideWidget('@info.Name', this)"><i class="fa fa-eye-slash"></i> 隐藏卡片</a>
+                                </div>
+                            </span>
+                            <span class="widget-drag" title="拖拽排序"><i class="fa fa-arrows"></i></span>
+                        </div>
+                        <div class="widget-body">
+                            @switch (info.WidgetType)
+                            {
+                                case WidgetTypes.Html:
+                                    // HTML 卡：widget 输出 HTML 字符串，固定渲染
+                                    @Html.Raw(item.Data)
+                                    break;
+                                case WidgetTypes.Kv:
+                                    // KV 卡：widget 输出键值字典，固定表格渲染；值为 HTML 时原样输出
+                                    <table class="table table-condensed widget-table">
+                                        <tbody>
+                                            @foreach (var kv in (IDictionary<String, Object>)item.Data)
+                                            {
+                                                <tr>
+                                                    <td class="w-name">@kv.Key</td>
+                                                    <td class="w-value">@Html.Raw(kv.Value)</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                    break;
+                                case WidgetTypes.Chart:
+                                    // 图表卡：widget 输出 ECharts 数据；配置 ChartUrl 后定时刷新追加
+                                    if (item.Data is ECharts chart)
+                                    {
+                                        @await Html.PartialAsync("_ECharts", chart)
+                                        if (!info.ChartUrl.IsNullOrEmpty())
+                                        {
+                                            <script>
+                                                $(function () {
+                                                    var chart = chart_@(chart.Name);
+                                                    if (!chart) return;
+                                                    var max = 60;
+                                                    // 刷新间隔（秒）由部件元数据声明，内联到 JS
+                                                    var interval = @(info.ChartInterval > 0 ? info.ChartInterval : 5);
+                                                    setInterval(function () {
+                                                        $.get('@info.ChartUrl', function (data) {
+                                                            if (!data || !data.xs || !data.xs.length) return;
+                                                            var opt = chart.getOption();
+                                                            var xs = opt.xAxis[0].data;
+                                                            data.xs.forEach(function (x) { xs.push(x); if (xs.length > max) xs.shift(); });
+                                                            (data.series || []).forEach(function (arr, i) {
+                                                                var s = opt.series[i].data;
+                                                                arr.forEach(function (v) { s.push(v); if (s.length > max) s.shift(); });
+                                                            });
+                                                            chart.setOption({ xAxis: { data: xs }, series: opt.series.map(function (s) { return { data: s.data }; }) });
+                                                        });
+                                                    }, interval * 1000);
+                                                });
+                                            </script>
+                                        }
+                                    }
+                                    break;
+                                default:
+                                    // 内容卡：自定义视图，ViewPath 指定路径，默认约定目录
+                                    var viewPath = info.ViewPath;
+                                    if (String.IsNullOrEmpty(viewPath)) viewPath = $"~/Areas/Admin/Views/Widgets/{info.Name}.cshtml";
+                                    @try
+                                    {
+                                        await Html.RenderPartialAsync(viewPath, item.Data);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        <div class="widget-error">组件加载失败：@ex.Message</div>
+                                    }
+                                    break;
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@if (isAdmin)
+{
+    @await Html.PartialAsync("_AiDiagnoseModal")
+}
+
+@section scripts {
+    <script src="@res/js/jquery-ui.custom.min.js"></script>
+    <script>
+        // 关闭所有卡片菜单与恢复面板
+        function closeMenus() {
+            $('.widget-menu-drop').hide();
+            $('#wb-hidden-pop').hide();
+        }
+
+        // 切换卡片 ⋯ 菜单
+        function toggleMenu(event, btn) {
+            event.stopPropagation();
+            var drop = $(btn).parent().find('.widget-menu-drop');
+            var visible = drop.is(':visible');
+            closeMenus();
+            if (!visible) drop.show();
+        }
+
+        // 隐藏卡片
+        function hideWidget(name, el) {
+            $.post('@Url.Action("HideWidget")', { name: name, hide: true }, function () {
+                $(el).closest('.widget-col').fadeOut(200, function () { location.reload(); });
+            });
+        }
+
+        // 恢复已隐藏卡片
+        function restoreWidget(name) {
+            $.post('@Url.Action("HideWidget")', { name: name, hide: false }, function () {
+                location.reload();
+            });
+        }
+
+        // 恢复默认布局
+        function resetLayout() {
+            if (!confirm('确定恢复默认布局？当前排序与隐藏设置将被清除。')) return;
+            $.post('@Url.Action("ResetLayout")', function () {
+                location.reload();
+            });
+        }
+
+        $(function () {
+            // 初始顺序，用于判断拖拽后是否真正变化
+            var initialOrder = $('#widget-grid .widget-col').map(function () { return $(this).attr('data-name'); }).get();
+
+            // 拖拽排序 → 服务端按用户保存（Parameter 表，分类 Widget.Layout 单行 JSON）
+            $('#widget-grid').sortable({
+                handle: '.widget-header, .widget-drag',
+                cancel: '.widget-menu, .widget-menu-drop',
+                placeholder: 'widget-col widget-placeholder',
+                forcePlaceholderSize: true,
+                tolerance: 'pointer',
+                stop: function () {
+                    var names = $('#widget-grid .widget-col').map(function () { return $(this).attr('data-name'); }).get();
+                    // 仅顺序真正变化时保存，避免布局重排等误触发
+                    if (initialOrder.join(',') === names.join(',')) return;
+
+                    $.post('@Url.Action("SaveOrder")', { order: names }, function () { });
+                }
+            });
+
+            // 已隐藏卡片面板
+            $('#btn-widget-hidden').click(function (event) {
+                event.stopPropagation();
+                $('#wb-hidden-pop').toggle();
+            });
+
+            // 点击空白处关闭菜单与面板
+            $(document).click(function () { closeMenus(); });
+
+            // 刷新数据
+            $('#btn-widget-refresh').click(function () { location.reload(); });
+        });
+    </script>
+}
+

@@ -1,0 +1,41 @@
+@model dynamic
+@using NewLife;
+@using NewLife.Web;
+@{
+    var d = Model;
+}
+<div class="widget-login">
+    <div class="widget-sub-title">最近登录</div>
+    <ul class="widget-list">
+        @foreach (dynamic item in d.Logins)
+        {
+            <li title="@item.Action @item.CreateIP">
+                <span class="list-time">@(((DateTime)item.CreateTime).ToString("MM-dd HH:mm"))</span>
+                <span class="list-name">@item.UserName</span>
+                <span class="list-action">@item.Action</span>
+            </li>
+        }
+        @if (!((IEnumerable<Object>)d.Logins).Any())
+        {
+            <li class="list-empty">最近24h无登录记录</li>
+        }
+    </ul>
+
+    <div class="widget-sub-title">在线用户</div>
+    <ul class="widget-list">
+        @foreach (dynamic item in d.Onlines)
+        {
+            <li title="@item.OAuthProvider">
+                <span class="list-time">@(((DateTime)item.CreateTime).ToString("HH:mm"))</span>
+                <span class="list-name">@item.Name</span>
+                <span class="list-action">@item.OAuthProvider</span>
+            </li>
+        }
+        @if (!((IEnumerable<Object>)d.Onlines).Any())
+        {
+            <li class="list-empty">当前无在线用户</li>
+        }
+    </ul>
+
+    <div class="widget-more"><a href="/Admin/UserOnline" target="_blank">在线用户管理 »</a></div>
+</div>
