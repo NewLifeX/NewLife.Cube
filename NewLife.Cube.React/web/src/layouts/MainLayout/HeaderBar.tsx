@@ -24,14 +24,12 @@ export default function HeaderBar() {
     const current = flatMenus.find((m) => m.path && lower.endsWith(m.path.toLowerCase()));
     if (!current) return [{ title: base.title }];
     const chain: { title: string }[] = [];
-    let node: typeof current | undefined = current;
+    let node: { id: string | number; parentId?: string | number | null; title?: string; name: string } | undefined = current;
     let guard = 0;
     while (node && guard++ < 10) {
       chain.unshift({ title: node.title || node.name });
-      node =
-        node.parentId != null
-          ? flatMenus.find((m) => String(m.id) === String(node.parentId))
-          : undefined;
+      const parentId: string | number | null | undefined = node.parentId;
+      node = parentId != null ? flatMenus.find((m) => String(m.id) === String(parentId)) : undefined;
     }
     return chain;
   }, [flatMenus, location.pathname, base.title]);

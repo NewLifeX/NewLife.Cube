@@ -17,6 +17,7 @@ export type WidgetType =
   | 'switch'         // 开关
   | 'date'           // 日期选择
   | 'datetime'       // 日期时间
+  | 'time'           // 时间选择
   | 'password'       // 密码
   | 'readonly'       // 只读文本
   | 'link'           // 链接
@@ -27,7 +28,12 @@ export type WidgetType =
   | 'url'            // URL
   | 'color'          // 颜色选择
   | 'code'           // 代码编辑器
-  | 'html';          // 富文本
+  | 'html'           // 富文本
+  | 'markdown'       // Markdown 富文本
+  | 'json'           // JSON 编辑器
+  | 'icon'           // 图标选择
+  | 'lov'            // 值集单选（LOV，选项经 lovCode 拉取或 dataSource）
+  | 'lovMulti';      // 值集多选（LOV，多选转逗号分隔）
 
 /** 字段映射结果 */
 export interface FieldMapping {
@@ -42,7 +48,7 @@ export interface FieldMapping {
 /**
  * 根据 DataField 元数据推断组件类型
  *
- * 判断优先级：只读 → itemType → 数据字典 → url 字段 → typeName → 名称模式 → 长度 → 默认
+ * 判断优先级：只读 → itemType → lovCode → 数据字典 → url 字段 → typeName → 名称模式 → 长度 → 默认
  *
  * @param field 字段元数据
  * @returns 映射结果
@@ -71,23 +77,43 @@ export function resolveWidget(field: DataField): FieldMapping {
       code: 'code',
       html: 'html',
       richtext: 'html',
+      markdown: 'markdown',
+      json: 'json',
+      icon: 'icon',
       password: 'password',
+      time: 'time',
+      singleselect: 'lov',
+      lovtable: 'lov',
+      multipleselect: 'lovMulti',
+      lovtablemulti: 'lovMulti',
     };
     const mapped = itemTypeMap[itemType];
-    if (mapped) return { widget: mapped, field };
+    if (mapped) {
+      // 单选/多选 LOV 控件透传 lovCode
+      if ((mapped === 'lov' || mapped === 'lovMulti') && field.lovCode) {
+        return { widget: mapped, field, props: { lovCode: field.lovCode, multiple: mapped === 'lovMulti' } };
+      }
+      return { widget: mapped, field };
+    }
   }
 
-  // 3. 有数据字典/枚举 → 下拉选择
+  // 3. lovCode 优先于 dataSource（后端静态构造下发的值集）
+  if (field.lovCode) {
+    const multiple = field.multiple || itemType === 'multipleselect' || itemType === 'lovtablemulti';
+    return { widget: multiple ? 'lovMulti' : 'lov', field, props: { lovCode: field.lovCode, multiple } };
+  }
+
+  // 4. 有数据字典/枚举 → 下拉选择
   if (field.dataSource && Object.keys(field.dataSource).length > 0) {
     return { widget: 'select', field };
   }
 
-  // 4. 有 url 属性 → 链接
+  // 5. 有 url 属性 → 链接
   if (field.url) {
     return { widget: 'link', field, props: { href: field.url, target: field.target } };
   }
 
-  // 5. 按 typeName 推断
+  // 6. 按 typeName 推断
   const typeName = (field.typeName ?? '').toLowerCase();
 
   if (typeName === 'boolean') {
@@ -102,11 +128,24 @@ export function resolveWidget(field: DataField): FieldMapping {
     return { widget: 'date', field };
   }
 
+  if (typeName === 'timespan') {
+    return { widget: 'time', field };
+  }
+
+  if (typeName === 'guid') {
+    return { widget: 'readonly', field };
+  }
+
   if (['int32', 'int64', 'int16', 'decimal', 'double', 'single', 'float', 'byte', 'uint32', 'uint64', 'sbyte'].includes(typeName)) {
     return { widget: 'number', field, props: { precision: field.scale } };
   }
 
-  // 6. 名称模式匹配
+  // 枚举类型名（非标准基元，无 lovCode 兜底时按 lov 渲染）
+  if (typeName === 'enum') {
+    return { widget: 'lov', field };
+  }
+
+  // 7. 名称模式匹配
   const name = field.name ?? '';
   if (/password|pwd|secret/i.test(name)) {
     return { widget: 'password', field };
@@ -124,12 +163,12 @@ export function resolveWidget(field: DataField): FieldMapping {
     return { widget: 'url', field };
   }
 
-  // 7. 长文本（长度 > 200 或包含特定名称）
+  // 8. 长文本（长度 > 200 或包含特定名称）
   if ((field.length && field.length > 200) || /remark|content|body|description|summary|memo/i.test(name)) {
     return { widget: 'textarea', field };
   }
 
-  // 8. 默认单行文本
+  // 9. 默认单行文本
   return { widget: 'text', field };
 }
 

@@ -114,6 +114,10 @@ export interface DataField {
   textAlign?: string;
   /** 数据字典（键值对列表） */
   dataSource?: Record<string, string>;
+  /** 值集编码（枚举 / singleSelect / multipleSelect 由后端静态构造下发，前端绝不硬编码） */
+  lovCode?: string;
+  /** 是否多选（multipleSelect 为 true；亦可由前端在映射时推导） */
+  multiple?: boolean;
 }
 
 /** 页面设置（GetPage.data.setting） */
