@@ -115,21 +115,21 @@ public partial class Attachment : Entity<Attachment>
     #region 高级查询
     /// <summary>高级查询</summary>
     /// <param name="category">分类</param>
-    /// <param name="key">业务关键字</param>
     /// <param name="ext">扩展名</param>
-    /// <param name="start">关键字</param>
-    /// <param name="end">关键字</param>
     /// <param name="keyWord">关键字</param>
-    /// <param name="page">分页参数信息。可携带统计和数据权限扩展查询等信息</param>
     /// <param name="storage">存储类型。Local需兼容历史空值</param>
+    /// <param name="key">业务关键字</param>
+    /// <param name="start">开始时间</param>
+    /// <param name="end">结束时间</param>
+    /// <param name="page">分页参数信息。可携带统计和数据权限扩展查询等信息</param>
     /// <returns>实体列表</returns>
-    public static IList<Attachment> Search(String category, String key, String ext, DateTime start, DateTime end, String keyWord, PageParameter page, String storage = null)
+    public static IList<Attachment> Search(String category, String ext, String keyWord, String storage, String key, DateTime start, DateTime end, PageParameter page)
     {
         var exp = new WhereExpression();
 
         if (!category.IsNullOrEmpty()) exp &= _.Category == category;
-        if (!key.IsNullOrEmpty()) exp &= _.Key == key;
         if (!ext.IsNullOrEmpty()) exp &= _.Extension == ext;
+        if (!keyWord.IsNullOrEmpty()) exp &= _.FileName == keyWord | _.Extension == keyWord | _.ContentType.Contains(keyWord) | _.FilePath.StartsWith(keyWord) | _.Title.Contains(keyWord);
         if (!storage.IsNullOrEmpty())
         {
             if (storage.EqualIgnoreCase("Local"))
@@ -137,8 +137,8 @@ public partial class Attachment : Entity<Attachment>
             else
                 exp &= _.Storage == storage;
         }
+        if (!key.IsNullOrEmpty()) exp &= _.Key == key;
         exp &= _.Id.Between(start, end, Meta.Factory.Snow);
-        if (!keyWord.IsNullOrEmpty()) exp &= _.FileName == keyWord | _.Extension == keyWord | _.ContentType.Contains(keyWord) | _.FilePath.StartsWith(keyWord) | _.Title.Contains(keyWord);
 
         return FindAll(exp, page);
     }

@@ -270,6 +270,7 @@ public partial class Attachment : IEntity<AttachmentModel>
         UploadTime = model.UploadTime;
         Url = model.Url;
         Source = model.Source;
+        Storage = model.Storage;
         Downloads = model.Downloads;
         LastDownload = model.LastDownload;
         TraceId = model.TraceId;
