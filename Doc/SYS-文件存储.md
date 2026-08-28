@@ -432,8 +432,7 @@ IAttachmentStorage
 3. **多节点部署**：启用 `FileStorageProvide` 和 `FileStorageFetch` 实现文件自动同步
 4. **NAS 共享**：如果使用共享存储（NAS），可不启用分布式同步，直接配置 `UploadPath` 到共享目录
 5. **哈希校验**：利用 `Hash` 字段进行文件去重和完整性校验
-6. **数据保留**：结合 `DataRetentionService` 定期清理过期附件（参见 [数据保留](BASE-数据保留.md)）
-- 延迟 10 秒初始化，避免应用启动时资源争抢
+6. **定期清理**：利用内置 `AttachmentCleanJob` 定时作业，定期清理长期没有下载的附件（管理后台 **系统管理 → 定时作业** 启用，可配置无下载天数、下载次数阈值等参数，参见 [定时作业](SYS-定时作业.md)）
 
 ## 管理后台
 
