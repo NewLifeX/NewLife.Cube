@@ -39,6 +39,20 @@ public static class Program
         // UseReact 必须在 MapControllers 之后，确保 API endpoint 优先匹配，SPA 回退兜底
         app.UseReact(builder.Environment);
 
+        // 启动完成后自动打开浏览器（仅开发环境）
+        // 本工程 Debug 输出控制台 Exe（非 Web SDK），VS 的 launchBrowser 不生效，改由应用自启浏览器
+        // watch 重启时 DOTNET_WATCH_ITERATION 递增（首次=1），只在首次启动时打开，避免每次保存弹新标签页
+        // 设置 DOTNET_WATCH_SUPPRESS_LAUNCH_BROWSER=1 可关闭（E2E/CI 等场景）
+        app.Lifetime.ApplicationStarted.Register(() =>
+        {
+            if (!builder.Environment.IsDevelopment()) return;
+            if (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH_SUPPRESS_LAUNCH_BROWSER"))) return;
+            var iteration = Environment.GetEnvironmentVariable("DOTNET_WATCH_ITERATION");
+            if (!iteration.IsNullOrEmpty() && iteration != "1") return;
+
+            "http://localhost:7081".ShellExecute();
+        });
+
         app.Run();
     }
 }

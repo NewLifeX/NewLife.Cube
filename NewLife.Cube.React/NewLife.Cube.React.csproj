@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
-    <AssemblyTitle>魔方React前端皮肤</AssemblyTitle>
+    <AssemblyTitle>React魔方</AssemblyTitle>
     <Description>魔方React前端皮肤包，基于React18+Ant Design 5，提供开箱即用的管理后台前端。支持动态菜单、字段元数据驱动的列表和表单、CRUD操作、OAuth登录等功能。引用NuGet包即可获得完整前端，无需前端开发。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 NewLife</Copyright>
