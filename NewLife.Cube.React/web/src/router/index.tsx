@@ -27,6 +27,8 @@ export interface RouteMeta {
   layout?: boolean;
   /** 是否加入多标签（默认 true） */
   tab?: boolean;
+  /** 动态实体页（catch-all），标签标题需从菜单解析 */
+  dynamic?: boolean;
 }
 
 export const router = createBrowserRouter([
@@ -77,7 +79,7 @@ export const router = createBrowserRouter([
       {
         path: '*',
         element: <DefaultEntityPage />,
-        handle: { title: '默认页面', auth: true, tab: true } as RouteMeta,
+        handle: { title: '默认页面', auth: true, tab: true, dynamic: true } as RouteMeta,
       },
     ],
   },

@@ -37,8 +37,18 @@ export const useTabsStore = create<TabsState>((set, get) => ({
 
   addTab: (tab) => {
     const { tabs } = get();
-    if (tabs.some((t) => t.path === tab.path)) {
-      set({ activePath: tab.path });
+    const idx = tabs.findIndex((t) => t.path === tab.path);
+    if (idx >= 0) {
+      // 已存在：同路径去重；菜单异步加载后标题变化时更新（如动态页从"默认页面"补全为菜单名）
+      const cur = tabs[idx];
+      if (tab.title && tab.title !== cur.title) {
+        set({
+          tabs: tabs.map((t, i) => (i === idx ? { ...t, title: tab.title } : t)),
+          activePath: tab.path,
+        });
+      } else {
+        set({ activePath: tab.path });
+      }
       return;
     }
     set({ tabs: [...tabs, tab], activePath: tab.path });

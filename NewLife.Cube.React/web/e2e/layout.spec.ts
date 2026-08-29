@@ -15,6 +15,10 @@ test.describe('多标签页（FND-8）', () => {
     await page.locator('.cube-home-card .ant-list .ant-card', { hasText: '/Admin/User' }).first().click();
     await expect(page.locator('.ant-tabs-tab')).toHaveCount(2, { timeout: 10000 });
 
+    // 标签标题取菜单名而非"默认页面"（设计规范 §6.2：标签名与菜单关联）
+    await expect(page.locator('.ant-tabs-tab', { hasText: '用户' })).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.ant-tabs-tab', { hasText: '默认页面' })).toHaveCount(0);
+
     // 点击首页标签切换回来
     await page.locator('.ant-tabs-tab', { hasText: '首页' }).click();
     await expect(page.locator('.cube-home-hero')).toBeVisible({ timeout: 8000 });

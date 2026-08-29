@@ -3,11 +3,12 @@
  *
  * 随路由自动添加标签；支持关闭单个/关闭其他/关闭全部（保留固定标签）。
  */
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Dropdown, Tabs } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
 import { useLocation, useMatches, useNavigate } from 'react-router-dom';
 import { useTabsStore } from '@/stores/tabs';
+import { useMenuStore, resolveMenuTitle } from '@/stores/menu';
 import type { RouteMeta } from '@/router';
 
 export default function TabsView() {
@@ -22,19 +23,29 @@ export default function TabsView() {
   const location = useLocation();
   const matches = useMatches();
 
-  const meta = (matches[matches.length - 1]?.handle ?? {}) as RouteMeta;
+  const lastMatch = matches[matches.length - 1];
+  const meta = (lastMatch?.handle ?? {}) as RouteMeta;
+  // catch-all 路由（dynamic 标志）承载所有动态实体页，标签标题需从菜单解析
+  const isCatchAll = meta.dynamic === true;
+  const flatMenus = useMenuStore((s) => s.flatMenus);
 
-  // 路由变化时自动添加标签
+  // 标签标题：静态路由用 meta.title；动态实体页用菜单名，菜单未就绪时回退 meta.title
+  const tabTitle = useMemo(() => {
+    if (!isCatchAll) return meta.title || '页面';
+    return resolveMenuTitle(flatMenus, location.pathname, meta.title || '页面');
+  }, [isCatchAll, meta.title, flatMenus, location.pathname]);
+
+  // 路由变化或标题就绪（菜单异步加载）时自动添加/更新标签
   useEffect(() => {
     if (meta.tab === false) return;
     addTab({
       path: location.pathname,
-      title: meta.title || '页面',
+      title: tabTitle,
       closable: true,
     });
     setActive(location.pathname);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname]);
+  }, [location.pathname, tabTitle]);
 
   const handleEdit = (targetKey: string | React.MouseEvent | React.KeyboardEvent, action: 'add' | 'remove') => {
     if (action !== 'remove') return;

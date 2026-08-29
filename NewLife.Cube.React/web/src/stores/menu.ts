@@ -48,6 +48,18 @@ export function flattenMenu(tree: MenuItem[], parentId: string | number | null =
   return result;
 }
 
+/** 按路径在扁平菜单中查找（大小写不敏感，endsWith 匹配） */
+function matchMenu(menus: FlatMenuItem[], path: string): FlatMenuItem | undefined {
+  const lower = path.toLowerCase();
+  return menus.find((m) => m.path && lower.endsWith(m.path.toLowerCase()));
+}
+
+/** 按路径解析菜单标题：命中返回菜单名，未命中返回 fallback */
+export function resolveMenuTitle(menus: FlatMenuItem[], path: string, fallback = ''): string {
+  const m = matchMenu(menus, path);
+  return m?.title || m?.name || fallback;
+}
+
 interface MenuState {
   /** 扁平菜单 */
   flatMenus: FlatMenuItem[];
@@ -73,10 +85,7 @@ export const useMenuStore = create<MenuState>((set, get) => ({
 
   setActivePath: (path: string) => set({ activePath: path }),
 
-  findMenu: (path: string) => {
-    const lower = path.toLowerCase();
-    return get().flatMenus.find((m) => m.path && lower.endsWith(m.path.toLowerCase()));
-  },
+  findMenu: (path: string) => matchMenu(get().flatMenus, path),
 
   reset: () => set({ flatMenus: [], activePath: '' }),
 }));
