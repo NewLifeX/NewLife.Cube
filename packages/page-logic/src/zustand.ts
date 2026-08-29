@@ -24,7 +24,8 @@ export interface ZustandPageState extends PageState {
   remove: (id: number | string) => Promise<ApiResponse<unknown>>;
   restore: (id: number | string) => Promise<ApiResponse<unknown>>;
   deleteSelect: (keys: (number | string)[]) => Promise<ApiResponse<unknown>>;
-  deleteAll: () => Promise<ApiResponse<unknown>>;
+  /** 按条件删除全部，params 为搜索条件（不传则后端拒绝空条件删除） */
+  deleteAll: (params?: Record<string, unknown>) => Promise<ApiResponse<unknown>>;
   getDetail: <T = Record<string, unknown>>(id: number | string) => Promise<T>;
   getExportUrl: (format: string) => string;
   importFile: (file: File) => Promise<ApiResponse<unknown>>;
@@ -86,7 +87,7 @@ export function createPageStore(
       remove: (id) => logic.remove(type, id),
       restore: (id) => logic.restore(type, id),
       deleteSelect: (keys) => logic.deleteSelect(type, keys),
-      deleteAll: () => logic.deleteAll(type),
+      deleteAll: (params) => logic.deleteAll(type, params),
       getDetail: (id) => logic.getDetail(type, id),
       getExportUrl: (format) => logic.getExportUrl(type, format),
       importFile: (file) => logic.importFile(type, file),

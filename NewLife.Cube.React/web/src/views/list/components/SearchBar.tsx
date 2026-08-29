@@ -3,6 +3,8 @@
  *
  * 依据 resolveSearchControl 渲染 text / numberRange / dateRange / datetimeRange /
  * timeRange / lov / lovMulti / switch / fileExists 控件。
+ * 布局：条件与操作按钮（搜索/重置/展开）同一 flex-wrap 容器，按钮落在最后一行右侧，
+ * 行满时自动换行并靠右对齐（对齐主流 QueryFilter 与规范 §7.2）。
  * 搜索参数约定（对齐 Vue）：
  * - 文本/值集/开关 → formData[field]
  * - 数值/时间范围 → formData[`${field}_min`] / formData[`${field}_max`]
@@ -184,6 +186,7 @@ export default function SearchBar({ fields, onSearch, onReset }: SearchBarProps)
   const [expanded, setExpanded] = useState(false);
   const [visibleCount, setVisibleCount] = useState(0);
   const gridRef = useRef<HTMLDivElement>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
 
   // 字段变化时重置
   useEffect(() => {
@@ -198,7 +201,9 @@ export default function SearchBar({ fields, onSearch, onReset }: SearchBarProps)
 
     const calc = () => {
       const width = el.clientWidth;
-      const cols = Math.max(1, Math.floor(width / MIN_CELL));
+      // 预留操作按钮区宽度，让「搜索/重置/展开」尽量留在最后一行右侧
+      const actionsWidth = actionsRef.current?.offsetWidth ?? 0;
+      const cols = Math.max(1, Math.floor((width - actionsWidth) / MIN_CELL));
       let cells = 0;
       let count = 0;
       for (const f of fields) {
@@ -251,7 +256,7 @@ export default function SearchBar({ fields, onSearch, onReset }: SearchBarProps)
 
   return (
     <div className="cube-search-panel">
-      <div ref={gridRef} className="cube-search-grid">
+      <div ref={gridRef} className="cube-search-fields">
         {visibleFields.map((field) => {
           const meta = toFieldMeta(field.field);
           const control = resolveSearchControl(meta);
@@ -273,25 +278,26 @@ export default function SearchBar({ fields, onSearch, onReset }: SearchBarProps)
             </div>
           );
         })}
-      </div>
-      <div className="cube-search-actions">
-        <Button type="primary" onClick={handleSearch}>
-          搜索
-        </Button>
-        <Button onClick={handleReset}>重置</Button>
-        {canCollapse && (
-          <Button type="link" size="small" onClick={() => setExpanded((v) => !v)}>
-            {expanded ? (
-              <>
-                收起 <UpOutlined />
-              </>
-            ) : (
-              <>
-                展开 <DownOutlined />
-              </>
-            )}
+        {/* 操作按钮与条件同行，落在最后一行右侧；行满时自动换行并靠右对齐 */}
+        <div ref={actionsRef} className="cube-search-actions">
+          <Button type="primary" onClick={handleSearch}>
+            搜索
           </Button>
-        )}
+          <Button onClick={handleReset}>重置</Button>
+          {canCollapse && (
+            <Button type="link" size="small" onClick={() => setExpanded((v) => !v)}>
+              {expanded ? (
+                <>
+                  收起 <UpOutlined />
+                </>
+              ) : (
+                <>
+                  展开 <DownOutlined />
+                </>
+              )}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

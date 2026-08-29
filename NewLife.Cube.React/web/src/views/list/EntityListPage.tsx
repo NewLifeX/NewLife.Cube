@@ -4,23 +4,23 @@
  * 由 DefaultListPage 包装组件探测后调用：确认当前页面为实体 CRUD 页后渲染。
  * 本组件与原始 DefaultListPage 行为一致：从后端 GetPage 拉取 list/search/addForm/editForm
  * 字段元数据，由 @cube/page-logic zustand store 驱动，分片渲染：
- *   - SearchBar      动态搜索控件
- *   - Toolbar        新增/删除/导出/导入/图表/刷新
+ *   - SearchBar      动态搜索控件（按钮与条件同行）
+ *   - Toolbar        新增/删除选中/刷新 + 表格图表视图切换 + 高级菜单
  *   - TableContent   动态列渲染
  *   - ListPagination 分页 + 统计行
  *   - FormDialog     命令式新增/编辑弹窗（FieldControl）
- *   - ListChartDialog 图表弹窗（ECharts 懒加载）
+ *   - ChartView      图表视图（表格/图表 Segmented 切换，规范 §7.6）
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Card, message } from 'antd';
+import { Card, message, Modal } from 'antd';
 import { getValueByKey } from '@/utils/url';
 import { api } from '@/api';
 import { usePageStore } from '@/hooks/usePageStore';
 import SearchBar from './components/SearchBar';
-import Toolbar from './components/Toolbar';
+import Toolbar, { type ListViewMode } from './components/Toolbar';
 import TableContent from './components/TableContent';
 import ListPagination from './components/ListPagination';
-import ListChartDialog from './components/ListChartDialog';
+import ChartView from './components/ChartView';
 import FormDialog from '@/views/form/FormDialog';
 import DetailDialog from '@/views/form/DetailDialog';
 
@@ -75,7 +75,8 @@ export default function EntityListPage({ type, title }: EntityListPageProps) {
     open: false,
     row: null,
   });
-  const [chartOpen, setChartOpen] = useState(false);
+  const [view, setView] = useState<ListViewMode>('table');
+  const [canChart, setCanChart] = useState(false);
   const importInputRef = useRef<HTMLInputElement>(null);
 
   // 页面加载：拉字段元数据 + 列表数据
@@ -86,6 +87,22 @@ export default function EntityListPage({ type, title }: EntityListPageProps) {
       .loadFields()
       .then(() => {
         if (!cancelled) return store.getState().loadData();
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type]);
+
+  // 图表能力探测：加载一次，无图表数据的页面不显示 表格/图表 视图切换（§7.6）
+  useEffect(() => {
+    let cancelled = false;
+    store
+      .getState()
+      .loadChart()
+      .then((list) => {
+        if (!cancelled) setCanChart(list.length > 0);
       })
       .catch(() => {});
     return () => {
@@ -193,10 +210,35 @@ export default function EntityListPage({ type, title }: EntityListPageProps) {
       });
   };
 
-  const handleChart = () => {
-    void store.getState().loadChart().then((list) => {
-      if (list.length) setChartOpen(true);
-      else message.info('暂无图表数据');
+  /** 切换表格/图表视图：切到图表时重新拉取图表数据 */
+  const handleViewChange = (v: ListViewMode) => {
+    setView(v);
+    if (v === 'chart') {
+      void store.getState().loadChart().then((list) => {
+        if (list.length) setCanChart(true);
+        else setCanChart(false);
+      });
+    }
+  };
+
+  /** 删除当前查询条件下的全部数据（高级菜单，二次确认） */
+  const handleDeleteAll = () => {
+    Modal.confirm({
+      title: '删除全部',
+      content: '确定删除当前查询条件下的所有数据吗？此操作不可恢复！',
+      okText: '删除',
+      okButtonProps: { danger: true },
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          await store.getState().deleteAll(searchParams);
+          message.success('删除成功');
+          setSelectedKeys([]);
+          void refresh();
+        } catch (err) {
+          message.error((err as Error)?.message || '删除失败');
+        }
+      },
     });
   };
 
@@ -230,47 +272,54 @@ export default function EntityListPage({ type, title }: EntityListPageProps) {
   return (
     <Card className="cube-entity-card" title={title} size="small" styles={{ body: { paddingTop: 12 } }}>
       <SearchBar fields={searchFields} onSearch={handleSearch} onReset={handleReset} />
-      <div className="cube-toolbar">
-        <Toolbar
-          canAdd={canAdd}
-          canDelete={canDelete}
-          canExport={canExport}
-          canImport={canImport}
-          selectedCount={selectedKeys.length}
-          onNew={handleNew}
-          onDelete={handleDeleteSelected}
-          onExport={handleExport}
-          onImport={handleImport}
-          onChart={handleChart}
-          onRefresh={() => void refresh()}
-        />
-      </div>
-      <TableContent
-        fields={listFields}
-        data={tableData}
-        loading={loading}
-        pkField={pkField}
-        canView={canView}
-        canEdit={canEdit}
+      <Toolbar
+        canAdd={canAdd}
         canDelete={canDelete}
-        softDeleteField={softDeleteField}
-        selectedKeys={selectedKeys}
-        onSelectChange={setSelectedKeys}
-        onView={handleViewRow}
-        onEdit={handleEditRow}
-        onDelete={handleDeleteRow}
-        onRestore={handleRestoreRow}
-        onSortChange={handleSortChange}
+        canExport={canExport}
+        canImport={canImport}
+        canChart={canChart}
+        view={view}
+        selectedCount={selectedKeys.length}
+        onNew={handleNew}
+        onDelete={handleDeleteSelected}
+        onDeleteAll={handleDeleteAll}
+        onExport={handleExport}
+        onImport={handleImport}
+        onViewChange={handleViewChange}
+        onRefresh={() => void refresh()}
       />
-      <div className="cube-table-footer">
-        <ListPagination
-          total={pagination.totalCount}
-          current={pagination.pageIndex}
-          pageSize={pagination.pageSize}
-          statData={statData}
-          onChange={handlePageChange}
-        />
-      </div>
+      {view === 'chart' ? (
+        <ChartView charts={store((s) => s.chartList)} />
+      ) : (
+        <>
+          <TableContent
+            fields={listFields}
+            data={tableData}
+            loading={loading}
+            pkField={pkField}
+            canView={canView}
+            canEdit={canEdit}
+            canDelete={canDelete}
+            softDeleteField={softDeleteField}
+            selectedKeys={selectedKeys}
+            onSelectChange={setSelectedKeys}
+            onView={handleViewRow}
+            onEdit={handleEditRow}
+            onDelete={handleDeleteRow}
+            onRestore={handleRestoreRow}
+            onSortChange={handleSortChange}
+          />
+          <div className="cube-table-footer">
+            <ListPagination
+              total={pagination.totalCount}
+              current={pagination.pageIndex}
+              pageSize={pagination.pageSize}
+              statData={statData}
+              onChange={handlePageChange}
+            />
+          </div>
+        </>
+      )}
 
       {/* 导入：隐藏文件选择框 */}
       <input ref={importInputRef} type="file" accept=".xls,.xlsx,.csv,.json,.zip" style={{ display: 'none' }} onChange={onImportFileChange} />
@@ -301,9 +350,6 @@ export default function EntityListPage({ type, title }: EntityListPageProps) {
         row={detailDialog.row}
         onClose={() => setDetailDialog({ open: false, row: null })}
       />
-
-      {/* 图表弹窗 */}
-      <ListChartDialog open={chartOpen} charts={store((s) => s.chartList)} onClose={() => setChartOpen(false)} />
     </Card>
   );
 }

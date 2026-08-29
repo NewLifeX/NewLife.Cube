@@ -106,7 +106,8 @@ test.describe('通用列表页（/Admin/User）', () => {
   test('导出 CSV 触发文件下载', async ({ page }) => {
     await page.goto('/Admin/User');
     await page.waitForSelector(ROW, { timeout: TABLE_TIMEOUT });
-    await page.getByRole('button', { name: /导\s*出/ }).click();
+    // 导出收纳在「高级」菜单内（规范 §7.8）
+    await page.getByRole('button', { name: /高\s*级/ }).click();
     const downloadPromise = page.waitForEvent('download', { timeout: 15000 });
     await page.getByText('导出 CSV').click();
     const download = await downloadPromise;
@@ -120,8 +121,9 @@ test.describe('通用列表页（/Admin/User）', () => {
     // CSV 首行为表头（字段名），后续行为数据
     const csv = `Name,DisplayName,Password\n${name},导入测试,admin123\n`;
     const buffer = Buffer.from(csv, 'utf-8');
-    // 触发隐藏文件选择框并上传
-    await page.getByRole('button', { name: /导\s*入/ }).click();
+    // 导入收纳在「高级」菜单内（规范 §7.8），触发隐藏文件选择框并上传
+    await page.getByRole('button', { name: /高\s*级/ }).click();
+    await page.getByText('导入 Excel/Json/Zip').click();
     await page.locator('input[type="file"]').setInputFiles({
       name: 'users.csv',
       mimeType: 'text/csv',
@@ -190,20 +192,54 @@ test.describe('通用列表页（/Admin/User）', () => {
     for (let i = 0; i < Math.min(2, count); i++) {
       await rows.nth(i).locator('input[type="checkbox"]').check({ timeout: 5000 });
     }
-    // 点击批量删除（Toolbar 删除按钮）→ Popconfirm 确认
-    await page.getByRole('button', { name: /删\s*除/ }).first().click();
+    // 点击工具栏「删除选中」（选中行后出现）→ Popconfirm 确认
+    await page.getByRole('button', { name: /删除选中/ }).click();
     const confirmBtn = page.locator('.ant-popover').getByRole('button', { name: /删\s*除/ }).first();
     await confirmBtn.click();
     await expect(page.locator('.ant-message')).toBeVisible({ timeout: 8000 });
   });
 
-  test('图表弹窗：有数据渲染弹窗，无数据友好提示', async ({ page }) => {
+  test('无图表数据的页面不显示 表格/图表 视图切换', async ({ page }) => {
     await page.goto('/Admin/User');
     await page.waitForSelector(ROW, { timeout: TABLE_TIMEOUT });
-    await page.getByRole('button', { name: /图\s*表/ }).click();
-    // 有图表数据 → 弹窗；无数据 → message「暂无图表数据」；二者至少其一出现
-    await expect(
-      page.locator('.ant-modal:not([style*="display: none"]), .ant-message').first(),
-    ).toBeVisible({ timeout: 10000 });
+    // /Admin/User 无图表数据（canChart=false），Segmented 视图切换不渲染，表格仍可见
+    await expect(page.locator('.ant-segmented')).toHaveCount(0);
+    await expect(page.locator(ROW).first()).toBeVisible({ timeout: TABLE_TIMEOUT });
+  });
+
+  test('列表页纵向与横向滚动可用（滚动回归）', async ({ page }) => {
+    // 固定较小视口，确保列表内容超高、表格超宽，从而触发内部滚动
+    await page.setViewportSize({ width: 1280, height: 700 });
+    await page.goto('/Admin/User');
+    await page.waitForSelector(ROW, { timeout: TABLE_TIMEOUT });
+    // 等待加载完成（antd 加载中可能只有占位行），避免滚动度量在数据未就绪时取样
+    await page
+      .waitForFunction(() => !document.querySelector('.ant-spin-spinning'), undefined, { timeout: 10000 })
+      .catch(() => undefined);
+    await page.waitForTimeout(300);
+
+    // 纵向：.cube-shell-body 是唯一滚动容器（overflow-y:auto），内容超高时可滚动到底露出分页
+    const vScroll = await page.evaluate(() => {
+      const body = document.querySelector<HTMLElement>('.cube-shell-body');
+      if (!body) return { ok: false, reason: 'no-scroll-body' };
+      const overflow = getComputedStyle(body).overflowY;
+      if (body.scrollHeight <= body.clientHeight)
+        return { ok: false, reason: 'content-not-taller', sh: body.scrollHeight, ch: body.clientHeight, overflow };
+      body.scrollTop = 999999;
+      return { ok: body.scrollTop > 0, sh: body.scrollHeight, ch: body.clientHeight, top: body.scrollTop, overflow };
+    });
+    expect(vScroll.ok, `纵向滚动异常: ${JSON.stringify(vScroll)}`).toBeTruthy();
+
+    // 横向：表格内容超宽时 .ant-table-content（overflow-x:auto）可横向滚动
+    const hScroll = await page.evaluate(() => {
+      const t = document.querySelector<HTMLElement>('.ant-table-content');
+      if (!t) return { ok: false, reason: 'no-table-content' };
+      const overflow = getComputedStyle(t).overflowX;
+      if (t.scrollWidth <= t.clientWidth)
+        return { ok: false, reason: 'table-not-wider', sw: t.scrollWidth, cw: t.clientWidth, overflow };
+      t.scrollLeft = 500;
+      return { ok: t.scrollLeft > 0, sw: t.scrollWidth, cw: t.clientWidth, left: t.scrollLeft, overflow };
+    });
+    expect(hScroll.ok, `横向滚动异常: ${JSON.stringify(hScroll)}`).toBeTruthy();
   });
 });

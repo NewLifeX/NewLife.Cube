@@ -1,28 +1,37 @@
 /**
- * 列表工具栏（新增/删除/导出/导入/图表/刷新，权限控制）
+ * 列表工具栏（规范 §7.1/§7.6/§7.8）
+ *
+ * - 左侧：新增（primary）、删除选中（选中行时显示）、刷新（图标）
+ * - 右侧：表格/图表视图切换（Segmented，§7.6）、高级菜单（§7.8 必须项）
+ * 高级菜单按权限（canExport/canImport/canDelete）驱动；分享/备份/还原等按需项后续补充。
  */
-import { Button, Dropdown, Popconfirm, Space, Tooltip } from 'antd';
-import {
-  DeleteOutlined,
-  DownloadOutlined,
-  FundOutlined,
-  ImportOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-} from '@ant-design/icons';
+import { Button, Dropdown, Popconfirm, Segmented, Tooltip } from 'antd';
+import type { MenuProps } from 'antd';
+import { DeleteOutlined, DownOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
 import { EXPORT_FORMATS } from '@cube/page-utils';
+
+/** 列表视图模式：表格 / 图表 */
+export type ListViewMode = 'table' | 'chart';
 
 export interface ToolbarProps {
   canAdd?: boolean;
   canDelete?: boolean;
   canExport?: boolean;
   canImport?: boolean;
+  /** 当前页是否有图表数据能力（控制 表格/图表 视图切换显示） */
+  canChart?: boolean;
+  /** 当前视图 */
+  view?: ListViewMode;
+  /** 已选中行数（>0 时显示「删除选中」） */
   selectedCount?: number;
   onNew?: () => void;
+  /** 删除选中行 */
   onDelete?: () => void;
+  /** 删除当前查询的全部数据（高级菜单） */
+  onDeleteAll?: () => void;
   onExport?: (format: string) => void;
   onImport?: () => void;
-  onChart?: () => void;
+  onViewChange?: (view: ListViewMode) => void;
   onRefresh?: () => void;
 }
 
@@ -31,58 +40,78 @@ export default function Toolbar({
   canDelete = true,
   canExport = true,
   canImport = true,
+  canChart = false,
+  view = 'table',
   selectedCount = 0,
   onNew,
   onDelete,
+  onDeleteAll,
   onExport,
   onImport,
-  onChart,
+  onViewChange,
   onRefresh,
 }: ToolbarProps) {
-  const exportItems = EXPORT_FORMATS.map((f) => ({
-    key: f.key,
-    label: f.label,
-    onClick: () => onExport?.(f.key),
-  }));
+  // 高级菜单：导出（全部格式）→ 导入 → 删除全部，按权限驱动
+  const advItems: MenuProps['items'] = [];
+  if (canExport) {
+    advItems.push(
+      ...EXPORT_FORMATS.map((f) => ({
+        key: `export-${f.key}`,
+        label: f.label,
+        onClick: () => onExport?.(f.key),
+      })),
+    );
+  }
+  if (canImport) {
+    advItems.push({ key: 'import', label: '导入 Excel/Json/Zip', onClick: () => onImport?.() });
+  }
+  if (canDelete) {
+    advItems.push({ type: 'divider' });
+    advItems.push({ key: 'deleteAll', label: '删除全部', danger: true, onClick: () => onDeleteAll?.() });
+  }
 
   return (
-    <Space wrap>
-      {canAdd && (
-        <Button type="primary" icon={<PlusOutlined />} onClick={onNew}>
-          新增
-        </Button>
-      )}
-      {canDelete && (
-        <Popconfirm
-          title={selectedCount > 0 ? `确定删除选中的 ${selectedCount} 条数据吗？` : '确定删除吗？'}
-          onConfirm={onDelete}
-          okText="删除"
-          okButtonProps={{ danger: true }}
-          disabled={selectedCount === 0}
-        >
-          <Button danger icon={<DeleteOutlined />} disabled={selectedCount === 0}>
-            删除{selectedCount > 0 ? ` (${selectedCount})` : ''}
+    <div className="cube-toolbar">
+      <div className="cube-toolbar-main">
+        {canAdd && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={onNew}>
+            新增
           </Button>
-        </Popconfirm>
-      )}
-      {canExport && (
-        <Dropdown menu={{ items: exportItems }} disabled={!canExport}>
-          <Button icon={<DownloadOutlined />}>导出</Button>
-        </Dropdown>
-      )}
-      {canImport && (
-        <Tooltip title="导入 Excel/CSV 文件">
-          <Button icon={<ImportOutlined />} onClick={onImport}>
-            导入
-          </Button>
+        )}
+        {canDelete && selectedCount > 0 && (
+          <Popconfirm
+            title={`确定删除选中的 ${selectedCount} 条数据吗？`}
+            onConfirm={onDelete}
+            okText="删除"
+            okButtonProps={{ danger: true }}
+          >
+            <Button danger icon={<DeleteOutlined />}>
+              删除选中 ({selectedCount})
+            </Button>
+          </Popconfirm>
+        )}
+        <Tooltip title="刷新">
+          <Button aria-label="刷新" icon={<ReloadOutlined />} onClick={onRefresh} />
         </Tooltip>
-      )}
-      <Button icon={<FundOutlined />} onClick={onChart}>
-        图表
-      </Button>
-      <Button icon={<ReloadOutlined />} onClick={onRefresh}>
-        刷新
-      </Button>
-    </Space>
+      </div>
+      <div className="cube-toolbar-side">
+        {canChart && (
+          <Segmented
+            size="small"
+            value={view}
+            options={[
+              { label: '表格', value: 'table' },
+              { label: '图表', value: 'chart' },
+            ]}
+            onChange={(v) => onViewChange?.(v as ListViewMode)}
+          />
+        )}
+        {advItems.length > 0 && (
+          <Dropdown menu={{ items: advItems }} placement="bottomRight">
+            <Button icon={<DownOutlined />}>高级</Button>
+          </Dropdown>
+        )}
+      </div>
+    </div>
   );
 }

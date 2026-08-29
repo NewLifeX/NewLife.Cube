@@ -55,9 +55,10 @@
   border: 1px solid var(--cube-border-soft);
 }
 
-.cube-search-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+.cube-search-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 10px 12px;
 }
 
@@ -66,11 +67,12 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
+  flex: 1 1 200px;
 }
 
-/* 范围类控件（日期/数值/时间区间）占 2 格，避免被压缩 */
+/* 范围类控件（日期/数值/时间区间）约占 2 格宽度，避免被压缩 */
 .cube-search-item--wide {
-  grid-column: span 2;
+  flex: 2 1 400px;
 }
 
 .cube-search-label {
@@ -98,8 +100,15 @@
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 12px;
-  flex-wrap: wrap;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+/* 图表视图（表格/图表 Segmented 切换，规范 §7.6） */
+.cube-chart-view {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .cube-toolbar {
@@ -196,12 +205,9 @@
     padding: 12px 14px;
   }
 
-  .cube-search-grid {
-    grid-template-columns: 1fr;
-  }
-
+  .cube-search-item,
   .cube-search-item--wide {
-    grid-column: span 1;
+    flex: 1 1 100%;
   }
 
   .cube-search-item {
@@ -216,6 +222,7 @@
   }
 
   .cube-search-actions {
+    margin-left: 0;
     justify-content: flex-start;
   }
 
