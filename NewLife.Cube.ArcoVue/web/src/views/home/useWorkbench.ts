@@ -1,4 +1,4 @@
-import { computed, onMounted, provide, reactive, ref } from 'vue';
+import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, provide, reactive, ref } from 'vue';
 import { Message } from '@arco-design/web-vue';
 import {
   emptyDashboard,
@@ -19,6 +19,8 @@ export function useWorkbench() {
   const dashboard = ref<DashboardConfig>(emptyDashboard());
   const editing = ref(false);
   const loadError = ref('');
+  /** 铺满视口并覆盖顶栏/侧栏（与列表页 DefaultList 同策略，非浏览器原生全屏） */
+  const fullscreen = ref(false);
 
   // 问候用语用户名（账号），不用昵称/显示名
   const hello = computed(() => greetingText(userStore.userInfo?.name || userStore.displayName || ''));
@@ -84,6 +86,22 @@ export function useWorkbench() {
     surface.canEdit = editing.value;
   }
 
+  function toggleFullscreen() {
+    fullscreen.value = !fullscreen.value;
+  }
+
+  function onFullscreenKeydown(e: KeyboardEvent) {
+    if (e.key === 'Escape' && fullscreen.value) fullscreen.value = false;
+  }
+
+  function bindFullscreenEsc() {
+    window.addEventListener('keydown', onFullscreenKeydown);
+  }
+
+  function unbindFullscreenEsc() {
+    window.removeEventListener('keydown', onFullscreenKeydown);
+  }
+
   async function restoreDefault() {
     try {
       await cubeApi.workbench.put('');
@@ -100,6 +118,11 @@ export function useWorkbench() {
     void load();
   });
 
+  // keep-alive 下离开 /home 仍会保留实例；仅在激活时监听 Esc，避免其它页误退全屏
+  onActivated(bindFullscreenEsc);
+  onDeactivated(unbindFullscreenEsc);
+  onBeforeUnmount(unbindFullscreenEsc);
+
   return {
     loading,
     source,
@@ -109,7 +132,9 @@ export function useWorkbench() {
     hello,
     todayLabel,
     canRestore,
+    fullscreen,
     toggleEdit,
+    toggleFullscreen,
     restoreDefault,
     load,
   };

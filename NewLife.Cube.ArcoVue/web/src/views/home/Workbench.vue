@@ -1,5 +1,5 @@
 <template>
-  <div class="workbench">
+  <div class="workbench" :class="{ 'workbench--fullscreen': fullscreen }">
     <div class="wb-banner">
       <div class="wb-hello">
         <div class="wb-hello-title">{{ hello }}</div>
@@ -24,6 +24,16 @@
             </a-button>
           </span>
         </a-tooltip>
+        <a-tooltip :content="fullscreen ? '退出全屏 (Esc)' : '全屏'">
+          <a-button
+            type="text"
+            class="wb-icon-btn"
+            :class="{ 'wb-icon-btn--on': fullscreen }"
+            @click="toggleFullscreen"
+          >
+            <icon-park :type="fullscreen ? 'off-screen' : 'full-screen'" :size="16" />
+          </a-button>
+        </a-tooltip>
       </a-space>
     </div>
     <a-alert v-if="loadError" type="warning" show-icon class="wb-alert">{{ loadError }}</a-alert>
@@ -39,7 +49,18 @@ import { useWorkbench } from './useWorkbench';
 
 defineOptions({ name: 'Workbench' });
 
-const { loading, editing, loadError, hello, todayLabel, canRestore, toggleEdit, restoreDefault } = useWorkbench();
+const {
+  loading,
+  editing,
+  loadError,
+  hello,
+  todayLabel,
+  canRestore,
+  fullscreen,
+  toggleEdit,
+  toggleFullscreen,
+  restoreDefault,
+} = useWorkbench();
 </script>
 
 <style scoped>
@@ -48,6 +69,19 @@ const { loading, editing, loadError, hello, todayLabel, canRestore, toggleEdit, 
   flex-direction: column;
   gap: 16px;
   min-width: 0;
+}
+/* 全屏：固定铺满视口，覆盖系统顶部及左侧导航栏；
+   z-index 低于 Arco 弹层（1000+），全屏期间的抽屉/弹窗/气泡仍可正常显示。
+   暗色 --color-fill-2 为半透明：须先铺不透明 bg-1 再叠 fill-2，否则顶栏/侧栏会透出 */
+.workbench--fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  overflow: auto;
+  background-color: var(--color-bg-1);
+  background-image: linear-gradient(var(--color-fill-2), var(--color-fill-2));
+  padding: 16px;
+  box-sizing: border-box;
 }
 .wb-banner {
   display: flex;
@@ -81,6 +115,9 @@ const { loading, editing, loadError, hello, todayLabel, canRestore, toggleEdit, 
 }
 .wb-icon-btn:disabled {
   color: var(--color-text-4) !important;
+}
+.wb-icon-btn--on {
+  color: rgb(var(--primary-6)) !important;
 }
 .wb-alert {
   margin: 0;

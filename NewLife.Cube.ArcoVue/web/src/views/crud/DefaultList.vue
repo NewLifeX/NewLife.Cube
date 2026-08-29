@@ -808,13 +808,15 @@ const automationFields = computed(() => {
   box-sizing: border-box;
 }
 /* 全屏：固定铺满视口，覆盖系统顶部及左侧导航栏；
-   z-index 低于 Arco 弹层（1000+），全屏期间的抽屉/弹窗/气泡仍可正常显示 */
+   z-index 低于 Arco 弹层（1000+），全屏期间的抽屉/弹窗/气泡仍可正常显示。
+   暗色 --color-fill-2 为半透明：须先铺不透明 bg-1 再叠 fill-2，否则顶栏/侧栏会透出 */
 .default-list--fullscreen {
   position: fixed;
   inset: 0;
   z-index: 900;
   overflow: auto;
-  background: var(--color-fill-2);
+  background-color: var(--color-bg-1);
+  background-image: linear-gradient(var(--color-fill-2), var(--color-fill-2));
   /* 全屏时无论是否有 chrome 背景，顶部仪表盘与视口边缘留白 */
   padding: 12px;
   box-sizing: border-box;
