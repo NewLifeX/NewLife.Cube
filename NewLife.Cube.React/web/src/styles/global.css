@@ -201,7 +201,7 @@ select {
 .cube-shell-header.ant-layout-header {
   height: auto !important;
   line-height: normal !important;
-  padding: 16px 16px 0 !important;
+  padding: 8px 16px 0 !important;
   background: transparent !important;
 }
 
@@ -210,7 +210,7 @@ select {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 18px 22px;
+  padding: 8px 16px;
   border-radius: 26px;
   background: var(--cube-shell-bg);
   border: 1px solid var(--cube-border-strong);
@@ -220,7 +220,7 @@ select {
 
 .cube-shell-header-main {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 14px;
   min-width: 0;
 }
@@ -233,20 +233,6 @@ select {
 
 .cube-shell-header-copy {
   min-width: 0;
-}
-
-.cube-shell-header-title-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.cube-shell-header-title {
-  color: var(--cube-text);
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.2;
 }
 
 .cube-shell-header-actions {
@@ -347,7 +333,7 @@ select {
 }
 
 .cube-shell-body.ant-layout-content {
-  padding: 16px !important;
+  padding: 12px !important;
   overflow-y: auto;
   background: transparent !important;
 }
@@ -420,10 +406,6 @@ select {
 }
 
 @media (max-width: 640px) {
-  .cube-shell-header-title {
-    font-size: 18px;
-  }
-
   .cube-user-trigger-copy,
   .cube-shell-brand-copy,
   .cube-shell-header-breadcrumb {

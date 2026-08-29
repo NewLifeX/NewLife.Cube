@@ -27,6 +27,8 @@ export interface RouteMeta {
   layout?: boolean;
   /** 是否加入多标签（默认 true） */
   tab?: boolean;
+  /** 是否固定标签（首页等）：不可关闭，且作为“关闭全部”后的归宿 */
+  fixed?: boolean;
   /** 动态实体页（catch-all），标签标题需从菜单解析 */
   dynamic?: boolean;
 }
@@ -39,7 +41,7 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <HomePage />,
-        handle: { title: '首页', auth: true, tab: true } as RouteMeta,
+        handle: { title: '首页', auth: true, tab: true, fixed: true } as RouteMeta,
       },
       {
         path: 'login',

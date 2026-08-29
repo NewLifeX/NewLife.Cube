@@ -41,7 +41,8 @@ export default function TabsView() {
     addTab({
       path: location.pathname,
       title: tabTitle,
-      closable: true,
+      closable: !meta.fixed,
+      fixed: meta.fixed === true,
     });
     setActive(location.pathname);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -59,6 +60,10 @@ export default function TabsView() {
     }
   };
 
+  // 仅剩固定首页（工作台）时隐藏整条标签栏，避免单独占一行；有业务标签时才显示
+  const hasBusinessTab = tabs.some((t) => !t.fixed);
+  if (!hasBusinessTab) return null;
+
   const items = tabs.map((t) => ({ key: t.path, label: t.title, closable: t.closable && !t.fixed }));
 
   const moreMenu = {
@@ -68,12 +73,17 @@ export default function TabsView() {
     ],
     onClick: ({ key }: { key: string }) => {
       if (key === 'others') closeOthers(activePath);
-      if (key === 'all') closeAll();
+      if (key === 'all') {
+        closeAll();
+        // 关闭全部后仅剩固定首页：导航回工作台，标签栏随之隐藏
+        const next = useTabsStore.getState().activePath;
+        if (next) navigate(next);
+      }
     },
   };
 
   return (
-    <div style={{ padding: '4px 16px 0', background: 'transparent' }}>
+    <div style={{ padding: '2px 16px 0', background: 'transparent' }}>
       <Tabs
         type="editable-card"
         hideAdd

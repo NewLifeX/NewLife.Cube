@@ -44,13 +44,6 @@ export default function HeaderBar({ collapsed, onToggle }: HeaderBarProps) {
     return chain;
   }, [flatMenus, location.pathname, base.title]);
 
-  // 页面主标题：当前菜单名，未命中用系统名
-  const pageTitle = useMemo(() => {
-    const lower = location.pathname.toLowerCase();
-    const current = flatMenus.find((m) => m.path && lower.endsWith(m.path.toLowerCase()));
-    return current?.title || current?.name || base.title;
-  }, [flatMenus, location.pathname, base.title]);
-
   return (
     <Layout.Header className="cube-shell-header">
       <div className="cube-shell-header-inner">
@@ -63,9 +56,6 @@ export default function HeaderBar({ collapsed, onToggle }: HeaderBarProps) {
             aria-label="切换导航"
           />
           <div className="cube-shell-header-copy">
-            <div className="cube-shell-header-title-row">
-              <span className="cube-shell-header-title">{pageTitle}</span>
-            </div>
             <Breadcrumb className="cube-shell-header-breadcrumb" items={crumbs} />
           </div>
         </div>

@@ -54,7 +54,7 @@ test.describe('顶栏切换器（CMP-6）', () => {
     await page.goto('/');
     await page.locator('.anticon-global').click();
     await page.getByText('English').click();
-    // 顶栏应出现英文（如首页标题或面包屑），放宽：无错误即可
+    // 顶栏应出现英文（面包屑或页面内容），放宽：无错误即可
     await page.waitForTimeout(500);
     expect(page.locator('.ant-message-error')).toHaveCount(0);
   });

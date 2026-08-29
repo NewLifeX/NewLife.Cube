@@ -35,4 +35,26 @@ describe('useTabsStore 多标签', () => {
     // 引用不变：标题未变化时不触发多余渲染
     expect(useTabsStore.getState().tabs).toBe(before);
   });
+
+  it('关闭全部：保留固定首页标签并激活首页', () => {
+    useTabsStore.getState().addTab({ path: '/', title: '首页', closable: false, fixed: true });
+    useTabsStore.getState().addTab({ path: '/Admin/User', title: '用户', closable: true });
+    useTabsStore.getState().addTab({ path: '/Admin/Log', title: '日志', closable: true });
+    useTabsStore.getState().closeAll();
+    const { tabs, activePath } = useTabsStore.getState();
+    expect(tabs).toHaveLength(1);
+    expect(tabs[0].fixed).toBe(true);
+    expect(tabs[0].path).toBe('/');
+    expect(activePath).toBe('/');
+  });
+
+  it('关闭其他：保留当前标签与固定首页', () => {
+    useTabsStore.getState().addTab({ path: '/', title: '首页', closable: false, fixed: true });
+    useTabsStore.getState().addTab({ path: '/Admin/User', title: '用户', closable: true });
+    useTabsStore.getState().addTab({ path: '/Admin/Log', title: '日志', closable: true });
+    useTabsStore.getState().closeOthers('/Admin/Log');
+    const { tabs, activePath } = useTabsStore.getState();
+    expect(tabs.map((t) => t.path)).toEqual(['/', '/Admin/Log']);
+    expect(activePath).toBe('/Admin/Log');
+  });
 });
