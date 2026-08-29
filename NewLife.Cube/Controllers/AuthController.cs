@@ -464,3 +464,4 @@ public class SwitchTenantModel
 {
     /// <summary>目标租户 Id；0 表示平台（仅系统管理员）</summary>
     public Int32 TenantId { get; set; }
+}
