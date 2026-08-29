@@ -21,39 +21,49 @@ public class ListField : DataField
 {
     #region 属性
     /// <summary>单元格文字</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String Text { get; set; }
 
     /// <summary>单元格标题。数据单元格上的提示文字</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String Title { get; set; }
 
     /// <summary>单元格链接。数据单元格的链接</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String Url { get; set; }
 
     ///// <summary>单元格图标。数据单元格前端显示时的图标或图片</summary>
     //public String Icon { get; set; }
 
     /// <summary>链接目标。参考：TargetEnum _blank/_self/_parent/_top，默认 null 根据皮肤自动判断</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String Target { get; set; }
 
     /// <summary>头部文字</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String Header { get; set; }
 
     /// <summary>头部标题。数据移上去后显示的文字</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String HeaderTitle { get; set; }
 
     /// <summary>文本对齐方式</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public TextAligns TextAlign { get; set; }
 
     /// <summary>单元格样式</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String Class { get; set; }
 
     /// <summary>最大宽度。用于指定超长隐藏文本的长度</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Int32 MaxWidth { get; set; }
 
     ///// <summary>头部链接。一般是排序</summary>
     //public String HeaderUrl { get; set; }
 
     /// <summary>数据动作。null 作为普通 url 操作；action 走 ajax 请求</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String DataAction { get; set; }
 
     /// <summary>获取数据委托。可用于自定义列表页单元格数值的显示</summary>

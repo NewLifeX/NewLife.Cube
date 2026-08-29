@@ -22,19 +22,22 @@ public delegate IDictionary DataSourceDelegate(Object entity);
 public delegate Boolean DataVisibleDelegate(Object entity);
 
 /// <summary>数据字段</summary>
-public class DataField
+public class DataField : IDictionarySource
 {
     #region 属性
     /// <summary>名称</summary>
     public String Name { get; set; }
 
     /// <summary>显示名</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String DisplayName { get; set; }
 
     /// <summary>描述</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String Description { get; set; }
 
     /// <summary>类别</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String Category { get; set; }
 
     /// <summary>属性类型</summary>
@@ -45,42 +48,55 @@ public class DataField
     public String TypeName => Type?.Name;
 
     /// <summary>元素类型。image,file-zip,html,singleSelect,multipleSelect</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String ItemType { get; set; }
 
     /// <summary>长度</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Int32 Length { get; set; }
 
     /// <summary>精度</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Int32 Precision { get; set; }
 
     /// <summary>位数</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Int32 Scale { get; set; }
 
     /// <summary>允许空</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Boolean Nullable { get; set; }
 
     /// <summary>主键</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Boolean PrimaryKey { get; set; }
 
     /// <summary>只读</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Boolean ReadOnly { get; set; }
 
     /// <summary>是否可见</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Boolean Visible { get; set; }
 
     /// <summary>是否必填</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Boolean Required { get; set; }
 
     /// <summary>权限相关。用户自由发挥</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String Authority { get; set; }
 
     /// <summary>扩展字段。用户自由发挥</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String Extended1 { get; set; }
 
     /// <summary>扩展字段。用户自由发挥</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String Extended2 { get; set; }
 
     /// <summary>扩展字段。用户自由发挥</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String Extended3 { get; set; }
 
     /// <summary>原始字段</summary>
@@ -88,9 +104,11 @@ public class DataField
     public FieldItem Field { get; set; }
 
     /// <summary>映射字段</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String MapField { get; set; }
 
     /// <summary>LOV 配置代码</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String LovCode { get; set; }
 
     /// <summary>映射提供者</summary>
@@ -127,6 +145,79 @@ public class DataField
     ///// <summary>实例化</summary>
     //public DataField() { }
 
+    /// <summary>转字典，用于FastJson序列化。仅输出有意义字段，忽略null/0/false等默认值，显著减小GetPage等元数据接口体积</summary>
+    /// <returns></returns>
+    public virtual IDictionary<String, Object> ToDictionary()
+    {
+        var dic = new Dictionary<String, Object>
+        {
+            ["name"] = Name,
+        };
+
+        if (!DisplayName.IsNullOrEmpty()) dic["displayName"] = DisplayName;
+        if (!Description.IsNullOrEmpty()) dic["description"] = Description;
+        if (!Category.IsNullOrEmpty()) dic["category"] = Category;
+        if (!TypeName.IsNullOrEmpty()) dic["typeName"] = TypeName;
+        if (!ItemType.IsNullOrEmpty()) dic["itemType"] = ItemType;
+        if (Length > 0) dic["length"] = Length;
+        if (Precision > 0) dic["precision"] = Precision;
+        if (Scale > 0) dic["scale"] = Scale;
+        if (Nullable) dic["nullable"] = true;
+        if (PrimaryKey) dic["primaryKey"] = true;
+        if (ReadOnly) dic["readOnly"] = true;
+        if (Visible) dic["visible"] = true;
+        if (Required) dic["required"] = true;
+        if (!Authority.IsNullOrEmpty()) dic["authority"] = Authority;
+        if (!Extended1.IsNullOrEmpty()) dic["extended1"] = Extended1;
+        if (!Extended2.IsNullOrEmpty()) dic["extended2"] = Extended2;
+        if (!Extended3.IsNullOrEmpty()) dic["extended3"] = Extended3;
+        if (!MapField.IsNullOrEmpty()) dic["mapField"] = MapField;
+        if (!LovCode.IsNullOrEmpty()) dic["lovCode"] = LovCode;
+
+        // 子类扩展字段
+        switch (this)
+        {
+            case ListField lf:
+                if (!lf.Text.IsNullOrEmpty()) dic["text"] = lf.Text;
+                if (!lf.Title.IsNullOrEmpty()) dic["title"] = lf.Title;
+                if (!lf.Url.IsNullOrEmpty()) dic["url"] = lf.Url;
+                if (!lf.Target.IsNullOrEmpty()) dic["target"] = lf.Target;
+                if (!lf.Header.IsNullOrEmpty()) dic["header"] = lf.Header;
+                if (!lf.HeaderTitle.IsNullOrEmpty()) dic["headerTitle"] = lf.HeaderTitle;
+                if (lf.TextAlign != TextAligns.Default) dic["textAlign"] = lf.TextAlign;
+                if (!lf.Class.IsNullOrEmpty()) dic["class"] = lf.Class;
+                if (lf.MaxWidth > 0) dic["maxWidth"] = lf.MaxWidth;
+                if (!lf.DataAction.IsNullOrEmpty()) dic["dataAction"] = lf.DataAction;
+                break;
+            case SearchField sf:
+                if (sf.Multiple) dic["multiple"] = true;
+#if MVC
+                if (!sf.View.IsNullOrEmpty()) dic["view"] = sf.View;
+#endif
+                break;
+            case FormField ff:
+#if MVC
+                if (!ff.GroupView.IsNullOrEmpty()) dic["groupView"] = ff.GroupView;
+                if (!ff.ItemView.IsNullOrEmpty()) dic["itemView"] = ff.ItemView;
+#endif
+                if (ff.Expand != null)
+                {
+                    var exp = ff.Expand;
+                    var edic = new Dictionary<String, Object>
+                    {
+                        ["name"] = exp.Name,
+                    };
+                    if (exp.Retain) edic["retain"] = true;
+                    if (!exp.Prefix.IsNullOrEmpty()) edic["prefix"] = exp.Prefix;
+                    if (!exp.Category.IsNullOrEmpty()) edic["category"] = exp.Category;
+                    dic["expand"] = edic;
+                }
+                break;
+        }
+
+        return dic;
+    }
+
     /// <summary>从FieldItem填充</summary>
     /// <param name="field"></param>
     public virtual void Fill(FieldItem field)
@@ -141,7 +232,7 @@ public class DataField
         DisplayName = field.DisplayName;
         Description = field.Description;
 
-        Category = pi?.GetCustomAttribute<CategoryAttribute>()?.Category + "";
+        Category = pi?.GetCustomAttribute<CategoryAttribute>()?.Category;
 
         Type = field.Type;
         //DataType = field.Type.Name;
@@ -180,7 +271,7 @@ public class DataField
         Name = property.Name;
         Type = property.PropertyType;
 
-        Category = property?.GetCustomAttribute<CategoryAttribute>()?.Category + "";
+        Category = property?.GetCustomAttribute<CategoryAttribute>()?.Category;
 
         var df = property.GetCustomAttribute<DataObjectFieldAttribute>();
         if (df != null)

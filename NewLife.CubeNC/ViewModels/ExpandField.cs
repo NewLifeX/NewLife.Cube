@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.ComponentModel;
 using System.Reflection;
+using System.Text.Json.Serialization;
 using NewLife.Reflection;
 using XCode;
 
@@ -14,9 +15,11 @@ public class ExpandField
     public String Name { get; set; }
 
     /// <summary>获取扩展字段委托。当前字段所表示的对象，各属性作为表单字段展开</summary>
+    [JsonIgnore]
     public Func<Object, Object> Decode { get; set; }
 
     /// <summary>编码扩展字段。一般是ToJson/ToXml</summary>
+    [JsonIgnore]
     public Func<Object, Object> Encode { get; set; }
 
     /// <summary>保留扩展字段。默认false，字段被扩展以后，表单上就不再出现原字段</summary>

@@ -1,5 +1,13 @@
 # ChangeLog
 
+## v6.14.2026.0830 (2026-08-30)
+
+### 接口与构建优化
+- **GetPage 元数据瘦身**：`DataField` 实现 `IDictionarySource`，FastJson 序列化时仅输出有意义字段（忽略 null/0/false 等默认值），GetPage/GetFields 响应体积减少约 2/3（如 User 页 54KB→17KB），前端字段类型全可选（`?`）无需改动
+- **字段元数据兼容**：`DataField` 及子类可空/默认属性补充 `[JsonIgnore(WhenWritingDefault)]`，System.Text.Json 路径同样省略噪音字段；`Category` 无分类时不再输出空字符串
+
+---
+
 ## v6.14.2026.0827 (2026-08-27)
 
 ### 新功能
