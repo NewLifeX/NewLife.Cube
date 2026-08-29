@@ -79,3 +79,32 @@ test.describe('登录页', () => {
     expect(loginBody!.remember).toBeFalsy();
   });
 });
+
+test.describe('保存密码跨会话恢复（干净上下文）', () => {
+  // 不复用登录态，走完整登录流程验证"再次访问免登录"
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test('勾选保存密码登录后，localStorage 丢失可从 Cookie 恢复免登录', async ({ page }) => {
+    const ADMIN_USER = process.env.ADMIN_USER || 'admin';
+    const ADMIN_PASS = process.env.ADMIN_PASS || 'admin';
+
+    await page.goto('/login');
+    await page.getByRole('checkbox', { name: '保存密码' }).check();
+    await page.getByPlaceholder('用户名 / 邮箱 / 手机号').fill(ADMIN_USER);
+    await page.getByPlaceholder('请输入密码').fill(ADMIN_PASS);
+    await page.getByRole('button', { name: '登 录' }).click();
+    await page.waitForURL('**/', { timeout: 15000 });
+
+    // 双通道写入：localStorage + Cookie 都有 token
+    expect(await page.evaluate(() => localStorage.getItem('token'))).toBeTruthy();
+    expect(await page.evaluate(() => document.cookie.includes('token='))).toBe(true);
+
+    // 模拟 localStorage 丢失（浏览器清理站点数据场景），Cookie 保留
+    await page.evaluate(() => localStorage.removeItem('token'));
+
+    // 再次访问受保护页：应从 Cookie 恢复 token，免登录进入
+    await page.goto('/Admin/User');
+    await page.waitForURL('**/Admin/User', { timeout: 8000 });
+    expect(page.url()).toContain('/Admin/User');
+  });
+});

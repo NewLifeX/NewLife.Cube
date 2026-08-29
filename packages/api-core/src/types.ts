@@ -426,6 +426,8 @@ export interface CaptchaResult {
 export interface MfaVerifyResult {
   accessToken: string;
   refreshToken?: string;
+  /** 访问令牌有效期（秒） */
+  expireIn?: number;
 }
 
 /** MFA 初始化结果 */

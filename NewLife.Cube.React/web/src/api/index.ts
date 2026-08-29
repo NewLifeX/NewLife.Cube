@@ -13,17 +13,30 @@ import { message } from 'antd';
 /** Token 变更事件（登录/登出时派发，供响应式登录态使用） */
 export const CUBE_TOKEN_EVENT = 'cube:token-change';
 
+/** 从 Cookie 读取指定键（localStorage 丢失时回退） */
+function readCookie(key: string): string | null {
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${key}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 /**
- * localStorage Token 存储（写操作派发事件，使登录态可被 UI 响应）
+ * 双通道 Token 存储：localStorage 优先 + Cookie 兜底
+ *
+ * 「保存密码」登录后 token 同时写入持久 Cookie（对齐 MVC 版写 365 天 Cookie 的行为），
+ * 当 localStorage 被浏览器清理但 Cookie 保留时，仍可从 Cookie 恢复登录态免登录。
  */
 const tokenStorage: TokenStorage = {
-  getToken: () => localStorage.getItem('token'),
-  setToken: (t) => {
+  getToken: () => localStorage.getItem('token') ?? readCookie('token'),
+  setToken: (t, expireIn) => {
     localStorage.setItem('token', t);
+    // 有有效期（保存密码=365 天）写持久 Cookie，否则会话级
+    const exp = expireIn && expireIn > 0 ? `; max-age=${expireIn}` : '';
+    document.cookie = `token=${encodeURIComponent(t)}; path=/; SameSite=Lax${exp}`;
     window.dispatchEvent(new Event(CUBE_TOKEN_EVENT));
   },
   clearToken: () => {
     localStorage.removeItem('token');
+    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     window.dispatchEvent(new Event(CUBE_TOKEN_EVENT));
   },
 };

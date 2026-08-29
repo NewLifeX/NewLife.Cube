@@ -80,7 +80,7 @@ export class AuthLogic {
       ...(remember ? { remember } : {}),
     });
     if (res.data?.accessToken) {
-      this.api.tokenManager.setToken(res.data.accessToken);
+      this.api.tokenManager.setToken(res.data.accessToken, res.data.expireIn);
     }
     return res;
   }
@@ -143,7 +143,7 @@ export class AuthLogic {
       ...(captchaCode ? { captchaCode } : {}),
     });
     if (res.data?.accessToken) {
-      this.api.tokenManager.setToken(res.data.accessToken);
+      this.api.tokenManager.setToken(res.data.accessToken, res.data.expireIn);
     }
     return res;
   }
@@ -266,7 +266,7 @@ export class MfaLoginLogic {
       const res = await this.api.user.mfaVerify({ mfaToken: this.mfaToken, code });
       const result = res.data;
       if (result?.accessToken) {
-        this.api.tokenManager.setToken(result.accessToken);
+        this.api.tokenManager.setToken(result.accessToken, result.expireIn);
       }
       this.setState({ verifying: false });
       return result ?? null;
@@ -549,7 +549,7 @@ export class RegisterLogic {
         confirmPassword,
       };
       const res = await this.api.user.register(payload);
-      if (res.data?.accessToken) this.api.tokenManager.setToken(res.data.accessToken);
+      if (res.data?.accessToken) this.api.tokenManager.setToken(res.data.accessToken, res.data.expireIn);
       this.setState({ submitting: false });
       return true;
     } catch (e: unknown) {

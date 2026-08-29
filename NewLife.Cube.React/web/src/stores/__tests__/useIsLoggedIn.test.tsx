@@ -10,12 +10,15 @@ import { api } from '@/api';
 import { useIsLoggedIn } from '@/stores/user';
 
 describe('useIsLoggedIn 响应式登录态', () => {
+  // 双通道存储（localStorage + Cookie 兜底）：两个都清理，避免测试间 token 残留
   beforeEach(() => {
     localStorage.clear();
+    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
   });
 
   afterEach(() => {
     localStorage.clear();
+    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
   });
 
   it('无 token 时初始为未登录', () => {
