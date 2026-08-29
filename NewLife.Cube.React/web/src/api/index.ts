@@ -6,7 +6,7 @@
  * - 服务接口（user/menu/config：/Auth /Cube /Sso）→ 同源不带 /api
  * - 统一错误处理：字段级错误 / 业务错误 / 401 未授权
  */
-import { createCubeApi, type CubeApi, type TokenStorage } from '@cube/api-core';
+import { createCubeApi, clearPageMetaCache, type CubeApi, type TokenStorage } from '@cube/api-core';
 import { getConfig } from '@/configure';
 import { message } from 'antd';
 
@@ -27,6 +27,9 @@ const tokenStorage: TokenStorage = {
     window.dispatchEvent(new Event(CUBE_TOKEN_EVENT));
   },
 };
+
+// Token 变更（登录/登出/切换账号）时清空页面元数据缓存，避免串用上一账号的页面配置
+window.addEventListener(CUBE_TOKEN_EVENT, () => clearPageMetaCache());
 
 // 同一响应若携带 fieldErrors，onFieldError 会弹出更精确的字段提示；
 // 此处标记抑制紧随其后的 onBusinessError，避免"操作失败！xxx"与"xxx"重复弹出

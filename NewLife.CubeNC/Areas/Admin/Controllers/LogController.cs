@@ -25,6 +25,16 @@ public class LogController : ReadOnlyEntityController<XLog>
         ListFields.RemoveField("CreateUserID");
         //FormFields.RemoveField("Remark");
 
+        // 精简列表：去掉扩展字段、性能追踪与冗余的用户相关字段，只保留审计核心信息
+        ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6", "TraceId", "CreateUser", "CreateUserName", "Success");
+
+        // 搜索字段显式配置，受后台控制（默认只显示有索引的列）
+        SearchFields.RemoveField("LinkID");
+        SearchFields.AddField("CreateTime");
+        // 用户编号用虚拟文本字段（标量参数 userid），真实 CreateUserID 字段会渲染成范围输入，不适合单值查询
+        SearchFields.AddDataField("UserID", null, "Success").DisplayName = "用户编号";
+        SearchFields.AddDataField("Q", "Category", null).DisplayName = "关键字";
+
         //{
         //    var df = ListFields.GetField("TraceId") as ListField;
         //    df.DisplayName = "跟踪";
@@ -61,12 +71,17 @@ public class LogController : ReadOnlyEntityController<XLog>
     protected override IEnumerable<XLog> Search(Pager p)
     {
         var category = p["category"];
-        var action = p["act"];
+        // React 搜索区按字段名提交 action，MVC 老界面提交 act，两者都兼容
+        var action = p["action"] ?? p["act"];
         var success = p["success"]?.ToBoolean();
         var linkid = p["linkid"].ToInt(-1);
         var userid = p["userid"].ToInt(-1);
+        if (userid < 0) userid = p["createuserid"].ToInt(-1);
+        // 时间范围：React 按字段名提交 CreateTime[0]/[1]，MVC 老界面提交 dtStart/dtEnd，两者都兼容
         var start = p["dtStart"].ToDateTime();
         var end = p["dtEnd"].ToDateTime();
+        if (start.Year < 2000) start = p["CreateTime[0]"].ToDateTime();
+        if (end.Year < 2000) end = p["CreateTime[1]"].ToDateTime();
         var key = p["Q"];
 
         // 默认排序
