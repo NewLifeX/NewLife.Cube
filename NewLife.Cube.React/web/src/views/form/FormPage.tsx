@@ -15,6 +15,7 @@ import { serializeSubmitModel, isFullWidthControl, resolveControl } from '@/util
 import { routeToApiPrefix, getValueByKey } from '@/utils/url';
 import { toFieldMeta } from '@/types/field';
 import { usePageStore } from '@/hooks/usePageStore';
+import { useAiFillForm } from '@/hooks/useAiFillForm';
 
 export interface FormPageProps {
   title?: string;
@@ -22,6 +23,8 @@ export interface FormPageProps {
 
 export default function FormPage({ title }: FormPageProps) {
   const [form] = Form.useForm();
+  // AI 填表：监听 AiAssistant 派发的 cube:ai-fill-form 事件
+  useAiFillForm(form);
   const location = useLocation();
   const navigate = useNavigate();
   const [params] = useSearchParams();

@@ -163,12 +163,13 @@ public class ControllerBaseX : ControllerBase, IActionFilter
                     };
                 }
             }
-            else if (context.Result is EmptyResult)
+            else if (context.Result is EmptyResult && !HttpContext.Response.HasStarted)
             {
+                // SSE 等流式响应已开始（Headers 只读）后不能再转 JsonResult，保持原样以完整结束流
                 context.Result = new JsonResult(new { code = 0, data = new { }, traceId });
             }
         }
-        else if (context.Exception != null && !context.ExceptionHandled)
+        else if (context.Exception != null && !context.ExceptionHandled && !HttpContext.Response.HasStarted)
         {
             //var ex = context.Exception.GetTrue();
             if (ex is ApiException aex)

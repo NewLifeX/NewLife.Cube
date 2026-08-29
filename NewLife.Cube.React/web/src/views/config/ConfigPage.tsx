@@ -16,6 +16,7 @@ import FieldControl from '@/components/field/FieldControl';
 import { resolveControl, isFullWidthControl, serializeSubmitModel } from '@/utils/fieldControl';
 import { toFieldMeta, type FieldMeta } from '@/types/field';
 import { api } from '@/api';
+import { useAiFillForm } from '@/hooks/useAiFillForm';
 
 export interface ConfigPageProps {
   /** 实体路径前缀，如 '/Admin/Cube' */
@@ -44,6 +45,8 @@ function groupByCategory(fields: FieldMeta[]): { category: string; fields: Field
 
 export default function ConfigPage({ type, title }: ConfigPageProps) {
   const [form] = Form.useForm();
+  // AI 填表：监听 AiAssistant 派发的 cube:ai-fill-form 事件（配置页也是表单页）
+  useAiFillForm(form);
   const [fields, setFields] = useState<FieldMeta[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

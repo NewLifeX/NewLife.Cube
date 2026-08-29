@@ -11,6 +11,7 @@ import FieldControl from '@/components/field/FieldControl';
 import { serializeSubmitModel, isFullWidthControl, resolveControl } from '@/utils/fieldControl';
 import { toFieldMeta } from '@/types/field';
 import type { FieldMapping } from '@cube/field-mapping';
+import { useAiFillForm } from '@/hooks/useAiFillForm';
 
 export interface FormDialogProps {
   open: boolean;
@@ -44,6 +45,8 @@ export default function FormDialog({
   onCancel,
 }: FormDialogProps) {
   const [form] = Form.useForm();
+  // AI 填表：弹窗打开时监听 AiAssistant 派发的 cube:ai-fill-form 事件
+  useAiFillForm(form, open);
   const [detail, setDetail] = useState<Record<string, unknown>>({});
 
   // 表单字段元数据（过滤主键与只读字段；编辑时主键已通过 setFieldsValue(row) 保留在表单中）

@@ -74,7 +74,8 @@ public class ControllerBaseX : Controller
 
         if (IsJsonRequest)
         {
-            if (ex != null && !context.ExceptionHandled)
+            // SSE 等流式响应已开始（Headers 只读）后不能再写 Json，保持原样以完整结束流
+            if (ex != null && !context.ExceptionHandled && !HttpContext.Response.HasStarted)
             {
                 var code = 500;
                 var message = ex.Message;

@@ -52,7 +52,8 @@
   margin-left: 6px;
 }
 
-.cube-ai-header-close.ant-btn {
+.cube-ai-header-close.ant-btn,
+.cube-ai-header-btn.ant-btn {
   color: #fff;
 }
 
@@ -123,6 +124,37 @@
   border-top: 1px solid var(--cube-border-soft);
   background: var(--cube-surface-bg);
   flex: none;
+}
+
+/* 输入区行：深度开关 + 输入框 */
+.cube-ai-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cube-ai-think.ant-checkbox-wrapper {
+  font-size: 12px;
+  color: var(--cube-text-secondary);
+  white-space: nowrap;
+}
+
+/* 快捷指令（welcome 区一键任务） */
+.cube-ai-quick {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* 最大化：占满视口留 20px 边距，状态持久化 */
+.cube-ai-panel.maximized {
+  right: 20px;
+  bottom: 20px;
+  width: calc(100vw - 40px);
+  max-width: none;
+  height: calc(100vh - 40px);
 }
 
 @media (max-width: 640px) {
