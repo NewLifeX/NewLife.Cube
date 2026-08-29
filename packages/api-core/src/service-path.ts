@@ -38,6 +38,8 @@ const CUBE_SERVICE_ACTIONS = new Set([
   'Automation',
   // 独立 WidgetController（[Route("Cube/Widget")]，无 /api）
   'Widget',
+  // 独立 WorkbenchController（[Route("Cube/Workbench")]，无 /api）
+  'Workbench',
   'Avatar'
 ]);
 

@@ -3,6 +3,7 @@ import type { FieldMeta } from '@/core/types/field';
 import type { ColumnPref } from '@/core/utils/viewProfile';
 import { bucketKanban, type KanbanMapping } from '@/core/utils/viewMapping';
 import { getValueByKey } from '@/core/utils/url';
+import { resolveCellLabel } from '@/core/utils/fieldBadge';
 import { buildCardBodyFields, cardExcludeKeys, resolveImageUrl } from './cardHelpers';
 import type { ViewFormatRule } from '@/core/utils/viewProfile';
 import { resolveCardTitleFormat, resolveRowSideColor } from '@/core/utils/viewFormat';
@@ -33,8 +34,11 @@ const LOAD_STEP = 100;
 export function useKanbanBoard(props: KanbanBoardProps) {
   const columns = computed(() => {
     if (!props.mapping?.groupField) return [];
-    const field = props.fields.find((f) => f.name === props.mapping!.groupField);
-    return bucketKanban(props.records, props.mapping.groupField, field?.dataSource);
+    const gf = props.mapping.groupField;
+    const field =
+      props.fields.find((f) => f.name === gf) ||
+      props.fields.find((f) => (f.name || '').toLowerCase() === gf.toLowerCase());
+    return bucketKanban(props.records, gf, field?.dataSource);
   });
 
   /** 每列已渲染条数（key = 列 key；列头 count 仍显示总数 col.rows.length） */
@@ -77,14 +81,18 @@ export function useKanbanBoard(props: KanbanBoardProps) {
   function titleOf(row: Record<string, unknown>) {
     const key = props.mapping?.titleField;
     if (!key) return '-';
-    const field = props.fields.find((f) => f.name === key);
+    const field =
+      props.fields.find((f) => f.name === key) ||
+      props.fields.find((f) => (f.name || '').toLowerCase() === key.toLowerCase());
     if (field && props.formatCell) return props.formatCell(field, row);
     const raw = getValueByKey(row, key);
-    return raw == null || raw === '' ? '-' : String(raw);
+    if (raw == null || raw === '') return '-';
+    if (field) return resolveCellLabel(field, raw) || String(raw);
+    return String(raw);
   }
 
   function bodyOf(row: Record<string, unknown>) {
-    if (props.compact) return [];
+    // compact 数据看板：按 props.columns（配置的显示字段）渲染正文；未配置则为空
     return buildCardBodyFields(
       row,
       props.columns,

@@ -36,6 +36,12 @@ export function isCardBodyFieldFullRow(
   return Array.from(value).length >= 33;
 }
 
+function findBodyField(fields: FieldMeta[], key: string): FieldMeta | undefined {
+  const k = (key || '').toLowerCase();
+  if (!k) return undefined;
+  return fields.find((f) => (f.name || '').toLowerCase() === k);
+}
+
 export function buildCardBodyFields(
   record: Record<string, unknown>,
   columns: ColumnPref[],
@@ -43,12 +49,15 @@ export function buildCardBodyFields(
   exclude: string[],
   format?: (field: FieldMeta, record: Record<string, unknown>) => string,
 ): CardBodyField[] {
-  const skip = new Set(exclude.filter(Boolean));
+  const skip = new Set(
+    exclude.filter(Boolean).map((x) => String(x).toLowerCase()),
+  );
   const out: CardBodyField[] = [];
   for (const col of columns) {
-    if (!col.visible || skip.has(col.key)) continue;
-    const field = fields.find((f) => f.name === col.key);
-    const label = col.title?.trim() || field?.displayName || col.key;
+    if (!col.visible || skip.has((col.key || '').toLowerCase())) continue;
+    const field = findBodyField(fields, col.key);
+    const label =
+      col.title?.trim() || field?.displayName?.trim() || field?.name || col.key;
     let value = '-';
     let badge: CellBadge | null = null;
     if (field && format) value = format(field, record);

@@ -3,6 +3,7 @@
 > 版本：2026-08-02（修订：看板分组字段取值修复；`EntityViewProfile`→`ViewProfile` 前后端统一重构；§8 收敛为「固定 CRUD 容器 + 有限用户运行时自定义」）
 > 版本：2026-08-19（复审：§3.1 矩阵现状列按代码实测刷新；§10.4 差距表补 OSC-26081903c0 启停/填色/AI 浮窗）
 > 版本：2026-08-21（增补 §8.5：自定义工作台、页面仪表盘与流程引擎；改写 §5.1 / §8.2 与「搜索 / 一张图 / FlowGram 样例」终态表述。口径与 [架构分享-预读.md](./架构分享-预读.md) 一致）
+> 版本：2026-08-29（复审：OSC-2608280e9e / OSC-26082815a1 归档后刷新 §1.1 完成度、§3.1 矩阵、§10.3 总验收、§10.4 差距表与附录归档表；工作台全屏与暗色叠底已合入）
 > 状态：可落地执行稿  
 > 适用范围：以 NewLife.Cube（WebAPI）为后端，将 NewLife.Cube.ArcoVue 建设为默认企业中后台皮肤；复用 NewLife.Cube.Vue 能力成果，对接字节官方组件栈，支持用户级呈现配置与 AI（OpenSpec）协作。
 
@@ -14,9 +15,9 @@
 
 | 现状 | 说明 |
 |------|------|
-| NewLife.Cube | WebAPI 主线已具备认证、菜单、权限、`GetPage` 元数据驱动 CRUD |
-| NewLife.Cube.Vue | 产品能力最完整（Element Plus + 微前端 + Section 覆写），但是默认皮肤之一，非 Arco 栈 |
-| NewLife.Cube.ArcoVue | Gen-2 薄皮肤，已能登录/菜单/基础动态 CRUD，深度约为 Vue 的 15%–35% |
+| NewLife.Cube | WebAPI 主线已具备认证、菜单、权限、`GetPage` 元数据驱动 CRUD；另含 UserProfile / ViewProfile / EntityComment、Workbench、Widget、Automation、Inbox、AI |
+| NewLife.Cube.Vue | 产品能力参照系（Element Plus + 微前端 + Section 覆写），仍是默认皮肤之一，非 Arco 栈 |
+| NewLife.Cube.ArcoVue | 默认企业中后台皮肤主线：P0 壳/六视图/抽屉/自动化已齐；**页面仪表盘 Widget（OSC-2608280e9e）与用户>主角色>系统工作台（OSC-26082815a1）已归档**。相对 Cube.Vue 主要差在微前端多应用、技能/覆写广度、Cypress 全量与 i18n |
 | 共享包 `@cube/*` | api-core / auth-logic / page-logic / field-mapping / page-utils 可跨皮肤复用 |
 
 ### 1.2 产品目标（必须达成）
@@ -142,7 +143,8 @@
 | 批量删除 | DATA-10 | ✅ | ✅ | ✅ | P0 |
 | 批量其它操作（启用/禁用等） | 工具条扩展 | ✅ | ✅（OSC-26081903c0 高级菜单批量启用/禁用；批量改字段见 e483） | 🟠 | P2 |
 | ListField.Url / dataAction 自定义链接 | 单元格 + 操作列分流 | ✅（Bootstrap 单元格 / Metronic 更多） | ✅（OSC-2608178bdb 方案 E） | 🟢 | Done |
-| 图表 GetChartData | SPA-15 | ✅ | ✅（OSC-2608280e9e：洞察槽 Widget 协议 + 迷你图平台模板；GetChartData 仅旧 insight 合成） | ✅ | P1 |
+| 图表 / 页面仪表盘 | SPA-15 | ✅ | ✅（OSC-2608280e9e：`DashboardJson` + WidgetHost；metricCard/miniChart；GetChartData 仅旧 insight 只读合成） | ✅ | P1 |
+| 首页自定义工作台 | §8.5.2 | 🟠 Index 监控 | ✅（OSC-26082815a1：`/home` Widget 墙；用户 HomeJson > 主角色 Parameter > 系统种子；`/Admin/Index` 仍监控页） | ✅ | P0 |
 | 字段控件矩阵（含上传/JSON/富文本等） | DATA-11 等 | 🟠～✅ | ✅（20+ 控件，FieldInput） | ✅ | P0 |
 | LOV 选择器 | SYS-16～20 | ✅ | ✅（LovSelect + lov-api） | ✅ | P1 |
 | 多页签 TagsView | 壳 | ✅ | ✅ | ✅ | P0 |
@@ -155,20 +157,23 @@
 | 卡片视图 | Vue 有未接线 stub | ❌ | ✅（CardList/RecordCard） | ✅ | P0 |
 | 甘特视图 | 本方案新建 | ❌ | ✅ 只读（vtable-gantt 计划/实际双条重叠对比 + 任务条定位图标 + 表宽拖拽持久化 + 固定色，OSC-0019；无拖拽写回） | ✅ | P0 |
 | 右侧记录抽屉 | 本方案 | ❌ 多为弹层 | ✅ 右抽屉（表单/历史/评论全接线，OSC-0008） | ✅ | P0 |
-| 修改历史（Log 筛选） | SYS-3 | 🟠 独立日志页 | ✅（抽屉内 timeline，无分页/无 diff） | ✅ 抽屉 Tab | P0 |
+| 修改历史（Log 筛选） | SYS-3 | 🟠 独立日志页 | ✅（抽屉 timeline：分页 + 动作筛；Remark 前端启发式字段 diff，无后端结构化审计） | ✅ 抽屉 Tab | P0 |
 | 实体评论 EntityComment | **后端新建** | ❌ | ✅（OSC-0008 接线：api-core comment API + 抽屉评论 Tab 顶层/回复/删除本人） | ✅ | P0 |
 | Section 页面覆写 | Vue skills | ✅ | ✅ 机制（useSections，仅 `_demo` 案例） | ✅ | P1 |
 | apps 自定义业务页 | cube-admin 等 | ✅ | 🟠 机制 + `_demo` + Admin/Db、Admin/File 专用页（detectPageKind custom） | 🟠 机制+高频页 | P1 |
 | 微前端多应用运行时 | Vue microApp | ✅ | ➖（未做） | ➖ | — |
 | FlowGram 工作流画布 | 本方案 | ❌ | ❌（未做） | ✅ 设计器；运行时见 §8.5.5 | P1 |
 | 字段级变更 diff | 相对 Log | ❌ | ❌ | ➖ 一期 / P2 二期 | P2 |
-| 单元/组件测试体系 | Vue Vitest 等 | ✅ | 🟠（逻辑单测 495 用例全过；组件测试仍缺） | ✅ 关键路径 | P0 |
+| 单元/组件测试体系 | Vue Vitest 等 | ✅ | 🟠（逻辑单测约 78 个 `*.spec.ts`；组件测试仍缺 `@vue/test-utils`） | ✅ 关键路径 | P0 |
 | E2E（Cypress 级） | Vue | ✅ | 🟠 Playwright 冒烟 3 spec（认证/实体表单/对象主页，OSC-2608139feb） | 🟠 冒烟即可 | P2 |
+| AI 助手浮窗 | AI-7 / SPA-7 | ✅ | ✅（OSC-26081903c0：右侧停靠 + FAB；流式对话；无会话持久化/搭建） | ✅ | P1 |
+| 嵌入分享 | UserToken | 🟠 | ✅（`?embed=1&token=` EmbedLayout；ShareView 短令牌；隐藏壳与 AI） | ✅ | P1 |
+| 站内通知 Inbox | Automation | 🟠 | ✅（顶栏未读 + InboxDrawer + 工作台 inbox 部件） | ✅ | P1 |
 | 嵌入 NuGet / UseArcoVue | SPA-2/3/7 | ✅ UseVue | ✅ | ✅ | P0 |
 
 > **实体自动化 ≠ 流程引擎 ≠ FlowGram。** OSC-260815fa86 已交付线性「自动化」（GraphJson + C# `AutomationExecutor`）。FlowGram 只做设计器；审批/待办运行时若立项则在 Cube `IModule`（§8.5.5），**禁止**把自动化实现成浏览器画布执行器。
 
-> 注：以上「ArcoVue 现状」列已于 2026-08-18 对照代码复审刷新（OSC-0001~0019 与 OSC-2608 号全部归档后）。刷新依据见 §10.4 审查结论。
+> 注：以上「ArcoVue 现状」列已于 **2026-08-29** 对照代码复审刷新（含 OSC-2608280e9e 页面仪表盘、OSC-26082815a1 首页工作台归档）。刷新依据见 §10.4 审查结论。
 
 矩阵随里程碑更新「ArcoVue 现状」列；目标为 ➖ 的项不得在 OSC 中膨胀为必做范围。
 
@@ -214,28 +219,31 @@ flowchart TB
   Override -.-> Dynamic
 ```
 
-### 4.2 前端目录（目标）
+### 4.2 前端目录（目标 → 2026-08-29 现状）
 
 ```
 NewLife.Cube.ArcoVue/web/src/
-├── api/                      # createCubeApi + userProfile/viewProfile/comment/history
-├── stores/                   # user / app / tabs / userProfile
+├── api/                      # createCubeApi 薄封装 → @cube/api-core
+├── stores/                   # user / app / tagsView / userProfile / viewProfile / tenant
 ├── router/                   # 菜单动态路由 + 守卫 + keep-alive
-├── layouts/                  # layout 实现：side / top / mix（由 UserProfile 选择）
-├── theme/                    # Design Token + Arco 主题注入（非写死颜色）
-├── components/fields/        # FieldInput 矩阵
+├── layouts/                  # side / top / mix / EmbedLayout（UserProfile + embed）
+├── theme/                    # Design Token + Arco 主题注入
+├── components/               # FieldInput / LovSelect / TagsView 等
 ├── features/
-│   ├── multi-view/           # 视图切换编排
-│   ├── vtable/               # VTable / Gantt 适配
-│   ├── record-drawer/        # 右抽屉三 Tab
-│   └── flowgram/             # 工作流（后期）
-├── views/dynamic/
-├── views/login/
-├── views/settings/           # 外观与工作台设置页（读写 UserProfile）
-├── apps/                     # 可选整页覆写
-└── i18n/
+│   ├── views/                # card / kanban / calendar / gantt / RecordCard
+│   ├── vtable/               # ListTable / 冻结线
+│   ├── search/               # SearchDrawer / InsightPanel（→ WidgetHost）
+│   └── widget/               # 平台 Widget 注册、宿主、配置抽屉
+├── views/
+│   ├── home/                 # Workbench（/home）
+│   ├── crud/                 # DefaultList + RecordDrawer + 自动化
+│   ├── object/ / dynamic/ / account/ / settings/ / inbox/ / ai/
+│   └── admin/                # Db / File 专用页
+├── apps/_demo/               # Section / 整页覆写样例
+└── i18n/                     # 目标位；尚未落地
 ```
 
+> 历史规划中的 `multi-view/`、`record-drawer/`、`flowgram/` 目录名已演化为上表；FlowGram 仍未创建。
 ### 4.3 官方组件栈分工（强制）
 
 | 层级 | 技术 | 职责 |
@@ -554,15 +562,15 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
 
 ### 8.5 自定义工作台、页面仪表盘与流程引擎
 
-> 2026-08-21 产品口径。L0 仍是零配置实体 CRUD（§8.1–8.2）。往上只加三类后端，不要并成「再做一个飞书」。实现另开 OSC；值集消费契约（含 `entity:` ListData）未收口前，跨实体选表与仪表盘实现应一并看待。口径长文见 [架构分享-预读.md](./架构分享-预读.md)。
+> 2026-08-21 产品口径；**2026-08-29**：OSC-2608280e9e / 15a1 已归档，下表「要补」项以代码为准刷新。L0 仍是零配置实体 CRUD（§8.1–8.2）。往上只加三类后端，不要并成「再做一个飞书」。值集消费契约（含 `entity:` ListData）未收口前，跨实体选表与仪表盘实现应一并看待。口径长文见 [架构分享-预读.md](./架构分享-预读.md)。
 
 三条产品边界必须分开：
 
-| 表面 | 对标 | 不是什么 |
-|------|------|----------|
-| **看板视图** | 飞书看板视图 | DefaultList **六视图之一**；只呈现当前实体、当前筛选；列=分组字段；只读、无拖拽写回。不承担跨表看数。 |
-| **InsightPanel** | 飞书仪表盘（缩小版） | 挂在实体页**固定洞察槽**，不是独立菜单、不是整页画布。每 `typePath` 一份配置；平台部件可绑**已授权**其它实体。 |
-| **首页工作台** | 「我的工作台」 | 平台槽位（待办、快捷入口、KPI）。今日 Index/Main 是监控页，不是这份工作台。 |
+| 表面 | 对标 | 不是什么 | 落地 |
+|------|------|----------|------|
+| **看板视图** | 飞书看板视图 | DefaultList **六视图之一**；只呈现当前实体、当前筛选；列=分组字段；只读、无拖拽写回。不承担跨表看数。 | ✅ OSC-0006 |
+| **InsightPanel** | 飞书仪表盘（缩小版） | 挂在实体页**固定洞察槽**，不是独立菜单、不是整页画布。每 `typePath` 一份 `DashboardJson`；平台部件可绑**已授权**其它实体。实现为 `WidgetHost`（非旧单图）。 | ✅ OSC-2608280e9e |
+| **首页工作台** | 「我的工作台」 | 平台槽位（待办、快捷入口、KPI）。`/Admin/Index` 仍是监控页；自定义墙在静态 **`/home`**。支持全屏（盖住壳层；暗色须不透明叠底）。 | ✅ OSC-26082815a1 |
 
 ```
 DefaultList 固定容器
@@ -848,42 +856,47 @@ Draft → Accepted → Implementing → Validating → Done
 
 - 矩阵现状列、功能清单回写、冒烟、harness；无大功能开发。另清理 §10.4 所列占位/死代码。
 
-### 总验收清单（2026-08-02 刷新；2026-08-18 复审）
+### 总验收清单（2026-08-02 刷新；2026-08-29 复审）
 
 - [x] 仅 `UseArcoVue`：Admin + 新业务实体自动 CRUD  
 - [x] **OSC-0002** 三实体后端已合并且带 XUnitTest  
 - [x] 布局/主题来自 UserProfile（OSC-0004）；列表视图/列来自 ViewProfile（OSC-0005+）  
-- [x] 六视图（table/tree/card/kanban/calendar/gantt）✅；右抽屉表单/历史 ✅；**评论 Tab 已随 OSC-0008 接线**
-- [ ] §3.1 矩阵 P0 目标：大部分达成；残留缺口 = i18n、组件测试（2026-08-18 复审确认仍缺，未做书面豁免）
-- [x] 功能清单可追溯；各 OSC 含测试设计与 verify 记录（21 个已归档 OSC 均有 verify.md 与测试；功能清单已回写 OSC 编号）  
-- [x] OSC 编号连续（0001~0006 已归档）、依赖方编号大于被依赖方  
+- [x] 六视图（table/tree/card/kanban/calendar/gantt）✅；右抽屉表单/历史/评论 ✅（OSC-0008）
+- [x] **页面仪表盘 Widget 协议**（OSC-2608280e9e）与 **首页用户>主角色>系统工作台**（OSC-26082815a1）已归档  
+- [x] 实体自动化（OSC-260815fa86）+ 站内信 Inbox + AI 浮窗（OSC-26081903c0）+ embed 分享短令牌  
+- [ ] §3.1 矩阵 P0 目标残留：i18n、组件测试（2026-08-29 仍缺，未做书面豁免）  
+- [ ] §8.5.4 查询收口（退役 SearchDrawer / 预定义查询；筛选全后端）— 已拍板未实施  
+- [ ] OSC-0010 流程设计器 / §8.5.5 流程运行时模块；OSC-0011 收口；OSC-0018 设计方案仍 Draft  
+- [x] 功能清单可追溯；已归档 OSC（含 2608280e9e / 15a1）均有 verify；编号规则见 §9.2  
 
-### 10.4 代码审查结论（2026-08-02；2026-08-18 复审）
+### 10.4 代码审查结论（2026-08-02；2026-08-29 复审）
 
-对照本方案对 NewLife.Cube.ArcoVue 全量代码审查（OSC-0001~0006 归档后），「ArcoVue 现状」列已按实测刷新（§3.1）。**2026-08-18 复审**（OSC-0001~0019 与 OSC-2608 号全部归档后）再次按代码实测刷新矩阵与差距表。
+对照本方案对 NewLife.Cube / NewLife.Cube.ArcoVue 全量审查。「ArcoVue 现状」列按实测刷新（§3.1）。**2026-08-29 复审**在 OSC-2608280e9e、OSC-26082815a1 与工作台全屏合入后再次刷新矩阵与差距表。
 
-**达成度高**：零配置 CRUD、6 视图工作台（table/tree/card/kanban/calendar/gantt）、UserProfile 双通道消费（布局/主题/密度）、ViewProfile 直接后端权威（命名视图/列/sort/chrome/mapping）、apps 两级覆写（整页+Section）、树形组装与 VTable hierarchy，均落地并带单测。**2026-08-18 实测：55 spec / 495 用例全过 + Playwright E2E 3 spec**。
+**达成度**：零配置 CRUD、六视图、UserProfile / ViewProfile、右抽屉三 Tab、实体自动化、条件填色与批量启停、AI 浮窗、**页面仪表盘 WidgetHost**、**三级自定义工作台（含全屏）**、embed 分享与站内信均已落地。**2026-08-29 实测：约 78 个 `web/src/**/*.spec.ts` + Playwright E2E 3 spec**（组件测试仍为 0）。
 
 **差距与后续规划**：
 
 | # | 差距 | 定位 | 建议后续 |
 |---|------|:---:|----------|
-| 1 | ~~评论 Tab 前端未接线~~（OSC-0008 已接线：api-core comment API + RecordDrawer 评论 Tab） | P0 | ✅ 已解决 |
-| 2 | ~~`UserProfile.workspace.defaultView / pageSize` 已建模未消费~~（OSC-0012：无 ViewProfile 时回落默认视图；页面级 PageSize 已按 typePath 接入，旧全局值仅作种子） | P0 | ✅ 已解决 |
-| 3 | ~~筛选记忆未持久化（filtersJson 预留未用；分组为占位）~~（OSC-0012：仅保存当前实体、当前命名视图的搜索条件；不做通用数据范围引擎。OSC-0015：筛选构建器条件组保存到 `NamedView.filter` 纯前端过滤；多级分组 ≤3 字段保存到 `NamedView.group`，table 用 VTable 原生 groupBy、树视图不允许分组） | P1 | ✅ 已解决 |
-| 4 | 列 frozen 仅 left/false，无 right（2026-08-18 复审仍未做） | P1 | 补充右冻结 |
-| 5 | ~~首页工作台角色层未实现~~（OSC-26082815a1：`HomeJson` + Parameter `Workbench.Role` + `/Cube/Workbench`；实体 ViewProfile 仍无角色层） | P1 | ✅ 已解决 |
-| 6 | 组件测试缺失（仅纯逻辑单测；2026-08-18 复审：495 单测全过但组件测试仍为 0） | P1 | `@vue/test-utils` + happy-dom 覆盖关键组件 |
-| 7 | ~~table/tree 分组入口 `Message.info` 占位~~（OSC-0015 已实现 GroupPopover 多级分组；排序走表头，工具栏排序按钮已移除）、`NamedViewsToolbar.vue` 无引用（2026-08-18 复审仍未清理） | P2 | 清理或实现 |
-| 8 | `ListTable` 树列标记排除条件写 `__check`（实际复选框列为 `__checked`），showCheckbox+hierarchy 同时开启时 tree:true 可能标错列（2026-08-18 复审仍未修） | P2 | 修正排除条件 |
-| 9 | i18n 未实现（矩阵目标 ✅ 但实际无文案外置；2026-08-18 复审仍缺，未做书面豁免） | P1 | 文案外置 |
-| 10 | ~~MFA UI~~（已实现）、~~E2E 冒烟~~（Playwright 3 spec）；FlowGram 设计器未做；流程运行时未建 | P1/P2 | 设计器 OSC-0010；运行时 §8.5.5 独立模块 |
-| 11 | ~~通用实体表单/列表/搜索元数据治理~~（OSC-0009 已落地） | P0 | ✅ 已解决；查询收口见 §8.5.4 |
-| 12 | ~~批量启停工具栏占位、AI 浮窗未接线、条件填色缺失~~（OSC-26081903c0） | P2 | ✅ 已解决；智能配色/日历甘特填色/会话历史另号 |
-| 13 | ~~Insight 仍为 e483 单图上限~~（OSC-2608280e9e：页面仪表盘 Widget 协议 + DashboardJson） | P1 | ✅ 已解决 |
+| 1 | ~~评论 Tab 前端未接线~~（OSC-0008） | P0 | ✅ 已解决 |
+| 2 | ~~`UserProfile.workspace.defaultView / pageSize` 未消费~~（OSC-0012） | P0 | ✅ 已解决 |
+| 3 | ~~筛选记忆 / 分组占位~~（OSC-0012 / 0015） | P1 | ✅ 已解决 |
+| 4 | 列 frozen 仅 left/false，无 right（2026-08-29 仍未做） | P1 | 补充右冻结 |
+| 5 | ~~首页工作台角色层未实现~~（OSC-26082815a1） | P1 | ✅ 已解决 |
+| 6 | 组件测试缺失（仅纯逻辑单测；约 78 spec，组件测试仍为 0） | P1 | `@vue/test-utils` + happy-dom 覆盖关键组件 |
+| 7 | `NamedViewsToolbar.vue` 无引用（2026-08-29 仍未清理） | P2 | 清理或实现 |
+| 8 | `ListTable` 树列排除条件写 `__check`（应为 `__checked`）（仍未修） | P2 | 修正排除条件 |
+| 9 | i18n 未实现（矩阵目标 ✅ 但无文案外置） | P1 | 文案外置 |
+| 10 | FlowGram 设计器未做；流程运行时未建 | P1/P2 | 设计器 OSC-0010；运行时 §8.5.5 独立模块 |
+| 11 | ~~通用实体表单/列表/搜索元数据治理~~（OSC-0009） | P0 | ✅ 已解决；查询收口见 §8.5.4 |
+| 12 | ~~批量启停、AI 浮窗、条件填色~~（OSC-26081903c0） | P2 | ✅ 已解决 |
+| 13 | ~~Insight 单图上限~~（OSC-2608280e9e） | P1 | ✅ 已解决 |
 | 14 | 查询双轨（SearchDrawer + 筛选；无法下推则当前页假筛选） | P1 | §8.5.4 退役搜索、筛选全后端 |
+| 15 | OSC-0018 实体界面自定义仍为 Draft；OSC-2608273d95 角色 DataScope 仍为 Draft | P1 | 设计定稿后再开执行号 |
+| 16 | ~~工作台无全屏 / 暗色全屏顶栏透出~~（2026-08-29：全屏按钮 + bg-1 叠 fill-2；列表全屏同步） | P2 | ✅ 已解决 |
 
-**文档一致性修正**：§7 与 §6.3 的「左侧抽屉」表述与本方案 §8.1 契约（`placement="right"`）及实际实现（右侧抽屉）不一致，本审查统一为「右侧抽屉」，并保留「飞书多维表为左抽屉」的范式差异说明。
+**文档一致性修正**：§7 与 §6.3 的「左侧抽屉」表述与本方案 §8.1 契约（`placement="right"`）及实际实现（右侧抽屉）不一致，统一为「右侧抽屉」，并保留「飞书多维表为左抽屉」的范式差异说明。开篇「深度 15%–35%」已于 2026-08-29 废止。
 
 ---
 
@@ -947,11 +960,17 @@ Draft → Accepted → Implementing → Validating → Done
 | OSC-260813c3e9 ✅ | 页面 TS 抽离与协作编号（OSC-YYMMDDxxxx 规则） | 协作治理 | — |
 | OSC-260815fa86 ✅ | 实体增删改自动化（GraphJson + C# AutomationExecutor；非 FlowGram 运行时） | Cube + ArcoVue | OSC-0003 |
 | OSC-2608178bdb ✅ | 列表自定义链接分流放置（方案 E：Url/dataAction 按单元格 vs 操作列分流） | 仅 ArcoVue | OSC-0007 |
+| OSC-26081903c0 ✅ | AI 助手浮窗 + 批量启停 + 条件填色 | Cube + ArcoVue | OSC-0004 |
+| OSC-260819e483 ✅ | 元数据契约与只读投影（Required/stat/筛选 AST 复用/PATCH 等） | Cube + ArcoVue | OSC-0009 |
+| OSC-26082097c1 ✅ | 字段控件规范化 | 仅 ArcoVue | OSC-0003 |
+| OSC-260824fc7c ✅ | 用户角色菜单角色授权 | Cube + ArcoVue | — |
+| OSC-2608280e9e ✅ | 页面仪表盘 Widget 协议（DashboardJson + WidgetHost） | Cube + ArcoVue | OSC-0016 |
+| OSC-26082815a1 ✅ | 首页自定义工作台（用户 > 主角色 > 系统） | Cube + ArcoVue | OSC-0002、OSC-2608280e9e |
 
-截至 2026-08-18 已归档 21 号（0001~0019 中 0010/0011 从未创建、0018 未完成，另有 OSC-2608 号五单）。剩余待办：**OSC-0010** 流程设计器（§8.5.5）、**OSC-0011** 收口、**OSC-0018** 实体界面自定义设计方案（Draft）、i18n、组件测试、**§8.5** 查询收口 / 流程运行时模块（首页工作台 OSC-26082815a1、Insight OSC-2608280e9e 已交付）。
+截至 **2026-08-29** 已归档 **27** 号（0001~0019 中 0010/0011 从未创建、0018 仍为 Draft；OSC-2608 号含 0e9e/15a1 等）。进行中/草稿：`OSC-0018`、`OSC-2608273d95`（角色 DataScope）。剩余待办：**OSC-0010** 流程设计器、**OSC-0011** 收口、**§8.5.4** 查询收口、i18n、组件测试、流程运行时模块。
 
 ---
 
 ## 14. 小结
 
-本方案将 NewLife.Cube.ArcoVue 定位为 **WebAPI 版企业中后台默认皮肤**。默认容器之上的工作台、页面仪表盘与流程引擎见 **§8.5**。协作增量在 **`NewLife.Cube.ArcoVue/openspec/`**（五壳 `openspec-*` 编排 NewLife.Skills；状态 `Draft → Accepted → Implementing → Validating → Done`，分支 `Rejected`；仅 Accepted/Implementing 可执行；触及前后端代码须跑单测，验收须本阶段新增单测全过且构建无错误；验收固定 audit→review→doc-sync）；三实体 OSC-0002 写入 Cube.xml 生成；新变更编号 `OSC-YYMMDDxxxx`（历史 `OSC-00xx` 豁免）。
+本方案将 NewLife.Cube.ArcoVue 定位为 **WebAPI 版企业中后台默认皮肤**。截至 2026-08-29：登录/多租户/MFA、side·top·mix·embed 壳、六视图列表、右抽屉、实体自动化与站内信、AI 浮窗、页面仪表盘 Widget 协议与用户>主角色>系统工作台均已归档；主要未收口项为 **§8.5.4 查询双轨退役**、FlowGram/流程运行时、i18n 与组件测试。协作增量在 **`NewLife.Cube.ArcoVue/openspec/`**（五壳 `openspec-*`；状态机与测试门禁见 §9）；三实体 OSC-0002 写入 Cube.xml 生成；新变更编号 `OSC-YYMMDDxxxx`（历史 `OSC-00xx` 豁免）。

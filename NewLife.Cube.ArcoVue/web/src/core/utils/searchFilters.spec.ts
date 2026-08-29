@@ -104,6 +104,25 @@ describe('parseUrlSearch', () => {
   });
 });
 
+describe('parseUrlViewFilter / buildDrillViewFilter', () => {
+  it('parses viewFilter JSON from query', async () => {
+    const { parseUrlViewFilter, buildDrillViewFilter } = await import('./searchFilters');
+    const vf = buildDrillViewFilter('Kind', '1');
+    expect(vf).toEqual({
+      logic: 'all',
+      conditions: [{ field: 'Kind', op: 'eq', value: '1' }],
+    });
+    expect(
+      parseUrlViewFilter({ viewFilter: JSON.stringify(vf) }),
+    ).toEqual(vf);
+    expect(parseUrlViewFilter({})).toBeNull();
+    expect(buildDrillViewFilter('Kind', '(空)')).toEqual({
+      logic: 'all',
+      conditions: [{ field: 'Kind', op: 'isNull' }],
+    });
+  });
+});
+
 describe('resolveStatEntries', () => {
   it('returns entries with non-null values only', () => {
     expect(resolveStatEntries({ Total: 10, Null: null, Empty: undefined, Zero: 0 })).toEqual([

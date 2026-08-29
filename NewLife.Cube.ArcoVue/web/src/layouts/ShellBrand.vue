@@ -56,11 +56,15 @@ const nameText = computed(() =>
   gap: 0;
 }
 .shell-brand__logo {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   object-fit: contain;
   flex-shrink: 0;
   border-radius: 4px;
+}
+.shell-brand--collapsed .shell-brand__logo {
+  width: 28px;
+  height: 28px;
 }
 .shell-brand__name {
   overflow: hidden;

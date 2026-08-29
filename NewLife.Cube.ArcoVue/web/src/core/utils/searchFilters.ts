@@ -5,7 +5,12 @@
  */
 import type { FieldMeta } from '@/core/types/field';
 import { getValueByKey } from '@/core/utils/url';
-import type { ViewFilter, ViewFilterCondition } from '@/core/utils/viewProfile';
+import {
+  emptyViewFilter,
+  normalizeFilter,
+  type ViewFilter,
+  type ViewFilterCondition,
+} from '@/core/utils/viewProfile';
 
 /** 保留搜索键（OSC-0016）：Q=全字段模糊，dtStart/dtEnd=主时间区间（后端 Search(Pager) 内置通用参数） */
 export const RESERVED_SEARCH_KEYS: readonly string[] = ['Q', 'dtStart', 'dtEnd'];
@@ -73,6 +78,35 @@ export function parseUrlSearch(
     out[k] = v;
   }
   return out;
+}
+
+/**
+ * 从路由 query 解析 viewFilter（部件下钻 / 分享链接）。
+ * 有合法条件则返回；缺失或非法返回 null（调用方勿覆盖已有本地筛选）。
+ */
+export function parseUrlViewFilter(query: Record<string, unknown> | null | undefined): ViewFilter | null {
+  if (!query) return null;
+  const raw = query.viewFilter ?? query.ViewFilter;
+  if (raw == null || raw === '') return null;
+  const s = Array.isArray(raw) ? String(raw[0] ?? '') : String(raw);
+  if (!s.trim()) return null;
+  try {
+    const parsed = normalizeFilter(JSON.parse(s) as unknown);
+    return parsed.conditions.length ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+/** 构造单字段等值（或空值）下钻用的 viewFilter */
+export function buildDrillViewFilter(field: string, key: string): ViewFilter {
+  const f = field.trim();
+  if (!f) return emptyViewFilter();
+  const k = (key ?? '').trim();
+  if (!k || k === '(空)' || k.toLowerCase() === 'null') {
+    return { logic: 'all', conditions: [{ field: f, op: 'isNull' }] };
+  }
+  return { logic: 'all', conditions: [{ field: f, op: 'eq', value: k }] };
 }
 
 /**
