@@ -33,7 +33,7 @@ type RequestFn = <T>(config: AxiosRequestConfig) => Promise<ApiResponse<T>>;
 export function createUserApi(request: RequestFn) {
   return {
     /** 密码登录（传入 category 可切换：手机验证码登录/邮箱验证码登录） */
-    login: (data: { username: string; password: string; category?: AuthCategory; challengeId?: string; captchaId?: string; captchaCode?: string }) =>
+    login: (data: { username: string; password: string; category?: AuthCategory; challengeId?: string; captchaId?: string; captchaCode?: string; remember?: boolean }) =>
       request<LoginResult>({ url: '/Auth/Login', method: 'post', data }),
 
     /** 发送验证码 */
@@ -189,6 +189,10 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
     /** 删除单条 */
     remove: (type: string, id: number | string) =>
       request<unknown>({ url: type, method: 'delete', params: { id } }),
+
+    /** 恢复软删除单条（后端 Delete 支持 restore=true 参数） */
+    restore: (type: string, id: number | string) =>
+      request<unknown>({ url: type, method: 'delete', params: { id, restore: true } }),
 
     /**
      * 批量删除，默认使用重复参数 id=1&id=2 （文档标准）。

@@ -39,4 +39,43 @@ test.describe('登录页', () => {
     await expect(page.getByRole('button', { name: '注册账号' })).toBeVisible();
     await expect(page.getByRole('button', { name: '忘记密码' })).toBeVisible();
   });
+
+  test('保存密码勾选框可见，勾选后登录请求携带 remember=true', async ({ page }) => {
+    await page.goto('/login');
+    const remember = page.getByRole('checkbox', { name: '保存密码' });
+    await expect(remember).toBeVisible();
+
+    // 拦截 /Auth/Login 请求体，验证勾选框已接通 remember 参数（无需真实登录成功）
+    let loginBody: Record<string, unknown> | undefined;
+    page.on('request', (req) => {
+      if (req.url().includes('/Auth/Login') && req.method() === 'POST') loginBody = req.postDataJSON();
+    });
+
+    await remember.check();
+    await expect(remember).toBeChecked();
+
+    // 用不存在的用户名触发登录请求（后端会拒绝，但请求体已可断言）
+    await page.getByPlaceholder('用户名 / 邮箱 / 手机号').fill('no-such-user');
+    await page.getByPlaceholder('请输入密码').fill('wrong-password');
+    await page.getByRole('button', { name: '登 录' }).click();
+
+    await expect.poll(() => loginBody, { timeout: 8000 }).toBeTruthy();
+    expect(loginBody!.remember).toBe(true);
+  });
+
+  test('未勾选保存密码时登录请求不带 remember', async ({ page }) => {
+    await page.goto('/login');
+
+    let loginBody: Record<string, unknown> | undefined;
+    page.on('request', (req) => {
+      if (req.url().includes('/Auth/Login') && req.method() === 'POST') loginBody = req.postDataJSON();
+    });
+
+    await page.getByPlaceholder('用户名 / 邮箱 / 手机号').fill('no-such-user');
+    await page.getByPlaceholder('请输入密码').fill('wrong-password');
+    await page.getByRole('button', { name: '登 录' }).click();
+
+    await expect.poll(() => loginBody, { timeout: 8000 }).toBeTruthy();
+    expect(loginBody!.remember).toBeFalsy();
+  });
 });

@@ -9,7 +9,7 @@
  * 5. 账号未激活时展示重发激活入口
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Button, Form, Input, Segmented, Spin, Tabs, message } from 'antd';
+import { Alert, Button, Checkbox, Form, Input, Segmented, Spin, Tabs, message } from 'antd';
 import type { InputRef } from 'antd';
 import { AppstoreOutlined, LockOutlined, SafetyOutlined, ThunderboltOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -101,7 +101,7 @@ export default function LoginPage() {
 
       const res =
         mode === 'password'
-          ? await useAuthStore.getState().login(values.username, values.password, captchaId, captchaCode)
+          ? await useAuthStore.getState().login(values.username, values.password, captchaId, captchaCode, !!values.remember)
           : await useAuthStore.getState().loginByCode(values.username, values.code, (mode === 'sms' ? 'mobile' : 'mail') as AuthCategory, captchaId, captchaCode);
 
       const data = res.data as LoginResult | undefined;
@@ -306,6 +306,13 @@ export default function LoginPage() {
                           />
                         )}
                       </div>
+                    </Form.Item>
+                  )}
+
+                  {/* 保存密码（记住登录状态）：后端按 remember 把令牌有效期延长到 365 天，重开系统免登录 */}
+                  {mode === 'password' && (
+                    <Form.Item name="remember" valuePropName="checked" className="cube-auth-remember">
+                      <Checkbox>保存密码</Checkbox>
                     </Form.Item>
                   )}
 

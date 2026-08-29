@@ -29,6 +29,7 @@ export default {
     title: '登录',
     username: '用户名',
     password: '密码',
+    remember: '保存密码',
     submit: '登录',
     register: '注册',
     forgotPassword: '忘记密码',

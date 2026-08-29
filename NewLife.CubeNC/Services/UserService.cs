@@ -230,7 +230,10 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         }
 
         // 先颁发令牌，JWT 缓存在 context.Items["jwtToken"]
-        var tokens = httpContext.IssueLoginToken(user, TimeSpan.FromSeconds(set.TokenExpire));
+        // 记住登录状态（Remember）：JWT 有效期与 Cookie 一致延长到 365 天，
+        // 前端（SPA 存 localStorage）在有效期内重开系统免登录；令牌带 jti，退出登录仍可吊销
+        var tokenExpire = remember ? TimeSpan.FromDays(365) : TimeSpan.FromSeconds(set.TokenExpire);
+        var tokens = httpContext.IssueLoginToken(user, tokenExpire);
 
         // 再存 Cookie（优先取 Items 中的 JWT，即包含 jti 的那个）
         var provider = ManageProvider.Provider;

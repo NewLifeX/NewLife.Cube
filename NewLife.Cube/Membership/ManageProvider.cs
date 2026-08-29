@@ -115,7 +115,9 @@ public class ManageProvider2 : ManageProvider
         if (context != null && user != null)
         {
             // 先颁发令牌（含 UserToken + JWT(jti)），JWT 缓存在 context.Items
-            context.IssueLoginToken(user, TimeSpan.FromSeconds(set.TokenExpire));
+            // 记住登录状态（Remember）：JWT 有效期与 Cookie 一致延长到 365 天，前端重开系统免登录
+            var tokenExpire = remember ? TimeSpan.FromDays(365) : TimeSpan.FromSeconds(set.TokenExpire);
+            context.IssueLoginToken(user, tokenExpire);
         }
 
         // 保存Cookie（优先取 Items 中带 jti 的 JWT）

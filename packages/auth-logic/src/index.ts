@@ -55,9 +55,10 @@ export class AuthLogic {
    *
    * @param captchaId  图片验证码 ID（当 LoginConfig.login.captcha=true 时需传入）
    * @param captchaCode 图片验证码答案
+   * @param remember  记住登录状态（保存密码）。true 时后端把令牌有效期延长到 365 天，重开系统免登录
    * @returns 若服务端要求 MFA，返回值中 data 为 null，需从 message 提取 mfaToken 继续二步验证
    */
-  async login(username: string, password: string, captchaId?: string, captchaCode?: string) {
+  async login(username: string, password: string, captchaId?: string, captchaCode?: string, remember?: boolean) {
     let finalPassword = password;
     let challengeId: string | undefined;
     try {
@@ -76,6 +77,7 @@ export class AuthLogic {
       ...(challengeId ? { challengeId } : {}),
       ...(captchaId ? { captchaId } : {}),
       ...(captchaCode ? { captchaCode } : {}),
+      ...(remember ? { remember } : {}),
     });
     if (res.data?.accessToken) {
       this.api.tokenManager.setToken(res.data.accessToken);

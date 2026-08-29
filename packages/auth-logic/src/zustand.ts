@@ -20,8 +20,9 @@ export interface ZustandAuthState extends AuthState {
   /**
    * 密码登录（自动尝试 RSA-OAEP Challenge 加密）。
    * 返回完整响应供调用方检查 pendingActivation / mfa_required 等。
+   * @param remember 记住登录状态（保存密码）。true 时后端把令牌有效期延长到 365 天，重开系统免登录
    */
-  login: (username: string, password: string, captchaId?: string, captchaCode?: string) => Promise<ApiResponse<LoginResult>>;
+  login: (username: string, password: string, captchaId?: string, captchaCode?: string, remember?: boolean) => Promise<ApiResponse<LoginResult>>;
   /** 验证码登录（手机/邮箱，category 为 'mobile' | 'mail'） */
   loginByCode: (username: string, code: string, category: AuthCategory, captchaId?: string, captchaCode?: string) => Promise<ApiResponse<LoginResult>>;
   logout: () => Promise<void>;
@@ -48,8 +49,8 @@ export function createZustandAuthStore(api: CubeApi): UseBoundStore<StoreApi<Zus
 
       isLoggedIn: () => !!api.tokenManager.getToken(),
 
-      login: (username, password, captchaId, captchaCode) =>
-        logic.login(username, password, captchaId, captchaCode),
+      login: (username, password, captchaId, captchaCode, remember) =>
+        logic.login(username, password, captchaId, captchaCode, remember),
 
       loginByCode: (username, code, category, captchaId, captchaCode) =>
         logic.loginByCode(username, code, category, captchaId, captchaCode),

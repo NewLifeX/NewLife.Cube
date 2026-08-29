@@ -29,6 +29,7 @@ export default {
     title: 'Login',
     username: 'Username',
     password: 'Password',
+    remember: 'Save password',
     submit: 'Sign in',
     register: 'Register',
     forgotPassword: 'Forgot password',
