@@ -69,7 +69,7 @@ export default function ForgotPasswordPage() {
       ]}
       footer="©2002-2026 NewLife"
     >
-      <Form form={form} layout="vertical" requiredMark={false}>
+      <Form form={form} layout="vertical" requiredMark={false} onFinish={() => void (step === 'input' ? handleSendCode() : handleReset())}>
         {step === 'input' && (
           <>
             <Form.Item label="找回渠道">
@@ -90,7 +90,7 @@ export default function ForgotPasswordPage() {
             >
               <Input size="large" placeholder={channel === 'mail' ? '请输入邮箱' : '请输入手机号'} />
             </Form.Item>
-            <Button type="primary" block size="large" loading={sending} onClick={() => void handleSendCode()}>
+            <Button type="primary" block size="large" htmlType="submit" loading={sending}>
               {countdown > 0 ? `${countdown}s 后重发` : '发送验证码'}
             </Button>
           </>
@@ -130,7 +130,7 @@ export default function ForgotPasswordPage() {
             >
               <Input.Password size="large" placeholder="请再次输入新密码" autoComplete="new-password" />
             </Form.Item>
-            <Button type="primary" block size="large" loading={submitting} onClick={() => void handleReset()}>
+            <Button type="primary" block size="large" htmlType="submit" loading={submitting}>
               重置密码
             </Button>
           </>

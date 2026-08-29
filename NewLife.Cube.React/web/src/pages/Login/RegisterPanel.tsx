@@ -98,7 +98,7 @@ export default function RegisterPanel({ config, onBack }: RegisterPanelProps) {
   };
 
   return (
-    <Form form={form} layout="vertical" requiredMark={false} style={{ maxWidth: 380, margin: '0 auto' }}>
+    <Form form={form} layout="vertical" requiredMark={false} style={{ maxWidth: 380, margin: '0 auto' }} onFinish={() => void handleSubmit()}>
       {/* 注册方式切换 */}
       {(canPassword || canSms || canMail) && (
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
@@ -194,7 +194,7 @@ export default function RegisterPanel({ config, onBack }: RegisterPanelProps) {
         </Form.Item>
       )}
 
-      <Button type="primary" block size="large" loading={submitting} onClick={() => void handleSubmit()} style={{ marginTop: 8 }}>
+      <Button type="primary" block size="large" htmlType="submit" loading={submitting} style={{ marginTop: 8 }}>
         注 册
       </Button>
       <div style={{ textAlign: 'center', marginTop: 12 }}>

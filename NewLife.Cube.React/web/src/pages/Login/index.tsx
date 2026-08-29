@@ -8,8 +8,9 @@
  * 4. MFA 二步验证（登录返回 mfa_required 时进入）
  * 5. 账号未激活时展示重发激活入口
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Button, Form, Input, Segmented, Spin, Tabs, message } from 'antd';
+import type { InputRef } from 'antd';
 import { AppstoreOutlined, LockOutlined, SafetyOutlined, ThunderboltOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import AuthLayout from '@/components/auth/AuthLayout';
@@ -33,6 +34,7 @@ function extractMfaToken(message?: string): string {
 
 export default function LoginPage() {
   const [form] = Form.useForm();
+  const passwordRef = useRef<InputRef>(null);
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const { config, loading, error: configError } = useLoginConfig();
@@ -232,7 +234,7 @@ export default function LoginPage() {
               key: 'login',
               label: '登 录',
               children: (
-                <Form form={form} layout="vertical" requiredMark={false} initialValues={{ username: params.get('username') ?? '' }}>
+                <Form form={form} layout="vertical" requiredMark={false} initialValues={{ username: params.get('username') ?? '' }} onFinish={() => void handleLogin()}>
                   {/* 登录方式切换 */}
                   {(showSms || showMail) && (
                     <Segmented
@@ -248,12 +250,23 @@ export default function LoginPage() {
                   )}
 
                   <Form.Item name="username" label={mode === 'password' ? '用户名' : mode === 'sms' ? '手机号' : '邮箱'} rules={[{ required: true, message: '请输入' }]}>
-                    <Input size="large" prefix={<UserOutlined />} placeholder={mode === 'password' ? '用户名 / 邮箱 / 手机号' : mode === 'sms' ? '手机号' : '邮箱'} autoComplete="username" />
+                    <Input
+                      size="large"
+                      prefix={<UserOutlined />}
+                      placeholder={mode === 'password' ? '用户名 / 邮箱 / 手机号' : mode === 'sms' ? '手机号' : '邮箱'}
+                      autoComplete="username"
+                      onPressEnter={(e) => {
+                        // 用户名框 Enter 不提交（密码为空），焦点跳密码框；Tab 走浏览器原生顺序
+                        e.preventDefault();
+                        passwordRef.current?.focus();
+                      }}
+                    />
                   </Form.Item>
 
                   {mode === 'password' ? (
                     <Form.Item name="password" label="密码" rules={[{ required: true, message: '请输入密码' }]}>
                       <Input.Password
+                        ref={passwordRef}
                         size="large"
                         prefix={<LockOutlined />}
                         placeholder="请输入密码"
@@ -296,7 +309,7 @@ export default function LoginPage() {
                     </Form.Item>
                   )}
 
-                  <Button type="primary" block size="large" loading={submitting} onClick={() => void handleLogin()}>
+                  <Button type="primary" block size="large" htmlType="submit" loading={submitting}>
                     登 录
                   </Button>
 
