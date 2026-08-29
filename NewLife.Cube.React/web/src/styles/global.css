@@ -82,7 +82,12 @@ select {
   overflow: hidden;
 }
 
+/* 必须为确定高度（height:100%），否则 .cube-main-layout 的 height:100% 无法解析为视口高度，
+   内容超出一屏后被 #root 裁剪，列表页无法向下/横向滚动（滚动链依赖确定高度）。
+   antd <App> 会额外渲染 .ant-app 包裹层（默认高度 auto），同样需固定高度才能接力 % 链 */
+.ant-app,
 .cube-app {
+  height: 100%;
   min-height: 100%;
 }
 
