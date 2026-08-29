@@ -33,15 +33,27 @@ export default function Uploader({ value, onChange, type, recordId, image, place
     setUploading(true);
     try {
       const res = await api.page.uploadFile(type, file, { id: Number(recordId ?? 0) });
-      const url = (res.data as { url?: string })?.url ?? '';
+      const data = (res?.data ?? {}) as Record<string, unknown>;
+      // 后端可能以 HTTP 200 + error/code 字段返回业务错误（如 User 头像仅限当前登录用户）
+      if (data.error || (typeof data.code === 'number' && data.code !== 0)) {
+        message.error(String(data.error ?? data.message ?? '上传失败'));
+        return false;
+      }
+      // 兼容字段名差异：旧版返回 url，新版返回 filePath
+      const url = String(data.url ?? data.filePath ?? '');
+      if (!url) {
+        message.error('上传失败：未返回文件地址');
+        return false;
+      }
       onChange?.(url);
       message.success('上传成功');
+      return false;
     } catch {
       message.error('上传失败');
+      return false;
     } finally {
       setUploading(false);
     }
-    return false; // 阻止 antd 默认上传
   };
 
   if (image) {

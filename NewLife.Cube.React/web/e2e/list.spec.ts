@@ -25,6 +25,11 @@ test.describe('通用列表页（/Admin/User）', () => {
   test('搜索按关键词过滤', async ({ page }) => {
     await page.goto('/Admin/User');
     await page.waitForSelector('.ant-table-tbody tr', { timeout: TABLE_TIMEOUT });
+    // 等待加载完成（antd 加载中可能只有占位行），避免 rowsBefore 在数据未就绪时取样
+    await page
+      .waitForFunction(() => !document.querySelector('.ant-spin-spinning'), undefined, { timeout: 10000 })
+      .catch(() => undefined);
+    await page.waitForTimeout(300);
     const rowsBefore = await page.locator('.ant-table-tbody tr').count();
     const searchInput = page.locator('.ant-card input[type="text"], .ant-card input:not([type])').first();
     if (await searchInput.isVisible().catch(() => false)) {

@@ -57,7 +57,7 @@ function CellRenderer({ field, value }: { field: FieldMapping; value: unknown })
     case 'color':
       return raw ? (
         <Tooltip title={String(raw)}>
-          <span style={{ display: 'inline-block', width: 18, height: 18, borderRadius: 4, background: String(raw), border: '1px solid #ddd', verticalAlign: 'middle' }} />
+          <span style={{ display: 'inline-block', width: 18, height: 18, borderRadius: 4, background: String(raw), border: '1px solid var(--cube-border-soft)', verticalAlign: 'middle' }} />
         </Tooltip>
       ) : (
         '-'

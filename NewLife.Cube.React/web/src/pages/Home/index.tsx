@@ -216,7 +216,7 @@ export default function HomePage() {
           <Card className="cube-home-card" title="性能监控" size="small" extra={<Tag color="blue" bordered={false}>5s 刷新</Tag>}>
             <div ref={chartRef} className="cube-home-monitor-chart" />
             {monitor.xs.length < 2 && (
-              <div style={{ textAlign: 'center', color: '#94a3b8', padding: '20px 0' }}>等待监控数据…</div>
+              <div style={{ textAlign: 'center', color: 'var(--cube-text-muted)', padding: '20px 0' }}>等待监控数据…</div>
             )}
           </Card>
         </div>

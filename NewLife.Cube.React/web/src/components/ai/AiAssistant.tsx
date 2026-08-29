@@ -28,6 +28,11 @@ interface ToolCard {
 
 let seq = 0;
 
+/** HTML 转义，防止用户输入被当作标记注入（用户消息回显时使用） */
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+}
+
 /** 从 /Cube/GetAiConfig 获取 Mermaid CDN 地址（失败回退公共 CDN） */
 async function fetchMermaidUrl(): Promise<string> {
   try {
@@ -87,7 +92,8 @@ export default function AiAssistant() {
     setInput('');
     setStreaming(true);
 
-    const userMsg: ChatMsg = { id: ++seq, type: 'user', html: '' };
+    // 用户消息需回显文本（转义后渲染），否则气泡为空、发送无反馈
+    const userMsg: ChatMsg = { id: ++seq, type: 'user', html: escapeHtml(text) };
     const assistMsg: ChatMsg = { id: ++seq, type: 'assistant', html: '' };
     setMessages((prev) => [...prev, userMsg, assistMsg]);
     let full = '';
@@ -157,14 +163,14 @@ export default function AiAssistant() {
           } else if (json.type === 'tool_call_error') {
             handleToolEvent('error', json);
           } else if (json.type === 'error') {
-            updateAssist(`<span style="color:#c62828">⚠️ ${String(json.message ?? 'AI 调用失败')}</span>`);
+            updateAssist(`<span style="color:var(--cube-danger)">⚠️ ${String(json.message ?? 'AI 调用失败')}</span>`);
             scrollBottom();
           }
         }
       }
     } catch (err) {
       updateAssist(
-        `<span style="color:#c62828">⚠️ ${(err as Error)?.message || '请求失败'}</span><br/><small>请确认 AI 服务已启用（系统设置中开启 AISwitch）</small>`,
+        `<span style="color:var(--cube-danger)">⚠️ ${(err as Error)?.message || '请求失败'}</span><br/><small>请确认 AI 服务已启用（系统设置中开启 AISwitch）</small>`,
       );
     } finally {
       setTools((prev) => prev.map((t) => (t.status === 'start' ? { ...t, status: 'error', name: t.name + '（中断）' } : t)));

@@ -25,7 +25,8 @@ test.describe('登录页', () => {
 
   test('错误密码提示登录失败', async ({ page }) => {
     await page.goto('/login');
-    await page.getByPlaceholder('用户名 / 邮箱 / 手机号').fill('admin');
+    // 用不存在的用户名验证失败提示：避免用 admin 触发登录风控（同用户失败计数达阈值会封禁，影响后续用例重登）
+    await page.getByPlaceholder('用户名 / 邮箱 / 手机号').fill('no-such-user');
     await page.getByPlaceholder('请输入密码').fill('wrong-password');
     await page.getByRole('button', { name: '登 录' }).click();
     // 登录失败不跳转，仍在登录页

@@ -232,7 +232,7 @@ export default function LovSelectTable({
         placeholder={placeholder}
         disabled={disabled}
         onClick={() => !disabled && setOpen(true)}
-        suffix={<SearchOutlined style={{ color: 'rgba(0,0,0,0.45)' }} />}
+        suffix={<SearchOutlined style={{ color: 'var(--cube-text-secondary)' }} />}
         style={{ width: '100%', cursor: disabled ? 'not-allowed' : 'pointer', ...style }}
       />
       <Modal

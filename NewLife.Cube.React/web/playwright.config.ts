@@ -15,6 +15,8 @@ export default defineConfig({
   testDir: './e2e',
   timeout: 30000,
   fullyParallel: false,
+  // 限制并发 workers：7081 一体站点并发压力过大时 list.spec 等用例偶发时序失败（单独跑均通过）
+  workers: 4,
   retries: 0,
   reporter: [['list']],
   use: {

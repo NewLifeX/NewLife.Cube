@@ -110,7 +110,7 @@ export default function ConfigPage({ type, title }: ConfigPageProps) {
   if (error) {
     return (
       <Card title={title || '配置'} size="small">
-        <div style={{ color: '#c62828', padding: 24, textAlign: 'center' }}>{error}</div>
+        <div style={{ color: 'var(--cube-danger)', padding: 24, textAlign: 'center' }}>{error}</div>
       </Card>
     );
   }
