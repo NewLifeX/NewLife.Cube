@@ -1,6 +1,10 @@
 import { createI18n } from 'vue-i18n';
 import zhCN from './locales/zh-CN';
 import enUS from './locales/en-US';
+/* Element Plus 组件（含 ElMessageBox / ElPagination 等）默认英文文案，
+   必须显式传入与框架 i18n 一致的 locale 才会显示「确定 / 取消」 */
+import epZhCn from 'element-plus/es/locale/lang/zh-cn';
+import epEnUs from 'element-plus/es/locale/lang/en';
 
 // 获取浏览器语言设置
 function getBrowserLanguage() {
@@ -45,6 +49,21 @@ export function setLanguage(lang: typeof i18n.global.locale.value) {
 // 获取当前语言
 export function getCurrentLanguage() {
   return i18n.global.locale.value;
+}
+
+/** 框架语言代码 → Element Plus locale 对象 */
+export const elementPlusLocales = {
+  'zh-CN': epZhCn,
+  'en-US': epEnUs,
+} as const;
+
+/**
+ * 取当前语言对应的 Element Plus locale。
+ * 未知语言回退中文（与 i18n 的 fallbackLocale 一致）。
+ */
+export function getEpLocale() {
+  const lang = getCurrentLanguage();
+  return elementPlusLocales[lang as keyof typeof elementPlusLocales] ?? epZhCn;
 }
 
 // 创建一个与 react-intl-universal 兼容的接口

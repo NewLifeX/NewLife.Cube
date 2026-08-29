@@ -107,7 +107,9 @@ function handleUnauthorized(url?: string) {
     user: { getUserInfoAxiosConfig },
   } = getConfig();
 
-  let AUTH_SELF_URL = '/Admin/User/Info';
+  // 兜底默认值：正常由 getConfig().user.getUserInfoAxiosConfig() 动态覆盖。
+  // 与 defaultConfig 保持一致指向外层统一用户接口 /Auth/Info，避免任何漏配场景回退到旧区域接口。
+  let AUTH_SELF_URL = '/Auth/Info';
   if (typeof getUserInfoAxiosConfig === 'function') {
     const cfg = getUserInfoAxiosConfig();
     if (!(cfg instanceof Promise)) {

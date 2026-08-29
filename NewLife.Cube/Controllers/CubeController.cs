@@ -409,8 +409,11 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
+    [HttpGet("{id}")]
     public virtual ActionResult Avatar(Int32 id)
     {
+        // 如果id为空，尝试从查询路径获取
+        if (id <= 0) id = Request.Query["id"].ToInt();
         if (id <= 0) throw new ArgumentNullException(nameof(id));
 
         var user = ManageProvider.Provider?.FindByID(id) as IUser;
@@ -571,7 +574,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         return Json(0, null, rs);
     }
 
-    /// <summary>获取菜单树</summary>
+    /// <summary>获取菜单树（按当前登录用户角色过滤，仅返回该用户有权访问的菜单）</summary>
     /// <param name="module">模块名称，如 Admin；为空时返回全部菜单</param>
     /// <returns>菜单树</returns>
     [HttpGet]
@@ -599,12 +602,23 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         // 如果顶级只有一层，并且至少有三级目录，则提升一级
         if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) { menus = menus[0].Childs; }
 
+        // 按当前用户角色过滤菜单：
+        // allowedIds       —— 当前用户角色可访问的菜单ID集合（来自各角色的 Resources）
+        // permissionedIds —— 被纳入权限系统的菜单ID集合（任一角色分配过即视为“已声明所需权限”）
+        // 规则：未声明所需权限的菜单默认有权限（对所有登录用户可见）；已声明的仅对拥有该权限的角色可见
+        var user = ManageProvider.Provider.Current as IUser;
+        var allowedIds = user?.Roles?.SelectMany(r => r.Resources).ToArray() ?? [];
+        var permissionedIds = Role.FindAll().SelectMany(r => r.Resources).ToArray();
+
+        Boolean IsAccessible(IMenu m) => m.Visible && (allowedIds.Contains(m.ID) || !permissionedIds.Contains(m.ID));
+
+        menus = menus.Where(IsAccessible).ToList();
+
         var menuTree = ViewModels.MenuTree.GetMenuTree(pMenuTree =>
         {
-            // 左侧菜单展示所有可见菜单，不按角色权限过滤
-            // 权限控制在 Controller/Action 层通过 EntityAuthorizeAttribute 实现
+            // 递归按当前用户角色过滤子菜单
             var parent = fact.FindByID(pMenuTree.ID);
-            var subMenus = parent?.Childs?.Where(m => m.Visible).ToList() as IList<IMenu> ?? [];
+            var subMenus = parent?.Childs?.Where(IsAccessible).ToList() as IList<IMenu> ?? [];
             return subMenus;
         }, list =>
         {

@@ -405,7 +405,7 @@ onMounted(() => {
   border: none;
   border-radius: 12px;
   background: linear-gradient(135deg, var(--el-color-primary), var(--el-color-primary-dark-2));
-  color: #fff;
+  color: var(--el-color-white);
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 4px;

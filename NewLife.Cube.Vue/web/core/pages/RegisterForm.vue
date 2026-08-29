@@ -494,7 +494,7 @@ function onFormKeydown(e: KeyboardEvent): void {
   border: none;
   border-radius: 12px;
   background: linear-gradient(135deg, var(--el-color-primary), var(--el-color-primary-dark-2));
-  color: #fff;
+  color: var(--el-color-white);
   font-size: 16px;
   font-weight: 600;
   letter-spacing: 6px;
@@ -529,8 +529,8 @@ function onFormKeydown(e: KeyboardEvent): void {
   width: 20px;
   height: 20px;
   margin: -10px 0 0 -10px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
+  border: 2px solid color-mix(in srgb, var(--el-color-white) 30%, transparent);
+  border-top-color: var(--el-color-white);
   border-radius: 50%;
   animation: login-spin 0.8s linear infinite;
   opacity: 0;

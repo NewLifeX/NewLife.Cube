@@ -11,7 +11,26 @@
  * - config：表单配置模式
  */
 import { defineComponent, h, computed, ref, Teleport, type VNode, type Component } from 'vue';
-import { ElDialog, ElDrawer, ElButton } from 'element-plus';
+/* 表单（config）模式经 h() 渲染，必须用组件对象而非字符串标签：
+   unplugin-vue-components 只改写模板里的标签，运行时 h('el-input') 解析不到组件、
+   会退化成未知自定义元素，弹窗只剩外壳没有控件 */
+import {
+  ElDialog,
+  ElDrawer,
+  ElButton,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElSelect,
+  ElOption,
+  ElSwitch,
+  ElInputNumber,
+  ElRadioGroup,
+  ElRadio,
+  ElCheckboxGroup,
+  ElCheckbox,
+  ElDatePicker,
+} from 'element-plus';
 import {
   modals,
   closeModal as closeModalFn,
@@ -29,10 +48,37 @@ import type {
    消除 core/ 对 src/ 的跨层依赖，确保框架层不耦合旧版遗留代码 */
 import type { FormColumnConfig } from '../types/forms';
 
+/**
+ * config 表单模式的控件渲染辅助。
+ *
+ * 字段属性来自调用方配置（`Record<string, unknown>` 展开），与 EP 组件的强类型 props
+ * 签名无法静态匹配（字符串标签写法不做检查，换成组件对象后即报 TS2769）。
+ * 这里集中做一次宽松调用，避免 11 个分支各写一次断言。
+ */
+function hControl(
+  type: Component,
+  props: Record<string, unknown>,
+  children?: unknown,
+): VNode {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (h as any)(type, props, children) as VNode;
+}
+
 export default defineComponent({
   name: 'ModalContainer',
   setup() {
     const contentRefs = ref<Record<string, unknown>>({});
+
+    /**
+     * 待渲染的 dialog / drawer 列表（派生自 useModal 的全局 modals）
+     *
+     * 这里包一层 computed 有两个作用：
+     * 1. 依赖追踪与原来一致（render 期间读取 .value，仍由 modals 驱动更新）；
+     * 2. 使其成为本组件的 setup 状态，可在 Vue DevTools 的 <setup> 面板实时查看，
+     *    便于定位"弹窗为什么没渲染 / 卡在哪一步"。
+     */
+    const dialogModals = computed(() => modals.filter((m) => m.type === 'dialog'));
+    const drawerModals = computed(() => modals.filter((m) => m.type === 'drawer'));
 
     /**
      * 处理取消操作（由用户点击关闭按钮/遮罩层触发）
@@ -108,8 +154,8 @@ export default defineComponent({
             case 'select': {
               const options =
                 (fieldProps.options as Array<{ label: string; value: unknown }>) || [];
-              fieldVNode = h(
-                'el-select',
+              fieldVNode = hControl(
+                ElSelect,
                 {
                   modelValue,
                   'onUpdate:modelValue': updateModel,
@@ -118,7 +164,7 @@ export default defineComponent({
                 {
                   default: () =>
                     options.map((opt) =>
-                      h('el-option', {
+                      hControl(ElOption, {
                         label: opt.label,
                         value: opt.value,
                       }),
@@ -128,7 +174,7 @@ export default defineComponent({
               break;
             }
             case 'input': {
-              fieldVNode = h('el-input', {
+              fieldVNode = hControl(ElInput, {
                 modelValue,
                 'onUpdate:modelValue': updateModel,
                 ...fieldProps,
@@ -136,7 +182,7 @@ export default defineComponent({
               break;
             }
             case 'switch': {
-              fieldVNode = h('el-switch', {
+              fieldVNode = hControl(ElSwitch, {
                 modelValue,
                 'onUpdate:modelValue': updateModel,
                 ...fieldProps,
@@ -144,7 +190,7 @@ export default defineComponent({
               break;
             }
             case 'inputNumber': {
-              fieldVNode = h('el-input-number', {
+              fieldVNode = hControl(ElInputNumber, {
                 modelValue,
                 'onUpdate:modelValue': updateModel,
                 ...fieldProps,
@@ -154,8 +200,8 @@ export default defineComponent({
             case 'radioGroup': {
               const options =
                 (fieldProps.options as Array<{ label: string; value: unknown }>) || [];
-              fieldVNode = h(
-                'el-radio-group',
+              fieldVNode = hControl(
+                ElRadioGroup,
                 {
                   modelValue,
                   'onUpdate:modelValue': updateModel,
@@ -164,10 +210,11 @@ export default defineComponent({
                 {
                   default: () =>
                     options.map((opt) =>
-                      h(
-                        'el-radio',
+                      hControl(
+                        ElRadio,
                         {
-                          label: opt.value,
+                          // EP 2.6+：value 是选中值，label 是显示文本（旧写法把值塞进 label 会错乱）
+                          value: opt.value,
                         },
                         () => opt.label,
                       ),
@@ -179,8 +226,8 @@ export default defineComponent({
             case 'checkboxGroup': {
               const options =
                 (fieldProps.options as Array<{ label: string; value: unknown }>) || [];
-              fieldVNode = h(
-                'el-checkbox-group',
+              fieldVNode = hControl(
+                ElCheckboxGroup,
                 {
                   modelValue,
                   'onUpdate:modelValue': updateModel,
@@ -189,10 +236,10 @@ export default defineComponent({
                 {
                   default: () =>
                     options.map((opt) =>
-                      h(
-                        'el-checkbox',
+                      hControl(
+                        ElCheckbox,
                         {
-                          label: opt.value,
+                          value: opt.value,
                         },
                         () => opt.label,
                       ),
@@ -202,7 +249,7 @@ export default defineComponent({
               break;
             }
             case 'datePicker': {
-              fieldVNode = h('el-date-picker', {
+              fieldVNode = hControl(ElDatePicker, {
                 modelValue,
                 'onUpdate:modelValue': updateModel,
                 ...fieldProps,
@@ -210,7 +257,7 @@ export default defineComponent({
               break;
             }
             default: {
-              fieldVNode = h('el-input', {
+              fieldVNode = hControl(ElInput, {
                 modelValue,
                 'onUpdate:modelValue': updateModel,
                 ...fieldProps,
@@ -219,8 +266,8 @@ export default defineComponent({
             }
           }
 
-          return h(
-            'el-form-item',
+          return hControl(
+            ElFormItem,
             {
               label: c.label ?? prop,
               prop,
@@ -262,7 +309,7 @@ export default defineComponent({
       if ('config' in o && o.config) {
         const fields = buildFormFields(item);
         return h(
-          'el-form',
+          ElForm,
           { model: item.formData, labelWidth: '120px' },
           { default: () => fields },
         );
@@ -392,31 +439,49 @@ export default defineComponent({
       return p;
     }
 
-    return () => {
-      const dialogs = modals
-        .filter((m) => m.type === 'dialog')
-        .map((item) => {
-          const content = renderContent(item);
-          const footer = renderFooter(item);
-          return h(ElDialog, buildDialogProps(item), {
-            default: () => content,
-            footer: () => footer,
-          });
+    /**
+     * 渲染所有弹窗
+     *
+     * 通过 setup 返回的对象暴露给 options.render()，
+     * 使 modals 等状态同时成为组件可见的 setupState（DevTools 可调试）。
+     */
+    function renderNodes() {
+      const dialogs = dialogModals.value.map((item) => {
+        const content = renderContent(item);
+        const footer = renderFooter(item);
+        return h(ElDialog, buildDialogProps(item), {
+          default: () => content,
+          footer: () => footer,
         });
+      });
 
-      const drawers = modals
-        .filter((m) => m.type === 'drawer')
-        .map((item) => {
-          const content = renderContent(item);
-          const footer = renderFooter(item);
-          return h(ElDrawer, buildDialogProps(item), {
-            default: () => content,
-            footer: () => footer,
-          });
+      const drawers = drawerModals.value.map((item) => {
+        const content = renderContent(item);
+        const footer = renderFooter(item);
+        return h(ElDrawer, buildDialogProps(item), {
+          default: () => content,
+          footer: () => footer,
         });
+      });
 
       return h(Teleport, { to: 'body' }, [...dialogs, ...drawers]);
+    }
+
+    return {
+      /** 全局弹窗队列（来自 useModal，仅用于 DevTools 观察） */
+      modals,
+      /** 当前 dialog 类弹窗 */
+      dialogModals,
+      /** 当前 drawer 类弹窗 */
+      drawerModals,
+      /** 各弹窗内容组件实例引用 */
+      contentRefs,
+      renderNodes,
     };
+  },
+
+  render() {
+    return this.renderNodes();
   },
 });
 </script>
