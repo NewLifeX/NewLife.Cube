@@ -326,4 +326,38 @@ public partial class EntityController<TEntity, TModel>
         };
     }
     #endregion
+
+    #region 导入Excel/Csv/Json/Zip
+    /// <summary>导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile</summary>
+    /// <param name="file">上传的 Excel/Csv/Json/Zip 文件</param>
+    /// <returns>统一 Json 响应，message 含导入行数</returns>
+    /// <remarks>依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误</remarks>
+    [HttpPost]
+    [EntityAuthorize(PermissionFlags.Insert)]
+    [DisplayName("导入Excel/Csv/Json/Zip")]
+    public virtual IActionResult ImportFile(IFormFile file)
+    {
+        if (file == null || file.Length <= 0) throw new ArgumentNullException(nameof(file), "未上传文件");
+
+        WriteLog(nameof(ImportFile), true, $"开始导入文件[{file.FileName}]，大小[{file.Length:n0}]字节，类型[{file.ContentType}]");
+
+        var factory = Factory;
+        var page = GetCachePager();
+        using var stream = file.OpenReadStream();
+        var name = file.FileName;
+        var ext = Path.GetExtension(file.FileName).ToLower();
+        var rs = ext switch
+        {
+            ".xls" or ".xlsx" => ImportExcel(name, stream, factory, page),
+            ".csv" => ImportCsv(name, stream, factory, page),
+            ".json" => ImportJson(name, stream, factory, page),
+            ".zip" => ImportZip(name, stream, factory, page),
+            _ => throw new NotSupportedException($"不支持的导入文件类型[{ext}]"),
+        };
+        var msg = $"导入[{name}] 共{rs}行";
+        WriteLog(nameof(ImportFile), true, msg);
+
+        return Json(0, msg);
+    }
+    #endregion
 }
