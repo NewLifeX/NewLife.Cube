@@ -8,7 +8,7 @@
  */
 
 /** 服务控制器前缀（后端路由无 /api） */
-const SERVICE_PREFIXES = ['/Auth/', '/Sso/', '/Mfa/', '/OAuth/'];
+const SERVICE_PREFIXES = ['/Auth/', '/Sso/', '/Mfa/', '/OAuth/', '/Ai/'];
 
 /** CubeController 服务动作（区别于 Cube 区域实体控制器，实体走 /api） */
 const CUBE_SERVICE_ACTIONS = new Set([

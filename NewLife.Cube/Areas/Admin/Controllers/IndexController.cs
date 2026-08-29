@@ -7,12 +7,17 @@ using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.AI;
+using NewLife.Cube.Entity;
 using NewLife.Cube.ViewModels;
+using NewLife.Cube.Widgets.System;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Serialization;
 using NewLife.Web;
+using XCode;
 using XCode.Membership;
+using XLog = XCode.Membership.Log;
+using static XCode.Membership.Log;
 
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
@@ -122,6 +127,127 @@ public class IndexController : ControllerBaseX, IPageDataContext
     [HttpGet]
     public Task<String> GetPageDataContextAsync()
         => Task.FromResult(BuildServerInfo(_env.ContentRootPath, HttpContext).ToJson());
+
+    /// <summary>监控数据。工作台性能曲线轮询接口，返回CPU/内存快照</summary>
+    /// <returns>CPU/内存快照 JSON</returns>
+    [DisplayName("监控数据")]
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet]
+    public ActionResult MonitorData()
+    {
+        var mi = MachineInfo.Current ?? new MachineInfo();
+
+        var cpu = Math.Round(mi.CpuRate * 100, 1);
+        var memPct = mi.Memory > 0 ? Math.Round((mi.Memory - mi.AvailableMemory) * 100.0 / mi.Memory, 1) : 0;
+
+        // 图表卡轮询契约：xs 为 X 轴新点数组，series 为各系列新数据数组，前端定时追加
+        return Json(0, null, new
+        {
+            xs = new[] { DateTime.Now.ToString("HH:mm:ss") },
+            series = new[]
+            {
+                new[] { cpu },
+                new[] { memPct },
+            },
+            memUsed = (mi.Memory - mi.AvailableMemory) / 1024 / 1024,
+            memTotal = mi.Memory / 1024 / 1024,
+        });
+    }
+
+    /// <summary>工作台数据聚合（React 皮肤首页使用）。返回 KPI、快捷入口、个人信息、系统信息</summary>
+    /// <returns>工作台聚合数据 JSON</returns>
+    [DisplayName("工作台数据")]
+    [EntityAuthorize]
+    [HttpGet]
+    public ActionResult Workbench()
+    {
+        var user = ManageProvider.User;
+        var now = DateTime.Now;
+        var start = now.AddHours(-24);
+
+        var mi = MachineInfo.Current ?? new MachineInfo();
+        var process = Process.GetCurrentProcess();
+        var memTotal = mi.Memory / 1024 / 1024;
+        var memUsed = memTotal - mi.AvailableMemory / 1024 / 1024;
+        var memRate = memTotal <= 0 ? 0 : (Double)memUsed * 100 / memTotal;
+
+        var snow = XLog.Meta.Factory.Snow;
+
+        // KPI 指标
+        var kpis = new List<Object>
+        {
+            new { name = "users", label = "用户总数", value = XCode.Membership.User.Meta.Count.ToString("n0"), trend = "注册用户", color = "blue", url = "/Admin/User" },
+            new { name = "login", label = "今日登录", value = XLog.FindCount(_.ID.Between(DateTime.Today, now, snow) & _.Action.Contains("登录")).ToString("n0"), trend = "今日登录成功", color = "green", url = "/Admin/Log" },
+            new { name = "online", label = "在线用户", value = UserOnline.FindCount().ToString("n0"), trend = "当前在线", color = "cyan", url = "/Admin/UserOnline" },
+            new { name = "log", label = "24h日志", value = XLog.FindCount(_.ID.Between(start, now, snow)).ToString("n0"), trend = "最近24小时", color = "grey", url = "/Admin/Log" },
+            new { name = "error", label = "24h异常", value = XLog.FindCount(_.ID.Between(start, now, snow) & _.Success == false).ToString(), trend = "最近24小时异常", color = "red", url = "/Admin/Log?success=false" },
+            new { name = "cpu", label = "CPU使用率", value = Math.Round(mi.CpuRate * 100, 1).ToString("0.0") + "%", trend = "内存 " + Math.Round(memRate, 1).ToString("0.0") + "%", color = "orange", url = "/Admin/Index/Main" },
+        };
+
+        // 快捷入口：最近访问优先，菜单补足
+        var links = new List<Object>();
+        var urls = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
+        if (user != null)
+        {
+            foreach (var item in QuickLinkWidget.GetRecent(user.ID))
+            {
+                var menu = ManageProvider.Menu?.FindByUrl(item.Url);
+                if (menu == null || !menu.Visible || menu.Url.IsNullOrEmpty() || menu.Url.StartsWith("~/")) continue;
+                if (!urls.Add(menu.Url)) continue;
+
+                links.Add(new { Name = menu.DisplayName ?? menu.Name, Url = menu.Url, Icon = menu.Icon });
+            }
+        }
+        if (links.Count < 8)
+        {
+            foreach (var menu in XCode.Membership.Menu.FindAllWithCache().Where(e => e.Visible && !e.Url.IsNullOrEmpty() && !e.Url.StartsWith("~/") && !e.Url.EqualIgnoreCase("/Admin/Index/Dashboard")).OrderByDescending(e => e.UpdateTime).ThenByDescending(e => e.ID))
+            {
+                if (links.Count >= 8) break;
+                if (!urls.Add(menu.Url)) continue;
+
+                links.Add(new { Name = menu.DisplayName ?? menu.Name, Url = menu.Url, Icon = menu.Icon });
+            }
+        }
+
+        // 个人信息
+        var u = user as User;
+        Object profile = u == null ? null : new
+        {
+            u.Name,
+            u.DisplayName,
+            RoleNames = u.RoleNames,
+            u.Online,
+            u.Logins,
+            LastLogin = u.LastLogin.Year > 2000 ? u.LastLogin.ToFullString() : "",
+            u.LastLoginIP,
+            RegisterTime = u.RegisterTime.Year > 2000 ? u.RegisterTime.ToFullString() : "",
+        };
+
+        // 系统信息
+        var sysInfo = new Dictionary<String, Object>
+        {
+            ["操作系统"] = $"{mi.OSName} {mi.OSVersion}",
+            ["机器"] = $"{Environment.MachineName} / {Environment.UserName}",
+            ["处理器"] = $"{mi.Processor}，{Environment.ProcessorCount} 核心",
+            ["运行时"] = Assembly.GetExecutingAssembly().GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkDisplayName,
+            ["应用"] = $"{process.ProcessName}，程序集 {AssemblyX.GetAssemblies(null).Count()} 个",
+            ["启动时间"] = DateTime.Now.AddMilliseconds(-Environment.TickCount64).ToFullString(),
+        };
+
+        return Json(0, null, new
+        {
+            user = new
+            {
+                name = user?.Name,
+                displayName = (user as IUser)?.DisplayName,
+                roles = (user as IUser)?.Roles?.Select(e => e.Name).ToList(),
+            },
+            kpis,
+            quickLinks = links,
+            profile,
+            sysInfo,
+        });
+    }
 
     #region AI 诊断
     /// <summary>AI 系统诊断。根据服务器运行指标生成健康诊断报告（SSE 流式输出）</summary>

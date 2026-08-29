@@ -75,7 +75,7 @@ public class DataSyncService : CubeJobBase<SyncArgument>
 
 ## 内置作业
 
-魔方默认提供三个内置作业：
+魔方默认提供多个内置作业：
 
 ### 备份数据库（BackupDbService）
 
@@ -97,6 +97,16 @@ public class DataSyncService : CubeJobBase<SyncArgument>
 - 参数格式：`SqlJobArgument`
   - `ConnName` — 数据库连接名
   - `Sql` — SQL 语句
+
+### 定期清理附件（AttachmentCleanJob）
+
+- 默认 Cron：`0 0 3 * * ? *`（每天凌晨 3 点，默认禁用）
+- 参数格式：`AttachmentCleanArgument`
+  - `MaxDays` — 无下载清理天数（默认 180，超过该天数未下载的附件将被清理，0 表示不启用）
+  - `LongDays` — 下载较少清理天数（默认 365，超过该天数且下载次数少于阈值时清理，0 表示不启用）
+  - `MinDownloads` — 下载次数阈值（默认 10）
+  - `MaximumRows` — 单批最大删除数（默认 10000）
+- 清理范围：长时间无下载的附件，或更长时间内下载次数较少的附件
 
 ## 作业调度流程
 

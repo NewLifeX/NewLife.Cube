@@ -253,8 +253,15 @@ public async Task<ActionResult> File(String id)
 | 配置项 | 类型 | 默认值 | 说明 |
 |--------|------|--------|------|
 | `UploadPath` | String | `Uploads` | 文件上传根目录（相对路径） |
-| `FileStorageProvide` | Boolean | false | 是否启用文件分布式提供（P2P 同步） |
-| `FileStorageFetch` | Boolean | false | 是否启用远程文件抓取 |
+| `FileStorageProvide` | Boolean | true | 是否响应其他节点的文件下载请求（P2P 同步） |
+| `FileStorageFetch` | Boolean | true | 是否主动拉取其他节点发布的新文件 |
+| `FileStorageFetchTimeout` | Int32 | 5000 | 文件存储拉取超时（毫秒）。下载本地缺失文件时等待其他节点同步的最大时间 |
+| `AttachmentStorage` | String | `Local` | 附件存储类型。Local本地磁盘，Oss阿里云，Cos腾讯云，Qiniu七牛，EasyIO |
+| `ObjectStorageServer` | String | "" | 对象存储服务器。OSS/COS/七牛S3兼容端点 |
+| `ObjectStorageBucket` | String | "" | 对象存储桶 |
+| `ObjectStorageRegion` | String | `cn-north-1` | 对象存储区域。用于S3签名作用域 |
+| `ObjectStorageAppId` | String | "" | 对象存储应用标识。AccessKeyId |
+| `ObjectStorageSecret` | String | "" | 对象存储应用密钥。AccessKeySecret |
 
 ### appsettings.json 配置示例
 
@@ -351,6 +358,63 @@ protected override IEnumerable<IFileInfo> GetMissingAttachments(DateTime startTi
 节点B保存本地副本 → 后续请求直接返回本地文件
 ```
 
+## 云存储（OSS/COS/七牛）
+
+除本地磁盘与P2P分布式同步外，魔方附件支持切换为对象存储（阿里云OSS、腾讯云COS、七牛Kodo），解决分布式部署下附件共用问题，无需每个节点保留完整副本。
+
+### 存储抽象
+
+附件读写通过 `IAttachmentStorage` 抽象，默认实现 `LocalAttachmentStorage`（本地磁盘），云存储使用 `ObjectAttachmentStorage` 包装 `IObjectStorage`：
+
+```
+IAttachmentStorage
+ ├─ LocalAttachmentStorage      # 本地磁盘（默认）
+ └─ ObjectAttachmentStorage     # 包装 IObjectStorage
+      ├─ S3ObjectStorage        # S3兼容协议，对接OSS/COS/七牛
+      └─ EasyClient             # 对接EasyIO（核心库自带）
+```
+
+- `AttachmentProvider` 为静态门面，`Attachment.SaveFile/Fetch/GetFilePath` 与 `CubeController` 下载统一经由它读写
+- `Attachment` 实体新增 `Storage` 字段记录存储类型（Local/Oss/Cos/Qiniu/EasyIO），历史附件未记录时按本地处理
+- 云存储启用时 `CubeFileStorage` 的P2P缺失扫描自动跳过云附件，避免误判
+
+### 配置
+
+在 `CubeSetting`（系统功能）配置附件存储类型与对象存储三元组：
+
+```json
+{
+  "CubeSetting": {
+    "AttachmentStorage": "Oss",
+    "ObjectStorageServer": "oss-cn-beijing.aliyuncs.com",
+    "ObjectStorageBucket": "mybucket",
+    "ObjectStorageRegion": "cn-beijing",
+    "ObjectStorageAppId": "AccessKeyId",
+    "ObjectStorageSecret": "AccessKeySecret"
+  }
+}
+```
+
+| 厂商 | Server | Bucket | Region |
+|------|--------|--------|--------|
+| 阿里云OSS | oss-cn-beijing.aliyuncs.com | mybucket | cn-beijing |
+| 腾讯云COS | cos.ap-beijing.myqcloud.com | mybucket-1250000000 | ap-beijing |
+| 七牛Kodo | s3-cn-east-1.qiniucs.com | mybucket | cn-east-1 |
+
+`S3ObjectStorage` 基于AWS SigV4签名、路径风格访问，流式上传（UNSIGNED-PAYLOAD），无需引入厂商SDK。
+
+### 读写流程
+
+```
+上传：SaveFile → AttachmentProvider → ObjectAttachmentStorage → S3 PutObject → 记录 Storage/Size/Hash
+下载：/cube/file?id=xxx → 云附件 → GetUrl（预签名Url）→ Redirect
+删除：OnDelete → DeleteFileAsync → S3 DeleteObject
+```
+
+- 云附件下载返回预签名Url（默认3600秒有效期），保留 `CheckAttachmentAccess` 细粒度权限校验
+- 上传时单遍计算MD5哈希与大小，写入 `Hash`/`Size` 字段
+- 附件管理界面显示存储类型与云地址，支持按存储类型筛选
+
 ## 管理后台
 
 附件管理在管理后台 **魔方管理 → 附件** 中可查看和管理。
@@ -368,8 +432,7 @@ protected override IEnumerable<IFileInfo> GetMissingAttachments(DateTime startTi
 3. **多节点部署**：启用 `FileStorageProvide` 和 `FileStorageFetch` 实现文件自动同步
 4. **NAS 共享**：如果使用共享存储（NAS），可不启用分布式同步，直接配置 `UploadPath` 到共享目录
 5. **哈希校验**：利用 `Hash` 字段进行文件去重和完整性校验
-6. **数据保留**：结合 `DataRetentionService` 定期清理过期附件（参见 [数据保留](BASE-数据保留.md)）
-- 延迟 10 秒初始化，避免应用启动时资源争抢
+6. **定期清理**：利用内置 `AttachmentCleanJob` 定时作业，定期清理长期没有下载的附件（管理后台 **系统管理 → 定时作业** 启用，可配置无下载天数、下载次数阈值等参数，参见 [定时作业](SYS-定时作业.md)）
 
 ## 管理后台
 

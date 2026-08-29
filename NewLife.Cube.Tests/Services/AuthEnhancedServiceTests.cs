@@ -14,7 +14,8 @@ public class AuthEnhancedServiceTests
         var provider = new TestCacheProvider();
         var userService = new UserService(new PasswordService(), provider, null!, null!, null!, new TenantContextService());
         var verifyCode = new VerifyCodeService(null!, null!, provider, null!, userService, new TenantContextService());
-        _svc = new AuthEnhancedService(userService, verifyCode, provider, new PasswordService(), null!, new TenantContextService());
+        var accountActivate = new AccountActivateService(userService, verifyCode, provider, null!, new TenantContextService());
+        _svc = new AuthEnhancedService(userService, verifyCode, provider, new PasswordService(), null!, new TenantContextService(), accountActivate);
     }
 
     [Fact(DisplayName = "ResetPassword：challengeId 无效（过期/伪造）时返回明确错误，不把密文当明文新密码")]

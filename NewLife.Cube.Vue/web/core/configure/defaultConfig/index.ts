@@ -12,17 +12,21 @@ export const defaultConfig: CubeFrontConfig = {
     getMenuAxiosConfig: () => {
       return {
         method: 'GET',
-        url: '/Admin/Menu',
+        // 统一菜单接口：CubeController 服务动作（/Cube/MenuTree），
+        // 后端返回 MenuItem 树（camelCase），按当前登录用户角色过滤
+        url: '/Cube/MenuTree',
       };
     },
-    isMenuTree: false,
+    // 字段映射对齐 @cube/api-core MenuItem（/Cube/MenuTree 返回结构，camelCase）
+    isMenuTree: true,
     dataKey: 'data',
     idField: 'id',
     parentField: 'parentID',
-    nameField: 'title',
+    nameField: 'name',
     pathField: 'url',
     titleField: 'displayName',
     iconField: 'icon',
+    // MenuItem 无 sort 字段，保留以符合 MenuConfig 必填约束，运行时取值为 undefined（不影响树构建）
     sortField: 'sort',
     childrenField: 'children',
     visibleField: 'visible',
@@ -31,7 +35,8 @@ export const defaultConfig: CubeFrontConfig = {
     getUserInfoAxiosConfig: (): AxiosRequestConfig => {
       return {
         method: 'GET',
-        url: '/Admin/User/Info',
+        // 统一用户接口：外层 AuthController 服务动作（/Auth/Info），无需再经 Admin 区域实体控制器
+        url: '/Auth/Info',
       };
     },
   },
@@ -84,8 +89,9 @@ export const defaultConfig: CubeFrontConfig = {
     background: '',
     logoutAxiosConfig: (): AxiosRequestConfig => {
       return {
-        method: 'GET',
-        url: '/Admin/User/Logout',
+        // AuthController.Logout 声明 [HttpPost]，必须用 POST，GET 会返回 405
+        method: 'POST',
+        url: '/Auth/Logout',
       };
     },
     // 默认的重新登录参数

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Areas.Cube.Controllers;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
+using NewLife.Cube.Web;
 using NewLife.Data;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -491,13 +492,21 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
         var denied = CheckAttachmentAccess(att);
         if (denied != null) return denied;
 
+        // 云存储附件：直接返回预签名Url
+        if (!att.IsLocalStorage())
+        {
+            var url = AttachmentProvider.Provider.GetUrl(att.FilePath);
+            if (url.IsNullOrEmpty()) return NotFound("找不到附件文件");
+            return Redirect(url);
+        }
+
         // 如果附件不存在，则抓取
         var filePath = att.GetFilePath();
         if (!filePath.IsNullOrEmpty() && !System.IO.File.Exists(filePath) && setting.FileStorageFetch)
         {
             // 如果本地文件不存在，则从分布式文件存储获取
             await fileStorage.RequestFileAsync(att.Id, att.FilePath, "file not found");
-            await Task.Delay(5_000);
+            await Task.Delay(setting.FileStorageFetchTimeout);
         }
         if (filePath.IsNullOrEmpty() || !System.IO.File.Exists(filePath))
         {
@@ -540,13 +549,21 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
         var denied = CheckAttachmentAccess(att);
         if (denied != null) return denied;
 
+        // 云存储附件：直接返回预签名Url
+        if (!att.IsLocalStorage())
+        {
+            var url = AttachmentProvider.Provider.GetUrl(att.FilePath);
+            if (url.IsNullOrEmpty()) return NotFound("找不到附件文件");
+            return Redirect(url);
+        }
+
         // 如果附件不存在，则抓取
         var filePath = att.GetFilePath();
         if (!filePath.IsNullOrEmpty() && !System.IO.File.Exists(filePath) && setting.FileStorageFetch)
         {
             // 如果本地文件不存在，则从分布式文件存储获取
             await fileStorage.RequestFileAsync(att.Id, att.FilePath, "file not found");
-            await Task.Delay(5_000);
+            await Task.Delay(setting.FileStorageFetchTimeout);
         }
         if (filePath.IsNullOrEmpty() || !System.IO.File.Exists(filePath))
         {

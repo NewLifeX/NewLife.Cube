@@ -85,12 +85,13 @@ public class MailService(ICacheProvider cacheProvider)
         }
     }
     /// <summary>发送邮件验证码</summary>
-    /// <param name="action">操作类型：login/bind/reset</param>
+    /// <param name="action">操作类型：login/bind/reset/activate</param>
     /// <param name="mail">邮箱地址</param>
     /// <param name="code">验证码</param>
     /// <param name="config">邮件配置</param>
+    /// <param name="link">激活链接。仅 activate 场景使用</param>
     /// <returns>验证码记录</returns>
-    public async Task<VerifyCodeRecord> SendVerifyCode(String action, String mail, String code, MailConfigModel config)
+    public async Task<VerifyCodeRecord> SendVerifyCode(String action, String mail, String code, MailConfigModel config, String link = null)
     {
         var key = $"MailVerify:{config.Provider}:{config.Id}";
 
@@ -127,6 +128,9 @@ public class MailService(ICacheProvider cacheProvider)
                     break;
                 case "reset":
                     record.Result = await provider.SendReset(mail, code, config.Expire);
+                    break;
+                case "activate":
+                    record.Result = await provider.SendActivate(mail, link, code, config.Expire);
                     break;
                 case "notify":
                 default://TODO 通知

@@ -93,6 +93,7 @@
     <Compile Include="..\NewLife.Cube\Common\ValidFormatHelper.cs" Link="Common\ValidFormatHelper.cs" />
     <Compile Include="..\NewLife.Cube\Common\EntityPageRegistry.cs" Link="Common\EntityPageRegistry.cs" />
     <Compile Include="..\NewLife.Cube\Common\ViewHelper.cs" Link="Common\ViewHelper.cs" />
+    <Compile Include="..\NewLife.Cube\Common\RolePermissionHelper.cs" Link="Common\RolePermissionHelper.cs" />
     <Compile Include="..\NewLife.Cube\AI\AiController.cs" Link="AI\AiController.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\AccessRuleModel.cs" Link="Entity\Models\AccessRuleModel.cs" />
      <Compile Include="..\NewLife.Cube\Entity\Models\AppLogModel.cs" Link="Entity\Models\AppLogModel.cs" />
@@ -172,10 +173,12 @@
     <Compile Include="..\NewLife.Cube\Services\Auth\AuthCacheKeys.cs" Link="Services\Auth\AuthCacheKeys.cs" />
     <Compile Include="..\NewLife.Cube\Services\Auth\AuthHelper.cs" Link="Services\Auth\AuthHelper.cs" />
     <Compile Include="..\NewLife.Cube\Services\IMfaService.cs" Link="Services\IMfaService.cs" />
-    <Compile Include="..\NewLife.Cube\Services\MailService.cs" Link="Services\MailService.cs" />
-    <Compile Include="..\NewLife.Cube\Services\SmsService.cs" Link="Services\SmsService.cs" />
     <Compile Include="..\NewLife.Cube\Services\DrawingCaptchaService.cs" Link="Services\DrawingCaptchaService.cs" />
     <Compile Include="..\NewLife.Cube\Services\TotpMfaService.cs" Link="Services\TotpMfaService.cs" />
+    <Compile Include="..\NewLife.Cube\Services\IAttachmentStorage.cs" Link="Services\IAttachmentStorage.cs" />
+    <Compile Include="..\NewLife.Cube\Services\LocalAttachmentStorage.cs" Link="Services\LocalAttachmentStorage.cs" />
+    <Compile Include="..\NewLife.Cube\Services\ObjectAttachmentStorage.cs" Link="Services\ObjectAttachmentStorage.cs" />
+    <Compile Include="..\NewLife.Cube\Services\S3ObjectStorage.cs" Link="Services\S3ObjectStorage.cs" />
     <Compile Include="..\NewLife.Cube\Entity\值集定义.cs" Link="Entity\值集定义.cs" />
     <Compile Include="..\NewLife.Cube\Entity\值集定义.Biz.cs" Link="Entity\值集定义.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\值集枚举值.cs" Link="Entity\值集枚举值.cs" />

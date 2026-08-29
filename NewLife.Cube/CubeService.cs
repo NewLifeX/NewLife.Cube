@@ -209,6 +209,7 @@ public static class CubeService
         services.AddSingleton<UserService>();
         services.AddSingleton<VerifyCodeService>();
         services.AddSingleton<AuthEnhancedService>();
+        services.AddSingleton<AccountActivateService>();
         services.AddSingleton<AccessService>();
         services.AddSingleton<PageService>();
         services.AddSingleton<TokenService>();
@@ -234,6 +235,9 @@ public static class CubeService
         // 注册文件存储服务。当文件提供或文件拉取任一功能开启时，启用文件存储
         if (set.FileStorageProvide || set.FileStorageFetch)
             services.AddCubeFileStorage();
+
+        // 注册附件存储提供者。根据配置切换本地磁盘与对象存储（OSS/COS/七牛）
+        services.AddCubeAttachmentStorage(set);
 
         // 注册 AI 服务
         services.AddCubeAI();

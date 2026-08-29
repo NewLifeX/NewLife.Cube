@@ -81,20 +81,11 @@
 				<td class="align-middle">@entity.DisplayName</td>
 				<td class="align-middle">@entity.Mobile</td>
 				@{
-					var item = fields.FirstOrDefault(f => f.Name.EqualIgnoreCase("RoleID"));
-					if (item != null && !entity.RoleName.IsNullOrEmpty() && item != null && !item.MapField.IsNullOrEmpty())
+					var item = fields.FirstOrDefault(f => f.Name.EqualIgnoreCase("RoleName"));
+					if (!entity.RoleName.IsNullOrEmpty() && item != null && item.MapProvider != null)
 					{
-						if (item.MapProvider != null)
-						{
-							var name = item.MapProvider.EntityType.Name;
-							var key = item.MapProvider.Key;
-							<td class="align-middle"><a href="@name?@key=@entity.RoleID">@entity.RoleName</a></td>
-
-						}
-						else
-						{
-							<td class="align-middle">@entity.RoleName</td>
-						}
+						var href = (item as ListField)?.GetUrl(entity, page);
+						<td class="align-middle"><a href="@href">@entity.RoleName</a></td>
 					}
 					else
 					{
@@ -102,20 +93,11 @@
 					}
 
                     // 部门
-                    item = fields.FirstOrDefault(f => f.Name == "DepartmentID");
-                    if (item != null && !entity.RoleName.IsNullOrEmpty() && !item.MapField.IsNullOrEmpty())
+                    item = fields.FirstOrDefault(f => f.Name.EqualIgnoreCase("DepartmentName"));
+                    if (!entity.DepartmentName.IsNullOrEmpty() && item != null && item.MapProvider != null)
                     {
-                        if (item.MapProvider != null)
-                        {
-                            var name = item.MapProvider.EntityType.Name;
-                            var key = item.MapProvider.Key;
-                            <td class="align-middle"><a href="@name?@key=@entity.DepartmentID">@entity.DepartmentName</a></td>
-
-                        }
-                        else
-                        {
-                            <td class="align-middle">@entity.DepartmentName</td>
-                        }
+                        var href = (item as ListField)?.GetUrl(entity, page);
+                        <td class="align-middle"><a href="@href">@entity.DepartmentName</a></td>
                     }
                     else
                     {

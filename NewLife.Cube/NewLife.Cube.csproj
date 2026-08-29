@@ -74,11 +74,11 @@
     <Compile Remove="Entity\模型表.cs" />
     <Compile Remove="Extensions\ItemsExtend.cs" />
     <Compile Remove="Extensions\MvcActionResultHelper.cs" />
-    <Compile Remove="Services\SmsServiceExtensions.cs" />
     <Compile Remove="Web\Models\TokenInfo.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\NewLife.CubeNC\Jobs\AttachmentCleanJob.cs" Link="Jobs\AttachmentCleanJob.cs" />
     <Compile Include="..\NewLife.CubeNC\Jobs\BackupDbService.cs" Link="Jobs\BackupDbService.cs" />
     <Compile Include="..\NewLife.CubeNC\Jobs\BackupHelper.cs" Link="Jobs\BackupHelper.cs" />
     <Compile Include="..\NewLife.CubeNC\Jobs\CronJobAttribute.cs" Link="Jobs\CronJobAttribute.cs" />
@@ -99,20 +99,16 @@
     <Compile Include="..\NewLife.CubeNC\Widgets\System\LoginLogWidget.cs" Link="Widgets\System\LoginLogWidget.cs" />
     <Compile Include="..\NewLife.CubeNC\Widgets\System\SysInfoWidget.cs" Link="Widgets\System\SysInfoWidget.cs" />
     <Compile Include="..\NewLife.CubeNC\Widgets\System\QuickLinkWidget.cs" Link="Widgets\System\QuickLinkWidget.cs" />
+    <Compile Include="..\NewLife.CubeNC\Widgets\System\RecentVisit.cs" Link="Widgets\System\RecentVisit.cs" />
     <Compile Include="..\NewLife.CubeNC\Widgets\System\ProfileWidget.cs" Link="Widgets\System\ProfileWidget.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\AccessService.cs" Link="Services\AccessService.cs" />
-    <Compile Include="..\NewLife.CubeNC\Services\AliyunClient.cs" Link="Services\AliyunClient.cs" />
-    <Compile Include="..\NewLife.CubeNC\Services\AliyunSmsVerifyCode.cs" Link="Services\AliyunSmsVerifyCode.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\DataRetentionService.cs" Link="Services\DataRetentionService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\DbDataProtectionBuilderExtensions.cs" Link="Services\DbDataProtectionBuilderExtensions.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\DbXmlRepository.cs" Link="Services\DbXmlRepository.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\ExternalAuthService.cs" Link="Services\ExternalAuthService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\FileStorageService.cs" Link="Services\FileStorageService.cs" />
-    <Compile Include="..\NewLife.CubeNC\Services\IMailVerifyCode.cs" Link="Services\IMailVerifyCode.cs" />
-    <Compile Include="..\NewLife.CubeNC\Services\ISmsVerifyCode.cs" Link="Services\ISmsVerifyCode.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\JobService.cs" Link="Services\JobService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\PasswordService.cs" Link="Services\PasswordService.cs" />
-    <Compile Include="..\NewLife.CubeNC\Services\SmtpMailVerifyCode.cs" Link="Services\SmtpMailVerifyCode.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\SvgAvatarService.cs" Link="Services\SvgAvatarService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\TokenService.cs" Link="Services\TokenService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\UserService.cs" Link="Services\UserService.cs" />

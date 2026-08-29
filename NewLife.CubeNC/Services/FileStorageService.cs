@@ -1,7 +1,9 @@
 ﻿using NewLife.Caching;
 using NewLife.Common;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Web;
 using NewLife.Data;
+using NewLife.IO;
 using NewLife.Log;
 using NewLife.Reflection;
 using Stardust;
@@ -70,6 +72,43 @@ public static class FileStorageExtensions
         });
 
         services.AddHostedService<FileStorageService>();
+
+        return services;
+    }
+
+    /// <summary>注册附件存储提供者。根据配置在本地磁盘与对象存储（OSS/COS/七牛/EasyIO）之间切换</summary>
+    /// <param name="services">服务集合</param>
+    /// <param name="set">魔方设置。为空时使用<see cref="CubeSetting.Current"/></param>
+    /// <returns></returns>
+    public static IServiceCollection AddCubeAttachmentStorage(this IServiceCollection services, CubeSetting set = null)
+    {
+        set ??= CubeSetting.Current;
+
+        IAttachmentStorage storage = new LocalAttachmentStorage();
+        var type = set.AttachmentStorage;
+        if (!type.IsNullOrEmpty() && !type.EqualIgnoreCase("Local"))
+        {
+            // EasyIO 使用核心库自带客户端，其他类型走S3兼容协议
+            IObjectStorage oss;
+            if (type.EqualIgnoreCase("EasyIO"))
+                oss = new EasyClient { Server = set.ObjectStorageServer, AppId = set.ObjectStorageAppId, Secret = set.ObjectStorageSecret };
+            else
+                oss = new S3ObjectStorage
+                {
+                    Server = set.ObjectStorageServer,
+                    AppId = set.ObjectStorageAppId,
+                    Secret = set.ObjectStorageSecret,
+                    Bucket = set.ObjectStorageBucket,
+                    Region = set.ObjectStorageRegion,
+                };
+
+            storage = new ObjectAttachmentStorage { Storage = oss, Name = type };
+        }
+
+        // 静态门面，供 Attachment 实体与控制器访问
+        AttachmentProvider.Provider = new AttachmentProvider { Storage = storage };
+
+        XTrace.WriteLine("附件存储：{0}", storage.Name);
 
         return services;
     }
@@ -156,6 +195,9 @@ public class CubeFileStorage : DefaultFileStorage
 
             foreach (var att in list)
             {
+                // 云存储附件不参与P2P同步，本地不会存放，无需请求
+                if (!att.IsLocalStorage()) continue;
+
                 var filePath = att.GetFilePath(RootPath);
                 if (!filePath.IsNullOrEmpty() && !File.Exists(filePath))
                 {

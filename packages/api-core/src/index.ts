@@ -29,6 +29,7 @@ export type {
   LoginResult,
   LoginConfig,
   ChallengeResult,
+  CaptchaResult,
   ResetPasswordModel,
   OAuthProvider,
   MenuItem,
@@ -42,6 +43,10 @@ export type {
   AuthBindItem,
   TenantItem,
   TenantListResult,
+  MfaSetupResult,
+  ActivateModel,
+  VerifyContactModel,
+  VerifyStatus,
 } from './types';
 export { FieldKind, Auth, ApiError } from './types';
 export type {

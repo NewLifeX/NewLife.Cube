@@ -69,8 +69,9 @@ export interface PageLogicOptions {
   update: PageStateUpdater;
   /** 默认每页大小 */
   defaultPageSize?: number;
-  /** 初始菜单权限（来自 auth-logic getMenuPermission），用于推断 canAdd/canEdit/canDelete 等 */
-  menuPermissions?: Record<string, string>;
+  /** 菜单权限（来自 auth-logic getMenuPermission），用于推断 canAdd/canEdit/canDelete 等；
+   *  可传静态对象或返回对象的函数（菜单异步加载后动态读取） */
+  menuPermissions?: Record<string, string> | (() => Record<string, string>);
 }
 
 // ======================== 核心逻辑 ========================
@@ -82,12 +83,16 @@ export class PageLogic {
   private api: CubeApi;
   private update: PageStateUpdater;
   private state: PageState;
-  private menuPermissions: Record<string, string>;
+  private getMenuPermissions: () => Record<string, string>;
 
   constructor(options: PageLogicOptions) {
     this.api = options.api;
     this.update = options.update;
-    this.menuPermissions = options.menuPermissions ?? {};
+    const mp = options.menuPermissions;
+    this.getMenuPermissions =
+      typeof mp === 'function'
+        ? (mp as () => Record<string, string>)
+        : () => (mp as Record<string, string> | undefined) ?? {};
     this.state = {
       listFields: [],
       searchFields: [],
@@ -140,12 +145,19 @@ export class PageLogic {
     const pageSetting = pageMeta.setting ?? pageMeta.pageSetting ?? null;
 
     // 计算权限标志（菜单权限 + 页面设置双重限制）
-    const perms = this.menuPermissions;
-    const hasAdd = perms['Add'] !== undefined || Object.values(perms).some(v => v === '新增' || v === 'Add');
-    const hasEdit = perms['Edit'] !== undefined || Object.values(perms).some(v => v === '编辑' || v === 'Edit');
-    const hasDel = perms['Delete'] !== undefined || Object.values(perms).some(v => v === '删除' || v === 'Delete');
-    const hasExport = perms['Export'] !== undefined || Object.values(perms).some(v => v === '导出' || v === 'Export');
-    const hasImport = perms['Import'] !== undefined || Object.values(perms).some(v => v === '导入' || v === 'Import');
+    // 权限码（2 的幂，对应 Auth 常量）优先按 key 匹配，兼容不同后端的权限标签文案（新增/添加、编辑/修改）
+    const perms = this.getMenuPermissions();
+    const hasPerm = (codes: number[], labels: string[], keys: string[]) =>
+      keys.some((k) => perms[k] !== undefined) ||
+      codes.some((c) => perms[String(c)] !== undefined) ||
+      Object.values(perms).some((v) => labels.includes(v));
+    const hasAdd = hasPerm([2], ['新增', '添加', 'Add'], ['Add']);
+    const hasEdit = hasPerm([4], ['编辑', '修改', 'Edit'], ['Edit']);
+    const hasDel = hasPerm([8], ['删除', 'Delete'], ['Delete']);
+    // 导出/导入的后端授权：NewLife.Cube ExportFile=[EntityAuthorize(Detail=1)]、ImportFile=[EntityAuthorize(Insert=2)]，
+    // 部分后端可能定义 16/32，故两种授权码都兼容
+    const hasExport = hasPerm([1, 16], ['查看', '导出', 'Export', 'Detail'], ['Detail', 'Export']);
+    const hasImport = hasPerm([2, 32], ['添加', '新增', '导入', 'Import', 'Insert'], ['Insert', 'Import']);
     // 无权限配置时（菜单未配 permissions）默认允许
     const noPermConfig = Object.keys(perms).length === 0;
 

@@ -1,5 +1,15 @@
 # ChangeLog
 
+## v6.14.2026.0827 (2026-08-27)
+
+### 新功能
+- **列表页免查总数分页**：新增 `PageSetting.EnableTotalCount` 配置（默认true），设为false时跳过SelectCount总数查询，列表页不显示总条数与页码，仅提供上一页/下一页，支持海量数据列表显示（GitHub issue #74）
+  - 免查总数模式下每页多取一条探测是否存在下一页，末页不出现空页
+  - Html/Json/API 数据接口同步支持该开关
+  - CubeSSO/CubeDemoNC 提供演示控制器
+
+---
+
 ## v6.14.2026.0805 (2026-08-05)
 
 ### AI 对话助手

@@ -83,7 +83,7 @@ public class WidgetManagerTests
         Assert.True(_manager.IsVisible(info, new List<String> { "普通用户" }, true));
     }
 
-    [Fact(DisplayName = "GetData_QuickLink返回快捷链接")]
+    [Fact(DisplayName = "GetData_QuickLink未登录返回空链接")]
     public void GetData_QuickLink_ReturnsLinks()
     {
         var info = _manager.Scan()["QuickLink"];
@@ -91,8 +91,8 @@ public class WidgetManagerTests
         Assert.NotNull(data);
 
         dynamic d = data!;
-        var links = (Object[])d.Links;
-        Assert.NotEmpty(links);
+        var links = (IEnumerable<Object>)d.Links;
+        Assert.Empty(links);
     }
 
     [Fact(DisplayName = "GetData_Profile无登录用户返回空安全结构")]

@@ -60,8 +60,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     {
         var p = new Pager(WebHelper.Params)
         {
-            // 需要总记录数来分页
-            RetrieveTotalCount = true
+            // 需要总记录数来分页；海量数据可关闭，免查总数后TotalCount恒为0，由客户端按PageIndex翻页
+            RetrieveTotalCount = PageSetting.EnableTotalCount
         };
 
         var list = SearchData(p);

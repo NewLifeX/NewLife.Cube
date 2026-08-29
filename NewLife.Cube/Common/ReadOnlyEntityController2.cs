@@ -160,6 +160,36 @@ public partial class ReadOnlyEntityController<TEntity>
         return Search(p);
     }
 
+    /// <summary>搜索数据，支持数据权限。免查总数时多取一条探测是否存在下一页</summary>
+    /// <param name="p">分页参数</param>
+    /// <param name="needCount">是否查询总记录数。false时跳过SelectCount，改由探测判断下一页</param>
+    /// <param name="hasNext">是否存在下一页。免查总数模式下由多取一条的结果判断</param>
+    /// <returns></returns>
+    protected virtual IEnumerable<TEntity> SearchData(Pager p, Boolean needCount, out Boolean hasNext)
+    {
+        if (needCount)
+        {
+            p.RetrieveTotalCount = true;
+            hasNext = false;
+            return SearchData(p);
+        }
+
+        // 免查总数：多取一条探测下一页，随后裁掉探测行，避免列表多出一行
+        // 注意用StartRow固定本页偏移，避免PageSize+1导致XCode按(PageIndex-1)*PageSize重新计算偏移而跳过数据
+        var pageSize = p.PageSize;
+        var startRow = p.StartRow;
+        p.StartRow = startRow >= 0 ? startRow : (p.PageIndex - 1) * pageSize;
+        p.PageSize = pageSize + 1;
+        var list = SearchData(p).ToList();
+        p.PageSize = pageSize;
+        p.StartRow = startRow;
+
+        hasNext = list.Count > pageSize;
+        if (hasNext) list.RemoveAt(list.Count - 1);
+
+        return list;
+    }
+
     /// <summary>查找单行数据</summary>
     /// <param name="key"></param>
     /// <returns></returns>

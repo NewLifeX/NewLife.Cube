@@ -89,6 +89,16 @@ public class ControllerBaseX : Controller
             }
         }
 
+        // 记录最近访问：登录用户访问的有菜单页面（GET 页面视图，排除工作台首页）
+        var user = ManageProvider.User;
+        if (user != null && context.Exception == null && Request.Method == "GET" && !IsJsonRequest && Menu != null && context.Result is ViewResult)
+        {
+            var act = GetControllerAction();
+            var isDashboard = act.Length >= 3 && act[1].EqualIgnoreCase("Index") && act[2].EqualIgnoreCase("Dashboard");
+            if (!isDashboard)
+                NewLife.Cube.Widgets.System.QuickLinkWidget.RecordVisit(user.ID, Menu);
+        }
+
         base.OnActionExecuted(context);
     }
     #endregion

@@ -42,6 +42,13 @@ public class PageSetting
     /// <summary>启用两次删除。默认true</summary>
     /// <remarks>具有假删除的实体，第一次删除是假删除，还可以修改恢复，假删除时第二次删除则是真正的物理删除</remarks>
     public Boolean DoubleDelete { get; set; } = true;
+
+    /// <summary>是否查询总记录数。默认true</summary>
+    /// <remarks>
+    /// 海量数据列表页查询慢往往源于SelectCount总数统计，可设为false跳过总数查询，
+    /// 此时列表页不显示总条数和页码，仅提供上一页/下一页翻页。
+    /// </remarks>
+    public Boolean EnableTotalCount { get; set; } = true;
     #endregion
 
     #region 构造

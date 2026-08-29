@@ -33,6 +33,19 @@
 <script src="@res/bootstrap-suggest.js"></script>
 <script type="text/javascript">
     $(function () {
+        @if (Model.ConditionFields != null && Model.ConditionFields.Count > 0)
+        {
+            <text>
+        var @(id)_baseUrl = "@Model.Url";
+        var @(id)_conditionFields = @Html.Raw(Model.ConditionFields.ToJson());
+            </text>
+        }
+        @if (Model.FillFields != null && Model.FillFields.Count > 0)
+        {
+            <text>
+        var @(id)_fillFields = @Html.Raw(Model.FillFields.ToJson());
+            </text>
+        }
         $("#@(id)_select").bsSuggest({
             url: "@Model.Url",
             getDataMethod:"url",
@@ -54,11 +67,52 @@
                 dt = {};
                 dt.value = result.data;
                 return dt;
-            }
+            }@if (Model.ConditionFields != null && Model.ConditionFields.Count > 0)
+            {<text>,
+            fnAdjustAjaxParam: function (keyword, options) {
+                var url = @(id)_baseUrl;
+                // If URL ends with "param=", insert conditions before that trailing param
+                var match = url.match(/^(.*[?&])([^?&]+=)$/);
+                var prefix, trailing;
+                if (match) {
+                    prefix = match[1];
+                    trailing = match[2];
+                } else {
+                    prefix = url.indexOf('?') >= 0 ? url + '&' : url + '?';
+                    trailing = '';
+                }
+                var condStr = '';
+                for (var fieldId in @(id)_conditionFields) {
+                    var paramName = @(id)_conditionFields[fieldId];
+                    var val = $('#' + fieldId).val();
+                    if (val !== undefined && val !== null && val !== '') {
+                        condStr += encodeURIComponent(paramName) + '=' + encodeURIComponent(val) + '&';
+                    }
+                }
+                options.url = prefix + condStr + trailing;
+            }</text>}
         }).on('onSetSelectValue', function (e, keyword, data) {
             $('#@id').val(keyword.id);
+            @if (Model.FillFields != null && Model.FillFields.Count > 0)
+            {<text>
+            if (data && typeof @(id)_fillFields !== 'undefined') {
+                for (var responseField in @(id)_fillFields) {
+                    var targetId = @(id)_fillFields[responseField];
+                    if (data[responseField] !== undefined) {
+                        $('#' + targetId).val(data[responseField]);
+                    }
+                }
+            }</text>}
         }).on('onUnsetSelectValue', function () {
             $('#@id').val('');
+            @if (Model.FillFields != null && Model.FillFields.Count > 0)
+            {<text>
+            if (typeof @(id)_fillFields !== 'undefined') {
+                for (var responseField in @(id)_fillFields) {
+                    var targetId = @(id)_fillFields[responseField];
+                    $('#' + targetId).val('');
+                }
+            }</text>}
         });
     });
 </script>

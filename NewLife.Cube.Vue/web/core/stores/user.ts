@@ -32,6 +32,10 @@ export interface UserInfo {
   departmentID: number;
   online: boolean;
   enable: boolean;
+  /** 邮箱已验证（安全中心展示验证状态） */
+  mailVerified: boolean;
+  /** 手机已验证（安全中心展示验证状态） */
+  mobileVerified: boolean;
   logins: number;
   lastLogin: string;
   lastLoginIP: string;

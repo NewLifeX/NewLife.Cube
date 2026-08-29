@@ -2,8 +2,10 @@
 @using NewLife.Web;
 @{
     var pager = ViewBag.Page as Pager;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+    var hasNext = ViewBag.HasNext as Boolean? ?? true;
     //page.PageUrlTemplate = page.PageUrlTemplate.Replace("{链接}", Url.Action("Index") + "{链接}");
-    // 没有总记录数的时候不显示分页，可以认为不启用分页
+    // 没有总记录数的时候不显示分页，可以认为不启用分页；免查总数模式仅显示上一页/下一页
 
     var act = Context.Request.Path + "";
     if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
@@ -17,6 +19,46 @@
             @Html.Raw(pager.GetPage("上一页"))&nbsp;
             @Html.Raw(pager.GetPage("下一页"))&nbsp;
             @Html.Raw(pager.GetPage("尾页")) &nbsp;
+            转到第<input name="PageIndex" type="text" value="@pager.PageIndex" class="input-sm" style="width:40px;text-align:right;" />页
+            <input type="submit" value="GO" class="btn btn-deafult btn-sm" />
+            页大小
+            <select id="PageSize" name="PageSize" onchange="$(this).parents('form').submit();">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="500">500</option>
+                <option value="1000">1000</option>
+            </select>
+            <script type="text/javascript">
+        $(function () {
+            $('#PageSize').val(@pager.PageSize);
+        });
+            </script>
+        </form></text>}
+else if (!set.EnableTotalCount && (hasNext || pager.PageIndex > 1))
+{<text><form action="@act?@pager.GetBaseUrl(true, true, false)" method="post" role="form">
+            每页<span>@pager.PageSize</span>条&nbsp;
+            @if (pager.PageIndex > 1)
+            {
+                @Html.Raw(pager.GetPageUrl("上一页", pager.PageIndex - 1))
+            }
+            else
+            {
+                <span>上一页</span>
+            }
+            &nbsp;
+            @if (hasNext)
+            {
+                @Html.Raw(pager.GetPageUrl("下一页", pager.PageIndex + 1))
+            }
+            else
+            {
+                <span>下一页</span>
+            }
+            &nbsp;
             转到第<input name="PageIndex" type="text" value="@pager.PageIndex" class="input-sm" style="width:40px;text-align:right;" />页
             <input type="submit" value="GO" class="btn btn-deafult btn-sm" />
             页大小

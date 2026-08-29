@@ -51,6 +51,8 @@ public class LogController : ReadOnlyEntityController<XLog>
             PageSetting.NavView = "_User_Nav";
             PageSetting.EnableNavbar = false;
         }
+
+        PageSetting.EnableTotalCount = false;
     }
 
     /// <summary>搜索数据集</summary>

@@ -99,6 +99,77 @@ public class AuthRegisterModel : ICubeModel
     public String Password2 { get => ConfirmPassword; set => ConfirmPassword = value; }
 }
 
+/// <summary>注册结果。正常注册返回访问令牌，需要邮箱/手机验证时返回待激活信息</summary>
+public class RegisterResult
+{
+    /// <summary>访问令牌。待激活时为 null</summary>
+    public String AccessToken { get; set; }
+
+    /// <summary>刷新令牌。待激活时为 null</summary>
+    public String RefreshToken { get; set; }
+
+    /// <summary>是否待激活。true 表示注册成功但需先激活邮箱/手机后才能登录</summary>
+    public Boolean PendingActivation { get; set; }
+
+    /// <summary>已发送激活的渠道列表。mail/sms</summary>
+    public String[] Channels { get; set; }
+
+    /// <summary>对应渠道的脱敏目标。与 Channels 一一对应</summary>
+    public String[] Targets { get; set; }
+
+    /// <summary>激活有效期（秒）</summary>
+    public Int32 ExpireIn { get; set; }
+}
+
+/// <summary>待激活注册信息。注册后需激活邮箱/手机才能登录</summary>
+public class ActivatePendingModel
+{
+    /// <summary>已发送激活的渠道列表。mail/sms</summary>
+    public String[] Channels { get; set; }
+
+    /// <summary>对应渠道的脱敏目标。与 Channels 一一对应</summary>
+    public String[] Targets { get; set; }
+
+    /// <summary>激活有效期（秒）</summary>
+    public Int32 ExpireIn { get; set; } = 3600;
+}
+
+/// <summary>联系方式验证状态。安全中心验证/更换后返回</summary>
+public class VerifyStatusModel
+{
+    /// <summary>邮箱已验证</summary>
+    public Boolean MailVerified { get; set; }
+
+    /// <summary>手机已验证</summary>
+    public Boolean MobileVerified { get; set; }
+}
+
+/// <summary>激活模型。邮箱/手机验证码激活</summary>
+public class ActivateModel
+{
+    /// <summary>渠道。mail/sms</summary>
+    public String Channel { get; set; }
+
+    /// <summary>邮箱或手机号</summary>
+    public String Account { get; set; }
+
+    /// <summary>验证码</summary>
+    public String Code { get; set; }
+}
+
+/// <summary>验证联系方式模型。安全中心验证/更换邮箱或手机</summary>
+public class VerifyContactModel
+{
+    /// <summary>渠道。mail/sms</summary>
+    public String Channel { get; set; }
+
+    /// <summary>新邮箱或手机号</summary>
+    public String Account { get; set; }
+
+    /// <summary>验证码（经 SendCode action=bind 发送）</summary>
+    public String Code { get; set; }
+}
+
 /// <summary>OAuth回跳待注册信息</summary>
 public class OAuthPendingInfoModel : ICubeModel
 {
@@ -160,6 +231,12 @@ public class UserInfo
 
     /// <summary>手机</summary>
     public String Mobile { get; set; }
+
+    /// <summary>邮箱已验证。安全中心展示邮箱验证状态</summary>
+    public Boolean MailVerified { get; set; }
+
+    /// <summary>手机已验证。安全中心展示手机验证状态</summary>
+    public Boolean MobileVerified { get; set; }
 
     /// <summary>代码。身份证、员工编号等</summary>
     public String Code { get; set; }

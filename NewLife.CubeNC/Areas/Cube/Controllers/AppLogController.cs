@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Web;
@@ -22,6 +23,13 @@ public class AppLogController : ReadOnlyEntityController<AppLog>
         //    df.Url = StarHelper.BuildUrl("{TraceId}");
         //    df.DataVisible = (e, f) => !(e as AppLog).TraceId.IsNullOrEmpty();
         //}
+    }
+
+    /// <summary>已重载。</summary>
+    public override void OnActionExecuting(ActionExecutingContext filterContext)
+    {
+        base.OnActionExecuting(filterContext);
+        PageSetting.EnableTotalCount = false;
     }
 
     /// <summary>搜索</summary>

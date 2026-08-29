@@ -1,16 +1,12 @@
 @model dynamic
-@using XCode.Membership;
 @{
     var d = Model;
-    var user = ManageProvider.User;
-    var isAdmin = user?.Roles.Any(e => e.IsSystem) == true;
 }
 <div class="widget-quicklinks">
     @foreach (dynamic link in d.Links)
     {
-        if (link.AdminOnly && !isAdmin) continue;
         <a class="quicklink-item" href="@link.Url" title="@link.Name">
-            <i class="fa @link.Icon"></i>
+            <i class="fa @(String.IsNullOrEmpty(link.Icon) ? "fa-th-large" : link.Icon)"></i>
             <span>@link.Name</span>
         </a>
     }

@@ -24,6 +24,9 @@ import type {
   EntityCommentModel,
   AuthBindItem,
   TenantListResult,
+  ActivateModel,
+  VerifyContactModel,
+  VerifyStatus,
 } from './types';
 import type {
   WidgetCatalog,
@@ -173,6 +176,24 @@ export function createUserApi(request: RequestFn) {
     /** 修改当前用户密码 */
     changePassword: (data: { oldPassword?: string; newPassword: string; newPassword2: string }) =>
       request<unknown>({ url: '/Admin/User/ChangePassword', method: 'post', data }),
+
+    /**
+     * 邮箱激活链接直达。激活邮件中的链接指向 {ActivateUrl}?token=&account=，前端 /activate 页解析后调用
+     */
+    activateByLink: (token: string, account: string) =>
+      request<{ activated: boolean }>({ url: '/Auth/Activate', method: 'get', params: { token, account } }),
+
+    /** 验证码激活（邮箱验证码/手机短信验证码） */
+    activateByCode: (data: ActivateModel) =>
+      request<{ activated: boolean }>({ url: '/Auth/Activate', method: 'post', data }),
+
+    /** 重发激活。未激活账号重新发送激活邮件/短信（登录页「未激活？重新发送」） */
+    sendActivateCode: (channel: string, account: string) =>
+      request<{ target: string }>({ url: '/Auth/SendActivateCode', method: 'post', data: { channel, username: account } }),
+
+    /** 已登录用户验证/更换邮箱或手机（安全中心）。验证码经 sendCode(action=bind) 发送 */
+    verifyContact: (data: VerifyContactModel) =>
+      request<VerifyStatus>({ url: '/Auth/VerifyContact', method: 'post', data }),
   };
 }
 

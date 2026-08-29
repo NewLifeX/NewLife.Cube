@@ -37,7 +37,7 @@ const h = vi.hoisted(() => {
         reLoginParams: { loginPageUrl: '/login' },
       },
       user: {
-        getUserInfoAxiosConfig: () => ({ method: 'GET', url: '/Admin/User/Info' }),
+        getUserInfoAxiosConfig: () => ({ method: 'GET', url: '/Auth/Info' }),
       },
     },
     gotoPage: vi.fn(),
@@ -140,15 +140,15 @@ describe('request.ts — cube-vue 请求层 UI 逻辑', () => {
       expect(h.gotoPage).not.toHaveBeenCalled();
     });
 
-    it('自身 401（/Admin/User/Info）且不在登录页 → 跳登录页', () => {
+    it('自身 401（/Auth/Info）且不在登录页 → 跳登录页', () => {
       setPath('/dashboard');
-      opts.onUnauthorized('/Admin/User/Info');
+      opts.onUnauthorized('/Auth/Info');
       expect(h.gotoPage).toHaveBeenCalledWith(expect.stringContaining('/login?redirect_uri='));
     });
 
     it('自身 401 但已在登录页 → 不重复跳转', () => {
       setPath('/login');
-      opts.onUnauthorized('/Admin/User/Info');
+      opts.onUnauthorized('/Auth/Info');
       expect(h.gotoPage).not.toHaveBeenCalled();
     });
 
