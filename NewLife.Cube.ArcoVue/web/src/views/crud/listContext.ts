@@ -328,12 +328,11 @@ export function createListContext(props: { type: string; authId?: number }) {
     resolveChrome(viewState.value ? getActiveView(viewState.value) : null),
   );
 
-  /** 批量删除门禁：表格视图 + 删除权限 + 允许删除 + 至少选中一行 */
+  /** 批量删除门禁：表格视图 + 删除权限 + 至少选中一行（详情/删除不再受 chrome.allow* 控制） */
   const batchDeleteState = computed(() =>
     resolveBatchDeleteState({
       viewKind: activeViewKind.value,
       canDelete: flags.value.canDelete,
-      allowDelete: chrome.value.allowDelete,
       selectedCount: selectedKeys.value.length,
     }),
   );
@@ -438,9 +437,10 @@ export function createListContext(props: { type: string; authId?: number }) {
 
   const listShellStyle = computed(() => {
     const c = chrome.value;
-    const style: Record<string, string> = { padding: '0 4px' };
+    // 全屏依赖 .default-list--fullscreen 的 padding:12px；勿用内联 padding 覆盖，否则贴边且易触发溢出细条
+    const style: Record<string, string> = fullscreen.value ? {} : { padding: '0 4px' };
     if (c.widthMode === 'fill') style.width = '100%';
-    if (c.heightMode === 'fill') style.minHeight = 'calc(100vh - 180px)';
+    if (c.heightMode === 'fill' && !fullscreen.value) style.minHeight = 'calc(100vh - 180px)';
     return style;
   });
 
@@ -507,8 +507,8 @@ export function createListContext(props: { type: string; authId?: number }) {
     const nonTableH = pr.height - measuredTableHeight.value;
     let avail: number;
     if (fullscreen.value) {
-      // 全屏：面板固定铺满视口（顶部贴近视口），可用高度 = 视口高 - 面板顶 - 非表格部分 - gutter
-      avail = Math.floor(window.innerHeight - pr.top - nonTableH - 16);
+      // 全屏：与 .default-list--fullscreen padding:12px 对齐，底部留白用 12 而非布局 scroll 的 16
+      avail = Math.floor(window.innerHeight - pr.top - nonTableH - 12);
     } else {
       const scroll = document.querySelector<HTMLElement>('.layout-content__scroll');
       if (!scroll) return;

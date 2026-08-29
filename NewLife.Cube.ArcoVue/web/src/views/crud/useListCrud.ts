@@ -26,7 +26,6 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
     listFields,
     pkField,
     flags,
-    chrome,
     enableBusy,
     fieldParts,
     fieldErrors,
@@ -55,7 +54,7 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
     if (payload.action.startsWith('auto:')) return;
     if (payload.action === 'edit') openEdit(payload.row);
     else if (payload.action === 'delete') {
-      if (!chrome.value.allowDelete) return;
+      if (!flags.value.canDelete) return;
       if (isIamRowActionDisabled(typePath.value, payload.row, 'delete')) return;
       Modal.confirm({
         title: '确认删除？',
@@ -272,7 +271,7 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
   }
 
   function onCardDelete(row: Record<string, unknown>) {
-    if (!chrome.value.allowDelete) return;
+    if (!flags.value.canDelete) return;
     if (isIamRowActionDisabled(typePath.value, row, 'delete')) return;
     Modal.confirm({
       title: '确认删除？',

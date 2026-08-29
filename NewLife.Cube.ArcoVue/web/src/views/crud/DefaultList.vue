@@ -169,7 +169,7 @@
               搜索
             </a-button>
             <ShareViewPopover
-              v-if="!isEmbed"
+              v-if="!isEmbed && chrome.showShare"
               :visible="sharePopoverVisible"
               :type-path="typePath"
               :view-id="activeViewId || ''"
@@ -336,8 +336,8 @@
               :selected-keys="selectedKeys"
               :show-checkbox="activeViewKind === 'table'"
               :can-edit="flags.canEdit"
-              :can-delete="flags.canDelete && chrome.allowDelete"
-              :can-view-detail="chrome.allowViewDetail"
+              :can-delete="flags.canDelete"
+              :can-view-detail="true"
               :enable-table-double-click="enableTableDoubleClick"
               :automation-buttons="automationButtons"
               :ops-custom-links="opsCustomLinks"
@@ -382,10 +382,10 @@
             :field-orientation="activeCardMapping?.fieldOrientation ?? 'vertical'"
             :row-key="pkField"
             :height="resolvedTableHeight"
-            :can-view-detail="chrome.allowViewDetail"
+            :can-view-detail="true"
             :enable-table-double-click="enableTableDoubleClick"
             :can-edit="flags.canEdit"
-            :can-delete="flags.canDelete && chrome.allowDelete"
+            :can-delete="flags.canDelete"
             :type-path="typePath"
             :ops-custom-links="opsCustomLinks"
             :format-cell="renderCell"
@@ -405,10 +405,10 @@
             :mapping="activeKanbanMapping"
             :row-key="pkField"
             :height="resolvedTableHeight"
-            :can-view-detail="chrome.allowViewDetail"
+            :can-view-detail="true"
             :enable-table-double-click="enableTableDoubleClick"
             :can-edit="flags.canEdit"
-            :can-delete="flags.canDelete && chrome.allowDelete"
+            :can-delete="flags.canDelete"
             :type-path="typePath"
             :ops-custom-links="opsCustomLinks"
             :format-cell="renderCell"
@@ -814,7 +814,9 @@ const automationFields = computed(() => {
   position: fixed;
   inset: 0;
   z-index: 900;
-  overflow: auto;
+  /* 禁止横向滚动：避免 VTable/面板 1px 溢出时底部出现灰色细滚动条；纵向仍可滚（洞察槽等） */
+  overflow-x: hidden;
+  overflow-y: auto;
   background-color: var(--color-bg-1);
   background-image: linear-gradient(var(--color-fill-2), var(--color-fill-2));
   /* 全屏时无论是否有 chrome 背景，顶部仪表盘与视口边缘留白 */
@@ -823,6 +825,10 @@ const automationFields = computed(() => {
 }
 .default-list--fullscreen .list-surface {
   padding-top: 0;
+}
+/* 全屏下列表面板：横向滚动交给 VTable 内部，避免面板底缘常驻细滚动条 */
+.default-list--fullscreen .list-panel {
+  overflow-x: hidden;
 }
 .list-surface {
   display: flex;

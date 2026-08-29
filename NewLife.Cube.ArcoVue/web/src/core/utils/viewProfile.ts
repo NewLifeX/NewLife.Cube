@@ -43,12 +43,20 @@ export interface ViewChrome {
   showGroup?: boolean;
   showSort?: boolean;
   showSearch?: boolean;
+  /** 工具栏「分享」；缺省 true（兼容旧配置：原先始终显示分享） */
+  showShare?: boolean;
   allowAdd?: boolean;
   addButtonText?: string;
   customButton?: boolean;
   /** 列表区 */
   showPager?: boolean;
+  /**
+   * @deprecated 改由菜单/角色权限控制，配置抽屉不再展示；仍归一化以兼容旧 ViewProfile，运行时忽略。
+   */
   allowViewDetail?: boolean;
+  /**
+   * @deprecated 改由菜单/角色删除权限控制，配置抽屉不再展示；仍归一化以兼容旧 ViewProfile，运行时忽略。
+   */
   allowDelete?: boolean;
   expandRow?: boolean;
 }
@@ -385,6 +393,7 @@ export const DEFAULT_CHROME: Required<ViewChrome> = {
   showGroup: true,
   showSort: true,
   showSearch: true,
+  showShare: true,
   allowAdd: true,
   addButtonText: '添加记录',
   customButton: false,
@@ -437,7 +446,10 @@ export function normalizeColumn(raw: unknown): ColumnPref | null {
   };
 }
 
-/** 元数据字段 ∪ 已存偏好：未知 key 丢弃；新字段默认 visible；meta 空时保留合法 prefs */
+/** 无列偏好时默认可见字段数（字段配置 / 新建视图 / 恢复默认） */
+export const DEFAULT_VISIBLE_COLUMN_COUNT = 7;
+
+/** 元数据字段 ∪ 已存偏好：未知 key 丢弃；无偏好的新字段默认至多可见 DEFAULT_VISIBLE_COLUMN_COUNT 个；meta 空时保留合法 prefs */
 export function mergeColumns(
   metaKeys: string[],
   prefs: ColumnPref[] | null | undefined,
@@ -462,7 +474,13 @@ export function mergeColumns(
   }
   for (const key of keys) {
     if (!ordered.some((x) => x.key === key)) {
-      ordered.push({ key, visible: true, frozen: false });
+      // 已有偏好的字段可见性不动；仅无历史偏好的新字段受默认可见上限约束
+      const visibleCount = ordered.filter((c) => c.visible).length;
+      ordered.push({
+        key,
+        visible: visibleCount < DEFAULT_VISIBLE_COLUMN_COUNT,
+        frozen: false,
+      });
     }
   }
   return arrangeFrozenColumns(ordered);
@@ -501,6 +519,8 @@ function normalizeChrome(raw: unknown): ViewChrome | undefined {
     showGroup: boolOr(o.showGroup, true),
     showSort: boolOr(o.showSort, true),
     showSearch: boolOr(o.showSearch, true),
+    // 旧配置无 showShare → 默认开，与「原先始终显示分享按钮」行为一致
+    showShare: boolOr(o.showShare, true),
     allowAdd: boolOr(o.allowAdd, true),
     addButtonText:
       typeof o.addButtonText === 'string' && o.addButtonText.trim()
@@ -508,6 +528,7 @@ function normalizeChrome(raw: unknown): ViewChrome | undefined {
         : '添加记录',
     customButton: boolOr(o.customButton, false),
     showPager: boolOr(o.showPager, true),
+    // 仍读入旧值以便 round-trip；列表运行时以角色权限为准，不再消费这两项
     allowViewDetail: boolOr(o.allowViewDetail, true),
     allowDelete: boolOr(o.allowDelete, true),
     expandRow: boolOr(o.expandRow, false),
@@ -1079,7 +1100,7 @@ export function createNamedView(
     view: kind,
     columns: mergeColumns(metaKeys, active.columns.map((c) => ({ ...c }))),
     sort: active.sort ? { ...active.sort } : null,
-    // chromeOverride 用于创建时按用户权限覆盖默认（如 allowDelete=用户是否有删除权限）
+    // chromeOverride：创建时可覆盖外观开关（如 showShare）；详情/删除改由角色权限控制，勿再传 allow*
     chrome: { ...(active.chrome || DEFAULT_CHROME), ...(chromeOverride || {}) },
     mapping,
   };
@@ -1137,8 +1158,9 @@ export function renameView(state: EntityViewState, id: string, name: string): En
 }
 
 /**
- * 恢复视图：把指定视图重置为创建时的默认状态（保留 id/名称/删除权限；
- * 列/排序/映射/筛选/分组/洞察恢复默认，等价重新创建该类型视图的配置）。
+ * 恢复视图：把指定视图重置为创建时的默认状态（保留 id/名称；
+ * 列/排序/映射/筛选/分组/洞察/chrome 恢复默认，等价重新创建该类型视图的配置）。
+ * 详情/删除入口由角色权限控制，不再保留旧 chrome.allow*。
  */
 export function restoreNamedView(
   state: EntityViewState,
@@ -1155,13 +1177,7 @@ export function restoreNamedView(
     view: src.view,
     columns: mergeColumns(metaKeys, []),
     sort: null,
-    // 删除权限为权限相关字段（创建时按用户删除权限写入），恢复时保留，其余外观回默认
-    chrome: {
-      ...DEFAULT_CHROME,
-      ...(src.chrome?.allowDelete !== undefined
-        ? { allowDelete: src.chrome.allowDelete }
-        : {}),
-    },
+    chrome: { ...DEFAULT_CHROME },
     mapping,
   };
   return {

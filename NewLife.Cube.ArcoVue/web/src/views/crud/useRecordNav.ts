@@ -11,7 +11,6 @@ export function useRecordNav(ctx: ListContext) {
     typePath,
     pkField,
     tableData,
-    chrome,
     formModel,
     fieldParts,
     drawerVisible,
@@ -65,7 +64,6 @@ export function useRecordNav(ctx: ListContext) {
   }
 
   async function openDetail(row: Record<string, unknown>) {
-    if (!chrome.value.allowViewDetail) return;
     await loadRecordIntoDrawer(row, 'detail');
   }
 

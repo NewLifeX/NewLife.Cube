@@ -63,7 +63,6 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
     localGroup,
     localFormat,
     activeViewId,
-    flags,
     drawerMode,
     tableDataRaw,
     evpStore,
@@ -225,10 +224,7 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
   }
 
   function onCreateView(kind: ViewKind, name: string) {
-    // 创建视图时按用户删除权限设置默认「允许删除记录」：有删除权限 → true，无 → false（需求 OSC）
-    evpStore.addView(typePath.value, name, kind, {
-      allowDelete: flags.value.canDelete,
-    });
+    evpStore.addView(typePath.value, name, kind);
     syncLocalState();
     selectedKeys.value = [];
     pagination.current = 1;

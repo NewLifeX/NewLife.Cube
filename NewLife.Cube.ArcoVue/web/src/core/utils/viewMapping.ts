@@ -101,16 +101,18 @@ export type BatchDeleteState = { visible: boolean; disabled: boolean };
 export type BatchEnableState = { visible: boolean; disabled: boolean };
 
 /**
- * 批量删除菜单门禁：仅表格视图 + 最终删除权限 + 视图允许删除 + 至少选中一行。
+ * 批量删除菜单门禁：仅表格视图 + 删除权限 + 至少选中一行。
  * visible=false 时 disabled 恒为 true，防止调用方遗漏二次保护。
+ * （chrome.allowDelete 已废弃，改由角色权限 canDelete 控制）
  */
 export function resolveBatchDeleteState(args: {
   viewKind: ViewKind;
   canDelete: boolean;
-  allowDelete: boolean;
+  /** @deprecated 忽略；保留入参以免旧调用方编译失败 */
+  allowDelete?: boolean;
   selectedCount: number;
 }): BatchDeleteState {
-  if (args.viewKind !== 'table' || !args.canDelete || !args.allowDelete) {
+  if (args.viewKind !== 'table' || !args.canDelete) {
     return { visible: false, disabled: true };
   }
   return { visible: true, disabled: args.selectedCount <= 0 };

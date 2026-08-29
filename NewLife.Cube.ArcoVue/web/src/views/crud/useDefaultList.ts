@@ -75,9 +75,9 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     }
     if (payload.action === 'more') {
       const { overflowLinks } = buildOpsPartsWithLinks({
-        canViewDetail: ctx.chrome.value.allowViewDetail,
+        canViewDetail: true,
         canEdit: ctx.flags.value.canEdit,
-        canDelete: ctx.flags.value.canDelete && ctx.chrome.value.allowDelete,
+        canDelete: ctx.flags.value.canDelete,
         automationButtons: auto.automationButtons.value,
         opsLinks: ctx.opsCustomLinks.value,
         inlineMax: OPS_LINK_INLINE_MAX,

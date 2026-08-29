@@ -377,13 +377,12 @@ describe('normalizeCardFieldOrientation', () => {
 });
 
 describe('resolveBatchDeleteState', () => {
-  it('hidden outside table or without permission/allow', () => {
+  it('hidden outside table or without canDelete (allowDelete ignored)', () => {
     for (const kind of ['tree', 'card', 'kanban', 'calendar', 'gantt'] as const) {
       expect(
         resolveBatchDeleteState({
           viewKind: kind,
           canDelete: true,
-          allowDelete: true,
           selectedCount: 3,
         }),
       ).toEqual({ visible: false, disabled: true });
@@ -392,10 +391,10 @@ describe('resolveBatchDeleteState', () => {
       resolveBatchDeleteState({
         viewKind: 'table',
         canDelete: false,
-        allowDelete: true,
         selectedCount: 3,
       }),
     ).toEqual({ visible: false, disabled: true });
+    // 旧 chrome.allowDelete=false 不再挡住批量删除（改由角色权限）
     expect(
       resolveBatchDeleteState({
         viewKind: 'table',
@@ -403,7 +402,7 @@ describe('resolveBatchDeleteState', () => {
         allowDelete: false,
         selectedCount: 3,
       }),
-    ).toEqual({ visible: false, disabled: true });
+    ).toEqual({ visible: true, disabled: false });
   });
 
   it('visible but disabled without selection, enabled with selection', () => {
@@ -411,7 +410,6 @@ describe('resolveBatchDeleteState', () => {
       resolveBatchDeleteState({
         viewKind: 'table',
         canDelete: true,
-        allowDelete: true,
         selectedCount: 0,
       }),
     ).toEqual({ visible: true, disabled: true });
@@ -419,7 +417,6 @@ describe('resolveBatchDeleteState', () => {
       resolveBatchDeleteState({
         viewKind: 'table',
         canDelete: true,
-        allowDelete: true,
         selectedCount: 1,
       }),
     ).toEqual({ visible: true, disabled: false });
@@ -427,7 +424,6 @@ describe('resolveBatchDeleteState', () => {
       resolveBatchDeleteState({
         viewKind: 'table',
         canDelete: true,
-        allowDelete: true,
         selectedCount: 5,
       }),
     ).toEqual({ visible: true, disabled: false });

@@ -143,7 +143,6 @@
 
         <section class="cfg-block">
           <div class="cfg-label">页面仪表盘</div>
-          <p class="cfg-hint">统计标签与固定图表已迁至列表顶部洞察槽。</p>
           <a-button size="small" @click="emit('openDashboard')">打开页面仪表盘</a-button>
         </section>
       </a-tab-pane>
@@ -286,6 +285,10 @@
               <span>搜索</span>
               <a-switch v-model="chrome.showSearch" @change="emitChrome" />
             </div>
+            <div class="switch-row">
+              <span>分享</span>
+              <a-switch v-model="chrome.showShare" @change="emitChrome" />
+            </div>
           </div>
         </section>
 
@@ -303,24 +306,6 @@
               </div>
               <div class="switch-row">
                 <span>
-                  允许查看记录详情
-                  <a-tooltip content="关闭后点击行与「详情」入口将不可用">
-                    <icon-park type="info" class="hint-ico" />
-                  </a-tooltip>
-                </span>
-                <a-switch v-model="chrome.allowViewDetail" @change="emitChrome" />
-              </div>
-              <div class="switch-row">
-                <span>
-                  允许删除记录
-                  <a-tooltip content="仍受菜单权限约束；关闭后隐藏删除入口">
-                    <icon-park type="info" class="hint-ico" />
-                  </a-tooltip>
-                </span>
-                <a-switch v-model="chrome.allowDelete" @change="emitChrome" />
-              </div>
-              <div class="switch-row">
-                <span>
                   展开行记录
                   <a-tooltip content="在表格左侧显示展开列，点击可查看详情">
                     <icon-park type="info" class="hint-ico" />
@@ -331,15 +316,6 @@
             </template>
 
             <template v-else-if="viewKind === 'card'">
-              <div class="switch-row">
-                <span>
-                  允许删除记录
-                  <a-tooltip content="仍受菜单权限约束；关闭后隐藏删除入口">
-                    <icon-park type="info" class="hint-ico" />
-                  </a-tooltip>
-                </span>
-                <a-switch v-model="chrome.allowDelete" @change="emitChrome" />
-              </div>
               <div class="nested-field">
                 <div class="cfg-label">卡片标题</div>
                 <a-select
@@ -426,15 +402,6 @@
             </template>
 
             <template v-else-if="viewKind === 'kanban'">
-              <div class="switch-row">
-                <span>
-                  允许删除记录
-                  <a-tooltip content="仍受菜单权限约束；关闭后隐藏删除入口">
-                    <icon-park type="info" class="hint-ico" />
-                  </a-tooltip>
-                </span>
-                <a-switch v-model="chrome.allowDelete" @change="emitChrome" />
-              </div>
               <div class="nested-field">
                 <div class="cfg-label">分组依据</div>
                 <a-select
@@ -834,7 +801,8 @@ const {
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: 360px;
+  /* 固定约 7 行可视高度，多余字段滚动查看（含已有 ViewProfile 长列表） */
+  max-height: calc(7 * (24px + 12px + 1px));
   overflow: auto;
   border: 1px solid var(--color-border);
   border-radius: 4px;

@@ -82,6 +82,60 @@ describe('mergeColumns', () => {
     );
     expect(s.views[0].columns.map((c) => c.key)).toEqual(['Name', 'Code']);
   });
+
+  it('seeds at most 7 visible columns when no prefs', () => {
+    const keys = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+    const m = mergeColumns(keys, null);
+    expect(m.filter((c) => c.visible).map((c) => c.key)).toEqual([
+      'A',
+      'B',
+      'C',
+      'D',
+      'E',
+      'F',
+      'G',
+    ]);
+    expect(m.filter((c) => !c.visible).map((c) => c.key)).toEqual(['H', 'I', 'J']);
+  });
+
+  it('keeps existing prefs visibility; new keys fill up to 7 visible', () => {
+    const m = mergeColumns(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'], [
+      { key: 'A', visible: true },
+      { key: 'B', visible: true },
+      { key: 'C', visible: false },
+    ]);
+    // 已有 A/B 可见；无偏好的新字段从可见槽位继续补到 7
+    expect(m.find((c) => c.key === 'C')?.visible).toBe(false);
+    expect(m.filter((c) => c.visible).map((c) => c.key)).toEqual([
+      'A',
+      'B',
+      'D',
+      'E',
+      'F',
+      'G',
+      'H',
+    ]);
+    expect(m.find((c) => c.key === 'I')?.visible).toBe(false);
+  });
+
+  it('does not hide fields when prefs already exceed 7 visible', () => {
+    const prefs = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((key) => ({
+      key,
+      visible: true,
+    }));
+    const m = mergeColumns(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'], prefs);
+    expect(m.filter((c) => c.visible).map((c) => c.key)).toEqual([
+      'A',
+      'B',
+      'C',
+      'D',
+      'E',
+      'F',
+      'G',
+      'H',
+    ]);
+    expect(m.find((c) => c.key === 'I')?.visible).toBe(false);
+  });
 });
 
 describe('namedViews', () => {
@@ -92,13 +146,14 @@ describe('namedViews', () => {
     expect(v.view).toBe('table');
   });
 
-  it('seeds default view with allowDelete enabled (delete visible for permitted users)', () => {
+  it('seeds default view with allowDelete/showShare defaults', () => {
     const v = seedDefaultView(['Name']);
     expect(v.chrome?.allowDelete).toBe(true);
+    expect(v.chrome?.showShare).toBe(true);
   });
 
-  it('normalizes legacy chrome allowDelete to true when unset', () => {
-    // 旧数据 chrome 未含 allowDelete（或缺失）→ 归一化后默认允许删除
+  it('normalizes legacy chrome: missing showShare → true; missing allowDelete → true', () => {
+    // 旧数据无 showShare / allowDelete → 默认开（分享原先始终显示；删除改由角色权限控制）
     const s = stateFromWire(
       {
         viewsJson: JSON.stringify([
@@ -115,9 +170,11 @@ describe('namedViews', () => {
       ['Name'],
     );
     expect(s.views[0].chrome?.allowDelete).toBe(true);
+    expect(s.views[0].chrome?.showShare).toBe(true);
+    expect(s.views[0].chrome?.showPager).toBe(false);
   });
 
-  it('keeps explicit allowDelete=false from user config', () => {
+  it('keeps explicit allowDelete=false in chrome for round-trip (runtime ignores it)', () => {
     const s = stateFromWire(
       {
         viewsJson: JSON.stringify([
@@ -126,7 +183,7 @@ describe('namedViews', () => {
             name: '默认列表',
             view: 'table',
             columns: [{ key: 'Name', visible: true }],
-            chrome: { allowDelete: false },
+            chrome: { allowDelete: false, showShare: false },
           },
         ]),
         activeViewId: 'default',
@@ -134,6 +191,7 @@ describe('namedViews', () => {
       ['Name'],
     );
     expect(s.views[0].chrome?.allowDelete).toBe(false);
+    expect(s.views[0].chrome?.showShare).toBe(false);
   });
 
   it('uses workspace defaultView when seeding empty state', () => {
@@ -165,14 +223,12 @@ describe('namedViews', () => {
     expect(() => removeView(s, s.views[0].id)).toThrow(/至少保留/);
   });
 
-  it('createNamedView applies chromeOverride (allowDelete by permission)', () => {
+  it('createNamedView applies chromeOverride (e.g. showShare)', () => {
     let s = stateFromWire(null, ['Name']);
-    // 有删除权限：创建视图默认允许删除
-    s = createNamedView(s, '可删', 'table', ['Name'], undefined, { allowDelete: true });
-    expect(s.views.at(-1)?.chrome?.allowDelete).toBe(true);
-    // 无删除权限：创建视图默认不允许删除
-    s = createNamedView(s, '只读', 'card', ['Name'], undefined, { allowDelete: false });
-    expect(s.views.at(-1)?.chrome?.allowDelete).toBe(false);
+    s = createNamedView(s, '可分享', 'table', ['Name'], undefined, { showShare: true });
+    expect(s.views.at(-1)?.chrome?.showShare).toBe(true);
+    s = createNamedView(s, '无分享', 'card', ['Name'], undefined, { showShare: false });
+    expect(s.views.at(-1)?.chrome?.showShare).toBe(false);
   });
 
   it('restoreNamedView resets view to creation-time defaults', () => {
@@ -182,7 +238,7 @@ describe('namedViews', () => {
       { name: 'End', displayName: '结束', typeName: 'DateTime', primaryKey: false } as FieldMeta,
     ];
     let s = stateFromWire(null, ['Name', 'Code']);
-    s = createNamedView(s, '甘特', 'gantt', ['Name', 'Code'], fields, { allowDelete: true });
+    s = createNamedView(s, '甘特', 'gantt', ['Name', 'Code'], fields);
     const gantt = s.views.at(-1)!;
     // 用户改乱了视图：列/排序/映射/筛选/洞察
     s = {
@@ -218,8 +274,9 @@ describe('namedViews', () => {
     // mapping 重新 seed
     expect(rv.mapping?.kind).toBe('gantt');
     expect((rv.mapping as { barColor?: string }).barColor).toBeUndefined();
-    // 删除权限保留，其余外观回默认
+    // chrome 整份回默认（详情/删除由角色权限控制，不再保留旧 allow*）
     expect(rv.chrome?.allowDelete).toBe(true);
+    expect(rv.chrome?.showShare).toBe(true);
     expect(rv.chrome?.showPager).toBe(true);
     // 筛选/分组/洞察重置
     expect(rv.filter).toBeUndefined();
