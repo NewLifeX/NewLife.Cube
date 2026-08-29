@@ -4,7 +4,7 @@
  * 每列按 resolveListControl 解析渲染类型：
  * 链接(resolveUrl)/布尔标签/日期/数值/图片缩略图/颜色色块/图标/LOV 翻译/JSON 摘要等。
  */
-import { Table, Tag, Tooltip, Button } from 'antd';
+import { Table, Tag, Tooltip, Button, Popconfirm } from 'antd';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import type { FieldMapping } from '@cube/field-mapping';
 import { resolveListControl } from '@/utils/fieldControl';
@@ -19,25 +19,36 @@ export interface TableContentProps {
   data: Record<string, unknown>[];
   loading?: boolean;
   pkField?: string;
+  canView?: boolean;
   canEdit?: boolean;
   canDelete?: boolean;
+  /** 软删除字段名（如 Deleted/IsDeleted），存在时已删除行操作列显示「恢复」 */
+  softDeleteField?: string;
   selectable?: boolean;
   selectedKeys?: React.Key[];
   onSelectChange?: (keys: React.Key[]) => void;
+  onView?: (row: Record<string, unknown>) => void;
   onEdit?: (row: Record<string, unknown>) => void;
   onDelete?: (row: Record<string, unknown>) => void;
+  onRestore?: (row: Record<string, unknown>) => void;
   onSortChange?: (sort?: string, desc?: boolean) => void;
   onChange?: (pagination: TablePaginationConfig) => void;
 }
 
-/** 日期格式化 */
-function formatDate(v: unknown): string {
+/** 日期格式化。dateOnly 输出 yyyy-MM-dd，否则 yyyy-MM-dd HH:mm:ss（规范 §7.4：日期时间到时分秒） */
+function formatDate(v: unknown, dateOnly = false): string {
   if (!v) return '';
-  if (v instanceof Date) return v.toLocaleString();
-  const s = String(v);
-  // 兼容 ISO 与 "2026-08-28 12:00:00"
-  const d = new Date(s.includes('T') ? s : s.replace(' ', 'T'));
-  return isNaN(d.getTime()) ? s : d.toLocaleString('zh-CN', { hour12: false });
+  let d: Date;
+  if (v instanceof Date) {
+    d = v;
+  } else {
+    const s = String(v);
+    d = new Date(s.includes('T') ? s : s.replace(' ', 'T'));
+    if (isNaN(d.getTime())) return s;
+  }
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const base = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  return dateOnly ? base : `${base} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
 /** 渲染单元格 */
@@ -49,7 +60,11 @@ function CellRenderer({ field, value }: { field: FieldMapping; value: unknown })
   switch (control) {
     case 'boolean':
       return <Tag color={raw === true || raw === 'true' || raw === 1 ? 'success' : 'default'}>{raw === true || raw === 'true' || raw === 1 ? '是' : '否'}</Tag>;
-    case 'date':
+    case 'date': {
+      // 纯日期字段（ItemType=date）只显示日期，其余显示完整时间
+      const dateOnly = (meta.itemType || '').toLowerCase() === 'date';
+      return <span>{formatDate(raw, dateOnly)}</span>;
+    }
     case 'time':
       return <span>{formatDate(raw)}</span>;
     case 'number':
@@ -102,13 +117,17 @@ export default function TableContent({
   data,
   loading,
   pkField = 'id',
+  canView = false,
   canEdit = true,
   canDelete = true,
+  softDeleteField,
   selectable = true,
   selectedKeys,
   onSelectChange,
+  onView,
   onEdit,
   onDelete,
+  onRestore,
   onSortChange,
   onChange,
 }: TableContentProps) {
@@ -116,12 +135,17 @@ export default function TableContent({
     const meta = toFieldMeta(field.field);
     const control = resolveListControl(meta);
 
-    // 列宽：主键窄、图片/文件/颜色/图标/布尔窄
+    // 列宽规范（皮肤设计规范 §7.5）：主键/数字/枚举 ≥80、时间 ≥140、字符串自适应。
+    // 列多时表格横向滚动，不把各列挤压到无法阅读
     let width: number | undefined;
     if (meta.primaryKey) width = 90;
     else if (control === 'image' || control === 'file') width = 100;
     else if (control === 'color' || control === 'icon') width = 90;
     else if (control === 'boolean') width = 90;
+    else if (control === 'number') width = 100;
+    else if (control === 'lov') width = 100;
+    else if (control === 'date') width = (meta.itemType || '').toLowerCase() === 'date' ? 100 : 140;
+    else if (control === 'time') width = 140;
 
     // 对齐
     const align = control === 'number' ? 'right' : control === 'boolean' || control === 'color' || control === 'icon' || control === 'image' ? 'center' : 'left';
@@ -140,25 +164,48 @@ export default function TableContent({
     };
   });
 
-  // 操作列
-  if (canEdit || canDelete) {
+  // 操作列：查看（只读/无编辑权限时）+ 编辑 + 删除（软删除行显示「恢复」）
+  const isSoftDeleted = (row: Record<string, unknown>) => {
+    if (!softDeleteField) return false;
+    const v = row[softDeleteField];
+    return v === true || v === 'true' || v === 1;
+  };
+
+  if (canView || canEdit || canDelete) {
     columns.push({
       title: '操作',
       key: '__ops',
-      width: 140,
+      width: 160,
       fixed: 'right',
       render: (_, row) => (
         <span>
+          {canView && (
+            <Button type="link" size="small" onClick={() => onView?.(row)}>
+              查看
+            </Button>
+          )}
           {canEdit && (
             <Button type="link" size="small" onClick={() => onEdit?.(row)}>
               编辑
             </Button>
           )}
-          {canDelete && (
-            <Button type="link" size="small" danger onClick={() => onDelete?.(row)}>
-              删除
-            </Button>
-          )}
+          {canDelete &&
+            (isSoftDeleted(row) ? (
+              <Button type="link" size="small" onClick={() => onRestore?.(row)}>
+                恢复
+              </Button>
+            ) : (
+              <Popconfirm
+                title="确定删除该行数据吗？"
+                okText="删除"
+                okButtonProps={{ danger: true }}
+                onConfirm={() => onDelete?.(row)}
+              >
+                <Button type="link" size="small" danger>
+                  删除
+                </Button>
+              </Popconfirm>
+            ))}
         </span>
       ),
     });
@@ -171,6 +218,7 @@ export default function TableContent({
       dataSource={data}
       loading={loading}
       size="middle"
+      scroll={{ x: 'max-content' }}
       rowSelection={
         selectable
           ? {

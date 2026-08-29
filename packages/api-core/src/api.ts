@@ -160,11 +160,34 @@ export function createMenuApi(request: RequestFn) {
  *
  * 所有方法的 `type` 参数为路径前缀，如 "/Admin/User"、"/Cube/App"
  */
+
+/**
+ * 页面元数据缓存（会话级内存缓存）
+ *
+ * GetPage 返回的页面配置（列表/搜索/表单字段）由控制器静态配置决定，同一会话内稳定不变。
+ * 按 type 缓存后，列表页「探测 + loadFields」与表单页只需请求一次，切换/重进页面不再重复请求。
+ * 仅在浏览器刷新（内存重置）或登出换用户时失效。
+ */
+const pageMetaCache = new Map<String, ApiResponse<PageMeta>>();
+
+/** 清空页面元数据缓存（登出/切换用户时调用，避免串用上一账号的配置） */
+export function clearPageMetaCache(): void {
+  pageMetaCache.clear();
+}
+
 export function createPageApi(request: RequestFn, baseApiUrl?: string) {
   return {
-    /** 获取页面元数据（setting + list/addForm/editForm/detail/search） */
-    getPage: (type: string) =>
-      request<PageMeta>({ url: `${type}/GetPage`, method: 'get' }),
+    /** 获取页面元数据（setting + list/addForm/editForm/detail/search）。同一 type 会话内缓存，避免重复请求 */
+    getPage: (type: string) => {
+      const hit = pageMetaCache.get(type);
+      if (hit) return Promise.resolve(hit);
+
+      return request<PageMeta>({ url: `${type}/GetPage`, method: 'get' }).then((res) => {
+        // 仅缓存实体页配置（data 为对象）；非实体页返回 HTML 字符串，不缓存
+        if (res && res.data && typeof res.data !== 'string') pageMetaCache.set(type, res);
+        return res;
+      });
+    },
 
     /** 获取字段元数据 */
     getFields: (type: string, kind: FieldKind) =>

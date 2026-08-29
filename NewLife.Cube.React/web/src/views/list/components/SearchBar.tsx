@@ -8,8 +8,9 @@
  * - 数值/时间范围 → formData[`${field}_min`] / formData[`${field}_max`]
  * - 日期/日期时间范围 → formData[field] = [start, end]
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button, DatePicker, Input, InputNumber, Select, Space, Switch, TimePicker } from 'antd';
+import { DownOutlined, UpOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import LovSelect from '@/components/field/LovSelect';
 import { resolveSearchControl } from '@/utils/fieldControl';
@@ -21,6 +22,20 @@ export interface SearchBarProps {
   fields: FieldMapping[];
   onSearch: (params: Record<string, unknown>) => void;
   onReset: () => void;
+}
+
+/** 范围类控件（占 2 格，避免被压缩） */
+const RANGE_CONTROLS: SearchControlType[] = ['numberRange', 'dateRange', 'datetimeRange', 'timeRange'];
+
+/** 最小格子宽度，与 entity.css 中 .cube-search-grid 的 minmax 保持一致 */
+const MIN_CELL = 200;
+
+/** 折叠时最多显示的行数（规范 §7.2：条件多时折叠，避免挤压表格） */
+const MAX_ROWS = 2;
+
+/** 是否范围类控件 */
+function isRangeControl(control: SearchControlType): boolean {
+  return RANGE_CONTROLS.includes(control);
 }
 
 /** 单字段搜索控件 */
@@ -166,10 +181,43 @@ function SearchControl({
 
 export default function SearchBar({ fields, onSearch, onReset }: SearchBarProps) {
   const [formData, setFormData] = useState<Record<string, unknown>>({});
+  const [expanded, setExpanded] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(0);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   // 字段变化时重置
   useEffect(() => {
     setFormData({});
+    setExpanded(false);
+  }, [fields]);
+
+  // 折叠可见数：按容器宽度估算列数，折叠时最多显示 MAX_ROWS 行（范围控件占 2 格）
+  useEffect(() => {
+    const el = gridRef.current;
+    if (!el) return;
+
+    const calc = () => {
+      const width = el.clientWidth;
+      const cols = Math.max(1, Math.floor(width / MIN_CELL));
+      let cells = 0;
+      let count = 0;
+      for (const f of fields) {
+        const control = resolveSearchControl(toFieldMeta(f.field));
+        const need = cols > 1 && isRangeControl(control) ? 2 : 1;
+        if (cells + need > cols * MAX_ROWS) break;
+        cells += need;
+        count++;
+      }
+      setVisibleCount(count);
+    };
+
+    calc();
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(calc);
+      ro.observe(el);
+      return () => ro.disconnect();
+    }
+    return undefined;
   }, [fields]);
 
   const setValue = (key: string, value: unknown) => {
@@ -198,21 +246,30 @@ export default function SearchBar({ fields, onSearch, onReset }: SearchBarProps)
 
   if (!fields.length) return null;
 
+  const visibleFields = expanded ? fields : fields.slice(0, visibleCount);
+  const canCollapse = fields.length > visibleCount;
+
   return (
     <div className="cube-search-panel">
-      <div className="cube-search-grid">
-        {fields.map((field) => {
+      <div ref={gridRef} className="cube-search-grid">
+        {visibleFields.map((field) => {
           const meta = toFieldMeta(field.field);
           const control = resolveSearchControl(meta);
+          const wide = isRangeControl(control);
           return (
-            <div key={field.field.name} className="cube-search-item">
+            <div
+              key={field.field.name}
+              className={wide ? 'cube-search-item cube-search-item--wide' : 'cube-search-item'}
+            >
               <span className="cube-search-label">{meta.displayName || meta.name}</span>
-              <SearchControl
-                field={field}
-                control={control}
-                value={formData[field.field.name]}
-                onChange={(v) => setValue(field.field.name, v)}
-              />
+              <div className="cube-search-control">
+                <SearchControl
+                  field={field}
+                  control={control}
+                  value={formData[field.field.name]}
+                  onChange={(v) => setValue(field.field.name, v)}
+                />
+              </div>
             </div>
           );
         })}
@@ -222,6 +279,19 @@ export default function SearchBar({ fields, onSearch, onReset }: SearchBarProps)
           搜索
         </Button>
         <Button onClick={handleReset}>重置</Button>
+        {canCollapse && (
+          <Button type="link" size="small" onClick={() => setExpanded((v) => !v)}>
+            {expanded ? (
+              <>
+                收起 <UpOutlined />
+              </>
+            ) : (
+              <>
+                展开 <DownOutlined />
+              </>
+            )}
+          </Button>
+        )}
       </div>
     </div>
   );

@@ -48,35 +48,57 @@
 }
 
 .cube-search-panel {
-  margin-bottom: 16px;
-  padding: 18px;
-  border-radius: 20px;
+  margin-bottom: 12px;
+  padding: 14px 16px;
+  border-radius: 18px;
   background: var(--cube-surface-muted);
   border: 1px solid var(--cube-border-soft);
 }
 
 .cube-search-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px 16px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px 12px;
 }
 
 .cube-search-item {
-  display: grid;
+  display: flex;
+  align-items: center;
   gap: 8px;
+  min-width: 0;
+}
+
+/* 范围类控件（日期/数值/时间区间）占 2 格，避免被压缩 */
+.cube-search-item--wide {
+  grid-column: span 2;
 }
 
 .cube-search-label {
+  flex: 0 0 72px;
   color: var(--cube-text-secondary);
   font-size: 13px;
   font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cube-search-control {
+  flex: 1;
+  min-width: 0;
+}
+
+.cube-search-control > * {
+  width: 100%;
 }
 
 .cube-search-actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 10px;
-  margin-top: 16px;
+  margin-top: 12px;
   flex-wrap: wrap;
 }
 
@@ -171,7 +193,30 @@
   }
 
   .cube-search-panel {
-    padding: 14px;
+    padding: 12px 14px;
+  }
+
+  .cube-search-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cube-search-item--wide {
+    grid-column: span 1;
+  }
+
+  .cube-search-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .cube-search-label {
+    flex: none;
+    text-align: left;
+  }
+
+  .cube-search-actions {
+    justify-content: flex-start;
   }
 
   .cube-pagination-bar {

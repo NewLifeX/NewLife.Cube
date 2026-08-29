@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.AI;
 using NewLife.Cube.Entity;
 using NewLife.Cube.ViewModels;
+using NewLife.Cube.Widgets;
 using NewLife.Cube.Widgets.System;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -248,6 +249,49 @@ public class IndexController : ControllerBaseX, IPageDataContext
             sysInfo,
         });
     }
+
+    #region 工作台布局
+    /// <summary>读取当前用户工作台卡片布局（排序+隐藏）。Parameter 表按用户持久化（分类 Widget.Layout，Name=config，LongValue=JSON），对齐 MVC WidgetManager</summary>
+    /// <returns>卡片名到布局项的字典（{name: {sort, hide}}）</returns>
+    [DisplayName("工作台布局")]
+    [EntityAuthorize]
+    [HttpGet]
+    public ActionResult GetWidgetLayout()
+    {
+        var userId = ManageProvider.User?.ID ?? 0;
+        var layout = new WidgetManager().GetLayout(userId);
+        return Json(0, null, layout);
+    }
+
+    /// <summary>保存当前用户工作台卡片布局（排序+隐藏），合并为单行 Parameter 原子保存</summary>
+    /// <param name="layout">卡片名到布局项的字典（{name: {sort, hide}}）</param>
+    /// <returns></returns>
+    [DisplayName("保存工作台布局")]
+    [EntityAuthorize]
+    [HttpPost]
+    public ActionResult SaveWidgetLayout(IDictionary<String, WidgetLayout> layout)
+    {
+        var userId = ManageProvider.User?.ID ?? 0;
+        if (userId <= 0) return Json(401, null, "未登录");
+        if (layout == null || layout.Count == 0) return Json(1, null, "布局为空");
+
+        new WidgetManager().SaveLayout(userId, layout);
+        return Json(0, null, "ok");
+    }
+
+    /// <summary>重置当前用户工作台卡片布局为默认（删除布局 Parameter 行）</summary>
+    /// <returns></returns>
+    [DisplayName("重置工作台布局")]
+    [EntityAuthorize]
+    [HttpPost]
+    public ActionResult ResetWidgetLayout()
+    {
+        var userId = ManageProvider.User?.ID ?? 0;
+        if (userId > 0) new WidgetManager().ResetLayout(userId);
+
+        return Json(0, null, "ok");
+    }
+    #endregion
 
     #region AI 诊断
     /// <summary>AI 系统诊断。根据服务器运行指标生成健康诊断报告（SSE 流式输出）</summary>

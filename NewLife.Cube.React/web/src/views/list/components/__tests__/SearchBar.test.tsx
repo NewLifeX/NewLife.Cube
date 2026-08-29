@@ -62,4 +62,25 @@ describe('SearchBar 搜索栏', () => {
     // Select 组件渲染为 combobox
     expect(screen.getByRole('combobox')).toBeInTheDocument();
   });
+
+  it('字段过多时默认折叠，点击展开显示全部', () => {
+    const fields = [
+      textField('A', '甲'),
+      textField('B', '乙'),
+      textField('C', '丙'),
+      textField('D', '丁'),
+    ];
+    render(<SearchBar fields={fields} onSearch={() => {}} onReset={() => {}} />);
+    // jsdom 下 clientWidth=0 → 1 列 × 2 行，折叠默认只显示前 2 项
+    expect(screen.getByText('甲')).toBeInTheDocument();
+    expect(screen.getByText('乙')).toBeInTheDocument();
+    expect(screen.queryByText('丙')).not.toBeInTheDocument();
+    // 展开后全部显示
+    fireEvent.click(screen.getByRole('button', { name: /展\s*开/ }));
+    expect(screen.getByText('丙')).toBeInTheDocument();
+    expect(screen.getByText('丁')).toBeInTheDocument();
+    // 可再收起
+    fireEvent.click(screen.getByRole('button', { name: /收\s*起/ }));
+    expect(screen.queryByText('丙')).not.toBeInTheDocument();
+  });
 });

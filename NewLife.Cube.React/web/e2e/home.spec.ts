@@ -73,8 +73,8 @@ test.describe('顶栏切换器（CMP-6）', () => {
 test.describe('用户菜单与登出（CMP-5）', () => {
   test('点击用户菜单显示安全中心与退出登录入口', async ({ page }) => {
     await page.goto('/');
-    // 用户菜单（头像+用户名）
-    await page.locator('.ant-dropdown-trigger').last().click();
+    // 用户菜单（头像+用户名），用稳定触发器类名（首页卡片按钮也含 ant-dropdown-trigger，不能用 last）
+    await page.locator('.cube-user-trigger').first().click();
     // 首页 hero 也有“安全中心”按钮，需限定在用户菜单下拉内定位
     await expect(page.locator('.ant-dropdown:visible').getByText('安全中心')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('.ant-dropdown:visible').getByText('退出登录')).toBeVisible();
@@ -89,7 +89,7 @@ test.describe('用户菜单与登出（CMP-5）', () => {
     await page.getByPlaceholder('请输入密码').fill(process.env.ADMIN_PASS || 'admin');
     await page.getByRole('button', { name: '登 录' }).click();
     await page.waitForURL('**/', { timeout: 10000 });
-    await page.locator('.ant-dropdown-trigger').last().click();
+    await page.locator('.cube-user-trigger').first().click();
     await page.getByText('退出登录').click();
     await page.waitForURL(/\/login/, { timeout: 10000 });
     await ctx.close();

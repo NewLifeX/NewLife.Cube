@@ -2,6 +2,7 @@
  * 首页 / 工作台（AntD5 风格）
  *
  * - 欢迎横幅：问候 + 日期 + 角色 + 操作按钮
+ * - 工作台卡片（卡片三能力）：拖动排序 / 保存顺序 / 隐藏，布局按用户持久化到服务端（Parameter）
  * - KPI 卡行：后端工作台接口（/Admin/Index/Workbench）数据优先，缺失时降级个人统计
  * - 性能监控：轮询 /Admin/Index/MonitorData（对齐 MVC 契约 {xs, series}）
  * - 快捷入口 + 常用菜单：菜单树叶子递归收集，接口数据优先
@@ -9,16 +10,22 @@
  */
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
+  AppstoreAddOutlined,
   AppstoreOutlined,
   BugOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
   FileTextOutlined,
+  HolderOutlined,
   LineChartOutlined,
+  MoreOutlined,
   ReloadOutlined,
   SafetyOutlined,
+  SaveOutlined,
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Button, Card, Empty, List, Skeleton, Tag } from 'antd';
+import { Button, Card, Dropdown, Empty, List, Skeleton, Space, Tag, message } from 'antd';
 import * as echarts from 'echarts';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/api';
@@ -37,6 +44,23 @@ const KPI_ICONS: Record<string, ReactNode> = {
   cpu: <LineChartOutlined />,
 };
 
+/** 工作台卡片布局项（排序 + 隐藏），对应后端 WidgetLayout */
+interface WidgetLayoutItem {
+  sort?: number;
+  hide?: boolean;
+}
+
+/** 工作台卡片清单：默认顺序 + 标题 */
+const WIDGET_DEFAULT_ORDER = ['kpi', 'monitor', 'quick', 'menus', 'profile', 'sysinfo'];
+const WIDGET_TITLES: Record<string, string> = {
+  kpi: '指标概览',
+  monitor: '性能监控',
+  quick: '快捷入口',
+  menus: '常用菜单',
+  profile: '个人信息',
+  sysinfo: '系统信息',
+};
+
 export default function HomePage() {
   const navigate = useNavigate();
   const userInfo = useUserStore((s) => s.userInfo);
@@ -45,6 +69,7 @@ export default function HomePage() {
   const [config, setConfig] = useState<LoginConfig | null>(null);
   const [now, setNow] = useState(new Date());
   const chartRef = useRef<HTMLDivElement>(null);
+  const chartInstRef = useRef<echarts.ECharts | null>(null);
   const [monitor, setMonitor] = useState<{ xs: string[]; cpu: number[]; mem: number[] }>({ xs: [], cpu: [], mem: [] });
 
   useEffect(() => {
@@ -88,7 +113,10 @@ export default function HomePage() {
   // 性能曲线渲染
   useEffect(() => {
     if (!chartRef.current || monitor.xs.length < 2) return;
+    // 卡片隐藏后重新显示时，旧实例已挂在已卸载节点上，先释放再重建
+    chartInstRef.current?.dispose();
     const chart = echarts.init(chartRef.current);
+    chartInstRef.current = chart;
     chart.setOption({
       tooltip: { trigger: 'axis' },
       legend: { data: ['CPU', '内存'], top: 0, right: 0, textStyle: { color: '#94a3b8' } },
@@ -117,8 +145,75 @@ export default function HomePage() {
     return () => {
       window.removeEventListener('resize', onResize);
       chart.dispose();
+      if (chartInstRef.current === chart) chartInstRef.current = null;
     };
   }, [monitor]);
+
+  // ── 工作台卡片布局（卡片三能力：拖动排序 / 保存顺序 / 隐藏）──
+  const [layout, setLayout] = useState<Record<string, WidgetLayoutItem>>({});
+  const [dragKey, setDragKey] = useState<string | null>(null);
+
+  // 读取用户布局（后端 Parameter 持久化）
+  useEffect(() => {
+    let cancelled = false;
+    api.client
+      .get('/Admin/Index/GetWidgetLayout')
+      .then((res) => {
+        if (cancelled) return;
+        const data = (res.data as { data?: Record<string, WidgetLayoutItem> })?.data;
+        if (data && Object.keys(data).length) setLayout(data);
+      })
+      .catch(() => {
+        /* 布局接口不可用静默 */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleSaveLayout = () => {
+    api.client
+      .post('/Admin/Index/SaveWidgetLayout', layout)
+      .then(() => message.success('布局已保存'))
+      .catch(() => message.error('保存失败'));
+  };
+
+  const handleResetLayout = () => {
+    setLayout({});
+    api.client
+      .post('/Admin/Index/ResetWidgetLayout')
+      .then(() => message.success('布局已重置'))
+      .catch(() => message.error('重置失败'));
+  };
+
+  const handleHideWidget = (key: string) =>
+    setLayout((prev) => ({ ...prev, [key]: { ...(prev[key] ?? {}), hide: true } }));
+
+  const handleUnhideWidget = (key: string) =>
+    setLayout((prev) => {
+      const next = { ...prev };
+      next[key] = { ...(next[key] ?? {}), hide: false };
+      return next;
+    });
+
+  // 拖拽落点：把拖拽卡插入目标卡位置，重新分配可见卡排序
+  const handleDrop = (target: string) => {
+    if (!dragKey || dragKey === target) {
+      setDragKey(null);
+      return;
+    }
+    setLayout((prev) => {
+      const order = WIDGET_DEFAULT_ORDER.filter((k) => !prev[k]?.hide && k !== dragKey);
+      const idx = order.indexOf(target);
+      order.splice(idx < 0 ? order.length : idx, 0, dragKey);
+      const next = { ...prev };
+      order.forEach((k, i) => {
+        next[k] = { ...(next[k] ?? {}), sort: i };
+      });
+      return next;
+    });
+    setDragKey(null);
+  };
 
   // 常用菜单入口：递归收集叶子菜单（过滤后端区域根菜单 ~/ 与隐藏项）
   const topMenus = useMemo(() => {
@@ -160,6 +255,120 @@ export default function HomePage() {
   const displayName = userCard?.displayName || userCard?.name || userInfo?.displayName || userInfo?.name || '用户';
   const roles = userCard?.roles?.join(' / ') || userInfo?.roleName || '';
 
+  // 工作台卡片布局：默认顺序 + 用户布局（排序/隐藏）
+  const sortOf = (key: string) => layout[key]?.sort ?? WIDGET_DEFAULT_ORDER.indexOf(key);
+  const visibleWidgets = WIDGET_DEFAULT_ORDER.filter((key) => !layout[key]?.hide).sort((a, b) => sortOf(a) - sortOf(b));
+  const hiddenWidgets = WIDGET_DEFAULT_ORDER.filter((key) => layout[key]?.hide);
+  const hasSysInfo = !!sysInfo && Object.keys(sysInfo).length > 0;
+  const widgetsToRender = visibleWidgets.filter((key) => key !== 'sysinfo' || hasSysInfo);
+
+  /** 渲染工作台卡片正文 */
+  const renderWidgetBody = (key: string): ReactNode => {
+    switch (key) {
+      case 'kpi':
+        return (
+          <div className="cube-home-kpi-grid">
+            {kpis.map((k) => (
+              <div key={k.name || k.label} className="cube-home-kpi-card">
+                <div className="cube-home-kpi-head">
+                  <div className={`cube-home-kpi-icon ${k.color || 'blue'}`}>{KPI_ICONS[k.name ?? ''] ?? null}</div>
+                  <span className="cube-home-kpi-label">{k.label}</span>
+                </div>
+                <div>
+                  <div className="cube-home-kpi-value">{k.value}</div>
+                  {k.trend && <div className="cube-home-kpi-trend">{k.trend}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      case 'monitor':
+        return (
+          <>
+            <div ref={chartRef} className="cube-home-monitor-chart" />
+            {monitor.xs.length < 2 && (
+              <div style={{ textAlign: 'center', color: 'var(--cube-text-muted)', padding: '20px 0' }}>等待监控数据…</div>
+            )}
+          </>
+        );
+      case 'quick':
+        return (
+          <div className="cube-home-quick-grid">
+            {quickLinks.map((link) => (
+              <div key={link.url} className="cube-home-quick-link" onClick={() => link.url && navigate(link.url)}>
+                <div className="cube-home-quick-icon">
+                  {link.icon ? <span style={{ fontSize: 16 }}>{link.icon}</span> : <AppstoreOutlined />}
+                </div>
+                <div>
+                  <div className="cube-home-quick-title">{link.name}</div>
+                  <div className="cube-home-quick-url">{link.url}</div>
+                </div>
+              </div>
+            ))}
+            {!quickLinks.length && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无快捷入口" />}
+          </div>
+        );
+      case 'menus':
+        return (
+          <Skeleton loading={!topMenus.length && menus.length > 0} active>
+            <List
+              grid={{ gutter: 16, xs: 1, sm: 2, md: 3 }}
+              dataSource={topMenus}
+              locale={{ emptyText: '暂无可用菜单' }}
+              renderItem={(item) => (
+                <List.Item>
+                  <Card
+                    size="small"
+                    hoverable
+                    onClick={() => item.url && navigate(item.url)}
+                    styles={{ body: { padding: '12px 16px' } }}
+                  >
+                    <div className="cube-home-list-title">{item.displayName || item.name}</div>
+                    <div className="cube-home-list-url">{item.url}</div>
+                  </Card>
+                </List.Item>
+              )}
+            />
+          </Skeleton>
+        );
+      case 'profile':
+        return (
+          <div className="cube-home-info-list">
+            <div className="cube-home-info-item">
+              <span className="cube-home-info-key">登录次数</span>
+              <span className="cube-home-info-value">{String(profile?.logins ?? '—')}</span>
+            </div>
+            <div className="cube-home-info-item">
+              <span className="cube-home-info-key">最近登录</span>
+              <span className="cube-home-info-value">{String(profile?.lastLogin ?? '—')}</span>
+            </div>
+            <div className="cube-home-info-item">
+              <span className="cube-home-info-key">登录 IP</span>
+              <span className="cube-home-info-value">{String(profile?.lastLoginIP ?? '—')}</span>
+            </div>
+            <div className="cube-home-info-item">
+              <span className="cube-home-info-key">注册时间</span>
+              <span className="cube-home-info-value">{String(profile?.registerTime ?? '—')}</span>
+            </div>
+          </div>
+        );
+      case 'sysinfo':
+        return (
+          <div className="cube-home-info-list">
+            {hasSysInfo &&
+              Object.entries(sysInfo).map(([k, v]) => (
+                <div key={k} className="cube-home-info-item">
+                  <span className="cube-home-info-key">{k}</span>
+                  <span className="cube-home-info-value">{String(v ?? '')}</span>
+                </div>
+              ))}
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="cube-home-page">
       {/* 欢迎横幅 */}
@@ -194,119 +403,86 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* KPI 卡行 */}
-      <div className="cube-home-kpi-grid">
-        {kpis.map((k) => (
-          <div key={k.name || k.label} className="cube-home-kpi-card">
-            <div className="cube-home-kpi-head">
-              <div className={`cube-home-kpi-icon ${k.color || 'blue'}`}>{KPI_ICONS[k.name ?? ''] ?? null}</div>
-              <span className="cube-home-kpi-label">{k.label}</span>
-            </div>
-            <div>
-              <div className="cube-home-kpi-value">{k.value}</div>
-              {k.trend && <div className="cube-home-kpi-trend">{k.trend}</div>}
-            </div>
-          </div>
-        ))}
+      {/* 卡片布局工具栏：拖动提示 + 保存 / 恢复 / 重置（卡片三能力） */}
+      <div className="cube-home-widget-toolbar">
+        <span className="cube-home-widget-hint">
+          <HolderOutlined /> 拖动卡片标题调整顺序，隐藏后可恢复
+        </span>
+        <Space wrap>
+          <Button size="small" icon={<SaveOutlined />} onClick={handleSaveLayout}>
+            保存布局
+          </Button>
+          <Dropdown
+            menu={{
+              items: hiddenWidgets.map((k) => ({
+                key: k,
+                label: WIDGET_TITLES[k],
+                icon: <EyeOutlined />,
+                onClick: () => handleUnhideWidget(k),
+              })),
+            }}
+            disabled={!hiddenWidgets.length}
+          >
+            <Button size="small" icon={<AppstoreAddOutlined />} disabled={!hiddenWidgets.length}>
+              恢复卡片
+            </Button>
+          </Dropdown>
+          <Button size="small" onClick={handleResetLayout}>
+            重置布局
+          </Button>
+        </Space>
       </div>
 
-      {/* 性能监控 + 快捷入口 */}
-      <div className="cube-home-grid">
-        <div className="cube-home-col-8">
-          <Card className="cube-home-card" title="性能监控" size="small" extra={<Tag color="blue" bordered={false}>5s 刷新</Tag>}>
-            <div ref={chartRef} className="cube-home-monitor-chart" />
-            {monitor.xs.length < 2 && (
-              <div style={{ textAlign: 'center', color: 'var(--cube-text-muted)', padding: '20px 0' }}>等待监控数据…</div>
-            )}
+      {/* 工作台卡片（可拖动排序 / 隐藏，保存后按用户持久化到服务端） */}
+      {widgetsToRender.map((key) => (
+        <div
+          key={key}
+          className="cube-home-widget"
+          onDragOver={(e) => {
+            if (dragKey && dragKey !== key) e.preventDefault();
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            handleDrop(key);
+          }}
+        >
+          <Card
+            className="cube-home-card"
+            size="small"
+            title={
+              <span className="cube-widget-title">
+                <span
+                  className="cube-widget-drag-handle"
+                  title="拖动排序"
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', key);
+                    setDragKey(key);
+                  }}
+                  onDragEnd={() => setDragKey(null)}
+                >
+                  <HolderOutlined />
+                </span>
+                {WIDGET_TITLES[key]}
+              </span>
+            }
+            extra={
+              <Dropdown
+                menu={{
+                  items: [
+                    { key: 'hide', icon: <EyeInvisibleOutlined />, label: '隐藏卡片', onClick: () => handleHideWidget(key) },
+                  ],
+                }}
+              >
+                <Button type="text" size="small" icon={<MoreOutlined />} />
+              </Dropdown>
+            }
+          >
+            {renderWidgetBody(key)}
           </Card>
         </div>
-        <div className="cube-home-col-4">
-          <Card className="cube-home-card" title="快捷入口" size="small">
-            <div className="cube-home-quick-grid">
-              {quickLinks.map((link) => (
-                <div key={link.url} className="cube-home-quick-link" onClick={() => link.url && navigate(link.url)}>
-                  <div className="cube-home-quick-icon">
-                    {link.icon ? <span style={{ fontSize: 16 }}>{link.icon}</span> : <AppstoreOutlined />}
-                  </div>
-                  <div>
-                    <div className="cube-home-quick-title">{link.name}</div>
-                    <div className="cube-home-quick-url">{link.url}</div>
-                  </div>
-                </div>
-              ))}
-              {!quickLinks.length && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无快捷入口" />}
-            </div>
-          </Card>
-        </div>
-      </div>
-
-      {/* 常用菜单 + 个人信息 */}
-      <div className="cube-home-grid">
-        <div className="cube-home-col-8">
-          <Card className="cube-home-card" title="常用菜单" size="small">
-            <Skeleton loading={!topMenus.length && menus.length > 0} active>
-              <List
-                grid={{ gutter: 16, xs: 1, sm: 2, md: 3 }}
-                dataSource={topMenus}
-                locale={{ emptyText: '暂无可用菜单' }}
-                renderItem={(item) => (
-                  <List.Item>
-                    <Card
-                      size="small"
-                      hoverable
-                      onClick={() => item.url && navigate(item.url)}
-                      styles={{ body: { padding: '12px 16px' } }}
-                    >
-                      <div className="cube-home-list-title">{item.displayName || item.name}</div>
-                      <div className="cube-home-list-url">{item.url}</div>
-                    </Card>
-                  </List.Item>
-                )}
-              />
-            </Skeleton>
-          </Card>
-        </div>
-        <div className="cube-home-col-4">
-          <Card className="cube-home-card" title="个人信息" size="small">
-            <div className="cube-home-info-list">
-              <div className="cube-home-info-item">
-                <span className="cube-home-info-key">登录次数</span>
-                <span className="cube-home-info-value">{String(profile?.logins ?? '—')}</span>
-              </div>
-              <div className="cube-home-info-item">
-                <span className="cube-home-info-key">最近登录</span>
-                <span className="cube-home-info-value">{String(profile?.lastLogin ?? '—')}</span>
-              </div>
-              <div className="cube-home-info-item">
-                <span className="cube-home-info-key">登录 IP</span>
-                <span className="cube-home-info-value">{String(profile?.lastLoginIP ?? '—')}</span>
-              </div>
-              <div className="cube-home-info-item">
-                <span className="cube-home-info-key">注册时间</span>
-                <span className="cube-home-info-value">{String(profile?.registerTime ?? '—')}</span>
-              </div>
-            </div>
-          </Card>
-        </div>
-      </div>
-
-      {/* 系统信息 */}
-      {sysInfo && Object.keys(sysInfo).length > 0 && (
-        <div className="cube-home-grid">
-          <div className="cube-home-col-12">
-            <Card className="cube-home-card" title="系统信息" size="small">
-              <div className="cube-home-info-list">
-                {Object.entries(sysInfo).map(([k, v]) => (
-                  <div key={k} className="cube-home-info-item">
-                    <span className="cube-home-info-key">{k}</span>
-                    <span className="cube-home-info-value">{String(v ?? '')}</span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
-        </div>
-      )}
+      ))}
     </div>
   );
 }

@@ -255,6 +255,11 @@ export class PageLogic {
     return this.api.page.remove(type, id);
   }
 
+  /** 恢复软删除单条记录 */
+  async restore(type: string, id: number | string): Promise<ApiResponse<unknown>> {
+    return this.api.page.restore(type, id);
+  }
+
   /** 批量删除 */
   async deleteSelect(type: string, keys: (number | string)[]): Promise<ApiResponse<unknown>> {
     return this.api.page.deleteSelect(type, keys);

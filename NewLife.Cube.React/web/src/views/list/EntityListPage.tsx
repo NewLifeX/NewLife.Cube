@@ -11,7 +11,7 @@
  *   - FormDialog     命令式新增/编辑弹窗（FieldControl）
  *   - ListChartDialog 图表弹窗（ECharts 懒加载）
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Card, message } from 'antd';
 import { getValueByKey } from '@/utils/url';
 import { api } from '@/api';
@@ -22,6 +22,7 @@ import TableContent from './components/TableContent';
 import ListPagination from './components/ListPagination';
 import ListChartDialog from './components/ListChartDialog';
 import FormDialog from '@/views/form/FormDialog';
+import DetailDialog from '@/views/form/DetailDialog';
 
 export interface EntityListPageProps {
   /** 实体路径前缀，如 '/Admin/User'、'/Cube/App' */
@@ -38,6 +39,8 @@ export default function EntityListPage({ type, title }: EntityListPageProps) {
   const searchFields = store((s) => s.searchFields);
   const addFields = store((s) => s.addFields);
   const editFields = store((s) => s.editFields);
+  const detailFields = store((s) => s.detailFields);
+  const pageSetting = store((s) => s.pageSetting);
   const tableData = store((s) => s.tableData);
   const statData = store((s) => s.statData);
   const pagination = store((s) => s.pagination);
@@ -50,11 +53,27 @@ export default function EntityListPage({ type, title }: EntityListPageProps) {
   const canExport = store((s) => s.canExport);
   const canImport = store((s) => s.canImport);
 
+  // 查看权限：只读控制器或无可编辑权限时提供「查看」（规范 §7.9）
+  const canView = !!pageSetting?.isReadOnly || !canEdit;
+
+  // 软删除字段：列表字段含 Deleted/IsDelete/IsDeleted 布尔字段时启用「恢复」（规范 §7.9）
+  const softDeleteField = useMemo(
+    () =>
+      listFields.find(
+        (f) => /^(deleted|isdelete|isdeleted)$/i.test(f.field.name) && f.field.typeName === 'Boolean',
+      )?.field.name,
+    [listFields],
+  );
+
   const [searchParams, setSearchParams] = useState<Record<string, unknown>>({});
   const [selectedKeys, setSelectedKeys] = useState<React.Key[]>([]);
   const [dialog, setDialog] = useState<{ open: boolean; mode: 'add' | 'edit'; row?: Record<string, unknown> | null }>({
     open: false,
     mode: 'add',
+  });
+  const [detailDialog, setDetailDialog] = useState<{ open: boolean; row?: Record<string, unknown> | null }>({
+    open: false,
+    row: null,
   });
   const [chartOpen, setChartOpen] = useState(false);
   const importInputRef = useRef<HTMLInputElement>(null);
@@ -108,6 +127,22 @@ export default function EntityListPage({ type, title }: EntityListPageProps) {
       .catch((err) => {
         // 业务错误已由 api-core 统一提示，这里兜底
         message.error((err as Error)?.message || '删除失败');
+      });
+  };
+
+  const handleViewRow = (row: Record<string, unknown>) => setDetailDialog({ open: true, row });
+
+  const handleRestoreRow = (row: Record<string, unknown>) => {
+    const id = getValueByKey(row, pkField) ?? getValueByKey(row, 'id');
+    void store
+      .getState()
+      .restore(String(id))
+      .then(() => {
+        message.success('恢复成功');
+        void refresh();
+      })
+      .catch((err: unknown) => {
+        message.error((err as Error)?.message || '恢复失败');
       });
   };
 
@@ -215,12 +250,16 @@ export default function EntityListPage({ type, title }: EntityListPageProps) {
         data={tableData}
         loading={loading}
         pkField={pkField}
+        canView={canView}
         canEdit={canEdit}
         canDelete={canDelete}
+        softDeleteField={softDeleteField}
         selectedKeys={selectedKeys}
         onSelectChange={setSelectedKeys}
+        onView={handleViewRow}
         onEdit={handleEditRow}
         onDelete={handleDeleteRow}
+        onRestore={handleRestoreRow}
         onSortChange={handleSortChange}
       />
       <div className="cube-table-footer">
@@ -247,6 +286,20 @@ export default function EntityListPage({ type, title }: EntityListPageProps) {
         submitting={formLoading}
         onSubmit={handleFormSubmit}
         onCancel={() => setDialog({ open: false, mode: 'add', row: null })}
+      />
+
+      {/* 详情弹窗（操作列「查看」） */}
+      <DetailDialog
+        open={detailDialog.open}
+        apiPrefix={type}
+        id={
+          detailDialog.row
+            ? ((getValueByKey(detailDialog.row, pkField) ?? getValueByKey(detailDialog.row, 'id')) as string | number | null)
+            : null
+        }
+        fields={detailFields.length ? detailFields : listFields}
+        row={detailDialog.row}
+        onClose={() => setDetailDialog({ open: false, row: null })}
       />
 
       {/* 图表弹窗 */}

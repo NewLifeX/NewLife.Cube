@@ -22,6 +22,7 @@ export interface ZustandPageState extends PageState {
   add: (data: Record<string, unknown>) => Promise<ApiResponse<unknown>>;
   update: (data: Record<string, unknown>) => Promise<ApiResponse<unknown>>;
   remove: (id: number | string) => Promise<ApiResponse<unknown>>;
+  restore: (id: number | string) => Promise<ApiResponse<unknown>>;
   deleteSelect: (keys: (number | string)[]) => Promise<ApiResponse<unknown>>;
   deleteAll: () => Promise<ApiResponse<unknown>>;
   getDetail: <T = Record<string, unknown>>(id: number | string) => Promise<T>;
@@ -83,6 +84,7 @@ export function createPageStore(
       add: (data) => logic.add(type, data),
       update: (data) => logic.update_(type, data),
       remove: (id) => logic.remove(type, id),
+      restore: (id) => logic.restore(type, id),
       deleteSelect: (keys) => logic.deleteSelect(type, keys),
       deleteAll: () => logic.deleteAll(type),
       getDetail: (id) => logic.getDetail(type, id),
