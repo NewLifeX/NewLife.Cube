@@ -68,10 +68,10 @@ pnpm build
 ## 测试
 
 ```bash
-# 单元测试（Vitest，53 个）
+# 单元测试（Vitest，81 个）
 pnpm test:unit
 
-# E2E 测试（Playwright，13 个；需后端运行于 5050 端口）
+# E2E 测试（Playwright，43 个；默认 5050，可用 $env:E2E_BASE_URL="http://localhost:7081" 覆盖指向一体站点）
 pnpm test:e2e
 ```
 

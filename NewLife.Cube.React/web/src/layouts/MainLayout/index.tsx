@@ -5,7 +5,7 @@
  * - 移动端（<lg）：Sider 自动隐藏，顶栏按钮打开 Drawer 导航
  * - Content 内容居中限制最大宽度，保证大屏观感
  */
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Drawer, Layout } from 'antd';
 import SiderMenu from './SiderMenu';
 import HeaderBar from './HeaderBar';
@@ -15,11 +15,29 @@ import { getConfig } from '@/configure';
 
 const { Sider, Content, Footer } = Layout;
 
+// 移动端断点：与 antd Sider breakpoint="lg"（<992px）保持一致
+const MOBILE_QUERY = '(max-width: 991.98px)';
+
+/** 判断当前视口是否移动端 */
+function isMobileViewport() {
+  return typeof window !== 'undefined' && window.matchMedia(MOBILE_QUERY).matches;
+}
+
 export default function MainLayout({ children }: { children: ReactNode }) {
   const cfg = getConfig().ui.layout;
   const [collapsed, setCollapsed] = useState(cfg.sider.defaultCollapsed);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(isMobileViewport);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // 用 matchMedia 主动监听窄视口：antd Sider 的 onBreakpoint 初始挂载时不一定触发，
+  // 会导致移动端初始进入时 isMobile=false、顶栏切换按钮走桌面折叠分支而打不开 Drawer
+  useEffect(() => {
+    const mql = window.matchMedia(MOBILE_QUERY);
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    setIsMobile(mql.matches);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
 
   // 导航切换：移动端打开 Drawer，桌面端折叠/展开 Sider
   const toggleNav = () => {
