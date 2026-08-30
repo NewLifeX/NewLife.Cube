@@ -2,6 +2,13 @@
 
 ## v6.14.2026.0830 (2026-08-30)
 
+### 新功能
+- **配置中心（Config Hub）**：API 版新增星尘设置（`StarController`），配置控制器（基本设置/系统设置/星尘设置/数据中间件/魔方设置 + 更多配置：短信/邮件/OAuth/访问规则）保持左侧菜单隐藏，在配置页顶部渲染切换器（Segmented + 更多配置下拉）实现页内切换，避免左侧菜单过多（对齐 MVC `_Object_Nav`）
+  - 修复隐藏配置页在 API 版无法直达的问题（菜单树过滤 Visible=false，前端按静态清单特判路由）
+  - 多标签标题、面包屑对配置页正确回退（如 `系统管理 / 短信设置`）
+- **配置页单行布局**：ConfigController 配置页改为每行一个配置项——左侧标签 + 中间控件 + 右侧 Description（对齐 MVC `_Form_Item`），保留分类 Tabs，配置说明始终可见
+  - React 皮肤：新增 `ConfigNav` 组件、`ConfigPage` 布局调整、单测与 E2E 覆盖
+
 ### 接口与构建优化
 - **GetPage 元数据瘦身**：`DataField` 实现 `IDictionarySource`，FastJson 序列化时仅输出有意义字段（忽略 null/0/false 等默认值），GetPage/GetFields 响应体积减少约 2/3（如 User 页 54KB→17KB），前端字段类型全可选（`?`）无需改动
 - **字段元数据兼容**：`DataField` 及子类可空/默认属性补充 `[JsonIgnore(WhenWritingDefault)]`，System.Text.Json 路径同样省略噪音字段；`Category` 无分类时不再输出空字符串

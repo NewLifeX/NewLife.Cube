@@ -7,6 +7,7 @@ import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { useLocation } from 'react-router-dom';
 import { useUserStore } from '@/stores/user';
 import { useMenuStore } from '@/stores/menu';
+import { findConfigCenter } from '@/views/config/ConfigNav';
 import { getConfig } from '@/configure';
 import ModeSwitcher from '@/components/ModeSwitcher';
 import LanguageSwitch from '@/components/LanguageSwitch';
@@ -31,7 +32,12 @@ export default function HeaderBar({ collapsed, onToggle }: HeaderBarProps) {
   const crumbs = useMemo(() => {
     const lower = location.pathname.toLowerCase();
     const current = flatMenus.find((m) => m.path && lower.endsWith(m.path.toLowerCase()));
-    if (!current) return [{ title: base.title }];
+    if (!current) {
+      // 配置中心页（左侧隐藏菜单，不在菜单树中）：显示 系统管理 / 配置名
+      const config = findConfigCenter(location.pathname);
+      if (config) return [{ title: '系统管理' }, { title: config.label }];
+      return [{ title: base.title }];
+    }
     const chain: { title: string }[] = [];
     let node: { id: string | number; parentId?: string | number | null; title?: string; name: string } | undefined = current;
     let guard = 0;

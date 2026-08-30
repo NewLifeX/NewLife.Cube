@@ -365,6 +365,70 @@ select {
 /* ============================================================
    通用组件微调（尽可能少，贴近 antd6 原生）
    ============================================================ */
+
+/* ============================================================
+   配置中心（ConfigNav 切换器 + ConfigPage 单行布局）
+   ============================================================ */
+
+/* 配置中心导航条：Segmented 核心配置 + 更多配置下拉 */
+.cube-config-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 2px 0 12px;
+  flex-wrap: wrap;
+}
+
+.cube-config-nav-more {
+  color: var(--cube-text-secondary);
+  font-size: 13px;
+}
+
+.cube-config-nav-more.active {
+  color: var(--cube-primary);
+}
+
+/* 配置页字段容器 */
+.cube-config-fields {
+  max-width: 1200px;
+}
+
+/* 配置项单行：标签 | 控件 | 右侧 Description（对齐 MVC _Form_Item） */
+.cube-config-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+  min-width: 0;
+}
+
+.cube-config-row .ant-form-item {
+  margin-bottom: 0;
+}
+
+.cube-config-desc {
+  flex: 1;
+  min-width: 220px;
+  color: var(--cube-text-secondary);
+  font-size: 12px;
+  line-height: 32px;
+  padding-top: 4px;
+  word-break: break-word;
+}
+
+/* 移动端：控件与描述换行，避免溢出 */
+@media (max-width: 768px) {
+  .cube-config-row {
+    flex-wrap: wrap;
+  }
+
+  .cube-config-desc {
+    min-width: 100%;
+    line-height: 1.6;
+    padding-top: 0;
+  }
+}
+   ============================================================ */
 .ant-result {
   padding-inline: 0 !important;
 }

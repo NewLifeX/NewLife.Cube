@@ -8,9 +8,12 @@
  * - GET  `{type}/GetFields`   → 返回配置字段元数据（按 [Category] 分组）
  *
  * 本组件通用渲染任意配置控制器页面：按分类 Tabs 分组渲染字段表单，保存时 PUT 提交。
+ *
+ * 字段布局（对齐 MVC _Form_Item）：每行一个配置项——左侧标签 + 中间控件 + 右侧 Description，
+ * 保证配置说明始终可见。
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { App, Button, Card, Col, Form, Row, Spin, Tabs } from 'antd';
+import { App, Button, Card, Form, Spin, Tabs } from 'antd';
 import type { DataField } from '@cube/api-core';
 import FieldControl from '@/components/field/FieldControl';
 import { groupByCategory, isFullWidthControl, resolveControl, serializeSubmitModel } from '@/utils/fieldControl';
@@ -123,24 +126,27 @@ export default function ConfigPage({ type }: ConfigPageProps) {
               key: g.category,
               label: g.category,
               children: (
-                <Row gutter={16}>
+                <div className="cube-config-fields">
                   {g.fields.map((meta) => {
-                    const control = resolveControl(meta);
-                    const span = isFullWidthControl(control) ? 24 : 12;
+                    // 每行一个配置项：标签 + 控件 + 右侧 Description
+                    const full = isFullWidthControl(resolveControl(meta));
                     return (
-                      <Col key={meta.name} span={span}>
+                      <div className="cube-config-row" key={meta.name}>
                         <Form.Item
                           name={meta.name}
                           label={meta.displayName || meta.name}
-                          extra={meta.description}
+                          labelCol={{ flex: '0 0 180px' }}
+                          wrapperCol={{ flex: full ? '1 1 auto' : '0 1 560px' }}
                           rules={meta.required ? [{ required: true, message: `请输入${meta.displayName || meta.name}` }] : []}
+                          style={{ marginBottom: 0, minWidth: 0 }}
                         >
                           <FieldControl field={meta} apiPrefix={type} />
                         </Form.Item>
-                      </Col>
+                        {meta.description && <div className="cube-config-desc">{meta.description}</div>}
+                      </div>
                     );
                   })}
-                </Row>
+                </div>
               ),
             }))}
           />

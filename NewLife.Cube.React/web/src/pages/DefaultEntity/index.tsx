@@ -10,6 +10,7 @@ import { useMenuStore } from '@/stores/menu';
 import DefaultListPage from '@/views/list';
 import FormPage from '@/views/form/FormPage';
 import NotFoundPage from '@/pages/NotFound';
+import ConfigNav, { findConfigCenter } from '@/views/config/ConfigNav';
 
 /** 是否表单类路径（含 ?id= 或 /Edit /Add /New /Detail 后缀） */
 function isFormPath(pathname: string, search: string): boolean {
@@ -26,18 +27,31 @@ export default function DefaultEntityPage() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const matched = useMemo(() => findMenu(location.pathname), [findMenu, flatMenus, location.pathname]);
+  // 配置中心路径：配置控制器在左侧菜单隐藏，菜单树中不存在，需按静态清单特判
+  const config = useMemo(() => findConfigCenter(location.pathname), [location.pathname]);
 
-  if (!matched) {
+  if (!matched && !config) {
     return <NotFoundPage />;
   }
 
-  const title = matched.title || matched.name;
+  const title = config?.label || matched?.title || matched?.name || '';
 
-  // 表单类路径（编辑/新增/详情）→ 表单页
-  if (isFormPath(location.pathname, location.search)) {
-    return <FormPage key={location.pathname + location.search} title={title} />;
+  // 表单类路径（编辑/新增/详情）→ 表单页；列表/配置页 → 通用列表页
+  const content = isFormPath(location.pathname, location.search) ? (
+    <FormPage key={location.pathname + location.search} title={title} />
+  ) : (
+    <DefaultListPage key={matched?.path || config?.path || location.pathname} />
+  );
+
+  // 配置中心页：顶部渲染切换器（基本设置/系统设置/星尘设置/数据中间件/魔方设置 + 更多配置）
+  if (config) {
+    return (
+      <>
+        <ConfigNav currentPath={location.pathname} />
+        {content}
+      </>
+    );
   }
 
-  // 列表页：key=type 保证切换实体时整体重建（store 缓存按 type 区分）
-  return <DefaultListPage key={matched.path || location.pathname} />;
+  return content;
 }
