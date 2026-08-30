@@ -1,6 +1,6 @@
 <template>
   <div class="query-combo-button">
-    <!-- ▾ 菜单按钮（OSC-260830a1b2 查询簇第三键）：重置查询参数 / 预定义查询等更多操作。查询与自定义按钮在调用方工具栏组装 -->
+    <!-- ▾ 菜单按钮（OSC-260830a1b2 查询簇第三键）：重置查询条件 / 预定义查询等更多操作。查询与自定义按钮在调用方工具栏组装 -->
     <a-dropdown trigger="click" @select="onSelect">
       <icon-park type="down" class="qcb-trigger" />
       <template #content>
@@ -21,7 +21,7 @@
           </a-doption>
           <a-doption value="__reset">
             <template #icon><icon-park type="refresh" /></template>
-            重置查询参数
+            重置查询条件
           </a-doption>
           <a-doption v-if="hasMoreFields" value="__toggle">
             <template #icon>

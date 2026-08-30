@@ -166,11 +166,11 @@
                   {{ kw }}
                 </div>
               </div>
-              <!-- 已应用预定义方案角标：显示方案名首字，点击重置查询参数（OSC-260830a1b2） -->
+              <!-- 已应用预定义方案角标：显示方案名首字，点击重置查询条件（OSC-260830a1b2） -->
               <span
                 v-if="hasAppliedQuery"
                 class="tb-query-badge"
-                title="重置查询参数"
+                title="重置查询条件"
                 @click="handleReset"
               >{{ appliedQueryName.charAt(0) }}</span>
             </span>

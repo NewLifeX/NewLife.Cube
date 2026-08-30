@@ -805,7 +805,7 @@ describe('viewProfile store queries (OSC-0016)', () => {
     expect(store.getQueries('Admin/User').queries.length).toBe(1);
   });
 
-  it('clearQuery 清空筛选与预定义查询标记并单次持久化，刷新后同样无查询（重置查询参数）', async () => {
+  it('clearQuery 清空筛选与预定义查询标记并单次持久化，刷新后同样无查询（重置查询条件）', async () => {
     getViewProfile.mockResolvedValue({
       data: {
         typePath: 'Admin/User',
