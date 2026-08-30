@@ -932,9 +932,14 @@ const automationFields = computed(() => {
   overflow-y: visible;
 }
 .list-view-tabs {
-  margin-bottom: 8px;
-  padding-bottom: 4px;
-  /* 横线由 Tab 组件自身（.arco-tabs-nav 下边框）提供，此处不额外加分隔线 */
+  /* 多维视图 Tab 标题与视图外壳间距整体控制 12px（OSC-260830a1b2 收尾） */
+  margin-bottom: 12px;
+  /* 横线由 Tab 组件自身（.arco-tabs-nav 下边框）提供，此处不额外加分隔线；
+     同时压掉 Arco Tabs nav 自带底部间距，避免叠加超过 12px */
+  padding-bottom: 0;
+}
+.list-view-tabs :deep(.arco-tabs-nav) {
+  margin-bottom: 0;
 }
 .list-topbar {
   display: flex;

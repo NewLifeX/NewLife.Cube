@@ -39,4 +39,11 @@ const {
 .tags-view__item {
   cursor: pointer;
 }
+/* 当前打开的页签（系统多页签）：文字/边框/底纹跟随当前主题主色（--cube-primary，外观设置可换） */
+.tags-view__item.arco-tag-checked,
+.tags-view__item :deep(.arco-tag-checked) {
+  color: var(--cube-primary);
+  border-color: var(--cube-primary);
+  background-color: color-mix(in srgb, var(--cube-primary) 10%, #fff);
+}
 </style>
