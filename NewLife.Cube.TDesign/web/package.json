@@ -18,7 +18,7 @@
     "pinia": "^3.0.0",
     "tdesign-icons-vue-next": "^0.3.0",
     "tdesign-vue-next": "^1.12.0",
-    "vue": "^3.5.0",
+    "vue": "^3.5.33",
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
