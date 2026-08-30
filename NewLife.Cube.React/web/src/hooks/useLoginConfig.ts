@@ -38,9 +38,10 @@ export function useLoginConfig() {
 /**
  * 加载图片验证码（SVG 算数题）
  *
+ * @param enabled 是否启用（跟随 LoginConfig.login.captcha / register.captcha），关闭时不请求验证码接口
  * @returns 验证码 ID / SVG 图片 / 刷新函数
  */
-export function useCaptcha() {
+export function useCaptcha(enabled = true) {
   const [captcha, setCaptcha] = useState<CaptchaResult | null>(null);
 
   const refresh = useCallback(async () => {
@@ -53,8 +54,13 @@ export function useCaptcha() {
   }, []);
 
   useEffect(() => {
+    // 开关关闭时不请求验证码；关闭→开启（配置异步加载完成）时自动触发首次拉取
+    if (!enabled) {
+      setCaptcha(null);
+      return;
+    }
     void refresh();
-  }, [refresh]);
+  }, [refresh, enabled]);
 
   return { captcha, refresh };
 }

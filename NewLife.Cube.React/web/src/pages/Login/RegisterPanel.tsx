@@ -27,7 +27,7 @@ export default function RegisterPanel({ config, onBack }: RegisterPanelProps) {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const register = config.register;
-  const { captcha, refresh } = useCaptcha();
+  const { captcha, refresh } = useCaptcha(!!register?.captcha);
   const [category, setCategory] = useState<'password' | 'mobile' | 'mail'>('password');
   const { redirectKey } = getConfig().auth;
   const redirect = params.get(redirectKey) || params.get('redirect') || '/';

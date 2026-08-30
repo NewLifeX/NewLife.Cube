@@ -38,7 +38,8 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const { config, loading, error: configError } = useLoginConfig();
-  const { captcha, refresh } = useCaptcha();
+  // 配置异步加载：enabled 由 false→true 时 useCaptcha 自动触发首次拉取
+  const { captcha, refresh } = useCaptcha(!!config?.login?.captcha);
   const { redirectKey } = getConfig().auth;
 
   const redirect = params.get(redirectKey) || params.get('redirect') || '/';

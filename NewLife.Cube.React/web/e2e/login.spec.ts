@@ -80,6 +80,45 @@ test.describe('登录页', () => {
   });
 });
 
+test.describe('验证码按 LoginConfig 开关请求', () => {
+  // 拦截真实 LoginConfig 响应，仅改写 login.captcha，与后端配置解耦
+  async function mockLoginCaptcha(page: import('@playwright/test').Page, captcha: boolean) {
+    await page.route('**/Auth/LoginConfig', async (route) => {
+      const res = await route.fetch();
+      const json = (await res.json()) as { data: { login?: { captcha?: boolean } } };
+      if (json.data?.login) json.data.login.captcha = captcha;
+      await route.fulfill({ response: res, json });
+    });
+  }
+
+  test('login.captcha=false 时不请求验证码接口', async ({ page }) => {
+    await mockLoginCaptcha(page, false);
+    let captchaRequests = 0;
+    page.on('request', (req) => {
+      if (req.url().includes('/Auth/Captcha')) captchaRequests++;
+    });
+
+    await page.goto('/login');
+    await expect(page.getByPlaceholder('用户名 / 邮箱 / 手机号')).toBeVisible();
+    // 等待潜在请求窗口，确认无验证码请求
+    await page.waitForTimeout(800);
+    expect(captchaRequests).toBe(0);
+    await expect(page.getByText('图形验证码')).toHaveCount(0);
+  });
+
+  test('login.captcha=true 时请求验证码接口并展示图形验证码', async ({ page }) => {
+    await mockLoginCaptcha(page, true);
+    let captchaRequests = 0;
+    page.on('request', (req) => {
+      if (req.url().includes('/Auth/Captcha')) captchaRequests++;
+    });
+
+    await page.goto('/login');
+    await expect(page.getByText('图形验证码')).toBeVisible({ timeout: 8000 });
+    expect(captchaRequests).toBeGreaterThan(0);
+  });
+});
+
 test.describe('保存密码跨会话恢复（干净上下文）', () => {
   // 不复用登录态，走完整登录流程验证"再次访问免登录"
   test.use({ storageState: { cookies: [], origins: [] } });
