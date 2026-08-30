@@ -407,12 +407,11 @@ export function useListQuery(ctx: ListContext) {
 
   function handleReset() {
     Object.keys(searchForm).forEach((k) => delete searchForm[k]);
-    // 重置查询参数：清空自定义条件、当前应用的预定义查询标记、以及持久化的未命名/视图筛选方案，
-    // 避免刷新后 syncLocalState 从 store 恢复旧条件（OSC-260830a1b2）
+    // 重置查询参数：清空本地查询条件，并由 store 单次持久化清空当前视图筛选、已应用预定义查询
+    // 标记与未命名当前查询到服务端；刷新/重载后同样不应用任何查询（OSC-260830a1b2）。
+    // 单次保存避免多次 scheduleSave(immediate) 产生 PUT 竞态导致旧 activeQueryId 覆盖。
     viewFilter.value = emptyViewFilter();
-    evpStore.updateFilter(typePath.value, emptyViewFilter());
-    evpStore.clearActiveQuery(typePath.value);
-    evpStore.clearLastQuery(typePath.value);
+    evpStore.clearQuery(typePath.value);
     searchTouched.value = true;
     pagination.current = 1;
     loadData();

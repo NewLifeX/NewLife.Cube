@@ -720,6 +720,20 @@ export const useViewProfileStore = defineStore('viewProfile', {
       this.scheduleSave(typePath, true);
     },
 
+    /** 清除该实体对象全部查询状态（OSC-260830a1b2）：清空当前激活视图筛选、清除已应用预定义查询
+     *  标记与未命名当前查询，并单次持久化到服务端；刷新/重载后同样不应用任何查询。
+     *  单次保存避免调用方多次 scheduleSave(immediate) 产生 PUT 竞态导致旧 activeQueryId 覆盖。 */
+    clearQuery(typePath: string) {
+      const entry = this.byType[typePath];
+      if (!entry) return;
+      entry.activeQueryId = null;
+      entry.state = patchActiveFilter(entry.state, emptyViewFilter());
+      entry.dirty = true;
+      entry.viewsDirty = true;
+      _clearLastQuery(typePath);
+      this.scheduleSave(typePath, true);
+    },
+
     /** 持久化未命名当前查询（Q + filter）到 sessionStorage（OSC-260830a1b2）：刷新有效，关闭视图界面后不保留 */
     persistLastQuery(typePath: string, wire: { q?: string; filter?: ViewFilter }) {
       _persistLastQuery(typePath, wire);

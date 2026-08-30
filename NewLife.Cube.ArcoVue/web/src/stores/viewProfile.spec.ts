@@ -804,6 +804,38 @@ describe('viewProfile store queries (OSC-0016)', () => {
     expect(store.getActiveQueryId('Admin/User')).toBeNull();
     expect(store.getQueries('Admin/User').queries.length).toBe(1);
   });
+
+  it('clearQuery 清空筛选与预定义查询标记并单次持久化，刷新后同样无查询（重置查询参数）', async () => {
+    getViewProfile.mockResolvedValue({
+      data: {
+        typePath: 'Admin/User',
+        activeQueryId: 'q_a',
+        viewsJson: JSON.stringify([
+          {
+            id: 'default',
+            name: '默认列表',
+            view: 'table',
+            columns: [{ key: 'Q', visible: true }],
+            filter: { logic: 'all', conditions: [{ field: 'Q', op: 'eq', value: 'x' }] },
+          },
+        ]),
+        queriesJson: JSON.stringify({ version: 2, queries: [{ id: 'q_a', name: 'A', q: 'a' }] }),
+      },
+    });
+    putViewProfile.mockResolvedValue({ data: {} });
+    const store = useViewProfileStore();
+    await store.load('Admin/User', ['Q']);
+    expect(store.getActiveQueryId('Admin/User')).toBe('q_a');
+    expect(store.getFilter('Admin/User').conditions.length).toBe(1);
+
+    store.clearQuery('Admin/User');
+
+    expect(store.getActiveQueryId('Admin/User')).toBeNull();
+    expect(store.getFilter('Admin/User').conditions.length).toBe(0);
+    expect(putViewProfile).toHaveBeenCalledWith(expect.objectContaining({ activeQueryId: null }));
+    // 预定义查询列表保留，未删除
+    expect(store.getQueries('Admin/User').queries.length).toBe(1);
+  });
 });
 
 describe('viewProfile store dashboard (OSC-2608280e9e)', () => {
