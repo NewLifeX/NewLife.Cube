@@ -845,7 +845,8 @@ describe('viewProfile store queries (OSC-0016)', () => {
     expect(store.getFilter('Admin/User').conditions.length).toBe(0);
     // activeViewId 保持不变
     expect(st?.activeViewId).toBe('default');
-    expect(putViewProfile).toHaveBeenCalledWith(expect.objectContaining({ activeQueryId: null }));
+    // activeQueryId 清除应发送空串（后端 null 不覆盖），确保服务端真正清空、重开不恢复方案
+    expect(putViewProfile).toHaveBeenCalledWith(expect.objectContaining({ activeQueryId: '' }));
     // 预定义查询列表保留，未删除
     expect(store.getQueries('Admin/User').queries.length).toBe(1);
   });

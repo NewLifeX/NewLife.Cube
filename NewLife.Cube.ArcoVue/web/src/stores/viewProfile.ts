@@ -905,8 +905,10 @@ export const useViewProfileStore = defineStore('viewProfile', {
       payload.pageSize = entry.pageSize || 0;
       // 预定义查询为实体级个人配置，始终随保存提交（OSC-0016）
       payload.queriesJson = serializeQueriesWire(entry.queries);
-      // 当前应用的预定义查询 id 服务端持久化（OSC-260830a1b2）：null 清除
-      payload.activeQueryId = entry.activeQueryId || null;
+      // 当前应用的预定义查询 id 服务端持久化（OSC-260830a1b2）：
+      // 后端约定「null 不覆盖，空串清除」。清除时需发送空串（而非 null），否则服务端仍保留旧 id，
+      // 重新打开界面会再次加载该预定义方案（修复：clearQuery 后重开恢复问题）。
+      payload.activeQueryId = entry.activeQueryId ?? '';
       // 表单布局为系统全局唯一配置（管理员定义，作用于所有用户）：
       // 仅管理员保存时提交；非管理员不发送，避免把全局布局写回或触发后端 403
       const userStore = useUserStore();
