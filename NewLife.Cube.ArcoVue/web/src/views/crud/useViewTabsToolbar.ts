@@ -149,7 +149,7 @@ export function useViewTabsToolbar(props: ViewTabsToolbarProps, emit: ViewTabsTo
   const createPopupVisible = ref(false);
   const createAnchorRef = ref<HTMLElement | null>(null);
 
-  /** 点击 Tab 条末尾 +（Arco editable add 按钮）：把锚点定位到按钮下方并弹出创建视图类型下拉 */
+  /** 点击「添加多维视图」按钮：把锚点定位到按钮下方并弹出创建视图类型下拉 */
   function onAddClick(ev: MouseEvent) {
     const btn = ev.currentTarget as HTMLElement | null;
     const anchor = createAnchorRef.value;

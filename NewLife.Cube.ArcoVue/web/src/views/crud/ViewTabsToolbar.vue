@@ -1,13 +1,10 @@
 <template>
   <div class="view-tabs-toolbar">
-    <!-- 视图 Tab：使用 Arco Tabs；新建视图（+）在最后一个 Tab 页签旁（editable add 按钮），全屏开关在 #extra 附加区最右 -->
+    <!-- 视图 Tab：Arco Tabs 无 add-icon 插槽（内置 + 写死 IconPlus），故自建「添加」按钮放 #extra 左侧（紧贴页签），全屏在最右 -->
     <a-tabs
       class="view-tabs"
       :active-key="activeId"
-      editable
-      show-add-button
       @change="onTabChange"
-      @add="onAddClick"
     >
       <a-tab-pane v-for="v in views" :key="v.id" :closable="false">
         <template #title>
@@ -51,15 +48,12 @@
         </template>
       </a-tab-pane>
 
-      <!-- 添加多维视图：Arco editable add 按钮（+），紧跟在最后一个多维视图页签旁边 -->
-      <template #add-icon>
-        <a-tooltip content="添加多维视图" position="bottom">
-          <span>+</span>
-        </a-tooltip>
-      </template>
-
-      <!-- extra：全屏开关（Tab 组件附加区最右，位置保持不变） -->
       <template #extra>
+        <a-tooltip content="添加多维视图">
+          <button type="button" class="view-add" @click="onAddClick">
+            <icon-park type="plus" />
+          </button>
+        </a-tooltip>
         <a-tooltip :content="fullscreen ? '退出全屏 (Esc)' : '全屏'">
           <button
             type="button"
@@ -257,17 +251,17 @@ const {
 .view-tab-menu:hover {
   opacity: 1;
 }
-/* Arco editable add 按钮（+）：样式与"全屏"按钮一致（透明圆角、15px 字号），
-   align-self:center 使其与全屏按钮水平位置对齐（nav 内垂直居中） */
-.view-tabs :deep(.arco-tabs-nav-add-btn) {
+/* 「添加多维视图」与「全屏」共用尺寸；+ 紧贴页签，全屏靠右 */
+.view-add,
+.view-fullscreen {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
   width: 28px;
   height: 28px;
-  margin-left: 4px;
+  margin: 0;
   padding: 0;
-  box-sizing: border-box;
   border: none;
   background: transparent;
   border-radius: 6px;
@@ -275,11 +269,28 @@ const {
   color: var(--color-text-3);
   font-size: 15px;
   line-height: 1;
-  align-self: center;
+  flex-shrink: 0;
 }
-.view-tabs :deep(.arco-tabs-nav-add-btn:hover) {
+.view-add :deep(.i-icon),
+.view-add :deep(svg),
+.view-fullscreen :deep(.i-icon),
+.view-fullscreen :deep(svg) {
+  display: block;
+  width: 1em;
+  height: 1em;
+}
+.view-add:hover,
+.view-fullscreen:hover {
   color: rgb(var(--primary-6));
   background: var(--color-fill-2);
+}
+.view-fullscreen.active {
+  color: rgb(var(--primary-6));
+  background: var(--color-primary-light-1);
+}
+/* Tooltip 会包一层 Trigger，margin 须落在该层才能把全屏顶到最右 */
+.view-tabs :deep(.arco-tabs-nav-extra > *:last-child) {
+  margin-left: auto;
 }
 /* 创建视图类型下拉锚点：不可见定位元素（fixed 定位到 + 按钮下方） */
 .create-dropdown-anchor {
@@ -289,53 +300,49 @@ const {
   pointer-events: none;
   z-index: 1000;
 }
-/* 全屏开关按钮：Tab 组件附加区（#extra）最右侧，激活态用主色强调；顶部无额外 padding */
-.view-fullscreen {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding-top: 0;
-  border: none;
-  background: transparent;
-  border-radius: 6px;
-  cursor: pointer;
-  color: var(--color-text-3);
-  font-size: 15px;
-  line-height: 1;
-}
-.view-fullscreen:hover {
-  color: rgb(var(--primary-6));
-  background: var(--color-fill-2);
-}
-.view-fullscreen.active {
-  color: rgb(var(--primary-6));
-  background: var(--color-primary-light-1);
-}
-/* Arco Tabs 微调：extra 区（添加多维视图 + 全屏）与 Tab 垂直居中对齐，保证与页签同一水平线 */
+/* extra：占满页签右侧剩余宽度；+ 在左（紧贴页签）、全屏 margin-left:auto 靠右 */
 .view-tabs :deep(.arco-tabs-nav-extra) {
   display: flex;
+  flex: 1 1 auto;
   align-items: center;
   align-self: center;
   gap: 2px;
   margin-left: 4px;
   padding-top: 0;
-  line-height: normal;
+  min-width: 56px;
+  line-height: 1;
+  height: 28px;
 }
-/* Tab 页签区：去掉顶部内边距，顶部留白由 list-panel--table 的 12px 统一承担 */
+/* Tab 页签区：内容宽度优先，溢出时可收缩并内部滚动；上下 padding 清零以免文字相对 +/全屏偏上 */
 .view-tabs :deep(.arco-tabs-nav-tab) {
+  flex: 0 1 auto;
+  max-width: calc(100% - 64px);
+  min-width: 0;
   padding-top: 0;
+  align-items: center;
 }
 .view-tabs :deep(.arco-tabs-nav-type-line .arco-tabs-tab) {
   padding-top: 0;
+  padding-bottom: 0;
+  min-height: 28px;
+  align-items: center;
 }
-/* Tab 组件自身的横线：Arco Tabs nav 下边框，贯穿 Tab 组件（占满整个视图区）下方；
-   align-items:center 使 nav 内「+」添加按钮、全屏与 Tab 页签统一垂直居中（同一水平线） */
+.view-tabs :deep(.arco-tabs-nav-type-line .arco-tabs-tab-title) {
+  display: inline-flex;
+  align-items: center;
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: 1.2;
+}
+/* Tab 组件自身的横线：贯穿整行；nav 内页签 / + / 全屏同一水平中线 */
 .view-tabs :deep(.arco-tabs-nav) {
   border-bottom: 1px solid var(--color-border-2);
   padding-top: 0;
   align-items: center;
+}
+.view-tabs :deep(.arco-tabs-nav-type-line .arco-tabs-nav-extra) {
+  line-height: 1;
+  height: 28px;
 }
 /* Arco Tabs 内容区：列表页 TabPane 无实际内容，去掉默认顶部内边距（避免多出空隙） */
 .view-tabs :deep(.arco-tabs-content) {
