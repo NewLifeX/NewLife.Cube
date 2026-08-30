@@ -39,5 +39,5 @@ export default function DefaultEntityPage() {
   }
 
   // 列表页：key=type 保证切换实体时整体重建（store 缓存按 type 区分）
-  return <DefaultListPage key={matched.path || location.pathname} title={title} />;
+  return <DefaultListPage key={matched.path || location.pathname} />;
 }

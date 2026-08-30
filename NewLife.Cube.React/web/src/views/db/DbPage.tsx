@@ -15,8 +15,6 @@ import { api } from '@/api';
 export interface DbPageProps {
   /** 实体路径前缀，如 '/Admin/Db' */
   type: string;
-  /** 页面标题 */
-  title?: string;
 }
 
 interface DbItem {
@@ -40,7 +38,7 @@ function typeColor(type: string): string {
   return 'default';
 }
 
-export default function DbPage({ type, title }: DbPageProps) {
+export default function DbPage({ type }: DbPageProps) {
   const [rows, setRows] = useState<DbItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [acting, setActing] = useState('');
@@ -94,8 +92,8 @@ export default function DbPage({ type, title }: DbPageProps) {
   };
 
   return (
+    // 页面名由顶栏面包屑/多标签承担，Card 不再重复标题
     <Card
-      title={title || '数据库'}
       size="small"
       extra={
         <Button icon={<ReloadOutlined />} onClick={() => void load()} loading={loading}>

@@ -18,14 +18,10 @@ import EntityListPage from './EntityListPage';
 import ConfigPage from '@/views/config/ConfigPage';
 import DbPage from '@/views/db/DbPage';
 
-export interface DefaultListPageProps {
-  title?: string;
-}
-
 /** 页面种类：探测中 / 实体页 / 非实体页（配置或特殊页） */
 type PageKind = 'probe' | 'entity' | 'special';
 
-export default function DefaultListPage({ title }: DefaultListPageProps) {
+export default function DefaultListPage() {
   const location = useLocation();
   const type = routeToApiPrefix(location.pathname);
   const [kind, setKind] = useState<PageKind>('probe');
@@ -51,19 +47,19 @@ export default function DefaultListPage({ title }: DefaultListPageProps) {
   // 非实体页：按路径分发（数据库页 / 通用配置页）
   if (kind === 'special') {
     if (type.toLowerCase().endsWith('/db')) {
-      return <DbPage type={type} title={title} />;
+      return <DbPage type={type} />;
     }
-    return <ConfigPage type={type} title={title} />;
+    return <ConfigPage type={type} />;
   }
 
   // 实体页：渲染原通用列表页
   if (kind === 'entity') {
-    return <EntityListPage key={type} type={type} title={title} />;
+    return <EntityListPage key={type} type={type} />;
   }
 
   // 探测中：加载占位，避免空白闪屏
   return (
-    <Card title={title} size="small" styles={{ body: { display: 'flex', justifyContent: 'center', padding: 48 } }}>
+    <Card size="small" styles={{ body: { display: 'flex', justifyContent: 'center', padding: 48 } }}>
       <Spin />
     </Card>
   );

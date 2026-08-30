@@ -27,11 +27,9 @@ import DetailDialog from '@/views/form/DetailDialog';
 export interface EntityListPageProps {
   /** 实体路径前缀，如 '/Admin/User'、'/Cube/App' */
   type: string;
-  /** 页面标题 */
-  title?: string;
 }
 
-export default function EntityListPage({ type, title }: EntityListPageProps) {
+export default function EntityListPage({ type }: EntityListPageProps) {
   const store = usePageStore(type);
 
   // 订阅 store 状态
@@ -270,7 +268,8 @@ export default function EntityListPage({ type, title }: EntityListPageProps) {
   const formFields = dialog.mode === 'edit' ? editFieldsForDialog : addFields;
 
   return (
-    <Card className="cube-entity-card" title={title} size="small" styles={{ body: { paddingTop: 12 } }}>
+    // 页面名由顶栏面包屑/多标签承担，Card 不再重复标题（避免搜索区上方冗余占位）
+    <Card className="cube-entity-card" size="small" styles={{ body: { paddingTop: 12 } }}>
       <SearchBar fields={searchFields} onSearch={handleSearch} onReset={handleReset} />
       <Toolbar
         canAdd={canAdd}

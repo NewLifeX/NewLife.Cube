@@ -21,8 +21,6 @@ import { useAiFillForm } from '@/hooks/useAiFillForm';
 export interface ConfigPageProps {
   /** 实体路径前缀，如 '/Admin/Cube' */
   type: string;
-  /** 页面标题 */
-  title?: string;
 }
 
 /** 布尔串转布尔（后端可能返回 'true'/'false' 字符串） */
@@ -32,7 +30,7 @@ function normalizeValue(v: unknown): unknown {
   return v;
 }
 
-export default function ConfigPage({ type, title }: ConfigPageProps) {
+export default function ConfigPage({ type }: ConfigPageProps) {
   const [form] = Form.useForm();
   // AI 填表：监听 AiAssistant 派发的 cube:ai-fill-form 事件（配置页也是表单页）
   useAiFillForm(form);
@@ -101,15 +99,15 @@ export default function ConfigPage({ type, title }: ConfigPageProps) {
 
   if (error) {
     return (
-      <Card title={title || '配置'} size="small">
+      <Card size="small">
         <div style={{ color: 'var(--cube-danger)', padding: 24, textAlign: 'center' }}>{error}</div>
       </Card>
     );
   }
 
   return (
+    // 页面名由顶栏面包屑/多标签承担，Card 不再重复标题
     <Card
-      title={title || '配置'}
       size="small"
       extra={
         <Button type="primary" loading={saving} onClick={() => void handleSave()}>
