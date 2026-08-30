@@ -24,7 +24,6 @@ import {
   LineChartOutlined,
   MoreOutlined,
   ReloadOutlined,
-  SafetyOutlined,
   SaveOutlined,
   TeamOutlined,
   ThunderboltOutlined,
@@ -512,14 +511,21 @@ export default function HomePage() {
       <div className="cube-home-hero">
         <div className="cube-home-hero-inner">
           <div className="cube-home-hero-main">
-            <div className="cube-home-hero-avatar">
+            <div
+              className="cube-home-hero-avatar"
+              title="进入个人中心"
+              role="button"
+              onClick={() => navigate('/profile')}
+            >
               {userInfo?.avatar ? <img src={userInfo.avatar} alt="avatar" /> : <UserOutlined />}
             </div>
-            <div>
+            <div className="cube-home-hero-copy">
               <Tag className="cube-home-hero-eyebrow" color="blue" variant="filled">
                 {greet}
               </Tag>
-              <h1 className="cube-home-hero-title">{displayName}</h1>
+              <h1 className="cube-home-hero-title" title="进入个人中心" onClick={() => navigate('/profile')}>
+                {displayName}
+              </h1>
               <p className="cube-home-hero-subtitle">
                 欢迎回到 {getConfig().base.title} · {today}
                 {roles ? ` · ${roles}` : ''} · 系统运行正常
@@ -528,15 +534,13 @@ export default function HomePage() {
             </div>
           </div>
           <div className="cube-home-hero-actions">
-            <Button icon={<ReloadOutlined />} onClick={() => void reloadWb()}>
-              刷新
-            </Button>
-            <Button icon={<SafetyOutlined />} onClick={() => navigate('/profile/security')}>
-              安全中心
-            </Button>
-            <Button type="primary" icon={<AppstoreOutlined />} onClick={() => navigate('/Admin/User')}>
-              用户管理
-            </Button>
+            <Button
+              type="text"
+              icon={<ReloadOutlined />}
+              title="刷新工作台数据"
+              aria-label="刷新工作台数据"
+              onClick={() => void reloadWb()}
+            />
           </div>
         </div>
       </div>

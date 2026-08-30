@@ -71,6 +71,12 @@ export default function UserMenu() {
 
   items.push(
     {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: '个人中心',
+      onClick: () => navigate('/profile'),
+    },
+    {
       key: 'security',
       icon: <SafetyOutlined />,
       label: '安全中心',

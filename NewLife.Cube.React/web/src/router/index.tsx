@@ -11,6 +11,7 @@ import RegisterPage from '@/pages/Register';
 import ActivatePage from '@/pages/Activate';
 import ForgotPasswordPage from '@/pages/ForgotPassword';
 import ProfileSecurityPage from '@/pages/ProfileSecurity';
+import ProfilePage from '@/pages/Profile';
 import HomePage from '@/pages/Home';
 import NotFoundPage from '@/pages/NotFound';
 import UnauthorizedPage from '@/pages/Unauthorized';
@@ -62,6 +63,11 @@ export const router = createBrowserRouter([
         path: 'forgot-password',
         element: <ForgotPasswordPage />,
         handle: { title: '忘记密码', auth: false, layout: false, tab: false } as RouteMeta,
+      },
+      {
+        path: 'profile',
+        element: <ProfilePage />,
+        handle: { title: '个人中心', auth: true, tab: true } as RouteMeta,
       },
       {
         path: 'profile/security',

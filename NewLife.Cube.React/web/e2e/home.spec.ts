@@ -36,6 +36,21 @@ test.describe('首页（/）', () => {
       await expect(page.getByText('暂无可用菜单').first()).toBeVisible({ timeout: 8000 });
     }
   });
+
+  test('点击 hero 头像/昵称进入个人中心', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.cube-home-hero-avatar')).toBeVisible({ timeout: 10000 });
+    // 点头像进入个人中心
+    await page.locator('.cube-home-hero-avatar').click();
+    await page.waitForURL('**/profile');
+    await expect(page.getByText('基本信息').first()).toBeVisible({ timeout: 10000 });
+    // 返回首页，点昵称同样进入个人中心
+    await page.goto('/');
+    await expect(page.locator('.cube-home-hero-title')).toBeVisible({ timeout: 10000 });
+    await page.locator('.cube-home-hero-title').click();
+    await page.waitForURL('**/profile');
+    await expect(page.getByText('基本信息').first()).toBeVisible({ timeout: 10000 });
+  });
 });
 
 test.describe('顶栏切换器（CMP-6）', () => {
@@ -60,12 +75,13 @@ test.describe('顶栏切换器（CMP-6）', () => {
 });
 
 test.describe('用户菜单与登出（CMP-5）', () => {
-  test('点击用户菜单显示安全中心与退出登录入口', async ({ page }) => {
+  test('点击用户菜单显示个人中心/安全中心与退出登录入口', async ({ page }) => {
     await page.goto('/');
     // 用户菜单（头像+用户名），用稳定触发器类名（首页卡片按钮也含 ant-dropdown-trigger，不能用 last）
     await page.locator('.cube-user-trigger').first().click();
-    // 首页 hero 也有“安全中心”按钮，需限定在用户菜单下拉内定位
-    await expect(page.locator('.ant-dropdown:visible').getByText('安全中心')).toBeVisible({ timeout: 5000 });
+    // 下拉项与页面内同名文案并存，限定在用户菜单下拉内定位
+    await expect(page.locator('.ant-dropdown:visible').getByText('个人中心')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.ant-dropdown:visible').getByText('安全中心')).toBeVisible();
     await expect(page.locator('.ant-dropdown:visible').getByText('退出登录')).toBeVisible();
   });
 

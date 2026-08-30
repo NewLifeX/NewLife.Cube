@@ -30,24 +30,31 @@ export interface DashboardQuickLink {
   icon?: string;
 }
 
+/** 个人资料（Dashboard 接口 profile 字段） */
+export interface DashboardProfile {
+  name?: string;
+  displayName?: string;
+  roleNames?: string;
+  online?: boolean;
+  logins?: number;
+  lastLogin?: string;
+  lastLoginIP?: string;
+  registerTime?: string;
+}
+
 /** 工作台聚合数据 */
 export interface DashboardData {
   user?: {
     name?: string;
     displayName?: string;
     roles?: string[];
-    online?: boolean;
-    logins?: number;
-    lastLogin?: string;
-    lastLoginIP?: string;
-    registerTime?: string;
   };
   /** 可见 KPI 指标（MVC Widget 部件驱动） */
   kpis?: DashboardKpi[];
   /** 用户已隐藏的 KPI 指标（供恢复面板） */
   hiddenKpis?: DashboardKpi[];
   quickLinks?: DashboardQuickLink[];
-  profile?: Record<string, unknown>;
+  profile?: DashboardProfile;
   sysInfo?: Record<string, string>;
 }
 

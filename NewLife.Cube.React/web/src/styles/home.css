@@ -38,6 +38,13 @@
   align-items: flex-start;
   gap: 18px;
   min-width: 0;
+  flex: 1;
+}
+
+/* 欢迎文字区：允许 flex 收缩，保证副标题超长时省略号生效 */
+.cube-home-hero-copy {
+  min-width: 0;
+  flex: 1;
 }
 
 .cube-home-hero-avatar {
@@ -51,6 +58,14 @@
   border: 1px solid rgba(255, 255, 255, 0.24);
   color: #fff;
   flex: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cube-home-hero-avatar:hover {
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
 }
 
 .cube-home-hero-eyebrow {
@@ -64,6 +79,12 @@
   font-size: clamp(26px, 3vw, 36px);
   line-height: 1.15;
   letter-spacing: -0.02em;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.cube-home-hero-title:hover {
+  opacity: 0.82;
 }
 
 .cube-home-hero-subtitle,
@@ -73,16 +94,28 @@
   line-height: 1.75;
 }
 
-.cube-home-hero-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+/* 副标题强制单行：超长省略号，避免挤压换行 */
+.cube-home-hero-subtitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+.cube-home-hero-actions {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+
+/* 刷新图标按钮：渐变横幅上的低调白色图标 */
 .cube-home-hero-actions .ant-btn {
-  height: 40px;
-  border-radius: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: 10px;
+}
+
+.cube-home-hero-actions .ant-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .cube-home-kpi-grid {
@@ -412,6 +445,11 @@
 
   .cube-home-hero-actions {
     justify-content: flex-start;
+  }
+
+  /* 移动端纵向布局下允许副标题换行（不再省略） */
+  .cube-home-hero-subtitle {
+    white-space: normal;
   }
 
   .cube-home-kpi-card {
