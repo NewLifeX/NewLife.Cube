@@ -229,6 +229,17 @@ public class ControllerBaseX : ControllerBase, IActionFilter
     /// <returns></returns>
     protected virtual String OnJsonSerialize(Object data)
     {
+        var host = new SystemJson();
+        var json = host.Write(data, new NewLife.Serialization.JsonOptions
+        {
+            WriteIndented = false,
+            IgnoreNullValues = false,
+            CamelCase = true,
+            Int64AsString = true,
+            IgnoreCycles = true,//忽略循环引用
+            FullTime = false// yyyy-MM-dd HH:mm:ss
+        });
+        return json;
         //data.ToJson(false, true, true);
         var writer = new JsonWriter
         {
@@ -236,15 +247,17 @@ public class ControllerBaseX : ControllerBase, IActionFilter
             //IgnoreNullValues = false,
             //CamelCase = true,
             //Int64AsString = true
+            
         };
         writer.Options.WriteIndented = false;
         writer.Options.IgnoreNullValues = false;
         writer.Options.CamelCase = true;
         writer.Options.Int64AsString = true;
-
+        writer.Options.FullTime = false;//TODO：格式yyyy-MM-dd HH:mm:ss这里不好使 
         writer.Write(data);
 
-        return writer.GetString();
+        var str = writer.GetString();
+        return str;
     }
     #endregion
 
