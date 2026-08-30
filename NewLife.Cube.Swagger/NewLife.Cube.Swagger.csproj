@@ -51,9 +51,11 @@
   <ItemGroup>
     <PackageReference Include="NewLife.Stardust.Extensions" Version="3.10.2026.801" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.16.17" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\Doc\leaf.png" Link="leaf.png" PackagePath="\" />
+    <EmbeddedResource Include="Resources\scalar-config.js" LogicalName="NewLife.Cube.Swagger.Resources.scalar-config.js" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Readme.MD">

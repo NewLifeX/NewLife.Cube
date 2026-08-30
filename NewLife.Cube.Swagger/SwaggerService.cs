@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using NewLife.Cube.Entity;
 using NewLife.Reflection;
+using Scalar.AspNetCore;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using XCode.Membership;
 
@@ -140,5 +142,87 @@ public static class SwaggerService
         });
 
         return app;
+    }
+
+    /// <summary>使用魔方Scalar接口文档</summary>
+    /// <param name="app"></param>
+    /// <param name="title">Scalar界面标题</param>
+    /// <returns></returns>
+    public static WebApplication UseCubeScalar(this WebApplication app, String? title = null)
+    {
+        app.UseWhen(ctx => IsProtectedDocumentationPath(ctx.Request.Path), branch =>
+        {
+            branch.Use(async (ctx, next) =>
+            {
+            var userName = app.Configuration["Swagger:UserName"] ?? "newlife";
+            var password = app.Configuration["Swagger:Password"] ?? "newlife@2026";
+            if (!VerifyBasicAuth(ctx, userName, password))
+                {
+                    ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    ctx.Response.Headers.WWWAuthenticate = "Basic realm=\"Scalar\"";
+                    return;
+                }
+                await next();
+            });
+
+            branch.Use(async (ctx, next) =>
+            {
+                if (ctx.Request.Path.Equals("/scalar/config.js", StringComparison.OrdinalIgnoreCase))
+                {
+                    await using var stream = typeof(SwaggerService).Assembly.GetManifestResourceStream("NewLife.Cube.Swagger.Resources.scalar-config.js");
+                    if (stream != null)
+                    {
+                        ctx.Response.ContentType = "application/javascript; charset=utf-8";
+                        await stream.CopyToAsync(ctx.Response.Body);
+                        return;
+                    }
+                }
+                await next();
+            });
+
+            branch.UseRouting();
+            branch.UseEndpoints(endpoints => endpoints.MapScalarApiReference(options =>
+            {
+                options.WithTitle(title ?? app.Environment.ApplicationName ?? "魔方接口文档");
+                options.AddPreferredSecuritySchemes("JwtBearer");
+                options.AddHttpAuthentication("JwtBearer", auth => auth.Token = app.Configuration["Scalar:JwtToken"] ?? String.Empty);
+                options.WithJavaScriptConfiguration("/scalar/config.js");
+
+                var names = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
+                var groups = app.Services.GetRequiredService<IApiDescriptionGroupCollectionProvider>().ApiDescriptionGroups.Items;
+                foreach (var group in groups)
+                {
+                    var name = String.IsNullOrEmpty(group.GroupName) ? "v1" : group.GroupName;
+                    if (names.Add(name)) options.AddDocument(name, title: name, routePattern: $"/swagger/{name}/swagger.json", isDefault: name == "vTest1");
+                }
+                if (names.Count == 0) options.AddDocument("v1", title: "v1", routePattern: "/swagger/v1/swagger.json");
+            }));
+        });
+
+        return app;
+    }
+
+    private static Boolean IsProtectedDocumentationPath(PathString path)
+    {
+        return path.StartsWithSegments("/scalar", StringComparison.OrdinalIgnoreCase) ||
+            (path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase) && path.Value!.EndsWith(".json", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static Boolean VerifyBasicAuth(HttpContext context, String userName, String password)
+    {
+        var header = context.Request.Headers.Authorization.ToString();
+        if (String.IsNullOrEmpty(header) || !header.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase)) return false;
+
+        try
+        {
+            var bytes = Convert.FromBase64String(header.Substring(6).Trim());
+            var pair = System.Text.Encoding.UTF8.GetString(bytes);
+            var index = pair.IndexOf(':');
+            return index > 0 && pair.Substring(0, index) == userName && pair.Substring(index + 1) == password;
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
     }
 }
