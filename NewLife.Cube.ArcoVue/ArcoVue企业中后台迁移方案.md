@@ -4,8 +4,59 @@
 > 版本：2026-08-19（复审：§3.1 矩阵现状列按代码实测刷新；§10.4 差距表补 OSC-26081903c0 启停/填色/AI 浮窗）
 > 版本：2026-08-21（增补 §8.5：自定义工作台、页面仪表盘与流程引擎；改写 §5.1 / §8.2 与「搜索 / 一张图 / FlowGram 样例」终态表述。口径与 [架构分享-预读.md](./架构分享-预读.md) 一致）
 > 版本：2026-08-29（复审：OSC-2608280e9e / OSC-26082815a1 归档后刷新 §1.1 完成度、§3.1 矩阵、§10.3 总验收、§10.4 差距表与附录归档表；工作台全屏与暗色叠底已合入）
+> 版本：2026-08-29b（筛选下推路径实测：XCode `FindAll(Expression, PageParameter)` 自动合并 `page.State`，18 个重写 Search 的控制器已全部透明下推，无需改控制器；§8.5.4 补实施路径，§10.4 #14 刷新）
+> 版本：2026-08-30（多维视图专项：对照飞书/钉钉官方六视图刷新 §7.1/§7.4 完成度；§10.4 划掉已落地右冻结/`NamedViewsToolbar`/`__check`，补日历/看板/甘特只读增强与多级排序）
+> 版本：2026-08-30c（对照 Cube + XCode + NewLife.X：行级/字段权限、GetPage 计算列、值集侧信道；增补 §8.6 企业级权限与审计合规 Issue 清单）
+> 版本：2026-08-30d（增补 §0 愿景；§1.2 按愿景补齐必须达成目标）
+> 版本：2026-08-30e（增补 §12 业务功能插件开发：ArcoVue 默认皮肤下业务包怎么做）
 > 状态：可落地执行稿  
 > 适用范围：以 NewLife.Cube（WebAPI）为后端，将 NewLife.Cube.ArcoVue 建设为默认企业中后台皮肤；复用 NewLife.Cube.Vue 能力成果，对接字节官方组件栈，支持用户级呈现配置与 AI（OpenSpec）协作。
+
+---
+
+## 0. 愿景
+
+把 NewLife.Cube.ArcoVue 做成 **.NET 企业中后台的默认皮肤**：实体 + `EntityController` + 菜单即可得到完整管理页；交互吸收飞书/钉钉多维表的「同源数据、多种呈现」，权限与审计仍走 Cube / XCode，而不是再造一张云协作表。
+
+**一句话**：元数据驱动的企业实体工作台——零配置 CRUD、六视图舞台、右侧记录抽屉、权限内的工作台与洞察、服务端自动化；对标成熟中后台的开箱能力，吸收多维表体验，不复刻飞书云。
+
+### 0.1 我们是谁 / 不是谁
+
+| 是 | 不是 |
+|----|------|
+| 自有数据的 **实体管理界面**（表格即管理页） | 飞书多维表格 / 钉钉 AI 表格那种「表格即产品」的云协作库 |
+| Cube WebAPI 的默认皮肤；与 Cube.Vue 并存，能力对齐、栈不搬运 | 低代码整页画布、第三方 Widget 市场、插件商店 |
+| 固定 DefaultList 容器 + 有限用户运行时自定义（命名视图、列、筛选、洞察槽） | 用户脚本公式、浏览器跑流程、双向链接写回 |
+
+相对若依 / Jeecg / Ant Design Pro / Arco Pro：领先应落在 **树表一等、ViewProfile、六视图、删除触发自动化、权限内 Widget/工作台**；不拼生态模板数量。相对飞书/钉钉：不追云端实时协同、互联网分享、按月自动化套餐。
+
+### 0.2 为谁成立
+
+| 角色 | 愿景体验 |
+|------|----------|
+| 业务研发 | 新模块 = 新 .NET 项目 + 实体控制器；80% 管理页零前端；特殊页才 Section / 整页覆写 |
+| 最终用户 | 同一实体可切表格/树/卡片/看板/日历/甘特；筛选即查询、翻页完整；点行在右侧抽屉改、看历史、讨论该条记录 |
+| 管理员 / 安全 | 菜单动作、租户、行范围、字段可见可写由后端强制；导出与列表同一套；操作可审计 |
+| 平台演进 | OpenSpec 小步变更；AI 协助实现与浮窗问答，不把字段 Agent 市场当皮肤职责 |
+
+### 0.3 产品北极星（对应 §1.2）
+
+1. **开箱即后台**：登录（含 MFA/SSO/租户）、菜单、用户角色、日志、值集，宿主 `UseArcoVue` 即可用。
+2. **元数据即页面**：`GetPage` 是字段权威；FormJson / 命名视图只改呈现，不能增字段、改可写、也不能当 ACL。
+3. **多维呈现、同一结果集**：六视图舞台齐全，只读完成度向飞书看齐（溢出列表、列折叠、甘特分组、画册布局）；查询只留筛选且必须下推服务端；看板/日历/甘特默认不做拖拽写回。
+4. **记录为协作单元**：讨论留在 RecordDrawer，不做成工具栏「权限范围内全部讨论」；收件箱承接推送到我的消息；实体自动化按 `TypePath`（+ 租户）共享，不是个人规则。
+5. **呈现分层 ≠ 数据权限**：壳与首页工作台用户 > 主角色 > 系统；实体视图个人 > 全局模板 > 系统。行权接角色 `DataScope`，列权后端裁剪并在写入/导出对称。
+6. **可读与可算在服务端**：值集翻译关联名；计算列是可序列化的 C# 属性；禁止浏览器公式与 `GetValue` 当 SPA 通道。
+7. **可运营、可审计**：列表/详情/导出/值集反查/部件查询同一套 CanAccess；敏感字段脱敏；权限变更可追溯（§8.6）。
+8. **可扩展、可协作交付**：业务覆写与 Cube.Vue 能力（富文本、LOV、CronJob POST、i18n、组件测试）可借；微前端多应用与 Element 页不搬。交付用 OpenSpec + 单测门禁。
+
+### 0.4 成功时的系统面貌
+
+业务人员打开任意已授权实体：工具条干净、视图可记、筛选即全量结果、洞察跟筛选走。点开一行，不离开列表上下文即可改字段、看谁改过、在本记录下讨论。管理员改角色数据范围或列权限后，列表、详情、导出立刻一致，前端藏列骗不过接口。新实体上线不先写 Vue。流程若立项，是 Cube 独立模块 + FlowGram 设计器，不是把自动化换成画布执行器。
+
+### 0.5 与后文的关系
+
+§1.2 是愿景的**必须达成清单**；§1.3 是边界；§7.4 / §8.5 / §8.6 是完成度与后端 Issue。未写入 §1.2 的项（如拖拽写回、对外表单、用户公式）维持非目标，除非先修订本节。
 
 ---
 
@@ -22,12 +73,21 @@
 
 ### 1.2 产品目标（必须达成）
 
+对应 §0 北极星。已落地的仍保留为回归门禁，未完成的不得用「舞台已有」代替。
+
 1. **零配置自动 CRUD**：宿主仅 `UseArcoVue` 时，内置 Admin/Cube 与新增业务 `EntityController` 自动获得完整管理界面。
-2. **飞书式多维数据工作台**：表格（自定义列）/ 树表 / 卡片 / 甘特；记录以**右侧抽屉**编辑（飞书多维表为左侧记录栏，本实现按 §8.1 契约用右侧），并含修改历史、用户评论。
-3. **可配置呈现**：导航布局、主题、列表默认视图与列布局等**禁止写死**。实体视图按个人 > 全局模板 > 系统默认；**首页工作台**按 **用户 > 主角色 > 系统默认**（不做租户层工作台）。
-4. **现代扁平视觉**：参考苹果 Human Interface / 飞书与 [Arco Design](https://arco.design/) 的扁平、留白、低噪点风格。
-5. **业务增量开发模型**：新业务 = 新 .NET 项目 + 实体控制器；仅特殊页覆写前端。
-6. **AI 协作可落地**：复用现有 GitHub Copilot 指令；OpenSpec 轻量变更；同时适配 VS Code Copilot 与 Cursor。
+2. **开箱即企业后台**：登录（密码 / 短信 / MFA / SSO）、菜单权限、用户/角色/部门/租户、审计日志、值集、文件与作业等内置模块可用；不依赖为每个实体手写 Vue。
+3. **飞书式多维数据工作台（舞台 + 只读完成度）**：table / **tree** / card / kanban / calendar / gantt 可切换、默认可记。记录以**右侧抽屉**编辑（飞书为左侧记录栏，本实现按 §8.1 用右侧），含表单、修改历史、**该条记录**的评论。只读完成度见 §7.4（日历溢出与空白新建、看板列折叠、甘特分组、卡片画册布局、多级排序）；**不**把看板/日历/甘特拖拽写回当作本目标。
+4. **查询单一入口**：只留筛选构建器，条件必须编译为后端 Where；退役 SearchDrawer 与预定义查询；翻页、导出、统计、Insight、非表格大 pageSize **共用同一结果集**（§8.5.4）。
+5. **可配置呈现（不是第二套 ACL）**：导航布局、主题、密度禁止写死。实体视图 **个人 > 全局模板 > 系统默认**；**首页工作台** **用户 > 主角色 > 系统**（不做租户层工作台）。FormJson / ColumnsJson 只能调顺序、显隐、分组，不能增字段、改 `ReadOnly`/`ItemType`、也不能授权写入。
+6. **实体页洞察 + 首页工作台**：实体洞察槽为授权范围内的指标卡/迷你图，随筛选联动；`/home` 与 `/Admin/Index` 监控页分离。
+7. **服务端自动化与站内信**：线性 GraphJson + C# 执行器（含删除触发）；规则按实体类型（+ 租户）共享，创建人仅审计。通知进 Inbox；评论 @ 与提及通知可增强，讨论面仍以抽屉为准。
+8. **行级与字段权、审计合规**：角色 `DataScope` 成为行权事实源（与租户 AND）；列表/详情/导出/PATCH/值集 `entity:` / Widget 查询同一套 `CanAccess`。字段可见/可写由后端裁剪，GetPage 按登录用户输出；计算列与 lookup 只读、不进 `CopyFrom`。缺口与 Issue 见 §8.6。
+9. **值集与只读投影**：ENUM/LIST/`Entity.` 翻译显示名；SPA 计算列 = 可序列化 C# 属性 + GetPage 声明，禁止浏览器公式与 MVC `GetValue` 当 API。
+10. **现代扁平视觉**：参考苹果 Human Interface / 飞书与 [Arco Design](https://arco.design/) 的扁平、留白、低噪点风格。
+11. **业务增量开发模型**：新业务 = 新 .NET 项目 + 实体控制器；仅特殊页覆写前端。操作手册见 **§12**。可复用 Cube.Vue 已验证的控件与约定（富文本/图标、LOV、CronJob POST、改密、i18n、组件测试），不搬 Element 页与微前端运行时。
+12. **AI 协作可落地**：复用现有 GitHub Copilot 指令；OpenSpec 轻量变更；同时适配 VS Code Copilot 与 Cursor。产品内 AI 浮窗（含附件）服务当前页，不把字段 Agent 市场当交付物。
+13. **质量门禁**：关键逻辑单测 + 构建无错；补齐 i18n 与组件测试（矩阵已列、尚未交付）。流程设计器（FlowGram）与审批运行时按 §8.5.5 独立模块，不阻塞上述目标。
 
 ### 1.3 非目标（明确不做）
 
@@ -36,6 +96,7 @@
 - 不改写已有 `.github/instructions` 组织级指令正文（只增量新增）。
 - Cube.Vue 微前端多应用运行时、Cypress 全量套件、Element 主题体系等：见 §3.1 能力矩阵中目标为「➖」的项。
 - 不做整页画布、第三方 Widget 市场、用户脚本公式；洞察槽内允许跨实体**平台部件**（须授权查询），见 §8.5。
+- 不做把 ViewProfile / 筛选 / 藏列当数据权限或字段 ACL；列权限必须后端裁剪并在写入/导出对称强制，见 §8.6。
 - 不做把 FlowGram 当流程执行器、不让浏览器跑流程；运行时若立项则在 Cube 独立模块。
 - 不做租户层首页工作台；实体 ViewProfile 首期仍无角色层（与首页分层分开）。
 - 演化后不再保留独立「搜索」产品面（SearchDrawer / `Q` / 预定义查询），见 §8.5.4。
@@ -154,8 +215,9 @@
 | ViewProfile（列/视图） | **后端新建** | ➖/局部 | ✅（直接后端权威：命名视图/列/sort/chrome/mapping + 筛选记忆 + 受限表单布局 FormJson + 全局只读模板 + 实体级预定义查询，OSC-0012~0016） | ✅ | P0 |
 | VTable 表格+自定义列 | 本方案增强 | 🟠 DOM 表 | ✅ | ✅ | P0 |
 | 树表视图 | DATA-3 | 🟠 部分页 | ✅（treeBuilder 组装 + VTable hierarchy） | ✅ | P0 |
-| 卡片视图 | Vue 有未接线 stub | ❌ | ✅（CardList/RecordCard） | ✅ | P0 |
-| 甘特视图 | 本方案新建 | ❌ | ✅ 只读（vtable-gantt 计划/实际双条重叠对比 + 任务条定位图标 + 表宽拖拽持久化 + 固定色，OSC-0019；无拖拽写回） | ✅ | P0 |
+| 卡片视图 | Vue 有未接线 stub | ❌ | ✅ 卡片流（CardList/RecordCard；标准/偏大/整行 + 可选封面；**非**飞书画册） | ✅ 卡片；画册布局见 §7.4 | P0 |
+| 看板 / 日历 | 本方案新建 | ❌ | 🟠 只读：看板分列（空枚举列仍展示）+ 日历**仅月网格**；无拖拽写回 | ✅ 只读舞台；完成度见 §7.4 | P0 |
+| 甘特视图 | 本方案新建 | ❌ | ✅ 只读（vtable-gantt 计划/实际双条重叠对比 + 任务条定位图标 + 表宽拖拽持久化 + 固定色，OSC-0019；`moveable:false`） | ✅ 只读；分组/依赖线见 §7.4 | P0 |
 | 右侧记录抽屉 | 本方案 | ❌ 多为弹层 | ✅ 右抽屉（表单/历史/评论全接线，OSC-0008） | ✅ | P0 |
 | 修改历史（Log 筛选） | SYS-3 | 🟠 独立日志页 | ✅（抽屉 timeline：分页 + 动作筛；Remark 前端启发式字段 diff，无后端结构化审计） | ✅ 抽屉 Tab | P0 |
 | 实体评论 EntityComment | **后端新建** | ❌ | ✅（OSC-0008 接线：api-core comment API + 抽屉评论 Tab 顶层/回复/删除本人） | ✅ | P0 |
@@ -173,7 +235,7 @@
 
 > **实体自动化 ≠ 流程引擎 ≠ FlowGram。** OSC-260815fa86 已交付线性「自动化」（GraphJson + C# `AutomationExecutor`）。FlowGram 只做设计器；审批/待办运行时若立项则在 Cube `IModule`（§8.5.5），**禁止**把自动化实现成浏览器画布执行器。
 
-> 注：以上「ArcoVue 现状」列已于 **2026-08-29** 对照代码复审刷新（含 OSC-2608280e9e 页面仪表盘、OSC-26082815a1 首页工作台归档）。刷新依据见 §10.4 审查结论。
+> 注：以上「ArcoVue 现状」列已于 **2026-08-29** 对照代码复审刷新；**2026-08-30** 按多维视图专项补看板/日历/卡片完成度（§7.4）。刷新依据见 §10.4。
 
 矩阵随里程碑更新「ArcoVue 现状」列；目标为 ➖ 的项不得在 OSC 中膨胀为必做范围。
 
@@ -462,9 +524,9 @@ DELETE /Cube/EntityComment?id=
 | calendar | 月历视图（CalendarMonth） | 存在 DateTime 字段作为开始日期 |
 | gantt | VisActor 甘特（只读，无拖拽写回） | 存在可映射的起止日期字段 |
 
-> 6 种视图均已落地（OSC-0006）；「看板/甘特/日历无拖拽写回」为设计内「不做」项，见 §10.4。
+> 6 种视图均已落地（OSC-0006）；「看板/甘特/日历无拖拽写回」为设计内「不做」项。结构齐之后的**只读完成度**见 §7.4，差距编号见 §10.4 #17–#22。
 
-视图切换器绑定当前 `typePath` 的 **ViewProfile.view**，切换即持久化该 Profile。
+视图切换器绑定当前 `typePath` 的 **ViewProfile.view**，切换即持久化该 Profile。同源 `GetList`：切视图不搬数据（与飞书「改一处全视图同步」同构，权限仍以后端为准）。
 
 ### 7.2 右侧 RecordDrawer
 
@@ -479,6 +541,27 @@ DELETE /Cube/EntityComment?id=
 建议 `EntityComment`：`Category`、`LinkId`、`Content`、**ParentId / RootId / ReplyUserId / ReplyUser**（同表回复）、创建人信息等。  
 API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复，不另建回复表。
 供所有皮肤复用，不绑死 ArcoVue。
+
+### 7.4 多维视图完成度（2026-08-30 专项，对照飞书/钉钉）
+
+飞书官方六视图为表格 / 看板 / 日历 / 甘特 / **画册** / **表单**；钉钉 AI 表格同级。ArcoVue 为 table / **tree** / card / kanban / calendar / gantt。对标交互范式，不复刻云协作。树表为一等视图（飞书/钉钉官方无），保持优势。
+
+| 视图 | 已交付 | 待完善（只读，不改「无拖拽写回」） | 明确不做 |
+|------|--------|-----------------------------------|----------|
+| table | VTable；列显隐/序/宽；左右冻结；分组 ≤3；条件填色；表头**单列**服务端排序 | 多级排序（Pager 白名单 `sorts`）；行高档；表内拖列（配置抽屉已可拖） | 单元格任意公式 |
+| tree | `treeBuilder` + hierarchy；无 Parent 禁创建；禁止分组 | 展开层级记忆、大树懒加载（P2） | 把树改成画册 |
+| card | 标准/偏大/整行 + 可选 `imageField` | 「画册」布局：图大字段少（P1） | 对外附件相册产品 |
+| kanban | 枚举分列；`dataSource` 空列仍展示；列内懒加载 | 列折叠；封面字段约定（`imageField` 已有） | 列间拖拽改分组字段（须先修订本条再 OSC；写回走 PATCH + `FindData`） |
+| calendar | **仅月网格**；点事件开详情；每天最多 3 条 + `+N` | 周或议程；`+N` 弹出当日列表；有 Insert 权时点空白开新增抽屉 | 拖事件改日期 |
+| gantt | 计划/实际双条；缩放 5 级；`tableWidth` 持久化；`taskBar.moveable=false` | 按字段分组；只读依赖线（须前置任务模型，见竞品缺口 D） | 拖条改期、进度条可调、里程碑写回 |
+| 表单视图 | 无；列表有 ShareView embed | — | 对外问卷收集（独立站点 + 同一实体 API） |
+
+**跨视图壳（已齐 / 待补）**
+
+- 已齐：命名视图 Tab（建/改名/复制/删除/存模板）；`canCreateViewKind` 门禁；mapping 按类型；筛选 AND/OR 且 `viewFilter` 下推；ShareView 短令牌；个人 ViewProfile > 全局模板。
+- 待补：视图 Tab **不能拖排序**；无飞书「保护视图」（不做视图级 ACL，最多只读模板）；**查询双轨**（SearchDrawer + 筛选）未按 §8.5.4 收口——看板/日历大 `pageSize` 与表格翻页两套心智；表格分组不作用于看板/日历/甘特（看板用 `mapping.groupField`）。
+
+落地顺序：先 §8.5.4 查询收口（所有视图受益）→ 日历溢出/空白新建与看板列折叠 → 甘特分组与画册布局 → 多级排序（须 Pager 白名单，勿客户端任意 `OrderBy`）。看板拖拽写回不进入本表承诺。
 
 ---
 
@@ -589,7 +672,7 @@ DefaultList 固定容器
 
 | 层 | 内容 |
 |----|------|
-| L0 实体内核 | GetPage / CRUD / 行级权限 / 值集。缺：字段级 ACL（写入与导出对称）。 |
+| L0 实体内核 | GetPage / CRUD / 行级权限 / 值集。**缺口与落地 Issue 见 §8.6**（Role.DataScope 未接 CreateWhere；字段矩阵 ACL 未做；值集 `entity:` 绕过行权）。 |
 | L1 呈现 | UserProfile 壳；ViewProfile 命名视图；**首页槽位用户>主角色**；**Insight DashboardJson**。 |
 | L2 协作 | 实体自动化（线性 GraphJson + `AutomationExecutor`）；站内信 Inbox。 |
 | L3 流程引擎（待建） | 定义、实例、待办任务；FlowGram **仅设计器**。 |
@@ -632,6 +715,8 @@ DefaultList 固定容器
 
 翻页、导出、统计、Insight 部件、看板视图共用同一结果集。`GetList` 以结构化筛选为权威参数。GetPage `Search` 分区改为可筛字段元数据，值集远程候选仍给筛选控件。筛选不是权限：`DataPermission` 与租户 Where 先于用户筛选。
 
+**实施路径发现（2026-08-29 实测）**：「全控制器可靠下推」**无需改造任何重写 Search 的控制器**。机制：① `SearchData` 已把 `p.State = CreateWhere() & viewExp`（权限表达式与 viewFilter 一同入 State）；② XCode `Entity.FindAll(Expression, PageParameter)` 源码自动把 `page.State`（Expression/WhereBuilder）AND 进 where；③ Areas 内 18 个重写 `Search` 的控制器（User/Log/Role/Department/Tenant 等）无论直接 `FindAll(exp, p)` 还是经实体静态 `Search(...)`，终点全部落在 `FindAll(exp, page)`——与 DataPermission 行权同一条透明通道。例外：`id>0` 单条直达分支（语义合理）、`EntityTreeController` 走缓存内存 `Match`（已专门处理）、`LovController.ListData` 值集场景（非实体列表）。因此收口剩余工作仅三件：`AutomationFilter` 字段白名单（`GetPage search ∪ list`）、透明下推回归单测（防绕过 FindAll 的自定义查询回潮）、前端退役 `SearchDrawer`/`QueriesJson`（保留 Q 搜索框）。
+
 #### 8.5.5 流程引擎 ≠ 实体自动化
 
 | | 实体自动化（已有） | 流程引擎（要补） |
@@ -648,15 +733,145 @@ DefaultList 固定容器
 
 首页「用户 > 主角色」已由 OSC-26082815a1 落地（`HomeJson` + Parameter `Workbench.Role` + `/Cube/Workbench`）。
 
+### 8.6 企业级权限、计算列与审计合规（后端增强）
+
+> 2026-08-30 对照：`NewLife.Cube` WebAPI、`NewLife.XCode` Membership、`NewLife.X` `SystemJson`/`DataMemberResolver`、`Doc/PERM-*.md` / `DATA-字段元数据.md`。权威代码优先于 Doc（`PERM-数据权限.md` 仍写三字段 `DataPermission` 构造器，与现码不符）。
+
+企业中后台审计合规要求：**同一套策略**覆盖列表、详情、导出、导入、PATCH、Widget 查询、值集反查；藏列与筛选不是安全边界。皮肤只消费裁剪后的 GetPage / 行 JSON。
+
+#### 8.6.1 现状：分层权限（代码实测）
+
+```
+菜单 PermissionFlags（EntityAuthorize：Detail/Insert/Update/Delete/…）
+  → 租户 CreateWhere（ITenantScope + TenantContext；无上下文 Enforce 则 1=0）
+  → 行权：仅 DataPermissionAttribute 固定表达式（如 User 的 ID={#userId}）
+      XCode Role.DataScope / DataScopeHelper.GetFilter 已实现，Cube CreateWhere **未调用**
+  → 字段：无角色×字段矩阵；IFieldScope + MaskSensitiveFields 存在，控制器 **从未调用**
+  → 写入：CopyFrom 脏字段；ValidPermission 默认恒 true
+```
+
+| 层 | 已有 | 缺口 |
+|----|------|------|
+| 操作 | `EntityAuthorize` + 角色菜单位 | 不覆盖「能看哪些列」 |
+| 租户 | `CreateWhere` + TenantInterceptor | 与行权 AND 已具备；无租户上下文 fail-closed |
+| 行 | `DataPermission(systemRoles, expression)` + `FindData` 的 `builder.Eval` | **忽略** `Role.DataScope`。`DataScopeMiddleware` 只灌 `DataScopeContext`，列表不消费。OSC-2608273d95 仍 Draft |
+| 行（XCode） | `GetFilter` / `CanAccess` / `DataScopeInterceptor.OnQuery` | ① `Role.Valid` 把 `DataScope==0`（全部）改写成「本部门」；② `OnValid` catch 后 **return true**（越权仍保存）；③ User/Department/Log **未** `Add<DataScopeInterceptor>()`（User 已有接口） |
+| 字段脱敏 | `IFieldScope.GetSensitiveFields` + `ViewSensitive` | 未接到 Index/Detail/Export；GetPage 无 `sensitive` |
+| 字段 ACL | `DataField.Authority` 序列化但 Fill 不赋值、无人消费 | 角色看不见薪资只能 `RemoveField`（全局）或前端藏列 |
+| 元数据 | GetPage / GetFields **`[AllowAnonymous]`** | 未登录可读字段名、类型、LOV 码、枚举字典；做列权限时必须按用户裁剪 |
+| 旁路 | `ExportFile` 用 `Factory.AllFields`；`LovController.FetchEntityList` 直调 `fact.FindAll` | 不走 GetPage 分区、不走 `SearchData`/`CreateWhere`；实体未挂拦截器则无行权 |
+| 文档 | 功能清单 PERM-6 标已实现 | `Doc/PERM-数据权限.md` 示例 API 与 `DataPermissionAttribute` **不一致** |
+
+**契约（不可破坏）**
+
+1. 行过滤只在服务端：`viewFilter` / ViewProfile / ColumnsJson **不是** ACL。
+2. 租户 Where 与行权 **AND**；`logic=any` 不得放大 `CreateWhere`。
+3. 不把 `DataPermission` 表达式下发浏览器。
+4. 字段矩阵另号；不要把 OSC-2608273d95 的 `IFieldScope` 脱敏当成列 ACL。
+
+#### 8.6.2 计算列能否经 GetPage 给前端
+
+`GetPage.list` 来自 `OnGetFields(List)` → 静态 `ListFields`（`factory.Fields` 表列 + `SetRelation` 用 `[Map]` 替换外键 + 控制器 `AddListField`）。`AddDataField(name)` 从 **`Factory.AllFields`** 取，**可以**加入 Biz 扩展属性。
+
+| 写法 | GetPage 元数据 | 行 JSON（GetList/GetDetail） | SPA |
+|------|----------------|------------------------------|-----|
+| 表列（Model.xml） | ✅ | ✅ | 标准列 |
+| `AddListField("Log")` + `Url`（无实体属性） | ✅ name/url/header | ❌ | 仅操作链（OSC-2608178bdb `__ops`） |
+| `ListField.GetValue` / `GetClass` / `DataVisible` | ❌ `[JsonIgnore]` | ❌ | **仅 MVC Razor**；SPA 拿不到单元格计算值 |
+| Biz `[Map]`（如 `RoleName`） | ✅ `SetRelation` 把 FK 换成 Map 名 | ❌ `[XmlIgnore, IgnoreDataMember]`；`SystemJson.Apply` → `DataMemberResolver` 剥掉 | 列表显示靠 **Map 名列 + `BatchLabel`/`DataSourceMap`**，值仍是外键 |
+| Biz 计算属性（**无** Ignore，且 `AddField` / `ShowIn` 进分区） | ✅ | ✅ 进 JSON | 值必须已在实体上；前端 **禁止** JS/SQL 求值 |
+| `Doc/DATA-字段元数据.md` 的 `AddDataField(new ListField{ DataSource = e => Price*Stock })` | 与现码不符（`AddDataField` 吃字段名；`DataSource` 是下拉字典委托） | — | 勿按该示例做 SPA |
+
+**前端计算列（ArcoVue 已冻结）**：`itemType ∈ {formula, compute, computed}` 只展示**已在行 JSON 的值**，不进提交体；lookup = Map + `BatchLabel` 显示关联**名称**。禁止 GetPage `projections`、浏览器公式、双向写回（e483 P5 / harness）。
+
+落地约定：要给 SPA 看的计算列 = **C# 扩展属性（可序列化）+ GetPage 声明 `ReadOnly` + 不进 add/edit/`CopyFrom`**。`GetValue` 只服务 MVC，不要作为企业皮肤的计算列通道。
+
+#### 8.6.3 值集机制
+
+| 类型 | 元数据 | 数据 | 权限 |
+|------|--------|------|------|
+| ENUM | GetPage `DataSourceMap`；无手工 LovCode 时 `PrepareForApi` 填 `Enum.{FullName}` | 内联，不必再打 Meta | 字典本身无行权 |
+| LIST | 字段 `LovCode`；`GET /Admin/Lov/Meta` | `POST ListData`（HTTP / `entity:`） | **Meta/ListData/BatchLabel 仅 `EntityAuthorize(Detail)`（值集菜单）**，不是目标实体菜单 |
+| 大表 FK | `FillMapCandidates`：行数 > `MaxDropDownList` → `LovCode=Entity.{FullName}` | 远程搜索 | 同 LIST |
+| `entity:` | LovListConfig.Source | `FetchEntityList`：`EntityFactory.FindAll(exp)`，**不经** `SearchData` | 无 `DataPermission`、无租户 `CreateWhere`；仅当目标实体已挂 `DataScopeInterceptor`/`TenantInterceptor` 且上下文有效才有 ORM 层过滤 |
+
+`BatchLabel` 按 value 反查 label：可对不可见行做存在性/标签推断（布尔侧信道）。筛选白名单见 OSC-260830a1b2（`search ∪ list`），与列 ACL 分开。
+
+#### 8.6.4 目标架构（审计合规）
+
+```
+请求
+  EntityAuthorize（动作）
+  → CreateWhere = Tenant AND DataScope.GetFilter AND DataPermission(可选额外 AND)
+  → Search / FindData / Export / Widget Query / entity: ListData 共用同一表达式或 CanAccess
+  → 字段：GetPage 按用户裁剪分区；行 JSON / 导出剥离或脱敏不可见列
+  → 写入：CopyFrom / PATCH / 导入只接受 editForm ∩ 可写矩阵；计算列/lookup 剔除
+  → 审计：LogOnChange（已有 Field=old→new）+ 导出/权限变更/越权拒绝记失败日志
+```
+
+原则：fail-closed；多角色 DataScope 取 **Min**（已有 `GetMergedDataScope`）；`IsSystem` 仍等于全部；无接口实体（Menu/Role/多数配置）不加行权，只靠菜单。列权限变更本身必须可审计。
+
+#### 8.6.5 Issue 清单（按功能分组，便于开 OSC）
+
+编号 `BE-*` 仅本方案使用。已有 Draft 号写在「承接」列，不要平行再造一套模型。
+
+**A. 行级权限（先于列 ACL）**
+
+| ID | 内容 | 改哪里 | 承接 / 依赖 |
+|----|------|--------|-------------|
+| BE-A1 | `Role.Valid` 勿把 `DataScope==0`（全部）当未设置；仅 Insert 且未脏时写默认 | XCode `角色.Biz.cs` | OSC-2608273d95 XCode Issue 问题 1 |
+| BE-A2 | `DataScopeInterceptor.OnValid` 失败 **return false**（或抛出），禁止 catch 后 true | XCode `DataScopeModule.cs` | 问题 2；**修好再挂实体** |
+| BE-A3 | User 挂拦截器；Department 补 `IDepartmentScope`；Log 补 `IUserScope`→`CreateUserID` | XCode 实体静态构造 | 问题 3；仅 IUserScope 不要按部门扩权 |
+| BE-A4 | `IDepartmentScope` +「仅本人」= 本部门 ID，禁止 `Equal(-1)` 空集 | XCode `GetFilter` | 问题 4 |
+| BE-A5 | 部门缓存键含 `userId+deptId+scope` | XCode `DataScopeContext` | 问题 6 |
+| BE-A6 | Cube `CreateWhere` **合并** `DataScopeHelper.GetFilter`；拆掉会压成仅本人的 `DataPermission`（User/Log/Token/Online 等）；特性类保留作可选额外 AND | Cube `ReadOnlyEntityController2` 双栈 | OSC-2608273d95；租户 AND 顺序不变 |
+| BE-A7 | 详情 / 导出 / PATCH / 启停 / Widget Query 与列表同一 `CanAccess` | Cube FindData / ExportFile / WidgetQueryService | 禁止只滤列表 |
+| BE-A8 | 重写 `Doc/PERM-数据权限.md` 与现码一致；功能清单 PERM-6 区分「特性表达式」与「角色 DataScope」 | Doc | 与 BE-A6 同号收口 |
+
+**B. 字段权限与脱敏**
+
+| ID | 内容 | 改哪里 | 承接 / 依赖 |
+|----|------|--------|-------------|
+| BE-B1 | Index/Detail/Export 调用 `MaskSensitiveFields`；GetPage 打 `sensitive`；无 ViewSensitive 且非本人密码类脱敏 | Cube PrepareFieldsForApi + SearchData 出口 | OSC-2608273d95 目标 4；**不是**矩阵 ACL |
+| BE-B2 | 角色×字段 可见/可写矩阵：GetPage 按用户裁剪五分区；写入/导出/导入对称剥离 | 新 OSC（建议独立） | 须先 **取消或收紧** GetPage `[AllowAnonymous]` |
+| BE-B3 | `CopyFrom` / PATCH / 导入忽略不可见且不可写列；计算列与 lookup 永不进写通道 | `EntityController` | 与 BE-B2 同号或紧随 |
+| BE-B4 | 勿用 `Authority`/`Extended*` 偷语义；显式 `Sensitive` / 可写位，并在写入路径强制 | `DataField` | 竞品 §7 契约 7 |
+
+**C. 计算列与只读投影**
+
+| ID | 内容 | 改哪里 | 承接 / 依赖 |
+|----|------|--------|-------------|
+| BE-C1 | 文档化：SPA 计算列 = 可序列化 C# 属性 + GetPage `itemType` + ReadOnly；废弃把 `GetValue` 当 API | Doc + 控制器技能 | 修订 `DATA-字段元数据.md` 错误示例 |
+| BE-C2 | 需要进列表的 Map 显示名：要么行 JSON 去掉 Ignore（或另投影 DTO），要么维持 FK + BatchLabel（现状） | 择一写进 design | **不**新增 projections 协议 |
+| BE-C3 | 只读查找多列（Customer.Level）：可选 `LookupDisplays[]`，GetList **附加**只读键；禁止双向写回 | 须重开 §8.2.6 | 竞品缺口 B；非本迭代承诺 |
+
+**D. 值集与查询侧信道**
+
+| ID | 内容 | 改哪里 | 承接 / 依赖 |
+|----|------|--------|-------------|
+| BE-D1 | `AutomationFilter` 字段 ∈ GetPage `search ∪ list` | `AutomationFilter` + SearchData | **OSC-260830a1b2**（已 Draft） |
+| BE-D2 | `entity:` ListData 并入目标实体菜单 Detail + 与 `CreateWhere` 同等的租户/行权（或强制走已挂拦截器且单测钉死） | `LovController.FetchEntityList` | 无拦截器则 fail-closed 或 403 |
+| BE-D3 | `BatchLabel`：仅翻译调用方已有权看见的 value；或对目标实体 `CanAccess` 后再回 label | `LovController.BatchLabel` | 防枚举探测 |
+| BE-D4 | 查询收口：退役 SearchDrawer；筛选唯一入口 | 前端 + GetPage Search 定位 | OSC-260830a1b2；**优先于**新视图种 |
+
+**E. 审计与合规门禁**
+
+| ID | 内容 | 改哪里 | 承接 / 依赖 |
+|----|------|--------|-------------|
+| BE-E1 | 导出走与列表相同的行权 + 字段裁剪（停止裸 `AllFields`） | `OnExportExcel/Csv/Json` | 与 BE-A7 / BE-B2 |
+| BE-E2 | 角色 DataScope / 字段矩阵 / 菜单权限变更写审计（谁改了谁的范围） | Role/Menu 控制器 + Log | SYS-3；失败拒绝也写 success=false |
+| BE-E3 | 业务用户不可改删操作日志（已有则核对外露 Action） | Log 控制器 | 合规保留 |
+| BE-E4 | GetPage 匿名范围成文：登录后按用户裁剪；分享令牌用分享者身份裁剪 | GetPage / ShareView | 与 BE-B2 绑定 |
+
+**建议落地顺序**：BE-A1～A5（XCode）→ BE-A6～A8 + BE-B1（Cube 行权+脱敏）→ BE-D1/D4（查询收口，可并行）→ BE-D2/D3（值集旁路）→ BE-B2/B3/E1（字段 ACL+导出）→ BE-C* / BE-E2 按合规节奏。
+
+**明确不做**：ViewProfile 当数据权限；用户脚本公式；把拦截器 fail-open 上生产；菜单/角色表按 DataScope 过滤。
+
 ### 8.3 业务侧日常开发
 
-1. 新建业务类库/宿主，引用 `NewLife.Cube`、`NewLife.Cube.ArcoVue`。
-2. 实体 + `EntityController` / `EntityTreeController`，配置 List/Form 字段与菜单。
-3. `AddCube` / `UseCube` / `UseArcoVue`。
-4. 默认零前端；需要时：
-   - **Section 覆写**：Search / Toolbar / View / DrawerTabs
-   - **整页覆写**：`apps/{biz}/...`
-   - **流程页**：未引入流程模块时无入口；引入后走平台待办页或整页覆写，FlowGram 只出现在设计器，不当 DefaultList 内嵌执行器
+**完整操作手册见 §12。** 此处只留四步备忘：新建类库 → 实体 + `EntityController` + Area 菜单 → 宿主 `AddCube` / `UseCube` / `UseArcoVue` → 默认零前端；不够再 Section / `apps/` 整页。不要为每个实体手写 Vue，也不要用 `AppModule` 表当发布模型。
+
+### 8.4 Cube.Vue 成果复用边界
 
 ### 8.4 Cube.Vue 成果复用边界
 
@@ -866,14 +1081,16 @@ Draft → Accepted → Implementing → Validating → Done
 - [x] 实体自动化（OSC-260815fa86）+ 站内信 Inbox + AI 浮窗（OSC-26081903c0）+ embed 分享短令牌  
 - [ ] §3.1 矩阵 P0 目标残留：i18n、组件测试（2026-08-29 仍缺，未做书面豁免）  
 - [ ] §8.5.4 查询收口（退役 SearchDrawer / 预定义查询；筛选全后端）— 已拍板未实施  
+- [ ] §7.4 多维视图只读完成度：日历周/议程与溢出列表、看板列折叠、甘特分组、卡片画册布局、多级排序（2026-08-30 专项）  
+- [ ] §8.6 行权 DataScope 接线 + 字段脱敏（BE-A / BE-B1）；字段矩阵 ACL 与值集旁路见 BE-B2 / BE-D2（2026-08-30c）  
 - [ ] OSC-0010 流程设计器 / §8.5.5 流程运行时模块；OSC-0011 收口；OSC-0018 设计方案仍 Draft  
 - [x] 功能清单可追溯；已归档 OSC（含 2608280e9e / 15a1）均有 verify；编号规则见 §9.2  
 
 ### 10.4 代码审查结论（2026-08-02；2026-08-29 复审）
 
-对照本方案对 NewLife.Cube / NewLife.Cube.ArcoVue 全量审查。「ArcoVue 现状」列按实测刷新（§3.1）。**2026-08-29 复审**在 OSC-2608280e9e、OSC-26082815a1 与工作台全屏合入后再次刷新矩阵与差距表。
+对照本方案对 NewLife.Cube / NewLife.Cube.ArcoVue 全量审查。「ArcoVue 现状」列按实测刷新（§3.1）。**2026-08-29 复审**在 OSC-2608280e9e、OSC-26082815a1 与工作台全屏合入后刷新矩阵与差距表。**2026-08-30** 按飞书/钉钉多维视图专项补 §7.4，并划掉已落地的 #4/#7/#8。**2026-08-30c** 行权/字段/值集见 §8.6，差距 #23。
 
-**达成度**：零配置 CRUD、六视图、UserProfile / ViewProfile、右抽屉三 Tab、实体自动化、条件填色与批量启停、AI 浮窗、**页面仪表盘 WidgetHost**、**三级自定义工作台（含全屏）**、embed 分享与站内信均已落地。**2026-08-29 实测：约 78 个 `web/src/**/*.spec.ts` + Playwright E2E 3 spec**（组件测试仍为 0）。
+**达成度**：零配置 CRUD、六视图**舞台**、UserProfile / ViewProfile、右抽屉三 Tab、实体自动化、条件填色与批量启停、AI 浮窗、**页面仪表盘 WidgetHost**、**三级自定义工作台（含全屏）**、embed 分享与站内信均已落地。非表格视图完成度见 §7.4。**2026-08-30 实测：约 81 个 `web/src/**/*.spec.ts` + Playwright E2E 2 spec + auth setup**（组件测试仍为 0）。
 
 **差距与后续规划**：
 
@@ -882,19 +1099,26 @@ Draft → Accepted → Implementing → Validating → Done
 | 1 | ~~评论 Tab 前端未接线~~（OSC-0008） | P0 | ✅ 已解决 |
 | 2 | ~~`UserProfile.workspace.defaultView / pageSize` 未消费~~（OSC-0012） | P0 | ✅ 已解决 |
 | 3 | ~~筛选记忆 / 分组占位~~（OSC-0012 / 0015） | P1 | ✅ 已解决 |
-| 4 | 列 frozen 仅 left/false，无 right（2026-08-29 仍未做） | P1 | 补充右冻结 |
+| 4 | ~~列无右冻结~~ | P1 | ✅ `ColumnFrozen: left\|right` + `rightFrozenColCount`（竞品 §6.2 #11） |
 | 5 | ~~首页工作台角色层未实现~~（OSC-26082815a1） | P1 | ✅ 已解决 |
-| 6 | 组件测试缺失（仅纯逻辑单测；约 78 spec，组件测试仍为 0） | P1 | `@vue/test-utils` + happy-dom 覆盖关键组件 |
-| 7 | `NamedViewsToolbar.vue` 无引用（2026-08-29 仍未清理） | P2 | 清理或实现 |
-| 8 | `ListTable` 树列排除条件写 `__check`（应为 `__checked`）（仍未修） | P2 | 修正排除条件 |
+| 6 | 组件测试缺失（仅纯逻辑单测；组件测试仍为 0） | P1 | `@vue/test-utils` + happy-dom 覆盖关键组件 |
+| 7 | ~~`NamedViewsToolbar.vue` 死代码~~ | P2 | ✅ 已删；活 UI 为 `ViewTabsToolbar` |
+| 8 | ~~树列排除写 `__check`~~ | P2 | ✅ 代码已用 `__checked` |
 | 9 | i18n 未实现（矩阵目标 ✅ 但无文案外置） | P1 | 文案外置 |
 | 10 | FlowGram 设计器未做；流程运行时未建 | P1/P2 | 设计器 OSC-0010；运行时 §8.5.5 独立模块 |
 | 11 | ~~通用实体表单/列表/搜索元数据治理~~（OSC-0009） | P0 | ✅ 已解决；查询收口见 §8.5.4 |
 | 12 | ~~批量启停、AI 浮窗、条件填色~~（OSC-26081903c0） | P2 | ✅ 已解决 |
 | 13 | ~~Insight 单图上限~~（OSC-2608280e9e） | P1 | ✅ 已解决 |
-| 14 | 查询双轨（SearchDrawer + 筛选；无法下推则当前页假筛选） | P1 | §8.5.4 退役搜索、筛选全后端 |
-| 15 | OSC-0018 实体界面自定义仍为 Draft；OSC-2608273d95 角色 DataScope 仍为 Draft | P1 | 设计定稿后再开执行号 |
+| 14 | 查询双轨（SearchDrawer + 筛选）。下推本身已全控制器透明生效（§8.5.4 实施路径发现） | P1 | §8.5.4 退役搜索；剩余仅 `AutomationFilter` 字段白名单 + 回归单测 + 前端退役 SearchDrawer/QueriesJson。**看板/日历大 pageSize 与表格翻页两套心智，收口优先于新视图种** |
+| 15 | OSC-0018 实体界面自定义仍为 Draft；OSC-2608273d95 角色 DataScope 仍为 Draft | P1 | 行权执行清单见 §8.6 BE-A*；字段矩阵另号 BE-B2 |
 | 16 | ~~工作台无全屏 / 暗色全屏顶栏透出~~（2026-08-29：全屏按钮 + bg-1 叠 fill-2；列表全屏同步） | P2 | ✅ 已解决 |
+| 17 | 日历仅月网格；`+N` 不可展开；不能点空白新建 | P1 | §7.4：周或议程 + 当日列表；有 Insert 权则开新增抽屉（**不**做拖改日期） |
+| 18 | 看板无列折叠；封面依赖实体 `imageField` 约定 | P1 | §7.4 只读增强；列间拖拽写回仍不做 |
+| 19 | 甘特无按字段分组；无依赖线 | P1/P2 | 分组只读即可；依赖线须任务模型（竞品缺口 D），写回仍不做 |
+| 20 | 卡片非画册（图不主导） | P2 | `CardMapping.layout` 增画册模式；不新开视图种 |
+| 21 | 表头仅单列排序 | P1 | Pager 白名单 `sorts`；禁止客户端任意 `OrderBy` |
+| 22 | 视图 Tab 不能拖排序；无保护视图 | P2 | Tab 拖序纯呈现；保护视图不做（会变成第二套 ACL） |
+| 23 | 行权未接 Role.DataScope；字段矩阵未做；GetPage 匿名；值集 entity: 绕过 SearchData | P0/P1 | **§8.6** BE-A～E；先 XCode 修拦截器 fail-open 再挂实体 |
 
 **文档一致性修正**：§7 与 §6.3 的「左侧抽屉」表述与本方案 §8.1 契约（`placement="right"`）及实际实现（右侧抽屉）不一致，统一为「右侧抽屉」，并保留「飞书多维表为左抽屉」的范式差异说明。开篇「深度 15%–35%」已于 2026-08-29 废止。
 
@@ -914,10 +1138,204 @@ Draft → Accepted → Implementing → Validating → Done
 
 ---
 
-## 12. 核心文档同步清单（实施时维护）
+## 12. 业务功能插件开发（ArcoVue 已是默认皮肤）
+
+> 写给业务研发：读完应能独立交出一个可上菜单的管理模块。平台实现细节见 §8；权限与计算列约束见 §8.6。对照样例：`CubeDemo/Areas/School`。
+
+### 12.1 先记住三句话
+
+1. **皮肤已经做好。** 宿主 `UseArcoVue` 之后，新实体不写 Vue 也能出列表、筛选、六视图、右侧抽屉。
+2. **功能插件 = 被宿主引用的业务类库**（实体 + Area + 控制器）。不是再做一个皮肤，也不是往「应用插件」表里丢 zip。
+3. **WebAPI 的 `IModule` 管管道（服务/中间件），不管菜单。** 菜单来自 Area 扫描。纯 CRUD 甚至不必实现 `IModule`。
+
+| 你要做的事 | 正确做法 | 不要做 |
+|------------|----------|--------|
+| 学生/订单/设备管理页 | `EntityController` + `[Menu]` | 为每个实体写 `index.vue` |
+| 后台 Worker、独立中间件 | `AddXxx()` 扩展方法；可选 `IModule` | 依赖管理页「启用插件」才启动（WebAPI **没有** `AppModuleController`） |
+| 某页工具条不够 | `apps/` 下 Section 文件 | 复制整套 Layout |
+| 驾驶舱、设计器 | `apps/.../index.vue` 整页覆写 | 把 FlowGram 嵌进 DefaultList 当执行器 |
+| 行权 / 藏薪资列 | 等平台 DataScope / 字段 ACL（§8.6） | ViewProfile 藏列、前端筛选当权限 |
+
+### 12.2 宿主里已经有什么（不要再做一遍）
+
+```csharp
+services.AddCube();                    // 认证、菜单、GetPage、CRUD、AI 等
+app.UseCube(env);
+app.MapControllers();
+app.UseArcoVue(env);                   // 必须在 MapControllers 之后（SPA 回退）
+```
+
+开发期前端 `pnpm dev`（端口 5183）会把 `/Admin`、`/Auth`、`/Cube` 以及 **大写字母开头的业务 Area**（如 `/School/Student/GetPage`）代理到后端。改代理后重启 Vite。
+
+浏览器打开的是菜单 url（`/School/Student`）；数据请求是 `/api/{Area}/{Controller}/...`。
+
+### 12.3 第一种（90%）：零前端业务包
+
+#### 仓库怎么摆
+
+```text
+Your.Biz.School/                 // 类库，引用 NewLife.Cube
+  Entity/                        // Model.xml → XCode 生成
+  Areas/School/SchoolArea.cs
+  Areas/School/Controllers/StudentController.cs
+Host/                             // 网站，引用 Your.Biz.School + NewLife.Cube.ArcoVue
+  Program.cs
+```
+
+宿主 **只要引用插件程序集**。控制器类型被加载后，`AreaBase` 会扫菜单。不必改 ArcoVue 源码。
+
+#### Area
+
+```csharp
+[DisplayName("教务系统")]
+[Menu(123)]
+public class SchoolArea : AreaBase
+{
+    public SchoolArea() : base(nameof(SchoolArea).TrimEnd("Area")) { }
+}
+```
+
+#### 控制器
+
+```csharp
+[SchoolArea]
+[DisplayName("学生")]
+[Menu(0, true, Mode = MenuModes.Admin | MenuModes.Tenant)]
+public class StudentController : EntityController<Student, StudentModel>
+{
+    static StudentController()
+    {
+        ListFields.RemoveField("CreateUserID", "UpdateUserID");
+        // 操作链：无实体属性、只设 Url → ArcoVue 进 __ops，不要指望行 JSON 有 "Log" 字段
+        var df = ListFields.AddListField("Log", "Enable");
+        df.DisplayName = "日志";
+        df.Url = "/Admin/Log?category=学生&linkId={Id}";
+    }
+}
+```
+
+树形实体用 `EntityTreeController<T>`。列表/搜索/表单分区由 `ShowIn` 与 `OnGetFields` 决定，前端 GetPage 原样消费。
+
+#### 字段怎么给 SPA 看
+
+| 需求 | 做法 |
+|------|------|
+| 隐藏列 | `ListFields.RemoveField` / Model.xml `ShowIn` |
+| 外键显示名 | `[Map]` + 大表 `LovCode=Entity.*`；列表靠 BatchLabel，不要指望 `RoleName` 一定在 JSON 里（常被 `IgnoreDataMember` 剥掉） |
+| 计算列 | Biz **可序列化**属性 + `AddField`/`ShowIn` 进 list；`ReadOnly`，不进 add/edit。禁止 `ListField.GetValue`（仅 MVC） |
+| 值集下拉 | 字段 `LovCode`；ENUM 会内联 `DataSourceMap` |
+
+自定义 Action 加 `[EntityAuthorize(PermissionFlags.Update)]` 等，列表用 `Url` 或 `DataAction` 调用。`DataAction` 走 ajax，须与后端动词一致（如 CronJob 执行是 POST，不要用 GET）。
+
+#### 验收（十分钟）
+
+1. 启动宿主，日志里出现「注册权限管理区域[School]」。
+2. 管理员登录，菜单有「教务系统 / 学生」。
+3. 打开后是 DefaultList（表格），点行右侧抽屉能看详情。
+4. 浏览器网络里 `GetPage`、`GetList`（或 Index）返回 200，不是 404。
+
+### 12.4 第二种：管道级能力（Worker / 中间件 / 可选引擎）
+
+适合流程引擎、独立 Job、与列表无关的服务。CRUD 菜单仍按 §12.3 做。
+
+```csharp
+public static class WorkflowServiceExtensions
+{
+    public static IServiceCollection AddCubeWorkflow(this IServiceCollection services)
+    {
+        services.AddSingleton<IWorkflowEngine, WorkflowEngine>();
+        return services;
+    }
+}
+
+[Module("Workflow")]
+[DisplayName("流程引擎")]
+public class WorkflowModule : IModule
+{
+    public void Add(IServiceCollection services) => services.AddCubeWorkflow();
+    public void Use(IApplicationBuilder app, IWebHostEnvironment env) { /* 中间件可选 */ }
+}
+```
+
+宿主写 `services.AddCubeWorkflow()`。用配置开关决定是否注册，**不要指望**「魔方管理 → 应用插件」：该页只在 CubeNC；WebAPI 启动 **不会** `ScanAllModules`，空表则 `LoadAll` 为 0。
+
+约束：
+
+- `IModule.Use` 的 `IApplicationBuilder` **不能** `MapFallbackToFile`；SPA 只由 `UseArcoVue` 负责。
+- 禁止再次 `AddCubeAI()`（`AddCube` 已注册）。
+- 未引用模块时皮肤应隐藏入口（能力探测，类似 `GetAiConfig`），见 §8.5.5。
+
+`PluginServer` 只下载驱动/资源，**不是**应用插件市场。
+
+### 12.5 第三种：默认页不够时再写 Vue
+
+文件放在皮肤仓 `NewLife.Cube.ArcoVue/web/src/apps/{包名}/src/views/...`。`main.ts` 已 `import.meta.glob` 扫描，**不用改路由表**。
+
+路径对应菜单 typePath（`/School/Student`）：
+
+```text
+apps/school/src/views/school/student/index.vue          // L3 整页，替换 DynamicPage
+apps/school/src/views/school/student/ListPageHeader.vue
+apps/school/src/views/school/student/ListToolbar.vue
+apps/school/src/views/school/student/FormContent.vue
+```
+
+Section 文件名必须是槽位名（PascalCase），且在下表中。`index.vue` 不会当 Section 注册。
+
+| 槽位 | 用途 |
+|------|------|
+| `DefaultListPage` | 整页换成自定义列表壳（少用；优先 `index.vue`） |
+| `ListPageHeader` / `ListSearchBar` / `ListToolbar` | 列表上区 |
+| `ListTableContent` / `ListPagination` / `ListPageFooter` | 列表中下区 |
+| `FormPageHeader` / `FormContent` / `FormActions` | 抽屉表单 |
+| `PageNotFound` | 该 typePath 专用空态 |
+
+原则：**能改 GetPage / 字段控件就不要 L3。** 角色授权树这类走字段控件（L2），不要整页覆写。流程设计器才用 L3；运行时待办走独立模块页，不把画布当执行器。
+
+自定义洞察 kind：在 `registerPlatformWidgets()` 之后 `registerWidget({ kind, title, component, ... })`。跨实体必须已授权 GetList，禁止前端拼 SQL。
+
+样例：`web/src/apps/_demo/src/views/demo/echo/`（整页 + `ListPageHeader`）。
+
+### 12.6 推荐目录（后端 NuGet + 可选前端）
+
+```text
+Your.Plugin.Workflow/
+  Areas/Workflow/...
+  WorkflowServiceExtensions.cs
+Host/Program.cs          → AddCubeWorkflow(); UseArcoVue();
+ArcoVue/web/src/apps/workflow/   // 仅 L2/L3 或自定义 Widget 时需要
+```
+
+只发后端 NuGet 也可以：引用即出管理页。自定义 UI 要么进皮肤仓 `apps/`，要么单独包并纳入皮肤的 glob 扫描约定。
+
+### 12.7 禁止清单
+
+- 为每个实体手写 Element / Arco 整页（Cube.Vue 旧习惯）。
+- 再 `UseXxx` 抢 `index.html`（变成第二个皮肤）。
+- 把 `AppModule` 的 zip / Javascript / Lua 当发布方式（实现只认 **dll + Type=`Module`/`Adapter`**）。
+- 用 ViewProfile、筛选、藏列当行权或列权。
+- 在插件里复制登录、菜单树、GetPage。
+- 用 `GetValue` 委托冒充 SPA 计算列。
+
+### 12.8 对照清单（做一个「学生」量级的包）
+
+- [ ] 实体 + Model.xml / Biz；计算列可序列化；密码类不进列表。
+- [ ] `XxxArea` + `EntityController` + `[Menu]`；宿主引用该程序集。
+- [ ] 启动日志出现区域注册；`/Cube/MenuTree` 能看到该区。
+- [ ] 打开菜单是 DefaultList，点行有右抽屉。
+- [ ] 仅当默认工具条/表单不够时再加 Section 或 `index.vue`。
+- [ ] 需要 Job/中间件时加 `AddXxx`，并写 XUnit；不要只测 Razor。
+- [ ] 自定义 Action 带 `EntityAuthorize`；`dataAction` 动词与后端一致。
+
+流程/审批类包额外：定义与待办 API 独立；皮肤无模块则无入口；FlowGram 只出现在设计器页（§8.5.5）。
+
+---
+
+## 13. 核心文档同步清单（实施时维护）
 
 | 文档 | 用途 |
 |------|------|
+| 本方案 **§12** | 业务功能插件操作手册（Area / IModule / apps 覆写） |
 | [NewLife.Cube.ArcoVue/web/README.md](../../NewLife.Cube.ArcoVue/web/README.md) | 皮肤开发入口 |
 | [`NewLife.Cube/Entity/Cube.xml`](../../NewLife.Cube/Entity/Cube.xml) | 三实体 Table 定义（生成源） |
 | 拟建 `NewLife.Cube.ArcoVue/web/docs/` | Pref 消费、多视图、覆写、测试约定 |
@@ -931,7 +1349,7 @@ Draft → Accepted → Implementing → Validating → Done
 
 ---
 
-## 13. 附录：首批 OpenSpec 变更顺序表
+## 14. 附录：首批 OpenSpec 变更顺序表
 
 下表为 **历史 `OSC-00xx` 落地记录**（豁免，不改名）。自 `OSC-260813c3e9` 起新变更使用 `OSC-YYMMDDxxxx`，不再连续占号。被依赖项须已 Done。每号必选五件套（§9.3）；有界面则加 `ui/`。单号范围见「范围」列，避免回潮成「大而全」变更。
 
@@ -971,6 +1389,6 @@ Draft → Accepted → Implementing → Validating → Done
 
 ---
 
-## 14. 小结
+## 15. 小结
 
 本方案将 NewLife.Cube.ArcoVue 定位为 **WebAPI 版企业中后台默认皮肤**。截至 2026-08-29：登录/多租户/MFA、side·top·mix·embed 壳、六视图列表、右抽屉、实体自动化与站内信、AI 浮窗、页面仪表盘 Widget 协议与用户>主角色>系统工作台均已归档；主要未收口项为 **§8.5.4 查询双轨退役**、FlowGram/流程运行时、i18n 与组件测试。协作增量在 **`NewLife.Cube.ArcoVue/openspec/`**（五壳 `openspec-*`；状态机与测试门禁见 §9）；三实体 OSC-0002 写入 Cube.xml 生成；新变更编号 `OSC-YYMMDDxxxx`（历史 `OSC-00xx` 豁免）。

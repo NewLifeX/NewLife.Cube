@@ -731,7 +731,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
     // 树视图仍用 VTable hierarchy；分组视图不再设 tree（VTable 会把 checkbox 列自动设为 tree 列导致渲染异常），
     // 改用 VTable 原生 groupBy + rowSeriesNumber checkbox（OSC-0015 重构，参考官方 list-table-group-checkbox demo）
     if (!groupedMode && props.hierarchy && cols.length) {
-      const firstData = cols.find((c: { field?: string }) => c.field && c.field !== '__check' && c.field !== '__ops' && c.field !== '__expand');
+      const firstData = cols.find((c: { field?: string }) => c.field && c.field !== '__checked' && c.field !== '__ops' && c.field !== '__expand');
       if (firstData) (firstData as { tree?: boolean }).tree = true;
     }
     const sortState = props.sortState?.field
