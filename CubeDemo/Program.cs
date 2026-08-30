@@ -38,6 +38,7 @@ var app = builder.Build();
 //if (app.Environment.IsDevelopment())
 {
     app.UseCubeSwagger("swagger");
+    app.UseCubeScalar("CubeDemo 接口文档");
 }
 
 app.UseCube(builder.Environment);
