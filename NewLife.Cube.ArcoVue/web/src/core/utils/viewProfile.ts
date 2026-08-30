@@ -1146,6 +1146,27 @@ export function removeView(state: EntityViewState, id: string): EntityViewState 
   return { views, activeViewId, view: active.view };
 }
 
+/**
+ * 按给定 id 顺序重排命名视图（OSC-260830a1b2 后续：拖动页签调整显示顺序）。
+ * 未列出的视图保持相对顺序追加到末尾；空结果原样返回。
+ */
+export function reorderViews(state: EntityViewState, orderedIds: string[]): EntityViewState {
+  const byId = new Map(state.views.map((v) => [v.id, v]));
+  const ordered: NamedView[] = [];
+  const seen = new Set<string>();
+  for (const id of orderedIds) {
+    const v = byId.get(id);
+    if (v && !seen.has(id)) {
+      ordered.push(v);
+      seen.add(id);
+    }
+  }
+  for (const v of state.views) if (!seen.has(v.id)) ordered.push(v);
+  if (!ordered.length) return state;
+  const active = ordered.find((v) => v.id === state.activeViewId) || ordered[0];
+  return { ...state, views: ordered, activeViewId: active.id, view: active.view };
+}
+
 export function duplicateView(state: EntityViewState, id: string): EntityViewState {
   const src = state.views.find((v) => v.id === id);
   if (!src) throw new Error('视图不存在');

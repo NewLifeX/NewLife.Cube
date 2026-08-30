@@ -11,7 +11,15 @@
     >
       <a-tab-pane v-for="v in views" :key="v.id" :closable="false">
         <template #title>
-          <span class="view-tab-inner">
+          <span
+            class="view-tab-inner"
+            draggable="true"
+            title="拖动可调整视图顺序"
+            @dragstart="onViewDragStart($event, v.id)"
+            @dragover="onViewDragOver($event, v.id)"
+            @drop="onViewDrop($event, v.id)"
+            @dragend="onViewDragEnd"
+          >
             <a-tooltip :content="VIEW_KIND_LABEL[v.view] || v.view">
               <icon-park :type="VIEW_KIND_ICONS[v.view]" class="view-tab-kind" />
             </a-tooltip>
@@ -156,6 +164,7 @@ const emit = defineEmits<{
   openConfig: [];
   saveAsDefault: [];
   toggleFullscreen: [];
+  reorder: [ids: string[]];
 }>();
 
 const {
@@ -175,6 +184,10 @@ const {
   closeDeleteModal,
   submitDelete,
   onMenuSelect,
+  onViewDragStart,
+  onViewDragOver,
+  onViewDrop,
+  onViewDragEnd,
   onAddClick,
   onCreatePopupChange,
   onCreateSelect,
