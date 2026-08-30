@@ -14,7 +14,8 @@ test.describe('首页（/）', () => {
     page.on('pageerror', (e) => errors.push(e.message));
 
     await page.goto('/');
-    await expect(page.getByText(/欢迎回来/).first()).toBeVisible({ timeout: 10000 });
+    // hero 副标题含"欢迎回到"（时间段问候 + 系统名，对齐 MVC Dashboard）
+    await expect(page.getByText(/欢迎回到/).first()).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('常用菜单')).toBeVisible({ timeout: 10000 });
     expect(errors.filter((e) => !e.includes('favicon')), `控制台错误: ${errors.join('; ')}`).toEqual([]);
   });

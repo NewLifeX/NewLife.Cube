@@ -202,6 +202,19 @@
   gap: 8px;
 }
 
+/* 卡片标题图标（对齐 MVC 工作台卡头 fa 图标样式） */
+.cube-widget-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--cube-primary-soft);
+  color: var(--cube-primary);
+  font-size: 12px;
+}
+
 .cube-widget-drag-handle {
   display: inline-flex;
   align-items: center;

@@ -155,12 +155,13 @@ public class IndexController : ControllerBaseX, IPageDataContext
         });
     }
 
-    /// <summary>工作台数据聚合（React 皮肤首页使用）。返回 KPI、快捷入口、个人信息、系统信息</summary>
+    /// <summary>工作台数据聚合（React 皮肤首页使用）。返回 KPI、快捷入口、个人信息、系统信息。
+    /// 命名与 MVC 版工作台统一为 Dashboard（视图 Index/Dashboard）</summary>
     /// <returns>工作台聚合数据 JSON</returns>
     [DisplayName("工作台数据")]
     [EntityAuthorize]
     [HttpGet]
-    public ActionResult Workbench()
+    public ActionResult Dashboard()
     {
         var user = ManageProvider.User;
         var now = DateTime.Now;

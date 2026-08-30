@@ -1,9 +1,9 @@
 /**
- * 首页 / 工作台（AntD5 风格）
+ * 首页 / 工作台（AntD6 风格，命名与 MVC 版统一为 Dashboard）
  *
- * - 欢迎横幅：问候 + 日期 + 角色 + 操作按钮
+ * - 欢迎横幅：时间段问候 + 昵称 + 日期/角色 + 操作按钮（对齐 MVC Index/Dashboard）
  * - 工作台卡片（卡片三能力）：拖动排序 / 保存顺序 / 隐藏，布局按用户持久化到服务端（Parameter）
- * - KPI 卡行：后端工作台接口（/Admin/Index/Workbench）数据优先，缺失时降级个人统计
+ * - KPI 卡行：后端工作台接口（/Admin/Index/Dashboard）数据优先，缺失时降级个人统计；点击跳转
  * - 性能监控：轮询 /Admin/Index/MonitorData（对齐 MVC 契约 {xs, series}）
  * - 快捷入口 + 常用菜单：菜单树叶子递归收集，接口数据优先
  * - 系统信息 / 个人信息：来自工作台接口，缺失时隐藏
@@ -13,6 +13,8 @@ import {
   AppstoreAddOutlined,
   AppstoreOutlined,
   BugOutlined,
+  DashboardOutlined,
+  DesktopOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
   FileTextOutlined,
@@ -23,6 +25,7 @@ import {
   SafetyOutlined,
   SaveOutlined,
   TeamOutlined,
+  ThunderboltOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import { App, Button, Card, Dropdown, Empty, Skeleton, Space, Tag } from 'antd';
@@ -31,7 +34,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '@/api';
 import { useUserStore } from '@/stores/user';
 import { getConfig } from '@/configure';
-import { useWorkbench, type WorkbenchKpi } from '@/hooks/useWorkbench';
+import { useDashboard, type DashboardKpi } from '@/hooks/useDashboard';
 import type { LoginConfig, MenuItem } from '@cube/api-core';
 
 /** KPI 语义名 → 图标 */
@@ -50,7 +53,7 @@ interface WidgetLayoutItem {
   hide?: boolean;
 }
 
-/** 工作台卡片清单：默认顺序 + 标题 */
+/** 工作台卡片清单：默认顺序 + 标题 + 图标（对齐 MVC 卡头图标样式） */
 const WIDGET_DEFAULT_ORDER = ['kpi', 'monitor', 'quick', 'menus', 'profile', 'sysinfo'];
 const WIDGET_TITLES: Record<string, string> = {
   kpi: '指标概览',
@@ -60,13 +63,21 @@ const WIDGET_TITLES: Record<string, string> = {
   profile: '个人信息',
   sysinfo: '系统信息',
 };
+const WIDGET_ICONS: Record<string, ReactNode> = {
+  kpi: <DashboardOutlined />,
+  monitor: <LineChartOutlined />,
+  quick: <ThunderboltOutlined />,
+  menus: <AppstoreOutlined />,
+  profile: <UserOutlined />,
+  sysinfo: <DesktopOutlined />,
+};
 
 export default function HomePage() {
   const { message } = App.useApp();
   const navigate = useNavigate();
   const userInfo = useUserStore((s) => s.userInfo);
   const menus = useUserStore((s) => s.menus);
-  const { data: wb, reload: reloadWb } = useWorkbench();
+  const { data: wb, reload: reloadWb } = useDashboard();
   const [config, setConfig] = useState<LoginConfig | null>(null);
   const [now, setNow] = useState(new Date());
   const chartRef = useRef<HTMLDivElement>(null);
@@ -111,30 +122,34 @@ export default function HomePage() {
     };
   }, []);
 
-  // 性能曲线渲染
+  // 性能曲线渲染（文字/边框色取主题 CSS 变量，明暗两套自适应）
   useEffect(() => {
     if (!chartRef.current || monitor.xs.length < 2) return;
     // 卡片隐藏后重新显示时，旧实例已挂在已卸载节点上，先释放再重建
     chartInstRef.current?.dispose();
+    const textColor =
+      getComputedStyle(document.body).getPropertyValue('--cube-text-muted').trim() || '#94a3b8';
+    const borderColor =
+      getComputedStyle(document.body).getPropertyValue('--cube-border-soft').trim() || 'rgba(148,163,184,.4)';
     const chart = echarts.init(chartRef.current);
     chartInstRef.current = chart;
     chart.setOption({
       tooltip: { trigger: 'axis' },
-      legend: { data: ['CPU', '内存'], top: 0, right: 0, textStyle: { color: '#94a3b8' } },
+      legend: { data: ['CPU', '内存'], top: 0, right: 0, textStyle: { color: textColor } },
       grid: { left: 8, right: 8, top: 32, bottom: 0, containLabel: true },
       xAxis: {
         type: 'category',
         data: monitor.xs,
         boundaryGap: false,
-        axisLine: { lineStyle: { color: 'rgba(148,163,184,.4)' } },
-        axisLabel: { color: '#94a3b8' },
+        axisLine: { lineStyle: { color: borderColor } },
+        axisLabel: { color: textColor },
       },
       yAxis: {
         type: 'value',
         min: 0,
         max: 100,
-        splitLine: { lineStyle: { color: 'rgba(148,163,184,.18)' } },
-        axisLabel: { color: '#94a3b8', formatter: '{value}%' },
+        splitLine: { lineStyle: { color: borderColor } },
+        axisLabel: { color: textColor, formatter: '{value}%' },
       },
       series: [
         { name: 'CPU', type: 'line', smooth: true, showSymbol: false, data: monitor.cpu, lineStyle: { width: 2 }, areaStyle: { opacity: 0.1 } },
@@ -233,7 +248,7 @@ export default function HomePage() {
   }, [menus]);
 
   // KPI：接口数据优先，缺失时降级个人统计
-  const kpis = useMemo<WorkbenchKpi[]>(() => {
+  const kpis = useMemo<DashboardKpi[]>(() => {
     if (wb?.kpis?.length) return wb.kpis;
     return [
       { name: 'login', label: '我的登录', value: '—', color: 'green', trend: '累计登录次数' },
@@ -255,6 +270,17 @@ export default function HomePage() {
   const today = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 星期${'日一二三四五六'[now.getDay()]}`;
   const displayName = userCard?.displayName || userCard?.name || userInfo?.displayName || userInfo?.name || '用户';
   const roles = userCard?.roles?.join(' / ') || userInfo?.roleName || '';
+  // 时间段问候（对齐 MVC Index/Dashboard：夜深了/早上好/中午好/下午好/晚上好）
+  const greet =
+    now.getHours() < 6
+      ? '夜深了'
+      : now.getHours() < 12
+        ? '早上好'
+        : now.getHours() < 14
+          ? '中午好'
+          : now.getHours() < 18
+            ? '下午好'
+            : '晚上好';
 
   // 工作台卡片布局：默认顺序 + 用户布局（排序/隐藏）
   const sortOf = (key: string) => layout[key]?.sort ?? WIDGET_DEFAULT_ORDER.indexOf(key);
@@ -270,7 +296,12 @@ export default function HomePage() {
         return (
           <div className="cube-home-kpi-grid">
             {kpis.map((k) => (
-              <div key={k.name || k.label} className="cube-home-kpi-card">
+              <div
+                key={k.name || k.label}
+                className="cube-home-kpi-card"
+                onClick={() => k.url && navigate(k.url)}
+                style={k.url ? { cursor: 'pointer' } : undefined}
+              >
                 <div className="cube-home-kpi-head">
                   <div className={`cube-home-kpi-icon ${k.color || 'blue'}`}>{KPI_ICONS[k.name ?? ''] ?? null}</div>
                   <span className="cube-home-kpi-label">{k.label}</span>
@@ -381,11 +412,12 @@ export default function HomePage() {
             </div>
             <div>
               <Tag className="cube-home-hero-eyebrow" color="blue" variant="filled">
-                欢迎回来
+                {greet}
               </Tag>
               <h1 className="cube-home-hero-title">{displayName}</h1>
               <p className="cube-home-hero-subtitle">
-                {today} {roles ? ` · ${roles}` : ''} · 系统运行正常
+                欢迎回到 {getConfig().base.title} · {today}
+                {roles ? ` · ${roles}` : ''} · 系统运行正常
               </p>
               {config?.loginTip && <p className="cube-home-hero-tip">{config.loginTip}</p>}
             </div>
@@ -465,6 +497,7 @@ export default function HomePage() {
                 >
                   <HolderOutlined />
                 </span>
+                <span className="cube-widget-icon">{WIDGET_ICONS[key]}</span>
                 {WIDGET_TITLES[key]}
               </span>
             }
