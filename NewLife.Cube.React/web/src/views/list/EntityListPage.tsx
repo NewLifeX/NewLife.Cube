@@ -112,18 +112,25 @@ export default function EntityListPage({ type }: EntityListPageProps) {
   }, [type]);
 
   const refresh = useCallback(() => {
-    return store.getState().loadData(searchParams).catch(() => {});
-  }, [store, searchParams]);
+    // 保留当前排序参数，刷新/删除后列表排序与表头箭头保持一致
+    return store
+      .getState()
+      .loadData({ ...searchParams, sort: sortState.field, desc: sortState.desc })
+      .catch(() => {});
+  }, [store, searchParams, sortState]);
 
   // ── 事件处理 ─────────────────────────────────────────
   const handleSearch = (params: Record<string, unknown>) => {
     setSearchParams(params);
+    // 搜索/重置时清空排序状态，避免表头箭头与后端排序参数不一致
+    setSortState({ desc: false });
     store.getState().setPagination(1);
     void store.getState().loadData(params);
   };
 
   const handleReset = () => {
     setSearchParams({});
+    setSortState({ desc: false });
     store.getState().setPagination(1);
     void store.getState().loadData();
   };
@@ -244,7 +251,8 @@ export default function EntityListPage({ type }: EntityListPageProps) {
 
   const handlePageChange = (page: number, pageSize?: number) => {
     store.getState().setPagination(page, pageSize);
-    void store.getState().loadData(searchParams);
+    // 翻页保留当前排序参数，列表数据与表头箭头保持一致
+    void store.getState().loadData({ ...searchParams, sort: sortState.field, desc: sortState.desc });
   };
 
   const handleSortChange = (sort?: string, desc?: boolean) => {
