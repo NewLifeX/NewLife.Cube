@@ -9,34 +9,35 @@ namespace NewLife.Cube.Services;
 /// <remarks>
 /// 字符提取规则（参考钉钉/飞书/Teams 主流做法）：
 /// <list type="bullet">
-///   <item>中文姓名（≤N字）：全取；中文姓名（＞N字）：取末尾N字</item>
+///   <item>中文姓名（≤N字）：全取；中文姓名（＞N字）：取前N字，保留姓氏，如"张三丰"取"张三"</item>
 ///   <item>英文含空格（姓名模式）：取第一个词首字母 + 最后一个词首字母，大写</item>
 ///   <item>英文无空格（用户名模式）：取前N字母并大写</item>
 /// </list>
+/// 视觉采用现代主流设计：主色到深色渐变背景 + 半透明装饰圆 + 白色粗体文字，字号随字符数动态调整。
 /// SVG 生成为纯字符串拼接（≪1µs），同一用户结果稳定，使用 MemoryCache 缓存 1 小时以减少 GC 压力。
 /// </remarks>
 public static class SvgAvatarService
 {
     #region 颜色常量
 
-    /// <summary>未知性别时按用户ID哈希选取的备用颜色池</summary>
-    private static readonly String[] _colors =
+    /// <summary>渐变配色池（亮端→暗端）。未知性别时按用户ID哈希选取，保证同一用户颜色稳定</summary>
+    private static readonly (String Light, String Dark)[] _colors =
     [
-        "#607D8B", // 蓝灰
-        "#009688", // 青绿
-        "#FF9800", // 橙
-        "#9C27B0", // 紫
-        "#795548", // 棕
-        "#00BCD4", // 青
-        "#8BC34A", // 浅绿
-        "#FF5722", // 深橙
+        ("#607D8B", "#455A64"), // 蓝灰
+        ("#009688", "#00695C"), // 青绿
+        ("#FF9800", "#E65100"), // 橙
+        ("#9C27B0", "#6A1B9A"), // 紫
+        ("#795548", "#4E342E"), // 棕
+        ("#00BCD4", "#00838F"), // 青
+        ("#8BC34A", "#558B2F"), // 浅绿
+        ("#FF5722", "#BF360C"), // 深橙
     ];
 
-    /// <summary>男性背景色（蓝色系，参考 Google/Teams 惯例）</summary>
-    private const String MaleColor = "#2196F3";
+    /// <summary>男性渐变配色（蓝色系，参考 Google/Teams 惯例）</summary>
+    private static readonly (String Light, String Dark) MaleColor = ("#2196F3", "#1565C0");
 
-    /// <summary>女性背景色（粉红色系）</summary>
-    private const String FemaleColor = "#E91E63";
+    /// <summary>女性渐变配色（粉红色系）</summary>
+    private static readonly (String Light, String Dark) FemaleColor = ("#E91E63", "#AD1457");
 
     #endregion
 
@@ -44,13 +45,13 @@ public static class SvgAvatarService
 
     /// <summary>根据用户信息生成 SVG 文字头像内容，优先从缓存获取</summary>
     /// <param name="user">用户对象，读取显示名、性别、ID</param>
-    /// <param name="chars">显示字符数，支持 1 或 2，默认 1</param>
+    /// <param name="chars">显示字符数，支持 1~3，默认 1</param>
     /// <returns>SVG 字符串</returns>
     public static String Generate(IUser user, Int32 chars = 1)
     {
-        // 约束到合法范围，目前支持 1 和 2
+        // 约束到合法范围，目前支持 1~3
         if (chars < 1) chars = 1;
-        if (chars > 2) chars = 2;
+        if (chars > 3) chars = 3;
 
         // 从缓存获取，key 含 chars 以支持运行时更改配置
         var cacheKey = $"cube:avatar:svg:{user.ID}:{chars}";
@@ -75,20 +76,20 @@ public static class SvgAvatarService
 
         var text = ExtractChars(name, chars);
 
-        // 按性别选择背景色；未知性别按用户ID哈希选取，保证同一用户颜色稳定
-        var bg = user.Sex switch
+        // 按性别选择渐变配色；未知性别按用户ID哈希选取，保证同一用户颜色稳定
+        var (light, dark) = user.Sex switch
         {
             SexKinds.男 => MaleColor,
             SexKinds.女 => FemaleColor,
             _ => _colors[Math.Abs(user.ID) % _colors.Length]
         };
 
-        return BuildSvg(text, bg);
+        return BuildSvg(text, light, dark);
     }
 
     /// <summary>从显示名提取用于头像的字符串</summary>
     /// <param name="name">显示名称</param>
-    /// <param name="chars">期望字符数（1 或 2）</param>
+    /// <param name="chars">期望字符数（1~3）</param>
     /// <returns>提取后的文字</returns>
     internal static String ExtractChars(String name, Int32 chars)
     {
@@ -105,11 +106,11 @@ public static class SvgAvatarService
 
         if (isCjk)
         {
-            // 中文姓名：≤N字全取，>N字取末尾N个字
+            // 中文姓名：≤N字全取，>N字取前N个字（保留姓氏，符合主流习惯）
             if (elements.Count <= chars)
                 return String.Concat(elements);
 
-            return String.Concat(elements.Skip(elements.Count - chars));
+            return String.Concat(elements.Take(chars));
         }
 
         // 英文含空格 → 姓名模式：取第一个词首字母 + 最后一个词首字母（大写）
@@ -197,25 +198,41 @@ public static class SvgAvatarService
 
     #region SVG 构建
 
-    /// <summary>构建 SVG 内容字符串，根据字符数动态调整字号</summary>
+    /// <summary>构建 SVG 内容字符串，渐变背景 + 装饰圆 + 动态字号</summary>
     /// <param name="text">中心显示文字</param>
-    /// <param name="background">背景色（十六进制）</param>
+    /// <param name="light">渐变亮端色（十六进制）</param>
+    /// <param name="dark">渐变暗端色（十六进制）</param>
     /// <returns>SVG 文本</returns>
-    private static String BuildSvg(String text, String background)
+    private static String BuildSvg(String text, String light, String dark)
     {
+        // 字号随字符数动态调整：1字=46px，2字=30px，3字=22px（SVG 100×100 viewBox）
+        var count = new StringInfo(text).LengthInTextElements;
+        var fontSize = count switch
+        {
+            1 => 46,
+            2 => 30,
+            _ => 22,
+        };
+
         // SecurityElement.Escape 防止 XSS（< > & ' "）
         var escaped = SecurityElement.Escape(text);
 
-        // 字号：1字=48px，2字=28px（SVG 100×100 viewBox）
-        var fontSize = escaped.Length <= 1 ? 48 : 28;
-
+        // 渐变背景 + 左上/右下半透明装饰圆，参考飞书/Figma 等现代主流设计
         return $"""
             <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
-              <rect width="100" height="100" fill="{background}" rx="8" ry="8"/>
+              <defs>
+                <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="{light}"/>
+                  <stop offset="100%" stop-color="{dark}"/>
+                </linearGradient>
+              </defs>
+              <rect width="100" height="100" fill="url(#bg)" rx="14" ry="14"/>
+              <circle cx="4" cy="4" r="54" fill="#FFFFFF" opacity="0.13"/>
+              <circle cx="98" cy="98" r="28" fill="#FFFFFF" opacity="0.09"/>
               <text x="50" y="50" font-size="{fontSize}"
                     font-family="'Microsoft YaHei','PingFang SC',Arial,sans-serif"
-                    fill="white" text-anchor="middle" dominant-baseline="central"
-                    font-weight="bold">{escaped}</text>
+                    fill="#FFFFFF" text-anchor="middle" dominant-baseline="central"
+                    font-weight="600">{escaped}</text>
             </svg>
             """;
     }

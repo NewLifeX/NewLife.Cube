@@ -38,8 +38,8 @@ public class CubeSetting : Config<CubeSetting>
     [Category("通用")]
     public String AvatarPath { get; set; } = "Avatars";
 
-    /// <summary>文字头像字符数。头像不存在时自动生成SVG文字头像，可选±1或±2个字符。中文取末尾N字，英文取各单词首字母。默认1</summary>
-    [Description("文字头像字符数。头像不存在时自动生成SVG文字头像，可选±1或±2个字符。中文取末尾N字，英文取各单词首字母。默认1")]
+    /// <summary>文字头像字符数。头像不存在时自动生成SVG文字头像，可选1~3个字符。中文取前N字，英文取各单词首字母。默认2</summary>
+    [Description("文字头像字符数。头像不存在时自动生成SVG文字头像，可选1~3个字符。中文取前N字，英文取各单词首字母。默认2")]
     [Category("通用")]
     public Int32 AvatarChars { get; set; } = 2;
 
