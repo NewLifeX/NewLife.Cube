@@ -108,7 +108,7 @@
 import { reactive, ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { Message } from '@arco-design/web-vue';
-import type { OAuthProvider, LoginConfig } from '@cube/api-core';
+import type { OAuthProvider, LoginConfig } from '@newlifex/api-core';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
 

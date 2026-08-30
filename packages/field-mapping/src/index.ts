@@ -1,11 +1,11 @@
 /**
- * @cube/field-mapping — DataField 元数据到 UI 组件的映射规则引擎
+ * @newlifex/field-mapping — DataField 元数据到 UI 组件的映射规则引擎
  *
  * 根据后端返回的 DataField 元数据，自动推断应使用的前端组件类型。
  * 各皮肤包基于此规则引擎，将抽象组件类型映射到具体 UI 库组件。
  */
 
-import type { DataField } from '@cube/api-core';
+import type { DataField } from '@newlifex/api-core';
 
 /** 抽象组件类型，各皮肤包自行映射到具体组件 */
 export type WidgetType =

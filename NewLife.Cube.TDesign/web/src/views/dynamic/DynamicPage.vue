@@ -77,8 +77,8 @@ import { SearchIcon, ChevronDownIcon } from 'tdesign-icons-vue-next';
 import { api } from '@/api';
 import { useUserStore } from '@/stores/user';
 import FieldInput from '@/components/FieldInput.vue';
-import { Auth, type DataField } from '@cube/api-core';
-import { toCamelCase } from '@cube/field-mapping';
+import { Auth, type DataField } from '@newlifex/api-core';
+import { toCamelCase } from '@newlifex/field-mapping';
 import { Button as TButton } from 'tdesign-vue-next';
 import * as echarts from 'echarts';
 

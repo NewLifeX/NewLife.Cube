@@ -3,7 +3,7 @@
  *
  * 功能：
  * 1. 加载 /Auth/LoginConfig，按能力开关渲染密码/短信/邮箱登录、注册入口、OAuth、版权
- * 2. 密码登录自动 RSA-OAEP Challenge 加密（@cube/auth-logic 内置）
+ * 2. 密码登录自动 RSA-OAEP Challenge 加密（@newlifex/auth-logic 内置）
  * 3. 图片验证码（login.captcha=true 时显示）
  * 4. MFA 二步验证（登录返回 mfa_required 时进入）
  * 5. 账号未激活时展示重发激活入口
@@ -21,7 +21,7 @@ import { getConfig } from '@/configure';
 import { useLoginConfig, useCaptcha } from '@/hooks/useLoginConfig';
 import { parsePasswordRules } from '@/utils/passwordRules';
 import RegisterPanel from './RegisterPanel';
-import type { AuthCategory, LoginResult } from '@cube/api-core';
+import type { AuthCategory, LoginResult } from '@newlifex/api-core';
 
 const useAuthStore = useUserStore;
 

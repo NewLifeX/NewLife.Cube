@@ -34,19 +34,19 @@ importers:
       '@angular/router':
         specifier: ^19.2.0
         version: 19.2.20(@angular/common@19.2.20(@angular/core@19.2.20(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@19.2.20(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@19.2.20(@angular/animations@19.2.20(@angular/common@19.2.20(@angular/core@19.2.20(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@19.2.20(rxjs@7.8.2)(zone.js@0.15.1)))(@angular/common@19.2.20(@angular/core@19.2.20(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@19.2.20(rxjs@7.8.2)(zone.js@0.15.1)))(rxjs@7.8.2)
-      '@cube/api-core':
+      '@newlifex/api-core':
         specifier: workspace:*
         version: link:../../packages/api-core
-      '@cube/auth-logic':
+      '@newlifex/auth-logic':
         specifier: workspace:*
         version: link:../../packages/auth-logic
-      '@cube/field-mapping':
+      '@newlifex/field-mapping':
         specifier: workspace:*
         version: link:../../packages/field-mapping
-      '@cube/page-logic':
+      '@newlifex/page-logic':
         specifier: workspace:*
         version: link:../../packages/page-logic
-      '@cube/page-utils':
+      '@newlifex/page-utils':
         specifier: workspace:*
         version: link:../../packages/page-utils
       echarts:
@@ -83,19 +83,19 @@ importers:
       '@arco-design/web-vue':
         specifier: ^2.56.0
         version: 2.57.0(vue@3.5.32(typescript@5.7.3))
-      '@cube/api-core':
+      '@newlifex/api-core':
         specifier: workspace:*
         version: link:../../packages/api-core
-      '@cube/auth-logic':
+      '@newlifex/auth-logic':
         specifier: workspace:*
         version: link:../../packages/auth-logic
-      '@cube/field-mapping':
+      '@newlifex/field-mapping':
         specifier: workspace:*
         version: link:../../packages/field-mapping
-      '@cube/page-logic':
+      '@newlifex/page-logic':
         specifier: workspace:*
         version: link:../../packages/page-logic
-      '@cube/page-utils':
+      '@newlifex/page-utils':
         specifier: workspace:*
         version: link:../../packages/page-utils
       echarts:
@@ -129,21 +129,6 @@ importers:
 
   NewLife.Cube.MUI/web:
     dependencies:
-      '@cube/api-core':
-        specifier: workspace:*
-        version: link:../../packages/api-core
-      '@cube/auth-logic':
-        specifier: workspace:*
-        version: link:../../packages/auth-logic
-      '@cube/field-mapping':
-        specifier: workspace:*
-        version: link:../../packages/field-mapping
-      '@cube/page-logic':
-        specifier: workspace:*
-        version: link:../../packages/page-logic
-      '@cube/page-utils':
-        specifier: workspace:*
-        version: link:../../packages/page-utils
       '@emotion/react':
         specifier: ^11.14.0
         version: 11.14.0(@types/react@19.2.14)(react@19.2.5)
@@ -156,6 +141,21 @@ importers:
       '@mui/material':
         specifier: ^6.4.0
         version: 6.5.0(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.5))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.5))(@types/react@19.2.14)(react@19.2.5))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@newlifex/api-core':
+        specifier: workspace:*
+        version: link:../../packages/api-core
+      '@newlifex/auth-logic':
+        specifier: workspace:*
+        version: link:../../packages/auth-logic
+      '@newlifex/field-mapping':
+        specifier: workspace:*
+        version: link:../../packages/field-mapping
+      '@newlifex/page-logic':
+        specifier: workspace:*
+        version: link:../../packages/page-logic
+      '@newlifex/page-utils':
+        specifier: workspace:*
+        version: link:../../packages/page-utils
       echarts:
         specifier: ^5.6.0
         version: 5.6.0
@@ -190,19 +190,19 @@ importers:
 
   NewLife.Cube.NaiveUI/web:
     dependencies:
-      '@cube/api-core':
+      '@newlifex/api-core':
         specifier: workspace:*
         version: link:../../packages/api-core
-      '@cube/auth-logic':
+      '@newlifex/auth-logic':
         specifier: workspace:*
         version: link:../../packages/auth-logic
-      '@cube/field-mapping':
+      '@newlifex/field-mapping':
         specifier: workspace:*
         version: link:../../packages/field-mapping
-      '@cube/page-logic':
+      '@newlifex/page-logic':
         specifier: workspace:*
         version: link:../../packages/page-logic
-      '@cube/page-utils':
+      '@newlifex/page-utils':
         specifier: workspace:*
         version: link:../../packages/page-utils
       '@vicons/ionicons5':
@@ -245,19 +245,19 @@ importers:
       '@ant-design/icons':
         specifier: ^6.3.2
         version: 6.3.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@cube/api-core':
+      '@newlifex/api-core':
         specifier: workspace:*
         version: link:../../packages/api-core
-      '@cube/auth-logic':
+      '@newlifex/auth-logic':
         specifier: workspace:*
         version: link:../../packages/auth-logic
-      '@cube/field-mapping':
+      '@newlifex/field-mapping':
         specifier: workspace:*
         version: link:../../packages/field-mapping
-      '@cube/page-logic':
+      '@newlifex/page-logic':
         specifier: workspace:*
         version: link:../../packages/page-logic
-      '@cube/page-utils':
+      '@newlifex/page-utils':
         specifier: workspace:*
         version: link:../../packages/page-utils
       antd:
@@ -351,19 +351,19 @@ importers:
 
   NewLife.Cube.Shadcn/web:
     dependencies:
-      '@cube/api-core':
+      '@newlifex/api-core':
         specifier: workspace:*
         version: link:../../packages/api-core
-      '@cube/auth-logic':
+      '@newlifex/auth-logic':
         specifier: workspace:*
         version: link:../../packages/auth-logic
-      '@cube/field-mapping':
+      '@newlifex/field-mapping':
         specifier: workspace:*
         version: link:../../packages/field-mapping
-      '@cube/page-logic':
+      '@newlifex/page-logic':
         specifier: workspace:*
         version: link:../../packages/page-logic
-      '@cube/page-utils':
+      '@newlifex/page-utils':
         specifier: workspace:*
         version: link:../../packages/page-utils
       '@radix-ui/react-accordion':
@@ -463,19 +463,19 @@ importers:
 
   NewLife.Cube.Svelte/web:
     dependencies:
-      '@cube/api-core':
+      '@newlifex/api-core':
         specifier: workspace:*
         version: link:../../packages/api-core
-      '@cube/auth-logic':
+      '@newlifex/auth-logic':
         specifier: workspace:*
         version: link:../../packages/auth-logic
-      '@cube/field-mapping':
+      '@newlifex/field-mapping':
         specifier: workspace:*
         version: link:../../packages/field-mapping
-      '@cube/page-logic':
+      '@newlifex/page-logic':
         specifier: workspace:*
         version: link:../../packages/page-logic
-      '@cube/page-utils':
+      '@newlifex/page-utils':
         specifier: workspace:*
         version: link:../../packages/page-utils
       echarts:
@@ -512,19 +512,19 @@ importers:
 
   NewLife.Cube.TDesign/web:
     dependencies:
-      '@cube/api-core':
+      '@newlifex/api-core':
         specifier: workspace:*
         version: link:../../packages/api-core
-      '@cube/auth-logic':
+      '@newlifex/auth-logic':
         specifier: workspace:*
         version: link:../../packages/auth-logic
-      '@cube/field-mapping':
+      '@newlifex/field-mapping':
         specifier: workspace:*
         version: link:../../packages/field-mapping
-      '@cube/page-logic':
+      '@newlifex/page-logic':
         specifier: workspace:*
         version: link:../../packages/page-logic
-      '@cube/page-utils':
+      '@newlifex/page-utils':
         specifier: workspace:*
         version: link:../../packages/page-utils
       echarts:
@@ -564,12 +564,12 @@ importers:
 
   NewLife.Cube.Vue/web:
     dependencies:
-      '@cube/api-core':
-        specifier: workspace:*
-        version: link:../../packages/api-core
       '@element-plus/icons-vue':
         specifier: ^2.3.1
         version: 2.3.2(vue@3.5.32(typescript@5.8.3))
+      '@newlifex/api-core':
+        specifier: workspace:*
+        version: link:../../packages/api-core
       '@vueuse/core':
         specifier: ^13.0.0
         version: 13.9.0(vue@3.5.32(typescript@5.8.3))
@@ -742,24 +742,24 @@ importers:
 
   NewLife.Cube.Vuetify/web:
     dependencies:
-      '@cube/api-core':
-        specifier: workspace:*
-        version: link:../../packages/api-core
-      '@cube/auth-logic':
-        specifier: workspace:*
-        version: link:../../packages/auth-logic
-      '@cube/field-mapping':
-        specifier: workspace:*
-        version: link:../../packages/field-mapping
-      '@cube/page-logic':
-        specifier: workspace:*
-        version: link:../../packages/page-logic
-      '@cube/page-utils':
-        specifier: workspace:*
-        version: link:../../packages/page-utils
       '@mdi/font':
         specifier: ^7.4.0
         version: 7.4.47
+      '@newlifex/api-core':
+        specifier: workspace:*
+        version: link:../../packages/api-core
+      '@newlifex/auth-logic':
+        specifier: workspace:*
+        version: link:../../packages/auth-logic
+      '@newlifex/field-mapping':
+        specifier: workspace:*
+        version: link:../../packages/field-mapping
+      '@newlifex/page-logic':
+        specifier: workspace:*
+        version: link:../../packages/page-logic
+      '@newlifex/page-utils':
+        specifier: workspace:*
+        version: link:../../packages/page-utils
       echarts:
         specifier: ^5.6.0
         version: 5.6.0
@@ -819,10 +819,10 @@ importers:
 
   packages/auth-logic:
     dependencies:
-      '@cube/api-core':
+      '@newlifex/api-core':
         specifier: workspace:*
         version: link:../api-core
-      '@cube/page-utils':
+      '@newlifex/page-utils':
         specifier: workspace:*
         version: link:../page-utils
     devDependencies:
@@ -844,7 +844,7 @@ importers:
 
   packages/field-mapping:
     dependencies:
-      '@cube/api-core':
+      '@newlifex/api-core':
         specifier: workspace:*
         version: link:../api-core
     devDependencies:
@@ -857,13 +857,13 @@ importers:
 
   packages/page-logic:
     dependencies:
-      '@cube/api-core':
+      '@newlifex/api-core':
         specifier: workspace:*
         version: link:../api-core
-      '@cube/field-mapping':
+      '@newlifex/field-mapping':
         specifier: workspace:*
         version: link:../field-mapping
-      '@cube/page-utils':
+      '@newlifex/page-utils':
         specifier: workspace:*
         version: link:../page-utils
     devDependencies:

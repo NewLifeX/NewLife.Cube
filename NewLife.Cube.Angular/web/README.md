@@ -30,7 +30,7 @@ ng build --output-path ../wwwroot
 web/
 ├── src/
 │   ├── app/
-│   │   ├── api/          # API 调用层（复用 @cube/api-core）
+│   │   ├── api/          # API 调用层（复用 @newlifex/api-core）
 │   │   ├── components/   # 共享组件
 │   │   ├── layouts/      # 布局组件
 │   │   ├── pages/        # 页面组件

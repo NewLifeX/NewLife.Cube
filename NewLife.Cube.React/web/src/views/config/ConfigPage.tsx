@@ -14,7 +14,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { App, Button, Card, Form, Spin, Tabs } from 'antd';
-import type { DataField } from '@cube/api-core';
+import type { DataField } from '@newlifex/api-core';
 import FieldControl from '@/components/field/FieldControl';
 import { groupByCategory, isFullWidthControl, resolveControl, serializeSubmitModel } from '@/utils/fieldControl';
 import { toFieldMeta, type FieldMeta } from '@/types/field';

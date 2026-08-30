@@ -1,18 +1,18 @@
 /**
- * @cube/auth-logic/zustand — Zustand 适配器
+ * @newlifex/auth-logic/zustand — Zustand 适配器
  *
  * 将 AuthLogic 桥接为 Zustand store，供 React 系皮肤使用。
  *
  * @example
  * ```ts
- * import { createZustandAuthStore } from '@cube/auth-logic/zustand';
+ * import { createZustandAuthStore } from '@newlifex/auth-logic/zustand';
  * import api from '@/api';
  * export const useUserStore = createZustandAuthStore(api);
  * ```
  */
 
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
-import { type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo, type ApiResponse, type LoginResult, type AuthCategory } from '@cube/api-core';
+import { type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo, type ApiResponse, type LoginResult, type AuthCategory } from '@newlifex/api-core';
 import { AuthLogic, ForgotPasswordLogic, RegisterLogic, type AuthState, type ForgotPasswordState, type RegisterState } from './index';
 
 export interface ZustandAuthState extends AuthState {
@@ -88,7 +88,7 @@ export interface ZustandForgotPasswordState extends ForgotPasswordState {
  *
  * @example
  * ```ts
- * import { createZustandForgotPasswordStore } from '@cube/auth-logic/zustand';
+ * import { createZustandForgotPasswordStore } from '@newlifex/auth-logic/zustand';
  * export const useForgotPasswordStore = createZustandForgotPasswordStore(api);
  * ```
  */

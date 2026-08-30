@@ -1,13 +1,13 @@
 /**
- * @cube/page-logic — 魔方前端列表页业务编排逻辑（框架无关核心）
+ * @newlifex/page-logic — 魔方前端列表页业务编排逻辑（框架无关核心）
  *
  * 将字段加载、列表查询、CRUD、导入导出、图表数据等列表页通用逻辑
  * 封装为框架无关的编排类，各框架通过适配器桥接到具体状态管理。
  */
 
-import type { CubeApi, DataField, ApiResponse, PageParams, PageSetting } from '@cube/api-core';
-import { resolveWidgets, type FieldMapping } from '@cube/field-mapping';
-import { buildExportUrl } from '@cube/page-utils';
+import type { CubeApi, DataField, ApiResponse, PageParams, PageSetting } from '@newlifex/api-core';
+import { resolveWidgets, type FieldMapping } from '@newlifex/field-mapping';
+import { buildExportUrl } from '@newlifex/page-utils';
 
 // ======================== 类型 ========================
 
@@ -315,8 +315,8 @@ export class PageLogic {
 }
 
 // 重新导出供适配器使用
-export { FieldKind } from '@cube/api-core';
-export type { DataField } from '@cube/api-core';
-export type { FieldMapping } from '@cube/field-mapping';
-export { resolveWidgets, resolveWidget } from '@cube/field-mapping';
-export { buildExportUrl, EXPORT_FORMATS, resolveUrl, checkAuth, Auth } from '@cube/page-utils';
+export { FieldKind } from '@newlifex/api-core';
+export type { DataField } from '@newlifex/api-core';
+export type { FieldMapping } from '@newlifex/field-mapping';
+export { resolveWidgets, resolveWidget } from '@newlifex/field-mapping';
+export { buildExportUrl, EXPORT_FORMATS, resolveUrl, checkAuth, Auth } from '@newlifex/page-utils';

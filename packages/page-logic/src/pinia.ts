@@ -1,11 +1,11 @@
 /**
- * @cube/page-logic/pinia — Pinia 适配器
+ * @newlifex/page-logic/pinia — Pinia 适配器
  *
  * 将 PageLogic 桥接为 Pinia composable，供 Vue 系皮肤使用。
  *
  * @example
  * ```ts
- * import { usePageLogic } from '@cube/page-logic/pinia';
+ * import { usePageLogic } from '@newlifex/page-logic/pinia';
  * const page = usePageLogic(api, '/Admin/User');
  * await page.loadFields();
  * await page.loadData();
@@ -13,7 +13,7 @@
  */
 
 import { ref, reactive, type Ref } from 'vue';
-import type { CubeApi, ApiResponse, PageSetting } from '@cube/api-core';
+import type { CubeApi, ApiResponse, PageSetting } from '@newlifex/api-core';
 import { PageLogic, type FieldMapping, type Pagination } from './index';
 
 export interface PiniaPageLogic {

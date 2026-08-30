@@ -1,5 +1,5 @@
 {
-  "name": "@cube/shadcn",
+  "name": "@newlifex/cube-shadcn",
   "private": true,
   "version": "0.0.1",
   "type": "module",
@@ -32,11 +32,11 @@
     "clsx": "^2.1.0",
     "tailwind-merge": "^3.0.0",
     "lucide-react": "^0.500.0",
-    "@cube/api-core": "workspace:*",
-    "@cube/field-mapping": "workspace:*",
-    "@cube/page-utils": "workspace:*",
-    "@cube/auth-logic": "workspace:*",
-    "@cube/page-logic": "workspace:*",
+    "@newlifex/api-core": "workspace:*",
+    "@newlifex/field-mapping": "workspace:*",
+    "@newlifex/page-utils": "workspace:*",
+    "@newlifex/auth-logic": "workspace:*",
+    "@newlifex/page-logic": "workspace:*",
     "echarts": "^5.6.0"
   },
   "devDependencies": {

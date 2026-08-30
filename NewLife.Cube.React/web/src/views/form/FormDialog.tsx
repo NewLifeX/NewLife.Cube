@@ -9,7 +9,7 @@ import { App, Form, Modal, Row, Tabs } from 'antd';
 import FormFieldItem from './FormFieldItem';
 import { groupByCategory, hasCategory, serializeSubmitModel } from '@/utils/fieldControl';
 import { toFieldMeta, type FieldMeta } from '@/types/field';
-import type { FieldMapping } from '@cube/field-mapping';
+import type { FieldMapping } from '@newlifex/field-mapping';
 import { useAiFillForm } from '@/hooks/useAiFillForm';
 
 export interface FormDialogProps {

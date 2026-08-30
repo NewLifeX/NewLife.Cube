@@ -1,5 +1,5 @@
 {
-  "name": "@cube/angular",
+  "name": "@newlifex/cube-angular",
   "private": true,
   "version": "0.1.0",
   "scripts": {
@@ -21,11 +21,11 @@
     "rxjs": "~7.8.0",
     "tslib": "^2.8.0",
     "zone.js": "~0.15.0",
-    "@cube/api-core": "workspace:*",
-    "@cube/field-mapping": "workspace:*",
-    "@cube/page-utils": "workspace:*",
-    "@cube/auth-logic": "workspace:*",
-    "@cube/page-logic": "workspace:*",
+    "@newlifex/api-core": "workspace:*",
+    "@newlifex/field-mapping": "workspace:*",
+    "@newlifex/page-utils": "workspace:*",
+    "@newlifex/auth-logic": "workspace:*",
+    "@newlifex/page-logic": "workspace:*",
     "echarts": "^5.6.0"
   },
   "devDependencies": {

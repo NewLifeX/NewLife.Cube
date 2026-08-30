@@ -60,7 +60,7 @@ import { ViewListIcon, SunnyIcon, MoonIcon } from 'tdesign-icons-vue-next';
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
 import { api } from '@/api';
-import type { MenuItem } from '@cube/api-core';
+import type { MenuItem } from '@newlifex/api-core';
 
 const appStore = useAppStore();
 const userStore = useUserStore();

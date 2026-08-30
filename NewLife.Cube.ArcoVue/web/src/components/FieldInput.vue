@@ -4,8 +4,8 @@
 
 <script setup lang="ts">
 import { computed, h } from 'vue';
-import type { DataField } from '@cube/api-core';
-import { resolveWidget } from '@cube/field-mapping';
+import type { DataField } from '@newlifex/api-core';
+import { resolveWidget } from '@newlifex/field-mapping';
 import {
   Input as AInput,
   InputNumber as AInputNumber,

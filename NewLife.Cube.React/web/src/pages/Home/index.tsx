@@ -36,7 +36,7 @@ import { api } from '@/api';
 import { useUserStore } from '@/stores/user';
 import { getConfig } from '@/configure';
 import { useDashboard, type DashboardKpi } from '@/hooks/useDashboard';
-import type { LoginConfig, MenuItem } from '@cube/api-core';
+import type { LoginConfig, MenuItem } from '@newlifex/api-core';
 
 /** KPI 语义名 → 图标（MVC Widget 部件名优先，兼容旧语义名降级数据） */
 const KPI_ICONS: Record<string, ReactNode> = {

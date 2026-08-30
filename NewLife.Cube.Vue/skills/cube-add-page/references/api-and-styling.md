@@ -127,11 +127,11 @@ static ProductController()
 
 自定义页面中可通过 `usePageApi(area, controller)` composable 快速对接后端 CRUD API。
 
-> **前提**：前端项目需在 `package.json` 中添加 `"@cube/api-core": "workspace:*"` 依赖。
+> **前提**：前端项目需在 `package.json` 中添加 `"@newlifex/api-core": "workspace:*"` 依赖。
 
 ### 全局 API 实例
 
-框架提供全局 `cubeApi` 实例（位于 `src/cubeApi.ts`），基于 `@cube/api-core` 的 `createCubeApi()` 创建，自动处理 Token 注入、401 跳转、响应拦截、字段名归一化等。
+框架提供全局 `cubeApi` 实例（位于 `src/cubeApi.ts`），基于 `@newlifex/api-core` 的 `createCubeApi()` 创建，自动处理 Token 注入、401 跳转、响应拦截、字段名归一化等。
 
 ### 通用 CRUD Composable
 
@@ -219,7 +219,7 @@ onMounted(() => fetchList());
 | 路径 | 入口 | 全局是否自动弹错 | 业务页面是否还需处理 |
 | --- | --- | --- | --- |
 | 默认模板页 | `@newlifex/cube-vue` 的 `request` | ✅ 是 | ❌ 不需要，catch 里只做复位/日志 |
-| 自定义页 | `usePageApi` / `@cube/api-core` 的 `cubeApi` | ⚠️ 取决于是否挂 `onBusinessError` | 见下方说明 |
+| 自定义页 | `usePageApi` / `@newlifex/api-core` 的 `cubeApi` | ⚠️ 取决于是否挂 `onBusinessError` | 见下方说明 |
 
 - **默认模板页**：全局拦截器已统一弹错，业务 `catch` 不要再 `ElMessage.error`，否则重复弹两次。正确写法：`catch` 只留 `console.error`，`finally` 复位 loading。
 - **自定义页（usePageApi）**：默认没挂 `onBusinessError`，全局不会自动弹错。`catch` **必须**自己处理错误提示；推荐在 `src/api/index.ts` 里统一挂一次 `onBusinessError`，之后各页面 `catch` 只做复位。

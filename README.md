@@ -182,7 +182,7 @@ public class AppController : EntityController<App, AppModel>
 - 视图覆写：子项目同路径同名 `.cshtml` 覆盖父级。  
 
 ### 新一代前端皮肤包
-基于 pnpm workspace + 公共模块 `@cube/api-core`（统一 API / Token / 类型）和 `@cube/field-mapping`（字段元数据 → 控件映射），8 套皮肤均开箱即用，NuGet 引包即得完整前端。
+基于 pnpm workspace + 公共模块 `@newlifex/api-core`（统一 API / Token / 类型）和 `@newlifex/field-mapping`（字段元数据 → 控件映射），8 套皮肤均开箱即用，NuGet 引包即得完整前端。
 
 ### 前端 workspace 构建约定
 

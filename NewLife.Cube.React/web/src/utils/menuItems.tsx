@@ -2,7 +2,7 @@
  * 菜单构建工具：后端菜单树 → antd Menu items
  */
 import type { MenuProps } from 'antd';
-import type { MenuItem } from '@cube/api-core';
+import type { MenuItem } from '@newlifex/api-core';
 import { resolveIcon } from '@/utils/icon';
 
 export type MenuItemType = Required<MenuProps>['items'][number];

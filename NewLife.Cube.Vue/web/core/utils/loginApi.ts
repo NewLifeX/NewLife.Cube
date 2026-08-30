@@ -4,7 +4,7 @@
  * 基于 core 请求库（core/utils/request，axios 封装，含拦截器与全局错误处理）调用后端接口。
  * core 库作为通用库，不依赖具体应用创建的 API 客户端；统一复用请求库的超时、拦截、401 处理。
  *
- * 类型定义复用 @cube/api-core 的 LoginConfig、LoginResult、ApiResponse。
+ * 类型定义复用 @newlifex/api-core 的 LoginConfig、LoginResult、ApiResponse。
  *
  * 字段名归一化说明：
  * 请求库仅透传后端返回的 data，不做字段名归一化，因此以下变体仍需在本文件内手动归一：
@@ -15,7 +15,7 @@
  * 业务调用方在 catch 中处理失败即可（无需自行弹错，避免重复提示）。
  */
 import request from './request';
-import type { ApiResponse, LoginConfig, LoginResult, OAuthProvider, RegisterModel, VerifyStatus } from '@cube/api-core';
+import type { ApiResponse, LoginConfig, LoginResult, OAuthProvider, RegisterModel, VerifyStatus } from '@newlifex/api-core';
 
 /** 默认请求超时时间（毫秒） */
 const REQUEST_TIMEOUT = 15000;
@@ -63,7 +63,7 @@ function normalizeLoginConfig(data: LoginConfig): LoginConfig {
  * - PascalCase: `Token` / `RefreshToken` / `ExpireIn`（C# 属性名原样输出）
  *
  * 归一化后统一为 camelCase（accessToken / refreshToken / expireIn），
- * 与 @cube/api-core 的 LoginResult 类型定义一致。
+ * 与 @newlifex/api-core 的 LoginResult 类型定义一致。
  * 注册待激活字段（pendingActivation/channels/targets）原样透传。
  *
  * @param data 后端原始返回的 LoginResult

@@ -1,5 +1,5 @@
 {
-  "name": "@cube/arco-vue",
+  "name": "@newlifex/cube-arco-vue",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -13,11 +13,11 @@
     "vue-router": "^4.5.0",
     "pinia": "^3.0.0",
     "@arco-design/web-vue": "^2.56.0",
-    "@cube/api-core": "workspace:*",
-    "@cube/field-mapping": "workspace:*",
-    "@cube/page-utils": "workspace:*",
-    "@cube/auth-logic": "workspace:*",
-    "@cube/page-logic": "workspace:*",
+    "@newlifex/api-core": "workspace:*",
+    "@newlifex/field-mapping": "workspace:*",
+    "@newlifex/page-utils": "workspace:*",
+    "@newlifex/auth-logic": "workspace:*",
+    "@newlifex/page-logic": "workspace:*",
     "echarts": "^5.6.0"
   },
   "devDependencies": {

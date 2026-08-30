@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { User, Lock } from '@element-plus/icons-vue';
 import { usePasswordRules } from '../composables/usePasswordRules';
-import type { LoginConfig } from '@cube/api-core';
+import type { LoginConfig } from '@newlifex/api-core';
 
 const props = defineProps<{
   /** 后端登录配置（主要消费 security.passwordStrength 动态生成密码规则） */

@@ -12,7 +12,7 @@
  * 本模块是列表页 / 表单页 / 表单弹窗共用的唯一映射函数，
  * 禁止在组件中再写本地 TYPE_TO_*_TYPE 映射。
  */
-import type { WidgetType } from '@cube/field-mapping';
+import type { WidgetType } from '@newlifex/field-mapping';
 import type { FieldMeta, ControlType, SearchControlType, ListControlType } from '@/types/field';
 
 /** 数值类型集合 */
@@ -100,10 +100,10 @@ export function resolveControl(field: FieldMeta): ControlType {
 }
 
 /**
- * 将 @cube/field-mapping 的 WidgetType 转为皮肤 ControlType（表单控件）。
+ * 将 @newlifex/field-mapping 的 WidgetType 转为皮肤 ControlType（表单控件）。
  * 与 resolveControl 双轨一致：store 侧已按 widget 映射，此处透传。
  *
- * @param widget @cube/field-mapping 推断的组件类型
+ * @param widget @newlifex/field-mapping 推断的组件类型
  * @returns 皮肤控件类型
  */
 export function widgetToControl(widget: WidgetType): ControlType {

@@ -1,17 +1,30 @@
 {
-  "name": "@cube/api-core",
+  "name": "@newlifex/api-core",
   "version": "0.1.0",
   "description": "魔方前端公共 API 调用层，框架无关（axios 封装、Token 管理、错误处理）",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
+  "keywords": ["魔方", "cube", "newlife", "api", "axios", "token"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NewLifeX/NewLife.Cube.git"
+  },
+  "homepage": "https://github.com/NewLifeX/NewLife.Cube",
+  "bugs": {
+    "url": "https://github.com/NewLifeX/NewLife.Cube/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
-    "postinstall": "pnpm build",
+    "prepare": "pnpm build",
     "pretest": "tsup src/index.ts --format esm,cjs --dts",
     "test": "node --test \"tests/**/*.test.cjs\""
   },

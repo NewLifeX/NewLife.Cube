@@ -72,7 +72,7 @@
 - **JS 注入修复**：编辑器 JS 上下文改用 JSON 序列化输出，杜绝 Query 参数注入
 
 ### 新一代前端皮肤体系
-- **公共模块**：新增 `@cube/api-core`（统一 API 客户端、Token 管理、类型定义）和 `@cube/field-mapping`（字段元数据推断控件类型，20+ WidgetType）
+- **公共模块**：新增 `@newlifex/api-core`（统一 API 客户端、Token 管理、类型定义）和 `@newlifex/field-mapping`（字段元数据推断控件类型，20+ WidgetType）
 - **pnpm workspace**：所有前端皮肤共享 `packages/` 工作区，统一依赖管理
 - **8 套前端皮肤包**：NaiveUI / MUI / Shadcn / ArcoVue / Angular / Vuetify / Svelte / TDesign，均支持动态菜单、字段元数据驱动列表/表单、CRUD、批量删除、CSV 导入导出、OAuth 登录、深色模式
 - **NuGet 一键集成**：引用 NuGet 包即获完整前端，`app.UseXxx(env)` 或 IModule 自动注册

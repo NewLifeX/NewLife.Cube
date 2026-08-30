@@ -17,7 +17,7 @@ import {
 } from '@/utils/fieldControl';
 import { toFieldMeta } from '@/types/field';
 import type { FieldMeta } from '@/types/field';
-import type { DataField } from '@cube/api-core';
+import type { DataField } from '@newlifex/api-core';
 
 function f(partial: Partial<DataField>): FieldMeta {
   return toFieldMeta({ name: 'F', typeName: 'String', ...partial });
@@ -89,7 +89,7 @@ describe('resolveListControl 列表单元格映射', () => {
   });
 });
 
-describe('widgetToControl @cube widget → 皮肤控件', () => {
+describe('widgetToControl @newlifex widget → 皮肤控件', () => {
   it('全量映射不丢', () => {
     expect(widgetToControl('text')).toBe('input');
     expect(widgetToControl('textarea')).toBe('textarea');

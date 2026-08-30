@@ -3,7 +3,7 @@
  *
  * 由 DefaultListPage 包装组件探测后调用：确认当前页面为实体 CRUD 页后渲染。
  * 本组件与原始 DefaultListPage 行为一致：从后端 GetPage 拉取 list/search/addForm/editForm
- * 字段元数据，由 @cube/page-logic zustand store 驱动，分片渲染：
+ * 字段元数据，由 @newlifex/page-logic zustand store 驱动，分片渲染：
  *   - SearchBar      动态搜索控件（按钮与条件同行）
  *   - Toolbar        新增/删除选中/刷新 + 表格图表视图切换 + 高级菜单
  *   - TableContent   动态列渲染

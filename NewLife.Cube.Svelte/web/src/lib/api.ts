@@ -1,4 +1,4 @@
-import { createCubeApi, type CubeApi } from '@cube/api-core';
+import { createCubeApi, type CubeApi } from '@newlifex/api-core';
 
 let api: CubeApi | null = null;
 

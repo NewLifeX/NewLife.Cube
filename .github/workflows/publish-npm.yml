@@ -1,0 +1,64 @@
+name: publish-npm
+
+on:
+  push:
+    - tags: [ 'v*' ]            # 稳定版：打 v* 标签触发（与 .NET publish.yml 共享标签）
+    - branches: [ master ]      # 预发布：master 上公共包变更触发
+      paths:
+        - 'packages/**'
+        - 'package.json'
+        - 'pnpm-workspace.yaml'
+        - 'pnpm-lock.yaml'
+  workflow_dispatch:
+
+jobs:
+  build-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: pnpm/action-setup@v4
+      with:
+        version: 9.15.0
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        registry-url: https://registry.npmjs.org
+
+    - name: Install
+      run: pnpm install --frozen-lockfile
+
+    - name: Test
+      run: pnpm -r --filter @newlifex/api-core --filter @newlifex/field-mapping test
+
+    - name: Compute dist-tag
+      id: npm-tag
+      run: |
+        if [ "${{ github.ref }}" = "refs/heads/master" ]; then
+          echo "dist-tag=beta" >> "$GITHUB_OUTPUT"
+        else
+          echo "dist-tag=latest" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Set beta version
+      if: steps.npm-tag.outputs.dist-tag == 'beta'
+      run: node scripts/set-beta-version.mjs
+
+    # 发 npmjs.org：@newlifex scope 需 NPM_TOKEN（仓库 Secrets）
+    - name: Publish to npmjs.org
+      run: pnpm -r --filter './packages/*' publish --no-git-checks --tag ${{ steps.npm-tag.outputs.dist-tag }}
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    # 发 GitHub Packages：scope @newlifex 匹配组织 NewLifeX，用 GITHUB_TOKEN
+    - name: Publish to GitHub Packages
+      run: |
+        echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> "$NPM_CONFIG_USERCONFIG"
+        pnpm -r --filter './packages/*' publish --no-git-checks --tag ${{ steps.npm-tag.outputs.dist-tag }} --registry https://npm.pkg.github.com
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

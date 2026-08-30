@@ -6,7 +6,7 @@
  */
 import { Table, Tag, Tooltip, Button, Popconfirm } from 'antd';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
-import type { FieldMapping } from '@cube/field-mapping';
+import type { FieldMapping } from '@newlifex/field-mapping';
 import { resolveListControl } from '@/utils/fieldControl';
 import { toFieldMeta } from '@/types/field';
 import { getValueByKey, resolveUrl } from '@/utils/url';

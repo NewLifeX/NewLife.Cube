@@ -1,12 +1,12 @@
 /**
  * 用户认证 Store（对齐 Vue 皮肤 stores/user.ts）
  *
- * 基于 @cube/auth-logic/zustand 适配器创建，提供：
+ * 基于 @newlifex/auth-logic/zustand 适配器创建，提供：
  * - 登录/登出、用户信息、菜单、权限
  * - 登出时联动清理菜单/标签/重定向
  */
 import { useEffect, useState } from 'react';
-import { createZustandAuthStore } from '@cube/auth-logic/zustand';
+import { createZustandAuthStore } from '@newlifex/auth-logic/zustand';
 import { api, CUBE_TOKEN_EVENT } from '@/api';
 import { useMenuStore } from './menu';
 import { useTabsStore } from './tabs';

@@ -2,10 +2,10 @@
  * 菜单 Store（对齐 Vue 皮肤 stores/menu.ts）
  *
  * 维护菜单树 ↔ 扁平列表转换、当前激活菜单、菜单路径匹配。
- * 原始菜单树数据由 @cube/auth-logic 的 user store 提供（fetchMenus → /Cube/MenuTree）。
+ * 原始菜单树数据由 @newlifex/auth-logic 的 user store 提供（fetchMenus → /Cube/MenuTree）。
  */
 import { create } from 'zustand';
-import type { MenuItem } from '@cube/api-core';
+import type { MenuItem } from '@newlifex/api-core';
 import { getConfig } from '@/configure';
 
 /** 扁平菜单项 */

@@ -3,7 +3,7 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/api';
-import type { LoginConfig, CaptchaResult } from '@cube/api-core';
+import type { LoginConfig, CaptchaResult } from '@newlifex/api-core';
 
 /**
  * 加载登录页配置

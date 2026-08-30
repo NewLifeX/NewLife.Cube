@@ -4,7 +4,7 @@
  * 后端 GetPage 下发的字段元数据（NewLife.Cube `DataField`）经归一为 `FieldMeta`，
  * 由 `utils/fieldControl.ts` 统一解析为控件类型，驱动列表渲染 / 动态搜索 / 表单编辑三处视图。
  */
-import type { DataField } from '@cube/api-core';
+import type { DataField } from '@newlifex/api-core';
 
 /** 表单 / 编辑控件类型（全项目唯一枚举，对齐 Vue ControlType） */
 export type ControlType =

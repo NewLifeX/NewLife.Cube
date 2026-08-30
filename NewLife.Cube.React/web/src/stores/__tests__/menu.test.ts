@@ -3,7 +3,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { flattenMenu, resolveMenuTitle } from '@/stores/menu';
-import type { MenuItem } from '@cube/api-core';
+import type { MenuItem } from '@newlifex/api-core';
 
 const tree: MenuItem[] = [
   {

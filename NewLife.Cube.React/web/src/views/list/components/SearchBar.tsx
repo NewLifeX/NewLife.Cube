@@ -17,7 +17,7 @@ import dayjs from 'dayjs';
 import LovSelect from '@/components/field/LovSelect';
 import { resolveSearchControl } from '@/utils/fieldControl';
 import { toFieldMeta } from '@/types/field';
-import type { FieldMapping } from '@cube/field-mapping';
+import type { FieldMapping } from '@newlifex/field-mapping';
 import type { SearchControlType } from '@/types/field';
 
 export interface SearchBarProps {

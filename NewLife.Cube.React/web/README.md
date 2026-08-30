@@ -2,7 +2,7 @@
 
 魔方（NewLife.Cube）第三代 WebAPI 前端的 **React 皮肤**。基于 **React 19 + Ant Design 6 + Zustand + Vite**，由后端字段元数据（`GetPage`）驱动，动态渲染通用列表页 / 表单页，对齐 Vue 皮肤功能。
 
-> 本项目为**全新重构**（原 UMI Max 版本已废弃），依赖公共前端库 `packages/`（`@cube/*`）。
+> 本项目为**全新重构**（原 UMI Max 版本已废弃），依赖公共前端库 `packages/`（`@newlifex/*`）。
 
 ---
 
@@ -14,7 +14,7 @@
 | UI | Ant Design 6 + @ant-design/icons（单一主题 × 明暗） |
 | 状态 | Zustand 5（登录态 / 菜单 / 多标签 / 主题） |
 | 路由 | react-router v6（静态路由 + catch-all `*` → 动态实体页） |
-| 数据 | axios（`@cube/api-core`）+ `@cube/page-logic` 页面 Store |
+| 数据 | axios（`@newlifex/api-core`）+ `@newlifex/page-logic` 页面 Store |
 | 图表 | ECharts 5（懒加载） |
 | AI | `marked` + `dompurify` + mermaid（CDN 懒加载） |
 | 测试 | Vitest 3 + RTL（单测）；Playwright 1.54（E2E） |

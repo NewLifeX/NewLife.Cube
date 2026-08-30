@@ -1,13 +1,13 @@
 /**
- * @cube/auth-logic — 魔方前端认证业务逻辑（框架无关核心）
+ * @newlifex/auth-logic — 魔方前端认证业务逻辑（框架无关核心）
  *
  * 将登录、登出、用户信息获取、菜单加载、权限查询等业务逻辑
  * 封装为框架无关的纯逻辑类，各框架通过适配器（Pinia/Zustand/Svelte）桥接。
  */
 
-import { type AuthCategory, type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo, type MfaVerifyResult } from '@cube/api-core';
-import { findMenu, getMenuPermission } from '@cube/page-utils';
-import { encryptPassword, getServiceBaseUrl } from '@cube/api-core';
+import { type AuthCategory, type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo, type MfaVerifyResult } from '@newlifex/api-core';
+import { findMenu, getMenuPermission } from '@newlifex/page-utils';
+import { encryptPassword, getServiceBaseUrl } from '@newlifex/api-core';
 
 /** 认证状态快照 */
 export interface AuthState {
@@ -198,9 +198,9 @@ export class AuthLogic {
 }
 
 // 重新导出类型供适配器使用
-export type { UserInfo, MenuItem, CubeApi, ResetPasswordModel, RegisterModel, OAuthPendingInfo, MfaVerifyResult, VerifyContactModel, VerifyStatus } from '@cube/api-core';
-export { findMenu, getMenuPermission, checkAuth, Auth } from '@cube/page-utils';
-export type { AuthCode } from '@cube/page-utils';
+export type { UserInfo, MenuItem, CubeApi, ResetPasswordModel, RegisterModel, OAuthPendingInfo, MfaVerifyResult, VerifyContactModel, VerifyStatus } from '@newlifex/api-core';
+export { findMenu, getMenuPermission, checkAuth, Auth } from '@newlifex/page-utils';
+export type { AuthCode } from '@newlifex/page-utils';
 
 // ─────────────────────────────────────────────
 // MFA 二步验证业务逻辑

@@ -1,7 +1,7 @@
 /**
  * HTTP请求工具
  *
- * 底层复用 @cube/api-core 的 createApiClient，非 UI 的请求逻辑（host 拼接、/api 前缀补全、
+ * 底层复用 @newlifex/api-core 的 createApiClient，非 UI 的请求逻辑（host 拼接、/api 前缀补全、
  * Token 头注入、附加请求头、withCredentials、content-type 透传、traceId、204 处理、
  * 错误分类归一化、响应钩子 responseIntercept）已全部迁移至 api-core，所有皮肤共享。
  *
@@ -13,7 +13,7 @@
  *
  * 对外导出（request / cubeAxios / redirectToLogin / toReLogin）保持兼容，业务文件无需改动。
  */
-import { createApiClient, TokenManager, type TokenStorage, type ResponseErrorInfo } from '@cube/api-core';
+import { createApiClient, TokenManager, type TokenStorage, type ResponseErrorInfo } from '@newlifex/api-core';
 import queryString from 'query-string';
 import { getSession, removeAllCookie, setSession } from './storage';
 import { getAccessToken, removeAccessToken } from './token';

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { createCubeApi, type CubeApi } from '@cube/api-core';
+import { createCubeApi, type CubeApi } from '@newlifex/api-core';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {

@@ -8,7 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import FieldControl from '../FieldControl';
 import { toFieldMeta, type FieldMeta } from '@/types/field';
-import type { DataField } from '@cube/api-core';
+import type { DataField } from '@newlifex/api-core';
 
 /** 构造字段元数据 */
 function f(partial: Partial<DataField>): FieldMeta {

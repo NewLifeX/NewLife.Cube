@@ -8,7 +8,7 @@
 import { Button, Dropdown, Popconfirm, Segmented, Tooltip } from 'antd';
 import type { MenuProps } from 'antd';
 import { DeleteOutlined, DownOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
-import { EXPORT_FORMATS } from '@cube/page-utils';
+import { EXPORT_FORMATS } from '@newlifex/page-utils';
 
 /** 列表视图模式：表格 / 图表 */
 export type ListViewMode = 'table' | 'chart';

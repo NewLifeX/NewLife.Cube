@@ -2,18 +2,18 @@
  * 注册面板（对齐 Vue 皮肤 pages/RegisterForm.vue）
  *
  * 能力开关驱动：password / sms / mail 三方式 + OAuth 预填。
- * 使用 @cube/auth-logic/zustand 的注册 store。
+ * 使用 @newlifex/auth-logic/zustand 的注册 store。
  */
 import { useEffect, useState } from 'react';
 import { App, Button, Form, Input, Space } from 'antd';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { createZustandRegisterStore } from '@cube/auth-logic/zustand';
+import { createZustandRegisterStore } from '@newlifex/auth-logic/zustand';
 import { api } from '@/api';
 import { useUserStore } from '@/stores/user';
 import { useMenuStore } from '@/stores/menu';
 import { getConfig } from '@/configure';
 import { useCaptcha } from '@/hooks/useLoginConfig';
-import type { LoginConfig } from '@cube/api-core';
+import type { LoginConfig } from '@newlifex/api-core';
 
 const useRegisterStore = createZustandRegisterStore(api);
 

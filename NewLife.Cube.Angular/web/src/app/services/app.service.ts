@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import type { LoginConfig } from '@cube/api-core';
+import type { LoginConfig } from '@newlifex/api-core';
 import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })

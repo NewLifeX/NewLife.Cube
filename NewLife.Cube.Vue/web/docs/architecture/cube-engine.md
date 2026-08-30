@@ -15,7 +15,7 @@
 | 后端配置 | 下发 `CubeSchema`（单数组 + `inSearch/inTable/inForm` 标志） | `GetPage` 已下发 `PageMeta`：`setting/list/addForm/editForm/detail/search` 六组独立 `BackendField[]`，前端归一为 `FieldMeta[]` | **复用** `PageMeta` + `FieldMeta`；“六数组分离”比单数组加标志更强，不重造 `CubeFieldConfig` |
 | 配置接口 | `/api/{moduleCode}/schema` | `GET {type}/GetPage`（`type` 由 `routeToApiPrefix(route.path)` 推导为 `/Area/Controller`） | 改用 `GetPage`；模块标识用 `routeToApiPrefix`，与 `DefaultEntity.vue` / `index.vue` 一致 |
 | 路由推导 | `route.meta.moduleCode` | 菜单驱动动态路由，`DefaultEntity.vue` 按 `menuStore.flatMenus` 匹配 `route.path` 解析页面 | 引擎以 `route.path` 推导 `type`，与现有约定一致 |
-| 数据访问 | 直接 `import request` 手写 CRUD | 已存在 `usePageApi`（`@cube/api-core`）与 `DataSet` 类，且 `index.vue` 仍用裸 `request` 自建逻辑 | **数据层用 `DataSet`**（对齐 `TODO.md` P0）；元数据/LOV 用 `usePageApi`；收敛 `index.vue` 裸请求 |
+| 数据访问 | 直接 `import request` 手写 CRUD | 已存在 `usePageApi`（`@newlifex/api-core`）与 `DataSet` 类，且 `index.vue` 仍用裸 `request` 自建逻辑 | **数据层用 `DataSet`**（对齐 `TODO.md` P0）；元数据/LOV 用 `usePageApi`；收敛 `index.vue` 裸请求 |
 | 生命周期 | 塞进 `provideCubeContext()` | `onMounted` 仅在 `setup` 同步调用才有效 | 拆为**纯工厂 `createCubeEngine(deps)`**（无生命周期、可单测）+ 薄 composable `useCubeEngine()`（`onMounted(() => ctx.init())`） |
 | UI 接入（v2 旧方案） | 所有 Section 直接 `useCubeContext()` | Section 当前是受控 `props/emit` 组件，覆盖机制依赖此契约 | v2：引擎只在页面根消费并适配回 `props/emit`；叶子 Section 保持受控 |
 | **UI 接入（v3 本次）** | —— | Section 覆盖机制（`ListSearchBar` 等按文件名覆盖）分散、需多文件、覆盖契约隐式 | **放弃 Section 覆盖**：改为单个 `CubeTable` 集成组件 + **具名插槽**做区域自定义；内置结构化子组件（搜索/工具栏/表格/分页/表单弹窗），每个子组件仍以 `ctx` 为 prop（受控、可测） |

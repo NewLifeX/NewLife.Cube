@@ -15,7 +15,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { NIcon, type MenuOption } from 'naive-ui';
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
-import type { MenuItem } from '@cube/api-core';
+import type { MenuItem } from '@newlifex/api-core';
 
 const route = useRoute();
 const router = useRouter();

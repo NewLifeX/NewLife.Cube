@@ -1,12 +1,12 @@
 /**
  * 全局 API 客户端（对齐 Vue 皮肤 composables/useCubeApi.ts）
  *
- * 基于 @cube/api-core 创建统一实例，提供：
+ * 基于 @newlifex/api-core 创建统一实例，提供：
  * - 实体/页面接口（page/client）→ 自动补 /api 前缀
  * - 服务接口（user/menu/config：/Auth /Cube /Sso）→ 同源不带 /api
  * - 统一错误处理：字段级错误 / 业务错误 / 401 未授权
  */
-import { createCubeApi, clearPageMetaCache, type CubeApi, type TokenStorage } from '@cube/api-core';
+import { createCubeApi, clearPageMetaCache, type CubeApi, type TokenStorage } from '@newlifex/api-core';
 import { getConfig } from '@/configure';
 import { getMessage } from '@/utils/antdApp';
 

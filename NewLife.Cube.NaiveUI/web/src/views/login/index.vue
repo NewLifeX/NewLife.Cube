@@ -110,7 +110,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useMessage, type FormInst, type FormRules } from 'naive-ui';
 import { useUserStore } from '@/stores/user';
 import api from '@/api';
-import type { LoginConfig } from '@cube/api-core';
+import type { LoginConfig } from '@newlifex/api-core';
 
 const router = useRouter();
 const route = useRoute();

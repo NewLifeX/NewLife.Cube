@@ -4,7 +4,7 @@
 
 ## 背景
 
-`core/views/index.vue`（约 470 行）自行用裸 `request` 拼接 `GetPage`、列表查询与删除，承载了“拉元数据 → 初始化模型 → 自动首查 → 分页/搜索/增删改”的全部逻辑。与之并存的数据访问能力还有 `usePageApi`（`@cube/api-core`）与 `DataSet` 类，三者职责重叠。项目 `TODO.md` 已把“**集成 DataSet 到默认视图**”列为 P0/高优先级——即既定方向是用 `DataSet` 替换手动 request+ref 模式。
+`core/views/index.vue`（约 470 行）自行用裸 `request` 拼接 `GetPage`、列表查询与删除，承载了“拉元数据 → 初始化模型 → 自动首查 → 分页/搜索/增删改”的全部逻辑。与之并存的数据访问能力还有 `usePageApi`（`@newlifex/api-core`）与 `DataSet` 类，三者职责重叠。项目 `TODO.md` 已把“**集成 DataSet 到默认视图**”列为 P0/高优先级——即既定方向是用 `DataSet` 替换手动 request+ref 模式。
 
 结果是：默认 CRUD 的状态流转无法单测；业务应用若想复用默认取数只能复制或整页覆盖。项目已具备后端驱动所需的一切基础（`GetPage` 元数据、`routeToApiPrefix`、`FieldMeta`/`ControlType` 契约、`usePageApi`、`DataSet`），缺的是**一个统一、可测试、通过上下文暴露的页面引擎**，以及一个**统一、可插槽定制的视图集成组件**。
 

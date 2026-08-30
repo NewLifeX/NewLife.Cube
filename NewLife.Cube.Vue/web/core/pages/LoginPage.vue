@@ -16,7 +16,7 @@
   - core/configure 的 getConfig() 获取 baseUrl
   - core/utils/token 的 setAccessToken() 写入 token
   - core/utils/loginApi 的 fetchLoginConfig / loginByPassword 调用后端
-  - @cube/api-core 的类型定义
+  - @newlifex/api-core 的类型定义
 -->
 <template>
   <div class="login-page">
@@ -188,7 +188,7 @@ import {
 } from '../utils/loginApi';
 import LoginForm from './LoginForm.vue';
 import RegisterForm from './RegisterForm.vue';
-import type { LoginConfig, LoginResult, OAuthProvider } from '@cube/api-core';
+import type { LoginConfig, LoginResult, OAuthProvider } from '@newlifex/api-core';
 
 // ── 路由与配置 ──────────────────────────────────────────────────────
 const route = useRoute();

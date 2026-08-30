@@ -3,8 +3,8 @@ import { useLocation } from 'react-router-dom';
 import {
   Plus, Trash2, Download, Upload, Search, RefreshCw, Eye, Pencil, ChevronDown,
 } from 'lucide-react';
-import { Auth } from '@cube/api-core';
-import { resolveWidgets, type FieldMapping } from '@cube/field-mapping';
+import { Auth } from '@newlifex/api-core';
+import { resolveWidgets, type FieldMapping } from '@newlifex/field-mapping';
 import * as echarts from 'echarts';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

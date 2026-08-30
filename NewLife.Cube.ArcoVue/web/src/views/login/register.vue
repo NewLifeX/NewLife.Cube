@@ -65,7 +65,7 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Message } from '@arco-design/web-vue';
-import type { AuthCategory } from '@cube/api-core';
+import type { AuthCategory } from '@newlifex/api-core';
 import cubeApi from '@/api';
 
 const router = useRouter();

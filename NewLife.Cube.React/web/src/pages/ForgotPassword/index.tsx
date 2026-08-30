@@ -2,14 +2,14 @@
  * 忘记密码页（对齐 Vue 皮肤忘记密码流程）
  *
  * 流程：输入邮箱/手机号 → 发送验证码 → 输入验证码 + 新密码 → 重置 → 跳登录。
- * 使用 @cube/auth-logic/zustand 的 ForgotPassword store。
+ * 使用 @newlifex/auth-logic/zustand 的 ForgotPassword store。
  */
 import { useEffect, useState } from 'react';
 import { Alert, App, Button, Form, Input, Radio } from 'antd';
 import { LockOutlined, MailOutlined, MobileOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import AuthLayout from '@/components/auth/AuthLayout';
-import { createZustandForgotPasswordStore } from '@cube/auth-logic/zustand';
+import { createZustandForgotPasswordStore } from '@newlifex/auth-logic/zustand';
 import { api } from '@/api';
 
 const useForgotStore = createZustandForgotPasswordStore(api);

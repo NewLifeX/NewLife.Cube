@@ -1,18 +1,18 @@
 /**
- * @cube/page-logic/zustand — Zustand 适配器
+ * @newlifex/page-logic/zustand — Zustand 适配器
  *
  * 将 PageLogic 桥接为 React hooks，供 React 系皮肤使用。
  *
  * @example
  * ```ts
- * import { createPageStore } from '@cube/page-logic/zustand';
+ * import { createPageStore } from '@newlifex/page-logic/zustand';
  * import api from '@/api';
  * const usePageStore = createPageStore(api, '/Admin/User');
  * ```
  */
 
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
-import type { CubeApi, ApiResponse } from '@cube/api-core';
+import type { CubeApi, ApiResponse } from '@newlifex/api-core';
 import { PageLogic, type PageState, type FieldMapping, type Pagination } from './index';
 
 export interface ZustandPageState extends PageState {

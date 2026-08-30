@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 import { User, Lock, Message } from '@element-plus/icons-vue';
 import { usePasswordRules } from '../composables/usePasswordRules';
-import type { LoginConfig } from '@cube/api-core';
+import type { LoginConfig } from '@newlifex/api-core';
 
 /**
  * 注册表单展示组件（纯展示，业务提交由容器层 LoginPage 处理）

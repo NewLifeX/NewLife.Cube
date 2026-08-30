@@ -4,7 +4,7 @@
   import { loginConfig as appLoginConfig, siteTitle } from '$lib/stores/app';
   import { getApi } from '$lib/api';
   import { onMount } from 'svelte';
-  import type { LoginConfig } from '@cube/api-core';
+  import type { LoginConfig } from '@newlifex/api-core';
 
   let username = $state('');
   let password = $state('');

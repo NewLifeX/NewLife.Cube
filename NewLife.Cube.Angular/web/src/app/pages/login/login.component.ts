@@ -8,7 +8,7 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import type { OAuthProvider } from '@cube/api-core';
+import type { OAuthProvider } from '@newlifex/api-core';
 import { ApiService } from '../../services/api.service';
 import { UserService } from '../../services/user.service';
 
