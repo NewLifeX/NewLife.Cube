@@ -84,4 +84,30 @@ describe('FormDialog 表单弹窗', () => {
       expect(submitted).toEqual({ Name: '李四' });
     });
   });
+
+  it('字段带 Description → 同排展示裁剪后的描述', () => {
+    render(
+      <FormDialog
+        open
+        mode="add"
+        fields={[mapping('Name', { displayName: '名称', description: '名称。实体名称' })]}
+      />,
+    );
+    // 标签与裁剪后的描述同排展示（描述带 title 悬浮完整）
+    expect(screen.getByText('名称')).toBeInTheDocument();
+    expect(screen.getByText('实体名称')).toBeInTheDocument();
+    expect(screen.getByTitle('实体名称')).toBeInTheDocument();
+  });
+
+  it('Description 与 DisplayName 相同 → 不渲染描述列', () => {
+    render(
+      <FormDialog
+        open
+        mode="add"
+        fields={[mapping('Name', { displayName: '名称', description: '名称' })]}
+      />,
+    );
+    // 仅标签一个「名称」，裁剪后为空串的描述不展示
+    expect(screen.getAllByText('名称')).toHaveLength(1);
+  });
 });

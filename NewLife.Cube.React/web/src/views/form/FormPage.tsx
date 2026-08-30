@@ -7,11 +7,11 @@
  * 提交 POST/PUT 后返回上一页。
  */
 import { useEffect, useMemo, useState } from 'react';
-import { App, Button, Card, Col, Form, Row, Space, Spin, Tabs } from 'antd';
+import { App, Button, Card, Form, Row, Space, Spin, Tabs } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import FieldControl from '@/components/field/FieldControl';
-import { groupByCategory, hasCategory, isFullWidthControl, resolveControl, serializeSubmitModel } from '@/utils/fieldControl';
+import FormFieldItem from './FormFieldItem';
+import { groupByCategory, hasCategory, serializeSubmitModel } from '@/utils/fieldControl';
 import { routeToApiPrefix, getValueByKey } from '@/utils/url';
 import { toFieldMeta, type FieldMeta } from '@/types/field';
 import { usePageStore } from '@/hooks/usePageStore';
@@ -132,51 +132,19 @@ export default function FormPage({ title }: FormPageProps) {
                 // forceRender：非激活分组表单项也注册进 Form，跨 Tab 必填校验生效
                 forceRender: true,
                 children: (
-                  <Row gutter={16} className="cube-form-grid">
-                    {g.fields.map((meta: FieldMeta) => {
-                      const control = resolveControl(meta);
-                      const span = isFullWidthControl(control) ? 24 : 12;
-                      return (
-                        <Col key={meta.name} span={span}>
-                          <Form.Item
-                            name={meta.name}
-                            label={meta.displayName || meta.name}
-                            rules={[
-                              ...(meta.required ? [{ required: true, message: `请输入${meta.displayName || meta.name}` }] : []),
-                              ...(meta.itemType === 'mail' ? [{ type: 'email' as const, message: '邮箱格式不正确' }] : []),
-                              ...(meta.itemType === 'mobile' ? [{ pattern: /^1\d{10}$/, message: '手机号格式不正确' }] : []),
-                            ]}
-                          >
-                            <FieldControl field={meta} apiPrefix={type} />
-                          </Form.Item>
-                        </Col>
-                      );
-                    })}
+                  <Row gutter={16}>
+                    {g.fields.map((meta: FieldMeta) => (
+                      <FormFieldItem key={meta.name} field={meta} apiPrefix={type} />
+                    ))}
                   </Row>
                 ),
               }))}
             />
           ) : (
-            <Row gutter={16} className="cube-form-grid">
-              {metas.map((meta) => {
-                const control = resolveControl(meta);
-                const span = isFullWidthControl(control) ? 24 : 12;
-                return (
-                  <Col key={meta.name} span={span}>
-                    <Form.Item
-                      name={meta.name}
-                      label={meta.displayName || meta.name}
-                      rules={[
-                        ...(meta.required ? [{ required: true, message: `请输入${meta.displayName || meta.name}` }] : []),
-                        ...(meta.itemType === 'mail' ? [{ type: 'email' as const, message: '邮箱格式不正确' }] : []),
-                        ...(meta.itemType === 'mobile' ? [{ pattern: /^1\d{10}$/, message: '手机号格式不正确' }] : []),
-                      ]}
-                    >
-                      <FieldControl field={meta} apiPrefix={type} />
-                    </Form.Item>
-                  </Col>
-                );
-              })}
+            <Row gutter={16}>
+              {metas.map((meta) => (
+                <FormFieldItem key={meta.name} field={meta} apiPrefix={type} />
+              ))}
             </Row>
           )}
           <div className="cube-form-actions">

@@ -7,6 +7,7 @@ import {
   groupByCategory,
   hasCategory,
   resolveControl,
+  resolveDescription,
   resolveSearchControl,
   resolveListControl,
   widgetToControl,
@@ -144,6 +145,27 @@ describe('resolveNumberPrecision / isFullWidthControl', () => {
     expect(isFullWidthControl('textarea')).toBe(true);
     expect(isFullWidthControl('json')).toBe(true);
     expect(isFullWidthControl('input')).toBe(false);
+  });
+});
+
+describe('resolveDescription 描述裁剪', () => {
+  it('裁掉 displayName 前缀与首部标点', () => {
+    expect(resolveDescription(f({ displayName: '名称', description: '名称。实体名称' }))).toBe('实体名称');
+    expect(resolveDescription(f({ displayName: '短文本', description: '短文本。必填的短文本示例' }))).toBe('必填的短文本示例');
+  });
+
+  it('与 displayName 相同 → 空串（不展示）', () => {
+    expect(resolveDescription(f({ displayName: '名称', description: '名称' }))).toBe('');
+  });
+
+  it('无描述 → 空串', () => {
+    expect(resolveDescription(f({ displayName: '名称' }))).toBe('');
+    expect(resolveDescription(f({ description: '   ' }))).toBe('');
+  });
+
+  it('不以 displayName 开头 → 原样保留（仅去首部标点）', () => {
+    expect(resolveDescription(f({ displayName: '名称', description: 'RPC服务端口。默认1882' }))).toBe('RPC服务端口。默认1882');
+    expect(resolveDescription(f({ displayName: '名称', description: '。前缀标点' }))).toBe('前缀标点');
   });
 });
 

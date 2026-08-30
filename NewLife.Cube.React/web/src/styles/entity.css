@@ -173,6 +173,54 @@
   color: var(--cube-text-muted);
 }
 
+/* 表单同排三栏（label | 控件 | description），对齐 MVC _Form_Item */
+.cube-form-inline-cell {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--cube-border-soft);
+}
+
+/* 有描述时追加第三栏（描述不额外占纵向空间） */
+.cube-form-inline-cell--desc {
+  grid-template-columns: 110px minmax(0, 1fr) minmax(0, 1.1fr);
+}
+
+/* 多行控件（textarea / json / 富文本等）顶部对齐 */
+.cube-form-inline-cell--top {
+  align-items: start;
+}
+
+.cube-form-inline-label {
+  color: var(--cube-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cube-form-inline-control.ant-form-item {
+  margin-bottom: 0;
+}
+
+.cube-form-inline-control .ant-form-item-control-input {
+  min-height: auto;
+}
+
+.cube-form-inline-desc {
+  min-width: 0;
+  color: var(--cube-text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .cube-result-page {
   min-height: 60vh;
   display: flex;

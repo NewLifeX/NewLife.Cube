@@ -5,10 +5,9 @@
  * 编辑模式自动加载详情（布尔串转布尔）。
  */
 import { useEffect, useMemo, useState } from 'react';
-import { App, Col, Form, Modal, Row, Tabs } from 'antd';
-import type { RuleObject } from 'antd/es/form';
-import FieldControl from '@/components/field/FieldControl';
-import { groupByCategory, hasCategory, isFullWidthControl, resolveControl, serializeSubmitModel } from '@/utils/fieldControl';
+import { App, Form, Modal, Row, Tabs } from 'antd';
+import FormFieldItem from './FormFieldItem';
+import { groupByCategory, hasCategory, serializeSubmitModel } from '@/utils/fieldControl';
 import { toFieldMeta, type FieldMeta } from '@/types/field';
 import type { FieldMapping } from '@cube/field-mapping';
 import { useAiFillForm } from '@/hooks/useAiFillForm';
@@ -91,43 +90,12 @@ export default function FormDialog({
 
   const recordId = mode === 'edit' && row ? (Object.values(row)[0] as number | string | undefined) : undefined;
 
-  /** 构建字段校验规则 */
-  const buildRules = (meta: FieldMeta): RuleObject[] => {
-    const rules: RuleObject[] = [];
-    if (meta.required) {
-      rules.push({ required: true, message: `请输入${meta.displayName || meta.name}` });
-    }
-    if (meta.itemType === 'mail') {
-      rules.push({ type: 'email', message: '邮箱格式不正确' });
-    }
-    if (meta.itemType === 'mobile') {
-      rules.push({ pattern: /^1\d{10}$/, message: '手机号格式不正确' });
-    }
-    return rules;
-  };
-
-  /** 渲染一组字段栅格（分组内 / 平铺共用） */
+  /** 渲染一组字段栅格（分组内 / 平铺共用，label|控件|description 同排） */
   const renderFields = (list: FieldMeta[]) => (
     <Row gutter={16}>
-      {list.map((meta) => {
-        const control = resolveControl(meta);
-        const span = isFullWidthControl(control) ? 24 : 12;
-        return (
-          <Col key={meta.name} span={span}>
-            <Form.Item
-              name={meta.name}
-              label={meta.displayName || meta.name}
-              rules={buildRules(meta)}
-            >
-              <FieldControl
-                field={meta}
-                apiPrefix={apiPrefix}
-                recordId={recordId}
-              />
-            </Form.Item>
-          </Col>
-        );
-      })}
+      {list.map((meta) => (
+        <FormFieldItem key={meta.name} field={meta} apiPrefix={apiPrefix} recordId={recordId} />
+      ))}
     </Row>
   );
 
@@ -140,10 +108,10 @@ export default function FormDialog({
       confirmLoading={submitting}
       okText="保存"
       cancelText="取消"
-      width={680}
+      width={800}
       destroyOnHidden
-      // 分组时限制弹窗高度，避免分组标签 + 单组字段把弹窗撑得过高
-      styles={groups ? { body: { maxHeight: '60vh', overflowY: 'auto' } } : undefined}
+      // 高度自适应：内容少时模态窗贴合内容，接近视口上限才出现滚动条；overflowX 兜底横向溢出
+      styles={{ body: { maxHeight: 'calc(100vh - 240px)', overflowY: 'auto', overflowX: 'hidden' } }}
     >
       <Form form={form} layout="vertical" requiredMark={false} style={{ marginTop: 16 }}>
         {groups ? (

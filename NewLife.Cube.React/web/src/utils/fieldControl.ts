@@ -264,6 +264,23 @@ export function groupByCategory(fields: FieldMeta[]): FieldGroup[] {
   return [...map.entries()].map(([category, list]) => ({ category, fields: list }));
 }
 
+/**
+ * 解析字段描述（对齐 MVC _Form_Item 的裁剪逻辑）
+ *
+ * 实体字段的 Description 常以 DisplayName 开头并附标点（如「名称。名称说明」），
+ * 表单同排展示时裁剪该前缀与首部标点，避免与标签重复。
+ *
+ * @param field 字段元数据
+ * @returns 裁剪后的描述（无可展示内容返回空串）
+ */
+export function resolveDescription(field: FieldMeta): string {
+  let des = field.description?.trim() ?? '';
+  const dn = field.displayName?.trim();
+  if (dn && des.startsWith(dn)) des = des.slice(dn.length);
+  des = des.replace(/^[.。，,;；:：\r\n\s]+/, '');
+  return des;
+}
+
 /** 表单全宽控件（占满整行） */
 const FULL_WIDTH_CONTROLS: ReadonlySet<ControlType> = new Set([
   'textarea',

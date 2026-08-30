@@ -137,10 +137,10 @@ export default function DetailDialog({ open, apiPrefix, id, fields, row, onClose
       title="详情"
       onCancel={onClose}
       footer={null}
-      width={680}
+      width={800}
       destroyOnHidden
-      // 分组时限制弹窗高度，避免分组标签 + 单组详情把弹窗撑得过高
-      styles={groups ? { body: { maxHeight: '60vh', overflowY: 'auto' } } : undefined}
+      // 高度自适应：内容少时模态窗贴合内容，接近视口上限才出现滚动条；overflowX 兜底横向溢出
+      styles={{ body: { maxHeight: 'calc(100vh - 240px)', overflowY: 'auto', overflowX: 'hidden' } }}
     >
       {groups ? (
         <Tabs

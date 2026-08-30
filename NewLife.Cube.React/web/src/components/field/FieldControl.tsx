@@ -37,7 +37,8 @@ function toBool(v: unknown): boolean {
 
 export default function FieldControl({ field, value, onChange, apiPrefix, recordId, disabled }: FieldControlProps) {
   const control = resolveControl(field);
-  const placeholder = field.description || field.displayName;
+  // 占位提示用显示名；字段 Description 已由 FormFieldItem 同排展示，不再重复作占位
+  const placeholder = field.displayName;
   const commonProps = { disabled };
 
   const renderByControl = () => {
