@@ -136,10 +136,11 @@ export default function TableContent({
     const control = resolveListControl(meta);
 
     // 列宽规范（皮肤设计规范 §7.5）：数字/枚举 ≥80、时间 ≥140、字符串自适应。
-    // 主键(Id)列初始宽 64px：数据少时列窄；长 Id（雪花）由 max-content auto 布局按内容撑开（配合主键列不省略、不排序）。
+    // 主键(Id)列初始宽 52px 且居中（规范 §7.4：主键/ID 居中对齐）：数据少时列窄无大块留白；
+    // 长 Id（雪花）由 max-content auto 布局按内容撑开（配合主键列不省略、不排序）。
     // 列多时表格横向滚动，不把各列挤压到无法阅读
     let width: number | undefined;
-    if (meta.primaryKey) width = 64;
+    if (meta.primaryKey) width = 52;
     else if (control === 'image' || control === 'file') width = 100;
     else if (control === 'color' || control === 'icon') width = 90;
     else if (control === 'boolean') width = 90;
@@ -148,8 +149,14 @@ export default function TableContent({
     else if (control === 'date') width = (meta.itemType || '').toLowerCase() === 'date' ? 100 : 140;
     else if (control === 'time') width = 140;
 
-    // 对齐
-    const align = control === 'number' ? 'right' : control === 'boolean' || control === 'color' || control === 'icon' || control === 'image' ? 'center' : 'left';
+    // 对齐：主键列居中（规范 §7.4），数字右对齐，其余按类型
+    const align = meta.primaryKey
+      ? 'center'
+      : control === 'number'
+        ? 'right'
+        : control === 'boolean' || control === 'color' || control === 'icon' || control === 'image'
+          ? 'center'
+          : 'left';
 
     return {
       title: meta.displayName || meta.name,
