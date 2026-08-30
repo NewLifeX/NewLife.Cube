@@ -76,12 +76,13 @@ public static class SvgAvatarService
 
         var text = ExtractChars(name, chars);
 
-        // 按性别选择渐变配色；未知性别按用户ID哈希选取，保证同一用户颜色稳定
+        // 按性别选择渐变配色；未知性别按用户ID哈希选取，保证同一用户颜色稳定。
+        // Math.Abs(Int32) 对 Int32.MinValue 会溢出抛异常，用 Int64 取模避免极端边界崩溃
         var (light, dark) = user.Sex switch
         {
             SexKinds.男 => MaleColor,
             SexKinds.女 => FemaleColor,
-            _ => _colors[Math.Abs(user.ID) % _colors.Length]
+            _ => _colors[Math.Abs((Int64)user.ID) % _colors.Length]
         };
 
         return BuildSvg(text, light, dark);
@@ -149,7 +150,10 @@ public static class SvgAvatarService
     private static Boolean IsCjkGrapheme(String grapheme)
     {
         if (grapheme.Length == 0) return false;
-        var cp = Char.ConvertToUtf32(grapheme, 0);
+        // 孤立代理无法 ConvertToUtf32（抛 ArgumentException），直接按 char 值判断
+        var cp = grapheme.Length >= 2 && Char.IsSurrogatePair(grapheme, 0)
+            ? Char.ConvertToUtf32(grapheme, 0)
+            : grapheme[0];
         // CJK 统一汉字 + 扩展A/B/C/D/E + CJK 兼容汉字
         return (cp >= 0x4E00 && cp <= 0x9FFF)
             || (cp >= 0x3400 && cp <= 0x4DBF)

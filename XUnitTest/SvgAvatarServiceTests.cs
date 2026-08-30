@@ -141,5 +141,21 @@ public class SvgAvatarServiceTests
         Assert.Contains("&lt;", svg);
     }
 
+    [Fact(DisplayName = "未知性别 Int32.MinValue 不崩溃（Math.Abs 溢出防御）")]
+    public void UnknownSex_Int32MinValue_NoCrash()
+    {
+        var user = new User { ID = Int32.MinValue, Name = "张三", DisplayName = "张三" };
+        var svg = SvgAvatarService.Generate(user, 2);
+        Assert.Contains("<svg", svg);
+    }
+
+    [Fact(DisplayName = "名字含孤立代理字符不崩溃（ConvertToUtf32 防御）")]
+    public void LoneSurrogate_NoCrash()
+    {
+        var user = CreateUser("\uD800名", "\uD800名");
+        var svg = SvgAvatarService.Generate(user, 2);
+        Assert.Contains("<svg", svg);
+    }
+
     #endregion
 }
