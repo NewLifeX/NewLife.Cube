@@ -393,11 +393,11 @@ select {
   max-width: 1200px;
 }
 
-/* 配置项单行：标签 | 控件 | 右侧 Description（对齐 MVC _Form_Item） */
+/* 配置项单行：标签 | 控件 | 右侧 Description（对齐 MVC _Form_Item，Form 横向布局） */
 .cube-config-row {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: 12px;
   margin-bottom: 16px;
   min-width: 0;
 }
@@ -406,9 +406,15 @@ select {
   margin-bottom: 0;
 }
 
+.cube-config-row .ant-form-item-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .cube-config-desc {
-  flex: 1;
-  min-width: 220px;
+  flex: 1 1 auto;
+  min-width: 200px;
   color: var(--cube-text-secondary);
   font-size: 12px;
   line-height: 32px;

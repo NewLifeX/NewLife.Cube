@@ -120,7 +120,7 @@ export default function ConfigPage({ type }: ConfigPageProps) {
       }
     >
       <Spin spinning={loading}>
-        <Form form={form} layout="vertical" requiredMark={false}>
+        <Form form={form} layout="horizontal" requiredMark={false}>
           <Tabs
             items={groups.map((g) => ({
               key: g.category,
@@ -135,8 +135,8 @@ export default function ConfigPage({ type }: ConfigPageProps) {
                         <Form.Item
                           name={meta.name}
                           label={meta.displayName || meta.name}
-                          labelCol={{ flex: '0 0 180px' }}
-                          wrapperCol={{ flex: full ? '1 1 auto' : '0 1 560px' }}
+                          labelCol={{ flex: '0 0 160px' }}
+                          wrapperCol={{ flex: full ? '1 1 auto' : '0 1 420px' }}
                           rules={meta.required ? [{ required: true, message: `请输入${meta.displayName || meta.name}` }] : []}
                           style={{ marginBottom: 0, minWidth: 0 }}
                         >
