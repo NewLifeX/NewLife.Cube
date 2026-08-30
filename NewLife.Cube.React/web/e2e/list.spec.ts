@@ -242,4 +242,21 @@ test.describe('通用列表页（/Admin/User）', () => {
     });
     expect(hScroll.ok, `横向滚动异常: ${JSON.stringify(hScroll)}`).toBeTruthy();
   });
+
+  test('新增弹窗按字段分类分组展示（Tabs）', async ({ page }) => {
+    await page.goto('/Admin/User');
+    await page.waitForSelector(ROW, { timeout: TABLE_TIMEOUT });
+    await page.getByRole('button', { name: /新增/ }).click();
+    await page.waitForSelector('.ant-modal:not([style*="display: none"])', { timeout: 8000 });
+    // 字段带 Category → 弹窗内按分类 Tabs 分组展示
+    const tabs = page.locator('.ant-modal:visible .ant-tabs-tab');
+    await expect(tabs.first()).toBeVisible({ timeout: 8000 });
+    const labels = await tabs.allTextContents();
+    expect(labels.length).toBeGreaterThan(1);
+    // 切换分组后展示该组字段
+    await tabs.nth(1).click();
+    await expect(page.locator('.ant-modal:visible .ant-tabs-tab-active')).toHaveText(labels[1]);
+    // 关闭弹窗，避免影响后续用例
+    await page.locator('.ant-modal:visible button:has-text("取 消")').click();
+  });
 });

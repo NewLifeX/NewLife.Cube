@@ -5,13 +5,13 @@
  * 元数据渲染字段名 + 格式化值。详情接口失败时用列表行数据兜底。
  * 对应皮肤设计规范 §7.9：只读控制器或无可编辑权限时提供「查看」。
  */
-import { useEffect, useState, type ReactNode } from 'react';
-import { Descriptions, Modal, Tag } from 'antd';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Descriptions, Modal, Tabs, Tag } from 'antd';
 import { api } from '@/api';
 import LovCell from '@/components/field/LovCell';
 import { getValueByKey } from '@/utils/url';
-import { resolveListControl } from '@/utils/fieldControl';
-import { toFieldMeta } from '@/types/field';
+import { groupByCategory, hasCategory, resolveListControl } from '@/utils/fieldControl';
+import { toFieldMeta, type FieldMeta } from '@/types/field';
 import type { FieldMapping } from '@cube/field-mapping';
 
 export interface DetailDialogProps {
@@ -103,18 +103,52 @@ export default function DetailDialog({ open, apiPrefix, id, fields, row, onClose
 
   const data = detail ?? row ?? {};
 
+  // 详情字段元数据（与 FieldMapping 按 name 一一对应）
+  const metas = useMemo(() => fields.map((f) => toFieldMeta(f.field)), [fields]);
+  const mappingByName = useMemo(() => new Map(fields.map((f) => [f.field.name, f])), [fields]);
+
+  // 分组：字段带 Category 才按分类 Tabs 分组，否则平铺（字段少的详情一屏展示）
+  const groups = useMemo(() => {
+    if (!hasCategory(metas)) return null;
+    return groupByCategory(metas);
+  }, [metas]);
+
+  /** 渲染一组详情描述（分组内 / 平铺共用） */
+  const renderDescriptions = (list: FieldMeta[]) => (
+    <Descriptions column={1} bordered size="small" style={{ marginTop: 16 }}>
+      {list.map((meta) => {
+        const mapping = mappingByName.get(meta.name)!;
+        return (
+          <Descriptions.Item key={meta.name} label={meta.displayName || meta.name}>
+            {formatValue(mapping, getValueByKey(data, meta.name))}
+          </Descriptions.Item>
+        );
+      })}
+    </Descriptions>
+  );
+
   return (
-    <Modal open={open} title="详情" onCancel={onClose} footer={null} width={680} destroyOnClose>
-      <Descriptions column={1} bordered size="small" style={{ marginTop: 16 }}>
-        {fields.map((field) => {
-          const meta = toFieldMeta(field.field);
-          return (
-            <Descriptions.Item key={meta.name} label={meta.displayName || meta.name}>
-              {formatValue(field, getValueByKey(data, meta.name))}
-            </Descriptions.Item>
-          );
-        })}
-      </Descriptions>
+    <Modal
+      open={open}
+      title="详情"
+      onCancel={onClose}
+      footer={null}
+      width={680}
+      destroyOnClose
+      // 分组时限制弹窗高度，避免分组标签 + 单组详情把弹窗撑得过高
+      styles={groups ? { body: { maxHeight: '60vh', overflowY: 'auto' } } : undefined}
+    >
+      {groups ? (
+        <Tabs
+          items={groups.map((g) => ({
+            key: g.category,
+            label: g.category,
+            children: renderDescriptions(g.fields),
+          }))}
+        />
+      ) : (
+        renderDescriptions(metas)
+      )}
     </Modal>
   );
 }

@@ -221,6 +221,49 @@ export function resolveListControl(field: FieldMeta): ListControlType {
   return 'text';
 }
 
+/** 默认分组名（无分类字段归入） */
+export const DEFAULT_CATEGORY = '常规设置';
+
+/** 字段分组 */
+export interface FieldGroup {
+  /** 分类名 */
+  category: string;
+  /** 该分类下的字段 */
+  fields: FieldMeta[];
+}
+
+/**
+ * 是否存在分类字段（决定表单是否按分类分组展示）
+ *
+ * 表单视图（FormDialog / FormPage / DetailDialog）据此决定是否分组：
+ * 任一字段带非空 category 即分组，全部无分类则平铺单页展示。
+ *
+ * @param fields 字段元数据
+ * @returns 是否存在非空分类
+ */
+export function hasCategory(fields: FieldMeta[]): boolean {
+  return fields.some((f) => !!f.category?.trim());
+}
+
+/**
+ * 按分类分组字段（无分类字段归入「常规设置」组；保持原有顺序）
+ *
+ * 与后端 FieldCollection.GroupByCategory 语义一致，前端统一入口：
+ * ConfigPage 配置页固定分组，实体表单视图仅当 hasCategory 为真时调用。
+ *
+ * @param fields 字段元数据
+ * @returns 按分类分组结果
+ */
+export function groupByCategory(fields: FieldMeta[]): FieldGroup[] {
+  const map = new Map<string, FieldMeta[]>();
+  for (const f of fields) {
+    const cat = f.category?.trim() || DEFAULT_CATEGORY;
+    if (!map.has(cat)) map.set(cat, []);
+    map.get(cat)!.push(f);
+  }
+  return [...map.entries()].map(([category, list]) => ({ category, fields: list }));
+}
+
 /** 表单全宽控件（占满整行） */
 const FULL_WIDTH_CONTROLS: ReadonlySet<ControlType> = new Set([
   'textarea',

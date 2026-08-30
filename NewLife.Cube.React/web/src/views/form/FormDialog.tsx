@@ -5,11 +5,11 @@
  * 编辑模式自动加载详情（布尔串转布尔）。
  */
 import { useEffect, useMemo, useState } from 'react';
-import { Col, Form, Modal, Row, message } from 'antd';
+import { Col, Form, Modal, Row, Tabs, message } from 'antd';
 import type { RuleObject } from 'antd/es/form';
 import FieldControl from '@/components/field/FieldControl';
-import { serializeSubmitModel, isFullWidthControl, resolveControl } from '@/utils/fieldControl';
-import { toFieldMeta } from '@/types/field';
+import { groupByCategory, hasCategory, isFullWidthControl, resolveControl, serializeSubmitModel } from '@/utils/fieldControl';
+import { toFieldMeta, type FieldMeta } from '@/types/field';
 import type { FieldMapping } from '@cube/field-mapping';
 import { useAiFillForm } from '@/hooks/useAiFillForm';
 
@@ -58,6 +58,12 @@ export default function FormDialog({
     [fields],
   );
 
+  // 分组：字段带 Category 才按分类 Tabs 分组，否则平铺单页（字段少的页面一屏展示）
+  const groups = useMemo(() => {
+    if (!hasCategory(metas)) return null;
+    return groupByCategory(metas);
+  }, [metas]);
+
   // 打开时初始化表单值
   useEffect(() => {
     if (!open) return;
@@ -85,7 +91,7 @@ export default function FormDialog({
   const recordId = mode === 'edit' && row ? (Object.values(row)[0] as number | string | undefined) : undefined;
 
   /** 构建字段校验规则 */
-  const buildRules = (meta: ReturnType<typeof toFieldMeta>): RuleObject[] => {
+  const buildRules = (meta: FieldMeta): RuleObject[] => {
     const rules: RuleObject[] = [];
     if (meta.required) {
       rules.push({ required: true, message: `请输入${meta.displayName || meta.name}` });
@@ -99,6 +105,31 @@ export default function FormDialog({
     return rules;
   };
 
+  /** 渲染一组字段栅格（分组内 / 平铺共用） */
+  const renderFields = (list: FieldMeta[]) => (
+    <Row gutter={16}>
+      {list.map((meta) => {
+        const control = resolveControl(meta);
+        const span = isFullWidthControl(control) ? 24 : 12;
+        return (
+          <Col key={meta.name} span={span}>
+            <Form.Item
+              name={meta.name}
+              label={meta.displayName || meta.name}
+              rules={buildRules(meta)}
+            >
+              <FieldControl
+                field={meta}
+                apiPrefix={apiPrefix}
+                recordId={recordId}
+              />
+            </Form.Item>
+          </Col>
+        );
+      })}
+    </Row>
+  );
+
   return (
     <Modal
       open={open}
@@ -110,29 +141,23 @@ export default function FormDialog({
       cancelText="取消"
       width={680}
       destroyOnClose
+      // 分组时限制弹窗高度，避免分组标签 + 单组字段把弹窗撑得过高
+      styles={groups ? { body: { maxHeight: '60vh', overflowY: 'auto' } } : undefined}
     >
       <Form form={form} layout="vertical" requiredMark={false} style={{ marginTop: 16 }}>
-        <Row gutter={16}>
-          {metas.map((meta) => {
-            const control = resolveControl(meta);
-            const span = isFullWidthControl(control) ? 24 : 12;
-            return (
-              <Col key={meta.name} span={span}>
-                <Form.Item
-                  name={meta.name}
-                  label={meta.displayName || meta.name}
-                  rules={buildRules(meta)}
-                >
-                  <FieldControl
-                    field={meta}
-                    apiPrefix={apiPrefix}
-                    recordId={recordId}
-                  />
-                </Form.Item>
-              </Col>
-            );
-          })}
-        </Row>
+        {groups ? (
+          <Tabs
+            items={groups.map((g) => ({
+              key: g.category,
+              label: g.category,
+              // forceRender：非激活分组表单项也注册进 Form，跨 Tab 必填校验生效
+              forceRender: true,
+              children: renderFields(g.fields),
+            }))}
+          />
+        ) : (
+          renderFields(metas)
+        )}
       </Form>
     </Modal>
   );

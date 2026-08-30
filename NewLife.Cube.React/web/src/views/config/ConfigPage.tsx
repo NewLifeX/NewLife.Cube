@@ -13,7 +13,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Card, Col, Form, Row, Spin, Tabs, message } from 'antd';
 import type { DataField } from '@cube/api-core';
 import FieldControl from '@/components/field/FieldControl';
-import { resolveControl, isFullWidthControl, serializeSubmitModel } from '@/utils/fieldControl';
+import { groupByCategory, isFullWidthControl, resolveControl, serializeSubmitModel } from '@/utils/fieldControl';
 import { toFieldMeta, type FieldMeta } from '@/types/field';
 import { api } from '@/api';
 import { useAiFillForm } from '@/hooks/useAiFillForm';
@@ -30,17 +30,6 @@ function normalizeValue(v: unknown): unknown {
   if (v === 'true') return true;
   if (v === 'false') return false;
   return v;
-}
-
-/** 按分类分组字段（未分类归为「常规设置」） */
-function groupByCategory(fields: FieldMeta[]): { category: string; fields: FieldMeta[] }[] {
-  const map = new Map<string, FieldMeta[]>();
-  for (const f of fields) {
-    const cat = f.category || '常规设置';
-    if (!map.has(cat)) map.set(cat, []);
-    map.get(cat)!.push(f);
-  }
-  return [...map.entries()].map(([category, list]) => ({ category, fields: list }));
 }
 
 export default function ConfigPage({ type, title }: ConfigPageProps) {

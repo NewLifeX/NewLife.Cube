@@ -3,6 +3,9 @@
  */
 import { describe, expect, it } from 'vitest';
 import {
+  DEFAULT_CATEGORY,
+  groupByCategory,
+  hasCategory,
   resolveControl,
   resolveSearchControl,
   resolveListControl,
@@ -141,5 +144,46 @@ describe('resolveNumberPrecision / isFullWidthControl', () => {
     expect(isFullWidthControl('textarea')).toBe(true);
     expect(isFullWidthControl('json')).toBe(true);
     expect(isFullWidthControl('input')).toBe(false);
+  });
+});
+
+describe('hasCategory 是否需分组', () => {
+  it('全部无分类 → false（平铺）', () => {
+    expect(hasCategory([f({ name: 'A' }), f({ name: 'B' })])).toBe(false);
+  });
+
+  it('任一字段有分类 → true（分组）', () => {
+    expect(hasCategory([f({ name: 'A' }), f({ name: 'B', category: '扩展' })])).toBe(true);
+  });
+
+  it('纯空白分类视为无分类', () => {
+    expect(hasCategory([f({ name: 'A', category: '  ' })])).toBe(false);
+  });
+});
+
+describe('groupByCategory 按分类分组', () => {
+  it('全部无分类归入默认组', () => {
+    const g = groupByCategory([f({ name: 'A' }), f({ name: 'B' })]);
+    expect(g).toEqual([{ category: DEFAULT_CATEGORY, fields: [f({ name: 'A' }), f({ name: 'B' })] }]);
+  });
+
+  it('按分类分组并保序，无分类归入默认组', () => {
+    const fields = [
+      f({ name: 'Name', category: '基本信息' }),
+      f({ name: 'Enable' }),
+      f({ name: 'Secret', category: '扩展' }),
+      f({ name: 'Remark', category: '基本信息' }),
+    ];
+    const g = groupByCategory(fields);
+    expect(g.map((x) => x.category)).toEqual(['基本信息', DEFAULT_CATEGORY, '扩展']);
+    expect(g[0].fields.map((x) => x.name)).toEqual(['Name', 'Remark']);
+    expect(g[1].fields.map((x) => x.name)).toEqual(['Enable']);
+    expect(g[2].fields.map((x) => x.name)).toEqual(['Secret']);
+  });
+
+  it('分类前后空白被修剪', () => {
+    const g = groupByCategory([f({ name: 'A', category: ' 基本信息 ' }), f({ name: 'B', category: '基本信息' })]);
+    expect(g).toHaveLength(1);
+    expect(g[0].category).toBe('基本信息');
   });
 });
