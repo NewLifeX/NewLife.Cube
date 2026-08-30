@@ -213,7 +213,10 @@ select {
 /* 顶栏：标准高度，容器底色 */
 .cube-shell-header.ant-layout-header {
   height: 56px;
-  line-height: 56px;
+  /* 不能设行高（antd .ant-layout-header 默认 line-height: headerHeight 同样泄漏）：
+     行高会继承给未显式设置 line-height 的文本后代（如 .cube-user-trigger-role），
+     把用户容器撑到超过顶栏高度；内容由 .cube-shell-header-inner 的 flex 垂直居中 */
+  line-height: normal;
   padding: 0 24px;
   border-bottom: 1px solid var(--cube-border-soft);
 }
@@ -311,6 +314,8 @@ select {
 .cube-user-trigger-role {
   color: var(--cube-text-muted);
   font-size: 12px;
+  /* 防御：禁止继承顶栏行高，避免把用户容器撑高 */
+  line-height: normal;
 }
 
 /* 多标签 */

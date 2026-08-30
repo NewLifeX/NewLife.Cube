@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.FileProviders;
 using NewLife.Cube.Extensions;
@@ -21,10 +21,8 @@ public static class ReactService
 
         if (!env.WebRootPath.IsNullOrEmpty() && Directory.Exists(env.WebRootPath) && env.WebRootFileProvider != null)
         {
-            // 嵌入资源优先，再到主机的 WebRootFileProvider
-            env.WebRootFileProvider = new CompositeFileProvider(
-                embeddedProvider,
-                env.WebRootFileProvider);
+            // 主机的 WebRootFileProvider 优先，再到embeddedProvider
+            env.WebRootFileProvider = new CompositeFileProvider(env.WebRootFileProvider, embeddedProvider);
         }
         else
         {
