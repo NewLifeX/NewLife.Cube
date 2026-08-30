@@ -553,6 +553,8 @@ export interface ViewProfileModel {
   columnsJson?: string | null;
   viewsJson?: string | null;
   activeViewId?: string | null;
+  /** 当前应用的预定义查询 Id（OSC-260830a1b2）：服务端持久化，跨浏览器/设备登录同一账号可恢复勾选 */
+  activeQueryId?: string | null;
   ganttJson?: string | null;
   cardJson?: string | null;
   filtersJson?: string | null;

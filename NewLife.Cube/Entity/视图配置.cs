@@ -78,6 +78,14 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
     [BindColumn("ActiveViewId", "当前激活的命名视图 Id", "")]
     public String ActiveViewId { get => _ActiveViewId; set { if (OnPropertyChanging("ActiveViewId", value)) { _ActiveViewId = value; OnPropertyChanged("ActiveViewId"); } } }
 
+    private String _ActiveQueryId;
+    /// <summary>当前应用的预定义查询 Id（OSC-260830a1b2）：服务端持久化，跨浏览器/设备登录同一账号可恢复</summary>
+    [DisplayName("当前预定义查询")]
+    [Description("当前应用的预定义查询 Id。服务端持久化，跨浏览器/设备登录同一账号可恢复")]
+    [DataObjectField(false, false, true, 50)]
+    [BindColumn("ActiveQueryId", "当前应用的预定义查询 Id", "")]
+    public String ActiveQueryId { get => _ActiveQueryId; set { if (OnPropertyChanging("ActiveQueryId", value)) { _ActiveQueryId = value; OnPropertyChanged("ActiveQueryId"); } } }
+
     private String _GanttJson;
     /// <summary>甘特映射。JSON</summary>
     [DisplayName("甘特映射")]
@@ -251,6 +259,7 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
             "ColumnsJson" => _ColumnsJson,
             "ViewsJson" => _ViewsJson,
             "ActiveViewId" => _ActiveViewId,
+            "ActiveQueryId" => _ActiveQueryId,
             "GanttJson" => _GanttJson,
             "CardJson" => _CardJson,
             "FiltersJson" => _FiltersJson,
@@ -279,6 +288,7 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
                 case "ColumnsJson": _ColumnsJson = Convert.ToString(value); break;
                 case "ViewsJson": _ViewsJson = Convert.ToString(value); break;
                 case "ActiveViewId": _ActiveViewId = Convert.ToString(value); break;
+                case "ActiveQueryId": _ActiveQueryId = Convert.ToString(value); break;
                 case "GanttJson": _GanttJson = Convert.ToString(value); break;
                 case "CardJson": _CardJson = Convert.ToString(value); break;
                 case "FiltersJson": _FiltersJson = Convert.ToString(value); break;
@@ -396,6 +406,9 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
         /// <summary>当前激活的命名视图 Id</summary>
         public static readonly Field ActiveViewId = FindByName("ActiveViewId");
 
+        /// <summary>当前应用的预定义查询 Id。服务端持久化，跨浏览器/设备登录同一账号可恢复</summary>
+        public static readonly Field ActiveQueryId = FindByName("ActiveQueryId");
+
         /// <summary>甘特映射。JSON</summary>
         public static readonly Field GanttJson = FindByName("GanttJson");
 
@@ -467,6 +480,9 @@ public partial class ViewProfile : IEntity<ViewProfileModel>
 
         /// <summary>当前激活的命名视图 Id</summary>
         public const String ActiveViewId = "ActiveViewId";
+
+        /// <summary>当前应用的预定义查询 Id</summary>
+        public const String ActiveQueryId = "ActiveQueryId";
 
         /// <summary>甘特映射。JSON</summary>
         public const String GanttJson = "GanttJson";

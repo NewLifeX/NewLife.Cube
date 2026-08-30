@@ -81,28 +81,6 @@ function cloneState(state: EntityViewState): EntityViewState {
   return JSON.parse(JSON.stringify(state)) as EntityViewState;
 }
 
-/** 当前应用的预定义查询 id 持久化（OSC-260830a1b2）：勾选的预定义查询在重新打开视图 / 系统重启后仍有效，故用 localStorage */
-const ACTIVE_QUERY_PREFIX = 'cube:activeQuery:';
-
-function restoreActiveQuery(typePath: string, queries: SavedQueriesWire): string | null {
-  try {
-    const id = localStorage.getItem(ACTIVE_QUERY_PREFIX + typePath);
-    if (id && queries.queries.some((q) => q.id === id)) return id;
-  } catch {
-    /* ignore */
-  }
-  return null;
-}
-
-function persistActiveQuery(typePath: string, id: string | null) {
-  try {
-    if (id) localStorage.setItem(ACTIVE_QUERY_PREFIX + typePath, id);
-    else localStorage.removeItem(ACTIVE_QUERY_PREFIX + typePath);
-  } catch {
-    /* ignore */
-  }
-}
-
 /** 未命名当前查询（Q + filter）会话持久化（OSC-260830a1b2）：刷新有效，关闭视图界面后不保留，故用 sessionStorage */
 const LAST_QUERY_PREFIX = 'cube:lastQuery:';
 
@@ -303,10 +281,12 @@ export const useViewProfileStore = defineStore('viewProfile', {
 
       entry.pageSize = normalizePageSize(personal?.pageSize);
       entry.formJson = parseFormJson(personal?.formJson);
-      // 预定义查询为实体级个人配置（OSC-0016）：仅个人域，不走模板回退；activeQueryId 用 localStorage，
-      // 勾选的预定义查询在重新打开视图 / 系统重启后仍有效
+      // 预定义查询为实体级个人配置（OSC-0016）：仅个人域，不走模板回退；
+      // activeQueryId 服务端持久化（OSC-260830a1b2），跨浏览器/设备登录同一账号可恢复勾选的预定义查询
       entry.queries = parseQueriesWire(personal?.queriesJson ?? null, entry.fields);
-      entry.activeQueryId = restoreActiveQuery(typePath, entry.queries);
+      const aq = (personal as Record<string, unknown> | null)?.activeQueryId;
+      entry.activeQueryId =
+        typeof aq === 'string' && aq && entry.queries.queries.some((x) => x.id === aq) ? aq : null;
       // 仪表盘：个人 present > 系统管理员模板（ViewProfileTemplate / global）> null（再合成旧 insight）
       // 后端 ViewProfile GET 也可能已把 global.DashboardJson 填入 personal；此处再兜底模板接口
       const personalDash = hasDashboardDomain(personal?.dashboardJson)
@@ -684,7 +664,6 @@ export const useViewProfileStore = defineStore('viewProfile', {
         queries: [...entry.queries.queries, item],
       };
       entry.activeQueryId = id;
-      persistActiveQuery(typePath, id);
       entry.dirty = true;
       this.scheduleSave(typePath, true);
       return id;
@@ -726,16 +705,19 @@ export const useViewProfileStore = defineStore('viewProfile', {
       const q = entry.queries.queries.find((x) => x.id === id);
       if (!q) return null;
       entry.activeQueryId = id;
-      persistActiveQuery(typePath, id);
+      // 服务端持久化，跨浏览器/设备登录同一账号可恢复勾选（OSC-260830a1b2）
+      entry.dirty = true;
+      this.scheduleSave(typePath, true);
       return q;
     },
 
-    /** 清除当前应用标记（同步清理 localStorage 的勾选持久化） */
+    /** 清除当前应用标记（同步服务端持久化） */
     clearActiveQuery(typePath: string) {
       const entry = this.byType[typePath];
       if (!entry) return;
       entry.activeQueryId = null;
-      persistActiveQuery(typePath, null);
+      entry.dirty = true;
+      this.scheduleSave(typePath, true);
     },
 
     /** 持久化未命名当前查询（Q + filter）到 sessionStorage（OSC-260830a1b2）：刷新有效，关闭视图界面后不保留 */
@@ -908,6 +890,8 @@ export const useViewProfileStore = defineStore('viewProfile', {
       payload.pageSize = entry.pageSize || 0;
       // 预定义查询为实体级个人配置，始终随保存提交（OSC-0016）
       payload.queriesJson = serializeQueriesWire(entry.queries);
+      // 当前应用的预定义查询 id 服务端持久化（OSC-260830a1b2）：null 清除
+      payload.activeQueryId = entry.activeQueryId || null;
       // 表单布局为系统全局唯一配置（管理员定义，作用于所有用户）：
       // 仅管理员保存时提交；非管理员不发送，避免把全局布局写回或触发后端 403
       const userStore = useUserStore();

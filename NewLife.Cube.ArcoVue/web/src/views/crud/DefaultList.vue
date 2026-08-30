@@ -74,7 +74,7 @@
             <!-- 查询组合框（OSC-260830a1b2）：关键字输入框内嵌 查询图标 + ▾ 下拉（最近搜索/自定义/预定义），紧靠「分组」；
                  已应用预定义方案时查询图标彩色 + 右上角角标（方案名首字） -->
             <span v-if="chrome.showSearch" class="tb-query-cluster">
-              <!-- 关键字输入框：enableKey===false 时隐藏（AC-15），查询按钮组（自定义/▾）仍可用 -->
+              <!-- 关键字输入框：▾ 下拉内嵌到输入框 suffix（与「查询」图标同排）；enableKey===false 时输入框隐藏（AC-15），▾ 独立渲染仍可用 -->
               <a-input
                 v-if="enableKey !== false"
                 v-model="searchForm.Q"
@@ -95,12 +95,38 @@
                       title="查询"
                       @click.stop="handleSearch"
                     />
+                    <!-- 自定义查询构建器：由 ▾ 菜单「自定义查询」触发打开，锚点吸附在输入框旁 -->
+                    <FilterBuilderPopover
+                      :visible="filterPopoverVisible"
+                      :fields="filterFields"
+                      :model-value="viewFilter"
+                      :can-save="!!activeViewId"
+                      @update:visible="onFilterPopoverVisible"
+                      @apply="onFilterApply"
+                      @save="onFilterSave"
+                    >
+                      <span class="tb-query-anchor" />
+                    </FilterBuilderPopover>
+                    <QueryComboButton
+                      :queries="savedQueries"
+                      :active-query-id="appliedQueryId"
+                      :params-dirty="queryParamsDirty"
+                      :can-save="queryHasParams"
+                      :has-more-fields="false"
+                      :more-field-count="0"
+                      :expanded="false"
+                      @custom="onFilterPopoverVisible(true)"
+                      @reset="handleReset"
+                      @apply="handleApplyQuery"
+                      @save="handleSaveQuery"
+                      @rename="handleRenameQuery"
+                      @delete="handleDeleteQuery"
+                    />
                   </span>
                 </template>
               </a-input>
-              <!-- 查询按钮组（自定义/▾）独立于 Q 框，始终渲染（AC-15 enableKey=false 仍可用） -->
-              <span class="tb-query-actions">
-                <!-- 自定义查询构建器：由 ▾ 菜单「自定义查询」触发打开，锚点吸附在输入框旁 -->
+              <!-- 无 Q 框（enableKey===false）时，▾ 独立于输入框渲染，保证自定义/预定义仍可用（AC-15） -->
+              <span v-else class="tb-query-actions">
                 <FilterBuilderPopover
                   :visible="filterPopoverVisible"
                   :fields="filterFields"

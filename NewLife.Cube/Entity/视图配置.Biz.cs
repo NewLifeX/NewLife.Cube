@@ -171,6 +171,9 @@ public partial class ViewProfile : Entity<ViewProfile>
             if (model.ColumnsJson != null) entity.ColumnsJson = model.ColumnsJson;
             if (model.ViewsJson != null) entity.ViewsJson = model.ViewsJson;
             if (model.ActiveViewId != null) entity.ActiveViewId = model.ActiveViewId;
+            // activeQueryId 服务端持久化（OSC-260830a1b2）：null 不覆盖；空串清除
+            if (model.ActiveQueryId != null)
+                entity.ActiveQueryId = model.ActiveQueryId.IsNullOrWhiteSpace() ? null : model.ActiveQueryId;
             if (model.GanttJson != null) entity.GanttJson = model.GanttJson;
             if (model.CardJson != null) entity.CardJson = model.CardJson;
             if (model.FiltersJson != null) entity.FiltersJson = model.FiltersJson;

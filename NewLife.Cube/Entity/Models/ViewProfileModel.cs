@@ -32,6 +32,9 @@ public partial class ViewProfileModel
     /// <summary>当前激活的命名视图 Id</summary>
     public String ActiveViewId { get; set; }
 
+    /// <summary>当前应用的预定义查询 Id（OSC-260830a1b2）：服务端持久化，跨浏览器/设备登录同一账号可恢复</summary>
+    public String ActiveQueryId { get; set; }
+
     /// <summary>甘特映射。JSON</summary>
     public String GanttJson { get; set; }
 
