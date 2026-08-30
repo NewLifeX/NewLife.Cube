@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode;
@@ -21,11 +20,11 @@ public class LogController : ReadOnlyEntityController<XLog>
     {
         // 日志列表需要显示详细信息，不需要显示用户编号
         ListFields.AddDataField("Remark", null, "Action");
-        ListFields.RemoveField("CreateUserID");
+        ListFields.RemoveField("Id");
         //FormFields.RemoveField("Remark");
 
         // 精简列表：去掉扩展字段、性能追踪与冗余的用户相关字段，只保留审计核心信息
-        ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6", "TraceId", "CreateUser", "CreateUserName", "Success");
+        ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6", "CreateUserID", "CreateUser", "CreateUserName", "Success");
 
         // 搜索字段显式配置，受后台控制（默认只显示有索引的列）
         SearchFields.RemoveField("LinkID");

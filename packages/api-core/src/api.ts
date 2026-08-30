@@ -218,24 +218,18 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
       request<unknown>({ url: type, method: 'delete', params: { id, restore: true } }),
 
     /**
-     * 批量删除，默认使用重复参数 id=1&id=2 （文档标准）。
-     * 若后端仅支持逗号形式，可传入 compatCommaJoin: true 切换为兼容模式。
+     * 批量删除选中，调用专用端点 DeleteSelect。
+     * 默认传数组（qs 序列化为索引形式 id[0]=1&id[1]=2，后端 String[] 绑定）；
+     * 后端不支持索引形式时可用 compatCommaJoin 传逗号分隔 id=1,2（后端已兼容拆分）。
      */
     deleteSelect: (type: string, keys: (number | string)[], options?: { compatCommaJoin?: boolean }) => {
-      const ids = options?.compatCommaJoin
-        ? { id: keys.join(',') }
-        : keys.map(id => `id=${encodeURIComponent(id)}`).reduce<Record<string, (number | string)[]>>(
-            (acc) => { acc.id = keys as (number | string)[]; return acc; },
-            { id: [] }
-          );
-      // 使用 qs 逗号逗号逗号 重复参数：id=1&id=2&id=3
-      const idArr = options?.compatCommaJoin ? keys.join(',') : keys;
-      return request<unknown>({ url: type, method: 'delete', params: { id: idArr } });
+      const params = options?.compatCommaJoin ? { id: keys.join(',') } : { id: keys };
+      return request<unknown>({ url: `${type}/DeleteSelect`, method: 'delete', params });
     },
 
-    /** 按条件删除，params 为搜索条件（至少需携带一个参数，否则后端拒绝） */
+    /** 按条件删除全部，params 为搜索条件（至少需携带一个参数，否则后端拒绝）。调用专用端点 DeleteAll */
     deleteAll: (type: string, params?: Record<string, unknown>) =>
-      request<unknown>({ url: type, method: 'delete', params }),
+      request<unknown>({ url: `${type}/DeleteAll`, method: 'delete', params }),
 
     /** 字典查询（codes 逗号分隔） */
     lookup: (codes: string) =>

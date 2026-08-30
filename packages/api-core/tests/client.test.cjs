@@ -339,3 +339,41 @@ test('content-type text 分支：非字符串 data 经 JSON.stringify 透传', a
   assert.equal(typeof res, 'string');
   assert.deepEqual(JSON.parse(res), payload);
 });
+
+// ── 批量删除端点与序列化（回归：id[0]= 序列化 vs 后端单 id 校验 400 报错）──
+// 注意：axios 1.16 中 params 序列化发生在标准 adapter 内部，自定义 adapter 收到的是原始 config.params，
+// 故此处断言 URL 端点 + params 结构，并用 qs 直接验证最终序列化格式（与 client.ts 的 paramsSerializer 一致）。
+
+const qs = require('qs');
+
+test('page.deleteSelect 指向 DeleteSelect 端点且传数组参数', async () => {
+  const { adapter, captured } = capturingAdapter();
+  const api = core.createCubeApi({ baseURL: 'http://host:5000/api', tokenStorage: memToken('tok') });
+  api.client.defaults.adapter = adapter;
+  await api.page.deleteSelect('/Admin/User', [125, 124, 123]);
+  assert.equal(captured.config.url, 'http://host:5000/api/Admin/User/DeleteSelect', '批量删除应走 DeleteSelect 端点');
+  assert.equal(captured.config.method, 'delete');
+  assert.deepEqual(captured.config.params, { id: [125, 124, 123] });
+  // 与 client.ts paramsSerializer（qs allowDots）一致：数组序列化为索引形式，后端 String[] 可绑定
+  const q = qs.stringify(captured.config.params, { allowDots: true });
+  assert.equal(q, 'id%5B0%5D=125&id%5B1%5D=124&id%5B2%5D=123');
+});
+
+test('page.deleteSelect compatCommaJoin 传逗号分隔 id=1,2', async () => {
+  const { adapter, captured } = capturingAdapter();
+  const api = core.createCubeApi({ baseURL: 'http://host:5000/api', tokenStorage: memToken('tok') });
+  api.client.defaults.adapter = adapter;
+  await api.page.deleteSelect('/Admin/User', [125, 124], { compatCommaJoin: true });
+  assert.equal(captured.config.url, 'http://host:5000/api/Admin/User/DeleteSelect', '批量删除应走 DeleteSelect 端点');
+  assert.deepEqual(captured.config.params, { id: '125,124' }, 'compatCommaJoin 应传逗号分隔字符串');
+});
+
+test('page.deleteAll 指向 DeleteAll 端点且透传搜索条件', async () => {
+  const { adapter, captured } = capturingAdapter();
+  const api = core.createCubeApi({ baseURL: 'http://host:5000/api', tokenStorage: memToken('tok') });
+  api.client.defaults.adapter = adapter;
+  await api.page.deleteAll('/Admin/User', { name: 'admin' });
+  assert.equal(captured.config.url, 'http://host:5000/api/Admin/User/DeleteAll', '按条件删除应走 DeleteAll 端点');
+  assert.equal(captured.config.method, 'delete');
+  assert.deepEqual(captured.config.params, { name: 'admin' });
+});

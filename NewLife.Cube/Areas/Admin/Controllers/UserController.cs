@@ -38,6 +38,8 @@ public class UserController(UserService userService, VerifyCodeService verifyCod
         ListFields.RemoveUpdateField();
         ListFields.RemoveField("Remark");
 
+        SearchFields.RemoveField("MailVerified", "MobileVerified");
+
         {
             // 为RoleId搜索字段增加LovCode
             var df = SearchFields.GetField(_.RoleID);
@@ -155,7 +157,41 @@ public class UserController(UserService userService, VerifyCodeService verifyCod
 
         //if (roleId > 0) roleIds.Add(roleId);
         //if (departmentId > 0) departmentIds.Add(departmentId);
-        var list2 = XCode.Membership.User.Search(roleIds, departmentIds, areaIds, enable, start, end, key, p);
+
+        // 性别/在线/邮箱验证/手机验证：XCode 数组版 Search 不支持这些参数，传了这些条件时改用完整表达式
+        var sex = p["sex"].ToInt(-1);
+        var online = p["online"]?.ToBoolean();
+        var mailVerified = p["mailVerified"]?.ToBoolean();
+        var mobileVerified = p["mobileVerified"]?.ToBoolean();
+
+        IList<User> list2;
+        if (sex >= 0 || online != null || mailVerified != null || mobileVerified != null)
+        {
+            var exp = new WhereExpression();
+            if (roleIds.Length > 0)
+            {
+                var exp2 = new WhereExpression();
+                exp2 |= _.RoleID.In(roleIds);
+                foreach (var rid in roleIds)
+                    exp2 |= _.RoleIds.Contains("," + rid + ",");
+                exp &= exp2;
+            }
+            if (departmentIds.Length > 0) exp &= _.DepartmentID.In(departmentIds);
+            if (areaIds.Length > 0) exp &= _.AreaId.In(areaIds);
+            if (enable != null) exp &= _.Enable == enable.Value;
+            if (sex >= 0) exp &= _.Sex == (SexKinds)sex;
+            if (online != null) exp &= _.Online == online.Value;
+            if (mailVerified != null) exp &= _.MailVerified == mailVerified.Value;
+            if (mobileVerified != null) exp &= _.MobileVerified == mobileVerified.Value;
+            exp &= _.LastLogin.Between(start, end);
+            if (!key.IsNullOrEmpty()) exp &= _.Code.Contains(key) | _.Name.Contains(key) | _.DisplayName.Contains(key) | _.Mobile.Contains(key) | _.Mail.Contains(key);
+
+            list2 = Entity<User>.FindAll(exp, p);
+        }
+        else
+        {
+            list2 = XCode.Membership.User.Search(roleIds, departmentIds, areaIds, enable, start, end, key, p);
+        }
 
         foreach (var user in list2)
             user.Password = null;
