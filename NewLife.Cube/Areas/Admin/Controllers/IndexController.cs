@@ -25,7 +25,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 /// <summary>首页</summary>
 [DisplayName("首页")]
 [AdminArea]
-[Menu(0, false, Icon = "HomeFilled")]
+[Menu(0, false, Icon = "HomeFilled", Mode = MenuModes.Admin | MenuModes.Tenant)]
 public class IndexController : ControllerBaseX, IPageDataContext
 {
     private readonly IManageProvider _provider;

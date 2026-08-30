@@ -28,6 +28,7 @@ export type {
   UserInfo,
   LoginResult,
   LoginConfig,
+  TenantItem,
   ChallengeResult,
   CaptchaResult,
   ResetPasswordModel,

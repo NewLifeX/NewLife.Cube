@@ -52,6 +52,10 @@ export function createUserApi(request: RequestFn) {
     info: () =>
       request<UserInfo>({ url: '/Auth/Info', method: 'get' }),
 
+    /** 切换当前租户（多租户开启时）。0=管理后台（仅系统管理员），>0=租户编号；成功后前端应刷新页面（菜单/数据随租户变化） */
+    switchTenant: (tenantId: number) =>
+      request<boolean>({ url: '/Auth/SwitchTenant', method: 'post', data: { tenantId } }),
+
     /** 获取登录页配置（OAuth 提供商列表等），可传入租户标识（id/code/name/domain） */
     getLoginConfig: (tenant?: string) =>
       request<LoginConfig>({ url: '/Auth/LoginConfig', method: 'get', params: tenant ? { tenant } : undefined }),

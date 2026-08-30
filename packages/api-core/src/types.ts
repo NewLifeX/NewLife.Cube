@@ -197,6 +197,32 @@ export interface UserInfo {
   lastLoginIP?: string;
   permission?: string;
   remark?: string;
+
+  // === 多租户 ===
+  /** 是否启用多租户。false 时隐藏租户相关 UI */
+  enableTenant?: boolean;
+  /** 当前租户编号。0=管理后台，>0=租户；未开启多租户恒为 0 */
+  tenantId?: number;
+  /** 当前租户编码。管理后台或未开启多租户为空 */
+  tenantCode?: string;
+  /** 当前租户名称。管理后台或未开启多租户为空 */
+  tenantName?: string;
+  /** 租户模式。0=未设置，1=管理后台，2=租户 */
+  tenantMode?: number;
+  /** 是否系统管理员。可进入管理后台，可切换任意租户 */
+  isSystemAdmin?: boolean;
+  /** 当前用户所属有效租户列表（租户切换器数据源） */
+  tenants?: TenantItem[];
+}
+
+/** 租户切换器选项 */
+export interface TenantItem {
+  /** 租户编号 */
+  id: number;
+  /** 租户编码 */
+  code?: string;
+  /** 租户名称 */
+  name?: string;
 }
 
 /** 登录返回 */
@@ -281,6 +307,8 @@ export interface SecurityConfig {
 
 /** 登录配置（新版嵌套结构，v2 起） */
 export interface LoginConfig {
+  /** 是否启用多租户。前端据此控制租户相关 UI（切换器/租户字段）显隐 */
+  enableTenant?: boolean;
   /** 租户 Code，有租户时非空 */
   code?: string;
   /** 系统名称（租户级优先） */

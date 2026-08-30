@@ -317,6 +317,27 @@ public class UserInfo
     /// <summary>备注</summary>
     public String Remark { get; set; }
 
+    /// <summary>是否启用多租户。前端据此控制租户相关 UI 显隐</summary>
+    public Boolean EnableTenant { get; set; }
+
+    /// <summary>当前租户编号。0=管理后台，&gt;0=租户；未开启多租户恒为0</summary>
+    public Int32 TenantId { get; set; }
+
+    /// <summary>当前租户编码。管理后台或未开启多租户为空</summary>
+    public String TenantCode { get; set; }
+
+    /// <summary>当前租户名称。管理后台或未开启多租户为空</summary>
+    public String TenantName { get; set; }
+
+    /// <summary>租户模式。0=未设置，1=管理后台，2=租户</summary>
+    public Int32 TenantMode { get; set; }
+
+    /// <summary>是否系统管理员。可进入管理后台，可切换任意租户</summary>
+    public Boolean IsSystemAdmin { get; set; }
+
+    /// <summary>当前用户所属有效租户列表（租户切换器数据源）</summary>
+    public TenantItem[] Tenants { get; set; }
+
     /// <summary>
     /// 包括角色组的权限集合
     /// </summary>
@@ -371,4 +392,17 @@ public class UserInfo
 
         RoleNames = roles.Select(s => s.Name).Join();
     }
+}
+
+/// <summary>租户切换器选项。返回当前用户可切换的租户</summary>
+public class TenantItem
+{
+    /// <summary>租户编号</summary>
+    public Int32 Id { get; set; }
+
+    /// <summary>租户编码</summary>
+    public String Code { get; set; }
+
+    /// <summary>租户名称</summary>
+    public String Name { get; set; }
 }

@@ -683,6 +683,10 @@ public partial class ReadOnlyEntityController<TEntity>
         };
         fields = fields.Clone();
 
+        // 未开启多租户时，隐藏租户字段（TenantId/TenantName），列表/表单/搜索/详情均生效
+        if (!CubeSetting.Current.EnableTenant)
+            fields.RemoveField("TenantId", "TenantName");
+
         // 表单嵌入配置字段
         if ((kind == ViewKinds.EditForm || kind == ViewKinds.Detail) && model is TEntity entity)
         {

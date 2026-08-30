@@ -174,7 +174,75 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
         userInfo.SetPermission(user.Roles);
         userInfo.SetRoleNames(user.Roles);
 
+        // 多租户信息：当前租户 + 用户可切换租户列表。未开启多租户时全部为空/空列表，前端据此隐藏租户 UI
+        var set = CubeSetting.Current;
+        userInfo.EnableTenant = set.EnableTenant;
+        if (set.EnableTenant)
+        {
+            var tc = TenantContext.Current;
+            userInfo.TenantId = TenantContext.CurrentId;
+            userInfo.TenantMode = (Int32)tc.GetTenantMode();
+            userInfo.IsSystemAdmin = user.Roles.Any(e => e.IsSystem);
+
+            if (userInfo.TenantId > 0)
+            {
+                var tenant = XCode.Membership.Tenant.FindById(userInfo.TenantId);
+                if (tenant != null)
+                {
+                    userInfo.TenantCode = tenant.Code;
+                    userInfo.TenantName = tenant.Name;
+                }
+            }
+
+            userInfo.Tenants = TenantUser.FindAllByUserId(user.ID)
+                .Where(e => e.Enable && e.Tenant != null && e.Tenant.Enable)
+                .Select(e => new TenantItem
+                {
+                    Id = e.TenantId,
+                    Code = e.Tenant?.Code,
+                    Name = e.Tenant?.Name,
+                })
+                .ToArray();
+        }
+
         return Json(0, "ok", userInfo);
+    }
+
+    /// <summary>切换当前租户。多租户开启时，将所选租户写入 Cookie（HttpOnly），下次登录沿用；前端切换成功后刷新页面</summary>
+    /// <param name="tenantId">租户编号。0=管理后台（仅系统管理员），&gt;0=租户</param>
+    /// <returns>切换结果</returns>
+    [HttpPost]
+    [EntityAuthorize]
+    [Menu(0, false, Mode = MenuModes.Admin | MenuModes.Tenant)]
+    public ApiResponse<Boolean> SwitchTenant(Int32 tenantId)
+    {
+        var set = CubeSetting.Current;
+        if (!set.EnableTenant)
+            throw new InvalidOperationException("未开启多租户，无法切换租户");
+
+        if (ManageProvider.User is not User user)
+            throw new InvalidOperationException("当前登录用户无效！");
+
+        // 管理后台（0）仅系统管理员可进入
+        if (tenantId == 0)
+        {
+            if (!user.Roles.Any(e => e.IsSystem))
+                throw new InvalidOperationException("仅系统管理员可进入系统管理后台");
+        }
+        else
+        {
+            // 普通租户：须存在且启用，且当前用户是成员（系统管理员豁免）
+            var tenant = XCode.Membership.Tenant.FindById(tenantId);
+            if (tenant == null || !tenant.Enable)
+                throw new ArgumentException($"租户[{tenantId}]不存在或已禁用", nameof(tenantId));
+
+            if (!TenantAccessPolicy.IsMember(tenantId, user))
+                throw new InvalidOperationException($"当前用户不属于租户[{tenant.Name}]");
+        }
+
+        HttpContext.SaveTenant(tenantId);
+
+        return true.ToOkApiResponse("切换成功");
     }
 
     /// <summary>登出</summary>

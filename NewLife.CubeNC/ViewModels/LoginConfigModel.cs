@@ -113,6 +113,9 @@ public class LoginConfigModel
         _tenant = tenant;
     }
 
+    /// <summary>是否启用多租户。前端据此控制租户相关 UI（切换器/租户字段）显隐</summary>
+    public Boolean EnableTenant => _set.EnableTenant;
+
     /// <summary>租户Code。有租户时返回租户标识，无租户时为空</summary>
     public String Code => _tenant?.Code;
 
