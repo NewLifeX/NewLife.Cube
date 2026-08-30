@@ -31,15 +31,17 @@ public class IndexController : ControllerBaseX, IPageDataContext
     private readonly IManageProvider _provider;
     private readonly IWebHostEnvironment _env;
     private readonly IAIService _ai;
+    private readonly WidgetManager _widgetManager;
 
     static IndexController() => MachineInfo.RegisterAsync();
 
     /// <summary>实例化</summary>
-    public IndexController(IManageProvider manageProvider, IWebHostEnvironment env, IAIService ai)
+    public IndexController(IManageProvider manageProvider, IWebHostEnvironment env, IAIService ai, WidgetManager widgetManager)
     {
         _provider = manageProvider;
         _env = env;
         _ai = ai;
+        _widgetManager = widgetManager;
         PageSetting.EnableNavbar = false;
     }
 
@@ -172,7 +174,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
         // 角色/启停按部件元数据过滤；用户隐藏项分到 hiddenKpis，供前端恢复面板
         var roleNames = user?.Roles?.Select(e => e.Name).ToList();
         var isAdmin = user?.Roles.Any(e => e.IsSystem) == true;
-        var wm = new WidgetManager();
+        var wm = _widgetManager;
         var layout = user != null ? wm.GetLayout(user.ID) : new Dictionary<String, WidgetLayout>();
         var kpis = new List<Object>();
         var hiddenKpis = new List<Object>();
@@ -262,7 +264,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     public ActionResult GetWidgetLayout()
     {
         var userId = ManageProvider.User?.ID ?? 0;
-        var layout = new WidgetManager().GetLayout(userId);
+        var layout = _widgetManager.GetLayout(userId);
         return Json(0, null, layout);
     }
 
@@ -278,7 +280,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
         if (userId <= 0) return Json(401, null, "未登录");
         if (layout == null || layout.Count == 0) return Json(1, null, "布局为空");
 
-        new WidgetManager().SaveLayout(userId, layout);
+        _widgetManager.SaveLayout(userId, layout);
         return Json(0, null, "ok");
     }
 
@@ -290,7 +292,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     public ActionResult ResetWidgetLayout()
     {
         var userId = ManageProvider.User?.ID ?? 0;
-        if (userId > 0) new WidgetManager().ResetLayout(userId);
+        if (userId > 0) _widgetManager.ResetLayout(userId);
 
         return Json(0, null, "ok");
     }

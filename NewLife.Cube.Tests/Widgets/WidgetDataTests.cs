@@ -141,4 +141,37 @@ public class WidgetDataTests : IDisposable
         var onlines = (Object[])d.Onlines;
         Assert.Equal(2, onlines.Length);
     }
+
+    [Fact(DisplayName = "Log24hWidget_统计24小时内日志数")]
+    public void Log24hWidget_Counts24hLogs()
+    {
+        var widget = new Log24hWidget();
+        dynamic d = widget.GetData();
+
+        // 播种：24h 内 3 条（操作/异常/登录），25h 前与昨日/前日不计入
+        Assert.Equal("3", (String)d.Value);
+        Assert.Equal("最近24小时", (String)d.Trend);
+    }
+
+    [Fact(DisplayName = "Error24hWidget_统计24小时内异常数")]
+    public void Error24hWidget_Counts24hErrors()
+    {
+        var widget = new Error24hWidget();
+        dynamic d = widget.GetData();
+
+        // 播种：24h 内异常 1 条（Success=false）
+        Assert.Equal("1", (String)d.Value);
+        Assert.Equal("最近24小时异常", (String)d.Trend);
+    }
+
+    [Fact(DisplayName = "OnlineCountWidget_统计当前在线数")]
+    public void OnlineCountWidget_CountsOnline()
+    {
+        var widget = new OnlineCountWidget();
+        dynamic d = widget.GetData();
+
+        // 播种：UserOnline 2 条（全部在线会话）
+        Assert.Equal("2", (String)d.Value);
+        Assert.Equal("当前在线", (String)d.Trend);
+    }
 }

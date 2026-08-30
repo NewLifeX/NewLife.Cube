@@ -14,6 +14,7 @@ using NewLife.Cube.Extensions;
 using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
 using NewLife.Cube.WebMiddleware;
+using NewLife.Cube.Widgets;
 using NewLife.IP;
 using NewLife.Log;
 using NewLife.Messaging;
@@ -221,6 +222,9 @@ public static class CubeService
         services.AddSingleton<Services.Sso.IUserBindingService, Services.Sso.UserBindingService>();
         services.AddSingleton<Services.Sso.ISsoClientService, Services.Sso.SsoClientService>();
         services.AddSingleton<Services.Sso.ISsoServerService, Services.Sso.SsoServerService>();
+
+        // 工作台组件管理器。单例复用扫描缓存，避免每次请求 new 实例重复扫描程序集
+        services.AddSingleton<WidgetManager>();
 
         //services.AddHostedService<JobService>();
         services.AddHostedService<DataRetentionService>();
