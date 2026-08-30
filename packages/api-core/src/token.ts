@@ -63,3 +63,31 @@ export class TokenManager {
   /** 清除 Token */
   clearToken(): void { this.storage.clearToken(); }
 }
+
+/**
+ * 从 URL hash 中提取访问令牌（SSO 第三方登录回调）
+ *
+ * 魔方后端第三方登录成功后，重定向到 `/#token=xxx`（或 `#/path#token=xxx`），
+ * 皮肤在应用启动时调用本函数提取 token 并写入本地存储，即可完成自动登录。
+ *
+ * @param hash URL hash 字符串（含 #）。缺省时取 window.location.hash
+ * @returns 提取到的 token；未找到返回 null
+ * @example
+ * extractTokenFromHash('#token=abc123') // 'abc123'
+ * extractTokenFromHash('#/home#token=abc123') // 'abc123'
+ */
+export function extractTokenFromHash(hash?: string): string | null {
+  const h = hash ?? (typeof window !== 'undefined' ? window.location.hash : '');
+  if (!h) return null;
+
+  // 兼容 #token=xxx 与 #/path#token=xxx 两种形式
+  const match = h.match(/[#&]token=([^&]+)/);
+  if (!match?.[1]) return null;
+
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    // token 含非法编码时原样返回，避免解码异常中断登录
+    return match[1];
+  }
+}
