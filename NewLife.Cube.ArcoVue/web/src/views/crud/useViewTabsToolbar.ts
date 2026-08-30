@@ -1,4 +1,5 @@
 import { computed, ref } from 'vue';
+import { Modal } from '@arco-design/web-vue';
 import type { FieldMeta } from '@/core/types/field';
 import type { NamedView, ViewKind } from '@/core/utils/viewProfile';
 import {
@@ -116,7 +117,12 @@ export function useViewTabsToolbar(props: ViewTabsToolbarProps, emit: ViewTabsTo
       return;
     }
     if (key === 'delete') {
-      if (window.confirm('删除当前视图？')) emit('remove', props.activeId);
+      // 删除多维视图需用户确认（Arco 弹窗，替代原生 confirm，嵌入/严格环境下更可靠）
+      Modal.confirm({
+        title: '删除视图',
+        content: '确认删除当前视图？删除后不可恢复。',
+        onOk: () => emit('remove', props.activeId),
+      });
       return;
     }
     if (key === 'saveAsDefault') {
