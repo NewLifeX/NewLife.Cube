@@ -117,10 +117,13 @@ export function useViewTabsToolbar(props: ViewTabsToolbarProps, emit: ViewTabsTo
       return;
     }
     if (key === 'delete') {
-      // 删除多维视图需用户确认（Arco 弹窗，替代原生 confirm，嵌入/严格环境下更可靠）
+      // 删除多维视图需用户确认（Arco 弹窗，宽度/样式与重命名弹层（width 360）保持一致）
       Modal.confirm({
         title: '删除视图',
         content: '确认删除当前视图？删除后不可恢复。',
+        width: 360,
+        okText: '确定',
+        cancelText: '取消',
         onOk: () => emit('remove', props.activeId),
       });
       return;
