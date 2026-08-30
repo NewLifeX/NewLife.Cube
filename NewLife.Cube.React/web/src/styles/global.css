@@ -26,6 +26,9 @@
   --cube-success: #16a34a;
   --cube-warning: #d97706;
   --cube-danger: #dc2626;
+  /* 表格冻结列背景（由 themes/applyTableCellCssVars 按主题注入，此处为浅色兜底） */
+  --cube-table-header-bg: #f5f6f6;
+  --cube-table-row-hover-bg: #f5f6f6;
 }
 
 html,
@@ -377,6 +380,25 @@ select {
 
 .ant-table-wrapper .ant-table {
   border-radius: 18px;
+}
+
+/* 表头排序箭头：默认隐藏，仅当前排序列显示（避免每列都出现上下箭头造成视觉噪音） */
+.ant-table-thead .ant-table-column-sorter {
+  display: none;
+}
+.ant-table-thead th.ant-table-column-sort .ant-table-column-sorter {
+  display: inline-flex;
+}
+
+/* 冻结列（操作列）背景不透明：antd 固定列表头/行悬停叠用半透明 headerBg/rowHoverBg，
+   横向滚动时其它列会透出，用主题计算好的不透明合成色覆盖（--cube-table-* 见 themes） */
+.ant-table-thead .ant-table-cell-fix-right,
+.ant-table-thead .ant-table-cell-fix-left {
+  background: var(--cube-table-header-bg) !important;
+}
+.ant-table-tbody tr:hover > .ant-table-cell-fix-right,
+.ant-table-tbody tr:hover > .ant-table-cell-fix-left {
+  background: var(--cube-table-row-hover-bg) !important;
 }
 
 @media (max-width: 992px) {

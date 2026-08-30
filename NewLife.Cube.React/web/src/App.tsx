@@ -11,17 +11,18 @@ import zhCN from 'antd/locale/zh_CN';
 import { RouterProvider } from 'react-router-dom';
 import { router } from '@/router';
 import { useThemeStore } from '@/stores/theme';
-import { buildThemeConfig } from '@/themes';
+import { applyTableCellCssVars, buildThemeConfig } from '@/themes';
 import '@/i18n';
 
 export default function App() {
   const family = useThemeStore((s) => s.family);
   const mode = useThemeStore((s) => s.mode);
 
-  // 同步 body 明暗属性，供全局 CSS 深浅色设计令牌切换
+  // 同步 body 明暗属性，供全局 CSS 深浅色设计令牌切换；并注入表格冻结列不透明背景变量
   useEffect(() => {
     document.body.dataset.cubeMode = mode;
-  }, [mode]);
+    applyTableCellCssVars(family, mode);
+  }, [family, mode]);
 
   const themeConfig = buildThemeConfig(family, mode);
 

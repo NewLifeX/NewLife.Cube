@@ -32,6 +32,10 @@ export interface TableContentProps {
   onDelete?: (row: Record<string, unknown>) => void;
   onRestore?: (row: Record<string, unknown>) => void;
   onSortChange?: (sort?: string, desc?: boolean) => void;
+  /** 当前排序列名（配合 onSortChange 受控显示排序指示，仅排序列显示箭头） */
+  sortField?: string;
+  /** 当前是否降序 */
+  sortDesc?: boolean;
   onChange?: (pagination: TablePaginationConfig) => void;
 }
 
@@ -129,6 +133,8 @@ export default function TableContent({
   onDelete,
   onRestore,
   onSortChange,
+  sortField,
+  sortDesc,
   onChange,
 }: TableContentProps) {
   const columns: ColumnsType<Record<string, unknown>> = fields.map((field) => {
@@ -168,6 +174,8 @@ export default function TableContent({
       // 配合主键列 64px 初始宽，数据少时列窄、雪花 ID 位数多时列宽
       ellipsis: meta.primaryKey ? false : true,
       sorter: onSortChange && !meta.primaryKey ? true : false,
+      // 排序箭头仅当前排序列显示（受控）：其余列 sortOrder 置 null 复位，配合 CSS 隐藏默认箭头
+      sortOrder: meta.name === sortField ? (sortDesc ? 'descend' : 'ascend') : null,
       render: (_: unknown, row: Record<string, unknown>) => (
         <CellRenderer field={field} value={getValueByKey(row, meta.name)} />
       ),
@@ -182,10 +190,13 @@ export default function TableContent({
   };
 
   if (canView || canEdit || canDelete) {
+    // 操作列宽度按可用操作数自适应：每按钮约 48px + 单元格 16px 内边距，
+    // 仅「查看」时收窄避免大块留白，多操作时撑开容纳按钮
+    const opsCount = (canView ? 1 : 0) + (canEdit ? 1 : 0) + (canDelete ? 1 : 0);
     columns.push({
       title: '操作',
       key: '__ops',
-      width: 160,
+      width: 16 + 48 * opsCount,
       fixed: 'right',
       render: (_, row) => (
         <span>

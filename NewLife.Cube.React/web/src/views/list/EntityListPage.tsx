@@ -65,6 +65,8 @@ export default function EntityListPage({ type }: EntityListPageProps) {
 
   const [searchParams, setSearchParams] = useState<Record<string, unknown>>({});
   const [selectedKeys, setSelectedKeys] = useState<React.Key[]>([]);
+  // 当前排序状态：驱动表头排序箭头受控显示（仅排序列显示）
+  const [sortState, setSortState] = useState<{ field?: string; desc: boolean }>({ desc: false });
   const [dialog, setDialog] = useState<{ open: boolean; mode: 'add' | 'edit'; row?: Record<string, unknown> | null }>({
     open: false,
     mode: 'add',
@@ -246,6 +248,7 @@ export default function EntityListPage({ type }: EntityListPageProps) {
   };
 
   const handleSortChange = (sort?: string, desc?: boolean) => {
+    setSortState({ field: sort, desc: !!desc });
     void store.getState().loadData({ ...searchParams, sort, desc });
   };
 
@@ -307,6 +310,8 @@ export default function EntityListPage({ type }: EntityListPageProps) {
             onDelete={handleDeleteRow}
             onRestore={handleRestoreRow}
             onSortChange={handleSortChange}
+            sortField={sortState.field}
+            sortDesc={sortState.desc}
           />
           <div className="cube-table-footer">
             <ListPagination

@@ -277,3 +277,35 @@ export const FAMILY_LABELS: Record<ThemeFamily, string> = {
   aurora: '极光',
   industrial: '工业',
 };
+
+/**
+ * 将半透明前景色叠加到不透明背景色上，返回不透明合成色
+ *
+ * @param fore 半透明前景色，如 rgba(15, 23, 42, 0.04)
+ * @param bg 不透明背景色，如 #ffffff
+ * @returns 不透明 rgb 字符串
+ */
+export function blendOver(fore: string, bg: string): string {
+  const fm = fore.match(/rgba?\(([^)]+)\)/);
+  const bm = bg.match(/^#([0-9a-f]{6})$/i);
+  if (!fm || !bm) return bg;
+  const [fr, fg, fb, fa = 1] = fm[1].split(',').map((x) => parseFloat(x.trim()));
+  const bn = parseInt(bm[1], 16);
+  const mix = (f: number, b: number) => Math.round(f * fa + b * (1 - fa));
+  return `rgb(${mix(fr, (bn >> 16) & 255)}, ${mix(fg, (bn >> 8) & 255)}, ${mix(fb, bn & 255)})`;
+}
+
+/**
+ * 应用表格冻结列不透明背景的 CSS 变量（随主题家族/明暗切换）
+ *
+ * antd 表格固定列（操作列）默认叠用半透明 headerBg/rowHoverBg，
+ * 横向滚动时其它列会从半透明背景中透出。这里把半透明色合成到不透明
+ * 容器底色上，得到与普通单元格一致的不透明背景，注入 --cube-table-* 供 CSS 覆盖固定列使用。
+ */
+export function applyTableCellCssVars(family: ThemeFamily, mode: ThemeMode) {
+  const p = FAMILY_PALETTES[family]?.[mode] ?? FAMILY_PALETTES.cyber[mode];
+  const opaque = blendOver(p.muted, p.container);
+  const root = document.documentElement;
+  root.style.setProperty('--cube-table-header-bg', opaque);
+  root.style.setProperty('--cube-table-row-hover-bg', opaque);
+}
