@@ -66,9 +66,9 @@ describe('configure 配置系统', () => {
     expect(cfg.ui.layout.header.show).toBe(false);
     expect(cfg.ui.layout.header.fixed).toBe(true);
     expect(cfg.ui.layout.header.height).toBe(56);
-    // sider/footer 不受影响
+    // sider/footer 不受影响（footer 默认隐藏，patch 未覆盖时保留默认）
     expect(cfg.ui.layout.sider.width).toBe(220);
-    expect(cfg.ui.layout.footer.show).toBe(true);
+    expect(cfg.ui.layout.footer.show).toBe(false);
   });
 
   it('运行时配置为 null 时不抛错且返回默认', () => {

@@ -27,6 +27,8 @@
   --cube-success: #52c41a;
   --cube-warning: #faad14;
   --cube-danger: #ff4d4f;
+  /* 内容区四周间距（页面/卡片留白，明暗共用，可运行时 CSS 覆盖） */
+  --cube-content-padding: 16px;
   /* 表格冻结列背景（由 themes/applyTableCellCssVars 按明暗注入，此处为浅色兜底） */
   --cube-table-header-bg: #fafafa;
   --cube-table-row-hover-bg: #fafafa;
@@ -328,7 +330,7 @@ select {
 
 /* 内容区：透明继承 page 底色，内部滚动 */
 .cube-shell-body.ant-layout-content {
-  padding: 24px !important;
+  padding: var(--cube-content-padding) !important;
   overflow-y: auto;
   background: transparent !important;
 }
@@ -338,14 +340,14 @@ select {
   margin: 0 auto;
 }
 
-/* 页脚 */
+/* 页脚（默认隐藏，ui.layout.footer.show 开启时紧凑显示，不挤压内容区） */
 .cube-shell-footer.ant-layout-footer {
-  padding: 0 24px 24px !important;
+  padding: 0 24px 12px !important;
   background: transparent !important;
 }
 
 .cube-shell-footer-inner {
-  padding: 12px 0;
+  padding: 6px 0;
   text-align: center;
   color: var(--cube-text-muted);
 }

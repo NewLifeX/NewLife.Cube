@@ -38,7 +38,7 @@ export const defaultConfig: CubeConfig = {
         theme: 'light',
       },
       footer: {
-        show: true,
+        show: false,
         fixed: false,
       },
     },
