@@ -7,6 +7,7 @@ using NewLife.Data;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Remoting;
+using NewLife.Web;
 using XCode.Membership;
 
 namespace NewLife.Cube;
@@ -33,6 +34,79 @@ public partial class EntityController<TEntity, TModel>
         catch (Exception ex)
         {
             return BuildFailResponse(ex, act, entity);
+        }
+    }
+
+    /// <summary>批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2</summary>
+    /// <param name="id">主键集合。为空时返回参数错误</param>
+    /// <returns></returns>
+    [EntityAuthorize(PermissionFlags.Delete)]
+    [DisplayName("批量删除{type}")]
+    [HttpDelete("/api/[area]/[controller]/DeleteSelect")]
+    public virtual ApiResponse<String> DeleteSelect([FromQuery] String[] id)
+    {
+        var act = "删除";
+        try
+        {
+            if (id == null || id.Length == 0)
+                throw new ApiException(Models.CubeCode.ParamError.ToInt(), "未指定要删除的数据！");
+
+            var n = 0;
+            foreach (var item in id)
+            {
+                // 兼容逗号分隔形式 id=1,2,3（String[] 绑定为单个元素时拆分）
+                var parts = item.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                foreach (var part in parts)
+                {
+                    var entity = FindData(part);
+                    if (entity == null) continue;
+
+                    ProcessDelete(entity);
+                    n++;
+                }
+            }
+
+            return new ApiResponse<String> { Code = 0, Message = $"{act}成功！共{n}条", Data = n.ToString() };
+        }
+        catch (Exception ex)
+        {
+            // DeleteSelect 返回 ApiResponse<String>，复用 BuildFailResponse 后做类型适配（保留错误码/消息/字段错误）
+            var fail = BuildFailResponse(ex, act, null);
+            return new ApiResponse<String> { Code = fail.Code, Message = fail.Message, Data = null, FieldErrors = fail.FieldErrors };
+        }
+    }
+
+    /// <summary>按当前搜索条件删除全部数据。至少需携带一个业务搜索条件，防止误删全表</summary>
+    /// <returns></returns>
+    [EntityAuthorize(PermissionFlags.Delete)]
+    [DisplayName("按条件删除{type}")]
+    [HttpDelete("/api/[area]/[controller]/DeleteAll")]
+    public virtual ApiResponse<String> DeleteAll()
+    {
+        var act = "删除";
+        try
+        {
+            var p = new Pager(WebHelper.Params);
+            // 排除分页系统参数后若无业务搜索条件，拒绝删除
+            var sys = new[] { "pageIndex", "pageSize", "sort", "desc" };
+            if (!p.Params.Keys.Any(e => !e.EqualIgnoreCase(sys)))
+                throw new ApiException(Models.CubeCode.ParamError.ToInt(), "未指定删除条件，拒绝删除全部数据！");
+
+            var list = SearchData(p).ToList();
+            var n = 0;
+            foreach (var entity in list)
+            {
+                ProcessDelete(entity);
+                n++;
+            }
+
+            return new ApiResponse<String> { Code = 0, Message = $"{act}成功！共{n}条", Data = n.ToString() };
+        }
+        catch (Exception ex)
+        {
+            // DeleteAll 返回 ApiResponse<String>，复用 BuildFailResponse 后做类型适配（保留错误码/消息/字段错误）
+            var fail = BuildFailResponse(ex, act, null);
+            return new ApiResponse<String> { Code = fail.Code, Message = fail.Message, Data = null, FieldErrors = fail.FieldErrors };
         }
     }
 
