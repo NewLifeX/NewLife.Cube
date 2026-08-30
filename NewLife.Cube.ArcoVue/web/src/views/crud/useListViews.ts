@@ -25,6 +25,8 @@ import type { ListContext } from './listContext';
 interface ListViewsDeps {
   loadData: (skipFetch?: boolean) => Promise<void>;
   applySearchToForm: (params: Record<string, unknown>) => void;
+  /** 重新应用指定的预定义查询方案（映射 useListQuery.handleApplyQuery），保持实体级预定义方案随视图切换不丢 */
+  applySavedQuery: (id: string) => void;
 }
 
 /** 16 进制色转 rgba（设计器透明度百分比 → 0~1） */
@@ -212,6 +214,13 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
     syncLocalState();
     selectedKeys.value = [];
     pagination.current = 1;
+    // 实体级预定义查询方案随实体保持（OSC-260830a1b2）：切换视图后仍应用当前勾选的预定义方案（回填 Q+filter），
+    // 避免切到其它视图时方案被丢弃
+    const activeId = evpStore.getActiveQueryId(typePath.value);
+    if (activeId) {
+      deps.applySavedQuery(activeId);
+      return;
+    }
     // 切换视图后重新计算条件来源并回填表单（OSC-0012）
     searchTouched.value = false;
     applySearchToForm(baseSearch.value);

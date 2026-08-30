@@ -47,6 +47,7 @@ export function useDefaultList(props: { type: string; authId?: number }) {
   const views = useListViews(ctx, {
     loadData: query.loadData,
     applySearchToForm: query.applySearchToForm,
+    applySavedQuery: query.handleApplyQuery,
   });
   const auto = useListAutomation(ctx);
 
