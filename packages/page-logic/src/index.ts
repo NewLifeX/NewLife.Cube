@@ -189,9 +189,13 @@ export class PageLogic {
     this.update({ loading: true });
 
     try {
+      // 后端 Pager.PageIndex 从 1 开始、默认 1；PageSize 默认 20。
+      // 第一页不传 pageIndex，pageSize 恰为 20 不传，交由后端默认值，避免冗余参数
+      const pageIndex = this.state.pagination.pageIndex;
+      const pageSize = this.state.pagination.pageSize;
       const params: PageParams = {
-        pageIndex: this.state.pagination.pageIndex - 1, // 后端从 0 开始
-        pageSize: this.state.pagination.pageSize,
+        ...(pageIndex > 1 ? { pageIndex } : {}),
+        ...(pageSize !== 20 ? { pageSize } : {}),
         ...searchParams,
       };
 
@@ -202,7 +206,7 @@ export class PageLogic {
 
       if (res.page) {
         pagination.totalCount = res.page.totalCount;
-        pagination.pageIndex = res.page.pageIndex + 1; // 转为从 1 开始
+        pagination.pageIndex = res.page.pageIndex; // 后端从 1 开始，与前端一致
         pagination.pageSize = res.page.pageSize;
       }
 

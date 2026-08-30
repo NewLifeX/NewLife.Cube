@@ -44,7 +44,7 @@ export class ApiError<T = unknown> extends Error {
 
 /** 分页信息 */
 export interface PageInfo {
-  /** 页码（从 0 开始） */
+  /** 页码（从 1 开始） */
   pageIndex: number;
   /** 每页大小 */
   pageSize: number;
@@ -56,9 +56,9 @@ export interface PageInfo {
 
 /** 分页查询参数 */
 export interface PageParams {
-  /** 页码（从 0 开始） */
+  /** 页码（从 1 开始，默认 1；第一页可不传） */
   pageIndex?: number;
-  /** 每页大小 */
+  /** 每页大小（默认 20，恰为 20 可不传） */
   pageSize?: number;
   /** 排序字段 */
   sort?: string;
