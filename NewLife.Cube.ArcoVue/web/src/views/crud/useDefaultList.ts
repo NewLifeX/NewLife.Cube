@@ -48,6 +48,7 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     loadData: query.loadData,
     applySearchToForm: query.applySearchToForm,
     applySavedQuery: query.handleApplyQuery,
+    applyLastQuery: query.applyLastQuery,
   });
   const auto = useListAutomation(ctx);
 

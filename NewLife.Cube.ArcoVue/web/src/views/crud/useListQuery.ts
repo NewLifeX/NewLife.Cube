@@ -417,6 +417,18 @@ export function useListQuery(ctx: ListContext) {
     loadData();
   }
 
+  /** 恢复未命名当前查询（OSC-260830a1b2）：读取 sessionStorage 的 Q+filter 回填表单与 viewFilter。
+   *  仅设置查询关键字/自定义条件但未保存为预定义方案时，切换视图仍保持该查询（不被基准条件覆盖）；
+   *  无未命名查询返回 false，由调用方回退基准条件。 */
+  function applyLastQuery(): boolean {
+    const last = evpStore.restoreLastQuery(typePath.value);
+    if (!last) return false;
+    applySearchToForm({ Q: last.q ?? '' });
+    viewFilter.value = last.filter ? normalizeFilter(last.filter) : emptyViewFilter();
+    searchTouched.value = true;
+    return true;
+  }
+
   /** 应用预定义查询（OSC-260830a1b2 v2）：回填 Q 与 viewFilter → 执行 → activeQueryId 由 store 设置 */
   function handleApplyQuery(id: string) {
     const saved = evpStore.applyQuery(typePath.value, id);
@@ -477,6 +489,7 @@ export function useListQuery(ctx: ListContext) {
     handleSearch,
     handleReset,
     handleApplyQuery,
+    applyLastQuery,
     handleSaveQuery,
     handleRenameQuery,
     handleDeleteQuery,

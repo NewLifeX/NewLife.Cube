@@ -27,6 +27,8 @@ interface ListViewsDeps {
   applySearchToForm: (params: Record<string, unknown>) => void;
   /** 重新应用指定的预定义查询方案（映射 useListQuery.handleApplyQuery），保持实体级预定义方案随视图切换不丢 */
   applySavedQuery: (id: string) => void;
+  /** 恢复未命名当前查询（Q/自定义条件未保存为方案）到表单与 viewFilter；无则返回 false（切换视图保持该查询） */
+  applyLastQuery: () => boolean;
 }
 
 /** 16 进制色转 rgba（设计器透明度百分比 → 0~1） */
@@ -221,6 +223,11 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
       deps.applySavedQuery(activeId);
       return;
     }
+    // 未勾选预定义方案：恢复未命名当前查询（Q/自定义条件未保存为方案），切换视图保持该查询，不被基准条件覆盖
+    if (deps.applyLastQuery()) {
+      loadData();
+      return;
+    }
     // 切换视图后重新计算条件来源并回填表单（OSC-0012）
     searchTouched.value = false;
     applySearchToForm(baseSearch.value);
@@ -319,8 +326,10 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
   }
 
   /** 应用筛选方案：写入 store 持久化（刷新/下次打开保留）；筛选为纯前端过滤，复用已加载数据重过滤 */
+  /** 应用筛选构建器条件（OSC-0015）：仅对当前查询生效，持久化到 sessionStorage（未命名查询），
+   *  不写入服务端视图 filter——否则未保存为方案的查询条件会残留在服务端，
+   *  违背「关闭该多维视图时不持久化非命名查询条件」（OSC-260830a1b2）。 */
   function onFilterApply(filter: ViewFilter) {
-    evpStore.updateFilter(typePath.value, filter);
     localFilter.value = filter;
     evpStore.persistLastQuery(typePath.value, { q: String(searchForm.Q ?? ''), filter });
     pagination.current = 1;
