@@ -7,6 +7,8 @@
     if (userId == 0 && path.StartsWithIgnoreCase("/Admin/User/Detail", "/Admin/User/Edit"))
     {
         userId = Context.Request.Query["Id"].ToInt(0);
+        // 路由形式 /Admin/User/Edit/{id}，主键在路由值而不是查询参数
+        if (userId == 0) userId = (ViewContext.RouteData.Values["id"] + "").ToInt();
     }
     if (userId == 0) userId = currentId;
 
