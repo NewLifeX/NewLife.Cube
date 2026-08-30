@@ -36,7 +36,6 @@ import {
   rematchStateMappings,
   removeView,
   renameView,
-  reorderViews,
   restoreNamedView,
   serializeFormJson,
   serializeNamedView,
@@ -832,13 +831,6 @@ export const useViewProfileStore = defineStore('viewProfile', {
       } catch (e) {
         Message.warning(e instanceof Error ? e.message : '删除失败');
       }
-    },
-
-    /** 调整命名视图显示顺序（拖动页签排序，OSC-260830a1b2 后续）：持久化到 ViewsJson（服务端） */
-    updateViewOrder(typePath: string, orderedIds: string[]) {
-      const entry = this.byType[typePath];
-      if (!entry) return;
-      this.setState(typePath, reorderViews(entry.state, orderedIds), true);
     },
 
     async reset(typePath: string, metaKeys: string[], opts?: ViewSeedOptions) {

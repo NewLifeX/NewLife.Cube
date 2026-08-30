@@ -38,7 +38,6 @@
             @rename="onRenameView"
             @remove="onRemoveView"
             @duplicate="onDuplicateView"
-            @reorder="onViewReorder"
             @reset="onResetViews"
             @save-as-default="onSaveAsDefault"
             @open-config="configDrawerVisible = true"
@@ -731,7 +730,6 @@ const {
   onRenameView,
   onRemoveView,
   onDuplicateView,
-  onViewReorder,
   onResetViews,
   onSaveAsDefault,
   configDrawerVisible,

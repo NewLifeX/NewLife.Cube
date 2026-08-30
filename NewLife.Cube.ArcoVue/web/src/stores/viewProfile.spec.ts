@@ -564,33 +564,6 @@ describe('viewProfile store filter/group (OSC-0015)', () => {
   });
 });
 
-describe('viewProfile store view order (拖动排序)', () => {
-  it('updateViewOrder 重排并持久化到 viewsJson', async () => {
-    getViewProfile.mockResolvedValue({
-      data: {
-        typePath: 'Admin/User',
-        view: 'table',
-        activeViewId: 'default',
-        viewsJson: JSON.stringify([
-          { id: 'default', name: '默认列表', view: 'table', columns: [{ key: 'Name', visible: true }] },
-          { id: 'v-2', name: '精简', view: 'table', columns: [{ key: 'Name', visible: true }] },
-        ]),
-      },
-    });
-    putViewProfile.mockResolvedValue({ data: {} });
-    const store = useViewProfileStore();
-    await store.load('Admin/User', ['Name']);
-    store.updateViewOrder('Admin/User', ['v-2', 'default']);
-    expect(store.getState('Admin/User')?.views.map((v) => v.id)).toEqual(['v-2', 'default']);
-    expect(store.getState('Admin/User')?.activeViewId).toBe('default');
-    expect(putViewProfile).toHaveBeenCalledWith(
-      expect.objectContaining({
-        viewsJson: expect.stringContaining('"v-2"'),
-      }),
-    );
-  });
-});
-
 describe('viewProfile store template domains (OSC-0014)', () => {
   beforeEach(() => {
     setActivePinia(createPinia());

@@ -32,8 +32,6 @@ interface ViewTabsToolbarEmits {
   openConfig: [];
   saveAsDefault: [];
   toggleFullscreen: [];
-  /** 拖动视图页签调整顺序后上报新顺序（id 数组），由父级持久化到服务端（OSC-260830a1b2 后续） */
-  reorder: [ids: string[]];
 }
 
 type ViewTabsToolbarEmit = <K extends keyof ViewTabsToolbarEmits>(event: K, ...args: ViewTabsToolbarEmits[K]) => void;
@@ -147,47 +145,6 @@ export function useViewTabsToolbar(props: ViewTabsToolbarProps, emit: ViewTabsTo
     }
   }
 
-  /** 拖动视图页签调整顺序（OSC-260830a1b2 后续）：记录拖拽来源，drop 时按目标位置重排并上报新顺序 */
-  const dragFromId = ref<string | null>(null);
-
-  function onViewDragStart(e: DragEvent, id: string) {
-    dragFromId.value = id;
-    if (e.dataTransfer) {
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', id);
-    }
-  }
-
-  function onViewDragOver(e: DragEvent, id: string) {
-    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
-    // 仅允许放置到其它 tab 上
-    if (id !== dragFromId.value) e.preventDefault();
-  }
-
-  function onViewDrop(e: DragEvent, id: string) {
-    e.preventDefault();
-    const from = dragFromId.value;
-    if (!from || from === id) {
-      onViewDragEnd();
-      return;
-    }
-    const ids = props.views.map((v) => v.id);
-    const fromIdx = ids.indexOf(from);
-    const toIdx = ids.indexOf(id);
-    if (fromIdx < 0 || toIdx < 0) {
-      onViewDragEnd();
-      return;
-    }
-    ids.splice(fromIdx, 1);
-    ids.splice(toIdx, 0, from);
-    emit('reorder', ids);
-    onViewDragEnd();
-  }
-
-  function onViewDragEnd() {
-    dragFromId.value = null;
-  }
-
   /** 创建视图类型下拉：受控弹出（锚点定位到 add 按钮下方） */
   const createPopupVisible = ref(false);
   const createAnchorRef = ref<HTMLElement | null>(null);
@@ -238,10 +195,6 @@ export function useViewTabsToolbar(props: ViewTabsToolbarProps, emit: ViewTabsTo
     closeDeleteModal,
     submitDelete,
     onMenuSelect,
-    onViewDragStart,
-    onViewDragOver,
-    onViewDrop,
-    onViewDragEnd,
     onAddClick,
     onCreatePopupChange,
     onCreateSelect,

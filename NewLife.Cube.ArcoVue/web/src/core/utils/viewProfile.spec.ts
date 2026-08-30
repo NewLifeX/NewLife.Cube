@@ -30,7 +30,6 @@ import {
   parseSavedFilters,
   rematchStateColumns,
   removeView,
-  reorderViews,
   restoreNamedView,
   seedDefaultView,
   serializeFormJson,
@@ -222,34 +221,6 @@ describe('namedViews', () => {
     s = removeView(s, s.views[1].id);
     expect(s.views).toHaveLength(1);
     expect(() => removeView(s, s.views[0].id)).toThrow(/至少保留/);
-  });
-
-  it('reorderViews 重排并保持激活、忽略未知 id、空数组原样返回（拖动排序）', () => {
-    const s = stateFromWire(
-      {
-        viewsJson: JSON.stringify([
-          { id: 'a', name: '默认列表', view: 'table', columns: [{ key: 'Name', visible: true }] },
-          { id: 'b', name: '精简', view: 'table', columns: [{ key: 'Name', visible: true }] },
-          { id: 'c', name: '网格', view: 'table', columns: [{ key: 'Name', visible: true }] },
-        ]),
-        activeViewId: 'a',
-      },
-      ['Name'],
-    );
-    const [a, b, c] = s.views.map((v) => v.id);
-
-    // 交换顺序
-    let r = reorderViews(s, [c, a, b]);
-    expect(r.views.map((v) => v.id)).toEqual([c, a, b]);
-    expect(r.activeViewId).toBe(s.activeViewId);
-
-    // 未知 id 忽略，未列出的追加在尾部（相对顺序不变）
-    r = reorderViews(s, [b, 'unknown']);
-    expect(r.views[0].id).toBe(b);
-    expect(r.views.map((v) => v.id)).toEqual([b, a, c]);
-
-    // 空数组：返回与原顺序一致的新 state
-    expect(reorderViews(s, []).views.map((v) => v.id)).toEqual([a, b, c]);
   });
 
   it('createNamedView applies chromeOverride (e.g. showShare)', () => {

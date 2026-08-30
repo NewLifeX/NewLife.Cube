@@ -260,16 +260,6 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
     loadData();
   }
 
-  /** 视图拖动排序（OSC-260830a1b2 后续）：重排命名视图顺序并持久化到 ViewsJson（服务端），同步本地 */
-  function onViewReorder(orderedIds: string[]) {
-    const cur = viewState.value;
-    if (!cur || !orderedIds.length) return;
-    // 顺序未变化则跳过，避免无意义 PUT
-    if (JSON.stringify(cur.views.map((v) => v.id)) === JSON.stringify(orderedIds)) return;
-    evpStore.updateViewOrder(typePath.value, orderedIds);
-    syncLocalState();
-  }
-
   function onResetViews() {
     // 「恢复默认」= 当前视图恢复到创建时的默认状态（保留视图本身，仅重置配置；不删除用户自定义视图）
     if (!activeViewId.value) return;
@@ -399,7 +389,6 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
     onRenameView,
     onRemoveView,
     onDuplicateView,
-    onViewReorder,
     onResetViews,
     onSaveAsDefault,
     onFilterPopoverVisible,
