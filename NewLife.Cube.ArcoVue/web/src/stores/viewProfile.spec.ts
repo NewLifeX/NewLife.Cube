@@ -805,11 +805,12 @@ describe('viewProfile store queries (OSC-0016)', () => {
     expect(store.getQueries('Admin/User').queries.length).toBe(1);
   });
 
-  it('clearQuery 清空筛选与预定义查询标记并单次持久化，刷新后同样无查询（重置查询条件）', async () => {
+  it('clearQuery 清空实体全部视图查询条件与预定义查询标记并单次持久化（重置查询条件）', async () => {
     getViewProfile.mockResolvedValue({
       data: {
         typePath: 'Admin/User',
         activeQueryId: 'q_a',
+        activeViewId: 'default',
         viewsJson: JSON.stringify([
           {
             id: 'default',
@@ -817,6 +818,13 @@ describe('viewProfile store queries (OSC-0016)', () => {
             view: 'table',
             columns: [{ key: 'Q', visible: true }],
             filter: { logic: 'all', conditions: [{ field: 'Q', op: 'eq', value: 'x' }] },
+          },
+          {
+            id: 'v2',
+            name: '精简',
+            view: 'table',
+            columns: [{ key: 'Q', visible: true }],
+            filter: { logic: 'all', conditions: [{ field: 'Q', op: 'eq', value: 'y' }] },
           },
         ]),
         queriesJson: JSON.stringify({ version: 2, queries: [{ id: 'q_a', name: 'A', q: 'a' }] }),
@@ -831,7 +839,12 @@ describe('viewProfile store queries (OSC-0016)', () => {
     store.clearQuery('Admin/User');
 
     expect(store.getActiveQueryId('Admin/User')).toBeNull();
+    // 所有命名视图的查询条件都被清除（filter 字段移除）
+    const st = store.getState('Admin/User');
+    expect(st?.views.every((v) => !('filter' in v))).toBe(true);
     expect(store.getFilter('Admin/User').conditions.length).toBe(0);
+    // activeViewId 保持不变
+    expect(st?.activeViewId).toBe('default');
     expect(putViewProfile).toHaveBeenCalledWith(expect.objectContaining({ activeQueryId: null }));
     // 预定义查询列表保留，未删除
     expect(store.getQueries('Admin/User').queries.length).toBe(1);

@@ -1275,6 +1275,19 @@ export function patchActiveInsight(
   };
 }
 
+/** 清除所有命名视图的查询条件（OSC-260830a1b2：重置查询条件对实体全部视图生效）。
+ *  对每个带 filter 的视图移除该字段，令实体回到无查询状态；activeViewId 保持不变。 */
+export function clearAllViewsFilter(state: EntityViewState): EntityViewState {
+  return {
+    ...state,
+    views: state.views.map((v) => {
+      if (!('filter' in v)) return v;
+      const { filter: _f, ...rest } = v;
+      return rest as NamedView;
+    }),
+  };
+}
+
 /** 更新当前命名视图的筛选构建器方案（OSC-0015）；空方案等价清除 */
 export function patchActiveFilter(
   state: EntityViewState,

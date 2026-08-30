@@ -5,6 +5,7 @@ import { formatApiError } from '@/core/utils/apiError';
 import { useUserStore } from './user';
 import type { FieldMeta } from '@/core/types/field';
 import {
+  clearAllViewsFilter,
   clearFormModeLayout,
   clearSavedViewFilters,
   createNamedView,
@@ -720,14 +721,14 @@ export const useViewProfileStore = defineStore('viewProfile', {
       this.scheduleSave(typePath, true);
     },
 
-    /** 清除该实体对象全部查询状态（OSC-260830a1b2）：清空当前激活视图筛选、清除已应用预定义查询
-     *  标记与未命名当前查询，并单次持久化到服务端；刷新/重载后同样不应用任何查询。
+    /** 清除该实体对象全部查询条件（OSC-260830a1b2）：清空实体所有命名视图的查询条件（不只当前视图）、
+     *  清除已应用预定义查询标记与未命名当前查询，并单次持久化到服务端；刷新/重载后同样不应用任何查询。
      *  单次保存避免调用方多次 scheduleSave(immediate) 产生 PUT 竞态导致旧 activeQueryId 覆盖。 */
     clearQuery(typePath: string) {
       const entry = this.byType[typePath];
       if (!entry) return;
       entry.activeQueryId = null;
-      entry.state = patchActiveFilter(entry.state, emptyViewFilter());
+      entry.state = clearAllViewsFilter(entry.state);
       entry.dirty = true;
       entry.viewsDirty = true;
       _clearLastQuery(typePath);
