@@ -111,6 +111,22 @@
         @keyup.enter="submitName"
       />
     </a-modal>
+
+    <!-- 删除确认：与重命名弹层同宽同组件（a-modal width 360），提示带警告图标 + 危险色 -->
+    <a-modal
+      :visible="deleteModalVisible"
+      title="删除视图"
+      :width="360"
+      unmount-on-close
+      :ok-button-props="{ status: 'danger' }"
+      @cancel="closeDeleteModal"
+      @ok="submitDelete"
+    >
+      <p class="view-delete-tip">
+        <icon-park type="attention" class="view-delete-tip__icon" />
+        <span>确认删除当前视图？删除后不可恢复。</span>
+      </p>
+    </a-modal>
   </div>
 </template>
 
@@ -151,10 +167,13 @@ const {
   nameModalVisible,
   nameModalTitle,
   nameDraft,
+  deleteModalVisible,
   createPopupVisible,
   createAnchorRef,
   closeNameModal,
   submitName,
+  closeDeleteModal,
+  submitDelete,
   onMenuSelect,
   onAddClick,
   onCreatePopupChange,
@@ -176,15 +195,23 @@ const {
   flex: 1;
   min-width: 0;
 }
-/* Tab 标题：图标 + 名称 + 视图菜单，垂直居中对齐 */
+/* Tab 标题：左图标 + 名称 + 视图菜单，同一水平中线对齐 */
 .view-tab-inner {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   line-height: 1.2;
 }
+/* Dropdown 触发器包裹层参与 flex，避免 inline 基线把菜单图标抬高 */
+.view-tab-inner :deep(.arco-trigger),
+.view-tab-inner > :deep(span) {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
 .view-tab-name {
   font-size: 13px;
+  line-height: 1.2;
   white-space: nowrap;
 }
 .view-tab-kind {
@@ -198,15 +225,24 @@ const {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
   border: none;
   background: transparent;
-  width: 22px;
-  padding: 4px 2px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin: 0;
   cursor: pointer;
   color: inherit;
   font-size: 14px;
   line-height: 1;
   opacity: 0.65;
+}
+.view-tab-menu :deep(.i-icon),
+.view-tab-menu :deep(svg) {
+  display: block;
+  width: 1em;
+  height: 1em;
 }
 /* 视图菜单项图标：与文字水平居中对齐 */
 .menu-item-icon {
@@ -251,13 +287,14 @@ const {
   pointer-events: none;
   z-index: 1000;
 }
-/* 全屏开关按钮：Tab 组件附加区（#extra）最右侧，激活态用主色强调 */
+/* 全屏开关按钮：Tab 组件附加区（#extra）最右侧，激活态用主色强调；顶部无额外 padding */
 .view-fullscreen {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 28px;
   height: 28px;
+  padding-top: 0;
   border: none;
   background: transparent;
   border-radius: 6px;
@@ -280,13 +317,39 @@ const {
   align-items: center;
   gap: 2px;
   margin-left: 4px;
+  padding-top: 0;
+  line-height: normal;
+}
+/* Tab 页签区：去掉顶部内边距，顶部留白由 list-panel--table 的 12px 统一承担 */
+.view-tabs :deep(.arco-tabs-nav-tab) {
+  padding-top: 0;
+}
+.view-tabs :deep(.arco-tabs-nav-type-line .arco-tabs-tab) {
+  padding-top: 0;
 }
 /* Tab 组件自身的横线：Arco Tabs nav 下边框，贯穿 Tab 组件（占满整个视图区）下方 */
 .view-tabs :deep(.arco-tabs-nav) {
   border-bottom: 1px solid var(--color-border-2);
+  padding-top: 0;
 }
 /* Arco Tabs 内容区：列表页 TabPane 无实际内容，去掉默认顶部内边距（避免多出空隙） */
 .view-tabs :deep(.arco-tabs-content) {
   padding-top: 0;
+}
+.view-delete-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  color: rgb(var(--danger-6));
+  font-size: var(--cube-font-size-body, 14px);
+  line-height: 1.5;
+}
+.view-delete-tip__icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 18px;
+  color: rgb(var(--danger-6));
+  line-height: 1;
 }
 </style>

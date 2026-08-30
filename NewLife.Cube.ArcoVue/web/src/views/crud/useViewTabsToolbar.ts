@@ -1,5 +1,4 @@
 import { computed, ref } from 'vue';
-import { Modal } from '@arco-design/web-vue';
 import type { FieldMeta } from '@/core/types/field';
 import type { NamedView, ViewKind } from '@/core/utils/viewProfile';
 import {
@@ -102,6 +101,23 @@ export function useViewTabsToolbar(props: ViewTabsToolbarProps, emit: ViewTabsTo
     closeNameModal();
   }
 
+  /** 删除确认弹层：与重命名共用 a-modal（width 360），不用 Modal.confirm 以免图标/尺寸不一致 */
+  const deleteModalVisible = ref(false);
+
+  function openDeleteModal() {
+    if (props.views.length <= 1) return;
+    deleteModalVisible.value = true;
+  }
+
+  function closeDeleteModal() {
+    deleteModalVisible.value = false;
+  }
+
+  function submitDelete() {
+    emit('remove', props.activeId);
+    closeDeleteModal();
+  }
+
   function onMenuSelect(val: string | number | Record<string, unknown> | undefined) {
     const key = String(val);
     if (key === 'rename') {
@@ -117,15 +133,7 @@ export function useViewTabsToolbar(props: ViewTabsToolbarProps, emit: ViewTabsTo
       return;
     }
     if (key === 'delete') {
-      // 删除多维视图需用户确认（Arco 弹窗，宽度/样式与重命名弹层（width 360）保持一致）
-      Modal.confirm({
-        title: '删除视图',
-        content: '确认删除当前视图？删除后不可恢复。',
-        width: 360,
-        okText: '确定',
-        cancelText: '取消',
-        onOk: () => emit('remove', props.activeId),
-      });
+      openDeleteModal();
       return;
     }
     if (key === 'saveAsDefault') {
@@ -179,10 +187,13 @@ export function useViewTabsToolbar(props: ViewTabsToolbarProps, emit: ViewTabsTo
     nameModalVisible,
     nameModalTitle,
     nameDraft,
+    deleteModalVisible,
     createPopupVisible,
     createAnchorRef,
     closeNameModal,
     submitName,
+    closeDeleteModal,
+    submitDelete,
     onMenuSelect,
     onAddClick,
     onCreatePopupChange,
