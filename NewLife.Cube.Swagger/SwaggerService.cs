@@ -42,6 +42,12 @@ public static class SwaggerService
             {
                 if (apiDesc.ActionDescriptor is not ControllerActionDescriptor controller) return false;
 
+                // 跳过未显式绑定 HTTP 方法的 action（如 RPC 风格基类辅助方法），避免 Swagger 文档生成失败
+                if (String.IsNullOrEmpty(apiDesc.HttpMethod)) return false;
+
+                // v1 文档包含全部接口（含各区域分组），便于 Scalar 单页展示；其余分组文档按区域名过滤
+                if (docName == "v1") return true;
+
                 var groups = controller.ControllerTypeInfo.GetCustomAttributes(true).OfType<IApiDescriptionGroupNameProvider>().Select(e => e.GroupName).ToList();
 
                 if (docName == "v1" && (groups == null || groups.Count == 0)) return true;
