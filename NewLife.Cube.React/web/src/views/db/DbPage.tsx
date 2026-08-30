@@ -8,7 +8,7 @@
  * - GET  /api/Admin/Db/Download?name=  → 下载数据库架构 XML
  */
 import { useCallback, useEffect, useState } from 'react';
-import { Button, Card, Popconfirm, Space, Spin, Table, Tag, message } from 'antd';
+import { App, Button, Card, Popconfirm, Space, Spin, Table, Tag } from 'antd';
 import { CloudDownloadOutlined, ReloadOutlined } from '@ant-design/icons';
 import { api } from '@/api';
 
@@ -39,6 +39,7 @@ function typeColor(type: string): string {
 }
 
 export default function DbPage({ type }: DbPageProps) {
+  const { message } = App.useApp();
   const [rows, setRows] = useState<DbItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [acting, setActing] = useState('');
@@ -105,7 +106,7 @@ export default function DbPage({ type }: DbPageProps) {
         <Table<DbItem>
           rowKey={(r) => r.name}
           dataSource={rows}
-          size="middle"
+          size="medium"
           pagination={false}
           locale={{ emptyText: '暂无数据库连接' }}
           columns={[

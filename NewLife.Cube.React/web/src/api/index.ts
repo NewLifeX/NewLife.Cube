@@ -8,7 +8,7 @@
  */
 import { createCubeApi, clearPageMetaCache, type CubeApi, type TokenStorage } from '@cube/api-core';
 import { getConfig } from '@/configure';
-import { message } from 'antd';
+import { getMessage } from '@/utils/antdApp';
 
 /** Token 变更事件（登录/登出时派发，供响应式登录态使用） */
 export const CUBE_TOKEN_EVENT = 'cube:token-change';
@@ -65,14 +65,14 @@ export const api: CubeApi = createCubeApi({
   onFieldError: (fieldErrors) => {
     // 统一展示字段级验证错误（如"编码不可以为空！"）
     fieldErrorShown = true;
-    message.error(fieldErrors.map((e) => e.message).join('；'));
+    getMessage().error(fieldErrors.map((e) => e.message).join('；'));
   },
   onBusinessError: (_code, msg) => {
     // 微任务中执行：若同一响应已通过 onFieldError 弹出字段级错误则跳过
     Promise.resolve()
       .then(() => {
         if (fieldErrorShown) return;
-        message.error(msg);
+        getMessage().error(msg);
       })
       .finally(() => {
         fieldErrorShown = false;

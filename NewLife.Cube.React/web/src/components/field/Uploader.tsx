@@ -5,7 +5,7 @@
  * 图片模式带预览，文件模式带下载链接。
  */
 import { useState } from 'react';
-import { Button, Image, Input, Space, Upload, message } from 'antd';
+import { App, Button, Image, Input, Space, Upload } from 'antd';
 import { DeleteOutlined, UploadOutlined } from '@ant-design/icons';
 import { api } from '@/api';
 
@@ -23,6 +23,7 @@ export interface UploaderProps {
 }
 
 export default function Uploader({ value, onChange, type, recordId, image, placeholder, disabled }: UploaderProps) {
+  const { message } = App.useApp();
   const [uploading, setUploading] = useState(false);
 
   const handleUpload = async (file: File) => {
@@ -58,7 +59,7 @@ export default function Uploader({ value, onChange, type, recordId, image, place
 
   if (image) {
     return (
-      <Space direction="vertical" size={8}>
+      <Space orientation="vertical" size={8}>
         {value ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Image src={value} width={80} height={80} style={{ objectFit: 'cover', borderRadius: 4 }} />
@@ -88,7 +89,7 @@ export default function Uploader({ value, onChange, type, recordId, image, place
 
   // 文件模式：URL 展示 + 上传按钮
   return (
-    <Space direction="vertical" size={8} style={{ width: '100%' }}>
+    <Space orientation="vertical" size={8} style={{ width: '100%' }}>
       <Upload showUploadList={false} beforeUpload={handleUpload} disabled={disabled || uploading}>
         <Button icon={<UploadOutlined />} loading={uploading}>
           上传文件

@@ -23,9 +23,8 @@
 .cube-page-title {
   margin: 0;
   color: var(--cube-text);
-  font-size: 28px;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  font-size: 24px;
+  line-height: 1.3;
 }
 
 .cube-page-subtitle {
@@ -36,7 +35,7 @@
 
 .cube-entity-card.ant-card,
 .cube-surface-card.ant-card {
-  border-radius: 24px;
+  border-radius: 12px;
   border-color: var(--cube-border-soft);
   box-shadow: var(--cube-shadow-soft);
   background: var(--cube-surface-bg);
@@ -50,7 +49,7 @@
 .cube-search-panel {
   margin-bottom: 12px;
   padding: 14px 16px;
-  border-radius: 18px;
+  border-radius: 8px;
   background: var(--cube-surface-muted);
   border: 1px solid var(--cube-border-soft);
 }

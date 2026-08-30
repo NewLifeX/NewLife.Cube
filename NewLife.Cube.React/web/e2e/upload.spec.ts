@@ -62,16 +62,17 @@ test.describe('上传组件（CMP-2 /Cube/App 图标）', () => {
     await expect(page.locator('.ant-image').first()).toBeVisible({ timeout: 15000 });
 
     // 删除按钮（danger）清除预览——必须限定在弹窗内，避免误点页面其它 danger 按钮（如用户菜单登出）
-    const del = page.locator('.ant-modal-content button.ant-btn-dangerous').first();
+    // antd6 Modal DOM 重构：.ant-modal-content → .ant-modal-container
+    const del = page.locator('.ant-modal-container button.ant-btn-dangerous').first();
     await expect(del).toBeVisible({ timeout: 10000 });
     await page.evaluate(() => {
-      const b = document.querySelector('.ant-modal-content button.ant-btn-dangerous');
+      const b = document.querySelector('.ant-modal-container button.ant-btn-dangerous');
       (b as HTMLButtonElement | null)?.click();
     });
 
     // 弹窗保持打开，回到上传按钮状态
-    await expect(page.locator('.ant-modal-content')).toBeVisible({ timeout: 8000 });
-    await expect(page.locator('.ant-modal-content button:has-text("上传图片")').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.ant-modal-container')).toBeVisible({ timeout: 8000 });
+    await expect(page.locator('.ant-modal-container button:has-text("上传图片")').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.ant-image').first()).toBeHidden({ timeout: 8000 });
   });
 });

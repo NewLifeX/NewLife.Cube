@@ -55,7 +55,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
         </div>
         <div className="cube-shell-brand-copy">
           <div className="cube-shell-brand-title">{brand.title}</div>
-          <div className="cube-shell-brand-subtitle">React 皮肤 · AntD5</div>
+          <div className="cube-shell-brand-subtitle">React 皮肤 · AntD6</div>
         </div>
       </div>
       <div className="cube-shell-menu-wrap">

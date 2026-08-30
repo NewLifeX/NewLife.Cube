@@ -6,13 +6,14 @@
  * 2. 验证码激活：邮箱/手机号 + 验证码（发码 POST /Auth/SendCode action=activate）→ POST /Auth/Activate
  */
 import { useEffect, useState } from 'react';
-import { Alert, Button, Form, Input, Radio, message } from 'antd';
+import { Alert, App, Button, Form, Input, Radio } from 'antd';
 import { MailOutlined, MobileOutlined, SafetyOutlined } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import AuthLayout from '@/components/auth/AuthLayout';
 import { api } from '@/api';
 
 export default function ActivatePage() {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [params] = useSearchParams();

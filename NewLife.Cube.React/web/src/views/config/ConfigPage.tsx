@@ -10,7 +10,7 @@
  * 本组件通用渲染任意配置控制器页面：按分类 Tabs 分组渲染字段表单，保存时 PUT 提交。
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Card, Col, Form, Row, Spin, Tabs, message } from 'antd';
+import { App, Button, Card, Col, Form, Row, Spin, Tabs } from 'antd';
 import type { DataField } from '@cube/api-core';
 import FieldControl from '@/components/field/FieldControl';
 import { groupByCategory, isFullWidthControl, resolveControl, serializeSubmitModel } from '@/utils/fieldControl';
@@ -31,6 +31,7 @@ function normalizeValue(v: unknown): unknown {
 }
 
 export default function ConfigPage({ type }: ConfigPageProps) {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   // AI 填表：监听 AiAssistant 派发的 cube:ai-fill-form 事件（配置页也是表单页）
   useAiFillForm(form);

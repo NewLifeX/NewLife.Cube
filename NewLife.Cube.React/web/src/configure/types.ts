@@ -85,8 +85,6 @@ export interface CubeConfig {
   ui: UIConfig;
   menu: MenuConfig;
   theme: {
-    /** 默认主题家族 id */
-    defaultTheme: string;
     /** 默认明暗模式 */
     defaultMode: 'light' | 'dark';
     /** 默认主色（antd token） */

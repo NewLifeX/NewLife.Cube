@@ -1,7 +1,7 @@
 /**
  * 首页 + 顶栏切换器 + 用户菜单 E2E（HOME-1 / CMP-6 / CMP-5）
  *
- * 覆盖：首页加载无错误、欢迎信息与常用菜单入口、主题/语言/明暗切换、用户菜单退出登录。
+ * 覆盖：首页加载无错误、欢迎信息与常用菜单入口、语言/明暗切换、用户菜单退出登录。
  */
 import { expect, test } from '@playwright/test';
 
@@ -24,7 +24,8 @@ test.describe('首页（/）', () => {
     await expect(page.getByText('常用菜单')).toBeVisible({ timeout: 10000 });
     // 等待菜单数据加载
     await page.waitForTimeout(1500);
-    const items = page.locator('.ant-list-item .ant-card');
+    // 常用菜单：原生网格容器内的卡片（antd6 升级后由 List 改为 CSS Grid）
+    const items = page.locator('.cube-home-menu-grid .ant-card');
     if ((await items.count()) > 0) {
       await items.first().click();
       // 进入实体页后应渲染列表（非 404）
@@ -37,19 +38,6 @@ test.describe('首页（/）', () => {
 });
 
 test.describe('顶栏切换器（CMP-6）', () => {
-  test('主题切换：选择森林主题不报错', async ({ page }) => {
-    await page.goto('/');
-    await page.locator('.anticon-bg-colors').click();
-    await expect(page.getByText(/森林|海洋|极光|工业|赛博/).last()).toBeVisible({ timeout: 5000 });
-    // 选择一个主题项（森林）
-    const forest = page.getByText(/森林/).first();
-    if (await forest.isVisible().catch(() => false)) {
-      await forest.click();
-    }
-    // 无 JS 错误
-    expect(page.locator('.ant-message-error')).toHaveCount(0);
-  });
-
   test('语言切换：切换到 English', async ({ page }) => {
     await page.goto('/');
     await page.locator('.anticon-global').click();

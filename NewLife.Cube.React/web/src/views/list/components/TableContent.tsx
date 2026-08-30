@@ -238,7 +238,7 @@ export default function TableContent({
       columns={columns}
       dataSource={data}
       loading={loading}
-      size="middle"
+      size="medium"
       scroll={{ x: 'max-content' }}
       rowSelection={
         selectable

@@ -3,34 +3,57 @@
 @import './entity.css';
 @import './ai.css';
 
+/* ============================================================
+   全局设计令牌（对齐 antd6 默认语义色，明暗两套）
+   ============================================================ */
 :root {
   color-scheme: light;
   --cube-primary: #1677ff;
-  --cube-primary-strong: #145bdb;
-  --cube-primary-soft: rgba(22, 119, 255, 0.12);
-  --cube-page-bg: #f4f7fb;
-  --cube-shell-bg: rgba(255, 255, 255, 0.68);
-  --cube-auth-bg: linear-gradient(135deg, #0f172a 0%, #14213d 45%, #1d4ed8 100%);
-  --cube-auth-surface: rgba(255, 255, 255, 0.78);
-  --cube-auth-glow: radial-gradient(circle, rgba(59, 130, 246, 0.42) 0%, rgba(59, 130, 246, 0) 68%);
-  --cube-hero-bg: linear-gradient(135deg, #1677ff 0%, #3b82f6 42%, #7c3aed 100%);
-  --cube-surface-bg: rgba(255, 255, 255, 0.92);
-  --cube-surface-elevated: rgba(255, 255, 255, 0.98);
-  --cube-surface-muted: rgba(15, 23, 42, 0.035);
-  --cube-border-soft: rgba(148, 163, 184, 0.22);
-  --cube-border-strong: rgba(148, 163, 184, 0.34);
-  --cube-text: #0f172a;
-  --cube-text-secondary: #475569;
-  --cube-text-muted: #64748b;
-  --cube-shadow-soft: 0 18px 46px rgba(15, 23, 42, 0.08);
-  --cube-success: #16a34a;
-  --cube-warning: #d97706;
-  --cube-danger: #dc2626;
-  /* 表格冻结列背景（由 themes/applyTableCellCssVars 按主题注入，此处为浅色兜底） */
-  --cube-table-header-bg: #f5f6f6;
-  --cube-table-row-hover-bg: #f5f6f6;
+  --cube-primary-strong: #0958d9;
+  --cube-primary-soft: rgba(22, 119, 255, 0.08);
+  --cube-page-bg: #f5f5f5;
+  --cube-shell-bg: #ffffff;
+  --cube-auth-bg: #f5f5f5;
+  --cube-hero-bg: linear-gradient(135deg, #1677ff 0%, #4096ff 100%);
+  --cube-surface-bg: #ffffff;
+  --cube-surface-elevated: #ffffff;
+  --cube-surface-muted: rgba(0, 0, 0, 0.02);
+  --cube-border-soft: rgba(5, 5, 5, 0.06);
+  --cube-border-strong: rgba(5, 5, 5, 0.15);
+  --cube-text: rgba(0, 0, 0, 0.88);
+  --cube-text-secondary: rgba(0, 0, 0, 0.65);
+  --cube-text-muted: rgba(0, 0, 0, 0.45);
+  --cube-shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 6px rgba(0, 0, 0, 0.03);
+  --cube-success: #52c41a;
+  --cube-warning: #faad14;
+  --cube-danger: #ff4d4f;
+  /* 表格冻结列背景（由 themes/applyTableCellCssVars 按明暗注入，此处为浅色兜底） */
+  --cube-table-header-bg: #fafafa;
+  --cube-table-row-hover-bg: #fafafa;
 }
 
+body[data-cube-mode='dark'] {
+  color-scheme: dark;
+  --cube-primary: #1668dc;
+  --cube-primary-strong: #3c89e8;
+  --cube-primary-soft: rgba(22, 104, 220, 0.18);
+  --cube-page-bg: #000000;
+  --cube-shell-bg: #141414;
+  --cube-auth-bg: #000000;
+  --cube-surface-bg: #141414;
+  --cube-surface-elevated: #1f1f1f;
+  --cube-surface-muted: rgba(255, 255, 255, 0.04);
+  --cube-border-soft: rgba(253, 253, 253, 0.08);
+  --cube-border-strong: rgba(253, 253, 253, 0.18);
+  --cube-text: rgba(255, 255, 255, 0.85);
+  --cube-text-secondary: rgba(255, 255, 255, 0.65);
+  --cube-text-muted: rgba(255, 255, 255, 0.45);
+  --cube-shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* ============================================================
+   高度接力链（滚动依赖确定高度）
+   ============================================================ */
 html,
 body,
 #root {
@@ -53,15 +76,8 @@ body {
     'Noto Sans SC', sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.5), transparent 30%),
-    radial-gradient(circle at bottom right, rgba(191, 219, 254, 0.32), transparent 24%),
-    var(--cube-page-bg);
+  background: var(--cube-page-bg);
   color: var(--cube-text);
-}
-
-body[data-cube-mode='dark'] {
-  color-scheme: dark;
 }
 
 body,
@@ -85,55 +101,50 @@ select {
   overflow: hidden;
 }
 
-/* 必须为确定高度（height:100%），否则 .cube-main-layout 的 height:100% 无法解析为视口高度，
-   内容超出一屏后被 #root 裁剪，列表页无法向下/横向滚动（滚动链依赖确定高度）。
-   antd <App> 会额外渲染 .ant-app 包裹层（默认高度 auto），同样需固定高度才能接力 % 链 */
+/* antd <App> 会额外渲染 .ant-app 包裹层（默认高度 auto），需固定高度才能接力 % 链 */
 .ant-app,
 .cube-app {
   height: 100%;
   min-height: 100%;
 }
 
+/* ============================================================
+   主布局 Shell（侧栏 / 顶栏 / 多标签 / 内容 / 页脚）
+   ============================================================ */
 .cube-main-layout.ant-layout {
   min-height: 100%;
   background: transparent;
 }
 
+/* 侧栏：全高容器底色（antd Layout.siderBg token），细分隔线 */
 .cube-shell-sider.ant-layout-sider {
-  background: transparent !important;
-  border-right: 0 !important;
+  border-right: 1px solid var(--cube-border-soft);
 }
 
 .cube-shell-sider-panel {
   height: 100%;
-  margin: 16px 0 16px 16px;
-  border-radius: 28px;
-  background: var(--cube-shell-bg);
-  border: 1px solid var(--cube-border-strong);
-  box-shadow: var(--cube-shadow-soft);
-  backdrop-filter: blur(16px);
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .cube-shell-brand {
-  padding: 20px 18px 10px;
+  padding: 16px 16px 8px;
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
 .cube-shell-brand-mark {
-  width: 44px;
-  height: 44px;
-  border-radius: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--cube-primary), var(--cube-primary-strong));
+  background: var(--cube-primary);
   color: #fff;
-  font-size: 22px;
+  font-size: 20px;
   flex: none;
   overflow: hidden;
 }
@@ -146,8 +157,11 @@ select {
 
 .cube-shell-brand-title {
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--cube-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cube-shell-brand-subtitle {
@@ -158,22 +172,14 @@ select {
 
 .cube-shell-menu-wrap {
   flex: 1;
-  padding: 8px 12px 16px;
+  padding: 8px 8px 16px;
   overflow: auto;
 }
 
+/* 菜单透明继承侧栏底色，去掉 antd 默认右边框 */
 .cube-shell-menu.ant-menu {
   background: transparent !important;
   border-inline-end: 0 !important;
-}
-
-.cube-shell-menu .ant-menu-item,
-.cube-shell-menu .ant-menu-submenu-title {
-  margin-inline: 0 !important;
-  margin-block: 4px !important;
-  border-radius: 16px !important;
-  height: 42px !important;
-  line-height: 42px !important;
 }
 
 .cube-shell-menu .ant-menu-title-content {
@@ -182,7 +188,7 @@ select {
 
 .ant-layout-sider-collapsed .cube-shell-brand {
   justify-content: center;
-  padding: 20px 0 10px;
+  padding: 16px 0 8px;
 }
 
 .ant-layout-sider-collapsed .cube-shell-brand-copy,
@@ -191,21 +197,23 @@ select {
 }
 
 .cube-shell-menu-footer {
-  padding: 14px 18px 18px;
+  padding: 10px 16px 14px;
   border-top: 1px solid var(--cube-border-soft);
   color: var(--cube-text-muted);
   font-size: 12px;
 }
 
+/* 右侧内容列 */
 .cube-main-content.ant-layout {
   background: transparent;
 }
 
+/* 顶栏：标准高度，容器底色 */
 .cube-shell-header.ant-layout-header {
-  height: auto !important;
-  line-height: normal !important;
-  padding: 8px 16px 0 !important;
-  background: transparent !important;
+  height: 56px;
+  line-height: 56px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--cube-border-soft);
 }
 
 .cube-shell-header-inner {
@@ -213,25 +221,19 @@ select {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 8px 16px;
-  border-radius: 26px;
-  background: var(--cube-shell-bg);
-  border: 1px solid var(--cube-border-strong);
-  box-shadow: var(--cube-shadow-soft);
-  backdrop-filter: blur(16px);
+  height: 100%;
 }
 
 .cube-shell-header-main {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   min-width: 0;
 }
 
 .cube-shell-sidebar-toggle.ant-btn {
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
+  width: 40px;
+  height: 40px;
 }
 
 .cube-shell-header-copy {
@@ -248,12 +250,12 @@ select {
 
 .cube-header-action.ant-btn,
 .cube-header-action-trigger {
-  height: 40px;
-  border-radius: 14px;
+  height: 36px;
+  border-radius: 8px;
 }
 
 .cube-header-action.ant-btn {
-  min-width: 40px;
+  min-width: 36px;
 }
 
 .cube-header-action-trigger {
@@ -278,18 +280,13 @@ select {
   width: min(320px, 100vw - 32px);
 }
 
-.cube-navbar-search .ant-input-affix-wrapper {
-  border-radius: 14px;
-  height: 40px;
-}
-
 .cube-user-trigger {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  min-height: 40px;
+  min-height: 36px;
   padding: 0 12px;
-  border-radius: 16px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -314,29 +311,24 @@ select {
   font-size: 12px;
 }
 
+/* 多标签 */
 .cube-shell-tabs {
-  padding: 14px 16px 0;
+  padding: 0 24px;
+  background: var(--cube-surface-bg);
+  border-bottom: 1px solid var(--cube-border-soft);
 }
 
 .cube-shell-tabs-inner {
-  padding: 0 10px;
-  border-radius: 20px;
-  background: var(--cube-shell-bg);
-  border: 1px solid var(--cube-border-strong);
-  box-shadow: var(--cube-shadow-soft);
-  backdrop-filter: blur(16px);
+  padding: 0;
 }
 
 .cube-shell-tabs .ant-tabs-nav {
   margin: 0 !important;
 }
 
-.cube-shell-tabs .ant-tabs-tab {
-  border-radius: 14px 14px 0 0 !important;
-}
-
+/* 内容区：透明继承 page 底色，内部滚动 */
 .cube-shell-body.ant-layout-content {
-  padding: 8px !important;
+  padding: 24px !important;
   overflow-y: auto;
   background: transparent !important;
 }
@@ -346,21 +338,19 @@ select {
   margin: 0 auto;
 }
 
+/* 页脚 */
 .cube-shell-footer.ant-layout-footer {
-  padding: 0 16px 16px !important;
+  padding: 0 24px 24px !important;
   background: transparent !important;
 }
 
 .cube-shell-footer-inner {
-  padding: 16px 22px;
-  border-radius: 22px;
+  padding: 12px 0;
   text-align: center;
   color: var(--cube-text-muted);
-  background: var(--cube-shell-bg);
-  border: 1px solid var(--cube-border-soft);
-  box-shadow: var(--cube-shadow-soft);
 }
 
+/* 移动端抽屉导航 */
 .cube-mobile-drawer .ant-drawer-content,
 .cube-mobile-drawer .ant-drawer-header {
   background: var(--cube-surface-bg);
@@ -370,16 +360,11 @@ select {
   border-bottom-color: var(--cube-border-soft);
 }
 
-.ant-breadcrumb {
-  color: var(--cube-text-secondary);
-}
-
+/* ============================================================
+   通用组件微调（尽可能少，贴近 antd6 原生）
+   ============================================================ */
 .ant-result {
   padding-inline: 0 !important;
-}
-
-.ant-table-wrapper .ant-table {
-  border-radius: 18px;
 }
 
 /* 表头排序箭头：默认隐藏，仅当前排序列显示（避免每列都出现上下箭头造成视觉噪音） */
@@ -391,7 +376,7 @@ select {
 }
 
 /* 冻结列（操作列）背景不透明：antd 固定列表头/行悬停叠用半透明 headerBg/rowHoverBg，
-   横向滚动时其它列会透出，用主题计算好的不透明合成色覆盖（--cube-table-* 见 themes） */
+   横向滚动时其它列会透出，用主题注入的不透明色覆盖（--cube-table-* 见 themes） */
 .ant-table-thead .ant-table-cell-fix-right,
 .ant-table-thead .ant-table-cell-fix-left {
   background: var(--cube-table-header-bg) !important;
@@ -401,6 +386,9 @@ select {
   background: var(--cube-table-row-hover-bg) !important;
 }
 
+/* ============================================================
+   响应式
+   ============================================================ */
 @media (max-width: 992px) {
   .cube-shell-sider.ant-layout-sider {
     display: none;
@@ -410,11 +398,7 @@ select {
   .cube-shell-tabs,
   .cube-shell-body.ant-layout-content,
   .cube-shell-footer.ant-layout-footer {
-    padding-inline: 12px !important;
-  }
-
-  .cube-shell-header-inner {
-    padding: 16px;
+    padding-inline: 16px !important;
   }
 
   .cube-shell-header-actions {

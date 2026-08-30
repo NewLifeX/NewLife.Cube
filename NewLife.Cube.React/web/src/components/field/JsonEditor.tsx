@@ -2,7 +2,7 @@
  * JSON 编辑器（文本域 + 格式化/校验）
  */
 import { useState } from 'react';
-import { Input, Space, Tooltip, message } from 'antd';
+import { App, Input, Space, Tooltip } from 'antd';
 import { CheckOutlined, FormatPainterOutlined } from '@ant-design/icons';
 
 export interface JsonEditorProps {
@@ -14,6 +14,7 @@ export interface JsonEditorProps {
 }
 
 export default function JsonEditor({ value, onChange, placeholder, disabled, rows = 6 }: JsonEditorProps) {
+  const { message } = App.useApp();
   const [error, setError] = useState(false);
 
   const format = () => {

@@ -15,8 +15,8 @@ test.describe('忘记密码页（/forgot-password）', () => {
     page.on('pageerror', (e) => errors.push(e.message));
 
     await page.goto('/forgot-password');
-    // 账号输入框存在（placeholder 由 label 派生，用 label 定位）
-    await expect(page.getByText(/邮箱|手机号/).first()).toBeVisible({ timeout: 10000 });
+    // 原生收敛版隐藏了营销 aside，断言可见的卡片标题（div 元素，非 heading role）
+    await expect(page.getByText('找回密码')).toBeVisible({ timeout: 10000 });
     await expect(page.getByRole('button', { name: /获取验证码|发送/ })).toBeVisible();
     expect(errors.filter((e) => !e.includes('favicon')), `控制台错误: ${errors.join('; ')}`).toEqual([]);
   });

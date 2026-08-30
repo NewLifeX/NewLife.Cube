@@ -5,7 +5,7 @@
  * 使用 @cube/auth-logic/zustand 的 ForgotPassword store。
  */
 import { useEffect, useState } from 'react';
-import { Alert, Button, Form, Input, Radio, message } from 'antd';
+import { Alert, App, Button, Form, Input, Radio } from 'antd';
 import { LockOutlined, MailOutlined, MobileOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import AuthLayout from '@/components/auth/AuthLayout';
@@ -15,6 +15,7 @@ import { api } from '@/api';
 const useForgotStore = createZustandForgotPasswordStore(api);
 
 export default function ForgotPasswordPage() {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [channel, setChannel] = useState<'mail' | 'sms'>('mail');

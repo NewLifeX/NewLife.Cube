@@ -8,7 +8,6 @@ import { useLocation } from 'react-router-dom';
 import { useUserStore } from '@/stores/user';
 import { useMenuStore } from '@/stores/menu';
 import { getConfig } from '@/configure';
-import ThemeSwitcher from '@/components/ThemeSwitcher';
 import ModeSwitcher from '@/components/ModeSwitcher';
 import LanguageSwitch from '@/components/LanguageSwitch';
 import NavbarSearch from '@/components/NavbarSearch';
@@ -63,7 +62,6 @@ export default function HeaderBar({ collapsed, onToggle }: HeaderBarProps) {
           <NavbarSearch />
           <NotificationBell />
           <LanguageSwitch />
-          <ThemeSwitcher />
           <ModeSwitcher />
           {userInfo && <UserMenu />}
         </div>

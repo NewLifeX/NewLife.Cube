@@ -25,7 +25,7 @@ import {
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Button, Card, Dropdown, Empty, List, Skeleton, Space, Tag, message } from 'antd';
+import { App, Button, Card, Dropdown, Empty, Skeleton, Space, Tag } from 'antd';
 import * as echarts from 'echarts';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/api';
@@ -62,6 +62,7 @@ const WIDGET_TITLES: Record<string, string> = {
 };
 
 export default function HomePage() {
+  const { message } = App.useApp();
   const navigate = useNavigate();
   const userInfo = useUserStore((s) => s.userInfo);
   const menus = useUserStore((s) => s.menus);
@@ -311,13 +312,11 @@ export default function HomePage() {
       case 'menus':
         return (
           <Skeleton loading={!topMenus.length && menus.length > 0} active>
-            <List
-              grid={{ gutter: 16, xs: 1, sm: 2, md: 3 }}
-              dataSource={topMenus}
-              locale={{ emptyText: '暂无可用菜单' }}
-              renderItem={(item) => (
-                <List.Item>
+            {topMenus.length ? (
+              <div className="cube-home-menu-grid">
+                {topMenus.map((item) => (
                   <Card
+                    key={item.url ?? item.name}
                     size="small"
                     hoverable
                     onClick={() => item.url && navigate(item.url)}
@@ -326,9 +325,11 @@ export default function HomePage() {
                     <div className="cube-home-list-title">{item.displayName || item.name}</div>
                     <div className="cube-home-list-url">{item.url}</div>
                   </Card>
-                </List.Item>
-              )}
-            />
+                ))}
+              </div>
+            ) : (
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无可用菜单" />
+            )}
           </Skeleton>
         );
       case 'profile':
@@ -379,7 +380,7 @@ export default function HomePage() {
               {userInfo?.avatar ? <img src={userInfo.avatar} alt="avatar" /> : <UserOutlined />}
             </div>
             <div>
-              <Tag className="cube-home-hero-eyebrow" color="blue" bordered={false}>
+              <Tag className="cube-home-hero-eyebrow" color="blue" variant="filled">
                 欢迎回来
               </Tag>
               <h1 className="cube-home-hero-title">{displayName}</h1>

@@ -5,7 +5,7 @@
  * 使用 @cube/auth-logic/zustand 的注册 store。
  */
 import { useEffect, useState } from 'react';
-import { Button, Form, Input, Space, message } from 'antd';
+import { App, Button, Form, Input, Space } from 'antd';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { createZustandRegisterStore } from '@cube/auth-logic/zustand';
 import { api } from '@/api';
@@ -23,6 +23,7 @@ export interface RegisterPanelProps {
 }
 
 export default function RegisterPanel({ config, onBack }: RegisterPanelProps) {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [params] = useSearchParams();

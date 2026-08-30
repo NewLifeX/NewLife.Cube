@@ -55,7 +55,6 @@ export const defaultConfig: CubeConfig = {
     visibleField: 'visible',
   },
   theme: {
-    defaultTheme: 'cyber',
     defaultMode: 'dark',
     primaryColor: '#1677ff',
   },

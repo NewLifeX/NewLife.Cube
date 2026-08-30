@@ -6,7 +6,7 @@
 .cube-home-hero {
   position: relative;
   overflow: hidden;
-  border-radius: 28px;
+  border-radius: 16px;
   background: var(--cube-hero-bg);
   border: 1px solid var(--cube-border-strong);
   box-shadow: var(--cube-shadow-soft);
@@ -20,8 +20,7 @@
   width: 320px;
   height: 320px;
   border-radius: 50%;
-  background: var(--cube-auth-glow);
-  opacity: 0.5;
+  background: rgba(255, 255, 255, 0.12);
   pointer-events: none;
 }
 
@@ -95,7 +94,7 @@
 .cube-home-kpi-card {
   grid-column: span 2;
   min-height: 146px;
-  border-radius: 24px;
+  border-radius: 12px;
   background: var(--cube-surface-bg);
   border: 1px solid var(--cube-border-soft);
   box-shadow: var(--cube-shadow-soft);
@@ -120,13 +119,13 @@
 }
 
 .cube-home-kpi-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 18px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 18px;
   color: #fff;
 }
 
@@ -145,10 +144,9 @@
 
 .cube-home-kpi-value {
   color: var(--cube-text);
-  font-size: clamp(26px, 2.8vw, 34px);
+  font-size: clamp(24px, 2.6vw, 30px);
   line-height: 1.1;
-  font-weight: 700;
-  letter-spacing: -0.03em;
+  font-weight: 600;
 }
 
 .cube-home-kpi-trend {
@@ -188,7 +186,7 @@
   gap: 12px;
   flex-wrap: wrap;
   padding: 10px 16px;
-  border-radius: 18px;
+  border-radius: 10px;
   background: var(--cube-surface-muted);
   border: 1px solid var(--cube-border-soft);
 }
@@ -236,7 +234,7 @@
   align-items: center;
   gap: 12px;
   padding: 14px;
-  border-radius: 18px;
+  border-radius: 10px;
   border: 1px solid var(--cube-border-soft);
   background: var(--cube-surface-muted);
   color: inherit;
@@ -251,7 +249,7 @@
 .cube-home-quick-icon {
   width: 38px;
   height: 38px;
-  border-radius: 14px;
+  border-radius: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -286,8 +284,10 @@
   height: 320px;
 }
 
-.cube-home-list .ant-list-item {
-  padding-inline: 0;
+.cube-home-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
 }
 
 .cube-home-list-title {

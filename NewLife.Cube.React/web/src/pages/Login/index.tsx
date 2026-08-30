@@ -9,7 +9,7 @@
  * 5. 账号未激活时展示重发激活入口
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Button, Checkbox, Form, Input, Segmented, Spin, Tabs, message } from 'antd';
+import { Alert, App, Button, Checkbox, Form, Input, Segmented, Spin, Tabs } from 'antd';
 import type { InputRef } from 'antd';
 import { AppstoreOutlined, LockOutlined, SafetyOutlined, ThunderboltOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -33,6 +33,7 @@ function extractMfaToken(message?: string): string {
 }
 
 export default function LoginPage() {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const passwordRef = useRef<InputRef>(null);
   const navigate = useNavigate();

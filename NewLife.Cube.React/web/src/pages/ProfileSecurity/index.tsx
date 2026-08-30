@@ -6,13 +6,14 @@
  * 3. MFA 双因素认证：状态/绑定（二维码+密钥）/激活（备用码）/解绑
  */
 import { useEffect, useState } from 'react';
-import { Alert, Button, Card, Descriptions, Form, Input, Modal, Space, Tag, message } from 'antd';
+import { Alert, App, Button, Card, Descriptions, Form, Input, Modal, Space, Tag } from 'antd';
 import { api } from '@/api';
 import { useUserStore } from '@/stores/user';
 
 type Panel = 'mail' | 'sms' | null;
 
 export default function ProfileSecurityPage() {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const userInfo = useUserStore((s) => s.userInfo);
   const [panel, setPanel] = useState<Panel>(null);
@@ -127,38 +128,50 @@ export default function ProfileSecurityPage() {
   return (
     <div style={{ maxWidth: 720, margin: '0 auto' }}>
       <Card title="联系方式验证" style={{ marginBottom: 16 }}>
-        <Descriptions column={1} size="middle">
-          <Descriptions.Item label="邮箱">
-            <Space>
-              <span>{userInfo?.mail || '未绑定'}</span>
-              {userInfo?.mail && (
-                <Tag color={userInfo.mailVerified ? 'success' : 'warning'}>
-                  {userInfo.mailVerified ? '已验证' : '未验证'}
-                </Tag>
-              )}
-              {userInfo?.mail && (
-                <Button size="small" onClick={() => setPanel(panel === 'mail' ? null : 'mail')}>
-                  {userInfo.mailVerified ? '更换' : '验证'}
-                </Button>
-              )}
-            </Space>
-          </Descriptions.Item>
-          <Descriptions.Item label="手机号">
-            <Space>
-              <span>{userInfo?.mobile || '未绑定'}</span>
-              {userInfo?.mobile && (
-                <Tag color={userInfo.mobileVerified ? 'success' : 'warning'}>
-                  {userInfo.mobileVerified ? '已验证' : '未验证'}
-                </Tag>
-              )}
-              {userInfo?.mobile && (
-                <Button size="small" onClick={() => setPanel(panel === 'sms' ? null : 'sms')}>
-                  {userInfo.mobileVerified ? '更换' : '验证'}
-                </Button>
-              )}
-            </Space>
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          column={1}
+          size="medium"
+          items={[
+            {
+              key: 'mail',
+              label: '邮箱',
+              children: (
+                <Space>
+                  <span>{userInfo?.mail || '未绑定'}</span>
+                  {userInfo?.mail && (
+                    <Tag color={userInfo.mailVerified ? 'success' : 'warning'}>
+                      {userInfo.mailVerified ? '已验证' : '未验证'}
+                    </Tag>
+                  )}
+                  {userInfo?.mail && (
+                    <Button size="small" onClick={() => setPanel(panel === 'mail' ? null : 'mail')}>
+                      {userInfo.mailVerified ? '更换' : '验证'}
+                    </Button>
+                  )}
+                </Space>
+              ),
+            },
+            {
+              key: 'mobile',
+              label: '手机号',
+              children: (
+                <Space>
+                  <span>{userInfo?.mobile || '未绑定'}</span>
+                  {userInfo?.mobile && (
+                    <Tag color={userInfo.mobileVerified ? 'success' : 'warning'}>
+                      {userInfo.mobileVerified ? '已验证' : '未验证'}
+                    </Tag>
+                  )}
+                  {userInfo?.mobile && (
+                    <Button size="small" onClick={() => setPanel(panel === 'sms' ? null : 'sms')}>
+                      {userInfo.mobileVerified ? '更换' : '验证'}
+                    </Button>
+                  )}
+                </Space>
+              ),
+            },
+          ]}
+        />
 
         {panel && (
           <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
@@ -193,7 +206,7 @@ export default function ProfileSecurityPage() {
         {!mfaAvailable ? (
           <Alert type="info" showIcon message="当前系统未开放 MFA 功能" />
         ) : (
-          <Space direction="vertical" style={{ width: '100%' }}>
+          <Space orientation="vertical" style={{ width: '100%' }}>
             {mfaEnabled ? (
               <Alert
                 type="success"
@@ -218,7 +231,7 @@ export default function ProfileSecurityPage() {
 
             {mfaSetup && (
               <Card size="small" title="绑定 MFA">
-                <Space direction="vertical" style={{ width: '100%' }}>
+                <Space orientation="vertical" style={{ width: '100%' }}>
                   <img
                     src={mfaSetup.qrCodeUri}
                     alt="MFA 二维码"

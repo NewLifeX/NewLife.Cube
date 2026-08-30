@@ -12,7 +12,7 @@
  *   - ChartView      图表视图（表格/图表 Segmented 切换，规范 §7.6）
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Card, message, Modal } from 'antd';
+import { App, Card } from 'antd';
 import { getValueByKey } from '@/utils/url';
 import { api } from '@/api';
 import { usePageStore } from '@/hooks/usePageStore';
@@ -30,6 +30,7 @@ export interface EntityListPageProps {
 }
 
 export default function EntityListPage({ type }: EntityListPageProps) {
+  const { message, modal } = App.useApp();
   const store = usePageStore(type);
 
   // 订阅 store 状态
@@ -230,7 +231,7 @@ export default function EntityListPage({ type }: EntityListPageProps) {
 
   /** 删除当前查询条件下的全部数据（高级菜单，二次确认） */
   const handleDeleteAll = () => {
-    Modal.confirm({
+    modal.confirm({
       title: '删除全部',
       content: '确定删除当前查询条件下的所有数据吗？此操作不可恢复！',
       okText: '删除',

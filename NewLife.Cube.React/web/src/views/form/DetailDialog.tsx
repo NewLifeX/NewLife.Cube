@@ -115,16 +115,20 @@ export default function DetailDialog({ open, apiPrefix, id, fields, row, onClose
 
   /** 渲染一组详情描述（分组内 / 平铺共用） */
   const renderDescriptions = (list: FieldMeta[]) => (
-    <Descriptions column={1} bordered size="small" style={{ marginTop: 16 }}>
-      {list.map((meta) => {
+    <Descriptions
+      column={1}
+      bordered
+      size="small"
+      style={{ marginTop: 16 }}
+      items={list.map((meta) => {
         const mapping = mappingByName.get(meta.name)!;
-        return (
-          <Descriptions.Item key={meta.name} label={meta.displayName || meta.name}>
-            {formatValue(mapping, getValueByKey(data, meta.name))}
-          </Descriptions.Item>
-        );
+        return {
+          key: meta.name,
+          label: meta.displayName || meta.name,
+          children: formatValue(mapping, getValueByKey(data, meta.name)),
+        };
       })}
-    </Descriptions>
+    />
   );
 
   return (
@@ -134,7 +138,7 @@ export default function DetailDialog({ open, apiPrefix, id, fields, row, onClose
       onCancel={onClose}
       footer={null}
       width={680}
-      destroyOnClose
+      destroyOnHidden
       // 分组时限制弹窗高度，避免分组标签 + 单组详情把弹窗撑得过高
       styles={groups ? { body: { maxHeight: '60vh', overflowY: 'auto' } } : undefined}
     >

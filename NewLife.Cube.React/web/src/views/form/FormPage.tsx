@@ -7,7 +7,7 @@
  * 提交 POST/PUT 后返回上一页。
  */
 import { useEffect, useMemo, useState } from 'react';
-import { Button, Card, Col, Form, Row, Space, Spin, Tabs, message } from 'antd';
+import { App, Button, Card, Col, Form, Row, Space, Spin, Tabs } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import FieldControl from '@/components/field/FieldControl';
@@ -22,6 +22,7 @@ export interface FormPageProps {
 }
 
 export default function FormPage({ title }: FormPageProps) {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   // AI 填表：监听 AiAssistant 派发的 cube:ai-fill-form 事件
   useAiFillForm(form);

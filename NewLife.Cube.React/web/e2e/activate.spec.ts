@@ -15,7 +15,8 @@ test.describe('激活页（/activate）', () => {
     page.on('pageerror', (e) => errors.push(e.message));
 
     await page.goto('/activate');
-    await expect(page.getByText(/激活|验证码/).first()).toBeVisible({ timeout: 10000 });
+    // 原生收敛版隐藏了营销 aside，断言可见的卡片标题（div 元素，非 heading role）
+    await expect(page.getByText('账号激活')).toBeVisible({ timeout: 10000 });
     expect(errors.filter((e) => !e.includes('favicon')), `控制台错误: ${errors.join('; ')}`).toEqual([]);
   });
 

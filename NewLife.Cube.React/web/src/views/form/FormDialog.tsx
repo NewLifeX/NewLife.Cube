@@ -5,7 +5,7 @@
  * 编辑模式自动加载详情（布尔串转布尔）。
  */
 import { useEffect, useMemo, useState } from 'react';
-import { Col, Form, Modal, Row, Tabs, message } from 'antd';
+import { App, Col, Form, Modal, Row, Tabs } from 'antd';
 import type { RuleObject } from 'antd/es/form';
 import FieldControl from '@/components/field/FieldControl';
 import { groupByCategory, hasCategory, isFullWidthControl, resolveControl, serializeSubmitModel } from '@/utils/fieldControl';
@@ -44,6 +44,7 @@ export default function FormDialog({
   onSubmit,
   onCancel,
 }: FormDialogProps) {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   // AI 填表：弹窗打开时监听 AiAssistant 派发的 cube:ai-fill-form 事件
   useAiFillForm(form, open);
@@ -140,7 +141,7 @@ export default function FormDialog({
       okText="保存"
       cancelText="取消"
       width={680}
-      destroyOnClose
+      destroyOnHidden
       // 分组时限制弹窗高度，避免分组标签 + 单组字段把弹窗撑得过高
       styles={groups ? { body: { maxHeight: '60vh', overflowY: 'auto' } } : undefined}
     >

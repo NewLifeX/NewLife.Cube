@@ -7,7 +7,7 @@
  */
 import { useEffect } from 'react';
 import type { FormInstance } from 'antd';
-import { message } from 'antd';
+import { App } from 'antd';
 
 /** 布尔串转布尔（AI 可能返回 'true'/'false' 字符串） */
 function normalizeValue(v: unknown): unknown {
@@ -22,6 +22,7 @@ function normalizeValue(v: unknown): unknown {
  * @param enabled 是否启用监听（如弹窗关闭时传 false 跳过）
  */
 export function useAiFillForm(form: FormInstance, enabled = true) {
+  const { message } = App.useApp();
   useEffect(() => {
     if (!enabled) return;
 

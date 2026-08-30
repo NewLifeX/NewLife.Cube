@@ -1,186 +1,40 @@
-:root {
-  --cube-auth-max-width: 1360px;
-}
-
+/* ============================================================
+   认证页（登录/注册/激活/找回）：antd6 原生居中卡片风格
+   ============================================================ */
 .cube-auth-layout {
   height: 100%;
   min-height: 100%;
   overflow-y: auto;
   display: flex;
-  align-items: stretch;
+  align-items: center;
   justify-content: center;
   padding: 24px;
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.22), transparent 32%),
-    radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.12), transparent 28%),
-    var(--cube-auth-bg);
+  background: var(--cube-auth-bg);
 }
 
+/* 单列布局，居中收窄为登录卡片宽度 */
 .cube-auth-shell {
-  width: min(var(--cube-auth-max-width), 100%);
+  width: min(440px, 100%);
   margin: auto;
-  display: grid;
-  grid-template-columns: minmax(340px, 1.1fr) minmax(360px, 520px);
-  gap: 24px;
-  align-items: stretch;
-}
-
-.cube-auth-aside,
-.cube-auth-card {
-  border-radius: 28px;
-  border: 1px solid var(--cube-border-strong);
-  box-shadow: var(--cube-shadow-soft);
-  backdrop-filter: blur(14px);
-}
-
-.cube-auth-aside {
-  position: relative;
-  overflow: hidden;
-  padding: 32px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 28px;
-  background: var(--cube-auth-surface);
 }
 
-.cube-auth-aside-glow {
-  position: absolute;
-  inset: auto -8% -16% auto;
-  width: 280px;
-  height: 280px;
-  border-radius: 50%;
-  background: var(--cube-auth-glow);
-  filter: blur(10px);
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.cube-auth-brand {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.cube-auth-brand-mark {
-  width: 68px;
-  height: 68px;
-  border-radius: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, var(--cube-primary), var(--cube-primary-strong));
-  color: #fff;
-  box-shadow: 0 18px 32px rgba(15, 23, 42, 0.14);
-  overflow: hidden;
-}
-
-.cube-auth-brand-mark img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.cube-auth-brand-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--cube-text);
-}
-
-.cube-auth-brand-subtitle {
-  margin-top: 4px;
-  color: var(--cube-text-secondary);
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.cube-auth-intro,
-.cube-auth-highlights,
-.cube-auth-aside-actions {
-  position: relative;
-  z-index: 1;
-}
-
-.cube-auth-eyebrow {
-  margin: 0 0 14px;
-  padding: 8px 14px;
-  border-radius: 999px;
-  font-weight: 600;
-}
-
-.cube-auth-hero-title {
-  margin: 0;
-  font-size: clamp(28px, 3.8vw, 44px);
-  line-height: 1.15;
-  color: var(--cube-text);
-  letter-spacing: -0.02em;
-}
-
-.cube-auth-hero-desc {
-  margin: 16px 0 0;
-  max-width: 560px;
-  color: var(--cube-text-secondary);
-  font-size: 15px;
-  line-height: 1.75;
-}
-
-.cube-auth-highlights {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.cube-auth-highlight {
-  display: flex;
-  gap: 12px;
-  padding: 16px;
-  border-radius: 20px;
-  background: var(--cube-surface-elevated);
-  border: 1px solid var(--cube-border-soft);
-}
-
-.cube-auth-highlight-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--cube-primary-soft);
-  color: var(--cube-primary);
-  font-size: 18px;
-  flex: none;
-}
-
-.cube-auth-highlight-title {
-  color: var(--cube-text);
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.cube-auth-highlight-desc {
-  margin-top: 4px;
-  color: var(--cube-text-secondary);
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.cube-auth-aside-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+/* 营销型 aside（品牌 / 卖点 / 动作）在原生收敛版中隐藏 */
+.cube-auth-aside {
+  display: none;
 }
 
 .cube-auth-panel {
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .cube-auth-card {
   width: 100%;
   background: var(--cube-surface-bg) !important;
+  box-shadow: var(--cube-shadow-soft);
 }
 
 .cube-auth-card .ant-card-body {
@@ -191,6 +45,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  margin-bottom: 24px;
 }
 
 .cube-auth-card-badge {
@@ -198,9 +53,9 @@
 }
 
 .cube-auth-card-title {
-  font-size: 28px;
-  line-height: 1.2;
-  font-weight: 700;
+  font-size: 24px;
+  line-height: 1.3;
+  font-weight: 600;
   color: var(--cube-text);
 }
 
@@ -250,7 +105,7 @@
 .cube-auth-captcha-image {
   width: 112px;
   height: 40px;
-  border-radius: 12px;
+  border-radius: 8px;
   cursor: pointer;
   border: 1px solid var(--cube-border-soft);
   background: var(--cube-surface-muted);
@@ -260,7 +115,7 @@
   display: grid;
   gap: 8px;
   padding: 14px 16px;
-  border-radius: 18px;
+  border-radius: 8px;
   background: var(--cube-surface-muted);
   border: 1px solid var(--cube-border-soft);
   color: var(--cube-text-secondary);
@@ -312,9 +167,9 @@
 }
 
 .cube-auth-provider-button.ant-btn {
-  height: 42px;
+  height: 40px;
   justify-content: center;
-  border-radius: 14px;
+  border-radius: 8px;
 }
 
 .cube-auth-provider-button img {
@@ -334,7 +189,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 12px 14px;
-  border-radius: 16px;
+  border-radius: 8px;
   background: var(--cube-surface-muted);
   border: 1px solid var(--cube-border-soft);
 }
@@ -343,50 +198,16 @@
   text-align: center;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 640px) {
   .cube-auth-layout {
     padding: 16px;
   }
 
-  .cube-auth-shell {
-    grid-template-columns: 1fr;
-  }
-
-  .cube-auth-aside {
-    min-height: 0;
-  }
-
-  .cube-auth-highlights {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 640px) {
   .cube-auth-card .ant-card-body {
     padding: 22px !important;
   }
 
-  .cube-auth-aside {
-    padding: 24px;
-    gap: 20px;
-  }
-
-  .cube-auth-brand-mark {
-    width: 56px;
-    height: 56px;
-    border-radius: 18px;
-  }
-
   .cube-auth-card-title {
-    font-size: 24px;
-  }
-
-  .cube-auth-provider-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .cube-auth-inline-actions {
-    flex-direction: column;
-    align-items: stretch;
+    font-size: 22px;
   }
 }

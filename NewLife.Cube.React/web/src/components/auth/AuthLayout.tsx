@@ -55,8 +55,8 @@ export default function AuthLayout({
           </div>
 
           <div className="cube-auth-intro">
-            <Tag color="blue" bordered={false} className="cube-auth-eyebrow">
-              React 18 + Ant Design 5
+            <Tag color="blue" variant="filled" className="cube-auth-eyebrow">
+              React 19 + Ant Design 6
             </Tag>
             <h1 className="cube-auth-hero-title">管理后台，也该像个产品。</h1>
             <p className="cube-auth-hero-desc">
@@ -82,8 +82,8 @@ export default function AuthLayout({
         </aside>
 
         <section className="cube-auth-panel">
-          <Card bordered={false} className="cube-auth-card">
-            <Space direction="vertical" size={20} style={{ width: '100%' }}>
+          <Card variant="borderless" className="cube-auth-card">
+            <Space orientation="vertical" size={20} style={{ width: '100%' }}>
               <div className="cube-auth-card-head">
                 {badge ? <div className="cube-auth-card-badge">{badge}</div> : null}
                 <div className="cube-auth-card-title">{title}</div>

@@ -13,7 +13,8 @@ test.describe('多标签页（FND-8）', () => {
 
     // 通过首页“常用菜单”项卡片 SPA 内导航到实体页（不可用整页 goto，会重置内存标签状态）
     // 注意用 URL 文本精确定位内层项卡片，避免误匹配外层“常用菜单”卡片（后代含相同文本、无 onClick）
-    await page.locator('.cube-home-card .ant-list .ant-card', { hasText: '/Admin/User' }).first().click();
+    // antd6 升级后常用菜单由 List 改为 CSS 网格（.cube-home-menu-grid）
+    await page.locator('.cube-home-card .cube-home-menu-grid .ant-card', { hasText: '/Admin/User' }).first().click();
     await expect(page.locator('.ant-tabs-tab')).toHaveCount(2, { timeout: 10000 });
 
     // 标签标题取菜单名而非"默认页面"（设计规范 §6.2：标签名与菜单关联）
