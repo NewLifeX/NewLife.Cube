@@ -184,8 +184,10 @@
               @apply="onGroupApply"
               @save="onGroupSave"
             >
-              <!-- 仅表格视图支持分组（树状视图不允许，OSC-0015）；有分组时按钮底纹 + 右上角徽标（数字=分组字段数） -->
+              <!-- 仅表格视图支持分组（树状视图不允许，OSC-0015）；有分组时按钮底纹 + 右上角徽标（数字=分组字段数）。
+                   非表格视图不渲染整块，避免空 slot 在工具栏留下额外间距 -->
               <div
+                v-if="activeViewKind === 'table' && chrome.showGroup"
                 class="tb-act"
                 :class="{ 'is-active': viewGroup.length > 0 }"
               >
