@@ -164,27 +164,28 @@ public class IndexController : ControllerBaseX, IPageDataContext
     public ActionResult Dashboard()
     {
         var user = ManageProvider.User;
-        var now = DateTime.Now;
-        var start = now.AddHours(-24);
 
         var mi = MachineInfo.Current ?? new MachineInfo();
         var process = Process.GetCurrentProcess();
-        var memTotal = mi.Memory / 1024 / 1024;
-        var memUsed = memTotal - mi.AvailableMemory / 1024 / 1024;
-        var memRate = memTotal <= 0 ? 0 : (Double)memUsed * 100 / memTotal;
 
-        var snow = XLog.Meta.Factory.Snow;
-
-        // KPI 指标
-        var kpis = new List<Object>
+        // KPI 指标（MVC Widget 部件驱动，对齐 MVC 工作台：UserCount/CpuRate/OnlineCount/TodayLogin/Log24h/Error24h/MyDays/MyLogins）。
+        // 角色/启停按部件元数据过滤；用户隐藏项分到 hiddenKpis，供前端恢复面板
+        var roleNames = user?.Roles?.Select(e => e.Name).ToList();
+        var isAdmin = user?.Roles.Any(e => e.IsSystem) == true;
+        var wm = new WidgetManager();
+        var layout = user != null ? wm.GetLayout(user.ID) : new Dictionary<String, WidgetLayout>();
+        var kpis = new List<Object>();
+        var hiddenKpis = new List<Object>();
+        foreach (var info in wm.Scan().Values.Where(e => e.WidgetType == WidgetTypes.Kpi && wm.IsVisible(e, roleNames, isAdmin) && wm.IsEnabled(e)).OrderBy(e => e.Sort))
         {
-            new { name = "users", label = "用户总数", value = XCode.Membership.User.Meta.Count.ToString("n0"), trend = "注册用户", color = "blue", url = "/Admin/User" },
-            new { name = "login", label = "今日登录", value = XLog.FindCount(_.ID.Between(DateTime.Today, now, snow) & _.Action.Contains("登录")).ToString("n0"), trend = "今日登录成功", color = "green", url = "/Admin/Log" },
-            new { name = "online", label = "在线用户", value = UserOnline.FindCount().ToString("n0"), trend = "当前在线", color = "cyan", url = "/Admin/UserOnline" },
-            new { name = "log", label = "24h日志", value = XLog.FindCount(_.ID.Between(start, now, snow)).ToString("n0"), trend = "最近24小时", color = "grey", url = "/Admin/Log" },
-            new { name = "error", label = "24h异常", value = XLog.FindCount(_.ID.Between(start, now, snow) & _.Success == false).ToString(), trend = "最近24小时异常", color = "red", url = "/Admin/Log?success=false" },
-            new { name = "cpu", label = "CPU使用率", value = Math.Round(mi.CpuRate * 100, 1).ToString("0.0") + "%", trend = "内存 " + Math.Round(memRate, 1).ToString("0.0") + "%", color = "orange", url = "/Admin/Index/Main" },
-        };
+            var d = wm.GetData(info);
+            var value = d?.GetType().GetProperty("Value")?.GetValue(d) ?? "";
+            var trend = d?.GetType().GetProperty("Trend")?.GetValue(d) ?? "";
+            var url = d?.GetType().GetProperty("Url")?.GetValue(d) ?? "";
+            var item = new { name = info.Name, label = info.Title, value, trend, color = info.Color ?? "blue", url };
+            if (layout.TryGetValue(info.Name, out var itemLayout) && itemLayout.Hide) hiddenKpis.Add(item);
+            else kpis.Add(item);
+        }
 
         // 快捷入口：最近访问优先，菜单补足
         var links = new List<Object>();
@@ -245,6 +246,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
                 roles = (user as IUser)?.Roles?.Select(e => e.Name).ToList(),
             },
             kpis,
+            hiddenKpis,
             quickLinks = links,
             profile,
             sysInfo,

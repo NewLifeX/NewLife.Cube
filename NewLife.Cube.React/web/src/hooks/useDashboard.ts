@@ -42,7 +42,10 @@ export interface DashboardData {
     lastLoginIP?: string;
     registerTime?: string;
   };
+  /** 可见 KPI 指标（MVC Widget 部件驱动） */
   kpis?: DashboardKpi[];
+  /** 用户已隐藏的 KPI 指标（供恢复面板） */
+  hiddenKpis?: DashboardKpi[];
   quickLinks?: DashboardQuickLink[];
   profile?: Record<string, unknown>;
   sysInfo?: Record<string, string>;

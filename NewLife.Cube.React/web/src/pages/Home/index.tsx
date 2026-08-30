@@ -13,6 +13,8 @@ import {
   AppstoreAddOutlined,
   AppstoreOutlined,
   BugOutlined,
+  CalendarOutlined,
+  ClockCircleOutlined,
   DashboardOutlined,
   DesktopOutlined,
   EyeInvisibleOutlined,
@@ -37,8 +39,18 @@ import { getConfig } from '@/configure';
 import { useDashboard, type DashboardKpi } from '@/hooks/useDashboard';
 import type { LoginConfig, MenuItem } from '@cube/api-core';
 
-/** KPI 语义名 → 图标 */
+/** KPI 语义名 → 图标（MVC Widget 部件名优先，兼容旧语义名降级数据） */
 const KPI_ICONS: Record<string, ReactNode> = {
+  // MVC Widget 部件名（后端 Dashboard 由 WidgetManager 驱动返回）
+  UserCount: <TeamOutlined />,
+  TodayLogin: <UserOutlined />,
+  OnlineCount: <AppstoreOutlined />,
+  Log24h: <FileTextOutlined />,
+  Error24h: <BugOutlined />,
+  CpuRate: <LineChartOutlined />,
+  MyDays: <CalendarOutlined />,
+  MyLogins: <ClockCircleOutlined />,
+  // 兼容旧语义名（接口不可用时的降级数据）
   users: <TeamOutlined />,
   login: <UserOutlined />,
   online: <AppstoreOutlined />,
@@ -71,6 +83,22 @@ const WIDGET_ICONS: Record<string, ReactNode> = {
   profile: <UserOutlined />,
   sysinfo: <DesktopOutlined />,
 };
+
+/**
+ * 布局 key 归一化：后端 Json 序列化强制 camelCase（字典 key 首字母小写），
+ * KPI 部件名（UserCount）与卡片名（kpi）统一转首字母小写（userCount / kpi）后访问布局
+ */
+export const layoutKey = (name?: string) => (name ? name.charAt(0).toLowerCase() + name.slice(1) : '');
+
+/** 按用户布局过滤 + 排序 KPI（隐藏项剔除，未排序项按后端顺序兜底） */
+export const sortKpisByLayout = (all: DashboardKpi[], layout: Record<string, WidgetLayoutItem>) => {
+  const order = (k: DashboardKpi) => layout[layoutKey(k.name)]?.sort ?? 999;
+  return all.filter((k) => !layout[layoutKey(k.name)]?.hide).sort((a, b) => order(a) - order(b));
+};
+
+/** 用户已隐藏的 KPI（恢复面板用） */
+export const filterHiddenKpis = (all: DashboardKpi[], layout: Record<string, WidgetLayoutItem>) =>
+  all.filter((k) => layout[layoutKey(k.name)]?.hide);
 
 export default function HomePage() {
   const { message } = App.useApp();
@@ -247,15 +275,53 @@ export default function HomePage() {
     return leaves.slice(0, 12);
   }, [menus]);
 
-  // KPI：接口数据优先，缺失时降级个人统计
-  const kpis = useMemo<DashboardKpi[]>(() => {
-    if (wb?.kpis?.length) return wb.kpis;
+  // KPI：接口部件数据（可见 + 已隐藏）优先，缺失时降级个人统计
+  const allKpis = useMemo<DashboardKpi[]>(() => {
+    if (wb?.kpis?.length || wb?.hiddenKpis?.length) return [...(wb.kpis ?? []), ...(wb.hiddenKpis ?? [])];
     return [
       { name: 'login', label: '我的登录', value: '—', color: 'green', trend: '累计登录次数' },
       { name: 'online', label: '在线状态', value: '在线', color: 'cyan', trend: '当前账号状态' },
       { name: 'users', label: '我的角色', value: userInfo?.roleName || '—', color: 'purple', trend: '当前角色' },
     ];
   }, [wb, userInfo]);
+
+  // 可见 KPI：按用户布局隐藏过滤 + 排序（camelCase 布局 key，与后端 Json 输出对齐）
+  const kpis = useMemo<DashboardKpi[]>(() => sortKpisByLayout(allKpis, layout), [allKpis, layout]);
+
+  // 已隐藏 KPI（恢复面板用）
+  const hiddenKpis = useMemo<DashboardKpi[]>(() => filterHiddenKpis(allKpis, layout), [allKpis, layout]);
+
+  // ── KPI 小卡交互（对齐 MVC 工作台：拖动排序 + 隐藏/恢复）──
+  const [kpiDragKey, setKpiDragKey] = useState<string | null>(null);
+
+  // KPI 拖拽落点：把拖拽卡插入目标卡位置，重新分配可见 KPI 排序（部件名作为布局 key）
+  const handleKpiDrop = (target: string) => {
+    if (!kpiDragKey || kpiDragKey === target) {
+      setKpiDragKey(null);
+      return;
+    }
+    setLayout((prev) => {
+      const visible = kpis.filter((k) => k.name !== kpiDragKey);
+      const idx = visible.findIndex((k) => k.name === target);
+      visible.splice(idx < 0 ? visible.length : idx, 0, kpis.find((k) => k.name === kpiDragKey)!);
+      const next = { ...prev };
+      visible.forEach((k, i) => {
+        if (k.name) next[layoutKey(k.name)] = { ...(next[layoutKey(k.name)] ?? {}), sort: i };
+      });
+      return next;
+    });
+    setKpiDragKey(null);
+  };
+
+  const handleHideKpi = (k: DashboardKpi) =>
+    setLayout((prev) => ({ ...prev, [layoutKey(k.name)]: { ...(prev[layoutKey(k.name)] ?? {}), hide: true } }));
+
+  const handleUnhideKpi = (k: DashboardKpi) =>
+    setLayout((prev) => {
+      const next = { ...prev };
+      next[layoutKey(k.name)] = { ...(next[layoutKey(k.name)] ?? {}), hide: false };
+      return next;
+    });
 
   // 快捷入口：接口数据优先，降级取常用菜单前 8 项
   const quickLinks = useMemo(() => {
@@ -299,12 +365,50 @@ export default function HomePage() {
               <div
                 key={k.name || k.label}
                 className="cube-home-kpi-card"
-                onClick={() => k.url && navigate(k.url)}
+                onClick={(e) => {
+                  // 拖动手柄 / 隐藏菜单（含 antd 弹层 portal，事件按组件树冒泡到卡片）不触发卡片跳转
+                  const target = e.target as HTMLElement;
+                  if (target.closest('.cube-home-kpi-actions') || target.closest('.ant-dropdown')) return;
+                  if (k.url) navigate(k.url);
+                }}
+                onDragOver={(e) => {
+                  if (kpiDragKey && kpiDragKey !== (k.name ?? '')) e.preventDefault();
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  handleKpiDrop(k.name ?? '');
+                }}
                 style={k.url ? { cursor: 'pointer' } : undefined}
               >
                 <div className="cube-home-kpi-head">
-                  <div className={`cube-home-kpi-icon ${k.color || 'blue'}`}>{KPI_ICONS[k.name ?? ''] ?? null}</div>
-                  <span className="cube-home-kpi-label">{k.label}</span>
+                  <div className="cube-home-kpi-head-left">
+                    <div className={`cube-home-kpi-icon ${k.color || 'blue'}`}>{KPI_ICONS[k.name ?? ''] ?? null}</div>
+                    <span className="cube-home-kpi-label">{k.label}</span>
+                  </div>
+                  <span className="cube-home-kpi-actions">
+                    <span
+                      className="cube-kpi-drag-handle"
+                      title="拖动排序"
+                      draggable
+                      onDragStart={(e) => {
+                        e.stopPropagation();
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.dataTransfer.setData('text/plain', k.name ?? '');
+                        setKpiDragKey(k.name ?? '');
+                      }}
+                      onDragEnd={() => setKpiDragKey(null)}
+                    >
+                      <HolderOutlined />
+                    </span>
+                    <Dropdown
+                      trigger={['click']}
+                      menu={{
+                        items: [{ key: 'hide', icon: <EyeInvisibleOutlined />, label: '隐藏', onClick: () => handleHideKpi(k) }],
+                      }}
+                    >
+                      <Button type="text" size="small" icon={<MoreOutlined />} />
+                    </Dropdown>
+                  </span>
                 </div>
                 <div>
                   <div className="cube-home-kpi-value">{k.value}</div>
@@ -312,6 +416,7 @@ export default function HomePage() {
                 </div>
               </div>
             ))}
+            {!kpis.length && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无指标" />}
           </div>
         );
       case 'monitor':
@@ -447,16 +552,40 @@ export default function HomePage() {
           </Button>
           <Dropdown
             menu={{
-              items: hiddenWidgets.map((k) => ({
-                key: k,
-                label: WIDGET_TITLES[k],
-                icon: <EyeOutlined />,
-                onClick: () => handleUnhideWidget(k),
-              })),
+              items: [
+                ...(hiddenWidgets.length
+                  ? [
+                      {
+                        type: 'group' as const,
+                        label: '工作台卡片',
+                        children: hiddenWidgets.map((k) => ({
+                          key: k,
+                          label: WIDGET_TITLES[k],
+                          icon: <EyeOutlined />,
+                          onClick: () => handleUnhideWidget(k),
+                        })),
+                      },
+                    ]
+                  : []),
+                ...(hiddenKpis.length
+                  ? [
+                      {
+                        type: 'group' as const,
+                        label: '指标小卡',
+                        children: hiddenKpis.map((k) => ({
+                          key: `kpi-${k.name ?? k.label}`,
+                          label: k.label,
+                          icon: <EyeOutlined />,
+                          onClick: () => handleUnhideKpi(k),
+                        })),
+                      },
+                    ]
+                  : []),
+              ],
             }}
-            disabled={!hiddenWidgets.length}
+            disabled={!hiddenWidgets.length && !hiddenKpis.length}
           >
-            <Button size="small" icon={<AppstoreAddOutlined />} disabled={!hiddenWidgets.length}>
+            <Button size="small" icon={<AppstoreAddOutlined />} disabled={!hiddenWidgets.length && !hiddenKpis.length}>
               恢复卡片
             </Button>
           </Dropdown>

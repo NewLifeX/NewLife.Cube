@@ -118,6 +118,38 @@
   gap: 12px;
 }
 
+.cube-home-kpi-head-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* KPI 小卡操作区：拖动手柄 + 隐藏菜单（对齐 MVC 工作台 KPI 小卡） */
+.cube-home-kpi-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.cube-kpi-drag-handle {
+  cursor: grab;
+  color: var(--cube-text-muted);
+  font-size: 14px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  line-height: 1;
+}
+
+.cube-kpi-drag-handle:hover {
+  color: var(--cube-text);
+  background: var(--cube-bg-hover, rgba(148, 163, 184, 0.12));
+}
+
+.cube-home-kpi-actions .ant-btn {
+  color: var(--cube-text-muted);
+}
+
 .cube-home-kpi-icon {
   width: 44px;
   height: 44px;

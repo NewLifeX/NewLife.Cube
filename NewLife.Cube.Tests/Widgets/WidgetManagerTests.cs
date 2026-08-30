@@ -15,7 +15,8 @@ public class WidgetManagerTests
     {
         var widgets = _manager.Scan();
 
-        // 内置组件随 NewLife.Cube（API版）编译；Monitor 依赖 Charts、KPI 部件属 MVC 工作台，仅 MVC 版存在，这里不校验
+        // 内置组件随 NewLife.Cube（API版）编译；KPI 部件已迁移至 API 侧（见 KpiWidgetTests），
+        // Monitor 依赖 Charts 仅 MVC 版存在（API 版工作台用前端 ECharts + MonitorData 轮询），这里不校验
         // LogWidget 已删除（与 KPI 24h 数字重复），不再断言
         Assert.Contains("LoginLog", widgets.Keys);
         Assert.Contains("SysInfo", widgets.Keys);
