@@ -18,6 +18,8 @@ export interface ApiResponse<T = unknown> {
   page?: PageInfo;
   /** 统计行数据 */
   stat?: Record<string, unknown>;
+  /** 时间窗收窄天数（OSC-260830a1b2）：无时间条件自动收窄时 >0，供工具栏提示消费 */
+  filterNarrowed?: number;
   /** 跟踪编号 */
   traceId?: string;
   /** 字段级验证错误列表（新增/编辑/删除时校验失败返回） */

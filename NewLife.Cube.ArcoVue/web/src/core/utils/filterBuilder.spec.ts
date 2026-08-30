@@ -48,6 +48,8 @@ describe('filterBuilder 字段类别与操作符矩阵 (OSC-0015)', () => {
       'neq',
       'contains',
       'notContains',
+      'startsWith',
+      'endsWith',
       'isNull',
       'notNull',
     ]);

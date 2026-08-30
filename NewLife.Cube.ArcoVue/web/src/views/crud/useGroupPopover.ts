@@ -7,6 +7,7 @@ import {
   moveGroupField,
 } from '@/core/utils/viewMapping';
 import { normalizeGroup, type ViewGroup } from '@/core/utils/viewProfile';
+import { isDateTimeBucketType } from '@/core/utils/timeBucket';
 
 /** GroupPopover 组件 props 类型（与 GroupPopover.vue defineProps 泛型逐字一致） */
 interface GroupPopoverProps {
@@ -36,7 +37,14 @@ export function useGroupPopover(props: GroupPopoverProps, emit: GroupPopoverEmit
 
   const candidateFields = computed(() => {
     const used = new Set(draft.value);
-    return groupFieldCandidates(props.fields).filter((f) => !used.has(f.name));
+    const base = groupFieldCandidates(props.fields).filter((f) => !used.has(f.name));
+    // 列表分组额外放开日期时间字段（前端按时间分桶）；仅作用于分组弹层，
+    // 不影响看板/甘特等复用 groupFieldCandidates 的默认分组
+    const seen = new Set(base.map((f) => f.name));
+    const dates = props.fields.filter(
+      (f) => !f.primaryKey && isDateTimeBucketType(f.typeName) && !used.has(f.name) && !seen.has(f.name),
+    );
+    return [...base, ...dates];
   });
 
   function syncDraftFromProps() {

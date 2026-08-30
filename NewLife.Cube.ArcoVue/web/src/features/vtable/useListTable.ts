@@ -25,6 +25,12 @@ import {
 } from '@/core/utils/opsAction';
 import { OPS_LINK_INLINE_MAX } from '@/core/utils/listLinkFields';
 import { isIamRowActionDisabled } from '@/core/utils/iamGuards';
+import {
+  isDateTimeBucketType,
+  timeBucketOf,
+  stripTimeBucketLabel,
+  timeSortValue,
+} from '@/core/utils/timeBucket';
 
 export interface ListTableColumnDef {
   pref: ColumnPref;
@@ -688,7 +694,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
     };
   }
 
-  /** groupBy 组标题行文本：`📁 label (count)`；label 按分组字段 dataSource 翻译（OSC-0015） */
+  /** groupBy 组标题行文本：`📁 字段名 在 label (count)`；label 按分组字段 dataSource 翻译（OSC-0015）；日期时间字段显示时间桶标签 */
   function groupTitleFormat(
     record: Record<string, unknown> | undefined,
     col?: number,
@@ -698,8 +704,17 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
     const level = (t?.getGroupTitleLevel?.(col, row) as number | undefined) ?? 0;
     const field = props.groupFields?.[level];
     const value = (record as { vtableMergeName?: unknown })?.vtableMergeName;
-    const label = field && props.groupLabelOf ? props.groupLabelOf(field, value) : undefined;
-    return `📁 ${label ?? (value == null ? '未分组' : String(value))} (${(record as { children?: unknown[] })?.children?.length ?? 0})`;
+    let label: string | undefined;
+    if (field && isTimeGroupField(field)) {
+      // 时间分桶：value 为“${序号}·${标签}”，去掉前缀显示
+      label = stripTimeBucketLabel(value);
+    } else if (field && props.groupLabelOf) {
+      label = props.groupLabelOf(field, value);
+    }
+    const valueLabel = label ?? (value == null ? '未分组' : String(value));
+    // 仅日期时间字段分组采用“字段名 在 值”格式；普通字段保持“值 (N)”
+    const prefix = field && isTimeGroupField(field) ? `${groupFieldLabel(field)} 在 ` : '';
+    return `📁 ${prefix}${valueLabel} (${(record as { children?: unknown[] })?.children?.length ?? 0})`;
   }
 
   /** groupBy 字段名与数据字段名匹配：视图分组字段为 PascalCase（FieldMeta.name），数据行字段为 camelCase */
@@ -725,6 +740,46 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
     return c >= 'A' && c <= 'Z';
   }
 
+  /** 分组字段是否为可做时间分桶的日期时间类型（OSC-260830a1b2 之后：日期时间分组） */
+  function isTimeGroupField(field: string): boolean {
+    const fm = (props.formatFields || []).find((f) => f.name === field);
+    return !!fm && isDateTimeBucketType(fm.typeName);
+  }
+
+  /** 分组字段显示名（组标题“字段名 在 值”用）；缺省回落字段名 */
+  function groupFieldLabel(field: string): string {
+    const fm = (props.formatFields || []).find((f) => f.name === field);
+    return fm?.displayName || field;
+  }
+
+  /** 时间分桶临时字段名（camelCase，与 VTable 分组数据字段命名一致） */
+  function timeBucketField(field: string): string {
+    return `__timeBucket_${toDataField(field)}`;
+  }
+
+  /**
+   * 为每条记录注入时间分桶临时字段（仅当分组含日期时间字段时）。
+   * 桶键为“${序号}·${标签}”，带序号前缀；无效/空值归入“未明确时间”桶（键 “7·未明确时间”，排在最后）。
+   * 随后按第一个时间分组字段降序（近到远）稳定排序 records：
+   * VTable 分组组顺序取决于 records 中组键值首次出现顺序（GroupConfig.sort 不生效），
+   * 预排序保证时间桶组间由近到远、组内记录也按时间近到远。
+   */
+  function withTimeBucket(records: Record<string, unknown>[]): Record<string, unknown>[] {
+    const fields = (props.groupFields || []).filter((f) => isTimeGroupField(f));
+    if (!fields.length) return records;
+    const now = new Date();
+    const decorated = records.map((r) => {
+      const out = { ...r };
+      for (const f of fields) {
+        out[timeBucketField(f)] = timeBucketOf(r[toDataField(f)], now);
+      }
+      return out;
+    });
+    const dataField = toDataField(fields[0]);
+    // 稳定排序：近到远（最新在前）；无时间值排最后
+    return decorated.sort((a, b) => timeSortValue(b[dataField]) - timeSortValue(a[dataField]));
+  }
+
   function buildOption(): any {
     const cols = buildColumns();
     const groupedMode = !!props.groupFields?.length;
@@ -739,7 +794,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       : null;
 
     return {
-      records: withChecks(props.records),
+      records: withChecks(withTimeBucket(props.records)),
       columns: cols,
       frozenColCount: frozenCount(),
       rightFrozenColCount: Math.min(rightFrozenCount(), Math.max(0, cols.length - frozenCount())),
@@ -748,8 +803,13 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
             // 官方分组复选框方案：checkbox 置于 rowSeriesNumber（每行最前面），
             // groupConfig.titleCheckbox 让组标题行左侧显示 checkbox，enableCheckboxCascade 级联同步子行
             groupConfig: {
-              // groupBy 需与数据字段名匹配（camelCase）；groupLabelOf 仍用 PascalCase 字段名查翻译
-              groupBy: (props.groupFields || []).map(toDataField),
+              // groupBy 需与数据字段名匹配（camelCase）；日期时间字段改用时间分桶临时字段（带序号前缀键），
+              // 其余字段沿用 camelCase 字段名。注：VTable 组顺序由 records 中组键值首次出现顺序决定
+              // （GroupConfig.sort 不生效），时间近到远由 withTimeBucket 预排序 records 保证
+              groupBy: (props.groupFields || []).map((f) => ({
+                key: isTimeGroupField(f) ? timeBucketField(f) : toDataField(f),
+                sort: 'asc',
+              })),
               titleCheckbox: true,
               titleFieldFormat: groupTitleFormat,
             },
@@ -1167,7 +1227,9 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
   // 注意：不要把 selectedKeys 放进全量 refresh 依赖——勾选后回写会 updateOption，冲掉 VTable 勾选态
   // （非 deep：records 为整体替换（翻页/加载新数组），引用变化即可触发；deep 会对千条记录全量深度遍历拖慢更新）
   /** 仅更新数据（setRecords）而非全量 updateOption：翻页/换数据时避免重建 columns/布局，
-   *  千条数据从 ~850ms 降至 setRecords 的数据替换开销（性能优化，不影响功能） */
+   *  千条数据从 ~850ms 降至 setRecords 的数据替换开销（性能优化，不影响功能）。
+   *  注意：数据更新时必须经 withTimeBucket 注入时间分桶字段并近到远排序，
+   *  否则刷新/查询/重置后日期时间分组在 setRecords 路径下失效（与 buildOption 保持一致）。 */
   function applyRecords() {
     if (!table) {
       mountTable();
@@ -1176,7 +1238,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
     applying = true;
     lastSetRecordsAt = Date.now();
     try {
-      table.setRecords?.(withChecks(props.records), { sortState: null });
+      table.setRecords?.(withChecks(withTimeBucket(props.records)), { sortState: null });
       if (props.sortState?.field) {
         table.updateSortState?.(
           { field: props.sortState.field, order: props.sortState.desc ? 'desc' : 'asc' },

@@ -8,7 +8,7 @@
 
     <!-- 视图背景色覆盖：洞察（暂隐藏）+ 表格（含视图 Tab） -->
     <div class="list-surface" :class="{ 'list-surface--chrome': hasChromeBg }" :style="listSurfaceStyle">
-      <!-- 洞察面板（原 QueryInsightPanel，更名 InsightPanel）：仅统计标签 + 一张固定图表看板（OSC-260819e483）；搜索统一走工具栏「搜索」抽屉 SearchDrawer -->
+      <!-- 洞察面板（原 QueryInsightPanel，更名 InsightPanel）：仅统计标签 + 一张固定图表看板（OSC-260819e483）；搜索统一走工具栏查询簇（Q+自定义+▾预定义） -->
       <InsightPanel
         ref="insightPanelRef"
         :type-path="typePath"
@@ -71,34 +71,83 @@
                 +
               </button>
             </span>
-            <FilterBuilderPopover
-              :visible="filterPopoverVisible"
-              :fields="filterFields"
-              :model-value="viewFilter"
-              :can-save="!!activeViewId"
-              @update:visible="onFilterPopoverVisible"
-              @apply="onFilterApply"
-              @save="onFilterSave"
-            >
-              <!-- 有筛选条件时按钮显示底纹，右上角主题主色圆形徽标（数字=条件数），点击徽标清除 -->
-              <div
-                class="tb-act"
-                :class="{ 'is-active': viewFilter.conditions.length > 0 }"
+            <!-- 查询组合框（OSC-260830a1b2）：关键字输入框内嵌 查询图标 + ▾ 下拉（最近搜索/自定义/预定义），紧靠「分组」；
+                 已应用预定义方案时查询图标彩色 + 右上角角标（方案名首字） -->
+            <span v-if="chrome.showSearch" class="tb-query-cluster">
+              <!-- 关键字输入框：enableKey===false 时隐藏（AC-15），查询按钮组（自定义/▾）仍可用 -->
+              <a-input
+                v-if="enableKey !== false"
+                v-model="searchForm.Q"
+                placeholder="关键字"
+                allow-clear
+                class="tb-query-input"
+                @press-enter="handleSearch"
+                @focus="openRecentDropdown"
+                @input="openRecentDropdown"
+                @blur="closeRecentDropdown"
               >
-                <a-button v-if="chrome.showFilter" type="text">
-                  <icon-park type="filter" />
-                  筛选
-                </a-button>
-                <span
-                  v-if="viewFilter.conditions.length"
-                  class="tb-count"
-                  title="清除筛选"
-                  @click.stop="onClearFilter"
+                <template #suffix>
+                  <span class="tb-query-suffix">
+                    <icon-park
+                      type="search"
+                      class="tb-query-go"
+                      :class="{ 'is-applied': queryActive }"
+                      title="查询"
+                      @click.stop="handleSearch"
+                    />
+                  </span>
+                </template>
+              </a-input>
+              <!-- 查询按钮组（自定义/▾）独立于 Q 框，始终渲染（AC-15 enableKey=false 仍可用） -->
+              <span class="tb-query-actions">
+                <!-- 自定义查询构建器：由 ▾ 菜单「自定义查询」触发打开，锚点吸附在输入框旁 -->
+                <FilterBuilderPopover
+                  :visible="filterPopoverVisible"
+                  :fields="filterFields"
+                  :model-value="viewFilter"
+                  :can-save="!!activeViewId"
+                  @update:visible="onFilterPopoverVisible"
+                  @apply="onFilterApply"
+                  @save="onFilterSave"
                 >
-                  {{ viewFilter.conditions.length }}
-                </span>
+                  <span class="tb-query-anchor" />
+                </FilterBuilderPopover>
+                <QueryComboButton
+                  :queries="savedQueries"
+                  :active-query-id="appliedQueryId"
+                  :params-dirty="queryParamsDirty"
+                  :can-save="queryHasParams"
+                  :has-more-fields="false"
+                  :more-field-count="0"
+                  :expanded="false"
+                  @custom="onFilterPopoverVisible(true)"
+                  @reset="handleReset"
+                  @apply="handleApplyQuery"
+                  @save="handleSaveQuery"
+                  @rename="handleRenameQuery"
+                  @delete="handleDeleteQuery"
+                />
+              </span>
+              <!-- 最近关键字自动匹配下拉（OSC-260830a1b2）：输入时按包含匹配显示，点击回填并执行 -->
+              <div v-if="showRecentDropdown && recentMatches.length" class="tb-recent-dropdown">
+                <div
+                  v-for="kw in recentMatches"
+                  :key="kw"
+                  class="tb-recent-item"
+                  @mousedown.prevent="pickRecentSuggestion(kw)"
+                >
+                  <icon-park type="search" />
+                  {{ kw }}
+                </div>
               </div>
-            </FilterBuilderPopover>
+              <!-- 已应用预定义方案角标：显示方案名首字，点击重置查询参数（OSC-260830a1b2） -->
+              <span
+                v-if="hasAppliedQuery"
+                class="tb-query-badge"
+                title="重置查询参数"
+                @click="handleReset"
+              >{{ appliedQueryName.charAt(0) }}</span>
+            </span>
 
             <GroupPopover
               :visible="groupPopoverVisible"
@@ -160,14 +209,6 @@
               </div>
             </FormatPopover>
 
-            <a-button
-              v-if="chrome.showSearch"
-              type="text"
-              @click="searchPanelOpen = !searchPanelOpen"
-            >
-              <icon-park type="search" />
-              搜索
-            </a-button>
             <ShareViewPopover
               v-if="!isEmbed && chrome.showShare"
               :visible="sharePopoverVisible"
@@ -318,6 +359,17 @@
             添加字段
           </a-button>
         </a-modal>
+
+        <!-- 时间窗收窄提示（OSC-260830a1b2）：后端自动限定近 N 天时展示，可关闭（仅会话） -->
+        <a-alert
+          v-if="filterNarrowed"
+          type="warning"
+          closable
+          style="margin-bottom: 8px"
+          @close="filterNarrowed = ''"
+        >
+          已自动限定近 {{ filterNarrowed.replace('d', '') }} 天。可在自定义查询中加入时间条件以更改范围。
+        </a-alert>
 
         <a-spin :loading="loading" style="width: 100%">
           <template v-if="activeViewKind === 'table' || activeViewKind === 'tree'">
@@ -549,26 +601,6 @@
 
     <ListChartModal v-model:visible="chartVisible" :charts="chartList" />
 
-    <!-- 搜索抽屉（OSC-0016 面板重构）：右侧抽屉承载全部查询条件，每行一个；Q 第一、查询按钮右上角 -->
-    <SearchDrawer
-      v-model:visible="searchPanelOpen"
-      :fields="searchFields"
-      :model="searchForm"
-      :master-time-name="masterTimeName"
-      :master-time-display-name="masterTimeDisplayName"
-      :enable-key="enableKey"
-      :queries="savedQueries"
-      :active-query-id="appliedQueryId"
-      :params-dirty="queryParamsDirty"
-      :can-save="queryHasParams"
-      @search="handleSearch"
-      @reset="handleReset"
-      @apply="handleApplyQuery"
-      @save-query="handleSaveQuery"
-      @rename-query="handleRenameQuery"
-      @delete-query="handleDeleteQuery"
-    />
-
     <FormLayoutDrawer
       v-if="viewState"
       v-model:visible="formLayoutDrawerVisible"
@@ -591,7 +623,7 @@ const CardList = defineAsyncComponent(() => import('@/features/views/CardList.vu
 const KanbanBoard = defineAsyncComponent(() => import('@/features/views/KanbanBoard.vue'));
 const CalendarMonth = defineAsyncComponent(() => import('@/features/views/CalendarMonth.vue'));
 const GanttView = defineAsyncComponent(() => import('@/features/views/GanttView.vue'));
-import SearchDrawer from '@/features/search/SearchDrawer.vue';
+import QueryComboButton from '@/features/search/QueryComboButton.vue';
 import InsightPanel from '@/features/search/InsightPanel.vue';
 import BatchEditValueInput from './BatchEditValueInput.vue';
 import RecordDrawer from './RecordDrawer.vue';
@@ -614,6 +646,21 @@ const props = defineProps<{
 const sharePopoverVisible = ref(false);
 const isEmbed = isEmbedMode();
 
+/** 当前已应用且未脏的预定义查询名（OSC-260830a1b2）：用于查询图标角标与彩色态 */
+const appliedQueryName = computed(() => {
+  const q = savedQueries.value.find((x) => x.id === appliedQueryId.value);
+  return q?.name ?? '';
+});
+const hasAppliedQuery = computed(
+  () => !!appliedQueryName.value && !queryParamsDirty.value,
+);
+/** 是否存在查询条件（关键字 Q 或已应用自定义条件）：用于查询图标彩色亮起（OSC-260830a1b2） */
+const queryActive = computed(
+  () =>
+    String(searchForm.Q ?? '').trim().length > 0 ||
+    viewFilter.value.conditions.length > 0,
+);
+
 const {
   headerSection,
   fullscreen,
@@ -627,8 +674,6 @@ const {
   chartData,
   chartLoading,
   chartError,
-  masterTimeName,
-  masterTimeDisplayName,
   enableKey,
   savedQueries,
   appliedQueryId,
@@ -640,6 +685,11 @@ const {
   handleSaveQuery,
   handleRenameQuery,
   handleDeleteQuery,
+  showRecentDropdown,
+  recentMatches,
+  openRecentDropdown,
+  closeRecentDropdown,
+  pickRecentSuggestion,
   tablePanelRef,
   viewState,
   listFields,
@@ -665,11 +715,11 @@ const {
   filterPopoverVisible,
   filterFields,
   viewFilter,
+  filterNarrowed,
   activeViewId,
   onFilterPopoverVisible,
   onFilterApply,
   onFilterSave,
-  onClearFilter,
   chrome,
   groupPopoverVisible,
   viewGroup,
@@ -683,7 +733,6 @@ const {
   onFormatPopoverVisible,
   onFormatChange,
   onClearFormat,
-  searchPanelOpen,
   advancedVisible,
   handleImport,
   exportFormats,
@@ -977,6 +1026,110 @@ const automationFields = computed(() => {
 }
 .tb-count:hover {
   background: color-mix(in srgb, var(--cube-primary) 85%, #000);
+}
+/* 查询组合框（OSC-260830a1b2）：关键字输入框内嵌 查询图标 + ▾ 下拉，紧靠「分组」；高度跟随密度（与工具栏按钮一致） */
+.tb-query-cluster {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+}
+.tb-query-input {
+  width: 240px;
+}
+.tb-query-input :deep(.arco-input-outer) {
+  height: var(--cube-density-control-height, 32px);
+  min-height: var(--cube-density-control-height, 32px);
+}
+.tb-query-input :deep(.arco-input-wrapper) {
+  height: 100%;
+  min-height: 0;
+}
+.tb-query-input :deep(.arco-input) {
+  height: 100%;
+  line-height: calc(var(--cube-density-control-height, 32px) - 2px);
+}
+.tb-query-suffix {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+}
+/* 查询按钮组（自定义/▾）独立于 Q 框：始终渲染（AC-15），与输入框视觉连体 */
+.tb-query-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  margin-left: -2px;
+  position: relative;
+}
+.tb-query-go {
+  cursor: pointer;
+  color: var(--color-text-2);
+  font-size: 13px;
+  line-height: 1;
+}
+.tb-query-go:hover,
+.tb-query-go.is-applied {
+  color: rgb(var(--primary-6));
+}
+/* 最近关键字自动匹配下拉（OSC-260830a1b2）：输入时弹出 */
+.tb-recent-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 200px;
+  max-width: 280px;
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-2);
+  border-radius: var(--border-radius-small);
+  box-shadow: var(--box-shadow);
+  z-index: 30;
+  max-height: 240px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+.tb-recent-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--color-text-1);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tb-recent-item:hover {
+  background: var(--color-fill-2);
+}
+/* 已应用预定义方案角标：方案名首字（OSC-260830a1b2）；置于最上层，输入框聚焦不遮挡 */
+.tb-query-badge {
+  position: absolute;
+  top: -5px;
+  right: -6px;
+  z-index: 20;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--cube-primary);
+  color: #fff;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  box-sizing: border-box;
+}
+.tb-query-badge:hover {
+  background: color-mix(in srgb, var(--cube-primary) 85%, #000);
+}
+/* 自定义查询构建器锚点：不可见、不响应点击，仅用于 popover 定位（由 ▾ 菜单「自定义查询」触发打开） */
+.tb-query-anchor {
+  display: inline-block;
+  width: 1px;
+  height: 1px;
+  visibility: hidden;
+  pointer-events: none;
 }
 .list-pager {
   margin-top: 12px;

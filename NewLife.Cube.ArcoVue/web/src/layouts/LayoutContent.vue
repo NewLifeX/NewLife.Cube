@@ -61,7 +61,7 @@ const contentWidthClass = computed(() => {
   min-height: 0;
   overflow: auto;
   /* 水平 gutter 固定在滚动层，宽/流式时也不会被内部溢出吃掉 */
-  padding: 16px;
+  padding: 12px;
   box-sizing: border-box;
   /* 与父级同色，避免滚动层透明时透出未主题化的祖先底色 */
   background: var(--color-fill-2);

@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using NewLife;
 using NewLife.Cube.Automation;
+using NewLife.Cube.ViewModels;
 using NewLife.Data;
 using NewLife.Reflection;
 using NewLife.Remoting;
@@ -94,6 +95,11 @@ public class WidgetQueryResult
 
     /// <summary>是否应用了宿主筛选</summary>
     public Boolean HostFilterApplied { get; set; }
+
+    /// <summary>时间窗收窄标记（OSC-260830a1b2）。形如 "30d"；未收窄则省略</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonPropertyName("filterNarrowed")]
+    public String FilterNarrowed { get; set; }
 }
 
 /// <summary>分组项</summary>
@@ -135,6 +141,17 @@ public static class WidgetQueryService
         var where = BuildWhere(user, fact, ctrlType, entityType, req, typePath, ref hostApplied);
         var mode = (req.Mode + "").Trim().ToLowerInvariant();
         if (mode.IsNullOrEmpty()) mode = "aggregate";
+
+        // 时间窗（OSC-260830a1b2）：分表/日志实体无时间条件时收窄近 N 天。宿主同源且已含时间条件时不注入
+        var filterNarrowed = "";
+        var hostPath = AutomationPaths.NormalizeTypePath(req.HostTypePath);
+        if (AutomationFilter.TryGetTimeWindow(fact, req.ExtraFilter, out var timeFi, out var narrowedDays) &&
+            !(hostPath.EqualIgnoreCase(typePath) && AutomationFilter.HasTimeCondition(req.HostFilter, timeFi.Name)))
+        {
+            var win = timeFi >= DateTime.Now.Date.AddDays(-narrowedDays);
+            where = where == null ? win : where & win;
+            filterNarrowed = $"{narrowedDays}d";
+        }
         // limit=-1：全部（XCode maximumRows=0 表示不截断）；其余默认 30、上限 300
         Int32 limit;
         Int64 fetchRows;
@@ -162,17 +179,17 @@ public static class WidgetQueryService
                     map[fi.Name] = e[fi.Name];
                 rows.Add(map);
             }
-            return new WidgetQueryResult { Rows = rows, HostFilterApplied = hostApplied };
+            return new WidgetQueryResult { Rows = rows, HostFilterApplied = hostApplied, FilterNarrowed = filterNarrowed };
         }
 
         if (!req.GroupBy.IsNullOrEmpty())
             // 聚合分组仍封顶；「全部」按上限 300 参与分组
-            return GroupAggregate(fact, where, req, limit == -1 ? 300 : limit, hostApplied);
+            return GroupAggregate(fact, where, req, limit == -1 ? 300 : limit, hostApplied, filterNarrowed);
         if (!req.TimeField.IsNullOrEmpty())
-            return TimeBucketAggregate(fact, where, req, hostApplied);
+            return TimeBucketAggregate(fact, where, req, hostApplied, filterNarrowed);
 
         var value = ScalarAggregate(fact, where, req.Measure);
-        return new WidgetQueryResult { Value = value, HostFilterApplied = hostApplied };
+        return new WidgetQueryResult { Value = value, HostFilterApplied = hostApplied, FilterNarrowed = filterNarrowed };
     }
 
     static void RejectForbiddenKeys(WidgetQueryRequest req)
@@ -228,6 +245,7 @@ public static class WidgetQueryService
     static Expression BuildWhere(IUser user, IEntityFactory fact, Type ctrlType, Type entityType, WidgetQueryRequest req, String typePath, ref Boolean hostApplied)
     {
         Expression exp = null;
+        var allowed = BuildAllowedField(fact);
 
         var att = ctrlType.GetCustomAttribute<DataPermissionAttribute>(true);
         if (att != null && (user.Roles == null || !user.Roles.Any(e => e.IsSystem) && !att.Valid(user.Roles)))
@@ -285,7 +303,7 @@ public static class WidgetQueryService
 
         if (HasConditions(req.ExtraFilter))
         {
-            var extra = AutomationFilter.TryBuildWhere(fact, req.ExtraFilter);
+            var extra = AutomationFilter.TryBuildWhere(fact, req.ExtraFilter, allowed);
             if (extra == null) throw new ApiException(400, "筛选无法下推");
             exp = exp == null ? extra : exp & extra;
         }
@@ -295,7 +313,7 @@ public static class WidgetQueryService
         {
             if (hostPath.EqualIgnoreCase(typePath))
             {
-                var hostExp = AutomationFilter.TryBuildWhere(fact, req.HostFilter);
+                var hostExp = AutomationFilter.TryBuildWhere(fact, req.HostFilter, allowed);
                 if (hostExp == null) throw new ApiException(400, "筛选无法下推");
                 exp = exp == null ? hostExp : exp & hostExp;
                 hostApplied = true;
@@ -342,6 +360,17 @@ public static class WidgetQueryService
     static Boolean HasConditions(ViewFilterDto filter) =>
         filter?.Conditions != null && filter.Conditions.Count > 0;
 
+    /// <summary>构造 viewFilter 字段白名单（GetPage search∪list 的 name）。OSC-260830a1b2：与 GetPage 一致的 FieldCollection 默认 ShowIn，禁止 AllFields</summary>
+    /// <param name="fact">实体工厂</param>
+    /// <returns>白名单判定委托</returns>
+    static Func<String, Boolean> BuildAllowedField(IEntityFactory fact)
+    {
+        var names = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
+        foreach (var f in new FieldCollection(fact, ViewKinds.Search)) names.Add(f.Name);
+        foreach (var f in new FieldCollection(fact, ViewKinds.List)) names.Add(f.Name);
+        return n => names.Contains(n);
+    }
+
     static Object ScalarAggregate(IEntityFactory fact, Expression where, WidgetMeasure measure)
     {
         var fn = (measure?.Fn + "").Trim().ToLowerInvariant();
@@ -362,7 +391,7 @@ public static class WidgetQueryService
         return row?[fi.Name];
     }
 
-    static WidgetQueryResult GroupAggregate(IEntityFactory fact, Expression where, WidgetQueryRequest req, Int32 limit, Boolean hostApplied)
+    static WidgetQueryResult GroupAggregate(IEntityFactory fact, Expression where, WidgetQueryRequest req, Int32 limit, Boolean hostApplied, String filterNarrowed = null)
     {
         var groupFi = fact.Table.FindByName(req.GroupBy)
             ?? fact.Fields.FirstOrDefault(f => f.Name.EqualIgnoreCase(req.GroupBy));
@@ -413,7 +442,7 @@ public static class WidgetQueryService
                 });
             }
         }
-        return new WidgetQueryResult { Items = items, HostFilterApplied = hostApplied };
+        return new WidgetQueryResult { Items = items, HostFilterApplied = hostApplied, FilterNarrowed = filterNarrowed };
     }
 
     /// <summary>分组键 → 友好显示名（枚举 / Boolean / Map 数据源）</summary>
@@ -495,7 +524,7 @@ public static class WidgetQueryService
         || t.IsEnum;
 
     /// <summary>按日历日分桶；方言不支持 → 400</summary>
-    static WidgetQueryResult TimeBucketAggregate(IEntityFactory fact, Expression where, WidgetQueryRequest req, Boolean hostApplied)
+    static WidgetQueryResult TimeBucketAggregate(IEntityFactory fact, Expression where, WidgetQueryRequest req, Boolean hostApplied, String filterNarrowed = null)
     {
         var timeFi = fact.Table.FindByName(req.TimeField)
             ?? fact.Fields.FirstOrDefault(f => f.Name.EqualIgnoreCase(req.TimeField));
@@ -551,7 +580,7 @@ public static class WidgetQueryService
                 items.Add(new WidgetQueryItem { Key = key, Label = key, Value = val });
             }
         }
-        return new WidgetQueryResult { Items = items, HostFilterApplied = hostApplied };
+        return new WidgetQueryResult { Items = items, HostFilterApplied = hostApplied, FilterNarrowed = filterNarrowed };
     }
 
     /// <summary>日历日截断 SQL；不支持返回 null</summary>

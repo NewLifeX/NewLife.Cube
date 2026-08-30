@@ -3,7 +3,7 @@ import { Message } from '@arco-design/web-vue';
 import { useRouter } from 'vue-router';
 import cubeApi from '@/api';
 import { formatApiError } from '@/core/utils/apiError';
-import { getActiveView } from '@/core/utils/viewProfile';
+import { emptyViewFilter, getActiveView, normalizeFilter } from '@/core/utils/viewProfile';
 import { PAGE_SIZE_OPTIONS } from '@/core/utils/viewMapping';
 import { resolveControl } from '@/core/utils/fieldControl';
 import { fetchLovMeta } from '@/core/utils/lov-api';
@@ -266,14 +266,38 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     views.applyWorkspacePrefs();
     // 初始回填 URL→已保存基准条件到搜索表单（OSC-0012）
     query.applySearchToForm(ctx.baseSearch.value);
-    // 部件下钻：URL viewFilter 覆盖本地筛选
-    applyUrlViewFilter();
+    // 部件下钻：URL viewFilter 覆盖本地筛选（OSC-0012）；记录是否生效以便后续恢复优先级
+    const hasUrlFilter = applyUrlViewFilter();
+    // 恢复查询状态优先级（OSC-260830a1b2）：
+    // 1) 部件下钻 URL viewFilter 生效时不恢复任何持久化查询
+    // 2) 勾选的预定义查询（localStorage，重开视图/系统重启后仍有效）
+    // 3) 未命名当前查询（sessionStorage，刷新有效、关闭视图后不保留）
+    if (!hasUrlFilter) {
+      const activeId = ctx.evpStore.getActiveQueryId(ctx.typePath.value);
+      if (activeId) {
+        query.handleApplyQuery(activeId);
+        return;
+      }
+      const last = query.restoreLastQuery();
+      if (last) {
+        query.applySearchToForm({ Q: last.q ?? '' });
+        ctx.viewFilter.value = last.filter ? normalizeFilter(last.filter) : emptyViewFilter();
+        ctx.searchTouched.value = true;
+        ctx.pagination.current = 1;
+        await query.loadData();
+        return;
+      }
+    }
     await query.loadData();
   }
 
-  function applyUrlViewFilter() {
+  function applyUrlViewFilter(): boolean {
     const vf = parseUrlViewFilter(ctx.route.query as Record<string, unknown>);
-    if (vf?.conditions?.length) ctx.localFilter.value = vf;
+    if (vf?.conditions?.length) {
+      ctx.localFilter.value = vf;
+      return true;
+    }
+    return false;
   }
 
   watch(ctx.typePath, () => {

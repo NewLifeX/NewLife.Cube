@@ -1,6 +1,5 @@
 import type { ViewProfileModel } from '@cube/api-core';
 import type { FieldMeta } from '@/core/types/field';
-import { cleanSearchParams, collectSearchKeys } from '@/core/utils/searchFilters';
 import {
   normalizeMapping,
   parseViewKind,
@@ -108,6 +107,8 @@ export type ViewFilterOp =
   | 'neq' // 不等于
   | 'contains' // 包含（字符）
   | 'notContains' // 不包含（字符）
+  | 'startsWith' // 开头是（字符）
+  | 'endsWith' // 结尾是（字符）
   | 'isNull' // 为空
   | 'notNull' // 不为空
   | 'gt' // 大于
@@ -123,6 +124,8 @@ export const FILTER_OPS: readonly ViewFilterOp[] = [
   'neq',
   'contains',
   'notContains',
+  'startsWith',
+  'endsWith',
   'isNull',
   'notNull',
   'gt',
@@ -285,23 +288,25 @@ export function normalizeGroup(raw: unknown): ViewGroup {
   return out;
 }
 
-/** 预定义查询条目（OSC-0016） */
+/** 预定义查询条目（OSC-260830a1b2 v2）：同时保存关键字 Q 与自定义条件 filter */
 export interface SavedQuery {
   /** 唯一 id；生成规则 `q_` + Date.now().toString(36) + 4 位随机 base36 */
   id: string;
   /** 查询名；trim 后 1~50 字符 */
   name: string;
-  /** 查询参数：经 cleanSearchParams 清理的平坦键值（含 Q/dtStart/dtEnd 保留键） */
-  params: Record<string, unknown>;
+  /** 关键字 Q（工具栏查询）。空串/省略 */
+  q?: string;
+  /** 自定义查询条件（viewFilter）。无条件可省略 */
+  filter?: ViewFilter;
 }
 
-/** QueriesJson 线缆格式（OSC-0016） */
+/** QueriesJson 线缆格式（OSC-260830a1b2 v2） */
 export interface SavedQueriesWire {
-  version: 1;
+  version: 2;
   queries: SavedQuery[];
 }
 
-export const SAVED_QUERIES_VERSION = 1;
+export const SAVED_QUERIES_VERSION = 2;
 
 /** 生成预定义查询条目 id：`q_` + 时间戳 base36 + 4 位随机 base36 */
 export function generateQueryId(): string {
@@ -316,37 +321,56 @@ export function emptySavedQueries(): SavedQueriesWire {
   return { version: SAVED_QUERIES_VERSION, queries: [] };
 }
 
-/** 归一化单条预定义查询；非法/空参数/空名称返回 null（OSC-0016 §3.1） */
+/** 归一化单条预定义查询（OSC-260830a1b2 v2）：q 非空或条件数 > 0 才保留；name 截断 50；id 非法/重复重新生成 */
 export function normalizeSavedQuery(
   raw: unknown,
-  searchFields: FieldMeta[],
+  _searchFields: FieldMeta[],
   usedIds?: Set<string>,
 ): SavedQuery | null {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const o = raw as Record<string, unknown>;
   const name = typeof o.name === 'string' ? o.name.trim() : '';
   if (!name) return null;
-  const params = cleanSearchParams(
-    o.params && typeof o.params === 'object' && !Array.isArray(o.params)
-      ? (o.params as Record<string, unknown>)
-      : {},
-    collectSearchKeys(searchFields),
-  );
-  if (Object.keys(params).length === 0) return null;
+  const q = typeof o.q === 'string' ? o.q.trim() : '';
+  const filter = normalizeFilter(o.filter);
+  // 合法条目：q 非空 或 条件数 > 0；否则丢弃
+  if (!q && filter.conditions.length === 0) return null;
   const id =
     typeof o.id === 'string' && o.id && !usedIds?.has(o.id) ? o.id : generateQueryId();
   usedIds?.add(id);
-  return { id, name: name.slice(0, 50), params };
+  const saved: SavedQuery = { id, name: name.slice(0, 50) };
+  if (q) saved.q = q;
+  if (filter.conditions.length > 0) saved.filter = filter;
+  return saved;
+}
+
+/** v1 单条迁移（OSC-260830a1b2）：只迁出 params.Q，其余旧抽屉键丢弃；迁完后既无 q 又无条件 → 丢弃 */
+function migrateV1Query(raw: unknown, usedIds?: Set<string>): SavedQuery | null {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const o = raw as Record<string, unknown>;
+  const name = typeof o.name === 'string' ? o.name.trim() : '';
+  if (!name) return null;
+  const params =
+    o.params && typeof o.params === 'object' && !Array.isArray(o.params)
+      ? (o.params as Record<string, unknown>)
+      : {};
+  const q = String(params.Q ?? params.q ?? '').trim();
+  // Q 为空则丢弃（不把 v1 其它旧抽屉键迁移为 viewFilter 条件）
+  if (!q) return null;
+  const id =
+    typeof o.id === 'string' && o.id && !usedIds?.has(o.id) ? o.id : generateQueryId();
+  usedIds?.add(id);
+  return { id, name: name.slice(0, 50), q };
 }
 
 /**
- * 宽容解析 QueriesJson（OSC-0016）。
- * 缺失/空串/解析失败/非对象/version 不符 → 空列表；queries 非数组 → []；
- * 逐条：非对象/空 name/空 params 丢弃，name 截断 50，id 非法或重复重新生成。
+ * 宽容解析 QueriesJson（OSC-260830a1b2 v2，兼容 v1）。
+ * 缺失/空串/解析失败/非对象/version 其它 → 空列表；queries 非数组 → []。
+ * v2 按新结构归一化；v1 或条目含 params 按 migrateV1Query 迁出 Q。
  */
 export function parseQueriesWire(
   raw: string | null | undefined,
-  searchFields: FieldMeta[],
+  _searchFields: FieldMeta[],
 ): SavedQueriesWire {
   if (!raw || typeof raw !== 'string') return emptySavedQueries();
   let v: unknown;
@@ -357,19 +381,21 @@ export function parseQueriesWire(
   }
   if (!v || typeof v !== 'object' || Array.isArray(v)) return emptySavedQueries();
   const o = v as Record<string, unknown>;
-  if (o.version !== SAVED_QUERIES_VERSION) return emptySavedQueries();
+  const version = o.version;
+  if (version !== 1 && version !== 2) return emptySavedQueries();
   const queries: SavedQuery[] = [];
   if (Array.isArray(o.queries)) {
     const usedIds = new Set<string>();
     for (const q of o.queries) {
-      const saved = normalizeSavedQuery(q, searchFields, usedIds);
+      const saved =
+        version === 2 ? normalizeSavedQuery(q, _searchFields, usedIds) : migrateV1Query(q, usedIds);
       if (saved) queries.push(saved);
     }
   }
   return { version: SAVED_QUERIES_VERSION, queries };
 }
 
-/** 序列化 QueriesJson 线缆；空列表序列化为 {"version":1,"queries":[]} */
+/** 序列化 QueriesJson 线缆；空列表序列化为 {"version":2,"queries":[]} */
 export function serializeQueriesWire(wire: SavedQueriesWire): string {
   return JSON.stringify(wire);
 }

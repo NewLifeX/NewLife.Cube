@@ -20,6 +20,7 @@ import {
   hasViewsDomain,
   getFormModeLayout,
   mergeColumns,
+  normalizeFilter,
   parseFormJson,
   parseQueriesWire,
   parseSavedFilters,
@@ -52,6 +53,7 @@ import {
   type FormMode,
   type SavedFiltersWire,
   type SavedQueriesWire,
+  type SavedQuery,
   type ViewChrome,
   type ViewDomainSource,
   type ViewFilter,
@@ -77,6 +79,74 @@ const SAVE_MS = 400;
 
 function cloneState(state: EntityViewState): EntityViewState {
   return JSON.parse(JSON.stringify(state)) as EntityViewState;
+}
+
+/** 当前应用的预定义查询 id 持久化（OSC-260830a1b2）：勾选的预定义查询在重新打开视图 / 系统重启后仍有效，故用 localStorage */
+const ACTIVE_QUERY_PREFIX = 'cube:activeQuery:';
+
+function restoreActiveQuery(typePath: string, queries: SavedQueriesWire): string | null {
+  try {
+    const id = localStorage.getItem(ACTIVE_QUERY_PREFIX + typePath);
+    if (id && queries.queries.some((q) => q.id === id)) return id;
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+function persistActiveQuery(typePath: string, id: string | null) {
+  try {
+    if (id) localStorage.setItem(ACTIVE_QUERY_PREFIX + typePath, id);
+    else localStorage.removeItem(ACTIVE_QUERY_PREFIX + typePath);
+  } catch {
+    /* ignore */
+  }
+}
+
+/** 未命名当前查询（Q + filter）会话持久化（OSC-260830a1b2）：刷新有效，关闭视图界面后不保留，故用 sessionStorage */
+const LAST_QUERY_PREFIX = 'cube:lastQuery:';
+
+interface LastQueryWire {
+  q?: string;
+  filter?: ViewFilter;
+}
+
+function _restoreLastQuery(typePath: string): LastQueryWire | null {
+  try {
+    const raw = sessionStorage.getItem(LAST_QUERY_PREFIX + typePath);
+    if (!raw) return null;
+    const o = JSON.parse(raw) as Record<string, unknown>;
+    return {
+      q: typeof o.q === 'string' ? o.q : undefined,
+      filter: o.filter ? normalizeFilter(o.filter) : undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function _persistLastQuery(typePath: string, wire: LastQueryWire) {
+  try {
+    const o: LastQueryWire = {};
+    const q = wire.q?.trim();
+    if (q) o.q = q;
+    if (wire.filter?.conditions?.length) o.filter = wire.filter;
+    if (!o.q && !o.filter) {
+      sessionStorage.removeItem(LAST_QUERY_PREFIX + typePath);
+      return;
+    }
+    sessionStorage.setItem(LAST_QUERY_PREFIX + typePath, JSON.stringify(o));
+  } catch {
+    /* ignore */
+  }
+}
+
+function _clearLastQuery(typePath: string) {
+  try {
+    sessionStorage.removeItem(LAST_QUERY_PREFIX + typePath);
+  } catch {
+    /* ignore */
+  }
 }
 
 type CacheEntry = {
@@ -233,9 +303,10 @@ export const useViewProfileStore = defineStore('viewProfile', {
 
       entry.pageSize = normalizePageSize(personal?.pageSize);
       entry.formJson = parseFormJson(personal?.formJson);
-      // 预定义查询为实体级个人配置（OSC-0016）：仅个人域，不走模板回退；activeQueryId 会话态不持久化
+      // 预定义查询为实体级个人配置（OSC-0016）：仅个人域，不走模板回退；activeQueryId 用 localStorage，
+      // 勾选的预定义查询在重新打开视图 / 系统重启后仍有效
       entry.queries = parseQueriesWire(personal?.queriesJson ?? null, entry.fields);
-      entry.activeQueryId = null;
+      entry.activeQueryId = restoreActiveQuery(typePath, entry.queries);
       // 仪表盘：个人 present > 系统管理员模板（ViewProfileTemplate / global）> null（再合成旧 insight）
       // 后端 ViewProfile GET 也可能已把 global.DashboardJson 填入 personal；此处再兜底模板接口
       const personalDash = hasDashboardDomain(personal?.dashboardJson)
@@ -589,25 +660,31 @@ export const useViewProfileStore = defineStore('viewProfile', {
       return this.byType[typePath]?.activeQueryId ?? null;
     },
 
-    /** 将当前查询保存为预定义查询：新增条目、activeQueryId 指向新条目并立即保存 */
+    /** 将当前查询保存为预定义查询（OSC-260830a1b2 v2）：新增条目（q + filter）、activeQueryId 指向新条目并立即保存 */
     saveQueryAs(
       typePath: string,
       name: string,
-      params: Record<string, unknown>,
+      q: string,
+      filter: ViewFilter,
     ): string | null {
       const entry = this.byType[typePath];
       if (!entry) return null;
       const trimmed = name.trim();
       if (!trimmed) return null;
       const id = generateQueryId();
+      const item: SavedQuery = { id, name: trimmed.slice(0, 50) };
+      const qs = typeof q === 'string' ? q.trim() : '';
+      if (qs) item.q = qs;
+      // 深拷贝条件，避免后续原地修改 viewFilter 污染已保存预定义
+      if (filter?.conditions?.length) item.filter = JSON.parse(JSON.stringify(filter)) as ViewFilter;
+      // 合法条目：q 非空 或 条件数 > 0
+      if (!item.q && !item.filter?.conditions?.length) return null;
       entry.queries = {
-        version: 1,
-        queries: [
-          ...entry.queries.queries,
-          { id, name: trimmed.slice(0, 50), params: { ...params } },
-        ],
+        version: 2,
+        queries: [...entry.queries.queries, item],
       };
       entry.activeQueryId = id;
+      persistActiveQuery(typePath, id);
       entry.dirty = true;
       this.scheduleSave(typePath, true);
       return id;
@@ -642,21 +719,38 @@ export const useViewProfileStore = defineStore('viewProfile', {
       this.scheduleSave(typePath, true);
     },
 
-    /** 应用预定义查询：设置 activeQueryId 并返回该条目 params（供 DefaultList 整体回填后执行） */
-    applyQuery(typePath: string, id: string): Record<string, unknown> | null {
+    /** 应用预定义查询：设置 activeQueryId 并返回该条目（q + filter）。供 DefaultList 回填 Q 与 viewFilter 后执行 */
+    applyQuery(typePath: string, id: string): SavedQuery | null {
       const entry = this.byType[typePath];
       if (!entry) return null;
       const q = entry.queries.queries.find((x) => x.id === id);
       if (!q) return null;
       entry.activeQueryId = id;
-      return { ...q.params };
+      persistActiveQuery(typePath, id);
+      return q;
     },
 
-    /** 清除当前应用标记（会话内存，不持久化） */
+    /** 清除当前应用标记（同步清理 localStorage 的勾选持久化） */
     clearActiveQuery(typePath: string) {
       const entry = this.byType[typePath];
       if (!entry) return;
       entry.activeQueryId = null;
+      persistActiveQuery(typePath, null);
+    },
+
+    /** 持久化未命名当前查询（Q + filter）到 sessionStorage（OSC-260830a1b2）：刷新有效，关闭视图界面后不保留 */
+    persistLastQuery(typePath: string, wire: { q?: string; filter?: ViewFilter }) {
+      _persistLastQuery(typePath, wire);
+    },
+
+    /** 读取未命名当前查询（sessionStorage）；无效/缺失返回 null */
+    restoreLastQuery(typePath: string): { q?: string; filter?: ViewFilter } | null {
+      return _restoreLastQuery(typePath);
+    },
+
+    /** 清除未命名当前查询（sessionStorage） */
+    clearLastQuery(typePath: string) {
+      _clearLastQuery(typePath);
     },
 
     switchView(typePath: string, viewId: string) {

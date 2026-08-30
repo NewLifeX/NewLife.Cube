@@ -65,6 +65,15 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         };
 
         var list = SearchData(p);
+        // 时间窗收窄天数透传到响应体（OSC-260830a1b2）：响应头 X-Cube-Filter-Narrowed 无法被前端 axios 响应体读取，
+        // 故额外放入 ApiListResponse.FilterNarrowed 供工具栏提示消费。
+        var narrowed = Response.Headers["X-Cube-Filter-Narrowed"].ToString();
+        var days = 0;
+        if (!String.IsNullOrEmpty(narrowed))
+        {
+            var n = narrowed.TrimEnd('d');
+            if (Int32.TryParse(n, out var d)) days = d;
+        }
         //return list.ToOkApiResponse().WithList(p); 
         return new ApiListResponse<TEntity>
         {
@@ -73,6 +82,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             // p.State 可能是 WhereBuilder（无 RetrieveState 时）或统计实体（RetrieveState 时），
             // 仅当其为 TEntity 时才作为 Stat 输出，否则为 null，不得抛 InvalidCastException（OSC-260819e483 P1）
             Stat = p.State as TEntity,
+            FilterNarrowed = days,
             TraceId = DefaultSpan.Current?.TraceId,
         };
     }

@@ -259,3 +259,14 @@ describe('matchesViewFilter (OSC-0015)', () => {
     expect(matchesViewFilter({ createTime: '2026-06-01' }, before, [])).toBe(false);
   });
 });
+
+describe('matchesViewFilter startsWith/endsWith (OSC-260830a1b2)', () => {
+  it('startsWith matches prefix, endsWith matches suffix', () => {
+    const sw = { logic: 'all' as const, conditions: [{ field: 'Name', op: 'startsWith' as const, value: '张' }] };
+    expect(matchesViewFilter({ name: '张三' }, sw, [])).toBe(true);
+    expect(matchesViewFilter({ name: '李四' }, sw, [])).toBe(false);
+    const ew = { logic: 'all' as const, conditions: [{ field: 'Name', op: 'endsWith' as const, value: '三' }] };
+    expect(matchesViewFilter({ name: '张三' }, ew, [])).toBe(true);
+    expect(matchesViewFilter({ name: '王五' }, ew, [])).toBe(false);
+  });
+});

@@ -66,12 +66,12 @@ export function resolveFieldFilterKind(field: FieldMeta): FilterFieldKind {
   return 'string';
 }
 
-/** 各类别可用操作符（OSC-0015） */
+/** 各类别可用操作符（OSC-0015；OSC-260830a1b2 字符类新增 开头是/不是开头） */
 export const FILTER_OPS_BY_KIND: Record<FilterFieldKind, readonly ViewFilterOp[]> = {
   // 状态/枚举/值集：等于/不等于/为空/不为空
   enum: ['eq', 'neq', 'isNull', 'notNull'],
-  // 字符：等于/不等于/包含/不包含/为空/不为空
-  string: ['eq', 'neq', 'contains', 'notContains', 'isNull', 'notNull'],
+  // 字符：等于/不等于/包含/不包含/开头是/结尾是/为空/不为空
+  string: ['eq', 'neq', 'contains', 'notContains', 'startsWith', 'endsWith', 'isNull', 'notNull'],
   // 人员：等于/不等于（用户实体下拉）
   person: ['eq', 'neq'],
   // 数字：等于/不等于/大于/大于或等于/小于/小于或等于/为空/不为空（不含范围）
@@ -86,6 +86,8 @@ export const FILTER_OP_LABELS: Record<ViewFilterOp, string> = {
   neq: '不等于',
   contains: '包含',
   notContains: '不包含',
+  startsWith: '开头是',
+  endsWith: '结尾是',
   isNull: '为空',
   notNull: '不为空',
   gt: '大于',

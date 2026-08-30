@@ -33,6 +33,7 @@ import {
   mergeColumns,
   resolveChrome,
   emptyViewFilter,
+  normalizeFilter,
   type ColumnPref,
   type EntityViewState,
   type FormLayout,
@@ -59,7 +60,6 @@ import {
   collectSearchKeys,
   parseUrlSearch,
 } from '@/core/utils/searchFilters';
-import { isPersonField } from '@/core/utils/filterBuilder';
 import { detectTreeData } from '@/core/utils/tree';
 import { buildTree, canBuildTree } from '@/core/utils/treeBuilder';
 import { hexToRgba } from './useListViews';
@@ -390,7 +390,15 @@ export function createListContext(props: { type: string; authId?: number }) {
 
   /** 当前命名视图的筛选构建器方案（OSC-0015）：会话内存状态，应用仅改本地、保存才写 store 持久化 */
   const localFilter = ref<ViewFilter>(emptyViewFilter());
-  const viewFilter = computed<ViewFilter>(() => localFilter.value);
+  /** 可写计算属性：读取/写入 localFilter（OSC-260830a1b2 供重置/应用预定义查询写回） */
+  const viewFilter = computed<ViewFilter>({
+    get: () => localFilter.value,
+    set: (v) => {
+      localFilter.value = v;
+    },
+  });
+  /** 时间窗收窄提示（OSC-260830a1b2）：响应头 X-Cube-Filter-Narrowed；如 "30d"，空则不提示 */
+  const filterNarrowed = ref('');
 
   /** 当前命名视图的多级分组字段（OSC-0015）：同筛选，应用仅改本地、保存才写 store */
   const localGroup = ref<ViewGroup>([]);
@@ -403,16 +411,17 @@ export function createListContext(props: { type: string; authId?: number }) {
     return k === 'table' || k === 'tree' || k === 'card';
   });
 
-  /** 筛选构建器候选字段 = 当前视图可见列 ∪ 人员字段（创建者/更新者等即使列隐藏也可筛选，OSC-0015） */
+  /** 筛选构建器候选字段 = GetPage search∪list（与后端 viewFilter 白名单对齐，OSC-260830a1b2）。去重保序 */
   const filterFields = computed<FieldMeta[]>(() => {
-    const visible = new Set(
-      activeColumns.value.filter((c) => c.visible).map((c) => c.key),
-    );
-    const visibleFields = listFields.value.filter((f) => visible.has(f.name));
-    const hiddenPerson = listFields.value.filter(
-      (f) => !visible.has(f.name) && isPersonField(f),
-    );
-    return [...visibleFields, ...hiddenPerson];
+    const seen = new Set<string>();
+    const out: FieldMeta[] = [];
+    for (const f of [...searchFields.value, ...listFields.value]) {
+      if (!f?.name) continue;
+      if (seen.has(f.name)) continue;
+      seen.add(f.name);
+      out.push(f);
+    }
+    return out;
   });
 
   /** 分组展示：仅表格视图且配置了分组字段（树状视图不允许分组，OSC-0015） */
@@ -465,22 +474,24 @@ export function createListContext(props: { type: string; authId?: number }) {
     return style;
   });
 
-  /** 预定义查询列表（OSC-0016）：实体级个人配置 */
+  /** 预定义查询列表（OSC-260830a1b2 v2）：实体级个人配置 */
   const savedQueries = computed(() => evpStore.getQueries(typePath.value).queries);
   /** 当前应用的预定义查询 id（会话内存，刷新后为 null） */
   const appliedQueryId = computed(() => evpStore.getActiveQueryId(typePath.value));
-  /** 当前表单参数（cleanSearchParams 后）是否有任一非空键（含 Q/dtStart/dtEnd） */
+  /** 当前是否可保存为预定义（OSC-260830a1b2）：Q 非空 或 已应用条件数 > 0 */
   const queryHasParams = computed(
-    () => Object.keys(cleanSearchParams({ ...searchForm }, searchKeys.value)).length > 0,
+    () => String(searchForm.Q ?? '').trim().length > 0 || viewFilter.value.conditions.length > 0,
   );
-  /** 当前表单参数与 activeQuery 是否不一致（OSC-0016：不一致时条目不显示 ✓，应用标记保留） */
+  /** 当前 Q + viewFilter 与 activeQuery 是否不一致（OSC-260830a1b2：不一致时条目不显示 ✓，应用标记保留） */
   const queryParamsDirty = computed(() => {
     const id = appliedQueryId.value;
     if (!id) return false;
     const q = savedQueries.value.find((x) => x.id === id);
     if (!q) return false;
-    const cur = cleanSearchParams({ ...searchForm }, searchKeys.value);
-    return JSON.stringify(cur) !== JSON.stringify(q.params);
+    const curQ = String(searchForm.Q ?? '').trim();
+    const curF = normalizeFilter(viewFilter.value);
+    const savedF = normalizeFilter(q.filter ?? emptyViewFilter());
+    return curQ !== (q.q ?? '') || JSON.stringify(curF) !== JSON.stringify(savedF);
   });
 
   /** 列表面板引用：用于测量表格可用高度，保证分页器与外壳底部在首屏可见 */
@@ -692,6 +703,7 @@ export function createListContext(props: { type: string; authId?: number }) {
     formatPopoverVisible,
     localFilter,
     viewFilter,
+    filterNarrowed,
     localGroup,
     viewGroup,
     localFormat,

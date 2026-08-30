@@ -54,4 +54,7 @@ public class ApiListResponse<T> : ApiResponse<IList<T>>
 
     /// <summary>统计行数据</summary>
     public T Stat { get; set; }
+
+    /// <summary>时间窗收窄天数（OSC-260830a1b2）。无时间条件自动收窄时输出，0 表示未收窄，供前端提示消费</summary>
+    public Int32 FilterNarrowed { get; set; }
 }

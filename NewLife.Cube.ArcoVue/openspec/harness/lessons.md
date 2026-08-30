@@ -261,3 +261,13 @@
 - 后续按现代中后台常见 **组件/场景**（列表表头、单元格、表单标签、抽屉标题、徽章等）在 Harness 建立统一的 **字体 / 字号 / 字重** 规范，并替换各处临时字重（如 VTable `headerStyle.fontWeight: 400`）。
 - 列表布尔徽章勿用 `borderRadius: 999`：短文案「是/否」会视觉成圆；用小矩形圆角（≈ Arco `--border-radius-small` / 4px）。
 
+## OSC-260830a1b2 — 2026-08-30
+
+- **前端读响应头不可靠**：`api-core.createRequest` 只返回响应体、丢弃响应头；需要响应头值时应在响应体透传（如 `ApiListResponse.FilterNarrowed`）。本次时间窗提示因读 `res.headers` 恒空，验收才暴露。
+- **VTable groupBy 组顺序取决于 records 首现顺序**：`GroupConfig.sort` 不生效；时间分桶需按时间字段**预排序 records**（组间+组内近到远）。
+- **功能按钮勿被条件渲染容器连带隐藏**：`enableKey=false` 时查询按钮组被 `a-input` 连带隐藏（AC-15），应独立渲染。
+- **monorepo `@cube/api-core` 改 src 后必须 build**：types 入口是 `dist`，否则 ArcoVue `vue-tsc` 看不到新导出（本号再次验证）。
+- **XCode 无 `NotStartsWith/NotEndsWith`**：design 列出的操作符若 XCode 不支持，应裁剪并记录，而非强行实现。
+- **验收必补会话内增量**：日期时间分组/查询持久化分层/数据更新重算/重置刷新/UI 微调均在会话窗口完成、不在 OSC 计划，验收需补录（T21–T25）。
+- **时间窗时区用本地 `DateTime.Now.Date`**，与既有 `dtStart` 本地惯例一致，避免 UTC 零点把本地当日 0:00–7:59 挤出默认窗口。
+

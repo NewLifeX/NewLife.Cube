@@ -65,6 +65,7 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
     activeViewId,
     drawerMode,
     tableDataRaw,
+    searchForm,
     evpStore,
     measureTableHeight,
   } = ctx;
@@ -312,6 +313,7 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
   function onFilterApply(filter: ViewFilter) {
     evpStore.updateFilter(typePath.value, filter);
     localFilter.value = filter;
+    evpStore.persistLastQuery(typePath.value, { q: String(searchForm.Q ?? ''), filter });
     pagination.current = 1;
     loadData(true);
   }
@@ -320,6 +322,7 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
   function onFilterSave(filter: ViewFilter) {
     evpStore.updateFilter(typePath.value, filter);
     localFilter.value = filter;
+    evpStore.persistLastQuery(typePath.value, { q: String(searchForm.Q ?? ''), filter });
     Message.success('筛选方案已保存到此视图');
   }
 
@@ -327,6 +330,7 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
   function onClearFilter() {
     evpStore.updateFilter(typePath.value, emptyViewFilter());
     localFilter.value = emptyViewFilter();
+    evpStore.persistLastQuery(typePath.value, { q: String(searchForm.Q ?? ''), filter: emptyViewFilter() });
     pagination.current = 1;
     loadData(true);
     Message.success('已清除筛选');

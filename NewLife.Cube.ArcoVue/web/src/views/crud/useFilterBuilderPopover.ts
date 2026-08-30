@@ -83,7 +83,13 @@ export function useFilterBuilderPopover(props: FilterBuilderPopoverProps, emit: 
     }
   }
 
-  const fieldCandidates = computed(() => props.fields.filter((f) => !!f.name));
+  /** 查询字段候选（OSC-260830a1b2）：优先主键字段排前，便于先按索引字段筛选；索引信息未在字段元数据下发时保持后端原序 */
+  const fieldCandidates = computed(() => {
+    const list = props.fields.filter((f) => !!f.name);
+    const pk = list.filter((f) => f.primaryKey);
+    const rest = list.filter((f) => !f.primaryKey);
+    return [...pk, ...rest];
+  });
 
   const draft = reactive<{ logic: 'all' | 'any'; rows: FilterDraftRow[] }>({
     logic: 'all',
@@ -94,6 +100,17 @@ export function useFilterBuilderPopover(props: FilterBuilderPopoverProps, emit: 
     const f = normalizeFilter(props.modelValue);
     draft.logic = f.logic;
     draft.rows = filterToDraftRows(f);
+    // 打开时若无条件，自动添加第一个字段为查询条件（OSC-260830a1b2）
+    if (draft.rows.length === 0) {
+      const first = fieldCandidates.value[0];
+      if (first) {
+        const row = newFilterDraftRow();
+        row.cond.field = first.name;
+        const kind = resolveFieldFilterKind(first);
+        row.cond.op = FILTER_OPS_BY_KIND[kind][0];
+        draft.rows.push(row);
+      }
+    }
   }
 
   function addCond() {

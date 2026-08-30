@@ -1,17 +1,24 @@
 <template>
   <div class="query-combo-button">
-    <!-- 主按钮：点击直接执行查询（OSC-0016） -->
-    <a-button type="primary" class="qcb-search" @click="emit('search')">
-      <template #icon><icon-park type="search" /></template>
-      查询
-    </a-button>
-    <!-- 下拉按钮：重置查询参数 / 预定义查询等更多操作 -->
+    <!-- ▾ 菜单按钮（OSC-260830a1b2 查询簇第三键）：重置查询参数 / 预定义查询等更多操作。查询与自定义按钮在调用方工具栏组装 -->
     <a-dropdown trigger="click" @select="onSelect">
-      <a-button type="primary" class="qcb-more">
-        <icon-park type="down" />
-      </a-button>
+      <icon-park type="down" class="qcb-trigger" />
       <template #content>
         <div class="qcb-menu">
+          <!-- 自定义查询（OSC-260830a1b2）：打开条件构建器（键盘/小屏备援），不在工具栏单独出按钮；
+               最近搜索已改为输入时自动匹配下拉，不再占用菜单 -->
+          <a-doption value="__custom">
+            <template #icon><icon-park type="message-search" /></template>
+            用户自定义查询
+          </a-doption>
+          <a-doption value="__save" :disabled="!canSave">
+            <template #icon><icon-park type="save" /></template>
+            保存当前查询为预定义…
+          </a-doption>
+          <a-doption value="__rename" :disabled="!canRename">
+            <template #icon><icon-park type="edit" /></template>
+            重命名
+          </a-doption>
           <a-doption value="__reset">
             <template #icon><icon-park type="refresh" /></template>
             重置查询参数
@@ -46,19 +53,6 @@
             </a-doption>
           </div>
 
-          <a-divider class="qcb-divider" />
-          <a-doption value="__save" :disabled="!canSave">
-            <template #icon><icon-park type="save" /></template>
-            保存当前查询为预定义…
-          </a-doption>
-          <a-doption value="__rename" :disabled="!canRename">
-            <template #icon><icon-park type="edit" /></template>
-            重命名当前查询
-          </a-doption>
-          <a-doption value="__delete" :disabled="!canRename">
-            <template #icon><icon-park type="delete" /></template>
-            删除当前查询
-          </a-doption>
         </div>
       </template>
     </a-dropdown>
@@ -66,10 +60,12 @@
     <a-modal
       v-model:visible="modalVisible"
       :title="modalTitle"
+      :width="420"
       :on-before-ok="onModalOk"
       @cancel="modalVisible = false"
     >
       <a-input
+        ref="modalInputRef"
         v-model="modalName"
         :max-length="50"
         placeholder="请输入查询名称"
@@ -104,6 +100,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   search: [];
   reset: [];
+  /** 打开自定义查询构建器（OSC-260830a1b2） */
+  custom: [];
   /** 展开 / 收起第二行条件 */
   toggleExpand: [];
   apply: [id: string];
@@ -118,6 +116,7 @@ const {
   modalVisible,
   modalTitle,
   modalName,
+  modalInputRef,
   onSelect,
   onModalOk,
   onDelete,
@@ -129,15 +128,14 @@ const {
   display: inline-flex;
   align-items: center;
 }
-/* 组合按钮：主按钮执行查询，下拉按钮更多操作；两按钮无缝拼接（边框重叠、中间圆角收掉） */
-.qcb-search {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+/* ▾ 下拉触发器：内嵌在关键字输入框 suffix，仅图标、可点击 */
+.qcb-trigger {
+  cursor: pointer;
+  color: var(--color-text-2);
+  font-size: 13px;
 }
-.qcb-more {
-  margin-left: -1px;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
+.qcb-trigger:hover {
+  color: rgb(var(--primary-6));
 }
 .qcb-menu {
   min-width: 220px;

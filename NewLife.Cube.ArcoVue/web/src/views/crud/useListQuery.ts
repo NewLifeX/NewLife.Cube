@@ -1,4 +1,4 @@
-import { nextTick } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 import { Message } from '@arco-design/web-vue';
 import { FieldKind, type PageSetting } from '@cube/api-core';
 import cubeApi from '@/api';
@@ -12,11 +12,12 @@ import {
   fetchBatchLabel,
 } from '@/core/utils/lov-api';
 import { collectCascaderIds, mergeAreaLabel } from '@/core/utils/areaLabels';
-import { buildSortPayload, applyChartData } from '@/core/utils/viewProfile';
+import { buildSortPayload, applyChartData, emptyViewFilter, normalizeFilter } from '@/core/utils/viewProfile';
 import { normalizePageSize } from '@/core/utils/viewMapping';
-import { buildViewFilterParam, cleanSearchParams, matchesViewFilter } from '@/core/utils/searchFilters';
+import { buildViewFilterParam, matchesViewFilter } from '@/core/utils/searchFilters';
 import { getPageCached } from '@/core/utils/pageMetaCache';
 import { useTenantStore } from '@/stores/tenant';
+import { useRecentKeywords } from '@/core/composables/useRecentKeywords';
 import type { ListContext } from './listContext';
 import type { FieldMeta } from '@/core/types/field';
 
@@ -25,6 +26,9 @@ import type { FieldMeta } from '@/core/types/field';
  */
 export function useListQuery(ctx: ListContext) {
   const tenantStore = useTenantStore();
+  const { recentKeywords, add: addRecentKeyword } = useRecentKeywords();
+  /** loadData 竞态序号：快速切换/连续搜索/翻页时丢弃过期响应（OSC-260830a1b2 收尾） */
+  const dataSeq = ref(0);
 
   function withoutTenant(fields: FieldMeta[]): FieldMeta[] {
     if (tenantStore.enableTenant) return fields;
@@ -64,7 +68,7 @@ export function useListQuery(ctx: ListContext) {
     isLargePageView,
     viewFilter,
     filterFields,
-    searchKeys,
+    filterNarrowed,
     treeRows,
     tableVisibleCount,
     TABLE_INITIAL_VISIBLE,
@@ -235,6 +239,8 @@ export function useListQuery(ctx: ListContext) {
   }
 
   async function loadData(skipFetch = false) {
+    // 竞态守卫（OSC-260830a1b2 收尾）：快速切换/连续搜索/翻页时丢弃过期响应
+    const seq = ++dataSeq.value;
     // 翻页/重载后以当前页选择为准，避免旧主键残留导致批量删除误用
     selectedKeys.value = [];
     loading.value = true;
@@ -261,10 +267,15 @@ export function useListQuery(ctx: ListContext) {
           ...effectiveSearch.value,
           ...(vf ? { viewFilter: vf } : {}),
         });
+        // 过期响应丢弃，避免覆盖最新的 tableData/total/loading
+        if (seq !== dataSeq.value) return;
         rows = (res.data as Record<string, unknown>[]) || [];
         tableDataRaw.value = rows;
         statData.value = (res.stat as Record<string, unknown>) ?? null;
         if (res.page) pagination.total = res.page.totalCount || 0;
+        // 时间窗收窄提示（OSC-260830a1b2）：读响应体 filterNarrowed（后端已从响应头透传到 ApiListResponse.FilterNarrowed）
+        filterNarrowed.value =
+          res.filterNarrowed && res.filterNarrowed > 0 ? `${res.filterNarrowed}d` : '';
       }
       // 筛选构建器客户端复核（OSC-0015）：业务重写 Search 的控制器（如 Department.Search
       // 仅处理 id/parentId/enable/visible）与树控制器可能不应用通用等值过滤，对已加载数据
@@ -290,6 +301,8 @@ export function useListQuery(ctx: ListContext) {
         await hydrateAreaLabels(tableData.value);
       }
     } finally {
+      // 过期响应不复位 loading（由最新请求管理），仅最新请求收尾
+      if (seq !== dataSeq.value) return;
       loading.value = false;
       // 洞察图表与列表同源（同一 effectiveSearch），随列表刷新；竞态由 chartSeq 保护
       void loadChart();
@@ -352,32 +365,76 @@ export function useListQuery(ctx: ListContext) {
     // 显式搜索后有效条件取自表单（OSC-0012）
     searchTouched.value = true;
     pagination.current = 1;
+    // 记录最近关键字（OSC-260830a1b2，上限 7 条）
+    addRecentKeyword(String(searchForm.Q ?? ''));
+    // 持久化未命名当前查询（OSC-260830a1b2）：刷新有效，关闭视图后不保留
+    evpStore.persistLastQuery(typePath.value, { q: String(searchForm.Q ?? ''), filter: viewFilter.value });
+    // 关闭自动匹配下拉
+    showRecentDropdown.value = false;
     loadData();
+  }
+
+  /** 选中一条最近搜索关键字（OSC-260830a1b2）：回填 Q 并执行，保留已应用的条件 */
+  function onPickRecentKeyword(kw: string) {
+    applySearchToForm({ Q: kw });
+    searchTouched.value = true;
+    pagination.current = 1;
+    evpStore.persistLastQuery(typePath.value, { q: kw, filter: viewFilter.value });
+    loadData();
+  }
+
+  /** 输入时自动匹配的最近关键字候选（OSC-260830a1b2）：不进入 ▾ 菜单，随输入弹下拉供选择 */
+  const showRecentDropdown = ref(false);
+  const recentMatches = computed(() => {
+    const q = String(searchForm.Q ?? '').trim().toLowerCase();
+    if (!q) return [];
+    return recentKeywords.value.filter((k) => k.toLowerCase().includes(q)).slice(0, 8);
+  });
+
+  function openRecentDropdown() {
+    showRecentDropdown.value = recentMatches.value.length > 0;
+  }
+
+  function closeRecentDropdown() {
+    showRecentDropdown.value = false;
+  }
+
+  /** 选中一条自动匹配建议：回填 Q 并执行 */
+  function pickRecentSuggestion(kw: string) {
+    showRecentDropdown.value = false;
+    onPickRecentKeyword(kw);
   }
 
   function handleReset() {
     Object.keys(searchForm).forEach((k) => delete searchForm[k]);
-    // 重置查询参数：一并清除当前应用的预定义查询标记（与删除的「清空查询参数」合并）
+    // 重置查询参数：清空自定义条件、当前应用的预定义查询标记、以及持久化的未命名/视图筛选方案，
+    // 避免刷新后 syncLocalState 从 store 恢复旧条件（OSC-260830a1b2）
+    viewFilter.value = emptyViewFilter();
+    evpStore.updateFilter(typePath.value, emptyViewFilter());
     evpStore.clearActiveQuery(typePath.value);
+    evpStore.clearLastQuery(typePath.value);
     searchTouched.value = true;
     pagination.current = 1;
     loadData();
   }
 
-  /** 应用预定义查询（OSC-0016）：整体回填 searchForm（无残留键）→ 执行 → activeQueryId 由 store 设置 */
+  /** 应用预定义查询（OSC-260830a1b2 v2）：回填 Q 与 viewFilter → 执行 → activeQueryId 由 store 设置 */
   function handleApplyQuery(id: string) {
-    const params = evpStore.applyQuery(typePath.value, id);
-    if (!params) return;
-    applySearchToForm(params);
+    const saved = evpStore.applyQuery(typePath.value, id);
+    if (!saved) return;
+    applySearchToForm({ Q: saved.q ?? '' });
+    viewFilter.value = saved.filter ? normalizeFilter(saved.filter) : emptyViewFilter();
     searchTouched.value = true;
     pagination.current = 1;
+    evpStore.persistLastQuery(typePath.value, { q: String(searchForm.Q ?? ''), filter: viewFilter.value });
     loadData();
   }
 
-  /** 保存当前查询为预定义（OSC-0016）：store 新增条目并指向，随后自动执行一次查询 */
+  /** 保存当前查询为预定义（OSC-260830a1b2 v2）：store 保存当前 Q + 已应用 viewFilter，并指向新条目 */
   function handleSaveQuery(name: string) {
-    const params = cleanSearchParams({ ...searchForm }, searchKeys.value);
-    evpStore.saveQueryAs(typePath.value, name, params);
+    const q = String(searchForm.Q ?? '').trim();
+    evpStore.saveQueryAs(typePath.value, name, q, viewFilter.value);
+    evpStore.persistLastQuery(typePath.value, { q, filter: viewFilter.value });
     Message.success('已保存为预定义查询');
     searchTouched.value = true;
     pagination.current = 1;
@@ -424,6 +481,14 @@ export function useListQuery(ctx: ListContext) {
     handleSaveQuery,
     handleRenameQuery,
     handleDeleteQuery,
+    onPickRecentKeyword,
+    restoreLastQuery: () => evpStore.restoreLastQuery(typePath.value),
+    recentKeywords,
+    showRecentDropdown,
+    recentMatches,
+    openRecentDropdown,
+    closeRecentDropdown,
+    pickRecentSuggestion,
     onPageChange,
     onPageSizeChange,
     onTableScrollBottom,

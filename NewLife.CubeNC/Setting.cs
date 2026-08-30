@@ -125,6 +125,11 @@ public class CubeSetting : Config<CubeSetting>
     [Description("强制跳转。指定目标schema和host，在GET访问发现不一致时强制跳转，host支持*。常用于强制跳转https，如https://*:8081")]
     [Category("通用")]
     public String ForceRedirect { get; set; }
+
+    /// <summary>筛选时间窗天数。分表/日志类实体在无时间条件时自动收窄近 N 天，默认30；0 表示关闭</summary>
+    [Description("筛选时间窗天数。分表/日志类实体在无时间条件时自动收窄近 N 天，默认30；0 表示关闭")]
+    [Category("通用")]
+    public Int32 FilterWindowDays { get; set; } = 30;
     #endregion
 
     #region 用户登录

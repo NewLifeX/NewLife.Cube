@@ -9,7 +9,7 @@
     <template #content>
       <div class="filter-builder">
         <div class="fb-head">
-          <span class="fb-title">筛选</span>
+          <span class="fb-title">查询</span>
           <a-radio-group v-model="draft.logic" type="button" size="mini">
             <a-radio value="all">且 (AND)</a-radio>
             <a-radio value="any">或 (OR)</a-radio>
@@ -147,7 +147,7 @@
 
         <div class="fb-foot">
           <a-button size="small" @click="resetDraft">重置</a-button>
-          <a-button size="small" :disabled="!canSave" @click="emitSave">保存到此视图</a-button>
+          <a-button size="small" :disabled="!canSave" @click="emitSave">保存条件到此视图</a-button>
           <a-space class="fb-foot-right">
             <a-button size="small" @click="close">取消</a-button>
             <a-button size="small" type="primary" @click="emitApply">应用</a-button>

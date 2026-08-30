@@ -2,6 +2,7 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Automation;
+using NewLife.Cube.ViewModels;
 using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
@@ -89,12 +90,28 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
         }
 
         // 视图筛选内存过滤（OSC-260819e483 P2）：树数据来自缓存不走 FindAll，无法下推 SQL，直接在缓存列表上 Match
+        // OSC-260830a1b2：白名单未授权字段 400；时序实体自动时间窗（内存过滤）
         var viewFilter = p["viewFilter"];
+        ViewFilterDto filter = null;
         if (!viewFilter.IsNullOrEmpty())
         {
-            var filter = AutomationFilter.ParseViewFilter(viewFilter);
-            if (filter.Conditions != null && filter.Conditions.Count > 0)
-                list = list.Where(e => AutomationFilter.Match(e, filter));
+            filter = AutomationFilter.ParseViewFilter(viewFilter);
+        }
+
+        // 白名单：GetPage Search∪List 字段
+        var names = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
+        foreach (var f in OnGetFields(ViewKinds.Search, null)) names.Add(f.Name);
+        foreach (var f in OnGetFields(ViewKinds.List, null)) names.Add(f.Name);
+        Func<String, Boolean> allowed = n => names.Contains(n);
+
+        if (filter != null && filter.Conditions != null && filter.Conditions.Count > 0)
+            list = list.Where(e => AutomationFilter.Match(e, filter, allowed));
+
+        // 时间窗：分表/日志实体无时间条件时收窄
+        if (AutomationFilter.TryGetTimeWindow(Factory, filter, out var timeFi, out var days))
+        {
+            var threshold = DateTime.Now.Date.AddDays(-days);
+            list = list.Where(e => e[timeFi.Name] is DateTime dt && dt >= threshold);
         }
 
         return list;

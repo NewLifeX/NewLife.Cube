@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using NewLife.Remoting;
 using XCode;
+using XCode.Configuration;
 
 namespace NewLife.Cube.Automation;
 
@@ -27,13 +28,23 @@ public static class AutomationFilter
     }
 
     /// <summary>尝试下推为 SQL Where；任一条件无法下推则返回 null（调用方改分页内存过滤）</summary>
-    public static Expression TryBuildWhere(IEntityFactory fact, ViewFilterDto filter)
+    /// <param name="fact">实体工厂</param>
+    /// <param name="filter">筛选条件</param>
+    /// <param name="allowedField">字段白名单。列表 / Widget / 树必须传入非 null；null 仅兼容自动化内部调用</param>
+    /// <returns>可下推的表达式；无法下推则 null</returns>
+    public static Expression TryBuildWhere(IEntityFactory fact, ViewFilterDto filter, Func<String, Boolean>? allowedField = null)
     {
         if (fact == null || filter?.Conditions == null || filter.Conditions.Count == 0) return null;
+        // 复杂度上限（OSC-260830a1b2）：与白名单无关，恒生效
+        if (filter.Conditions.Count > 10) throw new ApiException(400, "筛选条件过多");
         var any = (filter.Logic + "").EqualIgnoreCase("any");
+        if (any && filter.Conditions.Count > 5) throw new ApiException(400, "OR 条件过多");
         Expression exp = null;
         foreach (var c in filter.Conditions)
         {
+            // 字段白名单（OSC-260830a1b2）：未下发字段 → 400，不静默放弃，防止布尔侧信道伪造
+            if (allowedField != null && !allowedField(c.Field))
+                throw new ApiException(400, "筛选条件含未授权字段");
             var piece = TryBuildCondition(fact, c);
             if (piece == null) return null;
             exp = exp == null ? piece : (any ? (exp | piece) : (exp & piece));
@@ -62,6 +73,8 @@ public static class AutomationFilter
                 "lte" => fi <= val,
                 "contains" => fi.Contains("" + val),
                 "notcontains" => fi.NotContains("" + val),
+                "startswith" => fi.StartsWith("" + val),
+                "endswith" => fi.EndsWith("" + val),
                 "after" => fi > val,
                 "before" => fi < val,
                 _ => null,
@@ -87,9 +100,14 @@ public static class AutomationFilter
     }
 
     /// <summary>空条件恒 true</summary>
-    public static Boolean Match(IEntity entity, ViewFilterDto filter)
+    /// <param name="entity">实体</param>
+    /// <param name="filter">筛选条件</param>
+    /// <param name="allowedField">字段白名单。树控制器必须传入非 null；白名单失败抛 400</param>
+    /// <returns>是否匹配</returns>
+    public static Boolean Match(IEntity entity, ViewFilterDto filter, Func<String, Boolean>? allowedField = null)
     {
         if (entity == null) return false;
+        ValidateFilter(filter, allowedField);
         var map = new Dictionary<String, Object>(StringComparer.OrdinalIgnoreCase);
         var fact = EntityFactory.CreateFactory(entity.GetType());
         if (fact != null)
@@ -98,6 +116,21 @@ public static class AutomationFilter
                 map[f.Name] = entity[f.Name];
         }
         return Match(map, filter);
+    }
+
+    /// <summary>校验白名单与复杂度上限（OSC-260830a1b2）。树控制器内存路径同样适用</summary>
+    /// <param name="filter">筛选条件</param>
+    /// <param name="allowedField">字段白名单</param>
+    static void ValidateFilter(ViewFilterDto filter, Func<String, Boolean>? allowedField)
+    {
+        if (filter?.Conditions == null || filter.Conditions.Count == 0) return;
+        if (filter.Conditions.Count > 10) throw new ApiException(400, "筛选条件过多");
+        if ((filter.Logic + "").EqualIgnoreCase("any") && filter.Conditions.Count > 5) throw new ApiException(400, "OR 条件过多");
+        if (allowedField == null) return;
+        foreach (var c in filter.Conditions)
+        {
+            if (!allowedField(c.Field)) throw new ApiException(400, "筛选条件含未授权字段");
+        }
     }
 
     /// <summary>字典匹配</summary>
@@ -128,6 +161,9 @@ public static class AutomationFilter
             // 与前端 String.includes：大小写敏感
             "contains" => Contains(raw, c.Value, false),
             "notcontains" => !Contains(raw, c.Value, false),
+            // 与前端 String.startsWith/endsWith：大小写敏感
+            "startswith" => StartsWith(raw, c.Value),
+            "endswith" => EndsWith(raw, c.Value),
             "isnull" => IsNull(raw),
             "notnull" => !IsNull(raw),
             "gt" => Cmp(raw, c.Value) is { } r1 && r1 > 0,
@@ -191,6 +227,14 @@ public static class AutomationFilter
         return ignoreCase ? s.IndexOf(t, StringComparison.OrdinalIgnoreCase) >= 0 : s.Contains(t);
     }
 
+    /// <summary>与前端 String.startsWith 一致：大小写敏感</summary>
+    static Boolean StartsWith(Object raw, Object expected) =>
+        (raw + "").StartsWith(expected + "", StringComparison.Ordinal);
+
+    /// <summary>与前端 String.endsWith 一致：大小写敏感</summary>
+    static Boolean EndsWith(Object raw, Object expected) =>
+        (raw + "").EndsWith(expected + "", StringComparison.Ordinal);
+
     static Int32? Cmp(Object raw, Object expected)
     {
         if (!TryNum(raw, out var a) || !TryNum(expected, out var b)) return null;
@@ -236,4 +280,69 @@ public static class AutomationFilter
         JsonValueKind.Null => null,
         _ => je.ToString(),
     };
+
+    /// <summary>确定时间窗命中的时间字段：分表字段，或 *Log* 实体的 UpdateTime/CreateTime（OSC-260830a1b2）</summary>
+    /// <param name="fact">实体工厂</param>
+    /// <returns>时间字段；无则不注入</returns>
+    public static FieldItem ResolveFilterTimeField(IEntityFactory fact)
+    {
+        if (fact == null) return null;
+        // 分表字段（DataScale）
+        var shard = fact.ShardPolicy?.Field;
+        if (shard != null) return shard;
+        // *Log* 且含 UpdateTime/CreateTime 数据字段：类型名或表名任一匹配 *Log*（类名不含 Log 但表名含 Log 也命中）
+        var tn = fact.EntityType?.Name ?? "";
+        var tableName = fact.Table?.TableName ?? "";
+        if (!tn.Contains("Log", StringComparison.OrdinalIgnoreCase) && !tableName.Contains("Log", StringComparison.OrdinalIgnoreCase)) return null;
+        return fact.Fields?.FirstOrDefault(f => f.Name.EqualIgnoreCase("UpdateTime") || f.Name.EqualIgnoreCase("CreateTime"));
+    }
+
+    /// <summary>判断筛选是否已含该时间字段且有值条件（OSC-260830a1b2）。未含返回 false</summary>
+    /// <param name="filter">筛选条件（可为 null）</param>
+    /// <param name="fieldName">时间字段名</param>
+    /// <returns>是否已含时间条件</returns>
+    public static Boolean HasTimeCondition(ViewFilterDto filter, String fieldName)
+    {
+        if (filter?.Conditions == null) return false;
+        return filter.Conditions.Any(c =>
+            c != null && c.Field.EqualIgnoreCase(fieldName) &&
+            (c.Op + "").Trim().ToLowerInvariant() is "after" or "before" or "eq" or "gt" or "gte" or "lt" or "lte");
+    }
+
+    /// <summary>获取时间窗配置（OSC-260830a1b2）：无命中返回 false；命中返回时间字段与天数。FilterWindowDays=0 关闭</summary>
+    /// <param name="fact">实体工厂</param>
+    /// <param name="filter">已解析的筛选条件（可为 null）</param>
+    /// <param name="field">命中时间字段</param>
+    /// <param name="days">实际注入的天数；0 表示未注入</param>
+    /// <returns>是否命中</returns>
+    public static Boolean TryGetTimeWindow(IEntityFactory fact, ViewFilterDto filter, out FieldItem field, out Int32 days)
+    {
+        field = null;
+        days = 0;
+        var cfg = CubeSetting.Current.FilterWindowDays;
+        if (cfg <= 0) return false;
+        var d = Math.Clamp(cfg, 0, 3650);
+        if (d <= 0) return false;
+        var fi = ResolveFilterTimeField(fact);
+        if (fi == null) return false;
+        var t = Nullable.GetUnderlyingType(fi.Type) ?? fi.Type;
+        if (t != typeof(DateTime)) return false;
+        if (HasTimeCondition(filter, fi.Name)) return false;
+        field = fi;
+        days = d;
+        return true;
+    }
+
+    /// <summary>构建时间窗谓词（OSC-260830a1b2）：无命中返回 null；命中返回天数 out 参数。FilterWindowDays=0 关闭</summary>
+    /// <param name="fact">实体工厂</param>
+    /// <param name="filter">已解析的筛选条件（可为 null）</param>
+    /// <param name="days">实际注入的天数；0 表示未注入</param>
+    /// <returns>时间窗表达式；未注入返回 null</returns>
+    public static Expression BuildTimeWindow(IEntityFactory fact, ViewFilterDto filter, out Int32 days)
+    {
+        days = 0;
+        if (!TryGetTimeWindow(fact, filter, out var fi, out days)) return null;
+        // 与既有 dtStart 惯例一致，用本地时间当日零点起算，避免 UTC 零点把本地今日 0:00–7:59 挤出默认窗口（+8 时区）
+        return fi >= DateTime.Now.Date.AddDays(-days);
+    }
 }

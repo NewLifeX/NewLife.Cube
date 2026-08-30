@@ -157,6 +157,10 @@ function matchCondition(row: Record<string, unknown>, cond: ViewFilterCondition)
       return String(raw ?? '').includes(String(cond.value ?? ''));
     case 'notContains':
       return !String(raw ?? '').includes(String(cond.value ?? ''));
+    case 'startsWith':
+      return String(raw ?? '').startsWith(String(cond.value ?? ''));
+    case 'endsWith':
+      return String(raw ?? '').endsWith(String(cond.value ?? ''));
     case 'isNull':
       return raw == null || raw === '';
     case 'notNull':

@@ -78,7 +78,7 @@
 1. **零配置自动 CRUD**：宿主仅 `UseArcoVue` 时，内置 Admin/Cube 与新增业务 `EntityController` 自动获得完整管理界面。
 2. **开箱即企业后台**：登录（密码 / 短信 / MFA / SSO）、菜单权限、用户/角色/部门/租户、审计日志、值集、文件与作业等内置模块可用；不依赖为每个实体手写 Vue。
 3. **飞书式多维数据工作台（舞台 + 只读完成度）**：table / **tree** / card / kanban / calendar / gantt 可切换、默认可记。记录以**右侧抽屉**编辑（飞书为左侧记录栏，本实现按 §8.1 用右侧），含表单、修改历史、**该条记录**的评论。只读完成度见 §7.4（日历溢出与空白新建、看板列折叠、甘特分组、卡片画册布局、多级排序）；**不**把看板/日历/甘特拖拽写回当作本目标。
-4. **查询单一入口**：只留筛选构建器，条件必须编译为后端 Where；退役 SearchDrawer 与预定义查询；翻页、导出、统计、Insight、非表格大 pageSize **共用同一结果集**（§8.5.4）。
+4. **查询单一入口**：只留筛选构建器，条件必须编译为后端 Where；退役 SearchDrawer，保留并升级预定义查询（QueriesJson v2）；翻页、导出、统计、Insight、非表格大 pageSize **共用同一结果集**（§8.5.4）。
 5. **可配置呈现（不是第二套 ACL）**：导航布局、主题、密度禁止写死。实体视图 **个人 > 全局模板 > 系统默认**；**首页工作台** **用户 > 主角色 > 系统**（不做租户层工作台）。FormJson / ColumnsJson 只能调顺序、显隐、分组，不能增字段、改 `ReadOnly`/`ItemType`、也不能授权写入。
 6. **实体页洞察 + 首页工作台**：实体洞察槽为授权范围内的指标卡/迷你图，随筛选联动；`/home` 与 `/Admin/Index` 监控页分离。
 7. **服务端自动化与站内信**：线性 GraphJson + C# 执行器（含删除触发）；规则按实体类型（+ 租户）共享，创建人仅审计。通知进 Inbox；评论 @ 与提及通知可增强，讨论面仍以抽屉为准。
@@ -99,7 +99,7 @@
 - 不做把 ViewProfile / 筛选 / 藏列当数据权限或字段 ACL；列权限必须后端裁剪并在写入/导出对称强制，见 §8.6。
 - 不做把 FlowGram 当流程执行器、不让浏览器跑流程；运行时若立项则在 Cube 独立模块。
 - 不做租户层首页工作台；实体 ViewProfile 首期仍无角色层（与首页分层分开）。
-- 演化后不再保留独立「搜索」产品面（SearchDrawer / `Q` / 预定义查询），见 §8.5.4。
+- 演化后不再保留独立「搜索」抽屉（SearchDrawer）；保留工具栏 `Q` 与预定义查询（升级 QueriesJson v2），见 §8.5.4。
 
 ### 1.4 与 [功能清单.md](../功能清单.md) 的关系
 
@@ -130,7 +130,7 @@
 | 记录抽屉 | 右抽屉：表单 / 历史 / 评论 | P0 |
 | 个性化工作台 | 壳：布局/主题；首页槽位：用户 > 主角色 > 系统 | P0 |
 | 实体页小仪表盘 | InsightPanel：指标卡 / 只读迷你看板 / 筛选联动；可绑已授权其它实体 | P1 |
-| 查询收口 | 只留筛选构建器，条件必须后端查询；退役搜索抽屉与预定义查询 | P1 |
+| 查询收口 | 只留筛选构建器，条件必须后端查询；退役搜索抽屉，保留预定义查询（QueriesJson v2） | P1 |
 | 覆写扩展 | Section / 整页；流程设计器页（非执行器） | P1 |
 | 流程引擎 | Cube 独立模块：定义 / 实例 / 待办；FlowGram 仅设计器 | P1 |
 | 字段级变更 diff | 结构化历史（相对 Log.Remark） | P2 |
@@ -360,7 +360,7 @@ Agent / Copilot 实施约定：OSC-0002 的 `tasks.md` 首项应为「编辑 Cub
 | Table | 关键列（示意） | 索引 |
 |-------|----------------|------|
 | UserProfile | Id；UserId；LayoutJson / ThemeJson / WorkspaceJson（或单一 ProfileJson）；Version；Enable；Create*/Update* | Unique(UserId) |
-| ViewProfile | Id；UserId；TypePath；View；ColumnsJson；**ViewsJson**；**ActiveViewId**；GanttJson；CardJson；FiltersJson；QueriesJson；**FormJson**；**DashboardJson**（演化，§8.5.3）；Version；Create*/Update* | Unique(UserId, TypePath)；命名视图存 ViewsJson；`UserId=0` 为全局只读模板；FormJson 存受限表单布局；QueriesJson 为 OSC-0016 预定义查询（**演化退役**，§8.5.4）；DashboardJson 为实体级页面仪表盘，不跟命名视图走 |
+| ViewProfile | Id；UserId；TypePath；View；ColumnsJson；**ViewsJson**；**ActiveViewId**；GanttJson；CardJson；FiltersJson；QueriesJson；**FormJson**；**DashboardJson**（演化，§8.5.3）；Version；Create*/Update* | Unique(UserId, TypePath)；命名视图存 ViewsJson；`UserId=0` 为全局只读模板；FormJson 存受限表单布局；QueriesJson 为 OSC-0016 预定义查询（**演化升级 v2 保留**，§8.5.4）；DashboardJson 为实体级页面仪表盘，不跟命名视图走 |
 | EntityComment | Id；Category；LinkId；**ParentId / RootId / ReplyUserId / ReplyUser**；Content；CreateUser/Id/IP/Time；Update* | (Category, LinkId)；ParentId；RootId；CreateUserID |
 
 嵌套配置（layout/theme/columns 等）以 **JSON 文本列** 落库，与 §5.2 逻辑模型对应；API 层序列化为前端 TypeScript 形状。
@@ -632,7 +632,7 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
 | OSC-0013 | 受限表单布局 | ViewProfile 增 `FormJson`；RecordDrawer 支持字段顺序、显隐、Category 分组折叠与恢复默认 |
 | OSC-0014 | 全局只读模板 | `UserId=0` 模板读写 API、权限与审计；个人覆盖/恢复模板；不做角色、租户与协同编辑 |
 | OSC-0015 | 筛选构建器 + 多级分组 | **已交付**：条件组保存到 `NamedView.filter`；e483 起可下推 `viewFilter`，无法下推则忽略服务端过滤（前端当前页兜底，**已知限制**）。**演化**：必须后端查询，禁止假筛选，见 §8.5.4 |
-| OSC-0016 | 通用查询 + 预定义查询 | **已交付**：`SearchDrawer` + `QueriesJson`。**演化退役**：不再保留独立搜索与预定义查询，见 §8.5.4 |
+| OSC-0016 | 通用查询 + 预定义查询 | **已交付**：`SearchDrawer` + `QueriesJson`。**演化**：退役 `SearchDrawer`，预定义查询升级 `QueriesJson` v2 保留（`q`+`filter`），见 §8.5.4 |
 
 #### 8.2.6 验收与非目标
 
@@ -706,16 +706,16 @@ DefaultList 固定容器
 
 安全：每部件单独鉴权 + `DataPermission` + 租户 Where（与 CreateWhere 同等）；无法翻译的 extraFilter → 400。Sources 只含 Detail 实体。未知 kind 占位；Query 403 → 锁卡，不跳登录。
 
-#### 8.5.4 查询演化：只留筛选，全部走后端（已拍板）
+#### 8.5.4 查询演化：只留筛选，全部走后端（已拍板；OSC-260830a1b2 实施）
 
 | 今日双轨 | 演化 |
 |----------|------|
-| `SearchDrawer` + `Q` / `dtStart`/`dtEnd` / GetPage `Search` 字段 + `QueriesJson` 预定义查询 | **取消**独立搜索产品面；预定义查询**一并去掉**（不改成已存筛选） |
-| `NamedView.filter` / `viewFilter`：能下推则并入查询，不能则忽略服务端、只滤当前页 | **唯一入口**；条件必须编译成后端 Where；无法翻译则拒绝或提示，**禁止**当前页假筛选 |
+| `SearchDrawer` + `Q` / `dtStart`/`dtEnd` / GetPage `Search` 字段 + `QueriesJson` 预定义查询 | **退役**独立搜索抽屉；查询簇化（工具栏 `Q` + `查询 / 自定义 / ▾` 连体组）：关键字走 `Q`，字段条件走 `viewFilter`，预定义查询升级为 `QueriesJson` v2（同时保存 `q` + `filter`）**并保留** |
+| `NamedView.filter` / `viewFilter`：能下推则并入查询，不能则忽略服务端、只滤当前页 | **唯一入口**；条件必须编译成后端 Where；无法下推则返回 null 改内存过滤（当前页），**不再有当前页假筛选提示** |
 
 翻页、导出、统计、Insight 部件、看板视图共用同一结果集。`GetList` 以结构化筛选为权威参数。GetPage `Search` 分区改为可筛字段元数据，值集远程候选仍给筛选控件。筛选不是权限：`DataPermission` 与租户 Where 先于用户筛选。
 
-**实施路径发现（2026-08-29 实测）**：「全控制器可靠下推」**无需改造任何重写 Search 的控制器**。机制：① `SearchData` 已把 `p.State = CreateWhere() & viewExp`（权限表达式与 viewFilter 一同入 State）；② XCode `Entity.FindAll(Expression, PageParameter)` 源码自动把 `page.State`（Expression/WhereBuilder）AND 进 where；③ Areas 内 18 个重写 `Search` 的控制器（User/Log/Role/Department/Tenant 等）无论直接 `FindAll(exp, p)` 还是经实体静态 `Search(...)`，终点全部落在 `FindAll(exp, page)`——与 DataPermission 行权同一条透明通道。例外：`id>0` 单条直达分支（语义合理）、`EntityTreeController` 走缓存内存 `Match`（已专门处理）、`LovController.ListData` 值集场景（非实体列表）。因此收口剩余工作仅三件：`AutomationFilter` 字段白名单（`GetPage search ∪ list`）、透明下推回归单测（防绕过 FindAll 的自定义查询回潮）、前端退役 `SearchDrawer`/`QueriesJson`（保留 Q 搜索框）。
+**实施路径发现（2026-08-29 实测）**：「全控制器可靠下推」**无需改造任何重写 Search 的控制器**。机制：① `SearchData` 已把 `p.State = CreateWhere() & viewExp`（权限表达式与 viewFilter 一同入 State）；② XCode `Entity.FindAll(Expression, PageParameter)` 源码自动把 `page.State`（Expression/WhereBuilder）AND 进 where；③ Areas 内 18 个重写 `Search` 的控制器（User/Log/Role/Department/Tenant 等）无论直接 `FindAll(exp, p)` 还是经实体静态 `Search(...)`，终点全部落在 `FindAll(exp, page)`——与 DataPermission 行权同一条透明通道。例外：`id>0` 单条直达分支（语义合理）、`EntityTreeController` 走缓存内存 `Match`（已专门处理）、`LovController.ListData` 值集场景（非实体列表）。因此收口剩余工作（OSC-260830a1b2 实施）为：`AutomationFilter` 字段白名单（`GetPage search ∪ list`，未下发字段 400）+ 复杂度上限（条件 >10 / `any` >5 → 400）+ `startswith`/`notstartswith`；时序实体（分表 / `*Log*`）无时间条件时自动时间窗（`FilterWindowDays`，默认 30、0 关闭，`X-Cube-Filter-Narrowed` 响应头 / Widget `filterNarrowed`）；透明下推回归单测；前端退役 `SearchDrawer` 并查询簇化（`Q` + `查询 / 自定义 / ▾` 连体组）；预定义查询升级 `QueriesJson` v2（同时保存 `q` + `filter` 并保留）。
 
 #### 8.5.5 流程引擎 ≠ 实体自动化
 
@@ -1080,7 +1080,7 @@ Draft → Accepted → Implementing → Validating → Done
 - [x] **页面仪表盘 Widget 协议**（OSC-2608280e9e）与 **首页用户>主角色>系统工作台**（OSC-26082815a1）已归档  
 - [x] 实体自动化（OSC-260815fa86）+ 站内信 Inbox + AI 浮窗（OSC-26081903c0）+ embed 分享短令牌  
 - [ ] §3.1 矩阵 P0 目标残留：i18n、组件测试（2026-08-29 仍缺，未做书面豁免）  
-- [ ] §8.5.4 查询收口（退役 SearchDrawer / 预定义查询；筛选全后端）— 已拍板未实施  
+- [x] §8.5.4 查询收口（退役 SearchDrawer；查询簇化；预定义查询升级 QueriesJson v2 保留；筛选全后端）— OSC-260830a1b2 实施  
 - [ ] §7.4 多维视图只读完成度：日历周/议程与溢出列表、看板列折叠、甘特分组、卡片画册布局、多级排序（2026-08-30 专项）  
 - [ ] §8.6 行权 DataScope 接线 + 字段脱敏（BE-A / BE-B1）；字段矩阵 ACL 与值集旁路见 BE-B2 / BE-D2（2026-08-30c）  
 - [ ] OSC-0010 流程设计器 / §8.5.5 流程运行时模块；OSC-0011 收口；OSC-0018 设计方案仍 Draft  
@@ -1109,7 +1109,7 @@ Draft → Accepted → Implementing → Validating → Done
 | 11 | ~~通用实体表单/列表/搜索元数据治理~~（OSC-0009） | P0 | ✅ 已解决；查询收口见 §8.5.4 |
 | 12 | ~~批量启停、AI 浮窗、条件填色~~（OSC-26081903c0） | P2 | ✅ 已解决 |
 | 13 | ~~Insight 单图上限~~（OSC-2608280e9e） | P1 | ✅ 已解决 |
-| 14 | 查询双轨（SearchDrawer + 筛选）。下推本身已全控制器透明生效（§8.5.4 实施路径发现） | P1 | §8.5.4 退役搜索；剩余仅 `AutomationFilter` 字段白名单 + 回归单测 + 前端退役 SearchDrawer/QueriesJson。**看板/日历大 pageSize 与表格翻页两套心智，收口优先于新视图种** |
+| 14 | 查询双轨（SearchDrawer + 筛选）。下推本身已全控制器透明生效（§8.5.4 实施路径发现） | P1 | §8.5.4 退役搜索抽屉；剩余仅 `AutomationFilter` 字段白名单 + 回归单测 + 前端退役 SearchDrawer 并升级 QueriesJson v2 保留。**看板/日历大 pageSize 与表格翻页两套心智，收口优先于新视图种** |
 | 15 | OSC-0018 实体界面自定义仍为 Draft；OSC-2608273d95 角色 DataScope 仍为 Draft | P1 | 行权执行清单见 §8.6 BE-A*；字段矩阵另号 BE-B2 |
 | 16 | ~~工作台无全屏 / 暗色全屏顶栏透出~~（2026-08-29：全屏按钮 + bg-1 叠 fill-2；列表全屏同步） | P2 | ✅ 已解决 |
 | 17 | 日历仅月网格；`+N` 不可展开；不能点空白新建 | P1 | §7.4：周或议程 + 当日列表；有 Insert 权则开新增抽屉（**不**做拖改日期） |

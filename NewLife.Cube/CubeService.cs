@@ -85,13 +85,15 @@ public static class CubeService
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()
-            .SetIsOriginAllowed(hostname => true)));
+            .SetIsOriginAllowed(hostname => true)
+            .WithExposedHeaders("X-Cube-Filter-Narrowed")));
         else if (!set.CorsOrigins.IsNullOrEmpty())
             services.AddCors(options => options.AddPolicy("cube_cors", builder => builder
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()
-            .WithOrigins(set.CorsOrigins)));
+            .WithOrigins(set.CorsOrigins)
+            .WithExposedHeaders("X-Cube-Filter-Narrowed")));
 
         // 添加管理提供者
         services.AddManageProvider();

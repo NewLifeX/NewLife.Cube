@@ -721,31 +721,34 @@ describe('viewProfile store queries (OSC-0016)', () => {
     });
     const store = useViewProfileStore();
     await store.load('Admin/User', ['Name']);
+    // v1 兼容：只迁出 Q
     expect(store.getQueries('Admin/User').queries).toEqual([
-      { id: 'q_1', name: '昨日新增客户', params: { Q: '客户' } },
+      { id: 'q_1', name: '昨日新增客户', q: '客户' },
     ]);
     expect(store.getActiveQueryId('Admin/User')).toBeNull();
   });
 
-  it('saveQueryAs appends entry, sets activeQueryId and PUTs queriesJson', async () => {
+  it('saveQueryAs appends entry (q+filter), sets activeQueryId and PUTs queriesJson v2', async () => {
     getViewProfile.mockResolvedValue({ data: { typePath: 'Admin/User' } });
     const store = useViewProfileStore();
     await store.load('Admin/User', ['Name', 'Q']);
-    const id = store.saveQueryAs('Admin/User', '  本月大额订单  ', { Q: '订单', Status: 1 });
+    const filter = { logic: 'all' as const, conditions: [{ field: 'Status', op: 'eq' as const, value: 1 }] };
+    const id = store.saveQueryAs('Admin/User', '  本月大额订单  ', '订单', filter);
     expect(id).toMatch(/^q_/);
     expect(store.getQueries('Admin/User').queries.length).toBe(1);
     expect(store.getQueries('Admin/User').queries[0]).toEqual({
       id,
       name: '本月大额订单', // trim
-      params: { Q: '订单', Status: 1 },
+      q: '订单',
+      filter,
     });
     expect(store.getActiveQueryId('Admin/User')).toBe(id);
     expect(putViewProfile).toHaveBeenCalledWith(
       expect.objectContaining({
         typePath: 'Admin/User',
         queriesJson: JSON.stringify({
-          version: 1,
-          queries: [{ id, name: '本月大额订单', params: { Q: '订单', Status: 1 } }],
+          version: 2,
+          queries: [{ id, name: '本月大额订单', q: '订单', filter }],
         }),
       }),
     );
@@ -768,8 +771,8 @@ describe('viewProfile store queries (OSC-0016)', () => {
     await store.load('Admin/User', ['Q']);
     store.applyQuery('Admin/User', 'q_a');
     expect(store.getActiveQueryId('Admin/User')).toBe('q_a');
-    // applyQuery 返回 params 副本
-    expect(store.applyQuery('Admin/User', 'q_a')).toEqual({ Q: 'a' });
+    // applyQuery 返回条目（v2：q + filter）
+    expect(store.applyQuery('Admin/User', 'q_a')).toEqual({ id: 'q_a', name: 'A', q: 'a' });
 
     store.renameQuery('Admin/User', 'q_a', '  A改  ');
     expect(store.getQueries('Admin/User').queries[0].name).toBe('A改');

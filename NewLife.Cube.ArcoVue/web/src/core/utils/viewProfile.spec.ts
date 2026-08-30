@@ -827,38 +827,40 @@ const qFields = [
   { name: 'Status', typeName: 'Int32' },
 ] as FieldMeta[];
 
-describe('QueriesJson wire (OSC-0016)', () => {
+describe('QueriesJson wire (OSC-260830a1b2 v2)', () => {
   it('parseQueriesWire normalizes null/bad JSON/non-object/version mismatch to empty', () => {
     expect(parseQueriesWire(null, qFields)).toEqual(emptySavedQueries());
     expect(parseQueriesWire('', qFields)).toEqual(emptySavedQueries());
     expect(parseQueriesWire('not json', qFields)).toEqual(emptySavedQueries());
     expect(parseQueriesWire('[]', qFields)).toEqual(emptySavedQueries());
-    expect(parseQueriesWire(JSON.stringify({ version: 2, queries: [] }), qFields)).toEqual(
+    expect(parseQueriesWire(JSON.stringify({ version: 99, queries: [] }), qFields)).toEqual(
       emptySavedQueries(),
     );
   });
 
-  it('parseQueriesWire drops invalid entries, truncates name, regenerates duplicate/bad id', () => {
+  it('parseQueriesWire v2 drops invalid entries, truncates name, regenerates duplicate/bad id', () => {
     const raw = JSON.stringify({
-      version: 1,
+      version: 2,
       queries: [
-        { id: 'q_a', name: '昨日新增客户', params: { Name: '张三', Unknown: 'x' } },
-        { id: 'q_b', name: '   ', params: { Name: 'a' } }, // 空 name 丢弃
-        { id: 'q_b', name: '重名id', params: { Q: 'xx', dtStart: '2026-01-01' } }, // 重复 id 重新生成
-        { id: 123, name: '坏id', params: { Status: 2 } }, // 非字符串 id 重新生成
-        { name: '无id', params: { Name: 'b' } }, // 无 id 生成
-        { id: 'q_empty', name: '空参数', params: {} }, // 空 params 丢弃
-        { name: '超长' + '名'.repeat(100), params: { Name: 'c' } }, // name 截断 50
+        { id: 'q_a', name: '昨日新增客户', q: '张三', filter: { logic: 'all', conditions: [{ field: 'Status', op: 'gt', value: 1 }] } },
+        { id: 'q_b', name: '   ', q: 'a' }, // 空 name 丢弃
+        { id: 'q_b', name: '重名id', q: 'xx' }, // 重复 id 重新生成
+        { id: 123, name: '坏id', filter: { logic: 'all', conditions: [{ field: 'Status', op: 'eq', value: 2 }] } }, // 非字符串 id 重新生成
+        { name: '无id', q: 'b' }, // 无 id 生成
+        { id: 'q_empty', name: '空方案', q: '', filter: { logic: 'all', conditions: [] } }, // q 空且无条件丢弃
+        { name: '超长' + '名'.repeat(100), q: 'c' }, // name 截断 50
       ],
     });
     const wire = parseQueriesWire(raw, qFields);
-    // 保留：q_a / 重名id / 坏id / 无id / 超长名 = 5 条；空 name 与空 params 丢弃
+    // 保留：q_a / 重名id / 坏id / 无id / 超长名 = 5 条；空 name 与空方案丢弃
     expect(wire.queries.length).toBe(5);
-    expect(wire.queries[0]).toEqual({ id: 'q_a', name: '昨日新增客户', params: { Name: '张三' } });
-    // 未知字段 Unknown 被 cleanSearchParams 丢弃
-    expect(Object.keys(wire.queries[0].params)).toEqual(['Name']);
-    // 保留键 Q/dtStart 被接纳
-    expect(wire.queries[1].params).toEqual({ Q: 'xx', dtStart: '2026-01-01' });
+    expect(wire.queries[0]).toEqual({
+      id: 'q_a',
+      name: '昨日新增客户',
+      q: '张三',
+      filter: { logic: 'all', conditions: [{ field: 'Status', op: 'gt', value: 1 }] },
+    });
+    expect(wire.queries[1]).toEqual({ id: wire.queries[1].id, name: '重名id', q: 'xx' });
     expect(wire.queries[1].id).toMatch(/^q_/);
     // 重复 id 被重新生成，id 唯一
     const ids = wire.queries.map((q) => q.id);
@@ -868,22 +870,32 @@ describe('QueriesJson wire (OSC-0016)', () => {
     expect(wire.queries[4].name.length).toBe(50);
   });
 
-  it('serializeQueriesWire round-trips and empty list keeps shell', () => {
-    const wire: SavedQueriesWire = {
+  it('parseQueriesWire v1 migration only carries Q', () => {
+    const raw = JSON.stringify({
       version: 1,
       queries: [
-        { id: 'q_x', name: '查询A', params: { Q: 'xx', Status: 1 } },
+        { id: 'q_a', name: 'A', params: { Q: '客户', Status: 1, Unknown: 'x' } },
+        { id: 'q_b', name: 'B', params: { Name: '张三' } }, // 无 Q 丢弃
       ],
+    });
+    const wire = parseQueriesWire(raw, qFields);
+    expect(wire.queries).toEqual([{ id: 'q_a', name: 'A', q: '客户' }]);
+  });
+
+  it('serializeQueriesWire round-trips and empty list keeps shell', () => {
+    const wire: SavedQueriesWire = {
+      version: 2,
+      queries: [{ id: 'q_x', name: '查询A', q: 'xx', filter: { logic: 'all', conditions: [{ field: 'Status', op: 'eq', value: 1 }] } }],
     };
     const json = serializeQueriesWire(wire);
     expect(parseQueriesWire(json, qFields)).toEqual(wire);
-    expect(serializeQueriesWire(emptySavedQueries())).toBe('{"version":1,"queries":[]}');
+    expect(serializeQueriesWire(emptySavedQueries())).toBe('{"version":2,"queries":[]}');
   });
 
   it('normalizeSavedQuery regenerates id when usedIds collide', () => {
     const used = new Set(['q_same']);
-    const a = normalizeSavedQuery({ id: 'q_same', name: 'A', params: { Name: '1' } }, qFields, used);
-    const b = normalizeSavedQuery({ id: 'q_same', name: 'B', params: { Name: '2' } }, qFields, used);
+    const a = normalizeSavedQuery({ id: 'q_same', name: 'A', q: '1' }, qFields, used);
+    const b = normalizeSavedQuery({ id: 'q_same', name: 'B', q: '2' }, qFields, used);
     expect(a?.id).not.toBe(b?.id);
   });
 });

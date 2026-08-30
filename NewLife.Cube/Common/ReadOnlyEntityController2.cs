@@ -119,31 +119,46 @@ public partial class ReadOnlyEntityController<TEntity>
         // 任一条件无法下推（未知字段/不支持操作符）则整段返回 null，忽略服务端过滤——前端 matchesViewFilter 仍在，
         // 翻页不完整为已知限制（只保证本页复核），不 500。
         // 数据权限表达式（builder）始终保留：logic=any 只 OR 筛选条件，不得放大 CreateWhere 权限范围。
+        // OSC-260830a1b2：字段白名单（GetPage search∪list），未下发字段抛 400；时序实体自动时间窗 + 响应头。
         var viewFilter = p["viewFilter"];
+        ViewFilterDto filter = null;
         if (!viewFilter.IsNullOrEmpty())
         {
-            var filter = AutomationFilter.ParseViewFilter(viewFilter);
-            var viewExp = AutomationFilter.TryBuildWhere(Factory, filter);
-            if (viewExp != null)
+            filter = AutomationFilter.ParseViewFilter(viewFilter);
+        }
+
+        // 白名单：GetPage Search∪List 字段，作为 viewFilter 可查询字段元数据
+        var allowed = AllowSearchOrList();
+
+        Expression viewExp = null;
+        if (filter != null) viewExp = AutomationFilter.TryBuildWhere(Factory, filter, allowed);
+
+        // 时间窗：分表/日志实体无时间条件时自动收窄近 N 天
+        var winExp = AutomationFilter.BuildTimeWindow(Factory, filter, out var narrowedDays);
+        if (narrowedDays > 0)
+            Response.Headers["X-Cube-Filter-Narrowed"] = $"{narrowedDays}d";
+
+        if (viewExp != null || winExp != null)
+        {
+            // WhereBuilder.GetExpression() 对含常量/占位符无法解析的表达式（如多租户 fail-closed "1=0"）会抛异常，
+            // 此时放弃 viewFilter 下推（State 保持原 WhereBuilder，FindAll 仍按既有路径消费），前端 matchesViewFilter 兜底，不 500
+            try
             {
-                // WhereBuilder.GetExpression() 对含常量/占位符无法解析的表达式（如多租户 fail-closed "1=0"）会抛异常，
-                // 此时放弃 viewFilter 下推（State 保持原 WhereBuilder，FindAll 仍按既有路径消费），前端 matchesViewFilter 兜底，不 500
-                try
+                var exp = viewExp;
+                if (winExp != null) exp = exp == null ? winExp : exp & winExp;
+                if (builder != null)
                 {
-                    if (builder != null)
-                    {
-                        builder.Factory ??= Factory;
-                        p.State = builder.GetExpression() & viewExp;
-                    }
-                    else
-                    {
-                        p.State = viewExp;
-                    }
+                    builder.Factory ??= Factory;
+                    p.State = builder.GetExpression() & exp;
                 }
-                catch
+                else
                 {
-                    if (builder == null) p.State = null;
+                    p.State = exp;
                 }
+            }
+            catch
+            {
+                if (builder == null) p.State = null;
             }
         }
 
@@ -188,6 +203,16 @@ public partial class ReadOnlyEntityController<TEntity>
         if (hasNext) list.RemoveAt(list.Count - 1);
 
         return list;
+    }
+
+    /// <summary>构造 viewFilter 字段白名单（GetPage search∪list 的 name，大小写不敏感）。OSC-260830a1b2</summary>
+    /// <returns>白名单判定委托</returns>
+    protected virtual Func<String, Boolean> AllowSearchOrList()
+    {
+        var names = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
+        foreach (var f in OnGetFields(ViewKinds.Search, null)) names.Add(f.Name);
+        foreach (var f in OnGetFields(ViewKinds.List, null)) names.Add(f.Name);
+        return n => names.Contains(n);
     }
 
     /// <summary>查找单行数据</summary>

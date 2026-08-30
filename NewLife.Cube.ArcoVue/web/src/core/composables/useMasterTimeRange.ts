@@ -2,7 +2,7 @@ import { computed } from 'vue';
 
 /**
  * 主时间范围双向映射（OSC-0016）：`model.dtStart`/`model.dtEnd` 两键 ↔ 日期范围选择器 [start, end]。
- * 供 InsightPanel（已移除搜索区，仅图表）与 SearchDrawer（搜索抽屉）复用同一实现，避免两份漂移。
+ * 供 InsightPanel（仅图表）与查询簇（工具栏关键字/自定义条件）复用同一实现，避免两份漂移。
  */
 export function useMasterTimeRange(model: Record<string, unknown>) {
   /** 主时间范围值：dtStart/dtEnd 两键映射 [start, end] */
