@@ -135,10 +135,11 @@ export default function TableContent({
     const meta = toFieldMeta(field.field);
     const control = resolveListControl(meta);
 
-    // 列宽规范（皮肤设计规范 §7.5）：主键/数字/枚举 ≥80、时间 ≥140、字符串自适应。
+    // 列宽规范（皮肤设计规范 §7.5）：数字/枚举 ≥80、时间 ≥140、字符串自适应。
+    // 主键(Id)列初始宽 64px：数据少时列窄；长 Id（雪花）由 max-content auto 布局按内容撑开（配合主键列不省略、不排序）。
     // 列多时表格横向滚动，不把各列挤压到无法阅读
     let width: number | undefined;
-    if (meta.primaryKey) width = 90;
+    if (meta.primaryKey) width = 64;
     else if (control === 'image' || control === 'file') width = 100;
     else if (control === 'color' || control === 'icon') width = 90;
     else if (control === 'boolean') width = 90;
@@ -156,8 +157,10 @@ export default function TableContent({
       key: meta.name,
       width,
       align: align as 'left' | 'center' | 'right',
-      ellipsis: true,
-      sorter: onSortChange ? true : false,
+      // 主键列不参与排序 + 不省略：避免表头排序图标撑宽列、ellipsis 约束 auto 布局下按内容自适应；
+      // 配合主键列 64px 初始宽，数据少时列窄、雪花 ID 位数多时列宽
+      ellipsis: meta.primaryKey ? false : true,
+      sorter: onSortChange && !meta.primaryKey ? true : false,
       render: (_: unknown, row: Record<string, unknown>) => (
         <CellRenderer field={field} value={getValueByKey(row, meta.name)} />
       ),
