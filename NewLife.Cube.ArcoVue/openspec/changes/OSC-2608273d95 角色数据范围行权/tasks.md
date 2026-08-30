@@ -21,13 +21,15 @@
 
 - [ ] `ReadOnlyEntityController2.SearchData`：GetFilter AND 进 p.State；不得被 viewFilter logic=any 放大
 - [ ] `FindData` + 默认 `ValidPermission`：CanAccess
-- [ ] Index/详情/导出返回前 `MaskSensitiveFields`
+- [ ] Index/详情/导出：行集走 SearchData/GetFilter；返回前 `MaskSensitiveFields`（列 AllFields 可暂留）
+- [ ] `WidgetQueryService` AND GetFilter（WebAPI）
 - [ ] `DataField.Sensitive`；`PrepareFieldsForApi` 按 IFieldScope + ViewSensitive 打标
-- [ ] 确认 CubeNC 与 WebAPI 共享同一 `ReadOnlyEntityController2` 或两份同步
+- [ ] 确认 CubeNC 与 WebAPI 共享同一 `ReadOnlyEntityController2`（已 Link）
 
 ## T4 拆除仅本人 DataPermission
 
-- [ ] 两栈去掉 User/Log/UserToken/UserOnline/UserConnect/OAuthLog/NotificationRecord 上的 `[DataPermission]`
+- [ ] Cube + CubeNC 去掉 User/Log/UserToken/UserOnline/UserConnect/OAuthLog 上的 `[DataPermission]`
+- [ ] 仅 CubeNC `NotificationRecordController` 去特性
 - [ ] 特性类与 CreateWhere 额外 AND 分支保留（无特性则不进入）
 - [ ] WebAPI `RoleController`：DataDepartmentIds DataSource 对齐 CubeNC
 
@@ -43,7 +45,7 @@
 
 - [ ] 重写 `Doc/PERM-数据权限.md`（与 design §1 矩阵一致）
 - [ ] `Doc/功能清单.md` PERM-6
-- [ ] 迁移方案 / 竞品分析行权限一句回写本号 ID
+- [ ] 迁移方案 §8.6 / 竞品分析行权限一句回写本号 ID
 
 ## T7 测试与构建
 

@@ -11,6 +11,7 @@
 - 不给 Log/Token 做「本部门可见同事的日志/令牌」。
 - 不给 Menu/Role/File 加 IDataScope 行过滤。
 - 不新增 `/iam`；不改 Cube.Vue。
+- 不改 `LovController.ListData`；不把导出改成字段矩阵裁剪（AllFields 可暂留）。
 - `RoleController.Valid` 的 Permission `menuId#flags` 解析保留（OSC-260824fc7c）。
 - `DataPermissionAttribute` 类型可保留；禁止再给 User 挂回仅本人表达式。
 
@@ -54,6 +55,9 @@ pnpm --filter @cube/arco-vue build
 - [ ] **AC-18 viewFilter**：带 viewFilter 的列表仍受 DataScope 约束。
 - [ ] **AC-19 旧客户端**：无新查询参数；仅行集变严/变准，契约字段名不变。
 - [ ] **AC-20 文档**：`PERM-数据权限.md` 无 `DataScopeType`、无三参数 DataPermission 构造示例。
+- [ ] **AC-21 导出行集**：仅本人导出 User 不含他人行。
+- [ ] **AC-22 Widget Query**：本部门角色对 User 的 count 不含外部门（WebAPI）。
+- [ ] **AC-23 XCode 先于挂载**：拦截器不得 catch 后 `return true`。
 
 ## 残余（不阻断 Done）
 

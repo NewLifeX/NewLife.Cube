@@ -22,8 +22,11 @@
 | 3 | **本号字段**：接通 `IFieldScope` + `ViewSensitive` 脱敏与 GetPage 标记；字段矩阵 ACL 另号。 |
 | 4 | **允许普通角色存「全部」**。拆开 Valid 里 `DataScope==0` 当成未设置的逻辑。 |
 | 5 | 无部门字段的 `IUserScope` 实体（日志、令牌等）：「本部门 / 下级 / 自定义」**不扩成同事数据**，仍按归属用户过滤（表上没有部门列，禁止 join 用户表扩权）。 |
-| 6 | 双栈：WebAPI `NewLife.Cube` 与 MVC `NewLife.CubeNC` 的 `CreateWhere` / `FindData` / `ValidPermission` / Role 表单同源行为。 |
+| 6 | 双栈：WebAPI `NewLife.Cube` 与 MVC `NewLife.CubeNC` 的 `CreateWhere` / `FindData` / `ValidPermission` / Role 表单同源行为。`ReadOnlyEntityController2` 已 Link，只改一处；**拆 DataPermission 的控制器两栈各改**。 |
 | 7 | 不改 Cube.Vue / NaiveUI 专用页；JSON API 行为变化对它们自然生效。 |
+| 8 | **两仓一体**：XCode 修通（Issue 问题 1–6）与 Cube 接线在**本号**完成；`NewLife.XCode-Issue.md` 仅供粘贴上游，不是第二套设计。XCode 未合入时 Cube 不得先挂拦截器（fail-open）。 |
+| 9 | 列表 / 详情 / 导出 / PATCH / Widget Query 同一 `CanAccess`（迁移方案 BE-A7）。**不改** `LovController.ListData`（BE-D2 另号）。导出仍可 `AllFields` 列集（BE-E1 另号），但**行集**必须走 GetFilter。 |
+| 10 | WebAPI **无** `NotificationRecordController`，只改 CubeNC 该文件 + 实体拦截器（Entity 已 Link）。 |
 
 ## 4. 做什么
 
@@ -42,6 +45,8 @@
 - 不取消 GetPage `[AllowAnonymous]`；**不把过滤表达式下发浏览器**。
 - 不改租户 `ITenantScope` 语义（租户条件仍在 CreateWhere，与行权 AND）。
 - 不改 `PermissionFlags`、不新增 `/iam`。
+- 不改 `LovController` `entity:` 旁路（BE-D2/D3）；不停止导出裸 `AllFields`（BE-E1，与字段 ACL 同批）。
+- 不把本号与 OSC-260830a1b2 绑死；查询收口可并行，AND 顺序见 design。
 
 ## 6. 依赖
 
@@ -50,6 +55,8 @@
 | OSC-260824fc7c | 推翻「不改 User DataPermission」；保留授权树 / 系统角色锁 / 仅自己提示文案入口，按本号矩阵改触发条件 |
 | XCode `DataScopeContext` / `DataScopeHelper` / `DataScopeInterceptor` | 本号修通并挂载，不平行造第二套行权 |
 | OSC-260819e483 | `CreateWhere` / `SearchData` / `viewFilter` 与权限 AND 的顺序保持：行权不得被 logic=any 放大 |
+| 迁移方案 §8.6 BE-A1～A8 / BE-B1 | 本号覆盖；BE-B2 字段矩阵、BE-D2 值集、BE-E1 导出列裁剪 **不**在本号 |
+| OSC-260830a1b2 | 不依赖；并行时 SearchData 仍是 CreateWhere(+GetFilter) 先于 viewFilter |
 
 ## 7. 测试范围
 
@@ -69,3 +76,4 @@
 - [ ] 直打详情 ID 越权 → 非法访问；拦截器拒绝写入。
 - [ ] GetPage 含 `sensitive`；无 ViewSensitive 且非本人时密码类字段脱敏。
 - [ ] `PERM-数据权限.md` 与代码一致，不再出现 `DataScopeType` / 错误的 DataPermission 三字段构造器。
+- [ ] 迁移方案 §8.6 BE-A* 可勾本号；竞品行权限一句回写。

@@ -141,9 +141,17 @@ Update 时 0 就是「全部」，原样保存。
 
 列表 `Index` / 导出：在返回前对 `IEnumerable<TEntity>` 调 `FieldScopeHelper.MaskSensitiveFields`。详情同样。
 
+导出路径必须先走与列表相同的 `SearchData`/`GetFilter` 行集，再 `MaskSensitiveFields`。禁止另开 `FindAll` 无 State。列仍可用 `Factory.AllFields`（BE-E1 另号）。
+
+### 4.5 Widget Query（WebAPI）
+
+`WidgetQueryService` 今日会 AND `DataPermissionAttribute` 表达式。本号：在聚合/列表 SQL 上 **AND `DataScopeHelper.GetFilter(fact)`**（与列表同一助手）；无接口则 null。`CanAccess` 不适用于聚合行，靠 Where。禁止只滤 DefaultList 而 Query 看全表。
+
+CubeNC 无 Widget 控制器则跳过此文件。
+
 ### 4.2 拆除特性
 
-两栈删除这些行上的 `[DataPermission(null, "...")]`：User、Log、UserToken、UserOnline、UserConnect、OAuthLog、NotificationRecord。Department 保持无特性。
+两栈删除 User、Log、UserToken、UserOnline、UserConnect、OAuthLog 上的 `[DataPermission(null, "...")]`。`NotificationRecord` **仅 CubeNC 控制器**有该特性。Department 保持无特性。
 
 ### 4.3 Role 表单
 
@@ -168,7 +176,7 @@ WebAPI `RoleController` 对齐 CubeNC：`AddFormFields`/`EditFormFields` 的 `Da
 | 列表列 | 字段 `sensitive===true` 不进可见列（纯函数 `rejectSensitiveColumns`） | 不把藏列当授权 |
 | `*.spec.ts` | 覆盖显隐与 sensitive | |
 
-不改 GetPage 匿名；不展示 Where 表达式。
+不改 GetPage 匿名；不展示 Where 表达式。UI 细节见 `ui/information-architecture.md`。
 
 ## 6. 文件级改动地图
 
@@ -188,12 +196,19 @@ WebAPI `RoleController` 对齐 CubeNC：`AddFormFields`/`EditFormFields` 的 `Da
 
 | 文件 | 改 |
 | --- | --- |
-| `Common/ReadOnlyEntityController2.cs` | SearchData/FindData/ValidPermission/Mask |
-| `Common/ReadOnlyEntityController.cs` | Index/详情返回前 Mask；PrepareFieldsForApi 标 Sensitive |
+| `Common/ReadOnlyEntityController2.cs` | SearchData/FindData/ValidPermission/Mask；**Link 双栈一份** |
+| `Common/ReadOnlyEntityController.cs` | Index/详情/导出返回前 Mask；PrepareFieldsForApi 标 Sensitive |
 | `ViewModels/DataField.cs` | `Sensitive` |
-| `Areas/Admin/Controllers/UserController.cs` 等 | 去 DataPermission（两栈） |
-| `Areas/Admin/Controllers/RoleController.cs`（WebAPI） | DataDepartmentIds DataSource |
-| `Entity/*用户令牌|在线|链接|OAuth日志|通知记录*.Biz.cs` | 接口 + 拦截器 |
+| `Widgets/WidgetQueryService.cs` | GetFilter AND（WebAPI） |
+| `Areas/Admin/Controllers/UserController.cs` | 去 DataPermission（Cube + CubeNC） |
+| `Areas/Admin/Controllers/LogController.cs` | 同上两栈 |
+| `Areas/Admin/Controllers/UserTokenController.cs` | 同上两栈 |
+| `Areas/Admin/Controllers/UserOnlineController.cs` | 同上两栈 |
+| `Areas/Admin/Controllers/UserConnectController.cs` | 同上两栈 |
+| `Areas/Admin/Controllers/OAuthLogController.cs` | 同上两栈 |
+| `NewLife.CubeNC/Areas/Admin/Controllers/NotificationRecordController.cs` | 去 DataPermission（仅 NC） |
+| `Areas/Admin/Controllers/RoleController.cs`（WebAPI） | DataDepartmentIds DataSource；对齐 CubeNC |
+| `Entity/*用户令牌|在线|链接|OAuth日志|通知记录*.Biz.cs` | 接口 + 拦截器（NC Link 实体） |
 | `Doc/PERM-数据权限.md` | 重写为 DataScope 矩阵 |
 | `Doc/功能清单.md` | PERM-6 改为 DataScope 行权，注明本号 |
 
@@ -204,8 +219,23 @@ WebAPI `RoleController` 对齐 CubeNC：`AddFormFields`/`EditFormFields` 的 `Da
 ### 6.4 禁止改
 
 - `EntityAuthorize` 菜单位检查、GetPage AllowAnonymous。
-- OSC-0018 五件套、Cube.Vue 源码。
+- OSC-0018 五件套、Cube.Vue 源码、`LovController` 值集旁路。
 - 用 DataPermission 三字段构造器「实现」文档幻想 API。
+
+### 6.5 与 §8.6 对照
+
+| Issue | 本号任务 |
+| --- | --- |
+| BE-A1 Role.Valid 0=全部 | T1 |
+| BE-A2 OnValid 失败不放行 | T1；**先于** T2 挂载 |
+| BE-A3 实体接口+拦截器 | T2 |
+| BE-A4 部门仅本人≡本部门 | T1 |
+| BE-A5 缓存键 deptId | T1 |
+| BE-A6 CreateWhere 合并 GetFilter；拆仅本人特性 | T3/T4 |
+| BE-A7 详情/导出/PATCH/Widget | T3/T4；值集另号 |
+| BE-A8 PERM 文档 + PERM-6 | T6 |
+| BE-B1 IFieldScope 脱敏 + GetPage sensitive | T3 |
+| BE-B2 / D2 / E1 | 明确不做 |
 
 ## 7. 字段权限地基（本号边界）
 
@@ -223,8 +253,11 @@ WebAPI `RoleController` 对齐 CubeNC：`AddFormFields`/`EditFormFields` 的 `Da
 | --- | --- |
 | `Doc/PERM-数据权限.md` | 删除 DataScopeType / 错误特性签名 / 用户级 DataScope 覆盖；改为本节矩阵 |
 | `Doc/功能清单.md` PERM-6 | 后端✅ 对齐 DataScope；ArcoVue 无独立 ACL UI |
-| `ArcoVue企业中后台迁移方案.md` | 行权事实源改为 DataScope；DataPermission 降为可选额外 AND |
-| `web/README.md` | 一句：行权服务端 DataScope，前端不筛选当授权 |
+| `ArcoVue企业中后台迁移方案.md` | §8.6 BE-A1～A8/B1 标本号；行权事实源 DataScope |
+| `NewLife.Cube.ArcoVue/竞品分析报告.md` | 行权限：服务端 DataScope，不再写「仅 DataPermission 仅本人」为终态 |
+| `NewLife.Cube.ArcoVue/web/README.md` | 一句：行权服务端 DataScope，前端不筛选当授权 |
+| `Doc/Api/核心接口架构.md` | 无新路径；GetPage `sensitive` 字段说明 |
+| `NewLife.Cube.ArcoVue/web/docs/**` | 无强制；若文档仍写 DataPermission 仅本人则改一句 |
 
 ## 9. 测试设计
 
