@@ -81,6 +81,32 @@ public class UserController(UserService userService, VerifyCodeService verifyCod
         }
 
         {
+            // 地区搜索：省市区级联选择器（3级：省/市/区）。AreaId 无数据库索引不在默认搜索字段，显式添加；
+            // ItemType=area3 触发前端级联渲染，提交 areaId 由 Search 自动向下展开（省→市+区，市→区）
+            SearchFields.AddField("AreaId");
+            var df = SearchFields.GetField("AreaId");
+            df.ItemType = "area3";
+        }
+
+        {
+            // 新增表单地区字段：省市区级联选择器（4级：省/市/区/乡镇街道，对齐 MVC _Area4）。
+            // 实体 Map 虚拟字段 AreaName（String/readOnly）只用于展示名，表单应直接绑定 AreaId（Int32）提交编号；
+            // 移除 AreaName，重新添加 AreaId 并配 ItemType=area4 触发前端级联渲染
+            AddFormFields.RemoveField("AreaName");
+            AddFormFields.AddField("AreaId");
+            var df = AddFormFields.GetField("AreaId");
+            df.ItemType = "area4";
+        }
+
+        {
+            // 编辑表单地区字段：省市区级联选择器（4级：省/市/区/乡镇街道，对齐 MVC _Area4）
+            EditFormFields.RemoveField("AreaName");
+            EditFormFields.AddField("AreaId");
+            var df = EditFormFields.GetField("AreaId");
+            df.ItemType = "area4";
+        }
+
+        {
             var df = ListFields.AddListField("Link", "Logins");
             //df.Header = "链接";
             df.HeaderTitle = "第三方登录的链接信息";
