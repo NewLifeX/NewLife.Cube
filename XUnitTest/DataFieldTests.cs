@@ -360,4 +360,103 @@ public class DataFieldTests
         var sfJson = ToFastJson(sf);
         Assert.Contains("\"multiple\":true", sfJson);
     }
+
+    [Fact]
+    [DisplayName("枚举字段 FastJson 序列化自动下发 dataSource 选项")]
+    public void FastJson_EnumField_IncludesDataSource()
+    {
+        var field = new DataField
+        {
+            Name = "Sex",
+            DisplayName = "性别",
+            Type = typeof(XCode.Membership.SexKinds),
+        };
+
+        var json = ToFastJson(field);
+
+        // 枚举值反射构建选项，标签取成员名（SexKinds 无 DisplayName/Description 特性）
+        Assert.Contains("\"dataSource\":", json);
+        Assert.Contains("\"0\":\"未知\"", json);
+        Assert.Contains("\"1\":\"男\"", json);
+        Assert.Contains("\"2\":\"女\"", json);
+        // 枚举单选，不标记多选
+        Assert.DoesNotContain("\"multiple\"", json);
+    }
+
+    [Fact]
+    [DisplayName("DataSource 委托序列化下发选项，字段名以s结尾标记多选")]
+    public void FastJson_DataSource_IncludesOptionsAndMultiple()
+    {
+        var field = new DataField
+        {
+            Name = "RoleIds",
+            DisplayName = "角色组",
+            Type = typeof(String),
+            DataSource = _ => new Dictionary<Int32, String>
+            {
+                [2] = "管理员",
+                [3] = "普通用户",
+            },
+        };
+
+        var json = ToFastJson(field);
+
+        Assert.Contains("\"dataSource\":", json);
+        Assert.Contains("\"2\":\"管理员\"", json);
+        Assert.Contains("\"3\":\"普通用户\"", json);
+        // MVC _Form_Item 约定：名称以 s 结尾 → 多选
+        Assert.Contains("\"multiple\":true", json);
+    }
+
+    [Fact]
+    [DisplayName("DataSource 字段名不以s结尾且非multipleSelect 不标记多选")]
+    public void FastJson_DataSource_SingleSelect_NoMultiple()
+    {
+        var field = new DataField
+        {
+            Name = "Role",
+            DisplayName = "角色",
+            Type = typeof(Int32),
+            DataSource = _ => new Dictionary<Int32, String> { [2] = "管理员" },
+        };
+
+        var json = ToFastJson(field);
+
+        Assert.Contains("\"dataSource\":", json);
+        Assert.DoesNotContain("\"multiple\"", json);
+    }
+
+    [Fact]
+    [DisplayName("ItemType=multipleSelect 的 DataSource 字段标记多选")]
+    public void FastJson_DataSource_MultipleSelect_Flagged()
+    {
+        var field = new DataField
+        {
+            Name = "Tags",
+            DisplayName = "标签",
+            Type = typeof(String),
+            ItemType = "multipleSelect",
+            DataSource = _ => new Dictionary<Int32, String> { [1] = "A" },
+        };
+
+        var json = ToFastJson(field);
+
+        Assert.Contains("\"multiple\":true", json);
+    }
+
+    [Fact]
+    [DisplayName("DataSource 委托抛出异常时降级不输出 dataSource")]
+    public void FastJson_DataSource_Throws_Skips()
+    {
+        var field = new DataField
+        {
+            Name = "Owner",
+            Type = typeof(Int32),
+            DataSource = _ => throw new InvalidOperationException("依赖实体上下文"),
+        };
+
+        var json = ToFastJson(field);
+
+        Assert.DoesNotContain("dataSource", json);
+    }
 }

@@ -244,6 +244,9 @@ public class UserInfo
     /// <summary>头像</summary>
     public String Avatar { get; set; }
 
+    /// <summary>生日。用户中心编辑资料展示</summary>
+    public DateTime Birthday { get; set; }
+
     /// <summary>角色。主要角色</summary>
     public Int32 RoleID { get; set; }
 

@@ -55,9 +55,21 @@ public class UserController(UserService userService, VerifyCodeService verifyCod
         SearchFields.RemoveField("MailVerified", "MobileVerified");
 
         {
-            // 为RoleId搜索字段增加LovCode
+            // 角色搜索：下拉多选。LovDefinition 无 Role 值集（lovCode 加载为空），改用角色缓存作为数据源；
+            // ItemType=multipleSelect 触发 DataField 下发 multiple=true，前端 LovSelect 渲染为多选下拉，多选值经逗号串 roleID=1,2 提交
             var df = SearchFields.GetField(_.RoleID);
-            df.LovCode = "Role";
+            df.DataSource = _ => Role.FindAllWithCache()
+                .Where(e => e.Enable)
+                .OrderByDescending(e => e.Sort)
+                .ToDictionary(e => e.ID, e => e.Name);
+            df.ItemType = "multipleSelect";
+        }
+
+        {
+            // 部门搜索：下拉多选。部门缓存作为数据源（对齐 MVC _SelectDepartment 部门选择）
+            var df = SearchFields.GetField(_.DepartmentID);
+            df.DataSource = _ => Department.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+            df.ItemType = "multipleSelect";
         }
 
         {
@@ -127,7 +139,9 @@ public class UserController(UserService userService, VerifyCodeService verifyCod
         }
 
         //var roleId = p["roleId"].ToInt(-1);
+        // 角色搜索多选提交 roleID=1,2（前端字段名 camelCase），兼容 roleIds 复数参数
         var roleIds = p["roleIds"].SplitAsInt();
+        if (roleIds.Length == 0) roleIds = p["roleID"].SplitAsInt();
         //var departmentId = p["departmentId"].ToInt(-1);
         var departmentIds = p["departmentId"].SplitAsInt();
         var areaIds = p["areaId"].SplitAsInt("/");

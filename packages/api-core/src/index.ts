@@ -42,6 +42,10 @@ export type {
   ActivateModel,
   VerifyContactModel,
   VerifyStatus,
+  UserBind,
+  OAuthPlatform,
+  BindsResult,
+  ChangePasswordModel,
 } from './types';
 export { FieldKind, Auth, ApiError } from './types';
 

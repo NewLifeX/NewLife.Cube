@@ -570,7 +570,8 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     [HttpPost]
     public ActionResult SetPageConfig(String kind, String page, [FromBody] JsonElement value)
     {
-        var rs = pageService.SetPageConfig(kind, page, value.ToDictionary());
+        // 当前登录用户配置优先；未登录时写全局配置
+        var rs = pageService.SetPageConfig(kind, page, value.ToDictionary(), CurrentUser?.ID ?? 0);
         return Json(0, null, rs);
     }
 

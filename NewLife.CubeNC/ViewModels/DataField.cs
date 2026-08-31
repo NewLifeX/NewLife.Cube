@@ -179,6 +179,46 @@ public class DataField : IDictionarySource
         if (!ValueField.IsNullOrEmpty()) dic["valueField"] = ValueField;
         if (!LovCode.IsNullOrEmpty()) dic["lovCode"] = LovCode;
 
+        // 数据源。优先 DataSource 委托（控制器显式配置，如角色组），否则枚举字段自动构建选项
+        // 前端 LovSelect 优先使用 dataSource 渲染下拉选项（对齐 MVC _Form_Item/_Form_Int）
+        if (DataSource != null)
+        {
+            try
+            {
+                var ds = DataSource(null);
+                if (ds != null && ds.Count > 0)
+                {
+                    var sds = new Dictionary<String, String>();
+                    foreach (DictionaryEntry item in ds)
+                    {
+                        if (item.Key != null) sds[item.Key + ""] = item.Value + "";
+                    }
+                    dic["dataSource"] = sds;
+
+                    // 多选：显式 ItemType=multipleSelect，或字段名以 s 结尾（MVC _Form_Item 约定）
+                    if (String.Equals(ItemType, "multipleSelect", StringComparison.OrdinalIgnoreCase) || Name.EndsWith("s"))
+                        dic["multiple"] = true;
+                }
+            }
+            catch { /* 委托依赖实体上下文时可能失败，忽略并降级 */ }
+        }
+        else if (Type != null && Type.IsEnum)
+        {
+            // 枚举选项：反射枚举成员，标签取 DisplayName/Description/成员名（对齐 MVC _Form_Int）
+            var sds = new Dictionary<String, String>();
+            foreach (var item in Type.GetFields(BindingFlags.Public | BindingFlags.Static))
+            {
+                var value = Convert.ToInt64(item.GetValue(null));
+                var label = item.Name;
+                var dna = item.GetCustomAttribute<DisplayNameAttribute>(false);
+                if (dna != null && !String.IsNullOrEmpty(dna.DisplayName)) label = dna.DisplayName;
+                var att = item.GetCustomAttribute<DescriptionAttribute>(false);
+                if (att != null && !String.IsNullOrEmpty(att.Description)) label = att.Description;
+                sds[value + ""] = label;
+            }
+            if (sds.Count > 0) dic["dataSource"] = sds;
+        }
+
         // 子类扩展字段
         switch (this)
         {
