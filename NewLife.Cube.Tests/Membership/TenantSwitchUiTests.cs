@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
@@ -10,6 +11,7 @@ using NewLife.Cube.Areas.Admin.Controllers;
 using NewLife.Cube.Controllers;
 using NewLife.Cube.Services;
 using NewLife.Cube.ViewModels;
+using NewLife.Data;
 using XCode.Membership;
 using Xunit;
 
@@ -108,6 +110,40 @@ public class TenantSwitchUiTests
         {
             Restore();
         }
+    }
+
+    #endregion
+
+    #region 列表字段值注入（OnFillListValues）
+
+    /// <summary>测试控制器子类，暴露 OnFillListValues</summary>
+    private class TestFillValuesController : ReadOnlyEntityController<TenantUser>
+    {
+        public void FillForTest(IEnumerable<TenantUser> list, IList<DataField>? fields = null) => OnFillListValues(list, fields);
+    }
+
+    [Fact(DisplayName = "OnFillListValues：虚拟字段 GetValue 按行计算值写入 Items，DataVisible=false 跳过")]
+    public void OnFillListValues_Injects_VirtualFieldValues()
+    {
+        var ctrl = new TestFillValuesController();
+
+        var avatar = new ListField { Name = "AvatarImage", ItemType = "image" };
+        avatar.GetValue = e => "url://" + (e as TenantUser)?.UserId;
+        var hidden = new ListField { Name = "Hidden", GetValue = e => "x", DataVisible = e => false };
+        var fields = new FieldCollection(ViewKinds.List) { avatar, hidden };
+
+        var u1 = new TenantUser { UserId = 11 };
+        var u2 = new TenantUser { UserId = 22 };
+
+        ctrl.FillForTest([u1, u2], fields);
+
+        // 虚拟字段按行计算值并写入实体扩展，随行 JSON 内联输出
+        Assert.Equal("url://11", ((IExtend)u1).Items["AvatarImage"]);
+        Assert.Equal("url://22", ((IExtend)u2).Items["AvatarImage"]);
+        // DataVisible=false 的字段不输出
+        Assert.False(((IExtend)u1).Items.ContainsKey("Hidden"));
+        // 普通实体字段不在 Items 中（不重复注入）
+        Assert.False(((IExtend)u1).Items.ContainsKey("UserId"));
     }
 
     #endregion

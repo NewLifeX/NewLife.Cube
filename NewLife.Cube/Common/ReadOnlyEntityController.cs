@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.AI;
 using NewLife.Cube.ViewModels;
+using NewLife.Data;
 using NewLife.Log;
 using NewLife.Serialization;
 using NewLife.Web;
@@ -59,15 +60,52 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             RetrieveTotalCount = PageSetting.EnableTotalCount
         };
 
-        var list = SearchData(p);
+        var list = SearchData(p).ToList();
+
+        // 复刻 MVC ListField 按行计算值：虚拟字段/GetValue 字段写入实体扩展，随行 JSON 内联输出
+        OnFillListValues(list);
+
         //return list.ToOkApiResponse().WithList(p); 
         return new ApiListResponse<TEntity>
         {
-            Data = list.ToList(),
+            Data = list,
             Page = p.ToModel(),
             Stat = (TEntity)p.State,
             TraceId = DefaultSpan.Current?.TraceId,
         };
+    }
+
+    /// <summary>填充列表字段计算值。复刻 MVC 版 ListField 按行计算单元格值的能力</summary>
+    /// <remarks>
+    /// MVC 版在视图渲染时调用 ListField.GetLink/GetLinkName 按行计算单元格值；API 版无视图，
+    /// 在 Index 序列化前统一计算并写入实体扩展字典（<see cref="IExtend.Items"/>），
+    /// 由 JsonWriter 内联到行 JSON 顶层，前端字段元数据驱动的通用渲染即可显示，无需修改前端代码。
+    /// 仅处理虚拟字段（Field 为空，如 AddListField 创建的 AvatarImage）或设置了 GetValue 委托的字段，
+    /// 普通列不参与，避免额外开销。
+    /// </remarks>
+    /// <param name="list">数据列表</param>
+    /// <param name="fields">列表字段。为空时使用当前列表字段集合（OnGetFields）</param>
+    protected virtual void OnFillListValues(IEnumerable<TEntity> list, IList<DataField>? fields = null)
+    {
+        fields ??= OnGetFields(ViewKinds.List, null);
+
+        // 只收集需要计算值的字段：虚拟字段（非实体列）或设置了 GetValue 委托的字段
+        var lfs = fields.OfType<ListField>().Where(e => e.Field == null || e.GetValue != null).ToArray();
+        if (lfs.Length == 0) return;
+
+        foreach (var entity in list)
+        {
+            if (entity is not IExtend ext) continue;
+
+            foreach (var df in lfs)
+            {
+                // 可见性控制：DataVisible 为 false 时不输出该列值
+                if (df.DataVisible != null && !df.DataVisible(entity)) continue;
+
+                var value = df.GetValue?.Invoke(entity) ?? entity[df.Name];
+                if (value != null) ext.Items[df.Name] = value;
+            }
+        }
     }
 
     /// <summary>查看单行数据</summary>

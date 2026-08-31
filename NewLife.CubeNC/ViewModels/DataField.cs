@@ -107,6 +107,10 @@ public class DataField : IDictionarySource
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String MapField { get; set; }
 
+    /// <summary>取值字段。列表单元格优先取该字段值，为空时回退到本字段。如名称列优先显示昵称：Name.ValueField=DisplayName</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public String ValueField { get; set; }
+
     /// <summary>LOV 配置代码</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String LovCode { get; set; }
@@ -172,6 +176,7 @@ public class DataField : IDictionarySource
         if (!Extended2.IsNullOrEmpty()) dic["extended2"] = Extended2;
         if (!Extended3.IsNullOrEmpty()) dic["extended3"] = Extended3;
         if (!MapField.IsNullOrEmpty()) dic["mapField"] = MapField;
+        if (!ValueField.IsNullOrEmpty()) dic["valueField"] = ValueField;
         if (!LovCode.IsNullOrEmpty()) dic["lovCode"] = LovCode;
 
         // 子类扩展字段

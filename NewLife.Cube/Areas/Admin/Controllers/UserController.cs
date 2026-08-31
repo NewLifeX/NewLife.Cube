@@ -38,6 +38,20 @@ public class UserController(UserService userService, VerifyCodeService verifyCod
         ListFields.RemoveUpdateField();
         ListFields.RemoveField("Remark");
 
+        {
+            // 头像列。复刻 MVC 版：AddListField 虚拟字段 + GetValue 按行计算头像地址，纯 C# 控制，前端通用 image 渲染
+            var df = ListFields.AddListField("AvatarImage", null, "Id");
+            df.DisplayName = "头像";
+            df.ItemType = "image";
+            df.DataVisible = entity => !(entity as User).Avatar.IsNullOrEmpty();
+            df.GetValue = entity => (entity as User).Avatar;
+        }
+        {
+            // 名称列优先显示昵称，昵称为空时回退用户名。前端通用按 ValueField 渲染
+            var df = ListFields.GetField("Name");
+            df.ValueField = "DisplayName";
+        }
+
         SearchFields.RemoveField("MailVerified", "MobileVerified");
 
         {
