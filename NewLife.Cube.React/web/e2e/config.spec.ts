@@ -6,10 +6,54 @@
  * - 切换 5 个核心配置页均可达（无 404），配置表单正常渲染
  * - 更多配置下拉切换 短信/邮件/OAuth/访问规则，更多按钮高亮，面包屑正确
  * - 配置页每行一个配置项，右侧显示 Description
+ *
+ * ⚠️ 并发约束：本套件依赖 ReactSetting.configNavFlat=false（Segmented + 更多下拉），
+ * 而 react-setting.spec 的「导航排开」测试需要 configNavFlat=true。两者在同一 ReactSetting
+ * 上配置相反，**并发运行（workers>1）会互相覆盖导致偶发失败**——这两个 spec 必须串行运行
+ * （--workers=1）或分开运行。beforeAll 已做幂等恢复以降低冲突概率。
  */
 import { expect, test } from '@playwright/test';
 
 const NAV_TIMEOUT = 10000;
+
+/**
+ * 确保「配置导航排开」关闭（Segmented + 更多配置下拉），使本套件自包含。
+ *
+ * react-setting.spec 的「导航排开」测试会临时开启该配置，若运行中途中断或恢复失败会残留 true，
+ * 导致本套件（依赖 Segmented 下拉导航）失败。此处用 API 幂等恢复，与 react-setting 解耦。
+ */
+test.beforeAll(async ({ browser }) => {
+  const ctx = await browser.newContext({ storageState: '.auth/admin.json' });
+  const page = await ctx.newPage();
+  try {
+    await page.goto('/Admin/React');
+    // PUT 后 GET 验证，偶发失败时重试一次（保证导航恢复 Segmented 模式）
+    for (let i = 0; i < 3; i++) {
+      await page.evaluate(async () => {
+        const t = localStorage.getItem('token') || '';
+        const headers = { Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' };
+        const getRes = await fetch('/api/Admin/React', { headers });
+        const cur = (await getRes.json()).data ?? {};
+        const body = {
+          FormStyle: cur.formStyle ?? 'inline',
+          DescMode: cur.descMode ?? 1,
+          InputClear: cur.inputClear ?? false,
+          ConfigNavFlat: cur.configNavFlat ?? false,
+        };
+        body.ConfigNavFlat = false;
+        await fetch('/api/Admin/React', { method: 'PUT', headers, body: JSON.stringify(body) });
+      });
+      const cfg = await page.evaluate(async () => {
+        const t = localStorage.getItem('token') || '';
+        const r = await fetch('/api/Admin/React', { headers: { Authorization: 'Bearer ' + t } });
+        return (await r.json()).data;
+      });
+      if (cfg?.configNavFlat === false) break;
+    }
+  } finally {
+    await ctx.close();
+  }
+});
 
 /** 核心配置（对齐 ConfigNav.CONFIG_NAV） */
 const MAIN_PAGES = [

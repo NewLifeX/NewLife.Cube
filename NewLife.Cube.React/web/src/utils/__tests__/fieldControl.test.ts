@@ -34,6 +34,7 @@ describe('resolveControl 表单控件映射', () => {
     expect(resolveControl(f({ itemType: 'color' }))).toBe('color');
     expect(resolveControl(f({ itemType: 'html' }))).toBe('richHtml');
     expect(resolveControl(f({ itemType: 'markdown' }))).toBe('richMarkdown');
+    expect(resolveControl(f({ itemType: 'textarea', typeName: 'String' }))).toBe('textarea');
   });
 
   it('Guid → readonly', () => {

@@ -66,6 +66,7 @@ const ITEM_TYPE_TO_CONTROL: Record<string, ControlType> = {
   mail: 'email',
   mobile: 'tel',
   url: 'url',
+  textarea: 'textarea',
   singleselect: 'lov',
   multipleselect: 'lovMulti',
   lovtable: 'lov',
