@@ -12,6 +12,7 @@ import type { RuleObject } from 'antd/es/form';
 import FieldControl from '@/components/field/FieldControl';
 import { isFullWidthControl, resolveControl, resolveDescription } from '@/utils/fieldControl';
 import type { FieldMeta } from '@/types/field';
+import { useReactSetting } from '@/stores/reactSetting';
 
 export interface FormFieldItemProps {
   /** 字段元数据 */
@@ -43,7 +44,36 @@ export default function FormFieldItem({ field, apiPrefix, recordId }: FormFieldI
   const fullWidth = isFullWidthControl(control);
   const displayName = field.displayName || field.name;
   const desc = resolveDescription(field);
+  // React 皮肤设置：表单风格（inline-三栏同排 / vertical-标签一行控件一行）与注释显示方式
+  const { formStyle, descMode } = useReactSetting();
 
+  // antd6 风格：标签一行 + 控件一行，注释小字跟在标签后（descMode=1）或问号图标悬浮（descMode=2）
+  if (formStyle === 'vertical') {
+    const labelNode =
+      desc && descMode === 1 ? (
+        <span className="cube-form-vertical-label">
+          {displayName}
+          <span className="cube-form-vertical-desc">{desc}</span>
+        </span>
+      ) : (
+        displayName
+      );
+    return (
+      <Col span={fullWidth ? 24 : 12}>
+        <Form.Item
+          name={field.name}
+          label={labelNode}
+          tooltip={descMode === 2 && desc ? desc : undefined}
+          rules={buildRules(field)}
+          className="cube-form-vertical-item"
+        >
+          <FieldControl field={field} apiPrefix={apiPrefix} recordId={recordId} />
+        </Form.Item>
+      </Col>
+    );
+  }
+
+  // MVC 风格：label | 控件 | description 同排三栏
   const cls = [
     'cube-form-inline-cell',
     desc ? 'cube-form-inline-cell--desc' : '',

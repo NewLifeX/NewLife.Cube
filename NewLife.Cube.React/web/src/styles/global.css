@@ -404,6 +404,17 @@ select {
   color: var(--cube-primary);
 }
 
+/* 配置导航排开（ReactSetting.configNavFlat=true）：所有配置页一字排开 */
+.cube-config-nav-item {
+  color: var(--cube-text-secondary);
+  font-size: 13px;
+  border-radius: 6px;
+}
+
+.cube-config-nav-item.ant-btn-primary {
+  color: #fff;
+}
+
 /* 配置页字段容器 */
 .cube-config-fields {
   max-width: 1200px;

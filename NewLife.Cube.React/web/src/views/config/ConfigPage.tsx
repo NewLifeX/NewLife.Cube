@@ -18,6 +18,7 @@ import type { DataField } from '@newlifex/api-core';
 import FieldControl from '@/components/field/FieldControl';
 import { groupByCategory, isFullWidthControl, resolveControl, serializeSubmitModel } from '@/utils/fieldControl';
 import { toFieldMeta, type FieldMeta } from '@/types/field';
+import { getValueByKey } from '@/utils/url';
 import { api } from '@/api';
 import { useAiFillForm } from '@/hooks/useAiFillForm';
 
@@ -67,11 +68,13 @@ export default function ConfigPage({ type }: ConfigPageProps) {
           .filter((f) => !f.primaryKey && !f.readOnly);
         setFields(metas);
 
-        // 回填当前值（布尔串转布尔）
+        // 回填当前值（布尔串转布尔；配置对象键与字段名大小写可能不一致，按字段名大小写不敏感取值）
         const values = (objRes?.data?.data ?? objRes?.data ?? {}) as Record<string, unknown>;
-        const normalized = Object.fromEntries(
-          Object.entries(values).map(([k, v]) => [k, normalizeValue(v)]),
-        );
+        const normalized: Record<string, unknown> = {};
+        for (const f of metas) {
+          const v = getValueByKey(values, f.name);
+          if (v !== undefined) normalized[f.name] = normalizeValue(v);
+        }
         form.setFieldsValue(normalized);
       })
       .finally(() => {
@@ -92,6 +95,10 @@ export default function ConfigPage({ type }: ConfigPageProps) {
       setSaving(true);
       await api.client.put(type, model);
       message.success('保存成功');
+      // React 皮肤设置：保存后刷新页面，让全局配置（表单风格/导航排开等）立即生效
+      if (type.toLowerCase().endsWith('/react')) {
+        setTimeout(() => window.location.reload(), 600);
+      }
     } catch (err) {
       if ((err as Error)?.message && !(err as Error)?.message.includes('validateFields')) {
         message.error((err as Error).message);
@@ -135,14 +142,22 @@ export default function ConfigPage({ type }: ConfigPageProps) {
                         <Form.Item
                           name={meta.name}
                           label={meta.displayName || meta.name}
-                          labelCol={{ flex: '0 0 160px' }}
-                          wrapperCol={{ flex: full ? '1 1 auto' : '0 1 420px' }}
+                          labelCol={{ flex: '0 0 200px' }}
+                          // 控件列固定 340px 不收缩（0 0），描述列吸收剩余空间 → 各条配置描述左对齐，
+                          // 文本框/数字框等控件均占满该列，视觉等宽（对齐 MVC _Form_Item 栅格）
+                          wrapperCol={{ flex: full ? '1 1 auto' : '0 0 340px' }}
                           rules={meta.required ? [{ required: true, message: `请输入${meta.displayName || meta.name}` }] : []}
-                          style={{ marginBottom: 0, minWidth: 0 }}
+                          // 非整行控件固定基础宽度（标签 200 + 控件 340，对齐 MVC _Form_Item 栅格比例），
+                          // 保证「标签 | 控件 | 描述」同行；整行控件占满中间，由描述列吸收剩余空间
+                          style={{ flex: full ? '1 1 auto' : '0 0 548px', minWidth: 0, marginBottom: 0 }}
                         >
                           <FieldControl field={meta} apiPrefix={type} />
                         </Form.Item>
-                        {meta.description && <div className="cube-config-desc">{meta.description}</div>}
+                        {meta.description && (
+                          <div className="cube-config-desc" title={meta.description}>
+                            {meta.description}
+                          </div>
+                        )}
                       </div>
                     );
                   })}

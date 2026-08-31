@@ -14,6 +14,7 @@ import { useMemo } from 'react';
 import { Button, Dropdown, Segmented } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useReactSetting } from '@/stores/reactSetting';
 
 /** 配置页路径 → 显示名 */
 export interface ConfigNavItem {
@@ -23,13 +24,14 @@ export interface ConfigNavItem {
   label: string;
 }
 
-/** 核心配置（对齐 MVC _Object_Nav.cshtml 主导航） */
+/** 核心配置（对齐 MVC _Object_Nav.cshtml 主导航 + React 皮肤设置） */
 export const CONFIG_NAV: ConfigNavItem[] = [
   { path: '/Admin/Core', label: '基本设置' },
   { path: '/Admin/Sys', label: '系统设置' },
   { path: '/Admin/Star', label: '星尘设置' },
   { path: '/Admin/XCode', label: '数据中间件' },
   { path: '/Admin/Cube', label: '魔方设置' },
+  { path: '/Admin/React', label: 'React设置' },
 ];
 
 /** 更多配置（对齐 MVC _Object_Nav.cshtml 更多设置下拉） */
@@ -75,12 +77,32 @@ export interface ConfigNavProps {
   currentPath?: string;
 }
 
-/** 配置中心切换器：Segmented 核心配置 + Dropdown 更多配置 */
+/** 配置中心切换器：ReactSetting.configNavFlat=true 时一字排开，否则 Segmented 核心 + Dropdown 更多 */
 export default function ConfigNav({ currentPath }: ConfigNavProps) {
   const navigate = useNavigate();
   // 当前配置项：精确或前缀匹配
   const current = useMemo(() => findConfigCenter(currentPath || ''), [currentPath]);
   const inMore = !!current && MORE_NAV.some((i) => i.path === current.path);
+  const { configNavFlat } = useReactSetting();
+
+  // 配置导航排开：所有配置页一字排开（无下拉）
+  if (configNavFlat) {
+    return (
+      <div className="cube-config-nav">
+        {ALL_CONFIG_NAV.map((item) => (
+          <Button
+            key={item.path}
+            type={current?.path === item.path ? 'primary' : 'text'}
+            size="small"
+            className="cube-config-nav-item"
+            onClick={() => navigate(item.path)}
+          >
+            {item.label}
+          </Button>
+        ))}
+      </div>
+    );
+  }
 
   const segments = CONFIG_NAV.map((item) => ({ value: item.path, label: item.label }));
   // 未命中核心配置（更多配置或未知路径）时用哨兵值，避免 Segmented 默认选中第一项

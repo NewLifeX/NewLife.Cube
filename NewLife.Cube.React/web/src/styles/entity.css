@@ -291,6 +291,28 @@
   text-overflow: ellipsis;
 }
 
+/* 表单 antd6 风格（vertical）：标签一行 + 控件一行，注释小字跟在标签后（ReactSetting.formStyle=vertical） */
+.cube-form-vertical-label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.cube-form-vertical-desc {
+  color: var(--cube-text-muted);
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 24em;
+}
+
+.cube-form-vertical-item.ant-form-item {
+  margin-bottom: 14px;
+}
+
 .cube-result-page {
   min-height: 60vh;
   display: flex;
