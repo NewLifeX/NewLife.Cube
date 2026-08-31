@@ -35,6 +35,8 @@ export interface PiniaPageLogic {
   canDelete: Ref<boolean>;
   canExport: Ref<boolean>;
   canImport: Ref<boolean>;
+  /** 是否可用开发功能（高级菜单 备份/还原/备份导出/清空数据表）。开发模式 && 系统管理员 */
+  canDevelop: Ref<boolean>;
 
   loadFields: () => Promise<void>;
   loadData: (searchParams?: Record<string, unknown>) => Promise<void>;
@@ -78,6 +80,7 @@ export function usePageLogic(api: CubeApi, type: string, defaultPageSize = 20, m
   const canDelete = ref(true);
   const canExport = ref(true);
   const canImport = ref(true);
+  const canDevelop = ref(false);
 
   const logic = new PageLogic({
     api,
@@ -100,6 +103,7 @@ export function usePageLogic(api: CubeApi, type: string, defaultPageSize = 20, m
       if (partial.canDelete !== undefined) canDelete.value = partial.canDelete;
       if (partial.canExport !== undefined) canExport.value = partial.canExport;
       if (partial.canImport !== undefined) canImport.value = partial.canImport;
+      if (partial.canDevelop !== undefined) canDevelop.value = partial.canDevelop;
     },
     defaultPageSize,
     menuPermissions,
@@ -124,6 +128,7 @@ export function usePageLogic(api: CubeApi, type: string, defaultPageSize = 20, m
     canDelete,
     canExport,
     canImport,
+    canDevelop,
 
     loadFields: () => logic.loadFields(type),
     loadData: (searchParams) => logic.loadData(type, searchParams),

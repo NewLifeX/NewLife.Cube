@@ -58,6 +58,8 @@ export interface PageState {
   canExport: boolean;
   /** 是否允许导入（来自菜单权限） */
   canImport: boolean;
+  /** 是否可用开发功能（高级菜单 备份/还原/备份导出/清空数据表）。开发模式 && 系统管理员 */
+  canDevelop: boolean;
 }
 
 /** 状态变更回调 */
@@ -115,6 +117,7 @@ export class PageLogic {
       canDelete: true,
       canExport: true,
       canImport: true,
+      canDevelop: false,
     };
   }
 
@@ -171,6 +174,8 @@ export class PageLogic {
     const canDelete = (noPermConfig || hasDel) && (pageSetting?.isReadOnly !== true);
     const canExport = noPermConfig || hasExport;
     const canImport = noPermConfig || hasImport;
+    // 开发功能（备份/还原/备份导出/清空数据表）：开发模式 && 系统管理员（对齐 MVC Develop 条件）
+    const canDevelop = !!(pageSetting?.develop && pageSetting?.isSystem);
 
     this.state.listFields = listFields;
     this.state.allListFields = allListFields;
@@ -185,8 +190,9 @@ export class PageLogic {
     this.state.canDelete = canDelete;
     this.state.canExport = canExport;
     this.state.canImport = canImport;
+    this.state.canDevelop = canDevelop;
 
-    this.update({ listFields, allListFields, searchFields, addFields, editFields, detailFields, pkField, pageSetting, canAdd, canEdit, canDelete, canExport, canImport });
+    this.update({ listFields, allListFields, searchFields, addFields, editFields, detailFields, pkField, pageSetting, canAdd, canEdit, canDelete, canExport, canImport, canDevelop });
   }
 
   /** 加载列表数据（分页 + 搜索） */

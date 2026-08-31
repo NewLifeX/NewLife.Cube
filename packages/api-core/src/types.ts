@@ -137,6 +137,10 @@ export interface PageSetting {
   enableTableDoubleClick?: boolean;
   orderByKey?: boolean;
   doubleDelete?: boolean;
+  /** 开发模式（后端 SysConfig.Develop）。驱动列表页高级菜单显示备份/还原/清空数据表等开发功能 */
+  develop?: boolean;
+  /** 当前用户是否系统管理员。开发功能仅系统管理员可用 */
+  isSystem?: boolean;
 }
 
 /** GetPage 聚合元数据 */

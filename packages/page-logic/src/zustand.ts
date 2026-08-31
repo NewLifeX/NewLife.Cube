@@ -78,6 +78,7 @@ export function createPageStore(
       canDelete: true,
       canExport: true,
       canImport: true,
+      canDevelop: false,
 
       // 操作方法
       loadFields: () => logic.loadFields(type),
