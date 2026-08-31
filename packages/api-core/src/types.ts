@@ -199,6 +199,8 @@ export interface UserInfo {
   logins?: number;
   lastLogin?: string;
   lastLoginIP?: string;
+  /** 注册时间 */
+  registerTime?: string;
   permission?: string;
   remark?: string;
 
