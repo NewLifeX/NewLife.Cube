@@ -17,6 +17,7 @@ import { api } from '@/api';
 import EntityListPage from './EntityListPage';
 import ConfigPage from '@/views/config/ConfigPage';
 import DbPage from '@/views/db/DbPage';
+import WidgetPage from '@/views/widget/WidgetPage';
 
 /** 页面种类：探测中 / 实体页 / 非实体页（配置或特殊页） */
 type PageKind = 'probe' | 'entity' | 'special';
@@ -44,10 +45,13 @@ export default function DefaultListPage() {
     };
   }, [type]);
 
-  // 非实体页：按路径分发（数据库页 / 通用配置页）
+  // 非实体页：按路径分发（数据库页 / 工作台部件 / 通用配置页）
   if (kind === 'special') {
     if (type.toLowerCase().endsWith('/db')) {
       return <DbPage type={type} />;
+    }
+    if (type.toLowerCase().endsWith('/cube/widget') || type.toLowerCase().endsWith('/widget')) {
+      return <WidgetPage type={type} />;
     }
     return <ConfigPage type={type} />;
   }
