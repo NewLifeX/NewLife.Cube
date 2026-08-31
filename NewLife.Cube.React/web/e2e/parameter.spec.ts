@@ -46,4 +46,19 @@ test.describe('字典参数页（/Admin/Parameter）', () => {
     // 关闭弹窗
     await page.locator('.ant-modal button', { hasText: /取\s*消/ }).first().click().catch(() => undefined);
   });
+
+  test('双击行进入编辑弹窗（对齐 MVC 双击行任意地方编辑）', async ({ page }) => {
+    await page.goto('/Admin/Parameter');
+    await page.waitForSelector(ROW, { timeout: TABLE_TIMEOUT });
+
+    // 双击第一行 → 编辑弹窗打开（无需点操作列按钮）
+    await page.locator(ROW).first().dblclick();
+    await expect(page.locator('.ant-modal').first()).toBeVisible({ timeout: 8000 });
+    // 编辑弹窗含「长数值」textarea（说明进入的是编辑而非查看）
+    const formItemSel = '.ant-modal .ant-form-item, .ant-modal .cube-form-inline-cell, .ant-modal .cube-form-vertical-item';
+    const longValueItem = page.locator(formItemSel, { hasText: '长数值' }).first();
+    await expect(longValueItem.locator('textarea')).toBeVisible({ timeout: 8000 });
+
+    await page.locator('.ant-modal button', { hasText: /取\s*消/ }).first().click().catch(() => undefined);
+  });
 });

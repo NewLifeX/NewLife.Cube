@@ -272,6 +272,15 @@ export default function TableContent({
       loading={loading}
       size="medium"
       scroll={{ x: 'max-content' }}
+      // 双击行进入编辑（对齐 MVC：编辑链接 title「双击本行任意地方也可以进入编辑表单页」）；
+      // 无编辑权限时可查看，两者都无则无操作。title 悬浮提示双击能力
+      onRow={(row) => ({
+        title: canEdit ? '双击行进入编辑' : canView ? '双击行查看详情' : undefined,
+        onDoubleClick: () => {
+          if (canEdit) onEdit?.(row);
+          else if (canView) onView?.(row);
+        },
+      })}
       rowSelection={
         selectable
           ? {

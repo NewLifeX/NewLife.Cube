@@ -106,4 +106,26 @@ describe('TableContent 列表表格', () => {
     expect(screen.getByText('b')).toBeTruthy();
     expect(screen.getByText('c')).toBeTruthy();
   });
+
+  it('双击行进入编辑（可编辑时 onEdit，仅可查看时 onView）', () => {
+    const onEdit = vi.fn();
+    const onView = vi.fn();
+    const { container, rerender } = render(
+      <TableContent fields={FIELDS} data={DATA} canEdit onView={onView} onEdit={onEdit} selectable={false} />,
+    );
+    // 双击第一行 → 触发 onEdit（对齐 MVC「双击本行任意地方进入编辑表单页」）
+    const firstRow = container.querySelectorAll('.ant-table-tbody tr.ant-table-row')[0]!;
+    fireEvent.doubleClick(firstRow);
+    expect(onEdit).toHaveBeenCalledTimes(1);
+    expect(onEdit).toHaveBeenCalledWith(DATA[0]);
+    expect(onView).not.toHaveBeenCalled();
+
+    // 只读（仅可查看）→ 双击触发 onView
+    rerender(<TableContent fields={FIELDS} data={DATA} canEdit={false} canView onView={onView} onEdit={onEdit} selectable={false} />);
+    const secondRow = container.querySelectorAll('.ant-table-tbody tr.ant-table-row')[1]!;
+    fireEvent.doubleClick(secondRow);
+    expect(onView).toHaveBeenCalledTimes(1);
+    expect(onView).toHaveBeenCalledWith(DATA[1]);
+    expect(onEdit).toHaveBeenCalledTimes(1); // 编辑仍只被调用一次
+  });
 });
