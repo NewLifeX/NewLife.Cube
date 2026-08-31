@@ -13,12 +13,14 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { App, Card } from 'antd';
+import { clearPageMetaCache } from '@newlifex/api-core';
 import { getValueByKey } from '@/utils/url';
 import { api } from '@/api';
 import { usePageStore } from '@/hooks/usePageStore';
 import SearchBar from './components/SearchBar';
 import Toolbar, { type ListViewMode } from './components/Toolbar';
 import TableContent from './components/TableContent';
+import ColumnSetting, { filterVisibleFields } from './components/ColumnSetting';
 import ListPagination from './components/ListPagination';
 import ChartView from './components/ChartView';
 import FormDialog from '@/views/form/FormDialog';
@@ -36,6 +38,7 @@ export default function EntityListPage({ type }: EntityListPageProps) {
 
   // 订阅 store 状态
   const listFields = store((s) => s.listFields);
+  const allListFields = store((s) => s.allListFields);
   const searchFields = store((s) => s.searchFields);
   const addFields = store((s) => s.addFields);
   const editFields = store((s) => s.editFields);
@@ -55,6 +58,10 @@ export default function EntityListPage({ type }: EntityListPageProps) {
 
   // 查看权限：只读控制器或无可编辑权限时提供「查看」（规范 §7.9）
   const canView = !!pageSetting?.isReadOnly || !canEdit;
+
+  // 渲染列：过滤后端 GetPage 标记隐藏（visible=false）的字段（列设置持久化到后端后由 GetPage 干预）
+  const displayFields = useMemo(() => filterVisibleFields(listFields), [listFields]);
+  const visibleFieldNames = useMemo(() => displayFields.map((f) => f.field.name), [displayFields]);
 
   // 软删除字段：列表字段含 Deleted/IsDelete/IsDeleted 布尔字段时启用「恢复」（规范 §7.9）
   const softDeleteField = useMemo(
@@ -125,6 +132,15 @@ export default function EntityListPage({ type }: EntityListPageProps) {
       .getState()
       .loadData({ ...searchParams, sort: sortState.field, desc: sortState.desc })
       .catch(() => {});
+  }, [store, searchParams, sortState]);
+
+  // 列设置保存/恢复默认后：清除页面元数据缓存 + 重新拉取（GetPage 返回已应用配置的字段）+ 数据
+  const reloadMeta = useCallback(() => {
+    clearPageMetaCache();
+    void store
+      .getState()
+      .loadFields()
+      .then(() => store.getState().loadData({ ...searchParams, sort: sortState.field, desc: sortState.desc }));
   }, [store, searchParams, sortState]);
 
   // ── 事件处理 ─────────────────────────────────────────
@@ -319,13 +335,16 @@ export default function EntityListPage({ type }: EntityListPageProps) {
         onImport={handleImport}
         onViewChange={handleViewChange}
         onRefresh={() => void refresh()}
+        columnSetting={
+          <ColumnSetting type={type} allFields={allListFields} visibleFields={visibleFieldNames} onChanged={reloadMeta} />
+        }
       />
       {view === 'chart' ? (
         <ChartView charts={store((s) => s.chartList)} />
       ) : (
         <>
           <TableContent
-            fields={listFields}
+            fields={displayFields}
             data={tableData}
             loading={loading}
             pkField={pkField}

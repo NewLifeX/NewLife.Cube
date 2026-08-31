@@ -315,5 +315,13 @@ export function createConfigApi(request: RequestFn) {
     /** 更新系统配置 */
     updateSetting: (data: Record<string, unknown>) =>
       request<unknown>({ url: '/Cube/Setting', method: 'put', data }),
+
+    /** 获取页面配置（用户级优先、全局兜底，后端 PageService 读取） */
+    getPageSetting: (kind: string, page: string) =>
+      request<Record<string, unknown>>({ url: '/Cube/GetPageConfig', method: 'get', params: { kind, page } }),
+
+    /** 保存页面配置（当前登录用户级；未登录写全局）。用于列显隐/顺序等页面偏好持久化 */
+    savePageSetting: (kind: string, page: string, value: Record<string, unknown>) =>
+      request<number>({ url: '/Cube/SetPageConfig', method: 'post', params: { kind, page }, data: value }),
   };
 }

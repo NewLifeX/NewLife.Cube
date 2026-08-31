@@ -33,6 +33,8 @@ export interface ToolbarProps {
   onImport?: () => void;
   onViewChange?: (view: ListViewMode) => void;
   onRefresh?: () => void;
+  /** 右侧额外按钮（如列设置齿轮），渲染在高级菜单前 */
+  columnSetting?: React.ReactNode;
 }
 
 export default function Toolbar({
@@ -50,6 +52,7 @@ export default function Toolbar({
   onImport,
   onViewChange,
   onRefresh,
+  columnSetting,
 }: ToolbarProps) {
   // 高级菜单：导出（全部格式）→ 导入 → 删除全部，按权限驱动
   const advItems: MenuProps['items'] = [];
@@ -95,6 +98,7 @@ export default function Toolbar({
         </Tooltip>
       </div>
       <div className="cube-toolbar-side">
+        {columnSetting}
         {canChart && (
           <Segmented
             size="small"

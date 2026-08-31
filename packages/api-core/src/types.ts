@@ -148,6 +148,8 @@ export interface PageMeta {
 
   /** 新结构：扁平字段集合 */
   list?: DataField[];
+  /** 全部可用列表字段（应用用户列配置前，供列设置面板） */
+  allList?: DataField[];
   addForm?: DataField[];
   editForm?: DataField[];
   detail?: DataField[];

@@ -150,15 +150,21 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         };
 
         var list = OnGetFields(ViewKinds.List, null);
+        // 全部可用列表字段（应用用户列配置前，供前端列设置面板使用）
+        var allList = OnGetFields(ViewKinds.List, null);
         var addForm = OnGetFields(ViewKinds.AddForm, null);
         var editForm = OnGetFields(ViewKinds.EditForm, null);
         var detail = OnGetFields(ViewKinds.Detail, null);
         var search = OnGetFields(ViewKinds.Search, null);
 
+        // 应用当前用户列配置：重排列顺序、标记隐藏字段 Visible=false（React 皮肤列设置）
+        ApplyColumnConfig(list);
+
         var data = new
         {
             setting,
             list,
+            allList,
             addForm,
             editForm,
             detail,
@@ -178,6 +184,76 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     [AllowAnonymous]
     [HttpGet]
     public virtual List<DataField> GetFields(ViewKinds kind) => OnGetFields(kind, null);
+    #endregion
+
+    #region 列配置
+    /// <summary>应用当前用户的列配置（Parameter 表 Page-React 分类）。重排列顺序、标记隐藏字段 Visible=false</summary>
+    /// <param name="list">列表字段集合（就地修改）</param>
+    protected virtual void ApplyColumnConfig(List<DataField> list)
+    {
+        // 页面路径：优先当前菜单 URL（如 /Cube/App）；菜单不可用时从路由推导（/api/Cube/App/GetPage → /Cube/App）
+        var page = Menu?.Url;
+        if (page.IsNullOrEmpty())
+        {
+            var area = RouteData.Values["area"] + "";
+            var controller = RouteData.Values["controller"] + "";
+            page = area.IsNullOrEmpty() ? $"/{controller}" : $"/{area}/{controller}";
+        }
+        if (page.IsNullOrEmpty() || CurrentUser == null || list == null || list.Count == 0) return;
+
+        var cfg = LoadColumnConfig("Page-React", page, CurrentUser.ID);
+        if (cfg == null || cfg.Count == 0) return;
+
+        // 列顺序：listOrder 字段名数组。未列出的字段保持原顺序排在后面（新增字段自动可见）
+        if (cfg.TryGetValue("listOrder", out var orderObj) && orderObj is System.Collections.IList order)
+        {
+            var names = order.Cast<Object>().Select(e => e + "").ToList();
+            var dic = new Dictionary<String, DataField>(StringComparer.OrdinalIgnoreCase);
+            foreach (var f in list) dic[f.Name] = f;
+
+            var newList = new List<DataField>(list.Count);
+            foreach (var name in names)
+            {
+                if (dic.TryGetValue(name, out var f))
+                {
+                    newList.Add(f);
+                    dic.Remove(name);
+                }
+            }
+            foreach (var f in list)
+            {
+                if (dic.ContainsKey(f.Name)) newList.Add(f);
+            }
+
+            list.Clear();
+            list.AddRange(newList);
+        }
+
+        // 隐藏列：listHidden 字段名数组 → 从列表移除（前端不再渲染；allList 仍含全部供列设置面板）。
+        // 注意不能仅标记 Visible=false——DataField 序列化只输出 visible=true，false 不发到前端无法区分
+        if (cfg.TryGetValue("listHidden", out var hiddenObj) && hiddenObj is System.Collections.IList hidden)
+        {
+            var hs = new HashSet<String>(hidden.Cast<Object>().Select(e => e + ""), StringComparer.OrdinalIgnoreCase);
+            list.RemoveAll(f => hs.Contains(f.Name));
+        }
+    }
+
+    /// <summary>加载指定页面列配置。用户级优先，全局兜底</summary>
+    /// <param name="category">配置分类，如 Page-React</param>
+    /// <param name="page">页面路径，如 /Cube/Area</param>
+    /// <param name="userId">当前用户编号</param>
+    /// <returns>配置字典</returns>
+    protected virtual IDictionary<String, Object> LoadColumnConfig(String category, String page, Int32 userId)
+    {
+        var p = Parameter.Find(Parameter._.Category == category & Parameter._.Name == page & Parameter._.UserID == userId)
+            ?? Parameter.Find(Parameter._.Category == category & Parameter._.Name == page & Parameter._.UserID == 0);
+        if (p == null) return null;
+
+        var value = !p.Value.IsNullOrEmpty() ? p.Value : p.LongValue;
+        if (value.IsNullOrEmpty()) return null;
+
+        return value.DecodeJson() as IDictionary<String, Object>;
+    }
     #endregion
 
     #region 图表
