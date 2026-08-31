@@ -18,8 +18,8 @@ public class TodayLoginWidget : IWidget
         {
             Value = count.ToString("n0"),
             Trend = "今日登录成功",
-            // 跳转每日统计页：今日登录次数取自 UserStat
-            Url = "/Admin/UserStat",
+            // 跳转每日统计页：今日登录次数取自 UserStat，携带今日时间范围
+            Url = $"/Admin/UserStat?dtStart={DateTime.Today:yyyy-MM-dd}&dtEnd={DateTime.Today:yyyy-MM-dd}",
         };
     }
 }

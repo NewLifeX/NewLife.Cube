@@ -616,14 +616,15 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         // permissionedIds —— 被纳入权限系统的菜单ID集合（任一角色分配过即视为“已声明所需权限”）
         // 规则：未声明所需权限的菜单默认有权限（对所有登录用户可见）；已声明的仅对拥有该权限的角色可见
         // 多租户门控：未开启多租户时，隐藏所有租户相关菜单（控制器声明了 MenuModes.Tenant 的）
+        // 说明：Visible=false 的隐藏菜单（如 [Menu(0,false)] 的 UserOnline/UserStat）也保留返回，
+        //       前端用它解析标签页标题等；导航渲染时按 Visible 字段自行过滤
         var user = ManageProvider.Provider.Current as IUser;
         var set = CubeSetting.Current;
         var allowTenant = set.EnableTenant;
         var allowedIds = user?.Roles?.SelectMany(r => r.Resources).ToArray() ?? [];
         var permissionedIds = Role.FindAll().SelectMany(r => r.Resources).ToArray();
 
-        Boolean IsAccessible(IMenu m) => m.Visible
-            && (allowedIds.Contains(m.ID) || !permissionedIds.Contains(m.ID))
+        Boolean IsAccessible(IMenu m) => (allowedIds.Contains(m.ID) || !permissionedIds.Contains(m.ID))
             && (allowTenant || !NewLife.Cube.Membership.MenuHelper.IsTenantMenu(m));
 
         menus = menus.Where(IsAccessible).ToList();
