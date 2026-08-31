@@ -18,6 +18,7 @@ import EntityListPage from './EntityListPage';
 import ConfigPage from '@/views/config/ConfigPage';
 import DbPage from '@/views/db/DbPage';
 import WidgetPage from '@/views/widget/WidgetPage';
+import AreaPage from '@/views/area/AreaPage';
 
 /** 页面种类：探测中 / 实体页 / 非实体页（配置或特殊页） */
 type PageKind = 'probe' | 'entity' | 'special';
@@ -56,8 +57,11 @@ export default function DefaultListPage() {
     return <ConfigPage type={type} />;
   }
 
-  // 实体页：渲染原通用列表页
+  // 实体页：地区页走列表|地图双模式，其余渲染原通用列表页
   if (kind === 'entity') {
+    if (type.toLowerCase().endsWith('/cube/area')) {
+      return <AreaPage key={type} type={type} />;
+    }
     return <EntityListPage key={type} type={type} />;
   }
 
