@@ -51,20 +51,30 @@ export const EXPORT_FORMATS: ExportFormat[] = [
 
 // ======================== 工具函数 ========================
 
+/** 大小写不敏感取值：行 JSON 键与模板占位符大小写可能不一致（后端 camelCase vs 元数据 PascalCase） */
+function getValueCaseInsensitive(row: Record<string, unknown>, key: string): unknown {
+  if (key in row) return row[key];
+  const lowerKey = key.toLowerCase();
+  for (const k in row) {
+    if (k.toLowerCase() === lowerKey) return row[k];
+  }
+  return undefined;
+}
+
 /**
- * URL 变量替换：将 `/path/{Id}` 替换为 `/path/123`
+ * URL 变量替换：将 `/path/{Id}` 替换为 `/path/123`，字段名大小写不敏感匹配
  *
  * @param url - 含变量占位符的 URL 模板
  * @param row - 数据行对象
  * @returns 替换后的 URL
  *
  * @example
- * resolveUrl('/Admin/User/Detail?id={Id}', { Id: 42 })
+ * resolveUrl('/Admin/User/Detail?id={Id}', { id: 42 })
  * // => '/Admin/User/Detail?id=42'
  */
 export function resolveUrl(url: string, row: Record<string, unknown>): string {
   return url.replace(/\{(\w+)\}/g, (_, key: string) => {
-    const val = row[key] ?? row[toCamelCase(key)];
+    const val = getValueCaseInsensitive(row, key);
     return val !== undefined && val !== null ? encodeURIComponent(String(val)) : '';
   });
 }
