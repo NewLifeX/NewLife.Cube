@@ -103,9 +103,15 @@ export function resolveWidget(field: DataField): FieldMapping {
     return { widget: multiple ? 'lovMulti' : 'lov', field, props: { lovCode: field.lovCode, multiple } };
   }
 
-  // 4. 有数据字典/枚举 → 下拉选择
+  // 4. 有数据字典/枚举 → 下拉选择（字段名以 s 结尾或显式多选 → 多选，对齐 MVC _Form_Item 约定）
   if (field.dataSource && Object.keys(field.dataSource).length > 0) {
-    return { widget: 'select', field };
+    const name = field.name ?? '';
+    const multi =
+      field.multiple ||
+      itemType === 'multipleselect' ||
+      itemType === 'lovtablemulti' ||
+      /s$/i.test(name);
+    return { widget: multi ? 'lovMulti' : 'select', field, props: { multiple: multi } };
   }
 
   // 5. 有 url 属性 → 链接
@@ -121,7 +127,10 @@ export function resolveWidget(field: DataField): FieldMapping {
   }
 
   if (typeName === 'datetime' || typeName === 'datetimeoffset') {
-    return { widget: 'datetime', field };
+    // 纯日期字段（ItemType=date 或字段名以 Date/day 结尾，无 itemType）→ 日期选择（对齐 MVC _Form_DateTime）
+    const name = field.name ?? '';
+    const isDateOnly = itemType === 'date' || (!itemType && /(date|day)$/i.test(name));
+    return { widget: isDateOnly ? 'date' : 'datetime', field };
   }
 
   if (typeName === 'date') {
@@ -141,7 +150,13 @@ export function resolveWidget(field: DataField): FieldMapping {
   }
 
   // 枚举类型名（非标准基元，无 lovCode 兜底时按 lov 渲染）
-  if (typeName === 'enum') {
+  // 真实枚举类型名（如 SexKinds）不在已知基元集合中，视为枚举 → 下拉（选项由后端 dataSource 下发）
+  const PRIMITIVE_TYPES = new Set([
+    'string', 'boolean', 'datetime', 'datetimeoffset', 'date', 'timespan', 'guid',
+    'int32', 'int64', 'int16', 'decimal', 'double', 'single', 'float', 'byte',
+    'sbyte', 'uint32', 'uint64', 'enum',
+  ]);
+  if (typeName === 'enum' || (typeName && !PRIMITIVE_TYPES.has(typeName))) {
     return { widget: 'lov', field };
   }
 
