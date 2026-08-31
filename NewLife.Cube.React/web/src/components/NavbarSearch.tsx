@@ -6,11 +6,13 @@ import { AutoComplete, Input } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useMenuStore } from '@/stores/menu';
+import { useReactSetting } from '@/stores/reactSetting';
 
 export default function NavbarSearch() {
   const navigate = useNavigate();
   const flatMenus = useMenuStore((s) => s.flatMenus);
   const [value, setValue] = useState('');
+  const { inputClear } = useReactSetting();
 
   const options = useMemo(() => {
     if (!value) return [];
@@ -32,7 +34,7 @@ export default function NavbarSearch() {
         setValue('');
       }}
     >
-      <Input prefix={<SearchOutlined />} placeholder="搜索菜单" allowClear />
+      <Input prefix={<SearchOutlined />} placeholder="搜索菜单" allowClear={inputClear} />
     </AutoComplete>
   );
 }

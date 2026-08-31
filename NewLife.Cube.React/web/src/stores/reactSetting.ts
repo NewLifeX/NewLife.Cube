@@ -23,6 +23,8 @@ export interface ReactSetting {
   descMode: number;
   /** 配置导航排开：true-一字排开 / false-核心+更多下拉 */
   configNavFlat: boolean;
+  /** 文本框清除图标：true-显示清空叉叉 / false-隐藏（对齐 MVC 与主流表单输入框） */
+  inputClear: boolean;
 }
 
 /** 默认设置（读取失败时回退，保证任何环境下页面可用） */
@@ -30,6 +32,7 @@ export const DEFAULT_REACT_SETTING: ReactSetting = {
   formStyle: 'inline',
   descMode: 1,
   configNavFlat: true,
+  inputClear: false,
 };
 
 interface ReactSettingState {

@@ -22,6 +22,11 @@ public class ReactSetting : Config<ReactSetting>
     [Description("字段注释显示方式。1-标签后小字，2-标签后问号图标悬浮提示，0-不显示")]
     [Category("表单")]
     public Int32 DescMode { get; set; } = 1;
+
+    /// <summary>文本框清除图标。true-输入框右侧显示清空叉叉（antd默认），false-隐藏（对齐MVC，主流表单输入框一般不带清除）</summary>
+    [Description("文本框清除图标。true-输入框右侧显示清空叉叉，false-隐藏（对齐MVC，主流表单输入框一般不带清除）")]
+    [Category("表单")]
+    public Boolean InputClear { get; set; } = false;
     #endregion
 
     #region 导航

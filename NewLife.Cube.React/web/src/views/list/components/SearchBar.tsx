@@ -19,6 +19,7 @@ import { resolveSearchControl } from '@/utils/fieldControl';
 import { toFieldMeta } from '@/types/field';
 import type { FieldMapping } from '@newlifex/field-mapping';
 import type { SearchControlType } from '@/types/field';
+import { useReactSetting } from '@/stores/reactSetting';
 
 export interface SearchBarProps {
   fields: FieldMapping[];
@@ -55,12 +56,14 @@ function SearchControl({
   const meta = toFieldMeta(field.field);
   const placeholder = `请输入${meta.displayName || meta.name}`;
   const label = meta.displayName || meta.name;
+  // React 皮肤设置：搜索文本框清除图标开关
+  const { inputClear } = useReactSetting();
 
   switch (control) {
     case 'text':
       return (
         <Input
-          allowClear
+          allowClear={inputClear}
           placeholder={placeholder}
           value={(value as string) ?? ''}
           onChange={(e) => onChange(e.target.value || undefined)}
@@ -177,7 +180,14 @@ function SearchControl({
         />
       );
     default:
-      return <Input allowClear placeholder={placeholder} value={(value as string) ?? ''} onChange={(e) => onChange(e.target.value || undefined)} />;
+      return (
+        <Input
+          allowClear={inputClear}
+          placeholder={placeholder}
+          value={(value as string) ?? ''}
+          onChange={(e) => onChange(e.target.value || undefined)}
+        />
+      );
   }
 }
 
