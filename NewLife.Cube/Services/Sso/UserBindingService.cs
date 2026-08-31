@@ -1,4 +1,4 @@
-using NewLife.Cube.Entity;
+﻿using NewLife.Cube.Entity;
 using NewLife.Http;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -310,15 +310,16 @@ public class UserBindingService : IUserBindingService
         if (!avatarUrl.StartsWithIgnoreCase("http://", "https://"))
             avatarUrl = client.GetUrl("Avatar", avatarUrl);
 
+        // 已存在的本地头像文件按扩展名全量查找（.png/.svg/.jpg/.gif/.webp），避免仅检查 .png 造成重复抓取
+        var (existPath, _) = SvgAvatarService.FindAvatarFile(set.AvatarPath, user2.ID);
         var needUpdate = false;
-        var localFile = set.AvatarPath.CombinePath(user2.ID + ".png").GetBasePath();
 
-        if (!File.Exists(localFile))
+        if (existPath.IsNullOrEmpty())
         {
             needUpdate = true;
             LogProvider.Provider?.WriteLog(user.GetType(), "更新头像", true, $"本地文件不存在 {avatarUrl}", user.ID, user + "");
         }
-        else if (!remoteHash.IsNullOrEmpty() && !localFile.AsFile().VerifyHash(remoteHash))
+        else if (!remoteHash.IsNullOrEmpty() && !existPath.AsFile().VerifyHash(remoteHash))
         {
             needUpdate = true;
             LogProvider.Provider?.WriteLog(user.GetType(), "更新头像", true, $"哈希不匹配 {avatarUrl}", user.ID, user + "");
@@ -342,7 +343,8 @@ public class UserBindingService : IUserBindingService
                 else
                     downloadUrl = av;
 
-                Task.Factory.StartNew(() => FetchAvatar(user, downloadUrl, client.AccessToken, fallbackUrl), TaskCreationOptions.LongRunning);
+                // 异步抓取，失败不阻塞登录。Task.Run 正确解包内部 Task，异常由 FetchAvatar 内部处理
+                _ = Task.Run(() => FetchAvatar(user, downloadUrl, client.AccessToken, fallbackUrl));
             }
             else
                 user2.Avatar = avatarUrl;
@@ -603,12 +605,27 @@ public class UserBindingService : IUserBindingService
 
         if (url.IsNullOrEmpty()) url = user.GetValue("Avatar") as String;
 
+        // 相对地址（如 /Sso/Avatar?id=1#md5$xxx）按提供商 Server 解析为完整地址
+        if (!url.IsNullOrEmpty() && !url.StartsWithIgnoreCase("http://", "https://"))
+        {
+            var list = UserConnect.FindAllByUserID(user.ID);
+            var uc = list.OrderByDescending(e => e.UpdateTime).FirstOrDefault(e => !e.Avatar.IsNullOrEmpty());
+            if (uc != null) url = ResolveAvatarUrl(uc.Provider, url);
+        }
+
         if (url.IsNullOrEmpty() || !url.StartsWithIgnoreCase("http://", "https://"))
         {
             var list = UserConnect.FindAllByUserID(user.ID);
-            url = list.OrderByDescending(e => e.UpdateTime)
-                .Where(e => !e.Avatar.IsNullOrEmpty() && e.Avatar.StartsWithIgnoreCase("http://", "https://"))
-                .FirstOrDefault()?.Avatar;
+            var uc = list.OrderByDescending(e => e.UpdateTime)
+                .FirstOrDefault(e => !e.Avatar.IsNullOrEmpty() && e.Avatar.StartsWithIgnoreCase("http://", "https://"));
+            url = uc?.Avatar;
+
+            // 用户连接中保存的相对地址，按提供商 Server 解析
+            if (url.IsNullOrEmpty() || !url.StartsWithIgnoreCase("http://", "https://"))
+            {
+                uc = list.OrderByDescending(e => e.UpdateTime).FirstOrDefault(e => !e.Avatar.IsNullOrEmpty());
+                if (uc != null) url = ResolveAvatarUrl(uc.Provider, uc.Avatar);
+            }
         }
 
         if (url.IsNullOrEmpty()) return false;
@@ -682,6 +699,48 @@ public class UserBindingService : IUserBindingService
         }
 
         return false;
+    }
+
+    /// <summary>尝试从用户连接中获取远程头像地址，并触发异步下载到本地。用于本地头像缺失时的懒加载兜底</summary>
+    /// <param name="user">目标用户</param>
+    /// <returns>找到可用的远程头像地址时返回完整URL，否则返回 null</returns>
+    public virtual String TryFetchRemoteAvatar(IManageUser user)
+    {
+        if (user == null) return null;
+
+        var list = UserConnect.FindAllByUserID(user.ID);
+        foreach (var item in list.OrderByDescending(e => e.UpdateTime))
+        {
+            var url = item.Avatar;
+            if (url.IsNullOrEmpty()) continue;
+
+            var fullUrl = ResolveAvatarUrl(item.Provider, url);
+            if (fullUrl.IsNullOrEmpty()) continue;
+
+            var cfg = OAuthConfig.FindByName(item.Provider);
+            if (cfg != null && cfg.FetchAvatar)
+                _ = Task.Run(() => FetchAvatar(user, fullUrl, item.AccessToken));
+
+            return fullUrl;
+        }
+
+        return null;
+    }
+
+    /// <summary>解析头像地址为完整URL。相对路径按提供商 Server/AccessServer 拼接</summary>
+    /// <param name="provider">提供商名称</param>
+    /// <param name="url">原始头像地址，支持绝对地址（原样返回）与相对地址</param>
+    /// <returns>完整URL；无法解析时返回 null</returns>
+    public virtual String ResolveAvatarUrl(String provider, String url)
+    {
+        if (url.IsNullOrEmpty()) return null;
+        if (url.StartsWithIgnoreCase("http://", "https://")) return url;
+
+        var cfg = OAuthConfig.FindByName(provider);
+        var baseUrl = !cfg?.Server.IsNullOrEmpty() == true ? cfg.Server : cfg?.AccessServer;
+        if (baseUrl.IsNullOrEmpty() || !baseUrl.StartsWithIgnoreCase("http")) return null;
+
+        return new Uri(new Uri(baseUrl), url) + "";
     }
 
     /// <summary>获取指定Key</summary>

@@ -1008,6 +1008,14 @@ public class SsoController : ControllerBaseX
 
         if (av.IsNullOrEmpty() || !System.IO.File.Exists(av))
         {
+            // 懒加载兜底：本地头像缺失时，从用户连接中查找远程头像并触发异步下载到本地，
+            // 本次先跳转远程地址展示（对齐 MVC 版），下次请求即命中本地文件
+            if (user is IManageUser muser)
+            {
+                var remote = _bindingService.TryFetchRemoteAvatar(muser);
+                if (!remote.IsNullOrEmpty()) return Redirect(remote);
+            }
+
             var svg = SvgAvatarService.Generate(user, set.AvatarChars);
             return Content(svg, "image/svg+xml");
         }
