@@ -13,6 +13,7 @@ export type ControlType =
   | 'inputNumber' // 数值输入
   | 'switch' // 布尔开关
   | 'datePicker' // 日期时间选择
+  | 'date' // 日期选择（纯日期，无时间）
   | 'timePicker' // 时间选择（HH:mm:ss）
   | 'lov' // 值集单选（枚举 / 单选）
   | 'lovMulti' // 值集多选
@@ -102,6 +103,10 @@ export interface FieldMeta {
   url?: string;
   /** 链接目标 */
   target?: string;
+  /** 链接文字。列表单元格有 url 时优先显示该文字（如「追踪」），为空回退显示字段值 */
+  text?: string;
+  /** 取值字段。列表单元格优先取该字段值，为空时回退到本字段（如名称列优先显示昵称） */
+  valueField?: string;
 }
 
 /**
@@ -130,5 +135,7 @@ export function toFieldMeta(field: DataField): FieldMeta {
     dataSource: field.dataSource,
     url: field.url,
     target: field.target,
+    text: field.text,
+    valueField: field.valueField,
   };
 }

@@ -26,6 +26,24 @@ public class LogController : ReadOnlyEntityController<XLog>
         // 精简列表：去掉扩展字段、性能追踪与冗余的用户相关字段，只保留审计核心信息
         ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6", "CreateUserID", "CreateUser", "CreateUserName", "Success");
 
+        // 性能追踪：TraceId → 星尘 TraceUrl 超链接（对齐 MVC StarHelper.TraceUrl）。TraceId 为空时整行隐藏该单元格
+        {
+            var df = ListFields.GetField("TraceId") as ListField;
+            if (df != null)
+            {
+                df.DisplayName = "追踪";
+                df.Text = "追踪";
+                df.Title = "链路追踪，用于APM性能追踪定位，还原该事件的调用链";
+                df.Target = "_blank";
+                df.DataVisible = e => !(e as XLog).TraceId.IsNullOrEmpty();
+
+                // TraceUrl 模板：星尘Web地址 + trace?id={TraceId}，支持配置直接含 {traceId} 占位符
+                var web = CubeSetting.Current.StarWeb;
+                if (!web.IsNullOrEmpty())
+                    df.Url = web.Contains("{traceId}") ? web.Replace("{traceId}", "{TraceId}") : web.TrimEnd('/') + "/trace?id={TraceId}";
+            }
+        }
+
         // 搜索字段显式配置，受后台控制（默认只显示有索引的列）
         SearchFields.RemoveField("LinkID");
         SearchFields.AddField("CreateTime");

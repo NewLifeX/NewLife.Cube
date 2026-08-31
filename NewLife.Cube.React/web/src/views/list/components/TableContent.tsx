@@ -120,15 +120,16 @@ function CellRenderer({ field, row }: { field: FieldMapping; row: Record<string,
     case 'readonly':
     case 'text':
     default: {
-      // 链接字段（支持 {Id} 变量替换）
-      if (meta.url && raw != null) {
+      // 链接字段（支持 {Id} 变量替换）。值为空时显示 '-'，不渲染链接
+      if (meta.url && raw != null && raw !== '') {
         const href = resolveUrl(meta.url, { [meta.name]: raw, ...Object.fromEntries(Object.entries((raw as object) ?? {})) });
         return (
           <a href={href} target={meta.target || '_blank'} rel="noreferrer">
-            {String(raw)}
+            {meta.text || String(raw)}
           </a>
         );
       }
+      if (meta.url && (raw == null || raw === '')) return <span>-</span>;
       return <span>{String(raw ?? '')}</span>;
     }
   }
