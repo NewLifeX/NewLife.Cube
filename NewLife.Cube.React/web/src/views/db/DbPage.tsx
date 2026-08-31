@@ -8,7 +8,7 @@
  * - GET  /api/Admin/Db/Download?name=  → 下载数据库架构 XML
  */
 import { useCallback, useEffect, useState } from 'react';
-import { App, Button, Card, Popconfirm, Space, Spin, Table, Tag } from 'antd';
+import { App, Button, Card, Popconfirm, Space, Spin, Table, Tag, Tooltip } from 'antd';
 import { CloudDownloadOutlined, ReloadOutlined } from '@ant-design/icons';
 import { api } from '@/api';
 
@@ -24,6 +24,28 @@ interface DbItem {
   version?: string;
   dynamic?: boolean;
   backups?: number;
+}
+
+/** 连接字符串中需隐藏的密码键（对齐 MVC ProtectedKey.Names=["password","pass","pwd"]） */
+const CONN_SECRET_NAMES = ['password', 'pass', 'pwd'];
+
+/**
+ * 隐藏连接字符串中的密码（对齐 MVC ProtectedKey.Hide：password/pass/pwd 键的值替换为 {***}）。
+ *
+ * @param connStr 连接字符串（如 `Data Source=..;Password=123;...`）
+ * @returns 隐藏密码后的连接字符串
+ */
+export function hideConnSecret(connStr: string): string {
+  return connStr
+    .split(';')
+    .map((pair) => {
+      const eq = pair.indexOf('=');
+      if (eq <= 0) return pair;
+      const key = pair.slice(0, eq).trim().toLowerCase();
+      if (CONN_SECRET_NAMES.includes(key)) return `${pair.slice(0, eq)}={***}`;
+      return pair;
+    })
+    .join(';');
 }
 
 /** 数据库类型转标签色（常见类型配色，未知走默认） */
@@ -127,8 +149,18 @@ export default function DbPage({ type }: DbPageProps) {
             {
               title: '连接字符串',
               dataIndex: 'connStr',
+              width: 420,
               ellipsis: true,
-              render: (v?: string) => (v ? <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{v}</span> : '-'),
+              // 对齐 MVC Index.cshtml：连接串长省略，悬浮 title 显示完整（隐藏密码后的值，避免泄露）
+              render: (v?: string) => {
+                if (!v) return '-';
+                const hidden = hideConnSecret(v);
+                return (
+                  <Tooltip title={hidden} placement="topLeft">
+                    <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{hidden}</span>
+                  </Tooltip>
+                );
+              },
             },
             {
               title: '操作',
