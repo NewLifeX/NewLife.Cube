@@ -40,11 +40,19 @@ public class UserController(UserService userService, VerifyCodeService verifyCod
 
         {
             // 头像列。复刻 MVC 版：AddListField 虚拟字段 + GetValue 按行计算头像地址，纯 C# 控制，前端通用 image 渲染
+            // 始终显示头像列：无本地头像文件时由 /Cube/Avatar 端点兜底生成 SVG 文字头像（端点内部处理 本地文件→远程懒加载→SVG 生成）
             var df = ListFields.AddListField("AvatarImage", null, "Id");
             df.DisplayName = "头像";
             df.ItemType = "image";
-            df.DataVisible = entity => !(entity as User).Avatar.IsNullOrEmpty();
-            df.GetValue = entity => (entity as User).Avatar;
+            df.GetValue = entity =>
+            {
+                var user = (entity as User)!;
+                var av = user.Avatar;
+                // 已是完整 URL（http/https 或绝对路径）直接透传，保留远程头像
+                if (!av.IsNullOrEmpty() && av.StartsWithIgnoreCase("http://", "https://", "/")) return av;
+                // 其余情况（空、裸文件名）统一指向头像端点，由端点兜底返回本地文件或生成的 SVG 文字头像
+                return $"/Cube/Avatar?id={user.ID}";
+            };
         }
         {
             // 名称列优先显示昵称，昵称为空时回退用户名。前端通用按 ValueField 渲染

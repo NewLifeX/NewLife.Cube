@@ -5,7 +5,7 @@ using XCode.Membership;
 
 namespace NewLife.Cube.Services;
 
-/// <summary>SVG 文字头像生成服务。头像不存在时根据昵称和性别生成文字头像，主流系统（Google、飞书、钉钉、Teams等）均采用此方案</summary>
+/// <summary>SVG 文字头像生成服务。头像不存在时根据昵称生成文字头像，主流系统（Google、飞书、钉钉、Teams等）均采用此方案</summary>
 /// <remarks>
 /// 字符提取规则（参考钉钉/飞书/Teams 主流做法）：
 /// <list type="bullet">
@@ -20,31 +20,33 @@ public static class SvgAvatarService
 {
     #region 颜色常量
 
-    /// <summary>渐变配色池（亮端→暗端）。未知性别时按用户ID哈希选取，保证同一用户颜色稳定</summary>
+    /// <summary>渐变配色池（亮端→暗端）。全用户按用户ID哈希选取，保证同一用户颜色稳定，对齐 ui-avatars 等主流文字头像按名称/ID 取色的做法</summary>
     private static readonly (String Light, String Dark)[] _colors =
     [
-        ("#607D8B", "#455A64"), // 蓝灰
-        ("#009688", "#00695C"), // 青绿
+        ("#F44336", "#B71C1C"), // 红
+        ("#E91E63", "#880E4F"), // 粉
+        ("#9C27B0", "#4A148C"), // 紫
+        ("#673AB7", "#311B92"), // 深紫
+        ("#3F51B5", "#1A237E"), // 靛蓝
+        ("#2196F3", "#0D47A1"), // 蓝
+        ("#00BCD4", "#006064"), // 青
+        ("#009688", "#004D40"), // 青绿
+        ("#4CAF50", "#1B5E20"), // 绿
+        ("#8BC34A", "#33691E"), // 浅绿
+        ("#FFC107", "#FF6F00"), // 琥珀
         ("#FF9800", "#E65100"), // 橙
-        ("#9C27B0", "#6A1B9A"), // 紫
-        ("#795548", "#4E342E"), // 棕
-        ("#00BCD4", "#00838F"), // 青
-        ("#8BC34A", "#558B2F"), // 浅绿
         ("#FF5722", "#BF360C"), // 深橙
+        ("#795548", "#3E2723"), // 棕
+        ("#607D8B", "#263238"), // 蓝灰
+        ("#9E9E9E", "#424242"), // 灰
     ];
-
-    /// <summary>男性渐变配色（蓝色系，参考 Google/Teams 惯例）</summary>
-    private static readonly (String Light, String Dark) MaleColor = ("#2196F3", "#1565C0");
-
-    /// <summary>女性渐变配色（粉红色系）</summary>
-    private static readonly (String Light, String Dark) FemaleColor = ("#E91E63", "#AD1457");
 
     #endregion
 
     #region 主入口
 
     /// <summary>根据用户信息生成 SVG 文字头像内容，优先从缓存获取</summary>
-    /// <param name="user">用户对象，读取显示名、性别、ID</param>
+    /// <param name="user">用户对象，读取显示名、ID</param>
     /// <param name="chars">显示字符数，支持 1~3，默认 1</param>
     /// <returns>SVG 字符串</returns>
     public static String Generate(IUser user, Int32 chars = 1)
@@ -76,14 +78,9 @@ public static class SvgAvatarService
 
         var text = ExtractChars(name, chars);
 
-        // 按性别选择渐变配色；未知性别按用户ID哈希选取，保证同一用户颜色稳定。
+        // 全用户按用户ID哈希从调色板取色，保证同一用户颜色稳定（主流文字头像服务按名称/ID 哈希取色，不按性别）
         // Math.Abs(Int32) 对 Int32.MinValue 会溢出抛异常，用 Int64 取模避免极端边界崩溃
-        var (light, dark) = user.Sex switch
-        {
-            SexKinds.男 => MaleColor,
-            SexKinds.女 => FemaleColor,
-            _ => _colors[Math.Abs((Int64)user.ID) % _colors.Length]
-        };
+        var (light, dark) = _colors[Math.Abs((Int64)user.ID) % _colors.Length];
 
         return BuildSvg(text, light, dark);
     }
@@ -209,14 +206,13 @@ public static class SvgAvatarService
     /// <returns>SVG 文本</returns>
     private static String BuildSvg(String text, String light, String dark)
     {
-        // 字号随字符数动态调整：1字=46px，2字=30px，3字=22px（SVG 100×100 viewBox）
+        // 字号随字符数动态调整：CJK 1字=46px，2字=30px，3字=22px（SVG 100×100 viewBox）
+        // 纯拉丁（ASCII）字母宽度约为汉字一半，2 字母视觉偏空，字号适当上调保持视觉重量均衡
         var count = new StringInfo(text).LengthInTextElements;
-        var fontSize = count switch
-        {
-            1 => 46,
-            2 => 30,
-            _ => 22,
-        };
+        var isLatin = text.All(c => c < 128);
+        var fontSize = isLatin
+            ? count switch { 1 => 50, 2 => 36, _ => 28 }
+            : count switch { 1 => 46, 2 => 30, _ => 22 };
 
         // SecurityElement.Escape 防止 XSS（< > & ' "）
         var escaped = SecurityElement.Escape(text);

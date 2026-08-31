@@ -56,7 +56,7 @@ public class UserController : EntityController<User, UserModel>
             df.Header = "";
             //df.Text = "<img src=\"{Avatar}\" style=\"width:64px;height:64px;\" />";
             //df.Url = "/Admin/User/Edit?id={ID}";
-            df.DataVisible = entity => !(entity as User).Avatar.IsNullOrEmpty();
+            // 始终显示头像列：无头像文件时由 MyAvatar 回退到 /Cube/Avatar 端点兜底生成 SVG 文字头像
             // 使用ILinkExtend，高度定制头像超链接
             df.AddService(new MyAvatar());
             df.Title = "{Remark}";
@@ -115,7 +115,9 @@ public class UserController : EntityController<User, UserModel>
         public String Resolve(DataField field, IModel data)
         {
             var user = data as User;
-            return $"<a href=\"/Admin/User/Edit?id={user.ID}\" target=\"_blank\"><img src=\"{user.GetAvatarUrl()}\" style=\"width:32px;height:32px;\" /></a>";
+            // 本地有头像文件 → GetAvatarUrl 返回可访问地址；否则回退到 /Cube/Avatar 端点，由服务端兜底生成 SVG 文字头像
+            var src = user.GetAvatarUrl() ?? $"/Cube/Avatar?id={user.ID}";
+            return $"<a href=\"/Admin/User/Edit?id={user.ID}\" target=\"_blank\"><img src=\"{src}\" style=\"width:32px;height:32px;\" /></a>";
         }
     }
 

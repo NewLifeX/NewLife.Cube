@@ -8,7 +8,7 @@ namespace XUnitTest;
 
 /// <summary>SVG 文字头像生成服务单元测试</summary>
 /// <remarks>
-/// 覆盖字符提取规则（中文取前N字/英文首字母）与 SVG 视觉结构（渐变背景、装饰圆、动态字号、性别配色）。
+/// 覆盖字符提取规则（中文取前N字/英文首字母）与 SVG 视觉结构（渐变背景、装饰圆、动态字号、全量调色板配色）。
 /// 通过公开入口 Generate 间接验证，各用例使用不同用户ID避免命中内存缓存。
 /// </remarks>
 public class SvgAvatarServiceTests
@@ -28,6 +28,14 @@ public class SvgAvatarServiceTests
     {
         var start = svg.IndexOf('>', svg.IndexOf("<text", StringComparison.Ordinal)) + 1;
         var end = svg.IndexOf("</text>", start, StringComparison.Ordinal);
+        return svg[start..end];
+    }
+
+    /// <summary>从 SVG 提取渐变亮端色（第一个 stop-color）</summary>
+    private static String ExtractLightColor(String svg)
+    {
+        var start = svg.IndexOf("stop-color=\"", StringComparison.Ordinal) + "stop-color=\"".Length;
+        var end = svg.IndexOf('"', start);
         return svg[start..end];
     }
 
@@ -103,8 +111,8 @@ public class SvgAvatarServiceTests
     {
         var svg = SvgAvatarService.Generate(CreateUser("张三", "张三", SexKinds.男), 2);
         Assert.Contains("<linearGradient", svg);
-        Assert.Contains("stop-color=\"#2196F3\"", svg); // 男默认蓝色
-        Assert.Contains("stop-color=\"#1565C0\"", svg);
+        // 颜色按 ID 哈希取自调色板，断言含两个渐变 stop-color 即可
+        Assert.Contains("stop-color=\"#", svg);
     }
 
     [Fact(DisplayName = "SVG 含装饰圆与圆角")]
@@ -123,14 +131,42 @@ public class SvgAvatarServiceTests
         Assert.Contains("font-size=\"22\"", SvgAvatarService.Generate(CreateUser("管理员", "管理员"), 3));
     }
 
-    [Fact(DisplayName = "性别决定配色")]
-    public void Svg_SexColors()
+    [Fact(DisplayName = "同用户ID不同字符数配色一致（颜色仅由ID决定）")]
+    public void Svg_PaletteColor_SameIdStableAcrossChars()
     {
-        var male = SvgAvatarService.Generate(CreateUser("张三", "张三", SexKinds.男), 2);
-        Assert.Contains("#2196F3", male);
+        var user = new User { ID = 7, Name = "张三", DisplayName = "张三", Sex = SexKinds.男 };
+        // 不同 chars 缓存 key 不同，可绕过缓存验证配色确实按 ID 哈希稳定
+        var svg2 = SvgAvatarService.Generate(user, 2);
+        var svg3 = SvgAvatarService.Generate(user, 3);
+        Assert.Equal(ExtractLightColor(svg2), ExtractLightColor(svg3));
+    }
 
-        var female = SvgAvatarService.Generate(CreateUser("李四", "李四", SexKinds.女), 2);
-        Assert.Contains("#E91E63", female);
+    [Fact(DisplayName = "不同用户ID取不同配色（全量调色板）")]
+    public void Svg_PaletteColor_DifferentIdDifferentColor()
+    {
+        // ID 1 → 色池索引1（粉），ID 2 → 色池索引2（紫），必然不同色
+        var svg1 = SvgAvatarService.Generate(new User { ID = 1, Name = "张三", DisplayName = "张三", Sex = SexKinds.男 }, 2);
+        var svg2 = SvgAvatarService.Generate(new User { ID = 2, Name = "李四", DisplayName = "李四", Sex = SexKinds.女 }, 2);
+        Assert.NotEqual(ExtractLightColor(svg1), ExtractLightColor(svg2));
+    }
+
+    [Fact(DisplayName = "性别不再决定配色（去性别分支）")]
+    public void Svg_PaletteColor_GenderIndependent()
+    {
+        // 同 ID 的男/女用户配色一致，证明配色与性别无关
+        var male = SvgAvatarService.Generate(new User { ID = 9, Name = "张三", DisplayName = "张三", Sex = SexKinds.男 }, 2);
+        var female = SvgAvatarService.Generate(new User { ID = 9, Name = "李四", DisplayName = "李四", Sex = SexKinds.女 }, 2);
+        Assert.Equal(ExtractLightColor(male), ExtractLightColor(female));
+    }
+
+    [Fact(DisplayName = "纯拉丁文本字号上调（视觉均衡）")]
+    public void Svg_LatinFontSize()
+    {
+        Assert.Contains("font-size=\"50\"", SvgAvatarService.Generate(CreateUser("A", "A"), 1));
+        Assert.Contains("font-size=\"36\"", SvgAvatarService.Generate(CreateUser("admin", "admin"), 2));
+        Assert.Contains("font-size=\"28\"", SvgAvatarService.Generate(CreateUser("admin", "admin"), 3));
+        // 英文多词首字母 2 个同样走拉丁字号
+        Assert.Contains("font-size=\"36\"", SvgAvatarService.Generate(CreateUser("Zhang San", "Zhang San"), 2));
     }
 
     [Fact(DisplayName = "特殊字符转义防XSS")]
