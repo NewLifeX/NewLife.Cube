@@ -230,13 +230,17 @@ export default function SearchBar({ fields, onSearch, onReset }: SearchBarProps)
   };
 
   const handleSearch = () => {
+    // 字段名 → 搜索控件类型（多选 LOV 需转逗号串提交，后端 SplitAsInt 解析）
+    const controlOf = new Map(fields.map((f) => [f.field.name, resolveSearchControl(toFieldMeta(f.field))]));
     // 清理空值
     const params: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(formData)) {
       if (v === '' || v === null || v === undefined) continue;
       if (Array.isArray(v)) {
         const nonNull = (v as unknown[]).filter((x) => x !== null && x !== undefined);
-        if (nonNull.length) params[k] = nonNull;
+        if (!nonNull.length) continue;
+        // lovMulti 多选（角色/部门等）：逗号分隔字符串，如 roleID=1,2；范围类保持数组
+        params[k] = controlOf.get(k) === 'lovMulti' ? nonNull.join(',') : nonNull;
         continue;
       }
       params[k] = v;

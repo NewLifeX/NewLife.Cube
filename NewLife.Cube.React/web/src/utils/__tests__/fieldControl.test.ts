@@ -6,6 +6,8 @@ import {
   DEFAULT_CATEGORY,
   groupByCategory,
   hasCategory,
+  isDateOnlyField,
+  mapDataToFormValues,
   resolveControl,
   resolveDescription,
   resolveSearchControl,
@@ -75,6 +77,34 @@ describe('resolveSearchControl 搜索控件映射', () => {
   it('默认文本', () => {
     expect(resolveSearchControl(f({ typeName: 'String' }))).toBe('text');
   });
+
+  it('dataSource 数据字典 → 下拉（性别 SexKinds 单选）', () => {
+    expect(
+      resolveSearchControl(f({ name: 'Sex', typeName: 'SexKinds', dataSource: { '0': '未知', '1': '男', '2': '女' } })),
+    ).toBe('lov');
+  });
+
+  it('dataSource + multiple → 多选下拉（部门 DepartmentID）', () => {
+    expect(
+      resolveSearchControl(
+        f({ name: 'DepartmentID', typeName: 'Int32', dataSource: { '1': '研发部', '2': '运营部' }, multiple: true }),
+      ),
+    ).toBe('lovMulti');
+  });
+
+  it('lovCode + multiple → 多选下拉（角色 RoleID）', () => {
+    expect(resolveSearchControl(f({ name: 'RoleID', typeName: 'Int32', lovCode: 'Role', multiple: true }))).toBe(
+      'lovMulti',
+    );
+  });
+
+  it('枚举类型名（非基元）无 dataSource 兜底 → 下拉', () => {
+    expect(resolveSearchControl(f({ name: 'Kind', typeName: 'SomeEnum' }))).toBe('lov');
+  });
+
+  it('无选项的 Int32 仍是数字范围（部门未配置数据源时兜底）', () => {
+    expect(resolveSearchControl(f({ name: 'DepartmentID', typeName: 'Int32' }))).toBe('numberRange');
+  });
 });
 
 describe('resolveListControl 列表单元格映射', () => {
@@ -95,7 +125,7 @@ describe('widgetToControl @newlifex widget → 皮肤控件', () => {
     expect(widgetToControl('textarea')).toBe('textarea');
     expect(widgetToControl('number')).toBe('inputNumber');
     expect(widgetToControl('switch')).toBe('switch');
-    expect(widgetToControl('date')).toBe('datePicker');
+    expect(widgetToControl('date')).toBe('date');
     expect(widgetToControl('datetime')).toBe('datePicker');
     expect(widgetToControl('lov')).toBe('lov');
     expect(widgetToControl('lovMulti')).toBe('lovMulti');
@@ -129,6 +159,55 @@ describe('serializeSubmitModel 提交序列化', () => {
     const fields = [{ name: 'Tags', multiple: true, typeName: 'String' }] as FieldMeta[];
     const out = serializeSubmitModel({ Tags: 'a', Num: 3 }, fields);
     expect(out).toEqual({ Tags: 'a', Num: 3 });
+  });
+
+  it('表单键与字段名大小写不一致时仍合并多选（大小写不敏感）', () => {
+    const fields = [{ name: 'RoleIds', multiple: true, typeName: 'String' }] as FieldMeta[];
+    const out = serializeSubmitModel({ roleIds: ['1', '2'] }, fields);
+    expect(out).toEqual({ roleIds: '1,2' });
+  });
+});
+
+describe('mapDataToFormValues 编辑回填映射', () => {
+  it('camelCase 数据 → PascalCase 字段名（大小写不敏感）', () => {
+    const fields = [
+      { name: 'ID', primaryKey: true, typeName: 'Int32' },
+      { name: 'Name', typeName: 'String' },
+      { name: 'DisplayName', typeName: 'String' },
+    ] as FieldMeta[];
+    const out = mapDataToFormValues({ id: 2, name: 'Stone', displayName: '石头' }, fields);
+    expect(out).toEqual({ ID: 2, Name: 'Stone', DisplayName: '石头' });
+  });
+
+  it('布尔串转布尔（Enable 等）', () => {
+    const fields = [{ name: 'Enable', typeName: 'Boolean' }] as FieldMeta[];
+    expect(mapDataToFormValues({ enable: 'true' }, fields)).toEqual({ Enable: true });
+    expect(mapDataToFormValues({ enable: 'false' }, fields)).toEqual({ Enable: false });
+    expect(mapDataToFormValues({ enable: true }, fields)).toEqual({ Enable: true });
+  });
+
+  it('多选逗号串 → string[]（RoleIds 等）', () => {
+    const fields = [{ name: 'RoleIds', multiple: true, typeName: 'String' }] as FieldMeta[];
+    expect(mapDataToFormValues({ roleIds: '1,2,3' }, fields)).toEqual({ RoleIds: ['1', '2', '3'] });
+  });
+
+  it('多选 JSON 字符串 / 数组 同样归一', () => {
+    const fields = [{ name: 'RoleIds', multiple: true, typeName: 'String' }] as FieldMeta[];
+    expect(mapDataToFormValues({ roleIds: '["1","2"]' }, fields)).toEqual({ RoleIds: ['1', '2'] });
+    expect(mapDataToFormValues({ roleIds: ['1', 2] }, fields)).toEqual({ RoleIds: ['1', '2'] });
+  });
+
+  it('itemType=multipleSelect 同样转数组', () => {
+    const fields = [{ name: 'Tags', itemType: 'multipleSelect', typeName: 'String' }] as FieldMeta[];
+    expect(mapDataToFormValues({ tags: 'a,b' }, fields)).toEqual({ Tags: ['a', 'b'] });
+  });
+
+  it('缺失字段跳过，不输出空 key', () => {
+    const fields = [
+      { name: 'Name', typeName: 'String' },
+      { name: 'Mail', typeName: 'String' },
+    ] as FieldMeta[];
+    expect(mapDataToFormValues({ name: 'Stone' }, fields)).toEqual({ Name: 'Stone' });
   });
 });
 
@@ -207,5 +286,39 @@ describe('groupByCategory 按分类分组', () => {
     const g = groupByCategory([f({ name: 'A', category: ' 基本信息 ' }), f({ name: 'B', category: '基本信息' })]);
     expect(g).toHaveLength(1);
     expect(g[0].category).toBe('基本信息');
+  });
+});
+
+describe('对齐 MVC：枚举类型名 / 纯日期 / dataSource 多选', () => {
+  it('真实枚举类型名（SexKinds）→ lov，选项由后端 dataSource 下发', () => {
+    expect(resolveControl(f({ name: 'Sex', typeName: 'SexKinds', dataSource: { '0': '未知', '1': '男', '2': '女' } }))).toBe('lov');
+    // 后端未下发 dataSource 时仍按枚举渲染下拉（空选项兜底）
+    expect(resolveControl(f({ name: 'Sex', typeName: 'SexKinds' }))).toBe('lov');
+    expect(resolveListControl(f({ typeName: 'SexKinds', dataSource: { '1': '男' } }))).toBe('lov');
+  });
+
+  it('纯日期：itemType=date 或字段名以 Date/day 结尾 → date，其余 datePicker', () => {
+    expect(resolveControl(f({ name: 'Birthday', typeName: 'DateTime' }))).toBe('date');
+    expect(resolveControl(f({ name: 'LastLoginDay', typeName: 'DateTime' }))).toBe('date');
+    expect(resolveControl(f({ name: 'T', typeName: 'DateTime', itemType: 'date' }))).toBe('date');
+    expect(resolveControl(f({ name: 'CreateTime', typeName: 'DateTime' }))).toBe('datePicker');
+    expect(isDateOnlyField(f({ name: 'Birthday', typeName: 'DateTime' }))).toBe(true);
+    expect(isDateOnlyField(f({ name: 'CreateTime', typeName: 'DateTime' }))).toBe(false);
+    expect(isDateOnlyField(f({ name: 'T', typeName: 'DateTime', itemType: 'date' }))).toBe(true);
+  });
+
+  it('dataSource + 字段名以 s 结尾 → lovMulti，其余单选 lov', () => {
+    expect(resolveControl(f({ name: 'RoleIds', typeName: 'String', dataSource: { '2': '管理员', '3': '普通用户' } }))).toBe('lovMulti');
+    expect(resolveControl(f({ name: 'Tags', typeName: 'String', dataSource: { '1': 'A' }, multiple: true }))).toBe('lovMulti');
+    expect(resolveControl(f({ name: 'Role', typeName: 'Int32', dataSource: { '2': '管理员' } }))).toBe('lov');
+  });
+
+  it('widgetToControl date → date', () => {
+    expect(widgetToControl('date')).toBe('date');
+  });
+
+  it('纯日期搜索 → dateRange，其余 datetimeRange', () => {
+    expect(resolveSearchControl(f({ name: 'Birthday', typeName: 'DateTime' }))).toBe('dateRange');
+    expect(resolveSearchControl(f({ name: 'CreateTime', typeName: 'DateTime' }))).toBe('datetimeRange');
   });
 });

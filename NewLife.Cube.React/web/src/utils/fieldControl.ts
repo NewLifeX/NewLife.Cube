@@ -14,6 +14,7 @@
  */
 import type { WidgetType } from '@newlifex/field-mapping';
 import type { FieldMeta, ControlType, SearchControlType, ListControlType } from '@/types/field';
+import { getValueByKey } from '@/utils/url';
 
 /** 数值类型集合 */
 const NUMERIC_TYPES: ReadonlySet<string> = new Set([
@@ -28,6 +29,30 @@ const NUMERIC_TYPES: ReadonlySet<string> = new Set([
   'UInt64',
   'SByte',
 ]);
+
+/** 已知基元类型集合。不在其中的 typeName 视为枚举（选项由后端 dataSource 下发，对齐 MVC _Form_Int） */
+const PRIMITIVE_TYPES: ReadonlySet<string> = new Set([
+  ...NUMERIC_TYPES,
+  'String',
+  'Boolean',
+  'DateTime',
+  'TimeSpan',
+  'Guid',
+  'Enum',
+]);
+
+/**
+ * 是否纯日期字段（itemType=date，或字段名以 Date/day 结尾且无 itemType，对齐 MVC _Form_DateTime）
+ *
+ * @param field 字段元数据
+ * @returns 是否纯日期（不带时间）
+ */
+export function isDateOnlyField(field: FieldMeta): boolean {
+  const itemType = normalizeItemType(field);
+  if (itemType === 'date') return true;
+  if (itemType) return false;
+  return /(date|day)$/i.test(field.name);
+}
 
 /** ItemType（小写） → 表单控件类型 的精确映射表（唯一真理表） */
 const ITEM_TYPE_TO_CONTROL: Record<string, ControlType> = {
@@ -47,6 +72,7 @@ const ITEM_TYPE_TO_CONTROL: Record<string, ControlType> = {
   lovtablemulti: 'lovMulti',
   password: 'input',
   time: 'timePicker',
+  date: 'date',
 };
 
 /** 解析小写 ItemType */
@@ -74,19 +100,27 @@ export function resolveControl(field: FieldMeta): ControlType {
     return 'readonly';
   }
 
-  // 3. 枚举 / 单选 / 多选：lovCode 由后端下发，统一走 LOV
-  if (field.lovCode) {
-    return field.multiple || itemType === 'multipleselect' ? 'lovMulti' : 'lov';
+  // 3. 枚举 / 单选 / 多选：lovCode 或 dataSource 由后端下发，统一走 LOV
+  const hasOptions =
+    !!field.lovCode || (field.dataSource != null && Object.keys(field.dataSource).length > 0);
+  if (hasOptions) {
+    // 多选：显式 multiple / multipleselect，或 dataSource 字段名以 s 结尾（对齐 MVC _Form_Item 约定）
+    const multi =
+      field.multiple ||
+      itemType === 'multipleselect' ||
+      itemType === 'lovtablemulti' ||
+      (!!field.dataSource && /s$/i.test(field.name));
+    return multi ? 'lovMulti' : 'lov';
   }
 
   // 4. 已知 CLR 类型
   if (typeName === 'Boolean') return 'switch';
-  if (typeName === 'DateTime') return 'datePicker';
+  if (typeName === 'DateTime') return isDateOnlyField(field) ? 'date' : 'datePicker';
   if (typeName === 'TimeSpan') return 'timePicker';
   if (NUMERIC_TYPES.has(typeName)) return 'inputNumber';
 
-  // 枚举类型名（非标准基元，且无 lovCode 兜底）按 lov 渲染
-  if (typeName === 'Enum') return 'lov';
+  // 枚举类型名（非标准基元，如 SexKinds，选项由后端 dataSource 下发）按 lov 渲染
+  if (typeName === 'Enum' || (typeName && !PRIMITIVE_TYPES.has(typeName))) return 'lov';
 
   // 5. 字符串：大文本 → textarea
   if (typeName === 'String') {
@@ -114,7 +148,7 @@ export function widgetToControl(widget: WidgetType): ControlType {
     select: 'lov',
     checkbox: 'switch',
     switch: 'switch',
-    date: 'datePicker',
+    date: 'date',
     datetime: 'datePicker',
     time: 'timePicker',
     password: 'input',
@@ -158,16 +192,27 @@ export function resolveSearchControl(field: FieldMeta): SearchControlType {
   // Guid / 主键：上游已过滤，这里兜底不进搜索
   if (typeName === 'Guid') return 'text';
 
-  // LOV 驱动
-  if (field.lovCode) {
-    return field.multiple || itemType === 'multipleselect' ? 'lovMulti' : 'lov';
+  // 枚举 / 单选 / 多选：lovCode 或 dataSource（数据字典）→ 下拉。
+  // 多选：显式 multiple / multipleselect，或 dataSource 字段名以 s 结尾（对齐 resolveControl 与 MVC _Form_Item 约定）
+  const hasOptions =
+    !!field.lovCode || (field.dataSource != null && Object.keys(field.dataSource).length > 0);
+  if (hasOptions) {
+    const multi =
+      field.multiple ||
+      itemType === 'multipleselect' ||
+      itemType === 'lovtablemulti' ||
+      (!!field.dataSource && /s$/i.test(field.name));
+    return multi ? 'lovMulti' : 'lov';
   }
 
   // 已知 CLR 类型
   if (typeName === 'Boolean') return 'switch';
-  if (typeName === 'DateTime') return 'datetimeRange';
+  if (typeName === 'DateTime') return isDateOnlyField(field) ? 'dateRange' : 'datetimeRange';
   if (typeName === 'TimeSpan') return 'timeRange';
   if (NUMERIC_TYPES.has(typeName)) return 'numberRange';
+
+  // 枚举类型名（非标准基元，如 SexKinds，选项由后端 dataSource 下发）→ 下拉
+  if (typeName === 'Enum' || (typeName && !PRIMITIVE_TYPES.has(typeName))) return 'lov';
 
   // 默认模糊文本
   return 'text';
@@ -214,8 +259,8 @@ export function resolveListControl(field: FieldMeta): ListControlType {
   if (typeName === 'TimeSpan') return 'time';
   if (NUMERIC_TYPES.has(typeName)) return 'number';
 
-  // 枚举 / LOV
-  if (field.lovCode || typeName === 'Enum') return 'lov';
+  // 枚举 / LOV（真实枚举类型名如 SexKinds 也按 LOV 渲染）
+  if (field.lovCode || typeName === 'Enum' || (typeName && !PRIMITIVE_TYPES.has(typeName))) return 'lov';
 
   // 默认文本
   return 'text';
@@ -343,15 +388,74 @@ export function serializeSubmitModel(
   const multiNames = new Set(
     fields
       .filter((f) => f.multiple || (f.itemType ?? '').toLowerCase() === 'multipleselect')
-      .map((f) => f.name),
+      .map((f) => f.name.toLowerCase()),
   );
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(model)) {
-    if (multiNames.has(k) && Array.isArray(v)) {
+    if (multiNames.has(k.toLowerCase()) && Array.isArray(v)) {
       out[k] = (v as unknown[]).map(String).join(',');
     } else {
       out[k] = v;
     }
+  }
+  return out;
+}
+
+/**
+ * 多选值归一为 string[]（对齐 Vue 皮肤 toMultiArray）
+ *
+ * 兼容三种来源：
+ * - 数组（表单编辑中 LovSelect 直接回写的 string[]）
+ * - 逗号分隔字符串（后端 String 列存储格式，如 "1,2"）
+ * - JSON 字符串（如 '["1","2"]'）
+ *
+ * @param val 原始值
+ * @returns 字符串数组
+ */
+function toMultiArray(val: unknown): string[] {
+  if (val == null) return [];
+  if (Array.isArray(val)) return val.filter((x) => x != null).map(String);
+  const s = String(val).trim();
+  if (!s) return [];
+  try {
+    const parsed = JSON.parse(s);
+    if (Array.isArray(parsed)) return parsed.filter((x: unknown) => x != null).map(String);
+  } catch {
+    /* 非 JSON，按逗号拆分 */
+  }
+  return s
+    .split(',')
+    .map((x) => x.trim())
+    .filter((x) => x.length > 0);
+}
+
+/**
+ * 编辑回填：将后端 camelCase 数据（列表行/详情）映射为表单字段值（PascalCase 字段名）
+ *
+ * 后端实体 JSON 序列化为 camelCase（如 { id, name, displayName, enable }），
+ * 而 GetPage 下发的 DataField.name 为 PascalCase 实体属性名（如 ID/Name/DisplayName）。
+ * 若直接用 form.setFieldsValue(data) 精确匹配，camelCase 键与 PascalCase 字段名对不上，
+ * 编辑表单将全部为空（旧版问题：三方登录用户数据多时编辑完全看不到数据）。
+ *
+ * 归一规则：
+ * - 按字段名大小写不敏感取值（复用 getValueByKey，兼容 ID↔id）；
+ * - 布尔串 'true'/'false' → boolean（Enable 等）；
+ * - 多选字段（multiple / itemType=multipleselect）逗号/JSON 字符串 → string[]（LovSelect 多选展示）。
+ *
+ * @param data 后端数据对象（列表行或详情）
+ * @param fields 表单字段元数据（建议传全量字段，含主键，保证主键也进入表单 store）
+ * @returns 以字段名为键的表单值
+ */
+export function mapDataToFormValues(data: Record<string, unknown>, fields: FieldMeta[]): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const f of fields) {
+    const v = getValueByKey(data, f.name);
+    if (v === undefined) continue;
+    let val: unknown = v === 'true' ? true : v === 'false' ? false : v;
+    if (f.multiple || (f.itemType ?? '').toLowerCase() === 'multipleselect') {
+      val = toMultiArray(val);
+    }
+    out[f.name] = val;
   }
   return out;
 }
