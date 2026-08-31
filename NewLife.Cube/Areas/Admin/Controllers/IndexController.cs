@@ -239,6 +239,28 @@ public class IndexController : ControllerBaseX, IPageDataContext
             ["启动时间"] = DateTime.Now.AddMilliseconds(-Environment.TickCount64).ToFullString(),
         };
 
+        // 内容部件（KPI 以外）：可见/隐藏分开返回，排序对齐 MVC WidgetManager.GetWidgets（组配置 + 用户布局）。
+        // 图表卡（Monitor）数据体量大且前端独立轮询 MonitorData，此处只下发元数据；其余类型下发 GetData 数据
+        Object BuildWidgetItem(WidgetAttribute info) => new
+        {
+            name = info.Name,
+            title = info.Title,
+            icon = info.Icon,
+            cols = info.Cols,
+            category = info.Category,
+            widgetType = info.WidgetType.ToString(),
+            data = info.WidgetType == WidgetTypes.Chart ? null : wm.GetData(info),
+        };
+
+        var widgets = wm.GetWidgets(roleNames, isAdmin, user?.ID ?? 0)
+            .Where(e => e.WidgetType != WidgetTypes.Kpi)
+            .Select(BuildWidgetItem)
+            .ToList();
+        var hiddenWidgets = wm.GetHiddenWidgets(user?.ID ?? 0, roleNames, isAdmin)
+            .Where(e => e.WidgetType != WidgetTypes.Kpi)
+            .Select(BuildWidgetItem)
+            .ToList();
+
         return Json(0, null, new
         {
             user = new
@@ -249,6 +271,8 @@ public class IndexController : ControllerBaseX, IPageDataContext
             },
             kpis,
             hiddenKpis,
+            widgets,
+            hiddenWidgets,
             quickLinks = links,
             profile,
             sysInfo,
