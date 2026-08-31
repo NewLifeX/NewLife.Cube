@@ -87,7 +87,7 @@ export default function TabsView() {
   };
 
   return (
-    <div style={{ padding: '2px 16px 0', background: 'transparent' }}>
+    <div className="cube-shell-tabs" style={{ padding: '0 16px 0' }}>
       <Tabs
         type="editable-card"
         hideAdd

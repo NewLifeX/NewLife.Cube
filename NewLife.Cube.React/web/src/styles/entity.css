@@ -47,8 +47,8 @@
 }
 
 .cube-search-panel {
-  margin-bottom: 12px;
-  padding: 14px 16px;
+  margin-bottom: 10px;
+  padding: 10px 16px;
   border-radius: 8px;
   background: var(--cube-surface-muted);
   border: 1px solid var(--cube-border-soft);
@@ -58,7 +58,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px 12px;
+  gap: 8px 10px;
 }
 
 .cube-search-item {
@@ -116,7 +116,7 @@
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .cube-toolbar-main,

@@ -281,7 +281,7 @@ export default function EntityListPage({ type }: EntityListPageProps) {
 
   return (
     // 页面名由顶栏面包屑/多标签承担，Card 不再重复标题（避免搜索区上方冗余占位）
-    <Card className="cube-entity-card" size="small" styles={{ body: { paddingTop: 12 } }}>
+    <Card className="cube-entity-card" size="small" styles={{ body: { paddingTop: 8 } }}>
       <SearchBar fields={searchFields} onSearch={handleSearch} onReset={handleReset} />
       <Toolbar
         canAdd={canAdd}
