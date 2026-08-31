@@ -4,6 +4,7 @@
  * 使用 useModal 命令式 API，替代模板中手写 el-dialog + FormPage 的方式。
  * 表单内容通过 ListFormDialog 组件渲染，确认时自动调用后端 API 保存。
  */
+import { reactive } from 'vue';
 import { useModal } from '@newlifex/cube-vue/core/composables/useModal';
 import { serializeSubmitModel } from '@newlifex/cube-vue/core/utils/fieldControl';
 import request from '@newlifex/cube-vue/core/utils/request';
@@ -52,8 +53,12 @@ export function openListFormDialog(options: OpenListFormDialogOptions): Promise<
   const { openModal } = useModal();
 
   return new Promise<boolean>((resolve) => {
-    // 表单数据副本，避免修改原始数据
-    const formData = { ...(options.modelValue ?? {}) };
+    // 表单数据副本，避免修改原始数据。
+    // 必须是 reactive：openModal 对 options 做了 markRaw，且 componentEvents 的
+    // Object.assign 回写只有落在响应式对象上才能触发弹窗内容重渲染；
+    // 否则 FormContent 的受控 :model-value 永不更新，Element Plus 会在下一次
+    // 输入同步时把 DOM 值重置回旧值，表现为"输入框打不进字"。
+    const formData = reactive<Record<string, unknown>>({ ...(options.modelValue ?? {}) });
 
     // 根据字段数量自动推断弹窗类型和列数
     //   ≤ 10: dialog，2列，700px
