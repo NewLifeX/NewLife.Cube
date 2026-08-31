@@ -340,12 +340,13 @@ public partial class ReadOnlyEntityController<TEntity>
             p.Parse(queryData);
             return p;
         }
-        else
-        {
-            // 计算目标数据量。不能破坏缓存对象，需要new一个新对象
-            var p = Session[CacheKey] as Pager;
-            return new Pager(p);
-        }
+
+        // 会话缓存（MVC 版 Index 写入当前查询条件）
+        if (Session[CacheKey] is Pager sp) return new Pager(sp);
+
+        // 前后端分离 API 模式无会话缓存，直接使用当前请求参数（与 DeleteAll 一致），
+        // 使导出基于当前查询条件全量导出，而非整表
+        return new Pager(request);
     }
 
     /// <summary>多次导出数据</summary>

@@ -1,13 +1,17 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
+using System.IO.Compression;
 using System.Reflection;
 using System.Xml.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Common;
 using NewLife.Cube.AI;
 using NewLife.Cube.ViewModels;
 using NewLife.Data;
 using NewLife.Log;
+using NewLife.Office.Excel;
 using NewLife.Serialization;
 using NewLife.Web;
 using XCode;
@@ -134,6 +138,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     [HttpGet]
     public virtual ApiResponse<Object> GetPage()
     {
+        // 开发模式与系统管理员标志：驱动前端高级菜单显示备份/还原/清空数据表等开发功能（对齐 MVC Develop 条件）
+        var user = CurrentUser as IUser ?? ManageProvider.User;
         var setting = new
         {
             PageSetting.NavView,
@@ -147,6 +153,10 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             PageSetting.EnableTableDoubleClick,
             PageSetting.OrderByKey,
             PageSetting.DoubleDelete,
+            // 开发模式（SysConfig.Develop），开发功能仅开发模式可用
+            develop = SysConfig.Current.Develop,
+            // 当前用户是否系统管理员。开发功能仅系统管理员可用
+            isSystem = user?.Roles.Any(e => e.IsSystem) == true,
         };
 
         var list = OnGetFields(ViewKinds.List, null);
@@ -299,6 +309,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             "csv" => OnExportCsv(),
             "json" => OnExportJson(),
             "xml" => OnExportXml(),
+            "exceltemplate" or "template" => OnExportExcelTemplate(),
             _ => throw new ArgumentOutOfRangeException(nameof(format), $"不支持的导出格式：{format}"),
         };
     }
@@ -337,16 +348,66 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             }
         }
 
-        var name = MakeExportFileName(".csv");
+        var name = MakeExportFileName(".xlsx");
 
         var list = ExportData();
 
-        // WebAPI 版使用 CSV 格式导出，兼容所有平台
         var ms = new MemoryStream();
-        ExportCsvToStream(fs, list, ms);
+        WriteExcelToStream(fs, list, ms);
         ms.Position = 0;
 
-        return new FileStreamResult(ms, "text/csv") { FileDownloadName = name };
+        return new FileStreamResult(ms, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") { FileDownloadName = name };
+    }
+
+    /// <summary>导出Excel模板。仅列头与一行示例数据，隐藏自动维护字段，用于导入参考</summary>
+    /// <returns></returns>
+    [NonAction]
+    protected virtual IActionResult OnExportExcelTemplate()
+    {
+        // 准备需要输出的列，模板隐藏自动维护字段
+        var fs = new List<FieldItem>();
+        foreach (var fi in Factory.AllFields)
+        {
+            if (Type.GetTypeCode(fi.Type) == TypeCode.Object) continue;
+            if (!fi.IsDataObjectField)
+            {
+                var pi = Factory.EntityType.GetProperty(fi.Name);
+                if (pi != null && pi.GetCustomAttribute<XmlIgnoreAttribute>() != null) continue;
+            }
+
+            if (fi.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
+                        "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP", "Enable") || fi.Description.IsNullOrEmpty())
+            {
+                continue;
+            }
+
+            fs.Add(fi);
+        }
+
+        // 基本属性与扩展属性对调顺序
+        for (var i = 0; i < fs.Count; i++)
+        {
+            var fi = fs[i];
+            if (fi.OriField != null)
+            {
+                var k = fs.IndexOf(fi.OriField);
+                if (k >= 0)
+                {
+                    fs[i] = fs[k];
+                    fs[k] = fi;
+                }
+            }
+        }
+
+        var name = MakeExportFileName(".xlsx");
+
+        var list = ExportData(1);
+
+        var ms = new MemoryStream();
+        WriteExcelToStream(fs, list, ms);
+        ms.Position = 0;
+
+        return new FileStreamResult(ms, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") { FileDownloadName = name };
     }
 
     /// <summary>导出Csv</summary>
@@ -415,6 +476,24 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         }
     }
 
+    /// <summary>将数据写入Excel流（xlsx 格式）</summary>
+    /// <param name="fields">字段列表</param>
+    /// <param name="data">数据</param>
+    /// <param name="stream">目标流</param>
+    [NonAction]
+    protected void WriteExcelToStream(IList<FieldItem> fields, IEnumerable<TEntity> data, Stream stream)
+    {
+        using var excel = new ExcelWriter(stream);
+
+        // 表头：优先显示名（与列表页一致），空值回退字段名
+        excel.WriteHeader(null, fields.Select(f => f.DisplayName ?? f.Name));
+
+        // 数据行：按字段取实体值，ExcelWriter 自动识别常见类型并避免长数字科学计数
+        excel.WriteRows(null, data.Select(e => fields.Select(f => e[f.Name]).ToArray()));
+
+        excel.Save();
+    }
+
     /// <summary>生成导出文件名</summary>
     /// <param name="ext">扩展名，如 .xlsx</param>
     /// <returns></returns>
@@ -428,6 +507,219 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         if (!ext.IsNullOrEmpty()) ext = ext.EnsureStart(".");
 
         return $"{name}_{DateTime.Now:yyyyMMddHHmmss}{ext}";
+    }
+    #endregion
+
+    #region 高级Action
+    /// <summary>高级开发接口。开发模式下系统管理员可执行备份/还原/备份导出/清空数据表（对齐 MVC Develop）</summary>
+    /// <param name="act">动作：Backup/BackupAndExport/Restore/Clear</param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException">非开发模式或非系统管理员时抛出</exception>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [DisplayName("高级开发")]
+    [HttpGet]
+    public virtual async Task<ActionResult> Develop(String act)
+    {
+        if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
+
+        var user = CurrentUser as IUser ?? ManageProvider.User;
+        if (user == null || !user.Roles.Any(e => e.IsSystem)) throw new InvalidOperationException("仅支持系统管理员使用！");
+
+        return act switch
+        {
+            "Backup" => Backup(),
+            "BackupAndExport" => await BackupAndExport(),
+            "Restore" => Restore(),
+            "Clear" => Clear(),
+            _ => throw new NotSupportedException($"未支持[{act}]"),
+        };
+    }
+
+    /// <summary>清空数据表全部数据。仅无查询条件时允许，防止误删筛选后的数据</summary>
+    /// <returns></returns>
+    [NonAction]
+    public virtual ActionResult Clear()
+    {
+        // 排除 act 参数后，若还有其它查询参数，禁止全表清空（对齐 MVC：page.Params.Count > 0 拒绝）
+        if (WebHelper.Params.Keys.Any(e => !e.EqualIgnoreCase("act")))
+            throw new InvalidOperationException("当前带有查询参数，为免误解，禁止全表清空！");
+
+        try
+        {
+            var count = Entity<TEntity>.Meta.Session.Truncate();
+
+            WriteLog("清空数据", true, $"共删除{count}行数据");
+
+            return Json(0, $"共删除{count}行数据");
+        }
+        catch (Exception ex)
+        {
+            WriteLog("清空数据", false, ex.GetMessage());
+
+            throw;
+        }
+    }
+
+    /// <summary>备份全表到服务器本地备份目录（NewLife.Setting.BackupPath）</summary>
+    /// <returns></returns>
+    [NonAction]
+    public virtual ActionResult Backup()
+    {
+        try
+        {
+            var set = CubeSetting.Current;
+
+            var fact = Factory;
+            if (fact.Session.Count > set.MaxBackup)
+                throw new XException($"数据量[{fact.Session.Count:n0}>{set.MaxBackup:n0}]，禁止备份！");
+
+            var dal = fact.Session.Dal;
+
+            var name = GetType().Name.TrimSuffix("Controller");
+            var fileName = $"{name}_{DateTime.Now:yyyyMMddHHmmss}.gz";
+            var bak = NewLife.Setting.Current.BackupPath.CombinePath(fileName).GetBasePath();
+            bak.EnsureDirectory(true);
+
+            // 异步执行备份，阻塞等待一点时间，避免前端超时。
+            var task = Task.Factory.StartNew(() =>
+            {
+                WriteLog("备份", true, $"开始备份[{name}]到[{fileName}]");
+                try
+                {
+                    var rs = 0;
+                    var sw = Stopwatch.StartNew();
+                    {
+                        using var fs = new FileStream(bak, FileMode.OpenOrCreate);
+                        using var gs = new GZipStream(fs, CompressionLevel.SmallestSize, true);
+                        rs = dal.Backup(fact.Table.DataTable, gs, default);
+                        sw.Stop();
+                    }
+
+                    var fi = bak.AsFile();
+                    WriteLog("备份", true, $"备份[{name}]到[{fileName}]（{rs:n0}行）（{fi.Length.ToGMK()}字节）成功！耗时：{sw.Elapsed}");
+                    return rs;
+                }
+                catch (Exception ex)
+                {
+                    WriteLog("备份", false, $"备份[{fileName}]失败！{ex.GetMessage()}");
+                    return -1;
+                }
+            }, TaskCreationOptions.LongRunning);
+            if (task.Wait(5_000))
+                return Json(0, $"备份[{fileName}]（{task.Result:n0}行）成功！");
+            else
+                return Json(0, $"备份[{fileName}]后台执行中……");
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteException(ex);
+
+            WriteLog("备份", false, ex.GetMessage());
+
+            return Json(500, null, ex);
+        }
+    }
+
+    /// <summary>备份全表并下载 gz 压缩文件</summary>
+    /// <remarks>备份并下载</remarks>
+    /// <returns></returns>
+    [NonAction]
+    public virtual async Task<ActionResult> BackupAndExport()
+    {
+        var set = CubeSetting.Current;
+
+        var fact = Factory;
+        if (fact.Session.Count > set.MaxBackup)
+            throw new XException($"数据量[{fact.Session.Count:n0}>{set.MaxBackup:n0}]，禁止备份！");
+
+        var dal = fact.Session.Dal;
+
+        var name = GetType().Name.TrimSuffix("Controller");
+        var fileName = $"{name}_{DateTime.Now:yyyyMMddHHmmss}.gz";
+
+        // 允许同步IO，便于刷数据Flush
+        var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+        if (ft != null) ft.AllowSynchronousIO = true;
+
+        Response.ContentType = "application/gzip";
+        Response.Headers.ContentDisposition = $"attachment; filename={fileName}";
+
+        var ms = Response.Body;
+        try
+        {
+            WriteLog("备份导出", true, $"开始备份导出[{name}]");
+
+            var sw = Stopwatch.StartNew();
+            await using var gs = new GZipStream(ms, CompressionLevel.SmallestSize, true);
+            var count = dal.Backup(fact.Table.DataTable, gs, HttpContext.RequestAborted);
+            sw.Stop();
+
+            WriteLog("备份导出", true, $"备份[{name}]（{count:n0}行）成功！耗时：{sw.Elapsed}");
+
+            return new EmptyResult();
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteException(ex);
+
+            WriteLog("备份导出", false, ex.GetMessage());
+
+            return Json(500, null, ex);
+        }
+    }
+
+    /// <summary>从服务器本地备份目录还原最新备份文件</summary>
+    /// <returns></returns>
+    [NonAction]
+    public virtual ActionResult Restore()
+    {
+        try
+        {
+            var fact = Factory;
+            var dal = fact.Session.Dal;
+
+            var name = GetType().Name.TrimSuffix("Controller");
+            var fileName = $"{name}_*.gz";
+
+            var di = NewLife.Setting.Current.BackupPath.GetBasePath().AsDirectory();
+            var fi = di?.GetFiles(fileName)?.OrderByDescending(e => e.Name).FirstOrDefault();
+            if (fi == null || !fi.Exists) throw new XException($"找不到[{fileName}]的备份文件");
+
+            // 异步执行恢复，阻塞等待一点时间，避免前端超时。
+            var task = Task.Factory.StartNew(() =>
+            {
+                WriteLog("恢复", true, $"开始恢复[{fileName}]到[{name}]（{fi.Length.ToGMK()}字节）");
+                try
+                {
+                    var sw = Stopwatch.StartNew();
+                    using var fs = fi.OpenRead();
+                    using var gs = new GZipStream(fs, CompressionMode.Decompress, true);
+                    var rs = dal.Restore(gs, fact.Table.DataTable, default);
+                    sw.Stop();
+
+                    WriteLog("恢复", true, $"恢复[{fileName}]（{rs:n0}行）成功！");
+                    return rs;
+                }
+                catch (Exception ex)
+                {
+                    WriteLog("恢复", false, $"恢复[{fileName}]失败！{ex.GetMessage()}");
+                    return -1;
+                }
+            }, TaskCreationOptions.LongRunning);
+
+            if (task.Wait(5_000))
+                return Json(0, $"恢复[{fileName}]（{task.Result:n0}行）成功！");
+            else
+                return Json(0, $"恢复[{fileName}]后台执行中……");
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteException(ex);
+
+            WriteLog("恢复", false, ex.GetMessage());
+
+            return Json(500, null, ex);
+        }
     }
     #endregion
 }
