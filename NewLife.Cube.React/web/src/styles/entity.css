@@ -156,6 +156,72 @@
   font-size: 13px;
 }
 
+/* ============================================================
+   操作列胶囊按钮（对齐 MVC ace-ui .op-btn-*）
+   语义色淡底 + 圆角胶囊 + hover 反色；用 !important 覆盖 antd link 按钮内联样式
+   ============================================================ */
+.cube-op-btn.ant-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  margin: 1px 2px;
+  font-size: 12px;
+  line-height: 1.4;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  transition: all 0.15s ease;
+  /* antd 按钮由 CSS-in-JS 注入内联类样式，尺寸类关键属性用 !important 保证覆盖 */
+  height: 24px !important;
+  padding: 0 10px !important;
+  border-radius: 12px !important;
+}
+
+.cube-op-btn-op-view {
+  color: #5bc0de !important;
+  background: #f0fafc !important;
+  border-color: #d5eef4 !important;
+}
+.cube-op-btn-op-view:hover {
+  color: #fff !important;
+  background: #5bc0de !important;
+  border-color: #5bc0de !important;
+}
+
+.cube-op-btn-op-edit {
+  color: var(--cube-primary) !important;
+  background: var(--cube-primary-soft) !important;
+  border-color: rgba(22, 119, 255, 0.22) !important;
+}
+.cube-op-btn-op-edit:hover {
+  color: #fff !important;
+  background: var(--cube-primary) !important;
+  border-color: var(--cube-primary) !important;
+}
+
+.cube-op-btn-op-restore {
+  color: #449d44 !important;
+  background: #eef7ee !important;
+  border-color: #d4ebd4 !important;
+}
+.cube-op-btn-op-restore:hover {
+  color: #fff !important;
+  background: #449d44 !important;
+  border-color: #449d44 !important;
+}
+
+.cube-op-btn-op-delete {
+  color: #d9534f !important;
+  background: #fdf0ef !important;
+  border-color: #f3d6d5 !important;
+}
+.cube-op-btn-op-delete:hover {
+  color: #fff !important;
+  background: #d9534f !important;
+  border-color: #d9534f !important;
+}
+
 .cube-form-actions {
   display: flex;
   gap: 12px;
@@ -173,19 +239,20 @@
   color: var(--cube-text-muted);
 }
 
-/* 表单同排三栏（label | 控件 | description），对齐 MVC _Form_Item */
+/* 表单同排三栏（label | 控件 | description），对齐 MVC _Form_Item
+   label 列内容自适应：最小 4 汉字、最大 6 汉字（超长折行），释放控件空间 */
 .cube-form-inline-cell {
   display: grid;
-  grid-template-columns: 110px minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   column-gap: 10px;
-  padding: 8px 0;
+  padding: 6px 0;
   border-bottom: 1px dashed var(--cube-border-soft);
 }
 
-/* 有描述时追加第三栏（描述不额外占纵向空间） */
+/* 有描述时追加第三栏；描述列（0.4fr）远小于控件列（1fr），控件优先，长描述省略号+title */
 .cube-form-inline-cell--desc {
-  grid-template-columns: 110px minmax(0, 1fr) minmax(0, 1.1fr);
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 0.4fr);
 }
 
 /* 多行控件（textarea / json / 富文本等）顶部对齐 */
@@ -193,14 +260,17 @@
   align-items: start;
 }
 
+/* label 自适应：min 4em(约4汉字) ~ max 6em(约6汉字)，超长折行不挤压控件 */
 .cube-form-inline-label {
+  min-width: 4em;
+  max-width: 6em;
   color: var(--cube-text-secondary);
   font-size: 13px;
   font-weight: 600;
+  line-height: 1.35;
   text-align: right;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 .cube-form-inline-control.ant-form-item {

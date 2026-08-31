@@ -7,7 +7,7 @@
 import { Table, Tag, Tooltip, Button, Popconfirm } from 'antd';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import type { FieldMapping } from '@newlifex/field-mapping';
-import { resolveListControl } from '@/utils/fieldControl';
+import { resolveListControl, isDateOnlyField } from '@/utils/fieldControl';
 import { toFieldMeta } from '@/types/field';
 import { getValueByKey, resolveUrl } from '@/utils/url';
 import { resolveIcon } from '@/utils/icon';
@@ -55,18 +55,28 @@ function formatDate(v: unknown, dateOnly = false): string {
   return dateOnly ? base : `${base} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
+/** 取单元格值。按字段名顺序取第一个非空值（跳过 undefined/null/空串），供 valueField 取值优先使用 */
+function getCellValue(row: Record<string, unknown>, names: string[]): unknown {
+  for (const n of names) {
+    const v = getValueByKey(row, n);
+    if (v !== undefined && v !== null && v !== '') return v;
+  }
+  return undefined;
+}
+
 /** 渲染单元格 */
-function CellRenderer({ field, value }: { field: FieldMapping; value: unknown }) {
+function CellRenderer({ field, row }: { field: FieldMapping; row: Record<string, unknown> }) {
   const meta = toFieldMeta(field.field);
   const control = resolveListControl(meta);
-  const raw = value;
+  // 取值字段：优先取 valueField 指向的字段值（跳过空值），为空回退本字段（如名称列优先显示昵称）
+  const raw = meta.valueField ? getCellValue(row, [meta.valueField, meta.name]) : getCellValue(row, [meta.name]);
 
   switch (control) {
     case 'boolean':
       return <Tag color={raw === true || raw === 'true' || raw === 1 ? 'success' : 'default'}>{raw === true || raw === 'true' || raw === 1 ? '是' : '否'}</Tag>;
     case 'date': {
-      // 纯日期字段（ItemType=date）只显示日期，其余显示完整时间
-      const dateOnly = (meta.itemType || '').toLowerCase() === 'date';
+      // 纯日期字段（ItemType=date 或字段名以 Date/day 结尾）只显示日期，其余显示完整时间
+      const dateOnly = isDateOnlyField(meta);
       return <span>{formatDate(raw, dateOnly)}</span>;
     }
     case 'time':
@@ -176,43 +186,41 @@ export default function TableContent({
       sorter: onSortChange && !meta.primaryKey ? true : false,
       // 排序箭头仅当前排序列显示（受控）：其余列 sortOrder 置 null 复位，配合 CSS 隐藏默认箭头
       sortOrder: meta.name === sortField ? (sortDesc ? 'descend' : 'ascend') : null,
-      render: (_: unknown, row: Record<string, unknown>) => (
-        <CellRenderer field={field} value={getValueByKey(row, meta.name)} />
-      ),
+      render: (_: unknown, row: Record<string, unknown>) => <CellRenderer field={field} row={row} />,
     };
   });
 
   // 操作列：查看（只读/无编辑权限时）+ 编辑 + 删除（软删除行显示「恢复」）
   const isSoftDeleted = (row: Record<string, unknown>) => {
     if (!softDeleteField) return false;
-    const v = row[softDeleteField];
+    const v = getValueByKey(row, softDeleteField);
     return v === true || v === 'true' || v === 1;
   };
 
   if (canView || canEdit || canDelete) {
-    // 操作列宽度按可用操作数自适应：每按钮约 48px + 单元格 16px 内边距，
+    // 操作列宽度按可用操作数自适应：每胶囊按钮约 52px + 单元格 16px 内边距，
     // 仅「查看」时收窄避免大块留白，多操作时撑开容纳按钮
     const opsCount = (canView ? 1 : 0) + (canEdit ? 1 : 0) + (canDelete ? 1 : 0);
     columns.push({
       title: '操作',
       key: '__ops',
-      width: 16 + 48 * opsCount,
+      width: 16 + 52 * opsCount,
       fixed: 'right',
       render: (_, row) => (
         <span>
           {canView && (
-            <Button type="link" size="small" onClick={() => onView?.(row)}>
+            <Button type="link" size="small" className="cube-op-btn cube-op-btn-op-view" onClick={() => onView?.(row)}>
               查看
             </Button>
           )}
           {canEdit && (
-            <Button type="link" size="small" onClick={() => onEdit?.(row)}>
+            <Button type="link" size="small" className="cube-op-btn cube-op-btn-op-edit" onClick={() => onEdit?.(row)}>
               编辑
             </Button>
           )}
           {canDelete &&
             (isSoftDeleted(row) ? (
-              <Button type="link" size="small" onClick={() => onRestore?.(row)}>
+              <Button type="link" size="small" className="cube-op-btn cube-op-btn-op-restore" onClick={() => onRestore?.(row)}>
                 恢复
               </Button>
             ) : (
@@ -222,7 +230,7 @@ export default function TableContent({
                 okButtonProps={{ danger: true }}
                 onConfirm={() => onDelete?.(row)}
               >
-                <Button type="link" size="small" danger>
+                <Button type="link" size="small" className="cube-op-btn cube-op-btn-op-delete" danger>
                   删除
                 </Button>
               </Popconfirm>

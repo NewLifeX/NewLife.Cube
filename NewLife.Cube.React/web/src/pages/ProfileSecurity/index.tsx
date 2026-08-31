@@ -1,12 +1,14 @@
 /**
- * 安全中心（对齐 Vue 皮肤 pages/ProfileSecurity.vue + MFA 增强）
+ * 安全中心（对齐 Vue 皮肤 pages/ProfileSecurity.vue + MFA 增强 + 修改密码）
  *
  * 1. 邮箱/手机验证状态（/Auth/Info 的 mailVerified/mobileVerified）
  * 2. 验证/更换联系方式（发码 /Auth/SendCode action=bind，提交 /Auth/VerifyContact）
- * 3. MFA 双因素认证：状态/绑定（二维码+密钥）/激活（备用码）/解绑
+ * 3. 修改密码（POST /Admin/User/ChangePassword，对齐 MVC ChangePassword 页）
+ * 4. MFA 双因素认证：状态/绑定（二维码+密钥）/激活（备用码）/解绑
  */
 import { useEffect, useState } from 'react';
 import { Alert, App, Button, Card, Descriptions, Form, Input, Modal, Space, Tag } from 'antd';
+import { LockOutlined } from '@ant-design/icons';
 import { api } from '@/api';
 import { useUserStore } from '@/stores/user';
 
@@ -15,10 +17,32 @@ type Panel = 'mail' | 'sms' | null;
 export default function ProfileSecurityPage() {
   const { message } = App.useApp();
   const [form] = Form.useForm();
+  const [pwdForm] = Form.useForm();
   const userInfo = useUserStore((s) => s.userInfo);
   const [panel, setPanel] = useState<Panel>(null);
   const [sending, setSending] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [pwdSubmitting, setPwdSubmitting] = useState(false);
+
+  /** 修改密码：POST /Admin/User/ChangePassword（SSO 登录可免原密码，本地登录须原密码） */
+  const handleChangePassword = async () => {
+    const values = await pwdForm.validateFields();
+    setPwdSubmitting(true);
+    try {
+      await api.user.changePassword({
+        oldPassword: values.oldPassword ?? '',
+        newPassword: values.newPassword,
+        newPassword2: values.newPassword2,
+      });
+      message.success('密码修改成功');
+      pwdForm.resetFields();
+    } catch (err) {
+      // 字段级/业务错误已由全局拦截提示，这里兜底
+      message.error((err as Error)?.message || '修改失败');
+    } finally {
+      setPwdSubmitting(false);
+    }
+  };
 
   // MFA 状态
   const [mfaEnabled, setMfaEnabled] = useState(false);
@@ -200,6 +224,50 @@ export default function ProfileSecurityPage() {
             </Button>
           </Form>
         )}
+      </Card>
+
+      {/* 修改密码（对齐 MVC ChangePassword 页） */}
+      <Card title="修改密码" style={{ marginBottom: 16 }}>
+        <Form form={pwdForm} layout="vertical" style={{ maxWidth: 520 }} onFinish={handleChangePassword}>
+          <Form.Item
+            name="oldPassword"
+            label="原密码"
+            rules={[{ required: true, message: '请输入原密码' }]}
+            extra="SSO 第三方登录用户可留空"
+          >
+            <Input.Password prefix={<LockOutlined />} placeholder="请输入原密码" autoComplete="current-password" />
+          </Form.Item>
+          <Form.Item
+            name="newPassword"
+            label="新密码"
+            rules={[
+              { required: true, message: '请输入新密码' },
+              { min: 8, message: '密码至少 8 位' },
+            ]}
+            extra="要求 8 位起且包含数字、大小写字母和符号"
+          >
+            <Input.Password prefix={<LockOutlined />} placeholder="请输入新密码" autoComplete="new-password" />
+          </Form.Item>
+          <Form.Item
+            name="newPassword2"
+            label="确认新密码"
+            dependencies={['newPassword']}
+            rules={[
+              { required: true, message: '请再次输入新密码' },
+              ({ getFieldValue }) => ({
+                validator: (_, value) =>
+                  !value || getFieldValue('newPassword') === value
+                    ? Promise.resolve()
+                    : Promise.reject(new Error('两次输入的密码不一致')),
+              }),
+            ]}
+          >
+            <Input.Password prefix={<LockOutlined />} placeholder="请再次输入新密码" autoComplete="new-password" />
+          </Form.Item>
+          <Button type="primary" htmlType="submit" loading={pwdSubmitting}>
+            修改密码
+          </Button>
+        </Form>
       </Card>
 
       <Card title="双重验证（MFA）">

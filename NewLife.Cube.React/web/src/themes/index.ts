@@ -19,6 +19,8 @@ interface ThemePalette {
   /** 表格冻结列背景（不透明，避免横向滚动时其它列透出） */
   tableHeaderBg: string;
   tableRowHoverBg: string;
+  /** 斑马纹行底色（对齐 MVC ace-ui 奇数行 #fbfcfd，浅色偏蓝、深色偏深蓝灰） */
+  tableStripedBg: string;
 }
 
 const PALETTES: Record<ThemeMode, ThemePalette> = {
@@ -26,15 +28,19 @@ const PALETTES: Record<ThemeMode, ThemePalette> = {
     primary: '#1677ff',
     bg: '#f5f5f5',
     container: '#ffffff',
-    tableHeaderBg: '#fafafa',
-    tableRowHoverBg: '#fafafa',
+    // 对齐 MVC ace-ui：表头浅蓝灰 #f5f8fc、悬停浅蓝白 #f7fafd、斑马纹 #fbfcfd
+    tableHeaderBg: '#f5f8fc',
+    tableRowHoverBg: '#f7fafd',
+    tableStripedBg: '#fbfcfd',
   },
   dark: {
     primary: '#1668dc',
     bg: '#000000',
     container: '#141414',
-    tableHeaderBg: '#1d1d1d',
-    tableRowHoverBg: '#1d1d1d',
+    // 深色对应偏蓝的深灰，保证与明暗两套一致性
+    tableHeaderBg: '#1d2530',
+    tableRowHoverBg: '#1f2a38',
+    tableStripedBg: '#17191d',
   },
 };
 
@@ -78,4 +84,5 @@ export function applyTableCellCssVars(mode: ThemeMode) {
   const root = document.documentElement;
   root.style.setProperty('--cube-table-header-bg', p.tableHeaderBg);
   root.style.setProperty('--cube-table-row-hover-bg', p.tableRowHoverBg);
+  root.style.setProperty('--cube-table-striped-bg', p.tableStripedBg);
 }

@@ -14,7 +14,7 @@ test.describe('个人中心（/profile）', () => {
     page.on('pageerror', (e) => errors.push(e.message));
 
     await page.goto('/profile');
-    await expect(page.getByText('基本信息').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('基础信息').first()).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('登录次数').first()).toBeVisible();
     await expect(page.getByText('账号操作').first()).toBeVisible();
     await expect(page.getByText('安全中心').first()).toBeVisible();
