@@ -3,7 +3,9 @@ import { resolveRequestUrl } from './service-path';
 import type {
   ApiResponse,
   AuthCategory,
+  BindsResult,
   CaptchaResult,
+  ChangePasswordModel,
   DataField,
   FieldKind,
   MfaSetupResult,
@@ -145,6 +147,27 @@ export function createUserApi(request: RequestFn) {
     /** 已登录用户验证/更换邮箱或手机（安全中心）。验证码经 sendCode(action=bind) 发送 */
     verifyContact: (data: VerifyContactModel) =>
       request<VerifyStatus>({ url: '/Auth/VerifyContact', method: 'post', data }),
+
+    /** 获取当前用户详细资料（GET /Admin/User/Info，含邮箱/手机验证状态）。列表/首页信息经 /Auth/Info */
+    profile: () =>
+      request<UserInfo>({ url: '/Admin/User/Info', method: 'get' }),
+
+    /** 更新当前用户资料（昵称/性别/生日/邮箱/手机等文本字段，POST /Admin/User/Info）。
+     *  头像走 page.uploadFile('/Admin/User', file) 上传后，将返回 filePath 回填到 avatar 字段再提交 */
+    updateProfile: (data: Record<string, unknown>) =>
+      request<UserInfo>({ url: '/Admin/User/Info', method: 'post', data }),
+
+    /** 修改当前登录用户密码（SSO 登录可免原密码）。密码要求 8 位起且包含数字大小写字母和符号 */
+    changePassword: (data: ChangePasswordModel) =>
+      request<boolean>({ url: '/Admin/User/ChangePassword', method: 'post', data }),
+
+    /** 第三方授权绑定列表（GET /Admin/User/Binds）：已绑定记录 + 可绑定平台 */
+    binds: () =>
+      request<BindsResult>({ url: '/Admin/User/Binds', method: 'get' }),
+
+    /** 解绑第三方平台（GET /Sso/UnBind/{provider}） */
+    unbind: (provider: string) =>
+      request<boolean>({ url: `/Sso/UnBind/${provider}`, method: 'get' }),
   };
 }
 

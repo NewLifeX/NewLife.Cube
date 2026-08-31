@@ -194,6 +194,8 @@ export interface UserInfo {
   mailVerified?: boolean;
   /** 手机已验证（安全中心展示验证状态） */
   mobileVerified?: boolean;
+  /** 生日（用户中心编辑资料展示） */
+  birthday?: string;
   logins?: number;
   lastLogin?: string;
   lastLoginIP?: string;
@@ -428,6 +430,58 @@ export interface VerifyStatus {
   mailVerified: boolean;
   /** 手机已验证 */
   mobileVerified: boolean;
+}
+
+/** 第三方绑定记录（对应后端 UserConnect，GET /Admin/User/Binds） */
+export interface UserBind {
+  /** 编号 */
+  id?: number;
+  /** 平台标识（OpenWeixin/Microsoft/Github 等，与 OAuthPlatform.name 对应） */
+  provider?: string;
+  /** 第三方昵称 */
+  nickName?: string;
+  /** 第三方头像 */
+  avatar?: string;
+  /** 是否启用（解绑后为 false） */
+  enable?: boolean;
+  /** 绑定时间 */
+  createTime?: string;
+}
+
+/** 可绑定的第三方平台（对应后端 OAuthConfig） */
+export interface OAuthPlatform {
+  /** 编号 */
+  id?: number;
+  /** 平台标识（绑定/解绑 URL 使用） */
+  name?: string;
+  /** 平台显示名 */
+  nickName?: string;
+  /** 平台 Logo */
+  logo?: string;
+  /** 是否启用 */
+  enable?: boolean;
+  /** 是否可见 */
+  visible?: boolean;
+}
+
+/** 第三方授权绑定数据（GET /Admin/User/Binds 返回） */
+export interface BindsResult {
+  /** 用户名 */
+  name?: string;
+  /** 已绑定记录 */
+  connects?: UserBind[];
+  /** 可选的第三方平台 */
+  oAuthItems?: OAuthPlatform[];
+}
+
+/** 修改密码（POST /Admin/User/ChangePassword） */
+export interface ChangePasswordModel {
+  /** 原密码 */
+  oldPassword: string;
+  /** 新密码 */
+  newPassword: string;
+  /** 确认新密码 */
+  newPassword2: string;
 }
 
 /**
