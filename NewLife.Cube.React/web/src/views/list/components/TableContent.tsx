@@ -31,6 +31,14 @@ export interface TableContentProps {
   onEdit?: (row: Record<string, unknown>) => void;
   onDelete?: (row: Record<string, unknown>) => void;
   onRestore?: (row: Record<string, unknown>) => void;
+  /** 操作列扩展按钮（如角色「权限」），渲染在编辑按钮左侧 */
+  rowActions?: Array<{
+    key: string;
+    label: React.ReactNode;
+    className?: string;
+    danger?: boolean;
+    onClick: (row: Record<string, unknown>) => void;
+  }>;
   onSortChange?: (sort?: string, desc?: boolean) => void;
   /** 当前排序列名（配合 onSortChange 受控显示排序指示，仅排序列显示箭头） */
   sortField?: string;
@@ -142,6 +150,7 @@ export default function TableContent({
   onEdit,
   onDelete,
   onRestore,
+  rowActions,
   onSortChange,
   sortField,
   sortDesc,
@@ -197,10 +206,11 @@ export default function TableContent({
     return v === true || v === 'true' || v === 1;
   };
 
-  if (canView || canEdit || canDelete) {
+  if (canView || canEdit || canDelete || (rowActions && rowActions.length > 0)) {
     // 操作列宽度按可用操作数自适应：每胶囊按钮约 52px + 单元格 16px 内边距，
     // 仅「查看」时收窄避免大块留白，多操作时撑开容纳按钮
-    const opsCount = (canView ? 1 : 0) + (canEdit ? 1 : 0) + (canDelete ? 1 : 0);
+    const opsCount =
+      (canView ? 1 : 0) + (canEdit ? 1 : 0) + (canDelete ? 1 : 0) + (rowActions?.length ?? 0);
     columns.push({
       title: '操作',
       key: '__ops',
@@ -213,6 +223,19 @@ export default function TableContent({
               查看
             </Button>
           )}
+          {/* 操作列扩展按钮（如角色「权限」），渲染在编辑按钮左侧 */}
+          {rowActions?.map((a) => (
+            <Button
+              key={a.key}
+              type="link"
+              size="small"
+              className={['cube-op-btn', a.className].filter(Boolean).join(' ')}
+              danger={a.danger}
+              onClick={() => a.onClick(row)}
+            >
+              {a.label}
+            </Button>
+          ))}
           {canEdit && (
             <Button type="link" size="small" className="cube-op-btn cube-op-btn-op-edit" onClick={() => onEdit?.(row)}>
               编辑

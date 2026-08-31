@@ -1,4 +1,6 @@
 using System.ComponentModel;
+using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Web;
 using XCode.Membership;
 
@@ -147,4 +149,81 @@ public class RoleController : EntityController<Role, RoleModel>
 
         return !v.EqualIgnoreCase("true", "false") ? throw new XException("非法布尔值Request[{0}]={1}", name, v) : v.ToBoolean();
     }
+
+    #region 权限配置
+
+    /// <summary>获取角色权限树。返回菜单树 + 当前角色已授权权限位，供前端弹窗勾选</summary>
+    /// <param name="roleId">角色编号</param>
+    /// <returns>菜单树，每项含可用权限位（value/name）与已授权位 granted</returns>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet]
+    public Object PermissionTree(Int32 roleId)
+    {
+        var role = Role.FindByID(roleId) ?? throw new XException("角色[{0}]不存在", roleId);
+        var current = ManageProvider.User as IUser;
+        var restricted = TenantContext.CurrentId > 0 && (current == null || !current.Roles.Any(e => e.IsSystem));
+
+        var menus = XCode.Membership.Menu.Root.AllChilds;
+
+        return new
+        {
+            role = new { role.ID, role.Name },
+            tree = BuildPermissionTree(menus, 0, role, current, restricted),
+        };
+    }
+
+    /// <summary>保存角色权限。权限字符串格式：资源ID#权限位，逗号分隔（如 1#3,2#8）</summary>
+    /// <param name="model">角色权限保存模型</param>
+    /// <returns>保存结果</returns>
+    [EntityAuthorize(PermissionFlags.Update)]
+    [HttpPost]
+    public Object SavePermission(RolePermissionModel model)
+    {
+        var role = Role.FindByID(model.RoleId) ?? throw new XException("角色[{0}]不存在", model.RoleId);
+        var current = ManageProvider.User as IUser;
+        var restricted = TenantContext.CurrentId > 0 && (current == null || !current.Roles.Any(e => e.IsSystem));
+
+        // 受限模式（租户管理员）只授予自己拥有的权限位，保留系统管理员授予的其它权限
+        RolePermissionHelper.Apply(role, model.Permission, current, restricted);
+
+        role.Update();
+
+        // 清空缓存，确保后续读取拿到最新数据
+        Role.Meta.Session.ClearCache($"SavePermission-{role}", true);
+
+        return new { success = true, roleId = model.RoleId };
+    }
+
+    /// <summary>递归构建权限树</summary>
+    /// <param name="menus">全部菜单（平铺）</param>
+    /// <param name="parentId">父级编号</param>
+    /// <param name="role">当前角色，用于读取已授权位</param>
+    /// <param name="current">当前登录用户</param>
+    /// <param name="restricted">是否受限模式（租户管理员）</param>
+    /// <returns>菜单树</returns>
+    private static List<Object> BuildPermissionTree(IList<Menu> menus, Int32 parentId, Role role, IUser? current, Boolean restricted)
+    {
+        var list = new List<Object>();
+        foreach (var m in menus.Where(e => e.ParentID == parentId).OrderBy(e => e.Sort))
+        {
+            // 受限模式只返回自己拥有的权限位，避免越权勾选
+            var flags = m.Permissions
+                .Where(e => !restricted || current == null || current.Has(m, (PermissionFlags)e.Key))
+                .Select(e => new { value = e.Key, name = e.Value })
+                .ToList();
+
+            list.Add(new
+            {
+                id = m.ID,
+                name = m.Name,
+                displayName = m.DisplayName,
+                flags,
+                granted = role.Get(m.ID),
+                children = BuildPermissionTree(menus, m.ID, role, current, restricted),
+            });
+        }
+        return list;
+    }
+
+    #endregion
 }

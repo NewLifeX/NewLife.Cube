@@ -23,6 +23,7 @@ import ListPagination from './components/ListPagination';
 import ChartView from './components/ChartView';
 import FormDialog from '@/views/form/FormDialog';
 import DetailDialog from '@/views/form/DetailDialog';
+import PermissionDialog from './components/PermissionDialog';
 
 export interface EntityListPageProps {
   /** 实体路径前缀，如 '/Admin/User'、'/Cube/App' */
@@ -73,6 +74,12 @@ export default function EntityListPage({ type }: EntityListPageProps) {
     mode: 'add',
   });
   const [detailDialog, setDetailDialog] = useState<{ open: boolean; row?: Record<string, unknown> | null }>({
+    open: false,
+    row: null,
+  });
+  // 角色页权限配置弹窗（操作列「权限」按钮，对齐 MVC 角色授权）
+  const isRole = type.toLowerCase().endsWith('/role');
+  const [permDialog, setPermDialog] = useState<{ open: boolean; row?: Record<string, unknown> | null }>({
     open: false,
     row: null,
   });
@@ -156,6 +163,20 @@ export default function EntityListPage({ type }: EntityListPageProps) {
   };
 
   const handleViewRow = (row: Record<string, unknown>) => setDetailDialog({ open: true, row });
+
+  /** 角色页：打开权限配置弹窗（编辑按钮左侧「权限」） */
+  const handlePermRow = (row: Record<string, unknown>) => setPermDialog({ open: true, row });
+
+  const rowActions = isRole
+    ? [
+        {
+          key: 'permission',
+          label: '权限',
+          className: 'cube-op-btn-op-perm',
+          onClick: handlePermRow,
+        },
+      ]
+    : undefined;
 
   const handleRestoreRow = (row: Record<string, unknown>) => {
     const id = getValueByKey(row, pkField) ?? getValueByKey(row, 'id');
@@ -318,6 +339,7 @@ export default function EntityListPage({ type }: EntityListPageProps) {
             onEdit={handleEditRow}
             onDelete={handleDeleteRow}
             onRestore={handleRestoreRow}
+            rowActions={rowActions}
             onSortChange={handleSortChange}
             sortField={sortState.field}
             sortDesc={sortState.desc}
@@ -363,6 +385,21 @@ export default function EntityListPage({ type }: EntityListPageProps) {
         row={detailDialog.row}
         onClose={() => setDetailDialog({ open: false, row: null })}
       />
+
+      {/* 角色页：权限配置弹窗（操作列「权限」按钮） */}
+      {isRole && (
+        <PermissionDialog
+          open={permDialog.open}
+          roleId={
+            permDialog.row
+              ? ((getValueByKey(permDialog.row, pkField) ?? getValueByKey(permDialog.row, 'id')) as number)
+              : undefined
+          }
+          roleName={permDialog.row ? String(getValueByKey(permDialog.row, 'Name') ?? '') : undefined}
+          onClose={() => setPermDialog({ open: false, row: null })}
+          onSaved={() => void refresh()}
+        />
+      )}
     </Card>
   );
 }
