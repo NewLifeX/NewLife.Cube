@@ -210,7 +210,8 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
     private static readonly ConcurrentDictionary<String, Type> _ss = new ConcurrentDictionary<String, Type>();
     private Boolean CreateMenu(Type type)
     {
-        if (!_ss.TryAdd(type.Namespace, type)) return false;
+        // 按类型全名防重，避免同一命名空间下多个控制器（如 Admin 下的 UserController/ReactController）互相阻塞，导致独立类库控制器菜单被删后无法重建
+        if (!_ss.TryAdd(type.FullName, type)) return false;
 
         using var span = DefaultTracer.Instance?.NewSpan(nameof(CreateMenu), type.FullName);
 
@@ -239,7 +240,8 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
             foreach (var method in ctype.GetMethods())
             {
                 if (method.IsStatic || !method.IsPublic) continue;
-                if (!method.ReturnType.As<ActionResult>()) continue;
+                // 取消判断返回值类型，避免 ObjectController/ConfigController 的 Update 返回 TObject 而生成不了修改权限项（对齐 MenuHelper.ScanActionMenu）
+                //if (!method.ReturnType.As<ActionResult>()) continue;
                 if (method.GetCustomAttribute<AllowAnonymousAttribute>() != null) continue;
 
                 var att = method.GetCustomAttribute<EntityAuthorizeAttribute>();
