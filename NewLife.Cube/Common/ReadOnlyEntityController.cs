@@ -14,6 +14,7 @@ using NewLife.Log;
 using NewLife.Office.Excel;
 using NewLife.Serialization;
 using NewLife.Web;
+using NewLife.Xml;
 using XCode;
 using XCode.Configuration;
 using XCode.Membership;
@@ -447,7 +448,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         var name = MakeExportFileName(".xml");
         var list = ExportData().ToList();
 
-        var xml = list.ToJson(true);
+        // 实体列表转 Xml（对齐 MVC OnExportXml：IEntity.ToXml / IList.ToXml），此前误用 ToJson 输出 JSON
+        var xml = list.ToXml();
         return new FileContentResult(xml.GetBytes(), "application/xml") { FileDownloadName = name };
     }
 

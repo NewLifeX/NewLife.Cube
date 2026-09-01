@@ -191,6 +191,25 @@ public class ExportControllerTests
         Assert.DoesNotContain("创建时间", xml);
     }
 
+    [Fact(DisplayName = "ExportFile_Xml_返回真实Xml而非Json")]
+    public void ExportFile_Xml_ReturnsRealXml()
+    {
+        var ctrl = CreateController();
+
+        var result = ctrl.ExportFile("Xml");
+
+        var fr = Assert.IsType<FileContentResult>(result);
+        Assert.Equal("application/xml", fr.ContentType);
+        Assert.EndsWith(".xml", fr.FileDownloadName, StringComparison.OrdinalIgnoreCase);
+
+        var text = fr.FileContents.ToStr();
+        // 真实 XML：以元素节点开头且含实体数据（此前误用 ToJson 输出 JSON 数组，应以 [ 开头）
+        Assert.StartsWith("<", text);
+        Assert.False(text.StartsWith("[", StringComparison.Ordinal));
+        Assert.Contains("<ExportTestEntity>", text);
+        Assert.Contains("<Id>", text);
+    }
+
     [Fact(DisplayName = "ExportFile_未知格式_抛出ArgumentOutOfRangeException")]
     public void ExportFile_UnknownFormat_Throws()
     {
