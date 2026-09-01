@@ -7,6 +7,8 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using NewLife;
 using NewLife.Cube;
+using NewLife.Cube.ViewModels;
+using NewLife.Web;
 using XCode;
 using XCode.Configuration;
 using Xunit;
@@ -21,6 +23,16 @@ public class ExportControllerTests
     [BindTable("ExportTestEntity", "导出测试实体", ConnName = "Test")]
     private class ExportTestEntity : Entity<ExportTestEntity>
     {
+        /// <summary>测试枚举。验证 CSV 导出枚举为数字</summary>
+        public enum ExportKind
+        {
+            /// <summary>甲</summary>
+            A = 0,
+
+            /// <summary>乙</summary>
+            B = 1,
+        }
+
         private Int32 _Id;
         /// <summary>编号</summary>
         [DisplayName("编号")]
@@ -49,6 +61,13 @@ public class ExportControllerTests
         [DataObjectField(false, false, false, 0)]
         public DateTime CreateTime { get => _CreateTime; set { if (OnPropertyChanging("CreateTime", value)) { _CreateTime = value; OnPropertyChanged("CreateTime"); } } }
 
+        private Int32 _Kind;
+        /// <summary>类型</summary>
+        [DisplayName("类型")]
+        [Description("类型")]
+        [DataObjectField(false, false, false, 0)]
+        public ExportKind Kind { get => (ExportKind)_Kind; set { if (OnPropertyChanging("Kind", value)) { _Kind = (Int32)value; OnPropertyChanged("Kind"); } } }
+
         /// <summary>索引器重写：按字段名读写私有字段</summary>
         public override Object? this[String name]
         {
@@ -58,6 +77,7 @@ public class ExportControllerTests
                 "Name" => _Name,
                 "Amount" => _Amount,
                 "CreateTime" => _CreateTime,
+                "Kind" => _Kind,
                 _ => base[name],
             };
             set
@@ -68,6 +88,7 @@ public class ExportControllerTests
                     case "Name": _Name = value + ""; break;
                     case "Amount": _Amount = value.ToDecimal(); break;
                     case "CreateTime": _CreateTime = value.ToDateTime(); break;
+                    case "Kind": _Kind = value.ToInt(); break;
                     default: base[name] = value; break;
                 }
             }
@@ -88,8 +109,18 @@ public class ExportControllerTests
         }
 
         /// <summary>暴露 WriteExcelToStream 供测试</summary>
-        public void TestWriteExcelToStream(IList<FieldItem> fields, IEnumerable<ExportTestEntity> data, Stream stream)
+        public void TestWriteExcelToStream(IList<DataField> fields, IEnumerable<ExportTestEntity> data, Stream stream)
             => WriteExcelToStream(fields, data, stream);
+
+        /// <summary>暴露 GetExportFields 供测试</summary>
+        public List<DataField> TestGetExportFields(IList<FieldItem> fs, IEnumerable<ExportTestEntity> list)
+            => GetExportFields(fs, list);
+
+        /// <summary>测试环境无 HttpContext，重写分页获取避免 WebHelper.Params 空引用</summary>
+        protected override Pager GetCachePager() => null;
+
+        /// <summary>测试环境无日志上下文，重写日志为空实现</summary>
+        protected override void WriteLog(String action, Boolean success, String remark) { }
     }
     #endregion
 
@@ -105,8 +136,8 @@ public class ExportControllerTests
             {
                 Data =
                 [
-                    new ExportTestEntity { Id = 1, Name = "张三", Amount = 12.34m, CreateTime = new DateTime(2026, 9, 1, 8, 30, 0) },
-                    new ExportTestEntity { Id = 2, Name = "李四", Amount = 56.78m, CreateTime = new DateTime(2026, 9, 1, 9, 0, 0) },
+                    new ExportTestEntity { Id = 1, Name = "张三", Amount = 12.34m, CreateTime = new DateTime(2026, 9, 1, 8, 30, 0), Kind = ExportTestEntity.ExportKind.A },
+                    new ExportTestEntity { Id = 2, Name = "李四", Amount = 56.78m, CreateTime = new DateTime(2026, 9, 1, 9, 0, 0), Kind = ExportTestEntity.ExportKind.B },
                 ],
             };
         }
@@ -144,7 +175,7 @@ public class ExportControllerTests
     public void WriteExcelToStream_GeneratesValidXlsx()
     {
         var ctrl = CreateController();
-        var fields = ExportTestEntity.Meta.Factory.AllFields;
+        var fields = ctrl.TestGetExportFields(ExportTestEntity.Meta.Factory.AllFields, ctrl.Data);
 
         using var ms = new MemoryStream();
         ctrl.TestWriteExcelToStream(fields, ctrl.Data, ms);
@@ -166,29 +197,6 @@ public class ExportControllerTests
         using var ms = new MemoryStream();
         fr.FileStream.CopyTo(ms);
         AssertXlsx(ms.ToArray(), "编号", "名称");
-    }
-
-    [Fact(DisplayName = "ExportFile_ExcelTemplate_返回xlsx且隐藏自动维护字段")]
-    public void ExportFile_ExcelTemplate_HidesAutoFields()
-    {
-        var ctrl = CreateController();
-
-        var result = ctrl.ExportFile("ExcelTemplate");
-
-        var fr = Assert.IsType<FileStreamResult>(result);
-        Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fr.ContentType);
-        Assert.EndsWith(".xlsx", fr.FileDownloadName, StringComparison.OrdinalIgnoreCase);
-
-        using var ms = new MemoryStream();
-        fr.FileStream.CopyTo(ms);
-        // 模板保留业务字段，隐藏自动维护字段（CreateTime）
-        AssertXlsx(ms.ToArray(), "编号", "名称", "金额");
-        using var zip = new ZipArchive(new MemoryStream(ms.ToArray()), ZipArchiveMode.Read);
-        var ss = zip.GetEntry("xl/sharedStrings.xml");
-        Assert.NotNull(ss);
-        using var sr = new StreamReader(ss.Open());
-        var xml = sr.ReadToEnd();
-        Assert.DoesNotContain("创建时间", xml);
     }
 
     [Fact(DisplayName = "ExportFile_Xml_返回真实Xml而非Json")]
@@ -216,5 +224,49 @@ public class ExportControllerTests
         var ctrl = CreateController();
 
         Assert.Throws<ArgumentOutOfRangeException>(() => ctrl.ExportFile("BadFormat"));
+    }
+
+    [Fact(DisplayName = "ExportFile_Csv_英文表头且枚举导出数字")]
+    public void ExportFile_Csv_EnglishHeadersAndEnumNumber()
+    {
+        var ctrl = CreateController();
+
+        var result = ctrl.ExportFile("Csv");
+
+        var fr = Assert.IsType<FileStreamResult>(result);
+        Assert.Equal("text/csv", fr.ContentType);
+        Assert.EndsWith(".csv", fr.FileDownloadName, StringComparison.OrdinalIgnoreCase);
+
+        using var ms = new MemoryStream();
+        fr.FileStream.CopyTo(ms);
+        var text = ms.ToArray().ToStr();
+        var lines = text.Split('\n');
+
+        // 表头：英文字段名（对齐 MVC CsvResult），首列 Id
+        Assert.StartsWith("\"Id\",\"Name\",\"Amount\",\"CreateTime\",\"Kind\"", lines[0]);
+        // 数据行：枚举字段导出数字（Kind=A→0），不导出枚举名称。字段无逗号时合法不带引号
+        Assert.EndsWith(",0", lines[1].TrimEnd('\r'));
+        Assert.EndsWith(",1", lines[2].TrimEnd('\r'));
+    }
+
+    [Fact(DisplayName = "ExportFile_Zip_返回zip且含db与xml条目")]
+    public void ExportFile_Zip_ReturnsZip()
+    {
+        var ctrl = CreateController();
+
+        var result = ctrl.ExportFile("Zip");
+
+        var fr = Assert.IsType<FileStreamResult>(result);
+        Assert.Equal("application/zip", fr.ContentType);
+        Assert.EndsWith(".zip", fr.FileDownloadName, StringComparison.OrdinalIgnoreCase);
+
+        using var ms = new MemoryStream();
+        fr.FileStream.CopyTo(ms);
+        using var zip = new ZipArchive(ms, ZipArchiveMode.Read);
+        var names = zip.Entries.Select(e => e.FullName).ToList();
+
+        // 数据文件 .db + 表结构 .xml，支持异地恢复（对齐 MVC ExportZip）
+        Assert.Contains(names, e => e.EndsWith(".db", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(names, e => e.EndsWith(".xml", StringComparison.OrdinalIgnoreCase));
     }
 }

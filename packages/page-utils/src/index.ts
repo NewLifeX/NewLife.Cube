@@ -46,7 +46,7 @@ export const EXPORT_FORMATS: ExportFormat[] = [
   { key: 'Csv', label: '导出 CSV' },
   { key: 'Json', label: '导出 JSON' },
   { key: 'Xml', label: '导出 XML' },
-  { key: 'ExcelTemplate', label: '导出模板' },
+  { key: 'Zip', label: '导出 Zip' },
 ];
 
 // ======================== 工具函数 ========================

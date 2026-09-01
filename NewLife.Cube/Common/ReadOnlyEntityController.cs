@@ -17,6 +17,7 @@ using NewLife.Web;
 using NewLife.Xml;
 using XCode;
 using XCode.Configuration;
+using XCode.DataAccessLayer;
 using XCode.Membership;
 
 namespace NewLife.Cube;
@@ -310,7 +311,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             "csv" => OnExportCsv(),
             "json" => OnExportJson(),
             "xml" => OnExportXml(),
-            "exceltemplate" or "template" => OnExportExcelTemplate(),
+            "zip" => OnExportZip(),
             _ => throw new ArgumentOutOfRangeException(nameof(format), $"不支持的导出格式：{format}"),
         };
     }
@@ -320,66 +321,33 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     [NonAction]
     protected virtual IActionResult OnExportExcel()
     {
-        // 准备需要输出的列
-        var fs = new List<FieldItem>();
-        foreach (var fi in Factory.AllFields)
-        {
-            if (Type.GetTypeCode(fi.Type) == TypeCode.Object) continue;
-            if (!fi.IsDataObjectField)
-            {
-                var pi = Factory.EntityType.GetProperty(fi.Name);
-                if (pi != null && pi.GetCustomAttribute<XmlIgnoreAttribute>() != null) continue;
-            }
-
-            fs.Add(fi);
-        }
-
-        // 基本属性与扩展属性对调顺序
-        for (var i = 0; i < fs.Count; i++)
-        {
-            var fi = fs[i];
-            if (fi.OriField != null)
-            {
-                var k = fs.IndexOf(fi.OriField);
-                if (k >= 0)
-                {
-                    fs[i] = fs[k];
-                    fs[k] = fi;
-                }
-            }
-        }
-
+        // 准备需要输出的列（含计算/扩展字段），并合并实体扩展属性，对齐 MVC ExportExcel
+        var fs = BuildExportFields(Factory.AllFields);
         var name = MakeExportFileName(".xlsx");
-
         var list = ExportData();
+        var fields = GetExportFields(fs, list);
 
         var ms = new MemoryStream();
-        WriteExcelToStream(fs, list, ms);
+        WriteExcelToStream(fields, list, ms);
         ms.Position = 0;
 
         return new FileStreamResult(ms, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") { FileDownloadName = name };
     }
 
-    /// <summary>导出Excel模板。仅列头与一行示例数据，隐藏自动维护字段，用于导入参考</summary>
+    /// <summary>构建导出字段列表。过滤对象类型与XmlIgnore字段，并对调基本属性与扩展属性顺序</summary>
+    /// <param name="source">字段来源，通常为 Factory.AllFields 或 Factory.Fields</param>
     /// <returns></returns>
     [NonAction]
-    protected virtual IActionResult OnExportExcelTemplate()
+    protected List<FieldItem> BuildExportFields(IEnumerable<FieldItem> source)
     {
-        // 准备需要输出的列，模板隐藏自动维护字段
         var fs = new List<FieldItem>();
-        foreach (var fi in Factory.AllFields)
+        foreach (var fi in source)
         {
             if (Type.GetTypeCode(fi.Type) == TypeCode.Object) continue;
             if (!fi.IsDataObjectField)
             {
                 var pi = Factory.EntityType.GetProperty(fi.Name);
                 if (pi != null && pi.GetCustomAttribute<XmlIgnoreAttribute>() != null) continue;
-            }
-
-            if (fi.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
-                        "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP", "Enable") || fi.Description.IsNullOrEmpty())
-            {
-                continue;
             }
 
             fs.Add(fi);
@@ -400,16 +368,65 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             }
         }
 
-        var name = MakeExportFileName(".xlsx");
+        return fs;
+    }
 
-        var list = ExportData(1);
+    /// <summary>导出Zip。当前查询数据打包为 zip（.db 二进制数据 + .xml 表结构），支持异地恢复，可被 ImportZip 导回</summary>
+    /// <returns></returns>
+    [NonAction]
+    protected virtual IActionResult OnExportZip()
+    {
+        var name = MakeExportFileName(".zip");
+        var list = ExportData();
+
+        var dic = new Dictionary<Type, IEnumerable<IEntity>>
+        {
+            { Factory.EntityType, list }
+        };
+
+        var p = GetCachePager();
+        OnExportZip(dic, p);
+
+        WriteLog("导出Zip", true, $"开始导出[{dic.Keys.Join()}]");
 
         var ms = new MemoryStream();
-        WriteExcelToStream(fs, list, ms);
+        using (var zip = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            foreach (var item in dic)
+            {
+                var type = item.Key;
+                // 导出数据
+                {
+                    var entry = zip.CreateEntry(type.FullName + ".db");
+                    using var stream = entry.Open();
+                    item.Value.Write(stream);
+                }
+                // 导出结构
+                {
+                    var factory = type.AsFactory();
+                    if (factory != null)
+                    {
+                        var xml = DAL.Export([factory.Table.DataTable]);
+                        var buf = xml.GetBytes();
+
+                        var entry = zip.CreateEntry(type.FullName + ".xml");
+                        using var stream = entry.Open();
+                        stream.Write(buf, 0, buf.Length);
+                    }
+                }
+            }
+        }
+
         ms.Position = 0;
 
-        return new FileStreamResult(ms, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") { FileDownloadName = name };
+        return new FileStreamResult(ms, "application/zip") { FileDownloadName = name };
     }
+
+    /// <summary>导出Zip时，可以添加其它数据集</summary>
+    /// <param name="data">将要导出的数据集</param>
+    /// <param name="page">分页参数，含请求参数</param>
+    [NonAction]
+    protected virtual void OnExportZip(IDictionary<Type, IEnumerable<IEntity>> data, Pager page) { }
 
     /// <summary>导出Csv</summary>
     /// <returns></returns>
@@ -419,13 +436,36 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         var name = MakeExportFileName(".csv");
         var list = ExportData();
 
-        var fs = Factory.Fields.ToList();
+        // Csv 使用数据库字段（不含计算字段），并合并实体扩展属性，对齐 MVC ExportCsv
+        var fields = GetExportFields(Factory.Fields, list);
 
         var ms = new MemoryStream();
-        ExportCsvToStream(fs, list, ms);
+        ExportCsvToStream(fields, list, ms);
         ms.Position = 0;
 
         return new FileStreamResult(ms, "text/csv") { FileDownloadName = name };
+    }
+
+    /// <summary>准备需要输出的列，包括IExtend扩展属性</summary>
+    /// <param name="fs">字段列表</param>
+    /// <param name="list">数据集。取首条数据判断是否实现 IExtend</param>
+    /// <returns></returns>
+    [NonAction]
+    protected List<DataField> GetExportFields(IList<FieldItem> fs, IEnumerable<TEntity> list)
+    {
+        var fields = fs.Select(e => new DataField(e)).ToList();
+        if (list.FirstOrDefault() is IExtend ext)
+        {
+            foreach (var item in ext.Items)
+            {
+                if (!fields.Any(e => e.Name.EqualIgnoreCase(item.Key)))
+                {
+                    fields.Add(new DataField { Name = item.Key, Type = item.Value?.GetType(), });
+                }
+            }
+        }
+
+        return fields;
     }
 
     /// <summary>导出Json</summary>
@@ -454,41 +494,56 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     }
 
     /// <summary>将数据写入CSV流</summary>
-    /// <param name="fields">字段列表</param>
+    /// <param name="fields">字段列表（含扩展属性）</param>
     /// <param name="data">数据</param>
     /// <param name="stream">目标流</param>
     [NonAction]
-    protected void ExportCsvToStream(IList<FieldItem> fields, IEnumerable<TEntity> data, Stream stream)
+    protected void ExportCsvToStream(IList<DataField> fields, IEnumerable<TEntity> data, Stream stream)
     {
         using var writer = new StreamWriter(stream, System.Text.Encoding.UTF8, 1024, leaveOpen: true);
-        // 表头
-        writer.WriteLine(String.Join(",", fields.Select(f => $"\"{f.DisplayName ?? f.Name}\"")));
-        // 数据行
+
+        // 表头：英文字段名（对齐 MVC CsvResult）；首列 ID 改 Id 防止被识别为 SYLK 文件
+        var headers = fields.Select(f => f.Name).ToArray();
+        if (headers.Length > 0 && headers[0] == "ID") headers[0] = "Id";
+        writer.WriteLine(String.Join(",", headers.Select(h => $"\"{h}\"")));
+
+        // 数据行：枚举导出数字（对齐 MVC CsvResult）；含逗号/引号/换行的字段用引号包裹
         foreach (var entity in data)
         {
             var values = fields.Select(f =>
             {
-                var val = entity[f.Name]?.ToString() ?? "";
+                var val = f.Type.IsEnum ? Convert.ToInt32(entity[f.Name]) : entity[f.Name];
+                var s = val?.ToString() ?? "";
                 // CSV 规范：含逗号/引号/换行的字段用引号包裹
-                if (val.Contains(',') || val.Contains('"') || val.Contains('\n'))
-                    val = $"\"{val.Replace("\"", "\"\"")}\"";
-                return val;
+                if (s.Contains(',') || s.Contains('"') || s.Contains('\n'))
+                    s = $"\"{s.Replace("\"", "\"\"")}\"";
+                return s;
             });
             writer.WriteLine(String.Join(",", values));
         }
     }
 
     /// <summary>将数据写入Excel流（xlsx 格式）</summary>
-    /// <param name="fields">字段列表</param>
+    /// <param name="fields">字段列表（含扩展属性）</param>
     /// <param name="data">数据</param>
     /// <param name="stream">目标流</param>
     [NonAction]
-    protected void WriteExcelToStream(IList<FieldItem> fields, IEnumerable<TEntity> data, Stream stream)
+    protected void WriteExcelToStream(IList<DataField> fields, IEnumerable<TEntity> data, Stream stream)
     {
         using var excel = new ExcelWriter(stream);
 
-        // 表头：优先显示名（与列表页一致），空值回退字段名
-        excel.WriteHeader(null, fields.Select(f => f.DisplayName ?? f.Name));
+        // 表头：优先显示名，其次描述，最后字段名（对齐 MVC ExcelResult）；首列 ID 改 Id 防止被识别为 SYLK 文件
+        var headers = new List<String>();
+        foreach (var fi in fields)
+        {
+            var name = fi.DisplayName;
+            if (name.IsNullOrEmpty()) name = fi.Description;
+            if (name.IsNullOrEmpty()) name = fi.Name;
+
+            if (name == "ID" && fi == fields[0]) name = "Id";
+            headers.Add(name);
+        }
+        excel.WriteHeader(null, headers);
 
         // 数据行：按字段取实体值，ExcelWriter 自动识别常见类型并避免长数字科学计数
         excel.WriteRows(null, data.Select(e => fields.Select(f => e[f.Name]).ToArray()));
