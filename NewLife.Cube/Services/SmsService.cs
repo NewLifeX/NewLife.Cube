@@ -186,12 +186,17 @@ public class SmsService(ICacheProvider cacheProvider)
 
 
 
-    /// <summary>生成验证码</summary>
+    /// <summary>生成数字验证码</summary>
     /// <param name="codeLength">验证码长度。默认4位</param>
     /// <returns>验证码字符串</returns>
     public static String GenerateVerifyCode(Int32 codeLength = DefaultCodeLength)
     {
         if (codeLength <= 0) codeLength = DefaultCodeLength;
+        var randStr = Rand.NextString(codeLength, true);//随机一些字符
+        var strBytes = randStr.GetBytes();//转为字节数组
+        var joinStr = strBytes.Join("");//拼接为字符串
+        var code = joinStr.Cut(codeLength);//截取指定长度
+        return code;
 
         var seed = $"{Rand.Next(Int32.MaxValue / 10, Int32.MaxValue)}";
         var sb = new StringBuilder();
