@@ -434,11 +434,19 @@ const handleDelete = (row: Department) => {
 
 // 提交表单
 const submitForm = async () => {
+  // 清理列表行原始字段回传造成的键冲突：行数据同时含 camelCase 开关
+  // （enable/visible）与 PascalCase 旧字段（Enable/Visible 整型），handleEdit 整行
+  // Object.assign 后表单同时携带两组键。后端大小写不敏感绑定下靠后的 PascalCase 旧值
+  // 会覆盖开关新值（如 Visible:1 覆盖 visible:false），导致“编辑启用/可见性不生效”。
+  const payload: Record<string, unknown> = { ...form };
+  delete payload.Enable;
+  delete payload.Visible;
+
   const apiCall = async () => {
     if (formType.value === 'add') {
-      await request.post('/Admin/Department', form);
+      await request.post('/Admin/Department', payload);
     } else {
-      await request.put('/Admin/Department', form);
+      await request.put('/Admin/Department', payload);
     }
   };
 

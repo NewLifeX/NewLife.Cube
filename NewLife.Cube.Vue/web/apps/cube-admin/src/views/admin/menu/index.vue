@@ -455,11 +455,21 @@ const handleDelete = (row: Menu) => {
 
 // 提交表单
 const submitForm = async () => {
+  // 清理列表行原始字段回传造成的键冲突：行数据同时含 camelCase 布尔开关
+  // （visible/necessary/newWindow）与 PascalCase 旧字段（Visible/Necessary/NewWindow 整型），
+  // handleEdit 整行 Object.assign 后表单同时携带两组键。提交时后端大小写不敏感绑定下，
+  // 靠后的 PascalCase 旧值会覆盖开关新值（如 Visible:1 覆盖 visible:false），
+  // 导致“编辑可见性/必要/新窗口不生效”。发送前剔除 PascalCase 冗余键，仅保留开关值。
+  const payload: Record<string, unknown> = { ...form };
+  delete payload.Visible;
+  delete payload.Necessary;
+  delete payload.NewWindow;
+
   const apiCall = async () => {
     if (formType.value === 'add') {
-      await request.post('/Admin/Menu', form);
+      await request.post('/Admin/Menu', payload);
     } else {
-      await request.put('/Admin/Menu', form);
+      await request.put('/Admin/Menu', payload);
     }
   };
 
