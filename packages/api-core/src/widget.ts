@@ -154,6 +154,19 @@ export interface WorkbenchResolveResult {
   config: DashboardConfig | Record<string, unknown> | null;
 }
 
+/** 命名工作台列表项（OSC-260902ef43） */
+export interface NamedWorkbenchItem {
+  slug: string;
+  title: string;
+}
+
+/** 命名工作台读取结果（OSC-260902ef43） */
+export interface NamedWorkbenchResult {
+  slug: string;
+  title?: string;
+  config: DashboardConfig | Record<string, unknown> | null;
+}
+
 const WIDTHS_INSIGHT = new Set([3, 4, 6, 12]);
 const WIDTHS_WORKBENCH = new Set([2, 3, 4, 6, 8, 12]);
 const MAX_WIDGETS_INSIGHT = 12;

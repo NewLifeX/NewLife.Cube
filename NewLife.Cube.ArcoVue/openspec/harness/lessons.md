@@ -271,3 +271,14 @@
 - **验收必补会话内增量**：日期时间分组/查询持久化分层/数据更新重算/重置刷新/UI 微调均在会话窗口完成、不在 OSC 计划，验收需补录（T21–T25）。
 - **时间窗时区用本地 `DateTime.Now.Date`**，与既有 `dtStart` 本地惯例一致，避免 UTC 零点把本地当日 0:00–7:59 挤出默认窗口。
 
+## OSC-260902ef43 — 2026-09-02
+
+- **菜单“永远第一组”= XCode `BigSort` 下 `Sort` 降序，顶置取“根级最大 Sort+1”**：`EntityTreeSetting.BigSort` 默认 true，`Root.Childs` 按 Sort 大者在前；顶置要取当前最大值 +1（封顶 Int32.MaxValue），不要写死小数字，也不要只读到“当前已最大”而不 +1。
+- **XCode 实例 `Childs` 缓存删除后残留 stale**：删除/重建父子判断一律走 `Menu.Meta.Cache`（按 Url/ParentID 查），勿信任 `group.Childs` 实例缓存（单测先暴露）。
+- **动态路由只注册一次（router `routesLoaded`）**：新增可导航菜单（发布命名工作台）后须 `resetMenuRoutesFlag() + userStore.fetchMenus()` 再 push，否则新路由不命中、侧栏不刷新（复用 useShellToolbar 租户切换同款）。
+- **单测 SQLite 库跨 run 持久会污染“隐藏/可见”断言**：曾因失败残留隐藏父分组导致后续运行全红；集合测试应在 class fixture 每次运行重建库文件。
+- **图标名/白名单只保留一份纯函数源**：slug 白名单曾三处复制且 menuRoutes 内联 `+` 正则漏掉 1 位合法 slug；统一 import `workbenchNamed.isValidNamedSlug`。图标/显示名映射同理只放 `iconRegistry`（`MENU_NAME_ICONS`），spec 用 `all.add(...)` 锁值有效性。
+- **另存为（create 新对象）必须与“更新自身”区分**：统一 upsert 端点会让“另存为撞已存在 slug”静默覆盖既有共享看板；请求体加 `create=true`（已存在 → 409）+ 前端对 `namedList` 预检红字，重命名/发布更新不带 create。
+- **列表“可见”过滤要与读授权同一语义（沿父链）**：只滤叶子 `Visible` 不够，父分组隐藏时列表仍点开即 403 死胡同；抽 `IsChainVisible` 叶子→根逐级判断（角色声明判定另属 IsAccessible）。
+- **后端命名常量用中文显示名直接落代码，文档务必同步**：顶级组显示名“工作台→系统驾驶舱”涉及 ParentTitle、EnsureFirstGroup 幂等同步、图标键、proposal/design/verify/ui/迁移方案/功能清单多处；改一处忘同步会在 doc-sync 冒 P1。
+

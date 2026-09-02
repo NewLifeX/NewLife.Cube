@@ -9,6 +9,7 @@
 > 版本：2026-08-30c（对照 Cube + XCode + NewLife.X：行级/字段权限、GetPage 计算列、值集侧信道；增补 §8.6 企业级权限与审计合规 Issue 清单）
 > 版本：2026-08-30d（增补 §0 愿景；§1.2 按愿景补齐必须达成目标）
 > 版本：2026-08-30e（增补 §12 业务功能插件开发：ArcoVue 默认皮肤下业务包怎么做）
+> 版本：2026-09-02（OSC-260902ef43 命名工作台归档：系统角色可把默认工作台「另存为/发布」为命名工作台并挂系统菜单，配置落 Parameter `Workbench.Named`；`/Workbench/{slug}` 只读命名槽、「系统驾驶舱」菜单组永远第一组、默认工作台禁重命名/删除）
 > 状态：可落地执行稿  
 > 适用范围：以 NewLife.Cube（WebAPI）为后端，将 NewLife.Cube.ArcoVue 建设为默认企业中后台皮肤；复用 NewLife.Cube.Vue 能力成果，对接字节官方组件栈，支持用户级呈现配置与 AI（OpenSpec）协作。
 
@@ -690,6 +691,17 @@ DefaultList 固定容器
 写入：`PUT /Cube/Workbench` 只写当前用户 HomeJson（空串清除并继承）；`PUT /Cube/Workbench/Role/{id}` 仅系统角色。`WorkspaceJson` 仍是列表偏好，**禁止**塞首页布局。与 `/Admin/Index` 监控页分离。不做租户层、不做整页画布。
 
 洞察槽（§8.5.3）仍禁用 miniKanban、上限 12、`w∈{3,4,6,12}`。工作台开放看板，上限 16，`w∈{2,3,4,6,8,12}`。
+
+#### 8.5.2a 命名工作台：另存为、切换与菜单挂载（OSC-260902ef43 已实现）
+
+> 个人墙之上叠加**发布层**：系统角色在 `/home` 编辑态可把当前墙「另存为」成命名工作台，配置落 Parameter `Workbench.Named`（`Value`=标题、`LongValue`=归一化配置），并自动挂一条系统菜单（Url=`/Workbench/{slug}`）；普通用户按菜单进入只读命名页。
+
+- **slug 语义**：无 slug（`/home`）=「默认工作台」，user>role>system 个人墙不变；有 slug（`/Workbench/{slug}`）= 只读命名槽。
+- 读取：`GET /Cube/Workbench/Named/{slug}` 按对应菜单行权限 fail-closed（不存在 404 / 无权 403）；列表 `GET /Cube/Workbench/Named` 仅系统角色。
+- 写入/删除：`PUT /Cube/Workbench/Named/{slug}`（upsert 槽 + 菜单，仅系统角色；标题≤40）、`DELETE /Cube/Workbench/Named/{slug}`（下架：删槽 + 删菜单）。空 `homeJson` 400（清空请 DELETE）。
+- **菜单置顶**：`Workbench` 父分组 `Sort` 每次发布时顶置为根级最大 +1（XCode `BigSort=true`、`Root.Childs` 按 Sort 降序）→ 命名工作台所在的「系统驾驶舱」组（Name=Workbench，显示名=系统驾驶舱）在左侧菜单**永远第一组**；父分组无子项时随下架移除（下次发布重建）。
+- 前端交互：`Workbench` 标题栏「编辑（左）+ `▾`（右）」组合按钮（样式对齐查询簇 `QueryComboButton`）；`▾` = `发布 / 重命名 / 删除 / 分隔符 / 默认工作台 / 命名工作台1…N`（当前项打勾）。默认工作台仅可编辑与「发布…」，**禁止重命名/删除**；命名工作台仅系统角色可编辑/发布/重命名/删除，普通用户只读。
+- 约束沿用：单份 ≤16 张 / 64KiB / 禁 legacyChart；**不做共享命名工作台上的个人覆盖**（只读发布）；不做租户层命名工作台。
 
 #### 8.5.3 页面仪表盘 Widget 协议（OSC-2608280e9e）
 

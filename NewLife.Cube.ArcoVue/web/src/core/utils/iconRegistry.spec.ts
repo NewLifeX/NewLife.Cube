@@ -149,6 +149,7 @@ describe('ICON_COMPONENTS 覆盖', () => {
     ].forEach((x) => all.add(x));
     // 产品命名专用
     all.add('cube-three');
+    all.add('workbench');
     assertAllValid([...all]);
   });
 });
@@ -161,6 +162,14 @@ describe('FA_ICON_MAP + menuIcon', () => {
   it('菜单显示名精确匹配优先（魔方管理 → cube-three）', () => {
     // fa-tachometer 虽映射 dashboard，但显示名「魔方管理」命中 MENU_NAME_ICONS 优先
     expect(menuIcon({ icon: 'fa-tachometer', displayName: '魔方管理', name: 'Cube' })).toBe('cube-three');
+  });
+
+  it('「系统驾驶舱/工作台」菜单显示名命中 workbench 图标（OSC-260902ef43）', () => {
+    expect(menuIcon({ displayName: '系统驾驶舱', name: 'Workbench' })).toBe('workbench');
+    // 兼容旧版本地数据仍叫「工作台」
+    expect(menuIcon({ displayName: '工作台', name: 'Workbench' })).toBe('workbench');
+    // 命名工作台子菜单 displayName 是标题，仍走关键词/默认，不误命
+    expect(menuIcon({ displayName: '运营看板', name: 'ops' })).toBe('application');
   });
 
   it('FA_ICON_MAP 命中（含 fa- 前缀）', () => {

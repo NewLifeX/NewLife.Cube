@@ -1,0 +1,16 @@
+# Status
+- id: OSC-260902ef43
+- state: Done
+- updated: 2026-09-02T23:50:00+08:00
+- approvedBy: openspec-approve
+- trigger: "1. 工作台/命名工作台1..N 在前端菜单中永远显示在第一组。2. 无 slug 的默认工作台不允许重命名和删除操作。3. 按照上述修改建议，修改 OSC 变更草案。4. 按照本项目 OpenSpec 规范，批准并执行 OSC 变更 ef43。"
+- checklist: passed
+- note: 复盘完成（openspec-retro）：retro.md 已写、lessons.md 已追加、目录归档至 archive/；遗留（AC6.3 宿主冒烟、T7）记录于 retro 与 verify。
+- note: archived to openspec/changes/archive/OSC-260902ef43 命名工作台发布与菜单挂载/
+- note: 执行完成（openspec-apply）。实现：WorkbenchNamedStore(Parameter Workbench.Named + 菜单挂载/卸载/顶置 EnsureFirstGroup + IsAccessible)；WorkbenchController NamedList/Get/Put/Delete；api-core named* 4 端点 + 类型；menuRoutes /Workbench/{slug} 分流 → WorkbenchPage；useWorkbench(slug) + Workbench.vue 编辑(左)+▾(右) 组合按钮（发布/重命名/删除/切换）。测试：后端 build net10 0 错 + dotnet test ef43+15a1 19/19；前端 vue-tsc 0 错 + Vitest web 9/9、api-core 37/37（先 tsup 重建 dist）。测试命令/结果见 verify.md AC6；文档同步：迁移方案 §8.5.2a + Doc/功能清单 DASH-3。
+- note: 会话小任务已补录（tasks 底部 T1–T3 + P4-4 偏差说明）：①修复 WorkbenchController Decode 上方 doc 注释错位（CS1570 触发）；②IMenu.Childs 接口 IList<IMenu> 歧义 + 实例 Childs 缓存残留 → store 经 IMenu/Meta.Cache；③Workbench.vue ok-button-props 绑定。偏差记录：useWorkbench.spec 挂载式用例改为 core/utils/workbenchNamed 纯函数 + menuRoutes 分流单测（仓库无 composable 挂载先例）。
+- note: 待验收：P5-3/AC6.3 宿主手工冒烟（需起 CubeDemoNC + web dev，验证发布→只读→更新→重命名/删除→默认墙回归 + 菜单第一组），建议下一步「验收 OSC-260902ef43」。
+- note: 收尾门禁（代码审查 + 实现审计，2026-09-02）：🔴 2 项已清零——① menuRoutes slug 白名单统一 import isValidNamedSlug（原内联 `+` 漏 1 位 slug，补 1 位 slug 分流 spec）；② 发布/删除后 refreshMenus（resetMenuRoutesFlag + fetchMenus）打通「新路由可命中 + 侧栏即时刷新」。🟡 处理：IsAccessible 沿父链逐级 Visible/声明校验（隐藏父分组不再可直读）、GetVisibleList 过滤悬空槽、重命名先拉最新防陈旧覆盖并刷新菜单标题、__publish disabled 绑定、summary 单行化。复核测试：后端 ef43+15a1 **20/20**、前端 vue-tsc 0 错 + menuRoutes/workbenchNamed **10/10**（api-core 37/37 上轮已过）。
+- note: 遗留后续（tasks T7，不阻塞验收）：禁 DELETE 环境 POST ?delete=1 兜底、MountMenu 并发幂等、控制器层 action 自动化用例、附加角色/性能缓存、useWorkbench 拆分。会话小任务与修复轮均已补录 tasks 并勾选；宿主手工冒烟（P5-3/AC6.3）仍待验收阶段执行。
+- note: 收尾后体验微调（T8 已补录，2026-09-02）：左侧导航顶级组显示名由「工作台」改为「系统驾驶舱」（后端 ParentTitle 常量 + EnsureFirstGroup 幂等同步旧分组；图标键双映射兼容）；概念「命名工作台/默认工作台」不变。后端 ef43 8/8、前端 vue-tsc 0 错 + iconRegistry.spec 17/17 复核通过。
+- note: 验收（openspec-verify 2026-09-02）：三步检查（实现审计/代码审查/文档同步）无 P0；缺口补齐轮 T9–T12 完成（G1 另存为 409+预检、G3 GetVisibleList 父链过滤、G4 图标 spec 值断言、G2 文档/数字收尾）；门禁复核：后端 20/20（连跑两次稳定）、前端 vue-tsc 0 错 + 27/27、api-core 37/37。用户决策：G1=阻止覆盖；AC6.3 宿主手工冒烟与 T7 遗留 = 仅记录不补齐。verify.md 已更新 AC/记录；checklist: passed → 可复盘 OSC-260902ef43。

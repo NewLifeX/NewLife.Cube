@@ -126,8 +126,77 @@ public class WorkbenchController(TokenService tokenService) : ControllerBaseX
         return Json(0, null, new { roleId, config = Decode(n) });
     }
 
-    /// <summary>
-    /// 将配置 JSON 解成 FastJson 可写出的对象树。
+    #region 命名工作台（OSC-260902ef43）
+    /// <summary>命名工作台列表（仅系统角色；仅含已挂菜单行的槽）</summary>
+    [HttpGet("Named")]
+    public ActionResult NamedList()
+    {
+        var user = Current;
+        if (user == null) return Json(401, "未授权");
+        if (!WorkbenchResolver.IsSystem(user)) return Json(403, "仅系统角色可管理命名工作台");
+        return Json(0, null, WorkbenchNamedStore.GetVisibleList());
+    }
+
+    /// <summary>读取命名工作台（菜单授权只读）。不存在 404，无权 403。</summary>
+    [HttpGet("Named/{slug}")]
+    public ActionResult NamedGet(String slug)
+    {
+        var user = Current;
+        if (user == null) return Json(401, "未授权");
+        if (!WorkbenchNamedStore.IsValidSlug(slug)) return Json(400, "slug 非法");
+        if (!WorkbenchNamedStore.Exists(slug)) return Json(404, "命名工作台不存在");
+        if (!WorkbenchNamedStore.IsAccessible(user, slug)) return Json(403, "无权访问该命名工作台");
+
+        var item = WorkbenchNamedStore.FindItem(slug);
+        var json = WorkbenchNamedStore.Get(slug);
+        Object config = null;
+        if (!json.IsNullOrEmpty() &&
+            DashboardJson.TryNormalize(json, user, false, DashboardJson.SurfaceWorkbench, out var n, out _))
+            config = Decode(n);
+        return Json(0, null, new { slug, title = item?.Title, config });
+    }
+
+    /// <summary>保存命名工作台（upsert，仅系统角色）：写 Parameter 槽并挂载/更新系统菜单。</summary>
+    [HttpPut("Named/{slug}")]
+    [HttpPost("Named/{slug}")]
+    public ActionResult NamedPut(String slug, [FromBody] WorkbenchNamedPutRequest model)
+    {
+        var user = Current;
+        if (user == null) return Json(401, "未授权");
+        if (!WorkbenchResolver.IsSystem(user)) return Json(403, "仅系统角色可管理命名工作台");
+        if (model == null) return Json(400, "请求体无效");
+        if (!WorkbenchNamedStore.IsValidSlug(slug)) return Json(400, "slug 非法");
+        var title = model.Title?.Trim();
+        if (!WorkbenchNamedStore.IsValidTitle(title)) return Json(400, "标题不能为空且不超过 40 字");
+        // 另存为（create=true）撞已存在 slug → 409，禁止静默覆盖既有共享看板
+        if (model.Create && WorkbenchNamedStore.Exists(slug)) return Json(409, "命名工作台已存在，另存为不允许覆盖（可改用它或先删除）");
+
+        var raw = model.HomeJson ?? "";
+        if (raw.Trim().Length == 0) return Json(400, "homeJson 不能为空（清空请用 DELETE）");
+        if (!DashboardJson.TryNormalize(raw, user, true, DashboardJson.SurfaceWorkbench, out var n, out var err))
+            return Json(400, err);
+
+        WorkbenchNamedStore.Save(slug, title, n);
+        WorkbenchNamedStore.MountMenu(slug, title);
+        return Json(0, null, new { slug, title });
+    }
+
+    /// <summary>下架命名工作台（仅系统角色）：删除菜单行与 Parameter 槽。</summary>
+    [HttpDelete("Named/{slug}")]
+    public ActionResult NamedDelete(String slug)
+    {
+        var user = Current;
+        if (user == null) return Json(401, "未授权");
+        if (!WorkbenchResolver.IsSystem(user)) return Json(403, "仅系统角色可管理命名工作台");
+        if (!WorkbenchNamedStore.IsValidSlug(slug)) return Json(400, "slug 非法");
+
+        WorkbenchNamedStore.UnmountMenu(slug);
+        WorkbenchNamedStore.Delete(slug);
+        return Json(0, null, new { slug, deleted = true });
+    }
+    #endregion
+
+    /// <summary>将配置 JSON 解成 FastJson 可写出的对象树。
     /// 禁止返回 <c>JsonElement</c>：ControllerBaseX 用 FastJson 序列化时只会打出 <c>{"valueKind":1}</c>，前端拿不到 widgets。
     /// </summary>
     public static Object Decode(String json)
@@ -149,4 +218,17 @@ public class WorkbenchPutRequest
 {
     /// <summary>首页工作台 JSON；空串清除个人域</summary>
     public String HomeJson { get; set; }
+}
+
+/// <summary>命名工作台 PUT 体（OSC-260902ef43）</summary>
+public class WorkbenchNamedPutRequest
+{
+    /// <summary>标题（≤40），同步菜单 DisplayName</summary>
+    public String Title { get; set; }
+
+    /// <summary>命名工作台配置 JSON（workbench surface）</summary>
+    public String HomeJson { get; set; }
+
+    /// <summary>是否“另存为新建”语义：true 且 slug 已存在 → 409（禁止覆盖既有看板）；缺省 false=更新自身（发布/重命名）</summary>
+    public Boolean Create { get; set; }
 }

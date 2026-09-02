@@ -3,17 +3,60 @@
     <div class="wb-banner">
       <div class="wb-hello">
         <div class="wb-hello-title">{{ hello }}</div>
-        <div class="wb-hello-date">{{ todayLabel }}</div>
+        <div class="wb-hello-meta">
+          <span v-if="isNamed" class="wb-name-chip">
+            <icon-park type="workbench" :size="13" /> {{ currentLabel }}
+          </span>
+          <span class="wb-hello-date">{{ todayLabel }}</span>
+        </div>
       </div>
       <a-space :size="4">
-        <a-tooltip :content="editing ? '完成' : '自定义工作台'">
-          <a-button type="text" class="wb-icon-btn" @click="toggleEdit">
+        <!-- 左：进入/退出编辑态（现有按钮；命名工作台仅系统角色可编辑） -->
+        <a-tooltip :content="editing ? '完成' : isNamed ? '编辑命名工作台' : '自定义工作台'">
+          <a-button type="text" class="wb-icon-btn" :disabled="!canEditToggle" @click="toggleEdit">
             <icon-park :type="editing ? 'check' : 'setting-config'" :size="16" />
           </a-button>
         </a-tooltip>
+        <!-- 右：▾ 弹出菜单（OSC-260902ef43；样式对齐 QueryComboButton）：发布/重命名/删除/分隔符/工作台切换 -->
+        <a-dropdown v-if="showNamedMenu" trigger="click" @select="onNamedSelect">
+          <a-button type="text" class="wb-icon-btn wb-icon-btn--caret" aria-label="工作台操作">
+            <icon-park type="down" :size="12" />
+          </a-button>
+          <template #content>
+            <div class="wb-named-menu">
+              <a-doption value="__publish" :disabled="!canPublish">
+                <template #icon><icon-park type="save" /></template>
+                发布…
+              </a-doption>
+              <a-doption value="__rename" :disabled="!canRename">
+                <template #icon><icon-park type="edit" /></template>
+                重命名…
+              </a-doption>
+              <a-doption value="__delete" :disabled="!canDelete" class="danger">
+                <template #icon><icon-park type="delete" /></template>
+                删除…
+              </a-doption>
+              <a-divider class="wb-divider" />
+              <div class="wb-group-title">切换工作台</div>
+              <a-doption value="__default" :class="{ 'wb-option--checked': !isNamed }">
+                <icon-park v-if="!isNamed" type="check" class="wb-check" />
+                默认工作台
+              </a-doption>
+              <a-doption
+                v-for="n in namedList"
+                :key="n.slug"
+                :value="'__named:' + n.slug"
+                :class="{ 'wb-option--checked': isNamed && currentSlug === n.slug }"
+              >
+                <icon-park v-if="isNamed && currentSlug === n.slug" type="check" class="wb-check" />
+                {{ n.title || n.slug }}
+              </a-doption>
+            </div>
+          </template>
+        </a-dropdown>
         <a-tooltip content="恢复默认">
           <!-- span：disabled 时按钮不接收指针事件，保证 tooltip 仍可显示 -->
-          <span class="wb-icon-wrap">
+          <span v-if="!isNamed" class="wb-icon-wrap">
             <a-button
               type="text"
               class="wb-icon-btn"
@@ -40,6 +83,62 @@
     <a-spin :loading="loading" class="wb-spin">
       <WidgetHost />
     </a-spin>
+    <!-- 命名工作台空槽：只读展示占位（默认工作台空墙由 WidgetHost 提供添加入口） -->
+    <div v-if="isNamed && !(dashboard.widgets && dashboard.widgets.length) && !loading" class="wb-empty">
+      该命名工作台尚未配置或为空
+    </div>
+
+    <!-- 发布/另存为 命名工作台（OSC-260902ef43） -->
+    <a-modal
+      v-model:visible="publishVisible"
+      title="发布为命名工作台"
+      :on-before-ok="confirmPublish"
+      ok-text="发布并挂载菜单"
+      @cancel="publishVisible = false"
+    >
+      <a-alert v-if="publishError" type="error" show-icon class="wb-modal-alert">{{ publishError }}</a-alert>
+      <a-form layout="vertical">
+        <a-form-item label="标题" required>
+          <a-input v-model="publishTitle" maxlength="40" placeholder="如：运营看板（≤40 字，将作为菜单名）" />
+        </a-form-item>
+        <a-form-item label="标识 slug" required>
+          <a-input
+            v-model="publishSlug"
+            placeholder="小写字母开头，仅小写字母/数字/中划线，≤32 位"
+            @input="publishSlug = publishSlug.toLowerCase()"
+          />
+        </a-form-item>
+      </a-form>
+    </a-modal>
+
+    <!-- 重命名 命名工作台 -->
+    <a-modal
+      v-model:visible="renameVisible"
+      title="重命名命名工作台"
+      :on-before-ok="confirmRename"
+      ok-text="重命名"
+      @cancel="renameVisible = false"
+    >
+      <a-form layout="vertical">
+        <a-form-item label="标题" required>
+          <a-input v-model="renameTitle" maxlength="40" placeholder="≤40 字，将同步菜单显示名" />
+        </a-form-item>
+      </a-form>
+    </a-modal>
+
+    <!-- 删除 命名工作台（连带移除系统菜单项） -->
+    <a-modal
+      v-model:visible="deleteVisible"
+      title="删除命名工作台"
+      :on-before-ok="confirmDelete"
+      ok-text="删除"
+      :ok-button-props="{ status: 'danger' }"
+      @cancel="deleteVisible = false"
+    >
+      <p class="wb-delete-tip">
+        将删除「{{ currentLabel }}」及其对应系统菜单项，且不可恢复。删除后回到默认工作台。
+      </p>
+    </a-modal>
   </div>
 </template>
 
@@ -49,18 +148,42 @@ import { useWorkbench } from './useWorkbench';
 
 defineOptions({ name: 'Workbench' });
 
+/** 命名工作台 slug（OSC-260902ef43）：空 = 默认工作台（/home 个人墙）；有值 = /Workbench/{slug} 只读命名槽 */
+const props = defineProps<{ slug?: string }>();
+
 const {
   loading,
   editing,
   loadError,
   hello,
   todayLabel,
+  dashboard,
+  isNamed,
+  currentSlug,
+  currentLabel,
+  canEditToggle,
   canRestore,
+  canPublish,
+  canRename,
+  canDelete,
+  showNamedMenu,
+  namedList,
   fullscreen,
+  publishVisible,
+  publishTitle,
+  publishSlug,
+  publishError,
+  renameVisible,
+  renameTitle,
+  deleteVisible,
   toggleEdit,
   toggleFullscreen,
   restoreDefault,
-} = useWorkbench();
+  onNamedSelect,
+  confirmPublish,
+  confirmRename,
+  confirmDelete,
+} = useWorkbench(props.slug ?? '');
 </script>
 
 <style scoped>
@@ -97,9 +220,10 @@ const {
   line-height: 1.3;
 }
 .wb-hello-date {
-  margin-top: 4px;
   font-size: 13px;
   color: var(--color-text-3);
+  line-height: 1.5;
+  white-space: nowrap;
 }
 .wb-icon-wrap {
   display: inline-flex;
@@ -125,5 +249,60 @@ const {
 .wb-spin {
   width: 100%;
   min-height: 120px;
+}
+.wb-hello-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+  line-height: 1.5;
+}
+.wb-name-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgb(var(--primary-6));
+  background-color: var(--color-fill-2);
+}
+.wb-name-chip :deep(svg) {
+  display: block;
+}
+.wb-icon-btn--caret {
+  width: 20px !important;
+}
+.wb-named-menu {
+  min-width: 180px;
+}
+.wb-divider {
+  margin: 4px 0;
+}
+.wb-group-title {
+  padding: 6px 12px 2px;
+  font-size: 12px;
+  color: var(--color-text-3);
+}
+.wb-check {
+  color: rgb(var(--primary-6));
+}
+.wb-option--checked {
+  color: rgb(var(--primary-6));
+}
+.wb-empty {
+  text-align: center;
+  color: var(--color-text-3);
+  padding: 40px 0;
+  font-size: 14px;
+}
+.wb-modal-alert {
+  margin-bottom: 12px;
+}
+.wb-delete-tip {
+  margin: 0;
+  color: var(--color-text-2);
 }
 </style>

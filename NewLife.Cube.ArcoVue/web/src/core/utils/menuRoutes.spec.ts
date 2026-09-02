@@ -60,4 +60,31 @@ describe('menuRoutes B3', () => {
     expect(new Set(names).size).toBe(2);
     expect(routes.map((r) => r.path)).toEqual(['vTest1/Cube', 'Admin/Cube']);
   });
+
+  it('/Workbench/{slug} 分流到 WorkbenchPage（slug prop）；单段与普通菜单不误分流（OSC-260902ef43）', () => {
+    const tree = [
+      menu({ id: 41, name: 'Ops', url: '/Workbench/ops', displayName: '运营看板' }),
+      menu({ id: 42, name: 'Only', url: '/Workbench', displayName: '工作台' }),
+      menu({ id: 43, name: 'User', url: '/Admin/User', displayName: '用户' }),
+    ];
+    const routes = buildLeafRoutes(tree);
+    const slugRoutes = routes.filter(
+      (r) => r.props && 'slug' in (r.props as Record<string, unknown>),
+    );
+    expect(slugRoutes).toHaveLength(1);
+    expect(slugRoutes[0].path).toBe('Workbench/ops');
+    expect(slugRoutes[0].name).toBe('menu-41');
+    expect(slugRoutes[0].props).toMatchObject({ slug: 'ops', authId: 41 });
+    expect(routes.map((r) => r.path).sort()).toEqual(['Admin/User', 'Workbench', 'Workbench/ops']);
+  });
+
+  it('1 位合法 slug（/Workbench/a）同样分流（与 isValidNamedSlug 一致，OSC-260902ef43）', () => {
+    const tree = [menu({ id: 51, name: 'A', url: '/Workbench/a', displayName: '单字符' })];
+    const routes = buildLeafRoutes(tree);
+    const slugRoutes = routes.filter(
+      (r) => r.props && 'slug' in (r.props as Record<string, unknown>),
+    );
+    expect(slugRoutes).toHaveLength(1);
+    expect(slugRoutes[0].props).toMatchObject({ slug: 'a' });
+  });
 });

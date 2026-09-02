@@ -242,6 +242,23 @@ describe('createWorkbenchApi', () => {
       data: { homeJson: '' },
     }));
   });
+
+  it('named workbench endpoints hit /Cube/Workbench/Named (OSC-260902ef43)', async () => {
+    const request = vi.fn().mockResolvedValue({ code: 0, data: {} });
+    const api = createWorkbenchApi(request);
+    await api.namedList();
+    await api.namedGet('ops');
+    await api.namedPut('ops', { title: '运营', homeJson: '{"version":1,"widgets":[]}' });
+    await api.namedDelete('ops');
+    expect(request).toHaveBeenNthCalledWith(1, expect.objectContaining({ url: '/Cube/Workbench/Named', method: 'get' }));
+    expect(request).toHaveBeenNthCalledWith(2, expect.objectContaining({ url: '/Cube/Workbench/Named/ops', method: 'get' }));
+    expect(request).toHaveBeenNthCalledWith(3, expect.objectContaining({
+      url: '/Cube/Workbench/Named/ops',
+      method: 'put',
+      data: { title: '运营', homeJson: '{"version":1,"widgets":[]}' },
+    }));
+    expect(request).toHaveBeenNthCalledWith(4, expect.objectContaining({ url: '/Cube/Workbench/Named/ops', method: 'delete' }));
+  });
 });
 
 describe('createPageApi', () => {

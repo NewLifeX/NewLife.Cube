@@ -35,6 +35,8 @@ import type {
   WidgetSourceItem,
   WidgetSurface,
   WorkbenchResolveResult,
+  NamedWorkbenchItem,
+  NamedWorkbenchResult,
 } from './widget';
 
 type RequestFn = <T>(config: AxiosRequestConfig) => Promise<ApiResponse<T>>;
@@ -790,6 +792,25 @@ export function createWorkbenchApi(request: RequestFn) {
         url: `/Cube/Workbench/Role/${roleId}`,
         method: 'put',
         data: { homeJson },
+      }),
+
+    namedList: () =>
+      request<NamedWorkbenchItem[]>({ url: '/Cube/Workbench/Named', method: 'get' }),
+
+    namedGet: (slug: string) =>
+      request<NamedWorkbenchResult>({ url: `/Cube/Workbench/Named/${slug}`, method: 'get' }),
+
+    namedPut: (slug: string, body: { title: string; homeJson: string; create?: boolean }) =>
+      requestWithPostFallback<unknown>(request, {
+        url: `/Cube/Workbench/Named/${slug}`,
+        method: 'put',
+        data: body,
+      }),
+
+    namedDelete: (slug: string) =>
+      requestWithPostFallback<unknown>(request, {
+        url: `/Cube/Workbench/Named/${slug}`,
+        method: 'delete',
       }),
   };
 }

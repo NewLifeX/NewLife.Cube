@@ -2,6 +2,7 @@ import type { Router, RouteRecordRaw } from 'vue-router';
 import type { MenuItem } from '@cube/api-core';
 import { normalizeMenuUrl, routeToApiPrefix, toKebabCase } from './url';
 import { withRouteComponentName } from './namedRouteComponent';
+import { isValidNamedSlug } from './workbenchNamed';
 
 export type ComponentLoader = () => Promise<{ default: unknown }>;
 
@@ -76,6 +77,26 @@ export function buildLeafRoutes(menus: MenuItem[]): RouteRecordRaw[] {
     seen.add(path.toLowerCase());
 
     const typePath = routeToApiPrefix(path);
+    // 命名工作台菜单（OSC-260902ef43）：/Workbench/{slug} 分流到 WorkbenchPage（不吃 DynamicPage/GetPage 探测）；
+    // /Workbench 单段、非白名单 slug 维持原 DynamicPage 流程
+    const wbSeg = path.replace(/^\/+/, '').split('/').filter(Boolean);
+    if (wbSeg.length === 2 && wbSeg[0].toLowerCase() === 'workbench' && isValidNamedSlug(wbSeg[1].toLowerCase())) {
+      const routeName = 'menu-' + (item.id ?? item.name);
+      routes.push({
+        path: path.replace(/^\//, ''),
+        name: routeName,
+        component: withRouteComponentName(() => import('@/views/home/WorkbenchPage.vue'), routeName),
+        props: { slug: wbSeg[1].toLowerCase(), authId: item.id },
+        meta: {
+          title: item.displayName || item.name,
+          icon: item.icon,
+          hidden: false,
+          menuId: item.id,
+          typePath: '',
+        },
+      });
+      continue;
+    }
     // 路由名用唯一 id 兜底：不同 Area 可能存在同名菜单（如 vTest1/Cube 与 Admin/Cube），
     // vue-router 同名 addRoute 会互相覆盖导致页面 404
     const routeName = 'menu-' + (item.id ?? item.name);

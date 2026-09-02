@@ -69,6 +69,8 @@ export type {
   WidgetSurface,
   WidgetWidth,
   WorkbenchResolveResult,
+  NamedWorkbenchItem,
+  NamedWorkbenchResult,
 } from './widget';
 export {
   emptyDashboard,
