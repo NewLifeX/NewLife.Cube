@@ -217,6 +217,7 @@
     <Compile Include="..\NewLife.Cube\Widgets\WidgetAttribute.cs" Link="Widgets\WidgetAttribute.cs" />
     <Compile Include="..\NewLife.Cube\Widgets\WidgetLayout.cs" Link="Widgets\WidgetLayout.cs" />
     <Compile Include="..\NewLife.Cube\Widgets\WidgetManager.cs" Link="Widgets\WidgetManager.cs" />
+    <Compile Include="..\NewLife.Cube\Widgets\KpiModel.cs" Link="Widgets\KpiModel.cs" />
     <Compile Include="..\NewLife.Cube\Widgets\System\*.cs" Link="Widgets\System\%(Filename)%(Extension)" />
     <!-- API 版精简 MonitorWidget（GetData 返回 null，图表数据由前端轮询 MonitorData），
          MVC 版保留自带的完整版（GetData 输出 ECharts 初始图表），避免同名重复编译 -->

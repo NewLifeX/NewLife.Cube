@@ -115,14 +115,38 @@ public class WidgetManager
         return OrderWidgets(rs, null, groupOrder, groupItems);
     }
 
-    /// <summary>创建组件实例并获取数据</summary>
+    /// <summary>创建组件实例并获取数据。KPI 组件数据统一归一化为 <see cref="KpiModel"/>，保证跨程序集渲染安全</summary>
     /// <param name="info">组件元数据</param>
     /// <returns>组件数据模型</returns>
     public Object GetData(WidgetAttribute info)
     {
-        if (Activator.CreateInstance(info.Type) is IWidget widget) return widget.GetData();
+        if (Activator.CreateInstance(info.Type) is IWidget widget)
+        {
+            var data = widget.GetData();
+
+            // KPI 小卡渲染契约 { Value, Trend, Url }。具体应用程序集实现的组件若返回匿名类型（internal），
+            // 魔方工作台视图跨程序集 dynamic 绑定会抛 RuntimeBinderException，这里统一转换为公开模型
+            if (data != null && info.WidgetType == WidgetTypes.Kpi && data is not KpiModel) data = ToKpiModel(data);
+
+            return data;
+        }
 
         return null;
+    }
+
+    /// <summary>将组件原始数据转换为公开 <see cref="KpiModel"/>。反射读取 Value/Trend/Url，兼容匿名类型与各种公开模型</summary>
+    /// <param name="data">组件原始数据</param>
+    /// <returns></returns>
+    static KpiModel ToKpiModel(Object data)
+    {
+        var type = data.GetType();
+
+        return new KpiModel
+        {
+            Value = type.GetProperty("Value")?.GetValue(data)?.ToString(),
+            Trend = type.GetProperty("Trend")?.GetValue(data)?.ToString(),
+            Url = type.GetProperty("Url")?.GetValue(data)?.ToString(),
+        };
     }
 
     /// <summary>判断组件对指定角色与管理员标志是否可见</summary>
