@@ -60,3 +60,95 @@ export function wfRowInstanceId(row: Record<string, unknown> | null | undefined)
 export function wfRowCanStart(row: Record<string, unknown> | null | undefined): boolean {
   return row?.[WF_ROW_FIELD.canStart] === true;
 }
+
+/**
+ * 以下为设计器 GraphJson 类型（design §4）：节点 data 语义由后端 WorkflowGraph 解析，
+ * 前端只做编辑与序列化（禁止浏览器执行引擎）。
+ */
+
+/** 图节点 */
+export interface WfGraphNodeData {
+  id: string;
+  type: string;
+  data: Record<string, unknown>;
+}
+
+/** 图边 */
+export interface WfGraphEdgeData {
+  source: string;
+  target: string;
+}
+
+/** GraphJson（design §4） */
+export interface WfGraphData {
+  version?: number;
+  nodes: WfGraphNodeData[];
+  edges: WfGraphEdgeData[];
+}
+
+/** 节点 data 字段常量（与后端 WorkflowNode 解析对齐） */
+export const WF_NODE_DATA_KEY = {
+  name: 'name',
+  mode: 'mode',
+  to: 'to',
+  fields: 'fields',
+  timeoutHours: 'timeoutHours',
+  timeoutAction: 'timeoutAction',
+  allowAddSign: 'allowAddSign',
+  allowRollback: 'allowRollback',
+  cases: 'cases',
+  defaultTarget: 'defaultTarget',
+} as const;
+
+/** 节点类型白名单（design §4.1：仅 oa.*） */
+export const WF_NODE_TYPES = ['oa.start', 'oa.approve', 'oa.cc', 'oa.xor', 'oa.end'] as const;
+export type WfNodeType = (typeof WF_NODE_TYPES)[number];
+
+/** 解析节点类型中文名 */
+export function wfNodeTypeLabel(type: string): string {
+  switch (type) {
+    case 'oa.start':
+      return '开始';
+    case 'oa.approve':
+      return '审批';
+    case 'oa.cc':
+      return '知会';
+    case 'oa.xor':
+      return '条件分流';
+    case 'oa.end':
+      return '结束';
+    default:
+      return type || '未知';
+  }
+}
+
+/** 是否 oa.* 白名单节点 */
+export function isWfNodeType(type: string): boolean {
+  return (WF_NODE_TYPES as readonly string[]).includes(type);
+}
+
+/** 规范 `to` 接收人：读取 kind 对应 id 数组；缺省 users */
+export function wfRecipientTo(to: unknown): { kind: string; ids: number[] } {
+  const t = (to ?? {}) as Record<string, unknown>;
+  const kindMap: Record<string, 'users' | 'roles' | 'departments'> = {
+    users: 'users',
+    roles: 'roles',
+    departments: 'departments',
+    user: 'users',
+    role: 'roles',
+    department: 'departments',
+  };
+  const kind = kindMap[String(t.kind ?? 'users').toLowerCase()] ?? 'users';
+  const arr = Array.isArray(t[kind]) ? (t[kind] as unknown[]) : [];
+  const ids = arr.map(Number).filter((n) => Number.isFinite(n) && n > 0);
+  return { kind, ids };
+}
+
+/** 序列化 `to`（仅保留当前 kind 的 id 数组） */
+export function wfRecipientToJson(to: unknown, ids: number[], kind: string): Record<string, unknown> {
+  const k = kind === 'roles' ? 'roles' : kind === 'departments' ? 'departments' : 'users';
+  const base: Record<string, unknown> = { kind: k, users: [], roles: [], departments: [] };
+  if (ids.length) base[k] = ids;
+  return { ...(to && typeof to === 'object' ? to : {}), ...base };
+}
+

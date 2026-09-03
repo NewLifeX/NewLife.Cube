@@ -33,7 +33,7 @@ export function resolvePageComponent(path: string): ComponentLoader {
     if (sub === 'todo' || sub === 'done')
       return () => import('@/views/workflow/WorkflowTaskList.vue');
     if (sub === 'started') return () => import('@/views/workflow/WorkflowStartedList.vue');
-    // designer（/Cube/Workflow/Designer）在 T8e 接入 FlowGram 后注册
+    if (sub === 'designer') return () => import('@/views/workflow/WorkflowDesignerPage.vue');
   }
 
   const candidates = new Set<string>();
