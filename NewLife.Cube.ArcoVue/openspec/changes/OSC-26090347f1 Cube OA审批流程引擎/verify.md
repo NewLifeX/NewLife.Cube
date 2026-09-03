@@ -27,8 +27,16 @@
   2. `GET https://localhost:7116/Cube/Workflow/Meta` → `{ enabled: true }`；匿名 GetPage 仅 enabled。
   3. Admin/User 登录发布定义（start→approve(or)→end），非法图 400。
   4. 选 2 条 User 记录提交 → 1 Instance + 2 Subject；Inbox 候选人收 InApp；或签/会签/依次签通过路径。
-  5. full 锁：Running 中普通 PUT 失败、流程 Patch 成功。
+  5. full 锁：Running 中普通 PUT 失败、流程 Patch 成功（Patch 已改 `Entities/{key}/Patch?typePath=`）。
   6. 不引用模块的宿主（CubeDemoNC）：无待办槽、Meta `{ enabled:false }`、POST /Instances 404。
+
+### T12 收尾门禁修复批次（代码审查 + 实现审计）
+
+- 代码审查（NewLife 规范）5 🔴 全修 + 实现审计 P1/P2 合并修复，见 tasks.md T12；本轮**修复了 2 个此前未被测出的真实缺陷**：
+  1. **后加签整条断裂**：`#after#` 任务创建后无激活路径（原任务 Done 直接推进下游），现经 `TryActivateAfterSign` 激活等待，全部后加签完成后 `ContinueNode` 常规收尾；
+  2. **超时永不下发**：sqlite 下 `DueTime > DateTime.MinValue` 比较恒 false 致 `TimeoutTick` 查询恒 0 命中——改 SQL 仅按到期过滤、MinValue/状态/可见性内存筛。
+- 回归：`Workflow*`（含新增 4 例矩阵）23/23 + `Osc260815` 14/14 = **37/37**；web vue-tsc 0 error、workflow spec 32 绿；api-core 3 绿。
+- 无法闭环项（已记录 status.md）：G-01 跨进程唯一约束（后续 OSC）、G-04 候选可见语义（待确认）、G-05 附件 V1 范围外裁剪、G-06 Meta 恒 true（随 T11）、G-07 HTTP 冒烟（T11）、G-08/G-11 后续批次。
 
 ### 已由自动化覆盖的验收标准（供 verify 阶段引用）
 
