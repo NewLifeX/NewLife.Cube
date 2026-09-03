@@ -22,6 +22,20 @@ export function resolvePageComponent(path: string): ComponentLoader {
   const segments = path.replace(/^\/+/, '').split('/').filter(Boolean);
   if (segments.length === 0) return getFallbackDynamicPage();
 
+  // OA 审批独立页（OSC-26090347f1）：/Cube/Workflow/{Todo|Done|Started|Designer}
+  // 不走 DynamicPage（后端无 GetPage/Object 契约），由 workflow 专用组件按 route 尾段渲染。
+  if (
+    segments.length >= 3 &&
+    segments[0].toLowerCase() === 'cube' &&
+    segments[1].toLowerCase() === 'workflow'
+  ) {
+    const sub = segments[2].toLowerCase();
+    if (sub === 'todo' || sub === 'done')
+      return () => import('@/views/workflow/WorkflowTaskList.vue');
+    if (sub === 'started') return () => import('@/views/workflow/WorkflowStartedList.vue');
+    // designer（/Cube/Workflow/Designer）在 T8e 接入 FlowGram 后注册
+  }
+
   const candidates = new Set<string>();
   const add = (segs: string[]) => {
     if (!segs.length) return;

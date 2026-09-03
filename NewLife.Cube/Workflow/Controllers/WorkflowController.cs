@@ -671,6 +671,8 @@ public class WorkflowController : ControllerBaseX
             task.TimeoutAction,
             task.ClaimTime,
             task.FinishTime,
+            task.CreateTime,
+            task.UpdateTime,
             instanceStatus = instance?.Status,
             typePath = instance?.TypePath,
             title = subject?.Title,

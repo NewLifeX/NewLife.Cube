@@ -16,8 +16,8 @@ describe('createWorkflowApi /Cube/Workflow URL（OSC-26090347f1）', () => {
     const { api, calls } = captureApi();
     await api.meta();
     await api.definitions({ typePath: 'Admin/User' });
-    await api.createDefinition({ TypePath: 'Admin/User', Name: 'x' });
-    await api.updateDefinition(3, { Name: 'y' });
+    await api.createDefinition({ typePath: 'Admin/User', name: 'x' });
+    await api.updateDefinition(3, { name: 'y' });
     await api.publishDefinition(3);
 
     expect(calls.map((c) => `${c.method} ${c.url}`)).toEqual([

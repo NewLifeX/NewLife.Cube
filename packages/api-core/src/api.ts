@@ -821,18 +821,89 @@ export interface WorkflowMeta {
   todoCount?: number;
 }
 
-/** 流程定义视图 */
+/** 流程定义视图（服务端 ToDefView，camelCase） */
 export interface WorkflowDefinitionItem {
-  Id: number;
-  TypePath: string;
-  Name: string;
-  Enable: boolean;
-  Published: boolean;
-  Version: number;
-  LockPolicy?: string;
-  StartFilter?: string;
+  id: number;
+  typePath: string;
+  name: string;
+  enable: boolean;
+  published: boolean;
+  version: number;
+  lockPolicy?: string;
+  startFilter?: string;
   graphJson?: string;
-  Remark?: string;
+  remark?: string;
+  updateTime?: string;
+}
+
+/** 流程任务视图（服务端 ToTaskView；Todo/Done 列表行） */
+export interface WorkflowTaskItem {
+  id: number;
+  instanceId: number;
+  nodeId?: string;
+  mode?: string;
+  assigneeId?: number;
+  /** 候选人用户 Id 数组 */
+  candidate?: number[];
+  sequenceIndex?: number;
+  visible?: boolean;
+  /** Pending/Active/Done/Rejected/Cancelled/Transferred */
+  status?: string;
+  dueTime?: string;
+  timeoutAction?: string;
+  claimTime?: string;
+  finishTime?: string;
+  /** 所属实例状态（running/approved/...） */
+  instanceStatus?: string;
+  typePath?: string;
+  /** 主体标题（首条记录标题字段） */
+  title?: string;
+  createTime?: string;
+}
+
+/** 流程实例视图（服务端 ToInstanceView；Started 列表行） */
+export interface WorkflowInstanceItem {
+  id: number;
+  typePath: string;
+  /** running/approved/rejected/withdrawn/cancelled */
+  status: string;
+  definitionId: number;
+  definitionVersion: number;
+  title?: string;
+  starterId?: number;
+  startComment?: string;
+  createTime?: string;
+  finishTime?: string;
+}
+
+/** 流程实例详情（服务端 InstanceDetail：主体 + 任务 + 意见时间轴） */
+export interface WorkflowInstanceDetail {
+  id: number;
+  typePath: string;
+  status: string;
+  definition?: { id: number; name: string; version: number; lockPolicy?: string } | null;
+  starterId?: number;
+  startComment?: string;
+  createTime?: string;
+  finishTime?: string;
+  subjects?: { id: number; entityKey: string; title?: string }[];
+  tasks?: WorkflowTaskItem[];
+  comments?: {
+    id: number;
+    taskId?: number;
+    /** approve/reject/addsign/transfer/cc/rollback/withdraw/start... */
+    action?: string;
+    content?: string;
+    createUser?: string;
+    createTime?: string;
+  }[];
+}
+
+/** 批量同意逐条结果 */
+export interface WorkflowBatchResultItem {
+  id: number;
+  ok: boolean;
+  error?: string;
 }
 
 /** 发起请求体 */
@@ -904,7 +975,7 @@ export function createWorkflowApi(request: RequestFn) {
       request<{ instanceId: number }>({ url: '/Cube/Workflow/Instances', method: 'post', data }),
 
     instance: (id: number | string) =>
-      request<unknown>({ url: `/Cube/Workflow/Instances/${id}`, method: 'get' }),
+      request<WorkflowInstanceDetail>({ url: `/Cube/Workflow/Instances/${id}`, method: 'get' }),
 
     withdraw: (id: number | string, data?: WorkflowVoteBody) =>
       request<unknown>({ url: `/Cube/Workflow/Instances/${id}/Withdraw`, method: 'post', data }),
@@ -937,16 +1008,16 @@ export function createWorkflowApi(request: RequestFn) {
       request<unknown>({ url: `/Cube/Workflow/Tasks/${id}/Rollback`, method: 'post', data }),
 
     batchApprove: (data: WorkflowBatchBody) =>
-      request<unknown>({ url: '/Cube/Workflow/Tasks/BatchApprove', method: 'post', data }),
+      request<WorkflowBatchResultItem[]>({ url: '/Cube/Workflow/Tasks/BatchApprove', method: 'post', data }),
 
     todo: (params?: { pageSize?: number }) =>
-      request<unknown[]>({ url: '/Cube/Workflow/Todo', method: 'get', params }),
+      request<WorkflowTaskItem[]>({ url: '/Cube/Workflow/Todo', method: 'get', params }),
 
     started: (params?: { pageSize?: number }) =>
-      request<unknown[]>({ url: '/Cube/Workflow/Started', method: 'get', params }),
+      request<WorkflowInstanceItem[]>({ url: '/Cube/Workflow/Started', method: 'get', params }),
 
     done: (params?: { pageSize?: number }) =>
-      request<unknown[]>({ url: '/Cube/Workflow/Done', method: 'get', params }),
+      request<WorkflowTaskItem[]>({ url: '/Cube/Workflow/Done', method: 'get', params }),
 
     phrases: () => request<WorkflowPhrase[]>({ url: '/Cube/Workflow/Phrases', method: 'get' }),
 

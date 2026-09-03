@@ -91,6 +91,21 @@ export type {
   AutomationEntityOption,
   AutomationRecipientOption,
 } from './api';
+export type {
+  WorkflowMeta,
+  WorkflowDefinitionItem,
+  WorkflowTaskItem,
+  WorkflowInstanceItem,
+  WorkflowInstanceDetail,
+  WorkflowBatchResultItem,
+  WorkflowStartBody,
+  WorkflowVoteBody,
+  WorkflowRecipient,
+  WorkflowTransferBody,
+  WorkflowJumpBody,
+  WorkflowBatchBody,
+  WorkflowPhrase,
+} from './api';
 
 // 密码安全工具（RSA-OAEP 加密，配合 /Auth/Challenge 接口）
 export { encryptPassword } from './crypto';
