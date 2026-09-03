@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <!--
+      全局默认 glob 排除 node_modules。
+      主题项目（Vue/React 等）的 web/node_modules 巨型树含 .pnpm 悬空 junction，
+      会使 MSBuild 对 **/*.cs、**/*.resx 的默认 glob 遍历失败而退化为字面项，
+      触发 CS2001/CS2021（找不到源文件 "**/*.cs"）与 MSB3552（找不到资源文件 "**/*.resx"）。
+      在 Directory.Build.targets（SDK targets 之后）追加，避免覆盖 SDK 默认排除项。
+    -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);**/node_modules/**</DefaultItemExcludes>
+  </PropertyGroup>
+</Project>
