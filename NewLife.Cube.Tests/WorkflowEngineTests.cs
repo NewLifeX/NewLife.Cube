@@ -189,4 +189,18 @@ public class WorkflowEngineTests
         var ex = Assert.Throws<WorkflowException>(() => WorkflowEngine.Withdraw(instance2.Id, 9, "想撤"));
         Assert.Equal(409, ex.Code);
     }
+
+    [Fact(DisplayName = "常用语：空回落内置三条；保存后读回")]
+    public void Phrases_Roundtrip()
+    {
+        var p = XCode.Membership.Parameter.FindByUserIDAndCategoryAndName(0, WorkflowHelper.PhraseCategory, "tenant:0");
+        if (p != null) p.Delete();
+        var list = WorkflowHelper.PhraseList(0);
+        Assert.Equal(3, list.Count);
+
+        WorkflowHelper.SavePhrases(0, ["同意", "加急", "同意"]);
+        list = WorkflowHelper.PhraseList(0);
+        Assert.Equal(2, list.Count);
+        Assert.Contains("加急", list.Select(e => (e as dynamic).text.ToString()).ToList());
+    }
 }

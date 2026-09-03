@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using XCode.Membership;
 
 namespace NewLife.Cube.Workflow;
 
@@ -479,4 +480,59 @@ public static class WorkflowHelper
     /// <param name="node">节点</param>
     /// <returns>JSON 文本</returns>
     public static String ToJson(JsonNode node) => node?.ToJsonString() ?? "";
+
+    /// <summary>常用语类别</summary>
+    public const String PhraseCategory = "Workflow.Phrase";
+
+    /// <summary>常用语内置回落</summary>
+    static readonly String[] _defaultPhrases = ["同意", "请补充材料", "驳回"];
+
+    /// <summary>常用语键名</summary>
+    /// <param name="tenantId">租户</param>
+    /// <returns>键名</returns>
+    static String PhraseName(Int32 tenantId) => $"tenant:{tenantId}";
+
+    /// <summary>读取常用语。空则回落内置三条</summary>
+    /// <param name="tenantId">租户。0=平台</param>
+    /// <returns>常用语列表 [{id,text}]</returns>
+    public static List<Object> PhraseList(Int32 tenantId)
+    {
+        var texts = new List<String>();
+        var p = Parameter.FindByUserIDAndCategoryAndName(0, PhraseCategory, PhraseName(tenantId));
+        if (p != null && !p.Value.IsNullOrEmpty())
+        {
+            try
+            {
+                if (JsonNode.Parse(p.Value) is JsonArray arr)
+                {
+                    foreach (var item in arr)
+                    {
+                        var txt = item?["text"]?.ToString();
+                        if (!txt.IsNullOrEmpty()) texts.Add(txt);
+                    }
+                }
+            }
+            catch { }
+        }
+        if (texts.Count == 0) texts = [.. _defaultPhrases];
+        return texts.Select((t, i) => (Object)new { id = i + 1, text = t }).ToList();
+    }
+
+    /// <summary>保存常用语（覆盖）。非法项丢弃</summary>
+    /// <param name="tenantId">租户。0=平台</param>
+    /// <param name="texts">常用语文本</param>
+    public static void SavePhrases(Int32 tenantId, IList<String> texts)
+    {
+        var clean = (texts ?? []).Where(t => !String.IsNullOrWhiteSpace(t)).Select(t => t.Trim()).Distinct().ToList();
+        var p = Parameter.FindByUserIDAndCategoryAndName(0, PhraseCategory, PhraseName(tenantId));
+        p ??= new Parameter { UserID = 0, Category = PhraseCategory, Name = PhraseName(tenantId) };
+        var arr = new JsonArray();
+        var idx = 1;
+        foreach (var t in clean)
+        {
+            arr.Add(new JsonObject { ["id"] = idx++, ["text"] = t });
+        }
+        p.Value = arr.ToJsonString();
+        p.Save();
+    }
 }
