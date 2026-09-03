@@ -13,3 +13,6 @@
     **2026-09-03 Amd-1（执行期架构修订）**：后端从「独立 NewLife.Cube.Workflow NuGet 模块」改为
     「并入 NewLife.Cube.ArcoVue/Workflow（WebAPI 版专属），命名空间 NewLife.Cube.Workflow(.Entity) 不变」；
     CubeDemoNC（MVC）不引用、不受影响。proposal 目标1/决策6/9、design §1/§3/§6.1/§11/§12、tasks T1、verify 命令已同步改写。
+    **执行进度**：Amd-1 已落地并提交；T1 数据模型（含 Biz 查询入口）已核完成；T2 接收人公共化完成（Osc260815 回归 14/14）。
+    编译：ArcoVue/CubeDemo/NewLife.Cube.Tests 0 error；CubeDemoNC 有**预存在** EntityController ImportFile 重复（与本号无关，待单独修）。
+    下一步 T3 状态机 WorkflowEngine（落点 NewLife.Cube.ArcoVue/Workflow）。

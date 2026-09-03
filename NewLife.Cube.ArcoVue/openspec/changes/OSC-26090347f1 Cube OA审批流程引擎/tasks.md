@@ -12,9 +12,9 @@
 
 ## T2 接收人公共化（不升级执行器）
 
-- [ ] 将 `AutomationActions.ResolveRecipientUserIds` 抽到 `NewLife.Cube/Membership/RecipientResolver.cs`（或现有可见公共类型）
-- [ ] 自动化改为调用同一方法；`Osc260815` 接收人相关测试仍过
-- [ ] Workflow 只引用 Resolver，不引用 `AutomationExecutor`
+- [x] 将 `AutomationActions.ResolveRecipientUserIds` 抽到 `NewLife.Cube/Membership/RecipientResolver.cs`
+- [x] 自动化改为调用同一方法；`Osc260815` 接收人相关测试仍过（回归 14/14）
+- [x] Workflow 只引用 Resolver，不引用 `AutomationExecutor`
 
 ## T3 状态机
 
