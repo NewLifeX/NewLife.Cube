@@ -7,7 +7,34 @@
 
 ## 执行阶段记录（openspec-apply）
 
-- （空）Draft，未实现。
+### T1-T9（后端核心 + 前端 + 文档）— 已完成并提交
+
+- T1 数据模型（Workflow 五实体 + WorkflowGraph/Entity 注册）、T2 接收人公共化（regression 14/14）、T3 状态机引擎（or/and/sequence/403/409/撤回/热更新 GraphSnapshot）、T4 写锁 + 超时 Cron（full/Scope/解锁）、T5 挂钩（GetPage/GetList workflow 块 + Meta）、T6 WorkflowController、T7 前端路由占位 —— 全部勾选提交。
+- T8 前端：api-core `createWorkflowApi`（vitest 51 绿）→ ArcoVue 列表「提交审批/流程进度」（useWorkflowList.spec 12 绿）→ 提交抽屉/进度面板/接收人选择/待办·已办·我发起 → **设计器切换 FlowGram.AI**（`@flowgram.ai/fixed-layout-editor`，React 桥 Vue，固定布局文档=有序节点、内置 start/end；`flowgramGraph.ts` 双向映射 spec 6 绿；vue-tsc 0 error；vite build 通过，FlowGram 懒加载 chunk ~895KB）。vitest 全仓 830 绿（87 文件）。
+- T9 文档：`Doc/功能清单.md` WF-1..WF-4、`Doc/Api/核心接口架构.md` OA 审批流程行、`Doc/常见问题FAQ.md` §41.9、ArcoVue 迁移方案 §8.5.5 —— 4 处提交。
+
+### T10 测试与构建 — 已完成并提交
+
+- 新增 `WorkflowMatrixTests` 7 例：会签 quorum=0.6 两票过、or 驳回整单、依次首人驳回、回退清下游并重开目标（重开推进到下游）、前加签挂起→通过后恢复、XOR 缺 defaultTarget 发布校验失败、空候选人 Running+error 意见。
+- 新增 `WorkflowExclusiveTests` 2 例：顺序二次 409；**并发双提**——实测复现 Start 在途检查非原子的双插缺陷 → `WorkflowEngine.Start` 进程内 `_startGate` 互斥（排他检查+事务落库）修复。跨进程多实例仍需 DB 唯一约束（测试类备注，实现审计关注项）。
+- 回归：`Workflow*` + `Osc260815` 33/33 绿；`dotnet build` NewLife.Cube 0 error；web vitest 830 绿。
+
+### T11 手工冒烟（实现期）— 环境阻塞，待人工
+
+- **阻塞原因**：CubeDemo 宿主在本机构建失败——`MSB3552 找不到资源文件 "**/*.resx"`，来自 `NewLife.Cube.Vue/NewLife.Cube.React`（`EmbeddedResource Include="wwwroot\**\*"`）在 .NET SDK 10.0.400 下的回归（清除 obj/bin 复现、与本 OSC 改动无关；CubeDemo 引用全部主题皮肤）。宿主无法启动 → Meta enabled/发布定义/会签提交等 HTTP 冒烟无法在本会话执行。
+- **待人工清单**（宿主就绪后逐条执行，对应 tasks.md T11）：
+  1. CubeDemo `appsettings.json` ConnectionStrings 增加 `"Workflow": "Data Source=..\\Data\\Workflow.db;provider=sqlite"`（其余成员/Cube/Log 同款）；`dotnet run` 于 CubeDemo。
+  2. `GET https://localhost:7116/Cube/Workflow/Meta` → `{ enabled: true }`；匿名 GetPage 仅 enabled。
+  3. Admin/User 登录发布定义（start→approve(or)→end），非法图 400。
+  4. 选 2 条 User 记录提交 → 1 Instance + 2 Subject；Inbox 候选人收 InApp；或签/会签/依次签通过路径。
+  5. full 锁：Running 中普通 PUT 失败、流程 Patch 成功。
+  6. 不引用模块的宿主（CubeDemoNC）：无待办槽、Meta `{ enabled:false }`、POST /Instances 404。
+
+### 已由自动化覆盖的验收标准（供 verify 阶段引用）
+
+AC-01/16（无模块 404 + enabled false）、AC-02 非法图发布校验、AC-03 批量提交（Osc47f1 集成）、AC-04 或签、AC-05 会签、AC-06 依次、AC-07 写锁、AC-10 403、AC-11 排他 409、AC-13 撤回、AC-14 回退、AC-15 空候选人、AC-17 自动化回归 → 均由上述单测/集成测试覆盖（WorkflowEngineTests/WorkflowMatrixTests/WorkflowExclusiveTests/WorkflowLockTests/WorkflowPageOverlayTests + Osc260815 回归 33/33）。
+AC-08 设计器保存/映射由 vitest + vue-tsc + vite build 覆盖；「运行时不在浏览器执行」为架构设计属性（设计评审）。
+AC-12（混 TypePath/复合主键/N>100）、AC-18 由后端校验/引擎实现，前端 400 呈现待前端 E2E 或 T11 手工补充。
 
 ## 验收阶段记录（openspec-verify）
 

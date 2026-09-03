@@ -89,3 +89,5 @@
 - [ ] Demo 引用模块：Meta.enabled=true；Admin/User 发布定义；提交 2 条会签通过
 - [ ] full 锁普通 PUT 失败；流程 Patch 成功
 - [ ] 不引用模块的宿主：无待办槽
+
+> **T11 阻塞注记（2026-09-03）**：CubeDemo 宿主在本机 SDK 10.0.400 构建失败——`MSB3552 找不到资源文件 "**/*.resx"` 源自 `NewLife.Cube.Vue/NewLife.Cube.React`（`EmbeddedResource Include="wwwroot\**\*"`，清除 obj/bin 后复现，与本 OSC 改动无关，CubeDemo 引用全部主题皮肤）。宿主无法启动，HTTP 冒烟无法自动执行。逐条待办 + 命令见 verify.md「T11 手工冒烟」，宿主就绪后人工验证并在验收阶段勾选。

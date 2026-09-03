@@ -16,3 +16,13 @@
     T4 写锁拦截器+超时 Cron 已实现（WorkflowLockTests 绿：full/Scope/解锁）。全部 Workflow 测试 6/6。
     编译：NewLife.Cube/ArcoVue/CubeDemo/NewLife.Cube.Tests 0 error；CubeDemoNC 有**预存在** EntityController ImportFile 重复（与本号无关）。
     下一步 T5 核心挂钩（GetPage/GetList workflow 块 + Meta）→ T6 WorkflowController → T8 UI → T9 文档 → T10 全矩阵单测。
+    **T5-T10 全部完成**：T5 挂钩（GetPage/GetList workflow 块 + Meta）、T6 WorkflowController 全 API、T7 前端路由占位、
+    T8 前端（api-core createWorkflowApi 51 绿 → ArcoVue 列表提交审批/流程进度 + 提交抽屉/进度面板/接收人选择/待办·已办·我发起；
+    **设计器切换 FlowGram.AI**（fixed-layout-editor + React 桥 Vue，graph 双向映射 spec 6 绿，vue-tsc 0 error，vite build 通过，chunk ~895KB 懒加载）；vitest 全仓 830 绿）。
+    T9 文档 4 处（功能清单 WF-1..4 / 核心接口架构 / FAQ §41.9 / 迁移方案 §8.5.5）。
+    T10 补测：WorkflowMatrixTests 7 例（会签 quorum、or/sequence 驳回、回退重开、前加签、XOR 发布校验、空候选人）
+    + WorkflowExclusiveTests 2 例——**并发双提实测复现 Start 双插 race**，WorkflowEngine.Start 增加进程内 _startGate 互斥修复
+    （跨进程需 DB 唯一约束，实现审计关注项）；Workflow*+Osc260815 回归 33/33；dotnet build 0 error。
+    **T11 阻塞（待人工）**：CubeDemo 宿主本机 MSB3552（NewLife.Cube.Vue/React wwwroot 嵌入在 SDK 10.0.400 回归，清除 obj 复现，
+    与本号无关，CubeDemo 引用全部主题），HTTP 冒烟无法自动执行 → 详细清单见 verify.md「T11 手工冒烟」。
+    状态：实现期全部代码/测试/文档工作完成并提交；待宿主就绪人工冒烟 → 验收。
