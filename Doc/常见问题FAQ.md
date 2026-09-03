@@ -454,6 +454,8 @@ return Json(new { code = 0, data = new { id = att.Id, url = att.Url } });
 
 ## 41.9 如何实现数据审批？
 
+> **2026-09-03（OSC-26090347f1）**：平台级/通用审批请用 Cube OA 审批模块（`NewLife.Cube/Workflow`：定义/实例/待办/意见 + 提交/写锁/流程 PATCH，接口见 `Doc/Api/核心接口架构.md`），**勿在业务表加 `ApprovalStatus` 字段**。本小节「实体加状态 + 行内按钮」方案仅适用于简易单级审批。
+
 ### 问题
 
 实现数据的审批流程。

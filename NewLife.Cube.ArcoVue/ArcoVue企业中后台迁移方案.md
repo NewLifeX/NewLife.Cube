@@ -741,6 +741,8 @@ DefaultList 固定容器
 
 企微 `ApprovalInfo` 只是 OAuth 补卡 DTO，不是魔方审批引擎。最小集合建议独立 `IModule`：定义 JSON（禁止任意 SQL）、实例、任务（与 Inbox 打通）、服务端状态机 + Job 超时。未引用模块时皮肤隐藏待办槽与设计器入口（能力探测类似 `GetAiConfig`）。OSC-0010 从「样例页」升级为「设计器对接定义 API」，仍不是把自动化换成画布执行器。
 
+> **落地（2026-09-03，OSC-26090347f1）**：按上表「方案 A（最小增量）」交付——流程引擎随 WebAPI 核心库并入 `NewLife.Cube/Workflow`（命名空间 `NewLife.Cube.Workflow(.Entity)`，非独立 NuGet、非皮肤仓）；提供定义 JSON、实例/主体/任务/意见五表、服务端状态机与超时 Job；实体列表**零改业务表**接入（GetPage/GetList 注入 workflow 块与 `__wf*`，提交→写锁→审批通道 PATCH）；设计器用 FlowGram.AI 固定布局、运行时为 C# 引擎（浏览器不执行）；CubeNC/CubeDemoNC 不 Link 该目录、MVC 无入口。验证见 OSC-26090347f1 tasks/verify。
+
 #### 8.5.6 建议立项切分
 
 首页「用户 > 主角色」已由 OSC-26082815a1 落地（`HomeJson` + Parameter `Workbench.Role` + `/Cube/Workbench`）。
