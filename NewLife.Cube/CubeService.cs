@@ -234,6 +234,9 @@ public static class CubeService
         // 添加定时作业
         services.AddCubeJob();
 
+        // 工作流写锁拦截器挂全局（WebAPI 核心库自带：仅审批中且有在途主体时拦普通 Update/Delete；MVC/CubeNC 不 Link 无副作用）
+        NewLife.Cube.Workflow.WorkflowHost.Register();
+
         // 注册文件存储服务。当文件提供或文件拉取任一功能开启时，启用文件存储
         if (set.FileStorageProvide || set.FileStorageFetch)
             services.AddCubeFileStorage();
