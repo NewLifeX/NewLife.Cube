@@ -110,6 +110,13 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         var ip16Errors = ip16Key.IsNullOrEmpty() ? 0 : _cache.Get<Int32>(ip16Key);
 
         var set = CubeSetting.Current;
+
+        // 安全开关：关闭密码登录（AllowLogin=false，仅保留SSO等）后，直接拒绝所有账密登录请求，
+        // 防止攻击者绕过登录页直接调用登录接口。本方法是 MVC 版与 API 版共用的账密登录汇聚点
+        // （Auth/Login、Admin/User/Login 均汇聚到此），统一在此拦截即可覆盖全部密码登录入口
+        if (!set.AllowLogin)
+            throw new InvalidOperationException("已禁止密码登录，请使用 SSO 或其它登录方式");
+
         try
         {
             if (username.IsNullOrEmpty()) throw new ArgumentNullException(nameof(username), "用户名不能为空！");

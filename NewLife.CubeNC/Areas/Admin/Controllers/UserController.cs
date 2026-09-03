@@ -295,11 +295,12 @@ public class UserController : EntityController<User, UserModel>
         if (ms != null && !set.AllowLogin)
         {
             if (logId > 0) throw new Exception("已完成第三方登录，但无法绑定本地用户且没有开启自动注册，建议开启OAuth应用的自动注册");
-            if (ms.Count == 0)
-            {
-                //throw new Exception("禁用了本地密码登录，且没有配置第三方登录");
-                set.AllowLogin = true;
-            }
+
+            // 没有任何第三方登录渠道，且短信/邮箱登录也未开启时明确报错；
+            // 不得静默重开密码登录（旧实现 set.AllowLogin=true 仅影响页面展示，服务层已强制拦截账密登录，
+            // 两者叠加会陷入"页面有表单却登录不了"的困惑状态）
+            if (ms.Count == 0 && !set.EnableSms && !set.EnableMail)
+                throw new Exception("已禁止密码登录，且未配置第三方登录渠道，请先在OAuth应用中启用SSO登录");
 
             // 只有一个，跳转
             if (ms.Count == 1)
