@@ -16,6 +16,7 @@ import { buildSortPayload, applyChartData, emptyViewFilter, normalizeFilter } fr
 import { normalizePageSize } from '@/core/utils/viewMapping';
 import { buildViewFilterParam, matchesViewFilter } from '@/core/utils/searchFilters';
 import { getPageCached } from '@/core/utils/pageMetaCache';
+import type { WorkflowPageBlock } from '@/core/types/workflow';
 import { useTenantStore } from '@/stores/tenant';
 import { useRecentKeywords } from '@/core/composables/useRecentKeywords';
 import type { ListContext } from './listContext';
@@ -38,6 +39,7 @@ export function useListQuery(ctx: ListContext) {
     typePath,
     listFields,
     pageSetting,
+    workflowBlock,
     pkField,
     searchFields,
     addFields,
@@ -158,6 +160,8 @@ export function useListQuery(ctx: ListContext) {
       (meta.setting as PageSetting | undefined) ??
       (meta.pageSetting as PageSetting | undefined) ??
       null;
+    // 流程能力块（OSC-26090347f1）：随 GetPage 刷新，供列表工具栏/行操作计算按钮矩阵
+    workflowBlock.value = (meta.workflow as WorkflowPageBlock | undefined) ?? null;
     // 主时间字段与关键字开关（OSC-0016）：setting 透传搜索面板固定控件
     masterTimeName.value = pageSetting.value?.masterTimeName ?? null;
     masterTimeDisplayName.value = pageSetting.value?.masterTimeDisplayName ?? null;

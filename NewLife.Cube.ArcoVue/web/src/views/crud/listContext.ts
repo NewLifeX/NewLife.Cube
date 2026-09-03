@@ -63,6 +63,7 @@ import {
 import { detectTreeData } from '@/core/utils/tree';
 import { buildTree, canBuildTree } from '@/core/utils/treeBuilder';
 import { hexToRgba } from './useListViews';
+import type { WorkflowPageBlock } from '@/core/types/workflow';
 
 /**
  * DefaultList 共享状态上下文（OSC-260813c3e9）：全部 ref/reactive/computed/常量只创建一次，
@@ -81,6 +82,8 @@ export function createListContext(props: { type: string; authId?: number }) {
   const detailFields = ref<FieldMeta[]>([]);
   const pageSetting = ref<PageSetting | null>(null);
   const pkField = ref('id');
+  /** GetPage.workflow 类型级能力块（OSC-26090347f1）：useListQuery.loadFields 写入，DefaultList 审批入口消费 */
+  const workflowBlock = ref<WorkflowPageBlock | null>(null);
 
   const tableData = ref<Record<string, unknown>[]>([]);
   /** 后端原始数据（未应用视图级前端筛选 viewFilter）；视图切换/筛选变化时复用避免重复请求（重绘优化） */
@@ -734,6 +737,7 @@ export function createListContext(props: { type: string; authId?: number }) {
     drawerCanNext,
     showSelfOnlyUserAlert,
     selfOnlyUserAlertMessage,
+    workflowBlock,
   };
 }
 
