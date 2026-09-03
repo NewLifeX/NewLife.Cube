@@ -4,7 +4,19 @@ import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
 import { useUserProfileStore } from '@/stores/userProfile';
 import { useAppStore } from '@/stores/app';
-import { registerLeafRoutes } from '@/core/utils/menuRoutes';
+import { registerLeafRoutes, resolvePageComponent } from '@/core/utils/menuRoutes';
+
+// OA 审批独立页（OSC-26090347f1）：菜单未播种/visible=false 时不注册动态路由，
+// 此处静态兜底注册使 URL 直达可用（/Cube/Workflow/{Todo|Done|Started|Designer}）。
+const oaLeafRoutes: RouteRecordRaw[] = ['Todo', 'Done', 'Started', 'Designer'].map((sub) => {
+  const path = `Cube/Workflow/${sub}`;
+  return {
+    path,
+    name: `OaWorkflow${sub}`,
+    component: resolvePageComponent(`/${path}`),
+    meta: { title: sub },
+  };
+});
 
 const routes: RouteRecordRaw[] = [
   {
@@ -37,6 +49,8 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/home/index.vue'),
         meta: { title: '工作台' },
       },
+      // OA 审批独立页静态路由（resolvePageComponent 特判 /Cube/Workflow 段）
+      ...oaLeafRoutes,
       {
         /** 系统监控页（菜单 visible=false 不注册动态路由，此处静态兜底）；pageKind=home → DefaultHome。自定义工作台在静态 /home */
         path: 'Admin/Index',
