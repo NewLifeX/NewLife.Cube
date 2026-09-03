@@ -238,6 +238,12 @@ public class TokenService : ITokenService
     {
         EnsureOAuthServer();
 
+        // 安全开关：后台关闭密码登录（AllowLogin=false）后，密码式授权同样拒绝。
+        // 密码式授权直接用用户名密码换取令牌，绕过登录页与 UserService.LoginByPassword 的
+        // AllowLogin 守卫，不在此拦截将留下另一条账密通道（/Sso/Token grant_type=password 等）
+        if (!CubeSetting.Current.AllowLogin)
+            throw new XException("已禁止密码登录，请使用 SSO 或其它登录方式");
+
         var log = new AppLog
         {
             Action = "Password",
