@@ -18,19 +18,20 @@
 
 ## T3 状态机
 
-- [ ] `WorkflowEngine.Start`：同 TypePath、keys≤100、EntityKey 归一、复合主键 400、排他 409、StartFilter 全主体 Match、钉扎 GraphSnapshot、首节点任务
-- [ ] Approve/Reject：or/and/sequence 矩阵；乐观并发 409
-- [ ] Rollback：下游 Cancelled + 目标重生
-- [ ] AddSign 前/后临时节点；不写回 Definition
-- [ ] Transfer / Cc / Withdraw / Cancel / Jump
-- [ ] XOR：Filter 第一条主体；无命中走 default；运行期无 default 视为数据损坏失败停止
-- [ ] `WorkflowWriteScope` AsyncLocal
+- [x] `WorkflowEngine.Start`：同 TypePath、keys≤100、EntityKey 归一、复合主键 400、排他 409、StartFilter 全主体 Match、钉扎 GraphSnapshot、首节点任务（已实现+单测）
+- [x] Approve/Reject：or/and/sequence 矩阵；乐观并发 409（or/and/sequence 已实现+单测；乐观并发在事务内重读）
+- [x] Rollback：下游 Cancelled + 目标重生（已实现，T10 矩阵单测补）
+- [x] AddSign 前/后临时节点；不写回 Definition（已实现，T10 矩阵单测补）
+- [x] Transfer / Cc / Withdraw / Cancel / Jump（已实现；Withdraw 单测绿）
+- [x] XOR：Filter 第一条主体；无命中走 default；运行期无 default 视为数据损坏失败停止（已实现，T10 矩阵单测补）
+- [x] `WorkflowWriteScope` AsyncLocal（已实现）
+- [x] 通知：任务到达/驳回/办结/知会 → NotificationRecord（InApp，T7 语义随引擎已落地）
 
 ## T4 拦截器与超时
 
-- [ ] `WorkflowWriteInterceptor.Init/Valid` 矩阵 design §6.2
-- [ ] 模块未注册不挂拦截器
-- [ ] `[CronJob("WorkflowTimeoutTick", "0 */5 * * * ?")]` pass/reject/transfer
+- [x] `WorkflowWriteInterceptor.Init/Valid` 矩阵 design §6.2（full 锁/Scope 放行/nodeFields 候选人字段权；WorkflowLockTests 绿）
+- [x] 模块未注册不挂拦截器（CubeNC/CubeDemoNC 不 Link 无副作用；WebAPI AddCube→WorkflowHost.Register 幂等挂 Global）
+- [x] `[CronJob("WorkflowTimeoutTick", "0 */5 * * * ?")]` pass/reject/transfer（WorkflowEngine.TimeoutTick）
 
 ## T5 Cube 核心挂钩
 
