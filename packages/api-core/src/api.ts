@@ -814,3 +814,146 @@ export function createWorkbenchApi(request: RequestFn) {
       }),
   };
 }
+
+/** Workflow Meta 能力探测 */
+export interface WorkflowMeta {
+  enabled: boolean;
+  todoCount?: number;
+}
+
+/** 流程定义视图 */
+export interface WorkflowDefinitionItem {
+  Id: number;
+  TypePath: string;
+  Name: string;
+  Enable: boolean;
+  Published: boolean;
+  Version: number;
+  LockPolicy?: string;
+  StartFilter?: string;
+  graphJson?: string;
+  Remark?: string;
+}
+
+/** 发起请求体 */
+export interface WorkflowStartBody {
+  typePath: string;
+  keys: string[];
+  definitionId: number;
+  comment?: string;
+}
+
+/** 审批意见体 */
+export interface WorkflowVoteBody {
+  comment?: string;
+}
+
+/** 接收人体（与后端 to schema 同构） */
+export interface WorkflowRecipient {
+  kind?: 'users' | 'roles' | 'departments';
+  users?: number[];
+  roles?: number[];
+  departments?: number[];
+}
+
+/** 加签/转办/知会体 */
+export interface WorkflowTransferBody {
+  to: WorkflowRecipient;
+  comment?: string;
+  before?: boolean;
+}
+
+/** 目标节点体 */
+export interface WorkflowJumpBody {
+  targetNodeId: string;
+  comment?: string;
+}
+
+/** 批量同意体 */
+export interface WorkflowBatchBody {
+  ids: number[];
+  comment?: string;
+}
+
+/** 常用语项 */
+export interface WorkflowPhrase {
+  id: number;
+  text: string;
+}
+
+/**
+ * OA 审批流程 API（OSC-26090347f1）。后端 [Route("Cube/Workflow")]，无 /api 前缀
+ */
+export function createWorkflowApi(request: RequestFn) {
+  return {
+    meta: () => request<WorkflowMeta>({ url: '/Cube/Workflow/Meta', method: 'get' }),
+
+    definitions: (params?: { typePath?: string }) =>
+      request<WorkflowDefinitionItem[]>({ url: '/Cube/Workflow/Definitions', method: 'get', params }),
+
+    createDefinition: (data: Partial<WorkflowDefinitionItem>) =>
+      request<WorkflowDefinitionItem>({ url: '/Cube/Workflow/Definitions', method: 'post', data }),
+
+    updateDefinition: (id: number | string, data: Partial<WorkflowDefinitionItem>) =>
+      request<WorkflowDefinitionItem>({ url: `/Cube/Workflow/Definitions/${id}`, method: 'put', data }),
+
+    publishDefinition: (id: number | string) =>
+      request<WorkflowDefinitionItem>({ url: `/Cube/Workflow/Definitions/${id}/Publish`, method: 'post' }),
+
+    start: (data: WorkflowStartBody) =>
+      request<{ instanceId: number }>({ url: '/Cube/Workflow/Instances', method: 'post', data }),
+
+    instance: (id: number | string) =>
+      request<unknown>({ url: `/Cube/Workflow/Instances/${id}`, method: 'get' }),
+
+    withdraw: (id: number | string, data?: WorkflowVoteBody) =>
+      request<unknown>({ url: `/Cube/Workflow/Instances/${id}/Withdraw`, method: 'post', data }),
+
+    cancel: (id: number | string, data?: WorkflowVoteBody) =>
+      request<unknown>({ url: `/Cube/Workflow/Instances/${id}/Cancel`, method: 'post', data }),
+
+    jump: (id: number | string, data: WorkflowJumpBody) =>
+      request<unknown>({ url: `/Cube/Workflow/Instances/${id}/Jump`, method: 'post', data }),
+
+    claim: (id: number | string) =>
+      request<unknown>({ url: `/Cube/Workflow/Tasks/${id}/Claim`, method: 'post' }),
+
+    approve: (id: number | string, data?: WorkflowVoteBody) =>
+      request<unknown>({ url: `/Cube/Workflow/Tasks/${id}/Approve`, method: 'post', data }),
+
+    reject: (id: number | string, data?: WorkflowVoteBody) =>
+      request<unknown>({ url: `/Cube/Workflow/Tasks/${id}/Reject`, method: 'post', data }),
+
+    addSign: (id: number | string, data: WorkflowTransferBody) =>
+      request<unknown>({ url: `/Cube/Workflow/Tasks/${id}/AddSign`, method: 'post', data }),
+
+    transfer: (id: number | string, data: WorkflowTransferBody) =>
+      request<unknown>({ url: `/Cube/Workflow/Tasks/${id}/Transfer`, method: 'post', data }),
+
+    cc: (id: number | string, data: WorkflowTransferBody) =>
+      request<unknown>({ url: `/Cube/Workflow/Tasks/${id}/Cc`, method: 'post', data }),
+
+    rollback: (id: number | string, data: WorkflowJumpBody) =>
+      request<unknown>({ url: `/Cube/Workflow/Tasks/${id}/Rollback`, method: 'post', data }),
+
+    batchApprove: (data: WorkflowBatchBody) =>
+      request<unknown>({ url: '/Cube/Workflow/Tasks/BatchApprove', method: 'post', data }),
+
+    todo: (params?: { pageSize?: number }) =>
+      request<unknown[]>({ url: '/Cube/Workflow/Todo', method: 'get', params }),
+
+    started: (params?: { pageSize?: number }) =>
+      request<unknown[]>({ url: '/Cube/Workflow/Started', method: 'get', params }),
+
+    done: (params?: { pageSize?: number }) =>
+      request<unknown[]>({ url: '/Cube/Workflow/Done', method: 'get', params }),
+
+    phrases: () => request<WorkflowPhrase[]>({ url: '/Cube/Workflow/Phrases', method: 'get' }),
+
+    savePhrases: (texts: string[]) =>
+      request<unknown>({ url: '/Cube/Workflow/Phrases', method: 'put', data: { texts } }),
+
+    patchEntity: (typePath: string, key: string | number, fields: Record<string, unknown>) =>
+      request<unknown>({ url: `/Cube/Workflow/Entities/${typePath}/${key}/Patch`, method: 'post', data: fields }),
+  };
+}
