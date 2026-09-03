@@ -422,6 +422,11 @@ public class CubeSetting : Config<CubeSetting>
     [Category("系统功能")]
     public Boolean EnableOAuthServer { get; set; } = true;
 
+    /// <summary>文件管理。是否启用后台文件管理，可浏览/上传/下载/删除站点内文件，存在安全风险，默认false</summary>
+    [Description("文件管理。是否启用后台文件管理，可浏览/上传/下载/删除站点内文件，存在安全风险")]
+    [Category("系统功能")]
+    public Boolean EnableFileManager { get; set; }
+
     /// <summary>多租户。是否支持多租户，租户模式禁止访问系统管理，平台管理模式禁止访问租户页面</summary>
     [Description("多租户。是否支持多租户，租户模式禁止访问系统管理，平台管理模式禁止访问租户页面")]
     [Category("系统功能")]

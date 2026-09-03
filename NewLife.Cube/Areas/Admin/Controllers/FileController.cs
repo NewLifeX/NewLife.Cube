@@ -9,6 +9,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 /// <summary>文件管理</summary>
 [DisplayName("文件")]
 [EntityAuthorize(PermissionFlags.Detail)]
+[FileManagerAuthorize]
 [AdminArea]
 [Menu(28, false, Icon = "Files")]
 public class FileController : ControllerBaseX

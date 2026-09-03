@@ -25,7 +25,9 @@ public class OAuthAppService : IOAuthAppService
     #region 方法
     private void Valid()
     {
-        var set = Setting;
+        // 优先使用注入的 Setting；未注入时回退全局配置，确保 EnableOAuthServer 开关始终生效，
+        // 不依赖 SsoController 构造函数的手动接线（否则服务被直接调用时开关形同虚设）
+        var set = Setting ?? CubeSetting.Current;
         if (set != null && !set.EnableOAuthServer) throw new XException("未启用OAuth服务");
     }
 
