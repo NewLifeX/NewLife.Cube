@@ -113,11 +113,11 @@ public class WorkflowWriteInterceptor : EntityInterceptor
         return true;
     }
 
-    /// <summary>当前用户在该实例可见任务上的节点可写字段并集（nodeFields）</summary>
+    /// <summary>当前用户在该实例可见任务上的节点可写字段并集（nodeFields）。供 WorkflowPageOverlay 复用</summary>
     /// <param name="instance">实例</param>
     /// <param name="userId">用户</param>
     /// <returns>字段名集合</returns>
-    static HashSet<String> CurrentWritable(WorkflowInstance instance, Int32 userId)
+    internal static HashSet<String> CurrentWritable(WorkflowInstance instance, Int32 userId)
     {
         var set = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
         var tasks = WorkflowTask.FindAll(WorkflowTask._.InstanceId == instance.Id)

@@ -35,11 +35,11 @@
 
 ## T5 Cube 核心挂钩
 
-- [ ] `WorkflowPageOverlay.ApplyType`：GetPage 在 PrepareFieldsForApi 之后；匿名仅 `enabled`
-- [ ] `ApplyRows`：`__wfStatus` / `__wfInstanceId` / `__wfCanStart`；IN 查询无 N+1
-- [ ] GetDetail 登录记录级 wfVisible/wfWritable
-- [ ] ~~CubeNC 双栈~~（Amd-1 取消）：仅 `NewLife.Cube`（WebAPI）`ReadOnlyEntityController` 挂钩，不改 CubeNC
-- [ ] `GET /Cube/Workflow/Meta`
+- [x] `WorkflowPageOverlay.GetTypeBlock`：GetPage（ReadOnlyEntityController）PrepareFieldsForApi 后注入 `workflow` 块；匿名仅 `enabled`，登录加 definitionCount/lockPolicy/canStart（WorkflowPageOverlayTests 匿名矩阵绿）
+- [x] `ApplyRows`：`__wfStatus` / `__wfInstanceId` / `__wfCanStart`；批量 IN 无 N+1（覆盖测试：running/none/approved 绿）
+- [x] GetDetail 登录记录级：ApplyRow 注入 `__wfStatus/__wfInstanceId/__wfWritable`（行 JSON SetItem 平铺，序列化探针已证）
+- [x] ~~CubeNC 双栈~~（Amd-1 取消）：仅 `NewLife.Cube`（WebAPI）`ReadOnlyEntityController` 挂钩，不改 CubeNC
+- [x] `GET /Cube/Workflow/Meta`（WorkflowController.Meta：匿名 {enabled:true}；登录加 todoCount）
 
 ## T6 API
 

@@ -1,15 +1,19 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Reflection;
 using System.Xml.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Caching;
 using NewLife.Cube.AI;
+using NewLife.Cube.Automation;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
+using NewLife.Cube.Workflow;
 using NewLife.Log;
 using NewLife.Security;
 using NewLife.Serialization;
@@ -74,6 +78,19 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             var n = narrowed.TrimEnd('d');
             if (Int32.TryParse(n, out var d)) days = d;
         }
+
+        // 流程行覆盖（OSC-26090347f1）：登录且类型启用 → 行 JSON 注入 __wfStatus/__wfInstanceId/__wfCanStart
+        try
+        {
+            var wfUser = ManageProvider.User;
+            if (wfUser != null && list != null)
+            {
+                var wfPath = AutomationPaths.ResolveTypePath(typeof(TEntity));
+                WorkflowPageOverlay.ApplyRows(list.Cast<IEntity>(), wfPath, wfUser);
+            }
+        }
+        catch (Exception ex) { XTrace.WriteLine("列表流程覆盖跳过：{0}", ex.Message); }
+
         //return list.ToOkApiResponse().WithList(p); 
         return new ApiListResponse<TEntity>
         {
@@ -100,6 +117,18 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
         // 验证数据权限
         Valid(entity, DataObjectMethodType.Select, false);
+
+        // 流程单行覆盖（OSC-26090347f1）：__wfStatus/__wfInstanceId/__wfWritable（登录且启用时）
+        try
+        {
+            var wfUser = ManageProvider.User;
+            if (wfUser != null)
+            {
+                var wfPath = AutomationPaths.ResolveTypePath(typeof(TEntity));
+                WorkflowPageOverlay.ApplyRow(entity, wfPath, wfUser);
+            }
+        }
+        catch (Exception ex) { XTrace.WriteLine("详情流程覆盖跳过：{0}", ex.Message); }
 
         //return entity.ToOkApiResponse();
         return new ApiResponse<TEntity> { Data = entity };
@@ -138,6 +167,16 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         var detail = PrepareMapViewFields(ViewKinds.Detail);
         var search = PrepareMapViewFields(ViewKinds.Search);
 
+        // 流程能力块（OSC-26090347f1）：类型级 workflow 开关；匿名仅 enabled，登录加 canStart/definitionCount/lockPolicy
+        String wfPath = null;
+        IDictionary<String, Object> workflow = null;
+        try
+        {
+            wfPath = AutomationPaths.ResolveTypePath(typeof(TEntity));
+            workflow = WorkflowPageOverlay.GetTypeBlock(wfPath, ManageProvider.User);
+        }
+        catch (Exception ex) { XTrace.WriteLine("GetPage workflow 块计算跳过：{0}", ex.Message); }
+
         var data = new
         {
             setting,
@@ -146,6 +185,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             editForm,
             detail,
             search,
+            workflow,
         };
 
         return new ApiResponse<Object>

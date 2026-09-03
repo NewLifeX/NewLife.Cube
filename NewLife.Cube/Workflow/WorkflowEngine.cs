@@ -54,15 +54,19 @@ public static class WorkflowEngine
         // 解析发起条件
         var filter = AutomationFilter.ParseViewFilter(definition.StartFilter);
 
+        // 主键归一化：查询与落库使用同一条文本（数值 InvariantCulture、无前导零；字符串 trim）
+        var keys2 = kk.Select(e => NormalizeKeyText(e, pkField)).ToList();
+
         // 加载业务行（首条用于条件与标题），同时做在途排他
         var rows = new List<IEntity>();
-        foreach (var key in kk)
+        for (var i = 0; i < keys2.Count; i++)
         {
+            var key = keys2[i];
             // 同一记录同时最多一条在途
             if (WorkflowSubject.FindRunning(typePath, key) != null)
                 throw new WorkflowException(409, $"记录[{key}]已有在途审批");
 
-            var row = factory.FindByKey(NormalizeKey(key, pkField));
+            var row = factory.FindByKey(NormalizeKey(kk[i], pkField));
             if (row == null || (row as IEntity).IsNullKey) throw new WorkflowException(404, $"记录[{key}]不存在");
             rows.Add(row);
         }
@@ -108,12 +112,12 @@ public static class WorkflowEngine
                 var row = rows[i];
                 var master = factory.Table?.Master?.Name;
                 var title = master.IsNullOrEmpty() ? null : row[master]?.ToString();
-                if (title.IsNullOrEmpty()) title = kk[i];
+                if (title.IsNullOrEmpty()) title = keys2[i];
                 var subject = new WorkflowSubject
                 {
                     InstanceId = instance.Id,
                     TypePath = typePath,
-                    EntityKey = kk[i],
+                    EntityKey = keys2[i],
                     Title = title.Cut(100),
                 };
                 subject.Insert();
@@ -914,10 +918,23 @@ public static class WorkflowEngine
         throw new WorkflowException(400, $"无法解析实体路径[{np}]，请确认该实体有管理页面");
     }
 
+    /// <summary>主键归一化为可存储文本（数值 InvariantCulture、字符串 trim）</summary>
+    /// <param name="key">原始值</param>
+    /// <param name="field">主键字段</param>
+    /// <returns>归一化文本</returns>
+    static String NormalizeKeyText(String key, XCode.Configuration.FieldItem field)
+    {
+        var obj = NormalizeKey(key, field);
+        if (obj == null) return "";
+        if (obj is String s) return s.Trim();
+        if (obj is Guid g) return g.ToString("N");
+        return Convert.ToString(obj, System.Globalization.CultureInfo.InvariantCulture);
+    }
+
     /// <summary>主键归一化（与 subject.EntityKey 同一格式）</summary>
     /// <param name="key">原始值</param>
     /// <param name="field">主键字段</param>
-    /// <returns>归一化字符串</returns>
+    /// <returns>归一化值</returns>
     static Object NormalizeKey(String key, XCode.Configuration.FieldItem field)
     {
         var type = field?.Type ?? typeof(Object);
