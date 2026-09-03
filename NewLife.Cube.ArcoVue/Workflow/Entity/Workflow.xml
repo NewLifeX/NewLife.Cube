@@ -1,0 +1,163 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<EntityModel xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="https://newlifex.com https://newlifex.com/Model202509.xsd" Document="https://newlifex.com/xcode/model" ModelVersion="2.0.2026.130" xmlns="https://newlifex.com/Model202509.xsd">
+  <Option>
+    <!--类名模板。其中{name}替换为Table.Name，如{name}Model/I{name}Dto等-->
+    <ClassNameTemplate />
+    <!--显示名模板。其中{displayName}替换为Table.DisplayName-->
+    <DisplayNameTemplate />
+    <!--基类。可能包含基类和接口，其中{name}替换为Table.Name-->
+    <BaseClass>Entity</BaseClass>
+    <!--命名空间-->
+    <Namespace>NewLife.Cube.Workflow.Entity</Namespace>
+    <!--引用命名空间-->
+    <ExtendNameSpace />
+    <!--输出目录-->
+    <Output>.\</Output>
+    <!--是否使用中文文件名。默认false-->
+    <ChineseFileName>True</ChineseFileName>
+    <!--用于生成Copy函数的参数类型。例如{name}或I{name}-->
+    <ModelNameForCopy />
+    <!--带有索引器。实现IModel接口-->
+    <HasIModel>False</HasIModel>
+    <!--可为null上下文。生成String?等-->
+    <Nullable>False</Nullable>
+    <!--数据库连接名-->
+    <ConnName>Workflow</ConnName>
+    <!--模型类模版。设置后生成模型类，用于接口数据传输，例如{name}Model-->
+    <ModelClass>{name}Model</ModelClass>
+    <!--模型类输出目录。默认当前目录的Models子目录-->
+    <ModelsOutput>.\Models\</ModelsOutput>
+    <!--模型接口模版。设置后生成模型接口，用于约束模型类和实体类，例如I{name}-->
+    <ModelInterface />
+    <!--模型接口输出目录。默认当前目录的Interfaces子目录-->
+    <InterfacesOutput>.\Interfaces\</InterfacesOutput>
+    <!--用户实体转为模型类的模型类。例如{name}或{name}DTO-->
+    <ModelNameForToModel />
+    <!--命名格式。Default/Upper/Lower/Underline-->
+    <NameFormat>Default</NameFormat>
+    <!--魔方区域显示名-->
+    <DisplayName>审批流程</DisplayName>
+    <!--魔方控制器输出目录-->
+    <CubeOutput />
+  </Option>
+  <Tables>
+    <Table Name="WorkflowDefinition" Description="流程定义。按实体路径配置的审批图草稿与发布快照">
+      <Columns>
+        <Column Name="Id" DataType="Int64" PrimaryKey="True" DataScale="time" Description="编号" />
+        <Column Name="TenantId" DataType="Int32" Map="XCode.Membership.Tenant@Id@$@TenantName" Description="租户。0=平台" />
+        <Column Name="TypePath" DataType="String" Length="100" Nullable="False" Description="实体路径。与 GetPage 一致，禁止空=全部实体" />
+        <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称" />
+        <Column Name="Enable" DataType="Boolean" DefaultValue="true" Description="启用" />
+        <Column Name="Published" DataType="Boolean" Description="已发布。仅已发布定义可发起" />
+        <Column Name="Version" DataType="Int32" DefaultValue="1" Description="版本。每次发布加一" />
+        <Column Name="LockPolicy" DataType="String" Length="16" DefaultValue="full" Description="锁策略。full 全锁 / nodeFields 节点字段" />
+        <Column Name="StartFilter" DataType="String" ItemType="json" Length="-1" Description="发起过滤。ViewFilter 同构 JSON，空表示全记录可发起" />
+        <Column Name="GraphJson" DataType="String" ItemType="json" Length="-1" Description="设计草稿。FlowGram 图 JSON" />
+        <Column Name="PublishedGraphJson" DataType="String" ItemType="json" Length="-1" Description="发布快照。发起时再拷到实例" />
+        <Column Name="CreateUser" DataType="String" Description="创建者" Category="扩展" />
+        <Column Name="CreateUserID" DataType="Int32" Description="创建用户" Category="扩展" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+        <Column Name="UpdateUser" DataType="String" Description="更新者" Category="扩展" />
+        <Column Name="UpdateUserID" DataType="Int32" Description="更新用户" Category="扩展" />
+        <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+        <Column Name="Remark" DataType="String" Length="200" Description="备注" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="TenantId,TypePath,Enable" />
+      </Indexes>
+    </Table>
+    <Table Name="WorkflowInstance" Description="流程实例。一次审批运行，钉扎定义版本与图快照">
+      <Columns>
+        <Column Name="Id" DataType="Int64" PrimaryKey="True" DataScale="time" Description="编号" />
+        <Column Name="TenantId" DataType="Int32" Description="租户。拷贝定义" />
+        <Column Name="DefinitionId" DataType="Int64" Description="流程定义" />
+        <Column Name="DefinitionVersion" DataType="Int32" Description="定义版本。发起时钉扎" />
+        <Column Name="TypePath" DataType="String" Length="100" Description="实体路径" />
+        <Column Name="GraphSnapshot" DataType="String" ItemType="json" Length="-1" Description="图快照。发起时复制 PublishedGraphJson，之后只读" />
+        <Column Name="Status" DataType="String" Length="16" Description="状态。Running/Approved/Rejected/Withdrawn/Cancelled" />
+        <Column Name="StarterId" DataType="Int32" Description="发起人" />
+        <Column Name="StartComment" DataType="String" Length="500" Description="发起意见" />
+        <Column Name="FinishTime" DataType="DateTime" Description="结束时间" />
+        <Column Name="CreateUser" DataType="String" Description="创建者" Category="扩展" />
+        <Column Name="CreateUserID" DataType="Int32" Description="创建用户" Category="扩展" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+        <Column Name="UpdateUser" DataType="String" Description="更新者" Category="扩展" />
+        <Column Name="UpdateUserID" DataType="Int32" Description="更新用户" Category="扩展" />
+        <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="DefinitionId" />
+        <Index Columns="TenantId,TypePath,Status" />
+        <Index Columns="StarterId,Status" />
+      </Indexes>
+    </Table>
+    <Table Name="WorkflowSubject" Description="流程主体。实例关联的业务记录，一批最多 100 条">
+      <Columns>
+        <Column Name="Id" DataType="Int64" PrimaryKey="True" DataScale="time" Description="编号" />
+        <Column Name="InstanceId" DataType="Int64" Description="流程实例" />
+        <Column Name="TypePath" DataType="String" Length="100" Description="实体路径。必须等于实例 TypePath" />
+        <Column Name="EntityKey" DataType="String" Description="业务主键。归一化后的单主键字符串" />
+        <Column Name="Title" DataType="String" Master="True" Length="100" Description="标题。发起时快照显示名" />
+        <Column Name="CreateUser" DataType="String" Description="创建者" Category="扩展" />
+        <Column Name="CreateUserID" DataType="Int32" Description="创建用户" Category="扩展" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="InstanceId" />
+        <Index Columns="TypePath,EntityKey" />
+      </Indexes>
+    </Table>
+    <Table Name="WorkflowTask" Description="流程任务。节点上的待办/已办任务">
+      <Columns>
+        <Column Name="Id" DataType="Int64" PrimaryKey="True" DataScale="time" Description="编号" />
+        <Column Name="InstanceId" DataType="Int64" Description="流程实例" />
+        <Column Name="NodeId" DataType="String" Length="64" Description="节点。图节点 id" />
+        <Column Name="Mode" DataType="String" Length="16" Description="签核模式。or/and/sequence" />
+        <Column Name="AssigneeId" DataType="Int32" Description="办理人。0=未认领，候选人在 CandidateJson" />
+        <Column Name="CandidateJson" DataType="String" ItemType="json" Length="-1" Description="候选人。用户 Id 数组" />
+        <Column Name="SequenceIndex" DataType="Int32" Description="依次签序号。从 0 起" />
+        <Column Name="Visible" DataType="Boolean" Description="可见。依次签未轮到为 false" />
+        <Column Name="Status" DataType="String" Length="16" Description="状态。Pending/Active/Done/Rejected/Cancelled/Transferred" />
+        <Column Name="DueTime" DataType="DateTime" Description="截止时间" />
+        <Column Name="TimeoutAction" DataType="String" Length="16" Description="超时动作。pass/reject/transfer" />
+        <Column Name="TimeoutTransferTo" DataType="String" ItemType="json" Length="-1" Description="超时转交。复用 to schema" />
+        <Column Name="ClaimTime" DataType="DateTime" Description="认领时间" />
+        <Column Name="FinishTime" DataType="DateTime" Description="完成时间" />
+        <Column Name="CreateUser" DataType="String" Description="创建者" Category="扩展" />
+        <Column Name="CreateUserID" DataType="Int32" Description="创建用户" Category="扩展" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+        <Column Name="UpdateUser" DataType="String" Description="更新者" Category="扩展" />
+        <Column Name="UpdateUserID" DataType="Int32" Description="更新用户" Category="扩展" />
+        <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="AssigneeId,Status" />
+        <Index Columns="InstanceId,NodeId" />
+      </Indexes>
+    </Table>
+    <Table Name="WorkflowComment" Description="流程意见。审批动作与意见内容，附件走 Attachment" InsertOnly="True">
+      <Columns>
+        <Column Name="Id" DataType="Int64" PrimaryKey="True" DataScale="time" Description="编号" />
+        <Column Name="InstanceId" DataType="Int64" Description="流程实例" />
+        <Column Name="TaskId" DataType="Int64" Description="任务。0=发起意见" />
+        <Column Name="Action" DataType="String" Length="16" Description="动作。start/approve/reject/addSign/cc/rollback/withdraw/transfer/timeout" />
+        <Column Name="Content" DataType="String" Length="1000" Description="意见内容" />
+        <Column Name="CreateUser" DataType="String" Description="创建者" Category="扩展" />
+        <Column Name="CreateUserID" DataType="Int32" Description="创建用户" Category="扩展" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="InstanceId" />
+        <Index Columns="TaskId" />
+      </Indexes>
+    </Table>
+  </Tables>
+</EntityModel>

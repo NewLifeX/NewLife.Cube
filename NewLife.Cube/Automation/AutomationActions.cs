@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json.Nodes;
 using NewLife.Cube.AI;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Membership;
 using NewLife.Cube.Services;
 using NewLife.Log;
 using XCode;
@@ -60,7 +61,7 @@ public static class AutomationActions
         var title = AutomationExecutor.ApplyTemplate(data["title"]?.ToString() ?? "", ctx).Cut(200);
         var body = AutomationExecutor.ApplyTemplate(data["body"]?.ToString() ?? "", ctx).Cut(2000);
         var to = data["to"] as JsonObject;
-        var userIds = ResolveRecipientUserIds(to, ctx, data);
+        var userIds = RecipientResolver.Resolve(to, ctx.Rule?.TenantId ?? 0, TargetEntity(ctx, data) ?? ctx.Current);
         if (userIds.Count == 0)
         {
             detail = "notify skip: no recipients";
@@ -182,120 +183,6 @@ public static class AutomationActions
             err = ex.Message.Cut(200);
             return false;
         }
-    }
-
-    /// <summary>
-    /// 解析接收人：kind=users|roles|departments 三选一；兼容旧多字段与 mode=userId|field。
-    /// </summary>
-    static HashSet<Int32> ResolveRecipientUserIds(JsonObject to, AutomationContext ctx, JsonObject data)
-    {
-        var ids = new HashSet<Int32>();
-        if (to == null) return ids;
-
-        var kind = (to["kind"]?.ToString() ?? "").Trim().ToLowerInvariant();
-        if (kind.IsNullOrEmpty())
-        {
-            // 推断：仅一个非空数组时视为该 kind
-            var hasU = ReadIntArray(to["users"]).Any(x => x > 0);
-            var hasR = ReadIntArray(to["roles"]).Any(x => x > 0);
-            var hasD = ReadIntArray(to["departments"]).Any(x => x > 0);
-            var n = (hasU ? 1 : 0) + (hasR ? 1 : 0) + (hasD ? 1 : 0);
-            if (n == 1)
-                kind = hasU ? "users" : hasR ? "roles" : "departments";
-        }
-
-        void AddUsers()
-        {
-            foreach (var id in ReadIntArray(to["users"]))
-                if (id > 0 && UserInRuleTenant(id, ctx.Rule?.TenantId ?? 0)) ids.Add(id);
-        }
-        void AddRoles()
-        {
-            var roleIds = ReadIntArray(to["roles"]).Where(x => x > 0).Distinct().ToArray();
-            if (roleIds.Length == 0) return;
-            var exp = User._.RoleID.In(roleIds);
-            foreach (var rid in roleIds)
-                exp |= User._.RoleIds.Contains("," + rid + ",");
-            exp &= User._.Enable == true;
-            foreach (var u in User.FindAll(exp, null, null, 0, 500))
-                if (u.ID > 0 && UserInRuleTenant(u.ID, ctx.Rule?.TenantId ?? 0)) ids.Add(u.ID);
-        }
-        void AddDepts()
-        {
-            var deptIds = ReadIntArray(to["departments"]).Where(x => x > 0).Distinct().ToArray();
-            if (deptIds.Length == 0) return;
-            var exp = User._.DepartmentID.In(deptIds) & User._.Enable == true;
-            foreach (var u in User.FindAll(exp, null, null, 0, 500))
-                if (u.ID > 0 && UserInRuleTenant(u.ID, ctx.Rule?.TenantId ?? 0)) ids.Add(u.ID);
-        }
-
-        if (kind is "user" or "users") AddUsers();
-        else if (kind is "role" or "roles") AddRoles();
-        else if (kind is "department" or "departments" or "dept") AddDepts();
-        else
-        {
-            // 无 kind：兼容旧数据，三者并集
-            AddUsers();
-            AddRoles();
-            AddDepts();
-        }
-
-        // 兼容旧版 to.mode
-        var mode = to["mode"]?.ToString();
-        if (mode.EqualIgnoreCase("userId"))
-        {
-            var userId = to["userId"]?.GetValue<Int32>() ?? 0;
-            if (userId > 0) ids.Add(userId);
-        }
-        else if (mode.EqualIgnoreCase("field"))
-        {
-            var field = to["field"]?.ToString();
-            var ent = TargetEntity(ctx, data) ?? ctx.Current;
-            if (ent != null && !field.IsNullOrEmpty())
-            {
-                var userId = ent[field].ToInt();
-                if (userId > 0) ids.Add(userId);
-            }
-        }
-
-        return ids;
-    }
-
-    /// <summary>开启租户时，角色/部门展开与显式用户均须属于规则租户</summary>
-    static Boolean UserInRuleTenant(Int32 userId, Int32 tenantId)
-    {
-        if (!CubeSetting.Current.EnableTenant || tenantId <= 0) return true;
-        return TenantUser.FindByTenantIdAndUserId(tenantId, userId) != null;
-    }
-
-    static IEnumerable<Int32> ReadIntArray(JsonNode node)
-    {
-        var list = new List<Int32>();
-        if (node is JsonArray arr)
-        {
-            foreach (var item in arr)
-            {
-                if (item == null) continue;
-                try { list.Add(item.GetValue<Int32>()); }
-                catch
-                {
-                    if (Int32.TryParse(item.ToString(), out var id)) list.Add(id);
-                }
-            }
-            return list;
-        }
-        if (node != null)
-        {
-            var s = node.ToString();
-            if (!s.IsNullOrEmpty())
-            {
-                foreach (var part in s.Split(',', StringSplitOptions.RemoveEmptyEntries))
-                {
-                    if (Int32.TryParse(part.Trim().Trim('"'), out var id)) list.Add(id);
-                }
-            }
-        }
-        return list;
     }
 
     static Boolean UpdateRecord(AutomationContext ctx, JsonObject data, out String detail)
