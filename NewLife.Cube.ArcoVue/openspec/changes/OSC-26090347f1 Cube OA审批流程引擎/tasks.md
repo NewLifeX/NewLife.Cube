@@ -62,6 +62,7 @@
 - [x] `SubmitApprovalDrawer` / `WorkflowProgressPanel` / `TodoPage`
 - [x] `WorkflowDesignerPage`：FlowGram.AI 固定布局（自绘链式已替换为 FlowGram，见下）；节点仅 oa.*
   - 补录（2026-09-03）：OA 独立页（Designer/Todo/Done/Started）静态注册于 Layout children（`router/index.ts` oaLeafRoutes），URL 直达不再依赖菜单播种/embed 兜底——菜单未播种时直达曾 No match 白屏（menuRoutes 特判组件仅菜单命中才注册）；vue-tsc 0 error
+  - 补录（2026-09-03 修复批次，宿主真机验证）：**画布空白/无法插入节点**三根因——① 画布挂载 div 在 `v-if="!graph"` 分支，`ensureCanvas` 仅 onMounted 执行一次被跳过（初始 graph=null 无 div）→ `watch([graph, canvasEl])` flush post 就绪挂载；② FlowGram `materials.components` 空 `{}` 缺官方 `drag-node` 渲染 key → `PlaygroundReactRenderer` 抛 `Unknown render key drag-node` 整树卸载 → 合并 `defaultFixedSemiMaterials`（新依赖 `@flowgram.ai/fixed-semi-materials` + `styled-components`）+ `history.enable`（撤销/onApply 镜像）+ `onAllLayersRendered` fitView；③ 后端 Int64 雪花主键字符串序列化，前端 `Number()` 精度丢失致定义打开/保存失配 → id 全程字符串透传（openDefinition `String()` 比较、select、`?id=` 直达——顺带实现注释承诺的直达）。实测 start→审批(n1)→end 渲染、属性面板、插入 n2、保存草稿全通；web spec 834 全绿
 - [x] api-core `workflow.ts` + URL 单测
 - [x] `<1024` 设计器只读提示
 
