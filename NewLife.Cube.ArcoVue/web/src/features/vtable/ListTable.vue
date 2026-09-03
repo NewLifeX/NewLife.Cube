@@ -34,6 +34,8 @@ const props = withDefaults(
       target?: string;
       dataAction?: string;
     }[];
+    /** OA 审批行操作（OSC-26090347f1）：类型启用时渲染 提交/进度（行级按 __wf* 过滤） */
+    workflowButtons?: { submit?: boolean; progress?: boolean };
     /** 服务端排序状态；用于表头升/降序图标（不走 VTable 内部排序） */
     sortState?: { field: string; desc: boolean } | null;
     /** 树视图：启用 VTable hierarchy（行含 children） */

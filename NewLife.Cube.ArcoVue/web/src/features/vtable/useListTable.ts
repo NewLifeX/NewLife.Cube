@@ -25,12 +25,34 @@ import {
 } from '@/core/utils/opsAction';
 import { OPS_LINK_INLINE_MAX } from '@/core/utils/listLinkFields';
 import { isIamRowActionDisabled } from '@/core/utils/iamGuards';
+import { wfRowCanStart, wfRowInstanceId, wfRowStatus } from '@/core/types/workflow';
 import {
   isDateTimeBucketType,
   timeBucketOf,
   stripTimeBucketLabel,
   timeSortValue,
 } from '@/core/utils/timeBucket';
+
+/** OA 审批行操作动作 key（OSC-26090347f1）：由 ListTable @action 上抛，DefaultList 消费 */
+export const WF_ROW_ACTION = {
+  submit: 'wfSubmit',
+  progress: 'wfProgress',
+} as const;
+
+/** 行 workflow 提交是否可点（非审批中且行级可发起） */
+export function wfRowSubmitEnabled(row: Record<string, unknown>): boolean {
+  return wfRowStatus(row) !== 'running' && wfRowCanStart(row);
+}
+
+/** 行 workflow 提交是否渲染 */
+export function wfRowSubmitVisible(row: Record<string, unknown>): boolean {
+  return wfRowSubmitEnabled(row);
+}
+
+/** 行 workflow 进度是否渲染（有实例） */
+export function wfRowProgressVisible(row: Record<string, unknown>): boolean {
+  return wfRowInstanceId(row) > 0;
+}
 
 export interface ListTableColumnDef {
   pref: ColumnPref;
@@ -69,6 +91,8 @@ interface ListTableProps {
   automationButtons?: OpsAutomationButton[];
   /** GetPage 合成 Url/dataAction 自定义链接（OSC-2608178bdb） */
   opsCustomLinks?: OpsCustomLink[];
+  /** OA 审批行操作（OSC-26090347f1）：类型启用时渲染 提交/进度；行级按 __wf* 覆盖再隐藏 */
+  workflowButtons?: { submit?: boolean; progress?: boolean };
   /** 服务端排序状态；用于表头升/降序图标（不走 VTable 内部排序） */
   sortState?: { field: string; desc: boolean } | null;
   /** 树视图：启用 VTable hierarchy（行含 children） */
@@ -307,7 +331,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
   }
 
   function opsBundle() {
-    return buildOpsPartsWithLinks({
+    const bundle = buildOpsPartsWithLinks({
       canViewDetail: props.canViewDetail,
       canEdit: props.canEdit,
       canDelete: props.canDelete,
@@ -315,9 +339,16 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       opsLinks: props.opsCustomLinks,
       inlineMax: OPS_LINK_INLINE_MAX,
     });
+    // OA 审批行操作（OSC-26090347f1）：类型启用时作为操作列直出按钮（行级可见性渲染时按 __wf* 过滤）
+    const wf = props.workflowButtons;
+    if (wf?.submit) bundle.parts.push(WF_ROW_ACTION.submit);
+    if (wf?.progress) bundle.parts.push(WF_ROW_ACTION.progress);
+    return bundle;
   }
 
   function opsLabel(action: string): string {
+    if (action === WF_ROW_ACTION.submit) return '提交';
+    if (action === WF_ROW_ACTION.progress) return '进度';
     if (action === 'more') return '更多';
     if (action.startsWith('auto:')) {
       const id = action.slice(5);
@@ -373,9 +404,14 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       fill: false,
     });
 
-    const visibleParts = parts.filter(
-      (action) => !(action === 'delete' && isIamRowActionDisabled(props.typePath, record, 'delete')),
-    );
+    const visibleParts = parts.filter((action) => {
+      // OA 审批行操作：提交仅可发起行（非审批中且行级可发起）；进度仅已有实例行（IA §4）
+      if (action === WF_ROW_ACTION.submit) return wfRowSubmitVisible(record);
+      if (action === WF_ROW_ACTION.progress) return wfRowProgressVisible(record);
+      if (action === 'delete' && isIamRowActionDisabled(props.typePath, record, 'delete'))
+        return false;
+      return true;
+    });
     visibleParts.forEach((action, i) => {
       const isLast = i === visibleParts.length - 1;
       // 链接配色：详情/编辑=主色、删除=警示色、其余系统自定义=链接色（需求 OSC）

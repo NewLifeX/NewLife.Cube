@@ -27,6 +27,7 @@ import { useListCrud } from './useListCrud';
 import { useListViews } from './useListViews';
 import { useRecordNav } from './useRecordNav';
 import { useListAutomation } from './useListAutomation';
+import { useWorkflowList } from './useWorkflowList';
 import { runCellFieldLink, runOpsCustomLink } from './useListOpsLinks';
 
 /**
@@ -51,6 +52,32 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     applyLastQuery: query.applyLastQuery,
   });
   const auto = useListAutomation(ctx);
+  const wf = useWorkflowList(ctx);
+
+  /** OA 审批（OSC-26090347f1）：工具栏多选提交 / 行提交 / 行进度 */
+  const wfSubmitIds = ref<(string | number)[]>([]);
+  const wfProgressInstanceId = ref<number | null>(null);
+  const wfProgressVisible = ref(false);
+
+  /** 打开提交确认抽屉：工具栏用已勾选 ids；行提交传单行主键 */
+  function openWorkflowSubmit(ids?: (string | number)[]) {
+    wfSubmitIds.value = (ids ?? ctx.selectedKeys.value).slice();
+    wf.submitDrawerVisible.value = true;
+  }
+
+  /** 行「进度」：行 __wfInstanceId 打开进度抽屉 */
+  function openWorkflowProgress(row: Record<string, unknown>) {
+    const id = Number(row?.__wfInstanceId);
+    if (!Number.isFinite(id) || id <= 0) return;
+    wfProgressInstanceId.value = id;
+    wfProgressVisible.value = true;
+  }
+
+  /** 提交成功：清勾选并刷新列表（行状态随之更新） */
+  async function onWorkflowSubmitted() {
+    ctx.selectedKeys.value = [];
+    await query.loadData();
+  }
 
   /** 操作列「更多」溢出菜单（VTable canvas 外挂） */
   const moreMenu = ref<{
@@ -71,6 +98,17 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     clientX?: number;
     clientY?: number;
   }) {
+    // OA 审批行操作（OSC-26090347f1）：提交单行 / 打开进度抽屉
+    if (payload.action === 'wfSubmit') {
+      const key = getValueByKey(payload.row, ctx.pkField.value);
+      if (typeof key === 'string' && key !== '') openWorkflowSubmit([key]);
+      else if (typeof key === 'number' && Number.isFinite(key)) openWorkflowSubmit([key]);
+      return;
+    }
+    if (payload.action === 'wfProgress') {
+      openWorkflowProgress(payload.row);
+      return;
+    }
     if (payload.action.startsWith('auto:')) {
       void auto.runAutomationButton(payload);
       return;
@@ -415,6 +453,16 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     openBatchEdit,
     confirmBatchEdit,
     ...auto,
+    // OA 审批（OSC-26090347f1）：DefaultList 工具栏「提交审批」+ 提交/进度抽屉
+    workflowEnabled: wf.wfEnabled,
+    workflowToolbarSubmit: wf.toolbarSubmit,
+    workflowBlock: wf.workflowBlock,
+    workflowSubmitVisible: wf.submitDrawerVisible,
+    wfSubmitIds,
+    wfProgressInstanceId,
+    wfProgressVisible,
+    openWorkflowSubmit,
+    onWorkflowSubmitted,
     ...views,
     ...nav,
     PAGE_SIZE_OPTIONS,

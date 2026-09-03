@@ -341,6 +341,17 @@
                 </a-doption>
               </template>
             </a-dropdown>
+            <!-- OA 审批「提交审批」（OSC-26090347f1）：在自动化之后（高级下拉），类型启用才渲染；无勾选/无权限禁用 -->
+            <a-button
+              v-if="workflowToolbarSubmit.visible"
+              class="tb-workflow-submit"
+              :disabled="workflowToolbarSubmit.disabled"
+              :title="workflowToolbarSubmit.tooltip || undefined"
+              @click="openWorkflowSubmit()"
+            >
+              <icon-park type="send" />
+              提交审批
+            </a-button>
           </a-space>
         </div>
 
@@ -421,6 +432,7 @@
               :enable-table-double-click="enableTableDoubleClick"
               :automation-buttons="automationButtons"
               :ops-custom-links="opsCustomLinks"
+              :workflow-buttons="workflowEnabled ? { submit: true, progress: true } : undefined"
               :show-expand="chrome.expandRow"
               :enable-sort="chrome.showSort"
               :sort-state="activeSort"
@@ -581,6 +593,19 @@
       :fields="automationFields"
     />
 
+    <!-- OA 审批（OSC-26090347f1）：提交确认抽屉（工具栏/行提交共用）+ 行进度抽屉 -->
+    <SubmitApprovalDrawer
+      v-if="workflowEnabled"
+      v-model="workflowSubmitVisible"
+      :type-path="typePath"
+      :ids="wfSubmitIds"
+      @submitted="onWorkflowSubmitted"
+    />
+    <WorkflowProgressPanel
+      v-model="wfProgressVisible"
+      :instance-id="wfProgressInstanceId"
+    />
+
     <RecordDrawer
       v-model:visible="drawerVisible"
       :type-path="typePath"
@@ -663,6 +688,8 @@ import FilterBuilderPopover from './FilterBuilderPopover.vue';
 import GroupPopover from './GroupPopover.vue';
 import FormatPopover from './FormatPopover.vue';
 import AutomationDrawer from './automation/AutomationDrawer.vue';
+import SubmitApprovalDrawer from '../workflow/SubmitApprovalDrawer.vue';
+import WorkflowProgressPanel from '../workflow/WorkflowProgressPanel.vue';
 import ShareViewPopover from './ShareViewPopover.vue';
 import { isEmbedMode } from '@/core/utils/embedMode';
 
@@ -807,6 +834,14 @@ const {
   automationDrawerVisible,
   automationButtons,
   openAutomationDrawer,
+  workflowEnabled,
+  workflowToolbarSubmit,
+  workflowSubmitVisible,
+  wfSubmitIds,
+  wfProgressInstanceId,
+  wfProgressVisible,
+  openWorkflowSubmit,
+  onWorkflowSubmitted,
   cardListKey,
   activeCardMapping,
   activeColumns,
