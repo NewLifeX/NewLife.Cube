@@ -43,15 +43,17 @@
 
 ## T6 API
 
-- [ ] `WorkflowController` 全表 design §7；未引用模块非 Meta → 404
-- [ ] BatchApprove ≤50 部分成功
-- [ ] `POST .../Patch` 仅 Scope 内字段
-- [ ] Phrases 读写 Parameter `Workflow.Phrase`
+- [x] `WorkflowController` 全表 design §7（Definitions CRUD+发布、Instances 发起/撤回/作废/跳转/详情、Tasks 认领/同意/驳回/加签/转办/知会/回退、Todo/Started/Done、Meta）
+- [x] BatchApprove ≤50 部分成功（逐条 try/catch 返回 {id,ok,error}）
+- [x] `POST Entities/{typePath}/{key}/Patch` 仅节点可写字段（WorkflowWriteScope.Enter + 拦截器放行）
+- [x] Phrases 读写 Parameter `Workflow.Phrase`（`tenant:{TenantId}`；空回落内置三条；Phrases_Roundtrip 单测绿）
+  - 补录：GET /Phrases（IA 常用语管理读取需要，非 design §7 显式列出的只读端点在会话补录）
+  - 说明：意见附件（attachmentIds）留待 T8 前端配合 Attachment 复用，接口已预留不报错
 
 ## T7 通知
 
-- [ ] 任务到达 / 知会 / 超时 / 驳回 / 办结 → NotificationRecord；渠道与自动化 notify 相同默认 InApp
-- [ ] 待办槽角标用 Task 计数，**不**把待办行写入 Inbox 主时间轴
+- [x] 任务到达 / 知会 / 超时 / 驳回 / 办结 → NotificationRecord（引擎随 T3/T4 已落地，Action=Workflow、Channel=InApp）
+- [x] 待办槽角标用 Task 计数（`GET /Cube/Workflow/Meta` 登录附 todoCount；WorkflowTask.CountTodoByUser），不写 Inbox 主时间轴作待办行
 
 ## T8 ArcoVue
 
