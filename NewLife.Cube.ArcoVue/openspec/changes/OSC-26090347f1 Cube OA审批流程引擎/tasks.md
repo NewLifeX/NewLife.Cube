@@ -57,12 +57,15 @@
 
 ## T8 ArcoVue
 
-- [ ] `useWorkflowList.ts` + spec：IA §4 按钮矩阵；embed 隐藏
-- [ ] DefaultList 薄接入；工具栏顺序：自动化之后「提交审批」
-- [ ] `SubmitApprovalDrawer` / `WorkflowProgressPanel` / `TodoPage`
-- [ ] `WorkflowDesignerPage`：FlowGram 固定布局；节点仅 oa.*
-- [ ] api-core `workflow.ts` + URL 单测
-- [ ] `<1024` 设计器只读提示
+- [x] `useWorkflowList.ts` + spec：IA §4 按钮矩阵；embed 隐藏
+- [x] DefaultList 薄接入；工具栏顺序：自动化之后「提交审批」
+- [x] `SubmitApprovalDrawer` / `WorkflowProgressPanel` / `TodoPage`
+- [x] `WorkflowDesignerPage`：固定布局（自绘链式，未引入 FlowGram 依赖——实现偏差见下）；节点仅 oa.*
+- [x] api-core `workflow.ts` + URL 单测
+- [x] `<1024` 设计器只读提示
+
+> **T8 实现说明（2026-09-03）**：提交 88f02037（api-core 客户端+URL 单测）、T8b（useWorkflowList+矩阵 spec）、T8c（提交抽屉/进度面板/待办·已办·发起页）、T8d（DefaultList 薄接入：工具栏「提交审批」在高级-自动化之后、行提交/进度按 __wf* 过滤、提交后清勾选刷新）、T8e（设计器）。
+> **FlowGram 偏差**：T8e 未引入 FlowGram.AI 第三方画布（本仓未安装依赖、私有源不可靠），改以**自绘链式固定布局**实现同等的“固定布局只读编排 + 节点仅 oa.* + 运行时 C# 引擎”约束；编辑器只读写 GraphJson（design §4），不执行引擎。XOR 条件化 case 可视化编辑与真实分支绘制留后续增强。
 
 ## T9 文档
 
