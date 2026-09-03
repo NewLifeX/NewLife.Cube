@@ -193,6 +193,14 @@ public class TokenService : ITokenService
     #endregion
 
     #region 令牌颁发
+    /// <summary>检查是否启用OAuth服务端。未启用（EnableOAuthServer=false）时抛出异常，
+    /// 禁用OAuth2.0服务端令牌接口（授权码/密码/凭证/刷新），防止绕过登录页直连服务端接口</summary>
+    private static void EnsureOAuthServer()
+    {
+        var set = CubeSetting.Current;
+        if (!set.EnableOAuthServer) throw new XException("未启用OAuth服务");
+    }
+
     /// <summary>授权码方式获取访问令牌</summary>
     /// <param name="client_id"></param>
     /// <param name="client_secret"></param>
@@ -201,6 +209,8 @@ public class TokenService : ITokenService
     /// <returns></returns>
     public virtual TokenModel GetAccessToken(String client_id, String client_secret, String code, String ip)
     {
+        EnsureOAuthServer();
+
         using var span = Tracer?.NewSpan(nameof(GetAccessToken), client_id);
         try
         {
@@ -226,6 +236,8 @@ public class TokenService : ITokenService
     /// <returns></returns>
     public virtual TokenModel GetAccessTokenByPassword(String client_id, String username, String password, String ip)
     {
+        EnsureOAuthServer();
+
         var log = new AppLog
         {
             Action = "Password",
@@ -331,6 +343,8 @@ public class TokenService : ITokenService
     /// <returns></returns>
     public virtual TokenModel GetAccessTokenByClientCredentials(String client_id, String client_secret, String username, String ip)
     {
+        EnsureOAuthServer();
+
         var log = new AppLog
         {
             Action = "ClientCredentials",
@@ -390,6 +404,8 @@ public class TokenService : ITokenService
     /// <returns></returns>
     public virtual TokenModel RefreshToken(String client_id, String refresh_token, String ip)
     {
+        EnsureOAuthServer();
+
         var log = new AppLog
         {
             Action = "RefreshToken",
