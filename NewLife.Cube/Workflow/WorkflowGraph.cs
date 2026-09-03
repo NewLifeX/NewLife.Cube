@@ -376,11 +376,11 @@ public class WorkflowNode
     /// <summary>超时转交接收人（复用 to schema）</summary>
     public JsonObject TimeoutTransferTo => Raw?["timeoutTransferTo"] as JsonObject;
 
-    /// <summary>是否允许加签</summary>
-    public Boolean AllowAddSign => Raw?["allowAddSign"]?.GetValue<Boolean>() ?? false;
+    /// <summary>是否允许加签。默认开（design 节点示例默认 true，设计器可关闭）</summary>
+    public Boolean AllowAddSign => Raw?["allowAddSign"]?.GetValue<Boolean>() ?? true;
 
-    /// <summary>是否允许回退</summary>
-    public Boolean AllowRollback => Raw?["allowRollback"]?.GetValue<Boolean>() ?? false;
+    /// <summary>是否允许回退。默认开（design 节点示例默认 true，设计器可关闭）</summary>
+    public Boolean AllowRollback => Raw?["allowRollback"]?.GetValue<Boolean>() ?? true;
 
     /// <summary>网关条件列表</summary>
     public List<WorkflowGraphCase> Cases

@@ -26,3 +26,10 @@
     **T11 阻塞（待人工）**：CubeDemo 宿主本机 MSB3552（NewLife.Cube.Vue/React wwwroot 嵌入在 SDK 10.0.400 回归，清除 obj 复现，
     与本号无关，CubeDemo 引用全部主题），HTTP 冒烟无法自动执行 → 详细清单见 verify.md「T11 手工冒烟」。
     状态：实现期全部代码/测试/文档工作完成并提交；待宿主就绪人工冒烟 → 验收。
+    **收尾门禁（T12，2026-09-03）**：代码审查 5🔴 + 实现审计 P1/P2 合并修复批次已提交——
+    后加签激活、多前加签等齐+复活保护、Rollback allowRollback 403、AllowAddSign/AllowRollback 默认 true、
+    超时仅可见任务 + 修复 sqlite DateTime.MinValue 比较致超时永不下发的真实缺陷、
+    Start Detail 权限、Patch typePath 移 query（多段断裂）、前端 before 透传；新增矩阵测试 4 例。
+    回归 Workflow*+Osc260815 37/37；web vue-tsc 0 error、workflow spec 32 绿、api-core 3 绿。会话小任务已补录（tasks T12）。
+    无法闭环项已记录：G-01 跨进程唯一约束（后续 OSC）、G-04 候选可见语义（待确认）、G-05 附件裁剪、
+    G-06 Meta 恒 true（随 T11）、G-07 HTTP 冒烟（T11）、G-08/G-11 后续批次。收尾门禁无 🔴、无实现缺口。

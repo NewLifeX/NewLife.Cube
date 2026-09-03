@@ -91,3 +91,19 @@
 - [ ] 不引用模块的宿主：无待办槽
 
 > **T11 阻塞注记（2026-09-03）**：CubeDemo 宿主在本机 SDK 10.0.400 构建失败——`MSB3552 找不到资源文件 "**/*.resx"` 源自 `NewLife.Cube.Vue/NewLife.Cube.React`（`EmbeddedResource Include="wwwroot\**\*"`，清除 obj/bin 后复现，与本 OSC 改动无关，CubeDemo 引用全部主题皮肤）。宿主无法启动，HTTP 冒烟无法自动执行。逐条待办 + 命令见 verify.md「T11 手工冒烟」，宿主就绪后人工验证并在验收阶段勾选。
+
+## T12 收尾门禁修复批次（代码审查 + 实现审计驱动）
+
+> 会话小任务补录（收尾门禁第 1 步）核对：FlowGram 切换（T8e 修订）、GET /Phrases（T6 补录）、并发 race（T10 说明）均已记录于既有任务项，无需新建。本批次为收尾门禁代码审查 🔴 + 实现审计 P1/P2 合并修复，已全部勾选并验证。
+
+- [x] **后加签激活**（CR#1/G-02）：`AfterApprove` 原任务 Done 后经 `TryActivateAfterSign` 激活本任务 `#after#` 挂起任务（Visible+通知）并等待；全部后加签完成后 `ContinueNode` 回原节点常规收尾（依次放行/通过/下游）。重构抽取 `ContinueNode` 统一 AfterApprove 与合成任务收尾
+- [x] **多前加签等齐 + 复活保护**（CR#2）：`TryHandleSynthetic(addsign)` 等本节点全部前加签完成才恢复原任务；原任务已 Done/终态不复活
+- [x] **Rollback allowRollback**（CR#3）：当前节点 `AllowRollback=false` → 403（与 allowAddSign 对称）
+- [x] **WorkflowGraph 默认值**：`AllowAddSign/AllowRollback` 默认 true（对齐 design 节点示例 266-267 行）
+- [x] **超时可见性 + MinValue 缺陷**（CR🟡1/G-11）：`TimeoutTick` 只处理 Visible 任务；修复 sqlite 下 `DueTime > DateTime.MinValue` 比较恒 false 致超时永不下发的**真实引擎缺陷**（SQL 只按到期过滤，MinValue/状态/可见性内存再筛）
+- [x] **Start Detail 权限**（CR#4）：`WorkflowController.Start` 补 `CanDetail` 校验（design §6.4「发起=Detail」，行级 StartFilter 引擎已判）
+- [x] **Patch 路由多段 typePath**（CR#5）：`Entities/{typePath}/{key}/Patch` 改 `Entities/{key}/Patch?typePath=`（typePath 含 `/` 致路由断裂 404）；api-core 契约 + spec 同步
+- [x] **前端 before 透传**（G-03）：`useWorkflowProgress.transferAction` addSign body 补 `before`（原先面板前/后加签选择被丢弃，UI 前加签实际走后加签）
+- [x] 新增矩阵测试 4 例：后加签激活推进 / 多前加签等齐 / Rollback 403 / 超时仅可见任务；回归 Workflow*+Osc260815 37/37；web vue-tsc 0 error + workflow spec 32 绿 + api-core 3 绿
+
+> **无法在本会话闭环（记录为后续/待确认，见 status.md）**：G-01 跨进程排他需 DB 唯一约束（表结构决策，后续 OSC）；G-04 待办候选可见语义（design 未明示，待确认）；G-05 意见附件按 V1 范围外裁剪记录（retro）；G-06 Meta 恒 true（Amd-2 语义，随 T11 宿主验证）；G-07 HTTP 冒烟（T11 阻塞）；G-08 多定义 defs[0] 行级口径；G-11 动作级测试（Claim/Transfer/Cc/超时 transfer-reject 分支）留后续批次。

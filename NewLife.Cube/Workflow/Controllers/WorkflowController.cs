@@ -119,6 +119,8 @@ public class WorkflowController : ControllerBaseX
         if (model == null || model.Keys == null || model.Keys.Length == 0) return Json(400, "未选择记录");
         var def = WorkflowDefinition.FindById(model.DefinitionId);
         if (def == null) return Json(404, "流程定义不存在");
+        // 发起权限 = 实体 Detail（design §6.4）；行级 StartFilter 由引擎按主体逐条再判
+        if (!WorkflowPageOverlay.CanDetail(user, def.TypePath)) return Json(403, "无该实体的发起权限");
 
         try
         {
@@ -439,7 +441,7 @@ public class WorkflowController : ControllerBaseX
     /// <param name="key">主键</param>
     /// <param name="model">字段键值</param>
     /// <returns>更新结果</returns>
-    [HttpPost("Entities/{typePath}/{key}/Patch")]
+    [HttpPost("Entities/{key}/Patch")]
     public Object Patch(String typePath, String key, [FromBody] Dictionary<String, Object> model)
     {
         var user = ManageProvider.User;

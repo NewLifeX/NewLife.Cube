@@ -1025,6 +1025,12 @@ export function createWorkflowApi(request: RequestFn) {
       request<unknown>({ url: '/Cube/Workflow/Phrases', method: 'put', data: { texts } }),
 
     patchEntity: (typePath: string, key: string | number, fields: Record<string, unknown>) =>
-      request<unknown>({ url: `/Cube/Workflow/Entities/${typePath}/${key}/Patch`, method: 'post', data: fields }),
+      request<unknown>({
+        // typePath 可能含 /（如 Admin/User），放 query 避免路由段断裂
+        url: `/Cube/Workflow/Entities/${encodeURIComponent(key)}/Patch`,
+        method: 'post',
+        params: { typePath },
+        data: fields,
+      }),
   };
 }

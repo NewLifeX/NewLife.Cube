@@ -154,10 +154,10 @@ export function useWorkflowProgress(
     return runTaskAction((id) => cubeApi.workflow.reject(id, { comment: comment || undefined }));
   }
 
-  /** 加签/转办/知会（需先选接收人） */
+  /** 加签/转办/知会（需先选接收人）。addSign 支持 before 前/后加签 */
   async function transferAction(
     kind: 'addSign' | 'transfer' | 'cc',
-    payload: { kind: string; ids: number[]; comment?: string },
+    payload: { kind: string; ids: number[]; comment?: string; before?: boolean },
   ) {
     const task = myTask.value;
     if (!task) return false;
@@ -170,7 +170,11 @@ export function useWorkflowProgress(
           : kind === 'transfer'
             ? cubeApi.workflow.transfer
             : cubeApi.workflow.cc;
-      await fn(task.id, { to: to as never, comment: payload.comment || undefined });
+      await fn(task.id, {
+        to: to as never,
+        comment: payload.comment || undefined,
+        ...(kind === 'addSign' ? { before: payload.before ?? false } : {}),
+      });
       Message.success('操作成功');
       await load();
       return true;

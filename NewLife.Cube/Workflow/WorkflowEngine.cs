@@ -255,6 +255,9 @@ public static class WorkflowEngine
         var task = LoadOpenTask(taskId, userId, true);
         var instance = WorkflowInstance.FindById(task.InstanceId);
         var graph = ParseSnapshot(instance);
+        // 当前节点须允许回退（与加签 allowAddSign 对称）
+        var cur = graph.Find(task.NodeId);
+        if (cur == null || !cur.AllowRollback) throw new WorkflowException(403, "当前节点不允许回退");
         var node = graph.Find(targetNodeId);
         if (node == null || node.Type != WorkflowGraph.ApproveType) throw new WorkflowException(400, "回退目标必须是审批节点");
         if (targetNodeId == task.NodeId) throw new WorkflowException(400, "不能回退到当前节点");
@@ -383,8 +386,11 @@ public static class WorkflowEngine
     public static String TimeoutTick()
     {
         var now = DateTime.Now;
-        var due = WorkflowTask.FindAll(WorkflowTask._.DueTime > DateTime.MinValue & WorkflowTask._.DueTime <= now)
-            .Where(e => e.Status is WorkflowStatuses.Pending or WorkflowStatuses.Active)
+        // sqlite 下与 DateTime.MinValue 直接比较不可靠（MinValue 序列化后 `> MinValue` 恒 false），
+        // 故 SQL 只按到期过滤，MinValue（无超时）/状态/可见性在内存再筛。
+        // 超时只作用于当前可见任务（design §4.3：不可见的依次签下一位/挂起任务不参与）
+        var due = WorkflowTask.FindAll(WorkflowTask._.DueTime <= now)
+            .Where(e => e.Visible && e.DueTime > DateTime.MinValue && e.Status is WorkflowStatuses.Pending or WorkflowStatuses.Active)
             .ToList();
         var pass = 0;
         var reject = 0;
@@ -511,35 +517,64 @@ public static class WorkflowEngine
         // 加签临时任务：还原/接续
         if (TryHandleSynthetic(instance, graph, task)) return;
 
-        // 依次签：放行下一位（未轮到的不参与通过判定）
-        if (task.Mode == "sequence")
+        // 后加签：当前任务挂有未完成 #after# → 激活等待（全部完成后走常规收尾）
+        if (TryActivateAfterSign(instance, task)) return;
+
+        // 常规收尾：依次放行 → 节点通过 → 取消同节点 → 下游
+        ContinueNode(instance, graph, task.NodeId);
+    }
+
+    /// <summary>激活当前任务的未完成后加签（#after# 挂起 → Visible+通知），并挂起原节点推进</summary>
+    /// <param name="instance">实例</param>
+    /// <param name="task">刚完成的原任务</param>
+    /// <returns>是否存在被激活的后加签</returns>
+    static Boolean TryActivateAfterSign(WorkflowInstance instance, WorkflowTask task)
+    {
+        var after = WorkflowTask.FindAll(WorkflowTask._.InstanceId == instance.Id & WorkflowTask._.NodeId == $"{task.NodeId}#after#{task.Id}")
+            .Where(e => e.Status == WorkflowStatuses.Pending)
+            .ToList();
+        if (after.Count == 0) return false;
+
+        foreach (var t in after)
         {
-            var nextSeq = WorkflowTask.FindAll(WorkflowTask._.InstanceId == instance.Id & WorkflowTask._.NodeId == task.NodeId)
-                .Where(e => e.Status == WorkflowStatuses.Pending && !e.Visible)
-                .OrderBy(e => e.SequenceIndex)
-                .FirstOrDefault();
-            if (nextSeq != null)
-            {
-                nextSeq.Visible = true;
-                nextSeq.Update();
-                NotifyTaskArrive(instance, nextSeq);
-                return;
-            }
+            t.Visible = true;
+            t.Update();
+            NotifyTaskArrive(instance, t);
+        }
+        return true;
+    }
+
+    /// <summary>节点常规收尾：依次签放行下一位；否则节点通过判定 → 取消同节点剩余 → 向下游推进</summary>
+    /// <param name="instance">实例</param>
+    /// <param name="graph">图</param>
+    /// <param name="nodeId">节点 Id</param>
+    static void ContinueNode(WorkflowInstance instance, WorkflowGraph graph, String nodeId)
+    {
+        // 依次签：放行下一位（未轮到的不参与通过判定）
+        var nextSeq = WorkflowTask.FindAll(WorkflowTask._.InstanceId == instance.Id & WorkflowTask._.NodeId == nodeId)
+            .Where(e => e.Status == WorkflowStatuses.Pending && !e.Visible)
+            .OrderBy(e => e.SequenceIndex)
+            .FirstOrDefault();
+        if (nextSeq != null)
+        {
+            nextSeq.Visible = true;
+            nextSeq.Update();
+            NotifyTaskArrive(instance, nextSeq);
+            return;
         }
 
         // 节点通过判定
-        if (!NodePassed(instance, graph, task.NodeId)) return;
+        if (!NodePassed(instance, graph, nodeId)) return;
 
         // 节点已通过：取消同节点剩余未完成任务，向下游推进
-        CancelNodeOpen(instance.Id, task.NodeId);
-        var next = graph.NextOf(task.NodeId);
-        foreach (var nodeId in next)
+        CancelNodeOpen(instance.Id, nodeId);
+        foreach (var next in graph.NextOf(nodeId))
         {
-            Advance(instance, graph, nodeId, instance.TenantId, instance.StarterId, null, []);
+            Advance(instance, graph, next, instance.TenantId, instance.StarterId, null, []);
         }
     }
 
-    /// <summary>处理加签临时任务（NodeId 含 #）。返回 true 表示已处理（不再走常规下游）</summary>
+    /// <summary>处理加签临时任务（NodeId 含 #）。返回 true 表示已处理（不再走常规收尾）</summary>
     /// <param name="instance">实例</param>
     /// <param name="graph">图</param>
     /// <param name="task">已完成任务</param>
@@ -558,8 +593,13 @@ public static class WorkflowEngine
         var baseTask = baseTaskId > 0 ? WorkflowTask.FindById(baseTaskId) : null;
         if (kind == "addsign")
         {
-            // 前加签完成 → 恢复原任务
-            if (baseTask != null)
+            // 前加签：等本节点全部前加签完成后恢复原任务，避免残留加签人复活已办结任务
+            var pending = WorkflowTask.FindAll(WorkflowTask._.InstanceId == instance.Id & WorkflowTask._.NodeId == task.NodeId)
+                .Any(e => e.Status == WorkflowStatuses.Pending);
+            if (pending) return true;
+
+            // 原任务已被并发推进（Done/终态）时不复活，仅在办时恢复
+            if (baseTask != null && baseTask.Status is WorkflowStatuses.Pending or WorkflowStatuses.Active)
             {
                 baseTask.Visible = true;
                 baseTask.Status = WorkflowStatuses.Active;
@@ -570,20 +610,11 @@ public static class WorkflowEngine
         }
         if (kind == "after")
         {
-            // 后加签完成 → 走原节点下游
-            if (baseTask != null && !NodePassed(instance, graph, baseTask.NodeId))
-            {
-                // 若后加签不止一个，等全部完成再通过
-                var pending = WorkflowTask.FindAll(WorkflowTask._.InstanceId == instance.Id & WorkflowTask._.Status == WorkflowStatuses.Pending)
-                    .Any(e => e.NodeId == task.NodeId);
-                if (pending) return true;
-            }
-            var next = graph.NextOf(baseNode);
-            CancelNodeOpen(instance.Id, baseNode);
-            foreach (var nodeId in next)
-            {
-                Advance(instance, graph, nodeId, instance.TenantId, instance.StarterId, null, []);
-            }
+            // 后加签：等本组全部完成后回到原节点常规收尾（放行/通过/下游）
+            var pending = WorkflowTask.FindAll(WorkflowTask._.InstanceId == instance.Id & WorkflowTask._.NodeId == task.NodeId)
+                .Any(e => e.Status == WorkflowStatuses.Pending);
+            if (pending) return true;
+            ContinueNode(instance, graph, baseNode);
             return true;
         }
         return false;

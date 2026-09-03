@@ -185,6 +185,117 @@ public class WorkflowMatrixTests
         Assert.Equal(WorkflowStatuses.Running, WorkflowInstance.FindById(instance.Id).Status);
     }
 
+    [Fact(DisplayName = "后加签：原任务同意后激活加签人，加签完成再进下游（§4.3）")]
+    public void AddSign_After_ActivateAndContinue()
+    {
+        var def = NewDefinition(ChainGraph(ToJson("or", "101", "\"allowAddSign\":true"), ToJson("or", "102")));
+        var id = InsertRecord("r1");
+        var instance = WorkflowEngine.Start(def, [$"{id}"], 9, "发起人", "");
+        var task = Tasks(instance.Id).Single(t => t.NodeId == "n1");
+        var to = new System.Text.Json.Nodes.JsonObject
+        {
+            ["kind"] = "users",
+            ["users"] = new System.Text.Json.Nodes.JsonArray(202),
+        };
+
+        WorkflowEngine.AddSign(task.Id, 101, false, to, "还要主管确认");
+        var sign = Tasks(instance.Id).Single(t => t.NodeId.Contains("#after#"));
+        Assert.False(sign.Visible); // 后加签先不可见，原任务完成后才轮到
+
+        WorkflowEngine.Approve(task.Id, 101, "过");
+        var fresh = WorkflowTask.FindById(sign.Id);
+        Assert.True(fresh.Visible); // 原任务 Done → 激活后加签
+        Assert.Equal(WorkflowStatuses.Running, WorkflowInstance.FindById(instance.Id).Status);
+        Assert.DoesNotContain(Tasks(instance.Id), t => t.NodeId == "n2" && t.Status == "Pending"); // 未提前推进下游
+
+        WorkflowEngine.Approve(fresh.Id, 202, "确认");
+        // 后加签完成 → 常规收尾推进到 n2
+        Assert.Equal(WorkflowStatuses.Running, WorkflowInstance.FindById(instance.Id).Status);
+        Assert.Contains(Tasks(instance.Id), t => t.NodeId == "n2" && t.Status == "Pending");
+        var n2 = Tasks(instance.Id).Single(t => t.NodeId == "n2");
+        WorkflowEngine.Approve(n2.Id, 102, "ok");
+        Assert.Equal(WorkflowStatuses.Approved, WorkflowInstance.FindById(instance.Id).Status);
+    }
+
+    [Fact(DisplayName = "多前加签：全部加签完成才恢复原任务，避免残留加签人复活已办任务（§4.3）")]
+    public void MultiAddSign_Before_WaitAll()
+    {
+        var def = NewDefinition(ChainGraph(ToJson("or", "101", "\"allowAddSign\":true")));
+        var id = InsertRecord("r1");
+        var instance = WorkflowEngine.Start(def, [$"{id}"], 9, "发起人", "");
+        var task = Tasks(instance.Id).Single();
+        var to = new System.Text.Json.Nodes.JsonObject
+        {
+            ["kind"] = "users",
+            ["users"] = new System.Text.Json.Nodes.JsonArray(202, 203),
+        };
+
+        WorkflowEngine.AddSign(task.Id, 101, true, to, "双人复核");
+        var signs = Tasks(instance.Id).Where(t => t.NodeId.Contains("#addsign#")).ToList();
+        Assert.Equal(2, signs.Count);
+        Assert.False(WorkflowTask.FindById(task.Id).Visible);
+
+        WorkflowEngine.Approve(signs[0].Id, 202, "1/2");
+        Assert.False(WorkflowTask.FindById(task.Id).Visible); // 等全部，未提前恢复
+
+        WorkflowEngine.Approve(signs[1].Id, 203, "2/2");
+        var resumed = WorkflowTask.FindById(task.Id);
+        Assert.True(resumed.Visible);
+        Assert.Equal(WorkflowStatuses.Active, resumed.Status);
+
+        WorkflowEngine.Approve(resumed.Id, 101, "最终同意");
+        Assert.Equal(WorkflowStatuses.Approved, WorkflowInstance.FindById(instance.Id).Status);
+    }
+
+    [Fact(DisplayName = "回退权限：节点 allowRollback=false → 403（§7 权限矩阵）")]
+    public void Rollback_NoAllowRollback_403()
+    {
+        var def = NewDefinition(ChainGraph(ToJson("or", "101"), ToJson("or", "102", "\"allowRollback\":false")));
+        var id = InsertRecord("r1");
+        var instance = WorkflowEngine.Start(def, [$"{id}"], 9, "发起人", "");
+        var n1Task = Tasks(instance.Id).Single(t => t.NodeId == "n1");
+        WorkflowEngine.Approve(n1Task.Id, 101, "过");
+        var n2Task = Tasks(instance.Id).Single(t => t.NodeId == "n2");
+
+        var ex = Assert.Throws<WorkflowException>(() => WorkflowEngine.Rollback(n2Task.Id, 102, "n1", "退回"));
+        Assert.Equal(403, ex.Code);
+        // 未发生回退：n2 任务仍在办
+        Assert.Equal("Pending", WorkflowTask.FindById(n2Task.Id).Status);
+    }
+
+    [Fact(DisplayName = "超时仅作用于可见任务：依次签逐轮放行后各自到期 pass（§4.3/§8.3）")]
+    public void TimeoutSequence_OnlyVisibleAdvance()
+    {
+        var n1 = "\"mode\":\"sequence\",\"to\":{\"kind\":\"users\",\"users\":[101,102,103]},\"timeoutHours\":1,\"timeoutAction\":\"pass\"";
+        var def = NewDefinition(ChainGraph(n1));
+        var id = InsertRecord("r1");
+        var instance = WorkflowEngine.Start(def, [$"{id}"], 9, "发起人", "");
+        var tasks = Tasks(instance.Id);
+        Assert.Equal(3, tasks.Count);
+        Assert.True(WorkflowTask.FindById(tasks[0].Id).Visible);
+        Assert.False(WorkflowTask.FindById(tasks[1].Id).Visible);
+
+        // 全部置为到期；未轮到（!Visible）的任务不应被 TimeoutTick 处理
+        var past = DateTime.Now.AddMinutes(-1);
+        foreach (var t in tasks)
+        {
+            var e = WorkflowTask.FindById(t.Id);
+            e.DueTime = past;
+            e.Update();
+        }
+        Assert.True(WorkflowTask.FindById(tasks[0].Id).DueTime <= DateTime.Now, "DueTime 未落库");
+        WorkflowEngine.TimeoutTick();
+        Assert.Equal("Done", WorkflowTask.FindById(tasks[0].Id).Status);
+        Assert.Equal("Pending", WorkflowTask.FindById(tasks[1].Id).Status); // 未轮到不被超时
+        Assert.True(WorkflowTask.FindById(tasks[1].Id).Visible); // 101 超时通过后放行
+
+        // 逐轮放行并到期 → 最终办结
+        WorkflowEngine.TimeoutTick();
+        Assert.Equal("Done", WorkflowTask.FindById(tasks[1].Id).Status);
+        WorkflowEngine.TimeoutTick();
+        Assert.Equal(WorkflowStatuses.Approved, WorkflowInstance.FindById(instance.Id).Status);
+    }
+
     [Fact(DisplayName = "XOR 缺 defaultTarget：发布校验失败（§5/§11）")]
     public void Xor_NoDefault_PublishFail()
     {

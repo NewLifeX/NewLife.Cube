@@ -75,7 +75,9 @@ describe('createWorkflowApi /Cube/Workflow URL（OSC-26090347f1）', () => {
       'get /Cube/Workflow/Done',
       'get /Cube/Workflow/Phrases',
       'put /Cube/Workflow/Phrases',
-      'post /Cube/Workflow/Entities/Admin/User/42/Patch',
+      // typePath 含 / 移入 query，避免路由段断裂
+      'post /Cube/Workflow/Entities/42/Patch',
     ]);
+    expect(calls[6].params).toEqual({ typePath: 'Admin/User' });
   });
 });
