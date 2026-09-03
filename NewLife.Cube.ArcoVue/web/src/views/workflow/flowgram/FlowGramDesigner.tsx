@@ -17,6 +17,7 @@ import {
   FlowNodeRegistry,
   useNodeRender,
 } from '@flowgram.ai/fixed-layout-editor';
+import { defaultFixedSemiMaterials } from '@flowgram.ai/fixed-semi-materials';
 
 import type { FlowDoc } from './flowgramGraph';
 import { defaultNodeDataFor } from './flowgramGraph';
@@ -191,10 +192,15 @@ export const FlowGramDesigner = forwardRef<FlowGramApi, FlowGramDesignerProps>(
     const editorProps = useMemo(
       () => ({
         readonly,
+        background: true,
         nodeRegistries,
         initialData: initialDoc,
+        // 启用历史（撤销/重做 + onApply 变更镜像）
+        history: { enable: true },
         materials: {
-          components: {},
+          // 必须合并官方默认材料：内部渲染（drag-node 拖拽占位、Adder 等）依赖这些 key，
+          // 缺失会抛 Unknown render key 导致 PlaygroundReactRenderer 整树卸载（画布空白）
+          components: { ...defaultFixedSemiMaterials },
           renderDefaultNode: (n: { node: FlowNodeEntity }) => (
             <WorkflowNodeCard
               node={n.node}
@@ -204,8 +210,11 @@ export const FlowGramDesigner = forwardRef<FlowGramApi, FlowGramDesignerProps>(
             />
           ),
         },
-        onAllLayersRendered: () => {
-          // 渲染完成自动适配视图（fitView 由固定布局插件自动处理）
+        onAllLayersRendered: (ctx: unknown) => {
+          setTimeout(() => {
+            const c = ctx as { playground?: { config?: { fitView?(b: unknown, e?: boolean, p?: number): Promise<void> } }; document?: { root?: { bounds?: unknown } } };
+            c.playground?.config?.fitView?.(c.document?.root?.bounds, false, 30);
+          }, 10);
         },
       }),
       [readonly, nodeRegistries, initialDoc],

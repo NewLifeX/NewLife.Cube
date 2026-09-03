@@ -97,7 +97,7 @@ function nodeIcon(type: string): string {
         placeholder="选择流程定义"
         style="width: 240px"
         :disabled="narrow"
-        @update:model-value="(v: unknown) => openDefinition(v ? Number(v) : null)"
+        @update:model-value="(v: unknown) => openDefinition(v ? String(v) : null)"
       >
         <a-option v-for="def in definitions" :key="def.id" :value="def.id">
           {{ def.name }}（{{ def.typePath }}·v{{ def.version }}{{ def.published ? '·已发布' : '' }}）

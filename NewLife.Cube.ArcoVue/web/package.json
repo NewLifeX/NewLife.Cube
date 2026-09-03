@@ -20,6 +20,7 @@
     "@cube/page-logic": "workspace:*",
     "@cube/page-utils": "workspace:*",
     "@flowgram.ai/fixed-layout-editor": "^1.0.15",
+    "@flowgram.ai/fixed-semi-materials": "1.0.15",
     "@icon-park/vue-next": "^1.4.2",
     "@visactor/vtable": "^1.26.5",
     "@visactor/vtable-gantt": "^1.26.5",
@@ -29,6 +30,7 @@
     "qrcode": "^1.5.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "styled-components": "^6.5.3",
     "vue": "^3.5.0",
     "vue-router": "^4.5.0"
   },

@@ -1,4 +1,5 @@
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import type { WorkflowDefinitionItem } from '@cube/api-core';
 import { Message } from '@arco-design/web-vue';
 import { createElement } from 'react';
@@ -205,7 +206,8 @@ export async function loadWritableFields(typePath: string): Promise<{ name: stri
 export function useWorkflowDesigner() {
   const definitions = ref<WorkflowDefinitionItem[]>([]);
   const defsLoading = ref(false);
-  const currentId = ref<number | null>(null);
+  /** 定义主键。后端 Int64 雪花 id 以字符串序列化（JSON number 会丢精度），全程字符串透传 */
+  const currentId = ref<string | null>(null);
   const current = ref<WorkflowDefinitionItem | null>(null);
   const graph = ref<WfGraphData | null>(null);
   const selectedNodeId = ref<string | null>(null);
@@ -278,6 +280,13 @@ export function useWorkflowDesigner() {
       renderCanvas();
     }
   }
+
+  /**
+   * 画布挂载 div 位于模板 `v-if="!graph"` 的 v-else 分支内：初始 graph=null 时不存在，
+   * onMounted 时 canvasEl 为空会跳过 ensureCanvas；打开定义后 div 才出现。
+   * 因此 graph/canvasEl 就绪后再次尝试挂载（flush post：等 Vue patch 填 ref）。
+   */
+  watch([graph, canvasEl], () => ensureCanvas(), { flush: 'post' });
 
   /** 可配置实体（automation.entities update 权限） */
   async function loadEntities() {
@@ -361,12 +370,19 @@ export function useWorkflowDesigner() {
   function onResize() {
     narrow.value = window.innerWidth < 1024;
   }
-  onMounted(() => {
+  const route = useRoute();
+  onMounted(async () => {
     onResize();
     window.addEventListener('resize', onResize);
-    void loadDefinitions();
-    void loadEntities();
     ensureCanvas();
+    void loadEntities();
+    await loadDefinitions();
+    // 直达：/Cube/Workflow/Designer?id=<定义Id>（菜单 URL 直达设计器）；id 保持字符串透传
+    const qid = route.query.id;
+    if (qid) {
+      const sid = String(qid);
+      if (sid && definitions.value.some((d) => String(d.id) === sid)) void openDefinition(sid);
+    }
   });
   onBeforeUnmount(() => {
     window.removeEventListener('resize', onResize);
@@ -387,9 +403,11 @@ export function useWorkflowDesigner() {
     }
   }
 
-  async function openDefinition(id: number | null) {
-    currentId.value = id;
-    current.value = definitions.value.find((d) => d.id === id) ?? null;
+  async function openDefinition(id: number | string | null) {
+    // 后端 Int64 雪花主键以字符串序列化（避免 JSON number 精度丢失），比较/透传一律按字符串
+    const sid = id == null ? '' : String(id);
+    currentId.value = sid || null;
+    current.value = definitions.value.find((d) => String(d.id) === sid) ?? null;
     if (current.value) {
       graph.value = parseGraph(current.value.graphJson);
       selectedNodeId.value = null;
@@ -403,7 +421,7 @@ export function useWorkflowDesigner() {
     canvasApi.current?.load(graphToFlowDoc(graph.value));
   }
 
-  async function createDefinition(typePath: string, name: string): Promise<number | null> {
+  async function createDefinition(typePath: string, name: string): Promise<string | null> {
     if (!typePath || !name) {
       Message.warning('请填写实体与名称');
       return null;
@@ -420,7 +438,7 @@ export function useWorkflowDesigner() {
       await loadDefinitions();
       await openDefinition(d.id);
       Message.success('已创建草稿');
-      return d.id;
+      return String(d.id);
     } catch (err) {
       Message.error(formatApiError(err, '创建失败'));
       return null;
