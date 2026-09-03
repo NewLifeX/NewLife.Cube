@@ -2,6 +2,7 @@ import { computed, provide, reactive, watch } from 'vue';
 import { emptyDashboard, type DashboardConfig, type WidgetInstance } from '@cube/api-core';
 import { useUserStore } from '@/stores/user';
 import { useViewProfileStore } from '@/stores/viewProfile';
+import type { FieldMeta } from '@/core/types/field';
 import { isEmbedMode } from '@/core/utils/embedMode';
 import type { ViewFilter, ViewInsight } from '@/core/utils/viewProfile';
 import { WIDGET_SURFACE_KEY, type WidgetSurfaceContext } from '@/features/widget/context';
@@ -18,6 +19,8 @@ export interface InsightPanelProps {
   chartOption?: unknown;
   hostFilter: ViewFilter | null;
   listFields?: { name: string; displayName?: string; typeName?: string }[];
+  /** 宿主页 search∪list 字段候选（OSC-260903e2a4，供部件查询条件/宿主引用） */
+  filterFields?: FieldMeta[];
 }
 
 function persistableDashboard(cfg: DashboardConfig, hadStored: boolean): DashboardConfig {
@@ -72,6 +75,7 @@ export function useInsightPanel(props: InsightPanelProps) {
     legacyChartLoading: props.chartLoading,
     legacyChartError: props.chartError,
     listFields: props.listFields,
+    hostFilterFields: props.filterFields,
   });
 
   watch(
@@ -84,6 +88,7 @@ export function useInsightPanel(props: InsightPanelProps) {
       props.chartLoading,
       props.chartError,
       props.listFields,
+      props.filterFields,
     ],
     () => {
       surface.hostTypePath = props.typePath;
@@ -94,6 +99,7 @@ export function useInsightPanel(props: InsightPanelProps) {
       surface.legacyChartLoading = props.chartLoading;
       surface.legacyChartError = props.chartError;
       surface.listFields = props.listFields;
+      surface.hostFilterFields = props.filterFields;
     },
     { deep: true },
   );

@@ -58,6 +58,7 @@
     :editing="editing"
     :host-type-path="ctx?.hostTypePath"
     :host-fields="ctx?.listFields ?? []"
+    :host-filter-fields="ctx?.hostFilterFields"
     :surface="ctx?.surface ?? 'insight'"
     @save="onConfigSave"
   />

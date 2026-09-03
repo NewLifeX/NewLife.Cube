@@ -86,25 +86,29 @@ export function mergeFieldMetas(...sources: FieldMeta[][]): FieldMeta[] {
 }
 
 async function loadFromGetPage(tp: string): Promise<FieldMeta[]> {
+  return loadFromGetPagePartition(tp, 'list');
+}
+
+async function loadFromGetPagePartition(tp: string, part: 'list' | 'search'): Promise<FieldMeta[]> {
   try {
     const pageRes = await cubeApi.page.getPage(tp);
     const meta = unwrapPayload(pageRes?.data ?? pageRes) as Record<string, unknown> | null;
     if (!meta || typeof meta !== 'object' || Array.isArray(meta) || typeof meta === 'string') {
       return [];
     }
+    const pascal = part === 'list' ? 'List' : 'Search';
     const nested = pick<Record<string, unknown>>(meta, 'fields', 'Fields');
     const raw =
-      pick(meta, 'list', 'List') ??
-      (nested ? pick(nested, 'list', 'List') : undefined);
+      pick(meta, part, pascal) ?? (nested ? pick(nested, part, pascal) : undefined);
     return toFieldMetas(asFieldArray(raw) as never).filter((f) => !!f.name);
   } catch {
     return [];
   }
 }
 
-async function loadFromGetFields(tp: string): Promise<FieldMeta[]> {
+async function loadFromGetFields(tp: string, kind: FieldKind = FieldKind.List): Promise<FieldMeta[]> {
   try {
-    const fb = await cubeApi.page.getFields(tp, FieldKind.List);
+    const fb = await cubeApi.page.getFields(tp, kind);
     return toFieldMetas(asFieldArray(unwrapPayload(fb?.data ?? fb)) as never).filter(
       (f) => !!f.name,
     );
@@ -160,6 +164,30 @@ export async function loadEntityListFields(typePath: string | undefined): Promis
   await enrichFieldsWithEnumDataSource(list);
   await enrichFieldsWithLookup(list);
   return list;
+}
+
+/**
+ * 加载实体 search∪list 字段元数据（部件查询条件候选，OSC-260903e2a4）。
+ * 与后端 WidgetQueryService 白名单（FieldCollection Search∪List）对齐；多源合并 + 枚举/LOV 富化。
+ */
+export async function loadEntityFilterFields(typePath: string | undefined): Promise<FieldMeta[]> {
+  const tp = normalizeTypePath(typePath);
+  if (!tp) return [];
+
+  const [pageList, pageSearch, fList, fSearch, fromAuto] = await Promise.all([
+    loadFromGetPage(tp),
+    loadFromGetPagePartition(tp, 'search'),
+    loadFromGetFields(tp, FieldKind.List),
+    loadFromGetFields(tp, FieldKind.Search),
+    loadFromAutomationMeta(tp),
+  ]);
+
+  const merged = mergeFieldMetas(pageList, pageSearch, fList, fSearch, fromAuto);
+  if (!merged.length) return [];
+
+  await enrichFieldsWithEnumDataSource(merged);
+  await enrichFieldsWithLookup(merged);
+  return merged;
 }
 
 export function findFieldMeta(metas: FieldMeta[], name: string): FieldMeta | undefined {

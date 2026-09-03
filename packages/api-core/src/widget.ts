@@ -34,12 +34,44 @@ export interface WidgetLinkFilter {
 export interface WidgetFilterCondition {
   field: string;
   op: string;
+  /** 字面量（标量/数组），或 $host 宿主引用对象 { $host: 宿主字段 }（OSC-260903e2a4，仅实体页洞察槽） */
   value?: unknown;
 }
 
 export interface WidgetFilter {
   logic: 'all' | 'any';
   conditions: WidgetFilterCondition[];
+}
+
+/** $host 宿主引用值：取数时用宿主页当前筛选上下文中该字段的等值值替换（OSC-260903e2a4） */
+export interface WidgetHostRefValue {
+  $host: string;
+}
+
+/** $host 宿主引用键名（前后端各一份，勿漂移） */
+export const HOST_REF_KEY = '$host';
+
+/** 是否宿主引用对象值（{ $host: 字段名 } 单键对象） */
+export function isHostRefValue(value: unknown): value is WidgetHostRefValue {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const keys = Object.keys(value);
+  return (
+    keys.length === 1 &&
+    keys[0] === HOST_REF_KEY &&
+    typeof (value as Record<string, unknown>)[HOST_REF_KEY] === 'string'
+  );
+}
+
+/** 取宿主引用字段名；非宿主引用返回 undefined */
+export function hostRefField(value: unknown): string | undefined {
+  if (!isHostRefValue(value)) return undefined;
+  return (value as WidgetHostRefValue).$host;
+}
+
+/** 部件查询条件是否含任一宿主引用 */
+export function hasHostRefFilter(filter: WidgetFilter | undefined | null): boolean {
+  if (!filter || !Array.isArray(filter.conditions)) return false;
+  return filter.conditions.some((c) => c && hostRefField(c.value) != null);
 }
 
 export interface WidgetInstance {

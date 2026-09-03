@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   emptyDashboard,
   hasDashboardDomain,
+  hasHostRefFilter,
+  hostRefField,
+  isHostRefValue,
   parseDashboardJson,
   serializeDashboardJson,
   validateDashboardForPut,
@@ -129,5 +132,70 @@ describe('parseDashboardJson / serializeDashboardJson', () => {
     expect(validateDashboardForPut(dataCard).ok).toBe(false);
     expect(validateDashboardForPut(dataCard, 'workbench').ok).toBe(true);
     expect(emptyDashboard()).toEqual({ version: 1, widgets: [] });
+  });
+});
+
+describe('$host 宿主引用 (OSC-260903e2a4)', () => {
+  it('isHostRefValue 仅识别单键 $host 字符串对象', () => {
+    expect(isHostRefValue({ $host: 'RoleId' })).toBe(true);
+    expect(isHostRefValue({ $host: '' })).toBe(true);
+    expect(isHostRefValue({ $host: 1 })).toBe(false);
+    expect(isHostRefValue({ $host: 'a', extra: 1 })).toBe(false);
+    expect(isHostRefValue({})).toBe(false);
+    expect(isHostRefValue('RoleId')).toBe(false);
+    expect(isHostRefValue(['RoleId'])).toBe(false);
+    expect(isHostRefValue(null)).toBe(false);
+    expect(isHostRefValue(undefined)).toBe(false);
+    expect(hostRefField({ $host: 'RoleId' })).toBe('RoleId');
+    expect(hostRefField('RoleId')).toBeUndefined();
+    expect(hostRefField(undefined)).toBeUndefined();
+  });
+
+  it('hasHostRefFilter 扫描条件值', () => {
+    expect(hasHostRefFilter(null)).toBe(false);
+    expect(hasHostRefFilter({ logic: 'all', conditions: [] })).toBe(false);
+    expect(
+      hasHostRefFilter({ logic: 'all', conditions: [{ field: 'Status', op: 'eq', value: 1 }] }),
+    ).toBe(false);
+    expect(
+      hasHostRefFilter({
+        logic: 'all',
+        conditions: [{ field: 'RoleId', op: 'eq', value: { $host: 'RoleId' } }],
+      }),
+    ).toBe(true);
+  });
+
+  it('extraFilter（字面 + $host）经 parse/serialize 原样保留', () => {
+    const wire = JSON.stringify({
+      version: 1,
+      widgets: [
+        {
+          id: 'w1',
+          kind: 'dataList',
+          title: '角色用户',
+          layout: { w: 6, order: 0 },
+          source: { provider: 'entity.list', typePath: 'Admin/User' },
+          query: {
+            limit: 30,
+            extraFilter: {
+              logic: 'all',
+              conditions: [
+                { field: 'Enable', op: 'eq', value: true },
+                { field: 'RoleId', op: 'eq', value: { $host: 'Id' } },
+              ],
+            },
+          },
+        },
+      ],
+    });
+    const cfg = parseDashboardJson(wire, 'insight');
+    const extra = cfg?.widgets[0].query?.extraFilter;
+    expect(extra?.conditions).toHaveLength(2);
+    expect(isHostRefValue(extra?.conditions[1].value)).toBe(true);
+    expect(hostRefField(extra?.conditions[1].value)).toBe('Id');
+    const back = JSON.parse(serializeDashboardJson(cfg!, 'insight')) as {
+      widgets: { query: { extraFilter?: unknown } }[];
+    };
+    expect(back.widgets[0].query.extraFilter).toEqual(extra);
   });
 });

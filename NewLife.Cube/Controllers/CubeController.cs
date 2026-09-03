@@ -866,7 +866,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
 
         if (model.DashboardJson != null && !model.DashboardJson.IsNullOrWhiteSpace())
         {
-            if (!Widgets.DashboardJson.TryNormalize(model.DashboardJson, user as IUser, checkSources: true, out var normalized, out var error))
+            if (!Widgets.DashboardJson.TryNormalize(model.DashboardJson, user as IUser, checkSources: true, DashboardJson.SurfaceInsight, typePath, out var normalized, out var error))
                 return Json(400, error);
             model.DashboardJson = normalized;
         }
@@ -920,7 +920,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         // 模板域接受 ViewsJson/FiltersJson/DashboardJson；FormJson 不属模板域（走 ViewProfile 全局唯一逻辑）
         if (model.DashboardJson != null && !model.DashboardJson.IsNullOrWhiteSpace())
         {
-            if (!Widgets.DashboardJson.TryNormalize(model.DashboardJson, user as IUser, checkSources: false, out var normalized, out var error))
+            if (!Widgets.DashboardJson.TryNormalize(model.DashboardJson, user as IUser, checkSources: false, DashboardJson.SurfaceInsight, typePath, out var normalized, out var error))
                 return Json(400, error);
             model.DashboardJson = normalized;
         }

@@ -278,6 +278,43 @@
               </div>
             </div>
           </a-form-item>
+          <!-- 查询条件（OSC-260903e2a4）：复用列表页 FilterBuilderPopover；值来源可切「宿主」引用当前页字段 -->
+          <a-form-item label="查询条件">
+            <div class="wd-filter-wrap">
+              <FilterBuilderPopover
+                :visible="filterEditorVisible"
+                :fields="filterCandidates"
+                :model-value="filterModel"
+                :can-save="false"
+                :host-fields="hostEditorFields"
+                :show-save-view="false"
+                @update:visible="(v: boolean) => (filterEditorVisible = v)"
+                @apply="onFilterApply"
+              >
+                <a-button size="mini">
+                  <icon-park type="filter" />
+                  {{ filterCondCount ? `查询条件（${filterCondCount}）` : '查询条件' }}
+                </a-button>
+              </FilterBuilderPopover>
+              <a-button
+                v-if="filterCondCount"
+                size="mini"
+                status="danger"
+                @click="clearWidgetFilter"
+              >
+                清除
+              </a-button>
+            </div>
+            <template #extra>
+              <span class="wd-hint">
+                {{
+                  hostEditorFields.length
+                    ? '按条件过滤源数据；条件值可切「宿主」引用当前页面筛选字段，随宿主联动。'
+                    : '按条件过滤源实体数据，作用于本部件（工作台无宿主字段引用）。'
+                }}
+              </span>
+            </template>
+          </a-form-item>
         </template>
         <a-form-item v-else>
           <div class="wd-hint">平台部件由服务端提供数据，只需调整标题与宽度。</div>
@@ -316,6 +353,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import type { WidgetInstance, WidgetSourceItem } from '@cube/api-core';
+import FilterBuilderPopover from '@/views/crud/FilterBuilderPopover.vue';
 import { CHART_TYPE_OPTIONS } from './chartTemplates';
 import { useWidgetConfigDrawer, type WidgetConfigDrawerProps } from './useWidgetConfigDrawer';
 import { normalizeTypePath } from './legacy';
@@ -339,6 +377,13 @@ const {
   numericFields,
   dateFields,
   sourceFields,
+  filterCandidates,
+  hostEditorFields,
+  filterModel,
+  filterCondCount,
+  filterEditorVisible,
+  onFilterApply,
+  clearWidgetFilter,
   showFetchLimit,
   limitOptions,
   fetchAllSelected,
@@ -395,6 +440,11 @@ function sourceLabel(s: WidgetSourceItem) {
 .wd-label {
   font-weight: 500;
   flex-shrink: 0;
+}
+.wd-filter-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .wd-kind,
 .wd-src {

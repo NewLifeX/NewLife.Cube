@@ -1,6 +1,7 @@
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using NewLife;
 using NewLife.Cube.Automation;
@@ -129,7 +130,7 @@ public static class WidgetQueryService
         if (!AutomationAuth.HasPermission(user, typePath, PermissionFlags.Detail))
             throw new ApiException(403, "无权查看");
 
-        var entityType = ResolveEntityType(typePath);
+        var entityType = FindEntityType(typePath);
         if (entityType == null) throw new ApiException(400, "未知实体");
         var fact = EntityFactory.CreateFactory(entityType);
         if (fact == null) throw new ApiException(400, "未知实体");
@@ -202,7 +203,8 @@ public static class WidgetQueryService
         }
     }
 
-    static Type ResolveEntityType(String typePath)
+    /// <summary>按 typePath 反查已注册实体类型（DashboardJson 校验与查询共用）</summary>
+    internal static Type FindEntityType(String typePath)
     {
         foreach (var kv in EntityPageRegistry.GetAll())
         {
@@ -301,14 +303,21 @@ public static class WidgetQueryService
             // AdminBackend：不加租户过滤
         }
 
-        if (HasConditions(req.ExtraFilter))
+        var hostPath = AutomationPaths.NormalizeTypePath(req.HostTypePath);
+
+        // 部件查询条件（OSC-260903e2a4）：先解析 $host 宿主引用（取宿主筛选等值条件值），非法对象值 400
+        var extraFilter = req.ExtraFilter;
+        var hostRefApplied = false;
+        if (HasConditions(extraFilter))
+            extraFilter = ResolveHostRefs(extraFilter, req.HostFilter, ref hostRefApplied);
+
+        if (HasConditions(extraFilter))
         {
-            var extra = AutomationFilter.TryBuildWhere(fact, req.ExtraFilter, allowed);
+            var extra = AutomationFilter.TryBuildWhere(fact, extraFilter, allowed);
             if (extra == null) throw new ApiException(400, "筛选无法下推");
             exp = exp == null ? extra : exp & extra;
         }
 
-        var hostPath = AutomationPaths.NormalizeTypePath(req.HostTypePath);
         if (HasConditions(req.HostFilter))
         {
             if (hostPath.EqualIgnoreCase(typePath))
@@ -350,24 +359,125 @@ public static class WidgetQueryService
                         throw new ApiException(400, "跨实体字段类型不兼容");
                     }
                 }
-                hostApplied = mapped;
+                // $host 解析成功也视为已应用宿主上下文（前端据此隐藏「未联动」角标）
+                hostApplied = mapped || hostRefApplied;
             }
+            else if (hostRefApplied)
+            {
+                hostApplied = true;
+            }
+        }
+        else if (hostRefApplied)
+        {
+            // 宿主筛选为空但 extraFilter 有 $host 解析成功（理论不达，防御）
+            hostApplied = true;
         }
 
         return exp;
     }
 
+    /// <summary>解析部件查询条件中的 $host 宿主引用（OSC-260903e2a4）。值对象仅允许 {"$host": 宿主字段}，其余对象值 400；解析源=宿主筛选等值条件。</summary>
+    /// <param name="filter">原始部件查询条件</param>
+    /// <param name="hostFilter">宿主页当前筛选</param>
+    /// <param name="applied">是否有 $host 成功解析</param>
+    /// <returns>解析后的条件（克隆，不改原始 DTO，保证 Execute 时间窗判定沿用原始 ExtraFilter）</returns>
+    static ViewFilterDto ResolveHostRefs(ViewFilterDto filter, ViewFilterDto hostFilter, ref Boolean applied)
+    {
+        var changed = false;
+        var list = new List<ViewFilterConditionDto>();
+        foreach (var c in filter.Conditions)
+        {
+            if (c == null) continue;
+            var field = GetHostRefField(c.Value);
+            if (field == "")
+                throw new ApiException(400, "筛选值无效");
+            if (field != null)
+            {
+                changed = true;
+                var v = FindHostValue(hostFilter, field);
+                if (v != null)
+                {
+                    list.Add(new ViewFilterConditionDto { Field = c.Field, Op = c.Op, Value = v });
+                    applied = true;
+                }
+                continue;
+            }
+            list.Add(c);
+        }
+        if (!changed) return filter;
+        return new ViewFilterDto { Logic = filter.Logic, Conditions = list };
+    }
+
+    /// <summary>识别 $host 宿主引用。null=字面量；""=对象但非法（非 $host 单键）；否则为宿主字段名。</summary>
+    static String GetHostRefField(Object value)
+    {
+        if (value is JsonElement je)
+        {
+            if (je.ValueKind != JsonValueKind.Object) return null;
+            String field = null;
+            foreach (var p in je.EnumerateObject())
+            {
+                if (!p.Name.Equals("$host", StringComparison.Ordinal)) return "";
+                if (p.Value.ValueKind != JsonValueKind.String) return "";
+                field = p.Value.GetString();
+            }
+            if (field.IsNullOrWhiteSpace()) return "";
+            return field.Trim();
+        }
+        if (value is JsonObject jo)
+        {
+            String field = null;
+            foreach (var kv in jo)
+            {
+                if (!String.Equals(kv.Key, "$host", StringComparison.Ordinal)) return "";
+                if (kv.Value is not JsonValue jv || !jv.TryGetValue<String>(out var s)) return "";
+                field = s;
+            }
+            if (field.IsNullOrWhiteSpace()) return "";
+            return field.Trim();
+        }
+        return null;
+    }
+
+    /// <summary>在宿主筛选中取某字段等值条件值；无则返回 null</summary>
+    static Object FindHostValue(ViewFilterDto host, String field)
+    {
+        if (host?.Conditions == null) return null;
+        foreach (var c in host.Conditions)
+        {
+            if (c == null || !String.Equals(c.Field, field, StringComparison.OrdinalIgnoreCase)) continue;
+            var op = (c.Op + "").Trim().ToLowerInvariant();
+            if (op.Length != 0 && op != "eq") continue;
+            var v = c.Value;
+            if (v is JsonElement jv && (jv.ValueKind == JsonValueKind.Null ||
+                (jv.ValueKind == JsonValueKind.String && jv.GetString().IsNullOrEmpty()))) continue;
+            if (v is String s && s.IsNullOrEmpty()) continue;
+            if (v == null) continue;
+            return v;
+        }
+        return null;
+    }
+
     static Boolean HasConditions(ViewFilterDto filter) =>
         filter?.Conditions != null && filter.Conditions.Count > 0;
+
+    /// <summary>取实体 search∪list 字段名白名单（DashboardJson 保存校验与查询端共用）。OSC-260903e2a4</summary>
+    /// <param name="fact">实体工厂</param>
+    /// <returns>白名单字段名集合</returns>
+    internal static HashSet<String> GetAllowedNames(IEntityFactory fact)
+    {
+        var names = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
+        foreach (var f in new FieldCollection(fact, ViewKinds.Search)) names.Add(f.Name);
+        foreach (var f in new FieldCollection(fact, ViewKinds.List)) names.Add(f.Name);
+        return names;
+    }
 
     /// <summary>构造 viewFilter 字段白名单（GetPage search∪list 的 name）。OSC-260830a1b2：与 GetPage 一致的 FieldCollection 默认 ShowIn，禁止 AllFields</summary>
     /// <param name="fact">实体工厂</param>
     /// <returns>白名单判定委托</returns>
     static Func<String, Boolean> BuildAllowedField(IEntityFactory fact)
     {
-        var names = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
-        foreach (var f in new FieldCollection(fact, ViewKinds.Search)) names.Add(f.Name);
-        foreach (var f in new FieldCollection(fact, ViewKinds.List)) names.Add(f.Name);
+        var names = GetAllowedNames(fact);
         return n => names.Contains(n);
     }
 

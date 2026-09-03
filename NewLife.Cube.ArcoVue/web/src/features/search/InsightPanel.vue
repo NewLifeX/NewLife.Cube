@@ -5,6 +5,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import WidgetHost from '@/features/widget/WidgetHost.vue';
+import type { FieldMeta } from '@/core/types/field';
 import type { ViewFilter } from '@/core/utils/viewProfile';
 import { useInsightPanel } from './useInsightPanel';
 
@@ -21,6 +22,8 @@ const props = defineProps<{
   chartOption?: unknown;
   hostFilter: ViewFilter | null;
   listFields?: { name: string; displayName?: string; typeName?: string }[];
+  /** 宿主页 search∪list 字段候选（OSC-260903e2a4） */
+  filterFields?: FieldMeta[];
 }>();
 
 useInsightPanel(props);

@@ -13,6 +13,8 @@
 
 业务包可在 `main.ts` 的 `registerPlatformWidgets()` 之后调用 `registerWidget` 注册自定义洞察槽 kind（见 `web/src/features/widget/registry.ts`）。
 
+实体部件（页面仪表盘/首页工作台）可在配置抽屉添加「查询条件」（OSC-260903e2a4）：编辑器复用列表页查询条件组件，保存进 `query.extraFilter`；跨实体部件条件值可引用宿主页筛选字段（`$host`），字段候选=源实体 search∪list（见 `web/src/features/widget/listFieldMeta.ts`）。
+
 ## 开发
 
 ```bash

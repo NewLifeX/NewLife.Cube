@@ -134,6 +134,22 @@ function queryFingerprint(
   });
 }
 
+/** 查询结果返回后的未联动态（OSC-260903e2a4）：同源恒 false；跨实体未声明联动恒 true；
+ *  声明联动（linkFilter 或 $host 宿主引用）时以响应 hostFilterApplied 定角标（false=本次未应用宿主上下文） */
+export function unlinkedAfterQuery(
+  w: WidgetInstance,
+  hostTypePath: string | undefined,
+  pre: boolean,
+  hostFilterApplied: boolean | undefined,
+): boolean {
+  const src = normalizeTypePath(w.source?.typePath);
+  const host = normalizeTypePath(hostTypePath);
+  const cross = !!src && !!host && src.toLowerCase() !== host.toLowerCase();
+  if (!cross) return false;
+  if (!isUnlinkedWidget(w, hostTypePath)) return hostFilterApplied === false;
+  return pre;
+}
+
 export function useWidgetQuery(
   widgets: Ref<WidgetInstance[]>,
   hostTypePath: Ref<string | undefined>,
@@ -202,9 +218,7 @@ export function useWidgetQuery(
             error: '',
             locked: false,
             result,
-            unlinked:
-              unlinked ||
-              (result?.hostFilterApplied === false && isUnlinkedWidget(w, hostTypePath.value)),
+            unlinked: unlinkedAfterQuery(w, hostTypePath.value, unlinked, result?.hostFilterApplied),
           };
         } catch (err) {
           if (seq !== refreshSeq) return;

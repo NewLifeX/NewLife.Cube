@@ -21,6 +21,7 @@
         :chart-option="insight.chartOption"
         :host-filter="viewFilter"
         :list-fields="listFields"
+        :filter-fields="filterFields"
       />
 
       <!-- 表格面板：视图 Tab + 工具栏 + 表格 + 分页 -->

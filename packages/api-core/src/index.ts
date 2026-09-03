@@ -58,6 +58,7 @@ export type {
   WidgetLinkFilter,
   WidgetFilter,
   WidgetFilterCondition,
+  WidgetHostRefValue,
   WidgetInstance,
   DashboardConfig,
   WidgetQueryBody,
@@ -81,6 +82,10 @@ export {
   validateDashboardForPut,
   widthsFor,
   maxWidgetsFor,
+  HOST_REF_KEY,
+  isHostRefValue,
+  hostRefField,
+  hasHostRefFilter,
 } from './widget';
 export type {
   EntityAutomationListItem,

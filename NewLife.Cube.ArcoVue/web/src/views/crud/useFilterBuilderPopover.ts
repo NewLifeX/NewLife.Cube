@@ -1,4 +1,5 @@
 import { computed, reactive, ref, watch } from 'vue';
+import { hostRefField, isHostRefValue } from '@cube/api-core';
 import type { FieldMeta } from '@/core/types/field';
 import { normalizeFilter, type ViewFilter, type ViewFilterOp } from '@/core/utils/viewProfile';
 import {
@@ -25,6 +26,10 @@ interface FilterBuilderPopoverProps {
   modelValue: ViewFilter;
   /** 是否有命名视图可保存 */
   canSave: boolean;
+  /** 宿主字段候选（OSC-260903e2a4）：非空时条件行值来源可切「值 / 宿主」；缺省不显示 */
+  hostFields?: FieldMeta[];
+  /** 是否显示「保存条件到此视图」按钮（OSC-260903e2a4）；部件配置传 false，默认 true */
+  showSaveView?: boolean;
 }
 
 /** FilterBuilderPopover 组件 emits 类型（与 FilterBuilderPopover.vue defineEmits 泛型逐字一致） */
@@ -139,6 +144,53 @@ export function useFilterBuilderPopover(props: FilterBuilderPopoverProps, emit: 
     row.cond.value = v;
   }
 
+  // ---- 宿主字段引用（OSC-260903e2a4）：条件值可引用宿主页字段，存 { $host: 字段名 } ----
+  const hasHost = computed(() => (props.hostFields ?? []).some((f) => !!f?.name));
+  /** 宿主字段下拉选项（去重保序，中文 displayName 优先） */
+  function hostOptions(): { value: string; label: string }[] {
+    const seen = new Set<string>();
+    const out: { value: string; label: string }[] = [];
+    for (const f of props.hostFields ?? []) {
+      if (!f?.name || seen.has(f.name)) continue;
+      seen.add(f.name);
+      out.push({ value: f.name, label: f.displayName || f.name });
+    }
+    return out;
+  }
+  /** 该行值来源：host=宿主字段引用（值为 $host 对象） */
+  function valueModeOf(row: FilterDraftRow): 'fixed' | 'host' {
+    return isHostRefValue(row.cond.value) ? 'host' : 'fixed';
+  }
+  /** 该行是否可切宿主引用：有宿主候选、已选字段、且操作符需要值 */
+  function canHostValue(row: FilterDraftRow): boolean {
+    return (
+      hasHost.value &&
+      !!row.cond.field &&
+      opNeedsValue(row.cond.op)
+    );
+  }
+  /** 切换值来源：宿主=保留当前宿主字段或取第一个候选；固定=清空值 */
+  function onValueMode(row: FilterDraftRow, mode: unknown) {
+    if (mode === 'host') {
+      if (!isHostRefValue(row.cond.value)) {
+        const first = (props.hostFields ?? []).find((f) => !!f?.name)?.name;
+        row.cond.value = first ? { $host: first } : undefined;
+      }
+    } else {
+      row.cond.value = undefined;
+      row.cond.value2 = undefined;
+    }
+  }
+  /** 宿主字段选择：写回 $host 对象 */
+  function onHostValue(row: FilterDraftRow, v: unknown) {
+    const field = String(v ?? '').trim();
+    row.cond.value = field ? { $host: field } : undefined;
+  }
+  /** 当前宿主引用字段名（模板绑定用） */
+  function hostFieldOf(row: FilterDraftRow): string {
+    return hostRefField(row.cond.value) ?? '';
+  }
+
   function resetDraft() {
     draft.logic = 'all';
     draft.rows = [];
@@ -187,6 +239,14 @@ export function useFilterBuilderPopover(props: FilterBuilderPopoverProps, emit: 
     onCondValue,
     enumOptionsOf,
     condFieldOf,
+    hasHost,
+    hostOptions,
+    valueModeOf,
+    canHostValue,
+    onValueMode,
+    onHostValue,
+    hostFieldOf,
+    showSaveView: props.showSaveView !== false,
     removeCond,
     addCond,
     onFieldChange,

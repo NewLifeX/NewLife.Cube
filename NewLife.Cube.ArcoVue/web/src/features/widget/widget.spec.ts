@@ -7,7 +7,7 @@ import {
   resolveKanbanInteractive,
 } from './useMiniKanbanWidget';
 import { readChartItems, resolveChartDimKey } from './useMiniChartWidget';
-import { normalizeQueryResult, shouldQueryWidget } from './useWidgetQuery';
+import { normalizeQueryResult, shouldQueryWidget, unlinkedAfterQuery } from './useWidgetQuery';
 import { buildMiniChartOption } from './chartTemplates';
 import { getWidget, registerWidget } from './registry';
 import { readFileSync } from 'node:fs';
@@ -162,6 +162,53 @@ describe('isUnlinkedWidget', () => {
         'Admin/User',
       ),
     ).toBe(false);
+  });
+
+  it('cross-entity declaring $host extraFilter counts as linked (OSC-260903e2a4)', () => {
+    const w = {
+      id: 'a',
+      kind: 'dataList',
+      title: 't',
+      layout: { w: 6 as const, order: 0 },
+      source: { provider: 'entity.list' as const, typePath: 'Admin/User' },
+      query: {
+        extraFilter: {
+          logic: 'all' as const,
+          conditions: [{ field: 'RoleId', op: 'eq', value: { $host: 'RoleId' } }],
+        },
+      },
+    };
+    expect(isUnlinkedWidget(w, 'Admin/Role')).toBe(false);
+  });
+});
+
+describe('unlinkedAfterQuery (OSC-260903e2a4)', () => {
+  const w = (cross: boolean) => ({
+    id: 'a',
+    kind: 'metricCard',
+    title: 't',
+    layout: { w: 3 as const, order: 0 },
+    source: { provider: 'entity.aggregate' as const, typePath: cross ? 'Admin/Role' : 'Admin/User' },
+    query: {},
+  });
+
+  it('same source never unlinked regardless hostFilterApplied', () => {
+    expect(unlinkedAfterQuery(w(false), 'Admin/User', false, true)).toBe(false);
+    expect(unlinkedAfterQuery(w(false), 'Admin/User', false, false)).toBe(false);
+  });
+
+  it('cross undeclared stays unlinked', () => {
+    expect(unlinkedAfterQuery(w(true), 'Admin/User', true, true)).toBe(true);
+    expect(unlinkedAfterQuery(w(true), 'Admin/User', true, false)).toBe(true);
+  });
+
+  it('cross declared-link (linkFilter/$host) follows hostFilterApplied', () => {
+    const linked = {
+      ...w(true),
+      query: { extraFilter: { logic: 'all' as const, conditions: [{ field: 'Id', op: 'eq', value: { $host: 'Id' } }] } },
+    };
+    expect(unlinkedAfterQuery(linked, 'Admin/User', false, true)).toBe(false);
+    expect(unlinkedAfterQuery(linked, 'Admin/User', false, false)).toBe(true);
   });
 });
 

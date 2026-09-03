@@ -7,7 +7,7 @@
     @popup-visible-change="onVisibleChange"
   >
     <template #content>
-      <div class="filter-builder">
+      <div class="filter-builder" :class="{ 'filter-builder--host': hasHost }">
         <div class="fb-head">
           <span class="fb-title">查询</span>
           <a-radio-group v-model="draft.logic" type="button" size="mini">
@@ -54,26 +54,60 @@
             <div class="fb-value">
               <!-- 为空/不为空：无值控件 -->
               <template v-if="row.cond.field && opNeedsValue(row.cond.op)">
-                <!-- 人员：用户实体下拉 -->
-                <a-select
-                  v-if="kindOfName(row.cond.field) === 'person'"
-                  :model-value="row.cond.value"
-                  placeholder="请选择人员"
-                  allow-clear
-                  :loading="userLoading"
-                  size="small"
-                  style="width: 132px"
-                  @update:model-value="onCondValue(row, $event)"
+                <!-- 值来源：固定值 / 宿主字段（OSC-260903e2a4，仅部件配置传入 hostFields 时显示） -->
+                <a-radio-group
+                  v-if="canHostValue(row)"
+                  :model-value="valueModeOf(row)"
+                  class="fb-vmode"
+                  type="button"
+                  size="mini"
+                  @change="(v: string | number | boolean) => onValueMode(row, v)"
                 >
-                  <a-option
-                    v-for="u in userOptions"
-                    :key="u.value"
-                    :value="u.value"
-                    :label="u.label"
+                  <a-radio value="fixed">值</a-radio>
+                  <a-radio value="host">宿主</a-radio>
+                </a-radio-group>
+                <!-- 宿主字段引用：取宿主页当前筛选上下文该字段等值值 -->
+                <template v-if="valueModeOf(row) === 'host'">
+                  <a-select
+                    :model-value="hostFieldOf(row)"
+                    placeholder="本页字段"
+                    allow-clear
+                    size="small"
+                    style="width: 128px"
+                    @update:model-value="(v: unknown) => onHostValue(row, v)"
                   >
-                    {{ u.label }}
-                  </a-option>
-                </a-select>
+                    <a-option
+                      v-for="o in hostOptions()"
+                      :key="o.value"
+                      :value="o.value"
+                      :label="o.label"
+                    >
+                      {{ o.label }}
+                    </a-option>
+                  </a-select>
+                </template>
+                <!-- 固定值控件 -->
+                <template v-else>
+                  <!-- 人员：用户实体下拉 -->
+                  <a-select
+                    v-if="kindOfName(row.cond.field) === 'person'"
+                    :model-value="row.cond.value"
+                    placeholder="请选择人员"
+                    allow-clear
+                    :loading="userLoading"
+                    size="small"
+                    style="width: 132px"
+                    @update:model-value="onCondValue(row, $event)"
+                  >
+                    <a-option
+                      v-for="u in userOptions"
+                      :key="u.value"
+                      :value="u.value"
+                      :label="u.label"
+                    >
+                      {{ u.label }}
+                    </a-option>
+                  </a-select>
                 <!-- 枚举/值集：dataSource 已物化优先本地下拉 -->
                 <a-select
                   v-else-if="kindOfName(row.cond.field) === 'enum' && enumOptionsOf(row).length"
@@ -130,6 +164,7 @@
                   style="width: 132px"
                   @update:model-value="onCondValue(row, $event)"
                 />
+                </template>
               </template>
             </div>
             <a-button type="text" size="mini" class="fb-del" @click="removeCond(i)">
@@ -147,7 +182,7 @@
 
         <div class="fb-foot">
           <a-button size="small" @click="resetDraft">重置</a-button>
-          <a-button size="small" :disabled="!canSave" @click="emitSave">保存条件到此视图</a-button>
+          <a-button v-if="showSaveView" size="small" :disabled="!canSave" @click="emitSave">保存条件到此视图</a-button>
           <a-space class="fb-foot-right">
             <a-button size="small" @click="close">取消</a-button>
             <a-button size="small" type="primary" @click="emitApply">应用</a-button>
@@ -177,6 +212,10 @@ const props = defineProps<{
   modelValue: ViewFilter;
   /** 是否有命名视图可保存 */
   canSave: boolean;
+  /** 宿主字段候选（OSC-260903e2a4）：非空时条件行值来源可切「值 / 宿主」；缺省不显示 */
+  hostFields?: FieldMeta[];
+  /** 是否显示「保存条件到此视图」按钮（OSC-260903e2a4）；部件配置传 false，默认 true */
+  showSaveView?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -198,6 +237,14 @@ const {
   onCondValue,
   enumOptionsOf,
   condFieldOf,
+  hasHost,
+  hostOptions,
+  valueModeOf,
+  canHostValue,
+  onValueMode,
+  onHostValue,
+  hostFieldOf,
+  showSaveView,
   removeCond,
   addCond,
   onFieldChange,
@@ -213,6 +260,13 @@ const {
 .filter-builder {
   width: 420px;
   padding: 4px;
+}
+/* 宿主引用切换占宽：有条件值时放宽（OSC-260903e2a4） */
+.filter-builder--host {
+  width: 540px;
+}
+.fb-vmode {
+  margin-right: 2px;
 }
 .fb-head {
   display: flex;

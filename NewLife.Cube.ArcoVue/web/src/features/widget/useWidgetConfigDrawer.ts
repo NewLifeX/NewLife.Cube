@@ -10,8 +10,11 @@ import type {
   WidgetWidth,
 } from '@cube/api-core';
 import cubeApi from '@/api';
+import type { FieldMeta } from '@/core/types/field';
+import { emptyViewFilter, normalizeFilter, type ViewFilter } from '@/core/utils/viewProfile';
 import { listWidgets } from './registry';
 import { newWidgetId, normalizeSourceRows, normalizeTypePath } from './legacy';
+import { loadEntityFilterFields } from './listFieldMeta';
 import {
   DATA_LIST_LIMIT_ALL,
   DATA_LIST_LIMIT_DEFAULT,
@@ -44,6 +47,8 @@ export interface WidgetConfigDrawerProps {
   editing: WidgetInstance | null;
   hostTypePath?: string;
   hostFields: { name: string; displayName?: string; typeName?: string }[];
+  /** 宿主页 search∪list 字段候选（OSC-260903e2a4：实体页洞察槽注入；工作台无） */
+  hostFilterFields?: FieldMeta[];
   /** insight 页面仪表盘仅指标卡 / 迷你图表（禁用看板、列表、卡片） */
   surface?: 'insight' | 'workbench';
 }
@@ -87,11 +92,56 @@ export function useWidgetConfigDrawer(
     color: 'blue',
     badge: '',
     icon: '',
+    /** 部件查询条件（OSC-260903e2a4）：存 query.extraFilter；null=无条件 */
+    extraFilter: null as ViewFilter | null,
   });
 
   const showFetchLimit = computed(() => isListFetchKind(draft.kind));
   const limitOptions = DATA_LIST_LIMIT_OPTIONS;
   const fetchAllSelected = computed(() => draft.limit === DATA_LIST_LIMIT_ALL);
+
+  /** 条件编辑器候选：源=宿主时用宿主页候选；跨源/工作台懒加载源实体 search∪list */
+  const filterCandidatesLoaded = ref<FieldMeta[]>([]);
+  const isSameHost = computed(() => {
+    const host = normalizeTypePath(props.hostTypePath);
+    const src = normalizeTypePath(draft.typePath);
+    return !!host && !!src && host.toLowerCase() === src.toLowerCase();
+  });
+  const filterCandidates = computed<FieldMeta[]>(() => {
+    if (isSameHost.value && (props.hostFilterFields ?? []).length) return props.hostFilterFields!;
+    return filterCandidatesLoaded.value;
+  });
+  /** 宿主字段候选（FilterBuilderPopover hostFields）：工作台无宿主概念 → 空（隐藏宿主引用） */
+  const hostEditorFields = computed<FieldMeta[]>(() =>
+    props.surface === 'workbench' ? [] : (props.hostFilterFields ?? []),
+  );
+  /** 条件编辑器 modelValue（无条件下传空方案） */
+  const filterModel = computed<ViewFilter>(() =>
+    draft.extraFilter && draft.extraFilter.conditions.length
+      ? draft.extraFilter
+      : emptyViewFilter(),
+  );
+  const filterCondCount = computed(() => draft.extraFilter?.conditions?.length || 0);
+  const filterEditorVisible = ref(false);
+
+  async function loadFilterCandidates() {
+    const tp = normalizeTypePath(draft.typePath);
+    if (!tp) {
+      filterCandidatesLoaded.value = [];
+      return;
+    }
+    // 源=宿主且宿主候选已注入：不重复请求
+    if (isSameHost.value && (props.hostFilterFields ?? []).length) return;
+    filterCandidatesLoaded.value = await loadEntityFilterFields(tp);
+  }
+
+  function onFilterApply(f: ViewFilter) {
+    draft.extraFilter = f && f.conditions.length ? f : null;
+  }
+
+  function clearWidgetFilter() {
+    draft.extraFilter = null;
+  }
 
   const isNamed = computed(
     () => draft.provider === 'named' || !!draft.widgetName,
@@ -171,6 +221,9 @@ export function useWidgetConfigDrawer(
     draft.color = w?.style?.color || 'blue';
     draft.badge = w?.style?.badge || '';
     draft.icon = w?.style?.icon || '';
+    const wf = (w?.query?.extraFilter ?? null) as ViewFilter | null | undefined;
+    draft.extraFilter =
+      wf && Array.isArray(wf.conditions) && wf.conditions.length ? normalizeFilter(wf) : null;
   }
 
   watch(
@@ -209,8 +262,13 @@ export function useWidgetConfigDrawer(
           namedList.value = [];
         }
       }
-      if (!isNamed.value) await loadSourceFields(draft.typePath);
-      else sourceFields.value = [];
+      if (!isNamed.value) {
+        await loadSourceFields(draft.typePath);
+        await loadFilterCandidates();
+      } else {
+        sourceFields.value = [];
+        filterCandidatesLoaded.value = [];
+      }
     },
     { immediate: true },
   );
@@ -273,6 +331,7 @@ export function useWidgetConfigDrawer(
   async function pickSource(typePath: string) {
     draft.typePath = normalizeTypePath(typePath);
     await loadSourceFields(draft.typePath);
+    await loadFilterCandidates();
     step.value = 'fields';
   }
 
@@ -423,6 +482,11 @@ export function useWidgetConfigDrawer(
           isWorkbench.value || !isCross.value || !draft.hostField || !draft.sourceField
             ? undefined
             : [{ hostField: draft.hostField, sourceField: draft.sourceField }],
+        // 部件查询条件（OSC-260903e2a4）：合并保留，避免重建 query 丢失既有 extraFilter
+        extraFilter:
+          draft.extraFilter && draft.extraFilter.conditions.length
+            ? draft.extraFilter
+            : undefined,
       },
       style: {
         color: draft.color,
@@ -454,6 +518,13 @@ export function useWidgetConfigDrawer(
     numericFields,
     dateFields,
     sourceFields,
+    filterCandidates,
+    hostEditorFields,
+    filterModel,
+    filterCondCount,
+    filterEditorVisible,
+    onFilterApply,
+    clearWidgetFilter,
     showFetchLimit,
     limitOptions,
     fetchAllSelected,

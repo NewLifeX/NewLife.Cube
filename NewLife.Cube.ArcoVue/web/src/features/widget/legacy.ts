@@ -1,4 +1,4 @@
-import type { DashboardConfig, WidgetInstance, WidgetSourceItem } from '@cube/api-core';
+import { hasHostRefFilter, type DashboardConfig, type WidgetInstance, type WidgetSourceItem } from '@cube/api-core';
 import type { ViewInsight } from '@/core/utils/viewProfile';
 import { resolveStatEntries } from '@/core/utils/searchFilters';
 
@@ -110,13 +110,15 @@ export function normalizeSourceRows(payload: unknown): WidgetSourceItem[] {
   return out;
 }
 
-/** 跨实体且未声明 linkFilter → 未联动 */
+/** 跨实体且未声明联动（linkFilter 或 $host 宿主引用均视为声明联动，OSC-260903e2a4）→ 未联动 */
 export function isUnlinkedWidget(widget: WidgetInstance, hostTypePath: string | undefined): boolean {
   const src = normalizeTypePath(widget.source?.typePath);
   const host = normalizeTypePath(hostTypePath);
   if (!src || !host || src.toLowerCase() === host.toLowerCase()) return false;
   const links = widget.query?.linkFilter;
-  return !links || links.length === 0;
+  if (links && links.length > 0) return false;
+  if (hasHostRefFilter(widget.query?.extraFilter)) return false;
+  return true;
 }
 
 export function newWidgetId(): string {
