@@ -29,7 +29,7 @@ flowchart TB
     Interceptor["WorkflowWriteInterceptor"]
     Meta["GET /Cube/Workflow/Meta"]
   end
-  subgraph wf [NewLife.Cube.ArcoVue/Workflow 后端]
+  subgraph wf [NewLife.Cube/Workflow 后端]
     Def["WorkflowDefinition"]
     Eng["WorkflowEngine"]
     Inst["Instance / Subject / Task / Comment"]
@@ -137,7 +137,7 @@ stateDiagram-v2
 
 ## 3. 数据模型
 
-位于 `NewLife.Cube.ArcoVue/Workflow/Entity/Workflow.xml`（Amd-1：随 ArcoVue 皮肤仓交付，命名空间保留 `NewLife.Cube.Workflow.Entity` 便于未来抽独立 NuGet），`ConnName=Workflow`，`ChineseFileName=True`，`ModelClass={name}Model`。在该目录执行 `xcode` **只生成本 xml 的表**。禁止写入 `NewLife.Cube/Entity/Cube.xml`（避免与自动化表混生成）。
+位于 WebAPI 核心库 `NewLife.Cube/Workflow/Entity/Workflow.xml`（Amd-2：并入 NewLife.Cube，命名空间保留 `NewLife.Cube.Workflow.Entity`），`ConnName=Workflow`，`ChineseFileName=True`，`ModelClass={name}Model`。在该目录执行 `xcode` **只生成本 xml 的表**。禁止写入 `NewLife.Cube/Entity/Cube.xml`（避免与自动化表混生成）。
 
 主键一律 `Int64` + `DataScale=time` 雪花（实例/任务量大）。
 
@@ -339,14 +339,14 @@ XOR 与 StartFilter 的 Filter 针对 **Subject 列表的第一条实体快照**
 
 | 文件 | 改什么 | 禁止动 |
 | --- | --- | --- |
-| **新建** `NewLife.Cube.ArcoVue/Workflow/*`（Amd-1：并入皮肤项目，不建独立 csproj） | 随 ArcoVue 多目标 net6.0–net10.0；命名空间 `NewLife.Cube.Workflow(.Entity)` 不变；引用 NewLife.Cube | 不要引用 Elsa |
-| **新建** `ArcoVue/Workflow/Entity/Workflow.xml` + xcode 生成 | 五表 | 不改 Cube.xml |
-| **新建** `ArcoVue/Workflow/WorkflowModule.cs` | `[Module("Workflow")]` Add/Use；同 ArcoVue 程序集，仅 WebAPI 宿主生效 | Use 内不 MapFallbackToFile |
-| **新建** `ArcoVue/Workflow/WorkflowEngine.cs` | 状态机 | 不调用 AutomationExecutor.Run |
-| **新建** `ArcoVue/Workflow/WorkflowWriteInterceptor.cs` | `IEntityInterceptor.Valid` | Query/Filter 不做行藏 |
-| **新建** `ArcoVue/Workflow/Controllers/WorkflowController.cs` | API | |
-| **新建** `ArcoVue/Workflow/Jobs/WorkflowTimeoutJob.cs` | `[CronJob("WorkflowTimeoutTick", "0 */5 * * * ?")]` | 不改 EntityAutomationTick |
-| `魔方.sln` / 各 csproj（Amd-1） | 从 `魔方.sln` 移除独立 Workflow 项目；CubeDemo 经 ArcoVue 获得工作流；**CubeDemoNC 移除引用**；`NewLife.Cube.Tests` 改引用 ArcoVue | 不把工作流塞进 CubeNC / MVC Demo |
+| **新建** `NewLife.Cube/Workflow/*`（Amd-2：并入 WebAPI 核心库，不建独立 csproj、不进皮肤仓） | 随 NewLife.Cube 多目标 net6.0–net10.0；命名空间 `NewLife.Cube.Workflow(.Entity)`；与 Automation 同模式 | 不要引用 Elsa |
+| **新建** `NewLife.Cube/Workflow/Entity/Workflow.xml` + xcode 生成 | 五表 | 不改 Cube.xml |
+| **新建** `NewLife.Cube/Workflow/WorkflowModule.cs` | `[Module("Workflow")]` Add/Use；WebAPI 核心注册，MVC(CubeNC) 不 Link 无副作用 | Use 内不 MapFallbackToFile |
+| **新建** `NewLife.Cube/Workflow/WorkflowEngine.cs` | 状态机 | 不调用 AutomationExecutor.Run |
+| **新建** `NewLife.Cube/Workflow/WorkflowWriteInterceptor.cs` | `IEntityInterceptor.Valid` | Query/Filter 不做行藏 |
+| **新建** `NewLife.Cube/Workflow/Controllers/WorkflowController.cs` | API | |
+| **新建** `NewLife.Cube/Workflow/Jobs/WorkflowTimeoutJob.cs` | `[CronJob("WorkflowTimeoutTick", "0 */5 * * * ?")]` | 不改 EntityAutomationTick |
+| 项目引用（Amd-2） | Workflow 即 NewLife.Cube 源码；`NewLife.Cube.Tests` 直接引用 NewLife.Cube；CubeNC/CubeDemoNC 不 Link `NewLife.Cube/Workflow` 目录 | 不把工作流塞进 CubeNC / MVC Demo |
 | `NewLife.Cube/Common/ReadOnlyEntityController.cs` `GetPage` | PrepareFieldsForApi **之后**调用 `WorkflowPageOverlay.ApplyType(data, Factory, user)` | 不取消 `[AllowAnonymous]`；不改 PrepareFieldsForApi 本体 |
 | 同文件 GetList/GetDetail 序列化出口 | `WorkflowPageOverlay.ApplyRows` | 不改 Search 条件当 ACL |
 | ~~CubeNC 双栈~~（Amd-1） | **不做**：MVC 侧（CubeDemoNC/CubeNC）不引用工作流，无需双栈改动与实体 Link | 不把设计器塞 MVC |
@@ -508,7 +508,7 @@ pass：视同同意（Comment action=timeout）。reject：视同驳回。transf
 | `WorkflowPageOverlayTests` | 匿名 GetPage 仅 enabled；登录 canStart；GetList IN 查询 |
 | `Osc260815` 回归 | 抽 2 个自动化测试确保未改执行器 |
 | Vitest `useWorkflowList.spec.ts` | IA 按钮矩阵 |
-| 构建 | `dotnet build NewLife.Cube.ArcoVue` + Cube（含 ArcoVue/Workflow 源码）；`pnpm -C web test` 相关 spec |
+| 构建 | `dotnet build NewLife.Cube`（含 NewLife.Cube/Workflow 源码）；`pnpm -C web test` 相关 spec |
 
 ## 12. 自审记录（创建时已闭合）
 
@@ -524,7 +524,7 @@ pass：视同同意（Comment action=timeout）。reject：视同驳回。transf
 | 候选人空 | 不自动通过 |
 | PermissionFlags.Approve | 不做，候选人校验 |
 | 并行网关 AND-join | V1 不做 |
-| Cube.sln / Demo 引用（Amd-1） | 后端并入 ArcoVue：CubeDemo（WebAPI）经 ArcoVue 生效；CubeDemoNC 不引用；Tests 改引用 ArcoVue |
+| Cube.sln / Demo 引用（Amd-2） | 后端并入 NewLife.Cube：WebAPI 宿主（CubeDemo）天然生效；CubeNC/CubeDemoNC 不 Link 无影响；Tests 直接引用 NewLife.Cube |
 | 接收人代码重复 | 抽 RecipientResolver，自动化改调用 |
 | N=100 / 批量任务 50 | 硬上限 |
 | OSC-0010 | 不复活 |

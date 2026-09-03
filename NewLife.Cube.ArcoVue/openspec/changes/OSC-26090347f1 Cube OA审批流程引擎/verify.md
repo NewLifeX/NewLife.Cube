@@ -65,10 +65,10 @@
 ## 命令
 
 ```powershell
-dotnet test NewLife.Cube.Tests --filter DisplayName~Workflow   # 测试项目引用 NewLife.Cube.ArcoVue（含 ArcoVue/Workflow 源码）
+dotnet test NewLife.Cube.Tests --filter DisplayName~Workflow   # 工作流源码位于 NewLife.Cube/Workflow，测试项目直接引用 NewLife.Cube
 dotnet test NewLife.Cube.Tests --filter DisplayName~Osc260815
 pnpm --dir NewLife.Cube.ArcoVue/web exec vitest run src/views/crud/useWorkflowList.spec.ts
-dotnet build NewLife.Cube.ArcoVue/NewLife.Cube.ArcoVue.csproj --no-restore   # Amd-1：后端并入 ArcoVue，无独立 Workflow 项目
+dotnet build NewLife.Cube/NewLife.Cube.csproj -f net10.0   # Amd-2：后端并入 WebAPI 核心库 NewLife.Cube/Workflow
 ```
 
 预期：相关测试全绿；构建 0 error。

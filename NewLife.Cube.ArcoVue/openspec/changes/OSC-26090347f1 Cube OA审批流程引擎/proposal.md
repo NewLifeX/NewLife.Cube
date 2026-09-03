@@ -1,12 +1,12 @@
 # OSC-26090347f1 — Cube OA审批流程引擎
 
-> **2026-09-03 架构修订（Amd-1）**：执行中将后端从“独立 `NewLife.Cube.Workflow` NuGet 模块”改为“并入 `NewLife.Cube.ArcoVue` 皮肤仓（WebAPI 版专属）”，命名空间保留 `NewLife.Cube.Workflow(.Entity)`；CubeDemoNC（MVC）不引用、不受影响。目标 1 与决策 6/9 及 §4/§5/§7 相应条目已同步改写。
+> **2026-09-03 架构修订（Amd-1 → Amd-2）**：Amd-1 曾把后端从“独立 `NewLife.Cube.Workflow` NuGet 模块”改为“并入 `NewLife.Cube.ArcoVue` 皮肤仓”。**Amd-2 最终定稿**：后端**全部并入 WebAPI 核心库 `NewLife.Cube/Workflow`**（与既有 Automation 同模式），命名空间 `NewLife.Cube.Workflow(.Entity)`；`NewLife.CubeNC`/CubeDemoNC **不 Link** 该目录，MVC 版不受影响。目标 1 与决策 6/9 及 §4/§5/§7 相应条目已同步改写。
 
 ## 1. 目标愿景
 
 让任意已有 Cube 实体在**零改业务实体/零改实体控制器**的前提下，挂上飞书/钉钉式 OA 审批：提交即实例、待办可认领、或签/会签/依次签、加签/知会/回退/撤销，审批中写锁由定义策略与节点字段权共同约束。
 
-- 目标 1：工作流后端随 `NewLife.Cube.ArcoVue`（WebAPI 版皮肤）交付——类/服务位于皮肤仓 `ArcoVue/Workflow`，命名空间 `NewLife.Cube.Workflow(.Entity)` 提供定义 / 实例 / 主体 / 待办 / 意见；仅 WebAPI 宿主（CubeDemo，经 ArcoVue）生效，CubeDemoNC/MVC 侧不引用，无入口、无待办槽（`GET /Cube/Workflow/Meta` 能力探测）。
+- 目标 1：工作流后端随 **WebAPI 核心库 `NewLife.Cube`** 交付——类/服务位于核心仓 `NewLife.Cube/Workflow`，命名空间 `NewLife.Cube.Workflow(.Entity)` 提供定义 / 实例 / 主体 / 待办 / 意见；仅 WebAPI 版受影响（CubeDemo 等引用 NewLife.Cube 的宿主），CubeNC/MVC 侧不 Link 无入口、无待办槽（`GET /Cube/Workflow/Meta` 能力探测）。
 - 目标 2：一次提交可挂 N 条同 TypePath 记录（一单一批，默认 N≤100）；通过/驳回对全部主体同时生效；同一 `(TypePath, EntityKey)` 同时最多一条在途实例。
 - 目标 3：Cube 核心一次性挂钩——写入拦截、GetPage 类型级能力、GetList/GetDetail 记录级覆盖；业务 `Entity`/`EntityController` 零改动。
 - 目标 4：设计器只用 FlowGram.AI 固定布局读写定义图；运行时是 C# OA 状态机，**禁止**浏览器执行、禁止把 OSC-260815fa86 自动化升级成审批引擎。
@@ -26,16 +26,16 @@
 | 3 | **非侵入**：允许改 Cube 核心一次（拦截器 + GetPage/GetList/GetDetail 覆盖 + Meta 探测）。**禁止**改业务实体字段、禁止改业务 `EntityController`、禁止要求 `IApprovable`。 |
 | 4 | **写锁**：定义上 `LockPolicy`=`full`（默认，审批中禁止普通 Update/Delete）或 `nodeFields`（仅当前节点可写字段、且仅审批人经流程通道 PATCH）。 |
 | 5 | **组织**：只用 Cube `User` / `Role` / `Department`；不接飞书/钉钉通讯录。接收人展开**调用** `AutomationActions` 的用户/角色/部门解析，不复制第二套。 |
-| 6 | **宿主（Amd-1）**：后端内置 `NewLife.Cube.ArcoVue`（非独立 NuGet），命名空间 `NewLife.Cube.Workflow(.Entity)` 预留未来抽包；仅 UseArcoVue 的 WebAPI 宿主（CubeDemo）生效——不引用则无表用途、无钩子副作用（拦截器 `Init` 返回 false 或模块未注册则不挂）。 |
+| 6 | **宿主（Amd-2）**：后端内置 WebAPI 核心库 `NewLife.Cube/Workflow`（非独立 NuGet，非皮肤仓），命名空间 `NewLife.Cube.Workflow(.Entity)`；NewLife.CubeNC/CubeDemoNC **不 Link** 该目录——MVC 版无工作流表用途、无钩子副作用（拦截器 `Init` 返回 false 或模块未注册则不挂）。 |
 | 7 | **V1 能力一次交付**：提交/撤回、同意/驳回、或签/会签/依次签、前加签/后加签、知会、回退到已办节点、指定节点跳转（管理员）、超时（通过/驳回/转交）、意见+附件、条件网关（XOR）、常用语。 |
 | 8 | **自动化边界**：不改 `EntityAutomation` / `AutomationExecutor` / `AutomationPersistence` 产品语义。图 schema 可与自动化同形 `nodes/edges`，**节点 type 命名空间分离**（`oa.*` vs 自动化现有 type）；执行器遇自动化节点 type **失败并停止**。 |
-| 9 | **单栈（Amd-1）**：WebAPI `NewLife.Cube` 挂钩与 API 为主，工作流仅随 ArcoVue/WebAPI 版交付；**取消**实体生成物 CubeNC Link 与 CubeDemoNC 引用——MVC 侧（CubeNC）不交付设计器、无工作流。 |
+| 9 | **单栈（Amd-1，保持）**：WebAPI `NewLife.Cube` 挂钩与 API 为主，工作流随 WebAPI 核心库交付；**取消**实体生成物 CubeNC Link 与 CubeDemoNC 引用——MVC 侧（CubeNC）不交付设计器、无工作流。 |
 | 10 | **编号**：本号 `OSC-26090347f1` 替代历史上「给 FlowGram 留 OSC-0010」的叙事；**禁止**复活 `OSC-0010`。 |
 
 ## 4. 做什么
 
-1. `NewLife.Cube.ArcoVue/Workflow`（并入皮肤仓，Amd-1）：`Workflow.xml`（ConnName=`Workflow`，命名空间 `NewLife.Cube.Workflow.Entity`）五表 + xcode 生成；禁止手写实体骨架。
-2. `WorkflowModule : IModule`（与 ArcoVue 同程序集，随 WebAPI 宿主生效）+ `AddCubeWorkflow()`；`WorkflowEngine` 状态机；`WorkflowWriteInterceptor` 全局写入校验。
+1. `NewLife.Cube/Workflow`（并入 WebAPI 核心库，Amd-2）：`Workflow.xml`（ConnName=`Workflow`，命名空间 `NewLife.Cube.Workflow.Entity`）五表 + xcode 生成；禁止手写实体骨架。
+2. `WorkflowModule`/引擎随核心库注册（同 Automation 模式）；`WorkflowEngine` 状态机；`WorkflowWriteInterceptor` 全局写入校验。
 3. Cube 核心薄挂钩（模块存在才生效）：GetPage 类型级 `workflow` 块；GetList `__wf*`；GetDetail 字段三元组；拦截器注册。
 4. API：定义 CRUD/发布、发起/撤回、任务同意/驳回/加签/转办/知会/回退、Inbox 待办、Meta、常用语 Parameter。
 5. ArcoVue：实体列表提交/状态列；待办中心；FlowGram 固定布局设计器页；意见抽屉与附件（复用 Attachment）。
@@ -54,7 +54,7 @@
 - 不改 `PermissionFlags` 枚举（无 Approve 位）；审批动作走 Workflow API + 候选人校验。
 - 不混 TypePath 一批提交；不跨实体网关。
 - 不手写实体骨架；不全量乱跑 xcode 导致重复中文文件。
-- 不做 CubeNC/CubeDemoNC 双栈（Amd-1）：不把工作流实体 Link 到 `NewLife.CubeNC`，MVC 宿主不受影响。
+- 不做 CubeNC/CubeDemoNC 双栈（Amd-1，保持）：不把工作流实体 Link 到 `NewLife.CubeNC`，MVC 宿主不受影响。
 
 ## 6. 依赖
 
@@ -79,7 +79,7 @@
 | XUnit（Workflow） | 是 | 状态机：或签/会签/依次、回退清下游、加签、超时、排他实例、条件网关无匹配失败 |
 | XUnit（Cube 挂钩） | 是 | 拦截器跳过流程自有表；full 锁拒绝 Update；nodeFields 仅审批 PATCH；GetPage 匿名无字段权 |
 | Vitest | 是 | Meta.enabled 隐入口；列表提交按钮矩阵；待办空态 |
-| 构建 | 是 | NewLife.Cube.ArcoVue（含 ArcoVue/Workflow 后端）+ NewLife.Cube + arco-vue |
+| 构建 | 是 | NewLife.Cube（含 Workflow 后端）+ arco-vue |
 | 手工 | 是 | 对 Admin/User 挂定义、提交 2 条、会签通过、驳回解锁 |
 
 ## 8. 成功标准

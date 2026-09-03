@@ -1,14 +1,14 @@
 # OSC-26090347f1 Tasks
 
 > 顺序：模型 → 引擎 → Cube 挂钩 → API → ArcoVue → 文档 → 测试构建。批准前不写业务代码。  
-> **2026-09-03 Amd-1**：后端不再建独立 `NewLife.Cube.Workflow` 项目，改为并入 `NewLife.Cube.ArcoVue/Workflow`（命名空间不变，随 WebAPI/ArcoVue 生效）；CubeDemoNC 不引用。T1 勾选保留、语义以修订后为准；T2–T11 无实质拆分变化，代码落点均为 `NewLife.Cube.ArcoVue/Workflow`。
+> **2026-09-03 Amd-2（最终定稿）**：后端不再建独立项目、也不进 ArcoVue 皮肤仓，改为并入 **WebAPI 核心库 `NewLife.Cube/Workflow`**（命名空间不变，与 Automation 同模式）；NewLife.CubeNC/CubeDemoNC 不 Link 该目录。T1 勾选保留、语义以修订后为准；T2–T11 无实质拆分变化，代码落点均为 `NewLife.Cube/Workflow`。
 
 ## T1 数据模型
 
-- [x] 新建 `NewLife.Cube.ArcoVue/Workflow/Entity/Workflow.xml`（Amd-1 前建于独立项目 `NewLife.Cube.Workflow/Entity`，迁入皮肤仓后命名空间不变）：Definition / Instance / Subject / Task / Comment，列与索引对齐 design §3
+- [x] 新建 `NewLife.Cube/Workflow/Entity/Workflow.xml`（先后置于独立项目/ArcoVue 皮肤仓，Amd-2 定稿迁入 WebAPI 核心库，命名空间不变）：Definition / Instance / Subject / Task / Comment，列与索引对齐 design §3
 - [x] 该目录执行 `xcode`；禁止改 `NewLife.Cube/Entity/Cube.xml`
 - [x] Biz：Definition 发布校验入口；Subject 在途查询；Task 按用户待办
-- [x] **Amd-1 架构修订**：删除独立 `NewLife.Cube.Workflow` 项目，后端并入 `NewLife.Cube.ArcoVue/Workflow`；`魔方.sln` 移除项目、`NewLife.Cube.Tests` 改引用 ArcoVue；**CubeDemoNC 移除引用**——工作流只随 CubeDemo（WebAPI）经 ArcoVue 生效
+- [x] **Amd-2 架构修订（定稿）**：后端并入 `NewLife.Cube/Workflow`；Tests 直接引用 NewLife.Cube；CubeNC/CubeDemoNC 不 Link 该目录——工作流只随 WebAPI 版（引用 NewLife.Cube 的宿主如 CubeDemo）生效
 
 ## T2 接收人公共化（不升级执行器）
 
