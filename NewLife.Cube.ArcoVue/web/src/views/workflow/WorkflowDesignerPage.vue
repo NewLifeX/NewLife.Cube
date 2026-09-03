@@ -25,6 +25,7 @@ const {
   saving,
   writableFields,
   entityOptions,
+  canvasEl,
   selectedToKind,
   selectedToIds,
   selectedName,
@@ -130,7 +131,7 @@ function nodeIcon(type: string): string {
     <a-empty v-if="!graph" description="请选择或新建流程定义" />
 
     <div v-else class="wf-designer__body">
-      <!-- 主区：固定布局链式节点 -->
+      <!-- 主区：FlowGram.AI 固定布局画布（宽屏）；窄屏只读链式预览 -->
       <div class="wf-designer__canvas">
         <div class="wf-designer__toolbar">
           <span class="wf-designer__toolbar-hint">在选中节点后插入：</span>
@@ -151,9 +152,16 @@ function nodeIcon(type: string): string {
           >
             删除选中
           </a-button>
+          <a-typography-text v-if="narrow" type="secondary" style="font-size: 12px; margin-left: auto">
+            视口小于 1024px：只读预览
+          </a-typography-text>
         </div>
 
-        <div class="wf-designer__chain">
+        <!-- FlowGram 画布挂载点（React root） -->
+        <div v-if="!narrow" ref="canvasEl" class="wf-designer__flowgram" />
+
+        <!-- 窄屏只读链式预览 -->
+        <div v-else class="wf-designer__chain">
           <template v-for="(node, i) in chain" :key="node.id">
             <div v-if="i > 0" class="wf-designer__arrow">↓</div>
             <div
@@ -330,7 +338,19 @@ function nodeIcon(type: string): string {
   border: 1px solid var(--color-border-2);
   border-radius: 8px;
   padding: 12px;
-  overflow: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.wf-designer__flowgram {
+  flex: 1 1 auto;
+  min-height: 420px;
+  height: 100%;
+  position: relative;
+}
+.wf-designer__flowgram :deep(.gedit-flow-render-layer),
+.wf-designer__flowgram :deep(.gedit-canvas-host) {
+  border-radius: 8px;
 }
 .wf-designer__toolbar {
   display: flex;

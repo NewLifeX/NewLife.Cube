@@ -1,14 +1,18 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import type { WorkflowDefinitionItem } from '@cube/api-core';
 import { Message } from '@arco-design/web-vue';
+import { createElement } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
 import cubeApi from '@/api';
 import { formatApiError } from '@/core/utils/apiError';
 import type { WfGraphData, WfGraphNodeData } from '@/core/types/workflow';
 import { wfRecipientTo, wfRecipientToJson } from '@/core/types/workflow';
+import { defaultNodeDataFor, flowDocToGraph, graphToFlowDoc, type FlowDoc } from './flowgram/flowgramGraph';
+import { FlowGramDesigner, type FlowGramApi } from './flowgram/FlowGramDesigner';
 import type { RecipientKind } from './recipient';
 
 /**
- * 流程设计器（OSC-26090347f1 T8e）：固定布局（链式）编辑 GraphJson，节点仅 oa.*；
+ * 流程设计器（OSC-26090347f1 T8e-FlowGram）：画布由 FlowGram.AI 固定布局承担（结构增删/拖拽/缩放），
  * 运行时是 C# 引擎，浏览器只读写定义图（design §4）。<1024 只读提示（IA §3.4）。
  * 纯图函数（parseGraph/newDefaultGraph/insertAfter/removeNode/applyPatch/topoChain）可单测。
  */
@@ -211,6 +215,69 @@ export function useWorkflowDesigner() {
   const narrow = ref(false);
   /** 可发起实体选项（新建草稿 typePath 下拉） */
   const entityOptions = ref<{ value: string; label: string }[]>([]);
+  /** React 画布挂载点（WorkflowDesignerPage 提供 div） */
+  const canvasEl = ref<HTMLDivElement | null>(null);
+  let reactRoot: Root | null = null;
+  /** FlowGram 画布桥接 API（ref 回调在每次 render 更新） */
+  const canvasApi: { current: FlowGramApi | null } = { current: null };
+
+  /** id → 卡片名称（label 权威来源：Vue graph） */
+  function labelsOf(g: WfGraphData | null): Record<string, string> {
+    const m: Record<string, string> = {};
+    for (const n of g?.nodes ?? []) {
+      const name = (n.data?.name as string) ?? '';
+      if (name) m[n.id] = name;
+    }
+    return m;
+  }
+
+  /** 渲染/更新 React 画布（labels/readonly/doc 变更时调用；挂载前 no-op） */
+  function renderCanvas() {
+    if (!reactRoot) return;
+    const g = graph.value;
+    reactRoot.render(
+      createElement(FlowGramDesigner, {
+        doc: graphToFlowDoc(g),
+        readonly: !canEdit.value,
+        labels: labelsOf(g),
+        ref: (api: FlowGramApi | null) => {
+          canvasApi.current = api;
+        },
+        onSelectNode: (id: string) => {
+          selectedNodeId.value = id;
+        },
+        onDocChanged: (d: FlowDoc) => {
+          graphChangedFromCanvas(d);
+        },
+      }),
+    );
+  }
+
+  /** React 画布结构/数据变更 → 镜像重建 Vue graph（保存/发布/属性面板读取唯一数据源） */
+  function graphChangedFromCanvas(doc: FlowDoc) {
+    const prevById = new Map((graph.value?.nodes ?? []).map((n) => [n.id, n] as const));
+    let addedId: string | null = null;
+    const raw = flowDocToGraph(doc);
+    const nodes = raw.nodes.map((n) => {
+      const old = prevById.get(n.id);
+      // 已存在节点 data 以 Vue 镜像为准（FlowGram 不承载业务 data 语义）
+      if (old && (!n.data || Object.keys(n.data).length === 0)) return { ...n, data: old.data };
+      if (!old) addedId = n.id;
+      if (!n.data || Object.keys(n.data).length === 0) n.data = defaultNodeDataFor(n.type);
+      return n;
+    });
+    graph.value = { version: raw.version, nodes, edges: raw.edges };
+    if (addedId) selectedNodeId.value = addedId;
+    renderCanvas();
+  }
+
+  /** 在 canvasEl 上创建 React root（组件挂载后调用） */
+  function ensureCanvas() {
+    if (canvasEl.value && !reactRoot) {
+      reactRoot = createRoot(canvasEl.value);
+      renderCanvas();
+    }
+  }
 
   /** 可配置实体（automation.entities update 权限） */
   async function loadEntities() {
@@ -299,8 +366,13 @@ export function useWorkflowDesigner() {
     window.addEventListener('resize', onResize);
     void loadDefinitions();
     void loadEntities();
+    ensureCanvas();
   });
-  onBeforeUnmount(() => window.removeEventListener('resize', onResize));
+  onBeforeUnmount(() => {
+    window.removeEventListener('resize', onResize);
+    reactRoot?.unmount();
+    reactRoot = null;
+  });
 
   async function loadDefinitions() {
     defsLoading.value = true;
@@ -326,6 +398,9 @@ export function useWorkflowDesigner() {
       graph.value = null;
       writableFields.value = [];
     }
+    // 同步画布：labels/readonly 更新 + 数据装载（切换定义）
+    renderCanvas();
+    canvasApi.current?.load(graphToFlowDoc(graph.value));
   }
 
   async function createDefinition(typePath: string, name: string): Promise<number | null> {
@@ -356,26 +431,40 @@ export function useWorkflowDesigner() {
     graph.value = next;
   }
 
-  /** 在选中节点后插入（保存后自动选中新节点） */
+  /** 在选中节点后插入（优先 FlowGram 画布操作，其历史回调镜像回 Vue；无画布回退纯图插入） */
   function addNodeAfter(type: string) {
-    if (!graph.value || !selectedNodeId.value) return;
-    const next = insertAfter(graph.value, selectedNodeId.value, type);
+    const sel = selectedNodeId.value;
+    if (!sel) return;
+    if (canvasApi.current) {
+      canvasApi.current.addAfter(sel, type);
+      return;
+    }
+    if (!graph.value) return;
+    const next = insertAfter(graph.value, sel, type);
     setGraph(next);
-    // 定位新节点（n 最大者）
     const added = [...next.nodes].sort((a, b) => b.id.localeCompare(a.id))[0];
-    selectedNodeId.value = added?.id ?? selectedNodeId.value;
+    selectedNodeId.value = added?.id ?? sel;
+    renderCanvas();
   }
 
   function removeSelected() {
-    if (!graph.value || !selectedNodeId.value) return;
-    setGraph(removeNode(graph.value, selectedNodeId.value));
+    const sel = selectedNodeId.value;
+    if (!sel) return;
+    if (canvasApi.current) {
+      canvasApi.current.removeNode(sel);
+      return;
+    }
+    if (!graph.value) return;
+    setGraph(removeNode(graph.value, sel));
     selectedNodeId.value = null;
+    renderCanvas();
   }
 
-  /** 属性补丁写入选中节点 */
+  /** 属性补丁写入选中节点；name 变化同步画布卡片标签 */
   function patchSelected(patch: Record<string, unknown>) {
     if (!graph.value || !selectedNodeId.value) return;
     setGraph(applyNodePatch(graph.value, selectedNodeId.value, patch));
+    if ('name' in patch) renderCanvas();
   }
 
   function selectNode(id: string | null) {
@@ -445,6 +534,7 @@ export function useWorkflowDesigner() {
     error,
     writableFields,
     entityOptions,
+    canvasEl,
     selectedToKind,
     selectedToIds,
     selectedName,
