@@ -76,11 +76,13 @@
 
 ## T10 测试与构建
 
-- [ ] `WorkflowEngineTests`：§8 每格 + 回退 + 加签 + XOR + 空候选人
-- [ ] `WorkflowLockTests` / `WorkflowExclusiveTests` / `WorkflowPageOverlayTests`
-- [ ] 回归 `Osc260815` 至少接收人 + 一次执行
-- [ ] Vitest `useWorkflowList.spec.ts`
-- [ ] `dotnet build` Workflow + Cube 0 error；`pnpm` 相关 spec
+- [x] `WorkflowEngineTests`：§8 每格 + 回退 + 加签 + XOR + 空候选人
+- [x] `WorkflowLockTests` / `WorkflowExclusiveTests` / `WorkflowPageOverlayTests`
+- [x] 回归 `Osc260815` 至少接收人 + 一次执行
+- [x] Vitest `useWorkflowList.spec.ts`
+- [x] `dotnet build` Workflow + Cube 0 error；`pnpm` 相关 spec
+
+> **T10 实现说明（2026-09-03）**：新增 `WorkflowMatrixTests`（会签 quorum=0.6 两票过、or 驳回整单、依次首人驳回、回退清下游并重开目标、前加签挂起/通过后恢复、XOR 缺 defaultTarget 发布失败、空候选人 Running+error 意见——空候选人以不存在的角色触发，图校验要求 to 非空）7 例 + `WorkflowExclusiveTests`（顺序二次 409 + 并发双提）2 例。并发双提实测复现**双插缺陷**（Start 在途检查非原子）→ `WorkflowEngine.Start` 增加进程内 `_startGate` 互斥包裹“排他检查 + 事务落库”修复（跨进程/多实例仍需 DB 唯一约束，见 WorkflowExclusiveTests 备注，列为实现审计关注项）。`Workflow*` + `Osc260815` 回归 33/33 通过；`dotnet build` 0 error；web vitest 830 全绿。
 
 ## T11 手工冒烟（实现期）
 

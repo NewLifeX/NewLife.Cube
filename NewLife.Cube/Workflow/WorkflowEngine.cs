@@ -23,6 +23,8 @@ namespace NewLife.Cube.Workflow;
 /// </remarks>
 public static class WorkflowEngine
 {
+    /// <summary>发起互斥：同进程内“在途检查 + 落库”原子化（防并发双插）。跨进程部署需 DB 唯一约束，见 WorkflowExclusiveTests 备注</summary>
+    static readonly Object _startGate = new();
     #region 发起
     /// <summary>发起一批（N 条同 TypePath 记录 → 1 实例 + N 主体 + 首节点任务）</summary>
     /// <param name="definition">已发布定义</param>
@@ -57,6 +59,9 @@ public static class WorkflowEngine
         // 主键归一化：查询与落库使用同一条文本（数值 InvariantCulture、无前导零；字符串 trim）
         var keys2 = kk.Select(e => NormalizeKeyText(e, pkField)).ToList();
 
+        // 在途排他与落库整体互斥（进程内原子窗口；跨进程需 DB 唯一约束，见 WorkflowExclusiveTests 备注）
+        lock (_startGate)
+        {
         // 加载业务行（首条用于条件与标题），同时做在途排他
         var rows = new List<IEntity>();
         for (var i = 0; i < keys2.Count; i++)
@@ -144,6 +149,7 @@ public static class WorkflowEngine
             // 事务回滚后原样抛出
             throw;
         }
+        } // lock _startGate
     }
     #endregion
 
