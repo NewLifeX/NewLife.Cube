@@ -33,3 +33,7 @@
     回归 Workflow*+Osc260815 37/37；web vue-tsc 0 error、workflow spec 32 绿、api-core 3 绿。会话小任务已补录（tasks T12）。
     无法闭环项已记录：G-01 跨进程唯一约束（后续 OSC）、G-04 候选可见语义（待确认）、G-05 附件裁剪、
     G-06 Meta 恒 true（随 T11）、G-07 HTTP 冒烟（T11）、G-08/G-11 后续批次。收尾门禁无 🔴、无实现缺口。
+    **会话小任务补录（2026-09-03）**：宿主冒烟发现 OA 独立页（Designer/Todo/Done/Started）菜单未播种时
+    URL 直达白屏（路由由菜单动态注册）→ `router/index.ts` 静态注册 oaLeafRoutes 修复（tasks T8 补录子条目）。
+    遗留 UI 缺口：IA §1「侧栏菜单（模块扫描）」——WorkflowHost 未播种 OA 菜单，宿主侧栏无 OA 审批入口
+    （现仅 URL 直达；待后续后端菜单播种或宿主手工配菜单，列为待确认/后续）。

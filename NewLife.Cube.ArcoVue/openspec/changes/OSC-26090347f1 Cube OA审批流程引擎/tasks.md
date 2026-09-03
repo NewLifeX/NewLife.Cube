@@ -61,6 +61,7 @@
 - [x] DefaultList 薄接入；工具栏顺序：自动化之后「提交审批」
 - [x] `SubmitApprovalDrawer` / `WorkflowProgressPanel` / `TodoPage`
 - [x] `WorkflowDesignerPage`：FlowGram.AI 固定布局（自绘链式已替换为 FlowGram，见下）；节点仅 oa.*
+  - 补录（2026-09-03）：OA 独立页（Designer/Todo/Done/Started）静态注册于 Layout children（`router/index.ts` oaLeafRoutes），URL 直达不再依赖菜单播种/embed 兜底——菜单未播种时直达曾 No match 白屏（menuRoutes 特判组件仅菜单命中才注册）；vue-tsc 0 error
 - [x] api-core `workflow.ts` + URL 单测
 - [x] `<1024` 设计器只读提示
 
