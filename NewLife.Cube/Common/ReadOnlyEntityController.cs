@@ -574,7 +574,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     /// <exception cref="InvalidOperationException">非开发模式或非系统管理员时抛出</exception>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("高级开发")]
-    [HttpGet]
+    // 必须带模板：无模板的 [HttpGet] 与 Index 的 [HttpGet] 同挂类级路由，GET 请求会 AmbiguousMatchException；
+    // 显式 "Develop" 模板对齐 MVC 版 /Controller/Develop?act= 形态（NC 版走约定路由不受影响）
+    [HttpGet("Develop")]
     public virtual async Task<ActionResult> Develop(String act)
     {
         if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
