@@ -46,6 +46,7 @@ public class WidgetDataFixture : IDisposable
         // 本线程（fixture 线程）重映射后播种，确保种子数据落入独立库
         XLog.Meta.ConnName = ConnName;
         UserOnline.Meta.ConnName = ConnName;
+        NewLife.Cube.Entity.UserStat.Meta.ConnName = ConnName;
 
         Seed();
     }
@@ -84,6 +85,9 @@ public class WidgetDataFixture : IDisposable
 
         new UserOnline { Name = "admin", SessionID = "s1", CreateTime = now.AddMinutes(-5) }.Insert();
         new UserOnline { Name = "old", SessionID = "s2", CreateTime = now.AddHours(-2) }.Insert(); // 超出30分钟
+
+        // 今日统计：供 MaxOnline/OnlineTime 部件读取（最大在线 20，累计在线 3660 秒=1小时1分）
+        new NewLife.Cube.Entity.UserStat { Date = DateTime.Today, MaxOnline = 20, OnlineTime = 3660 }.Insert();
     }
 
     private static void InsertLog(DateTime time, String action, Boolean success, String userName = "")
@@ -107,15 +111,18 @@ public class WidgetDataTests : IDisposable
 {
     private readonly String _oldLog;
     private readonly String _oldOnline;
+    private readonly String _oldStat;
 
-    /// <summary>每个测试实例在自己的执行线程上重映射 Log/UserOnline 到独立连接。
+    /// <summary>每个测试实例在自己的执行线程上重映射 Log/UserOnline/UserStat 到独立连接。
     /// Meta.ConnName 是线程级配置，fixture 线程设置不作用于测试线程，故须在测试构造函数中设置</summary>
     public WidgetDataTests()
     {
         _oldLog = XLog.Meta.ConnName;
         _oldOnline = UserOnline.Meta.ConnName;
+        _oldStat = NewLife.Cube.Entity.UserStat.Meta.ConnName;
         XLog.Meta.ConnName = WidgetDataFixture.ConnName;
         UserOnline.Meta.ConnName = WidgetDataFixture.ConnName;
+        NewLife.Cube.Entity.UserStat.Meta.ConnName = WidgetDataFixture.ConnName;
     }
 
     public void Dispose()
@@ -123,6 +130,7 @@ public class WidgetDataTests : IDisposable
         // 恢复实体连接映射，避免影响其它测试集合
         XLog.Meta.ConnName = _oldLog;
         UserOnline.Meta.ConnName = _oldOnline;
+        NewLife.Cube.Entity.UserStat.Meta.ConnName = _oldStat;
     }
 
     [Fact(DisplayName = "LoginLogWidget_返回最近登录与在线明细")]
@@ -142,15 +150,26 @@ public class WidgetDataTests : IDisposable
         Assert.Equal(2, onlines.Length);
     }
 
-    [Fact(DisplayName = "Log24hWidget_统计24小时内日志数")]
-    public void Log24hWidget_Counts24hLogs()
+    [Fact(DisplayName = "MaxOnlineWidget_读取今日最大在线")]
+    public void MaxOnlineWidget_ReadsTodayMax()
     {
-        var widget = new Log24hWidget();
+        var widget = new MaxOnlineWidget();
         dynamic d = widget.GetData();
 
-        // 播种：24h 内 3 条（操作/异常/登录），25h 前与昨日/前日不计入
-        Assert.Equal("3", (String)d.Value);
-        Assert.Equal("最近24小时", (String)d.Trend);
+        // 播种：今日统计 MaxOnline=20
+        Assert.Equal("20", (String)d.Value);
+        Assert.Equal("今日峰值", (String)d.Trend);
+    }
+
+    [Fact(DisplayName = "OnlineTimeWidget_读取今日在线时长并格式化")]
+    public void OnlineTimeWidget_FormatsDuration()
+    {
+        var widget = new OnlineTimeWidget();
+        dynamic d = widget.GetData();
+
+        // 播种：今日统计 OnlineTime=3660 秒 → 1小时1分
+        Assert.Equal("1小时1分", (String)d.Value);
+        Assert.Equal("今日累计", (String)d.Trend);
     }
 
     [Fact(DisplayName = "Error24hWidget_统计24小时内异常数")]

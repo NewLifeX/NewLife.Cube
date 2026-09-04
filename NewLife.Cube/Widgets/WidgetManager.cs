@@ -337,8 +337,25 @@ public class WidgetManager
         return (order, items);
     }
 
-    /// <summary>按用户布局、管理员组内配置与组顺序排序组件。无布局时用默认（组顺序 + 组内顺序，同组聚合）；
-    /// 有布局时已知组件按布局排序值，未覆盖的新组件追加末尾并按默认排（保证同组仍聚合）</summary>
+    /// <summary>判断组件是否来自外部程序集（非魔方内置）。下游业务系统注册的组件默认排在魔方内置组件之前</summary>
+    /// <param name="info">组件元数据。未扫描（Type 为空）视为内置，保证手工构造与测试安全</param>
+    internal static Boolean IsExternal(WidgetAttribute info) =>
+        info.Type != null && info.Type.Assembly != typeof(WidgetAttribute).Assembly;
+
+    /// <summary>按默认规则排序组件（不叠加用户布局）。KPI 小卡恒在内容卡前，同簇内外部业务组件在魔方内置前，再按组顺序与组内配置/Sort。</summary>
+    /// <param name="widgets">组件集合</param>
+    /// <returns>排序后的组件列表</returns>
+    public IList<WidgetAttribute> SortByDefault(IEnumerable<WidgetAttribute> widgets)
+    {
+        var list = widgets == null ? new List<WidgetAttribute>() : widgets.ToList();
+        if (list.Count == 0) return list;
+
+        var (groupOrder, groupItems) = LoadGroupConfig();
+        return OrderWidgets(list, null, groupOrder, groupItems);
+    }
+
+    /// <summary>按用户布局、管理员组内配置与组顺序排序组件。无布局时用默认（KPI 簇优先 → 外部业务在魔方前 → 组顺序，同组聚合）；
+    /// 有布局时已知组件严格按布局排序值，未覆盖的新组件按默认位智能插入（插到第一个默认排在它后面的已知组件前），避免新卡一律沉底</summary>
     /// <param name="widgets">组件集合</param>
     /// <param name="layout">用户布局。null/空表示无自定义布局</param>
     /// <param name="groupOrder">组顺序。未配置的组排到已配置组之后并按名称排序</param>
@@ -368,11 +385,13 @@ public class WidgetManager
             return 0;
         }
 
-        // 默认顺序：组（已配置在前按序号，未配置在后按名称）→ 组内（配置在前按位置，未配置按 Sort）
+        // 默认顺序：KPI 小卡簇在前 → 外部业务组件在魔方内置前 → 组（已配置在前按序号，未配置在后按名称）→ 组内（配置在前按位置，未配置按 Sort）
         IEnumerable<WidgetAttribute> DefaultOrder(IEnumerable<WidgetAttribute> src) =>
-            src.Select(e => new { W = e, C = e.Category.IsNullOrEmpty() ? "通用" : e.Category })
-               .Select(x => new { x.W, x.C, P = ItemPos(x.W, out var cfg), Cfg = cfg })
-               .OrderBy(x => groupIndex.ContainsKey(x.C) ? 0 : 1)
+            src.Select(e => new { W = e, C = e.Category.IsNullOrEmpty() ? "通用" : e.Category, K = e.WidgetType == WidgetTypes.Kpi ? 0 : 1, O = IsExternal(e) ? 0 : 1 })
+               .Select(x => new { x.W, x.C, x.K, x.O, P = ItemPos(x.W, out var cfg), Cfg = cfg })
+               .OrderBy(x => x.K)
+               .ThenBy(x => x.O)
+               .ThenBy(x => groupIndex.ContainsKey(x.C) ? 0 : 1)
                .ThenBy(x => groupIndex.TryGetValue(x.C, out var idx) ? idx : 0)
                .ThenBy(x => x.C, StringComparer.OrdinalIgnoreCase)
                .ThenBy(x => x.Cfg ? 0 : 1)
@@ -382,14 +401,26 @@ public class WidgetManager
 
         if (layout == null || layout.Count == 0) return DefaultOrder(widgets).ToList();
 
-        var known = widgets.Where(e => layout.ContainsKey(e.Name)).ToList();
+        // 用户已布局的组件严格按布局排序值；新增（未布局）组件按默认位智能插入
+        var known = widgets.Where(e => layout.ContainsKey(e.Name)).OrderBy(e => layout[e.Name].Sort).ToList();
         var unknown = widgets.Where(e => !layout.ContainsKey(e.Name)).ToList();
 
-        known = known.OrderBy(e => layout[e.Name].Sort).ToList();
+        // 全部已布局：直接按用户序返回；全部未布局：退回默认序
+        if (known.Count == 0) return DefaultOrder(widgets).ToList();
+        if (unknown.Count == 0) return known;
+
+        // 全量默认序作为秩参照：每个未布局组件插到第一个“默认应排在它之后”的已知组件前，无锚点则追加末尾
+        var defaults = DefaultOrder(widgets).ToList();
+        var rank = new Dictionary<String, Int32>(StringComparer.OrdinalIgnoreCase);
+        for (var i = 0; i < defaults.Count; i++) rank[defaults[i].Name] = i;
 
         var rs = new List<WidgetAttribute>(known.Count + unknown.Count);
         rs.AddRange(known);
-        rs.AddRange(DefaultOrder(unknown));
+        foreach (var u in DefaultOrder(unknown))
+        {
+            var idx = rs.FindIndex(k => rank.TryGetValue(k.Name, out var r) && r > rank[u.Name]);
+            if (idx < 0) rs.Add(u); else rs.Insert(idx, u);
+        }
 
         return rs;
     }

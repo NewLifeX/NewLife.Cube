@@ -17,7 +17,7 @@ public class WidgetManagerTests
         var dic = _manager.Scan();
 
         // 核心部件应全部存在
-        foreach (var name in new[] { "UserCount", "TodayLogin", "OnlineCount", "Log24h", "Error24h", "CpuRate", "MyLogins", "MyDays", "Monitor", "QuickLink", "Profile", "SysInfo", "LoginLog" })
+        foreach (var name in new[] { "UserCount", "TodayLogin", "OnlineCount", "MaxOnline", "Error24h", "OnlineTime", "Monitor", "QuickLink", "Profile", "SysInfo", "LoginLog" })
         {
             Assert.True(dic.ContainsKey(name), $"未找到部件 {name}");
         }
@@ -38,22 +38,9 @@ public class WidgetManagerTests
     {
         var dic = _manager.Scan();
 
-        foreach (var name in new[] { "UserCount", "TodayLogin", "OnlineCount", "Log24h", "Error24h", "CpuRate" })
+        foreach (var name in new[] { "UserCount", "TodayLogin", "OnlineCount", "MaxOnline", "Error24h", "OnlineTime" })
         {
             Assert.True(dic[name].Cols <= 3, $"KPI 部件 {name} 宽度应为 2");
-        }
-    }
-
-    [Fact]
-    [DisplayName("个人 KPI 部件对普通用户可见")]
-    public void PersonalKpi_VisibleForNormalUser()
-    {
-        var dic = _manager.Scan();
-
-        foreach (var name in new[] { "MyLogins", "MyDays" })
-        {
-            Assert.False(dic[name].AdminOnly, $"个人 KPI {name} 不应仅管理员可见");
-            Assert.Equal("个人", dic[name].Category);
         }
     }
 

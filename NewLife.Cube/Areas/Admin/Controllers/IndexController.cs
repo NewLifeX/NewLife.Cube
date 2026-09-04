@@ -170,15 +170,16 @@ public class IndexController : ControllerBaseX, IPageDataContext
         var mi = MachineInfo.Current ?? new MachineInfo();
         var process = Process.GetCurrentProcess();
 
-        // KPI 指标（MVC Widget 部件驱动，对齐 MVC 工作台：UserCount/CpuRate/OnlineCount/TodayLogin/Log24h/Error24h/MyDays/MyLogins）。
-        // 角色/启停按部件元数据过滤；用户隐藏项分到 hiddenKpis，供前端恢复面板
+        // KPI 指标（Widget 部件驱动，与 MVC 工作台同一套内置部件，增删内置部件自动同步）。
+        // 默认排序走 WidgetManager（外部业务组件在魔方内置前，KPI 簇内业务新卡自然上浮）；用户隐藏项分到 hiddenKpis，供前端恢复面板
         var roleNames = user?.Roles?.Select(e => e.Name).ToList();
         var isAdmin = user?.Roles.Any(e => e.IsSystem) == true;
         var wm = _widgetManager;
         var layout = user != null ? wm.GetLayout(user.ID) : new Dictionary<String, WidgetLayout>();
         var kpis = new List<Object>();
         var hiddenKpis = new List<Object>();
-        foreach (var info in wm.Scan().Values.Where(e => e.WidgetType == WidgetTypes.Kpi && wm.IsVisible(e, roleNames, isAdmin) && wm.IsEnabled(e)).OrderBy(e => e.Sort))
+        var kpiWidgets = wm.Scan().Values.Where(e => e.WidgetType == WidgetTypes.Kpi && wm.IsVisible(e, roleNames, isAdmin) && wm.IsEnabled(e));
+        foreach (var info in wm.SortByDefault(kpiWidgets))
         {
             var d = wm.GetData(info);
             var value = d?.GetType().GetProperty("Value")?.GetValue(d) ?? "";
