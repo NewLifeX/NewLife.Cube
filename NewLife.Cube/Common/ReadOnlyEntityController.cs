@@ -120,8 +120,11 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("查看{type}")]
     [HttpGet]
-    public virtual ApiResponse<TEntity> Detail([Required] String id)
+    [HttpGet("/api/[area]/[controller]/{id}")]
+    public virtual ApiResponse<TEntity> Detail(String id)
     {
+        if (id.IsNullOrEmpty()) id = Request.Query["id"].ToString();
+        if (id.IsNullOrEmpty()) throw new XException("缺少主键参数！");
         var entity = FindData(id);
         if (entity == null || (entity as IEntity).IsNullKey) throw new XException("要查看的数据[{0}]不存在！", id);
 
