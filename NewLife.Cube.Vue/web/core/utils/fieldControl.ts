@@ -198,6 +198,18 @@ export function isFullWidthControl(control: ControlType): boolean {
 }
 
 /**
+ * 判断字段是否必填（表单星号展示与提交前校验共用同一判定，避免两处口径漂移）。
+ *
+ * 规则：非可空 且 非主键 且 控件不是只读 —— 与 FormContent 的必填星号保持一致。
+ *
+ * @param field 字段元数据
+ * @returns true 表示必填
+ */
+export function isRequiredField(field: FieldMeta): boolean {
+  return !field.nullable && !field.primaryKey && resolveControl(field) !== 'readonly';
+}
+
+/**
  * 提交前序列化：将多选字段（后端以 String 列存储）的 string[] 合并为逗号分隔字符串，
  * 避免 System.Text.Json 将数组绑定到 String 属性时报错。
  *

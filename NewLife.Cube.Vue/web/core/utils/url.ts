@@ -94,27 +94,45 @@ export function routeToApiPrefix(path: string): string {
 }
 
 /**
+ * 解析 key 在数据对象中「实际存在」的名字。
+ *
+ * 后端 JSON 序列化为 camelCase，而元数据里的字段名是实体属性名（PascalCase），
+ * 两者不一致：直接用 `data[key]` 取值会全部 undefined。列表取值已按此规则容错，
+ * 表单取值与回写必须共用同一套规则，否则出现「列表能显示、编辑不回显」。
+ *
+ * 查找顺序：原名 → 翻转首字母（PascalCase ↔ camelCase）→ 全大写 ↔ 全小写。
+ * 全部未命中时返回原 key（保证回写仍落在字段名义 key 上，新增模式即如此）。
+ *
+ * @param data - 数据对象（如列表行 / 详情响应）
+ * @param key - 元数据字段名（如 `Name`）
+ * @returns 数据对象中真实存在的 key（如 `name`）
+ */
+export function resolveKey(data: Record<string, unknown>, key: string): string {
+  if (key in data) return key;
+  // 翻转首字母再试（容错 PascalCase ↔ camelCase）
+  const flipped = toPascalAndCamel(key);
+  if (flipped !== key && flipped in data) return flipped;
+  // 如果 key 是全大写，转成全小写再试（如 ID → id, UUID → uuid）
+  if (key === key.toUpperCase() && key !== key.toLowerCase()) {
+    const lowerKey = key.toLowerCase();
+    if (lowerKey in data) return lowerKey;
+  }
+  // 如果 key 是全小写且包含字母，试试全大写（如 id → ID）
+  if (key === key.toLowerCase() && /[a-z]/.test(key)) {
+    const upperKey = key.toUpperCase();
+    if (upperKey in data) return upperKey;
+  }
+  return key;
+}
+
+/**
  * 从数据对象中取值，先尝试 `data[key]` 直接获取，
  * 取不到时通过 `toPascalAndCamel(key)` 翻转首字母再取一次，
  * 如果 key 是全大写字母（如 ID、UUID），再尝试全小写（id、uuid），
  * 容错后端 JSON 字段名大小写不匹配问题。
  */
 export function getValueByKey(data: Record<string, unknown>, key: string): unknown {
-  if (key in data) return data[key];
-  // 翻转首字母再试（容错 PascalCase ↔ camelCase）
-  const flipped = toPascalAndCamel(key);
-  if (flipped !== key && flipped in data) return data[flipped];
-  // 如果 key 是全大写，转成全小写再试（如 ID → id, UUID → uuid）
-  if (key === key.toUpperCase() && key !== key.toLowerCase()) {
-    const lowerKey = key.toLowerCase();
-    if (lowerKey in data) return data[lowerKey];
-  }
-  // 如果 key 是全小写且包含字母，试试全大写（如 id → ID）
-  if (key === key.toLowerCase() && /[a-z]/.test(key)) {
-    const upperKey = key.toUpperCase();
-    if (upperKey in data) return data[upperKey];
-  }
-  return undefined;
+  return data[resolveKey(data, key)];
 }
 
 export function isUrl(path: string) {

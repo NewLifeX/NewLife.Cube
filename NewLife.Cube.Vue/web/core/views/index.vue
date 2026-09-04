@@ -209,16 +209,46 @@ function handleNew() {
   }
 }
 
+/** 从行数据中取出主键字段名（优先取后端元数据主键，回退 'id'） */
+function resolveRowIdKey(): string {
+  return pageMeta.value?.list.find((f) => f.primaryKey)?.name ?? 'id';
+}
+
+/** 从行数据中取出主键值（大小写容错） */
+function resolveRowId(row: Record<string, unknown>, idKey: string): string | number {
+  const id = getValueByKey(row, idKey) ?? (row as Record<string, unknown>)[idKey];
+  return id as string | number;
+}
+
 function handleEditRow(row: Record<string, unknown>) {
   if (auto.value) {
+    const idKey = resolveRowIdKey();
+    const id = resolveRowId(row, idKey);
     openListFormDialog({
       title: '编辑',
       fields: backendFieldsToFormFields(pageMeta.value!.editForm ?? pageMeta.value!.addForm ?? []),
-      modelValue: { ...row },
       apiPrefix: apiPrefix.value,
       mode: 'edit',
+      id,
+      idKey,
       routePath: route.path,
       onSuccess: () => fetchList(),
+    });
+  }
+}
+
+function handleViewRow(row: Record<string, unknown>) {
+  if (auto.value) {
+    const idKey = resolveRowIdKey();
+    const id = resolveRowId(row, idKey);
+    openListFormDialog({
+      title: '查看',
+      fields: backendFieldsToFormFields(pageMeta.value!.editForm ?? pageMeta.value!.addForm ?? []),
+      apiPrefix: apiPrefix.value,
+      mode: 'view',
+      id,
+      idKey,
+      routePath: route.path,
     });
   }
 }
@@ -512,6 +542,7 @@ onMounted(async () => {
               :data="renderData"
               :loading="renderLoading"
               @edit="handleEditRow"
+              @view="handleViewRow"
               @delete="handleDeleteRowTable"
             />
           </slot>

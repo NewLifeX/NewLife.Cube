@@ -10,7 +10,8 @@
  */
 import { computed, defineAsyncComponent } from 'vue';
 import type { FieldMeta, ControlType } from '../../types/field';
-import { resolveControl, isFullWidthControl, resolveNumberPrecision, resolveNumberStep } from '../../utils/fieldControl';
+import { resolveControl, isFullWidthControl, resolveNumberPrecision, resolveNumberStep, isRequiredField } from '../../utils/fieldControl';
+import { getValueByKey, resolveKey } from '../../utils/url';
 import LovSelect from '../../components/LovSelect/index.vue';
 import Uploader from '../../components/Uploader.vue';
 // 重型编辑器改为异步组件，仅在表单确有 json / 富文本字段时才按需加载，
@@ -28,6 +29,8 @@ interface Props {
   apiPrefix?: string;
   /** 栅格列数，默认 2。在弹窗/抽屉中可根据字段数量动态调整 */
   columns?: number;
+  /** 只读模式（查看详情）：所有控件禁用，不触发回写 */
+  disabled?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -36,6 +39,7 @@ const props = withDefaults(defineProps<Props>(), {
   modelValue: () => ({}),
   apiPrefix: '',
   columns: 2,
+  disabled: false,
 });
 
 const emit = defineEmits<{
@@ -47,12 +51,18 @@ function controlOf(field: FieldMeta): ControlType {
   return resolveControl(field);
 }
 
+/** 必填判定复用 fieldControl 的唯一实现，保证星号展示与提交校验口径一致 */
 function isRequired(field: FieldMeta): boolean {
-  return !field.nullable && !field.primaryKey && controlOf(field) !== 'readonly';
+  return isRequiredField(field);
 }
 
+/**
+ * 取值：必须走大小写容错。
+ * 后端 JSON 序列化为 camelCase，而元数据字段名是实体属性名（PascalCase），
+ * 直接 `modelValue[key]` 恒为 undefined —— 这正是「编辑不回显」的根因。
+ */
 function getValue(key: string): unknown {
-  return props.modelValue?.[key];
+  return getValueByKey(props.modelValue ?? {}, key);
 }
 
 function toNumber(val: unknown): number | undefined {
@@ -62,7 +72,12 @@ function toNumber(val: unknown): number | undefined {
 }
 
 function updateField(key: string, value: unknown) {
-  emit('update:modelValue', { ...props.modelValue, [key]: value });
+  if (props.disabled) return;
+  // 回写必须落在数据对象里「实际存在」的那个 key 上：
+  // 若用元数据名 PascalCase 硬写，会与原有的 camelCase 键并存（Name + name），
+  // 提交时两个键都进 body，且回显仍读不到。
+  const realKey = resolveKey(props.modelValue ?? {}, key);
+  emit('update:modelValue', { ...props.modelValue, [realKey]: value });
 }
 
 /** 数值控件统一回写 number */
@@ -96,7 +111,8 @@ function toMultiArray(val: unknown): string[] {
 
 <template>
   <div class="form-content">
-    <div class="fmc-header">
+    <!-- 标题为空时不渲染分组头：弹窗场景下标题已由弹窗自身提供，避免重复 -->
+    <div v-if="title" class="fmc-header">
       <h2 class="fmc-title">{{ title }}</h2>
     </div>
     <div class="fmc-body">
@@ -121,6 +137,7 @@ function toMultiArray(val: unknown): string[] {
             class="fmc-textarea"
             :placeholder="field.description || '请输入...'"
             :model-value="String(getValue(field.name) ?? '')"
+            :disabled="disabled"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
 
@@ -134,6 +151,7 @@ function toMultiArray(val: unknown): string[] {
             :step="resolveNumberStep(field)"
             :placeholder="field.description || '请输入数值'"
             :model-value="toNumber(getValue(field.name))"
+            :disabled="disabled"
             @update:model-value="(v: number | undefined) => updateNumber(field.name, v)"
           />
 
@@ -141,6 +159,7 @@ function toMultiArray(val: unknown): string[] {
           <div v-else-if="controlOf(field) === 'switch'" class="fmc-switch-wrapper">
             <el-switch
               :model-value="Boolean(getValue(field.name))"
+              :disabled="disabled"
               @change="(v: string | number | boolean) => updateField(field.name, v)"
             />
           </div>
@@ -154,6 +173,7 @@ function toMultiArray(val: unknown): string[] {
             format="YYYY-MM-DD HH:mm:ss"
             value-format="YYYY-MM-DDTHH:mm:ss"
             :model-value="String(getValue(field.name) ?? '')"
+            :disabled="disabled"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
 
@@ -165,6 +185,7 @@ function toMultiArray(val: unknown): string[] {
             format="HH:mm:ss"
             value-format="HH:mm:ss"
             :model-value="String(getValue(field.name) ?? '')"
+            :disabled="disabled"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
 
@@ -174,6 +195,7 @@ function toMultiArray(val: unknown): string[] {
             :code="field.lovCode || ''"
             :model-value="(getValue(field.name) as string | number | undefined)"
             :placeholder="field.description || '请选择'"
+            :disabled="disabled"
             @update:model-value="(v: string | number | string[] | undefined) => updateField(field.name, v)"
           />
 
@@ -184,6 +206,7 @@ function toMultiArray(val: unknown): string[] {
             :multiple="true"
             :model-value="toMultiArray(getValue(field.name))"
             :placeholder="field.description || '请选择（多选）'"
+            :disabled="disabled"
             @update:model-value="(v: string | number | string[] | undefined) => updateField(field.name, v)"
           />
 
@@ -193,6 +216,7 @@ function toMultiArray(val: unknown): string[] {
             kind="file"
             :api-prefix="apiPrefix"
             :model-value="String(getValue(field.name) ?? '')"
+            :disabled="disabled"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
 
@@ -202,6 +226,7 @@ function toMultiArray(val: unknown): string[] {
             kind="image"
             :api-prefix="apiPrefix"
             :model-value="String(getValue(field.name) ?? '')"
+            :disabled="disabled"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
 
@@ -209,6 +234,7 @@ function toMultiArray(val: unknown): string[] {
           <JsonEditor
             v-else-if="controlOf(field) === 'json'"
             :model-value="String(getValue(field.name) ?? '')"
+            :disabled="disabled"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
 
@@ -217,6 +243,7 @@ function toMultiArray(val: unknown): string[] {
             v-else-if="controlOf(field) === 'richHtml'"
             mode="html"
             :model-value="String(getValue(field.name) ?? '')"
+            :disabled="disabled"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
 
@@ -225,6 +252,7 @@ function toMultiArray(val: unknown): string[] {
             v-else-if="controlOf(field) === 'richMarkdown'"
             mode="markdown"
             :model-value="String(getValue(field.name) ?? '')"
+            :disabled="disabled"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
 
@@ -232,6 +260,7 @@ function toMultiArray(val: unknown): string[] {
           <ColorPicker
             v-else-if="controlOf(field) === 'color'"
             :model-value="String(getValue(field.name) ?? '')"
+            :disabled="disabled"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
 
@@ -239,6 +268,7 @@ function toMultiArray(val: unknown): string[] {
           <IconSelector
             v-else-if="controlOf(field) === 'icon'"
             :model-value="String(getValue(field.name) ?? '')"
+            :disabled="disabled"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
 
@@ -250,6 +280,7 @@ function toMultiArray(val: unknown): string[] {
             :type="controlOf(field) === 'email' ? 'email' : controlOf(field) === 'tel' ? 'tel' : 'url'"
             :placeholder="field.description || '请输入...'"
             :model-value="String(getValue(field.name) ?? '')"
+            :disabled="disabled"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
 
@@ -269,6 +300,7 @@ function toMultiArray(val: unknown): string[] {
             class="fmc-input"
             :placeholder="field.description || '请输入...'"
             :model-value="String(getValue(field.name) ?? '')"
+            :disabled="disabled"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
         </div>
