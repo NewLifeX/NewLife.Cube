@@ -219,8 +219,16 @@ public class SsoClientService : ISsoClientService
 
         (user as IEntity).Extends.Clear();
 
+        // 外部来源。SSO 回跳后把来源写入登录日志，并回填用户归属（仅空时写入）
+        var source = httpContext.GetSourceUrl();
+        if (user is User userSource && !source.IsNullOrEmpty() && userSource.Ex4.IsNullOrEmpty())
+        {
+            userSource.Ex4 = source.GetHost();
+            userSource.SaveAsync();
+        }
+
         var log = LogProvider.Provider;
-        log?.WriteLog(typeof(User), "SSO登录", true, $"[{user}]从[{client.Name}]的[{client.UserName ?? client.NickName}]登录", user.ID, user + "");
+        log?.WriteLog(typeof(User), "SSO登录", true, $"[{user}]从[{client.Name}]的[{client.UserName ?? client.NickName}]登录" + (source.IsNullOrEmpty() ? "" : $" 来源：{source}"), user.ID, user + "");
 
         if (!user.Enable) throw new InvalidOperationException($"用户[{user}]已禁用！");
 

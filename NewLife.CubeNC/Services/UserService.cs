@@ -222,7 +222,15 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         if (_tenantContext.Mode != TenantMode.None)
             httpContext.SaveTenant(_tenantContext.TenantId);
 
-        LogProvider.Provider.WriteLog(typeof(User), action, true, $"用户：{username}", user.ID, user + "", ip);
+        // 外部来源。登录/注册来自外部系统跳转时，来源写入登录日志，并回填用户归属（仅空时写入）
+        var source = httpContext.GetSourceUrl();
+        if (user is User userSource && !source.IsNullOrEmpty() && userSource.Ex4.IsNullOrEmpty())
+        {
+            userSource.Ex4 = source.GetHost();
+            userSource.SaveAsync();
+        }
+
+        LogProvider.Provider.WriteLog(typeof(User), action, true, $"用户：{username}" + (source.IsNullOrEmpty() ? "" : $" 来源：{source}"), user.ID, user + "", ip);
 
         // MFA 拦截：账密通过但用户已开启 MFA，不下发正式令牌，改为下发挂起令牌
         if (set.EnableMfa && _mfa != null && user is IUser iuser && _mfa.IsEnabled(iuser))
@@ -676,7 +684,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
     #region 用户在线
     /// <summary>设置会话状态</summary>
     /// <returns></returns>
-    public UserOnline SetStatus(UserOnline online, String sessionId, String deviceId, String page, String status, UserAgentParser userAgent, Int32 userid = 0, String name = null, String ip = null)
+    public UserOnline SetStatus(UserOnline online, String sessionId, String deviceId, String page, String status, UserAgentParser userAgent, Int32 userid = 0, String name = null, String ip = null, String refer = null)
     {
         // 网页使用一个定时器来清理过期
         StartTimer();
@@ -719,6 +727,9 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         online.UpdateIP = ip;
         online.OnlineTime = (Int32)(online.UpdateTime - online.CreateTime).TotalSeconds;
         online.TraceId = DefaultSpan.Current?.TraceId;
+
+        // 记录外部跳转来源。仅在为空时写入，站内跳转不清空，保持会话首次外部来源
+        if (!refer.IsNullOrEmpty() && online.Referer.IsNullOrEmpty()) online.Referer = refer;
         online.SaveAsync(5_000);
 
         if (_onlines == 0 || online.Times <= 1)
@@ -729,12 +740,12 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
 
     /// <summary>设置网页会话状态</summary>
     /// <returns></returns>
-    public UserOnline SetWebStatus(UserOnline online, String sessionId, String deviceId, String page, String status, UserAgentParser userAgent, IUser user, String ip)
+    public UserOnline SetWebStatus(UserOnline online, String sessionId, String deviceId, String page, String status, UserAgentParser userAgent, IUser user, String ip, String refer = null)
     {
         // 网页使用一个定时器来清理过期
         StartTimer();
 
-        if (user == null) return SetStatus(online, sessionId, deviceId, page, status, userAgent, 0, null, ip);
+        if (user == null) return SetStatus(online, sessionId, deviceId, page, status, userAgent, 0, null, ip, refer);
 
         // 根据IP修正用户城市
         if (user is User user2 && (user2.AreaId == 0 || user2.AreaId % 10000 == 0))
@@ -754,7 +765,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
             }
         }
 
-        return SetStatus(online, sessionId, deviceId, page, status, userAgent, user.ID, user + "", ip);
+        return SetStatus(online, sessionId, deviceId, page, status, userAgent, user.ID, user + "", ip, refer);
     }
 
     /// <summary>删除过期，指定过期时间</summary>

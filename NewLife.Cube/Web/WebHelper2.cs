@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Primitives;
 using NewLife.Collections;
+using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Serialization;
 using XCode;
@@ -147,6 +148,48 @@ public static class WebHelper2
     /// <param name="request"></param>
     /// <returns></returns>
     public static String GetReferer(this HttpRequest request) => request.Headers["Referer"].FirstOrDefault();
+
+    /// <summary>获取外部来源。空值、无法解析或属于本站的引用页视为站内跳转，返回空</summary>
+    /// <param name="request">请求</param>
+    /// <returns>外部来源URL，否则返回空</returns>
+    public static String GetExternalRefer(this HttpRequest request) => GetExternalRefer(request.Headers["Referer"].FirstOrDefault(), request.Host.Host + "");
+
+    /// <summary>获取外部来源。空值、无法解析或属于本站的引用页视为站内跳转，返回空</summary>
+    /// <param name="refer">引用页URL</param>
+    /// <param name="host">本站主机名</param>
+    /// <returns>外部来源URL，否则返回空</returns>
+    public static String GetExternalRefer(String refer, String host)
+    {
+        if (refer.IsNullOrEmpty() || host.IsNullOrEmpty()) return null;
+
+        // 无法解析为绝对地址的，不视为有效外部来源
+        if (!Uri.TryCreate(refer, UriKind.Absolute, out var uri)) return null;
+
+        // 与本站同主机名的引用页视为站内跳转
+        if (uri.Host.EqualIgnoreCase(host)) return null;
+
+        return refer;
+    }
+
+    /// <summary>获取当前请求的外部来源。优先取在线会话采集的首个外部来源，其次取请求引用页</summary>
+    /// <param name="context">上下文</param>
+    /// <returns>外部来源URL，无则返回空</returns>
+    public static String GetSourceUrl(this HttpContext context)
+    {
+        if (context.Items["Cube_Online"] is UserOnline online && !online.Referer.IsNullOrEmpty()) return online.Referer;
+
+        return GetExternalRefer(context.Request);
+    }
+
+    /// <summary>从URL提取主机名，用于用户归属等短字段</summary>
+    /// <param name="url">完整URL</param>
+    /// <returns>主机名，解析失败返回空</returns>
+    public static String GetHost(this String url)
+    {
+        if (url.IsNullOrEmpty()) return null;
+
+        return Uri.TryCreate(url, UriKind.Absolute, out var uri) ? uri.Host : null;
+    }
     #endregion
 
     #region Http响应

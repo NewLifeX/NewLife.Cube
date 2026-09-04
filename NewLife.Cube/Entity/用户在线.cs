@@ -64,6 +64,14 @@ public partial class UserOnline : IEntity<UserOnlineModel>
     [BindColumn("OAuthProvider", "登录方。OAuth提供商，从哪个渠道登录", "")]
     public String OAuthProvider { get => _OAuthProvider; set { if (OnPropertyChanging("OAuthProvider", value)) { _OAuthProvider = value; OnPropertyChanged("OAuthProvider"); } } }
 
+    private String _Referer;
+    /// <summary>来源。最近一次外部跳转来源，站内跳转不更新</summary>
+    [DisplayName("来源")]
+    [Description("来源。最近一次外部跳转来源，站内跳转不更新")]
+    [DataObjectField(false, false, true, 200)]
+    [BindColumn("Referer", "来源。最近一次外部跳转来源，站内跳转不更新", "")]
+    public String Referer { get => _Referer; set { if (OnPropertyChanging("Referer", value)) { _Referer = value; OnPropertyChanged("Referer"); } } }
+
     private Int32 _Times;
     /// <summary>次数</summary>
     [DisplayName("次数")]
@@ -216,6 +224,7 @@ public partial class UserOnline : IEntity<UserOnlineModel>
         Name = model.Name;
         SessionID = model.SessionID;
         OAuthProvider = model.OAuthProvider;
+        Referer = model.Referer;
         Times = model.Times;
         Page = model.Page;
         Platform = model.Platform;
@@ -249,6 +258,7 @@ public partial class UserOnline : IEntity<UserOnlineModel>
             "Name" => _Name,
             "SessionID" => _SessionID,
             "OAuthProvider" => _OAuthProvider,
+            "Referer" => _Referer,
             "Times" => _Times,
             "Page" => _Page,
             "Platform" => _Platform,
@@ -277,6 +287,7 @@ public partial class UserOnline : IEntity<UserOnlineModel>
                 case "Name": _Name = Convert.ToString(value); break;
                 case "SessionID": _SessionID = Convert.ToString(value); break;
                 case "OAuthProvider": _OAuthProvider = Convert.ToString(value); break;
+                case "Referer": _Referer = Convert.ToString(value); break;
                 case "Times": _Times = value.ToInt(); break;
                 case "Page": _Page = Convert.ToString(value); break;
                 case "Platform": _Platform = Convert.ToString(value); break;
@@ -324,6 +335,9 @@ public partial class UserOnline : IEntity<UserOnlineModel>
 
         /// <summary>登录方。OAuth提供商，从哪个渠道登录</summary>
         public static readonly Field OAuthProvider = FindByName("OAuthProvider");
+
+        /// <summary>来源。最近一次外部跳转来源，站内跳转不更新</summary>
+        public static readonly Field Referer = FindByName("Referer");
 
         /// <summary>次数</summary>
         public static readonly Field Times = FindByName("Times");
@@ -396,6 +410,9 @@ public partial class UserOnline : IEntity<UserOnlineModel>
 
         /// <summary>登录方。OAuth提供商，从哪个渠道登录</summary>
         public const String OAuthProvider = "OAuthProvider";
+
+        /// <summary>来源。最近一次外部跳转来源，站内跳转不更新</summary>
+        public const String Referer = "Referer";
 
         /// <summary>次数</summary>
         public const String Times = "Times";

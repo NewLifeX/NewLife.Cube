@@ -34,7 +34,7 @@ public partial class UserOnline : Entity<UserOnline>
 
         // 截取长度
         //CutField(_.Status, _.Page, _.Platform, _.OS, _.Device, _.Brower, _.NetType);
-        this.TrimExtraLong(__.Status, __.Page, __.Platform, __.OS, __.Device, __.Brower, __.NetType);
+        this.TrimExtraLong(__.Status, __.Page, __.Platform, __.OS, __.Device, __.Brower, __.NetType, __.Referer);
 
         // 建议先调用基类方法，基类方法会做一些统一处理
         base.Valid(isNew);

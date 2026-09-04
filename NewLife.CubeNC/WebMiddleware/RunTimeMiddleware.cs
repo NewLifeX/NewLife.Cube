@@ -120,10 +120,12 @@ public class RunTimeMiddleware
                 var deviceId = WebHelper.FillDeviceId(ctx);
                 //var sessionId = token?.MD5_16() ?? ip;
                 var sessionId = deviceId;
+                // 外部跳转来源。站内跳转或空时返回空，仅首次外部来源写入在线表
+                var refer = WebHelper2.GetExternalRefer(ctx.Request);
                 if (user == null)
-                    online = _userService.SetStatus(online, sessionId, deviceId, p, userAgent, ua, 0, WebHelper.GetUserByToken(ctx), ip);
+                    online = _userService.SetStatus(online, sessionId, deviceId, p, userAgent, ua, 0, WebHelper.GetUserByToken(ctx), ip, refer);
                 else
-                    online = _userService.SetWebStatus(online, sessionId, deviceId, p, userAgent, ua, user, ip);
+                    online = _userService.SetWebStatus(online, sessionId, deviceId, p, userAgent, ua, user, ip, refer);
                 //FillDeviceId(ctx, olt);
                 session["Online"] = online;
                 ctx.Items["Cube_Online"] = online;
