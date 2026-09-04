@@ -153,6 +153,7 @@
     <Compile Include="..\NewLife.Cube\Entity\访问规则.cs" Link="Entity\访问规则.cs" />
     <Compile Include="..\NewLife.Cube\Entity\通知记录.Biz.cs" Link="Entity\通知记录.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\通知记录.cs" Link="Entity\通知记录.cs" />
+    <Compile Include="..\NewLife.Cube\OnlineAlertService.cs" Link="OnlineAlertService.cs" />
     <Compile Include="..\NewLife.Cube\Entity\邮件配置.Biz.cs" Link="Entity\邮件配置.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\邮件配置.cs" Link="Entity\邮件配置.cs" />
     <Compile Include="..\NewLife.Cube\Entity\附件.Biz.cs" Link="Entity\附件.Biz.cs" />

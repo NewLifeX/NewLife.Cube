@@ -663,6 +663,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
     private TimerX _timer;
     private TimerX _timer2;
     private Int32 _onlines;
+    private Int32 _lastOnlineTotal;
 
     private void StartTimer()
     {
@@ -793,6 +794,13 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
 
             // 修正在线数
             var total = UserOnline.Meta.Count;
+
+            // 在线数变化时，检查是否突破历史纪录（在线新高告警，内部自行判断开关与门槛）
+            if (total != _lastOnlineTotal)
+            {
+                _lastOnlineTotal = total;
+                OnlineAlertService.Check(total, DateTime.Now);
+            }
 
             // 设置统计
             UserStat stat = null;

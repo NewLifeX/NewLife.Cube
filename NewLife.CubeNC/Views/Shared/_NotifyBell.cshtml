@@ -1,0 +1,131 @@
+@using XCode.Membership;
+@{
+    // 导航栏铃铛（主题无关，自包含样式与脚本）：轮询未读站内信数，展示最近未读，支持单条/全部标记已读。
+    // 仅登录用户渲染；广播消息(UserId=0)系统管理员可见，个人消息仅本人可见。
+    // 由 ACE / layui 等主题的 _Navbar.cshtml 在右侧菜单中注入。
+    var user = ViewBag.User as IUser ?? ManageProvider.User;
+    var countUrl = Url.Action("NotifyCount", "NotificationRecord", new { area = "Admin" });
+    var recentUrl = Url.Action("NotifyRecent", "NotificationRecord", new { area = "Admin" });
+    var markReadUrl = Url.Action("NotifyMarkRead", "NotificationRecord", new { area = "Admin" });
+    var markAllUrl = Url.Action("NotifyMarkAllRead", "NotificationRecord", new { area = "Admin" });
+    var listUrl = Url.Action("Index", "NotificationRecord", new { area = "Admin", channel = "InApp" });
+}
+@if (user != null)
+{
+    <li class="cube-notify" id="notifyBell" style="position:relative;display:inline-block;vertical-align:middle;list-style:none;">
+        <a href="javascript:void(0);" id="notifyBellToggle" title="通知" style="position:relative;display:block;padding:14px 10px;line-height:20px;text-decoration:none;">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true" style="display:block;">
+                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"></path>
+            </svg>
+            <span class="cube-notify-badge" id="notifyBadge" style="display:none;position:absolute;top:4px;right:2px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#ff4d4f;color:#fff;font-size:11px;line-height:16px;text-align:center;">0</span>
+        </a>
+
+        <div class="cube-notify-panel" id="notifyPanel" style="display:none;position:absolute;top:100%;right:0;width:320px;max-width:88vw;background:#fff;border:1px solid #e6e6e6;border-radius:4px;box-shadow:0 2px 10px rgba(0,0,0,.18);z-index:9999;color:#333;font-size:13px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #f2f2f2;">
+                <b>未读通知</b>
+                <a href="javascript:void(0);" id="notifyMarkAll" style="color:#1E9FFF;text-decoration:none;font-size:12px;">全部已读</a>
+            </div>
+            <ul id="notifyList" style="list-style:none;margin:0;padding:0;max-height:300px;overflow:auto;"></ul>
+            <div style="text-align:center;padding:6px 0;border-top:1px solid #f2f2f2;">
+                <a href="@listUrl" style="color:#666;text-decoration:none;font-size:12px;">查看全部通知</a>
+            </div>
+        </div>
+    </li>
+
+    <script type="text/javascript">
+        (function () {
+            var countUrl = '@countUrl';
+            var recentUrl = '@recentUrl';
+            var markReadUrl = '@markReadUrl';
+            var markAllUrl = '@markAllUrl';
+
+            var bell = document.getElementById('notifyBell');
+            var toggle = document.getElementById('notifyBellToggle');
+            var panel = document.getElementById('notifyPanel');
+            var badge = document.getElementById('notifyBadge');
+            var list = document.getElementById('notifyList');
+
+            // 简单转义，防止通知内容中的 HTML 注入
+            function esc(s) {
+                return (s == null ? '' : String(s))
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            }
+
+            function refreshCount() {
+                fetch(countUrl).then(function (r) { return r.json(); }).then(function (d) {
+                    var n = d && d.data ? (d.data.count || 0) : 0;
+                    if (n > 0) { badge.style.display = ''; badge.textContent = n > 99 ? '99+' : n; }
+                    else { badge.style.display = 'none'; }
+                }).catch(function () { });
+            }
+
+            function loadList() {
+                fetch(recentUrl + '?size=8').then(function (r) { return r.json(); }).then(function (d) {
+                    var items = d && d.data ? d.data : [];
+                    if (!items.length) {
+                        list.innerHTML = '<li style="padding:24px 12px;text-align:center;color:#999;font-size:12px;">暂无未读通知</li>';
+                        return;
+                    }
+                    var html = '';
+                    for (var i = 0; i < items.length; i++) {
+                        var it = items[i];
+                        var time = (it.createTime || '').toString().substring(5, 16);
+                        var text = (it.content || '').substring(0, 60);
+                        html += '<li data-id="' + it.id + '" style="padding:8px 12px;border-bottom:1px dashed #f2f2f2;cursor:pointer;">'
+                            + '<div style="color:#333;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(it.title) + '</div>'
+                            + '<div style="color:#999;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(text) + '</div>'
+                            + '<div style="color:#bbb;font-size:11px;margin-top:2px;">' + esc(time) + (it.broadcast ? ' · 系统' : '') + '</div>'
+                            + '</li>';
+                    }
+                    list.innerHTML = html;
+                }).catch(function () { });
+            }
+
+            function markRead(id) {
+                fetch(markReadUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'id=' + id
+                }).then(function (r) { return r.json(); }).then(function () {
+                    refreshCount(); loadList();
+                }).catch(function () { });
+            }
+
+            // 展开/收起
+            if (toggle) toggle.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var show = panel.style.display === 'none';
+                panel.style.display = show ? '' : 'none';
+                if (show) loadList();
+            });
+
+            // 点击未读条目即标记已读并从下拉移除
+            if (list) list.addEventListener('click', function (e) {
+                var li = e.target && e.target.closest ? e.target.closest('li[data-id]') : null;
+                if (!li) return;
+                markRead(li.getAttribute('data-id'));
+            });
+
+            // 全部已读
+            var markAll = document.getElementById('notifyMarkAll');
+            if (markAll) markAll.addEventListener('click', function () {
+                fetch(markAllUrl, { method: 'POST' }).then(function (r) { return r.json(); }).then(function () {
+                    refreshCount(); loadList();
+                }).catch(function () { });
+            });
+
+            // 点击其它区域关闭下拉
+            document.addEventListener('click', function (e) {
+                if (panel.style.display !== 'none' && bell && !bell.contains(e.target)) {
+                    panel.style.display = 'none';
+                }
+            });
+
+            // 首屏加载 + 每60秒轮询未读数
+            refreshCount();
+            setInterval(refreshCount, 60000);
+        })();
+    </script>
+}

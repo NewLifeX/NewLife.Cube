@@ -20,22 +20,16 @@ namespace XUnitTest;
 /// 关键回归：PermissionFlags.All 为 UInt32(0xFFFFFFFF)，落库/解析均以 Int32 -1 表示，
 /// 前端「全部」级联生成的 "id#-1" 必须能通过 Apply 保存并读回。
 /// </summary>
+[Collection("SqliteDb")]
 public class RolePermissionTests : IDisposable
 {
-    private static readonly String _dbFile = Path.Combine(Path.GetTempPath(), $"roleperm_{Guid.NewGuid():N}.db");
-    private static Boolean _inited;
-
     public RolePermissionTests()
     {
-        if (!_inited)
-        {
-            _inited = true;
-            var connStr = $"Data Source={_dbFile};provider=sqlite;Migration=On";
-            DAL.AddConnStr("Membership", connStr, null, "sqlite");
+        // 与集合内其它 DB 用例共用同一 SQLite 文件，避免重复重定向连接导致表结构缓存错乱
+        SqliteDb.Ensure();
 
-            // 触发表结构检查与初始化（自动建表 + 默认角色）
-            var _ = Role.Meta.Count;
-        }
+        // 触发表结构检查与初始化（自动建表 + 默认角色）
+        var _ = Role.Meta.Count;
 
         // 每个测试独立起点：清空角色缓存，避免跨用例缓存干扰
         Role.Meta.Session.ClearCache("RolePermissionTests", true);

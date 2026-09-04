@@ -28,7 +28,7 @@
     dic["令牌"] = $"/Admin/UserToken?userId={userId}";
     dic["OAuth日志"] = $"/Admin/OAuthLog?userId={userId}";
     dic["日志"] = $"/Admin/Log?userId={userId}";
-    dic["通知记录"] = $"/Admin/NotificationRecord?userId={userId}";
+    dic["通知记录"] = $"/Admin/NotificationRecord?userId={userId}&channel=InApp";
 
     // Tab 图标
     var icons = new Dictionary<String, String>

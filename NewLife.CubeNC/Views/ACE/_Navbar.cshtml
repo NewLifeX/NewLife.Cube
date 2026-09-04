@@ -127,6 +127,9 @@
                     </li>
                 }
 
+                <!-- 通知铃铛 -->
+                @await Html.PartialAsync("_NotifyBell")
+
                 <!-- #section:basics/navbar.user_menu -->
                 <li class="light-blue">
                     <a data-toggle="dropdown" href="~/Admin/User/Info" class="dropdown-toggle" target="main">
