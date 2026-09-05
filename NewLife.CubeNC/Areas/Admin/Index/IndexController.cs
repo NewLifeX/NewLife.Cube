@@ -398,7 +398,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
         {
             var p = Process.GetCurrentProcess();
             var fileName = p.MainModule.FileName;
-            var args = Environment.CommandLine.TrimStart(Path.ChangeExtension(fileName, ".dll")).Trim();
+            var args = Environment.CommandLine.TrimPrefix(Path.ChangeExtension(fileName, ".dll")).Trim();
             args += " -delay";
 
             WriteLog("Restart", true, $"fileName={fileName} args={args}");

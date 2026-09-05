@@ -86,7 +86,7 @@ public static class RequestHelper
             var body = reader.ReadToEndAsync().GetAwaiter().GetResult();
             request.Body.Seek(0, SeekOrigin.Begin);
 
-            var entityBody = body.ToJsonEntity(type);
+            var entityBody = body.ToJsonEntity(type, null);
             request.HttpContext.Items["RequestBody"] = entityBody;
 
             return entityBody;

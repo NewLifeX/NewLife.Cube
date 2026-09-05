@@ -535,7 +535,7 @@ public static class CubeService
             var root = av.FullName.EnsureEnd(Path.DirectorySeparatorChar.ToString());
             foreach (var item in av.GetAllFiles(null, true))
             {
-                var name = item.FullName.TrimStart(root);
+                var name = item.FullName.TrimPrefix(root);
                 var dfile = dst.FullName.CombinePath(name);
                 if (!File.Exists(dfile))
                 {

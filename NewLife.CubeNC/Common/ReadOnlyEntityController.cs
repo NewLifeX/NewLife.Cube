@@ -452,7 +452,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         name = GetAttachment(name, ext, includeTime);
         name = HttpUtility.UrlEncode(name, Encoding.UTF8);
 
-        Response.Headers.Add("Content-Disposition", "Attachment;filename=" + name);
+        Response.Headers["Content-Disposition"] = "Attachment;filename=" + name;
     }
 
     /// <summary>获取附件响应方式</summary>

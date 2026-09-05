@@ -36,7 +36,7 @@
                 <tr>
                     <td>@field.Name</td>
                     <td>@field.DisplayName</td>
-                    <td class="text-center">@(field.Type?.FullName.TrimStart("System."))</td>
+                    <td class="text-center">@(field.Type?.FullName.TrimPrefix("System."))</td>
 
                     @if (field.Length > 0)
                     {
@@ -74,7 +74,7 @@
                     }
 
                     <td class="text-center">@(column.Nullable ? "" : "N")</td>
-                    <td>@(column.Description?.TrimStart(column.DisplayName).TrimStart("。", "，"))</td>
+                    <td>@(column.Description?.TrimPrefix(column.DisplayName).TrimPrefix("。", "，"))</td>
                 </tr>
             }
         </tbody>

@@ -383,7 +383,7 @@ public static class HtmlExtensions
     /// <returns></returns>
     public static IHtmlContent ForDescription(this IHtmlHelper Html, FieldItem field)
     {
-        var des = field.Description.TrimStart(field.DisplayName).TrimStart(",", ".", "，", "。");
+        var des = field.Description.TrimPrefix(field.DisplayName).TrimPrefix(",", ".", "，", "。");
         if (des.IsNullOrWhiteSpace()) return Html.Raw(null);
 
         if (field.Type == typeof(Boolean))

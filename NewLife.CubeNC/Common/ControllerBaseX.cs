@@ -204,7 +204,7 @@ public class ControllerBaseX : Controller
         };
         writer.Options.WriteIndented = false;
         writer.Options.IgnoreNullValues = false;
-        writer.Options.CamelCase = true;
+        writer.Options.PropertyNaming = PropertyNaming.CamelCase;
         writer.Options.Int64AsString = true;
 
         writer.Write(data);

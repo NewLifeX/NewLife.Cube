@@ -57,7 +57,7 @@
                 <td>@entity.UserName</td>
                 <td>@entity.CreateIP</td>
                 <td>@entity.CreateIP.IPToAddress()</td>
-                <td class="text-center" style="max-width:150px">@entity.CreateTime.ToFullString("").TrimStart(today)</td>
+                <td class="text-center" style="max-width:150px">@entity.CreateTime.ToFullString("").TrimPrefix(today)</td>
                 <td class="text-center">
                     <a href="?act=near&id=@entity.ID&range=10" title="前后10行日志">附近</a>
                 </td>

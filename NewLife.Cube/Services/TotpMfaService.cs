@@ -251,7 +251,7 @@ public class TotpMfaService : IMfaService
         }
         finally
         {
-            Pool.StringBuilder.Put(sb);
+            Pool.StringBuilder.Return(sb);
         }
     }
 

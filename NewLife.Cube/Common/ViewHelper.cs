@@ -596,7 +596,7 @@ public static class ViewHelper
 
     private static void BuildFormItem(DataField field, StringBuilder sb, IEntityFactory fact)
     {
-        var des = field.Description.TrimStart(field.DisplayName).TrimStart(",", ".", "，", "。");
+        var des = field.Description.TrimPrefix(field.DisplayName).TrimPrefix(",", ".", "，", "。");
 
         var err = 0;
 

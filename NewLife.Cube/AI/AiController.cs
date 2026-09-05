@@ -35,7 +35,7 @@ namespace NewLife.Cube.Controllers;
 /// </list>
 /// 目标控制器实现 <see cref="IPageDataContext"/> 时，get_page_context 优先调用其服务端实现。
 /// 浏览器操作回传亦放本控制器（<see cref="OperationResult"/>），避免为每个页面重复增加接口。
-/// 本控制器为全局控制器（不标记 <see cref="AdminArea"/>），路由统一为 <c>/Ai/[action]</c>（无区域前缀），
+/// 本控制器为全局控制器（不标记 <c>AdminArea</c>），路由统一为 <c>/Ai/[action]</c>（无区域前缀），
 /// 所有调用方（MVC _AiAssistant / ai-assistant.js / Vue AiAssistant.vue）统一使用该地址；
 /// 非区域控制器命中不了 <c>{area}/{controller}/{action}</c> 约定路由，只能靠属性路由显式声明。
 /// 请求校验、_query 解码与 SSE 输出管道（原 AiChatEndpoint 公共逻辑）已内聚在本控制器。

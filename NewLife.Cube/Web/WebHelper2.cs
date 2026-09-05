@@ -39,7 +39,7 @@ public static class WebHelper2
     {
         if (!session.TryGetValue(key, out var buf)) return null;
 
-        var rs = buf.ToStr().ToJsonEntity(targetType);
+        var rs = buf.ToStr().ToJsonEntity(targetType, null);
         if (rs is IEntity entity && entity.HasDirty) entity.Dirtys.Clear();
 
         return rs;

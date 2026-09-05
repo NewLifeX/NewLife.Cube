@@ -34,7 +34,7 @@
                 <tr>
                     <td>@column.ColumnName</td>
                     <td>@column.DisplayName</td>
-                    <td class="text-center">@(column.RawType ?? column.DataType?.FullName.TrimStart("System."))</td>
+                    <td class="text-center">@(column.RawType ?? column.DataType?.FullName.TrimPrefix("System."))</td>
 
                     @if (column.Length > 0)
                     {
@@ -72,7 +72,7 @@
                     }
 
                     <td class="text-center">@(column.Nullable ? "" : "N")</td>
-                    <td>@(column.Description?.TrimStart(column.DisplayName).TrimStart("。", "，"))</td>
+                    <td>@(column.Description?.TrimPrefix(column.DisplayName).TrimPrefix("。", "，"))</td>
                 </tr>
             }
         </tbody>

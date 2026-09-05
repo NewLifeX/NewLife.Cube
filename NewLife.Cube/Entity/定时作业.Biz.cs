@@ -168,7 +168,7 @@ public partial class CronJob : Entity<CronJob>
 
         try
         {
-            return JsonHelper.ToJsonEntity(Argument, paramType);
+            return JsonHelper.ToJsonEntity(Argument, paramType, null);
         }
         catch
         {
