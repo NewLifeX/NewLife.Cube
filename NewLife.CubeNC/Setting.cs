@@ -621,7 +621,12 @@ public class CubeSetting : Config<CubeSetting>
         //if (AvatarPath.IsNullOrEmpty()) AvatarPath = web ? "..\\Avatars" : "Avatars";
         if (DefaultRole.IsNullOrEmpty() || DefaultRole == "3") DefaultRole = "普通用户";
 
-        if (JwtSecret.IsNullOrEmpty() || JwtSecret.Split(':').Length != 2) JwtSecret = $"HS256:{Rand.NextString(16)}";
+        if (JwtSecret.IsNullOrEmpty() || JwtSecret.Split(':').Length != 2)
+        {
+            JwtSecret = $"HS256:{Rand.NextString(16)}";
+            // 首次生成后持久化，避免进程重启密钥变化导致已签发令牌全部失效；多实例部署应在配置中显式固定
+            try { Save(); } catch { }
+        }
 
         // 取版权信息
         if (Copyright.IsNullOrEmpty())

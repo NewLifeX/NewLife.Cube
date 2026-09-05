@@ -31,8 +31,16 @@ public class FileStorageService(IFileStorage fileStorage) : IHostedService
 
     private async Task InitializeLaterAsync(CancellationToken cancellationToken)
     {
-        await Task.Delay(10_000, cancellationToken);
-        await fileStorage.InitializeAsync(cancellationToken);
+        try
+        {
+            await Task.Delay(10_000, cancellationToken);
+            await fileStorage.InitializeAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            // 后台初始化失败仅记录日志，不导致主机退出，也不产生未观测异常
+            XTrace.WriteException(ex);
+        }
     }
 }
 
@@ -159,6 +167,7 @@ public class CubeFileStorage : DefaultFileStorage
         //if (path.IsNullOrEmpty()) throw new ArgumentNullException(nameof(path));
 
         var att = Attachment.FindById(attachmentId);
+        if (att == null) return null;
 
         return new NewFileInfo
         {

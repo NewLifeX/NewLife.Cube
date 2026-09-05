@@ -355,6 +355,8 @@ public class SsoController : ControllerBaseX
                 url = GetRequest("r");
                 if (url.IsNullOrEmpty()) url = GetRequest("ReturnUrl");
                 if (url.IsNullOrEmpty()) url = _clientService.SuccessUrl;
+                // 防开放重定向：注销后仅允许回跳相对地址或本域地址
+                if (!IsSafeUrl(url)) url = _clientService.SuccessUrl;
 
                 var state = GetRequest("state");
 
@@ -472,7 +474,13 @@ public class SsoController : ControllerBaseX
     public virtual ActionResult Authorize(String client_id, String redirect_uri, String response_type = null, String scope = null, String state = null, String loginUrl = null)
     {
         // 参数不完整时，跳转到登录页面，避免爬虫抓取而导致误报告警
-        if (client_id.IsNullOrEmpty()) return Redirect(loginUrl ?? _clientService.LoginUrl);
+        if (client_id.IsNullOrEmpty())
+        {
+            // 防开放重定向：loginUrl 仅接受相对地址或本域地址，外域一律忽略
+            var login = loginUrl;
+            if (!login.IsNullOrEmpty() && !IsSafeUrl(login)) login = null;
+            return Redirect(login ?? _clientService.LoginUrl);
+        }
 
         //有些第三方客户端使用redirect_url作为回调地址参数名
         if (redirect_uri.IsNullOrEmpty()) redirect_uri = GetRequest("redirect_url");
@@ -550,7 +558,8 @@ public class SsoController : ControllerBaseX
         }
         catch (Exception ex)
         {
-            XTrace.WriteLine($"Access_Token client_id={client_id} client_secret={client_secret} code={code}");
+            // 日志不得记录 client_secret 明文
+            XTrace.WriteLine($"Access_Token client_id={client_id} code={code}");
             XTrace.WriteException(ex);
             return SsoJsonError(ex);
         }
@@ -747,7 +756,8 @@ public class SsoController : ControllerBaseX
         }
         catch (Exception ex)
         {
-            XTrace.WriteLine($"RefreshToken client_id={client_id} grant_type={grant_type} refresh_token={refresh_token}");
+            // 日志不得记录 refresh_token 明文（长时效凭据）
+            XTrace.WriteLine($"RefreshToken client_id={client_id} grant_type={grant_type}");
             XTrace.WriteException(ex);
             return SsoJsonError(ex);
         }
@@ -817,7 +827,8 @@ public class SsoController : ControllerBaseX
         var username = _tokenService.Decode(access_token);
 
         var user = prv.FindByName(username);
-        prv.Current = user ?? throw new XException("用户[{0}]不存在", username);
+        if (user == null || !user.Enable) throw new XException("用户[{0}]不存在或已停用", username);
+        prv.Current = user;
 
         var set = CubeSetting.Current;
         var expire = TimeSpan.FromMinutes(0);
@@ -827,6 +838,8 @@ public class SsoController : ControllerBaseX
         prv.SaveCookie(user, expire, HttpContext);
 
         if (redirect_uri.IsNullOrEmpty()) return Content("ok");
+        // 防开放重定向：仅允许相对地址或本域回调
+        if (!IsSafeUrl(redirect_uri)) return Content("ok");
 
         return Redirect(redirect_uri);
     }
@@ -835,10 +848,11 @@ public class SsoController : ControllerBaseX
     /// <param name="model">令牌模型</param>
     /// <returns></returns>
     [AllowAnonymous]
-    [HttpGet]
     [HttpPost]
     public virtual ActionResult UserAuth([FromBody] SsoTokenModel model)
     {
+        if (model == null) throw new ArgumentNullException(nameof(model));
+
         var client_id = model.client_id;
         var username = model.UserName;
         var password = model.Password;
@@ -905,6 +919,19 @@ public class SsoController : ControllerBaseX
     #endregion
 
     #region 辅助
+    /// <summary>校验跳转地址是否安全。仅允许相对地址或与当前请求同源的绝对地址，防止开放重定向</summary>
+    /// <param name="url">待校验地址</param>
+    /// <returns>安全返回 true</returns>
+    private Boolean IsSafeUrl(String url)
+    {
+        if (url.IsNullOrEmpty()) return false;
+        // 相对地址安全；协议相对地址（//host）与外域绝对地址拒绝
+        if (!url.StartsWithIgnoreCase("http://", "https://")) return !url.StartsWithIgnoreCase("//");
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var u)) return false;
+        var host = Request.Host.Value + "";
+        return !host.IsNullOrEmpty() && host.EqualIgnoreCase(u.Authority);
+    }
+
     /// <summary>获取用户头像。头像文件不存在时根据昵称和性别自动生成 SVG 文字头像</summary>
     /// <param name="id">用户编号</param>
     /// <returns></returns>
@@ -920,8 +947,13 @@ public class SsoController : ControllerBaseX
         FileInfo? av = null;
         if (!user.Avatar.IsNullOrEmpty() && !user.Avatar.StartsWith("/"))
         {
-            av = set.AvatarPath.CombinePath(user.Avatar).GetBasePath().AsFile();
-            if (!av.Exists) av = null;
+            // 防路径穿越：仅接受纯文件名（无路径分隔符），外部回填头像地址可能含 .. 或子路径
+            var name = Path.GetFileName(user.Avatar);
+            if (!name.IsNullOrEmpty() && name == user.Avatar)
+            {
+                av = set.AvatarPath.CombinePath(name).GetBasePath().AsFile();
+                if (!av.Exists) av = null;
+            }
         }
 
         // 用于兼容旧代码：按扩展名优先级查找（.png/.svg/.jpg/.gif/.webp）
