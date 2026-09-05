@@ -18,7 +18,6 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>用户控制器</summary>
 /// <remarks>实例化用户控制器</remarks>
-/// <param name="userService"></param>
 /// <param name="verifyCode">验证码服务</param>
 /// <param name="authEnhanced">增强认证服务</param>
 /// <param name="passwordService"></param>
@@ -28,7 +27,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
 [AdminArea]
 [Menu(100, true, Icon = "User", Mode = MenuModes.Admin | MenuModes.Tenant)]
-public class UserController(UserService userService, VerifyCodeService verifyCode, AuthEnhancedService authEnhanced, PasswordService passwordService, ITenantContext tenantContext) : EntityController<User, UserModel>
+public class UserController(VerifyCodeService verifyCode, AuthEnhancedService authEnhanced, PasswordService passwordService, ITenantContext tenantContext) : EntityController<User, UserModel>
 {
     static UserController()
     {
@@ -356,16 +355,6 @@ public class UserController(UserService userService, VerifyCodeService verifyCod
         {
             return res.ToFailApiResponse(ex.Message);
         }
-
-        // 地址跳转，应该直接操作Response，而不是返回一个视图。API暂时不需要跳转，由前端处理
-        var returnUrl = GetRequest("r");
-        if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
-        var viewModel = GetViewModel(returnUrl);
-        //viewModel.LoginTip = loginResult?.Result;
-        //viewModel.OAuthItems = OAuthConfig.GetVisibles(TenantContext.CurrentId);
-        //return Json(0, null, viewModel);
-        return res.ToFailApiResponse("");
-        ////Response.Redirect(returnUrl,true); 
     }
 
     /// <summary>刷新令牌</summary>

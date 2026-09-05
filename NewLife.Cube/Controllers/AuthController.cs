@@ -263,7 +263,7 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
     /// <returns>挑战标识(challengeId)和PEM格式RSA公钥(publicKey)</returns>
     [HttpGet]
     [AllowAnonymous]
-    public ActionResult Challenge()
+    public new ActionResult Challenge()
     {
         var (challengeId, publicKey) = userService.GetPublicKey();
         return Json(0, null, new { challengeId, publicKey });

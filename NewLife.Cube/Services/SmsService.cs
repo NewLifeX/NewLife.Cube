@@ -197,15 +197,5 @@ public class SmsService(ICacheProvider cacheProvider)
         var joinStr = strBytes.Join("");//拼接为字符串
         var code = joinStr.Cut(codeLength);//截取指定长度
         return code;
-
-        var seed = $"{Rand.Next(Int32.MaxValue / 10, Int32.MaxValue)}";
-        var sb = new StringBuilder();
-        for (var i = 0; i < codeLength; i++)
-        {
-            var index = i % seed.Length;
-            var c = seed[index]; // 避免超长，超过长度时会循环取
-            sb.Append(c);
-        }
-        return sb.ToString();
     }
 }

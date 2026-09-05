@@ -82,7 +82,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     }
 
     /// <summary>收集服务器信息（供页面展示与 AI 页面上下文共用，避免重复逻辑）</summary>
-    /// <param name="contentRootPath">应用内容根目录（<see cref="IWebHostEnvironment.ContentRootPath"/>）</param>
+    /// <param name="contentRootPath">应用内容根目录（IWebHostEnvironment.ContentRootPath）</param>
     /// <param name="context">当前 HTTP 上下文，用于获取请求与连接信息</param>
     /// <returns>服务器信息对象</returns>
     private static Object BuildServerInfo(String contentRootPath, Microsoft.AspNetCore.Http.HttpContext context)

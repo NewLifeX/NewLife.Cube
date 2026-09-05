@@ -234,30 +234,12 @@ public class ControllerBaseX : ControllerBase, IActionFilter
         {
             WriteIndented = false,
             IgnoreNullValues = false,
-            CamelCase = true,
+            PropertyNaming = PropertyNaming.CamelCase,
             Int64AsString = true,
             IgnoreCycles = true,//忽略循环引用
             FullTime = false// yyyy-MM-dd HH:mm:ss
         });
         return json;
-        //data.ToJson(false, true, true);
-        var writer = new JsonWriter
-        {
-            //Indented = false,
-            //IgnoreNullValues = false,
-            //CamelCase = true,
-            //Int64AsString = true
-            
-        };
-        writer.Options.WriteIndented = false;
-        writer.Options.IgnoreNullValues = false;
-        writer.Options.CamelCase = true;
-        writer.Options.Int64AsString = true;
-        writer.Options.FullTime = false;//TODO：格式yyyy-MM-dd HH:mm:ss这里不好使 
-        writer.Write(data);
-
-        var str = writer.GetString();
-        return str;
     }
     #endregion
 
