@@ -37,7 +37,7 @@ public class WebHelper2Tests
     [InlineData("not a url", "cube.newlifex.com")]
     [InlineData("https://cube.newlifex.com/admin", null)]
     [InlineData("https://cube.newlifex.com/admin", "")]
-    public void EmptyOrInvalid_ReturnsNull(String refer, String host)
+    public void EmptyOrInvalid_ReturnsNull(String? refer, String? host)
     {
         Assert.Null(WebHelper2.GetExternalRefer(refer, host));
     }
@@ -48,7 +48,7 @@ public class WebHelper2Tests
     [InlineData("http://cube.newlifex.com/admin", "cube.newlifex.com")]
     [InlineData("not a url", null)]
     [InlineData(null, null)]
-    public void GetHost_Parse(String url, String host)
+    public void GetHost_Parse(String? url, String? host)
     {
         Assert.Equal(host, WebHelper2.GetHost(url));
     }

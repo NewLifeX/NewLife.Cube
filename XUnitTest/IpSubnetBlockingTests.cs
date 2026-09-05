@@ -49,7 +49,7 @@ public class IpSubnetBlockingTests
     [Theory(DisplayName = "GetSubnet24：空值或null时返回空字符串")]
     [InlineData("")]
     [InlineData(null)]
-    public void GetSubnet24_NullOrEmpty_ReturnsEmpty(String ip)
+    public void GetSubnet24_NullOrEmpty_ReturnsEmpty(String? ip)
     {
         var result = Subnet24(ip);
         Assert.Equal("", result);
@@ -90,7 +90,7 @@ public class IpSubnetBlockingTests
     [Theory(DisplayName = "GetSubnet16：空值或null时返回空字符串")]
     [InlineData("")]
     [InlineData(null)]
-    public void GetSubnet16_NullOrEmpty_ReturnsEmpty(String ip)
+    public void GetSubnet16_NullOrEmpty_ReturnsEmpty(String? ip)
     {
         var result = Subnet16(ip);
         Assert.Equal("", result);
