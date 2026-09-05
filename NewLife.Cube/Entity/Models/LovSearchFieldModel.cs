@@ -6,7 +6,7 @@ public class LovSearchFieldModel
     /// <summary>编号</summary>
     public Int32 Id { get; set; }
 
-    /// <summary>值集定义。关联LovDefinition</summary>
+    /// <summary>值集定义（按 LovCode 关联，不再落真实表）</summary>
     public Int32 LovDefId { get; set; }
 
     /// <summary>字段名。搜索参数字段名</summary>

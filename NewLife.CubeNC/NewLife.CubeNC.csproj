@@ -116,7 +116,6 @@
     <Compile Include="..\NewLife.Cube\Entity\Models\UserStatModel.cs" Link="Entity\Models\UserStatModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\UserTokenModel.cs" Link="Entity\Models\UserTokenModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\VerifyCodeRecordModel.cs" Link="Entity\Models\VerifyCodeRecordModel.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\Models\LovDefinitionModel.cs" Link="Entity\Models\LovDefinitionModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth日志.Biz.cs" Link="Entity\OAuth日志.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth日志.cs" Link="Entity\OAuth日志.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth配置.Biz.cs" Link="Entity\OAuth配置.Biz.cs" />
@@ -174,8 +173,6 @@
     <Compile Include="..\NewLife.Cube\Services\LocalAttachmentStorage.cs" Link="Services\LocalAttachmentStorage.cs" />
     <Compile Include="..\NewLife.Cube\Services\ObjectAttachmentStorage.cs" Link="Services\ObjectAttachmentStorage.cs" />
     <Compile Include="..\NewLife.Cube\Services\S3ObjectStorage.cs" Link="Services\S3ObjectStorage.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\值集定义.cs" Link="Entity\值集定义.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\值集定义.Biz.cs" Link="Entity\值集定义.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Web\AttachmentProvider.cs" Link="Web\AttachmentProvider.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\ApprovalInfo.cs" Link="Web\Models\ApprovalInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\CheckInData.cs" Link="Web\Models\CheckInData.cs" />

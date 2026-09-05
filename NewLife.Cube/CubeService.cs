@@ -242,12 +242,10 @@ public static class CubeService
         // 注册 AI 服务
         services.AddCubeAI();
 
-        // // 注册 LOV 值集服务，并扫描测试枚举所在命名空间，自动将其注册为枚举值集
-        // 不用在这里注册，直接内置在 NewLife.Cube\Services\LovAutoRegisterService.cs
-        // services.AddCubeLov(cfg =>
-        // {
-        //     cfg.ScanNamespace(typeof(AuthCategory).Namespace);
-        // });
+        // 注册列表型值集数据代理（默认 HTTP 转发）。值集已代码优先（枚举/[LovList] 反射直读），无需启动扫描注册；
+        // 使用者可在 AddCube 之前注册自定义 ILovListDataProxy 实现覆盖默认行为；IHttpClientFactory 以 TryAdd 注册，不覆盖 AddHttpClient。
+        services.TryAddSingleton<ILovListDataProxy, DefaultLovListDataProxy>();
+        services.TryAddDefaultHttpClientFactory();
 
         // 注册IP地址库
         IpResolver.Register();
@@ -406,9 +404,6 @@ public static class CubeService
                 XTrace.WriteLine("魔方优雅退出！");
                 web.StopAsync().Wait();
             });
-
-        // 触发 Lov 值集自动注册
-        app.UseCubeLov();
 
         return app;
     }

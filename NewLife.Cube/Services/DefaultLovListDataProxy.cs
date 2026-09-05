@@ -10,7 +10,7 @@ namespace NewLife.Cube.Services;
 /// <summary>列表型值集默认数据代理实现。
 /// 以 HTTP 客户端（<see cref="IHttpClientFactory"/>）向外部数据源发起 GET/POST 请求，
 /// 支持分页参数、固定参数，并按 DataPath/TotalPath 从响应 JSON 中抽取数据与总数。
-/// 该实现通过 <see cref="LovServiceExtensions.AddCubeLov"/> 以 TryAddSingleton 注册，使用者可自定义实现覆盖。</summary>
+/// 该实现由魔方 AddCube 默认以 TryAddSingleton 注册（<c>ILovListDataProxy</c>），使用者可在 AddCube 前注册自定义实现覆盖。</summary>
 public class DefaultLovListDataProxy : ILovListDataProxy
 {
     private readonly IHttpClientFactory _httpClientFactory;

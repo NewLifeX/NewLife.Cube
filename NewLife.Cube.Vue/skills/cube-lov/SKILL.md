@@ -7,6 +7,11 @@ description: LOV（List of Values）值集系统使用指南。涵盖后端配�
 
 Cube LOV（List of Values）值集系统使用指南。值集用于统一管理枚举型和列表型下拉选项，贯穿后端定义 → 前端渲染 → 列翻译全链路。
 
+> ⚠️ **架构变更（2026-09-05）**：值集已全面**代码优先**，下述旧机制已移除，请以本文为准并忽略残留旧描述（LovDefinition 表、LovAutoRegisterService、AddCubeLov/UseCubeLov、BatchLabel 均已删除）：
+> - 代码枚举（`Enum.{FullName}`）与 `[LovList]`（`List.*`）列表型值集由后端 `Meta`/`ListData` **运行时反射直读**（`LovRegistry` 进程内索引），**不落库、无需启动注册/AddCubeLov**
+> - 仅后台手工创建的"名值定义"存 `Parameter`（`LovStore`，Category=`Lov.Def` 等，Name=LovCode），值集管理页平时为空
+> - `ILovListDataProxy` 默认由魔方 `AddCube` 注册；前端只依赖 `Meta`/`ListData` 契约，不受影响
+
 ## 核心原则
 
 - **值集码只出现在后端**：前端通过 GetPage 元数据「发现」lovCode，不硬编码

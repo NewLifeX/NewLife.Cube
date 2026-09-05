@@ -63,7 +63,7 @@ public class UserController(UserService userService, VerifyCodeService verifyCod
         SearchFields.RemoveField("MailVerified", "MobileVerified");
 
         {
-            // 角色搜索：下拉多选。LovDefinition 无 Role 值集（lovCode 加载为空），改用角色缓存作为数据源；
+            // 角色搜索：下拉多选。角色未以值集声明（无 LovCode），改用角色缓存作为数据源；
             // ItemType=multipleSelect 触发 DataField 下发 multiple=true，前端 LovSelect 渲染为多选下拉，多选值经逗号串 roleID=1,2 提交
             var df = SearchFields.GetField(_.RoleID);
             df.DataSource = _ => Role.FindAllWithCache()

@@ -628,28 +628,5 @@
         <Index Columns="Channel,Target,Id" />
       </Indexes>
     </Table>
-    <Table Name="LovDefinition" Description="值集定义。值和列表的值集定义，支持枚举型和列表型">
-      <Columns>
-        <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
-        <Column Name="LovCode" DataType="String" Master="True" Length="200" Nullable="False" Description="值集编码。带前缀的完全限定编码，如 Enum.SmartMES.Data.ProcessCard.ProcessCardStatus / List.User" />
-        <Column Name="Name" DataType="String" Description="显示名称" />
-        <Column Name="Type" DataType="String" Description="值集类型。ENUM=枚举型/LIST=列表型，须与LovCode前缀一致" />
-        <Column Name="ValueField" DataType="String" Description="值字段。列表型的值字段名" />
-        <Column Name="LabelField" DataType="String" Description="标签字段。列表型的标签字段名" />
-        <Column Name="Source" DataType="String" Description="来源。AUTO=自动注册/MANUAL=手工管理" />
-        <Column Name="Enabled" DataType="Boolean" Description="启用" />
-        <Column Name="CreateUserID" DataType="Int32" Description="创建用户" Category="扩展" />
-        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
-        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
-        <Column Name="UpdateUserID" DataType="Int32" Description="更新用户" Category="扩展" />
-        <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
-        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
-        <Column Name="Remark" DataType="String" Length="500" Description="备注" Category="扩展" />
-      </Columns>
-      <Indexes>
-        <Index Columns="LovCode" Unique="True" />
-        <Index Columns="Type,Enabled" />
-      </Indexes>
-    </Table>
   </Tables>
 </EntityModel>

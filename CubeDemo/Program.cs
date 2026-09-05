@@ -18,9 +18,6 @@ var star = services.AddStardust(null);
 
 services.AddCubeFileStorage("Cube");
 
-// 注册 LOV 值集服务，并扫描测试枚举所在命名空间，自动将其注册为 Enum.CubeDemo.Areas.Test.测试枚举 值集
-services.AddCubeLov(cfg => cfg.ScanNamespace("CubeDemo.Areas.Test"));
-
 services.AddControllers();
 
 services.AddCubeSwagger();

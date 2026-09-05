@@ -8,7 +8,7 @@ using Xunit;
 namespace NewLife.Cube.Tests.Services;
 
 /// <summary>
-/// 覆盖 <see cref="LovAutoRegisterService"/> 中 <c>InferLovList</c> 的自动推断逻辑（私有方法，通过反射调用）。
+/// 覆盖 <see cref="LovRegistry"/> 中 <c>InferLovList</c> 的自动推断逻辑。
 /// 验证：
 ///   1) Name 为空时推断为 ControllerName.ActionName；
 ///   2) RequestUrl 从 [Route] / HTTP 方法特性推断，并自动拼接 ApiPrefixes；
@@ -16,8 +16,6 @@ namespace NewLife.Cube.Tests.Services;
 /// </summary>
 public class LovAutoRegisterInferenceTests
 {
-    private const BindingFlags PrivateStatic = BindingFlags.NonPublic | BindingFlags.Static;
-
     #region 测试用控制器
 
     [Route("api/roles")]
@@ -332,15 +330,11 @@ public class LovAutoRegisterInferenceTests
 
     #region 辅助
 
-    /// <summary>通过反射调用 <c>LovAutoRegisterService.InferLovList(LovListAttribute, MethodInfo)</c></summary>
+    /// <summary>调用 <c>LovRegistry.InferLovList(LovListAttribute, MethodInfo)</c></summary>
     private static void CallInferLovList(LovListAttribute attr, MethodInfo method)
     {
-        var type = typeof(LovAutoRegisterService);
-        var methodInfo = type.GetMethod("InferLovList", PrivateStatic, [typeof(LovListAttribute), typeof(MethodInfo)]);
-        Assert.NotNull(methodInfo);
-
-        // API前缀在WebAPI版固定为 /api（写死到LOV路由推断），无需配置
-        methodInfo!.Invoke(null, [attr, method]);
+        // API 前缀在 WebAPI 版固定为 /api（写死到 LOV 路由推断），无需配置
+        LovRegistry.InferLovList(attr, method);
     }
 
     #endregion

@@ -20,7 +20,7 @@ public class TestFieldController : EntityController<测试字段, 测试字段Mo
     static TestFieldController()
     {
         // 统一为 枚举 / 单选 / 多选 三类值集字段下发 lovCode。
-        // 值集由 LovAutoRegisterService 自动注册为 Enum.CubeDemo.Areas.Test.测试枚举。
+        // 值集为代码枚举（Enum.CubeDemo.Areas.Test.测试枚举），由 Meta 接口按 FullName 反射直读，无需注册落库。
         var lovCode = $"Enum.{typeof(测试枚举).FullName}";
 
         SetLov(ListFields, 测试字段._.Kind, lovCode);
@@ -38,7 +38,7 @@ public class TestFieldController : EntityController<测试字段, 测试字段Mo
         SetLov(EditFormFields, 测试字段._.MultiVal, lovCode);
         SetLov(SearchFields, 测试字段._.MultiVal, lovCode);
 
-        // 下拉表格字段：使用列表型值集 List.CubeDemo.Role（由本控制器 RoleList 方法上的 [LovList] 自动注册）。
+        // 下拉表格字段：使用列表型值集 List.CubeDemo.Role（由本控制器 RoleList 方法上的 [LovList] 声明，Meta 反射直读，不落库）。
         // 该值集 ProxyRequest=false，前端直接请求同应用接口 /Test/TestField/RoleList（不代理）。
         const String roleLovCode = "List.CubeDemo.Role";
         SetLov(ListFields, 测试字段._.ListVal, roleLovCode);
@@ -64,7 +64,7 @@ public class TestFieldController : EntityController<测试字段, 测试字段Mo
     }
 
     /// <summary>角色列表数据源。返回角色列表 JSON，供 List.CubeDemo.Role 值集（前端直连，不代理）使用。
-    /// 同时用 [LovList] 声明该列表型值集，由 LovAutoRegisterService 在初始化时自动注册。</summary>
+    /// 同时用 [LovList] 声明该列表型值集（代码优先，Meta 反射直读，不落库）。</summary>
     /// <returns>角色列表与总数</returns>
     [LovList(
         LovCode = "List.CubeDemo.Role",

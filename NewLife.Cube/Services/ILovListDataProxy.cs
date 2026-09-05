@@ -4,7 +4,7 @@ namespace NewLife.Cube.Services;
 
 /// <summary>列表型值集数据代理接口。
 /// 把 LovController.ListData 的「外部数据源转发」逻辑抽象为接口，默认由 <see cref="DefaultLovListDataProxy"/> 以 HTTP 客户端实现。
-/// 使用者可通过依赖注入注册自己的实现来覆盖默认行为（见 <see cref="LovServiceExtensions.AddCubeLov"/> 的 TryAddSingleton 说明）。</summary>
+/// 使用者可通过依赖注入注册自己的实现来覆盖默认行为（默认由魔方 AddCube 以 TryAddSingleton 注册 <see cref="DefaultLovListDataProxy"/>）。</summary>
 public interface ILovListDataProxy
 {
     /// <summary>根据列表配置与查询请求，向外部数据源发起请求并解析出数据与总数</summary>

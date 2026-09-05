@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
 using XCode.DataAccessLayer;
@@ -65,7 +66,7 @@ public class LovStoreFixture : IDisposable
     }
 }
 
-/// <summary>值集存取（<see cref="LovStore"/>）集成测试（Parameter 表，SQLite）。覆盖四类明细数据的保存读回与整表覆盖</summary>
+/// <summary>值集存取（<see cref="LovStore"/>）集成测试（Parameter 表，SQLite）。覆盖手工定义与四类明细数据的保存读回与整表覆盖</summary>
 [Collection("LovStore")]
 public class LovStoreTests : IDisposable
 {
@@ -82,46 +83,44 @@ public class LovStoreTests : IDisposable
     public void Dispose() => Parameter.Meta.ConnName = _oldConn;
 
     [Fact]
-    [DisplayName("枚举值：保存后整表覆盖读回")]
+    [DisplayName("枚举值：按 LovCode 保存后整表覆盖读回")]
     public void EnumItems_SaveAndFind_Overwrite()
     {
-        var lovDefId = 11;
-        LovStore.SaveEnumItems(lovDefId, new List<LovEnumItemModel>
+        var lovCode = "Enum.Test.Status";
+        LovStore.SaveEnumItems(lovCode, new List<LovEnumItemModel>
         {
-            new LovEnumItemModel { LovDefId = lovDefId, Value = "1", Label = "启用", Sort = 0, Enabled = true },
-            new LovEnumItemModel { LovDefId = lovDefId, Value = "2", Label = "停用", Sort = 1, Enabled = true },
+            new LovEnumItemModel { Value = "1", Label = "启用", Sort = 0, Enabled = true },
+            new LovEnumItemModel { Value = "2", Label = "停用", Sort = 1, Enabled = true },
         });
 
         // 整表覆盖：旧值应全部被替换
-        LovStore.SaveEnumItems(lovDefId, new List<LovEnumItemModel>
+        LovStore.SaveEnumItems(lovCode, new List<LovEnumItemModel>
         {
-            new LovEnumItemModel { LovDefId = lovDefId, Value = "3", Label = "删除", Sort = 0, Enabled = true },
+            new LovEnumItemModel { Value = "3", Label = "删除", Sort = 0, Enabled = true },
         });
 
-        var items = LovStore.FindEnumItems(lovDefId);
+        var items = LovStore.FindEnumItems(lovCode);
         Assert.Single(items);
         Assert.Equal("3", items[0].Value);
         Assert.Equal("删除", items[0].Label);
-        Assert.Equal(lovDefId, items[0].LovDefId);
     }
 
     [Fact]
     [DisplayName("枚举值：无记录时读回空列表")]
     public void EnumItems_Find_Empty()
     {
-        var items = LovStore.FindEnumItems(999);
+        var items = LovStore.FindEnumItems("Enum.Test.None");
         Assert.NotNull(items);
         Assert.Empty(items);
     }
 
     [Fact]
-    [DisplayName("列表配置：保存读回，未保存时返回 null")]
+    [DisplayName("列表配置：按 LovCode 保存读回，未保存时返回 null")]
     public void ListConfig_SaveAndFind_NullWhenAbsent()
     {
-        var lovDefId = 22;
-        LovStore.SaveListConfig(lovDefId, new LovListConfigModel
+        var lovCode = "List.Test.Role";
+        LovStore.SaveListConfig(lovCode, new LovListConfigModel
         {
-            LovDefId = lovDefId,
             RequestUrl = "http://external/api/roles",
             Method = "GET",
             Pageable = true,
@@ -132,28 +131,27 @@ public class LovStoreTests : IDisposable
             ProxyRequest = true,
         });
 
-        var config = LovStore.FindListConfig(lovDefId);
+        var config = LovStore.FindListConfig(lovCode);
         Assert.NotNull(config);
-        Assert.Equal(lovDefId, config.LovDefId);
-        Assert.Equal("http://external/api/roles", config.RequestUrl);
+        Assert.Equal("http://external/api/roles", config!.RequestUrl);
         Assert.True(config.Pageable);
         Assert.True(config.ProxyRequest);
 
         // 未保存过的值集定义返回 null
-        Assert.Null(LovStore.FindListConfig(888));
+        Assert.Null(LovStore.FindListConfig("List.Test.None"));
     }
 
     [Fact]
-    [DisplayName("搜索字段：保存后读回")]
+    [DisplayName("搜索字段：按 LovCode 保存后读回")]
     public void SearchFields_SaveAndFind()
     {
-        var lovDefId = 33;
-        LovStore.SaveSearchFields(lovDefId, new List<LovSearchFieldModel>
+        var lovCode = "List.Test.Search";
+        LovStore.SaveSearchFields(lovCode, new List<LovSearchFieldModel>
         {
-            new LovSearchFieldModel { LovDefId = lovDefId, Field = "name", Title = "名称", ComponentType = "input", ParamType = "QUERY", Sort = 0 },
+            new LovSearchFieldModel { Field = "name", Title = "名称", ComponentType = "input", ParamType = "QUERY", Sort = 0 },
         });
 
-        var fields = LovStore.FindSearchFields(lovDefId);
+        var fields = LovStore.FindSearchFields(lovCode);
         Assert.Single(fields);
         Assert.Equal("name", fields[0].Field);
         Assert.Equal("名称", fields[0].Title);
@@ -161,21 +159,71 @@ public class LovStoreTests : IDisposable
     }
 
     [Fact]
-    [DisplayName("表格列：保存后读回")]
+    [DisplayName("表格列：按 LovCode 保存后读回")]
     public void TableColumns_SaveAndFind()
     {
-        var lovDefId = 44;
-        LovStore.SaveTableColumns(lovDefId, new List<LovTableColumnModel>
+        var lovCode = "List.Test.Table";
+        LovStore.SaveTableColumns(lovCode, new List<LovTableColumnModel>
         {
-            new LovTableColumnModel { LovDefId = lovDefId, Field = "id", Title = "编号", Width = 80, Sortable = true, Sort = 0 },
-            new LovTableColumnModel { LovDefId = lovDefId, Field = "name", Title = "名称", Width = 200, Sort = 1 },
+            new LovTableColumnModel { Field = "id", Title = "编号", Width = 80, Sortable = true, Sort = 0 },
+            new LovTableColumnModel { Field = "name", Title = "名称", Width = 200, Sort = 1 },
         });
 
-        var cols = LovStore.FindTableColumns(lovDefId);
+        var cols = LovStore.FindTableColumns(lovCode);
         Assert.Equal(2, cols.Count);
         Assert.Equal("id", cols[0].Field);
         Assert.Equal(80, cols[0].Width);
         Assert.True(cols[0].Sortable);
         Assert.Equal("名称", cols[1].Title);
+    }
+
+    [Fact]
+    [DisplayName("定义：保存读回与全量遍历")]
+    public void Def_SaveAndFind()
+    {
+        var code1 = "Enum.Manual.Status";
+        var code2 = "List.Manual.Role";
+        LovStore.SaveDef(new LovDefModel { LovCode = code1, Name = "手工状态", Type = "ENUM", Enabled = true });
+        LovStore.SaveDef(new LovDefModel { LovCode = code2, Name = "手工角色", Type = "LIST", ValueField = "id", LabelField = "name" });
+
+        var def = LovStore.FindDef(code1);
+        Assert.NotNull(def);
+        Assert.Equal("手工状态", def!.Name);
+        Assert.Equal("ENUM", def.Type);
+        Assert.True(def.Enabled);
+
+        // 共享集合库可能累积其它用例数据，仅断言包含自身记录
+        var all = LovStore.FindAllDefs();
+        Assert.Contains(all, e => e.LovCode == code1);
+        Assert.Contains(all, e => e.LovCode == code2 && e.Type == "LIST" && e.ValueField == "id");
+    }
+
+    [Fact]
+    [DisplayName("定义：不存在时返回 null")]
+    public void Def_Find_NullWhenAbsent()
+    {
+        Assert.Null(LovStore.FindDef("Enum.NoSuch.Xxx"));
+    }
+
+    [Fact]
+    [DisplayName("删除定义：级联清理枚举值，不影响其它值集")]
+    public void Def_Delete_Cascade()
+    {
+        var code = "Enum.Manual.Gender";
+        LovStore.SaveDef(new LovDefModel { LovCode = code, Name = "性别", Type = "ENUM" });
+        LovStore.SaveEnumItems(code, new List<LovEnumItemModel>
+        {
+            new LovEnumItemModel { Value = "0", Label = "未知", Enabled = true },
+        });
+
+        // 无关记录，删除后应保留
+        var other = "List.Manual.Tmp";
+        LovStore.SaveDef(new LovDefModel { LovCode = other, Name = "临时", Type = "LIST" });
+
+        LovStore.DeleteDef(code);
+
+        Assert.Null(LovStore.FindDef(code));
+        Assert.Empty(LovStore.FindEnumItems(code));
+        Assert.NotNull(LovStore.FindDef(other));
     }
 }
