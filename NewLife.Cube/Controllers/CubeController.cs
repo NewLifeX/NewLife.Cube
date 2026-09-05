@@ -114,7 +114,8 @@ public class CubeController(PageService pageService, TokenService tokenService, 
             {
                 var set = CubeSetting.Current;
                 var (app, ex) = tokenService.TryDecodeToken(token, set.JwtSecret);
-                if (app != null && app.Enable && ex != null) logined = true;
+                // 验签通过（ex == null）且应用有效才放行；验签失败时 ex 非空绝不能放行，防止伪造 JWT 认证绕过
+                if (app != null && app.Enable && ex == null) logined = true;
             }
 
             // 回退到 UserToken 验证，并校验 Url 防止水平越权
@@ -424,8 +425,13 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         var av = "";
         if (!user.Avatar.IsNullOrEmpty() && !user.Avatar.StartsWith("/"))
         {
-            av = set.AvatarPath.CombinePath(user.Avatar).GetBasePath();
-            if (!System.IO.File.Exists(av)) av = null;
+            // 防路径穿越：仅接受纯文件名（无路径分隔符），外部回填头像地址可能含 .. 或子路径
+            var name = Path.GetFileName(user.Avatar);
+            if (!name.IsNullOrEmpty() && name == user.Avatar)
+            {
+                av = set.AvatarPath.CombinePath(name).GetBasePath();
+                if (!System.IO.File.Exists(av)) av = null;
+            }
         }
 
         // 用于兼容旧代码：按扩展名优先级查找（.png/.svg/.jpg/.gif/.webp）
@@ -536,6 +542,11 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     {
         if (!category.EqualIgnoreCase("LayoutSetting"))
             return Json(203, "非授权操作，不允许保存系统布局以外的信息");
+
+        // 防水平越权：仅允许保存当前登录用户自己的布局；系统管理员可代用户设置
+        var cur = ManageProvider.User;
+        if (cur == null || userid != cur.ID && !cur.Roles.Any(e => e.IsSystem))
+            return Json(403, "仅能保存自己的布局设置");
 
         var para = Parameter.GetOrAdd(userid, category, name);
         para.SetItem("Value", value);
