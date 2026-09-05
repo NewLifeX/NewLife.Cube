@@ -263,7 +263,9 @@ public class FileController : ControllerBaseX
             var di = GetDirectory(r) ?? Root.AsDirectory();
             if (di == null) throw new Exception("找不到目录！");
 
-            var dest = di.FullName.CombinePath(file.FileName);
+            // 防目录穿越：仅取文件名，丢弃客户端可控的路径部分
+            var name = Path.GetFileName(file.FileName);
+            var dest = di.FullName.CombinePath(name);
             WriteLog("上传", true, dest);
 
             dest.EnsureDirectory(true);
@@ -301,7 +303,9 @@ public class FileController : ControllerBaseX
                 var di = GetDirectory(r) ?? Root.AsDirectory();
                 if (di == null) throw new Exception("找不到目录！");
 
-                var dest = di.FullName.CombinePath(file.FileName);
+                // 防目录穿越：仅取文件名，丢弃客户端可控的路径部分
+                var name = Path.GetFileName(file.FileName);
+                var dest = di.FullName.CombinePath(name);
                 WriteLog("上传", true, dest);
 
                 dest.EnsureDirectory(true);

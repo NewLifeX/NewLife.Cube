@@ -123,7 +123,8 @@ public class RunTimeMiddleware
                 // 外部跳转来源。站内跳转或空时返回空，仅首次外部来源写入在线表
                 var refer = WebHelper2.GetExternalRefer(ctx.Request);
                 if (user == null)
-                    online = _userService.SetStatus(online, sessionId, deviceId, p, userAgent, ua, 0, WebHelper.GetUserByToken(ctx), ip, refer);
+                    // 匿名请求不采信请求头JWT（GetUserByToken 仅解析不验签可伪造），在线记录以设备/IP标识，避免伪造用户名污染在线列表
+                    online = _userService.SetStatus(online, sessionId, deviceId, p, userAgent, ua, 0, null, ip, refer);
                 else
                     online = _userService.SetWebStatus(online, sessionId, deviceId, p, userAgent, ua, user, ip, refer);
                 //FillDeviceId(ctx, olt);
