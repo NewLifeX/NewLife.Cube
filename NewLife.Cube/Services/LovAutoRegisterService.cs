@@ -117,7 +117,7 @@ public class LovAutoRegisterService
         return true;
     }
 
-    /// <summary>同步枚举值到 LovEnumItem（数据落到 Parameter，不触碰真实表）</summary>
+    /// <summary>同步枚举值到值集枚举值（数据落到 Parameter，不触碰真实表）</summary>
     /// <param name="def">值集定义</param>
     /// <param name="enumType">要同步的枚举类型</param>
     /// <param name="useStringValue">为 true 时使用枚举成员名作为选项值（字符串），否则使用数字值</param>
@@ -127,12 +127,12 @@ public class LovAutoRegisterService
         var values = Enum.GetValues(enumType);
 
         // 读取现有记录（全部落到 Parameter）
-        var existingItems = LovEnumItem.FindAllByLovDefId(def.Id);
+        var existingItems = LovStore.FindEnumItems(def.Id);
         var existingMap = existingItems.ToDictionary(e => e.Value, e => e);
 
         // 当前枚举值集合
         var currentValues = new HashSet<String>();
-        var result = new List<LovEnumItem>();
+        var result = new List<LovEnumItemModel>();
 
         for (var i = 0; i < names.Length; i++)
         {
@@ -167,7 +167,7 @@ public class LovAutoRegisterService
             else
             {
                 // 新增枚举值
-                result.Add(new LovEnumItem
+                result.Add(new LovEnumItemModel
                 {
                     LovDefId = def.Id,
                     Value = value,
@@ -189,7 +189,7 @@ public class LovAutoRegisterService
         }
 
         // 整表覆盖写回 Parameter
-        LovEnumItem.SaveAllByLovDefId(def.Id, result);
+        LovStore.SaveEnumItems(def.Id, result);
     }
 
     /// <summary>获取枚举类型的显示名称，优先 DisplayName 特性，无则返回 null</summary>
@@ -309,7 +309,7 @@ public class LovAutoRegisterService
         }
 
         // 列表数据源配置（1:1，覆盖写入 Parameter）
-        var config = LovListConfig.FindByLovDefId(def.Id) ?? new LovListConfig { LovDefId = def.Id };
+        var config = LovStore.FindListConfig(def.Id) ?? new LovListConfigModel { LovDefId = def.Id };
         config.RequestUrl = attr.RequestUrl;
         config.Method = attr.Method;
         config.Pageable = attr.Pageable;
@@ -320,19 +320,19 @@ public class LovAutoRegisterService
         config.FixedParams = attr.FixedParams;
         config.ProxyRequest = attr.ProxyRequest;
         // 首跑建库期间数据库可能处于繁忙/锁定状态，写入 Parameter 需容忍瞬时锁定并重试
-        RetryDb(() => LovListConfig.SaveByLovDefId(def.Id, config));
+        RetryDb(() => LovStore.SaveListConfig(def.Id, config));
 
         // 表格列与搜索字段（覆盖写入）
-        RetryDb(() => LovTableColumn.SaveAllByLovDefId(def.Id, ParseColumns(attr.Columns, def.Id)));
-        RetryDb(() => LovSearchField.SaveAllByLovDefId(def.Id, ParseSearchFields(attr.SearchFields, def.Id)));
+        RetryDb(() => LovStore.SaveTableColumns(def.Id, ParseColumns(attr.Columns, def.Id)));
+        RetryDb(() => LovStore.SaveSearchFields(def.Id, ParseSearchFields(attr.SearchFields, def.Id)));
 
         return true;
     }
 
     /// <summary>解析表格列声明。元素格式 "Field:Title:Width:Align"</summary>
-    private static IList<LovTableColumn> ParseColumns(String[]? tokens, Int32 lovDefId)
+    private static IList<LovTableColumnModel> ParseColumns(String[]? tokens, Int32 lovDefId)
     {
-        var list = new List<LovTableColumn>();
+        var list = new List<LovTableColumnModel>();
         if (tokens == null) return list;
 
         for (var i = 0; i < tokens.Length; i++)
@@ -340,7 +340,7 @@ public class LovAutoRegisterService
             var parts = tokens[i].Split(':');
             if (parts.Length < 2) continue;
 
-            var col = new LovTableColumn
+            var col = new LovTableColumnModel
             {
                 LovDefId = lovDefId,
                 Field = parts[0].Trim(),
@@ -357,9 +357,9 @@ public class LovAutoRegisterService
     }
 
     /// <summary>解析搜索字段声明。元素格式 "Field:Title:ComponentType:ParamType:Required"</summary>
-    private static IList<LovSearchField> ParseSearchFields(String[]? tokens, Int32 lovDefId)
+    private static IList<LovSearchFieldModel> ParseSearchFields(String[]? tokens, Int32 lovDefId)
     {
-        var list = new List<LovSearchField>();
+        var list = new List<LovSearchFieldModel>();
         if (tokens == null) return list;
 
         for (var i = 0; i < tokens.Length; i++)
@@ -367,7 +367,7 @@ public class LovAutoRegisterService
             var parts = tokens[i].Split(':');
             if (parts.Length < 2) continue;
 
-            var sf = new LovSearchField
+            var sf = new LovSearchFieldModel
             {
                 LovDefId = lovDefId,
                 Field = parts[0].Trim(),

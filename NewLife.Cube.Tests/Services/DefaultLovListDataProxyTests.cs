@@ -53,7 +53,7 @@ public class DefaultLovListDataProxyTests
         var handler = new CapturingHandler(externalJson);
         var proxy = new DefaultLovListDataProxy(new FakeHttpClientFactory(handler));
 
-        var config = new LovListConfig
+        var config = new LovListConfigModel
         {
             RequestUrl = "http://external/api/roles",
             Method = "GET",
@@ -99,7 +99,7 @@ public class DefaultLovListDataProxyTests
         var handler = new CapturingHandler(externalJson);
         var proxy = new DefaultLovListDataProxy(new FakeHttpClientFactory(handler));
 
-        var config = new LovListConfig
+        var config = new LovListConfigModel
         {
             RequestUrl = "http://external/api/roles",
             Method = "POST",

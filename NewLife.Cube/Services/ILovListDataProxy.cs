@@ -12,7 +12,7 @@ public interface ILovListDataProxy
     /// <param name="request">前端下发的查询请求（lovCode、搜索参数、分页）</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>代理查询结果：数据列表（已反序列化的对象数组）与总数</returns>
-    Task<LovListDataProxyResult> FetchAsync(LovListConfig config, LovListDataRequest request, CancellationToken cancellationToken = default);
+    Task<LovListDataProxyResult> FetchAsync(LovListConfigModel config, LovListDataRequest request, CancellationToken cancellationToken = default);
 }
 
 /// <summary>列表型值集代理查询结果</summary>

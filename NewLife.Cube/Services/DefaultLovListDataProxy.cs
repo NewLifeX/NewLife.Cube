@@ -26,7 +26,7 @@ public class DefaultLovListDataProxy : ILovListDataProxy
     }
 
     /// <inheritdoc />
-    public async Task<LovListDataProxyResult> FetchAsync(LovListConfig config, LovListDataRequest request, CancellationToken cancellationToken = default)
+    public async Task<LovListDataProxyResult> FetchAsync(LovListConfigModel config, LovListDataRequest request, CancellationToken cancellationToken = default)
     {
         if (config == null) throw new ArgumentNullException(nameof(config));
         if (request == null) throw new ArgumentNullException(nameof(request));

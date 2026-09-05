@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.Serialization;
-using System.Web.Script.Serialization;
-using System.Xml.Serialization;
-
 namespace NewLife.Cube.Entity;
 
-/// <summary>值集表格列。列表型值集的列字段定义</summary>
-public partial class LovTableColumnModel
+/// <summary>值集表格列。列表型值集的列字段定义，无真实表，数据以 JSON 存 Parameter（LovStore）</summary>
+public class LovTableColumnModel
 {
-    #region 属性
     /// <summary>编号</summary>
     public Int32 Id { get; set; }
 
@@ -61,30 +53,4 @@ public partial class LovTableColumnModel
 
     /// <summary>备注</summary>
     public String Remark { get; set; }
-    #endregion
-
-    #region 拷贝
-    /// <summary>拷贝模型对象</summary>
-    /// <param name="model">模型</param>
-    public void Copy(LovTableColumnModel model)
-    {
-        Id = model.Id;
-        LovDefId = model.LovDefId;
-        Field = model.Field;
-        Title = model.Title;
-        Width = model.Width;
-        Align = model.Align;
-        Sortable = model.Sortable;
-        RefLovCode = model.RefLovCode;
-        FormatType = model.FormatType;
-        Sort = model.Sort;
-        CreateUserID = model.CreateUserID;
-        CreateIP = model.CreateIP;
-        CreateTime = model.CreateTime;
-        UpdateUserID = model.UpdateUserID;
-        UpdateIP = model.UpdateIP;
-        UpdateTime = model.UpdateTime;
-        Remark = model.Remark;
-    }
-    #endregion
 }
