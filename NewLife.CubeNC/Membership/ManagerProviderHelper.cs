@@ -660,13 +660,12 @@ public static class ManagerProviderHelper
         if (!existingAccess.IsNullOrEmpty() && !existingRefresh.IsNullOrEmpty())
             return new TokenModel { AccessToken = existingAccess, RefreshToken = existingRefresh, ExpireIn = expire.TotalSeconds.ToInt() };
 
-        // 1. 创建刷新令牌（纯字符串，尚未入库）
-        var refreshToken = CreateRefreshToken(user, DateTime.Now.AddDays(7));
-
-        // 2. 先插入 UserToken 记录（获取自增 Id）
+        // 1. 创建刷新令牌（纯字符串，尚未入库）并插入 UserToken 记录（获取自增 Id）
+        String refreshToken = null;
         UserToken ut = null;
         if (user != null)
         {
+            refreshToken = CreateRefreshToken(user, DateTime.Now.AddDays(7));
             ut = new UserToken
             {
                 Token = refreshToken,

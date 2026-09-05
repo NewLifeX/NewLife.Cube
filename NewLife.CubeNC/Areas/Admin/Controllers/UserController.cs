@@ -163,8 +163,12 @@ public class UserController : EntityController<User, UserModel>
         {
             var list = new List<User>();
             var entity = FindByID(id);
-            entity.Password = null;
-            if (entity != null) list.Add(entity);
+            if (entity != null)
+            {
+                // 不向浏览器输出密码
+                entity.Password = null;
+                list.Add(entity);
+            }
             return list;
         }
 
@@ -238,15 +242,12 @@ public class UserController : EntityController<User, UserModel>
 
         if (post)
         {
-            // 非系统管理员，禁止修改任何人的角色
+            // 非系统管理员，禁止修改任何人的角色（含租户上下文；租户成员角色分配走 TenantUserController）
             var user = ManageProvider.User;
-            if (_tenantContext.TenantId == 0)//非租户验证
+            if (!user.Roles.Any(e => e.IsSystem) && entity is IEntity entity2)
             {
-                if (!user.Roles.Any(e => e.IsSystem) && entity is IEntity entity2)
-                {
-                    if (entity2.Dirtys["RoleID"]) throw new Exception("禁止修改角色！");
-                    if (entity2.Dirtys["RoleIds"]) throw new Exception("禁止修改角色！");
-                }
+                if (entity2.Dirtys["RoleID"]) throw new Exception("禁止修改角色！");
+                if (entity2.Dirtys["RoleIds"]) throw new Exception("禁止修改角色！");
             }
         }
 
@@ -682,6 +683,9 @@ public class UserController : EntityController<User, UserModel>
             if (att != null) user.Avatar = ViewHelper.GetAttachmentUrl(att);
         }
 
+        // 资料编辑不走密码流程：清除 Password 脏标记，防止构造请求绕过密码哈希直接明文入库
+        (user as IEntity).Dirtys["Password"] = false;
+
         user.Update();
 
         return Info(user.ID);
@@ -823,6 +827,12 @@ public class UserController : EntityController<User, UserModel>
 
         // 前面表单可能已经清空密码
         var user = FindByID(id);
+        if (user == null)
+        {
+            if (IsJsonRequest) return Json(1, "用户不存在");
+            return RedirectToAction("Index");
+        }
+
         //user.Password = "nopass";
         user.Password = null;
         user.SaveWithoutValid();

@@ -154,6 +154,7 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
     public ActionResult Up(Int32 id)
     {
         var menu = FindByID(id);
+        if (menu == null) return RedirectToAction("Index");
 
         if (Valid(menu, DataObjectMethodType.Update, true))
             menu.Up();
@@ -184,6 +185,7 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
     public ActionResult Down(Int32 id)
     {
         var menu = FindByID(id);
+        if (menu == null) return RedirectToAction("Index");
 
         if (Valid(menu, DataObjectMethodType.Update, true))
             menu.Down();
