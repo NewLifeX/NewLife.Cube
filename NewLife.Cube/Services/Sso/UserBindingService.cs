@@ -663,11 +663,12 @@ public class UserBindingService : IUserBindingService
                 var fi2 = dest.AsFile();
                 if (fi2.Exists && fi2.Length > 0)
                 {
-                    var firstByte = new Byte[1];
+                    // CA2022：FileStream.Read 可能部分读取（不准确），单字节判断改用 ReadByte；块级 using 确保关闭文件后再移动
+                    Int32 b = -1;
                     using (var fs = fi2.OpenRead())
-                        fs.Read(firstByte, 0, 1);
+                        b = fs.ReadByte();
 
-                    if (firstByte[0] == (Byte)'<')
+                    if (b == (Byte)'<')
                     {
                         var svgDest = set.AvatarPath.CombinePath(user.ID + ".svg").GetBasePath();
                         if (System.IO.File.Exists(svgDest))
