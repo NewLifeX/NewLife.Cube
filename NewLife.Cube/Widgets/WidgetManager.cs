@@ -13,6 +13,7 @@ public class WidgetManager
 {
     #region 属性
     private IDictionary<String, WidgetAttribute> _widgets;
+    private readonly Object _lock = new();
 
     /// <summary>参数分类：组件启用开关。UserID=0 全局，Name=组件名，Value=0/1</summary>
     public const String EnableCategory = "Widget.Enable";
@@ -32,30 +33,36 @@ public class WidgetManager
     /// <returns>组件名称到元数据的字典</returns>
     public IDictionary<String, WidgetAttribute> Scan()
     {
+        // 双检锁：并发首次访问仅扫描一次程序集，避免重复构建
         if (_widgets != null) return _widgets;
 
-        var dic = new Dictionary<String, WidgetAttribute>(StringComparer.OrdinalIgnoreCase);
-        foreach (var type in AssemblyX.FindAllPlugins(typeof(IWidget), true, true))
+        lock (_lock)
         {
-            try
-            {
-                var att = type.GetCustomAttribute<WidgetAttribute>();
-                var name = att?.Name ?? type.Name.TrimSuffix("Widget");
-                if (att == null) att = new WidgetAttribute(name, type.GetDisplayName() ?? name);
+            if (_widgets != null) return _widgets;
 
-                att.Name = name;
-                att.Type = type;
-
-                dic[name] = att;
-            }
-            catch (Exception ex)
+            var dic = new Dictionary<String, WidgetAttribute>(StringComparer.OrdinalIgnoreCase);
+            foreach (var type in AssemblyX.FindAllPlugins(typeof(IWidget), true, true))
             {
-                // 单个组件扫描失败不影响其它组件
-                XTrace.WriteException(ex);
+                try
+                {
+                    var att = type.GetCustomAttribute<WidgetAttribute>();
+                    var name = att?.Name ?? type.Name.TrimSuffix("Widget");
+                    if (att == null) att = new WidgetAttribute(name, type.GetDisplayName() ?? name);
+
+                    att.Name = name;
+                    att.Type = type;
+
+                    dic[name] = att;
+                }
+                catch (Exception ex)
+                {
+                    // 单个组件扫描失败不影响其它组件
+                    XTrace.WriteException(ex);
+                }
             }
+
+            return _widgets = dic;
         }
-
-        return _widgets = dic;
     }
 
     /// <summary>获取全部组件。按角色、管理员标志与启停过滤，按用户布局排序并过滤用户隐藏，返回</summary>
