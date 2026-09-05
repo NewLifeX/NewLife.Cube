@@ -790,10 +790,13 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
             // 10分钟不活跃将会被删除
             var exp = UserOnline._.UpdateTime < DateTime.Now.AddSeconds(-secTimeout);
             var list = UserOnline.FindAll(exp, null, null, 0, 0);
+
+            // 删除前读取在线总数（Meta.Count 带短缓存，删除后再读可能返回含过期行的旧值导致重复扣减）
+            var total0 = UserOnline.Meta.Count;
             list.Delete();
 
-            // 修正在线数
-            var total = UserOnline.Meta.Count;
+            // 删除后真实在线数 = 删除前总数 - 删除行数
+            var total = total0 - list.Count;
 
             // 在线数变化时，检查是否突破历史纪录（在线新高告警，内部自行判断开关与门槛）
             if (total != _lastOnlineTotal)
@@ -816,7 +819,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
                 }
             }
 
-            _onlines = total - list.Count;
+            _onlines = total;
 
             // 设置离线
             foreach (var item in list)
