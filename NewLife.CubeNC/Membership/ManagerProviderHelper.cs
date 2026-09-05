@@ -86,6 +86,22 @@ public static class ManagerProviderHelper
                                     var expire = set.SessionTimeout > 0 ?
                                         TimeSpan.FromSeconds(set.SessionTimeout) :
                                         TimeSpan.FromHours(2);
+
+                                    // 先颁发带 jti 的新令牌（建立 UserToken 记录），SaveCookie 才能把可吊销令牌写入 Cookie，
+                                    // 避免走 IssueToken 兜底生成无记录、无法吊销的孤儿令牌
+                                    context.IssueLoginToken(user, expire);
+
+                                    // 吊销旧令牌对应 UserToken，防止滑动续期不断累积不可吊销的令牌
+                                    if (!jwt.Id.IsNullOrEmpty() && Int32.TryParse(jwt.Id, out var oldId))
+                                    {
+                                        var oldUt = UserToken.FindByID(oldId);
+                                        if (oldUt != null && oldUt.Enable)
+                                        {
+                                            oldUt.Enable = false;
+                                            oldUt.SaveAsync(3_000);
+                                        }
+                                    }
+
                                     provider.SaveCookie(user, expire, context);
 
                                     XTrace.WriteLine("滑动刷新：用户[{0}]令牌有效期剩余[{1}]秒，已刷新续期至[{2}]秒", user, remaining.TotalSeconds.ToInt(), expire.TotalSeconds.ToInt());
