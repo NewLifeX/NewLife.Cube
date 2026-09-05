@@ -20,7 +20,7 @@ namespace NewLife.Cube.Services;
 /// <summary>用户服务</summary>
 /// <remarks>
 /// 基础用户服务：用户名密码登录、注册（含三方）、会话、在线统计、账号注销。
-/// 验证码登录/注册/找回/绑定等增强能力由 <see cref="VerifyCodeService"/> 与 <see cref="AuthEnhancedService"/> 承载（MVC精简版不编译）。
+/// 验证码登录/注册/找回/绑定等增强能力由 <c>VerifyCodeService</c> 与 <c>AuthEnhancedService</c> 承载（MVC精简版不编译）。
 /// </remarks>
 /// <param name="passwordService">密码服务</param>
 /// <param name="cacheProvider">缓存提供者</param>
@@ -80,7 +80,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
     #endregion
 
     #region 登录
-    /// <summary>统一登录入口。基础服务仅支持用户名密码登录，验证码登录见 <see cref="AuthEnhancedService.Login"/></summary>
+    /// <summary>统一登录入口。基础服务仅支持用户名密码登录，验证码登录见 <c>AuthEnhancedService.Login</c></summary>
     /// <param name="loginModel">登录模型</param>
     /// <param name="httpContext">HTTP上下文</param>
     /// <returns>登录结果，包含Token信息或错误信息</returns>
@@ -395,7 +395,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
     #endregion
 
     #region 注册
-    /// <summary>统一注册入口。基础服务支持用户名密码/OAuth注册，验证码注册见 <see cref="AuthEnhancedService.Register"/></summary>
+    /// <summary>统一注册入口。基础服务支持用户名密码/OAuth注册，验证码注册见 <c>AuthEnhancedService.Register</c></summary>
     /// <param name="model">注册模型</param>
     /// <param name="httpContext">HTTP上下文</param>
     /// <returns>注册并登录结果</returns>

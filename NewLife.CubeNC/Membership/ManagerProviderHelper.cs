@@ -367,7 +367,7 @@ public static class ManagerProviderHelper
         return config != null && IsValidTenant(config.TenantId) ? config.TenantId : -1;
     }
 
-    /// <summary>X-App-Id 对应的应用（OAuthConfig）已配置但未设置租户（TenantId&le;0）。存量小程序过渡态，供影子期兼容放行判断。应用未配置返回 false</summary>
+    /// <summary>X-App-Id 对应的应用（OAuthConfig）已配置但未设置租户（TenantId&lt;=0）。存量小程序过渡态，供影子期兼容放行判断。应用未配置返回 false</summary>
     /// <param name="appId">应用标识</param>
     /// <returns>应用存在且租户未设置返回 true</returns>
     private static Boolean IsAppIdConfiguredWithoutTenant(String appId)
