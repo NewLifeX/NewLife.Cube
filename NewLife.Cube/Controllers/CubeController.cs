@@ -164,11 +164,11 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     private static readonly String _OS = Environment.OSVersion + "";
 
     /// <summary>服务器信息，用户健康检测</summary>
-    /// <param name="state">状态信息</param>
+    /// <param name="state">状态信息。可选，用于回显校验</param>
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
-    public ActionResult Info(String state)
+    public ActionResult Info(String state = null)
     {
         var asmx = AssemblyX.Entry;
         var conn = HttpContext.Connection;
@@ -597,8 +597,10 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     /// <summary>获取菜单树（按当前登录用户角色过滤，仅返回该用户有权访问的菜单）</summary>
     /// <param name="module">模块名称，如 Admin；为空时返回全部菜单</param>
     /// <returns>菜单树</returns>
+    // 参数必须给默认值 = null：.NET 8+ [ApiController] 会把无默认值的非空引用类型参数（Nullable=annotations 下 String 视为不可空）
+    // 隐式推断为 [Required]，导致前端无参调用 /Cube/MenuTree 报 “The module field is required.”，登录后左侧无菜单。
     [HttpGet]
-    public ActionResult MenuTree(String module) => Json(0, null, BuildMenuTree(module));
+    public ActionResult MenuTree(String module = null) => Json(0, null, BuildMenuTree(module));
 
     private IList<MenuTree> BuildMenuTree(String module)
     {
