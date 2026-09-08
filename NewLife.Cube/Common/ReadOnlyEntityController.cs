@@ -115,14 +115,23 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     }
 
     /// <summary>查看单行数据</summary>
+    /// <remarks>
+    /// 同时支持两种风格：
+    /// 1) RESTful：<c>/api/[area]/[controller]/{id}</c>，如 /api/Admin/User/21；
+    /// 2) 传统 Action+查询参数：<c>/api/[area]/[controller]/Detail?id=</c>，类级 Route 已生成该字面量路由。
+    /// </remarks>
     /// <param name="id">主键。可能为空（表示添加），所以用字符串而不是整数</param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("查看{type}")]
     [HttpGet]
     [HttpGet("/api/[area]/[controller]/{id}")]
-    public virtual ApiResponse<TEntity> Detail(String id)
+    public virtual ApiResponse<TEntity> Detail(String id = null)
     {
+        // id 必须给默认值 null：action 同时挂有 {id} 模板时，[ApiController] 会把 id 推断为 [FromRoute]
+        // （仅从路由取值），且无默认值的非空引用类型会被隐式推断 [Required]；
+        // 导致传统前端 /Detail?id=xxx 因路由取不到 id 直接报 “The id field is required.”（与 MenuTree/Info 同类）。
+        // 设默认值后走下方 query 兜底，RESTful 路径风格不受影响。
         if (id.IsNullOrEmpty()) id = Request.Query["id"].ToString();
         if (id.IsNullOrEmpty()) throw new XException("缺少主键参数！");
         var entity = FindData(id);
