@@ -128,7 +128,7 @@ export interface AuthConfig {
 export interface RouterConfig {
   /** 路由命名风格：pascal（大驼峰，默认）| kebab（短横线） */
   routeNamingStyle: 'pascal' | 'kebab';
-  /** 路由模式：hash（默认，兼容静态部署）| history（需服务端 fallback 支持） */
+  /** 路由模式：hash（兼容静态部署）| history（默认，需服务端 fallback 支持） */
   history?: 'hash' | 'history';
 }
 

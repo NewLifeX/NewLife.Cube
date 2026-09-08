@@ -13,7 +13,7 @@ import { getConfig } from '../configure';
 const routerConfig = getConfig();
 const historyMode = routerConfig.router?.history;
 const router: Router = createRouter({
-  history: historyMode === 'history' ? createWebHistory() : createWebHashHistory(),
+  history: historyMode === 'hash' ? createWebHashHistory() : createWebHistory(),
   routes,
 });
 
