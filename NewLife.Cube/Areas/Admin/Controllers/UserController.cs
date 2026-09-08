@@ -166,8 +166,11 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         {
             var list = new List<User>();
             var entity = FindByID(id);
-            entity.Password = null;
-            if (entity != null) list.Add(entity);
+            if (entity != null)
+            {
+                entity.Password = null;
+                list.Add(entity);
+            }
             return list;
         }
 
