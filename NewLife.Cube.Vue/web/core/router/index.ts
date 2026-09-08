@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, type Router } from 'vue-router';
+import { createRouter, createWebHashHistory, createWebHistory, type Router } from 'vue-router';
 import routes from '../routes';
 import { initAppRoutes, isRoutesInitialized } from '../microAppRouter';
 import { useUserStore } from '../stores/user';
@@ -9,9 +9,11 @@ import { registerMenuRoutes } from '../utils/menuRoutes';
 import { normalizeMenuUrl, type RouteNamingStyle } from '../utils/url';
 import { getConfig } from '../configure';
 
-// 创建路由实例
+// 创建路由实例：支持通过配置切换 hash / history 模式，默认 hash 保持向后兼容
+const routerConfig = getConfig();
+const historyMode = routerConfig.router?.history;
 const router: Router = createRouter({
-  history: createWebHistory(),
+  history: historyMode === 'history' ? createWebHistory() : createWebHashHistory(),
   routes,
 });
 
@@ -118,18 +120,20 @@ router.beforeEach(async (to, from, next) => {
         }
       }
 
-      // 如果有菜单但路由未注册，自动注册路由
-      if (menuStore.hasMenus && !menuStore.routesRegistered && menuStore.flatMenus) {
-        const registered = registerMenuRoutes(router, menuStore.flatMenus, to.path);
+      // 如果有菜单但路由未注册，自动注册路由（仅首次），随后以全新 location 重定向触发重新解析
+      if (
+        menuStore.hasMenus &&
+        !menuStore.routesRegistered &&
+        menuStore.flatMenus?.length
+      ) {
+        registerMenuRoutes(router, menuStore.flatMenus, to.path);
         menuStore.markRoutesRegistered();
-        // 如果当前路径是刚注册的动态路由，需要重新导航
-        if (registered?.currentPathNeedsRefresh) {
-          // 使用与 registerMenuRoutes 一致的命名风格
-          const { router: { routeNamingStyle } } = getConfig();
-          const toStyle: RouteNamingStyle = routeNamingStyle === 'kebab' ? 'kebab' : 'pascal';
-          pendingNavigationPath = normalizeMenuUrl(to.fullPath, toStyle);
-          return next(false); // 取消当前导航，让 afterEach 触发重新导航
-        }
+        // 动态路由刚刚注册完毕，重试本次导航。不能用 next(false) 依赖 afterEach 重导航——
+        // 被取消的导航不触发 afterEach，会导致 pendingNavigationPath 永远不被消费、页面停在旧路由。
+        // 也不能 next(to)：Vue Router 4 视为「冗余导航」而中止（URL 变但组件不渲染）；
+        // 必须用全新 location 对象强制重导航，加 force 避免同 path 被优化。
+        next({ path: to.path, query: to.query, hash: to.hash, replace: true, force: true } as any);
+        return;
       }
 
       // 更新当前活动菜单

@@ -2,6 +2,10 @@ import type { Router } from 'vue-router';
 import type { FlatMenuItem } from '@newlifex/cube-vue/core/stores/menu';
 import { normalizeMenuUrl, toKebabCase, type RouteNamingStyle } from './url';
 import { getConfig } from '../configure';
+// 后备视图（列表/表单）直接静态引入，避免动态 import(`@newlifex/cube-vue/core/views/${type}.vue`)
+// 在 Vite 开发服务器下因别名+变量模板无法解析而静默失败（主内容区空白）。
+import AutoPage from '../views/AutoPage.vue';
+import FormView from '../views/form.vue';
 
 /** 视图组件异步加载器 */
 type ComponentLoader = () => Promise<{ default: unknown; }>;
@@ -83,7 +87,7 @@ function fromCacheOrResolve(
  *
  * @param path 路由路径，如 /IoT/Device/Product 或 /ProcessCard/ProcessCard
  */
-function resolvePageComponent(path: string): ComponentLoader {
+export function resolvePageComponent(path: string): ComponentLoader {
   // 解析路径：去掉开头的 /，分割各层级
   const segments = path.replace(/^\/+/, '').split('/').filter(Boolean);
   if (segments.length === 0) return getFallbackComponent('form');
@@ -241,10 +245,39 @@ function resolveViewComponent(
 }
 
 /**
+ * 判断指定路径是否存在自定义视图（非 AutoPage 后备）。
+ * 用于「无菜单匹配」但 MVC 中仍可被链接访问到的隐藏页（如 Configs/ConfigData）。
+ */
+export function hasMatchingCustomView(path: string): boolean {
+  const segments = path.replace(/^\/+/, '').split('/').filter(Boolean);
+  if (segments.length === 0) return false;
+
+  if (segments.length >= 3) {
+    const [appName, ...viewPathSegments] = segments;
+    const candidates = buildViewDirCandidates([
+      viewPathSegments,
+      [appName, ...viewPathSegments],
+    ]);
+    return scanViewModules(candidates).length > 0;
+  }
+
+  // 1~2段：先直接匹配
+  const directCandidates = buildViewDirCandidates([segments]);
+  if (scanViewModules(directCandidates).length > 0) return true;
+
+  // 再拼接已知应用名
+  const allCombinations: string[][] = knownAppNames.map(
+    (app) => [app, ...segments],
+  );
+  const comboCandidates = buildViewDirCandidates(allCombinations);
+  return scanViewModules(comboCandidates).length > 0;
+}
+
+/**
  * 获取后备组件（无匹配视图时使用）
  */
 function getFallbackComponent(type: 'index' | 'form'): ComponentLoader {
-  return () => import(`@newlifex/cube-vue/core/views/${type}.vue`);
+  return () => Promise.resolve({ default: type === 'index' ? AutoPage : FormView });
 }
 
 /**
