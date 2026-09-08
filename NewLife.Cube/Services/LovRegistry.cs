@@ -425,6 +425,20 @@ public static class LovRegistry
         // 控制器级别 [Route] 特性
         var controllerRoute = controllerType.GetCustomAttributes(inherit: true)
             .FirstOrDefault(a => a.GetType().FullName == routeAttrName);
+        // 解析区域段（无区域特性则视为无区域，约定路由退化为 /api/{controller}/{action}）
+        // 匹配逻辑与 InferLovList 保持一致：AreaBase 继承 AreaAttribute，需按继承链/类型名判断
+        var areaAttr = controllerType?.GetCustomAttributes(inherit: true)
+            .FirstOrDefault(a =>
+            {
+                var t = a.GetType();
+                var baseFullName = t.BaseType?.FullName;
+                return t.FullName == "Microsoft.AspNetCore.Mvc.AreaAttribute"
+                    || baseFullName == "Microsoft.AspNetCore.Mvc.AreaAttribute"
+                    || t.Name == "AreaBase"
+                    || (baseFullName != null && baseFullName.EndsWith("AreaBase"));
+            });
+        var area = GetAreaName(areaAttr);
+
         if (controllerRoute != null)
         {
             var template = GetAttributeProperty(controllerRoute, "Template") as String;
@@ -432,6 +446,8 @@ public static class LovRegistry
             {
                 template = template.Trim('/');
                 // 替换令牌
+                if (template.Contains("[area]"))
+                    template = template.Replace("[area]", area);
                 if (template.Contains("[controller]"))
                     template = template.Replace("[controller]", controllerName);
                 if (template.Contains("[action]"))
@@ -482,12 +498,32 @@ public static class LovRegistry
             segments.Add(actionTemplate.Trim('/'));
         }
 
+        // 约定路由（无显式 [Route]）需补区域段：api/{area}/{controller}/{action}
+        // 若 segments 首个元素已含区域路由（如 [area]/... 已被替换），则不重复添加
+        var areaPrefix = area.IsNullOrEmpty() ? "" : area + "/";
+        if (!area.IsNullOrEmpty() && segments.Count > 0 &&
+            !segments[0].StartsWith(area + "/", StringComparison.OrdinalIgnoreCase) &&
+            !segments[0].StartsWith("api/", StringComparison.OrdinalIgnoreCase))
+        {
+            segments.Insert(0, area);
+        }
+
         var path = String.Join("/", segments);
 
-        // 拼接 API 前缀（WebAPI版固定 /api，写死不配置）
-        path = $"api/{path}";
+        // 拼接 API 前缀（WebAPI版固定 /api，写死不配置），避免重复前缀
+        if (!path.StartsWith("api/", StringComparison.OrdinalIgnoreCase))
+            path = "api/" + path.TrimStart('/');
 
         return "/" + path;
+    }
+
+    /// <summary>从区域特性解析区域名（AreaBase 继承 AreaAttribute，优先 RouteValue 再 Name）</summary>
+    private static String GetAreaName(Object? areaAttr)
+    {
+        if (areaAttr == null) return "";
+        var area = GetAttributeProperty(areaAttr, "RouteValue") as String;
+        if (area.IsNullOrEmpty()) area = GetAttributeProperty(areaAttr, "Name") as String;
+        return area ?? "";
     }
 
     /// <summary>从 HTTP 方法特性推断请求方式（GET/POST/PUT/DELETE/PATCH）</summary>
