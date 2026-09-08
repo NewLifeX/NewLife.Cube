@@ -22,18 +22,25 @@ public class LoginModel : ICubeModel
     /// <summary> 记住登录状态 </summary>
     public Boolean Remember { get; set; }
 
-    /// <summary> 挑战标识。调用 /Auth/Challenge 获取，登录时原样回传 </summary>
-    public String ChallengeId { get; set; }
+    /// <summary> 挑战标识。调用 /Auth/Challenge 获取，登录时原样回传；仅当关闭明文密码（AllowPlainPassword=false）时必填 </summary>
+    /// <remarks>
+    /// 必须声明为可空：项目开启 Nullable(annotations) 且控制器带 [ApiController] 时，
+    /// 无默认值的非空引用类型属性会被框架隐式推断为 [Required] 并自动 400，
+    /// 导致仅在“需要验证码/挑战”时才使用的可选字段被当成必填，明文密码登录被误拦
+    /// （症状：POST /Auth/Login 报 “The Pkey field is required.” 等字段错误）。
+    /// 真实必填校验由服务层按 CubeSetting 配置执行，返回准确的业务提示。
+    /// </remarks>
+    public String? ChallengeId { get; set; }
 
     /// <summary>验证码 ID。调用 /Auth/Captcha 获取，登录时原样回传；仅在登录场景需要验证码时必填 </summary>
-    public String CaptchaId { get; set; }
+    public String? CaptchaId { get; set; }
 
     /// <summary>验证码用户输入。仅在登录场景需要验证码时必填 </summary>
-    public String CaptchaCode { get; set; }
+    public String? CaptchaCode { get; set; }
 
     /// <summary> 兼容旧版字段，建议改用 ChallengeId </summary>
     [Obsolete("Use ChallengeId instead")]
-    public String Pkey { get => ChallengeId; set => ChallengeId = value; }
+    public String? Pkey { get => ChallengeId; set => ChallengeId = value; }
 }
 
 
