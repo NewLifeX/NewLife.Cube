@@ -123,8 +123,8 @@ function handleExport() {
 <style scoped>
 .custom-search-bar {
   padding: 16px;
-  background: #fff;
-  border-radius: 4px;
+  background: var(--el-bg-color);
+  border-radius: var(--el-border-radius-base);
 }
 </style>
 ```
@@ -170,10 +170,20 @@ function handleBatchDelete() {
 <style scoped>
 .custom-toolbar {
   padding: 12px 16px;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid var(--el-border-color-lighter);
 }
 </style>
 ```
+
+## 红线 / 禁止自行发挥
+
+> 以下为历史踩坑固化的强制约束，**落实时严格照办，禁止凭记忆或"想当然"自行发挥**：
+
+1. **Section 文件名必须 PascalCase 大写开头**：`ListSearchBar.vue`/`ListToolbar.vue` 合法；`index.vue`/`form.vue`/`listSearchBar.vue` 不被扫描（Vite 插件只收大写开头文件，且排除 `index.vue`）。命名错 = 覆盖不生效且无明显报错。
+2. **Section 只能覆盖框架预设的覆盖点**：先用「常用 Section 覆盖点」表确认框架有对应槽位，再写组件；不要臆造不存在的 Section 名。
+3. **样式规范（硬约束）**：Section 组件里也禁止硬编码色值、禁止私占 `--cube-layout-*`、禁止在 `scoped style` 覆盖 `--el-*`、禁止定义任何自定义 CSS 变量；统一用 `--el-*` token（如本技能示例中的 `.custom-search-bar`/`.custom-toolbar` 已改为 `var(--el-bg-color)`、`var(--el-border-color-lighter)` 等）。
+4. **不要手写路由注册 Section**：Section 由 `initApp()` 的 `registerPageSections()` 自动注册（虚拟模块 `virtual:@newlifex/cube-vue-sections`），不要在 `routes.ts`/`main.ts` 里手动引入。
+5. **与父组件通信只允许 `defineEmits` 约定事件**：不要直接改父组件内部状态，按示例用 `search`/`reset`/`refresh`/`open` 等事件回传。
 
 ## 与父组件通信
 

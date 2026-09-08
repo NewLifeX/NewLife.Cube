@@ -67,6 +67,23 @@ Cube 前端新增页面技能。根据后端控制器定义，在前端对应应
 
 > **判断口诀**：`apps/` 里区域是"文件夹"还是"应用名"？是文件夹 → 情形 A（两级）；是应用名 → 情形 B（一级）。
 
+### 情形 C：独立宿主（vite.config 在项目根，无 apps/ 子应用）
+
+若项目是**独立 Vue 应用**（`vite.config.ts` 直接放在项目根目录，`apps/` 下没有子应用的 `vite.config.ts`/`package.json`），则必须**手动新建** `apps/<app-name>/` 层级作为视图容器，否则框架的 `import.meta.glob('/apps/*/src/views/**/index.vue')` 扫不到页面：
+
+```
+{前端项目}/apps/{app-name}/src/views/{area}/{controller}/index.vue
+```
+
+- `app-name` 可任取（如 `myapp`），仅作目录标识，不要求是真实微应用（无需配 `package.json`/`main.ts`）。
+- 建议用情形 A 的两级结构（`area/controller/index.vue`）。
+- 一个根目录下可以有多个 `apps/*`，彼此独立。
+
+**示例**：Demo 区域、Demo 控制器，独立宿主 app 名为 `myapp`
+→ `apps/myapp/src/views/demo/demo/index.vue`
+
+> 此情形同样适用情形 A 的判断口诀（区域是文件夹 → 两级）。
+
 ## 工作流程
 
 ### 第一步：确认准备
@@ -124,13 +141,16 @@ apps/{area-app}/src/views/{controller}/index.vue
 
 **必须先提供原型参考**（原型 HTML / 截图 / 详细描述），再根据原型实现 Vue 组件。
 
-**样式规范**：自定义页面**必须**使用 Element Plus CSS token（`--el-*`）或 Cube Layout token（`--cube-layout-*`），禁止硬编码色值与自定义 token。详见 [references/api-and-styling.md](references/api-and-styling.md#自定义页面样式规范)。
+**样式规范**：自定义页面**必须**使用 Element Plus CSS token（`--el-*`），配合自己的 class 名进行样式编排；禁止定义任何自定义 CSS 变量、禁止硬编码色值、禁止私占框架保留的 `--cube-layout-*` 命名空间。详见 [references/api-and-styling.md](references/api-and-styling.md#自定义页面样式规范)。
 
 **API 对接**：通过 `usePageApi(area, controller)` composable 对接后端 CRUD，无需为每个模块手写 `api/xxx.ts`：
 
 ```ts
+import { usePageApi } from '@newlifex/cube-vue/core/composables/useCubeApi';
+
 const api = usePageApi("Demo", "Demo");
 const res = await api.getList({ pageIndex: 0, pageSize: 20 });
+// res.data: 当前页数据数组; res.page: { pageIndex, pageSize, totalCount } 分页信息
 ```
 
 > 完整 usePageApi 方法表、使用示例、错误处理约定、完整示例、枚举字段处理详见 [references/api-and-styling.md](references/api-and-styling.md#自定义页面对接后端-api)。
@@ -141,16 +161,42 @@ const res = await api.getList({ pageIndex: 0, pageSize: 20 });
 - 刷新浏览器，框架自动加载新页面
 - 页面路径为 `/{area}/{controller}`，无需手动输入路由配置
 
+### 第六步（收尾·强制）：派子代理审查整改
+
+> **这是技能流程的强制收尾步骤，不得跳过。** 落实完页面后，必须派一个**子代理**对本次新增/修改的前端文件做合规审查，确保不重复历史踩坑：
+
+1. 派子代理检查本次页面是否满足全部红线（见下「红线 / 禁止自行发挥」），重点核对：
+   - 页面路径是否落在正确的 `apps/<app-name>/src/views/...` 下（独立宿主是否已建 `apps/` 层级）；
+   - API 是否走 `usePageApi`（真实导出在 `@newlifex/cube-vue/core/composables/useCubeApi`），**没有**误用不存在的 `@/composables/usePageApi` 路径；
+   - 是否误手写路由 / 改 `main.ts` 注册；
+   - 样式是否全部用 Element Plus `--el-*` token（或框架保留的 `--cube-layout-*`），**无自定义 CSS 变量、无硬编码色值、无私占 `--cube-layout-*`**。
+2. 子代理返回问题清单后，按红线逐项整改，直至 0 问题、lint 通过。
+3. 整改完成后，本技能流程才算结束。
+
+> 目的：把"落实后自查"固化进流程，保证下次再跑技能不会重复发生相同问题。
+
 ## 注意事项
 
 1. **图标名**必须是 Element Plus 图标 PascalCase 名称（如 `Files`、`Setting`），不可用 `fa-` 旧格式
 2. **字段名**必须与实体属性名一致，大小写敏感
 3. **Area 注册**：Controller 必须加上 `[XxxArea]` 特性
 4. **路由由框架自动注册**：不要在 `routes.ts` 中写路由，不要修改 `main.ts`
-5. **页面自动加载**：框架扫描 `apps/*/src/views/**/index.vue` 自动匹配后端菜单路由
+5. **页面自动加载**：`menuRoutes.ts` 通过 `import.meta.glob('/apps/*/src/views/**/index.vue')` 扫描并自动注册路由，匹配后端菜单。注意：Vite 插件的 `scanSectionFiles`（虚拟模块 `virtual:*-sections`）是**另一套机制**，只会收集 PascalCase 文件名的 Section 覆盖组件、**排除 `index.vue`**，二者不要混淆。
 6. **新增/编辑**默认通过弹窗打开，无需注册独立前端路由
 7. **API 调用**：通过 `usePageApi(area, controller)` 对接后端，不需要为每个模块建 `api/xxx.ts`
 8. **分页参数**：后端分页从 0 开始，`getList` 需传 `pageIndex: page - 1`；`totalCount` 在 `res.page.totalCount`
+
+## 红线 / 禁止自行发挥
+
+> 以下为历史踩坑固化的强制约束，**落实时严格照办，禁止凭记忆或"想当然"自行发挥**：
+
+1. **页面自动加载，禁止手写路由 / 改 `main.ts`**：框架通过 `menuRoutes.ts` 的 `import.meta.glob('/apps/*/src/views/**/index.vue')` 自动注册路由，匹配后端菜单。不要写 `routes.ts`、不要改 `main.ts`、不要配菜单（后端 `[Menu]` 特性控制）。
+2. **`usePageApi` 真实导出路径是 `useCubeApi`**：import 必须写 `import { usePageApi } from '@newlifex/cube-vue/core/composables/useCubeApi'`，**禁止**写成 `@/composables/usePageApi` 或 `@newlifex/cube-vue/core/composables/usePageApi`（这些路径不存在）。
+3. **独立宿主必须建 `apps/` 层级**：若 `vite.config.ts` 在项目根目录（无 `apps/<name>/` 子应用），页面必须放进 `apps/<app-name>/src/views/...`，否则扫不到。先按「页面目录结构」判断情形 A / B / C，再落文件。
+4. **样式规范（硬约束）**：自定义页面只用 Element Plus `--el-*` token 配合自己的 class 名编排样式；**禁止**定义任何自定义 CSS 变量（包括 `--{布局名}-*` 之类），禁止硬编码色值，禁止私占框架保留的 `--cube-layout-*` 命名空间。详见 [references/api-and-styling.md](references/api-and-styling.md#自定义页面样式规范) 与 cube-layout 技能。
+5. **`useCubeApi` 内置 `onFieldError` 会 `ElMessage.error`**：业务页**不要**再对字段错误重复弹窗；只在需要时处理业务级错误。
+6. **不要臆造后端字段名 / Area 名**：字段名必须与实体属性名大小写一致；Area 必须加 `[XxxArea]` 特性；分页从 0 开始，`getList` 传 `pageIndex: page - 1`，总条数取 `res.page.totalCount`。
+7. **先有原型再写组件**：自定义页面（看板/图表等）必须先拿到原型参考（HTML/截图/描述），不要凭空发挥布局。
 
 ## 参考文件
 

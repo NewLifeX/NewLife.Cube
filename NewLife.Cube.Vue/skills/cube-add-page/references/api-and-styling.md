@@ -158,7 +158,7 @@ static ProductController()
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { usePageApi } from "@/composables/usePageApi";
+import { usePageApi } from '@newlifex/cube-vue/core/composables/useCubeApi';
 
 const api = usePageApi("Demo", "Demo");
 
@@ -222,7 +222,7 @@ onMounted(() => fetchList());
 | 自定义页 | `usePageApi` / `@newlifex/api-core` 的 `cubeApi` | ⚠️ 取决于是否挂 `onBusinessError` | 见下方说明 |
 
 - **默认模板页**：全局拦截器已统一弹错，业务 `catch` 不要再 `ElMessage.error`，否则重复弹两次。正确写法：`catch` 只留 `console.error`，`finally` 复位 loading。
-- **自定义页（usePageApi）**：默认没挂 `onBusinessError`，全局不会自动弹错。`catch` **必须**自己处理错误提示；推荐在 `src/api/index.ts` 里统一挂一次 `onBusinessError`，之后各页面 `catch` 只做复位。
+- **自定义页（usePageApi）**：`useCubeApi` 内部已挂 `onFieldError`（字段级错误会 `ElMessage.error` 弹窗）。因此自定义页 `catch` 同样**不要**再 `ElMessage.error`，否则重复弹窗；`catch` 只做复位 / `console.error`，与默认模板页一致。如需自定义业务错误文案，可在 `src/api/index.ts` 挂一次 `onBusinessError`，但不要在页面内重复弹。
 - **通用铁律**：`ElMessage.success(...)` 这类**成功**提示可保留；**失败**提示只许全局一处弹。
 
 > 删除操作例外：`ElMessageBox.confirm` 取消时 reject 的是字符串 `'cancel'`，所以 `catch` 里仍需 `if (err !== 'cancel')` 判断。
@@ -280,7 +280,7 @@ public class DemoController : EntityController<DemoEntity>
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { ElMessage } from "element-plus";
-import { usePageApi } from "@/composables/usePageApi";
+import { usePageApi } from '@newlifex/cube-vue/core/composables/useCubeApi';
 
 const api = usePageApi("Demo", "Demo");
 const list = ref<Record<string, unknown>[]>([]);
@@ -330,7 +330,7 @@ Cube 框架的自动表格和下拉选择已内置枚举处理：
 
 ```ts
 import { createEnumLabel, useEnumLookup } from "@/composables/useEnumLabel";
-import { usePageApi } from "@/composables/usePageApi";
+import { usePageApi } from '@newlifex/cube-vue/core/composables/useCubeApi';
 
 const api = usePageApi("Equipments", "Equipment");
 

@@ -123,7 +123,7 @@ const filterStatus = ref('');
 ```vue
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { usePageApi } from '@/composables/usePageApi';
+import { usePageApi } from '@newlifex/cube-vue/core/composables/useCubeApi';
 import LovSelect from '@newlifex/cube-vue/core/components/LovSelect.vue';
 
 const api = usePageApi("AreaName", "ControllerName");
@@ -394,6 +394,16 @@ resolveLovType('List.xxx')  // => 'LIST'
 前端：shouldDirectRequest=false → fetchLovListData() → 后端 /Admin/Lov/ListData → ILovListDataProxy 转发
 → 外部地址隐藏、规避跨域；可 IOC 覆盖 DefaultLovListDataProxy 自定义转发
 ```
+
+## 红线 / 禁止自行发挥
+
+> 以下为历史踩坑固化的强制约束，**落实时严格照办，禁止凭记忆或"想当然"自行发挥**：
+
+1. **`usePageApi` 真实导出路径是 `useCubeApi`**：`import { usePageApi } from '@newlifex/cube-vue/core/composables/useCubeApi'`，**禁止**写成 `@/composables/usePageApi` 或 `@newlifex/cube-vue/core/composables/usePageApi`（这些路径不存在，见第三步方式 B 示例）。
+2. **值集码只出现在后端，前端不硬编码 LovCode**：前端通过 GetPage 元数据「发现」lovCode，或在后端 `[LovList]`/`LovCode` 配置。禁止在前端把 `Enum.Xxx` / `List.Xxx` 硬编码成字符串字面量（除非已知且稳定的内置值集）。
+3. **LovCode 前缀必须正确**：枚举型以 `Enum.` 开头（用 `typeof(TEnum).FullName` 生成完全限定名），列表型以 `List.` 开头；手写前缀易拼错导致值集查不到。
+4. **`requestUrl` 以 `/` 开头时禁用代理**：同应用接口（同源）必须 `proxyRequest=false`，前端直连；只有跨域或需隐藏地址的外部接口才 `proxyRequest=true`。即便写了 `proxyRequest=true`，框架也会因 `/` 开头强制直连。
+5. **样式规范**：LOV 相关自定义 UI 仍须用 Element Plus `--el-*` token（或框架保留的 `--cube-layout-*`），禁止自定义 CSS 变量、禁止硬编码色值、禁止私占 `--cube-layout-*`。
 
 ## 注意事项
 

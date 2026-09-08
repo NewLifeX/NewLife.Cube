@@ -63,9 +63,11 @@ initApp();
 > **重要**：布局样式**必须**使用 Element Plus CSS token（`--el-*`）或 Cube Layout token（`--cube-layout-*`），**禁止硬编码色值、自定义 CSS 变量或第三方 token 体系**。
 
 核心规则：
-- ✅ 必须使用 `--el-*` 或 `--cube-layout-*`，通过 `var(--xxx)` 引用
-- ✅ 布局专属变量以 `--{布局名}-` 前缀，基于 Layer 1 语义变量派生
-- ❌ 禁止硬编码色值、禁止使用已废弃的 `--bg-*`/`--text-*` 等自定义 token
+- ✅ 必须使用 `--el-*`（Element Plus 官方 Token），通过 `var(--xxx)` 引用
+- ✅ 可使用 `--cube-layout-*`（框架布局保留 Token），不私占、不改写其语义
+- ✅ 布局样式优先用 Tailwind 工具类编排（如 `flex items-center gap-2 bg-[var(--el-color-primary)]`）；需要取色 / 语义时直接用 `--el-*` 或框架保留的 `--cube-layout-*` token，**禁止自定义任何 CSS 变量**（包括 `--{布局名}-*` 这类命名）
+- ❌ 禁止硬编码色值（如 `#1a2b3c`、`rgb(...)`、`rgba(...)`）
+- ❌ 禁止自定义任何 CSS 变量（不得新增 `--cube-layout-xxx`，也不得新增 `--{布局名}-*` 之类自定义 token）
 - ❌ 禁止在组件 `scoped style` 中覆盖 `--el-*` 变量
 
 > 📖 完整 Token 表、三层架构规范、示例对照：[references/css-token-spec.md](references/css-token-spec.md)
@@ -98,13 +100,54 @@ initApp();
 | `main`     | `@newlifex/cube-vue/core/layouts/MainLayout/`  | 侧边栏 + 内容区，Element Plus 风格 |
 | `top-menu` | `@newlifex/cube-vue/core/layouts/TopMenu/`     | 顶部导航栏 + 内容区                |
 
-## 布局插槽
+## 布局插槽与结构约定
 
-| 插槽名    | 说明                 |
-| --------- | -------------------- |
-| `default` | 主内容区（页面内容） |
-| `sidebar` | 侧边栏内容           |
-| `header`  | 顶部导航内容         |
+`RootLayout` 是统一外壳，**只向布局组件注入两个插槽**：
+
+| 插槽名    | 说明                 | 是否必须 |
+| --------- | -------------------- | -------- |
+| `default` | 主内容区（页面内容，由 RootLayout 用 keep-alive + transition 包裹） | 是 |
+| `tabs`    | 标签页视图（声明后 RootLayout 注入内置 TabsView；不声明则不显示） | 否（可选） |
+
+> 重要纠正：旧文档写 `sidebar` / `header` 是插槽——那是错的。`RootLayout` 不会向布局注入 `sidebar`/`header` 插槽。布局组件必须自己渲染侧边栏与顶栏（参照 `CyberLayout/index.vue` 直接 import 框架组件 `LogoBrand`/`SearchBar`/`MenuItem`/`UserProfile`/`ThemeSwitcher`/`ModeSwitcher`/`LayoutSwitcher`/`NotificationBell` 并 `useMenuStore()` 拉取菜单）。不要把侧边栏/顶栏写成等待 RootLayout 注入的空 `<slot name="sidebar"/>`，否则运行时不渲染、无菜单、无法导航。
+
+布局组件标准骨架：
+
+```vue
+<template>
+  <div class="my-layout">
+    <aside class="side">
+      <LogoBrand />
+      <SearchBar />
+      <ElScrollbar><MenuItem :menu="menu" /></ElScrollbar>
+      <UserProfile />
+      <ThemeSwitcher /><ModeSwitcher /><LayoutSwitcher /><NotificationBell />
+    </aside>
+
+    <slot name="tabs" />
+
+    <main class="content"><slot /></main>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useMenuStore } from '@newlifex/cube-vue/core/stores/menu';
+import { ElScrollbar } from 'element-plus';
+import LogoBrand from '@newlifex/cube-vue/core/components/LogoBrand.vue';
+import SearchBar from '@newlifex/cube-vue/core/components/SearchBar.vue';
+import MenuItem from '@newlifex/cube-vue/core/components/MenuItem.vue';
+import UserProfile from '@newlifex/cube-vue/core/components/UserProfile.vue';
+import ThemeSwitcher from '@newlifex/cube-vue/core/components/ThemeSwitcher.vue';
+import ModeSwitcher from '@newlifex/cube-vue/core/components/ModeSwitcher.vue';
+import LayoutSwitcher from '@newlifex/cube-vue/core/components/LayoutSwitcher.vue';
+import NotificationBell from '@newlifex/cube-vue/core/components/NotificationBell.vue';
+
+const menu = computed(() => useMenuStore().menu);
+</script>
+```
+
+布局专属装饰层（如星空背景、悬浮导航坞）可作为布局内部 UI 自由添加，不影响插槽约定。
 
 ## 运行时切换布局
 
@@ -116,13 +159,9 @@ setLayout('main-layout');
 
 ## 路由级别指定布局
 
-```typescript
-const routes = [{
-  path: '/dashboard',
-  component: () => import('./views/Dashboard.vue'),
-  meta: { layout: 'your-layout' },
-}];
-```
+> 框架路由由后端菜单自动生成，**不需要**手写 `vue-router` 的 `routes` 数组。布局的切换通过 `registerLayout(option, true)` 或运行时 `setLayout(id)`（LayoutSwitcher 组件）完成，而非在路由 `meta` 里指定。
+
+若确有"某路由用特定布局"的强需求，可结合运行时 `setLayout` 在页面 `onMounted` 中切换，但常规项目不推荐。
 
 ## 场景判断速查
 
@@ -135,6 +174,21 @@ const routes = [{
 > **核心规则**：无论哪种场景，都必须调用 `registerLayout` 才能让布局生效。
 
 ---
+
+## 红线 / 禁止自行发挥
+
+> 以下为历史踩坑固化的强制约束，**落实时严格照办，禁止凭记忆或"想当然"自行发挥**：
+
+1. **`registerLayout` 参数必须是 `label` + `icon`，禁止用 `name`**：框架 `LayoutOption` 以 `label`（展示名）+ `icon`（图标字符/组件）识别布局，`name` 不是合法字段，`vue-tsc` 会失败且布局无法注册。也不要再用旧版 `provide(app, LayoutKey, ...)`——`RootLayout` 不读取它。
+2. **`RootLayout` 只注入 `tabs` 与 `default` 两个插槽**：`sidebar` / `header` **不是插槽**。布局组件必须**自己渲染**侧边栏与顶栏（import 框架组件 `LogoBrand`/`SearchBar`/`MenuItem`/`UserProfile`/`ThemeSwitcher`/`ModeSwitcher`/`LayoutSwitcher`/`NotificationBell` 并 `useMenuStore()` 拉菜单）。禁止把侧边栏/顶栏写成等待注入的空 `<slot name="sidebar"/>`——那会导致运行时不渲染、无菜单、无法导航。
+3. **CSS Token 规范（硬约束）**：
+   - ✅ 必须用 `--el-*`（Element Plus 官方 Token），经 `var(--xxx)` 引用；
+   - ✅ 布局样式优先用 Tailwind 工具类（`flex` / `p-4` / `bg-[var(--el-color-primary)]` 等）编排；取色 / 语义只用 `--el-*` 或框架保留的 `--cube-layout-*` token，**不得新增任何自定义 CSS 变量**（含 `--{布局名}-*`）；
+   - ❌ 禁止硬编码色值（`#1a2b3c`、`rgb(...)`、`rgba(...)`、`hsla(...)`）；
+   - ❌ 禁止自定义任何 CSS 变量（不得新增 `--cube-layout-xxx`，也不得新增 `--{布局名}-*` 之类自定义 token）；
+   - ❌ 禁止在 `scoped style` 中覆盖 `--el-*` 变量。
+4. **不要手写路由 `routes` 为布局而设**：框架路由由后端菜单自动生成，布局切换靠 `registerLayout(option, true)` 或运行时 `setLayout(id)`，不在路由 `meta` 里指定布局。
+5. **多布局共存时每个都要 `registerLayout`**：无论新增到用户项目还是框架 `core/layouts/`，都必须调用 `registerLayout` 才能生效，漏注册等于没加。
 
 ## 参考文件
 
