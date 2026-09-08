@@ -112,10 +112,14 @@ function normalizeLoginResult(data: LoginResult): LoginResult {
  * @throws 网络错误或 HTTP 状态码非 200 时抛出异常
  */
 export async function fetchLoginConfig(): Promise<ApiResponse<LoginConfig>> {
-  // 请求库响应拦截器已展开为 ApiResponse（{ code, message, data }），此处断言其形态
-  const json = (await request.get('/Auth/LoginConfig', {
+  // 请求库响应拦截器（unwrapResponse:true）会把 axios response 展开；
+  // 实测返回形态为 { data: ApiResponse }（多包一层 data），此处做兼容提取真正的 ApiResponse。
+  const raw = (await request.get('/Auth/LoginConfig', {
     timeout: REQUEST_TIMEOUT,
-  })) as unknown as ApiResponse<LoginConfig>;
+  })) as unknown as { data?: ApiResponse<LoginConfig> } & ApiResponse<LoginConfig>;
+
+  const json: ApiResponse<LoginConfig> =
+    raw && raw.code === undefined && raw.data ? raw.data : raw;
 
   // 归一化字段名（oAuth / providers → oauth）
   if (json?.data) {
@@ -145,12 +149,16 @@ export async function loginByPassword(
   username: string,
   password: string,
 ): Promise<ApiResponse<LoginResult>> {
-  // 请求库响应拦截器已展开为 ApiResponse（{ code, message, data }），此处断言其形态
-  const json = (await request.post(
+  // 请求库响应拦截器（unwrapResponse:true）会把 axios response 展开；
+  // 实测返回形态为 { data: ApiResponse }（多包一层 data），此处做兼容提取真正的 ApiResponse。
+  const raw = (await request.post(
     '/Auth/Login',
     { username, password },
     { timeout: REQUEST_TIMEOUT },
-  )) as unknown as ApiResponse<LoginResult>;
+  )) as unknown as { data?: ApiResponse<LoginResult> } & ApiResponse<LoginResult>;
+
+  const json: ApiResponse<LoginResult> =
+    raw && raw.code === undefined && raw.data ? raw.data : raw;
 
   // 归一化字段名（snake_case / PascalCase → camelCase）
   if (json?.data) {
