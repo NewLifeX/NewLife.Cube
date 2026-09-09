@@ -265,4 +265,36 @@ describe('FormContent 字段类型 → 控件渲染矩阵（§3.2 全矩阵）',
     expect(w.findComponent(ColorPicker).exists()).toBe(true);
     expect(w.findComponent(IconSelector).exists()).toBe(true);
   });
+
+  it('disabled=true 时控件禁用且不展示必填星号（查看详情只读）', async () => {
+    const metas = [
+      fm({ name: 'Name', typeName: 'String', nullable: false }),
+      fm({ name: 'Status', typeName: 'String', nullable: false, lovCode: ENUM_LOV }),
+    ];
+    const w = mount(FormContent, {
+      props: { fields: metas, modelValue: { Name: 'demo', Status: '1' }, disabled: true },
+      global: { plugins: [ElementPlus] },
+    });
+    await flushPromises();
+    // 文本输入禁用（el-input 根节点带 is-disabled）
+    expect(w.find('.el-input.is-disabled').exists()).toBe(true);
+    expect(w.find('.el-input.is-disabled input').attributes('disabled')).toBeDefined();
+    // LOV 下拉禁用
+    const lov = w.findComponent(LovSelect);
+    expect(lov.exists()).toBe(true);
+    expect(lov.props('disabled')).toBe(true);
+    // 必填星号不渲染（查看模式无填写语义）
+    expect(w.find('.fmc-required').exists()).toBe(false);
+  });
+
+  it('disabled 缺省（undefined）时控件可编辑且必填星号正常渲染', async () => {
+    const metas = [fm({ name: 'Name', typeName: 'String', nullable: false })];
+    const w = mount(FormContent, {
+      props: { fields: metas, modelValue: { Name: 'demo' } },
+      global: { plugins: [ElementPlus] },
+    });
+    await flushPromises();
+    expect(w.find('.el-input.is-disabled').exists()).toBe(false);
+    expect(w.find('.fmc-required').exists()).toBe(true);
+  });
 });
