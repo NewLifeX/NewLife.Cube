@@ -77,6 +77,11 @@ export function resolveControl(field: FieldMeta): ControlType {
     return field.multiple || itemType === 'multipleselect' ? 'lovMulti' : 'lov';
   }
 
+  // 3.1 无 lovCode 但后端下发 dataSource（枚举字典）→ 本地下拉，提交数字避免枚举反序列化失败
+  if (field.dataSource && Object.keys(field.dataSource).length > 0) {
+    return 'select';
+  }
+
   // 4. 已知 CLR 类型
   if (typeName === 'Boolean') return 'switch';
   if (typeName === 'DateTime') return 'datePicker';
@@ -201,11 +206,14 @@ export function isFullWidthControl(control: ControlType): boolean {
  * 判断字段是否必填（表单星号展示与提交前校验共用同一判定，避免两处口径漂移）。
  *
  * 规则：非可空 且 非主键 且 控件不是只读 —— 与 FormContent 的必填星号保持一致。
+ * 例外：Boolean 开关天然有值（false=否 即默认态），无需强制用户操作，故不计必填。
  *
  * @param field 字段元数据
  * @returns true 表示必填
  */
 export function isRequiredField(field: FieldMeta): boolean {
+  // Boolean 开关恒有值（默认 false），强制必填只会要求用户多余拨动一次开关
+  if (field.typeName === 'Boolean') return false;
   return !field.nullable && !field.primaryKey && resolveControl(field) !== 'readonly';
 }
 
@@ -238,6 +246,18 @@ export function serializeSubmitModel(
     }
   }
   return out;
+}
+
+/**
+ * 枚举选项值归一：dataSource 的键为字符串（如 "1"），而提交目标模型可能是枚举 / Int32，
+ * 纯数字键转 number（System.Text.Json 把数字转枚举）；非数字键（如名称型字典）原样返回。
+ *
+ * @param key dataSource 的键
+ * @returns number（纯数字键）或原字符串
+ */
+export function enumOptionValue(key: string): string | number {
+  if (/^-?\d+$/.test(key)) return Number(key);
+  return key;
 }
 
 /**

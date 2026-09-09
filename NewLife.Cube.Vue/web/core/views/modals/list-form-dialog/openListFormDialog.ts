@@ -172,6 +172,16 @@ export function openListFormDialog(options: OpenListFormDialogOptions): Promise<
     // 输入同步时把 DOM 值重置回旧值，表现为"输入框打不进字"。
     const formData = reactive<Record<string, unknown>>({ ...(options.modelValue ?? {}) });
 
+    // 新增模式下，Boolean 开关字段默认注入 false（“否”），
+    // 用户未操作开关也能以 false 正常提交，避免缺省 undefined 导致必填误报或后端收 null
+    if (mode === 'add' && options.fields) {
+      for (const f of options.fields) {
+        if (f.typeName === 'Boolean' && (formData[f.name] === undefined || formData[f.name] === null)) {
+          formData[f.name] = false;
+        }
+      }
+    }
+
     // 内容组件 props 用 shallowReactive 承载：ModalContainer 渲染时会展开
     // componentProps 并读取各属性，顶层字段（loading）变化即可触发重渲染；
     // 用 shallow 是为了不让 fields 数组被深度代理污染。

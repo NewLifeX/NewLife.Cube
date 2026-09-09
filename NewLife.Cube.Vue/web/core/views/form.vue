@@ -39,6 +39,7 @@ interface BackendField {
   readOnly?: boolean;
   lovCode?: string;
   multiple?: boolean;
+  dataSource?: Record<string, string>;
 }
 
 interface Props {
@@ -107,6 +108,7 @@ function backendFieldsToFormFields(fields: BackendField[]): FieldMeta[] {
       readOnly: f.readOnly,
       lovCode: f.lovCode,
       multiple: f.multiple,
+      dataSource: f.dataSource,
     }));
 }
 

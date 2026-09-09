@@ -10,7 +10,7 @@
  */
 import { computed, defineAsyncComponent } from 'vue';
 import type { FieldMeta, ControlType } from '../../types/field';
-import { resolveControl, isFullWidthControl, resolveNumberPrecision, resolveNumberStep } from '../../utils/fieldControl';
+import { resolveControl, isFullWidthControl, resolveNumberPrecision, resolveNumberStep, enumOptionValue } from '../../utils/fieldControl';
 import { toPascalAndCamel } from '../../utils/url';
 import LovSelect from '../../components/LovSelect/index.vue';
 import Uploader from '../../components/Uploader.vue';
@@ -51,6 +51,8 @@ function controlOf(field: FieldMeta): ControlType {
 }
 
 function isRequired(field: FieldMeta): boolean {
+  // Boolean 开关恒有值（默认 false），与 fieldControl.isRequiredField 口径一致，避免星号与校验漂移
+  if (field.typeName === 'Boolean') return false;
   return !field.nullable && !field.primaryKey && controlOf(field) !== 'readonly';
 }
 
@@ -163,6 +165,22 @@ function toMultiArray(val: unknown): string[] {
             :model-value="toNumber(getValue(field.name))"
             @update:model-value="(v: number | undefined) => updateNumber(field.name, v)"
           />
+
+          <!-- 枚举 / 字典下拉（后端下发 dataSource） -->
+          <el-select
+            v-else-if="controlOf(field) === 'select'"
+            class="fmc-select"
+            :placeholder="field.description || '请选择'"
+            :model-value="getValue(field.name) as string | number | undefined"
+            @update:model-value="(v: string | number) => updateField(field.name, v)"
+          >
+            <el-option
+              v-for="(label, key) in field.dataSource || {}"
+              :key="key"
+              :label="label"
+              :value="enumOptionValue(key)"
+            />
+          </el-select>
 
           <!-- 布尔开关 -->
           <div v-else-if="controlOf(field) === 'switch'" class="fmc-switch-wrapper">
