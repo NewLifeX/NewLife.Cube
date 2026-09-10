@@ -380,6 +380,16 @@ public class CubeSetting : Config<CubeSetting>
     [Category("界面配置")]
     public Boolean EnableTableDoubleClick { get; set; } = true;
 
+    /// <summary>表格分隔样式。列表页数据表格的分隔风格：Light-轻量、Standard-标准（默认）、Grid-网格</summary>
+    [Description("表格分隔样式。Light-轻量（极简浅线）、Standard-标准（清晰行线，默认）、Grid-网格（完整单元格边框）")]
+    [Category("界面配置")]
+    public String TableStyle { get; set; } = "Standard";
+
+    /// <summary>表格行高密度。列表页数据表格的行高：Compact-紧凑（默认）、Normal-适中</summary>
+    [Description("表格行高密度。Compact-紧凑（默认，信息量大）、Normal-适中（呼吸感强）")]
+    [Category("界面配置")]
+    public String TableDensity { get; set; } = "Compact";
+
     /// <summary>星尘Web。星尘控制台地址，支持直达调用链 /trace?id={traceId} 或 /graph?id={traceId}</summary>
     [Description("星尘Web。星尘控制台地址，支持直达调用链 /trace?id={traceId} 或 /graph?id={traceId}")]
     [Category("界面配置")]

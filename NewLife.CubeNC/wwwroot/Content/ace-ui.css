@@ -310,12 +310,25 @@ body > .panel.panel-default {
     border-color: #d5dbe3;
 }
 
-/* 表格 */
+/* ========== 数据表格（分隔样式三档 × 行高密度两档） ==========
+   档位由 _Layout 依据 CubeSetting.TableStyle / TableDensity 在 body 注入：
+     cube-table-light / cube-table-standard / cube-table-grid
+     cube-density-compact / cube-density-normal
+   设计原则（每档"一主一辅"）：
+     · 轻量/标准档：行线为主（横向引导），无竖线，斑马纹极浅为辅；
+     · 网格档：完整单元格网格（横+竖）为唯一分隔机制，关闭斑马纹避免噪音叠加。
+   共同保留：外框 #e4e6e9 + 圆角卡片观感、表头底色 #f5f8fc。 */
 .table-responsive {
     border: none;
 }
 
 .table-data-list {
+    /* 默认=标准档 + 紧凑密度（与 CubeSetting 默认值一致，无 class 注入时兜底） */
+    --tbl-line: #e5e9ee;
+    --tbl-head-line: #e0e5ea;
+    --tbl-stripe: #fafbfc;
+    --tbl-hover: #f0f6fb;
+
     border-collapse: separate;
     border-spacing: 0;
     border: 1px solid var(--cube-border);
@@ -326,18 +339,55 @@ body > .panel.panel-default {
     margin-bottom: 0;
 }
 
-    /* 消除 table-bordered 四边边框在 separate 模式下相邻单元格叠加的双重分割线（2px），
-       仅保留下/右边框形成单线网格，外框由 .table-data-list 自身 border 提供 */
+    /* 轻量档：极简浅线（无竖线） */
+    body.cube-table-light .table-data-list {
+        --tbl-line: #eef1f4;
+        --tbl-head-line: #e4e6e9;
+        --tbl-stripe: #fbfcfd;
+        --tbl-hover: #f5f9fc;
+    }
+
+    /* 网格档：完整单元格网格（横+竖），关闭斑马纹 */
+    body.cube-table-grid .table-data-list {
+        --tbl-line: #e2e7ec;
+        --tbl-head-line: #e2e7ec;
+        --tbl-stripe: transparent;
+        --tbl-hover: #eef4fa;
+        --tbl-vline: #e2e7ec;
+    }
+
+    /* 消除 table-bordered 在 separate 模式下相邻单元格叠加的双重分割线（2px）：
+       每格仅保留底部 1px 单线（外框由 .table-data-list 自身 border 提供）；
+       竖线仅网格档开启（见下方 cube-table-grid 规则，轻量/标准档无竖线） */
     .table-data-list.table-bordered > thead > tr > th,
     .table-data-list.table-bordered > tbody > tr > td,
     .table-data-list.table-bordered > tfoot > tr > td {
         border-top: none;
         border-left: none;
+        border-right: none;
+        border-bottom: 1px solid var(--tbl-line);
+    }
+
+    /* 网格档补竖线：末列由 :not(:last-child) 排除（外框即右边界） */
+    body.cube-table-grid .table-data-list.table-bordered > thead > tr > th:not(:last-child),
+    body.cube-table-grid .table-data-list.table-bordered > tbody > tr > td:not(:last-child),
+    body.cube-table-grid .table-data-list.table-bordered > tfoot > tr > td:not(:last-child) {
+        border-right: 1px solid var(--tbl-vline);
+    }
+
+    /* 末行无下边线（外框即下边界，避免与外框叠出双线） */
+    .table-data-list.table-bordered > tbody > tr:last-child > td,
+    .table-data-list.table-bordered > tfoot > tr:last-child > td {
+        border-bottom: none;
+    }
+
+    /* 表头底线比行线略深，区分表头区 */
+    .table-data-list.table-bordered > thead > tr > th {
+        border-bottom: 1px solid var(--tbl-head-line);
     }
 
     .table-data-list > thead > tr > th {
         background: #f5f8fc;
-        border-bottom: 1px solid var(--cube-border);
         color: var(--cube-text-title);
         font-weight: 600;
         font-size: 13px;
@@ -354,24 +404,41 @@ body > .panel.panel-default {
             }
 
     .table-data-list > tbody > tr > td {
-        /* 紧凑密度：在 table-condensed(5px) 基础上收紧，配合细边框提升紧凑感 */
         padding: 4px 8px;
         font-size: 13px;
-        border-color: #f0f2f5;
         vertical-align: middle;
     }
 
+    /* 悬停行高亮（全档保留，作为行定位辅助）。nth-child(odd) 与 hover 特异性相同，
+       奇数行需单独定义 odd:hover，否则斑马纹规则会覆盖悬停效果 */
     .table-data-list > tbody > tr:hover > td {
-        background: #f7fafd;
+        background-color: var(--tbl-hover);
     }
 
     .table-data-list > tbody > tr:nth-child(odd) > td {
-        background-color: #fbfcfd;
+        background-color: var(--tbl-stripe);
     }
 
         .table-data-list > tbody > tr:nth-child(odd):hover > td {
-            background: #f2f7fc;
+            background-color: var(--tbl-hover);
         }
+
+    /* 行高密度：紧凑（默认，基础规则即紧凑；显式声明便于后续维护）/ 适中 */
+    body.cube-density-compact .table-data-list > thead > tr > th {
+        padding: 6px 8px;
+    }
+
+    body.cube-density-compact .table-data-list > tbody > tr > td {
+        padding: 4px 8px;
+    }
+
+    body.cube-density-normal .table-data-list > thead > tr > th {
+        padding: 9px 12px;
+    }
+
+    body.cube-density-normal .table-data-list > tbody > tr > td {
+        padding: 9px 12px;
+    }
 
 /* 服务器信息表格（Admin/Index/Main）名称列 */
 .table-data-list > tbody > tr > td.name {
@@ -624,6 +691,20 @@ body > .panel.panel-default {
     .form-actions .btn i {
         margin-right: 4px;
     }
+
+    /* 警示操作按钮（如用户表单的"清空密码"）：描边样式替代实底，
+       保留提示性但不与主操作（保存）竞争视觉重量；其它主题回退 Bootstrap 实底黄 */
+    .form-actions .btn-warning {
+        background: #fff;
+        border-color: #ffb752;
+        color: #d9822b;
+    }
+
+        .form-actions .btn-warning:hover {
+            background: #fff8ee;
+            border-color: #ffb752;
+            color: #d9822b;
+        }
 
 /* ========== 页脚 ========== */
 .panel-footer .runinfo {

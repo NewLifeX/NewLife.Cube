@@ -23,6 +23,12 @@
     var ver = typeof(ControllerBaseX).Assembly.GetName().Version;
 
     var dbclickEnable = pageSetting.EnableTableDoubleClick;
+
+    // 表格分隔样式与行高密度：规范化配置值（空值/非法值回退默认），输出为 body class 供 ace-ui.css 消费
+    var tableStyle = set.TableStyle;
+    if (!tableStyle.EqualIgnoreCase("Light", "Standard", "Grid")) tableStyle = "Standard";
+    var tableDensity = set.TableDensity;
+    if (!tableDensity.EqualIgnoreCase("Compact", "Normal")) tableDensity = "Compact";
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -82,7 +88,7 @@
         }
     }
 </head>
-<body>
+<body class="cube-table-@tableStyle.ToLower() cube-density-@tableDensity.ToLower()">
     <div class="panel panel-default">
         <div class="page-content">
             <section class="content-wrapper main-content clear-fix">

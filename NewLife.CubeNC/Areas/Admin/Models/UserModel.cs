@@ -23,18 +23,24 @@ public class LoginModel : ICubeModel
     /// <summary> 记住登录状态 </summary>
     public Boolean Remember { get; set; }
 
-    /// <summary> 挑战标识。调用 /Auth/Challenge 获取，登录时原样回传 </summary>
-    public String ChallengeId { get; set; }
+    /// <summary> 挑战标识。调用 /Auth/Challenge 获取，登录时原样回传；仅当关闭明文密码时必填 </summary>
+    /// <remarks>
+    /// 必须声明为可空：项目开启 Nullable 标注时，MVC 会把无默认值的非空引用类型属性隐式推断为 [Required]，
+    /// 导致仅在需要验证码/挑战时才使用的可选字段被当成必填，明文密码登录被误拦
+    /// （症状：登录报 "The CaptchaId field is required." 等字段错误）。
+    /// 真实必填校验由服务层按 CubeSetting 配置执行。参见 API 版同名模型（已按此修复）。
+    /// </remarks>
+    public String? ChallengeId { get; set; }
 
     /// <summary> 兼容旧版字段，建议改用 ChallengeId </summary>
     [Obsolete("Use ChallengeId instead")]
-    public String Pkey { get => ChallengeId; set => ChallengeId = value; }
+    public String? Pkey { get => ChallengeId; set => ChallengeId = value; }
 
-    /// <summary>图片验证码ID。调用 /Auth/Captcha 获取</summary>
-    public String CaptchaId { get; set; }
+    /// <summary>图片验证码ID。调用 /Auth/Captcha 获取；仅在登录场景需要验证码时必填</summary>
+    public String? CaptchaId { get; set; }
 
-    /// <summary>图片验证码答案</summary>
-    public String CaptchaCode { get; set; }
+    /// <summary>图片验证码答案。仅在登录场景需要验证码时必填</summary>
+    public String? CaptchaCode { get; set; }
 }
 
 
@@ -94,11 +100,12 @@ public class AuthRegisterModel : ICubeModel
     /// <summary>OAuth 临时令牌（OAuthBind 时必填）</summary>
     public String OAuthToken { get; set; }
 
-    /// <summary>图片验证码ID。调用 /Auth/Captcha 获取</summary>
-    public String CaptchaId { get; set; }
+    /// <summary>图片验证码ID。调用 /Auth/Captcha 获取；仅在注册场景需要验证码时必填</summary>
+    /// <remarks>可空声明以避免 MVC 隐式 Required 误拦，原因同登录模型</remarks>
+    public String? CaptchaId { get; set; }
 
-    /// <summary>图片验证码答案</summary>
-    public String CaptchaCode { get; set; }
+    /// <summary>图片验证码答案。仅在注册场景需要验证码时必填</summary>
+    public String? CaptchaCode { get; set; }
 
     /// <summary>兼容旧版字段，建议改用 ConfirmPassword</summary>
     [Obsolete("Use ConfirmPassword instead")]
