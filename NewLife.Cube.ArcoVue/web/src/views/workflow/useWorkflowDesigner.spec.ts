@@ -106,3 +106,17 @@ describe('validateGraph 快速校验', () => {
     expect(validateGraph(g)).toEqual([]);
   });
 });
+
+describe('切换审批人类别清空旧 Id', () => {
+  it('users → roles 后 ids 为空', () => {
+    let g = applyNodePatch(newDefaultGraph(), 'n1', {
+      to: { kind: 'users', users: [1], roles: [], departments: [] },
+    });
+    g = applyNodePatch(g, 'n1', {
+      to: { kind: 'roles', users: [], roles: [], departments: [] },
+    });
+    const to = toApprove(g.nodes).data.to as { kind: string; roles: number[] };
+    expect(to.kind).toBe('roles');
+    expect(to.roles ?? []).toEqual([]);
+  });
+});

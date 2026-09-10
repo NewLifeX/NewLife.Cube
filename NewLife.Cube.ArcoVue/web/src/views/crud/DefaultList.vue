@@ -250,6 +250,17 @@
                 分享
               </a-button>
             </ShareViewPopover>
+            <!-- OA 审批「批量提交」：仅列表视图；放在「高级」组合按钮前 -->
+            <a-button
+              v-if="workflowToolbarSubmit.visible && activeViewKind === 'table'"
+              class="tb-workflow-submit"
+              :disabled="workflowToolbarSubmit.disabled"
+              :title="workflowToolbarSubmit.tooltip || undefined"
+              @click="openWorkflowSubmit()"
+            >
+              <icon-park type="send" />
+              批量提交
+            </a-button>
             <a-dropdown v-if="advancedVisible" trigger="click" position="bottom">
               <a-button>
                 高级 <icon-park type="down" />
@@ -342,17 +353,6 @@
                 </a-doption>
               </template>
             </a-dropdown>
-            <!-- OA 审批「提交审批」（OSC-26090347f1）：在自动化之后（高级下拉），类型启用才渲染；无勾选/无权限禁用 -->
-            <a-button
-              v-if="workflowToolbarSubmit.visible"
-              class="tb-workflow-submit"
-              :disabled="workflowToolbarSubmit.disabled"
-              :title="workflowToolbarSubmit.tooltip || undefined"
-              @click="openWorkflowSubmit()"
-            >
-              <icon-park type="send" />
-              提交审批
-            </a-button>
           </a-space>
         </div>
 
@@ -433,7 +433,11 @@
               :enable-table-double-click="enableTableDoubleClick"
               :automation-buttons="automationButtons"
               :ops-custom-links="opsCustomLinks"
-              :workflow-buttons="workflowEnabled ? { submit: true, progress: true } : undefined"
+              :workflow-buttons="
+                workflowEnabled && activeViewKind === 'table'
+                  ? { submit: true, progress: true }
+                  : undefined
+              "
               :show-expand="chrome.expandRow"
               :enable-sort="chrome.showSort"
               :sort-state="activeSort"
@@ -622,12 +626,14 @@
       :field-errors="fieldErrors"
       :layout="drawerFormLayout"
       :ops-custom-links="opsCustomLinks"
+      :workflow-enabled="workflowEnabled"
       @toggle-collapse="onToggleCollapse"
       @save="handleSave"
       @edit="drawerMode = 'edit'"
       @prev="navigateRecord(-1)"
       @next="navigateRecord(1)"
       @ops-link="(link) => formModel && onOpsLinkClick(link, formModel)"
+      @open-workflow="openWorkflowProgressById"
     />
 
     <!-- 操作列「更多」溢出（VTable canvas 外挂） -->
@@ -842,6 +848,7 @@ const {
   wfProgressInstanceId,
   wfProgressVisible,
   openWorkflowSubmit,
+  openWorkflowProgressById,
   onWorkflowSubmitted,
   cardListKey,
   activeCardMapping,

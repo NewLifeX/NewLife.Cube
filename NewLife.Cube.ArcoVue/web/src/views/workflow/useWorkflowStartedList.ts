@@ -3,6 +3,7 @@ import type { WorkflowInstanceItem } from '@cube/api-core';
 import { Message } from '@arco-design/web-vue';
 import cubeApi from '@/api';
 import { formatApiError } from '@/core/utils/apiError';
+import { wfIdOf } from './useWorkflowProgress';
 
 /**
  * 我发起的审批页编排（OSC-26090347f1 T8c）：实例列表加载 + 进度抽屉状态。.vue 只做模板绑定。
@@ -10,14 +11,15 @@ import { formatApiError } from '@/core/utils/apiError';
 export function useWorkflowStartedList() {
   const rows = ref<WorkflowInstanceItem[]>([]);
   const loading = ref(false);
-  const progressInstanceId = ref<number | null>(null);
+  const progressInstanceId = ref<string | null>(null);
   const progressVisible = ref(false);
 
   async function load() {
     loading.value = true;
     try {
       const res = await cubeApi.workflow.started({ pageSize: 50 });
-      rows.value = res.data ?? [];
+      const list = res?.data;
+      rows.value = Array.isArray(list) ? list : [];
     } catch (err) {
       rows.value = [];
       Message.error(formatApiError(err, '加载失败'));
@@ -31,7 +33,9 @@ export function useWorkflowStartedList() {
   }
 
   function openProgress(row: WorkflowInstanceItem) {
-    progressInstanceId.value = row.id;
+    const id = wfIdOf(row.id);
+    if (!id) return;
+    progressInstanceId.value = id;
     progressVisible.value = true;
   }
 

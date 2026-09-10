@@ -10,6 +10,7 @@ import type { WorkflowTaskItem } from '@cube/api-core';
 import { dueText, modeLabel, taskStatusMeta, taskTitle } from './useWorkflowTaskList';
 import { useWorkflowTaskPage } from './useWorkflowTaskPage';
 import WorkflowProgressPanel from './WorkflowProgressPanel.vue';
+import './workflowChrome.css';
 
 const route = useRoute();
 const kind = computed(() => (String(route.path).toLowerCase().endsWith('/done') ? 'done' : 'todo'));
@@ -33,6 +34,12 @@ const {
   openProgress,
   openRecord,
   refresh,
+  rowOpinionVisible,
+  rowOpinionKind,
+  rowOpinionText,
+  rowOpinionSaving,
+  openRowOpinion,
+  confirmRowOpinion,
 } = useWorkflowTaskPage(kind.value);
 
 /** 勾选仅限可处理任务（Pending/Active 且属我） */
@@ -47,28 +54,35 @@ function modeTagColor(mode?: string): string {
 function dueMeta(record: WorkflowTaskItem) {
   return dueText(record.dueTime);
 }
+
+function isSelected(id: string | number) {
+  return selected.value.includes(String(id));
+}
 </script>
 
 <template>
-  <div class="wf-task-page">
-    <div class="wf-task-page__head">
-      <h3 class="wf-task-page__title">{{ pageTitle }}</h3>
-      <a-space v-if="kind === 'todo'">
-        <a-button type="primary" size="small" :disabled="!hasBatch" @click="openBatch('approve')">
-          批量同意
-        </a-button>
-        <a-button status="danger" size="small" :disabled="!hasBatch" @click="openBatch('reject')">
-          批量驳回
-        </a-button>
-        <a-button size="small" @click="refresh()">刷新</a-button>
-      </a-space>
-      <a-button v-else size="small" @click="refresh()">刷新</a-button>
-    </div>
+  <div class="wf-task-page list-surface">
+    <div class="list-panel list-panel--table">
+      <!-- 工具栏与表格同处一个面板（多维视图） -->
+      <div class="list-topbar">
+        <h3 class="wf-task-page__title">{{ pageTitle }}</h3>
+        <a-space v-if="kind === 'todo'">
+          <a-button type="primary" size="small" :disabled="!hasBatch" @click="openBatch('approve')">
+            批量同意
+          </a-button>
+          <a-button status="danger" size="small" :disabled="!hasBatch" @click="openBatch('reject')">
+            批量驳回
+          </a-button>
+          <a-button size="small" @click="refresh()">刷新</a-button>
+        </a-space>
+        <a-button v-else size="small" @click="refresh()">刷新</a-button>
+      </div>
 
-    <a-spin :loading="loading">
+      <a-spin :loading="loading" style="width: 100%; display: block">
       <a-table
         :data="rows"
-        :row-key="(r: WorkflowTaskItem) => r.id"
+        :loading="loading"
+        :row-key="(r: WorkflowTaskItem) => String(r.id)"
         :pagination="false"
         :bordered="false"
         size="small"
@@ -83,7 +97,7 @@ function dueMeta(record: WorkflowTaskItem) {
           >
             <template #cell="{ record }">
               <a-checkbox
-                :model-value="selected.includes(record.id)"
+                :model-value="isSelected(record.id)"
                 :disabled="!selectable(record)"
                 @change="(v: unknown) => toggleSelect(record.id, !!v)"
                 @click.stop
@@ -133,9 +147,19 @@ function dueMeta(record: WorkflowTaskItem) {
               </a-tag>
             </template>
           </a-table-column>
-          <a-table-column title="操作" :width="80">
+          <a-table-column title="操作" :width="kind === 'todo' ? 180 : 80">
             <template #cell="{ record }">
-              <a-button type="text" size="mini" @click.stop="openProgress(record)">进度</a-button>
+              <a-space :size="4">
+                <template v-if="kind === 'todo' && selectable(record)">
+                  <a-button type="text" size="mini" status="success" @click.stop="openRowOpinion(record, 'approve')">
+                    审批
+                  </a-button>
+                  <a-button type="text" size="mini" status="danger" @click.stop="openRowOpinion(record, 'reject')">
+                    驳回
+                  </a-button>
+                </template>
+                <a-button type="text" size="mini" @click.stop="openProgress(record)">进度</a-button>
+              </a-space>
             </template>
           </a-table-column>
         </template>
@@ -143,7 +167,7 @@ function dueMeta(record: WorkflowTaskItem) {
           <a-empty :description="kind === 'todo' ? '暂无待办' : '暂无已办记录'" />
         </template>
       </a-table>
-    </a-spin>
+      </a-spin>
 
     <!-- 批量同意/驳回意见 -->
     <a-modal
@@ -155,19 +179,24 @@ function dueMeta(record: WorkflowTaskItem) {
       <a-textarea v-model="batchComment" :max-length="500" placeholder="意见（可选）" allow-clear />
     </a-modal>
 
+    <a-modal
+      v-model:visible="rowOpinionVisible"
+      :title="rowOpinionKind === 'approve' ? '审批' : '驳回'"
+      :on-before-ok="confirmRowOpinion"
+      :ok-loading="rowOpinionSaving"
+    >
+      <a-textarea v-model="rowOpinionText" :max-length="500" placeholder="意见（可选）" allow-clear />
+    </a-modal>
+
     <WorkflowProgressPanel v-model="progressVisible" :instance-id="progressInstanceId" />
+    </div>
   </div>
 </template>
 
 <style scoped>
 .wf-task-page {
-  padding: 16px;
-}
-.wf-task-page__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
+  /* 内边距/背景由共享 .list-surface/.list-panel 承担 */
+  min-height: 0;
 }
 .wf-task-page__title {
   margin: 0;

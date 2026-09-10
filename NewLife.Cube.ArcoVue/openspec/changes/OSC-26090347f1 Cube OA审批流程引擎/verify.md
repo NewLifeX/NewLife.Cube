@@ -48,7 +48,10 @@ AC-12（混 TypePath/复合主键/N>100）、AC-18 由后端校验/引擎实现�
 
 ### implementation-audit
 
-- （空）
+- **2026-09-10 审计 + 自动补齐**：对照 proposal/IA/design/功能清单 WF-1..4。
+- **已修**：G-04 或签候选待办可见（`FindTodoByUser`/`CountTodoByUser`）；G-08 多定义 StartFilter 任一命中 + 锁策略不一致省略 `lockPolicy`；G-11 Claim/Transfer/Cc/超时 reject 单测；侧栏 `EnsureMenus`（既有未提交改动纳入）；顶栏审批槽+角标；列表 `__wfStatus` 列；RecordDrawer 审批 Tab。
+- **回归**：`FullyQualifiedName~Workflow` 31/31；vitest workflow 相关 28/28。
+- **仍无法闭环**：G-01 跨进程 DB 唯一约束（后续 OSC）；G-05 意见附件；G-06/AC-01 Meta 探测与 Amd-2 文档对齐；G-07 T11 宿主冒烟；常用语管理 UI。
 
 ### code-review
 

@@ -10,6 +10,12 @@ export interface RecipientOption {
   displayName: string;
 }
 
+/** 把 a-select 的单选标量 / 多选数组归一成正整数 Id 列表 */
+export function normalizeSelectIds(value: unknown): number[] {
+  const arr = Array.isArray(value) ? value : value == null || value === '' ? [] : [value];
+  return arr.map(Number).filter((n) => Number.isFinite(n) && n > 0);
+}
+
 /** 归一任意来源接收人行（Automation/实体列表 键兼容） */
 export function normalizeRecipient(row: Record<string, unknown>): RecipientOption | null {
   const id = Number(row.id ?? row.Id ?? row.iD ?? 0);

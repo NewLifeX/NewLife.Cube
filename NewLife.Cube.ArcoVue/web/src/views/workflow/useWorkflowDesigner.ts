@@ -311,8 +311,8 @@ export function useWorkflowDesigner() {
   const selectedToKind = computed<RecipientKind>({
     get: () => wfRecipientTo(selectedNode.value?.data?.to).kind as RecipientKind,
     set: (kind: RecipientKind) => {
-      const ids = wfRecipientTo(selectedNode.value?.data?.to).ids;
-      patchSelected({ to: wfRecipientToJson(selectedNode.value?.data?.to, ids, kind) });
+      // 切换用户/角色/部门时清空已选，避免旧 Id 落到新类别上导致下拉无法选
+      patchSelected({ to: wfRecipientToJson(undefined, [], kind) });
     },
   });
   const selectedToIds = computed({

@@ -35,7 +35,10 @@ public static class WorkflowPageOverlay
         if (user == null) return dict;
 
         dict["definitionCount"] = defs.Count;
-        dict["lockPolicy"] = defs[0].LockPolicy ?? WorkflowStatuses.LockFull;
+        // 多定义时若锁策略不一致不下发单一误导值（行级锁以在途实例定义为准）
+        var policies = defs.Select(d => d.LockPolicy.IsNullOrEmpty() ? WorkflowStatuses.LockFull : d.LockPolicy)
+            .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        if (policies.Count == 1) dict["lockPolicy"] = policies[0];
         // 登录且对该实体有 Detail 才可发起（类型级开关，行级在 GetList 再判）
         dict["canStart"] = CanDetail(user, typePath);
         return dict;
@@ -92,7 +95,10 @@ public static class WorkflowPageOverlay
         }
 
         var typeCanStart = CanDetail(user, np);
-        var startFilter = defs[0].StartFilter.IsNullOrEmpty() ? null : AutomationFilter.ParseViewFilter(defs[0].StartFilter);
+        // 多定义：行级 canStart 对「任一」已发布定义 StartFilter 命中即可（提交时再选 definitionId，G-08）
+        var filters = defs
+            .Select(d => d.StartFilter.IsNullOrEmpty() || d.StartFilter == "{}" ? null : AutomationFilter.ParseViewFilter(d.StartFilter))
+            .ToList();
 
         foreach (var row in list)
         {
@@ -107,9 +113,11 @@ public static class WorkflowPageOverlay
                 running = inst.Status == WorkflowStatuses.Running;
             }
             row.SetItem("__wfStatus", status);
-            row.SetItem("__wfInstanceId", instanceId);
-            var canStart = !running && typeCanStart;
-            if (canStart && startFilter != null) canStart = AutomationFilter.Match(row, startFilter);
+            row.SetItem("__wfInstanceId", instanceId > 0 ? instanceId.ToString() : "0");
+            // 审批中 / 已通过：不可再发起（驳回/撤回可再发起）
+            var canStart = !running && status != "approved" && typeCanStart;
+            if (canStart && filters.Count > 0)
+                canStart = filters.Any(f => f == null || AutomationFilter.Match(row, f));
             row.SetItem("__wfCanStart", canStart);
         }
     }

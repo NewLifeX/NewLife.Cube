@@ -2,7 +2,7 @@ import { computed, reactive, ref, watch, type Ref } from 'vue';
 import type { WorkflowPhrase } from '@cube/api-core';
 import { Message } from '@arco-design/web-vue';
 import cubeApi from '@/api';
-import { actionLabel, useWorkflowProgress } from './useWorkflowProgress';
+import { actionLabel, useWorkflowProgress, wfIdOf, type WfId } from './useWorkflowProgress';
 import type { RecipientKind } from './recipient';
 
 /**
@@ -12,11 +12,11 @@ import type { RecipientKind } from './recipient';
 export function useWorkflowProgressPanel(input: {
   /** 抽屉可见性（computed） */
   visible: Ref<boolean>;
-  /** 目标实例 Id（getter，避免 prop 直读） */
-  instanceId: () => number | null | undefined;
+  /** 目标实例 Id（getter，雪花 string） */
+  instanceId: () => WfId | null | undefined;
 }) {
   /** 当前可见实例 Id（抽屉关闭置空停止加载） */
-  const activeInstanceId = ref<number | null>(null);
+  const activeInstanceId = ref<string | null>(null);
 
   /** 意见弹层（同意/驳回/撤回共用） */
   const opinionVisible = ref(false);
@@ -37,10 +37,9 @@ export function useWorkflowProgressPanel(input: {
   const targetSaving = ref(false);
 
   watch(
-    () => (input.visible.value ? input.instanceId() ?? null : null),
+    () => (input.visible.value ? wfIdOf(input.instanceId()) || null : null),
     (v) => {
-      activeInstanceId.value = v ?? null;
-      // 切换实例时重置操作弹层
+      activeInstanceId.value = v;
       opinionText.value = '';
       targetRecipients.kind = 'users';
       targetRecipients.ids = [];
@@ -83,7 +82,10 @@ export function useWorkflowProgressPanel(input: {
           : opinionKind.value === 'approve'
             ? await wf.approve(opinionText.value)
             : await wf.reject(opinionText.value);
-      if (ok) opinionVisible.value = false;
+      if (ok) {
+        opinionVisible.value = false;
+        await wf.load();
+      }
       return ok;
     } finally {
       saving.value = false;
@@ -124,7 +126,10 @@ export function useWorkflowProgressPanel(input: {
     }
   }
 
-  /** 时间轴条目：发起意见 + 全部评论 */
+  /**
+   * 时间轴：优先展示「发起流程」合成条（摘要/标题/发起意见）；
+   * 跳过 comments 中 action=start，避免与合成条重复。
+   */
   const timelineItems = computed(() => {
     const items: {
       key: string;
@@ -135,16 +140,24 @@ export function useWorkflowProgressPanel(input: {
     }[] = [];
     const d = wf.detail.value;
     if (!d) return items;
-    if (d.startComment || d.createTime) {
+    const comments = d.comments ?? [];
+    const showSyntheticStart = !!(d.summary || d.startComment || d.title || d.createTime);
+    const startContent =
+      [d.title ? `标题：${d.title}` : '', d.summary || '', d.startComment || '']
+        .filter(Boolean)
+        .join('\n') || undefined;
+    if (showSyntheticStart) {
       items.push({
         key: 'start',
         title: '发起流程',
         user: d.starterId ? `发起人 #${d.starterId}` : '发起人',
         time: d.createTime,
-        content: d.startComment || undefined,
+        content: startContent,
       });
     }
-    for (const c of d.comments ?? []) {
+    for (const c of comments) {
+      // 合成条已含发起信息时，跳过 comments 中 action=start，避免双条
+      if (showSyntheticStart && String(c.action ?? '').toLowerCase() === 'start') continue;
       items.push({
         key: `c${c.id}`,
         title: actionLabel(c.action),
@@ -163,7 +176,6 @@ export function useWorkflowProgressPanel(input: {
   };
 
   return {
-    // 详情/操作条（解构自 useWorkflowProgress）
     detail: wf.detail,
     loading: wf.loading,
     error: wf.error,
@@ -171,7 +183,6 @@ export function useWorkflowProgressPanel(input: {
     canWithdraw: wf.canWithdraw,
     statusMeta: wf.statusMeta,
     timelineItems,
-    // 意见弹层
     opinionVisible,
     opinionKind,
     opinionText,
@@ -185,7 +196,6 @@ export function useWorkflowProgressPanel(input: {
     openCc: () => openTarget('cc'),
     confirmOpinion,
     pickPhrase,
-    // 接收人弹层
     targetVisible,
     targetKind,
     targetComment,

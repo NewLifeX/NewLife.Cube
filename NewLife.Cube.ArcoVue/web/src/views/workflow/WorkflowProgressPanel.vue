@@ -6,10 +6,11 @@ import { computed } from 'vue';
 import { formatTime } from '@/core/utils/datetime';
 import { useWorkflowProgressPanel } from './useWorkflowProgressPanel';
 import WorkflowRecipientPicker from './WorkflowRecipientPicker.vue';
+import type { WfId } from './useWorkflowProgress';
 
 const props = defineProps<{
   modelValue: boolean;
-  instanceId?: number | null;
+  instanceId?: WfId | null;
 }>();
 
 const emit = defineEmits<{ (e: 'update:modelValue', v: boolean): void }>();
@@ -53,11 +54,11 @@ const {
 
 <template>
   <a-drawer
-    :model-value="visible"
+    :visible="visible"
     :width="560"
     :footer="false"
     unmount-on-close
-    @update:model-value="(v: boolean) => (visible = v)"
+    @update:visible="(v: boolean) => (visible = v)"
   >
     <template #title>
       <span class="wf-progress__title">审批进度</span>
@@ -72,6 +73,7 @@ const {
     <template v-else>
       <div class="wf-progress__head">
         <a-tag :color="statusMeta.color">{{ statusMeta.text }}</a-tag>
+        <span v-if="detail.title" class="wf-progress__inst-title">{{ detail.title }}</span>
         <span class="wf-progress__def">{{ detail.definition?.name || `定义 #${detail.definition?.id ?? ''}` }}</span>
         <a-typography-text v-if="detail.definition" type="secondary" style="font-size: 12px">
           v{{ detail.definition.version }}
@@ -79,7 +81,7 @@ const {
       </div>
 
       <div v-if="detail.subjects?.length" class="wf-progress__subjects">
-        <div v-for="s in detail.subjects" :key="s.id" class="wf-progress__subject">
+        <div v-for="s in detail.subjects" :key="String(s.id)" class="wf-progress__subject">
           <span class="wf-progress__subject-key">{{ s.entityKey }}</span>
           <a-typography-text ellipsis>{{ s.title || '—' }}</a-typography-text>
         </div>
@@ -99,6 +101,20 @@ const {
         </a-timeline-item>
       </a-timeline>
       <a-empty v-else description="暂无处理记录" />
+
+      <div v-if="detail.attachments?.length" class="wf-progress__attachments">
+        <div class="wf-progress__attachments-title">发起附件</div>
+        <a
+          v-for="a in detail.attachments"
+          :key="String(a.id)"
+          class="wf-progress__att"
+          :href="a.url || '#'"
+          target="_blank"
+          rel="noopener"
+        >
+          {{ a.fileName || a.title || a.id }}
+        </a>
+      </div>
 
       <!-- 操作条 -->
       <div v-if="myTask || canWithdraw" class="wf-progress__ops">
@@ -120,7 +136,7 @@ const {
       </div>
     </template>
 
-    <!-- 意见弹层：同意/驳回/撤回 -->
+    <!-- 意见弹层：同意/驳回/撤回（审批节点不上传附件；发起附件见进度区） -->
     <a-modal
       v-model:visible="opinionVisible"
       :title="opinionKind === 'approve' ? '同意' : opinionKind === 'reject' ? '驳回' : '撤回流程'"
@@ -179,8 +195,12 @@ const {
 .wf-progress__head {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 12px;
+}
+.wf-progress__inst-title {
+  font-weight: 600;
 }
 .wf-progress__subjects {
   display: flex;
@@ -217,6 +237,21 @@ const {
   margin-top: 2px;
   color: var(--color-text-2);
   white-space: pre-wrap;
+}
+.wf-progress__attachments {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border-2);
+}
+.wf-progress__attachments-title {
+  margin-bottom: 6px;
+  color: var(--color-text-2);
+  font-size: 13px;
+}
+.wf-progress__att {
+  display: block;
+  font-size: 13px;
+  line-height: 1.8;
 }
 .wf-progress__ops {
   position: sticky;

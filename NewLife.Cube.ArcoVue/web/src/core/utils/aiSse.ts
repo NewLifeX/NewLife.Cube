@@ -23,7 +23,7 @@ export function takeSseEvents(buffer: string): { rest: string; events: Record<st
   return { rest, events };
 }
 
-/** 对话结束事件：须在此结束读取，否则代理可能不关连接，输入框会一直 disabled */
+/** 对话结束事件：message_done 为最新协议，done 兼容旧协议。须在此结束读取，否则代理可能不关连接，输入框会一直 disabled */
 export function isAiSseDone(json: Record<string, unknown> | null | undefined): boolean {
-  return json?.type === 'done';
+  return json?.type === 'done' || json?.type === 'message_done';
 }

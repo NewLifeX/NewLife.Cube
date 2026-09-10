@@ -821,9 +821,9 @@ export interface WorkflowMeta {
   todoCount?: number;
 }
 
-/** 流程定义视图（服务端 ToDefView，camelCase） */
+/** 流程定义视图（服务端 ToDefView，camelCase；Id 为雪花字符串，禁止 Number()） */
 export interface WorkflowDefinitionItem {
-  id: number;
+  id: number | string;
   typePath: string;
   name: string;
   enable: boolean;
@@ -838,8 +838,9 @@ export interface WorkflowDefinitionItem {
 
 /** 流程任务视图（服务端 ToTaskView；Todo/Done 列表行） */
 export interface WorkflowTaskItem {
-  id: number;
-  instanceId: number;
+  /** 雪花 Id：字符串透传 */
+  id: number | string;
+  instanceId: number | string;
   nodeId?: string;
   mode?: string;
   assigneeId?: number;
@@ -856,52 +857,76 @@ export interface WorkflowTaskItem {
   /** 所属实例状态（running/approved/...） */
   instanceStatus?: string;
   typePath?: string;
-  /** 主体标题（首条记录标题字段） */
+  /** 主体标题 / 实例标题 */
   title?: string;
   createTime?: string;
 }
 
 /** 流程实例视图（服务端 ToInstanceView；Started 列表行） */
 export interface WorkflowInstanceItem {
-  id: number;
+  /** 雪花 Id：字符串透传 */
+  id: number | string;
   typePath: string;
   /** running/approved/rejected/withdrawn/cancelled */
   status: string;
-  definitionId: number;
+  definitionId: number | string;
   definitionVersion: number;
   title?: string;
   starterId?: number;
   startComment?: string;
+  /** 流程摘要（Markdown/富文本） */
+  summary?: string;
   createTime?: string;
   finishTime?: string;
 }
 
 /** 流程实例详情（服务端 InstanceDetail：主体 + 任务 + 意见时间轴） */
 export interface WorkflowInstanceDetail {
-  id: number;
+  /** 雪花 Id：字符串透传 */
+  id: number | string;
   typePath: string;
   status: string;
-  definition?: { id: number; name: string; version: number; lockPolicy?: string } | null;
+  definition?: {
+    id: number | string;
+    name: string;
+    /** 钉扎版本（实例 DefinitionVersion） */
+    version: number;
+    lockPolicy?: string;
+  } | null;
   starterId?: number;
+  /** 流程标题 */
+  title?: string;
   startComment?: string;
+  /** 流程摘要（Markdown/富文本） */
+  summary?: string;
+  definitionVersion?: number;
   createTime?: string;
   finishTime?: string;
-  subjects?: { id: number; entityKey: string; title?: string }[];
+  subjects?: { id: number | string; entityKey: string; title?: string }[];
   tasks?: WorkflowTaskItem[];
   comments?: {
-    id: number;
-    taskId?: number;
+    id: number | string;
+    taskId?: number | string;
     /** approve/reject/addsign/transfer/cc/rollback/withdraw/start... */
     action?: string;
     content?: string;
     createUser?: string;
     createTime?: string;
   }[];
+  attachments?: {
+    id: number | string;
+    title?: string;
+    fileName?: string;
+    size?: number;
+    url?: string;
+    key?: string;
+    createTime?: string;
+  }[];
 }
 
 /** 批量同意逐条结果 */
 export interface WorkflowBatchResultItem {
-  id: number;
+  id: number | string;
   ok: boolean;
   error?: string;
 }
@@ -910,8 +935,13 @@ export interface WorkflowBatchResultItem {
 export interface WorkflowStartBody {
   typePath: string;
   keys: string[];
-  definitionId: number;
+  /** 雪花主键：必须字符串透传，禁止 Number() 丢精度 */
+  definitionId: number | string;
   comment?: string;
+  /** 流程摘要（Markdown/富文本） */
+  summary?: string;
+  /** 流程标题 */
+  title?: string;
 }
 
 /** 审批意见体 */
@@ -942,7 +972,7 @@ export interface WorkflowJumpBody {
 
 /** 批量同意体 */
 export interface WorkflowBatchBody {
-  ids: number[];
+  ids: Array<number | string>;
   comment?: string;
 }
 
@@ -972,10 +1002,23 @@ export function createWorkflowApi(request: RequestFn) {
       request<WorkflowDefinitionItem>({ url: `/Cube/Workflow/Definitions/${id}/Publish`, method: 'post' }),
 
     start: (data: WorkflowStartBody) =>
-      request<{ instanceId: number }>({ url: '/Cube/Workflow/Instances', method: 'post', data }),
+      request<{ instanceId: number | string }>({ url: '/Cube/Workflow/Instances', method: 'post', data }),
 
     instance: (id: number | string) =>
       request<WorkflowInstanceDetail>({ url: `/Cube/Workflow/Instances/${id}`, method: 'get' }),
+
+    /** 审批附件上传（发起流程；挂到实例 Key=instanceId） */
+    uploadAttachment: (file: File, params: { instanceId: number | string; taskId?: number | string }) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      return request<{ id: string; fileName?: string; url?: string; size?: number }>({
+        url: '/Cube/Workflow/Attachments',
+        method: 'post',
+        headers: { 'Content-Type': 'multipart/form-data' },
+        data: formData,
+        params: { instanceId: params.instanceId },
+      });
+    },
 
     withdraw: (id: number | string, data?: WorkflowVoteBody) =>
       request<unknown>({ url: `/Cube/Workflow/Instances/${id}/Withdraw`, method: 'post', data }),

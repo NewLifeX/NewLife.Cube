@@ -1,8 +1,10 @@
 using System.ComponentModel;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Automation;
+using NewLife.Cube.Entity;
 using NewLife.Cube.Workflow.Entity;
 using NewLife.Log;
 using XCode;
@@ -23,8 +25,13 @@ public class WorkflowController : ControllerBaseX
     #region 定义
     /// <summary>能力探测。匿名返回 { enabled }；登录附加待办数</summary>
     /// <returns>能力 JSON</returns>
+    /// <remarks>
+    /// 规范路径为 GET /Cube/Workflow/Meta（与前端 api-core 一致）。
+    /// 同时保留 GET /Cube/Workflow（裸 [HttpGet]），避免旧客户端/书签仍指向控制器根。
+    /// </remarks>
     [AllowAnonymous]
     [HttpGet]
+    [HttpGet("Meta")]
     public Object Meta()
     {
         var user = ManageProvider.User;
@@ -117,15 +124,17 @@ public class WorkflowController : ControllerBaseX
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");
         if (model == null || model.Keys == null || model.Keys.Length == 0) return Json(400, "未选择记录");
-        var def = WorkflowDefinition.FindById(model.DefinitionId);
+        var defId = model.DefinitionId.ToLong();
+        if (defId <= 0) return Json(400, "流程定义无效");
+        var def = WorkflowDefinition.FindById(defId);
         if (def == null) return Json(404, "流程定义不存在");
         // 发起权限 = 实体 Detail（design §6.4）；行级 StartFilter 由引擎按主体逐条再判
         if (!WorkflowPageOverlay.CanDetail(user, def.TypePath)) return Json(403, "无该实体的发起权限");
 
         try
         {
-            var instance = WorkflowEngine.Start(def, model.Keys, user.ID, user.DisplayName ?? user.Name, model.Comment);
-            return Json(0, null, new { instanceId = instance.Id });
+            var instance = WorkflowEngine.Start(def, model.Keys, user.ID, user.DisplayName ?? user.Name, model.Comment, model.Summary, model.Title);
+            return Json(0, null, new { instanceId = instance.Id.ToString() });
         }
         catch (WorkflowException ex) { return Json(ex.Code, ex.Message); }
         catch (Exception ex) { return Json(500, "发起失败：" + ex.GetTrue().Message); }
@@ -206,17 +215,30 @@ public class WorkflowController : ControllerBaseX
 
         return Json(0, null, new
         {
-            instance.Id,
+            id = instance.Id.ToString(),
             instance.TypePath,
             instance.Status,
-            definition = def == null ? null : new { def.Id, def.Name, def.Version, def.LockPolicy },
+            definition = def == null
+                ? null
+                : new
+                {
+                    id = def.Id.ToString(),
+                    def.Name,
+                    // 钉扎版本：进度展示用实例 DefinitionVersion，避免 republish 后误显最新版
+                    version = instance.DefinitionVersion,
+                    def.LockPolicy,
+                },
             instance.StarterId,
+            instance.Title,
             instance.StartComment,
+            instance.Summary,
+            definitionVersion = instance.DefinitionVersion,
             instance.CreateTime,
             instance.FinishTime,
-            subjects = subjects.Select(s => new { s.Id, s.EntityKey, s.Title }).ToList(),
+            subjects = subjects.Select(s => new { id = s.Id.ToString(), s.EntityKey, s.Title }).ToList(),
             tasks = tasks.Select(ToTaskView).ToList(),
-            comments = comments.Select(c => new { c.Id, c.TaskId, c.Action, c.Content, c.CreateUser, c.CreateTime }).ToList(),
+            comments = comments.Select(c => new { id = c.Id.ToString(), taskId = c.TaskId.ToString(), c.Action, c.Content, c.CreateUser, c.CreateTime }).ToList(),
+            attachments = ListWorkflowAttachments(id),
         });
     }
 
@@ -231,7 +253,7 @@ public class WorkflowController : ControllerBaseX
         foreach (var task in tasks)
         {
             if (task.AssigneeId == user.ID) return true;
-            if (WorkflowHelper.ReadIntArray(JsonNode.Parse(task.CandidateJson) as JsonArray).Contains(user.ID)) return true;
+            if (WorkflowHelper.ReadIntArray(JsonNode.Parse(task.CandidateJson.IsNullOrEmpty() ? "[]" : task.CandidateJson) as JsonArray).Contains(user.ID)) return true;
         }
         return WorkflowPageOverlay.CanDetail(user, instance.TypePath);
     }
@@ -373,7 +395,7 @@ public class WorkflowController : ControllerBaseX
         return Json(0, $"成功 {ok}/{ids.Length}", rs);
     }
 
-    /// <summary>我的待办</summary>
+    /// <summary>我的待办（仅当前用户：已认领本人，或或签未认领且候选含本人）</summary>
     /// <param name="pageSize">页大小</param>
     /// <returns>待办列表</returns>
     [HttpGet("Todo")]
@@ -398,7 +420,7 @@ public class WorkflowController : ControllerBaseX
         return Json(0, null, list.Select(ToInstanceView).ToList());
     }
 
-    /// <summary>我已办（任务 Done/Transferred/Rejected）</summary>
+    /// <summary>我已办（仅当前用户办理过的任务：Done/Transferred/Rejected 且 AssigneeId=本人）</summary>
     /// <param name="pageSize">页大小</param>
     /// <returns>已办列表</returns>
     [HttpGet("Done")]
@@ -406,8 +428,7 @@ public class WorkflowController : ControllerBaseX
     {
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");
-        var tasks = WorkflowTask.FindAll(WorkflowTask._.AssigneeId == user.ID)
-            .Where(e => e.Status is WorkflowStatuses.Done or WorkflowStatuses.Transferred or WorkflowStatuses.Rejected)
+        var tasks = WorkflowTask.FindDoneByUser(user.ID)
             .OrderByDescending(e => e.FinishTime).Take(pageSize).ToList();
         return Json(0, null, tasks.Select(ToTaskView).ToList());
     }
@@ -514,11 +535,17 @@ public class WorkflowController : ControllerBaseX
         /// <summary>业务主键数组</summary>
         public String[] Keys { get; set; }
 
-        /// <summary>定义编号</summary>
-        public Int64 DefinitionId { get; set; }
+        /// <summary>定义编号（雪花 Id：前端必须字符串透传，避免 JS Number 丢精度）</summary>
+        public String DefinitionId { get; set; }
 
         /// <summary>发起意见</summary>
         public String Comment { get; set; }
+
+        /// <summary>流程摘要（Markdown/富文本）</summary>
+        public String Summary { get; set; }
+
+        /// <summary>流程标题</summary>
+        public String Title { get; set; }
     }
 
     /// <summary>意见请求</summary>
@@ -526,6 +553,9 @@ public class WorkflowController : ControllerBaseX
     {
         /// <summary>意见</summary>
         public String Comment { get; set; }
+
+        /// <summary>附件 Id（同意/驳回时绑定到本次意见，Category=WorkflowComment）</summary>
+        public Int64[] AttachmentIds { get; set; }
     }
 
     /// <summary>跳转请求</summary>
@@ -595,7 +625,7 @@ public class WorkflowController : ControllerBaseX
         if (model == null) throw new WorkflowException(400, "请求数据为空");
         if (model.TypePath.IsNullOrEmpty()) throw new WorkflowException(400, "实体路径不能为空");
         if (model.Name.IsNullOrEmpty()) throw new WorkflowException(400, "名称不能为空");
-        def.TypePath = model.TypePath.Trim();
+        def.TypePath = AutomationPaths.NormalizeTypePath(model.TypePath.Trim());
         def.Name = model.Name.Trim();
         def.Enable = model.Enable;
         def.LockPolicy = model.LockPolicy ?? WorkflowStatuses.LockFull;
@@ -641,14 +671,15 @@ public class WorkflowController : ControllerBaseX
         var subject = WorkflowSubject.FindAll(WorkflowSubject._.InstanceId == instance.Id).OrderBy(e => e.Id).FirstOrDefault();
         return new
         {
-            instance.Id,
+            id = instance.Id.ToString(),
             instance.TypePath,
             instance.Status,
-            instance.DefinitionId,
+            definitionId = instance.DefinitionId.ToString(),
             instance.DefinitionVersion,
-            title = subject?.Title ?? instance.TypePath,
+            title = !instance.Title.IsNullOrEmpty() ? instance.Title : (subject?.Title ?? instance.TypePath),
             instance.StarterId,
             instance.StartComment,
+            instance.Summary,
             instance.CreateTime,
             instance.FinishTime,
         };
@@ -660,12 +691,12 @@ public class WorkflowController : ControllerBaseX
         var subject = WorkflowSubject.FindAll(WorkflowSubject._.InstanceId == task.InstanceId).OrderBy(e => e.Id).FirstOrDefault();
         return new
         {
-            task.Id,
-            task.InstanceId,
+            id = task.Id.ToString(),
+            instanceId = task.InstanceId.ToString(),
             task.NodeId,
             task.Mode,
             task.AssigneeId,
-            candidate = WorkflowHelper.ReadIntArray(JsonNode.Parse(task.CandidateJson) as JsonArray),
+            candidate = WorkflowHelper.ReadIntArray(JsonNode.Parse(task.CandidateJson.IsNullOrEmpty() ? "[]" : task.CandidateJson) as JsonArray),
             task.SequenceIndex,
             task.Visible,
             task.Status,
@@ -677,8 +708,67 @@ public class WorkflowController : ControllerBaseX
             task.UpdateTime,
             instanceStatus = instance?.Status,
             typePath = instance?.TypePath,
-            title = subject?.Title,
+            title = instance != null && !instance.Title.IsNullOrEmpty() ? instance.Title : subject?.Title,
         };
+    }
+
+    /// <summary>列出实例关联附件（Key=实例Id；兼容历史 Key=实例Id:任务Id）</summary>
+    static Object ListWorkflowAttachments(Int64 instanceId)
+    {
+        var key = instanceId.ToString();
+        var list = Attachment.FindAll(Attachment._.Category == "WorkflowComment")
+            .Where(a => a.Key == key || (a.Key != null && a.Key.StartsWith(key + ":")))
+            .OrderBy(e => e.Id)
+            .Select(a => new
+            {
+                id = a.Id.ToString(),
+                a.Title,
+                a.FileName,
+                a.Size,
+                a.Url,
+                a.Key,
+                a.CreateTime,
+            }).ToList();
+        return list;
+    }
+
+    /// <summary>上传流程附件（发起时）。Category=WorkflowComment，Key=实例Id。审批节点不再上传。</summary>
+    [HttpPost("Attachments")]
+    [RequestSizeLimit(50 * 1024 * 1024)]
+    public async Task<Object> UploadAttachment(IFormFile file, String instanceId, String taskId = null)
+    {
+        var user = ManageProvider.User;
+        if (user == null) return Json(401, "未授权");
+        if (file == null || file.Length <= 0) return Json(400, "未选择文件");
+        // 审批节点不再接受按任务挂附件；统一挂到实例，供后续审批人查看
+        if (!taskId.IsNullOrEmpty()) return Json(400, "审批节点不支持上传附件，请在发起时上传");
+        var iid = instanceId.ToLong();
+        if (iid <= 0) return Json(400, "实例无效");
+        var instance = WorkflowInstance.FindById(iid);
+        if (instance == null) return Json(404, "流程实例不存在");
+        if (!CanView(instance, user)) return Json(403, "无权上传该流程附件");
+
+        try
+        {
+            var att = new Attachment
+            {
+                Category = "WorkflowComment",
+                Key = iid.ToString(),
+                Title = file.FileName,
+                FileName = file.FileName,
+                ContentType = file.ContentType,
+                Size = file.Length,
+                Enable = true,
+                UploadTime = DateTime.Now,
+            };
+            await using var stream = file.OpenReadStream();
+            await att.SaveFile(stream);
+            return Json(0, null, new { id = att.Id.ToString(), att.FileName, att.Url, att.Size });
+        }
+        catch (Exception ex)
+        {
+            return Json(500, "上传失败：" + ex.GetTrue().Message);
+        }
     }
     #endregion
 }

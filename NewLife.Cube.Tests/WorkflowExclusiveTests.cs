@@ -24,6 +24,7 @@ public class WorkflowExclusiveTests
         DAL.AddConnStr("Cube", "Data Source=Osc47f1ExCube;Mode=Memory;Cache=Shared", null, "SQLite");
         DAL.AddConnStr("Log", "Data Source=Osc47f1ExLog;Mode=Memory;Cache=Shared", null, "SQLite");
         DAL.AddConnStr("Workflow", "Data Source=Osc47f1ExWf;Mode=Memory;Cache=Shared", null, "SQLite");
+        WorkflowTestDb.EnsureInstanceSummaryColumn();
 
         WorkflowTask.FindAll().Delete();
         WorkflowSubject.FindAll().Delete();

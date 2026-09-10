@@ -4,6 +4,7 @@ import { Message } from '@arco-design/web-vue';
 import cubeApi from '@/api';
 import { formatApiError } from '@/core/utils/apiError';
 import { formatDateTime } from '@/core/utils/datetime';
+import { useAppStore } from '@/stores/app';
 
 /**
  * 待办/已办任务中心逻辑（OSC-26090347f1 T8c，IA §3.3）：
@@ -72,7 +73,8 @@ export function taskTitle(t: WorkflowTaskItem): string {
 export function useWorkflowTaskList(kind: 'todo' | 'done') {
   const rows = ref<WorkflowTaskItem[]>([]);
   const loading = ref(false);
-  const selected = ref<number[]>([]);
+  /** 任务雪花 Id：字符串透传 */
+  const selected = ref<string[]>([]);
   const batchVisible = ref(false);
   const batchKind = ref<'approve' | 'reject'>('approve');
   const batchComment = ref('');
@@ -83,7 +85,8 @@ export function useWorkflowTaskList(kind: 'todo' | 'done') {
     loading.value = true;
     try {
       const res = kind === 'todo' ? await cubeApi.workflow.todo({ pageSize }) : await cubeApi.workflow.done({ pageSize });
-      rows.value = res.data ?? [];
+      const list = res?.data;
+      rows.value = Array.isArray(list) ? list : [];
     } catch (err) {
       rows.value = [];
       Message.error(formatApiError(err, '加载失败'));
@@ -95,11 +98,12 @@ export function useWorkflowTaskList(kind: 'todo' | 'done') {
   const hasBatch = computed(() => selected.value.length > 0);
 
   /** 勾选/取消（勾选仅可处理任务） */
-  function toggleSelect(id: number, on: boolean) {
+  function toggleSelect(id: string | number, on: boolean) {
+    const sid = String(id);
     if (on) {
-      if (!selected.value.includes(id)) selected.value = [...selected.value, id];
+      if (!selected.value.includes(sid)) selected.value = [...selected.value, sid];
     } else {
-      selected.value = selected.value.filter((x) => x !== id);
+      selected.value = selected.value.filter((x) => x !== sid);
     }
   }
 
@@ -147,6 +151,7 @@ export function useWorkflowTaskList(kind: 'todo' | 'done') {
       batchVisible.value = false;
       selected.value = [];
       await load();
+      void useAppStore().refreshWorkflowMeta();
       return true;
     } catch (err) {
       Message.error(formatApiError(err, '批量操作失败'));

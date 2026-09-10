@@ -145,24 +145,63 @@ public partial class WorkflowTask : Entity<WorkflowTask>
         return model;
     }
 
-    /// <summary>按用户查找待办任务（已认领且可见、状态为 Active/Pending）</summary>
+    /// <summary>按用户查找待办任务（可见且 Active/Pending：已认领本人，或或签未认领且候选含本人）</summary>
     /// <param name="userId">用户编号</param>
     /// <returns>待办列表</returns>
+    /// <remarks>
+    /// 或签多人共用一条任务（AssigneeId=0，候选人在 CandidateJson）；仅按 AssigneeId 过滤会漏掉未认领候选人（G-04）。
+    /// 已被他人认领（AssigneeId&gt;0 且非本人）的任务不再出现在待办。
+    /// </remarks>
     public static IList<WorkflowTask> FindTodoByUser(Int32 userId)
     {
         if (userId <= 0) return [];
 
-        return FindAll(_.AssigneeId == userId & _.Visible == true & _.Status.In(new[] { WorkflowStatuses.Active, WorkflowStatuses.Pending }));
+        var open = _.Visible == true & _.Status.In(new[] { WorkflowStatuses.Active, WorkflowStatuses.Pending });
+        var claimed = FindAll(_.AssigneeId == userId & open);
+        var unclaimed = FindAll(_.AssigneeId == 0 & open)
+            .Where(t => CandidateContains(t, userId))
+            .ToList();
+        if (unclaimed.Count == 0) return claimed;
+        if (claimed.Count == 0) return unclaimed;
+        return claimed.Concat(unclaimed).OrderByDescending(e => e.Id).ToList();
     }
 
-    /// <summary>统计用户待办数量，供角标使用</summary>
+    /// <summary>统计用户待办数量，供角标使用（口径与 <see cref="FindTodoByUser"/> 一致）</summary>
     /// <param name="userId">用户编号</param>
     /// <returns>待办条数</returns>
     public static Int64 CountTodoByUser(Int32 userId)
     {
         if (userId <= 0) return 0;
+        return FindTodoByUser(userId).Count;
+    }
 
-        return FindCount(_.AssigneeId == userId & _.Visible == true & _.Status.In(new[] { WorkflowStatuses.Active, WorkflowStatuses.Pending }));
+    /// <summary>按用户查找已办任务（本人办理且状态为 Done/Transferred/Rejected）</summary>
+    /// <param name="userId">用户编号</param>
+    /// <returns>已办列表</returns>
+    public static IList<WorkflowTask> FindDoneByUser(Int32 userId)
+    {
+        if (userId <= 0) return [];
+        return FindAll(_.AssigneeId == userId)
+            .Where(e => e.Status is WorkflowStatuses.Done or WorkflowStatuses.Transferred or WorkflowStatuses.Rejected)
+            .ToList();
+    }
+
+    /// <summary>CandidateJson 是否包含用户 Id</summary>
+    /// <param name="task">任务</param>
+    /// <param name="userId">用户</param>
+    /// <returns>是否候选人</returns>
+    public static Boolean CandidateContains(WorkflowTask task, Int32 userId)
+    {
+        if (task == null || userId <= 0) return false;
+        try
+        {
+            var node = System.Text.Json.Nodes.JsonNode.Parse(task.CandidateJson.IsNullOrEmpty() ? "[]" : task.CandidateJson);
+            return WorkflowHelper.ReadIntArray(node as System.Text.Json.Nodes.JsonArray).Contains(userId);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     #endregion

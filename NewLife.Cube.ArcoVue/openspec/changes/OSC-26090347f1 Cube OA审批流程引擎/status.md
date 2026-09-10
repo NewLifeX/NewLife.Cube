@@ -35,5 +35,7 @@
     G-06 Meta 恒 true（随 T11）、G-07 HTTP 冒烟（T11）、G-08/G-11 后续批次。收尾门禁无 🔴、无实现缺口。
     **会话小任务补录（2026-09-03）**：宿主冒烟发现 OA 独立页（Designer/Todo/Done/Started）菜单未播种时
     URL 直达白屏（路由由菜单动态注册）→ `router/index.ts` 静态注册 oaLeafRoutes 修复（tasks T8 补录子条目）。
-    遗留 UI 缺口：IA §1「侧栏菜单（模块扫描）」——WorkflowHost 未播种 OA 菜单，宿主侧栏无 OA 审批入口
-    （现仅 URL 直达；待后续后端菜单播种或宿主手工配菜单，列为待确认/后续）。
+    **实现审计补齐（2026-09-10）**：侧栏菜单已由 `WorkflowHost.EnsureMenus` 播种（一级「流程审批」+五叶子）；
+    G-04 或签候选待办可见已修；G-08 多定义 StartFilter 任一命中；G-11 Claim/Transfer/Cc/超时 reject 单测；
+    顶栏审批槽+角标、列表 `__wfStatus` 列、RecordDrawer 审批 Tab。
+    仍无法闭环：G-01 跨进程唯一约束、G-05 附件、G-06/AC Meta 文档对齐、G-07 T11 冒烟、常用语管理 UI。

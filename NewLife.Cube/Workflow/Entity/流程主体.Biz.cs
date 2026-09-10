@@ -153,6 +153,23 @@ public partial class WorkflowSubject : Entity<WorkflowSubject>
         return null;
     }
 
+    /// <summary>最近一次主体所属实例是否已通过（审批中/已通过均不可再发起；在途另走 FindRunning）</summary>
+    /// <param name="typePath">实体路径</param>
+    /// <param name="entityKey">归一化业务主键</param>
+    /// <returns>最近实例为 Approved 时 true</returns>
+    public static Boolean IsLatestApproved(String typePath, String entityKey)
+    {
+        if (typePath.IsNullOrEmpty() || entityKey.IsNullOrEmpty()) return false;
+
+        var latest = FindAll(_.TypePath == typePath & _.EntityKey == entityKey)
+            .OrderByDescending(e => e.Id)
+            .FirstOrDefault();
+        if (latest == null) return false;
+
+        var inst = WorkflowInstance.FindById(latest.InstanceId);
+        return inst != null && inst.Status == WorkflowStatuses.Approved;
+    }
+
     /// <summary>按主键集合批量查找在途主体，避免列表叠加 N+1</summary>
     /// <param name="typePath">实体路径</param>
     /// <param name="entityKeys">业务主键集合</param>

@@ -378,20 +378,23 @@ export function useAiAssistant() {
   }
 
   function handleTool(json: Record<string, unknown>) {
-    const id = String(json.id || '');
+    // 最新协议以 type 区分（tool_call_start/done/error），id 用 toolCallId；兼容旧协议（tool + event + id）
+    const id = String(json.toolCallId || json.id || '');
     let card = toolCards.value.find((t) => t.id === id);
     if (!card) {
       card = { id, name: String(json.name || ''), status: 'start' };
       toolCards.value.push(card);
     }
-    const event = json.event;
-    if (event === 'start') {
+    const type = String(json.type || '');
+    const event = String(json.event || '');
+    if (type === 'tool_call_start' || (type === 'tool' && event === 'start')) {
       card.name = String(json.name || card.name);
       card.status = 'start';
-    } else if (event === 'done') {
+    } else if (type === 'tool_call_done' || (type === 'tool' && event === 'done')) {
       card.status = 'done';
-      if (json.name === 'fill_form' && json.value) {
-        const values = parseFillFormValue(json.value);
+      const fill = json.result ?? json.value;
+      if (card.name === 'fill_form' && fill) {
+        const values = parseFillFormValue(fill);
         if (values) {
           const apply = ctx.value.applyFill;
           if (!apply) {
@@ -437,11 +440,12 @@ export function useAiAssistant() {
 
   function applySseJson(json: Record<string, unknown>, am: Msg, acc: { full: string }): boolean {
     const type = json.type;
-    if (type === 'text') {
+    // 最新协议：文本增量走 content_delta（message_start 仅标识开始，可忽略）；兼容旧协议 text
+    if (type === 'text' || type === 'content_delta') {
       acc.full += String(json.content || '');
       am.html = renderAiMarkdown(acc.full);
       scrollBottom();
-    } else if (type === 'tool') {
+    } else if (type === 'tool' || type === 'tool_call_start' || type === 'tool_call_done' || type === 'tool_call_error') {
       handleTool(json);
     } else if (type === 'run_js') {
       handleRunJs(json);

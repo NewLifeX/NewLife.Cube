@@ -35,8 +35,14 @@ public partial class WorkflowInstanceModel
     /// <summary>发起人</summary>
     public Int32 StarterId { get; set; }
 
+    /// <summary>标题。本次提交的显示标题，发起时填写</summary>
+    public String Title { get; set; }
+
     /// <summary>发起意见</summary>
     public String StartComment { get; set; }
+
+    /// <summary>流程摘要。Markdown/富文本，发起时填写</summary>
+    public String Summary { get; set; }
 
     /// <summary>结束时间</summary>
     public DateTime FinishTime { get; set; }
@@ -79,7 +85,9 @@ public partial class WorkflowInstanceModel
         GraphSnapshot = model.GraphSnapshot;
         Status = model.Status;
         StarterId = model.StarterId;
+        Title = model.Title;
         StartComment = model.StartComment;
+        Summary = model.Summary;
         FinishTime = model.FinishTime;
         CreateUser = model.CreateUser;
         CreateUserID = model.CreateUserID;

@@ -22,13 +22,15 @@ export function useShellToolbar() {
   const appStore = useAppStore();
   const tagsStore = useTagsViewStore();
   const tenantStore = useTenantStore();
-  const { inboxUnreadCount } = storeToRefs(appStore);
+  const { inboxUnreadCount, workflowEnabled, workflowTodoCount } = storeToRefs(appStore);
   const inboxBadgeCount = computed(() => formatInboxBadgeCount(inboxUnreadCount.value));
+  const workflowTodoBadge = computed(() => formatInboxBadgeCount(workflowTodoCount.value));
 
   onMounted(() => {
     if (userStore.isLoggedIn) {
       void tenantStore.load();
       void appStore.refreshInboxUnread();
+      void appStore.refreshWorkflowMeta();
     }
   });
 
@@ -49,6 +51,10 @@ export function useShellToolbar() {
 
   function goInbox() {
     appStore.openInboxDrawer();
+  }
+
+  function goWorkflowTodo() {
+    router.push('/Cube/Workflow/Todo');
   }
 
   function goProfile() {
@@ -99,9 +105,12 @@ export function useShellToolbar() {
     APPEARANCE_ICONS,
     inboxUnreadCount,
     inboxBadgeCount,
+    workflowEnabled,
+    workflowTodoBadge,
     cycleAppearance,
     goAppearance,
     goInbox,
+    goWorkflowTodo,
     goProfile,
     goSecurity,
     tenantOptionLabel,

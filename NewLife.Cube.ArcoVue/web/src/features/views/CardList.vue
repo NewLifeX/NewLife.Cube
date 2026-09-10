@@ -28,8 +28,10 @@
       :min-height="cardMinHeight"
       :can-view-detail="canViewDetail"
       :enable-table-double-click="enableTableDoubleClick"
-      :can-edit="canEdit"
-      :can-delete="canDelete && !isIamRowActionDisabled(typePath, row, 'delete')"
+      :can-edit="canEdit && !wfRowEditLocked(row)"
+      :can-delete="
+        canDelete && !wfRowEditLocked(row) && !isIamRowActionDisabled(typePath, row, 'delete')
+      "
       :ops-custom-links="opsCustomLinks"
       :title-format-color="titleFormatColorOf(row)"
       :title-format-bold="titleFormatBoldOf(row)"
@@ -60,6 +62,7 @@ import { resolveImageUrl } from './cardHelpers';
 import { useCardList } from './useCardList';
 import type { ViewFormatRule } from '@/core/utils/viewProfile';
 import { isIamRowActionDisabled } from '@/core/utils/iamGuards';
+import { wfRowEditLocked } from '@/core/types/workflow';
 
 const props = withDefaults(
   defineProps<{

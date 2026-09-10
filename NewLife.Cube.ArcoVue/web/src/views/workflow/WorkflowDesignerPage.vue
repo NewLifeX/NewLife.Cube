@@ -8,6 +8,7 @@ import { ref } from 'vue';
 import { wfNodeTypeLabel } from '@/core/types/workflow';
 import { useWorkflowDesigner } from './useWorkflowDesigner';
 import WorkflowRecipientPicker from './WorkflowRecipientPicker.vue';
+import './workflowChrome.css';
 
 const d = useWorkflowDesigner();
 
@@ -85,12 +86,13 @@ function nodeIcon(type: string): string {
 
 <template>
   <div class="wf-designer">
+    <div class="list-surface">
     <a-alert v-if="narrow" type="warning" class="wf-designer__narrow">
       当前视口宽度小于 1024px，设计器为只读预览（保存/编辑已禁用）。
     </a-alert>
 
     <!-- 头部：定义选择 / 新建 / 保存发布 -->
-    <div class="wf-designer__head">
+    <div class="wf-designer__head list-panel">
       <a-select
         :model-value="currentId ?? undefined"
         :loading="defsLoading"
@@ -128,11 +130,11 @@ function nodeIcon(type: string): string {
       </a-space>
     </div>
 
-    <a-empty v-if="!graph" description="请选择或新建流程定义" />
+    <a-empty v-if="!graph" class="list-panel" description="请选择或新建流程定义" />
 
     <div v-else class="wf-designer__body">
       <!-- 主区：FlowGram.AI 固定布局画布（宽屏）；窄屏只读链式预览 -->
-      <div class="wf-designer__canvas">
+      <div class="wf-designer__canvas list-panel">
         <div class="wf-designer__toolbar">
           <span class="wf-designer__toolbar-hint">在选中节点后插入：</span>
           <a-button size="mini" :disabled="!canEdit || !selectedNode || selectedNode.type === 'oa.end'" @click="addNodeAfter('oa.approve')">
@@ -181,7 +183,7 @@ function nodeIcon(type: string): string {
       </div>
 
       <!-- 右侧属性面板 -->
-      <div v-if="selectedNode" class="wf-designer__props">
+      <div v-if="selectedNode" class="wf-designer__props list-panel">
         <div class="wf-designer__props-title">
           {{ wfNodeTypeLabel(selectedNode.type) }} 属性
         </div>
@@ -272,7 +274,7 @@ function nodeIcon(type: string): string {
           </a-form-item>
         </a-form>
       </div>
-      <a-empty v-else class="wf-designer__props-empty" description="点击左侧节点编辑属性" />
+      <a-empty v-else class="wf-designer__props-empty list-panel" description="点击左侧节点编辑属性" />
     </div>
 
     <!-- 新建流程弹窗 -->
@@ -296,15 +298,23 @@ function nodeIcon(type: string): string {
         </a-form-item>
       </a-form>
     </a-modal>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .wf-designer {
-  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+}
+.list-surface {
+  /* 共享 chrome（workflowChrome.css）基础上让画布撑满剩余高度 */
+  flex: 1 1 auto;
   min-height: 0;
 }
 .wf-designer__narrow {
@@ -335,9 +345,6 @@ function nodeIcon(type: string): string {
 .wf-designer__canvas {
   flex: 1 1 auto;
   min-width: 0;
-  border: 1px solid var(--color-border-2);
-  border-radius: 8px;
-  padding: 12px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -413,9 +420,6 @@ function nodeIcon(type: string): string {
 .wf-designer__props {
   width: 320px;
   flex: 0 0 320px;
-  border: 1px solid var(--color-border-2);
-  border-radius: 8px;
-  padding: 12px;
   max-height: 70vh;
   overflow: auto;
 }

@@ -37,4 +37,10 @@ describe('isAiSseDone', () => {
     expect(isAiSseDone({ type: 'text' })).toBe(false);
     expect(isAiSseDone(null)).toBe(false);
   });
+
+  it('最新协议 type=message_done 结束流', () => {
+    expect(isAiSseDone({ type: 'message_done' })).toBe(true);
+    expect(isAiSseDone({ type: 'content_delta' })).toBe(false);
+    expect(isAiSseDone({ type: 'tool_call_done' })).toBe(false);
+  });
 });

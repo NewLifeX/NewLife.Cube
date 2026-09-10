@@ -19,6 +19,7 @@ public class WorkflowMatrixTests
         DAL.AddConnStr("Cube", "Data Source=Osc47f1MxCube;Mode=Memory;Cache=Shared", null, "SQLite");
         DAL.AddConnStr("Log", "Data Source=Osc47f1MxLog;Mode=Memory;Cache=Shared", null, "SQLite");
         DAL.AddConnStr("Workflow", "Data Source=Osc47f1MxWf;Mode=Memory;Cache=Shared", null, "SQLite");
+        WorkflowTestDb.EnsureInstanceSummaryColumn();
 
         // 意见表为只写日志型，禁止删除，跳过；其余清理保证独立
         WorkflowTask.FindAll().Delete();
@@ -328,5 +329,96 @@ public class WorkflowMatrixTests
         Assert.Empty(Tasks(instance.Id)); // 无待办任务
         var comments = WorkflowComment.FindAll(WorkflowComment._.InstanceId == instance.Id).ToList();
         Assert.Contains(comments, c => c.Action == "error");
+    }
+
+    [Fact(DisplayName = "G-04 或签未认领：CandidateJson 双方均进待办/角标；认领后仅认领人")]
+    public void OrUnclaimed_TodoVisibleForCandidates()
+    {
+        var def = NewDefinition(ChainGraph(ToJson("or", "101,102")));
+        var id = InsertRecord("r1");
+        var instance = WorkflowEngine.Start(def, [$"{id}"], 9, "发起人", "");
+        var task = Assert.Single(Tasks(instance.Id));
+        Assert.Equal(0, task.AssigneeId);
+
+        Assert.Contains(WorkflowTask.FindTodoByUser(101), t => t.Id == task.Id);
+        Assert.Contains(WorkflowTask.FindTodoByUser(102), t => t.Id == task.Id);
+        Assert.Equal(1, WorkflowTask.CountTodoByUser(101));
+        Assert.Equal(1, WorkflowTask.CountTodoByUser(102));
+        Assert.Equal(0, WorkflowTask.CountTodoByUser(999));
+
+        WorkflowEngine.Claim(task.Id, 101);
+        Assert.Contains(WorkflowTask.FindTodoByUser(101), t => t.Id == task.Id);
+        Assert.DoesNotContain(WorkflowTask.FindTodoByUser(102), t => t.Id == task.Id);
+        Assert.Equal(1, WorkflowTask.CountTodoByUser(101));
+        Assert.Equal(0, WorkflowTask.CountTodoByUser(102));
+    }
+
+    [Fact(DisplayName = "G-11 Claim：候选人认领后 AssigneeId/Active；非候选人 403")]
+    public void Claim_CandidateOk_NonCandidate403()
+    {
+        var def = NewDefinition(ChainGraph(ToJson("or", "101,102")));
+        var id = InsertRecord("r1");
+        var instance = WorkflowEngine.Start(def, [$"{id}"], 9, "发起人", "");
+        var task = Assert.Single(Tasks(instance.Id));
+
+        var ex = Assert.Throws<WorkflowException>(() => WorkflowEngine.Claim(task.Id, 999));
+        Assert.Equal(403, ex.Code);
+
+        WorkflowEngine.Claim(task.Id, 102);
+        var got = WorkflowTask.FindById(task.Id);
+        Assert.Equal(102, got.AssigneeId);
+        Assert.Equal(WorkflowStatuses.Active, got.Status);
+        Assert.True(got.ClaimTime > DateTime.MinValue);
+    }
+
+    [Fact(DisplayName = "G-11 Transfer：原任务 Transferred，目标得新 Pending 任务")]
+    public void Transfer_CreatesTargetTask()
+    {
+        var def = NewDefinition(ChainGraph(ToJson("or", "101")));
+        var id = InsertRecord("r1");
+        var instance = WorkflowEngine.Start(def, [$"{id}"], 9, "发起人", "");
+        var task = Assert.Single(Tasks(instance.Id));
+
+        var to = System.Text.Json.Nodes.JsonNode.Parse("{\"kind\":\"users\",\"users\":[202]}") as System.Text.Json.Nodes.JsonObject;
+        WorkflowEngine.Transfer(task.Id, 101, to, "请代办");
+
+        Assert.Equal(WorkflowStatuses.Transferred, WorkflowTask.FindById(task.Id).Status);
+        var nt = Tasks(instance.Id).Single(t => t.Id != task.Id);
+        Assert.Equal(202, nt.AssigneeId);
+        Assert.Equal(WorkflowStatuses.Pending, nt.Status);
+        Assert.True(nt.Visible);
+    }
+
+    [Fact(DisplayName = "G-11 Cc：只写意见+通知，不增任务")]
+    public void Cc_NotifyOnly_NoExtraTask()
+    {
+        var def = NewDefinition(ChainGraph(ToJson("or", "101")));
+        var id = InsertRecord("r1");
+        var instance = WorkflowEngine.Start(def, [$"{id}"], 9, "发起人", "");
+        var task = Assert.Single(Tasks(instance.Id));
+        var before = Tasks(instance.Id).Count;
+
+        var to = System.Text.Json.Nodes.JsonNode.Parse("{\"kind\":\"users\",\"users\":[303]}") as System.Text.Json.Nodes.JsonObject;
+        WorkflowEngine.Cc(task.Id, 101, to, "请知悉");
+
+        Assert.Equal(before, Tasks(instance.Id).Count);
+        Assert.Contains(WorkflowComment.FindAll(WorkflowComment._.InstanceId == instance.Id), c => c.Action == "cc");
+        Assert.Contains(NotificationRecord.FindAll(), n => n.UserId == 303 && n.Action == "Workflow");
+    }
+
+    [Fact(DisplayName = "G-11 超时 reject：到期 Visible 任务整单 Rejected")]
+    public void TimeoutReject_FinishesRejected()
+    {
+        var n1 = "\"mode\":\"or\",\"to\":{\"kind\":\"users\",\"users\":[101]},\"timeoutHours\":1,\"timeoutAction\":\"reject\"";
+        var def = NewDefinition(ChainGraph(n1));
+        var id = InsertRecord("r1");
+        var instance = WorkflowEngine.Start(def, [$"{id}"], 9, "发起人", "");
+        var task = Assert.Single(Tasks(instance.Id));
+        var e = WorkflowTask.FindById(task.Id);
+        e.DueTime = DateTime.Now.AddMinutes(-1);
+        e.Update();
+
+        WorkflowEngine.TimeoutTick();
+        Assert.Equal(WorkflowStatuses.Rejected, WorkflowInstance.FindById(instance.Id).Status);
     }
 }

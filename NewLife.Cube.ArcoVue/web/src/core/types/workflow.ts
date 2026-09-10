@@ -48,17 +48,39 @@ export function wfRowStatus(row: Record<string, unknown> | null | undefined): Wf
   return 'none';
 }
 
-/** 读取行实例 Id（0=无实例；进度入口可见性依据） */
-export function wfRowInstanceId(row: Record<string, unknown> | null | undefined): number {
+/** 读取行实例 Id（雪花：全程 string，禁止 Number() 丢精度；0/空=无实例） */
+export function wfRowInstanceId(row: Record<string, unknown> | null | undefined): string {
   const v = row?.[WF_ROW_FIELD.instanceId];
-  if (typeof v === 'number') return v;
-  const n = Number(v);
-  return Number.isFinite(n) && n > 0 ? n : 0;
+  if (v == null || v === '' || v === 0) return '';
+  if (typeof v === 'string') {
+    const s = v.trim();
+    return s && s !== '0' ? s : '';
+  }
+  // 兼容后端偶发 number（已丢精度时仍尽量透传，正确路径应由 JSON 字符串下发）
+  if (typeof v === 'number' && Number.isFinite(v) && v > 0) return String(Math.trunc(v));
+  const s = String(v).trim();
+  return s && s !== '0' ? s : '';
 }
 
-/** 读取行级可发起标记（后端已综合 running/Detail/StartFilter；缺省 false 保守处理） */
+/** 是否有关联流程实例 */
+export function wfRowHasInstance(row: Record<string, unknown> | null | undefined): boolean {
+  return !!wfRowInstanceId(row);
+}
+
+/** 读取行级可发起标记（后端已综合 running/approved/Detail/StartFilter；缺省 false 保守处理） */
 export function wfRowCanStart(row: Record<string, unknown> | null | undefined): boolean {
   return row?.[WF_ROW_FIELD.canStart] === true;
+}
+
+/** 审批中：实体禁止编辑/删除（含所有视图；写锁由后端拦截器兜底） */
+export function wfRowEditLocked(row: Record<string, unknown> | null | undefined): boolean {
+  return wfRowStatus(row) === 'running';
+}
+
+/** 审批中或已通过：禁止再次发起 */
+export function wfRowRestartBlocked(row: Record<string, unknown> | null | undefined): boolean {
+  const s = wfRowStatus(row);
+  return s === 'running' || s === 'approved';
 }
 
 /**

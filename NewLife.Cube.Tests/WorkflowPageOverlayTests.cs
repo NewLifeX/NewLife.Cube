@@ -20,6 +20,7 @@ public class WorkflowPageOverlayTests
         DAL.AddConnStr("Cube", "Data Source=Osc47f1OvlCube;Mode=Memory;Cache=Shared", null, "SQLite");
         DAL.AddConnStr("Log", "Data Source=Osc47f1OvlLog;Mode=Memory;Cache=Shared", null, "SQLite");
         DAL.AddConnStr("Workflow", "Data Source=Osc47f1OvlWf;Mode=Memory;Cache=Shared", null, "SQLite");
+        WorkflowTestDb.EnsureInstanceSummaryColumn();
 
         WorkflowTask.FindAll().Delete();
         WorkflowSubject.FindAll().Delete();
@@ -83,6 +84,36 @@ public class WorkflowPageOverlayTests
         Assert.Equal(WorkflowStatuses.LockFull, block["lockPolicy"]);
     }
 
+    [Fact(DisplayName = "G-08 多定义：行 canStart 对任一 StartFilter 命中；锁策略不一致不下发 lockPolicy")]
+    public void MultiDef_CanStartAnyFilter_MixedLockOmits()
+    {
+        var defA = NewDef("过滤A");
+        defA.StartFilter = "{\"logic\":\"all\",\"conditions\":[{\"field\":\"Name\",\"op\":\"eq\",\"value\":\"matchA\"}]}";
+        defA.LockPolicy = WorkflowStatuses.LockFull;
+        defA.Update();
+
+        var defB = NewDef("过滤B");
+        defB.StartFilter = "{\"logic\":\"all\",\"conditions\":[{\"field\":\"Name\",\"op\":\"eq\",\"value\":\"matchB\"}]}";
+        defB.LockPolicy = "nodeFields";
+        defB.Update();
+
+        var block = WorkflowPageOverlay.GetTypeBlock(TypePath, FakeUser());
+        Assert.Equal(2, (Int32)block["definitionCount"]);
+        Assert.False(block.ContainsKey("lockPolicy")); // 策略不一致
+
+        var recA = new WfLockRecord { Name = "matchA" };
+        recA.Insert();
+        var recB = new WfLockRecord { Name = "matchB" };
+        recB.Insert();
+        var recC = new WfLockRecord { Name = "other" };
+        recC.Insert();
+
+        WorkflowPageOverlay.ApplyRows([recA, recB, recC], TypePath, FakeUser());
+        Assert.Equal(true, recA["__wfCanStart"]);
+        Assert.Equal(true, recB["__wfCanStart"]);
+        Assert.Equal(false, recC["__wfCanStart"]);
+    }
+
     [Fact(DisplayName = "行覆盖：running 行注入 __wfStatus/__wfInstanceId/canStart=false；无主体行 none")]
     public void ApplyRows_RunningAndNone()
     {
@@ -100,20 +131,20 @@ public class WorkflowPageOverlayTests
         WorkflowPageOverlay.ApplyRows(rows, TypePath, user);
 
         Assert.Equal("running", rec1["__wfStatus"]);
-        Assert.Equal(instance.Id, rec1["__wfInstanceId"]);
+        Assert.Equal(instance.Id.ToString(), rec1["__wfInstanceId"]?.ToString());
         Assert.Equal(false, rec1["__wfCanStart"]);
 
         Assert.Equal("none", rec2["__wfStatus"]);
-        Assert.Equal(0L, rec2["__wfInstanceId"]);
+        Assert.Equal("0", rec2["__wfInstanceId"]?.ToString());
         Assert.True(rec2["__wfCanStart"] is Boolean);
 
-        // 通过后：status approved、instanceId 保留、canStart=true（可再次发起）
+        // 通过后：status approved、instanceId 保留、canStart=false（不可再次发起）
         var task = WorkflowTask.FindAll(WorkflowTask._.InstanceId == instance.Id).First();
         WorkflowEngine.Approve(task.Id, 101, "ok");
 
         WorkflowPageOverlay.ApplyRows(new List<IEntity> { rec1 }, TypePath, user);
         Assert.Equal("approved", rec1["__wfStatus"]);
-        Assert.Equal(true, rec1["__wfCanStart"]);
+        Assert.Equal(false, rec1["__wfCanStart"]);
     }
 
     [Fact(DisplayName = "无定义时行覆盖不注入任何 __wf 键")]

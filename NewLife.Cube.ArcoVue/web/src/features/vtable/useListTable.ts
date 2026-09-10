@@ -10,6 +10,7 @@ import {
   resolveRowSideColor,
   ROW_SIDE_WIDTH_PX,
 } from '@/core/utils/viewFormat';
+import { wfRowCanStart, wfRowEditLocked, wfRowInstanceId, wfRowStatus } from '@/core/types/workflow';
 import { BADGE_BORDER_RADIUS, BADGE_PADDING } from '@/core/utils/fieldBadge';
 import { getValueByKey } from '@/core/utils/url';
 import { themeColor } from '@/core/utils/themeColor';
@@ -25,7 +26,7 @@ import {
 } from '@/core/utils/opsAction';
 import { OPS_LINK_INLINE_MAX } from '@/core/utils/listLinkFields';
 import { isIamRowActionDisabled } from '@/core/utils/iamGuards';
-import { wfRowCanStart, wfRowInstanceId, wfRowStatus } from '@/core/types/workflow';
+import { wfStatusBadge } from '@/views/crud/useWorkflowList';
 import {
   isDateTimeBucketType,
   timeBucketOf,
@@ -39,9 +40,10 @@ export const WF_ROW_ACTION = {
   progress: 'wfProgress',
 } as const;
 
-/** 行 workflow 提交是否可点（非审批中且行级可发起） */
+/** 行 workflow 提交是否可点（非审批中/已通过且行级可发起） */
 export function wfRowSubmitEnabled(row: Record<string, unknown>): boolean {
-  return wfRowStatus(row) !== 'running' && wfRowCanStart(row);
+  const s = wfRowStatus(row);
+  return s !== 'running' && s !== 'approved' && wfRowCanStart(row);
 }
 
 /** 行 workflow 提交是否渲染 */
@@ -51,7 +53,7 @@ export function wfRowSubmitVisible(row: Record<string, unknown>): boolean {
 
 /** 行 workflow 进度是否渲染（有实例） */
 export function wfRowProgressVisible(row: Record<string, unknown>): boolean {
-  return wfRowInstanceId(row) > 0;
+  return wfRowInstanceId(row) !== '';
 }
 
 export interface ListTableColumnDef {
@@ -405,9 +407,11 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
     });
 
     const visibleParts = parts.filter((action) => {
-      // OA 审批行操作：提交仅可发起行（非审批中且行级可发起）；进度仅已有实例行（IA §4）
+      // OA 审批行操作：提交仅可发起行（非审批中/已通过且行级可发起）；进度仅已有实例行（IA §4）
       if (action === WF_ROW_ACTION.submit) return wfRowSubmitVisible(record);
       if (action === WF_ROW_ACTION.progress) return wfRowProgressVisible(record);
+      // 审批中：隐藏编辑/删除（全视图一致；列表操作列在此过滤）
+      if ((action === 'edit' || action === 'delete') && wfRowEditLocked(record)) return false;
       if (action === 'delete' && isIamRowActionDisabled(props.typePath, record, 'delete'))
         return false;
       return true;
@@ -459,7 +463,8 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
   function leadingCount(): number {
     // 分组模式（groupBy + rowSeriesNumber checkbox）：不使用前置 checkbox/expand 数据列
     if (props.groupFields?.length) return 0;
-    return (props.showCheckbox ? 1 : 0) + (props.showExpand ? 1 : 0);
+    // 审批状态列插在 chrome 与业务列之间，随左侧冻结一起钉住
+    return (props.showCheckbox ? 1 : 0) + (props.showExpand ? 1 : 0) + (props.workflowButtons ? 1 : 0);
   }
 
   function buildColumns(): any[] {
@@ -506,6 +511,48 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
           const side = props.showExpand ? undefined : sideBarPatch(record);
           if (!fill && !side) return undefined;
           return { ...fill, ...side };
+        },
+      });
+    }
+
+    // OA 审批状态列（IA §1）：类型启用时注入，消费服务端 __wfStatus
+    if (props.workflowButtons) {
+      const isFirstWfCol = dataColCount === 0;
+      dataColCount += 1;
+      cols.push({
+        field: '__wfStatus',
+        title: '审批',
+        width: 88,
+        dragHeader: false,
+        sort: false,
+        showSort: false,
+        cellType: 'button',
+        fieldFormat: (rec: Record<string, unknown>) => {
+          const gh = groupHeaderFormat(rec, isFirstWfCol);
+          if (gh !== undefined) return gh;
+          return wfStatusBadge(wfRowStatus(rec)).text;
+        },
+        style: (args: { table?: any; col?: number; row?: number }) => {
+          const record = args.table?.getRecordByCell?.(args.col, args.row) as
+            | Record<string, unknown>
+            | undefined;
+          const ghs = groupHeaderStyle(record);
+          if (ghs) return ghs;
+          const badge = wfStatusBadge(wfRowStatus(record));
+          const colorMap: Record<string, string> = {
+            orange: '#ff7d00',
+            green: '#00b42a',
+            red: '#f53f3f',
+            gray: '#86909c',
+          };
+          return {
+            ...rowChromeFillPatch(record),
+            color: '#fff',
+            buttonBorderColor: 'transparent',
+            buttonColor: colorMap[badge.color] || colorMap.gray,
+            buttonPadding: BADGE_PADDING,
+            buttonBorderRadius: BADGE_BORDER_RADIUS,
+          };
         },
       });
     }

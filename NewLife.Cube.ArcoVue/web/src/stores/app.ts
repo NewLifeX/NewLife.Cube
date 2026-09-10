@@ -19,6 +19,10 @@ export const useAppStore = defineStore('app', {
     inboxDrawerVisible: false,
     /** 站内信未读数 */
     inboxUnreadCount: 0,
+    /** OA 审批：Meta.enabled（顶栏「审批」槽可见性） */
+    workflowEnabled: false,
+    /** OA 审批待办角标（Meta.todoCount） */
+    workflowTodoCount: 0,
     /** 浏览器标题页名前段覆盖（配置中心左侧选中项等） */
     shellPageTitle: null as string | null,
     /** 浏览器标题「显示名称」覆盖（系统设置表单 DisplayName 实时值） */
@@ -69,6 +73,19 @@ export const useAppStore = defineStore('app', {
         this.inboxUnreadCount = parseInboxUnreadCount(res.data);
       } catch {
         this.inboxUnreadCount = 0;
+      }
+    },
+    /** 刷新 OA 审批 Meta（enabled + todoCount），供顶栏待办槽（IA §1） */
+    async refreshWorkflowMeta() {
+      try {
+        const res = await cubeApi.workflow.meta();
+        const data = res.data as { enabled?: boolean; todoCount?: number } | undefined;
+        this.workflowEnabled = data?.enabled === true;
+        const n = Number(data?.todoCount);
+        this.workflowTodoCount = Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+      } catch {
+        this.workflowEnabled = false;
+        this.workflowTodoCount = 0;
       }
     },
   },

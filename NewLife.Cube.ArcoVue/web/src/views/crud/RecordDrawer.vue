@@ -384,6 +384,26 @@
           </div>
         </a-spin>
       </a-tab-pane>
+      <a-tab-pane v-if="wfTabVisible" key="workflow" title="审批">
+        <div class="wf-drawer-tab">
+          <a-space>
+            <a-tag :color="wfStatusMeta.color">{{ wfStatusMeta.text }}</a-tag>
+            <a-typography-text v-if="wfInstanceId" type="secondary">
+              实例 #{{ wfInstanceId }}
+            </a-typography-text>
+          </a-space>
+          <a-empty v-if="!wfInstanceId" description="暂无审批" />
+          <a-button
+            v-else
+            type="primary"
+            size="small"
+            class="wf-drawer-tab__open"
+            @click="emit('open-workflow', wfInstanceId)"
+          >
+            查看进度与办理
+          </a-button>
+        </div>
+      </a-tab-pane>
     </a-tabs>
 
     <template #footer>
@@ -397,7 +417,7 @@
         >
           保存
         </a-button>
-        <a-button v-else-if="canEdit" type="primary" @click="emit('edit')">编辑</a-button>
+        <a-button v-else-if="canEdit && !wfEditLocked" type="primary" @click="emit('edit')">编辑</a-button>
       </a-space>
     </template>
   </a-drawer>
@@ -414,6 +434,9 @@ import UserAvatar from '@/components/UserAvatar.vue';
 import FormContent from './FormContent.vue';
 import RolePermTree from './RolePermTree.vue';
 import { useRecordDrawer } from './useRecordDrawer';
+import { wfRowEditLocked, wfRowInstanceId, wfRowStatus } from '@/core/types/workflow';
+import { wfStatusBadge } from './useWorkflowList';
+import { computed } from 'vue';
 
 const props = withDefaults(
   defineProps<{
@@ -436,6 +459,8 @@ const props = withDefaults(
     layout?: FormLayout | null;
     /** 日历/甘特等：详情内展示自定义链接（OSC-2608178bdb） */
     opsCustomLinks?: OpsCustomLink[];
+    /** 类型级是否启用 OA 审批（IA §1 审批 Tab） */
+    workflowEnabled?: boolean;
   }>(),
   {
     showHistoryTabs: true,
@@ -444,6 +469,7 @@ const props = withDefaults(
     fieldErrors: () => [],
     layout: null,
     opsCustomLinks: () => [],
+    workflowEnabled: false,
   },
 );
 
@@ -455,7 +481,15 @@ const emit = defineEmits<{
   next: [];
   'toggle-collapse': [category: string];
   'ops-link': [link: OpsCustomLink];
+  'open-workflow': [instanceId: string | number];
 }>();
+
+const wfInstanceId = computed(() => wfRowInstanceId(props.model));
+const wfStatusMeta = computed(() => wfStatusBadge(wfRowStatus(props.model)));
+const wfEditLocked = computed(() => wfRowEditLocked(props.model));
+const wfTabVisible = computed(
+  () => props.workflowEnabled === true && props.mode !== 'add' && !!props.showHistoryTabs,
+);
 
 const {
   activeTab,
@@ -710,6 +744,18 @@ defineExpose({ validate: () => formRef.value?.validate() });
 .history-diff-new {
   color: var(--color-text-1);
   word-break: break-word;
+}
+
+/* OA 审批 Tab（IA §1） */
+.wf-drawer-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 8px 0;
+}
+.wf-drawer-tab__open {
+  margin-top: 4px;
 }
 
 /* 评论 Tab */

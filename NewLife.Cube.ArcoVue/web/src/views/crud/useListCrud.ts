@@ -9,6 +9,7 @@ import { formatApiError } from '@/core/utils/apiError';
 import { resolveFieldsForKind } from '@/core/utils/fieldParts';
 import { prepareSubmitPayload } from '@/core/utils/submitPayload';
 import { isIamBatchDeleteBlocked, isIamRowActionDisabled } from '@/core/utils/iamGuards';
+import { wfRowEditLocked } from '@/core/types/workflow';
 import type { ListContext } from './listContext';
 
 interface ListCrudDeps {
@@ -52,9 +53,18 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
 
   function onTableAction(payload: { action: string; row: Record<string, unknown> }) {
     if (payload.action.startsWith('auto:')) return;
-    if (payload.action === 'edit') openEdit(payload.row);
-    else if (payload.action === 'delete') {
+    if (payload.action === 'edit') {
+      if (wfRowEditLocked(payload.row)) {
+        Message.warning('审批中的记录不可编辑');
+        return;
+      }
+      openEdit(payload.row);
+    } else if (payload.action === 'delete') {
       if (!flags.value.canDelete) return;
+      if (wfRowEditLocked(payload.row)) {
+        Message.warning('审批中的记录不可删除');
+        return;
+      }
       if (isIamRowActionDisabled(typePath.value, payload.row, 'delete')) return;
       Modal.confirm({
         title: '确认删除？',
@@ -174,6 +184,10 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
   }
 
   async function handleDelete(row: Record<string, unknown>) {
+    if (wfRowEditLocked(row)) {
+      Message.warning('审批中的记录不可删除');
+      return;
+    }
     if (isIamRowActionDisabled(typePath.value, row, 'delete')) return;
     const id = getValueByKey(row, pkField.value);
     await cubeApi.page.remove(typePath.value, id as string | number);
@@ -184,7 +198,12 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
   function confirmBatchDelete() {
     if (!batchDeleteState.value.visible || batchDeleteState.value.disabled) return;
     if (!selectedKeys.value.length) return;
-    if (isIamBatchDeleteBlocked(typePath.value, selectedRowsForKeys())) {
+    const rows = selectedRowsForKeys();
+    if (rows.some((r) => wfRowEditLocked(r))) {
+      Message.error('选中记录含审批中，无法删除');
+      return;
+    }
+    if (isIamBatchDeleteBlocked(typePath.value, rows)) {
       Message.error('含系统角色，无法批量删除');
       return;
     }
@@ -199,7 +218,12 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
   async function handleBatchDelete() {
     if (!batchDeleteState.value.visible || batchDeleteState.value.disabled) return;
     if (!selectedKeys.value.length) return;
-    if (isIamBatchDeleteBlocked(typePath.value, selectedRowsForKeys())) {
+    const rows = selectedRowsForKeys();
+    if (rows.some((r) => wfRowEditLocked(r))) {
+      Message.error('选中记录含审批中，无法删除');
+      return;
+    }
+    if (isIamBatchDeleteBlocked(typePath.value, rows)) {
       Message.error('含系统角色，无法批量删除');
       return;
     }
@@ -272,6 +296,10 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
 
   function onCardDelete(row: Record<string, unknown>) {
     if (!flags.value.canDelete) return;
+    if (wfRowEditLocked(row)) {
+      Message.warning('审批中的记录不可删除');
+      return;
+    }
     if (isIamRowActionDisabled(typePath.value, row, 'delete')) return;
     Modal.confirm({
       title: '确认删除？',

@@ -3,9 +3,9 @@
  * 审批接收人选择（OSC-26090347f1 T8c）：用户/角色/部门 单选/多选 + 远端搜索。
  * 逻辑复用 recipient.ts searchRecipients（自动化同策略），UI 对齐自动化动作卡片。
  */
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { RecipientKind, RecipientOption } from './recipient';
-import { searchRecipients } from './recipient';
+import { normalizeSelectIds, searchRecipients } from './recipient';
 
 const props = withDefaults(
   defineProps<{
@@ -25,15 +25,12 @@ const emit = defineEmits<{
   (e: 'update:modelValue', ids: number[]): void;
 }>();
 
-const kind = computed({
-  get: () => props.kind,
-  set: (v: RecipientKind) => emit('update:kind', v),
-});
-
-const selected = computed({
-  get: () => props.modelValue,
-  set: (ids: number[]) => emit('update:modelValue', ids),
-});
+const kind = computed(() => props.kind);
+const selected = computed(() => props.modelValue ?? []);
+/** 单选时 a-select 要标量，多选才是数组；否则切换角色/部门后点选无效 */
+const selectValue = computed(() =>
+  props.multiple ? selected.value : (selected.value[0] ?? undefined),
+);
 
 const options = ref<RecipientOption[]>([]);
 const loading = ref(false);
@@ -45,15 +42,16 @@ const KIND_LABEL: Record<RecipientKind, string> = {
   departments: '部门',
 };
 
-async function doSearch(keyword = '') {
+async function doSearch(keyword = '', searchKind: RecipientKind = kind.value) {
   const s = ++seq;
   loading.value = true;
   try {
-    const list = await searchRecipients(kind.value, keyword);
+    const list = await searchRecipients(searchKind, keyword);
     if (s !== seq) return;
     // 已选项不在当前页时保留占位标签
     const map = new Map(list.map((x) => [x.id, x]));
-    for (const id of selected.value) {
+    const keep = searchKind === kind.value ? selected.value : [];
+    for (const id of keep) {
       if (!map.has(id)) map.set(id, { id, name: String(id), displayName: String(id) });
     }
     options.value = [...map.values()];
@@ -62,30 +60,45 @@ async function doSearch(keyword = '') {
   }
 }
 
-function onKindChange(v: RecipientKind) {
-  kind.value = v;
-  selected.value = [];
-  void doSearch('');
+function onKindChange(v: string | number | boolean) {
+  const next = String(v) as RecipientKind;
+  if (!KIND_LABEL[next] || next === kind.value) return;
+  emit('update:kind', next);
+  emit('update:modelValue', []);
+  options.value = [];
+  void doSearch('', next);
 }
 
 function onUpdate(v: unknown) {
-  selected.value = (Array.isArray(v) ? v : [])
-    .map(Number)
-    .filter((n) => Number.isFinite(n) && n > 0);
+  emit('update:modelValue', normalizeSelectIds(v));
 }
+
+watch(
+  () => props.kind,
+  (k) => {
+    void doSearch('', k);
+  },
+);
 
 defineExpose({ doSearch });
 </script>
 
 <template>
   <div class="wf-recipient">
-    <a-radio-group :model-value="kind" type="button" size="small" class="wf-recipient__kind">
-      <a-radio v-for="(label, k) in KIND_LABEL" :key="k" :value="k" @change="onKindChange(k)">
+    <a-radio-group
+      :model-value="kind"
+      type="button"
+      size="small"
+      class="wf-recipient__kind"
+      @change="onKindChange"
+    >
+      <a-radio v-for="(label, k) in KIND_LABEL" :key="k" :value="k">
         {{ label }}
       </a-radio>
     </a-radio-group>
     <a-select
-      :model-value="selected"
+      :key="kind + (multiple ? '-m' : '-s')"
+      :model-value="selectValue"
       :multiple="multiple"
       allow-clear
       allow-search

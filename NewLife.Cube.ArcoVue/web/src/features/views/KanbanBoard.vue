@@ -22,8 +22,12 @@
           :body-fields="bodyOf(row)"
         :can-view-detail="compact ? false : canViewDetail"
           :enable-table-double-click="compact ? false : enableTableDoubleClick"
-          :can-edit="compact ? false : canEdit"
-          :can-delete="compact ? false : canDelete && !isIamRowActionDisabled(typePath, row, 'delete')"
+          :can-edit="compact ? false : canEdit && !wfRowEditLocked(row)"
+          :can-delete="
+            compact
+              ? false
+              : canDelete && !wfRowEditLocked(row) && !isIamRowActionDisabled(typePath, row, 'delete')
+          "
           :ops-custom-links="opsCustomLinks"
           :title-format-color="titleFormatColorOf(row)"
           :title-format-bold="titleFormatBoldOf(row)"
@@ -48,6 +52,7 @@ import RecordCard from './RecordCard.vue';
 import { useKanbanBoard } from './useKanbanBoard';
 import type { ViewFormatRule } from '@/core/utils/viewProfile';
 import { isIamRowActionDisabled } from '@/core/utils/iamGuards';
+import { wfRowEditLocked } from '@/core/types/workflow';
 
 const props = withDefaults(
   defineProps<{

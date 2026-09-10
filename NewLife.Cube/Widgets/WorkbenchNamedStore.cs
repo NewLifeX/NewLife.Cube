@@ -13,7 +13,7 @@ public static class WorkbenchNamedStore
     public const String ParentName = "Workbench";
 
     /// <summary>菜单父分组显示名（侧栏顶级菜单组名）</summary>
-    public const String ParentTitle = "系统驾驶舱";
+    public const String ParentTitle = "系统看板";
 
     /// <summary>命名项</summary>
     public sealed class NamedItem

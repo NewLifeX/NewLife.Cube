@@ -8,13 +8,20 @@ import { registerLeafRoutes, resolvePageComponent } from '@/core/utils/menuRoute
 
 // OA 审批独立页（OSC-26090347f1）：菜单未播种/visible=false 时不注册动态路由，
 // 此处静态兜底注册使 URL 直达可用（/Cube/Workflow/{Todo|Done|Started|Designer}）。
-const oaLeafRoutes: RouteRecordRaw[] = ['Todo', 'Done', 'Started', 'Designer'].map((sub) => {
+const oaLeafRoutes: RouteRecordRaw[] = (
+  [
+    { sub: 'Todo', title: '我的待办' },
+    { sub: 'Done', title: '已办' },
+    { sub: 'Started', title: '我发起的' },
+    { sub: 'Designer', title: '流程设计' },
+  ] as const
+).map(({ sub, title }) => {
   const path = `Cube/Workflow/${sub}`;
   return {
     path,
     name: `OaWorkflow${sub}`,
     component: resolvePageComponent(`/${path}`),
-    meta: { title: sub },
+    meta: { title },
   };
 });
 

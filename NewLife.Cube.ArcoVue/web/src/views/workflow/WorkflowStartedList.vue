@@ -7,6 +7,7 @@ import { formatDateTime } from '@/core/utils/datetime';
 import { instanceStatusMeta } from './useWorkflowProgress';
 import { useWorkflowStartedList } from './useWorkflowStartedList';
 import WorkflowProgressPanel from './WorkflowProgressPanel.vue';
+import './workflowChrome.css';
 
 const {
   rows,
@@ -23,14 +24,25 @@ function titleOf(row: WorkflowInstanceItem): string {
 </script>
 
 <template>
-  <div class="wf-started-page">
-    <div class="wf-started-page__head">
-      <h3 class="wf-started-page__title">我发起的</h3>
-      <a-button size="small" @click="refresh">刷新</a-button>
-    </div>
+  <div class="wf-started-page list-surface">
+    <div class="list-panel list-panel--table">
+      <!-- 工具栏与表格同处一个面板（多维视图） -->
+      <div class="list-topbar">
+        <h3 class="wf-started-page__title">我发起的</h3>
+        <a-space>
+          <a-button size="small" @click="refresh">刷新</a-button>
+        </a-space>
+      </div>
 
-    <a-spin :loading="loading">
-      <a-table :data="rows" :row-key="(r: WorkflowInstanceItem) => r.id" :pagination="false" :bordered="false" size="small">
+      <a-spin :loading="loading" style="width: 100%; display: block">
+        <a-table
+          :data="rows"
+          :loading="loading"
+          :row-key="(r: WorkflowInstanceItem) => String(r.id)"
+          :pagination="false"
+          :bordered="false"
+          size="small"
+        >
         <template #columns>
           <a-table-column title="标题" data-index="title" :width="240" ellipsis>
             <template #cell="{ record }">
@@ -74,21 +86,17 @@ function titleOf(row: WorkflowInstanceItem): string {
           <a-empty description="暂无发起的流程" />
         </template>
       </a-table>
-    </a-spin>
+      </a-spin>
 
-    <WorkflowProgressPanel v-model="progressVisible" :instance-id="progressInstanceId" />
+      <WorkflowProgressPanel v-model="progressVisible" :instance-id="progressInstanceId" />
+    </div>
   </div>
 </template>
 
 <style scoped>
 .wf-started-page {
-  padding: 16px;
-}
-.wf-started-page__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
+  /* 内边距/背景由共享 .list-surface/.list-panel 承担 */
+  min-height: 0;
 }
 .wf-started-page__title {
   margin: 0;

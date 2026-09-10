@@ -28,6 +28,7 @@ import { useListViews } from './useListViews';
 import { useRecordNav } from './useRecordNav';
 import { useListAutomation } from './useListAutomation';
 import { useWorkflowList } from './useWorkflowList';
+import { wfRowCanStart, wfRowEditLocked, wfRowInstanceId, wfRowRestartBlocked } from '@/core/types/workflow';
 import { runCellFieldLink, runOpsCustomLink } from './useListOpsLinks';
 
 /**
@@ -42,7 +43,13 @@ export function useDefaultList(props: { type: string; authId?: number }) {
   const nav = useRecordNav(ctx);
   const crud = useListCrud(ctx, {
     loadData: query.loadData,
-    openEdit: nav.openEdit,
+    openEdit: async (row) => {
+      if (wfRowEditLocked(row)) {
+        Message.warning('审批中的记录不可编辑');
+        return;
+      }
+      await nav.openEdit(row);
+    },
     openDetail: nav.openDetail,
   });
   const views = useListViews(ctx, {
@@ -56,20 +63,54 @@ export function useDefaultList(props: { type: string; authId?: number }) {
 
   /** OA 审批（OSC-26090347f1）：工具栏多选提交 / 行提交 / 行进度 */
   const wfSubmitIds = ref<(string | number)[]>([]);
-  const wfProgressInstanceId = ref<number | null>(null);
+  const wfProgressInstanceId = ref<string | null>(null);
   const wfProgressVisible = ref(false);
 
-  /** 打开提交确认抽屉：工具栏用已勾选 ids；行提交传单行主键 */
+  /** 打开提交确认抽屉：工具栏用已勾选 ids；行提交传单行主键；过滤审批中/已通过 */
   function openWorkflowSubmit(ids?: (string | number)[]) {
-    wfSubmitIds.value = (ids ?? ctx.selectedKeys.value).slice();
+    const source = (ids ?? ctx.selectedKeys.value).slice();
+    // 工具栏批量：去掉不可再发起的行，避免整批 409
+    const table = ctx.tableData.value;
+    const pk = ctx.pkField.value;
+    const picked = source.filter((id) => {
+      const row = table.find((r) => String(getValueByKey(r, pk)) === String(id));
+      if (!row) return true;
+      return !wfRowRestartBlocked(row) && wfRowCanStart(row);
+    });
+    if (source.length > 0 && picked.length === 0) {
+      Message.warning('所选记录均不可发起（审批中或已通过）');
+      return;
+    }
+    if (picked.length < source.length) {
+      Message.warning(`已排除 ${source.length - picked.length} 条不可发起的记录`);
+    }
+    wfSubmitIds.value = picked;
     wf.submitDrawerVisible.value = true;
+    if (picked.length === 0) {
+      Message.warning('请先勾选要提交的记录');
+    }
   }
 
-  /** 行「进度」：行 __wfInstanceId 打开进度抽屉 */
+  async function openEdit(row: Record<string, unknown>) {
+    if (wfRowEditLocked(row)) {
+      Message.warning('审批中的记录不可编辑');
+      return;
+    }
+    await nav.openEdit(row);
+  }
+
+  /** 行「进度」：行 __wfInstanceId 打开进度抽屉（雪花 Id 字符串透传） */
   function openWorkflowProgress(row: Record<string, unknown>) {
-    const id = Number(row?.__wfInstanceId);
-    if (!Number.isFinite(id) || id <= 0) return;
-    wfProgressInstanceId.value = id;
+    const id = wfRowInstanceId(row);
+    if (!id) return;
+    openWorkflowProgressById(id);
+  }
+
+  /** 按实例 Id 打开进度（RecordDrawer 审批 Tab） */
+  function openWorkflowProgressById(id: string | number) {
+    const sid = typeof id === 'string' ? id.trim() : id > 0 ? String(id) : '';
+    if (!sid || sid === '0') return;
+    wfProgressInstanceId.value = sid;
     wfProgressVisible.value = true;
   }
 
@@ -77,6 +118,7 @@ export function useDefaultList(props: { type: string; authId?: number }) {
   async function onWorkflowSubmitted() {
     ctx.selectedKeys.value = [];
     await query.loadData();
+    void useAppStore().refreshWorkflowMeta();
   }
 
   /** 操作列「更多」溢出菜单（VTable canvas 外挂） */
@@ -265,6 +307,14 @@ export function useDefaultList(props: { type: string; authId?: number }) {
   }
 
   function openBatchEdit() {
+    const rows = ctx.tableData.value.filter((row) => {
+      const id = getValueByKey(row, ctx.pkField.value);
+      return id != null && ctx.selectedKeys.value.map(String).includes(String(id));
+    });
+    if (rows.some((r) => wfRowEditLocked(r))) {
+      Message.error('选中记录含审批中，无法批量修改');
+      return;
+    }
     batchEditRows.value = [newBatchEditRow(batchEditFieldOptions.value[0]?.value ?? '')];
     void loadBatchRowOptions(batchEditRows.value[0]);
     batchEditVisible.value = true;
@@ -453,7 +503,7 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     openBatchEdit,
     confirmBatchEdit,
     ...auto,
-    // OA 审批（OSC-26090347f1）：DefaultList 工具栏「提交审批」+ 提交/进度抽屉
+    // OA 审批（OSC-26090347f1）：DefaultList 工具栏「批量提交」+ 提交/进度抽屉
     workflowEnabled: wf.wfEnabled,
     workflowToolbarSubmit: wf.toolbarSubmit,
     workflowBlock: wf.workflowBlock,
@@ -462,9 +512,11 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     wfProgressInstanceId,
     wfProgressVisible,
     openWorkflowSubmit,
+    openWorkflowProgressById,
     onWorkflowSubmitted,
     ...views,
     ...nav,
+    openEdit,
     PAGE_SIZE_OPTIONS,
     getActiveView,
   };

@@ -3,13 +3,25 @@ import type { WorkflowInstanceDetail, WorkflowTaskItem } from '@cube/api-core';
 import { Message } from '@arco-design/web-vue';
 import cubeApi from '@/api';
 import { formatApiError } from '@/core/utils/apiError';
+import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
 
 /**
  * 审批进度面板逻辑（OSC-26090347f1 T8c，IA §3.2）：
  * 加载实例详情（主体+任务+意见时间轴），识别当前用户可办任务并驱动同意/驳回/加签/转办/知会/撤回。
  * 纯 helper（instanceStatusMeta/actionLabel/pickMyTask）可单测。
+ * 实例/任务 Id 全程 string，禁止 Number() 丢雪花精度。
  */
+
+export type WfId = string | number;
+
+export function wfIdOf(id: WfId | null | undefined): string {
+  if (id == null || id === '') return '';
+  if (typeof id === 'string') return id.trim();
+  if (typeof id === 'number' && Number.isFinite(id) && id > 0) return String(Math.trunc(id));
+  const s = String(id).trim();
+  return s === '0' ? '' : s;
+}
 
 /** 实例状态展示（后端大写 Running/Approved/...） */
 export function instanceStatusMeta(status: string | undefined): { text: string; color: string } {
@@ -74,9 +86,9 @@ export function pickMyTask(
   return null;
 }
 
-/** 面板实例详情加载与操作；instanceId 支持 ref 或普通值 */
+/** 面板实例详情加载与操作；instanceId 支持 ref 或普通值（雪花 string） */
 export function useWorkflowProgress(
-  instanceId: Ref<number | null | undefined> | number | null | undefined,
+  instanceId: Ref<WfId | null | undefined> | WfId | null | undefined,
 ) {
   const userStore = useUserStore();
   const detail = ref<WorkflowInstanceDetail | null>(null);
@@ -85,7 +97,7 @@ export function useWorkflowProgress(
   const seq = ref(0);
 
   async function load() {
-    const id = unref(instanceId);
+    const id = wfIdOf(unref(instanceId));
     if (!id) {
       detail.value = null;
       return;
@@ -107,7 +119,7 @@ export function useWorkflowProgress(
   }
 
   watch(
-    () => unref(instanceId),
+    () => wfIdOf(unref(instanceId)),
     () => void load(),
     { immediate: true },
   );
@@ -125,20 +137,22 @@ export function useWorkflowProgress(
   const statusMeta = computed(() => instanceStatusMeta(detail.value?.status));
 
   /** 单任务操作；或签未认领先 Claim 再执行 */
-  async function runTaskAction(action: (id: number) => Promise<unknown>) {
+  async function runTaskAction(action: (id: string) => Promise<unknown>) {
     const task = myTask.value;
-    if (!task) return false;
+    const taskId = wfIdOf(task?.id);
+    if (!task || !taskId) return false;
     try {
       if (task.assigneeId !== userId.value && (task.candidate ?? []).includes(userId.value as number)) {
         try {
-          await cubeApi.workflow.claim(task.id);
+          await cubeApi.workflow.claim(taskId);
         } catch {
           /* 后端或签引擎允许未认领直接动作时忽略 */
         }
       }
-      await action(task.id);
+      await action(taskId);
       Message.success('操作成功');
       await load();
+      void useAppStore().refreshWorkflowMeta();
       return true;
     } catch (err) {
       Message.error(formatApiError(err, '操作失败'));
@@ -160,7 +174,8 @@ export function useWorkflowProgress(
     payload: { kind: string; ids: number[]; comment?: string; before?: boolean },
   ) {
     const task = myTask.value;
-    if (!task) return false;
+    const taskId = wfIdOf(task?.id);
+    if (!task || !taskId) return false;
     const to = { kind: payload.kind, users: [], roles: [], departments: [] } as Record<string, unknown>;
     to[payload.kind] = payload.ids;
     try {
@@ -170,13 +185,14 @@ export function useWorkflowProgress(
           : kind === 'transfer'
             ? cubeApi.workflow.transfer
             : cubeApi.workflow.cc;
-      await fn(task.id, {
+      await fn(taskId, {
         to: to as never,
         comment: payload.comment || undefined,
         ...(kind === 'addSign' ? { before: payload.before ?? false } : {}),
       });
       Message.success('操作成功');
       await load();
+      void useAppStore().refreshWorkflowMeta();
       return true;
     } catch (err) {
       Message.error(formatApiError(err, '操作失败'));
@@ -186,11 +202,13 @@ export function useWorkflowProgress(
 
   /** 发起人撤回 */
   async function withdraw(comment: string) {
-    if (!detail.value) return false;
+    const id = wfIdOf(detail.value?.id);
+    if (!id) return false;
     try {
-      await cubeApi.workflow.withdraw(detail.value.id, { comment: comment || undefined });
+      await cubeApi.workflow.withdraw(id, { comment: comment || undefined });
       Message.success('已撤回');
       await load();
+      void useAppStore().refreshWorkflowMeta();
       return true;
     } catch (err) {
       Message.error(formatApiError(err, '撤回失败'));

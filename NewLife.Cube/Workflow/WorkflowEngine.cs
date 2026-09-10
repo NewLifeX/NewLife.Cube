@@ -32,8 +32,10 @@ public static class WorkflowEngine
     /// <param name="starterId">发起人</param>
     /// <param name="starterName">发起人姓名</param>
     /// <param name="comment">发起意见</param>
+    /// <param name="summary">流程摘要（Markdown/富文本）</param>
+    /// <param name="title">流程标题（本次提交显示名）</param>
     /// <returns>新实例</returns>
-    public static WorkflowInstance Start(WorkflowDefinition definition, IList<String> keys, Int32 starterId, String starterName, String comment)
+    public static WorkflowInstance Start(WorkflowDefinition definition, IList<String> keys, Int32 starterId, String starterName, String comment, String summary = null, String title = null)
     {
         if (definition == null) throw new WorkflowException(404, "流程定义不存在");
         if (!definition.Published || !definition.Enable) throw new WorkflowException(400, "流程定义未发布或已停用");
@@ -67,9 +69,11 @@ public static class WorkflowEngine
         for (var i = 0; i < keys2.Count; i++)
         {
             var key = keys2[i];
-            // 同一记录同时最多一条在途
+            // 同一记录同时最多一条在途；已通过不可再次发起
             if (WorkflowSubject.FindRunning(typePath, key) != null)
                 throw new WorkflowException(409, $"记录[{key}]已有在途审批");
+            if (WorkflowSubject.IsLatestApproved(typePath, key))
+                throw new WorkflowException(409, $"记录[{key}]已通过审批，不可再次发起");
 
             var row = factory.FindByKey(NormalizeKey(kk[i], pkField));
             if (row == null || (row as IEntity).IsNullKey) throw new WorkflowException(404, $"记录[{key}]不存在");
@@ -107,7 +111,9 @@ public static class WorkflowEngine
                 GraphSnapshot = definition.PublishedGraphJson,
                 Status = WorkflowStatuses.Running,
                 StarterId = starterId,
+                Title = title?.Trim().Cut(200),
                 StartComment = comment?.Cut(500),
+                Summary = summary?.Trim(),
             };
             instance.Insert();
 
@@ -116,14 +122,16 @@ public static class WorkflowEngine
             {
                 var row = rows[i];
                 var master = factory.Table?.Master?.Name;
-                var title = master.IsNullOrEmpty() ? null : row[master]?.ToString();
-                if (title.IsNullOrEmpty()) title = keys2[i];
+                var subjectTitle = master.IsNullOrEmpty() ? null : row[master]?.ToString();
+                if (subjectTitle.IsNullOrEmpty()) subjectTitle = keys2[i];
+                // 批量多主体时：首条可用实例标题覆盖显示名
+                if (i == 0 && !title.IsNullOrWhiteSpace()) subjectTitle = title.Trim();
                 var subject = new WorkflowSubject
                 {
                     InstanceId = instance.Id,
                     TypePath = typePath,
                     EntityKey = keys2[i],
-                    Title = title.Cut(100),
+                    Title = subjectTitle.Cut(100),
                 };
                 subject.Insert();
             }
@@ -1056,6 +1064,7 @@ public static class WorkflowEngine
     /// <returns>标题</returns>
     static String BuildTitle(WorkflowInstance instance, WorkflowTask task)
     {
+        if (!instance.Title.IsNullOrEmpty()) return instance.Title;
         var subject = WorkflowSubject.FindAll(WorkflowSubject._.InstanceId == instance.Id).OrderBy(e => e.Id).FirstOrDefault();
         return subject?.Title ?? instance.TypePath;
     }

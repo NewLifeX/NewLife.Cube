@@ -1,21 +1,64 @@
 import { ref } from 'vue';
 import type { WorkflowTaskItem } from '@cube/api-core';
+import { Message } from '@arco-design/web-vue';
 import cubeApi from '@/api';
+import { formatApiError } from '@/core/utils/apiError';
+import { useAppStore } from '@/stores/app';
 import { useWorkflowTaskList } from './useWorkflowTaskList';
+import { wfIdOf, type WfId } from './useWorkflowProgress';
 
 /**
  * 任务中心页编排（OSC-26090347f1 T8c）：待办/已办列表加载 + 进度抽屉状态 + 打开业务记录。
- * .vue 只做模板绑定，本文件持有全部页面逻辑（构造即拉取）。
+ * 行级审批仅意见，不上传附件（附件仅发起时挂实例）。
  */
 export function useWorkflowTaskPage(kind: 'todo' | 'done') {
   const wl = useWorkflowTaskList(kind);
-  const progressInstanceId = ref<number | null>(null);
+  const progressInstanceId = ref<string | null>(null);
   const progressVisible = ref(false);
 
+  /** 行级审批弹层 */
+  const rowOpinionVisible = ref(false);
+  const rowOpinionKind = ref<'approve' | 'reject'>('approve');
+  const rowOpinionText = ref('');
+  const rowOpinionSaving = ref(false);
+  const rowOpinionTask = ref<WorkflowTaskItem | null>(null);
+
   function openProgress(row: WorkflowTaskItem) {
-    if (!row.instanceId) return;
-    progressInstanceId.value = row.instanceId;
+    const id = wfIdOf(row.instanceId);
+    if (!id) return;
+    progressInstanceId.value = id;
     progressVisible.value = true;
+  }
+
+  function openRowOpinion(row: WorkflowTaskItem, kind2: 'approve' | 'reject') {
+    rowOpinionTask.value = row;
+    rowOpinionKind.value = kind2;
+    rowOpinionText.value = '';
+    rowOpinionVisible.value = true;
+  }
+
+  async function confirmRowOpinion(): Promise<boolean> {
+    const task = rowOpinionTask.value;
+    const taskId = wfIdOf(task?.id);
+    if (!task || !taskId) return false;
+    rowOpinionSaving.value = true;
+    try {
+      if (rowOpinionKind.value === 'approve') {
+        await cubeApi.workflow.approve(taskId, { comment: rowOpinionText.value || undefined });
+      } else {
+        await cubeApi.workflow.reject(taskId, { comment: rowOpinionText.value || undefined });
+      }
+      Message.success(rowOpinionKind.value === 'approve' ? '已同意' : '已驳回');
+      rowOpinionVisible.value = false;
+      await wl.load();
+      void useAppStore().refreshWorkflowMeta();
+      return true;
+    } catch (err) {
+      Message.error(formatApiError(err, '操作失败'));
+      return false;
+    } finally {
+      rowOpinionSaving.value = false;
+    }
   }
 
   function refresh() {
@@ -32,9 +75,11 @@ export function useWorkflowTaskPage(kind: 'todo' | 'done') {
   }
 
   /** 取实例首条主体 EntityKey 作为记录主键 */
-  async function resolveSubjectKey(instanceId: number): Promise<string> {
+  async function resolveSubjectKey(instanceId: WfId): Promise<string> {
+    const id = wfIdOf(instanceId);
+    if (!id) return '';
     try {
-      const res = await cubeApi.workflow.instance(instanceId);
+      const res = await cubeApi.workflow.instance(id);
       const first = (res.data?.subjects ?? [])[0];
       return first?.entityKey ?? '';
     } catch {
@@ -42,7 +87,6 @@ export function useWorkflowTaskPage(kind: 'todo' | 'done') {
     }
   }
 
-  // 构造即加载（页面 setup 即触发；不依赖 DOM）
   void wl.load();
 
   return {
@@ -52,5 +96,11 @@ export function useWorkflowTaskPage(kind: 'todo' | 'done') {
     openProgress,
     openRecord,
     refresh,
+    rowOpinionVisible,
+    rowOpinionKind,
+    rowOpinionText,
+    rowOpinionSaving,
+    openRowOpinion,
+    confirmRowOpinion,
   };
 }

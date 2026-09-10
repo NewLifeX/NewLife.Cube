@@ -4,7 +4,17 @@ vi.mock('@/api', () => ({
   default: { automation: { recipients: vi.fn() }, page: { getList: vi.fn() } },
 }));
 
-import { normalizeRecipient } from './recipient';
+import { normalizeRecipient, normalizeSelectIds } from './recipient';
+
+describe('normalizeSelectIds 单选标量/多选数组', () => {
+  it('标量与数组都归一成正整数列表', () => {
+    expect(normalizeSelectIds(8)).toEqual([8]);
+    expect(normalizeSelectIds([8, 9])).toEqual([8, 9]);
+    expect(normalizeSelectIds(null)).toEqual([]);
+    expect(normalizeSelectIds('')).toEqual([]);
+    expect(normalizeSelectIds(0)).toEqual([]);
+  });
+});
 
 describe('normalizeRecipient 接收人归一', () => {
   it('Pascal/camel/Id/iD 兼容', () => {

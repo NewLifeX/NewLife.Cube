@@ -19,7 +19,7 @@ function rowOf(partial: Partial<Record<keyof typeof WF_ROW_FIELD, unknown>> = {}
 
 const disabledBlock: WorkflowPageBlock = { enabled: true, canStart: true };
 
-describe('resolveWfToolbarSubmit 工具栏「提交审批」（IA §4）', () => {
+describe('resolveWfToolbarSubmit 工具栏「批量提交」（IA §4）', () => {
   it('embed 分享：整体不渲染（IA §5）', () => {
     expect(resolveWfToolbarSubmit({ enabled: true, canStart: true }, 3, true)).toEqual({
       visible: false,
@@ -92,15 +92,7 @@ describe('resolveWfRowActions 行「提交/进度」矩阵（IA §4）', () => {
     });
   });
 
-  it('approved + 可发起 + 有实例：行提交可用（可再发起新流程）+ 进度显示', () => {
-    const a = resolveWfRowActions(
-      disabledBlock,
-      rowOf({ status: 'approved', canStart: true, instanceId: 7 }),
-    );
-    expect(a).toMatchObject({ submitVisible: true, submitDisabled: false, progressVisible: true });
-  });
-
-  it('approved + 无权限：行提交禁用；进度仍显示（有实例）', () => {
+  it('approved + 有实例：行提交禁用（不可再发起）+ 进度显示', () => {
     const a = resolveWfRowActions(
       disabledBlock,
       rowOf({ status: 'approved', canStart: false, instanceId: 7 }),
@@ -108,7 +100,20 @@ describe('resolveWfRowActions 行「提交/进度」矩阵（IA §4）', () => {
     expect(a).toMatchObject({
       submitVisible: true,
       submitDisabled: true,
-      submitTooltip: '当前账号无发起审批权限',
+      submitTooltip: '已通过，不可再次发起',
+      progressVisible: true,
+    });
+  });
+
+  it('approved 即便 canStart 误为 true：仍禁提交（前端兜底）', () => {
+    const a = resolveWfRowActions(
+      disabledBlock,
+      rowOf({ status: 'approved', canStart: true, instanceId: 7 }),
+    );
+    expect(a).toMatchObject({
+      submitVisible: true,
+      submitDisabled: true,
+      submitTooltip: '已通过，不可再次发起',
       progressVisible: true,
     });
   });

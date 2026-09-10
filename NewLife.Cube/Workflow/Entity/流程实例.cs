@@ -88,6 +88,14 @@ public partial class WorkflowInstance : IEntity<WorkflowInstanceModel>
     [BindColumn("StarterId", "发起人", "")]
     public Int32 StarterId { get => _StarterId; set { if (OnPropertyChanging("StarterId", value)) { _StarterId = value; OnPropertyChanged("StarterId"); } } }
 
+    private String _Title;
+    /// <summary>标题。本次提交的显示标题，发起时填写</summary>
+    [DisplayName("标题")]
+    [Description("标题。本次提交的显示标题，发起时填写")]
+    [DataObjectField(false, false, true, 200)]
+    [BindColumn("Title", "标题。本次提交的显示标题，发起时填写", "", Master = true)]
+    public String Title { get => _Title; set { if (OnPropertyChanging("Title", value)) { _Title = value; OnPropertyChanged("Title"); } } }
+
     private String _StartComment;
     /// <summary>发起意见</summary>
     [DisplayName("发起意见")]
@@ -95,6 +103,14 @@ public partial class WorkflowInstance : IEntity<WorkflowInstanceModel>
     [DataObjectField(false, false, true, 500)]
     [BindColumn("StartComment", "发起意见", "")]
     public String StartComment { get => _StartComment; set { if (OnPropertyChanging("StartComment", value)) { _StartComment = value; OnPropertyChanged("StartComment"); } } }
+
+    private String _Summary;
+    /// <summary>流程摘要。Markdown/富文本，发起时填写</summary>
+    [DisplayName("流程摘要")]
+    [Description("流程摘要。Markdown/富文本，发起时填写")]
+    [DataObjectField(false, false, true, -1)]
+    [BindColumn("Summary", "流程摘要。Markdown/富文本，发起时填写", "")]
+    public String Summary { get => _Summary; set { if (OnPropertyChanging("Summary", value)) { _Summary = value; OnPropertyChanged("Summary"); } } }
 
     private DateTime _FinishTime;
     /// <summary>结束时间</summary>
@@ -190,7 +206,9 @@ public partial class WorkflowInstance : IEntity<WorkflowInstanceModel>
         GraphSnapshot = model.GraphSnapshot;
         Status = model.Status;
         StarterId = model.StarterId;
+        Title = model.Title;
         StartComment = model.StartComment;
+        Summary = model.Summary;
         FinishTime = model.FinishTime;
         CreateUser = model.CreateUser;
         CreateUserID = model.CreateUserID;
@@ -219,7 +237,9 @@ public partial class WorkflowInstance : IEntity<WorkflowInstanceModel>
             "GraphSnapshot" => _GraphSnapshot,
             "Status" => _Status,
             "StarterId" => _StarterId,
+            "Title" => _Title,
             "StartComment" => _StartComment,
+            "Summary" => _Summary,
             "FinishTime" => _FinishTime,
             "CreateUser" => _CreateUser,
             "CreateUserID" => _CreateUserID,
@@ -243,7 +263,9 @@ public partial class WorkflowInstance : IEntity<WorkflowInstanceModel>
                 case "GraphSnapshot": _GraphSnapshot = Convert.ToString(value); break;
                 case "Status": _Status = Convert.ToString(value); break;
                 case "StarterId": _StarterId = value.ToInt(); break;
+                case "Title": _Title = Convert.ToString(value); break;
                 case "StartComment": _StartComment = Convert.ToString(value); break;
+                case "Summary": _Summary = Convert.ToString(value); break;
                 case "FinishTime": _FinishTime = value.ToDateTime(); break;
                 case "CreateUser": _CreateUser = Convert.ToString(value); break;
                 case "CreateUserID": _CreateUserID = value.ToInt(); break;
@@ -310,43 +332,14 @@ public partial class WorkflowInstance : IEntity<WorkflowInstanceModel>
     }
     #endregion
 
-    #region 高级查询
-    /// <summary>高级查询</summary>
-    /// <param name="tenantId">租户。拷贝定义</param>
-    /// <param name="definitionId">流程定义</param>
-    /// <param name="typePath">实体路径</param>
-    /// <param name="status">状态。Running/Approved/Rejected/Withdrawn/Cancelled</param>
-    /// <param name="starterId">发起人</param>
-    /// <param name="start">编号开始</param>
-    /// <param name="end">编号结束</param>
-    /// <param name="key">关键字</param>
-    /// <param name="page">分页参数信息。可携带统计和数据权限扩展查询等信息</param>
-    /// <returns>实体列表</returns>
-    public static IList<WorkflowInstance> Search(Int32 tenantId, Int64 definitionId, String typePath, String status, Int32 starterId, DateTime start, DateTime end, String key, PageParameter page)
-    {
-        var exp = new WhereExpression();
-
-        if (tenantId >= 0) exp &= _.TenantId == tenantId;
-        if (definitionId >= 0) exp &= _.DefinitionId == definitionId;
-        if (!typePath.IsNullOrEmpty()) exp &= _.TypePath == typePath;
-        if (!status.IsNullOrEmpty()) exp &= _.Status == status;
-        if (starterId >= 0) exp &= _.StarterId == starterId;
-        exp &= _.Id.Between(start, end, Meta.Factory.Snow);
-        if (!key.IsNullOrEmpty()) exp &= SearchWhereByKeys(key);
-
-        return FindAll(exp, page);
-    }
-    #endregion
-
     #region 数据清理
     /// <summary>清理指定时间段内的数据</summary>
     /// <param name="start">开始时间。未指定时清理小于指定时间的所有数据</param>
     /// <param name="end">结束时间</param>
-    /// <param name="maximumRows">最大删除行数。清理历史数据时，避免一次性删除过多导致数据库IO跟不上，0表示所有</param>
     /// <returns>清理行数</returns>
-    public static Int32 DeleteWith(DateTime start, DateTime end, Int32 maximumRows = 0)
+    public static Int32 DeleteWith(DateTime start, DateTime end)
     {
-        return Delete(_.Id.Between(start, end, Meta.Factory.Snow), maximumRows);
+        return Delete(_.Id.Between(start, end, Meta.Factory.Snow));
     }
     #endregion
 
@@ -378,8 +371,14 @@ public partial class WorkflowInstance : IEntity<WorkflowInstanceModel>
         /// <summary>发起人</summary>
         public static readonly Field StarterId = FindByName("StarterId");
 
+        /// <summary>标题。本次提交的显示标题，发起时填写</summary>
+        public static readonly Field Title = FindByName("Title");
+
         /// <summary>发起意见</summary>
         public static readonly Field StartComment = FindByName("StartComment");
+
+        /// <summary>流程摘要。Markdown/富文本，发起时填写</summary>
+        public static readonly Field Summary = FindByName("Summary");
 
         /// <summary>结束时间</summary>
         public static readonly Field FinishTime = FindByName("FinishTime");
@@ -438,8 +437,14 @@ public partial class WorkflowInstance : IEntity<WorkflowInstanceModel>
         /// <summary>发起人</summary>
         public const String StarterId = "StarterId";
 
+        /// <summary>标题。本次提交的显示标题，发起时填写</summary>
+        public const String Title = "Title";
+
         /// <summary>发起意见</summary>
         public const String StartComment = "StartComment";
+
+        /// <summary>流程摘要。Markdown/富文本，发起时填写</summary>
+        public const String Summary = "Summary";
 
         /// <summary>结束时间</summary>
         public const String FinishTime = "FinishTime";

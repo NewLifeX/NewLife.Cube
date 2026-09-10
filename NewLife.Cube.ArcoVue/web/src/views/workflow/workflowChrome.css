@@ -1,0 +1,42 @@
+/**
+ * 流程审批多维视图 Chrome（OSC-26090347f1 / 一级菜单需求）
+ *
+ * 与 DefaultList.vue（多维视图实体页）的 list-surface / list-panel / list-topbar 保持同一套 token，
+ * 保证「流程审批」下所有页面（我的待办/已办/我发起的/流程设计）与实体多维视图视觉一致：
+ * 工具栏与表格同处一个面板，不再上下分离成两张卡片。
+ *
+ * 说明：DefaultList 里同名样式是 scoped 的，这里以全局类提供给 workflow 页面复用；
+ * 数值如有调整需与 DefaultList.vue 一并同步。
+ */
+.list-surface {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.list-panel {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 16px;
+  background: var(--color-bg-2);
+  border: none;
+  border-radius: 8px;
+  /* 允许内部横向滚动；勿用 overflow:hidden 把右侧 gutter 连带裁掉 */
+  overflow-x: auto;
+  overflow-y: visible;
+}
+/* 多维视图：顶部仅留 12px，与工具栏/页签的顶部间距合计为页签到面板顶总间距 */
+.list-panel--table {
+  padding-top: 12px;
+}
+.list-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}

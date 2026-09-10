@@ -9,6 +9,15 @@
         </a-badge>
       </a-tooltip>
 
+      <a-tooltip v-if="workflowEnabled" content="审批待办">
+        <a-badge :count="workflowTodoBadge" class="shell-toolbar__inbox-badge">
+          <a-button type="text" size="small" class="shell-toolbar__inbox-btn" @click="goWorkflowTodo">
+            <icon-park type="stamp" />
+            <span class="shell-toolbar__wf-label">审批</span>
+          </a-button>
+        </a-badge>
+      </a-tooltip>
+
       <a-tooltip :content="appearanceLabel">
         <a-button type="text" size="small" @click="cycleAppearance">
           <icon-park :type="APPEARANCE_ICONS[profileStore.theme.appearance]" />
@@ -81,9 +90,12 @@ const {
   appearanceLabel,
   APPEARANCE_ICONS,
   inboxBadgeCount,
+  workflowEnabled,
+  workflowTodoBadge,
   cycleAppearance,
   goAppearance,
   goInbox,
+  goWorkflowTodo,
   goProfile,
   goSecurity,
   tenantOptionLabel,
@@ -103,6 +115,10 @@ const {
 }
 .shell-toolbar__inbox-btn {
   overflow: visible;
+}
+.shell-toolbar__wf-label {
+  margin-left: 4px;
+  font-size: 13px;
 }
 .shell-toolbar__inbox-badge :deep(.arco-badge-number) {
   font-size: 10px;

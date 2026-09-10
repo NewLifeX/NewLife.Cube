@@ -11,7 +11,12 @@ public static class WorkflowAuth
     /// <returns>是否系统</returns>
     public static Boolean IsAdmin(IUser user) => user != null && AutomationAuth.IsSystem(user);
 
-    /// <summary>是否可管理工作流（系统管理员，或对 /Cube/Workflow 菜单有 Update 权）</summary>
+    /// <summary>是否可管理工作流（系统管理员，或对「流程定义」菜单有 Update 权）</summary>
+    /// <remarks>
+    /// 流程审批已是一级菜单（父节点无 URL，FindMenu("Cube/Workflow") 不可达），
+    /// 平台管理权收敛到「流程定义」实体菜单（/Cube/WorkflowDefinition）的 Update；
+    /// 兼容旧菜单 Cube/Workflow（升级前播种的版本）。
+    /// </remarks>
     /// <param name="user">用户</param>
     /// <returns>是否可管理</returns>
     public static Boolean CanManage(IUser user)
@@ -20,7 +25,8 @@ public static class WorkflowAuth
         if (IsAdmin(user)) return true;
         try
         {
-            var menu = AutomationAuth.FindMenu("Cube/Workflow");
+            var menu = AutomationAuth.FindMenu("Cube/WorkflowDefinition");
+            menu ??= AutomationAuth.FindMenu("Cube/Workflow");
             return menu != null && user.Has(menu, PermissionFlags.Update);
         }
         catch

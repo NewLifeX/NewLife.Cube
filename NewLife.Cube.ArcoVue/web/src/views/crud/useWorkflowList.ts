@@ -3,6 +3,7 @@ import { isEmbedMode } from '@/core/utils/embedMode';
 import {
   wfRowCanStart,
   wfRowInstanceId,
+  wfRowRestartBlocked,
   wfRowStatus,
   type WfRowStatus,
   type WorkflowPageBlock,
@@ -13,8 +14,8 @@ import type { ListContext } from './listContext';
  * 实体列表审批入口状态（OSC-26090347f1 T8b，IA §4 按钮矩阵）。
  *
  * 纯函数 resolve* 承载矩阵决策（可单测），useWorkflowList 组装 ctx 状态供 DefaultList 消费：
- * - 工具栏「提交审批」：类型级 canStart + 勾选数
- * - 行操作「提交/进度」：行 __wfStatus / __wfInstanceId / __wfCanStart
+ * - 工具栏「批量提交」：类型级 canStart + 勾选数（仅列表视图渲染）
+ * - 行操作「提交/进度」：行 __wfStatus / __wfInstanceId / __wfCanStart（仅列表视图）
  * - embed（?embed=1）整体隐藏（IA §5）
  */
 
@@ -32,7 +33,7 @@ export function wfStatusBadge(status: WfRowStatus | string): { text: string; col
   return WF_STATUS_BADGE[status] ?? { text: status || '未发起', color: 'gray' };
 }
 
-/** 工具栏「提交审批」按钮态 */
+/** 工具栏「批量提交」按钮态 */
 export interface WfToolbarSubmit {
   /** 是否渲染（类型启用且非 embed） */
   visible: boolean;
@@ -43,7 +44,7 @@ export interface WfToolbarSubmit {
 }
 
 /**
- * 工具栏「提交审批」矩阵（IA §4 前两列）
+ * 工具栏「批量提交」矩阵（IA §4 前两列）
  * @param block GetPage.workflow 类型块
  * @param selectedCount 已勾选记录数
  * @param embed 分享 embed 模式
@@ -77,6 +78,7 @@ export interface WfRowActions {
 
 /**
  * 行操作按钮矩阵（IA §4 后三列）。行状态唯一来源 __wfStatus，禁止前端拼实例。
+ * 审批中 / 已通过：禁再次发起；驳回 / 撤回 / 未发起：可发起。
  * @param block GetPage.workflow 类型块
  * @param row 列表行（含 __wf* 覆盖）
  * @param embed 分享 embed 模式
@@ -90,16 +92,15 @@ export function resolveWfRowActions(
     return { submitVisible: false, submitDisabled: true, submitTooltip: '', progressVisible: false };
 
   const status = wfRowStatus(row);
-  const running = status === 'running';
   const rowCanStart = wfRowCanStart(row);
-  const hasInstance = wfRowInstanceId(row) > 0;
+  const hasInstance = !!wfRowInstanceId(row);
 
-  // 审批中：禁提交 + tooltip「审批中」；其余依据行级 canStart
-  if (running)
+  // 审批中 / 已通过：禁提交
+  if (wfRowRestartBlocked(row))
     return {
       submitVisible: true,
       submitDisabled: true,
-      submitTooltip: '审批中，不可重复提交',
+      submitTooltip: status === 'approved' ? '已通过，不可再次发起' : '审批中，不可重复提交',
       progressVisible: hasInstance,
     };
   if (!rowCanStart)
@@ -109,7 +110,7 @@ export function resolveWfRowActions(
       submitTooltip: '当前账号无发起审批权限',
       progressVisible: hasInstance,
     };
-  // 到达此处：非 running 且行级可发起（none/rejected/withdrawn/approved）→ 可提交新流程
+  // 到达此处：非 running/approved 且行级可发起（none/rejected/withdrawn）→ 可提交新流程
   return {
     submitVisible: true,
     submitDisabled: false,
@@ -126,7 +127,7 @@ export function useWorkflowList(ctx: ListContext) {
   /** 类型级启用且非 embed：整个审批入口是否可见 */
   const wfEnabled = computed(() => !embed && workflowBlock.value?.enabled === true);
 
-  /** 工具栏「提交审批」按钮态（勾选数来自 ctx.selectedKeys） */
+  /** 工具栏「批量提交」按钮态（勾选数来自 ctx.selectedKeys） */
   const toolbarSubmit = computed(() =>
     resolveWfToolbarSubmit(workflowBlock.value, ctx.selectedKeys.value.length, embed),
   );

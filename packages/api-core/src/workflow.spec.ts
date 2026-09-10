@@ -31,7 +31,18 @@ describe('createWorkflowApi /Cube/Workflow URL（OSC-26090347f1）', () => {
 
   it('instances and tasks paths', async () => {
     const { api, calls } = captureApi();
-    await api.start({ typePath: 'Admin/User', keys: ['1', '2'], definitionId: 3, comment: '批' });
+    await api.start({
+      typePath: 'Admin/User',
+      keys: ['1', '2'],
+      definitionId: '7501276170837360640',
+      comment: '批',
+    });
+    expect(calls[0].data).toEqual({
+      typePath: 'Admin/User',
+      keys: ['1', '2'],
+      definitionId: '7501276170837360640',
+      comment: '批',
+    });
     await api.instance(9);
     await api.withdraw(9);
     await api.cancel(9);
