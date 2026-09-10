@@ -67,17 +67,43 @@ select.form-control {
     transition: border-color .15s ease, box-shadow .15s ease;
 }
 
-/* ace.min.css 对 input[type=text] 等强制 border-radius:0（高特异性），需 !important 覆盖 */
+/* ace.min.css 对 input[type=text] 等强制 border-radius:0、边框色 #d5d5d5（元素+属性选择器，特异性 0,1,1），
+   需用同等特异性的 input.form-control 覆盖；边框色统一为中性 #d5dbe3（对齐表单页设计稿） */
 input.form-control,
 textarea.form-control,
 select.form-control {
     border-radius: var(--cube-radius) !important;
+    border-color: #d5dbe3;
 }
 
-    .form-control:focus {
-        border-color: var(--cube-primary);
-        box-shadow: 0 0 0 2px rgba(43, 125, 188, .15);
-    }
+/* 聚焦态：主色边框 + 2px 柔光圈（对齐表单页设计稿）
+   注意 ace.min.css 用 input[type=text]:focus 等（特异性 0,2,1）压过 .form-control:focus（0,2,0），
+   故聚焦态须以 input/textarea/select + .form-control 组合（0,2,1）并加 !important 才能取胜 */
+.form-control:focus,
+input.form-control:focus,
+textarea.form-control:focus,
+select.form-control:focus {
+    border-color: var(--cube-primary) !important;
+    box-shadow: 0 0 0 2px rgba(43, 125, 188, .15) !important;
+}
+
+/* 输入组拼接：addon 左圆角、右侧与紧随控件无缝相接
+   修复“左侧图标直角四方 + 右侧输入框圆角”的错位观感
+   （ace.min.css 的 .input-group .input-group-addon{border-radius:0!important} 需同级 !important 覆盖） */
+.input-group > .input-group-addon:first-child {
+    border-radius: var(--cube-radius) 0 0 var(--cube-radius) !important;
+    border-right-width: 0;
+}
+
+.input-group > .input-group-addon:first-child + input.form-control,
+.input-group > .input-group-addon:first-child + select.form-control,
+.input-group > .input-group-addon:first-child + textarea.form-control {
+    border-radius: 0 var(--cube-radius) var(--cube-radius) 0 !important;
+}
+
+.input-group > .input-group-addon:first-child + .input-group-btn > .btn {
+    border-radius: 0 var(--cube-radius) var(--cube-radius) 0 !important;
+}
 
 /* 下拉框圆角 */
 .dropdown-menu {
@@ -312,7 +338,6 @@ body > .panel.panel-default {
     }
 
     .tableTools-container .input-group .form-control {
-        border-radius: var(--cube-radius) 0 0 var(--cube-radius);
         height: 30px;
         padding: 4px 10px;
     }
@@ -322,8 +347,11 @@ body > .panel.panel-default {
         padding: 4px 10px;
     }
 
-    .tableTools-container .input-group-btn .btn {
-        border-radius: 0 var(--cube-radius) var(--cube-radius) 0;
+    /* 关键字输入框与查询按钮拆分为两个独立控件（对齐列表页设计稿）：
+       原 input-group 把两者拼成一体，视觉上“紧贴”按钮；此处留出 12px 间距，
+       输入框与按钮各自保持完整圆角 */
+    .tableTools-container .input-group input[name=q] + .input-group-btn {
+        padding-left: 12px;
     }
 
     /* 工具栏文件上传输入框（部门页批量导入）统一高度 */
@@ -695,12 +723,19 @@ body > .panel.panel-default {
     font-size: 12px;
 }
 
-/* 表单项输入框组 */
+/* 表单项输入框组：addon 底色与图标色（圆角、拼接由全局“输入组拼接”规则统一处理） */
 .form-horizontal .input-group .input-group-addon {
-    border-radius: var(--cube-radius) 0 0 var(--cube-radius);
     border-color: #d5dbe3;
     background: #f5f8fc;
     color: var(--cube-text-muted);
+}
+
+/* 表单控件高度对齐表单页设计稿（30px），与列表页工具栏控件保持一致；
+   多选列表框（multiple）需要更大展示高度，保持默认 */
+.form-horizontal input.form-control,
+.form-horizontal select.form-control:not([multiple]) {
+    height: 30px;
+    padding: 4px 10px;
 }
 
 /* 表单页 tab 切换 */

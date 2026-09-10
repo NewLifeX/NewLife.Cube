@@ -639,5 +639,100 @@ public sealed class AceUiTests : IAsyncLifetime
         Assert.Contains("Grid", opts);
     }
 
+    [Fact(DisplayName = "TC-ACE-048 表单页控件规范（聚焦态/控件高度/输入组拼接）")]
+    [Trait("Category", "AceUi")]
+    [Trait("Priority", "P1")]
+    public async Task TC_ACE_048_FormControlVisual()
+    {
+        const String testId = "TC-ACE-048";
+
+        // 从列表页解析编辑链接，取不到则回退到首个用户
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User");
+        var href = await _page.EvaluateAsync<String>(
+            "() => { const a = document.querySelector('table tbody a[href*=\"/Edit\"]'); return a ? a.getAttribute('href') : '/Admin/User/Edit/1'; }");
+        await PageHelpers.GotoAndWaitAsync(_page, String.IsNullOrEmpty(href) ? "/Admin/User/Edit/1" : href);
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 1) 控件高度与边框色对齐设计稿（30px / #d5dbe3）
+        //    ace.min.css 用 input[type=text]（0,1,1）压过 .form-control（0,1,0），此处验证覆盖是否生效
+        var input = _page.Locator(".form-horizontal input.form-control[type=text]").First;
+        Assert.True(await input.CountAsync() > 0, $"[{testId}] 表单页未找到文本输入框");
+
+        var rest = await input.EvaluateAsync<String>(
+            "el => { const s = getComputedStyle(el); return JSON.stringify({ h: s.height, border: s.borderTopColor }); }");
+        using (var doc = System.Text.Json.JsonDocument.Parse(rest))
+        {
+            var root = doc.RootElement;
+            Assert.Equal("30px", root.GetProperty("h").GetString());
+            Assert.Equal("rgb(213, 219, 227)", root.GetProperty("border").GetString());
+        }
+
+        // 2) 聚焦态：主色边框 + 2px 柔光圈（ACE 原生为橙色 #f59942 边框且无光圈，需被覆盖）
+        await input.FocusAsync();
+        await _page.WaitForTimeoutAsync(250);
+        var focused = await input.EvaluateAsync<String>(
+            "el => { const s = getComputedStyle(el); return JSON.stringify({ border: s.borderTopColor, shadow: s.boxShadow, active: document.activeElement === el }); }");
+        using (var doc = System.Text.Json.JsonDocument.Parse(focused))
+        {
+            var root = doc.RootElement;
+            Assert.True(root.GetProperty("active").GetBoolean(), $"[{testId}] 输入框未获得焦点: {focused}");
+            Assert.Equal("rgb(43, 125, 188)", root.GetProperty("border").GetString());
+            var shadow = root.GetProperty("shadow").GetString() ?? "";
+            Assert.Contains("rgba(43, 125, 188, 0.15)", shadow);
+            Assert.Contains("2px", shadow);
+        }
+
+        // 3) 日期控件输入组拼接：addon 左圆角 + 右侧无边框，输入框左侧直角（消除"左直角+右圆角"错位）
+        var dt = await _page.EvaluateAsync<String>(
+            "() => { const i = document.querySelector('.form-horizontal input.form_datetime'); if (!i) return ''; const a = i.parentElement.querySelector('.input-group-addon'); const cs = getComputedStyle; return JSON.stringify({ name: i.name, addonRadius: a ? cs(a).borderRadius : '', addonBorderRight: a ? cs(a).borderRightWidth : '', inputRadius: cs(i).borderRadius, gap: a ? i.getBoundingClientRect().left - a.getBoundingClientRect().right : -99 }); }");
+        Assert.False(String.IsNullOrEmpty(dt), $"[{testId}] 表单页未找到日期时间控件");
+        using (var doc = System.Text.Json.JsonDocument.Parse(dt!))
+        {
+            var root = doc.RootElement;
+            Assert.Equal("6px 0px 0px 6px", root.GetProperty("addonRadius").GetString());
+            Assert.Equal("0px", root.GetProperty("addonBorderRight").GetString());
+            Assert.Equal("0px 6px 6px 0px", root.GetProperty("inputRadius").GetString());
+            Assert.True(Math.Abs(root.GetProperty("gap").GetDouble()) < 1, $"[{testId}] addon 与输入框未无缝拼接: {dt}");
+        }
+
+        // 4) 带图标 addon 的普通输入组（邮件字段）同样规则
+        var mail = await _page.EvaluateAsync<String>(
+            "() => { const i = document.querySelector('.form-horizontal input[name=Mail], .form-horizontal input[name=mail]'); if (!i) return ''; const a = i.parentElement.querySelector('.input-group-addon'); const cs = getComputedStyle; return JSON.stringify({ addonRadius: a ? cs(a).borderRadius : '', inputRadius: cs(i).borderRadius }); }");
+        Assert.False(String.IsNullOrEmpty(mail), $"[{testId}] 表单页未找到邮件字段输入组");
+        using (var doc = System.Text.Json.JsonDocument.Parse(mail!))
+        {
+            var root = doc.RootElement;
+            Assert.Equal("6px 0px 0px 6px", root.GetProperty("addonRadius").GetString());
+            Assert.Equal("0px 6px 6px 0px", root.GetProperty("inputRadius").GetString());
+        }
+    }
+
+    [Fact(DisplayName = "TC-ACE-049 列表页搜索框与查询按钮分离（间距 + 完整圆角）")]
+    [Trait("Category", "AceUi")]
+    [Trait("Priority", "P1")]
+    public async Task TC_ACE_049_SearchBoxSeparated()
+    {
+        const String testId = "TC-ACE-049";
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User");
+        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await _page.WaitForTimeoutAsync(300);
+
+        var info = await _page.EvaluateAsync<String>(
+            "() => { const q = document.querySelector('.tableTools-container input[name=q]'); if (!q) return ''; const btn = q.parentElement.querySelector('.input-group-btn .btn'); const cs = getComputedStyle; return JSON.stringify({ gap: btn ? btn.getBoundingClientRect().left - q.getBoundingClientRect().right : -99, inputRadius: cs(q).borderRadius, btnRadius: btn ? cs(btn).borderRadius : '', btnText: btn ? btn.innerText.trim() : '' }); }");
+        Assert.False(String.IsNullOrEmpty(info), $"[{testId}] 列表页未找到关键字搜索框");
+
+        using var doc = System.Text.Json.JsonDocument.Parse(info!);
+        var root = doc.RootElement;
+
+        // 输入框与按钮为两个独立控件（设计稿间距 12px，实际由按钮单元左内边距形成）
+        var gap = root.GetProperty("gap").GetDouble();
+        Assert.True(gap >= 8, $"[{testId}] 关键字输入框与查询按钮间距过小（{gap}px），未按设计稿拆分: {info}");
+
+        // 两者各自完整圆角（不再拼接为一体）
+        Assert.Equal("6px", root.GetProperty("inputRadius").GetString());
+        Assert.Equal("6px", root.GetProperty("btnRadius").GetString());
+        Assert.Contains("查询", root.GetProperty("btnText").GetString() ?? "");
+    }
+
     #endregion
 }
