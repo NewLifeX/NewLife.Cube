@@ -3,6 +3,11 @@
    设计语言对齐 Doc/UI设计：主色 #2b7dbc、白卡片、圆角阴影、浅灰蓝背景 #f0f2f5
    仅由 ACE 主题视图引入（_Layout.cshtml / CubeIndex.cshtml），不影响 layui 等其它主题
    说明：需覆盖 ACE 内联/内置样式时使用更高特异性选择器或 !important
+   ------------------------------------------------------------
+   风格边界原则（详见 Doc/UI设计/ACE-设计说明.md §7）：
+   ① ACE 基因保留区：顶栏/侧栏的布局形态、静态底色、品牌蓝语义 —— 不做 reshape；
+   ② 内容工作区：卡片/表格/表单/工作台走现代中性令牌，克制借用外部体系的极端值；
+   ③ 过渡带：以“层次（阴影/分隔）+ 交互过渡 + 活动指示”衔接两代质感。
    ============================================================ */
 
 /* ========== 设计变量 ========== */
@@ -98,6 +103,63 @@ select.form-control {
    头像加载失败时 onerror 移除 hidden-icon 类，图标兑底显示） */
 #navbar .navbar-buttons .ace-nav .nav-user-photo-icon.hidden-icon {
     display: none !important;
+}
+
+/* ========== 主框架过渡带精修 ==========
+   目标：消解“ACE 外壳（2013 质感）→ 现代内容区（2020s 质感）”的过渡断层。
+   原则：布局形态、静态底色、主色语义不变（E2E 断言锁定 #438eb9 / #f2f2f2 / #f8f8f8 等），
+   仅以“层次（阴影/分隔）+ 交互过渡 + 活动指示”提升质感衔接，不 reshape 布局。 */
+
+/* 顶栏：底部柔和投影，与侧栏/内容区形成层次（不改背景色与定位方式） */
+#navbar {
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
+}
+
+/* 侧栏：右侧中性分隔线（原皮肤边框为蓝色调，统一为中性灰以贴合现代内容区） */
+#sidebar {
+    border-right-color: #e4e6e9;
+}
+
+/* 菜单交互：统一过渡动画；静止态底色保持不变 */
+#sidebar .nav-list > li > a,
+#sidebar .submenu > li > a,
+#sidebar .nav-list > li > a .menu-icon,
+#sidebar .submenu > li > a .menu-icon {
+    transition: background-color .15s ease, color .15s ease;
+}
+
+/* 一级菜单 hover：浅蓝反馈 + 主色文字
+   （与 ACE 原生同源触发方式 li:hover > a；!important 确保覆盖 ACE 内置 hover 样式） */
+#sidebar .nav-list > li:hover > a {
+    background-color: #edf3f9 !important;
+    color: var(--cube-primary) !important;
+}
+
+    #sidebar .nav-list > li:hover > a .menu-icon {
+        color: var(--cube-primary) !important;
+    }
+
+/* 一级菜单活动项：左侧主色指示条（inset 阴影实现，不占布局、不与伪元素冲突） */
+#sidebar .nav-list > li.active > a {
+    box-shadow: inset 3px 0 0 var(--cube-primary);
+    color: var(--cube-primary);
+    font-weight: 600;
+}
+
+/* 二级菜单 hover / 当前项：浅蓝反馈 */
+#sidebar .submenu > li:hover > a {
+    background-color: #edf3f9 !important;
+    color: var(--cube-primary) !important;
+}
+
+    #sidebar .submenu > li:hover > a .menu-icon {
+        color: var(--cube-primary) !important;
+    }
+
+#sidebar .submenu > li.active > a {
+    background-color: var(--cube-primary-light);
+    color: var(--cube-primary);
+    font-weight: 600;
 }
 
 /* ========== 面包屑 ========== */
