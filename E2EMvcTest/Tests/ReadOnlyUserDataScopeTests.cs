@@ -24,7 +24,11 @@ public sealed class ReadOnlyUserDataScopeTests : IAsyncLifetime
     private static String? _userName;
     private static String? _ownTitle;
     private static String? _otherTitle;
+    private static String? _ownDeptName;
+    private static String? _otherDeptName;
     private static Int32 _userId;
+    private static Int32 _ownDeptId;
+    private static Int32 _otherDeptId;
 
     private const String Password = "Test@2026!";
 
@@ -58,6 +62,13 @@ public sealed class ReadOnlyUserDataScopeTests : IAsyncLifetime
         var adminId = DatabaseHelper.GetUserIdByName(AppFixture.AdminUser);
         DatabaseHelper.SeedAttachment(_ownTitle, _userId);
         DatabaseHelper.SeedAttachment(_otherTitle, adminId);
+
+        // 部门种子：本人管理一个 + 管理员管理一个（普通用户只看自己管理的部门）
+        _ownDeptName = $"E2E部门本人{ts}";
+        _otherDeptName = $"E2E部门他人{ts}";
+        _ownDeptId = DatabaseHelper.SeedDepartment(_ownDeptName, _userId);
+        _otherDeptId = DatabaseHelper.SeedDepartment(_otherDeptName, adminId);
+        Assert.True(_ownDeptId > 0 && _otherDeptId > 0, "部门种子写入失败");
 
         // 只读用户上下文
         _context = await _fixture.Browser.NewContextAsync();
@@ -126,18 +137,67 @@ public sealed class ReadOnlyUserDataScopeTests : IAsyncLifetime
         await PageHelpers.AssertTextNotVisibleAsync(_page, _otherTitle!, testId);
     }
 
-    [Fact(DisplayName = "TC-DS-004 普通用户部门页正常加载")]
+    [Fact(DisplayName = "TC-DS-004 普通用户部门页只显示自己管理的部门")]
     [Trait("Category", "DataScope")]
-    [Trait("Priority", "P1")]
-    public async Task TC_DS_004_DepartmentPageLoads()
+    [Trait("Priority", "P0")]
+    public async Task TC_DS_004_DepartmentListShowsManagedOnly()
     {
         const String testId = "TC-DS-004";
+
+        // 先确认部门种子已落库，避免"他人部门不可见"断言空过
+        Assert.Equal(1, DatabaseHelper.CountDepartmentByName(_ownDeptName!));
+        Assert.Equal(1, DatabaseHelper.CountDepartmentByName(_otherDeptName!));
 
         await PageHelpers.GotoAndWaitAsync(_page, "/Admin/Department");
         await PageHelpers.AssertNoServerErrorAsync(_page, testId);
         await PageHelpers.AssertTextNotVisibleAsync(_page, "无法取得编号", testId);
 
-        Assert.True(await _page.IsVisibleAsync("table"), $"[{testId}] 部门页未渲染表格。URL={_page.Url}");
+        // 管理者字段（ManagerID）决定可见性：自己管理的可见，他人管理（含管理员）不可见
+        await PageHelpers.AssertTextVisibleAsync(_page, _ownDeptName!, testId);
+        await PageHelpers.AssertTextNotVisibleAsync(_page, _otherDeptName!, testId);
+    }
+
+    [Fact(DisplayName = "TC-DS-007 普通用户可打开自己管理的部门详情")]
+    [Trait("Category", "DataScope")]
+    [Trait("Priority", "P0")]
+    public async Task TC_DS_007_OwnDepartmentDetailLoads()
+    {
+        const String testId = "TC-DS-007";
+
+        await PageHelpers.GotoAndWaitAsync(_page, $"/Admin/Department/Detail/{_ownDeptId}");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+        await PageHelpers.AssertTextNotVisibleAsync(_page, "非法访问数据", testId);
+
+        // 详情页以表单控件呈现，名称在 input.value 中，不能按文本断言
+        var nameValue = await _page.InputValueAsync("input[name=Name]");
+        Assert.Equal(_ownDeptName, nameValue);
+    }
+
+    [Fact(DisplayName = "TC-DS-008 普通用户无法打开他人部门详情")]
+    [Trait("Category", "DataScope")]
+    [Trait("Priority", "P0")]
+    public async Task TC_DS_008_OtherDepartmentDetailBlocked()
+    {
+        const String testId = "TC-DS-008";
+
+        await PageHelpers.GotoAndWaitAsync(_page, $"/Admin/Department/Detail/{_otherDeptId}");
+
+        // 数据权限拦截：页面不得泄露他人部门信息
+        await PageHelpers.AssertTextNotVisibleAsync(_page, _otherDeptName!, testId);
+    }
+
+    [Fact(DisplayName = "TC-DS-009 管理员部门页可见全部部门")]
+    [Trait("Category", "DataScope")]
+    [Trait("Priority", "P1")]
+    public async Task TC_DS_009_AdminSeesAllDepartments()
+    {
+        const String testId = "TC-DS-009";
+
+        await PageHelpers.GotoAndWaitAsync(_adminPage, "/Admin/Department");
+        await PageHelpers.AssertNoServerErrorAsync(_adminPage, testId);
+
+        await PageHelpers.AssertTextVisibleAsync(_adminPage, _ownDeptName!, testId);
+        await PageHelpers.AssertTextVisibleAsync(_adminPage, _otherDeptName!, testId);
     }
 
     #endregion

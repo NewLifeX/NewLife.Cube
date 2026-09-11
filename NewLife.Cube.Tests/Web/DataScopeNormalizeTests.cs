@@ -143,4 +143,14 @@ public class DataScopeNormalizeTests
         Assert.NotNull(att);
         Assert.Equal("PrincipalId={#userId} or AgentId={#userId}", att!.Expression);
     }
+
+    [Fact(DisplayName = "DepartmentController_标注数据权限_仅限本人管理的部门")]
+    public void DepartmentController_HasManagerDataPermission()
+    {
+        var att = typeof(Areas.Admin.Controllers.DepartmentController)
+            .GetCustomAttribute<DataPermissionAttribute>();
+
+        Assert.NotNull(att);
+        Assert.Equal("ManagerID={#userId}", att!.Expression);
+    }
 }

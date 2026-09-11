@@ -237,6 +237,30 @@ public static class DatabaseHelper
         return ExecuteScalar<Int32>(CubeWriteConnStr, sql, ("@name", name));
     }
 
+    /// <summary>写入一条测试部门记录（指定管理者），返回部门编号</summary>
+    /// <param name="name">部门名称（唯一值便于断言）</param>
+    /// <param name="managerId">管理者用户 Id</param>
+    /// <returns>部门 Id</returns>
+    public static Int32 SeedDepartment(String name, Int32 managerId)
+    {
+        const String sql = """
+            INSERT INTO Department (TenantId, Code, Name, ParentID, Level, Sort, Enable, Visible, ManagerId, CreateUserID, CreateTime, UpdateUserID, UpdateTime)
+            VALUES (0, @name, @name, 0, 1, 0, 1, 1, @mid, @mid, @now, @mid, @now)
+            RETURNING ID;
+            """;
+        var now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        return ExecuteScalarWrite<Int32>(MembershipWriteConnStr, sql, ("@name", name), ("@mid", managerId), ("@now", now));
+    }
+
+    /// <summary>按名称统计部门行数</summary>
+    /// <param name="name">部门名称</param>
+    /// <returns>匹配行数</returns>
+    public static Int32 CountDepartmentByName(String name)
+    {
+        const String sql = "SELECT COUNT(*) FROM Department WHERE Name = @name";
+        return ExecuteScalar<Int32>(MembershipConnStr, sql, ("@name", name));
+    }
+
     /// <summary>写入一条测试附件记录（归属指定用户），返回附件编号</summary>
     /// <param name="title">附件标题（唯一值便于断言）</param>
     /// <param name="createUserId">创建用户 Id</param>
