@@ -2,6 +2,8 @@
 using NewLife.Collections;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.Services;
+using NewLife.Log;
 using NewLife.Serialization;
 using XCode;
 using XCode.Membership;
@@ -63,6 +65,9 @@ public static class WebHelper2
         if (remote != null && remote.IsIPv4MappedToIPv6) remote = remote.MapToIPv4();
         var remoteIp = remote + "";
 
+        // 自动学习可信代理：可信代理未配置时，内网直连来源视为反向代理/负载均衡入口
+        LearnTrustedProxy(remoteIp);
+
         var str = "";
         if (str.IsNullOrEmpty()) str = request.Headers["X-Remote-Ip"];
         if (str.IsNullOrEmpty()) str = request.Headers["HTTP_X_FORWARDED_FOR"];
@@ -71,9 +76,8 @@ public static class WebHelper2
 
         if (!str.IsNullOrEmpty())
         {
-            var trustedTxt = CubeSetting.Current.TrustedProxies;
-            var trusted = !trustedTxt.IsNullOrEmpty() ? trustedTxt.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries) : null;
-            if (trusted == null || trusted.Length == 0)
+            var trusted = GetAllTrustedProxies();
+            if (trusted.Length == 0)
             {
                 // 未配置可信代理，兼容旧行为信任全部转发头；多层反代时取链首地址，并折叠为单一IP
                 var first = str.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(e => e.Trim()).FirstOrDefault(e => e.Length > 0);
@@ -106,6 +110,125 @@ public static class WebHelper2
         if (str.IsNullOrEmpty()) str = remoteIp;
 
         return str;
+    }
+
+    /// <summary>可信代理学习上限。学满后不再学习，避免被灌入大量地址</summary>
+    private const Int32 MaxLearnedProxies = 20;
+
+    private static readonly Object _learnLock = new();
+
+    /// <summary>获取全部可信代理。合并手工配置与自动学习结果，均支持精确IP、*通配和IPv4 CIDR网段</summary>
+    /// <returns>可信代理数组，未配置且未学习时为空数组</returns>
+    public static String[] GetAllTrustedProxies()
+    {
+        var set = CubeSetting.Current;
+
+        var list = new List<String>();
+        if (!set.TrustedProxies.IsNullOrEmpty())
+        {
+            foreach (var item in set.TrustedProxies.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries))
+            {
+                var t = item.Trim();
+                if (t.Length > 0 && !list.Any(e => e.EqualIgnoreCase(t))) list.Add(t);
+            }
+        }
+        if (!set.LearnedProxies.IsNullOrEmpty())
+        {
+            foreach (var item in set.LearnedProxies.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries))
+            {
+                var t = item.Trim();
+                if (t.Length > 0 && !list.Any(e => e.EqualIgnoreCase(t))) list.Add(t);
+            }
+        }
+
+        return [.. list];
+    }
+
+    /// <summary>判断地址是否属于可信代理（含自动学习）。自动封禁前调用，避免误封反向代理/网关导致整片用户不可用</summary>
+    /// <param name="ip">待判断地址</param>
+    /// <returns>是否可信代理</returns>
+    public static Boolean IsTrustedProxyAddress(String ip)
+    {
+        if (ip.IsNullOrEmpty()) return false;
+
+        return IsTrustedProxy(ip, GetAllTrustedProxies());
+    }
+
+    /// <summary>获取代理链摘要，用于安全事件审计。记录直连地址与转发头原始值</summary>
+    /// <param name="context">HTTP上下文</param>
+    /// <returns>链摘要文本</returns>
+    public static String GetIpChain(this HttpContext context)
+    {
+        var request = context.Request;
+
+        var remote = context.Connection?.RemoteIpAddress;
+        if (remote != null && remote.IsIPv4MappedToIPv6) remote = remote.MapToIPv4();
+
+        var sb = Pool.StringBuilder.Get();
+        try
+        {
+            sb.Append("直连=").Append(remote + "");
+            var xff = request.Headers["X-Forwarded-For"] + "";
+            if (xff.IsNullOrEmpty()) xff = request.Headers["HTTP_X_FORWARDED_FOR"] + "";
+            if (!xff.IsNullOrEmpty()) sb.Append("; XFF=").Append(xff);
+            var real = request.Headers["X-Real-IP"] + "";
+            if (!real.IsNullOrEmpty()) sb.Append("; X-Real-IP=").Append(real);
+            sb.Append("; X-Remote-Ip=").Append(request.Headers["X-Remote-Ip"] + "");
+
+            return sb.ToString();
+        }
+        finally
+        {
+            Pool.StringBuilder.Return(sb);
+        }
+    }
+
+    /// <summary>自动学习可信代理。可信代理未配置时，学习内网直连来源；先到先学，学满为止</summary>
+    /// <param name="ip">直连地址</param>
+    private static void LearnTrustedProxy(String ip)
+    {
+        if (ip.IsNullOrEmpty()) return;
+
+        var set = CubeSetting.Current;
+        if (!set.TrustedProxyLearning) return;
+
+        // 手工配置优先，配置了可信代理就不再学习
+        if (!set.TrustedProxies.IsNullOrEmpty()) return;
+
+        // 只学内网来源，公网来源不学；环回地址（本机）语义模糊，交给手工配置
+        if (!AuthHelper.IsInnerIp(ip)) return;
+        if (System.Net.IPAddress.TryParse(ip, out var addr) && System.Net.IPAddress.IsLoopback(addr)) return;
+
+        lock (_learnLock)
+        {
+            var list = new List<String>();
+            if (!set.LearnedProxies.IsNullOrEmpty())
+            {
+                foreach (var item in set.LearnedProxies.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var t = item.Trim();
+                    if (t.Length > 0 && !list.Any(e => e.EqualIgnoreCase(t))) list.Add(t);
+                }
+            }
+
+            if (list.Count >= MaxLearnedProxies) return;
+            if (list.Any(e => e.EqualIgnoreCase(ip))) return;
+
+            list.Add(ip);
+            set.LearnedProxies = String.Join(",", list);
+
+            try
+            {
+                set.Save();
+
+                XTrace.WriteLine("安全防御自动学习可信代理 {0}，累计 {1} 个", ip, list.Count);
+            }
+            catch (Exception ex)
+            {
+                // 配置保存失败不影响请求处理，内存中已生效
+                XTrace.WriteException(ex);
+            }
+        }
     }
 
     /// <summary>判断地址是否在可信代理列表内。列表项支持精确IP、*通配和IPv4 CIDR网段</summary>

@@ -108,10 +108,10 @@ public class CubeSetting : Config<CubeSetting>
     #endregion
 
     #region 安全防御
-    /// <summary>安全防御模式。0=关闭，1=观察模式仅记录安全事件，2=拦截模式，默认1</summary>
-    [Description("安全防御模式。0=关闭，1=观察模式仅记录安全事件，2=拦截模式，默认1")]
+    /// <summary>安全防御模式。0=关闭，1=观察模式仅记录，2=拦截模式，3=自动模式（默认；观察为主，连续攻击自动封禁，大范围攻击临时拦截并自动回落）</summary>
+    [Description("安全防御模式。0=关闭，1=观察模式仅记录，2=拦截模式，3=自动模式（默认；观察为主，连续攻击自动封禁，大范围攻击临时拦截并自动回落）")]
     [Category("安全")]
-    public Int32 SecurityMode { get; set; } = 1;
+    public Int32 SecurityMode { get; set; } = 3;
 
     /// <summary>自动封禁时长档位。逗号分隔秒数，按触发次数递增；空值使用默认档位 60,300,1800,7200,86400</summary>
     [Description("自动封禁时长档位。逗号分隔秒数，按触发次数递增；空值使用默认档位 60,300,1800,7200,86400")]
@@ -122,6 +122,16 @@ public class CubeSetting : Config<CubeSetting>
     [Description("可信代理。来自这些代理的转发头才被信任，逗号分隔IP或CIDR网段；空值兼容旧行为信任全部转发头")]
     [Category("安全")]
     public String TrustedProxies { get; set; }
+
+    /// <summary>可信代理自动学习。可信代理未配置时，自动学习内网直连来源（反向代理/负载均衡入口），公网来源不学习</summary>
+    [Description("可信代理自动学习。可信代理未配置时，自动学习内网直连来源，公网来源不学习")]
+    [Category("安全")]
+    public Boolean TrustedProxyLearning { get; set; } = true;
+
+    /// <summary>已学习代理。由系统自动维护，可信代理为空时参与链解析；清空可重置学习结果</summary>
+    [Description("已学习代理。由系统自动维护，清空可重置学习结果")]
+    [Category("安全")]
+    public String LearnedProxies { get; set; }
     #endregion
 
     #region 用户登录

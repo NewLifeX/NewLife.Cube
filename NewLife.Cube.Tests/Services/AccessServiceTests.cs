@@ -14,25 +14,64 @@ namespace NewLife.Cube.Tests.Services;
 [CollectionDefinition("SecurityDefense", DisableParallelization = true)]
 public class SecurityDefenseCollection { }
 
-/// <summary>安全访问服务测试。覆盖封禁快照、观察/拦截模式、威胁检测决策与自动封禁闭环（SQLite集成）</summary>
-[Collection("SecurityDefense")]
-public class AccessServiceTests : IDisposable
+/// <summary>安全访问测试的SQLite夹具。类级注册 Cube/Log 连接，类结束后恢复全局连接，避免影响其它测试类</summary>
+public class AccessServiceDbFixture : IDisposable
 {
-    private static readonly String _dbFile = Path.Combine(Path.GetTempPath(), $"CubeSecDb_{Guid.NewGuid():N}.db");
-    private static Boolean _dbInited;
-    private static readonly Object _lock = new();
+    private readonly String _oldCube;
+    private readonly String _oldLog;
+    private readonly Boolean _hadCube;
+    private readonly Boolean _hadLog;
 
+    /// <summary>实例化，注册临时SQLite并建表</summary>
+    public AccessServiceDbFixture()
+    {
+        var dbFile = Path.Combine(Path.GetTempPath(), $"CubeSecDb_{Guid.NewGuid():N}.db");
+
+        if (DAL.ConnStrs != null)
+        {
+            _hadCube = DAL.ConnStrs.TryGetValue("Cube", out _oldCube);
+            _hadLog = DAL.ConnStrs.TryGetValue("Log", out _oldLog);
+        }
+
+        DAL.AddConnStr("Cube", $"Data Source={dbFile}", null, "SQLite");
+        DAL.AddConnStr("Log", $"Data Source={dbFile}", null, "SQLite");
+
+        // 触发表结构检查与自动建表
+        _ = AccessRule.Meta.Count;
+        _ = XLog.Meta.Count;
+        _ = NotificationRecord.Meta.Count;
+    }
+
+    /// <summary>恢复全局连接并清缓存，避免其它测试类拿到本夹具的临时库</summary>
+    public void Dispose()
+    {
+        if (DAL.ConnStrs != null)
+        {
+            if (_hadCube) DAL.ConnStrs["Cube"] = _oldCube;
+            else DAL.ConnStrs.TryRemove("Cube", out _);
+
+            if (_hadLog) DAL.ConnStrs["Log"] = _oldLog;
+            else DAL.ConnStrs.TryRemove("Log", out _);
+        }
+
+        DAL.Create("Cube").Reset();
+        DAL.Create("Log").Reset();
+    }
+}
+
+/// <summary>安全访问服务测试。覆盖封禁快照、观察/拦截/自动模式、威胁检测决策与自动封禁闭环（SQLite集成）</summary>
+[Collection("SecurityDefense")]
+public class AccessServiceTests : IDisposable, IClassFixture<AccessServiceDbFixture>
+{
     private readonly TestCacheProvider _cache = new();
     private readonly SecurityEventService _events;
     private readonly BlockService _blocks;
     private readonly AccessService _access;
     private readonly Int32 _oldMode;
 
-    /// <summary>实例化，构建SQLite环境与服务实例</summary>
+    /// <summary>实例化，构建服务实例</summary>
     public AccessServiceTests()
     {
-        EnsureDb();
-
         _oldMode = CubeSetting.Current.SecurityMode;
 
         _events = new SecurityEventService(_cache, null!);
@@ -42,24 +81,6 @@ public class AccessServiceTests : IDisposable
 
     /// <summary>恢复全局配置</summary>
     public void Dispose() => CubeSetting.Current.SecurityMode = _oldMode;
-
-    private static void EnsureDb()
-    {
-        lock (_lock)
-        {
-            if (_dbInited) return;
-
-            DAL.AddConnStr("Cube", $"Data Source={_dbFile}", null, "SQLite");
-            DAL.AddConnStr("Log", $"Data Source={_dbFile}", null, "SQLite");
-
-            // 触发表结构检查与自动建表
-            _ = AccessRule.Meta.Count;
-            _ = XLog.Meta.Count;
-            _ = NotificationRecord.Meta.Count;
-
-            _dbInited = true;
-        }
-    }
 
     private static void CleanRules()
     {
@@ -223,5 +244,91 @@ public class AccessServiceTests : IDisposable
         Assert.Equal(60, d1);
         Assert.Equal(300, d2);
         Assert.Equal(1800, d3);
+    }
+
+    [Fact(DisplayName = "自动模式：单次威胁仅记录不拦截")]
+    public void AutoMode_SingleThreat_ObserveOnly()
+    {
+        CleanRules();
+        CubeSetting.Current.SecurityMode = 3;
+
+        var ip = "192.0.2.21";
+        _cache.Cache.Remove($"security:threat:{ip}");
+
+        var rs = _access.Valid("/Admin/User", null, CreateUa("sqlmap/1.7"), ip, null, null);
+
+        // 自动模式单次威胁放行，事件已记录且标记为未拦截
+        Assert.Null(rs);
+
+        var log = XLog.Find(XLog._.Category == SecurityEventService.CategoryName & XLog._.Action == "扫描器" & XLog._.CreateIP == ip);
+        Assert.NotNull(log);
+        Assert.False(log!.Success);
+    }
+
+    [Fact(DisplayName = "自动模式：连续威胁达阈值拦截并自动封禁")]
+    public void AutoMode_RepeatedThreat_BlockAndBan()
+    {
+        CleanRules();
+        CubeSetting.Current.SecurityMode = 3;
+
+        var ip = "192.0.2.22";
+        var ua = CreateUa("sqlmap/1.7");
+        _cache.Cache.Remove($"security:threat:{ip}");
+
+        // 前两次观察放行
+        Assert.Null(_access.Valid("/Admin/User", null, ua, ip, null, null));
+        Assert.Null(_access.Valid("/Admin/User", null, ua, ip, null, null));
+
+        // 第三次达到累计阈值，拦截并自动封禁
+        var rs = _access.Valid("/Admin/User", null, ua, ip, null, null);
+        Assert.NotNull(rs);
+        Assert.Equal(AccessActionKinds.Block, rs!.ActionKind);
+        Assert.True(_blocks.IsBlocked(ip));
+    }
+
+    [Fact(DisplayName = "自动模式：全局大范围攻击进入临时拦截")]
+    public void AutoMode_GlobalEscalation_TemporaryBlock()
+    {
+        CleanRules();
+        CubeSetting.Current.SecurityMode = 3;
+
+        var ip = "192.0.2.23";
+        _cache.Cache.Remove($"security:threat:{ip}");
+
+        // 预置全局攻击计数，使下一次威胁触发升级
+        _cache.Cache.Set("security:auto:global", AccessService.AutoEscalateTimes - 1);
+        _cache.Cache.SetExpire("security:auto:global", TimeSpan.FromSeconds(60));
+
+        var rs1 = _access.Valid("/Admin/User", null, CreateUa("sqlmap/1.7"), ip, null, null);
+
+        // 达到全局阈值：进入临时拦截，本次直接拦截
+        Assert.NotNull(rs1);
+        Assert.True(_cache.Cache.ContainsKey("security:auto:escalate"));
+
+        // 临时拦截期内，其它IP的威胁同样被拦截
+        var rs2 = _access.Valid("/Admin/User", null, CreateUa("sqlmap/1.7"), "192.0.2.24", null, null);
+        Assert.NotNull(rs2);
+    }
+
+    [Fact(DisplayName = "自动模式：临时拦截到期自动回落观察")]
+    public void AutoMode_Escalation_ExpiresToObserve()
+    {
+        CleanRules();
+        CubeSetting.Current.SecurityMode = 3;
+
+        var ip = "192.0.2.25";
+        _cache.Cache.Remove($"security:threat:{ip}");
+
+        // 模拟曾经升级且临时拦截已到期
+        _cache.Cache.Set("security:auto:escalated", 1, 3600);
+
+        var rs = _access.Valid("/Admin/User", null, CreateUa("sqlmap/1.7"), ip, null, null);
+
+        // 自动回落：标记被清除并记录恢复事件，本次恢复观察放行
+        Assert.Null(rs);
+        Assert.False(_cache.Cache.ContainsKey("security:auto:escalated"));
+
+        var log = XLog.Find(XLog._.Category == SecurityEventService.CategoryName & XLog._.Action == "自动恢复" & XLog._.CreateIP == ip);
+        Assert.NotNull(log);
     }
 }

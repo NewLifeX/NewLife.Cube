@@ -19,6 +19,9 @@ public class SecurityEventService
     /// <summary>封禁告警动作</summary>
     public const String BlockAlertAction = "SecurityBlock";
 
+    /// <summary>安全自动模式动作。进入临时拦截与自动回落通知</summary>
+    public const String AutoAlertAction = "SecurityAuto";
+
     private readonly ICacheProvider _cacheProvider;
     private readonly ITracer _tracer;
 
@@ -88,26 +91,44 @@ public class SecurityEventService
     /// <param name="expireTime">解封时间</param>
     public void NotifyBlocked(String ip, String reason, DateTime expireTime)
     {
+        XTrace.WriteLine("安全防御封禁 {0}：{1}，解封时间 {2:yyyy-MM-dd HH:mm:ss}", ip, reason, expireTime);
+
+        NotifyOnce(BlockAlertAction, $"安全防御：封禁 {ip}", $"来源IP {ip} 因 {reason} 已被自动封禁，解封时间 {expireTime:yyyy-MM-dd HH:mm:ss}。请登录后台查看安全事件与封禁规则，必要时手动解封。", reason, false);
+    }
+
+    /// <summary>发送安全自动模式通知。进入临时拦截与自动回落时使用，同标题每小时最多一条</summary>
+    /// <param name="title">标题，如 进入临时拦截</param>
+    /// <param name="content">通知内容</param>
+    public void NotifyAuto(String title, String content) => NotifyOnce(AutoAlertAction, $"安全防御：{title}", content, title, true);
+
+    /// <summary>发送站内信通知。默认每小时最多一条，可选按标题去重区分不同事件</summary>
+    /// <param name="action">通知动作</param>
+    /// <param name="title">通知标题</param>
+    /// <param name="content">通知内容</param>
+    /// <param name="result">结果摘要</param>
+    /// <param name="dedupByTitle">是否按标题去重。false表示仅按动作去重</param>
+    private void NotifyOnce(String action, String title, String content, String result, Boolean dedupByTitle)
+    {
         try
         {
-            // 每小时最多一条，避免高频封禁刷屏
+            // 每小时最多一条，避免高频通知刷屏
             var now = DateTime.Now;
             var start = now.AddHours(-1);
-            if (NotificationRecord.FindCount(NotificationRecord._.Action == BlockAlertAction & NotificationRecord._.CreateTime >= start) > 0) return;
+            var where = NotificationRecord._.Action == action & NotificationRecord._.CreateTime >= start;
+            if (dedupByTitle) where = where & (NotificationRecord._.Title == title);
+            if (NotificationRecord.FindCount(where) > 0) return;
 
             var record = new NotificationRecord
             {
-                Action = BlockAlertAction,
+                Action = action,
                 Channel = "InApp",
-                Title = $"安全防御：封禁 {ip}",
-                Content = $"来源IP {ip} 因 {reason} 已被自动封禁，解封时间 {expireTime:yyyy-MM-dd HH:mm:ss}。请登录后台查看安全事件与封禁规则，必要时手动解封。",
+                Title = title,
+                Content = content,
                 Success = true,
-                Result = reason,
+                Result = result,
                 CreateTime = now,
             };
             record.Insert();
-
-            XTrace.WriteLine("安全防御封禁 {0}：{1}，解封时间 {2:yyyy-MM-dd HH:mm:ss}", ip, reason, expireTime);
         }
         catch (Exception ex)
         {

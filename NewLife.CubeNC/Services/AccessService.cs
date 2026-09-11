@@ -43,8 +43,9 @@ public class AccessService
     /// <param name="ip">来源IP</param>
     /// <param name="user">当前用户</param>
     /// <param name="session">会话集合</param>
+    /// <param name="ipChain">代理链摘要，写入安全事件供审计，可为空</param>
     /// <returns>需要拦截时返回规则，放行返回null</returns>
-    public AccessRule Valid(String url, String body, UserAgentParser ua, String ip, IUser user, IDictionary<String, Object> session)
+    public AccessRule Valid(String url, String body, UserAgentParser ua, String ip, IUser user, IDictionary<String, Object> session, String ipChain = null)
     {
         // 检查IP是否被自动封禁（持久化封禁的内存快照）
         if (!ip.IsNullOrEmpty())
@@ -94,7 +95,7 @@ public class AccessService
         }
 
         // 内置威胁检测
-        return DetectThreat(url, body, ua.UserAgent, ip, user);
+        return DetectThreat(url, body, ua.UserAgent, ip, user, ipChain);
     }
 
     private Boolean IsMatch(AccessRule rule, String url, String userAgent, String ip, IUser user)
@@ -240,17 +241,32 @@ public class AccessService
     /// <summary>威胁拦截累计阈值。窗口内达到该次数时自动封禁</summary>
     public const Int32 ThreatBlockTimes = 3;
 
-    /// <summary>内置威胁检测。观察模式仅记录事件；拦截模式返回拦截规则，累计达标时自动封禁</summary>
+    /// <summary>自动模式升级拦截窗口。全局攻击事件在该窗口内达到阈值时进入临时拦截，单位秒</summary>
+    public const Int32 AutoEscalateWindow = 60;
+
+    /// <summary>自动模式升级拦截阈值。窗口内全局攻击事件达到该次数时进入临时拦截，大范围扫描时避免逐IP封禁滞后</summary>
+    public const Int32 AutoEscalateTimes = 100;
+
+    /// <summary>自动模式临时拦截时长。到期自动回落观察模式，单位秒</summary>
+    public const Int32 AutoEscalateHold = 300;
+
+    private const String AutoEscalateKey = "security:auto:escalate";
+    private const String AutoEscalateMarkKey = "security:auto:escalated";
+    private const String AutoGlobalKey = "security:auto:global";
+
+    /// <summary>内置威胁检测。观察模式仅记录事件；拦截模式返回拦截规则并累计封禁；自动模式默认观察，连续攻击达标时封禁，大范围攻击期间临时拦截</summary>
     /// <param name="url">请求地址</param>
     /// <param name="body">请求体</param>
     /// <param name="userAgent">用户代理</param>
     /// <param name="ip">来源IP</param>
     /// <param name="user">当前用户</param>
+    /// <param name="ipChain">代理链摘要，可为空</param>
     /// <returns>需要拦截时返回拦截规则，否则返回null</returns>
-    private AccessRule DetectThreat(String url, String body, String userAgent, String ip, IUser user)
+    private AccessRule DetectThreat(String url, String body, String userAgent, String ip, IUser user, String ipChain)
     {
         var set = CubeSetting.Current;
-        if (set.SecurityMode <= 0) return null;
+        var mode = set.SecurityMode;
+        if (mode <= 0) return null;
 
         ThreatResult threat;
         try
@@ -265,22 +281,82 @@ public class AccessService
         }
         if (threat == null) return null;
 
-        var blocked = set.SecurityMode >= 2 && threat.Level >= 2;
         var message = $"{threat.Pattern} @{threat.Target}；片段：{threat.Snippet}；URL：{url}；UA：{userAgent}";
-        _eventService.Write(threat.Category, message, ip, user?.Name, blocked);
+        if (!ipChain.IsNullOrEmpty()) message += $"；链：{ipChain}";
 
-        if (!blocked) return null;
+        // 自动模式：默认观察记录，连续攻击累计达标时自动封禁并拦截，全局大范围攻击期间临时拦截
+        if (mode == 3)
+        {
+            if (threat.Level < 2)
+            {
+                _eventService.Write(threat.Category, message, ip, user?.Name);
+
+                return null;
+            }
+
+            var escalated = TrackAutoEscalate(ip, threat.Category);
+            var blocked = CheckThreatBlock(ip);
+            if (blocked) ApplyBlock(ip, $"{threat.Category}攻击", user?.Name);
+
+            _eventService.Write(threat.Category, escalated ? message + "；[全局临时拦截中]" : message, ip, user?.Name, blocked || escalated);
+
+            return blocked || escalated ? BuildThreatRule(threat) : null;
+        }
+
+        var hit = mode >= 2 && threat.Level >= 2;
+        _eventService.Write(threat.Category, message, ip, user?.Name, hit);
+
+        if (!hit) return null;
 
         // 拦截模式下累计威胁次数，短时间连续触发时自动封禁
         if (CheckThreatBlock(ip)) ApplyBlock(ip, $"{threat.Category}攻击", user?.Name);
 
-        return new AccessRule
+        return BuildThreatRule(threat);
+    }
+
+    /// <summary>构建威胁拦截规则</summary>
+    /// <param name="threat">威胁检测结果</param>
+    /// <returns>拦截规则</returns>
+    private static AccessRule BuildThreatRule(ThreatResult threat) => new()
+    {
+        Name = $"威胁拦截 {threat.Category}",
+        ActionKind = AccessActionKinds.Block,
+        BlockCode = 403,
+        BlockContent = "<h1>访问被拒绝</h1><p>您的请求存在安全风险，已被系统拦截！</p>",
+    };
+
+    /// <summary>自动模式全局升级判定。大范围攻击期间临时收紧拦截，到期自动回落观察模式</summary>
+    /// <param name="ip">来源IP</param>
+    /// <param name="category">攻击类别</param>
+    /// <returns>当前是否处于临时拦截</returns>
+    private Boolean TrackAutoEscalate(String ip, String category)
+    {
+        var cache = _cacheProvider.Cache;
+
+        // 升级中：临时拦截期内所有威胁请求直接拦截
+        if (cache.ContainsKey(AutoEscalateKey)) return true;
+
+        // 曾升级且已到期，记录自动回落
+        if (cache.ContainsKey(AutoEscalateMarkKey))
         {
-            Name = $"威胁拦截 {threat.Category}",
-            ActionKind = AccessActionKinds.Block,
-            BlockCode = 403,
-            BlockContent = "<h1>访问被拒绝</h1><p>您的请求存在安全风险，已被系统拦截！</p>",
-        };
+            cache.Remove(AutoEscalateMarkKey);
+            _eventService.Write("自动恢复", $"临时拦截已到期，自动恢复观察模式（最近来源 {ip}）", ip, null);
+            _eventService.NotifyAuto("恢复观察模式", "临时拦截已到期，系统已自动恢复观察模式。");
+        }
+
+        // 全局速率统计，短时间大范围攻击时进入临时拦截
+        var hits = cache.Increment(AutoGlobalKey, 1);
+        if (hits <= 2) cache.SetExpire(AutoGlobalKey, TimeSpan.FromSeconds(AutoEscalateWindow));
+        if (hits < AutoEscalateTimes) return false;
+
+        cache.Remove(AutoGlobalKey);
+        cache.Set(AutoEscalateKey, 1, AutoEscalateHold);
+        cache.Set(AutoEscalateMarkKey, 1, AutoEscalateHold + 86400);
+
+        _eventService.Write("自动升级", $"安全自动模式：{AutoEscalateWindow}秒内全局攻击事件 {hits} 次，超过阈值 {AutoEscalateTimes}，进入临时拦截 {AutoEscalateHold} 秒（来源 {ip}，{category}）", ip, null, blocked: true);
+        _eventService.NotifyAuto("进入临时拦截", $"短时间检测到大量攻击（{hits} 次/{AutoEscalateWindow}秒），系统已自动进入临时拦截，{AutoEscalateHold} 秒后自动恢复观察模式。");
+
+        return true;
     }
 
     /// <summary>累计威胁触发次数，达到阈值时返回true</summary>
@@ -308,6 +384,14 @@ public class AccessService
 
         try
         {
+            // 可信代理（含自动学习）不参与自动封禁，避免误封反向代理/网关导致整片用户不可用
+            if (WebHelper2.IsTrustedProxyAddress(ip))
+            {
+                _eventService.Write("封禁跳过", $"{reason}；来源 {ip} 属于可信代理，跳过自动封禁", ip, user);
+
+                return;
+            }
+
             var rule = _blockService.Block(ip, reason);
             _eventService.Write("自动封禁", $"{reason}；解封时间 {rule.ExpireTime:yyyy-MM-dd HH:mm:ss}", ip, user, blocked: true, linkId: rule.Id);
             _eventService.NotifyBlocked(ip, reason, rule.ExpireTime);

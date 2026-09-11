@@ -9,12 +9,43 @@ namespace NewLife.Cube.Tests.Web;
 public class GetUserHostTests : IDisposable
 {
     private readonly String _oldTrusted;
+    private readonly String _oldLearned;
+    private readonly Boolean _oldLearning;
 
-    /// <summary>实例化，保存原始可信代理配置</summary>
-    public GetUserHostTests() => _oldTrusted = CubeSetting.Current.TrustedProxies;
+    /// <summary>实例化，保存原始可信代理配置；用例期内关闭学习并清空已学习代理，避免跨用例与跨运行污染</summary>
+    public GetUserHostTests()
+    {
+        var set = CubeSetting.Current;
+        _oldTrusted = set.TrustedProxies;
+        _oldLearned = set.LearnedProxies;
+        _oldLearning = set.TrustedProxyLearning;
 
-    /// <summary>恢复原始可信代理配置</summary>
-    public void Dispose() => CubeSetting.Current.TrustedProxies = _oldTrusted;
+        set.TrustedProxyLearning = false;
+        set.LearnedProxies = null;
+    }
+
+    /// <summary>恢复原始可信代理配置。学习用例可能已写入配置文件，恢复盘面避免污染后续运行</summary>
+    public void Dispose()
+    {
+        var set = CubeSetting.Current;
+        var dirty = set.LearnedProxies != _oldLearned;
+
+        set.TrustedProxies = _oldTrusted;
+        set.LearnedProxies = _oldLearned;
+        set.TrustedProxyLearning = _oldLearning;
+
+        if (dirty)
+        {
+            try
+            {
+                set.Save();
+            }
+            catch
+            {
+                // 测试环境配置保存失败无碍用例结果
+            }
+        }
+    }
 
     private static DefaultHttpContext CreateContext(String remoteIp)
     {
@@ -113,5 +144,68 @@ public class GetUserHostTests : IDisposable
         var ip = ((HttpContext)ctx).GetUserHost();
 
         Assert.Equal("5.6.7.8", ip);
+    }
+
+    [Fact(DisplayName = "自动学习：内网直连来源被学习为可信代理")]
+    public void AutoLearn_InnerRemote_Learned()
+    {
+        var set = CubeSetting.Current;
+        set.TrustedProxies = null;
+        set.LearnedProxies = null;
+        set.TrustedProxyLearning = true;
+
+        var ctx = CreateContext("10.1.2.3");
+        ctx.Request.Headers["X-Forwarded-For"] = "1.2.3.4";
+
+        var ip = ((HttpContext)ctx).GetUserHost();
+
+        // 直连地址被学习，转发头被信任并解析出真实客户端
+        Assert.Equal("1.2.3.4", ip);
+        Assert.Contains("10.1.2.3", CubeSetting.Current.LearnedProxies);
+    }
+
+    [Fact(DisplayName = "自动学习：公网直连来源不被学习")]
+    public void AutoLearn_PublicRemote_NotLearned()
+    {
+        var set = CubeSetting.Current;
+        set.TrustedProxies = null;
+        set.LearnedProxies = null;
+        set.TrustedProxyLearning = true;
+
+        var ctx = CreateContext("8.8.4.4");
+        ctx.Request.Headers["X-Forwarded-For"] = "1.2.3.4";
+
+        var ip = ((HttpContext)ctx).GetUserHost();
+
+        Assert.Equal("1.2.3.4", ip);
+        Assert.Null(CubeSetting.Current.LearnedProxies);
+    }
+
+    [Fact(DisplayName = "已学习代理：参与链解析")]
+    public void LearnedProxies_ParticipateInChain()
+    {
+        var set = CubeSetting.Current;
+        set.TrustedProxies = null;
+        set.LearnedProxies = "10.0.0.5";
+        set.TrustedProxyLearning = false;
+
+        var ctx = CreateContext("10.0.0.5");
+        ctx.Request.Headers["X-Forwarded-For"] = "1.2.3.4, 10.0.0.5";
+
+        var ip = ((HttpContext)ctx).GetUserHost();
+
+        Assert.Equal("1.2.3.4", ip);
+    }
+
+    [Fact(DisplayName = "可信代理判定：学习地址受封禁保护")]
+    public void IsTrustedProxyAddress_Learned_Protected()
+    {
+        var set = CubeSetting.Current;
+        set.TrustedProxies = null;
+        set.LearnedProxies = "10.0.0.5";
+        set.TrustedProxyLearning = false;
+
+        Assert.True(WebHelper2.IsTrustedProxyAddress("10.0.0.5"));
+        Assert.False(WebHelper2.IsTrustedProxyAddress("1.2.3.4"));
     }
 }

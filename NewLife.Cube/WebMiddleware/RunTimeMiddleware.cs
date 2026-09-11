@@ -63,7 +63,7 @@ public class RunTimeMiddleware
 
         // 安全访问。读取请求体用于威胁检测（仅文本类内容，超限不读）
         var body = await MiddlewareHelper.ReadRequestBodyAsync(ctx);
-        var rule = _accessService.Valid(ctx.Request.GetDisplayUrl(), body, ua, ip, user, session);
+        var rule = _accessService.Valid(ctx.Request.GetDisplayUrl(), body, ua, ip, user, session, ctx.GetIpChain());
         if (rule != null && rule.ActionKind is AccessActionKinds.Block or AccessActionKinds.Limit)
         {
             if (rule.BlockCode == 302)
