@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Models;
 using NewLife.Cube.ViewModels;
 using NewLife.Data;
@@ -11,12 +12,14 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 /// <summary>部门</summary>
 /// <remarks>实例化</remarks>
 /// <param name="tenantContext">租户上下文</param>
-//[DataPermission(null, "ManagerID={#userId}")]
+[DataPermission(null, "ManagerID={#userId}")]
 [DisplayName("部门")]
 [AdminArea]
 [Menu(95, true, Icon = "fa-users", Mode = MenuModes.Admin | MenuModes.Tenant)]
 public class DepartmentController(ITenantContext tenantContext) : EntityController<Department, DepartmentModel>
 {
+    private DataScopeContext? _scopeBackup;
+
     static DepartmentController()
     {
         LogOnChange = true;
@@ -56,6 +59,40 @@ public class DepartmentController(ITenantContext tenantContext) : EntityControll
         return rs;
     }
 
+    /// <summary>执行前。非系统用户的部门可见性由管理者数据权限决定，临时让出角色数据范围</summary>
+    /// <param name="context"></param>
+    public override void OnActionExecuting(ActionExecutingContext context)
+    {
+        // 部门行的归属是管理者（ManagerID），可见性统一由 [DataPermission] 决定；
+        // 角色数据范围的部门过滤（本部门/仅本人）与其叠加会退化为恒假条件（无部门用户 ID=0），此处临时让出
+        var user = ManageProvider.User;
+        if (user != null && !user.Roles.Any(e => e.IsSystem))
+        {
+            _scopeBackup = DataScopeContext.Current;
+            DataScopeContext.Current = new DataScopeContext
+            {
+                UserId = user.ID,
+                DepartmentId = user.DepartmentID,
+                DataScope = DataScopes.全部,
+            };
+        }
+
+        base.OnActionExecuting(context);
+    }
+
+    /// <summary>执行后。恢复数据权限上下文</summary>
+    /// <param name="context"></param>
+    public override void OnActionExecuted(ActionExecutedContext context)
+    {
+        base.OnActionExecuted(context);
+
+        if (_scopeBackup != null)
+        {
+            DataScopeContext.Current = _scopeBackup;
+            _scopeBackup = null;
+        }
+    }
+
     /// <summary>搜索数据集</summary>
     /// <param name="p"></param>
     /// <returns></returns>
@@ -66,7 +103,8 @@ public class DepartmentController(ITenantContext tenantContext) : EntityControll
         {
             var list = new List<Department>();
             var entity = Department.FindByID(id);
-            if (entity != null) list.Add(entity);
+            // 分页查询由 WhereBuilder 按管理者过滤，本分支需自行判断，避免绕过数据权限
+            if (entity != null && CanView(entity)) list.Add(entity);
             return list;
         }
 
@@ -91,6 +129,31 @@ public class DepartmentController(ITenantContext tenantContext) : EntityControll
         }
 
         return base.Valid(entity, type, post);
+    }
+
+    /// <summary>查找单行数据，并判断数据权限</summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    protected override Department FindData(Object key)
+    {
+        var entity = Find(key);
+
+        // 不用 WhereBuilder.Eval：部门实现 ITenantScope，无租户上下文时求值恒为 false；
+        // 可见性以管理者字段为准（与 [DataPermission] 的列表过滤一致）
+        if (entity != null && !CanView(entity)) throw new InvalidOperationException($"非法访问数据[{key}]");
+
+        return entity;
+    }
+
+    /// <summary>判断当前用户能否查看指定部门。系统角色不受限，普通用户仅限自己管理的部门</summary>
+    /// <param name="entity">部门</param>
+    /// <returns></returns>
+    protected virtual Boolean CanView(Department entity)
+    {
+        var user = ManageProvider.User;
+        if (user == null || user.Roles.Any(e => e.IsSystem)) return true;
+
+        return entity.ManagerId == user.ID;
     }
 
     /// <summary>合并导入。查出表中已有数据匹配，能匹配的更新，无法匹配的批量插入</summary>

@@ -213,7 +213,7 @@ public partial class ReadOnlyEntityController<TEntity>
     /// <summary>查找单行数据，并判断数据权限</summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    protected TEntity FindData(Object key)
+    protected virtual TEntity FindData(Object key)
     {
         // 先查出来，再判断数据权限
         var entity = Find(key);
