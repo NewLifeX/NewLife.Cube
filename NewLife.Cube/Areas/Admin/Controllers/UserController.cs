@@ -263,6 +263,14 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         return list2;
     }
 
+    /// <summary>当前登录用户是否为系统角色。非系统角色在用户页只读，资料编辑走用户中心</summary>
+    /// <returns></returns>
+    private static Boolean IsSystemRole()
+    {
+        var user = ManageProvider.User;
+        return user != null && user.Roles.Any(e => e.IsSystem);
+    }
+
     /// <summary>验证实体对象</summary>
     /// <param name="entity"></param>
     /// <param name="type"></param>
@@ -274,6 +282,13 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
             // 清空密码，不向浏览器输出
             //entity.Password = null;
             entity["Password"] = null;
+
+        if (post && !IsSystemRole())
+        {
+            // 用户页对非系统角色只读：仅支持查看本人信息，角色/部门/启用等管理字段一律禁止写入
+            //（资料编辑走用户中心 Info，租户成员角色分配走 TenantUserController）
+            throw new Exception("用户页对非系统角色只读，资料编辑请前往用户中心！");
+        }
 
         if (post && type == DataObjectMethodType.Update)
         {
@@ -288,6 +303,19 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         }
 
         return base.Valid(entity, type, post);
+    }
+
+    /// <summary>导入数据。批量导入绕过 Valid 直接批量写入，同样禁止非系统角色使用</summary>
+    /// <param name="factory">实体工厂</param>
+    /// <param name="list">新数据列表</param>
+    /// <param name="context">导入上下文</param>
+    /// <returns></returns>
+    protected override Int32 OnImport(IEntityFactory factory, IList<IEntity> list, ImportContext context)
+    {
+        // 用户页对非系统角色只读：批量导入属于写入旁路，一并禁止
+        if (!IsSystemRole()) throw new Exception("用户页对非系统角色只读，禁止批量导入！");
+
+        return base.OnImport(factory, list, context);
     }
 
     #region 登录注销
@@ -743,6 +771,9 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
     [HttpPost]
     public ActionResult RevokeTokens(Int32 id)
     {
+        // 吊销令牌属于安全运维操作，仅管理员可用（用户页对非系统角色只读，防跨用户令牌吊销）
+        if (!IsSystemRole()) throw new Exception("吊销令牌需要管理员权限，非法操作！");
+
         var user = FindByID(id);
         if (user == null) return Json(1, "用户不存在");
 

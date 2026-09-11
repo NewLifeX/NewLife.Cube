@@ -226,6 +226,25 @@ public class UserController : EntityController<User, UserModel>
         return list2;
     }
 
+    /// <summary>当前登录用户是否为系统角色。非系统角色在用户页只读，资料编辑走用户中心</summary>
+    /// <returns></returns>
+    private static Boolean IsSystemRole()
+    {
+        var user = ManageProvider.User;
+        return user != null && user.Roles.Any(e => e.IsSystem);
+    }
+
+    /// <summary>表单，添加/修改</summary>
+    /// <param name="id">主键。可能为空（表示添加），所以用字符串而不是整数</param>
+    /// <returns></returns>
+    public override ActionResult Edit(String id)
+    {
+        // 用户页对非系统角色只读：管理表单不可进入，资料编辑统一走用户中心（基本信息页）
+        if (!IsSystemRole()) return RedirectToAction(nameof(Info));
+
+        return base.Edit(id);
+    }
+
     /// <summary>验证实体对象</summary>
     /// <param name="entity"></param>
     /// <param name="type"></param>
@@ -240,15 +259,11 @@ public class UserController : EntityController<User, UserModel>
             entity["Password"] = null;
         }
 
-        if (post)
+        if (post && !IsSystemRole())
         {
-            // 非系统管理员，禁止修改任何人的角色（含租户上下文；租户成员角色分配走 TenantUserController）
-            var user = ManageProvider.User;
-            if (!user.Roles.Any(e => e.IsSystem) && entity is IEntity entity2)
-            {
-                if (entity2.Dirtys["RoleID"]) throw new Exception("禁止修改角色！");
-                if (entity2.Dirtys["RoleIds"]) throw new Exception("禁止修改角色！");
-            }
+            // 用户页对非系统角色只读：仅支持查看本人信息，角色/部门/启用等管理字段一律禁止写入
+            // （含租户上下文；租户成员角色分配走 TenantUserController，个人资料编辑走用户中心）
+            throw new Exception("用户页对非系统角色只读，资料编辑请前往用户中心！");
         }
 
         if (post && type == DataObjectMethodType.Update)
@@ -266,6 +281,19 @@ public class UserController : EntityController<User, UserModel>
         }
 
         return base.Valid(entity, type, post);
+    }
+
+    /// <summary>导入数据。批量导入绕过 Valid 直接批量写入，同样禁止非系统角色使用</summary>
+    /// <param name="factory">实体工厂</param>
+    /// <param name="list">新数据列表</param>
+    /// <param name="context">导入上下文</param>
+    /// <returns></returns>
+    protected override Int32 OnImport(IEntityFactory factory, IList<IEntity> list, ImportContext context)
+    {
+        // 用户页对非系统角色只读：批量导入属于写入旁路，一并禁止
+        if (!IsSystemRole()) throw new Exception("用户页对非系统角色只读，禁止批量导入！");
+
+        return base.OnImport(factory, list, context);
     }
 
     #region 登录注销
@@ -849,6 +877,9 @@ public class UserController : EntityController<User, UserModel>
     [EntityAuthorize(PermissionFlags.Update)]
     public ActionResult RevokeTokens(Int32 id)
     {
+        // 吊销令牌属于安全运维操作，仅管理员可用（用户页对非系统角色只读，防跨用户令牌吊销）
+        if (!IsSystemRole()) throw new Exception("吊销令牌需要管理员权限，非法操作！");
+
         var user = FindByID(id);
         if (user == null)
         {

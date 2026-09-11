@@ -23,7 +23,8 @@
         dic["第三方授权"] = "/Admin/User/Binds";
         dic["租户信息"] = "/Admin/User/TenantSetting";
     }
-    dic[user + ""] = $"/Admin/User/Edit?Id={userId}";
+    // 用户页对非系统角色只读（资料编辑走用户中心），此处统一指向只读查看页
+    dic[user + ""] = $"/Admin/User/Detail?Id={userId}";
     dic["三方链接"] = $"/Admin/UserConnect?userId={userId}";
     dic["令牌"] = $"/Admin/UserToken?userId={userId}";
     dic["OAuth日志"] = $"/Admin/OAuthLog?userId={userId}";
