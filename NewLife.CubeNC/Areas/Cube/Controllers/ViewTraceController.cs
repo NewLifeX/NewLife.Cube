@@ -24,10 +24,11 @@ public class ViewTraceController(IRazorViewEngine viewEngine, IWebHostEnvironmen
     /// <returns></returns>
     public ActionResult Index([FromQuery] String area = null, [FromQuery] String controller = null, [FromQuery] String view = null, [FromQuery] String theme = null)
     {
-        if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
+        // 诊断能力仅限开发模式与系统管理员，非授权访问返回 403 提示而不是 500 异常页
+        if (!SysConfig.Current.Develop) return Json(403, "仅支持开发模式下使用！");
 
         var user = ManageProvider.User;
-        if (user == null || !user.Roles.Any(e => e.IsSystem)) throw new InvalidOperationException("仅支持系统管理员使用！");
+        if (user == null || !user.Roles.Any(e => e.IsSystem)) return Json(403, "仅支持系统管理员使用！");
 
         // 默认取当前请求。area/controller 与路由令牌同名，必须显式从查询串绑定，否则被路由值遮蔽
         if (String.IsNullOrEmpty(area)) area = RouteData.Values["area"] + "";
