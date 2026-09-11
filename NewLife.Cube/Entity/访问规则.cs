@@ -142,6 +142,14 @@ public partial class AccessRule : IEntity<AccessRuleModel>
     [BindColumn("LimitTimes", "限流次数。限流考察期间达到该阈值时，执行拦截", "")]
     public Int32 LimitTimes { get => _LimitTimes; set { if (OnPropertyChanging("LimitTimes", value)) { _LimitTimes = value; OnPropertyChanged("LimitTimes"); } } }
 
+    private DateTime _ExpireTime;
+    /// <summary>过期时间。到期后本规则自动失效；未设置表示永久有效。仅供系统自动封禁使用</summary>
+    [DisplayName("过期时间")]
+    [Description("过期时间。到期后本规则自动失效；未设置表示永久有效。仅供系统自动封禁使用")]
+    [DataObjectField(false, false, true, 0)]
+    [BindColumn("ExpireTime", "过期时间。到期后本规则自动失效；未设置表示永久有效。仅供系统自动封禁使用", "", ShowIn = "List,Detail")]
+    public DateTime ExpireTime { get => _ExpireTime; set { if (OnPropertyChanging("ExpireTime", value)) { _ExpireTime = value; OnPropertyChanged("ExpireTime"); } } }
+
     private Int32 _CreateUserID;
     /// <summary>创建者</summary>
     [Category("扩展")]
@@ -226,6 +234,7 @@ public partial class AccessRule : IEntity<AccessRuleModel>
         LimitDimension = model.LimitDimension;
         LimitCycle = model.LimitCycle;
         LimitTimes = model.LimitTimes;
+        ExpireTime = model.ExpireTime;
         CreateUserID = model.CreateUserID;
         CreateTime = model.CreateTime;
         CreateIP = model.CreateIP;
@@ -259,6 +268,7 @@ public partial class AccessRule : IEntity<AccessRuleModel>
             "LimitDimension" => _LimitDimension,
             "LimitCycle" => _LimitCycle,
             "LimitTimes" => _LimitTimes,
+            "ExpireTime" => _ExpireTime,
             "CreateUserID" => _CreateUserID,
             "CreateTime" => _CreateTime,
             "CreateIP" => _CreateIP,
@@ -287,6 +297,7 @@ public partial class AccessRule : IEntity<AccessRuleModel>
                 case "LimitDimension": _LimitDimension = (LimitDimensions)value.ToInt(); break;
                 case "LimitCycle": _LimitCycle = value.ToInt(); break;
                 case "LimitTimes": _LimitTimes = value.ToInt(); break;
+                case "ExpireTime": _ExpireTime = value.ToDateTime(); break;
                 case "CreateUserID": _CreateUserID = value.ToInt(); break;
                 case "CreateTime": _CreateTime = value.ToDateTime(); break;
                 case "CreateIP": _CreateIP = Convert.ToString(value); break;
@@ -379,6 +390,9 @@ public partial class AccessRule : IEntity<AccessRuleModel>
         /// <summary>限流次数。限流考察期间达到该阈值时，执行拦截</summary>
         public static readonly Field LimitTimes = FindByName("LimitTimes");
 
+        /// <summary>过期时间。到期后本规则自动失效；未设置表示永久有效。仅供系统自动封禁使用</summary>
+        public static readonly Field ExpireTime = FindByName("ExpireTime");
+
         /// <summary>创建者</summary>
         public static readonly Field CreateUserID = FindByName("CreateUserID");
 
@@ -450,6 +464,9 @@ public partial class AccessRule : IEntity<AccessRuleModel>
 
         /// <summary>限流次数。限流考察期间达到该阈值时，执行拦截</summary>
         public const String LimitTimes = "LimitTimes";
+
+        /// <summary>过期时间。到期后本规则自动失效；未设置表示永久有效。仅供系统自动封禁使用</summary>
+        public const String ExpireTime = "ExpireTime";
 
         /// <summary>创建者</summary>
         public const String CreateUserID = "CreateUserID";

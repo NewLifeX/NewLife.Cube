@@ -182,6 +182,9 @@ public static class CubeService
         services.AddSingleton<WidgetManager>();
         services.AddSingleton<PasswordService>();
         services.AddSingleton<UserService>();
+        services.AddSingleton<SecurityEventService>();
+        services.AddSingleton<BlockService>();
+        services.AddHostedService(sp => sp.GetRequiredService<BlockService>());
         services.AddSingleton<AccessService>();
         services.AddSingleton<TokenService>();
         services.TryAddSingleton<IMfaService, TotpMfaService>();

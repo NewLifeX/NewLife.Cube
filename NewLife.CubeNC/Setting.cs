@@ -127,6 +127,23 @@ public class CubeSetting : Config<CubeSetting>
     public String ForceRedirect { get; set; }
     #endregion
 
+    #region 安全防御
+    /// <summary>安全防御模式。0=关闭，1=观察模式仅记录安全事件，2=拦截模式，默认1</summary>
+    [Description("安全防御模式。0=关闭，1=观察模式仅记录安全事件，2=拦截模式，默认1")]
+    [Category("安全")]
+    public Int32 SecurityMode { get; set; } = 1;
+
+    /// <summary>自动封禁时长档位。逗号分隔秒数，按触发次数递增；空值使用默认档位 60,300,1800,7200,86400</summary>
+    [Description("自动封禁时长档位。逗号分隔秒数，按触发次数递增；空值使用默认档位 60,300,1800,7200,86400")]
+    [Category("安全")]
+    public String BlockDurations { get; set; }
+
+    /// <summary>可信代理。来自这些代理的转发头才被信任，逗号分隔IP或CIDR网段；空值兼容旧行为信任全部转发头</summary>
+    [Description("可信代理。来自这些代理的转发头才被信任，逗号分隔IP或CIDR网段；空值兼容旧行为信任全部转发头")]
+    [Category("安全")]
+    public String TrustedProxies { get; set; }
+    #endregion
+
     #region 用户登录
     /// <summary>默认角色。默认普通用户</summary>
     [Description("默认角色。默认普通用户")]

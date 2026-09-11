@@ -1,4 +1,6 @@
-﻿using NewLife.Log;
+﻿using System.Text;
+using Microsoft.AspNetCore.Http;
+using NewLife.Log;
 using NewLife.Web;
 using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 
@@ -51,6 +53,44 @@ public static class MiddlewareHelper
         ctx.Response.Redirect(url);
 
         return true;
+    }
+
+    /// <summary>读取请求体文本用于安全检测。仅处理方法为修改类且内容类型为文本的请求，超过指定大小不读取</summary>
+    /// <param name="ctx">HTTP上下文</param>
+    /// <param name="maxSize">最大读取字符数</param>
+    /// <returns>请求体文本，不适用时返回null</returns>
+    public static async Task<String> ReadRequestBodyAsync(HttpContext ctx, Int32 maxSize = 65536)
+    {
+        var req = ctx.Request;
+        var method = req.Method;
+        if (!HttpMethods.IsPost(method) && !HttpMethods.IsPut(method) && !HttpMethods.IsPatch(method)) return null;
+
+        // 排除文件上传，仅处理文本类内容
+        var ct = req.ContentType + "";
+        if (ct.StartsWithIgnoreCase("multipart/")) return null;
+        if (!req.HasFormContentType && !ct.Contains("json", StringComparison.OrdinalIgnoreCase) &&
+            !ct.Contains("text", StringComparison.OrdinalIgnoreCase) && !ct.Contains("xml", StringComparison.OrdinalIgnoreCase)) return null;
+
+        // 超过指定大小不读取，避免大请求体开销
+        var len = req.ContentLength;
+        if (len > maxSize) return null;
+
+        try
+        {
+            req.EnableBuffering();
+            using var reader = new StreamReader(req.Body, Encoding.UTF8, true, 1024, leaveOpen: true);
+            var buf = new Char[maxSize];
+            var n = await reader.ReadBlockAsync(buf, 0, maxSize);
+            req.Body.Position = 0;
+
+            return n > 0 ? new String(buf, 0, n) : null;
+        }
+        catch
+        {
+            // 读取失败不影响请求处理，尽力恢复流位置供后续读取
+            try { if (req.Body.CanSeek) req.Body.Position = 0; } catch { }
+            return null;
+        }
     }
 
     class MyUri

@@ -208,6 +208,9 @@ public static class CubeService
         services.AddSingleton<VerifyCodeService>();
         services.AddSingleton<AuthEnhancedService>();
         services.AddSingleton<AccountActivateService>();
+        services.AddSingleton<SecurityEventService>();
+        services.AddSingleton<BlockService>();
+        services.AddHostedService(sp => sp.GetRequiredService<BlockService>());
         services.AddSingleton<AccessService>();
         services.AddSingleton<PageService>();
         services.AddSingleton<TokenService>();

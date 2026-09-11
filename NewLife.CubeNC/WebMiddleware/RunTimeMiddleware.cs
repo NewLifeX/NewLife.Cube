@@ -64,8 +64,9 @@ public class RunTimeMiddleware
         // 获取当前用户。先找Items，再找Session2，没有自动登录能力
         var user = ManageProvider.User;
 
-        // 安全访问
-        var rule = _accessService.Valid(url + "", ua, ip, user, session);
+        // 安全访问。读取请求体用于威胁检测（仅文本类内容，超限不读）
+        var body = await MiddlewareHelper.ReadRequestBodyAsync(ctx);
+        var rule = _accessService.Valid(url + "", body, ua, ip, user, session);
         if (rule != null && rule.ActionKind is AccessActionKinds.Block or AccessActionKinds.Limit)
         {
             if (rule.BlockCode == 302)

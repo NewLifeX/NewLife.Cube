@@ -2,14 +2,18 @@
 
 魔方提供基于规则的访问控制服务，支持 URL、IP、User-Agent、用户名等多维度匹配，兼具静态规则拦截和动态响应码检测两种工作模式，可实现 IP 黑名单、路径拦截、请求限流和爬虫/扫描攻击自动封禁。
 
+在此基础上，魔方集成了内置威胁检测、持久化自动封禁与安全事件审计的[安全防御体系](PERM-安全防御.md)。
+
 ---
 
 ## 核心组件
 
 | 组件 | 位置 | 说明 |
 |------|------|------|
-| `AccessRule` | `NewLife.Cube/Entity/` | 访问规则实体，持久化规则配置 |
+| `AccessRule` | `NewLife.Cube/Entity/` | 访问规则实体，持久化规则配置与自动封禁记录 |
 | `AccessService` | `NewLife.CubeNC/Services/` | 访问控制服务，在请求管道中执行规则匹配和封禁 |
+| `BlockService` | `NewLife.CubeNC/Services/` | 封禁服务，维护自动封禁快照（见安全防御） |
+| `SecurityEventService` | `NewLife.CubeNC/Services/` | 安全事件审计与封禁告警（见安全防御） |
 | `RunTimeMiddleware` | `WebMiddleware/` | HTTP 中间件，调用 AccessService 执行检测 |
 
 `AccessService` 以文件链接方式同时被第三代（`NewLife.Cube`）和第二代（`NewLife.CubeNC`）引用，逻辑完全共享。
@@ -34,6 +38,7 @@
 | `LimitDimension` | Enum | 限流维度：`IP(1)` / `User(2)` |
 | `LimitCycle` | Int32 | 限流周期（秒），响应码检测时同时用作动态封禁时长 |
 | `LimitTimes` | Int32 | 限流周期内允许的最大次数，超过后触发动作 |
+| `ExpireTime` | DateTime | 过期时间。到期后规则自动失效，仅供系统自动封禁使用（见安全防御）；未设置表示永久有效 |
 
 ### 关于 `LimitCycle` 的双重语义
 
@@ -69,18 +74,22 @@ Url / UserAgent / IP / LoginedUser 字段均支持以下语法：
 ```
 请求到达 → Valid()
     │
-    ├─ 检查IP是否在动态封禁缓存 access:block:{ip}
-    │    └─ 命中 → 直接返回对应规则，拦截
+    ├─ 检查IP是否命中自动封禁快照（持久化封禁，内存加速，见安全防御）
+    │    └─ 命中 → 直接返回封禁规则，拦截
     │
-    ├─ 加载所有启用规则（FindAllWithCache，有缓存）
+    ├─ 加载所有启用规则（FindAllWithCache，有缓存；自动封禁规则不参与遍历）
     ├─ 按 Priority 降序、Id 降序排列
     │
-    └─ 逐条匹配 Url × UserAgent × IP × LoginedUser
-         ├─ 命中 Pass  → 返回 null（放行，不再继续匹配）
-         ├─ 命中 Block → 返回规则（中间件拦截并响应 BlockCode/BlockContent）
-         └─ 命中 Limit → 检查会话限流次数
-                ├─ 未超限 → 返回 null（放行）
-                └─ 超限   → 返回规则（中间件拦截）
+    ├─ 逐条匹配 Url × UserAgent × IP × LoginedUser
+    │    ├─ 命中 Pass  → 返回 null（放行，豁免后续规则与威胁检测）
+    │    ├─ 命中 Block → 返回规则（中间件拦截并响应 BlockCode/BlockContent）
+    │    └─ 命中 Limit → 检查会话限流次数
+    │           ├─ 未超限 → 继续评估后续规则
+    │           └─ 超限   → 返回规则（中间件拦截）
+    │
+    └─ 内置威胁检测（安全防御，可按观察/拦截模式配置）
+         ├─ 未命中 → 返回 null（放行）
+         └─ 命中   → 观察模式仅记录安全事件；拦截模式返回拦截规则（连续触发自动封禁）
 ```
 
 **注意**：`Pass` 动作优先级最高，一旦命中立即放行，不再匹配后续规则。可用于内网白名单绕过全局限制。
@@ -129,7 +138,7 @@ Url / UserAgent / IP / LoginedUser 字段均支持以下语法：
 | 封禁爬虫 | Block | UA = `*bot*,*spider*` | UA 含 bot/spider 则跳转 |
 | IP访问太快 | Limit | 非静态资源；IP限流 60s/100次 | 频繁访问给出友好提示 |
 | 内网优先 | Pass | IP = `192.*`，优先级 999 | 内网IP直接放行 |
-| 404扫描检测 | Block | ResponseCodes=404；60s/20次 | 60秒内触发404超过20次，封禁IP（封禁时长=LimitCycle） |
+| 404扫描检测 | Block | ResponseCodes=404；60s/20次 | 60秒内触发404超过20次，自动封禁该IP（时长按阶梯档位递增，见安全防御） |
 
 启用 `404扫描检测` 可自动拦截绝大多数路径枚举式 Web 扫描攻击。
 
@@ -140,7 +149,7 @@ Url / UserAgent / IP / LoginedUser 字段均支持以下语法：
 | 缓存键 | 格式 | 用途 | TTL |
 |--------|------|------|-----|
 | 响应码计数 | `access:resp:{ruleId}:{ip}:{timeWindow}` | 统计某IP在时间窗口内触发次数 | LimitCycle 秒 |
-| 动态IP封禁 | `access:block:{ip}` | 标记IP已被封禁，值为规则ID | LimitCycle 秒 |
+| 动态IP封禁 | 访问规则表（名称前缀"自动封禁"）+ `BlockService` 内存快照 | 标记IP已被封禁，到期自动解封；已由持久化封禁取代原 `access:block` 缓存 | 到期时间 |
 
 其中 `timeWindow = (今日已过秒数) / LimitCycle`，形成等长时间窗口。
 
@@ -209,8 +218,8 @@ BlockContent:  <h1>您的IP已因频繁触发404被暂时封禁</h1>
 | 类别 | 问题描述 | 建议方案 |
 |------|----------|----------|
 | **性能** | `FindAllWithCache()` 在每条请求中被调用两次（`Valid` + `TrackResponse`），虽已缓存，但每次仍执行 LINQ 过滤排序 | 将已过滤排序的列表单独缓存，或在 Middleware 层一次性加载后传给两个方法 |
-| **封禁管理** | 动态封禁的 IP 无法从后台手动解封，只能等 TTL 自然过期 | 在管理后台增加"动态封禁 IP 列表"页面，支持手动解封 |
-| **审计日志** | 触发动态封禁时没有写入系统日志，运维无法事后审计 | 在 `TrackResponse` 封禁触发时写入 `XTrace.WriteLine` 或专用审计记录 |
+| **封禁管理** | ✅ 已实现：自动封禁持久化为访问规则，列表"解封时间"列一键解封 | 详见[安全防御](PERM-安全防御.md) |
+| **审计日志** | ✅ 已实现：检测与封禁动作写入审计日志（类别"安全防御"） | 详见[安全防御](PERM-安全防御.md) |
 | **子网聚合封禁** | 响应码检测目前只支持单 IP 封禁，精明的攻击者可切换 IP 绕过 | 参考登录风控的三级 IP 封禁（/32、/24、/16），扩展到响应码检测模块 |
 | **静态资源提前退出** | `TrackResponse` 对所有请求遍历规则，包括已确定的静态资源 | 在进入循环前，若 URL 明确为静态资源扩展名则提前 return |
 | **规则语义混合** | `ActionKind`、`LimitCycle` 在静态规则和响应码检测规则中含义不同，容易误配 | 可引入 `RuleMode` 字段（`Static` / `ResponseTrack`）明确区分，减少理解成本 |
@@ -226,11 +235,14 @@ BlockContent:  <h1>您的IP已因频繁触发404被暂时封禁</h1>
 - 启用/禁用规则
 - 调整优先级
 - `ResponseCodes` 配置响应码检测（留空则仅为静态规则）
+- 自动封禁行（名称前缀"自动封禁"）显示"解封时间"，点击即可解除封禁
+- 安全事件查看：系统管理 → 日志，按类别"安全防御"筛选
 
 ---
 
 ## 相关文档
 
+- [安全防御](PERM-安全防御.md)
 - [安全与审计](SYS-安全与审计.md)
 - [中间件与过滤器](BASE-中间件与过滤器.md)
 - [访问规则架构图](安全访问架构.emmx)

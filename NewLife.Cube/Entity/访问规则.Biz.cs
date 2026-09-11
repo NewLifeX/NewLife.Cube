@@ -245,5 +245,70 @@ public partial class AccessRule : Entity<AccessRule>
     #endregion
 
     #region 业务操作
+    /// <summary>自动封禁规则名称前缀。系统生成的封禁规则以"前缀+IP"命名，用于与管理员配置的规则区分</summary>
+    public const String AutoBlockPrefix = "自动封禁";
+
+    /// <summary>自动封禁规则优先级。确保封禁规则优先于普通规则</summary>
+    public const Int32 AutoBlockPriority = 10000;
+
+    /// <summary>是否系统自动封禁规则。按名称前缀识别，不参与常规规则匹配，仅通过封禁快照生效</summary>
+    public Boolean IsAutoBlock => Name?.StartsWith(AutoBlockPrefix) == true;
+
+    /// <summary>查询全部自动封禁规则。包含已过期尚未清理的记录</summary>
+    /// <returns>自动封禁规则列表</returns>
+    public static IList<AccessRule> FindAllAutoBlocks() => FindAll(_.Name.StartsWith(AutoBlockPrefix), null, null, 0, 0);
+
+    /// <summary>写入自动封禁。同一IP已存在封禁规则时延长有效期</summary>
+    /// <param name="ip">被封禁的IP地址，支持*通配</param>
+    /// <param name="reason">封禁原因</param>
+    /// <param name="expireTime">解封时间</param>
+    /// <returns>封禁规则</returns>
+    public static AccessRule WriteAutoBlock(String ip, String reason, DateTime expireTime)
+    {
+        if (ip.IsNullOrEmpty()) throw new ArgumentNullException(nameof(ip));
+
+        var name = $"{AutoBlockPrefix} {ip}";
+        var rule = FindByName(name) ?? new AccessRule();
+        rule.Name = name;
+        rule.Enable = true;
+        rule.Priority = AutoBlockPriority;
+        rule.Url = null;
+        rule.UserAgent = null;
+        rule.IP = ip;
+        rule.LoginedUser = null;
+        rule.ActionKind = AccessActionKinds.Block;
+        rule.BlockCode = 403;
+        rule.BlockContent = "<h1>访问被拒绝</h1><p>您的网络行为异常，已被暂时限制访问，请稍后重试！</p>";
+        rule.ExpireTime = expireTime;
+        rule.Remark = reason;
+        rule.Save();
+
+        return rule;
+    }
+
+    /// <summary>解除自动封禁</summary>
+    /// <param name="ip">IP地址</param>
+    /// <returns>受影响行数</returns>
+    public static Int32 RemoveAutoBlock(String ip)
+    {
+        if (ip.IsNullOrEmpty()) return 0;
+
+        return FindByName($"{AutoBlockPrefix} {ip}")?.Delete() ?? 0;
+    }
+
+    /// <summary>清理已过期的自动封禁</summary>
+    /// <param name="time">截止时间，早于该时间的封禁视为过期</param>
+    /// <returns>清理行数</returns>
+    public static Int32 RemoveExpiredAutoBlocks(DateTime time)
+    {
+        var rs = 0;
+        foreach (var rule in FindAllAutoBlocks())
+        {
+            // 仅清理设置了到期时间且已过期的记录
+            if (rule.ExpireTime.Year > 2000 && rule.ExpireTime <= time) rs += rule.Delete();
+        }
+
+        return rs;
+    }
     #endregion
 }

@@ -51,35 +51,133 @@ public static class WebHelper2
     /// <param name="value"></param>
     public static void Set(this ISession session, String key, Object value) => session.Set(key, value?.ToJson().GetBytes());
 
-    /// <summary>获取用户主机</summary>
-    /// <param name="context"></param>
-    /// <returns></returns>
+    /// <summary>获取用户主机。优先从转发头解析；配置可信代理后按代理链解析并防伪造，最终返回单一IP地址</summary>
+    /// <param name="context">HTTP上下文</param>
+    /// <returns>客户端IP地址</returns>
     public static String GetUserHost(this HttpContext context)
     {
         var request = context.Request;
+
+        // 直连地址
+        var remote = context.Connection?.RemoteIpAddress;
+        if (remote != null && remote.IsIPv4MappedToIPv6) remote = remote.MapToIPv4();
+        var remoteIp = remote + "";
 
         var str = "";
         if (str.IsNullOrEmpty()) str = request.Headers["X-Remote-Ip"];
         if (str.IsNullOrEmpty()) str = request.Headers["HTTP_X_FORWARDED_FOR"];
         if (str.IsNullOrEmpty()) str = request.Headers["X-Real-IP"];
         if (str.IsNullOrEmpty()) str = request.Headers["X-Forwarded-For"];
-        if (str.IsNullOrEmpty()) str = request.Headers["REMOTE_ADDR"];
-        //if (str.IsNullOrEmpty()) str = request.Headers["Host"];
-        if (str.IsNullOrEmpty())
+
+        if (!str.IsNullOrEmpty())
         {
-            var addr = context.Connection?.RemoteIpAddress;
-            if (addr != null)
+            var trustedTxt = CubeSetting.Current.TrustedProxies;
+            var trusted = !trustedTxt.IsNullOrEmpty() ? trustedTxt.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries) : null;
+            if (trusted == null || trusted.Length == 0)
             {
-                if (addr.IsIPv4MappedToIPv6) addr = addr.MapToIPv4();
-                str = addr + "";
+                // 未配置可信代理，兼容旧行为信任全部转发头；多层反代时取链首地址，并折叠为单一IP
+                var first = str.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(e => e.Trim()).FirstOrDefault(e => e.Length > 0);
+                if (!first.IsNullOrEmpty()) str = first;
+            }
+            else if (!IsTrustedProxy(remoteIp, trusted))
+            {
+                // 配置了可信代理但直连来源不可信，转发头可被伪造，直接使用直连地址
+                str = remoteIp;
+            }
+            else
+            {
+                // 从链尾向左跳过可信代理，取第一个不可信地址作为客户端地址
+                var ips = str.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(e => e.Trim()).Where(e => e.Length > 0).ToList();
+                var found = (String)null;
+                for (var i = ips.Count - 1; i >= 0; i--)
+                {
+                    if (!IsTrustedProxy(ips[i], trusted))
+                    {
+                        found = ips[i];
+                        break;
+                    }
+                }
+                str = found ?? (ips.Count > 0 ? ips[0] : remoteIp);
             }
         }
 
-        // 多层反代时头部值可能为逗号分隔的多值，如 "10.1.1.1,10.1.1.1"，去重后重组
-        if (!str.IsNullOrEmpty() && str.Contains(','))
-            str = String.Join(",", str.Split(',').Select(s => s.Trim()).Where(s => !s.IsNullOrWhiteSpace()).Distinct());
+        if (str.IsNullOrEmpty()) str = request.Headers["REMOTE_ADDR"];
+        //if (str.IsNullOrEmpty()) str = request.Headers["Host"];
+        if (str.IsNullOrEmpty()) str = remoteIp;
 
         return str;
+    }
+
+    /// <summary>判断地址是否在可信代理列表内。列表项支持精确IP、*通配和IPv4 CIDR网段</summary>
+    /// <param name="ip">待判断IP</param>
+    /// <param name="trusted">可信代理列表</param>
+    /// <returns>是否可信</returns>
+    private static Boolean IsTrustedProxy(String ip, String[] trusted)
+    {
+        if (ip.IsNullOrEmpty()) return false;
+
+        foreach (var item in trusted)
+        {
+            var t = item.Trim();
+            if (t.Length == 0) continue;
+
+            if (t == "*") return true;
+
+            if (t.Contains('/'))
+            {
+                if (MatchCidr(ip, t)) return true;
+            }
+            else if (t.IsMatch(ip))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>IPv4 CIDR网段匹配</summary>
+    /// <param name="ip">IPv4地址</param>
+    /// <param name="cidr">网段，如 10.0.0.0/8</param>
+    /// <returns>是否属于该网段</returns>
+    private static Boolean MatchCidr(String ip, String cidr)
+    {
+        var ss = cidr.Split('/');
+        if (ss.Length != 2) return false;
+
+        var mask = ss[1].ToInt();
+        if (mask is < 0 or > 32) return false;
+
+        var ip1 = ParseIpv4(ip);
+        var ip2 = ParseIpv4(ss[0]);
+        if (ip1 < 0 || ip2 < 0) return false;
+
+        if (mask == 0) return true;
+
+        var bits = (~((1L << (32 - mask)) - 1)) & 0xFFFFFFFFL;
+        return (ip1 & bits) == (ip2 & bits);
+    }
+
+    /// <summary>解析IPv4地址为整数，非法返回-1</summary>
+    /// <param name="ip">IPv4地址</param>
+    /// <returns>整型地址</returns>
+    private static Int64 ParseIpv4(String ip)
+    {
+        if (ip.IsNullOrEmpty()) return -1;
+
+        var ss = ip.Split('.');
+        if (ss.Length != 4) return -1;
+
+        var n = 0L;
+        foreach (var item in ss)
+        {
+            var b = item.ToInt();
+            if (b is < 0 or > 255) return -1;
+
+            n = (n << 8) | (UInt32)b;
+        }
+
+        return n;
     }
 
     /// <summary>返回请求字符串和表单的名值字段，过滤空值和ViewState，同名时优先表单</summary>
