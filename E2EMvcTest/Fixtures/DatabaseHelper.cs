@@ -134,6 +134,24 @@ public static class DatabaseHelper
         return ExecuteScalar<Int32>(MembershipConnStr, sql, ("@name", username));
     }
 
+    /// <summary>按用户名查询角色编号</summary>
+    /// <param name="username">用户名</param>
+    /// <returns>角色 Id，不存在返回 0</returns>
+    public static Int32 GetUserRoleId(String username)
+    {
+        const String sql = "SELECT RoleID FROM User WHERE Name = @name LIMIT 1";
+        return ExecuteScalar<Int32>(MembershipConnStr, sql, ("@name", username));
+    }
+
+    /// <summary>查询角色权限字符串</summary>
+    /// <param name="roleId">角色 Id</param>
+    /// <returns>Permission 字段值，不存在返回 null</returns>
+    public static String? GetRolePermission(Int32 roleId)
+    {
+        const String sql = "SELECT Permission FROM Role WHERE ID = @id LIMIT 1";
+        return ExecuteScalar<String?>(MembershipConnStr, sql, ("@id", roleId));
+    }
+
     /// <summary>按名称获取租户 Id</summary>
     /// <param name="tenantName">租户名称</param>
     /// <returns>租户 Id，不存在返回 0</returns>
@@ -217,6 +235,31 @@ public static class DatabaseHelper
     {
         const String sql = "SELECT TenantId FROM OAuthConfig WHERE Name = @name LIMIT 1";
         return ExecuteScalar<Int32>(CubeWriteConnStr, sql, ("@name", name));
+    }
+
+    /// <summary>写入一条测试附件记录（归属指定用户），返回附件编号</summary>
+    /// <param name="title">附件标题（唯一值便于断言）</param>
+    /// <param name="createUserId">创建用户 Id</param>
+    /// <returns>附件 Id</returns>
+    public static Int64 SeedAttachment(String title, Int32 createUserId)
+    {
+        const String sql = """
+            INSERT INTO Attachment (Id, Category, Title, FileName, Extension, Size, ContentType, Enable, UploadTime, CreateUser, CreateUserID, CreateTime, UpdateUserID, UpdateTime)
+            VALUES ((SELECT IFNULL(MAX(Id), 0) + 1 FROM Attachment), 'e2e', @title, @title, '.txt', 1, 'text/plain', 1, @now, @user, @uid, @now, @uid, @now)
+            RETURNING Id;
+            """;
+        var now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        return ExecuteScalarWrite<Int64>(CubeWriteConnStr, sql,
+            ("@title", title), ("@now", now), ("@user", createUserId + ""), ("@uid", createUserId));
+    }
+
+    /// <summary>按标题统计附件行数</summary>
+    /// <param name="title">附件标题</param>
+    /// <returns>匹配行数</returns>
+    public static Int32 CountAttachmentByTitle(String title)
+    {
+        const String sql = "SELECT COUNT(*) FROM Attachment WHERE Title = @title";
+        return ExecuteScalar<Int32>(CubeWriteConnStr, sql, ("@title", title));
     }
 
     #endregion
