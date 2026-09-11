@@ -124,21 +124,28 @@ public sealed class UserProfileTests : IAsyncLifetime
         await PageHelpers.AssertNoServerErrorAsync(_page, testId);
     }
 
-    [Fact(DisplayName = "TC-USER-014 用户名称标签（编辑表单）含昵称和名称字段")]
+    [Fact(DisplayName = "TC-USER-014 用户名称标签（只读查看）回填名称且无保存按钮")]
     [Trait("Category", "UserProfile")]
     [Trait("Priority", "P0")]
-    public async Task TC_USER_014_UserNameEditTab()
+    public async Task TC_USER_014_UserNameDetailTab()
     {
         const String testId = "TC-USER-014";
 
         await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Info");
         await PageHelpers.AssertNoServerErrorAsync(_page, testId);
 
-        // 用户名称标签的 href 包含 /Admin/User/Edit，用 href selector 避免因 DisplayName 不同而匹配失败
-        await _page.ClickAsync(".nav-pills a[href*='/Admin/User/Edit']");
+        // 用户名称标签指向只读查看页 /Admin/User/Detail，用 href selector 避免因 DisplayName 不同而匹配失败
+        await _page.ClickAsync(".profile-tabs a[href*='/Admin/User/Detail']");
         await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
         await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+        await PageHelpers.AssertUrlContainsAsync(_page, "/User/Detail", testId);
+
+        // 查看页回填名称和昵称；且不得出现编辑表单的保存按钮，导航条不允许直接进入编辑表单
+        var nameVal = await _page.InputValueAsync("input[name=Name]");
+        Assert.False(String.IsNullOrWhiteSpace(nameVal), $"[{testId}] 查看页名称字段为空（未回填）。URL: {_page.Url}");
+        Assert.True(await _page.IsVisibleAsync("input[name=DisplayName]"), $"[{testId}] 查看页未找到昵称（DisplayName）字段。URL: {_page.Url}");
+        Assert.False(await _page.IsVisibleAsync(".form-actions"), $"[{testId}] 查看页不应出现编辑表单的保存按钮。URL: {_page.Url}");
     }
 
     [Fact(DisplayName = "TC-USER-015 三方链接标签：加载列表")]
@@ -458,14 +465,14 @@ public sealed class UserProfileTests : IAsyncLifetime
     {
         const String testId = "TC-USER-042";
 
-        // 进入 admin 用户详情/编辑页
+        // 进入 admin 用户只读查看页
         await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Info");
-        // 用户名称标签的 href 包含 /Admin/User/Edit，用 href selector 避免因 DisplayName 不同而匹配失败
-        await _page.ClickAsync(".nav-pills a[href*='/Admin/User/Edit']");
+        // 用户名称标签指向 /Admin/User/Detail，用 href selector 避免因 DisplayName 不同而匹配失败
+        await _page.ClickAsync(".profile-tabs a[href*='/Admin/User/Detail']");
         await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         await PageHelpers.AssertNoServerErrorAsync(_page, testId);
 
-        // 用 textContent 而非 innerText：Edit 页面有多个 tab，Logins 字段可能在非活动 tab 内（display:none），
+        // 用 textContent 而非 innerText：Detail 页面有多个 tab，Logins 字段可能在非活动 tab 内（display:none），
         // innerText 只返回可见文本，textContent 包含所有 DOM 文本（含隐藏元素）
         var bodyText = await _page.EvaluateAsync<String>("() => document.body.textContent");
 

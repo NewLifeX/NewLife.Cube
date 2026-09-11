@@ -44,6 +44,8 @@
         ["日志"] = "fa-list-alt",
         ["通知记录"] = "fa-bell-o",
     };
+    // 用户标签为查看页
+    icons[user + ""] = "fa-eye";
 }
 @* 用户中心页面专用样式：仅在此 partial 渲染的页面加载，避免污染全局 Cube.css *@
 <link rel="stylesheet" href="~/Content/profile.css?v=20260826" />
@@ -55,7 +57,9 @@
             var p = url.IndexOf('?');
             var v = p > 0 ? url.Substring(0, p) : url;
             var icon = icons.ContainsKey(item.Key) ? icons[item.Key] : "fa-pencil-square-o";
-            <li role="presentation" class="@(path.EqualIgnoreCase(v) ? "active" : "")">
+            // 用户标签指向查看页；用户编辑页（管理入口）同样点亮该标签
+            var active = path.EqualIgnoreCase(v) || (v.EqualIgnoreCase("/Admin/User/Detail") && path.StartsWithIgnoreCase("/Admin/User/Edit"));
+            <li role="presentation" class="@(active ? "active" : "")">
                 <a href="@url"><i class="fa @icon"></i>@item.Key</a>
             </li>
         }
