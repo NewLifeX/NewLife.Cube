@@ -112,6 +112,12 @@ public class ControllerBaseX : ControllerBase, IActionFilter
             {
                 // 设置变量，数据权限使用
                 HttpContext.Items["userId"] = CurrentUser.ID;
+
+                // 批量操作需要更新或删除权限，无权限时隐藏选择列与批量按钮；没有菜单时不做权限控制
+                if (Menu != null && CurrentUser is IUser user2)
+                {
+                    PageSetting.EnableSelect = user2.Has(Menu, PermissionFlags.Update, PermissionFlags.Delete);
+                }
             }
         }
         catch (Exception ex)

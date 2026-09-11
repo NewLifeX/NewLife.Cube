@@ -67,7 +67,10 @@ public class DataScopeMiddleware(RequestDelegate next, ITenantContext tenantCont
                 var url = ctx.Request.Path + "";
                 var menu = ManageProvider.Menu?.FindByUrl(url);
 
-                DataScopeContext.Current = DataScopeContext.Create(user, menu);
+                var scope = DataScopeContext.Create(user, menu);
+                Normalize(scope);
+
+                DataScopeContext.Current = scope;
                 dataScopeChanged = true;
             }
 
@@ -78,6 +81,25 @@ public class DataScopeMiddleware(RequestDelegate next, ITenantContext tenantCont
             // 无条件恢复租户上下文（无论本请求是否设置过），防止 AsyncLocal 值泄漏到下一个请求/后台任务
             TenantContext.Current = oldTenant;
             if (dataScopeChanged) DataScopeContext.Current = null;
+        }
+    }
+
+    /// <summary>规范化数据权限上下文。用户未分配部门时，部门类数据范围无法行使，退化为"仅本人"</summary>
+    /// <remarks>
+    /// 部门类数据范围（本部门/本部门及下级/自定义）依赖用户所属部门计算可访问部门，未分配部门时结果为空，
+    /// XCode 拦截器会退化为恒假条件（DepartmentID=-1 / ID=-1），导致普通用户连自己的资料都看不到。
+    /// 此处退化为"仅本人"，保证普通用户始终能看到自己的数据。
+    /// </remarks>
+    /// <param name="scope">数据权限上下文</param>
+    public static void Normalize(DataScopeContext scope)
+    {
+        if (scope is { IsSystem: false } &&
+            scope.DataScope is DataScopes.本部门 or DataScopes.本部门及下级 or DataScopes.自定义 &&
+            scope.DepartmentId <= 0 &&
+            scope.AccessibleDepartmentIds is not { Length: > 0 })
+        {
+            scope.DataScope = DataScopes.仅本人;
+            scope.AccessibleDepartmentIds = [];
         }
     }
 

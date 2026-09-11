@@ -8,6 +8,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Areas.Cube.Controllers;
 
 /// <summary>附件管理</summary>
+[DataPermission(null, "CreateUserID={#userId}")]
 [CubeArea]
 [Menu(38, true, Icon = "Document")]
 public class AttachmentController : EntityController<Attachment, AttachmentModel>

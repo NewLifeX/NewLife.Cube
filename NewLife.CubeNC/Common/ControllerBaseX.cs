@@ -50,11 +50,11 @@ public class ControllerBaseX : Controller
             // 设置变量，数据权限使用
             HttpContext.Items["userId"] = user.ID;
 
-            // 没有菜单时不做权限控制
-            //if (Menu != null)
-            //{
-            //    PageSetting.EnableSelect = user.Has(Menu, PermissionFlags.Update, PermissionFlags.Delete);
-            //}
+            // 批量操作需要更新或删除权限，无权限时隐藏选择列与批量按钮；没有菜单时不做权限控制
+            if (Menu != null)
+            {
+                PageSetting.EnableSelect = user.Has(Menu, PermissionFlags.Update, PermissionFlags.Delete);
+            }
         }
 
         base.OnActionExecuting(context);
