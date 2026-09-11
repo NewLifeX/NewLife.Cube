@@ -298,7 +298,7 @@
                     <label class="control-label col-sm-4">注销账号</label>
                     <div class="col-sm-8">
                         <button type="button" class="btn btn-sm btn-danger" id="sec_close_btn"><i class="fa fa-times-circle"></i> 注销账号</button>
-                        <span class="help-text">依据《中华人民共和国个人信息保护法》提供账号注销。注销后账号禁用，个性化数据将清空且不可恢复</span>
+                        <span class="help-text">依据《中华人民共和国个人信息保护法》、欧盟《通用数据保护条例》（GDPR）等法规提供账号注销（删除权）。注销后账号将被禁用，个人数据将删除或匿名化，且不可恢复</span>
                     </div>
                 </div>
             </div>
@@ -314,7 +314,7 @@
             jQuery(function () {
                 // ========== 注销账号 ==========
                 $('#sec_close_btn').on('click', function () {
-                    if (!confirm('确定要注销账号吗？注销后账号将被禁用，个性化数据将清空且不可恢复。')) return;
+                    if (!confirm('确定要注销账号吗？注销后账号将被禁用，个人数据将删除或匿名化，且不可恢复。')) return;
                     $.ajax({
                         url: '@Url.Action("CloseAccount", "User", new { area = "Admin" })',
                         type: 'POST',

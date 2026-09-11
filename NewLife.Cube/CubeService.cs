@@ -219,6 +219,9 @@ public static class CubeService
         services.TryAddSingleton<ICaptchaService, DrawingCaptchaService>();
         services.TryAddSingleton<IMfaService, TotpMfaService>();
 
+        // 账号注销处理器：默认处理器清理框架侧个人数据；下游可继续追加注册（必须 Singleton）
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountCloseHandler, DefaultAccountCloseHandler>());
+
         // SSO 服务
         services.AddSingleton<Services.Sso.IOAuthAppService, Services.Sso.OAuthAppService>();
         services.AddSingleton<Services.Sso.ITokenService, Services.Sso.TokenService>();

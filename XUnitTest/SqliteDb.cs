@@ -32,12 +32,15 @@ public static class SqliteDb
                 (IDataTable)User.Meta.Table.DataTable.Clone(),
                 (IDataTable)UserStat.Meta.Table.DataTable.Clone(),
                 (IDataTable)UserToken.Meta.Table.DataTable.Clone(),
-                (IDataTable)UserConnect.Meta.Table.DataTable.Clone());
+                (IDataTable)UserConnect.Meta.Table.DataTable.Clone(),
+                (IDataTable)Parameter.Meta.Table.DataTable.Clone(),
+                (IDataTable)TenantUser.Meta.Table.DataTable.Clone());
 
             var dal2 = DAL.Create("Log");
             dal2.SetTables(
                 (IDataTable)NotificationRecord.Meta.Table.DataTable.Clone(),
-                (IDataTable)UserOnline.Meta.Table.DataTable.Clone());
+                (IDataTable)UserOnline.Meta.Table.DataTable.Clone(),
+                (IDataTable)VerifyCodeRecord.Meta.Table.DataTable.Clone());
 
             // 触发表结构检查与自动建表，避免首个用例直接 Delete/Insert 时表尚不存在
             var _ = Role.Meta.Count;
