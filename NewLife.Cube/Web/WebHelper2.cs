@@ -56,6 +56,9 @@ public static class WebHelper2
     /// <summary>获取用户主机。优先从转发头解析；配置可信代理后按代理链解析并防伪造，最终返回单一IP地址</summary>
     /// <param name="context">HTTP上下文</param>
     /// <returns>客户端IP地址</returns>
+    /// <remarks>
+    /// 后续收敛：NewLife.Core 发版后统一改用其 IP/网段工具，Web 侧解析复用 NewLife.Remoting.Extensions 的公共实现，魔方仅保留自动学习等差异化部分
+    /// </remarks>
     public static String GetUserHost(this HttpContext context)
     {
         var request = context.Request;
@@ -65,9 +68,6 @@ public static class WebHelper2
         if (remote != null && remote.IsIPv4MappedToIPv6) remote = remote.MapToIPv4();
         var remoteIp = remote + "";
 
-        // 自动学习可信代理：可信代理未配置时，内网直连来源视为反向代理/负载均衡入口
-        LearnTrustedProxy(remoteIp);
-
         var str = "";
         if (str.IsNullOrEmpty()) str = request.Headers["X-Remote-Ip"];
         if (str.IsNullOrEmpty()) str = request.Headers["HTTP_X_FORWARDED_FOR"];
@@ -76,6 +76,9 @@ public static class WebHelper2
 
         if (!str.IsNullOrEmpty())
         {
+            // 自动学习：仅携带转发头的请求说明来源正在替他人转发，内网直连来源才可能是反向代理/负载均衡入口
+            LearnTrustedProxy(remoteIp);
+
             var trusted = GetAllTrustedProxies();
             if (trusted.Length == 0)
             {
@@ -112,33 +115,24 @@ public static class WebHelper2
         return str;
     }
 
-    /// <summary>可信代理学习上限。学满后不再学习，避免被灌入大量地址</summary>
-    private const Int32 MaxLearnedProxies = 20;
-
     private static readonly Object _learnLock = new();
 
-    /// <summary>获取全部可信代理。合并手工配置与自动学习结果，均支持精确IP、*通配和IPv4 CIDR网段</summary>
+    /// <summary>获取全部可信代理。手工配置优先，未配置时使用自动学习结果；列表项支持精确IP、*通配和IPv4 CIDR网段</summary>
     /// <returns>可信代理数组，未配置且未学习时为空数组</returns>
     public static String[] GetAllTrustedProxies()
     {
         var set = CubeSetting.Current;
 
+        // 手工配置优先：配置可信代理后即接管，不再使用学习结果
+        var txt = set.TrustedProxies;
+        if (txt.IsNullOrEmpty()) txt = set.LearnedProxies;
+        if (txt.IsNullOrEmpty()) return [];
+
         var list = new List<String>();
-        if (!set.TrustedProxies.IsNullOrEmpty())
+        foreach (var item in txt.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries))
         {
-            foreach (var item in set.TrustedProxies.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries))
-            {
-                var t = item.Trim();
-                if (t.Length > 0 && !list.Any(e => e.EqualIgnoreCase(t))) list.Add(t);
-            }
-        }
-        if (!set.LearnedProxies.IsNullOrEmpty())
-        {
-            foreach (var item in set.LearnedProxies.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries))
-            {
-                var t = item.Trim();
-                if (t.Length > 0 && !list.Any(e => e.EqualIgnoreCase(t))) list.Add(t);
-            }
+            var t = item.Trim();
+            if (t.Length > 0 && !list.Any(e => e.EqualIgnoreCase(t))) list.Add(t);
         }
 
         return [.. list];
@@ -151,10 +145,25 @@ public static class WebHelper2
     {
         if (ip.IsNullOrEmpty()) return false;
 
-        return IsTrustedProxy(ip, GetAllTrustedProxies());
+        foreach (var t in GetAllTrustedProxies())
+        {
+            // 通配全部只表示信任所有转发头，不代表所有地址都是代理，不参与封禁保护
+            if (t == "*" || t == "0.0.0.0/0") continue;
+
+            if (t.Contains('/'))
+            {
+                if (MatchCidr(ip, t)) return true;
+            }
+            else if (t.IsMatch(ip))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    /// <summary>获取代理链摘要，用于安全事件审计。记录直连地址与转发头原始值</summary>
+    /// <summary>获取代理链摘要，用于安全事件审计。记录直连地址与转发头原始值，仅在安全事件写入时调用</summary>
     /// <param name="context">HTTP上下文</param>
     /// <returns>链摘要文本</returns>
     public static String GetIpChain(this HttpContext context)
@@ -173,7 +182,8 @@ public static class WebHelper2
             if (!xff.IsNullOrEmpty()) sb.Append("; XFF=").Append(xff);
             var real = request.Headers["X-Real-IP"] + "";
             if (!real.IsNullOrEmpty()) sb.Append("; X-Real-IP=").Append(real);
-            sb.Append("; X-Remote-Ip=").Append(request.Headers["X-Remote-Ip"] + "");
+            var remoteHeader = request.Headers["X-Remote-Ip"] + "";
+            if (!remoteHeader.IsNullOrEmpty()) sb.Append("; X-Remote-Ip=").Append(remoteHeader);
 
             return sb.ToString();
         }
@@ -183,14 +193,17 @@ public static class WebHelper2
         }
     }
 
-    /// <summary>自动学习可信代理。可信代理未配置时，学习内网直连来源；先到先学，学满为止</summary>
+    /// <summary>自动学习可信代理。携带转发头且可信代理未配置时，学习内网直连来源；先到先学，学习数量由配置控制</summary>
     /// <param name="ip">直连地址</param>
     private static void LearnTrustedProxy(String ip)
     {
         if (ip.IsNullOrEmpty()) return;
 
         var set = CubeSetting.Current;
-        if (!set.TrustedProxyLearning) return;
+
+        // 0=不学习。单机房主备通常2个入口，双机房通常4个
+        var max = set.TrustedProxyLearning;
+        if (max <= 0) return;
 
         // 手工配置优先，配置了可信代理就不再学习
         if (!set.TrustedProxies.IsNullOrEmpty()) return;
@@ -199,19 +212,25 @@ public static class WebHelper2
         if (!AuthHelper.IsInnerIp(ip)) return;
         if (System.Net.IPAddress.TryParse(ip, out var addr) && System.Net.IPAddress.IsLoopback(addr)) return;
 
+        // 已学习过则跳过。分隔符包裹，避免10.0.0.1误判为已存在于10.0.0.10
+        var learned = set.LearnedProxies;
+        if (!learned.IsNullOrEmpty() && ($",{learned},").Contains($",{ip},", StringComparison.OrdinalIgnoreCase)) return;
+
         lock (_learnLock)
         {
+            // 锁内重读，避免并发学习时相互覆盖
+            var current = set.LearnedProxies;
             var list = new List<String>();
-            if (!set.LearnedProxies.IsNullOrEmpty())
+            if (!current.IsNullOrEmpty())
             {
-                foreach (var item in set.LearnedProxies.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries))
+                foreach (var item in current.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries))
                 {
                     var t = item.Trim();
                     if (t.Length > 0 && !list.Any(e => e.EqualIgnoreCase(t))) list.Add(t);
                 }
             }
 
-            if (list.Count >= MaxLearnedProxies) return;
+            if (list.Count >= max) return;
             if (list.Any(e => e.EqualIgnoreCase(ip))) return;
 
             list.Add(ip);
@@ -221,7 +240,7 @@ public static class WebHelper2
             {
                 set.Save();
 
-                XTrace.WriteLine("安全防御自动学习可信代理 {0}，累计 {1} 个", ip, list.Count);
+                XTrace.WriteLine("安全防御自动学习可信代理 {0}，累计 {1}/{2} 个", ip, list.Count, max);
             }
             catch (Exception ex)
             {

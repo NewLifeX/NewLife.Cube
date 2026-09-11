@@ -1,4 +1,5 @@
-﻿using NewLife.Caching;
+﻿using Microsoft.AspNetCore.Http;
+using NewLife.Caching;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Web;
 using NewLife.Log;
@@ -43,9 +44,9 @@ public class AccessService
     /// <param name="ip">来源IP</param>
     /// <param name="user">当前用户</param>
     /// <param name="session">会话集合</param>
-    /// <param name="ipChain">代理链摘要，写入安全事件供审计，可为空</param>
+    /// <param name="context">HTTP上下文，写入安全事件时记录代理链摘要，可为空</param>
     /// <returns>需要拦截时返回规则，放行返回null</returns>
-    public AccessRule Valid(String url, String body, UserAgentParser ua, String ip, IUser user, IDictionary<String, Object> session, String ipChain = null)
+    public AccessRule Valid(String url, String body, UserAgentParser ua, String ip, IUser user, IDictionary<String, Object> session, HttpContext context = null)
     {
         // 检查IP是否被自动封禁（持久化封禁的内存快照）
         if (!ip.IsNullOrEmpty())
@@ -95,7 +96,7 @@ public class AccessService
         }
 
         // 内置威胁检测
-        return DetectThreat(url, body, ua.UserAgent, ip, user, ipChain);
+        return DetectThreat(url, body, ua.UserAgent, ip, user, context);
     }
 
     private Boolean IsMatch(AccessRule rule, String url, String userAgent, String ip, IUser user)
@@ -260,9 +261,9 @@ public class AccessService
     /// <param name="userAgent">用户代理</param>
     /// <param name="ip">来源IP</param>
     /// <param name="user">当前用户</param>
-    /// <param name="ipChain">代理链摘要，可为空</param>
+    /// <param name="context">HTTP上下文，可为空</param>
     /// <returns>需要拦截时返回拦截规则，否则返回null</returns>
-    private AccessRule DetectThreat(String url, String body, String userAgent, String ip, IUser user, String ipChain)
+    private AccessRule DetectThreat(String url, String body, String userAgent, String ip, IUser user, HttpContext context)
     {
         var set = CubeSetting.Current;
         var mode = set.SecurityMode;
@@ -282,7 +283,13 @@ public class AccessService
         if (threat == null) return null;
 
         var message = $"{threat.Pattern} @{threat.Target}；片段：{threat.Snippet}；URL：{url}；UA：{userAgent}";
-        if (!ipChain.IsNullOrEmpty()) message += $"；链：{ipChain}";
+
+        // 仅在写入安全事件时构造代理链摘要，避免正常请求产生额外开销
+        if (context != null)
+        {
+            var ipChain = context.GetIpChain();
+            if (!ipChain.IsNullOrEmpty()) message += $"；链：{ipChain}";
+        }
 
         // 自动模式：默认观察记录，连续攻击累计达标时自动封禁并拦截，全局大范围攻击期间临时拦截
         if (mode == 3)

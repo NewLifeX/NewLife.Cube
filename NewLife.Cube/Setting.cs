@@ -123,10 +123,10 @@ public class CubeSetting : Config<CubeSetting>
     [Category("安全")]
     public String TrustedProxies { get; set; }
 
-    /// <summary>可信代理自动学习。可信代理未配置时，自动学习内网直连来源（反向代理/负载均衡入口），公网来源不学习</summary>
-    [Description("可信代理自动学习。可信代理未配置时，自动学习内网直连来源，公网来源不学习")]
+    /// <summary>可信代理自动学习数量。可信代理未配置时，自动学习携带转发头的内网直连来源（反向代理/负载均衡入口），最多学习该数量，0=不学习</summary>
+    [Description("可信代理自动学习数量。可信代理未配置时，自动学习携带转发头的内网直连来源，最多学习该数量，0=不学习（单机房主备一般2，双机房一般4）")]
     [Category("安全")]
-    public Boolean TrustedProxyLearning { get; set; } = true;
+    public Int32 TrustedProxyLearning { get; set; } = 4;
 
     /// <summary>已学习代理。由系统自动维护，可信代理为空时参与链解析；清空可重置学习结果</summary>
     [Description("已学习代理。由系统自动维护，清空可重置学习结果")]

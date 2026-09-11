@@ -10,7 +10,7 @@ public class GetUserHostTests : IDisposable
 {
     private readonly String _oldTrusted;
     private readonly String _oldLearned;
-    private readonly Boolean _oldLearning;
+    private readonly Int32 _oldLearning;
 
     /// <summary>实例化，保存原始可信代理配置；用例期内关闭学习并清空已学习代理，避免跨用例与跨运行污染</summary>
     public GetUserHostTests()
@@ -20,7 +20,7 @@ public class GetUserHostTests : IDisposable
         _oldLearned = set.LearnedProxies;
         _oldLearning = set.TrustedProxyLearning;
 
-        set.TrustedProxyLearning = false;
+        set.TrustedProxyLearning = 0;
         set.LearnedProxies = null;
     }
 
@@ -152,7 +152,7 @@ public class GetUserHostTests : IDisposable
         var set = CubeSetting.Current;
         set.TrustedProxies = null;
         set.LearnedProxies = null;
-        set.TrustedProxyLearning = true;
+        set.TrustedProxyLearning = 4;
 
         var ctx = CreateContext("10.1.2.3");
         ctx.Request.Headers["X-Forwarded-For"] = "1.2.3.4";
@@ -170,7 +170,7 @@ public class GetUserHostTests : IDisposable
         var set = CubeSetting.Current;
         set.TrustedProxies = null;
         set.LearnedProxies = null;
-        set.TrustedProxyLearning = true;
+        set.TrustedProxyLearning = 4;
 
         var ctx = CreateContext("8.8.4.4");
         ctx.Request.Headers["X-Forwarded-For"] = "1.2.3.4";
@@ -187,7 +187,7 @@ public class GetUserHostTests : IDisposable
         var set = CubeSetting.Current;
         set.TrustedProxies = null;
         set.LearnedProxies = "10.0.0.5";
-        set.TrustedProxyLearning = false;
+        set.TrustedProxyLearning = 0;
 
         var ctx = CreateContext("10.0.0.5");
         ctx.Request.Headers["X-Forwarded-For"] = "1.2.3.4, 10.0.0.5";
@@ -203,9 +203,73 @@ public class GetUserHostTests : IDisposable
         var set = CubeSetting.Current;
         set.TrustedProxies = null;
         set.LearnedProxies = "10.0.0.5";
-        set.TrustedProxyLearning = false;
+        set.TrustedProxyLearning = 0;
 
         Assert.True(WebHelper2.IsTrustedProxyAddress("10.0.0.5"));
+        Assert.False(WebHelper2.IsTrustedProxyAddress("1.2.3.4"));
+    }
+
+    [Fact(DisplayName = "自动学习：无转发头不学习")]
+    public void AutoLearn_NoForwarded_NotLearned()
+    {
+        var set = CubeSetting.Current;
+        set.TrustedProxies = null;
+        set.LearnedProxies = null;
+        set.TrustedProxyLearning = 4;
+
+        // 内网直连但不携带转发头：只是普通内网机器，不视为代理
+        var ctx = CreateContext("10.2.3.4");
+
+        var ip = ((HttpContext)ctx).GetUserHost();
+
+        Assert.Equal("10.2.3.4", ip);
+        Assert.Null(CubeSetting.Current.LearnedProxies);
+    }
+
+    [Fact(DisplayName = "自动学习：数量为0时不学习")]
+    public void AutoLearn_ZeroDisables()
+    {
+        var set = CubeSetting.Current;
+        set.TrustedProxies = null;
+        set.LearnedProxies = null;
+        set.TrustedProxyLearning = 0;
+
+        var ctx = CreateContext("10.2.3.5");
+        ctx.Request.Headers["X-Forwarded-For"] = "1.2.3.4";
+
+        var ip = ((HttpContext)ctx).GetUserHost();
+
+        // 兼容旧行为信任转发头，但不学习
+        Assert.Equal("1.2.3.4", ip);
+        Assert.Null(CubeSetting.Current.LearnedProxies);
+    }
+
+    [Fact(DisplayName = "自动学习：学满后不再学习")]
+    public void AutoLearn_LimitReached()
+    {
+        var set = CubeSetting.Current;
+        set.TrustedProxies = null;
+        set.LearnedProxies = "10.0.0.9";
+        set.TrustedProxyLearning = 1;
+
+        var ctx = CreateContext("10.2.3.6");
+        ctx.Request.Headers["X-Forwarded-For"] = "1.2.3.4";
+
+        ((HttpContext)ctx).GetUserHost();
+
+        // 已达上限，新来源不被学习
+        Assert.Equal("10.0.0.9", CubeSetting.Current.LearnedProxies);
+    }
+
+    [Fact(DisplayName = "封禁保护：通配列表不保护任何地址")]
+    public void IsTrustedProxyAddress_Wildcard_NotProtected()
+    {
+        var set = CubeSetting.Current;
+        set.TrustedProxies = "*";
+        set.LearnedProxies = null;
+        set.TrustedProxyLearning = 0;
+
+        // 通配只表示信任所有转发头，所有地址仍可被封禁
         Assert.False(WebHelper2.IsTrustedProxyAddress("1.2.3.4"));
     }
 }
