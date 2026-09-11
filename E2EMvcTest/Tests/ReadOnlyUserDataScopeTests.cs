@@ -137,6 +137,32 @@ public sealed class ReadOnlyUserDataScopeTests : IAsyncLifetime
         await PageHelpers.AssertTextNotVisibleAsync(_page, _otherTitle!, testId);
     }
 
+    [Fact(DisplayName = "TC-DS-010 普通用户用户链接页只显示本人绑定")]
+    [Trait("Category", "DataScope")]
+    [Trait("Priority", "P0")]
+    public async Task TC_DS_010_UserConnectListFilteredToSelf()
+    {
+        const String testId = "TC-DS-010";
+
+        // 种子：同一提供商下本人一条 + 管理员一条；搜索 provider 只命中本次种子
+        var provider = $"E2E_DS_{DateTime.Now:HHmmss}";
+        var adminId = DatabaseHelper.GetUserIdByName(AppFixture.AdminUser);
+        Assert.True(adminId > 0, "未找到管理员用户");
+
+        Assert.True(DatabaseHelper.SeedUserConnect(provider, $"own_{provider}", _userId) > 0, "本人用户链接种子写入失败");
+        Assert.True(DatabaseHelper.SeedUserConnect(provider, $"other_{provider}", adminId) > 0, "他人用户链接种子写入失败");
+        Assert.Equal(1, DatabaseHelper.CountUserConnect(_userId, provider));
+        Assert.Equal(1, DatabaseHelper.CountUserConnect(adminId, provider));
+
+        // 数据权限（[DataPermission] UserID={#userId}）：非系统角色只能看到本人绑定
+        await PageHelpers.GotoAndWaitAsync(_page, $"/Admin/UserConnect?provider={provider}");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        var rows = _page.Locator("table tbody tr");
+        var count = await rows.CountAsync();
+        Assert.True(count == 1, $"[{testId}] 用户链接列表应只有本人一行，实际 {count} 行。URL={_page.Url}");
+    }
+
     [Fact(DisplayName = "TC-DS-004 普通用户部门页只显示自己管理的部门")]
     [Trait("Category", "DataScope")]
     [Trait("Priority", "P0")]

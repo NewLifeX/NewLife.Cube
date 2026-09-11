@@ -98,6 +98,23 @@ public static class DatabaseHelper
         }
     }
 
+    /// <summary>写入一条用户链接（指定归属用户），返回记录 Id</summary>
+    /// <param name="provider">提供商（用唯一值便于断言）</param>
+    /// <param name="openid">身份标识</param>
+    /// <param name="userId">归属用户 Id</param>
+    /// <returns>记录 Id</returns>
+    public static Int32 SeedUserConnect(String provider, String openid, Int32 userId)
+    {
+        const String sql = """
+            INSERT INTO UserConnect (Provider, UserID, OpenID, Enable, CreateUserID, CreateIP, CreateTime, UpdateUserID, UpdateIP, UpdateTime)
+            VALUES (@p, @uid, @openid, 1, @uid, '::1', @now, @uid, '::1', @now)
+            RETURNING ID;
+            """;
+        var now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        return ExecuteScalarWrite<Int32>(MembershipWriteConnStr, sql,
+            ("@p", provider), ("@openid", openid), ("@uid", userId), ("@now", now));
+    }
+
     #endregion
 
     #region OAuthLog 表查询
