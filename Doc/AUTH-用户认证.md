@@ -350,10 +350,38 @@ UserService.ResetPassword
 | 功能 | MVC | 说明 |
 |------|-----|------|
 | 更换手机/邮箱 | `POST /Admin/User/BindByVerifyCode { account, code }` | 验证码校验**新号**所有权后绑定/更换（按格式分发手机/邮箱），旧号自动失效；API 可复用 `UserService.BindByVerifyCode` |
-| 注销账号 | `POST /Admin/User/CloseAccount` | 软删除：`Enable=false` 禁用 + 清空敏感字段（Mail/Mobile/DisplayName/Avatar/Password 等）+ 吊销全部令牌 + 解绑三方 + 清理在线记录，保留 ID/Name 防重名与审计 |
+| 注销账号 | `POST /Admin/User/CloseAccount` | 软删除：`Enable=false` 禁用 + 清空敏感字段（Mail/Mobile/DisplayName/Avatar/Password 等）+ 吊销全部令牌 + 解绑三方 + 清理在线记录，保留 ID/Name 防重名与审计；注销完成后按注册顺序调起已注册的下游清理处理器（见 §5.9） |
 | 导出个人数据 | `GET /Admin/User/ExportData` | JSON 文件下载：个人资料 + 第三方绑定 + 令牌记录 |
 
 > 注销与导出均依据《中华人民共和国个人信息保护法》要求提供（注销对应删除权、导出对应数据可携带权），前端入口位于用户信息页"安全中心"区块，页面文案已标注。
+
+### 5.9 注销下游数据清理扩展
+
+框架在注销完成后按注册顺序调用所有 `IAccountCloseHandler` 实现，供下游业务系统（同进程内任意层级/插件）清理与账号关联的业务数据。
+
+| 维度 | 说明 |
+|------|------|
+| 接口 | `NewLife.Cube.Services.IAccountCloseHandler.HandleAsync(IUser user, String ip, CancellationToken)` |
+| 快照 | `user` 为**脱敏前快照**（含 ID/Name/Mail/Mobile/DisplayName 等原始值），可安全用于定位下游数据 |
+| 注册 | `services.AddSingleton<IAccountCloseHandler, MyHandler>()`，AddCube 前后任意时机均可；支持 Singleton/Scoped/Transient（每次注销使用独立作用域解析） |
+| 失败策略 | 尽力而为：单个处理器异常被隔离记录，不影响其它处理器，也不影响注销成功结果；处理器必须**幂等** |
+| 触发范围 | 当前仅用户自助注销：MVC `POST /Admin/User/CloseAccount`、API `POST /Auth/CloseAccount`；管理端删除用户暂不触发 |
+
+```csharp
+/// <summary>订单模块：注销时清理账号关联数据</summary>
+public class OrderAccountCloseHandler : IAccountCloseHandler
+{
+    public Task HandleAsync(IUser user, String ip, CancellationToken cancellationToken = default)
+    {
+        // 删除与该账号关联的业务数据（务必幂等）
+        // ErpOrder.DeleteByUserId(user.ID);
+        return Task.CompletedTask;
+    }
+}
+
+// 注册（Program.cs / Startup.cs）
+services.AddSingleton<IAccountCloseHandler, OrderAccountCloseHandler>();
+```
 
 ---
 
@@ -402,7 +430,7 @@ UserService.ResetPassword
 | 微信登录 | — | `POST /Sso/WxMiniLogin` / `POST /Sso/WxAppLogin` |
 | 绑定 | `POST /Admin/User/BindByVerifyCode`、`/Sso/Bind` | `POST /Auth/Register(category=oauth)` |
 | 更换手机/邮箱 | `POST /Admin/User/BindByVerifyCode` | 复用 `UserService.BindByVerifyCode` |
-| 注销账号 | `POST /Admin/User/CloseAccount` | 复用 `UserService.CloseAccount` |
+| 注销账号 | `POST /Admin/User/CloseAccount` | `POST /Auth/CloseAccount`（复用 `UserService.CloseAccount`，触发下游清理处理器） |
 | 导出个人数据 | `GET /Admin/User/ExportData` | 复用 `UserService` 数据组装 |
 
 ---

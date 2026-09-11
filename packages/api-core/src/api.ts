@@ -50,6 +50,10 @@ export function createUserApi(request: RequestFn) {
     logout: () =>
       request<void>({ url: '/Auth/Logout', method: 'post' }),
 
+    /** 注销账号（不可恢复：禁用账号、清空个性化数据，并通知下游清理业务数据）。成功后应清理本地登录态并跳转登录页 */
+    closeAccount: () =>
+      request<void>({ url: '/Auth/CloseAccount', method: 'post' }),
+
     /** 获取当前用户信息 */
     info: () =>
       request<UserInfo>({ url: '/Auth/Info', method: 'get' }),

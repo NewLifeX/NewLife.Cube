@@ -14,6 +14,7 @@ using NewLife.Web;
 using XCode;
 using XCode.Membership;
 using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
+using IServiceScopeFactory = Microsoft.Extensions.DependencyInjection.IServiceScopeFactory;
 
 namespace NewLife.Cube.Services;
 
@@ -28,7 +29,8 @@ namespace NewLife.Cube.Services;
 /// <param name="tracer">追踪器</param>
 /// <param name="bindingService">用户绑定服务</param>
 /// <param name="tenantContext">租户上下文</param>
-public class UserService(PasswordService passwordService, ICacheProvider cacheProvider, IMfaService mfaService, ITracer tracer, IUserBindingService bindingService, ITenantContext tenantContext)
+/// <param name="serviceProvider">服务提供者。用于解析账号注销处理器</param>
+public class UserService(PasswordService passwordService, ICacheProvider cacheProvider, IMfaService mfaService, ITracer tracer, IUserBindingService bindingService, ITenantContext tenantContext, IServiceProvider serviceProvider)
 {
     #region 缓存Key前缀常量
     /// <summary>OAuth回跳注册待处理缓存前缀</summary>
@@ -613,6 +615,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
     /// 软删除：保留 ID/Name（防重名、可审计），Enable=false 禁用；
     /// 清空 Mail/Mobile/DisplayName/Avatar/Password 等敏感字段；
     /// 吊销全部令牌、解绑第三方、清理在线记录。
+    /// 注销完成后按注册顺序调用所有 <see cref="IAccountCloseHandler"/> 清理下游业务数据，单个失败不影响注销结果。
     /// </remarks>
     /// <param name="user">当前用户</param>
     /// <param name="ip">客户端IP</param>
@@ -636,8 +639,12 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
 
         // 禁用账号并清空个性化数据（保留 ID/Name 防重名与审计）
         var entity = User.FindByID(user.ID);
+        IUser snapshot = null;
         if (entity != null)
         {
+            // 保留脱敏前快照，供下游处理器定位业务数据
+            snapshot = entity.CloneEntity();
+
             entity.Enable = false;
             entity.Password = null;
             entity.Mail = null;
@@ -653,9 +660,39 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
             entity.Update();
         }
 
+        // 通知下游处理器清理业务数据。尽力而为，单个处理器失败不影响注销结果
+        InvokeCloseHandlers(snapshot ?? user, ip);
+
         LogProvider.Provider.WriteLog(typeof(User), "注销账号", true, $"用户：{user}", user.ID, user + "", ip);
 
         return new ServiceResult { IsSuccess = true, Message = "账号已注销" };
+    }
+
+    /// <summary>逐个调用账号注销处理器。尽力而为，单个处理器异常被隔离记录，不影响其它处理器与注销结果</summary>
+    /// <param name="user">注销脱敏前的用户快照</param>
+    /// <param name="ip">客户端IP</param>
+    private void InvokeCloseHandlers(IUser user, String ip)
+    {
+        if (serviceProvider == null) return;
+
+        // 每次注销使用独立作用域解析，兼容 Scoped/Transient 生命周期的处理器。
+        // 注意：不能使用 ModelExtension.CreateScope，它对标准 DI 容器可能返回 null
+        var factory = ModelExtension.GetService<IServiceScopeFactory>(serviceProvider);
+        using var scope = factory?.CreateScope();
+        if (scope == null) return;
+        var handlers = ModelExtension.GetServices<IAccountCloseHandler>(scope.ServiceProvider);
+        foreach (var handler in handlers)
+        {
+            try
+            {
+                handler.HandleAsync(user, ip).ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                XTrace.WriteLine("[CloseAccount] 处理器 {0} 清理失败（用户 {1}）：{2}", handler.GetType().FullName, user?.ID, ex.Message);
+                XTrace.WriteException(ex);
+            }
+        }
     }
     #endregion
 

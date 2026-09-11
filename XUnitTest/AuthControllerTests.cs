@@ -172,7 +172,7 @@ public class AuthControllerTests
     public void GetPublicKey_GeneratesUniqueChallengeId()
     {
         var provider = new MemoryCacheProvider();
-        var svc = new UserService(null!, provider, null!, null!, null!, null!);
+        var svc = new UserService(null!, provider, null!, null!, null!, null!, null!);
 
         var (challengeId1, publicKey1) = svc.GetPublicKey();
         var (challengeId2, publicKey2) = svc.GetPublicKey();
@@ -187,7 +187,7 @@ public class AuthControllerTests
     public void GetPublicKey_OaepEncrypt_XmlPrivateKeyDecrypt_RoundTrip()
     {
         var provider = new MemoryCacheProvider();
-        var svc = new UserService(null!, provider, null!, null!, null!, null!);
+        var svc = new UserService(null!, provider, null!, null!, null!, null!, null!);
 
         // 1. 获取挑战：返回 PEM(SPKI) 公钥，缓存 XML 私钥
         var (challengeId, publicKey) = svc.GetPublicKey();

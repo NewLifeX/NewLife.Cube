@@ -30,7 +30,7 @@ public class CaptchaRiskTests : IDisposable
 
     public CaptchaRiskTests()
     {
-        _userService = new UserService(new PasswordService(), _cacheProvider, null!, null!, null!, new TenantContextService());
+        _userService = new UserService(new PasswordService(), _cacheProvider, null!, null!, null!, new TenantContextService(), null!);
         _verifyCode = new VerifyCodeService(null!, null!, _cacheProvider, null!, _userService, new TenantContextService());
         _set = CubeSetting.Current;
 

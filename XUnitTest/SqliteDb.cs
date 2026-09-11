@@ -24,6 +24,21 @@ public static class SqliteDb
             DAL.AddConnStr("Membership", connStr, null, "sqlite");
             DAL.AddConnStr("Log", connStr, null, "sqlite");
 
+            // 主动按表建结构：部分实体（如 User）可能在本初始化之前已被访问过，
+            // EntitySession 的“已检查”标记换库后不会复位，不再触发建表；直接 SetTables 绕过该缓存，避免 no such table
+            var dal = DAL.Create("Membership");
+            dal.SetTables(
+                (IDataTable)Role.Meta.Table.DataTable.Clone(),
+                (IDataTable)User.Meta.Table.DataTable.Clone(),
+                (IDataTable)UserStat.Meta.Table.DataTable.Clone(),
+                (IDataTable)UserToken.Meta.Table.DataTable.Clone(),
+                (IDataTable)UserConnect.Meta.Table.DataTable.Clone());
+
+            var dal2 = DAL.Create("Log");
+            dal2.SetTables(
+                (IDataTable)NotificationRecord.Meta.Table.DataTable.Clone(),
+                (IDataTable)UserOnline.Meta.Table.DataTable.Clone());
+
             // 触发表结构检查与自动建表，避免首个用例直接 Delete/Insert 时表尚不存在
             var _ = Role.Meta.Count;
             var _2 = UserStat.Meta.Count;
