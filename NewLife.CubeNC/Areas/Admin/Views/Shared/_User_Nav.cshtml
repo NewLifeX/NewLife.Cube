@@ -12,6 +12,9 @@
     }
     if (userId == 0) userId = currentId;
 
+    // 非系统角色只能查看本人：与列表页 [DataPermission] 口径一致，禁止经 ?userId= 深链窥探他人
+    if (user == null || !user.Roles.Any(e => e.IsSystem)) userId = currentId;
+
     // 该用户
     user = XCode.Membership.User.FindByID(userId);
 

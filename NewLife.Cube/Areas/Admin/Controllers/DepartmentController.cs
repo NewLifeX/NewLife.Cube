@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Web;
 using XCode.Membership;
 using static XCode.Membership.Department;
@@ -13,8 +12,6 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [Menu(95, true, Icon = "UserFilled")]
 public class DepartmentController : EntityController<Department, DepartmentModel>
 {
-    private DataScopeContext? _scopeBackup;
-
     static DepartmentController()
     {
         LogOnChange = true;
@@ -50,40 +47,6 @@ public class DepartmentController : EntityController<Department, DepartmentModel
                 }
                 return dict;
             };
-        }
-    }
-
-    /// <summary>执行前。非系统用户的部门可见性由管理者数据权限决定，临时让出角色数据范围</summary>
-    /// <param name="context"></param>
-    public override void OnActionExecuting(ActionExecutingContext context)
-    {
-        // 部门行的归属是管理者（ManagerID），可见性统一由 [DataPermission] 决定；
-        // 角色数据范围的部门过滤（本部门/仅本人）与其叠加会退化为恒假条件（无部门用户 ID=0），此处临时让出
-        var user = ManageProvider.User;
-        if (user != null && !user.Roles.Any(e => e.IsSystem))
-        {
-            _scopeBackup = DataScopeContext.Current;
-            DataScopeContext.Current = new DataScopeContext
-            {
-                UserId = user.ID,
-                DepartmentId = user.DepartmentID,
-                DataScope = DataScopes.全部,
-            };
-        }
-
-        base.OnActionExecuting(context);
-    }
-
-    /// <summary>执行后。恢复数据权限上下文</summary>
-    /// <param name="context"></param>
-    public override void OnActionExecuted(ActionExecutedContext context)
-    {
-        base.OnActionExecuted(context);
-
-        if (_scopeBackup != null)
-        {
-            DataScopeContext.Current = _scopeBackup;
-            _scopeBackup = null;
         }
     }
 

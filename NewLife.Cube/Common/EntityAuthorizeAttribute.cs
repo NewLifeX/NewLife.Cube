@@ -77,10 +77,6 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         var menu = ResolveMenu(filterContext, create);
         span?.AppendTag($"menu: {menu}");
 
-        // 为数据权限上下文，设置当前菜单，以便后续获取菜单级数据权限
-        if (menu != null)
-            DataScopeContext.Current?.SetMenu(menu);
-
         // 如果已经处理过，就不处理了
         if (filterContext.Result != null) return;
 

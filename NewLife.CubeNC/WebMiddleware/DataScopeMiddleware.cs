@@ -6,7 +6,7 @@ using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 
 namespace NewLife.Cube.WebMiddleware;
 
-/// <summary>上下文中间件。设置租户上下文和数据权限上下文</summary>
+/// <summary>上下文中间件。设置租户上下文，并声明宿主数据权限策略（实体层以系统身份运行）</summary>
 /// <param name="next"></param>
 /// <param name="tenantContext">租户上下文（无状态门面，注册为 Singleton，内部读 AsyncLocal）</param>
 public class DataScopeMiddleware(RequestDelegate next, ITenantContext tenantContext)
@@ -57,20 +57,15 @@ public class DataScopeMiddleware(RequestDelegate next, ITenantContext tenantCont
                 // 中间件若在此拦截会依赖 ManageProvider.User 加载时机，误拒刚登录的管理员。
             }
 
-            // 2. 设置数据权限上下文
+            // 2. 宿主数据权限声明：实体层以"系统身份"运行，数据权限统一由接口层负责。
+            // XCode 数据权限拦截器会在上下文缺失时以 ManageProvider.User 兜底创建，
+            // 若此处不注入，请求内一切业务代码（SSO/服务/自定义 Action）都会被隐式收窄；
+            // 而实体层同时服务 Web、服务层与算法层等消费方，不承担 Web 展示层的数据隔离职责。
+            // 页面行级过滤由 DataPermissionAttribute 特性经 SearchData/FindData 管道显式执行。
+            // 外部已显式设置上下文时尊重之（测试或嵌入式宿主）。
             if (DataScopeContext.Current == null)
             {
-                var user = ManageProvider.User;
-
-                // 从路由或参数获取菜单。专用于菜单级别数据权限作用域（很少用）
-                //var menuId = ctx.GetMenuId(); 
-                var url = ctx.Request.Path + "";
-                var menu = ManageProvider.Menu?.FindByUrl(url);
-
-                var scope = DataScopeContext.Create(user, menu);
-                Normalize(scope);
-
-                DataScopeContext.Current = scope;
+                DataScopeContext.Current = CreateHostScope(ManageProvider.User);
                 dataScopeChanged = true;
             }
 
@@ -84,24 +79,20 @@ public class DataScopeMiddleware(RequestDelegate next, ITenantContext tenantCont
         }
     }
 
-    /// <summary>规范化数据权限上下文。用户未分配部门时，部门类数据范围无法行使，退化为"仅本人"</summary>
+    /// <summary>创建宿主数据权限上下文。魔方宿主中实体层以系统身份运行，不参与行级数据过滤</summary>
     /// <remarks>
-    /// 部门类数据范围（本部门/本部门及下级/自定义）依赖用户所属部门计算可访问部门，未分配部门时结果为空，
-    /// XCode 拦截器会退化为恒假条件（DepartmentID=-1 / ID=-1），导致普通用户连自己的资料都看不到。
-    /// 此处退化为"仅本人"，保证普通用户始终能看到自己的数据。
+    /// 返回系统态上下文（<see cref="DataScopes.全部"/>），使 XCode 数据权限拦截器在魔方宿主内休眠；
+    /// 同时保留用户编号与部门编号，供实体拦截器在新增数据时自动填充审计字段。
+    /// 行级数据权限统一由接口层控制器特性（DataPermissionAttribute）经查询管道显式执行。
     /// </remarks>
-    /// <param name="scope">数据权限上下文</param>
-    public static void Normalize(DataScopeContext scope)
+    /// <param name="user">当前登录用户，可为空</param>
+    /// <returns>宿主数据权限上下文</returns>
+    public static DataScopeContext CreateHostScope(IUser user) => new()
     {
-        if (scope is { IsSystem: false } &&
-            scope.DataScope is DataScopes.本部门 or DataScopes.本部门及下级 or DataScopes.自定义 &&
-            scope.DepartmentId <= 0 &&
-            scope.AccessibleDepartmentIds is not { Length: > 0 })
-        {
-            scope.DataScope = DataScopes.仅本人;
-            scope.AccessibleDepartmentIds = [];
-        }
-    }
+        UserId = user?.ID ?? 0,
+        DepartmentId = user?.DepartmentID ?? 0,
+        DataScope = DataScopes.全部,
+    };
 
     /// <summary>是否显式提供了租户信息（请求头或查询参数）</summary>
     /// <param name="ctx"></param>

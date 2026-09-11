@@ -52,6 +52,8 @@ public class UserBindingService : IUserBindingService
         var openid = client.OpenID;
         if (openid.IsNullOrEmpty()) openid = client.UserName;
 
+        // openid 查重必须跨用户可见：同一第三方账号不能重复绑定到不同的本地用户。
+        // 实体层不承担数据权限（魔方宿主以系统身份运行），此处直接查询即可；严禁添加用户范围过滤
         var uc = UserConnect.FindByProviderAndOpenID(client.Name, openid);
         uc ??= new UserConnect { Provider = client.Name, OpenID = openid };
 
@@ -220,6 +222,9 @@ public class UserBindingService : IUserBindingService
 
         var log = OAuthLog.FindById(oauthId);
         if (log == null) return null;
+
+        // 只允许绑定当前用户自己的 OAuth 会话，防止枚举 oauthId 把他人的第三方连接挂到当前用户名下
+        if (log.UserId > 0 && log.UserId != user.ID) return null;
 
         var uc = UserConnect.FindByID(log.ConnectId);
         if (uc == null) return null;
