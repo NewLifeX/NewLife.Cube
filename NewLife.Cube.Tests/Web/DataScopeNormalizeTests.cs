@@ -123,4 +123,24 @@ public class DataScopeNormalizeTests
         Assert.NotNull(att);
         Assert.Equal("CreateUserID={#userId}", att!.Expression);
     }
+
+    [Fact(DisplayName = "ParameterController_标注数据权限_仅限本人参数")]
+    public void ParameterController_HasSelfOnlyDataPermission()
+    {
+        var att = typeof(Areas.Admin.Controllers.ParameterController)
+            .GetCustomAttribute<DataPermissionAttribute>();
+
+        Assert.NotNull(att);
+        Assert.Equal("UserID={#userId}", att!.Expression);
+    }
+
+    [Fact(DisplayName = "PrincipalAgentController_标注数据权限_委托人或代理人")]
+    public void PrincipalAgentController_HasPartyDataPermission()
+    {
+        var att = typeof(Areas.Cube.Controllers.PrincipalAgentController)
+            .GetCustomAttribute<DataPermissionAttribute>();
+
+        Assert.NotNull(att);
+        Assert.Equal("PrincipalId={#userId} or AgentId={#userId}", att!.Expression);
+    }
 }
