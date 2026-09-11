@@ -31,303 +31,161 @@
 ### 基本用法
 
 ```csharp
-[DataPermission("TenantId", "DepartmentId", "CreateUserId")]
-public class ProductController : EntityController<Product>
+[DataPermission(null, "UserID={#userId}")]
+public class UserTokenController : EntityController<UserToken, UserTokenModel>
 {
-    // 自动根据数据权限过滤查询结果
+    // 列表、导出、详情、编辑、删除等动作统一按表达式过滤
 }
 ```
 
-### 特性参数说明
+### 特性定义
 
 ```csharp
-[AttributeUsage(AttributeTargets.Class)]
 public class DataPermissionAttribute : Attribute
 {
-    /// <summary>租户字段</summary>
-    public String TenantField { get; set; }
-    
-    /// <summary>部门字段</summary>
-    public String DepartmentField { get; set; }
-    
-    /// <summary>创建者字段</summary>
-    public String CreatorField { get; set; }
-    
-    /// <summary>是否启用</summary>
-    public Boolean Enable { get; set; } = true;
+    /// <summary>不受限的系统角色名。逗号或分号分隔</summary>
+    public String SystemRoles { get; set; }
+
+    /// <summary>条件表达式。如 linkid in {#SiteIds} or CreateUserID={$user.Id}</summary>
+    public String Expression { get; set; }
 }
 ```
 
-### 完整示例
+- 当前登录用户为系统角色（`IRole.IsSystem`）或 `SystemRoles` 命中时跳过过滤
+- 表达式由 XCode `WhereBuilder` 解析：支持 `=`、`!=`、`in` 与 `and`/`or` 串联，不支持括号
+- `{#xxx}` 取 `HttpContext.Items`（如 `{#userId}`、`{#TenantId}`），`{$xxx}` 取 Session
 
-```csharp
-// 产品实体
-public partial class Product : Entity<Product>
-{
-    public Int32 TenantId { get; set; }
-    public Int32 DepartmentId { get; set; }
-    public Int32 CreateUserId { get; set; }
-    // ... 其他字段
-}
+### 生效范围
 
-// 产品控制器
-[DataPermission(TenantField = "TenantId", 
-                DepartmentField = "DepartmentId", 
-                CreatorField = "CreateUserId")]
-public class ProductController : EntityController<Product>
-{
-    protected override IEnumerable<Product> Search(Pager p)
-    {
-        // 基类会自动添加数据权限过滤条件
-        return base.Search(p);
-    }
-}
-```
+| 动作 | 入口 | 说明 |
+|------|------|------|
+| 列表 / 分页 | `SearchData` → `CreateWhere` → `p.State` | 条件随查询进入 SQL |
+| 导出 | `ExportData` / `ExportDataByPage` / `ExportDataByDatetime` | 与列表同源，含时间分片导出 |
+| 详情 / 编辑 / 删除 / 批量 / 导入 | `FindData` | 按表达式二次校验，不通过抛"非法访问数据" |
+| 令牌接口（Html/Json/Xml/Csv/Excel） | `ValidToken` 注入用户后走 `SearchData` | 与页面一致 |
+| 页面 AI 工具 | `IEntityAiContext.SearchData` | 复用控制器管道 |
 
 ---
 
 ## 9.3 DataScopeMiddleware 中间件
 
-### 中间件配置
+### 中间件职责
+
+1. **租户上下文**：多租户开启时解析并设置 `TenantContext`（见多租户章节）
+2. **宿主数据权限声明**：注入系统态上下文，声明"实体层以系统身份运行"
 
 ```csharp
-public void Configure(IApplicationBuilder app)
+// DataScopeMiddleware 内部：UseCube 已自动注册，无需手动 UseDataScope
+if (DataScopeContext.Current == null)
 {
-    // 启用数据权限中间件
-    app.UseDataScope();
-    
-    // 必须在认证中间件之后
-    app.UseAuthentication();
-    app.UseAuthorization();
-    app.UseDataScope();  // 放在这里
-    
-    app.UseCube(env);
+    // 系统态上下文：实体层不参与行级过滤；保留用户身份供审计字段填充
+    DataScopeContext.Current = CreateHostScope(ManageProvider.User);
+    dataScopeChanged = true;
 }
 ```
 
-### 中间件工作原理
+### 为什么注入系统态
 
-```
-请求 -> 认证 -> 授权 -> DataScopeMiddleware -> 控制器
-                              |
-                              v
-                    读取用户数据权限配置
-                              |
-                              v
-                    设置 DataScope 上下文
-                              |
-                              v
-                    EntityController 自动应用
-```
+XCode 数据权限拦截器在上下文缺失时会用 `ManageProvider.User` 兜底创建上下文。若宿主不声明，请求内**一切**实体查询（SSO、服务、自定义 Action）都会被隐式收窄；而实体层同时服务 Web、服务层与算法层等消费方，不应承担 Web 展示层的数据隔离职责。
 
-### 手动获取数据范围
-
-```csharp
-// 在控制器中获取当前数据范围
-var scope = DataScope.Current;
-
-// 检查数据范围类型
-if (scope.Type == DataScopeType.All)
-{
-    // 可以看到所有数据
-}
-else if (scope.Type == DataScopeType.Department)
-{
-    // 只能看到本部门数据
-    var departmentId = scope.DepartmentId;
-}
-else if (scope.Type == DataScopeType.Self)
-{
-    // 只能看到自己的数据
-    var userId = scope.UserId;
-}
-```
+宿主声明系统态后，数据权限只由接口层控制器特性（见 9.2）显式执行；拦截器能力保留，业务代码可显式调用 `DataScopeHelper.ApplyScope` / `CanAccess`（见 9.4）。
 
 ---
 
-## 9.4 数据范围控制
+## 9.4 数据范围（DataScopes）
 
-### 全部数据
+### XCode 数据范围枚举
 
-```csharp
-// 管理员角色：可以看到所有数据
-var role = Role.FindByName("管理员");
-role.DataScope = DataScopeType.All;
-role.Update();
-```
+| 值 | 名称 | 含义 |
+|----|------|------|
+| -1 | 默认 | 未设置，按角色取值 |
+| 0 | 全部 | 不受限 |
+| 1 | 本部门及下级 | 本部门及其所有下级部门 |
+| 2 | 本部门 | 仅本部门 |
+| 3 | 仅本人 | 仅用户本人 |
+| 4 | 自定义 | 角色上配置的部门集合 |
 
-用户拥有此数据范围时，查询不添加任何过滤条件。
+来源：`XCode.Membership.DataScopes`（角色/菜单的 `DataScope` 字段）。
 
-### 本部门数据
+### 在魔方中的定位
 
-```csharp
-// 部门经理：可以看到本部门数据
-var role = Role.FindByName("部门经理");
-role.DataScope = DataScopeType.Department;
-role.Update();
-
-// 自动添加的过滤条件：WHERE DepartmentId = @CurrentDepartmentId
-```
-
-### 本人数据
+- 魔方页面的行级过滤统一由控制器 `[DataPermission]` 特性表达，角色/菜单数据范围不再隐式作用于页面
+- 数据范围能力保留在 XCode，可在业务代码中显式使用：
 
 ```csharp
-// 普通员工：只能看到自己的数据
-var role = Role.FindByName("普通员工");
-role.DataScope = DataScopeType.Self;
-role.Update();
+// 显式按当前用户数据范围过滤（适用于"与用户视野一致"的查询）
+var exp = new WhereExpression();
+exp &= Order._.Status == 1;
+exp = exp.ApplyScope<Order>();      // 合并租户和数据权限过滤
+return Order.FindAll(exp, page);
 
-// 自动添加的过滤条件：WHERE CreateUserId = @CurrentUserId
-```
-
-### 自定义数据范围
-
-```csharp
-// 区域经理：可以看到多个部门的数据
-var role = Role.FindByName("区域经理");
-role.DataScope = DataScopeType.Custom;
-role.DataScopeIds = "1,2,3,4,5";  // 可访问的部门ID列表
-role.Update();
-
-// 自动添加的过滤条件：WHERE DepartmentId IN (1,2,3,4,5)
-```
-
-### DataScopeType 枚举
-
-```csharp
-public enum DataScopeType
-{
-    /// <summary>全部数据</summary>
-    All = 0,
-    
-    /// <summary>本部门数据</summary>
-    Department = 1,
-    
-    /// <summary>本部门及下级部门数据</summary>
-    DepartmentAndChild = 2,
-    
-    /// <summary>本人数据</summary>
-    Self = 3,
-    
-    /// <summary>自定义数据范围</summary>
-    Custom = 4
-}
+// 单条数据校验
+if (!DataScopeHelper.CanAccess(order)) throw new UnauthorizedAccessException();
 ```
 
 ---
 
 ## 9.5 数据权限配置与使用
 
-### 角色数据权限配置
+### 给页面新增行级过滤
 
-在角色管理界面配置数据权限：
+按页面语义选择表达式（`[DataPermission(SystemRoles, Expression)]`）：
+
+| 场景 | 表达式示例 |
+|------|-----------|
+| 仅本人数据（令牌/参数/在线） | `UserID={#userId}` |
+| 创建者本人（日志/附件） | `CreateUserID={#userId}` |
+| 行归属为负责人（部门） | `ManagerID={#userId}` |
+| 双方字段任一（委托代理） | `PrincipalId={#userId} or AgentId={#userId}` |
+| 用户记录本人（用户页） | `ID={#userId}` |
+| 站点/地区集合 | `SiteId in {#SiteIds}` |
+
+> `{#userId}` 由控制器管线写入（`ControllerBaseX.OnActionExecuting`，令牌接口由 `ValidToken` 写入）；控制器之外没有该数据源。
+
+### 业务代码直接操作实体
+
+实体层不承担数据权限，业务代码（SSO、服务、后台任务）直接查询与写入，无需构造数据上下文：
 
 ```csharp
-// 获取角色
-var role = Role.FindById(roleId);
-
-// 配置数据范围
-role.DataScope = DataScopeType.Department;
-role.Update();
+// openid 查重必须跨用户可见，禁止在此添加用户范围过滤
+var uc = UserConnect.FindByProviderAndOpenID(client.Name, openid);
 ```
 
-### 用户数据权限配置
+### 页面自定义校验
 
-用户可以覆盖角色的数据权限：
-
-```csharp
-// 获取用户
-var user = User.FindById(userId);
-
-// 设置用户特定的数据权限（优先级高于角色）
-user.DataScope = DataScopeType.Custom;
-user.DataScopeIds = "1,2,3";
-user.Update();
-```
-
-### 控制器中应用数据权限
+行归属语义无法用表达式表达时，重写 `FindData`：
 
 ```csharp
-[DataPermission("TenantId", "DepartmentId", "CreateUserId")]
-public class OrderController : EntityController<Order>
+protected override Department FindData(Object key)
 {
-    protected override IEnumerable<Order> Search(Pager p)
-    {
-        var exp = new WhereExpression();
-        
-        // 业务查询条件
-        var status = p["status"].ToInt();
-        if (status > 0)
-            exp &= Order._.Status == status;
-        
-        // 数据权限会自动添加（由基类处理）
-        return Order.FindAll(exp, p);
-    }
-    
-    // 编辑时也需要检查数据权限
-    protected override Order Find(Object key)
-    {
-        var entity = base.Find(key);
-        
-        // 检查数据权限
-        if (!HasDataPermission(entity))
-            throw new UnauthorizedAccessException("无权操作此数据");
-        
-        return entity;
-    }
-    
-    private Boolean HasDataPermission(Order entity)
-    {
-        var scope = DataScope.Current;
-        
-        return scope.Type switch
-        {
-            DataScopeType.All => true,
-            DataScopeType.Department => entity.DepartmentId == scope.DepartmentId,
-            DataScopeType.Self => entity.CreateUserId == scope.UserId,
-            DataScopeType.Custom => scope.DataScopeIds.Contains(entity.DepartmentId.ToString()),
-            _ => false
-        };
-    }
+    var entity = Find(key);
+    if (entity != null && !CanView(entity)) throw new InvalidOperationException($"非法访问数据[{key}]");
+    return entity;
 }
 ```
 
-### 手动构建数据权限条件
+---
 
-```csharp
-protected WhereExpression BuildDataPermissionCondition()
-{
-    var exp = new WhereExpression();
-    var scope = DataScope.Current;
-    
-    switch (scope.Type)
-    {
-        case DataScopeType.All:
-            // 不添加条件
-            break;
-            
-        case DataScopeType.Department:
-            exp &= Order._.DepartmentId == scope.DepartmentId;
-            break;
-            
-        case DataScopeType.DepartmentAndChild:
-            var deptIds = GetDepartmentAndChildIds(scope.DepartmentId);
-            exp &= Order._.DepartmentId.In(deptIds);
-            break;
-            
-        case DataScopeType.Self:
-            exp &= Order._.CreateUserId == scope.UserId;
-            break;
-            
-        case DataScopeType.Custom:
-            var ids = scope.DataScopeIds.Split(',').Select(Int32.Parse);
-            exp &= Order._.DepartmentId.In(ids);
-            break;
-    }
-    
-    return exp;
-}
-```
+## 9.6 架构边界与迁移说明
+
+### 边界
+
+| 层 | 是否承担数据权限 | 说明 |
+|----|------------------|------|
+| XCode 实体层 | ❌ | 纯数据访问；宿主以系统身份运行，拦截器不参与行过滤 |
+| 魔方控制器（接口层） | ✅ | `[DataPermission]` 特性 + `SearchData`/`FindData` 管道，唯一执行点 |
+| 业务代码（SSO/服务/任务） | ❌ | 直接操作任意实体，不受数据权限影响 |
+| 多租户 | — | 独立链路（`TenantContext` + `ITenantScope`），不受本章调整影响 |
+
+### 历史与迁移
+
+早期曾把数据权限下沉到实体层（实体实现 `IUserScope` 并注册 `DataScopeInterceptor`，全宿主自动过滤），带来三类问题：业务代码被隐式收窄（SSO 绑定需要临时提升数据范围）、同字段条件多次叠加、菜单数据范围配置引发全站失效事故。现已回退，数据权限回归接口层。
+
+**下游应用迁移**：
+
+- 依赖实体级过滤的页面 → 在对应控制器标注 `[DataPermission]`（表达式见 9.5）
+- 需要在业务代码中按用户视野过滤 → 显式调用 `DataScopeHelper.ApplyScope` / `CanAccess`（见 9.4）
+- 不再需要任何"临时提升数据范围"的代码（原 `DataScopeContext.Current = ...` 补丁已删除）
 
 ---
 
@@ -415,10 +273,10 @@ foreach (var order in orders)
 通过本章学习，你应该掌握了：
 
 1. **数据权限概念**：区分功能权限和数据权限
-2. **DataPermissionAttribute**：标记控制器的数据权限字段
-3. **DataScopeMiddleware**：数据权限中间件的配置和原理
-4. **数据范围类型**：全部、本部门、本人、自定义
-5. **数据权限应用**：在查询和操作中应用数据权限
+2. **DataPermissionAttribute**：控制器行级过滤，覆盖列表/导出/详情/编辑/删除/令牌接口
+3. **DataScopeMiddleware**：租户上下文 + 宿主系统态声明（实体层以系统身份运行）
+4. **数据范围（DataScopes）**：能力保留在 XCode，魔方页面不再隐式消费
+5. **架构边界**：数据权限唯一执行点在接口层，业务代码直接操作实体
 
 **下一步**：
 
