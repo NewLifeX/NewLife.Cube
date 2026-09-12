@@ -50,12 +50,12 @@
 - [x] T3 前端 `Workbench.vue` 删除模态 `ok-button-props` 字符串误写（TS2559）修复为绑定对象。
 - [x] T5 「工作台」顶级组菜单图标用 `workbench`：`iconRegistry.MENU_NAME_ICONS` 增 `工作台→workbench`（显示名精确命中，先于 fa/关键词/默认），命名子菜单不误命；补 spec 断言（工作台→workbench、运营看板→application）。
 - [x] T6 命名工作台页标题 chip 与日期水平对齐：chip 图标 `dashboard→workbench`；`.wb-hello-meta` 与 chip/date 同 flex 行 `align-items:center`（去 date `margin-top`、统一 `line-height`、chip svg `display:block`）；清理重复 `.wb-hello-date` 规则。
-- [x] T8 顶级组名「工作台」→「系统驾驶舱」（仅左侧导航组显示名）：`WorkbenchNamedStore.ParentTitle="系统驾驶舱"`（Name=Workbench 标识不变）+ `EnsureFirstGroup` 对已存在分组幂等同步 DisplayName（旧库升级即生效）；iconRegistry `MENU_NAME_ICONS` 双键（系统驾驶舱/工作台→workbench）兼容旧数据；补父分组 DisplayName 断言（用常量）+ iconRegistry.spec（系统驾驶舱→workbench）；文档同步 proposal/design/verify/ui/迁移方案 §8.5.2a/功能清单 DASH-3。**概念词「命名工作台/默认工作台/首页工作台」不改**。
+- [x] T8 顶级组名「工作台」→「系统看板」（仅左侧导航组显示名）：`WorkbenchNamedStore.ParentTitle="系统看板"`（Name=Workbench 标识不变）+ `EnsureFirstGroup` 对已存在分组幂等同步 DisplayName（旧库升级即生效）；iconRegistry `MENU_NAME_ICONS` 双键（系统看板/工作台→workbench）兼容旧数据；补父分组 DisplayName 断言（用常量）+ iconRegistry.spec（系统看板→workbench）；文档同步 proposal/design/verify/ui/迁移方案 §8.5.2a/功能清单 DASH-3。**概念词「命名工作台/默认工作台/首页工作台」不改**。
 - [ ] T7 遗留后续（不阻塞验收）：①控制器层 401/403/404/400 自动化用例；②禁 DELETE 环境 POST `?delete=1` 兜底；③`MountMenu` 并发幂等；④`IsAccessible` 附加角色用例 + `permissionedIds` 缓存；⑤`useWorkbench` 拆分 `useNamedWorkbenchActions`。
 - [x] T9 验收补齐 G1（另存为防覆盖）：后端 `WorkbenchNamedPutRequest.Create` + `NamedPut` create=true 撞已存在 slug → 409；前端另存为 `namedPut(...,create:true)` + 弹窗对 `namedList` 已占用 slug 红字预检（不发请求）。api-core `namedPut` body 增 `create?`。
 - [x] T10 验收补齐 G3：`GetVisibleList` 沿父链过滤可见（新增 `IsChainVisible`，隐藏的菜单行/父分组不再出现在列表，消除“点开恒 403”死胡同）；可见性链测试补 Save+Mount 与列表断言（修复测试库跨 run 残留 → class fixture 每次运行重建库）。
 - [x] T11 验收补齐 G4：`iconRegistry.spec` 产品命名专用区补 `all.add('workbench')`，防未来移除组件不回警。
-- [x] T12 验收文档收尾 G2：迁移方案版本行顶级组名「工作台」→「系统驾驶舱」；功能清单 DASH-3 XUnit 7→8；verify AC1~AC6 数字与勾选更新（20/20、27/27、37/37）+ design/ui G1 语义（create 409/预检）；P5-1 历史数字补注。
+- [x] T12 验收文档收尾 G2：迁移方案版本行顶级组名「工作台」→「系统看板」；功能清单 DASH-3 XUnit 7→8；verify AC1~AC6 数字与勾选更新（20/20、27/27、37/37）+ design/ui G1 语义（create 409/预检）；P5-1 历史数字补注。
 - 说明：本 OSC 无 plan 外的功能新增；上述均为实现路径上的必要修正/对齐/体验微调，已在 tasks/status/verify 记录（会话小任务已补录）。
 
 ## 收尾修复轮（代码审查 🔴/🟡 + 实现审计缺口，2026-09-02 第二轮）

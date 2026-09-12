@@ -17,10 +17,10 @@
 
 - 命名工作台存储：`Parameter(UserID=0, Category=Workbench.Named, Name={slug})`，Value=标题(≤40)、LongValue=归一化配置；复用双字段免建表（与 `WorkbenchRoleStore` 同构）。
 - `WorkbenchController`：`NamedList/Get/Put/Delete`（列表与写删仅系统角色；读按菜单行授权 fail-closed 400/404/403；另存为 `create=true` 撞 slug → 409）。
-- 菜单挂载与置顶：`WorkbenchNamedStore` Mount/Unmount/`EnsureFirstGroup`（父分组 `Workbench`、显示名「系统驾驶舱」，每次发布把 Sort 顶置为根级最大+1 → 永远第一组，幂等同步旧分组名）；`GetVisibleList` 过滤悬空与隐藏项（沿父链）；`IsAccessible` 沿父链 Visible/声明校验（主角色+附加角色并集）。
+- 菜单挂载与置顶：`WorkbenchNamedStore` Mount/Unmount/`EnsureFirstGroup`（父分组 `Workbench`、显示名「系统看板」，每次发布把 Sort 顶置为根级最大+1 → 永远第一组，幂等同步旧分组名）；`GetVisibleList` 过滤悬空与隐藏项（沿父链）；`IsAccessible` 沿父链 Visible/声明校验（主角色+附加角色并集）。
 - 前端：`/Workbench/{slug}` 分流 WorkbenchPage；`useWorkbench(slug)` 加载/保存/发布/重命名/删除/切换；`Workbench` 标题栏「编辑(左)+▾(右)」组合按钮（样式对齐查询簇）；默认工作台禁重命名/删除；chip（workbench 图标）与日期水平对齐；发布/删除/重命名后 `refreshMenus` 刷新路由与菜单树。
 - api-core：`namedList/namedGet/namedPut/namedDelete` + 类型；menuRoutes/iconRegistry 等纯函数化并有 spec 锁死。
-- 体验微调：顶级组名「系统驾驶舱」（T8）、图标 workbench 双键映射、命名页 chip 对齐（T5/T6）。
+- 体验微调：顶级组名「系统看板」（T8）、图标 workbench 双键映射、命名页 chip 对齐（T5/T6）。
 
 ## 做得好
 
@@ -48,6 +48,6 @@
 
 ## 遗留与后续
 
-- AC6.3 宿主手工冒烟（发布→普通用户只读→更新→重命名/删除→菜单「系统驾驶舱」第一组/图标/chip 对齐）。
+- AC6.3 宿主手工冒烟（发布→普通用户只读→更新→重命名/删除→菜单「系统看板」第一组/图标/chip 对齐）。
 - T7：控制器 action 自动化、禁 DELETE 环境 `?delete=1` 兜底、`MountMenu` 并发幂等、`IsAccessible` 附加角色用例+缓存、`useWorkbench` 拆分。
 

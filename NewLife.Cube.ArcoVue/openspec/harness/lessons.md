@@ -280,5 +280,5 @@
 - **图标名/白名单只保留一份纯函数源**：slug 白名单曾三处复制且 menuRoutes 内联 `+` 正则漏掉 1 位合法 slug；统一 import `workbenchNamed.isValidNamedSlug`。图标/显示名映射同理只放 `iconRegistry`（`MENU_NAME_ICONS`），spec 用 `all.add(...)` 锁值有效性。
 - **另存为（create 新对象）必须与“更新自身”区分**：统一 upsert 端点会让“另存为撞已存在 slug”静默覆盖既有共享看板；请求体加 `create=true`（已存在 → 409）+ 前端对 `namedList` 预检红字，重命名/发布更新不带 create。
 - **列表“可见”过滤要与读授权同一语义（沿父链）**：只滤叶子 `Visible` 不够，父分组隐藏时列表仍点开即 403 死胡同；抽 `IsChainVisible` 叶子→根逐级判断（角色声明判定另属 IsAccessible）。
-- **后端命名常量用中文显示名直接落代码，文档务必同步**：顶级组显示名“工作台→系统驾驶舱”涉及 ParentTitle、EnsureFirstGroup 幂等同步、图标键、proposal/design/verify/ui/迁移方案/功能清单多处；改一处忘同步会在 doc-sync 冒 P1。
+- **后端命名常量用中文显示名直接落代码，文档务必同步**：顶级组显示名“工作台→系统看板”涉及 ParentTitle、EnsureFirstGroup 幂等同步、图标键、proposal/design/verify/ui/迁移方案/功能清单多处；改一处忘同步会在 doc-sync 冒 P1。
 

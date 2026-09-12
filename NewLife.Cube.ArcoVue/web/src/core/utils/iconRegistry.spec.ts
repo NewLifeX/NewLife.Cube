@@ -164,8 +164,8 @@ describe('FA_ICON_MAP + menuIcon', () => {
     expect(menuIcon({ icon: 'fa-tachometer', displayName: '魔方管理', name: 'Cube' })).toBe('cube-three');
   });
 
-  it('「系统驾驶舱/工作台」菜单显示名命中 workbench 图标（OSC-260902ef43）', () => {
-    expect(menuIcon({ displayName: '系统驾驶舱', name: 'Workbench' })).toBe('workbench');
+  it('「系统看板/工作台」菜单显示名命中 workbench 图标（OSC-260902ef43）', () => {
+    expect(menuIcon({ displayName: '系统看板', name: 'Workbench' })).toBe('workbench');
     // 兼容旧版本地数据仍叫「工作台」
     expect(menuIcon({ displayName: '工作台', name: 'Workbench' })).toBe('workbench');
     // 命名工作台子菜单 displayName 是标题，仍走关键词/默认，不误命

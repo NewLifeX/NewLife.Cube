@@ -9,7 +9,7 @@
 > 版本：2026-08-30c（对照 Cube + XCode + NewLife.X：行级/字段权限、GetPage 计算列、值集侧信道；增补 §8.6 企业级权限与审计合规 Issue 清单）
 > 版本：2026-08-30d（增补 §0 愿景；§1.2 按愿景补齐必须达成目标）
 > 版本：2026-08-30e（增补 §12 业务功能插件开发：ArcoVue 默认皮肤下业务包怎么做）
-> 版本：2026-09-02（OSC-260902ef43 命名工作台归档：系统角色可把默认工作台「另存为/发布」为命名工作台并挂系统菜单，配置落 Parameter `Workbench.Named`；`/Workbench/{slug}` 只读命名槽、「系统驾驶舱」菜单组永远第一组、默认工作台禁重命名/删除）
+> 版本：2026-09-02（OSC-260902ef43 命名工作台归档：系统角色可把默认工作台「另存为/发布」为命名工作台并挂系统菜单，配置落 Parameter `Workbench.Named`；`/Workbench/{slug}` 只读命名槽、「系统看板」菜单组永远第一组、默认工作台禁重命名/删除）
 > 状态：可落地执行稿  
 > 适用范围：以 NewLife.Cube（WebAPI）为后端，将 NewLife.Cube.ArcoVue 建设为默认企业中后台皮肤；复用 NewLife.Cube.Vue 能力成果，对接字节官方组件栈，支持用户级呈现配置与 AI（OpenSpec）协作。
 
@@ -70,7 +70,7 @@
 | NewLife.Cube | WebAPI 主线已具备认证、菜单、权限、`GetPage` 元数据驱动 CRUD；另含 UserProfile / ViewProfile / EntityComment、Workbench、Widget、Automation、Inbox、AI |
 | NewLife.Cube.Vue | 产品能力参照系（Element Plus + 微前端 + Section 覆写），仍是默认皮肤之一，非 Arco 栈 |
 | NewLife.Cube.ArcoVue | 默认企业中后台皮肤主线：P0 壳/六视图/抽屉/自动化已齐；**页面仪表盘 Widget（OSC-2608280e9e）与用户>主角色>系统工作台（OSC-26082815a1）已归档**。相对 Cube.Vue 主要差在微前端多应用、技能/覆写广度、Cypress 全量与 i18n |
-| 共享包 `@cube/*` | api-core / auth-logic / page-logic / field-mapping / page-utils 可跨皮肤复用 |
+| 共享包 `@newlifex/*` | api-core / auth-logic / page-logic / field-mapping / page-utils 可跨皮肤复用 |
 
 ### 1.2 产品目标（必须达成）
 
@@ -165,7 +165,7 @@
 |------|------|
 | 后端契约 | 最小集见 [核心接口架构.md](./核心接口架构.md)；MFA 见 [认证接口设计.md](./认证接口设计.md) `/Mfa/*`（AUTH-10）；Profile/Comment 见独立后端任务 |
 | UI 栈 | Arco Design Vue（壳/表单）+ VisActor VTable（多维视图）+ FlowGram.AI（流程**设计器**，运行时见 §8.5.5） |
-| 逻辑复用 | `@cube/*`；接线模板优先对照 NaiveUI，能力验收对照 §3.1 矩阵 |
+| 逻辑复用 | `@newlifex/*`；接线模板优先对照 NaiveUI，能力验收对照 §3.1 矩阵 |
 | 呈现配置 | `UserProfile` + `ViewProfile`（后端独立交付，前端消费，见 §5 / §10.1） |
 | 扩展 | `registerSection` + `apps/` 整页覆写 |
 | 协作 | 恢复 `.github` Copilot 指令；OpenSpec（`openspec/`，新号 `OSC-YYMMDDxxxx`）；测试要求见 §9.3 |
@@ -314,7 +314,7 @@ NewLife.Cube.ArcoVue/web/src/
 | 设计系统 / 壳 / 表单 | [Arco Design Vue](https://arco.design/) | 布局容器、导航、页签、登录、抽屉、表单控件、反馈 |
 | 多维数据视图 | [VisActor VTable](https://visactor.com/vtable)（+ gantt） | 表格列布局、树表、卡片式布局、甘特；禁止长期以 `a-table` 做主多维表 |
 | 工作流设计器 | [FlowGram.AI](https://flowgram.ai/) | 只读写流程定义；运行时禁止放在浏览器（§8.5.5） |
-| 领域逻辑 | `@cube/*` | API、认证、列表状态机、字段映射 |
+| 领域逻辑 | `@newlifex/*` | API、认证、列表状态机、字段映射 |
 
 ---
 
@@ -699,7 +699,7 @@ DefaultList 固定容器
 - **slug 语义**：无 slug（`/home`）=「默认工作台」，user>role>system 个人墙不变；有 slug（`/Workbench/{slug}`）= 只读命名槽。
 - 读取：`GET /Cube/Workbench/Named/{slug}` 按对应菜单行权限 fail-closed（不存在 404 / 无权 403）；列表 `GET /Cube/Workbench/Named` 仅系统角色。
 - 写入/删除：`PUT /Cube/Workbench/Named/{slug}`（upsert 槽 + 菜单，仅系统角色；标题≤40）、`DELETE /Cube/Workbench/Named/{slug}`（下架：删槽 + 删菜单）。空 `homeJson` 400（清空请 DELETE）。
-- **菜单置顶**：`Workbench` 父分组 `Sort` 每次发布时顶置为根级最大 +1（XCode `BigSort=true`、`Root.Childs` 按 Sort 降序）→ 命名工作台所在的「系统驾驶舱」组（Name=Workbench，显示名=系统驾驶舱）在左侧菜单**永远第一组**；父分组无子项时随下架移除（下次发布重建）。
+- **菜单置顶**：`Workbench` 父分组 `Sort` 每次发布时顶置为根级最大 +1（XCode `BigSort=true`、`Root.Childs` 按 Sort 降序）→ 命名工作台所在的「系统看板」组（Name=Workbench，显示名=系统看板）在左侧菜单**永远第一组**；父分组无子项时随下架移除（下次发布重建）。
 - 前端交互：`Workbench` 标题栏「编辑（左）+ `▾`（右）」组合按钮（样式对齐查询簇 `QueryComboButton`）；`▾` = `发布 / 重命名 / 删除 / 分隔符 / 默认工作台 / 命名工作台1…N`（当前项打勾）。默认工作台仅可编辑与「发布…」，**禁止重命名/删除**；命名工作台仅系统角色可编辑/发布/重命名/删除，普通用户只读。
 - 约束沿用：单份 ≤16 张 / 64KiB / 禁 legacyChart；**不做共享命名工作台上的个人覆盖**（只读发布）；不做租户层命名工作台。
 
@@ -891,7 +891,7 @@ DefaultList 固定容器
 
 | 复用 | 重写 |
 |------|------|
-| `@cube/*`、菜单路由思想、LOV/密码规则等逻辑、Section 概念、能力清单 | 全部 Element Plus UI、Vue `core/views`、旧 layout 壳 |
+| `@newlifex/*`、菜单路由思想、LOV/密码规则等逻辑、Section 概念、能力清单 | 全部 Element Plus UI、Vue `core/views`、旧 layout 壳 |
 
 ---
 

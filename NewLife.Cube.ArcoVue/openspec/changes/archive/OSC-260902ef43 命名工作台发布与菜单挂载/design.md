@@ -42,11 +42,11 @@
 
 菜单行（`ManageProvider.Menu` 子树）：
 
-> **置顶依据（已核实）**：XCode `EntityTreeSetting<TEntity>.BigSort` 默认 `true`，`EntityTree.FindAllByParent` 对子节点按 `Sort` **降序**排列（`Sort` 大者在前）；菜单树 `Root.Childs` 即该路径。因此让 `系统驾驶舱` 顶级组（`Name=Workbench`）“永远在第一组”＝把其 `Sort` 顶置为**当前根级顶级菜单最大值 + 1**，并在每次发布/更新时重新顶置（防止被后续更大 Sort 的顶级菜单超越）。
+> **置顶依据（已核实）**：XCode `EntityTreeSetting<TEntity>.BigSort` 默认 `true`，`EntityTree.FindAllByParent` 对子节点按 `Sort` **降序**排列（`Sort` 大者在前）；菜单树 `Root.Childs` 即该路径。因此让 `系统看板` 顶级组（`Name=Workbench`）“永远在第一组”＝把其 `Sort` 顶置为**当前根级顶级菜单最大值 + 1**，并在每次发布/更新时重新顶置（防止被后续更大 Sort 的顶级菜单超越）。
 
 | 属性 | 值 |
 | --- | --- |
-| 父节点 | 根下查找 `Name=="Workbench"`；不存在则 `Root.Add("Workbench","系统驾驶舱",…)` 后使用（发布首个命名工作台时自动建） |
+| 父节点 | 根下查找 `Name=="Workbench"`；不存在则 `Root.Add("Workbench","系统看板",…)` 后使用（发布首个命名工作台时自动建） |
 | 父节点 Sort | **顶置**：`Sort = max(根级顶级菜单 Sort) + 1`（封顶 `Int32.MaxValue`）；每次 `MountMenu` 时重算 |
 | Name | slug |
 | DisplayName | 标题（重命名时同步） |
@@ -67,7 +67,7 @@ public static class WorkbenchNamedStore
 {
     public const String Category = "Workbench.Named";
     public const String ParentName = "Workbench";      // 菜单父分组 Name
-    public const String ParentTitle = "系统驾驶舱";
+    public const String ParentTitle = "系统看板";
 
     // 列表（系统角色用）：Parameter.FindAllByCategory(Category) → { Name=slug, Value=title }，按 Name 排序
     public static IList<NamedItem> GetList();
@@ -283,7 +283,7 @@ slug 有  → GET /Cube/Workbench/Named/{slug}
 
 ## 8. 手动冒烟
 
-1. 系统角色登录 → `/home` 编辑加 1-2 部件 → `▾ 发布…` 标题+slug → 跳到 `/Workbench/{slug}`；左侧菜单出现「系统驾驶舱 > 标题」。
+1. 系统角色登录 → `/home` 编辑加 1-2 部件 → `▾ 发布…` 标题+slug → 跳到 `/Workbench/{slug}`；左侧菜单出现「系统看板 > 标题」。
 2. 普通用户登录 → 菜单点击该工作台 → 只读墙；无编辑/`▾`；直接 URL 也一致。
 3. 系统角色在 `/Workbench/{slug}` → 编辑改部件 → `▾ 发布`（更新）→ 普通用户刷新看到新内容。
 4. 重命名 → 菜单 DisplayName 变、Url 不变；删除 → 菜单项消失、回到默认工作台。

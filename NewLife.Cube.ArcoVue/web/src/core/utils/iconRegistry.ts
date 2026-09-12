@@ -130,9 +130,8 @@ const MENU_NAME_ICONS: Record<string, string> = {
   // 魔方管理顶级菜单：后端 Icon=fa-tachometer（仪表盘），产品命名宜用立方体图标
   魔方管理: 'cube-three',
   // 「系统看板」顶级分组（命名工作台发布后创建，OSC-260902ef43）：用工作台图标而非默认兜底；
-  // 兼容旧版本地数据仍叫「系统驾驶舱」「工作台」的分组显示名
+  // 兼容旧版本地数据仍叫「工作台」的分组显示名
   系统看板: 'workbench',
-  系统驾驶舱: 'workbench',
   工作台: 'workbench',
 };
 

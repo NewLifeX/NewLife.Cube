@@ -20,7 +20,7 @@ OSC-26082815a1 交付的 `/home` 工作台只有**一份个人 HomeJson + 角色
 | 1 | **命名槽 = Parameter**：`UserID=0`、`Category=Workbench.Named`、`Name={slug}`；`Value` 存标题（≤40）、`LongValue` 存归一化后配置 JSON（与 `WorkbenchRoleStore` 同构，复用双字段，**不改 UserProfile / 不建表**）。 |
 | 2 | **发布者 = 系统角色**（`WorkbenchResolver.IsSystem`）；普通用户仅按菜单授权只读 `GET`。不做「个人在共享页上再叠个人覆盖」。 |
 | 3 | **slug**：小写 `^[a-z][a-z0-9-]{0,31}$`、全局唯一；由发布者在「另存为」对话框填写（预填 `wb-<4位hex>`），标题仅用于菜单展示。 |
-| 4 | **挂菜单**：发布时在菜单根下查找/创建 `Name='Workbench'`（DisplayName=「系统驾驶舱」）父分组，其下挂子菜单 `Name={slug}`、`DisplayName={标题}`、`Url=/Workbench/{slug}`、Icon=`fa-th-large`、Visible=true。菜单授权沿用既有角色 `Resources` 模型（未声明权限默认全员可见；限角色由授权树配置，本号不重做授权树 UI）。**父分组置顶**：XCode `EntityTree` 默认 `BigSort=true`，菜单子节点按 `Sort` **降序**；每次发布/更新时把父分组 `Sort` 提升为当前根级顶级菜单最大 `Sort+1`（封顶 `Int32.MaxValue`）→ `系统驾驶舱` 组（Name=Workbench）与其全部命名工作台在前端菜单**永远显示在第一组**。 |
+| 4 | **挂菜单**：发布时在菜单根下查找/创建 `Name='Workbench'`（DisplayName=「系统看板」）父分组，其下挂子菜单 `Name={slug}`、`DisplayName={标题}`、`Url=/Workbench/{slug}`、Icon=`fa-th-large`、Visible=true。菜单授权沿用既有角色 `Resources` 模型（未声明权限默认全员可见；限角色由授权树配置，本号不重做授权树 UI）。**父分组置顶**：XCode `EntityTree` 默认 `BigSort=true`，菜单子节点按 `Sort` **降序**；每次发布/更新时把父分组 `Sort` 提升为当前根级顶级菜单最大 `Sort+1`（封顶 `Int32.MaxValue`）→ `系统看板` 组（Name=Workbench）与其全部命名工作台在前端菜单**永远显示在第一组**。 |
 | 5 | **无 slug = 默认工作台**（`/home`，user>role>system 不变，个人可编辑）；**有 slug = 命名工作台**（`/Workbench/{slug}`，普通用户只读；系统角色经「编辑」可改）。 |
 | 6 | **编辑组合按钮**：左键 = 现有 `toggleEdit`；右键 `▾` 弹出菜单项 = `发布 / 重命名 / 删除 / 分隔符 / 默认工作台 / 命名工作台1…N`。样式与交互对齐 `QueryComboButton`（`a-dropdown trigger=click` + `a-doption` + `a-divider` + 勾选当前项）。 |
 | 7 | **删除** = 删除 Parameter 命名槽 + 删除对应菜单行；当前正在查看的命名工作台被删后跳回 `/home`。**重命名**仅改标题（`Value` + 菜单 DisplayName），不改 slug/Url。**发布（无 slug）** = 把当前个人墙「另存为」新命名槽并跳转；**发布（有 slug）** = 把当前命名槽编辑结果保存更新。 |
