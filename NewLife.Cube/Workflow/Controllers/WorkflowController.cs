@@ -41,10 +41,14 @@ public class WorkflowController : ControllerBaseX
     }
 
     /// <summary>定义列表。可按 typePath 过滤</summary>
-    /// <param name="typePath">实体路径（可空）</param>
+    /// <param name="typePath">实体路径（可空；设计器页加载全部定义时不传）</param>
     /// <returns>定义列表</returns>
+    /// <remarks>
+    /// typePath 必须可空：非空引用类型参数会被 MVC 隐式推断为 [Required]，
+    /// 前端 cubeApi.workflow.definitions({}) 不带该参数时会直接 400 “The typePath field is required.”。
+    /// </remarks>
     [HttpGet("Definitions")]
-    public Object GetDefinitions(String typePath)
+    public Object GetDefinitions(String? typePath = null)
     {
         IList<WorkflowDefinition> list;
         if (!typePath.IsNullOrEmpty())
@@ -63,7 +67,7 @@ public class WorkflowController : ControllerBaseX
     /// <param name="model">定义</param>
     /// <returns>新定义</returns>
     [HttpPost("Definitions")]
-    public Object AddDefinition([FromBody] WorkflowDefModel model)
+    public Object AddDefinition([FromBody] WorkflowDefModel? model)
     {
         var user = ManageProvider.User;
         if (!WorkflowAuth.CanManage(user)) return Json(403, "无权管理流程定义");
@@ -82,7 +86,7 @@ public class WorkflowController : ControllerBaseX
     /// <param name="model">定义内容</param>
     /// <returns>保存结果</returns>
     [HttpPut("Definitions/{id}")]
-    public Object UpdateDefinition(Int64 id, [FromBody] WorkflowDefModel model)
+    public Object UpdateDefinition(Int64 id, [FromBody] WorkflowDefModel? model)
     {
         var user = ManageProvider.User;
         if (!WorkflowAuth.CanManage(user)) return Json(403, "无权管理流程定义");
@@ -119,7 +123,7 @@ public class WorkflowController : ControllerBaseX
     /// <param name="model">发起请求</param>
     /// <returns>实例编号</returns>
     [HttpPost("Instances")]
-    public Object Start([FromBody] StartModel model)
+    public Object Start([FromBody] StartModel? model)
     {
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");
@@ -145,7 +149,7 @@ public class WorkflowController : ControllerBaseX
     /// <param name="model">请求（意见）</param>
     /// <returns>结果</returns>
     [HttpPost("Instances/{id}/Withdraw")]
-    public Object Withdraw(Int64 id, [FromBody] CommentModel model)
+    public Object Withdraw(Int64 id, [FromBody] CommentModel? model)
     {
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");
@@ -163,7 +167,7 @@ public class WorkflowController : ControllerBaseX
     /// <param name="model">请求（意见）</param>
     /// <returns>结果</returns>
     [HttpPost("Instances/{id}/Cancel")]
-    public Object Cancel(Int64 id, [FromBody] CommentModel model)
+    public Object Cancel(Int64 id, [FromBody] CommentModel? model)
     {
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");
@@ -182,7 +186,7 @@ public class WorkflowController : ControllerBaseX
     /// <param name="model">目标节点</param>
     /// <returns>结果</returns>
     [HttpPost("Instances/{id}/Jump")]
-    public Object Jump(Int64 id, [FromBody] JumpModel model)
+    public Object Jump(Int64 id, [FromBody] JumpModel? model)
     {
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");
@@ -278,7 +282,7 @@ public class WorkflowController : ControllerBaseX
     /// <param name="model">意见</param>
     /// <returns>结果</returns>
     [HttpPost("Tasks/{id}/Approve")]
-    public Object Approve(Int64 id, [FromBody] CommentModel model)
+    public Object Approve(Int64 id, [FromBody] CommentModel? model)
     {
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");
@@ -292,7 +296,7 @@ public class WorkflowController : ControllerBaseX
     /// <param name="model">意见</param>
     /// <returns>结果</returns>
     [HttpPost("Tasks/{id}/Reject")]
-    public Object Reject(Int64 id, [FromBody] CommentModel model)
+    public Object Reject(Int64 id, [FromBody] CommentModel? model)
     {
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");
@@ -306,11 +310,11 @@ public class WorkflowController : ControllerBaseX
     /// <param name="model">加签参数</param>
     /// <returns>结果</returns>
     [HttpPost("Tasks/{id}/AddSign")]
-    public Object AddSign(Int64 id, [FromBody] AddSignModel model)
+    public Object AddSign(Int64 id, [FromBody] AddSignModel? model)
     {
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");
-        if (model?.To == null) return Json(400, "缺少加签接收人");
+        if (model == null || model.To == null) return Json(400, "缺少加签接收人");
         try { WorkflowEngine.AddSign(id, user.ID, model.Before, model.To, model.Comment); return Json(0, "已加签"); }
         catch (WorkflowException ex) { return Json(ex.Code, ex.Message); }
         catch (Exception ex) { return Json(500, ex.GetTrue().Message); }
@@ -321,11 +325,11 @@ public class WorkflowController : ControllerBaseX
     /// <param name="model">转办参数</param>
     /// <returns>结果</returns>
     [HttpPost("Tasks/{id}/Transfer")]
-    public Object Transfer(Int64 id, [FromBody] ToModel model)
+    public Object Transfer(Int64 id, [FromBody] ToModel? model)
     {
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");
-        if (model?.To == null) return Json(400, "缺少转办接收人");
+        if (model == null || model.To == null) return Json(400, "缺少转办接收人");
         try { WorkflowEngine.Transfer(id, user.ID, model.To, model.Comment); return Json(0, "已转办"); }
         catch (WorkflowException ex) { return Json(ex.Code, ex.Message); }
         catch (Exception ex) { return Json(500, ex.GetTrue().Message); }
@@ -336,11 +340,11 @@ public class WorkflowController : ControllerBaseX
     /// <param name="model">知会参数</param>
     /// <returns>结果</returns>
     [HttpPost("Tasks/{id}/Cc")]
-    public Object Cc(Int64 id, [FromBody] ToModel model)
+    public Object Cc(Int64 id, [FromBody] ToModel? model)
     {
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");
-        if (model?.To == null) return Json(400, "缺少知会接收人");
+        if (model == null || model.To == null) return Json(400, "缺少知会接收人");
         try { WorkflowEngine.Cc(id, user.ID, model.To, model.Comment); return Json(0, "已知会"); }
         catch (WorkflowException ex) { return Json(ex.Code, ex.Message); }
         catch (Exception ex) { return Json(500, ex.GetTrue().Message); }
@@ -351,11 +355,11 @@ public class WorkflowController : ControllerBaseX
     /// <param name="model">回退参数</param>
     /// <returns>结果</returns>
     [HttpPost("Tasks/{id}/Rollback")]
-    public Object Rollback(Int64 id, [FromBody] RollbackModel model)
+    public Object Rollback(Int64 id, [FromBody] RollbackModel? model)
     {
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");
-        if (String.IsNullOrEmpty(model?.TargetNodeId)) return Json(400, "缺少回退目标节点");
+        if (model == null || model.TargetNodeId.IsNullOrEmpty()) return Json(400, "缺少回退目标节点");
         try { WorkflowEngine.Rollback(id, user.ID, model.TargetNodeId, model.Comment); return Json(0, "已回退"); }
         catch (WorkflowException ex) { return Json(ex.Code, ex.Message); }
         catch (Exception ex) { return Json(500, ex.GetTrue().Message); }
@@ -365,7 +369,7 @@ public class WorkflowController : ControllerBaseX
     /// <param name="model">批量参数</param>
     /// <returns>逐条结果</returns>
     [HttpPost("Tasks/BatchApprove")]
-    public Object BatchApprove([FromBody] BatchModel model)
+    public Object BatchApprove([FromBody] BatchModel? model)
     {
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");
@@ -448,7 +452,7 @@ public class WorkflowController : ControllerBaseX
     /// <param name="model">常用语列表 [{text}]</param>
     /// <returns>结果</returns>
     [HttpPut("Phrases")]
-    public Object PutPhrases([FromBody] PhraseModel model)
+    public Object PutPhrases([FromBody] PhraseModel? model)
     {
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");
@@ -463,10 +467,11 @@ public class WorkflowController : ControllerBaseX
     /// <param name="model">字段键值</param>
     /// <returns>更新结果</returns>
     [HttpPost("Entities/{key}/Patch")]
-    public Object Patch(String typePath, String key, [FromBody] Dictionary<String, Object> model)
+    public Object Patch(String? typePath, String? key, [FromBody] Dictionary<String, Object>? model)
     {
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");
+        if (typePath.IsNullOrEmpty()) return Json(400, "缺少实体路径");
         if (model == null || model.Count == 0) return Json(400, "没有可更新字段");
 
         var np = AutomationPaths.NormalizeTypePath(typePath);
@@ -501,71 +506,76 @@ public class WorkflowController : ControllerBaseX
     #endregion
 
     #region 模型
+    // 以下请求模型的成员一律可空：项目开启 Nullable 标注且 MVC 默认
+    // SuppressImplicitRequiredAttributeForNonNullableReferenceTypes=false，非空引用类型属性会被隐式推断为 [Required]，
+    // 而前端（api-core）会省略可选字段甚至不带 body（如 approve(id)），导致请求被模型校验拦下 400。
+    // 必填语义一律在动作内部用中文提示校验。
+
     /// <summary>定义写入模型</summary>
     public class WorkflowDefModel
     {
         /// <summary>实体路径</summary>
-        public String TypePath { get; set; }
+        public String? TypePath { get; set; }
 
         /// <summary>名称</summary>
-        public String Name { get; set; }
+        public String? Name { get; set; }
 
         /// <summary>启用</summary>
         public Boolean Enable { get; set; } = true;
 
         /// <summary>锁策略</summary>
-        public String LockPolicy { get; set; }
+        public String? LockPolicy { get; set; }
 
         /// <summary>发起过滤</summary>
-        public String StartFilter { get; set; } = "{}";
+        public String? StartFilter { get; set; } = "{}";
 
         /// <summary>图 JSON</summary>
-        public String GraphJson { get; set; }
+        public String? GraphJson { get; set; }
 
         /// <summary>备注</summary>
-        public String Remark { get; set; }
+        public String? Remark { get; set; }
     }
 
     /// <summary>发起请求</summary>
     public class StartModel
     {
         /// <summary>实体路径</summary>
-        public String TypePath { get; set; }
+        public String? TypePath { get; set; }
 
         /// <summary>业务主键数组</summary>
-        public String[] Keys { get; set; }
+        public String[]? Keys { get; set; }
 
         /// <summary>定义编号（雪花 Id：前端必须字符串透传，避免 JS Number 丢精度）</summary>
-        public String DefinitionId { get; set; }
+        public String? DefinitionId { get; set; }
 
         /// <summary>发起意见</summary>
-        public String Comment { get; set; }
+        public String? Comment { get; set; }
 
         /// <summary>流程摘要（Markdown/富文本）</summary>
-        public String Summary { get; set; }
+        public String? Summary { get; set; }
 
         /// <summary>流程标题</summary>
-        public String Title { get; set; }
+        public String? Title { get; set; }
     }
 
     /// <summary>意见请求</summary>
     public class CommentModel
     {
         /// <summary>意见</summary>
-        public String Comment { get; set; }
+        public String? Comment { get; set; }
 
         /// <summary>附件 Id（同意/驳回时绑定到本次意见，Category=WorkflowComment）</summary>
-        public Int64[] AttachmentIds { get; set; }
+        public Int64[]? AttachmentIds { get; set; }
     }
 
     /// <summary>跳转请求</summary>
     public class JumpModel
     {
         /// <summary>目标节点</summary>
-        public String TargetNodeId { get; set; }
+        public String? TargetNodeId { get; set; }
 
         /// <summary>意见</summary>
-        public String Comment { get; set; }
+        public String? Comment { get; set; }
     }
 
     /// <summary>加签请求</summary>
@@ -575,58 +585,60 @@ public class WorkflowController : ControllerBaseX
         public Boolean Before { get; set; }
 
         /// <summary>接收人</summary>
-        public JsonObject To { get; set; }
+        public JsonObject? To { get; set; }
 
         /// <summary>意见</summary>
-        public String Comment { get; set; }
+        public String? Comment { get; set; }
     }
 
     /// <summary>转办/知会请求</summary>
     public class ToModel
     {
         /// <summary>接收人</summary>
-        public JsonObject To { get; set; }
+        public JsonObject? To { get; set; }
 
         /// <summary>意见</summary>
-        public String Comment { get; set; }
+        public String? Comment { get; set; }
     }
 
     /// <summary>回退请求</summary>
     public class RollbackModel
     {
         /// <summary>目标节点</summary>
-        public String TargetNodeId { get; set; }
+        public String? TargetNodeId { get; set; }
 
         /// <summary>意见</summary>
-        public String Comment { get; set; }
+        public String? Comment { get; set; }
     }
 
     /// <summary>批量请求</summary>
     public class BatchModel
     {
         /// <summary>任务编号数组</summary>
-        public Int64[] Ids { get; set; }
+        public Int64[]? Ids { get; set; }
 
         /// <summary>意见</summary>
-        public String Comment { get; set; }
+        public String? Comment { get; set; }
     }
 
     /// <summary>常用语请求</summary>
     public class PhraseModel
     {
         /// <summary>常用语文本</summary>
-        public String[] Texts { get; set; }
+        public String[]? Texts { get; set; }
     }
     #endregion
 
     #region 辅助
-    static void FillDef(WorkflowDefinition def, WorkflowDefModel model)
+    static void FillDef(WorkflowDefinition def, WorkflowDefModel? model)
     {
         if (model == null) throw new WorkflowException(400, "请求数据为空");
-        if (model.TypePath.IsNullOrEmpty()) throw new WorkflowException(400, "实体路径不能为空");
-        if (model.Name.IsNullOrEmpty()) throw new WorkflowException(400, "名称不能为空");
-        def.TypePath = AutomationPaths.NormalizeTypePath(model.TypePath.Trim());
-        def.Name = model.Name.Trim();
+        var typePath = (model.TypePath ?? "").Trim();
+        if (typePath.IsNullOrEmpty()) throw new WorkflowException(400, "实体路径不能为空");
+        var name = (model.Name ?? "").Trim();
+        if (name.IsNullOrEmpty()) throw new WorkflowException(400, "名称不能为空");
+        def.TypePath = AutomationPaths.NormalizeTypePath(typePath);
+        def.Name = name;
         def.Enable = model.Enable;
         def.LockPolicy = model.LockPolicy ?? WorkflowStatuses.LockFull;
         def.StartFilter = model.StartFilter ?? "{}";
@@ -735,7 +747,7 @@ public class WorkflowController : ControllerBaseX
     /// <summary>上传流程附件（发起时）。Category=WorkflowComment，Key=实例Id。审批节点不再上传。</summary>
     [HttpPost("Attachments")]
     [RequestSizeLimit(50 * 1024 * 1024)]
-    public async Task<Object> UploadAttachment(IFormFile file, String instanceId, String taskId = null)
+    public async Task<Object> UploadAttachment(IFormFile? file, String? instanceId, String? taskId = null)
     {
         var user = ManageProvider.User;
         if (user == null) return Json(401, "未授权");

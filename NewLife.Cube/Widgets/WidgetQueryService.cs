@@ -125,7 +125,7 @@ public class WidgetQueryItem
 public static class WidgetQueryService
 {
     /// <summary>执行查询。无权限抛 ApiException 403；非法参数 400。</summary>
-    public static WidgetQueryResult Execute(IUser user, WidgetQueryRequest req)
+    public static WidgetQueryResult Execute(IUser user, WidgetQueryRequest? req)
     {
         if (req == null) throw new ApiException(400, "body 不能为空");
         RejectForbiddenKeys(req);

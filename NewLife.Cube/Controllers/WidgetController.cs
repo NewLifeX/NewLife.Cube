@@ -115,7 +115,7 @@ public class WidgetController(TokenService tokenService) : ControllerBaseX
 
     /// <summary>只读聚合或列表查询</summary>
     [HttpPost("Query")]
-    public ActionResult Query([FromBody] WidgetQueryRequest req)
+    public ActionResult Query([FromBody] WidgetQueryRequest? req)
     {
         var user = Current;
         if (user == null) return Json(401, "未授权");
