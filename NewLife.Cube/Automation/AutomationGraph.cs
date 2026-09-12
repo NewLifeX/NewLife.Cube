@@ -17,16 +17,20 @@ public class ViewFilterDto
 }
 
 /// <summary>单条筛选条件</summary>
+/// <remarks>
+/// 三个成员均可空：前端可能只给 value（如 {"field":"ownerId","value":{"$host":"id"}} 省略 op），
+/// 非空引用类型属性会被 MVC 隐式推断为 [Required] 而把请求拦在模型校验阶段，故一律声明为可空。
+/// </remarks>
 public class ViewFilterConditionDto
 {
     /// <summary>字段名</summary>
-    public String Field { get; set; }
+    public String? Field { get; set; }
 
     /// <summary>操作符</summary>
-    public String Op { get; set; }
+    public String? Op { get; set; }
 
     /// <summary>值</summary>
-    public Object Value { get; set; }
+    public Object? Value { get; set; }
 }
 
 /// <summary>表单动作草稿</summary>

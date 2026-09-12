@@ -19,6 +19,11 @@ using XCode.Model;
 namespace NewLife.Cube.Widgets;
 
 /// <summary>Widget 查询请求</summary>
+/// <remarks>
+/// 除 Mode/TypePath 外均为可选项，必须声明为可空：项目开启 Nullable 标注且 MVC 默认
+/// SuppressImplicitRequiredAttributeForNonNullableReferenceTypes=false，非空引用类型属性会被隐式推断为 [Required]，
+/// 而前端 buildQueryBody 会丢弃 undefined 字段（如 count 度量不带 field），导致 POST /Cube/Widget/Query 被模型校验拦下 400。
+/// </remarks>
 public class WidgetQueryRequest
 {
     /// <summary>aggregate | list</summary>
@@ -28,13 +33,13 @@ public class WidgetQueryRequest
     public String TypePath { get; set; }
 
     /// <summary>度量</summary>
-    public WidgetMeasure Measure { get; set; }
+    public WidgetMeasure? Measure { get; set; }
 
     /// <summary>分组字段</summary>
-    public String GroupBy { get; set; }
+    public String? GroupBy { get; set; }
 
     /// <summary>时间字段</summary>
-    public String TimeField { get; set; }
+    public String? TimeField { get; set; }
 
     /// <summary>时间桶数</summary>
     public Int32 Buckets { get; set; } = 12;
@@ -43,23 +48,23 @@ public class WidgetQueryRequest
     public Int32 Limit { get; set; } = 30;
 
     /// <summary>部件自有筛选</summary>
-    public ViewFilterDto ExtraFilter { get; set; }
+    public ViewFilterDto? ExtraFilter { get; set; }
 
     /// <summary>宿主 typePath</summary>
-    public String HostTypePath { get; set; }
+    public String? HostTypePath { get; set; }
 
     /// <summary>宿主筛选</summary>
-    public ViewFilterDto HostFilter { get; set; }
+    public ViewFilterDto? HostFilter { get; set; }
 
     /// <summary>跨实体字段映射</summary>
-    public List<WidgetLinkFilter> LinkFilter { get; set; }
+    public List<WidgetLinkFilter>? LinkFilter { get; set; }
 
     /// <summary>宿主字段当前值</summary>
-    public Dictionary<String, Object> HostValues { get; set; }
+    public Dictionary<String, Object>? HostValues { get; set; }
 
     /// <summary>拒绝 sql/script/join</summary>
     [JsonExtensionData]
-    public Dictionary<String, JsonElement> Extra { get; set; }
+    public Dictionary<String, JsonElement>? Extra { get; set; }
 }
 
 /// <summary>度量</summary>
@@ -68,18 +73,18 @@ public class WidgetMeasure
     /// <summary>count/sum/avg/min/max</summary>
     public String Fn { get; set; } = "count";
 
-    /// <summary>字段</summary>
-    public String Field { get; set; }
+    /// <summary>字段。count 度量无需字段，故可空</summary>
+    public String? Field { get; set; }
 }
 
 /// <summary>跨实体映射</summary>
 public class WidgetLinkFilter
 {
     /// <summary>宿主字段</summary>
-    public String HostField { get; set; }
+    public String? HostField { get; set; }
 
     /// <summary>源字段</summary>
-    public String SourceField { get; set; }
+    public String? SourceField { get; set; }
 }
 
 /// <summary>查询结果</summary>
