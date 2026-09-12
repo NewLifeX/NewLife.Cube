@@ -58,7 +58,7 @@ ArcoVue 实体页已能零配置渲染列表与抽屉表单，但添加/编辑/�
 | Vitest | 是 | detectPageKind、cascader onChange、area/detail 标签、enum-like 提交、Object 字段分组 |
 | Playwright E2E | 是 | 登录后逐实体打开添加/编辑/详情；主页四块数据；Cube+Sys 对象页保存控件 |
 | XUnit / dotnet build | 是 | ObjectController.GetFields 物化 DataSourceMap（能单测则测，否则 build 验证） |
-| 构建 | 是 | `pnpm --filter @cube/arco-vue test`、`pnpm --filter @cube/arco-vue build`、`dotnet build NewLife.Cube` |
+| 构建 | 是 | `pnpm --filter @newlifex/cube-arco-vue test`、`pnpm --filter @newlifex/cube-arco-vue build`、`dotnet build NewLife.Cube` |
 
 ## 7. 成功标准
 

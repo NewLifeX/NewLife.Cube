@@ -30,7 +30,7 @@
 
 ## 测试 / 构建 / 文档
 
-- [x] T.1 `pnpm --filter @cube/api-core test` 与 `@cube/arco-vue test` 新增用例全过。
-- [x] T.2 `pnpm --filter @cube/arco-vue build` 0 error。
+- [x] T.1 `pnpm --filter @newlifex/api-core test` 与 `@newlifex/cube-arco-vue test` 新增用例全过。
+- [x] T.2 `pnpm --filter @newlifex/cube-arco-vue build` 0 error。
 - [x] T.3 手工冒烟见 verify AC-01…（实现侧已按 AC 对照自检；浏览器环境冒烟归验收）。
 - [x] D.1 同步 `web/README.md`、`Doc/功能清单.md` SPA-7、`Doc/Api/核心接口架构.md`（若缺 Ai 行）、迁移方案 §3.1/§10.4、竞品分析 §6.1 #1#3#4 与文首版本注记。

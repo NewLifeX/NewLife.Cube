@@ -48,8 +48,8 @@ flowchart TB
 - 微内核模块 **禁止** `import` / 读取 `useAppStore` 的 layout/theme/density、UserProfile。
 - 对外稳定 props：`type: string`（控制器路径，如 `/Admin/User`）、可选 `authId`。
 - 权限：菜单节点 `permissions` + GetPage `setting`（enableAdd / isReadOnly 等）。
-- 使用 `@cube/page-utils` 的 `checkAuth` + 数字 `Auth` 码；**不**依赖 `@cube/page-logic` 内错误的 `'Add'/'Edit'` 字符串启发式（避免改共享包）。
-- API：`@cube/api-core`（GetPage / list / detail / CRUD / import / export / chart）；LOV 客户端在 ArcoVue 内实现（对齐 Cube.Vue `/Admin/Lov/*`）。
+- 使用 `@newlifex/page-utils` 的 `checkAuth` + 数字 `Auth` 码；**不**依赖 `@newlifex/page-logic` 内错误的 `'Add'/'Edit'` 字符串启发式（避免改共享包）。
+- API：`@newlifex/api-core`（GetPage / list / detail / CRUD / import / export / chart）；LOV 客户端在 ArcoVue 内实现（对齐 Cube.Vue `/Admin/Lov/*`）。
 
 ## 2. 微内核落地（对标 Cube.Vue，重写 UI）
 
@@ -76,7 +76,7 @@ flowchart TB
 3. 否则渲染 DefaultList（可被 `DefaultListPage` Section 替换）。
 4. 不承载主题/布局逻辑。
 
-**与 `@cube/page-logic`：** 本号 **不以** `usePageLogic` 为编排中枢（用户要求 Cube 微内核）。列表状态机可在 DefaultList 内联（对齐 Cube.Vue `index.vue`），必要时抽 `core/composables/useEntityPage.ts`。仍可用 api-core 方法，避免重复 HTTP 细节。
+**与 `@newlifex/page-logic`：** 本号 **不以** `usePageLogic` 为编排中枢（用户要求 Cube 微内核）。列表状态机可在 DefaultList 内联（对齐 Cube.Vue `index.vue`），必要时抽 `core/composables/useEntityPage.ts`。仍可用 api-core 方法，避免重复 HTTP 细节。
 
 ## 3. 路由 B3
 
@@ -103,7 +103,7 @@ registerLeafRoutes(menus):
 2. **渲染**：`FormContent` / `FieldInput` 按 `ControlType` 映射：
    - 优先 `@arco-design/web-vue` 原生；
    - 无对应能力 → `web/src/components/`（如 `RichEditor`、`JsonEditor`、`IconSelector`、`LovSelectTable`）。
-3. **不强制**改 `@cube/field-mapping`；若未来收敛到共享包，另开 OSC。
+3. **不强制**改 `@newlifex/field-mapping`；若未来收敛到共享包，另开 OSC。
 
 ## 5. LOV / 树 / 图表 / Section / 抽屉
 

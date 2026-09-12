@@ -25,7 +25,7 @@
 
 - [x] **T14** `dotnet test NewLife.Cube.Tests --filter ~Osc260830A1b2` 全过（4/4）。
 - [ ] **T15** `dotnet build` Cube + CubeNC 0 error。⚠ Cube ✓ 0 error；CubeNC **预先存在** `EntityController2.cs ImportFile` 重复定义（CS0111，与本次改动无关，属工作区既有未提交状态），需另行修复后复跑。
-- [x] **T16** `pnpm --filter @cube/arco-vue test`（754 passed）+ `vue-tsc` + `vite build` 0 error。
+- [x] **T16** `pnpm --filter @newlifex/cube-arco-vue test`（754 passed）+ `vue-tsc` + `vite build` 0 error。
 - [x] **T17 grep**：`web/src` 与 `apps` 无 `SearchDrawer`；`QueryComboButton` 仍在。
 
 ## 文档

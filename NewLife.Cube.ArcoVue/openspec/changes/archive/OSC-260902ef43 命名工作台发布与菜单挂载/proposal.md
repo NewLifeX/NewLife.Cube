@@ -33,7 +33,7 @@ OSC-26082815a1 交付的 `/home` 工作台只有**一份个人 HomeJson + 角色
 
 1. 后端新建 `WorkbenchNamedStore`（Parameter 读写 + 菜单行 Mount/Unmount + `EnsureFirstGroup` 父分组 Sort 顶置 + `IsAccessible(user, slug)`），`DashboardJson.TryNormalize` 复用。
 2. `WorkbenchController` 增：`GET Named`（系统角色列表）、`GET Named/{slug}`（菜单授权只读）、`PUT Named/{slug}`（upsert：建/改 + 挂/改菜单，仅系统角色）、`DELETE Named/{slug}`（下架：删槽 + 删菜单，仅系统角色）。
-3. `@cube/api-core`：`createWorkbenchApi` 增 `namedList / namedGet / namedPut / namedDelete` 与 `NamedWorkbenchItem` 类型。
+3. `@newlifex/api-core`：`createWorkbenchApi` 增 `namedList / namedGet / namedPut / namedDelete` 与 `NamedWorkbenchItem` 类型。
 4. ArcoVue：`menuRoutes.buildLeafRoutes` 为 `/Workbench/{slug}` 前缀菜单分流到工作台组件（新增薄壳 `WorkbenchPage.vue` 接收 `slug` prop）；`useWorkbench` 支持 `slug`（只读命名槽 / 系统角色可编辑），`Workbench.vue` 标题栏改造为「编辑」组合按钮 + 发布/重命名对话框。
 5. 测试：后端参照 `Osc26082815a1WorkbenchTests` 补命名槽/菜单/鉴权用例；前端补 `useWorkbench` 组合逻辑 Vitest。
 6. 文档同步：`ArcoVue企业中后台迁移方案.md` §8.5 增补命名工作台小节；功能清单标注（如适用）。

@@ -31,7 +31,7 @@
 - [x] P3.2 `parseDashboardJson(raw, surface)` / serialize 按 surface；workbench w=8 合法
 - [x] P3.3 `createWorkbenchApi`：get / put / getRole / putRole；挂 `cubeApi.workbench`
 - [x] P3.4 Catalog 请求带 `surface`
-- [x] P3.5 Vitest：非法 w 归一、空 widgets、version；`pnpm --filter @cube/api-core test`
+- [x] P3.5 Vitest：非法 w 归一、空 widgets、version；`pnpm --filter @newlifex/api-core test`
 
 ## 阶段 P4 — ArcoVue 工作台
 
@@ -46,7 +46,7 @@
 - [x] P4.9 `userProfile.ts` appearance payload **不含** homeJson；单测 mergeWorkspace 丢 home
 - [x] P4.10 IconPark 新 type 注册 + spec
 - [x] P4.11 Vitest：种子形状、surface 上限、trend 读取。`.vue` 无业务 TS
-- [x] P4.12 `pnpm --filter @cube/arco-vue test` + `build` 无错误
+- [x] P4.12 `pnpm --filter @newlifex/cube-arco-vue test` + `build` 无错误
 - [x] P4.13 更新 `e2e/object-home.spec.ts`：`/home` 工作台；`/Admin/Index` 系统信息
 
 ## 阶段 P5 — 洞察槽隔离回归

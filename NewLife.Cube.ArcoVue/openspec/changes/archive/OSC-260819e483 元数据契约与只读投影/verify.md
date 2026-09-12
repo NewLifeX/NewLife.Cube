@@ -70,9 +70,9 @@
 | `dotnet test NewLife.Cube.Tests --filter FullyQualifiedName~Osc260819` | 21 passed / 0 failed |
 | `dotnet build NewLife.Cube/NewLife.Cube.csproj` | 0 error / 0 warning |
 | `dotnet build NewLife.CubeNC/NewLife.CubeNC.csproj` | 0 error / 0 warning |
-| `pnpm --filter @cube/api-core test` | vitest 36 + node:test 51，全过 |
-| `pnpm --filter @cube/arco-vue test` | 65 files / 593 passed / 0 failed |
-| `pnpm --filter @cube/arco-vue build` | vue-tsc + vite 0 error（仅 chunk size warning） |
+| `pnpm --filter @newlifex/api-core test` | vitest 36 + node:test 51，全过 |
+| `pnpm --filter @newlifex/cube-arco-vue test` | 65 files / 593 passed / 0 failed |
+| `pnpm --filter @newlifex/cube-arco-vue build` | vue-tsc + vite 0 error（仅 chunk size warning） |
 
 ### 三步检查摘要
 

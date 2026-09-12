@@ -461,9 +461,9 @@ Webhook：只读 token + 复制；「重新生成」确认后 PUT。
 ### 构建命令（验收必跑）
 
 ```
-pnpm --filter @cube/api-core test
-pnpm --filter @cube/arco-vue test
-pnpm --filter @cube/arco-vue build
+pnpm --filter @newlifex/api-core test
+pnpm --filter @newlifex/cube-arco-vue test
+pnpm --filter @newlifex/cube-arco-vue build
 dotnet test NewLife.Cube.Tests --filter Osc260815
 dotnet build NewLife.Cube
 dotnet build NewLife.CubeNC

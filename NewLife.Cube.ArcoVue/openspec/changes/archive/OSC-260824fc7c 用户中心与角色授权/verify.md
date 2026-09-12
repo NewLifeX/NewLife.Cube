@@ -17,9 +17,9 @@
 ## 命令与预期
 
 ```
-pnpm --filter @cube/api-core test
-pnpm --filter @cube/arco-vue test
-pnpm --filter @cube/arco-vue build
+pnpm --filter @newlifex/api-core test
+pnpm --filter @newlifex/cube-arco-vue test
+pnpm --filter @newlifex/cube-arco-vue build
 ```
 
 预期：0 failed；vue-tsc/vite 0 error。改 C# 后另：`dotnet build NewLife.Cube/NewLife.Cube.csproj` 0 error。
@@ -58,9 +58,9 @@ pnpm --filter @cube/arco-vue build
 
 ## 执行记录（Implementing）
 
-- 2026-08-24：`pnpm --filter @cube/api-core test` 通过（含 profile / updateProfile / changePassword URL）。
-- 2026-08-24：`pnpm --filter @cube/arco-vue test` 72 files / 654 tests 通过（含 `rolePermission.spec.ts`、`iamGuards.spec.ts`、`accountCenter.spec.ts`、`sfcThin.spec.ts`）。
-- 2026-08-24：`pnpm --filter @cube/arco-vue build` vue-tsc + vite 0 error。
+- 2026-08-24：`pnpm --filter @newlifex/api-core test` 通过（含 profile / updateProfile / changePassword URL）。
+- 2026-08-24：`pnpm --filter @newlifex/cube-arco-vue test` 72 files / 654 tests 通过（含 `rolePermission.spec.ts`、`iamGuards.spec.ts`、`accountCenter.spec.ts`、`sfcThin.spec.ts`）。
+- 2026-08-24：`pnpm --filter @newlifex/cube-arco-vue build` vue-tsc + vite 0 error。
 - 2026-08-24：`dotnet build NewLife.Cube/NewLife.Cube.csproj` 0 error。
 - 浏览器端到端 AC-01～AC-20 留待验收环境勾选。
 
@@ -79,9 +79,9 @@ pnpm --filter @cube/arco-vue build
 
 | 命令 | 结果 |
 |------|------|
-| `pnpm --filter @cube/api-core test` | vitest 37 + node:test 51，全过（含 profile/updateProfile/changePassword URL） |
-| `pnpm --filter @cube/arco-vue test` | 72 files / **670** passed / 0 failed（本号 `rolePermission` 18、`iamGuards` 7、`accountCenter` 8、`loginConfig` SSO 缺省、`sfcThin` 64） |
-| `pnpm --filter @cube/arco-vue build` | vue-tsc + vite **0 error**（仅 chunk size / dynamic import 警告） |
+| `pnpm --filter @newlifex/api-core test` | vitest 37 + node:test 51，全过（含 profile/updateProfile/changePassword URL） |
+| `pnpm --filter @newlifex/cube-arco-vue test` | 72 files / **670** passed / 0 failed（本号 `rolePermission` 18、`iamGuards` 7、`accountCenter` 8、`loginConfig` SSO 缺省、`sfcThin` 64） |
+| `pnpm --filter @newlifex/cube-arco-vue build` | vue-tsc + vite **0 error**（仅 chunk size / dynamic import 警告） |
 | `dotnet build NewLife.Cube/NewLife.Cube.csproj` | **0 error**（493 warning，既有） |
 
 首次 vue-tsc 因并行 WIP `useCascaderField.ts` TS2345 失败；已最小收窄 `modelValue == null`（**非本号交付**，复盘提交排除该文件）。

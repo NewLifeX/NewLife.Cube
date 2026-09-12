@@ -71,11 +71,11 @@
 
 
 
-- [x] T.1 `pnpm --filter @cube/api-core test` 新增用例全过。
+- [x] T.1 `pnpm --filter @newlifex/api-core test` 新增用例全过。
 
-- [x] T.2 `pnpm --filter @cube/arco-vue test` 本号 spec 全过。
+- [x] T.2 `pnpm --filter @newlifex/cube-arco-vue test` 本号 spec 全过。
 
-- [x] T.3 `pnpm --filter @cube/arco-vue build` 0 error。
+- [x] T.3 `pnpm --filter @newlifex/cube-arco-vue build` 0 error。
 
 - [x] T.4 若改了 C#：`dotnet build` NewLife.Cube 无 error。
 

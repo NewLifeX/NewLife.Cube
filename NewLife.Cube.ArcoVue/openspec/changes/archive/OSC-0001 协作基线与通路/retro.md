@@ -23,5 +23,5 @@
 ## 后续 OSC 建议
 
 - OSC-0002：后端三实体时严格执行 XUnit + build 门禁。
-- 可选：CI 为 `@cube/arco-vue` 增加 `pnpm test` job；Registry 可用 npmmirror 或预缓存 vitest。
+- 可选：CI 为 `@newlifex/cube-arco-vue` 增加 `pnpm test` job；Registry 可用 npmmirror 或预缓存 vitest。
 - 开发联调：起 CubeDemo 后再验 `/Auth` 经 5183 代理。

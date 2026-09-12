@@ -43,7 +43,7 @@ Cube WebAPI 已具备密码 / 短信 / 邮箱登录、图片验证码、RSA Chal
 | --- | --- |
 | OSC-0004 | 壳 / UserProfile / token |
 | OSC-0003 | 动态实体页（租户实体走 DefaultList） |
-| `@cube/api-core` / `@cube/auth-logic` | LoginConfig v2、MFA、Challenge 已封装，登录页应对齐而非另造协议 |
+| `@newlifex/api-core` / `@newlifex/auth-logic` | LoginConfig v2、MFA、Challenge 已封装，登录页应对齐而非另造协议 |
 | `DataScopeMiddleware` / `ITenantScope` | 隔离事实源 |
 
 ## 6. 测试范围

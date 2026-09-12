@@ -51,7 +51,7 @@
 
 - [ ] `dotnet test`：XCode DataScopeTests + Cube 本号新增测试 全过
 - [ ] `dotnet build` NewLife.Cube + NewLife.CubeNC 0 error
-- [ ] `pnpm --filter @cube/arco-vue test` 本号 spec 全过；`pnpm --filter @cube/arco-vue build` 0 error
+- [ ] `pnpm --filter @newlifex/cube-arco-vue test` 本号 spec 全过；`pnpm --filter @newlifex/cube-arco-vue build` 0 error
 
 ## T8 手工冒烟（验收勾）
 

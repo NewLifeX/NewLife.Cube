@@ -6,8 +6,8 @@
 
 ## 执行阶段记录（openspec-apply）
 
-- **测试**：`pnpm --filter @cube/arco-vue run test` → 48 文件 464 通过（执行收尾）
-- **构建**：`pnpm --filter @cube/arco-vue run build`（vue-tsc + vite）通过
+- **测试**：`pnpm --filter @newlifex/cube-arco-vue run test` → 48 文件 464 通过（执行收尾）
+- **构建**：`pnpm --filter @newlifex/cube-arco-vue run build`（vue-tsc + vite）通过
 - **新增/关键**：`listLinkFields`、`useListOpsLinks`、`opsAction` 扩展、`useListTable`/`DefaultList`/`RecordCard`/`RecordDrawer`、`page-utils` `lookupRowField`
 - **已知限制**：`{page:}` 占位；Map 空 Url 不前端补造
 
@@ -31,8 +31,8 @@
 
 | 命令 | 结果 |
 | --- | --- |
-| `pnpm --filter @cube/arco-vue run test` | **50 文件 472 通过** |
-| `pnpm --filter @cube/arco-vue run build` | vue-tsc + vite **通过**（chunk size 警告既有，非错误） |
+| `pnpm --filter @newlifex/cube-arco-vue run test` | **50 文件 472 通过** |
+| `pnpm --filter @newlifex/cube-arco-vue run build` | vue-tsc + vite **通过**（chunk size 警告既有，非错误） |
 
 ### 目标愿景对照
 
@@ -95,7 +95,7 @@
 
 - `buildOpsParts` CRUD 三动作与自动化 `auto:{id}` 能力
 - OSC-0007 工具栏精简（不恢复自定义工具栏按钮）
-- `@cube/page-utils` `resolveUrl` / `lookupRowField` 导出
+- `@newlifex/page-utils` `resolveUrl` / `lookupRowField` 导出
 
 ## 已知限制（可接受）
 

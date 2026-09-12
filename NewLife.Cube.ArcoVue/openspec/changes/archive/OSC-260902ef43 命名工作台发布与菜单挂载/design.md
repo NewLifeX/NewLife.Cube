@@ -15,7 +15,7 @@
 | `/Cube/Workbench`（个人 GET/PUT）、`/Cube/Workbench/Role/{id}` | 不改既有行为 |
 | Cube.Vue / NaiveUI / CubeNC Razor | 不改 UI |
 
-加法：Parameter 新 Category `Workbench.Named`（`WorkbenchNamedStore`）；`WorkbenchController` 4 个命名端点；`@cube/api-core` `named*` API；`menuRoutes` `/Workbench/{slug}` 前缀分支；薄壳 `WorkbenchPage.vue`；`useWorkbench(slug)` + `Workbench.vue` 组合按钮。
+加法：Parameter 新 Category `Workbench.Named`（`WorkbenchNamedStore`）；`WorkbenchController` 4 个命名端点；`@newlifex/api-core` `named*` API；`menuRoutes` `/Workbench/{slug}` 前缀分支；薄壳 `WorkbenchPage.vue`；`useWorkbench(slug)` + `Workbench.vue` 组合按钮。
 
 ## 2. 状态唯一来源
 
@@ -116,7 +116,7 @@ public static class WorkbenchNamedStore
 
 ## 5. 前端改动地图（`NewLife.Cube.ArcoVue/web/src/`）
 
-### 5.1 `@cube/api-core`（`packages/api-core/src/`）
+### 5.1 `@newlifex/api-core`（`packages/api-core/src/`）
 
 - `api.ts` `createWorkbenchApi` 追加：
 
@@ -264,7 +264,7 @@ slug 有  → GET /Cube/Workbench/Named/{slug}
 | --- | --- |
 | `ArcoVue企业中后台迁移方案.md` §8.5 | 增补 8.5.2 之后小节「命名工作台与菜单挂载（OSC-260902ef43）」：Parameter `Workbench.Named` + 菜单行模型 + `▾` 组合按钮 + slug 只读语义 + 发布/重命名/删除/切换矩阵 |
 | `openspec/changes/archive/OSC-26082815a1` 等 | 不改（历史冻结） |
-| `@cube/api-core` README（如有） | 仅当存在 API 列表处追加 named*（执行期核对） |
+| `@newlifex/api-core` README（如有） | 仅当存在 API 列表处追加 named*（执行期核对） |
 | 功能清单（NewLife.Cube 根 `Doc/`，如适用） | 若工作台条目未覆盖「多命名工作台」则补一行并回写 OSC 号 |
 
 ## 7. 测试设计

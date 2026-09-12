@@ -18,7 +18,7 @@
 | # | 决策 |
 | --- | --- |
 | 1 | **一个 OSC**。`tasks.md` 分 P1→P6。前端不得在 P1 API 未就绪时接线；可先写纯函数/Vitest。 |
-| 2 | 皮肤主实现 **ArcoVue**；契约落 **Cube WebAPI + `@cube/api-core`**。Cube.Vue / NaiveUI **不改 UI**。CubeNC `Widgets/IWidget` **不引用、不改、不删除**。 |
+| 2 | 皮肤主实现 **ArcoVue**；契约落 **Cube WebAPI + `@newlifex/api-core`**。Cube.Vue / NaiveUI **不改 UI**。CubeNC `Widgets/IWidget` **不引用、不改、不删除**。 |
 | 3 | 角色层 **不新建 `RoleWorkspace` 表**。`Parameter(UserID=0, Category=Workbench.Role, Name={roleId})` 的 `LongValue` 存角色 JSON。用户层 `UserProfile` **只加列 `HomeJson`**，不塞进 `WorkspaceJson`。 |
 | 4 | named 目录以 CubeNC 13 件为准（见 §4 对照表）+ `Inbox`。Greeting 为页面横幅（非 Catalog 项），始终渲染。 |
 | 5 | 工作台 `layout.w` ∈ `{2,3,4,6,8,12}`（对齐 MVC Cols=2 的 6 KPI 一行与 Monitor Cols=8）。洞察槽校验仍只允许 `{3,4,6,12}`。 |

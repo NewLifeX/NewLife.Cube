@@ -203,7 +203,16 @@ public class LovController : ControllerBaseX
                 continue;
             }
 
-            // 2) 代码声明：枚举型反射 / [LovList] 列表型描述符
+            // 2) 代码声明：内部实体值集（Entity.{Type}）→ 按实体工厂即时合成，不落库
+            if (ResolveEntityFactory(code) is { } entityFact)
+            {
+                var m = ResolveListMeta(code, entityFact.EntityType?.Name ?? code, ValueFieldOf(entityFact), LabelFieldOf(entityFact),
+                    BuildEntityListConfig(entityFact), BuildEntitySearchFields(), BuildEntityColumns(entityFact), inlineEnums);
+                if (m != null) result.Add(m);
+                continue;
+            }
+
+            // 3) 代码声明：枚举型反射 / [LovList] 列表型描述符
             if (code.StartsWith("Enum."))
             {
                 var type = LovRegistry.FindEnumType(code[5..]);
@@ -251,6 +260,17 @@ public class LovController : ControllerBaseX
         var config = ResolveListConfig(request.LovCode);
         if (config == null)
             throw new InvalidOperationException($"值集 {request.LovCode} 不存在或未配置列表数据源");
+
+        // 内部实体值集（Entity.{Type}）：entity: 协议在控制器内直接查询实体工厂，不外发 HTTP，也不依赖 DI 代理
+        if (!config.RequestUrl.IsNullOrEmpty() && config.RequestUrl.StartsWith("entity:", StringComparison.OrdinalIgnoreCase))
+        {
+            var (rows, total) = FetchEntityList(config.RequestUrl, request.Params, request.PageNum, request.PageSize);
+            return new
+            {
+                Data = rows,
+                Total = total,
+            };
+        }
 
         // 通过 IOC 获取列表数据代理实现（默认 DefaultLovListDataProxy，可被使用者覆盖）
         var proxy = HttpContext.RequestServices.GetRequiredService<ILovListDataProxy>();
@@ -301,15 +321,29 @@ public class LovController : ControllerBaseX
             return result;
         }
 
-        // 列表型：[LovList] 声明式值集（List.*），同样由 LovRegistry 反射直读
-        var desc = LovRegistry.FindList(request.LovCode);
-        if (desc == null)
-            throw new InvalidOperationException($"值集 {request.LovCode} 不存在");
+        // 列表型：[LovList] 声明式值集（List.*）与内部实体值集（Entity.{Type}）统一解析；
+        // 前者由 LovRegistry 反射直读，后者按实体工厂即时合成配置，两者均不落库
+        LovListConfigModel config;
+        String valueField;
+        String labelField;
+        if (ResolveEntityFactory(request.LovCode) is { } entityFact)
+        {
+            config = BuildEntityListConfig(entityFact);
+            valueField = ValueFieldOf(entityFact);
+            labelField = LabelFieldOf(entityFact);
+        }
+        else
+        {
+            var desc = LovRegistry.FindList(request.LovCode);
+            if (desc == null)
+                throw new InvalidOperationException($"值集 {request.LovCode} 不存在");
+
+            config = desc.Config;
+            valueField = desc.ValueField;
+            labelField = desc.LabelField;
+        }
 
         {
-            var config = desc.Config;
-            var valueField = desc.ValueField;
-            var labelField = desc.LabelField;
             if (config != null && !valueField.IsNullOrEmpty() && !labelField.IsNullOrEmpty())
             {
                 var pending = request.Values
@@ -856,7 +890,79 @@ public class LovController : ControllerBaseX
     private static Boolean GetBool(JsonElement root, String name, Boolean def)
         => root.TryGetProperty(name, out var v) && v.ValueKind is JsonValueKind.True or JsonValueKind.False ? v.GetBoolean() : def;
 
-    /// <summary>解析列表型值集的数据源配置。手工定义（LIST）优先读 Parameter；否则读 [LovList] 描述符</summary>
+    /// <summary>内部实体值集编码前缀。Entity.{Type.FullName} 表示按唯一键/主字段翻译的内部实体值集（代码优先，不落库）</summary>
+    private const String EntityPrefix = "Entity.";
+
+    /// <summary>解析内部实体值集对应的实体工厂。lovCode 形如 Entity.{Type.FullName}，兼容短类型名</summary>
+    /// <param name="lovCode">值集编码</param>
+    /// <returns>实体工厂；非内部实体值集或未注册时返回 null</returns>
+    private static IEntityFactory? ResolveEntityFactory(String lovCode)
+    {
+        if (lovCode.IsNullOrEmpty() || !lovCode.StartsWith(EntityPrefix, StringComparison.OrdinalIgnoreCase)) return null;
+
+        var typeName = lovCode[EntityPrefix.Length..].Trim();
+        if (typeName.IsNullOrEmpty()) return null;
+
+        foreach (var fact in EntityFactory.Entities.Values)
+        {
+            var type = fact.EntityType;
+            if (type == null) continue;
+            if (type.FullName.EqualIgnoreCase(typeName) || type.Name.EqualIgnoreCase(typeName)) return fact;
+        }
+
+        return null;
+    }
+
+    /// <summary>内部实体值集的值字段：唯一键名，缺省 Id</summary>
+    /// <param name="fact">实体工厂</param>
+    /// <returns>字段名</returns>
+    private static String ValueFieldOf(IEntityFactory fact) => fact.Unique?.Name ?? "Id";
+
+    /// <summary>内部实体值集的标签字段：主字段名，缺省与值字段相同</summary>
+    /// <param name="fact">实体工厂</param>
+    /// <returns>字段名</returns>
+    private static String LabelFieldOf(IEntityFactory fact)
+    {
+        var value = ValueFieldOf(fact);
+        var label = fact.Master?.Name;
+        return label.IsNullOrEmpty() ? value : label;
+    }
+
+    /// <summary>构建内部实体值集的列表数据源配置（entity: 协议，分页参数 pageNum/pageSize）</summary>
+    /// <param name="fact">实体工厂</param>
+    /// <returns>列表数据源配置</returns>
+    private static LovListConfigModel BuildEntityListConfig(IEntityFactory fact) => new()
+    {
+        RequestUrl = "entity:" + (fact.EntityType?.Name ?? ""),
+        Method = "GET",
+        Pageable = true,
+        PageNumField = "pageNum",
+        PageSizeField = "pageSize",
+    };
+
+    /// <summary>内部实体值集的搜索字段：Q 关键字（entity: 协议按 Q 做键值模糊）</summary>
+    /// <returns>搜索字段列表</returns>
+    private static IList<LovSearchFieldModel> BuildEntitySearchFields() =>
+    [
+        new() { Field = "Q", Title = "关键字", ComponentType = "input", ParamType = "BODY", Sort = 0 },
+    ];
+
+    /// <summary>内部实体值集的表格列：值字段 + 标签字段</summary>
+    /// <param name="fact">实体工厂</param>
+    /// <returns>表格列列表</returns>
+    private static IList<LovTableColumnModel> BuildEntityColumns(IEntityFactory fact)
+    {
+        var value = ValueFieldOf(fact);
+        var label = LabelFieldOf(fact);
+        var list = new List<LovTableColumnModel>
+        {
+            new() { Field = value, Title = "编号", Sort = 0 },
+        };
+        if (!label.EqualIgnoreCase(value)) list.Add(new() { Field = label, Title = "名称", Sort = 1 });
+        return list;
+    }
+
+    /// <summary>解析列表型值集的数据源配置。手工定义（LIST）优先读 Parameter；其次内部实体值集；否则读 [LovList] 描述符</summary>
     private static LovListConfigModel? ResolveListConfig(String lovCode)
     {
         var def = LovStore.FindDef(lovCode);
@@ -866,6 +972,9 @@ public class LovController : ControllerBaseX
 
             return LovStore.FindListConfig(lovCode);
         }
+
+        // 内部实体值集：代码优先，按实体工厂即时合成 entity: 数据源（不落库）
+        if (ResolveEntityFactory(lovCode) is { } fact) return BuildEntityListConfig(fact);
 
         return LovRegistry.FindList(lovCode)?.Config;
     }

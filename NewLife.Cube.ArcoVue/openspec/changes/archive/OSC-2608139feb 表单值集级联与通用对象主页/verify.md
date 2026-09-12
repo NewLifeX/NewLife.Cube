@@ -18,9 +18,9 @@
 **自动化门禁复检**（2026-08-14，仓库根；前端 `PLAYWRIGHT_BASE_URL=http://localhost:5183`，后端 CubeDemo `:5000` 已起）：
 
 - 本号相关 Vitest 13 files / **108 passed**（含 sfcThin 53）
-- `pnpm --filter @cube/arco-vue test`：40 files / **404 passed**
-- `pnpm --filter @cube/api-core test`：src 20 + node 49 = **69 passed**（含 getObject / getIndexMain URL 断言）
-- `pnpm --filter @cube/arco-vue build`：`vue-tsc -b` + vite **exit 0**（chunk>500kB 既有警告）
+- `pnpm --filter @newlifex/cube-arco-vue test`：40 files / **404 passed**
+- `pnpm --filter @newlifex/api-core test`：src 20 + node 49 = **69 passed**（含 getObject / getIndexMain URL 断言）
+- `pnpm --filter @newlifex/cube-arco-vue build`：`vue-tsc -b` + vite **exit 0**（chunk>500kB 既有警告）
 - `dotnet build NewLife.Cube.csproj`：**0 Error**（警告可保留）
 - Playwright：37 用例，**20 passed / 17 skipped / 0 failed（1.4m）**；skip 原因见下，无删用例充通过
 
@@ -80,7 +80,7 @@
 ### 门禁
 
 - [x] **AC-21 单测**：本号新增 `*.spec.ts` 全部通过（见命令摘要）。
-- [x] **AC-22 构建**：`@cube/arco-vue` test+build 无错误；`dotnet build NewLife.Cube` 0 Error。
+- [x] **AC-22 构建**：`@newlifex/cube-arco-vue` test+build 无错误；`dotnet build NewLife.Cube` 0 Error。
 - [x] **AC-23 E2E**：37 用例执行完毕；**20 passed / 17 skipped / 0 failed**。skip：Star（无控制器）；Tenant/Parameter/OAuthConfig/MailConfig/SmsConfig/OAuthLog/UserStat/UserOnline/AppLog/TenantUser/AccessRule/UserConnect/UserToken/NotificationRecord/ModelTable/ModelColumn（CubeDemo 菜单未装）。
 
 ## 三步编排摘要
@@ -111,26 +111,26 @@
 ## 自动化门禁
 
 ```text
-pnpm --filter @cube/arco-vue exec vitest run --config vitest.config.ts
+pnpm --filter @newlifex/cube-arco-vue exec vitest run --config vitest.config.ts
   pageKind / cascaderValue / fieldControl / detailFormat / fieldFormat /
   objectForm / areaLabels / objectPages / download / useDefaultHome /
   useDbPage / useFilePage / sfcThin
 → Test Files 13 passed; Tests 108 passed
 
-pnpm --filter @cube/arco-vue test
+pnpm --filter @newlifex/cube-arco-vue test
 → Test Files 40 passed (40); Tests 404 passed (404)
 
-pnpm --filter @cube/api-core test
+pnpm --filter @newlifex/api-core test
 → vitest 20 + node:test 49; fail 0
 
-pnpm --filter @cube/arco-vue build
+pnpm --filter @newlifex/cube-arco-vue build
 → vue-tsc -b && vite build; built in ~16.5s; exit 0
 
 dotnet build NewLife.Cube\NewLife.Cube.csproj --no-restore
 → 0 个错误
 
 $env:PLAYWRIGHT_BASE_URL='http://localhost:5183'
-pnpm --filter @cube/arco-vue test:e2e
+pnpm --filter @newlifex/cube-arco-vue test:e2e
 → 20 passed / 17 skipped / 0 failed (1.4m)
 ```
 

@@ -15,18 +15,18 @@
 ## 命令与预期
 
 ```
-pnpm --filter @cube/api-core test
-pnpm --filter @cube/arco-vue test
-pnpm --filter @cube/arco-vue build
+pnpm --filter @newlifex/api-core test
+pnpm --filter @newlifex/cube-arco-vue test
+pnpm --filter @newlifex/cube-arco-vue build
 ```
 
 预期：0 failed；vue-tsc/vite 0 error。
 
 记录（Implementing 2026-08-19）：
 
-- `pnpm --filter @cube/api-core test`：vitest 35 + node:test 50，全过。
-- `pnpm --filter @cube/arco-vue test`：62 files / 553 passed。
-- `pnpm --filter @cube/arco-vue build`：vue-tsc + vite 0 error。
+- `pnpm --filter @newlifex/api-core test`：vitest 35 + node:test 50，全过。
+- `pnpm --filter @newlifex/cube-arco-vue test`：62 files / 553 passed。
+- `pnpm --filter @newlifex/cube-arco-vue build`：vue-tsc + vite 0 error。
 
 新增/扩 spec：`aiMarkdown` `aiSse` `aiChatContext` `aiWelcome` `aiFill` `viewFormat`；api-core `getAiConfig`；`viewProfile`/`stores/viewProfile`/`viewMapping` 启停与 format。
 
@@ -73,9 +73,9 @@ pnpm --filter @cube/arco-vue build
 
 | 命令 | 结果 |
 |------|------|
-| `pnpm --filter @cube/api-core test` | 51 pass / 0 fail |
-| `pnpm --filter @cube/arco-vue test` | 65 files / 593 passed / 0 failed |
-| `pnpm --filter @cube/arco-vue build` | vue-tsc + vite 0 error（仅 chunk size warning） |
+| `pnpm --filter @newlifex/api-core test` | 51 pass / 0 fail |
+| `pnpm --filter @newlifex/cube-arco-vue test` | 65 files / 593 passed / 0 failed |
+| `pnpm --filter @newlifex/cube-arco-vue build` | vue-tsc + vite 0 error（仅 chunk size warning） |
 | C# 测试（Osc260819P1/P3/P4 + Osc260819/P2） | 8 pass / 0 fail |
 
 **验收修复**：`sfcThin.spec.ts` 检出 `FormatPopover.vue` 内含 `watch`/`ref` 违反 SFC 薄壳规范。已修复：`openColorIdx` + `watch(visible)` 移入 `useFormatPopover.ts`，`.vue` 不再直接引用 `ref`/`watch`。

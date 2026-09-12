@@ -12,7 +12,7 @@
 依据：
 
 - `/Auth/*`：[核心接口架构](../../../../Doc/Api/核心接口架构.md) 必要认证
-- `/Mfa/*`：[认证接口设计](../../../../Doc/Api/认证接口设计.md) AUTH-10（不在核心接口最小集，但 `@cube/api-core` / auth-logic 会调用）
+- `/Mfa/*`：[认证接口设计](../../../../Doc/Api/认证接口设计.md) AUTH-10（不在核心接口最小集，但 `@newlifex/api-core` / auth-logic 会调用）
 
 ### 2. 文档
 

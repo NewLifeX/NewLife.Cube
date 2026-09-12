@@ -311,16 +311,16 @@ Vitest 已 `include: ['src/**/*.{spec,test}.ts']`，无需改 `vitest.config.ts`
 
 | 何时 | 命令 | 预期 |
 | --- | --- | --- |
-| 每个触及 `web/` 的 T 之后 | `pnpm --filter @cube/arco-vue exec vitest run --config vitest.config.ts src/core/utils/sfcThin.spec.ts` | 该 spec 通过（T10 之前尚未有文件则该 T 用下一行） |
+| 每个触及 `web/` 的 T 之后 | `pnpm --filter @newlifex/cube-arco-vue exec vitest run --config vitest.config.ts src/core/utils/sfcThin.spec.ts` | 该 spec 通过（T10 之前尚未有文件则该 T 用下一行） |
 | T10 之前的规范-only T | 不跑 Vitest；回复贴出目标文件命中行 | — |
-| DefaultList / 大文件 T 之后另加 | `pnpm --filter @cube/arco-vue test` | 既有约 307 条全绿 |
-| 全部 T 完成后 | `pnpm --filter @cube/arco-vue test` 与 `pnpm --filter @cube/arco-vue build` | 全绿；`vue-tsc -b && vite build` 无 error |
+| DefaultList / 大文件 T 之后另加 | `pnpm --filter @newlifex/cube-arco-vue test` | 既有约 307 条全绿 |
+| 全部 T 完成后 | `pnpm --filter @newlifex/cube-arco-vue test` 与 `pnpm --filter @newlifex/cube-arco-vue build` | 全绿；`vue-tsc -b && vite build` 无 error |
 
 工作目录：以 `NewLife.Cube` 为根（pnpm workspace）。若 filter 找不到包，改用：
 
 `pnpm --filter ./NewLife.Cube.ArcoVue/web test`
 
-二者等价时优先 filter 包名 `@cube/arco-vue`。
+二者等价时优先 filter 包名 `@newlifex/cube-arco-vue`。
 
 既有 28 个 `*.spec.ts` **禁止删除、禁止改断言意图**（除非本号新 spec）。允许因 import 路径变化做 **最小** import 修正，但本号抽离不改 `core/utils/*.ts` 导出的话通常无需动旧 spec。
 

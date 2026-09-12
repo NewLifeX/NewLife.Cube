@@ -89,7 +89,7 @@
 | XUnit（NewLife.Cube.Tests） | 是 | `DashboardJson.TryNormalize` extraFilter 校验矩阵（白名单/上限/`$host` 表面/对象值拒绝）；`WidgetQueryService` 静态条件与 `$host` 解析矩阵（同源/跨源/缺值/时间窗组合）；控制器传参 |
 | Vitest（api-core） | 是 | `isHostRefValue/hostRefField/hasHostRefFilter`；extraFilter round-trip 保留 |
 | Vitest（arco-vue） | 是 | `isUnlinkedWidget` 扩展、`useWidgetConfigDrawer` 还原/保存 extraFilter、buildQueryBody 回归（含 extraFilter 不变式） |
-| 构建 | 是 | NewLife.Cube + NewLife.CubeNC + @cube/api-core + arco-vue（`vue-tsc`/`vite build`） |
+| 构建 | 是 | NewLife.Cube + NewLife.CubeNC + @newlifex/api-core + arco-vue（`vue-tsc`/`vite build`） |
 | 手工 | 是 | 洞察槽实体部件配置静态/宿主条件、工作台部件静态条件、跨实体缺宿主上下文角标、编辑保留条件、越权字段保存 400 |
 | Cube.Vue/NaiveUI/CubeNC 改代码 | 否 | — |
 

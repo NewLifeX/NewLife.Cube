@@ -274,4 +274,4 @@ WebAPI `RoleController` 对齐 CubeNC：`AddFormFields`/`EditFormFields` 的 `Da
 | Mask User 列表无 ViewSensitive | 他人 Password=`***`；自己明文哈希按今日（或仍 *** 若 List 本无 Password 列——以 ListFields 为准） |
 | Vitest 自定义才显示 DataDepartmentIds | DataScope 2 隐藏、4 显示 |
 
-执行期：`dotnet test` XCode DataScopeTests + Cube 本号测试；`pnpm --filter @cube/arco-vue test` 相关 spec。
+执行期：`dotnet test` XCode DataScopeTests + Cube 本号测试；`pnpm --filter @newlifex/cube-arco-vue test` 相关 spec。

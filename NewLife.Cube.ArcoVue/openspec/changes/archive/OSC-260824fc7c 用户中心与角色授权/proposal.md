@@ -78,4 +78,4 @@ ArcoVue 的 User / Role / Menu / Department 全部走 `DynamicPage` → `Default
 - [ ] `/account` 可改昵称邮箱手机；改密校验两次一致；旧 `/account/security` 仍进入安全 Tab。
 - [ ] `RedirectUserToSso=true` 且 `SsoUserCenter` 非空：个人信息与改密走用户中心 MVC 路径；MFA 仍本页。
 - [ ] 菜单 Permission 只读；角色列表不展示 bitmask 列。
-- [ ] 本号新增单测全过；`pnpm --filter @cube/arco-vue build` 无 error。
+- [ ] 本号新增单测全过；`pnpm --filter @newlifex/cube-arco-vue build` 无 error。

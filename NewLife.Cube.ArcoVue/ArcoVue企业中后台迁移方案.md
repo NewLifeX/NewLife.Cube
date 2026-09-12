@@ -179,7 +179,7 @@
 
 | 维度 | 判断 |
 |------|------|
-| API/认证/菜单 | ArcoVue 已走 `@cube/api-core` / auth-logic；最小集对齐核心接口架构；MFA 对齐认证接口设计 |
+| API/认证/菜单 | ArcoVue 已走 `@newlifex/api-core` / auth-logic；最小集对齐核心接口架构；MFA 对齐认证接口设计 |
 | 自动 CRUD | 后端完备；ArcoVue 需接入 `usePageLogic` 并产品化 |
 | 多视图/抽屉 | 前端新建；**UserProfile / ViewProfile / EntityComment 为 Cube 核心后端扩展**，独立排期 |
 | 工作量 | 后端独立 OSC + 前端 M0–M6（约 2–3 个迭代月，视人力浮动） |
@@ -286,7 +286,7 @@ flowchart TB
 
 ```
 NewLife.Cube.ArcoVue/web/src/
-├── api/                      # createCubeApi 薄封装 → @cube/api-core
+├── api/                      # createCubeApi 薄封装 → @newlifex/api-core
 ├── stores/                   # user / app / tagsView / userProfile / viewProfile / tenant
 ├── router/                   # 菜单动态路由 + 守卫 + keep-alive
 ├── layouts/                  # side / top / mix / EmbedLayout（UserProfile + embed）

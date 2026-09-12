@@ -103,7 +103,7 @@ flowchart LR
 | `router/index.ts` | hash token |
 | `stores/user.ts` / tokenManager | 存 refreshToken；401 → Refresh（`userName` 用上次登录名） |
 
-Challenge 实现：优先复用 `@cube/auth-logic` 已有加密；若包内缺 WebCrypto 封装，在 `loginCrypto.ts` 用 `subtle.importKey` + RSA-OAEP，失败则 Message「加密失败」且 **不回退明文**（challengeRequired 时）。
+Challenge 实现：优先复用 `@newlifex/auth-logic` 已有加密；若包内缺 WebCrypto 封装，在 `loginCrypto.ts` 用 `subtle.importKey` + RSA-OAEP，失败则 Message「加密失败」且 **不回退明文**（challengeRequired 时）。
 
 ## 3. 第三方绑定与 MFA 设置
 

@@ -22,8 +22,8 @@ dotnet test NewLife.Cube.Tests/NewLife.Cube.Tests.csproj --filter FullyQualified
 dotnet test NewLife.Cube.Tests/NewLife.Cube.Tests.csproj --filter FullyQualifiedName~ViewFilter
 dotnet build NewLife.Cube/NewLife.Cube.csproj
 dotnet build NewLife.CubeNC/NewLife.CubeNC.csproj
-pnpm --filter @cube/arco-vue test
-pnpm --filter @cube/arco-vue build
+pnpm --filter @newlifex/cube-arco-vue test
+pnpm --filter @newlifex/cube-arco-vue build
 ```
 
 ```powershell
@@ -66,9 +66,9 @@ rg -n "QueryComboButton" "NewLife.Cube.ArcoVue/web/src"
 ```text
 dotnet build NewLife.Cube/NewLife.Cube.csproj           → 0 error ✅
 dotnet test NewLife.Cube.Tests --filter ~Osc260830A1b2  → 9/9 passed ✅（新增时间窗 4 用例）
-pnpm --filter @cube/arco-vue test                        → 80 文件 / 770 passed ✅
+pnpm --filter @newlifex/cube-arco-vue test                        → 80 文件 / 770 passed ✅
 vue-tsc -b                                               → EXIT=0 ✅
-pnpm --filter @cube/arco-vue build                       → built ✅
+pnpm --filter @newlifex/cube-arco-vue build                       → built ✅
 rg SearchDrawer web/src web/apps                         → 0 命中（注释已清理）✅
 rg QueryComboButton web/src                              → 命中（查询簇保留）✅
 ```

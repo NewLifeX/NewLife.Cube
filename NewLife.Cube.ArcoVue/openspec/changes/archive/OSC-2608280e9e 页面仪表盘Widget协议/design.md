@@ -342,4 +342,4 @@ interface WidgetSurfaceContext {
 
 前端：parse 未知键保留；legacy 仅 null dashboard 时合成；linkFilter 空显示未联动；未知 kind 占位；serialize 按 order 重排。
 
-构建：`dotnet build NewLife.Cube`、`NewLife.CubeNC`（Link 实体编译过）、`pnpm --filter @cube/api-core test`、`pnpm --filter @cube/arco-vue test` 与 build。
+构建：`dotnet build NewLife.Cube`、`NewLife.CubeNC`（Link 实体编译过）、`pnpm --filter @newlifex/api-core test`、`pnpm --filter @newlifex/cube-arco-vue test` 与 build。

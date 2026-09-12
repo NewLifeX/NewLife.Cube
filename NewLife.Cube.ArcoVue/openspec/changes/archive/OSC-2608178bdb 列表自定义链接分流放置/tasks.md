@@ -28,7 +28,7 @@
 - [x] **T4 useListOpsLinks + 点击行为**
   - 新增 `web/src/views/crud/useListOpsLinks.ts`：`resolveUrl` + 导航 / action 请求 + 刷新列表
   - action：`cubeApi.client` GET（`/api` 前缀）；导航：router.push / `_blank`
-  - 冒烟补强：`@cube/page-utils` `lookupRowField`（`{ID}`↔`id` 大小写容错），避免链接 `?parentId=` / `?userId=` 空参
+  - 冒烟补强：`@newlifex/page-utils` `lookupRowField`（`{ID}`↔`id` 大小写容错），避免链接 `?parentId=` / `?userId=` 空参
   - [x] 测试通过（`useListOpsLinks.spec.ts`）
 
 ## 列表与表格
@@ -59,7 +59,7 @@
   - [x] 文档完成
 
 - [x] **T10 全量门禁与冒烟**
-  - `pnpm --filter @cube/arco-vue run test`：验收门禁 **50 文件 472 通过**
-  - `pnpm --filter @cube/arco-vue run build`：vue-tsc + vite **通过**
+  - `pnpm --filter @newlifex/cube-arco-vue run test`：验收门禁 **50 文件 472 通过**
+  - `pnpm --filter @newlifex/cube-arco-vue run build`：vue-tsc + vite **通过**
   - 手工：User「链接」、CronJob「日志/马上执行」——代码路径已具备；完整浏览器点验记为残余（🟢）
   - [x] 测试通过 [x] 构建通过 [x] 冒烟（代码路径 + 已知限制）

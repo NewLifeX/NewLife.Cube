@@ -8,7 +8,7 @@
 | 多维表 / 操作列 customLayout | VisActor VTable | 教程：https://arco.design/vue/docs/start ；配置：https://visactor.com/vtable/option/ListTable ；接口：https://visactor.com/vtable/api/Methods |
 | 经典对照 | Metronic8 `_List_Data_Action_Adv.cshtml` | Url/DataAction 剔除数据列 → 行「更多」 |
 | 后端元数据 | `ListField.Url` / `DataAction` / `Target` | `NewLife.CubeNC/ViewModels/ListField.cs`；GetPage → `data.list` |
-| Url 模板 | `@cube/page-utils` `resolveUrl` | `{Id}` / 字段名占位；本号接入，不改算法除非发现 `{page:}` 缺口（见 §10） |
+| Url 模板 | `@newlifex/page-utils` `resolveUrl` | `{Id}` / 字段名占位；本号接入，不改算法除非发现 `{page:}` 缺口（见 §10） |
 
 ## 1. 目标与契约边界
 

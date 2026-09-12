@@ -9,7 +9,7 @@
 
 - **DynamicPage** 作为宿主，落地 **Cube.Vue 微内核引擎**（GetPage → fieldControl → Section 列表/表单 → LOV → 命令式抽屉/弹层 → 菜单路由），UI 全部用 **Arco Design**（缺则自研于 `web/src/components`）。
 - 路由 **B3**：`/Cube/MenuTree` → 叶节点 `addRoute` + `props: { type, authId }` + `beforeEach`；文件夹菜单不注册嵌套子路由（避免 NaiveUI 式嵌套坑）。
-- 字段：Arco **本地适配层**（移植 Cube.Vue `fieldControl` 规则到 ArcoVue；**不**以扩展 `@cube/field-mapping` 为必选项）。
+- 字段：Arco **本地适配层**（移植 Cube.Vue `fieldControl` 规则到 ArcoVue；**不**以扩展 `@newlifex/field-mapping` 为必选项）。
 - LOV、GetChartData、树表（零配置识别层级/`children`）、Section + `apps` 整页覆写、**右侧**记录抽屉（表单为主；历史/评论见 design）。
 - 冒烟实体：`Admin/User`、`Admin/Role`、`Admin/Menu`、`Admin/Log`。
 - Vitest 关键路径 + `pnpm build` 硬门禁。

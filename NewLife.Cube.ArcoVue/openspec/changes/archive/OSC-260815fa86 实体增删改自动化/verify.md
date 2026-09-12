@@ -76,16 +76,16 @@
 ### 测试与构建
 
 - [x] **AC-22** api-core **50** pass；arco-vue **421** pass。
-- [x] **AC-23** `pnpm --filter @cube/arco-vue build` 成功。
+- [x] **AC-23** `pnpm --filter @newlifex/cube-arco-vue build` 成功。
 - [x] **AC-24** `dotnet test --filter Osc260815`：**12** pass；`dotnet build NewLife.Cube` / `NewLife.CubeNC` 0 error。
 - [x] **AC-25** 文档四份已登记。
 
 ## 命令与预期
 
 ```text
-pnpm --filter @cube/api-core test          → 50 pass
-pnpm --filter @cube/arco-vue test          → 421 pass
-pnpm --filter @cube/arco-vue build         → 0 error
+pnpm --filter @newlifex/api-core test          → 50 pass
+pnpm --filter @newlifex/cube-arco-vue test          → 421 pass
+pnpm --filter @newlifex/cube-arco-vue build         → 0 error
 dotnet test NewLife.Cube.Tests --filter Osc260815 → 12 pass
 dotnet build NewLife.Cube / NewLife.CubeNC → 0 error
 ```

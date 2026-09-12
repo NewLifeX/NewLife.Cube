@@ -87,7 +87,7 @@ Cube 实体增删改（含导入、启用禁用、作业、`entity.Insert()`）�
 | Vitest | 是 | 表单→Graph 编译、TriggerConfig 归一、ops 按钮拼装、filter 与 C# 对齐样例、found 目标链路校验 |
 | api-core 单测 | 是 | `createAutomationApi` URL/方法（含 recipients/entities/inbox） |
 | XUnit | 是 | Graph 校验、Filter.Match、循环深度、Dirtys 快照入队、Webhook token、租户隔离 |
-| 构建 | 是 | `pnpm --filter @cube/arco-vue test` + `build`；`dotnet test NewLife.Cube.Tests`；`dotnet build NewLife.Cube` |
+| 构建 | 是 | `pnpm --filter @newlifex/cube-arco-vue test` + `build`；`dotnet test NewLife.Cube.Tests`；`dotnet build NewLife.Cube` |
 | 手工/E2E | 是 | User 列表打开自动化抽屉保存一条 insert+notify（用户接收人）；无 Update 权限不显示按钮；顶栏站内通知可读。CubeDemo 无菜单则记环境跳过，不删用例 |
 
 ## 7. 成功标准

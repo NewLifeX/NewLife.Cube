@@ -53,7 +53,7 @@
 | --- | --- | --- |
 | 新增单测 | 是 | `sfcThin.spec.ts`：禁止 token + allowlist；抽离结束 allowlist `[]` |
 | 回归 | 是 | 现有 28 个 spec、约 307 条 Vitest 必须保持全绿 |
-| 构建 | 是 | `pnpm --filter @cube/arco-vue build`（`vue-tsc -b && vite build`）无错误 |
+| 构建 | 是 | `pnpm --filter @newlifex/cube-arco-vue build`（`vue-tsc -b && vite build`）无错误 |
 | 后端 XUnit | 否 | 本号不改 C# |
 | 纯文档核对 | 是 | 新号正则 `OSC-YYMMDDxxxx`、create 禁 `max+1`、规范中无 DeepSeek 执行粒度 |
 
@@ -62,5 +62,5 @@
 - [ ] 新 OSC 只能以 `OSC-YYMMDDxxxx` 创建；create agent 已删除「最大号 +1」。
 - [ ] 历史 `OSC-0018` 等旧触发语仍能定位目录。
 - [ ] 47 个 `.vue` 均已抽离或审计；`sfcThin` allowlist 为空。
-- [ ] `pnpm --filter @cube/arco-vue test` 全绿；`build` 无错误。
+- [ ] `pnpm --filter @newlifex/cube-arco-vue test` 全绿；`build` 无错误。
 - [ ] 列表/抽屉/六视图/登录/壳的外部行为与抽离前一致（verify 冒烟清单）。

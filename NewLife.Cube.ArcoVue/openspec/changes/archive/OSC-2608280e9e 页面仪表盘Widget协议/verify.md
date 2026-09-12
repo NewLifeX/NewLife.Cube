@@ -68,9 +68,9 @@
 | `dotnet test … ~Osc260828` | **10 passed** |
 | `dotnet build NewLife.Cube` | 0 error |
 | `dotnet build NewLife.CubeNC` | 0 error |
-| `pnpm --filter @cube/api-core test/build` | 51 pass / build OK |
-| `pnpm --filter @cube/arco-vue test` | **713 passed** |
-| `pnpm --filter @cube/arco-vue build` | 0 error（验收轮已跑） |
+| `pnpm --filter @newlifex/api-core test/build` | 51 pass / build OK |
+| `pnpm --filter @newlifex/cube-arco-vue test` | **713 passed** |
+| `pnpm --filter @newlifex/cube-arco-vue build` | 0 error（验收轮已跑） |
 
 ## 风险（仅记录）
 

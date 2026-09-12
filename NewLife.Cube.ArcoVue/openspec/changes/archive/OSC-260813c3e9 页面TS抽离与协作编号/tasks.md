@@ -71,7 +71,7 @@
 - 输出：`NewLife.Cube.ArcoVue/web/src/core/utils/sfcThin.spec.ts`
 - 符号：`ALLOWLIST` 初始 = design §4.1 全部 32 个 posix 路径；禁止 token 正则见 design §2.2 / §7。
 - 保留：不改 `vitest.config.ts`、不改其它 spec。
-- 命令：`pnpm --filter @cube/arco-vue exec vitest run --config vitest.config.ts src/core/utils/sfcThin.spec.ts`
+- 命令：`pnpm --filter @newlifex/cube-arco-vue exec vitest run --config vitest.config.ts src/core/utils/sfcThin.spec.ts`
 - 结果：48 passed（1 ALLOWLIST 存在性 + 47 .vue 扫描）
 
 ---
@@ -85,7 +85,7 @@
 - 符号：design §5.2 全部绑定；`createListContext` `ListContext`。
 - 本 T **不改** `.vue`（下一 T 才删）。允许 vue 暂时与新文件重复，直到 T11g。
 - 保留：函数仍留在 vue。
-- 命令：`pnpm --filter @cube/arco-vue test`
+- 命令：`pnpm --filter @newlifex/cube-arco-vue test`
 - 结果：355 全绿。注：chartSeq/tableResizeObserver 改 ref 以保跨闭包可变；measureTableHeight/renderCell 因依赖 ctx 状态且多域共用定义于本文件（design 表内部循环依赖时保行为优先）。
 
 - [x] ### T11b `useListQuery.ts`
@@ -93,32 +93,32 @@
 - 新建 `web/src/views/crud/useListQuery.ts`
 - 符号：design §5.3 `useListQuery` 函数列表；参数 `ctx: ListContext`。
 - 不改 `.vue`。
-- 命令：`pnpm --filter @cube/arco-vue test`
+- 命令：`pnpm --filter @newlifex/cube-arco-vue test`
 - 结果：355 全绿。
 
 - [x] ### T11c `useListCrud.ts`
 
 - 新建 `useListCrud.ts`；符号见 §5.3。交叉 `loadData` 用第二参（design §5.3 表）。
-- 命令：`pnpm --filter @cube/arco-vue test`
+- 命令：`pnpm --filter @newlifex/cube-arco-vue test`
 - 结果：355 全绿。第二参实际为 { loadData, openEdit, openDetail }（onTableAction 需 openEdit/openDetail，按源码核实）。
 
 - [x] ### T11d `useListViews.ts`
 
 - 新建 `useListViews.ts`；符号见 §5.3。
-- 命令：`pnpm --filter @cube/arco-vue test`
+- 命令：`pnpm --filter @newlifex/cube-arco-vue test`
 - 结果：355 全绿。第二参 { loadData, applySearchToForm }（onSwitchView 需 applySearchToForm）。
 
 - [x] ### T11e `useRecordNav.ts`
 
 - 新建 `useRecordNav.ts`；符号见 §5.3。
-- 命令：`pnpm --filter @cube/arco-vue test`
+- 命令：`pnpm --filter @newlifex/cube-arco-vue test`
 - 结果：355 全绿。
 
 - [x] ### T11f `useDefaultList.ts`
 
 - 新建 `useDefaultList.ts`；组装 + 原 `watch`/`onMounted`/`onBeforeUnmount`/`bootstrap`。
 - 不改 `.vue`。
-- 命令：`pnpm --filter @cube/arco-vue test`
+- 命令：`pnpm --filter @newlifex/cube-arco-vue test`
 - 结果：355 全绿。
 
 - [x] ### T11g 构薄 `DefaultList.vue`
@@ -127,14 +127,14 @@
 - 按 design §5.4 删除已搬走的 script；调用 `useDefaultList(props)`。
 - 从 `sfcThin.spec.ts` 的 `ALLOWLIST` 删除 `views/crud/DefaultList.vue`。
 - 保留：template、style、props `type` `authId`、子组件 import。
-- 命令：`pnpm --filter @cube/arco-vue test`
+- 命令：`pnpm --filter @newlifex/cube-arco-vue test`
 - 结果：355 全绿；vue-tsc -b 无错误；文件 1837→694 行。
 
 ---
 
 ## D. 其余抽离（每文件两 T：先建 composable，再构薄 vue）
 
-标准命令（D 组每条）：`pnpm --filter @cube/arco-vue exec vitest run --config vitest.config.ts src/core/utils/sfcThin.spec.ts`
+标准命令（D 组每条）：`pnpm --filter @newlifex/cube-arco-vue exec vitest run --config vitest.config.ts src/core/utils/sfcThin.spec.ts`
 
 T-a 不改 ALLOWLIST；T-b 删除对应路径。T-a 之后若尚未构薄，vue 与 ts 可暂时重复。
 
@@ -221,7 +221,7 @@ T-a 不改 ALLOWLIST；T-b 删除对应路径。T-a 之后若尚未构薄，vue 
 
 - 只改 `sfcThin.spec.ts`：`ALLOWLIST` 必须为 `[]`
 - 若仍有路径 → 回到对应未勾选 T-b，禁止在本 T 把未构薄文件留在空名单外硬过
-- 命令：`pnpm --filter @cube/arco-vue exec vitest run --config vitest.config.ts src/core/utils/sfcThin.spec.ts`
+- 命令：`pnpm --filter @newlifex/cube-arco-vue exec vitest run --config vitest.config.ts src/core/utils/sfcThin.spec.ts`
 - 结果：`ALLOWLIST = []`（T42b 收口时收敛）；sfcThin 48/48 通过（全量扫描 48 个 vue 无禁止 token）。
 
 - [x] ### T45 `web/README.md`
@@ -235,7 +235,7 @@ T-a 不改 ALLOWLIST；T-b 删除对应路径。T-a 之后若尚未构薄，vue 
 - [x] ### T46 全量测试 + 构建
 
 - 不改代码
-- 命令 1：`pnpm --filter @cube/arco-vue test`（全绿）
-- 命令 2：`pnpm --filter @cube/arco-vue build`（无 error）
+- 命令 1：`pnpm --filter @newlifex/cube-arco-vue test`（全绿）
+- 命令 2：`pnpm --filter @newlifex/cube-arco-vue build`（无 error）
 - 在 `status.md` note 记录两条命令的通过摘要
 - 结果：vitest 355/355 全绿（29 文件，抽离前 307 + sfcThin 48）；vue-tsc -b exit 0；vite build exit 0（仅 chunk>500kB 既有警告，非 error）。

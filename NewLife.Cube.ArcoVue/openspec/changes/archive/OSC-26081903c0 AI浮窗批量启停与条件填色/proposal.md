@@ -66,10 +66,10 @@
 | Vitest | 是 | AI markdown XSS、SSE、问候/快捷 Tab、启停门禁、format 归一与着色 |
 | api-core | 是 | `config.getAiConfig` URL |
 | XUnit | 否 | 不改 C# 行为 |
-| 构建 | 是 | `@cube/api-core` + `@cube/arco-vue` |
+| 构建 | 是 | `@newlifex/api-core` + `@newlifex/cube-arco-vue` |
 | 手工 | 是 | 见 verify |
 
-硬门禁：本号新增单测全过 + `pnpm --filter @cube/arco-vue test|build` 无错误。
+硬门禁：本号新增单测全过 + `pnpm --filter @newlifex/cube-arco-vue test|build` 无错误。
 
 ## 8. 成功标准
 

@@ -24,7 +24,7 @@
 - [x] P2.2 `widget.ts`：类型 + `parseDashboardJson` / `serializeDashboardJson`（与后端校验对齐的前端子集：version、widgets 长度、id 唯一、w/order 归一）
 - [x] P2.3 `createWidgetApi` + `cube.ts` 挂载 `widget.sources|catalog|query|data`
 - [x] P2.4 api-core 单测：非法 version、重复 id、未知键保留、空 widgets
-- [x] P2.5 `pnpm --filter @cube/api-core test` 通过
+- [x] P2.5 `pnpm --filter @newlifex/api-core test` 通过
 
 ## 阶段 P3 — ArcoVue Widget 运行时
 
@@ -37,7 +37,7 @@
 - [x] P3.7 `viewProfile` store + `viewProfile.ts`：dashboard 解析/保存；PUT 带 `dashboardJson`；空串清除；与 viewsJson 分域防抖
 - [x] P3.8 `DefaultList.vue` / `InsightPanel.vue`：挂 Host；空配置高度 0 + 添加入口；`onFilterApply` 通知 Host 重查。不传 SearchDrawer 条件
 - [x] P3.9 Vitest：serialize order、未知 kind、同源 AND 标志、跨实体无 mapping 角标逻辑、compact 看板不发 edit。`.vue` 无业务 TS
-- [x] P3.10 `pnpm --filter @cube/arco-vue test` + `build` 无错误
+- [x] P3.10 `pnpm --filter @newlifex/cube-arco-vue test` + `build` 无错误
 - [x] P3.11 会话补录：Widget 悬停操作组（编辑/复制/删除）与标题对齐；跨实体「未联动」角标（`WidgetLinkBadge`）；配置器支持跨实体复制部件
 - [x] P3.12 会话补录：个人 DashboardJson 空白时回落全局模板；管理员保存个人时同步模板（便于分享页继承）
 

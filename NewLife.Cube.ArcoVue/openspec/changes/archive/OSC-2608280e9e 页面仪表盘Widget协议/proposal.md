@@ -20,7 +20,7 @@
 | # | 决策 |
 | --- | --- |
 | 1 | **一个 OSC**，`tasks.md` 分 P1→P5。P3 前端不得在 P1 API 未就绪时接线；可先写纯函数/Vitest。不另拆后端号。 |
-| 2 | 皮肤主实现 **ArcoVue**；契约落 **Cube WebAPI + `@cube/api-core`**。Cube.Vue / NaiveUI **不改 UI**。CubeNC Razor `Widgets/IWidget` **不引用、不迁移**。 |
+| 2 | 皮肤主实现 **ArcoVue**；契约落 **Cube WebAPI + `@newlifex/api-core`**。Cube.Vue / NaiveUI **不改 UI**。CubeNC Razor `Widgets/IWidget` **不引用、不迁移**。 |
 | 3 | 第一期平台 kind：`metricCard`、`miniChart`（sparkline/line/bar/pie 模板）；**洞察槽暂不交付 `miniKanban`**（代码/Catalog/PUT 禁用，留给工作台 OSC）。禁止用户粘贴自由 ECharts option 作为新编主路径。 |
 | 4 | 代码可注册：C# `ICubeWidget` + Vue `registerWidget`。禁止用户上传、第三方市场、整页画布、自由 x/y 拖拽。洞察槽仅 12 栅格自动流 + `w/order`。 |
 | 5 | 用户可在洞察槽内增删/排序；源表必须当前用户 **Detail**。跨实体只许声明 `linkFilter`，禁止隐式 JOIN / SQL / 脚本。 |
@@ -67,7 +67,7 @@
 |------|--------|------|
 | XUnit（NewLife.Cube.Tests） | 是 | Sources 鉴权、Query 聚合/拒绝 SQL/跨实体无 mapping、DashboardJson 校验、Catalog AdminOnly |
 | Vitest（api-core + arco-vue） | 是 | schema 归一、linkFilter、未知 kind、legacy 合成、序列化 |
-| 构建 | 是 | NewLife.Cube + NewLife.CubeNC + @cube/api-core + arco-vue |
+| 构建 | 是 | NewLife.Cube + NewLife.CubeNC + @newlifex/api-core + arco-vue |
 | 手工 | 是 | 洞察槽增删部件、跨实体指标、筛选联动、无权限锁卡、旧 insight 刷新仍在 |
 | Cube.Vue/NaiveUI 改代码 | 否 | 无新参时 GetList/GetChartData 与今日一致 |
 

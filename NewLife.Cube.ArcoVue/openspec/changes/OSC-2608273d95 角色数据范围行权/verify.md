@@ -24,8 +24,8 @@ dotnet test <XCode 测试工程> --filter FullyQualifiedName~DataScope
 dotnet test NewLife.Cube.Tests/NewLife.Cube.Tests.csproj --filter FullyQualifiedName~DataScope
 dotnet build NewLife.Cube/NewLife.Cube.csproj
 dotnet build NewLife.CubeNC/NewLife.CubeNC.csproj
-pnpm --filter @cube/arco-vue test
-pnpm --filter @cube/arco-vue build
+pnpm --filter @newlifex/cube-arco-vue test
+pnpm --filter @newlifex/cube-arco-vue build
 ```
 
 预期：本号相关测试 0 failed；构建 0 error。

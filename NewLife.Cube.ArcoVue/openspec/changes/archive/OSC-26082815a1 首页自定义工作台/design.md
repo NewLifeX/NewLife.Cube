@@ -36,7 +36,7 @@
 
 ## 3. 实例 schema
 
-复用 `@cube/api-core` `DashboardConfig` / `WidgetInstance`。工作台归一化与洞察槽的差异只允许下列分支（`DashboardJson.TryNormalize` 增加 `surface` 参数，默认 `insight` 保持旧行为）：
+复用 `@newlifex/api-core` `DashboardConfig` / `WidgetInstance`。工作台归一化与洞察槽的差异只允许下列分支（`DashboardJson.TryNormalize` 增加 `surface` 参数，默认 `insight` 保持旧行为）：
 
 | 规则 | insight | workbench |
 |------|---------|-----------|
@@ -261,4 +261,4 @@ Vitest：
 - 种子 admin widgets 含 `seed-Monitor`，member 不含。
 - MetricCard 读 `Trend`/`trend`。
 
-构建：`dotnet build NewLife.Cube`、`NewLife.CubeNC`；`pnpm --filter @cube/api-core test`；`pnpm --filter @cube/arco-vue test`。
+构建：`dotnet build NewLife.Cube`、`NewLife.CubeNC`；`pnpm --filter @newlifex/api-core test`；`pnpm --filter @newlifex/cube-arco-vue test`。

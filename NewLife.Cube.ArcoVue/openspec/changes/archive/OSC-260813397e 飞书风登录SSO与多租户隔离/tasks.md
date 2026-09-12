@@ -45,7 +45,7 @@
 
 ## T6 验证
 
-- [x] 6.1 本号新增 Vitest 全过；`pnpm --filter @cube/arco-vue test` 与 `build` 无错误。
+- [x] 6.1 本号新增 Vitest 全过；`pnpm --filter @newlifex/cube-arco-vue test` 与 `build` 无错误。
 - [x] 6.2 `dotnet build NewLife.Cube` 无错误。
 - [x] 6.3 冒烟证据：loginConfig/tenantHeader/mfaQr/api-core URL 单测 + `Osc260813397eTenantTests`（TenantUser / UserTenantSearch）；全浏览器手工未在本环境跑，残余见 verify。
 

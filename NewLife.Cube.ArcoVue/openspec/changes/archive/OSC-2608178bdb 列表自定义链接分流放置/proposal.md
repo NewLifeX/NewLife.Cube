@@ -61,14 +61,14 @@ ArcoVue 现状缺口：
 | OSC-0007 | 工具栏精简契约（本号不往工具栏塞行链接） |
 | OSC-260815fa86 | 自动化 button 已占 `__ops`；本号与之并存，直出配额分离 |
 | OSC-0018 | 文档层引用 Url/dataAction；本号实现消费，不阻塞 0018 |
-| `@cube/page-utils` `resolveUrl` | 占位符替换 |
+| `@newlifex/page-utils` `resolveUrl` | 占位符替换 |
 
 ## 7. 测试范围
 
 | 类型 | 是否做 | 说明 |
 | --- | --- | --- |
 | Vitest | 是 | classify/partition、ops 拼装顺序与溢出、normalize 保留 dataAction/空 typeName、resolveUrl 点击参数构造 |
-| 构建 | 是 | `pnpm --filter @cube/arco-vue test` + `build`（或 web 目录等价命令） |
+| 构建 | 是 | `pnpm --filter @newlifex/cube-arco-vue test` + `build`（或 web 目录等价命令） |
 | 手工冒烟 | 是 | Admin/User「链接」、Cube/CronJob「日志」「马上执行」；字段挂 Url 实体若有则验单元格可点 |
 
 ## 8. 成功标准

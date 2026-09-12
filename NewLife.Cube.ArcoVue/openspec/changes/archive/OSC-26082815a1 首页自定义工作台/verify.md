@@ -49,8 +49,8 @@
 | `dotnet test … --filter FullyQualifiedName~Osc260828` | **22 passed**（含 15a1 新增交叉用例） |
 | `dotnet build NewLife.Cube` | 0 error |
 | `dotnet build NewLife.CubeNC` | 0 error |
-| `pnpm --filter @cube/api-core test` | Vitest + node:test 全过 |
-| `pnpm --filter @cube/arco-vue test` | **753 passed** |
+| `pnpm --filter @newlifex/api-core test` | Vitest + node:test 全过 |
+| `pnpm --filter @newlifex/cube-arco-vue test` | **753 passed** |
 
 ## 冻结（全程必须保持）
 

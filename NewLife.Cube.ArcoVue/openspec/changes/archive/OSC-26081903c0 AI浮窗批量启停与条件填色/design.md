@@ -458,9 +458,9 @@ function ruleMatchesRow(row, rule, fields): boolean {
 ### 构建
 
 ```
-pnpm --filter @cube/api-core test
-pnpm --filter @cube/arco-vue test
-pnpm --filter @cube/arco-vue build
+pnpm --filter @newlifex/api-core test
+pnpm --filter @newlifex/cube-arco-vue test
+pnpm --filter @newlifex/cube-arco-vue build
 ```
 
 不强制 `dotnet test`。若误改 Cube 工程则须 0 error。

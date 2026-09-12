@@ -55,10 +55,10 @@
 
 ## T6 验证与文档
 
-- [x] 6.1 `pnpm --filter @cube/arco-vue test` 全过（含本号新增，395 例）。
-- [x] 6.2 `pnpm --filter @cube/arco-vue build` 无错误。
+- [x] 6.1 `pnpm --filter @newlifex/cube-arco-vue test` 全过（含本号新增，395 例）。
+- [x] 6.2 `pnpm --filter @newlifex/cube-arco-vue build` 无错误。
 - [x] 6.3 `dotnet build` `NewLife.Cube` 无错误（CubeNC 同步 0 error）。
-- [x] 6.4 `pnpm --filter @cube/arco-vue test:e2e`（后端已启动）按 §5 清单执行：20 passed / 17 skipped / 0 failed，skip 原因见 verify.md。
+- [x] 6.4 `pnpm --filter @newlifex/cube-arco-vue test:e2e`（后端已启动）按 §5 清单执行：20 passed / 17 skipped / 0 failed，skip 原因见 verify.md。
 - [x] 6.5 `web/README.md` 登记三种宿主与 E2E 命令。迁移方案仅在确有「首页/配置页缺口」旧述时最小回写。
 - [x] 6.6 验收 doc-sync：`Doc/功能清单.md` SPA-7 补记 DynamicPage 分发 / DefaultObject / DefaultHome / Db·File / Cascader 叶子 ID 与 E2E（OSC-2608139feb）。
 

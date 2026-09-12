@@ -353,7 +353,7 @@ XOR 与 StartFilter 的 Filter 针对 **Subject 列表的第一条实体快照**
 | `NewLife.Cube/Automation/*` | **不改** | 可 `internal` 改 `public` 仅当接收人方法当前不可见——若必须暴露，加 `AutomationRecipients.Resolve` 薄包装 **或** 把 Resolve 提成 `NewLife.Cube/Membership/RecipientResolver.cs` 供两边调用。**首选**抽公共 Resolver，自动化改为调用它（行为单测对齐，不算升级执行器） |
 | ArcoVue `web/src/views/crud/DefaultList*.ts` | 工具栏按钮 + 列 | 不改自动化抽屉 |
 | **新建** `web/src/views/workflow/*` | designer/todo | FlowGram 固定布局 |
-| `@cube/api-core` | workflow 客户端 | |
+| `@newlifex/api-core` | workflow 客户端 | |
 | `Doc/功能清单.md`、迁移方案 §8.5.5 一行本号 ID | 事实回写 | 禁止同义大段改写 |
 
 **保留不动：** `AutomationExecutor` 节点表、`EntityAutomation` 列、GetPage AllowAnonymous、`PermissionFlags` 枚举、业务 Area 控制器。
