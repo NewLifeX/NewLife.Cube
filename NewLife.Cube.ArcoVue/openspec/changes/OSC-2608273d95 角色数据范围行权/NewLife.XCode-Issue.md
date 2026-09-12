@@ -2,6 +2,7 @@
 
 > 本文供粘贴到 [NewLife.XCode](https://github.com/NewLifeX/NewLife.XCode) Issue。  
 > Cube / ArcoVue 侧对应规划：`OSC-2608273d95`（行权接线、拆除仅本人 `DataPermission`、字段脱敏地基）。**下列问题必须在 XCode 修，Cube 无法用 partial 跨程序集补接口，也无法挡住 `Role.Valid` 把 0 改写成「本部门」。**
+> **↳ 2026-09-12 状态：上述 6 项已由上游修复并入 XCode 12.2.2026.0901（见其 ChangeLog「数据权限（DataScope）增强」）。本文转为存档 + 回归清单；`OSC-2608273d95` 已改走「接口层行权、不改 XCode 仓库」（见 `audit-merged.md`）。**
 
 ---
 

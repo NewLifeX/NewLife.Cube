@@ -13,15 +13,19 @@
 - 不新增 `/iam`；不改 Cube.Vue。
 - 不改 `LovController.ListData`；不把导出改成字段矩阵裁剪（AllFields 可暂留）。
 - `RoleController.Valid` 的 Permission `menuId#flags` 解析保留（OSC-260824fc7c）。
-- `DataPermissionAttribute` 类型可保留；禁止再给 User 挂回仅本人表达式。
+- `DataPermissionAttribute` 类型可保留；矩阵内 7 控制器不得再有仅本人表达式。
+- **不改 XCode 仓库、不升包**；不得给任何实体挂 `DataScopeInterceptor`（`DataScopeDecouplingTests` 前两条必须保持绿）。
+- `MaskSensitiveFields` / `sensitive` 标记必须传真实用户上下文（`GetDataScopeContext()`）；用宿主态会把全员敏感字段一起脱敏。
 
 ## 命令与预期
 
 仓库根 `NewLife.XCode` / `NewLife.Cube`；前端 `NewLife.Cube.ArcoVue/web`。
 
 ```
-dotnet test <XCode 测试工程> --filter FullyQualifiedName~DataScope
+# XCode：只读回归，不改该仓库
+dotnet test XUnitTest.XCode --filter FullyQualifiedName~DataScope
 dotnet test NewLife.Cube.Tests/NewLife.Cube.Tests.csproj --filter FullyQualifiedName~DataScope
+dotnet test XUnitTest/XUnitTest.csproj --filter FullyQualifiedName~DataScopeDecoupling
 dotnet build NewLife.Cube/NewLife.Cube.csproj
 dotnet build NewLife.CubeNC/NewLife.CubeNC.csproj
 pnpm --filter @newlifex/cube-arco-vue test
@@ -44,10 +48,10 @@ pnpm --filter @newlifex/cube-arco-vue build
 ## 权限 / 空 / 非法 / 兼容
 
 - [ ] **AC-09 越权详情**：仅本人 GET 他人 User id → 非法访问 / 非 200 实体。
-- [ ] **AC-10 越权写入**：拦截器或 ValidPermission 拒绝改他人（仅本人）。
+- [ ] **AC-10 越权写入**：`ValidPermission` / `CanAccess` 拒绝改他人（仅本人）。
 - [ ] **AC-11 无接口实体**：本部门角色打开 Admin/Role、Admin/Menu 仍有数据（不因 GetFilter 变 1=0）。
 - [ ] **AC-12 无部门用户+本部门**：User.DepartmentID=0 → 用户列表空或仅符合恒假，不得变全表。
-- [ ] **AC-13 DataPermission 已拆**：UserController 源码无 `[DataPermission]`。
+- [ ] **AC-13 DataPermission 已拆**：矩阵内 7 控制器（双栈）源码无 `[DataPermission]`；`DataScopeDecouplingTests.Controllers_HaveExpectedDataPermission` 已按 tasks T5 同步。
 - [ ] **AC-14 敏感**：无 ViewSensitive 时他人 Password 不为原哈希（`***` 或字段不在列表）。
 - [ ] **AC-15 GetPage sensitive**：无 ViewSensitive 时密码字段 `sensitive=true`。
 - [ ] **AC-16 前端自定义部门**：DataScope≠自定义不渲染 DataDepartmentIds。
@@ -57,7 +61,9 @@ pnpm --filter @newlifex/cube-arco-vue build
 - [ ] **AC-20 文档**：`PERM-数据权限.md` 无 `DataScopeType`、无三参数 DataPermission 构造示例。
 - [ ] **AC-21 导出行集**：仅本人导出 User 不含他人行。
 - [ ] **AC-22 Widget Query**：本部门角色对 User 的 count 不含外部门（WebAPI）。
-- [ ] **AC-23 XCode 先于挂载**：拦截器不得 catch 后 `return true`。
+- [ ] **AC-23 XCode 零改动回归**：上游 `DataScopeTests` 全绿（不改该仓库）。
+- [ ] **AC-24 实体层纯净**：`DataScopeDecouplingTests` 前两条绿（无 `DataScopeInterceptor`；跨用户查询不被实体层收窄）。
+- [ ] **AC-25 行权上下文**：`CreateWhere`/`FindData`/`ValidPermission` 均用控制器层构造的真实用户上下文；`DataScopeContext.Current` 仍为宿主系统态。
 
 ## 残余（不阻断 Done）
 
