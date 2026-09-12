@@ -216,7 +216,7 @@ public static class WorkbenchNamedStore
         }
     }
 
-    /// <summary>确保「系统驾驶舱」父分组存在，并把其 Sort 顶置为当前根级顶级菜单最大 Sort+1（BigSort=true、Sort 降序 → 永远第一组）。</summary>
+    /// <summary>确保「系统看板」父分组存在，并把其 Sort 顶置为当前根级顶级菜单最大 Sort+1（BigSort=true、Sort 降序 → 永远第一组）。</summary>
     /// <returns>父分组菜单行</returns>
     public static IMenu EnsureFirstGroup()
     {

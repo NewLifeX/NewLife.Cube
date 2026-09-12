@@ -512,8 +512,8 @@ describe('createUserApi auth extensions', () => {
     );
   });
 
-  it('switchTenant posts tenantId', async () => {
-    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: { currentId: 2, items: [] } });
+  it('switchTenant passes tenantId as query param（后端简单类型推断 [FromQuery]，非 body）', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: true });
     const { createUserApi } = await import('./api');
     const api = createUserApi(request);
     await api.switchTenant(2);
@@ -521,7 +521,7 @@ describe('createUserApi auth extensions', () => {
       expect.objectContaining({
         url: '/Auth/SwitchTenant',
         method: 'post',
-        data: { tenantId: 2 },
+        params: { tenantId: 2 },
       }),
     );
   });

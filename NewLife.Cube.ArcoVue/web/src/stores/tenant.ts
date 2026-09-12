@@ -98,8 +98,9 @@ export const useTenantStore = defineStore('tenant', {
       }
     },
     async switchTo(tenantId: number) {
-      const res = await cubeApi.user.switchTenant(tenantId);
-      this.applyResult(res.data);
+      // 后端 SwitchTenant 仅返回布尔结果，切换成功后重新拉取列表，刷新 currentId/currentCode/items
+      await cubeApi.user.switchTenant(tenantId);
+      await this.load();
     },
     clear() {
       this.currentId = 0;

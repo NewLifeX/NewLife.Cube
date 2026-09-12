@@ -85,9 +85,9 @@ export function createUserApi(request: RequestFn) {
     info: () =>
       request<UserInfo>({ url: '/Auth/Info', method: 'get' }),
 
-    /** 切换当前租户（多租户开启时）。0=管理后台（仅系统管理员），>0=租户编号；成功后前端应刷新页面（菜单/数据随租户变化） */
+    /** 切换当前租户（多租户开启时）。0=管理后台（仅系统管理员），>0=租户编号；成功后应重新拉取租户列表并刷新页面（菜单/数据随租户变化） */
     switchTenant: (tenantId: number) =>
-      request<boolean>({ url: '/Auth/SwitchTenant', method: 'post', data: { tenantId } }),
+      request<boolean>({ url: '/Auth/SwitchTenant', method: 'post', params: { tenantId } }),
 
     /** 获取登录页配置（OAuth 提供商列表等），可传入租户标识（id/code/name/domain） */
     getLoginConfig: (tenant?: string) =>
@@ -173,21 +173,20 @@ export function createUserApi(request: RequestFn) {
     listTenants: () =>
       request<TenantListResult>({ url: '/Auth/Tenants', method: 'get' }),
 
-    /** 切换当前租户 */
-    switchTenant: (tenantId: number) =>
-      request<TenantListResult>({ url: '/Auth/SwitchTenant', method: 'post', data: { tenantId } }),
-
     /** 当前登录用户资料（可写字段见 User/Info） */
     profile: () =>
-      request<Record<string, unknown>>({ url: '/Admin/User/Info', method: 'get' }),
+      request<UserInfo>({ url: '/Admin/User/Info', method: 'get' }),
 
-    /** 更新当前用户资料 */
+    /**
+     * 更新当前用户资料（昵称/性别/生日/邮箱/手机等文本字段，POST /Admin/User/Info）。
+     * 头像走 page.uploadFile('/Admin/User', file) 上传后，将返回 filePath 回填到 avatar 字段再提交
+     */
     updateProfile: (data: Record<string, unknown>) =>
-      request<Record<string, unknown>>({ url: '/Admin/User/Info', method: 'post', data }),
+      request<UserInfo>({ url: '/Admin/User/Info', method: 'post', data }),
 
-    /** 修改当前用户密码 */
-    changePassword: (data: { oldPassword?: string; newPassword: string; newPassword2: string }) =>
-      request<unknown>({ url: '/Admin/User/ChangePassword', method: 'post', data }),
+    /** 修改当前登录用户密码（SSO 登录可免原密码）。密码要求 8 位起且包含数字大小写字母和符号 */
+    changePassword: (data: ChangePasswordModel) =>
+      request<boolean>({ url: '/Admin/User/ChangePassword', method: 'post', data }),
 
     /**
      * 邮箱激活链接直达。激活邮件中的链接指向 {ActivateUrl}?token=&account=，前端 /activate 页解析后调用
@@ -206,19 +205,6 @@ export function createUserApi(request: RequestFn) {
     /** 已登录用户验证/更换邮箱或手机（安全中心）。验证码经 sendCode(action=bind) 发送 */
     verifyContact: (data: VerifyContactModel) =>
       request<VerifyStatus>({ url: '/Auth/VerifyContact', method: 'post', data }),
-
-    /** 获取当前用户详细资料（GET /Admin/User/Info，含邮箱/手机验证状态）。列表/首页信息经 /Auth/Info */
-    profile: () =>
-      request<UserInfo>({ url: '/Admin/User/Info', method: 'get' }),
-
-    /** 更新当前用户资料（昵称/性别/生日/邮箱/手机等文本字段，POST /Admin/User/Info）。
-     *  头像走 page.uploadFile('/Admin/User', file) 上传后，将返回 filePath 回填到 avatar 字段再提交 */
-    updateProfile: (data: Record<string, unknown>) =>
-      request<UserInfo>({ url: '/Admin/User/Info', method: 'post', data }),
-
-    /** 修改当前登录用户密码（SSO 登录可免原密码）。密码要求 8 位起且包含数字大小写字母和符号 */
-    changePassword: (data: ChangePasswordModel) =>
-      request<boolean>({ url: '/Admin/User/ChangePassword', method: 'post', data }),
 
     /** 第三方授权绑定列表（GET /Admin/User/Binds）：已绑定记录 + 可绑定平台 */
     binds: () =>

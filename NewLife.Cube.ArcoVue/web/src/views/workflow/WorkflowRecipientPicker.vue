@@ -1,11 +1,10 @@
 <script setup lang="ts">
 /**
  * 审批接收人选择（OSC-26090347f1 T8c）：用户/角色/部门 单选/多选 + 远端搜索。
- * 逻辑复用 recipient.ts searchRecipients（自动化同策略），UI 对齐自动化动作卡片。
+ * 业务逻辑在 useRecipientPicker.ts（SFC 构薄门禁），UI 对齐自动化动作卡片。
  */
-import { computed, ref, watch } from 'vue';
-import type { RecipientKind, RecipientOption } from './recipient';
-import { normalizeSelectIds, searchRecipients } from './recipient';
+import type { RecipientKind } from './recipient';
+import { RECIPIENT_KIND_LABEL, useRecipientPicker } from './useRecipientPicker';
 
 const props = withDefaults(
   defineProps<{
@@ -25,60 +24,8 @@ const emit = defineEmits<{
   (e: 'update:modelValue', ids: number[]): void;
 }>();
 
-const kind = computed(() => props.kind);
-const selected = computed(() => props.modelValue ?? []);
-/** 单选时 a-select 要标量，多选才是数组；否则切换角色/部门后点选无效 */
-const selectValue = computed(() =>
-  props.multiple ? selected.value : (selected.value[0] ?? undefined),
-);
-
-const options = ref<RecipientOption[]>([]);
-const loading = ref(false);
-let seq = 0;
-
-const KIND_LABEL: Record<RecipientKind, string> = {
-  users: '用户',
-  roles: '角色',
-  departments: '部门',
-};
-
-async function doSearch(keyword = '', searchKind: RecipientKind = kind.value) {
-  const s = ++seq;
-  loading.value = true;
-  try {
-    const list = await searchRecipients(searchKind, keyword);
-    if (s !== seq) return;
-    // 已选项不在当前页时保留占位标签
-    const map = new Map(list.map((x) => [x.id, x]));
-    const keep = searchKind === kind.value ? selected.value : [];
-    for (const id of keep) {
-      if (!map.has(id)) map.set(id, { id, name: String(id), displayName: String(id) });
-    }
-    options.value = [...map.values()];
-  } finally {
-    if (s === seq) loading.value = false;
-  }
-}
-
-function onKindChange(v: string | number | boolean) {
-  const next = String(v) as RecipientKind;
-  if (!KIND_LABEL[next] || next === kind.value) return;
-  emit('update:kind', next);
-  emit('update:modelValue', []);
-  options.value = [];
-  void doSearch('', next);
-}
-
-function onUpdate(v: unknown) {
-  emit('update:modelValue', normalizeSelectIds(v));
-}
-
-watch(
-  () => props.kind,
-  (k) => {
-    void doSearch('', k);
-  },
-);
+const { kind, selectValue, options, loading, doSearch, onKindChange, onUpdate } =
+  useRecipientPicker(props, emit);
 
 defineExpose({ doSearch });
 </script>
@@ -92,7 +39,7 @@ defineExpose({ doSearch });
       class="wf-recipient__kind"
       @change="onKindChange"
     >
-      <a-radio v-for="(label, k) in KIND_LABEL" :key="k" :value="k">
+      <a-radio v-for="(label, k) in RECIPIENT_KIND_LABEL" :key="k" :value="k">
         {{ label }}
       </a-radio>
     </a-radio-group>
@@ -104,7 +51,7 @@ defineExpose({ doSearch });
       allow-search
       :filter-option="false"
       :loading="loading"
-      :placeholder="placeholder || `选择${KIND_LABEL[kind]}`"
+      :placeholder="placeholder || `选择${RECIPIENT_KIND_LABEL[kind]}`"
       size="small"
       @search="doSearch"
       @focus="() => doSearch('')"

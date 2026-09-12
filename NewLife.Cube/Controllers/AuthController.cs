@@ -405,35 +405,6 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
         return Json(0, "ok", BuildTenantList(user));
     }
 
-    /// <summary>切换当前租户</summary>
-    [HttpPost]
-    [EntityAuthorize]
-    public ActionResult SwitchTenant([FromBody] SwitchTenantModel model)
-    {
-        if (ManageProvider.User is not User user) return Json(-1, "未登录");
-        if (!CubeSetting.Current.EnableTenant) return Json(-1, "未开启多租户");
-
-        var tenantId = model?.TenantId ?? -1;
-        var isAdmin = user.Roles != null && user.Roles.Any(e => e.IsSystem);
-        var list = TenantUser.FindAllByUserId(user.ID).Where(e => e.Enable).ToList();
-
-        if (tenantId == 0)
-        {
-            if (!isAdmin) return Json(-1, "无权切换到平台");
-        }
-        else if (tenantId > 0)
-        {
-            if (!list.Any(e => e.TenantId == tenantId)) return Json(-1, "无权切换到该租户");
-        }
-        else
-        {
-            return Json(-1, "无效租户");
-        }
-
-        HttpContext.SaveTenant(tenantId);
-        return Json(0, "ok", BuildTenantList(user));
-    }
-
     private static Object BuildTenantList(User user)
     {
         // 多租户关闭：不返回可切换列表，前端据此隐藏顶栏/表单租户 UI
@@ -542,11 +513,4 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
 
         return Json(0, "账号已注销");
     }
-}
-
-/// <summary>切换租户请求</summary>
-public class SwitchTenantModel
-{
-    /// <summary>目标租户 Id；0 表示平台（仅系统管理员）</summary>
-    public Int32 TenantId { get; set; }
 }
