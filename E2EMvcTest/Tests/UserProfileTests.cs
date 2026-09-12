@@ -331,6 +331,38 @@ public sealed class UserProfileTests : IAsyncLifetime
         Assert.Equal(remark, dbValue);
     }
 
+    [Fact(DisplayName = "TC-USER-024 单段加粗备注保存不带 p 标签，DB 验证")]
+    [Trait("Category", "UserProfile")]
+    [Trait("Priority", "P1")]
+    public async Task TC_USER_024_RemarkSingleParagraphWithFormatSavedWithoutPTag()
+    {
+        const String testId = "TC-USER-024";
+        var remark = $"E2E加粗{DateTime.Now:HHmmss}";
+
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Info");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 输入一段文字后整段加粗（Quill 内部为 <p><strong>text</strong></p>），提交时应只去掉外层 <p>，行内加粗格式保留
+        await _page.WaitForSelectorAsync("#html_Remark .ql-editor", new PageWaitForSelectorOptions { Timeout = 10_000 });
+        await _page.ClickAsync("#html_Remark .ql-editor");
+        await _page.Keyboard.PressAsync("Control+a");
+        await _page.Keyboard.PressAsync("Delete");
+        await _page.Keyboard.TypeAsync(remark);
+        await _page.Keyboard.PressAsync("Control+a");
+        await _page.Keyboard.PressAsync("Control+b");
+
+        await _page.ClickAsync("button[type=submit], input[type=submit]");
+        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // DB 验证：带行内格式的单段内容同样不应被包成富文本段落
+        var dbValue = DatabaseHelper.GetUserField(AppFixture.AdminUser, "Remark");
+        Assert.NotNull(dbValue);
+        Assert.DoesNotContain("<p", dbValue);
+        Assert.Contains("strong", dbValue);
+        Assert.Contains(remark, dbValue);
+    }
+
     #endregion
 
     #region C.4 清空密码流程

@@ -40,7 +40,7 @@
 
         // 归一化富文本：
         // 1) 仅剩空段落/换行/空白且无嵌入内容时返回空串，避免空富文本写入数据库并经由 SSO 同步扩散
-        // 2) 仅单个无属性段落且内部没有子元素（即纯文字，无样式/换行/嵌入）时去掉两端 <p></p>，简单文字不必存成富文本
+        // 2) 仅单个无属性段落（内部无软换行与嵌入内容，strong/em/a 等行内格式不影响）时去掉外层 <p></p>，一段话内容不必存成富文本
         function normalizeHtml(html) {
             if (!html) return '';
             var tmp = document.createElement('div');
@@ -48,7 +48,7 @@
             if (tmp.querySelector('img,iframe,video,audio,object,embed,svg')) return html;
             if ((tmp.textContent || '').trim() === '') return '';
             var first = tmp.firstElementChild;
-            if (first && first === tmp.lastElementChild && first.tagName === 'P' && first.attributes.length === 0 && !first.querySelector('*'))
+            if (first && first === tmp.lastElementChild && first.tagName === 'P' && first.attributes.length === 0 && !first.querySelector('br'))
                 return first.innerHTML;
             return html;
         }
