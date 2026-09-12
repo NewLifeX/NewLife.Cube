@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.AI;
 using NewLife.Cube.Entity;
 using NewLife.Cube.ViewModels;
+using NewLife.Cube.Widgets;
 using NewLife.Cube.Widgets.System;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -24,21 +25,23 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 /// <summary>首页</summary>
 [DisplayName("首页")]
 [AdminArea]
-[Menu(0, false, Icon = "HomeFilled")]
+[Menu(0, false, Icon = "HomeFilled", Mode = MenuModes.Admin | MenuModes.Tenant)]
 public class IndexController : ControllerBaseX, IPageDataContext
 {
     private readonly IManageProvider _provider;
     private readonly IWebHostEnvironment _env;
     private readonly IAIService _ai;
+    private readonly WidgetManager _widgetManager;
 
     static IndexController() => MachineInfo.RegisterAsync();
 
     /// <summary>实例化</summary>
-    public IndexController(IManageProvider manageProvider, IWebHostEnvironment env, IAIService ai)
+    public IndexController(IManageProvider manageProvider, IWebHostEnvironment env, IAIService ai, WidgetManager widgetManager)
     {
         _provider = manageProvider;
         _env = env;
         _ai = ai;
+        _widgetManager = widgetManager;
         PageSetting.EnableNavbar = false;
     }
 
@@ -79,7 +82,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     }
 
     /// <summary>收集服务器信息（供页面展示与 AI 页面上下文共用，避免重复逻辑）</summary>
-    /// <param name="contentRootPath">应用内容根目录（<see cref="IWebHostEnvironment.ContentRootPath"/>）</param>
+    /// <param name="contentRootPath">应用内容根目录（IWebHostEnvironment.ContentRootPath）</param>
     /// <param name="context">当前 HTTP 上下文，用于获取请求与连接信息</param>
     /// <returns>服务器信息对象</returns>
     private static Object BuildServerInfo(String contentRootPath, Microsoft.AspNetCore.Http.HttpContext context)
@@ -154,35 +157,38 @@ public class IndexController : ControllerBaseX, IPageDataContext
         });
     }
 
-    /// <summary>工作台数据聚合（React 皮肤首页使用）。返回 KPI、快捷入口、个人信息、系统信息</summary>
+    /// <summary>工作台数据聚合（React 皮肤首页使用）。返回 KPI、快捷入口、个人信息、系统信息。
+    /// 命名与 MVC 版工作台统一为 Dashboard（视图 Index/Dashboard）</summary>
     /// <returns>工作台聚合数据 JSON</returns>
     [DisplayName("工作台数据")]
     [EntityAuthorize]
     [HttpGet]
-    public ActionResult Workbench()
+    public ActionResult Dashboard()
     {
         var user = ManageProvider.User;
-        var now = DateTime.Now;
-        var start = now.AddHours(-24);
 
         var mi = MachineInfo.Current ?? new MachineInfo();
         var process = Process.GetCurrentProcess();
-        var memTotal = mi.Memory / 1024 / 1024;
-        var memUsed = memTotal - mi.AvailableMemory / 1024 / 1024;
-        var memRate = memTotal <= 0 ? 0 : (Double)memUsed * 100 / memTotal;
 
-        var snow = XLog.Meta.Factory.Snow;
-
-        // KPI 指标
-        var kpis = new List<Object>
+        // KPI 指标（Widget 部件驱动，与 MVC 工作台同一套内置部件，增删内置部件自动同步）。
+        // 默认排序走 WidgetManager（外部业务组件在魔方内置前，KPI 簇内业务新卡自然上浮）；用户隐藏项分到 hiddenKpis，供前端恢复面板
+        var roleNames = user?.Roles?.Select(e => e.Name).ToList();
+        var isAdmin = user?.Roles.Any(e => e.IsSystem) == true;
+        var wm = _widgetManager;
+        var layout = user != null ? wm.GetLayout(user.ID) : new Dictionary<String, WidgetLayout>();
+        var kpis = new List<Object>();
+        var hiddenKpis = new List<Object>();
+        var kpiWidgets = wm.Scan().Values.Where(e => e.WidgetType == WidgetTypes.Kpi && wm.IsVisible(e, roleNames, isAdmin) && wm.IsEnabled(e));
+        foreach (var info in wm.SortByDefault(kpiWidgets))
         {
-            new { name = "users", label = "用户总数", value = XCode.Membership.User.Meta.Count.ToString("n0"), trend = "注册用户", color = "blue", url = "/Admin/User" },
-            new { name = "login", label = "今日登录", value = XLog.FindCount(_.ID.Between(DateTime.Today, now, snow) & _.Action.Contains("登录")).ToString("n0"), trend = "今日登录成功", color = "green", url = "/Admin/Log" },
-            new { name = "online", label = "在线用户", value = UserOnline.FindCount().ToString("n0"), trend = "当前在线", color = "cyan", url = "/Admin/UserOnline" },
-            new { name = "log", label = "24h日志", value = XLog.FindCount(_.ID.Between(start, now, snow)).ToString("n0"), trend = "最近24小时", color = "grey", url = "/Admin/Log" },
-            new { name = "error", label = "24h异常", value = XLog.FindCount(_.ID.Between(start, now, snow) & _.Success == false).ToString(), trend = "最近24小时异常", color = "red", url = "/Admin/Log?success=false" },
-            new { name = "cpu", label = "CPU使用率", value = Math.Round(mi.CpuRate * 100, 1).ToString("0.0") + "%", trend = "内存 " + Math.Round(memRate, 1).ToString("0.0") + "%", color = "orange", url = "/Admin/Index/Main" },
-        };
+            var d = wm.GetData(info);
+            var value = d?.GetType().GetProperty("Value")?.GetValue(d) ?? "";
+            var trend = d?.GetType().GetProperty("Trend")?.GetValue(d) ?? "";
+            var url = d?.GetType().GetProperty("Url")?.GetValue(d) ?? "";
+            var item = new { name = info.Name, label = info.Title, value, trend, color = info.Color ?? "blue", url };
+            if (layout.TryGetValue(info.Name, out var itemLayout) && itemLayout.Hide) hiddenKpis.Add(item);
+            else kpis.Add(item);
+        }
 
         // 快捷入口：最近访问优先，菜单补足
         var links = new List<Object>();
@@ -234,6 +240,28 @@ public class IndexController : ControllerBaseX, IPageDataContext
             ["启动时间"] = DateTime.Now.AddMilliseconds(-Environment.TickCount64).ToFullString(),
         };
 
+        // 内容部件（KPI 以外）：可见/隐藏分开返回，排序对齐 MVC WidgetManager.GetWidgets（组配置 + 用户布局）。
+        // 图表卡（Monitor）数据体量大且前端独立轮询 MonitorData，此处只下发元数据；其余类型下发 GetData 数据
+        Object BuildWidgetItem(WidgetAttribute info) => new
+        {
+            name = info.Name,
+            title = info.Title,
+            icon = info.Icon,
+            cols = info.Cols,
+            category = info.Category,
+            widgetType = info.WidgetType.ToString(),
+            data = info.WidgetType == WidgetTypes.Chart ? null : wm.GetData(info),
+        };
+
+        var widgets = wm.GetWidgets(roleNames, isAdmin, user?.ID ?? 0)
+            .Where(e => e.WidgetType != WidgetTypes.Kpi)
+            .Select(BuildWidgetItem)
+            .ToList();
+        var hiddenWidgets = wm.GetHiddenWidgets(user?.ID ?? 0, roleNames, isAdmin)
+            .Where(e => e.WidgetType != WidgetTypes.Kpi)
+            .Select(BuildWidgetItem)
+            .ToList();
+
         return Json(0, null, new
         {
             user = new
@@ -243,11 +271,57 @@ public class IndexController : ControllerBaseX, IPageDataContext
                 roles = (user as IUser)?.Roles?.Select(e => e.Name).ToList(),
             },
             kpis,
+            hiddenKpis,
+            widgets,
+            hiddenWidgets,
             quickLinks = links,
             profile,
             sysInfo,
         });
     }
+
+    #region 工作台布局
+    /// <summary>读取当前用户工作台卡片布局（排序+隐藏）。Parameter 表按用户持久化（分类 Widget.Layout，Name=config，LongValue=JSON），对齐 MVC WidgetManager</summary>
+    /// <returns>卡片名到布局项的字典（{name: {sort, hide}}）</returns>
+    [DisplayName("工作台布局")]
+    [EntityAuthorize]
+    [HttpGet]
+    public ActionResult GetWidgetLayout()
+    {
+        var userId = ManageProvider.User?.ID ?? 0;
+        var layout = _widgetManager.GetLayout(userId);
+        return Json(0, null, layout);
+    }
+
+    /// <summary>保存当前用户工作台卡片布局（排序+隐藏），合并为单行 Parameter 原子保存</summary>
+    /// <param name="layout">卡片名到布局项的字典（{name: {sort, hide}}）</param>
+    /// <returns></returns>
+    [DisplayName("保存工作台布局")]
+    [EntityAuthorize]
+    [HttpPost]
+    public ActionResult SaveWidgetLayout(IDictionary<String, WidgetLayout> layout)
+    {
+        var userId = ManageProvider.User?.ID ?? 0;
+        if (userId <= 0) return Json(401, null, "未登录");
+        if (layout == null || layout.Count == 0) return Json(1, null, "布局为空");
+
+        _widgetManager.SaveLayout(userId, layout);
+        return Json(0, null, "ok");
+    }
+
+    /// <summary>重置当前用户工作台卡片布局为默认（删除布局 Parameter 行）</summary>
+    /// <returns></returns>
+    [DisplayName("重置工作台布局")]
+    [EntityAuthorize]
+    [HttpPost]
+    public ActionResult ResetWidgetLayout()
+    {
+        var userId = ManageProvider.User?.ID ?? 0;
+        if (userId > 0) _widgetManager.ResetLayout(userId);
+
+        return Json(0, null, "ok");
+    }
+    #endregion
 
     #region AI 诊断
     /// <summary>AI 系统诊断。根据服务器运行指标生成健康诊断报告（SSE 流式输出）</summary>

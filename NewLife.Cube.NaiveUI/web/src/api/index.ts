@@ -1,5 +1,5 @@
-import { createCubeApi } from '@cube/api-core';
-import type { CubeApi } from '@cube/api-core';
+import { createCubeApi } from '@newlifex/api-core';
+import type { CubeApi } from '@newlifex/api-core';
 
 /** 全局 API 实例 */
 export const api: CubeApi = createCubeApi({

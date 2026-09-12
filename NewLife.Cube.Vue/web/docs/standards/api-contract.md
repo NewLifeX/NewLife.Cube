@@ -2,7 +2,7 @@
 
 ## 请求入口
 
-所有业务 HTTP 请求通过 `core/utils/request.ts`。它**只保留与 UI 强相关**的少量逻辑——错误/业务错误的弹窗展示、401 跳转与导航。**其余请求逻辑已全部下沉至 `@cube/api-core` 的 `createApiClient`**（基地址拼接、`/api` 前缀补全、Token 头注入、附加请求头、`withCredentials`、content-type 透传、traceId、204 处理、错误分类归一化、响应钩子 `responseIntercept`、业务错误 reject、401 基础处理），并通过 option / 回调参数化，所有皮肤共享。`request.ts` 仅以回调把 cube-vue 的 UI 行为与配置（附加头、请求钩子、响应钩子）接线到 api-core，对外导出（`request` / `cubeAxios` / `redirectToLogin` / `toReLogin`）保持兼容，业务文件无需改动。
+所有业务 HTTP 请求通过 `core/utils/request.ts`。它**只保留与 UI 强相关**的少量逻辑——错误/业务错误的弹窗展示、401 跳转与导航。**其余请求逻辑已全部下沉至 `@newlifex/api-core` 的 `createApiClient`**（基地址拼接、`/api` 前缀补全、Token 头注入、附加请求头、`withCredentials`、content-type 透传、traceId、204 处理、错误分类归一化、响应钩子 `responseIntercept`、业务错误 reject、401 基础处理），并通过 option / 回调参数化，所有皮肤共享。`request.ts` 仅以回调把 cube-vue 的 UI 行为与配置（附加头、请求钩子、响应钩子）接线到 api-core，对外导出（`request` / `cubeAxios` / `redirectToLogin` / `toReLogin`）保持兼容，业务文件无需改动。
 
 ### api-core `createApiClient` 关键选项（非 UI 逻辑载体）
 
@@ -29,11 +29,11 @@
 ### 两条链路均已统一到 api-core
 
 - **request.ts 链路**：`cubeAxios = createApiClient({ baseURL: API_HOST, tokenHeaderPrefix: 'bearer ', unwrapResponse: true, withCredentials: true, additionalRequestHeaders, onRequestHook, onResponseHook, onUnauthorized, onBusinessError, onResponseError })`，`API_HOST` 为纯主机；最终地址由 api-core 请求拦截经 `resolveRequestUrl(baseURL, url)` 解析；`unwrapResponse: true` 使业务直接拿到 `ApiResponse`。
-- **cubeApi 链路**：`core/composables/useCubeApi.ts` 的 `cubeApi`（`page`/`client`/`user`/`menu`/`config`）由 `@cube/api-core` 的 `createCubeApi({ baseURL: API_HOST, tokenStorage: 'localStorage', ... })` 创建；实体/区域请求同样经 `resolveRequestUrl` 解析为 `${API_HOST}/api/...`；服务接口（Auth/Sso/Mfa 及 /Cube 服务动作）由 `getServiceBaseUrl(baseURL)` 派生主机且不带 `/api`。
+- **cubeApi 链路**：`core/composables/useCubeApi.ts` 的 `cubeApi`（`page`/`client`/`user`/`menu`/`config`）由 `@newlifex/api-core` 的 `createCubeApi({ baseURL: API_HOST, tokenStorage: 'localStorage', ... })` 创建；实体/区域请求同样经 `resolveRequestUrl` 解析为 `${API_HOST}/api/...`；服务接口（Auth/Sso/Mfa 及 /Cube 服务动作）由 `getServiceBaseUrl(baseURL)` 派生主机且不带 `/api`。
 
 > **返回值语义差异（务必注意，避免混用）**：`request.ts` 链路 `unwrapResponse: true`，业务调用 `request.get(...)` 等**直接返回 `ApiResponse`**；而 `cubeApi.client` 是裸 axios 实例（`unwrapResponse` 默认 `false`），`cubeApi.client.request(...)` 返回**完整 `AxiosResponse`**，需自行 `.then(r => r.data)` 取 `ApiResponse`。两者返回值类型不同，消费时不要混用期望值（现有 `usePageApi().getAction` 已正确做了 `.then(res => res.data)`，可作范本）。
 
-两条链路共用同一 `resolveRequestUrl(baseUrl, url)`（位于 `@cube/api-core` 的 `service-path.ts`），按「baseUrl 是否含 /api 前缀」分两种情形：
+两条链路共用同一 `resolveRequestUrl(baseUrl, url)`（位于 `@newlifex/api-core` 的 `service-path.ts`），按「baseUrl 是否含 /api 前缀」分两种情形：
 
 - **baseUrl 含 /api 前缀**（如 `http://host:5000/api`）：实体请求保留 /api；服务接口去掉 /api；url 自身若已带 /api 则去重（避免 `http://host/api/api/...`）。
 - **baseUrl 不含 /api 前缀**（如 `http://host:5000`，cube-vue 实际传此）：服务接口不补前缀；非服务接口已带 /api 的不重复补、缺 /api 则补。

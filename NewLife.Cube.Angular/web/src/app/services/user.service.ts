@@ -1,5 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
-import type { UserInfo, MenuItem } from '@cube/api-core';
+import type { UserInfo, MenuItem } from '@newlifex/api-core';
 import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { LoginConfig } from '@cube/api-core';
+import type { LoginConfig } from '@newlifex/api-core';
 import cubeApi from '@/api';
 
 export const useAppStore = defineStore('app', {

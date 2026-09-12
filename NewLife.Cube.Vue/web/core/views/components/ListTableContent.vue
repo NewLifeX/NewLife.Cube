@@ -51,6 +51,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
+  view: [row: Record<string, unknown>];
   edit: [row: Record<string, unknown>];
   delete: [row: Record<string, unknown>];
 }>();
@@ -351,7 +352,7 @@ function getCellRaw(row: Record<string, unknown>, col: InternalColumn): string {
         </template>
       </el-table-column>
 
-      <el-table-column label="操作" width="120" fixed="right" align="center">
+      <el-table-column label="操作" width="168" fixed="right" align="center">
         <template #header>
           <el-tooltip content="操作" placement="top" :show-after="500">
             <span class="ltc-header-text">操作</span>
@@ -359,6 +360,13 @@ function getCellRaw(row: Record<string, unknown>, col: InternalColumn): string {
         </template>
         <template #default="scope">
           <div class="ltc-actions">
+            <button class="ltc-action-btn ltc-action-btn--view" @click="emit('view', scope.row)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <span>查看</span>
+            </button>
             <button class="ltc-action-btn ltc-action-btn--edit" @click="emit('edit', scope.row)">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
@@ -537,6 +545,15 @@ function getCellRaw(row: Record<string, unknown>, col: InternalColumn): string {
   font-size: 12px;
   cursor: pointer;
   transition: all 0.15s ease;
+
+  &--view {
+    color: var(--el-text-color-secondary);
+
+    &:hover {
+      background: var(--el-color-info-light-9);
+      color: var(--el-color-info);
+    }
+  }
 
   &--edit {
     color: var(--el-text-color-secondary);

@@ -16,10 +16,10 @@
  * const { data } = await api.getList({ pageIndex: 0, pageSize: 20 });
  * ```
  */
-import { createCubeApi } from '@cube/api-core';
+import { createCubeApi } from '@newlifex/api-core';
 import { getConfig } from '../configure';
 import { ElMessage } from 'element-plus';
-import type { ApiResponse, PageParams } from '@cube/api-core';
+import type { ApiResponse, PageParams } from '@newlifex/api-core';
 
 // ── 全局 API 客户端实例 ──────────────────────────────────────────────
 
@@ -32,7 +32,7 @@ const API_HOST = (cfg.request.baseUrl ?? '').replace(/\/+$/, '');
 /**
  * cubeApi 全局实例
  *
- * 基于 @cube/api-core 创建，提供通用 CRUD 及认证 API。
+ * 基于 @newlifex/api-core 创建，提供通用 CRUD 及认证 API。
  * baseUrl 统一从 @newlifex/cube-vue 配置系统获取，
  * Token 存储使用 localStorage（与 @newlifex/cube-vue core/utils/token.ts 一致）。
  *

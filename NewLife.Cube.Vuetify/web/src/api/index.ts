@@ -1,4 +1,4 @@
-import { createCubeApi } from '@cube/api-core';
+import { createCubeApi } from '@newlifex/api-core';
 
 const cubeApi = createCubeApi({ baseURL: '' });
 

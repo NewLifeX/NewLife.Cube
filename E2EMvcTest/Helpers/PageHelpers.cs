@@ -238,7 +238,8 @@ public static class PageHelpers
     /// <param name="tabText">标签文字</param>
     public static async Task ClickNavTabAsync(IPage page, String tabText)
     {
-        await page.ClickAsync($".nav-pills a:text-is('{tabText}')");
+        // 用户中心导航条：UI 重构后为 .profile-tabs，保留 .nav-pills 兼容旧皮肤
+        await page.ClickAsync($".profile-tabs a:text-is('{tabText}'), .nav-pills a:text-is('{tabText}')");
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
     }
 

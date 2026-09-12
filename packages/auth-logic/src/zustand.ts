@@ -1,18 +1,18 @@
 /**
- * @cube/auth-logic/zustand — Zustand 适配器
+ * @newlifex/auth-logic/zustand — Zustand 适配器
  *
  * 将 AuthLogic 桥接为 Zustand store，供 React 系皮肤使用。
  *
  * @example
  * ```ts
- * import { createZustandAuthStore } from '@cube/auth-logic/zustand';
+ * import { createZustandAuthStore } from '@newlifex/auth-logic/zustand';
  * import api from '@/api';
  * export const useUserStore = createZustandAuthStore(api);
  * ```
  */
 
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
-import { type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo, type ApiResponse, type LoginResult, type AuthCategory } from '@cube/api-core';
+import { type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo, type ApiResponse, type LoginResult, type AuthCategory } from '@newlifex/api-core';
 import { AuthLogic, ForgotPasswordLogic, RegisterLogic, type AuthState, type ForgotPasswordState, type RegisterState } from './index';
 
 export interface ZustandAuthState extends AuthState {
@@ -20,8 +20,9 @@ export interface ZustandAuthState extends AuthState {
   /**
    * 密码登录（自动尝试 RSA-OAEP Challenge 加密）。
    * 返回完整响应供调用方检查 pendingActivation / mfa_required 等。
+   * @param remember 记住登录状态（保存密码）。true 时后端把令牌有效期延长到 365 天，重开系统免登录
    */
-  login: (username: string, password: string, captchaId?: string, captchaCode?: string) => Promise<ApiResponse<LoginResult>>;
+  login: (username: string, password: string, captchaId?: string, captchaCode?: string, remember?: boolean) => Promise<ApiResponse<LoginResult>>;
   /** 验证码登录（手机/邮箱，category 为 'mobile' | 'mail'） */
   loginByCode: (username: string, code: string, category: AuthCategory, captchaId?: string, captchaCode?: string) => Promise<ApiResponse<LoginResult>>;
   logout: () => Promise<void>;
@@ -48,8 +49,8 @@ export function createZustandAuthStore(api: CubeApi): UseBoundStore<StoreApi<Zus
 
       isLoggedIn: () => !!api.tokenManager.getToken(),
 
-      login: (username, password, captchaId, captchaCode) =>
-        logic.login(username, password, captchaId, captchaCode),
+      login: (username, password, captchaId, captchaCode, remember) =>
+        logic.login(username, password, captchaId, captchaCode, remember),
 
       loginByCode: (username, code, category, captchaId, captchaCode) =>
         logic.loginByCode(username, code, category, captchaId, captchaCode),
@@ -87,7 +88,7 @@ export interface ZustandForgotPasswordState extends ForgotPasswordState {
  *
  * @example
  * ```ts
- * import { createZustandForgotPasswordStore } from '@cube/auth-logic/zustand';
+ * import { createZustandForgotPasswordStore } from '@newlifex/auth-logic/zustand';
  * export const useForgotPasswordStore = createZustandForgotPasswordStore(api);
  * ```
  */

@@ -381,7 +381,7 @@ public sealed class AceUiTests : IAsyncLifetime
         Assert.True(pad != "0px", $"[{testId}] 菜单页操作按钮无内边距（未按钮化）");
     }
 
-    [Fact(DisplayName = "TC-ACE-041 数据列表表格细分割线（无双重边框）")]
+    [Fact(DisplayName = "TC-ACE-041 数据列表表格细分割线（标准档：单线行分隔，无竖线）")]
     [Trait("Category", "AceUi")]
     [Trait("Priority", "P1")]
     public async Task TC_ACE_041_TableThinDividers()
@@ -390,19 +390,49 @@ public sealed class AceUiTests : IAsyncLifetime
         await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User");
         await PageHelpers.AssertNoServerErrorAsync(_page, testId);
 
-        // tbody 单元格上/左边框应为 none（消除 separate 模式双重分割线），右/下保留 1px 单线
-        var borderTop = await _page.EvaluateAsync<String>(
-            "(() => { const el = document.querySelector('.table-data-list tbody tr td'); return el ? getComputedStyle(el).borderTopWidth : ''; })()");
-        Assert.Equal("0px", borderTop);
-        var borderLeft = await _page.EvaluateAsync<String>(
-            "(() => { const el = document.querySelector('.table-data-list tbody tr td'); return el ? getComputedStyle(el).borderLeftWidth : ''; })()");
-        Assert.Equal("0px", borderLeft);
-        var borderRight = await _page.EvaluateAsync<String>(
-            "(() => { const el = document.querySelector('.table-data-list tbody tr td'); return el ? getComputedStyle(el).borderRightWidth : ''; })()");
-        Assert.Equal("1px", borderRight);
-        var borderBottom = await _page.EvaluateAsync<String>(
-            "(() => { const el = document.querySelector('.table-data-list tbody tr td'); return el ? getComputedStyle(el).borderBottomWidth : ''; })()");
-        Assert.Equal("1px", borderBottom);
+        // 默认配置（TableStyle=Standard、TableDensity=Compact）：body 注入对应 class
+        var bodyClass = await _page.EvaluateAsync<String>("document.body.className");
+        Assert.Contains("cube-table-standard", bodyClass);
+        Assert.Contains("cube-density-compact", bodyClass);
+
+        // tbody 单元格：上/左/右边框均为 none（标准档无竖线，消除 separate 模式双重分割线）；
+        // 行线为底部 1px 单线（颜色 #e5e9ee），末行无下边线（外框即下边界）。
+        // 注意：测试库数据行数可能仅一行（新库仅 admin），行线断言按行数自适应
+        var cellStyle = await _page.EvaluateAsync<String>(
+            """
+            () => {
+                const rows = document.querySelectorAll('.table-data-list tbody tr');
+                if (!rows.length) return '';
+                const cs = getComputedStyle;
+                const first = rows[0].querySelector('td');
+                const last = rows[rows.length - 1].querySelector('td');
+                const tbl = document.querySelector('.table-data-list');
+                const th = document.querySelector('.table-data-list thead th');
+                return JSON.stringify({
+                    rowCount: rows.length,
+                    top: cs(first).borderTopWidth,
+                    left: cs(first).borderLeftWidth,
+                    right: cs(first).borderRightWidth,
+                    firstBottom: cs(first).borderBottomWidth,
+                    lastBottom: cs(last).borderBottomWidth,
+                    lineVar: cs(tbl).getPropertyValue('--tbl-line').trim(),
+                    headBottom: cs(th).borderBottomWidth,
+                    headColor: cs(th).borderBottomColor,
+                });
+            }
+            """);
+        var json = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(cellStyle);
+        Assert.Equal("0px", json.GetProperty("top").GetString());
+        Assert.Equal("0px", json.GetProperty("left").GetString());
+        Assert.Equal("0px", json.GetProperty("right").GetString());
+        Assert.Equal("0px", json.GetProperty("lastBottom").GetString());
+        if (json.GetProperty("rowCount").GetInt32() > 1)
+            Assert.Equal("1px", json.GetProperty("firstBottom").GetString());
+        Assert.Equal("#e5e9ee", json.GetProperty("lineVar").GetString());
+
+        // 表头底线 1px、用略深的 --tbl-head-line（#e0e5ea = rgb(224,229,234)），与行线区分
+        Assert.Equal("1px", json.GetProperty("headBottom").GetString());
+        Assert.Equal("rgb(224, 229, 234)", json.GetProperty("headColor").GetString());
     }
 
     [Fact(DisplayName = "TC-ACE-042 工具栏按钮统一高度（添加/批量/查询/高级同高）")]
@@ -523,6 +553,185 @@ public sealed class AceUiTests : IAsyncLifetime
         // 搜索区右对齐：右边缘贴近工具栏容器右边缘（gap 很小，说明被推到了右侧而非左对齐）
         var rightGap = json.GetProperty("rightGap").GetInt32();
         Assert.True(rightGap >= 0 && rightGap <= 40, $"[{testId}] 搜索区未右对齐（右缘与容器右缘差 {rightGap}px）: {info}");
+    }
+
+    [Fact(DisplayName = "TC-ACE-046 表格分隔样式三档 CSS 生效（轻量/标准/网格）")]
+    [Trait("Category", "AceUi")]
+    [Trait("Priority", "P1")]
+    public async Task TC_ACE_046_TableStyleVariants()
+    {
+        const String testId = "TC-ACE-046";
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 服务端默认注入 cube-table-standard（由 TC-ACE-041 断言）；此处切换 body class
+        // 验证三档 CSS 变量体系生效：行线色（读 CSS 变量，不依赖数据行数）、竖线开关、斑马纹开关
+        var result = await _page.EvaluateAsync<String>(
+            """
+            () => {
+                const body = document.body;
+                const snap = () => {
+                    const cs = getComputedStyle;
+                    const tbl = document.querySelector('.table-data-list');
+                    const td = document.querySelector('.table-data-list tbody tr td');
+                    const oddTd = document.querySelector('.table-data-list tbody tr:nth-child(odd) td');
+                    return {
+                        line: cs(tbl).getPropertyValue('--tbl-line').trim(),
+                        vline: cs(td).borderRightWidth,
+                        stripe: cs(oddTd).backgroundColor,
+                    };
+                };
+                const setStyle = (cls) => {
+                    ['cube-table-light', 'cube-table-standard', 'cube-table-grid'].forEach(c => body.classList.remove(c));
+                    body.classList.add(cls);
+                };
+                const out = {};
+                setStyle('cube-table-light'); out.light = snap();
+                setStyle('cube-table-standard'); out.standard = snap();
+                setStyle('cube-table-grid'); out.grid = snap();
+                setStyle('cube-table-standard');
+                return JSON.stringify(out);
+            }
+            """);
+
+        using var doc = System.Text.Json.JsonDocument.Parse(result);
+        var root = doc.RootElement;
+        var light = root.GetProperty("light");
+        var standard = root.GetProperty("standard");
+        var grid = root.GetProperty("grid");
+
+        // 轻量：极浅行线 #eef1f4，无竖线，保留微斑马纹 #fbfcfd
+        Assert.Equal("#eef1f4", light.GetProperty("line").GetString());
+        Assert.Equal("0px", light.GetProperty("vline").GetString());
+        Assert.Equal("rgb(251, 252, 253)", light.GetProperty("stripe").GetString());
+
+        // 标准（默认）：清晰行线 #e5e9ee，无竖线
+        Assert.Equal("#e5e9ee", standard.GetProperty("line").GetString());
+        Assert.Equal("0px", standard.GetProperty("vline").GetString());
+
+        // 网格：行线 #e2e7ec + 竖线 1px，关闭斑马纹
+        Assert.Equal("#e2e7ec", grid.GetProperty("line").GetString());
+        Assert.Equal("1px", grid.GetProperty("vline").GetString());
+        Assert.Equal("rgba(0, 0, 0, 0)", grid.GetProperty("stripe").GetString());
+    }
+
+    [Fact(DisplayName = "TC-ACE-047 魔方设置页存在表格样式与行高密度配置项")]
+    [Trait("Category", "AceUi")]
+    [Trait("Priority", "P2")]
+    public async Task TC_ACE_047_SettingFieldsExist()
+    {
+        const String testId = "TC-ACE-047";
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/Cube");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 配置项下拉存在（BootstrapSelect 开启时 select 被转为按钮式下拉，但 select 元素仍在 DOM）
+        var styleCount = await _page.Locator("select[name=TableStyle]").CountAsync();
+        Assert.True(styleCount > 0, $"[{testId}] 表格分隔样式配置项 select[name=TableStyle] 不存在");
+
+        var densityCount = await _page.Locator("select[name=TableDensity]").CountAsync();
+        Assert.True(densityCount > 0, $"[{testId}] 表格行高密度配置项 select[name=TableDensity] 不存在");
+
+        // 选项值：Light/Standard/Grid
+        var opts = await _page.EvaluateAsync<String>(
+            "() => { const s = document.querySelector('select[name=TableStyle]'); return s ? Array.from(s.options).map(o => o.value).join(',') : ''; }");
+        Assert.Contains("Light", opts);
+        Assert.Contains("Standard", opts);
+        Assert.Contains("Grid", opts);
+    }
+
+    [Fact(DisplayName = "TC-ACE-048 表单页控件规范（聚焦态/控件高度/输入组拼接）")]
+    [Trait("Category", "AceUi")]
+    [Trait("Priority", "P1")]
+    public async Task TC_ACE_048_FormControlVisual()
+    {
+        const String testId = "TC-ACE-048";
+
+        // 从列表页解析编辑链接，取不到则回退到首个用户
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User");
+        var href = await _page.EvaluateAsync<String>(
+            "() => { const a = document.querySelector('table tbody a[href*=\"/Edit\"]'); return a ? a.getAttribute('href') : '/Admin/User/Edit/1'; }");
+        await PageHelpers.GotoAndWaitAsync(_page, String.IsNullOrEmpty(href) ? "/Admin/User/Edit/1" : href);
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 1) 控件高度与边框色对齐设计稿（30px / #d5dbe3）
+        //    ace.min.css 用 input[type=text]（0,1,1）压过 .form-control（0,1,0），此处验证覆盖是否生效
+        var input = _page.Locator(".form-horizontal input.form-control[type=text]").First;
+        Assert.True(await input.CountAsync() > 0, $"[{testId}] 表单页未找到文本输入框");
+
+        var rest = await input.EvaluateAsync<String>(
+            "el => { const s = getComputedStyle(el); return JSON.stringify({ h: s.height, border: s.borderTopColor }); }");
+        using (var doc = System.Text.Json.JsonDocument.Parse(rest))
+        {
+            var root = doc.RootElement;
+            Assert.Equal("30px", root.GetProperty("h").GetString());
+            Assert.Equal("rgb(213, 219, 227)", root.GetProperty("border").GetString());
+        }
+
+        // 2) 聚焦态：主色边框 + 2px 柔光圈（ACE 原生为橙色 #f59942 边框且无光圈，需被覆盖）
+        await input.FocusAsync();
+        await _page.WaitForTimeoutAsync(250);
+        var focused = await input.EvaluateAsync<String>(
+            "el => { const s = getComputedStyle(el); return JSON.stringify({ border: s.borderTopColor, shadow: s.boxShadow, active: document.activeElement === el }); }");
+        using (var doc = System.Text.Json.JsonDocument.Parse(focused))
+        {
+            var root = doc.RootElement;
+            Assert.True(root.GetProperty("active").GetBoolean(), $"[{testId}] 输入框未获得焦点: {focused}");
+            Assert.Equal("rgb(43, 125, 188)", root.GetProperty("border").GetString());
+            var shadow = root.GetProperty("shadow").GetString() ?? "";
+            Assert.Contains("rgba(43, 125, 188, 0.15)", shadow);
+            Assert.Contains("2px", shadow);
+        }
+
+        // 3) 日期控件输入组拼接：addon 左圆角 + 右侧无边框，输入框左侧直角（消除"左直角+右圆角"错位）
+        var dt = await _page.EvaluateAsync<String>(
+            "() => { const i = document.querySelector('.form-horizontal input.form_datetime'); if (!i) return ''; const a = i.parentElement.querySelector('.input-group-addon'); const cs = getComputedStyle; return JSON.stringify({ name: i.name, addonRadius: a ? cs(a).borderRadius : '', addonBorderRight: a ? cs(a).borderRightWidth : '', inputRadius: cs(i).borderRadius, gap: a ? i.getBoundingClientRect().left - a.getBoundingClientRect().right : -99 }); }");
+        Assert.False(String.IsNullOrEmpty(dt), $"[{testId}] 表单页未找到日期时间控件");
+        using (var doc = System.Text.Json.JsonDocument.Parse(dt!))
+        {
+            var root = doc.RootElement;
+            Assert.Equal("6px 0px 0px 6px", root.GetProperty("addonRadius").GetString());
+            Assert.Equal("0px", root.GetProperty("addonBorderRight").GetString());
+            Assert.Equal("0px 6px 6px 0px", root.GetProperty("inputRadius").GetString());
+            Assert.True(Math.Abs(root.GetProperty("gap").GetDouble()) < 1, $"[{testId}] addon 与输入框未无缝拼接: {dt}");
+        }
+
+        // 4) 带图标 addon 的普通输入组（邮件字段）同样规则
+        var mail = await _page.EvaluateAsync<String>(
+            "() => { const i = document.querySelector('.form-horizontal input[name=Mail], .form-horizontal input[name=mail]'); if (!i) return ''; const a = i.parentElement.querySelector('.input-group-addon'); const cs = getComputedStyle; return JSON.stringify({ addonRadius: a ? cs(a).borderRadius : '', inputRadius: cs(i).borderRadius }); }");
+        Assert.False(String.IsNullOrEmpty(mail), $"[{testId}] 表单页未找到邮件字段输入组");
+        using (var doc = System.Text.Json.JsonDocument.Parse(mail!))
+        {
+            var root = doc.RootElement;
+            Assert.Equal("6px 0px 0px 6px", root.GetProperty("addonRadius").GetString());
+            Assert.Equal("0px 6px 6px 0px", root.GetProperty("inputRadius").GetString());
+        }
+    }
+
+    [Fact(DisplayName = "TC-ACE-049 列表页搜索框与查询按钮分离（间距 + 完整圆角）")]
+    [Trait("Category", "AceUi")]
+    [Trait("Priority", "P1")]
+    public async Task TC_ACE_049_SearchBoxSeparated()
+    {
+        const String testId = "TC-ACE-049";
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User");
+        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await _page.WaitForTimeoutAsync(300);
+
+        var info = await _page.EvaluateAsync<String>(
+            "() => { const q = document.querySelector('.tableTools-container input[name=q]'); if (!q) return ''; const btn = q.parentElement.querySelector('.input-group-btn .btn'); const cs = getComputedStyle; return JSON.stringify({ gap: btn ? btn.getBoundingClientRect().left - q.getBoundingClientRect().right : -99, inputRadius: cs(q).borderRadius, btnRadius: btn ? cs(btn).borderRadius : '', btnText: btn ? btn.innerText.trim() : '' }); }");
+        Assert.False(String.IsNullOrEmpty(info), $"[{testId}] 列表页未找到关键字搜索框");
+
+        using var doc = System.Text.Json.JsonDocument.Parse(info!);
+        var root = doc.RootElement;
+
+        // 输入框与按钮为两个独立控件（设计稿间距 12px，实际由按钮单元左内边距形成）
+        var gap = root.GetProperty("gap").GetDouble();
+        Assert.True(gap >= 8, $"[{testId}] 关键字输入框与查询按钮间距过小（{gap}px），未按设计稿拆分: {info}");
+
+        // 两者各自完整圆角（不再拼接为一体）
+        Assert.Equal("6px", root.GetProperty("inputRadius").GetString());
+        Assert.Equal("6px", root.GetProperty("btnRadius").GetString());
+        Assert.Contains("查询", root.GetProperty("btnText").GetString() ?? "");
     }
 
     #endregion

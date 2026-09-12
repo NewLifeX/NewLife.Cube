@@ -51,7 +51,7 @@ public class OAuthClientSexTests
     [InlineData("")]
     [InlineData("abc")]
     [InlineData("-1")]
-    public void ParseSex_Invalid(String value)
+    public void ParseSex_Invalid(String? value)
     {
         var client = new SexTestClient();
         Assert.Equal(SexKinds.未知, client.CallParseSex(value));

@@ -1,5 +1,5 @@
 {
-  "name": "@cube/arco-vue",
+  "name": "@newlifex/cube-arco-vue",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -14,11 +14,11 @@
   },
   "dependencies": {
     "@arco-design/web-vue": "^2.56.0",
-    "@cube/api-core": "workspace:*",
-    "@cube/auth-logic": "workspace:*",
-    "@cube/field-mapping": "workspace:*",
-    "@cube/page-logic": "workspace:*",
-    "@cube/page-utils": "workspace:*",
+    "@newlifex/api-core": "workspace:*",
+    "@newlifex/auth-logic": "workspace:*",
+    "@newlifex/field-mapping": "workspace:*",
+    "@newlifex/page-logic": "workspace:*",
+    "@newlifex/page-utils": "workspace:*",
     "@flowgram.ai/fixed-layout-editor": "^1.0.15",
     "@flowgram.ai/fixed-semi-materials": "1.0.15",
     "@icon-park/vue-next": "^1.4.2",

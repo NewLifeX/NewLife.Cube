@@ -1,5 +1,5 @@
 /**
- * @cube/page-utils — 魔方前端页面工具函数集
+ * @newlifex/page-utils — 魔方前端页面工具函数集
  *
  * 零框架依赖，提供 URL 变量替换、权限检查、菜单查找、导出格式常量等通用工具。
  * 所有皮肤包共享此模块，避免重复实现。
@@ -46,13 +46,23 @@ export const EXPORT_FORMATS: ExportFormat[] = [
   { key: 'Csv', label: '导出 CSV' },
   { key: 'Json', label: '导出 JSON' },
   { key: 'Xml', label: '导出 XML' },
-  { key: 'ExcelTemplate', label: '导出模板' },
+  { key: 'Zip', label: '导出 Zip' },
 ];
 
 // ======================== 工具函数 ========================
 
+/** 大小写不敏感取值：行 JSON 键与模板占位符大小写可能不一致（后端 camelCase vs 元数据 PascalCase） */
+function getValueCaseInsensitive(row: Record<string, unknown>, key: string): unknown {
+  if (key in row) return row[key];
+  const lowerKey = key.toLowerCase();
+  for (const k in row) {
+    if (k.toLowerCase() === lowerKey) return row[k];
+  }
+  return undefined;
+}
+
 /**
- * URL 变量替换：将 `/path/{Id}` 替换为 `/path/123`
+ * URL 变量替换：将 `/path/{Id}` 替换为 `/path/123`，字段名大小写不敏感匹配
  *
  * 占位符键与行数据键做大小写容错（`{ID}` ↔ `id` / `Id`），对齐后端 ListField.GetUrl
  * 与 SPA camelCase JSON（System.Text.Json）常见输出。
@@ -62,7 +72,7 @@ export const EXPORT_FORMATS: ExportFormat[] = [
  * @returns 替换后的 URL
  *
  * @example
- * resolveUrl('/Admin/User/Detail?id={Id}', { Id: 42 })
+ * resolveUrl('/Admin/User/Detail?id={Id}', { id: 42 })
  * // => '/Admin/User/Detail?id=42'
  * resolveUrl('/Cube/Area?parentId={ID}', { id: 110000 })
  * // => '/Cube/Area?parentId=110000'

@@ -23,6 +23,43 @@ public class LogController : ReadOnlyEntityController<XLog>
         // 日志列表需要显示详细信息，不需要显示用户编号
         ListFields.AddDataField("Remark", null, "Action");
         ListFields.RemoveField("CreateUserID");
+        ListFields.RemoveField("Id");
+        //FormFields.RemoveField("Remark");
+
+        // 精简列表：去掉扩展字段、性能追踪与冗余的用户相关字段，只保留审计核心信息
+        ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6", "CreateUserID", "CreateUser", "CreateUserName", "Success");
+
+        // 性能追踪：TraceId → 星尘 TraceUrl 超链接（对齐 MVC StarHelper.TraceUrl）。TraceId 为空时整行隐藏该单元格
+        {
+            var df = ListFields.GetField("TraceId") as ListField;
+            if (df != null)
+            {
+                df.DisplayName = "追踪";
+                df.Text = "追踪";
+                df.Title = "链路追踪，用于APM性能追踪定位，还原该事件的调用链";
+                df.Target = "_blank";
+                df.DataVisible = e => !(e as XLog).TraceId.IsNullOrEmpty();
+
+                // TraceUrl 模板：星尘Web地址 + trace?id={TraceId}，支持配置直接含 {traceId} 占位符
+                var web = CubeSetting.Current.StarWeb;
+                if (!web.IsNullOrEmpty())
+                    df.Url = web.Contains("{traceId}") ? web.Replace("{traceId}", "{TraceId}") : web.TrimEnd('/') + "/trace?id={TraceId}";
+            }
+        }
+
+        // 搜索字段显式配置，受后台控制（默认只显示有索引的列）
+        SearchFields.RemoveField("LinkID");
+        SearchFields.AddField("CreateTime");
+        // 用户编号用虚拟文本字段（标量参数 userid），真实 CreateUserID 字段会渲染成范围输入，不适合单值查询
+        SearchFields.AddDataField("UserID", null, "Success").DisplayName = "用户编号";
+        SearchFields.AddDataField("Q", "Category", null).DisplayName = "关键字";
+
+        //{
+        //    var df = ListFields.GetField("TraceId") as ListField;
+        //    df.DisplayName = "跟踪";
+        //    df.Url = StarHelper.BuildUrl("{TraceId}");
+        //    df.DataVisible = (e, f) => !(e as XLog).TraceId.IsNullOrEmpty();
+        //}
         {
             // 今天的时间不显示日期
             var df = ListFields.GetField("CreateTime") as ListField;
@@ -37,12 +74,17 @@ public class LogController : ReadOnlyEntityController<XLog>
     {
         var category = p["category"];
         // 前端历史 Tab 传 action；旧版/附近日志用 act
+        // React 搜索区按字段名提交 action，MVC 老界面提交 act，两者都兼容
         var action = p["action"] ?? p["act"];
         var success = p["success"]?.ToBoolean();
         var linkid = p["linkid"].ToInt(-1);
         var userid = p["userid"].ToInt(-1);
+        if (userid < 0) userid = p["createuserid"].ToInt(-1);
+        // 时间范围：React 按字段名提交 CreateTime[0]/[1]，MVC 老界面提交 dtStart/dtEnd，两者都兼容
         var start = p["dtStart"].ToDateTime();
         var end = p["dtEnd"].ToDateTime();
+        if (start.Year < 2000) start = p["CreateTime[0]"].ToDateTime();
+        if (end.Year < 2000) end = p["CreateTime[1]"].ToDateTime();
         var key = p["Q"];
 
         // 默认排序

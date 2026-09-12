@@ -1,20 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.Serialization;
-using System.Web.Script.Serialization;
-using System.Xml.Serialization;
-
 namespace NewLife.Cube.Entity;
 
-/// <summary>值集枚举值。枚举型值集的可选值列表</summary>
-public partial class LovEnumItemModel
+/// <summary>值集枚举值。枚举型值集的可选值列表，无真实表，数据以 JSON 存 Parameter（LovStore）</summary>
+public class LovEnumItemModel
 {
-    #region 属性
     /// <summary>编号</summary>
     public Int32 Id { get; set; }
 
-    /// <summary>值集定义。关联LovDefinition</summary>
+    /// <summary>值集定义（按 LovCode 关联，不再落真实表）</summary>
     public Int32 LovDefId { get; set; }
 
     /// <summary>枚举值。实际存储的值</summary>
@@ -52,27 +44,4 @@ public partial class LovEnumItemModel
 
     /// <summary>备注</summary>
     public String Remark { get; set; }
-    #endregion
-
-    #region 拷贝
-    /// <summary>拷贝模型对象</summary>
-    /// <param name="model">模型</param>
-    public void Copy(LovEnumItemModel model)
-    {
-        Id = model.Id;
-        LovDefId = model.LovDefId;
-        Value = model.Value;
-        Label = model.Label;
-        Sort = model.Sort;
-        Enabled = model.Enabled;
-        Extra = model.Extra;
-        CreateUserID = model.CreateUserID;
-        CreateIP = model.CreateIP;
-        CreateTime = model.CreateTime;
-        UpdateUserID = model.UpdateUserID;
-        UpdateIP = model.UpdateIP;
-        UpdateTime = model.UpdateTime;
-        Remark = model.Remark;
-    }
-    #endregion
 }

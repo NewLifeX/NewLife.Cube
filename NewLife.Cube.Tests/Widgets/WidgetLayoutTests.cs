@@ -67,7 +67,8 @@ public class WidgetLayoutFixture : IDisposable
 /// <summary>纯排序逻辑测试。验证组顺序聚合与用户布局覆盖，不依赖数据库</summary>
 public class WidgetOrderTests
 {
-    private static WidgetAttribute W(String name, String category, Int32 sort) => new(name, name) { Category = category, Sort = sort };
+    private static WidgetAttribute W(String name, String category, Int32 sort, WidgetTypes type = WidgetTypes.Content, Type impl = null) =>
+        new(name, name) { Category = category, Sort = sort, WidgetType = type, Type = impl };
 
     private static readonly IList<String> DefaultGroups = new List<String> { "系统", "个人", "通用" };
 
@@ -106,7 +107,7 @@ public class WidgetOrderTests
         Assert.Equal(new[] { "A", "B" }, rs.Select(e => e.Name).ToArray());
     }
 
-    [Fact(DisplayName = "OrderWidgets_有布局_已知按布局排序未覆盖追加末尾")]
+    [Fact(DisplayName = "OrderWidgets_有布局_已知按布局序且未覆盖按默认位插入")]
     public void OrderWidgets_WithLayout_KnownFirstThenUnknown()
     {
         var widgets = new List<WidgetAttribute>
@@ -120,7 +121,7 @@ public class WidgetOrderTests
             W("G", "订单", 3),
         };
 
-        // 用户拖拽后：B 排第一、C 第二、F 第三；其余（A/D/E/G）未覆盖追加末尾按默认排
+        // 用户拖拽后：B 第一、C 第二、F 第三；未覆盖的 A/D/E/G 按默认位插入（A 默认序在 B 后 C 前 → 插到 C 前），不一律追加末尾
         var layout = new Dictionary<String, WidgetLayout>
         {
             ["B"] = new() { Sort = 0 },
@@ -130,7 +131,7 @@ public class WidgetOrderTests
 
         var rs = WidgetManager.OrderWidgets(widgets, layout, DefaultGroups);
 
-        Assert.Equal(new[] { "B", "C", "F", "A", "D", "E", "G" }, rs.Select(e => e.Name).ToArray());
+        Assert.Equal(new[] { "B", "A", "C", "F", "D", "E", "G" }, rs.Select(e => e.Name).ToArray());
     }
 
     [Fact(DisplayName = "OrderWidgets_有布局_隐藏项不参与排序但保留在布局")]
@@ -197,6 +198,105 @@ public class WidgetOrderTests
         var rs = WidgetManager.OrderWidgets(widgets, null, DefaultGroups, groupItems);
 
         Assert.Equal(new[] { "A", "B", "D", "C" }, rs.Select(e => e.Name).ToArray());
+    }
+
+    [Fact(DisplayName = "OrderWidgets_无布局_KPI卡恒在内容卡前")]
+    public void OrderWidgets_Default_KpiBeforeContent()
+    {
+        // 内容卡属于已配置组“系统”且 Sort 更小，KPI 卡属于“通用”；KPI 簇优先仍应排前
+        var widgets = new List<WidgetAttribute>
+        {
+            W("Content", "系统", 1, WidgetTypes.Content),
+            W("Kpi", "通用", 0, WidgetTypes.Kpi),
+        };
+
+        var rs = WidgetManager.OrderWidgets(widgets, null, DefaultGroups);
+
+        Assert.Equal(new[] { "Kpi", "Content" }, rs.Select(e => e.Name).ToArray());
+    }
+
+    [Fact(DisplayName = "OrderWidgets_无布局_同簇内外部业务组件在魔方内置前")]
+    public void OrderWidgets_Default_ExternalBeforeBuiltin()
+    {
+        // 外部组件（Type 指向其它程序集）与内置组件同簇时业务优先；KPI 簇仍整体在内容区前
+        var widgets = new List<WidgetAttribute>
+        {
+            W("CubeKpi", "系统", 10, WidgetTypes.Kpi),
+            W("BizKpi", "系统", 5, WidgetTypes.Kpi, typeof(WidgetOrderTests)),
+            W("BizContent", "通用", 1, WidgetTypes.Content, typeof(WidgetOrderTests)),
+            W("CubeContent", "通用", 1, WidgetTypes.Content),
+        };
+
+        var rs = WidgetManager.OrderWidgets(widgets, null, DefaultGroups);
+
+        // KPI 簇：BizKpi（外部）→ CubeKpi（内置）；内容区：BizContent（外部）→ CubeContent（内置）
+        Assert.Equal(new[] { "BizKpi", "CubeKpi", "BizContent", "CubeContent" }, rs.Select(e => e.Name).ToArray());
+    }
+
+    [Fact(DisplayName = "OrderWidgets_外部判定_Type为空视为内置")]
+    public void OrderWidgets_External_NullTypeIsBuiltin()
+    {
+        // 手工构造（Type 为空）默认按内置处理，不因来源判定抛异常
+        var widgets = new List<WidgetAttribute>
+        {
+            W("A", "系统", 10, WidgetTypes.Kpi),
+            W("B", "系统", 20, WidgetTypes.Kpi, typeof(WidgetOrderTests)),
+        };
+
+        var rs = WidgetManager.OrderWidgets(widgets, null, DefaultGroups);
+
+        Assert.Equal(new[] { "B", "A" }, rs.Select(e => e.Name).ToArray());
+    }
+
+    [Fact(DisplayName = "OrderWidgets_有布局_业务新KPI插到已知KPI簇之前")]
+    public void OrderWidgets_WithLayout_NewBusinessKpiFloatsUp()
+    {
+        var widgets = new List<WidgetAttribute>
+        {
+            W("C1", "系统", 10, WidgetTypes.Kpi),
+            W("C2", "系统", 20, WidgetTypes.Kpi),
+            W("M", "通用", 1, WidgetTypes.Content),
+            W("Biz", "系统", 30, WidgetTypes.Kpi, typeof(WidgetOrderTests)), // 新增业务 KPI
+        };
+
+        // 用户已拖 C1/C2/M；Biz 未覆盖 → 外部 KPI 默认排最前，应插到 C1 之前
+        var layout = new Dictionary<String, WidgetLayout>
+        {
+            ["C1"] = new() { Sort = 0 },
+            ["C2"] = new() { Sort = 1 },
+            ["M"] = new() { Sort = 2 },
+        };
+
+        var rs = WidgetManager.OrderWidgets(widgets, layout, DefaultGroups);
+
+        Assert.Equal(new[] { "Biz", "C1", "C2", "M" }, rs.Select(e => e.Name).ToArray());
+    }
+
+    [Fact(DisplayName = "OrderWidgets_有布局_魔方新KPI插到自然位且用户拖序不变")]
+    public void OrderWidgets_WithLayout_NewBuiltinKpiNaturalSlot()
+    {
+        var widgets = new List<WidgetAttribute>
+        {
+            W("C1", "系统", 10, WidgetTypes.Kpi),
+            W("C2", "系统", 20, WidgetTypes.Kpi),
+            W("C3", "系统", 30, WidgetTypes.Kpi), // 新增魔方 KPI
+            W("C4", "系统", 50, WidgetTypes.Kpi),
+            W("M", "通用", 1, WidgetTypes.Content),
+        };
+
+        // 用户拖拽过：C1 第一、C4 第二、C2 第三、M 第四（把 C4 提到 C2 前）
+        var layout = new Dictionary<String, WidgetLayout>
+        {
+            ["C1"] = new() { Sort = 0 },
+            ["C4"] = new() { Sort = 1 },
+            ["C2"] = new() { Sort = 2 },
+            ["M"] = new() { Sort = 3 },
+        };
+
+        var rs = WidgetManager.OrderWidgets(widgets, layout, DefaultGroups);
+
+        // C3（Sort=30）默认位在 C1(10) 与 C4(50) 之间 → 插到 C4 前；已拖的 C2 保持在 C4 之后不动
+        Assert.Equal(new[] { "C1", "C3", "C4", "C2", "M" }, rs.Select(e => e.Name).ToArray());
     }
 }
 

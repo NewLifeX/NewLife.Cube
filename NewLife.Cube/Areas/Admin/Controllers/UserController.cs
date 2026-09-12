@@ -20,7 +20,6 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>用户控制器</summary>
 /// <remarks>实例化用户控制器</remarks>
-/// <param name="userService"></param>
 /// <param name="verifyCode">验证码服务</param>
 /// <param name="authEnhanced">增强认证服务</param>
 /// <param name="passwordService"></param>
@@ -30,7 +29,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
 [AdminArea]
 [Menu(100, true, Icon = "User", Mode = MenuModes.Admin | MenuModes.Tenant)]
-public class UserController(UserService userService, VerifyCodeService verifyCode, AuthEnhancedService authEnhanced, PasswordService passwordService, ITenantContext tenantContext) : EntityController<User, UserModel>
+public class UserController(VerifyCodeService verifyCode, AuthEnhancedService authEnhanced, PasswordService passwordService, ITenantContext tenantContext) : EntityController<User, UserModel>
 {
     static UserController()
     {
@@ -41,9 +40,71 @@ public class UserController(UserService userService, VerifyCodeService verifyCod
         ListFields.RemoveField("Remark");
 
         {
-            // 为RoleId搜索字段增加LovCode
+            // 头像列。复刻 MVC 版：AddListField 虚拟字段 + GetValue 按行计算头像地址，纯 C# 控制，前端通用 image 渲染
+            // 始终显示头像列：无本地头像文件时由 /Cube/Avatar 端点兜底生成 SVG 文字头像（端点内部处理 本地文件→远程懒加载→SVG 生成）
+            var df = ListFields.AddListField("AvatarImage", null, "Id");
+            df.DisplayName = "头像";
+            df.ItemType = "image";
+            df.GetValue = entity =>
+            {
+                var user = (entity as User)!;
+                var av = user.Avatar;
+                // 已是完整 URL（http/https 或绝对路径）直接透传，保留远程头像
+                if (!av.IsNullOrEmpty() && av.StartsWithIgnoreCase("http://", "https://", "/")) return av;
+                // 其余情况（空、裸文件名）统一指向头像端点，由端点兜底返回本地文件或生成的 SVG 文字头像
+                return $"/Cube/Avatar?id={user.ID}";
+            };
+        }
+        {
+            // 名称列优先显示昵称，昵称为空时回退用户名。前端通用按 ValueField 渲染
+            var df = ListFields.GetField("Name");
+            df.ValueField = "DisplayName";
+        }
+
+        SearchFields.RemoveField("MailVerified", "MobileVerified");
+
+        {
+            // 角色搜索：下拉多选。角色未以值集声明（无 LovCode），改用角色缓存作为数据源；
+            // ItemType=multipleSelect 触发 DataField 下发 multiple=true，前端 LovSelect 渲染为多选下拉，多选值经逗号串 roleID=1,2 提交
             var df = SearchFields.GetField(_.RoleID);
-            df.LovCode = "Role";
+            df.DataSource = _ => Role.FindAllWithCache()
+                .Where(e => e.Enable)
+                .OrderByDescending(e => e.Sort)
+                .ToDictionary(e => e.ID, e => e.Name);
+            df.ItemType = "multipleSelect";
+        }
+
+        {
+            // 部门搜索：下拉多选。部门缓存作为数据源（对齐 MVC _SelectDepartment 部门选择）
+            var df = SearchFields.GetField(_.DepartmentID);
+            df.DataSource = _ => Department.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+            df.ItemType = "multipleSelect";
+        }
+
+        {
+            // 地区搜索：省市区级联选择器（3级：省/市/区）。AreaId 无数据库索引不在默认搜索字段，显式添加；
+            // ItemType=area3 触发前端级联渲染，提交 areaId 由 Search 自动向下展开（省→市+区，市→区）
+            SearchFields.AddField("AreaId");
+            var df = SearchFields.GetField("AreaId");
+            df.ItemType = "area3";
+        }
+
+        {
+            // 新增表单地区字段：省市区级联选择器（4级：省/市/区/乡镇街道，对齐 MVC _Area4）。
+            // 实体 Map 虚拟字段 AreaName（String/readOnly）只用于展示名，表单应直接绑定 AreaId（Int32）提交编号；
+            // 移除 AreaName，重新添加 AreaId 并配 ItemType=area4 触发前端级联渲染
+            AddFormFields.RemoveField("AreaName");
+            AddFormFields.AddField("AreaId");
+            var df = AddFormFields.GetField("AreaId");
+            df.ItemType = "area4";
+        }
+
+        {
+            // 编辑表单地区字段：省市区级联选择器（4级：省/市/区/乡镇街道，对齐 MVC _Area4）
+            EditFormFields.RemoveField("AreaName");
+            EditFormFields.AddField("AreaId");
+            var df = EditFormFields.GetField("AreaId");
+            df.ItemType = "area4";
         }
 
         {
@@ -118,6 +179,11 @@ public class UserController(UserService userService, VerifyCodeService verifyCod
                 entity.Password = null;
                 list.Add(entity);
             }
+            if (entity != null)
+            {
+                entity.Password = null;
+                list.Add(entity);
+            }
             return list;
         }
 
@@ -125,6 +191,8 @@ public class UserController(UserService userService, VerifyCodeService verifyCod
         // roleIds(复数,多角色) ↔ RoleID(单选)；departmentId ↔ DepartmentID；enable ↔ Enable；q ↔ Q
         var roleIds = p["roleIds"].SplitAsInt();
         if (roleIds.Length == 0 && !p["RoleID"].IsNullOrWhiteSpace()) roleIds = p["RoleID"].SplitAsInt();
+        if (roleIds.Length == 0) roleIds = p["roleID"].SplitAsInt();
+        //var departmentId = p["departmentId"].ToInt(-1);
         var departmentIds = p["departmentId"].SplitAsInt();
         if (departmentIds.Length == 0 && !p["DepartmentID"].IsNullOrWhiteSpace()) departmentIds = p["DepartmentID"].SplitAsInt();
         var areaIds = p["areaId"].SplitAsInt("/");
@@ -228,6 +296,14 @@ public class UserController(UserService userService, VerifyCodeService verifyCod
         tu.Insert();
     }
 
+    /// <summary>当前登录用户是否为系统角色。非系统角色在用户页只读，资料编辑走用户中心</summary>
+    /// <returns></returns>
+    private static Boolean IsSystemRole()
+    {
+        var user = ManageProvider.User;
+        return user != null && user.Roles.Any(e => e.IsSystem);
+    }
+
     /// <summary>验证实体对象</summary>
     /// <param name="entity"></param>
     /// <param name="type"></param>
@@ -239,6 +315,13 @@ public class UserController(UserService userService, VerifyCodeService verifyCod
             // 清空密码，不向浏览器输出
             //entity.Password = null;
             entity["Password"] = null;
+
+        if (post && !IsSystemRole())
+        {
+            // 用户页对非系统角色只读：仅支持查看本人信息，角色/部门/启用等管理字段一律禁止写入
+            //（资料编辑走用户中心 Info，租户成员角色分配走 TenantUserController）
+            throw new Exception("用户页对非系统角色只读，资料编辑请前往用户中心！");
+        }
 
         if (post && type == DataObjectMethodType.Update)
         {
@@ -253,6 +336,19 @@ public class UserController(UserService userService, VerifyCodeService verifyCod
         }
 
         return base.Valid(entity, type, post);
+    }
+
+    /// <summary>导入数据。批量导入绕过 Valid 直接批量写入，同样禁止非系统角色使用</summary>
+    /// <param name="factory">实体工厂</param>
+    /// <param name="list">新数据列表</param>
+    /// <param name="context">导入上下文</param>
+    /// <returns></returns>
+    protected override Int32 OnImport(IEntityFactory factory, IList<IEntity> list, ImportContext context)
+    {
+        // 用户页对非系统角色只读：批量导入属于写入旁路，一并禁止
+        if (!IsSystemRole()) throw new Exception("用户页对非系统角色只读，禁止批量导入！");
+
+        return base.OnImport(factory, list, context);
     }
 
     #region 登录注销
@@ -323,16 +419,6 @@ public class UserController(UserService userService, VerifyCodeService verifyCod
         {
             return res.ToFailApiResponse(ex.Message);
         }
-
-        // 地址跳转，应该直接操作Response，而不是返回一个视图。API暂时不需要跳转，由前端处理
-        var returnUrl = GetRequest("r");
-        if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
-        var viewModel = GetViewModel(returnUrl);
-        //viewModel.LoginTip = loginResult?.Result;
-        //viewModel.OAuthItems = OAuthConfig.GetVisibles(TenantContext.CurrentId);
-        //return Json(0, null, viewModel);
-        return res.ToFailApiResponse("");
-        ////Response.Redirect(returnUrl,true); 
     }
 
     /// <summary>刷新令牌</summary>
@@ -718,6 +804,9 @@ public class UserController(UserService userService, VerifyCodeService verifyCod
     [HttpPost]
     public ActionResult RevokeTokens(Int32 id)
     {
+        // 吊销令牌属于安全运维操作，仅管理员可用（用户页对非系统角色只读，防跨用户令牌吊销）
+        if (!IsSystemRole()) throw new Exception("吊销令牌需要管理员权限，非法操作！");
+
         var user = FindByID(id);
         if (user == null) return Json(1, "用户不存在");
 

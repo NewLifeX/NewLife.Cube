@@ -5,7 +5,7 @@
     var menu = ViewBag.Menu as IMenu;
 
     var url = Context.Request.Headers["Referer"].FirstOrDefault() + "";
-    var us = url.TrimStart("http://", "https://").Split('/', StringSplitOptions.RemoveEmptyEntries);
+    var us = url.TrimPrefix("http://", "https://").Split('/', StringSplitOptions.RemoveEmptyEntries);
 }
 <li>
     <i class="ace-icon fa fa-home home-icon"></i>

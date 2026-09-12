@@ -166,11 +166,11 @@ public ActionResult Index()
 
 ### 功能概述
 
-`DataScopeMiddleware` 负责设置租户上下文和数据权限上下文：
+`DataScopeMiddleware` 负责设置租户上下文，并声明宿主数据权限策略：
 
 - 设置租户上下文（多租户）
-- 设置数据权限上下文
-- 影响 XCode 的数据查询范围
+- 注入系统态数据权限上下文，声明"实体层以系统身份运行"
+- 页面行级数据权限由控制器 `DataPermissionAttribute` 经查询管道显式执行（见 32.5）
 
 ### 中间件实现
 
@@ -203,14 +203,11 @@ public class DataScopeMiddleware
                 }
             }
             
-            // 2. 设置数据权限上下文
+            // 2. 宿主数据权限声明：实体层以系统身份运行
             if (DataScopeContext.Current == null)
             {
-                var user = ManageProvider.User;
-                var url = ctx.Request.Path + "";
-                var menu = ManageProvider.Menu?.FindByUrl(url);
-                
-                DataScopeContext.Current = DataScopeContext.Create(user, menu);
+                // 系统态上下文：业务代码查询实体不被隐式收窄；页面过滤由控制器特性显式执行
+                DataScopeContext.Current = CreateHostScope(ManageProvider.User);
                 dataScopeChanged = true;
             }
             
@@ -229,33 +226,29 @@ public class DataScopeMiddleware
 ### 数据范围上下文
 
 ```csharp
-/// <summary>数据范围上下文</summary>
 public class DataScopeContext
 {
-    /// <summary>当前上下文</summary>
-    public static DataScopeContext Current { get; set; }
-    
-    /// <summary>用户</summary>
-    public IManageUser User { get; set; }
-    
-    /// <summary>菜单</summary>
-    public IMenu Menu { get; set; }
-    
-    /// <summary>数据范围</summary>
-    public DataScope Scope { get; set; }
-    
-    /// <summary>创建数据范围上下文</summary>
-    public static DataScopeContext Create(IManageUser user, IMenu menu)
-    {
-        return new DataScopeContext
-        {
-            User = user,
-            Menu = menu,
-            Scope = GetDataScope(user, menu)
-        };
-    }
+    /// <summary>用户编号</summary>
+    public Int32 UserId { get; set; }
+
+    /// <summary>用户所属部门编号</summary>
+    public Int32 DepartmentId { get; set; }
+
+    /// <summary>数据范围。多角色取最大权限</summary>
+    public DataScopes DataScope { get; set; }
+
+    /// <summary>可访问的部门编号列表。null 表示不限制</summary>
+    public Int32[]? AccessibleDepartmentIds { get; set; }
+
+    /// <summary>是否不受数据权限约束</summary>
+    public Boolean IsSystem => DataScope == DataScopes.全部;
+
+    /// <summary>当前上下文（AsyncLocal，按请求流动）</summary>
+    public static DataScopeContext? Current { get; set; }
 }
 ```
+
+> `DataScopeContext` 由 XCode 提供（`XCode.Membership`）；魔方宿主通过 `DataScopeMiddleware.CreateHostScope` 注入系统态上下文，使数据权限拦截器在宿主内休眠。
 
 ---
 
@@ -583,26 +576,14 @@ public class DataPermissionAttribute : Attribute
 
 ```csharp
 /// <summary>订单管理</summary>
-[DataPermission("管理员,系统", "CreateUserID={$user.Id}")]
+[DataPermission(null, "CreateUserID={#userId}")]
 public class OrderController : EntityController<Order>
 {
-    protected override IEnumerable<Order> Search(Pager p)
-    {
-        var user = ManageProvider.User;
-        
-        // 检查数据权限
-        var att = GetType().GetCustomAttribute<DataPermissionAttribute>();
-        if (att != null && !att.Valid(user.Roles))
-        {
-            // 应用数据权限表达式
-            var exp = ParseExpression(att.Expression);
-            return Order.Search(exp, p);
-        }
-        
-        return base.Search(p);
-    }
+    // 框架在 SearchData/FindData 管道中统一应用表达式过滤，无需在 Search 内手工处理
 }
 ```
+
+> 完整机制（表达式语法、生效范围、宿主系统态声明与架构边界）见 [数据权限](PERM-数据权限.md)。
 
 ---
 
@@ -777,7 +758,7 @@ Authorization Filter → Resource Filter → Action Filter → Action → Action
 本章介绍了魔方的中间件和过滤器机制：
 
 1. **RunTimeMiddleware**：核心中间件，统计运行时间、安全验证
-2. **DataScopeMiddleware**：设置租户和数据权限上下文
+2. **DataScopeMiddleware**：设置租户上下文 + 宿主系统态声明（实体层不参与数据权限）
 3. **ApiFilterAttribute**：API 响应包装和异常处理
 4. **EntityAuthorizeAttribute**：实体授权验证
 5. **DataPermissionAttribute**：数据级别权限过滤

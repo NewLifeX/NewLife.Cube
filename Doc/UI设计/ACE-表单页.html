@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="新生命团队,NewLife,魔方,Cube - ACE 皮肤表单页设计稿（含按钮语义修正）" />
+    <title>表单页设计稿 - ACE 皮肤 - 魔方</title>
+
+    <!-- 独立设计稿：CDN 引入 Bootstrap3 + FontAwesome，双击即可预览
+         本文件为 ACE 皮肤表单页（新增/编辑）UI 草稿，待确认后实施。
+         重点展示：两列表单布局、控件态、以及按钮语义修正
+         （清空密码 success→warning、取消 danger→default）。 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+
+    <style>
+        /* ========== 设计语言：对齐 ace-ui.css 设计令牌 ========== */
+        :root {
+            --p: #2b7dbc;
+            --p-dark: #1f5f8e;
+            --p-light: #e8f1f9;
+            --bg: #f0f2f5;
+            --card: #fff;
+            --border: #e4e6e9;
+            --border-l: #eef1f4;
+            --text: #3a3f44;
+            --text-title: #262a2e;
+            --text-muted: #8a9199;
+            --radius: 6px;
+            --radius-lg: 10px;
+            --shadow: 0 1px 3px rgba(0, 0, 0, .06), 0 1px 2px rgba(0, 0, 0, .04);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+            font-size: 13px;
+            padding-bottom: 60px;
+        }
+        a { color: var(--p); text-decoration: none; }
+        a:hover { color: var(--p-dark); }
+
+        /* ========== 顶部演示条（非产品 UI） ========== */
+        .demo-bar {
+            position: sticky; top: 0; z-index: 999;
+            background: #262a2e; color: #e8eef4; font-size: 13px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 20px;
+        }
+        .demo-bar b { color: #fff; margin-right: 12px; }
+        .demo-bar .hint { color: #98a2ad; font-size: 12px; }
+
+        /* ========== 顶层框架示意 ========== */
+        .demo-navbar {
+            background: #438eb9; color: #fff;
+            height: 46px; line-height: 46px; padding: 0 20px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .demo-navbar .brand { font-size: 15px; font-weight: 600; }
+        .demo-navbar .brand i { margin-right: 8px; }
+        .demo-navbar .user { font-size: 13px; opacity: .95; }
+        .demo-navbar .user i { margin-right: 6px; }
+
+        .page-wrap { max-width: 1200px; margin: 0 auto; padding: 14px 18px 0; }
+
+        .crumbs {
+            height: 46px; line-height: 46px;
+            border-bottom: 1px solid var(--border-l);
+            margin-bottom: 12px;
+            color: var(--text-muted); font-size: 13px;
+        }
+        .crumbs .home { color: var(--p); margin-right: 6px; }
+        .crumbs .sep { color: #c3c9d1; margin: 0 8px; }
+        .crumbs .cur { color: var(--p); font-weight: 600; }
+
+        .content-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            padding: 18px;
+            margin-bottom: 18px;
+        }
+
+        /* ========== 编辑入口 Tab（控制器导航） ========== */
+        .entry-tabs {
+            display: flex; gap: 4px; flex-wrap: wrap;
+            border-bottom: 1px solid var(--border-l);
+            margin-bottom: 14px; padding-bottom: 0;
+        }
+        .entry-tabs a {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 14px; font-size: 13px; color: var(--text-muted);
+            border-bottom: 2px solid transparent; margin-bottom: -1px;
+        }
+        .entry-tabs a.active { color: var(--p); font-weight: 600; border-bottom-color: var(--p); }
+
+        /* ========== 表单分组 Tab ========== */
+        .form-tabs {
+            display: flex; gap: 2px; flex-wrap: wrap;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        .form-tabs a {
+            padding: 8px 18px; font-size: 14px; color: var(--text-muted);
+            border-bottom: 2px solid transparent; margin-bottom: -1px;
+        }
+        .form-tabs a.active { color: var(--p); font-weight: 600; border-bottom-color: var(--p); }
+
+        /* ========== 两列表单 ========== */
+        .form-grid { display: flex; flex-wrap: wrap; }
+        .form-cell {
+            width: 50%; padding: 0 15px 16px 0;
+            display: flex; align-items: flex-start;
+        }
+        @media (max-width: 991px) { .form-cell { width: 100%; } }
+        .form-cell .f-label {
+            flex: 0 0 110px; text-align: right; padding-right: 12px;
+            line-height: 30px; color: var(--text-title); font-weight: 600; font-size: 13px;
+        }
+        .form-cell .f-label .req { color: #d9534f; margin-right: 2px; }
+        .form-cell .f-control { flex: 1; min-width: 0; }
+        .form-cell .f-help { color: var(--text-muted); font-size: 12px; margin-top: 4px; }
+
+        .ipt {
+            width: 100%; height: 30px; padding: 4px 10px;
+            border: 1px solid #d5dbe3; border-radius: var(--radius);
+            font-size: 13px; color: var(--text); outline: none;
+            background: #fff;
+            transition: border-color .15s ease, box-shadow .15s ease;
+        }
+        .ipt:focus { border-color: var(--p); box-shadow: 0 0 0 2px rgba(43, 125, 188, .15); }
+        .ipt.disabled { background: #f5f6f7; color: #a4abb2; cursor: not-allowed; }
+
+        .sel {
+            position: relative; width: 100%;
+        }
+        .sel .ipt { padding-right: 26px; cursor: pointer; }
+        .sel .caret-i {
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+            color: #98a2ad; font-size: 10px; pointer-events: none;
+        }
+
+        .input-group-addon {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 30px; height: 30px;
+            border: 1px solid #d5dbe3; border-right: none;
+            border-radius: var(--radius) 0 0 var(--radius);
+            background: #f5f8fc; color: var(--text-muted); font-size: 12px;
+        }
+        .with-addon { display: flex; }
+        .with-addon .ipt { border-radius: 0 var(--radius) var(--radius) 0; }
+
+        /* 开关（bootstrap-switch 风格示意） */
+        .switch {
+            display: inline-flex; border-radius: 14px; overflow: hidden;
+            border: 1px solid #d5dbe3; font-size: 11px; line-height: 26px;
+            height: 28px; user-select: none;
+        }
+        .switch span { padding: 0 10px; color: #98a2ad; }
+        .switch .on { background: #6fb3e0; color: #fff; font-weight: 600; }
+        .switch.off .off { background: #d5dbe3; color: #fff; font-weight: 600; }
+
+        /* 城市选择（city-picker 风格示意） */
+        .city-picker {
+            width: 100%; height: 30px; line-height: 28px;
+            border: 1px solid #d5dbe3; border-radius: var(--radius);
+            padding: 0 10px; color: var(--text-muted); font-size: 13px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .city-picker .c { color: var(--text); }
+        .city-picker .caret-i { color: #98a2ad; font-size: 10px; }
+
+        /* 头像上传区 */
+        .avatar-upload { display: flex; gap: 14px; align-items: flex-start; }
+        .avatar-preview {
+            width: 72px; height: 72px; border-radius: 50%;
+            background: linear-gradient(135deg, #5aa7d6, var(--p));
+            color: #fff; font-size: 26px;
+            display: flex; align-items: center; justify-content: center;
+            flex: 0 0 72px; box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
+        }
+        .file-row { display: flex; height: 30px; }
+        .file-row .fake-file {
+            flex: 1; min-width: 0; border: 1px solid #d5dbe3; border-right: none;
+            border-radius: var(--radius) 0 0 var(--radius);
+            display: flex; align-items: center; padding: 0 10px;
+            color: var(--text); font-size: 13px;
+            overflow: hidden; white-space: nowrap;
+        }
+        .file-row .fake-btn {
+            flex: 0 0 auto; padding: 0 12px; line-height: 28px;
+            border: 1px solid #d5dbe3; border-radius: 0 var(--radius) var(--radius) 0;
+            background: #f5f6f7; color: var(--text); font-size: 13px;
+        }
+        .url-hint { color: var(--text-muted); font-size: 12px; margin-top: 4px; }
+
+        /* ========== 表单底部按钮区（修正后） ========== */
+        .form-actions {
+            display: flex; align-items: center; gap: 10px;
+            background: #fafbfc;
+            border-top: 1px solid var(--border-l);
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            padding: 14px 18px;
+            margin: 18px -18px -18px;
+        }
+        .form-actions .spacer { flex: 1; }
+        .fbtn {
+            display: inline-flex; align-items: center; gap: 6px;
+            height: 32px; padding: 0 20px;
+            border-radius: var(--radius); border: 1px solid transparent;
+            font-size: 14px; font-weight: 600; cursor: default;
+        }
+        .fbtn i { font-size: 13px; font-weight: 400; }
+        /* 主要操作：绿（保持现状） */
+        .fbtn-primary { background: #87b87f; border-color: #87b87f; color: #fff; }
+        /* 次要操作：中性（修正：原 btn-danger 红色过重） */
+        .fbtn-default { background: #fff; border-color: #d5dbe3; color: var(--text); }
+        /* 警示操作：描边警告（修正：原 btn-success 绿色语义错误）
+           描边而非实底——不与「保存」主操作竞争视觉重量，且与危险区隔 */
+        .fbtn-warning { background: #fff; border-color: #ffb752; color: #d9822b; }
+        .fbtn-warning:hover { background: #fff8ee; }
+
+        /* ========== 设计说明区（非产品 UI） ========== */
+        .spec-section { max-width: 1200px; margin: 0 auto; padding: 0 18px; }
+        .spec-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            padding: 22px 24px; margin-bottom: 18px;
+        }
+        .spec-card h2 {
+            font-size: 17px; font-weight: 700; color: var(--text-title);
+            margin: 0 0 10px; padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-l);
+        }
+        .spec-card h3 { font-size: 14px; font-weight: 600; color: var(--text-title); margin: 18px 0 8px; }
+        .spec-card p { line-height: 1.9; margin: 6px 0; }
+        .spec-card .muted { color: var(--text-muted); font-size: 12px; }
+        ul.spec-list { padding-left: 20px; margin: 6px 0; line-height: 2; }
+        ul.spec-list li b { color: var(--text-title); }
+
+        .btn-compare { display: flex; gap: 28px; flex-wrap: wrap; margin-top: 10px; }
+        .btn-compare .col { flex: 1 1 320px; border: 1px solid var(--border-l); border-radius: var(--radius); padding: 14px 16px; }
+        .btn-compare h4 { margin: 0 0 10px; font-size: 13px; font-weight: 600; }
+        .btn-compare .tag { display: inline-block; padding: 1px 8px; border-radius: 8px; font-size: 11px; margin-left: 6px; }
+        .tag-bad { background: #fdf0ef; color: #d9534f; }
+        .tag-good { background: #eef7ee; color: #5b9a55; }
+        .demo-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+        .demo-row .cap { color: var(--text-muted); font-size: 12px; width: 84px; }
+
+        /* 控件态矩阵 */
+        .state-grid { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 8px; }
+        .state-item { flex: 1 1 200px; }
+        .state-item h5 { font-size: 12px; color: var(--text-muted); font-weight: 400; margin: 0 0 6px; }
+    </style>
+</head>
+<body>
+
+    <!-- ========== 顶部演示条（非产品 UI） ========== -->
+    <div class="demo-bar">
+        <div><b>ACE 表单页设计稿</b><span class="hint">两列表单 · 控件态 · 按钮语义修正（清空密码 → 警示 / 取消 → 中性）</span></div>
+        <div class="hint">页面底部附设计说明与修改前后对比</div>
+    </div>
+
+    <!-- ========== 简化顶栏 ========== -->
+    <div class="demo-navbar">
+        <span class="brand"><i class="fa fa-cube"></i>新生命用户中心</span>
+        <span class="user"><i class="fa fa-user-circle"></i>大石头 <i class="fa fa-caret-down"></i></span>
+    </div>
+
+    <div class="page-wrap">
+        <!-- 面包屑 -->
+        <div class="crumbs">
+            <i class="fa fa-home home"></i>
+            系统管理 <span class="sep">/</span>
+            <a href="#">用户</a> <span class="sep">/</span>
+            <span class="cur">编辑</span>
+        </div>
+
+        <!-- ========== 内容卡 ========== -->
+        <div class="content-card">
+
+            <!-- 编辑入口导航（用户页特有的多入口 Tab） -->
+            <div class="entry-tabs">
+                <a href="#" class="active"><i class="fa fa-pencil"></i>545813550@qq.com</a>
+                <a href="#"><i class="fa fa-link"></i>三方链接</a>
+                <a href="#"><i class="fa fa-key"></i>令牌</a>
+                <a href="#"><i class="fa fa-history"></i>OAuth日志</a>
+                <a href="#"><i class="fa fa-list-alt"></i>日志</a>
+                <a href="#"><i class="fa fa-bell-o"></i>通知记录</a>
+            </div>
+
+            <!-- 表单分组 Tab -->
+            <div class="form-tabs">
+                <a href="#" class="active">默认</a>
+                <a href="#">登录信息</a>
+                <a href="#">扩展</a>
+            </div>
+
+            <!-- 两列表单 -->
+            <div class="form-grid">
+                <div class="form-cell">
+                    <div class="f-label">名称</div>
+                    <div class="f-control">
+                        <input class="ipt" value="545813550@qq.com">
+                        <div class="f-help">登录用户名</div>
+                    </div>
+                </div>
+                <div class="form-cell">
+                    <div class="f-label">密码</div>
+                    <div class="f-control">
+                        <input class="ipt" type="password" value="">
+                        <div class="f-help">留空表示不修改密码</div>
+                    </div>
+                </div>
+                <div class="form-cell">
+                    <div class="f-label">昵称</div>
+                    <div class="f-control"><input class="ipt" placeholder=""></div>
+                </div>
+                <div class="form-cell">
+                    <div class="f-label">性别</div>
+                    <div class="f-control">
+                        <div class="sel">
+                            <input class="ipt" value="未知" readonly>
+                            <i class="fa fa-caret-down caret-i"></i>
+                        </div>
+                        <div class="f-help">未知、男、女</div>
+                    </div>
+                </div>
+                <div class="form-cell">
+                    <div class="f-label">邮件</div>
+                    <div class="f-control">
+                        <div class="with-addon">
+                            <span class="input-group-addon"><i class="fa fa-envelope-o"></i></span>
+                            <input class="ipt" value="545813550@qq.com">
+                        </div>
+                        <div class="f-help">支持登录</div>
+                    </div>
+                </div>
+                <div class="form-cell">
+                    <div class="f-label">邮箱验证</div>
+                    <div class="f-control">
+                        <div class="switch off"><span class="on">ON</span><span class="off">OFF</span></div>
+                        <div class="f-help">邮箱是否已通过验证</div>
+                    </div>
+                </div>
+                <div class="form-cell">
+                    <div class="f-label">手机</div>
+                    <div class="f-control">
+                        <div class="with-addon">
+                            <span class="input-group-addon"><i class="fa fa-mobile" style="font-size:16px;"></i></span>
+                            <input class="ipt" placeholder="">
+                        </div>
+                        <div class="f-help">支持登录</div>
+                    </div>
+                </div>
+                <div class="form-cell">
+                    <div class="f-label">手机验证</div>
+                    <div class="f-control">
+                        <div class="switch off"><span class="on">ON</span><span class="off">OFF</span></div>
+                        <div class="f-help">手机是否已通过验证</div>
+                    </div>
+                </div>
+                <div class="form-cell">
+                    <div class="f-label">代码</div>
+                    <div class="f-control">
+                        <input class="ipt">
+                        <div class="f-help">身份证、员工编码等，支持登录</div>
+                    </div>
+                </div>
+                <div class="form-cell">
+                    <div class="f-label">地区</div>
+                    <div class="f-control">
+                        <div class="city-picker">
+                            <span class="c">广东 / 东莞</span>
+                            <i class="fa fa-caret-down caret-i"></i>
+                        </div>
+                        <div class="f-help">省市区</div>
+                    </div>
+                </div>
+                <div class="form-cell">
+                    <div class="f-label">头像</div>
+                    <div class="f-control">
+                        <div class="avatar-upload">
+                            <div class="avatar-preview">Q</div>
+                            <div style="flex:1; min-width:0;">
+                                <div class="file-row">
+                                    <span class="fake-file">/Sso/Avatar?id=9698</span>
+                                    <span class="fake-btn">选择文件</span>
+                                </div>
+                                <div class="url-hint">支持填写外链地址或上传本地图片</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-cell">
+                    <div class="f-label">年龄</div>
+                    <div class="f-control">
+                        <input class="ipt" value="0">
+                        <div class="f-help">周岁</div>
+                    </div>
+                </div>
+                <div class="form-cell">
+                    <div class="f-label">生日</div>
+                    <div class="f-control">
+                        <div class="with-addon">
+                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            <input class="ipt" placeholder="公历年月日">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部按钮区（本次修正后） -->
+            <div class="form-actions">
+                <span class="fbtn fbtn-warning"><i class="fa fa-eraser"></i>清空密码</span>
+                <span class="spacer"></span>
+                <span class="fbtn fbtn-primary"><i class="fa fa-save"></i>保存</span>
+                <span class="fbtn fbtn-default"><i class="fa fa-times"></i>取消</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 设计说明（非产品 UI） ========== -->
+    <div class="spec-section">
+
+        <div class="spec-card">
+            <h2>一、按钮语义修正（本次设计稿核心变更）</h2>
+            <p>现状问题：<b>「清空密码」使用绿色主操作样式（btn-success）</b>，与「保存」同色同级，语义完全相反——清空密码是高危动作，绿色传递了「安全、推荐」的错误暗示；<b>「取消」使用红色（btn-danger）</b>，视觉过重，红色应保留给真正的破坏性操作（如删除）。</p>
+
+            <div class="btn-compare">
+                <div class="col">
+                    <h4>修改前 <span class="tag tag-bad">语义冲突</span></h4>
+                    <div class="demo-row">
+                        <span class="cap">清空密码</span>
+                        <span class="fbtn" style="background:#87b87f;border-color:#87b87f;color:#fff;height:30px;font-size:13px;padding:0 14px;"><i class="fa fa-eraser"></i>清空密码</span>
+                        <span class="cap" style="width:auto;flex:1;">绿色实底 —— 与「保存」竞争，暗示推荐操作</span>
+                    </div>
+                    <div class="demo-row">
+                        <span class="cap">取消</span>
+                        <span class="fbtn" style="background:#d9534f;border-color:#d9534f;color:#fff;height:30px;font-size:13px;padding:0 14px;"><i class="fa fa-times"></i>取消</span>
+                        <span class="cap" style="width:auto;flex:1;">红色实底 —— 视觉过重，误导为危险操作</span>
+                    </div>
+                </div>
+                <div class="col">
+                    <h4>修改后 <span class="tag tag-good">语义清晰</span></h4>
+                    <div class="demo-row">
+                        <span class="cap">清空密码</span>
+                        <span class="fbtn fbtn-warning" style="height:30px;font-size:13px;padding:0 14px;"><i class="fa fa-eraser"></i>清空密码</span>
+                        <span class="cap" style="width:auto;flex:1;">描边警示 —— 保留提示性但不抢主操作</span>
+                    </div>
+                    <div class="demo-row">
+                        <span class="cap">取消</span>
+                        <span class="fbtn fbtn-default" style="height:30px;font-size:13px;padding:0 14px;"><i class="fa fa-times"></i>取消</span>
+                        <span class="cap" style="width:auto;flex:1;">中性描边 —— 与 ACE 通用表单模板一致</span>
+                    </div>
+                </div>
+            </div>
+            <p class="muted" style="margin-top:12px;">
+                布局上「清空密码」靠左、「保存 / 取消」靠右——三级视觉权重：主操作（实底绿）＞ 警示（描边橙）＞ 次要（描边灰）。
+                修改文件：<code>Areas/Admin/Views/User/_Form_Action.cshtml</code>（用户表单）；
+                ACE 通用模板 <code>Views/ACE/_Form_Action.cshtml</code> 的取消按钮已是中性色。
+            </p>
+        </div>
+
+        <div class="spec-card">
+            <h2>二、表单控件规范</h2>
+            <ul class="spec-list">
+                <li><b>两列栅格</b>：大屏 2 列（<code>col-sm-6</code>），小屏 1 列；标签右对齐、输入控件高度统一 30px。</li>
+                <li><b>聚焦态</b>：主色边框 + 2px 主色柔光圈（<code>box-shadow: 0 0 0 2px rgba(43,125,188,.15)</code>）。</li>
+                <li><b>帮助文本</b>：字段说明统一 12px 灰字，位于控件下方 4px 间距。</li>
+                <li><b>输入组</b>：图标 addon 浅灰蓝底 <code>#f5f8fc</code>，与输入框圆角拼接。</li>
+                <li><b>底部按钮区</b>：浅灰底 <code>#fafbfc</code> + 顶部分隔线，按钮高度 32px、主按钮最小宽度 84px。</li>
+            </ul>
+
+            <h3>控件状态矩阵</h3>
+            <div class="state-grid">
+                <div class="state-item">
+                    <h5>默认</h5>
+                    <input class="ipt" value="默认态">
+                </div>
+                <div class="state-item">
+                    <h5>聚焦</h5>
+                    <input class="ipt" value="聚焦态（主色光圈）" style="border-color:#2b7dbc;box-shadow:0 0 0 2px rgba(43,125,188,.15);">
+                </div>
+                <div class="state-item">
+                    <h5>禁用</h5>
+                    <input class="ipt disabled" value="禁用态" disabled>
+                </div>
+                <div class="state-item">
+                    <h5>校验错误</h5>
+                    <input class="ipt" value="必填校验失败" style="border-color:#d9534f;box-shadow:0 0 0 2px rgba(217,83,79,.12);">
+                    <div class="f-help" style="color:#d9534f;">该字段不能为空</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="spec-card">
+            <h2>三、落地映射</h2>
+            <ul class="spec-list">
+                <li><b>按钮修正</b>：<code>Areas/Admin/Views/User/_Form_Action.cshtml</code>——清空密码 <code>btn-success</code> → 描边警告样式；取消 <code>btn-danger</code> → <code>btn-default</code>。</li>
+                <li><b>其余表单视觉</b>已由 <code>ace-ui.css</code> 覆盖层实现（圆角、聚焦态、按钮区），本稿予以确认，无需额外改动。</li>
+                <li><b>状态</b>：<span class="badge" style="background:#fdf0ef;color:#d9534f;">待确认</span> 确认后与列表页稿一并实施。</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

@@ -449,7 +449,8 @@ public partial class EntityController<TEntity, TModel>
                 }
             }
 
-            total = updates.Count;
+            // 统计待处理行数 = 软删 + 硬删，避免纯硬删场景 total 为 0 造成文案误导
+            total = updates.Count + deletes.Count;
             success += updates.Update();
             success += deletes.Delete();
 

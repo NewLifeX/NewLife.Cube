@@ -1,13 +1,13 @@
 /**
- * @cube/auth-logic — 魔方前端认证业务逻辑（框架无关核心）
+ * @newlifex/auth-logic — 魔方前端认证业务逻辑（框架无关核心）
  *
  * 将登录、登出、用户信息获取、菜单加载、权限查询等业务逻辑
  * 封装为框架无关的纯逻辑类，各框架通过适配器（Pinia/Zustand/Svelte）桥接。
  */
 
-import { type AuthCategory, type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo, type MfaVerifyResult } from '@cube/api-core';
-import { findMenu, getMenuPermission } from '@cube/page-utils';
-import { encryptPassword, getServiceBaseUrl } from '@cube/api-core';
+import { type AuthCategory, type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo, type MfaVerifyResult } from '@newlifex/api-core';
+import { findMenu, getMenuPermission } from '@newlifex/page-utils';
+import { encryptPassword, getServiceBaseUrl } from '@newlifex/api-core';
 
 /** 认证状态快照 */
 export interface AuthState {
@@ -55,9 +55,10 @@ export class AuthLogic {
    *
    * @param captchaId  图片验证码 ID（当 LoginConfig.login.captcha=true 时需传入）
    * @param captchaCode 图片验证码答案
+   * @param remember  记住登录状态（保存密码）。true 时后端把令牌有效期延长到 365 天，重开系统免登录
    * @returns 若服务端要求 MFA，返回值中 data 为 null，需从 message 提取 mfaToken 继续二步验证
    */
-  async login(username: string, password: string, captchaId?: string, captchaCode?: string) {
+  async login(username: string, password: string, captchaId?: string, captchaCode?: string, remember?: boolean) {
     let finalPassword = password;
     let challengeId: string | undefined;
     try {
@@ -76,9 +77,10 @@ export class AuthLogic {
       ...(challengeId ? { challengeId } : {}),
       ...(captchaId ? { captchaId } : {}),
       ...(captchaCode ? { captchaCode } : {}),
+      ...(remember ? { remember } : {}),
     });
     if (res.data?.accessToken) {
-      this.api.tokenManager.setToken(res.data.accessToken);
+      this.api.tokenManager.setToken(res.data.accessToken, res.data.expireIn);
     }
     return res;
   }
@@ -141,7 +143,7 @@ export class AuthLogic {
       ...(captchaCode ? { captchaCode } : {}),
     });
     if (res.data?.accessToken) {
-      this.api.tokenManager.setToken(res.data.accessToken);
+      this.api.tokenManager.setToken(res.data.accessToken, res.data.expireIn);
     }
     return res;
   }
@@ -196,9 +198,9 @@ export class AuthLogic {
 }
 
 // 重新导出类型供适配器使用
-export type { UserInfo, MenuItem, CubeApi, ResetPasswordModel, RegisterModel, OAuthPendingInfo, MfaVerifyResult, VerifyContactModel, VerifyStatus } from '@cube/api-core';
-export { findMenu, getMenuPermission, checkAuth, Auth } from '@cube/page-utils';
-export type { AuthCode } from '@cube/page-utils';
+export type { UserInfo, MenuItem, CubeApi, ResetPasswordModel, RegisterModel, OAuthPendingInfo, MfaVerifyResult, VerifyContactModel, VerifyStatus } from '@newlifex/api-core';
+export { findMenu, getMenuPermission, checkAuth, Auth } from '@newlifex/page-utils';
+export type { AuthCode } from '@newlifex/page-utils';
 
 // ─────────────────────────────────────────────
 // MFA 二步验证业务逻辑
@@ -264,7 +266,7 @@ export class MfaLoginLogic {
       const res = await this.api.user.mfaVerify({ mfaToken: this.mfaToken, code });
       const result = res.data;
       if (result?.accessToken) {
-        this.api.tokenManager.setToken(result.accessToken);
+        this.api.tokenManager.setToken(result.accessToken, result.expireIn);
       }
       this.setState({ verifying: false });
       return result ?? null;
@@ -547,7 +549,7 @@ export class RegisterLogic {
         confirmPassword,
       };
       const res = await this.api.user.register(payload);
-      if (res.data?.accessToken) this.api.tokenManager.setToken(res.data.accessToken);
+      if (res.data?.accessToken) this.api.tokenManager.setToken(res.data.accessToken, res.data.expireIn);
       this.setState({ submitting: false });
       return true;
     } catch (e: unknown) {

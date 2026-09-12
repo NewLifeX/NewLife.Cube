@@ -24,6 +24,11 @@ const mocks = vi.hoisted(() => ({
   request: vi.fn(),
   ElMessage: { success: vi.fn(), error: vi.fn() },
   serializeSubmitModel: (data: Record<string, unknown>) => data,
+  getDetail: vi.fn(),
+}));
+
+vi.mock('@newlifex/cube-vue/core/composables/useCubeApi', () => ({
+  default: { page: { getDetail: mocks.getDetail } },
 }));
 
 vi.mock('@newlifex/cube-vue/core/composables/useModal', () => ({
@@ -40,6 +45,8 @@ vi.mock('element-plus', () => ({
 
 vi.mock('@newlifex/cube-vue/core/utils/fieldControl', () => ({
   serializeSubmitModel: mocks.serializeSubmitModel,
+  // 本 spec 聚焦弹窗请求/事件流，不测必填逻辑，故统一放行必填校验
+  isRequiredField: () => false,
 }));
 
 // ── 测试数据 ────────────────────────────────────────────────────
@@ -83,11 +90,11 @@ describe('openListFormDialog', () => {
     // 触发 onConfirm
     const result = await modalOptions.onConfirm();
 
-    // 验证请求
+    // 验证请求（新增模式 Boolean 字段默认注入 false，未操作开关也以“否”提交）
     expect(requestMock).toHaveBeenCalledWith({
       url: '/api/test',
       method: 'post',
-      data: {},
+      data: { Enable: false },
     });
     expect(mocks.ElMessage.success).toHaveBeenCalledWith('新增成功');
     expect(onSuccess).toHaveBeenCalledOnce();
@@ -101,23 +108,28 @@ describe('openListFormDialog', () => {
   it('编辑模式：onConfirm → PUT 请求 → onSuccess → resolve(true)', async () => {
     const onSuccess = vi.fn();
     requestMock.mockResolvedValue(undefined);
+    // 编辑模式弹窗内部先拉详情回显，这里模拟详情返回完整记录
+    mocks.getDetail.mockResolvedValue({ data: { id: 1, Name: 'old', Enable: true } });
 
     const promise = openListFormDialog({
       title: '编辑测试',
       fields: FIELDS,
-      modelValue: { Name: 'old', Enable: true },
       apiPrefix: '/api/test',
       mode: 'edit',
+      id: 1,
+      idKey: 'id',
       onSuccess,
     });
 
     const modalOptions = openModalMock.mock.calls[0][0];
+    // 等待详情回填完成（loadDetail 在 openModal 后异步执行）
+    await new Promise((r) => setTimeout(r, 0));
     await modalOptions.onConfirm();
 
     expect(requestMock).toHaveBeenCalledWith({
       url: '/api/test',
       method: 'put',
-      data: { Name: 'old', Enable: true },
+      data: { id: 1, Name: 'old', Enable: true },
     });
     expect(mocks.ElMessage.success).toHaveBeenCalledWith('更新成功');
     expect(onSuccess).toHaveBeenCalledOnce();
@@ -219,17 +231,18 @@ describe('openListFormDialog', () => {
       fields: FIELDS,
       modelValue: { Name: 'test' },
       apiPrefix: '/api/foo',
-      mode: 'edit',
+      mode: 'add',
     });
 
     const modalOptions = openModalMock.mock.calls[0][0];
     expect(modalOptions.componentProps).toEqual({
       fields: FIELDS,
-      modelValue: { Name: 'test' },
+      modelValue: { Name: 'test', Enable: false },
       apiPrefix: '/api/foo',
-      mode: 'edit',
+      mode: 'add',
       routePath: undefined,
       columns: 2,
+      loading: false,
     });
   });
 

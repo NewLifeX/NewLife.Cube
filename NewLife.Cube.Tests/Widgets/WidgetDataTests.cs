@@ -46,6 +46,7 @@ public class WidgetDataFixture : IDisposable
         // 本线程（fixture 线程）重映射后播种，确保种子数据落入独立库
         XLog.Meta.ConnName = ConnName;
         UserOnline.Meta.ConnName = ConnName;
+        NewLife.Cube.Entity.UserStat.Meta.ConnName = ConnName;
 
         Seed();
     }
@@ -84,6 +85,9 @@ public class WidgetDataFixture : IDisposable
 
         new UserOnline { Name = "admin", SessionID = "s1", CreateTime = now.AddMinutes(-5) }.Insert();
         new UserOnline { Name = "old", SessionID = "s2", CreateTime = now.AddHours(-2) }.Insert(); // 超出30分钟
+
+        // 今日统计：供 MaxOnline/OnlineTime 部件读取（最大在线 20，累计在线 3660 秒=1小时1分）
+        new NewLife.Cube.Entity.UserStat { Date = DateTime.Today, MaxOnline = 20, OnlineTime = 3660 }.Insert();
     }
 
     private static void InsertLog(DateTime time, String action, Boolean success, String userName = "")
@@ -107,15 +111,18 @@ public class WidgetDataTests : IDisposable
 {
     private readonly String _oldLog;
     private readonly String _oldOnline;
+    private readonly String _oldStat;
 
-    /// <summary>每个测试实例在自己的执行线程上重映射 Log/UserOnline 到独立连接。
+    /// <summary>每个测试实例在自己的执行线程上重映射 Log/UserOnline/UserStat 到独立连接。
     /// Meta.ConnName 是线程级配置，fixture 线程设置不作用于测试线程，故须在测试构造函数中设置</summary>
     public WidgetDataTests()
     {
         _oldLog = XLog.Meta.ConnName;
         _oldOnline = UserOnline.Meta.ConnName;
+        _oldStat = NewLife.Cube.Entity.UserStat.Meta.ConnName;
         XLog.Meta.ConnName = WidgetDataFixture.ConnName;
         UserOnline.Meta.ConnName = WidgetDataFixture.ConnName;
+        NewLife.Cube.Entity.UserStat.Meta.ConnName = WidgetDataFixture.ConnName;
     }
 
     public void Dispose()
@@ -123,6 +130,7 @@ public class WidgetDataTests : IDisposable
         // 恢复实体连接映射，避免影响其它测试集合
         XLog.Meta.ConnName = _oldLog;
         UserOnline.Meta.ConnName = _oldOnline;
+        NewLife.Cube.Entity.UserStat.Meta.ConnName = _oldStat;
     }
 
     [Fact(DisplayName = "LoginLogWidget_返回最近登录与在线明细")]
@@ -140,5 +148,49 @@ public class WidgetDataTests : IDisposable
         // 当前在线：全部在线会话（非雪花表按 Id 降序），播种 2 条
         var onlines = (Object[])d.Onlines;
         Assert.Equal(2, onlines.Length);
+    }
+
+    [Fact(DisplayName = "MaxOnlineWidget_读取今日最大在线")]
+    public void MaxOnlineWidget_ReadsTodayMax()
+    {
+        var widget = new MaxOnlineWidget();
+        dynamic d = widget.GetData();
+
+        // 播种：今日统计 MaxOnline=20
+        Assert.Equal("20", (String)d.Value);
+        Assert.Equal("今日峰值", (String)d.Trend);
+    }
+
+    [Fact(DisplayName = "OnlineTimeWidget_读取今日在线时长并格式化")]
+    public void OnlineTimeWidget_FormatsDuration()
+    {
+        var widget = new OnlineTimeWidget();
+        dynamic d = widget.GetData();
+
+        // 播种：今日统计 OnlineTime=3660 秒 → 1小时1分
+        Assert.Equal("1小时1分", (String)d.Value);
+        Assert.Equal("今日累计", (String)d.Trend);
+    }
+
+    [Fact(DisplayName = "Error24hWidget_统计24小时内异常数")]
+    public void Error24hWidget_Counts24hErrors()
+    {
+        var widget = new Error24hWidget();
+        dynamic d = widget.GetData();
+
+        // 播种：24h 内异常 1 条（Success=false）
+        Assert.Equal("1", (String)d.Value);
+        Assert.Equal("最近24小时异常", (String)d.Trend);
+    }
+
+    [Fact(DisplayName = "OnlineCountWidget_统计当前在线数")]
+    public void OnlineCountWidget_CountsOnline()
+    {
+        var widget = new OnlineCountWidget();
+        dynamic d = widget.GetData();
+
+        // 播种：UserOnline 2 条（全部在线会话）
+        Assert.Equal("2", (String)d.Value);
+        Assert.Equal("当前在线", (String)d.Trend);
     }
 }

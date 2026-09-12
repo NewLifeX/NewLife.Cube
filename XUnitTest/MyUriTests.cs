@@ -15,7 +15,7 @@ public class MyUriTests
     [InlineData("localhost:8080/", null, "localhost", 8080, "/")]
     [InlineData("localhost/", null, "localhost", 0, "/")]
     [InlineData("localhost", null, "localhost", 0, null)]
-    public void Parse(String url, String schema, String host, Int32 port, String path)
+    public void Parse(String url, String? schema, String host, Int32 port, String? path)
     {
         {
             var uri = new MyUri(url);

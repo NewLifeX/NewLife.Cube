@@ -194,7 +194,10 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
-        // ❌ 不需要 '@newlifex/cube-vue' 别名——pnpm workspace 协议自动处理
+        // ⚠️ 必须加 '@newlifex/cube-vue' 别名指向 Cube web 源码目录：
+        // 包内代码用包名自引用（@newlifex/cube-vue/core/...）时，pnpm workspace 链接
+        // 只存在于应用侧 node_modules，包内部解析不到，需别名兜底。
+        // 例：'@newlifex/cube-vue': fileURLToPath(new URL('../Cube/NewLife.Cube/NewLife.Cube.Vue/web', import.meta.url))
       },
     },
     server: {
@@ -309,15 +312,14 @@ export default defineConfig(({ mode }) => {
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "dev:test": "vite --mode test",
-    "build": "vite build",
-    "build:test": "vite build --mode test",
+    "dev": "cross-env NODE_ENV=development vite",
+    "dev:test": "cross-env NODE_ENV=test vite --mode test",
+    "build": "vue-tsc -b && vite build",
+    "build:test": "vue-tsc -b && vite build --mode test",
     "preview": "vite preview",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix"
+    "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "@newlifex/cube-vue": "workspace:@newlifex/cube-vue@*",
     "@newlifex/cube-vue": "workspace:*",
     "element-plus": "^2.9.0",
     "pinia": "^3.0.0",
@@ -415,12 +417,12 @@ request["baseUrl"] = "BUILD_REQUEST_BASE_URL";
 
 | 功能                | 说明                                     | 如何使用                                                      |
 | ------------------- | ---------------------------------------- | ------------------------------------------------------------- |
-| **布局系统**        | MainLayout 主布局，侧边栏+内容区         | 通过 `LayoutKey` 依赖注入自定义                               |
+| **布局系统**        | RootLayout 统一接管菜单/登录/标签页，布局组件仅提供结构外壳 | 通过 `registerLayout(option, setAsCurrent)` 登记（见 cube-layout 技能），**禁止**旧版 `provide(LayoutKey)` |
 | **状态管理**        | UserStore 用户状态，MenuStore 菜单状态   | `useUserStore()`, `useMenuStore()`                            |
-| **路由系统**        | 动态路由，微前端支持                     | 通过后端菜单动态生成                                          |
+| **路由系统**        | 动态路由，由后端菜单自动生成             | 无需手写 vue-router 配置，页面文件按目录约定放置即可          |
 | **API请求**         | 带 Token、401处理、错误提示的 Axios 封装 | `import request from '@newlifex/cube-vue/core/utils/request'` |
 | **国际化**          | Vue I18n，支持动态切换                   | `intl.get('key').d('默认值')`                                 |
-| **页面覆盖**        | Section 机制，可覆盖框架组件             | 在 `views/` 下创建大写开头的 Vue 文件                         |
+| **页面覆盖**        | Section 机制，可覆盖框架组件             | 在**视图目录**下创建 PascalCase（首字母大写）Vue 文件，见下方「页面视图目录约定」 |
 | **BUILD_ 配置注入** | 生产构建时自动注入到 html                | 在 config.production.ts 使用 `${BUILD_XXX}`                   |
 
 ## 验证初始化成功
@@ -434,8 +436,37 @@ request["baseUrl"] = "BUILD_REQUEST_BASE_URL";
    - `pnpm build` 成功
    - 检查 `dist/index.html` 是否包含 BUILD_ 占位符脚本
 
+## 红线 / 禁止自行发挥
+
+> 以下为历史踩坑固化的强制约束，**落实时严格照办，禁止凭记忆或"想当然"自行发挥**：
+
+1. **框架源码路径有层级，定位时别少写一层**：本仓库中框架源码位于 `Cube/NewLife.Cube/NewLife.Cube.Vue/web`（注意是两层：`NewLife.Cube` 目录内还有一层 `NewLife.Cube.Vue`）。不同仓库层级可能不同，关键是**先确认框架源码真实目录再引用**——任何指向框架源码的路径、别名、`@newlifex/cube-vue` 兜底 alias 都要与实际目录对齐，少写一层会导致文件找不到（MISSING）。
+2. **`package.json` 不要重复声明 `@newlifex/cube-vue`**：monorepo 场景只用 `workspace:*` 一条依赖（见步骤 9/10），禁止再写第二处 `link:` 或重复键——重复键会让 pnpm 解析失败或产生不可预期的幽灵依赖。
+3. **dev 脚本统一用 `cross-env`**：`"dev": "cross-env NODE_ENV=development vite"`，不要裸写 `vite` 或直接 `NODE_ENV=development vite`（跨平台兼容）。
+4. **视图目录必须含 `apps/` 层级（独立宿主）**：若 `vite.config.ts` 在项目根目录（非 `apps/<name>/`），页面**必须**放进 `apps/<app-name>/src/views/...`，否则 Vite 插件按 `apps/*/src/views` 扫描，扫不到 `src/views/` 下的页面。详见「页面视图目录约定」。
+5. **不要创建被框架接管的孤儿文件**：`initApp()` 内部已挂载框架 `core/App.vue`，**禁止**在项目里再写一份 `src/App.vue`（那是孤儿文件，不会生效且造成困惑）。`src/main.ts` 只需 `initApp()` + `registerLayout()`，不要手写 `createApp().mount()` 或 `new Router()`。
+6. **Docker 章节按需执行**：仅在需要容器部署时才创建 `docker/`，不部署则跳过，不要无脑生成（用户明确暂不启用 docker）。
+
 ## 多语言配置（可选）
 
 默认中文，如需多语言在 `src/i18n/` 下配置：
 - `src/i18n/index.ts` - I18n 实例
 - `src/i18n/locales/` - 语言文件目录
+
+## 页面视图目录约定（重要）
+
+框架通过 Vite 插件在**构建期**自动扫描视图目录、生成路由与 Section 覆盖。**视图目录位置取决于项目结构**：
+
+| 项目结构 | vite.config.ts 位置 | 页面应放置目录 | 说明 |
+| --- | --- | --- | --- |
+| 子项目模式（monorepo 子应用） | `<root>/apps/<name>/vite.config.ts` | `apps/<name>/src/views/<area>/<controller>/index.vue` | 插件按 `apps/<name>/src/views` 精确扫描 |
+| 单体模式（根目录即应用） | `<root>/vite.config.ts` | **`<root>/apps/<name>/src/views/...`**（必须含 `apps/` 层级） | 插件遍历 `root/apps/*/src/views`，**不会**扫描 `src/views/` |
+| 框架内置应用 | 框架源码内 | `@newlifex/cube-vue/core/apps/*/src/views` | 仅框架自身使用 |
+
+> 独立宿主常见坑：若项目是独立 Vue 应用（vite.config 在根目录、没有 `apps/` 子目录），不要把页面放进 `src/views/` —— 框架扫描不到。必须在根目录新建 `apps/<your-app-name>/src/views/...`，让插件按单体模式扫描到。一个根目录下可以有多个 `apps/*`，每个各自一份 `src/views`。
+
+页面文件命名（用于 Section 覆盖）：
+- 路由页：`views/<area>/<controller>/index.vue`（小写目录 + `index.vue`）
+- Section 覆盖：`views/<area>/<controller>/<PascalCase>.vue`（首字母大写的 Vue 文件名会被识别为 Section 覆盖组件）
+
+详见 `cube-add-page` 技能。

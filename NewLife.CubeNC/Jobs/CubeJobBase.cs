@@ -27,7 +27,7 @@ public abstract class CubeJobBase<TArgument> : CubeJobBase where TArgument : cla
         var arg = new TArgument();
         if (!argument.IsNullOrEmpty())
         {
-            arg = argument.ToJsonEntity(typeof(TArgument)) as TArgument;
+            arg = argument.ToJsonEntity(typeof(TArgument), null) as TArgument;
         }
 
         return await OnExecute(arg);

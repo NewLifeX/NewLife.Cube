@@ -23,6 +23,7 @@ using static XCode.Membership.User;
 using NewLife.Cube.ViewModels;
 using AreaX = XCode.Membership.Area;
 using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
+using IManageUser = NewLife.Model.IManageUser;
 
 namespace NewLife.Cube.Controllers;
 
@@ -106,24 +107,32 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         if (ManageProvider.Provider.TryLogin(HttpContext) != null) return true;
         if (ManageProvider.User != null) return true;
 
+        var logined = false;
         var token = GetToken(HttpContext);
         if (!token.IsNullOrEmpty())
         {
             var ap = tokenService.FindBySecret(token);
-            if (ap != null && ap.Enable) return true;
-
-            var set = CubeSetting.Current;
-            var (app, ex) = tokenService.TryDecodeToken(token, set.JwtSecret);
-            if (app != null && app.Enable && ex != null) return true;
+            if (ap != null && ap.Enable)
+                logined = true;
+            else
+            {
+                var set = CubeSetting.Current;
+                var (app, ex) = tokenService.TryDecodeToken(token, set.JwtSecret);
+                // 验签通过（ex == null）且应用有效才放行；验签失败时 ex 非空绝不能放行，防止伪造 JWT 认证绕过
+                if (app != null && app.Enable && ex == null) logined = true;
+            }
 
             // 回退到 UserToken 验证，并校验 Url 防止水平越权（分享页允许 Widget/ViewProfile 等）
-            var ut = UserToken.FindByToken(token);
-            if (ut != null && ut.Enable && ut.Expire > DateTime.Now
-                && ManagerProviderHelper.IsShareRequestAllowed(HttpContext, ut))
-                return true;
+            if (!logined)
+            {
+                var ut = UserToken.FindByToken(token);
+                if (ut != null && ut.Enable && ut.Expire > DateTime.Now
+                    && ManagerProviderHelper.IsShareRequestAllowed(HttpContext, ut))
+                    logined = true;
+            }
         }
 
-        return false;
+        return logined;
     }
 
     /// <summary>从请求头中获取令牌</summary>
@@ -145,11 +154,11 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     private static readonly String _OS = Environment.OSVersion + "";
 
     /// <summary>服务器信息，用户健康检测</summary>
-    /// <param name="state">状态信息</param>
+    /// <param name="state">状态信息。可选，用于回显校验</param>
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
-    public ActionResult Info(String state)
+    public ActionResult Info(String state = null)
     {
         var asmx = AssemblyX.Entry;
         var conn = HttpContext.Connection;
@@ -406,8 +415,13 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         var av = "";
         if (!user.Avatar.IsNullOrEmpty() && !user.Avatar.StartsWith("/"))
         {
-            av = set.AvatarPath.CombinePath(user.Avatar).GetBasePath();
-            if (!System.IO.File.Exists(av)) av = null;
+            // 防路径穿越：仅接受纯文件名（无路径分隔符），外部回填头像地址可能含 .. 或子路径
+            var name = Path.GetFileName(user.Avatar);
+            if (!name.IsNullOrEmpty() && name == user.Avatar)
+            {
+                av = set.AvatarPath.CombinePath(name).GetBasePath();
+                if (!System.IO.File.Exists(av)) av = null;
+            }
         }
 
         // 用于兼容旧代码：按扩展名优先级查找（.png/.svg/.jpg/.gif/.webp）
@@ -438,9 +452,16 @@ public class CubeController(PageService pageService, TokenService tokenService, 
             }
         }
 
-        // 头像文件不存在时，根据昵称和性别生成 SVG 文字头像
+        // 头像文件不存在时，从用户连接中查找远程头像并触发异步下载到本地（懒加载兜底，对齐 MVC）
         if (av.IsNullOrEmpty() || !System.IO.File.Exists(av))
         {
+            if (user is IManageUser muser)
+            {
+                var bindingService = HttpContext.RequestServices.GetService<Services.Sso.IUserBindingService>();
+                var remote = bindingService?.TryFetchRemoteAvatar(muser);
+                if (!remote.IsNullOrEmpty()) return Redirect(remote);
+            }
+
             var svg = SvgAvatarService.Generate(user, set.AvatarChars);
             return Content(svg, "image/svg+xml");
         }
@@ -512,6 +533,11 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         if (!category.EqualIgnoreCase("LayoutSetting"))
             return Json(203, "非授权操作，不允许保存系统布局以外的信息");
 
+        // 防水平越权：仅允许保存当前登录用户自己的布局；系统管理员可代用户设置
+        var cur = ManageProvider.User;
+        if (cur == null || userid != cur.ID && !cur.Roles.Any(e => e.IsSystem))
+            return Json(403, "仅能保存自己的布局设置");
+
         var para = Parameter.GetOrAdd(userid, category, name);
         para.SetItem("Value", value);
         para.Save();
@@ -553,15 +579,18 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     [HttpPost]
     public ActionResult SetPageConfig(String kind, String page, [FromBody] JsonElement value)
     {
-        var rs = pageService.SetPageConfig(kind, page, value.ToDictionary());
+        // 当前登录用户配置优先；未登录时写全局配置
+        var rs = pageService.SetPageConfig(kind, page, value.ToDictionary(), CurrentUser?.ID ?? 0);
         return Json(0, null, rs);
     }
 
     /// <summary>获取菜单树（按当前登录用户角色过滤，仅返回该用户有权访问的菜单）</summary>
     /// <param name="module">模块名称，如 Admin；为空时返回全部菜单</param>
     /// <returns>菜单树</returns>
+    // 参数必须给默认值 = null：.NET 8+ [ApiController] 会把无默认值的非空引用类型参数（Nullable=annotations 下 String 视为不可空）
+    // 隐式推断为 [Required]，导致前端无参调用 /Cube/MenuTree 报 “The module field is required.”，登录后左侧无菜单。
     [HttpGet]
-    public ActionResult MenuTree(String module) => Json(0, null, BuildMenuTree(module));
+    public ActionResult MenuTree(String module = null) => Json(0, null, BuildMenuTree(module));
 
     private IList<MenuTree> BuildMenuTree(String module)
     {
@@ -589,11 +618,17 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         // allowedIds       —— 当前用户角色可访问的菜单ID集合（来自各角色的 Resources）
         // permissionedIds —— 被纳入权限系统的菜单ID集合（任一角色分配过即视为“已声明所需权限”）
         // 规则：未声明所需权限的菜单默认有权限（对所有登录用户可见）；已声明的仅对拥有该权限的角色可见
+        // 多租户门控：未开启多租户时，隐藏所有租户相关菜单（控制器声明了 MenuModes.Tenant 的）
+        // 说明：Visible=false 的隐藏菜单（如 [Menu(0,false)] 的 UserOnline/UserStat）也保留返回，
+        //       前端用它解析标签页标题等；导航渲染时按 Visible 字段自行过滤
         var user = ManageProvider.Provider.Current as IUser;
+        var set = CubeSetting.Current;
+        var allowTenant = set.EnableTenant;
         var allowedIds = user?.Roles?.SelectMany(r => r.Resources).ToArray() ?? [];
         var permissionedIds = Role.FindAll().SelectMany(r => r.Resources).ToArray();
 
-        Boolean IsAccessible(IMenu m) => m.Visible && (allowedIds.Contains(m.ID) || !permissionedIds.Contains(m.ID));
+        Boolean IsAccessible(IMenu m) => (allowedIds.Contains(m.ID) || !permissionedIds.Contains(m.ID))
+            && (allowTenant || !NewLife.Cube.Membership.MenuHelper.IsTenantMenu(m));
 
         menus = menus.Where(IsAccessible).ToList();
 

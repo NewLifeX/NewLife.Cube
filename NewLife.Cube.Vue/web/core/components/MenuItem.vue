@@ -119,7 +119,7 @@ const handleClick = () => {
 </script>
 
 <template>
-  <div class="menu-item">
+  <div v-if="menu" class="menu-item">
     <!-- 折叠模式：仅显示 2 字缩写 badge -->
     <div
       v-if="sidebarCollapsed"
@@ -179,7 +179,7 @@ const handleClick = () => {
       <div v-if="hasChildrenMenu" class="menu-children" :class="{ expanded: isExpanded }">
         <div class="menu-children-inner">
           <MenuItem
-            v-for="child in menu.children"
+            v-for="child in (menu.children ?? []).filter(Boolean)"
             :key="child.id"
             :menu="child"
             :depth="depth + 1"

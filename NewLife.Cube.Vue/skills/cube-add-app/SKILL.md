@@ -180,6 +180,18 @@ const token = getAccessToken();
 const userStore = useUserStore();
 ```
 
+## 红线 / 禁止自行发挥
+
+> 以下为历史踩坑固化的强制约束，**落实时严格照办，禁止凭记忆或"想当然"自行发挥**：
+
+1. **新增应用放在调用技能的项目根目录 `apps/`**，不要放进 `@newlifex/cube-vue` 框架目录——那是框架源码，会被覆盖/冲突。
+2. **区分「微应用」与「自动加载页面」两条路径，别混淆**：
+   - 本技能（cube-add-app）创建的是**微应用**：需要 `routes.ts` + `main.ts` + 在 `microAppConfig.json` 注册，页面路由手写；
+   - 若只是给已有应用**加一个普通 CRUD/看板页**，应走 `cube-add-page`：页面按目录约定放好即被 `import.meta.glob` 自动加载，**不需要** `routes.ts`、不需要改 `microAppConfig.json`。
+   - 不要把自动加载页面的场景错误地用本技能手写 `routes.ts`，也不要给微应用漏掉 `microAppConfig.json` 注册（漏注册 = 应用不可见）。
+3. **`packageName` 写法严格按文档**：内置应用可省略 `packageName`（框架自动从 `apps/{name}/src/main.ts` 加载）；外部包用 `@newlifex/cube-vue/apps/xxx`。不要臆造路径格式。
+4. **新增应用后必须重启 `pnpm dev`**：虚拟模块在构建期生成，新增应用需重新构建才能被加载。
+
 ## 验证
 
 1. **重新启动应用**：`pnpm dev`，因为新增应用需要重新构建虚拟模块

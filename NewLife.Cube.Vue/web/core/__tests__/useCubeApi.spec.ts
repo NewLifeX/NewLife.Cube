@@ -8,7 +8,7 @@
  *   4. onFieldError 聚合字段错误并经 ElMessage.error 展示；
  *   5. onUnauthorized 在非登录页回退到根路径。
  *
- * 底层 HTTP 行为已由 @cube/api-core 覆盖，此处 mock createCubeApi 捕获实例与回调后直接驱动。
+ * 底层 HTTP 行为已由 @newlifex/api-core 覆盖，此处 mock createCubeApi 捕获实例与回调后直接驱动。
  *
  * 运行：pnpm test:unit core/__tests__/useCubeApi.spec.ts
  */
@@ -40,7 +40,7 @@ const h = vi.hoisted(() => {
   };
 });
 
-vi.mock('@cube/api-core', () => ({
+vi.mock('@newlifex/api-core', () => ({
   createCubeApi: (options: Record<string, unknown>) => {
     h.captured = options;
     return { page: h.page, client: h.client };

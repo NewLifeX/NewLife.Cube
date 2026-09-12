@@ -112,6 +112,9 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
     }
 
     /// <summary>搜索数据集</summary>
+    /// <remarks>树形列表按整棵缓存树单页展示：默认页大小时把 PageSize 放大为 10000 并从缓存取数。
+    /// 子类重载本方法时应保持分页放大并返回缓存树（Root.AllChilds / FindAllChildsByParent），不要返回分页 DB 查询，
+    /// 否则 ListTree 视图将退化为扁平分页列表，树形层级与上移/下移均错乱。</remarks>
     /// <param name="p"></param>
     /// <returns></returns>
     protected override IEnumerable<TEntity> Search(Pager p)
@@ -181,6 +184,7 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
     public ActionResult Up(Int32 id)
     {
         var menu = FindByID(id);
+        if (menu == null) return RedirectToAction("Index");
 
         if (Valid(menu, DataObjectMethodType.Update, true))
             menu.Up();
@@ -211,6 +215,7 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
     public ActionResult Down(Int32 id)
     {
         var menu = FindByID(id);
+        if (menu == null) return RedirectToAction("Index");
 
         if (Valid(menu, DataObjectMethodType.Update, true))
             menu.Down();

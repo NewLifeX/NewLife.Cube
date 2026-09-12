@@ -124,21 +124,28 @@ public sealed class UserProfileTests : IAsyncLifetime
         await PageHelpers.AssertNoServerErrorAsync(_page, testId);
     }
 
-    [Fact(DisplayName = "TC-USER-014 用户名称标签（编辑表单）含昵称和名称字段")]
+    [Fact(DisplayName = "TC-USER-014 用户名称标签（只读查看）回填名称且无保存按钮")]
     [Trait("Category", "UserProfile")]
     [Trait("Priority", "P0")]
-    public async Task TC_USER_014_UserNameEditTab()
+    public async Task TC_USER_014_UserNameDetailTab()
     {
         const String testId = "TC-USER-014";
 
         await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Info");
         await PageHelpers.AssertNoServerErrorAsync(_page, testId);
 
-        // 用户名称标签的 href 包含 /Admin/User/Edit，用 href selector 避免因 DisplayName 不同而匹配失败
-        await _page.ClickAsync(".nav-pills a[href*='/Admin/User/Edit']");
+        // 用户名称标签指向只读查看页 /Admin/User/Detail，用 href selector 避免因 DisplayName 不同而匹配失败
+        await _page.ClickAsync(".profile-tabs a[href*='/Admin/User/Detail']");
         await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
         await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+        await PageHelpers.AssertUrlContainsAsync(_page, "/User/Detail", testId);
+
+        // 查看页回填名称和昵称；且不得出现编辑表单的保存按钮，导航条不允许直接进入编辑表单
+        var nameVal = await _page.InputValueAsync("input[name=Name]");
+        Assert.False(String.IsNullOrWhiteSpace(nameVal), $"[{testId}] 查看页名称字段为空（未回填）。URL: {_page.Url}");
+        Assert.True(await _page.IsVisibleAsync("input[name=DisplayName]"), $"[{testId}] 查看页未找到昵称（DisplayName）字段。URL: {_page.Url}");
+        Assert.False(await _page.IsVisibleAsync(".form-actions"), $"[{testId}] 查看页不应出现编辑表单的保存按钮。URL: {_page.Url}");
     }
 
     [Fact(DisplayName = "TC-USER-015 三方链接标签：加载列表")]
@@ -267,6 +274,93 @@ public sealed class UserProfileTests : IAsyncLifetime
 
         var dbMail = DatabaseHelper.GetUserField(AppFixture.AdminUser, "Mail");
         Assert.Equal(newMail, dbMail);
+    }
+
+    [Fact(DisplayName = "TC-USER-022 备注字段使用 HTML 富文本编辑器（与编辑页一致）")]
+    [Trait("Category", "UserProfile")]
+    [Trait("Priority", "P1")]
+    public async Task TC_USER_022_RemarkUsesHtmlEditor()
+    {
+        const String testId = "TC-USER-022";
+
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Info");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 备注在用户实体上配置了 ItemType=html，应与编辑页一致渲染 Quill 富文本编辑器，而不是普通 textarea
+        try
+        {
+            await _page.WaitForSelectorAsync("#html_Remark .ql-editor", new PageWaitForSelectorOptions { Timeout = 10_000 });
+        }
+        catch
+        {
+            await PageHelpers.TakeScreenshotAsync(_page, testId);
+            throw new Exception($"[{testId}] 备注未渲染 HTML 富文本编辑器（未找到 #html_Remark .ql-editor）。当前URL: {_page.Url}");
+        }
+
+        Assert.Equal(0, await _page.Locator("textarea[name=Remark]").CountAsync());
+
+        // 编辑器内容经隐藏域提交，隐藏域缺失会导致备注无法保存
+        var hiddenCount = await _page.Locator("input[type=hidden][name=Remark]").CountAsync();
+        Assert.True(hiddenCount > 0, $"[{testId}] 备注隐藏域不存在，提交时将丢失内容。当前URL: {_page.Url}");
+    }
+
+    [Fact(DisplayName = "TC-USER-023 备注纯文本保存不带 p 标签，DB 验证")]
+    [Trait("Category", "UserProfile")]
+    [Trait("Priority", "P1")]
+    public async Task TC_USER_023_RemarkPlainTextSavedWithoutPTag()
+    {
+        const String testId = "TC-USER-023";
+        var remark = $"E2E备注{DateTime.Now:HHmmss}";
+
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Info");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 清空编辑器后输入纯文本（Quill 内部为 <p>text</p>），提交时应归一化去掉两端 <p></p>
+        await _page.WaitForSelectorAsync("#html_Remark .ql-editor", new PageWaitForSelectorOptions { Timeout = 10_000 });
+        await _page.ClickAsync("#html_Remark .ql-editor");
+        await _page.Keyboard.PressAsync("Control+a");
+        await _page.Keyboard.PressAsync("Delete");
+        await _page.Keyboard.TypeAsync(remark);
+
+        await _page.ClickAsync("button[type=submit], input[type=submit]");
+        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // DB 验证：纯文本不应被包成富文本
+        var dbValue = DatabaseHelper.GetUserField(AppFixture.AdminUser, "Remark");
+        Assert.Equal(remark, dbValue);
+    }
+
+    [Fact(DisplayName = "TC-USER-024 单段加粗备注保存不带 p 标签，DB 验证")]
+    [Trait("Category", "UserProfile")]
+    [Trait("Priority", "P1")]
+    public async Task TC_USER_024_RemarkSingleParagraphWithFormatSavedWithoutPTag()
+    {
+        const String testId = "TC-USER-024";
+        var remark = $"E2E加粗{DateTime.Now:HHmmss}";
+
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Info");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 输入一段文字后整段加粗（Quill 内部为 <p><strong>text</strong></p>），提交时应只去掉外层 <p>，行内加粗格式保留
+        await _page.WaitForSelectorAsync("#html_Remark .ql-editor", new PageWaitForSelectorOptions { Timeout = 10_000 });
+        await _page.ClickAsync("#html_Remark .ql-editor");
+        await _page.Keyboard.PressAsync("Control+a");
+        await _page.Keyboard.PressAsync("Delete");
+        await _page.Keyboard.TypeAsync(remark);
+        await _page.Keyboard.PressAsync("Control+a");
+        await _page.Keyboard.PressAsync("Control+b");
+
+        await _page.ClickAsync("button[type=submit], input[type=submit]");
+        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // DB 验证：带行内格式的单段内容同样不应被包成富文本段落
+        var dbValue = DatabaseHelper.GetUserField(AppFixture.AdminUser, "Remark");
+        Assert.NotNull(dbValue);
+        Assert.DoesNotContain("<p", dbValue);
+        Assert.Contains("strong", dbValue);
+        Assert.Contains(remark, dbValue);
     }
 
     #endregion
@@ -458,14 +552,14 @@ public sealed class UserProfileTests : IAsyncLifetime
     {
         const String testId = "TC-USER-042";
 
-        // 进入 admin 用户详情/编辑页
+        // 进入 admin 用户只读查看页
         await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Info");
-        // 用户名称标签的 href 包含 /Admin/User/Edit，用 href selector 避免因 DisplayName 不同而匹配失败
-        await _page.ClickAsync(".nav-pills a[href*='/Admin/User/Edit']");
+        // 用户名称标签指向 /Admin/User/Detail，用 href selector 避免因 DisplayName 不同而匹配失败
+        await _page.ClickAsync(".profile-tabs a[href*='/Admin/User/Detail']");
         await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         await PageHelpers.AssertNoServerErrorAsync(_page, testId);
 
-        // 用 textContent 而非 innerText：Edit 页面有多个 tab，Logins 字段可能在非活动 tab 内（display:none），
+        // 用 textContent 而非 innerText：Detail 页面有多个 tab，Logins 字段可能在非活动 tab 内（display:none），
         // innerText 只返回可见文本，textContent 包含所有 DOM 文本（含隐藏元素）
         var bodyText = await _page.EvaluateAsync<String>("() => document.body.textContent");
 

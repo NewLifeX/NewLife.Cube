@@ -17,10 +17,13 @@ public static class FormatEntity
     /// <returns></returns>
     public static void FromExcelToEntity(this FieldItem fieldsItem, IDictionary<String, Object> item, Object entity)
     {
+        // 缺少列或空值直接跳过，避免键缺失 KeyNotFoundException 与空值 NRE
+        if (item == null || !item.TryGetValue(fieldsItem.Name, out var value)) return;
+
         //解析时间
         if (fieldsItem.Type == typeof(DateTime))
         {
-            var fieldsValue = item[fieldsItem.Name].ToString();
+            var fieldsValue = value?.ToString();
             var fieldsValueTime = DateTime.Now;
             if (!fieldsValue.IsNullOrWhiteSpace())
             {

@@ -46,4 +46,9 @@ public interface IUserBindingService
     /// <param name="fallbackUrl">降级下载地址。内网地址下载失败时使用此地址重试</param>
     /// <returns></returns>
     Task<Boolean> FetchAvatar(IManageUser user, String url = null, String accessToken = null, String fallbackUrl = null);
+
+    /// <summary>尝试从用户连接中获取远程头像地址，并触发异步下载到本地。用于本地头像缺失时的懒加载兜底</summary>
+    /// <param name="user">目标用户</param>
+    /// <returns>找到可用的远程头像地址时返回完整URL，否则返回 null</returns>
+    String TryFetchRemoteAvatar(IManageUser user);
 }

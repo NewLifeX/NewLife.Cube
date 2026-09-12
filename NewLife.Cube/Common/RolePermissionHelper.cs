@@ -32,10 +32,12 @@ public static class RolePermissionHelper
             foreach (var part in permission.Split(','))
             {
                 var kv = part.Split('#');
+                // 注意：All 在 Role.SavePermission 中以 (Int32) 序列化为 -1（PermissionFlags 为 UInt32），
+                // 必须放行 -1，否则「全部」权限（-1）会被 flag > 0 误判为非法而丢弃
                 if (kv.Length == 2 &&
                     Int32.TryParse(kv[0], out var menuId) &&
                     Int32.TryParse(kv[1], out var flag) &&
-                    flag > 0)
+                    flag != 0)
                 {
                     var flagVal = (PermissionFlags)flag;
                     // 防止越界授权：受限模式只授予当前用户自己拥有的权限位

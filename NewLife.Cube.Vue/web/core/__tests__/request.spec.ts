@@ -1,15 +1,15 @@
 /**
  * request.ts 单元测试（cube-vue 请求层 UI 逻辑）
  *
- * 范围：仅验证 cube-vue 在 @cube/api-core 之上叠加的、与 UI 强相关的行为：
+ * 范围：仅验证 cube-vue 在 @newlifex/api-core 之上叠加的、与 UI 强相关的行为：
  *   1. redirectToLogin —— 登出 / 重登录跳转（清 token、带 redirect_uri）；
  *   2. onUnauthorized(handleUnauthorized) —— 401 去重、自身请求判定、跳登录页 / 未授权页；
  *   3. onResponseError(showErrorNotification) —— 网络错误中文提示 / 其余走 autoNotification；
  *   4. onBusinessError —— 业务错误弹窗；
  *   5. createApiClient 接线（unwrapResponse:true 等）。
  *
- * 非 UI 的底层逻辑（host 拼接、/api 补全、token 注入、错误归一化等）已在 @cube/api-core 覆盖，
- * 此处通过 vi.mock('@cube/api-core') 捕获传给 createApiClient 的回调后直接驱动，避免真实网络。
+ * 非 UI 的底层逻辑（host 拼接、/api 补全、token 注入、错误归一化等）已在 @newlifex/api-core 覆盖，
+ * 此处通过 vi.mock('@newlifex/api-core') 捕获传给 createApiClient 的回调后直接驱动，避免真实网络。
  *
  * 运行：pnpm test:unit core/__tests__/request.spec.ts
  */
@@ -51,7 +51,7 @@ const h = vi.hoisted(() => {
   };
 });
 
-vi.mock('@cube/api-core', () => ({
+vi.mock('@newlifex/api-core', () => ({
   createApiClient: (options: Record<string, unknown>) => {
     h.captured = options;
     return { get: vi.fn(), post: vi.fn(), request: vi.fn() };

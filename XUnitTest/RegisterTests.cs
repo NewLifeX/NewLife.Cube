@@ -19,6 +19,7 @@ public class RegisterTests
     [Fact(DisplayName = "AuthRegisterModel Password2 与 ConfirmPassword 双向兼容")]
     public void AuthRegisterModel_Password2_Compatibility()
     {
+#pragma warning disable CS0618 // 兼容测试：验证过时别名 Password2 与 ConfirmPassword 仍双向同步
         var model = new AuthRegisterModel
         {
             Password2 = "P@ssw0rd#2026"
@@ -28,6 +29,7 @@ public class RegisterTests
 
         model.ConfirmPassword = "NewPass#2026";
         Assert.Equal("NewPass#2026", model.Password2);
+#pragma warning restore CS0618
     }
 
     [Fact(DisplayName = "OAuthPendingInfoModel 可承载回跳预填信息")]

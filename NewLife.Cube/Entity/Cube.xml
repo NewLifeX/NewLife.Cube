@@ -172,6 +172,7 @@
         <Column Name="Name" DataType="String" Master="True" Description="名称。当前登录人，或根据设备标识推算出来的使用人" />
         <Column Name="SessionID" DataType="String" Description="会话。Web的SessionID或Server的会话编号" />
         <Column Name="OAuthProvider" DataType="String" Description="登录方。OAuth提供商，从哪个渠道登录" />
+        <Column Name="Referer" DataType="String" Length="200" Description="来源。最近一次外部跳转来源，站内跳转不更新" />
         <Column Name="Times" DataType="Int32" Description="次数" />
         <Column Name="Page" DataType="String" Length="200" Description="页面" />
         <Column Name="Platform" DataType="String" Description="平台。操作系统平台，Windows/Linux/Android等" />
@@ -488,6 +489,7 @@
         <Column Name="LimitDimension" DataType="Int32" Description="限流维度。IP/用户" Type="LimitDimensions" />
         <Column Name="LimitCycle" DataType="Int32" ItemType="TimeSpan" Description="限流时间。限流时的考察时间，期间累加规则触发次数，如600秒" />
         <Column Name="LimitTimes" DataType="Int32" Description="限流次数。限流考察期间达到该阈值时，执行拦截" />
+        <Column Name="ExpireTime" DataType="DateTime" ShowIn="List,Detail" Description="过期时间。到期后本规则自动失效；未设置表示永久有效。仅供系统自动封禁使用" />
         <Column Name="CreateUserID" DataType="Int32" Description="创建者" Category="扩展" />
         <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
         <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />

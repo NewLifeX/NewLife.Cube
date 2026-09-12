@@ -14,6 +14,7 @@ using NewLife.Cube.Extensions;
 using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
 using NewLife.Cube.WebMiddleware;
+using NewLife.Cube.Widgets;
 using NewLife.IP;
 using NewLife.Log;
 using NewLife.Messaging;
@@ -212,6 +213,9 @@ public static class CubeService
         services.AddSingleton<VerifyCodeService>();
         services.AddSingleton<AuthEnhancedService>();
         services.AddSingleton<AccountActivateService>();
+        services.AddSingleton<SecurityEventService>();
+        services.AddSingleton<BlockService>();
+        services.AddHostedService(sp => sp.GetRequiredService<BlockService>());
         services.AddSingleton<AccessService>();
         services.AddSingleton<PageService>();
         services.AddSingleton<TokenService>();
@@ -220,12 +224,18 @@ public static class CubeService
         services.TryAddSingleton<ICaptchaService, DrawingCaptchaService>();
         services.TryAddSingleton<IMfaService, TotpMfaService>();
 
+        // 账号注销处理器：默认处理器清理框架侧个人数据；下游可继续追加注册（必须 Singleton）
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountCloseHandler, DefaultAccountCloseHandler>());
+
         // SSO 服务
         services.AddSingleton<Services.Sso.IOAuthAppService, Services.Sso.OAuthAppService>();
         services.AddSingleton<Services.Sso.ITokenService, Services.Sso.TokenService>();
         services.AddSingleton<Services.Sso.IUserBindingService, Services.Sso.UserBindingService>();
         services.AddSingleton<Services.Sso.ISsoClientService, Services.Sso.SsoClientService>();
         services.AddSingleton<Services.Sso.ISsoServerService, Services.Sso.SsoServerService>();
+
+        // 工作台组件管理器。单例复用扫描缓存，避免每次请求 new 实例重复扫描程序集
+        services.AddSingleton<WidgetManager>();
 
         //services.AddHostedService<JobService>();
         services.AddHostedService<DataRetentionService>();
@@ -247,12 +257,10 @@ public static class CubeService
         // 注册 AI 服务
         services.AddCubeAI();
 
-        // // 注册 LOV 值集服务，并扫描测试枚举所在命名空间，自动将其注册为枚举值集
-        // 不用在这里注册，直接内置在 NewLife.Cube\Services\LovAutoRegisterService.cs
-        // services.AddCubeLov(cfg =>
-        // {
-        //     cfg.ScanNamespace(typeof(AuthCategory).Namespace);
-        // });
+        // 注册列表型值集数据代理（默认 HTTP 转发）。值集已代码优先（枚举/[LovList] 反射直读），无需启动扫描注册；
+        // 使用者可在 AddCube 之前注册自定义 ILovListDataProxy 实现覆盖默认行为；IHttpClientFactory 以 TryAdd 注册，不覆盖 AddHttpClient。
+        services.TryAddSingleton<ILovListDataProxy, DefaultLovListDataProxy>();
+        services.TryAddDefaultHttpClientFactory();
 
         // 注册IP地址库
         IpResolver.Register();
@@ -426,9 +434,6 @@ public static class CubeService
                 XTrace.WriteLine("魔方优雅退出！");
                 web.StopAsync().Wait();
             });
-
-        // 触发 Lov 值集自动注册
-        app.UseCubeLov();
 
         return app;
     }

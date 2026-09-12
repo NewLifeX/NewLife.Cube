@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using NewLife;
 using NewLife.Log;
 using NewLife.Serialization;
 using NewLife.Web.OAuth;
@@ -9,6 +10,8 @@ using Xunit;
 
 namespace XUnitTest;
 
+/// <summary>企业微信 API 真实环境验证。依赖 Config/Member.config 等真实企微凭据，未配置时自动跳过</summary>
+[Trait("Category", "Integration")]
 public class QyWeiXinTests
 {
     static QyWeiXinTests()
@@ -38,6 +41,7 @@ public class QyWeiXinTests
     public async Task GetToken()
     {
         var ss = GetSecret("Member");
+        if (ss[0].IsNullOrEmpty()) return;// 未配置真实企微凭据，跳过
         var wx = new QyWeiXin
         {
             CorpId = ss[0],
@@ -55,6 +59,7 @@ public class QyWeiXinTests
     public async Task GetDepartments()
     {
         var ss = GetSecret("Member");
+        if (ss[0].IsNullOrEmpty()) return;// 未配置真实企微凭据，跳过
         var wx = new QyWeiXin
         {
             CorpId = ss[0],
@@ -71,6 +76,7 @@ public class QyWeiXinTests
     public async Task GetUser()
     {
         var ss = GetSecret("Member");
+        if (ss[0].IsNullOrEmpty()) return;// 未配置真实企微凭据，跳过
         var wx = new QyWeiXin
         {
             CorpId = ss[0],
@@ -87,6 +93,7 @@ public class QyWeiXinTests
     public async Task GetUsers()
     {
         var ss = GetSecret("Member");
+        if (ss[0].IsNullOrEmpty()) return;// 未配置真实企微凭据，跳过
         var wx = new QyWeiXin
         {
             CorpId = ss[0],
@@ -103,6 +110,7 @@ public class QyWeiXinTests
     public async Task GetCheckIn()
     {
         var ss = GetSecret("CheckIn");
+        if (ss[0].IsNullOrEmpty()) return;// 未配置真实企微凭据，跳过
         var wx = new QyWeiXin
         {
             CorpId = ss[0],
@@ -123,6 +131,7 @@ public class QyWeiXinTests
     public async Task GetApproval()
     {
         var ss = GetSecret("Approval");
+        if (ss[0].IsNullOrEmpty()) return;// 未配置真实企微凭据，跳过
         var wx = new QyWeiXin
         {
             CorpId = ss[0],
@@ -152,6 +161,7 @@ public class QyWeiXinTests
     public async Task GetUserInfo()
     {
         var ss = GetSecret("SSO");
+        if (ss[0].IsNullOrEmpty()) return;// 未配置真实企微凭据，跳过
         var wx = new QyWeiXin
         {
             CorpId = ss[0],

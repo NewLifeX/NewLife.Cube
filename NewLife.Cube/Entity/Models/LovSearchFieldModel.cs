@@ -1,20 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.Serialization;
-using System.Web.Script.Serialization;
-using System.Xml.Serialization;
-
 namespace NewLife.Cube.Entity;
 
-/// <summary>值集搜索字段。列表型值集的搜索条件字段定义</summary>
-public partial class LovSearchFieldModel
+/// <summary>值集搜索字段。列表型值集的搜索条件字段定义，无真实表，数据以 JSON 存 Parameter（LovStore）</summary>
+public class LovSearchFieldModel
 {
-    #region 属性
     /// <summary>编号</summary>
     public Int32 Id { get; set; }
 
-    /// <summary>值集定义。关联LovDefinition</summary>
+    /// <summary>值集定义（按 LovCode 关联，不再落真实表）</summary>
     public Int32 LovDefId { get; set; }
 
     /// <summary>字段名。搜索参数字段名</summary>
@@ -61,30 +53,4 @@ public partial class LovSearchFieldModel
 
     /// <summary>备注</summary>
     public String Remark { get; set; }
-    #endregion
-
-    #region 拷贝
-    /// <summary>拷贝模型对象</summary>
-    /// <param name="model">模型</param>
-    public void Copy(LovSearchFieldModel model)
-    {
-        Id = model.Id;
-        LovDefId = model.LovDefId;
-        Field = model.Field;
-        Title = model.Title;
-        ComponentType = model.ComponentType;
-        ParamType = model.ParamType;
-        Required = model.Required;
-        DefaultValue = model.DefaultValue;
-        Sort = model.Sort;
-        RefLovCode = model.RefLovCode;
-        CreateUserID = model.CreateUserID;
-        CreateIP = model.CreateIP;
-        CreateTime = model.CreateTime;
-        UpdateUserID = model.UpdateUserID;
-        UpdateIP = model.UpdateIP;
-        UpdateTime = model.UpdateTime;
-        Remark = model.Remark;
-    }
-    #endregion
 }

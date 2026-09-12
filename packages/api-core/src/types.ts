@@ -46,7 +46,7 @@ export class ApiError<T = unknown> extends Error {
 
 /** 分页信息 */
 export interface PageInfo {
-  /** 页码（从 0 开始） */
+  /** 页码（从 1 开始） */
   pageIndex: number;
   /** 每页大小 */
   pageSize: number;
@@ -58,9 +58,9 @@ export interface PageInfo {
 
 /** 分页查询参数 */
 export interface PageParams {
-  /** 页码（从 0 开始） */
+  /** 页码（从 1 开始，默认 1；第一页可不传） */
   pageIndex?: number;
-  /** 每页大小 */
+  /** 每页大小（默认 20，恰为 20 可不传） */
   pageSize?: number;
   /** 排序字段 */
   sort?: string;
@@ -112,10 +112,14 @@ export interface DataField {
   visible?: boolean;
   /** 映射字段名 */
   mapField?: string;
+  /** 取值字段。列表单元格优先取该字段值，为空时回退到本字段（如名称列优先显示昵称：Name.valueField=DisplayName） */
+  valueField?: string;
   /** 链接 URL（支持变量替换 {Id} 等） */
   url?: string;
   /** 链接目标 */
   target?: string;
+  /** 链接文字。列表单元格有 url 时优先显示该文字（如「追踪」），为空回退显示字段值 */
+  text?: string;
   /** 数据动作（AJAX POST） */
   dataAction?: string;
   /** 表头文字 */
@@ -151,6 +155,10 @@ export interface PageSetting {
   masterTimeName?: string | null;
   /** 主时间字段显示名（OSC-0016） */
   masterTimeDisplayName?: string | null;
+  /** 开发模式（后端 SysConfig.Develop）。驱动列表页高级菜单显示备份/还原/清空数据表等开发功能 */
+  develop?: boolean;
+  /** 当前用户是否系统管理员。开发功能仅系统管理员可用 */
+  isSystem?: boolean;
 }
 
 /** GetPage 聚合元数据 */
@@ -162,6 +170,8 @@ export interface PageMeta {
 
   /** 新结构：扁平字段集合 */
   list?: DataField[];
+  /** 全部可用列表字段（应用用户列配置前，供列设置面板） */
+  allList?: DataField[];
   addForm?: DataField[];
   editForm?: DataField[];
   detail?: DataField[];
@@ -212,11 +222,41 @@ export interface UserInfo {
   mailVerified?: boolean;
   /** 手机已验证（安全中心展示验证状态） */
   mobileVerified?: boolean;
+  /** 生日（用户中心编辑资料展示） */
+  birthday?: string;
   logins?: number;
   lastLogin?: string;
   lastLoginIP?: string;
+  /** 注册时间 */
+  registerTime?: string;
   permission?: string;
   remark?: string;
+
+  // === 多租户 ===
+  /** 是否启用多租户。false 时隐藏租户相关 UI */
+  enableTenant?: boolean;
+  /** 当前租户编号。0=管理后台，>0=租户；未开启多租户恒为 0 */
+  tenantId?: number;
+  /** 当前租户编码。管理后台或未开启多租户为空 */
+  tenantCode?: string;
+  /** 当前租户名称。管理后台或未开启多租户为空 */
+  tenantName?: string;
+  /** 租户模式。0=未设置，1=管理后台，2=租户 */
+  tenantMode?: number;
+  /** 是否系统管理员。可进入管理后台，可切换任意租户 */
+  isSystemAdmin?: boolean;
+  /** 当前用户所属有效租户列表（租户切换器数据源） */
+  tenants?: TenantItem[];
+}
+
+/** 租户切换器选项 */
+export interface TenantItem {
+  /** 租户编号 */
+  id: number;
+  /** 租户编码 */
+  code?: string;
+  /** 租户名称 */
+  name?: string;
 }
 
 /** 登录返回 */
@@ -305,6 +345,8 @@ export interface SecurityConfig {
 
 /** 登录配置（新版嵌套结构，v2 起） */
 export interface LoginConfig {
+  /** 是否启用多租户。前端据此控制租户相关 UI（切换器/租户字段）显隐 */
+  enableTenant?: boolean;
   /** 租户 Code，有租户时非空 */
   code?: string;
   /** 系统名称（租户级优先） */
@@ -443,6 +485,58 @@ export interface VerifyStatus {
   mobileVerified: boolean;
 }
 
+/** 第三方绑定记录（对应后端 UserConnect，GET /Admin/User/Binds） */
+export interface UserBind {
+  /** 编号 */
+  id?: number;
+  /** 平台标识（OpenWeixin/Microsoft/Github 等，与 OAuthPlatform.name 对应） */
+  provider?: string;
+  /** 第三方昵称 */
+  nickName?: string;
+  /** 第三方头像 */
+  avatar?: string;
+  /** 是否启用（解绑后为 false） */
+  enable?: boolean;
+  /** 绑定时间 */
+  createTime?: string;
+}
+
+/** 可绑定的第三方平台（对应后端 OAuthConfig） */
+export interface OAuthPlatform {
+  /** 编号 */
+  id?: number;
+  /** 平台标识（绑定/解绑 URL 使用） */
+  name?: string;
+  /** 平台显示名 */
+  nickName?: string;
+  /** 平台 Logo */
+  logo?: string;
+  /** 是否启用 */
+  enable?: boolean;
+  /** 是否可见 */
+  visible?: boolean;
+}
+
+/** 第三方授权绑定数据（GET /Admin/User/Binds 返回） */
+export interface BindsResult {
+  /** 用户名 */
+  name?: string;
+  /** 已绑定记录 */
+  connects?: UserBind[];
+  /** 可选的第三方平台 */
+  oAuthItems?: OAuthPlatform[];
+}
+
+/** 修改密码（POST /Admin/User/ChangePassword） */
+export interface ChangePasswordModel {
+  /** 原密码 */
+  oldPassword: string;
+  /** 新密码 */
+  newPassword: string;
+  /** 确认新密码 */
+  newPassword2: string;
+}
+
 /**
  * Challenge-Response 安全登录挑战响应
  *
@@ -472,6 +566,8 @@ export interface CaptchaResult {
 export interface MfaVerifyResult {
   accessToken: string;
   refreshToken?: string;
+  /** 访问令牌有效期（秒） */
+  expireIn?: number;
 }
 
 /** MFA 初始化结果 */

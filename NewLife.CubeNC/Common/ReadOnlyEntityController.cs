@@ -381,33 +381,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             var list = SearchData(p);
 
             // 准备需要输出的列
-            var fs = new List<FieldItem>();
-            foreach (var fi in Factory.AllFields)
-            {
-                if (Type.GetTypeCode(fi.Type) == TypeCode.Object) continue;
-                if (!fi.IsDataObjectField)
-                {
-                    var pi = Factory.EntityType.GetProperty(fi.Name);
-                    if (pi != null && pi.GetCustomAttribute<XmlIgnoreAttribute>() != null) continue;
-                }
-
-                fs.Add(fi);
-            }
-
-            // 基本属性与扩展属性对调顺序
-            for (var i = 0; i < fs.Count; i++)
-            {
-                var fi = fs[i];
-                if (fi.OriField != null)
-                {
-                    var k = fs.IndexOf(fi.OriField);
-                    if (k >= 0)
-                    {
-                        fs[i] = fs[k];
-                        fs[k] = fi;
-                    }
-                }
-            }
+            var fs = GetExportFields();
 
             return new ExcelResult { Fields = GetFields(fs, list), Data = list, HttpContext = HttpContext };
         }
@@ -443,6 +417,53 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     /// <returns></returns>
     protected virtual Object OnExportXml() => ExportData();
 
+    /// <summary>准备导出列：过滤 Object/XmlIgnore 类型，基本属性与扩展属性对调顺序</summary>
+    /// <param name="forTemplate">是否导出模板。true 时隐藏审计/启用等模板无用字段且要求有描述</param>
+    /// <returns>导出列集合</returns>
+    private IList<FieldItem> GetExportFields(Boolean forTemplate = false)
+    {
+        // 准备需要输出的列
+        var fs = new List<FieldItem>();
+        foreach (var fi in Factory.AllFields)
+        {
+            if (Type.GetTypeCode(fi.Type) == TypeCode.Object) continue;
+            if (!fi.IsDataObjectField)
+            {
+                var pi = Factory.EntityType.GetProperty(fi.Name);
+                if (pi != null && pi.GetCustomAttribute<XmlIgnoreAttribute>() != null) continue;
+            }
+
+            // 模板隐藏审计等字段，且要求有描述
+            if (forTemplate)
+            {
+                if (fi.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
+                            "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP", "Enable") || fi.Description.IsNullOrEmpty())
+                {
+                    continue;
+                }
+            }
+
+            fs.Add(fi);
+        }
+
+        // 基本属性与扩展属性对调顺序
+        for (var i = 0; i < fs.Count; i++)
+        {
+            var fi = fs[i];
+            if (fi.OriField != null)
+            {
+                var k = fs.IndexOf(fi.OriField);
+                if (k >= 0)
+                {
+                    fs[i] = fs[k];
+                    fs[k] = fi;
+                }
+            }
+        }
+
+        return fs;
+    }
+
     /// <summary>设置附件响应方式</summary>
     /// <param name="name"></param>
     /// <param name="ext"></param>
@@ -452,7 +473,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         name = GetAttachment(name, ext, includeTime);
         name = HttpUtility.UrlEncode(name, Encoding.UTF8);
 
-        Response.Headers.Add("Content-Disposition", "Attachment;filename=" + name);
+        Response.Headers["Content-Disposition"] = "Attachment;filename=" + name;
     }
 
     /// <summary>获取附件响应方式</summary>
@@ -498,33 +519,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     public virtual IActionResult ExportExcel()
     {
         // 准备需要输出的列
-        var fs = new List<FieldItem>();
-        foreach (var fi in Factory.AllFields)
-        {
-            if (Type.GetTypeCode(fi.Type) == TypeCode.Object) continue;
-            if (!fi.IsDataObjectField)
-            {
-                var pi = Factory.EntityType.GetProperty(fi.Name);
-                if (pi != null && pi.GetCustomAttribute<XmlIgnoreAttribute>() != null) continue;
-            }
-
-            fs.Add(fi);
-        }
-
-        // 基本属性与扩展属性对调顺序
-        for (var i = 0; i < fs.Count; i++)
-        {
-            var fi = fs[i];
-            if (fi.OriField != null)
-            {
-                var k = fs.IndexOf(fi.OriField);
-                if (k >= 0)
-                {
-                    fs[i] = fs[k];
-                    fs[k] = fi;
-                }
-            }
-        }
+        var fs = GetExportFields();
 
         var name = GetAttachment(null, ".xlsx", true);
 
@@ -539,41 +534,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     [DisplayName("导出模板")]
     public virtual IActionResult ExportExcelTemplate()
     {
-        // 准备需要输出的列
-        var fs = new List<FieldItem>();
-        foreach (var fi in Factory.AllFields)
-        {
-            if (Type.GetTypeCode(fi.Type) == TypeCode.Object) continue;
-            if (!fi.IsDataObjectField)
-            {
-                var pi = Factory.EntityType.GetProperty(fi.Name);
-                if (pi != null && pi.GetCustomAttribute<XmlIgnoreAttribute>() != null) continue;
-            }
-
-            //模板隐藏这几个字段
-            if (fi.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
-                        "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP", "Enable") || fi.Description.IsNullOrEmpty())
-            {
-                continue;
-            }
-
-            fs.Add(fi);
-        }
-
-        // 基本属性与扩展属性对调顺序
-        for (var i = 0; i < fs.Count; i++)
-        {
-            var fi = fs[i];
-            if (fi.OriField != null)
-            {
-                var k = fs.IndexOf(fi.OriField);
-                if (k >= 0)
-                {
-                    fs[i] = fs[k];
-                    fs[k] = fi;
-                }
-            }
-        }
+        // 准备需要输出的列（模板：隐藏审计/启用字段且要求有描述）
+        var fs = GetExportFields(true);
 
         var name = GetAttachment(null, ".xlsx", true);
 

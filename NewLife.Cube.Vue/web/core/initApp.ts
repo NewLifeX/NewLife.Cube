@@ -41,7 +41,7 @@ import 'element-plus/dist/index.css';
 import 'element-plus/theme-chalk/dark/css-vars.css';
 import App from './App.vue';
 import router from './router';
-import i18n from './i18n';
+import i18n, { getEpLocale } from './i18n';
 import './global.css';
 import {
   appProvide,
@@ -196,6 +196,8 @@ export const initApp = async (optionsOrConfigure?: InitAppOptions | ConfigureFun
   app.use(pinia);
   app.use(i18n); // 添加 i18n 插件
   app.use(ElementPlus, {
+    // locale 跟随框架 i18n：否则 ElMessageBox/ElPagination 等命令式与内置文案是英文（Cancel/OK）
+    locale: getEpLocale(),
     table: {
       showOverflowTooltip: true,
     },

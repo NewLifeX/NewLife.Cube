@@ -7,8 +7,8 @@ import {
   TableHead, TableRow, TablePagination, TextField, Toolbar, Tooltip, Typography,
 } from '@mui/material';
 import { Add, Delete, Download, Upload, Search, Refresh, Visibility, Edit as EditIcon, ArrowDropDown } from '@mui/icons-material';
-import { Auth, type DataField } from '@cube/api-core';
-import { resolveWidgets, type FieldMapping } from '@cube/field-mapping';
+import { Auth, type DataField } from '@newlifex/api-core';
+import { resolveWidgets, type FieldMapping } from '@newlifex/field-mapping';
 import * as echarts from 'echarts';
 import api from '@/api';
 import { useUserStore } from '@/stores/user';

@@ -128,6 +128,12 @@ public class ControllerBaseX : ControllerBase, IActionFilter
             {
                 // 设置变量，数据权限使用
                 HttpContext.Items["userId"] = CurrentUser.ID;
+
+                // 批量操作需要更新或删除权限，无权限时隐藏选择列与批量按钮；没有菜单时不做权限控制
+                if (Menu != null && CurrentUser is IUser user2)
+                {
+                    PageSetting.EnableSelect = user2.Has(Menu, PermissionFlags.Update, PermissionFlags.Delete);
+                }
             }
         }
         catch (Exception ex)
@@ -179,12 +185,13 @@ public class ControllerBaseX : ControllerBase, IActionFilter
                     };
                 }
             }
-            else if (context.Result is EmptyResult)
+            else if (context.Result is EmptyResult && !HttpContext.Response.HasStarted)
             {
+                // SSE 等流式响应已开始（Headers 只读）后不能再转 JsonResult，保持原样以完整结束流
                 context.Result = new JsonResult(new { code = 0, data = new { }, traceId });
             }
         }
-        else if (context.Exception != null && !context.ExceptionHandled)
+        else if (context.Exception != null && !context.ExceptionHandled && !HttpContext.Response.HasStarted)
         {
             //var ex = context.Exception.GetTrue();
             if (ex is ApiException aex)
@@ -244,22 +251,17 @@ public class ControllerBaseX : ControllerBase, IActionFilter
     /// <returns></returns>
     protected virtual String OnJsonSerialize(Object data)
     {
-        //data.ToJson(false, true, true);
-        var writer = new JsonWriter
+        var host = new SystemJson();
+        var json = host.Write(data, new NewLife.Serialization.JsonOptions
         {
-            //Indented = false,
-            //IgnoreNullValues = false,
-            //CamelCase = true,
-            //Int64AsString = true
-        };
-        writer.Options.WriteIndented = false;
-        writer.Options.IgnoreNullValues = false;
-        writer.Options.CamelCase = true;
-        writer.Options.Int64AsString = true;
-
-        writer.Write(data);
-
-        return writer.GetString();
+            WriteIndented = false,
+            IgnoreNullValues = false,
+            PropertyNaming = PropertyNaming.CamelCase,
+            Int64AsString = true,
+            IgnoreCycles = true,//忽略循环引用
+            FullTime = false// yyyy-MM-dd HH:mm:ss
+        });
+        return json;
     }
     #endregion
 

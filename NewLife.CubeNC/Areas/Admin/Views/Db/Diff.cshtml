@@ -71,7 +71,7 @@ else
                             <tr>
                                 <td>@col.ColumnName</td>
                                 <td>@col.DisplayName</td>
-                                <td class="text-center">@(col.RawType ?? col.DataType?.FullName.TrimStart("System."))</td>
+                                <td class="text-center">@(col.RawType ?? col.DataType?.FullName.TrimPrefix("System."))</td>
 
                                 @if (col.Length > 0)
                                 {
@@ -105,7 +105,7 @@ else
                                 }
 
                                 <td class="text-center">@(col.Nullable ? "" : "N")</td>
-                                <td>@(col.Description?.TrimStart(col.DisplayName).TrimStart("。", "，"))</td>
+                                <td>@(col.Description?.TrimPrefix(col.DisplayName).TrimPrefix("。", "，"))</td>
                             </tr>
                         }
                     </tbody>

@@ -6,7 +6,7 @@ using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 
 namespace NewLife.Cube.WebMiddleware;
 
-/// <summary>上下文中间件。设置租户上下文和数据权限上下文</summary>
+/// <summary>上下文中间件。设置租户上下文，并声明宿主数据权限策略（实体层以系统身份运行）</summary>
 /// <param name="next"></param>
 /// <param name="tenantContext">租户上下文（无状态门面，注册为 Singleton，内部读 AsyncLocal）</param>
 public class DataScopeMiddleware(RequestDelegate next, ITenantContext tenantContext)
@@ -57,17 +57,15 @@ public class DataScopeMiddleware(RequestDelegate next, ITenantContext tenantCont
                 // 中间件若在此拦截会依赖 ManageProvider.User 加载时机，误拒刚登录的管理员。
             }
 
-            // 2. 设置数据权限上下文
+            // 2. 宿主数据权限声明：实体层以"系统身份"运行，数据权限统一由接口层负责。
+            // XCode 数据权限拦截器会在上下文缺失时以 ManageProvider.User 兜底创建，
+            // 若此处不注入，请求内一切业务代码（SSO/服务/自定义 Action）都会被隐式收窄；
+            // 而实体层同时服务 Web、服务层与算法层等消费方，不承担 Web 展示层的数据隔离职责。
+            // 页面行级过滤由 DataPermissionAttribute 特性经 SearchData/FindData 管道显式执行。
+            // 外部已显式设置上下文时尊重之（测试或嵌入式宿主）。
             if (DataScopeContext.Current == null)
             {
-                var user = ManageProvider.User;
-
-                // 从路由或参数获取菜单。专用于菜单级别数据权限作用域（很少用）
-                //var menuId = ctx.GetMenuId(); 
-                var url = ctx.Request.Path + "";
-                var menu = ManageProvider.Menu?.FindByUrl(url);
-
-                DataScopeContext.Current = DataScopeContext.Create(user, menu);
+                DataScopeContext.Current = CreateHostScope(ManageProvider.User);
                 dataScopeChanged = true;
             }
 
@@ -80,6 +78,21 @@ public class DataScopeMiddleware(RequestDelegate next, ITenantContext tenantCont
             if (dataScopeChanged) DataScopeContext.Current = null;
         }
     }
+
+    /// <summary>创建宿主数据权限上下文。魔方宿主中实体层以系统身份运行，不参与行级数据过滤</summary>
+    /// <remarks>
+    /// 返回系统态上下文（<see cref="DataScopes.全部"/>），使 XCode 数据权限拦截器在魔方宿主内休眠；
+    /// 同时保留用户编号与部门编号，供实体拦截器在新增数据时自动填充审计字段。
+    /// 行级数据权限统一由接口层控制器特性（DataPermissionAttribute）经查询管道显式执行。
+    /// </remarks>
+    /// <param name="user">当前登录用户，可为空</param>
+    /// <returns>宿主数据权限上下文</returns>
+    public static DataScopeContext CreateHostScope(IUser user) => new()
+    {
+        UserId = user?.ID ?? 0,
+        DepartmentId = user?.DepartmentID ?? 0,
+        DataScope = DataScopes.全部,
+    };
 
     /// <summary>是否显式提供了租户信息（请求头或查询参数）</summary>
     /// <param name="ctx"></param>

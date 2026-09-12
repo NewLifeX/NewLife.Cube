@@ -2,7 +2,7 @@ namespace NewLife.Cube.Services;
 
 /// <summary>图片验证码服务接口。实现该接口可替换内置 SVG 算术题验证码</summary>
 /// <remarks>
-/// 默认实现为 <see cref="SvgMathCaptchaService"/>，基于纯 SVG 生成算术题，零外部依赖。
+/// 默认实现为 <see cref="DrawingCaptchaService"/>，基于纯 SVG 生成算术题，零外部依赖。
 /// 注册自定义实现时使用 TryAddSingleton&lt;ICaptchaService, YourImpl&gt;()。
 /// </remarks>
 public interface ICaptchaService

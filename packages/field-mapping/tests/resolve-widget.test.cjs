@@ -45,6 +45,33 @@ test('dataSource → select', () => {
   assert.equal(r.widget, 'select');
 });
 
+test('dataSource + 字段名以 s 结尾 → lovMulti（对齐 MVC 约定）', () => {
+  const r = resolveWidget({ name: 'RoleIds', typeName: 'String', dataSource: { '2': '管理员' } });
+  assert.equal(r.widget, 'lovMulti');
+  assert.equal(r.props.multiple, true);
+});
+
+test('dataSource + multiple 显式标记 → lovMulti', () => {
+  const r = resolveWidget({ name: 'Tags', typeName: 'String', dataSource: { '1': 'A' }, multiple: true });
+  assert.equal(r.widget, 'lovMulti');
+  assert.equal(r.props.multiple, true);
+});
+
+test('DateTime 字段名以 Date 结尾 → 纯日期 date', () => {
+  assert.equal(resolveWidget({ name: 'Birthday', typeName: 'DateTime' }).widget, 'date');
+  assert.equal(resolveWidget({ name: 'LastLoginDay', typeName: 'DateTime' }).widget, 'date');
+});
+
+test('DateTime itemType=date → 纯日期 date，否则 datetime', () => {
+  assert.equal(resolveWidget({ name: 'T', typeName: 'DateTime', itemType: 'date' }).widget, 'date');
+  assert.equal(resolveWidget({ name: 'CreateTime', typeName: 'DateTime' }).widget, 'datetime');
+});
+
+test('真实枚举类型名（非基元）→ lov', () => {
+  assert.equal(resolveWidget({ name: 'Sex', typeName: 'SexKinds' }).widget, 'lov');
+  assert.equal(resolveWidget({ name: 'Status', typeName: 'OrderStatus' }).widget, 'lov');
+});
+
 test('typeName 推断：Boolean/DateTime/Date/TimeSpan/数值', () => {
   assert.equal(resolveWidget({ name: 'Enable', typeName: 'Boolean' }).widget, 'switch');
   assert.equal(resolveWidget({ name: 'T', typeName: 'DateTime' }).widget, 'datetime');

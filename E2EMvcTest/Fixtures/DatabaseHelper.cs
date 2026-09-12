@@ -47,7 +47,7 @@ public static class DatabaseHelper
         // 字段名不能参数化，使用白名单校验防止注入
         var allowedFields = new HashSet<String>(StringComparer.OrdinalIgnoreCase)
         {
-            "ID", "Name", "DisplayName", "Mail", "Mobile", "Code", "Password",
+            "ID", "Name", "DisplayName", "Mail", "Mobile", "Code", "Password", "Remark",
             "Logins", "LastLogin", "CreateTime", "UpdateTime", "Enable",
         };
 
@@ -98,6 +98,23 @@ public static class DatabaseHelper
         }
     }
 
+    /// <summary>写入一条用户链接（指定归属用户），返回记录 Id</summary>
+    /// <param name="provider">提供商（用唯一值便于断言）</param>
+    /// <param name="openid">身份标识</param>
+    /// <param name="userId">归属用户 Id</param>
+    /// <returns>记录 Id</returns>
+    public static Int32 SeedUserConnect(String provider, String openid, Int32 userId)
+    {
+        const String sql = """
+            INSERT INTO UserConnect (Provider, UserID, OpenID, Enable, CreateUserID, CreateIP, CreateTime, UpdateUserID, UpdateIP, UpdateTime)
+            VALUES (@p, @uid, @openid, 1, @uid, '::1', @now, @uid, '::1', @now)
+            RETURNING ID;
+            """;
+        var now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        return ExecuteScalarWrite<Int32>(MembershipWriteConnStr, sql,
+            ("@p", provider), ("@openid", openid), ("@uid", userId), ("@now", now));
+    }
+
     #endregion
 
     #region OAuthLog 表查询
@@ -132,6 +149,24 @@ public static class DatabaseHelper
     {
         const String sql = "SELECT ID FROM User WHERE Name = @name LIMIT 1";
         return ExecuteScalar<Int32>(MembershipConnStr, sql, ("@name", username));
+    }
+
+    /// <summary>按用户名查询角色编号</summary>
+    /// <param name="username">用户名</param>
+    /// <returns>角色 Id，不存在返回 0</returns>
+    public static Int32 GetUserRoleId(String username)
+    {
+        const String sql = "SELECT RoleID FROM User WHERE Name = @name LIMIT 1";
+        return ExecuteScalar<Int32>(MembershipConnStr, sql, ("@name", username));
+    }
+
+    /// <summary>查询角色权限字符串</summary>
+    /// <param name="roleId">角色 Id</param>
+    /// <returns>Permission 字段值，不存在返回 null</returns>
+    public static String? GetRolePermission(Int32 roleId)
+    {
+        const String sql = "SELECT Permission FROM Role WHERE ID = @id LIMIT 1";
+        return ExecuteScalar<String?>(MembershipConnStr, sql, ("@id", roleId));
     }
 
     /// <summary>按名称获取租户 Id</summary>
@@ -217,6 +252,101 @@ public static class DatabaseHelper
     {
         const String sql = "SELECT TenantId FROM OAuthConfig WHERE Name = @name LIMIT 1";
         return ExecuteScalar<Int32>(CubeWriteConnStr, sql, ("@name", name));
+    }
+
+    /// <summary>写入一条测试部门记录（指定管理者），返回部门编号</summary>
+    /// <param name="name">部门名称（唯一值便于断言）</param>
+    /// <param name="managerId">管理者用户 Id</param>
+    /// <returns>部门 Id</returns>
+    public static Int32 SeedDepartment(String name, Int32 managerId)
+    {
+        const String sql = """
+            INSERT INTO Department (TenantId, Code, Name, ParentID, Level, Sort, Enable, Visible, ManagerId, CreateUserID, CreateTime, UpdateUserID, UpdateTime)
+            VALUES (0, @name, @name, 0, 1, 0, 1, 1, @mid, @mid, @now, @mid, @now)
+            RETURNING ID;
+            """;
+        var now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        return ExecuteScalarWrite<Int32>(MembershipWriteConnStr, sql, ("@name", name), ("@mid", managerId), ("@now", now));
+    }
+
+    /// <summary>按名称统计部门行数</summary>
+    /// <param name="name">部门名称</param>
+    /// <returns>匹配行数</returns>
+    public static Int32 CountDepartmentByName(String name)
+    {
+        const String sql = "SELECT COUNT(*) FROM Department WHERE Name = @name";
+        return ExecuteScalar<Int32>(MembershipConnStr, sql, ("@name", name));
+    }
+
+    /// <summary>写入一条测试附件记录（归属指定用户），返回附件编号</summary>
+    /// <param name="title">附件标题（唯一值便于断言）</param>
+    /// <param name="createUserId">创建用户 Id</param>
+    /// <returns>附件 Id</returns>
+    public static Int64 SeedAttachment(String title, Int32 createUserId)
+    {
+        const String sql = """
+            INSERT INTO Attachment (Id, Category, Title, FileName, Extension, Size, ContentType, Enable, UploadTime, CreateUser, CreateUserID, CreateTime, UpdateUserID, UpdateTime)
+            VALUES ((SELECT IFNULL(MAX(Id), 0) + 1 FROM Attachment), 'e2e', @title, @title, '.txt', 1, 'text/plain', 1, @now, @user, @uid, @now, @uid, @now)
+            RETURNING Id;
+            """;
+        var now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        return ExecuteScalarWrite<Int64>(CubeWriteConnStr, sql,
+            ("@title", title), ("@now", now), ("@user", createUserId + ""), ("@uid", createUserId));
+    }
+
+    /// <summary>按标题统计附件行数</summary>
+    /// <param name="title">附件标题</param>
+    /// <returns>匹配行数</returns>
+    public static Int32 CountAttachmentByTitle(String title)
+    {
+        const String sql = "SELECT COUNT(*) FROM Attachment WHERE Title = @title";
+        return ExecuteScalar<Int32>(CubeWriteConnStr, sql, ("@title", title));
+    }
+
+    #endregion
+
+    #region NotificationRecord 站内信写入（通知铃铛测试）
+
+    /// <summary>Log 数据库写连接字符串（NotificationRecord 等表）</summary>
+    private static String LogWriteConnStr =>
+        $"Data Source={AppFixture.DataDir}\\Log.db";
+
+    /// <summary>写入一条未读站内信（默认系统级广播 UserId=0），返回记录 Id</summary>
+    /// <param name="title">标题（建议唯一值便于断言）</param>
+    /// <param name="content">内容</param>
+    /// <param name="userId">接收用户 Id，0 表示系统级广播（仅系统管理员可见）</param>
+    /// <returns>记录 Id</returns>
+    public static Int64 SeedInAppNotification(String title, String content, Int32 userId = 0)
+    {
+        const String sql = """
+            INSERT INTO NotificationRecord
+                (Id, TenantId, Action, Channel, ConfigId, ConfigName, Provider, UserId, Target, Title, Content,
+                 Success, Result, "Read", ReadTime, TraceId, CreateIP, CreateTime, UpdateTime, UpdateIP, Remark)
+            VALUES
+                ((SELECT IFNULL(MAX(Id), 0) + 1 FROM NotificationRecord), 0, 'Notify', 'InApp', 0, '', '', @uid, '', @title, @content,
+                 1, '', 0, NULL, '', '::1', @now, @now, '::1', 'E2E通知')
+            RETURNING Id;
+            """;
+        var now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        return ExecuteScalarWrite<Int64>(LogWriteConnStr, sql,
+            ("@uid", userId), ("@title", title), ("@content", content), ("@now", now));
+    }
+
+    /// <summary>查询站内信是否已读</summary>
+    /// <param name="id">记录 Id</param>
+    /// <returns>已读返回 true；记录不存在返回 false</returns>
+    public static Boolean IsNotificationRead(Int64 id)
+    {
+        const String sql = "SELECT \"Read\" FROM NotificationRecord WHERE Id = @id LIMIT 1";
+        return ExecuteScalar<Int32>(LogConnStr, sql, ("@id", id)) != 0;
+    }
+
+    /// <summary>删除站内信（测试清理）</summary>
+    /// <param name="id">记录 Id</param>
+    public static void DeleteNotification(Int64 id)
+    {
+        const String sql = "DELETE FROM NotificationRecord WHERE Id = @id";
+        ExecuteScalarWrite<Int32>(LogWriteConnStr, sql, ("@id", id));
     }
 
     #endregion

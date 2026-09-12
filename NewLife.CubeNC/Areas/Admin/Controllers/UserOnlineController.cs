@@ -78,6 +78,12 @@ public class UserOnlineController : EntityController<UserOnline, UserOnlineModel
         var online = UserOnline.FindByID(id);
         if (online == null) return Json(1, "在线记录不存在");
 
+        // 数据权限校验：非系统管理员只能强制下线自己的在线记录，防止越权踢人并吊销他人全部令牌
+        var user = ManageProvider.User;
+        if (user == null) return Json(403, "请先登录");
+        if (!user.Roles.Any(e => e.IsSystem) && online.UserID != user.ID)
+            return Json(403, "仅能强制下线自己的在线记录");
+
         // 1. 吊销该用户所有令牌（API/JWT 即时失效）
         var count = UserToken.RevokeByUser(online.UserID);
 

@@ -990,7 +990,8 @@ public class SsoController : ControllerBaseX
         if (id <= 0) throw new ArgumentNullException(nameof(id));
 
         var user = ManageProvider.Provider?.FindByID(id) as IUser;
-        if (user == null) throw new Exception("用户不存在 " + id);
+        // 用户可能已删除，返回404而非抛异常，避免客户端反复请求刷新错误日志与审计异常
+        if (user == null) return NotFound();
 
         var set = CubeSetting.Current;
         var av = "";
@@ -1008,6 +1009,14 @@ public class SsoController : ControllerBaseX
 
         if (av.IsNullOrEmpty() || !System.IO.File.Exists(av))
         {
+            // 懒加载兜底：本地头像缺失时，从用户连接中查找远程头像并触发异步下载到本地，
+            // 本次先跳转远程地址展示（对齐 MVC 版），下次请求即命中本地文件
+            if (user is IManageUser muser)
+            {
+                var remote = _bindingService.TryFetchRemoteAvatar(muser);
+                if (!remote.IsNullOrEmpty()) return Redirect(remote);
+            }
+
             var svg = SvgAvatarService.Generate(user, set.AvatarChars);
             return Content(svg, "image/svg+xml");
         }

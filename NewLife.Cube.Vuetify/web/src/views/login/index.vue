@@ -42,7 +42,7 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import type { OAuthProvider } from '@cube/api-core';
+import type { OAuthProvider } from '@newlifex/api-core';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
 

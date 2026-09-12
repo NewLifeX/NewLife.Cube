@@ -271,7 +271,7 @@ public partial class ReadOnlyEntityController<TEntity>
     /// <summary>查找单行数据，并判断数据权限</summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    protected TEntity FindData(Object key)
+    protected virtual TEntity FindData(Object key)
     {
         // 先查出来，再判断数据权限
         var entity = Find(key);
@@ -398,12 +398,13 @@ public partial class ReadOnlyEntityController<TEntity>
             p.Parse(queryData);
             return p;
         }
-        else
-        {
-            // 计算目标数据量。不能破坏缓存对象，需要new一个新对象
-            var p = Session[CacheKey] as Pager;
-            return new Pager(p);
-        }
+
+        // 会话缓存（MVC 版 Index 写入当前查询条件）
+        if (Session[CacheKey] is Pager sp) return new Pager(sp);
+
+        // 前后端分离 API 模式无会话缓存，直接使用当前请求参数（与 DeleteAll 一致），
+        // 使导出基于当前查询条件全量导出，而非整表
+        return new Pager(request);
     }
 
     /// <summary>多次导出数据</summary>
@@ -740,6 +741,10 @@ public partial class ReadOnlyEntityController<TEntity>
             _ => ListFields,
         };
         fields = fields.Clone();
+
+        // 未开启多租户时，隐藏租户字段（TenantId/TenantName），列表/表单/搜索/详情均生效
+        if (!CubeSetting.Current.EnableTenant)
+            fields.RemoveField("TenantId", "TenantName");
 
         // 表单嵌入配置字段
         if ((kind == ViewKinds.EditForm || kind == ViewKinds.Detail) && model is TEntity entity)

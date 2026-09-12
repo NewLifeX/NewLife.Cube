@@ -2,24 +2,31 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Caching;
+using NewLife.Common;
 using NewLife.Cube.AI;
 using NewLife.Cube.Automation;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
 using NewLife.Cube.Workflow;
+using NewLife.Data;
 using NewLife.Log;
 using NewLife.Security;
+using NewLife.Office.Excel;
 using NewLife.Serialization;
 using NewLife.Web;
+using NewLife.Xml;
 using XCode;
 using XCode.Configuration;
+using XCode.DataAccessLayer;
 using XCode.Membership;
 
 namespace NewLife.Cube;
@@ -68,7 +75,11 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             RetrieveTotalCount = PageSetting.EnableTotalCount
         };
 
-        var list = SearchData(p);
+        var list = SearchData(p).ToList();
+
+        // 复刻 MVC ListField 按行计算值：虚拟字段/GetValue 字段写入实体扩展，随行 JSON 内联输出
+        OnFillListValues(list);
+
         // 时间窗收窄天数透传到响应体（OSC-260830a1b2）：响应头 X-Cube-Filter-Narrowed 无法被前端 axios 响应体读取，
         // 故额外放入 ApiListResponse.FilterNarrowed 供工具栏提示消费。
         var narrowed = Response.Headers["X-Cube-Filter-Narrowed"].ToString();
@@ -94,7 +105,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         //return list.ToOkApiResponse().WithList(p); 
         return new ApiListResponse<TEntity>
         {
-            Data = list.ToList(),
+            Data = list,
             Page = p.ToModel(),
             // p.State 可能是 WhereBuilder（无 RetrieveState 时）或统计实体（RetrieveState 时），
             // 仅当其为 TEntity 时才作为 Stat 输出，否则为 null，不得抛 InvalidCastException（OSC-260819e483 P1）
@@ -104,14 +115,59 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         };
     }
 
+    /// <summary>填充列表字段计算值。复刻 MVC 版 ListField 按行计算单元格值的能力</summary>
+    /// <remarks>
+    /// MVC 版在视图渲染时调用 ListField.GetLink/GetLinkName 按行计算单元格值；API 版无视图，
+    /// 在 Index 序列化前统一计算并写入实体扩展字典（<see cref="IExtend.Items"/>），
+    /// 由 JsonWriter 内联到行 JSON 顶层，前端字段元数据驱动的通用渲染即可显示，无需修改前端代码。
+    /// 仅处理虚拟字段（Field 为空，如 AddListField 创建的 AvatarImage）或设置了 GetValue 委托的字段，
+    /// 普通列不参与，避免额外开销。
+    /// </remarks>
+    /// <param name="list">数据列表</param>
+    /// <param name="fields">列表字段。为空时使用当前列表字段集合（OnGetFields）</param>
+    protected virtual void OnFillListValues(IEnumerable<TEntity> list, IList<DataField>? fields = null)
+    {
+        fields ??= OnGetFields(ViewKinds.List, null);
+
+        // 只收集需要计算值的字段：虚拟字段（非实体列）或设置了 GetValue 委托的字段
+        var lfs = fields.OfType<ListField>().Where(e => e.Field == null || e.GetValue != null).ToArray();
+        if (lfs.Length == 0) return;
+
+        foreach (var entity in list)
+        {
+            if (entity is not IExtend ext) continue;
+
+            foreach (var df in lfs)
+            {
+                // 可见性控制：DataVisible 为 false 时不输出该列值
+                if (df.DataVisible != null && !df.DataVisible(entity)) continue;
+
+                var value = df.GetValue?.Invoke(entity) ?? entity[df.Name];
+                if (value != null) ext.Items[df.Name] = value;
+            }
+        }
+    }
+
     /// <summary>查看单行数据</summary>
+    /// <remarks>
+    /// 同时支持两种风格：
+    /// 1) RESTful：<c>/api/[area]/[controller]/{id}</c>，如 /api/Admin/User/21；
+    /// 2) 传统 Action+查询参数：<c>/api/[area]/[controller]/Detail?id=</c>，类级 Route 已生成该字面量路由。
+    /// </remarks>
     /// <param name="id">主键。可能为空（表示添加），所以用字符串而不是整数</param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("查看{type}")]
     [HttpGet]
-    public virtual ApiResponse<TEntity> Detail([Required] String id)
+    [HttpGet("/api/[area]/[controller]/{id}")]
+    public virtual ApiResponse<TEntity> Detail(String id = null)
     {
+        // id 必须给默认值 null：action 同时挂有 {id} 模板时，[ApiController] 会把 id 推断为 [FromRoute]
+        // （仅从路由取值），且无默认值的非空引用类型会被隐式推断 [Required]；
+        // 导致传统前端 /Detail?id=xxx 因路由取不到 id 直接报 “The id field is required.”（与 MenuTree/Info 同类）。
+        // 设默认值后走下方 query 兜底，RESTful 路径风格不受影响。
+        if (id.IsNullOrEmpty()) id = Request.Query["id"].ToString();
+        if (id.IsNullOrEmpty()) throw new XException("缺少主键参数！");
         var entity = FindData(id);
         if (entity == null || (entity as IEntity).IsNullKey) throw new XException("要查看的数据[{0}]不存在！", id);
 
@@ -142,6 +198,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     [HttpGet]
     public virtual ApiResponse<Object> GetPage()
     {
+        // 开发模式与系统管理员标志：驱动前端高级菜单显示备份/还原/清空数据表等开发功能（对齐 MVC Develop 条件）
+        var user = CurrentUser as IUser ?? ManageProvider.User;
         // 主时间字段信息（OSC-0016）：供 SPA 搜索面板渲染主时间范围控件；无 MasterTime 时两键为 null
         var masterTime = Factory.MasterTime;
         var setting = new
@@ -157,11 +215,17 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             PageSetting.EnableTableDoubleClick,
             PageSetting.OrderByKey,
             PageSetting.DoubleDelete,
+            // 开发模式（SysConfig.Develop），开发功能仅开发模式可用
+            develop = SysConfig.Current.Develop,
+            // 当前用户是否系统管理员。开发功能仅系统管理员可用
+            isSystem = user?.Roles.Any(e => e.IsSystem) == true,
             masterTimeName = masterTime?.Name,
             masterTimeDisplayName = masterTime?.DisplayName,
         };
 
         var list = PrepareFieldsForApi(OnGetFields(ViewKinds.List, null));
+        // 全部可用列表字段（应用用户列配置前，供前端列设置面板使用）
+        var allList = OnGetFields(ViewKinds.List, null);
         var addForm = PrepareMapViewFields(ViewKinds.AddForm);
         var editForm = PrepareMapViewFields(ViewKinds.EditForm);
         var detail = PrepareMapViewFields(ViewKinds.Detail);
@@ -177,10 +241,14 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         }
         catch (Exception ex) { XTrace.WriteLine("GetPage workflow 块计算跳过：{0}", ex.Message); }
 
+        // 应用当前用户列配置：重排列顺序、标记隐藏字段 Visible=false（React 皮肤列设置）
+        ApplyColumnConfig(list);
+
         var data = new
         {
             setting,
             list,
+            allList,
             addForm,
             editForm,
             detail,
@@ -250,7 +318,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         var fields = OnGetFields(kind, null);
         if (kind is ViewKinds.Search or ViewKinds.AddForm or ViewKinds.EditForm or ViewKinds.Detail)
             FixSearchMapCandidates(fields);
-        return PrepareFieldsForApi(fields).ToList();
+        return PrepareFieldsForApi(fields);
     }
 
     /// <summary>先还原 Map 物理列并补全候选，再 PrepareForApi（必填/枚举字典依赖还原后的 Type）</summary>
@@ -269,7 +337,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
     /// <summary>物化字段数据源字典，供 SPA 列表徽章/表单下拉复用，避免反复拉值集</summary>
     [NonAction]
-    protected virtual IList<DataField> PrepareFieldsForApi(IList<DataField> fields)
+    protected virtual List<DataField> PrepareFieldsForApi(List<DataField> fields)
     {
         if (fields == null) return fields;
         foreach (var df in fields)
@@ -281,7 +349,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         return fields;
     }
 
-    /// <summary>按 Required 矩阵设置必填（OSC-260819e483 P1）：字段为 null 跳过；主键/只读/可空=false；其余（含布尔 NOT NULL）为 true。不在 Fill 内写，避免影响 MVC 校验语义；布尔 false、数字 0 不视为空，校验器已如此。多租户关闭时租户字段非必填（0 表示全局）。</summary>
+    /// <summary>按 Required 矩阵设置必填（OSC-260819e483 P1）：字段为 null 跳过；主键/只读/可空=false；其余（含布尔 NOT NULL）为 true。多租户关闭时租户字段非必填（0 表示全局）。</summary>
     /// <param name="df">字段</param>
     protected static void ApplyRequired(DataField df)
     {
@@ -292,6 +360,76 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             return;
         }
         df.Required = !df.PrimaryKey && !df.ReadOnly && !df.Nullable;
+    }
+    #endregion
+
+    #region 列配置
+    /// <summary>应用当前用户的列配置（Parameter 表 Page-React 分类）。重排列顺序、标记隐藏字段 Visible=false</summary>
+    /// <param name="list">列表字段集合（就地修改）</param>
+    protected virtual void ApplyColumnConfig(List<DataField> list)
+    {
+        // 页面路径：优先当前菜单 URL（如 /Cube/App）；菜单不可用时从路由推导（/api/Cube/App/GetPage → /Cube/App）
+        var page = Menu?.Url;
+        if (page.IsNullOrEmpty())
+        {
+            var area = RouteData.Values["area"] + "";
+            var controller = RouteData.Values["controller"] + "";
+            page = area.IsNullOrEmpty() ? $"/{controller}" : $"/{area}/{controller}";
+        }
+        if (page.IsNullOrEmpty() || CurrentUser == null || list == null || list.Count == 0) return;
+
+        var cfg = LoadColumnConfig("Page-React", page, CurrentUser.ID);
+        if (cfg == null || cfg.Count == 0) return;
+
+        // 列顺序：listOrder 字段名数组。未列出的字段保持原顺序排在后面（新增字段自动可见）
+        if (cfg.TryGetValue("listOrder", out var orderObj) && orderObj is System.Collections.IList order)
+        {
+            var names = order.Cast<Object>().Select(e => e + "").ToList();
+            var dic = new Dictionary<String, DataField>(StringComparer.OrdinalIgnoreCase);
+            foreach (var f in list) dic[f.Name] = f;
+
+            var newList = new List<DataField>(list.Count);
+            foreach (var name in names)
+            {
+                if (dic.TryGetValue(name, out var f))
+                {
+                    newList.Add(f);
+                    dic.Remove(name);
+                }
+            }
+            foreach (var f in list)
+            {
+                if (dic.ContainsKey(f.Name)) newList.Add(f);
+            }
+
+            list.Clear();
+            list.AddRange(newList);
+        }
+
+        // 隐藏列：listHidden 字段名数组 → 从列表移除（前端不再渲染；allList 仍含全部供列设置面板）。
+        // 注意不能仅标记 Visible=false——DataField 序列化只输出 visible=true，false 不发到前端无法区分
+        if (cfg.TryGetValue("listHidden", out var hiddenObj) && hiddenObj is System.Collections.IList hidden)
+        {
+            var hs = new HashSet<String>(hidden.Cast<Object>().Select(e => e + ""), StringComparer.OrdinalIgnoreCase);
+            list.RemoveAll(f => hs.Contains(f.Name));
+        }
+    }
+
+    /// <summary>加载指定页面列配置。用户级优先，全局兜底</summary>
+    /// <param name="category">配置分类，如 Page-React</param>
+    /// <param name="page">页面路径，如 /Cube/Area</param>
+    /// <param name="userId">当前用户编号</param>
+    /// <returns>配置字典</returns>
+    protected virtual IDictionary<String, Object> LoadColumnConfig(String category, String page, Int32 userId)
+    {
+        var p = Parameter.Find(Parameter._.Category == category & Parameter._.Name == page & Parameter._.UserID == userId)
+            ?? Parameter.Find(Parameter._.Category == category & Parameter._.Name == page & Parameter._.UserID == 0);
+        if (p == null) return null;
+
+        var value = !p.Value.IsNullOrEmpty() ? p.Value : p.LongValue;
+        if (value.IsNullOrEmpty()) return null;
+
+        return value.DecodeJson() as IDictionary<String, Object>;
     }
     #endregion
 
@@ -338,6 +476,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             "csv" => OnExportCsv(),
             "json" => OnExportJson(),
             "xml" => OnExportXml(),
+            "zip" => OnExportZip(),
             _ => throw new ArgumentOutOfRangeException(nameof(format), $"不支持的导出格式：{format}"),
         };
     }
@@ -347,9 +486,27 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     [NonAction]
     protected virtual IActionResult OnExportExcel()
     {
-        // 准备需要输出的列
+        // 准备需要输出的列（含计算/扩展字段），并合并实体扩展属性，对齐 MVC ExportExcel
+        var fs = BuildExportFields(Factory.AllFields);
+        var name = MakeExportFileName(".xlsx");
+        var list = ExportData();
+        var fields = GetExportFields(fs, list);
+
+        var ms = new MemoryStream();
+        WriteExcelToStream(fields, list, ms);
+        ms.Position = 0;
+
+        return new FileStreamResult(ms, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") { FileDownloadName = name };
+    }
+
+    /// <summary>构建导出字段列表。过滤对象类型与XmlIgnore字段，并对调基本属性与扩展属性顺序</summary>
+    /// <param name="source">字段来源，通常为 Factory.AllFields 或 Factory.Fields</param>
+    /// <returns></returns>
+    [NonAction]
+    protected List<FieldItem> BuildExportFields(IEnumerable<FieldItem> source)
+    {
         var fs = new List<FieldItem>();
-        foreach (var fi in Factory.AllFields)
+        foreach (var fi in source)
         {
             if (Type.GetTypeCode(fi.Type) == TypeCode.Object) continue;
             if (!fi.IsDataObjectField)
@@ -376,17 +533,65 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             }
         }
 
-        var name = MakeExportFileName(".csv");
+        return fs;
+    }
 
+    /// <summary>导出Zip。当前查询数据打包为 zip（.db 二进制数据 + .xml 表结构），支持异地恢复，可被 ImportZip 导回</summary>
+    /// <returns></returns>
+    [NonAction]
+    protected virtual IActionResult OnExportZip()
+    {
+        var name = MakeExportFileName(".zip");
         var list = ExportData();
 
-        // WebAPI 版使用 CSV 格式导出，兼容所有平台
+        var dic = new Dictionary<Type, IEnumerable<IEntity>>
+        {
+            { Factory.EntityType, list }
+        };
+
+        var p = GetCachePager();
+        OnExportZip(dic, p);
+
+        WriteLog("导出Zip", true, $"开始导出[{dic.Keys.Join()}]");
+
         var ms = new MemoryStream();
-        ExportCsvToStream(fs, list, ms);
+        using (var zip = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            foreach (var item in dic)
+            {
+                var type = item.Key;
+                // 导出数据
+                {
+                    var entry = zip.CreateEntry(type.FullName + ".db");
+                    using var stream = entry.Open();
+                    item.Value.Write(stream);
+                }
+                // 导出结构
+                {
+                    var factory = type.AsFactory();
+                    if (factory != null)
+                    {
+                        var xml = DAL.Export([factory.Table.DataTable]);
+                        var buf = xml.GetBytes();
+
+                        var entry = zip.CreateEntry(type.FullName + ".xml");
+                        using var stream = entry.Open();
+                        stream.Write(buf, 0, buf.Length);
+                    }
+                }
+            }
+        }
+
         ms.Position = 0;
 
-        return new FileStreamResult(ms, "text/csv") { FileDownloadName = name };
+        return new FileStreamResult(ms, "application/zip") { FileDownloadName = name };
     }
+
+    /// <summary>导出Zip时，可以添加其它数据集</summary>
+    /// <param name="data">将要导出的数据集</param>
+    /// <param name="page">分页参数，含请求参数</param>
+    [NonAction]
+    protected virtual void OnExportZip(IDictionary<Type, IEnumerable<IEntity>> data, Pager page) { }
 
     /// <summary>导出Csv</summary>
     /// <returns></returns>
@@ -396,13 +601,36 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         var name = MakeExportFileName(".csv");
         var list = ExportData();
 
-        var fs = Factory.Fields.ToList();
+        // Csv 使用数据库字段（不含计算字段），并合并实体扩展属性，对齐 MVC ExportCsv
+        var fields = GetExportFields(Factory.Fields, list);
 
         var ms = new MemoryStream();
-        ExportCsvToStream(fs, list, ms);
+        ExportCsvToStream(fields, list, ms);
         ms.Position = 0;
 
         return new FileStreamResult(ms, "text/csv") { FileDownloadName = name };
+    }
+
+    /// <summary>准备需要输出的列，包括IExtend扩展属性</summary>
+    /// <param name="fs">字段列表</param>
+    /// <param name="list">数据集。取首条数据判断是否实现 IExtend</param>
+    /// <returns></returns>
+    [NonAction]
+    protected List<DataField> GetExportFields(IList<FieldItem> fs, IEnumerable<TEntity> list)
+    {
+        var fields = fs.Select(e => new DataField(e)).ToList();
+        if (list.FirstOrDefault() is IExtend ext)
+        {
+            foreach (var item in ext.Items)
+            {
+                if (!fields.Any(e => e.Name.EqualIgnoreCase(item.Key)))
+                {
+                    fields.Add(new DataField { Name = item.Key, Type = item.Value?.GetType(), });
+                }
+            }
+        }
+
+        return fields;
     }
 
     /// <summary>导出Json</summary>
@@ -425,33 +653,67 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         var name = MakeExportFileName(".xml");
         var list = ExportData().ToList();
 
-        var xml = list.ToJson(true);
+        // 实体列表转 Xml（对齐 MVC OnExportXml：IEntity.ToXml / IList.ToXml），此前误用 ToJson 输出 JSON
+        var xml = list.ToXml();
         return new FileContentResult(xml.GetBytes(), "application/xml") { FileDownloadName = name };
     }
 
     /// <summary>将数据写入CSV流</summary>
-    /// <param name="fields">字段列表</param>
+    /// <param name="fields">字段列表（含扩展属性）</param>
     /// <param name="data">数据</param>
     /// <param name="stream">目标流</param>
     [NonAction]
-    protected void ExportCsvToStream(IList<FieldItem> fields, IEnumerable<TEntity> data, Stream stream)
+    protected void ExportCsvToStream(IList<DataField> fields, IEnumerable<TEntity> data, Stream stream)
     {
         using var writer = new StreamWriter(stream, System.Text.Encoding.UTF8, 1024, leaveOpen: true);
-        // 表头
-        writer.WriteLine(String.Join(",", fields.Select(f => $"\"{f.DisplayName ?? f.Name}\"")));
-        // 数据行
+
+        // 表头：英文字段名（对齐 MVC CsvResult）；首列 ID 改 Id 防止被识别为 SYLK 文件
+        var headers = fields.Select(f => f.Name).ToArray();
+        if (headers.Length > 0 && headers[0] == "ID") headers[0] = "Id";
+        writer.WriteLine(String.Join(",", headers.Select(h => $"\"{h}\"")));
+
+        // 数据行：枚举导出数字（对齐 MVC CsvResult）；含逗号/引号/换行的字段用引号包裹
         foreach (var entity in data)
         {
             var values = fields.Select(f =>
             {
-                var val = entity[f.Name]?.ToString() ?? "";
+                var val = f.Type.IsEnum ? Convert.ToInt32(entity[f.Name]) : entity[f.Name];
+                var s = val?.ToString() ?? "";
                 // CSV 规范：含逗号/引号/换行的字段用引号包裹
-                if (val.Contains(',') || val.Contains('"') || val.Contains('\n'))
-                    val = $"\"{val.Replace("\"", "\"\"")}\"";
-                return val;
+                if (s.Contains(',') || s.Contains('"') || s.Contains('\n'))
+                    s = $"\"{s.Replace("\"", "\"\"")}\"";
+                return s;
             });
             writer.WriteLine(String.Join(",", values));
         }
+    }
+
+    /// <summary>将数据写入Excel流（xlsx 格式）</summary>
+    /// <param name="fields">字段列表（含扩展属性）</param>
+    /// <param name="data">数据</param>
+    /// <param name="stream">目标流</param>
+    [NonAction]
+    protected void WriteExcelToStream(IList<DataField> fields, IEnumerable<TEntity> data, Stream stream)
+    {
+        using var excel = new ExcelWriter(stream);
+
+        // 表头：优先显示名，其次描述，最后字段名（对齐 MVC ExcelResult）；首列 ID 改 Id 防止被识别为 SYLK 文件
+        var headers = new List<String>();
+        foreach (var fi in fields)
+        {
+            var name = fi.DisplayName;
+            if (name.IsNullOrEmpty()) name = fi.Description;
+            if (name.IsNullOrEmpty()) name = fi.Name;
+
+            if (name == "ID" && fi == fields[0]) name = "Id";
+            headers.Add(name);
+        }
+        excel.WriteHeader(null, headers);
+
+        // 数据行：按字段取实体值，ExcelWriter 自动识别常见类型并避免长数字科学计数
+        excel.WriteRows(null, data.Select(e => fields.Select(f => e[f.Name]).ToArray()));
+
+        excel.Save();
     }
 
     /// <summary>生成导出文件名</summary>
@@ -467,6 +729,221 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         if (!ext.IsNullOrEmpty()) ext = ext.EnsureStart(".");
 
         return $"{name}_{DateTime.Now:yyyyMMddHHmmss}{ext}";
+    }
+    #endregion
+
+    #region 高级Action
+    /// <summary>高级开发接口。开发模式下系统管理员可执行备份/还原/备份导出/清空数据表（对齐 MVC Develop）</summary>
+    /// <param name="act">动作：Backup/BackupAndExport/Restore/Clear</param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException">非开发模式或非系统管理员时抛出</exception>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [DisplayName("高级开发")]
+    // 必须带模板：无模板的 [HttpGet] 与 Index 的 [HttpGet] 同挂类级路由，GET 请求会 AmbiguousMatchException；
+    // 显式 "Develop" 模板对齐 MVC 版 /Controller/Develop?act= 形态（NC 版走约定路由不受影响）
+    [HttpGet("Develop")]
+    public virtual async Task<ActionResult> Develop(String act)
+    {
+        if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
+
+        var user = CurrentUser as IUser ?? ManageProvider.User;
+        if (user == null || !user.Roles.Any(e => e.IsSystem)) throw new InvalidOperationException("仅支持系统管理员使用！");
+
+        return act switch
+        {
+            "Backup" => Backup(),
+            "BackupAndExport" => await BackupAndExport(),
+            "Restore" => Restore(),
+            "Clear" => Clear(),
+            _ => throw new NotSupportedException($"未支持[{act}]"),
+        };
+    }
+
+    /// <summary>清空数据表全部数据。仅无查询条件时允许，防止误删筛选后的数据</summary>
+    /// <returns></returns>
+    [NonAction]
+    public virtual ActionResult Clear()
+    {
+        // 排除 act 参数后，若还有其它查询参数，禁止全表清空（对齐 MVC：page.Params.Count > 0 拒绝）
+        if (WebHelper.Params.Keys.Any(e => !e.EqualIgnoreCase("act")))
+            throw new InvalidOperationException("当前带有查询参数，为免误解，禁止全表清空！");
+
+        try
+        {
+            var count = Entity<TEntity>.Meta.Session.Truncate();
+
+            WriteLog("清空数据", true, $"共删除{count}行数据");
+
+            return Json(0, $"共删除{count}行数据");
+        }
+        catch (Exception ex)
+        {
+            WriteLog("清空数据", false, ex.GetMessage());
+
+            throw;
+        }
+    }
+
+    /// <summary>备份全表到服务器本地备份目录（NewLife.Setting.BackupPath）</summary>
+    /// <returns></returns>
+    [NonAction]
+    public virtual ActionResult Backup()
+    {
+        try
+        {
+            var set = CubeSetting.Current;
+
+            var fact = Factory;
+            if (fact.Session.Count > set.MaxBackup)
+                throw new XException($"数据量[{fact.Session.Count:n0}>{set.MaxBackup:n0}]，禁止备份！");
+
+            var dal = fact.Session.Dal;
+
+            var name = GetType().Name.TrimSuffix("Controller");
+            var fileName = $"{name}_{DateTime.Now:yyyyMMddHHmmss}.gz";
+            var bak = NewLife.Setting.Current.BackupPath.CombinePath(fileName).GetBasePath();
+            bak.EnsureDirectory(true);
+
+            // 异步执行备份，阻塞等待一点时间，避免前端超时。
+            var task = Task.Factory.StartNew(() =>
+            {
+                WriteLog("备份", true, $"开始备份[{name}]到[{fileName}]");
+                try
+                {
+                    var rs = 0;
+                    var sw = Stopwatch.StartNew();
+                    {
+                        using var fs = new FileStream(bak, FileMode.OpenOrCreate);
+                        using var gs = new GZipStream(fs, CompressionLevel.SmallestSize, true);
+                        rs = dal.Backup(fact.Table.DataTable, gs, default);
+                        sw.Stop();
+                    }
+
+                    var fi = bak.AsFile();
+                    WriteLog("备份", true, $"备份[{name}]到[{fileName}]（{rs:n0}行）（{fi.Length.ToGMK()}字节）成功！耗时：{sw.Elapsed}");
+                    return rs;
+                }
+                catch (Exception ex)
+                {
+                    WriteLog("备份", false, $"备份[{fileName}]失败！{ex.GetMessage()}");
+                    return -1;
+                }
+            }, TaskCreationOptions.LongRunning);
+            if (task.Wait(5_000))
+                return Json(0, $"备份[{fileName}]（{task.Result:n0}行）成功！");
+            else
+                return Json(0, $"备份[{fileName}]后台执行中……");
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteException(ex);
+
+            WriteLog("备份", false, ex.GetMessage());
+
+            return Json(500, null, ex);
+        }
+    }
+
+    /// <summary>备份全表并下载 gz 压缩文件</summary>
+    /// <remarks>备份并下载</remarks>
+    /// <returns></returns>
+    [NonAction]
+    public virtual async Task<ActionResult> BackupAndExport()
+    {
+        var set = CubeSetting.Current;
+
+        var fact = Factory;
+        if (fact.Session.Count > set.MaxBackup)
+            throw new XException($"数据量[{fact.Session.Count:n0}>{set.MaxBackup:n0}]，禁止备份！");
+
+        var dal = fact.Session.Dal;
+
+        var name = GetType().Name.TrimSuffix("Controller");
+        var fileName = $"{name}_{DateTime.Now:yyyyMMddHHmmss}.gz";
+
+        // 允许同步IO，便于刷数据Flush
+        var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+        if (ft != null) ft.AllowSynchronousIO = true;
+
+        Response.ContentType = "application/gzip";
+        Response.Headers.ContentDisposition = $"attachment; filename={fileName}";
+
+        var ms = Response.Body;
+        try
+        {
+            WriteLog("备份导出", true, $"开始备份导出[{name}]");
+
+            var sw = Stopwatch.StartNew();
+            await using var gs = new GZipStream(ms, CompressionLevel.SmallestSize, true);
+            var count = dal.Backup(fact.Table.DataTable, gs, HttpContext.RequestAborted);
+            sw.Stop();
+
+            WriteLog("备份导出", true, $"备份[{name}]（{count:n0}行）成功！耗时：{sw.Elapsed}");
+
+            return new EmptyResult();
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteException(ex);
+
+            WriteLog("备份导出", false, ex.GetMessage());
+
+            return Json(500, null, ex);
+        }
+    }
+
+    /// <summary>从服务器本地备份目录还原最新备份文件</summary>
+    /// <returns></returns>
+    [NonAction]
+    public virtual ActionResult Restore()
+    {
+        try
+        {
+            var fact = Factory;
+            var dal = fact.Session.Dal;
+
+            var name = GetType().Name.TrimSuffix("Controller");
+            var fileName = $"{name}_*.gz";
+
+            var di = NewLife.Setting.Current.BackupPath.GetBasePath().AsDirectory();
+            var fi = di?.GetFiles(fileName)?.OrderByDescending(e => e.Name).FirstOrDefault();
+            if (fi == null || !fi.Exists) throw new XException($"找不到[{fileName}]的备份文件");
+
+            // 异步执行恢复，阻塞等待一点时间，避免前端超时。
+            var task = Task.Factory.StartNew(() =>
+            {
+                WriteLog("恢复", true, $"开始恢复[{fileName}]到[{name}]（{fi.Length.ToGMK()}字节）");
+                try
+                {
+                    var sw = Stopwatch.StartNew();
+                    using var fs = fi.OpenRead();
+                    using var gs = new GZipStream(fs, CompressionMode.Decompress, true);
+                    var rs = dal.Restore(gs, fact.Table.DataTable, default);
+                    sw.Stop();
+
+                    WriteLog("恢复", true, $"恢复[{fileName}]（{rs:n0}行）成功！");
+                    return rs;
+                }
+                catch (Exception ex)
+                {
+                    WriteLog("恢复", false, $"恢复[{fileName}]失败！{ex.GetMessage()}");
+                    return -1;
+                }
+            }, TaskCreationOptions.LongRunning);
+
+            if (task.Wait(5_000))
+                return Json(0, $"恢复[{fileName}]（{task.Result:n0}行）成功！");
+            else
+                return Json(0, $"恢复[{fileName}]后台执行中……");
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteException(ex);
+
+            WriteLog("恢复", false, ex.GetMessage());
+
+            return Json(500, null, ex);
+        }
     }
     #endregion
 }

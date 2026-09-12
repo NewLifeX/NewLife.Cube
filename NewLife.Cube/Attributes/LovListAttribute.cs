@@ -2,8 +2,8 @@ using System;
 
 namespace NewLife.Cube;
 
-/// <summary>列表型值集自动注册特性。
-/// 标注在控制器 Action 方法上，Lov 初始化枚举时会一并扫描并自动注册一个 LIST 类型的列表型值集（Source=AUTO）。
+/// <summary>列表型值集声明特性。
+/// 标注在控制器 Action 方法上，<see cref="NewLife.Cube.Services.LovRegistry"/> 在运行时扫描并缓存该方法的列表值集描述符（代码优先、不落库）。
 /// 典型用途：把某个返回列表 JSON 的接口（如角色列表）直接声明为可下拉选择的列表值集。
 /// 注意：RequestUrl 指向该接口自身（同应用接口），一般配合 ProxyRequest=false 由前端直连请求，避免后端无意义代理。</summary>
 /// <remarks>

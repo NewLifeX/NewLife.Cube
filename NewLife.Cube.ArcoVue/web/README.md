@@ -28,7 +28,7 @@ pnpm dev
 - **业务 Area 通配**：`/^/[A-Z]…/`（如 `/School/Class/GetPage`）
 - 浏览器 HTML 导航 `bypass` 回 SPA；XHR/fetch 转发后端
 
-前端 `createCubeApi({ baseURL: '/api' })`：实体/后台接口走 `/api/{Area}/...`（与后端 `api/[area]/[controller]/[action]` 对齐）；`/Auth`、`/Cube/MenuTree` 等服务动作由 `@cube/api-core` 去掉 `/api`。
+前端 `createCubeApi({ baseURL: '/api' })`：实体/后台接口走 `/api/{Area}/...`（与后端 `api/[area]/[controller]/[action]` 对齐）；`/Auth`、`/Cube/MenuTree` 等服务动作由 `@newlifex/api-core` 去掉 `/api`。
 
 改代理后需**重启** `pnpm dev`。
 
@@ -167,7 +167,7 @@ pnpm build
 ```
 web/
 ├── src/
-│   ├── api/          # API 调用层（复用 @cube/api-core）
+│   ├── api/          # API 调用层（复用 @newlifex/api-core）
 │   ├── components/   # 组件（含 TagsView）
 │   ├── layouts/      # RootLayout + side/top/mix
 │   ├── theme/        # 主题 token / 密度 CSS

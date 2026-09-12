@@ -7,7 +7,7 @@
     <Description>魔方WebAPI核心库，提供实体控制器、权限管理、菜单管理、字段元数据、OAuth服务端、JWT认证等功能。支持前后端分离架构，对接Vue/Blazor/Antd等前端框架，单表100亿级数据验证。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 NewLife</Copyright>
-    <VersionPrefix>6.14</VersionPrefix>
+    <VersionPrefix>6.15</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
@@ -18,6 +18,7 @@
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
+    <Nullable>annotations</Nullable>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Doc\newlife.snk</AssemblyOriginatorKeyFile>
     <NoWarn>1701;1702;NU5104;NETSDK1138;CS7035</NoWarn>
@@ -31,7 +32,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>新增 AI 对话助手及工具集，支持多轮对话、浏览器操作与主题色配置；AI 洞察合并至对话助手，后端重构增强安全与流式输出；AI 表单助手支持 ItemType 与编辑器填充优化；修复 403 无权限清除 Token、角色初始化权限等问题；优化上传流释放与 OAuth 性别字段解析</PackageReleaseNotes>
+    <PackageReleaseNotes>集成 Scalar API 文档；新增 SVG 文字头像、工作台部件体系与 /Cube/Widget 管理、表格列自定义设置、多租户开关与租户切换；导出增强（xlsx 全量导出、Zip 导出、CSV 表头与 SYLK 防护）；地区管理地图模式与省市区级联选择器；修复导出 Xml 误输出 Json、SVG 头像溢出、SSO 头像抓取、分页页码约定等问题；升级 NewLife.Core/XCode 等核心依赖</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -92,24 +93,20 @@
     <Compile Include="..\NewLife.CubeNC\Modules\IModule.cs" Link="Modules\IModule.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleAttribute.cs" Link="Modules\ModuleAttribute.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleManager.cs" Link="Modules\ModuleManager.cs" />
-    <Compile Include="..\NewLife.CubeNC\Widgets\IWidget.cs" Link="Widgets\IWidget.cs" />
-    <Compile Include="..\NewLife.CubeNC\Widgets\WidgetAttribute.cs" Link="Widgets\WidgetAttribute.cs" />
-    <Compile Include="..\NewLife.CubeNC\Widgets\WidgetLayout.cs" Link="Widgets\WidgetLayout.cs" />
-    <Compile Include="..\NewLife.CubeNC\Widgets\WidgetManager.cs" Link="Widgets\WidgetManager.cs" />
-    <Compile Include="..\NewLife.CubeNC\Widgets\System\LoginLogWidget.cs" Link="Widgets\System\LoginLogWidget.cs" />
-    <Compile Include="..\NewLife.CubeNC\Widgets\System\SysInfoWidget.cs" Link="Widgets\System\SysInfoWidget.cs" />
-    <Compile Include="..\NewLife.CubeNC\Widgets\System\QuickLinkWidget.cs" Link="Widgets\System\QuickLinkWidget.cs" />
-    <Compile Include="..\NewLife.CubeNC\Widgets\System\RecentVisit.cs" Link="Widgets\System\RecentVisit.cs" />
-    <Compile Include="..\NewLife.CubeNC\Widgets\System\ProfileWidget.cs" Link="Widgets\System\ProfileWidget.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\AccessService.cs" Link="Services\AccessService.cs" />
+    <Compile Include="..\NewLife.CubeNC\Services\BlockService.cs" Link="Services\BlockService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\DataRetentionService.cs" Link="Services\DataRetentionService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\DbDataProtectionBuilderExtensions.cs" Link="Services\DbDataProtectionBuilderExtensions.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\DbXmlRepository.cs" Link="Services\DbXmlRepository.cs" />
+    <Compile Include="..\NewLife.CubeNC\Services\DefaultAccountCloseHandler.cs" Link="Services\DefaultAccountCloseHandler.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\ExternalAuthService.cs" Link="Services\ExternalAuthService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\FileStorageService.cs" Link="Services\FileStorageService.cs" />
+    <Compile Include="..\NewLife.CubeNC\Services\IAccountCloseHandler.cs" Link="Services\IAccountCloseHandler.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\JobService.cs" Link="Services\JobService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\PasswordService.cs" Link="Services\PasswordService.cs" />
+    <Compile Include="..\NewLife.CubeNC\Services\SecurityEventService.cs" Link="Services\SecurityEventService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\SvgAvatarService.cs" Link="Services\SvgAvatarService.cs" />
+    <Compile Include="..\NewLife.CubeNC\Services\ThreatDetector.cs" Link="Services\ThreatDetector.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\TokenService.cs" Link="Services\TokenService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\UserService.cs" Link="Services\UserService.cs" />
     <Compile Include="..\NewLife.CubeNC\Session\SessionProvider.cs" Link="Session\SessionProvider.cs" />
@@ -135,12 +132,12 @@
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\MiddlewareHelper.cs" Link="WebMiddleware\MiddlewareHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.AI" Version="1.5.2026.820-beta1456" />
-    <PackageReference Include="NewLife.Core" Version="11.18.2026.818-beta1306" />
+    <PackageReference Include="NewLife.AI" Version="1.6.2026.901" />
+    <PackageReference Include="NewLife.Core" Version="11.19.2026.901" />
     <PackageReference Include="NewLife.IP" Version="2.5.2026.804" />
-    <PackageReference Include="NewLife.Office" Version="1.3.2026.810-beta1534" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.10.2026.801" />
-    <PackageReference Include="NewLife.XCode" Version="12.1.2026.807-beta0759" />
+    <PackageReference Include="NewLife.Office" Version="1.4.2026.901" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.10.2026.901" />
+    <PackageReference Include="NewLife.XCode" Version="12.2.2026.901" />
   </ItemGroup>
 
   <ItemGroup>

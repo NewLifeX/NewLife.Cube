@@ -350,10 +350,60 @@ UserService.ResetPassword
 | 功能 | MVC | 说明 |
 |------|-----|------|
 | 更换手机/邮箱 | `POST /Admin/User/BindByVerifyCode { account, code }` | 验证码校验**新号**所有权后绑定/更换（按格式分发手机/邮箱），旧号自动失效；API 可复用 `UserService.BindByVerifyCode` |
-| 注销账号 | `POST /Admin/User/CloseAccount` | 软删除：`Enable=false` 禁用 + 清空敏感字段（Mail/Mobile/DisplayName/Avatar/Password 等）+ 吊销全部令牌 + 解绑三方 + 清理在线记录，保留 ID/Name 防重名与审计 |
+| 注销账号 | `POST /Admin/User/CloseAccount` | 依次调起已注册的清理处理器（默认处理器吊销令牌、解绑三方、清理在线/OAuth日志/通知/验证码/用户参数/租户关系/委托代理并脱敏用户行），随后框架**兜底禁用**账号，保留 ID/Name 防重名与审计（见 §5.9） |
 | 导出个人数据 | `GET /Admin/User/ExportData` | JSON 文件下载：个人资料 + 第三方绑定 + 令牌记录 |
 
-> 注销与导出均依据《中华人民共和国个人信息保护法》要求提供（注销对应删除权、导出对应数据可携带权），前端入口位于用户信息页"安全中心"区块，页面文案已标注。
+> 注销与导出依据《中华人民共和国个人信息保护法》、欧盟《通用数据保护条例》（GDPR）等法规提供（注销对应删除权、导出对应数据可携带权），前端入口位于用户信息页"安全中心"区块，按钮与确认弹窗已标注法规说明。
+
+### 5.9 注销与个人数据清理（处理器扩展）
+
+账号注销按 **处理器链 → 兜底禁用** 两段执行：
+
+1. 校验通过后取用户**脱敏前快照**，按注册顺序逐个调用所有 `IAccountCloseHandler`。全部尽力而为，单个处理器异常被隔离记录，不影响其它处理器；
+2. 处理器全部跑完后，框架**兜底**将账号 `Enable=false` 并保存。因此即使部分处理器失败，账号也不可再登录，注销结果始终为成功。
+
+框架通过 `TryAddEnumerable` 默认注册 `DefaultAccountCloseHandler`，负责清理框架侧个人数据：
+
+| 数据 | 处理 |
+|------|------|
+| 令牌 `UserToken` | `RevokeByUser` 全部吊销（置 `Enable=false` 保留审计痕迹，不物理删除） |
+| 三方绑定 `UserConnect` | 按 UserID 删除 |
+| 在线记录 `UserOnline` | 按 UserID 删除 |
+| `OAuthLog` | 按 UserId 删除（含第三方 OpenID/访问令牌等敏感信息） |
+| `NotificationRecord` | 按 UserId 删除（站内信/短信/邮件等个人消息） |
+| `VerifyCodeRecord` | 按 UserId 删除；并按注销前手机/邮箱匹配删除（未登录发码时 UserId 可能为 0） |
+| `Parameter`（用户字典参数） | 按 UserID 删除；`UserID=0` 的系统参数保留 |
+| `TenantUser` | 按 UserId 删除租户关系 |
+| `PrincipalAgent` | 委托人与代理人双向删除 |
+| `User` 行 | 脱敏：`Password/Mail/Mobile/DisplayName/Avatar/Code/LastLoginIP/RegisterIP/Ex4~Ex6` 置空，`Age/AreaId/Ex1~Ex3` 置零，邮箱手机验证标记复位；保留 `ID/Name` 与 `Enable`（由兜底统一禁用） |
+
+> 保留不清理：日志类 `Log`/`AppLog` 与统计 `UserStat`——属审计与运营统计范畴，按合规要求保留。
+> 冷静期/自助恢复暂不提供：注销为不可逆操作，如需恢复账号请联系管理员。
+
+| 维度 | 说明 |
+|------|------|
+| 接口 | `NewLife.Cube.Services.IAccountCloseHandler.HandleAsync(IUser user, String ip, CancellationToken)` |
+| 快照 | `user` 为**脱敏前快照**（含 ID/Name/Mail/Mobile/DisplayName 等原始值），可安全用于定位下游数据 |
+| 注册 | `services.AddSingleton<IAccountCloseHandler, MyHandler>()`，AddCube 前后任意时机均可；**必须 Singleton**（框架从根容器解析全部实现，不支持 Scoped/Transient） |
+| 失败策略 | 全部尽力而为：单个处理器异常被隔离记录，不影响其它处理器；账号禁用由框架兜底完成 |
+| 埋点 | 每个处理器调用处生成 `CloseAccount:{处理器名}` 子 Span，成功记 Value，异常记错误 |
+| 触发范围 | 当前仅用户自助注销：MVC `POST /Admin/User/CloseAccount`、API `POST /Auth/CloseAccount`；管理端删除用户暂不触发 |
+
+```csharp
+/// <summary>订单模块：注销时清理账号关联数据</summary>
+public class OrderAccountCloseHandler : IAccountCloseHandler
+{
+    public Task HandleAsync(IUser user, String ip, CancellationToken cancellationToken = default)
+    {
+        // 删除与该账号关联的业务数据（务必幂等）
+        // ErpOrder.DeleteByUserId(user.ID);
+        return Task.CompletedTask;
+    }
+}
+
+// 注册（Program.cs / Startup.cs）。必须 Singleton
+services.AddSingleton<IAccountCloseHandler, OrderAccountCloseHandler>();
+```
 
 ---
 
@@ -402,7 +452,7 @@ UserService.ResetPassword
 | 微信登录 | — | `POST /Sso/WxMiniLogin` / `POST /Sso/WxAppLogin` |
 | 绑定 | `POST /Admin/User/BindByVerifyCode`、`/Sso/Bind` | `POST /Auth/Register(category=oauth)` |
 | 更换手机/邮箱 | `POST /Admin/User/BindByVerifyCode` | 复用 `UserService.BindByVerifyCode` |
-| 注销账号 | `POST /Admin/User/CloseAccount` | 复用 `UserService.CloseAccount` |
+| 注销账号 | `POST /Admin/User/CloseAccount` | `POST /Auth/CloseAccount`（复用 `UserService.CloseAccount`，触发下游清理处理器） |
 | 导出个人数据 | `GET /Admin/User/ExportData` | 复用 `UserService` 数据组装 |
 
 ---

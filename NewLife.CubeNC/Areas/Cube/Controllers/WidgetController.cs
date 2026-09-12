@@ -16,7 +16,8 @@ public class WidgetController(WidgetManager widgetManager) : ControllerBaseX
     /// <summary>部件列表</summary>
     public ActionResult Index()
     {
-        CheckAdmin();
+        var admin = CheckAdmin();
+        if (admin != null) return admin;
 
         var list = widgetManager.Scan().Values.OrderBy(e => e.Sort).ToList();
 
@@ -48,7 +49,8 @@ public class WidgetController(WidgetManager widgetManager) : ControllerBaseX
     [HttpPost]
     public ActionResult SaveGroupOrder(String groups)
     {
-        CheckAdmin();
+        var admin = CheckAdmin();
+        if (admin != null) return admin;
 
         var list = (groups + "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
         widgetManager.SetGroupOrder(list);
@@ -63,7 +65,8 @@ public class WidgetController(WidgetManager widgetManager) : ControllerBaseX
     [HttpPost]
     public ActionResult SaveGroupItemOrder(String group, String names)
     {
-        CheckAdmin();
+        var admin = CheckAdmin();
+        if (admin != null) return admin;
 
         var list = (names + "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
         widgetManager.SetGroupItemOrder(group, list);
@@ -78,16 +81,18 @@ public class WidgetController(WidgetManager widgetManager) : ControllerBaseX
     [HttpPost]
     public ActionResult Enable(String name, Boolean enable)
     {
-        CheckAdmin();
+        var admin = CheckAdmin();
+        if (admin != null) return admin;
 
         widgetManager.SetEnabled(name, enable);
 
         return Json(0, null, enable ? "已启用" : "已禁用");
     }
 
-    private void CheckAdmin()
+    private ActionResult CheckAdmin()
     {
         var user = ManageProvider.User;
-        if (user == null || !user.Roles.Any(e => e.IsSystem)) throw new InvalidOperationException("仅支持系统管理员使用！");
+        if (user == null || !user.Roles.Any(e => e.IsSystem)) return Json(403, "仅支持系统管理员使用！");
+        return null;
     }
 }

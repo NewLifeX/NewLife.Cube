@@ -1,4 +1,4 @@
-using NewLife.Caching;
+﻿using NewLife.Caching;
 using NewLife.Cube.Common;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Models;
@@ -185,10 +185,9 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
         try
         {
             // 发送短信验证码
-            var code = SmsService.GenerateVerifyCode();
+            var code = SmsService.GenerateVerifyCode(config.CodeLength);//通过配置指定验证码长度 
             var rs = await smsService.SendVerifyCode(model.Action, mobile, code, config);
-            if (rs == null || !rs.Success)
-                throw new XException("短信发送失败");
+            if (rs == null || !rs.Success) throw new XException("短信发送失败");
 
             // 缓存验证码用于校验
             var codeKey = $"{codePrefix}{mobile}";

@@ -56,7 +56,7 @@ public class UserController : EntityController<User, UserModel>
             df.Header = "";
             //df.Text = "<img src=\"{Avatar}\" style=\"width:64px;height:64px;\" />";
             //df.Url = "/Admin/User/Edit?id={ID}";
-            df.DataVisible = entity => !(entity as User).Avatar.IsNullOrEmpty();
+            // 始终显示头像列：无头像文件时由 MyAvatar 回退到 /Cube/Avatar 端点兜底生成 SVG 文字头像
             // 使用ILinkExtend，高度定制头像超链接
             df.AddService(new MyAvatar());
             df.Title = "{Remark}";
@@ -115,7 +115,9 @@ public class UserController : EntityController<User, UserModel>
         public String Resolve(DataField field, IModel data)
         {
             var user = data as User;
-            return $"<a href=\"/Admin/User/Edit?id={user.ID}\" target=\"_blank\"><img src=\"{user.GetAvatarUrl()}\" style=\"width:32px;height:32px;\" /></a>";
+            // 本地有头像文件 → GetAvatarUrl 返回可访问地址；否则回退到 /Cube/Avatar 端点，由服务端兜底生成 SVG 文字头像
+            var src = user.GetAvatarUrl() ?? $"/Cube/Avatar?id={user.ID}";
+            return $"<a href=\"/Admin/User/Edit?id={user.ID}\" target=\"_blank\"><img src=\"{src}\" style=\"width:32px;height:32px;\" /></a>";
         }
     }
 
@@ -161,8 +163,12 @@ public class UserController : EntityController<User, UserModel>
         {
             var list = new List<User>();
             var entity = FindByID(id);
-            entity.Password = null;
-            if (entity != null) list.Add(entity);
+            if (entity != null)
+            {
+                // 不向浏览器输出密码
+                entity.Password = null;
+                list.Add(entity);
+            }
             return list;
         }
 
@@ -220,6 +226,25 @@ public class UserController : EntityController<User, UserModel>
         return list2;
     }
 
+    /// <summary>当前登录用户是否为系统角色。非系统角色在用户页只读，资料编辑走用户中心</summary>
+    /// <returns></returns>
+    private static Boolean IsSystemRole()
+    {
+        var user = ManageProvider.User;
+        return user != null && user.Roles.Any(e => e.IsSystem);
+    }
+
+    /// <summary>表单，添加/修改</summary>
+    /// <param name="id">主键。可能为空（表示添加），所以用字符串而不是整数</param>
+    /// <returns></returns>
+    public override ActionResult Edit(String id)
+    {
+        // 用户页对非系统角色只读：管理表单不可进入，资料编辑统一走用户中心（基本信息页）
+        if (!IsSystemRole()) return RedirectToAction(nameof(Info));
+
+        return base.Edit(id);
+    }
+
     /// <summary>验证实体对象</summary>
     /// <param name="entity"></param>
     /// <param name="type"></param>
@@ -234,18 +259,11 @@ public class UserController : EntityController<User, UserModel>
             entity["Password"] = null;
         }
 
-        if (post)
+        if (post && !IsSystemRole())
         {
-            // 非系统管理员，禁止修改任何人的角色
-            var user = ManageProvider.User;
-            if (_tenantContext.TenantId == 0)//非租户验证
-            {
-                if (!user.Roles.Any(e => e.IsSystem) && entity is IEntity entity2)
-                {
-                    if (entity2.Dirtys["RoleID"]) throw new Exception("禁止修改角色！");
-                    if (entity2.Dirtys["RoleIds"]) throw new Exception("禁止修改角色！");
-                }
-            }
+            // 用户页对非系统角色只读：仅支持查看本人信息，角色/部门/启用等管理字段一律禁止写入
+            // （含租户上下文；租户成员角色分配走 TenantUserController，个人资料编辑走用户中心）
+            throw new Exception("用户页对非系统角色只读，资料编辑请前往用户中心！");
         }
 
         if (post && type == DataObjectMethodType.Update)
@@ -263,6 +281,19 @@ public class UserController : EntityController<User, UserModel>
         }
 
         return base.Valid(entity, type, post);
+    }
+
+    /// <summary>导入数据。批量导入绕过 Valid 直接批量写入，同样禁止非系统角色使用</summary>
+    /// <param name="factory">实体工厂</param>
+    /// <param name="list">新数据列表</param>
+    /// <param name="context">导入上下文</param>
+    /// <returns></returns>
+    protected override Int32 OnImport(IEntityFactory factory, IList<IEntity> list, ImportContext context)
+    {
+        // 用户页对非系统角色只读：批量导入属于写入旁路，一并禁止
+        if (!IsSystemRole()) throw new Exception("用户页对非系统角色只读，禁止批量导入！");
+
+        return base.OnImport(factory, list, context);
     }
 
     #region 登录注销
@@ -293,11 +324,12 @@ public class UserController : EntityController<User, UserModel>
         if (ms != null && !set.AllowLogin)
         {
             if (logId > 0) throw new Exception("已完成第三方登录，但无法绑定本地用户且没有开启自动注册，建议开启OAuth应用的自动注册");
-            if (ms.Count == 0)
-            {
-                //throw new Exception("禁用了本地密码登录，且没有配置第三方登录");
-                set.AllowLogin = true;
-            }
+
+            // 没有任何第三方登录渠道，且短信/邮箱登录也未开启时明确报错；
+            // 不得静默重开密码登录（旧实现 set.AllowLogin=true 仅影响页面展示，服务层已强制拦截账密登录，
+            // 两者叠加会陷入"页面有表单却登录不了"的困惑状态）
+            if (ms.Count == 0 && !set.EnableSms && !set.EnableMail)
+                throw new Exception("已禁止密码登录，且未配置第三方登录渠道，请先在OAuth应用中启用SSO登录");
 
             // 只有一个，跳转
             if (ms.Count == 1)
@@ -679,6 +711,9 @@ public class UserController : EntityController<User, UserModel>
             if (att != null) user.Avatar = ViewHelper.GetAttachmentUrl(att);
         }
 
+        // 资料编辑不走密码流程：清除 Password 脏标记，防止构造请求绕过密码哈希直接明文入库
+        (user as IEntity).Dirtys["Password"] = false;
+
         user.Update();
 
         return Info(user.ID);
@@ -820,6 +855,12 @@ public class UserController : EntityController<User, UserModel>
 
         // 前面表单可能已经清空密码
         var user = FindByID(id);
+        if (user == null)
+        {
+            if (IsJsonRequest) return Json(1, "用户不存在");
+            return RedirectToAction("Index");
+        }
+
         //user.Password = "nopass";
         user.Password = null;
         user.SaveWithoutValid();
@@ -836,6 +877,9 @@ public class UserController : EntityController<User, UserModel>
     [EntityAuthorize(PermissionFlags.Update)]
     public ActionResult RevokeTokens(Int32 id)
     {
+        // 吊销令牌属于安全运维操作，仅管理员可用（用户页对非系统角色只读，防跨用户令牌吊销）
+        if (!IsSystemRole()) throw new Exception("吊销令牌需要管理员权限，非法操作！");
+
         var user = FindByID(id);
         if (user == null)
         {

@@ -260,7 +260,20 @@
                     <div class="form-group">
                         <label class="control-label col-sm-2">备注</label>
                         <div class="col-sm-10">
-                            @Html.ForEditor("Remark")
+                            @{
+                                // 备注在用户实体上配置了 ItemType=html，与编辑页保持一致使用 HTML 富文本编辑器。
+                                // 注意：本页 ViewBag.Fields 是基类 OnActionExecuting 注入的列表字段（已移除 Remark），必须从实体元数据判定
+                                var remarkField = fact.Table.FindByName("Remark");
+                                var remarkItemType = remarkField?.Field?.ItemType ?? remarkField?.Column?.ItemType;
+                            }
+                            @if (remarkItemType.EqualIgnoreCase("html"))
+                            {
+                                @await Html.PartialAsync("_HtmlEditor", new ItemModel("Remark", user.Remark, typeof(String)))
+                            }
+                            else
+                            {
+                                @Html.ForEditor("Remark")
+                            }
                         </div>
                     </div>
                 </div>
@@ -298,7 +311,7 @@
                     <label class="control-label col-sm-4">注销账号</label>
                     <div class="col-sm-8">
                         <button type="button" class="btn btn-sm btn-danger" id="sec_close_btn"><i class="fa fa-times-circle"></i> 注销账号</button>
-                        <span class="help-text">依据《中华人民共和国个人信息保护法》提供账号注销。注销后账号禁用，个性化数据将清空且不可恢复</span>
+                        <span class="help-text">依据《中华人民共和国个人信息保护法》、欧盟《通用数据保护条例》（GDPR）等法规提供账号注销（删除权）。注销后账号将被禁用，个人数据将删除或匿名化，且不可恢复</span>
                     </div>
                 </div>
             </div>
@@ -314,7 +327,7 @@
             jQuery(function () {
                 // ========== 注销账号 ==========
                 $('#sec_close_btn').on('click', function () {
-                    if (!confirm('确定要注销账号吗？注销后账号将被禁用，个性化数据将清空且不可恢复。')) return;
+                    if (!confirm('确定要注销账号吗？注销后账号将被禁用，个人数据将删除或匿名化，且不可恢复。')) return;
                     $.ajax({
                         url: '@Url.Action("CloseAccount", "User", new { area = "Admin" })',
                         type: 'POST',

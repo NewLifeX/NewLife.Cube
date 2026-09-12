@@ -29,7 +29,8 @@ export type ControlType =
   | 'email' // 邮箱（带校验）
   | 'tel' // 手机（带校验）
   | 'url' // 网址（带校验）
-  | 'readonly'; // 只读文本（Guid 等）
+  | 'readonly' // 只读文本（Guid 等）
+  | 'select'; // 枚举 / 字典下拉（后端下发 dataSource）
 
 /** 动态搜索控件类型（搜索区子集） */
 export type SearchControlType =
@@ -97,6 +98,11 @@ export interface FieldMeta {
   multiple?: boolean;
   /** 选项（保留，LOV 模式一般留空） */
   options?: FieldOption[];
+  /**
+   * 后端下发的取值字典（枚举 / 字典字段，如 { "1": "小时", "2": "班次" }）。
+   * 与 lovCode 二选一：有 lovCode 走 LOV 远程拉取；否则用本地 dataSource 渲染下拉。
+   */
+  dataSource?: Record<string, string>;
 }
 
 /** 搜索字段（列表搜索区消费，继承 FieldMeta 并附带解析后的搜索控件类型） */

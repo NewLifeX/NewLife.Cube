@@ -1,13 +1,13 @@
 /**
- * @cube/page-logic — 魔方前端列表页业务编排逻辑（框架无关核心）
+ * @newlifex/page-logic — 魔方前端列表页业务编排逻辑（框架无关核心）
  *
  * 将字段加载、列表查询、CRUD、导入导出、图表数据等列表页通用逻辑
  * 封装为框架无关的编排类，各框架通过适配器桥接到具体状态管理。
  */
 
-import type { CubeApi, DataField, ApiResponse, PageParams, PageSetting } from '@cube/api-core';
-import { resolveWidgets, type FieldMapping } from '@cube/field-mapping';
-import { buildExportUrl } from '@cube/page-utils';
+import type { CubeApi, DataField, ApiResponse, PageParams, PageSetting } from '@newlifex/api-core';
+import { resolveWidgets, type FieldMapping } from '@newlifex/field-mapping';
+import { buildExportUrl } from '@newlifex/page-utils';
 
 // ======================== 类型 ========================
 
@@ -22,6 +22,8 @@ export interface Pagination {
 export interface PageState {
   /** 列表字段映射 */
   listFields: FieldMapping[];
+  /** 全部可用列表字段（应用用户列配置前，供列设置面板使用） */
+  allListFields: FieldMapping[];
   /** 搜索字段映射 */
   searchFields: FieldMapping[];
   /** 新增字段映射 */
@@ -56,6 +58,8 @@ export interface PageState {
   canExport: boolean;
   /** 是否允许导入（来自菜单权限） */
   canImport: boolean;
+  /** 是否可用开发功能（高级菜单 备份/还原/备份导出/清空数据表）。开发模式 && 系统管理员 */
+  canDevelop: boolean;
 }
 
 /** 状态变更回调 */
@@ -95,6 +99,7 @@ export class PageLogic {
         : () => (mp as Record<string, string> | undefined) ?? {};
     this.state = {
       listFields: [],
+      allListFields: [],
       searchFields: [],
       addFields: [],
       editFields: [],
@@ -112,6 +117,7 @@ export class PageLogic {
       canDelete: true,
       canExport: true,
       canImport: true,
+      canDevelop: false,
     };
   }
 
@@ -126,12 +132,14 @@ export class PageLogic {
     const pageMeta = pageRes.data ?? {};
 
     const listData = pageMeta.list ?? pageMeta.fields?.list ?? [];
+    const allListData = pageMeta.allList ?? listData;
     const addData = pageMeta.addForm ?? pageMeta.fields?.form?.addForm ?? [];
     const editData = pageMeta.editForm ?? pageMeta.fields?.form?.editForm ?? [];
     const detailData = pageMeta.detail ?? pageMeta.fields?.form?.detail ?? [];
     const searchData = pageMeta.search ?? pageMeta.fields?.search ?? [];
 
     const listFields = resolveWidgets(listData);
+    const allListFields = resolveWidgets(allListData);
     const searchFields = resolveWidgets(searchData);
     const addFields = resolveWidgets(addData);
     const editFields = resolveWidgets(editData);
@@ -166,8 +174,11 @@ export class PageLogic {
     const canDelete = (noPermConfig || hasDel) && (pageSetting?.isReadOnly !== true);
     const canExport = noPermConfig || hasExport;
     const canImport = noPermConfig || hasImport;
+    // 开发功能（备份/还原/备份导出/清空数据表）：开发模式 && 系统管理员（对齐 MVC Develop 条件）
+    const canDevelop = !!(pageSetting?.develop && pageSetting?.isSystem);
 
     this.state.listFields = listFields;
+    this.state.allListFields = allListFields;
     this.state.searchFields = searchFields;
     this.state.addFields = addFields;
     this.state.editFields = editFields;
@@ -179,8 +190,9 @@ export class PageLogic {
     this.state.canDelete = canDelete;
     this.state.canExport = canExport;
     this.state.canImport = canImport;
+    this.state.canDevelop = canDevelop;
 
-    this.update({ listFields, searchFields, addFields, editFields, detailFields, pkField, pageSetting, canAdd, canEdit, canDelete, canExport, canImport });
+    this.update({ listFields, allListFields, searchFields, addFields, editFields, detailFields, pkField, pageSetting, canAdd, canEdit, canDelete, canExport, canImport, canDevelop });
   }
 
   /** 加载列表数据（分页 + 搜索） */
@@ -189,9 +201,13 @@ export class PageLogic {
     this.update({ loading: true });
 
     try {
+      // 后端 Pager.PageIndex 从 1 开始、默认 1；PageSize 默认 20。
+      // 第一页不传 pageIndex，pageSize 恰为 20 不传，交由后端默认值，避免冗余参数
+      const pageIndex = this.state.pagination.pageIndex;
+      const pageSize = this.state.pagination.pageSize;
       const params: PageParams = {
-        pageIndex: this.state.pagination.pageIndex - 1, // 后端从 0 开始
-        pageSize: this.state.pagination.pageSize,
+        ...(pageIndex > 1 ? { pageIndex } : {}),
+        ...(pageSize !== 20 ? { pageSize } : {}),
         ...searchParams,
       };
 
@@ -202,7 +218,7 @@ export class PageLogic {
 
       if (res.page) {
         pagination.totalCount = res.page.totalCount;
-        pagination.pageIndex = res.page.pageIndex + 1; // 转为从 1 开始
+        pagination.pageIndex = res.page.pageIndex; // 后端从 1 开始，与前端一致
         pagination.pageSize = res.page.pageSize;
       }
 
@@ -253,6 +269,11 @@ export class PageLogic {
   /** 删除单条记录 */
   async remove(type: string, id: number | string): Promise<ApiResponse<unknown>> {
     return this.api.page.remove(type, id);
+  }
+
+  /** 恢复软删除单条记录 */
+  async restore(type: string, id: number | string): Promise<ApiResponse<unknown>> {
+    return this.api.page.restore(type, id);
   }
 
   /** 批量删除 */
@@ -306,8 +327,8 @@ export class PageLogic {
 }
 
 // 重新导出供适配器使用
-export { FieldKind } from '@cube/api-core';
-export type { DataField } from '@cube/api-core';
-export type { FieldMapping } from '@cube/field-mapping';
-export { resolveWidgets, resolveWidget } from '@cube/field-mapping';
-export { buildExportUrl, EXPORT_FORMATS, resolveUrl, checkAuth, Auth } from '@cube/page-utils';
+export { FieldKind } from '@newlifex/api-core';
+export type { DataField } from '@newlifex/api-core';
+export type { FieldMapping } from '@newlifex/field-mapping';
+export { resolveWidgets, resolveWidget } from '@newlifex/field-mapping';
+export { buildExportUrl, EXPORT_FORMATS, resolveUrl, checkAuth, Auth } from '@newlifex/page-utils';

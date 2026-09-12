@@ -1,5 +1,5 @@
 {
-  "name": "@cube/page-logic",
+  "name": "@newlifex/page-logic",
   "version": "0.1.0",
   "description": "魔方前端列表页业务编排逻辑，框架无关核心 + Pinia/Zustand 适配器",
   "type": "module",
@@ -23,17 +23,30 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
+  "keywords": ["魔方", "cube", "newlife", "page", "list", "crud"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NewLifeX/NewLife.Cube.git"
+  },
+  "homepage": "https://github.com/NewLifeX/NewLife.Cube",
+  "bugs": {
+    "url": "https://github.com/NewLifeX/NewLife.Cube/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup src/index.ts src/pinia.ts src/zustand.ts --format esm,cjs --dts",
     "dev": "tsup src/index.ts src/pinia.ts src/zustand.ts --format esm,cjs --dts --watch",
-    "postinstall": "pnpm build"
+    "prepare": "pnpm build"
   },
   "dependencies": {
-    "@cube/api-core": "workspace:*",
-    "@cube/field-mapping": "workspace:*",
-    "@cube/page-utils": "workspace:*"
+    "@newlifex/api-core": "workspace:*",
+    "@newlifex/field-mapping": "workspace:*",
+    "@newlifex/page-utils": "workspace:*"
   },
   "peerDependencies": {
     "pinia": ">=2.0.0",

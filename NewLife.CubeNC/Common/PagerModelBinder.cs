@@ -57,7 +57,9 @@ namespace NewLife.Cube
                     return;
                 }
 
+#pragma warning disable CS0618 // ComplexObjectModelBinder 无公开构造函数（仅 Provider 内部创建），无法直接实例化，回退绑定仍使用 ComplexTypeModelBinder
                 var complexTypeModelBinder = new ComplexTypeModelBinder(_propertyBinders, _loggerFactory);
+#pragma warning restore CS0618
                 bindingContext.Model = pager;
                 await complexTypeModelBinder.BindModelAsync(bindingContext);
             }

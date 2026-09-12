@@ -5,7 +5,7 @@
   import { collapsed, darkMode, loginConfig, siteTitle } from '$lib/stores/app';
   import { user, menus, isLoggedIn, displayName, fetchUserInfo, fetchMenus, logout } from '$lib/stores/user';
   import { getApi } from '$lib/api';
-  import type { MenuItem } from '@cube/api-core';
+  import type { MenuItem } from '@newlifex/api-core';
   import '../app.css';
 
   let openKeys: Record<string, boolean> = $state({});

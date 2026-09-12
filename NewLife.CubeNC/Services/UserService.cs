@@ -20,7 +20,7 @@ namespace NewLife.Cube.Services;
 /// <summary>用户服务</summary>
 /// <remarks>
 /// 基础用户服务：用户名密码登录、注册（含三方）、会话、在线统计、账号注销。
-/// 验证码登录/注册/找回/绑定等增强能力由 <see cref="VerifyCodeService"/> 与 <see cref="AuthEnhancedService"/> 承载（MVC精简版不编译）。
+/// 验证码登录/注册/找回/绑定等增强能力由 <c>VerifyCodeService</c> 与 <c>AuthEnhancedService</c> 承载（MVC精简版不编译）。
 /// </remarks>
 /// <param name="passwordService">密码服务</param>
 /// <param name="cacheProvider">缓存提供者</param>
@@ -28,7 +28,8 @@ namespace NewLife.Cube.Services;
 /// <param name="tracer">追踪器</param>
 /// <param name="bindingService">用户绑定服务</param>
 /// <param name="tenantContext">租户上下文</param>
-public class UserService(PasswordService passwordService, ICacheProvider cacheProvider, IMfaService mfaService, ITracer tracer, IUserBindingService bindingService, ITenantContext tenantContext)
+/// <param name="serviceProvider">服务提供者。用于解析账号注销处理器</param>
+public class UserService(PasswordService passwordService, ICacheProvider cacheProvider, IMfaService mfaService, ITracer tracer, IUserBindingService bindingService, ITenantContext tenantContext, IServiceProvider serviceProvider)
 {
     #region 缓存Key前缀常量
     /// <summary>OAuth回跳注册待处理缓存前缀</summary>
@@ -80,7 +81,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
     #endregion
 
     #region 登录
-    /// <summary>统一登录入口。基础服务仅支持用户名密码登录，验证码登录见 <see cref="AuthEnhancedService.Login"/></summary>
+    /// <summary>统一登录入口。基础服务仅支持用户名密码登录，验证码登录见 <c>AuthEnhancedService.Login</c></summary>
     /// <param name="loginModel">登录模型</param>
     /// <param name="httpContext">HTTP上下文</param>
     /// <returns>登录结果，包含Token信息或错误信息</returns>
@@ -110,6 +111,13 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         var ip16Errors = ip16Key.IsNullOrEmpty() ? 0 : _cache.Get<Int32>(ip16Key);
 
         var set = CubeSetting.Current;
+
+        // 安全开关：关闭密码登录（AllowLogin=false，仅保留SSO等）后，直接拒绝所有账密登录请求，
+        // 防止攻击者绕过登录页直接调用登录接口。本方法是 MVC 版与 API 版共用的账密登录汇聚点
+        // （Auth/Login、Admin/User/Login 均汇聚到此），统一在此拦截即可覆盖全部密码登录入口
+        if (!set.AllowLogin)
+            throw new InvalidOperationException("已禁止密码登录，请使用 SSO 或其它登录方式");
+
         try
         {
             if (username.IsNullOrEmpty()) throw new ArgumentNullException(nameof(username), "用户名不能为空！");
@@ -215,7 +223,15 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         if (_tenantContext.Mode != TenantMode.None)
             httpContext.SaveTenant(_tenantContext.TenantId);
 
-        LogProvider.Provider.WriteLog(typeof(User), action, true, $"用户：{username}", user.ID, user + "", ip);
+        // 外部来源。登录/注册来自外部系统跳转时，来源写入登录日志，并回填用户归属（仅空时写入）
+        var source = httpContext.GetSourceUrl();
+        if (user is User userSource && !source.IsNullOrEmpty() && userSource.Ex4.IsNullOrEmpty())
+        {
+            userSource.Ex4 = source.GetHost();
+            userSource.SaveAsync();
+        }
+
+        LogProvider.Provider.WriteLog(typeof(User), action, true, $"用户：{username}" + (source.IsNullOrEmpty() ? "" : $" 来源：{source}"), user.ID, user + "", ip);
 
         // MFA 拦截：须用库中最新 User（含 Ex4/Ex5/Ex6），避免会话对象无持久化扩展字段
         if (set.EnableMfa && _mfa != null)
@@ -234,7 +250,10 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         }
 
         // 先颁发令牌，JWT 缓存在 context.Items["jwtToken"]
-        var tokens = httpContext.IssueLoginToken(user, TimeSpan.FromSeconds(set.TokenExpire));
+        // 记住登录状态（Remember）：JWT 有效期与 Cookie 一致延长到 365 天，
+        // 前端（SPA 存 localStorage）在有效期内重开系统免登录；令牌带 jti，退出登录仍可吊销
+        var tokenExpire = remember ? TimeSpan.FromDays(365) : TimeSpan.FromSeconds(set.TokenExpire);
+        var tokens = httpContext.IssueLoginToken(user, tokenExpire);
 
         // 再存 Cookie（优先取 Items 中的 JWT，即包含 jti 的那个）
         var provider = ManageProvider.Provider;
@@ -381,7 +400,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
     #endregion
 
     #region 注册
-    /// <summary>统一注册入口。基础服务支持用户名密码/OAuth注册，验证码注册见 <see cref="AuthEnhancedService.Register"/></summary>
+    /// <summary>统一注册入口。基础服务支持用户名密码/OAuth注册，验证码注册见 <c>AuthEnhancedService.Register</c></summary>
     /// <param name="model">注册模型</param>
     /// <param name="httpContext">HTTP上下文</param>
     /// <returns>注册并登录结果</returns>
@@ -596,9 +615,9 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
     #region 账号管理（注销 / 导出）
     /// <summary>注销账号：禁用账号并清空个性化数据（依据《个人信息保护法》提供账号注销功能）</summary>
     /// <remarks>
-    /// 软删除：保留 ID/Name（防重名、可审计），Enable=false 禁用；
-    /// 清空 Mail/Mobile/DisplayName/Avatar/Password 等敏感字段；
-    /// 吊销全部令牌、解绑第三方、清理在线记录。
+    /// 按注册顺序调用所有 <see cref="IAccountCloseHandler"/>（全部尽力而为，单个失败不影响其它处理器），
+    /// 默认处理器负责吊销令牌、解绑第三方、清理个人数据并脱敏用户行；
+    /// 处理器完成后，框架兜底禁用账号（保留 ID/Name 防重名与审计），确保注销后无法登录。
     /// </remarks>
     /// <param name="user">当前用户</param>
     /// <param name="ip">客户端IP</param>
@@ -609,33 +628,18 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
 
         if (user == null || user.ID <= 0) return new ServiceResult { IsSuccess = false, Message = "用户未登录" };
 
-        // 吊销全部令牌，使其立即失效
-        UserToken.RevokeByUser(user.ID);
+        // 注销脱敏前快照，供处理器定位并清理个人数据
+        var entity0 = User.FindByID(user.ID);
+        IUser snapshot = entity0?.CloneEntity();
 
-        // 解绑第三方
-        var ucs = UserConnect.FindAllByUserID(user.ID);
-        if (ucs.Count > 0) ucs.Delete();
+        // 调用所有处理器清理个人数据。全部尽力而为，单个失败不影响其它处理器
+        InvokeCloseHandlers(snapshot ?? user, ip);
 
-        // 清理在线记录
-        var onlines = UserOnline.FindAllByUserID(user.ID);
-        if (onlines.Count > 0) onlines.Delete();
-
-        // 禁用账号并清空个性化数据（保留 ID/Name 防重名与审计）
+        // 兜底禁用账号：不依赖任何处理器，确保注销后无法登录
         var entity = User.FindByID(user.ID);
         if (entity != null)
         {
             entity.Enable = false;
-            entity.Password = null;
-            entity.Mail = null;
-            entity.MailVerified = false;
-            entity.Mobile = null;
-            entity.MobileVerified = false;
-            entity.DisplayName = null;
-            entity.Avatar = null;
-            entity.Code = null;
-            entity.Age = 0;
-            entity.Birthday = DateTime.MinValue;
-            entity.LastLoginIP = null;
             entity.Update();
         }
 
@@ -643,12 +647,39 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
 
         return new ServiceResult { IsSuccess = true, Message = "账号已注销" };
     }
+
+    /// <summary>逐个调用账号注销处理器。全部尽力而为，单个异常被隔离记录；处理器必须按 Singleton 注册</summary>
+    /// <param name="user">注销前的用户快照</param>
+    /// <param name="ip">客户端IP</param>
+    private void InvokeCloseHandlers(IUser user, String ip)
+    {
+        if (serviceProvider == null) return;
+
+        var handlers = ModelExtension.GetServices<IAccountCloseHandler>(serviceProvider);
+        foreach (var handler in handlers)
+        {
+            // 埋点：每个处理器一个子 Span，便于观测各自耗时与失败
+            using var span = tracer?.NewSpan($"CloseAccount:{handler.GetType().Name}", new { user?.ID });
+            try
+            {
+                handler.HandleAsync(user, ip).ConfigureAwait(false).GetAwaiter().GetResult();
+                if (span != null) span.Value++;
+            }
+            catch (Exception ex)
+            {
+                span?.SetError(ex, null);
+                XTrace.WriteLine("[CloseAccount] 处理器 {0} 清理失败（用户 {1}）：{2}", handler.GetType().FullName, user?.ID, ex.Message);
+                XTrace.WriteException(ex);
+            }
+        }
+    }
     #endregion
 
     #region 定时任务
     private TimerX _timer;
     private TimerX _timer2;
     private Int32 _onlines;
+    private Int32 _lastOnlineTotal;
 
     private void StartTimer()
     {
@@ -670,7 +701,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
     #region 用户在线
     /// <summary>设置会话状态</summary>
     /// <returns></returns>
-    public UserOnline SetStatus(UserOnline online, String sessionId, String deviceId, String page, String status, UserAgentParser userAgent, Int32 userid = 0, String name = null, String ip = null)
+    public UserOnline SetStatus(UserOnline online, String sessionId, String deviceId, String page, String status, UserAgentParser userAgent, Int32 userid = 0, String name = null, String ip = null, String refer = null)
     {
         // 网页使用一个定时器来清理过期
         StartTimer();
@@ -713,6 +744,9 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         online.UpdateIP = ip;
         online.OnlineTime = (Int32)(online.UpdateTime - online.CreateTime).TotalSeconds;
         online.TraceId = DefaultSpan.Current?.TraceId;
+
+        // 记录外部跳转来源。仅在为空时写入，站内跳转不清空，保持会话首次外部来源
+        if (!refer.IsNullOrEmpty() && online.Referer.IsNullOrEmpty()) online.Referer = refer;
         online.SaveAsync(5_000);
 
         if (_onlines == 0 || online.Times <= 1)
@@ -723,12 +757,12 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
 
     /// <summary>设置网页会话状态</summary>
     /// <returns></returns>
-    public UserOnline SetWebStatus(UserOnline online, String sessionId, String deviceId, String page, String status, UserAgentParser userAgent, IUser user, String ip)
+    public UserOnline SetWebStatus(UserOnline online, String sessionId, String deviceId, String page, String status, UserAgentParser userAgent, IUser user, String ip, String refer = null)
     {
         // 网页使用一个定时器来清理过期
         StartTimer();
 
-        if (user == null) return SetStatus(online, sessionId, deviceId, page, status, userAgent, 0, null, ip);
+        if (user == null) return SetStatus(online, sessionId, deviceId, page, status, userAgent, 0, null, ip, refer);
 
         // 根据IP修正用户城市
         if (user is User user2 && (user2.AreaId == 0 || user2.AreaId % 10000 == 0))
@@ -748,7 +782,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
             }
         }
 
-        return SetStatus(online, sessionId, deviceId, page, status, userAgent, user.ID, user + "", ip);
+        return SetStatus(online, sessionId, deviceId, page, status, userAgent, user.ID, user + "", ip, refer);
     }
 
     /// <summary>删除过期，指定过期时间</summary>
@@ -772,10 +806,20 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
             // 10分钟不活跃将会被删除
             var exp = UserOnline._.UpdateTime < DateTime.Now.AddSeconds(-secTimeout);
             var list = UserOnline.FindAll(exp, null, null, 0, 0);
+
+            // 删除前读取在线总数（Meta.Count 带短缓存，删除后再读可能返回含过期行的旧值导致重复扣减）
+            var total0 = UserOnline.Meta.Count;
             list.Delete();
 
-            // 修正在线数
-            var total = UserOnline.Meta.Count;
+            // 删除后真实在线数 = 删除前总数 - 删除行数
+            var total = total0 - list.Count;
+
+            // 在线数变化时，检查是否突破历史纪录（在线新高告警，内部自行判断开关与门槛）
+            if (total != _lastOnlineTotal)
+            {
+                _lastOnlineTotal = total;
+                OnlineAlertService.Check(total, DateTime.Now);
+            }
 
             // 设置统计
             UserStat stat = null;
@@ -791,7 +835,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
                 }
             }
 
-            _onlines = total - list.Count;
+            _onlines = total;
 
             // 设置离线
             foreach (var item in list)

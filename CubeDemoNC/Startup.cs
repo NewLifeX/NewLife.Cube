@@ -45,6 +45,9 @@ public class Startup
 
         services.AddCubeFileStorage("Cube");
 
+        // 账号注销处理器示例：演示下游注册数据清理处理器（AddCube 前后注册均可）
+        services.AddSingleton<IAccountCloseHandler, DemoAccountCloseHandler>();
+
         // 启用接口响应压缩
         services.AddResponseCompression();
 

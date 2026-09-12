@@ -38,8 +38,8 @@ public class CubeSetting : Config<CubeSetting>
     [Category("通用")]
     public String AvatarPath { get; set; } = "Avatars";
 
-    /// <summary>文字头像字符数。头像不存在时自动生成SVG文字头像，可选±1或±2个字符。中文取末尾N字，英文取各单词首字母。默认1</summary>
-    [Description("文字头像字符数。头像不存在时自动生成SVG文字头像，可选±1或±2个字符。中文取末尾N字，英文取各单词首字母。默认1")]
+    /// <summary>文字头像字符数。头像不存在时自动生成SVG文字头像，可选1~3个字符。中文取前N字，英文取各单词首字母。默认2</summary>
+    [Description("文字头像字符数。头像不存在时自动生成SVG文字头像，可选1~3个字符。中文取前N字，英文取各单词首字母。默认2")]
     [Category("通用")]
     public Int32 AvatarChars { get; set; } = 2;
 
@@ -110,6 +110,33 @@ public class CubeSetting : Config<CubeSetting>
     [Description("筛选时间窗天数。分表/日志类实体在无时间条件时自动收窄近 N 天，默认30；0 表示关闭")]
     [Category("通用")]
     public Int32 FilterWindowDays { get; set; } = 30;
+    #endregion
+
+    #region 安全防御
+    /// <summary>安全防御模式。0=关闭，1=观察模式仅记录，2=拦截模式，3=自动模式（默认；观察为主，连续攻击自动封禁，大范围攻击临时拦截并自动回落）</summary>
+    [Description("安全防御模式。0=关闭，1=观察模式仅记录，2=拦截模式，3=自动模式（默认；观察为主，连续攻击自动封禁，大范围攻击临时拦截并自动回落）")]
+    [Category("安全")]
+    public Int32 SecurityMode { get; set; } = 3;
+
+    /// <summary>自动封禁时长档位。逗号分隔秒数，按触发次数递增；空值使用默认档位 60,300,1800,7200,86400</summary>
+    [Description("自动封禁时长档位。逗号分隔秒数，按触发次数递增；空值使用默认档位 60,300,1800,7200,86400")]
+    [Category("安全")]
+    public String BlockDurations { get; set; }
+
+    /// <summary>可信代理。来自这些代理的转发头才被信任，逗号分隔IP或CIDR网段；空值兼容旧行为信任全部转发头</summary>
+    [Description("可信代理。来自这些代理的转发头才被信任，逗号分隔IP或CIDR网段；空值兼容旧行为信任全部转发头")]
+    [Category("安全")]
+    public String TrustedProxies { get; set; }
+
+    /// <summary>可信代理自动学习数量。可信代理未配置时，自动学习携带转发头的内网直连来源（反向代理/负载均衡入口），最多学习该数量，0=不学习</summary>
+    [Description("可信代理自动学习数量。可信代理未配置时，自动学习携带转发头的内网直连来源，最多学习该数量，0=不学习（单机房主备一般2，双机房一般4）")]
+    [Category("安全")]
+    public Int32 TrustedProxyLearning { get; set; } = 4;
+
+    /// <summary>已学习代理。由系统自动维护，可信代理为空时参与链解析；清空可重置学习结果</summary>
+    [Description("已学习代理。由系统自动维护，清空可重置学习结果")]
+    [Category("安全")]
+    public String LearnedProxies { get; set; }
     #endregion
 
     #region 用户登录
@@ -436,6 +463,11 @@ public class CubeSetting : Config<CubeSetting>
     [Description("OAuth服务。是否启用OAuth2.0服务，为其它应用提供单点登录服务")]
     [Category("系统功能")]
     public Boolean EnableOAuthServer { get; set; } = true;
+
+    /// <summary>文件管理。是否启用后台文件管理，可浏览/上传/下载/删除站点内文件，存在安全风险，默认false</summary>
+    [Description("文件管理。是否启用后台文件管理，可浏览/上传/下载/删除站点内文件，存在安全风险")]
+    [Category("系统功能")]
+    public Boolean EnableFileManager { get; set; }
 
     /// <summary>多租户。是否支持多租户，租户模式禁止访问系统管理，平台管理模式禁止访问租户页面</summary>
     [Description("多租户。是否支持多租户，租户模式禁止访问系统管理，平台管理模式禁止访问租户页面")]

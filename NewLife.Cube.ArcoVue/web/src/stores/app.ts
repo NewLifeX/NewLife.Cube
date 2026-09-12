@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { LoginConfig } from '@cube/api-core';
+import type { LoginConfig } from '@newlifex/api-core';
 import cubeApi from '@/api';
 import { emptyAiRuntimeContext, type AiRuntimeContext } from '@/core/utils/aiChatContext';
 import { DEFAULT_AI_CONFIG, parseAiConfig, type AiAssistantConfig } from '@/core/utils/aiConfig';

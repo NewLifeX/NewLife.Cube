@@ -1,18 +1,18 @@
 /**
- * @cube/page-logic/zustand — Zustand 适配器
+ * @newlifex/page-logic/zustand — Zustand 适配器
  *
  * 将 PageLogic 桥接为 React hooks，供 React 系皮肤使用。
  *
  * @example
  * ```ts
- * import { createPageStore } from '@cube/page-logic/zustand';
+ * import { createPageStore } from '@newlifex/page-logic/zustand';
  * import api from '@/api';
  * const usePageStore = createPageStore(api, '/Admin/User');
  * ```
  */
 
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
-import type { CubeApi, ApiResponse } from '@cube/api-core';
+import type { CubeApi, ApiResponse } from '@newlifex/api-core';
 import { PageLogic, type PageState, type FieldMapping, type Pagination } from './index';
 
 export interface ZustandPageState extends PageState {
@@ -22,8 +22,10 @@ export interface ZustandPageState extends PageState {
   add: (data: Record<string, unknown>) => Promise<ApiResponse<unknown>>;
   update: (data: Record<string, unknown>) => Promise<ApiResponse<unknown>>;
   remove: (id: number | string) => Promise<ApiResponse<unknown>>;
+  restore: (id: number | string) => Promise<ApiResponse<unknown>>;
   deleteSelect: (keys: (number | string)[]) => Promise<ApiResponse<unknown>>;
-  deleteAll: () => Promise<ApiResponse<unknown>>;
+  /** 按条件删除全部，params 为搜索条件（不传则后端拒绝空条件删除） */
+  deleteAll: (params?: Record<string, unknown>) => Promise<ApiResponse<unknown>>;
   getDetail: <T = Record<string, unknown>>(id: number | string) => Promise<T>;
   getExportUrl: (format: string) => string;
   importFile: (file: File) => Promise<ApiResponse<unknown>>;
@@ -58,6 +60,7 @@ export function createPageStore(
     return {
       // 初始状态
       listFields: [],
+      allListFields: [],
       searchFields: [],
       addFields: [],
       editFields: [],
@@ -75,6 +78,7 @@ export function createPageStore(
       canDelete: true,
       canExport: true,
       canImport: true,
+      canDevelop: false,
 
       // 操作方法
       loadFields: () => logic.loadFields(type),
@@ -83,8 +87,9 @@ export function createPageStore(
       add: (data) => logic.add(type, data),
       update: (data) => logic.update_(type, data),
       remove: (id) => logic.remove(type, id),
+      restore: (id) => logic.restore(type, id),
       deleteSelect: (keys) => logic.deleteSelect(type, keys),
-      deleteAll: () => logic.deleteAll(type),
+      deleteAll: (params) => logic.deleteAll(type, params),
       getDetail: (id) => logic.getDetail(type, id),
       getExportUrl: (format) => logic.getExportUrl(type, format),
       importFile: (file) => logic.importFile(type, file),

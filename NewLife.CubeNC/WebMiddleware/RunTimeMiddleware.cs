@@ -64,8 +64,9 @@ public class RunTimeMiddleware
         // 获取当前用户。先找Items，再找Session2，没有自动登录能力
         var user = ManageProvider.User;
 
-        // 安全访问
-        var rule = _accessService.Valid(url + "", ua, ip, user, session);
+        // 安全访问。读取请求体用于威胁检测（仅文本类内容，超限不读）
+        var body = await MiddlewareHelper.ReadRequestBodyAsync(ctx);
+        var rule = _accessService.Valid(url + "", body, ua, ip, user, session, ctx);
         if (rule != null && rule.ActionKind is AccessActionKinds.Block or AccessActionKinds.Limit)
         {
             if (rule.BlockCode == 302)
@@ -120,10 +121,13 @@ public class RunTimeMiddleware
                 var deviceId = WebHelper.FillDeviceId(ctx);
                 //var sessionId = token?.MD5_16() ?? ip;
                 var sessionId = deviceId;
+                // 外部跳转来源。站内跳转或空时返回空，仅首次外部来源写入在线表
+                var refer = WebHelper2.GetExternalRefer(ctx.Request);
                 if (user == null)
-                    online = _userService.SetStatus(online, sessionId, deviceId, p, userAgent, ua, 0, WebHelper.GetUserByToken(ctx), ip);
+                    // 匿名请求不采信请求头JWT（GetUserByToken 仅解析不验签可伪造），在线记录以设备/IP标识，避免伪造用户名污染在线列表
+                    online = _userService.SetStatus(online, sessionId, deviceId, p, userAgent, ua, 0, null, ip, refer);
                 else
-                    online = _userService.SetWebStatus(online, sessionId, deviceId, p, userAgent, ua, user, ip);
+                    online = _userService.SetWebStatus(online, sessionId, deviceId, p, userAgent, ua, user, ip, refer);
                 //FillDeviceId(ctx, olt);
                 session["Online"] = online;
                 ctx.Items["Cube_Online"] = online;

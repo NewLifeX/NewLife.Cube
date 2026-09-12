@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import { useUserStore } from '@/stores/user';
 import api from '@/api';
-import type { LoginConfig } from '@cube/api-core';
+import type { LoginConfig } from '@newlifex/api-core';
 
 export default function Login() {
   const navigate = useNavigate();

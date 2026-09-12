@@ -132,6 +132,33 @@ public class CubeSetting : Config<CubeSetting>
     public Int32 FilterWindowDays { get; set; } = 30;
     #endregion
 
+    #region 安全防御
+    /// <summary>安全防御模式。0=关闭，1=观察模式仅记录，2=拦截模式，3=自动模式（默认；观察为主，连续攻击自动封禁，大范围攻击临时拦截并自动回落）</summary>
+    [Description("安全防御模式。0=关闭，1=观察模式仅记录，2=拦截模式，3=自动模式（默认；观察为主，连续攻击自动封禁，大范围攻击临时拦截并自动回落）")]
+    [Category("安全")]
+    public Int32 SecurityMode { get; set; } = 3;
+
+    /// <summary>自动封禁时长档位。逗号分隔秒数，按触发次数递增；空值使用默认档位 60,300,1800,7200,86400</summary>
+    [Description("自动封禁时长档位。逗号分隔秒数，按触发次数递增；空值使用默认档位 60,300,1800,7200,86400")]
+    [Category("安全")]
+    public String BlockDurations { get; set; }
+
+    /// <summary>可信代理。来自这些代理的转发头才被信任，逗号分隔IP或CIDR网段；空值兼容旧行为信任全部转发头</summary>
+    [Description("可信代理。来自这些代理的转发头才被信任，逗号分隔IP或CIDR网段；空值兼容旧行为信任全部转发头")]
+    [Category("安全")]
+    public String TrustedProxies { get; set; }
+
+    /// <summary>可信代理自动学习数量。可信代理未配置时，自动学习携带转发头的内网直连来源（反向代理/负载均衡入口），最多学习该数量，0=不学习</summary>
+    [Description("可信代理自动学习数量。可信代理未配置时，自动学习携带转发头的内网直连来源，最多学习该数量，0=不学习（单机房主备一般2，双机房一般4）")]
+    [Category("安全")]
+    public Int32 TrustedProxyLearning { get; set; } = 4;
+
+    /// <summary>已学习代理。由系统自动维护，可信代理为空时参与链解析；清空可重置学习结果</summary>
+    [Description("已学习代理。由系统自动维护，清空可重置学习结果")]
+    [Category("安全")]
+    public String LearnedProxies { get; set; }
+    #endregion
+
     #region 用户登录
     /// <summary>默认角色。默认普通用户</summary>
     [Description("默认角色。默认普通用户")]
@@ -395,6 +422,16 @@ public class CubeSetting : Config<CubeSetting>
     [Category("界面配置")]
     public Boolean EnableTableDoubleClick { get; set; } = true;
 
+    /// <summary>表格分隔样式。列表页数据表格的分隔风格：Light-轻量、Standard-标准（默认）、Grid-网格</summary>
+    [Description("表格分隔样式。Light-轻量（极简浅线）、Standard-标准（清晰行线，默认）、Grid-网格（完整单元格边框）")]
+    [Category("界面配置")]
+    public String TableStyle { get; set; } = "Standard";
+
+    /// <summary>表格行高密度。列表页数据表格的行高：Compact-紧凑（默认）、Normal-适中</summary>
+    [Description("表格行高密度。Compact-紧凑（默认，信息量大）、Normal-适中（呼吸感强）")]
+    [Category("界面配置")]
+    public String TableDensity { get; set; } = "Compact";
+
     /// <summary>星尘Web。星尘控制台地址，支持直达调用链 /trace?id={traceId} 或 /graph?id={traceId}</summary>
     [Description("星尘Web。星尘控制台地址，支持直达调用链 /trace?id={traceId} 或 /graph?id={traceId}")]
     [Category("界面配置")]
@@ -468,6 +505,11 @@ public class CubeSetting : Config<CubeSetting>
     [Description("OAuth服务。是否启用OAuth2.0服务，为其它应用提供单点登录服务")]
     [Category("系统功能")]
     public Boolean EnableOAuthServer { get; set; } = true;
+
+    /// <summary>文件管理。是否启用后台文件管理，可浏览/上传/下载/删除站点内文件，存在安全风险，默认false</summary>
+    [Description("文件管理。是否启用后台文件管理，可浏览/上传/下载/删除站点内文件，存在安全风险")]
+    [Category("系统功能")]
+    public Boolean EnableFileManager { get; set; }
 
     /// <summary>多租户。是否支持多租户，租户模式禁止访问系统管理，平台管理模式禁止访问租户页面</summary>
     [Description("多租户。是否支持多租户，租户模式禁止访问系统管理，平台管理模式禁止访问租户页面")]
@@ -631,7 +673,12 @@ public class CubeSetting : Config<CubeSetting>
         //if (AvatarPath.IsNullOrEmpty()) AvatarPath = web ? "..\\Avatars" : "Avatars";
         if (DefaultRole.IsNullOrEmpty() || DefaultRole == "3") DefaultRole = "普通用户";
 
-        if (JwtSecret.IsNullOrEmpty() || JwtSecret.Split(':').Length != 2) JwtSecret = $"HS256:{Rand.NextString(16)}";
+        if (JwtSecret.IsNullOrEmpty() || JwtSecret.Split(':').Length != 2)
+        {
+            JwtSecret = $"HS256:{Rand.NextString(16)}";
+            // 首次生成后持久化，避免进程重启密钥变化导致已签发令牌全部失效；多实例部署应在配置中显式固定
+            try { Save(); } catch { }
+        }
 
         // 取版权信息
         if (Copyright.IsNullOrEmpty())

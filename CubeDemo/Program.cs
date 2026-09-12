@@ -1,6 +1,5 @@
 ﻿using NewLife.Cube;
 using NewLife.Cube.ArcoVue;
-using NewLife.Cube.React;
 using NewLife.Cube.Services;
 using NewLife.Cube.Swagger;
 using NewLife.Cube.Vue;
@@ -19,9 +18,6 @@ var star = services.AddStardust(null);
 
 services.AddCubeFileStorage("Cube");
 
-// 注册 LOV 值集服务，并扫描测试枚举所在命名空间，自动将其注册为 Enum.CubeDemo.Areas.Test.测试枚举 值集
-services.AddCubeLov(cfg => cfg.ScanNamespace("CubeDemo.Areas.Test"));
-
 services.AddControllers();
 
 services.AddCubeSwagger();
@@ -38,6 +34,7 @@ var app = builder.Build();
 //if (app.Environment.IsDevelopment())
 {
     app.UseCubeSwagger("swagger");
+    app.UseCubeScalar("CubeDemo 接口文档");
 }
 
 app.UseCube(builder.Environment);
@@ -49,7 +46,6 @@ app.MapControllers();
 
 // UseVue 必须在 MapControllers 之后，确保 API endpoint 优先匹配，SPA 回退兜底
 //app.UseVue(builder.Environment);
-app.UseReact(builder.Environment);
 // app.UseArcoVue(builder.Environment);
 
 app.RegisterService("CubeDemo", null, builder.Environment.EnvironmentName, "/cube/info");

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { UserInfo, MenuItem } from '@cube/api-core';
+import type { UserInfo, MenuItem } from '@newlifex/api-core';
 import api from '@/api';
 
 /** 递归查找菜单树中 URL 匹配的节点 */

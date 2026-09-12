@@ -16,8 +16,7 @@ namespace NewLife.Cube.Services;
 /// <param name="verifyCode">验证码服务</param>
 /// <param name="cacheProvider">缓存提供者</param>
 /// <param name="tracer">追踪器</param>
-/// <param name="tenantContext">租户上下文</param>
-public class AccountActivateService(UserService userService, VerifyCodeService verifyCode, ICacheProvider cacheProvider, ITracer tracer, ITenantContext tenantContext)
+public class AccountActivateService(UserService userService, VerifyCodeService verifyCode, ICacheProvider cacheProvider, ITracer tracer)
 {
     private readonly ICache _cache = cacheProvider.Cache;
 

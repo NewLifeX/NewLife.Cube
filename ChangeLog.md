@@ -1,5 +1,54 @@
 # ChangeLog
 
+## v6.15.2026.0902 (2026-09-02)
+
+### 新功能
+- **Scalar API 文档**：集成 Scalar 在线接口文档，配合 Swagger 按区域自动分组生成 API 文档，接口生成与在线调试体验更佳
+- **SVG 文字头像**：用户列表头像兜底生成 SVG 文字头像，中文取前 N 字并升级渐变视觉，支持 1~3 字，英文头像微调字号
+- **导出增强**：导出 Excel 改为 xlsx 格式并基于当前查询条件全量导出；补齐 Zip 导出、CSV 英文表头与枚举数字、合并 IExtend 扩展属性并增加 SYLK 防护
+- **工作台部件体系**：工作台 Dashboard 接口返回内容部件，新增 `/Cube/Widget` 部件管理页，补注册 Monitor 性能监控部件
+- **表格列设置**：列表页齿轮按钮自定义列显隐与顺序，后端持久化、用户级生效
+- **多租户开关与切换**：关闭多租户时隐藏租户菜单与字段，新增 `Auth/SwitchTenant` 租户切换接口
+- **角色权限弹窗**：角色列表行新增「权限」按钮，弹窗内树形勾选菜单权限
+- **地区管理地图模式**：地区管理新增地图模式（对齐 MVC Map.cshtml）
+- **省市区级联选择器**：用户搜索区与表单地区字段改用省市区三级级联选择器
+- **用户统计图表**：用户统计增加图表视图，对齐 MVC 三个图表
+- **界面细节对齐**：菜单编辑父编号改下拉选择；数据库页连接字符串悬浮显示完整并隐藏密码；日志页 TraceId 显示为星尘 TraceUrl 超链接；字典参数长数值改大文本 textarea；列表页双击行任意位置进入编辑
+
+### 权限与安全
+- **角色权限**：RolePermissionHelper 放行 All(-1)，新增集成测试覆盖权限往返
+- **菜单重建修复**：EntityAuthorizeAttribute 菜单重建按类型全名防重，取消返回值类型判断
+
+### Bug 修复
+- **[fix]** 修复导出 Xml 误输出 Json，改用 ToXml 生成真实 XML
+- **[fix]** 修复 SVG 头像 `Math.Abs(Int32.MinValue)` 溢出与孤立代理转换异常
+- **[fix]** 修复 SSO 登录头像抓取：补齐懒加载兜底与相对地址解析
+- **[fix]** 修复列表分页页码约定：后端 PageIndex 从 1 开始，第一页省略参数，响应页码不再 +1
+- **[fix]** 修复保存密码登录后免登录增强：localStorage 丢失时从 Cookie 恢复
+- **[fix]** 修复新增/编辑弹窗无法输入（component 模式 formData 改 reactive）
+
+### 其他优化
+- **静态资源**：主机的 WebRootFileProvider 优先，再回退到 embeddedProvider
+- **依赖升级**：升级 NewLife.Core 11.19、NewLife.XCode 12.2、NewLife.AI 1.6、NewLife.Office 1.4 等核心依赖
+- **架构调整**：NewLife.Cube.React 皮肤已独立为单独仓库，从本仓库移除
+
+---
+
+## v6.14.2026.0830 (2026-08-30)
+
+### 新功能
+- **配置中心（Config Hub）**：API 版新增星尘设置（`StarController`），配置控制器（基本设置/系统设置/星尘设置/数据中间件/魔方设置 + 更多配置：短信/邮件/OAuth/访问规则）保持左侧菜单隐藏，在配置页顶部渲染切换器（Segmented + 更多配置下拉）实现页内切换，避免左侧菜单过多（对齐 MVC `_Object_Nav`）
+  - 修复隐藏配置页在 API 版无法直达的问题（菜单树过滤 Visible=false，前端按静态清单特判路由）
+  - 多标签标题、面包屑对配置页正确回退（如 `系统管理 / 短信设置`）
+- **配置页单行布局**：ConfigController 配置页改为每行一个配置项——左侧标签 + 中间控件 + 右侧 Description（对齐 MVC `_Form_Item`），保留分类 Tabs，配置说明始终可见
+  - React 皮肤：新增 `ConfigNav` 组件、`ConfigPage` 布局调整、单测与 E2E 覆盖
+
+### 接口与构建优化
+- **GetPage 元数据瘦身**：`DataField` 实现 `IDictionarySource`，FastJson 序列化时仅输出有意义字段（忽略 null/0/false 等默认值），GetPage/GetFields 响应体积减少约 2/3（如 User 页 54KB→17KB），前端字段类型全可选（`?`）无需改动
+- **字段元数据兼容**：`DataField` 及子类可空/默认属性补充 `[JsonIgnore(WhenWritingDefault)]`，System.Text.Json 路径同样省略噪音字段；`Category` 无分类时不再输出空字符串
+
+---
+
 ## v6.14.2026.0827 (2026-08-27)
 
 ### 新功能
@@ -57,7 +106,7 @@
 - **JS 注入修复**：编辑器 JS 上下文改用 JSON 序列化输出，杜绝 Query 参数注入
 
 ### 新一代前端皮肤体系
-- **公共模块**：新增 `@cube/api-core`（统一 API 客户端、Token 管理、类型定义）和 `@cube/field-mapping`（字段元数据推断控件类型，20+ WidgetType）
+- **公共模块**：新增 `@newlifex/api-core`（统一 API 客户端、Token 管理、类型定义）和 `@newlifex/field-mapping`（字段元数据推断控件类型，20+ WidgetType）
 - **pnpm workspace**：所有前端皮肤共享 `packages/` 工作区，统一依赖管理
 - **8 套前端皮肤包**：NaiveUI / MUI / Shadcn / ArcoVue / Angular / Vuetify / Svelte / TDesign，均支持动态菜单、字段元数据驱动列表/表单、CRUD、批量删除、CSV 导入导出、OAuth 登录、深色模式
 - **NuGet 一键集成**：引用 NuGet 包即获完整前端，`app.UseXxx(env)` 或 IModule 自动注册

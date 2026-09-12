@@ -36,8 +36,8 @@ public class PageService
              */
 
         if (kind.IsNullOrEmpty()) kind = "Default";
-        var adapter = _moduleManager.GetAdapter(kind) ??
-            throw new ArgumentOutOfRangeException(nameof(kind), $"未找到适配器[{kind}]");
+        var adapter = _moduleManager.GetAdapter(kind) ?? _moduleManager.GetAdapter("Default");
+        // 未注册适配器（如 React 皮肤新 kind）时按 DefaultAdapter 行为：直接返回合并后的配置字典
 
         var dic = new Dictionary<String, Object>();
         var fdic = new Dictionary<ViewKinds, FieldCollection>();
@@ -76,7 +76,7 @@ public class PageService
             if (dic2 != null && dic2.Count > 0) dic.Merge(dic2);
         }
 
-        var rs = adapter.Encode(dic, fdic);
+        var rs = adapter == null ? (Object)dic : adapter.Encode(dic, fdic);
 
         return rs;
     }
@@ -99,22 +99,22 @@ public class PageService
     }
 
     /// <summary>保存页面配置信息。需要自定义部分字段，其它信息由字段列表和适配器动态生成</summary>
-    /// <param name="kind"></param>
-    /// <param name="page"></param>
-    /// <param name="value"></param>
+    /// <param name="kind">种类。用于区分不同的前端类型，如Vue/Antd/QuickVue</param>
+    /// <param name="page">页面路径。如/admin/user</param>
+    /// <param name="value">配置对象。作为Body直接Post的Json配置</param>
+    /// <param name="userId">用户编号。>0 为用户级配置，0 为全局配置（所有用户兜底）</param>
     /// <returns></returns>
-    public Object SetPageConfig(String kind, String page, IDictionary<String, Object> value)
+    public Object SetPageConfig(String kind, String page, IDictionary<String, Object> value, Int32 userId = 0)
     {
         if (page.IsNullOrEmpty()) throw new ArgumentNullException(nameof(page));
 
         if (kind.IsNullOrEmpty()) kind = "Default";
-        var adapter = _moduleManager.GetAdapter(kind) ??
-            throw new ArgumentOutOfRangeException(nameof(kind), $"未找到适配器[{kind}]");
+        var adapter = _moduleManager.GetAdapter(kind);
+        // 未注册适配器（如 React 皮肤新 kind）时按默认序列化（obj.ToJson），保证列配置等持久化可用
+        var rs = adapter == null ? value.ToJson(true) : adapter.Decode(value);
 
-        var rs = adapter.Decode(value);
-
-        //todo 需要一个机制，识别是用户级配置还是全局配置，这里暂时作为全局配置
-        var p = Parameter.GetOrAdd(0, $"Page-{kind}", page);
+        // 用户级配置（userId>0）与全局配置（0）分别存储；读取时用户配置优先、全局兜底
+        var p = Parameter.GetOrAdd(userId, $"Page-{kind}", page);
         p.LongValue = rs as String ?? rs.ToJson(true);
         p.Update();
 

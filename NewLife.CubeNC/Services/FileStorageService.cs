@@ -31,8 +31,16 @@ public class FileStorageService(IFileStorage fileStorage) : IHostedService
 
     private async Task InitializeLaterAsync(CancellationToken cancellationToken)
     {
-        await Task.Delay(10_000, cancellationToken);
-        await fileStorage.InitializeAsync(cancellationToken);
+        try
+        {
+            await Task.Delay(10_000, cancellationToken);
+            await fileStorage.InitializeAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            // 后台初始化失败仅记录日志，不导致主机退出，也不产生未观测异常
+            XTrace.WriteException(ex);
+        }
     }
 }
 
@@ -78,7 +86,7 @@ public static class FileStorageExtensions
 
     /// <summary>注册附件存储提供者。根据配置在本地磁盘与对象存储（OSS/COS/七牛/EasyIO）之间切换</summary>
     /// <param name="services">服务集合</param>
-    /// <param name="set">魔方设置。为空时使用<see cref="CubeSetting.Current"/></param>
+    /// <param name="set">魔方设置。为空时使用<see cref="CubeSetting"/>的当前实例</param>
     /// <returns></returns>
     public static IServiceCollection AddCubeAttachmentStorage(this IServiceCollection services, CubeSetting set = null)
     {
@@ -159,6 +167,7 @@ public class CubeFileStorage : DefaultFileStorage
         //if (path.IsNullOrEmpty()) throw new ArgumentNullException(nameof(path));
 
         var att = Attachment.FindById(attachmentId);
+        if (att == null) return null;
 
         return new NewFileInfo
         {

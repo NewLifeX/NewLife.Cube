@@ -4,8 +4,8 @@
   import { getApi } from '$lib/api';
   import { getMenuPermission } from '$lib/stores/user';
   import FieldInput from '$lib/components/FieldInput.svelte';
-  import { FieldKind, Auth, type DataField, type PageResult } from '@cube/api-core';
-  import { toCamelCase } from '@cube/field-mapping';
+  import { FieldKind, Auth, type DataField, type PageResult } from '@newlifex/api-core';
+  import { toCamelCase } from '@newlifex/field-mapping';
   import * as echarts from 'echarts';
 
   const exportOptions = [

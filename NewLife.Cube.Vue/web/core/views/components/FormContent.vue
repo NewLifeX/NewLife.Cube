@@ -10,7 +10,8 @@
  */
 import { computed, defineAsyncComponent } from 'vue';
 import type { FieldMeta, ControlType } from '../../types/field';
-import { resolveControl, isFullWidthControl, resolveNumberPrecision, resolveNumberStep } from '../../utils/fieldControl';
+import { resolveControl, isFullWidthControl, resolveNumberPrecision, resolveNumberStep, enumOptionValue } from '../../utils/fieldControl';
+import { toPascalAndCamel } from '../../utils/url';
 import LovSelect from '../../components/LovSelect/index.vue';
 import Uploader from '../../components/Uploader.vue';
 // 重型编辑器改为异步组件，仅在表单确有 json / 富文本字段时才按需加载，
@@ -28,6 +29,8 @@ interface Props {
   apiPrefix?: string;
   /** 栅格列数，默认 2。在弹窗/抽屉中可根据字段数量动态调整 */
   columns?: number;
+  /** 是否禁用所有表单控件（查看详情模式只读） */
+  disabled?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -48,11 +51,33 @@ function controlOf(field: FieldMeta): ControlType {
 }
 
 function isRequired(field: FieldMeta): boolean {
+  // Boolean 开关恒有值（默认 false），与 fieldControl.isRequiredField 口径一致，避免星号与校验漂移
+  if (field.typeName === 'Boolean') return false;
   return !field.nullable && !field.primaryKey && controlOf(field) !== 'readonly';
 }
 
+/**
+ * 解析模型中的实际键。后端字段元数据 name 为 PascalCase（如 Name/Enable），
+ * 而行数据（列表行 / Detail）为 camelCase（如 name/enable），直接按字段名精确取值会取不到 → 编辑弹窗回填为空。
+ * 此处优先精确命中，其次翻转首字母（PascalCase ↔ camelCase），再兼容 ID/UUID 全大写场景。
+ */
+function resolveKey(key: string): string {
+  if (props.modelValue && key in props.modelValue) return key;
+  const flipped = toPascalAndCamel(key);
+  if (props.modelValue && flipped !== key && flipped in props.modelValue) return flipped;
+  if (props.modelValue && key === key.toUpperCase() && key !== key.toLowerCase()) {
+    const lowerKey = key.toLowerCase();
+    if (lowerKey in props.modelValue) return lowerKey;
+  }
+  if (props.modelValue && key === key.toLowerCase() && /[a-z]/.test(key)) {
+    const upperKey = key.toUpperCase();
+    if (upperKey in props.modelValue) return upperKey;
+  }
+  return key;
+}
+
 function getValue(key: string): unknown {
-  return props.modelValue?.[key];
+  return props.modelValue?.[resolveKey(key)];
 }
 
 function toNumber(val: unknown): number | undefined {
@@ -61,8 +86,9 @@ function toNumber(val: unknown): number | undefined {
   return Number.isNaN(n) ? undefined : n;
 }
 
+/** 回写使用模型实际存在的键（保持行数据 camelCase），避免同字段大小写双键共存 */
 function updateField(key: string, value: unknown) {
-  emit('update:modelValue', { ...props.modelValue, [key]: value });
+  emit('update:modelValue', { ...props.modelValue, [resolveKey(key)]: value });
 }
 
 /** 数值控件统一回写 number */
@@ -109,7 +135,8 @@ function toMultiArray(val: unknown): string[] {
         >
           <label :for="`fmc-${field.name}`" class="fmc-label">
             {{ field.displayName || field.name }}
-            <span v-if="isRequired(field)" class="fmc-required" aria-hidden="true">*</span>
+            <!-- 查看（禁用）模式下不展示必填星号：详情只读无填写语义 -->
+            <span v-if="!props.disabled && isRequired(field)" class="fmc-required" aria-hidden="true">*</span>
           </label>
 
           <!-- 大文本 -->
@@ -119,6 +146,7 @@ function toMultiArray(val: unknown): string[] {
             type="textarea"
             :rows="3"
             class="fmc-textarea"
+            :disabled="props.disabled"
             :placeholder="field.description || '请输入...'"
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
@@ -130,6 +158,7 @@ function toMultiArray(val: unknown): string[] {
             :id="`fmc-${field.name}`"
             class="fmc-input-number"
             :controls="true"
+            :disabled="props.disabled"
             :precision="resolveNumberPrecision(field)"
             :step="resolveNumberStep(field)"
             :placeholder="field.description || '请输入数值'"
@@ -137,9 +166,26 @@ function toMultiArray(val: unknown): string[] {
             @update:model-value="(v: number | undefined) => updateNumber(field.name, v)"
           />
 
+          <!-- 枚举 / 字典下拉（后端下发 dataSource） -->
+          <el-select
+            v-else-if="controlOf(field) === 'select'"
+            class="fmc-select"
+            :placeholder="field.description || '请选择'"
+            :model-value="getValue(field.name) as string | number | undefined"
+            @update:model-value="(v: string | number) => updateField(field.name, v)"
+          >
+            <el-option
+              v-for="(label, key) in field.dataSource || {}"
+              :key="key"
+              :label="label"
+              :value="enumOptionValue(key)"
+            />
+          </el-select>
+
           <!-- 布尔开关 -->
           <div v-else-if="controlOf(field) === 'switch'" class="fmc-switch-wrapper">
             <el-switch
+              :disabled="props.disabled"
               :model-value="Boolean(getValue(field.name))"
               @change="(v: string | number | boolean) => updateField(field.name, v)"
             />
@@ -150,6 +196,7 @@ function toMultiArray(val: unknown): string[] {
             v-else-if="controlOf(field) === 'datePicker'"
             class="fmc-date-picker"
             type="datetime"
+            :disabled="props.disabled"
             :placeholder="field.description || '选择日期时间'"
             format="YYYY-MM-DD HH:mm:ss"
             value-format="YYYY-MM-DDTHH:mm:ss"
@@ -161,6 +208,7 @@ function toMultiArray(val: unknown): string[] {
           <el-time-picker
             v-else-if="controlOf(field) === 'timePicker'"
             class="fmc-date-picker"
+            :disabled="props.disabled"
             :placeholder="field.description || '选择时间'"
             format="HH:mm:ss"
             value-format="HH:mm:ss"
@@ -172,6 +220,7 @@ function toMultiArray(val: unknown): string[] {
           <LovSelect
             v-else-if="controlOf(field) === 'lov'"
             :code="field.lovCode || ''"
+            :disabled="props.disabled"
             :model-value="(getValue(field.name) as string | number | undefined)"
             :placeholder="field.description || '请选择'"
             @update:model-value="(v: string | number | string[] | undefined) => updateField(field.name, v)"
@@ -182,6 +231,7 @@ function toMultiArray(val: unknown): string[] {
             v-else-if="controlOf(field) === 'lovMulti'"
             :code="field.lovCode || ''"
             :multiple="true"
+            :disabled="props.disabled"
             :model-value="toMultiArray(getValue(field.name))"
             :placeholder="field.description || '请选择（多选）'"
             @update:model-value="(v: string | number | string[] | undefined) => updateField(field.name, v)"
@@ -192,6 +242,7 @@ function toMultiArray(val: unknown): string[] {
             v-else-if="controlOf(field) === 'upload'"
             kind="file"
             :api-prefix="apiPrefix"
+            :disabled="props.disabled"
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
@@ -201,6 +252,7 @@ function toMultiArray(val: unknown): string[] {
             v-else-if="controlOf(field) === 'image'"
             kind="image"
             :api-prefix="apiPrefix"
+            :disabled="props.disabled"
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
@@ -208,6 +260,7 @@ function toMultiArray(val: unknown): string[] {
           <!-- Json 编辑器 -->
           <JsonEditor
             v-else-if="controlOf(field) === 'json'"
+            :disabled="props.disabled"
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
@@ -216,6 +269,7 @@ function toMultiArray(val: unknown): string[] {
           <RichEditor
             v-else-if="controlOf(field) === 'richHtml'"
             mode="html"
+            :disabled="props.disabled"
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
@@ -224,6 +278,7 @@ function toMultiArray(val: unknown): string[] {
           <RichEditor
             v-else-if="controlOf(field) === 'richMarkdown'"
             mode="markdown"
+            :disabled="props.disabled"
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
@@ -231,6 +286,7 @@ function toMultiArray(val: unknown): string[] {
           <!-- 颜色选择器 -->
           <ColorPicker
             v-else-if="controlOf(field) === 'color'"
+            :disabled="props.disabled"
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
@@ -238,6 +294,7 @@ function toMultiArray(val: unknown): string[] {
           <!-- 图标选择器 -->
           <IconSelector
             v-else-if="controlOf(field) === 'icon'"
+            :disabled="props.disabled"
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
@@ -247,6 +304,7 @@ function toMultiArray(val: unknown): string[] {
             v-else-if="controlOf(field) === 'email' || controlOf(field) === 'tel' || controlOf(field) === 'url'"
             :id="`fmc-${field.name}`"
             class="fmc-input"
+            :disabled="props.disabled"
             :type="controlOf(field) === 'email' ? 'email' : controlOf(field) === 'tel' ? 'tel' : 'url'"
             :placeholder="field.description || '请输入...'"
             :model-value="String(getValue(field.name) ?? '')"
@@ -267,6 +325,7 @@ function toMultiArray(val: unknown): string[] {
             v-else
             :id="`fmc-${field.name}`"
             class="fmc-input"
+            :disabled="props.disabled"
             :placeholder="field.description || '请输入...'"
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"

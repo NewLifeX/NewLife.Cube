@@ -3,7 +3,9 @@ import { resolveRequestUrl } from './service-path';
 import type {
   ApiResponse,
   AuthCategory,
+  BindsResult,
   CaptchaResult,
+  ChangePasswordModel,
   DataField,
   FieldKind,
   FieldPatchResult,
@@ -60,7 +62,7 @@ async function requestWithPostFallback<T>(request: RequestFn, config: AxiosReque
 export function createUserApi(request: RequestFn) {
   return {
     /** 密码登录（传入 category 可切换：手机验证码登录/邮箱验证码登录） */
-    login: (data: { username: string; password: string; category?: AuthCategory; challengeId?: string; captchaId?: string; captchaCode?: string }) =>
+    login: (data: { username: string; password: string; category?: AuthCategory; challengeId?: string; captchaId?: string; captchaCode?: string; remember?: boolean }) =>
       request<LoginResult>({ url: '/Auth/Login', method: 'post', data }),
 
     /** 发送验证码 */
@@ -75,9 +77,17 @@ export function createUserApi(request: RequestFn) {
     logout: () =>
       request<void>({ url: '/Auth/Logout', method: 'post' }),
 
+    /** 注销账号（不可恢复：禁用账号、清空个性化数据，并通知下游清理业务数据）。成功后应清理本地登录态并跳转登录页 */
+    closeAccount: () =>
+      request<void>({ url: '/Auth/CloseAccount', method: 'post' }),
+
     /** 获取当前用户信息 */
     info: () =>
       request<UserInfo>({ url: '/Auth/Info', method: 'get' }),
+
+    /** 切换当前租户（多租户开启时）。0=管理后台（仅系统管理员），>0=租户编号；成功后前端应刷新页面（菜单/数据随租户变化） */
+    switchTenant: (tenantId: number) =>
+      request<boolean>({ url: '/Auth/SwitchTenant', method: 'post', data: { tenantId } }),
 
     /** 获取登录页配置（OAuth 提供商列表等），可传入租户标识（id/code/name/domain） */
     getLoginConfig: (tenant?: string) =>
@@ -196,6 +206,27 @@ export function createUserApi(request: RequestFn) {
     /** 已登录用户验证/更换邮箱或手机（安全中心）。验证码经 sendCode(action=bind) 发送 */
     verifyContact: (data: VerifyContactModel) =>
       request<VerifyStatus>({ url: '/Auth/VerifyContact', method: 'post', data }),
+
+    /** 获取当前用户详细资料（GET /Admin/User/Info，含邮箱/手机验证状态）。列表/首页信息经 /Auth/Info */
+    profile: () =>
+      request<UserInfo>({ url: '/Admin/User/Info', method: 'get' }),
+
+    /** 更新当前用户资料（昵称/性别/生日/邮箱/手机等文本字段，POST /Admin/User/Info）。
+     *  头像走 page.uploadFile('/Admin/User', file) 上传后，将返回 filePath 回填到 avatar 字段再提交 */
+    updateProfile: (data: Record<string, unknown>) =>
+      request<UserInfo>({ url: '/Admin/User/Info', method: 'post', data }),
+
+    /** 修改当前登录用户密码（SSO 登录可免原密码）。密码要求 8 位起且包含数字大小写字母和符号 */
+    changePassword: (data: ChangePasswordModel) =>
+      request<boolean>({ url: '/Admin/User/ChangePassword', method: 'post', data }),
+
+    /** 第三方授权绑定列表（GET /Admin/User/Binds）：已绑定记录 + 可绑定平台 */
+    binds: () =>
+      request<BindsResult>({ url: '/Admin/User/Binds', method: 'get' }),
+
+    /** 解绑第三方平台（GET /Sso/UnBind/{provider}） */
+    unbind: (provider: string) =>
+      request<boolean>({ url: `/Sso/UnBind/${provider}`, method: 'get' }),
   };
 }
 
@@ -215,11 +246,34 @@ export function createMenuApi(request: RequestFn) {
  *
  * 所有方法的 `type` 参数为路径前缀，如 "/Admin/User"、"/Cube/App"
  */
+
+/**
+ * 页面元数据缓存（会话级内存缓存）
+ *
+ * GetPage 返回的页面配置（列表/搜索/表单字段）由控制器静态配置决定，同一会话内稳定不变。
+ * 按 type 缓存后，列表页「探测 + loadFields」与表单页只需请求一次，切换/重进页面不再重复请求。
+ * 仅在浏览器刷新（内存重置）或登出换用户时失效。
+ */
+const pageMetaCache = new Map<String, ApiResponse<PageMeta>>();
+
+/** 清空页面元数据缓存（登出/切换用户时调用，避免串用上一账号的配置） */
+export function clearPageMetaCache(): void {
+  pageMetaCache.clear();
+}
+
 export function createPageApi(request: RequestFn, baseApiUrl?: string) {
   return {
-    /** 获取页面元数据（setting + list/addForm/editForm/detail/search） */
-    getPage: (type: string) =>
-      request<PageMeta>({ url: `${type}/GetPage`, method: 'get' }),
+    /** 获取页面元数据（setting + list/addForm/editForm/detail/search）。同一 type 会话内缓存，避免重复请求 */
+    getPage: (type: string) => {
+      const hit = pageMetaCache.get(type);
+      if (hit) return Promise.resolve(hit);
+
+      return request<PageMeta>({ url: `${type}/GetPage`, method: 'get' }).then((res) => {
+        // 仅缓存实体页配置（data 为对象）；非实体页返回 HTML 字符串，不缓存
+        if (res && res.data && typeof res.data !== 'string') pageMetaCache.set(type, res);
+        return res;
+      });
+    },
 
     /**
      * 分享当前视图：签发 UserToken（可设有效期），返回短令牌供匿名打开 embed 页。
@@ -292,25 +346,23 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
         params: { keys: keys.join(','), ...(reason ? { reason } : {}) },
       }),
 
+    /** 恢复软删除单条（后端 Delete 支持 restore=true 参数） */
+    restore: (type: string, id: number | string) =>
+      request<unknown>({ url: type, method: 'delete', params: { id, restore: true } }),
+
     /**
-     * 批量删除，默认使用重复参数 id=1&id=2 （文档标准）。
-     * 若后端仅支持逗号形式，可传入 compatCommaJoin: true 切换为兼容模式。
+     * 批量删除选中，调用专用端点 DeleteSelect。
+     * 默认传数组（qs 序列化为索引形式 id[0]=1&id[1]=2，后端 String[] 绑定）；
+     * 后端不支持索引形式时可用 compatCommaJoin 传逗号分隔 id=1,2（后端已兼容拆分）。
      */
     deleteSelect: (type: string, keys: (number | string)[], options?: { compatCommaJoin?: boolean }) => {
-      const ids = options?.compatCommaJoin
-        ? { id: keys.join(',') }
-        : keys.map(id => `id=${encodeURIComponent(id)}`).reduce<Record<string, (number | string)[]>>(
-            (acc) => { acc.id = keys as (number | string)[]; return acc; },
-            { id: [] }
-          );
-      // 使用 qs 逗号逗号逗号 重复参数：id=1&id=2&id=3
-      const idArr = options?.compatCommaJoin ? keys.join(',') : keys;
-      return request<unknown>({ url: type, method: 'delete', params: { id: idArr } });
+      const params = options?.compatCommaJoin ? { id: keys.join(',') } : { id: keys };
+      return request<unknown>({ url: `${type}/DeleteSelect`, method: 'delete', params });
     },
 
-    /** 按条件删除，params 为搜索条件（至少需携带一个参数，否则后端拒绝） */
+    /** 按条件删除全部，params 为搜索条件（至少需携带一个参数，否则后端拒绝）。调用专用端点 DeleteAll */
     deleteAll: (type: string, params?: Record<string, unknown>) =>
-      request<unknown>({ url: type, method: 'delete', params }),
+      request<unknown>({ url: `${type}/DeleteAll`, method: 'delete', params }),
 
     /** 字典查询（codes 逗号分隔） */
     lookup: (codes: string) =>
@@ -490,6 +542,14 @@ export function createConfigApi(request: RequestFn) {
     /** 更新系统配置 */
     updateSetting: (data: Record<string, unknown>) =>
       request<unknown>({ url: '/Cube/Setting', method: 'put', data }),
+
+    /** 获取页面配置（用户级优先、全局兜底，后端 PageService 读取） */
+    getPageSetting: (kind: string, page: string) =>
+      request<Record<string, unknown>>({ url: '/Cube/GetPageConfig', method: 'get', params: { kind, page } }),
+
+    /** 保存页面配置（当前登录用户级；未登录写全局）。用于列显隐/顺序等页面偏好持久化 */
+    savePageSetting: (kind: string, page: string, value: Record<string, unknown>) =>
+      request<number>({ url: '/Cube/SetPageConfig', method: 'post', params: { kind, page }, data: value }),
   };
 }
 

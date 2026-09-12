@@ -54,6 +54,28 @@ public class CubeController : ConfigController<CubeSetting>, IPageDataContext
                 df.DataSource = e => themes.ToDictionary(e => e, e => e);
             }
 
+            // 表格分隔样式与行高密度：下拉选择，ACE 主题经 _Layout 输出 body class 供 ace-ui.css 消费
+            df = list.FirstOrDefault(e => e.Name == "TableStyle");
+            if (df != null)
+            {
+                df.DataSource = e => new Dictionary<String, String>
+                {
+                    ["Light"] = "Light-轻量（极简浅线）",
+                    ["Standard"] = "Standard-标准（清晰行线）",
+                    ["Grid"] = "Grid-网格（完整单元格边框）",
+                };
+            }
+
+            df = list.FirstOrDefault(e => e.Name == "TableDensity");
+            if (df != null)
+            {
+                df.DataSource = e => new Dictionary<String, String>
+                {
+                    ["Compact"] = "Compact-紧凑（信息量大）",
+                    ["Normal"] = "Normal-适中（呼吸感强）",
+                };
+            }
+
             // AI 助手配色：主题色方案下拉联动主色/辅色，主色/辅色渲染为颜色选择器
             df = list.FirstOrDefault(e => e.Name == "AIColorScheme");
             if (df != null)

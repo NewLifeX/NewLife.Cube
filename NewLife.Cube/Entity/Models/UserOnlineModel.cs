@@ -26,6 +26,9 @@ public partial class UserOnlineModel
     /// <summary>登录方。OAuth提供商，从哪个渠道登录</summary>
     public String OAuthProvider { get; set; }
 
+    /// <summary>来源。最近一次外部跳转来源，站内跳转不更新</summary>
+    public String Referer { get; set; }
+
     /// <summary>次数</summary>
     public Int32 Times { get; set; }
 
@@ -88,6 +91,7 @@ public partial class UserOnlineModel
         Name = model.Name;
         SessionID = model.SessionID;
         OAuthProvider = model.OAuthProvider;
+        Referer = model.Referer;
         Times = model.Times;
         Page = model.Page;
         Platform = model.Platform;

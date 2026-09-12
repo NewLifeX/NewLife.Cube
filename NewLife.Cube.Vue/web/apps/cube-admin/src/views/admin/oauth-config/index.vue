@@ -408,11 +408,19 @@ const submitForm = async () => {
 
   formRef.value.validate(async (valid: boolean) => {
     if (valid) {
+      // 清理列表行原始字段回传造成的键冲突：行数据同时含 camelCase 开关
+      // （enable/visible）与 PascalCase 旧字段（Enable/Visible 整型），handleEdit 整行
+      // Object.assign 后表单同时携带两组键。后端大小写不敏感绑定下靠后的 PascalCase
+      // 旧值会覆盖开关新值，导致“编辑启用/可见性不生效”。发送前剔除 PascalCase 冗余键。
+      const payload: Record<string, unknown> = { ...form };
+      delete payload.Enable;
+      delete payload.Visible;
+
       try {
         if (formType.value === 'add') {
-          await request.post('/Admin/OAuthConfig', form);
+          await request.post('/Admin/OAuthConfig', payload);
         } else {
-          await request.put('/Admin/OAuthConfig', form);
+          await request.put('/Admin/OAuthConfig', payload);
         }
         dialogVisible.value = false;
         loadData();

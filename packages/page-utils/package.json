@@ -1,17 +1,30 @@
 {
-  "name": "@cube/page-utils",
+  "name": "@newlifex/page-utils",
   "version": "0.1.0",
   "description": "魔方前端页面工具函数集，零框架依赖",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
+  "keywords": ["魔方", "cube", "newlife", "utils", "page"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NewLifeX/NewLife.Cube.git"
+  },
+  "homepage": "https://github.com/NewLifeX/NewLife.Cube",
+  "bugs": {
+    "url": "https://github.com/NewLifeX/NewLife.Cube/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
-    "postinstall": "pnpm build"
+    "prepare": "pnpm build"
   },
   "devDependencies": {
     "tsup": "^8.0.0",

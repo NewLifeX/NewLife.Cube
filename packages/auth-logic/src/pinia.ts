@@ -1,18 +1,18 @@
 /**
- * @cube/auth-logic/pinia — Pinia 适配器
+ * @newlifex/auth-logic/pinia — Pinia 适配器
  *
  * 将 AuthLogic 桥接为 Pinia store，供 Vue 系皮肤使用。
  *
  * @example
  * ```ts
- * import { createPiniaAuthStore } from '@cube/auth-logic/pinia';
+ * import { createPiniaAuthStore } from '@newlifex/auth-logic/pinia';
  * import api from '@/api';
  * export const useUserStore = createPiniaAuthStore(api);
  * ```
  */
 
 import { defineStore } from 'pinia';
-import { type CubeApi, type UserInfo, type MenuItem, type RegisterModel } from '@cube/api-core';
+import { type CubeApi, type UserInfo, type MenuItem, type RegisterModel } from '@newlifex/api-core';
 import { AuthLogic, ForgotPasswordLogic, RegisterLogic, type AuthState, type ForgotPasswordState, type RegisterState } from './index';
 
 /**
@@ -80,7 +80,7 @@ export function createPiniaAuthStore(api: CubeApi, storeId = 'user') {
  *
  * @example
  * ```ts
- * import { createPiniaForgotPasswordStore } from '@cube/auth-logic/pinia';
+ * import { createPiniaForgotPasswordStore } from '@newlifex/auth-logic/pinia';
  * export const useForgotPasswordStore = createPiniaForgotPasswordStore(api);
  * ```
  */
@@ -110,7 +110,7 @@ export function createPiniaForgotPasswordStore(api: CubeApi, storeId = 'forgotPa
       async resendCode(username: string, channel: string) {
         return this._getLogic().resendCode(username, channel);
       },
-      async confirmReset(model: import('@cube/api-core').ResetPasswordModel) {
+      async confirmReset(model: import('@newlifex/api-core').ResetPasswordModel) {
         return this._getLogic().confirmReset(model);
       },
       reset() {

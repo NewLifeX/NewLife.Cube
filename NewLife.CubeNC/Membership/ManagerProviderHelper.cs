@@ -98,6 +98,22 @@ public static class ManagerProviderHelper
                                     var expire = set.SessionTimeout > 0 ?
                                         TimeSpan.FromSeconds(set.SessionTimeout) :
                                         TimeSpan.FromHours(2);
+
+                                    // 先颁发带 jti 的新令牌（建立 UserToken 记录），SaveCookie 才能把可吊销令牌写入 Cookie，
+                                    // 避免走 IssueToken 兜底生成无记录、无法吊销的孤儿令牌
+                                    context.IssueLoginToken(user, expire);
+
+                                    // 吊销旧令牌对应 UserToken，防止滑动续期不断累积不可吊销的令牌
+                                    if (!jwt.Id.IsNullOrEmpty() && Int32.TryParse(jwt.Id, out var oldId))
+                                    {
+                                        var oldUt = UserToken.FindByID(oldId);
+                                        if (oldUt != null && oldUt.Enable)
+                                        {
+                                            oldUt.Enable = false;
+                                            oldUt.SaveAsync(3_000);
+                                        }
+                                    }
+
                                     provider.SaveCookie(user, expire, context);
 
                                     XTrace.WriteLine("滑动刷新：用户[{0}]令牌有效期剩余[{1}]秒，已刷新续期至[{2}]秒", user, remaining.TotalSeconds.ToInt(), expire.TotalSeconds.ToInt());
@@ -429,7 +445,7 @@ public static class ManagerProviderHelper
         return config != null && IsValidTenant(config.TenantId) ? config.TenantId : -1;
     }
 
-    /// <summary>X-App-Id 对应的应用（OAuthConfig）已配置但未设置租户（TenantId&le;0）。存量小程序过渡态，供影子期兼容放行判断。应用未配置返回 false</summary>
+    /// <summary>X-App-Id 对应的应用（OAuthConfig）已配置但未设置租户（TenantId&lt;=0）。存量小程序过渡态，供影子期兼容放行判断。应用未配置返回 false</summary>
     /// <param name="appId">应用标识</param>
     /// <returns>应用存在且租户未设置返回 true</returns>
     private static Boolean IsAppIdConfiguredWithoutTenant(String appId)
@@ -729,13 +745,12 @@ public static class ManagerProviderHelper
         if (!existingAccess.IsNullOrEmpty() && !existingRefresh.IsNullOrEmpty())
             return new TokenModel { AccessToken = existingAccess, RefreshToken = existingRefresh, ExpireIn = expire.TotalSeconds.ToInt() };
 
-        // 1. 创建刷新令牌（纯字符串，尚未入库）
-        var refreshToken = CreateRefreshToken(user, DateTime.Now.AddDays(7));
-
-        // 2. 先插入 UserToken 记录（获取自增 Id）
+        // 1. 创建刷新令牌（纯字符串，尚未入库）并插入 UserToken 记录（获取自增 Id）
+        String refreshToken = null;
         UserToken ut = null;
         if (user != null)
         {
+            refreshToken = CreateRefreshToken(user, DateTime.Now.AddDays(7));
             ut = new UserToken
             {
                 Token = refreshToken,

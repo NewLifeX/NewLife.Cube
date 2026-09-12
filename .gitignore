@@ -91,3 +91,6 @@ xcodetool.exe
 # 历史曾提交过的大二进制目录护栏（已在 HEAD 删除，防止被重新加回）
 /DLL/
 /DLL20/
+.umi/
+.umi-production/
+NewLife.Cube.Vue/web/scripts/element-tokens.json

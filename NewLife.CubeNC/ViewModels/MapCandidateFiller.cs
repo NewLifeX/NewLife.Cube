@@ -1,5 +1,6 @@
 using NewLife.Caching;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Services;
 using NewLife.Cube.ViewModels;
 using XCode;
 using XCode.Configuration;
@@ -76,15 +77,9 @@ public static class MapCandidateFiller
     {
         if (!df.LovCode.IsNullOrEmpty())
         {
-            var lovKey = "LovRegistered:" + df.LovCode;
-            var mark = MemoryCache.Instance.Get<String>(lovKey);
-            if (mark.IsNullOrEmpty())
-            {
-                var lov = LovDefinition.Find(LovDefinition._.LovCode == df.LovCode);
-                mark = lov != null ? "1" : "0";
-                MemoryCache.Instance.Set(lovKey, mark, 60);
-            }
-            if (mark == "1") return;
+            // 值集已全面代码优先：Enum./List. 由后端 LovRegistry 反射直读（不落库），命中则无需内联候选
+            if (df.LovCode.StartsWith("Enum.", StringComparison.OrdinalIgnoreCase) || df.LovCode.StartsWith("List.", StringComparison.OrdinalIgnoreCase))
+                return;
         }
         if (df.DataSourceMap != null && df.DataSourceMap.Count > 0) return;
 

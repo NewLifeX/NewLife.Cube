@@ -1,5 +1,5 @@
 /**
- * @cube/api-core — 魔方前端公共 API 调用层
+ * @newlifex/api-core — 魔方前端公共 API 调用层
  *
  * 框架无关的 HTTP 客户端封装，统一 Token 管理、错误处理、请求/响应拦截。
  * 所有皮肤包共享此模块，避免重复实现。
@@ -13,9 +13,8 @@ export { isServiceApiPath, getServiceBaseUrl, resolveRequestUrl } from './servic
 
 // 底层构建块（高级用法）
 export { createApiClient, createRequest, type ApiClientOptions, type ResponseErrorInfo } from './client';
-export { TokenManager, type TokenStorage } from './token';
-export { createUserApi, createMenuApi, createPageApi, createConfigApi, createProfileApi, createCommentApi, createAutomationApi, createWidgetApi, createWorkbenchApi, createWorkflowApi, AUTOMATION_HOOK_PATH } from './api';
-
+export { TokenManager, type TokenStorage, extractTokenFromHash } from './token';
+export { createUserApi, createMenuApi, createPageApi, createConfigApi, clearPageMetaCache, createProfileApi, createCommentApi, createAutomationApi, createWidgetApi, createWorkbenchApi, createWorkflowApi, AUTOMATION_HOOK_PATH } from './api';
 // 类型
 export type {
   ApiResponse,
@@ -28,6 +27,7 @@ export type {
   UserInfo,
   LoginResult,
   LoginConfig,
+  TenantItem,
   ChallengeResult,
   CaptchaResult,
   ResetPasswordModel,
@@ -47,6 +47,10 @@ export type {
   ActivateModel,
   VerifyContactModel,
   VerifyStatus,
+  UserBind,
+  OAuthPlatform,
+  BindsResult,
+  ChangePasswordModel,
 } from './types';
 export { FieldKind, Auth, ApiError } from './types';
 export type {

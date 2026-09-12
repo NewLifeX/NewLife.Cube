@@ -185,9 +185,15 @@ public static class CubeService
         services.AddSingleton<WidgetManager>();
         services.AddSingleton<PasswordService>();
         services.AddSingleton<UserService>();
+        services.AddSingleton<SecurityEventService>();
+        services.AddSingleton<BlockService>();
+        services.AddHostedService(sp => sp.GetRequiredService<BlockService>());
         services.AddSingleton<AccessService>();
         services.AddSingleton<TokenService>();
         services.TryAddSingleton<IMfaService, TotpMfaService>();
+
+        // 账号注销处理器：默认处理器清理框架侧个人数据；下游可继续追加注册（必须 Singleton）
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountCloseHandler, DefaultAccountCloseHandler>());
 
         // SSO 服务
         services.AddSingleton<Services.Sso.IOAuthAppService, Services.Sso.OAuthAppService>();
@@ -541,7 +547,7 @@ public static class CubeService
             var root = av.FullName.EnsureEnd(Path.DirectorySeparatorChar.ToString());
             foreach (var item in av.GetAllFiles(null, true))
             {
-                var name = item.FullName.TrimStart(root);
+                var name = item.FullName.TrimPrefix(root);
                 var dfile = dst.FullName.CombinePath(name);
                 if (!File.Exists(dfile))
                 {

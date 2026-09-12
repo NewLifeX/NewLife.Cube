@@ -5,9 +5,8 @@ namespace CubeDemo.Areas.Test;
 /// <summary>
 /// 测试枚举。用于验证 枚举 / 单选(singleSelect) / 多选(multipleSelect) 三种 LOV 场景。
 /// <para>
-/// <see cref="NewLife.Cube.Services.LovAutoRegisterService"/> 会在启动时扫描
-/// <c>CubeDemo.Areas.Test</c> 命名空间下的枚举，自动将其注册为
-/// <c>Enum.CubeDemo.Areas.Test.测试枚举</c> 值集，无需手工维护 <c>LovDefinition</c> 记录。
+/// 值集为代码声明（枚举成员 + Description），运行时由 <see cref="NewLife.Cube.Services.LovRegistry"/>
+/// 按 <c>Enum.CubeDemo.Areas.Test.测试枚举</c>（FullName）反射直读，无需落库，也无需手工维护。</summary>
 /// </para>
 /// </summary>
 public enum 测试枚举

@@ -135,4 +135,97 @@ public partial class NotificationRecord : Entity<NotificationRecord>
     }
 
     #endregion
+
+    #region 站内信
+    /// <summary>构建当前用户可见的站内信查询条件。广播消息(UserId=0)仅系统管理员可见，个人消息(UserId&gt;0)仅本人可见</summary>
+    /// <param name="userId">当前用户编号</param>
+    /// <param name="admin">是否系统管理员（IsSystem 角色）</param>
+    /// <returns>查询条件</returns>
+    public static Expression GetInAppExp(Int32 userId, Boolean admin)
+    {
+        var exp = _.Channel == "InApp";
+        if (admin)
+            exp &= _.UserId == 0 | _.UserId == userId;
+        else
+            exp &= _.UserId == userId;
+
+        return exp;
+    }
+
+    /// <summary>统计当前用户未读站内信数。广播消息(UserId=0)仅系统管理员计入</summary>
+    /// <param name="userId">当前用户编号</param>
+    /// <param name="admin">是否系统管理员（IsSystem 角色）</param>
+    /// <returns>未读数</returns>
+    public static Int32 CountUnread(Int32 userId, Boolean admin)
+    {
+        if (userId <= 0 && !admin) return 0;
+
+        var exp = GetInAppExp(userId, admin) & _.Read == false;
+
+        return (Int32)FindCount(exp);
+    }
+
+    /// <summary>获取当前用户最近的未读站内信，用于导航栏铃铛下拉</summary>
+    /// <param name="userId">当前用户编号</param>
+    /// <param name="admin">是否系统管理员（IsSystem 角色）</param>
+    /// <param name="size">条数。默认10</param>
+    /// <returns>未读站内信列表</returns>
+    public static IList<NotificationRecord> GetRecentUnread(Int32 userId, Boolean admin, Int32 size = 10)
+    {
+        if (userId <= 0 && !admin) return [];
+
+        var exp = GetInAppExp(userId, admin) & _.Read == false;
+
+        return FindAll(exp, _.Id.Desc(), null, 0, size);
+    }
+
+    /// <summary>标记站内信已读。广播消息(UserId=0)任意系统管理员可标记，个人消息仅本人可标记</summary>
+    /// <param name="id">通知编号</param>
+    /// <param name="userId">当前用户编号</param>
+    /// <param name="userName">当前用户名称，写入已读人便于审计</param>
+    /// <param name="admin">是否系统管理员（IsSystem 角色）</param>
+    /// <returns>已读后的记录；记录不存在、非站内信或无权时返回null</returns>
+    public static NotificationRecord MarkRead(Int64 id, Int32 userId, String userName, Boolean admin)
+    {
+        var entity = FindById(id);
+        if (entity == null || !entity.Channel.EqualIgnoreCase("InApp")) return null;
+
+        // 广播消息仅系统管理员可读，个人消息仅本人可读
+        if (entity.UserId == 0 && !admin) return null;
+        if (entity.UserId != 0 && entity.UserId != userId) return null;
+
+        if (!entity.Read)
+        {
+            entity.Read = true;
+            entity.ReadTime = DateTime.Now;
+            if (!userName.IsNullOrEmpty()) entity.Result = $"已读：{userName}";
+            entity.Update();
+        }
+
+        return entity;
+    }
+
+    /// <summary>批量标记当前用户可见的全部未读站内信为已读</summary>
+    /// <param name="userId">当前用户编号</param>
+    /// <param name="userName">当前用户名称，写入已读人便于审计</param>
+    /// <param name="admin">是否系统管理员（IsSystem 角色）</param>
+    /// <returns>已读数量</returns>
+    public static Int32 MarkAllRead(Int32 userId, String userName, Boolean admin)
+    {
+        if (userId <= 0 && !admin) return 0;
+
+        var exp = GetInAppExp(userId, admin) & _.Read == false;
+        var list = FindAll(exp, null, null, 0, 0);
+        if (list.Count == 0) return 0;
+
+        foreach (var entity in list)
+        {
+            entity.Read = true;
+            entity.ReadTime = DateTime.Now;
+            if (!userName.IsNullOrEmpty()) entity.Result = $"已读：{userName}";
+        }
+
+        return list.Save();
+    }
+    #endregion
 }

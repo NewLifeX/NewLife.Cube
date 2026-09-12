@@ -56,6 +56,9 @@ public partial class AccessRuleModel
     /// <summary>限流次数。限流考察期间达到该阈值时，执行拦截</summary>
     public Int32 LimitTimes { get; set; }
 
+    /// <summary>过期时间。到期后本规则自动失效；未设置表示永久有效。仅供系统自动封禁使用</summary>
+    public DateTime ExpireTime { get; set; }
+
     /// <summary>创建者</summary>
     public Int32 CreateUserID { get; set; }
 
@@ -98,6 +101,7 @@ public partial class AccessRuleModel
         LimitDimension = model.LimitDimension;
         LimitCycle = model.LimitCycle;
         LimitTimes = model.LimitTimes;
+        ExpireTime = model.ExpireTime;
         CreateUserID = model.CreateUserID;
         CreateTime = model.CreateTime;
         CreateIP = model.CreateIP;

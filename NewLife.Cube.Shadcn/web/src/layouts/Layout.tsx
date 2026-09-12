@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
 import api from '@/api';
-import type { MenuItem as CubeMenuItem } from '@cube/api-core';
+import type { MenuItem as CubeMenuItem } from '@newlifex/api-core';
 
 export default function Layout() {
   const navigate = useNavigate();

@@ -1,5 +1,5 @@
 /**
- * @cube/api-core — 密码安全工具
+ * @newlifex/api-core — 密码安全工具
  *
  * 使用浏览器原生 Web Crypto API（无需额外依赖）实现 RSA-OAEP 密码加密，
  * 配合后端 GET /Auth/Challenge 接口防止密码明文传输。

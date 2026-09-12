@@ -16,7 +16,6 @@ public class FieldCollectionTests
     {
         var collection = new FieldCollection(ViewKinds.List);
         Assert.Empty(collection);
-        Assert.Equal(0, collection.Count);
     }
 
     [Fact]

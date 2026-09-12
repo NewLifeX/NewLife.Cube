@@ -12,7 +12,7 @@ import {
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
 import api from '@/api';
-import type { MenuItem as CubeMenuItem } from '@cube/api-core';
+import type { MenuItem as CubeMenuItem } from '@newlifex/api-core';
 
 const DRAWER_WIDTH = 240;
 

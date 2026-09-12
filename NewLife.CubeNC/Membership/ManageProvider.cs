@@ -118,7 +118,9 @@ public class ManageProvider2 : ManageProvider
         if (context != null && user != null)
         {
             // 先颁发令牌（含 UserToken + JWT(jti)），JWT 缓存在 context.Items
-            context.IssueLoginToken(user, TimeSpan.FromSeconds(set.TokenExpire));
+            // 记住登录状态（Remember）：JWT 有效期与 Cookie 一致延长到 365 天，前端重开系统免登录
+            var tokenExpire = remember ? TimeSpan.FromDays(365) : TimeSpan.FromSeconds(set.TokenExpire);
+            context.IssueLoginToken(user, tokenExpire);
         }
 
         // 保存Cookie（优先取 Items 中带 jti 的 JWT）
@@ -130,13 +132,17 @@ public class ManageProvider2 : ManageProvider
     private SsoClient _client;
     private IManageUser LoginByOAuth(OAuthConfig oa, String username, String password)
     {
-        _client ??= new SsoClient
+        // SSO 客户端按当前 OAuth 配置惰性创建。运行期配置变更或多租户各自配置时按需重建，避免沿用陈旧配置
+        if (_client == null || _client.Server != oa.Server || _client.AppId != oa.AppId || _client.Secret != oa.Secret || _client.SecurityKey != oa.SecurityKey)
         {
-            Server = oa.Server,
-            AppId = oa.AppId,
-            Secret = oa.Secret,
-            SecurityKey = oa.SecurityKey,
-        };
+            _client = new SsoClient
+            {
+                Server = oa.Server,
+                AppId = oa.AppId,
+                Secret = oa.Secret,
+                SecurityKey = oa.SecurityKey,
+            };
+        }
 
         //var ti = _client.GetToken(username, password).Result;
         //var ui = _client.GetUser(ti.AccessToken).Result as User;

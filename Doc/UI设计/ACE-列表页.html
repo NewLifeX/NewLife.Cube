@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="新生命团队,NewLife,魔方,Cube - ACE 皮肤列表页设计稿（表格分隔样式三档 × 行高密度两档）" />
+    <title>列表页设计稿 - ACE 皮肤 - 魔方</title>
+
+    <!-- 独立设计稿：CDN 引入 Bootstrap3 + FontAwesome，双击即可预览
+         本文件为 ACE 皮肤列表页（数据表格）UI 草稿，待确认后实施。
+         顶部演示条可切换「分隔样式」（轻量/标准/网格）×「行高密度」（紧凑/适中）。
+         表格色值与将来 ace-ui.css 的实施值保持一致——设计稿即规格。 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+
+    <style>
+        /* ========== 设计语言：对齐 ace-ui.css 设计令牌 ==========
+           主色 #2b7dbc、白卡片、圆角 10px、柔和阴影、背景 #f0f2f5 */
+        :root {
+            --p: #2b7dbc;
+            --p-dark: #1f5f8e;
+            --p-light: #e8f1f9;
+            --bg: #f0f2f5;
+            --card: #fff;
+            --border: #e4e6e9;
+            --border-l: #eef1f4;
+            --text: #3a3f44;
+            --text-title: #262a2e;
+            --text-muted: #8a9199;
+            --radius: 6px;
+            --radius-lg: 10px;
+            --shadow: 0 1px 3px rgba(0, 0, 0, .06), 0 1px 2px rgba(0, 0, 0, .04);
+            --shadow-lg: 0 6px 20px rgba(43, 125, 188, .10), 0 2px 6px rgba(0, 0, 0, .06);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+            font-size: 13px;
+            padding-bottom: 60px;
+        }
+        a { color: var(--p); text-decoration: none; }
+        a:hover { color: var(--p-dark); }
+
+        /* ========== 顶部演示条（非产品 UI） ========== */
+        .demo-bar {
+            position: sticky; top: 0; z-index: 999;
+            background: #262a2e; color: #e8eef4; font-size: 13px;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 10px;
+            padding: 10px 20px;
+        }
+        .demo-bar b { color: #fff; margin-right: 12px; }
+        .demo-bar .seg-group { display: flex; align-items: center; gap: 10px; }
+        .demo-bar .seg-label { color: #98a2ad; font-size: 12px; }
+        .demo-bar .seg { display: inline-flex; border: 1px solid #4a5058; border-radius: 6px; overflow: hidden; }
+        .demo-bar .seg button {
+            background: transparent; color: #c7ced6; border: none; padding: 6px 16px; cursor: pointer; font-size: 13px;
+        }
+        .demo-bar .seg button + button { border-left: 1px solid #4a5058; }
+        .demo-bar .seg button.on { background: var(--p); color: #fff; }
+        .demo-bar .hint { color: #98a2ad; font-size: 12px; }
+
+        /* ========== 顶层框架示意（简化 ACE 顶栏） ========== */
+        .demo-navbar {
+            background: #438eb9; color: #fff;
+            height: 46px; line-height: 46px; padding: 0 20px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .demo-navbar .brand { font-size: 15px; font-weight: 600; color: #fff; }
+        .demo-navbar .brand i { margin-right: 8px; }
+        .demo-navbar .user { font-size: 13px; opacity: .95; }
+        .demo-navbar .user i { margin-right: 6px; }
+
+        .page-wrap { max-width: 1400px; margin: 0 auto; padding: 14px 18px 0; }
+
+        /* 面包屑（内容卡顶部条） */
+        .crumbs {
+            height: 46px; line-height: 46px;
+            border-bottom: 1px solid var(--border-l);
+            margin-bottom: 12px;
+            color: var(--text-muted); font-size: 13px;
+        }
+        .crumbs .home { color: var(--p); margin-right: 6px; }
+        .crumbs .sep { color: #c3c9d1; margin: 0 8px; }
+        .crumbs .cur { color: var(--p); font-weight: 600; }
+        .crumbs .tip { float: right; color: var(--text-muted); font-size: 12px; }
+
+        /* ========== 内容卡（对齐 ace-ui.css 的 content-wrapper） ========== */
+        .content-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            padding: 18px;
+            margin-bottom: 18px;
+        }
+
+        /* ========== 工具栏 ========== */
+        .toolbar {
+            display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+            margin-bottom: 14px;
+        }
+        .toolbar .tbtn {
+            display: inline-flex; align-items: center; gap: 4px;
+            height: 30px; padding: 4px 12px;
+            border: 1px solid #d5dbe3; border-radius: var(--radius);
+            background: #fff; color: var(--text); font-size: 13px; cursor: default;
+        }
+        .toolbar .tbtn i { font-size: 12px; }
+        .toolbar .tbtn-primary { background: var(--p); border-color: var(--p); color: #fff; }
+        .toolbar .tbtn-success { background: #87b87f; border-color: #87b87f; color: #fff; }
+        .toolbar .tbtn-warn { background: #ffb752; border-color: #ffb752; color: #fff; }
+        .toolbar .spacer { flex: 1; }
+        .toolbar .search-unit {
+            display: inline-flex; align-items: center; gap: 4px; height: 30px;
+            border: 1px solid #d5dbe3; border-radius: var(--radius);
+            background: #fff; padding: 0 10px; color: var(--text-muted); font-size: 12px;
+        }
+        .toolbar .search-unit input {
+            border: none; outline: none; height: 28px; width: 130px; font-size: 13px;
+        }
+        .toolbar .search-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            height: 30px; padding: 4px 14px; border-radius: var(--radius);
+            background: #9583bf; color: #fff; font-size: 13px; border: none; cursor: default;
+        }
+        .toolbar .adv-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            height: 30px; padding: 4px 12px; border-radius: var(--radius);
+            background: #6fb3e0; border: none; color: #fff; font-size: 13px; cursor: default;
+        }
+        .toolbar .chip {
+            display: inline-flex; align-items: center;
+            padding: 2px 10px; border: 1px solid var(--border); border-radius: 14px;
+            color: var(--p); background: #f7fafd; font-size: 12px;
+        }
+
+        /* ============================================================
+           数据表格（核心）
+           三档分隔样式 × 两档行高密度，由 <body> class 驱动：
+             .ts-light / .ts-standard / .ts-grid      —— 分隔样式
+             .td-compact / .td-normal                 —— 行高密度
+           注：「轻量/标准」档无竖线（横向引导为主，类 Ant Design）；
+               「网格」档补竖线（完整单元格网格，数据密集场景）。
+               每档内部「一主一辅」：行线为主、斑马纹/hover 为辅。
+           ============================================================ */
+        .tbl-wrap { overflow-x: auto; }
+
+        table.tbl {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            background: var(--card);
+            margin: 0;
+        }
+        table.tbl th, table.tbl td {
+            padding: 6px 8px;                 /* 默认=紧凑（与实施默认一致） */
+            font-size: 13px;
+            text-align: center;
+            border-bottom: 1px solid var(--tbl-line);
+        }
+        table.tbl thead th {
+            background: #f5f8fc;
+            border-bottom: 1px solid var(--tbl-head-line);
+            color: var(--text-title);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        table.tbl thead th a { color: var(--text-title); }
+        table.tbl thead th a:hover { color: var(--p); }
+        table.tbl thead th .sort { color: #c3c9d1; font-size: 10px; margin-left: 3px; }
+        table.tbl tbody td { vertical-align: middle; }
+        table.tbl tbody tr:last-child td { border-bottom: none; }
+
+        /* 斑马纹（网格档关闭） */
+        table.tbl tbody tr:nth-child(odd) td { background-color: var(--tbl-stripe); }
+        /* 悬停高亮（全档保留，作为行定位辅助） */
+        table.tbl tbody tr:hover td { background-color: var(--tbl-hover); }
+
+        /* 单元格内容类型 */
+        .cell-name { display: inline-flex; align-items: center; gap: 6px; }
+        .avatar {
+            width: 22px; height: 22px; border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 11px; flex: 0 0 22px;
+            background: #7fb3dd;
+        }
+        .avatar.g2 { background: #87b87f; }
+        .avatar.g3 { background: #ffb752; }
+        .avatar.g4 { background: #9583bf; }
+        .avatar.g5 { background: #d9838a; }
+        .cell-link { color: var(--p); }
+        .cell-empty { color: #c3c9d1; }
+        .text-ok { color: #5b9a55; }
+        .text-warn { color: #d9822b; }
+
+        /* 操作列按钮（对齐 ace-ui.css 的 op-btn） */
+        .op-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px; margin: 1px 2px;
+            font-size: 12px; line-height: 1.4;
+            border-radius: 14px; border: 1px solid transparent;
+        }
+        .op-btn i { font-size: 12px; }
+        .op-btn-edit { color: var(--p); background: var(--p-light); border-color: #cfe3f5; }
+        .op-btn-del { color: #d9534f; background: #fdf0ef; border-color: #f3d6d5; }
+
+        /* ========== 三档样式变量 ========== */
+        /* 轻量：极简轻线，无竖线，保留微斑马纹——现代极简风（Ant Design 派） */
+        body.ts-light table.tbl {
+            --tbl-line: #eef1f4;
+            --tbl-head-line: #e4e6e9;
+            --tbl-stripe: #fbfcfd;
+            --tbl-hover: #f5f9fc;
+        }
+        /* 标准（默认）：清晰行线，无竖线，微斑马纹——平衡可读与轻盈 */
+        body.ts-standard table.tbl {
+            --tbl-line: #e5e9ee;
+            --tbl-head-line: #e0e5ea;
+            --tbl-stripe: #fafbfc;
+            --tbl-hover: #f0f6fb;
+        }
+        /* 网格：完整单元格网格（横+竖），关闭斑马纹——数据密集、对账类场景 */
+        body.ts-grid table.tbl {
+            --tbl-line: #e2e7ec;
+            --tbl-head-line: #e2e7ec;
+            --tbl-stripe: transparent;
+            --tbl-hover: #eef4fa;
+        }
+        body.ts-grid table.tbl td, body.ts-grid table.tbl th {
+            border-right: 1px solid #e2e7ec;
+        }
+        body.ts-grid table.tbl td:last-child, body.ts-grid table.tbl th:last-child {
+            border-right: none;
+        }
+
+        /* ========== 两档行高密度 ========== */
+        body.td-compact table.tbl th, body.td-compact table.tbl td { padding: 6px 8px; }
+        body.td-compact table.tbl tbody td { padding: 4px 8px; }
+        body.td-normal table.tbl th, body.td-normal table.tbl td { padding: 9px 12px; }
+
+        /* ========== 分页器（对齐 ace-ui.css 的 panel-footer） ========== */
+        .pager {
+            display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+            padding: 14px 0 2px; color: var(--text-muted); font-size: 13px;
+        }
+        .pager b { color: var(--p); font-weight: 600; }
+        .pager .btns { display: inline-flex; align-items: center; gap: 4px; }
+        .pager .pbtn {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 30px; padding: 4px 10px;
+            color: var(--text); background: var(--card);
+            border: 1px solid #d5dbe3; border-radius: var(--radius);
+            font-size: 13px;
+        }
+        .pager .pbtn.current { color: #fff; background: var(--p); border-color: var(--p); font-weight: 600; }
+        .pager .pbtn.disabled { color: #c3c9d1; background: #f7f8fa; border-color: #e8eaee; }
+        .pager .jump { display: inline-flex; align-items: center; gap: 6px; }
+        .pager .jump input {
+            width: 44px; height: 28px; border: 1px solid #d5dbe3; border-radius: var(--radius);
+            text-align: center; font-size: 13px;
+        }
+        .pager .jump .go {
+            height: 28px; padding: 4px 10px; border: 1px solid #d5dbe3; border-radius: var(--radius);
+            background: #f7f8fa; color: var(--text); font-size: 12px;
+        }
+        .pager select { height: 28px; border: 1px solid #d5dbe3; border-radius: var(--radius); font-size: 13px; padding: 2px 4px; }
+
+        /* ========== 设计说明区（非产品 UI） ========== */
+        .spec-section { max-width: 1400px; margin: 0 auto; padding: 0 18px; }
+        .spec-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            padding: 22px 24px;
+            margin-bottom: 18px;
+        }
+        .spec-card h2 {
+            font-size: 17px; font-weight: 700; color: var(--text-title);
+            margin: 0 0 6px; padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-l);
+        }
+        .spec-card h3 { font-size: 14px; font-weight: 600; color: var(--text-title); margin: 18px 0 8px; }
+        .spec-card p { line-height: 1.9; color: var(--text); margin: 6px 0; }
+        .spec-card .muted { color: var(--text-muted); font-size: 12px; }
+
+        /* 色板 */
+        .swatches { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 10px; }
+        .swatch-set { flex: 1 1 300px; border: 1px solid var(--border-l); border-radius: var(--radius); padding: 14px 16px; }
+        .swatch-set h4 { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: var(--text-title); }
+        .swatch-set .pos { color: var(--text-muted); font-size: 12px; margin-bottom: 10px; }
+        .swatch-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; font-size: 12px; }
+        .swatch-chip {
+            width: 46px; height: 20px; border-radius: 4px; border: 1px solid rgba(0,0,0,.08);
+            flex: 0 0 46px;
+        }
+        .swatch-row .lbl { color: var(--text-muted); width: 62px; }
+        .swatch-row .val { color: var(--text); font-family: Consolas, monospace; }
+
+        /* 对比演示表（小样） */
+        .mini-demo { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
+        .mini-demo .mini { flex: 1 1 260px; }
+        .mini-demo h5 { font-size: 13px; font-weight: 600; margin: 0 0 8px; color: var(--text-title); }
+        table.mini {
+            width: 100%; border-collapse: separate; border-spacing: 0;
+            border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+        }
+        table.mini td, table.mini th {
+            padding: 5px 8px; font-size: 12px; text-align: left;
+            border-bottom: 1px solid var(--tbl-line);
+        }
+        table.mini thead th { background: #f5f8fc; border-bottom: 1px solid var(--tbl-head-line); }
+        table.mini tbody tr:nth-child(odd) td { background: var(--tbl-stripe); }
+        table.mini tbody tr:last-child td { border-bottom: none; }
+        .mini.m-light table.mini { --tbl-line: #eef1f4; --tbl-head-line: #e4e6e9; --tbl-stripe: #fbfcfd; }
+        .mini.m-standard table.mini { --tbl-line: #e5e9ee; --tbl-head-line: #e0e5ea; --tbl-stripe: #fafbfc; }
+        .mini.m-grid table.mini { --tbl-line: #e2e7ec; --tbl-head-line: #e2e7ec; --tbl-stripe: transparent; }
+        .mini.m-grid table.mini td, .mini.m-grid table.mini th { border-right: 1px solid #e2e7ec; }
+        .mini.m-grid table.mini td:last-child, .mini.m-grid table.mini th:last-child { border-right: none; }
+
+        .legend { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 12px; }
+        .legend.bad { background: #fdf0ef; color: #d9534f; }
+        .legend.good { background: #eef7ee; color: #5b9a55; }
+
+        ul.spec-list { padding-left: 20px; margin: 6px 0; line-height: 2; }
+        ul.spec-list li { color: var(--text); }
+        ul.spec-list li b { color: var(--text-title); }
+    </style>
+</head>
+<body class="ts-standard td-compact">
+
+    <!-- ========== 顶部演示条（非产品 UI） ========== -->
+    <div class="demo-bar">
+        <div><b>ACE 列表页设计稿</b><span class="hint">表格分隔样式 × 行高密度 —— 实时切换对比</span></div>
+        <div class="seg-group">
+            <span class="seg-label">分隔样式</span>
+            <div class="seg" id="segStyle">
+                <button data-ts="ts-light">轻量</button>
+                <button data-ts="ts-standard" class="on">标准</button>
+                <button data-ts="ts-grid">网格</button>
+            </div>
+            <span class="seg-label">行高</span>
+            <div class="seg" id="segDensity">
+                <button data-td="td-compact" class="on">紧凑</button>
+                <button data-td="td-normal">适中</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 简化顶栏（上下文示意，实际由框架页提供） ========== -->
+    <div class="demo-navbar">
+        <span class="brand"><i class="fa fa-cube"></i>新生命用户中心</span>
+        <span class="user"><i class="fa fa-user-circle"></i>大石头 <i class="fa fa-caret-down"></i></span>
+    </div>
+
+    <div class="page-wrap">
+        <!-- 面包屑 -->
+        <div class="crumbs">
+            <i class="fa fa-home home"></i>
+            系统管理 <span class="sep">/</span> <span class="cur">用户</span>
+            <span class="tip">系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。</span>
+        </div>
+
+        <!-- ========== 内容卡 ========== -->
+        <div class="content-card">
+
+            <!-- 工具栏 -->
+            <div class="toolbar">
+                <span class="tbtn tbtn-success"><i class="fa fa-plus"></i>添加</span>
+                <span class="tbtn"><i class="fa fa-check-square-o"></i>批量启用</span>
+                <span class="tbtn"><i class="fa fa-square-o"></i>批量禁用</span>
+                <span class="chip">用户在线</span>
+                <span class="chip">用户统计</span>
+                <span class="spacer"></span>
+                <span class="search-unit"><i class="fa fa-angle-down"></i><input placeholder="搜索关键字"></span>
+                <span class="search-btn"><i class="fa fa-search"></i>查询</span>
+                <span class="adv-btn">高级 <i class="fa fa-caret-down"></i></span>
+            </div>
+
+            <!-- 数据表格 -->
+            <div class="tbl-wrap">
+                <table class="tbl">
+                    <thead>
+                        <tr>
+                            <th style="width:28px;"><input type="checkbox" title="全选"></th>
+                            <th><a href="#">编号</a><i class="fa fa-sort sort"></i></th>
+                            <th><a href="#">名称</a><i class="fa fa-sort sort"></i></th>
+                            <th><a href="#">昵称</a><i class="fa fa-sort sort"></i></th>
+                            <th><a href="#">性别</a><i class="fa fa-sort sort"></i></th>
+                            <th><a href="#">地区</a><i class="fa fa-sort sort"></i></th>
+                            <th><a href="#">角色</a><i class="fa fa-sort sort"></i></th>
+                            <th><a href="#">部门</a><i class="fa fa-sort sort"></i></th>
+                            <th><a href="#">启用</a><i class="fa fa-sort sort"></i></th>
+                            <th><a href="#">登录次数</a><i class="fa fa-sort sort"></i></th>
+                            <th style="min-width:134px;"><a href="#">最后登录</a><i class="fa fa-sort sort"></i></th>
+                            <th><a href="#">在线时间</a><i class="fa fa-sort sort"></i></th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td>9698</td>
+                            <td><span class="cell-name"><span class="avatar">Q</span><a href="#" class="cell-link">545813550@qq.com</a></span></td>
+                            <td><a href="#" class="cell-link">大石头</a></td>
+                            <td>男</td>
+                            <td>广东/东莞</td>
+                            <td><a href="#" class="cell-link">管理员</a></td>
+                            <td><a href="#" class="cell-link">研发部</a></td>
+                            <td><i class="fa fa-check text-ok"></i></td>
+                            <td>13278</td>
+                            <td>2026-09-10 09:31:00</td>
+                            <td>02:14:55</td>
+                            <td>
+                                <a href="#" class="op-btn op-btn-edit"><i class="fa fa-pencil"></i>编辑</a>
+                                <a href="#" class="op-btn op-btn-del"><i class="fa fa-trash-o"></i>删除</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td>9697</td>
+                            <td><span class="cell-name"><span class="avatar g2">I</span><a href="#" class="cell-link">ichov</a></span></td>
+                            <td><span class="cell-empty">—</span></td>
+                            <td>未知</td>
+                            <td>上海/杨浦</td>
+                            <td><a href="#" class="cell-link">普通用户</a></td>
+                            <td><a href="#" class="cell-link">市场部</a></td>
+                            <td><i class="fa fa-check text-ok"></i></td>
+                            <td>6</td>
+                            <td>2026-09-09 12:04:07</td>
+                            <td>00:19:10</td>
+                            <td>
+                                <a href="#" class="op-btn op-btn-edit"><i class="fa fa-pencil"></i>编辑</a>
+                                <a href="#" class="op-btn op-btn-del"><i class="fa fa-trash-o"></i>删除</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td>9696</td>
+                            <td><span class="cell-name"><span class="avatar g3">熊</span><a href="#" class="cell-link">xiongliuyun</a></span></td>
+                            <td><a href="#" class="cell-link">熊六云</a></td>
+                            <td>女</td>
+                            <td>北京/朝阳</td>
+                            <td><a href="#" class="cell-link">管理员</a></td>
+                            <td><a href="#" class="cell-link">财务部</a></td>
+                            <td><i class="fa fa-check text-ok"></i></td>
+                            <td>152</td>
+                            <td>2026-09-09 08:22:41</td>
+                            <td>01:32:08</td>
+                            <td>
+                                <a href="#" class="op-btn op-btn-edit"><i class="fa fa-pencil"></i>编辑</a>
+                                <a href="#" class="op-btn op-btn-del"><i class="fa fa-trash-o"></i>删除</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td>9695</td>
+                            <td><span class="cell-name"><span class="avatar g4">M</span><a href="#" class="cell-link">mes1234567</a></span></td>
+                            <td><span class="cell-empty">—</span></td>
+                            <td>未知</td>
+                            <td>浙江/杭州</td>
+                            <td><a href="#" class="cell-link">普通用户</a></td>
+                            <td><span class="cell-empty">—</span></td>
+                            <td><i class="fa fa-times text-warn"></i></td>
+                            <td>0</td>
+                            <td><span class="cell-empty">—</span></td>
+                            <td>00:00:00</td>
+                            <td>
+                                <a href="#" class="op-btn op-btn-edit"><i class="fa fa-pencil"></i>编辑</a>
+                                <a href="#" class="op-btn op-btn-del"><i class="fa fa-trash-o"></i>删除</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td>9694</td>
+                            <td><span class="cell-name"><span class="avatar g5">陈</span><a href="#" class="cell-link">chenxiaoliao</a></span></td>
+                            <td><a href="#" class="cell-link">陈小廖</a></td>
+                            <td>男</td>
+                            <td>四川/成都</td>
+                            <td><a href="#" class="cell-link">管理员</a></td>
+                            <td><a href="#" class="cell-link">研发部</a></td>
+                            <td><i class="fa fa-check text-ok"></i></td>
+                            <td>88</td>
+                            <td>2026-09-08 18:05:22</td>
+                            <td>00:47:33</td>
+                            <td>
+                                <a href="#" class="op-btn op-btn-edit"><i class="fa fa-pencil"></i>编辑</a>
+                                <a href="#" class="op-btn op-btn-del"><i class="fa fa-trash-o"></i>删除</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td>9693</td>
+                            <td><span class="cell-name"><span class="avatar">A</span><a href="#" class="cell-link">andmin</a></span></td>
+                            <td><span class="cell-empty">—</span></td>
+                            <td>未知</td>
+                            <td>广东/东莞</td>
+                            <td><a href="#" class="cell-link">普通用户</a></td>
+                            <td><a href="#" class="cell-link">市场部</a></td>
+                            <td><i class="fa fa-check text-ok"></i></td>
+                            <td>12</td>
+                            <td>2026-09-08 14:16:06</td>
+                            <td>00:00:36</td>
+                            <td>
+                                <a href="#" class="op-btn op-btn-edit"><i class="fa fa-pencil"></i>编辑</a>
+                                <a href="#" class="op-btn op-btn-del"><i class="fa fa-trash-o"></i>删除</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td>9692</td>
+                            <td><span class="cell-name"><span class="avatar g2">豪</span><a href="#" class="cell-link">haozige</a></span></td>
+                            <td><a href="#" class="cell-link">豪子哥</a></td>
+                            <td>男</td>
+                            <td>湖北/武汉</td>
+                            <td><a href="#" class="cell-link">管理员</a></td>
+                            <td><a href="#" class="cell-link">运营部</a></td>
+                            <td><i class="fa fa-check text-ok"></i></td>
+                            <td>31</td>
+                            <td>2026-09-08 08:22:45</td>
+                            <td>00:18:44</td>
+                            <td>
+                                <a href="#" class="op-btn op-btn-edit"><i class="fa fa-pencil"></i>编辑</a>
+                                <a href="#" class="op-btn op-btn-del"><i class="fa fa-trash-o"></i>删除</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td>9691</td>
+                            <td><span class="cell-name"><span class="avatar g3">P</span><a href="#" class="cell-link">PXY</a></span></td>
+                            <td><span class="cell-empty">—</span></td>
+                            <td>未知</td>
+                            <td>广东/东莞</td>
+                            <td><a href="#" class="cell-link">普通用户</a></td>
+                            <td><a href="#" class="cell-link">市场部</a></td>
+                            <td><i class="fa fa-check text-ok"></i></td>
+                            <td>1</td>
+                            <td>2026-09-07 21:10:02</td>
+                            <td>00:02:11</td>
+                            <td>
+                                <a href="#" class="op-btn op-btn-edit"><i class="fa fa-pencil"></i>编辑</a>
+                                <a href="#" class="op-btn op-btn-del"><i class="fa fa-trash-o"></i>删除</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td>9690</td>
+                            <td><span class="cell-name"><span class="avatar g4">M</span><a href="#" class="cell-link">Mario9</a></span></td>
+                            <td><a href="#" class="cell-link">Mario 9</a></td>
+                            <td>未知</td>
+                            <td>江苏/南京</td>
+                            <td><a href="#" class="cell-link">普通用户</a></td>
+                            <td><a href="#" class="cell-link">客服部</a></td>
+                            <td><i class="fa fa-check text-ok"></i></td>
+                            <td>9</td>
+                            <td>2026-09-07 16:44:18</td>
+                            <td>00:07:13</td>
+                            <td>
+                                <a href="#" class="op-btn op-btn-edit"><i class="fa fa-pencil"></i>编辑</a>
+                                <a href="#" class="op-btn op-btn-del"><i class="fa fa-trash-o"></i>删除</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td>9689</td>
+                            <td><span class="cell-name"><span class="avatar g5">兰</span><a href="#" class="cell-link">lanse</a></span></td>
+                            <td><a href="#" class="cell-link">蓝色风暴</a></td>
+                            <td>女</td>
+                            <td>山东/青岛</td>
+                            <td><a href="#" class="cell-link">管理员</a></td>
+                            <td><a href="#" class="cell-link">财务部</a></td>
+                            <td><i class="fa fa-check text-ok"></i></td>
+                            <td>203</td>
+                            <td>2026-09-06 23:35:41</td>
+                            <td>01:08:26</td>
+                            <td>
+                                <a href="#" class="op-btn op-btn-edit"><i class="fa fa-pencil"></i>编辑</a>
+                                <a href="#" class="op-btn op-btn-del"><i class="fa fa-trash-o"></i>删除</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页器 -->
+            <div class="pager">
+                <span>共 <b>9,636</b> 条 · 每页 <b>20</b> 条 · 第 <b>1/482</b> 页</span>
+                <span class="btns">
+                    <span class="pbtn disabled"><i class="fa fa-angle-double-left"></i></span>
+                    <span class="pbtn disabled"><i class="fa fa-angle-left"></i></span>
+                    <span class="pbtn current">1</span>
+                    <span class="pbtn">2</span>
+                    <span class="pbtn">3</span>
+                    <span class="pbtn">4</span>
+                    <span class="pbtn"><i class="fa fa-angle-right"></i></span>
+                    <span class="pbtn"><i class="fa fa-angle-double-right"></i></span>
+                </span>
+                <span class="jump">转到第 <input value="1"> 页 <span class="go">GO</span></span>
+                <span class="jump">每页
+                    <select><option>20</option><option>10</option><option>30</option><option>50</option></select>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 设计说明（非产品 UI） ========== -->
+    <div class="spec-section">
+
+        <!-- 问题分析 -->
+        <div class="spec-card">
+            <h2>一、问题分析：表格分界线过淡</h2>
+            <p>
+                <b>结论：线深线浅是「偏好」，但现状叠加了两个客观瑕疵。</b>
+            </p>
+            <ul class="spec-list">
+                <li><b>偏好维度</b>：极简轻线（Ant Design 派）与清晰网格各有拥趸，无唯一正确答案——因此做成配置项而非单方面改深。</li>
+                <li><b>瑕疵 ①：多机制弱化共存</b>。现状同时使用 4 种分隔机制——行线 <code>#f0f2f5</code>、竖线 <code>#f0f2f5</code>、斑马纹 <code>#fbfcfd</code>、悬停 <code>#f7fafd</code>——全部处于「似有似无」状态，无主无次。设计上应「一主一辅」。</li>
+                <li><b>瑕疵 ②：对比度低于可辨阈值</b>。行线 <code>#f0f2f5</code> 对白底对比度约 1.06:1，1080p 屏幕上基本不可辨，横向串行（读错行）风险客观存在。</li>
+            </ul>
+            <p class="muted">
+                解决思路：三档配置（轻量 / 标准 / 网格），每档内部机制主次分明、对比度达标；默认「标准」档解决「看不清」问题，偏好极简或偏好强网格的用户各选所需。
+            </p>
+        </div>
+
+        <!-- 三档规范 -->
+        <div class="spec-card">
+            <h2>二、三档分隔样式规范</h2>
+            <div class="swatches">
+                <div class="swatch-set">
+                    <h4>轻量 Light</h4>
+                    <div class="pos">极简现代 · 快速扫读 · 类似 Ant Design</div>
+                    <div class="swatch-row"><span class="lbl">行线</span><span class="swatch-chip" style="background:#eef1f4"></span><span class="val">#eef1f4</span></div>
+                    <div class="swatch-row"><span class="lbl">竖线</span><span class="swatch-chip" style="background:#fff"></span><span class="val">无</span></div>
+                    <div class="swatch-row"><span class="lbl">斑马纹</span><span class="swatch-chip" style="background:#fbfcfd"></span><span class="val">#fbfcfd</span></div>
+                    <div class="swatch-row"><span class="lbl">悬停</span><span class="swatch-chip" style="background:#f5f9fc"></span><span class="val">#f5f9fc</span></div>
+                    <div class="swatch-row"><span class="lbl">表头底线</span><span class="swatch-chip" style="background:#e4e6e9"></span><span class="val">#e4e6e9</span></div>
+                </div>
+                <div class="swatch-set">
+                    <h4>标准 Standard（默认）</h4>
+                    <div class="pos">平衡可读与轻盈 · 推荐大多数场景</div>
+                    <div class="swatch-row"><span class="lbl">行线</span><span class="swatch-chip" style="background:#e5e9ee"></span><span class="val">#e5e9ee</span></div>
+                    <div class="swatch-row"><span class="lbl">竖线</span><span class="swatch-chip" style="background:#fff"></span><span class="val">无</span></div>
+                    <div class="swatch-row"><span class="lbl">斑马纹</span><span class="swatch-chip" style="background:#fafbfc"></span><span class="val">#fafbfc</span></div>
+                    <div class="swatch-row"><span class="lbl">悬停</span><span class="swatch-chip" style="background:#f0f6fb"></span><span class="val">#f0f6fb</span></div>
+                    <div class="swatch-row"><span class="lbl">表头底线</span><span class="swatch-chip" style="background:#e0e5ea"></span><span class="val">#e0e5ea</span></div>
+                </div>
+                <div class="swatch-set">
+                    <h4>网格 Grid</h4>
+                    <div class="pos">完整单元格网格 · 数据密集 / 对账场景</div>
+                    <div class="swatch-row"><span class="lbl">行线</span><span class="swatch-chip" style="background:#e2e7ec"></span><span class="val">#e2e7ec</span></div>
+                    <div class="swatch-row"><span class="lbl">竖线</span><span class="swatch-chip" style="background:#e2e7ec"></span><span class="val">#e2e7ec</span></div>
+                    <div class="swatch-row"><span class="lbl">斑马纹</span><span class="swatch-chip" style="background:#fff"></span><span class="val">无（靠线分隔）</span></div>
+                    <div class="swatch-row"><span class="lbl">悬停</span><span class="swatch-chip" style="background:#eef4fa"></span><span class="val">#eef4fa</span></div>
+                    <div class="swatch-row"><span class="lbl">表头底线</span><span class="swatch-chip" style="background:#e2e7ec"></span><span class="val">#e2e7ec</span></div>
+                </div>
+            </div>
+            <p class="muted" style="margin-top:12px;">
+                三档均保留：外框 <code>#e4e6e9</code> + 圆角 10px、表头底色 <code>#f5f8fc</code>（既有视觉不变）。
+                密度两档：紧凑（td 4px 8px，现状）/ 适中（td 9px 12px）。
+            </p>
+
+            <h3>对比小样</h3>
+            <div class="mini-demo">
+                <div class="mini m-light">
+                    <h5>轻量</h5>
+                    <table class="mini">
+                        <thead><tr><th>名称</th><th>角色</th><th>登录</th></tr></thead>
+                        <tbody>
+                            <tr><td>大石头</td><td>管理员</td><td>13278</td></tr>
+                            <tr><td>ichov</td><td>普通用户</td><td>6</td></tr>
+                            <tr><td>熊六云</td><td>管理员</td><td>152</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mini m-standard">
+                    <h5>标准</h5>
+                    <table class="mini">
+                        <thead><tr><th>名称</th><th>角色</th><th>登录</th></tr></thead>
+                        <tbody>
+                            <tr><td>大石头</td><td>管理员</td><td>13278</td></tr>
+                            <tr><td>ichov</td><td>普通用户</td><td>6</td></tr>
+                            <tr><td>熊六云</td><td>管理员</td><td>152</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mini m-grid">
+                    <h5>网格</h5>
+                    <table class="mini">
+                        <thead><tr><th>名称</th><th>角色</th><th>登录</th></tr></thead>
+                        <tbody>
+                            <tr><td>大石头</td><td>管理员</td><td>13278</td></tr>
+                            <tr><td>ichov</td><td>普通用户</td><td>6</td></tr>
+                            <tr><td>熊六云</td><td>管理员</td><td>152</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 落地映射 -->
+        <div class="spec-card">
+            <h2>三、落地映射</h2>
+            <ul class="spec-list">
+                <li><b>配置项</b>：<code>CubeSetting.TableStyle</code>（Light/Standard/Grid，默认 Standard）+ <code>CubeSetting.TableDensity</code>（Compact/Normal，默认 Compact），在「魔方设置 → 界面配置」页以下拉框配置。</li>
+                <li><b>样式注入</b>：<code>Views/ACE/_Layout.cshtml</code> 的 <code>&lt;body&gt;</code> 输出 <code>cube-table-{style} cube-density-{density}</code>，<code>ace-ui.css</code> 按 class 切换变量。</li>
+                <li><b>生效范围</b>：ACE 主题下所有 <code>.table-data-list</code> 表格（列表页 / 树形表 / 服务器信息表），当前仅 ACE 皮肤消费。</li>
+                <li><b>状态</b>：<span class="legend bad">待确认</span> 本稿色值与最终实现保持一致，确认后可微调。</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 演示条：切换分隔样式与行高密度（仅设计稿演示用）
+        (function () {
+            function bind(groupId, attr, prefix) {
+                var group = document.getElementById(groupId);
+                group.addEventListener('click', function (e) {
+                    var btn = e.target.closest('button');
+                    if (!btn) return;
+                    group.querySelectorAll('button').forEach(function (b) { b.classList.remove('on'); });
+                    btn.classList.add('on');
+                    // 移除同类 class 后添加新值
+                    Array.prototype.slice.call(document.body.classList).forEach(function (c) {
+                        if (c.indexOf(prefix) === 0) document.body.classList.remove(c);
+                    });
+                    document.body.classList.add(btn.getAttribute(attr));
+                });
+            }
+            bind('segStyle', 'data-ts', 'ts-');
+            bind('segDensity', 'data-td', 'td-');
+        })();
+    </script>
+</body>
+</html>

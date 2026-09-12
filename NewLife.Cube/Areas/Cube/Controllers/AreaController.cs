@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode;
@@ -108,4 +109,29 @@ public class AreaController : EntityController<Area, AreaModel>
 
     //    return View("Map");
     //}
+
+    /// <summary>中国地图数据：省级 + 有经纬度城市散点，供 React 地图模式渲染（对齐 MVC Map.cshtml）</summary>
+    /// <returns>省份与城市经纬度列表</returns>
+    [HttpGet("/api/[area]/[controller]/Map")]
+    [EntityAuthorize(PermissionFlags.Detail)]
+    public ActionResult Map()
+    {
+        InitAreaData();
+
+        // 缓存一次全量加载，避免逐省查询子级（对齐 MVC Root.Childs 语义）
+        var all = Area.FindAllWithCache();
+
+        // 省级（父级为根 0）且有经纬度
+        var provinces = all.Where(e => e.ParentID == 0 && (e.Longitude != 0 || e.Latitude != 0)).ToList();
+        var provIds = provinces.Select(e => e.ID).ToHashSet();
+
+        // 城市（省直下）且有经纬度
+        var cities = all.Where(e => provIds.Contains(e.ParentID) && e.Longitude > 0 && e.Latitude > 0).ToList();
+
+        return Json(0, null, new
+        {
+            provinces = provinces.Select(e => new { e.Name, e.Longitude, e.Latitude, e.Kind }),
+            cities = cities.Select(e => new { e.Name, e.Longitude, e.Latitude }),
+        });
+    }
 }
