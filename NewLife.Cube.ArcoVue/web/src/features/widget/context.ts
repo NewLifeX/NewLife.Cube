@@ -1,5 +1,5 @@
 import type { InjectionKey } from 'vue';
-import type { DashboardConfig, WidgetInstance } from '@cube/api-core';
+import type { DashboardConfig, WidgetInstance } from '@newlifex/api-core';
 import type { FieldMeta } from '@/core/types/field';
 import type { ViewFilter } from '@/core/utils/viewProfile';
 

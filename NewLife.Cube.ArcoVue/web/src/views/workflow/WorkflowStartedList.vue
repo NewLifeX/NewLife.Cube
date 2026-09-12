@@ -2,7 +2,7 @@
 /**
  * 我发起的审批页（OSC-26090347f1 T8c）：菜单 URL /Cube/Workflow/Started。薄 .vue，逻辑见 useWorkflowStartedList。
  */
-import type { WorkflowInstanceItem } from '@cube/api-core';
+import type { WorkflowInstanceItem } from '@newlifex/api-core';
 import { formatDateTime } from '@/core/utils/datetime';
 import { instanceStatusMeta } from './useWorkflowProgress';
 import { useWorkflowStartedList } from './useWorkflowStartedList';

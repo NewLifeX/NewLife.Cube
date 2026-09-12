@@ -1,5 +1,5 @@
 import { computed, reactive, watch, type Ref } from 'vue';
-import { ApiError, type WidgetInstance, type WidgetQueryBody, type WidgetQueryResult } from '@cube/api-core';
+import { ApiError, type WidgetInstance, type WidgetQueryBody, type WidgetQueryResult } from '@newlifex/api-core';
 import cubeApi from '@/api';
 import { getWidget } from './registry';
 import { isUnlinkedWidget, normalizeTypePath } from './legacy';

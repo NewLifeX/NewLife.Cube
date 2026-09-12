@@ -1,4 +1,4 @@
-import { hasHostRefFilter, type DashboardConfig, type WidgetInstance, type WidgetSourceItem } from '@cube/api-core';
+import { hasHostRefFilter, type DashboardConfig, type WidgetInstance, type WidgetSourceItem } from '@newlifex/api-core';
 import type { ViewInsight } from '@/core/utils/viewProfile';
 import { resolveStatEntries } from '@/core/utils/searchFilters';
 

@@ -41,7 +41,6 @@ export type {
   ViewProfileModel,
   EntityCommentModel,
   AuthBindItem,
-  TenantItem,
   TenantListResult,
   MfaSetupResult,
   ActivateModel,

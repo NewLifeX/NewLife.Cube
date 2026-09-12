@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { computed, inject, toRef } from 'vue';
-import type { WidgetInstance } from '@cube/api-core';
+import type { WidgetInstance } from '@newlifex/api-core';
 import { WIDGET_SURFACE_KEY } from './context';
 import { isUnlinkedWidget } from './legacy';
 

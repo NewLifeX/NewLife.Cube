@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import type { MenuItem } from '@cube/api-core';
+import type { MenuItem } from '@newlifex/api-core';
 import { useUserStore } from '@/stores/user';
 import { normalizeMenuUrl } from '@/core/utils/url';
 import SidebarMenuNodes from './SidebarMenuNodes.vue';

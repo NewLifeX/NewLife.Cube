@@ -1,5 +1,5 @@
 import { ref, watch } from 'vue';
-import type { InboxMessageItem } from '@cube/api-core';
+import type { InboxMessageItem } from '@newlifex/api-core';
 import cubeApi from '@/api';
 import { formatDateTime } from '@/core/utils/datetime';
 import { parseInboxUnreadCount, resolveInboxTotal } from '@/core/utils/inboxBadge';

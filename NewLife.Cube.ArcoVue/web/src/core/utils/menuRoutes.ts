@@ -1,5 +1,5 @@
 import type { Router, RouteRecordRaw } from 'vue-router';
-import type { MenuItem } from '@cube/api-core';
+import type { MenuItem } from '@newlifex/api-core';
 import { normalizeMenuUrl, routeToApiPrefix, toKebabCase } from './url';
 import { withRouteComponentName } from './namedRouteComponent';
 import { isValidNamedSlug } from './workbenchNamed';

@@ -8,7 +8,7 @@ import type {
   WidgetProvider,
   WidgetSourceItem,
   WidgetWidth,
-} from '@cube/api-core';
+} from '@newlifex/api-core';
 import cubeApi from '@/api';
 import type { FieldMeta } from '@/core/types/field';
 import { emptyViewFilter, normalizeFilter, type ViewFilter } from '@/core/utils/viewProfile';

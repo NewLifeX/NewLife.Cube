@@ -1,4 +1,4 @@
-import type { DataField } from '@cube/api-core';
+import type { DataField } from '@newlifex/api-core';
 import type { FieldMeta, FieldOption } from '../types/field';
 import { isAreaFieldName, isBooleanDataSource, parseFkName } from './fieldControl';
 import { applyDescriptionDataSourceIfNeeded } from './descriptionDataSource';

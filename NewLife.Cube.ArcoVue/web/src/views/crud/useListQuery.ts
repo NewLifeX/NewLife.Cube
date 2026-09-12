@@ -1,6 +1,6 @@
 import { computed, nextTick, ref } from 'vue';
 import { Message } from '@arco-design/web-vue';
-import { FieldKind, type PageSetting } from '@cube/api-core';
+import { FieldKind, type PageSetting } from '@newlifex/api-core';
 import cubeApi from '@/api';
 import { toFieldMetas } from '@/core/utils/fieldNormalize';
 import { isTenantField, resolveListControl } from '@/core/utils/fieldControl';

@@ -1,5 +1,5 @@
 import type { Component } from 'vue';
-import type { WidgetProvider, WidgetWidth } from '@cube/api-core';
+import type { WidgetProvider, WidgetWidth } from '@newlifex/api-core';
 
 export interface WidgetDefinition {
   kind: string;

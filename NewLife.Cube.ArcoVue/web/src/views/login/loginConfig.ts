@@ -1,4 +1,4 @@
-import type { LoginConfig, OAuthProvider } from '@cube/api-core';
+import type { LoginConfig, OAuthProvider } from '@newlifex/api-core';
 
 export type LoginTabKey = 'password' | 'sms' | 'mail';
 

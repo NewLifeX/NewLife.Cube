@@ -4,7 +4,7 @@
  * 指纹覆盖所有带 url 的菜单节点（id / url / visible / 展示名），
  * 新注册或增删改菜单后指纹不同 → 丢弃旧缓存并重新探测。
  */
-import type { MenuItem } from '@cube/api-core';
+import type { MenuItem } from '@newlifex/api-core';
 
 /** sessionStorage 键；升版改名以丢弃不兼容结构 */
 export const OBJECT_KIND_CACHE_KEY = 'cube.objectKindCache.v1';

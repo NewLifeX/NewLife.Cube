@@ -1,5 +1,5 @@
 import { computed, ref, toValue, unref, watch, type MaybeRefOrGetter, type Ref } from 'vue';
-import type { WorkflowDefinitionItem } from '@cube/api-core';
+import type { WorkflowDefinitionItem } from '@newlifex/api-core';
 import { Message } from '@arco-design/web-vue';
 import cubeApi from '@/api';
 import { formatApiError } from '@/core/utils/apiError';

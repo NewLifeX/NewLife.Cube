@@ -363,8 +363,6 @@ export interface LoginConfig {
   loginLogo?: string;
   /** 登录页背景图，空则使用皮肤内置默认 */
   loginBackground?: string;
-  /** 是否启用多租户（魔方设置/系统功能） */
-  enableTenant?: boolean;
   /**
    * Cube 作为 OAuth2 **服务端**（为其它应用提供 SSO）是否开启。
    * 与登录页「第三方登录」无关；第三方入口仅看 oauth[] 可见列表。

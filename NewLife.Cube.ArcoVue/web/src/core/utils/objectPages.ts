@@ -5,7 +5,7 @@
  * 这里提供「菜单树 → 候选对象页」的纯函数：两层 URL（/Area/Controller）、
  * 可见菜单、去重、排除当前页；探测（entity/object）由 useDefaultObject 完成。
  */
-import type { MenuItem } from '@cube/api-core';
+import type { MenuItem } from '@newlifex/api-core';
 
 export interface ObjectPageRef {
   /** 类型路径（如 /Admin/Cube），兼做菜单 key */

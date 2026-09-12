@@ -6,8 +6,8 @@ import {
   type Component,
 } from 'vue';
 import { useRoute } from 'vue-router';
-import { type PageSetting } from '@cube/api-core';
-import { EXPORT_FORMATS } from '@cube/page-utils';
+import { type PageSetting } from '@newlifex/api-core';
+import { EXPORT_FORMATS } from '@newlifex/page-utils';
 import { useUserStore } from '@/stores/user';
 import { useUserProfileStore } from '@/stores/userProfile';
 import { useViewProfileStore } from '@/stores/viewProfile';

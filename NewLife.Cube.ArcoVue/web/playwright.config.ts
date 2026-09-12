@@ -3,7 +3,7 @@ import { defineConfig } from '@playwright/test';
 /**
  * Playwright E2E（OSC-2608139feb）。
  * 前置：Vite dev（5183）已启动，代理命中后端 /api（默认 http://localhost:5000）。
- * 运行：pnpm --filter @cube/arco-vue test:e2e
+ * 运行：pnpm --filter @newlifex/cube-arco-vue test:e2e
  */
 export default defineConfig({
   testDir: './e2e',

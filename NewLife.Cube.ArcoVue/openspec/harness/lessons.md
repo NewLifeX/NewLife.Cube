@@ -44,7 +44,7 @@
 ## OSC-0004 — 2026-08-01
 
 - 壳偏好走 UserProfile（`layoutJson`/`themeJson`/`workspaceJson` 字符串列）；FE 负责 parse/merge/防抖 PUT；CRUD **禁止**读 `userProfileStore`。
-- 改 `@cube/api-core` **src 后必须 `pnpm build` 该包**（types 入口是 `dist`），否则 ArcoVue `vue-tsc` 看不到新导出。
+- 改 `@newlifex/api-core` **src 后必须 `pnpm build` 该包**（types 入口是 `dist`），否则 ArcoVue `vue-tsc` 看不到新导出。
 - TagsView + keep-alive：动态页多为同名组件，须按**路由 name 具名包装**才能用 `:include` 关签裁剪。
 - 401/`onUnauthorized` 全页跳转会丢内存 store，须同步 **clear localStorage 壳偏好**，否则多用户同浏览器串布局/主题。
 - `appearance=system` 要监听 `prefers-color-scheme`；仅设一次 light/dark 不够。
@@ -65,7 +65,7 @@
 
 ## OSC-0006 — 2026-08-02
 
-- `EntityViewProfile` 已统一收敛为 `ViewProfile`：后端实体 / 控制器路由、`@cube/api-core` 类型与方法名、ArcoVue store/工具模块、README/对接文档必须同步改名，避免旧路径残留导致接口与类型双轨并存。
+- `EntityViewProfile` 已统一收敛为 `ViewProfile`：后端实体 / 控制器路由、`@newlifex/api-core` 类型与方法名、ArcoVue store/工具模块、README/对接文档必须同步改名，避免旧路径残留导致接口与类型双轨并存。
 - `UserProfile` / `ViewProfile` 保存接口前端需兼容 `PUT → POST` 回退；部分宿主、代理或历史环境会放行读取但拒绝 `PUT`，若不兜底会出现「加载成功、保存 405」的伪联调通过。
 - 列表页默认态要消费 `workspace.defaultView` 与 `workspace.pageSize`：当用户尚未保存个人 ViewProfile 时，`seedDefaultView` 负责首视图回落，分页条数也要与工作台偏好一致，避免壳偏好和 CRUD 默认值各走各的。
 
@@ -266,7 +266,7 @@
 - **前端读响应头不可靠**：`api-core.createRequest` 只返回响应体、丢弃响应头；需要响应头值时应在响应体透传（如 `ApiListResponse.FilterNarrowed`）。本次时间窗提示因读 `res.headers` 恒空，验收才暴露。
 - **VTable groupBy 组顺序取决于 records 首现顺序**：`GroupConfig.sort` 不生效；时间分桶需按时间字段**预排序 records**（组间+组内近到远）。
 - **功能按钮勿被条件渲染容器连带隐藏**：`enableKey=false` 时查询按钮组被 `a-input` 连带隐藏（AC-15），应独立渲染。
-- **monorepo `@cube/api-core` 改 src 后必须 build**：types 入口是 `dist`，否则 ArcoVue `vue-tsc` 看不到新导出（本号再次验证）。
+- **monorepo `@newlifex/api-core` 改 src 后必须 build**：types 入口是 `dist`，否则 ArcoVue `vue-tsc` 看不到新导出（本号再次验证）。
 - **XCode 无 `NotStartsWith/NotEndsWith`**：design 列出的操作符若 XCode 不支持，应裁剪并记录，而非强行实现。
 - **验收必补会话内增量**：日期时间分组/查询持久化分层/数据更新重算/重置刷新/UI 微调均在会话窗口完成、不在 OSC 计划，验收需补录（T21–T25）。
 - **时间窗时区用本地 `DateTime.Now.Date`**，与既有 `dtStart` 本地惯例一致，避免 UTC 零点把本地当日 0:00–7:59 挤出默认窗口。

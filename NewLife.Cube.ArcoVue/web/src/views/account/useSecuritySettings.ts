@@ -3,7 +3,7 @@
  */
 import { computed, onMounted, ref } from 'vue';
 import { Message, Modal } from '@arco-design/web-vue';
-import type { AuthBindItem } from '@cube/api-core';
+import type { AuthBindItem } from '@newlifex/api-core';
 import cubeApi from '@/api';
 import { useAppStore } from '@/stores/app';
 import { isOAuthLoginEnabled } from '@/views/login/loginConfig';

@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import type { MenuItem } from '@cube/api-core';
+import type { MenuItem } from '@newlifex/api-core';
 import { normalizeMenuUrl } from '@/core/utils/url';
 import { menuIcon } from '@/core/utils/iconRegistry';
 // 递归自引用

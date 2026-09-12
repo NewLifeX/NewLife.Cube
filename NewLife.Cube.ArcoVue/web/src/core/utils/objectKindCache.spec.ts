@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { MenuItem } from '@cube/api-core';
+import type { MenuItem } from '@newlifex/api-core';
 import {
   OBJECT_KIND_CACHE_KEY,
   clearObjectKindCache,

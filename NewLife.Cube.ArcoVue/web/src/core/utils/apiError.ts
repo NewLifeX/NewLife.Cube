@@ -1,4 +1,4 @@
-import { ApiError } from '@cube/api-core';
+import { ApiError } from '@newlifex/api-core';
 import { buildStarTraceUrl } from './starTrace';
 
 /** 可选：从应用状态注入 StarWeb，避免 apiError 直接依赖 Pinia */

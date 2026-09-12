@@ -4,7 +4,7 @@ import type { FieldMeta } from '@/core/types/field';
 import { selectListColumns } from '@/core/utils/listColumns';
 import { resolveCellLabel } from '@/core/utils/fieldBadge';
 import { getValueByKey } from '@/core/utils/url';
-import type { WidgetQueryResult } from '@cube/api-core';
+import type { WidgetQueryResult } from '@newlifex/api-core';
 import type { WidgetCardProps } from './context';
 import { rotateDataListWindow, visibleDataListRows } from './dataListViewport';
 import { normalizeTypePath } from './legacy';

@@ -1,6 +1,6 @@
 import { computed, reactive, ref, watch } from 'vue';
 import { Message, Modal } from '@arco-design/web-vue';
-import type { AutomationRunItem } from '@cube/api-core';
+import type { AutomationRunItem } from '@newlifex/api-core';
 import cubeApi from '@/api';
 import type { FieldMeta } from '@/core/types/field';
 import {

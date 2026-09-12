@@ -1,5 +1,5 @@
 import type { EChartsOption } from 'echarts';
-import type { ChartType } from '@cube/api-core';
+import type { ChartType } from '@newlifex/api-core';
 import { themeColor } from '@/core/utils/themeColor';
 
 export interface ChartItem {

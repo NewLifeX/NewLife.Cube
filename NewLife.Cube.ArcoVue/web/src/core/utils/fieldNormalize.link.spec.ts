@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { DataField } from '@cube/api-core';
+import type { DataField } from '@newlifex/api-core';
 import { toFieldMeta } from './fieldNormalize';
 
 describe('toFieldMeta link metadata', () => {

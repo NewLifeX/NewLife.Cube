@@ -6,7 +6,7 @@ import { selectListColumns } from '@/core/utils/listColumns';
 import { getValueByKey } from '@/core/utils/url';
 import { resolveCellLabel } from '@/core/utils/fieldBadge';
 import { buildCardBodyFields, resolveImageUrl } from '@/features/views/cardHelpers';
-import type { WidgetQueryResult } from '@cube/api-core';
+import type { WidgetQueryResult } from '@newlifex/api-core';
 import type { WidgetCardProps } from './context';
 import { normalizeTypePath } from './legacy';
 import { fieldLabelOf, findFieldMeta, loadEntityListFields } from './listFieldMeta';

@@ -1,4 +1,4 @@
-import type { DashboardConfig, WidgetInstance, WidgetWidth } from '@cube/api-core';
+import type { DashboardConfig, WidgetInstance, WidgetWidth } from '@newlifex/api-core';
 import { FA_ICON_MAP } from './iconRegistry';
 
 /** 欢迎时段：5–11 上午、11–13 中午、13–18 下午，其余晚上 */

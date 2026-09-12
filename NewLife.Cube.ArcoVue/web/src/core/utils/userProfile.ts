@@ -1,4 +1,4 @@
-import type { UserProfileModel } from '@cube/api-core';
+import type { UserProfileModel } from '@newlifex/api-core';
 import { normalizeAiFab, normalizeAiPanel, type AiFabPos, type AiPanelPref } from './aiFab';
 
 export type LayoutMode = 'side' | 'top' | 'mix';

@@ -10,7 +10,7 @@
  */
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { Message } from '@arco-design/web-vue';
-import { FieldKind, type MenuItem } from '@cube/api-core';
+import { FieldKind, type MenuItem } from '@newlifex/api-core';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
 import { resolveCrudFlags } from '@/core/utils/permissions';

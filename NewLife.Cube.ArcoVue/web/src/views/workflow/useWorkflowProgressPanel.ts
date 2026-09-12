@@ -1,5 +1,5 @@
 import { computed, reactive, ref, watch, type Ref } from 'vue';
-import type { WorkflowPhrase } from '@cube/api-core';
+import type { WorkflowPhrase } from '@newlifex/api-core';
 import { Message } from '@arco-design/web-vue';
 import cubeApi from '@/api';
 import { actionLabel, useWorkflowProgress, wfIdOf, type WfId } from './useWorkflowProgress';

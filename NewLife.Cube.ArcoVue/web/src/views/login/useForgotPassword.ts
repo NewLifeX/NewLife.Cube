@@ -1,7 +1,7 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { Message } from '@arco-design/web-vue';
-import type { LoginConfig } from '@cube/api-core';
+import type { LoginConfig } from '@newlifex/api-core';
 import cubeApi from '@/api';
 import { useAppStore } from '@/stores/app';
 import { needSendCodeCaptcha, validatePasswordStrength } from './loginConfig';

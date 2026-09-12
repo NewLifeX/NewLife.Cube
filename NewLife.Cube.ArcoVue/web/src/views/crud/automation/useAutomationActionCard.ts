@@ -1,5 +1,5 @@
 import { computed, onMounted, reactive, ref, watch, type ComputedRef, type Ref } from 'vue';
-import type { AutomationEntityOption, AutomationRecipientOption } from '@cube/api-core';
+import type { AutomationEntityOption, AutomationRecipientOption } from '@newlifex/api-core';
 import cubeApi from '@/api';
 import type { FieldMeta } from '@/core/types/field';
 import type { ActionDraft } from '@/core/utils/automationGraph';

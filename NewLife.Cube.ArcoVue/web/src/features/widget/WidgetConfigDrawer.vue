@@ -352,7 +352,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import type { WidgetInstance, WidgetSourceItem } from '@cube/api-core';
+import type { WidgetInstance, WidgetSourceItem } from '@newlifex/api-core';
 import FilterBuilderPopover from '@/views/crud/FilterBuilderPopover.vue';
 import { CHART_TYPE_OPTIONS } from './chartTemplates';
 import { useWidgetConfigDrawer, type WidgetConfigDrawerProps } from './useWidgetConfigDrawer';

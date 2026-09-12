@@ -1,6 +1,6 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import type { WidgetQueryResult } from '@cube/api-core';
+import type { WidgetQueryResult } from '@newlifex/api-core';
 import { buildDrillViewFilter } from '@/core/utils/searchFilters';
 import { ensureEchartsTheme, initEcharts } from '@/core/utils/echartsTheme';
 import type { WidgetCardProps } from './context';

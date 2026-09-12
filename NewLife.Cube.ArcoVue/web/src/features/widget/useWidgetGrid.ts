@@ -1,5 +1,5 @@
 import { computed, onBeforeUnmount, onMounted, ref, toRef } from 'vue';
-import type { WidgetInstance } from '@cube/api-core';
+import type { WidgetInstance } from '@newlifex/api-core';
 
 /** 相对旧版 88/160/240/320 减半；h=3 给监控图 / 快捷入口足够绘图高度 */
 const HEIGHTS: Record<number, number> = { 1: 72, 2: 100, 3: 180, 4: 260 };

@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue';
 import { Message, Modal } from '@arco-design/web-vue';
-import type { EntityCommentModel } from '@cube/api-core';
+import type { EntityCommentModel } from '@newlifex/api-core';
 import type { FieldMeta } from '@/core/types/field';
 import { getValueByKey } from '@/core/utils/url';
 import { isIamRowActionDisabled } from '@/core/utils/iamGuards';

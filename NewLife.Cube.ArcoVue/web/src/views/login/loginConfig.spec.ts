@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { LoginConfig } from '@cube/api-core';
+import type { LoginConfig } from '@newlifex/api-core';
 import {
   buildSsoLoginUrl,
   extractMfaToken,

@@ -7,7 +7,7 @@ vi.mock('@/api', () => ({
 }));
 
 import { actionLabel, instanceStatusMeta, pickMyTask } from './useWorkflowProgress';
-import type { WorkflowInstanceDetail } from '@cube/api-core';
+import type { WorkflowInstanceDetail } from '@newlifex/api-core';
 
 describe('instanceStatusMeta 实例状态展示', () => {
   it('后端大写状态映射', () => {

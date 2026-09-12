@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { serializeDashboardJson } from '@cube/api-core';
+import { serializeDashboardJson } from '@newlifex/api-core';
 import { isUnlinkedWidget, normalizeSourceRows, synthesizeLegacyDashboard } from './legacy';
 import {
   fallbackKanbanDisplayFields,

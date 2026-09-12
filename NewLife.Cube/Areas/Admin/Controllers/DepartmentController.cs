@@ -69,4 +69,41 @@ public class DepartmentController : EntityController<Department, DepartmentModel
 
         return Department.Search(parentId, enable, visible, p["Q"], p);
     }
+
+    /// <summary>查找单行数据，并判断数据权限</summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    protected override Department FindData(Object key)
+    {
+        var entity = Find(key);
+
+        // 不用 WhereBuilder.Eval：部门实现 ITenantScope，无租户上下文时求值恒为 false；
+        // 可见性以管理者字段为准（与 [DataPermission] 的列表过滤一致）
+        if (entity != null && !CanView(entity)) throw new InvalidOperationException($"非法访问数据[{key}]");
+
+        return entity;
+    }
+
+    /// <summary>判断当前用户能否查看指定部门。系统角色不受限，普通用户仅限自己管理的部门</summary>
+    /// <param name="entity">部门</param>
+    /// <returns></returns>
+    protected virtual Boolean CanView(Department entity)
+    {
+        var user = ManageProvider.User;
+        if (user == null || user.Roles.Any(e => e.IsSystem)) return true;
+
+        return entity.ManagerId == user.ID;
+    }
+
+    /// <summary>验证数据：插入时盖章 TenantId</summary>
+    protected override Boolean Valid(Department entity, DataObjectMethodType type, Boolean post)
+    {
+        if (type == DataObjectMethodType.Insert)
+        {
+            if (entity.TenantId == 0) entity.TenantId = TenantContext.CurrentId;
+            if (entity.ManagerId == 0) entity.ManagerId = ManageProvider.Provider.Current.ID;
+        }
+
+        return base.Valid(entity, type, post);
+    }
 }

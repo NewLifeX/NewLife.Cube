@@ -6,7 +6,7 @@
  */
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import type { WorkflowTaskItem } from '@cube/api-core';
+import type { WorkflowTaskItem } from '@newlifex/api-core';
 import { dueText, modeLabel, taskStatusMeta, taskTitle } from './useWorkflowTaskList';
 import { useWorkflowTaskPage } from './useWorkflowTaskPage';
 import WorkflowProgressPanel from './WorkflowProgressPanel.vue';

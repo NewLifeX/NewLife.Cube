@@ -6,7 +6,7 @@
  */
 import { computed, onMounted, ref } from 'vue';
 import { Message, Modal } from '@arco-design/web-vue';
-import { Auth, checkAuth } from '@cube/page-utils';
+import { Auth, checkAuth } from '@newlifex/page-utils';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
 import { formatApiError } from '@/core/utils/apiError';

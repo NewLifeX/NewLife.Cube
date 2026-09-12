@@ -3,7 +3,7 @@ import type { FieldMeta } from '@/core/types/field';
 import type { ColumnPref } from '@/core/utils/viewProfile';
 import type { KanbanMapping } from '@/core/utils/viewMapping';
 import { selectListColumns } from '@/core/utils/listColumns';
-import type { WidgetQueryResult } from '@cube/api-core';
+import type { WidgetQueryResult } from '@newlifex/api-core';
 import type { WidgetCardProps } from './context';
 import { fieldLabelOf, findFieldMeta, loadEntityListFields } from './listFieldMeta';
 

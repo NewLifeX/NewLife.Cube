@@ -74,7 +74,7 @@ import {
   serializeDashboardJson,
   validateDashboardForPut,
   type DashboardConfig,
-} from '@cube/api-core';
+} from '@newlifex/api-core';
 
 const SAVE_MS = 400;
 

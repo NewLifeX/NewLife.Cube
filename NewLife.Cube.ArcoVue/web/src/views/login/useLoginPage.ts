@@ -4,7 +4,7 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Message } from '@arco-design/web-vue';
-import { encryptPassword, type LoginConfig, type OAuthProvider } from '@cube/api-core';
+import { encryptPassword, type LoginConfig, type OAuthProvider } from '@newlifex/api-core';
 import cubeApi from '@/api';
 import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';

@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue';
-import type { WorkflowTaskItem, WorkflowBatchResultItem } from '@cube/api-core';
+import type { WorkflowTaskItem, WorkflowBatchResultItem } from '@newlifex/api-core';
 import { Message } from '@arco-design/web-vue';
 import cubeApi from '@/api';
 import { formatApiError } from '@/core/utils/apiError';
