@@ -264,7 +264,11 @@ public class UserBindingService : IUserBindingService
             if (user2.Mail.IsNullOrEmpty() || set.ForceBindUserMail && !client.Mail.IsNullOrEmpty()) user2.Mail = client.Mail;
 
             if (client.Sex != SexKinds.未知) user2.Sex = client.Sex;
-            if (!client.Detail.IsNullOrEmpty()) user2.Remark = client.Detail;
+
+            // detail 来自富文本编辑器，空内容形如 <p><br></p> 属于历史脏数据；归一化后再决定是否同步，避免把空的富文本覆盖到本地备注
+            var detail = client.Detail;
+            if (!detail.IsNullOrEmpty() && EmptyHtmlHelper.IsEmptyHtml(detail)) detail = null;
+            if (!detail.IsNullOrEmpty()) user2.Remark = detail;
 
             FillRoles(client, user2, set);
             FillDepartment(client, user2, set);

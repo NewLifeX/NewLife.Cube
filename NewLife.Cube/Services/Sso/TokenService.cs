@@ -555,7 +555,8 @@ public class TokenService : ITokenService
                 deviceid = online?.DeviceId,
                 avatar = avatarUrl,
                 birthday = user2.Birthday.ToString("yyyy-MM-dd", ""),
-                detail = user2.Remark,
+                // 备注由富文本编辑器维护，空内容形如 <p><br></p>；出口过滤，避免把空的富文本同步给下游应用
+                detail = EmptyHtmlHelper.IsEmptyHtml(user2.Remark) ? null : user2.Remark,
                 resources = dic,
             };
         }

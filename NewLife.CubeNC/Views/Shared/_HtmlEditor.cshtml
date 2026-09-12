@@ -38,6 +38,15 @@
             xhr.send(fd);
         }
 
+        // 归一化富文本空内容：仅剩空段落/换行/空白且无嵌入内容时返回空串，避免空富文本写入数据库并经由 SSO 同步扩散
+        function normalizeHtml(html) {
+            if (!html) return '';
+            var tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            if (tmp.querySelector('img,iframe,video,audio,object,embed,svg')) return html;
+            return (tmp.textContent || '').trim() === '' ? '' : html;
+        }
+
         // 加载 Quill（防重复加载，使用本地内嵌资源）
         function loadQuill(callback) {
             if (typeof Quill !== 'undefined') { callback(); return; }
@@ -120,7 +129,8 @@
 
             var form = container.closest('form');
             if (form) form.addEventListener('submit', function () {
-                hidden.value = sourceMode ? sourceArea.value : q.root.innerHTML;
+                // Quill 空内容固定为 <p><br></p>，与源码模式输入一起归一化，避免空富文本写入数据库
+                hidden.value = normalizeHtml(sourceMode ? sourceArea.value : q.root.innerHTML);
             });
 
             // 工具栏自定义按钮：通过 getModule('toolbar').container 获取工具栏，包裹在 ql-formats 内跟随 flex 布局
