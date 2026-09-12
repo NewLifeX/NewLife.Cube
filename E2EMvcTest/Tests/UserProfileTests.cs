@@ -276,6 +276,61 @@ public sealed class UserProfileTests : IAsyncLifetime
         Assert.Equal(newMail, dbMail);
     }
 
+    [Fact(DisplayName = "TC-USER-022 备注字段使用 HTML 富文本编辑器（与编辑页一致）")]
+    [Trait("Category", "UserProfile")]
+    [Trait("Priority", "P1")]
+    public async Task TC_USER_022_RemarkUsesHtmlEditor()
+    {
+        const String testId = "TC-USER-022";
+
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Info");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 备注在用户实体上配置了 ItemType=html，应与编辑页一致渲染 Quill 富文本编辑器，而不是普通 textarea
+        try
+        {
+            await _page.WaitForSelectorAsync("#html_Remark .ql-editor", new PageWaitForSelectorOptions { Timeout = 10_000 });
+        }
+        catch
+        {
+            await PageHelpers.TakeScreenshotAsync(_page, testId);
+            throw new Exception($"[{testId}] 备注未渲染 HTML 富文本编辑器（未找到 #html_Remark .ql-editor）。当前URL: {_page.Url}");
+        }
+
+        Assert.Equal(0, await _page.Locator("textarea[name=Remark]").CountAsync());
+
+        // 编辑器内容经隐藏域提交，隐藏域缺失会导致备注无法保存
+        var hiddenCount = await _page.Locator("input[type=hidden][name=Remark]").CountAsync();
+        Assert.True(hiddenCount > 0, $"[{testId}] 备注隐藏域不存在，提交时将丢失内容。当前URL: {_page.Url}");
+    }
+
+    [Fact(DisplayName = "TC-USER-023 备注纯文本保存不带 p 标签，DB 验证")]
+    [Trait("Category", "UserProfile")]
+    [Trait("Priority", "P1")]
+    public async Task TC_USER_023_RemarkPlainTextSavedWithoutPTag()
+    {
+        const String testId = "TC-USER-023";
+        var remark = $"E2E备注{DateTime.Now:HHmmss}";
+
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Info");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 清空编辑器后输入纯文本（Quill 内部为 <p>text</p>），提交时应归一化去掉两端 <p></p>
+        await _page.WaitForSelectorAsync("#html_Remark .ql-editor", new PageWaitForSelectorOptions { Timeout = 10_000 });
+        await _page.ClickAsync("#html_Remark .ql-editor");
+        await _page.Keyboard.PressAsync("Control+a");
+        await _page.Keyboard.PressAsync("Delete");
+        await _page.Keyboard.TypeAsync(remark);
+
+        await _page.ClickAsync("button[type=submit], input[type=submit]");
+        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // DB 验证：纯文本不应被包成富文本
+        var dbValue = DatabaseHelper.GetUserField(AppFixture.AdminUser, "Remark");
+        Assert.Equal(remark, dbValue);
+    }
+
     #endregion
 
     #region C.4 清空密码流程

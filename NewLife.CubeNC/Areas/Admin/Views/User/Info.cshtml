@@ -260,7 +260,20 @@
                     <div class="form-group">
                         <label class="control-label col-sm-2">备注</label>
                         <div class="col-sm-10">
-                            @Html.ForEditor("Remark")
+                            @{
+                                // 备注在用户实体上配置了 ItemType=html，与编辑页保持一致使用 HTML 富文本编辑器。
+                                // 注意：本页 ViewBag.Fields 是基类 OnActionExecuting 注入的列表字段（已移除 Remark），必须从实体元数据判定
+                                var remarkField = fact.Table.FindByName("Remark");
+                                var remarkItemType = remarkField?.Field?.ItemType ?? remarkField?.Column?.ItemType;
+                            }
+                            @if (remarkItemType.EqualIgnoreCase("html"))
+                            {
+                                @await Html.PartialAsync("_HtmlEditor", new ItemModel("Remark", user.Remark, typeof(String)))
+                            }
+                            else
+                            {
+                                @Html.ForEditor("Remark")
+                            }
                         </div>
                     </div>
                 </div>

@@ -47,7 +47,7 @@ public static class DatabaseHelper
         // 字段名不能参数化，使用白名单校验防止注入
         var allowedFields = new HashSet<String>(StringComparer.OrdinalIgnoreCase)
         {
-            "ID", "Name", "DisplayName", "Mail", "Mobile", "Code", "Password",
+            "ID", "Name", "DisplayName", "Mail", "Mobile", "Code", "Password", "Remark",
             "Logins", "LastLogin", "CreateTime", "UpdateTime", "Enable",
         };
 
