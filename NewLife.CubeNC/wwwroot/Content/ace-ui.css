@@ -1336,14 +1336,14 @@ body.skin-3 {
     color: var(--cube-text-muted);
 }
 
-/* 统计卡片 */
+/* 统计卡片（类名限定在 .widget-stats 作用域内，避免裸 .stat-item/.stat-label 等通用名污染用户中心 .profile-stats 下的同名类） */
 .widget-stats {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
 }
 
-.stat-item {
+.widget-stats .stat-item {
     flex: 1;
     min-width: 150px;
     display: flex;
@@ -1355,7 +1355,7 @@ body.skin-3 {
     background: #fbfcfd;
 }
 
-.stat-icon {
+.widget-stats .stat-icon {
     width: 44px;
     height: 44px;
     border-radius: 50%;
@@ -1367,22 +1367,22 @@ body.skin-3 {
     flex-shrink: 0;
 }
 
-.stat-icon-cpu { background: #2b7dbc; }
+.widget-stats .stat-icon-cpu { background: #2b7dbc; }
 
-.stat-icon-mem { background: #27ae60; }
+.widget-stats .stat-icon-mem { background: #27ae60; }
 
-.stat-icon-disk { background: #e67e22; }
+.widget-stats .stat-icon-disk { background: #e67e22; }
 
-.stat-icon-time { background: #8e44ad; }
+.widget-stats .stat-icon-time { background: #8e44ad; }
 
-.stat-value {
+.widget-stats .stat-value {
     font-size: 20px;
     font-weight: 700;
     color: var(--cube-text-title);
     line-height: 1.2;
 }
 
-.stat-label {
+.widget-stats .stat-label {
     font-size: 12px;
     color: var(--cube-text-muted);
 }
