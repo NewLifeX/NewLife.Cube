@@ -305,6 +305,52 @@ public static class DatabaseHelper
 
     #endregion
 
+    #region NotificationRecord 站内信写入（通知铃铛测试）
+
+    /// <summary>Log 数据库写连接字符串（NotificationRecord 等表）</summary>
+    private static String LogWriteConnStr =>
+        $"Data Source={AppFixture.DataDir}\\Log.db";
+
+    /// <summary>写入一条未读站内信（默认系统级广播 UserId=0），返回记录 Id</summary>
+    /// <param name="title">标题（建议唯一值便于断言）</param>
+    /// <param name="content">内容</param>
+    /// <param name="userId">接收用户 Id，0 表示系统级广播（仅系统管理员可见）</param>
+    /// <returns>记录 Id</returns>
+    public static Int64 SeedInAppNotification(String title, String content, Int32 userId = 0)
+    {
+        const String sql = """
+            INSERT INTO NotificationRecord
+                (Id, TenantId, Action, Channel, ConfigId, ConfigName, Provider, UserId, Target, Title, Content,
+                 Success, Result, "Read", ReadTime, TraceId, CreateIP, CreateTime, UpdateTime, UpdateIP, Remark)
+            VALUES
+                ((SELECT IFNULL(MAX(Id), 0) + 1 FROM NotificationRecord), 0, 'Notify', 'InApp', 0, '', '', @uid, '', @title, @content,
+                 1, '', 0, NULL, '', '::1', @now, @now, '::1', 'E2E通知')
+            RETURNING Id;
+            """;
+        var now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        return ExecuteScalarWrite<Int64>(LogWriteConnStr, sql,
+            ("@uid", userId), ("@title", title), ("@content", content), ("@now", now));
+    }
+
+    /// <summary>查询站内信是否已读</summary>
+    /// <param name="id">记录 Id</param>
+    /// <returns>已读返回 true；记录不存在返回 false</returns>
+    public static Boolean IsNotificationRead(Int64 id)
+    {
+        const String sql = "SELECT \"Read\" FROM NotificationRecord WHERE Id = @id LIMIT 1";
+        return ExecuteScalar<Int32>(LogConnStr, sql, ("@id", id)) != 0;
+    }
+
+    /// <summary>删除站内信（测试清理）</summary>
+    /// <param name="id">记录 Id</param>
+    public static void DeleteNotification(Int64 id)
+    {
+        const String sql = "DELETE FROM NotificationRecord WHERE Id = @id";
+        ExecuteScalarWrite<Int32>(LogWriteConnStr, sql, ("@id", id));
+    }
+
+    #endregion
+
     #region 私有执行辅助
 
     /// <summary>执行写 SQL 并返回首行首列。设置 busy_timeout 避免与应用进程并发写锁冲突</summary>

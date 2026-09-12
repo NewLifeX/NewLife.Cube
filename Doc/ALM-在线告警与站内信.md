@@ -12,7 +12,7 @@
 | 机制 | 说明 |
 |------|------|
 | 在线高峰告警（ALM-1/2） | 当前在线数**超过近 7 天最高纪录的固定比例**时，向系统管理员发送一条**系统级站内信广播** |
-| 站内信未读闭环（NOTI-6） | 导航栏铃铛展示未读红点与最近未读，支持单条/全部标记已读——让"提醒"真正到达人 |
+| 站内信未读闭环（NOTI-6） | 导航栏铃铛展示未读红点与最近未读；点击条目就地展开全文，停留数秒自动已读，支持全部标记已读——让"提醒"真正到达人 |
 
 > **设计取舍**：不做后台可配置项，采用**内置固定参数**（近 7 天窗口 + 比例 1.2 + 每天最多一条），把预警逻辑做到极简、可预期。如需调整，改 `OnlineAlertService` 顶部两个常量即可。
 
@@ -37,7 +37,8 @@ UserService.ClearExpire()  每60秒，清理20分钟不活跃会话
              ├─ total > max×1.2 且今日未告警 → 写一条 NotificationRecord
              │     Action=OnlineAlert, Channel=InApp, UserId=0（系统级广播）
              └─ 管理员导航栏铃铛轮询未读数（60s）→ 红点 / 最近未读下拉
-                  点击条目 / 全部已读 → Read=true（广播任意一人已读即全局消除）
+                  点击条目 → 就地展开全文 → 停留约 3 秒自动 Read=true（只更新红点，条目留在面板中可继续查看）
+                  全部已读 → Read=true（广播任意一人已读即全局消除）
 ```
 
 当前在线数取 `ClearExpire` 清理后的 `UserOnline.Meta.Count`，与 `UserStat.MaxOnline` 的口径完全一致（后者本来就由同一处维护）。告警检测**无进程内状态**，频控靠查当日已有记录，逻辑最简单且重启不丢语义。
@@ -58,6 +59,8 @@ UserService.ClearExpire()  每60秒，清理20分钟不活跃会话
 **是**。广播只有一条共享记录、只有一个 `Read/ReadTime`，**任何管理员标记已读后，其他管理员刷新即消失**——天然满足"任意一人已读即可"，无需每人一份 + 每人生成已读状态的复杂模型，也不会造成数据膨胀。
 
 标记已读会记录已读人（写入 `Result` 字段，如"已读：张三"，便于审计），**无需新增表字段**。
+
+铃铛交互：点击未读条目**就地展开全文**（不跳转页面），停留约 3 秒后自动标记已读；已读只更新红点计数，当前下拉中的条目与正文继续保留，直到下次打开面板（仅未读）或点击"全部已读"。
 
 ### 4.3 为什么不用 CronJob / 独立调度？
 
@@ -88,7 +91,7 @@ UserService.ClearExpire()  每60秒，清理20分钟不活跃会话
 | `NewLife.CubeNC/Services/UserService.cs` | `ClearExpire` 接线（在线数变化时调用 `Check`，并顺带修正 `MaxOnline` 纯增长漏刷新） |
 | `NewLife.Cube/Entity/通知记录.Biz.cs` | 站内信未读/已读辅助：`GetInAppExp/CountUnread/GetRecentUnread/MarkRead/MarkAllRead` |
 | `NewLife.CubeNC/Areas/Admin/Controllers/NotificationRecordController.cs` | JSON 端点：`NotifyCount/NotifyRecent/NotifyMarkRead/NotifyMarkAllRead` + 列表行内"标记已读" |
-| `NewLife.CubeNC/Views/Shared/_NotifyBell.cshtml` | 主题无关铃铛（自包含样式/脚本），注入 ACE 与 layui 导航栏 |
+| `NewLife.CubeNC/Views/Shared/_NotifyBell.cshtml` | 主题无关铃铛（自包含样式/脚本），注入 ACE 与 layui 导航栏；点击条目就地展开全文、停留数秒自动已读 |
 
 > 工程文件共享说明：`OnlineAlertService` 物理位于 `NewLife.Cube`（经典工程自动包含），`NewLife.CubeNC` 经 csproj `<Compile Include>` 链接共享；NC 导航栏视图仅 NC 侧存在。
 
@@ -97,6 +100,7 @@ UserService.ClearExpire()  每60秒，清理20分钟不活跃会话
 - `XUnitTest/OnlineAlertServiceTests.cs`：超比例写系统级广播、每天最多一条、次日再提醒、恰在阈值/低于阈值不告警、无历史基线不告警、统计未开启不告警（SQLite 集成）。
 - `XUnitTest/NotificationRecordBizTests.cs`：广播仅管理员可见可读、个人仅本人、任意一人已读广播即全局消除、全部已读作用域。
 - 上述 DB 用例与 `RolePermissionTests` 同处 `SqliteDb` 测试集合：**共用同一 SQLite 文件**（`SqliteDb.Ensure()`），避免多类各自重定向同一逻辑连接导致 XCode 表结构缓存错乱；各用例自清理数据保证独立。
+- `E2EMvcTest/Tests/NotificationBellTests.cs`：铃铛主链路 E2E——点击条目展开全文、停留自动已读（DB 断言 Read=1）、已读后内容不消失、重开面板按"仅未读"过滤。
 
 ## 8. 后续增强（本期不做）
 

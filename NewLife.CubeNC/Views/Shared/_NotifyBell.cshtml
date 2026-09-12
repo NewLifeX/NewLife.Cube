@@ -1,6 +1,7 @@
 @using XCode.Membership;
 @{
-    // 导航栏铃铛（主题无关，自包含样式与脚本）：轮询未读站内信数，展示最近未读，支持单条/全部标记已读。
+    // 导航栏铃铛（主题无关，自包含样式与脚本）：轮询未读站内信数，展示最近未读。
+    // 点击条目就地展开全文，停留数秒后自动标记已读；已读只更新红点计数，不立即移出列表，保证内容可继续查看。
     // 仅登录用户渲染；广播消息(UserId=0)系统管理员可见，个人消息仅本人可见。
     // 由 ACE / layui 等主题的 _Navbar.cshtml 在右侧菜单中注入。
     var user = ViewBag.User as IUser ?? ManageProvider.User;
@@ -12,6 +13,18 @@
 }
 @if (user != null)
 {
+    <style>
+        /* 未读条目：收起态单行省略；展开态显示全文（保留换行、限高滚动）；已读后置灰并显示标记 */
+        .cube-notify-item { padding: 8px 12px; border-bottom: 1px dashed #f2f2f2; cursor: pointer; }
+        .cube-notify-title { color: #333; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cube-notify-text { color: #999; font-size: 12px; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cube-notify-time { color: #bbb; font-size: 11px; margin-top: 2px; }
+        .cube-notify-item.expanded .cube-notify-title { white-space: normal; word-break: break-word; }
+        .cube-notify-item.expanded .cube-notify-text { color: #555; white-space: pre-wrap; word-break: break-word; line-height: 1.6; max-height: 240px; overflow: auto; }
+        .cube-notify-readtag { display: none; margin-right: 4px; padding: 0 4px; border-radius: 2px; background: #f5f5f5; color: #999; font-size: 10px; }
+        .cube-notify-item.read .cube-notify-readtag { display: inline; }
+        .cube-notify-item.read .cube-notify-title { color: #999; }
+    </style>
     <li class="cube-notify" id="notifyBell" style="position:relative;display:inline-block;vertical-align:middle;list-style:none;">
         <a href="javascript:void(0);" id="notifyBellToggle" title="通知" style="position:relative;display:block;padding:14px 10px;line-height:20px;text-decoration:none;">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true" style="display:block;">
@@ -39,11 +52,17 @@
             var markReadUrl = '@markReadUrl';
             var markAllUrl = '@markAllUrl';
 
+            // 条目展开后停留时长（毫秒），到点自动标记已读
+            var READ_DELAY = 3000;
+
             var bell = document.getElementById('notifyBell');
             var toggle = document.getElementById('notifyBellToggle');
             var panel = document.getElementById('notifyPanel');
             var badge = document.getElementById('notifyBadge');
             var list = document.getElementById('notifyList');
+
+            // 已启动延时已读的条目编号，保证每条只提交一次
+            var readStarted = {};
 
             // 简单转义，防止通知内容中的 HTML 注入
             function esc(s) {
@@ -71,24 +90,31 @@
                     for (var i = 0; i < items.length; i++) {
                         var it = items[i];
                         var time = (it.createTime || '').toString().substring(5, 16);
-                        var text = (it.content || '').substring(0, 60);
-                        html += '<li data-id="' + it.id + '" style="padding:8px 12px;border-bottom:1px dashed #f2f2f2;cursor:pointer;">'
-                            + '<div style="color:#333;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(it.title) + '</div>'
-                            + '<div style="color:#999;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(text) + '</div>'
-                            + '<div style="color:#bbb;font-size:11px;margin-top:2px;">' + esc(time) + (it.broadcast ? ' · 系统' : '') + '</div>'
+                        // 完整正文直接入DOM（转义后），收起态由CSS单行省略，点击展开显示全文
+                        html += '<li class="cube-notify-item" data-id="' + it.id + '">'
+                            + '<div class="cube-notify-title"><span class="cube-notify-readtag">已读</span>' + esc(it.title) + '</div>'
+                            + '<div class="cube-notify-text">' + esc(it.content) + '</div>'
+                            + '<div class="cube-notify-time">' + esc(time) + (it.broadcast ? ' · 系统' : '') + '</div>'
                             + '</li>';
                     }
                     list.innerHTML = html;
                 }).catch(function () { });
             }
 
+            // 标记已读：成功后刷新红点计数并给当前列表中的同一条目加上已读标记；
+            // 不重载列表，条目与正文继续留在面板中，直到下次打开面板（仅未读）或全部已读
             function markRead(id) {
                 fetch(markReadUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: 'id=' + id
-                }).then(function (r) { return r.json(); }).then(function () {
-                    refreshCount(); loadList();
+                }).then(function (r) { return r.json(); }).then(function (d) {
+                    if (!d || d.code !== 0) return;
+
+                    refreshCount();
+
+                    var li = list.querySelector('li[data-id="' + id + '"]');
+                    if (li) li.classList.add('read');
                 }).catch(function () { });
             }
 
@@ -101,11 +127,23 @@
                 if (show) loadList();
             });
 
-            // 点击未读条目即标记已读并从下拉移除
+            // 点击条目：就地展开全文（同时只展开一条），首次展开启动延时已读
             if (list) list.addEventListener('click', function (e) {
-                var li = e.target && e.target.closest ? e.target.closest('li[data-id]') : null;
+                var li = e.target && e.target.closest ? e.target.closest('li.cube-notify-item') : null;
                 if (!li) return;
-                markRead(li.getAttribute('data-id'));
+
+                var expanded = li.classList.contains('expanded');
+                var opened = list.querySelectorAll('li.cube-notify-item.expanded');
+                for (var i = 0; i < opened.length; i++) opened[i].classList.remove('expanded');
+                if (expanded) return;
+
+                li.classList.add('expanded');
+
+                // 展开即开始计时，停留数秒后自动已读（每条只提交一次）
+                var id = li.getAttribute('data-id');
+                if (readStarted[id]) return;
+                readStarted[id] = true;
+                setTimeout(function () { markRead(id); }, READ_DELAY);
             });
 
             // 全部已读
