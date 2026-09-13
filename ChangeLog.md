@@ -1,5 +1,13 @@
 # ChangeLog
 
+## v6.15.2026.0913 (2026-09-13)
+
+### Bug 修复
+- **[fix]** 修复 SPA 元数据丢失 Map 外键候选：`GetPage`/`GetFields` 由 `DataField.ToDictionary()` 产出，早期只输出 `DataSource` 委托与枚举两类 `dataSource` 来源，`PrepareForApi`/`MapCandidateFiller` 物化的 `DataSourceMap` 被静默丢弃，导致角色/部门/创建人等外键字段（`mapField` 非空）在表单与详情里退化为数字输入框。现按「委托 → 枚举 → 物化字典」回退输出 `dataSource`。
+- **[fix]** 列表分区补齐 Map 外键候选：`GetPage` 的 `list`/`allList` 与 `GetFields(List)` 现同样经过候选填充，列表外键编号列直接显示名称/徽章；`String` 展示列（`RoleName`/`ParentName`）与地区列保持原样。
+
+> **升级需知**：外键字段的形态会从数字输入框变为下拉（小表本地下拉、大表远程搜索），共用同一 `/api` 的其它前端皮肤（ElementUI/Vue 等）同样受影响。
+
 ## v6.15.2026.0912 (2026-09-12)
 
 ### 安全语义变更（升级需知）

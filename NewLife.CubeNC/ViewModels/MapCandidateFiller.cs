@@ -8,7 +8,7 @@ using XCode.Membership;
 
 namespace NewLife.Cube;
 
-/// <summary>为搜索/添加/编辑/详情字段补全 Map 外键候选（OSC-0016 / OSC-26082097c1）。
+/// <summary>为列表/搜索/添加/编辑/详情字段补全 Map 外键候选（OSC-0016 / OSC-26082097c1）。
 /// 小表内联 DataSourceMap，大表写 Entity. LovCode；地区字段标 ItemType=area4 走 Cascader。</summary>
 public static class MapCandidateFiller
 {
@@ -28,12 +28,21 @@ public static class MapCandidateFiller
         {
             if (df == null) continue;
 
+            // 列表列（ListField）：只给外键编号列补候选，展示列本身已可读；也不做 ItemType/物理列改写
+            var forList = df is ListField;
+
             if (IsAreaLikeField(df))
             {
+                // 列表地区列沿用既有级联渲染（前端按 ItemType/地区缓存翻译），不做 area4 改写
+                if (forList) continue;
+
                 if (!IsCascaderItemType(df.ItemType)) df.ItemType = "area4";
                 RestorePhysicalColumnName(df, factory);
                 continue;
             }
+
+            // 列表展示列（String）已是名称，补字典只会多出徽章，且无法翻译多值串（如 RoleIds=1,2）
+            if (forList && df.Type == typeof(String)) continue;
 
             RestorePhysicalColumnName(df, factory);
 

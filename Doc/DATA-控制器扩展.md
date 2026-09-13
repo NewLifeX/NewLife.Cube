@@ -431,6 +431,16 @@ public class Department : EntityTree<Department>
 - 编辑时自动排除**当前节点及其全部后代**，避免把自己或子孙选为父级而成环；新增时全量可选
 - 控制器若已自定义 `DataSource`（如特殊过滤）不会被覆盖；重写 `ApplyTreeParentSource` / `BuildTreeParentSource` 可完全接管
 
+### Map 外键字段自动下拉（含列表分区）
+
+实体上带 `[Map]` 关系的外键字段（如 `User.RoleID` / `User.DepartmentID` / `Log.CreateUserID`）由 `MapCandidateFiller` 自动补候选，**无需逐个手工配 `DataSource`**：
+
+- 覆盖面：`GetPage` 的 `list` / `allList` / `addForm` / `editForm` / `detail` / `search`，以及 `GetFields(kind)`
+- 小表（≤ `CubeSetting.MaxDropDownList`，默认 50）内联 `dataSource` 字典；大表下发 `lovCode = Entity.{实体全名}` 走远程可搜索下拉
+- 列表分区只给**非 String 的外键编号列**补候选（列表直接显示名称/徽章）；`RoleName`/`ParentName` 这类 String 展示列、地区列保持原样
+- 字段名启发式兜底：`RoleID(s)` / `DepartmentID(s)` / `UserID(s)` / `CreateUserID` / `UpdateUserID` / `CreatorID` / `UpdaterID` / `MenuID(s)` 无 `[Map]` 也可识别目标实体
+- 手工已设 `DataSource` / `LovCode` / `DataSourceMap` 不会被覆盖；重写 `FixSearchMapCandidates` 可完全接管
+
 ---
 
 ## 30.5 ConfigController（配置控制器）

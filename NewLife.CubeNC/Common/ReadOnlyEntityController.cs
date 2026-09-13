@@ -998,7 +998,10 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             masterTimeDisplayName = masterTime?.DisplayName,
         };
 
-        var list = PrepareFieldsForApi(OnGetFields(ViewKinds.List, null));
+        // 列表字段同样补 Map 外键候选（列表外键编号列直接出名称/徽章；列筛选候选来自 search 分区）
+        var listFields = OnGetFields(ViewKinds.List, null);
+        MapCandidateFiller.Apply(listFields, Factory);
+        var list = PrepareFieldsForApi(listFields);
         var addForm = PrepareMapViewFields(ViewKinds.AddForm);
         var editForm = PrepareMapViewFields(ViewKinds.EditForm);
         var detail = PrepareMapViewFields(ViewKinds.Detail);
@@ -1026,7 +1029,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     public virtual ActionResult GetFields(ViewKinds kind)
     {
         var raw = OnGetFields(kind, null);
-        if (kind is ViewKinds.Search or ViewKinds.AddForm or ViewKinds.EditForm or ViewKinds.Detail)
+        if (kind is ViewKinds.List or ViewKinds.Search or ViewKinds.AddForm or ViewKinds.EditForm or ViewKinds.Detail)
             MapCandidateFiller.Apply(raw, Factory);
         var fields = PrepareFieldsForApi(raw);
 

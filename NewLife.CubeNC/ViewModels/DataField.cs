@@ -201,33 +201,25 @@ public class DataField : IDictionarySource
         if (!ValueField.IsNullOrEmpty()) dic["valueField"] = ValueField;
         if (!LovCode.IsNullOrEmpty()) dic["lovCode"] = LovCode;
 
-        // 数据源。优先 DataSource 委托（控制器显式配置，如角色组），否则枚举字段自动构建选项
-        // 前端 LovSelect 优先使用 dataSource 渲染下拉选项（对齐 MVC _Form_Item/_Form_Int）
+        // 数据源。优先级：DataSource 委托（控制器显式配置，如角色组，每次新鲜）→ 枚举反射 → DataSourceMap
+        // （PrepareForApi / MapCandidateFiller 物化的 Map 外键候选与布尔字典）。前端按 dataSource 渲染本地下拉
+        // （对齐 MVC _Form_Item/_Form_Int）；漏掉 DataSourceMap 会让 Map 外键退化为数字输入框
+        IDictionary ds = null;
+        var fromDelegate = false;
         if (DataSource != null)
         {
             try
             {
-                var ds = DataSource(null);
-                if (ds != null && ds.Count > 0)
-                {
-                    var sds = new Dictionary<String, String>();
-                    foreach (DictionaryEntry item in ds)
-                    {
-                        if (item.Key != null) sds[item.Key + ""] = item.Value + "";
-                    }
-                    dic["dataSource"] = sds;
-
-                    // 多选：显式 ItemType=multipleSelect，或字段名以 s 结尾（MVC _Form_Item 约定）
-                    if (String.Equals(ItemType, "multipleSelect", StringComparison.OrdinalIgnoreCase) || Name.EndsWith("s"))
-                        dic["multiple"] = true;
-                }
+                ds = DataSource(null);
+                fromDelegate = true;
             }
             catch { /* 委托依赖实体上下文时可能失败，忽略并降级 */ }
         }
-        else if (Type != null && Type.IsEnum)
+
+        if ((ds == null || ds.Count == 0) && Type != null && Type.IsEnum)
         {
             // 枚举选项：反射枚举成员，标签取 DisplayName/Description/成员名（对齐 MVC _Form_Int）
-            var sds = new Dictionary<String, String>();
+            var eds = new Dictionary<String, String>();
             foreach (var item in Type.GetFields(BindingFlags.Public | BindingFlags.Static))
             {
                 var value = Convert.ToInt64(item.GetValue(null));
@@ -236,9 +228,27 @@ public class DataField : IDictionarySource
                 if (dna != null && !String.IsNullOrEmpty(dna.DisplayName)) label = dna.DisplayName;
                 var att = item.GetCustomAttribute<DescriptionAttribute>(false);
                 if (att != null && !String.IsNullOrEmpty(att.Description)) label = att.Description;
-                sds[value + ""] = label;
+                eds[value + ""] = label;
             }
-            if (sds.Count > 0) dic["dataSource"] = sds;
+            if (eds.Count > 0) ds = eds;
+        }
+
+        // Map 外键/布尔：委托与枚举都未产出时回退已物化字典，避免外键字段丢失候选
+        if ((ds == null || ds.Count == 0) && DataSourceMap != null && DataSourceMap.Count > 0) ds = DataSourceMap;
+
+        if (ds != null && ds.Count > 0)
+        {
+            var sds = new Dictionary<String, String>();
+            foreach (DictionaryEntry item in ds)
+            {
+                if (item.Key != null) sds[item.Key + ""] = item.Value + "";
+            }
+            dic["dataSource"] = sds;
+
+            // 多选：显式 ItemType=multipleSelect，或委托来源且字段名以 s 结尾（MVC _Form_Item 约定）。
+            // 物化字典来源不按名称推断，避免枚举/布尔字段被误标多选
+            if (String.Equals(ItemType, "multipleSelect", StringComparison.OrdinalIgnoreCase) || (fromDelegate && Name.EndsWith("s")))
+                dic["multiple"] = true;
         }
 
         // 子类扩展字段

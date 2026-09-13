@@ -814,6 +814,7 @@ DefaultList 固定容器
 5. `GetDataScopeContext()` 不得写 `DataScopeContext.Current`；宿主系统态继续休眠。
 6. 行权表达式与 `viewFilter` 同时存在时先保行权；仅当租户/特性 `WhereBuilder` 自身不可解析时保留该 WhereBuilder（行权退让，已在 `tasks.md` 残留 R1 登记）。
 7. 前端藏列/筛选不改变服务端行集与脱敏结果。
+8. Map 外键候选必须落在 `dataSource` 上：SPA 元数据出口是 `DataField.ToDictionary()`，`DataSourceMap`（`MapCandidateFiller` 小表内联分支）此前不被输出，导致 `mapField` 非空的外键字段（`RoleID`/`DepartmentID`/`CreateUserID`）在表单与详情退化为数字输入框。现按「`DataSource` 委托 → 枚举反射 → `DataSourceMap`」回退输出；`list`/`allList`/`GetFields(List)` 同步接入候选填充（仅 `ListField` 且非 String 的编号列）。`mapField` 只表示「映射到某物理外键列」，不驱动控件。
 
 #### 8.6.2 计算列能否经 GetPage 给前端
 
