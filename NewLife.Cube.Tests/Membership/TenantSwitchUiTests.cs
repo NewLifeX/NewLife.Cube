@@ -48,7 +48,7 @@ public class TenantSwitchUiTests
     /// <summary>构造认证控制器。SwitchTenant/Info 不依赖短信/邮件/MFA 等能力，依赖以 null 占位</summary>
     private static AuthController CreateController(TenantAuthFixture fx, HttpContext ctx)
     {
-        var controller = new AuthController(fx.UserService, null!, null!, new TestCacheProvider(), null!)
+        var controller = new AuthController(fx.UserService, null!, null!, new TestCacheProvider(), null!, null!)
         {
             ControllerContext = new ControllerContext { HttpContext = ctx },
         };
