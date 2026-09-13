@@ -8,11 +8,9 @@ namespace NewLife.Cube.WebMiddleware;
 
 /// <summary>上下文中间件。设置租户上下文，并声明宿主数据权限策略（实体层以系统身份运行）</summary>
 /// <param name="next"></param>
-/// <param name="tenantContext">租户上下文（无状态门面，注册为 Singleton，内部读 AsyncLocal）</param>
-public class DataScopeMiddleware(RequestDelegate next, ITenantContext tenantContext)
+public class DataScopeMiddleware(RequestDelegate next)
 {
     private readonly RequestDelegate _next = next ?? throw new ArgumentNullException(nameof(next));
-    private readonly ITenantContext _tenantContext = tenantContext;
 
     /// <summary>调用</summary>
     /// <param name="ctx"></param>
@@ -28,9 +26,10 @@ public class DataScopeMiddleware(RequestDelegate next, ITenantContext tenantCont
         {
             // 1. 设置租户上下文
             var set = CubeSetting.Current;
-            if (set.EnableTenant && _tenantContext.Mode == TenantMode.None)
+            if (set.EnableTenant && TenantContext.Current.GetTenantMode() == TenantMode.None)
             {
-                var tenantId = ctx.GetTenantId();
+                // 复用单一解析入口（含 X-App-Id，与 ITenantContext 门面一致），结果缓存到 HttpContext.Items，同一请求只解析一次
+                var tenantId = ctx.GetTenantResolution().TenantId;
                 if (tenantId.GetTenantMode() != TenantMode.None)
                 {
                     // 中间件只做"租户上下文解析"（三段式之②），不做成员授权（③）。

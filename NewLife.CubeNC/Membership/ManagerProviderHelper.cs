@@ -21,6 +21,9 @@ public static class ManagerProviderHelper
     /// <summary>登录失败统一文案。与 UserService.LoginByPassword 的用户名校验失败文案保持一致，避免泄露用户/租户存在性</summary>
     private const String LoginFailedMessage = "提供的用户名或密码不正确。";
 
+    /// <summary>租户解析缓存键。HttpContext.Items 按请求隔离，避免同一请求重复解析租户</summary>
+    private const String TenantResolutionItemsKey = "Cube.TenantResolution";
+
     /// <summary>设置当前用户</summary>
     /// <param name="provider">提供者</param>
     /// <param name="context">Http上下文，兼容NetCore</param>
@@ -413,6 +416,30 @@ public static class ManagerProviderHelper
 
         var id = context.GetTenantId();
         return new TenantResolution { HasIdentifier = id >= 0, TenantId = id };
+    }
+
+    /// <summary>解析当前请求租户（复用单一解析入口 <see cref="ResolveTenant"/>），结果缓存到 HttpContext.Items，同一请求只解析一次。
+    /// 请求未携带租户标识时，回退到已建立的租户上下文（登录流程 ChooseTenant/SetTenant 已设置），保证认证后读取与上下文一致</summary>
+    /// <param name="context">HTTP上下文</param>
+    /// <returns>租户解析结果</returns>
+    public static TenantResolution GetTenantResolution(this HttpContext context)
+    {
+        if (context == null) return default;
+
+        // 请求上下文缓存优先，避免重复解析租户
+        if (context.Items.TryGetValue(TenantResolutionItemsKey, out var obj) && obj is TenantResolution resolution)
+            return resolution;
+
+        // 优先请求声明的租户（X-App-Id → X-Tenant/X-Tenant-Id/Query/Cookie）
+        resolution = context.ResolveTenant();
+
+        // 请求完全未声明租户标识时，回退到已建立的租户上下文（登录/中间件已设置），避免与 ChooseTenant 后的读取不一致；
+        // 显式声明但无效的标识（X-Tenant/X-App-Id 等）不参与回退，避免被陈旧上下文覆盖
+        if (!resolution.HasIdentifier && !context.HasExplicitTenantHeader() && TenantContext.Current.GetTenantMode() != TenantMode.None)
+            resolution = new TenantResolution { HasIdentifier = true, TenantId = TenantContext.CurrentId };
+
+        context.Items[TenantResolutionItemsKey] = resolution;
+        return resolution;
     }
 
     /// <summary>解析登录/绑定租户：优先已建立的租户上下文，其次单一解析入口（X-App-Id / X-Tenant/Query/Cookie）。返回 -1 表示未解析到有效租户</summary>
@@ -1115,17 +1142,45 @@ public interface ITenantContext
     ITenant Tenant { get; }
 }
 
-/// <summary>租户上下文实现。包装静态 <see cref="TenantContext"/>，后续逐步把 ASP.NET 读站点迁移到 DI（P2-6）</summary>
+/// <summary>租户上下文实现。优先按当前请求解析租户（复用 ResolveTenant 单一入口），结果缓存到 HttpContext.Items，
+/// 同一请求只解析一次，避免依赖静态 AsyncLocal 在跨请求场景下的残留导致租户固定；
+/// 请求未携带租户标识时回退到已建立的租户上下文（登录流程 ChooseTenant/SetTenant 设置）。
+/// 注册为 Singleton，内部通过 IHttpContextAccessor 获取当前请求；无请求场景（后台任务）回退 AsyncLocal</summary>
 public class TenantContextService : ITenantContext
 {
-    /// <summary>租户模式</summary>
-    public TenantMode Mode => TenantContext.Current.GetTenantMode();
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    /// <summary>租户ID</summary>
-    public Int32 TenantId => TenantContext.CurrentId;
+    /// <summary>实例化租户上下文服务</summary>
+    public TenantContextService() : this(null) { }
+
+    /// <summary>实例化租户上下文服务</summary>
+    /// <param name="httpContextAccessor">HTTP上下文访问器</param>
+    public TenantContextService(IHttpContextAccessor httpContextAccessor)
+        => _httpContextAccessor = httpContextAccessor;
+
+    /// <summary>租户模式</summary>
+    public TenantMode Mode => Resolve()?.Mode ?? TenantContext.Current.GetTenantMode();
+
+    /// <summary>租户ID。0=管理后台/无租户，&gt;0=租户</summary>
+    public Int32 TenantId => Math.Max(0, Resolve()?.TenantId ?? TenantContext.CurrentId);
 
     /// <summary>租户</summary>
-    public ITenant Tenant => TenantContext.Current?.Tenant;
+    public ITenant Tenant
+    {
+        get
+        {
+            var resolution = Resolve();
+            if (resolution != null)
+            {
+                var tid = resolution.Value.TenantId;
+                return tid > 0 ? XCode.Membership.Tenant.FindById(tid) : null;
+            }
+            return TenantContext.Current?.Tenant;
+        }
+    }
+
+    /// <summary>获取当前请求的租户解析结果（Items缓存，避免重复解析）；无请求上下文时返回null</summary>
+    private TenantResolution? Resolve() => _httpContextAccessor?.HttpContext?.GetTenantResolution();
 }
 
 /// <summary>租户成员授权统一授权点（三段式之③"成员授权"，方案§4.2）。管理员豁免；普通用户须有指定租户的有效 TenantUser 绑定。
