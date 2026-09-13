@@ -803,14 +803,16 @@ DefaultList 固定容器
 | 项 | 结论 |
 |----|------|
 | 覆盖实体接口 | User（`IDataScope`）；UserToken / UserOnline / UserConnect / OAuthLog / NotificationRecord → `IUserScope` + `IDataScopeFieldProvider` |
-| 拆除特性 | User / Log / UserToken / UserOnline / UserConnect / OAuthLog（双栈）+ CubeNC NotificationRecord；Department 无特性 |
+| 拆除特性 | User / Log / UserToken / UserOnline / UserConnect / OAuthLog（双栈）+ CubeNC NotificationRecord；Department 保留 `ManagerID` 特性（无需归属接口表达） |
 | 保留特性 | Department（`ManagerID`）、Parameter、Attachment、PrincipalAgent（无法用归属接口表达） |
+| 新增写入 | `ValidPermission` 新增不再无条件放行：非系统角色声称为他人归属时拒绝（归属为 0 交由保存链路，与审计字段一致） |
 | 实体层 | 仍不承担行权；`DecouplingTests` 前两条守护不变 |
-| 测试 | 后端 `DataScopeRowPermissionTests` / `DataPermissionArchitectureTests` / `DataScopeDecouplingTests`；前端 Vitest `dataScopeForm` / `listColumns` / `iamGuards` |
+| 排障备注 | `UserController.Search` 的 `?id=` 分支已改走 `FindData`（含 CanAccess），不得回退为 `FindByID` |
+| 测试 | 后端 `DataScopeRowPermissionTests` / `DataPermissionArchitectureTests` / `DataScopeDecouplingTests` / `DataScopeSensitiveMvcTests` / `UserScopeQueryBypassGuardTests`；前端 Vitest `dataScopeForm` / `listColumns` / `iamGuards` |
 
 **契约补充（叠加 8.6.1 四条）**：
 5. `GetDataScopeContext()` 不得写 `DataScopeContext.Current`；宿主系统态继续休眠。
-6. 行权表达式解析失败时 **保留行权**、放弃 `viewFilter`（fail-closed）。
+6. 行权表达式与 `viewFilter` 同时存在时先保行权；仅当租户/特性 `WhereBuilder` 自身不可解析时保留该 WhereBuilder（行权退让，已在 `tasks.md` 残留 R1 登记）。
 7. 前端藏列/筛选不改变服务端行集与脱敏结果。
 
 #### 8.6.2 计算列能否经 GetPage 给前端

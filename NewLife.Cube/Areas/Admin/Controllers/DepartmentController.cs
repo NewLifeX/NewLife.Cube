@@ -73,6 +73,12 @@ public class DepartmentController : EntityController<Department, DepartmentModel
     /// <summary>查找单行数据，并判断数据权限</summary>
     /// <param name="key"></param>
     /// <returns></returns>
+    /// <remarks>
+    /// 本控制器不叠加接口层 <c>CanAccess</c>（DataScope 部门集合）而是以管理者字段判定，原因：
+    /// ① 部门表「一行即一个部门」，DataScope 的部门集合语义（部门行自身的 DepartmentId）与之退化重叠，叠加会把
+    /// 「我管理的部门」误挡；② 列表行权已由 <c>[DataPermission(ManagerID)]</c> 与租户条件共同表达，详情必须同源。
+    /// 因此本页详情/`?id=` 的可见性 = 「我管理的部门」（系统角色不受限），与列表一致。
+    /// </remarks>
     protected override Department FindData(Object key)
     {
         var entity = Find(key);

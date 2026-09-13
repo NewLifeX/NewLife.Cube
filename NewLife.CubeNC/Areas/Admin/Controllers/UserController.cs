@@ -161,8 +161,9 @@ public class UserController : EntityController<User, UserModel>
         var id = p["id"].ToInt(-1);
         if (id > 0)
         {
+            // 行权（OSC-2608273d95）：?id= 直查走同一行权管道（实现审计 N1）
             var list = new List<User>();
-            var entity = FindByID(id);
+            var entity = FindData(id);
             if (entity != null)
             {
                 // 不向浏览器输出密码

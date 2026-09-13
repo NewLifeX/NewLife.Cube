@@ -59,7 +59,8 @@
 
 ## T9 测试与构建
 
-- [x] Cube XUnit：`Common/DataScopeRowPermissionTests.cs`（列表 State 合 GetFilter / 无接口实体 GetFilter=null / FindData 越权拒绝 / ValidPermission / 实体接口映射 / 脱敏用真实上下文 / 上下文不写 Current）——`9/9 通过`；`Web/DataPermissionArchitectureTests` `22/22 通过`
+- [x] Cube XUnit：`Common/DataScopeRowPermissionTests.cs`（列表 State 合 GetFilter / 无接口实体 GetFilter=null / FindData 越权拒绝 / ValidPermission（含新增伪造归属）/ 实体接口映射 / 脱敏用真实上下文 / 上下文不写 Current）——与 `Web/DataPermissionArchitectureTests` 合计 `35/35 通过`（拆：13 + 22）；另新增 `Web/UserScopeQueryBypassGuardTests`（?id= 不走 FindData 的回退守护）与 `Common/DataScopeMenuOverrideTests`（菜单 SetMenu 覆盖/继承）
+- [x] CubeNC XUnit：`XUnitTest/DataScopeSensitiveMvcTests.cs`（MVC 侧列级 sensitive 标记 + 列表/详情遮蔽用真实上下文）`4/4 通过`；`DataScopeDecouplingTests` `13/13 通过`
 - [x] Vitest：`dataScopeForm` + `rejectSensitiveColumns` + `iamGuards`——全量 `89 文件/848 用例通过`
 - [x] `dotnet build NewLife.Cube` + `NewLife.CubeNC` 0 error 0 warning；`pnpm --filter @newlifex/cube-arco-vue test` 与 `build` 通过（`✓ built in 25.25s`）
 - [x] 回归对比（`git worktree` HEAD=75e747ef 基线）：本次涉及子集与基线一致，**0 新增失败**；全量失败均为环境/租户夹具既有问题（与基线同类）
@@ -96,7 +97,8 @@
 
 ### 门禁结论
 
-**轮次 1（2026-09-12）**：实现审计 + 代码审查各一轮，修复后复验通过；未进入第 2 轮。
+**轮次 1（2026-09-12）**：实现审计 + 代码审查各一轮，修复后复验通过。
+**轮次 2（2026-09-13）**：实现复审计（HEAD `74475939`）发现 N1–N12，已按用户裁定「修复 N1–N5 + 若干 🔵」执行完毕，详见下方第 2 轮记录。
 
 #### 已修复（本轮）
 
@@ -135,4 +137,25 @@
 
 #### 结论
 
-🔴 全部修复并复验；🟡 中 5 项修复、4 项登记为接受残留（R1–R5，均已注明理由与后续归属）。无未决 🔴，未进入第 2 轮循环。可进入 `验收 OSC-2608273d95`（T10 冒烟由验收方在真实实例执行）。
+🔴 全部修复并复验；🟡 中 5 项修复、4 项登记为接受残留（R1–R5，均已注明理由与后续归属）。
+
+#### 轮次 2：实现复审计发现与修复（2026-09-13）
+
+| # | 来源 | 问题 | 修复 |
+|---|------|------|------|
+| N1 | 复审计 🔴 | 双栈 `UserController.Search(Pager)` 的 `id>0` 分支直接 `FindByID` 返回，绕过 `SearchData` 行权管道（`?id=<他人ID>` 可读他人行） | 双栈改走 `FindData(id)`（含 `CanAccess`，越权抛「非法访问数据」）；顺带修掉 WebAPI 同分支 `list.Add(entity)` 重复两次的合并遗留 bug；新增源码守护用例 `UserScopeQueryBypassGuardTests` |
+| N2 | 复审计 🟡 | `DepartmentController` 详情不叠加 `CanAccess`，与列表语义不一致；design §1.7 把 Department 写成「无特性」与现码矛盾 | 保留 ManagerId 判定（部门表「一行即一个部门」与 DataScope 部门集合退化重叠，叠加会误挡），在双栈 `FindData` 补 XML 备注说明取舍；修订 design §1.7 |
+| N3 | 复审计 🟡 | ①`Doc/Api` 的 `sensitive` 契约未落地却被记为已修（虚标）；②迁移方案 8.6.1b 仍写「ValidPermission 新增放行」；③「解析失败保留行权」仍作普适宣称 | 补 `Doc/Api/字段元数据.md` 6.1 敏感字段小节 + `Doc/Api/核心接口架构.md` 一句；更正迁移方案两处；更正 `Doc/PERM-数据权限.md` 行权/新增/解析失败三处措辞 |
+| N4 | 复审计 🟡 | 升级语义（非系统角色行集可能变宽）未登记 | `ChangeLog.md` 新增 `v6.15.2026.0912` 安全语义变更节；`verify.md` AC-19 措辞更正 |
+| N5 | 复审计 🟡 | AC-14 标【单测】称「双栈」，实际只有 WebAPI 用例；R5 理由「NC 无测试工程可引用」不成立 | 新增 `XUnitTest/DataScopeSensitiveMvcTests.cs`（4 例，CubeNC 侧列级标记与遮蔽）`4/4 通过` |
+| N6 | 复审计 🔵 | `verify.md` 残留要求「单元测试须覆盖 SetMenu 覆盖/继承」全仓零用例 | 新增 `Common/DataScopeMenuOverrideTests.cs`（2 例）`2/2 通过` |
+| N7 | 复审计 🔵 | WebAPI 详情脱敏仍在流程覆盖之前 | 后移到 `WorkflowPageOverlay.ApplyRow` 之后，与列表时序一致 |
+| N8 | 复审计 🔵 | `GetPage` 中 `allList` 与 `addForm` 两条语句被合并到一行 | 拆回两行 |
+| N11 | 复审计 🔵 | tasks/门禁测试数字过时（写 9/9、34、494/6） | 按实测更新为 35、13、4、2，MVC 全量实测 493/7（6×`QyWeiXinTests` 外网 + 1×`TryFetchRemoteAvatar` 抖动，单跑通过） |
+| N12 | 复审计 🔵 | AC-12 字面与 XCode 实际退化语义不符 | 改为「本人恒可见 + 部门集合恒假，即仅本人一行」 |
+
+**依旧保留的残留**：R1（`builder != null` 时行权退让，已同步文档）、R2（`GetPage.allList` 未标 sensitive）、R3（导出迭代器二次枚举 / 就地改写与单对象缓存邻接）、R4 前半（无真实行集用例，靠 T10 冒烟）、R5→已由 N5 消除、N9（Widget 无断言级用例）、N10（`IsSystemUser` 与 `DataScopeContext.IsSystem` 语义分歧，已在代码注释说明）。
+
+#### 结论（轮次 2 后）
+
+本轮 N1–N8 全部修复、N9–N12 已登记或修复；无未决 🔴。可进入 `验收 OSC-2608273d95`（T10 冒烟由验收方在真实实例执行）。

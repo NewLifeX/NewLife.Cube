@@ -135,9 +135,9 @@ if (!DataScopeHelper.CanAccess(order)) throw new UnauthorizedAccessException();
 | 环节 | 实现 | 说明 |
 |------|------|------|
 | 上下文 | `GetDataScopeContext()` | `DataScopeContext.Create(当前用户)`，按请求缓存于 `HttpContext.Items`；**不写 `DataScopeContext.Current`**（宿主系统态必须保持休眠） |
-| 列表 / 导出 | `DataScopeHelper.GetFilter(Factory, ctx)` AND 进 `SearchData` 的 `p.State` | `logic=any` 只 OR 前端筛选，不得放大行权；表达式解析失败时保留行权、放弃 `viewFilter` |
-| 聚合 / 实体部件 | `WidgetQueryService` 追加同一 `GetFilter` | 与页面列表同一助手 |
-| 详情 / 写入 | `DataScopeHelper.CanAccess(entity, ctx)` | `FindData` 越权抛「非法访问数据」；`ValidPermission` 除新增外与列表同一判定（新增归属由保存链路赋值） |
+| 列表 / 导出 | `DataScopeHelper.GetFilter(Factory, ctx)` AND 进 `SearchData` 的 `p.State` | `logic=any` 只 OR 前端筛选，不得放大行权；`viewFilter` 解析失败且无其他 WhereBuilder 时保留行权，有 WhereBuilder（租户/特性）时保留原 WhereBuilder 并记 Trance（见 tasks.md 残留 R1） |
+| 聚合 / 实体部件 | `WidgetQueryService` 追加同一 `GetFilter` | 与页面列表同 一助手 |
+| 详情 / 写入 | `DataScopeHelper.CanAccess(entity, ctx)` | `FindData` 越权抛 「非法访问数据」；`ValidPermission` 除新增外与列表同一判定（新增强制不得伪造他人归属） |
 | 敏感字段 | `IFieldScope.GetSensitiveFields()` + `FieldScopeHelper.MaskSensitiveFields` | 列表/详情/导出返回前遮蔽；角色未授 `ViewSensitive` 且非本人时置 `***`；`DataField.Sensitive` 供前端藏列，**藏列不等于授权** |
 
 实体只需实现 `IUserScope`（或 `IDataScope` / `IDepartmentScope`）声明归属列，字段名非默认时另实现 `IDataScopeFieldProvider`；**不得**注册 `DataScopeInterceptor`（实体层守护见 `DataScopeDecouplingTests`）。

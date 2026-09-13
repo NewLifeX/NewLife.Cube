@@ -177,9 +177,6 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         // 验证数据权限
         Valid(entity, DataObjectMethodType.Select, false);
 
-        // 字段级脱敏（OSC-2608273d95）：无 ViewSensitive 权限且非本人时敏感列置 ***
-        MaskSensitiveFields(entity);
-
         // 流程单行覆盖（OSC-26090347f1）：__wfStatus/__wfInstanceId/__wfWritable（登录且启用时）
         try
         {
@@ -191,6 +188,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             }
         }
         catch (Exception ex) { XTrace.WriteLine("详情流程覆盖跳过：{0}", ex.Message); }
+
+        // 字段级脱敏（OSC-2608273d95）：放在流程覆盖之后、输出之前，与列表时序一致；无 ViewSensitive 权限且非本人时敏感列置 ***
+        MaskSensitiveFields(entity);
 
         //return entity.ToOkApiResponse();
         return new ApiResponse<TEntity> { Data = entity };
@@ -231,7 +231,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
         var list = PrepareFieldsForApi(OnGetFields(ViewKinds.List, null));
         // 全部可用列表字段（应用用户列配置前，供前端列设置面板使用）
-        var allList = OnGetFields(ViewKinds.List, null);        var addForm = PrepareMapViewFields(ViewKinds.AddForm);
+        var allList = OnGetFields(ViewKinds.List, null);
+        var addForm = PrepareMapViewFields(ViewKinds.AddForm);
         var editForm = PrepareMapViewFields(ViewKinds.EditForm);
         var detail = PrepareMapViewFields(ViewKinds.Detail);
         var search = PrepareMapViewFields(ViewKinds.Search);

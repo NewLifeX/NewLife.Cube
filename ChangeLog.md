@@ -1,5 +1,11 @@
 # ChangeLog
 
+## v6.15.2026.0912 (2026-09-12)
+
+### 安全语义变更（升级需知）
+- **角色数据范围行权生效（OSC-2608273d95）**：User / Log / UserToken / UserOnline / UserConnect / OAuthLog / NotificationRecord 的 `[DataPermission(null, "...")]` 仅本人特性已移除，行级数据权限改由角色 `DataScope` 四档（仅本人 / 本部门 / 本部门及下级 / 自定义 / 全部）在接口层统一执行（列表、导出、详情、写入、实体部件聚合）。**存量系统里非系统角色的可见行集可能比升级前更宽**（此前被强制收窄为「仅本人」），请复核各角色的数据范围配置。
+- **敏感字段脱敏**：实现 `IFieldScope` 的实体（如 `User.Password`）在列表 / 详情 / 导出返回前按角色 `ViewSensitive` 遮蔽为 `***`（本人行与已授权用户不遮蔽）；GetPage 字段新增可选 `sensitive` 供前端藏列（藏列不等于授权）。
+
 ## v6.15.2026.0902 (2026-09-02)
 
 ### 新功能

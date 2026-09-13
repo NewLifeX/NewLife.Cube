@@ -76,7 +76,7 @@ GetFilter=null，CanAccess=真（就行权而言）。菜单权限与租户仍�
 | Log | `CreateUserID={#userId}` | 按 1.2 |
 | UserToken / Online / Connect / OAuthLog | `UserID`/`UserId`={#userId} | 按 1.2 |
 | NotificationRecord | `UserId={#userId}` | 按 1.2 |
-| Department | 无（注释掉的 ManagerID） | 按 1.3 |
+| Department | 有 `ManagerID={#userId}`（本号保留，未拆；控制器另以 `CanView` 校验详情/`?id=`） | 按 1.3 |
 | Role / Menu / File / Cube 配置 | 无 | 仍无行权 |
 
 `DataPermissionAttribute` 保留为「额外 AND」，但**矩阵内 7 个控制器必须去掉仅本人表达式**（否则本部门被压成仅本人）。`CreateWhere` 合并顺序：租户 → `GetFilter` →（若特性仍在且未被 `IsSystem`/`att.Valid(roles)` 放行）`att.Expression`。
@@ -151,7 +151,7 @@ CubeNC 无 Widget 控制器则跳过此文件。
 
 ### 4.3 拆除仅本人特性（含守护测试同步）
 
-两栈删除 User、Log、UserToken、UserOnline、UserConnect、OAuthLog 上的 `[DataPermission(null, "...")]`；`NotificationRecord` **仅 CubeNC 控制器**有该特性。Department 保持无特性。
+两栈删除 User、Log、UserToken、UserOnline、UserConnect、OAuthLog 上的 `[DataPermission(null, "...")]`；`NotificationRecord` **仅 CubeNC 控制器**有该特性。Department **保留** `ManagerID={#userId}` 特性，其详情/`?id=` 由控制器 `CanView`（管理者字段）判定，**不叠加** `CanAccess`——部门表「一行即一个部门」与 DataScope 部门集合语义退化重叠，叠加会误挡「我管理的部门」（见 tasks.md 复审计 N2）。
 
 **同步修订** `XUnitTest/DataScopeDecouplingTests.Controllers_HaveExpectedDataPermission`：矩阵内 7 个控制器改为断言「无 `[DataPermission]`（行权由 DataScope GetFilter 表达）」；未纳入本号的 Parameter / Attachment / PrincipalAgent 保留原表达式断言。同文件 `Entities_DoNotRegisterDataScopeInterceptor` 与 `CrossUserQuery_NotFilteredByEntityLayer` **不得改动**。
 

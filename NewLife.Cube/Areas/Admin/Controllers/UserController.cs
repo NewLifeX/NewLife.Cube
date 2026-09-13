@@ -172,13 +172,10 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         var id = p["id"].ToInt(-1);
         if (id > 0)
         {
+            // 行权（OSC-2608273d95）：?id= 直查必须与列表/详情同一套判定，不得另开无 State 的查询，
+            // 否则非系统用户可借 ?id=<他人ID> 绕过 DataScope 读到他人行（实现审计 N1）
             var list = new List<User>();
-            var entity = FindByID(id);
-            if (entity != null)
-            {
-                entity.Password = null;
-                list.Add(entity);
-            }
+            var entity = FindData(id);
             if (entity != null)
             {
                 entity.Password = null;
