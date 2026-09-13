@@ -422,6 +422,15 @@ public class Department : EntityTree<Department>
 }
 ```
 
+### 父级字段自动下拉（自引用 ParentID）
+
+只要实体含有与主键同型的自引用字段 `ParentID`/`ParentId`（不要求继承 `EntityTree<T>`，如 `Department`、`Area`、`Menu`），基类会在**新增/编辑表单**里自动为该字段配置数据源：
+
+- 候选值 = 同表全部节点，标签为层级路径（`总公司/上海分公司/市场部`），避免同名节点难以分辨
+- 数据取自实体缓存（`Entity<T>.FindAllWithCache()`），标签优先 `DisplayName`（名称可能是编码，如菜单），其次主字段
+- 编辑时自动排除**当前节点及其全部后代**，避免把自己或子孙选为父级而成环；新增时全量可选
+- 控制器若已自定义 `DataSource`（如特殊过滤）不会被覆盖；重写 `ApplyTreeParentSource` / `BuildTreeParentSource` 可完全接管
+
 ---
 
 ## 30.5 ConfigController（配置控制器）

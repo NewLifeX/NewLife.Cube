@@ -858,10 +858,81 @@ public partial class ReadOnlyEntityController<TEntity>
             fields.RemoveField("TenantId", "TenantName");
         }
 
+        // 树形实体：父级字段自动配候选（ID→层级路径），表单可下拉选择而无需手填编号
+        if (kind is ViewKinds.AddForm or ViewKinds.EditForm) ApplyTreeParentSource(fields, model as TEntity);
+
         return fields;
     }
 
     /// <summary>展开字段</summary>
     protected virtual FieldCollection OnExpandFields(ExpandField field, TEntity entity, Object parameter) => field.Expand(entity, parameter);
+    #endregion
+
+    #region 树形实体父级
+    /// <summary>父级字段名。约定 ParentID/ParentId，且与主键同型（自引用树）</summary>
+    /// <returns>字段名；非树形实体返回 null</returns>
+    protected virtual String? GetTreeParentFieldName()
+    {
+        var fact = Factory;
+        var parent = fact.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("ParentID", "ParentId"));
+        if (parent == null) return null;
+
+        // 主键与父级同型（Int32 引 Int32），避免把普通业务外键当作树
+        var id = fact.Unique;
+        if (id == null || Type.GetTypeCode(parent.Type) != Type.GetTypeCode(id.Type)) return null;
+
+        return parent.Name;
+    }
+
+    /// <summary>为树形实体的父级字段配置数据源。控制器已自定义 DataSource 时不覆盖</summary>
+    /// <param name="fields">当前分区的字段集合</param>
+    /// <param name="entity">当前实体（编辑时用于排除自身及其后代，防成环）；新增时为 null</param>
+    protected virtual void ApplyTreeParentSource(FieldCollection fields, TEntity entity)
+    {
+        var parentName = GetTreeParentFieldName();
+        if (parentName == null) return;
+
+        var df = fields.GetField(parentName);
+        if (df == null || df.DataSource != null) return;
+
+        var idName = Factory.Unique.Name;
+        var nameName = GetTreeDisplayFieldName();
+        var excludeId = (entity as IEntity)?[idName].ToInt() ?? 0;
+
+        df.DataSource = _ => BuildTreeParentSource(idName, parentName, nameName, excludeId);
+    }
+
+    /// <summary>树节点显示名字段。优先 DisplayName（名称可能是编码，如菜单），其次主字段，再退到 Name/Title</summary>
+    /// <returns>字段名</returns>
+    protected virtual String GetTreeDisplayFieldName()
+    {
+        var fact = Factory;
+        foreach (var name in new[] { "DisplayName", fact.Master?.Name, "Name", "Title" })
+        {
+            if (!name.IsNullOrEmpty() && fact.Fields.Any(e => e.Name.EqualIgnoreCase(name))) return name;
+        }
+
+        return fact.Unique?.Name;
+    }
+
+    /// <summary>加载同表全部行并构建父级候选（ID→层级路径），排除当前节点及其后代</summary>
+    /// <param name="idName">主键字段名</param>
+    /// <param name="parentName">父级字段名</param>
+    /// <param name="nameName">显示名字段名</param>
+    /// <param name="excludeId">需排除的节点编号（含其全部后代）；0 表示不排除</param>
+    /// <returns>编号到层级路径的映射</returns>
+    protected virtual Dictionary<Int32, String> BuildTreeParentSource(String idName, String parentName, String nameName, Int32 excludeId)
+    {
+        var rows = new List<(Int32, Int32, String)>();
+        foreach (var entity in Entity<TEntity>.FindAllWithCache())
+        {
+            var ie = (IEntity)entity;
+            var name = nameName.IsNullOrEmpty() ? null : ie[nameName] as String;
+
+            rows.Add((ie[idName].ToInt(), ie[parentName].ToInt(), name.IsNullOrEmpty() ? ie[idName] + "" : name));
+        }
+
+        return TreeParentSourceHelper.Build(rows, excludeId);
+    }
     #endregion
 }

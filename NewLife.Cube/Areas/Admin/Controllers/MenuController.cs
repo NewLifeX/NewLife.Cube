@@ -17,35 +17,8 @@ public class MenuController : EntityTreeController<Menu, MenuModel>
         ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6");
         ListFields.RemoveField("Remark");
 
-        // 父级：下拉选择。菜单缓存作为数据源，label 用层级路径（如 系统管理/用户），
-        // 避免同名菜单混淆；不依赖 FullName 字段数据质量。新增/编辑表单均生效
-        foreach (var fields in new[] { AddFormFields, EditFormFields })
-        {
-            var df = fields.GetField("ParentID");
-            df.DataSource = _ => BuildMenuSource();
-        }
-    }
-
-    /// <summary>构建菜单层级路径字典（菜单缓存 → ID → 显示路径），供父级下拉选择</summary>
-    /// <returns>菜单编号到层级路径的映射</returns>
-    private static Dictionary<Int32, String> BuildMenuSource()
-    {
-        var menus = XCode.Membership.Menu.FindAllWithCache().ToList();
-        var map = menus.ToDictionary(e => e.ID, e => e);
-        var dict = new Dictionary<Int32, String>();
-        foreach (var e in menus)
-        {
-            var parts = new List<String> { e.DisplayName.IsNullOrEmpty() ? e.Name : e.DisplayName };
-            var p = e;
-            var guard = 0;
-            while (p.ParentID > 0 && map.TryGetValue(p.ParentID, out var pp) && pp.ID != p.ID && guard++ < 8)
-            {
-                parts.Insert(0, pp.DisplayName.IsNullOrEmpty() ? pp.Name : pp.DisplayName);
-                p = pp;
-            }
-            dict[e.ID] = String.Join("/", parts);
-        }
-        return dict;
+        // 父级（ParentID）下拉候选由基类统一处理（自引用树）：新增/编辑表单均可直接选择，
+        // 无需在此逐个控制器接线，见 ReadOnlyEntityController.ApplyTreeParentSource
     }
 
     /// <summary>表单/详情中权限目录只读，避免与角色授权串混淆</summary>
