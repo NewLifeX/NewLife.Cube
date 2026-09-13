@@ -93,4 +93,59 @@ public class DataFieldDataSourceMapTests
 
         Assert.False(ff.ToDictionary().ContainsKey("dataSource"));
     }
+
+    [Fact(DisplayName = "ToDictionary：布尔字段不回退物化字典（避免各皮肤开关被误判为下拉）")]
+    public void BooleanField_No_DataSourceFallback()
+    {
+        var ff = new FormField
+        {
+            Name = "Enable",
+            Type = typeof(Boolean),
+            DataSourceMap = new Dictionary<String, String> { ["true"] = "是", ["false"] = "否", ["1"] = "是", ["0"] = "否" },
+        };
+
+        Assert.False(ff.ToDictionary().ContainsKey("dataSource"));
+
+        // 可空布尔同样不回退
+        var nf = new FormField
+        {
+            Name = "Enable",
+            Type = typeof(Boolean?),
+            DataSourceMap = new Dictionary<String, String> { ["true"] = "是", ["false"] = "否" },
+        };
+
+        Assert.False(nf.ToDictionary().ContainsKey("dataSource"));
+    }
+
+    [Fact(DisplayName = "ToDictionary：布尔字段的显式委托仍优先（控制器主动配置的场景不受影响）")]
+    public void BooleanField_Delegate_StillWins()
+    {
+        var ff = new FormField
+        {
+            Name = "Kind",
+            Type = typeof(Boolean),
+            DataSource = _ => new Dictionary<Object, String> { [1] = "是", [0] = "否" },
+        };
+
+        var ds = ff.ToDictionary()["dataSource"] as IDictionary<String, String>;
+
+        Assert.NotNull(ds);
+        Assert.Equal("是", ds!["1"]);
+    }
+
+    [Fact(DisplayName = "ToDictionary：非布尔字段（Map 外键）仍回退物化字典")]
+    public void NonBooleanField_StillFallsBack()
+    {
+        foreach (var type in new[] { typeof(Int32), typeof(Int32?), typeof(Int64), typeof(String) })
+        {
+            var df = new FormField
+            {
+                Name = "DepartmentID",
+                Type = type,
+                DataSourceMap = new Dictionary<String, String> { ["1"] = "总公司" },
+            };
+
+            Assert.True(df.ToDictionary().ContainsKey("dataSource"), $"{type.Name} 应回退物化字典");
+        }
+    }
 }

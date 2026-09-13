@@ -202,8 +202,10 @@ public class DataField : IDictionarySource
         if (!LovCode.IsNullOrEmpty()) dic["lovCode"] = LovCode;
 
         // 数据源。优先级：DataSource 委托（控制器显式配置，如角色组，每次新鲜）→ 枚举反射 → DataSourceMap
-        // （PrepareForApi / MapCandidateFiller 物化的 Map 外键候选与布尔字典）。前端按 dataSource 渲染本地下拉
+        // （PrepareForApi / MapCandidateFiller 物化的 Map 外键候选）。前端按 dataSource 渲染本地下拉
         // （对齐 MVC _Form_Item/_Form_Int）；漏掉 DataSourceMap 会让 Map 外键退化为数字输入框
+        var underlyingType = Type == null ? null : System.Nullable.GetUnderlyingType(Type) ?? Type;
+        var isBooleanType = underlyingType == typeof(Boolean) || "Boolean".EqualIgnoreCase(TypeName);
         IDictionary ds = null;
         var fromDelegate = false;
         if (DataSource != null)
@@ -233,8 +235,10 @@ public class DataField : IDictionarySource
             if (eds.Count > 0) ds = eds;
         }
 
-        // Map 外键/布尔：委托与枚举都未产出时回退已物化字典，避免外键字段丢失候选
-        if ((ds == null || ds.Count == 0) && DataSourceMap != null && DataSourceMap.Count > 0) ds = DataSourceMap;
+        // Map 外键：委托与枚举都未产出时回退已物化字典，避免外键字段丢失候选。
+        // 布尔字段不回退：各皮肤按 typeName 渲染开关，dataSource 优先的皮肤（field-mapping / Cube.Vue）
+        // 会因字典存在而误判为下拉，导致开关变选择框
+        if ((ds == null || ds.Count == 0) && !isBooleanType && DataSourceMap != null && DataSourceMap.Count > 0) ds = DataSourceMap;
 
         if (ds != null && ds.Count > 0)
         {
