@@ -428,10 +428,13 @@ public class UserController : EntityController<User, UserModel>
         if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
         try
         {
+            String tenantError = null;
             if (ModelState.IsValid)
             {
                 result = _userService.Login(loginModel, HttpContext);
-                if (result != null && result.IsSuccess && result.Data != null && !result.Data.AccessToken.IsNullOrEmpty())
+                // 多租户校验：携带 X-Tenant 且开启多租户时，登录用户必须属于该租户，否则当作用户不存在
+                tenantError = HttpContext.ValidateLoginTenant(loginModel.Username);
+                if (result != null && result.IsSuccess && result.Data != null && !result.Data.AccessToken.IsNullOrEmpty() && tenantError == null)
                 {
                     if (IsJsonRequest)
                     {
@@ -458,7 +461,7 @@ public class UserController : EntityController<User, UserModel>
             }
 
             // 如果我们进行到这一步时某个地方出错，则重新显示表单
-            ModelState.AddModelError("username", "提供的用户名或密码不正确。");
+            ModelState.AddModelError("username", tenantError ?? "提供的用户名或密码不正确。");
         }
         catch (Exception ex)
         {

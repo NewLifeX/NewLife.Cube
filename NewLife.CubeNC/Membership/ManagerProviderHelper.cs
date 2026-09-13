@@ -18,6 +18,9 @@ namespace NewLife.Cube;
 /// <summary>管理提供者助手</summary>
 public static class ManagerProviderHelper
 {
+    /// <summary>登录失败统一文案。与 UserService.LoginByPassword 的用户名校验失败文案保持一致，避免泄露用户/租户存在性</summary>
+    private const String LoginFailedMessage = "提供的用户名或密码不正确。";
+
     /// <summary>设置当前用户</summary>
     /// <param name="provider">提供者</param>
     /// <param name="context">Http上下文，兼容NetCore</param>
@@ -945,6 +948,40 @@ public static class ManagerProviderHelper
         var key = $"TenantId-{SysConfig.Current.Name}";
         var str = req.Cookies[key];
         return str.IsNullOrEmpty() ? -1 : ResolveTenantById(str);
+    }
+
+    /// <summary>登录租户校验：携带 X-Tenant 请求头且开启多租户时，校验登录用户是否属于该租户。
+    /// 非成员返回错误信息（与用户名校验失败的文案一致，不泄露用户与租户的存在性）；校验通过返回 null。
+    /// 在登录成功（账密/验证码已验证）之后、颁发令牌之前调用</summary>
+    /// <param name="context">HTTP上下文</param>
+    /// <param name="username">登录用户名（用户名/邮箱/手机号）</param>
+    /// <returns>错误信息；null 表示校验通过</returns>
+    public static String ValidateLoginTenant(this HttpContext context, String username)
+    {
+        var req = context?.Request;
+        if (req == null) return null;
+
+        // 仅校验 X-Tenant 租户编码请求头；未携带不校验
+        var tenantStr = req.Headers["X-Tenant"].ToString();
+        if (tenantStr.IsNullOrEmpty()) return null;
+
+        // 未开启多租户不校验
+        var set = CubeSetting.Current;
+        if (!set.EnableTenant) return null;
+
+        // 按租户编码解析租户（存在且启用）；无效租户当作用户不存在，不泄露租户是否存在
+        var tenantId = ResolveTenantByCode(tenantStr);
+        if (tenantId < 0) return LoginFailedMessage;
+
+        // 定位登录用户（用户名/邮箱/手机，与 UserService.LoginByPassword 一致）；查不到交由登录流程返回同样的错误
+        var user = User.FindByName(username) ?? User.FindByMail(username) ?? User.FindByMobile(username);
+        if (user == null) return null;
+
+        // 用户不属于该租户，当作用户不存在
+        if (!TenantAccessPolicy.IsMember(tenantId, user))
+            return LoginFailedMessage;
+
+        return null;
     }
 
     /// <summary>按租户编码（Code）解析租户。X-Tenant 头专用，避免纯数字编码被误判为ID；多租户开启时校验存在且启用，无效返回-1</summary>

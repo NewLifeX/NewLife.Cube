@@ -374,6 +374,12 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         try
         {
             var loginResult = authEnhanced.Login(model, HttpContext);
+
+            // 多租户校验：携带 X-Tenant 且开启多租户时，登录用户必须属于该租户，否则当作用户不存在返回
+            var tenantError = HttpContext.ValidateLoginTenant(model.Username);
+            if (tenantError != null)
+                return res.ToFailApiResponse(tenantError);
+
             if (loginResult?.Data == null || loginResult.Data.AccessToken.IsNullOrEmpty())
                 return res.ToFailApiResponse(loginResult?.Message); //登录失败
 

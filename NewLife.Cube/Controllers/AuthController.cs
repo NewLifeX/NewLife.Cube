@@ -50,6 +50,12 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
         try
         {
             var loginResult = authEnhanced.Login(model, HttpContext);
+
+            // 多租户校验：携带 X-Tenant 且开启多租户时，登录用户必须属于该租户，否则当作用户不存在返回
+            var tenantError = HttpContext.ValidateLoginTenant(model.Username);
+            if (tenantError != null)
+                return res.ToFailApiResponse(tenantError);
+
             // MFA 拦截：账密通过但需要二步验证
             if (loginResult != null && !loginResult.MfaToken.IsNullOrEmpty())
                 return res.ToFailApiResponse($"mfa_required:{loginResult.MfaToken}");
