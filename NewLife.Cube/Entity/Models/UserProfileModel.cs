@@ -18,16 +18,16 @@ public partial class UserProfileModel
     public Int32 UserId { get; set; }
 
     /// <summary>布局。JSON：mode/siderCollapsed/siderWidth/showTabs/contentWidth</summary>
-    public String LayoutJson { get; set; }
+    public String? LayoutJson { get; set; }
 
     /// <summary>主题。JSON：appearance/primaryColor/radius/density/fontScale</summary>
-    public String ThemeJson { get; set; }
+    public String? ThemeJson { get; set; }
 
     /// <summary>工作台。JSON：defaultView/pageSize</summary>
-    public String WorkspaceJson { get; set; }
+    public String? WorkspaceJson { get; set; }
 
     /// <summary>首页工作台。JSON：version+widgets</summary>
-    public String HomeJson { get; set; }
+    public String? HomeJson { get; set; }
 
     /// <summary>版本。配置契约版本</summary>
     public Int32 Version { get; set; }
@@ -42,7 +42,7 @@ public partial class UserProfileModel
     public DateTime CreateTime { get; set; }
 
     /// <summary>创建地址</summary>
-    public String CreateIP { get; set; }
+    public String? CreateIP { get; set; }
 
     /// <summary>更新者</summary>
     public Int32 UpdateUserId { get; set; }
@@ -51,10 +51,10 @@ public partial class UserProfileModel
     public DateTime UpdateTime { get; set; }
 
     /// <summary>更新地址</summary>
-    public String UpdateIP { get; set; }
+    public String? UpdateIP { get; set; }
 
     /// <summary>备注</summary>
-    public String Remark { get; set; }
+    public String? Remark { get; set; }
     #endregion
 
     #region 拷贝

@@ -15,7 +15,7 @@ public partial class EntityCommentModel
     public Int32 Id { get; set; }
 
     /// <summary>分类。实体类型或业务类别</summary>
-    public String Category { get; set; }
+    public String? Category { get; set; }
 
     /// <summary>关联。业务记录主键</summary>
     public Int64 LinkId { get; set; }
@@ -30,13 +30,13 @@ public partial class EntityCommentModel
     public Int32 ReplyUserId { get; set; }
 
     /// <summary>回复对象名。被回复作者显示名</summary>
-    public String ReplyUser { get; set; }
+    public String? ReplyUser { get; set; }
 
     /// <summary>内容</summary>
-    public String Content { get; set; }
+    public String? Content { get; set; }
 
     /// <summary>创建人</summary>
-    public String CreateUser { get; set; }
+    public String? CreateUser { get; set; }
 
     /// <summary>创建者</summary>
     public Int32 CreateUserId { get; set; }
@@ -45,7 +45,7 @@ public partial class EntityCommentModel
     public DateTime CreateTime { get; set; }
 
     /// <summary>创建地址</summary>
-    public String CreateIP { get; set; }
+    public String? CreateIP { get; set; }
 
     /// <summary>更新者</summary>
     public Int32 UpdateUserId { get; set; }
@@ -54,7 +54,7 @@ public partial class EntityCommentModel
     public DateTime UpdateTime { get; set; }
 
     /// <summary>更新地址</summary>
-    public String UpdateIP { get; set; }
+    public String? UpdateIP { get; set; }
     #endregion
 
     #region 拷贝

@@ -18,43 +18,43 @@ public partial class ViewProfileModel
     public Int32 UserId { get; set; }
 
     /// <summary>实体路径。如 Admin/User</summary>
-    public String TypePath { get; set; }
+    public String? TypePath { get; set; }
 
     /// <summary>视图。table/tree/card/gantt</summary>
-    public String View { get; set; }
+    public String? View { get; set; }
 
     /// <summary>列布局。JSON 数组（与活跃命名视图同步）</summary>
-    public String ColumnsJson { get; set; }
+    public String? ColumnsJson { get; set; }
 
     /// <summary>命名视图集合。JSON 数组</summary>
-    public String ViewsJson { get; set; }
+    public String? ViewsJson { get; set; }
 
     /// <summary>当前激活的命名视图 Id</summary>
-    public String ActiveViewId { get; set; }
+    public String? ActiveViewId { get; set; }
 
     /// <summary>当前应用的预定义查询 Id（OSC-260830a1b2）：服务端持久化，跨浏览器/设备登录同一账号可恢复</summary>
-    public String ActiveQueryId { get; set; }
+    public String? ActiveQueryId { get; set; }
 
     /// <summary>甘特映射。JSON</summary>
-    public String GanttJson { get; set; }
+    public String? GanttJson { get; set; }
 
     /// <summary>卡片映射。JSON</summary>
-    public String CardJson { get; set; }
+    public String? CardJson { get; set; }
 
     /// <summary>筛选记忆。JSON</summary>
-    public String FiltersJson { get; set; }
+    public String? FiltersJson { get; set; }
 
     /// <summary>预定义查询。JSON</summary>
-    public String QueriesJson { get; set; }
+    public String? QueriesJson { get; set; }
 
     /// <summary>页面条数。每页显示记录数，0 表示未配置</summary>
     public Int32 PageSize { get; set; }
 
     /// <summary>表单布局。JSON：add/edit/detail 的字段顺序/显隐/分组折叠</summary>
-    public String FormJson { get; set; }
+    public String? FormJson { get; set; }
 
     /// <summary>页面仪表盘。JSON：version+widgets（实体级，不跟命名视图走）</summary>
-    public String DashboardJson { get; set; }
+    public String? DashboardJson { get; set; }
 
     /// <summary>版本。配置契约版本</summary>
     public Int32 Version { get; set; }
@@ -66,7 +66,7 @@ public partial class ViewProfileModel
     public DateTime CreateTime { get; set; }
 
     /// <summary>创建地址</summary>
-    public String CreateIP { get; set; }
+    public String? CreateIP { get; set; }
 
     /// <summary>更新者</summary>
     public Int32 UpdateUserId { get; set; }
@@ -75,10 +75,10 @@ public partial class ViewProfileModel
     public DateTime UpdateTime { get; set; }
 
     /// <summary>更新地址</summary>
-    public String UpdateIP { get; set; }
+    public String? UpdateIP { get; set; }
 
     /// <summary>备注</summary>
-    public String Remark { get; set; }
+    public String? Remark { get; set; }
     #endregion
 
     #region 拷贝
