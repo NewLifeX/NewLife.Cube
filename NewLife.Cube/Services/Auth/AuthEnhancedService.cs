@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using NewLife.Caching;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Common;
@@ -44,8 +44,33 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         var ip = httpContext.GetUserHost();
         if (_verifyCode.RequireCaptcha(1, ip, loginModel.Username, AuthHelper.GetDeviceId(httpContext)))
         {
+            if (loginModel.CaptchaId.IsNullOrEmpty())
+            {
+                // 需要验证码但未提交：生成并返回，前端据此展示验证码输入框
+                var c = _verifyCode.GenerateCaptcha();
+                return new ServiceResult<IToken>
+                {
+                    IsSuccess = false,
+                    Message = "请输入图形验证码",
+                    CaptchaRequired = true,
+                    CaptchaId = c.CaptchaId,
+                    CaptchaImage = c.Image,
+                };
+            }
+
             if (!_verifyCode.ValidateCaptcha(loginModel.CaptchaId, loginModel.CaptchaCode))
-                return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码错误或已过期，请刷新后重试" };
+            {
+                // 验证码错误或已过期（校验成功即失效，必须换新），附新验证码供前端刷新
+                var c = _verifyCode.GenerateCaptcha();
+                return new ServiceResult<IToken>
+                {
+                    IsSuccess = false,
+                    Message = "验证码错误或已过期，请重新输入",
+                    CaptchaRequired = true,
+                    CaptchaId = c.CaptchaId,
+                    CaptchaImage = c.Image,
+                };
+            }
         }
 
         switch (loginModel.Category)//登录方式

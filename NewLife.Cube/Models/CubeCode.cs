@@ -39,4 +39,9 @@ public enum CubeCode
     /// <remarks>程序异常</remarks>
     [Description("内部错误")]
     Exception = -5,
+
+    /// <summary>需要图形验证码：登录/注册/发码时要求输入图片验证码</summary>
+    /// <remarks>data 返回 { captchaRequired, captchaId, image, captchaUrl }，前端据此展示验证码输入</remarks>
+    [Description("需要图形验证码")]
+    CaptchaRequired = -6,
 }
