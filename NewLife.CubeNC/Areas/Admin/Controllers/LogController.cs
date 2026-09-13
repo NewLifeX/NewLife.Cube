@@ -10,7 +10,7 @@ using XLog = XCode.Membership.Log;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>审计日志控制器</summary>
-[DataPermission(null, "CreateUserID={#userId}")]
+// 行权改由 DataScope（OSC-2608273d95）：DataScopeHelper.GetFilter/CanAccess 按归属用户列 CreateUserID 过滤
 [DisplayName("审计日志")]
 [Description("系统内重要操作均记录日志，便于审计。任何人都不能删除、修改或伪造操作日志。")]
 [AdminArea]

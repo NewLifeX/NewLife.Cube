@@ -49,7 +49,7 @@ UserService.ClearExpire()  每60秒，清理20分钟不活跃会话
 
 **只写一条**（`UserId=0` 表示系统级广播），不按管理员数写 N 份副本。
 
-可见性由魔方数据权限天然实现：`NotificationRecordController` 的 `[DataPermission(null, "UserId={#userId}")]` 中，**系统角色（IsSystem）直接放行**（见 `ReadOnlyEntityController2.CreateWhere`），普通用户被 `UserId=当前用户` 过滤。因此：
+可见性由魔方数据权限天然实现：`NotificationRecord` 实现 `IUserScope`（归属列 `UserId`），`NotificationRecordController` 的行权交给接口层 DataScope（OSC-2608273d95）：**系统角色（IsSystem）直接放行**（见 `ReadOnlyEntityController2.GetDataScopeContext`/`DataScopeHelper.GetFilter`），普通用户被 `UserId=当前用户` 过滤。因此：
 
 - **UserId=0 的广播：只有系统管理员能看到**（普通用户不可见）；
 - 个人站内信（UserId=某用户）：仅本人可见。

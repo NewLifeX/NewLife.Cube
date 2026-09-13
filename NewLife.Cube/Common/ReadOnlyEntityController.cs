@@ -102,6 +102,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         }
         catch (Exception ex) { XTrace.WriteLine("列表流程覆盖跳过：{0}", ex.Message); }
 
+        // 字段级脱敏（OSC-2608273d95）：放在行计算与流程覆盖之后，避免派生钩子读到已遮蔽值；无敏感查看权限时敏感列置 ***
+        MaskSensitiveList(list);
+
         //return list.ToOkApiResponse().WithList(p); 
         return new ApiListResponse<TEntity>
         {
@@ -174,6 +177,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         // 验证数据权限
         Valid(entity, DataObjectMethodType.Select, false);
 
+        // 字段级脱敏（OSC-2608273d95）：无 ViewSensitive 权限且非本人时敏感列置 ***
+        MaskSensitiveFields(entity);
+
         // 流程单行覆盖（OSC-26090347f1）：__wfStatus/__wfInstanceId/__wfWritable（登录且启用时）
         try
         {
@@ -225,8 +231,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
         var list = PrepareFieldsForApi(OnGetFields(ViewKinds.List, null));
         // 全部可用列表字段（应用用户列配置前，供前端列设置面板使用）
-        var allList = OnGetFields(ViewKinds.List, null);
-        var addForm = PrepareMapViewFields(ViewKinds.AddForm);
+        var allList = OnGetFields(ViewKinds.List, null);        var addForm = PrepareMapViewFields(ViewKinds.AddForm);
         var editForm = PrepareMapViewFields(ViewKinds.EditForm);
         var detail = PrepareMapViewFields(ViewKinds.Detail);
         var search = PrepareMapViewFields(ViewKinds.Search);
@@ -340,11 +345,18 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     protected virtual List<DataField> PrepareFieldsForApi(List<DataField> fields)
     {
         if (fields == null) return fields;
+
+        // 敏感字段标记（OSC-2608273d95）：无 ViewSensitive 权限时标记，前端据此藏列；
+        // 序列化脱敏仍以后端 MaskSensitiveFields 为准，藏列不等于授权
+        var sensitive = GetSensitiveFieldNames();
+        var sensitiveSet = new HashSet<String>(sensitive, StringComparer.OrdinalIgnoreCase);
+
         foreach (var df in fields)
         {
             if (df == null) continue;
             df.PrepareForApi();
             ApplyRequired(df);
+            if (sensitiveSet.Count > 0 && !df.Name.IsNullOrEmpty() && sensitiveSet.Contains(df.Name)) df.Sensitive = true;
         }
         return fields;
     }
@@ -489,7 +501,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         // 准备需要输出的列（含计算/扩展字段），并合并实体扩展属性，对齐 MVC ExportExcel
         var fs = BuildExportFields(Factory.AllFields);
         var name = MakeExportFileName(".xlsx");
-        var list = ExportData();
+        var list = ExportDataMasked();
         var fields = GetExportFields(fs, list);
 
         var ms = new MemoryStream();
@@ -542,7 +554,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     protected virtual IActionResult OnExportZip()
     {
         var name = MakeExportFileName(".zip");
-        var list = ExportData();
+        var list = ExportDataMasked();
 
         var dic = new Dictionary<Type, IEnumerable<IEntity>>
         {
@@ -599,7 +611,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     protected virtual IActionResult OnExportCsv()
     {
         var name = MakeExportFileName(".csv");
-        var list = ExportData();
+        var list = ExportDataMasked();
 
         // Csv 使用数据库字段（不含计算字段），并合并实体扩展属性，对齐 MVC ExportCsv
         var fields = GetExportFields(Factory.Fields, list);
@@ -639,7 +651,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     protected virtual IActionResult OnExportJson()
     {
         var name = MakeExportFileName(".json");
-        var list = ExportData().ToList();
+        var list = ExportDataMasked().ToList();
 
         var json = list.ToJson(true);
         return new FileContentResult(json.GetBytes(), "application/json") { FileDownloadName = name };
@@ -651,7 +663,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     protected virtual IActionResult OnExportXml()
     {
         var name = MakeExportFileName(".xml");
-        var list = ExportData().ToList();
+        var list = ExportDataMasked().ToList();
 
         // 实体列表转 Xml（对齐 MVC OnExportXml：IEntity.ToXml / IList.ToXml），此前误用 ToJson 输出 JSON
         var xml = list.ToXml();

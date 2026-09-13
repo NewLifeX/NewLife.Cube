@@ -86,6 +86,11 @@ export interface FieldMeta {
   dataAction?: string;
   /** 后端是否给出 TypeName（合成 AddListField 为空；归一前判定，勿被 String 回落抹掉） */
   hasTypeName?: boolean;
+  /**
+   * 敏感字段（OSC-2608273d95）。后端 IFieldScope 命中且当前用户无 ViewSensitive 权限时为 true。
+   * 仅用于藏列，不作为授权依据；序列化脱敏以后端 Mask 为准。
+   */
+  sensitive?: boolean;
 }
 
 export interface SearchFieldMeta extends FieldMeta {

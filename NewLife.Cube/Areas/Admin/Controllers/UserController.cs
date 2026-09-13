@@ -24,7 +24,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 /// <param name="authEnhanced">增强认证服务</param>
 /// <param name="passwordService"></param>
 /// <param name="tenantContext">租户上下文</param>
-[DataPermission(null, "ID={#userId}")]
+// 行权改由 DataScope（OSC-2608273d95）：列表/详情/写入统一走 DataScopeHelper.GetFilter/CanAccess，避免「本部门/下级/自定义」被压成仅本人
 [DisplayName("用户")]
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
 [AdminArea]

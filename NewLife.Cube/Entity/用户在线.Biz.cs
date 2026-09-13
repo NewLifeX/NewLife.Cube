@@ -1,11 +1,12 @@
 using NewLife.Data;
 using XCode;
 using XCode.Configuration;
+using XCode.Membership;
 
 namespace NewLife.Cube.Entity;
 
 /// <summary>用户在线</summary>
-public partial class UserOnline : Entity<UserOnline>
+public partial class UserOnline : Entity<UserOnline>, IUserScope, IDataScopeFieldProvider
 {
     #region 对象操作
     static UserOnline()
@@ -166,5 +167,19 @@ public partial class UserOnline : Entity<UserOnline>
 
         SaveAsync(3_000);
     }
+    #endregion
+
+    #region 数据权限
+    /// <summary>数据权限用户字段。IUserScope 显式映射到 UserID 列</summary>
+    Int32 IUserScope.UserId { get => UserID; set => UserID = value; }
+
+    /// <summary>数据权限字段提供者。归属列 UserID；无部门/租户行权字段</summary>
+    FieldItem? IDataScopeFieldProvider.GetUserField() => _.UserID;
+
+    /// <inheritdoc />
+    FieldItem? IDataScopeFieldProvider.GetDepartmentField() => null;
+
+    /// <inheritdoc />
+    FieldItem? IDataScopeFieldProvider.GetTenantField() => null;
     #endregion
 }

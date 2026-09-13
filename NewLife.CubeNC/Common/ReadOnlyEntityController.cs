@@ -127,6 +127,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         ViewBag.SearchFields = OnGetFields(ViewKinds.Search, list);
         ViewBag.HasNext = hasNext;
 
+        // 字段级脱敏（OSC-2608273d95）：放在字段计算之后、输出之前，避免派生钩子读到已遮蔽值
+        MaskSensitiveList(list);
+
         // Json输出
         if (IsJsonRequest) return Json(0, null, list, new { page = p, hasNext });
 
@@ -145,6 +148,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
         // 验证数据权限
         Valid(entity, DataObjectMethodType.Select, false);
+
+        // 字段级脱敏（OSC-2608273d95）：无 ViewSensitive 权限且非本人时敏感列置 ***
+        MaskSensitiveFields(entity);
 
         // Json输出
         if (IsJsonRequest) return Json(0, null, entity);
@@ -207,6 +213,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             var list = SearchData(p, needCount, out var hasNext);
             ViewBag.HasNext = hasNext;
 
+            // 字段级脱敏（OSC-2608273d95）：令牌端点同样是数据出口
+            MaskSensitiveList(list);
+
             return View("List", list);
         }
         catch (Exception ex)
@@ -230,6 +239,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             // 需要总记录数来分页；海量数据可关闭，免查总数后仅提供上一页/下一页
             var needCount = PageSetting.EnableTotalCount;
             var list = SearchData(p, needCount, out var hasNext);
+
+            // 字段级脱敏（OSC-2608273d95）：令牌端点同样是数据出口
+            MaskSensitiveList(list);
 
             // Json输出
             return Json(0, null, list, new { issuer, page = p, hasNext });
@@ -323,6 +335,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
             var list = SearchData(p) as IList<TEntity>;
 
+            // 字段级脱敏（OSC-2608273d95）
+            MaskSensitiveList(list);
+
             var rs = new Root { Result = false, Data = list, Pager = p, Issuer = issuer };
 
             xml = rs.ToXml(null, false, false);
@@ -356,7 +371,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         {
             var issuer = ValidToken(token);
 
-            var list = SearchData(p);
+            var list = MaskSensitiveList(SearchData(p));
 
             return new CsvResult { Fields = GetFields(Factory.Fields, list), Data = list, ContentType = null };
         }
@@ -378,7 +393,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         {
             var issuer = ValidToken(token);
 
-            var list = SearchData(p);
+            var list = MaskSensitiveList(SearchData(p));
 
             // 准备需要输出的列
             var fs = GetExportFields();
@@ -415,7 +430,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
     /// <summary>要导出Xml的对象</summary>
     /// <returns></returns>
-    protected virtual Object OnExportXml() => ExportData();
+    protected virtual Object OnExportXml() => ExportDataMasked();
 
     /// <summary>准备导出列：过滤 Object/XmlIgnore 类型，基本属性与扩展属性对调顺序</summary>
     /// <param name="forTemplate">是否导出模板。true 时隐藏审计/启用等模板无用字段且要求有描述</param>
@@ -510,7 +525,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
     /// <summary>要导出Json的对象</summary>
     /// <returns></returns>
-    protected virtual Object OnExportJson() => ExportData().ToList();
+    protected virtual Object OnExportJson() => ExportDataMasked().ToList();
 
     /// <summary>导出Excel</summary>
     /// <returns></returns>
@@ -523,7 +538,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
         var name = GetAttachment(null, ".xlsx", true);
 
-        var list = ExportData();
+        var list = ExportDataMasked();
 
         return new ExcelResult { Fields = GetFields(fs, list), Data = list, AttachmentName = name, HttpContext = HttpContext };
     }
@@ -539,7 +554,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
         var name = GetAttachment(null, ".xlsx", true);
 
-        var list = ExportData(1);
+        var list = ExportDataMasked(1);
 
         return new ExcelResult { Fields = GetFields(fs, list), Data = list, AttachmentName = name, HttpContext = HttpContext };
     }
@@ -553,7 +568,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         var name = GetType().Name.TrimSuffix("Controller");
         name = GetAttachment(name, ".csv", true);
 
-        var list = ExportData();
+        var list = ExportDataMasked();
 
         return new CsvResult { Fields = GetFields(Factory.Fields, list), Data = list, AttachmentName = name };
     }
@@ -588,7 +603,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         var name = GetType().Name.TrimSuffix("Controller");
         var fileName = GetAttachment(name, ".zip", true);
 
-        var list = ExportData();
+        var list = ExportDataMasked();
 
         var dic = new Dictionary<Type, IEnumerable<IEntity>>
         {
@@ -1034,11 +1049,18 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     protected virtual IList<DataField> PrepareFieldsForApi(IList<DataField> fields)
     {
         if (fields == null) return fields;
+
+        // 敏感字段标记（OSC-2608273d95）：无 ViewSensitive 权限时标记，前端据此藏列；
+        // 序列化脱敏仍以后端 MaskSensitiveFields 为准，藏列不等于授权
+        var sensitive = GetSensitiveFieldNames();
+        var sensitiveSet = new HashSet<String>(sensitive, StringComparer.OrdinalIgnoreCase);
+
         foreach (var df in fields)
         {
             if (df == null) continue;
             df.PrepareForApi();
             ApplyRequired(df);
+            if (sensitiveSet.Count > 0 && !df.Name.IsNullOrEmpty() && sensitiveSet.Contains(df.Name)) df.Sensitive = true;
         }
         return fields;
     }

@@ -8,7 +8,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>用户在线控制器</summary>
-[DataPermission(null, "UserID={#userId}")]
+// 行权改由 DataScope（OSC-2608273d95）：UserOnline 实现 IUserScope，归属列 UserID
 [AdminArea]
 [Menu(0, false)]
 public class UserOnlineController : EntityController<UserOnline, UserOnlineModel>

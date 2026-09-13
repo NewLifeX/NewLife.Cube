@@ -7,7 +7,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>用户链接控制器</summary>
-[DataPermission(null, "UserID={#userId}")]
+// 行权改由 DataScope（OSC-2608273d95）：UserConnect 实现 IUserScope，归属列 UserID；SSO 查重走实体层不过滤
 [DisplayName("用户链接")]
 [Description("第三方登录信息")]
 [AdminArea]

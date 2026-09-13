@@ -102,6 +102,10 @@ public class DataField : IDictionarySource
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String Authority { get; set; }
 
+    /// <summary>敏感字段。实体 IFieldScope.GetSensitiveFields 命中且当前用户未获 ViewSensitive 权限时为 true，供前端藏列</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public Boolean Sensitive { get; set; }
+
     /// <summary>扩展字段。用户自由发挥</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String Extended1 { get; set; }

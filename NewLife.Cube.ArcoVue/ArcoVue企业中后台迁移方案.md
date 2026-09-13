@@ -750,6 +750,8 @@ DefaultList 固定容器
 ### 8.6 企业级权限、计算列与审计合规（后端增强）
 
 > 2026-08-30 对照：`NewLife.Cube` WebAPI、`NewLife.XCode` Membership、`NewLife.X` `SystemJson`/`DataMemberResolver`、`Doc/PERM-*.md` / `DATA-字段元数据.md`。权威代码优先于 Doc（`PERM-数据权限.md` 仍写三字段 `DataPermission` 构造器，与现码不符）。
+>
+> 2026-09-12 更新：行权与脱敏已按 **OSC-2608273d95** 落地（见 8.6.1b）；下面 8.6.1 的「缺口」列保留当时实测记录，供对照。
 
 企业中后台审计合规要求：**同一套策略**覆盖列表、详情、导出、导入、PATCH、Widget 查询、值集反查；藏列与筛选不是安全边界。皮肤只消费裁剪后的 GetPage / 行 JSON。
 
@@ -768,9 +770,9 @@ DefaultList 固定容器
 |----|------|------|
 | 操作 | `EntityAuthorize` + 角色菜单位 | 不覆盖「能看哪些列」 |
 | 租户 | `CreateWhere` + TenantInterceptor | 与行权 AND 已具备；无租户上下文 fail-closed |
-| 行 | `DataPermission(systemRoles, expression)` + `FindData` 的 `builder.Eval` | **忽略** `Role.DataScope`。`DataScopeMiddleware` 只灌 `DataScopeContext`，列表不消费。OSC-2608273d95 仍 Draft |
+| 行 | `DataPermission(systemRoles, expression)` + `FindData` 的 `builder.Eval` | **忽略** `Role.DataScope`。`DataScopeMiddleware` 只灌 `DataScopeContext`，列表不消费。OSC-2608273d95 仍 Draft（↓ 8.6.1b 已交付） |
 | 行（XCode） | `GetFilter` / `CanAccess` / `DataScopeInterceptor.OnQuery` | ① `Role.Valid` 把 `DataScope==0`（全部）改写成「本部门」；② `OnValid` catch 后 **return true**（越权仍保存）；③ User/Department/Log **未** `Add<DataScopeInterceptor>()`（User 已有接口） |
-| 字段脱敏 | `IFieldScope.GetSensitiveFields` + `ViewSensitive` | 未接到 Index/Detail/Export；GetPage 无 `sensitive` |
+| 字段脱敏 | `IFieldScope.GetSensitiveFields` + `ViewSensitive` | 未接到 Index/Detail/Export；GetPage 无 `sensitive`（↓ 8.6.1b 已交付） |
 | 字段 ACL | `DataField.Authority` 序列化但 Fill 不赋值、无人消费 | 角色看不见薪资只能 `RemoveField`（全局）或前端藏列 |
 | 元数据 | GetPage / GetFields **`[AllowAnonymous]`** | 未登录可读字段名、类型、LOV 码、枚举字典；做列权限时必须按用户裁剪 |
 | 旁路 | `ExportFile` 用 `Factory.AllFields`；`LovController.FetchEntityList` 直调 `fact.FindAll` | 不走 GetPage 分区、不走 `SearchData`/`CreateWhere`；实体未挂拦截器则无行权 |
@@ -782,6 +784,34 @@ DefaultList 固定容器
 2. 租户 Where 与行权 **AND**；`logic=any` 不得放大 `CreateWhere`。
 3. 不把 `DataPermission` 表达式下发浏览器。
 4. 字段矩阵另号；不要把 OSC-2608273d95 的 `IFieldScope` 脱敏当成列 ACL。
+
+#### 8.6.1b 已交付：四档行权与控件脱敏（OSC-2608273d95，2026-09-12）
+
+**策略**：不改 XCode 仓库、不给实体挂 `DataScopeInterceptor`、不写 `DataScopeContext.Current`；行权在接口层显式构造上下文后调用 XCode 现成 API。
+
+```
+菜单 PermissionFlags
+  → 租户 CreateWhere（不变）
+  → 行权：GetDataScopeContext()（真实用户，不写 Current）
+        列表/导出/聚合：DataScopeHelper.GetFilter AND 进 SearchData.p.State
+        详情/写入：DataScopeHelper.CanAccess（FindData 越权拒；ValidPermission 新增放行）
+  → 字段：GetPage DataField.sensitive（真实 ctx 无 ViewSensitive 时标记）
+        列表/详情/导出返回前 FieldScopeHelper.MaskSensitiveFields → ***
+  → 前端：rejectSensitiveColumns 藏列（藏列 ≠ 授权）；角色表单数据范围=自定义 才显示「数据部门」
+```
+
+| 项 | 结论 |
+|----|------|
+| 覆盖实体接口 | User（`IDataScope`）；UserToken / UserOnline / UserConnect / OAuthLog / NotificationRecord → `IUserScope` + `IDataScopeFieldProvider` |
+| 拆除特性 | User / Log / UserToken / UserOnline / UserConnect / OAuthLog（双栈）+ CubeNC NotificationRecord；Department 无特性 |
+| 保留特性 | Department（`ManagerID`）、Parameter、Attachment、PrincipalAgent（无法用归属接口表达） |
+| 实体层 | 仍不承担行权；`DecouplingTests` 前两条守护不变 |
+| 测试 | 后端 `DataScopeRowPermissionTests` / `DataPermissionArchitectureTests` / `DataScopeDecouplingTests`；前端 Vitest `dataScopeForm` / `listColumns` / `iamGuards` |
+
+**契约补充（叠加 8.6.1 四条）**：
+5. `GetDataScopeContext()` 不得写 `DataScopeContext.Current`；宿主系统态继续休眠。
+6. 行权表达式解析失败时 **保留行权**、放弃 `viewFilter`（fail-closed）。
+7. 前端藏列/筛选不改变服务端行集与脱敏结果。
 
 #### 8.6.2 计算列能否经 GetPage 给前端
 

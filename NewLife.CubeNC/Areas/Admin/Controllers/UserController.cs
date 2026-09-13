@@ -26,7 +26,7 @@ using static XCode.Membership.User;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>用户控制器</summary>
-[DataPermission(null, "ID={#userId}")]
+// 行权改由 DataScope（OSC-2608273d95）：列表/详情/写入统一走 DataScopeHelper.GetFilter/CanAccess，避免「本部门/下级/自定义」被压成仅本人
 [DisplayName("用户")]
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
 [AdminArea]
@@ -949,6 +949,10 @@ public class UserController : EntityController<User, UserModel>
     {
         // 导出用户时，附带导出所属角色和部门等信息
         // （仅用于演示，不具备实际业务意义）
+
+        // 行权（OSC-2608273d95）：附加数据集是旁路（不走 SearchData 行集），而 UserToken 是共享端点凭据，
+        // 泄露等同伪造任意用户身份；因此仅系统角色附带，非系统角色只导出主数据集（其可观用户行）。
+        if (!IsSystemUser()) return;
 
         var p = page;
         var roleIds = p["roleIds"].SplitAsInt();

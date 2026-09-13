@@ -584,6 +584,8 @@ public class OrderController : EntityController<Order>
 ```
 
 > 完整机制（表达式语法、生效范围、宿主系统态声明与架构边界）见 [数据权限](PERM-数据权限.md)。
+>
+> 实体已实现 `IUserScope`/`IDataScope`/`IDepartmentScope` 时无需写该特性：角色 `DataScope` 四档由接口层自动接管（OSC-2608273d95）。
 
 ---
 

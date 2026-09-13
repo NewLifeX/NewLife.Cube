@@ -173,7 +173,7 @@ WebAPI `RoleController` 对齐 CubeNC：`AddFormFields`/`EditFormFields` 的 `Da
 | 文件 | 改动 | 保留 |
 | --- | --- | --- |
 | `web/src/core/utils/dataScopeForm.ts`（新建） | `isCustomDataScope(v)`：4 或 `'自定义'`；`shouldShowDataDepartmentIds(model)` | 不在 vue 写分支 |
-| Role 表单字段显隐 | DefaultForm / FieldInput：`Admin/Role` + 字段 DataDepartmentIds 且非自定义 → 不渲染 | 不改 Permission 树 |
+| Role 表单字段显隐 | `DefaultForm` / `FieldInput`：`Admin/Role` + 字段 DataDepartmentIds 且非自定义 → 不渲染（**实际接入点**：`useFormContent.visibleFields` 一处 filter，判定在 `dataScopeForm.ts`，`.vue` 零分支） | 不改 Permission 树 |
 | `iamGuards.ts` | `shouldShowSelfOnlyUserAlert`：增加「仅当可判定为仅本人」：`rows.length===1 && total∈{0,1,NaN} && id==自己` **保持**；本部门多人时自然不触发。文案不变 | 不根据角色名显示 |
 | 列表列 | 字段 `sensitive===true` 不进可见列（纯函数 `rejectSensitiveColumns`） | 不把藏列当授权 |
 | `*.spec.ts` | 覆盖显隐与 sensitive | |

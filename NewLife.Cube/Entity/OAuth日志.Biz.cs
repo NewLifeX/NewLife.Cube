@@ -4,13 +4,14 @@ using System.Xml.Serialization;
 using NewLife.Data;
 using XCode;
 using XCode.Cache;
+using XCode.Configuration;
 using XCode.Exceptions;
 using XCode.Membership;
 
 namespace NewLife.Cube.Entity;
 
 /// <summary>OAuth日志。用于记录OAuth客户端请求，同时Id作为state，避免向OAuthServer泄漏本机Url</summary>
-public partial class OAuthLog : Entity<OAuthLog>
+public partial class OAuthLog : Entity<OAuthLog>, IUserScope, IDataScopeFieldProvider
 {
     #region 对象操作
     static OAuthLog()
@@ -134,5 +135,16 @@ public partial class OAuthLog : Entity<OAuthLog>
         }
         return rs;
     }
+    #endregion
+
+    #region 数据权限
+    /// <summary>数据权限字段提供者。归属列 UserId（属性名与 IUserScope.UserId 一致，隐式实现）；无部门/租户行权字段</summary>
+    FieldItem? IDataScopeFieldProvider.GetUserField() => _.UserId;
+
+    /// <inheritdoc />
+    FieldItem? IDataScopeFieldProvider.GetDepartmentField() => null;
+
+    /// <inheritdoc />
+    FieldItem? IDataScopeFieldProvider.GetTenantField() => null;
     #endregion
 }

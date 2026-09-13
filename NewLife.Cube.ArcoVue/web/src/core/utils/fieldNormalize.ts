@@ -42,6 +42,12 @@ function pickDescription(field: DataField & Record<string, unknown>): string | u
   return t || undefined;
 }
 
+/** 敏感字段标记（OSC-2608273d95）：后端 GetPage 下发 sensitive，兼容 PascalCase */
+function pickSensitive(field: DataField & Record<string, unknown>): boolean | undefined {
+  const raw = field.sensitive ?? field.Sensitive;
+  return raw === true || raw === 1 || raw === '1' || raw === 'true' ? true : undefined;
+}
+
 /** DataField → FieldMeta（兼容后端 lovCode / dataSourceMap / multiple / PascalCase） */
 export function toFieldMeta(field: DataField): FieldMeta {
   const ext = field as DataField & {
@@ -96,6 +102,7 @@ export function toFieldMeta(field: DataField): FieldMeta {
     target: field.target,
     dataAction,
     hasTypeName,
+    sensitive: pickSensitive(ext as DataField & Record<string, unknown>),
   };
 
   // Int32 + description 明显键值对 → 补齐 dataSource，供 resolveControl 渲染下拉

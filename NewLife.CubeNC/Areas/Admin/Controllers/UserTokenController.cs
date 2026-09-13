@@ -8,7 +8,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>用户令牌控制器</summary>
-[DataPermission(null, "UserID={#userId}")]
+// 行权改由 DataScope（OSC-2608273d95）：UserToken 实现 IUserScope，归属列 UserID
 [DisplayName("用户令牌")]
 [Description("授权指定用户访问接口数据，支持有效期")]
 [AdminArea]
@@ -69,6 +69,7 @@ public class UserTokenController : EntityController<UserToken, UserTokenModel>
             entity.UserID = user.ID;
         }
 
-        return entity.UserID == user.ID;
+        // 行权（OSC-2608273d95）：DataScope 四档统一校验（纯 IUserScope 实体退化为本人）；系统角色由 base 内系统态放行
+        return base.ValidPermission(entity, type, post);
     }
 }

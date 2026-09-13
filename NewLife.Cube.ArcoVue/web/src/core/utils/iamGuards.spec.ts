@@ -86,4 +86,29 @@ describe('shouldShowSelfOnlyUserAlert', () => {
       }),
     ).toBe(false);
   });
+
+  // OSC-2608273d95：行权改为 DataScope 四档后，本部门角色能看到同事，不得再提示「仅自己」
+  it('hides when department scope shows colleagues', () => {
+    expect(
+      shouldShowSelfOnlyUserAlert({
+        typePath: 'Admin/User',
+        isSystemUser: false,
+        total: 3,
+        rows: [{ id: 8 }, { id: 9 }, { id: 10 }],
+        currentUserId: 8,
+      }),
+    ).toBe(false);
+  });
+
+  it('shows for self-only scope even when total is unknown', () => {
+    expect(
+      shouldShowSelfOnlyUserAlert({
+        typePath: 'Admin/User',
+        isSystemUser: false,
+        total: 0,
+        rows: [{ id: 8 }],
+        currentUserId: 8,
+      }),
+    ).toBe(true);
+  });
 });

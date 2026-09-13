@@ -3,6 +3,7 @@ import type { FieldMeta } from '@/core/types/field';
 import { isAuditField, isFullWidthControl, isTenantField, resolveControl } from '@/core/utils/fieldControl';
 import { isIamPermissionFullWidth } from '@/core/utils/rolePermission';
 import { isSystemRoleFlagLocked, isSystemRoleNameLocked } from '@/core/utils/iamGuards';
+import { shouldShowDataScopeField } from '@/core/utils/dataScopeForm';
 import { applyFormLayout, groupFieldsByCategory } from '@/core/utils/fieldGroups';
 import type { FormLayout } from '@/core/utils/viewProfile';
 import { isFieldRequired } from '@/core/utils/submitPayload';
@@ -35,6 +36,10 @@ export function useFormContent(props: FormContentProps) {
     if (!tenantStore.enableTenant) {
       list = list.filter((f) => !isTenantField(f));
     }
+    // 数据部门（DataDepartmentIds）仅数据范围=自定义时显示（OSC-2608273d95，判定逻辑在 core/utils）
+    list = list.filter((f) =>
+      shouldShowDataScopeField({ typePath: props.typePath, model: props.model, fieldName: f.name }),
+    );
     if (props.mode === 'add') {
       return list.filter((f) => !f.primaryKey && !f.readOnly);
     }

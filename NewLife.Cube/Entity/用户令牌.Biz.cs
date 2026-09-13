@@ -5,12 +5,13 @@ using System.Web.Script.Serialization;
 using System.Xml.Serialization;
 using NewLife.Web;
 using XCode;
+using XCode.Configuration;
 using XCode.Membership;
 
 namespace NewLife.Cube.Entity
 {
     /// <summary>用户令牌。授权其他人直接拥有指定用户的身份，支持有效期，支持数据接口</summary>
-    public partial class UserToken : Entity<UserToken>
+    public partial class UserToken : Entity<UserToken>, IUserScope, IDataScopeFieldProvider
     {
         #region 对象操作
         static UserToken()
@@ -177,6 +178,20 @@ namespace NewLife.Cube.Entity
 
             return true;
         }
+        #endregion
+
+        #region 数据权限
+        /// <summary>数据权限用户字段。IUserScope 显式映射到 UserID 列</summary>
+        Int32 IUserScope.UserId { get => UserID; set => UserID = value; }
+
+        /// <summary>数据权限字段提供者。归属列 UserID；无部门/租户行权字段</summary>
+        FieldItem? IDataScopeFieldProvider.GetUserField() => _.UserID;
+
+        /// <inheritdoc />
+        FieldItem? IDataScopeFieldProvider.GetDepartmentField() => null;
+
+        /// <inheritdoc />
+        FieldItem? IDataScopeFieldProvider.GetTenantField() => null;
         #endregion
     }
 }

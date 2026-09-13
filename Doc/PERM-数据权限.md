@@ -31,12 +31,17 @@
 ### 基本用法
 
 ```csharp
-[DataPermission(null, "UserID={#userId}")]
-public class UserTokenController : EntityController<UserToken, UserTokenModel>
+// 部门页：归管人是负责人，无归属接口时用表达式特例
+[DataPermission(null, "ManagerID={#userId}")]
+public class DepartmentController : EntityController<Department>
 {
     // 列表、导出、详情、编辑、删除等动作统一按表达式过滤
 }
 ```
+
+> 上面是**表达式特例**写法（Parameter / Attachment / PrincipalAgent 同类）。
+> 实体已实现归属接口（`IUserScope`/`IDataScope`/`IDepartmentScope`）时**不要**再写该特性：
+> 如 `UserToken`（归属列 `UserID`）与 `NotificationRecord`，角色 `DataScope` 四档由接口层自动接管（OSC-2608273d95，见 9.4「DataScope 四档的接口层接线」）。
 
 ### 特性定义
 
@@ -109,7 +114,7 @@ XCode 数据权限拦截器在上下文缺失时会用 `ManageProvider.User` 兜
 
 ### 在魔方中的定位
 
-- 魔方页面的行级过滤统一由控制器 `[DataPermission]` 特性表达，角色/菜单数据范围不再隐式作用于页面
+- 魔方页面的行级过滤在接口层执行：实体实现了数据权限接口时由 DataScope 四档统一接管；仅表达式能表达的特例（部门、附件、参数、委托代理）继续由控制器 `[DataPermission]` 特性表达（OSC-2608273d95）
 - 数据范围能力保留在 XCode，可在业务代码中显式使用：
 
 ```csharp
@@ -123,13 +128,29 @@ return Order.FindAll(exp, page);
 if (!DataScopeHelper.CanAccess(order)) throw new UnauthorizedAccessException();
 ```
 
+### DataScope 四档的接口层接线（OSC-2608273d95）
+
+角色/菜单的 `DataScope` 四档（仅本人 / 本部门 / 本部门及下级 / 自定义 / 全部）在控制器层显式生效，判定 API 全部来自 XCode，魔方不重复实现：
+
+| 环节 | 实现 | 说明 |
+|------|------|------|
+| 上下文 | `GetDataScopeContext()` | `DataScopeContext.Create(当前用户)`，按请求缓存于 `HttpContext.Items`；**不写 `DataScopeContext.Current`**（宿主系统态必须保持休眠） |
+| 列表 / 导出 | `DataScopeHelper.GetFilter(Factory, ctx)` AND 进 `SearchData` 的 `p.State` | `logic=any` 只 OR 前端筛选，不得放大行权；表达式解析失败时保留行权、放弃 `viewFilter` |
+| 聚合 / 实体部件 | `WidgetQueryService` 追加同一 `GetFilter` | 与页面列表同一助手 |
+| 详情 / 写入 | `DataScopeHelper.CanAccess(entity, ctx)` | `FindData` 越权抛「非法访问数据」；`ValidPermission` 除新增外与列表同一判定（新增归属由保存链路赋值） |
+| 敏感字段 | `IFieldScope.GetSensitiveFields()` + `FieldScopeHelper.MaskSensitiveFields` | 列表/详情/导出返回前遮蔽；角色未授 `ViewSensitive` 且非本人时置 `***`；`DataField.Sensitive` 供前端藏列，**藏列不等于授权** |
+
+实体只需实现 `IUserScope`（或 `IDataScope` / `IDepartmentScope`）声明归属列，字段名非默认时另实现 `IDataScopeFieldProvider`；**不得**注册 `DataScopeInterceptor`（实体层守护见 `DataScopeDecouplingTests`）。
+
 ---
 
 ## 9.5 数据权限配置与使用
 
 ### 给页面新增行级过滤
 
-按页面语义选择表达式（`[DataPermission(SystemRoles, Expression)]`）：
+实体已实现 `IUserScope` / `IDataScope` / `IDepartmentScope` 时，**无需写特性**：接口层按角色数据范围自动接管（登录即可用，支持四档切换）。
+
+仅在行归属语义无法用接口表达时，才按页面语义选择表达式（`[DataPermission(SystemRoles, Expression)]`）：
 
 | 场景 | 表达式示例 |
 |------|-----------|
@@ -173,7 +194,7 @@ protected override Department FindData(Object key)
 | 层 | 是否承担数据权限 | 说明 |
 |----|------------------|------|
 | XCode 实体层 | ❌ | 纯数据访问；宿主以系统身份运行，拦截器不参与行过滤 |
-| 魔方控制器（接口层） | ✅ | `[DataPermission]` 特性 + `SearchData`/`FindData` 管道，唯一执行点 |
+| 魔方控制器（接口层） | ✅ | DataScope 四档（`DataScopeHelper.GetFilter`/`CanAccess`）+ `[DataPermission]` 特性，经 `SearchData`/`FindData`/`ValidPermission` 管道，唯一执行点 |
 | 业务代码（SSO/服务/任务） | ❌ | 直接操作任意实体，不受数据权限影响 |
 | 多租户 | — | 独立链路（`TenantContext` + `ITenantScope`），不受本章调整影响 |
 
@@ -181,9 +202,12 @@ protected override Department FindData(Object key)
 
 早期曾把数据权限下沉到实体层（实体实现 `IUserScope` 并注册 `DataScopeInterceptor`，全宿主自动过滤），带来三类问题：业务代码被隐式收窄（SSO 绑定需要临时提升数据范围）、同字段条件多次叠加、菜单数据范围配置引发全站失效事故。现已回退，数据权限回归接口层。
 
+**OSC-2608273d95 补充**：实体层不承担行权，但鼓励实体实现 `IUserScope`/`IDataScope`/`IDepartmentScope` 声明归属列——接口层借这些接口解析归属，四档数据范围由服务端统一执行；角色表单仅在数据范围为「自定义」时显示「数据部门」。
+
 **下游应用迁移**：
 
-- 依赖实体级过滤的页面 → 在对应控制器标注 `[DataPermission]`（表达式见 9.5）
+- 需要按角色数据范围过滤的页面 → 优先让实体实现 `IUserScope`/`IDataScope`/`IDepartmentScope`（字段名非默认时另实现 `IDataScopeFieldProvider`）
+- 行归属语义无法用归属接口表达时 → 才在对应控制器标注 `[DataPermission]`（表达式见 9.5）
 - 需要在业务代码中按用户视野过滤 → 显式调用 `DataScopeHelper.ApplyScope` / `CanAccess`（见 9.4）
 - 不再需要任何"临时提升数据范围"的代码（原 `DataScopeContext.Current = ...` 补丁已删除）
 

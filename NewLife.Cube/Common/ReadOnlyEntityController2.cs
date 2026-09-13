@@ -138,13 +138,17 @@ public partial class ReadOnlyEntityController<TEntity>
         if (narrowedDays > 0)
             Response.Headers["X-Cube-Filter-Narrowed"] = $"{narrowedDays}d";
 
-        if (viewExp != null || winExp != null)
+        // 行权（OSC-2608273d95）：DataScope 四档由接口层显式合并；实体层拦截器仍由宿主系统态休眠
+        var dataScope = GetDataScopeExpression();
+
+        if (dataScope != null || viewExp != null || winExp != null)
         {
             // WhereBuilder.GetExpression() 对含常量/占位符无法解析的表达式（如多租户 fail-closed "1=0"）会抛异常，
-            // 此时放弃 viewFilter 下推（State 保持原 WhereBuilder，FindAll 仍按既有路径消费），前端 matchesViewFilter 兜底，不 500
+            // 此时放弃 viewFilter 下推（前端 matchesViewFilter 兜底，不 500）；无 builder 时行权表达式仍单独保留。
             try
             {
-                var exp = viewExp;
+                var exp = dataScope;
+                if (viewExp != null) exp = exp == null ? viewExp : exp & viewExp;
                 if (winExp != null) exp = exp == null ? winExp : exp & winExp;
                 if (builder != null)
                 {
@@ -156,9 +160,16 @@ public partial class ReadOnlyEntityController<TEntity>
                     p.State = exp;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                if (builder == null) p.State = null;
+                // builder 自身无法解析时，XCode 侧同样无法用它构造 WHERE；此处保持 WhereBuilder 原样（租户/特性过滤语义不变），
+                // 行权不再叠加——与本变更新增前行为一致。
+                // 不得改写为「只保留 dataScope」：那会丢掉租户过滤，造成跨租户越权，风险高于行权缺失。
+                // 该残留已在 tasks.md 收尾门禁记录中登记。
+                if (builder == null)
+                    p.State = dataScope;
+                else
+                    XTrace.WriteLine("[DataScope] 行权表达式合并跳过（WhereBuilder 解析失败）：{0} {1}", Factory.EntityType.Name, ex.Message);
             }
         }
 
@@ -280,6 +291,9 @@ public partial class ReadOnlyEntityController<TEntity>
             // 数据权限
             var builder = CreateWhere();
             if (builder != null && !builder.Eval(entity)) throw new InvalidOperationException($"非法访问数据[{key}]");
+
+            // 行权（OSC-2608273d95）：详情与列表同一套 DataScope 范围
+            if (!CanAccess(entity)) throw new InvalidOperationException($"非法访问数据[{key}]");
         }
 
         return entity;
@@ -632,6 +646,50 @@ public partial class ReadOnlyEntityController<TEntity>
     #endregion
     #endregion
 
+    #region 数据权限（OSC-2608273d95）
+    /// <summary>本请求的数据范围上下文。由当前登录用户构造，并按请求缓存</summary>
+    /// <remarks>
+    /// 合并后架构：实体层以系统身份运行（DataScopeMiddleware 注入宿主系统态使拦截器休眠），行权统一由接口层显式执行。
+    /// 此处只构造「真实用户」上下文供 GetFilter/CanAccess/MaskSensitiveFields 使用，
+    /// <b>不写入</b> DataScopeContext.Current，避免唤醒实体层拦截器导致业务代码被隐式收窄。
+    /// </remarks>
+    /// <returns>数据范围上下文；未登录返回 null（行权不介入）</returns>
+    protected virtual DataScopeContext? GetDataScopeContext()
+    {
+        if (HttpContext?.Items["DataScopeContext"] is DataScopeContext cached) return cached;
+
+        var user = HttpContext?.Items["CurrentUser"] as IUser ?? ManageProvider.User;
+        if (user == null) return null;
+
+        var ctx = DataScopeContext.Create(user);
+        if (ctx != null && HttpContext != null) HttpContext.Items["DataScopeContext"] = ctx;
+        return ctx;
+    }
+
+    /// <summary>行权过滤表达式。目标实体未实现 IDataScope/IUserScope/IDepartmentScope 时返回 null（行权不介入）</summary>
+    /// <returns>行权表达式；无接口实体、未登录、系统态或全部范围均返回 null</returns>
+    protected virtual Expression? GetDataScopeExpression() => DataScopeHelper.GetFilter(Factory, GetDataScopeContext());
+
+    /// <summary>实体是否在当前用户数据范围内。详情/写入/删除与列表同一套判定</summary>
+    /// <param name="entity">实体对象</param>
+    /// <returns>true 表示可访问；实体为空、无上下文或无归属接口时按可访问处理（行权不介入）</returns>
+    protected virtual Boolean CanAccess(TEntity entity)
+    {
+        if (entity == null) return false;
+
+        var ctx = GetDataScopeContext();
+        if (ctx == null) return true;
+
+        return entity switch
+        {
+            IDataScope ds => DataScopeHelper.CanAccess(ds, ctx),
+            IUserScope us => DataScopeHelper.CanAccess(us, ctx),
+            IDepartmentScope dept => DataScopeHelper.CanAccess(dept, ctx),
+            _ => true,
+        };
+    }
+    #endregion
+
     #region 实体操作重载
     /// <summary>验证实体对象</summary>
     /// <param name="entity">实体对象</param>
@@ -695,8 +753,25 @@ public partial class ReadOnlyEntityController<TEntity>
     /// <param name="entity">实体对象</param>
     /// <param name="type">操作类型</param>
     /// <param name="post">是否提交数据阶段</param>
-    /// <returns></returns>
-    protected virtual Boolean ValidPermission(TEntity entity, DataObjectMethodType type, Boolean post) => true;
+    /// <returns>true 表示允许</returns>
+    /// <remarks>
+    /// 行权（OSC-2608273d95）：除新增外，详情/更新/删除均按当前用户数据范围校验（与列表 GetFilter 同一语义）。
+    /// 新增不按行范围校验（新实体尚未落库），但**不得声称为他人归属**：实体层拦截器在宿主内休眠，
+    /// 保存链路不会兜底归属列，若此处放行伪造归归属，即可建出「他人名义」的令牌/绑定（审计 🔴-2）。
+    /// 归属为 0 视为未声明（交由保存链路赋值，与审计字段一致）。
+    /// </remarks>
+    protected virtual Boolean ValidPermission(TEntity entity, DataObjectMethodType type, Boolean post)
+    {
+        if (type != DataObjectMethodType.Insert) return CanAccess(entity);
+
+        // 绑定前（post=false）归属可能尚未填充，仅提交阶段校验
+        if (!post || entity == null) return true;
+
+        var ctx = GetDataScopeContext();
+        if (ctx == null || ctx.IsSystem) return true;
+
+        return entity is not IUserScope scope || scope.UserId <= 0 || scope.UserId == ctx.UserId;
+    }
     #endregion
 
     #region 列表字段和表单字段

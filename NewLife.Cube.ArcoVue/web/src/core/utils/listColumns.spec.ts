@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { selectListColumns } from './listColumns';
+import { rejectSensitiveColumns, selectListColumns } from './listColumns';
 import type { FieldMeta } from '../types/field';
 
 describe('selectListColumns', () => {
@@ -20,5 +20,15 @@ describe('selectListColumns', () => {
       { name: 'Run', typeName: 'String', hasTypeName: false, url: '/run', dataAction: 'action' },
     ];
     expect(selectListColumns(fields).map((c) => c.name)).toEqual(['Name']);
+  });
+
+  it('drops sensitive columns and is applied by selectListColumns (OSC-2608273d95)', () => {
+    const fields: FieldMeta[] = [
+      { name: 'Name', typeName: 'String' },
+      { name: 'Password', typeName: 'String', sensitive: true },
+      { name: 'Remark', typeName: 'String', sensitive: false },
+    ];
+    expect(rejectSensitiveColumns(fields).map((c) => c.name)).toEqual(['Name', 'Remark']);
+    expect(selectListColumns(fields).map((c) => c.name)).toEqual(['Name', 'Remark']);
   });
 });

@@ -26,7 +26,7 @@ using XCode.Shards;
 
 namespace NewLife.Cube.Entity;
 
-public partial class NotificationRecord : Entity<NotificationRecord>
+public partial class NotificationRecord : Entity<NotificationRecord>, IUserScope, IDataScopeFieldProvider
 {
     #region 对象操作
     static NotificationRecord()
@@ -227,5 +227,16 @@ public partial class NotificationRecord : Entity<NotificationRecord>
 
         return list.Save();
     }
+    #endregion
+
+    #region 数据权限
+    /// <summary>数据权限字段提供者。归属列 UserId（隐式实现 IUserScope）；无部门/租户行权字段</summary>
+    FieldItem? IDataScopeFieldProvider.GetUserField() => _.UserId;
+
+    /// <inheritdoc />
+    FieldItem? IDataScopeFieldProvider.GetDepartmentField() => null;
+
+    /// <inheritdoc />
+    FieldItem? IDataScopeFieldProvider.GetTenantField() => null;
     #endregion
 }

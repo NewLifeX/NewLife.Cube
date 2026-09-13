@@ -10,10 +10,10 @@ using Xunit;
 
 namespace XUnitTest;
 
-/// <summary>数据权限去耦测试（MVC 版）。实体层不承担数据权限，页面行权限由控制器特性表达</summary>
+/// <summary>数据权限去耦测试（MVC 版）。实体层不承担数据权限，页面行权限由接口层 DataScope 显式执行</summary>
 /// <remarks>
 /// 架构约定：
-/// 1. 页面行级数据权限 = 控制器 [DataPermission] 特性，经 SearchData/FindData 管道显式执行；
+/// 1. 页面行级数据权限 = 接口层 DataScopeHelper.GetFilter/CanAccess 按当前用户上下文显式执行（OSC-2608273d95）；
 /// 2. 实体不注册 DataScopeInterceptor，魔方宿主注入系统态上下文使拦截器休眠；
 /// 3. 跨用户业务查询（SSO openid 查重）在任意数据权限上下文下均命中，实体层不得过滤。
 /// </remarks>
@@ -22,16 +22,26 @@ public class DataScopeDecouplingTests
 {
     public DataScopeDecouplingTests() => SqliteDb.Ensure();
 
+    [Theory(DisplayName = "控制器_行权已改由 DataScope 承担_不再声明仅本人特性")]
+    [InlineData(typeof(UserController))]
+    [InlineData(typeof(LogController))]
+    [InlineData(typeof(UserOnlineController))]
+    [InlineData(typeof(UserConnectController))]
+    [InlineData(typeof(UserTokenController))]
+    [InlineData(typeof(OAuthLogController))]
+    [InlineData(typeof(NotificationRecordController))]
+    public void Controllers_DoNotDeclareSelfOnlyDataPermission(Type controllerType)
+    {
+        // 这7个控制器都实现了 IUserScope（或按归属列表达），行权交给 DataScopeHelper，
+        // 保留 [DataPermission(null, "UserID={#userId}")] 会把「本部门/下级/自定义」压成「仅本人」
+        var att = controllerType.GetCustomAttribute<DataPermissionAttribute>();
+
+        Assert.Null(att);
+    }
+
     [Theory(DisplayName = "控制器_数据权限特性_表达式符合页面行语义")]
     [InlineData(typeof(DepartmentController), "ManagerID={#userId}")]
     [InlineData(typeof(ParameterController), "UserID={#userId}")]
-    [InlineData(typeof(UserOnlineController), "UserID={#userId}")]
-    [InlineData(typeof(LogController), "CreateUserID={#userId}")]
-    [InlineData(typeof(UserController), "ID={#userId}")]
-    [InlineData(typeof(UserConnectController), "UserID={#userId}")]
-    [InlineData(typeof(UserTokenController), "UserID={#userId}")]
-    [InlineData(typeof(OAuthLogController), "UserId={#userId}")]
-    [InlineData(typeof(NotificationRecordController), "UserId={#userId}")]
     [InlineData(typeof(NewLife.Cube.Areas.Cube.Controllers.AttachmentController), "CreateUserID={#userId}")]
     [InlineData(typeof(NewLife.Cube.Areas.Cube.Controllers.PrincipalAgentController), "PrincipalId={#userId} or AgentId={#userId}")]
     public void Controllers_HaveExpectedDataPermission(Type controllerType, String expression)

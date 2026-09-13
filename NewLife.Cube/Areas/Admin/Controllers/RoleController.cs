@@ -22,6 +22,16 @@ public class RoleController : EntityController<Role, RoleModel>
         {
             var df = ListFields.AddListField("Remark", "UpdateUser");
         }
+
+        // 数据范围为自定义时，需要选择数据部门列表（OSC-2608273d95，与 CubeNC 对齐）
+        {
+            var df = AddFormFields.GetField("DataDepartmentIds");
+            df.DataSource = entity => Department.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+        }
+        {
+            var df = EditFormFields.GetField("DataDepartmentIds");
+            df.DataSource = entity => Department.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+        }
     }
 
     /// <summary>搜索数据集</summary>

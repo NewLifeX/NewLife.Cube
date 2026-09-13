@@ -262,6 +262,12 @@ public static class WidgetQueryService
             catch { throw new ApiException(400, "数据权限表达式无法解析"); }
         }
 
+        // 行权（OSC-2608273d95）：聚合/列表与页面列表同一助手合并 DataScope 四档；
+        // 上下文由当前用户显式构造，不写 DataScopeContext.Current（实体层拦截器继续休眠）
+        var scopeCtx = DataScopeContext.Create(user);
+        var scope = DataScopeHelper.GetFilter(fact, scopeCtx);
+        if (scope != null) exp = exp == null ? scope : exp & scope;
+
         // 与 ReadOnlyEntityController2.CreateWhere 同等：无上下文 fail-closed；租户模式 AND TenantId；管理后台不加
         if (CubeSetting.Current.EnableTenant && typeof(ITenantScope).IsAssignableFrom(entityType))
         {

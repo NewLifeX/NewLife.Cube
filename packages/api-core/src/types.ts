@@ -136,6 +136,11 @@ export interface DataField {
   lovCode?: string;
   /** 是否多选（multipleSelect 为 true；亦可由前端在映射时推导） */
   multiple?: boolean;
+  /**
+   * 敏感字段（OSC-2608273d95）。后端 IFieldScope 命中且当前用户无 ViewSensitive 权限时为 true。
+   * 前端据此隐藏列；授权与脱敏以服务端为准，藏列不等于授权。
+   */
+  sensitive?: boolean;
 }
 
 /** 页面设置（GetPage.data.setting） */

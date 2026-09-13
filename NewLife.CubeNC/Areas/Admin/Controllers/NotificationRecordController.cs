@@ -11,7 +11,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>通知记录</summary>
-[DataPermission(null, "UserId={#userId}")]
+// 行权改由 DataScope（OSC-2608273d95）：NotificationRecord 实现 IUserScope，归属列 UserId
 [DisplayName("通知记录")]
 [AdminArea]
 [Menu(0, false)]

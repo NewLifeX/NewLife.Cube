@@ -1,5 +1,11 @@
 # Status
 - id: OSC-2608273d95
-- state: Draft
-- updated: 2026-09-12T00:00:00+08:00
-- note: 2026-09-12 合并后重审计（audit-merged.md）：选定路线 A「接口层行权」——不改 XCode 仓库、不给实体挂 DataScopeInterceptor、不改写 DataScopeContext.Current；design/tasks 已按路线 A 重写（T1 为上游回归、T2 为实体接口、T3-T6 为 Cube 接线与脱敏、T7-T10 前端/文档/测试/冒烟）；仍待批准实施
+- state: Validating
+- updated: 2026-09-12T11:40:00+08:00
+- approvedBy: openspec-approve
+- trigger: "按照本项目 OpenSpec 规范，批准并执行 3d95 变更。"
+- checklist: passed
+- note: T1–T9 完成并勾选（含执行回填），T10 手工冒烟待验收方在真实实例执行；双栈实现 = 接口层 DataScope 四档 + 控件脱敏，XCode 仓库零改动。
+- note: 收尾门禁已执行一轮：实现审计 + 代码审查 → 修复审查 🔴-1（CubeNC Zip 旁路）与 🔴-2（新增归属防伪造，本变更引入的回归）、补齐双栈脱敏与注释/文档纠偏 → 复验全绿（Cube 行权相关 56 通过、MVC 全量 494 通过 6 条环境失败、XCode 92 通过、前端 848 通过、双栈 0 error），未进入第 2 轮。残留 R1–R5 已登记理由，详见 tasks.md「收尾门禁记录」。
+- note: 依赖 260824fc7c/260819e483/260815fa86 均 Done；XCode 侧 Issue 1-6 已由 12.2.2026.901 交付（audit-merged.md）。范围单一（行权接线 + 脱敏地基），design 已按路线 A（接口层行权、不改 XCode）重写
+- next: 验收 `验收 OSC-2608273d95`（逐项勾 verify.md AC；AC-01…AC-08/12/18/21/22 需真机冒烟）

@@ -9,12 +9,13 @@ using NewLife.Serialization;
 using NewLife.Web;
 using XCode;
 using XCode.Cache;
+using XCode.Configuration;
 using XCode.Membership;
 
 namespace NewLife.Cube.Entity;
 
 /// <summary>用户链接。第三方绑定</summary>
-public partial class UserConnect : Entity<UserConnect>
+public partial class UserConnect : Entity<UserConnect>, IUserScope, IDataScopeFieldProvider
 {
     #region 对象操作
     static UserConnect()
@@ -185,5 +186,19 @@ public static IList<UserConnect> FindAllByDeviceId(String deviceId)
     /// <summary>获取所有提供商名称</summary>
     /// <returns></returns>
     public static IDictionary<String, String> FindAllProviderName() => ProviderCache.FindAllName();
+    #endregion
+
+    #region 数据权限
+    /// <summary>数据权限用户字段。IUserScope 显式映射到 UserID 列</summary>
+    Int32 IUserScope.UserId { get => UserID; set => UserID = value; }
+
+    /// <summary>数据权限字段提供者。归属列 UserID；无部门/租户行权字段</summary>
+    FieldItem? IDataScopeFieldProvider.GetUserField() => _.UserID;
+
+    /// <inheritdoc />
+    FieldItem? IDataScopeFieldProvider.GetDepartmentField() => null;
+
+    /// <inheritdoc />
+    FieldItem? IDataScopeFieldProvider.GetTenantField() => null;
     #endregion
 }
