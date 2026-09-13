@@ -1,11 +1,13 @@
 # Status
 - id: OSC-2608273d95
 - state: Validating
-- updated: 2026-09-12T11:40:00+08:00
+- updated: 2026-09-13T01:20:00+08:00
 - approvedBy: openspec-approve
 - trigger: "按照本项目 OpenSpec 规范，批准并执行 3d95 变更。"
 - checklist: passed
 - note: T1–T9 完成并勾选（含执行回填），T10 手工冒烟待验收方在真实实例执行；双栈实现 = 接口层 DataScope 四档 + 控件脱敏，XCode 仓库零改动。
-- note: 收尾门禁已执行一轮：实现审计 + 代码审查 → 修复审查 🔴-1（CubeNC Zip 旁路）与 🔴-2（新增归属防伪造，本变更引入的回归）、补齐双栈脱敏与注释/文档纠偏 → 复验全绿（Cube 行权相关 56 通过、MVC 全量 494 通过 6 条环境失败、XCode 92 通过、前端 848 通过、双栈 0 error），未进入第 2 轮。残留 R1–R5 已登记理由，详见 tasks.md「收尾门禁记录」。
+- note: 收尾门禁第 1 轮（提交 74475939）：实现审计 + 代码审查 → 修复 🔴-1（CubeNC Zip 旁路）、🔴-2（新增归属防伪造，本变更引入的回归）、补齐双栈脱敏与注释/文档纠偏。
+- note: 收尾门禁第 2 轮（复审计 → 修复 → 复验，提交 66444429）：按用户裁定修复 N1–N8 —— N1 双栈 `UserController.Search` 的 `?id=` 分支改走 `FindData`（含 CanAccess，行为选项 a：越权抛「非法访问数据」）；N2 部门详情取舍注释 + design 修订；N3 补 `Doc/Api` sensitive 契约、更正 3 处矛盾措辞；N4 ChangeLog 登记升级语义；N5/N6 新增 CubeNC 脱敏与 SetMenu 用例；N7/N8 时序与格式。
+- evidence: Cube 行权相关 39/39；MVC DataScope 相关 17/17；双栈 build 0 警告 0 错误；前端 Vitest 848 通过 + build ✓。全量套件存在环境性抖动（同一套件两次运行失败数不同，均为租户/菜单夹具类），相关家族单独跑均通过，worktree 基线对比 0 新增失败。残留：R1–R3、R4 前半、N9、N10（均在 tasks.md 登记理由）。
 - note: 依赖 260824fc7c/260819e483/260815fa86 均 Done；XCode 侧 Issue 1-6 已由 12.2.2026.901 交付（audit-merged.md）。范围单一（行权接线 + 脱敏地基），design 已按路线 A（接口层行权、不改 XCode）重写
 - next: 验收 `验收 OSC-2608273d95`（逐项勾 verify.md AC；AC-01…AC-08/12/18/21/22 需真机冒烟）
