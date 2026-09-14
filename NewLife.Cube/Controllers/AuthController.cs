@@ -28,13 +28,12 @@ namespace NewLife.Cube.Controllers;
 /// <param name="authEnhanced">增强认证服务</param>
 /// <param name="cacheProvider">缓存提供者</param>
 /// <param name="accountActivate">账号激活服务</param>
-/// <param name="passwordService">密码服务</param>
 [DisplayName("认证")]
 [ApiController]
 [Produces("application/json")]
 [Route("[controller]/[action]")]
 [Menu(0, false, Mode = MenuModes.Admin | MenuModes.Tenant)]
-public class AuthController(UserService userService, VerifyCodeService verifyCode, AuthEnhancedService authEnhanced, ICacheProvider cacheProvider, AccountActivateService accountActivate, PasswordService passwordService) : ControllerBaseX
+public class AuthController(UserService userService, VerifyCodeService verifyCode, AuthEnhancedService authEnhanced, ICacheProvider cacheProvider, AccountActivateService accountActivate) : ControllerBaseX
 {
     private const String OAuthPendingPrefix = "OAuthPending:";
     private readonly ICache _cache = cacheProvider.Cache;
@@ -176,202 +175,6 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
         return Json(0, null, model);
     }
 
-    /// <summary>获取当前登录用户信息</summary>
-    /// <returns>用户信息，包含权限和角色</returns>
-    [HttpGet]
-    [EntityAuthorize]
-    [Menu(0, false, Mode = MenuModes.Admin | MenuModes.Tenant)]
-    public ActionResult Info()
-    {
-        if (ManageProvider.User is not User user) throw new Exception("当前登录用户无效！");
-
-        user = XCode.Membership.User.FindByKeyForEdit(user.ID);
-        if (user == null) throw new Exception("无效用户编号！");
-
-        user["Password"] = null;
-
-        var userInfo = new Areas.Admin.Models.UserInfo();
-        userInfo.Copy(user);
-        userInfo.SetPermission(user.Roles);
-        userInfo.SetRoleNames(user.Roles);
-
-        // 多租户信息：当前租户 + 用户可切换租户列表。未开启多租户时全部为空/空列表，前端据此隐藏租户 UI
-        var set = CubeSetting.Current;
-        userInfo.EnableTenant = set.EnableTenant;
-        if (set.EnableTenant)
-        {
-            var tc = TenantContext.Current;
-            userInfo.TenantId = TenantContext.CurrentId;
-            userInfo.TenantMode = (Int32)tc.GetTenantMode();
-            userInfo.IsSystemAdmin = user.Roles.Any(e => e.IsSystem);
-
-            if (userInfo.TenantId > 0)
-            {
-                var tenant = XCode.Membership.Tenant.FindById(userInfo.TenantId);
-                if (tenant != null)
-                {
-                    userInfo.TenantCode = tenant.Code;
-                    userInfo.TenantName = tenant.Name;
-                }
-            }
-
-            userInfo.Tenants = TenantUser.FindAllByUserId(user.ID)
-                .Where(e => e.Enable && e.Tenant != null && e.Tenant.Enable)
-                .Select(e => new TenantItem
-                {
-                    Id = e.TenantId,
-                    Code = e.Tenant?.Code,
-                    Name = e.Tenant?.Name,
-                })
-                .ToArray();
-        }
-
-        return Json(0, "ok", userInfo);
-    }
-
-    /// <summary>更新当前登录用户资料（昵称/性别/邮箱/手机/生日/头像等文本字段）。头像上传走 POST /Auth/UploadAvatar</summary>
-    /// <param name="user">用户资料字段，仅允许自助修改的文本字段</param>
-    /// <returns>更新后的用户信息</returns>
-    [HttpPost]
-    [EntityAuthorize]
-    public ActionResult Info(User user)
-    {
-        var cur = ManageProvider.User;
-        if (cur == null) throw new Exception("当前登录用户无效！");
-        if (user.ID != cur.ID) throw new Exception("禁止修改非当前登录用户资料");
-
-        var entity = user as IEntity;
-        // 自助更新：仅当用户名实际变更时才拦截（移动端会回传当前用户名，值一致则放行）
-        if (entity.Dirtys["Name"] && !user.Name.EqualIgnoreCase(cur.Name))
-            throw new Exception("禁止修改用户名！");
-        if (entity.Dirtys["RoleID"]) throw new Exception("禁止修改角色！");
-        if (entity.Dirtys["Enable"]) throw new Exception("禁止修改禁用！");
-        if (entity.Dirtys["Password"]) throw new Exception("禁止通过资料接口修改密码，请使用 /Auth/ChangePassword！");
-
-        // 密码等敏感字段不得输出
-        user["Password"] = null;
-
-        user.Update();
-
-        return Json(0, "ok", user);
-    }
-
-    /// <summary>上传头像。仅限当前登录用户且仅允许图片类型；上传成功后自动回填 Avatar 字段持久化，无需再调用 Info</summary>
-    /// <param name="file">头像文件（multipart/form-data，字段名 file）</param>
-    /// <returns>附件信息 { attId, filePath, contentType, avatar }</returns>
-    [HttpPost]
-    [EntityAuthorize]
-    public async Task<ActionResult> UploadAvatar(IFormFile file)
-    {
-        if (ManageProvider.User is not User cur) throw new Exception("当前登录用户无效！");
-
-        if (file == null || file.Length == 0) return Json(1, "未收到文件");
-
-        var ext = Path.GetExtension(file.FileName);
-        if (!ext.EqualIgnoreCase(".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".svg"))
-            return Json(1, "仅支持上传图片文件！");
-
-        var att = new Attachment
-        {
-            Category = nameof(User),
-            Key = cur.ID + "",
-            Title = cur + "",
-            ContentType = file.ContentType,
-            Size = file.Length,
-            Enable = true,
-            UploadTime = DateTime.Now,
-        };
-
-        try
-        {
-            using var stream = file.OpenReadStream();
-            await att.SaveFile(stream);
-        }
-        catch (Exception ex)
-        {
-            return Json(1, "保存失败：" + ex.Message);
-        }
-
-        // 附件访问路径（图片类型为 /cube/image?id=xxx.ext），回填到头像字段持久化
-        var url = ViewHelper.GetAttachmentUrl(att);
-        cur.Avatar = url;
-        cur.Update();
-
-        return Json(0, "ok", new { attId = att.Id, filePath = url, contentType = att.ContentType, avatar = url });
-    }
-
-    /// <summary>获取用户头像。头像文件不存在时根据昵称和性别自动生成 SVG 文字头像（本地文件 → 远程懒加载 → SVG 兜底）</summary>
-    /// <param name="id">用户编号</param>
-    /// <returns>头像图片（png/jpg/svg）</returns>
-    [HttpGet]
-    [AllowAnonymous]
-    public ActionResult Avatar(Int32 id)
-    {
-        // 如果id为空，尝试从查询路径获取
-        if (id <= 0) id = Request.Query["id"].ToInt();
-        if (id <= 0) throw new ArgumentNullException(nameof(id));
-
-        var user = ManageProvider.Provider?.FindByID(id) as IUser;
-        if (user == null) throw new Exception("用户不存在 " + id);
-
-        var set = CubeSetting.Current;
-        var av = "";
-        if (!user.Avatar.IsNullOrEmpty() && !user.Avatar.StartsWith("/"))
-        {
-            // 防路径穿越：仅接受纯文件名（无路径分隔符），外部回填头像地址可能含 .. 或子路径
-            var name = Path.GetFileName(user.Avatar);
-            if (!name.IsNullOrEmpty() && name == user.Avatar)
-            {
-                av = set.AvatarPath.CombinePath(name).GetBasePath();
-                if (!System.IO.File.Exists(av)) av = null;
-            }
-        }
-
-        // 按扩展名优先级查找本地头像文件（.png/.svg/.jpg/.gif/.webp）
-        if (av.IsNullOrEmpty() && !set.AvatarPath.IsNullOrEmpty())
-        {
-            var (found, _) = SvgAvatarService.FindAvatarFile(set.AvatarPath, user.ID);
-            av = found;
-        }
-
-        // 兼容头像地址为附件接口 URL 的情况（如 /cube/image?id=xxx.png）
-        if (av.IsNullOrEmpty() && !user.Avatar.IsNullOrEmpty() && user.Avatar.StartsWith("/cube/image?"))
-        {
-            var p = user.Avatar.IndexOf("?id=");
-            if (p >= 0)
-            {
-                var attId = user.Avatar[(p + 4)..];
-                var q = attId.IndexOf('&');
-                if (q >= 0) attId = attId[..q];
-
-                var e = attId.IndexOf('.');
-                if (e > 0) attId = attId[..e];
-
-                var att = Attachment.FindById(attId.ToLong());
-                av = att?.GetFilePath();
-                if (!av.IsNullOrEmpty() && !System.IO.File.Exists(av)) av = null;
-            }
-        }
-
-        // 头像文件不存在时，从用户连接中查找远程头像并触发异步下载到本地（懒加载兜底）
-        if (av.IsNullOrEmpty() || !System.IO.File.Exists(av))
-        {
-            if (user is IManageUser muser)
-            {
-                var bindingService = HttpContext.RequestServices.GetService<Services.Sso.IUserBindingService>();
-                var remote = bindingService?.TryFetchRemoteAvatar(muser);
-                if (!remote.IsNullOrEmpty()) return Redirect(remote);
-            }
-
-            var svg = SvgAvatarService.Generate(user, set.AvatarChars);
-            return Content(svg, "image/svg+xml");
-        }
-
-        var vs = System.IO.File.ReadAllBytes(av);
-        var ct = SvgAvatarService.GetContentType(Path.GetExtension(av));
-        return File(vs, ct);
-    }
-
     /// <summary>切换当前租户。多租户开启时，将所选租户写入 Cookie（HttpOnly），下次登录沿用；前端切换成功后刷新页面</summary>
     /// <param name="tenantId">租户编号。0=管理后台（仅系统管理员），&gt;0=租户</param>
     /// <returns>切换结果</returns>
@@ -451,50 +254,6 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
         return result.IsSuccess
             ? true.ToOkApiResponse(result.Message)
             : false.ToFailApiResponse(result.Message);
-    }
-
-    /// <summary>修改密码。SSO 登录用户无需原密码即可修改（信任外方身份，同时避免第三方登录用户未设置密码的尴尬）</summary>
-    /// <param name="model">修改密码模型：原密码、新密码、确认新密码</param>
-    /// <returns>修改结果</returns>
-    [HttpPost]
-    [EntityAuthorize]
-    public ActionResult ChangePassword(ChangePasswordModel model)
-    {
-        if (model.NewPassword.IsNullOrWhiteSpace()) throw new ArgumentException("新密码不能为空", nameof(model.NewPassword));
-        if (model.NewPassword2.IsNullOrWhiteSpace()) throw new ArgumentException("确认密码不能为空", nameof(model.NewPassword2));
-        if (model.NewPassword != model.NewPassword2) throw new ArgumentException("两次输入密码不一致", nameof(model.NewPassword));
-
-        if (!passwordService.Valid(model.NewPassword)) throw new ArgumentException("密码太弱，要求8位起且包含数字大小写字母和符号", nameof(model.NewPassword));
-
-        // SSO 登录无需原密码即可修改
-        var ssoName = Session["Cube_Sso"] as String;
-        var requireOldPass = ssoName.IsNullOrEmpty();
-        if (requireOldPass)
-        {
-            if (model.OldPassword.IsNullOrWhiteSpace()) throw new ArgumentException("原密码不能为空", nameof(model.OldPassword));
-            if (model.NewPassword == model.OldPassword) throw new ArgumentException("修改密码不能与原密码一致", nameof(model.NewPassword));
-        }
-
-        var current = ManageProvider.User;
-        if (current == null) throw new Exception("当前登录用户无效！");
-
-        ManageProvider.Provider.ChangePassword(current.Name, model.NewPassword, requireOldPass ? model.OldPassword : null);
-
-        return Json(0, "密码修改成功");
-    }
-
-    /// <summary>验证码绑定手机号/邮箱到当前登录用户（安全中心）。验证码经 SendCode（action=bind）发送</summary>
-    /// <param name="model">Username 为手机号/邮箱，Password 为验证码</param>
-    /// <returns>绑定结果</returns>
-    [HttpPost]
-    [EntityAuthorize]
-    public ApiResponse<Boolean> BindByVerifyCode(LoginModel model)
-    {
-        var account = model.Username?.Trim() ?? "";
-        var code = model.Password?.Trim() ?? "";
-
-        var result = authEnhanced.BindByVerifyCode(account, code, ManageProvider.User, UserHost);
-        return result.IsSuccess ? true.ToOkApiResponse(result.Message) : false.ToFailApiResponse(result.Message);
     }
 
     /// <summary>查询OAuth回跳待注册预填信息</summary>
@@ -594,20 +353,5 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
         return Json(result.IsSuccess ? 0 : 1, result.Message, result.Data);
     }
 
-    /// <summary>注销账号（依据《个人信息保护法》提供账号注销功能）。禁用账号并清空个性化数据，吊销令牌、解绑三方，并通知下游清理业务数据</summary>
-    /// <returns>注销结果</returns>
-    [HttpPost]
-    [EntityAuthorize]
-    public ActionResult CloseAccount()
-    {
-        if (ManageProvider.User is not User user) throw new Exception("当前登录用户无效！");
 
-        var result = userService.CloseAccount(user, UserHost);
-        if (!result.IsSuccess) return Json(1, result.Message);
-
-        // 注销当前会话
-        ManageProvider.Provider.Logout();
-
-        return Json(0, "账号已注销");
-    }
 }

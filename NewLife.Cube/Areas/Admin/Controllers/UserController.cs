@@ -21,13 +21,14 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 /// <param name="verifyCode">验证码服务</param>
 /// <param name="authEnhanced">增强认证服务</param>
 /// <param name="passwordService"></param>
+/// <param name="userService">用户服务</param>
 /// <param name="tenantContext">租户上下文</param>
 [DataPermission(null, "ID={#userId}")]
 [DisplayName("用户")]
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
 [AdminArea]
 [Menu(100, true, Icon = "User", Mode = MenuModes.Admin | MenuModes.Tenant)]
-public class UserController(VerifyCodeService verifyCode, AuthEnhancedService authEnhanced, PasswordService passwordService, ITenantContext tenantContext) : EntityController<User, UserModel>
+public class UserController(VerifyCodeService verifyCode, AuthEnhancedService authEnhanced, PasswordService passwordService, UserService userService, ITenantContext tenantContext) : EntityController<User, UserModel>
 {
     static UserController()
     {
@@ -849,4 +850,21 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         return result.IsSuccess ? true.ToOkApiResponse(result.Message) : false.ToFailApiResponse(result.Message);
     }
     #endregion
+
+    /// <summary>注销账号（依据《个人信息保护法》提供账号注销功能）。禁用账号并清空个性化数据，吊销令牌、解绑三方，并通知下游清理业务数据</summary>
+    /// <returns>注销结果</returns>
+    [HttpPost]
+    [EntityAuthorize]
+    public ActionResult CloseAccount()
+    {
+        if (ManageProvider.User is not User user) throw new Exception("当前登录用户无效！");
+
+        var result = userService.CloseAccount(user, UserHost);
+        if (!result.IsSuccess) return Json(1, result.Message);
+
+        // 注销当前会话
+        ManageProvider.Provider.Logout();
+
+        return Json(0, "账号已注销");
+    }
 }
