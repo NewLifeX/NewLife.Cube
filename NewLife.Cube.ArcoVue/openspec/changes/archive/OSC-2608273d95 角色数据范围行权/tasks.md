@@ -59,7 +59,7 @@
 
 ## T9 测试与构建
 
-- [x] Cube XUnit：`Common/DataScopeRowPermissionTests.cs`（列表 State 合 GetFilter / 无接口实体 GetFilter=null / FindData 越权拒绝 / ValidPermission（含新增伪造归属）/ 实体接口映射 / 脱敏用真实上下文 / 上下文不写 Current）——与 `Web/DataPermissionArchitectureTests` 合计 `35/35 通过`（拆：13 + 22）；另新增 `Web/UserScopeQueryBypassGuardTests`（?id= 不走 FindData 的回退守护）与 `Common/DataScopeMenuOverrideTests`（菜单 SetMenu 覆盖/继承）
+- [x] Cube XUnit：`Common/DataScopeRowPermissionTests.cs`（列表 State 合 GetFilter / 无接口实体 GetFilter=null / FindData 越权拒绝 / ValidPermission（含新增伪造归属）/ 实体接口映射 / 脱敏用真实上下文 / 上下文不写 Current）——与 `Web/DataPermissionArchitectureTests` 合计 `35/35 通过`（拆：13 + 22）；另新增 `Web/UserScopeQueryBypassGuardTests`（?id= 不走 FindData 的回退守护）与 `Common/DataScopeMenuOverrideTests`（菜单 SetMenu 覆盖/继承）。**验收修正**：计入后两族，本号相关 Cube XUnit 子集实测 **39 通过 / 0 失败**；再加 `ExportController` 族为 **45/45**（见 `verify.md` 门禁表）
 - [x] CubeNC XUnit：`XUnitTest/DataScopeSensitiveMvcTests.cs`（MVC 侧列级 sensitive 标记 + 列表/详情遮蔽用真实上下文）`4/4 通过`；`DataScopeDecouplingTests` `13/13 通过`
 - [x] Vitest：`dataScopeForm` + `rejectSensitiveColumns` + `iamGuards`——全量 `89 文件/848 用例通过`
 - [x] `dotnet build NewLife.Cube` + `NewLife.CubeNC` 0 error 0 warning；`pnpm --filter @newlifex/cube-arco-vue test` 与 `build` 通过（`✓ built in 25.25s`）
@@ -67,14 +67,15 @@
 
 ## T10 手工冒烟（验收勾）
 
-> 待验收方在真实实例执行（本机无法拉起 CubeDemo + 浏览器会话）。验收时依次勾选：
+> 2026-09-14 已在**隔离实例**（CubeDemo 副本 + 独立 SQLite，5099 端口，不触碰业务库）执行完毕，证据见 `verify.md`「验收执行」。
 
-- [ ] 四档 DataScope（仅本人 / 本部门 / 本部门及下级 / 自定义 / 全部）各一用户打开 `Admin/User`
-- [ ] 系统角色看全；Role / Menu 列表不因行权变空
-- [ ] 仅本人直打他人 User 详情 id → 拒绝；写入被拒
-- [ ] 无 `ViewSensitive` 时他人 Password 不出现原哈希
-- [ ] Widget（WebAPI）本部门角色的 count 不含外部门
-- [ ] 实体层守护：`DataScopeDecouplingTests` 前两条仍绿（未挂拦截器）
+- [x] 四档 DataScope（仅本人 / 本部门 / 本部门及下级 / 自定义 / 全部）各一用户打开 `Admin/User`：1 / 6 / 7 / 1 / 10 行，SQL 与各档定义一致
+- [~] 系统角色看全（✅ 10 行）；Role / Menu 列表不因行权变空（未单独采样，由单测与 XCode 92/92 回归覆盖）
+- [x] 仅本人直打他人 User 详情 id → `非法访问数据[2]`（`ReadOnlyEntityController2.cs:296`）
+- [x] 无 `ViewSensitive` 时他人 Password 为 `***`
+- [ ] Widget（WebAPI）本部门角色的 count 不含外部门——**本轮未采样**（留 AC-22，代码路径已由单测覆盖）
+- [x] 实体层守护：`DataScopeDecouplingTests` 前两条仍绿（未挂拦截器）
+- [x] 额外汇总：日志不扩权（15 行全自己）、导出跟随行集（6 行 / 1 行）
 ## 执行回填（执行期新增的小任务，均已随本号完成）
 
 - [x] API 版矩阵同步：`NewLife.Cube.Tests/Web/DataPermissionArchitectureTests.cs` 与 `XUnitTest/DataScopeDecouplingTests.cs` 同款断言（design 只写了 XUnitTest；API 版存在同一份矩阵，不同步会直接红灯）
@@ -128,7 +129,7 @@
 |------|------|
 | `dotnet test NewLife.Cube.Tests --filter DataScopeRowPermissionTests\|DataPermissionArchitectureTests` | 33 → 修复后 **34 通过 / 0 失败**（含新增「新增伪造他人归属拒绝」「系统态放行」两例） |
 | `dotnet test NewLife.Cube.Tests --filter 行权相关子集 + UserPageReadOnly + Osc260819P3` | **56 通过 / 0 失败** |
-| `dotnet test XUnitTest`（MVC 全量） | **494 通过 / 6 失败**，失败全部为 `QyWeiXinTests`（企业微信外网接口，基线同为环境性失败），优于基线 7–8 条 |
+| `dotnet test XUnitTest`（MVC 全量） | **494 通过 / 6 失败**（另一轮实测 493/7；失败全部为 `QyWeiXinTests` 企业微信外网用例，基线同为环境性失败） |
 | `dotnet test XUnitTest --filter DataScopeDecoupling` | **13 通过 / 0 失败** |
 | `dotnet test XUnitTest.XCode --filter DataScope`（只读回归） | **92 通过 / 0 失败** |
 | `dotnet build NewLife.Cube` + `NewLife.CubeNC` | **0 警告 0 错误** |
@@ -138,6 +139,21 @@
 #### 结论
 
 🔴 全部修复并复验；🟡 中 5 项修复、4 项登记为接受残留（R1–R5，均已注明理由与后续归属）。
+
+## 验收期新增缺口（2026-09-14 已裁定：补齐 G1–G4 + G9；G5–G8/G10 仅记录）
+
+> 来源：2026-09-14 验收的三步检查（实现审计 / 代码审查 / 文档同步）。**P0 = 0**。用户裁定「补齐 G1–G4（P1 四项）后再复盘」+「AC 判据按锁定包改写」，已于 2026-09-14 实现完毕（见 `verify.md` §7）；G5–G8/G10 按「仅记录」保留，留后续号。
+
+- [x] **G1（P1）批量导入收口** —— 已修：`OnImport` 新增 `ValidImport`（归属不得为他人 / 已声明归属须在范围 / 合并类按主键不得覆盖不可见行）；`ImportZip` 对包内其它实体数据集校验页面新增权限（系统角色不受约束）；实测 `ImportRowPermissionTests` 11 例 + `EntityController2.cs`。同时修正 `Doc/PERM-数据权限.md` 生效范围表（导入从 `FindData` 行移出）。
+- [x] **G2（P1）AI 记录上下文走行权** —— 已修：`CubeTools<TEntity>` 新增可选 `findRecord` 委托（越权降级为「记录不存在或无权访问」），`GetRecordContext`/`GetFormSchema(edit)` 改走它；控制器注入 `FindRecordMasked` = `FindData` + `MaskSensitiveFields`；实测 `CubeDataScopeTests` 3 例。
+- [x] **G3（P1）App 密钥令牌出口行权策略** —— 已修：`ValidToken` 的 App 密钥分支支持 `userId`/`user` 参数绑定用户（绑定后与页面同一套行权），未绑定时显式 `XTrace` 声明系统级；`Doc/PERM-数据权限.md` 生效范围表与小节 2 按实现区分（无单测：CubeNC 令牌路径需 App 表数据，与 R5 同口径）。
+- [x] **G4（P1）系统内置部件纳入行权** —— 已修：新增共享助手 `Common/CubeDataScope.cs`（双栈 Link），用户总数 / 在线 / 24h 日志 / 24h 异常 / 登录与在线明细（MVC+WebAPI 两套）接入 `GetFilter`；实测 `WidgetDataTests` 新增 4 例 + `CubeDataScopeTests` 判定矩阵。
+- [ ] **G5（P2·仅记录）菜单级覆盖接线或降级宣传**：`DataScopeContext.Create(user)` 未传 `menu`，XCode `SetMenu` 覆盖未接线；但 `Doc/功能清单.md:67`、`Doc/PERM-数据权限.md:133`、`web/README.md:127` 已宣称「角色/菜单四档」。二选一：接线 `Create(user, menu)`，或把文档改为「本期仅角色级」。
+- [ ] **G6（P2·仅记录）部件投影改 `IFieldScope`**：`WidgetQueryService.cs:629` 用名字黑名单（`Password/Secret/Salt`）过滤列，自定义敏感列（工资/身份证）在部件 list 不受遮蔽；`GetSensitiveFieldNames` 已就绪，改走它即可。
+- [ ] **G7（P2·仅记录）`MaskSensitiveList` 返回值收口**：`ReadOnlyEntityControllerScope.cs:60-69` 非 `IList` 输入时返回新实例但 4 处调用点丢弃返回值 → 潜在静默漏脱敏；改为 `Ts = MaskSensitiveList(Ts)` 或改就地。
+- [ ] **G8（P2·仅记录）`***` 往返写回收口**：遮蔽值可经「详情 → 编辑 → 提交」落库，当前仅靠 `Areas/Admin/Controllers/UserController.cs:309` 的只读门禁挡住；建议后端忽略等于当前遮蔽标记的敏感字段提交。
+- [x] **G9（P2）AC 判据按锁定包版本改写** —— 已按裁定改写：`verify.md` AC-04/AC-07/AC-12 改为「部门集合正确 / 部门列表 = 我管理的部门 / 无部门 + 本部门 = 恒假条件（0 行）」，不再引用锁定包不具备的 `ac108a773` 语义。
+- [ ] **G10（P2·仅记录）文档/台账漂移清理**：`Doc/PERM-数据权限.md:138` `Trance`→`Trace`；`README.md:392` TFM 写 net45（实为 net6–net10）；本文件 T9/T10 数字（已改）；`retro.md` 范围表「接口自动过滤」措辞；`Doc/功能清单.md` 单测清单漏列本号新增用例。
 
 #### 轮次 2：实现复审计发现与修复（2026-09-13）
 

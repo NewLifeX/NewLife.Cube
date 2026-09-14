@@ -101,8 +101,9 @@ public class LoginLogWidget : ICubeWidget
         var now = DateTime.Now;
         var snow = XLog.Meta.Factory.Snow;
         var start = now.AddHours(-24);
-        var logins = XLog.FindAll(_.Action.Contains("登录") & _.ID.Between(start, now, snow), "ID desc", null, 0, 10);
-        var onlines = UserOnline.FindAll(null, "ID desc", null, 0, 10);
+        // 行权（OSC-2608273d95）：部件是页外出口，口径与 Admin/Log、Admin/UserOnline 列表一致
+        var logins = XLog.FindAll(CubeDataScope.Merge(_.Action.Contains("登录") & _.ID.Between(start, now, snow), CubeDataScope.GetFilter(XLog.Meta.Factory, CubeDataScope.Create(ctx?.User))), "ID desc", null, 0, 10);
+        var onlines = UserOnline.FindAll(CubeDataScope.GetFilter(UserOnline.Meta.Factory, CubeDataScope.Create(ctx?.User)), "ID desc", null, 0, 10);
         return new
         {
             logins = logins.Select(e => new { createTime = e.CreateTime, userName = e.UserName, action = e.Action, createIP = e.CreateIP }).ToArray(),

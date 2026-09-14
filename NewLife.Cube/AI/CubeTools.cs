@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using NewLife.AI.Tools;
 using NewLife.Cube.ViewModels;
+using NewLife.Log;
 using NewLife.Serialization;
 using NewLife.Web;
 using XCode;
@@ -21,10 +22,12 @@ namespace NewLife.Cube.AI;
 /// <param name="pager">当前查询条件（可为空）</param>
 /// <param name="entityId">当前记录编号</param>
 /// <param name="queryData">数据查询委托，应用列表页查询逻辑（SearchData）</param>
-public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 entityId, Func<Pager, IList<TEntity>> queryData) where TEntity : Entity<TEntity>, new()
+/// <param name="findRecord">记录查询委托，应用详情页查询逻辑（FindData，含行权与脱敏）。为空时回退实体直查</param>
+public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 entityId, Func<Pager, IList<TEntity>> queryData, Func<Object, TEntity?>? findRecord = null) where TEntity : Entity<TEntity>, new()
 {
     #region 属性
     private readonly Pager? _pager = pager;
+    private readonly Func<Object, TEntity?>? _findRecord = findRecord;
 
     /// <summary>添加表单字段</summary>
     public FieldCollection AddFields { get; } = new FieldCollection(factory, ViewKinds.AddForm);
@@ -56,7 +59,7 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
         // 编辑模式：并入当前记录已有值，供 AI 基于现状补全/修正（而非凭空生成）
         if (mode.EqualIgnoreCase("edit") && entityId > 0)
         {
-            var entity = Entity<TEntity>.FindByKey(entityId);
+            var entity = FindRecord(entityId);
             if (entity != null)
             {
                 var safeFields = AiDataHelper.FilterSafeFields(factory.AllFields, typeof(TEntity));
@@ -161,13 +164,35 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
         }.ToJson();
     }
 
+    /// <summary>查找当前记录</summary>
+    /// <remarks>
+    /// 行权（OSC-2608273d95）：优先走控制器注入的记录查询委托（FindData，与详情页同一套数据范围判定与敏感字段遮蔽）；
+    /// 未注入时回退实体直查（单测/自定义子类场景）。越权拒绝不得让工具调用 500，记日志后按「不可访问」返回 null。
+    /// </remarks>
+    /// <param name="id">记录编号</param>
+    /// <returns>实体对象；不存在或无权访问返回 null</returns>
+    protected virtual TEntity? FindRecord(Int64 id)
+    {
+        if (_findRecord == null) return Entity<TEntity>.FindByKey(id);
+
+        try
+        {
+            return _findRecord(id);
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteLine("AI 记录上下文取数被拒：{0}", ex.Message);
+            return null;
+        }
+    }
+
     /// <summary>收集当前记录的值与字段元数据，供单条记录异常分析使用</summary>
     protected virtual String GetRecordContext()
     {
         if (entityId <= 0) return "{\"error\":\"当前无记录（新增模式），请先保存或切换到详情/编辑页\"}";
 
-        var entity = Entity<TEntity>.FindByKey(entityId);
-        if (entity == null) return "{\"error\":\"记录不存在\"}";
+        var entity = FindRecord(entityId);
+        if (entity == null) return "{\"error\":\"记录不存在或无权访问\"}";
 
         var safeFields = AiDataHelper.FilterSafeFields(factory.AllFields, typeof(TEntity));
         var values = AiDataHelper.ToSafeDictionary(entity, safeFields);

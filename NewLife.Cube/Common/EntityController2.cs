@@ -238,6 +238,9 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             context.TotalCount = totalRows;
         }
 
+        // 行权（OSC-2608273d95 G1）：批量写库不经过实体层拦截器，也不经过逐行 Valid，必须在此显式校验
+        ValidImport(factory, list, context, totalRows);
+
         // 所有字段参与插入
         var option = new BatchOption { FullInsert = true };
 
@@ -282,6 +285,105 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                     return OnMerge(factory, list, context);
                 }
         }
+    }
+
+    /// <summary>导入前置行权校验</summary>
+    /// <remarks>
+    /// 行权（OSC-2608273d95 G1）：导入走批量写库（BatchInsert/BatchUpsert/Merge），既不经过实体层拦截器
+    /// （宿主内休眠），也不经过控制器逐行 <c>Valid</c>；不在此显式校验，即可绕过
+    /// 「新增不得声称为他人归属」与「不可见行不可改写」两条约束。
+    /// <para>规则：① 归属不得为他人（全部模式）；② 已声明归属必须在当前用户数据范围内；</para>
+    /// <para>③ 未声明归属且为合并类模式时，按主键查已存在行，不可见则拒绝。</para>
+    /// 违规即拒绝整次导入（不静默跳过），保证「导入内容 ⊆ 用户可见范围」可预期。
+    /// 需要自定义导入语义的派生类可重载本方法。
+    /// </remarks>
+    /// <param name="factory">实体工厂</param>
+    /// <param name="list">新数据列表</param>
+    /// <param name="context">导入上下文</param>
+    /// <param name="totalRows">目标表已有行数，用于判定 Auto 模式按新增还是合并处理</param>
+    protected virtual void ValidImport(IEntityFactory factory, IList<IEntity> list, ImportContext context, Int64 totalRows)
+    {
+        if (list == null || list.Count == 0) return;
+
+        // 跨实体数据集（Zip/Db 包内按类名反射出的其它实体）另需目标实体页面权限
+        ValidImportEntity(factory);
+
+        var ctx = GetDataScopeContext();
+        if (ctx == null || ctx.IsSystem) return;
+
+        // Auto 模式：空表按新增、非空表按合并，与 OnImport 的分支保持一致
+        var insertLike = context.Mode switch
+        {
+            ImportMode.Insert or ImportMode.InsertIgnore or ImportMode.Replace => true,
+            ImportMode.Upsert or ImportMode.Merge => false,
+            _ => totalRows == 0,
+        };
+
+        var keyField = factory.Unique;
+        foreach (var entity in list)
+        {
+            var key = keyField == null ? null : entity[keyField.Name];
+
+            // ① 归属不得为他人。与 ValidPermission 对新增的判定一致（归属为 0 视为未声明）
+            if (CubeDataScope.IsForgedOwner(entity, ctx))
+                throw new NoPermissionException(PermissionFlags.Insert, $"导入数据越权：{keyField?.Name}={key} 归属为他人");
+
+            if (CubeDataScope.HasOwner(entity))
+            {
+                // ② 已声明归属：必须在当前用户数据范围内
+                if (!CubeDataScope.CanAccess(entity, ctx, false))
+                    throw new NoPermissionException(PermissionFlags.Insert, $"导入数据越权：{keyField?.Name}={key} 归属不在当前数据范围");
+            }
+            else if (!insertLike)
+            {
+                // ③ 合并类模式：提交行未声明归属，以已存在行判定，防止借 Upsert/Merge 改写不可见行
+                var old = FindImportTarget(factory, entity);
+                if (old != null && !CubeDataScope.CanAccess(old, ctx, false))
+                    throw new NoPermissionException(PermissionFlags.Insert, $"导入数据越权：{keyField?.Name}={key} 将覆盖不可见数据");
+            }
+        }
+    }
+
+    /// <summary>校验导入目标实体是否可写</summary>
+    /// <remarks>
+    /// Zip/Db 包内可按类名（反射）携带任意实体数据集，仅凭当前控制器的新增权限不足以说明可写该数据集，
+    /// 因此要求登录用户对目标实体页面拥有新增权限；未注册页面的实体一律拒绝。
+    /// 系统角色不受约束（与 <c>DataScopeContext.Create</c> 对系统角色的判定一致）。
+    /// </remarks>
+    /// <param name="factory">目标实体工厂</param>
+    protected virtual void ValidImportEntity(IEntityFactory factory)
+    {
+        if (factory == null || factory == Factory) return;
+
+        var user = ManageProvider.User;
+
+        // 系统角色不受约束
+        if (user?.Roles.Any(e => e.IsSystem) == true) return;
+
+        var url = EntityPageRegistry.Get(factory.EntityType)?.Url;
+        var mf = ManageProvider.Menu;
+        var menu = url.IsNullOrEmpty() ? null : mf?.FindByUrl(url) ?? mf?.FindByUrl("~" + url);
+
+        if (menu == null || user is not IUser u || !u.Has(menu, PermissionFlags.Insert))
+            throw new NoPermissionException(PermissionFlags.Insert, $"无权导入[{factory.EntityType.FullName}]数据集");
+    }
+
+    /// <summary>查找导入目标实体中已存在的行（按主键）</summary>
+    /// <param name="factory">实体工厂</param>
+    /// <param name="entity">导入行</param>
+    /// <returns>已存在行；无主键列、主键未声明或不存在时返回 null</returns>
+    protected virtual IEntity FindImportTarget(IEntityFactory factory, IEntity entity)
+    {
+        var keyField = factory?.Unique;
+        if (keyField == null || entity == null) return null;
+
+        var key = entity[keyField.Name];
+        if (key == null) return null;
+        if (key is Int32 i && i == 0) return null;
+        if (key is Int64 l && l == 0) return null;
+        if (key is String s && s.IsNullOrEmpty()) return null;
+
+        return factory.FindByKey(key);
     }
 
     /// <summary>导入Excel</summary>
@@ -617,6 +719,9 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             }
             factory2 ??= factory;
             span?.AppendTag($"{entry.Name}=>{factory2?.EntityType.FullName}");
+
+            // 行权（OSC-2608273d95 G1）：包内数据集按类名反射而来，写入前先校验目标实体页面权限
+            ValidImportEntity(factory2);
 
             // 仅解析当前控制器对应的数据集，其它数据交给 OnImportZip 重载处理
             using var entryStream = entry.Open();

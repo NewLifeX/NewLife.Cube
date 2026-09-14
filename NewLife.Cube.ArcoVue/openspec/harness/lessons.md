@@ -282,3 +282,14 @@
 - **列表“可见”过滤要与读授权同一语义（沿父链）**：只滤叶子 `Visible` 不够，父分组隐藏时列表仍点开即 403 死胡同；抽 `IsChainVisible` 叶子→根逐级判断（角色声明判定另属 IsAccessible）。
 - **后端命名常量用中文显示名直接落代码，文档务必同步**：顶级组显示名“工作台→系统看板”涉及 ParentTitle、EnsureFirstGroup 幂等同步、图标键、proposal/design/verify/ui/迁移方案/功能清单多处；改一处忘同步会在 doc-sync 冒 P1。
 
+## OSC-2608273d95 — 2026-09-14
+
+- **验收判据必须钉到锁定包版本**：本地 XCode 仓库 HEAD 可能领先 NuGet 锁定包（本次 `ac108a773` 2026-09-11「本人数据始终可访问」晚于包 `12.2.2026.901` 2026-09-01），按仓库源码写 AC 会得出「实现不符」的假结论；冒烟先用 SQL 对照包内行为，再判定 AC 真伪。
+- **`<Compile Include>` 链接文件是隐形依赖**：`Widgets/System/*.cs`、`AI/CubeTools.cs`、`Common/*` 由 `NewLife.CubeNC.csproj` 链接编译，在 WebAPI 项目新增被链接文件需要引用的共享类型时，必须同步补 `Link`，否则 MVC 栈编译失败（本轮首次编译即暴露）。
+- **批量写库是行权旁路高发区**：`BatchInsert/BatchUpsert/BatchReplace/factory.Merge` 既不经过实体层拦截器（宿主内休眠）也不走逐行 `Valid`；导入必须前置显式校验归属，合并类还要按主键查已存在行，且 Zip/Db 包内可按类名反射任意实体数据集，需另校验目标实体页面权限。
+- **页外出口要有一份共享助手**：部件、AI 记录上下文、导入等出口各自直查实体时行权必漏；统一到 `CubeDataScope`（`GetFilter`/`CanAccess`/`IsForgedOwner`）后，新增出口只需一行接入，且双栈行为一致。
+- **`AdminOnly` ≠ 行权**：系统角色也可能持有非「全部」的 DataScope，内置部件统计（用户总数/在线/24h 日志）仍会放大，须与页面列表同口径。
+- **测试注入范围的省事做法**：单测无 `ManageProvider.User` 时 `GetFilter(factory, null)` 会回落 `DataScopeContext.Current`，部件类集成测试直接 `DataScopeContext.Current = ctx`（用完复原）即可验证接线。
+- **手写测试实体没有 `_` 字段访问器**：XCode 生成的 `_` 只在生成实体上，手写测试实体断言表达式应改用生成实体（如 `User._.ID`），否则 CS0117。
+- **导入等批量入口的「拒绝」优于「跳过」**：违规静默跳过会让用户以为导入成功；改为拒绝整次并给出主体/归属原因，同时把校验方法留 `virtual` 供派生类放宽，兼顾安全与可扩展。
+

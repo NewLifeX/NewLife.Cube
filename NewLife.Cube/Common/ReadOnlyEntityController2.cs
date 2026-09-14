@@ -572,13 +572,14 @@ public partial class ReadOnlyEntityController<TEntity>
     /// 默认工具集 <see cref="CubeTools{TEntity}"/> 提供数据上下文、表单 Schema、回填表单等能力。
     /// 重载时通常继承 <see cref="CubeTools{TEntity}"/> 并重写其 virtual 工具方法
     /// （GetDataContext / GetFormSchema / FillForm），或重写数据收集方法（GetListContext / GetRecordContext），
-    /// 或返回全新的 IToolProvider 实现。数据查询委托默认走 SearchData（保留子类重载与数据权限）。
+    /// 或返回全新的 IToolProvider 实现。数据查询委托默认走 SearchData（保留子类重载与数据权限），
+    /// 记录查询委托默认走 FindData + 遮蔽敏感字段（行权：AI 记录上下文与详情页同一套判定）。
     /// </remarks>
     /// <param name="pager">当前查询条件（可为空）</param>
     /// <param name="entityId">当前记录编号</param>
     /// <returns>AI 工具集</returns>
     protected virtual CubeTools<TEntity> CreateCubeTools(Pager? pager, Int64 entityId)
-        => new CubeTools<TEntity>(Factory, pager, entityId, p => SearchData(p).ToList());
+        => new CubeTools<TEntity>(Factory, pager, entityId, p => SearchData(p).ToList(), key => FindRecordMasked(key));
 
     /// <summary>构建 AI 对话系统提示词，注入当前页面上下文</summary>
     /// <param name="req">对话请求</param>
@@ -687,6 +688,17 @@ public partial class ReadOnlyEntityController<TEntity>
             IDepartmentScope dept => DataScopeHelper.CanAccess(dept, ctx),
             _ => true,
         };
+    }
+
+    /// <summary>查询单条记录并遮蔽敏感字段。供 AI 工具集等页外出口复用详情页取数语义</summary>
+    /// <remarks>行权（OSC-2608273d95）：AI 记录上下文曾用 Entity&lt;TEntity&gt;.FindByKey 直查，绕过 CanAccess 与脱敏，此处统一收口。</remarks>
+    /// <param name="key">记录编号</param>
+    /// <returns>实体对象；不存在返回 null，无权访问抛出非法访问异常（由调用方降级处理）</returns>
+    protected virtual TEntity FindRecordMasked(Object key)
+    {
+        var entity = FindData(key);
+        if (entity != null) MaskSensitiveFields(entity);
+        return entity;
     }
     #endregion
 

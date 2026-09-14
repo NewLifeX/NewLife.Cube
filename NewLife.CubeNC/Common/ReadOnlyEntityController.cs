@@ -265,6 +265,23 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         {
             if (!app.Enable) throw new XException("非法授权！");
 
+            // 行权（OSC-2608273d95 G3）：App 密钥是系统级凭据，默认不绑定用户，行权不介入（全量可见）。
+            // 调用方可携带 userId/user 参数显式绑定用户身份，此时令牌出口与页面走同一套数据范围；
+            // 契约见 Doc/PERM-数据权限.md「令牌接口」行，避免「与页面一致」的笼统表述。
+            var userId = GetRequest("userId").ToInt();
+            if (userId <= 0) userId = GetRequest("user").ToInt();
+            if (userId > 0)
+            {
+                if (ManageProvider.Provider?.FindByID(userId) is not IUser appUser) throw new XException($"无效用户[{userId}]");
+
+                HttpContext.Items["userId"] = appUser.ID;
+                HttpContext.Items["CurrentUser"] = appUser;
+            }
+            else
+            {
+                XTrace.WriteLine("App 密钥[{0}]访问 {1}：未指定 userId，按系统级访问（数据范围不介入）", app, HttpContext.Request.Path);
+            }
+
             return app?.ToString();
         }
         else

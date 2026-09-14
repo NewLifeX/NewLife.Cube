@@ -92,6 +92,7 @@
     <Compile Include="..\NewLife.Cube\Common\PageSetting.cs" Link="Common\PageSetting.cs" />
     <Compile Include="..\NewLife.Cube\Common\ReadOnlyEntityController2.cs" Link="Common\ReadOnlyEntityController2.cs" />
     <Compile Include="..\NewLife.Cube\Common\ReadOnlyEntityControllerScope.cs" Link="Common\ReadOnlyEntityControllerScope.cs" />
+    <Compile Include="..\NewLife.Cube\Common\CubeDataScope.cs" Link="Common\CubeDataScope.cs" />
     <Compile Include="..\NewLife.Cube\Common\TreeParentSourceHelper.cs" Link="Common\TreeParentSourceHelper.cs" />
     <Compile Include="..\NewLife.Cube\Common\ValidFormatHelper.cs" Link="Common\ValidFormatHelper.cs" />
     <Compile Include="..\NewLife.Cube\Common\EntityPageRegistry.cs" Link="Common\EntityPageRegistry.cs" />

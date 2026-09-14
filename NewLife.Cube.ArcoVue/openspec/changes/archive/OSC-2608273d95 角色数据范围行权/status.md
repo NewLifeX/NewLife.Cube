@@ -1,0 +1,19 @@
+# Status
+- id: OSC-2608273d95
+- state: Done
+- updated: 2026-09-14T22:38:00+08:00
+- approvedBy: openspec-approve
+- trigger: "按照本项目 OpenSpec 规范，批准并执行 3d95 变更。"
+- checklist: passed
+- note: **2026-09-14 用户裁定**：缺口处置 = 「补齐 G1–G4（P1 四项）后再复盘」；AC-04/07/12 判据 = 「按锁定包 `12.2.2026.901` 改写，不升包」。G5–G8/G10 归为「仅记录」。
+- note: T1–T9 完成并勾选（含执行回填），T10 手工冒烟待验收方在真实实例执行；双栈实现 = 接口层 DataScope 四档 + 控件脱敏，XCode 仓库零改动。
+- note: 收尾门禁第 1 轮（提交 74475939）：实现审计 + 代码审查 → 修复 🔴-1（CubeNC Zip 旁路）、🔴-2（新增归属防伪造，本变更引入的回归）、补齐双栈脱敏与注释/文档纠偏。
+- note: 收尾门禁第 2 轮（复审计 → 修复 → 复验，提交 66444429）：按用户裁定修复 N1–N8 —— N1 双栈 `UserController.Search` 的 `?id=` 分支改走 `FindData`（含 CanAccess，行为选项 a：越权抛「非法访问数据」）；N2 部门详情取舍注释 + design 修订；N3 补 `Doc/Api` sensitive 契约、更正 3 处矛盾措辞；N4 ChangeLog 登记升级语义；N5/N6 新增 CubeNC 脱敏与 SetMenu 用例；N7/N8 时序与格式。
+- evidence: Cube 行权相关 39/39；MVC DataScope 相关 17/17；双栈 build 0 警告 0 错误；前端 Vitest 848 通过 + build ✓。全量套件存在环境性抖动（同一套件两次运行失败数不同，均为租户/菜单夹具类），相关家族单独跑均通过，worktree 基线对比 0 新增失败。残留：R1–R3、R4 前半、N9、N10（均在 tasks.md 登记理由）。
+- note: 验收（2026-09-14）：三步检查（实现审计/代码审查/文档同步）已完成，**P0 = 0**；门禁全绿（双栈 build 0/0、XCode DataScope 92/92、Cube 行权族 45/45、MVC 行权族 17/17、Vitest 848/848 + build ✓）；隔离实例冒烟完成（5089→5099 端口副本 + 独立 SQLite）：四档行集 1/6/7/1/10 行、日志不扩权、越权详情 `非法访问数据[2]`、他人 Password `***`、导出 6/1 行。AC-07/AC-12/AC-04 判据不成立（根因：本号锁定包 `12.2.2026.901` 早于 XCode `ac108a773`，无「本人数据始终可访问」且部门列表仍取 `ManagerID` 特性），已在 `verify.md` 按事实改写。
+- gaps: P1 ×4（G1 导入无归属校验、G2 AI 记录上下文绕行权、G3 App 密钥令牌出口无用户上下文、G4 系统内置部件直查实体）+ P2 ×6（G5 菜单级覆盖未接线、G6 部件投影黑名单、G7 `MaskSensitiveList` 返回值丢弃、G8 `***` 往返写回、G9 AC 判据、G10 文档漂移）；**待用户裁定「补齐 / 仅记录」**（清单见 `verify.md` 与 `tasks.md` 同名节）。
+- note: 范围变更说明：行权交付后又有两个同文件区的独立修复落地（`995a6f57` Map 外键候选、`04ef627d` 布尔不下发 dataSource），不属于本号，但同在 `GetPage`/`PrepareFieldsForApi` 链上；后续改动需连跑本号用例族。
+- note: 依赖 260824fc7c/260819e483/260815fa86 均 Done；XCode 侧 Issue 1-6 已由 12.2.2026.901 交付（audit-merged.md）。范围单一（行权接线 + 脱敏地基），design 已按路线 A（接口层行权、不改 XCode）重写
+- note: **2026-09-14 补齐轮次（G1–G4）已完成并验证**：G1 导入 `ValidImport`（归属/范围/覆盖不可见行 + 包内跨实体页面权限）、G2 AI 记录上下文走 `FindData`+脱敏（`CubeTools.findRecord` 委托，越权降级）、G3 App 密钥令牌支持 `userId` 绑定（未绑定时显式系统级）、G4 新增共享 `CubeDataScope` 并把两套内置部件（用户/在线/24h 日志与异常/登录在线明细）接入行权。新增测试：`CubeDataScopeTests` 14 例 + `ImportRowPermissionTests` 11 例 + `WidgetDataTests` 新增 4 例；门禁：WebAPI 行权/新增族 **79/0**、MVC 族 **36/0**、双栈 build **0/0**。G5–G8/G10 按裁定仅记录（见 `tasks.md`、`verify.md` §7）。
+- note: 复盘（2026-09-14）完成：`retro.md` 已填（结果摘要 / 范围回顾 / 实际完成范围 / 做得好 / 偏离 D1–D5 / 教训 / 遗留），教训已追加 `openspec/harness/lessons.md`（OSC-2608273d95 条目）；本目录整体归档至 `changes/archive/`。
+- next: 已归档，无需后续动作（遗留项见 `tasks.md` G5–G8/G10 与 `retro.md` 遗留与后续）

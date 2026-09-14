@@ -19,11 +19,12 @@ public class LoginLogWidget : IWidget
         var snow = XLog.Meta.Factory.Snow;
 
         // 最近24h登录记录。雪花Id，按 Id 降序，仅展示少量行（工作台卡片空间有限）
+        // 行权（OSC-2608273d95）：部件是页外出口，口径与 Admin/Log、Admin/UserOnline 列表一致
         var start = now.AddHours(-24);
-        var logins = XLog.FindAll(_.Action.Contains("登录") & _.ID.Between(start, now, snow), "ID desc", null, 0, 5);
+        var logins = XLog.FindAll(CubeDataScope.Merge(_.Action.Contains("登录") & _.ID.Between(start, now, snow), CubeDataScope.GetFilter(XLog.Meta.Factory)), "ID desc", null, 0, 5);
 
         // 当前在线用户（UserOnline 由定时任务清理 20 分钟不活跃会话，表内即在线会话；非雪花表按自增 Id 降序取最新，仅展示少量行）
-        var onlines = UserOnline.FindAll(null, "ID desc", null, 0, 5);
+        var onlines = UserOnline.FindAll(CubeDataScope.GetFilter(UserOnline.Meta.Factory), "ID desc", null, 0, 5);
 
         return new
         {

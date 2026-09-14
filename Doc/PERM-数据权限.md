@@ -66,9 +66,10 @@ public class DataPermissionAttribute : Attribute
 |------|------|------|
 | 列表 / 分页 | `SearchData` → `CreateWhere` → `p.State` | 条件随查询进入 SQL |
 | 导出 | `ExportData` / `ExportDataByPage` / `ExportDataByDatetime` | 与列表同源，含时间分片导出 |
-| 详情 / 编辑 / 删除 / 批量 / 导入 | `FindData` | 按表达式二次校验，不通过抛"非法访问数据" |
-| 令牌接口（Html/Json/Xml/Csv/Excel） | `ValidToken` 注入用户后走 `SearchData` | 与页面一致 |
-| 页面 AI 工具 | `IEntityAiContext.SearchData` | 复用控制器管道 |
+| 详情 / 编辑 / 删除 / 批量 | `FindData` | 按表达式二次校验，不通过抛"非法访问数据" |
+| 导入（Excel/Csv/Json/Zip） | `OnImport` → `ValidImport` | 批量写库既不经过实体层拦截器，也不经过逐行 `Valid`，由 `ValidImport` 逐行校验归属（不得为他人、不得越范围、合并类不得覆盖不可见行），并对包内跨实体数据集校验页面新增权限（OSC-2608273d95 G1） |
+| 令牌接口（Html/Json/Xml/Csv/Excel） | `ValidToken` | 用户令牌：注入用户后走 `SearchData`，与页面一致；**App 密钥：系统级凭据，默认不绑定用户、行权不介入**，调用方可带 `userId`/`user` 参数绑定用户以接入行权（OSC-2608273d95 G3） |
+| 页面 AI 工具 | `IEntityAiContext.SearchData` / `FindData` | 列表复用控制器管道；记录上下文经 `FindData` + `MaskSensitiveFields`（OSC-2608273d95 G2） |
 
 ---
 
@@ -137,6 +138,7 @@ if (!DataScopeHelper.CanAccess(order)) throw new UnauthorizedAccessException();
 | 上下文 | `GetDataScopeContext()` | `DataScopeContext.Create(当前用户)`，按请求缓存于 `HttpContext.Items`；**不写 `DataScopeContext.Current`**（宿主系统态必须保持休眠） |
 | 列表 / 导出 | `DataScopeHelper.GetFilter(Factory, ctx)` AND 进 `SearchData` 的 `p.State` | `logic=any` 只 OR 前端筛选，不得放大行权；`viewFilter` 解析失败且无其他 WhereBuilder 时保留行权，有 WhereBuilder（租户/特性）时保留原 WhereBuilder 并记 Trance（见 tasks.md 残留 R1） |
 | 聚合 / 实体部件 | `WidgetQueryService` 追加同一 `GetFilter` | 与页面列表同 一助手 |
+| 内置系统部件 | `CubeDataScope.GetFilter(实体工厂)` | 用户总数 / 在线 / 24h 日志与异常 / 登录与在线明细等 KPI 与内容部件与页面同口径（OSC-2608273d95 G4；页外出口统一走 `CubeDataScope`） |
 | 详情 / 写入 | `DataScopeHelper.CanAccess(entity, ctx)` | `FindData` 越权抛 「非法访问数据」；`ValidPermission` 除新增外与列表同一判定（新增强制不得伪造他人归属） |
 | 敏感字段 | `IFieldScope.GetSensitiveFields()` + `FieldScopeHelper.MaskSensitiveFields` | 列表/详情/导出返回前遮蔽；角色未授 `ViewSensitive` 且非本人时置 `***`；`DataField.Sensitive` 供前端藏列，**藏列不等于授权** |
 
@@ -297,7 +299,7 @@ foreach (var order in orders)
 通过本章学习，你应该掌握了：
 
 1. **数据权限概念**：区分功能权限和数据权限
-2. **DataPermissionAttribute**：控制器行级过滤，覆盖列表/导出/详情/编辑/删除/令牌接口
+2. **DataPermissionAttribute**：控制器行级过滤，覆盖列表/导出/详情/编辑/删除；行权接口实体的页面出口见 §9.2 生效范围（令牌接口需先绑定用户）
 3. **DataScopeMiddleware**：租户上下文 + 宿主系统态声明（实体层以系统身份运行）
 4. **数据范围（DataScopes）**：能力保留在 XCode，魔方页面不再隐式消费
 5. **架构边界**：数据权限唯一执行点在接口层，业务代码直接操作实体

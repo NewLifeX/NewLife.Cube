@@ -11,7 +11,8 @@ public class OnlineCountWidget : IWidget
     public Object GetData()
     {
         // UserOnline 表内即当前在线会话，直接取总数
-        var count = UserOnline.FindCount();
+        // 行权（OSC-2608273d95 G4）：部件是页外出口，口径与 Admin/UserOnline 列表一致（UserOnline 为 IUserScope）
+        var count = UserOnline.FindCount(CubeDataScope.GetFilter(UserOnline.Meta.Factory));
 
         return new
         {

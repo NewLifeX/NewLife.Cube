@@ -193,4 +193,74 @@ public class WidgetDataTests : IDisposable
         Assert.Equal("2", (String)d.Value);
         Assert.Equal("当前在线", (String)d.Trend);
     }
+
+    [Fact(DisplayName = "Error24hWidget_仅本人范围_只统计归属自己的数据")]
+    public void Error24hWidget_SelfScope_OnlyOwnRows()
+    {
+        // 行权（OSC-2608273d95 G4）：部件是页外出口，必须与 Admin/Log 列表同口径。
+        // 播种日志归属为 0，与上下文用户 999 不匹配 → 计数归零；若部件不接线则仍为 1（下方对照用例）
+        WithScope(new DataScopeContext { UserId = 999, DepartmentId = 10, DataScope = DataScopes.仅本人 }, () =>
+        {
+            var widget = new Error24hWidget();
+            dynamic d = widget.GetData();
+
+            Assert.Equal("0", (String)d.Value);
+        });
+    }
+
+    [Fact(DisplayName = "LoginLogWidget_仅本人范围_登录与在线明细清空")]
+    public void LoginLogWidget_SelfScope_EmptyDetails()
+    {
+        WithScope(new DataScopeContext { UserId = 999, DepartmentId = 10, DataScope = DataScopes.仅本人 }, () =>
+        {
+            var widget = new LoginLogWidget();
+            dynamic d = widget.GetData();
+
+            Assert.Empty((Object[])d.Logins);
+            Assert.Empty((Object[])d.Onlines);
+        });
+    }
+
+    [Fact(DisplayName = "OnlineCountWidget_仅本人范围_按归属列过滤")]
+    public void OnlineCountWidget_SelfScope_FiltersByOwner()
+    {
+        WithScope(new DataScopeContext { UserId = 999, DepartmentId = 10, DataScope = DataScopes.仅本人 }, () =>
+        {
+            var widget = new OnlineCountWidget();
+            dynamic d = widget.GetData();
+
+            Assert.Equal("0", (String)d.Value);
+        });
+    }
+
+    [Fact(DisplayName = "部件_系统态范围_不介入过滤")]
+    public void Widgets_SystemScope_NotFiltered()
+    {
+        // 系统态（DataScopes.全部）不带行权条件，口径与改造前一致
+        WithScope(new DataScopeContext { UserId = 999, DepartmentId = 10, DataScope = DataScopes.全部 }, () =>
+        {
+            var widget = new Error24hWidget();
+            dynamic d = widget.GetData();
+
+            Assert.Equal("1", (String)d.Value);
+        });
+    }
+
+    /// <summary>在指定数据权限上下文中执行</summary>
+    /// <remarks>部件通过 CubeDataScope 取上下文；测试环境没有 HttpContext 用户，助手回落到 DataScopeContext.Current</remarks>
+    /// <param name="scope">数据权限上下文</param>
+    /// <param name="action">待执行动作</param>
+    private static void WithScope(DataScopeContext scope, Action action)
+    {
+        var old = DataScopeContext.Current;
+        try
+        {
+            DataScopeContext.Current = scope;
+            action();
+        }
+        finally
+        {
+            DataScopeContext.Current = old;
+        }
+    }
 }

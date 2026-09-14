@@ -14,7 +14,9 @@ public class Error24hWidget : IWidget
         var now = DateTime.Now;
         // Log.Id 是雪花Id，带时间信息，用 Id 时间范围过滤
         var snow = XLog.Meta.Factory.Snow;
-        var count = XLog.FindCount(_.ID.Between(now.AddHours(-24), now, snow) & _.Success == false);
+        // 行权（OSC-2608273d95）：部件是页外出口，口径与 Admin/Log 列表一致（Log 为 IUserScope，非全部范围时不扩权）
+        var where = CubeDataScope.Merge(_.ID.Between(now.AddHours(-24), now, snow) & _.Success == false, CubeDataScope.GetFilter(XLog.Meta.Factory));
+        var count = XLog.FindCount(where);
 
         return new
         {

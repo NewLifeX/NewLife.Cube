@@ -17,8 +17,13 @@ static class WorkbenchKpi
 public class UserCountWidget : ICubeWidget
 {
     /// <inheritdoc />
-    public Object GetData(WidgetContext ctx) =>
-        WorkbenchKpi.Pack(User.Meta.Count.ToString("n0"), "注册用户", "/Admin/User");
+    public Object GetData(WidgetContext ctx)
+    {
+        // 行权（OSC-2608273d95）：部件是页外出口，口径必须与 Admin/User 列表一致；无限制时仍走实体缓存
+        var scope = CubeDataScope.GetFilter(User.Meta.Factory, CubeDataScope.Create(ctx?.User));
+
+        return WorkbenchKpi.Pack((scope == null ? User.Meta.Count : User.FindCount(scope)).ToString("n0"), "注册用户", "/Admin/User");
+    }
 }
 
 /// <summary>今日登录</summary>
@@ -41,7 +46,7 @@ public class OnlineCountWidget : ICubeWidget
 {
     /// <inheritdoc />
     public Object GetData(WidgetContext ctx) =>
-        WorkbenchKpi.Pack(UserOnline.FindCount().ToString(), "当前在线", "/Admin/UserOnline");
+        WorkbenchKpi.Pack(UserOnline.FindCount(CubeDataScope.GetFilter(UserOnline.Meta.Factory, CubeDataScope.Create(ctx?.User))).ToString(), "当前在线", "/Admin/UserOnline");
 }
 
 /// <summary>24h 日志量</summary>
@@ -53,7 +58,9 @@ public class Log24hWidget : ICubeWidget
     {
         var now = DateTime.Now;
         var snow = XLog.Meta.Factory.Snow;
-        var count = XLog.FindCount(_.ID.Between(now.AddHours(-24), now, snow));
+        // 行权（OSC-2608273d95）：部件是页外出口，口径与 Admin/Log 列表一致（Log 为 IUserScope，非全部范围时不扩权）
+        var where = CubeDataScope.Merge(_.ID.Between(now.AddHours(-24), now, snow), CubeDataScope.GetFilter(XLog.Meta.Factory, CubeDataScope.Create(ctx?.User)));
+        var count = XLog.FindCount(where);
         return WorkbenchKpi.Pack(count.ToString("n0"), "最近24小时",
             $"/Admin/Log?dtStart={now.AddHours(-24):yyyy-MM-dd HH:mm:ss}&dtEnd={now:yyyy-MM-dd HH:mm:ss}");
     }
@@ -68,7 +75,9 @@ public class Error24hWidget : ICubeWidget
     {
         var now = DateTime.Now;
         var snow = XLog.Meta.Factory.Snow;
-        var count = XLog.FindCount(_.ID.Between(now.AddHours(-24), now, snow) & _.Success == false);
+        // 行权（OSC-2608273d95）：部件是页外出口，口径与 Admin/Log 列表一致
+        var where = CubeDataScope.Merge(_.ID.Between(now.AddHours(-24), now, snow) & _.Success == false, CubeDataScope.GetFilter(XLog.Meta.Factory, CubeDataScope.Create(ctx?.User)));
+        var count = XLog.FindCount(where);
         return WorkbenchKpi.Pack(count.ToString(), "最近24小时异常",
             $"/Admin/Log?dtStart={now.AddHours(-24):yyyy-MM-dd HH:mm:ss}&dtEnd={now:yyyy-MM-dd HH:mm:ss}&success=false");
     }
