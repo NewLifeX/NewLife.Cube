@@ -1,0 +1,101 @@
+// 部署与发布拓扑（current-state，2026-09-01，分支 x_master）
+// 产出技能：deployment-topology-analyzer + graphviz
+// 证据：见 Doc/Architecture/deployment/deployment-topology.md
+digraph DeploymentTopology {
+    rankdir=TB;
+    fontname="Microsoft YaHei";
+    node [fontname="Microsoft YaHei", fontsize=10];
+    edge [fontname="Microsoft YaHei", fontsize=9];
+    labelloc="t";
+    label="NewLife.Cube 部署与发布拓扑（current-state）\n虚线 = 可选依赖";
+
+    // ===== CI/CD =====
+    subgraph cluster_cicd {
+        label="GitHub Actions（CI/CD）";
+        style=rounded;
+        node [shape=box, style=filled, fillcolor="#ffe6cc"];
+        wfTest    [label="test.yml\n全分支构建+测试 魔方.sln"];
+        wfPub     [label="publish.yml\ntag v* → dotnet pack ×3\n→ nuget.org + GitHub Packages"];
+        wfBeta    [label="publish-beta.yml\nmaster 路径过滤 → beta 版本"];
+        wfNpm     [label="publish-npm.yml\n前端包发布"];
+    }
+
+    nuget [shape=cylinder, label="NuGet 仓库\nNewLife.Cube / NewLife.Cube.Core / 主题包"];
+    npm [shape=cylinder, label="npm 仓库\n@newlifex/* 前端包"];
+    wfPub -> nuget [label="push"];
+    wfBeta -> nuget [label="push", style=dashed];
+    wfNpm -> npm [label="push"];
+
+    // ===== 运行时宿主 =====
+    subgraph cluster_runtime {
+        label="运行时（开发/演示为单机；生产形态由集成方决定）";
+        style=rounded;
+
+        subgraph cluster_demo {
+            label="CubeDemo 进程（net10.0 Kestrel）\nhttps://localhost:7116（launchSettings）";
+            style=rounded;
+            demoApp [shape=component, style=filled, fillcolor="#fff2cc", label="CubeDemo\nAddCube + Swagger/Scalar + UseReact SPA 回退"];
+            demoSpa [shape=box, style=filled, fillcolor=white, label="嵌入式 SPA 产物（Vue/ArcoVue）\nwwwroot EmbeddedResource"];
+            demoApp -> demoSpa [label="静态托管"];
+        }
+
+        subgraph cluster_demonc {
+            label="CubeDemoNC 进程（net10.0 Kestrel）\nhttp://*:7080 ; https://*:7081";
+            style=rounded;
+            demoncApp [shape=component, style=filled, fillcolor="#fff2cc", label="CubeDemoNC\nMVC + 7 个 Razor 主题"];
+            demoncRazor [shape=box, style=filled, fillcolor=white, label="Razor 视图 + 主题静态资源"];
+            demoncApp -> demoncRazor;
+        }
+
+        subgraph cluster_sso {
+            label="CubeSSO 进程（Kestrel 或 Docker）\nhttp/https :8080（launchSettings）";
+            style=rounded;
+            ssoApp [shape=component, style=filled, fillcolor="#fff2cc", label="CubeSSO\nOAuth2 服务端端点"];
+            dockerSso [shape=box3d, style=filled, fillcolor="#eeeeee", label="Docker 镜像（CubeSSO/Dockerfile）\naspnet 基础镜像，EXPOSE 80，卷 /cube"];
+            ssoApp -> dockerSso [label="容器化部署方式之一"];
+        }
+    }
+
+    // ===== 数据与外部服务 =====
+    subgraph cluster_data {
+        label="数据层（演示默认）";
+        style=rounded;
+        dbMembership [shape=cylinder, label="SQLite: Membership.db"];
+        dbCube [shape=cylinder, label="SQLite: Cube.db"];
+        dbLog [shape=cylinder, label="SQLite: Log.db"];
+    }
+    redis [shape=cylinder, style="filled,dashed", fillcolor="#eeeeee", label="Redis（可选）\n缓存 / DataProtection / 事件总线\nCubeDemoNC Startup.cs:34-57"];
+    stardust [shape=cloud, style=filled, fillcolor="#eeeeee", label="星尘 Stardust\n服务注册 + 配置中心（地址仅注释证据）"];
+
+    demoApp -> dbMembership [label="SQL (provider=sqlite)"];
+    demoApp -> dbCube;
+    demoApp -> dbLog;
+    demoncApp -> dbMembership [label="SQL"];
+    demoncApp -> dbCube;
+    demoncApp -> dbLog;
+    ssoApp -> dbMembership [label="SQL (inferred: 共用会员库)", style=dashed];
+    demoncApp -> redis [style=dashed, label="默认注释关闭"];
+
+    demoApp -> stardust [label="RegisterService", style=dashed];
+    demoncApp -> stardust [style=dashed];
+    ssoApp -> stardust [style=dashed];
+
+    // ===== 发布产物到部署的链路 =====
+    nuget -> demoApp [label="集成方引用部署（下游）", style=dashed, color=gray, fontcolor=gray];
+    npm -> demoSpa [label="前端皮肤源（构建期）", style=dashed, color=gray, fontcolor=gray];
+
+    // ===== 前端构建链（构建期拓扑）=====
+    subgraph cluster_frontend_build {
+        label="前端构建链（构建期）";
+        style=dashed;
+        pnpm [shape=box, label="pnpm workspace\n各 SPA 皮肤 Vite 构建\noutDir → 对应项目 wwwroot"];
+        vueDocker [shape=box3d, style=filled, fillcolor="#eeeeee", label="Vue SPA Docker 镜像\nnode20+pnpm → nginx:alpine（EXPOSE 80）"];
+        pnpm -> demoSpa [label="产物嵌入 NuGet 包"];
+        pnpm -> vueDocker [label="独立 nginx 部署选项"];
+    }
+    wfTest -> pnpm [style=dashed, label="不涉及（仅 .NET 构建）", color=gray, fontcolor=gray];
+
+    // ===== Linux 手工部署方式 =====
+    note [shape=note, style=filled, fillcolor="#ffffcc", label="Linux 手工部署（CubeDemoNC/bootstrap.sh）\nnohup dotnet cube.dll --urls http://* -basepath ../"];
+    demoncApp -> note [style=dashed, color=gray];
+}

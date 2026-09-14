@@ -1,0 +1,97 @@
+// NewLife.Cube 模块/项目依赖图
+// 产出技能：dependency-impact-analyzer + graphviz
+// 视图状态：current-state，2026-09-01，分支 x_master
+// 证据：各 .csproj 的 ProjectReference / PackageReference、魔方.sln / 魔方3.sln
+digraph ModuleDependencies {
+    rankdir=TB;
+    fontname="Microsoft YaHei";
+    node [fontname="Microsoft YaHei", fontsize=11];
+    edge [fontname="Microsoft YaHei", fontsize=9];
+    labelloc="t";
+    label="NewLife.Cube 项目依赖图（current-state 2026-09-01）\n红框 = 双核心库（含共享源码耦合）";
+
+    // ===== 外部 NuGet 依赖 =====
+    subgraph cluster_nuget {
+        label="外部 NuGet 包";
+        style=dashed;
+        node [style=filled, fillcolor=lightgray, shape=box];
+        nlcore   [label="NewLife.Core 11.18"];
+        xcode    [label="NewLife.XCode 12.1\n(Entity/Membership 基类)"];
+        nlip     [label="NewLife.IP 2.5"];
+        nlai     [label="NewLife.AI"];
+        nloffice [label="NewLife.Office"];
+        nlmySql  [label="NewLife.MySql"];
+        nlredis  [label="NewLife.Redis"];
+        stardust [label="NewLife.Stardust.Extensions"];
+    }
+
+    // ===== 双核心库 =====
+    node [shape=box, style="filled,bold", fillcolor="#cfe2ff"];
+    cube   [label="NewLife.Cube\nWebAPI 核心\nNuGet: NewLife.Cube\nnet6.0–net10.0"];
+    cubenc [label="NewLife.CubeNC\nMVC 核心 (Sdk.Web)\nNuGet: NewLife.Cube.Core\nDefineConstants=MVC"];
+    edge [dir=both, color=red, style=bold, fontcolor=red];
+    cube -> cubenc [label="双向 Compile Include 共享源码"];
+    edge [dir=forward, color=black, style=solid, fontcolor=black];
+
+    // ===== 主题包 =====
+    subgraph cluster_mvc_themes {
+        label="MVC Razor 主题（引用 CubeNC）";
+        style=rounded;
+        node [shape=box, style=filled, fillcolor=white];
+        adminlte; tabler; metronic; metronic8; elementui; layuiadmin; blazor;
+    }
+    subgraph cluster_spa_themes {
+        label="SPA 皮肤（独立前端工程，引用 Cube）";
+        style=rounded;
+        node [shape=box, style=filled, fillcolor=white];
+        vue; arcovue; naiveui; mui; shadcn; vuetify; svelte; tdesign; angular;
+    }
+    swagger [shape=box, style=filled, fillcolor=white, label="NewLife.Cube.Swagger\n(Swashbuckle + Scalar)"];
+
+    // ===== 宿主与测试 =====
+    subgraph cluster_hosts {
+        label="宿主应用";
+        style=rounded;
+        node [shape=component, style=filled, fillcolor="#fff2cc"];
+        demo   [label="CubeDemo\n(WebAPI 演示, net10.0)"];
+        demonc [label="CubeDemoNC\n(MVC 演示, net10.0)"];
+        sso    [label="CubeSSO\n(OAuth2 服务端宿主)"];
+    }
+    subgraph cluster_tests {
+        label="测试工程（均未入两个 sln）";
+        style=dashed;
+        node [shape=note, style=filled, fillcolor="#eeeeee"];
+        cubetests [label="NewLife.Cube.Tests\n(xunit + SQLite)"];
+        e2emvc    [label="E2EMvcTest\n(Playwright)"];
+        test      [label="Test / XUnitTest"];
+    }
+    deprecated [shape=box, style="filled,dashed", fillcolor=lightgray, color=gray, fontcolor=gray, label="NewLife.CubeST（已废弃，仅存 bin/obj）"];
+
+    // ===== 主题 → 核心 =====
+    adminlte -> cubenc; tabler -> cubenc; metronic -> cubenc; metronic8 -> cubenc;
+    elementui -> cubenc; layuiadmin -> cubenc; blazor -> cubenc;
+    vue -> cube; arcovue -> cube; naiveui -> cube; mui -> cube; shadcn -> cube;
+    vuetify -> cube; svelte -> cube; tdesign -> cube; angular -> cube;
+    swagger -> cube;
+
+    // ===== 宿主 → 核心/主题 =====
+    demo -> cube; demo -> swagger; demo -> vue; demo -> arcovue;
+    demo -> nlmySql;
+    demonc -> cubenc; demonc -> adminlte; demonc -> tabler; demonc -> metronic;
+    demonc -> metronic8; demonc -> elementui; demonc -> layuiadmin; demonc -> blazor;
+    demonc -> nlredis;
+    sso -> cubenc;
+
+    // ===== 测试 → 核心 =====
+    cubetests -> cube;
+    e2emvc -> cubenc;
+    test -> cubenc;
+
+    // ===== 核心 → 外部包 =====
+    cube -> nlcore; cube -> xcode; cube -> nlip; cube -> nlai; cube -> nloffice; cube -> stardust;
+    cubenc -> nlcore; cubenc -> xcode; cubenc -> nlip; cubenc -> nlai; cubenc -> nloffice; cubenc -> stardust;
+
+    // ===== 变更影响提示 =====
+    // 改共享源码文件（Jobs/Modules/Services/ViewModels/WebMiddleware、AI/Common/Entity/OAuth）
+    // 同时波及 cube 与 cubenc，以及全部 16 个主题包与 3 个宿主。
+}

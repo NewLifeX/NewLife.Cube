@@ -1,0 +1,85 @@
+// 登录与认证链流程（current-state，2026-09-01，分支 x_master）
+// 产出技能：flow-visualizer + graphviz
+// 证据：见 Doc/Architecture/flows/flows.md 中"流程一"小节的文件引用
+digraph AuthLoginFlow {
+    rankdir=TB;
+    fontname="Microsoft YaHei";
+    node [fontname="Microsoft YaHei", fontsize=10];
+    edge [fontname="Microsoft YaHei", fontsize=9];
+    labelloc="t";
+    label="登录与认证链（current-state）\n虚线 = 挂起/延迟路径；红色 = 失败路径";
+
+    // ===== 入口层 =====
+    entry [shape=ellipse, style=filled, fillcolor="#fff2cc", label="浏览器用户"];
+    uiAdmin [shape=box, style=filled, fillcolor=white, label="UI: 后台登录表单"];
+    uiSpa [shape=box, style=filled, fillcolor=white, label="UI: SPA 登录\n(RSA 挑战加密)"];
+    ctrlAdmin [shape=box, label="Route: POST /Admin/User/Login\nUserController.cs:302"];
+    ctrlAuth [shape=box, label="Route: /Auth/Login\nAuthController.cs:42"];
+
+    entry -> uiAdmin;
+    entry -> uiSpa;
+    uiAdmin -> ctrlAdmin [label="表单提交"];
+    uiSpa -> ctrlAuth [label="密文提交"];
+
+    // ===== 服务分发 =====
+    authSvc [shape=box, style=filled, fillcolor="#cfe2ff", label="AuthEnhancedService.Login\nAuthEnhancedService.cs:41"];
+    ctrlAdmin -> authSvc;
+    ctrlAuth -> authSvc;
+
+    pwdLogin [shape=box, label="UserService.LoginByPassword\nUserService.cs:91\n风控计数(账号/IP/子网) → 挑战解密"];
+    smsMail [shape=box, style="filled,dashed", fillcolor="#eeeeee", label="短信/邮箱登录路径（同走 CompleteLogin）"];
+    authSvc -> pwdLogin [label="密码"];
+    authSvc -> smsMail [label="短信/邮箱"];
+
+    failRisk [shape=ellipse, style=filled, fillcolor="#f4cccc", label="登录失败 / 风控拦截"];
+    pwdLogin -> failRisk [label="凭据错误 / 频率超限", color=red, fontcolor=red];
+    pwdLogin -> manageLogin [label="验证通过"];
+
+    // ===== ManageProvider =====
+    manageLogin [shape=box, style=filled, fillcolor="#cfe2ff", label="ManageProvider2.Login\nManageProvider.cs:87\n(OAuth 密码模式分支 :130)"];
+    checkAgent [shape=box, label="CheckAgent\n委托代理切换\nManageProvider.cs:185"];
+    manageLogin -> checkAgent [label="in-process", style=dashed];
+
+    // ===== CompleteLogin =====
+    complete [shape=box, style=filled, fillcolor="#cfe2ff", label="UserService.CompleteLogin\nUserService.cs:186"];
+    pwdLogin -> complete;
+    smsMail -> complete [style=dashed];
+    manageLogin -> complete;
+
+    ensure [shape=box, label="EnsureTenantUser :209\n无归属时自动建 TenantUser\nUserService.cs:253"];
+    choose [shape=box, label="ChooseTenant :212\n选择租户（0=管理后台哨兵）"];
+    save [shape=box, label="SaveTenant :216\n写租户 Cookie"];
+    complete -> ensure -> choose -> save;
+
+    mfa [shape=diamond, style=filled, fillcolor="#fff2cc", label="MFA 开启?"];
+    save -> mfa;
+    mfaHold [shape=box, style="filled,dashed", fillcolor="#eeeeee", label="挂起令牌\nMfaController.cs:139 验证后颁发"];
+    issue [shape=box, style=filled, fillcolor="#d9ead3", label="IssueLoginToken\nManagerProviderHelper.cs:655\nrefreshToken:664 → UserToken.Insert:678\n→ JWT(jti=ut.ID):689"];
+    mfa -> mfaHold [label="是（拦截 :221-230）", style=dashed];
+    mfaHold -> issue [label="验证通过", style=dashed];
+    mfa -> issue [label="否"];
+
+    // ===== 令牌持久化与下发 =====
+    utoken [shape=cylinder, label="DB: UserToken 表\nEntity/用户令牌.cs:23"];
+    cookie [shape=box, style=filled, fillcolor="#d9ead3", label="SaveCookie :833\nCookie token-{SysConfig.Name}\n(含 jti 的 JWT)"];
+    done [shape=ellipse, style=filled, fillcolor="#d9ead3", label="登录完成"];
+    issue -> utoken [label="Insert"];
+    issue -> cookie;
+    cookie -> done;
+
+    // ===== 后续请求令牌回读 =====
+    subgraph cluster_tokencheck {
+        label="后续请求令牌校验（同步，每请求）";
+        style=rounded;
+        loadtoken [shape=box, label="LoadToken :591\nAuthorization → X-Token → Query → Cookie 四级回退"];
+        loaduser [shape=box, label="LoadUser :137\n解 JWT → jti 查 UserToken 吊销状态 :179-186"];
+        trylogin [shape=box, label="TryLogin :46\nSession/Token 自动登录 + 滑动续期 :66-95"];
+        loadtoken -> loaduser -> trylogin;
+    }
+    done -> loadtoken [label="携带 Cookie/Authorization", style=dashed];
+
+    // ===== 登出 =====
+    logout [shape=box, style=filled, fillcolor="#f4cccc", label="ManageProvider2.Logout :231\n多设备按 jti 精确吊销 :243-245 / 全吊销 :250"];
+    done -> logout [style=dashed, color=gray];
+    logout -> utoken [label="RevokeByUser / RevokeByTokenId\n用户令牌.Biz.cs:153/:170", color=red];
+}

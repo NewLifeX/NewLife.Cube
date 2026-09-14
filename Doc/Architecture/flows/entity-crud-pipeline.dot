@@ -1,0 +1,66 @@
+// 实体管理 CRUD 管道流程（current-state，2026-09-01，分支 x_master）
+// 产出技能：flow-visualizer + graphviz
+// 证据：见 Doc/Architecture/flows/flows.md 中"流程二"小节的文件引用
+digraph EntityCrudPipeline {
+    rankdir=TB;
+    fontname="Microsoft YaHei";
+    node [fontname="Microsoft YaHei", fontsize=10];
+    edge [fontname="Microsoft YaHei", fontsize=9];
+    labelloc="t";
+    label="实体管理 CRUD 管道（current-state）\n红色 = 拒绝路径；虚线 = 租户/数据范围上下文";
+
+    req [shape=ellipse, style=filled, fillcolor="#fff2cc", label="HTTP 请求（浏览器 / SPA / 第三方）"];
+
+    mw [shape=box, style=filled, fillcolor="#ead1dc", label="DataScopeMiddleware\nDataScopeMiddleware.cs:12\nGetTenantId:33 → SetTenant:39（TenantContext AsyncLocal）\n建 DataScopeContext:70"];
+    req -> mw;
+
+    mw400 [shape=ellipse, style=filled, fillcolor="#f4cccc", label="400\n显式无效租户（:44）"];
+    mw -> mw400 [label="租户校验失败", color=red, fontcolor=red];
+
+    // ===== 授权过滤器 =====
+    attr [shape=box, style=filled, fillcolor="#cfe2ff", label="EntityAuthorizeAttribute.OnAuthorization\nEntityAuthorizeAttribute.cs:17/:43"];
+    mw -> attr [label="租户上下文就绪"];
+
+    menu [shape=box, label="ResolveMenu :166\n控制器/URL → Menu 表\n缺菜单可 CreateMenu:211 扫描注册"];
+    attr -> menu;
+
+    trylogin [shape=box, label="TryLogin :109\n（令牌/会话校验，见登录链流程图）"];
+    menu -> trylogin;
+
+    unauth [shape=ellipse, style=filled, fillcolor="#f4cccc", label="401 → 跳转登录页"];
+    trylogin -> unauth [label="未认证", color=red, fontcolor=red];
+
+    hasperm [shape=diamond, style=filled, fillcolor="#fff2cc", label="user2.Has(menu, Permission)\nAuthorizeCore:103/:115\n(权限位存菜单表，角色-菜单授权)"];
+    trylogin -> hasperm [label="已认证"];
+
+    forbidden [shape=ellipse, style=filled, fillcolor="#f4cccc", label="403\nHandleUnauthorized:129"];
+    hasperm -> forbidden [label="无权限", color=red, fontcolor=red];
+
+    // ===== 控制器管道 =====
+    ctrl [shape=box, style=filled, fillcolor="#cfe2ff", label="EntityController 管道\nReadOnlyEntityController.cs:21/:55/:117\nEntityController.cs:16/:117/:199/:25"];
+    hasperm -> ctrl [label="有权限"];
+
+    index [shape=box, label="Index :55\nPager.cs:13 分页 + Search/SearchData"];
+    detail [shape=box, label="Detail :117"];
+    add [shape=box, label="Add/Save :117（Insert）"];
+    edit [shape=box, label="Edit :199（Update）"];
+    del [shape=box, label="Delete :25 / DeleteSelect :46 / DeleteAll :84"];
+    export [shape=box, label="ExportFile :292\nExcel :309 / CSV :355\nExportData 按页 :395 或按时段 :440"];
+    import [shape=box, label="ImportExcel :280 / ImportCsv :398"];
+    ctrl -> { index detail add edit del export import };
+
+    // ===== 数据访问 =====
+    dal [shape=box, style=filled, fillcolor="#d9ead3", label="XCode Entity DAL（NuGet 包内）\n实体继承 Entity&lt;TEntity&gt;"];
+    { index detail add edit del export import } -> dal;
+
+    dbSel [shape=box, label="宿主 ConnectionStrings + provider= 后缀\nCubeDemo/appsettings.json:11-19\nXCode.config Migration=On 自动建表"];
+    dal -> dbSel;
+
+    db [shape=cylinder, label="DB: Membership / Cube / Log\n(演示默认 SQLite；MySQL 见注释示例)"];
+    dbSel -> db [label="SQL"];
+
+    // ===== 租户数据范围 =====
+    ctx [shape=note, style=filled, fillcolor="#eeeeee", label="TenantContext + DataScopeContext\n(AsyncLocal，请求生命周期)"];
+    mw -> ctx [style=dashed];
+    ctx -> ctrl [style=dashed, label="数据权限过滤依据"];
+}
