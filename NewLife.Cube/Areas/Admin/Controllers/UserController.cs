@@ -819,7 +819,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
     /// <param name="model">Username为手机号，Password为验证码</param>
     /// <returns></returns>
     [HttpPost]
-    [EntityAuthorize]
+    [AllowAnonymous]
     public ApiResponse<Boolean> BindByVerifyCode(LoginModel model)
     {
         var mobile = model.Username?.Trim() ?? "";
