@@ -353,5 +353,20 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
         return Json(result.IsSuccess ? 0 : 1, result.Message, result.Data);
     }
 
+    /// <summary>注销账号（依据《个人信息保护法》提供账号注销功能）。禁用账号并清空个性化数据，吊销令牌、解绑三方，并通知下游清理业务数据</summary>
+    /// <returns>注销结果</returns>
+    [HttpPost]
+    [EntityAuthorize]
+    public ActionResult CloseAccount()
+    {
+        if (ManageProvider.User is not User user) throw new Exception("当前登录用户无效！");
 
+        var result = userService.CloseAccount(user, UserHost);
+        if (!result.IsSuccess) return Json(1, result.Message);
+
+        // 注销当前会话
+        ManageProvider.Provider.Logout();
+
+        return Json(0, "账号已注销");
+    }
 }
