@@ -5,6 +5,12 @@
 		},
 		{
 			"path": "../NewLife.Skills"
+		},
+		{
+			"path": "../NewLife.AI"
+		},
+		{
+			"path": "../NewLife.XCode"
 		}
 	],
 	"settings": {}

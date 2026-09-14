@@ -9,7 +9,7 @@
                最近搜索已改为输入时自动匹配下拉，不再占用菜单 -->
           <a-doption value="__custom">
             <template #icon><icon-park type="message-search" /></template>
-            用户自定义查询
+            自定义查询
           </a-doption>
           <a-doption value="__save" :disabled="!canSave">
             <template #icon><icon-park type="save" /></template>
