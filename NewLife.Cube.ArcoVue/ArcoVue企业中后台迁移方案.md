@@ -949,7 +949,7 @@ DefaultList 固定容器
 NewLife.Cube.ArcoVue/openspec/
 ├── README.md
 ├── agents/                   # 薄壳编排 Agent（openspec-*）
-├── harness/lessons.md
+├── harness/                  # lessons.md（教训＋条目索引）+ verify-lessons.ps1（索引校验）
 └── changes/
     ├── OSC-260813c3e9 页面TS抽离与协作编号/  # 新号：OSC-YYMMDDxxxx + 空格 + 中文简述
     │   ├── status.md
@@ -998,7 +998,7 @@ Draft → Accepted → Implementing → Validating → Done
 
 ### 9.3 五阶段薄壳 Agent（编排 NewLife.Skills）
 
-路径：`NewLife.Cube.ArcoVue/openspec/agents/`，命名 `openspec-*`。薄壳只做编排与写 OSC 产物；实现委托 Skills。
+路径：`NewLife.Cube.ArcoVue/openspec/agents/`，命名 `openspec-*`。薄壳只做编排与写 OSC 产物；实现委托 Skills。共享规则（编号/门禁/补录/测试/目标愿景/`status.md` 写法/SFC/框架文档）收敛在 `openspec/README.md` 作为单一事实源，五壳只写阶段动作并引用之。
 
 | 阶段 | Agent | 触发示例 | 编排的 NewLife.Skills | 状态动作 |
 |------|-------|----------|----------------------|----------|

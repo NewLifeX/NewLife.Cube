@@ -7,9 +7,7 @@ description: >-
 
 # openspec-retro（复盘）
 
-你是 ArcoVue OpenSpec **复盘**编排器。终态为 **`Done`**（不再使用 Archived）。
-
-定位：在 `openspec/changes/` 找 **目录名以用户给出的 OSC ID 为前缀** 的唯一文件夹（新号 `OSC-YYMMDDxxxx`，历史 `OSC-00xx` 仍有效）。
+你是 ArcoVue OpenSpec **复盘**编排器。终态为 **`Done`**（不再使用 Archived）；共享规则见 `openspec/README.md`（单一事实源），目录定位见 README「编号规则」。
 
 ## 前置
 
@@ -21,12 +19,12 @@ description: >-
 
 ## 动作
 
-1. **会话小任务复核补录**：归档前再次核对 `tasks.md` 是否完整覆盖自验收至复盘期间通过会话窗口直接完成、且不在 OSC 计划内的事项 / 重构 / 修复；缺失则按「独立 → 新增任务项、相似 → 并入已有任务项」补录，并同步 `status.md` note 与 `retro.md` 实际完成范围。
+1. **会话小任务复核补录**：归档前按 README「会话小任务补录」再次核对自验收至复盘期间的会话内增量；缺失则补录，并同步 `status.md` note 与 `retro.md` 实际完成范围。
 2. 写 `retro.md`。
-3. 追加 `openspec/harness/lessons.md`。
+3. 追加 `openspec/harness/lessons.md` 条目：格式 `## OSC-… — <日期>`，**并同步顶部「条目索引」加一行**（条目名 = 正文标题原文）。
 4. **先改状态、后移动（防竞态残留）**：将 `status.md` 置为 `state: Done`（连同 retro/verify/tasks 的补录一并在此步完成）。**对本变更目录内全部文件的编辑必须在目录移动之前全部结束**；目录移动完成后禁止再用编辑工具触碰该目录任何文件——否则编辑器文档缓冲会在旧路径重新写回，导致 `changes/` 下残留重复副本（0008/0009/0015 曾多次复现）。
 5. **整体搬迁**：目录移至 `openspec/changes/archive/{原文件夹名}/`（新号 `OSC-YYMMDDxxxx <简述>`，历史 `OSC-00xx <简述>`；保持原文件夹名整体搬迁）。用文件系统命令（`Move-Item` / `mv`）一次移动整个目录，禁止逐文件复制或移动后再编辑。
-6. **归档后校验（防竞态残留）**：确认 `openspec/changes/` 下该变更目录已消失；若旧路径仍有残留文件（内容与 `archive/` 同名文件比对哈希），**哈希一致则直接删除残留**（纯竞态副本，无需人工确认）；哈希不一致才保留并人工确认。校验通过前不得提交。
+6. **归档后校验（防竞态残留）**：确认 `openspec/changes/` 下该变更目录已消失；若旧路径仍有残留文件（内容与 `archive/` 同名文件比对哈希），**哈希一致则直接删除残留**（纯竞态副本，无需人工确认）；哈希不一致才保留并人工确认。并运行 `powershell -NoProfile -ExecutionPolicy Bypass -File NewLife.Cube.ArcoVue\openspec\harness\verify-lessons.ps1`，确认索引与归档覆盖无 ERROR（退出码 0）。校验通过前不得提交。
 7. **提交本轮修改**：复盘归档完成后，按仓库 git 提交规范创建一次（或按 OSC 惯例一条）commit，纳入本 OSC 业务代码、OpenSpec 归档、`harness/lessons.md`、相关文档与必要构建产物；**排除**与本 OSC 无关的 WIP（如临时 patch、他皮肤误改）。提交信息对齐近期风格（如 `feat(arco): OSC-260813c3e9 …` 或历史 `feat(arco): OSC-00xx …`）。用户已说「验收并复盘」或「复盘」且未禁止提交时，本步默认执行，无需再单独要一句「请提交」。
 
 ## 禁止

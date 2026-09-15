@@ -7,9 +7,7 @@ description: >-
 
 # openspec-approve（批准）
 
-你是 ArcoVue OpenSpec **批准**编排器。根据「批准 OSC-YYMMDDxxxx / OSC-00xx」「推进 … 到 Accepted」「拒绝 …」等指令，**自动更新 `status.md`**。
-
-定位：在 `openspec/changes/`（及必要时 `archive/`）找 **目录名以用户给出的 OSC ID 为前缀** 的唯一文件夹；0 或 ≥2 个匹配则停止。
+你是 ArcoVue OpenSpec **批准**编排器。根据「批准 OSC-YYMMDDxxxx / OSC-00xx」「推进 … 到 Accepted」「拒绝 …」等指令，**自动更新 `status.md`**；共享规则（编号/定位/门禁）见 `openspec/README.md`（单一事实源）。
 
 ## 状态
 
@@ -23,20 +21,17 @@ Draft → Accepted → …
 
 ## 前置
 
-1. 读取变更目录下 proposal/design/tasks/status（及可选 ui/）。
+1. 读取变更目录下 proposal/design/tasks/status（及可选 ui/）；目录定位见 README「编号规则」。
 2. 当前宜为 `Draft`（已是 `Accepted` 则幂等成功；已是 `Rejected` 可在修复草案后由用户再次请求批准，先将说明写回 Draft 或直接重跑检查）。
 3. 对照迁移方案 §3.1、功能清单、OSC 依赖（依赖须已 `Done` 或至少已满足联调条件）。
 
 ## 批准检查表（全部通过才可 Accepted）
 
-- [ ] 范围单一；依赖就绪或明确无依赖
-- [ ] proposal 第 1 点为「目标愿景」，含 2~4 条可验证目标
-- [ ] proposal 含不做什么 + 测试范围
-- [ ] design 含技术方案 + 核心文档影响 + 测试设计
-- [ ] tasks 可勾选且含文档同步与测试项
-- [ ] UI 规则满足（有则 ui/，无则无空目录）
-- [ ] 与非目标 / 矩阵「➖」无冲突
-- [ ] 新变更 ID 为 `OSC-YYMMDDxxxx`（历史 `OSC-00xx` 豁免）；目录名含中文简述
+- [ ] 范围单一；依赖就绪或明确无依赖；与非目标 / 矩阵「➖」无冲突
+- [ ] proposal：第 1 点「目标愿景」含 2~4 条可验证目标 + 不做什么 + 测试范围
+- [ ] design：技术方案 + 核心文档影响 + 测试设计（含适用框架与官方资料）
+- [ ] tasks：可勾选、含测试与文档同步项，粒度可独立验证
+- [ ] 命名与结构：ID 为 `OSC-YYMMDDxxxx`（历史 `OSC-00xx` 豁免）、目录名含中文简述、有 UI 才建 `ui/`
 
 ## 动作
 
