@@ -718,6 +718,8 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
                     {
                         TenantId = tenantId,
                         UserId = user2.ID,
+                        // 自动绑定租户时一并带默认角色，避免 TenantUser.RoleId 为 0 导致进入租户上下文后角色为空（403）
+                        RoleId = r?.ID ?? 0,
                         Enable = true,
                         CreateIP = UserHost,
                         CreateTime = DateTime.Now,

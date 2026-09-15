@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using NewLife.Caching;
+using NewLife.Cube.Areas.Admin.Controllers;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Enums;
@@ -275,7 +276,18 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
 
         // 检查是否已绑定到该租户
         var tenantUser = TenantUser.FindByTenantIdAndUserId(tenantId, userId);
-        if (tenantUser != null) return tenantUser;
+        if (tenantUser != null)
+        {
+            // 自愈：存量 RoleId=0（旧 bug / 早期默认）在重新登录时补齐为默认角色，避免租户上下文 403。
+            // 仅 RoleId==0 才修正，不覆盖后台已显式分配的角色；取值与创建时一致（行为统一）。
+            if (tenantUser.Enable && tenantUser.RoleId == 0)
+            {
+                tenantUser.RoleId = Role.GetOrAdd(CubeSetting.Current.DefaultRole)?.ID ?? 0;
+                tenantUser.Update();
+                XTrace.WriteLine($"[{userId}]租户[{tenantId}]绑定 RoleId 自愈为默认角色");
+            }
+            return tenantUser;
+        }
 
         // 规则B 收紧：仅"存量无有效绑定用户"（无任何 Enable=true 的 TenantUser）才自动绑定。
         // 已属于其它租户的用户不自动自建加入，防止带可猜编码的水平越权；多租户归属走显式管理动作。
@@ -293,6 +305,8 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
             Enable = true,
             CreateIP = ip,
             CreateTime = DateTime.Now,
+            RoleId = Role.GetOrAdd(CubeSetting.Current.DefaultRole)?.ID ?? 0,
+            //与 UserController.Register 自动绑定一致，取默认角色兜底 
         };
         tenantUser.Insert();
 
