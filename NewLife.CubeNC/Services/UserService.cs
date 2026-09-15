@@ -301,12 +301,11 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         {
             TenantId = tenantId,
             UserId = userId,
+            //与 UserController.Register 自动绑定一致，取默认角色兜底 
             RoleId = ManagerProviderHelper.ResolveTenantRole(tenantId),
             Enable = true,
             CreateIP = ip,
             CreateTime = DateTime.Now,
-            RoleId = Role.GetOrAdd(CubeSetting.Current.DefaultRole)?.ID ?? 0,
-            //与 UserController.Register 自动绑定一致，取默认角色兜底 
         };
         tenantUser.Insert();
 

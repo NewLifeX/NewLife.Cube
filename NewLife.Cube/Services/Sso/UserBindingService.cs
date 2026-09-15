@@ -532,11 +532,9 @@ public class UserBindingService : IUserBindingService
                 {
                     TenantId = tenant.Id,
                     UserId = user.ID,
+                    //SSO 自动建租户关系时 RoleId 默认为 0，取默认角色兜底
                     RoleId = ManagerProviderHelper.ResolveTenantRole(tenant.Id),
                     Enable = true,
-                    RoleId = Role.GetOrAdd(CubeSetting.Current.DefaultRole)?.ID ?? 0,
-                    //SSO 自动建租户关系时 RoleId 默认为 0，取默认角色兜底
-
                 };
                 tenantUser.Insert();
 
@@ -566,11 +564,9 @@ public class UserBindingService : IUserBindingService
                     {
                         TenantId = tenant.Id,
                         UserId = user.ID,
+                        // 补 RoleId，避免租户内空角色导致 403（SSO 自动建租户关系时 RoleId 默认为 0，取默认角色兜底）
                         RoleId = ManagerProviderHelper.ResolveTenantRole(tenant.Id),
                         Enable = true,
-                        RoleId = Role.GetOrAdd(CubeSetting.Current.DefaultRole)?.ID ?? 0,
-                        // 补 RoleId，避免租户内空角色导致 403（SSO 自动建租户关系时 RoleId 默认为 0，取默认角色兜底）
-
                     };
                     tenantUser.Insert();
 
