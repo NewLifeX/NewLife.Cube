@@ -932,6 +932,7 @@ public class UserController : EntityController<User, UserModel>
             {
                 TenantId = _tenantContext.TenantId,
                 UserId = entity.ID,
+                RoleId = ManagerProviderHelper.ResolveTenantRole(_tenantContext.TenantId, entity.RoleID),
                 CreateIP = entity.RegisterIP,
                 Enable = entity.Enable,
 

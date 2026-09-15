@@ -481,6 +481,23 @@ public static class ManagerProviderHelper
         //ManageProvider.Provider.Tenant = Tenant.FindById(tenantId);
     }
 
+    /// <summary>解析租户用户角色：显式指定角色优先；否则取租户默认角色（全局默认角色-租户名，如"普通用户-某某租户"），
+    /// 与注册逻辑同口径，避免租户成员无角色。多租户下各租户拥有独立默认角色，互不混淆</summary>
+    /// <param name="tenantId">租户编号</param>
+    /// <param name="roleId">显式指定角色编号，0表示未指定</param>
+    /// <returns>角色编号</returns>
+    public static Int32 ResolveTenantRole(Int32 tenantId, Int32 roleId = 0)
+    {
+        if (roleId > 0) return roleId;
+
+        var set = CubeSetting.Current;
+        var name = set.DefaultRole;
+        var tenant = Tenant.FindById(tenantId);
+        if (tenant != null && !tenant.Name.IsNullOrEmpty()) name += $"-{tenant.Name}";
+
+        return Role.GetOrAdd(name).ID;
+    }
+
     /// <summary>解析注册租户。优先X-App-Id（参考SSO登录按AppId查找OAuth配置取租户），其次X-Tenant（租户编码，与GetTenantId语义一致）。
     /// Shadow 期（默认）：无租户标识的注册与登录规则A一致，兼容放行不绑定，仅记日志；Enforce 才强制要求有效租户。未开启多租户不解析</summary>
     /// <param name="context">HTTP上下文</param>

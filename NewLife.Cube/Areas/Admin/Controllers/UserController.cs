@@ -723,12 +723,17 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
                         Enable = true,
                         CreateIP = UserHost,
                         CreateTime = DateTime.Now,
+                        RoleId = ManagerProviderHelper.ResolveTenantRole(tenantId),
                     };
                     tenantUser.Insert();
                 }
-                else if (!tenantUser.Enable)
+                else
                 {
+                    // 为了补偿存量用户的租户用户角色，始终启用租户用户并确保角色存在
+
                     tenantUser.Enable = true;
+                    // 补偿：存量绑定无角色（主角色与角色组均为空）时，用租户默认角色兜底
+                    if (tenantUser.RoleId <= 0 && tenantUser.RoleIds.IsNullOrEmpty()) tenantUser.RoleId = ManagerProviderHelper.ResolveTenantRole(tenantId);
                     tenantUser.Update();
                 }
             }

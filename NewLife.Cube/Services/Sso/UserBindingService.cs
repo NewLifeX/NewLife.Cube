@@ -532,6 +532,7 @@ public class UserBindingService : IUserBindingService
                 {
                     TenantId = tenant.Id,
                     UserId = user.ID,
+                    RoleId = ManagerProviderHelper.ResolveTenantRole(tenant.Id),
                     Enable = true,
                     RoleId = Role.GetOrAdd(CubeSetting.Current.DefaultRole)?.ID ?? 0,
                     //SSO 自动建租户关系时 RoleId 默认为 0，取默认角色兜底
@@ -541,11 +542,13 @@ public class UserBindingService : IUserBindingService
 
                 log?.WriteLog(typeof(User), "SSO租户", true, $"[{manageUser}]自动创建租户关系[{tenant.Name}]", manageUser.ID, manageUser + "");
             }
-            else if (!tenantUser.Enable || tenantUser.RoleId == 0)
+            else
             {
+                // 为了补偿存量用户的租户用户角色，始终启用租户用户并确保角色存在
+
                 tenantUser.Enable = true;
-                // 补齐 RoleId（存量 RoleId=0 的绑定重新启用时一并修正，避免 403）
-                if (tenantUser.RoleId == 0) tenantUser.RoleId = Role.GetOrAdd(CubeSetting.Current.DefaultRole)?.ID ?? 0;
+                // 补偿：存量绑定无角色（主角色与角色组均为空）时，用租户默认角色兜底
+                if (tenantUser.RoleId <= 0 && tenantUser.RoleIds.IsNullOrEmpty()) tenantUser.RoleId = ManagerProviderHelper.ResolveTenantRole(tenant.Id);
                 tenantUser.Update();
 
                 log?.WriteLog(typeof(User), "SSO租户", true, $"[{manageUser}]启用租户关系[{tenant.Name}]", manageUser.ID, manageUser + "");
@@ -563,6 +566,7 @@ public class UserBindingService : IUserBindingService
                     {
                         TenantId = tenant.Id,
                         UserId = user.ID,
+                        RoleId = ManagerProviderHelper.ResolveTenantRole(tenant.Id),
                         Enable = true,
                         RoleId = Role.GetOrAdd(CubeSetting.Current.DefaultRole)?.ID ?? 0,
                         // 补 RoleId，避免租户内空角色导致 403（SSO 自动建租户关系时 RoleId 默认为 0，取默认角色兜底）
@@ -575,8 +579,8 @@ public class UserBindingService : IUserBindingService
                 else if (!tenantUser.Enable || tenantUser.RoleId == 0)
                 {
                     tenantUser.Enable = true;
-                    // 补齐 RoleId（存量 RoleId=0 的绑定重新启用时一并修正，避免 403）
-                    if (tenantUser.RoleId == 0) tenantUser.RoleId = Role.GetOrAdd(CubeSetting.Current.DefaultRole)?.ID ?? 0;
+                    // 补偿：存量绑定无角色（主角色与角色组均为空）时，用租户默认角色兜底
+                    if (tenantUser.RoleId <= 0 && tenantUser.RoleIds.IsNullOrEmpty()) tenantUser.RoleId = ManagerProviderHelper.ResolveTenantRole(tenant.Id);
                     tenantUser.Update();
 
                     log?.WriteLog(typeof(User), "SSO租户", true, $"[{manageUser}]启用租户关系[{tenant.Name}]", manageUser.ID, manageUser + "");
