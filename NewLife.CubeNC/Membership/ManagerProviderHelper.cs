@@ -18,6 +18,9 @@ namespace NewLife.Cube;
 /// <summary>管理提供者助手</summary>
 public static class ManagerProviderHelper
 {
+    /// <summary>登录失败统一文案。与 UserService.LoginByPassword 的用户名校验失败文案保持一致，避免泄露用户/租户存在性</summary>
+    private const String LoginFailedMessage = "提供的用户名或密码不正确。";
+
     /// <summary>设置当前用户</summary>
     /// <param name="provider">提供者</param>
     /// <param name="context">Http上下文，兼容NetCore</param>
@@ -945,6 +948,48 @@ public static class ManagerProviderHelper
         var key = $"TenantId-{SysConfig.Current.Name}";
         var str = req.Cookies[key];
         return str.IsNullOrEmpty() ? -1 : ResolveTenantById(str);
+    }
+
+    /// <summary>登录租户校验：请求显式声明租户标识且开启多租户时，校验登录用户是否属于该租户。
+    /// 非成员返回错误信息（与用户名校验失败的文案一致，不泄露用户与租户的存在性）；校验通过返回 null。
+    /// 在登录流程（自动绑定/令牌签发）之前调用，被拒登录不产生任何会话副作用</summary>
+    /// <param name="context">HTTP上下文</param>
+    /// <param name="username">登录用户名（用户名/邮箱/手机号）</param>
+    /// <returns>错误信息；null 表示校验通过</returns>
+    public static String ValidateLoginTenant(this HttpContext context, String username)
+    {
+        var req = context?.Request;
+        if (req == null) return null;
+
+        // 未开启多租户不校验
+        var set = CubeSetting.Current;
+        if (!set.EnableTenant) return null;
+
+        // 统一走单一解析入口（X-App-Id → X-Tenant/X-Tenant-Id/Query/Cookie），与自动绑定/访问路径的租户解析语义一致
+        var resolution = context.ResolveTenant();
+
+        // 未解析到有效租户：完全未声明不校验；显式声明但无效（不存在/已禁用）当作用户不存在，拒绝登录
+        if (resolution.TenantId <= 0)
+        {
+            // X-App-Id 对应应用已配置但未设置租户（存量小程序过渡态）：视为未声明，与注册路径影子期兼容放行一致
+            var appId = req.Headers["X-App-Id"] + "";
+            if (IsAppIdConfiguredWithoutTenant(appId))
+                return null;
+
+            return context.HasExplicitTenantHeader() ? LoginFailedMessage : null;
+        }
+
+        var tenantId = resolution.TenantId;
+
+        // 定位登录用户（用户名/邮箱/手机，与 UserService.LoginByPassword 一致）；查不到交由登录流程返回同样的错误
+        var user = User.FindByName(username) ?? User.FindByMail(username) ?? User.FindByMobile(username);
+        if (user == null) return null;
+
+        // 用户不属于该租户，当作用户不存在
+        if (!TenantAccessPolicy.IsMember(tenantId, user))
+            return LoginFailedMessage;
+
+        return null;
     }
 
     /// <summary>按租户编码（Code）解析租户。X-Tenant 头专用，避免纯数字编码被误判为ID；多租户开启时校验存在且启用，无效返回-1</summary>

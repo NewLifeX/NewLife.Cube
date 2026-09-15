@@ -3,13 +3,17 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Caching;
 using NewLife.Cube.Areas.Admin.Models;
+using NewLife.Cube.Common;
+using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Models;
 using NewLife.Cube.Services;
 using NewLife.Cube.ViewModels;
 using NewLife.Reflection;
 using NewLife.Web;
+using XCode;
 using XCode.Membership;
+using IManageUser = NewLife.Model.IManageUser;
 
 namespace NewLife.Cube.Controllers;
 
@@ -36,12 +40,12 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
 
     /// <summary>密码登录</summary>
     /// <param name="model">登录模型，包含用户名和密码</param>
-    /// <returns>访问令牌和刷新令牌</returns>
+    /// <returns>访问令牌和刷新令牌；需要图形验证码时返回 code=-6（CubeCode.CaptchaRequired）及 captchaId/image</returns>
     [HttpPost]
     [AllowAnonymous]
-    public ApiResponse<TokenModel> Login(LoginModel model)
+    public ApiResponse<LoginTokenModel> Login(LoginModel model)
     {
-        var res = new TokenModel();
+        var res = new LoginTokenModel();
         if (String.IsNullOrWhiteSpace(model.Username))
             return res.ToFailApiResponse("用户名不能为空");
         if (String.IsNullOrWhiteSpace(model.Password))
@@ -50,6 +54,17 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
         try
         {
             var loginResult = authEnhanced.Login(model, HttpContext);
+
+            // 需要图片验证码：返回专用业务码 + captchaId/image，前端据此展示验证码输入框
+            if (loginResult != null && loginResult.CaptchaRequired)
+            {
+                res.CaptchaRequired = true;
+                res.CaptchaId = loginResult.CaptchaId;
+                res.CaptchaImage = loginResult.CaptchaImage;
+                res.CaptchaUrl = "/Auth/Captcha";
+                return res.ToFailApiResponse(CubeCode.CaptchaRequired, loginResult.Message);
+            }
+
             // MFA 拦截：账密通过但需要二步验证
             if (loginResult != null && !loginResult.MfaToken.IsNullOrEmpty())
                 return res.ToFailApiResponse($"mfa_required:{loginResult.MfaToken}");
