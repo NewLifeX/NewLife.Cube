@@ -75,35 +75,35 @@ public class AuthRegisterModel : ICubeModel
     public AuthCategory Category { get; set; } = AuthCategory.Password;
 
     /// <summary>用户名</summary>
-    public String Username { get; set; }
+    public String? Username { get; set; }
 
     /// <summary>邮箱</summary>
-    public String Email { get; set; }
+    public String? Email { get; set; }
 
     /// <summary>手机号</summary>
-    public String Mobile { get; set; }
+    public String? Mobile { get; set; }
 
     /// <summary>密码</summary>
-    public String Password { get; set; }
+    public String? Password { get; set; }
 
     /// <summary>确认密码</summary>
-    public String ConfirmPassword { get; set; }
+    public String? ConfirmPassword { get; set; }
 
     /// <summary>验证码（手机/邮箱注册时必填）</summary>
-    public String Code { get; set; }
+    public String? Code { get; set; }
 
     /// <summary>OAuth 临时令牌（category=oauth 时必填）</summary>
-    public String OAuthToken { get; set; }
+    public String? OAuthToken { get; set; }
 
     /// <summary>验证码 ID。调用 /Auth/Captcha 获取，注册时原样回传；仅在注册场景需要验证码时必填 </summary>
-    public String CaptchaId { get; set; }
+    public String? CaptchaId { get; set; }
 
     /// <summary>验证码用户输入。仅在注册场景需要验证码时必填 </summary>
-    public String CaptchaCode { get; set; }
+    public String? CaptchaCode { get; set; }
 
     /// <summary>兼容旧版字段，建议改用 ConfirmPassword</summary>
     [Obsolete("Use ConfirmPassword instead")]
-    public String Password2 { get => ConfirmPassword; set => ConfirmPassword = value; }
+    public String? Password2 { get => ConfirmPassword; set => ConfirmPassword = value; }
 }
 
 /// <summary>注册结果。正常注册返回访问令牌，需要邮箱/手机验证时返回待激活信息</summary>
