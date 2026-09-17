@@ -79,7 +79,10 @@ public static class FileStorageExtensions
             return storage;
         });
 
-        services.AddHostedService<FileStorageService>();
+        // 仅当提供或拉取任一功能开启时，才启动后台文件存储服务（事件总线订阅/扫描定时）。
+        // 注意：IFileStorage 已始终注册，此处是否注册后台服务不影响 CubeController 的激活。
+        if (CubeSetting.Current.FileStorageProvide || CubeSetting.Current.FileStorageFetch)
+            services.AddHostedService<FileStorageService>();
 
         return services;
     }
