@@ -59,25 +59,11 @@ export class AuthLogic {
    * @returns 若服务端要求 MFA，返回值中 data 为 null，需从 message 提取 mfaToken 继续二步验证
    */
   async login(username: string, password: string, captchaId?: string, captchaCode?: string, remember?: boolean) {
-    let finalPassword = password;
-    let challengeId: string | undefined;
-    try {
-      const challengeRes = await this.api.user.getChallenge();
-      const challenge = challengeRes.data;
-      if (challenge?.publicKey) {
-        finalPassword = await encryptPassword(password, challenge.publicKey);
-        challengeId = challenge.challengeId;
-      }
-    } catch {
-      // Challenge 接口不可达或加密失败，降级为明文传输
-    }
-    const res = await this.api.user.login({
-      username,
-      password: finalPassword,
-      ...(challengeId ? { challengeId } : {}),
-      ...(captchaId ? { captchaId } : {}),
-      ...(captchaCode ? { captchaCode } : {}),
-      ...(remember ? { remember } : {}),
+    // 复用 api-core 的通用密码登录逻辑（RSA Challenge 加密 + captcha/remember 透传 + 失败降级明文）
+    const res = await this.api.user.loginWithPassword(username, password, {
+      captchaId,
+      captchaCode,
+      remember,
     });
     if (res.data?.accessToken) {
       this.api.tokenManager.setToken(res.data.accessToken, res.data.expireIn);

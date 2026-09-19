@@ -120,7 +120,7 @@ export interface ApiClientOptions {
   additionalRequestHeaders?: Record<string, string> | (() => Record<string, string>);
   /** 请求钩子：皮肤可注入自定义请求处理逻辑（在 token 注入与地址解析之后执行）。允许返回 Promise（同 axios 拦截器） */
   onRequestHook?: (config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig | Promise<InternalAxiosRequestConfig>;
-  /** 响应钩子（responseIntercept）：成功与失败响应均触发，传入完整 axios 响应 */
+  /** 响应钩子（responseInterceptor，成功与失败响应均触发）：传入完整 axios 响应 */
   onResponseHook?: (response: AxiosResponse) => void;
   /** 401 时的回调（默认触发 cube:unauthorized 事件）。url 为当前请求路径，便于上层判断是否为自身请求 */
   onUnauthorized?: (url?: string) => void;
@@ -241,7 +241,7 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
         console.log('TraceId:', res.traceId);
       }
 
-      // 响应钩子（responseIntercept）
+      // 响应钩子（responseInterceptor）
       if (onResponseHook) {
         onResponseHook(response);
       }
@@ -268,7 +268,7 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
           window.dispatchEvent(new CustomEvent('cube:unauthorized'));
         }
       } else {
-        // 响应钩子（responseIntercept）在错误路径同样触发
+        // 响应钩子（responseInterceptor）在错误路径同样触发
         if (response && onResponseHook) {
           onResponseHook(response);
         }

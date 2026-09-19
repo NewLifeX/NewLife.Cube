@@ -55,3 +55,46 @@ test('unbind: GET /Sso/UnBind/{provider}（服务接口不带 /api）', () => {
   assert.equal(calls[0].url, '/Sso/UnBind/OpenWeixin');
   assert.equal(calls[0].method, 'get');
 });
+
+// ── loginWithPassword（密码登录通用逻辑：Challenge 加密 / 降级明文 / 验证码与记住透传）──
+
+/** 构造 mock：/Auth/Challenge 返回给定公钥，/Auth/Login 返回给定 token，捕获全部请求 */
+function createLoginMock({ publicKey, challengeId, token = 'tk' }) {
+  const calls = [];
+  const request = (cfg) => {
+    calls.push(cfg);
+    const isChallenge = cfg.url === '/Auth/Challenge';
+    return Promise.resolve({
+      code: 0,
+      message: 'ok',
+      data: isChallenge ? { challengeId, publicKey } : { accessToken: token },
+    });
+  };
+  return { api: createUserApi(request), calls };
+}
+
+test('loginWithPassword: 公钥为空 → 明文登录，不携带 challengeId', async () => {
+  const { api, calls } = createLoginMock({ publicKey: '', challengeId: 'ch-empty' });
+  const res = await api.loginWithPassword('admin', 'Admin123!');
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0].url, '/Auth/Challenge');
+  assert.equal(calls[1].url, '/Auth/Login');
+  assert.equal(calls[1].data.password, 'Admin123!'); // 明文
+  assert.equal(calls[1].data.challengeId, undefined); // 公钥为空不进加密分支
+  assert.equal(res.data.accessToken, 'tk');
+});
+
+test('loginWithPassword: 公钥无效致加密失败 → 降级明文', async () => {
+  const { api, calls } = createLoginMock({ publicKey: 'not-a-valid-pem', challengeId: 'ch-bad' });
+  await api.loginWithPassword('admin', 'pwd');
+  assert.equal(calls[1].data.password, 'pwd'); // 加密失败兜底明文
+  assert.equal(calls[1].data.challengeId, undefined);
+});
+
+test('loginWithPassword: 验证码与记住登录态透传（captchaId/captchaCode/remember）', async () => {
+  const { api, calls } = createLoginMock({ publicKey: '', challengeId: undefined });
+  await api.loginWithPassword('admin', 'pwd', { captchaId: 'c1', captchaCode: '1234', remember: true });
+  assert.equal(calls[1].data.captchaId, 'c1');
+  assert.equal(calls[1].data.captchaCode, '1234');
+  assert.equal(calls[1].data.remember, true);
+});

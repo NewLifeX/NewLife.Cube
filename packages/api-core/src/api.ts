@@ -1,5 +1,6 @@
 import type { AxiosRequestConfig } from 'axios';
 import { resolveRequestUrl } from './service-path';
+import { encryptPassword } from './crypto';
 import type {
   ApiResponse,
   AuthCategory,
@@ -27,6 +28,66 @@ import type {
 
 type RequestFn = <T>(config: AxiosRequestConfig) => Promise<ApiResponse<T>>;
 
+/** 密码登录附加参数（图画验证码与记住登录态） */
+export interface PasswordLoginOptions {
+  /** 图片验证码 ID（登录配置 login.captcha=true 时必填） */
+  captchaId?: string;
+  /** 图片验证码答案 */
+  captchaCode?: string;
+  /** 记住登录状态（true 时后端把令牌有效期延长到 365 天） */
+  remember?: boolean;
+}
+
+/**
+ * 密码登录通用业务逻辑（皮肤无关，沉淀在 api-core 供所有皮肤复用）
+ *
+ * 与后端 GET /Auth/Challenge 协作，自动尝试 RSA-OAEP 公钥加密密码；
+ * Challenge 接口不可达 / 公钥为空 / 加密失败时降级为明文传输。
+ * captchaId/captchaCode/remember 可选，仅在传值时携带对应字段。
+ *
+ * @param login 发起登录请求的 callback（sku 注入：user.login）
+ * @param getChallenge 获取 RSA 挑战的 callback（sku 注入：user.getChallenge）
+ * @param username 用户名
+ * @param password 原始明文密码（本函数内部按需加密）
+ * @param opts 附加参数（验证码 / 记住）
+ * @returns 登录结果 ApiResponse（登录成功时 data 含 accessToken）
+ */
+export async function passwordLoginWithChallenge(
+  login: (data: {
+    username: string;
+    password: string;
+    category?: AuthCategory;
+    challengeId?: string;
+    captchaId?: string;
+    captchaCode?: string;
+    remember?: boolean;
+  }) => Promise<ApiResponse<LoginResult>>,
+  getChallenge: () => Promise<ApiResponse<ChallengeResult>>,
+  username: string,
+  password: string,
+  opts: PasswordLoginOptions = {},
+): Promise<ApiResponse<LoginResult>> {
+  let finalPassword = password;
+  let challengeId: string | undefined;
+  try {
+    const challenge = (await getChallenge()).data;
+    if (challenge?.publicKey) {
+      finalPassword = await encryptPassword(password, challenge.publicKey);
+      challengeId = challenge.challengeId;
+    }
+  } catch {
+    // Challenge 接口不可达 / 公钥为空 / 加密失败：降级为明文传输
+  }
+  return login({
+    username,
+    password: finalPassword,
+    ...(challengeId ? { challengeId } : {}),
+    ...(opts.captchaId ? { captchaId: opts.captchaId } : {}),
+    ...(opts.captchaCode ? { captchaCode: opts.captchaCode } : {}),
+    ...(opts.remember ? { remember: opts.remember } : {}),
+  });
+}
+
 /**
  * 用户认证相关 API
  *
@@ -37,6 +98,25 @@ export function createUserApi(request: RequestFn) {
     /** 密码登录（传入 category 可切换：手机验证码登录/邮箱验证码登录） */
     login: (data: { username: string; password: string; category?: AuthCategory; challengeId?: string; captchaId?: string; captchaCode?: string; remember?: boolean }) =>
       request<LoginResult>({ url: '/Auth/Login', method: 'post', data }),
+
+    /**
+     * 密码登录（皮肤通用逻辑，自动 RSA Challenge 加密）
+     *
+     * 内部先 GET /Auth/Challenge 取公钥加密密码并携带 challengeId 登录；
+     * 服务端不支持 / 不可达 / 加密失败时降级明文。验证码与记住登录态按需传 opts。
+     */
+    loginWithPassword: (
+      username: string,
+      password: string,
+      opts: PasswordLoginOptions = {},
+    ) =>
+      passwordLoginWithChallenge(
+        (data) => request<LoginResult>({ url: '/Auth/Login', method: 'post', data }),
+        () => request<ChallengeResult>({ url: '/Auth/Challenge', method: 'get' }),
+        username,
+        password,
+        opts,
+      ),
 
     /** 发送验证码 */
     sendCode: (data: { channel: string; username: string; action?: string; captchaId?: string; captchaCode?: string }) =>
