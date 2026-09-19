@@ -1,19 +1,27 @@
 /**
  * HTTP请求工具
  *
- * 底层复用 @newlifex/api-core 的 createApiClient，非 UI 的请求逻辑（host 拼接、/api 前缀补全、
- * Token 头注入、附加请求头、withCredentials、content-type 透传、traceId、204 处理、
- * 错误分类归一化、响应钩子 responseIntercept）已全部迁移至 api-core，所有皮肤共享。
+ * 底层复用 @newlifex/api-core 的 createCubeApi（内部 createApiClient），非 UI 的请求逻辑（host 拼接、
+ * /api 前缀补全、Token 头注入、附加请求头、withCredentials、content-type 透传、traceId、204 处理、
+ * 错误分类归一化、响应钩子 responseInterceptor）已全部迁移至 api-core，所有皮肤共享。
  *
- * 本文件仅保留 cube-vue 特有、与 UI 强相关的逻辑：
+ * 本文件保留 cube-vue 特有、与 UI 强相关的逻辑：
  *   1. 401 跳转 / 导航（handleUnauthorized、redirectToLogin）；
- *   2. 错误与业务错误的弹窗展示（onBusinessError、onResponseError 回调）。
- * 其余配置（additionalRequestHeaders / requestInterceptor / responseIntercept）均以回调形式接线，
+ *   2. 错误与字段/业务错误的弹窗展示（onFieldError / onBusinessError / onResponseError 回调）。
+ * 其余配置（additionalRequestHeaders / requestInterceptor / responseInterceptor）均以回调形式接线，
  * 机制在 api-core，取值来自 cube-vue 配置系统。
  *
- * 对外导出（request / cubeAxios / redirectToLogin / toReLogin）保持兼容，业务文件无需改动。
+ * 统一解包模型：createCubeApi 使用 unwrapResponse:false，使 createRequest 封装(page/user/menu/config)
+ * 返回统一业务体 ApiResponse，调用方只需访问 res.data，杜绝 res.data.data 重复解包。
+ * 默认导出的 request 对 client 做薄封装（Proxy），request(config)/request.get/post 自动取 response.data，
+ * 与旧 unwrap:true 行为一致，既有业务调用点零改动。
+ *
+ * 对外导出（request / cubeAxios / client / user / menu / page / config / tokenManager / toReLogin）
+ * 保持兼容，业务文件无需改动。useCubeApi 复用本实例，不再单独创建 createCubeApi。
  */
-import { createApiClient, TokenManager, type TokenStorage, type ResponseErrorInfo } from '@newlifex/api-core';
+import { createCubeApi, type TokenStorage, type ResponseErrorInfo } from '@newlifex/api-core';
+import type { AxiosInstance, AxiosResponse } from 'axios';
+import { ElMessage } from 'element-plus';
 import queryString from 'query-string';
 import { getSession, removeAllCookie, setSession } from './storage';
 import { getAccessToken, removeAccessToken } from './token';
@@ -170,40 +178,78 @@ function showErrorNotification(info: ResponseErrorInfo) {
   notification.autoNotification('error', info.message, info.description || undefined);
 }
 
-// 创建统一的 axios 实例（底层来自 api-core，非 UI 逻辑已由 api-core 承担）
-// cube-vue 仅以回调接线 UI 行为（弹窗 / 401 跳转）与配置（附加头 / 请求钩子 / 响应钩子）。
-const cubeAxios = createApiClient({
+// 字段级校验错误去重标志：同一响应先经 onFieldError 弹出字段提示，则抑制紧随的 onBusinessError，避免重复弹窗
+let fieldErrorShown = false;
+const cubeConfig = getConfig();
+
+// 创建统一的魔方 API 客户端（底层来自 @newlifex/api-core 的 createCubeApi）
+// 内部派生两个客户端：entityClient(=client) 走 baseURL(API_HOST)；serviceClient(去掉 /api 前缀) 供 user/menu/config 使用。
+// unwrapResponse:false：createRequest 封装(page/user/menu/config)返回统一业务体 ApiResponse，调用方只需访问 res.data。
+// cube-vue 仅以回调接线 UI 行为（弹窗 / 401 跳转）与配置（附加头 / 请求钩子 / 响应钩子），其余下沉至 api-core。
+const api = createCubeApi({
   baseURL: API_HOST,
+  tokenStorage: cubeTokenStorage,
   tokenHeaderPrefix: 'bearer ',
-  tokenManager: new TokenManager(cubeTokenStorage),
   // 非 UI 逻辑（下沉至 api-core）：
   withCredentials: true,
+  unwrapResponse: false,
   additionalRequestHeaders: () => {
-    const cfg = getConfig().request.additionalRequestHeaders;
+    const cfg = cubeConfig.request.additionalRequestHeaders;
     if (!cfg) return {};
     return typeof cfg === 'function' ? cfg() : cfg;
   },
   onRequestHook: (config) => {
-    const ri = getConfig().request.requestInterceptor;
+    const ri = cubeConfig.request.requestInterceptor;
     return ri ? ri(config) : config;
   },
   onResponseHook: (response) => {
-    const ri = getConfig().request.responseIntercept;
+    const ri = cubeConfig.request.responseInterceptor;
     if (ri) ri(response);
   },
-  unwrapResponse: true,
-  // UI 强相关（保留在 cube-vue）：
   onUnauthorized: handleUnauthorized,
-  onBusinessError: (code, message) => {
-    if (message) notification.error({ message });
+  // 字段级验证错误：统一 toast（原 useCubeApi 逻辑合并至 request，页面无需各自处理）
+  onFieldError: (fieldErrors) => {
+    fieldErrorShown = true;
+    ElMessage.error(fieldErrors.map(e => e.message).join('；'));
+  },
+  // 业务错误：统一 toast；若同一响应已弹字段级错误或消息为空则跳过，微任务后重置标志
+  onBusinessError: (_code, message) => {
+    Promise.resolve()
+      .then(() => {
+        if (fieldErrorShown || !message) return;
+        ElMessage.error(message);
+      })
+      .finally(() => {
+        fieldErrorShown = false;
+      });
   },
   onResponseError: showErrorNotification,
 });
 
-// 导出配置好的axios实例
-export const request = cubeAxios;
+// 原始实体客户端（unwrapResponse:false，.get/.post 返回 AxiosResponse，供需要原生响应的场景使用）
+const client = api.client;
+
+// 默认导出的 request 沿用原语义：对 client 做薄封装（Proxy），request(config) / request.get/post 等
+// 自动解包取 response.data，统一返回业务体 ApiResponse，与 page/user 语义一致，既有调用点零改动。
+type LooseCallable = (...args: unknown[]) => Promise<AxiosResponse>;
+const request = new Proxy(client, {
+  apply: (target, thisArg, args) =>
+    (target as unknown as LooseCallable).apply(thisArg, args).then((r) => r?.data),
+  get: (target, prop, receiver) => {
+    const value = Reflect.get(target, prop, receiver);
+    if (typeof value === 'function' && prop !== 'then' && prop !== 'catch') {
+      return (...args: unknown[]) =>
+        (value as unknown as LooseCallable).apply(target, args).then((r) => r?.data);
+    }
+    return value;
+  },
+}) as AxiosInstance;
+
 export default request;
-export { cubeAxios };
+export { request, client };
+export const cubeAxios = client;
+// user(认证) / menu(菜单) / page(通用 CRUD) / config(配置) / tokenManager(令牌)
+export const { user, menu, page, config, tokenManager } = api;
 
 // 替换原来导出的toReLogin
 export { redirectToLogin as toReLogin };

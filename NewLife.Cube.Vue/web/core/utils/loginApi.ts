@@ -1,26 +1,24 @@
 /**
- * 登录页 API 封装
+ * 登录页 API 封装（兼容层）
  *
- * 基于 core 请求库（core/utils/request，axios 封装，含拦截器与全局错误处理）调用后端接口。
- * core 库作为通用库，不依赖具体应用创建的 API 客户端；统一复用请求库的超时、拦截、401 处理。
+ * 本文件仅作为皮肤兼容壳：保留原有导出函数名与签名，供 LoginPage / ActivatePage /
+ * ProfileSecurity 等业务页零改动调用；实际请求全部委托 @newlifex/api-core 的
+ * user 认证 API（注册 / 发码 / 验证码 / 激活 / 验证联系方式等），不重复实现基础库已有功能。
  *
- * 类型定义复用 @newlifex/api-core 的 LoginConfig、LoginResult、ApiResponse。
+ * 基础库已下沉的能力（不再在此处实现）：
+ * - 请求层（host 拼接、/api 前缀、Token 头、204 处理、错误归一化、401 跳转）见 core/utils/request；
+ * - 登录结果字段归一化（access_token / Token → accessToken）由 api-core 响应拦截器统一处理
+ *   （LOGIN_RESULT_PATHS 含 /Auth/Login、/Auth/Register、/Auth/Refresh 等），皮肤无需重复归一化。
  *
- * 字段名归一化说明：
- * 请求库仅透传后端返回的 data，不做字段名归一化，因此以下变体仍需在本文件内手动归一：
- * - LoginConfig: oAuth / providers → oauth
- * - LoginResult: access_token / Token → accessToken（snake_case + PascalCase 兼容）
+ * 类型定义复用 @newlifex/api-core 的 LoginConfig、LoginResult、ApiResponse 等。
  *
- * 注意：请求库的响应拦截器会在 code !== 0/200 时自动弹出错误提示并抛异常，
+ * 注意：基础库的响应拦截器会在 code !== 0/200 时自动弹出错误提示并抛异常，
  * 业务调用方在 catch 中处理失败即可（无需自行弹错，避免重复提示）。
  */
-import request from './request';
+import { user } from './request';
 import type { ApiResponse, LoginConfig, LoginResult, OAuthProvider, RegisterModel, VerifyStatus } from '@newlifex/api-core';
 
-/** 默认请求超时时间（毫秒） */
-const REQUEST_TIMEOUT = 15000;
-
-// ── 字段名归一化工具 ────────────────────────────────────────────────
+// ── 字段名归一化工具（皮肤专属，基础库无此逻辑，仅保留） ─────────────
 
 /**
  * 归一化登录配置字段名
@@ -30,6 +28,7 @@ const REQUEST_TIMEOUT = 15000;
  * - `providers`（v1 旧版字段名）→ 标准字段 `oauth`
  *
  * 归一化后确保 LoginConfig.oauth 始终有值（如果后端返回了的话）。
+ * 该别名兼容由后端历史版本决定，基础库未做此处理，故保留在皮肤层。
  *
  * @param data 后端原始返回的 LoginConfig
  * @returns 归一化后的 LoginConfig
@@ -55,117 +54,53 @@ function normalizeLoginConfig(data: LoginConfig): LoginConfig {
   return result;
 }
 
-/**
- * 归一化登录结果字段名
- *
- * 后端 /Auth/Login 可能返回以下字段名变体：
- * - snake_case: `access_token` / `refresh_token` / `expire_in`
- * - PascalCase: `Token` / `RefreshToken` / `ExpireIn`（C# 属性名原样输出）
- *
- * 归一化后统一为 camelCase（accessToken / refreshToken / expireIn），
- * 与 @newlifex/api-core 的 LoginResult 类型定义一致。
- * 注册待激活字段（pendingActivation/channels/targets）原样透传。
- *
- * @param data 后端原始返回的 LoginResult
- * @returns 归一化后的 LoginResult
- */
-function normalizeLoginResult(data: LoginResult): LoginResult {
-  const raw = data as unknown as Record<string, unknown>;
-  return {
-    accessToken:
-      (raw.accessToken as string) ??
-      (raw.access_token as string) ??
-      (raw.Token as string) ??
-      '',
-    refreshToken:
-      (raw.refreshToken as string) ??
-      (raw.refresh_token as string) ??
-      (raw.RefreshToken as string),
-    expireIn:
-      (raw.expireIn as number) ??
-      (raw.expire_in as number) ??
-      (raw.ExpireIn as number),
-    // 注册待激活透传
-    ...(raw.pendingActivation !== undefined ? { pendingActivation: !!raw.pendingActivation } : {}),
-    ...(raw.channels !== undefined ? { channels: raw.channels as string[] } : {}),
-    ...(raw.targets !== undefined ? { targets: raw.targets as string[] } : {}),
-  };
-}
-
-// ── API 函数 ────────────────────────────────────────────────────────
+// ── API 函数（全部委托 @newlifex/api-core 的 user 认证 API） ─────────
 
 /**
  * 获取登录配置
  *
- * 调用 GET /Auth/LoginConfig 获取后端登录配置，包括：
- * - 系统名称、Logo、版权信息
- * - 登录能力（密码/短信/邮箱/验证码）
- * - OAuth 提供商列表
- * - 安全策略
+ * 委托 user.getLoginConfig 调用 GET /Auth/LoginConfig，返回系统名称、Logo、版权、
+ * 登录/注册能力、OAuth 提供商列表、安全策略等。
  *
- * 返回前对 data 做字段名归一化（oAuth / providers → oauth）。
- *
- * AuthController 路由不带 /api 前缀，统一经请求层拼接 baseUrl（API_HOST）转发；
- * 请确保 baseUrl 能到达 Auth 服务。
+ * 返回前对 data 做字段名归一化（oAuth / providers → oauth），该别名兼容为基础库未覆盖，
+ * 故保留在皮肤层（@newlifex/api-core 不含此逻辑）。
  *
  * @returns 登录配置响应
  * @throws 网络错误或 HTTP 状态码非 200 时抛出异常
  */
 export async function fetchLoginConfig(): Promise<ApiResponse<LoginConfig>> {
-  // 请求库响应拦截器（unwrapResponse:true）会把 axios response 展开；
-  // 实测返回形态为 { data: ApiResponse }（多包一层 data），此处做兼容提取真正的 ApiResponse。
-  const raw = (await request.get('/Auth/LoginConfig', {
-    timeout: REQUEST_TIMEOUT,
-  })) as unknown as { data?: ApiResponse<LoginConfig> } & ApiResponse<LoginConfig>;
-
-  const json: ApiResponse<LoginConfig> =
-    raw && raw.code === undefined && raw.data ? raw.data : raw;
-
-  // 归一化字段名（oAuth / providers → oauth）
+  const json = await user.getLoginConfig();
   if (json?.data) {
     json.data = normalizeLoginConfig(json.data);
   }
-
   return json;
 }
 
 /**
  * 密码登录
  *
- * 调用 POST /Auth/Login 进行用户名密码登录。
- * 成功后返回包含 accessToken 和 refreshToken 的 LoginResult。
+ * @deprecated 通用登录逻辑已下沉到 @newlifex/api-core（user.loginWithPassword，皮肤共用），
+ * 本函数仅保留骨架兼容旧调用方式，勿再在核心逻辑处使用。新代码请直接调
+ * cubeApi.user.loginWithPassword(username, password, { captchaId, captchaCode, remember })。
  *
- * 返回前对 data 做字段名归一化
- * （access_token / Token → accessToken，兼容 snake_case 和 PascalCase）。
- *
- * AuthController 路由不带 /api 前缀，统一经请求层拼接 baseUrl（API_HOST）转发。
+ * 登录逻辑跟随后端设置：先 GET /Auth/Challenge 获取 RSA 公钥加密密码并携带 challengeId 登录，
+ * 服务端不支持 / 不可达 / 加密失败时降级为明文传输（由 api-core 统一处理）。
  *
  * @param username 用户名
- * @param password 密码（明文，通过 HTTPS 传输）
- * @returns 登录结果响应，data.accessToken 为访问令牌
- * @throws 网络错误或 HTTP 状态码非 200 时抛出异常
+ * @param password 密码（明文，内部按需 RSA 加密后传输）
+ * @param captchaId 图片验证码 ID（LoginConfig.login.captcha 为 true 时需传入）
+ * @param captchaCode 图片验证码输入（LoginConfig.login.captcha 为 true 时需传入）
+ * @param remember 记住登录状态（true 时后端把令牌有效期延长到 365 天）
+ * @returns 登录结果 ApiResponse，data 含 accessToken（已由 api-core 归一化 camelCase）
  */
 export async function loginByPassword(
   username: string,
   password: string,
+  captchaId?: string,
+  captchaCode?: string,
+  remember?: boolean,
 ): Promise<ApiResponse<LoginResult>> {
-  // 请求库响应拦截器（unwrapResponse:true）会把 axios response 展开；
-  // 实测返回形态为 { data: ApiResponse }（多包一层 data），此处做兼容提取真正的 ApiResponse。
-  const raw = (await request.post(
-    '/Auth/Login',
-    { username, password },
-    { timeout: REQUEST_TIMEOUT },
-  )) as unknown as { data?: ApiResponse<LoginResult> } & ApiResponse<LoginResult>;
-
-  const json: ApiResponse<LoginResult> =
-    raw && raw.code === undefined && raw.data ? raw.data : raw;
-
-  // 归一化字段名（snake_case / PascalCase → camelCase）
-  if (json?.data) {
-    json.data = normalizeLoginResult(json.data);
-  }
-
-  return json;
+  return user.loginWithPassword(username, password, { captchaId, captchaCode, remember });
 }
 
 // ── 注册 / 验证码 / 激活 / 安全中心 ─────────────────────────────────
@@ -173,28 +108,23 @@ export async function loginByPassword(
 /**
  * 注册新用户
  *
- * 调用 POST /Auth/Register。开启邮箱/手机验证时，
+ * 委托 user.register 调用 POST /Auth/Register。开启邮箱/手机验证时，
  * 成功返回 data.pendingActivation=true（待激活），不返回 token。
+ *
+ * 注册结果字段归一化（access_token / Token → accessToken）已由 api-core 响应拦截器统一处理，
+ * 此处不再重复归一化。
  *
  * @param data 注册参数（category/username/email/mobile/password/confirmPassword/code/captchaId/captchaCode）
  * @returns 注册结果：data.accessToken 表示已登录；data.pendingActivation 表示待激活
  */
 export async function registerByForm(data: RegisterModel): Promise<ApiResponse<LoginResult>> {
-  const json = (await request.post(
-    '/Auth/Register',
-    data,
-    { timeout: REQUEST_TIMEOUT },
-  )) as unknown as ApiResponse<LoginResult>;
-
-  if (json?.data) {
-    json.data = normalizeLoginResult(json.data);
-  }
-
-  return json;
+  return user.register(data);
 }
 
 /**
  * 发送验证码（注册/绑定等场景）
+ *
+ * 委托 user.sendCode 调用 POST /Auth/SendCode。
  *
  * @param channel 渠道：Sms / Mail
  * @param username 手机号或邮箱
@@ -209,23 +139,18 @@ export async function sendCode(
   captchaId?: string,
   captchaCode?: string,
 ): Promise<ApiResponse<number>> {
-  return (await request.post(
-    '/Auth/SendCode',
-    { channel, username, action, captchaId, captchaCode },
-    { timeout: REQUEST_TIMEOUT },
-  )) as unknown as ApiResponse<number>;
+  return user.sendCode({ channel, username, action, captchaId, captchaCode });
 }
 
 /**
  * 获取图片验证码（SVG 算数题）
  *
+ * 委托 user.getCaptcha 调用 GET /Auth/Captcha，返回 captchaId 与 SVG 文本。
  * 注册/发码需要图片验证码时（LoginConfig.register.captcha / login.sendCode），
  * 先调用本接口获取 captchaId 与 SVG 文本，随提交请求一并回传。
  */
 export async function fetchCaptcha(): Promise<ApiResponse<{ captchaId: string; image: string }>> {
-  return (await request.get('/Auth/Captcha', {
-    timeout: REQUEST_TIMEOUT,
-  })) as unknown as ApiResponse<{ captchaId: string; image: string }>;
+  return user.getCaptcha();
 }
 
 /**
@@ -235,10 +160,7 @@ export async function activateByLink(
   token: string,
   account: string,
 ): Promise<ApiResponse<{ activated: boolean }>> {
-  return (await request.get('/Auth/Activate', {
-    params: { token, account },
-    timeout: REQUEST_TIMEOUT,
-  })) as unknown as ApiResponse<{ activated: boolean }>;
+  return user.activateByLink(token, account);
 }
 
 /**
@@ -249,11 +171,7 @@ export async function activateByCode(
   account: string,
   code: string,
 ): Promise<ApiResponse<{ activated: boolean }>> {
-  return (await request.post(
-    '/Auth/Activate',
-    { channel, account, code },
-    { timeout: REQUEST_TIMEOUT },
-  )) as unknown as ApiResponse<{ activated: boolean }>;
+  return user.activateByCode({ channel, account, code });
 }
 
 /**
@@ -263,11 +181,7 @@ export async function sendActivateCode(
   channel: string,
   account: string,
 ): Promise<ApiResponse<{ target: string }>> {
-  return (await request.post(
-    '/Auth/SendActivateCode',
-    { channel, username: account },
-    { timeout: REQUEST_TIMEOUT },
-  )) as unknown as ApiResponse<{ target: string }>;
+  return user.sendActivateCode(channel, account);
 }
 
 /**
@@ -278,9 +192,5 @@ export async function verifyContact(
   account: string,
   code: string,
 ): Promise<ApiResponse<VerifyStatus>> {
-  return (await request.post(
-    '/Auth/VerifyContact',
-    { channel, account, code },
-    { timeout: REQUEST_TIMEOUT },
-  )) as unknown as ApiResponse<VerifyStatus>;
+  return user.verifyContact({ channel, account, code });
 }

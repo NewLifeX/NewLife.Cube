@@ -2,7 +2,7 @@
 
 ## 请求入口
 
-所有业务 HTTP 请求通过 `core/utils/request.ts`。它**只保留与 UI 强相关**的少量逻辑——错误/业务错误的弹窗展示、401 跳转与导航。**其余请求逻辑已全部下沉至 `@newlifex/api-core` 的 `createApiClient`**（基地址拼接、`/api` 前缀补全、Token 头注入、附加请求头、`withCredentials`、content-type 透传、traceId、204 处理、错误分类归一化、响应钩子 `responseIntercept`、业务错误 reject、401 基础处理），并通过 option / 回调参数化，所有皮肤共享。`request.ts` 仅以回调把 cube-vue 的 UI 行为与配置（附加头、请求钩子、响应钩子）接线到 api-core，对外导出（`request` / `cubeAxios` / `redirectToLogin` / `toReLogin`）保持兼容，业务文件无需改动。
+所有业务 HTTP 请求通过 `core/utils/request.ts`。它**只保留与 UI 强相关**的少量逻辑——错误/业务错误的弹窗展示、401 跳转与导航。**其余请求逻辑已全部下沉至 `@newlifex/api-core` 的 `createApiClient`**（基地址拼接、`/api` 前缀补全、Token 头注入、附加请求头、`withCredentials`、content-type 透传、traceId、204 处理、错误分类归一化、响应钩子 `responseInterceptor`、业务错误 reject、401 基础处理），并通过 option / 回调参数化，所有皮肤共享。`request.ts` 仅以回调把 cube-vue 的 UI 行为与配置（附加头、请求钩子、响应钩子）接线到 api-core，对外导出（`request` / `cubeAxios` / `redirectToLogin` / `toReLogin`）保持兼容，业务文件无需改动。
 
 ### api-core `createApiClient` 关键选项（非 UI 逻辑载体）
 
@@ -14,7 +14,7 @@
 | `withCredentials` | 跨域凭证 | `true` |
 | `additionalRequestHeaders` | 静态/函数式附加请求头 | 取自 `getConfig().request.additionalRequestHeaders` |
 | `onRequestHook` | 请求钩子（同 axios 拦截器，可返回 Promise） | 接 `getConfig().request.requestInterceptor` |
-| `onResponseHook` | 响应钩子（成功/失败均触发，即 `responseIntercept`） | 接 `getConfig().request.responseIntercept` |
+| `onResponseHook` | 响应钩子（成功/失败均触发，即 `responseInterceptor`） | 接 `getConfig().request.responseInterceptor` |
 | `onUnauthorized` | 401 回调（收到请求 url） | `handleUnauthorized`（跳转登录/未授权页） |
 | `onBusinessError` | 业务错误（code≠0）回调 | `notification.error` 弹窗 |
 | `onResponseError` | 非 401 响应错误回调，传入**已归一化**的 `ResponseErrorInfo`（含 `isNetwork`/`message`/`description`，无文案） | `showErrorNotification`（本地化后 `notification.autoNotification`） |
