@@ -6,6 +6,7 @@
 import type { Router } from 'vue-router';
 import type { ConfigRoute } from './typings';
 import microAppConfigs from 'virtual:@newlifex/cube-vue-micro-apps';
+import { addFrameworkRoute } from './router/routeOverride';
 
 // 定义应用信息类型
 interface AppInfo {
@@ -78,7 +79,9 @@ export function registerAppRoutes(
   }
 
   routes.forEach((route) => {
-    router.addRoute(route);
+    // 走框架侧收口：命中外部声明（业务应用 externalRoutes）的同形态路由时让位，
+    // 避免晚注册的微应用路由抢占业务声明的路径。
+    addFrameworkRoute(route, router);
   });
 
   console.log(`应用 ${appName} 路由注册成功`);

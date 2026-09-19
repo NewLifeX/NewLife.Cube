@@ -2,6 +2,7 @@ import type { Router } from 'vue-router';
 import type { FlatMenuItem } from '@newlifex/cube-vue/core/stores/menu';
 import { normalizeMenuUrl, toKebabCase, type RouteNamingStyle } from './url';
 import { getConfig } from '../configure';
+import { addFrameworkRoute } from '../router/routeOverride';
 // 后备视图（列表/表单）直接静态引入，避免动态 import(`@newlifex/cube-vue/core/views/${type}.vue`)
 // 在 Vite 开发服务器下因别名+变量模板无法解析而静默失败（主内容区空白）。
 import AutoPage from '../views/AutoPage.vue';
@@ -311,7 +312,10 @@ export function registerMenuRoutes(
   const { router: { routeNamingStyle } } = getConfig();
   const toStyle: RouteNamingStyle = routeNamingStyle === 'kebab' ? 'kebab' : 'pascal';
 
-  // 获取已注册路径，保护应用级预注册路由
+  // 已注册路径集合：用于「同 path 已被任何先注册者占用则不重复注册」（静态表、外部路由、早先的菜单）
+  // 说明：本集合与路由优先级中心（routeOverride）职责不同，不要合并——
+  //   - existingPaths：按**精确 path** 去重，避免重复注册产生永不命中的死路由；
+  //   - addFrameworkRoute：按**归一化 path / name** 判定外部声明，让业务能接管框架路由。
   const existingPaths = new Set(router.getRoutes().map((r) => r.path));
 
   // 筛选叶子节点：没有其他 menu 以其 id 为 parentId 的即为叶子
@@ -324,19 +328,23 @@ export function registerMenuRoutes(
   for (const menu of leafMenus) {
     // 根据配置风格转换路径
     const normalizedPath = normalizeMenuUrl(menu.path, toStyle);
-    if (existingPaths.has(normalizedPath)) continue; // 应用级路由优先，跳过
+    if (existingPaths.has(normalizedPath)) continue; // 已被先注册者占用：不重复注册
 
-    router.addRoute({
-      path: normalizedPath,
-      name: `menu-${menu.name || menu.id}`,
-      component: resolvePageComponent(menu.path),
-      meta: {
-        auth: true,
-        menuId: menu.id,
-        title: menu.title ?? menu.name,
-        originalPath: menu.path, // 保留原始路径用于调试
+    // 走框架侧收口：命中外部声明（业务应用 externalRoutes）的同形态路由时让位
+    addFrameworkRoute(
+      {
+        path: normalizedPath,
+        name: `menu-${menu.name || menu.id}`,
+        component: resolvePageComponent(menu.path),
+        meta: {
+          auth: true,
+          menuId: menu.id,
+          title: menu.title ?? menu.name,
+          originalPath: menu.path, // 保留原始路径用于调试
+        },
       },
-    });
+      router,
+    );
 
     // 记录刚添加的动态路由
     pendingNavigations.push(normalizedPath);
