@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
+using NewLife.Cube.ViewModels;
 using NewLife.Cube.Widgets;
 using NewLife.Serialization;
+using NewLife.Security;
 using XCode.Membership;
 using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 
@@ -62,8 +64,8 @@ public class WorkbenchController(TokenService tokenService) : ControllerBaseX
     }
 
     /// <summary>保存个人工作台。空串清除个人域。同时接受 PUT/POST（禁 PUT 环境回落）。</summary>
-    [HttpPut]
-    [HttpPost]
+    [HttpPut("")]
+    [HttpPost("")]
     public ActionResult Put([FromBody] WorkbenchPutRequest model, Int32 clear = 0)
     {
         var user = Current;
@@ -194,7 +196,67 @@ public class WorkbenchController(TokenService tokenService) : ControllerBaseX
         WorkbenchNamedStore.Delete(slug);
         return Json(0, null, new { slug, deleted = true });
     }
+
+    /// <summary>分享当前工作台：签发 Url 锁定的 UserToken（有效期可配），供匿名以分享者权限打开 embed 页。</summary>
+    [HttpPost("Share")]
+    [HttpPut("Share")]
+    public ActionResult Share([FromBody] ShareViewRequest model)
+    {
+        var user = Current;
+        if (user == null) return Json(401, "未授权");
+
+        var slug = (model?.Slug + "").Trim();
+        if (!slug.IsNullOrEmpty())
+        {
+            if (!WorkbenchNamedStore.IsValidSlug(slug)) return Json(400, "slug 非法");
+            if (!WorkbenchNamedStore.Exists(slug)) return Json(404, "命名工作台不存在");
+            if (!WorkbenchNamedStore.IsAccessible(user, slug)) return Json(403, "无权分享该命名工作台");
+        }
+
+        var expireSec = ClampShareExpireSeconds(model?.ExpireSeconds ?? 0);
+        var url = ResolveSharePageUrl(slug);
+
+        try
+        {
+            var list = UserToken.FindAllByUserID(user.ID);
+            var ut = list.FirstOrDefault(e => e.Url.EqualIgnoreCase(url) && e.Enable && e.Expire > DateTime.Now);
+            ut ??= new UserToken { UserID = user.ID, Url = url };
+            if (ut.Token.IsNullOrEmpty()) ut.Token = Rand.NextString(16);
+            ut.Enable = true;
+            ut.Expire = DateTime.Now.AddSeconds(expireSec);
+            ut.Save();
+
+            WriteLog("分享", true, url);
+
+            return Json(0, null, new
+            {
+                token = ut.Token,
+                expire = ut.Expire,
+                path = url,
+            });
+        }
+        catch (Exception ex)
+        {
+            return Json(500, ex.GetTrue()?.Message ?? "签发分享令牌失败");
+        }
+    }
     #endregion
+
+    /// <summary>工作台分享页路径：空 slug → /home；命名 → /Workbench/{slug}</summary>
+    public static String ResolveSharePageUrl(String slug)
+    {
+        slug = (slug + "").Trim();
+        return slug.IsNullOrEmpty() ? "/home" : "/Workbench/" + slug;
+    }
+
+    /// <summary>分享有效秒数：缺省用配置，最短 60 秒，最长 1 年</summary>
+    public static Int32 ClampShareExpireSeconds(Int32 expireSec)
+    {
+        if (expireSec <= 0) expireSec = CubeSetting.Current.ShareExpire;
+        if (expireSec < 60) expireSec = 60;
+        if (expireSec > 365 * 24 * 3600) expireSec = 365 * 24 * 3600;
+        return expireSec;
+    }
 
     /// <summary>将配置 JSON 解成 FastJson 可写出的对象树。
     /// 禁止返回 <c>JsonElement</c>：ControllerBaseX 用 FastJson 序列化时只会打出 <c>{"valueKind":1}</c>，前端拿不到 widgets。

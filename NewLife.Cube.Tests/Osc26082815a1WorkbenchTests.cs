@@ -235,4 +235,22 @@ public class Osc26082815a1WorkbenchTests
         Assert.NotNull(config);
         Assert.True(config["widgets"] is IList<Object> list && list.Count > 0);
     }
+
+    [Fact(DisplayName = "分享页路径：空 slug=/home，命名=/Workbench/{slug}")]
+    public void ResolveSharePageUrl_HomeAndNamed()
+    {
+        Assert.Equal("/home", WorkbenchController.ResolveSharePageUrl(""));
+        Assert.Equal("/home", WorkbenchController.ResolveSharePageUrl("  "));
+        Assert.Equal("/Workbench/ops", WorkbenchController.ResolveSharePageUrl("ops"));
+    }
+
+    [Fact(DisplayName = "分享有效期：缺省≥60，封顶 1 年")]
+    public void ClampShareExpireSeconds_Bounds()
+    {
+        var def = WorkbenchController.ClampShareExpireSeconds(0);
+        Assert.True(def >= 60);
+        Assert.Equal(60, WorkbenchController.ClampShareExpireSeconds(10));
+        Assert.Equal(86400, WorkbenchController.ClampShareExpireSeconds(86400));
+        Assert.Equal(365 * 24 * 3600, WorkbenchController.ClampShareExpireSeconds(365 * 24 * 3600 + 1));
+    }
 }

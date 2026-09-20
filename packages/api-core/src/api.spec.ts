@@ -259,6 +259,26 @@ describe('createWorkbenchApi', () => {
     }));
     expect(request).toHaveBeenNthCalledWith(4, expect.objectContaining({ url: '/Cube/Workbench/Named/ops', method: 'delete' }));
   });
+
+  it('share hits POST /Cube/Workbench/Share', async () => {
+    const request = vi.fn().mockResolvedValue({ code: 0, data: { token: 'abc' } });
+    const api = createWorkbenchApi(request);
+    await api.share({ slug: 'ops', expireSeconds: 86400 });
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Cube/Workbench/Share',
+        method: 'post',
+        data: { slug: 'ops', expireSeconds: 86400 },
+      }),
+    );
+    request.mockClear();
+    await api.share({ expireSeconds: 3600 });
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { slug: '', expireSeconds: 3600 },
+      }),
+    );
+  });
 });
 
 describe('createPageApi', () => {

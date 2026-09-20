@@ -6,6 +6,8 @@ import { formatDateTime } from '@/core/utils/datetime';
 
 export type ShareExpireKey = '1h' | '1d' | '7d' | 'long' | 'custom';
 
+export type ShareKind = 'page' | 'workbench';
+
 export interface ShareResult {
   token: string;
   expire?: string;
@@ -25,17 +27,21 @@ export function resolveExpireSeconds(key: ShareExpireKey, customDays: number): n
   return days * 86400;
 }
 
-function normalizeShareData(data: unknown): ShareResult | null {
+export function normalizeShareData(data: unknown): ShareResult | null {
   if (!data || typeof data !== 'object') return null;
   const r = data as Record<string, unknown>;
   const token = String(r.token ?? r.Token ?? '');
-  if (!token) return null;
-  return {
-    token,
-    expire: (r.expire ?? r.Expire) as string | undefined,
-    path: (r.path ?? r.Path) as string | undefined,
-    url: (r.url ?? r.Url) as string | undefined,
-  };
+  if (token) {
+    return {
+      token,
+      expire: (r.expire ?? r.Expire) as string | undefined,
+      path: (r.path ?? r.Path) as string | undefined,
+      url: (r.url ?? r.Url) as string | undefined,
+    };
+  }
+  const nested = r.data ?? r.Data;
+  if (nested && nested !== data && typeof nested === 'object') return normalizeShareData(nested);
+  return null;
 }
 
 /** 构建可打开的分享 URL（embed=1 隐藏壳层导航） */
@@ -53,10 +59,13 @@ export function useShareViewPopover(
   getViewId: () => string,
   visible: Ref<boolean>,
   emitVisible: (v: boolean) => void,
+  getKind: () => ShareKind = () => 'page',
+  getSlug: () => string = () => '',
 ) {
   const creating = ref(false);
   const shareUrl = ref('');
   const expireText = ref('');
+  const generateError = ref('');
   const expireKey = ref<ShareExpireKey>('1d');
   const customDays = ref(7);
   let genSeq = 0;
@@ -64,16 +73,26 @@ export function useShareViewPopover(
   function reset() {
     shareUrl.value = '';
     expireText.value = '';
+    generateError.value = '';
   }
 
   async function createLink(expireSeconds: number) {
     creating.value = true;
+    generateError.value = '';
     try {
       const typePath = getTypePath();
-      const viewId = getViewId();
-      const res = await cubeApi.page.share(typePath, { viewId, expireSeconds });
-      const data = normalizeShareData(res.data);
+      const kind = getKind();
+      const shareApi = cubeApi.workbench?.share;
+      if (kind === 'workbench' && typeof shareApi !== 'function') {
+        throw new Error('工作台分享接口不可用，请重新编译前端');
+      }
+      const res =
+        kind === 'workbench'
+          ? await shareApi({ slug: getSlug() || undefined, expireSeconds })
+          : await cubeApi.page.share(typePath, { viewId: getViewId(), expireSeconds });
+      const data = normalizeShareData(res?.data) || normalizeShareData(res);
       if (!data?.token) throw new Error('分享接口未返回令牌');
+      const viewId = kind === 'workbench' ? '' : getViewId();
       shareUrl.value = data.url || buildSharePageUrl(typePath, viewId, data.token);
       expireText.value = data.expire ? formatDateTime(data.expire) || String(data.expire) : '';
     } catch (e) {
@@ -92,17 +111,19 @@ export function useShareViewPopover(
       if (seq !== genSeq) return;
     } catch (e) {
       if (seq !== genSeq) return;
-      Message.error(e instanceof Error ? e.message : '生成失败');
+      const msg = e instanceof Error ? e.message : '生成失败';
+      generateError.value = msg;
+      Message.error(msg);
     }
   }
 
   function onVisibleChange(v: boolean) {
-    if (v) {
-      expireKey.value = '1d';
-      customDays.value = 7;
-      reset();
-    }
     emitVisible(v);
+    if (!v) return;
+    expireKey.value = '1d';
+    customDays.value = 7;
+    reset();
+    void regenerate();
   }
 
   /** 打开弹层或变更有效期时立即生成链接 */
@@ -151,6 +172,7 @@ export function useShareViewPopover(
     creating,
     shareUrl,
     expireText,
+    generateError,
     expireKey,
     customDays,
     onVisibleChange,

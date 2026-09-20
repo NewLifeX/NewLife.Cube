@@ -858,6 +858,14 @@ export function createWorkbenchApi(request: RequestFn) {
         url: `/Cube/Workbench/Named/${slug}`,
         method: 'delete',
       }),
+
+    /** 分享当前工作台：签发 UserToken，返回短令牌供匿名打开 embed 页 */
+    share: (body: { slug?: string; expireSeconds?: number }) =>
+      request<{ token: string; expire?: string; path?: string; url?: string }>({
+        url: '/Cube/Workbench/Share',
+        method: 'post',
+        data: { slug: body.slug ?? '', expireSeconds: body.expireSeconds },
+      }),
   };
 }
 

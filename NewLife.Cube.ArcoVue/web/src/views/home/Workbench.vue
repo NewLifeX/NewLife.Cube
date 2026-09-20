@@ -12,7 +12,7 @@
       </div>
       <a-space :size="4">
         <!-- 左：进入/退出编辑态（现有按钮；命名工作台仅系统角色可编辑） -->
-        <a-tooltip :content="editing ? '完成' : isNamed ? '编辑命名工作台' : '自定义工作台'">
+        <a-tooltip v-if="showShare" :content="editing ? '完成' : isNamed ? '编辑命名工作台' : '自定义工作台'">
           <a-button type="text" class="wb-icon-btn" :disabled="!canEditToggle" @click="toggleEdit">
             <icon-park :type="editing ? 'check' : 'setting-config'" :size="16" />
           </a-button>
@@ -54,7 +54,7 @@
             </div>
           </template>
         </a-dropdown>
-        <a-tooltip content="恢复默认">
+        <a-tooltip v-if="showShare && !isNamed" content="恢复默认">
           <!-- span：disabled 时按钮不接收指针事件，保证 tooltip 仍可显示 -->
           <span v-if="!isNamed" class="wb-icon-wrap">
             <a-button
@@ -67,6 +67,20 @@
             </a-button>
           </span>
         </a-tooltip>
+        <ShareViewPopover
+          v-if="showShare"
+          :visible="sharePopoverVisible"
+          share-kind="workbench"
+          :type-path="shareTypePath"
+          :slug="currentSlug"
+          title="分享当前看板"
+          position="br"
+          @update:visible="sharePopoverVisible = $event"
+        >
+          <a-button type="text" class="wb-icon-btn" aria-label="分享" title="分享">
+            <icon-park type="share" :size="16" />
+          </a-button>
+        </ShareViewPopover>
         <a-tooltip :content="fullscreen ? '退出全屏 (Esc)' : '全屏'">
           <a-button
             type="text"
@@ -144,6 +158,7 @@
 
 <script setup lang="ts">
 import WidgetHost from '@/features/widget/WidgetHost.vue';
+import ShareViewPopover from '@/views/crud/ShareViewPopover.vue';
 import { useWorkbench } from './useWorkbench';
 
 defineOptions({ name: 'Workbench' });
@@ -169,6 +184,9 @@ const {
   showNamedMenu,
   namedList,
   fullscreen,
+  showShare,
+  sharePopoverVisible,
+  shareTypePath,
   publishVisible,
   publishTitle,
   publishSlug,

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { serializeDashboardJson } from '@newlifex/api-core';
 import { isUnlinkedWidget, normalizeSourceRows, synthesizeLegacyDashboard } from './legacy';
 import {
@@ -141,6 +141,28 @@ describe('share expire helpers', () => {
     expect(resolveExpireSeconds('long', 7)).toBe(SHARE_LONG_SECONDS);
     expect(resolveExpireSeconds('custom', 3)).toBe(3 * 86400);
     expect(resolveExpireSeconds('custom', 0)).toBe(86400);
+  });
+
+  it('buildSharePageUrl 拼 embed 与 token，工作台无 viewId', async () => {
+    const origin = 'http://localhost:5183';
+    vi.stubGlobal('window', { location: { origin } });
+    const { buildSharePageUrl } = await import('@/views/crud/useShareViewPopover');
+    expect(buildSharePageUrl('Admin/User', 'default', 'tok')).toBe(
+      `${origin}/Admin/User?viewId=default&embed=1&token=tok`,
+    );
+    expect(buildSharePageUrl('home', '', 'tok')).toBe(`${origin}/home?embed=1&token=tok`);
+    expect(buildSharePageUrl('Workbench/ops', '', 'tok')).toBe(
+      `${origin}/Workbench/ops?embed=1&token=tok`,
+    );
+  });
+
+  it('normalizeShareData 能从 data 嵌套解出 token', async () => {
+    const { normalizeShareData } = await import('@/views/crud/useShareViewPopover');
+    expect(normalizeShareData({ token: 'abc', expire: 'x' })?.token).toBe('abc');
+    expect(normalizeShareData({ data: { Token: 'xyz', Path: '/home' } })).toMatchObject({
+      token: 'xyz',
+      path: '/home',
+    });
   });
 });
 

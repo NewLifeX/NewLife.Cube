@@ -243,16 +243,27 @@ public static class ManagerProviderHelper
     public static Boolean IsShareRequestAllowed(HttpContext context, UserToken ut)
     {
         if (ut == null) return false;
-        var utUrl = ut.Url + "";
+        var req = context?.Request?.Path.Value + "";
+        return IsShareRequestAllowed(req, ut.Url);
+    }
+
+    /// <summary>分享令牌 Url 锁定（纯路径，便于单测）</summary>
+    public static Boolean IsShareRequestAllowed(String requestPath, String tokenUrl)
+    {
+        var utUrl = tokenUrl + "";
         if (utUrl.IsNullOrEmpty()) return true;
         if (utUrl.StartsWithIgnoreCase("attachment:")) return false;
 
         var tokenPath = utUrl.Split('?')[0].TrimEnd('/');
         if (tokenPath.IsNullOrEmpty()) return true;
-        var req = context?.Request?.Path.Value + "";
+        var req = requestPath + "";
         if (req.IsNullOrEmpty()) return false;
 
         if (req.StartsWithIgnoreCase("/api" + tokenPath) || req.StartsWithIgnoreCase(tokenPath))
+            return true;
+
+        // 工作台分享：页面路径为 /home 或 /Workbench/{slug}，配置接口走 /Cube/Workbench
+        if (IsWorkbenchSharePage(tokenPath) && req.StartsWithIgnoreCase("/Cube/Workbench"))
             return true;
 
         // 分享页所需：Widget 查询、视图配置、菜单注册、登录态探测、当前用户 Info
@@ -269,6 +280,14 @@ public static class ManagerProviderHelper
             return true;
 
         return false;
+    }
+
+    /// <summary>工作台分享页路径：默认墙 /home，命名看板 /Workbench/{slug}</summary>
+    public static Boolean IsWorkbenchSharePage(String tokenPath)
+    {
+        if (tokenPath.IsNullOrEmpty()) return false;
+        if (tokenPath.EqualIgnoreCase("/home")) return true;
+        return tokenPath.StartsWithIgnoreCase("/Workbench/");
     }
 
     /// <summary>设置租户</summary>

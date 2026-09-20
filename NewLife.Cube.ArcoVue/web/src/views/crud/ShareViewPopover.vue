@@ -1,16 +1,16 @@
 <template>
   <a-popover
     :popup-visible="visible"
-    position="bottom"
     trigger="click"
     class="share-view-popover"
+    :position="position"
     :content-style="{ padding: '12px 14px', width: '360px' }"
     @popup-visible-change="onVisibleChange"
   >
     <template #content>
       <div class="share-pop">
         <div class="share-pop__head">
-          <span class="share-pop__title">分享当前视图</span>
+          <span class="share-pop__title">{{ title }}</span>
           <a-spin v-if="creating" :size="14" />
         </div>
         <div class="share-pop__hint">
@@ -36,8 +36,9 @@
           readonly
           size="small"
           class="share-pop__url"
-          placeholder="正在生成…"
+          :placeholder="creating ? '正在生成…' : ''"
         />
+        <div v-if="generateError" class="share-pop__error">{{ generateError }}</div>
         <div v-if="expireText" class="share-pop__expire">过期：{{ expireText }}</div>
 
         <div class="share-pop__actions">
@@ -56,11 +57,24 @@
 import { toRef } from 'vue';
 import { useShareViewPopover } from './useShareViewPopover';
 
-const props = defineProps<{
-  visible: boolean;
-  typePath: string;
-  viewId: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    visible: boolean;
+    typePath: string;
+    viewId?: string;
+    shareKind?: 'page' | 'workbench';
+    slug?: string;
+    title?: string;
+    position?: 'top' | 'tl' | 'tr' | 'bottom' | 'bl' | 'br' | 'left' | 'lt' | 'lb' | 'right' | 'rt' | 'rb';
+  }>(),
+  {
+    viewId: '',
+    shareKind: 'page',
+    slug: '',
+    title: '分享当前视图',
+    position: 'bottom',
+  },
+);
 
 const emit = defineEmits<{ 'update:visible': [boolean] }>();
 
@@ -68,6 +82,7 @@ const {
   creating,
   shareUrl,
   expireText,
+  generateError,
   expireKey,
   customDays,
   onVisibleChange,
@@ -77,6 +92,8 @@ const {
   () => props.viewId,
   toRef(props, 'visible'),
   (v) => emit('update:visible', v),
+  () => props.shareKind,
+  () => props.slug,
 );
 </script>
 
@@ -126,6 +143,11 @@ const {
 .share-pop__expire {
   font-size: 12px;
   color: var(--color-text-3);
+}
+.share-pop__error {
+  font-size: 12px;
+  color: rgb(var(--danger-6));
+  line-height: 1.4;
 }
 .share-pop__actions {
   display: flex;

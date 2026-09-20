@@ -12,6 +12,7 @@ import {
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
 import { WIDGET_SURFACE_KEY, type WidgetSurfaceContext } from '@/features/widget/context';
+import { isEmbedMode } from '@/core/utils/embedMode';
 import { alignWorkbenchSeedLayout, greetingText } from '@/core/utils/workbench';
 import {
   defaultPublishSlug,
@@ -43,6 +44,10 @@ export function useWorkbench(slugArg = '') {
   const isSystem = computed(() => userStore.userInfo?.isSystem === true);
   const namedList = ref<NamedWorkbenchItem[]>([]);
   const namedTitle = ref('');
+  const embed = isEmbedMode();
+  const showShare = computed(() => !embed);
+  const sharePopoverVisible = ref(false);
+  const shareTypePath = computed(() => workbenchRoutePath(slug).replace(/^\//, ''));
 
   // 问候用语用户名（账号），不用昵称/显示名
   const hello = computed(() => greetingText(userStore.userInfo?.name || userStore.displayName || ''));
@@ -55,10 +60,10 @@ export function useWorkbench(slugArg = '') {
     }),
   );
   const canRestore = computed(() => !isNamed.value && source.value === 'user');
-  /** 编辑按钮可用性：默认工作台人人可；命名工作台仅系统角色 */
-  const canEditToggle = computed(() => (isNamed.value ? isSystem.value : true));
+  /** 编辑按钮可用性：默认工作台人人可；命名工作台仅系统角色；分享 embed 只读 */
+  const canEditToggle = computed(() => !embed && (isNamed.value ? isSystem.value : true));
   /** ▾ 菜单仅系统角色（命名工作台的发布者/管理者）渲染 */
-  const showNamedMenu = computed(() => isSystem.value);
+  const showNamedMenu = computed(() => !embed && isSystem.value);
   const canPublish = computed(() => isSystem.value);
   const canRename = computed(() => isSystem.value && isNamed.value);
   const canDelete = computed(() => isSystem.value && isNamed.value);
@@ -140,7 +145,7 @@ export function useWorkbench(slugArg = '') {
         dashboard.value = cfg;
         surface.dashboard = cfg;
       }
-      await refreshNamedList();
+      if (!embed) await refreshNamedList();
     } catch (e) {
       loadError.value = e instanceof Error ? e.message : isNamed.value ? '加载命名工作台失败' : '加载工作台失败';
       dashboard.value = emptyDashboard();
@@ -363,6 +368,9 @@ export function useWorkbench(slugArg = '') {
     showNamedMenu,
     namedList,
     fullscreen,
+    showShare,
+    sharePopoverVisible,
+    shareTypePath,
     publishVisible,
     publishTitle,
     publishSlug,
