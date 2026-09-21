@@ -5,7 +5,7 @@
       <WidgetLinkBadge :widget="widget" />
       <a-tooltip content="更多">
         <a-button type="text" size="mini" class="dc-more" @click="openList">
-          <icon-park type="share" :size="14" />
+          <icon-park type="more" :size="14" />
         </a-button>
       </a-tooltip>
     </div>
@@ -127,7 +127,8 @@ const showNav = computed(() => rows.value.length > 1);
   box-sizing: border-box;
 }
 .dc-card--editing .dc-head {
-  padding-right: 52px;
+  /* 操作条预留：右内缩 12 + 按钮组宽 + 间距 7 */
+  padding-right: calc(var(--widget-ops-w, 22px) + 7px);
 }
 .dc-title {
   flex: 1;

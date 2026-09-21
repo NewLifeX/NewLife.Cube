@@ -317,6 +317,171 @@ public class Osc260828WidgetTests
         }
     }
 
+    [Fact(DisplayName = "多度量分组聚合：Values 与 measures 对齐，Value 兼容首度量")]
+    public void Query_GroupBy_MultiMeasures()
+    {
+        var oldTenant = CubeSetting.Current.EnableTenant;
+        CubeSetting.Current.EnableTenant = false;
+        try
+        {
+            Osc260828Item.Meta.ConnName = "Osc260828Item";
+            Osc260828Item.Meta.Session.Truncate();
+            SeedItem("a", 10);
+            SeedItem("a", 11);
+            SeedItem("b", 20);
+            var user = SystemUser();
+            var r = WidgetQueryService.Execute(user, new WidgetQueryRequest
+            {
+                Mode = "aggregate",
+                TypePath = "Admin/Osc260828",
+                GroupBy = "Name",
+                Measures =
+                [
+                    new WidgetMeasure { Fn = "count" },
+                    new WidgetMeasure { Fn = "sum", Field = "Amount" },
+                ],
+            });
+            Assert.NotNull(r.Items);
+            Assert.Equal(2, r.Items.Count);
+            var a = r.Items.FirstOrDefault(e => e.Key == "a");
+            Assert.NotNull(a);
+            Assert.NotNull(a.Values);
+            Assert.Equal(2, a.Values.Count);
+            Assert.Equal(2L, Convert.ToInt64(a.Values[0]));
+            Assert.Equal(21L, Convert.ToInt64(a.Values[1]));
+            Assert.Equal(a.Values[0], a.Value);
+            var b = r.Items.FirstOrDefault(e => e.Key == "b");
+            Assert.NotNull(b);
+            Assert.Equal(20L, Convert.ToInt64(b.Values[1]));
+        }
+        finally
+        {
+            CubeSetting.Current.EnableTenant = oldTenant;
+        }
+    }
+
+    [Fact(DisplayName = "分组排序：缺省纵轴值倒序；横轴值正序可切换")]
+    public void Query_GroupBy_Sort()
+    {
+        var oldTenant = CubeSetting.Current.EnableTenant;
+        CubeSetting.Current.EnableTenant = false;
+        try
+        {
+            Osc260828Item.Meta.ConnName = "Osc260828Item";
+            Osc260828Item.Meta.Session.Truncate();
+            SeedItem("b", 1);
+            SeedItem("a", 5);
+            SeedItem("c", 3);
+            var user = SystemUser();
+            var r = WidgetQueryService.Execute(user, new WidgetQueryRequest
+            {
+                TypePath = "Admin/Osc260828",
+                GroupBy = "Name",
+                Measures = [new WidgetMeasure { Fn = "sum", Field = "Amount" }],
+            });
+            Assert.Equal(["a", "c", "b"], r.Items.Select(e => e.Key).ToArray());
+
+            var r2 = WidgetQueryService.Execute(user, new WidgetQueryRequest
+            {
+                TypePath = "Admin/Osc260828",
+                GroupBy = "Name",
+                SortBy = "x",
+                SortOrder = "asc",
+                Measures = [new WidgetMeasure { Fn = "count" }],
+            });
+            Assert.Equal(["a", "b", "c"], r2.Items.Select(e => e.Key).ToArray());
+
+            // 记录顺序：显式关闭排序后不校验顺序，仅保证返回分组完整
+            var r3 = WidgetQueryService.Execute(user, new WidgetQueryRequest
+            {
+                TypePath = "Admin/Osc260828",
+                GroupBy = "Name",
+                SortBy = "record",
+                Measures = [new WidgetMeasure { Fn = "count" }],
+            });
+            Assert.Equal(3, r3.Items.Count);
+        }
+        finally
+        {
+            CubeSetting.Current.EnableTenant = oldTenant;
+        }
+    }
+
+    [Fact(DisplayName = "度量校验：count 可计数任意字段；非数值求和 / 超量 / 未知字段 → 400")]
+    public void Query_Measures_Validation()
+    {
+        var oldTenant = CubeSetting.Current.EnableTenant;
+        CubeSetting.Current.EnableTenant = false;
+        try
+        {
+            Osc260828Item.Meta.ConnName = "Osc260828Item";
+            Osc260828Item.Meta.Session.Truncate();
+            SeedItem("a", 10);
+            SeedItem("b", 20);
+            var user = SystemUser();
+
+            var r = WidgetQueryService.Execute(user, new WidgetQueryRequest
+            {
+                TypePath = "Admin/Osc260828",
+                Measures = [new WidgetMeasure { Fn = "count", Field = "Name" }],
+            });
+            Assert.Equal(2L, Convert.ToInt64(r.Value));
+
+            var ex1 = Assert.Throws<ApiException>(() => WidgetQueryService.Execute(user, new WidgetQueryRequest
+            {
+                TypePath = "Admin/Osc260828",
+                Measures = [new WidgetMeasure { Fn = "sum", Field = "Name" }],
+            }));
+            Assert.Equal(400, ex1.Code);
+
+            var ex2 = Assert.Throws<ApiException>(() => WidgetQueryService.Execute(user, new WidgetQueryRequest
+            {
+                TypePath = "Admin/Osc260828",
+                Measures = Enumerable.Range(0, WidgetQueryService.MaxMeasures + 1)
+                    .Select(_ => new WidgetMeasure { Fn = "count" }).ToList(),
+            }));
+            Assert.Equal(400, ex2.Code);
+
+            var ex3 = Assert.Throws<ApiException>(() => WidgetQueryService.Execute(user, new WidgetQueryRequest
+            {
+                TypePath = "Admin/Osc260828",
+                Measures = [new WidgetMeasure { Fn = "max", Field = "NotExist" }],
+            }));
+            Assert.Equal(400, ex3.Code);
+        }
+        finally
+        {
+            CubeSetting.Current.EnableTenant = oldTenant;
+        }
+    }
+
+    [Fact(DisplayName = "DashboardJson：measures 白名单归一化、非法度量拒存、chartOptions 仅保留布尔键")]
+    public void DashboardJson_Measures_And_ChartOptions()
+    {
+        var ok = """{"version":1,"widgets":[{"id":"c1","kind":"miniChart","title":"t","layout":{"w":6,"order":0},"source":{"provider":"entity.aggregate","typePath":"Admin/Osc260828"},"query":{"groupBy":"Name","sortBy":"X","sortOrder":"up","measures":[{"fn":"SUM","field":"Amount","label":"金额（求和）"}]},"style":{"chartType":"bar","chartOptions":{"legend":true,"axis":"yes","gridLine":false}}}]}""";
+        Assert.True(DashboardJson.TryNormalize(ok, null, false, out var json, out var err), err);
+        Assert.Contains("\"sortBy\":\"x\"", json);
+        Assert.DoesNotContain("\"sortOrder\"", json);
+        Assert.Contains("\"legend\":true", json);
+        Assert.Contains("\"gridLine\":false", json);
+        Assert.DoesNotContain("\"axis\"", json);
+        // 中文会被 JSON 转义，逐字段解析断言度量内容
+        var mo = System.Text.Json.Nodes.JsonNode.Parse(json)!["widgets"]![0]!["query"]!["measures"]![0]!;
+        Assert.Equal("sum", mo["fn"]!.GetValue<String>());
+        Assert.Equal("Amount", mo["field"]!.GetValue<String>());
+        Assert.Equal("金额（求和）", mo["label"]!.GetValue<String>());
+
+        var notNumeric = """{"version":1,"widgets":[{"id":"c2","kind":"miniChart","title":"t","layout":{"w":6,"order":0},"source":{"provider":"entity.aggregate","typePath":"Admin/Osc260828"},"query":{"groupBy":"Name","measures":[{"fn":"sum","field":"Name"}]},"style":{"chartType":"bar"}}]}""";
+        Assert.False(DashboardJson.TryNormalize(notNumeric, null, false, out _, out var e1));
+        Assert.Contains("度量", e1);
+
+        var tooMany = "{\"version\":1,\"widgets\":[{\"id\":\"c3\",\"kind\":\"miniChart\",\"title\":\"t\",\"layout\":{\"w\":6,\"order\":0},\"source\":{\"provider\":\"entity.aggregate\",\"typePath\":\"Admin/Osc260828\"},\"query\":{\"groupBy\":\"Name\",\"measures\":[" +
+            string.Join(",", Enumerable.Repeat("{\"fn\":\"count\"}", WidgetQueryService.MaxMeasures + 1)) +
+            "]},\"style\":{\"chartType\":\"bar\"}}]}";
+        Assert.False(DashboardJson.TryNormalize(tooMany, null, false, out _, out var e2));
+        Assert.Contains("度量", e2);
+    }
+
     [Fact(DisplayName = "跨实体无 mapping 时 hostFilter 不进入 Where")]
     public void Query_CrossEntity_NoMapping()
     {

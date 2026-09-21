@@ -55,7 +55,8 @@ const { rows, mapping, fields, columns, interactive } = useMiniKanbanWidget(prop
   gap: 6px;
   height: 22px;
   margin-bottom: 8px;
-  padding-right: 52px;
+  /* 操作条预留：右内缩 12 + 按钮组宽 + 间距 7 */
+  padding-right: calc(var(--widget-ops-w, 22px) + 7px);
   flex-shrink: 0;
   box-sizing: border-box;
 }

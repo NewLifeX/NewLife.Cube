@@ -50,6 +50,17 @@ export function routeToApiPrefix(path: string): string {
   );
 }
 
+/**
+ * 流程/自动化存的 TypePath 为 `Admin/User`（无前导 /）。
+ * 实体页 API（GetPage/GetFields）必须带前导 `/`，否则 resolveRequestUrl 会拼成 `/apiAdmin/User/...`。
+ */
+export function ensureApiTypePath(typePath: string | null | undefined): string {
+  const n = String(typePath ?? '')
+    .trim()
+    .replace(/^\/+/, '');
+  return n ? `/${n}` : '';
+}
+
 /** 容错取值（大小写） */
 export function getValueByKey(data: Record<string, unknown>, key: string): unknown {
   if (key in data) return data[key];

@@ -4,10 +4,10 @@ import type { WidgetQueryResult } from '@newlifex/api-core';
 import { buildDrillViewFilter } from '@/core/utils/searchFilters';
 import { ensureEchartsTheme, initEcharts } from '@/core/utils/echartsTheme';
 import type { WidgetCardProps } from './context';
-import { buildMiniChartOption, type ChartItem } from './chartTemplates';
+import { buildMiniChartOption, resolveChartMeasures, type ChartItem } from './chartTemplates';
 import { normalizeTypePath } from './legacy';
 
-/** 兼容 items/Items 与 key/Key 混用 */
+/** 兼容 items/Items 与 key/Key 混用；values/Values 为多度量值（OSC-260920） */
 export function readChartItems(result: unknown): ChartItem[] {
   const r = result as Record<string, unknown> | null | undefined;
   if (!r) return [];
@@ -15,10 +15,12 @@ export function readChartItems(result: unknown): ChartItem[] {
   if (!Array.isArray(raw)) return [];
   return raw.map((it) => {
     const o = (it && typeof it === 'object' ? it : {}) as Record<string, unknown>;
+    const vs = o.values ?? o.Values;
     return {
       key: String(o.key ?? o.Key ?? ''),
       label: String(o.label ?? o.Label ?? o.key ?? o.Key ?? ''),
       value: o.value ?? o.Value,
+      values: Array.isArray(vs) ? vs : undefined,
     };
   });
 }
@@ -49,7 +51,10 @@ export function useMiniChartWidget(props: WidgetCardProps) {
   const items = computed(() => readChartItems(props.result));
   const empty = computed(() => !props.loading && !props.error && items.value.length === 0);
   const option = computed(() =>
-    buildMiniChartOption(props.widget.style?.chartType ?? 'bar', items.value),
+    buildMiniChartOption(props.widget.style?.chartType ?? 'bar', items.value, undefined, {
+      measures: resolveChartMeasures(props.widget.query),
+      chartOptions: props.widget.style?.chartOptions,
+    }),
   );
   const drillable = computed(() => {
     const tp = normalizeTypePath(props.widget.source?.typePath);

@@ -2,7 +2,7 @@
   <a-drawer
     class="widget-config-drawer"
     :visible="visible"
-    :width="480"
+    :width="420"
     unmount-on-close
     placement="right"
     @update:visible="(v: boolean) => emit('update:visible', v)"
@@ -81,12 +81,91 @@
       </div>
     </div>
     <div v-else class="wd-step">
-      <div class="wd-label">字段与样式</div>
       <a-form layout="vertical">
+        <!-- 分组（OSC-260921）：数据源 / 图表配置 / 图表布局；仅组间画分隔线，不加分组标签 -->
         <a-form-item label="标题">
           <a-input v-model="draft.title" :max-length="40" />
         </a-form-item>
+        <a-form-item v-if="!isNamed" label="数据源">
+          <a-select v-model="draft.typePath" allow-search @change="onSourceChange">
+            <a-option v-for="s in sourceOptions" :key="s.typePath" :value="s.typePath">
+              {{ sourceLabel(s) }}
+            </a-option>
+          </a-select>
+        </a-form-item>
+        <WidgetScopeFilter
+          v-if="!isNamed"
+          :label="draft.kind === 'miniChart' ? '数据范围' : '查询条件'"
+          :count="filterCondCount"
+          :model-value="filterModel"
+          :fields="filterCandidates"
+          :host-fields="hostEditorFields"
+          :visible="filterEditorVisible"
+          :hint="filterHint"
+          @update:visible="(v: boolean) => (filterEditorVisible = v)"
+          @apply="onFilterApply"
+          @clear="clearWidgetFilter"
+        />
+        <a-form-item v-if="!isNamed && showFetchLimit" label="拉取数量">
+          <a-select v-model="draft.limit">
+            <a-option v-for="n in limitOptions" :key="n" :value="n">
+              {{ formatDataListLimitLabel(n) }}
+            </a-option>
+          </a-select>
+          <template #extra>
+            <span v-if="fetchAllSelected" class="wd-hint wd-hint--warn">
+              「全部」会拉取匹配的全部记录，数据量大时可能影响性能，请谨慎使用。
+            </span>
+            <span v-else class="wd-hint">
+              从后端一次拉取的记录数，用于列表滚动 / 看板卡片 / 卡片轮播
+            </span>
+          </template>
+        </a-form-item>
+        <a-form-item v-if="!isNamed && isCross && !isWorkbench" label="跨实体联动">
+          <div class="wd-link-block">
+            <div class="wd-hint wd-hint--lead">
+              当前数据源与本页实体不同。填写一对「相等」字段后，列表筛选会传到该部件；不填则独立统计并显示未联动图标。
+            </div>
+            <a-space direction="vertical" fill>
+              <div class="wd-link-row">
+                <span class="wd-link-label">本页字段</span>
+                <a-select
+                  v-model="draft.hostField"
+                  allow-search
+                  allow-clear
+                  placeholder="例如：Id / RoleId"
+                >
+                  <a-option v-for="f in hostFieldOptions" :key="f.name" :value="f.name">
+                    {{ f.displayName || f.name }}
+                  </a-option>
+                </a-select>
+              </div>
+              <div class="wd-link-row">
+                <span class="wd-link-label">数据源字段</span>
+                <a-select
+                  v-model="draft.sourceField"
+                  allow-search
+                  allow-clear
+                  placeholder="例如：RoleId / Id"
+                >
+                  <a-option v-for="f in sourceFields" :key="f.name" :value="f.name">
+                    {{ f.displayName || f.name }}
+                  </a-option>
+                </a-select>
+              </div>
+            </a-space>
+            <div class="wd-hint">
+              示例：角色页挂「用户」统计时，本页字段填 <code>Id</code>，数据源字段填 <code>RoleId</code>（用户.角色 = 当前角色）。
+            </div>
+          </div>
+        </a-form-item>
+        <a-form-item v-if="isNamed">
+          <div class="wd-hint">平台部件由服务端提供数据，只需调整标题与宽度。</div>
+        </a-form-item>
+
+        <!-- 图表配置（OSC-260921）：图表形态与字段 -->
         <template v-if="!isNamed">
+          <a-divider class="wd-group" />
           <a-form-item v-if="draft.kind === 'metricCard'" label="标签">
             <a-input
               v-model="draft.badge"
@@ -121,18 +200,44 @@
               </a-option>
             </a-select>
           </a-form-item>
+          <a-form-item v-if="draft.kind === 'miniChart'" label="图表选项">
+            <div class="wd-chartopts">
+              <a-checkbox-group v-model="chartOptionKeys">
+                <a-checkbox value="legend">图例</a-checkbox>
+                <a-checkbox value="dataLabel">数据标签</a-checkbox>
+                <a-checkbox v-if="showAxisOptions" value="axis">坐标轴</a-checkbox>
+                <a-checkbox v-if="showAxisOptions" value="gridLine">网格线</a-checkbox>
+              </a-checkbox-group>
+            </div>
+          </a-form-item>
           <a-form-item
             v-if="
               draft.kind === 'miniChart' &&
               (draft.chartType === 'bar' || draft.chartType === 'hbar' || draft.chartType === 'pie')
             "
-            label="分组字段"
+            label="横轴（类别）"
           >
             <a-select v-model="draft.groupBy" allow-search>
               <a-option v-for="f in sourceFields" :key="f.name" :value="f.name">
                 {{ f.displayName || f.name }}
               </a-option>
             </a-select>
+          </a-form-item>
+          <a-form-item v-if="draft.kind === 'miniChart' && showChartSort" label="排序依据">
+            <a-radio-group v-model="draft.sortBy" type="button" size="small">
+              <a-radio value="x">横轴值</a-radio>
+              <a-radio value="y">纵轴值</a-radio>
+              <a-radio value="record">记录顺序</a-radio>
+            </a-radio-group>
+          </a-form-item>
+          <a-form-item v-if="draft.kind === 'miniChart' && showChartSort" label="排序规则">
+            <a-radio-group v-model="draft.sortOrder" type="button" size="small">
+              <a-radio value="asc">正序</a-radio>
+              <a-radio value="desc">倒序</a-radio>
+            </a-radio-group>
+            <template #extra>
+              <span class="wd-hint">排序对分组聚合结果生效；「记录顺序」按数据库返回顺序，不额外排序。</span>
+            </template>
           </a-form-item>
           <a-form-item
             v-if="draft.kind === 'miniChart' && (draft.chartType === 'line' || draft.chartType === 'sparkline')"
@@ -143,6 +248,61 @@
                 {{ f.displayName || f.name }}
               </a-option>
             </a-select>
+          </a-form-item>
+          <!-- 纵轴（字段，OSC-260920）：统计记录总数（仅计数）/ 统计字段数值（计数/求和/最大/最小/平均） -->
+          <a-form-item v-if="draft.kind === 'miniChart'" label="纵轴（字段）">
+            <a-radio-group v-model="draft.measureMode" type="button" size="small">
+              <a-radio value="count">统计记录总数</a-radio>
+              <a-radio value="field">统计字段数值</a-radio>
+            </a-radio-group>
+          </a-form-item>
+          <a-form-item v-if="draft.kind === 'miniChart'" label="选择字段">
+            <div class="wd-measure-list">
+              <div v-for="(m, i) in draft.measures" :key="i" class="wd-measure-item">
+                <!-- 组合输入框（OSC-260921）：字段选择 / 统计方式 / 删除按钮 拼为一体 -->
+                <a-input-group>
+                  <a-select
+                    v-model="m.field"
+                    class="wd-measure-field"
+                    allow-search
+                    allow-clear
+                    size="small"
+                    placeholder="选择字段"
+                    @change="onMeasureFieldChange(i)"
+                  >
+                    <a-option v-for="f in sourceFields" :key="f.name" :value="f.name">
+                      {{ f.displayName || f.name }}
+                    </a-option>
+                  </a-select>
+                  <!-- 统计方式按字段类型限定（OSC-260921）：数值字段 5 种，文本/日期/时间/编号类仅计数 -->
+                  <a-select v-if="draft.measureMode === 'field'" v-model="m.fn" class="wd-measure-fn" size="small">
+                    <a-option v-for="fn in measureFnOptions(m.field)" :key="fn" :value="fn">
+                      {{ MEASURE_FN_LABELS[fn] }}
+                    </a-option>
+                  </a-select>
+                  <!-- 统计记录总数：仅计数，仍置于组合框内以保持视觉一致 -->
+                  <a-select v-else v-model="m.fn" class="wd-measure-fn" size="small">
+                    <a-option value="count">计数</a-option>
+                  </a-select>
+                  <a-button size="small" status="danger" @click="removeMeasureRow(i)">
+                    <icon-park type="delete" />
+                  </a-button>
+                </a-input-group>
+              </div>
+              <a-button size="mini" :disabled="!canAddMeasure" @click="addMeasureRow">
+                <icon-park type="plus" />
+                添加字段
+              </a-button>
+            </div>
+            <template #extra>
+              <span class="wd-hint">
+                {{
+                  draft.measureMode === 'count'
+                    ? '统计记录总数：仅按计数（Count）统计；不添加字段时统计全部记录数，最多 5 个字段。'
+                    : '统计字段数值：数值字段可按计数 / 求和 / 最大值 / 最小值 / 平均值统计；文本、日期、时间、编号等字段仅支持计数，最多 5 个字段。'
+                }}
+              </span>
+            </template>
           </a-form-item>
           <template v-if="draft.kind === 'miniKanban'">
             <a-form-item label="分组字段">
@@ -225,100 +385,10 @@
               </a-option>
             </a-select>
           </a-form-item>
-          <a-form-item v-if="showFetchLimit" label="拉取数量">
-            <a-select v-model="draft.limit">
-              <a-option v-for="n in limitOptions" :key="n" :value="n">
-                {{ formatDataListLimitLabel(n) }}
-              </a-option>
-            </a-select>
-            <template #extra>
-              <span v-if="fetchAllSelected" class="wd-hint wd-hint--warn">
-                「全部」会拉取匹配的全部记录，数据量大时可能影响性能，请谨慎使用。
-              </span>
-              <span v-else class="wd-hint">
-                从后端一次拉取的记录数，用于列表滚动 / 看板卡片 / 卡片轮播
-              </span>
-            </template>
-          </a-form-item>
-          <a-form-item v-if="isCross && !isWorkbench" label="跨实体联动">
-            <div class="wd-link-block">
-              <div class="wd-hint wd-hint--lead">
-                当前数据源与本页实体不同。填写一对「相等」字段后，列表筛选会传到该部件；不填则独立统计并显示未联动图标。
-              </div>
-              <a-space direction="vertical" fill>
-                <div class="wd-link-row">
-                  <span class="wd-link-label">本页字段</span>
-                  <a-select
-                    v-model="draft.hostField"
-                    allow-search
-                    allow-clear
-                    placeholder="例如：Id / RoleId"
-                  >
-                    <a-option v-for="f in hostFieldOptions" :key="f.name" :value="f.name">
-                      {{ f.displayName || f.name }}
-                    </a-option>
-                  </a-select>
-                </div>
-                <div class="wd-link-row">
-                  <span class="wd-link-label">数据源字段</span>
-                  <a-select
-                    v-model="draft.sourceField"
-                    allow-search
-                    allow-clear
-                    placeholder="例如：RoleId / Id"
-                  >
-                    <a-option v-for="f in sourceFields" :key="f.name" :value="f.name">
-                      {{ f.displayName || f.name }}
-                    </a-option>
-                  </a-select>
-                </div>
-              </a-space>
-              <div class="wd-hint">
-                示例：角色页挂「用户」统计时，本页字段填 <code>Id</code>，数据源字段填 <code>RoleId</code>（用户.角色 = 当前角色）。
-              </div>
-            </div>
-          </a-form-item>
-          <!-- 查询条件（OSC-260903e2a4）：复用列表页 FilterBuilderPopover；值来源可切「宿主」引用当前页字段 -->
-          <a-form-item label="查询条件">
-            <div class="wd-filter-wrap">
-              <FilterBuilderPopover
-                :visible="filterEditorVisible"
-                :fields="filterCandidates"
-                :model-value="filterModel"
-                :can-save="false"
-                :host-fields="hostEditorFields"
-                :show-save-view="false"
-                @update:visible="(v: boolean) => (filterEditorVisible = v)"
-                @apply="onFilterApply"
-              >
-                <a-button size="mini">
-                  <icon-park type="filter" />
-                  {{ filterCondCount ? `查询条件（${filterCondCount}）` : '查询条件' }}
-                </a-button>
-              </FilterBuilderPopover>
-              <a-button
-                v-if="filterCondCount"
-                size="mini"
-                status="danger"
-                @click="clearWidgetFilter"
-              >
-                清除
-              </a-button>
-            </div>
-            <template #extra>
-              <span class="wd-hint">
-                {{
-                  hostEditorFields.length
-                    ? '按条件过滤源数据；条件值可切「宿主」引用当前页面筛选字段，随宿主联动。'
-                    : '按条件过滤源实体数据，作用于本部件（工作台无宿主字段引用）。'
-                }}
-              </span>
-            </template>
-          </a-form-item>
         </template>
-        <a-form-item v-else>
-          <div class="wd-hint">平台部件由服务端提供数据，只需调整标题与宽度。</div>
-        </a-form-item>
+
+        <!-- 图表布局（OSC-260921）：宽度 -->
+        <a-divider class="wd-group" />
         <a-form-item label="宽度">
           <a-radio-group v-model="draft.w" type="button" size="small">
             <a-radio v-if="isWorkbench" :value="2">1/6</a-radio>
@@ -353,8 +423,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import type { WidgetInstance, WidgetSourceItem } from '@newlifex/api-core';
-import FilterBuilderPopover from '@/views/crud/FilterBuilderPopover.vue';
-import { CHART_TYPE_OPTIONS } from './chartTemplates';
+import WidgetScopeFilter from './WidgetScopeFilter.vue';
+import { CHART_TYPE_OPTIONS, MEASURE_FN_LABELS } from './chartTemplates';
 import { useWidgetConfigDrawer, type WidgetConfigDrawerProps } from './useWidgetConfigDrawer';
 import { normalizeTypePath } from './legacy';
 
@@ -376,6 +446,13 @@ const {
   wbTab,
   numericFields,
   dateFields,
+  measureFnOptions,
+  onMeasureFieldChange,
+  canAddMeasure,
+  showAxisOptions,
+  showChartSort,
+  addMeasureRow,
+  removeMeasureRow,
   sourceFields,
   filterCandidates,
   hostEditorFields,
@@ -397,6 +474,32 @@ const {
 } = useWidgetConfigDrawer(props, emit as (e: 'update:visible' | 'save', ...args: unknown[]) => void);
 
 const chartTypeOptions = CHART_TYPE_OPTIONS;
+/** 图表选项勾选值 ↔ draft.chartOptions 映射；轴/网格线对饼图、迷你折线不适用 */
+const chartOptionKeys = computed<string[]>({
+  get: () => {
+    const co = draft.chartOptions;
+    const keys: string[] = [];
+    if (co.legend) keys.push('legend');
+    if (co.dataLabel) keys.push('dataLabel');
+    if (co.axis) keys.push('axis');
+    if (co.gridLine) keys.push('gridLine');
+    return keys;
+  },
+  set: (keys) => {
+    draft.chartOptions.legend = keys.includes('legend');
+    draft.chartOptions.dataLabel = keys.includes('dataLabel');
+    if (showAxisOptions.value) {
+      draft.chartOptions.axis = keys.includes('axis');
+      draft.chartOptions.gridLine = keys.includes('gridLine');
+    }
+  },
+});
+/** 条件编辑器底部提示（是否可引用宿主字段） */
+const filterHint = computed(() =>
+  hostEditorFields.value.length
+    ? '按条件过滤源数据；条件值可切「宿主」引用当前页面筛选字段，随宿主联动。'
+    : '按条件过滤源实体数据，作用于本部件（工作台无宿主字段引用）。',
+);
 const hostFieldOptions = computed(() => props.hostFields ?? []);
 const sourceQ = ref('');
 const filteredSources = computed(() => {
@@ -417,6 +520,27 @@ function sourceLabel(s: WidgetSourceItem) {
   if (dn && dn.toLowerCase() !== name.toLowerCase()) return dn;
   if (dn) return dn;
   return name || s.typePath;
+}
+/**
+ * 配置界面内切换数据源（OSC-260921）：旧实体字段引用对新实体多已失效，先重置再重载字段/条件候选，
+ * 否则保存或取数会因「未知分组字段/未知度量字段」被后端 400。展示类配置（图表模板/选项/排序）与源无关，保留。
+ */
+function onSourceChange(value: unknown) {
+  const typePath = normalizeTypePath(String(value ?? ''));
+  if (!typePath) return;
+  draft.groupBy = '';
+  draft.timeField = '';
+  draft.measures = [];
+  draft.measureMode = 'count';
+  draft.measureField = '';
+  draft.groupField = '';
+  draft.titleField = '';
+  draft.imageField = '';
+  draft.displayFields = [];
+  draft.hostField = '';
+  draft.sourceField = '';
+  draft.extraFilter = null;
+  void pickSource(typePath);
 }
 </script>
 
@@ -522,6 +646,37 @@ function sourceLabel(s: WidgetSourceItem) {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+/* 组间分隔线（无文字；首个分组上方不画线） */
+.wd-group {
+  margin: 12px 0;
+}
+/* 图表选项：4 项同排；项多时自动换行（外层普通 div，保证 scoped 样式命中） */
+.wd-chartopts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+}
+.wd-measure-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+.wd-measure-item {
+  width: 100%;
+}
+/* 组合框占满整行；内部元素是 Arco 组件（根元素不带 scoped 属性），用 :deep() 定位 */
+.wd-measure-item > :first-child {
+  width: 100%;
+}
+.wd-measure-item :deep(.wd-measure-field) {
+  flex: 1;
+  min-width: 0;
+}
+.wd-measure-item :deep(.wd-measure-fn) {
+  width: 84px;
+  flex-shrink: 0;
 }
 .wd-chart-ico {
   color: rgb(var(--primary-6));

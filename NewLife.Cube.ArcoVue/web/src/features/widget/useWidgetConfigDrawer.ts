@@ -2,10 +2,15 @@ import { computed, reactive, ref, watch } from 'vue';
 import { Message } from '@arco-design/web-vue';
 import type {
   ChartType,
+  MeasureFn,
+  WidgetChartOptions,
   WidgetInstance,
   WidgetKind,
+  WidgetMeasure,
   WidgetNamedMeta,
   WidgetProvider,
+  WidgetSortBy,
+  WidgetSortOrder,
   WidgetSourceItem,
   WidgetWidth,
 } from '@newlifex/api-core';
@@ -15,6 +20,7 @@ import { emptyViewFilter, normalizeFilter, type ViewFilter } from '@/core/utils/
 import { listWidgets } from './registry';
 import { newWidgetId, normalizeSourceRows, normalizeTypePath } from './legacy';
 import { loadEntityFilterFields } from './listFieldMeta';
+import { isNumericTypeName, measureFnOptionsFor, MEASURE_FN_LABELS, resolveChartMeasures } from './chartTemplates';
 import {
   DATA_LIST_LIMIT_ALL,
   DATA_LIST_LIMIT_DEFAULT,
@@ -75,11 +81,20 @@ export function useWidgetConfigDrawer(
     typePath: '',
     provider: 'entity.aggregate' as WidgetProvider,
     widgetName: '',
-    measureFn: 'count' as 'count' | 'sum' | 'avg' | 'min' | 'max',
+    measureFn: 'count' as MeasureFn,
     measureField: '',
     groupBy: '',
     timeField: '',
     chartType: 'bar' as ChartType,
+    /** 纵轴模式（OSC-260920）：count=统计记录总数（仅计数）；field=统计字段数值（计数/求和/最大/最小/平均） */
+    measureMode: 'count' as 'count' | 'field',
+    /** 选择字段行（OSC-260920）：多统计字段；count 模式下空字段=记录总数 Count(*) */
+    measures: [] as { fn: MeasureFn; field: string }[],
+    /** 排序依据/方向（OSC-260920，仅分组聚合生效） */
+    sortBy: 'y' as WidgetSortBy,
+    sortOrder: 'desc' as WidgetSortOrder,
+    /** 图表显示选项（OSC-260920）：图例/数据标签/坐标轴/网格线 */
+    chartOptions: { legend: false, dataLabel: true, axis: true, gridLine: false } as Required<WidgetChartOptions>,
     groupField: '',
     titleField: '',
     imageField: '',
@@ -181,14 +196,90 @@ export function useWidgetConfigDrawer(
     return !!host && !!src && host.toLowerCase() !== src.toLowerCase();
   });
 
-  const sourceFields = ref<{ name: string; displayName?: string; typeName?: string }[]>([]);
+  const sourceFields = ref<{ name: string; displayName?: string; typeName?: string; primaryKey?: boolean }[]>([]);
 
+  // 数值字段（排除主键/身份列，与后端 ResolveNumeric 一致）：指标卡「数值字段」候选
   const numericFields = computed(() =>
-    sourceFields.value.filter((f) => /int|long|decimal|double|single|float|byte|short|number/i.test(f.typeName || '')),
+    sourceFields.value.filter((f) => !f.primaryKey && isNumericTypeName(f.typeName)),
   );
   const dateFields = computed(() =>
     sourceFields.value.filter((f) => /date|time/i.test(f.typeName || '')),
   );
+
+  /** 度量行上限（与后端 WidgetQueryService.MaxMeasures 对齐） */
+  const MAX_CHART_MEASURES = 5;
+  const canAddMeasure = computed(() => draft.measures.length < MAX_CHART_MEASURES);
+  /** 图表显示选项：饼图/迷你折线不出坐标轴与网格线 */
+  const showAxisOptions = computed(
+    () => draft.chartType !== 'pie' && draft.chartType !== 'sparkline',
+  );
+  /** 排序控件：仅分类轴图表（柱状/条形/饼图）有意义，时间轴恒定按时间正序 */
+  const showChartSort = computed(
+    () => draft.chartType === 'bar' || draft.chartType === 'hbar' || draft.chartType === 'pie',
+  );
+
+  /** 行可用统计方式（OSC-260921）：数值非主键字段 5 种；文本/日期/时间/编号类仅计数 */
+  function measureFnOptions(name: string): MeasureFn[] {
+    return measureFnOptionsFor(sourceFields.value.find((f) => f.name === name));
+  }
+
+  /** 字段是否可用于求和/最大/最小/平均（数值且非主键） */
+  function isAggregatableNumeric(name: string) {
+    return measureFnOptions(name).includes('sum');
+  }
+
+  /** 字段变更后回落非法统计方式（如数值→文本时 求和→计数） */
+  function onMeasureFieldChange(index: number) {
+    const row = draft.measures[index];
+    if (!row) return;
+    if (!measureFnOptions(row.field).includes(row.fn)) row.fn = 'count';
+  }
+
+  /** 新增一行统计字段（优先未使用的字段；数值字段默认求和，其余默认计数） */
+  function addMeasureRow() {
+    if (!canAddMeasure.value) return;
+    const used = new Set(draft.measures.map((r) => r.field));
+    const next = sourceFields.value.find((f) => !used.has(f.name));
+    const fn: MeasureFn =
+      draft.measureMode === 'count' ? 'count' : next && isAggregatableNumeric(next.name) ? 'sum' : 'count';
+    draft.measures.push({ fn, field: next?.name || '' });
+  }
+
+  function removeMeasureRow(index: number) {
+    draft.measures.splice(index, 1);
+  }
+
+  // 切换纵轴模式：计数模式强制计数；字段数值模式下不支持的统计方式回落为计数，避免保存非法组合
+  watch(
+    () => draft.measureMode,
+    (mode) => {
+      if (mode === 'count') draft.measures.forEach((r) => (r.fn = 'count'));
+      else
+        draft.measures.forEach((r) => {
+          if (!measureFnOptions(r.field).includes(r.fn)) r.fn = 'count';
+        });
+    },
+  );
+
+  /** 序列显示名：字段显示名（函数） */
+  function measureLabel(fn: MeasureFn, field: string) {
+    const dn = (sourceFields.value.find((f) => f.name === field)?.displayName || '').trim() || field;
+    return `${dn}（${MEASURE_FN_LABELS[fn]}）`;
+  }
+
+  /** 保存用度量（OSC-260920）：count 模式统一为计数（空=Count(*)）；field 模式携带序列名 */
+  function buildChartMeasures(): WidgetMeasure[] {
+    const rows = draft.measures
+      .map((r) => ({ fn: r.fn, field: (r.field || '').trim() }))
+      .filter((r) => r.field);
+    if (draft.measureMode === 'count') {
+      if (!rows.length) return [{ fn: 'count' }];
+      return rows.map((r) => ({ fn: 'count' as MeasureFn, field: r.field, label: measureLabel('count', r.field) }));
+    }
+    return rows
+      .slice(0, MAX_CHART_MEASURES)
+      .map((r) => ({ fn: r.fn, field: r.field, label: measureLabel(r.fn, r.field) }));
+  }
 
   function resetFromEditing() {
     const w = props.editing;
@@ -209,6 +300,21 @@ export function useWidgetConfigDrawer(
     draft.groupBy = w?.query?.groupBy || '';
     draft.timeField = w?.query?.timeField || '';
     draft.chartType = w?.style?.chartType || 'bar';
+    // 多统计度量（OSC-260920）：measures 优先，legacy measure 迁移；默认 Count(*) 不占字段行
+    const ms = resolveChartMeasures(w?.query);
+    draft.measures = ms
+      .filter((m) => (m.field || m.fn !== 'count') && m.fn !== undefined)
+      .map((m) => ({ fn: m.fn, field: (m.field || '').trim() }));
+    draft.measureMode = ms.every((m) => m.fn === 'count') ? 'count' : 'field';
+    draft.sortBy = (w?.query?.sortBy as WidgetSortBy) || 'y';
+    draft.sortOrder = (w?.query?.sortOrder as WidgetSortOrder) || 'desc';
+    const co = w?.style?.chartOptions;
+    draft.chartOptions = {
+      legend: co?.legend === true,
+      dataLabel: co?.dataLabel !== false,
+      axis: co?.axis !== false,
+      gridLine: co?.gridLine === true,
+    };
     draft.groupField = w?.query?.mapping?.groupField || '';
     draft.titleField = w?.query?.mapping?.titleField || '';
     draft.imageField = w?.query?.mapping?.imageField || '';
@@ -284,6 +390,8 @@ export function useWidgetConfigDrawer(
         name: f.name,
         displayName: f.displayName,
         typeName: f.typeName,
+        // 主键/身份列后端拒绝 sum/avg/min/max（OSC-260921），保留标志用于统计方式限制
+        primaryKey: f.primaryKey,
       }));
     } catch {
       sourceFields.value = props.hostFields;
@@ -428,6 +536,19 @@ export function useWidgetConfigDrawer(
         Message.warning('折线需要时间字段');
         return;
       }
+      // 纵轴：字段数值模式至少一个字段；非计数方式必须为数值（且非主键）字段（OSC-260920/260921）
+      if (draft.measureMode === 'field') {
+        const rows = draft.measures.filter((r) => (r.field || '').trim());
+        if (!rows.length) {
+          Message.warning('请至少选择一个统计字段');
+          return;
+        }
+        const bad = rows.find((r) => r.fn !== 'count' && !isAggregatableNumeric(r.field));
+        if (bad) {
+          Message.warning(`字段「${bad.field}」不支持该统计方式，请改用计数或更换字段`);
+          return;
+        }
+      }
     }
     if (draft.kind === 'miniKanban' && (!draft.groupField || !draft.titleField)) {
       Message.warning('数据看板需要分组字段和标题字段');
@@ -454,7 +575,14 @@ export function useWidgetConfigDrawer(
       },
       source: { provider: providerOf(), typePath: draft.typePath },
       query: {
-        measure: { fn: draft.measureFn, field: draft.measureFn === 'count' ? undefined : draft.measureField },
+        // 迷你图表用多度量 measures（OSC-260920）；其余部件保持单值 measure
+        measure:
+          draft.kind === 'miniChart'
+            ? undefined
+            : { fn: draft.measureFn, field: draft.measureFn === 'count' ? undefined : draft.measureField },
+        measures: draft.kind === 'miniChart' ? buildChartMeasures() : undefined,
+        sortBy: draft.kind === 'miniChart' ? draft.sortBy : undefined,
+        sortOrder: draft.kind === 'miniChart' ? draft.sortOrder : undefined,
         groupBy: draft.groupBy || undefined,
         timeField: draft.timeField || undefined,
         // 列表/卡片/看板：一次拉取条数；默认 30，上限 300，-1=全部
@@ -491,6 +619,7 @@ export function useWidgetConfigDrawer(
       style: {
         color: draft.color,
         chartType: draft.kind === 'miniChart' ? draft.chartType : undefined,
+        chartOptions: draft.kind === 'miniChart' ? { ...draft.chartOptions } : undefined,
         badge:
           draft.kind === 'metricCard' && draft.badge.trim()
             ? draft.badge.trim().slice(0, 12)
@@ -517,6 +646,14 @@ export function useWidgetConfigDrawer(
     wbTab,
     numericFields,
     dateFields,
+    MAX_CHART_MEASURES,
+    canAddMeasure,
+    showAxisOptions,
+    showChartSort,
+    measureFnOptions,
+    onMeasureFieldChange,
+    addMeasureRow,
+    removeMeasureRow,
     sourceFields,
     filterCandidates,
     hostEditorFields,

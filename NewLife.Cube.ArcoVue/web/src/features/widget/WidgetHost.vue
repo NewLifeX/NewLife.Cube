@@ -3,10 +3,10 @@
   <div v-if="hasWidgets" class="widget-host">
     <WidgetGrid :widgets="widgets">
       <template #default="{ widget }">
-        <div class="widget-shell">
+        <div class="widget-shell" :class="{ 'widget-shell--with-add': showInlineAdd(widget) }">
           <div v-if="canEdit" class="widget-shell-ops">
             <a-button-group class="widget-ops-group" size="mini">
-              <a-tooltip content="添加部件">
+              <a-tooltip v-if="showInlineAdd(widget)" content="添加部件">
                 <a-button
                   type="text"
                   class="widget-ops-btn"
@@ -22,7 +22,7 @@
                 </a-button>
                 <template #content>
                   <a-doption v-if="widget.kind !== 'legacyChart'" @click="openEdit(widget)">
-                    <icon-park type="edit" class="menu-item-icon" /> 编辑
+                    <icon-park type="edit" class="menu-item-icon" /> 编辑…
                   </a-doption>
                   <a-doption v-if="widget.kind === 'legacyChart'" @click="openUpgrade(widget)">
                     <icon-park type="upload" class="menu-item-icon" /> 升级为迷你图表
@@ -65,6 +65,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import type { WidgetInstance } from '@newlifex/api-core';
 import WidgetGrid from './WidgetGrid.vue';
 import WidgetConfigDrawer from './WidgetConfigDrawer.vue';
 import { useWidgetHost } from './useWidgetHost';
@@ -87,6 +89,21 @@ const {
   removeWidget,
   moveWidget,
 } = useWidgetHost();
+
+/**
+ * 部件行内「+」入口（OSC-260921）：
+ * - 多维视图（insight）：无顶层菜单，仅在最后一个部件上保留入口；
+ * - 工作台：顶部菜单已有「添加部件…」时不再给行内入口；无该菜单（普通用户）时同样只在最后一个部件保留。
+ */
+const inlineAddWidgetId = computed(() => {
+  const last = widgets.value[widgets.value.length - 1]?.id ?? '';
+  if (ctx?.surface === 'insight') return last;
+  if (ctx?.surface === 'workbench' && !ctx.topAddEntry) return last;
+  return '';
+});
+function showInlineAdd(w: WidgetInstance) {
+  return w.id === inlineAddWidgetId.value;
+}
 
 defineExpose({ openAdd });
 </script>
@@ -111,6 +128,12 @@ defineExpose({ openAdd });
   min-height: 0;
   height: 100%;
   overflow: hidden;
+  /* 操作条实际宽度（OSC-260921）：仅下拉 22 = 按钮 20 + 组边框 1×2；「+」与下拉并存 48。
+     卡片标题行用 calc(var(--widget-ops-w) + 7px) 预留右侧空间，两种形态下按钮间距都约 8px */
+  --widget-ops-w: 22px;
+}
+.widget-shell--with-add {
+  --widget-ops-w: 48px;
 }
 /* 与卡片内标题行水平对齐（卡片 padding-top: 10px，标题行高约 22px） */
 .widget-shell-ops {
@@ -136,9 +159,10 @@ defineExpose({ openAdd });
   border-color: var(--color-border-2);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
+/* 高度 20 + 组边框 1px×2 = 与 22px 标题行等高，避免按钮底/悬浮底色超出标题行 */
 .widget-ops-group :deep(.arco-btn) {
   padding: 0 6px;
-  height: 22px;
+  height: 20px;
   border: none;
   border-radius: 0;
   background: transparent;
@@ -147,6 +171,11 @@ defineExpose({ openAdd });
 .widget-shell:hover .widget-ops-group :deep(.arco-btn + .arco-btn),
 .widget-shell:hover .widget-ops-group :deep(.arco-btn-group .arco-btn:not(:first-child)) {
   border-left: 1px solid var(--color-border-2);
+}
+/* IconPark 以行内 svg 渲染，基线对齐会让图形比按钮中心高约 2px；改块级后由按钮 flex 精确居中 */
+.widget-ops-group :deep(.i-icon),
+.widget-ops-group :deep(.i-icon svg) {
+  display: block;
 }
 .widget-ops-btn:hover {
   color: rgb(var(--primary-6)) !important;

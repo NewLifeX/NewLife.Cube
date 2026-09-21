@@ -72,7 +72,8 @@ function onCardClick() {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding-right: 52px;
+  /* 操作条预留：右内缩 12 + 按钮组宽 + 间距 7 */
+  padding-right: calc(var(--widget-ops-w, 22px) + 7px);
   flex-shrink: 0;
 }
 .metric-ico {

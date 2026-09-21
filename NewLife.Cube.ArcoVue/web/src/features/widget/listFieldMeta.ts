@@ -4,6 +4,7 @@ import { toFieldMetas } from '@/core/utils/fieldNormalize';
 import { enrichFieldsWithEnumDataSource, enrichFieldsWithLookup } from '@/core/utils/lov-api';
 import cubeApi from '@/api';
 import { normalizeTypePath } from './legacy';
+import { ensureApiTypePath } from '@/core/utils/url';
 
 /** 解包 ApiResponse / 直出，避免 .data 套一层 */
 export function unwrapPayload(raw: unknown): unknown {
@@ -91,7 +92,8 @@ async function loadFromGetPage(tp: string): Promise<FieldMeta[]> {
 
 async function loadFromGetPagePartition(tp: string, part: 'list' | 'search'): Promise<FieldMeta[]> {
   try {
-    const pageRes = await cubeApi.page.getPage(tp);
+    // 实体 GetPage 必须带前导 /（Admin/X → /Admin/X），否则拼成 /apiAdmin/...
+    const pageRes = await cubeApi.page.getPage(ensureApiTypePath(tp));
     const meta = unwrapPayload(pageRes?.data ?? pageRes) as Record<string, unknown> | null;
     if (!meta || typeof meta !== 'object' || Array.isArray(meta) || typeof meta === 'string') {
       return [];
@@ -108,7 +110,7 @@ async function loadFromGetPagePartition(tp: string, part: 'list' | 'search'): Pr
 
 async function loadFromGetFields(tp: string, kind: FieldKind = FieldKind.List): Promise<FieldMeta[]> {
   try {
-    const fb = await cubeApi.page.getFields(tp, kind);
+    const fb = await cubeApi.page.getFields(ensureApiTypePath(tp), kind);
     return toFieldMetas(asFieldArray(unwrapPayload(fb?.data ?? fb)) as never).filter(
       (f) => !!f.name,
     );

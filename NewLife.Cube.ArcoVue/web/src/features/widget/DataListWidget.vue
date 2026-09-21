@@ -5,7 +5,7 @@
       <WidgetLinkBadge :widget="widget" />
       <a-tooltip content="更多">
         <a-button type="text" size="mini" class="dl-more" @click="openList">
-          <icon-park type="share" :size="14" />
+          <icon-park type="more" :size="14" />
         </a-button>
       </a-tooltip>
     </div>
@@ -115,7 +115,8 @@ const arcoColumns = computed(() =>
   box-sizing: border-box;
 }
 .dl-card--editing .dl-head {
-  padding-right: 52px;
+  /* 操作条预留：右内缩 12 + 按钮组宽 + 间距 7 */
+  padding-right: calc(var(--widget-ops-w, 22px) + 7px);
 }
 .dl-title {
   flex: 1;

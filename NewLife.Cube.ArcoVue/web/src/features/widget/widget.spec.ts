@@ -8,7 +8,13 @@ import {
 } from './useMiniKanbanWidget';
 import { readChartItems, resolveChartDimKey } from './useMiniChartWidget';
 import { normalizeQueryResult, shouldQueryWidget, unlinkedAfterQuery } from './useWidgetQuery';
-import { buildMiniChartOption } from './chartTemplates';
+import {
+  buildMiniChartOption,
+  isNumericTypeName,
+  measureDisplayName,
+  measureFnOptionsFor,
+  resolveChartMeasures,
+} from './chartTemplates';
 import { getWidget, registerWidget } from './registry';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -91,6 +97,102 @@ describe('readChartItems', () => {
     const opt = buildMiniChartOption('hbar', [{ key: 'a', label: 'A', value: 2 }]);
     expect((opt.yAxis as { type?: string }).type).toBe('category');
     expect((opt.xAxis as { type?: string }).type).toBe('value');
+  });
+});
+
+describe('buildMiniChartOption 多度量与显示选项（OSC-260920）', () => {
+  const items = [
+    { key: 'a', label: 'A', value: 2, values: [2, 21] },
+    { key: 'b', label: 'B', value: 1, values: [1, 20] },
+  ];
+  const measures = [
+    { fn: 'count' as const, label: '记录数' },
+    { fn: 'sum' as const, field: 'Amount', label: '金额（求和）' },
+  ];
+
+  it('每个度量一条序列，数据按 values 对齐', () => {
+    const opt = buildMiniChartOption('bar', items, undefined, { measures });
+    const series = opt.series as { name?: string; data: number[]; label?: { show?: boolean } }[];
+    expect(series).toHaveLength(2);
+    expect(series[0].data).toEqual([2, 1]);
+    expect(series[1].data).toEqual([21, 20]);
+    expect(series[1].name).toBe('金额（求和）');
+    expect(series[0].label?.show).toBe(true);
+  });
+
+  it('图例 / 数据标签 / 坐标轴 / 网格线开关生效', () => {
+    const opt = buildMiniChartOption('bar', items, undefined, {
+      measures,
+      chartOptions: { legend: true, dataLabel: false, axis: false, gridLine: true },
+    });
+    expect((opt.legend as { show?: boolean }).show).toBe(true);
+    const series = opt.series as { label?: { show?: boolean } }[];
+    expect(series[0].label?.show).toBe(false);
+    expect((opt.xAxis as { show?: boolean }).show).toBe(false);
+    expect((opt.yAxis as { splitLine?: { show?: boolean } }).splitLine?.show).toBe(true);
+  });
+
+  it('缺省无 measures 时保持单序列旧行为', () => {
+    const opt = buildMiniChartOption('bar', [{ key: 'a', label: 'A', value: 5 }]);
+    const series = opt.series as { data: number[] }[];
+    expect(series).toHaveLength(1);
+    expect(series[0].data).toEqual([5]);
+    expect((opt.legend as { show?: boolean }).show).toBe(false);
+    expect((opt.yAxis as { splitLine?: { show?: boolean } }).splitLine?.show).toBe(false);
+  });
+
+  it('resolveChartMeasures 优先 measures，其次 measure，缺省 Count(*)', () => {
+    expect(resolveChartMeasures({ measures })).toHaveLength(2);
+    expect(resolveChartMeasures({ measure: { fn: 'avg', field: 'Amount' } })).toEqual([
+      { fn: 'avg', field: 'Amount' },
+    ]);
+    expect(resolveChartMeasures(null)).toEqual([{ fn: 'count' }]);
+  });
+
+  it('measureDisplayName 优先 label，其次字段（函数）', () => {
+    expect(measureDisplayName({ fn: 'sum', field: 'Amount', label: '金额（求和）' })).toBe('金额（求和）');
+    expect(measureDisplayName({ fn: 'sum', field: 'Amount' })).toBe('Amount（求和）');
+    expect(measureDisplayName({ fn: 'count' })).toBe('记录数');
+  });
+
+  it('readChartItems 读取 values / Values', () => {
+    expect(
+      readChartItems({ items: [{ key: 'a', label: 'A', value: 1, values: [1, 2] }] })[0].values,
+    ).toEqual([1, 2]);
+    expect(
+      readChartItems({ Items: [{ Key: 'a', Label: 'A', Value: 1, Values: [3, 4] }] })[0].values,
+    ).toEqual([3, 4]);
+  });
+});
+
+describe('measureFnOptionsFor 按字段类型限定统计方式（OSC-260921）', () => {
+  it('数值且非主键字段可用全部方式', () => {
+    expect(measureFnOptionsFor({ typeName: 'Int32' })).toEqual(['count', 'sum', 'max', 'min', 'avg']);
+    expect(measureFnOptionsFor({ typeName: 'Decimal' })).toContain('sum');
+    expect(measureFnOptionsFor({ typeName: 'Double' })).toContain('avg');
+  });
+
+  it('文本 / 日期 / 时间 / 布尔 / Guid 字段仅计数', () => {
+    expect(measureFnOptionsFor({ typeName: 'String' })).toEqual(['count']);
+    expect(measureFnOptionsFor({ typeName: 'DateTime' })).toEqual(['count']);
+    expect(measureFnOptionsFor({ typeName: 'TimeSpan' })).toEqual(['count']);
+    expect(measureFnOptionsFor({ typeName: 'Boolean' })).toEqual(['count']);
+    expect(measureFnOptionsFor({ typeName: 'Guid' })).toEqual(['count']);
+  });
+
+  it('编号（主键/身份列）即使为数值也仅计数', () => {
+    expect(measureFnOptionsFor({ typeName: 'Int32', primaryKey: true })).toEqual(['count']);
+    expect(measureFnOptionsFor({ typeName: 'Int64', primaryKey: true })).toEqual(['count']);
+  });
+
+  it('未选字段与空类型仅计数；isNumericTypeName 与后端类型集合对齐', () => {
+    expect(measureFnOptionsFor(null)).toEqual(['count']);
+    expect(measureFnOptionsFor({})).toEqual(['count']);
+    expect(isNumericTypeName('Int16')).toBe(true);
+    expect(isNumericTypeName('Byte')).toBe(true);
+    expect(isNumericTypeName('Double')).toBe(true);
+    expect(isNumericTypeName('String')).toBe(false);
+    expect(isNumericTypeName(undefined)).toBe(false);
   });
 });
 
@@ -388,5 +490,40 @@ describe('workbench grid', () => {
     expect(fallbackHeightOf('dataCard')).toBe(3);
     expect(minHeightOf(4)).toBe(260);
     expect(minHeightOf(3)).toBe(180);
+  });
+});
+
+describe('添加部件入口（OSC-260921）', () => {
+  const dir = resolve(fileURLToPath(import.meta.url), '..');
+  const hostSrc = () => readFileSync(resolve(dir, 'WidgetHost.vue'), 'utf8');
+  const workbenchSrc = () => readFileSync(resolve(dir, '../../views/home/Workbench.vue'), 'utf8');
+  const useWorkbenchSrc = () => readFileSync(resolve(dir, '../../views/home/useWorkbench.ts'), 'utf8');
+
+  it('顶部菜单「添加部件…」排在「发布…」之前', () => {
+    const src = workbenchSrc();
+    const add = src.indexOf('添加部件…');
+    const publish = src.indexOf('发布…');
+    expect(add).toBeGreaterThan(-1);
+    expect(publish).toBeGreaterThan(-1);
+    expect(add).toBeLessThan(publish);
+    expect(src).toMatch(/value="__addWidget"/);
+    expect(src).toMatch(/openAdd\(\)/);
+  });
+
+  it('部件行内「+」仅按 showInlineAdd 条件渲染', () => {
+    const src = hostSrc();
+    expect(src).toMatch(/v-if="showInlineAdd\(widget\)"/);
+    // 多维视图：仅最后一个部件；工作台：顶部菜单不可用时退回最后一个部件
+    expect(src).toMatch(/ctx\?\.surface === 'insight'/);
+    expect(src).toMatch(/!ctx\.topAddEntry/);
+  });
+
+  it('工作台把顶部菜单可用性注入部件表面上下文', () => {
+    const src = useWorkbenchSrc();
+    expect(src).toMatch(/surface\.topAddEntry = v/);
+  });
+
+  it('部件下拉菜单项为「编辑…」', () => {
+    expect(hostSrc()).toMatch(/编辑…/);
   });
 });

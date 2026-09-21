@@ -35,6 +35,15 @@ public class WidgetQueryRequest
     /// <summary>度量</summary>
     public WidgetMeasure? Measure { get; set; }
 
+    /// <summary>多统计度量（OSC-260920）；非空时优先于 Measure。最多 5 个</summary>
+    public List<WidgetMeasure>? Measures { get; set; }
+
+    /// <summary>排序依据：x=横轴列 / y=首度量（默认） / record=记录顺序（不排序）；仅分组聚合生效</summary>
+    public String? SortBy { get; set; }
+
+    /// <summary>排序方向：asc/desc（x 缺省正序，y 缺省倒序）</summary>
+    public String? SortOrder { get; set; }
+
     /// <summary>分组字段</summary>
     public String? GroupBy { get; set; }
 
@@ -73,8 +82,11 @@ public class WidgetMeasure
     /// <summary>count/sum/avg/min/max</summary>
     public String Fn { get; set; } = "count";
 
-    /// <summary>字段。count 度量无需字段，故可空</summary>
+    /// <summary>字段。count 度量可空（=记录总数 Count(*)）</summary>
     public String? Field { get; set; }
+
+    /// <summary>序列显示名（图例/提示用；仅透传，不参与 SQL）</summary>
+    public String? Label { get; set; }
 }
 
 /// <summary>跨实体映射</summary>
@@ -117,8 +129,11 @@ public class WidgetQueryItem
     /// <summary>标签</summary>
     public String Label { get; set; }
 
-    /// <summary>值</summary>
+    /// <summary>值（兼容：首个度量）</summary>
     public Object Value { get; set; }
+
+    /// <summary>多度量值（与请求 measures 顺序对齐，OSC-260920）</summary>
+    public List<Object> Values { get; set; }
 }
 
 /// <summary>带鉴权的只读聚合/列表查询</summary>
@@ -194,7 +209,9 @@ public static class WidgetQueryService
         if (!req.TimeField.IsNullOrEmpty())
             return TimeBucketAggregate(fact, where, req, hostApplied, filterNarrowed);
 
-        var value = ScalarAggregate(fact, where, req.Measure);
+        // 无分组：仅支持单值，取首个度量（多度量由前端 miniChart 使用）
+        var measures = ResolveMeasures(fact, req);
+        var value = ScalarAggregate(fact, where, measures[0]);
         return new WidgetQueryResult { Value = value, HostFilterApplied = hostApplied, FilterNarrowed = filterNarrowed };
     }
 
@@ -518,31 +535,18 @@ public static class WidgetQueryService
             ?? fact.Fields.FirstOrDefault(f => f.Name.EqualIgnoreCase(req.GroupBy));
         if (groupFi is null) throw new ApiException(400, "未知分组字段");
         var top = Math.Min(limit, 20);
-        var fn = (req.Measure?.Fn + "").Trim().ToLowerInvariant();
-        if (fn.IsNullOrEmpty()) fn = "count";
-        String agg;
-        if (fn == "count")
-            agg = "Count(*) as Value";
-        else
-        {
-            var fi = ResolveNumeric(fact, req.Measure?.Field);
-            agg = fn switch
-            {
-                "sum" => $"{fi.Sum()}".Replace($" as {fi.Name}", " as Value", StringComparison.OrdinalIgnoreCase),
-                "avg" => $"{fi.Avg()}".Replace($" as {fi.Name}", " as Value", StringComparison.OrdinalIgnoreCase),
-                "min" => $"{fi.Min()}".Replace($" as {fi.Name}", " as Value", StringComparison.OrdinalIgnoreCase),
-                "max" => $"{fi.Max()}".Replace($" as {fi.Name}", " as Value", StringComparison.OrdinalIgnoreCase),
-                _ => throw new ApiException(400, "非法度量"),
-            };
-        }
+
+        // 多度量（OSC-260920）：m0..mN 与 measures 对齐；首度量同时写入 Value 兼容旧前端
+        var measures = ResolveMeasures(fact, req);
+        var (aggCols, aliases) = BuildAggregates(fact, measures);
 
         var sb = new SelectBuilder
         {
             Table = fact.Table.TableName,
-            Column = $"{groupFi.ColumnName} as {groupFi.Name}, {agg}",
+            Column = $"{groupFi.ColumnName} as {groupFi.Name}, {aggCols}",
             Where = where + "",
             GroupBy = groupFi.ColumnName,
-            OrderBy = "Value desc",
+            OrderBy = BuildGroupOrderBy(req, groupFi),
         };
         var dt = fact.Session.Query(sb, 0, top);
         var items = new List<WidgetQueryItem>();
@@ -553,17 +557,48 @@ public static class WidgetQueryService
             foreach (var row in dt)
             {
                 var key = row[groupFi.Name] + "";
-                Object val = null;
-                try { val = row["Value"]; } catch { /* ignore */ }
+                var values = ReadRowValues(row, aliases);
                 items.Add(new WidgetQueryItem
                 {
                     Key = key,
                     Label = FormatGroupLabel(groupFi, key, mapSource),
-                    Value = val,
+                    Value = values.Count > 0 ? values[0] : null,
+                    Values = values,
                 });
             }
         }
         return new WidgetQueryResult { Items = items, HostFilterApplied = hostApplied, FilterNarrowed = filterNarrowed };
+    }
+
+    /// <summary>按度量别名（m0..mN）从数据行取值，缺列容错为 null（OSC-260920）</summary>
+    static List<Object> ReadRowValues(DbRow row, List<String> aliases)
+    {
+        var values = new List<Object>(aliases.Count);
+        foreach (var alias in aliases)
+        {
+            Object val = null;
+            try { val = row[alias]; } catch { /* ignore */ }
+            values.Add(val);
+        }
+        return values;
+    }
+
+    /// <summary>分组聚合排序（OSC-260920）：x=横轴列（缺省正序）/ y=首度量（缺省倒序）/ record=记录顺序（不排序）</summary>
+    /// <param name="req">查询请求</param>
+    /// <param name="groupFi">分组字段</param>
+    /// <returns>ORDER BY 片段；null 表示不排序</returns>
+    static String BuildGroupOrderBy(WidgetQueryRequest req, FieldItem groupFi)
+    {
+        var by = (req.SortBy + "").Trim().ToLowerInvariant();
+        var order = (req.SortOrder + "").Trim().ToLowerInvariant();
+        if (by == "record") return null;
+        if (by == "x")
+        {
+            var xAsc = order != "desc";
+            return $"{groupFi.ColumnName} {(xAsc ? "asc" : "desc")}";
+        }
+        var yAsc = order == "asc";
+        return $"m0 {(yAsc ? "asc" : "desc")}";
     }
 
     /// <summary>分组键 → 友好显示名（枚举 / Boolean / Map 数据源）</summary>
@@ -611,15 +646,130 @@ public static class WidgetQueryService
     static FieldItem ResolveNumeric(IEntityFactory fact, String field)
     {
         if (field.IsNullOrEmpty()) throw new ApiException(400, "度量字段不能为空");
-        var fi = fact.Table.FindByName(field) ?? fact.Fields.FirstOrDefault(f => f.Name.EqualIgnoreCase(field));
+        var fi = FindField(fact, field);
         if (fi is null) throw new ApiException(400, "未知度量字段");
         if (fi.PrimaryKey || fi.IsIdentity) throw new ApiException(400, "非法度量字段");
         if (fi.Name.EqualIgnoreCase("Password", "Secret", "Salt")) throw new ApiException(400, "非法度量字段");
-        var t = fi.Type;
-        if (t != typeof(Int32) && t != typeof(Int64) && t != typeof(Single) && t != typeof(Double) && t != typeof(Decimal)
-            && t != typeof(Int32?) && t != typeof(Int64?) && t != typeof(Decimal?))
-            throw new ApiException(400, "度量字段必须为数值");
+        if (!IsNumericType(fi.Type)) throw new ApiException(400, "度量字段必须为数值");
         return fi;
+    }
+
+    /// <summary>字段名/列名查找（忽略大小写）</summary>
+    /// <param name="fact">实体工厂</param>
+    /// <param name="name">字段名</param>
+    /// <returns>字段项；未找到返回 null</returns>
+    internal static FieldItem FindField(IEntityFactory fact, String name)
+    {
+        if (name.IsNullOrEmpty()) return null;
+        return fact.Table.FindByName(name) ?? fact.Fields.FirstOrDefault(f => f.Name.EqualIgnoreCase(name));
+    }
+
+    /// <summary>数值类型判定（与前端数值字段候选一致，OSC-260920）</summary>
+    /// <param name="type">字段类型（含可空）</param>
+    /// <returns>是否可作为 sum/avg/min/max 度量</returns>
+    internal static Boolean IsNumericType(Type type)
+    {
+        var t = Nullable.GetUnderlyingType(type) ?? type;
+        return t == typeof(Int16) || t == typeof(Int32) || t == typeof(Int64)
+            || t == typeof(Single) || t == typeof(Double) || t == typeof(Decimal)
+            || t == typeof(Byte) || t == typeof(SByte)
+            || t == typeof(UInt16) || t == typeof(UInt32) || t == typeof(UInt64);
+    }
+
+    /// <summary>度量函数白名单</summary>
+    internal static readonly HashSet<String> MeasureFns = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "count", "sum", "avg", "min", "max"
+    };
+
+    /// <summary>单部件度量上限（OSC-260920）</summary>
+    public const Int32 MaxMeasures = 5;
+
+    /// <summary>校验单个度量（函数白名单 + 字段存在/类型/敏感）。返回错误文案，null=通过。查询与保存校验共用（OSC-260920）</summary>
+    /// <param name="fact">实体工厂</param>
+    /// <param name="fn">度量函数</param>
+    /// <param name="field">字段名；count 可空（=Count(*)）</param>
+    /// <returns>错误文案；null 表示合法</returns>
+    internal static String CheckMeasure(IEntityFactory fact, String fn, String field)
+    {
+        fn = (fn + "").Trim().ToLowerInvariant();
+        if (!MeasureFns.Contains(fn)) return "非法度量";
+        if (fn == "count")
+        {
+            // count 可无字段（Count(*)）；带字段时统计该字段非空值，任意标量字段均可
+            if (field.IsNullOrEmpty()) return null;
+            var cfi = FindField(fact, field);
+            if (cfi is null) return "未知度量字段";
+            if (cfi.Name.EqualIgnoreCase("Password", "Secret", "Salt")) return "非法度量字段";
+            var ct = Nullable.GetUnderlyingType(cfi.Type) ?? cfi.Type;
+            if (ct == typeof(Byte[])) return "非法度量字段";
+            return null;
+        }
+        if (field.IsNullOrEmpty()) return "度量字段不能为空";
+        var fi = FindField(fact, field);
+        if (fi is null) return "未知度量字段";
+        if (fi.PrimaryKey || fi.IsIdentity) return "非法度量字段";
+        if (fi.Name.EqualIgnoreCase("Password", "Secret", "Salt")) return "非法度量字段";
+        if (!IsNumericType(fi.Type)) return "度量字段必须为数值";
+        return null;
+    }
+
+    /// <summary>解析有效度量：Measures 优先，其次 Measure，缺省 Count(*)；数量与字段均校验（OSC-260920）</summary>
+    /// <param name="fact">实体工厂</param>
+    /// <param name="req">查询请求</param>
+    /// <returns>已归一化（小写 fn）的度量列表</returns>
+    static List<WidgetMeasure> ResolveMeasures(IEntityFactory fact, WidgetQueryRequest req)
+    {
+        var list = new List<WidgetMeasure>();
+        if (req.Measures != null && req.Measures.Count > 0)
+            list.AddRange(req.Measures.Where(e => e != null));
+        else if (req.Measure != null)
+            list.Add(req.Measure);
+        if (list.Count == 0) list.Add(new WidgetMeasure { Fn = "count" });
+        if (list.Count > MaxMeasures) throw new ApiException(400, $"度量不能超过 {MaxMeasures} 个");
+
+        foreach (var m in list)
+        {
+            var fn = (m.Fn + "").Trim().ToLowerInvariant();
+            var err = CheckMeasure(fact, fn, m.Field);
+            if (err != null) throw new ApiException(400, err);
+            m.Fn = fn;
+            if (m.Label != null && m.Label.Length > 40) m.Label = m.Label[..40];
+        }
+        return list;
+    }
+
+    /// <summary>构造聚合 SELECT 列（别名 m0..mN 与度量对齐，OSC-260920）</summary>
+    /// <param name="fact">实体工厂</param>
+    /// <param name="measures">度量列表</param>
+    /// <returns>聚合列 SQL 与别名列表</returns>
+    static (String Columns, List<String> Aliases) BuildAggregates(IEntityFactory fact, List<WidgetMeasure> measures)
+    {
+        var cols = new List<String>();
+        var aliases = new List<String>();
+        for (var i = 0; i < measures.Count; i++)
+        {
+            var m = measures[i];
+            var alias = "m" + i;
+            String col;
+            if (m.Fn == "count")
+                col = m.Field.IsNullOrEmpty() ? $"Count(*) as {alias}" : $"{FindField(fact, m.Field).Count(alias)}";
+            else
+            {
+                var fi = ResolveNumeric(fact, m.Field);
+                col = m.Fn switch
+                {
+                    "sum" => $"{fi.Sum(alias)}",
+                    "avg" => $"{fi.Avg(alias)}",
+                    "min" => $"{fi.Min(alias)}",
+                    "max" => $"{fi.Max(alias)}",
+                    _ => throw new ApiException(400, "非法度量"),
+                };
+            }
+            cols.Add(col);
+            aliases.Add(alias);
+        }
+        return (String.Join(", ", cols), aliases);
     }
 
     /// <summary>list 投影：主键 + 非敏感标量（排除 Password/Secret/Salt/二进制）</summary>
@@ -663,28 +813,14 @@ public static class WidgetQueryService
         var dayExpr = DateBucketSql(dbType, timeFi.ColumnName);
         if (dayExpr.IsNullOrEmpty()) throw new ApiException(400, "不支持时间分桶");
 
-        var fn = (req.Measure?.Fn + "").Trim().ToLowerInvariant();
-        if (fn.IsNullOrEmpty()) fn = "count";
-        String agg;
-        if (fn == "count")
-            agg = "Count(*) as Value";
-        else
-        {
-            var fi = ResolveNumeric(fact, req.Measure?.Field);
-            agg = fn switch
-            {
-                "sum" => $"{fi.Sum()}".Replace($" as {fi.Name}", " as Value", StringComparison.OrdinalIgnoreCase),
-                "avg" => $"{fi.Avg()}".Replace($" as {fi.Name}", " as Value", StringComparison.OrdinalIgnoreCase),
-                "min" => $"{fi.Min()}".Replace($" as {fi.Name}", " as Value", StringComparison.OrdinalIgnoreCase),
-                "max" => $"{fi.Max()}".Replace($" as {fi.Name}", " as Value", StringComparison.OrdinalIgnoreCase),
-                _ => throw new ApiException(400, "非法度量"),
-            };
-        }
+        // 多度量（OSC-260920）：时间桶恒定按 Bucket 正序
+        var measures = ResolveMeasures(fact, req);
+        var (aggCols, aliases) = BuildAggregates(fact, measures);
 
         var sb = new SelectBuilder
         {
             Table = fact.Table.TableName,
-            Column = $"{dayExpr} as Bucket, {agg}",
+            Column = $"{dayExpr} as Bucket, {aggCols}",
             Where = where + "",
             GroupBy = dayExpr,
             OrderBy = "Bucket asc",
@@ -696,9 +832,8 @@ public static class WidgetQueryService
             foreach (var row in dt)
             {
                 var key = row["Bucket"] + "";
-                Object val = null;
-                try { val = row["Value"]; } catch { /* ignore */ }
-                items.Add(new WidgetQueryItem { Key = key, Label = key, Value = val });
+                var values = ReadRowValues(row, aliases);
+                items.Add(new WidgetQueryItem { Key = key, Label = key, Value = values.Count > 0 ? values[0] : null, Values = values });
             }
         }
         return new WidgetQueryResult { Items = items, HostFilterApplied = hostApplied, FilterNarrowed = filterNarrowed };

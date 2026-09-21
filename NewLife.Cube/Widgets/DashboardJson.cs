@@ -299,7 +299,18 @@ public static class DashboardJson
             // 部件查询条件（OSC-260903e2a4）：extraFilter 结构/白名单/复杂度/$host 表面与宿主字段
             if (query["extraFilter"] != null && !ValidateWidgetFilter(query, srcTypePath, hostTypePath, out error))
                 return false;
+
+            // 多统计度量（OSC-260920）：结构/函数/字段白名单，最多 5 个
+            if (query["measures"] != null && !ValidateWidgetMeasures(query, srcTypePath, out error))
+                return false;
+
+            // 分组排序（OSC-260920）：非法值移除，回落缺省（x 正序 / y 倒序）
+            NormalizeWidgetSort(query);
         }
+
+        // 图表显示选项（OSC-260920）：仅保留布尔键，空对象移除
+        if (w["style"] is JsonObject styleObj && styleObj["chartOptions"] is JsonObject chartOpts)
+            NormalizeChartOptions(styleObj, chartOpts);
 
         kind = w["kind"]?.GetValue<String>()?.Trim() ?? kind;
         if (kind.EqualIgnoreCase("miniChart"))
@@ -343,6 +354,84 @@ public static class DashboardJson
         "eq", "neq", "contains", "notcontains", "startswith", "endswith",
         "isnull", "notnull", "gt", "gte", "lt", "lte", "after", "before"
     };
+
+    /// <summary>校验多统计度量：数组 ≤ MaxMeasures；count 可空字段，其余必须数值字段（OSC-260920）</summary>
+    /// <param name="query">部件 query 节点</param>
+    /// <param name="srcTypePath">源实体 typePath（named 为空则不校验字段白名单）</param>
+    /// <param name="error">失败原因</param>
+    static Boolean ValidateWidgetMeasures(JsonObject query, String srcTypePath, out String error)
+    {
+        error = null;
+        if (query["measures"] is not JsonArray arr)
+        {
+            error = "measures 必须为数组";
+            return false;
+        }
+        if (arr.Count > WidgetQueryService.MaxMeasures)
+        {
+            error = $"度量不能超过 {WidgetQueryService.MaxMeasures} 个";
+            return false;
+        }
+        if (arr.Count == 0)
+        {
+            query.Remove("measures");
+            return true;
+        }
+        // named 部件不执行实体查询，无字段白名单可校
+        if (srcTypePath.IsNullOrEmpty()) return true;
+
+        var fact = FindFactory(srcTypePath);
+        if (fact == null)
+        {
+            error = "未知实体";
+            return false;
+        }
+        foreach (var node in arr)
+        {
+            if (node is not JsonObject mo)
+            {
+                error = "度量必须为对象";
+                return false;
+            }
+            var fn = (mo["fn"]?.ToString() ?? "").Trim().ToLowerInvariant();
+            var field = (mo["field"]?.ToString() ?? "").Trim();
+            var bad = WidgetQueryService.CheckMeasure(fact, fn, field);
+            if (bad != null)
+            {
+                error = $"度量非法：{bad}";
+                return false;
+            }
+            mo["fn"] = fn;
+            if (field.IsNullOrEmpty()) mo.Remove("field"); else mo["field"] = field;
+            var label = (mo["label"]?.ToString() ?? "").Trim();
+            if (label.IsNullOrEmpty() || label.Length > 40) mo.Remove("label"); else mo["label"] = label;
+        }
+        return true;
+    }
+
+    /// <summary>排序归一化：sortBy ∈ x/y/record、sortOrder ∈ asc/desc，非法值移除（回落缺省）</summary>
+    /// <param name="query">部件 query 节点</param>
+    static void NormalizeWidgetSort(JsonObject query)
+    {
+        var by = (query["sortBy"]?.ToString() ?? "").Trim().ToLowerInvariant();
+        if (by is "x" or "y" or "record") query["sortBy"] = by; else query.Remove("sortBy");
+        var order = (query["sortOrder"]?.ToString() ?? "").Trim().ToLowerInvariant();
+        if (order is "asc" or "desc") query["sortOrder"] = order; else query.Remove("sortOrder");
+    }
+
+    /// <summary>图表显示选项归一化：仅保留 legend/dataLabel/axis/gridLine 的布尔值（OSC-260920）</summary>
+    /// <param name="style">部件 style 节点</param>
+    /// <param name="options">chartOptions 节点</param>
+    static void NormalizeChartOptions(JsonObject style, JsonObject options)
+    {
+        var clean = new JsonObject();
+        foreach (var key in new[] { "legend", "dataLabel", "axis", "gridLine" })
+        {
+            if (options[key] is JsonValue v && v.TryGetValue<Boolean>(out var b)) clean[key] = b;
+        }
+        if (clean.Count > 0) style["chartOptions"] = clean;
+        else style.Remove("chartOptions");
+    }
 
     /// <summary>校验部件查询条件 extraFilter：结构/复杂度/源字段白名单/操作符/$host 表面与宿主字段（OSC-260903e2a4）</summary>
     /// <param name="query">部件 query 节点</param>

@@ -1,6 +1,6 @@
 <template>
   <div class="shell-toolbar">
-    <a-space>
+    <a-space :size="4">
       <a-tooltip content="站内通知">
         <a-badge :count="inboxBadgeCount" class="shell-toolbar__inbox-badge">
           <a-button type="text" size="small" class="shell-toolbar__inbox-btn" @click="goInbox">
@@ -12,8 +12,7 @@
       <a-tooltip v-if="workflowEnabled" content="审批待办">
         <a-badge :count="workflowTodoBadge" class="shell-toolbar__inbox-badge">
           <a-button type="text" size="small" class="shell-toolbar__inbox-btn" @click="goWorkflowTodo">
-            <icon-park type="stamp" />
-            <span class="shell-toolbar__wf-label">审批</span>
+            <icon-park type="audit" />
           </a-button>
         </a-badge>
       </a-tooltip>
@@ -110,15 +109,17 @@ const {
   align-items: center;
   overflow: visible;
 }
+/* 顶栏按钮簇紧凑化：Arco 文本按钮默认水平内边距 15px（small/medium 同值），收窄至 10px，
+   与紧凑密度 .arco-btn 的 10px 对齐；图标按钮命中区仍有 38×28，不影响可点性 */
+.shell-toolbar :deep(.arco-btn) {
+  padding-left: 10px;
+  padding-right: 10px;
+}
 .shell-toolbar__inbox-badge {
   line-height: 1;
 }
 .shell-toolbar__inbox-btn {
   overflow: visible;
-}
-.shell-toolbar__wf-label {
-  margin-left: 4px;
-  font-size: 13px;
 }
 .shell-toolbar__inbox-badge :deep(.arco-badge-number) {
   font-size: 10px;

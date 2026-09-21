@@ -17,6 +17,29 @@ export type WidgetKind =
 export type WidgetProvider = 'entity.aggregate' | 'entity.list' | 'named';
 export type MeasureFn = 'count' | 'sum' | 'avg' | 'min' | 'max';
 export type ChartType = 'sparkline' | 'line' | 'bar' | 'hbar' | 'pie';
+
+/** 单个统计度量（OSC-260920 迷你图表）：可多字段多函数；count 可不带字段（记录总数 Count(*)） */
+export interface WidgetMeasure {
+  fn: MeasureFn;
+  /** count 可空（=Count(*)）；其余函数必须为数值字段 */
+  field?: string;
+  /** 序列显示名（图例/提示用；保存时由前端按字段显示名+函数写入） */
+  label?: string;
+}
+
+/** 排序依据：x=横轴值 / y=纵轴值（首个度量） / record=记录顺序（不排序） */
+export type WidgetSortBy = 'x' | 'y' | 'record';
+
+/** 排序方向：asc 正序 / desc 倒序 */
+export type WidgetSortOrder = 'asc' | 'desc';
+
+/** 图表显示选项（miniChart 专用，存 style.chartOptions；缺省按模板默认） */
+export interface WidgetChartOptions {
+  legend?: boolean;
+  dataLabel?: boolean;
+  axis?: boolean;
+  gridLine?: boolean;
+}
 export type WidgetSurface = 'insight' | 'workbench';
 export type WidgetWidth = 2 | 3 | 4 | 6 | 8 | 12;
 
@@ -85,11 +108,16 @@ export interface WidgetInstance {
     widgetName?: string;
   };
   query: {
-    measure?: { fn: MeasureFn; field?: string };
+    measure?: WidgetMeasure;
+    /** 多统计度量（OSC-260920）：优先于 measure；空数组等同未配置 */
+    measures?: WidgetMeasure[];
     groupBy?: string;
     timeField?: string;
     buckets?: number;
     limit?: number;
+    /** 排序依据/方向（OSC-260920，仅分组聚合生效）：缺省按纵轴值倒序 */
+    sortBy?: WidgetSortBy;
+    sortOrder?: WidgetSortOrder;
     mapping?: {
       groupField?: string;
       titleField?: string;
@@ -104,6 +132,8 @@ export interface WidgetInstance {
     icon?: string;
     color?: string;
     chartType?: ChartType;
+    /** 图表显示选项（图例/数据标签/坐标轴/网格线，OSC-260920） */
+    chartOptions?: WidgetChartOptions;
     clickUrl?: string;
     /** 指标卡等自定义角标文案 */
     badge?: string;
@@ -120,11 +150,16 @@ export interface DashboardConfig {
 export interface WidgetQueryBody {
   mode?: 'aggregate' | 'list';
   typePath: string;
-  measure?: { fn: MeasureFn; field?: string };
+  measure?: WidgetMeasure;
+  /** 多统计度量（OSC-260920）：优先于 measure */
+  measures?: WidgetMeasure[];
   groupBy?: string;
   timeField?: string;
   buckets?: number;
   limit?: number;
+  /** 排序依据/方向（OSC-260920，仅分组聚合生效） */
+  sortBy?: WidgetSortBy;
+  sortOrder?: WidgetSortOrder;
   extraFilter?: WidgetFilter;
   hostTypePath?: string;
   hostFilter?: WidgetFilter;
@@ -136,7 +171,8 @@ export interface WidgetQueryResult {
   value?: unknown;
   trend?: unknown;
   url?: string;
-  items?: { key: string; label: string; value: unknown; [key: string]: unknown }[];
+  /** 分组/时间序列项；values 与请求 measures 一一对应（OSC-260920），value 兼容为首个度量值 */
+  items?: { key: string; label: string; value: unknown; values?: unknown[]; [key: string]: unknown }[];
   rows?: Record<string, unknown>[];
   hostFilterApplied?: boolean;
   links?: unknown;

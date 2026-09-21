@@ -18,12 +18,17 @@
           </a-button>
         </a-tooltip>
         <!-- 右：▾ 弹出菜单（OSC-260902ef43；样式对齐 QueryComboButton）：发布/重命名/删除/分隔符/工作台切换 -->
-        <a-dropdown v-if="showNamedMenu" trigger="click" @select="onNamedSelect">
+        <a-dropdown v-if="showNamedMenu" trigger="click" @select="onTopMenuSelect">
           <a-button type="text" class="wb-icon-btn wb-icon-btn--caret" aria-label="工作台操作">
             <icon-park type="down" :size="12" />
           </a-button>
           <template #content>
             <div class="wb-named-menu">
+              <!-- 添加部件统一入口（OSC-260921）：各部件行内「+」已取消 -->
+              <a-doption value="__addWidget">
+                <template #icon><icon-park type="plus" /></template>
+                添加部件…
+              </a-doption>
               <a-doption value="__publish" :disabled="!canPublish">
                 <template #icon><icon-park type="save" /></template>
                 发布…
@@ -95,7 +100,7 @@
     </div>
     <a-alert v-if="loadError" type="warning" show-icon class="wb-alert">{{ loadError }}</a-alert>
     <a-spin :loading="loading" class="wb-spin">
-      <WidgetHost />
+      <WidgetHost ref="widgetHostRef" />
     </a-spin>
     <!-- 命名工作台空槽：只读展示占位（默认工作台空墙由 WidgetHost 提供添加入口） -->
     <div v-if="isNamed && !(dashboard.widgets && dashboard.widgets.length) && !loading" class="wb-empty">
@@ -157,6 +162,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import WidgetHost from '@/features/widget/WidgetHost.vue';
 import ShareViewPopover from '@/views/crud/ShareViewPopover.vue';
 import { useWorkbench } from './useWorkbench';
@@ -165,6 +171,8 @@ defineOptions({ name: 'Workbench' });
 
 /** 命名工作台 slug（OSC-260902ef43）：空 = 默认工作台（/home 个人墙）；有值 = /Workbench/{slug} 只读命名槽 */
 const props = defineProps<{ slug?: string }>();
+
+const widgetHostRef = ref<InstanceType<typeof WidgetHost> | null>(null);
 
 const {
   loading,
@@ -202,6 +210,15 @@ const {
   confirmRename,
   confirmDelete,
 } = useWorkbench(props.slug ?? '');
+
+/** 顶部菜单：添加部件入口落到 WidgetHost 的配置抽屉，其余项仍走工作台菜单逻辑 */
+function onTopMenuSelect(value: string | number | Record<string, unknown>) {
+  if (value === '__addWidget') {
+    widgetHostRef.value?.openAdd();
+    return;
+  }
+  void onNamedSelect(String(value));
+}
 </script>
 
 <style scoped>

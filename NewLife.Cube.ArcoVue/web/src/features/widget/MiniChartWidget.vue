@@ -68,13 +68,17 @@ const {
   border: 1px solid var(--color-border-2);
   border-radius: var(--cube-radius-md, 8px);
   overflow: hidden;
+  /* 不加 border-box 时 width:100% 会把 padding/border 撑到卡片外（右侧边框与内边距被外壳裁掉），
+     标题编辑框也会越过预留区被悬浮按钮压住 */
+  box-sizing: border-box;
 }
 .mini-chart-head {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 2px;
-  padding-right: 52px;
+  /* 操作条预留：右内缩 12 + 按钮组宽 + 间距 7 */
+  padding-right: calc(var(--widget-ops-w, 22px) + 7px);
   flex-shrink: 0;
   line-height: 22px;
 }

@@ -67,7 +67,8 @@ const {
 }
 /* 工作台自定义模式时 Host 右上角有操作条，给编辑钮留空 */
 .ql-card--host-edit .ql-head {
-  padding-right: 52px;
+  /* 操作条预留：右内缩 12 + 按钮组宽 + 间距 7 */
+  padding-right: calc(var(--widget-ops-w, 22px) + 7px);
 }
 .ql-head {
   display: flex;

@@ -1,4 +1,4 @@
-import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, provide, reactive, ref } from 'vue';
+import { computed, onActivated, onBeforeUnmount, onDeactivated, onMounted, provide, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { Message } from '@arco-design/web-vue';
 import { resetMenuRoutesFlag } from '@/router';
@@ -100,6 +100,9 @@ export function useWorkbench(slugArg = '') {
   });
 
   provide(WIDGET_SURFACE_KEY, surface);
+
+  // 顶部菜单（含「添加部件…」）仅系统角色渲染；普通用户无该入口，部件需退回行内「+」兜底
+  watch(showNamedMenu, (v) => { surface.topAddEntry = v; }, { immediate: true });
 
   async function refreshNamedList() {
     if (!isSystem.value) {
