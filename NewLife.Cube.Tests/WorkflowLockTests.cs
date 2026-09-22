@@ -12,6 +12,7 @@ using WorkflowTask = NewLife.Cube.Workflow.Entity.WorkflowTask;
 namespace NewLife.Cube.Tests;
 
 /// <summary>OSC-26090347f1 写锁：full 拒绝普通 Update/Delete；流程通道 Scope 放行节点字段</summary>
+[Collection("Osc47f1Menu")]
 public class WorkflowLockTests
 {
     public WorkflowLockTests()
@@ -30,7 +31,7 @@ public class WorkflowLockTests
         EntityPageRegistry.Register(typeof(WfLockRecord), "Cube/WfLockRecord", "Id");
 
         // 挂全局写锁拦截器（幂等）。跳过名单保护系统表；其它表在无在途主体时直接放行
-        WorkflowHost.Register();
+        WorkflowHost.Register(false);
     }
 
     static String Graph(String mode, String users) =>

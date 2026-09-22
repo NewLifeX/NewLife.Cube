@@ -79,8 +79,54 @@ describe('graphToFlowDoc / flowDocToGraph 双向无损', () => {
       ],
     };
     const back = flowDocToGraph(graphToFlowDoc(g));
-    expect(back.nodes[1].data).toEqual(g.nodes[1].data);
-    expect(back.edges).toEqual(g.edges);
+    expect(back.nodes.find((n) => n.id === 'x')?.data).toMatchObject({
+      name: '分流',
+      defaultTarget: 'end',
+    });
+    expect(back.edges).toEqual(
+      expect.arrayContaining([
+        { source: 'start', target: 'x' },
+        { source: 'x', target: 'end' },
+      ]),
+    );
+  });
+
+  it('xor 画布为满足/不满足两槽，分支节点在 blocks 内', () => {
+    const g: WfGraphData = {
+      version: 1,
+      nodes: [
+        { id: 'start', type: 'oa.start', data: {} },
+        { id: 'x', type: 'oa.xor', data: { cases: [{ target: 'n1' }], defaultTarget: 'end' } },
+        { id: 'n1', type: 'oa.approve', data: { name: '主管' } },
+        { id: 'end', type: 'oa.end', data: {} },
+      ],
+      edges: [
+        { source: 'start', target: 'x' },
+        { source: 'x', target: 'n1' },
+        { source: 'x', target: 'end' },
+        { source: 'n1', target: 'end' },
+      ],
+    };
+    const doc = graphToFlowDoc(g);
+    expect(doc.nodes.map((n) => n.id)).toEqual(['start', 'x', 'end']);
+    const xor = doc.nodes[1];
+    expect(xor.blocks).toHaveLength(2);
+    expect(xor.blocks?.[0].data?.title).toBe('满足');
+    expect(xor.blocks?.[1].data?.title).toBe('不满足');
+    expect(xor.blocks?.[0].blocks?.map((n) => n.id)).toEqual(['n1']);
+    expect(xor.blocks?.[1].blocks).toEqual([]);
+    const back = flowDocToGraph(doc);
+    expect(back.nodes.map((n) => n.id).sort()).toEqual(['end', 'n1', 'start', 'x']);
+    expect(back.edges).toEqual(
+      expect.arrayContaining([
+        { source: 'x', target: 'n1' },
+        { source: 'x', target: 'end' },
+        { source: 'n1', target: 'end' },
+      ]),
+    );
+    const x = back.nodes.find((n) => n.id === 'x')!;
+    expect(x.data?.defaultTarget).toBe('end');
+    expect((x.data?.cases as { target: string }[])[0].target).toBe('n1');
   });
 });
 
@@ -92,6 +138,7 @@ describe('defaultNodeDataFor 各类型默认 data', () => {
     expect(d.to).toEqual({ kind: 'users', users: [], roles: [], departments: [] });
     expect(d.fields).toEqual({ visible: ['*'], writable: [] });
     expect(d.timeoutAction).toBe('pass');
+    expect(d.allowTransfer).toBe(true);
   });
   it('cc/xor/start/end 有默认 name', () => {
     expect(defaultNodeDataFor('oa.cc').name).toBe('知会');

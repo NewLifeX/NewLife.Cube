@@ -7,8 +7,10 @@ using NewLife.Cube.Automation;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Workflow.Entity;
 using NewLife.Log;
+using NewLife.Reflection;
 using XCode;
 using XCode.Membership;
+using UserX = XCode.Membership.User;
 using WorkflowComment = NewLife.Cube.Workflow.Entity.WorkflowComment;
 using WorkflowDefinition = NewLife.Cube.Workflow.Entity.WorkflowDefinition;
 using WorkflowInstance = NewLife.Cube.Workflow.Entity.WorkflowInstance;
@@ -239,6 +241,8 @@ public class WorkflowController : ControllerBaseX
             definitionVersion = instance.DefinitionVersion,
             instance.CreateTime,
             instance.FinishTime,
+            graphSnapshot = instance.GraphSnapshot,
+            writableFields = WorkflowWriteInterceptor.CurrentWritable(instance, user.ID).ToList(),
             subjects = subjects.Select(s => new { id = s.Id.ToString(), s.EntityKey, s.Title }).ToList(),
             tasks = tasks.Select(ToTaskView).ToList(),
             comments = comments.Select(c => new { id = c.Id.ToString(), taskId = c.TaskId.ToString(), c.Action, c.Content, c.CreateUser, c.CreateTime }).ToList(),
@@ -685,6 +689,7 @@ public class WorkflowController : ControllerBaseX
         {
             id = instance.Id.ToString(),
             instance.TypePath,
+            typeName = ResolveTypeName(instance.TypePath),
             instance.Status,
             definitionId = instance.DefinitionId.ToString(),
             instance.DefinitionVersion,
@@ -692,6 +697,7 @@ public class WorkflowController : ControllerBaseX
             instance.StarterId,
             instance.StartComment,
             instance.Summary,
+            currentApprover = ResolveCurrentApprover(instance.Id, instance.Status),
             instance.CreateTime,
             instance.FinishTime,
         };
@@ -701,6 +707,7 @@ public class WorkflowController : ControllerBaseX
     {
         var instance = WorkflowInstance.FindById(task.InstanceId);
         var subject = WorkflowSubject.FindAll(WorkflowSubject._.InstanceId == task.InstanceId).OrderBy(e => e.Id).FirstOrDefault();
+        var typePath = instance?.TypePath;
         return new
         {
             id = task.Id.ToString(),
@@ -719,9 +726,64 @@ public class WorkflowController : ControllerBaseX
             task.CreateTime,
             task.UpdateTime,
             instanceStatus = instance?.Status,
-            typePath = instance?.TypePath,
+            typePath,
+            typeName = ResolveTypeName(typePath),
             title = instance != null && !instance.Title.IsNullOrEmpty() ? instance.Title : subject?.Title,
+            summary = instance?.Summary,
+            currentApprover = instance == null ? "" : ResolveCurrentApprover(instance.Id, instance.Status),
         };
+    }
+
+    /// <summary>实体友好名：菜单 DisplayName → 实体类型 DisplayName → 路径末段</summary>
+    static String ResolveTypeName(String? typePath)
+    {
+        if (typePath.IsNullOrEmpty()) return "";
+        var menu = AutomationAuth.FindMenu(typePath);
+        if (menu != null)
+        {
+            if (!menu.DisplayName.IsNullOrEmpty()) return menu.DisplayName;
+            if (!menu.Name.IsNullOrEmpty()) return menu.Name;
+        }
+        var np = AutomationPaths.NormalizeTypePath(typePath);
+        foreach (var kv in EntityPageRegistry.GetAll())
+        {
+            var url = AutomationPaths.NormalizeTypePath(kv.Value?.Url);
+            if (!url.EqualIgnoreCase(np)) continue;
+            var display = kv.Key.GetDisplayName();
+            return display.IsNullOrEmpty() ? kv.Key.Name : display;
+        }
+        var slash = np.LastIndexOf('/');
+        return slash >= 0 && slash < np.Length - 1 ? np[(slash + 1)..] : np;
+    }
+
+    /// <summary>在途实例当前审批人（已认领显示办理人，未认领显示候选人；已结束为空）</summary>
+    static String ResolveCurrentApprover(Int64 instanceId, String? status)
+    {
+        if (!status.EqualIgnoreCase(WorkflowStatuses.Running)) return "";
+        var open = WorkflowTask.FindAll(WorkflowTask._.InstanceId == instanceId)
+            .Where(t => t.Visible && t.Status is WorkflowStatuses.Pending or WorkflowStatuses.Active)
+            .ToList();
+        var ids = new List<Int32>();
+        foreach (var t in open)
+        {
+            if (t.AssigneeId > 0)
+            {
+                if (!ids.Contains(t.AssigneeId)) ids.Add(t.AssigneeId);
+                continue;
+            }
+            foreach (var id in WorkflowHelper.ReadIntArray(JsonNode.Parse(t.CandidateJson.IsNullOrEmpty() ? "[]" : t.CandidateJson) as JsonArray))
+            {
+                if (id > 0 && !ids.Contains(id)) ids.Add(id);
+            }
+        }
+        if (ids.Count == 0) return "";
+        var names = new List<String>(ids.Count);
+        foreach (var id in ids)
+        {
+            var u = UserX.FindByID(id);
+            names.Add(u == null ? $"#{id}" : (u.DisplayName.IsNullOrEmpty() ? u.Name : u.DisplayName));
+        }
+        return String.Join("、", names);
     }
 
     /// <summary>列出实例关联附件（Key=实例Id；兼容历史 Key=实例Id:任务Id）</summary>

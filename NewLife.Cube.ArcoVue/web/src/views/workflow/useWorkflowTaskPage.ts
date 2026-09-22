@@ -8,8 +8,7 @@ import { useWorkflowTaskList } from './useWorkflowTaskList';
 import { wfIdOf, type WfId } from './useWorkflowProgress';
 
 /**
- * 任务中心页编排（OSC-26090347f1 T8c）：待办/已办列表加载 + 进度抽屉状态 + 打开业务记录。
- * 行级审批仅意见，不上传附件（附件仅发起时挂实例）。
+ * 任务中心页编排（OSC-26090347f1 T8c）：点「进度」/行打开进度抽屉（与「我发起的」一致，不再宽屏分栏）。
  */
 export function useWorkflowTaskPage(kind: 'todo' | 'done') {
   const wl = useWorkflowTaskList(kind);
@@ -28,6 +27,10 @@ export function useWorkflowTaskPage(kind: 'todo' | 'done') {
     if (!id) return;
     progressInstanceId.value = id;
     progressVisible.value = true;
+  }
+
+  function closeProgress() {
+    progressVisible.value = false;
   }
 
   function openRowOpinion(row: WorkflowTaskItem, kind2: 'approve' | 'reject') {
@@ -94,6 +97,7 @@ export function useWorkflowTaskPage(kind: 'todo' | 'done') {
     progressInstanceId,
     progressVisible,
     openProgress,
+    closeProgress,
     openRecord,
     refresh,
     rowOpinionVisible,

@@ -1,20 +1,29 @@
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/api', () => ({
-  default: { workflow: {}, automation: { entities: vi.fn() }, page: { getPage: vi.fn() } },
+  default: {
+    workflow: {},
+    automation: { entities: vi.fn(), meta: vi.fn() },
+    page: { getPage: vi.fn(), getFields: vi.fn() },
+  },
 }));
 
+import cubeApi from '@/api';
 import {
   applyNodePatch,
   compileGraph,
+  compileXorEdges,
   insertAfter,
+  loadFilterFields,
   newDefaultGraph,
   parseGraph,
   removeNode,
+  stripAndQuorum,
   topoChain,
   validateGraph,
 } from './useWorkflowDesigner';
 import type { WfGraphData } from '@/core/types/workflow';
+import { FieldKind } from '@newlifex/api-core';
 
 function toApprove(nodes: WfGraphData['nodes']) {
   return nodes.find((n) => n.type === 'oa.approve')!;
@@ -105,6 +114,41 @@ describe('validateGraph 快速校验', () => {
     });
     expect(validateGraph(g)).toEqual([]);
   });
+  it('XOR 缺默认分支时报错', () => {
+    let g = insertAfter(newDefaultGraph(), 'n1', 'oa.xor');
+    const xor = g.nodes.find((n) => n.type === 'oa.xor')!;
+    g = applyNodePatch(g, xor.id, { defaultTarget: '' });
+    expect(validateGraph(g).join('')).toContain('缺少默认分支');
+  });
+});
+
+describe('compileXorEdges / insertAfter xor', () => {
+  it('插入分流时 defaultTarget 指向原后继，并写出多边', () => {
+    let g = insertAfter(newDefaultGraph(), 'n1', 'oa.xor');
+    const xor = g.nodes.find((n) => n.type === 'oa.xor')!;
+    expect(xor.data.defaultTarget).toBe('end');
+    g = applyNodePatch(g, xor.id, {
+      cases: [{ filter: { logic: 'all', conditions: [] }, target: 'n1' }],
+      defaultTarget: 'end',
+    });
+    g = compileXorEdges(g);
+    expect(g.edges.filter((e) => e.source === xor.id)).toEqual(
+      expect.arrayContaining([
+        { source: xor.id, target: 'end' },
+        { source: xor.id, target: 'n1' },
+      ]),
+    );
+  });
+});
+
+describe('stripAndQuorum 会签清 quorum', () => {
+  it('and 节点去掉 quorum', () => {
+    let g = applyNodePatch(newDefaultGraph(), 'n1', { mode: 'and', quorum: 0.6 });
+    g = stripAndQuorum(g);
+    const n = g.nodes.find((x) => x.id === 'n1')!;
+    expect(n.data.mode).toBe('and');
+    expect(n.data.quorum).toBeUndefined();
+  });
 });
 
 describe('切换审批人类别清空旧 Id', () => {
@@ -118,5 +162,25 @@ describe('切换审批人类别清空旧 Id', () => {
     const to = toApprove(g.nodes).data.to as { kind: string; roles: number[] };
     expect(to.kind).toBe('roles');
     expect(to.roles ?? []).toEqual([]);
+  });
+});
+
+describe('loadFilterFields 实体路径', () => {
+  it('对 Admin/Department 以 /Admin/Department 调 GetPage/GetFields', async () => {
+    const getPage = vi.mocked(cubeApi.page.getPage);
+    const getFields = vi.mocked(cubeApi.page.getFields);
+    const meta = vi.mocked(cubeApi.automation.meta);
+    getPage.mockResolvedValue({
+      data: {
+        editForm: [{ name: 'Name', displayName: '名称', typeName: 'String' }],
+      },
+    } as never);
+    getFields.mockResolvedValue({ data: [] } as never);
+    meta.mockResolvedValue({ data: [] } as never);
+
+    const fields = await loadFilterFields('Admin/Department');
+    expect(getPage).toHaveBeenCalledWith('/Admin/Department');
+    expect(getFields).toHaveBeenCalledWith('/Admin/Department', FieldKind.Edit);
+    expect(fields.some((f) => f.name === 'Name')).toBe(true);
   });
 });

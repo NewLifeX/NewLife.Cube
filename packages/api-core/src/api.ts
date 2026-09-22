@@ -911,8 +911,14 @@ export interface WorkflowTaskItem {
   /** 所属实例状态（running/approved/...） */
   instanceStatus?: string;
   typePath?: string;
+  /** 实体友好名（菜单/类型 DisplayName） */
+  typeName?: string;
   /** 主体标题 / 实例标题 */
   title?: string;
+  /** 流程摘要（Markdown/富文本） */
+  summary?: string;
+  /** 当前审批人显示名（多人顿号分隔；已结束为空） */
+  currentApprover?: string;
   createTime?: string;
 }
 
@@ -921,6 +927,8 @@ export interface WorkflowInstanceItem {
   /** 雪花 Id：字符串透传 */
   id: number | string;
   typePath: string;
+  /** 实体友好名（菜单/类型 DisplayName） */
+  typeName?: string;
   /** running/approved/rejected/withdrawn/cancelled */
   status: string;
   definitionId: number | string;
@@ -930,6 +938,8 @@ export interface WorkflowInstanceItem {
   startComment?: string;
   /** 流程摘要（Markdown/富文本） */
   summary?: string;
+  /** 当前审批人显示名（多人顿号分隔；已结束为空） */
+  currentApprover?: string;
   createTime?: string;
   finishTime?: string;
 }
@@ -956,6 +966,7 @@ export interface WorkflowInstanceDetail {
   definitionVersion?: number;
   createTime?: string;
   finishTime?: string;
+  graphSnapshot?: string;
   subjects?: { id: number | string; entityKey: string; title?: string }[];
   tasks?: WorkflowTaskItem[];
   comments?: {

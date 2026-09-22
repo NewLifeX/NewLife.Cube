@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ensureApiTypePath,
   getValueByKey,
   normalizeKeysByFields,
   normalizeMenuUrl,
@@ -23,6 +24,13 @@ describe('url utils', () => {
   it('routeToApiPrefix maps kebab to Pascal', () => {
     expect(routeToApiPrefix('/admin/user')).toBe('/Admin/User');
     expect(routeToApiPrefix('/Admin/User')).toBe('/Admin/User');
+  });
+
+  it('ensureApiTypePath 补齐实体 GetPage 所需前导斜杠', () => {
+    expect(ensureApiTypePath('Admin/Department')).toBe('/Admin/Department');
+    expect(ensureApiTypePath('/Admin/Department')).toBe('/Admin/Department');
+    expect(ensureApiTypePath('  //Admin/User  ')).toBe('/Admin/User');
+    expect(ensureApiTypePath('')).toBe('');
   });
 
   it('getValueByKey tolerates case', () => {

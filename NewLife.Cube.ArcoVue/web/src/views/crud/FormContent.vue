@@ -63,8 +63,10 @@ const props = withDefaults(
     fieldErrors?: { field: string; message: string }[];
     /** 受限表单布局（OSC-0013）：字段排序/显隐/Category 折叠；null 表示元数据原序 */
     layout?: FormLayout | null;
+    /** 审批可写白名单：非空时仅名单内字段可编辑 */
+    writableAllowlist?: string[] | null;
   }>(),
-  { mode: 'edit', fieldErrors: () => [], layout: null },
+  { mode: 'edit', fieldErrors: () => [], layout: null, writableAllowlist: null },
 );
 
 defineEmits<{

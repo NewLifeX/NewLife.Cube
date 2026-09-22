@@ -77,6 +77,18 @@ export function wfRowEditLocked(row: Record<string, unknown> | null | undefined)
   return wfRowStatus(row) === 'running';
 }
 
+/** 当前用户在本节点可写的业务字段名（GetDetail 注入 __wfWritable；缺省空） */
+export function wfRowWritable(row: Record<string, unknown> | null | undefined): string[] {
+  const v = row?.[WF_ROW_FIELD.writable];
+  if (!Array.isArray(v)) return [];
+  return v.map(String).filter(Boolean);
+}
+
+/** 审批中且有可写字段：允许走 Patch 通道改指定字段 */
+export function wfRowCanPatchWritable(row: Record<string, unknown> | null | undefined): boolean {
+  return wfRowEditLocked(row) && wfRowWritable(row).length > 0;
+}
+
 /** 审批中或已通过：禁止再次发起 */
 export function wfRowRestartBlocked(row: Record<string, unknown> | null | undefined): boolean {
   const s = wfRowStatus(row);
@@ -118,6 +130,7 @@ export const WF_NODE_DATA_KEY = {
   timeoutAction: 'timeoutAction',
   allowAddSign: 'allowAddSign',
   allowRollback: 'allowRollback',
+  allowTransfer: 'allowTransfer',
   cases: 'cases',
   defaultTarget: 'defaultTarget',
 } as const;

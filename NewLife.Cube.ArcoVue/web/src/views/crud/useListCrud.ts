@@ -9,7 +9,7 @@ import { formatApiError } from '@/core/utils/apiError';
 import { resolveFieldsForKind } from '@/core/utils/fieldParts';
 import { prepareSubmitPayload } from '@/core/utils/submitPayload';
 import { isIamBatchDeleteBlocked, isIamRowActionDisabled } from '@/core/utils/iamGuards';
-import { wfRowEditLocked } from '@/core/types/workflow';
+import { wfRowCanPatchWritable, wfRowEditLocked, wfRowWritable } from '@/core/types/workflow';
 import type { ListContext } from './listContext';
 
 interface ListCrudDeps {
@@ -157,6 +157,24 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
       const mode = drawerMode.value === 'add' ? 'add' : 'edit';
       // 保存字段集与表单回填同源（editForm → addForm），避免字段名不一致
       const fields = resolveFieldsForKind(mode, fieldParts.value);
+      // 审批中可写字段：走 Workflow Patch，仅提交白名单字段
+      const writable = wfRowWritable(formModel);
+      if (mode === 'edit' && wfRowCanPatchWritable(formModel)) {
+        const id = getValueByKey(formModel, pkField.value);
+        if (id == null || id === '') throw new Error('缺少主键');
+        const patch: Record<string, unknown> = {};
+        const allow = new Set(writable.map((n) => n.toLowerCase()));
+        for (const f of fields) {
+          if (!allow.has(f.name.toLowerCase())) continue;
+          if (f.name in formModel) patch[f.name] = formModel[f.name];
+        }
+        await cubeApi.workflow.patchEntity(typePath.value, id as string | number, patch);
+        Message.success('可写字段已保存');
+        fieldErrors.value = [];
+        drawerVisible.value = false;
+        await loadData();
+        return;
+      }
       const payload = prepareSubmitPayload({ ...formModel }, fields, {
         mode,
         pkField: pkField.value,

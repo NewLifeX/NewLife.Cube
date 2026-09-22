@@ -208,11 +208,15 @@ public static class WorkflowEngine
     public static void Transfer(Int64 taskId, Int32 userId, JsonObject to, String comment)
     {
         var task = LoadOpenTask(taskId, userId, true);
+        var instance = WorkflowInstance.FindById(task.InstanceId);
+        var graph = ParseSnapshot(instance);
+        var node = graph.Find(BaseNodeId(task.NodeId));
+        if (node != null && !node.AllowTransfer) throw new WorkflowException(403, "当前节点不允许转办");
+
         var ids = ResolveIds(to, task, null, out var single);
         if (ids.Count == 0) throw new WorkflowException(400, "转办接收人为空");
         if (!single) throw new WorkflowException(400, "转办仅支持单个用户");
 
-        var instance = WorkflowInstance.FindById(task.InstanceId);
         var targetId = ids.First();
         if (targetId == userId) throw new WorkflowException(400, "不能转办给自己");
 
@@ -998,6 +1002,14 @@ public static class WorkflowEngine
         var graph = WorkflowGraph.Parse(instance.GraphSnapshot);
         if (graph == null) throw new WorkflowException(500, "实例图快照损坏");
         return graph;
+    }
+
+    /// <summary>去掉加签临时后缀，得到定义图节点 Id</summary>
+    static String BaseNodeId(String nodeId)
+    {
+        if (nodeId.IsNullOrEmpty()) return nodeId;
+        var i = nodeId.IndexOf('#');
+        return i < 0 ? nodeId : nodeId[..i];
     }
 
     /// <summary>复制任务（转办/加签/超时转交）</summary>

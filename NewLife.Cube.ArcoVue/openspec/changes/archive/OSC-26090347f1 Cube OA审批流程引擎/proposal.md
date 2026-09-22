@@ -1,6 +1,8 @@
 # OSC-26090347f1 — Cube OA审批流程引擎
 
 > **2026-09-03 架构修订（Amd-1 → Amd-2）**：Amd-1 曾把后端从“独立 `NewLife.Cube.Workflow` NuGet 模块”改为“并入 `NewLife.Cube.ArcoVue` 皮肤仓”。**Amd-2 最终定稿**：后端**全部并入 WebAPI 核心库 `NewLife.Cube/Workflow`**（与既有 Automation 同模式），命名空间 `NewLife.Cube.Workflow(.Entity)`；`NewLife.CubeNC`/CubeDemoNC **不 Link** 该目录，MVC 版不受影响。目标 1 与决策 6/9 及 §4/§5/§7 相应条目已同步改写。
+>
+> **Amd-3（2026-09-19）**：对照飞书审批补充流程设计器与审批界面（`ui/process-and-approval.md`、design §13）。仍不接飞书开放平台、不做独立表单设计器；办理人/并加签/委托列为明确不做。
 
 ## 1. 目标愿景
 

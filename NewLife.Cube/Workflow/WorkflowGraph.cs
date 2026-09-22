@@ -382,6 +382,9 @@ public class WorkflowNode
     /// <summary>是否允许回退。默认开（design 节点示例默认 true，设计器可关闭）</summary>
     public Boolean AllowRollback => Raw?["allowRollback"]?.GetValue<Boolean>() ?? true;
 
+    /// <summary>是否允许转办。默认开（Amd-3 D8，缺字段视为允许）</summary>
+    public Boolean AllowTransfer => Raw?["allowTransfer"]?.GetValue<Boolean>() ?? true;
+
     /// <summary>网关条件列表</summary>
     public List<WorkflowGraphCase> Cases
     {

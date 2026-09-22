@@ -146,7 +146,7 @@ const MENU_KEYWORD_FALLBACK: ReadonlyArray<readonly [RegExp, string]> = [
   [/文件|附件|上传/, 'file-text'],
   [/统计|报表|图表|分析/, 'chart-line'],
   [/任务|计划|调度|定时/, 'timer'],
-  [/流程|审批|工作流/, 'send'],
+  [/流程|审批|工作流/, 'audit'],
   [/消息|通知|提醒/, 'message'],
   [/订单|交易|支付/, 'shopping-bag'],
   [/部门|组织|机构/, 'building-one'],

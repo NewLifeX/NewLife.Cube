@@ -125,6 +125,7 @@ describe('ICON_COMPONENTS 覆盖', () => {
       'up',
       'refresh',
       'remind',
+      'audit',
       'check',
       'save',
       'edit',

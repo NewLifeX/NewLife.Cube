@@ -3,33 +3,29 @@ import type { WorkflowPhrase } from '@newlifex/api-core';
 import { Message } from '@arco-design/web-vue';
 import cubeApi from '@/api';
 import { actionLabel, useWorkflowProgress, wfIdOf, type WfId } from './useWorkflowProgress';
+import { buildProgressFlow, nodeFlags, rollbackTargets } from './wfProgressFlow';
 import type { RecipientKind } from './recipient';
 
 /**
- * 审批进度抽屉编排（OSC-26090347f1 T8c，IA §3.2）：.vue 只做模板绑定。
- * 抽屉可见才加载实例；切换实例重置意见/接收人弹层；持有常用语与意见/接收人弹层状态与提交动作。
+ * 审批进度面板编排（OSC-26090347f1 T8c / T13）：节点流程 + 意见折叠 + 回退。
  */
 export function useWorkflowProgressPanel(input: {
-  /** 抽屉可见性（computed） */
   visible: Ref<boolean>;
-  /** 目标实例 Id（getter，雪花 string） */
   instanceId: () => WfId | null | undefined;
 }) {
-  /** 当前可见实例 Id（抽屉关闭置空停止加载） */
   const activeInstanceId = ref<string | null>(null);
 
-  /** 意见弹层（同意/驳回/撤回共用） */
   const opinionVisible = ref(false);
   const opinionKind = ref<'approve' | 'reject' | 'withdraw'>('approve');
   const opinionText = ref('');
   const phrases = ref<WorkflowPhrase[]>([]);
   const saving = ref(false);
 
-  /** 接收人弹层（加签/转办/知会） */
   const targetVisible = ref(false);
-  const targetKind = ref<'addSign' | 'transfer' | 'cc'>('addSign');
+  const targetKind = ref<'addSign' | 'transfer' | 'cc' | 'rollback'>('addSign');
   const targetComment = ref('');
   const targetBefore = ref(false);
+  const targetNodeId = ref('');
   const targetRecipients = reactive<{ kind: RecipientKind; ids: number[] }>({
     kind: 'users',
     ids: [],
@@ -48,6 +44,18 @@ export function useWorkflowProgressPanel(input: {
   );
 
   const wf = useWorkflowProgress(activeInstanceId);
+
+  const flowNodes = computed(() => buildProgressFlow(wf.detail.value, wf.userId.value));
+  const flags = computed(() => nodeFlags(wf.detail.value, wf.myTask.value?.nodeId));
+  const rollbackOptions = computed(() => rollbackTargets(wf.detail.value, wf.myTask.value?.nodeId));
+  /** 当前用户可写字段（InstanceDetail.writableFields；无待办则为空） */
+  const writableFieldNames = computed(() => {
+    const d = wf.detail.value as { writableFields?: unknown } | null;
+    if (!d || !wf.myTask.value) return [] as string[];
+    const raw = d.writableFields;
+    if (!Array.isArray(raw)) return [];
+    return raw.map(String).filter(Boolean);
+  });
 
   async function loadPhrases() {
     try {
@@ -92,20 +100,39 @@ export function useWorkflowProgressPanel(input: {
     }
   }
 
-  function openTarget(kind: 'addSign' | 'transfer' | 'cc') {
+  function openTarget(kind: 'addSign' | 'transfer' | 'cc' | 'rollback') {
     if (!wf.myTask.value) {
       Message.warning('当前无待办任务');
+      return;
+    }
+    if (kind === 'rollback' && !rollbackOptions.value.length) {
+      Message.warning('还没有可回退的已办节点');
       return;
     }
     targetKind.value = kind;
     targetComment.value = '';
     targetBefore.value = false;
+    targetNodeId.value = rollbackOptions.value[0]?.nodeId || '';
     targetRecipients.kind = 'users';
     targetRecipients.ids = [];
     targetVisible.value = true;
   }
 
   async function confirmTarget(): Promise<boolean> {
+    if (targetKind.value === 'rollback') {
+      if (!targetNodeId.value) {
+        Message.warning('请选择回退到哪一步');
+        return false;
+      }
+      targetSaving.value = true;
+      try {
+        const ok = await wf.rollback(targetNodeId.value, targetComment.value);
+        if (ok) targetVisible.value = false;
+        return ok;
+      } finally {
+        targetSaving.value = false;
+      }
+    }
     if (targetRecipients.ids.length === 0) {
       Message.warning('请选择接收人');
       return false;
@@ -118,7 +145,7 @@ export function useWorkflowProgressPanel(input: {
         comment: targetComment.value || undefined,
         ...(targetKind.value === 'addSign' ? { before: targetBefore.value } : {}),
       };
-      const ok = await wf.transferAction(targetKind.value, payload);
+      const ok = await wf.transferAction(targetKind.value as 'addSign' | 'transfer' | 'cc', payload);
       if (ok) targetVisible.value = false;
       return ok;
     } finally {
@@ -126,10 +153,6 @@ export function useWorkflowProgressPanel(input: {
     }
   }
 
-  /**
-   * 时间轴：优先展示「发起流程」合成条（摘要/标题/发起意见）；
-   * 跳过 comments 中 action=start，避免与合成条重复。
-   */
   const timelineItems = computed(() => {
     const items: {
       key: string;
@@ -140,24 +163,7 @@ export function useWorkflowProgressPanel(input: {
     }[] = [];
     const d = wf.detail.value;
     if (!d) return items;
-    const comments = d.comments ?? [];
-    const showSyntheticStart = !!(d.summary || d.startComment || d.title || d.createTime);
-    const startContent =
-      [d.title ? `标题：${d.title}` : '', d.summary || '', d.startComment || '']
-        .filter(Boolean)
-        .join('\n') || undefined;
-    if (showSyntheticStart) {
-      items.push({
-        key: 'start',
-        title: '发起流程',
-        user: d.starterId ? `发起人 #${d.starterId}` : '发起人',
-        time: d.createTime,
-        content: startContent,
-      });
-    }
-    for (const c of comments) {
-      // 合成条已含发起信息时，跳过 comments 中 action=start，避免双条
-      if (showSyntheticStart && String(c.action ?? '').toLowerCase() === 'start') continue;
+    for (const c of d.comments ?? []) {
       items.push({
         key: `c${c.id}`,
         title: actionLabel(c.action),
@@ -173,6 +179,7 @@ export function useWorkflowProgressPanel(input: {
     addSign: '加签',
     transfer: '转办',
     cc: '知会',
+    rollback: '回退到已办节点',
   };
 
   return {
@@ -182,6 +189,10 @@ export function useWorkflowProgressPanel(input: {
     myTask: wf.myTask,
     canWithdraw: wf.canWithdraw,
     statusMeta: wf.statusMeta,
+    flowNodes,
+    flags,
+    rollbackOptions,
+    writableFieldNames,
     timelineItems,
     opinionVisible,
     opinionKind,
@@ -194,12 +205,15 @@ export function useWorkflowProgressPanel(input: {
     openAddSign: () => openTarget('addSign'),
     openTransfer: () => openTarget('transfer'),
     openCc: () => openTarget('cc'),
+    openRollback: () => openTarget('rollback'),
+    openRecord: wf.openRecord,
     confirmOpinion,
     pickPhrase,
     targetVisible,
     targetKind,
     targetComment,
     targetBefore,
+    targetNodeId,
     targetRecipients,
     targetSaving,
     confirmTarget,

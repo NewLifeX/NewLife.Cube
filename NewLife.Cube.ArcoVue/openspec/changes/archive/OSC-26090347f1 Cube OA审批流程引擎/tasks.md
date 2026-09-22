@@ -109,3 +109,28 @@
 - [x] 新增矩阵测试 4 例：后加签激活推进 / 多前加签等齐 / Rollback 403 / 超时仅可见任务；回归 Workflow*+Osc260815 37/37；web vue-tsc 0 error + workflow spec 32 绿 + api-core 3 绿
 
 > **无法在本会话闭环（记录为后续/待确认，见 status.md）**：G-01 跨进程排他需 DB 唯一约束（表结构决策，后续 OSC）；G-04 待办候选可见语义（design 未明示，待确认）；G-05 意见附件按 V1 范围外裁剪记录（retro）；G-06 Meta 恒 true（Amd-2 语义，随 T11 宿主验证）；G-07 HTTP 冒烟（T11 阻塞）；G-08 多定义 defs[0] 行级口径；G-11 动作级测试（Claim/Transfer/Cc/超时 transfer-reject 分支）留后续批次。
+
+## T13 流程设计 / 审批界面补齐（Amd-3，设计已锁定）
+
+> 2026-09-19 对照飞书审批写入 design §13 与 `ui/process-and-approval.md`。下列为实现项，批准后在本号继续，不新开 OSC。
+
+- [x] D1 XOR 可视化：cases ViewFilter + defaultTarget（设计器现仅占位）
+- [x] D2 定义级 LockPolicy / StartFilter UI
+- [x] D3 画布节点卡片：模式徽章 + 接收人摘要
+- [x] D4 节点间 `[+]` 插入（与顶栏工具条等价）
+- [x] D5 进度按节点+候选人状态渲染（意见时间轴降为折叠）
+- [x] D6 进度「更多」回退（API 已有）
+- [x] D7 待办宽屏左记录摘要 + 右流程
+- [x] D8 Graph 补 `allowTransfer`（默认 true）
+- [x] D9 进度区渲染发起摘要 Markdown
+- [x] D10 常用语管理入口（Phrases API 已有）
+
+## T14 会话补录（验收前，设计器与列表体验）
+
+- [x] 设计器新建审批不再提供依次签；引擎与历史图仍识别 `sequence`（列表/进度中文名保留）
+- [x] 条件分支画布按飞书式「满足 / 不满足」两支
+- [x] 列表审批列改为几何徽标 + Tooltip，不用 Unicode 字
+- [x] 待办 / 已办 / 我发起：摘要、友好实体名、当前审批人；空单元格不显示短横
+- [x] 顶栏审批入口改为 IconPark `audit`，按钮旁不显示「审批」文字
+- [x] 菜单播种单测不再切换全局 `Menu.ConnName`（并行下连接名换不了已创建的会话）；写锁单测 `Register(false)` 不播种菜单
+

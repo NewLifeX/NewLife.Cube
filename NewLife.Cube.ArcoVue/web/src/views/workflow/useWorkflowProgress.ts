@@ -216,6 +216,18 @@ export function useWorkflowProgress(
     }
   }
 
+  async function rollback(targetNodeId: string, comment: string) {
+    return runTaskAction((id) => cubeApi.workflow.rollback(id, { targetNodeId, comment: comment || undefined }));
+  }
+
+  function openRecord() {
+    const d = detail.value;
+    if (!d?.typePath) return;
+    const key = d.subjects?.[0]?.entityKey;
+    const base = `/${String(d.typePath).replace(/^\/+/, '')}`;
+    window.location.hash = key ? `#${base}/${encodeURIComponent(key)}` : `#${base}`;
+  }
+
   return {
     detail,
     loading,
@@ -230,5 +242,7 @@ export function useWorkflowProgress(
     reject,
     transferAction,
     withdraw,
+    rollback,
+    openRecord,
   };
 }

@@ -389,6 +389,20 @@ public class WorkflowMatrixTests
         Assert.True(nt.Visible);
     }
 
+    [Fact(DisplayName = "D8 allowTransfer=false：转办 403")]
+    public void Transfer_AllowTransferFalse_403()
+    {
+        var def = NewDefinition(ChainGraph(ToJson("or", "101", "\"allowTransfer\":false")));
+        var id = InsertRecord("r1");
+        var instance = WorkflowEngine.Start(def, [$"{id}"], 9, "发起人", "");
+        var task = Assert.Single(Tasks(instance.Id));
+
+        var to = System.Text.Json.Nodes.JsonNode.Parse("{\"kind\":\"users\",\"users\":[202]}") as System.Text.Json.Nodes.JsonObject;
+        var ex = Assert.Throws<WorkflowException>(() => WorkflowEngine.Transfer(task.Id, 101, to, "请代办"));
+        Assert.Equal(403, ex.Code);
+        Assert.Equal(WorkflowStatuses.Pending, WorkflowTask.FindById(task.Id).Status);
+    }
+
     [Fact(DisplayName = "G-11 Cc：只写意见+通知，不增任务")]
     public void Cc_NotifyOnly_NoExtraTask()
     {

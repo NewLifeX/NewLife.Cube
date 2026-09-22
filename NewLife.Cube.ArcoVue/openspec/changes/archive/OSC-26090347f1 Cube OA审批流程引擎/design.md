@@ -5,6 +5,8 @@
 > 本号只**调用** `AutomationFilter.Match`、接收人展开、`NotificationRecord`/`Inbox`、`CronJob`、Attachment 上传。  
 > 禁止给自动化图增加人工等待节点；禁止把审批实例塞进 `AutomationRun` 内存队列。
 
+> **Amd-3（2026-09-19）**：对照飞书审批管理员/成员手册与当前 ArcoVue 实现，补充**流程设计器**与**审批界面**（见 §13 与 `ui/process-and-approval.md`）。不改变方案 A（自研 OA 状态机）、不引入飞书独立表单设计器。引擎 V1 能力保持；界面按飞书「节点可读 + 详情左单右流」收口。
+
 ## 0. 适用框架与官方资料
 
 | 场景 | 框架 | 资料 | 本号用法 |
@@ -173,7 +175,9 @@ stateDiagram-v2
 | GraphSnapshot | String(-1) | **发起时**复制 PublishedGraphJson，之后只读 |
 | Status | String(16) | Running/Approved/Rejected/Withdrawn/Cancelled |
 | StarterId | Int32 | |
+| Title | String(200) | **Amd-3 已落地**：发起时可选显示标题，进度抽屉展示 |
 | StartComment | String(500) | |
+| Summary | String(-1) | **Amd-3 已落地**：发起 Markdown 摘要，审批人只读 |
 | FinishTime | DateTime | |
 | Create*/Update* | | |
 
@@ -221,7 +225,16 @@ stateDiagram-v2
 | Content | String(1000) | |
 | CreateUser/Id/IP/Time | | |
 
-附件：**不**新建表。`Attachment.Category='WorkflowComment'`，`Key=Comment.Id.ToString()`（与现有 Attachment 约定一致）。上传复用已有附件 API，完成后把 Id 列表写入意见请求。
+附件：**不**新建表。`Attachment.Category='WorkflowComment'`。
+
+**Amd-3 产品决策（已落地，覆盖原「Key=CommentId + 审批节点上传」）**：
+
+| 时机 | Key | 谁上传 | 谁可见 |
+| --- | --- | --- | --- |
+| 发起成功后 | 实例 Id 十进制字符串 | 发起人 | 后续审批人（进度「发起附件」） |
+| 审批同意/驳回 | **禁止** | — | — |
+
+兼容历史：列表仍识别 `Key=instanceId` 或 `instanceId:taskId` 前缀。新上传拒绝 `taskId`。
 
 ### 3.6 常用语
 
@@ -422,15 +435,15 @@ GetDetail（登录）：在 fields 上附 `wfVisible` / `wfWritable`（bool）�
 
 | 方法 | 路径 | 权限 | 说明 |
 | --- | --- | --- | --- |
-| GET | `/Meta` | 登录或匿名 | `{ enabled }` 匿名；登录加 `todoCount` |
+| GET | `/Meta` **与** `GET /Cube/Workflow` | 匿名 | `{ enabled }`；登录加 `todoCount`。Amd-3：必须同时挂 `HttpGet("Meta")`，仅裸 `[HttpGet]` 会导致前端 `/Cube/Workflow/Meta` 404 |
 | GET/POST/PUT | `/Definitions` | 定义菜单 | CRUD；PUT 草稿 |
 | POST | `/Definitions/{id}/Publish` | Update | 校验+钉扎 |
-| POST | `/Instances` | 登录 | body: `{ typePath, keys: string[], definitionId, comment }` |
+| POST | `/Instances` | 登录 | body: `{ typePath, keys: string[], definitionId, comment, title?, summary? }`；成功后前端再 `POST /Attachments?instanceId=` |
 | POST | `/Instances/{id}/Withdraw` | 发起人 | |
 | POST | `/Instances/{id}/Cancel` | 定义 Update | 作废 |
 | GET | `/Instances/{id}` | 发起人/候选人/实体 Detail | 含 tasks/comments |
 | POST | `/Tasks/{id}/Claim` | 候选人 | 或签认领 |
-| POST | `/Tasks/{id}/Approve` | 候选人 | `{ comment, attachmentIds }` |
+| POST | `/Tasks/{id}/Approve` | 候选人 | `{ comment }`（Amd-3：审批节点不传附件） |
 | POST | `/Tasks/{id}/Reject` | 候选人 | 整单 Rejected |
 | POST | `/Tasks/{id}/AddSign` | 候选人且 allowAddSign | `{ before: bool, to }` |
 | POST | `/Tasks/{id}/Transfer` | 候选人 | `{ to }` 单用户 |
@@ -442,7 +455,8 @@ GetDetail（登录）：在 fields 上附 `wfVisible` / `wfWritable`（bool）�
 | GET | `/Started` | 登录 | |
 | GET | `/Done` | 登录 | 我已办 |
 | PUT | `/Phrases` | 定义 Update | |
-| POST | `/Entities/{typePath}/{key}/Patch` | 流程通道 | 审批中改 writable 字段 |
+| POST | `/Attachments` | 可查看该实例 | multipart；`instanceId` 必填；**禁止** `taskId` |
+| POST | `/Entities/{key}/Patch?typePath=` | 流程通道 | 审批中改 writable 字段 |
 
 错误码：400 校验；401 未登录；403 非候选人；404 无模块或无记录；409 排他在途或定义 Version 冲突。
 
@@ -529,4 +543,60 @@ pass：视同同意（Comment action=timeout）。reject：视同驳回。transf
 | N=100 / 批量任务 50 | 硬上限 |
 | OSC-0010 | 不复活 |
 
-**仍待批准后实现，本号不写 C#。**
+**仍待批准后实现，本号不写 C#。**（历史句；Amd-2 起已在执行。Amd-3 起界面补齐见 §13。）
+
+## 13. Amd-3：对照飞书审批的设计补充（2026-09-19）
+
+权威界面稿：[ui/process-and-approval.md](./ui/process-and-approval.md)。本节只锁**架构结论**与**和飞书的差异**，避免把 SaaS 审批应用误当成 Cube 皮肤的终态。
+
+### 13.1 表单 vs 流程
+
+飞书审批定义 = 表单设计 + 流程设计。Cube **禁止**第二套表单画布：单据 = 实体行（GetPage / FormJson / RecordDrawer）。流程定义只绑定 `TypePath` + GraphJson。发起是「勾选已有记录」，不是「填写请假单控件」。
+
+### 13.2 节点集合（相对飞书）
+
+| 飞书节点 | Cube V1 | 说明 |
+| --- | --- | --- |
+| 提交 / 结束 | `oa.start` / `oa.end` | 固定各 1 |
+| 审批人 | `oa.approve` | 会签=and、或签=or、依次=sequence |
+| 抄送人 | `oa.cc` | 通知、不阻塞 |
+| 条件分支 | `oa.xor` | 必须 defaultTarget；**设计器必须可视化 cases**（现状仅占位文案） |
+| 办理人 | **不做** | 财务打款/盖章属 V2 |
+| 自动通过/拒绝节点 | 不做独立 type | 用超时 pass/reject 近似 |
+
+加签：飞书前/并/后 + 减签。Cube V1 **仅前加签、后加签**（引擎已有）。并加签/减签另号。
+
+接收人：飞书上级/部门负责人/角色/指定/自选/表单内联系人。Cube V1 **仅** users / roles / departments。N 级上级依赖组织关系字段，不在本号展开。
+
+### 13.3 实例页信息架构
+
+飞书：左单据、右流程、底同意/驳回/更多。  
+Cube 映射：
+
+- 实体入口：RecordDrawer 表单 + Tab「审批」内嵌进度（单据已在）。
+- 待办入口：宽屏左记录摘要 + 右节点流程（现状缺左栏）。
+- 操作：同意/驳回主按钮；更多 = 加签/转办/知会/**回退**（回退 API 已有、进度面板无入口）。
+- 附件：仅发起时；审批弹层不出现上传。
+
+进度默认按**节点 + 候选人状态**渲染，意见时间轴降为「全部动态」折叠。禁止只靠 Comment 列表冒充流程。
+
+### 13.4 已落地、需回写设计的实现偏差
+
+| 项 | 原 design | 实现 / Amd-3 采纳 |
+| --- | --- | --- |
+| 实例 Title / Summary | 无列 | 已加列；发起抽屉可填 |
+| 附件 Key | Comment.Id | 实例 Id；审批节点禁止上传 |
+| 雪花 Id | 前端易 Number() | 全程 string |
+| Meta 路由 | `/Cube/Workflow/Meta` | 必须 `[HttpGet("Meta")]`，根路径可保留 |
+| 待办口径 | 候选人可见 | `FindTodoByUser`：认领人或或签未认领候选；角标同一口径 |
+| 已通过再发起 | 终态可再提 | **已通过不可再提**（产品收紧，与「审批中不可重复」一起） |
+| 工具栏文案 | 提交审批 | 批量提交，且仅表格视图 |
+| 菜单 | 流程 / … | 一级「流程审批」+ 中文叶子 |
+
+### 13.5 设计器 / 审批界面补齐（本号后续实现，不新开 OSC）
+
+见 `ui/process-and-approval.md` §3 D1–D10。其中 **D1 XOR 可视化**与 **D6 回退入口**为办理闭环阻塞项。
+
+### 13.6 明确不做（飞书有也不做）
+
+独立表单设计器、办理人节点、并加签/减签、委托授权、消息卡片秒批、发起/结束节点内置抄送、审批人去重、空候选人转上级、移动端审批应用。

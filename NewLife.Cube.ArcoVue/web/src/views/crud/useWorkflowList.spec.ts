@@ -126,12 +126,17 @@ describe('resolveWfRowActions 行「提交/进度」矩阵（IA §4）', () => {
 });
 
 describe('wfStatusBadge 行状态徽章', () => {
-  it('五态文案与未知回落', () => {
-    expect(wfStatusBadge('running')).toEqual({ text: '审批中', color: 'orange' });
-    expect(wfStatusBadge('approved')).toEqual({ text: '已通过', color: 'green' });
-    expect(wfStatusBadge('rejected')).toEqual({ text: '已驳回', color: 'red' });
-    expect(wfStatusBadge('withdrawn')).toEqual({ text: '已撤回', color: 'gray' });
-    expect(wfStatusBadge('none')).toEqual({ text: '未发起', color: 'gray' });
-    expect(wfStatusBadge('cancelled')).toEqual({ text: 'cancelled', color: 'gray' });
+  it('五态文案/色板/图标/Tooltip', () => {
+    expect(wfStatusBadge('running')).toMatchObject({
+      text: '审批中',
+      color: 'orange',
+      icon: '◎',
+      tooltip: '审批进行中',
+    });
+    expect(wfStatusBadge('approved')).toMatchObject({ text: '已通过', color: 'green', icon: '✓' });
+    expect(wfStatusBadge('rejected')).toMatchObject({ text: '已驳回', color: 'red', icon: '✕' });
+    expect(wfStatusBadge('withdrawn')).toMatchObject({ text: '已撤回', color: 'gray', icon: '↺' });
+    expect(wfStatusBadge('none')).toMatchObject({ text: '未发起', color: 'gray', icon: '○' });
+    expect(wfStatusBadge('cancelled')).toMatchObject({ text: 'cancelled', color: 'gray' });
   });
 });

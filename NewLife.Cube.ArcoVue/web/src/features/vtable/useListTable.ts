@@ -1,6 +1,7 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { ListTable } from '@visactor/vtable';
+import { ListTable, TYPES } from '@visactor/vtable';
 import { createGroup, createText } from '@visactor/vtable/es/vrender';
+import { appendWfStatusMark, wfMarkKind } from './wfStatusMark';
 import type { FieldMeta } from '@/core/types/field';
 import type { ColumnPref, ViewFormatRule } from '@/core/utils/viewProfile';
 import { frozenLeftCount, frozenRightCount } from '@/core/utils/viewProfile';
@@ -365,10 +366,23 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
     return OPS_ACTION_LABELS[action as OpsAction] ?? action;
   }
 
+  const OPS_ITEM_GAP = 12;
+  const OPS_CELL_PAD = 8;
+
+  function opsLabelWidth(label: string): number {
+    let w = 0;
+    for (const ch of label) w += ch.charCodeAt(0) > 255 ? 13 : 8;
+    return Math.ceil(w);
+  }
+
+  /** 按文案估算操作列宽：项间距 12、左右内边距 8 */
   function opsColumnWidth(): number {
-    const n = opsBundle().parts.length;
-    if (n <= 0) return 88;
-    return Math.max(88, n * 56 + 16);
+    const parts = opsBundle().parts;
+    if (!parts.length) return 72;
+    const content = parts.reduce((sum, action, i) => {
+      return sum + opsLabelWidth(opsLabel(action)) + (i ? OPS_ITEM_GAP : 0);
+    }, 0);
+    return Math.max(72, content + OPS_CELL_PAD * 2);
   }
 
   /**
@@ -429,7 +443,8 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
         fontFamily: 'sans-serif',
         fill: themeColor(color.token, color.fallback),
         cursor: 'pointer',
-        boundsPadding: [0, isLast ? 0 : 10, 0, 10],
+        // 仅首项左内边距、项间距 6、末项右内边距（原先左右各 10 会叠成 20 间隙）
+        boundsPadding: [0, isLast ? OPS_CELL_PAD : OPS_ITEM_GAP, 0, i === 0 ? OPS_CELL_PAD : 0],
       });
       link.states = {
         hover: {
@@ -460,6 +475,66 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
     return { rootContainer: container, renderDefault: false };
   }
 
+  /** 审批状态列：仅图标徽标；hover Tooltip 显示状态文案 */
+  function renderWfStatusLayout(args: any) {
+    const t = table;
+    if (!t || !hostRef.value) return undefined;
+    const { col, row } = args;
+    const rect = (args.rect as { width?: number; height?: number } | undefined) ??
+      (t.getCellRect(col, row) as { width: number; height: number });
+    const record = t.getCellOriginRecord?.(col, row) as Record<string, unknown> | undefined;
+    if (
+      !record ||
+      (record as { vtableMerge?: unknown }).vtableMerge ||
+      (record as { __groupHeader?: unknown }).__groupHeader
+    ) {
+      return undefined;
+    }
+    const badge = wfStatusBadge(wfRowStatus(record));
+    const size = 22;
+    const container = createGroup({
+      height: rect.height,
+      width: rect.width,
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fill: false,
+    });
+    const pill = createGroup({
+      height: size,
+      width: size,
+      cornerRadius: BADGE_BORDER_RADIUS,
+      fill: badge.bgColor,
+      clip: true,
+      cursor: 'default',
+    });
+    appendWfStatusMark(pill, wfMarkKind(wfRowStatus(record)), size, badge.textColor);
+    const tip = badge.tooltip || badge.text;
+    const showTip = () => {
+      try {
+        const cellRect = t.getVisibleCellRangeRelativeRect?.({ col, row }) ?? t.getCellRect(col, row);
+        t.showTooltip?.(col, row, {
+          content: tip,
+          referencePosition: { rect: cellRect, placement: TYPES.Placement.top },
+          style: {
+            bgColor: '#1d2129',
+            color: '#fff',
+            fontSize: 12,
+            padding: [6, 8, 6, 8],
+            arrowMark: true,
+          },
+          disappearDelay: 120,
+        });
+      } catch {
+        /* ignore */
+      }
+    };
+    pill.addEventListener('mouseenter', showTip);
+    container.add(pill);
+    return { rootContainer: container, renderDefault: false };
+  }
+
   function leadingCount(): number {
     // 分组模式（groupBy + rowSeriesNumber checkbox）：不使用前置 checkbox/expand 数据列
     if (props.groupFields?.length) return 0;
@@ -478,6 +553,8 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
         field: '__expand',
         title: '',
         width: 40,
+        minWidth: 40,
+        maxWidth: 40,
         dragHeader: false,
         sort: false,
         showSort: false,
@@ -498,6 +575,8 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
         field: '__checked',
         title: '',
         width: 48,
+        minWidth: 48,
+        maxWidth: 48,
         headerType: 'checkbox',
         cellType: 'checkbox',
         dragHeader: false,
@@ -515,18 +594,23 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       });
     }
 
-    // OA 审批状态列（IA §1）：类型启用时注入，消费服务端 __wfStatus
+    // OA 审批状态列（IA §1）：徽标 + Tooltip（图标/色板按状态）
     if (props.workflowButtons) {
       const isFirstWfCol = dataColCount === 0;
       dataColCount += 1;
       cols.push({
         field: '__wfStatus',
         title: '审批',
-        width: 88,
+        width: 64,
+        minWidth: 64,
+        maxWidth: 64,
         dragHeader: false,
         sort: false,
         showSort: false,
-        cellType: 'button',
+        headerStyle: {
+          textAlign: 'center',
+          padding: [8, 4, 8, 4],
+        },
         fieldFormat: (rec: Record<string, unknown>) => {
           const gh = groupHeaderFormat(rec, isFirstWfCol);
           if (gh !== undefined) return gh;
@@ -538,22 +622,9 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
             | undefined;
           const ghs = groupHeaderStyle(record);
           if (ghs) return ghs;
-          const badge = wfStatusBadge(wfRowStatus(record));
-          const colorMap: Record<string, string> = {
-            orange: '#ff7d00',
-            green: '#00b42a',
-            red: '#f53f3f',
-            gray: '#86909c',
-          };
-          return {
-            ...rowChromeFillPatch(record),
-            color: '#fff',
-            buttonBorderColor: 'transparent',
-            buttonColor: colorMap[badge.color] || colorMap.gray,
-            buttonPadding: BADGE_PADDING,
-            buttonBorderRadius: BADGE_BORDER_RADIUS,
-          };
+          return { textAlign: 'center', ...rowChromeFillPatch(record) };
         },
+        customLayout: renderWfStatusLayout,
       });
     }
 
@@ -662,17 +733,24 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
     }
 
     if (opsBundle().parts.length) {
+      const opsW = opsColumnWidth();
       cols.push({
         field: '__ops',
         title: '操作',
-        width: opsColumnWidth(),
+        width: opsW,
+        minWidth: opsW,
+        maxWidth: opsW,
         dragHeader: false,
         sort: false,
         showSort: false,
         disableColumnResize: true,
         customLayout: renderOpsLayout,
+        headerStyle: {
+          textAlign: 'left',
+          padding: [8, 8, 8, 8],
+        },
         style: (args: { table?: any; col?: number; row?: number }) => {
-          const base = { textAlign: 'center' as const };
+          const base = { textAlign: 'left' as const };
           if (!isFormatBodyRow(args)) return base;
           return { ...base, ...rowChromeFillPatch(recordOf(args)) };
         },
@@ -898,6 +976,8 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
             },
             rowSeriesNumber: {
               width: 48,
+              minWidth: 48,
+              maxWidth: 48,
               format: () => '',
               cellType: 'checkbox',
               headerType: 'checkbox',
@@ -914,6 +994,8 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
           }
         : {}),
       widthMode: 'standard',
+      // 表宽有余量时摊给数据列；操作/勾选等 chrome 列用 maxWidth 钉死
+      autoFillWidth: true,
       columnResizeMode: 'all',
       // 官方异步大数据建议（visactor 性能指南 async_data）：
       // 双击列间隔线自动计算列宽会请求/计算全部数据 → 禁用；右键表头组织全部选中 cell 信息同理

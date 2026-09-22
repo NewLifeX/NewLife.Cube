@@ -70,6 +70,29 @@ export function taskTitle(t: WorkflowTaskItem): string {
   return t.title || `${t.typePath || '记录'} #${t.instanceId}`;
 }
 
+/** 实体友好名（无 typeName 时回落路径末段） */
+export function entityLabel(typeName?: string, typePath?: string): string {
+  if (typeName?.trim()) return typeName.trim();
+  const path = (typePath || '').trim();
+  if (!path) return '—';
+  const slash = path.lastIndexOf('/');
+  return slash >= 0 && slash < path.length - 1 ? path.slice(slash + 1) : path;
+}
+
+/** 列表摘要：去掉粗 Markdown 标记后截断 */
+export function summaryPlain(summary?: string, max = 80): string {
+  if (!summary?.trim()) return '';
+  const plain = summary
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/!\[[^\]]*]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]*)]\([^)]*\)/g, '$1')
+    .replace(/[#>*_`~]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!plain) return '';
+  return plain.length > max ? `${plain.slice(0, max)}…` : plain;
+}
+
 export function useWorkflowTaskList(kind: 'todo' | 'done') {
   const rows = ref<WorkflowTaskItem[]>([]);
   const loading = ref(false);

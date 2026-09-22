@@ -7,7 +7,7 @@
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import type { WorkflowTaskItem } from '@newlifex/api-core';
-import { dueText, modeLabel, taskStatusMeta, taskTitle } from './useWorkflowTaskList';
+import { dueText, modeLabel, taskStatusMeta, taskTitle, entityLabel, summaryPlain } from './useWorkflowTaskList';
 import { useWorkflowTaskPage } from './useWorkflowTaskPage';
 import WorkflowProgressPanel from './WorkflowProgressPanel.vue';
 import './workflowChrome.css';
@@ -62,7 +62,7 @@ function isSelected(id: string | number) {
 
 <template>
   <div class="wf-task-page list-surface">
-    <div class="list-panel list-panel--table">
+    <div class="list-panel list-panel--table wf-task-page__list">
       <!-- 工具栏与表格同处一个面板（多维视图） -->
       <div class="list-topbar">
         <h3 class="wf-task-page__title">{{ pageTitle }}</h3>
@@ -86,7 +86,7 @@ function isSelected(id: string | number) {
         :pagination="false"
         :bordered="false"
         size="small"
-        :row-class-name="() => (kind === 'todo' ? 'wf-task-row' : '')"
+        :row-class-name="(record: WorkflowTaskItem) => (String(record.instanceId) === progressInstanceId && progressVisible ? 'wf-task-row wf-task-row--on' : 'wf-task-row')"
         @row-click="openProgress"
       >
         <template #columns>
@@ -104,35 +104,42 @@ function isSelected(id: string | number) {
               />
             </template>
           </a-table-column>
-          <a-table-column title="标题" data-index="titleKey" :width="220" ellipsis>
+          <a-table-column title="标题" data-index="titleKey" :width="180" ellipsis>
             <template #cell="{ record }">
               <a class="wf-task-page__title-link" @click.stop="openRecord(record)">
                 {{ taskTitle(record) }}
               </a>
             </template>
           </a-table-column>
-          <a-table-column title="实体" data-index="typePath" :width="160" ellipsis>
+          <a-table-column title="摘要" data-index="summary" :width="200" ellipsis>
             <template #cell="{ record }">
               <a-typography-text type="secondary" style="font-size: 12px">
-                {{ record.typePath || '—' }}
+                {{ summaryPlain(record.summary) }}
               </a-typography-text>
             </template>
           </a-table-column>
-          <a-table-column title="节点" data-index="mode" :width="110">
+          <a-table-column title="实体" data-index="typeName" :width="120" ellipsis>
+            <template #cell="{ record }">
+              <a-typography-text type="secondary" style="font-size: 12px">
+                {{ entityLabel(record.typeName, record.typePath) }}
+              </a-typography-text>
+            </template>
+          </a-table-column>
+          <a-table-column title="节点" data-index="mode" :width="100">
             <template #cell="{ record }">
               <a-tag size="small" :color="modeTagColor(record.mode)">
                 {{ modeLabel(record.mode) || record.nodeId || '—' }}
               </a-tag>
             </template>
           </a-table-column>
-          <a-table-column title="到达时间" data-index="createTime" :width="170">
+          <a-table-column title="到达时间" data-index="createTime" :width="160">
             <template #cell="{ record }">
               <a-typography-text type="secondary" style="font-size: 12px">
                 {{ formatDateTime(record.createTime) }}
               </a-typography-text>
             </template>
           </a-table-column>
-          <a-table-column v-if="kind === 'todo'" title="截止" data-index="dueTime" :width="140">
+          <a-table-column v-if="kind === 'todo'" title="截止" data-index="dueTime" :width="120">
             <template #cell="{ record }">
               <span v-if="dueMeta(record)" :style="{ color: dueMeta(record)!.overdue ? 'var(--color-danger-6)' : undefined }">
                 {{ dueMeta(record)!.text }}
@@ -140,7 +147,14 @@ function isSelected(id: string | number) {
               <a-typography-text v-else type="secondary" style="font-size: 12px">—</a-typography-text>
             </template>
           </a-table-column>
-          <a-table-column title="状态" data-index="status" :width="100">
+          <a-table-column title="当前审批人" data-index="currentApprover" :width="140" ellipsis>
+            <template #cell="{ record }">
+              <a-typography-text style="font-size: 12px">
+                {{ record.currentApprover }}
+              </a-typography-text>
+            </template>
+          </a-table-column>
+          <a-table-column title="状态" data-index="status" :width="90">
             <template #cell="{ record }">
               <a-tag :color="taskStatusMeta(record.status).color" size="small">
                 {{ taskStatusMeta(record.status).text }}
@@ -195,7 +209,6 @@ function isSelected(id: string | number) {
 
 <style scoped>
 .wf-task-page {
-  /* 内边距/背景由共享 .list-surface/.list-panel 承担 */
   min-height: 0;
 }
 .wf-task-page__title {

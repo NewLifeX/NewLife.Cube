@@ -6,7 +6,7 @@ vi.mock('@/api', () => ({
   },
 }));
 
-import { dueText, modeLabel, taskStatusMeta, taskTitle } from './useWorkflowTaskList';
+import { dueText, modeLabel, taskStatusMeta, taskTitle, entityLabel, summaryPlain } from './useWorkflowTaskList';
 import type { WorkflowTaskItem } from '@newlifex/api-core';
 
 describe('modeLabel 节点模式', () => {
@@ -53,5 +53,21 @@ describe('taskTitle 标题兜底', () => {
     expect(taskTitle({ typePath: 'Admin/User', instanceId: 7 } as WorkflowTaskItem)).toBe(
       'Admin/User #7',
     );
+  });
+});
+
+describe('entityLabel 实体友好名', () => {
+  it('优先 typeName，否则路径末段', () => {
+    expect(entityLabel('部门', 'Admin/Department')).toBe('部门');
+    expect(entityLabel('', 'Admin/Department')).toBe('Department');
+    expect(entityLabel(undefined, undefined)).toBe('—');
+  });
+});
+
+describe('summaryPlain 列表摘要', () => {
+  it('去 Markdown 并截断', () => {
+    expect(summaryPlain('')).toBe('');
+    expect(summaryPlain('**加急** 请审批')).toBe('加急 请审批');
+    expect(summaryPlain('a'.repeat(100), 10)).toBe(`${'a'.repeat(10)}…`);
   });
 });

@@ -119,5 +119,9 @@ export function normalizeKeysByFields(
     const v = getValueByKey(data, f.name);
     if (v !== undefined) out[f.name] = v;
   }
+  // 保留流程行覆盖字段（__wfStatus / __wfInstanceId / __wfWritable / __wfCanStart）
+  for (const [k, v] of Object.entries(data)) {
+    if (k.startsWith('__wf') && v !== undefined && !(k in out)) out[k] = v;
+  }
   return out;
 }

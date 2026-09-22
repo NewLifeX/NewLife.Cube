@@ -15,8 +15,11 @@ public static class WorkflowHost
 {
     private static Int32 _inited;
 
+    static readonly Object MenuSync = new();
+
     /// <summary>注册全局写锁拦截器（幂等）。测试可直接调 Register 或自行 Add</summary>
-    public static void Register()
+    /// <param name="ensureMenus">是否播种菜单。单测只验证写锁时传 false，避免改全局 Menu 连接</param>
+    public static void Register(Boolean ensureMenus = true)
     {
         if (Interlocked.Exchange(ref _inited, 1) != 0) return;
 
@@ -35,6 +38,8 @@ public static class WorkflowHost
         {
             XTrace.WriteLine("Workflow 库初始化：{0}", ex.Message);
         }
+
+        if (!ensureMenus) return;
 
         try
         {
@@ -58,6 +63,11 @@ public static class WorkflowHost
     /// 定义 /Cube/WorkflowDefinition（实体多维页），任务 /Cube/Workflow/{Todo|Done|Started|Designer}。
     /// </remarks>
     public static void EnsureMenus()
+    {
+        lock (MenuSync) EnsureMenusCore();
+    }
+
+    static void EnsureMenusCore()
     {
         var mf = ManageProvider.Menu;
         if (mf == null) return;

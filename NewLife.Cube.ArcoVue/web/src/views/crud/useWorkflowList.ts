@@ -19,18 +19,77 @@ import type { ListContext } from './listContext';
  * - embed（?embed=1）整体隐藏（IA §5）
  */
 
-/** 行状态徽章（T8d 行状态列用）：文案 + Arco 徽章颜色 */
-export const WF_STATUS_BADGE: Readonly<Record<string, { text: string; color: string }>> = {
-  none: { text: '未发起', color: 'gray' },
-  running: { text: '审批中', color: 'orange' },
-  approved: { text: '已通过', color: 'green' },
-  rejected: { text: '已驳回', color: 'red' },
-  withdrawn: { text: '已撤回', color: 'gray' },
+/** 行状态徽章（列表列 / Tooltip）：文案 + 色板 + 图标 + 提示 */
+export interface WfStatusBadgeMeta {
+  text: string;
+  /** Arco Tag 色名（兼容旧用法） */
+  color: string;
+  /** 徽标前景色 */
+  textColor: string;
+  /** 徽标浅底色 */
+  bgColor: string;
+  /** 简短图标字符（VTable canvas 可用） */
+  icon: string;
+  /** hover Tooltip */
+  tooltip: string;
+}
+
+export const WF_STATUS_BADGE: Readonly<Record<string, WfStatusBadgeMeta>> = {
+  none: {
+    text: '未发起',
+    color: 'gray',
+    textColor: '#86909c',
+    bgColor: '#f2f3f5',
+    icon: '○',
+    tooltip: '尚未发起审批',
+  },
+  running: {
+    text: '审批中',
+    color: 'orange',
+    textColor: '#ff7d00',
+    bgColor: '#fff7e8',
+    icon: '◎',
+    tooltip: '审批进行中',
+  },
+  approved: {
+    text: '已通过',
+    color: 'green',
+    textColor: '#00b42a',
+    bgColor: '#e8ffea',
+    icon: '✓',
+    tooltip: '审批已通过',
+  },
+  rejected: {
+    text: '已驳回',
+    color: 'red',
+    textColor: '#f53f3f',
+    bgColor: '#ffece8',
+    icon: '✕',
+    tooltip: '审批已驳回',
+  },
+  withdrawn: {
+    text: '已撤回',
+    color: 'gray',
+    textColor: '#4e5969',
+    bgColor: '#f2f3f5',
+    icon: '↺',
+    tooltip: '流程已撤回',
+  },
 };
 
 /** 状态徽章元数据（未知状态回落灰显原文） */
-export function wfStatusBadge(status: WfRowStatus | string): { text: string; color: string } {
-  return WF_STATUS_BADGE[status] ?? { text: status || '未发起', color: 'gray' };
+export function wfStatusBadge(status: WfRowStatus | string): WfStatusBadgeMeta {
+  const hit = WF_STATUS_BADGE[status];
+  if (hit) return hit;
+  const text = status || '未发起';
+  return {
+    text,
+    color: 'gray',
+    textColor: '#86909c',
+    bgColor: '#f2f3f5',
+    icon: '·',
+    tooltip: text,
+  };
 }
 
 /** 工具栏「批量提交」按钮态 */

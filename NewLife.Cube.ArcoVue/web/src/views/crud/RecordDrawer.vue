@@ -127,9 +127,26 @@
           mode="edit"
           :field-errors="fieldErrors"
           :layout="layout"
+          :writable-allowlist="wfWritableNames.length ? wfWritableNames : null"
           @toggle-collapse="emit('toggle-collapse', $event)"
         />
         <div v-else class="detail-grouped" :style="detailLabelCssVars">
+          <a-alert
+            v-if="wfCanPatchWritable"
+            type="info"
+            class="wf-writable-alert"
+            show-icon
+          >
+            审批中可修改：{{ wfWritableLabels }}
+          </a-alert>
+          <a-alert
+            v-else-if="wfEditLocked"
+            type="warning"
+            class="wf-writable-alert"
+            show-icon
+          >
+            审批中整单锁定，当前节点无可写字段
+          </a-alert>
           <section
             v-for="group in detailGroups"
             :key="group.category || '__default'"
@@ -388,20 +405,14 @@
         <div class="wf-drawer-tab">
           <a-space>
             <a-tag :color="wfStatusMeta.color">{{ wfStatusMeta.text }}</a-tag>
-            <a-typography-text v-if="wfInstanceId" type="secondary">
-              实例 #{{ wfInstanceId }}
-            </a-typography-text>
           </a-space>
           <a-empty v-if="!wfInstanceId" description="暂无审批" />
-          <a-button
+          <WorkflowProgressPanel
             v-else
-            type="primary"
-            size="small"
-            class="wf-drawer-tab__open"
-            @click="emit('open-workflow', wfInstanceId)"
-          >
-            查看进度与办理
-          </a-button>
+            embed
+            :model-value="true"
+            :instance-id="wfInstanceId"
+          />
         </div>
       </a-tab-pane>
     </a-tabs>
@@ -416,6 +427,13 @@
           @click="onSave"
         >
           保存
+        </a-button>
+        <a-button
+          v-else-if="canEdit && wfCanPatchWritable"
+          type="primary"
+          @click="emit('edit')"
+        >
+          修改可写字段
         </a-button>
         <a-button v-else-if="canEdit && !wfEditLocked" type="primary" @click="emit('edit')">编辑</a-button>
       </a-space>
@@ -434,8 +452,9 @@ import UserAvatar from '@/components/UserAvatar.vue';
 import FormContent from './FormContent.vue';
 import RolePermTree from './RolePermTree.vue';
 import { useRecordDrawer } from './useRecordDrawer';
-import { wfRowEditLocked, wfRowInstanceId, wfRowStatus } from '@/core/types/workflow';
+import { wfRowCanPatchWritable, wfRowEditLocked, wfRowInstanceId, wfRowStatus, wfRowWritable } from '@/core/types/workflow';
 import { wfStatusBadge } from './useWorkflowList';
+import WorkflowProgressPanel from '@/views/workflow/WorkflowProgressPanel.vue';
 import { computed } from 'vue';
 
 const props = withDefaults(
@@ -487,6 +506,15 @@ const emit = defineEmits<{
 const wfInstanceId = computed(() => wfRowInstanceId(props.model));
 const wfStatusMeta = computed(() => wfStatusBadge(wfRowStatus(props.model)));
 const wfEditLocked = computed(() => wfRowEditLocked(props.model));
+const wfWritableNames = computed(() => wfRowWritable(props.model));
+const wfCanPatchWritable = computed(() => wfRowCanPatchWritable(props.model));
+const wfWritableLabels = computed(() => {
+  const names = wfWritableNames.value;
+  if (!names.length) return '';
+  return names
+    .map((n) => props.fields.find((f) => f.name.toLowerCase() === n.toLowerCase())?.displayName || n)
+    .join('、');
+});
 const wfTabVisible = computed(
   () => props.workflowEnabled === true && props.mode !== 'add' && !!props.showHistoryTabs,
 );
@@ -571,6 +599,9 @@ defineExpose({ validate: () => formRef.value?.validate() });
   padding: 4px;
   background: var(--color-fill-2);
   border-radius: 8px;
+}
+.wf-writable-alert {
+  margin: 0;
 }
 .detail-group {
   padding: 16px;

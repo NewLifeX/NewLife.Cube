@@ -22,6 +22,8 @@ interface FormContentProps {
   fieldErrors?: { field: string; message: string }[];
   /** 受限表单布局（OSC-0013）：字段排序/显隐/Category 折叠；null 表示元数据原序 */
   layout?: FormLayout | null;
+  /** 审批可写白名单：非空时仅名单内字段可编辑（其余禁用） */
+  writableAllowlist?: string[] | null;
 }
 
 /** FormContent 组件全部业务 TS：字段分组可见性、校验规则与 FieldErrors 映射（自 FormContent.vue script setup 原样搬移） */
@@ -100,6 +102,11 @@ export function useFormContent(props: FormContentProps) {
     if (props.readonly || !!field.readOnly || !!field.primaryKey) return true;
     if (isSystemRoleNameLocked(props.typePath, props.model, field.name)) return true;
     if (isSystemRoleFlagLocked(props.typePath, props.model, field.name, props.mode)) return true;
+    const allow = props.writableAllowlist;
+    if (allow && allow.length > 0) {
+      const set = new Set(allow.map((n) => n.toLowerCase()));
+      if (!set.has(field.name.toLowerCase())) return true;
+    }
     return false;
   }
 

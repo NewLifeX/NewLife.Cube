@@ -1,7 +1,7 @@
 # Status
 - id: OSC-26090347f1
-- state: Implementing
-- updated: 2026-09-03T18:48:20+08:00
+- state: Done
+- updated: 2026-09-22T08:40:00+08:00
 - approvedBy: openspec-approve
 - trigger: "请按照本项目OpenSpec 规范，批准并执行 47f1 变更。"
 - checklist: passed
@@ -39,3 +39,11 @@
     G-04 或签候选待办可见已修；G-08 多定义 StartFilter 任一命中；G-11 Claim/Transfer/Cc/超时 reject 单测；
     顶栏审批槽+角标、列表 `__wfStatus` 列、RecordDrawer 审批 Tab。
     仍无法闭环：G-01 跨进程唯一约束、G-05 附件、G-06/AC Meta 文档对齐、G-07 T11 冒烟、常用语管理 UI。
+    **Amd-3（2026-09-19）**：对照飞书审批 + 当前实现，补充流程设计/审批界面（design §13、ui/process-and-approval.md、IA §3）。
+    产品边界写死：实体表单=单据，GraphJson=流程；不复制飞书表单设计器。
+    **Amd-3 实现（2026-09-19）**：实现审计后补齐 D1–D10。引擎补 `allowTransfer`（缺省 true，false 转办 403）；实例详情下发 `graphSnapshot` 供节点进度组装。
+    设计器：顶栏写锁/发起条件/常用语；XOR 条件+默认分支；节点卡片徽章；节点下方「+」。
+    办理：进度按节点+候选人；更多含回退；待办宽屏左右分栏；摘要 Markdown；审批 Tab 内嵌进度。
+    仍无法闭环：G-01 跨进程唯一约束、G-07 T11 宿主冒烟。
+    **验收（2026-09-22）**：三步编排完成，🔴 0。Workflow+Osc260815 62/62，workflow vitest 84/84，vue-tsc 与 net10.0 构建 0 error。AC-01/AC-16 与 T11 仅记录。checklist passed。会话小任务已补录（T14）。
+    **复盘**：状态 Done，目录归档。
