@@ -441,7 +441,13 @@ public static class DashboardJson
     static Boolean ValidateWidgetFilter(JsonObject query, String srcTypePath, String hostTypePath, out String error)
     {
         error = null;
-        if (query?["extraFilter"] is not JsonObject f) return true;
+        if (query?["extraFilter"] == null) return true;
+        // 键存在但非对象：畸形形状保存即拒（查询端反序列化必失败，OSC-260903e2a4 补齐）
+        if (query["extraFilter"] is not JsonObject f)
+        {
+            error = "部件查询条件值无效";
+            return false;
+        }
         var logic = (f["logic"]?.ToString() ?? "all").Trim().ToLowerInvariant();
         if (logic != "all" && logic != "any")
         {
@@ -477,11 +483,22 @@ public static class DashboardJson
             }
             allowed = WidgetQueryService.GetAllowedNames(fact);
         }
-        // 宿主字段集（$host 引用须属于宿主实体字段）
+        // 宿主字段集仅在实际存在 $host 引用时解析（纯静态条件不要求宿主实体可解析）
         HashSet<String> hostNames = null;
-        if (!hostTypePath.IsNullOrEmpty())
+        if (HasHostRef(arr))
         {
-            var hf = FindFactory(hostTypePath);
+            if (hostTypePath.IsNullOrEmpty())
+            {
+                error = "工作台不支持宿主引用";
+                return false;
+            }
+            var hostNorm = AutomationPaths.NormalizeTypePath(hostTypePath);
+            if (hostNorm.IsNullOrEmpty())
+            {
+                error = "未知宿主实体";
+                return false;
+            }
+            var hf = FindFactory(hostNorm);
             if (hf == null)
             {
                 error = "未知宿主实体";
@@ -494,7 +511,12 @@ public static class DashboardJson
 
         foreach (var node in arr)
         {
-            if (node is not JsonObject cn) continue;
+            // 条件元素必须为对象（畸形形状保存即拒）
+            if (node is not JsonObject cn)
+            {
+                error = "部件查询条件值无效";
+                return false;
+            }
             var field = (cn["field"]?.ToString() ?? "").Trim();
             if (field.IsNullOrEmpty())
             {
@@ -536,6 +558,18 @@ public static class DashboardJson
             }
         }
         return true;
+    }
+
+    /// <summary>条件集是否含 $host 宿主引用（决定是否解析宿主字段集）</summary>
+    /// <param name="arr">conditions 数组</param>
+    static Boolean HasHostRef(JsonArray arr)
+    {
+        foreach (var node in arr)
+        {
+            if (node is not JsonObject cn) continue;
+            if (cn["value"] is JsonObject vo && vo.ContainsKey("$host")) return true;
+        }
+        return false;
     }
 
     /// <summary>按 typePath 解析实体工厂（实体部件查询条件校验用）</summary>

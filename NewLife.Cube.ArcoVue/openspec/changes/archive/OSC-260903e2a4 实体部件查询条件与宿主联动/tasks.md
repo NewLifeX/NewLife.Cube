@@ -50,3 +50,11 @@
 - [x] 构建：NewLife.Cube 多 TFM 0 error；api-core dist 重建；arco-vue vue-tsc -b + vite build 通过（wwwroot 已更新）
 - [x] 手工冒烟清单入 verify.md（待 CubeDemo 宿主人工执行）；勾选本号 tasks 并提交
 
+## P8 验收缺口补齐（2026-09-22 验收发现，用户确认「全部补齐」）
+
+- [x] G1 `listFieldMeta.loadEntityFilterFields`：AutomationMeta 仅富化不扩充候选（按 search∪list 名字集过滤），与后端白名单一致；新增 `listFieldMeta.filter.spec.ts`
+- [x] G2 `DashboardJson.ValidateWidgetFilter`：extraFilter 非对象 / conditions 元素非对象 → 保存即 400；纯静态条件不再强制解析宿主实体（hostTypePath 先归一，仅存在 $host 时解析）；XUnit 补 `DashboardJson_MalformedShapeRejected`
+- [x] G3 测试补强：XUnit 补 group 模式、group+$host、$host 引用时间字段（等值解析生效 / after 不解析跳过）共 3 例；前端补 `buildQueryBody` extraFilter 不变式、`normalizeFilter` $host 保留用例
+- [x] G4 `api-core isHostRefValue`：`$host` 空串/空白串不再识别（与后端一致）；`hostRefField` 去空白；spec 同步边界
+- [x] G5 文档：`web/README.md` 限定「工作台无宿主引用」；`功能清单.md` DASH-4 与 `核心接口架构.md`、`前端对接指南.md` 补「条件跳过」语义、复杂度数字（≤10/any≤5）、候选来源与迷你图表「数据范围」标签
+

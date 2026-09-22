@@ -792,6 +792,26 @@ describe('normalizeFilter / normalizeGroup (OSC-0015)', () => {
     expect(f.conditions.map((c) => c.field)).toEqual(['D', 'E', 'F']);
   });
 
+  it('keeps $host host-ref object values (OSC-260903e2a4)', () => {
+    const f = normalizeFilter({
+      logic: 'all',
+      conditions: [
+        { field: 'RoleId', op: 'eq', value: { $host: 'Id' } },
+        { field: 'Enable', op: 'eq', value: true },
+      ],
+    });
+    expect(f.conditions).toHaveLength(2);
+    expect(f.conditions[0]).toEqual({ field: 'RoleId', op: 'eq', value: { $host: 'Id' } });
+  });
+
+  it('still drops empty-array values (regression guard)', () => {
+    const f = normalizeFilter({
+      logic: 'all',
+      conditions: [{ field: 'RoleId', op: 'eq', value: [] }],
+    });
+    expect(f.conditions).toHaveLength(0);
+  });
+
   it('round-trips filter via serializeNamedView', () => {
     const v = {
       id: 'v1',

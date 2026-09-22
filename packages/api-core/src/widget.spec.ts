@@ -136,9 +136,11 @@ describe('parseDashboardJson / serializeDashboardJson', () => {
 });
 
 describe('$host 宿主引用 (OSC-260903e2a4)', () => {
-  it('isHostRefValue 仅识别单键 $host 字符串对象', () => {
+  it('isHostRefValue 仅识别单键 $host 非空白字符串对象', () => {
     expect(isHostRefValue({ $host: 'RoleId' })).toBe(true);
-    expect(isHostRefValue({ $host: '' })).toBe(true);
+    expect(isHostRefValue({ $host: ' RoleId ' })).toBe(true);
+    expect(isHostRefValue({ $host: '' })).toBe(false);
+    expect(isHostRefValue({ $host: '  ' })).toBe(false);
     expect(isHostRefValue({ $host: 1 })).toBe(false);
     expect(isHostRefValue({ $host: 'a', extra: 1 })).toBe(false);
     expect(isHostRefValue({})).toBe(false);
@@ -147,6 +149,8 @@ describe('$host 宿主引用 (OSC-260903e2a4)', () => {
     expect(isHostRefValue(null)).toBe(false);
     expect(isHostRefValue(undefined)).toBe(false);
     expect(hostRefField({ $host: 'RoleId' })).toBe('RoleId');
+    expect(hostRefField({ $host: ' RoleId ' })).toBe('RoleId');
+    expect(hostRefField({ $host: ' ' })).toBeUndefined();
     expect(hostRefField('RoleId')).toBeUndefined();
     expect(hostRefField(undefined)).toBeUndefined();
   });

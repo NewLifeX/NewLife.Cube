@@ -1,7 +1,7 @@
 # Status
 - id: OSC-260903e2a4
-- state: Implementing
-- updated: 2026-09-03T21:30:00+08:00
+- state: Done
+- updated: 2026-09-22T12:00:00+08:00
 - approvedBy: openspec-approve
 - trigger: 批准并执行 e2a4 变更。
 - checklist: passed
@@ -16,3 +16,7 @@
     未联动判定扩展（vue-tsc 0 error、vite build 通过、wwwroot 已更新）；文档 4 处 + DASH-4 行。
     XUnit Osc260903WidgetQueryTests 13 绿 + Widget/工作台回归 39 绿；api-core Vitest 51 绿；arco-vue Vitest 834 绿。
     待宿主（CubeDemo）人工冒烟（清单见 verify.md）→ 验收。
+    **2026-09-22 验收**：三步编排（实现审计/代码审查/文档同步）+ 门禁重跑全过（XUnit 41、api-core 53、arco-vue 884、双构建 0 error）；
+    发现 P1 缺口 2（候选超集、畸形形状放行）+ P2 缺口 3（用例缺口、$host 空串、文档限定）；用户确认「全部补齐」。
+    **2026-09-22 补齐（P8 G1–G5 完成）**：候选收敛 + 畸形 400 + 宿主按需解析；XUnit 16 绿、api-core 54 绿、widget/viewProfile/候选过滤新增用例绿；文档 4 处同步；待本轮门禁重跑后再次验收。
+    **2026-09-22 复验通过**：XUnit 44 绿、前端 889 绿、双构建 0 error；AC 10 项全过、G1–G5 全部关闭；checklist: passed，进入复盘。

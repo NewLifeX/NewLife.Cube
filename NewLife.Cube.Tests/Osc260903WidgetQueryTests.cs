@@ -199,6 +199,26 @@ public class Osc260903WidgetQueryTests
         Assert.DoesNotContain("extraFilter", n);
     }
 
+    [Fact(DisplayName = "DashboardJson：extraFilter 畸形形状（非对象 / 条件元素非对象）→ 400")]
+    public void DashboardJson_MalformedShapeRejected()
+    {
+        // 非对象
+        foreach (var bad in new[] { "\"abc\"", "[\"x\"]", "123" })
+        {
+            Assert.False(DashboardJson.TryNormalize(WidgetJson(bad), null, false, DashboardJson.SurfaceInsight, "Admin/Osc260903", out _, out var err), bad);
+            Assert.Contains("值无效", err);
+        }
+
+        // conditions 元素非对象
+        var elem = WidgetJson("""{"logic":"all","conditions":["x"]}""");
+        Assert.False(DashboardJson.TryNormalize(elem, null, false, DashboardJson.SurfaceInsight, "Admin/Osc260903", out _, out var err2));
+        Assert.Contains("值无效", err2);
+
+        // 纯静态条件不要求宿主实体可解析（hostTypePath 归一后仍可保存）
+        var stat = WidgetJson("""{"logic":"all","conditions":[{"field":"Name","op":"eq","value":"a"}]}""");
+        Assert.True(DashboardJson.TryNormalize(stat, null, false, DashboardJson.SurfaceInsight, "/Admin/Osc260903/", out _, out var err3), err3);
+    }
+
     #endregion
 
     #region WidgetQueryService $host 解析
@@ -214,7 +234,7 @@ public class Osc260903WidgetQueryTests
         };
     }
 
-    static Object HostRef() => JsonDocument.Parse("""{"$host":"RoleId"}""").RootElement.Clone();
+    static Object HostRef(String field = "RoleId") => JsonDocument.Parse(($$"""{"$host":"{{field}}"}""")).RootElement.Clone();
 
     static ViewFilterDto Filter(params ViewFilterConditionDto[] conds) => new() { Logic = "all", Conditions = conds.ToList() };
 
@@ -243,6 +263,15 @@ public class Osc260903WidgetQueryTests
             var rows = WidgetQueryService.Execute(user, list);
             Assert.NotNull(rows.Rows);
             Assert.Equal(2, rows.Rows.Count);
+
+            // 分组模式：条件同样生效（仅 Name=c）
+            var group = Query();
+            group.GroupBy = "Name";
+            group.ExtraFilter = Filter(new ViewFilterConditionDto { Field = "Amount", Op = "gt", Value = 25 });
+            var g = WidgetQueryService.Execute(user, group);
+            Assert.NotNull(g.Items);
+            var one = Assert.Single(g.Items);
+            Assert.Equal("c", one.Key);
         }
         finally
         {
@@ -388,6 +417,74 @@ public class Osc260903WidgetQueryTests
             var row = Assert.Single(r.Rows);
             Assert.Equal("b", row["Name"] + "");
             Assert.True(r.HostFilterApplied);
+        }
+        finally
+        {
+            CubeSetting.Current.EnableTenant = oldTenant;
+        }
+    }
+
+    [Fact(DisplayName = "group 模式 $host 解析 → 分组项收敛且 HostFilterApplied=true")]
+    public void Execute_Group_HostRef()
+    {
+        var oldTenant = CubeSetting.Current.EnableTenant;
+        CubeSetting.Current.EnableTenant = false;
+        try
+        {
+            Osc260903Item.Meta.ConnName = "Osc260903Item";
+            Osc260903Item.Meta.Session.Truncate();
+            SeedItem("a", 10, 1);
+            SeedItem("b", 20, 1);
+            SeedItem("c", 30, 2);
+            var user = SystemUser();
+
+            var req = Query();
+            req.GroupBy = "Name";
+            req.ExtraFilter = Filter(new ViewFilterConditionDto { Field = "RoleId", Op = "eq", Value = HostRef() });
+            req.HostFilter = Filter(new ViewFilterConditionDto { Field = "RoleId", Op = "eq", Value = 1 });
+
+            var r = WidgetQueryService.Execute(user, req);
+            Assert.NotNull(r.Items);
+            Assert.Equal(2, r.Items.Count);
+            Assert.All(r.Items, it => Assert.Contains(it.Key, new[] { "a", "b" }));
+            Assert.True(r.HostFilterApplied);
+        }
+        finally
+        {
+            CubeSetting.Current.EnableTenant = oldTenant;
+        }
+    }
+
+    [Fact(DisplayName = "$host 引用时间字段：宿主等值条件解析生效；非等值（after）不解析 → 条件跳过")]
+    public void Execute_HostRefOnTimeField()
+    {
+        var oldTenant = CubeSetting.Current.EnableTenant;
+        CubeSetting.Current.EnableTenant = false;
+        try
+        {
+            Osc260903Item.Meta.ConnName = "Osc260903Item";
+            Osc260903Item.Meta.Session.Truncate();
+            SeedItem("old", 10, 1, DateTime.Today.AddDays(-3));
+            SeedItem("new", 20, 1, DateTime.Today);
+            var user = SystemUser();
+
+            // 宿主筛选等值：CreateTime == 今天 → $host 解析为该值，条件收敛
+            var req = Query(hostTypePath: "Admin/User");
+            req.ExtraFilter = Filter(new ViewFilterConditionDto { Field = "CreateTime", Op = "eq", Value = HostRef("CreateTime") });
+            req.HostFilter = Filter(new ViewFilterConditionDto { Field = "CreateTime", Op = "eq", Value = DateTime.Today });
+
+            var r = WidgetQueryService.Execute(user, req);
+            Assert.Equal(1L, Convert.ToInt64(r.Value));
+            Assert.True(r.HostFilterApplied);
+
+            // 宿主筛选非等值（after）：不满足「等值条件」定义 → $host 条件跳过，无过滤
+            var req2 = Query(hostTypePath: "Admin/User");
+            req2.ExtraFilter = Filter(new ViewFilterConditionDto { Field = "CreateTime", Op = "after", Value = HostRef("CreateTime") });
+            req2.HostFilter = Filter(new ViewFilterConditionDto { Field = "CreateTime", Op = "after", Value = DateTime.Today.AddDays(-1) });
+
+            var r2 = WidgetQueryService.Execute(user, req2);
+            Assert.Equal(2L, Convert.ToInt64(r2.Value));
+            Assert.False(r2.HostFilterApplied);
         }
         finally
         {

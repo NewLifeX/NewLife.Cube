@@ -7,7 +7,7 @@ import {
   resolveKanbanInteractive,
 } from './useMiniKanbanWidget';
 import { readChartItems, resolveChartDimKey } from './useMiniChartWidget';
-import { normalizeQueryResult, shouldQueryWidget, unlinkedAfterQuery } from './useWidgetQuery';
+import { buildQueryBody, normalizeQueryResult, shouldQueryWidget, unlinkedAfterQuery } from './useWidgetQuery';
 import {
   buildMiniChartOption,
   isNumericTypeName,
@@ -333,6 +333,34 @@ describe('unlinkedAfterQuery (OSC-260903e2a4)', () => {
     };
     expect(unlinkedAfterQuery(linked, 'Admin/User', false, true)).toBe(false);
     expect(unlinkedAfterQuery(linked, 'Admin/User', false, false)).toBe(true);
+  });
+});
+
+describe('buildQueryBody extraFilter 不变式 (OSC-260903e2a4)', () => {
+  const base = {
+    id: 'w1',
+    kind: 'metricCard',
+    title: 't',
+    layout: { w: 3 as const, order: 0 },
+    source: { provider: 'entity.aggregate' as const, typePath: 'Admin/User' },
+  };
+
+  it('extraFilter（字面 + $host）原样进入 Query body', () => {
+    const extraFilter = {
+      logic: 'all' as const,
+      conditions: [
+        { field: 'Enable', op: 'eq', value: true },
+        { field: 'RoleId', op: 'eq', value: { $host: 'RoleId' } },
+      ],
+    };
+    const body = buildQueryBody({ ...base, query: { extraFilter } }, 'Admin/Role', null);
+    expect(body?.extraFilter).toBe(extraFilter);
+    expect(body?.hostTypePath).toBe('Admin/Role');
+  });
+
+  it('无 extraFilter 部件不产生该键', () => {
+    const body = buildQueryBody({ ...base, query: {} }, undefined, null);
+    expect(body?.extraFilter).toBeUndefined();
   });
 });
 

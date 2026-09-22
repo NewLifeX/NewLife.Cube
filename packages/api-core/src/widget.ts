@@ -74,21 +74,22 @@ export interface WidgetHostRefValue {
 /** $host 宿主引用键名（前后端各一份，勿漂移） */
 export const HOST_REF_KEY = '$host';
 
-/** 是否宿主引用对象值（{ $host: 字段名 } 单键对象） */
+/** 是否宿主引用对象值（{ $host: 字段名 } 单键对象；字段名去空白后须非空，与后端一致） */
 export function isHostRefValue(value: unknown): value is WidgetHostRefValue {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const keys = Object.keys(value);
   return (
     keys.length === 1 &&
     keys[0] === HOST_REF_KEY &&
-    typeof (value as Record<string, unknown>)[HOST_REF_KEY] === 'string'
+    typeof (value as Record<string, unknown>)[HOST_REF_KEY] === 'string' &&
+    ((value as Record<string, unknown>)[HOST_REF_KEY] as string).trim() !== ''
   );
 }
 
-/** 取宿主引用字段名；非宿主引用返回 undefined */
+/** 取宿主引用字段名（去空白）；非宿主引用返回 undefined */
 export function hostRefField(value: unknown): string | undefined {
   if (!isHostRefValue(value)) return undefined;
-  return (value as WidgetHostRefValue).$host;
+  return (value as WidgetHostRefValue).$host.trim();
 }
 
 /** 部件查询条件是否含任一宿主引用 */

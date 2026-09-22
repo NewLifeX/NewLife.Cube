@@ -171,6 +171,7 @@ export async function loadEntityListFields(typePath: string | undefined): Promis
 /**
  * 加载实体 search∪list 字段元数据（部件查询条件候选，OSC-260903e2a4）。
  * 与后端 WidgetQueryService 白名单（FieldCollection Search∪List）对齐；多源合并 + 枚举/LOV 富化。
+ * 注意：Automation/Meta（kind=all 全字段）仅用于富化，按名过滤后不扩充候选——避免出现后端 400 的字段。
  */
 export async function loadEntityFilterFields(typePath: string | undefined): Promise<FieldMeta[]> {
   const tp = normalizeTypePath(typePath);
@@ -184,12 +185,18 @@ export async function loadEntityFilterFields(typePath: string | undefined): Prom
     loadFromAutomationMeta(tp),
   ]);
 
-  const merged = mergeFieldMetas(pageList, pageSearch, fList, fSearch, fromAuto);
-  if (!merged.length) return [];
+  const base = mergeFieldMetas(pageList, pageSearch, fList, fSearch);
+  if (!base.length) return [];
 
-  await enrichFieldsWithEnumDataSource(merged);
-  await enrichFieldsWithLookup(merged);
-  return merged;
+  const allowed = new Set(base.map((f) => (f.name || '').toLowerCase()));
+  const enriched = mergeFieldMetas(
+    base,
+    fromAuto.filter((f) => allowed.has((f.name || '').toLowerCase())),
+  );
+
+  await enrichFieldsWithEnumDataSource(enriched);
+  await enrichFieldsWithLookup(enriched);
+  return enriched;
 }
 
 export function findFieldMeta(metas: FieldMeta[], name: string): FieldMeta | undefined {
