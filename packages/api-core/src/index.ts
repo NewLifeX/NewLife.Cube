@@ -14,7 +14,7 @@ export { isServiceApiPath, getServiceBaseUrl, resolveRequestUrl } from './servic
 // 底层构建块（高级用法）
 export { createApiClient, createRequest, type ApiClientOptions, type ResponseErrorInfo } from './client';
 export { TokenManager, type TokenStorage, extractTokenFromHash } from './token';
-export { createUserApi, createMenuApi, createPageApi, createConfigApi, clearPageMetaCache, createProfileApi, createCommentApi, createAutomationApi, createWidgetApi, createWorkbenchApi, createWorkflowApi, AUTOMATION_HOOK_PATH } from './api';
+export { createUserApi, createMenuApi, createPageApi, createConfigApi, clearPageMetaCache, createProfileApi, createCommentApi, createAutomationApi, createWidgetApi, createWorkbenchApi, createWorkflowApi, AUTOMATION_HOOK_PATH, passwordLoginWithChallenge, type PasswordLoginOptions } from './api';
 // 类型
 export type {
   ApiResponse,

@@ -84,7 +84,7 @@ export interface RequestConfig {
   /** 额外请求头（静态对象或返回对象的函数），对应 api-core 的 additionalRequestHeaders */
   additionalRequestHeaders?: Record<string, string> | (() => Record<string, string>);
   /** 响应拦截器 */
-  responseIntercept?: (response: AxiosResponse) => void;
+  responseInterceptor?: (response: AxiosResponse) => void;
   /** 请求配置拦截钩子：在请求发送前对配置做自定义修改 */
   requestInterceptor?: (
     config: InternalAxiosRequestConfig,

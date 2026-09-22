@@ -51,6 +51,8 @@ import {
 } from './composables/useProvideInject';
 import { currentComponent } from './composables/useLayout';
 import { registerPageSections } from './utils/pageSections';
+import { applyExternalRoutes } from './router/routeOverride';
+import type { ConfigRoute } from './typings';
 import autoSectionModules from 'virtual:@newlifex/cube-vue-sections';
 import CyberLayout from './layouts/CyberLayout/index.vue';
 
@@ -117,6 +119,22 @@ export type ConfigureFunction = (
 export interface InitAppOptions {
   configure?: ConfigureFunction;
   sections?: Record<string, () => Promise<{ default: unknown; }>>;
+  /**
+   * 外部（业务应用）路由声明，**优先级高于框架所有来源**（静态表 / 微应用 / 后端菜单）。
+   *
+   * 声明后：框架侧注册同形态 path 或同 name 的路由会自动让位；外部路由注册时会强制
+   * 接管框架已注册的同项。落盘时机在 `app.use(router)` 之前，先于首次导航解析。
+   *
+   * @example 覆盖框架首页（框架 core/routes 的 '/' 会让位）
+   * ```typescript
+   * initApp({
+   *   externalRoutes: [
+   *     { path: '/', name: 'HomeRedirect', redirect: '/stardust/overview' },
+   *   ],
+   * });
+   * ```
+   */
+  externalRoutes?: ConfigRoute[];
 }
 
 /**
@@ -185,11 +203,16 @@ export const initApp = async (optionsOrConfigure?: InitAppOptions | ConfigureFun
       ? { configure: optionsOrConfigure }
       : (optionsOrConfigure ?? {});
 
-  const { configure, sections } = options;
+  const { configure, sections, externalRoutes } = options;
 
   const pinia = createPinia();
 
   const app = createApp(App);
+
+  // 外部路由优先：必须在 app.use(router) 之前落盘。
+  // app.use(router) 会立即触发首次导航解析（matchers 首个命中者胜出），
+  // 晚于它则首个 location 仍按框架静态路由解析，外部声明的首页/登录页会失效。
+  applyExternalRoutes(externalRoutes, router);
 
   // 安装核心插件
   app.use(router);

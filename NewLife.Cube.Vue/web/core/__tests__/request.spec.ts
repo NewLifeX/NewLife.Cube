@@ -5,11 +5,11 @@
  *   1. redirectToLogin —— 登出 / 重登录跳转（清 token、带 redirect_uri）；
  *   2. onUnauthorized(handleUnauthorized) —— 401 去重、自身请求判定、跳登录页 / 未授权页；
  *   3. onResponseError(showErrorNotification) —— 网络错误中文提示 / 其余走 autoNotification；
- *   4. onBusinessError —— 业务错误弹窗；
- *   5. createApiClient 接线（unwrapResponse:true 等）。
+ *   4. onBusinessError / onFieldError —— 业务/字段级错误弹窗；
+ *   5. createCubeApi 接线（unwrapResponse:false 等）。
  *
  * 非 UI 的底层逻辑（host 拼接、/api 补全、token 注入、错误归一化等）已在 @newlifex/api-core 覆盖，
- * 此处通过 vi.mock('@newlifex/api-core') 捕获传给 createApiClient 的回调后直接驱动，避免真实网络。
+ * 此处通过 vi.mock('@newlifex/api-core') 捕获传给 createCubeApi 的回调后直接驱动，避免真实网络。
  *
  * 运行：pnpm test:unit core/__tests__/request.spec.ts
  */
@@ -43,6 +43,7 @@ const h = vi.hoisted(() => {
     gotoPage: vi.fn(),
     notification,
     intl,
+    elMessageError: vi.fn(),
     getSession: vi.fn(() => null),
     setSession: vi.fn(),
     removeAllCookie: vi.fn(),
@@ -52,18 +53,23 @@ const h = vi.hoisted(() => {
 });
 
 vi.mock('@newlifex/api-core', () => ({
-  createApiClient: (options: Record<string, unknown>) => {
+  createCubeApi: (options: Record<string, unknown>) => {
     h.captured = options;
-    return { get: vi.fn(), post: vi.fn(), request: vi.fn() };
-  },
-  TokenManager: class {
-    constructor(_storage: unknown) {}
+    return {
+      client: { get: vi.fn(), post: vi.fn(), request: vi.fn() },
+      tokenManager: {},
+      user: {},
+      menu: {},
+      page: {},
+      config: {},
+    };
   },
 }));
 
 vi.mock('../configure', () => ({ getConfig: () => h.config }));
 vi.mock('../components/Notification', () => ({ default: h.notification }));
 vi.mock('../i18n', () => ({ intl: h.intl }));
+vi.mock('element-plus', () => ({ ElMessage: { error: h.elMessageError } }));
 vi.mock('../utils/storage', () => ({
   getSession: h.getSession,
   setSession: h.setSession,
@@ -100,9 +106,9 @@ describe('request.ts — cube-vue 请求层 UI 逻辑', () => {
     vi.useRealTimers();
   });
 
-  describe('createApiClient 接线', () => {
-    it('以 unwrapResponse:true 创建（与 cubeApi.client 不同）', () => {
-      expect(opts.unwrapResponse).toBe(true);
+  describe('createCubeApi 接线', () => {
+    it('以 unwrapResponse:false 创建（统一解包，页面/登录 API 直接访问 res.data）', () => {
+      expect(opts.unwrapResponse).toBe(false);
       expect(opts.withCredentials).toBe(true);
       expect(opts.tokenHeaderPrefix).toBe('bearer ');
       expect(opts.baseURL).toBe('http://localhost:5000');
@@ -176,15 +182,37 @@ describe('request.ts — cube-vue 请求层 UI 逻辑', () => {
     });
   });
 
+  describe('onFieldError（字段级错误）', () => {
+    it('聚合 message 并经 ElMessage.error 展示', () => {
+      opts.onFieldError([
+        { field: 'code', message: '编码不可空' },
+        { field: 'name', message: '名称不可空' },
+      ]);
+      expect(h.elMessageError).toHaveBeenCalledWith('编码不可空；名称不可空');
+    });
+  });
+
   describe('onBusinessError（业务错误弹窗）', () => {
-    it('有 message 时弹错误通知', () => {
+    it('有 message 时经 ElMessage.error 展示', () => {
       opts.onBusinessError(1, '业务失败');
-      expect(h.notification.error).toHaveBeenCalledWith({ message: '业务失败' });
+      return Promise.resolve().then(() => {
+        expect(h.elMessageError).toHaveBeenCalledWith('业务失败');
+      });
     });
 
     it('无 message 时不弹窗', () => {
       opts.onBusinessError(1, '');
-      expect(h.notification.error).not.toHaveBeenCalled();
+      return Promise.resolve().then(() => {
+        expect(h.elMessageError).not.toHaveBeenCalled();
+      });
+    });
+
+    it('已弹字段级错误时抑制业务错误（避免重复提示）', () => {
+      opts.onFieldError([{ field: 'code', message: '编码不可空' }]);
+      opts.onBusinessError(1, '添加失败');
+      return Promise.resolve().then(() => {
+        expect(h.elMessageError).toHaveBeenCalledTimes(1); // 仅字段错误
+      });
     });
   });
 });

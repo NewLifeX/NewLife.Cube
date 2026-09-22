@@ -50,7 +50,7 @@
 | 维度 | MVC（服务端渲染） | API（前后端分离） |
 |------|------------------|------------------|
 | 登录页 | `~/Admin/User/Login`（Razor 视图 + Bootstrap Tab） | 皮肤自带 `/login` 路由（Vue/React 等） |
-| 端点前缀 | `/Admin/User/*`、`/Sso/*` | `/Auth/*`、`/Sso/*` |
+| 端点前缀 / 控制器 | `/Admin/User/*`、`/Sso/*`（Admin 区域 `UserController`） | `/Auth/*`、`/Sso/*`（`AuthController`） |
 | 请求格式 | HTML 表单 POST（`application/x-www-form-urlencoded`） | JSON（`application/json`） |
 | 登录状态 | Cookie 会话（`token-{系统名}`）+ 自动跳转 | `accessToken/refreshToken`（前端自行保存） |
 | 密码加密 | `GET /Admin/User/GetLoginKey` + JSEncrypt（PKCS#1v1.5） | `GET /Auth/Challenge` + Web Crypto（RSA-OAEP/SHA-256） |
@@ -58,19 +58,19 @@
 | 登录配置 | `LoginViewModel`（服务端填充） | `GET /Auth/LoginConfig`（JSON） |
 | 业务逻辑 | 两者**共用同一套** `UserService` / `SsoController`，不重复实现 | 同左 |
 
-> 核心原则：**业务逻辑全部收敛在 `UserService`**（登录/注册/重置/发码），MVC 控制器与 API 控制器都是薄封装。
+> 核心原则：**业务逻辑全部收敛在 `UserService`**（登录/注册/重置/发码），MVC 控制器与 API 控制器都是薄封装。控制器归属：**API 调用走 `AuthController`（`/Auth/*`），MVC 调用走 Admin 区域 `UserController`（`/Admin/User/*`）**，两侧共用 `AuthEnhancedService` / `UserService` 业务层，不重复实现认证逻辑。
 
 ---
 
 ## 2. 登录
 
-登录入口统一为 `UserService.Login(LoginModel, HttpContext)`，按 `LoginModel.Category` 分发：
+登录入口统一为 `AuthEnhancedService.Login(LoginModel, HttpContext)`，按 `LoginModel.Category` 分发；**MVC（`UserController.Login`，`POST /Admin/User/Login`）与 API（`AuthController.Login`，`POST /Auth/Login`）均调用该入口**，控制器内不重复实现认证逻辑：
 
 ```
-UserService.Login
-├── Category=Password（默认） → LoginByPassword   （密码 + RSA 解密 + 防爆破 + 外部验证）
-├── Category=Mobile           → LoginBySms        （手机号 + 短信验证码，未注册可自动建号）
-└── Category=Mail             → LoginByMail       （邮箱 + 邮件验证码，未注册可自动建号）
+AuthEnhancedService.Login
+├── Category=Password（默认） → UserService.LoginByPassword（密码 + RSA 解密 + 防爆破 + 外部验证）
+├── Category=Mobile           → 本类 LoginBySms            （手机号 + 短信验证码，未注册可自动建号）
+└── Category=Mail             → 本类 LoginByMail           （邮箱 + 邮件验证码，未注册可自动建号）
 ```
 
 `LoginModel` 关键字段：
@@ -84,7 +84,7 @@ UserService.Login
 | `ChallengeId` | RSA 挑战标识，非空时后端解密 `Password` |
 | `CaptchaId/CaptchaCode` | 图片验证码（`CaptchaScene & 1` 启用时必填） |
 
-登录成功后统一走 `CompleteLogin`：记录登录统计 → 自动绑定租户 → 颁发 JWT → 写 Cookie / 返回 Token；用户开启 MFA 时中断返回挂起令牌。
+登录成功后统一执行**多租户校验**（携带 `X-Tenant` 且开启多租户时，登录用户必须属于该租户，否则当作用户不存在返回），通过后走 `CompleteLogin`：记录登录统计 → 自动绑定租户 → 颁发 JWT → 写 Cookie / 返回 Token；用户开启 MFA 时中断返回挂起令牌。
 
 ### 2.1 密码登录
 
@@ -100,7 +100,7 @@ UserService.Login
 ⑤ 前端跳转 ReturnUrl 或首页
 ```
 
-**MVC**
+**MVC**（`UserController.Login`，Admin 区域）
 
 ```http
 GET  /Admin/User/Login?r={returnUrl}            # 登录页（含 challengeId + 公钥）
@@ -108,7 +108,7 @@ POST /Admin/User/Login                          # 表单：username/password/cha
 GET  /Admin/User/GetLoginKey                    # 获取新鲜 RSA 公钥（登录提交前调用）
 ```
 
-**API**
+**API**（`AuthController.Login`）
 
 ```http
 GET  /Auth/LoginConfig?tenant={tenant}          # 登录配置（含 login.password/captcha）
@@ -350,7 +350,7 @@ UserService.ResetPassword
 | 功能 | MVC | 说明 |
 |------|-----|------|
 | 更换手机/邮箱 | `POST /Admin/User/BindByVerifyCode { account, code }` | 验证码校验**新号**所有权后绑定/更换（按格式分发手机/邮箱），旧号自动失效；API 可复用 `UserService.BindByVerifyCode` |
-| 注销账号 | `POST /Admin/User/CloseAccount` | 依次调起已注册的清理处理器（默认处理器吊销令牌、解绑三方、清理在线/OAuth日志/通知/验证码/用户参数/租户关系/委托代理并脱敏用户行），随后框架**兜底禁用**账号，保留 ID/Name 防重名与审计（见 §5.9） |
+| 注销账号 | —（并入 API，原 MVC `/Admin/User/CloseAccount` 已移除） | 依次调起已注册的清理处理器（默认处理器吊销令牌、解绑三方、清理在线/OAuth日志/通知/验证码/用户参数/租户关系/委托代理并脱敏用户行），随后框架**兜底禁用**账号，保留 ID/Name 防重名与审计（见 §5.9） |
 | 导出个人数据 | `GET /Admin/User/ExportData` | JSON 文件下载：个人资料 + 第三方绑定 + 令牌记录 |
 
 > 注销与导出依据《中华人民共和国个人信息保护法》、欧盟《通用数据保护条例》（GDPR）等法规提供（注销对应删除权、导出对应数据可携带权），前端入口位于用户信息页"安全中心"区块，按钮与确认弹窗已标注法规说明。
@@ -387,7 +387,7 @@ UserService.ResetPassword
 | 注册 | `services.AddSingleton<IAccountCloseHandler, MyHandler>()`，AddCube 前后任意时机均可；**必须 Singleton**（框架从根容器解析全部实现，不支持 Scoped/Transient） |
 | 失败策略 | 全部尽力而为：单个处理器异常被隔离记录，不影响其它处理器；账号禁用由框架兜底完成 |
 | 埋点 | 每个处理器调用处生成 `CloseAccount:{处理器名}` 子 Span，成功记 Value，异常记错误 |
-| 触发范围 | 当前仅用户自助注销：MVC `POST /Admin/User/CloseAccount`、API `POST /Auth/CloseAccount`；管理端删除用户暂不触发 |
+| 触发范围 | 当前仅用户自助注销：API `POST /Auth/CloseAccount`（`AuthController`；原 MVC `/Admin/User/CloseAccount` 已移除）；管理端删除用户暂不触发 |
 
 ```csharp
 /// <summary>订单模块：注销时清理账号关联数据</summary>
@@ -436,6 +436,8 @@ services.AddSingleton<IAccountCloseHandler, OrderAccountCloseHandler>();
 
 ## 7. 端点对照总表
 
+> 列含义：**MVC**＝Admin 区域 `UserController`（`/Admin/User/*`）；**API**＝`AuthController`（`/Auth/*`）。登录两端点 `UserController.Login` / `AuthController.Login` 共用 `AuthEnhancedService.Login`（含多租户校验）。
+
 | 业务 | MVC | API |
 |------|-----|-----|
 | 登录页/配置 | `GET /Admin/User/Login` | `GET /Auth/LoginConfig` |
@@ -452,7 +454,7 @@ services.AddSingleton<IAccountCloseHandler, OrderAccountCloseHandler>();
 | 微信登录 | — | `POST /Sso/WxMiniLogin` / `POST /Sso/WxAppLogin` |
 | 绑定 | `POST /Admin/User/BindByVerifyCode`、`/Sso/Bind` | `POST /Auth/Register(category=oauth)` |
 | 更换手机/邮箱 | `POST /Admin/User/BindByVerifyCode` | 复用 `UserService.BindByVerifyCode` |
-| 注销账号 | `POST /Admin/User/CloseAccount` | `POST /Auth/CloseAccount`（复用 `UserService.CloseAccount`，触发下游清理处理器） |
+| 注销账号 | —（并入 API，原 MVC 端点已移除） | `POST /Auth/CloseAccount`（`AuthController`，复用 `UserService.CloseAccount`，触发下游清理处理器） |
 | 导出个人数据 | `GET /Admin/User/ExportData` | 复用 `UserService` 数据组装 |
 
 ---

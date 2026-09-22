@@ -1,246 +1,64 @@
 <template>
-  <div class="user-page">
-    <!-- ─── 页头 ─── -->
-    <div class="page-header">
-      <div class="header-brand">
-        <div class="brand-icon">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-          >
-            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 00-3-3.87" />
-            <path d="M16 3.13a4 4 0 010 7.75" />
-          </svg>
+  <div class="user-container">
+    <!-- ─── 用户列表 ─── -->
+    <el-card class="box-card">
+      <template #header>
+        <div class="card-header">
+          <h3>用户管理</h3>
+          <el-button type="primary" @click="handleAdd">新增用户</el-button>
         </div>
-        <div>
-          <p class="brand-sup">系统管理</p>
-          <h1 class="brand-title">用户管理</h1>
-        </div>
-      </div>
-      <div class="header-right">
-        <div class="count-stat">
-          <span class="count-num">{{ queryParams.total || 0 }}</span>
-          <span class="count-label">用户总数</span>
-        </div>
-        <button class="hdr-btn" @click="queryUser">
-          <svg
-            width="13"
-            height="13"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="23 4 23 10 17 10" />
-            <polyline points="1 20 1 14 7 14" />
-            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
-          </svg>
-          刷新
-        </button>
-        <button class="hdr-btn prime" @click="handleAdd">
-          <svg
-            width="13"
-            height="13"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-          >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          新增用户
-        </button>
-      </div>
-    </div>
+      </template>
 
-    <!-- ─── 搜索栏 ─── -->
-    <div class="search-bar">
-      <div class="search-input-wrap">
-        <svg
-          class="search-icon"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-        <input
-          class="search-input"
-          v-model="searchQ"
-          placeholder="搜索用户名、显示名称、邮箱..."
-          @keyup.enter="doSearch"
-        />
-        <button
-          v-if="searchQ"
-          class="search-clear"
-          @click="
-            searchQ = '';
-            doSearch();
-          "
-        >
-          ✕
-        </button>
-      </div>
-      <button class="search-btn primary" @click="doSearch">搜索</button>
-      <button class="search-btn ghost" @click="doReset">重置</button>
-    </div>
+      <CubeListToolbarSearch
+        :on-search="SearchData"
+        :on-reset="ResetData"
+        :on-callback="callback"
+      />
 
-    <!-- ─── 数据表格 ─── -->
-    <div class="data-panel" v-loading="loading">
-      <!-- 表头 -->
-      <div class="row-head">
-        <div class="col col-user">用户信息</div>
-        <div class="col col-role">角色</div>
-        <div class="col col-dept">部门</div>
-        <div class="col col-contact">联系方式</div>
-        <div class="col col-status">状态</div>
-        <div class="col col-time">更新时间</div>
-        <div class="col col-ops">操作</div>
-      </div>
+      <el-table :data="tableData" border style="width: 100%" v-loading="loading" row-key="id">
+        <el-table-column prop="id" label="编号" width="80" />
+        <el-table-column label="用户名" min-width="150" show-overflow-tooltip>
+          <template #default="scope">
+            <div class="user-cell">
+              <el-avatar :size="24" :src="getAvatarUrl(scope.row.avatar)">
+                {{ (scope.row.displayName || scope.row.name || '?').charAt(0) }}
+              </el-avatar>
+              <span>{{ scope.row.name }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="displayName" label="显示名" min-width="110" show-overflow-tooltip />
+        <el-table-column label="角色" min-width="110" show-overflow-tooltip>
+          <template #default="scope">{{ scope.row.roleName || '-' }}</template>
+        </el-table-column>
+        <el-table-column label="部门" min-width="110" show-overflow-tooltip>
+          <template #default="scope">{{ scope.row.departmentName || '-' }}</template>
+        </el-table-column>
+        <el-table-column label="邮箱" min-width="180" show-overflow-tooltip>
+          <template #default="scope">{{ scope.row.mail || '-' }}</template>
+        </el-table-column>
+        <el-table-column label="手机号" width="130" show-overflow-tooltip>
+          <template #default="scope">{{ scope.row.mobile || '-' }}</template>
+        </el-table-column>
+        <el-table-column label="状态" width="80" align="center">
+          <template #default="scope">
+            <el-tag :type="scope.row.enable ? 'success' : 'danger'" size="small">
+              {{ scope.row.enable ? '正常' : '禁用' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="updateTime" label="更新时间" width="160" show-overflow-tooltip />
+        <el-table-column label="备注" min-width="120" show-overflow-tooltip>
+          <template #default="scope">{{ scope.row.remark || '-' }}</template>
+        </el-table-column>
+        <el-table-column label="操作" width="150" fixed="right" align="center">
+          <template #default="scope">
+            <el-button type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button type="danger" size="small" @click="handleDelete(scope.row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
 
-      <!-- 数据行 -->
-      <TransitionGroup name="rows" tag="div" class="rows-body">
-        <div
-          v-for="user in tableData"
-          :key="user.id"
-          class="data-row"
-          :class="{ 'is-off': !user.enable }"
-        >
-          <div class="col col-user">
-            <div class="avatar" :class="user.sex === 1 ? 'avatar--male' : 'avatar--female'">
-              <img
-                v-if="user.avatar && !avatarError[user.id]"
-                :src="getAvatarUrl(user.avatar)"
-                @error="avatarError[user.id] = true"
-              />
-              <span v-else class="avatar-init">{{
-                (user.displayName || user.name || '?').charAt(0)
-              }}</span>
-            </div>
-            <div class="user-info">
-              <span class="user-dname">{{ user.displayName || user.name }}</span>
-              <span class="user-uname">@{{ user.name }}</span>
-            </div>
-          </div>
-          <div class="col col-role">
-            <span v-if="user.roleName" class="chip chip--role">{{ user.roleName }}</span>
-            <span v-else class="nil">—</span>
-          </div>
-          <div class="col col-dept">
-            <span v-if="user.departmentName" class="dept-tag">{{ user.departmentName }}</span>
-            <span v-else class="nil">—</span>
-          </div>
-          <div class="col col-contact">
-            <div v-if="user.mail" class="contact-line">
-              <svg
-                width="11"
-                height="11"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
-                />
-                <polyline points="22,6 12,13 2,6" />
-              </svg>
-              {{ user.mail }}
-            </div>
-            <div v-if="user.mobile" class="contact-line">
-              <svg
-                width="11"
-                height="11"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
-                <line x1="12" y1="18" x2="12.01" y2="18" />
-              </svg>
-              {{ user.mobile }}
-            </div>
-            <span v-if="!user.mail && !user.mobile" class="nil">—</span>
-          </div>
-          <div class="col col-status">
-            <div class="status-pill" :class="user.enable ? 'status-ok' : 'status-off'">
-              <i class="status-dot"></i>
-              {{ user.enable ? '正常' : '禁用' }}
-            </div>
-          </div>
-          <div class="col col-time">
-            <span class="time-val" :title="user.updateTime">{{ formatTime(user.updateTime) }}</span>
-          </div>
-          <div class="col col-ops">
-            <button class="op-btn edit-btn" @click="handleEdit(user)">
-              <svg
-                width="11"
-                height="11"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-              </svg>
-              编辑
-            </button>
-            <button class="op-btn del-btn" @click="handleDelete(user)">
-              <svg
-                width="11"
-                height="11"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-                <path d="M10 11v6M14 11v6" />
-              </svg>
-              删除
-            </button>
-          </div>
-        </div>
-      </TransitionGroup>
-
-      <!-- 空状态 -->
-      <div v-if="!loading && tableData.length === 0" class="empty-state">
-        <svg
-          width="52"
-          height="52"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1"
-        >
-          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-          <circle cx="9" cy="7" r="4" />
-          <path d="M23 21v-2a4 4 0 00-3-3.87" />
-          <path d="M16 3.13a4 4 0 010 7.75" />
-        </svg>
-        <p>暂无用户数据</p>
-      </div>
-    </div>
-
-    <!-- ─── 分页 ─── -->
-    <div class="pager-bar">
-      <span class="pager-info"
-        >共 <b>{{ queryParams.total || 0 }}</b> 条记录</span
-      >
       <CubeListPager
         :total="queryParams.total"
         :current-page="queryParams.pageIndex"
@@ -249,7 +67,7 @@
         :on-size-change="PageSizeChange"
         :on-callback="callback"
       />
-    </div>
+    </el-card>
 
     <!-- ─── 用户表单弹窗 ─── -->
     <el-dialog
@@ -385,6 +203,7 @@ import {
   handleDeleteOperation,
   handleFormSubmit,
 } from '@newlifex/cube-vue/core/utils/api-helpers';
+import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListToolbarSearch.vue';
 import CubeListPager from '@newlifex/cube-vue/core/components/CubeListPager.vue';
 import type { SelectOption, BaseEntity, EnableStatus } from '@newlifex/cube-vue/core/types/common';
 import { pageInfoDefault } from '@newlifex/cube-vue/core/types/common';
@@ -485,39 +304,6 @@ const queryParams = reactive({
   q: '',
   ...pageInfoDefault,
 });
-
-// 搜索关键字（绑定输入框）
-const searchQ = ref('');
-// 头像加载失败记录
-const avatarError = ref<Record<number, boolean>>({});
-
-// 时间友好格式化
-const formatTime = (time?: string): string => {
-  if (!time) return '—';
-  const d = new Date(time);
-  if (isNaN(d.getTime())) return time;
-  const diff = Date.now() - d.getTime();
-  const mins = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  if (mins < 1) return '刚刚';
-  if (hours < 1) return `${mins} 分钟前`;
-  if (days < 1) return `${hours} 小时前`;
-  if (days < 30) return `${days} 天前`;
-  return d.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
-};
-
-// 搜索操作
-const doSearch = () => {
-  Object.assign(queryParams, { q: searchQ.value, pageIndex: 1 });
-  queryUser();
-};
-
-const doReset = () => {
-  searchQ.value = '';
-  Object.assign(queryParams, { q: '', pageIndex: 1 });
-  queryUser();
-};
 
 // 组件回调函数
 const callback = (e?: Record<string, unknown>) => {
@@ -810,554 +596,19 @@ onMounted(() => {
 });
 </script>
 
-<style lang="scss" scoped>
-/* ─── 页面容器 ─── */
-.user-page {
+<style scoped>
+.card-header {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 20px 24px;
-  min-height: 100%;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-/* ─── 页头 ─── */
-.page-header {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 18px 24px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
-    opacity: 0.5;
-  }
-}
-
-.header-brand {
-  display: flex;
   align-items: center;
-  gap: 14px;
 }
 
-.brand-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
-  background: rgba(74, 222, 128, 0.08);
-  border: 1px solid rgba(74, 222, 128, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--accent);
-  flex-shrink: 0;
-}
-
-.brand-sup {
-  font-size: 11px;
-  color: var(--text-muted);
-  letter-spacing: 0.5px;
-  margin: 0 0 3px;
-}
-
-.brand-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-  letter-spacing: -0.2px;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.count-stat {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  margin-right: 6px;
-}
-
-.count-num {
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--accent);
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -1px;
-}
-
-.count-label {
-  font-size: 10px;
-  color: var(--text-muted);
-  margin-top: 1px;
-}
-
-.hdr-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  font-size: 13px;
-  font-weight: 500;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all 0.15s;
-  border: 1px solid var(--border-subtle);
-  background: transparent;
-  color: var(--text-secondary);
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-primary);
-    border-color: rgba(255, 255, 255, 0.12);
-  }
-
-  &.prime {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #0a0e14;
-    font-weight: 600;
-
-    &:hover {
-      filter: brightness(1.1);
-      box-shadow: 0 0 18px rgba(74, 222, 128, 0.35);
-    }
-  }
-}
-
-/* ─── 搜索栏 ─── */
-.search-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-}
-
-.search-input-wrap {
-  flex: 1;
+.user-cell {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  transition:
-    border-color 0.15s,
-    background 0.15s;
-
-  &:focus-within {
-    border-color: rgba(74, 222, 128, 0.5);
-    background: rgba(74, 222, 128, 0.04);
-  }
 }
 
-.search-icon {
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-
-.search-input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  padding: 10px 0;
-  font-size: 13px;
-  color: var(--text-primary);
-
-  &::placeholder {
-    color: var(--text-muted);
-  }
-}
-
-.search-clear {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: var(--text-muted);
-  font-size: 13px;
-  line-height: 1;
-  padding: 3px 5px;
-  border-radius: 4px;
-
-  &:hover {
-    color: var(--text-primary);
-  }
-}
-
-.search-btn {
-  padding: 9px 18px;
-  font-size: 13px;
-  font-weight: 500;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-
-  &.primary {
-    background: var(--accent);
-    border: 1px solid var(--accent);
-    color: #0a0e14;
-
-    &:hover {
-      filter: brightness(1.1);
-      box-shadow: 0 0 12px rgba(74, 222, 128, 0.3);
-    }
-  }
-
-  &.ghost {
-    background: transparent;
-    border: 1px solid var(--border-subtle);
-    color: var(--text-secondary);
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text-primary);
-    }
-  }
-}
-
-/* ─── 数据面板 ─── */
-.data-panel {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  overflow-x: auto;
-  flex: 1;
-}
-
-.row-head {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1.6fr 80px 96px 118px;
-  padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid var(--border-subtle);
-
-  .col {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
-}
-
-.rows-body {
-  display: contents;
-}
-
-.data-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1.6fr 80px 96px 118px;
-  padding: 13px 20px;
-  border-bottom: 1px solid var(--border-subtle);
-  transition: background 0.12s;
-  align-items: center;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &:hover {
-    background: rgba(74, 222, 128, 0.03);
-
-    .op-btn {
-      opacity: 1;
-    }
-  }
-
-  &.is-off {
-    opacity: 0.5;
-  }
-}
-
-.col {
-  display: flex;
-  align-items: center;
-}
-.col-user {
-  gap: 12px;
-}
-
-/* ─── 头像 ─── */
-.avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  &.avatar--male {
-    background: linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%);
-  }
-  &.avatar--female {
-    background: linear-gradient(135deg, #f43f5e 0%, #fb7185 100%);
-  }
-}
-
-.avatar-init {
-  font-size: 14px;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
-.user-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.user-dname {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.user-uname {
-  font-size: 11px;
-  color: var(--text-muted);
-  font-family: 'SFMono-Regular', Consolas, 'Cascadia Code', monospace;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ─── 角色 ─── */
-.chip--role {
-  display: inline-flex;
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-  background: rgba(74, 222, 128, 0.1);
-  color: var(--accent);
-  border: 1px solid rgba(74, 222, 128, 0.2);
-  white-space: nowrap;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.dept-tag {
-  font-size: 12px;
-  color: var(--text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
-}
-
-.nil {
-  color: var(--text-muted);
-  font-size: 14px;
-}
-
-/* ─── 联系方式 ─── */
-.col-contact {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-}
-
-.contact-line {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-
-  svg {
-    flex-shrink: 0;
-    color: var(--text-muted);
-  }
-}
-
-/* ─── 状态 ─── */
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 500;
-
-  &.status-ok {
-    color: var(--accent);
-
-    .status-dot {
-      background: var(--accent);
-      box-shadow: 0 0 6px rgba(74, 222, 128, 0.8);
-      animation: dot-pulse 2.5s infinite;
-    }
-  }
-
-  &.status-off {
-    color: var(--text-muted);
-    .status-dot {
-      background: var(--text-muted);
-    }
-  }
-}
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  display: inline-block;
-}
-
-@keyframes dot-pulse {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.3);
-  }
-}
-
-.time-val {
-  font-size: 12px;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
-/* ─── 操作按钮 ─── */
-.col-ops {
-  gap: 6px;
-}
-
-.op-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 5px 10px;
-  font-size: 12px;
-  font-weight: 500;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.12s;
-  opacity: 0.8;
-  white-space: nowrap;
-
-  &.edit-btn {
-    background: rgba(74, 222, 128, 0.07);
-    border: 1px solid rgba(74, 222, 128, 0.18);
-    color: var(--accent);
-
-    &:hover {
-      background: rgba(74, 222, 128, 0.14);
-      border-color: var(--accent);
-      opacity: 1;
-    }
-  }
-
-  &.del-btn {
-    background: rgba(251, 113, 133, 0.07);
-    border: 1px solid rgba(251, 113, 133, 0.18);
-    color: #fb7185;
-
-    &:hover {
-      background: rgba(251, 113, 133, 0.14);
-      border-color: #fb7185;
-      opacity: 1;
-    }
-  }
-}
-
-/* ─── 空状态 ─── */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  padding: 64px 20px;
-  color: var(--text-muted);
-
-  p {
-    font-size: 14px;
-    margin: 0;
-  }
-}
-
-/* ─── 分页条 ─── */
-.pager-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-}
-
-.pager-info {
-  font-size: 13px;
-  color: var(--text-muted);
-
-  b {
-    color: var(--text-primary);
-    font-weight: 600;
-  }
-}
-
-/* ─── 行过渡动画 ─── */
-.rows-enter-active,
-.rows-leave-active {
-  transition:
-    opacity 0.18s ease,
-    transform 0.18s ease;
-}
-.rows-enter-from,
-.rows-leave-to {
-  opacity: 0;
-  transform: translateY(-6px);
-}
-
-/* ─── 弹窗底部 ─── */
 .dialog-footer {
   display: flex;
   justify-content: space-between;

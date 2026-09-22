@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using NewLife.Caching;
+using NewLife.Cube.Areas.Admin.Controllers;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Enums;
@@ -214,7 +215,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         }
 
         // 自动绑定用户到当前租户
-        if (set.EnableTenant) EnsureTenantUser(httpContext, user.ID, ip);
+        if (set.EnableTenant) EnsureTenantUser(httpContext, user, ip);
 
         // 设置租户
         httpContext.ChooseTenant(user.ID);
@@ -267,19 +268,29 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
 
     /// <summary>确保用户已绑定到当前租户。用户从哪个租户登录/注册，自动添加绑定关系</summary>
     /// <param name="httpContext">HTTP上下文</param>
-    /// <param name="userId">用户编号</param>
+    /// <param name="user">当前用户</param>
     /// <param name="ip">客户端IP</param>
     /// <returns>租户用户绑定记录，无需绑定时返回null</returns>
-    private TenantUser EnsureTenantUser(HttpContext httpContext, Int32 userId, String ip)
+    private TenantUser EnsureTenantUser(HttpContext httpContext, IManageUser user, String ip)
     {
         // 规则B（永久能力，非影子期兼容）：优先 X-App-Id（OAuth 配置租户），其次 X-Tenant/Query/Cookie；
         // 有有效租户标识且用户未绑定时自动补建绑定。无租户标识返回 -1，不处理。
+        var userId = user?.ID ?? 0;
         var tenantId = httpContext.ResolveTenantForLogin();
         if (tenantId <= 0 || userId <= 0) return null;
 
         // 检查是否已绑定到该租户
         var tenantUser = TenantUser.FindByTenantIdAndUserId(tenantId, userId);
-        if (tenantUser != null) return tenantUser;
+        if (tenantUser != null)
+        {
+            // 补偿：存量绑定无角色（主角色与角色组均为空）时，用租户默认角色兜底
+            if (tenantUser.Enable && tenantUser.RoleId <= 0 && tenantUser.RoleIds.IsNullOrEmpty())
+            {
+                tenantUser.RoleId = ManagerProviderHelper.ResolveTenantRole(tenantId);
+                tenantUser.Update();
+            }
+            return tenantUser;
+        }
 
         // 规则B 收紧：仅"存量无有效绑定用户"（无任何 Enable=true 的 TenantUser）才自动绑定。
         // 已属于其它租户的用户不自动自建加入，防止带可猜编码的水平越权；多租户归属走显式管理动作。
@@ -294,6 +305,8 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         {
             TenantId = tenantId,
             UserId = userId,
+            //与 UserController.Register 自动绑定一致，取默认角色兜底 
+            RoleId = ManagerProviderHelper.ResolveTenantRole(tenantId),
             Enable = true,
             CreateIP = ip,
             CreateTime = DateTime.Now,

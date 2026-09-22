@@ -8,6 +8,7 @@ using NewLife.Cube.Membership;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Reflection;
+using NewLife.Serialization;
 using XCode;
 using XCode.Membership;
 
@@ -108,7 +109,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         // 判断权限
         if (menu != null)
         {
-            if (user is IUser user2) return user2.Has(menu, Permission);
+            if (user is IUser user2) return user2.Has(menu, Permission); 
 
             var msg = $"访问资源[{menu}]时无法验证用户[{user}]的权限";
             LogProvider.Provider.WriteLog("访问", "拒绝", false, msg, ip: ctx.GetUserHost());

@@ -14,14 +14,6 @@
         :on-callback="callback"
       />
 
-      <el-alert
-        :title="`共找到 ${total} 个部门，其中根部门 ${tableData.length} 个。`"
-        type="info"
-        :closable="false"
-        show-icon
-        style="margin-bottom: 16px"
-      />
-
       <el-table
         :data="tableData"
         border

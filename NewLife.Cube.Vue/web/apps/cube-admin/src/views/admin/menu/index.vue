@@ -32,14 +32,6 @@
         :on-callback="callback"
       />
 
-      <el-alert
-        :title="`共找到 ${total} 个菜单项，其中根菜单 ${tableData.length} 个。`"
-        type="info"
-        :closable="false"
-        show-icon
-        style="margin-bottom: 16px"
-      />
-
       <div class="table-wrapper">
         <el-table
           :data="tableData"
@@ -213,7 +205,6 @@ interface Menu extends BaseEntity {
 // 表格数据
 const tableData = ref<Menu[]>([]);
 const loading = ref(false);
-const total = ref(0);
 const menuOptions = ref<Menu[]>([]);
 const selectedRows = ref<Menu[]>([]);
 
@@ -389,7 +380,6 @@ const loadData = async () => {
 
     // 构建树结构并排序
     tableData.value = buildTreeData(dataList);
-    total.value = dataList.length;
 
     console.log('构建后的树状数据:', tableData.value);
 
@@ -398,7 +388,6 @@ const loadData = async () => {
   } catch {
     tableData.value = [];
     menuOptions.value = [];
-    total.value = 0;
   } finally {
     loading.value = false;
   }

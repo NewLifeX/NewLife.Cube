@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using NewLife.Caching;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Common;
@@ -34,7 +34,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
     #endregion
 
     #region 登录
-    /// <summary>统一登录入口，支持账号密码、手机验证码、邮箱验证码登录。密码登录委托基础服务，验证码登录在本类实现</summary>
+    /// <summary>统一登录入口，支持账号密码、手机验证码、邮箱验证码登录。密码登录委托基础服务，验证码登录在本类实现；登录前执行多租户校验（请求显式声明租户标识且开启多租户时，登录用户必须属于该租户，否则当作用户不存在返回）</summary>
     /// <param name="loginModel">登录模型</param>
     /// <param name="httpContext">HTTP上下文</param>
     /// <returns>登录结果，包含Token信息或错误信息</returns>
@@ -44,29 +44,63 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         var ip = httpContext.GetUserHost();
         if (_verifyCode.RequireCaptcha(1, ip, loginModel.Username, AuthHelper.GetDeviceId(httpContext)))
         {
+            if (loginModel.CaptchaId.IsNullOrEmpty())
+            {
+                // 需要验证码但未提交：生成并返回，前端据此展示验证码输入框
+                var c = _verifyCode.GenerateCaptcha();
+                return new ServiceResult<IToken>
+                {
+                    IsSuccess = false,
+                    Message = "请输入图形验证码",
+                    CaptchaRequired = true,
+                    CaptchaId = c.CaptchaId,
+                    CaptchaImage = c.Image,
+                };
+            }
+
             if (!_verifyCode.ValidateCaptcha(loginModel.CaptchaId, loginModel.CaptchaCode))
-                return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码错误或已过期，请刷新后重试" };
+            {
+                // 验证码错误或已过期（校验成功即失效，必须换新），附新验证码供前端刷新
+                var c = _verifyCode.GenerateCaptcha();
+                return new ServiceResult<IToken>
+                {
+                    IsSuccess = false,
+                    Message = "验证码错误或已过期，请重新输入",
+                    CaptchaRequired = true,
+                    CaptchaId = c.CaptchaId,
+                    CaptchaImage = c.Image,
+                };
+            }
         }
 
+        // 多租户校验（提前）：请求显式声明租户标识且开启多租户时，登录用户必须属于该租户，否则当作用户不存在返回。
+        // 在登录（自动绑定租户/令牌签发/Cookie 写入）之前执行，被拒登录不产生任何会话副作用；
+        // 用户不存在（短信/邮箱自动注册路径）时跳过，交由登录流程注册后自动绑定
+        var tenantError = httpContext.ValidateLoginTenant(loginModel.Username);
+        if (tenantError != null)
+            return new ServiceResult<IToken> { IsSuccess = false, Message = tenantError };
+
+        ServiceResult<IToken> result;
         switch (loginModel.Category)//登录方式
         {
             case AuthCategory.Mobile://手机验证码登录
-                {
-                    return !ValidFormatHelper.IsMobile(loginModel.Username)
-                        ? new ServiceResult<IToken> { IsSuccess = false, Message = "手机号码格式不正确" }
-                        : LoginBySms(loginModel, httpContext);
-                }
+                result = !ValidFormatHelper.IsMobile(loginModel.Username)
+                    ? new ServiceResult<IToken> { IsSuccess = false, Message = "手机号码格式不正确" }
+                    : LoginBySms(loginModel, httpContext);
+                break;
             case AuthCategory.Mail://邮箱验证码登录
-                {
-                    return !ValidFormatHelper.IsEmail(loginModel.Username)
-                        ? new ServiceResult<IToken> { IsSuccess = false, Message = "邮箱格式不正确" }
-                        : LoginByMail(loginModel, httpContext);
-                }
+                result = !ValidFormatHelper.IsEmail(loginModel.Username)
+                    ? new ServiceResult<IToken> { IsSuccess = false, Message = "邮箱格式不正确" }
+                    : LoginByMail(loginModel, httpContext);
+                break;
             case AuthCategory.OAuth:
             case AuthCategory.Password:
             default:
-                return _userService.LoginByPassword(loginModel, httpContext);
+                result = _userService.LoginByPassword(loginModel, httpContext);
+                break;
         }
+
+        return result;
     }
 
     /// <summary>手机验证码登录</summary>

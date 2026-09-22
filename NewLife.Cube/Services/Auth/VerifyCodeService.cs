@@ -44,7 +44,7 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
     public Boolean RequireCaptcha(Int32 scene, String ip, String username = null, String deviceId = null)
     {
         var set = CubeSetting.Current;
-
+        if (set.CaptchaScene == 0) return false;
         // 场景强制：管理员明确要求，不受自适应豁免
         if ((set.CaptchaScene & scene) != 0) return true;
 

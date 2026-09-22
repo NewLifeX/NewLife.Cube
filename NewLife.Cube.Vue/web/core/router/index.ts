@@ -8,13 +8,25 @@ import { getUrlHashToken } from '../utils/token';
 import { registerMenuRoutes } from '../utils/menuRoutes';
 import { normalizeMenuUrl, type RouteNamingStyle } from '../utils/url';
 import { getConfig } from '../configure';
+import { addFrameworkRoute, bindRoutePriority } from './routeOverride';
 
-// 创建路由实例：支持通过配置切换 hash / history 模式，默认 hash 保持向后兼容
+// 创建路由实例：支持通过配置显式指定 hash / history 模式；未配置时默认 history（createWebHistory）
 const routerConfig = getConfig();
 const historyMode = routerConfig.router?.history;
+// 路由表改为空表 + 下方逐条走「框架侧收口」注册：
+// createRouter 一次性收下静态表的话，这些框架路由会永远压过业务应用声明的同形态路由
+// （vue-router 同形态 path 先注册者胜），外部注入也就无法生效。
 const router: Router = createRouter({
   history: historyMode === 'hash' ? createWebHashHistory() : createWebHistory(),
-  routes,
+  routes: [],
+});
+
+// 绑定 router 到路由优先级中心，并使能「外部路由优先」机制
+bindRoutePriority(router);
+
+// 框架静态路由注册：命中外部声明（业务应用 externalRoutes）的让位，其余正常注册
+routes.forEach((route) => {
+  addFrameworkRoute(route, router);
 });
 
 const {
@@ -31,16 +43,8 @@ initAppRoutes(router).catch((error) => {
   console.error('初始化微应用路由失败:', error);
 });
 
-// 记录需要重新导航的路径（动态路由刚注册）
-let pendingNavigationPath: string | null = null;
-
 // 全局导航守卫
 router.beforeEach(async (to, from, next) => {
-  // 检查是否需要重新导航到刚注册的动态路由
-  if (pendingNavigationPath && to.path === pendingNavigationPath) {
-    pendingNavigationPath = null;
-  }
-
   // 为了调试，在全局对象上暴露状态检查函数
   if (typeof window !== 'undefined') {
     (window as unknown as Record<string, unknown>).microAppRouter = {
@@ -89,61 +93,54 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // 如果有token
+  // 注意：走到这里 to.path 必不等于 loginPageUrl（上方已放行），
+  // 原先嵌套的「去登录页则转首页」分支属不可达死分支，已删除。
   if (hasToken) {
-    // 如果去登录页，直接跳转到首页
-    if (to.path === loginPageUrl) {
-      if (to.query.redirect) {
-        next({ path: to.query.redirect as string });
-      } else {
-        next({ path: '/' });
-      }
-    } else {
-      // 如果没有用户信息，获取用户信息
-      if (!userStore.hasUserInfo) {
-        try {
-          await userStore.fetchUserInfoAsync();
-        } catch (error) {
-          // 获取用户信息失败，可能是token无效，跳转到登录页
-          console.error('获取用户信息失败:', error);
-          next({ path: loginPageUrl });
-          return;
-        }
-      }
-
-      // 如果没有菜单信息，获取菜单信息
-      if (!menuStore.hasMenus) {
-        try {
-          await menuStore.fetchMenuAsync();
-        } catch (error) {
-          console.error('获取菜单信息失败:', error);
-          // 获取菜单失败但不影响导航，继续放行
-        }
-      }
-
-      // 如果有菜单但路由未注册，自动注册路由（仅首次），随后以全新 location 重定向触发重新解析
-      if (
-        menuStore.hasMenus &&
-        !menuStore.routesRegistered &&
-        menuStore.flatMenus?.length
-      ) {
-        registerMenuRoutes(router, menuStore.flatMenus, to.path);
-        menuStore.markRoutesRegistered();
-        // 动态路由刚刚注册完毕，重试本次导航。不能用 next(false) 依赖 afterEach 重导航——
-        // 被取消的导航不触发 afterEach，会导致 pendingNavigationPath 永远不被消费、页面停在旧路由。
-        // 也不能 next(to)：Vue Router 4 视为「冗余导航」而中止（URL 变但组件不渲染）；
-        // 必须用全新 location 对象强制重导航，加 force 避免同 path 被优化。
-        next({ path: to.path, query: to.query, hash: to.hash, replace: true, force: true } as any);
+    // 如果没有用户信息，获取用户信息
+    if (!userStore.hasUserInfo) {
+      try {
+        await userStore.fetchUserInfoAsync();
+      } catch (error) {
+        // 获取用户信息失败，可能是token无效，跳转到登录页
+        console.error('获取用户信息失败:', error);
+        next({ path: loginPageUrl });
         return;
       }
-
-      // 更新当前活动菜单
-      if (menuStore.hasMenus) {
-        menuStore.setActiveMenuByPath(to.path);
-      }
-
-      // 继续导航
-      next();
     }
+
+    // 如果没有菜单信息，获取菜单信息
+    if (!menuStore.hasMenus) {
+      try {
+        await menuStore.fetchMenuAsync();
+      } catch (error) {
+        console.error('获取菜单信息失败:', error);
+        // 获取菜单失败但不影响导航，继续放行
+      }
+    }
+
+    // 如果有菜单但路由未注册，自动注册路由（仅首次），随后以全新 location 重定向触发重新解析
+    if (
+      menuStore.hasMenus &&
+      !menuStore.routesRegistered &&
+      menuStore.flatMenus?.length
+    ) {
+      registerMenuRoutes(router, menuStore.flatMenus, to.path);
+      menuStore.markRoutesRegistered();
+      // 动态路由刚刚注册完毕，重试本次导航。不能依赖 afterEach 重导航——
+      // 被取消的导航不触发 afterEach，会停在旧路由。
+      // 也不能 next(to)：Vue Router 4 视为「冗余导航」而中止（URL 变但组件不渲染）；
+      // 必须用全新 location 对象强制重导航，加 force 避免同 path 被优化。
+      next({ path: to.path, query: to.query, hash: to.hash, replace: true, force: true } as any);
+      return;
+    }
+
+    // 更新当前活动菜单
+    if (menuStore.hasMenus) {
+      menuStore.setActiveMenuByPath(to.path);
+    }
+
+    // 继续导航
+    next();
   } else {
     // 无token的情况
 
@@ -154,19 +151,6 @@ router.beforeEach(async (to, from, next) => {
       // 需要认证的路由，重定向到登录页
       next({ path: loginPageUrl, query: { redirect: to.fullPath } });
     }
-  }
-});
-
-// afterEach 用于处理动态路由注册后的重新导航
-router.afterEach((to, from) => {
-  if (pendingNavigationPath) {
-    // 清除标记并重新导航（直接信任 pendingNavigationPath，不依赖 to.matched）
-    const path = pendingNavigationPath;
-    pendingNavigationPath = null;
-    console.log(`Re-navigating to dynamic route: ${path}`);
-    router.replace(path).catch(() => {
-      // 忽略错误（可能是路由不存在或其他导航错误）
-    });
   }
 });
 
