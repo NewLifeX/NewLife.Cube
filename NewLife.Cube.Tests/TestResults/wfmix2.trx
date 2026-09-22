@@ -1,0 +1,429 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="936c73b1-5fe5-47b7-89ce-10fbeef4a581" name="许胜平@XUSP-T14 2026-09-22 08:20:36" runUser="XUSP-T14\许胜平" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-22T08:20:36.4517277+08:00" queuing="2026-09-22T08:20:36.4517280+08:00" start="2026-09-22T08:20:34.9299966+08:00" finish="2026-09-22T08:20:38.3087885+08:00" />
+  <TestSettings name="default" id="2bcf7ca6-f0f3-447a-9dc4-c09d200a1b3f">
+    <Deployment runDeploymentRoot="许胜平_XUSP-T14_2026-09-22_08_20_36" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="09b18be4-d1a1-4088-b6d9-c66d43b66278" testId="6140083e-ce73-bf2e-9abe-dc0d145d560d" testName="D8 allowTransfer=false：转办 403" computerName="XUSP-T14" duration="00:00:00.0485007" startTime="2026-09-22T08:20:36.9058243+08:00" endTime="2026-09-22T08:20:36.9058245+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="09b18be4-d1a1-4088-b6d9-c66d43b66278" />
+    <UnitTestResult executionId="e676b6cf-13b7-4e50-bcf1-87c5d5f7bbb6" testId="b8ebc414-fb3d-dc8a-6afa-10549f2000eb" testName="无定义时行覆盖不注入任何 __wf 键" computerName="XUSP-T14" duration="00:00:00.0191218" startTime="2026-09-22T08:20:36.6933000+08:00" endTime="2026-09-22T08:20:36.6933001+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e676b6cf-13b7-4e50-bcf1-87c5d5f7bbb6" />
+    <UnitTestResult executionId="225540c3-e5b9-4136-bfef-839f1ea180f4" testId="6cf6d185-9cc4-0197-730c-51161d944275" testName="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+PhraseModel), json: &quot;{\&quot;texts\&quot;:[\&quot;已阅\&quot;]}&quot;)" computerName="XUSP-T14" duration="00:00:00.0004062" startTime="2026-09-22T08:20:37.9587991+08:00" endTime="2026-09-22T08:20:37.9587992+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="225540c3-e5b9-4136-bfef-839f1ea180f4" />
+    <UnitTestResult executionId="18cdfa87-6193-4cf8-b40a-6ec764bb8368" testId="82a7bf04-80db-c0ec-0806-a54e0e719d8e" testName="G-11 Claim：候选人认领后 AssigneeId/Active；非候选人 403" computerName="XUSP-T14" duration="00:00:00.0513703" startTime="2026-09-22T08:20:37.4565557+08:00" endTime="2026-09-22T08:20:37.4565557+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="18cdfa87-6193-4cf8-b40a-6ec764bb8368" />
+    <UnitTestResult executionId="41038b30-9ae7-459a-829f-e780e2d0e122" testId="134132cb-b87d-fa96-5cd3-5cf130f1622a" testName="G-11 Cc：只写意见+通知，不增任务" computerName="XUSP-T14" duration="00:00:00.0650623" startTime="2026-09-22T08:20:36.7586802+08:00" endTime="2026-09-22T08:20:36.7586803+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="41038b30-9ae7-459a-829f-e780e2d0e122" />
+    <UnitTestResult executionId="fd8dc3e0-9851-4498-a523-1fc14f12bdb7" testId="e3afe9c5-99fc-5a97-ffa7-e2b2cf4e70e1" testName="G-08 多定义：行 canStart 对任一 StartFilter 命中；锁策略不一致不下发 lockPolicy" computerName="XUSP-T14" duration="00:00:00.0380280" startTime="2026-09-22T08:20:36.6740356+08:00" endTime="2026-09-22T08:20:36.6740360+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fd8dc3e0-9851-4498-a523-1fc14f12bdb7" />
+    <UnitTestResult executionId="b8c40b4c-7888-4a4b-bd58-ef62a229d1f7" testId="98a910bd-9777-ad31-c49c-ae127aba9a2f" testName="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+PhraseModel), json: &quot;{}&quot;)" computerName="XUSP-T14" duration="00:00:00.0005159" startTime="2026-09-22T08:20:37.9566668+08:00" endTime="2026-09-22T08:20:37.9566669+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b8c40b4c-7888-4a4b-bd58-ef62a229d1f7" />
+    <UnitTestResult executionId="f37448c5-2a57-4ff4-9179-78acf3ae7ea6" testId="e705fc5c-3b8a-c86c-199c-921ea8a81023" testName="会签 and + quorum=0.6：3 人需 2 票通过（§8.1）" computerName="XUSP-T14" duration="00:00:00.0792218" startTime="2026-09-22T08:20:37.8467399+08:00" endTime="2026-09-22T08:20:37.8467400+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f37448c5-2a57-4ff4-9179-78acf3ae7ea6" />
+    <UnitTestResult executionId="8e77eb2a-bdb0-4255-b758-3cf8df0d5b2e" testId="ce6b365f-6127-39f9-b882-fb000e8a3a80" testName="或签 or 一人驳回 → 整单 Rejected，任务 Cancelled（§8.1）" computerName="XUSP-T14" duration="00:00:00.0616190" startTime="2026-09-22T08:20:37.2054655+08:00" endTime="2026-09-22T08:20:37.2054656+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8e77eb2a-bdb0-4255-b758-3cf8df0d5b2e" />
+    <UnitTestResult executionId="d6267c26-e339-42d7-a4b4-939625424e2c" testId="7afb1da0-64ec-6e4f-d80f-b552fce0fd8a" testName="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+BatchModel), json: &quot;{\&quot;ids\&quot;:[1,2]}&quot;)" computerName="XUSP-T14" duration="00:00:00.0006534" startTime="2026-09-22T08:20:37.9580457+08:00" endTime="2026-09-22T08:20:37.9580458+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d6267c26-e339-42d7-a4b4-939625424e2c" />
+    <UnitTestResult executionId="675a1bf8-9e5a-4d07-a68f-3b334239147b" testId="8bff566e-ba63-7b05-163b-977c3ae00992" testName="依次签 sequence 首人驳回 → 整单 Rejected（§8.1）" computerName="XUSP-T14" duration="00:00:00.0669257" startTime="2026-09-22T08:20:37.2725508+08:00" endTime="2026-09-22T08:20:37.2725510+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="675a1bf8-9e5a-4d07-a68f-3b334239147b" />
+    <UnitTestResult executionId="1bf8a12d-34e1-4aa9-ad59-5126b84ab5d9" testId="20ae05e2-12ba-5c88-c4b3-48c296fb89fc" testName="found 连续段：空跳过 + 有数据时每条执行整段" computerName="XUSP-T14" duration="00:00:00.1217740" startTime="2026-09-22T08:20:38.1153332+08:00" endTime="2026-09-22T08:20:38.1153333+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1bf8a12d-34e1-4aa9-ad59-5126b84ab5d9" />
+    <UnitTestResult executionId="db3bd1e0-9aeb-4d27-94ef-786175f65238" testId="f50fe702-47c4-eb2b-cff7-22296bed0782" testName="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+WorkflowDefModel), json: &quot;{\&quot;typePath\&quot;:\&quot;Admin/User\&quot;,\&quot;name\&quot;:\&quot;审批\&quot;,\&quot;gra&quot;···)" computerName="XUSP-T14" duration="00:00:00.0010349" startTime="2026-09-22T08:20:37.9608706+08:00" endTime="2026-09-22T08:20:37.9608706+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="db3bd1e0-9aeb-4d27-94ef-786175f65238" />
+    <UnitTestResult executionId="1e6ed1eb-249f-41b4-ad66-1d9d233051b2" testId="13229d29-1cf9-d390-15d1-4d9ba39039c4" testName="G-11 Transfer：原任务 Transferred，目标得新 Pending 任务" computerName="XUSP-T14" duration="00:00:00.0411690" startTime="2026-09-22T08:20:37.5892050+08:00" endTime="2026-09-22T08:20:37.5892051+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1e6ed1eb-249f-41b4-ad66-1d9d233051b2" />
+    <UnitTestResult executionId="4f8166ef-450f-4827-a06a-8db8baa695fd" testId="081cc989-4ff2-23a5-35e8-54bb37fe6c9b" testName="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+ToModel), json: &quot;{\&quot;to\&quot;:{\&quot;kind\&quot;:\&quot;users\&quot;,\&quot;ids\&quot;:[1]}}&quot;)" computerName="XUSP-T14" duration="00:00:00.0451216" startTime="2026-09-22T08:20:37.9437033+08:00" endTime="2026-09-22T08:20:37.9437035+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4f8166ef-450f-4827-a06a-8db8baa695fd" />
+    <UnitTestResult executionId="d17c1c1e-2aa2-4009-be71-2f26ca308de7" testId="e5b7227d-8523-8c2d-e359-7bf8b55f5dca" testName="回退：n1 已办后到 n2；n2 回退 n1 → 下游取消并重开 n1（§8.2）" computerName="XUSP-T14" duration="00:00:00.1090001" startTime="2026-09-22T08:20:37.7673461+08:00" endTime="2026-09-22T08:20:37.7673462+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d17c1c1e-2aa2-4009-be71-2f26ca308de7" />
+    <UnitTestResult executionId="d419ccd7-b908-4b9b-8ea2-c9bd1a9e29f1" testId="477a6272-e79e-f693-8750-a06852e59372" testName="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+CommentModel), json: &quot;{}&quot;)" computerName="XUSP-T14" duration="00:00:00.0002665" startTime="2026-09-22T08:20:37.9583541+08:00" endTime="2026-09-22T08:20:37.9583542+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d419ccd7-b908-4b9b-8ea2-c9bd1a9e29f1" />
+    <UnitTestResult executionId="c6134754-1ce8-4565-94d9-63b037791b52" testId="bf7de5ae-24f9-5ce0-de28-6055044c671b" testName="多前加签：全部加签完成才恢复原任务，避免残留加签人复活已办任务（§4.3）" computerName="XUSP-T14" duration="00:00:00.0983528" startTime="2026-09-22T08:20:36.8571850+08:00" endTime="2026-09-22T08:20:36.8571852+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c6134754-1ce8-4565-94d9-63b037791b52" />
+    <UnitTestResult executionId="314d5b11-b8e4-48c7-b96d-ddb91242d020" testId="bb99a1ff-2f34-66bc-10e0-828e1b6ef147" testName="Compile 拒绝环与预留 type" computerName="XUSP-T14" duration="00:00:00.0003595" startTime="2026-09-22T08:20:37.9933741+08:00" endTime="2026-09-22T08:20:37.9933745+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="314d5b11-b8e4-48c7-b96d-ddb91242d020" />
+    <UnitTestResult executionId="42672d2a-0e33-492a-9c39-8d92d4ae6b86" testId="e51f30ac-f4dc-2d2a-5152-9f9bbf73e644" testName="流程日志 Remark JSON 往返（写入系统 Log 不改表结构）" computerName="XUSP-T14" duration="00:00:00.0114289" startTime="2026-09-22T08:20:37.9928498+08:00" endTime="2026-09-22T08:20:37.9928501+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="42672d2a-0e33-492a-9c39-8d92d4ae6b86" />
+    <UnitTestResult executionId="e3eec3f5-63cd-4174-97f4-7f049a915638" testId="474363f6-a86a-eb64-6f45-c4ff77ccab24" testName="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+WorkflowDefModel), json: &quot;{\&quot;typePath\&quot;:\&quot;Admin/User\&quot;,\&quot;name\&quot;:\&quot;审批\&quot;}&quot;)" computerName="XUSP-T14" duration="00:00:00.0010024" startTime="2026-09-22T08:20:37.9530300+08:00" endTime="2026-09-22T08:20:37.9530304+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e3eec3f5-63cd-4174-97f4-7f049a915638" />
+    <UnitTestResult executionId="817a0bda-399c-40d1-9548-343f8abdf24f" testId="9d731627-84d3-e42c-c153-7d8a1ba7700b" testName="空候选人：不自动通过；实例保持 Running 并记 error 意见（§4.1/§12）" computerName="XUSP-T14" duration="00:00:00.0512426" startTime="2026-09-22T08:20:37.8981595+08:00" endTime="2026-09-22T08:20:37.8981596+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="817a0bda-399c-40d1-9548-343f8abdf24f" />
+    <UnitTestResult executionId="d0bdaa32-7e29-4e93-983b-553ba9f6f36d" testId="85177db2-f3a8-aae1-a4e3-4175acf7ce79" testName="提交生成 1 实例 + N 主体 + 首节点任务；或签一人同意即 Approved" computerName="XUSP-T14" duration="00:00:00.0597603" startTime="2026-09-22T08:20:36.4920816+08:00" endTime="2026-09-22T08:20:36.4920817+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d0bdaa32-7e29-4e93-983b-553ba9f6f36d" />
+    <UnitTestResult executionId="1451727b-06bd-45f3-bee5-6f39c3023b15" testId="662b4736-84d1-dc6d-708f-f8a3b4041085" testName="非候选人操作 403；同一记录在途二次提交 409" computerName="XUSP-T14" duration="00:00:00.0391002" startTime="2026-09-22T08:20:36.5314541+08:00" endTime="2026-09-22T08:20:36.5314542+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1451727b-06bd-45f3-bee5-6f39c3023b15" />
+    <UnitTestResult executionId="9cb32b2f-4054-4b4e-8651-8bf13c960744" testId="a222a586-0524-cb44-fed1-23062878d8ba" testName="循环实体仍跳过；CronJob 用户改名称入队、心跳字段不入队" computerName="XUSP-T14" duration="00:00:00.0192392" startTime="2026-09-22T08:20:38.2185927+08:00" endTime="2026-09-22T08:20:38.2185930+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9cb32b2f-4054-4b4e-8651-8bf13c960744" />
+    <UnitTestResult executionId="22f3dcb3-5f66-459a-ae37-c96470371d2d" testId="7d541e1d-e1a4-2ec7-86ef-fd8f58da5984" testName="runAutomation 指向自身保存拒绝；SSRF 拒绝 localhost" computerName="XUSP-T14" duration="00:00:00.0151969" startTime="2026-09-22T08:20:37.9811315+08:00" endTime="2026-09-22T08:20:37.9811318+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="22f3dcb3-5f66-459a-ae37-c96470371d2d" />
+    <UnitTestResult executionId="47e91a5d-b90e-4c44-bb80-48f01297a5e0" testId="d0789d52-c27b-6d0f-9165-d8be90ee91e9" testName="fieldChange 仅在 watch 字段出现于 Dirtys 时触发" computerName="XUSP-T14" duration="00:00:00.0133783" startTime="2026-09-22T08:20:38.2321484+08:00" endTime="2026-09-22T08:20:38.2321485+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="47e91a5d-b90e-4c44-bb80-48f01297a5e0" />
+    <UnitTestResult executionId="e3ce5897-1a5d-48c6-9c73-1768a6090bc1" testId="1356ca0b-c5bf-ca37-253a-560d8235103f" testName="GetPage 类型块：无定义 enabled=false；匿名仅 enabled；登录含 canStart" computerName="XUSP-T14" duration="00:00:00.0294877" startTime="2026-09-22T08:20:36.6358646+08:00" endTime="2026-09-22T08:20:36.6358647+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e3ce5897-1a5d-48c6-9c73-1768a6090bc1" />
+    <UnitTestResult executionId="5fd0101c-5f08-4cc9-ba7b-cd39a0e98c0c" testId="f499738e-e9cf-0bac-9473-f002da97a1c9" testName="前加签：原任务挂起、加签先行；加签通过后恢复原任务（§4.3）" computerName="XUSP-T14" duration="00:00:00.0693571" startTime="2026-09-22T08:20:37.3420628+08:00" endTime="2026-09-22T08:20:37.3420629+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5fd0101c-5f08-4cc9-ba7b-cd39a0e98c0c" />
+    <UnitTestResult executionId="183daff2-53d2-4061-a5c0-1aa0dd33f27f" testId="bb11ffc9-77fa-aa3e-2200-52059a0c01b2" testName="发起人撤回（无人同意）→ Withdrawn；先批后不可撤" computerName="XUSP-T14" duration="00:00:00.0928862" startTime="2026-09-22T08:20:36.3630646+08:00" endTime="2026-09-22T08:20:36.3630647+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="183daff2-53d2-4061-a5c0-1aa0dd33f27f" />
+    <UnitTestResult executionId="214b5a62-1aa1-407f-9f43-a751be77ecd4" testId="4a380eba-81fe-26eb-b114-15ae3a66c1be" testName="同一记录二次提交 → 409，全程仅一条在途" computerName="XUSP-T14" duration="00:00:00.0462563" startTime="2026-09-22T08:20:35.8819720+08:00" endTime="2026-09-22T08:20:35.8819721+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="214b5a62-1aa1-407f-9f43-a751be77ecd4" />
+    <UnitTestResult executionId="b1dfaac5-bbcc-4533-9dd3-2e81992144e8" testId="acc7212c-6220-31e8-90cf-fa78030a2977" testName="脏 approval 节点执行 failed" computerName="XUSP-T14" duration="00:00:00.0099691" startTime="2026-09-22T08:20:38.1568932+08:00" endTime="2026-09-22T08:20:38.1568933+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b1dfaac5-bbcc-4533-9dd3-2e81992144e8" />
+    <UnitTestResult executionId="5035329a-0393-4667-a9fb-0e686f636282" testId="bedd7e60-a70a-2a1c-dffa-15e31ac1cfdf" testName="会签 and：需全部同意才通过；中途驳回整单 Rejected" computerName="XUSP-T14" duration="00:00:00.0793669" startTime="2026-09-22T08:20:36.1811790+08:00" endTime="2026-09-22T08:20:36.1811792+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5035329a-0393-4667-a9fb-0e686f636282" />
+    <UnitTestResult executionId="4ae24d6d-b912-41bc-af52-a1fa0f6a2052" testId="ed27e435-c1e6-f631-e001-ab8048905519" testName="租户不匹配不入队" computerName="XUSP-T14" duration="00:00:00.0103654" startTime="2026-09-22T08:20:38.1392584+08:00" endTime="2026-09-22T08:20:38.1392585+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4ae24d6d-b912-41bc-af52-a1fa0f6a2052" />
+    <UnitTestResult executionId="4d5e7759-6989-4caf-94cc-f727018eb1be" testId="430aeeb1-e80f-3990-b700-b2c60305b122" testName="Depth&gt;=3 丢弃并写 failed" computerName="XUSP-T14" duration="00:00:00.0108367" startTime="2026-09-22T08:20:38.1264050+08:00" endTime="2026-09-22T08:20:38.1264052+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4d5e7759-6989-4caf-94cc-f727018eb1be" />
+    <UnitTestResult executionId="767177c4-02e7-4f50-a536-8274aee306c8" testId="e106d039-5a37-5d5c-2a74-dba3d47285a3" testName="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+CommentModel), json: &quot;{\&quot;comment\&quot;:\&quot;\&quot;}&quot;)" computerName="XUSP-T14" duration="00:00:00.0003512" startTime="2026-09-22T08:20:37.9561040+08:00" endTime="2026-09-22T08:20:37.9561040+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="767177c4-02e7-4f50-a536-8274aee306c8" />
+    <UnitTestResult executionId="1c017cdf-eebf-4351-9d6a-4d3be0ce6426" testId="d15ba713-50b9-e1be-a36f-bfbe55da3430" testName="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+StartModel), json: &quot;{\&quot;typePath\&quot;:\&quot;Admin/User\&quot;,\&quot;keys\&quot;:[\&quot;1\&quot;,\&quot;2\&quot;&quot;···)" computerName="XUSP-T14" duration="00:00:00.0006071" startTime="2026-09-22T08:20:37.9594500+08:00" endTime="2026-09-22T08:20:37.9594500+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1c017cdf-eebf-4351-9d6a-4d3be0ce6426" />
+    <UnitTestResult executionId="b7965f4a-47c1-44de-ad4b-77145262d2f8" testId="8b5c8499-cd85-23b2-6e03-05b287861faf" testName="并发双提（同记录）：成功至多一条；其余 409/事务回滚不落第二条在途" computerName="XUSP-T14" duration="00:00:00.3878695" startTime="2026-09-22T08:20:35.8324840+08:00" endTime="2026-09-22T08:20:35.8324972+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b7965f4a-47c1-44de-ad4b-77145262d2f8" />
+    <UnitTestResult executionId="85c3dba1-a2f7-49c0-b5c9-1db680fff109" testId="de7aa0d9-1115-ebe7-015e-e1da96da11b2" testName="Filter 与 searchFilters 同构：all/any/eq/contains/isNull/gt/after" computerName="XUSP-T14" duration="00:00:00.0018151" startTime="2026-09-22T08:20:38.1283806+08:00" endTime="2026-09-22T08:20:38.1283807+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="85c3dba1-a2f7-49c0-b5c9-1db680fff109" />
+    <UnitTestResult executionId="b0c4806a-2d27-4569-9d57-65664c573623" testId="bf9cc568-c615-db91-c5ea-1b7c17cddb6c" testName="回退权限：节点 allowRollback=false → 403（§7 权限矩阵）" computerName="XUSP-T14" duration="00:00:00.0683458" startTime="2026-09-22T08:20:37.5250861+08:00" endTime="2026-09-22T08:20:37.5250862+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b0c4806a-2d27-4569-9d57-65664c573623" />
+    <UnitTestResult executionId="9dc26e37-81ee-44a3-a34d-afb89ba14bd4" testId="a3d7cc77-b3fe-60b9-2e97-965272f6cfe1" testName="EnsureMenus：旧版 Cube/Workflow 提升为一级，叶子保留" computerName="XUSP-T14" duration="00:00:00.0705229" startTime="2026-09-22T08:20:36.0873070+08:00" endTime="2026-09-22T08:20:36.0873071+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9dc26e37-81ee-44a3-a34d-afb89ba14bd4" />
+    <UnitTestResult executionId="38923a04-5b96-40cd-9ca9-30bf0a33bc11" testId="4000b542-2069-0788-d2be-cf3787bdf8d3" testName="工作流请求模型：不允许存在被隐式推断为必填的成员" computerName="XUSP-T14" duration="00:00:00.0034545" startTime="2026-09-22T08:20:37.9644227+08:00" endTime="2026-09-22T08:20:37.9644229+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="38923a04-5b96-40cd-9ca9-30bf0a33bc11" />
+    <UnitTestResult executionId="f7ebc58f-d4e4-465f-beee-a45c7bcbac9c" testId="16450236-aa2b-3872-97b4-462f83679f2d" testName="XOR 缺 defaultTarget：发布校验失败（§5/§11）" computerName="XUSP-T14" duration="00:00:00.0222309" startTime="2026-09-22T08:20:37.5474793+08:00" endTime="2026-09-22T08:20:37.5474794+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f7ebc58f-d4e4-465f-beee-a45c7bcbac9c" />
+    <UnitTestResult executionId="2aa6b3b9-4988-4dfe-82e3-fdbb41e954de" testId="db6dd8f1-d2a4-c19a-0652-8c963b473e6f" testName="G-11 超时 reject：到期 Visible 任务整单 Rejected" computerName="XUSP-T14" duration="00:00:00.0627745" startTime="2026-09-22T08:20:37.4049929+08:00" endTime="2026-09-22T08:20:37.4049930+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2aa6b3b9-4988-4dfe-82e3-fdbb41e954de" />
+    <UnitTestResult executionId="b0da6ce0-3bb2-435f-a3bd-7638f22198a4" testId="6470670d-1afb-4a17-38de-1cb3918bf615" testName="模板 {{Name}} 与 {{显示名}} 均可替换" computerName="XUSP-T14" duration="00:00:00.0071973" startTime="2026-09-22T08:20:38.1642787+08:00" endTime="2026-09-22T08:20:38.1642789+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b0da6ce0-3bb2-435f-a3bd-7638f22198a4" />
+    <UnitTestResult executionId="2ff17e0f-e757-499e-a2cc-183d2bde692d" testId="2107f3f0-8fdd-602f-39d8-7d18bfc59d0d" testName="依次签 sequence：先仅第一人可见，逐个同意后通过" computerName="XUSP-T14" duration="00:00:00.0886793" startTime="2026-09-22T08:20:36.2700391+08:00" endTime="2026-09-22T08:20:36.2700392+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2ff17e0f-e757-499e-a2cc-183d2bde692d" />
+    <UnitTestResult executionId="9fa98c5c-cf0e-475d-817e-77d5d7dd41da" testId="fda8b226-22db-636d-4bc6-c11c67390840" testName="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+JumpModel), json: &quot;{\&quot;targetNodeId\&quot;:\&quot;n1\&quot;}&quot;)" computerName="XUSP-T14" duration="00:00:00.0006316" startTime="2026-09-22T08:20:37.9573453+08:00" endTime="2026-09-22T08:20:37.9573453+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9fa98c5c-cf0e-475d-817e-77d5d7dd41da" />
+    <UnitTestResult executionId="fd7cabff-4897-4bf4-8ce7-1345a24c4cd6" testId="3856c9f5-d8b6-b917-7f05-4804af7abeb0" testName="TypePath 前导斜杠与触发路径归一后仍能入队" computerName="XUSP-T14" duration="00:00:00.0129921" startTime="2026-09-22T08:20:38.1991967+08:00" endTime="2026-09-22T08:20:38.1991967+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fd7cabff-4897-4bf4-8ce7-1345a24c4cd6" />
+    <UnitTestResult executionId="1c6f8260-c6a7-4174-9ea5-cea3dddf44f4" testId="1db84901-0860-51d9-e333-6a00f505fe51" testName="超时仅作用于可见任务：依次签逐轮放行后各自到期 pass（§4.3/§8.3）" computerName="XUSP-T14" duration="00:00:00.1193770" startTime="2026-09-22T08:20:37.1436510+08:00" endTime="2026-09-22T08:20:37.1436512+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1c6f8260-c6a7-4174-9ea5-cea3dddf44f4" />
+    <UnitTestResult executionId="f2b50ab4-bc9e-4ef5-b102-67b86d4bafc1" testId="72e8a00b-91f0-00c2-76d2-f24aa9d5dbe6" testName="Webhook HMAC 与限流 61 次" computerName="XUSP-T14" duration="00:00:00.0073637" startTime="2026-09-22T08:20:38.1467662+08:00" endTime="2026-09-22T08:20:38.1467664+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f2b50ab4-bc9e-4ef5-b102-67b86d4bafc1" />
+    <UnitTestResult executionId="6db178fd-c138-42b3-bd7b-76719d3a0642" testId="077d9f91-0a73-9b2c-4c04-1c7833d37eaa" testName="行覆盖：running 行注入 __wfStatus/__wfInstanceId/canStart=false；无主体行 none" computerName="XUSP-T14" duration="00:00:00.0744744" startTime="2026-09-22T08:20:36.6062256+08:00" endTime="2026-09-22T08:20:36.6062257+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6db178fd-c138-42b3-bd7b-76719d3a0642" />
+    <UnitTestResult executionId="5bf3ae0a-c062-41a1-8d51-687fe7ab024e" testId="0786e092-a730-0850-a786-fef2fdeeb577" testName="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+StartModel), json: &quot;{\&quot;typePath\&quot;:\&quot;Admin/User\&quot;,\&quot;keys\&quot;:[\&quot;1\&quot;],\&quot;de&quot;···)" computerName="XUSP-T14" duration="00:00:00.0052586" startTime="2026-09-22T08:20:37.9490762+08:00" endTime="2026-09-22T08:20:37.9490763+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5bf3ae0a-c062-41a1-8d51-687fe7ab024e" />
+    <UnitTestResult executionId="0540bccd-77ec-473a-b74f-378f2b95e8cb" testId="5f17a0dc-580e-8ffc-ce9b-073455e70c1d" testName="EnsureMenus：播种一级流程审批及五叶子，父节点无 URL，Definition 指向实体控制器" computerName="XUSP-T14" duration="00:00:00.0063948" startTime="2026-09-22T08:20:36.1014954+08:00" endTime="2026-09-22T08:20:36.1014956+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0540bccd-77ec-473a-b74f-378f2b95e8cb">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ&#xD;
+Expected: 5&#xD;
+Actual:   1</Message>
+          <StackTrace>   at NewLife.Cube.Tests.WorkflowMenuTests.SeedsBody() in F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\WorkflowMenuTests.cs:line 92&#xD;
+   at NewLife.Cube.Tests.WorkflowMenuTests.&lt;EnsureMenus_Seeds_TopLevel&gt;b__4_0() in F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\WorkflowMenuTests.cs:line 65&#xD;
+   at NewLife.Cube.Tests.WorkflowMenuTests.Run(Action body) in F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\WorkflowMenuTests.cs:line 41&#xD;
+   at NewLife.Cube.Tests.WorkflowMenuTests.EnsureMenus_Seeds_TopLevel() in F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\WorkflowMenuTests.cs:line 65&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="5f990d30-88be-4881-a475-dfca60ecca6c" testId="f2d3cdea-8af4-034f-cafb-4e984d312a98" testName="后加签：原任务同意后激活加签人，加签完成再进下游（§4.3）" computerName="XUSP-T14" duration="00:00:00.1173587" startTime="2026-09-22T08:20:37.0241175+08:00" endTime="2026-09-22T08:20:37.0241176+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5f990d30-88be-4881-a475-dfca60ecca6c" />
+    <UnitTestResult executionId="ac04dbad-7a9f-4dd9-9b79-b06f2e749e87" testId="602e969d-e3dc-b511-78e5-4d305886510a" testName="full 锁：审批中普通 Update 抛 403；流程通道改 Name 放行；结束后解锁" computerName="XUSP-T14" duration="00:00:00.1315475" startTime="2026-09-22T08:20:36.0165032+08:00" endTime="2026-09-22T08:20:36.0165033+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ac04dbad-7a9f-4dd9-9b79-b06f2e749e87" />
+    <UnitTestResult executionId="2e237fbb-ccd9-4965-b87f-c4771ae9e95f" testId="ca8ef43b-9a25-8b2b-5c36-db1dd9a4ebd4" testName="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+AddSignModel), json: &quot;{\&quot;to\&quot;:{\&quot;kind\&quot;:\&quot;users\&quot;,\&quot;ids\&quot;:[1]},\&quot;before\&quot;···)" computerName="XUSP-T14" duration="00:00:00.0016035" startTime="2026-09-22T08:20:37.9507601+08:00" endTime="2026-09-22T08:20:37.9507603+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2e237fbb-ccd9-4965-b87f-c4771ae9e95f" />
+    <UnitTestResult executionId="b70da1a9-4b91-434b-802d-567c88274a80" testId="3587c52e-6d85-c9f4-ad96-5e8076bf905f" testName="常用语：空回落内置三条；保存后读回" computerName="XUSP-T14" duration="00:00:00.0523225" startTime="2026-09-22T08:20:36.4155236+08:00" endTime="2026-09-22T08:20:36.4155238+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b70da1a9-4b91-434b-802d-567c88274a80" />
+    <UnitTestResult executionId="7636aa44-bd6f-4258-8f2c-fe010ab69c70" testId="197ab44f-7c1f-0b13-ad92-c06c66d61a27" testName="G-04 或签未认领：CandidateJson 双方均进待办/角标；认领后仅认领人" computerName="XUSP-T14" duration="00:00:00.0687953" startTime="2026-09-22T08:20:37.6581652+08:00" endTime="2026-09-22T08:20:37.6581653+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7636aa44-bd6f-4258-8f2c-fe010ab69c70" />
+    <UnitTestResult executionId="ad11106e-d2d4-41af-8861-485028340956" testId="9bdb50e1-6733-a024-6ce3-85a7caafbcd3" testName="工作流控制器：可选查询参数与 FromBody 参数必须可空（允许空 body）" computerName="XUSP-T14" duration="00:00:00.0011409" startTime="2026-09-22T08:20:37.9656918+08:00" endTime="2026-09-22T08:20:37.9656920+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ad11106e-d2d4-41af-8861-485028340956" />
+    <UnitTestResult executionId="a854c312-027a-428b-af76-2abfbde8a906" testId="42b6d48b-969e-bce1-62e3-13c8b7d5e3df" testName="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+CommentModel), json: &quot;{\&quot;comment\&quot;:\&quot;同意\&quot;,\&quot;attachmentIds\&quot;:[1,2]}&quot;)" computerName="XUSP-T14" duration="00:00:00.0025829" startTime="2026-09-22T08:20:37.9556825+08:00" endTime="2026-09-22T08:20:37.9556825+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a854c312-027a-428b-af76-2abfbde8a906" />
+    <UnitTestResult executionId="ab583620-8a77-4519-8d71-5adc4c919d39" testId="a5728c98-a086-d9a0-caa2-39ae8db5db87" testName="Debounce 3 秒内同规则同记录不重复入队" computerName="XUSP-T14" duration="00:00:00.0215743" startTime="2026-09-22T08:20:38.1859938+08:00" endTime="2026-09-22T08:20:38.1859940+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ab583620-8a77-4519-8d71-5adc4c919d39" />
+    <UnitTestResult executionId="08668c16-03d3-4ef9-ba26-f0a31f19450d" testId="067fc517-21ad-4e77-253d-7892e5efe8a3" testName="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+RollbackModel), json: &quot;{\&quot;targetNodeId\&quot;:\&quot;n1\&quot;,\&quot;comment\&quot;:\&quot;退回到上一节点\&quot;}&quot;)" computerName="XUSP-T14" duration="00:00:00.0007607" startTime="2026-09-22T08:20:37.9515892+08:00" endTime="2026-09-22T08:20:37.9515893+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="08668c16-03d3-4ef9-ba26-f0a31f19450d" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="循环实体仍跳过；CronJob 用户改名称入队、心跳字段不入队" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="a222a586-0524-cb44-fed1-23062878d8ba">
+      <Execution id="9cb32b2f-4054-4b4e-8651-8bf13c960744" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Osc260815AutomationTests" name="Trigger_CronJob_UserEdit_Enqueues_RuntimeSkip" />
+    </UnitTest>
+    <UnitTest name="G-11 Claim：候选人认领后 AssigneeId/Active；非候选人 403" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="82a7bf04-80db-c0ec-0806-a54e0e719d8e">
+      <Execution id="18cdfa87-6193-4cf8-b40a-6ec764bb8368" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMatrixTests" name="Claim_CandidateOk_NonCandidate403" />
+    </UnitTest>
+    <UnitTest name="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+CommentModel), json: &quot;{\&quot;comment\&quot;:\&quot;\&quot;}&quot;)" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="e106d039-5a37-5d5c-2a74-dba3d47285a3">
+      <Execution id="767177c4-02e7-4f50-a536-8274aee306c8" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Workflow.WorkflowRequestModelValidationTests" name="Request_Body_Passes_ModelValidation" />
+    </UnitTest>
+    <UnitTest name="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+BatchModel), json: &quot;{\&quot;ids\&quot;:[1,2]}&quot;)" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="7afb1da0-64ec-6e4f-d80f-b552fce0fd8a">
+      <Execution id="d6267c26-e339-42d7-a4b4-939625424e2c" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Workflow.WorkflowRequestModelValidationTests" name="Request_Body_Passes_ModelValidation" />
+    </UnitTest>
+    <UnitTest name="G-11 超时 reject：到期 Visible 任务整单 Rejected" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="db6dd8f1-d2a4-c19a-0652-8c963b473e6f">
+      <Execution id="2aa6b3b9-4988-4dfe-82e3-fdbb41e954de" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMatrixTests" name="TimeoutReject_FinishesRejected" />
+    </UnitTest>
+    <UnitTest name="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+ToModel), json: &quot;{\&quot;to\&quot;:{\&quot;kind\&quot;:\&quot;users\&quot;,\&quot;ids\&quot;:[1]}}&quot;)" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="081cc989-4ff2-23a5-35e8-54bb37fe6c9b">
+      <Execution id="4f8166ef-450f-4827-a06a-8db8baa695fd" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Workflow.WorkflowRequestModelValidationTests" name="Request_Body_Passes_ModelValidation" />
+    </UnitTest>
+    <UnitTest name="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+StartModel), json: &quot;{\&quot;typePath\&quot;:\&quot;Admin/User\&quot;,\&quot;keys\&quot;:[\&quot;1\&quot;],\&quot;de&quot;···)" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="0786e092-a730-0850-a786-fef2fdeeb577">
+      <Execution id="5bf3ae0a-c062-41a1-8d51-687fe7ab024e" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Workflow.WorkflowRequestModelValidationTests" name="Request_Body_Passes_ModelValidation" />
+    </UnitTest>
+    <UnitTest name="G-04 或签未认领：CandidateJson 双方均进待办/角标；认领后仅认领人" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="197ab44f-7c1f-0b13-ad92-c06c66d61a27">
+      <Execution id="7636aa44-bd6f-4258-8f2c-fe010ab69c70" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMatrixTests" name="OrUnclaimed_TodoVisibleForCandidates" />
+    </UnitTest>
+    <UnitTest name="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+WorkflowDefModel), json: &quot;{\&quot;typePath\&quot;:\&quot;Admin/User\&quot;,\&quot;name\&quot;:\&quot;审批\&quot;}&quot;)" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="474363f6-a86a-eb64-6f45-c4ff77ccab24">
+      <Execution id="e3eec3f5-63cd-4174-97f4-7f049a915638" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Workflow.WorkflowRequestModelValidationTests" name="Request_Body_Passes_ModelValidation" />
+    </UnitTest>
+    <UnitTest name="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+RollbackModel), json: &quot;{\&quot;targetNodeId\&quot;:\&quot;n1\&quot;,\&quot;comment\&quot;:\&quot;退回到上一节点\&quot;}&quot;)" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="067fc517-21ad-4e77-253d-7892e5efe8a3">
+      <Execution id="08668c16-03d3-4ef9-ba26-f0a31f19450d" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Workflow.WorkflowRequestModelValidationTests" name="Request_Body_Passes_ModelValidation" />
+    </UnitTest>
+    <UnitTest name="无定义时行覆盖不注入任何 __wf 键" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="b8ebc414-fb3d-dc8a-6afa-10549f2000eb">
+      <Execution id="e676b6cf-13b7-4e50-bcf1-87c5d5f7bbb6" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowPageOverlayTests" name="ApplyRows_Disabled_NoKeys" />
+    </UnitTest>
+    <UnitTest name="D8 allowTransfer=false：转办 403" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="6140083e-ce73-bf2e-9abe-dc0d145d560d">
+      <Execution id="09b18be4-d1a1-4088-b6d9-c66d43b66278" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMatrixTests" name="Transfer_AllowTransferFalse_403" />
+    </UnitTest>
+    <UnitTest name="G-11 Cc：只写意见+通知，不增任务" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="134132cb-b87d-fa96-5cd3-5cf130f1622a">
+      <Execution id="41038b30-9ae7-459a-829f-e780e2d0e122" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMatrixTests" name="Cc_NotifyOnly_NoExtraTask" />
+    </UnitTest>
+    <UnitTest name="工作流控制器：可选查询参数与 FromBody 参数必须可空（允许空 body）" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="9bdb50e1-6733-a024-6ce3-85a7caafbcd3">
+      <Execution id="ad11106e-d2d4-41af-8861-485028340956" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Workflow.WorkflowRequestModelValidationTests" name="Optional_Parameters_Are_Nullable" />
+    </UnitTest>
+    <UnitTest name="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+StartModel), json: &quot;{\&quot;typePath\&quot;:\&quot;Admin/User\&quot;,\&quot;keys\&quot;:[\&quot;1\&quot;,\&quot;2\&quot;&quot;···)" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="d15ba713-50b9-e1be-a36f-bfbe55da3430">
+      <Execution id="1c017cdf-eebf-4351-9d6a-4d3be0ce6426" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Workflow.WorkflowRequestModelValidationTests" name="Request_Body_Passes_ModelValidation" />
+    </UnitTest>
+    <UnitTest name="会签 and：需全部同意才通过；中途驳回整单 Rejected" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="bedd7e60-a70a-2a1c-dffa-15e31ac1cfdf">
+      <Execution id="5035329a-0393-4667-a9fb-0e686f636282" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowEngineTests" name="And_All_Required" />
+    </UnitTest>
+    <UnitTest name="Compile 拒绝环与预留 type" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="bb99a1ff-2f34-66bc-10e0-828e1b6ef147">
+      <Execution id="314d5b11-b8e4-48c7-b96d-ddb91242d020" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Osc260815AutomationTests" name="Graph_RejectsCycleAndReserved" />
+    </UnitTest>
+    <UnitTest name="租户不匹配不入队" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="ed27e435-c1e6-f631-e001-ab8048905519">
+      <Execution id="4ae24d6d-b912-41bc-af52-a1fa0f6a2052" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Osc260815AutomationTests" name="Trigger_TenantMismatch" />
+    </UnitTest>
+    <UnitTest name="并发双提（同记录）：成功至多一条；其余 409/事务回滚不落第二条在途" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="8b5c8499-cd85-23b2-6e03-05b287861faf">
+      <Execution id="b7965f4a-47c1-44de-ad4b-77145262d2f8" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowExclusiveTests" name="Concurrent_DoubleStart_OnlyOneRunning" />
+    </UnitTest>
+    <UnitTest name="行覆盖：running 行注入 __wfStatus/__wfInstanceId/canStart=false；无主体行 none" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="077d9f91-0a73-9b2c-4c04-1c7833d37eaa">
+      <Execution id="6db178fd-c138-42b3-bd7b-76719d3a0642" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowPageOverlayTests" name="ApplyRows_RunningAndNone" />
+    </UnitTest>
+    <UnitTest name="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+PhraseModel), json: &quot;{}&quot;)" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="98a910bd-9777-ad31-c49c-ae127aba9a2f">
+      <Execution id="b8c40b4c-7888-4a4b-bd58-ef62a229d1f7" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Workflow.WorkflowRequestModelValidationTests" name="Request_Body_Passes_ModelValidation" />
+    </UnitTest>
+    <UnitTest name="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+WorkflowDefModel), json: &quot;{\&quot;typePath\&quot;:\&quot;Admin/User\&quot;,\&quot;name\&quot;:\&quot;审批\&quot;,\&quot;gra&quot;···)" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="f50fe702-47c4-eb2b-cff7-22296bed0782">
+      <Execution id="db3bd1e0-9aeb-4d27-94ef-786175f65238" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Workflow.WorkflowRequestModelValidationTests" name="Request_Body_Passes_ModelValidation" />
+    </UnitTest>
+    <UnitTest name="会签 and + quorum=0.6：3 人需 2 票通过（§8.1）" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="e705fc5c-3b8a-c86c-199c-921ea8a81023">
+      <Execution id="f37448c5-2a57-4ff4-9179-78acf3ae7ea6" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMatrixTests" name="AndQuorum_Partial" />
+    </UnitTest>
+    <UnitTest name="工作流请求模型：不允许存在被隐式推断为必填的成员" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="4000b542-2069-0788-d2be-cf3787bdf8d3">
+      <Execution id="38923a04-5b96-40cd-9ca9-30bf0a33bc11" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Workflow.WorkflowRequestModelValidationTests" name="Workflow_Models_Have_No_Implicitly_Required_Members" />
+    </UnitTest>
+    <UnitTest name="模板 {{Name}} 与 {{显示名}} 均可替换" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="6470670d-1afb-4a17-38de-1cb3918bf615">
+      <Execution id="b0da6ce0-3bb2-435f-a3bd-7638f22198a4" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Osc260815AutomationTests" name="Executor_ApplyTemplate_DisplayName" />
+    </UnitTest>
+    <UnitTest name="G-11 Transfer：原任务 Transferred，目标得新 Pending 任务" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="13229d29-1cf9-d390-15d1-4d9ba39039c4">
+      <Execution id="1e6ed1eb-249f-41b4-ad66-1d9d233051b2" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMatrixTests" name="Transfer_CreatesTargetTask" />
+    </UnitTest>
+    <UnitTest name="found 连续段：空跳过 + 有数据时每条执行整段" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="20ae05e2-12ba-5c88-c4b3-48c296fb89fc">
+      <Execution id="1bf8a12d-34e1-4aa9-ad59-5126b84ab5d9" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Osc260815AutomationTests" name="Executor_FoundSegment_RunsPerRecord" />
+    </UnitTest>
+    <UnitTest name="非候选人操作 403；同一记录在途二次提交 409" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="662b4736-84d1-dc6d-708f-f8a3b4041085">
+      <Execution id="1451727b-06bd-45f3-bee5-6f39c3023b15" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowEngineTests" name="NonCandidate_And_Exclusive" />
+    </UnitTest>
+    <UnitTest name="GetPage 类型块：无定义 enabled=false；匿名仅 enabled；登录含 canStart" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="1356ca0b-c5bf-ca37-253a-560d8235103f">
+      <Execution id="e3ce5897-1a5d-48c6-9c73-1768a6090bc1" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowPageOverlayTests" name="GetTypeBlock_Matrix" />
+    </UnitTest>
+    <UnitTest name="常用语：空回落内置三条；保存后读回" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="3587c52e-6d85-c9f4-ad96-5e8076bf905f">
+      <Execution id="b70da1a9-4b91-434b-802d-567c88274a80" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowEngineTests" name="Phrases_Roundtrip" />
+    </UnitTest>
+    <UnitTest name="G-08 多定义：行 canStart 对任一 StartFilter 命中；锁策略不一致不下发 lockPolicy" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="e3afe9c5-99fc-5a97-ffa7-e2b2cf4e70e1">
+      <Execution id="fd8dc3e0-9851-4498-a523-1fc14f12bdb7" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowPageOverlayTests" name="MultiDef_CanStartAnyFilter_MixedLockOmits" />
+    </UnitTest>
+    <UnitTest name="多前加签：全部加签完成才恢复原任务，避免残留加签人复活已办任务（§4.3）" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="bf7de5ae-24f9-5ce0-de28-6055044c671b">
+      <Execution id="c6134754-1ce8-4565-94d9-63b037791b52" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMatrixTests" name="MultiAddSign_Before_WaitAll" />
+    </UnitTest>
+    <UnitTest name="前加签：原任务挂起、加签先行；加签通过后恢复原任务（§4.3）" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="f499738e-e9cf-0bac-9473-f002da97a1c9">
+      <Execution id="5fd0101c-5f08-4cc9-ba7b-cd39a0e98c0c" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMatrixTests" name="AddSign_Before_Resume" />
+    </UnitTest>
+    <UnitTest name="或签 or 一人驳回 → 整单 Rejected，任务 Cancelled（§8.1）" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="ce6b365f-6127-39f9-b882-fb000e8a3a80">
+      <Execution id="8e77eb2a-bdb0-4255-b758-3cf8df0d5b2e" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMatrixTests" name="OrReject_AllCancelled" />
+    </UnitTest>
+    <UnitTest name="TypePath 前导斜杠与触发路径归一后仍能入队" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="3856c9f5-d8b6-b917-7f05-4804af7abeb0">
+      <Execution id="fd7cabff-4897-4bf4-8ce7-1345a24c4cd6" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Osc260815AutomationTests" name="Trigger_TypePath_SlashNormalized" />
+    </UnitTest>
+    <UnitTest name="流程日志 Remark JSON 往返（写入系统 Log 不改表结构）" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="e51f30ac-f4dc-2d2a-5152-9f9bbf73e644">
+      <Execution id="42672d2a-0e33-492a-9c39-8d92d4ae6b86" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Osc260815AutomationTests" name="FlowLog_Remark_Roundtrip" />
+    </UnitTest>
+    <UnitTest name="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+AddSignModel), json: &quot;{\&quot;to\&quot;:{\&quot;kind\&quot;:\&quot;users\&quot;,\&quot;ids\&quot;:[1]},\&quot;before\&quot;···)" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="ca8ef43b-9a25-8b2b-5c36-db1dd9a4ebd4">
+      <Execution id="2e237fbb-ccd9-4965-b87f-c4771ae9e95f" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Workflow.WorkflowRequestModelValidationTests" name="Request_Body_Passes_ModelValidation" />
+    </UnitTest>
+    <UnitTest name="Debounce 3 秒内同规则同记录不重复入队" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="a5728c98-a086-d9a0-caa2-39ae8db5db87">
+      <Execution id="ab583620-8a77-4519-8d71-5adc4c919d39" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Osc260815AutomationTests" name="Trigger_Debounce" />
+    </UnitTest>
+    <UnitTest name="同一记录二次提交 → 409，全程仅一条在途" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="4a380eba-81fe-26eb-b114-15ae3a66c1be">
+      <Execution id="214b5a62-1aa1-407f-9f43-a751be77ecd4" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowExclusiveTests" name="SameRecord_SecondStart_409" />
+    </UnitTest>
+    <UnitTest name="脏 approval 节点执行 failed" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="acc7212c-6220-31e8-90cf-fa78030a2977">
+      <Execution id="b1dfaac5-bbcc-4533-9dd3-2e81992144e8" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Osc260815AutomationTests" name="Executor_ApprovalFailClosed" />
+    </UnitTest>
+    <UnitTest name="EnsureMenus：旧版 Cube/Workflow 提升为一级，叶子保留" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="a3d7cc77-b3fe-60b9-2e97-965272f6cfe1">
+      <Execution id="9dc26e37-81ee-44a3-a34d-afb89ba14bd4" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMenuTests" name="EnsureMenus_Migrate_From_Cube" />
+    </UnitTest>
+    <UnitTest name="后加签：原任务同意后激活加签人，加签完成再进下游（§4.3）" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="f2d3cdea-8af4-034f-cafb-4e984d312a98">
+      <Execution id="5f990d30-88be-4881-a475-dfca60ecca6c" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMatrixTests" name="AddSign_After_ActivateAndContinue" />
+    </UnitTest>
+    <UnitTest name="依次签 sequence 首人驳回 → 整单 Rejected（§8.1）" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="8bff566e-ba63-7b05-163b-977c3ae00992">
+      <Execution id="675a1bf8-9e5a-4d07-a68f-3b334239147b" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMatrixTests" name="SequenceReject_AllCancelled" />
+    </UnitTest>
+    <UnitTest name="Depth&gt;=3 丢弃并写 failed" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="430aeeb1-e80f-3990-b700-b2c60305b122">
+      <Execution id="4d5e7759-6989-4caf-94cc-f727018eb1be" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Osc260815AutomationTests" name="Trigger_MaxDepth" />
+    </UnitTest>
+    <UnitTest name="Webhook HMAC 与限流 61 次" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="72e8a00b-91f0-00c2-76d2-f24aa9d5dbe6">
+      <Execution id="f2b50ab4-bc9e-4ef5-b102-67b86d4bafc1" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Osc260815AutomationTests" name="Hook_HmacAndRate" />
+    </UnitTest>
+    <UnitTest name="依次签 sequence：先仅第一人可见，逐个同意后通过" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="2107f3f0-8fdd-602f-39d8-7d18bfc59d0d">
+      <Execution id="2ff17e0f-e757-499e-a2cc-183d2bde692d" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowEngineTests" name="Sequence_OneByOne" />
+    </UnitTest>
+    <UnitTest name="EnsureMenus：播种一级流程审批及五叶子，父节点无 URL，Definition 指向实体控制器" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="5f17a0dc-580e-8ffc-ce9b-073455e70c1d">
+      <Execution id="0540bccd-77ec-473a-b74f-378f2b95e8cb" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMenuTests" name="EnsureMenus_Seeds_TopLevel" />
+    </UnitTest>
+    <UnitTest name="回退：n1 已办后到 n2；n2 回退 n1 → 下游取消并重开 n1（§8.2）" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="e5b7227d-8523-8c2d-e359-7bf8b55f5dca">
+      <Execution id="d17c1c1e-2aa2-4009-be71-2f26ca308de7" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMatrixTests" name="Rollback_ClearDownstreamAndRegenerate" />
+    </UnitTest>
+    <UnitTest name="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+JumpModel), json: &quot;{\&quot;targetNodeId\&quot;:\&quot;n1\&quot;}&quot;)" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="fda8b226-22db-636d-4bc6-c11c67390840">
+      <Execution id="9fa98c5c-cf0e-475d-817e-77d5d7dd41da" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Workflow.WorkflowRequestModelValidationTests" name="Request_Body_Passes_ModelValidation" />
+    </UnitTest>
+    <UnitTest name="runAutomation 指向自身保存拒绝；SSRF 拒绝 localhost" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="7d541e1d-e1a4-2ec7-86ef-fd8f58da5984">
+      <Execution id="22f3dcb3-5f66-459a-ae37-c96470371d2d" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Osc260815AutomationTests" name="Graph_SelfRef_And_HttpSsrf" />
+    </UnitTest>
+    <UnitTest name="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+CommentModel), json: &quot;{\&quot;comment\&quot;:\&quot;同意\&quot;,\&quot;attachmentIds\&quot;:[1,2]}&quot;)" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="42b6d48b-969e-bce1-62e3-13c8b7d5e3df">
+      <Execution id="a854c312-027a-428b-af76-2abfbde8a906" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Workflow.WorkflowRequestModelValidationTests" name="Request_Body_Passes_ModelValidation" />
+    </UnitTest>
+    <UnitTest name="发起人撤回（无人同意）→ Withdrawn；先批后不可撤" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="bb11ffc9-77fa-aa3e-2200-52059a0c01b2">
+      <Execution id="183daff2-53d2-4061-a5c0-1aa0dd33f27f" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowEngineTests" name="Withdraw_Rule" />
+    </UnitTest>
+    <UnitTest name="XOR 缺 defaultTarget：发布校验失败（§5/§11）" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="16450236-aa2b-3872-97b4-462f83679f2d">
+      <Execution id="f7ebc58f-d4e4-465f-beee-a45c7bcbac9c" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMatrixTests" name="Xor_NoDefault_PublishFail" />
+    </UnitTest>
+    <UnitTest name="回退权限：节点 allowRollback=false → 403（§7 权限矩阵）" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="bf9cc568-c615-db91-c5ea-1b7c17cddb6c">
+      <Execution id="b0c4806a-2d27-4569-9d57-65664c573623" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMatrixTests" name="Rollback_NoAllowRollback_403" />
+    </UnitTest>
+    <UnitTest name="超时仅作用于可见任务：依次签逐轮放行后各自到期 pass（§4.3/§8.3）" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="1db84901-0860-51d9-e333-6a00f505fe51">
+      <Execution id="1c6f8260-c6a7-4174-9ea5-cea3dddf44f4" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMatrixTests" name="TimeoutSequence_OnlyVisibleAdvance" />
+    </UnitTest>
+    <UnitTest name="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+PhraseModel), json: &quot;{\&quot;texts\&quot;:[\&quot;已阅\&quot;]}&quot;)" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="6cf6d185-9cc4-0197-730c-51161d944275">
+      <Execution id="225540c3-e5b9-4136-bfef-839f1ea180f4" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Workflow.WorkflowRequestModelValidationTests" name="Request_Body_Passes_ModelValidation" />
+    </UnitTest>
+    <UnitTest name="工作流请求体：前端真实提交可通过 MVC 校验(modelType: typeof(NewLife.Cube.Workflow.Controllers.WorkflowController+CommentModel), json: &quot;{}&quot;)" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="477a6272-e79e-f693-8750-a06852e59372">
+      <Execution id="d419ccd7-b908-4b9b-8ea2-c9bd1a9e29f1" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Workflow.WorkflowRequestModelValidationTests" name="Request_Body_Passes_ModelValidation" />
+    </UnitTest>
+    <UnitTest name="空候选人：不自动通过；实例保持 Running 并记 error 意见（§4.1/§12）" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="9d731627-84d3-e42c-c153-7d8a1ba7700b">
+      <Execution id="817a0bda-399c-40d1-9548-343f8abdf24f" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMatrixTests" name="EmptyCandidate_NoAutoPass" />
+    </UnitTest>
+    <UnitTest name="full 锁：审批中普通 Update 抛 403；流程通道改 Name 放行；结束后解锁" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="602e969d-e3dc-b511-78e5-4d305886510a">
+      <Execution id="ac04dbad-7a9f-4dd9-9b79-b06f2e749e87" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowLockTests" name="FullLock_Blocks_ExceptScope" />
+    </UnitTest>
+    <UnitTest name="Filter 与 searchFilters 同构：all/any/eq/contains/isNull/gt/after" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="de7aa0d9-1115-ebe7-015e-e1da96da11b2">
+      <Execution id="85c3dba1-a2f7-49c0-b5c9-1db680fff109" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Osc260815AutomationTests" name="Filter_Isomorphic" />
+    </UnitTest>
+    <UnitTest name="提交生成 1 实例 + N 主体 + 首节点任务；或签一人同意即 Approved" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="85177db2-f3a8-aae1-a4e3-4175acf7ce79">
+      <Execution id="d0bdaa32-7e29-4e93-983b-553ba9f6f36d" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowEngineTests" name="Start_And_Or_Approve" />
+    </UnitTest>
+    <UnitTest name="fieldChange 仅在 watch 字段出现于 Dirtys 时触发" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="d0789d52-c27b-6d0f-9165-d8be90ee91e9">
+      <Execution id="47e91a5d-b90e-4c44-bb80-48f01297a5e0" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.Osc260815AutomationTests" name="Trigger_FieldChange_Dirtys" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="6140083e-ce73-bf2e-9abe-dc0d145d560d" executionId="09b18be4-d1a1-4088-b6d9-c66d43b66278" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b8ebc414-fb3d-dc8a-6afa-10549f2000eb" executionId="e676b6cf-13b7-4e50-bcf1-87c5d5f7bbb6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6cf6d185-9cc4-0197-730c-51161d944275" executionId="225540c3-e5b9-4136-bfef-839f1ea180f4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="82a7bf04-80db-c0ec-0806-a54e0e719d8e" executionId="18cdfa87-6193-4cf8-b40a-6ec764bb8368" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="134132cb-b87d-fa96-5cd3-5cf130f1622a" executionId="41038b30-9ae7-459a-829f-e780e2d0e122" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e3afe9c5-99fc-5a97-ffa7-e2b2cf4e70e1" executionId="fd8dc3e0-9851-4498-a523-1fc14f12bdb7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="98a910bd-9777-ad31-c49c-ae127aba9a2f" executionId="b8c40b4c-7888-4a4b-bd58-ef62a229d1f7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e705fc5c-3b8a-c86c-199c-921ea8a81023" executionId="f37448c5-2a57-4ff4-9179-78acf3ae7ea6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ce6b365f-6127-39f9-b882-fb000e8a3a80" executionId="8e77eb2a-bdb0-4255-b758-3cf8df0d5b2e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7afb1da0-64ec-6e4f-d80f-b552fce0fd8a" executionId="d6267c26-e339-42d7-a4b4-939625424e2c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8bff566e-ba63-7b05-163b-977c3ae00992" executionId="675a1bf8-9e5a-4d07-a68f-3b334239147b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="20ae05e2-12ba-5c88-c4b3-48c296fb89fc" executionId="1bf8a12d-34e1-4aa9-ad59-5126b84ab5d9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f50fe702-47c4-eb2b-cff7-22296bed0782" executionId="db3bd1e0-9aeb-4d27-94ef-786175f65238" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="13229d29-1cf9-d390-15d1-4d9ba39039c4" executionId="1e6ed1eb-249f-41b4-ad66-1d9d233051b2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="081cc989-4ff2-23a5-35e8-54bb37fe6c9b" executionId="4f8166ef-450f-4827-a06a-8db8baa695fd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e5b7227d-8523-8c2d-e359-7bf8b55f5dca" executionId="d17c1c1e-2aa2-4009-be71-2f26ca308de7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="477a6272-e79e-f693-8750-a06852e59372" executionId="d419ccd7-b908-4b9b-8ea2-c9bd1a9e29f1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bf7de5ae-24f9-5ce0-de28-6055044c671b" executionId="c6134754-1ce8-4565-94d9-63b037791b52" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bb99a1ff-2f34-66bc-10e0-828e1b6ef147" executionId="314d5b11-b8e4-48c7-b96d-ddb91242d020" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e51f30ac-f4dc-2d2a-5152-9f9bbf73e644" executionId="42672d2a-0e33-492a-9c39-8d92d4ae6b86" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="474363f6-a86a-eb64-6f45-c4ff77ccab24" executionId="e3eec3f5-63cd-4174-97f4-7f049a915638" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9d731627-84d3-e42c-c153-7d8a1ba7700b" executionId="817a0bda-399c-40d1-9548-343f8abdf24f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="85177db2-f3a8-aae1-a4e3-4175acf7ce79" executionId="d0bdaa32-7e29-4e93-983b-553ba9f6f36d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="662b4736-84d1-dc6d-708f-f8a3b4041085" executionId="1451727b-06bd-45f3-bee5-6f39c3023b15" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a222a586-0524-cb44-fed1-23062878d8ba" executionId="9cb32b2f-4054-4b4e-8651-8bf13c960744" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7d541e1d-e1a4-2ec7-86ef-fd8f58da5984" executionId="22f3dcb3-5f66-459a-ae37-c96470371d2d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d0789d52-c27b-6d0f-9165-d8be90ee91e9" executionId="47e91a5d-b90e-4c44-bb80-48f01297a5e0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1356ca0b-c5bf-ca37-253a-560d8235103f" executionId="e3ce5897-1a5d-48c6-9c73-1768a6090bc1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f499738e-e9cf-0bac-9473-f002da97a1c9" executionId="5fd0101c-5f08-4cc9-ba7b-cd39a0e98c0c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bb11ffc9-77fa-aa3e-2200-52059a0c01b2" executionId="183daff2-53d2-4061-a5c0-1aa0dd33f27f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4a380eba-81fe-26eb-b114-15ae3a66c1be" executionId="214b5a62-1aa1-407f-9f43-a751be77ecd4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="acc7212c-6220-31e8-90cf-fa78030a2977" executionId="b1dfaac5-bbcc-4533-9dd3-2e81992144e8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bedd7e60-a70a-2a1c-dffa-15e31ac1cfdf" executionId="5035329a-0393-4667-a9fb-0e686f636282" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ed27e435-c1e6-f631-e001-ab8048905519" executionId="4ae24d6d-b912-41bc-af52-a1fa0f6a2052" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="430aeeb1-e80f-3990-b700-b2c60305b122" executionId="4d5e7759-6989-4caf-94cc-f727018eb1be" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e106d039-5a37-5d5c-2a74-dba3d47285a3" executionId="767177c4-02e7-4f50-a536-8274aee306c8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d15ba713-50b9-e1be-a36f-bfbe55da3430" executionId="1c017cdf-eebf-4351-9d6a-4d3be0ce6426" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8b5c8499-cd85-23b2-6e03-05b287861faf" executionId="b7965f4a-47c1-44de-ad4b-77145262d2f8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="de7aa0d9-1115-ebe7-015e-e1da96da11b2" executionId="85c3dba1-a2f7-49c0-b5c9-1db680fff109" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bf9cc568-c615-db91-c5ea-1b7c17cddb6c" executionId="b0c4806a-2d27-4569-9d57-65664c573623" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a3d7cc77-b3fe-60b9-2e97-965272f6cfe1" executionId="9dc26e37-81ee-44a3-a34d-afb89ba14bd4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4000b542-2069-0788-d2be-cf3787bdf8d3" executionId="38923a04-5b96-40cd-9ca9-30bf0a33bc11" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="16450236-aa2b-3872-97b4-462f83679f2d" executionId="f7ebc58f-d4e4-465f-beee-a45c7bcbac9c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="db6dd8f1-d2a4-c19a-0652-8c963b473e6f" executionId="2aa6b3b9-4988-4dfe-82e3-fdbb41e954de" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6470670d-1afb-4a17-38de-1cb3918bf615" executionId="b0da6ce0-3bb2-435f-a3bd-7638f22198a4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2107f3f0-8fdd-602f-39d8-7d18bfc59d0d" executionId="2ff17e0f-e757-499e-a2cc-183d2bde692d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fda8b226-22db-636d-4bc6-c11c67390840" executionId="9fa98c5c-cf0e-475d-817e-77d5d7dd41da" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3856c9f5-d8b6-b917-7f05-4804af7abeb0" executionId="fd7cabff-4897-4bf4-8ce7-1345a24c4cd6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1db84901-0860-51d9-e333-6a00f505fe51" executionId="1c6f8260-c6a7-4174-9ea5-cea3dddf44f4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="72e8a00b-91f0-00c2-76d2-f24aa9d5dbe6" executionId="f2b50ab4-bc9e-4ef5-b102-67b86d4bafc1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="077d9f91-0a73-9b2c-4c04-1c7833d37eaa" executionId="6db178fd-c138-42b3-bd7b-76719d3a0642" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0786e092-a730-0850-a786-fef2fdeeb577" executionId="5bf3ae0a-c062-41a1-8d51-687fe7ab024e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5f17a0dc-580e-8ffc-ce9b-073455e70c1d" executionId="0540bccd-77ec-473a-b74f-378f2b95e8cb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f2d3cdea-8af4-034f-cafb-4e984d312a98" executionId="5f990d30-88be-4881-a475-dfca60ecca6c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="602e969d-e3dc-b511-78e5-4d305886510a" executionId="ac04dbad-7a9f-4dd9-9b79-b06f2e749e87" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ca8ef43b-9a25-8b2b-5c36-db1dd9a4ebd4" executionId="2e237fbb-ccd9-4965-b87f-c4771ae9e95f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3587c52e-6d85-c9f4-ad96-5e8076bf905f" executionId="b70da1a9-4b91-434b-802d-567c88274a80" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="197ab44f-7c1f-0b13-ad92-c06c66d61a27" executionId="7636aa44-bd6f-4258-8f2c-fe010ab69c70" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9bdb50e1-6733-a024-6ce3-85a7caafbcd3" executionId="ad11106e-d2d4-41af-8861-485028340956" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="42b6d48b-969e-bce1-62e3-13c8b7d5e3df" executionId="a854c312-027a-428b-af76-2abfbde8a906" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a5728c98-a086-d9a0-caa2-39ae8db5db87" executionId="ab583620-8a77-4519-8d71-5adc4c919d39" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="067fc517-21ad-4e77-253d-7892e5efe8a3" executionId="08668c16-03d3-4ef9-ba26-f0a31f19450d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="62" executed="62" passed="61" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 10.0.11)&#xD;
+[xUnit.net 00:00:00.06]   Discovering: NewLife.Cube.Tests&#xD;
+[xUnit.net 00:00:00.15]   Discovered:  NewLife.Cube.Tests&#xD;
+[xUnit.net 00:00:00.16]   Starting:    NewLife.Cube.Tests&#xD;
+[xUnit.net 00:00:00.84]       Assert.Equal() Failure: Values differ&#xD;
+[xUnit.net 00:00:00.84]       Expected: 5&#xD;
+[xUnit.net 00:00:00.84]       Actual:   1&#xD;
+[xUnit.net 00:00:00.84]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.84]         F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\WorkflowMenuTests.cs(92,0): at NewLife.Cube.Tests.WorkflowMenuTests.SeedsBody()&#xD;
+[xUnit.net 00:00:00.84]         F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\WorkflowMenuTests.cs(65,0): at NewLife.Cube.Tests.WorkflowMenuTests.&lt;EnsureMenus_Seeds_TopLevel&gt;b__4_0()&#xD;
+[xUnit.net 00:00:00.84]         F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\WorkflowMenuTests.cs(41,0): at NewLife.Cube.Tests.WorkflowMenuTests.Run(Action body)&#xD;
+[xUnit.net 00:00:00.84]         F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\WorkflowMenuTests.cs(65,0): at NewLife.Cube.Tests.WorkflowMenuTests.EnsureMenus_Seeds_TopLevel()&#xD;
+[xUnit.net 00:00:00.84]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+[xUnit.net 00:00:00.84]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+[xUnit.net 00:00:02.98]   Finished:    NewLife.Cube.Tests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="XUSP-T14" outcome="Error" timestamp="2026-09-22T08:20:36.1003693+08:00">
+        <Text>[xUnit.net 00:00:00.84]     EnsureMenus：播种一级流程审批及五叶子，父节点无 URL，Definition 指向实体控制器 [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

@@ -20,9 +20,12 @@
               class="wd-named"
               @click="pickNamed(n)"
             >
-              <icon-park :type="resolveWorkbenchIcon(n.icon, n.name)" class="wd-named-ico" />
+              <!-- 图标与 Admin 徒标同一行：徒标靠卡片右上角，与图标水平对齐 -->
+              <span class="wd-named-head">
+                <icon-park :type="resolveWorkbenchIcon(n.icon, n.name)" class="wd-named-ico" />
+                <a-tag v-if="n.adminOnly" size="small" color="orangered">Admin</a-tag>
+              </span>
               <div class="wd-named-title">{{ n.title }}</div>
-              <a-tag v-if="n.adminOnly" size="small" color="orangered">Admin</a-tag>
             </button>
           </div>
         </a-tab-pane>
@@ -607,6 +610,17 @@ function onSourceChange(value: unknown) {
 }
 .wd-named-ico {
   color: rgb(var(--primary-6));
+}
+/* 图标与右上角徽标同一行；徽标用 flex 右对齐，与图标垂直居中 */
+.wd-named-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+}
+.wd-named-head :deep(.arco-tag) {
+  flex-shrink: 0;
 }
 .wd-named-title {
   font-weight: 500;

@@ -98,6 +98,11 @@ AC-12（混 TypePath/复合主键/N>100）、AC-18 由后端校验/引擎实现�
 
 - 已补录 tasks T14（依次签入口下线、XOR 两支、几何徽标、三列表列、顶栏 audit、菜单单测隔离）。核对无另增未落盘事项。
 
+### 归档后清尾补录（T15，2026-09-22）
+
+- 工作区残余的 `WidgetConfigDrawer.vue` 命名卡片「图标 + Admin 徽标」对齐样式（`.wd-named-head` flex 两端对齐）此前未随任何提交入库；本轮补录 T15 并同步 `wwwroot/index.html` 装置哈希。
+- 核查：与 47f1 流程功能无耦合（纯模板/样式）；随本轮 arco-vue 全量 vitest 889/889 与 vite build 0 error 通过。
+
 ## 验收标准
 
 ### Happy path

@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="45200e1f-f7e1-4247-811d-620712c4fe02" name="许胜平@XUSP-T14 2026-09-22 08:17:43" runUser="XUSP-T14\许胜平" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-22T08:17:43.9830623+08:00" queuing="2026-09-22T08:17:43.9830624+08:00" start="2026-09-22T08:17:42.9962591+08:00" finish="2026-09-22T08:17:43.9888250+08:00" />
+  <TestSettings name="default" id="c9890dc5-64ec-4510-a73c-5999d47774fd">
+    <Deployment runDeploymentRoot="许胜平_XUSP-T14_2026-09-22_08_17_43" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="c8068399-9837-4174-8d6d-86f853e38b40" testId="5f17a0dc-580e-8ffc-ce9b-073455e70c1d" testName="EnsureMenus：播种一级流程审批及五叶子，父节点无 URL，Definition 指向实体控制器" computerName="XUSP-T14" duration="00:00:00.0050979" startTime="2026-09-22T08:17:43.9060458+08:00" endTime="2026-09-22T08:17:43.9060460+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c8068399-9837-4174-8d6d-86f853e38b40" />
+    <UnitTestResult executionId="c2da4893-735c-4719-a777-b94921e3138d" testId="a3d7cc77-b3fe-60b9-2e97-965272f6cfe1" testName="EnsureMenus：旧版 Cube/Workflow 提升为一级，叶子保留" computerName="XUSP-T14" duration="00:00:00.3959526" startTime="2026-09-22T08:17:43.8985264+08:00" endTime="2026-09-22T08:17:43.8985416+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c2da4893-735c-4719-a777-b94921e3138d" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="EnsureMenus：播种一级流程审批及五叶子，父节点无 URL，Definition 指向实体控制器" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="5f17a0dc-580e-8ffc-ce9b-073455e70c1d">
+      <Execution id="c8068399-9837-4174-8d6d-86f853e38b40" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMenuTests" name="EnsureMenus_Seeds_TopLevel" />
+    </UnitTest>
+    <UnitTest name="EnsureMenus：旧版 Cube/Workflow 提升为一级，叶子保留" storage="f:\git repos\1.newlife\newlife.cube\newlife.cube.tests\bin\debug\net10.0\newlife.cube.tests.dll" id="a3d7cc77-b3fe-60b9-2e97-965272f6cfe1">
+      <Execution id="c2da4893-735c-4719-a777-b94921e3138d" />
+      <TestMethod codeBase="F:\Git Repos\1.Newlife\NewLife.Cube\NewLife.Cube.Tests\bin\Debug\net10.0\NewLife.Cube.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="NewLife.Cube.Tests.WorkflowMenuTests" name="EnsureMenus_Migrate_From_Cube" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="5f17a0dc-580e-8ffc-ce9b-073455e70c1d" executionId="c8068399-9837-4174-8d6d-86f853e38b40" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a3d7cc77-b3fe-60b9-2e97-965272f6cfe1" executionId="c2da4893-735c-4719-a777-b94921e3138d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="2" executed="2" passed="2" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 10.0.11)&#xD;
+[xUnit.net 00:00:00.06]   Discovering: NewLife.Cube.Tests&#xD;
+[xUnit.net 00:00:00.14]   Discovered:  NewLife.Cube.Tests&#xD;
+[xUnit.net 00:00:00.14]   Starting:    NewLife.Cube.Tests&#xD;
+[xUnit.net 00:00:00.58]   Finished:    NewLife.Cube.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>
