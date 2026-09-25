@@ -1,26 +1,17 @@
 import { ref } from 'vue';
 import type { WorkflowTaskItem } from '@newlifex/api-core';
-import { Message } from '@arco-design/web-vue';
 import cubeApi from '@/api';
-import { formatApiError } from '@/core/utils/apiError';
-import { useAppStore } from '@/stores/app';
 import { useWorkflowTaskList } from './useWorkflowTaskList';
 import { wfIdOf, type WfId } from './useWorkflowProgress';
 
 /**
- * 任务中心页编排（OSC-26090347f1 T8c）：点「进度」/行打开进度抽屉（与「我发起的」一致，不再宽屏分栏）。
+ * 任务中心页编排：列表、批量意见、进度抽屉。
+ * 行内同意 / 驳回 / 更多由 WorkflowTaskActions 自己完成，这里不再持有弹层状态。
  */
 export function useWorkflowTaskPage(kind: 'todo' | 'done') {
   const wl = useWorkflowTaskList(kind);
   const progressInstanceId = ref<string | null>(null);
   const progressVisible = ref(false);
-
-  /** 行级审批弹层 */
-  const rowOpinionVisible = ref(false);
-  const rowOpinionKind = ref<'approve' | 'reject'>('approve');
-  const rowOpinionText = ref('');
-  const rowOpinionSaving = ref(false);
-  const rowOpinionTask = ref<WorkflowTaskItem | null>(null);
 
   function openProgress(row: WorkflowTaskItem) {
     const id = wfIdOf(row.instanceId);
@@ -33,34 +24,14 @@ export function useWorkflowTaskPage(kind: 'todo' | 'done') {
     progressVisible.value = false;
   }
 
-  function openRowOpinion(row: WorkflowTaskItem, kind2: 'approve' | 'reject') {
-    rowOpinionTask.value = row;
-    rowOpinionKind.value = kind2;
-    rowOpinionText.value = '';
-    rowOpinionVisible.value = true;
-  }
-
-  async function confirmRowOpinion(): Promise<boolean> {
-    const task = rowOpinionTask.value;
-    const taskId = wfIdOf(task?.id);
-    if (!task || !taskId) return false;
-    rowOpinionSaving.value = true;
+  /** 常用语（行内意见气泡一键填入） */
+  const phrases = ref<string[]>([]);
+  async function loadPhrases() {
     try {
-      if (rowOpinionKind.value === 'approve') {
-        await cubeApi.workflow.approve(taskId, { comment: rowOpinionText.value || undefined });
-      } else {
-        await cubeApi.workflow.reject(taskId, { comment: rowOpinionText.value || undefined });
-      }
-      Message.success(rowOpinionKind.value === 'approve' ? '已同意' : '已驳回');
-      rowOpinionVisible.value = false;
-      await wl.load();
-      void useAppStore().refreshWorkflowMeta();
-      return true;
-    } catch (err) {
-      Message.error(formatApiError(err, '操作失败'));
-      return false;
-    } finally {
-      rowOpinionSaving.value = false;
+      const res = await cubeApi.workflow.phrases();
+      phrases.value = (res.data ?? []).map((p) => p.text).filter(Boolean);
+    } catch {
+      phrases.value = [];
     }
   }
 
@@ -91,20 +62,16 @@ export function useWorkflowTaskPage(kind: 'todo' | 'done') {
   }
 
   void wl.load();
+  void loadPhrases();
 
   return {
     ...wl,
+    phrases,
     progressInstanceId,
     progressVisible,
     openProgress,
     closeProgress,
     openRecord,
     refresh,
-    rowOpinionVisible,
-    rowOpinionKind,
-    rowOpinionText,
-    rowOpinionSaving,
-    openRowOpinion,
-    confirmRowOpinion,
   };
 }

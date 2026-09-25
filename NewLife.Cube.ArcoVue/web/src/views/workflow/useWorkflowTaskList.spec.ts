@@ -6,7 +6,7 @@ vi.mock('@/api', () => ({
   },
 }));
 
-import { dueText, modeLabel, taskStatusMeta, taskTitle, entityLabel, summaryPlain } from './useWorkflowTaskList';
+import { dueText, modeLabel, taskStatusMeta, taskTitle, entityLabel, summaryPlain, isHandleTask, rowActionsOf } from './useWorkflowTaskList';
 import type { WorkflowTaskItem } from '@newlifex/api-core';
 
 describe('modeLabel 节点模式', () => {
@@ -33,10 +33,12 @@ describe('taskStatusMeta 任务状态', () => {
 describe('dueText 截止倒计时', () => {
   const now = new Date('2026-09-03T12:00:00').getTime();
 
-  it('无 DueTime / 非法返回 null', () => {
+  it('无 DueTime / 非法 / 未设超时的 MinValue 返回 null', () => {
     expect(dueText(undefined, now)).toBeNull();
     expect(dueText('', now)).toBeNull();
     expect(dueText('not-a-date', now)).toBeNull();
+    expect(dueText('0001-01-01 00:00:00', now)).toBeNull();
+    expect(dueText('0001-01-01T00:00:00', now)).toBeNull();
   });
 
   it('未来显示剩余，过去显示已超时', () => {
@@ -69,5 +71,28 @@ describe('summaryPlain 列表摘要', () => {
     expect(summaryPlain('')).toBe('');
     expect(summaryPlain('**加急** 请审批')).toBe('加急 请审批');
     expect(summaryPlain('a'.repeat(100), 10)).toBe(`${'a'.repeat(10)}…`);
+  });
+});
+
+describe('rowActionsOf 行操作矩阵（T5：办理节点只办不驳回）', () => {
+  const todo = (t: Partial<WorkflowTaskItem>) => ({ id: '1', status: 'Pending', ...t }) as WorkflowTaskItem;
+
+  it('审批行待办：同意/驳回/更多/进度', () => {
+    const a = rowActionsOf(todo({ nodeType: 'oa.approve' }), 'todo');
+    expect(a).toEqual({ canApprove: true, canReject: true, canHandle: false, canMore: true, canProgress: true });
+  });
+
+  it('办理行待办：仅「已办理」，不显示驳回', () => {
+    const a = rowActionsOf(todo({ nodeType: 'oa.handle' }), 'todo');
+    expect(a).toEqual({ canApprove: false, canReject: false, canHandle: true, canMore: true, canProgress: true });
+  });
+
+  it('已办列表与缺省 nodeType：不可操作，仅保留进度', () => {
+    const a = rowActionsOf(todo({ nodeType: 'oa.handle' }), 'done');
+    expect(a.canApprove).toBe(false);
+    expect(a.canHandle).toBe(false);
+    expect(a.canMore).toBe(false);
+    expect(a.canProgress).toBe(true);
+    expect(isHandleTask(todo({}))).toBe(false); // 缺省按审批处理
   });
 });

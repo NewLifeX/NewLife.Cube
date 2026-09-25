@@ -46,14 +46,21 @@ export function taskStatusMeta(status: string | undefined): { text: string; colo
   }
 }
 
-/** 截止倒计时（壁钟差）：剩 X / 已超时 X；无 DueTime 返回 null */
+/**
+ * 截止倒计时（壁钟差）：剩 X / 已超时 X；无 DueTime 返回 null。
+ * 未设超时的任务 DueTime 是 DateTime.MinValue，JSON 为 "0001-01-01 00:00:00"。
+ * 这种非 ISO 字符串会被 JS Date 解析成 2001-01-01，必须在解析前丢掉。
+ */
 export function dueText(
-  dueTime: string | undefined,
+  dueTime: string | undefined | null,
   now = Date.now(),
 ): { text: string; overdue: boolean } | null {
   if (!dueTime) return null;
-  const t = new Date(dueTime).getTime();
-  if (!Number.isFinite(t)) return null;
+  const raw = dueTime.trim();
+  if (!raw || raw.startsWith('0001')) return null;
+  const iso = raw.includes('T') ? raw : raw.replace(' ', 'T');
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t) || new Date(t).getFullYear() < 1970) return null;
   const diff = t - now;
   const abs = Math.abs(diff);
   const totalMinutes = Math.floor(abs / 60000);
@@ -93,6 +100,38 @@ export function summaryPlain(summary?: string, max = 80): string {
   return plain.length > max ? `${plain.slice(0, max)}…` : plain;
 }
 
+/** 是否办理节点任务（nodeType 由后端快照解析下发；缺省按审批处理） */
+export function isHandleTask(row: WorkflowTaskItem): boolean {
+  return row.nodeType === 'oa.handle';
+}
+
+/** 行操作矩阵（design §4.2）：审批行同意/驳回；办理行只有「已办理」；均可看进度；主操作不再打开进度 */
+export interface WfRowActions {
+  /** 同意（审批行） */
+  canApprove: boolean;
+  /** 驳回（仅审批行；办理行不显示） */
+  canReject: boolean;
+  /** 已办理（办理行） */
+  canHandle: boolean;
+  /** 更多：转交/加签/回退 */
+  canMore: boolean;
+  /** 进度入口（标题或「进度」） */
+  canProgress: boolean;
+}
+
+export function rowActionsOf(row: WorkflowTaskItem, kind: 'todo' | 'done'): WfRowActions {
+  const open = ['pending', 'active'].includes(String(row.status ?? '').toLowerCase());
+  const actionable = kind === 'todo' && open;
+  const handle = isHandleTask(row);
+  return {
+    canApprove: actionable && !handle,
+    canReject: actionable && !handle,
+    canHandle: actionable && handle,
+    canMore: actionable,
+    canProgress: true,
+  };
+}
+
 export function useWorkflowTaskList(kind: 'todo' | 'done') {
   const rows = ref<WorkflowTaskItem[]>([]);
   const loading = ref(false);
@@ -102,20 +141,52 @@ export function useWorkflowTaskList(kind: 'todo' | 'done') {
   const batchKind = ref<'approve' | 'reject'>('approve');
   const batchComment = ref('');
   const batchSaving = ref(false);
-  const pageSize = 50;
+  const keyword = ref('');
+  const page = ref(1);
+  const pageSize = ref(20);
+  const total = ref(0);
 
   async function load() {
     loading.value = true;
     try {
-      const res = kind === 'todo' ? await cubeApi.workflow.todo({ pageSize }) : await cubeApi.workflow.done({ pageSize });
-      const list = res?.data;
-      rows.value = Array.isArray(list) ? list : [];
+      const params = {
+        page: page.value,
+        pageSize: pageSize.value,
+        q: keyword.value.trim() || undefined,
+      };
+      const res = kind === 'todo' ? await cubeApi.workflow.todo(params) : await cubeApi.workflow.done(params);
+      const data = res?.data;
+      if (Array.isArray(data)) {
+        rows.value = data;
+        total.value = data.length;
+      } else {
+        rows.value = data?.list ?? [];
+        total.value = data?.total ?? rows.value.length;
+      }
     } catch (err) {
       rows.value = [];
+      total.value = 0;
       Message.error(formatApiError(err, '加载失败'));
     } finally {
       loading.value = false;
     }
+  }
+
+  function search(q: string) {
+    keyword.value = q;
+    page.value = 1;
+    void load();
+  }
+
+  function changePage(p: number) {
+    page.value = p;
+    void load();
+  }
+
+  function changePageSize(size: number) {
+    pageSize.value = size;
+    page.value = 1;
+    void load();
   }
 
   const hasBatch = computed(() => selected.value.length > 0);
@@ -140,7 +211,7 @@ export function useWorkflowTaskList(kind: 'todo' | 'done') {
     batchVisible.value = true;
   }
 
-  /** 批量同意（后端 BatchApprove，≤50）/ 批量驳回（逐条 Reject 循环）；部分失败逐条汇总 */
+  /** 批量同意（后端 BatchApprove）/ 批量驳回（后端 BatchReject，跳过办理任务）；部分失败逐条汇总 */
   async function confirmBatch(): Promise<boolean> {
     if (selected.value.length === 0) return false;
     batchSaving.value = true;
@@ -152,22 +223,20 @@ export function useWorkflowTaskList(kind: 'todo' | 'done') {
         const res = await cubeApi.workflow.batchApprove({ ids, comment });
         results.push(...((res.data ?? []) as WorkflowBatchResultItem[]));
       } else {
-        for (const id of ids) {
-          try {
-            await cubeApi.workflow.reject(id, { comment });
-            results.push({ id, ok: true });
-          } catch (err) {
-            results.push({ id, ok: false, error: formatApiError(err, '') });
-          }
-        }
+        const res = await cubeApi.workflow.batchReject({ ids, comment });
+        results.push(...((res.data ?? []) as WorkflowBatchResultItem[]));
       }
-      const failed = results.filter((r) => !r.ok);
-      const okCount = results.length - failed.length;
+      const failed = results.filter((r) => !r.ok && !r.skipped);
+      const skipped = results.filter((r) => r.skipped === true).length;
+      const okCount = results.filter((r) => r.ok).length;
       const label = batchKind.value === 'approve' ? '同意' : '驳回';
+      const skipTip = skipped > 0 ? `，已跳过 ${skipped} 条办理任务` : '';
       if (failed.length > 0) {
         Message.warning(
-          `成功 ${okCount}/${results.length}。失败：${failed.map((f) => `#${f.id} ${f.error || ''}`).join('；')}`,
+          `成功 ${okCount}/${results.length}${skipTip}。失败：${failed.map((f) => `#${f.id} ${f.error || ''}`).join('；')}`,
         );
+      } else if (skipped > 0) {
+        Message.warning(`已批量${label} ${okCount} 条${skipTip}`);
       } else {
         Message.success(`已批量${label} ${okCount} 条`);
       }
@@ -194,6 +263,13 @@ export function useWorkflowTaskList(kind: 'todo' | 'done') {
     batchSaving,
     hasBatch,
     load,
+    keyword,
+    page,
+    pageSize,
+    total,
+    search,
+    changePage,
+    changePageSize,
     toggleSelect,
     openBatch,
     confirmBatch,

@@ -127,7 +127,7 @@
           mode="edit"
           :field-errors="fieldErrors"
           :layout="layout"
-          :writable-allowlist="wfWritableNames.length ? wfWritableNames : null"
+          :writable-allowlist="wfEditLocked ? wfWritableNames : null"
           @toggle-collapse="emit('toggle-collapse', $event)"
         />
         <div v-else class="detail-grouped" :style="detailLabelCssVars">
@@ -403,16 +403,13 @@
       </a-tab-pane>
       <a-tab-pane v-if="wfTabVisible" key="workflow" title="审批">
         <div class="wf-drawer-tab">
-          <a-space>
-            <a-tag :color="wfStatusMeta.color">{{ wfStatusMeta.text }}</a-tag>
-          </a-space>
-          <a-empty v-if="!wfInstanceId" description="暂无审批" />
           <WorkflowProgressPanel
-            v-else
+            v-if="wfInstanceId"
             embed
             :model-value="true"
             :instance-id="wfInstanceId"
           />
+          <a-empty v-else description="暂无审批" />
         </div>
       </a-tab-pane>
     </a-tabs>
@@ -421,7 +418,7 @@
       <a-space>
         <a-button @click="emit('update:visible', false)">取消</a-button>
         <a-button
-          v-if="mode !== 'detail'"
+          v-if="mode !== 'detail' && (!wfEditLocked || wfCanPatchWritable)"
           type="primary"
           :loading="saving"
           @click="onSave"
@@ -452,10 +449,9 @@ import UserAvatar from '@/components/UserAvatar.vue';
 import FormContent from './FormContent.vue';
 import RolePermTree from './RolePermTree.vue';
 import { useRecordDrawer } from './useRecordDrawer';
-import { wfRowCanPatchWritable, wfRowEditLocked, wfRowInstanceId, wfRowStatus, wfRowWritable } from '@/core/types/workflow';
-import { wfStatusBadge } from './useWorkflowList';
+import { wfRowCanPatchWritable, wfRowEditLocked, wfRowInstanceId, wfRowWritable } from '@/core/types/workflow';
 import WorkflowProgressPanel from '@/views/workflow/WorkflowProgressPanel.vue';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 
 const props = withDefaults(
   defineProps<{
@@ -480,6 +476,8 @@ const props = withDefaults(
     opsCustomLinks?: OpsCustomLink[];
     /** 类型级是否启用 OA 审批（IA §1 审批 Tab） */
     workflowEnabled?: boolean;
+    /** 从列表「审批」打开时，先停在审批页签 */
+    openOnWorkflow?: boolean;
   }>(),
   {
     showHistoryTabs: true,
@@ -489,6 +487,7 @@ const props = withDefaults(
     layout: null,
     opsCustomLinks: () => [],
     workflowEnabled: false,
+    openOnWorkflow: false,
   },
 );
 
@@ -504,7 +503,6 @@ const emit = defineEmits<{
 }>();
 
 const wfInstanceId = computed(() => wfRowInstanceId(props.model));
-const wfStatusMeta = computed(() => wfStatusBadge(wfRowStatus(props.model)));
 const wfEditLocked = computed(() => wfRowEditLocked(props.model));
 const wfWritableNames = computed(() => wfRowWritable(props.model));
 const wfCanPatchWritable = computed(() => wfRowCanPatchWritable(props.model));
@@ -567,6 +565,13 @@ const {
 } = useRecordDrawer(props, emit);
 
 defineExpose({ validate: () => formRef.value?.validate() });
+
+watch(
+  () => props.visible,
+  (v) => {
+    if (v && props.openOnWorkflow && wfTabVisible.value) activeTab.value = 'workflow';
+  },
+);
 </script>
 
 <style scoped>
@@ -777,16 +782,18 @@ defineExpose({ validate: () => formRef.value?.validate() });
   word-break: break-word;
 }
 
-/* OA 审批 Tab（IA §1） */
+/* OA 审批页签：按抽屉内容区全宽铺开 */
 .wf-drawer-tab {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 8px 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
 }
-.wf-drawer-tab__open {
-  margin-top: 4px;
+.wf-drawer-tab :deep(.wf-progress--embed) {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
 }
 
 /* 评论 Tab */
@@ -851,5 +858,24 @@ defineExpose({ validate: () => formRef.value?.validate() });
 /* drawer 内容挂到 body，用全局类铺灰底以衬托分组卡片 */
 .record-drawer .arco-drawer-body {
   background: var(--color-fill-2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.record-drawer .arco-drawer-body > .arco-tabs {
+  flex: 1;
+  min-height: 0;
+}
+.record-drawer .arco-tabs {
+  display: flex;
+  flex-direction: column;
+}
+.record-drawer .arco-tabs-content {
+  flex: 1;
+  min-height: 0;
+}
+.record-drawer .arco-tabs-content-list,
+.record-drawer .arco-tabs-pane {
+  height: 100%;
 }
 </style>

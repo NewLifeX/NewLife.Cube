@@ -356,7 +356,10 @@ public class AutomationController(TokenService tokenService) : ControllerBaseX
             var typePath = AutomationPaths.NormalizeTypePath(url);
             if (typePath.IsNullOrEmpty() || !seen.Add(typePath)) continue;
             if (!AutomationAuth.HasPermission(user, typePath, flag)) continue;
-            var display = kv.Key.GetDisplayName().IsNullOrEmpty() ? kv.Key.Name : kv.Key.GetDisplayName();
+            // 友好名：菜单显示名（中文，与页面菜单一致）优先，其次实体类 DisplayName，最后类名
+            var display = AutomationAuth.FindMenu(typePath)?.DisplayName;
+            if (display.IsNullOrEmpty()) display = kv.Key.GetDisplayName();
+            if (display.IsNullOrEmpty()) display = kv.Key.Name;
             list.Add((typePath, display, kv.Key.Name));
         }
         var data = list.OrderBy(e => e.displayName).Select(e => new

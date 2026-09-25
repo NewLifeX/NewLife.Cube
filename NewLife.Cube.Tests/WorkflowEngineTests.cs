@@ -19,7 +19,7 @@ public class WorkflowEngineTests
         DAL.AddConnStr("Cube", "Data Source=Osc47f1Cube;Mode=Memory;Cache=Shared", null, "SQLite");
         DAL.AddConnStr("Log", "Data Source=Osc47f1Log;Mode=Memory;Cache=Shared", null, "SQLite");
         DAL.AddConnStr("Workflow", "Data Source=Osc47f1Wf;Mode=Memory;Cache=Shared", null, "SQLite");
-        WorkflowTestDb.EnsureInstanceSummaryColumn();
+        WorkflowTestDb.EnsureWorkflowTables();
 
         // 清空上轮数据，保证用例独立（意见表为只写日志型，禁止删除，跳过）
         WorkflowTask.FindAll().Delete();

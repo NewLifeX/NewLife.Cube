@@ -20,6 +20,7 @@ import {
   jsonPreview,
 } from '@/core/utils/detailFormat';
 import { filterDetailAuditFields } from '@/core/utils/auditDisplay';
+import { recordDrawerWidth } from './recordDrawerWidth';
 import { isCascaderField } from '@/core/utils/fieldControl';
 import { fetchBatchLabel } from '@/core/utils/lov-api';
 import { mergeAreaLabel } from '@/core/utils/areaLabels';
@@ -115,7 +116,7 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
     return '详情';
   });
 
-  const width = computed(() => (props.fields.length > 10 ? 720 : 520));
+  const width = computed(() => recordDrawerWidth(props.fields.length));
 
   const showSideTabs = computed(
     () => props.mode !== 'add' && props.showHistoryTabs !== false,

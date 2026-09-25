@@ -13,9 +13,9 @@ namespace NewLife.Cube.Tests;
 
 /// <summary>OSC-26090347f1 排他：同一业务记录同一时刻最多一条在途（design §3.3/§12）。</summary>
 /// <remarks>
-/// 并发窗口说明：Start 的 `FindRunning` 排他检查在实例事务之前，两个并发 Start 在 DB 层无原子约束时
-/// 理论可双插（WorkflowSubject 无唯一索引）。真并发双提交需要 DB 层唯一/锁（如 WorkflowSubject
-/// (TypePath,EntityKey) + Running 哨兵唯一索引）——该加固列为实现审计项，当前以确定性顺序测试覆盖 409。
+/// 并发窗口说明：Start 的 `FindRunning` 排他检查在实例事务之前；OSC-260922201a 起在实例事务内插入
+/// WorkflowOccupancy，其 (TypePath,EntityKey) 唯一索引提供 DB 层原子约束，冲突转 409「已有在途审批」。
+/// 本测试以 Barrier 并发双提，断言结束后在途仅一条。
 /// </remarks>
 public class WorkflowExclusiveTests
 {
@@ -24,7 +24,7 @@ public class WorkflowExclusiveTests
         DAL.AddConnStr("Cube", "Data Source=Osc47f1ExCube;Mode=Memory;Cache=Shared", null, "SQLite");
         DAL.AddConnStr("Log", "Data Source=Osc47f1ExLog;Mode=Memory;Cache=Shared", null, "SQLite");
         DAL.AddConnStr("Workflow", "Data Source=Osc47f1ExWf;Mode=Memory;Cache=Shared", null, "SQLite");
-        WorkflowTestDb.EnsureInstanceSummaryColumn();
+        WorkflowTestDb.EnsureWorkflowTables();
 
         WorkflowTask.FindAll().Delete();
         WorkflowSubject.FindAll().Delete();

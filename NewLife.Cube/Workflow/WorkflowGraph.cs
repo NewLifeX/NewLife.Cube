@@ -28,10 +28,14 @@ public class WorkflowGraph
     public const String ApproveType = "oa.approve";
     /// <summary>知会节点 type</summary>
     public const String CcType = "oa.cc";
-    /// <summary>条件网关 type</summary>
+    /// <summary>条件网关 type。只走一条</summary>
     public const String XorType = "oa.xor";
+    /// <summary>并行分支 type。命中的分支同时进入，全部完成后汇合</summary>
+    public const String ParallelType = "oa.parallel";
     /// <summary>结束节点 type</summary>
     public const String EndType = "oa.end";
+    /// <summary>办理节点 type。只办完，不能驳回整单</summary>
+    public const String HandleType = "oa.handle";
     #endregion
 
     #region 解析
@@ -169,12 +173,12 @@ public class WorkflowGraph
         var ends = Nodes.Where(e => e.Type == EndType).ToList();
         if (ends.Count != 1) errors.Add($"必须恰好 1 个结束节点，实际 {ends.Count}");
 
-        var allowed = new HashSet<String> { StartType, ApproveType, CcType, XorType, EndType };
+        var allowed = new HashSet<String> { StartType, ApproveType, CcType, XorType, ParallelType, EndType, HandleType };
         foreach (var node in Nodes)
         {
             if (!allowed.Contains(node.Type))
             {
-                errors.Add($"节点[{node.Id}]类型[{node.Type}]非法，仅支持 oa.start/approve/cc/xor/end");
+                errors.Add($"节点[{node.Id}]类型[{node.Type}]非法，仅支持 oa.start/approve/handle/cc/xor/parallel/end");
                 continue;
             }
             switch (node.Type)
@@ -186,10 +190,22 @@ public class WorkflowGraph
                     if (OutDegree(node.Id) != 0) errors.Add($"结束节点[{node.Id}]不允许出边");
                     break;
                 case ApproveType:
-                    ValidateApprove(node, errors);
+                    ValidateApprove(node, errors, false);
+                    break;
+                case HandleType:
+                    ValidateApprove(node, errors, true);
                     break;
                 case XorType:
+                case ParallelType:
                     ValidateXor(node, errors);
+                    if (node.Type == ParallelType)
+                    {
+                        // 汇合点必填：缺了运行时无法在分支完成后继续（ReleaseParallel 将无目标可去）
+                        if (node.JoinTarget.IsNullOrEmpty())
+                            errors.Add($"并行分支[{node.Id}]缺少 joinTarget（画布上并行节点后面的节点）");
+                        else if (Find(node.JoinTarget) == null)
+                            errors.Add($"并行分支[{node.Id}]汇合点[{node.JoinTarget}]不存在");
+                    }
                     break;
                 case CcType:
                     if (node.To == null) errors.Add($"知会节点[{node.Id}]缺少 to");
@@ -203,25 +219,33 @@ public class WorkflowGraph
         return errors;
     }
 
-    /// <summary>校验审批节点参数</summary>
+    /// <summary>校验审批或办理节点参数</summary>
     /// <param name="node">节点</param>
     /// <param name="errors">错误列表</param>
-    static void ValidateApprove(WorkflowNode node, List<String> errors)
+    /// <param name="handle">是否办理节点</param>
+    static void ValidateApprove(WorkflowNode node, List<String> errors, Boolean handle)
     {
+        var label = handle ? "办理节点" : "审批节点";
         if (node.To == null)
         {
-            errors.Add($"审批节点[{node.Id}]缺少接收人 to");
+            errors.Add($"{label}[{node.Id}]缺少接收人 to");
         }
         else
         {
-            var ids = new List<Int32>();
-            ids.AddRange(WorkflowHelper.ReadIntArray(node.To["users"]));
-            ids.AddRange(WorkflowHelper.ReadIntArray(node.To["roles"]));
-            ids.AddRange(WorkflowHelper.ReadIntArray(node.To["departments"]));
-            if (ids.Count == 0) errors.Add($"审批节点[{node.Id}]接收人 to 为空");
+            ValidateTo(node, errors, label);
         }
-        if (node.Mode is not ("or" or "and" or "sequence"))
-            errors.Add($"审批节点[{node.Id}]签核模式[{node.Mode}]非法，仅 or/and/sequence");
+        if (handle && node.Mode == "sequence")
+            errors.Add($"办理节点[{node.Id}]不允许依次审批");
+        else if (node.Mode is not ("or" or "and" or "sequence"))
+            errors.Add($"{label}[{node.Id}]签核模式[{node.Mode}]非法，仅 or/and/sequence");
+        var policy = node.Raw?["emptyPolicy"]?.ToString();
+        if (!policy.IsNullOrEmpty() && policy is not ("pass" or "manager" or "user"))
+            errors.Add($"{label}[{node.Id}]emptyPolicy[{policy}]非法");
+        if (policy == "user")
+        {
+            var uid = node.Raw?["emptyUserId"]?.GetValue<Int32>() ?? 0;
+            if (uid <= 0) errors.Add($"{label}[{node.Id}]emptyPolicy=user 时必须指定 emptyUserId");
+        }
         var quorum = node.Quorum;
         if (quorum > 0)
         {
@@ -264,6 +288,56 @@ public class WorkflowGraph
         }
     }
     #endregion
+
+    /// <summary>校验 to.kind 与 level</summary>
+    static void ValidateTo(WorkflowNode node, List<String> errors, String label)
+    {
+        var to = node.To;
+        var kind = (to["kind"]?.ToString() ?? "").Trim();
+        var users = WorkflowHelper.ReadIntArray(to["users"]).Where(e => e > 0).ToList();
+        var roles = WorkflowHelper.ReadIntArray(to["roles"]).Where(e => e > 0).ToList();
+        var depts = WorkflowHelper.ReadIntArray(to["departments"]).Where(e => e > 0).ToList();
+        if (kind.Length == 0)
+        {
+            if (users.Count > 0) kind = "users";
+            else if (roles.Count > 0) kind = "roles";
+            else if (depts.Count > 0) kind = "departments";
+        }
+        var levelNode = to["level"];
+        if (levelNode != null && levelNode.GetValue<Int32>() != 1)
+            errors.Add($"{label}[{node.Id}]level 仅允许 1");
+
+        switch (kind)
+        {
+            case "users":
+                if (users.Count == 0) errors.Add($"{label}[{node.Id}]接收人 to 为空");
+                break;
+            case "roles":
+                if (roles.Count == 0) errors.Add($"{label}[{node.Id}]接收人 to 为空");
+                break;
+            case "departments":
+                if (depts.Count == 0) errors.Add($"{label}[{node.Id}]接收人 to 为空");
+                break;
+            case "manager":
+                break;
+            case "starterPick":
+                var scope = to["scope"]?.ToString();
+                if (!scope.IsNullOrEmpty() && scope is not ("all" or "roles" or "departments"))
+                    errors.Add($"{label}[{node.Id}]starterPick.scope[{scope}]非法");
+                break;
+            case "field":
+                if (to["field"]?.ToString().IsNullOrEmpty() != false)
+                    errors.Add($"{label}[{node.Id}]field 为空");
+                var fieldAs = to["fieldAs"]?.ToString();
+                if (!fieldAs.IsNullOrEmpty() && fieldAs is not ("user" or "manager"))
+                    errors.Add($"{label}[{node.Id}]fieldAs[{fieldAs}]非法");
+                break;
+            default:
+                if (kind.Length == 0) errors.Add($"{label}[{node.Id}]接收人 to 为空");
+                else errors.Add($"{label}[{node.Id}]to.kind[{kind}]非法");
+                break;
+        }
+    }
 
     #region 辅助
     /// <summary>入边数量</summary>
@@ -411,6 +485,9 @@ public class WorkflowNode
 
     /// <summary>网关默认目标</summary>
     public String DefaultTarget => Raw?["defaultTarget"]?.ToString();
+
+    /// <summary>并行分支汇合点。进入的分支都完成后才进入该节点</summary>
+    public String JoinTarget => Raw?["joinTarget"]?.ToString();
     #endregion
 
     #region 解析
@@ -502,15 +579,18 @@ public static class WorkflowHelper
     {
         var texts = new List<String>();
         var p = Parameter.FindByUserIDAndCategoryAndName(0, PhraseCategory, PhraseName(tenantId));
-        if (p != null && !p.Value.IsNullOrEmpty())
+        // 值存 LongValue（无 200 长度限制）；兼容早期存在 Value 的数据
+        var raw = p == null ? null : !p.LongValue.IsNullOrEmpty() ? p.LongValue : p.Value;
+        if (!raw.IsNullOrEmpty())
         {
             try
             {
-                if (JsonNode.Parse(p.Value) is JsonArray arr)
+                if (JsonNode.Parse(raw) is JsonArray arr)
                 {
                     foreach (var item in arr)
                     {
-                        var txt = item?["text"]?.ToString();
+                        // 纯字符串数组（当前格式）；兼容旧对象格式 {"id","text"}
+                        var txt = item is JsonObject o ? o["text"]?.ToString() : item?.ToString();
                         if (!txt.IsNullOrEmpty()) texts.Add(txt);
                     }
                 }
@@ -529,13 +609,9 @@ public static class WorkflowHelper
         var clean = (texts ?? []).Where(t => !String.IsNullOrWhiteSpace(t)).Select(t => t.Trim()).Distinct().ToList();
         var p = Parameter.FindByUserIDAndCategoryAndName(0, PhraseCategory, PhraseName(tenantId));
         p ??= new Parameter { UserID = 0, Category = PhraseCategory, Name = PhraseName(tenantId) };
-        var arr = new JsonArray();
-        var idx = 1;
-        foreach (var t in clean)
-        {
-            arr.Add(new JsonObject { ["id"] = idx++, ["text"] = t });
-        }
-        p.Value = arr.ToJsonString();
+        // 存 LongValue（长数值列，无 200 长度限制）；纯字符串数组比对象数组更省
+        p.LongValue = new JsonArray(clean.Select(t => (JsonNode)t).ToArray()).ToJsonString();
+        p.Value = null;
         p.Save();
     }
 }

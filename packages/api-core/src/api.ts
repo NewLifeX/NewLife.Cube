@@ -970,12 +970,22 @@ export interface WorkflowDefinitionItem {
   updateTime?: string;
 }
 
+/** 待办 / 已办 / 我发起的分页结果 */
+export interface WorkflowListPage<T> {
+  total: number;
+  page: number;
+  pageSize: number;
+  list: T[];
+}
+
 /** 流程任务视图（服务端 ToTaskView；Todo/Done 列表行） */
 export interface WorkflowTaskItem {
   /** 雪花 Id：字符串透传 */
   id: number | string;
   instanceId: number | string;
   nodeId?: string;
+  /** 节点类型（oa.approve/oa.handle/…）：办理行只有「已办理」 */
+  nodeType?: string;
   mode?: string;
   assigneeId?: number;
   /** 候选人用户 Id 数组 */
@@ -1069,10 +1079,12 @@ export interface WorkflowInstanceDetail {
   }[];
 }
 
-/** 批量同意逐条结果 */
+/** 批量结果条目（skipped=true 表示办理任务被 BatchReject 跳过） */
 export interface WorkflowBatchResultItem {
   id: number | string;
   ok: boolean;
+  /** 批量驳回时：该条是办理任务，已跳过 */
+  skipped?: boolean;
   error?: string;
 }
 
@@ -1087,11 +1099,15 @@ export interface WorkflowStartBody {
   summary?: string;
   /** 流程标题 */
   title?: string;
+  /** 提交人自选。节点 Id → 用户 Id（starterPick 节点必填） */
+  picks?: Record<string, number[]>;
 }
 
 /** 审批意见体 */
 export interface WorkflowVoteBody {
   comment?: string;
+  /** 审批附件 Id（提交后绑定到本次意见，进度按意见列出） */
+  attachmentIds?: Array<number | string>;
 }
 
 /** 接收人体（与后端 to schema 同构） */
@@ -1127,6 +1143,50 @@ export interface WorkflowPhrase {
   text: string;
 }
 
+/** 效率聚合行（design §6.4） */
+export interface WorkflowEfficiencyRow {
+  /** 行键 */
+  key: string;
+  /** 行标题 */
+  title: string;
+  /** 已结束节点样本数 */
+  count: number;
+  /** 平均耗时（小时；无样本 null） */
+  avgHours: number | null;
+  /** 中位耗时（小时；无样本 null） */
+  medianHours: number | null;
+  /** 超 48 小时比例（无样本 null） */
+  over48Rate: number | null;
+}
+
+/** 效率最慢条目（节点/月行就地展开） */
+export interface WorkflowEfficiencySlowItem {
+  /** 实例编号（雪花字符串） */
+  instanceId: string;
+  nodeId: string;
+  title: string;
+  /** 办理人显示名 */
+  assignee: string;
+  /** 耗时（小时） */
+  hours: number;
+  /** 未办完（等待中） */
+  waiting: boolean;
+}
+
+/** 效率聚合结果（design §6.5） */
+export interface WorkflowEfficiencyResult {
+  /** 平均耗时（小时；无样本 null → 页面显示「—」） */
+  avgHours: number | null;
+  /** 完成率（无实例 null → 页面显示「—」） */
+  completionRate: number | null;
+  /** 超 48 小时仍未办完的单数 */
+  overdueOpen: number;
+  /** 实例超 2000 条截断 */
+  truncated: boolean;
+  rows: WorkflowEfficiencyRow[];
+  slow: WorkflowEfficiencySlowItem[];
+}
+
 /**
  * OA 审批流程 API（OSC-26090347f1）。后端 [Route("Cube/Workflow")]，无 /api 前缀
  */
@@ -1152,7 +1212,7 @@ export function createWorkflowApi(request: RequestFn) {
     instance: (id: number | string) =>
       request<WorkflowInstanceDetail>({ url: `/Cube/Workflow/Instances/${id}`, method: 'get' }),
 
-    /** 审批附件上传（发起流程；挂到实例 Key=instanceId） */
+    /** 审批附件上传（发起时挂实例；审批任务上传时挂任务，提交意见时绑定） */
     uploadAttachment: (file: File, params: { instanceId: number | string; taskId?: number | string }) => {
       const formData = new FormData();
       formData.append('file', file);
@@ -1161,7 +1221,10 @@ export function createWorkflowApi(request: RequestFn) {
         method: 'post',
         headers: { 'Content-Type': 'multipart/form-data' },
         data: formData,
-        params: { instanceId: params.instanceId },
+        params: {
+          instanceId: params.instanceId,
+          ...(params.taskId != null && params.taskId !== '' ? { taskId: params.taskId } : {}),
+        },
       });
     },
 
@@ -1198,14 +1261,30 @@ export function createWorkflowApi(request: RequestFn) {
     batchApprove: (data: WorkflowBatchBody) =>
       request<WorkflowBatchResultItem[]>({ url: '/Cube/Workflow/Tasks/BatchApprove', method: 'post', data }),
 
-    todo: (params?: { pageSize?: number }) =>
-      request<WorkflowTaskItem[]>({ url: '/Cube/Workflow/Todo', method: 'get', params }),
+    /** 批量驳回（≤50；办理任务自动跳过，结果条目 skipped=true） */
+    batchReject: (data: WorkflowBatchBody) =>
+      request<WorkflowBatchResultItem[]>({ url: '/Cube/Workflow/Tasks/BatchReject', method: 'post', data }),
 
-    started: (params?: { pageSize?: number }) =>
-      request<WorkflowInstanceItem[]>({ url: '/Cube/Workflow/Started', method: 'get', params }),
+    /** 效率聚合（只读；无「效率」菜单 Detail 权 403） */
+    efficiency: (params: {
+      groupBy?: string;
+      days?: number;
+      year?: string;
+      definitionId?: string;
+      departmentId?: string;
+      userId?: string;
+      nodeId?: string;
+      month?: string;
+    }) => request<WorkflowEfficiencyResult>({ url: '/Cube/Workflow/Efficiency', method: 'get', params }),
 
-    done: (params?: { pageSize?: number }) =>
-      request<WorkflowTaskItem[]>({ url: '/Cube/Workflow/Done', method: 'get', params }),
+    todo: (params?: { page?: number; pageSize?: number; q?: string }) =>
+      request<WorkflowListPage<WorkflowTaskItem>>({ url: '/Cube/Workflow/Todo', method: 'get', params }),
+
+    started: (params?: { page?: number; pageSize?: number; q?: string }) =>
+      request<WorkflowListPage<WorkflowInstanceItem>>({ url: '/Cube/Workflow/Started', method: 'get', params }),
+
+    done: (params?: { page?: number; pageSize?: number; q?: string }) =>
+      request<WorkflowListPage<WorkflowTaskItem>>({ url: '/Cube/Workflow/Done', method: 'get', params }),
 
     phrases: () => request<WorkflowPhrase[]>({ url: '/Cube/Workflow/Phrases', method: 'get' }),
 

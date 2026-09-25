@@ -255,5 +255,6 @@ export function useFilterBuilderPopover(props: FilterBuilderPopoverProps, emit: 
     emitSave,
     close,
     emitApply,
+    syncDraftFromProps,
   };
 }

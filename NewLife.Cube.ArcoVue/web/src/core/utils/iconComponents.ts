@@ -14,6 +14,7 @@ import {
   ApplicationMenu,
   Attention,
   Audit,
+  Branch,
   BigClock,
   BackgroundColor,
   Blackboard,
@@ -78,6 +79,7 @@ import {
   MoreOne,
   NetworkTree,
   People,
+  ParallelGateway,
   Peoples,
   Permissions,
   Phone,
@@ -175,6 +177,7 @@ export const ICON_COMPONENTS: Record<string, Component> = {
   share: Share,
   message: Message,
   'building-one': BuildingOne,
+  branch: Branch,
   box: Box,
   inbox: Inbox,
   application: Application,
@@ -226,6 +229,7 @@ export const ICON_COMPONENTS: Record<string, Component> = {
   click: Click,
   comments: Comments,
   'network-tree': NetworkTree,
+  'parallel-gateway': ParallelGateway,
 };
 
 /** 兜底图标（无效/未登记 type 时渲染，避免运行时抛错） */

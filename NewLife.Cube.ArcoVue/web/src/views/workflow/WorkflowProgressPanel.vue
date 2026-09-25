@@ -2,11 +2,13 @@
 /**
  * 审批进度（抽屉或内嵌）。节点流程为主，全部动态折叠；主按钮同意/驳回，更多含回退。
  */
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { formatTime } from '@/core/utils/datetime';
 import { renderAiMarkdown } from '@/core/utils/aiMarkdown';
 import { useWorkflowProgressPanel } from './useWorkflowProgressPanel';
-import WorkflowRecipientPicker from './WorkflowRecipientPicker.vue';
+import WfInstanceGraph from './WfInstanceGraph.vue';
+import WfStatusMark from './WfStatusMark.vue';
+import WorkflowTaskActions from './WorkflowTaskActions.vue';
 import type { WfId } from './useWorkflowProgress';
 
 const props = withDefaults(
@@ -31,39 +33,30 @@ const {
   error,
   myTask,
   canWithdraw,
-  statusMeta,
-  flowNodes,
+  isHandle,
+  isCc,
+  opinionEvents,
   flags,
   rollbackOptions,
-  timelineItems,
+  starterAttachments,
   writableFieldNames,
-  opinionVisible,
-  opinionKind,
-  opinionText,
+  preview,
+  openAttachment,
+  closePreview,
   phrases,
-  saving,
-  openApprove,
-  openReject,
-  openWithdraw,
-  openAddSign,
-  openTransfer,
-  openCc,
-  openRollback,
-  openRecord,
-  confirmOpinion,
-  pickPhrase,
-  targetVisible,
-  targetKind,
-  targetComment,
-  targetBefore,
-  targetNodeId,
-  targetRecipients,
-  targetSaving,
-  confirmTarget,
-  TARGET_TITLE,
+  reload,
 } = useWorkflowProgressPanel({ visible, instanceId: () => props.instanceId ?? null });
 
 const summaryHtml = computed(() => renderAiMarkdown(detail.value?.summary || ''));
+/** 激活的页签：仅在激活「查看流程」时挂载只读画布，避免隐藏容器初始化 FlowGram 导致浮层错位遮挡其他页签 */
+const activeTab = ref('progress');
+const phraseTexts = computed(() => phrases.value.map((p) => p.text).filter(Boolean));
+const actionVariant = computed<'approve' | 'handle' | 'read' | 'none'>(() => {
+  if (!myTask.value) return 'none';
+  if (isHandle.value) return 'handle';
+  if (isCc.value) return 'read';
+  return 'approve';
+});
 </script>
 
 <template>
@@ -83,7 +76,7 @@ const summaryHtml = computed(() => renderAiMarkdown(detail.value?.summary || '')
     @update:visible="(v: boolean) => (visible = v)"
   >
     <template v-if="!embed" #title>
-      <span class="wf-progress__title">审批进度</span>
+      <span class="wf-progress__title">{{ detail?.title || '流程实例' }}</span>
     </template>
 
     <div v-if="loading" class="wf-progress__loading">
@@ -93,174 +86,158 @@ const summaryHtml = computed(() => renderAiMarkdown(detail.value?.summary || '')
     <a-empty v-else-if="!detail" description="暂无审批" />
 
     <template v-else>
-      <div class="wf-progress__head">
-        <a-tag :color="statusMeta.color">{{ statusMeta.text }}</a-tag>
-        <span v-if="detail.title" class="wf-progress__inst-title">{{ detail.title }}</span>
-        <span class="wf-progress__def">{{ detail.definition?.name || `定义 #${detail.definition?.id ?? ''}` }}</span>
-        <a-button type="text" size="mini" @click="openRecord">打开记录</a-button>
-      </div>
-
-      <div v-if="detail.subjects?.length" class="wf-progress__subjects">
-        <div v-for="s in detail.subjects" :key="String(s.id)" class="wf-progress__subject">
-          <span class="wf-progress__subject-key">{{ s.entityKey }}</span>
-          <a-typography-text ellipsis>{{ s.title || '—' }}</a-typography-text>
-        </div>
-      </div>
-
-      <div v-if="summaryHtml" class="wf-progress__summary" v-html="summaryHtml" />
-
-      <a-alert
-        v-if="writableFieldNames.length"
-        type="info"
-        class="wf-progress__writable"
-        show-icon
-      >
+      <a-alert v-if="writableFieldNames.length" type="info" class="wf-progress__writable" show-icon>
         当前节点可写字段：{{ writableFieldNames.join('、') }}
-        <template #action>
-          <a-button type="text" size="mini" @click="openRecord">打开记录修改</a-button>
-        </template>
       </a-alert>
 
-      <div v-if="flowNodes.length" class="wf-progress__nodes">
-        <div
-          v-for="n in flowNodes"
-          :key="n.key"
-          class="wf-node"
-          :class="{ 'wf-node--current': n.current }"
-        >
-          <div class="wf-node__head">
-            <b>{{ n.title }}</b>
-            <a-tag v-for="b in n.badges" :key="b" size="small">{{ b }}</a-tag>
-            <a-tag v-if="n.current" color="orangered" size="small">待你处理</a-tag>
+      <a-tabs
+        v-model:active-key="activeTab"
+        class="wf-progress__tabs"
+        default-active-key="progress"
+        size="small"
+      >
+        <template #extra>
+          <div class="wf-progress__tab-extra">
+            <WfStatusMark :status="detail.status" />
+            <span class="wf-progress__def">{{ detail.definition?.name || '流程' }}</span>
           </div>
-          <div v-if="n.hint" class="wf-node__hint">{{ n.hint }}</div>
-          <div v-for="p in n.people" :key="p.key" class="wf-node__person">
-            <span>{{ p.label }}</span>
-            <a-tag :color="p.statusColor" size="small">{{ p.statusText }}</a-tag>
-            <span v-if="p.comment" class="wf-node__comment">{{ p.comment }}</span>
-            <span v-if="p.time" class="wf-node__time">{{ formatTime(p.time) }}</span>
-          </div>
-        </div>
-      </div>
-
-      <a-collapse v-if="timelineItems.length" :bordered="false" class="wf-progress__all">
-        <a-collapse-item key="all">
-          <template #header>全部动态</template>
-          <a-timeline>
-            <a-timeline-item
-              v-for="it in timelineItems"
-              :key="it.key"
-              :label="it.time ? formatTime(it.time) : ''"
-            >
-              <b>{{ it.title }}</b>
-              <span class="wf-progress__user">{{ it.user }}</span>
-              <div v-if="it.content" class="wf-progress__content">{{ it.content }}</div>
-            </a-timeline-item>
-          </a-timeline>
-        </a-collapse-item>
-      </a-collapse>
-
-      <div v-if="detail.attachments?.length" class="wf-progress__attachments">
-        <div class="wf-progress__attachments-title">发起附件</div>
-        <a
-          v-for="a in detail.attachments"
-          :key="String(a.id)"
-          class="wf-progress__att"
-          :href="a.url || '#'"
-          target="_blank"
-          rel="noopener"
-        >
-          {{ a.fileName || a.title || a.id }}
-        </a>
-      </div>
-
-      <div v-if="myTask || canWithdraw" class="wf-progress__ops">
-        <template v-if="myTask">
-          <a-button type="primary" @click="openApprove">同意</a-button>
-          <a-button status="danger" @click="openReject">驳回</a-button>
-          <a-dropdown trigger="hover">
-            <a-button>更多 <icon-park type="down" /></a-button>
-            <template #content>
-              <a-doption v-if="flags.allowAddSign" @click="openAddSign">加签</a-doption>
-              <a-doption v-if="flags.allowTransfer" @click="openTransfer">转办</a-doption>
-              <a-doption @click="openCc">知会</a-doption>
-              <a-doption v-if="flags.allowRollback" @click="openRollback">回退</a-doption>
-            </template>
-          </a-dropdown>
         </template>
-        <a-button v-if="canWithdraw" status="warning" @click="openWithdraw">撤回</a-button>
-      </div>
+        <a-tab-pane key="progress" title="审批进度">
+          <a-card class="wf-progress__card" :bordered="true" size="small">
+            <div class="wf-progress__card-title">{{ detail.title || '未命名流程' }}</div>
+            <div v-if="summaryHtml" class="wf-progress__summary" v-html="summaryHtml" />
+            <div v-else class="wf-progress__muted">暂无摘要</div>
+            <div class="wf-progress__file-label">附件</div>
+            <div v-if="!starterAttachments.length" class="wf-progress__muted">暂无附件</div>
+            <div v-for="a in starterAttachments" :key="a.id" class="wf-progress__file">
+              <span class="wf-progress__file-name">{{ a.fileName }}</span>
+              <a-button v-if="a.url" type="text" size="mini" @click="openAttachment(a)">
+                <icon-park type="preview-open" /> 预览
+              </a-button>
+              <a v-if="a.url" class="wf-progress__dl" :href="a.url" target="_blank" rel="noopener" download>
+                <icon-park type="download" /> 下载
+              </a>
+            </div>
+          </a-card>
+
+          <a-collapse :default-active-key="['opinions']" :bordered="false" class="wf-progress__all">
+            <a-collapse-item key="opinions" header="审批意见">
+              <a-timeline>
+                <a-timeline-item v-for="ev in opinionEvents" :key="ev.key" :label="ev.time ? formatTime(ev.time) : ''">
+                  <div class="wf-progress__ev">
+                    <a-tag size="small">{{ ev.actionText }}</a-tag>
+                    <b v-if="ev.nodeTitle">{{ ev.nodeTitle }}</b>
+                    <span class="wf-progress__user">{{ ev.user }}</span>
+                  </div>
+                  <div v-if="ev.content" class="wf-progress__content">{{ ev.content }}</div>
+                  <div v-if="ev.attachments?.length" class="wf-progress__file">
+                    <template v-for="a in ev.attachments" :key="a.id">
+                      <span class="wf-progress__file-name">{{ a.fileName }}</span>
+                      <a-button v-if="a.url" type="text" size="mini" @click="openAttachment(a)">预览</a-button>
+                      <a v-if="a.url" class="wf-progress__dl" :href="a.url" download target="_blank" rel="noopener">下载</a>
+                    </template>
+                  </div>
+                </a-timeline-item>
+              </a-timeline>
+            </a-collapse-item>
+          </a-collapse>
+        </a-tab-pane>
+
+        <a-tab-pane key="graph" title="查看流程">
+          <WfInstanceGraph v-if="activeTab === 'graph'" :graph-json="detail?.graphSnapshot" :detail="detail" />
+        </a-tab-pane>
+      </a-tabs>
+
+      <WorkflowTaskActions
+        v-if="myTask || canWithdraw"
+        class="wf-progress__ops"
+        appearance="solid"
+        popup-position="tl"
+        :variant="actionVariant"
+        :show-more="!!myTask && !isHandle && !isCc"
+        :show-withdraw="canWithdraw"
+        :task-id="myTask?.id"
+        :instance-id="detail.id"
+        :node-id="myTask?.nodeId"
+        :assignee-id="myTask?.assigneeId"
+        :candidate="myTask?.candidate"
+        :phrases="phraseTexts"
+        :rollback-options="rollbackOptions"
+        :allow-transfer="flags.allowTransfer"
+        :allow-add-sign="flags.allowAddSign"
+        :allow-rollback="flags.allowRollback"
+        :allow-cc="!!myTask && !isHandle && !isCc"
+        @done="reload()"
+      />
     </template>
 
     <a-modal
-      v-model:visible="opinionVisible"
-      :title="opinionKind === 'approve' ? '同意' : opinionKind === 'reject' ? '驳回' : '撤回流程'"
-      :on-before-ok="confirmOpinion"
-      :ok-loading="saving"
+      :visible="!!preview"
+      :title="preview?.title || '预览'"
+      :footer="false"
+      width="720px"
+      unmount-on-close
+      @cancel="closePreview"
     >
-      <div v-if="phrases.length" class="wf-opinion-phrases">
-        <a-tag
-          v-for="p in phrases"
-          :key="p.id"
-          class="wf-opinion-phrase"
-          :bordered="false"
-          @click="pickPhrase(p)"
-        >
-          {{ p.text }}
-        </a-tag>
-      </div>
-      <a-textarea v-model="opinionText" :max-length="500" placeholder="意见（可选）" allow-clear />
-    </a-modal>
-
-    <a-modal
-      v-model:visible="targetVisible"
-      :title="TARGET_TITLE[targetKind]"
-      :on-before-ok="confirmTarget"
-      :ok-loading="targetSaving"
-    >
-      <a-form :model="{}" layout="vertical">
-        <a-form-item v-if="targetKind === 'addSign'" label="位置">
-          <a-radio-group v-model="targetBefore" type="button" size="small">
-            <a-radio :value="false">后加签（我办完再给对方）</a-radio>
-            <a-radio :value="true">前加签（先给对方，再回到我）</a-radio>
-          </a-radio-group>
-        </a-form-item>
-        <a-form-item v-if="targetKind === 'rollback'" label="回退到">
-          <a-select v-model="targetNodeId" :options="rollbackOptions.map((t) => ({ value: t.nodeId, label: t.name }))" />
-        </a-form-item>
-        <a-form-item v-if="targetKind !== 'rollback'" label="接收人">
-          <WorkflowRecipientPicker
-            v-model:kind="targetRecipients.kind"
-            v-model:model-value="targetRecipients.ids"
-            :multiple="targetKind !== 'transfer'"
-            :placeholder="targetKind === 'transfer' ? '选择转办人' : '选择接收人'"
-          />
-        </a-form-item>
-        <a-form-item label="附言">
-          <a-textarea v-model="targetComment" :max-length="500" placeholder="附言（可选）" allow-clear />
-        </a-form-item>
-      </a-form>
+      <img v-if="preview?.kind === 'image'" class="wf-preview__img" :src="preview.url" :alt="preview.title" />
+      <iframe v-else-if="preview?.kind === 'pdf'" class="wf-preview__frame" :src="preview.url" title="预览" />
+      <pre v-else-if="preview?.kind === 'text'" class="wf-preview__text">{{ preview.text }}</pre>
     </a-modal>
   </component>
 </template>
 
 <style scoped>
+/* tabs 撑满抽屉内容区，「查看流程」画布随之拉伸填满页签（四边留白 = 外层 body/tabs 既有间距） */
+.wf-progress__tabs {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.wf-progress__tabs :deep(.arco-tabs-content) {
+  flex: 1;
+  min-height: 0;
+}
+.wf-progress__tabs :deep(.arco-tabs-content-list) {
+  height: 100%;
+}
+.wf-progress__tabs :deep(.arco-tabs-content-item-active),
+.wf-progress__tabs :deep(.arco-tabs-pane) {
+  height: 100%;
+}
 .wf-progress--embed {
   display: flex;
   flex-direction: column;
+  width: 100%;
   min-height: 0;
   height: 100%;
+}
+.wf-progress--embed :deep(.arco-tabs) {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+.wf-progress--embed .wf-progress__ops {
+  flex: none;
+  margin-top: auto;
 }
 .wf-progress__loading {
   padding: 40px;
   text-align: center;
 }
-.wf-progress__head {
+.wf-progress__head,
+.wf-progress__tab-extra {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
+}
+.wf-progress__head {
   margin-bottom: 12px;
+}
+.wf-progress__tab-extra {
+  margin-left: 12px;
 }
 .wf-progress__inst-title {
   font-weight: 600;
@@ -322,6 +299,15 @@ const summaryHtml = computed(() => renderAiMarkdown(detail.value?.summary || '')
   color: var(--color-text-3);
   font-size: 12px;
 }
+.wf-node__atts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+.wf-node__att {
+  font-size: 12px;
+}
 .wf-node__person {
   display: flex;
   align-items: center;
@@ -334,9 +320,6 @@ const summaryHtml = computed(() => renderAiMarkdown(detail.value?.summary || '')
   margin-left: auto;
   color: var(--color-text-4);
   font-size: 12px;
-}
-.wf-progress__all {
-  margin-top: 8px;
 }
 .wf-progress__user {
   color: var(--color-text-3);
@@ -363,15 +346,71 @@ const summaryHtml = computed(() => renderAiMarkdown(detail.value?.summary || '')
   font-size: 13px;
   line-height: 1.8;
 }
+.wf-progress__card {
+  width: 100%;
+  margin-bottom: 12px;
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-2);
+  border-radius: 8px;
+}
+.wf-progress__all {
+  margin-top: 8px;
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.wf-progress__card-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.wf-progress__muted,
+.wf-progress__file-label {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--color-text-3);
+}
+.wf-progress__file {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+}
+.wf-progress__file-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wf-progress__dl {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+}
+.wf-progress__ev {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.wf-preview__img {
+  max-width: 100%;
+}
+.wf-preview__frame {
+  width: 100%;
+  height: 70vh;
+  border: 0;
+}
+.wf-preview__text {
+  max-height: 70vh;
+  overflow: auto;
+  white-space: pre-wrap;
+}
 .wf-progress__ops {
-  position: sticky;
-  bottom: 0;
   display: flex;
   gap: 8px;
-  padding-top: 12px;
   margin-top: 16px;
-  border-top: 1px solid var(--color-border-2);
-  background: var(--color-bg-5);
 }
 .wf-opinion-phrases {
   display: flex;

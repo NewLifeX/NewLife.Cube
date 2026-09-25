@@ -190,14 +190,37 @@ public partial class WorkflowComment : IEntity<WorkflowCommentModel>
     }
     #endregion
 
+    #region 高级查询
+    /// <summary>高级查询</summary>
+    /// <param name="instanceId">流程实例</param>
+    /// <param name="taskId">任务。0=发起意见</param>
+    /// <param name="start">编号开始</param>
+    /// <param name="end">编号结束</param>
+    /// <param name="key">关键字</param>
+    /// <param name="page">分页参数信息。可携带统计和数据权限扩展查询等信息</param>
+    /// <returns>实体列表</returns>
+    public static IList<WorkflowComment> Search(Int64 instanceId, Int64 taskId, DateTime start, DateTime end, String key, PageParameter page)
+    {
+        var exp = new WhereExpression();
+
+        if (instanceId >= 0) exp &= _.InstanceId == instanceId;
+        if (taskId >= 0) exp &= _.TaskId == taskId;
+        exp &= _.Id.Between(start, end, Meta.Factory.Snow);
+        if (!key.IsNullOrEmpty()) exp &= SearchWhereByKeys(key);
+
+        return FindAll(exp, page);
+    }
+    #endregion
+
     #region 数据清理
     /// <summary>清理指定时间段内的数据</summary>
     /// <param name="start">开始时间。未指定时清理小于指定时间的所有数据</param>
     /// <param name="end">结束时间</param>
+    /// <param name="maximumRows">最大删除行数。清理历史数据时，避免一次性删除过多导致数据库IO跟不上，0表示所有</param>
     /// <returns>清理行数</returns>
-    public static Int32 DeleteWith(DateTime start, DateTime end)
+    public static Int32 DeleteWith(DateTime start, DateTime end, Int32 maximumRows = 0)
     {
-        return Delete(_.Id.Between(start, end, Meta.Factory.Snow));
+        return Delete(_.Id.Between(start, end, Meta.Factory.Snow), maximumRows);
     }
     #endregion
 

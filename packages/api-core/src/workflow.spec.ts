@@ -91,4 +91,29 @@ describe('createWorkflowApi /Cube/Workflow URL（OSC-26090347f1）', () => {
     ]);
     expect(calls[6].params).toEqual({ typePath: 'Admin/User' });
   });
+
+  it('batchReject / efficiency / 附件 taskId / start picks（OSC-260922201a）', async () => {
+    const { api, calls } = captureApi();
+    await api.batchReject({ ids: [1, 2], comment: 'no' });
+    await api.efficiency({ groupBy: 'node', definitionId: '12', nodeId: 'n1' });
+    await api.uploadAttachment('x' as unknown as File, { instanceId: '9', taskId: '7' });
+    await api.uploadAttachment('x' as unknown as File, { instanceId: '9' });
+    await api.start({ typePath: 'x', keys: ['1'], definitionId: '1', picks: { n1: [5, 6] } });
+    await api.approve(7, { comment: 'ok', attachmentIds: ['11'] });
+
+    expect(calls.map((c) => `${c.method} ${c.url}`)).toEqual([
+      'post /Cube/Workflow/Tasks/BatchReject',
+      'get /Cube/Workflow/Efficiency',
+      'post /Cube/Workflow/Attachments',
+      'post /Cube/Workflow/Attachments',
+      'post /Cube/Workflow/Instances',
+      'post /Cube/Workflow/Tasks/7/Approve',
+    ]);
+    expect(calls[1].params).toEqual({ groupBy: 'node', definitionId: '12', nodeId: 'n1' });
+    // 审批任务上传带 taskId；发起上传不带
+    expect(calls[2].params).toEqual({ instanceId: '9', taskId: '7' });
+    expect(calls[3].params).toEqual({ instanceId: '9' });
+    expect(calls[4].data).toEqual({ typePath: 'x', keys: ['1'], definitionId: '1', picks: { n1: [5, 6] } });
+    expect(calls[5].data).toEqual({ comment: 'ok', attachmentIds: ['11'] });
+  });
 });

@@ -627,6 +627,7 @@
       :layout="drawerFormLayout"
       :ops-custom-links="opsCustomLinks"
       :workflow-enabled="workflowEnabled"
+      :open-on-workflow="openOnWorkflow"
       @toggle-collapse="onToggleCollapse"
       @save="handleSave"
       @edit="drawerMode = 'edit'"
@@ -847,6 +848,7 @@ const {
   wfSubmitIds,
   wfProgressInstanceId,
   wfProgressVisible,
+  openOnWorkflow,
   openWorkflowSubmit,
   openWorkflowProgressById,
   onWorkflowSubmitted,

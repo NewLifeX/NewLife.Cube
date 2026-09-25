@@ -1,0 +1,14 @@
+---
+description: 审批同意/驳回/更多必须共用同一套弹层组件，禁止各页面重复实现
+globs: NewLife.Cube.ArcoVue/web/src/views/{workflow,crud}/**/*
+alwaysApply: false
+---
+
+# 审批操作共用组件
+
+- 同意、驳回、更多，以及已办理、已阅、撤回，使用同一套弹层：宽屏为 480px 点击气泡，窄屏为全宽对话框。
+- 入口只用 `WorkflowTaskActions`。意见内容只用 `WorkflowOpinionForm`，更多内容只用 `WorkflowMoreActions`，提交只用 `workflowTaskOps`。
+- 进度抽屉、实体列表里的审批页签、我的待办，不要各自再写一套意见框、更多菜单或底部操作条。
+- 审批操作按钮底部不要再包带边框、带底色的矩形栏。
+- 进度抽屉和提交抽屉的宽度与实体添加 / 编辑 / 详情抽屉相同，用 `recordDrawerWidth`。
+- 查看流程的节点列表只用 `WfDefinitionNodes`。

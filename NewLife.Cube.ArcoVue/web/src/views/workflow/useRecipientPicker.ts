@@ -21,6 +21,8 @@ export interface RecipientPickerProps {
   kind: RecipientKind;
   /** 已选 Id */
   modelValue: number[];
+  /** 与 Id 对齐的显示名，搜索结果里没有该人时用来保留标签 */
+  labels?: string[];
   /** 多选（转办固定单选） */
   multiple: boolean;
   /** 占位文案 */
@@ -33,6 +35,8 @@ export interface RecipientPickerEmits {
   (e: 'update:kind', kind: RecipientKind): void;
   /** 已选项变化 */
   (e: 'update:modelValue', ids: number[]): void;
+  /** 与 Id 对齐的显示名，供画布卡片立即刷新 */
+  (e: 'update:labels', labels: string[]): void;
 }
 
 /**
@@ -61,7 +65,11 @@ export function useRecipientPicker(props: RecipientPickerProps, emit: RecipientP
       const map = new Map(list.map((x) => [x.id, x]));
       const keep = searchKind === kind.value ? selected.value : [];
       for (const id of keep) {
-        if (!map.has(id)) map.set(id, { id, name: String(id), displayName: String(id) });
+        if (map.has(id)) continue;
+        const idx = keep.indexOf(id);
+        const known = (props.labels?.[idx] ?? '').trim();
+        const name = known && known !== String(id) ? known : String(id);
+        map.set(id, { id, name, displayName: name });
       }
       options.value = [...map.values()];
     } finally {
@@ -79,7 +87,16 @@ export function useRecipientPicker(props: RecipientPickerProps, emit: RecipientP
   }
 
   function onUpdate(v: unknown) {
-    emit('update:modelValue', normalizeSelectIds(v));
+    const ids = normalizeSelectIds(v);
+    emit('update:modelValue', ids);
+    emit(
+      'update:labels',
+      ids.map((id) => {
+        const hit = options.value.find((o) => o.id === id);
+        const name = (hit?.displayName || hit?.name || '').trim();
+        return name && name !== String(id) ? name : '';
+      }),
+    );
   }
 
   watch(

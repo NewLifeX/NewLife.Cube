@@ -20,7 +20,7 @@ public class WorkflowPageOverlayTests
         DAL.AddConnStr("Cube", "Data Source=Osc47f1OvlCube;Mode=Memory;Cache=Shared", null, "SQLite");
         DAL.AddConnStr("Log", "Data Source=Osc47f1OvlLog;Mode=Memory;Cache=Shared", null, "SQLite");
         DAL.AddConnStr("Workflow", "Data Source=Osc47f1OvlWf;Mode=Memory;Cache=Shared", null, "SQLite");
-        WorkflowTestDb.EnsureInstanceSummaryColumn();
+        WorkflowTestDb.EnsureWorkflowTables();
 
         WorkflowTask.FindAll().Delete();
         WorkflowSubject.FindAll().Delete();

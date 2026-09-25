@@ -103,7 +103,8 @@ export function useFormContent(props: FormContentProps) {
     if (isSystemRoleNameLocked(props.typePath, props.model, field.name)) return true;
     if (isSystemRoleFlagLocked(props.typePath, props.model, field.name, props.mode)) return true;
     const allow = props.writableAllowlist;
-    if (allow && allow.length > 0) {
+    // null：不限制。数组（含空）：只允许列出的字段，审批中无可写字段则全部禁用
+    if (Array.isArray(allow)) {
       const set = new Set(allow.map((n) => n.toLowerCase()));
       if (!set.has(field.name.toLowerCase())) return true;
     }

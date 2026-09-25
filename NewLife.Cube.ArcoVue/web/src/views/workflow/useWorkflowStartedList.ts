@@ -13,15 +13,30 @@ export function useWorkflowStartedList() {
   const loading = ref(false);
   const progressInstanceId = ref<string | null>(null);
   const progressVisible = ref(false);
+  const keyword = ref('');
+  const page = ref(1);
+  const pageSize = ref(20);
+  const total = ref(0);
 
   async function load() {
     loading.value = true;
     try {
-      const res = await cubeApi.workflow.started({ pageSize: 50 });
-      const list = res?.data;
-      rows.value = Array.isArray(list) ? list : [];
+      const res = await cubeApi.workflow.started({
+        page: page.value,
+        pageSize: pageSize.value,
+        q: keyword.value.trim() || undefined,
+      });
+      const data = res?.data;
+      if (Array.isArray(data)) {
+        rows.value = data;
+        total.value = data.length;
+      } else {
+        rows.value = data?.list ?? [];
+        total.value = data?.total ?? rows.value.length;
+      }
     } catch (err) {
       rows.value = [];
+      total.value = 0;
       Message.error(formatApiError(err, '加载失败'));
     } finally {
       loading.value = false;
@@ -29,6 +44,23 @@ export function useWorkflowStartedList() {
   }
 
   function refresh() {
+    void load();
+  }
+
+  function search(q: string) {
+    keyword.value = q;
+    page.value = 1;
+    void load();
+  }
+
+  function changePage(p: number) {
+    page.value = p;
+    void load();
+  }
+
+  function changePageSize(size: number) {
+    pageSize.value = size;
+    page.value = 1;
     void load();
   }
 
@@ -47,8 +79,15 @@ export function useWorkflowStartedList() {
     loading,
     progressInstanceId,
     progressVisible,
+    keyword,
+    page,
+    pageSize,
+    total,
     load,
     refresh,
+    search,
+    changePage,
+    changePageSize,
     openProgress,
   };
 }

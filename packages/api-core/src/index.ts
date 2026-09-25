@@ -117,6 +117,9 @@ export type {
   WorkflowJumpBody,
   WorkflowBatchBody,
   WorkflowPhrase,
+  WorkflowEfficiencyRow,
+  WorkflowEfficiencySlowItem,
+  WorkflowEfficiencyResult,
 } from './api';
 
 // 密码安全工具（RSA-OAEP 加密，配合 /Auth/Challenge 接口）

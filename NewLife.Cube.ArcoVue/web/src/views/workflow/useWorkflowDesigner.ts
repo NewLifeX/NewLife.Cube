@@ -7,8 +7,8 @@ import { createRoot, type Root } from 'react-dom/client';
 import cubeApi from '@/api';
 import { formatApiError } from '@/core/utils/apiError';
 import type { FieldMeta } from '@/core/types/field';
-import type { WfGraphData, WfGraphNodeData } from '@/core/types/workflow';
-import { wfRecipientTo, wfRecipientToJson } from '@/core/types/workflow';
+import type { WfGraphData, WfGraphNodeData, WfToKind } from '@/core/types/workflow';
+import { isSearchToKind, wfRecipientTo, wfRecipientToJson, wfToJsonForKind, wfToKindOf } from '@/core/types/workflow';
 import { toFieldMetas } from '@/core/utils/fieldNormalize';
 import { ensureApiTypePath } from '@/core/utils/url';
 import { emptyViewFilter, type ViewFilter } from '@/core/utils/viewProfile';
@@ -16,8 +16,8 @@ import { defaultNodeDataFor, flowDocToGraph, graphToFlowDoc, type FlowDoc } from
 import { FlowGramDesigner, type FlowGramApi } from './flowgram/FlowGramDesigner';
 import type { RecipientKind } from './recipient';
 import { searchRecipients } from './recipient';
-import { cardsOf, insertNodeTitle } from './wfNodeCard';
-import { parseViewFilterJson, stringifyViewFilter, viewFilterHasRules } from './wfFilterText';
+import { branchInfosOf, cardsOf, insertNodeTitle, recipientLabelsOf, xorCaseList } from './wfNodeCard';
+import { parseViewFilterJson, stringifyViewFilter, viewFilterHasRules, filterValueLabelResolver } from './wfFilterText';
 
 /**
  * 流程设计器（OSC-26090347f1 T8e-FlowGram）：画布由 FlowGram.AI 固定布局承担（结构增删/拖拽/缩放），
@@ -42,7 +42,8 @@ export function parseGraph(json: string | null | undefined): WfGraphData {
     try {
       const obj = JSON.parse(json) as Partial<WfGraphData>;
       if (obj && Array.isArray(obj.nodes) && Array.isArray(obj.edges)) {
-        return { version: obj.version ?? 1, nodes: obj.nodes, edges: obj.edges };
+        // 保留根级未知字段（如 excludeStats），保存时原样写回
+        return { ...obj, version: obj.version ?? 1, nodes: obj.nodes, edges: obj.edges };
       }
     } catch {
       /* 非法 JSON 回落默认图 */
@@ -68,6 +69,7 @@ export function newDefaultGraph(): WfGraphData {
         allowAddSign: true,
         allowRollback: true,
         allowTransfer: true,
+        emptyPolicy: 'manager',
       },
     },
     { id: 'end', type: 'oa.end', data: { name: '结束' } },
@@ -100,12 +102,12 @@ export function topoChain(graph: WfGraphData): WfGraphNodeData[] {
 
 /** XOR 出边按 cases + defaultTarget 重写（默认分支优先，主链走 default） */
 export function compileXorEdges(graph: WfGraphData): WfGraphData {
-  const xorIds = new Set(graph.nodes.filter((n) => n.type === 'oa.xor').map((n) => n.id));
+  const xorIds = new Set(graph.nodes.filter((n) => n.type === 'oa.xor' || n.type === 'oa.parallel').map((n) => n.id));
   if (!xorIds.size) return graph;
   const idSet = new Set(graph.nodes.map((n) => n.id));
   const edges = (graph.edges ?? []).filter((e) => !xorIds.has(e.source));
   for (const n of graph.nodes) {
-    if (n.type !== 'oa.xor') continue;
+    if (n.type !== 'oa.xor' && n.type !== 'oa.parallel') continue;
     const def = String(n.data?.defaultTarget ?? '').trim();
     const targets: string[] = [];
     if (def && idSet.has(def)) targets.push(def);
@@ -135,11 +137,18 @@ export function insertAfter(graph: WfGraphData, afterId: string, type: string): 
     data.allowAddSign = true;
     data.allowRollback = true;
     data.allowTransfer = true;
+    data.emptyPolicy = 'manager';
+  }
+  if (type === 'oa.handle') {
+    data.mode = 'or';
+    data.to = wfRecipientToJson(undefined, [], 'users');
+    data.emptyPolicy = 'manager';
   }
   if (type === 'oa.cc') data.to = wfRecipientToJson(undefined, [], 'users');
-  if (type === 'oa.xor') {
+  if (type === 'oa.xor' || type === 'oa.parallel') {
     data.cases = [];
     data.defaultTarget = oldTarget || '';
+    if (type === 'oa.parallel') data.joinTarget = oldTarget || '';
   }
   const newNode: WfGraphNodeData = { id, type, data };
   // 移除 after→oldTarget 首边，改为 after→new + new→oldTarget；其它 from after 的出边保留
@@ -173,6 +182,8 @@ function defaultName(type: string): string {
       return '知会';
     case 'oa.xor':
       return '条件分流';
+    case 'oa.parallel':
+      return '并行分支';
     case 'oa.start':
       return '开始';
     case 'oa.end':
@@ -228,14 +239,19 @@ export function validateGraph(graph: WfGraphData): string[] {
   for (const n of graph.nodes) {
     const label = String((n.data?.name as string) || n.id);
     if (n.type === 'oa.approve') {
-      const to = wfRecipientTo(n.data?.to);
-      if (to.ids.length === 0) errors.push(`「${label}」缺少审批人`);
+      // 六种选人按 kind 分支：仅 users/roles/departments 需 Id；manager 恒合法；
+      // starterPick 由提交侧 picks 校验；field 由后端 ValidateTo 校验
+      const toKind = wfToKindOf(n.data?.to);
+      if (toKind === 'users' || toKind === 'roles' || toKind === 'departments') {
+        const to = wfRecipientTo(n.data?.to);
+        if (to.ids.length === 0) errors.push(`「${label}」缺少审批人`);
+      }
       if (n.data?.timeoutAction === 'transfer' && Number(n.data?.timeoutHours) > 0) {
         const tt = wfRecipientTo(n.data?.timeoutTransferTo);
         if (!tt.ids.length) errors.push(`「${label}」超时转交未指定接收人`);
       }
     }
-    if (n.type === 'oa.xor') {
+    if (n.type === 'oa.xor' || n.type === 'oa.parallel') {
       const def = String(n.data?.defaultTarget ?? '').trim();
       if (!def) errors.push(`「${label}」缺少默认分支`);
       else if (!graph.nodes.some((x) => x.id === def)) errors.push(`「${label}」默认分支目标不存在`);
@@ -358,6 +374,8 @@ export function useWorkflowDesigner() {
   const current = ref<WorkflowDefinitionItem | null>(null);
   const graph = ref<WfGraphData | null>(null);
   const selectedNodeId = ref<string | null>(null);
+  /** 右侧抽屉：点空白是流程属性，点节点是节点属性 */
+  const propertyPanel = ref<'none' | 'flow' | 'node'>('none');
   const saving = ref(false);
   const error = ref('');
   const writableFields = ref<{ name: string; label: string }[]>([]);
@@ -375,12 +393,12 @@ export function useWorkflowDesigner() {
   /** FlowGram 画布桥接 API（ref 回调在每次 render 更新） */
   const canvasApi: { current: FlowGramApi | null } = { current: null };
 
-  /** 添加审批/知会：插入前配置签核模式与接收人 */
+  /** 添加审批/办理/知会：插入前配置签核模式与接收人 */
   const insertVisible = ref(false);
   const insertAfterId = ref<string | null>(null);
-  const insertType = ref<'oa.approve' | 'oa.cc'>('oa.approve');
+  const insertType = ref<'oa.approve' | 'oa.handle' | 'oa.cc'>('oa.approve');
   const insertMode = ref('or');
-  const insertToKind = ref<RecipientKind>('users');
+  const insertToKind = ref<WfToKind>('users');
   const insertToIds = ref<number[]>([]);
   const pendingInsertDraft = ref<Record<string, unknown> | null>(null);
 
@@ -396,6 +414,14 @@ export function useWorkflowDesigner() {
 
   const hasStartFilter = computed(() => viewFilterHasRules(parseViewFilterJson(current.value?.startFilter)));
   const cardInfos = computed(() => cardsOf(graph.value, hasStartFilter.value));
+  /** 分支卡片摘要（画布块按物理顺序查，字段/枚举值均取友好名） */
+  const branchInfos = computed(() =>
+    branchInfosOf(
+      graph.value,
+      (name) => filterFields.value.find((f) => f.name === name)?.displayName || name,
+      filterValueLabelResolver(filterFields.value),
+    ),
+  );
   const graphErrors = computed(() => (graph.value ? validateGraph(graph.value) : []));
 
   /** 渲染/更新 React 画布（labels/readonly/doc 变更时调用；挂载前 no-op） */
@@ -408,11 +434,20 @@ export function useWorkflowDesigner() {
         readonly: !canEdit.value,
         labels: labelsOf(g),
         cards: cardInfos.value,
+        branchInfos: branchInfos.value,
+        selectedId: selectedNodeId.value || undefined,
         ref: (api: FlowGramApi | null) => {
           canvasApi.current = api;
         },
         onSelectNode: (id: string) => {
-          selectedNodeId.value = id;
+          if (id) {
+            selectedNodeId.value = id;
+            propertyPanel.value = 'node';
+          } else {
+            selectedNodeId.value = null;
+            propertyPanel.value = 'flow';
+          }
+          renderCanvas();
         },
         onInsertAfter: (fromId: string, type: string) => {
           beginInsert(fromId, type);
@@ -439,7 +474,7 @@ export function useWorkflowDesigner() {
         n.data = { ...n.data, ...pendingInsertDraft.value };
         pendingInsertDraft.value = null;
       }
-      if (!old && n.type === 'oa.xor') {
+      if (!old && (n.type === 'oa.xor' || n.type === 'oa.parallel')) {
         const next = raw.edges.find((e) => e.source === n.id)?.target || '';
         if (next && !n.data.defaultTarget) n.data = { ...n.data, defaultTarget: next };
       }
@@ -448,19 +483,23 @@ export function useWorkflowDesigner() {
     const nextIds = new Set(nodes.map((n) => n.id));
     for (const n of prev?.nodes ?? []) {
       if (nextIds.has(n.id)) continue;
-      const referenced = nodes.some((x) => xorTargetIds(x).includes(n.id)) || xorTargetIds(n).length > 0;
+      // 仅保留仍被画布现存节点 target 引用的旧节点；已删分流节点自身不再被"自我引用"复活
+      const referenced = nodes.some((x) => xorTargetIds(x).includes(n.id));
       if (referenced) {
         nodes.push(n);
         nextIds.add(n.id);
       }
     }
     graph.value = compileXorEdges({ version: raw.version, nodes, edges: raw.edges });
-    if (addedId) selectedNodeId.value = addedId;
+    if (addedId) {
+      selectedNodeId.value = addedId;
+      propertyPanel.value = 'node';
+    }
     renderCanvas();
   }
 
   function xorTargetIds(n: WfGraphNodeData): string[] {
-    if (n.type !== 'oa.xor') return [];
+    if (n.type !== 'oa.xor' && n.type !== 'oa.parallel') return [];
     const def = String(n.data?.defaultTarget ?? '').trim();
     const cases = Array.isArray(n.data?.cases) ? (n.data!.cases as { target?: string }[]) : [];
     return [def, ...cases.map((c) => String(c?.target ?? '').trim())].filter(Boolean);
@@ -481,14 +520,14 @@ export function useWorkflowDesigner() {
    */
   watch([graph, canvasEl], () => ensureCanvas(), { flush: 'post' });
 
-  /** 可配置实体（automation.entities update 权限） */
+  /** 可配置实体（automation.entities update 权限）；label 优先菜单中文显示名 */
   async function loadEntities() {
     try {
       const res = await cubeApi.automation.entities('update');
-      const rows = (res.data ?? []) as { typePath?: string; name?: string }[];
+      const rows = (res.data ?? []) as { typePath?: string; displayName?: string; name?: string }[];
       entityOptions.value = rows
         .filter((r) => !!r.typePath)
-        .map((r) => ({ value: r.typePath as string, label: (r.name as string) || (r.typePath as string) }));
+        .map((r) => ({ value: r.typePath as string, label: r.displayName || r.name || (r.typePath as string) }));
     } catch {
       entityOptions.value = [];
     }
@@ -500,30 +539,117 @@ export function useWorkflowDesigner() {
   const chain = computed(() => (graph.value ? topoChain(graph.value) : []));
   const canEdit = computed(() => !narrow.value && !!current.value);
 
-  /** 选中节点当前接收人（规范化） */
-  const selectedToKind = computed<RecipientKind>({
-    get: () => wfRecipientTo(selectedNode.value?.data?.to).kind as RecipientKind,
-    set: (kind: RecipientKind) => {
-      // 切换用户/角色/部门时清空已选，避免旧 Id 落到新类别上导致下拉无法选
-      patchSelected({ to: wfRecipientToJson(undefined, [], kind), toLabels: [] });
+  /** 选中节点当前接收人（规范化，六种选人） */
+  const selectedToKind = computed<WfToKind>({
+    get: () => wfToKindOf(selectedNode.value?.data?.to),
+    set: (kind: WfToKind) => {
+      // 切换选人类型时清空已选，避免旧 Id 落到新类别上
+      patchSelected({ to: wfToJsonForKind(kind, []), toLabels: [] });
     },
   });
+
+  /** 合并 to 上的附加字段（scope/multiple/field/fieldAs），保留原 kind 与 Id */
+  function patchToExtras(extra: Record<string, unknown>) {
+    const node = selectedNode.value;
+    if (!node) return;
+    const to = (node.data?.to ?? {}) as Record<string, unknown>;
+    const kind = wfToKindOf(to);
+    const ids = wfRecipientTo(to).ids;
+    patchSelected({ to: wfToJsonForKind(kind, ids, { ...to, ...extra }) });
+  }
+
   const selectedToIds = computed({
     get: () => wfRecipientTo(selectedNode.value?.data?.to).ids,
     set: (ids: number[]) => {
+      if (!isSearchToKind(selectedToKind.value)) return;
       const kind = selectedToKind.value;
+      const prev = recipientLabelsOf(selectedNode.value?.data);
       patchSelected({
         to: wfRecipientToJson(selectedNode.value?.data?.to, ids, kind),
-        toLabels: ids.map(String),
       });
       void (async () => {
-        const labels = await resolveRecipientLabels(kind, ids);
+        const resolved = await resolveRecipientLabels(kind as RecipientKind, ids);
         const cur = selectedNode.value;
         if (!cur) return;
         const still = wfRecipientTo(cur.data?.to);
         if (still.kind !== kind || still.ids.join(',') !== ids.join(',')) return;
+        const live = recipientLabelsOf(cur.data);
+        const labels = ids.map((id, i) => {
+          const name = (resolved[i] ?? '').trim();
+          if (name && name !== String(id)) return name;
+          const kept = (live[i] ?? '').trim();
+          if (kept && kept !== String(id)) return kept;
+          const old = (prev[i] ?? '').trim();
+          if (old && old !== String(id)) return old;
+          return name || kept || String(id);
+        });
         patchSelected({ toLabels: labels });
       })();
+    },
+  });
+
+  /** 选人框里的显示名，和 Id 一起写到卡片 */
+  const selectedToLabels = computed({
+    get: () => recipientLabelsOf(selectedNode.value?.data),
+    set: (labels: string[]) => {
+      const ids = wfRecipientTo(selectedNode.value?.data?.to).ids;
+      const next = ids.map((id, i) => {
+        const name = (labels[i] ?? '').trim();
+        return name || String(id);
+      });
+      patchSelected({ toLabels: next });
+    },
+  });
+
+  /** 提交人自选：可选范围与是否多选 */
+  const selectedStarterPickScope = computed({
+    get: () => String((selectedNode.value?.data?.to as Record<string, unknown> | undefined)?.scope ?? 'all'),
+    set: (v: string) => patchToExtras({ scope: v }),
+  });
+  const selectedStarterPickMultiple = computed({
+    get: () => (selectedNode.value?.data?.to as Record<string, unknown> | undefined)?.multiple === true,
+    set: (v: boolean) => patchToExtras({ multiple: v }),
+  });
+
+  /** 表单人员：字段名与取值方式（user=用户字段；manager=部门字段取负责人） */
+  const selectedFieldName = computed({
+    get: () => String((selectedNode.value?.data?.to as Record<string, unknown> | undefined)?.field ?? ''),
+    set: (v: string) => {
+      const label = filterFields.value.find((f) => f.name === v)?.displayName ?? v;
+      patchToExtras({ field: v });
+      if (v) patchSelected({ toLabels: [label] });
+    },
+  });
+  const selectedFieldAs = computed({
+    get: () => String((selectedNode.value?.data?.to as Record<string, unknown> | undefined)?.fieldAs ?? 'user'),
+    set: (v: string) => patchToExtras({ fieldAs: v }),
+  });
+
+  /** 空人策略：缺省（停住通知）/ pass（自动通过）/ manager（转部门负责人）/ user（指定人） */
+  const selectedEmptyPolicy = computed({
+    get: () => String(selectedNode.value?.data?.emptyPolicy ?? ''),
+    set: (v: string) => patchSelected({ emptyPolicy: v === 'default' || !v ? undefined : v }),
+  });
+  const selectedEmptyUserIds = computed({
+    get: () => {
+      const id = Number(selectedNode.value?.data?.emptyUserId ?? 0) || 0;
+      return id > 0 ? [id] : [];
+    },
+    set: (ids: number[]) => patchSelected({ emptyUserId: ids[0] ?? undefined }),
+  });
+
+  /** 审批节点「不计入效率」 */
+  const selectedExcludeStats = computed({
+    get: () => selectedNode.value?.data?.excludeStats === true,
+    set: (v: boolean) => patchSelected({ excludeStats: v ? true : undefined }),
+  });
+
+  /** 流程根「不纳入效率统计」 */
+  const rootExcludeStats = computed({
+    get: () => graph.value?.excludeStats === true,
+    set: (v: boolean) => {
+      if (!graph.value) return;
+      setGraph({ ...graph.value, excludeStats: v ? true : undefined });
     },
   });
 
@@ -559,11 +685,10 @@ export function useWorkflowDesigner() {
   const selectedAddSign = boolDefaultTrue('allowAddSign');
   const selectedRollback = boolDefaultTrue('allowRollback');
   const selectedTransfer = boolDefaultTrue('allowTransfer');
-  /** 会签固定全部通过；设计器仅保留或签/会签（依次签已下线） */
+  /** 或签 / 会签 / 依次审批。会签仍是全部通过 */
   function setApproveMode(mode: string) {
-    const m = mode === 'and' ? 'and' : 'or';
-    if (m === 'and') patchSelected({ mode: 'and', quorum: undefined });
-    else patchSelected({ mode: 'or', quorum: undefined });
+    const m = mode === 'and' ? 'and' : mode === 'sequence' ? 'sequence' : 'or';
+    patchSelected({ mode: m, quorum: undefined });
   }
   const selectedTimeoutToKind = computed<RecipientKind>({
     get: () => wfRecipientTo(selectedNode.value?.data?.timeoutTransferTo).kind as RecipientKind,
@@ -575,10 +700,6 @@ export function useWorkflowDesigner() {
       patchSelected({
         timeoutTransferTo: wfRecipientToJson(selectedNode.value?.data?.timeoutTransferTo, ids, selectedTimeoutToKind.value),
       }),
-  });
-  const selectedXorCases = computed(() => {
-    const raw = selectedNode.value?.data?.cases;
-    return Array.isArray(raw) ? (raw as { filter?: unknown; target?: string }[]) : [];
   });
   const selectedDefaultTarget = stringProp('defaultTarget');
   const nodeOptions = computed(() =>
@@ -601,9 +722,10 @@ export function useWorkflowDesigner() {
       if (current.value) current.value.startFilter = stringifyViewFilter(v);
     },
   });
-  /** 是否审批/知会节点（展示接收人/超时属性区） */
+  /** 是否审批/办理/知会节点（展示接收人属性区） */
   const selectedHasTo = computed(
-    () => !!selectedNode.value && ['oa.approve', 'oa.cc'].includes(selectedNode.value.type),
+    () =>
+      !!selectedNode.value && ['oa.approve', 'oa.handle', 'oa.cc'].includes(selectedNode.value.type),
   );
 
   function boolDefaultTrue(key: string) {
@@ -613,20 +735,90 @@ export function useWorkflowDesigner() {
     });
   }
   function wfNodeTypeLabelSafe(type: string) {
-    return type === 'oa.approve' ? '审批' : type === 'oa.cc' ? '知会' : type === 'oa.xor' ? '条件分流' : type === 'oa.end' ? '结束' : type;
+    return type === 'oa.approve' ? '审批' : type === 'oa.cc' ? '知会' : type === 'oa.xor' ? '条件分流' : type === 'oa.parallel' ? '并行分支' : type === 'oa.end' ? '结束' : type === 'oa.handle' ? '办理' : type;
   }
 
-  function patchXorCases(cases: { filter?: unknown; target?: string }[]) {
-    patchSelected({ cases });
+  /** 画布分支卡片选中：__if / __caseN / __else 后缀（块 id 即选中的 selectedNodeId） */
+  const BRANCH_SUFFIX = /__(?:if|else|case\d+)$/;
+  const selectedBranch = computed(() => {
+    const id = selectedNodeId.value ?? '';
+    if (!id || !BRANCH_SUFFIX.test(id)) return null;
+    const splitId = id.replace(BRANCH_SUFFIX, '');
+    const split = graph.value?.nodes.find((n) => n.id === splitId) ?? null;
+    if (!split || (split.type !== 'oa.xor' && split.type !== 'oa.parallel')) return null;
+    const cases = xorCaseList(split.data);
+    const isElse = id.endsWith('__else');
+    const m = /__case(\d+)$/.exec(id);
+    const index = isElse ? cases.length : m ? Number(m[1]) : 0;
+    return { blockId: id, splitId, split, cases, index, isElse };
+  });
+
+  /** 分支补丁：改指定 split 节点的 cases / defaultTarget（不经 selectedNode） */
+  function patchBranchData(
+    splitId: string,
+    patch: { cases?: { filter?: unknown; target?: string; name?: string }[]; defaultTarget?: string },
+  ) {
+    const g = graph.value;
+    if (!g) return;
+    setGraph(applyNodePatch(g, splitId, patch));
+    renderCanvas();
   }
-  function addXorCase() {
-    patchXorCases([...selectedXorCases.value, { filter: emptyViewFilter(), target: '' }]);
+
+  /** 分支补丁：只改指定 split 的第 index 个条件 */
+  function patchBranchCase(splitId: string, index: number, patch: { filter?: unknown; target?: string; name?: string }) {
+    const g = graph.value;
+    if (!g) return;
+    const split = g.nodes.find((n) => n.id === splitId);
+    if (!split) return;
+    const cases = xorCaseList(split.data).map((c, i) => (i === index ? { ...c, ...patch } : c));
+    setGraph(applyNodePatch(g, splitId, { cases }));
+    renderCanvas();
   }
-  function removeXorCase(i: number) {
-    patchXorCases(selectedXorCases.value.filter((_, idx) => idx !== i));
-  }
-  function updateXorCase(i: number, patch: { filter?: unknown; target?: string }) {
-    patchXorCases(selectedXorCases.value.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
+
+  /** 分支面板：条件过滤器（case 专属；其他情况无） */
+  const selectedBranchFilter = computed<ViewFilter>({
+    get: () => {
+      const b = selectedBranch.value;
+      if (!b || b.isElse) return emptyViewFilter();
+      return (b.cases[b.index]?.filter as ViewFilter) ?? emptyViewFilter();
+    },
+    set: (v: ViewFilter) => {
+      const b = selectedBranch.value;
+      if (!b || b.isElse) return;
+      patchBranchCase(b.splitId, b.index, { filter: v });
+      // 同步到画布块（下一次结构镜像携带，避免删除其他分支时回退）
+      canvasApi.current?.patchBranch(b.blockId, { filter: v });
+    },
+  });
+
+  /** 分支面板：条件名称（case 专属；留空则卡片回落「条件N」；其他情况无） */
+  const selectedBranchName = computed<string>({
+    get: () => {
+      const b = selectedBranch.value;
+      if (!b || b.isElse) return '';
+      return String(b.cases[b.index]?.name ?? '');
+    },
+    set: (v: string) => {
+      const b = selectedBranch.value;
+      if (!b || b.isElse) return;
+      const name = String(v ?? '').trim();
+      patchBranchCase(b.splitId, b.index, { name });
+      // 同步到画布块（下一次结构镜像携带，避免分支增删后丢失）
+      canvasApi.current?.patchBranch(b.blockId, { name });
+    },
+  });
+
+  /** 删除当前条件分支（其他情况不可删；画布可用时走 FlowGram 删除块） */
+  function removeSelectedBranch() {
+    const b = selectedBranch.value;
+    if (!b || b.isElse) return;
+    if (canvasApi.current) {
+      canvasApi.current.removeBranch(b.blockId);
+    } else if (graph.value) {
+      patchBranchData(b.splitId, { cases: b.cases.filter((_, i) => i !== b.index) });
+    }
+    selectedNodeId.value = null;
+    propertyPanel.value = 'none';
   }
 
   function onResize() {
@@ -750,14 +942,14 @@ export function useWorkflowDesigner() {
     renderCanvas();
   }
 
-  /** 「+」菜单：条件直接插入；审批/知会先弹窗配置签核模式与接收人 */
+  /** 「+」菜单：条件直接插入；审批/办理/知会先弹窗配置签核模式与接收人 */
   function beginInsert(fromId: string, type: string) {
     selectedNodeId.value = fromId;
-    if (type === 'oa.xor') {
+    if (type === 'oa.xor' || type === 'oa.parallel') {
       addNodeAfter(type);
       return;
     }
-    if (type !== 'oa.approve' && type !== 'oa.cc') {
+    if (type !== 'oa.approve' && type !== 'oa.handle' && type !== 'oa.cc') {
       addNodeAfter(type);
       return;
     }
@@ -777,22 +969,26 @@ export function useWorkflowDesigner() {
 
   async function confirmInsert(): Promise<boolean> {
     if (!insertAfterId.value) return false;
-    if (!insertToIds.value.length) {
+    const kind = insertToKind.value;
+    if (isSearchToKind(kind) && !insertToIds.value.length) {
       Message.warning(insertType.value === 'oa.cc' ? '请选择知会对象' : '请选择审批人');
       return false;
     }
-    const mode = insertMode.value === 'and' ? 'and' : 'or';
-    const kind = insertToKind.value;
-    const ids = [...insertToIds.value];
-    const labels = await resolveRecipientLabels(kind, ids);
+    const mode = insertMode.value === 'and' ? 'and' : insertMode.value === 'sequence' ? 'sequence' : 'or';
+    const ids = isSearchToKind(kind) ? [...insertToIds.value] : [];
+    const labels = isSearchToKind(kind) ? await resolveRecipientLabels(kind as RecipientKind, ids) : [];
     const draft: Record<string, unknown> = {
-      to: wfRecipientToJson(undefined, ids, kind),
+      to: wfToJsonForKind(kind, ids),
       toLabels: labels,
       name: insertNodeTitle(insertType.value, mode, kind, labels),
     };
     if (insertType.value === 'oa.approve') {
       draft.mode = mode;
       if (mode === 'and') draft.quorum = undefined;
+    }
+    if (insertType.value === 'oa.handle') {
+      // 办理节点仅 or/and（sequence 发布会被拒），依次归一为或签
+      draft.mode = mode === 'and' ? 'and' : 'or';
     }
     pendingInsertDraft.value = draft;
     selectedNodeId.value = insertAfterId.value;
@@ -817,6 +1013,14 @@ export function useWorkflowDesigner() {
 
   function selectNode(id: string | null) {
     selectedNodeId.value = id;
+    propertyPanel.value = id ? 'node' : 'none';
+    // 同步画布选中高亮（分支卡片也要激活态）
+    renderCanvas();
+  }
+
+  function openFlowProperties() {
+    selectedNodeId.value = null;
+    propertyPanel.value = 'flow';
   }
 
   async function save(): Promise<boolean> {
@@ -913,11 +1117,17 @@ export function useWorkflowDesigner() {
     phrases.value = phrases.value.filter((p) => String(p.id) !== String(id));
   }
 
+  /** 常用语就地改名（仅本地；落库走 savePhrases） */
+  function updatePhrase(id: number | string, text: string) {
+    const t = text.trim();
+    if (!t) return;
+    phrases.value = phrases.value.map((p) => (String(p.id) === String(id) ? { ...p, text: t } : p));
+  }
+
+  /** 常用语整体保存（就地管理：增/改/删后立即落库）；成功后重载，保持 id 与服务端一致 */
   async function savePhrases(): Promise<boolean> {
     try {
       await cubeApi.workflow.savePhrases(phrases.value.map((p) => p.text).filter(Boolean));
-      Message.success('常用语已保存');
-      phrasesVisible.value = false;
       await loadPhrases();
       return true;
     } catch (err) {
@@ -933,6 +1143,7 @@ export function useWorkflowDesigner() {
     current,
     graph,
     selectedNodeId,
+    propertyPanel,
     selectedNode,
     chain,
     canEdit,
@@ -949,6 +1160,15 @@ export function useWorkflowDesigner() {
     startFilter,
     selectedToKind,
     selectedToIds,
+    selectedToLabels,
+    selectedStarterPickScope,
+    selectedStarterPickMultiple,
+    selectedFieldName,
+    selectedFieldAs,
+    selectedEmptyPolicy,
+    selectedEmptyUserIds,
+    selectedExcludeStats,
+    rootExcludeStats,
     selectedName,
     selectedMode,
     selectedTimeoutHours,
@@ -960,20 +1180,22 @@ export function useWorkflowDesigner() {
     selectedTransfer,
     selectedWritable,
     selectedHasTo,
-    selectedXorCases,
+    selectedBranch,
+    selectedBranchName,
+    selectedBranchFilter,
+    removeSelectedBranch,
     selectedDefaultTarget,
     nodeOptions,
-    addXorCase,
-    removeXorCase,
-    updateXorCase,
     phrases,
     phrasesVisible,
     phraseDraft,
     addPhrase,
     removePhrase,
+    updatePhrase,
     savePhrases,
     loadDefinitions,
     openDefinition,
+    openFlowProperties,
     createDefinition,
     addNodeAfter,
     beginInsert,

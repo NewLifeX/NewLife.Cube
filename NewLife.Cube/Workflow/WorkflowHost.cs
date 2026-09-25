@@ -27,12 +27,18 @@ public static class WorkflowHost
         XTrace.WriteLine("启用工作流写锁拦截器[WorkflowWriteInterceptor]");
 
         // 确保 Workflow 库建表/加列（Title/Summary 等）；Full 可 ALTER，无需删库
+        // 注意：XCode 的建表检查只在查询/计数路径触发，Insert 路径不触发；
+        // WorkflowOccupancy 仅在 Start 事务中 Insert 使用，不在此显式触发表检查时，新库首发起会报 no such table
         try
         {
             var dal = DAL.Create("Workflow");
             dal.Db.Migration = Migration.Full;
             _ = WorkflowInstance.Meta.Count;
             _ = WorkflowDefinition.Meta.Count;
+            _ = WorkflowSubject.Meta.Count;
+            _ = WorkflowTask.Meta.Count;
+            _ = WorkflowComment.Meta.Count;
+            _ = WorkflowOccupancy.Meta.Count;
         }
         catch (Exception ex)
         {
@@ -102,10 +108,22 @@ public static class WorkflowHost
         var wfc = typeof(Controllers.WorkflowController).FullName;
         var defc = typeof(NewLife.Cube.Areas.Cube.Controllers.WorkflowDefinitionController).FullName;
         EnsureLeaf(mf, parent, "Definition", "流程定义", "/Cube/WorkflowDefinition", 60, "Common", defc);
-        EnsureLeaf(mf, parent, "Designer", "流程设计", "/Cube/Workflow/Designer", 50, "Share", $"{wfc}.Designer");
         EnsureLeaf(mf, parent, "Todo", "我的待办", "/Cube/Workflow/Todo", 40, "Checked", $"{wfc}.Todo");
         EnsureLeaf(mf, parent, "Started", "我发起的", "/Cube/Workflow/Started", 30, "Promotion", $"{wfc}.Started");
         EnsureLeaf(mf, parent, "Done", "已办", "/Cube/Workflow/Done", 20, "Select", $"{wfc}.Done");
+        EnsureLeaf(mf, parent, "Efficiency", "效率", "/Cube/Workflow/Efficiency", 10, "Chart", $"{wfc}.Efficiency");
+        HideDesignerMenu(mf, parent);
+    }
+
+    /// <summary>设计器从流程定义行的「设计」进入，不再单独占菜单。已有菜单改为不可见，地址仍可直达。</summary>
+    static void HideDesignerMenu(IMenuFactory mf, IMenu parent)
+    {
+        var node = parent.FindByPath("Designer");
+        node ??= parent.Childs?.FirstOrDefault(e => e.Name.EqualIgnoreCase("Designer") || (e.Url != null && e.Url.EqualIgnoreCase("/Cube/Workflow/Designer")));
+        node ??= mf.FindByUrl("/Cube/Workflow/Designer");
+        if (node == null || !node.Visible) return;
+        node.Visible = false;
+        (node as IEntity)?.Save();
     }
 
     static void EnsureLeaf(IMenuFactory mf, IMenu parent, String name, String display, String url, Int32 sort, String icon, String fullName)

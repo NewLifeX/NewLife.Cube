@@ -12,6 +12,7 @@ using WorkflowComment = NewLife.Cube.Workflow.Entity.WorkflowComment;
 using WorkflowDefinition = NewLife.Cube.Workflow.Entity.WorkflowDefinition;
 using WorkflowInstance = NewLife.Cube.Workflow.Entity.WorkflowInstance;
 using WorkflowSubject = NewLife.Cube.Workflow.Entity.WorkflowSubject;
+using WorkflowOccupancy = NewLife.Cube.Workflow.Entity.WorkflowOccupancy;
 using WorkflowTask = NewLife.Cube.Workflow.Entity.WorkflowTask;
 
 namespace NewLife.Cube.Workflow;
@@ -25,6 +26,9 @@ public static class WorkflowEngine
 {
     /// <summary>发起互斥：同进程内“在途检查 + 落库”原子化（防并发双插）。跨进程部署需 DB 唯一约束，见 WorkflowExclusiveTests 备注</summary>
     static readonly Object _startGate = new();
+
+    /// <summary>发起当次的提交人自选，仅 Start 调用栈内有效</summary>
+    static readonly System.Threading.AsyncLocal<Dictionary<String, List<Int32>>> _picks = new();
     #region 发起
     /// <summary>发起一批（N 条同 TypePath 记录 → 1 实例 + N 主体 + 首节点任务）</summary>
     /// <param name="definition">已发布定义</param>
@@ -35,7 +39,7 @@ public static class WorkflowEngine
     /// <param name="summary">流程摘要（Markdown/富文本）</param>
     /// <param name="title">流程标题（本次提交显示名）</param>
     /// <returns>新实例</returns>
-    public static WorkflowInstance Start(WorkflowDefinition definition, IList<String> keys, Int32 starterId, String starterName, String comment, String summary = null, String title = null)
+    public static WorkflowInstance Start(WorkflowDefinition definition, IList<String> keys, Int32 starterId, String starterName, String comment, String summary = null, String title = null, IDictionary<String, List<Int32>> picks = null)
     {
         if (definition == null) throw new WorkflowException(404, "流程定义不存在");
         if (!definition.Published || !definition.Enable) throw new WorkflowException(400, "流程定义未发布或已停用");
@@ -64,6 +68,7 @@ public static class WorkflowEngine
         // 在途排他与落库整体互斥（进程内原子窗口；跨进程需 DB 唯一约束，见 WorkflowExclusiveTests 备注）
         lock (_startGate)
         {
+        _picks.Value = picks == null ? null : new Dictionary<String, List<Int32>>(picks);
         // 加载业务行（首条用于条件与标题），同时做在途排他
         var rows = new List<IEntity>();
         for (var i = 0; i < keys2.Count; i++)
@@ -134,6 +139,20 @@ public static class WorkflowEngine
                     Title = subjectTitle.Cut(100),
                 };
                 subject.Insert();
+                try
+                {
+                    new WorkflowOccupancy
+                    {
+                        TypePath = typePath,
+                        EntityKey = keys2[i],
+                        InstanceId = instance.Id,
+                        CreateTime = now,
+                    }.Insert();
+                }
+                catch (Exception ex) when (ex.Message.Contains("UNIQUE", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new WorkflowException(409, "已有在途审批");
+                }
             }
 
             // 首节点任务（从 start 后推进；无审批节点链直接到 end 时实例直接 Approved）
@@ -150,11 +169,12 @@ public static class WorkflowEngine
             AddComment(instance.Id, 0, starterId, starterName, "start", comment);
 
             tran.Commit();
+            _picks.Value = null;
             return instance;
         }
         catch
         {
-            // 事务回滚后原样抛出
+            _picks.Value = null;
             throw;
         }
         } // lock _startGate
@@ -350,12 +370,24 @@ public static class WorkflowEngine
         tran.Commit();
     }
 
+    /// <summary>任务是否办理节点（oa.handle）任务。批量驳回跳过办理任务用</summary>
+    /// <param name="task">任务</param>
+    /// <returns>是否办理任务</returns>
+    public static Boolean IsHandleNodeTask(WorkflowTask task)
+    {
+        if (task == null) return false;
+        var instance = WorkflowInstance.FindById(task.InstanceId);
+        if (instance == null) return false;
+        var graph = ParseSnapshot(instance);
+        var node = graph.Find(BaseNodeId(task.NodeId));
+        return node != null && node.Type == WorkflowGraph.HandleType;
+    }
+
     /// <summary>撤回。仅发起人且无人同意过</summary>
     /// <param name="instanceId">实例编号</param>
     /// <param name="userId">操作人</param>
     /// <param name="comment">意见</param>
-    public static void Withdraw(Int64 instanceId, Int32 userId, String comment)
-    {
+    public static void Withdraw(Int64 instanceId, Int32 userId, String comment)    {
         var instance = LoadRunning(instanceId);
         if (instance.StarterId != userId) throw new WorkflowException(403, "仅发起人可撤回");
         if (WorkflowComment.FindAll(WorkflowComment._.InstanceId == instance.Id).Any(e => e.Action == "approve"))
@@ -496,6 +528,9 @@ public static class WorkflowEngine
 
         if (reject)
         {
+            var snap = ParseSnapshot(instance);
+            if (snap?.Find(BaseNodeId(task.NodeId))?.Type == WorkflowGraph.HandleType)
+                throw new WorkflowException(400, "办理节点不能驳回");
             task.Status = WorkflowStatuses.Rejected;
             task.AssigneeId = asTimeout ? task.AssigneeId : userId;
             task.FinishTime = DateTime.Now;
@@ -582,6 +617,7 @@ public static class WorkflowEngine
         CancelNodeOpen(instance.Id, nodeId);
         foreach (var next in graph.NextOf(nodeId))
         {
+            if (HoldForParallelJoin(instance, graph, nodeId, next)) continue;
             Advance(instance, graph, next, instance.TenantId, instance.StarterId, null, []);
         }
     }
@@ -680,10 +716,14 @@ public static class WorkflowEngine
         switch (node.Type)
         {
             case WorkflowGraph.ApproveType:
+            case WorkflowGraph.HandleType:
                 // 同节点已有在办任务则不重复建
                 var hasOpen = WorkflowTask.FindAll(WorkflowTask._.InstanceId == instance.Id & WorkflowTask._.NodeId == nodeId)
                     .Any(e => e.Status is WorkflowStatuses.Pending or WorkflowStatuses.Active);
-                if (!hasOpen) CreateNodeTasks(instance, graph, node, tenantId, starterId, starterName);
+                if (!hasOpen && CreateNodeTasks(instance, graph, node, tenantId, starterId, starterName))
+                {
+                    foreach (var next in graph.NextOf(nodeId)) Advance(instance, graph, next, tenantId, starterId, starterName, visited);
+                }
                 break;
             case WorkflowGraph.CcType:
                 var ccIds = RecipientResolver.Resolve(node.To, tenantId, null);
@@ -697,6 +737,9 @@ public static class WorkflowEngine
                 var target = PickXor(instance, graph, node);
                 foreach (var next in graph.NextOf(nodeId)) { if (next == target) Advance(instance, graph, next, tenantId, starterId, starterName, visited); }
                 break;
+            case WorkflowGraph.ParallelType:
+                EnterParallel(instance, graph, node, tenantId, starterId, starterName, visited);
+                break;
             case WorkflowGraph.EndType:
                 if (instance.Status == WorkflowStatuses.Running)
                 {
@@ -704,6 +747,7 @@ public static class WorkflowEngine
                     instance.Status = WorkflowStatuses.Approved;
                     instance.FinishTime = DateTime.Now;
                     instance.Update();
+                    ReleaseOccupancy(instance.Id);
                     NotifyStarter(instance, "审批通过", $"{instance.TypePath} 流程已通过");
                 }
                 break;
@@ -719,16 +763,36 @@ public static class WorkflowEngine
     /// <param name="tenantId">租户</param>
     /// <param name="starterId">发起人</param>
     /// <param name="starterName">发起人名</param>
-    static void CreateNodeTasks(WorkflowInstance instance, WorkflowGraph graph, WorkflowNode node, Int32 tenantId, Int32 starterId, String starterName)
+    /// <returns>节点已自动通过，调用方应继续下游</returns>
+    static Boolean CreateNodeTasks(WorkflowInstance instance, WorkflowGraph graph, WorkflowNode node, Int32 tenantId, Int32 starterId, String starterName)
     {
         var first = LoadFirstSubject(instance);
-        var ids = RecipientResolver.Resolve(node.To, tenantId, first)?.ToList() ?? [];
+        var ids = ResolveAssignees(node, tenantId, starterId, first);
         if (ids.Count == 0)
         {
-            // 空候选人：不自动通过，记 error 并通知发起人
-            AddComment(instance.Id, 0, starterId, starterName ?? starterId + "", "error", $"节点[{node.Name}]无候选人，等待人工处理");
-            Notify(instance, starterId, "审批异常", $"{instance.TypePath} 节点[{node.Name}]无候选人", "请联系管理员处理");
-            return;
+            var policy = node.Raw?["emptyPolicy"]?.ToString();
+            if (policy == "pass")
+            {
+                AddComment(instance.Id, 0, starterId, starterName ?? starterId + "", "approve", "审批人为空，自动通过");
+                return true;
+            }
+            if (policy == "manager")
+            {
+                var mid = ManagerOf(starterId);
+                if (mid > 0) ids.Add(mid);
+            }
+            else if (policy == "user")
+            {
+                var uid = node.Raw?["emptyUserId"]?.GetValue<Int32>() ?? 0;
+                if (uid > 0) ids.Add(uid);
+            }
+            if (ids.Count == 0)
+            {
+                // 缺省或转交后仍空：停住并通知发起人
+                AddComment(instance.Id, 0, starterId, starterName ?? starterId + "", "error", $"节点[{node.Name}]无候选人，等待人工处理");
+                Notify(instance, starterId, "审批异常", $"{instance.TypePath} 节点[{node.Name}]无候选人", "请联系管理员处理");
+                return false;
+            }
         }
 
         var mode = node.Mode;
@@ -761,11 +825,97 @@ public static class WorkflowEngine
 
         foreach (var t in tasks) t.Insert();
 
+        var skippedAll = node.Type == WorkflowGraph.ApproveType && TrySkipSamePerson(instance, graph, node, tasks, starterName);
+        if (skippedAll) return true;
+
         // 通知可见候选人
         foreach (var t in tasks)
         {
-            if (t.Visible) NotifyTaskArrive(instance, t);
+            if (t.Visible && t.Status == WorkflowStatuses.Pending) NotifyTaskArrive(instance, t);
         }
+        return false;
+    }
+
+    /// <summary>展开六种选人，并把禁用用户改派到其部门负责人</summary>
+    static List<Int32> ResolveAssignees(WorkflowNode node, Int32 tenantId, Int32 starterId, IEntity entity)
+    {
+        var to = node.To;
+        var kind = (to?["kind"]?.ToString() ?? "").Trim();
+        var ids = new List<Int32>();
+        if (kind == "manager")
+        {
+            var mid = ManagerOf(starterId);
+            if (mid > 0) ids.Add(mid);
+        }
+        else if (kind == "field")
+        {
+            var field = to?["field"]?.ToString();
+            var fieldAs = to?["fieldAs"]?.ToString();
+            if (entity != null && !field.IsNullOrEmpty())
+            {
+                var raw = entity[field].ToInt();
+                if (fieldAs == "manager")
+                {
+                    var dept = Department.FindByID(raw);
+                    if (dept != null && dept.ManagerId > 0) ids.Add(dept.ManagerId);
+                }
+                else if (raw > 0) ids.Add(raw);
+            }
+        }
+        else if (kind == "starterPick")
+        {
+            var picked = _picks.Value != null && _picks.Value.TryGetValue(node.Id, out var list) ? list : null;
+            var multiple = to?["multiple"]?.GetValue<Boolean>() ?? false;
+            if (picked == null || picked.Count == 0 || (!multiple && picked.Count != 1))
+                throw new WorkflowException(400, $"节点[{node.Name}]需要提交人自选");
+            ids.AddRange(picked.Where(e => e > 0));
+        }
+        else
+        {
+            ids.AddRange(RecipientResolver.Resolve(to, tenantId, entity) ?? []);
+        }
+
+        var next = new List<Int32>();
+        foreach (var id in ids.Distinct())
+        {
+            var user = User.FindByID(id);
+            if (user != null && !user.Enable)
+            {
+                var dept = Department.FindByID(user.DepartmentID);
+                if (dept != null && dept.ManagerId > 0) next.Add(dept.ManagerId);
+            }
+            else if (id > 0) next.Add(id);
+        }
+        return next.Distinct().ToList();
+    }
+
+    static Int32 ManagerOf(Int32 userId)
+    {
+        var user = User.FindByID(userId);
+        if (user == null || user.DepartmentID <= 0) return 0;
+        var dept = Department.FindByID(user.DepartmentID);
+        return dept?.ManagerId ?? 0;
+    }
+
+    /// <summary>同一审批人在本实例更早的审批节点已同意则跳过。办理节点不跳过；NodeId 含加签后缀时按基础节点归一化</summary>
+    static Boolean TrySkipSamePerson(WorkflowInstance instance, WorkflowGraph graph, WorkflowNode node, List<WorkflowTask> tasks, String starterName)
+    {
+        var baseNodeId = BaseNodeId(node.Id);
+        var prior = WorkflowTask.FindAll(WorkflowTask._.InstanceId == instance.Id)
+            .Where(e => BaseNodeId(e.NodeId) != baseNodeId && e.Status == WorkflowStatuses.Done && graph.Find(BaseNodeId(e.NodeId))?.Type == WorkflowGraph.ApproveType)
+            .Select(e => e.AssigneeId)
+            .ToHashSet();
+        foreach (var t in tasks)
+        {
+            if (t.AssigneeId > 0 && prior.Contains(t.AssigneeId))
+            {
+                t.Status = WorkflowStatuses.Done;
+                t.FinishTime = DateTime.Now;
+                t.Update();
+                AddComment(instance.Id, t.Id, t.AssigneeId, starterName ?? "系统", "approve", "自动跳过");
+            }
+        }
+        return tasks.Count > 0 && tasks.All(e => e.Status == WorkflowStatuses.Done);
     }
 
     /// <summary>构造任务实体（未入库）</summary>
@@ -795,6 +945,131 @@ public static class WorkflowEngine
             TimeoutAction = node?.TimeoutAction,
             TimeoutTransferTo = node?.TimeoutTransferTo?.ToJsonString(),
         };
+    }
+
+    /// <summary>并行分支：无条件的支都进入，有条件的按第一条记录判断；都不进入才走其他情况。汇合前用隐藏任务记账</summary>
+    static void EnterParallel(WorkflowInstance instance, WorkflowGraph graph, WorkflowNode node, Int32 tenantId, Int32 starterId, String starterName, HashSet<String> visited)
+    {
+        var join = node.JoinTarget;
+        var arms = PickParallelArms(instance, node, join);
+        foreach (var arm in arms)
+        {
+            var marker = new WorkflowTask
+            {
+                InstanceId = instance.Id,
+                NodeId = ParallelArmId(node.Id, arm),
+                Mode = "and",
+                AssigneeId = 0,
+                CandidateJson = "[]",
+                Visible = false,
+                Status = WorkflowStatuses.Pending,
+            };
+            marker.Insert();
+        }
+        foreach (var arm in arms)
+            Advance(instance, graph, arm, tenantId, starterId, starterName, visited);
+        ReleaseParallel(instance, graph, node);
+    }
+
+    /// <summary>到达汇合点时记下这条分支已完成；未齐则先不进入汇合点</summary>
+    static Boolean HoldForParallelJoin(WorkflowInstance instance, WorkflowGraph graph, String fromId, String nextId)
+    {
+        var gate = graph.Nodes.FirstOrDefault(n => n.Type == WorkflowGraph.ParallelType && n.JoinTarget == nextId);
+        if (gate == null) return false;
+        var arm = ParallelArmOf(instance, graph, gate, fromId, nextId);
+        if (!arm.IsNullOrEmpty()) MarkParallelArm(instance.Id, gate.Id, arm);
+        ReleaseParallel(instance, graph, gate);
+        return true;
+    }
+
+    static void MarkParallelArm(Int64 instanceId, String gateId, String arm)
+    {
+        var id = ParallelArmId(gateId, arm);
+        var marker = WorkflowTask.FindAll(WorkflowTask._.InstanceId == instanceId & WorkflowTask._.NodeId == id).FirstOrDefault();
+        if (marker == null || marker.Status == WorkflowStatuses.Done) return;
+        marker.Status = WorkflowStatuses.Done;
+        marker.FinishTime = DateTime.Now;
+        marker.Update();
+    }
+
+    static void ReleaseParallel(WorkflowInstance instance, WorkflowGraph graph, WorkflowNode gate)
+    {
+        if (instance.Status != WorkflowStatuses.Running) return;
+        var prefix = ParallelArmId(gate.Id, "");
+        var markers = WorkflowTask.FindAll(WorkflowTask._.InstanceId == instance.Id)
+            .Where(e => e.NodeId != null && e.NodeId.StartsWith(prefix, StringComparison.Ordinal))
+            .ToList();
+        if (markers.Count > 0 && markers.Any(e => e.Status != WorkflowStatuses.Done)) return;
+        var join = gate.JoinTarget;
+        if (join.IsNullOrEmpty()) join = gate.DefaultTarget;
+        if (join.IsNullOrEmpty()) return;
+        Advance(instance, graph, join, instance.TenantId, instance.StarterId, null, []);
+    }
+
+    static String ParallelArmId(String gateId, String arm) => $"#par:{gateId}:{arm}";
+
+    /// <summary>from 落在哪条已记账的分支上（汇合点本身不算）</summary>
+    static String ParallelArmOf(WorkflowInstance instance, WorkflowGraph graph, WorkflowNode gate, String fromId, String join)
+    {
+        var prefix = ParallelArmId(gate.Id, "");
+        var markers = WorkflowTask.FindAll(WorkflowTask._.InstanceId == instance.Id)
+            .Where(e => e.NodeId != null && e.NodeId.StartsWith(prefix, StringComparison.Ordinal));
+        foreach (var marker in markers)
+        {
+            var arm = marker.NodeId.Substring(prefix.Length);
+            if (arm.IsNullOrEmpty() || arm == join) continue;
+            if (fromId == arm || ArmContains(graph, arm, join, fromId)) return arm;
+        }
+        return null;
+    }
+
+    static Boolean ArmContains(WorkflowGraph graph, String arm, String join, String nodeId)
+    {
+        var seen = new HashSet<String>();
+        var queue = new Queue<String>();
+        queue.Enqueue(arm);
+        while (queue.Count > 0)
+        {
+            var cur = queue.Dequeue();
+            if (!seen.Add(cur)) continue;
+            if (cur == nodeId) return true;
+            foreach (var next in graph.NextOf(cur))
+            {
+                if (next == join) continue;
+                queue.Enqueue(next);
+            }
+        }
+        return false;
+    }
+
+    /// <summary>并行分支要进入的入口。无条件恒进；有条件按第一条记录。都不进则只走其他情况（且其他情况不是汇合点）</summary>
+    static List<String> PickParallelArms(WorkflowInstance instance, WorkflowNode node, String join)
+    {
+        var entity = instance == null ? null : LoadFirstSubject(instance);
+        var entered = new List<String>();
+        foreach (var c in node.Cases)
+        {
+            if (c.Target.IsNullOrEmpty() || c.Target == join) continue;
+            if (FilterIsOpen(c.Filter) || (entity != null && FilterMatches(entity, c.Filter)))
+                entered.Add(c.Target);
+        }
+        if (entered.Count == 0 && !node.DefaultTarget.IsNullOrEmpty() && node.DefaultTarget != join)
+            entered.Add(node.DefaultTarget);
+        return entered.Distinct().ToList();
+    }
+
+    static Boolean FilterIsOpen(JsonObject filter)
+    {
+        if (filter == null) return true;
+        var dto = AutomationFilter.ParseViewFilter(filter.ToJsonString());
+        return dto == null || dto.Conditions == null || dto.Conditions.Count == 0;
+    }
+
+    static Boolean FilterMatches(IEntity entity, JsonObject filter)
+    {
+        if (filter == null) return true;
+        var dto = AutomationFilter.ParseViewFilter(filter.ToJsonString());
+        return AutomationFilter.Match(entity, dto);
     }
 
     /// <summary>网关分支选择：用第一条主体当前行按序 Match cases，全不命中走 default</summary>
@@ -849,6 +1124,7 @@ public static class WorkflowEngine
         instance.Status = status;
         instance.FinishTime = DateTime.Now;
         instance.Update();
+        ReleaseOccupancy(instance.Id);
         if (!action.IsNullOrEmpty()) AddComment(instance.Id, 0, userId, User.FindByID(userId)?.Name ?? userId + "", action, comment);
 
         var text = status switch
@@ -859,6 +1135,12 @@ public static class WorkflowEngine
             _ => "流程结束",
         };
         NotifyStarter(instance, text, $"{instance.TypePath} {text}");
+    }
+
+    static void ReleaseOccupancy(Int64 instanceId)
+    {
+        var rows = WorkflowOccupancy.FindAll(WorkflowOccupancy._.InstanceId == instanceId);
+        rows.Delete();
     }
 
     /// <summary>取消实例全部未完成任务</summary>
@@ -1086,6 +1368,7 @@ public static class WorkflowEngine
     /// <param name="userId">用户</param>
     /// <param name="action">动作</param>
     /// <param name="title">标题</param>
+    /// <param name="picks">提交人自选。节点 Id → 用户 Id</param>
     /// <param name="body">内容</param>
     static void Notify(WorkflowInstance instance, Int32 userId, String action, String title, String body)
     {

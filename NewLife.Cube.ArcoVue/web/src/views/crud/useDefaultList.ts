@@ -28,7 +28,7 @@ import { useListViews } from './useListViews';
 import { useRecordNav } from './useRecordNav';
 import { useListAutomation } from './useListAutomation';
 import { useWorkflowList } from './useWorkflowList';
-import { wfRowCanStart, wfRowEditLocked, wfRowInstanceId, wfRowRestartBlocked } from '@/core/types/workflow';
+import { wfRowCanStart, wfRowEditLocked, wfRowInstanceId, wfRowRestartBlocked, wfRowStatus } from '@/core/types/workflow';
 import { runCellFieldLink, runOpsCustomLink } from './useListOpsLinks';
 
 /**
@@ -44,10 +44,6 @@ export function useDefaultList(props: { type: string; authId?: number }) {
   const crud = useListCrud(ctx, {
     loadData: query.loadData,
     openEdit: async (row) => {
-      if (wfRowEditLocked(row)) {
-        Message.warning('审批中的记录不可编辑');
-        return;
-      }
       await nav.openEdit(row);
     },
     openDetail: nav.openDetail,
@@ -61,7 +57,8 @@ export function useDefaultList(props: { type: string; authId?: number }) {
   const auto = useListAutomation(ctx);
   const wf = useWorkflowList(ctx);
 
-  /** OA 审批（OSC-26090347f1）：工具栏多选提交 / 行提交 / 行进度 */
+  /** 从列表「审批」打开编辑抽屉时，先停在审批页签 */
+  const openOnWorkflow = ref(false);
   const wfSubmitIds = ref<(string | number)[]>([]);
   const wfProgressInstanceId = ref<string | null>(null);
   const wfProgressVisible = ref(false);
@@ -92,10 +89,6 @@ export function useDefaultList(props: { type: string; authId?: number }) {
   }
 
   async function openEdit(row: Record<string, unknown>) {
-    if (wfRowEditLocked(row)) {
-      Message.warning('审批中的记录不可编辑');
-      return;
-    }
     await nav.openEdit(row);
   }
 
@@ -140,6 +133,7 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     clientX?: number;
     clientY?: number;
   }) {
+    openOnWorkflow.value = false;
     // OA 审批行操作（OSC-26090347f1）：提交单行 / 打开进度抽屉
     if (payload.action === 'wfSubmit') {
       const key = getValueByKey(payload.row, ctx.pkField.value);
@@ -148,6 +142,12 @@ export function useDefaultList(props: { type: string; authId?: number }) {
       return;
     }
     if (payload.action === 'wfProgress') {
+      // 审批进行中：打开编辑抽屉，按可写字段编辑，并在右侧办理
+      if (wfRowStatus(payload.row) === 'running') {
+        openOnWorkflow.value = true;
+        await nav.openEdit(payload.row);
+        return;
+      }
       openWorkflowProgress(payload.row);
       return;
     }
@@ -511,6 +511,7 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     wfSubmitIds,
     wfProgressInstanceId,
     wfProgressVisible,
+    openOnWorkflow,
     openWorkflowSubmit,
     openWorkflowProgressById,
     onWorkflowSubmitted,

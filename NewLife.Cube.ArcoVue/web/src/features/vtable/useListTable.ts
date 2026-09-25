@@ -349,9 +349,11 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
     return bundle;
   }
 
-  function opsLabel(action: string): string {
+  function opsLabel(action: string, row?: Record<string, unknown>): string {
     if (action === WF_ROW_ACTION.submit) return '提交';
-    if (action === WF_ROW_ACTION.progress) return '进度';
+    // 审批未结束：操作栏用「审批」，打开编辑抽屉；已结束仍是「进度」
+    if (action === WF_ROW_ACTION.progress)
+      return row && wfRowStatus(row) === 'running' ? '审批' : '进度';
     if (action === 'more') return '更多';
     if (action.startsWith('auto:')) {
       const id = action.slice(5);
@@ -438,7 +440,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
           ? OPS_LINK_COLOR
           : opsActionColor(action);
       const link = createText({
-        text: opsLabel(action),
+        text: opsLabel(action, record),
         fontSize: 13,
         fontFamily: 'sans-serif',
         fill: themeColor(color.token, color.fallback),

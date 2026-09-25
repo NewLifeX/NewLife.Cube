@@ -34,4 +34,23 @@ public static class WorkflowAuth
             return false;
         }
     }
+
+    /// <summary>是否可看效率页（系统管理员，或对「效率」菜单有 Detail 权）</summary>
+    /// <remarks>design §6.1：无 Detail 权的人菜单不出现，GET /Cube/Workflow/Efficiency 返回 403。</remarks>
+    /// <param name="user">用户</param>
+    /// <returns>是否可看</returns>
+    public static Boolean CanEfficiency(IUser user)
+    {
+        if (user == null) return false;
+        if (IsAdmin(user)) return true;
+        try
+        {
+            var menu = AutomationAuth.FindMenu("Cube/Workflow/Efficiency");
+            return menu != null && user.Has(menu, PermissionFlags.Detail);
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

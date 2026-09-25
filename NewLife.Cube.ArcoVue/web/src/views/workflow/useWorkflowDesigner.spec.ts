@@ -75,6 +75,14 @@ describe('insertAfter / removeNode 链重接', () => {
     expect(g.edges).toContainEqual({ source: cc.id, target: 'end' });
     expect(g.edges).not.toContainEqual({ source: 'n1', target: 'end' });
   });
+  it('插入办理节点：默认 emptyPolicy=manager、mode=or，并重接链', () => {
+    const g = insertAfter(newDefaultGraph(), 'n1', 'oa.handle');
+    const h = g.nodes.find((n) => n.type === 'oa.handle')!;
+    expect(h.data.emptyPolicy).toBe('manager');
+    expect(h.data.mode).toBe('or');
+    expect(g.edges).toContainEqual({ source: 'n1', target: h.id });
+    expect(g.edges).toContainEqual({ source: h.id, target: 'end' });
+  });
   it('end 后不可插入', () => {
     const g = insertAfter(newDefaultGraph(), 'end', 'oa.approve');
     expect(g.nodes.length).toBe(3);
@@ -91,6 +99,16 @@ describe('insertAfter / removeNode 链重接', () => {
     expect(g.nodes.length).toBe(3);
     const g2 = removeNode(newDefaultGraph(), 'end');
     expect(g2.nodes.length).toBe(3);
+  });
+});
+
+describe('parseGraph / compileGraph 根级字段', () => {
+  it('保留流程根 excludeStats（保存时写回）', () => {
+    const g = parseGraph(
+      '{"version":1,"excludeStats":true,"nodes":[{"id":"start","type":"oa.start","data":{}},{"id":"end","type":"oa.end","data":{}}],"edges":[{"source":"start","target":"end"}]}',
+    );
+    expect(g.excludeStats).toBe(true);
+    expect(compileGraph(g)).toContain('"excludeStats":true');
   });
 });
 
@@ -113,6 +131,12 @@ describe('validateGraph 快速校验', () => {
       to: { kind: 'users', users: [1], roles: [], departments: [] },
     });
     expect(validateGraph(g)).toEqual([]);
+  });
+  it('部门负责人/提交人自选/表单人员节点不误报缺人（验收修复）', () => {
+    for (const kind of ['manager', 'starterPick', 'field'] as const) {
+      const g = applyNodePatch(newDefaultGraph(), 'n1', { to: { kind } });
+      expect(validateGraph(g), kind).toEqual([]);
+    }
   });
   it('XOR 缺默认分支时报错', () => {
     let g = insertAfter(newDefaultGraph(), 'n1', 'oa.xor');
@@ -148,6 +172,11 @@ describe('stripAndQuorum 会签清 quorum', () => {
     const n = g.nodes.find((x) => x.id === 'n1')!;
     expect(n.data.mode).toBe('and');
     expect(n.data.quorum).toBeUndefined();
+  });
+  it('sequence 模式写入不被 stripAndQuorum 改动（依次可新建）', () => {
+    let g = applyNodePatch(newDefaultGraph(), 'n1', { mode: 'sequence' });
+    g = stripAndQuorum(g);
+    expect(toApprove(g.nodes).data.mode).toBe('sequence');
   });
 });
 

@@ -2,13 +2,40 @@
 /**
  * 我发起的审批页（OSC-26090347f1 T8c）：菜单 URL /Cube/Workflow/Started。薄 .vue，逻辑见 useWorkflowStartedList。
  */
+import { computed, ref } from 'vue';
+import type { FieldMeta } from '@/core/types/field';
 import type { WorkflowInstanceItem } from '@newlifex/api-core';
+import type { ViewGroup } from '@/core/utils/viewProfile';
 import { formatDateTime } from '@/core/utils/datetime';
 import { instanceStatusMeta } from './useWorkflowProgress';
 import { entityLabel, summaryPlain } from './useWorkflowTaskList';
 import { useWorkflowStartedList } from './useWorkflowStartedList';
+import { groupWorkflowRows, type WorkflowGroupRow } from './workflowListGroup';
+import WorkflowListBar from './WorkflowListBar.vue';
 import WorkflowProgressPanel from './WorkflowProgressPanel.vue';
 import './workflowChrome.css';
+
+const STARTED_GROUP_FIELDS: FieldMeta[] = [
+  { name: 'typeName', displayName: '业务对象', typeName: 'Enum' },
+  {
+    name: 'status',
+    displayName: '状态',
+    typeName: 'Enum',
+    dataSource: {
+      running: '审批中',
+      Running: '审批中',
+      approved: '已通过',
+      Approved: '已通过',
+      rejected: '已驳回',
+      Rejected: '已驳回',
+      withdrawn: '已撤回',
+      Withdrawn: '已撤回',
+      cancelled: '已作废',
+      Cancelled: '已作废',
+    },
+  },
+  { name: 'createTime', displayName: '发起时间', typeName: 'DateTime' },
+];
 
 const {
   rows,
@@ -17,7 +44,29 @@ const {
   progressVisible,
   refresh,
   openProgress,
+  keyword,
+  page,
+  pageSize,
+  total,
+  search,
+  changePage,
+  changePageSize,
 } = useWorkflowStartedList();
+
+const group = ref<ViewGroup>([]);
+const displayRows = computed(() =>
+  groupWorkflowRows(rows.value as unknown as Record<string, unknown>[], group.value, STARTED_GROUP_FIELDS),
+);
+
+function spanMethod(data: { record: WorkflowGroupRow; columnIndex: number }) {
+  if (!data.record.__group) return undefined;
+  if (data.columnIndex === 0) return { rowspan: 1, colspan: 8 };
+  return { rowspan: 0, colspan: 0 };
+}
+
+function isGroup(record: WorkflowGroupRow) {
+  return record.__group === true;
+}
 
 function titleOf(row: WorkflowInstanceItem): string {
   return row.title || `${row.typePath} #${row.id}`;
@@ -28,26 +77,35 @@ function titleOf(row: WorkflowInstanceItem): string {
   <div class="wf-started-page list-surface">
     <div class="list-panel list-panel--table">
       <!-- 工具栏与表格同处一个面板（多维视图） -->
-      <div class="list-topbar">
-        <h3 class="wf-started-page__title">我发起的</h3>
-        <a-space>
-          <a-button size="small" @click="refresh">刷新</a-button>
-        </a-space>
-      </div>
-
+      <WorkflowListBar
+        v-model:q="keyword"
+        :fields="STARTED_GROUP_FIELDS"
+        :group="group"
+        :page="page"
+        :page-size="pageSize"
+        :total="total"
+        @search="search(keyword)"
+        @refresh="refresh()"
+        @update:group="group = $event"
+        @page-change="changePage"
+        @page-size-change="changePageSize"
+      >
       <a-spin :loading="loading" style="width: 100%; display: block">
         <a-table
-          :data="rows"
+          :data="displayRows"
           :loading="loading"
-          :row-key="(r: WorkflowInstanceItem) => String(r.id)"
+          :row-key="(r: WorkflowGroupRow) => String(r.id)"
           :pagination="false"
           :bordered="false"
+          :span-method="spanMethod"
+          :scroll="{ x: 1200 }"
           size="small"
         >
         <template #columns>
           <a-table-column title="标题" data-index="title" :width="180" ellipsis>
             <template #cell="{ record }">
-              <a-typography-text>{{ titleOf(record) }}</a-typography-text>
+              <span v-if="isGroup(record)" class="wf-group-label">{{ record.__groupLabel }}</span>
+              <a-typography-text v-else>{{ titleOf(record) }}</a-typography-text>
             </template>
           </a-table-column>
           <a-table-column title="摘要" data-index="summary" :width="220" ellipsis>
@@ -57,7 +115,7 @@ function titleOf(row: WorkflowInstanceItem): string {
               </a-typography-text>
             </template>
           </a-table-column>
-          <a-table-column title="实体" data-index="typeName" :width="120" ellipsis>
+          <a-table-column title="业务对象" data-index="typeName" :width="120" ellipsis>
             <template #cell="{ record }">
               <a-typography-text type="secondary" style="font-size: 12px">
                 {{ entityLabel(record.typeName, record.typePath) }}
@@ -93,17 +151,18 @@ function titleOf(row: WorkflowInstanceItem): string {
               <a-typography-text v-else type="secondary" style="font-size: 12px">—</a-typography-text>
             </template>
           </a-table-column>
-          <a-table-column title="操作" :width="90">
+          <a-table-column title="操作" :width="88">
             <template #cell="{ record }">
-              <a-button type="text" size="mini" @click="openProgress(record)">进度</a-button>
+              <a-button v-if="!isGroup(record)" type="text" size="mini" @click="openProgress(record)">进度</a-button>
             </template>
           </a-table-column>
         </template>
         <template #empty>
           <a-empty description="暂无发起的流程" />
         </template>
-      </a-table>
+        </a-table>
       </a-spin>
+      </WorkflowListBar>
 
       <WorkflowProgressPanel v-model="progressVisible" :instance-id="progressInstanceId" />
     </div>

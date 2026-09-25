@@ -20,7 +20,7 @@ public class WorkflowLockTests
         DAL.AddConnStr("Cube", "Data Source=Osc47f1LockCube;Mode=Memory;Cache=Shared", null, "SQLite");
         DAL.AddConnStr("Log", "Data Source=Osc47f1LockLog;Mode=Memory;Cache=Shared", null, "SQLite");
         DAL.AddConnStr("Workflow", "Data Source=Osc47f1LockWf;Mode=Memory;Cache=Shared", null, "SQLite");
-        WorkflowTestDb.EnsureInstanceSummaryColumn();
+        WorkflowTestDb.EnsureWorkflowTables();
 
         WorkflowTask.FindAll().Delete();
         WorkflowSubject.FindAll().Delete();

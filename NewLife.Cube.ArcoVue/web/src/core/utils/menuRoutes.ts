@@ -34,6 +34,7 @@ export function resolvePageComponent(path: string): ComponentLoader {
       return () => import('@/views/workflow/WorkflowTaskList.vue');
     if (sub === 'started') return () => import('@/views/workflow/WorkflowStartedList.vue');
     if (sub === 'designer') return () => import('@/views/workflow/WorkflowDesignerPage.vue');
+    if (sub === 'efficiency') return () => import('@/views/workflow/WorkflowEfficiencyPage.vue');
   }
 
   const candidates = new Set<string>();

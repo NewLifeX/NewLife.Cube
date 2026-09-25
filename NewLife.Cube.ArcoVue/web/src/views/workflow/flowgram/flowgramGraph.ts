@@ -1,10 +1,12 @@
 import type { WfGraphData, WfGraphNodeData } from '@/core/types/workflow';
 import { wfRecipientToJson } from '@/core/types/workflow';
-import { xorCaseList } from '../wfNodeCard';
+import { isXorBranchBlock, xorBranchBlockId, xorCaseList } from '../wfNodeCard';
+
+export { isXorBranchBlock, xorBranchBlockId };
 
 /**
  * 后端 GraphJson（扁平 nodes+edges）↔ FlowGram 固定布局文档（可嵌套 blocks）。
- * oa.xor 映射为二分支：满足（首条 case）/ 不满足（defaultTarget），对齐飞书条件判断画布。
+ * oa.xor 映射为 N 个条件支 + 末支「其他情况」（defaultTarget），对齐飞书条件判断画布（design §3/§4）。
  */
 
 export interface FlowDocNode {
@@ -25,30 +27,42 @@ export const CANVAS_TYPE = {
   end: 'end',
 } as const;
 
-const BUSINESS_TYPES = new Set(['oa.start', 'oa.end', 'oa.approve', 'oa.cc', 'oa.xor', 'start', 'end']);
+const BUSINESS_TYPES = new Set(['oa.start', 'oa.end', 'oa.approve', 'oa.handle', 'oa.cc', 'oa.xor', 'oa.parallel', 'start', 'end']);
+
+export function isSplitNodeType(type: string): boolean {
+  return type === 'oa.xor' || type === 'oa.parallel';
+}
 
 export function isBusinessNodeType(type: string): boolean {
   return BUSINESS_TYPES.has(type) || type.startsWith('oa.');
 }
 
-export function isXorBranchBlock(id: string): boolean {
-  return id.endsWith('__if') || id.endsWith('__else');
+/** 插入条件分流时的空分支槽：caseCount 个条件支 + 末支「其他情况」；filters 按序写入块上（分支卡片摘要） */
+export function xorSplitBlocks(xorId: string, caseCount = 1, filters?: unknown[]): FlowDocNode[] {
+  const blocks: FlowDocNode[] = [];
+  for (let i = 0; i < Math.max(0, caseCount); i++) {
+    blocks.push({
+      id: xorBranchBlockId(xorId, i),
+      type: 'block',
+      data: { title: `条件${i + 1}`, filter: filters?.[i] },
+      blocks: [],
+    });
+  }
+  blocks.push({ id: xorBranchBlockId(xorId, -1), type: 'block', data: { title: '其他情况' }, blocks: [] });
+  return blocks;
 }
 
-export function xorIfBlockId(xorId: string): string {
-  return `${xorId}__if`;
-}
-
-export function xorElseBlockId(xorId: string): string {
-  return `${xorId}__else`;
-}
-
-/** 插入条件分流时的两个空分支槽 */
-export function xorSplitBlocks(xorId: string): FlowDocNode[] {
-  return [
-    { id: xorIfBlockId(xorId), type: 'block', data: { title: '满足' }, blocks: [] },
-    { id: xorElseBlockId(xorId), type: 'block', data: { title: '不满足' }, blocks: [] },
-  ];
+/** 下一个条件分支块 id：扫描现有 __if/__caseN 取最大序号 +1（新块由画布插在「其他情况」之前） */
+export function nextCaseBlockId(xorId: string, usedIds: Iterable<string>): string {
+  let max = -1;
+  for (const id of usedIds) {
+    if (id === `${xorId}__if`) max = Math.max(max, 0);
+    else if (id.startsWith(xorId)) {
+      const m = /__case(\d+)$/.exec(id);
+      if (m) max = Math.max(max, Number(m[1]));
+    }
+  }
+  return xorBranchBlockId(xorId, max + 1);
 }
 
 export function toCanvasType(type: string): string {
@@ -78,11 +92,21 @@ export function defaultNodeDataFor(type: string): Record<string, unknown> {
         allowAddSign: true,
         allowRollback: true,
         allowTransfer: true,
+        emptyPolicy: 'manager',
+      };
+    case 'oa.handle':
+      return {
+        name: '办理',
+        mode: 'or',
+        to: wfRecipientToJson(undefined, [], 'users'),
+        emptyPolicy: 'manager',
       };
     case 'oa.cc':
       return { name: '知会', to: wfRecipientToJson(undefined, [], 'users') };
     case 'oa.xor':
       return { name: '条件分流', cases: [], defaultTarget: '' };
+    case 'oa.parallel':
+      return { name: '并行分支', cases: [], defaultTarget: '', joinTarget: '' };
     case 'oa.end':
       return { name: '结束' };
     default:
@@ -106,22 +130,22 @@ function reachable(graph: WfGraphData, start: string, banned: Set<string>): Set<
   return hit;
 }
 
-/** 两分支汇合点：满足链上第一个也出现在不满足可达集中的节点 */
+/** 多分支汇合点：从首支沿链走，第一个出现在其它所有分支可达集的节点；兜底取第二条链起点 */
 export function xorJoinId(graph: WfGraphData, xor: WfGraphNodeData): string | undefined {
-  const cases = xorCaseList(xor.data);
-  const ifStart = cases.map((c) => c.target).find(Boolean);
+  const cases = xorCaseList(xor.data).map((c) => c.target).filter(Boolean);
   const elseStart = String(xor.data?.defaultTarget ?? '').trim() || succs(graph, xor.id)[0];
-  if (!ifStart) return elseStart;
-  if (!elseStart || ifStart === elseStart) return ifStart;
-  const rElse = reachable(graph, elseStart, new Set([xor.id]));
+  const unique = [...new Set([...cases, elseStart].filter(Boolean))];
+  if (!unique.length) return undefined;
+  if (unique.length === 1) return unique[0];
+  const others = unique.slice(1).map((s) => reachable(graph, s, new Set([xor.id])));
   const seen = new Set<string>();
-  let cur: string | undefined = ifStart;
+  let cur: string | undefined = unique[0];
   while (cur && !seen.has(cur)) {
-    if (rElse.has(cur)) return cur;
+    if (others.every((rs) => rs.has(cur!))) return cur;
     seen.add(cur);
     cur = succs(graph, cur)[0];
   }
-  return elseStart;
+  return unique[1];
 }
 
 function emitChain(
@@ -137,29 +161,28 @@ function emitChain(
     const node = byId.get(cur);
     if (!node) break;
     visited.add(cur);
-    if (node.type === 'oa.xor') {
+    if (isSplitNodeType(node.type)) {
       const join = xorJoinId(graph, node);
-      const ifStart = xorCaseList(node.data).map((c) => c.target).find(Boolean);
+      const caseList = xorCaseList(node.data);
       const elseStart = String(node.data?.defaultTarget ?? '').trim();
-      out.push({
-        id: node.id,
-        type: 'oa.xor',
-        data: node.data ?? {},
-        blocks: [
-          {
-            id: xorIfBlockId(node.id),
-            type: 'block',
-            data: { title: '满足' },
-            blocks: emitChain(graph, ifStart && ifStart !== join ? ifStart : undefined, join, visited),
-          },
-          {
-            id: xorElseBlockId(node.id),
-            type: 'block',
-            data: { title: '不满足' },
-            blocks: emitChain(graph, elseStart && elseStart !== join ? elseStart : undefined, join, visited),
-          },
-        ],
+      const blocks: FlowDocNode[] = [];
+      // 保留原下标：target 为空的条件支也要占位，否则块序号与 cases 错位
+      caseList.forEach((c, i) => {
+        const start = String(c.target ?? '').trim();
+        blocks.push({
+          id: xorBranchBlockId(node.id, i),
+          type: 'block',
+          data: { title: `条件${i + 1}`, filter: c.filter, name: c.name },
+          blocks: emitChain(graph, start && start !== join ? start : undefined, join, visited),
+        });
       });
+      blocks.push({
+        id: xorBranchBlockId(node.id, -1),
+        type: 'block',
+        data: { title: '其他情况' },
+        blocks: emitChain(graph, elseStart && elseStart !== join ? elseStart : undefined, join, visited),
+      });
+      out.push({ id: node.id, type: node.type, data: node.data ?? {}, blocks });
       cur = join;
       continue;
     }
@@ -196,7 +219,7 @@ function collectBusiness(nodes: FlowDocNode[] | undefined): WfGraphNodeData[] {
     }
     if (!isBusinessNodeType(t)) continue;
     out.push({ id: n.id, type: toOaType(t), data: n.data ?? {} });
-    if (t === 'oa.xor') out.push(...collectBusiness(n.blocks));
+    if (isSplitNodeType(t)) out.push(...collectBusiness(n.blocks));
   }
   return out;
 }
@@ -219,17 +242,14 @@ function chainEdges(nodes: FlowDocNode[], joinId: string | undefined): { source:
       edges.push(...chainEdges(n.blocks ?? [], joinId));
       continue;
     }
-    if (t === 'oa.xor') {
-      const ifChain = n.blocks?.[0]?.blocks ?? [];
-      const elseChain = n.blocks?.[1]?.blocks ?? [];
-      const ifEntry = firstEntryId(ifChain[0]);
-      const elseEntry = firstEntryId(elseChain[0]);
-      if (ifEntry) edges.push({ source: n.id, target: ifEntry });
-      else if (nextId) edges.push({ source: n.id, target: nextId });
-      if (elseEntry) edges.push({ source: n.id, target: elseEntry });
-      else if (nextId) edges.push({ source: n.id, target: nextId });
-      edges.push(...chainEdges(ifChain, nextId));
-      edges.push(...chainEdges(elseChain, nextId));
+    if (isSplitNodeType(t)) {
+      for (const b of n.blocks ?? []) {
+        const chain = b.blocks ?? [];
+        const entry = firstEntryId(chain[0]);
+        if (entry) edges.push({ source: n.id, target: entry });
+        else if (nextId) edges.push({ source: n.id, target: nextId });
+        edges.push(...chainEdges(chain, nextId));
+      }
       continue;
     }
     if (isBusinessNodeType(t) && nextId && n.id !== nextId) edges.push({ source: n.id, target: nextId });
@@ -239,25 +259,26 @@ function chainEdges(nodes: FlowDocNode[], joinId: string | undefined): { source:
 
 function patchXorData(n: FlowDocNode, joinId: string | undefined): Record<string, unknown> {
   const data = { ...(n.data ?? {}) };
-  const ifEntry = firstEntryId(n.blocks?.[0]?.blocks?.[0]);
-  const elseEntry = firstEntryId(n.blocks?.[1]?.blocks?.[0]);
-  const old = xorCaseList(data);
-  const ifTarget = ifEntry || '';
-  if (old.length) {
-    data.cases = old.map((c, i) => (i === 0 ? { filter: c.filter, target: ifTarget || c.target } : c));
-  } else if (ifTarget) {
-    data.cases = [{ target: ifTarget }];
-  } else {
-    data.cases = [];
-  }
+  const branchBlocks = (n.blocks ?? []).filter((b) => !b.type || String(b.type) === 'block');
+  const caseBlocks = branchBlocks.slice(0, -1);
+  const elseBlock = branchBlocks.length ? branchBlocks[branchBlocks.length - 1] : undefined;
+  const caseTargets = caseBlocks.map((b) => firstEntryId(b.blocks?.[0]) || '');
+  const elseEntry = firstEntryId(elseBlock?.blocks?.[0]);
+  // filter/则去目标以块上数据为准（画布内条件编辑经 patchBranch 同步到块，不随分支增删错位）
+  data.cases = caseTargets.map((t, i) => {
+    const bd = caseBlocks[i]?.data as Record<string, unknown> | undefined;
+    const cached = String(bd?.target ?? '').trim();
+    return { filter: bd?.filter, target: t || cached || '', name: bd?.name };
+  });
   data.defaultTarget = elseEntry || joinId || String(data.defaultTarget ?? '');
+  if (String(n.type) === 'oa.parallel') data.joinTarget = joinId || String(data.joinTarget ?? '');
   return data;
 }
 
 function applyXorPatches(nodes: FlowDocNode[], joinId?: string): FlowDocNode[] {
   return nodes.map((n, i) => {
     const nextJoin = firstEntryId(nodes[i + 1]) || joinId;
-    if (String(n.type) === 'oa.xor') {
+    if (isSplitNodeType(String(n.type))) {
       return {
         ...n,
         data: patchXorData(n, nextJoin),
@@ -294,8 +315,12 @@ export function flowNodeTitle(type: string, data: Record<string, unknown> | unde
           ? '知会'
           : type === 'oa.xor'
             ? '条件分流'
-            : type === 'oa.approve'
+            : type === 'oa.parallel'
+              ? '并行分支'
+              : type === 'oa.approve'
               ? '审批'
-              : type;
+              : type === 'oa.handle'
+                ? '办理'
+                : type;
   return name ? `${label} · ${name}` : label;
 }

@@ -23,3 +23,12 @@ body,
   box-sizing: border-box;
   min-height: 240px;
 }
+
+/**
+ * FlowGram 画布（流程设计器 / 实例只读画布）背景跟随主题：
+ * 组件内置 --g-editor-background 硬编码浅灰 #f2f3f5（深色主题下画布发白），
+ * 此处接管为 Arco 语义 fill —— 浅色下与默认一致，深色自动变暗。
+ */
+.wf-flowcanvas {
+  --g-editor-background: var(--color-fill-2);
+}

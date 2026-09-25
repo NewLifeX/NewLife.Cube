@@ -54,10 +54,6 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
   function onTableAction(payload: { action: string; row: Record<string, unknown> }) {
     if (payload.action.startsWith('auto:')) return;
     if (payload.action === 'edit') {
-      if (wfRowEditLocked(payload.row)) {
-        Message.warning('审批中的记录不可编辑');
-        return;
-      }
       openEdit(payload.row);
     } else if (payload.action === 'delete') {
       if (!flags.value.canDelete) return;
