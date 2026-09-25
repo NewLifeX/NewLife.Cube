@@ -70,6 +70,36 @@ public class WorkflowDefinitionControllerTests
         }
     }
 
+    [Fact(DisplayName = "必填收敛：名称/实体路径必填；启用/已发布/版本等非字符串列不再误标（OSC-260925）")]
+    public void RequiredMatrix_OnlyStringFields()
+    {
+        var ctrl = new WorkflowDefinitionController();
+        var mi = typeof(WorkflowDefinitionController).GetMethod("PrepareFieldsForApi", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(mi);
+
+        // 添加表单：名称/实体路径为字符串 NOT NULL → 必填；备注可空 → 非必填
+        var add = GetFormFields("AddFormFields");
+        mi!.Invoke(ctrl, [add]);
+        Assert.True(add.First(e => e.Name == "Name").Required);
+        Assert.True(add.First(e => e.Name == "TypePath").Required);
+        Assert.False(add.First(e => e.Name == "Remark").Required);
+
+        // 编辑表单：启用/已发布（布尔开关）与版本（引擎维护列）不再误标必填；
+        // 旧矩阵按数据库 NOT NULL 判定，编辑表单会带 3 个红星且清空版本即被「版本不可以为空！」拦截
+        var edit = GetFormFields("EditFormFields");
+        mi.Invoke(ctrl, [edit]);
+        Assert.True(edit.First(e => e.Name == "Name").Required);
+        Assert.True(edit.First(e => e.Name == "TypePath").Required);
+        Assert.False(edit.First(e => e.Name == "Enable").Required);
+        Assert.False(edit.First(e => e.Name == "Published").Required);
+        Assert.False(edit.First(e => e.Name == "Version").Required);
+
+        // required 显式下发（含 false）：前端 isFieldRequired 显式值优先，不得再按 nullable 兜底改回必填
+        var dic = edit.First(e => e.Name == "Enable").ToDictionary();
+        Assert.True(dic.ContainsKey("required"));
+        Assert.False((Boolean)dic["required"]);
+    }
+
     [Fact(DisplayName = "新建默认值：表单通道补齐启用/图草稿，实体直插保持原样")]
     public void Insert_Defaults()
     {

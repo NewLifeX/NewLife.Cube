@@ -51,6 +51,7 @@ public class Osc260819Controller : ReadOnlyEntityController<Osc260819Source>
 }
 
 /// <summary>OSC-260819e483 P1 契约加固：Required 矩阵 / Fill 不写 Required / Stat 安全转换</summary>
+/// <remarks>OSC-260925 审计修正：必填矩阵收敛为「仅非空字符串字段」——布尔/数值/枚举/系统列不再误标必填。</remarks>
 public class Osc260819Tests
 {
     public Osc260819Tests()
@@ -60,35 +61,51 @@ public class Osc260819Tests
     }
 
     [Fact]
-    [DisplayName("P1 Required 矩阵：非PK/非只读/非可空 → true；PK/只读/可空 → false")]
+    [DisplayName("P1 Required 矩阵：仅非空字符串必填；PK/只读/可空/布尔/数值/枚举 → false，且 ToDictionary 显式下发 required")]
     public void PrepareFieldsForApi_RequiredMatrix()
     {
         var c = new Osc260819Controller();
         var list = new List<DataField>
         {
-            new() { Name = "Id", PrimaryKey = true, Nullable = false },
-            new() { Name = "Name", Nullable = false },
-            new() { Name = "Description", Nullable = true },
-            new() { Name = "Enable", Nullable = false },
-            new() { Name = "ReadOnlyField", Nullable = false, ReadOnly = true },
+            new() { Name = "Id", PrimaryKey = true, Nullable = false, Type = typeof(Int32) },
+            new() { Name = "Name", Nullable = false, Type = typeof(String) },
+            new() { Name = "Description", Nullable = true, Type = typeof(String) },
+            new() { Name = "Enable", Nullable = false, Type = typeof(Boolean) },
+            new() { Name = "Version", Nullable = false, Type = typeof(Int32) },
+            new() { Name = "Kind", Nullable = false, Type = typeof(DayOfWeek) },
+            new() { Name = "ReadOnlyField", Nullable = false, ReadOnly = true, Type = typeof(String) },
+            // Map 扩展字段（映射名≠字段名）：不标必填，避免前端拿不到值又被拦截
+            new() { Name = "ParentName", Nullable = false, Type = typeof(String), MapField = "ParentID" },
         };
 
         var prepared = c.PrepareFields(list);
 
         // 主键 → false
         Assert.False(prepared.First(f => f.Name == "Id").Required);
-        // NOT NULL 非主键 → true
+        // NOT NULL 字符串 → true（名称等业务主字段）
         Assert.True(prepared.First(f => f.Name == "Name").Required);
         // 可空 → false
         Assert.False(prepared.First(f => f.Name == "Description").Required);
-        // 布尔 NOT NULL → true（design：布尔 false、数字 0 不是空，仍标必填）
-        Assert.True(prepared.First(f => f.Name == "Enable").Required);
+        // 布尔 NOT NULL → false（开关无空态，false 是有效值；OSC-260925 收敛）
+        Assert.False(prepared.First(f => f.Name == "Enable").Required);
+        // 数值 NOT NULL → false（空值不提交时后端按 0/默认值落库，前端不得拦截整单）
+        Assert.False(prepared.First(f => f.Name == "Version").Required);
+        // 枚举 NOT NULL → false（0/未知为合法值，业务校验交给实体 Valid）
+        Assert.False(prepared.First(f => f.Name == "Kind").Required);
         // 只读 → false
         Assert.False(prepared.First(f => f.Name == "ReadOnlyField").Required);
+        // Map 扩展字段 → false
+        Assert.False(prepared.First(f => f.Name == "ParentName").Required);
+
+        // 显式下发 required（true/false 都要有）：前端以显式值为准，缺省才按 nullable 兜底
+        var enableDic = prepared.First(f => f.Name == "Enable").ToDictionary();
+        Assert.True(enableDic.ContainsKey("required"));
+        Assert.False((Boolean)enableDic["required"]);
+        Assert.True((Boolean)prepared.First(f => f.Name == "Name").ToDictionary()["required"]);
     }
 
     [Fact]
-    [DisplayName("P1 真实实体链路：OnGetFields + PrepareFieldsForApi 后 Name/Enable required:true，Id/Description false")]
+    [DisplayName("P1 真实实体链路：OnGetFields + PrepareFieldsForApi 后 Name required:true，Id/Description/Enable false")]
     public void PrepareFieldsForApi_RealEntity()
     {
         var c = new Osc260819Controller();
@@ -97,7 +114,8 @@ public class Osc260819Tests
         Assert.False(fields.First(f => f.Name == "Id").Required);
         Assert.True(fields.First(f => f.Name == "Name").Required);
         Assert.False(fields.First(f => f.Name == "Description").Required);
-        Assert.True(fields.First(f => f.Name == "Enable").Required);
+        // 布尔开关不再误标必填（OSC-260925 审计修正）
+        Assert.False(fields.First(f => f.Name == "Enable").Required);
     }
 
     [Fact]
@@ -119,7 +137,7 @@ public class Osc260819Tests
 
         Assert.Null(c.PrepareFields(null));
 
-        var list = new List<DataField> { null, new() { Name = "X", Nullable = false } };
+        var list = new List<DataField> { null, new() { Name = "X", Nullable = false, Type = typeof(String) } };
         var prepared = c.PrepareFields(list);
         Assert.True(prepared[1].Required);
     }

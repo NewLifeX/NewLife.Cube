@@ -192,7 +192,9 @@ public class DataField : IDictionarySource
         if (PrimaryKey) dic["primaryKey"] = true;
         if (ReadOnly) dic["readOnly"] = true;
         if (Visible) dic["visible"] = true;
-        if (Required) dic["required"] = true;
+        // 必填显式下发 true/false（OSC-260925 审计修正）：前端 isFieldRequired 以「显式 required 优先，
+        // 未下发时按 nullable 兜底」，只发 true 会让被判非必填的数值/布尔字段在前端又被兜底规则改回必填
+        dic["required"] = Required;
         if (!Authority.IsNullOrEmpty()) dic["authority"] = Authority;
         if (!Extended1.IsNullOrEmpty()) dic["extended1"] = Extended1;
         if (!Extended2.IsNullOrEmpty()) dic["extended2"] = Extended2;

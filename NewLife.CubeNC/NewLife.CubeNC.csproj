@@ -86,6 +86,7 @@
     <Compile Include="..\NewLife.Cube\Common\BaseController.cs" Link="Common\BaseController.cs" />
     <Compile Include="..\NewLife.Cube\Common\DataPermissionAttribute.cs" Link="Common\DataPermissionAttribute.cs" />
     <Compile Include="..\NewLife.Cube\Common\EntityController2.cs" Link="Common\EntityController2.cs" />
+    <Compile Include="..\NewLife.Cube\Common\FormRequiredHelper.cs" Link="Common\FormRequiredHelper.cs" />
     <Compile Include="..\NewLife.Cube\Common\MembershipExtensions.cs" Link="Common\MembershipExtensions.cs" />
     <Compile Include="..\NewLife.Cube\Common\NoPermissionException.cs" Link="Common\NoPermissionException.cs" />
     <Compile Include="..\NewLife.Cube\Common\OAuthController.cs" Link="Common\OAuthController.cs" />

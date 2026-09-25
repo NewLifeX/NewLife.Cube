@@ -332,6 +332,14 @@ public partial class EntityController<TEntity, TModel>
     /// <param name="type">操作类型（Insert使用AddFormFields，Update使用EditFormFields）</param>
     /// <param name="onlyFields">仅校验指定字段（PATCH/批量局部更新）；null 时校验全部表单字段（Insert/Update 整表单）</param>
     /// <returns>字段错误列表，无错误时返回null</returns>
+    /// <remarks>
+    /// Map 扩展字段按物理列取值（OSC-260925 审计）：表单分区 SetRelation 会把物理列换成查找展示列
+    /// （如 ParentID→ParentName），API 输出前还原为物理列（MapCandidateFiller.RestorePhysicalColumnName），
+    /// 用户提交的也是物理列名。按展示列取值时 entity[ParentName] 仅在已选父级时才有值，
+    /// ParentID=0（根部门，合法）会被误报「父级不可以为空！」。
+    /// 必填判定与前端 required 同一套自动推断（<see cref="FormRequiredHelper"/>）：
+    /// 仅「非空、无默认值、非审计」的字符串字段校验空值，其余类型与列交实体 Valid/默认值兜底。
+    /// </remarks>
     private static List<FieldError> ValidateEntityFields(TEntity entity, DataObjectMethodType type, IEnumerable<String> onlyFields = null)
     {
         var fields = type == DataObjectMethodType.Insert ? AddFormFields : EditFormFields;
@@ -342,18 +350,23 @@ public partial class EntityController<TEntity, TModel>
             // 跳过主键和只读字段
             if (df.PrimaryKey || df.ReadOnly) continue;
 
+            // Map 扩展字段按物理列取值（如 ParentID→ParentName 这类查找展示列）：
+            // 展示列在用户未选父级时恒为空，会把合法的 ParentID=0 误判为空值（OSC-260925 审计，见方法 remarks）
+            var name = !df.MapField.IsNullOrEmpty() && !df.MapField.EqualIgnoreCase(df.Name) ? df.MapField : df.Name;
+
             // 局部更新（PATCH/批量改字段）只校验本次提交字段：其它字段保持数据库原值，
             // 若因整实体必填校验（如某必填 String 原值为空串）而误伤，则改一个字段也会失败（OSC-260819e483 修复）
-            if (onlyFields != null && !onlyFields.Any(f => f.EqualIgnoreCase(df.Name))) continue;
+            if (onlyFields != null && !onlyFields.Any(f => f.EqualIgnoreCase(df.Name, name))) continue;
 
             // 租户字段：关闭多租户或 TenantId=0（全局角色）时查找列 TenantName 为空，不能报「租户不可以为空」
             if (df.IsTenantScopeField()) continue;
 
-            var value = entity[df.Name];
+            var value = entity[name];
             var displayName = df.DisplayName ?? df.Name;
 
-            // 1. 必填校验：数据库列定义为 NOT NULL 的字段
-            if (!df.Nullable)
+            // 1. 必填校验：仅校验「用户必须手工提供」的字段（与前端 required 同一套自动推断，见 FormRequiredHelper）：
+            // 主键/标识列/只读/可空/默认值/审计列/值类型/Map/租户均非必填，空值只对推断必填的字符串报错
+            if (FormRequiredHelper.IsRequired(df))
             {
                 if (value == null || (value is String s && s.IsNullOrEmpty()))
                 {

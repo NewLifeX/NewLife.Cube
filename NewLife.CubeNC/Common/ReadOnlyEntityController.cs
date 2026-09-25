@@ -1085,17 +1085,19 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         return fields;
     }
 
-    /// <summary>按 Required 矩阵设置必填（OSC-260819e483 P1，与 WebAPI 同源）：字段为 null 跳过；主键/只读/可空=false；其余（含布尔 NOT NULL）为 true。不在 Fill 内写，避免影响 MVC 校验语义。多租户关闭时租户字段非必填（0 表示全局）。</summary>
+    /// <summary>按表单必填规则设置必填（与 WebAPI 同源）：依据实体 XML 定义生成的类定义元数据自动推断（见 <see cref="FormRequiredHelper"/>），控制器无需逐字段显式设置。</summary>
     /// <param name="df">字段</param>
+    /// <remarks>
+    /// OSC-260925 修正：旧规则把数据库 NOT NULL 列直接等同表单必填，布尔/数值/枚举/系统列全部带红星，
+    /// 前端按「X不可以为空！」拦截整单保存（部门添加表单实测 10 项误拦）。现仅「非空、无默认值、非审计」
+    /// 的字符串字段必填；控制器显式置 true 的业务特例保留。不在 Fill 内写，避免影响 MVC 校验语义。
+    /// </remarks>
     protected static void ApplyRequired(DataField df)
     {
         if (df == null) return;
-        if (df.IsTenantScopeField() && !CubeSetting.Current.EnableTenant)
-        {
-            df.Required = false;
-            return;
-        }
-        df.Required = !df.PrimaryKey && !df.ReadOnly && !df.Nullable;
+
+        // 显式置 true 的业务特例保留（推断结果不覆盖显式配置），其余按生成的类定义自动推断
+        df.Required = df.Required || FormRequiredHelper.IsRequired(df);
     }
     #endregion
 
