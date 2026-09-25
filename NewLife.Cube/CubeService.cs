@@ -33,6 +33,19 @@ public static class CubeService
     /// <summary>区域名集合</summary>
     public static String[] AreaNames { get; set; }
 
+    #region 配置实体模型校验
+    /// <summary>配置与 WebAPI 行为对齐的 MVC 选项：关闭非空引用类型属性被隐式推断为 [Required]</summary>
+    /// <param name="options">MVC 选项</param>
+    /// <remarks>
+    /// 供 AddCube 与回归测试共享引用，确保开关被意外移除时测试能捕获。
+    /// 参见 AddCube 内注释：实体（TModel）String 属性被隐式必填会拦截实体页按需提交。
+    /// </remarks>
+    public static void ConfigureEntityModelValidation(Microsoft.AspNetCore.Mvc.MvcOptions options)
+    {
+        options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+    }
+    #endregion
+
     #region 配置魔方
     /// <summary>添加魔方，放在AddControllersWithViews之后</summary>
     /// <param name="services"></param>
@@ -95,6 +108,12 @@ public static class CubeService
             .AllowCredentials()
             .WithOrigins(set.CorsOrigins)
             .WithExposedHeaders("X-Cube-Filter-Narrowed")));
+
+        // 关闭「非空引用类型属性被 MVC 隐式推断为 [Required]」（与 CubeNC 的 EntityValidationMetadataProvider 目标一致）。
+        // 项目启用 Nullable 标注后，实体（TModel）中的 String 属性无默认值时被隐式必填；前端表单按需提交字段
+        // （省略 undefined 值）时，添加/编辑记录会在模型校验阶段被拦下（code=-2 “The X field is required.”），
+        // 导致实体页写入整体不可用。显式 [Required] 与各动作内部中文提示校验不受影响。
+        services.Configure<Microsoft.AspNetCore.Mvc.MvcOptions>(ConfigureEntityModelValidation);
 
         // 添加管理提供者
         services.AddManageProvider();

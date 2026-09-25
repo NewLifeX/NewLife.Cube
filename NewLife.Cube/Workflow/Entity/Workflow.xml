@@ -62,7 +62,7 @@
         <Column Name="UpdateUserID" DataType="Int32" Description="更新用户" Category="扩展" />
         <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
         <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
-        <Column Name="Remark" DataType="String" Length="200" Description="备注" Category="扩展" />
+        <Column Name="Remark" DataType="String" Length="500" Description="备注" Category="扩展" />
       </Columns>
       <Indexes>
         <Index Columns="TenantId,TypePath,Enable" />

@@ -187,7 +187,7 @@ public partial class WorkflowDefinition : IEntity<WorkflowDefinitionModel>
     [Category("扩展")]
     [DisplayName("备注")]
     [Description("备注")]
-    [DataObjectField(false, false, true, 200)]
+    [DataObjectField(false, false, true, 500)]
     [BindColumn("Remark", "备注", "")]
     public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
     #endregion

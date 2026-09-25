@@ -47,6 +47,28 @@ internal static class ModelValidationHarness
             .ToArray();
     }
 
+    /// <summary>按 Cube 实际运行配置（AddCube 的隐式必填关闭已生效）校验模型</summary>
+    /// <param name="model">待校验模型实例（通常由前端 JSON 反序列化而来）</param>
+    /// <returns>校验错误项；空数组表示通过</returns>
+    /// <remarks>与 CubeService.ConfigureEntityModelValidation 共享同一开关，防止配置被移除而测试不自知。</remarks>
+    internal static String[] ValidateAsCube(Object model)
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddMvcCore().AddDataAnnotations();
+        services.Configure<Microsoft.AspNetCore.Mvc.MvcOptions>(CubeService.ConfigureEntityModelValidation);
+        var sp = services.BuildServiceProvider();
+
+        var validator = sp.GetRequiredService<IObjectModelValidator>();
+        var ctx = new ActionContext(new DefaultHttpContext { RequestServices = sp }, new RouteData(), new ActionDescriptor());
+        validator.Validate(ctx, null, String.Empty, model);
+
+        return ctx.ModelState
+            .Where(e => e.Value.Errors.Count > 0)
+            .Select(e => $"{e.Key}: {e.Value.Errors[0].ErrorMessage}")
+            .ToArray();
+    }
+
     static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,

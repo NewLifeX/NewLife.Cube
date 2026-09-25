@@ -118,7 +118,7 @@ public partial class WorkflowOccupancy : IEntity<WorkflowOccupancyModel>
         if (id < 0) return null;
 
         // 实体缓存
-        if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Id == id);
+        if (Meta.Session.Count < MaxCacheCount) return Meta.Cache.Find(e => e.Id == id);
 
         // 单对象缓存
         return Meta.SingleCache[id];
@@ -136,7 +136,7 @@ public partial class WorkflowOccupancy : IEntity<WorkflowOccupancyModel>
         if (entityKey.IsNullOrEmpty()) return null;
 
         // 实体缓存
-        if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.TypePath.EqualIgnoreCase(typePath) && e.EntityKey.EqualIgnoreCase(entityKey));
+        if (Meta.Session.Count < MaxCacheCount) return Meta.Cache.Find(e => e.TypePath.EqualIgnoreCase(typePath) && e.EntityKey.EqualIgnoreCase(entityKey));
 
         return Find(_.TypePath == typePath & _.EntityKey == entityKey);
     }
@@ -149,7 +149,7 @@ public partial class WorkflowOccupancy : IEntity<WorkflowOccupancyModel>
         if (typePath.IsNullOrEmpty()) return [];
 
         // 实体缓存
-        if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.TypePath.EqualIgnoreCase(typePath));
+        if (Meta.Session.Count < MaxCacheCount) return Meta.Cache.FindAll(e => e.TypePath.EqualIgnoreCase(typePath));
 
         return FindAll(_.TypePath == typePath);
     }

@@ -194,8 +194,11 @@ public class WorkflowEngineTests
     [Fact(DisplayName = "常用语：空回落内置三条；保存后读回")]
     public void Phrases_Roundtrip()
     {
-        var p = XCode.Membership.Parameter.FindByUserIDAndCategoryAndName(0, WorkflowHelper.PhraseCategory, "tenant:0");
-        if (p != null) p.Delete();
+        // 清空常用语（含跨运行/跨库残留）：切换连接不会清实体缓存，整类清空后再显式清缓存，
+        // 否则单条 Delete 可能删到上一个库的缓存对象而无效（Expected 3 / Actual 2）
+        XCode.Membership.Parameter.FindAll(XCode.Membership.Parameter._.Category == WorkflowHelper.PhraseCategory).Delete();
+        XCode.Membership.Parameter.Meta.Cache.Clear("测试重置常用语");
+
         var list = WorkflowHelper.PhraseList(0);
         Assert.Equal(3, list.Count);
 

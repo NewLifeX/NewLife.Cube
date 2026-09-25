@@ -1,4 +1,5 @@
 using System;
+using NewLife.Cube.Entity;
 using NewLife.Cube.Workflow.Entity;
 using XCode.DataAccessLayer;
 
@@ -30,6 +31,29 @@ static class WorkflowTestDb
         catch
         {
             /* 建表失败留给后续用例暴露 */
+        }
+
+        // 引擎副作用的“外部表”：通知记录（Log）与写锁记录（Cube）。
+        // 这两张表不在 Workflow 库，且 Insert 路径不触发 XCode 建表检查；
+        // 干净输出目录（或 CI）下必须先显式建表，否则报 no such table（历史输出目录曾靠先前运行残留的库文件掩盖）。
+        try
+        {
+            var dal = DAL.Create("Log");
+            dal.SetTables((IDataTable)NotificationRecord.Meta.Table.DataTable.Clone());
+        }
+        catch
+        {
+            /* 连接未设置时忽略，留给用例暴露 */
+        }
+
+        try
+        {
+            var dal = DAL.Create("Cube");
+            dal.SetTables((IDataTable)WfLockRecord.Meta.Table.DataTable.Clone());
+        }
+        catch
+        {
+            /* 连接未设置时忽略，留给用例暴露 */
         }
     }
 
