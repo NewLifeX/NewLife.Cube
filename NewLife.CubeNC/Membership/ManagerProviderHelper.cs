@@ -21,6 +21,17 @@ public static class ManagerProviderHelper
     /// <summary>登录失败统一文案。与 UserService.LoginByPassword 的用户名校验失败文案保持一致，避免泄露用户/租户存在性</summary>
     private const String LoginFailedMessage = "提供的用户名或密码不正确。";
 
+    /// <summary>租户校验失败标记（HttpContext.Items 键）。标识"已认证但租户不匹配"（授权失败，应返回 403），
+    /// 与"未认证（凭证缺失/无效，应返回 401）"区分，避免客户端把租户拒绝误判为凭证过期而触发无意义的刷新/重登</summary>
+    public const String TenantCheckFailedKey = "Cube_TenantCheckFailed";
+
+    /// <summary>租户校验失败用户的 ID 标记（HttpContext.Items 键），与 <see cref="TenantCheckFailedKey"/> 配套。
+    /// 单独存 ID：审计日志落库需要真实 userId 关联用户；同时以 ID 是否大于 0 作为"已认证但租户校验失败"的判定（比用户名更可靠）</summary>
+    public const String TenantCheckFailedUserIdKey = "Cube_TenantCheckFailedUserId";
+
+    /// <summary>租户校验失败原因标记（HttpContext.Items 键），取值：InvalidIdentifier（显式标识无效）/NotMember（非租户成员）/MissingIdentifier（缺租户标识）。403 响应据此输出差异化文案</summary>
+    public const String TenantCheckFailedReasonKey = "Cube_TenantCheckFailedReason";
+
     /// <summary>设置当前用户</summary>
     /// <param name="provider">提供者</param>
     /// <param name="context">Http上下文，兼容NetCore</param>
@@ -130,10 +141,14 @@ public static class ManagerProviderHelper
             if (user == null) return null;
 
             // 认证层租户校验（fail-closed）：多租户开启时，已认证用户必须处于有效租户上下文，否则拒绝访问。
-            // 校验失败时清除当前用户，避免 token 路径已 SetCurrent 的用户残留 session，导致下次请求跳过校验
+            // 校验失败时清除当前用户，避免 token 路径已 SetCurrent 的用户残留 session，导致下次请求跳过校验。
+            // 同时打"租户校验失败"标记，授权过滤器据此返回 403（授权失败），与未认证(401)区分——
+            // 已认证但租户不匹配时 token 本身有效，返回 401 会诱导客户端无意义刷新/重登（死循环），403 语义才正确
             if (!context.ValidateTenant(user))
             {
                 XTrace.WriteLine("租户校验失败，拒绝访问：用户[{0}]没有可用的有效租户", user);
+                context.Items[TenantCheckFailedKey] = user.Name;
+                context.Items[TenantCheckFailedUserIdKey] = user.ID;
                 provider.SetCurrent(null, serviceProvider);
                 return null;
             }
@@ -302,6 +317,7 @@ public static class ManagerProviderHelper
                 }
 
                 XTrace.WriteLine("租户校验失败：显式租户标识无效，拒绝访问：用户[{0}] resolution={1}", user, resolution.TenantId);
+                context.Items[TenantCheckFailedReasonKey] = "InvalidIdentifier";
                 return false;
             }
 
@@ -316,6 +332,7 @@ public static class ManagerProviderHelper
             if (!TenantAccessPolicy.IsMember(resolution.TenantId, user))
             {
                 XTrace.WriteLine("租户校验失败：用户[{0}]不是租户[{1}]成员，拒绝访问", user, resolution.TenantId);
+                context.Items[TenantCheckFailedReasonKey] = "NotMember";
                 return false;
             }
 
@@ -342,6 +359,7 @@ public static class ManagerProviderHelper
             context.SetTenant(0); // 管理员进管理后台，无需租户标识
             return true;
         }
+        context.Items[TenantCheckFailedReasonKey] = "MissingIdentifier";
         return false; // 普通用户缺租户标识，拒绝
     }
 
