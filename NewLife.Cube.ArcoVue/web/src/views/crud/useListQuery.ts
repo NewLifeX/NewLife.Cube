@@ -12,7 +12,7 @@ import {
   fetchBatchLabel,
 } from '@/core/utils/lov-api';
 import { collectCascaderIds, mergeAreaLabel } from '@/core/utils/areaLabels';
-import { buildSortPayload, applyChartData, emptyViewFilter, normalizeFilter } from '@/core/utils/viewProfile';
+import { buildSortsPayload, applyChartData, emptyViewFilter, normalizeFilter } from '@/core/utils/viewProfile';
 import { normalizePageSize } from '@/core/utils/viewMapping';
 import { buildViewFilterParam, matchesViewFilter } from '@/core/utils/searchFilters';
 import { getPageCached } from '@/core/utils/pageMetaCache';
@@ -58,7 +58,7 @@ export function useListQuery(ctx: ListContext) {
     pagination,
     searchForm,
     searchTouched,
-    activeSort,
+    activeSorts,
     activeViewKind,
     effectivePageSize,
     effectiveSearch,
@@ -251,7 +251,7 @@ export function useListQuery(ctx: ListContext) {
     // 数据重载 → 列表/树增量渲染从头开始（前 100 条），滚动再追加
     tableVisibleCount.value = TABLE_INITIAL_VISIBLE;
     try {
-      const sort = buildSortPayload(activeSort.value);
+      const sort = buildSortsPayload(activeSorts.value);
       const pageSize = effectivePageSize.value;
       // 甘特图现可翻页（pageIndex 随分页器 current），看板/日历仍固定第一页大加载
       const pageIndex =

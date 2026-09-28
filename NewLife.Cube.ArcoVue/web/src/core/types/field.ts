@@ -71,6 +71,8 @@ export interface FieldMeta {
   scale?: number;
   nullable?: boolean;
   primaryKey?: boolean;
+  /** 可按索引排序（主键首列或索引最左列）。单独排序可走索引 */
+  indexed?: boolean;
   readOnly?: boolean;
   required?: boolean;
   visible?: boolean;

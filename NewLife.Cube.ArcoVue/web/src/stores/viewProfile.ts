@@ -33,6 +33,7 @@ import {
   patchActiveInsight,
   patchActiveMapping,
   patchActiveSort,
+  patchActiveSorts,
   rematchStateColumns,
   rematchStateMappings,
   removeView,
@@ -357,6 +358,12 @@ export const useViewProfileStore = defineStore('viewProfile', {
       const entry = this.byType[typePath];
       if (!entry) return;
       this.setState(typePath, patchActiveSort(entry.state, sort), immediate);
+    },
+
+    updateSorts(typePath: string, sorts: ViewSort[] | null, immediate?: boolean) {
+      const entry = this.byType[typePath];
+      if (!entry) return;
+      this.setState(typePath, patchActiveSorts(entry.state, sorts), immediate);
     },
 
     updateChrome(typePath: string, chrome: ViewChrome, immediate?: boolean) {

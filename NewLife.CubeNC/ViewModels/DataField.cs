@@ -86,6 +86,10 @@ public class DataField : IDictionarySource
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Boolean PrimaryKey { get; set; }
 
+    /// <summary>可按索引排序。主键首列，或任一索引的最左列。单独作为 ORDER BY 时能走索引，避免全表扫描</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public Boolean Indexed { get; set; }
+
     /// <summary>只读</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Boolean ReadOnly { get; set; }
@@ -190,6 +194,7 @@ public class DataField : IDictionarySource
         if (Scale > 0) dic["scale"] = Scale;
         if (Nullable) dic["nullable"] = true;
         if (PrimaryKey) dic["primaryKey"] = true;
+        if (Indexed) dic["indexed"] = true;
         if (ReadOnly) dic["readOnly"] = true;
         if (Visible) dic["visible"] = true;
         // 必填显式下发 true/false（OSC-260925 审计修正）：前端 isFieldRequired 以「显式 required 优先，
@@ -323,6 +328,7 @@ public class DataField : IDictionarySource
         Length = field.Length;
         Nullable = field.IsNullable;
         PrimaryKey = field.PrimaryKey;
+        Indexed = CanOrderByIndex(field);
         ReadOnly = field.ReadOnly;
 
         if (field.Map != null)
@@ -345,6 +351,47 @@ public class DataField : IDictionarySource
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// 单独作为 ORDER BY 时能否走索引。
+    /// 主键只认首列；复合索引只认最左列。其余列即使出现在索引里，单独排序仍会全表扫描。
+    /// </summary>
+    static Boolean CanOrderByIndex(FieldItem field)
+    {
+        if (field == null) return false;
+        var table = field.Table;
+        if (table == null) return field.PrimaryKey;
+
+        var pks = table.PrimaryKeys;
+        if (pks != null && pks.Length > 0)
+        {
+            if (SameField(pks[0], field)) return true;
+        }
+        else if (field.PrimaryKey)
+        {
+            return true;
+        }
+
+        var indexes = table.DataTable?.Indexes;
+        if (indexes == null) return false;
+        foreach (var idx in indexes)
+        {
+            var cols = idx?.Columns;
+            if (cols == null || cols.Length == 0) continue;
+            if (ColumnEquals(cols[0], field)) return true;
+        }
+        return false;
+    }
+
+    static Boolean SameField(FieldItem lead, FieldItem field) =>
+        lead != null && lead.Name.EqualIgnoreCase(field.Name);
+
+    static Boolean ColumnEquals(String column, FieldItem field)
+    {
+        if (column.IsNullOrEmpty()) return false;
+        if (column.EqualIgnoreCase(field.Name)) return true;
+        return !field.ColumnName.IsNullOrEmpty() && column.EqualIgnoreCase(field.ColumnName);
     }
 
     /// <summary>从PropertyInfo填充</summary>

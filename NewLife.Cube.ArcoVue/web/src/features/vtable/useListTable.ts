@@ -1,5 +1,5 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { ListTable, TYPES } from '@visactor/vtable';
+import { ListTable, TYPES, register } from '@visactor/vtable';
 import { createGroup, createText } from '@visactor/vtable/es/vrender';
 import { appendWfStatusMark, wfMarkKind } from './wfStatusMark';
 import type { FieldMeta } from '@/core/types/field';
@@ -16,6 +16,7 @@ import { BADGE_BORDER_RADIUS, BADGE_PADDING } from '@/core/utils/fieldBadge';
 import { getValueByKey } from '@/core/utils/url';
 import { themeColor } from '@/core/utils/themeColor';
 import { customFreezeSides, freezeLineHeight, freezeLineXs } from './freezeLines';
+import { toVTableSortOption, vtableSortKey } from './vtableSortState';
 import {
   buildOpsPartsWithLinks,
   opsActionColor,
@@ -34,6 +35,51 @@ import {
   stripTimeBucketLabel,
   timeSortValue,
 } from '@/core/utils/timeBucket';
+
+/** 列头排序图标与工具栏排序弹层同一套：升序 alphabetical-sorting，降序 alphabetical-sorting-two */
+const SORT_ASC_PATHS = ['M36 4V43.5', 'M7 28H23L7 44H23', 'M7 20L15.2759 4L23 20', 'M44 36L36 44L28 36'];
+const SORT_DESC_PATHS = ['M36 4V43.5', 'M7 4H23L7 20H23', 'M7 44L15.2759 28L23 44', 'M44 36L36 44L28 36'];
+
+function sortHeaderSvg(desc: boolean, color: string, opacity: string): string {
+  const paths = desc ? SORT_DESC_PATHS : SORT_ASC_PATHS;
+  const body = paths
+    .map(
+      (d) =>
+        `<path d="${d}" stroke="${color}" stroke-opacity="${opacity}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`,
+    )
+    .join('');
+  return `<svg width="14" height="14" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">${body}</svg>`;
+}
+
+function sortHeaderIcon(name: string, mode: 'asc' | 'desc' | 'normal') {
+  const icon = {
+    type: 'svg' as const,
+    width: 14,
+    height: 14,
+    funcType: TYPES.IconFuncTypeEnum.sort,
+    name,
+    positionType: TYPES.IconPosition.contentRight,
+    marginLeft: 3,
+    cursor: 'pointer',
+    svg: '',
+  };
+  Object.defineProperty(icon, 'svg', {
+    enumerable: true,
+    configurable: true,
+    get() {
+      const active = mode !== 'normal';
+      const color = active
+        ? themeColor('--primary-6', 'rgb(22, 93, 255)')
+        : themeColor('--color-text-3', '#86909C');
+      return sortHeaderSvg(mode === 'desc', color, active ? '1' : '0.45');
+    },
+  });
+  return icon;
+}
+
+register.icon('sort_upward', sortHeaderIcon('sort_upward', 'asc'));
+register.icon('sort_downward', sortHeaderIcon('sort_downward', 'desc'));
+register.icon('sort_normal', sortHeaderIcon('sort_normal', 'normal'));
 
 /** OA 审批行操作动作 key（OSC-26090347f1）：由 ListTable @action 上抛，DefaultList 消费 */
 export const WF_ROW_ACTION = {
@@ -96,8 +142,8 @@ interface ListTableProps {
   opsCustomLinks?: OpsCustomLink[];
   /** OA 审批行操作（OSC-26090347f1）：类型启用时渲染 提交/进度；行级按 __wf* 覆盖再隐藏 */
   workflowButtons?: { submit?: boolean; progress?: boolean };
-  /** 服务端排序状态；用于表头升/降序图标（不走 VTable 内部排序） */
-  sortState?: { field: string; desc: boolean } | null;
+  /** 服务端排序状态（可多列）；用于表头升/降序图标，不走 VTable 内部排序 */
+  sortState?: { field: string; desc: boolean }[] | { field: string; desc: boolean } | null;
   /** 树视图：启用 VTable hierarchy（行含 children） */
   hierarchy?: boolean;
   /** 分组视图（OSC-0015）：records 含 __groupHeader 组头节点行，组头跨列显示并浅色区分 */
@@ -952,9 +998,9 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       const firstData = cols.find((c: { field?: string }) => c.field && c.field !== '__checked' && c.field !== '__ops' && c.field !== '__expand');
       if (firstData) (firstData as { tree?: boolean }).tree = true;
     }
-    const sortState = props.sortState?.field
-      ? { field: props.sortState.field, order: props.sortState.desc ? 'desc' : 'asc' }
-      : null;
+    // 多列排序：每一列都要有图标。multipleSort 让 VTable 保留数组，而不是只留最后一列。
+    // 无排序必须是 []：null 会被包成 [null] 并在建表时抛错。
+    const sortState = toVTableSortOption(props.sortState);
 
     return {
       records: withChecks(withTimeBucket(props.records)),
@@ -980,6 +1026,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
               width: 48,
               minWidth: 48,
               maxWidth: 48,
+              sort: false,
               format: () => '',
               cellType: 'checkbox',
               headerType: 'checkbox',
@@ -1009,7 +1056,8 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       // 禁用单元格选中框；勾选列负责多选。Hover 用整行高亮
       select: { highlightMode: 'row', disableSelect: true, disableHeaderSelect: true },
       tooltip: { isShowOverflowTextTooltip: true },
-      // 服务端排序：图标状态由 sortState 驱动，数据不走 VTable 内部排序
+      // 服务端排序：图标由 sortState 驱动。列上 sort:false，setRecords 不会改数据顺序
+      multipleSort: true,
       sortState,
       ...(props.hierarchy || props.grouped
         ? // VTable 的 hierarchyExpandLevel>1 时根节点才默认展开；设为 2 使树视图默认显示第一层子节点
@@ -1285,10 +1333,16 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
         const field = fieldKey(args.field);
         if (!field || field === '__ops' || field === '__checked' || field === '__expand') return false;
         // return false 会跳过 VTable 内部状态推进，必须按业务 sortState 自行循环：无→升→降→无
-        const cur = props.sortState;
+        // 多列时表头点击仍替换成这一列（清掉第 2、3 列），与工具栏「应用」写入的 sorts 区分
+        const sorts = Array.isArray(props.sortState)
+          ? props.sortState
+          : props.sortState?.field
+            ? [props.sortState]
+            : [];
+        const sole = sorts.length === 1 ? sorts[0] : null;
         let next: { field: string; desc: boolean } | null;
-        if (!cur || cur.field !== field) next = { field, desc: false };
-        else if (!cur.desc) next = { field, desc: true };
+        if (!sole || sole.field !== field) next = { field, desc: false };
+        else if (!sole.desc) next = { field, desc: true };
         else next = null;
         emit('sortChange', next);
         return false;
@@ -1300,7 +1354,13 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
     if (!hostRef.value) return;
     table?.release();
     applying = true;
-    table = new ListTable(hostRef.value, buildOption());
+    try {
+      table = new ListTable(hostRef.value, buildOption());
+    } catch {
+      table = null;
+      applying = false;
+      return;
+    }
     // VTable 构造会清空宿主容器（innerHTML=''），必须在创建后重建分隔线层
     ensureSeparatorLayer();
     updateFreezeLines();
@@ -1333,8 +1393,11 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       return;
     }
     applying = true;
-    table.updateOption(buildOption());
-    applying = false;
+    try {
+      table.updateOption(buildOption());
+    } finally {
+      applying = false;
+    }
     ensureSeparatorLayer();
     updateFreezeLines();
   }
@@ -1361,13 +1424,23 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
     // 主题（外观/主色）变化时重建表格：VTable canvas 颜色在 buildOption 时快照，需重新读取 Arco token
     if (typeof MutationObserver !== 'undefined') {
       themeObserver = new MutationObserver(() => {
-        // 防抖合并：body 属性变化（loading/布局等）可能频繁触发，只重建一次
+        // 防抖合并：body 属性变化（loading/布局等）可能频繁触发，只重建一次。
+        // 重建期间断开观察，避免 refreshOption 写回 body 样式后再触发自己。
         clearTimeout(themeRefreshTimer);
         themeRefreshTimer = window.setTimeout(() => {
+          const obs = themeObserver;
+          obs?.disconnect();
           try {
             refreshOption();
           } catch {
             /* ignore */
+          } finally {
+            if (obs && themeObserver === obs) {
+              obs.observe(document.body, {
+                attributes: true,
+                attributeFilter: ['style', 'arco-theme'],
+              });
+            }
           }
         }, 120);
       });
@@ -1405,25 +1478,30 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
     applying = true;
     lastSetRecordsAt = Date.now();
     try {
-      table.setRecords?.(withChecks(withTimeBucket(props.records)), { sortState: null });
-      if (props.sortState?.field) {
-        table.updateSortState?.(
-          { field: props.sortState.field, order: props.sortState.desc ? 'desc' : 'asc' },
-          false,
-        );
-      }
+      // 必须把 sortState 放进 setRecords：随后的 updateSortState(executeSort:false) 只改内部状态、不重绘表头。
+      // 各列 sort:false，这里不会按图标再排一次数据，行序保持服务端 Order By。
+      // 空排序传 []，避免 multipleSort 把 null 包成 [null] 后建表抛错。
+      table.setRecords?.(withChecks(withTimeBucket(props.records)), {
+        sortState: toVTableSortOption(props.sortState),
+      });
     } catch {
-      refreshOption();
+      try {
+        refreshOption();
+      } catch {
+        /* 重建失败不抛出渲染周期，否则列表 loading 无法收尾 */
+      }
     } finally {
       applying = false;
       updateFreezeLines();
     }
   }
 
-  // 数据变化：仅 setRecords（保留滚动位置，只替换数据不重建配置）
-  watch(() => props.records, applyRecords);
+  // 数据或排序变化：仅 setRecords（保留滚动位置，只替换数据不重建配置）。
+  // 排序必须单独监听：请求失败或行序未变时 records 引用不变，表头图标仍要跟上 sorts。
+  // 用字符串签名比较，避免 toVTableSortOption 每次返回新数组导致 setRecords 循环。
+  watch([() => props.records, () => vtableSortKey(props.sortState)], () => applyRecords());
 
-  // 配置/交互能力/层级/分组变化：全量重建（updateOption）；sortState 由 applyRecords 内 updateSortState 处理
+  // 配置/交互能力/层级/分组变化：全量重建（updateOption）；sortState 由 applyRecords 写入 setRecords
   watch(
     () => [
       props.columns,

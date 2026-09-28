@@ -3,7 +3,7 @@ import { Message } from '@arco-design/web-vue';
 import cubeApi from '@/api';
 import { formatApiError } from '@/core/utils/apiError';
 import {
-  buildSortPayload,
+  buildSortsPayload,
   emptyViewFilter,
   serializeNamedView,
   type ColumnPref,
@@ -55,7 +55,7 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
     metaKeys,
     searchTouched,
     baseSearch,
-    activeSort,
+    activeSorts,
     effectivePageSize,
     effectivePageSizePref,
     pagination,
@@ -159,6 +159,23 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
     loadData();
   }
 
+  function onSortsApply(sorts: ViewSort[]) {
+    evpStore.updateSorts(typePath.value, sorts, true);
+    syncLocalState();
+    pagination.current = 1;
+    loadData();
+  }
+
+  /** 点击排序徽标：清空多列排序并重新查询（与分组/填色徽标清除一致） */
+  function onClearSort() {
+    evpStore.updateSorts(typePath.value, [], true);
+    syncLocalState();
+    ctx.activePopover.value = null;
+    pagination.current = 1;
+    loadData();
+    Message.success('已清除排序');
+  }
+
   function onConfigSort(sort: ViewSort | null) {
     onSortChange(sort);
   }
@@ -210,7 +227,7 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
 
   function onSwitchView(id: string) {
     const wasTouched = searchTouched.value;
-    const oldSort = JSON.stringify(buildSortPayload(activeSort.value));
+    const oldSort = JSON.stringify(buildSortsPayload(activeSorts.value));
     const oldPageSize = effectivePageSize.value;
     evpStore.switchView(typePath.value, id);
     syncLocalState();
@@ -235,7 +252,7 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
     const canReuse =
       !wasTouched &&
       effectivePageSize.value === oldPageSize &&
-      JSON.stringify(buildSortPayload(activeSort.value)) === oldSort &&
+      JSON.stringify(buildSortsPayload(activeSorts.value)) === oldSort &&
       tableDataRaw.value.length > 0;
     loadData(canReuse);
   }
@@ -308,6 +325,10 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
   /** 分组弹层可见性（互斥：打开分组关闭筛选） */
   function onGroupPopoverVisible(v: boolean) {
     ctx.activePopover.value = v ? 'group' : null;
+  }
+
+  function onSortPopoverVisible(v: boolean) {
+    ctx.activePopover.value = v ? 'sort' : null;
   }
 
   function onFormatPopoverVisible(v: boolean) {
@@ -386,6 +407,9 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
     syncLocalState,
     onColumnsChange,
     onSortChange,
+    onSortsApply,
+    onClearSort,
+    onSortPopoverVisible,
     onConfigSort,
     onChromeChange,
     onMappingChange,

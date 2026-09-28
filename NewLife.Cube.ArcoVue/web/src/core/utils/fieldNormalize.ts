@@ -42,6 +42,12 @@ function pickDescription(field: DataField & Record<string, unknown>): string | u
   return t || undefined;
 }
 
+/** 可走索引排序。后端只在为 true 时下发 indexed */
+function pickIndexed(field: DataField & Record<string, unknown>): boolean | undefined {
+  const raw = field.indexed ?? (field as { Indexed?: unknown }).Indexed;
+  return raw === true || raw === 1 || raw === '1' || raw === 'true' ? true : undefined;
+}
+
 /** 敏感字段标记（OSC-2608273d95）：后端 GetPage 下发 sensitive，兼容 PascalCase */
 function pickSensitive(field: DataField & Record<string, unknown>): boolean | undefined {
   const raw = field.sensitive ?? field.Sensitive;
@@ -89,6 +95,7 @@ export function toFieldMeta(field: DataField): FieldMeta {
     scale: field.scale,
     nullable: field.nullable,
     primaryKey: field.primaryKey,
+    indexed: pickIndexed(ext as DataField & Record<string, unknown>),
     readOnly: field.readOnly,
     required: field.required,
     visible: field.visible,

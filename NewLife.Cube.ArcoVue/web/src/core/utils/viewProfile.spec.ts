@@ -6,6 +6,10 @@ import {
   arrangeFrozenColumns,
   buildFormJsonWire,
   buildSortPayload,
+  buildSortsPayload,
+  parseNamedViews,
+  patchActiveSort,
+  patchActiveSorts,
   CHART_OPTION_MAX_BYTES,
   clearFormModeLayout,
   clearSavedViewFilters,
@@ -350,6 +354,65 @@ describe('buildSortPayload / frozenLeftCount / frozenRightCount', () => {
       desc: true,
     });
     expect(buildSortPayload(null)).toEqual({});
+  });
+
+  it('单列走 sort/desc，两列及以上只发 sorts', () => {
+    expect(buildSortsPayload([{ field: 'Name', desc: true }])).toEqual({ sort: 'Name', desc: true });
+    expect(buildSortsPayload([])).toEqual({});
+    expect(
+      buildSortsPayload([
+        { field: 'Name', desc: false },
+        { field: 'Id', desc: true },
+      ]),
+    ).toEqual({ sorts: 'Name,-Id' });
+  });
+
+  it('有 sorts 时截断 3 列并令 sort 等于第一列；只有 sort 时升为单列 sorts', () => {
+    const fromSorts = parseNamedViews(
+      JSON.stringify([
+        {
+          id: 'default',
+          name: '默认列表',
+          view: 'table',
+          columns: [],
+          sort: { field: 'Id', desc: true },
+          sorts: [
+            { field: 'Name', desc: false },
+            { field: '' },
+            { field: 'Code', desc: true },
+            { field: 'Extra', desc: false },
+            { field: 'More', desc: false },
+          ],
+        },
+      ]),
+      ['Name'],
+    );
+    expect(fromSorts[0].sorts).toEqual([
+      { field: 'Name', desc: false },
+      { field: 'Code', desc: true },
+      { field: 'Extra', desc: false },
+    ]);
+    expect(fromSorts[0].sort).toEqual({ field: 'Name', desc: false });
+
+    const fromSort = parseNamedViews(
+      JSON.stringify([{ id: 'default', name: '默认列表', view: 'table', columns: [], sort: { field: 'Name', desc: true } }]),
+      ['Name'],
+    );
+    expect(fromSort[0].sorts).toEqual([{ field: 'Name', desc: true }]);
+    const raw = serializeNamedView(fromSort[0]);
+    expect(raw.sort).toEqual({ field: 'Name', desc: true });
+    expect(raw.sorts).toEqual([{ field: 'Name', desc: true }]);
+  });
+
+  it('表头单列排序清空第 2、3 列', () => {
+    let s = stateFromWire(null, ['Name', 'Id']);
+    s = patchActiveSorts(s, [
+      { field: 'Name', desc: false },
+      { field: 'Id', desc: true },
+    ]);
+    s = patchActiveSort(s, { field: 'Code', desc: true });
+    expect(s.views[0].sort).toEqual({ field: 'Code', desc: true });
+    expect(s.views[0].sorts).toEqual([{ field: 'Code', desc: true }]);
   });
 
   it('counts all visible left-frozen cols', () => {

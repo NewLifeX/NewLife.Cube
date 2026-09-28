@@ -66,6 +66,8 @@ export interface NamedView {
   view: ViewKind;
   columns: ColumnPref[];
   sort?: ViewSort | null;
+  /** 多级排序，最多 3 列；有值时 sort 恒等于 sorts[0]（OSC-26092694a1） */
+  sorts?: ViewSort[] | null;
   chrome?: ViewChrome;
   /** 类型专属字段映射（存 ViewsJson；不写 ganttJson/cardJson） */
   mapping?: ViewMapping;
@@ -660,7 +662,11 @@ export function serializeNamedView(v: NamedView): Record<string, unknown> {
   raw.name = v.name;
   raw.view = v.view;
   if (v.columns) raw.columns = v.columns;
-  if (v.sort) raw.sort = v.sort;
+  const sorts = resolveViewSorts(v);
+  if (sorts.length) {
+    raw.sorts = sorts.map((s) => ({ field: s.field, desc: !!s.desc }));
+    raw.sort = { field: sorts[0].field, desc: !!sorts[0].desc };
+  }
   if (v.chrome) raw.chrome = v.chrome;
   if (v.mapping !== undefined) raw.mapping = v.mapping;
   if (v.insight) raw.insight = serializeInsight(v.insight, v._raw?.insight);
@@ -690,6 +696,7 @@ const MANAGED_VIEW_KEYS = new Set([
   'view',
   'columns',
   'sort',
+  'sorts',
   'chrome',
   'mapping',
   'insight',
@@ -906,6 +913,7 @@ export function seedDefaultView(
     view: resolveSeedViewKind(defaultView),
     columns: columns ?? mergeColumns(metaKeys, null),
     sort: null,
+    sorts: null,
     chrome: { ...DEFAULT_CHROME },
   };
 }
@@ -939,6 +947,8 @@ export function parseNamedViews(
         sort = { field: s.field, desc: !!s.desc };
       }
     }
+    const sorts = Array.isArray(o.sorts) ? readNamedViewSorts(o.sorts, null) : readNamedViewSorts(undefined, sort);
+    sort = sorts[0] ?? null;
     // 解析阶段无 FieldMeta 时先原样保留 mapping；load 后 rematchMapping 校正
     let mapping: ViewMapping | undefined;
     if (o.mapping && typeof o.mapping === 'object') {
@@ -950,6 +960,7 @@ export function parseNamedViews(
       view,
       columns,
       sort,
+      sorts: sorts.length ? sorts : null,
       chrome: normalizeChrome(o.chrome) ?? { ...DEFAULT_CHROME },
       mapping,
       insight: normalizeInsight(o.insight),
@@ -1096,6 +1107,38 @@ export function buildSortPayload(sort: ViewSort | null | undefined): {
   return { sort: sort.field, desc: !!sort.desc };
 }
 
+/** 读 sorts：数组则截断 3 列并丢掉无 field 项；否则回落单列 sort */
+export function readNamedViewSorts(raw: unknown, fallback: ViewSort | null): ViewSort[] {
+  if (Array.isArray(raw)) {
+    const list: ViewSort[] = [];
+    for (const item of raw) {
+      if (!item || typeof item !== 'object') continue;
+      const s = item as Record<string, unknown>;
+      if (typeof s.field !== 'string' || !s.field) continue;
+      list.push({ field: s.field, desc: !!s.desc });
+      if (list.length >= 3) break;
+    }
+    return list;
+  }
+  return fallback?.field ? [{ field: fallback.field, desc: !!fallback.desc }] : [];
+}
+
+function resolveViewSorts(v: NamedView): ViewSort[] {
+  if (Array.isArray(v.sorts)) return readNamedViewSorts(v.sorts, null);
+  return readNamedViewSorts(undefined, v.sort ?? null);
+}
+
+/** 单列走 sort/desc；两列及以上只发 sorts=Name,-Id */
+export function buildSortsPayload(sorts: ViewSort[] | null | undefined): {
+  sort?: string;
+  desc?: boolean;
+  sorts?: string;
+} {
+  const list = readNamedViewSorts(sorts ?? undefined, null);
+  if (list.length <= 1) return buildSortPayload(list[0] ?? null);
+  return { sorts: list.map((s) => `${s.desc ? '-' : ''}${s.field}`).join(',') };
+}
+
 export function createTableView(
   state: EntityViewState,
   name: string,
@@ -1126,6 +1169,7 @@ export function createNamedView(
     view: kind,
     columns: mergeColumns(metaKeys, active.columns.map((c) => ({ ...c }))),
     sort: active.sort ? { ...active.sort } : null,
+    sorts: active.sorts?.length ? active.sorts.map((s) => ({ ...s })) : null,
     // chromeOverride：创建时可覆盖外观开关（如 showShare）；详情/删除改由角色权限控制，勿再传 allow*
     chrome: { ...(active.chrome || DEFAULT_CHROME), ...(chromeOverride || {}) },
     mapping,
@@ -1161,6 +1205,7 @@ export function duplicateView(state: EntityViewState, id: string): EntityViewSta
     name,
     columns: src.columns.map((c) => ({ ...c })),
     sort: src.sort ? { ...src.sort } : null,
+    sorts: src.sorts?.length ? src.sorts.map((s) => ({ ...s })) : null,
     chrome: src.chrome ? { ...src.chrome } : { ...DEFAULT_CHROME },
     mapping: src.mapping ? { ...src.mapping } : undefined,
   };
@@ -1203,6 +1248,7 @@ export function restoreNamedView(
     view: src.view,
     columns: mergeColumns(metaKeys, []),
     sort: null,
+    sorts: null,
     chrome: { ...DEFAULT_CHROME },
     mapping,
   };
@@ -1228,10 +1274,27 @@ export function patchActiveSort(
   state: EntityViewState,
   sort: ViewSort | null,
 ): EntityViewState {
+  const sorts = sort?.field ? [{ field: sort.field, desc: !!sort.desc }] : null;
   return {
     ...state,
     views: state.views.map((v) =>
-      v.id === state.activeViewId ? { ...v, sort } : v,
+      v.id === state.activeViewId ? { ...v, sort: sorts?.[0] ?? null, sorts } : v,
+    ),
+  };
+}
+
+/** 写入最多 3 列排序，并令 sort 等于第一列 */
+export function patchActiveSorts(
+  state: EntityViewState,
+  sorts: ViewSort[] | null,
+): EntityViewState {
+  const list = readNamedViewSorts(sorts ?? undefined, null);
+  return {
+    ...state,
+    views: state.views.map((v) =>
+      v.id === state.activeViewId
+        ? { ...v, sort: list[0] ?? null, sorts: list.length ? list : null }
+        : v,
     ),
   };
 }

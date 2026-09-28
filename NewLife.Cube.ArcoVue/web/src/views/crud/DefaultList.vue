@@ -210,6 +210,30 @@
               </div>
             </GroupPopover>
 
+            <SortPopover
+              :visible="sortPopoverVisible"
+              :fields="listFields"
+              :model-value="activeSorts"
+              @update:visible="onSortPopoverVisible"
+              @apply="onSortsApply"
+            >
+              <div
+                v-if="(activeViewKind === 'table' || activeViewKind === 'tree') && chrome.showSort"
+                class="tb-act"
+                :class="{ 'is-active': activeSorts.length > 0 }"
+              >
+                <a-button type="text">排序</a-button>
+                <span
+                  v-if="activeSorts.length"
+                  class="tb-count"
+                  title="清除排序"
+                  @click.stop="onClearSort"
+                >
+                  {{ activeSorts.length }}
+                </span>
+              </div>
+            </SortPopover>
+
             <FormatPopover
               :visible="formatPopoverVisible"
               :fields="filterFields"
@@ -440,7 +464,7 @@
               "
               :show-expand="chrome.expandRow"
               :enable-sort="chrome.showSort"
-              :sort-state="activeSort"
+              :sort-state="activeSorts"
               :hierarchy="activeViewKind === 'tree' && treeDataDetected"
               :grouped="isGrouped"
               :group-fields="isGrouped ? viewGroup : []"
@@ -694,6 +718,7 @@ import ViewTabsToolbar from './ViewTabsToolbar.vue';
 import ViewConfigDrawer from './ViewConfigDrawer.vue';
 import FilterBuilderPopover from './FilterBuilderPopover.vue';
 import GroupPopover from './GroupPopover.vue';
+import SortPopover from './SortPopover.vue';
 import FormatPopover from './FormatPopover.vue';
 import AutomationDrawer from './automation/AutomationDrawer.vue';
 import SubmitApprovalDrawer from '../workflow/SubmitApprovalDrawer.vue';
@@ -785,6 +810,11 @@ const {
   onFilterSave,
   chrome,
   groupPopoverVisible,
+  sortPopoverVisible,
+  activeSorts,
+  onSortPopoverVisible,
+  onSortsApply,
+  onClearSort,
   viewGroup,
   onGroupPopoverVisible,
   onGroupApply,

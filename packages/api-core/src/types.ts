@@ -102,6 +102,8 @@ export interface DataField {
   scale?: number;
   /** 是否主键 */
   primaryKey?: boolean;
+  /** 可按索引排序（主键首列或索引最左列）。缺省表示不能单靠索引完成 ORDER BY */
+  indexed?: boolean;
   /** 是否允许空 */
   nullable?: boolean;
   /** 是否只读 */

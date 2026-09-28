@@ -213,6 +213,13 @@ export function createListContext(props: { type: string; authId?: number }) {
     viewState.value ? getActiveView(viewState.value).sort || null : null,
   );
 
+  const activeSorts = computed<ViewSort[]>(() => {
+    if (!viewState.value) return [];
+    const v = getActiveView(viewState.value);
+    if (Array.isArray(v.sorts)) return v.sorts.slice(0, 3);
+    return v.sort?.field ? [v.sort] : [];
+  });
+
   const activeViewKind = computed<ViewKind>(() =>
     viewState.value ? getActiveView(viewState.value).view : 'table',
   );
@@ -371,7 +378,7 @@ export function createListContext(props: { type: string; authId?: number }) {
   const searchPanelOpen = ref(false);
 
   /** 筛选/分组/填色弹层互斥 */
-  const activePopover = ref<'filter' | 'group' | 'format' | null>(null);
+  const activePopover = ref<'filter' | 'group' | 'format' | 'sort' | null>(null);
   const filterPopoverVisible = computed({
     get: () => activePopover.value === 'filter',
     set: (v: boolean) => {
@@ -388,6 +395,12 @@ export function createListContext(props: { type: string; authId?: number }) {
     get: () => activePopover.value === 'format',
     set: (v: boolean) => {
       activePopover.value = v ? 'format' : null;
+    },
+  });
+  const sortPopoverVisible = computed({
+    get: () => activePopover.value === 'sort',
+    set: (v: boolean) => {
+      activePopover.value = v ? 'sort' : null;
     },
   });
 
@@ -668,6 +681,7 @@ export function createListContext(props: { type: string; authId?: number }) {
     statLabels,
     activeColumns,
     activeSort,
+    activeSorts,
     activeViewKind,
     ganttZoomLevel,
     GANTT_PAGE_SIZE_OPTIONS,
@@ -704,6 +718,7 @@ export function createListContext(props: { type: string; authId?: number }) {
     filterPopoverVisible,
     groupPopoverVisible,
     formatPopoverVisible,
+    sortPopoverVisible,
     localFilter,
     viewFilter,
     filterNarrowed,

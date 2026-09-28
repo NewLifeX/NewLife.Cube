@@ -36,8 +36,8 @@ const props = withDefaults(
     }[];
     /** OA 审批行操作（OSC-26090347f1）：类型启用时渲染 提交/进度（行级按 __wf* 过滤） */
     workflowButtons?: { submit?: boolean; progress?: boolean };
-    /** 服务端排序状态；用于表头升/降序图标（不走 VTable 内部排序） */
-    sortState?: { field: string; desc: boolean } | null;
+    /** 服务端排序状态（可多列）；用于表头升/降序图标，不走 VTable 内部排序 */
+    sortState?: { field: string; desc: boolean }[] | { field: string; desc: boolean } | null;
     /** 树视图：启用 VTable hierarchy（行含 children） */
     hierarchy?: boolean;
     /** 分组视图（OSC-0015）：records 含 __groupHeader 组头节点行，组头跨列显示并浅色区分 */
