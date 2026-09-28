@@ -692,12 +692,13 @@ export function createCommentApi(request: RequestFn) {
       pageSize?: number;
     }) => request<EntityCommentModel[]>({ url: '/Cube/EntityComment', method: 'get', params }),
 
-    /** 发表评论；body 含 parentId 表示回复 */
+    /** 发表评论；body 含 parentId 表示回复；可带 mentionUserIds 提及用户（OSC-260819e483 后端已支持，OSC-260926c2b8 前端接线，最多 20） */
     post: (data: {
       category: string;
       linkId: number | string;
       content: string;
       parentId?: number | string;
+      mentionUserIds?: number[];
     }) => request<EntityCommentModel>({ url: '/Cube/EntityComment', method: 'post', data }),
 
     /** 删除评论（本人或管理员） */

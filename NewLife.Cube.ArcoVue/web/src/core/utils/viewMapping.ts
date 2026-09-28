@@ -47,6 +47,8 @@ export type GanttMapping = {
   barColor?: string;
   /** 左侧表格宽度（拖拽持久化），缺省 380 */
   tableWidth?: number;
+  /** 分组字段；空或不在候选项中表示不分组（OSC-26092694a1） */
+  groupField?: string;
 };
 export type CalendarMapping = {
   kind: 'calendar';
@@ -410,6 +412,9 @@ export function normalizeMapping(
       tableWidth = Math.min(640, Math.max(280, Math.round(tw)));
     }
 
+    const groupRaw = typeof o.groupField === 'string' ? o.groupField : '';
+    const groupField = groupFieldCandidates(fields).some((f) => f.name === groupRaw) ? groupRaw : '';
+
     return {
       kind: 'gantt',
       titleField,
@@ -419,6 +424,7 @@ export function normalizeMapping(
       actualEndField: hasActual ? actualEnd : undefined,
       barColor,
       tableWidth,
+      groupField,
     };
   }
 

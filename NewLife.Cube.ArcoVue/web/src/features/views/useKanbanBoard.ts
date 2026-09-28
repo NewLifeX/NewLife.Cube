@@ -1,4 +1,4 @@
-import { computed, reactive, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
 import type { ColumnPref } from '@/core/utils/viewProfile';
 import { bucketKanban, type KanbanMapping } from '@/core/utils/viewMapping';
@@ -30,6 +30,11 @@ interface KanbanBoardProps {
 const INITIAL_VISIBLE = 100;
 const LOAD_STEP = 100;
 
+/** 折叠集合切换：同一 key 两次回到原态（OSC-260926c2b8 列折叠纯函数） */
+export function toggleCollapsed(keys: readonly string[], key: string): string[] {
+  return keys.includes(key) ? keys.filter((k) => k !== key) : [...keys, key];
+}
+
 /** KanbanBoard 组件全部业务 TS：分桶列构建与列内滚动懒加载（自 KanbanBoard.vue script setup 原样搬移） */
 export function useKanbanBoard(props: KanbanBoardProps) {
   const columns = computed(() => {
@@ -57,6 +62,28 @@ export function useKanbanBoard(props: KanbanBoardProps) {
     },
     { immediate: true },
   );
+
+  /** 折叠的列 key 集合（仅当前页内存，刷新/切换视图恢复全展开；不写入 ViewProfile，OSC-260926c2b8） */
+  const collapsedKeys = ref<string[]>([]);
+
+  /** 分组字段变化（配置切换）→ 清空折叠集合 */
+  watch(
+    () => props.mapping?.groupField,
+    () => {
+      collapsedKeys.value = [];
+    },
+  );
+
+  /** 列是否折叠 */
+  function isColumnCollapsed(key: string): boolean {
+    return collapsedKeys.value.includes(key);
+  }
+
+  /** 列头点击折叠/展开；工作台迷你看板（compact）不参与 */
+  function toggleColumn(key: string) {
+    if (props.compact) return;
+    collapsedKeys.value = toggleCollapsed(collapsedKeys.value, key);
+  }
 
   function onColScroll(key: string, e: Event) {
     const el = e.currentTarget as HTMLElement;
@@ -126,5 +153,8 @@ export function useKanbanBoard(props: KanbanBoardProps) {
     titleFormatBoldOf,
     sideFormatColorOf,
     resolveImageUrl,
+    collapsedKeys,
+    isColumnCollapsed,
+    toggleColumn,
   };
 }

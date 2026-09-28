@@ -10,6 +10,8 @@
 import type { Component } from 'vue';
 import {
   AddUser,
+  AlphabeticalSorting,
+  AlphabeticalSortingTwo,
   Application,
   ApplicationMenu,
   Attention,
@@ -187,6 +189,8 @@ export const ICON_COMPONENTS: Record<string, Component> = {
   // 产品命名专用
   'cube-three': CubeThree,
   'connection-box': ConnectionBox,
+  'alphabetical-sorting': AlphabeticalSorting,
+  'alphabetical-sorting-two': AlphabeticalSortingTwo,
   // 工具栏 / 表单 / 视图配置
   filter: Filter,
   'background-color': BackgroundColor,

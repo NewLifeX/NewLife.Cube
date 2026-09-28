@@ -173,6 +173,12 @@ public partial class ReadOnlyEntityController<TEntity>
             }
         }
 
+        // 多级排序（OSC-26092694a1）：有 sorts 时忽略 sort/desc，非法 400；不读客户端 orderby
+        String sorts = null;
+        if (Request?.Query != null && Request.Query.ContainsKey("sorts"))
+            sorts = Request.Query["sorts"].ToString();
+        SortWhitelist.Apply(p, sorts, Factory.Fields.Select(f => f.Name), AllowSearchOrList());
+
         // 数字型主键，默认降序
         if (PageSetting.OrderByKey && p.Sort.IsNullOrEmpty() && p.OrderBy.IsNullOrEmpty())
         {
@@ -314,69 +320,19 @@ public partial class ReadOnlyEntityController<TEntity>
                 exp = att.Expression;
         }
 
-        // 多租户
-        var set = CubeSetting.Current;
-        if (set.EnableTenant && IsTenantSource)
+        // 多租户（规则统一收敛到 TenantScopeHelper，与值集等出口共用同一套判定）
+        var tenantExp = TenantScopeHelper.GetFilter(Factory);
+        if (tenantExp == "1=0")
         {
-            var ctxTenant = TenantContext.Current;
-
-            // 无租户上下文（未设置/匿名请求）：
-            // [TenantCompat] 影子期规则A：不加租户过滤（等同多租户开启前），仅记录影子日志；
-            // Enforce 严格 fail-closed，返回 1=0 空集，防止无租户场景看到全量数据。
-            if (ctxTenant.GetTenantMode() == TenantMode.None)
-            {
-                if (set.TenantEnforceMode == TenantEnforceModes.Shadow)
-                {
-                    XTrace.WriteLine($"[TenantCompat] 无租户上下文，兼容放行不加过滤：{typeof(TEntity).Name}");
-                    // 数据日志（CreateLog 落库）；无租户上下文场景用户信息非重点
-                    ManagerProviderHelper.WriteTenantCompatDataLog("影子兼容放行", $"无租户上下文，兼容放行不加过滤 实体[{typeof(TEntity).Name}]", null, HttpContext.Connection.RemoteIpAddress + "");
-                }
-                else if (set.TenantQueryPolicy == TenantQueryPolicies.ThrowOnMissingTenant)
-                {
-                    // 对外 API 可配置为显式抛错，而不是"假空数据"（P2-7）
-                    throw new NoPermissionException(PermissionFlags.None, $"缺少租户上下文，禁止查询{typeof(TEntity).Name}");
-                }
-                else
-                {
-                    XTrace.WriteLine($"多租户模式下缺少租户上下文，禁止查询{typeof(TEntity).Name}");
-                    exp = "1=0";
-                }
-            }
-            else if (ctxTenant.GetTenantMode() == TenantMode.AdminBackend)
-            {
-                // 管理后台模式，不限制租户数据，管理后台要能看到所有租户的数据
-            }
+            // fail-closed 空集直接覆盖（与原行为一致，语义上叠加也是恒假）
+            exp = tenantExp;
+        }
+        else if (!tenantExp.IsNullOrEmpty())
+        {
+            if (!exp.IsNullOrEmpty())
+                exp = tenantExp + " and " + exp;
             else
-            {
-                // 租户模式（TenantId>0）：校验租户存在且启用，无效则 fail-closed，防止伪造租户ID绕过数据隔离
-                var tenant = ctxTenant.Tenant;
-                tenant ??= Tenant.FindById(ctxTenant.TenantId);
-                if (tenant == null || !tenant.Enable)
-                {
-                    XTrace.WriteLine($"多租户模式下租户[{ctxTenant.TenantId}]不存在或已禁用，禁止查询{typeof(TEntity).Name}");
-                    exp = "1=0";
-                }
-                else
-                {
-                    // WhereBuilder 内部会从 HttpContext.Items 读取 TenantId
-                    HttpContext.Items["TenantId"] = tenant.Id;
-
-                    if (typeof(TEntity) == typeof(Tenant))
-                    {
-                        if (!exp.IsNullOrEmpty())
-                            exp = "Id={#TenantId} and " + exp;
-                        else
-                            exp = "Id={#TenantId}";
-                    }
-                    else
-                    {
-                        if (!exp.IsNullOrEmpty())
-                            exp = "TenantId={#TenantId} and " + exp;
-                        else
-                            exp = "TenantId={#TenantId}";
-                    }
-                }
-            }
+                exp = tenantExp;
         }
 
         if (exp.IsNullOrEmpty()) return null;

@@ -94,10 +94,13 @@
     <Compile Include="..\NewLife.Cube\Common\ReadOnlyEntityController2.cs" Link="Common\ReadOnlyEntityController2.cs" />
     <Compile Include="..\NewLife.Cube\Common\ReadOnlyEntityControllerScope.cs" Link="Common\ReadOnlyEntityControllerScope.cs" />
     <Compile Include="..\NewLife.Cube\Common\CubeDataScope.cs" Link="Common\CubeDataScope.cs" />
+    <Compile Include="..\NewLife.Cube\Common\TenantScopeHelper.cs" Link="Common\TenantScopeHelper.cs" />
+    <Compile Include="..\NewLife.Cube\Common\LovEntityGuard.cs" Link="Common\LovEntityGuard.cs" />
     <Compile Include="..\NewLife.Cube\Common\TreeParentSourceHelper.cs" Link="Common\TreeParentSourceHelper.cs" />
     <Compile Include="..\NewLife.Cube\Common\ValidFormatHelper.cs" Link="Common\ValidFormatHelper.cs" />
     <Compile Include="..\NewLife.Cube\Common\EntityPageRegistry.cs" Link="Common\EntityPageRegistry.cs" />
     <Compile Include="..\NewLife.Cube\Common\ViewHelper.cs" Link="Common\ViewHelper.cs" />
+    <Compile Include="..\NewLife.Cube\Common\SortWhitelist.cs" Link="Common\SortWhitelist.cs" />
     <Compile Include="..\NewLife.Cube\Common\RolePermissionHelper.cs" Link="Common\RolePermissionHelper.cs" />
     <Compile Include="..\NewLife.Cube\Common\EmptyHtmlHelper.cs" Link="Common\EmptyHtmlHelper.cs" />
     <Compile Include="..\NewLife.Cube\Common\FileManagerAuthorizeAttribute.cs" Link="Common\FileManagerAuthorizeAttribute.cs" />

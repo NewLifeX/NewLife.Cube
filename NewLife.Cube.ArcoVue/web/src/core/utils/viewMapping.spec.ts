@@ -244,7 +244,44 @@ describe('normalizeMapping / seedMapping', () => {
       actualEndField: 'End',
       barColor: '#FF6600',
       tableWidth: 520,
+      groupField: '',
     });
+  });
+
+  it('gantt normalize: 合法分组字段保留，未知或空为不分组', () => {
+    expect(
+      normalizeMapping(
+        'gantt',
+        {
+          kind: 'gantt',
+          titleField: 'Name',
+          plannedStartField: 'Start',
+          plannedEndField: 'End',
+          groupField: 'Status',
+        },
+        fields,
+      ),
+    ).toMatchObject({ groupField: 'Status' });
+    expect(
+      normalizeMapping(
+        'gantt',
+        {
+          kind: 'gantt',
+          titleField: 'Name',
+          plannedStartField: 'Start',
+          plannedEndField: 'End',
+          groupField: 'Nope',
+        },
+        fields,
+      ),
+    ).toMatchObject({ groupField: '' });
+    expect(
+      normalizeMapping(
+        'gantt',
+        { kind: 'gantt', titleField: 'Name', plannedStartField: 'Start', plannedEndField: 'End' },
+        fields,
+      ),
+    ).toMatchObject({ groupField: '' });
   });
 
   it('gantt normalize: 实际字段仅配一个视为未配置实际', () => {
@@ -346,6 +383,7 @@ describe('normalizeCardLayout', () => {
     expect(normalizeCardLayout('standard')).toBe('standard');
     expect(normalizeCardLayout('large')).toBe('large');
     expect(normalizeCardLayout('row')).toBe('row');
+    expect(normalizeCardLayout('gallery')).toBe('standard');
     expect(normalizeCardLayout(undefined)).toBe('standard');
     expect(normalizeCardLayout(null)).toBe('standard');
     expect(normalizeCardLayout('')).toBe('standard');

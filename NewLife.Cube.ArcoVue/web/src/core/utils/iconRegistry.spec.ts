@@ -114,6 +114,8 @@ describe('ICON_COMPONENTS 覆盖', () => {
       'filter',
       'background-color',
       'connection-box',
+      'alphabetical-sorting',
+      'alphabetical-sorting-two',
       'search',
       'more',
       'more-one',

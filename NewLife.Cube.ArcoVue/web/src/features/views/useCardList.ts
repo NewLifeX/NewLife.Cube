@@ -37,7 +37,8 @@ export function useCardList(props: CardListProps) {
   const resolvedLayout = computed<CardLayout>(() => {
     const m = props.mapping?.layout;
     if (m === 'large' || m === 'row' || m === 'standard') return m;
-    return props.layout === 'large' || props.layout === 'row' ? props.layout : 'standard';
+    if (props.layout === 'large' || props.layout === 'row') return props.layout;
+    return 'standard';
   });
 
   const resolvedBodyColumns = computed<CardBodyColumns>(() => {

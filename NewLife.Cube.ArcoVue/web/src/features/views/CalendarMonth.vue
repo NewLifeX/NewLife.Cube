@@ -22,7 +22,8 @@
           v-for="(cell, idx) in cells"
           :key="idx"
           class="cal-cell"
-          :class="{ muted: !cell.inMonth, today: cell.isToday }"
+          :class="{ muted: !cell.inMonth, today: cell.isToday, 'can-create': cell.canCreate }"
+          @click="cell.canCreate && $emit('create', { date: cell.dateText })"
         >
           <div class="cal-day">{{ cell.day }}</div>
           <button
@@ -32,11 +33,33 @@
             class="cal-event"
             :style="{ background: ev.color, color: eventTextColor(ev.color) }"
             :title="ev.title"
-            @click="$emit('detail', ev.row)"
+            @click.stop="$emit('detail', ev.row)"
           >
             {{ ev.title }}
           </button>
-          <div v-if="cell.events.length > 3" class="cal-more">+{{ cell.events.length - 3 }}</div>
+          <a-popover
+            v-if="cell.events.length > 3"
+            trigger="click"
+            position="top"
+            :popup-visible="moreKey === cell.key"
+            @popup-visible-change="(v: boolean) => (moreKey = v ? cell.key : null)"
+          >
+            <template #content>
+              <div class="cal-more-panel">
+                <button
+                  v-for="ev in cell.events"
+                  :key="ev.key"
+                  type="button"
+                  class="cal-more-item"
+                  :title="ev.title"
+                  @click="$emit('detail', pickMoreEvent(ev.row))"
+                >
+                  {{ ev.title }}
+                </button>
+              </div>
+            </template>
+            <button type="button" class="cal-more" @click.stop>+{{ cell.events.length - 3 }}</button>
+          </a-popover>
         </div>
       </div>
     </template>
@@ -55,12 +78,15 @@ const props = withDefaults(
     mapping?: CalendarMapping | null;
     rowKey: string;
     height?: number;
+    /** 有新增权时本月空白格可点击新建（OSC-260926c2b8） */
+    canAdd?: boolean;
   }>(),
-  { height: 520 },
+  { height: 520, canAdd: false },
 );
 
 defineEmits<{
   detail: [row: Record<string, unknown>];
+  create: [payload: { date: string }];
 }>();
 
 const {
@@ -71,6 +97,8 @@ const {
   goToday,
   eventTextColor,
   cells,
+  moreKey,
+  pickMoreEvent,
 } = useCalendarMonth(props);
 </script>
 
@@ -113,6 +141,9 @@ const {
 .cal-cell.today {
   background: var(--color-primary-light-1);
 }
+.cal-cell.can-create {
+  cursor: pointer;
+}
 .cal-day {
   font-size: 12px;
   margin-bottom: 2px;
@@ -135,5 +166,34 @@ const {
 .cal-more {
   font-size: 11px;
   color: var(--color-text-3);
+  background: none;
+  border: none;
+  padding: 0 4px;
+  cursor: pointer;
+}
+.cal-more-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 280px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.cal-more-item {
+  display: block;
+  width: 100%;
+  border: none;
+  background: none;
+  border-radius: 3px;
+  font-size: 12px;
+  padding: 4px 8px;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cal-more-item:hover {
+  background: var(--color-fill-2);
 }
 </style>

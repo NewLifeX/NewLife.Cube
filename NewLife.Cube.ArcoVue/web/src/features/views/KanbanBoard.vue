@@ -7,12 +7,26 @@
     <a-empty description="暂无看板数据或未配置分组字段" />
   </div>
   <div v-else class="kanban-board" :class="{ 'kanban-board--compact': compact }" :style="{ minHeight: height + 'px' }">
-    <div v-for="col in columns" :key="col.key" class="kanban-col">
-      <div class="kanban-col-head">
+    <div
+      v-for="col in columns"
+      :key="col.key"
+      class="kanban-col"
+      :class="{ 'kanban-col--collapsed': isColumnCollapsed(col.key) }"
+    >
+      <div
+        class="kanban-col-head"
+        :class="{ 'kanban-col-head--clickable': !compact }"
+        :aria-expanded="isColumnCollapsed(col.key) ? 'false' : 'true'"
+        @click="toggleColumn(col.key)"
+      >
         <span class="kanban-col-title">{{ col.label }}</span>
         <span class="kanban-col-count">{{ col.rows.length }}</span>
       </div>
-      <div class="kanban-col-body" @scroll="onColScroll(col.key, $event)">
+      <div
+        v-show="!isColumnCollapsed(col.key)"
+        class="kanban-col-body"
+        @scroll="onColScroll(col.key, $event)"
+      >
         <RecordCard
           v-for="(row, idx) in col.rows.slice(0, colVisible[col.key] ?? INITIAL_VISIBLE)"
           :key="rowKeyOf(row, idx)"
@@ -99,6 +113,8 @@ const {
   titleFormatBoldOf,
   sideFormatColorOf,
   resolveImageUrl,
+  isColumnCollapsed,
+  toggleColumn,
 } = useKanbanBoard(props);
 </script>
 
@@ -136,6 +152,33 @@ const {
   padding: 10px 12px;
   font-size: 13px;
   font-weight: 500;
+}
+.kanban-col-head--clickable {
+  cursor: pointer;
+  user-select: none;
+}
+.kanban-col-head--clickable:hover {
+  background: var(--color-fill-2);
+  border-radius: 8px 8px 0 0;
+}
+.kanban-col--collapsed {
+  flex: 0 0 48px;
+  min-width: 48px;
+}
+.kanban-col--collapsed .kanban-col-head {
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 2px;
+  height: 100%;
+}
+.kanban-col--collapsed .kanban-col-title {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-height: 240px;
 }
 .kanban-col-count {
   color: var(--color-text-3);

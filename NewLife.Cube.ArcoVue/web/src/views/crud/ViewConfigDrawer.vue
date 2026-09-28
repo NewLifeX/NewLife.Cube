@@ -371,7 +371,7 @@
                     type="button"
                     class="seg-item"
                     :class="{ active: localMapping.bodyColumns === c.value }"
-                    :disabled="c.value === 3 && localMapping.layout !== 'row'"
+                    :disabled="bodyColumnDisabled(c.value)"
                     @click="setBodyColumns(c.value)"
                   >
                     <span>{{ c.label }}</span>
@@ -572,6 +572,23 @@
                 </a-select>
               </div>
               <div class="nested-field">
+                <div class="cfg-label">分组字段</div>
+                <a-select
+                  v-model="localMapping.groupField"
+                  placeholder="不分组"
+                  @change="emitMapping"
+                >
+                  <a-option value="">不分组</a-option>
+                  <a-option
+                    v-for="f in groupCandidates"
+                    :key="f.name"
+                    :value="f.name"
+                  >
+                    {{ fieldLabel(f) }}
+                  </a-option>
+                </a-select>
+              </div>
+              <div class="nested-field">
                 <div class="cfg-label">实际开始</div>
                 <a-select
                   v-model="localMapping.actualStartField"
@@ -717,6 +734,7 @@ const {
   barColorInputRef,
   cardLayouts,
   cardBodyColumnOptions,
+  bodyColumnDisabled,
   recommendedColors,
   drawerTitle,
   listAreaLabel,

@@ -280,6 +280,7 @@ export function useViewConfigDrawer(props: ViewConfigDrawerProps, emit: ViewConf
       localMapping.actualStartField = m.actualStartField;
       localMapping.actualEndField = m.actualEndField;
       localMapping.barColor = m.barColor;
+      localMapping.groupField = m.groupField || '';
       barColorShown.value = m.barColor ?? currentPrimaryColor();
     }
   }
@@ -472,6 +473,7 @@ export function useViewConfigDrawer(props: ViewConfigDrawerProps, emit: ViewConf
       const actualStart = localMapping.actualStartField || undefined;
       const actualEnd = localMapping.actualEndField || undefined;
       const hasActual = !!(actualStart && actualEnd);
+      const prev = props.mapping?.kind === 'gantt' ? props.mapping : undefined;
       emit('update:mapping', {
         kind: 'gantt',
         titleField: localMapping.titleField,
@@ -480,6 +482,8 @@ export function useViewConfigDrawer(props: ViewConfigDrawerProps, emit: ViewConf
         actualStartField: hasActual ? actualStart : undefined,
         actualEndField: hasActual ? actualEnd : undefined,
         barColor: localMapping.barColor || undefined,
+        tableWidth: prev?.tableWidth,
+        groupField: localMapping.groupField || '',
       });
     }
   }
@@ -573,6 +577,11 @@ export function useViewConfigDrawer(props: ViewConfigDrawerProps, emit: ViewConf
     emitChrome();
   }
 
+  /** 标准/偏大禁用 3 列；整行三列都可用 */
+  function bodyColumnDisabled(n: CardBodyColumns): boolean {
+    return n === 3 && localMapping.layout !== 'row';
+  }
+
   function setHeight(mode: HeightMode) {
     chrome.heightMode = mode;
     emitChrome();
@@ -593,6 +602,7 @@ export function useViewConfigDrawer(props: ViewConfigDrawerProps, emit: ViewConf
     barColorInputRef,
     cardLayouts,
     cardBodyColumnOptions,
+    bodyColumnDisabled,
     recommendedColors,
     drawerTitle,
     listAreaLabel,

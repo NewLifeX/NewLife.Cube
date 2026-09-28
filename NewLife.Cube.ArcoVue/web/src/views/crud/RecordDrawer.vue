@@ -263,8 +263,51 @@
             placeholder="写下你的讨论内容…"
             :max-length="500"
             allow-clear
+            @click="rememberMentionCursor('top', $event)"
+            @keyup="rememberMentionCursor('top', $event)"
           />
           <div class="comment-actions">
+            <a-tag
+              v-for="m in commentMentions"
+              :key="m.id"
+              size="small"
+              closable
+              @close="removeMention('top', m)"
+            >
+              @{{ m.name }}
+            </a-tag>
+            <a-popover
+              trigger="click"
+              position="top"
+              @popup-visible-change="(v: boolean) => v && searchMentionUsers('')"
+            >
+              <template #content>
+                <div class="mention-panel">
+                  <a-input
+                    :model-value="mentionKeyword"
+                    placeholder="搜索用户"
+                    size="small"
+                    allow-clear
+                    @input="(v: string) => searchMentionUsers(String(v))"
+                  />
+                  <a-spin :loading="mentionLoading" style="width: 100%">
+                    <div v-if="!mentionUsers.length" class="mention-empty">无匹配用户</div>
+                    <button
+                      v-for="u in mentionUsers"
+                      :key="u.id"
+                      type="button"
+                      class="mention-item"
+                      @click="pickMention('top', u)"
+                    >
+                      {{ u.name }}
+                    </button>
+                  </a-spin>
+                </div>
+              </template>
+              <a-button size="mini" title="提及用户">
+                <icon-park type="people" />
+              </a-button>
+            </a-popover>
             <a-button
               size="mini"
               type="primary"
@@ -383,6 +426,13 @@
                   :target="commentReplyTarget"
                   v-model="commentReplyText"
                   :saving="commentSaving"
+                  :mentions="commentReplyMentions"
+                  :mention-users="mentionUsers"
+                  :mention-loading="mentionLoading"
+                  :mention-keyword="mentionKeyword"
+                  @search-mention="searchMentionUsers"
+                  @pick-mention="(u, cursor) => pickMention('reply', u, cursor)"
+                  @remove-mention="(m) => removeMention('reply', m)"
                   @submit="submitReply"
                   @cancel="cancelCommentReply"
                 />
@@ -394,6 +444,13 @@
                 :target="commentReplyTarget"
                 v-model="commentReplyText"
                 :saving="commentSaving"
+                :mentions="commentReplyMentions"
+                :mention-users="mentionUsers"
+                :mention-loading="mentionLoading"
+                :mention-keyword="mentionKeyword"
+                @search-mention="searchMentionUsers"
+                @pick-mention="(u, cursor) => pickMention('reply', u, cursor)"
+                @remove-mention="(m) => removeMention('reply', m)"
                 @submit="submitReply"
                 @cancel="cancelCommentReply"
               />
@@ -531,6 +588,15 @@ const {
   commentText,
   commentReplyTarget,
   commentReplyText,
+  commentMentions,
+  commentReplyMentions,
+  mentionUsers,
+  mentionKeyword,
+  mentionLoading,
+  searchMentionUsers,
+  rememberMentionCursor,
+  pickMention,
+  removeMention,
   title,
   width,
   showSideTabs,
@@ -803,8 +869,39 @@ watch(
 .comment-actions {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 8px;
+}
+.mention-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 220px;
+  max-height: 260px;
+}
+.mention-empty {
+  padding: 8px 4px;
+  font-size: 12px;
+  color: var(--color-text-3);
+}
+.mention-item {
+  display: block;
+  width: 100%;
+  border: none;
+  background: none;
+  border-radius: 3px;
+  font-size: 12px;
+  padding: 4px 8px;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mention-item:hover {
+  background: var(--color-fill-2);
 }
 .comment-list {
   display: flex;

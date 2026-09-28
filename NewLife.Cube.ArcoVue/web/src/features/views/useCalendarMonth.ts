@@ -11,6 +11,8 @@ interface CalendarMonthProps {
   mapping?: CalendarMapping | null;
   rowKey: string;
   height?: number;
+  /** 有新增权时本月空白格可点击新建（OSC-260926c2b8） */
+  canAdd?: boolean;
 }
 
 type CalEvent = {
@@ -21,6 +23,17 @@ type CalEvent = {
   start: Date;
   end: Date;
 };
+
+/** 日历空白日新建门禁（OSC-260926c2b8）：有新增权 + 本月格 + 已配置开始字段三项同时成立 */
+export function canCreateOnCalendarCell(canAdd: boolean | undefined, inMonth: boolean, hasStart: boolean): boolean {
+  return !!canAdd && inMonth && hasStart;
+}
+
+/** 本地日期格式化 YYYY-MM-DD（壁钟拼接，避免 toISOString 的时区漂移） */
+export function formatCalendarDate(d: Date): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
 
 /** CalendarMonth 组件全部业务 TS：月历网格/事件按天索引/事件文字颜色（自 CalendarMonth.vue script setup 原样搬移；emits 仅模板 $emit 使用） */
 export function useCalendarMonth(props: CalendarMonthProps) {
@@ -136,20 +149,40 @@ export function useCalendarMonth(props: CalendarMonthProps) {
       inMonth: boolean;
       isToday: boolean;
       events: CalEvent[];
+      /** 日键（弹层受控与去重共用） */
+      key: string;
+      /** 该格自然日（YYYY-MM-DD，含非本月补齐格） */
+      dateText: string;
+      /** 有新增权且为本月格时可点击新建 */
+      canCreate: boolean;
     }[] = [];
+    const hasStart = !!props.mapping?.startField;
     for (let i = 0; i < 42; i++) {
       const d = new Date(gridStart);
       d.setDate(gridStart.getDate() + i);
       const key = dayKey(d);
+      const inMonth = d.getMonth() === m;
       result.push({
         day: d.getDate(),
-        inMonth: d.getMonth() === m,
+        inMonth,
         isToday: key === todayKey,
         events: byDay.get(key) ?? [],
+        key,
+        dateText: formatCalendarDate(d),
+        canCreate: canCreateOnCalendarCell(props.canAdd, inMonth, hasStart),
       });
     }
     return result;
   });
+
+  /** +N 弹层展开的日键（受控；点条目或关闭后置空）（OSC-260926c2b8） */
+  const moreKey = ref<string | null>(null);
+
+  /** +N 弹层点条目：关闭弹层并返回行（模板 $emit('detail', ...) 消费） */
+  function pickMoreEvent(row: Record<string, unknown>) {
+    moreKey.value = null;
+    return row;
+  }
 
   return {
     weekLabels,
@@ -159,5 +192,7 @@ export function useCalendarMonth(props: CalendarMonthProps) {
     goToday,
     eventTextColor,
     cells,
+    moreKey,
+    pickMoreEvent,
   };
 }

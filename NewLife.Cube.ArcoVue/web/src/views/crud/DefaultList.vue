@@ -47,7 +47,7 @@
         </div>
         <div class="list-topbar">
           <a-space>
-            <a-button v-if="flags.canAdd" type="primary" @click="openAdd">+ 添加记录</a-button>
+            <a-button v-if="flags.canAdd" type="primary" @click="openAdd()">+ 添加记录</a-button>
           </a-space>
           <a-space>
             <!-- 甘特图缩放控制（仅甘特图视图显示，位于筛选前）：− / 当前等级 / + 按钮切换等级，默认月·日 -->
@@ -520,6 +520,7 @@
 
           <KanbanBoard
             v-else-if="activeViewKind === 'kanban'"
+            :key="'kanban:' + activeViewId"
             :records="tableData"
             :columns="activeColumns"
             :fields="listFields"
@@ -548,7 +549,9 @@
             :mapping="activeCalendarMapping"
             :row-key="pkField"
             :height="resolvedTableHeight"
+            :can-add="flags.canAdd"
             @detail="openDetail"
+            @create="onCreateFromCalendar"
           />
 
           <GanttView
@@ -887,6 +890,7 @@ const {
   activeColumns,
   renderCell,
   openEdit,
+  onCreateFromCalendar,
   onCardDelete,
   activeKanbanMapping,
   activeCalendarMapping,

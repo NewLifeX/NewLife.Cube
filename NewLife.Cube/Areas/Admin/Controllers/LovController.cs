@@ -264,7 +264,18 @@ public class LovController : ControllerBaseX
         // 内部实体值集（Entity.{Type}）：entity: 协议在控制器内直接查询实体工厂，不外发 HTTP，也不依赖 DI 代理
         if (!config.RequestUrl.IsNullOrEmpty() && config.RequestUrl.StartsWith("entity:", StringComparison.OrdinalIgnoreCase))
         {
-            var (rows, total) = FetchEntityList(config.RequestUrl, request.Params, request.PageNum, request.PageSize);
+            var fact = ResolveEntityFactoryByUrl(config.RequestUrl);
+            if (fact == null)
+                throw new InvalidOperationException($"内部实体数据源 {config.RequestUrl["entity:".Length..].Trim()} 未注册");
+
+            // 行权（OSC-260926c2b8）：目标实体菜单 Detail 失败关闭 → 403（空数据不下发）
+            if (!LovEntityGuard.CheckMenu(fact))
+            {
+                Response.StatusCode = 403;
+                return new JsonResult(new { code = 403, message = $"无权访问[{fact.EntityType?.Name}]值集数据" });
+            }
+
+            var (rows, total) = FetchEntityList(fact, request.Params, request.PageNum, request.PageSize);
             return new
             {
                 Data = rows,
@@ -321,27 +332,21 @@ public class LovController : ControllerBaseX
             return result;
         }
 
-        // 列表型：[LovList] 声明式值集（List.*）与内部实体值集（Entity.{Type}）统一解析；
-        // 前者由 LovRegistry 反射直读，后者按实体工厂即时合成配置，两者均不落库
-        LovListConfigModel config;
-        String valueField;
-        String labelField;
+        // 内部实体值集（Entity.{Type}）：按主键集合逐键取数 + 行权判定，不可见键省略（OSC-260926c2b8，不再扫全表防枚举）
         if (ResolveEntityFactory(request.LovCode) is { } entityFact)
         {
-            config = BuildEntityListConfig(entityFact);
-            valueField = ValueFieldOf(entityFact);
-            labelField = LabelFieldOf(entityFact);
+            AppendEntityLabels(entityFact, request.Values, result);
+            return result;
         }
-        else
-        {
-            var desc = LovRegistry.FindList(request.LovCode);
-            if (desc == null)
-                throw new InvalidOperationException($"值集 {request.LovCode} 不存在");
 
-            config = desc.Config;
-            valueField = desc.ValueField;
-            labelField = desc.LabelField;
-        }
+        // [LovList] 声明式值集（List.*）：由 LovRegistry 反射直读配置，分页权威反查（行为不变）
+        var desc = LovRegistry.FindList(request.LovCode);
+        if (desc == null)
+            throw new InvalidOperationException($"值集 {request.LovCode} 不存在");
+
+        LovListConfigModel config = desc.Config;
+        String valueField = desc.ValueField;
+        String labelField = desc.LabelField;
 
         {
             if (config != null && !valueField.IsNullOrEmpty() && !labelField.IsNullOrEmpty())
@@ -411,7 +416,12 @@ public class LovController : ControllerBaseX
 
         if (url.StartsWith("entity:"))
         {
-            return FetchEntityList(url, extraParams, pageNum, pageSize);
+            var fact = ResolveEntityFactoryByUrl(url) ?? throw new InvalidOperationException($"内部实体数据源 {url["entity:".Length..].Trim()} 未注册");
+
+            // 菜单 Detail 失败关闭（OSC-260926c2b8 审查 🟡1）：声明式值集把数据源配成 entity: 时同样受目标实体菜单约束
+            if (!LovEntityGuard.CheckMenu(fact)) return ([], 0);
+
+            return FetchEntityList(fact, extraParams, pageNum, pageSize);
         }
 
         using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
@@ -522,27 +532,18 @@ public class LovController : ControllerBaseX
         return (rows, total);
     }
 
-    /// <summary>内部实体值集查询（entity: 协议，OSC-0016）。按名称解析已注册 EntityFactory，Q 模糊 + 分页，行输出 {值字段: 主键值, 标签字段: ToString}</summary>
-    /// <param name="url">entity:{EntityTypeName} 数据源地址</param>
+    /// <summary>内部实体值集查询（entity: 协议，OSC-0016；行权 OSC-260926c2b8）。Q 模糊 + 分页 + 租户/行权表达式，行输出 {值字段: 主键值, 标签字段: ToString}</summary>
+    /// <param name="fact">目标实体工厂（调用方已按 entity: 地址解析并完成菜单裁决）</param>
     /// <param name="extraParams">查询参数（含 Q 关键字）</param>
     /// <param name="pageNum">页码，从 1 起</param>
     /// <param name="pageSize">每页条数，缺省 20、上限 500</param>
     /// <returns>行数据列表与总数</returns>
     private static (List<Dictionary<String, Object>> Rows, Int32 Total) FetchEntityList(
-        String url,
+        IEntityFactory fact,
         Dictionary<String, Object>? extraParams,
         Int32 pageNum,
         Int32 pageSize)
     {
-        var typeName = url.Substring("entity:".Length).Trim();
-        if (typeName.IsNullOrEmpty())
-            throw new InvalidOperationException("值集内部实体数据源缺少实体名");
-
-        // 按名称解析已注册实体工厂（大小写不敏感）；未注册抛异常（HTTP 500 由既有异常处理承接，不泄露堆栈）
-        var fact = EntityFactory.Entities.Values.FirstOrDefault(e => e.EntityType?.Name.EqualIgnoreCase(typeName) == true);
-        if (fact == null)
-            throw new InvalidOperationException($"内部实体数据源 {typeName} 未注册");
-
         // Q 关键字（extraParams 兼容大小写）
         var q = "";
         if (extraParams != null)
@@ -565,7 +566,7 @@ public class LovController : ControllerBaseX
         {
             var method = GetSearchWhereByKeys(fact.EntityType);
             if (method == null)
-                XTrace.WriteLine("entity: 值集 {0} 未找到 SearchWhereByKeys 方法，Q 过滤失效", typeName);
+                XTrace.WriteLine("entity: 值集 {0} 未找到 SearchWhereByKeys 方法，Q 过滤失效", fact.EntityType.Name);
             else
             {
                 try
@@ -579,6 +580,10 @@ public class LovController : ControllerBaseX
                 }
             }
         }
+
+        // 行权（OSC-260926c2b8）：关键字条件之后 AND 租户 + DataScope 表达式；菜单 Detail 由调用方先裁决
+        var guard = LovEntityGuard.GetFilter(fact);
+        if (guard != null) exp = exp == null ? guard : exp & guard;
 
         var unique = fact.Unique;
         var valueField = unique?.Name ?? "Id";
@@ -911,6 +916,93 @@ public class LovController : ControllerBaseX
         }
 
         return null;
+    }
+
+    /// <summary>解析 entity: 数据源地址中的实体工厂（大小写不敏感，短类型名）</summary>
+    /// <param name="url">entity:{EntityTypeName} 数据源地址</param>
+    /// <returns>实体工厂；地址为空、缺实体名或未注册时返回 null</returns>
+    private static IEntityFactory? ResolveEntityFactoryByUrl(String url)
+    {
+        if (url.IsNullOrEmpty() || !url.StartsWith("entity:", StringComparison.OrdinalIgnoreCase)) return null;
+
+        var typeName = url["entity:".Length..].Trim();
+        if (typeName.IsNullOrEmpty()) return null;
+
+        return EntityFactory.Entities.Values.FirstOrDefault(e => e.EntityType?.Name.EqualIgnoreCase(typeName) == true);
+    }
+
+    /// <summary>实体值集按主键集合翻译标签（OSC-260926c2b8）。单次按主键集合取数 + 菜单/行权判定，不可见键省略，防枚举探测</summary>
+    /// <param name="fact">目标实体工厂</param>
+    /// <param name="values">待翻译的原始值集合</param>
+    /// <param name="result">value→label 结果字典（就地追加）</param>
+    private static void AppendEntityLabels(IEntityFactory fact, Object[] values, Dictionary<String, String> result)
+    {
+        // 菜单 Detail 失败关闭：找不到菜单或无权限时全部省略（不 500）
+        if (!LovEntityGuard.CheckMenu(fact)) return;
+
+        var unique = fact.Unique;
+        if (unique == null) return;
+
+        var valueField = ValueFieldOf(fact);
+        var labelField = LabelFieldOf(fact);
+
+        // 去重并限制单次翻译量（与值集分页上限对齐，防构造超大数组触发大量查询）
+        var pending = values
+            .Select(v => v?.ToString())
+            .Where(v => !v.IsNullOrEmpty())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(500)
+            .ToList();
+        if (pending.Count == 0) return;
+
+        // 主键类型转换（非法格式的键静默跳过，不整体失败）
+        var keys = new List<Object>();
+        foreach (var key in pending)
+        {
+            var value = ConvertKey(key, unique.Type);
+            if (value != null) keys.Add(value);
+        }
+        if (keys.Count == 0) return;
+
+        // 单次查询按主键集合取数，再逐行行权判定（DataScope 归属 + 租户，与列表 FindData 同序；范围外键省略）
+        var list = fact.FindAll(unique.In(keys), null, null, 0, 0);
+        if (list == null || list.Count == 0) return;
+
+        // 行键 → 请求原始键（保留请求大小写与格式）
+        var original = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
+        foreach (var key in pending)
+        {
+            original[key] = key;
+        }
+
+        foreach (var entity in list)
+        {
+            if (entity == null) continue;
+            if (!LovEntityGuard.CanAccess(fact, entity)) continue;
+
+            var key = entity[valueField]?.ToString();
+            if (key.IsNullOrEmpty() || !original.TryGetValue(key, out var raw)) continue;
+
+            result[raw] = labelField.EqualIgnoreCase(valueField) ? raw : entity.ToString();
+        }
+    }
+
+    /// <summary>按主键字段类型转换字符串键；非法格式返回 null（跳过该键）</summary>
+    /// <param name="key">请求中的字符串键</param>
+    /// <param name="type">主键字段类型</param>
+    /// <returns>转换后的键值；无法转换返回 null</returns>
+    private static Object? ConvertKey(String key, Type? type)
+    {
+        if (type == null || type == typeof(String)) return key;
+
+        try
+        {
+            return Convert.ChangeType(key, type);
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     /// <summary>内部实体值集的值字段：唯一键名，缺省 Id</summary>

@@ -27,6 +27,14 @@ import { mergeAreaLabel } from '@/core/utils/areaLabels';
 import { parseRemarkDiff, type RemarkDiff } from '@/core/utils/logRemarkDiff';
 import { useUserStore } from '@/stores/user';
 import cubeApi from '@/api';
+import {
+  addMentionEntry,
+  buildMentionIds,
+  insertMentionText,
+  removeMentionEntry,
+  type MentionEntry,
+  type MentionUser,
+} from './commentMention';
 import FormContent from './FormContent.vue';
 
 /** RecordDrawer 组件 props 类型（与 RecordDrawer.vue defineProps 泛型逐字一致） */
@@ -109,6 +117,92 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
   const commentReplyTarget = ref<EntityCommentModel | null>(null);
   const commentReplyText = ref('');
   const comments = ref<EntityCommentModel[]>([]);
+
+  // ---- 评论提及（OSC-260926c2b8）：顶层与回复各自的已选列表，候选/搜索状态共用 ----
+  const commentMentions = ref<MentionEntry[]>([]);
+  const commentReplyMentions = ref<MentionEntry[]>([]);
+  const mentionUsers = ref<MentionUser[]>([]);
+  const mentionKeyword = ref('');
+  const mentionLoading = ref(false);
+  /** 顶层评论输入框最近一次光标（点选提及用户时在此插入 @显示名） */
+  const topMentionCursor = ref<number | null>(null);
+
+  /** 当前用户编号（提交与选人时去掉自己） */
+  function selfIdOf(): number | null {
+    const id = Number(userStore.userInfo?.id);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }
+
+  /** 提交用提及 ID：去重、去自己、≤20；为空时不传字段 */
+  function mentionIdsOf(entries: readonly MentionEntry[]): number[] | undefined {
+    const ids = buildMentionIds(entries, selfIdOf());
+    return ids.length ? ids : undefined;
+  }
+
+  /** 搜索候选用户：/Admin/User 前 20 条（关键字 q）；失败时列表为空，仍可发送不带提及的评论 */
+  async function searchMentionUsers(keyword?: string) {
+    const q = (keyword ?? mentionKeyword.value).trim();
+    mentionKeyword.value = q;
+    mentionLoading.value = true;
+    try {
+      const res = await cubeApi.page.getList('/Admin/User', { pageIndex: 0, pageSize: 20, q });
+      const rows = (res.data as Record<string, unknown>[]) || [];
+      mentionUsers.value = rows
+        .map((u) => {
+          const id = Number(u.id ?? u.Id ?? 0);
+          const name = String(u.name ?? u.Name ?? u.account ?? u.Account ?? '');
+          return { id: Number.isFinite(id) ? id : 0, name: name || String(id) };
+        })
+        .filter((u) => u.id > 0);
+    } catch {
+      mentionUsers.value = [];
+    } finally {
+      mentionLoading.value = false;
+    }
+  }
+
+  /** 记录输入框光标（顶层评论输入框的点击/按键后调用） */
+  function rememberMentionCursor(target: 'top' | 'reply', e: Event) {
+    if (target !== 'top') return;
+    const el = e.target as HTMLTextAreaElement | null;
+    if (!el || typeof el.selectionStart !== 'number') return;
+    topMentionCursor.value = el.selectionStart;
+  }
+
+  /** 挑选提及用户：未选且未满 20 时加入列表，并在光标处插入 `@显示名 `；已选/自己/满 20 不插入 */
+  function pickMention(target: 'top' | 'reply', user: MentionUser, cursor?: number | null) {
+    if (target === 'top') {
+      const before = commentMentions.value;
+      const next = addMentionEntry(before, user, selfIdOf());
+      if (next.length === before.length) return;
+
+      commentMentions.value = next;
+      const res = insertMentionText(commentText.value, user.name, cursor ?? topMentionCursor.value);
+      commentText.value = res.content;
+      topMentionCursor.value = res.cursor;
+    } else {
+      const before = commentReplyMentions.value;
+      const next = addMentionEntry(before, user, selfIdOf());
+      if (next.length === before.length) return;
+
+      commentReplyMentions.value = next;
+      const res = insertMentionText(commentReplyText.value, user.name, cursor);
+      commentReplyText.value = res.content;
+    }
+  }
+
+  /** 移除已选提及：删标签并从正文去掉第一次出现的 `@显示名` */
+  function removeMention(target: 'top' | 'reply', entry: MentionEntry) {
+    if (target === 'top') {
+      const res = removeMentionEntry(commentMentions.value, entry.id, commentText.value, entry.name);
+      commentMentions.value = res.entries;
+      commentText.value = res.content;
+    } else {
+      const res = removeMentionEntry(commentReplyMentions.value, entry.id, commentReplyText.value, entry.name);
+      commentReplyMentions.value = res.entries;
+      commentReplyText.value = res.content;
+    }
+  }
 
   const title = computed(() => {
     if (props.mode === 'add') return '新增';
@@ -337,11 +431,13 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
   function startCommentReply(c: EntityCommentModel) {
     commentReplyTarget.value = c;
     commentReplyText.value = '';
+    commentReplyMentions.value = [];
   }
 
   function cancelCommentReply() {
     commentReplyTarget.value = null;
     commentReplyText.value = '';
+    commentReplyMentions.value = [];
   }
 
   /** 顶层评论：提交新评论 */
@@ -357,9 +453,11 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
         linkId,
         content,
         parentId: 0,
+        mentionUserIds: mentionIdsOf(commentMentions.value),
       });
       Message.success('评论成功');
       commentText.value = '';
+      commentMentions.value = [];
       await loadComments();
     } catch (err) {
       Message.error(formatApiError(err, '评论失败'));
@@ -382,10 +480,12 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
         linkId,
         content,
         parentId: target.id,
+        mentionUserIds: mentionIdsOf(commentReplyMentions.value),
       });
       Message.success('回复成功');
       commentReplyText.value = '';
       commentReplyTarget.value = null;
+      commentReplyMentions.value = [];
       await loadComments();
     } catch (err) {
       Message.error(formatApiError(err, '回复失败'));
@@ -451,6 +551,8 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
     () => {
       commentReplyTarget.value = null;
       commentReplyText.value = '';
+      commentMentions.value = [];
+      commentReplyMentions.value = [];
     },
   );
 
@@ -476,6 +578,8 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
         activeTab.value = 'form';
         commentReplyTarget.value = null;
         commentReplyText.value = '';
+        commentMentions.value = [];
+        commentReplyMentions.value = [];
         lastHistoryId = null;
         // 详情/编辑打开前补齐地区与 LOV 标签（OSC-2608139feb）
         void hydrateRowLabels();
@@ -498,6 +602,15 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
     commentReplyTarget,
     commentReplyText,
     comments,
+    commentMentions,
+    commentReplyMentions,
+    mentionUsers,
+    mentionKeyword,
+    mentionLoading,
+    searchMentionUsers,
+    rememberMentionCursor,
+    pickMention,
+    removeMention,
     title,
     width,
     showSideTabs,

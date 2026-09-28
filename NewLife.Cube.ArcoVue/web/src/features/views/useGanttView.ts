@@ -3,6 +3,7 @@ import type { FieldMeta } from '@/core/types/field';
 import type { GanttMapping } from '@/core/utils/viewMapping';
 import { getValueByKey } from '@/core/utils/url';
 import { themeColor } from '@/core/utils/themeColor';
+import { groupGanttRecords, isGanttGroupParent } from './ganttGroup';
 import {
   ganttMappingSignature,
   ganttRecordsSignature,
@@ -84,34 +85,69 @@ export function useGanttView(props: GanttViewProps, emit: GanttViewEmit) {
    * - 无实际 → 主条回退计划（与基线 overlap 完全重合，视觉单条）
    * - 计划起止均为空的行过滤（现状逻辑保留）
    */
-  function buildRecords() {
+  type GanttRow = {
+    id: unknown;
+    title: string;
+    __row?: Record<string, unknown>;
+    __ganttGroup?: boolean;
+    __actualStart: string;
+    __actualEnd: string;
+    __plannedStart: string;
+    __plannedEnd: string;
+    children?: GanttRow[];
+  };
+
+  function mapTask(row: Record<string, unknown>, idx: number): GanttRow | null {
+    const m = props.mapping;
+    if (!m) return null;
+    const rawId = getValueByKey(row, props.rowKey);
+    const id = rawId == null || rawId === '' ? idx : rawId;
+    const titleRaw = getValueByKey(row, m.titleField);
+    const plannedStart = toDateStr(getValueByKey(row, m.plannedStartField));
+    const plannedEnd = toDateStr(getValueByKey(row, m.plannedEndField));
+    if (!plannedStart || !plannedEnd) return null;
+    const hasActual =
+      !!m.actualStartField &&
+      !!m.actualEndField &&
+      toDateStr(getValueByKey(row, m.actualStartField)) !== '' &&
+      toDateStr(getValueByKey(row, m.actualEndField)) !== '';
+    return {
+      __row: row,
+      id,
+      title: titleRaw == null || titleRaw === '' ? '(无标题)' : String(titleRaw),
+      __actualStart: hasActual ? toDateStr(getValueByKey(row, m.actualStartField!)) : plannedStart,
+      __actualEnd: hasActual ? toDateStr(getValueByKey(row, m.actualEndField!)) : plannedEnd,
+      __plannedStart: plannedStart,
+      __plannedEnd: plannedEnd,
+    };
+  }
+
+  function buildRecords(): GanttRow[] {
     const m = props.mapping;
     if (!m) return [];
-    return props.records
-      .map((row, idx) => {
-        const rawId = getValueByKey(row, props.rowKey);
-        const id = rawId == null || rawId === '' ? idx : rawId;
-        const titleRaw = getValueByKey(row, m.titleField);
-        const plannedStart = toDateStr(getValueByKey(row, m.plannedStartField));
-        const plannedEnd = toDateStr(getValueByKey(row, m.plannedEndField));
-        const hasActual =
-          !!m.actualStartField &&
-          !!m.actualEndField &&
-          toDateStr(getValueByKey(row, m.actualStartField)) !== '' &&
-          toDateStr(getValueByKey(row, m.actualEndField)) !== '';
-        return {
-          __row: row,
-          id,
-          title: titleRaw == null || titleRaw === '' ? '(无标题)' : String(titleRaw),
-          // 主条：有实际用实际，否则回退计划
-          __actualStart: hasActual ? toDateStr(getValueByKey(row, m.actualStartField!)) : plannedStart,
-          __actualEnd: hasActual ? toDateStr(getValueByKey(row, m.actualEndField!)) : plannedEnd,
-          // 基线（计划）
-          __plannedStart: plannedStart,
-          __plannedEnd: plannedEnd,
-        };
-      })
-      .filter((r) => r.__plannedStart && r.__plannedEnd);
+    const grouped = groupGanttRecords(props.records, m.groupField, props.fields);
+    if (!m.groupField) {
+      return props.records.map(mapTask).filter((r): r is GanttRow => !!r);
+    }
+    const out: GanttRow[] = [];
+    for (const node of grouped) {
+      if (!isGanttGroupParent(node)) continue;
+      const children = node.children.map(mapTask).filter((r): r is GanttRow => !!r);
+      if (!children.length) continue;
+      const starts = children.map((c) => c.__plannedStart).sort();
+      const ends = children.map((c) => c.__plannedEnd).sort();
+      out.push({
+        id: node.id,
+        title: node.title,
+        __ganttGroup: true,
+        __plannedStart: starts[0],
+        __plannedEnd: ends[ends.length - 1],
+        __actualStart: starts[0],
+        __actualEnd: ends[ends.length - 1],
+        children,
+      });
+    }
+    return out;
   }
 
   /** 表格宽度轮询（VTable Gantt 无 resize_table_width 事件，design §4.3 兜底）：
@@ -497,11 +533,13 @@ export function useGanttView(props: GanttViewProps, emit: GanttViewEmit) {
     if (firstTaskScrollTimer) window.clearTimeout(firstTaskScrollTimer);
     firstTaskScrollTimer = window.setTimeout(scrollToFirstTask, 40);
 
-    gantt.on?.('click_cell', (args: { originData?: { __row?: Record<string, unknown> } }) => {
+    gantt.on?.('click_cell', (args: { originData?: { __row?: Record<string, unknown>; __ganttGroup?: boolean } }) => {
+      if (args?.originData?.__ganttGroup) return;
       const row = args?.originData?.__row;
       if (row) emit('detail', row);
     });
-    gantt.on?.('click_task_bar', (args: { record?: { __row?: Record<string, unknown> } }) => {
+    gantt.on?.('click_task_bar', (args: { record?: { __row?: Record<string, unknown>; __ganttGroup?: boolean } }) => {
+      if (args?.record?.__ganttGroup) return;
       const row = args?.record?.__row;
       if (row) emit('detail', row);
     });

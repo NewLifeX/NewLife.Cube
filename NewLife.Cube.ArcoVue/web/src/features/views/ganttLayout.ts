@@ -18,6 +18,7 @@ export function ganttMappingSignature(m: GanttMapping | null | undefined): strin
     m.actualStartField ?? '',
     m.actualEndField ?? '',
     m.barColor ?? '',
+    m.groupField ?? '',
   ].join('\0');
 }
 
@@ -28,7 +29,7 @@ export function ganttRecordsSignature(
   rowKey: string,
 ): string {
   if (!mapping || !records.length) return String(records.length);
-  const { titleField, plannedStartField, plannedEndField, actualStartField, actualEndField } =
+  const { titleField, plannedStartField, plannedEndField, actualStartField, actualEndField, groupField } =
     mapping;
   return records
     .map((row, idx) => {
@@ -40,6 +41,7 @@ export function ganttRecordsSignature(
         getValueByKey(row, plannedEndField) ?? '',
         actualStartField ? (getValueByKey(row, actualStartField) ?? '') : '',
         actualEndField ? (getValueByKey(row, actualEndField) ?? '') : '',
+        groupField ? (getValueByKey(row, groupField) ?? '') : '',
       ].join('\t');
     })
     .join('\n');

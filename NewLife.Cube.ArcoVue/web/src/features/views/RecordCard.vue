@@ -12,8 +12,11 @@
     <div class="record-card-header" :style="headerFormatStyle">
       <div class="record-card-title" :style="titleTextStyle" :title="title">{{ title }}</div>
     </div>
+    <div v-if="imageUrl && layout !== 'row'" class="record-card-image record-card-image--bleed">
+      <img :src="imageUrl" alt="" loading="lazy" decoding="async" />
+    </div>
     <div class="record-card-body">
-      <div v-if="imageUrl" class="record-card-image">
+      <div v-if="imageUrl && layout === 'row'" class="record-card-image">
         <!-- 懒加载 + 异步解码：千条卡片时避免图片并发加载/解码阻塞首屏渲染 -->
         <img :src="imageUrl" alt="" loading="lazy" decoding="async" />
       </div>
@@ -181,9 +184,10 @@ const {
   min-width: 0;
   grid-template-areas:
     'header'
+    'image'
     'body'
     'actions';
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto auto 1fr auto;
   transition: box-shadow 0.2s cubic-bezier(0, 0, 1, 1);
 }
 .record-card:hover {
@@ -226,6 +230,11 @@ const {
   overflow: hidden;
   border-radius: 6px;
   background: var(--color-fill-1);
+}
+.record-card-image--bleed {
+  grid-area: image;
+  border-radius: 0;
+  background: transparent;
 }
 .record-card-image img {
   width: 100%;
@@ -366,6 +375,9 @@ const {
   grid-template-columns: 180px 1fr;
   align-items: start;
   gap: 12px;
+}
+.record-card--row .record-card-image {
+  border-radius: 2px;
 }
 .record-card--row .record-card-image img {
   width: 180px;

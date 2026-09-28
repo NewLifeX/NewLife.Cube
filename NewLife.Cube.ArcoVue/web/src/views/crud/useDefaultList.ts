@@ -20,6 +20,7 @@ import { mergeFillFormValues } from '@/core/utils/aiFill';
 import { resolveFieldsForKind } from '@/core/utils/fieldParts';
 import { parseUrlViewFilter } from '@/core/utils/searchFilters';
 import { getValueByKey } from '@/core/utils/url';
+import { inferDateKind } from '@/core/utils/datetime';
 import { useAppStore } from '@/stores/app';
 import { createListContext } from './listContext';
 import { useListQuery } from './useListQuery';
@@ -30,6 +31,18 @@ import { useListAutomation } from './useListAutomation';
 import { useWorkflowList } from './useWorkflowList';
 import { wfRowCanStart, wfRowEditLocked, wfRowInstanceId, wfRowRestartBlocked, wfRowStatus } from '@/core/types/workflow';
 import { runCellFieldLink, runOpsCustomLink } from './useListOpsLinks';
+
+/** 路由 query 稳定签名。键排序，避免对象被替换但内容不变时被当成新查询。 */
+function routeQueryKey(query: Record<string, unknown> | null | undefined): string {
+  if (!query) return '';
+  return Object.keys(query)
+    .sort()
+    .map((k) => {
+      const v = query[k];
+      return `${k}=${Array.isArray(v) ? v.map(String).join(',') : String(v ?? '')}`;
+    })
+    .join('&');
+}
 
 /**
  * DefaultList 组装器（OSC-260813c3e9）：创建共享上下文，组装四个领域 composable，
@@ -90,6 +103,24 @@ export function useDefaultList(props: { type: string; authId?: number }) {
 
   async function openEdit(row: Record<string, unknown>) {
     await nav.openEdit(row);
+  }
+
+  /**
+   * 日历空白日新建（OSC-260926c2b8）：打开新增抽屉并预填开始日期（本地 0 点），不填结束字段。
+   * 日期种类按字段元数据：date → YYYY-MM-DD；datetime → YYYY-MM-DDT00:00:00（壁钟，无时区后缀）。
+   */
+  function onCreateFromCalendar(payload: { date: string }) {
+    if (!ctx.flags.value.canAdd) return;
+    const startField = ctx.activeCalendarMapping.value?.startField;
+    if (!startField || !payload?.date) return;
+
+    const meta = [...ctx.addFields.value, ...ctx.editFields.value].find(
+      (f) => (f.name || '').toLowerCase() === startField.toLowerCase(),
+    );
+    const kind = meta ? inferDateKind(meta) : 'datetime';
+    const value = kind === 'date' ? payload.date : `${payload.date}T00:00:00`;
+
+    nav.openAdd({ field: meta?.name || startField, value });
   }
 
   /** 行「进度」：行 __wfInstanceId 打开进度抽屉（雪花 Id 字符串透传） */
@@ -396,9 +427,10 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     bootstrap();
   });
 
-  // URL 参数变化（同页面路由 query 变更）时重新派生基准条件
+  // URL 参数变化（同页面路由 query 变更）时重新派生基准条件。
+  // 只比较序列化结果：deep 监听 route.query 会在对象被替换但内容不变时反复 loadData，列表停在 loading。
   watch(
-    () => ctx.route.query,
+    () => routeQueryKey(ctx.route.query as Record<string, unknown>),
     () => {
       ctx.searchTouched.value = false;
       query.applySearchToForm(ctx.baseSearch.value);
@@ -406,7 +438,6 @@ export function useDefaultList(props: { type: string; authId?: number }) {
       ctx.pagination.current = 1;
       query.loadData();
     },
-    { deep: true },
   );
 
   // 洞察图表开关变化时刷新图表区（不影响列表）
@@ -518,6 +549,7 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     ...views,
     ...nav,
     openEdit,
+    onCreateFromCalendar,
     PAGE_SIZE_OPTIONS,
     getActiveView,
   };

@@ -52,10 +52,15 @@ export function useRecordNav(ctx: ListContext) {
     drawerVisible.value = true;
   }
 
-  function openAdd() {
+  /**
+   * 打开新增抽屉；preset 预填某字段（日历空白日新建的开始日期，OSC-260926c2b8）。
+   * 仅接受「日期字段名 + 值」对，不填其它字段（如结束日期保持空）
+   */
+  function openAdd(preset?: { field: string; value: string }) {
     drawerMode.value = 'add';
     drawerRowIndex.value = -1;
     clearModel();
+    if (preset?.field && preset.value) formModel[preset.field] = preset.value;
     drawerVisible.value = true;
   }
 
