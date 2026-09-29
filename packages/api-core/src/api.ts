@@ -376,12 +376,19 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
     update: (type: string, data: Record<string, unknown>) =>
       request<unknown>({ url: type, method: 'put', data }),
 
-    /** PATCH 局部字段更新（OSC-260819e483 P3）：只改白名单字段，避免 PUT 绑默认值打脏未提交列 */
+    /**
+     * PATCH 局部字段更新（OSC-260819e483 P3）：只改白名单字段，避免 PUT 绑默认值打脏未提交列。
+     * 后端 Id 是字符串（兼容雪花主键），数字主键在这里转成字符串再提交。
+     */
     patchFields: (
       type: string,
       body: { id: number | string; values: Record<string, unknown> },
     ) =>
-      request<FieldPatchResult>({ url: type, method: 'patch', data: body }),
+      request<FieldPatchResult>({
+        url: type,
+        method: 'patch',
+        data: { id: String(body.id), values: body.values },
+      }),
 
     /** 批量改字段（OSC-260819e483 P3）：对全部 keys 逐行应用字段变更，部分失败返回 ok/fail/errors；多字段用 fields（≤50），单字段兼容 field/value */
     batchUpdateFields: (

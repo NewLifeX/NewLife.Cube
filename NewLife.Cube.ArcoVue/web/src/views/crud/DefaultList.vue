@@ -521,6 +521,7 @@
           <KanbanBoard
             v-else-if="activeViewKind === 'kanban'"
             :key="'kanban:' + activeViewId"
+            :view-id="activeViewId || ''"
             :records="tableData"
             :columns="activeColumns"
             :fields="listFields"
@@ -535,11 +536,14 @@
             :ops-custom-links="opsCustomLinks"
             :format-cell="renderCell"
             :format-rules="viewFormat"
+            :can-drag-group="kanbanGroupDrag.enabled"
+            :group-required="kanbanGroupDrag.required"
             @detail="openDetail"
             @edit="openEdit"
             @delete="onCardDelete"
             @ops-link="onOpsLinkClick"
             @toggle-enable="onToggleEnable"
+            @move="onKanbanMove"
           />
 
           <CalendarMonth
@@ -871,6 +875,8 @@ const {
   opsCustomLinks,
   enableTableDoubleClick,
   onToggleEnable,
+  kanbanGroupDrag,
+  onKanbanMove,
   onTableScrollBottom,
   automationDrawerVisible,
   automationButtons,

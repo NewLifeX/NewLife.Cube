@@ -1,3 +1,4 @@
+import { computed, ref } from 'vue';
 import { Message, Modal } from '@arco-design/web-vue';
 import { ApiError } from '@newlifex/api-core';
 import cubeApi from '@/api';
@@ -10,6 +11,7 @@ import { resolveFieldsForKind } from '@/core/utils/fieldParts';
 import { prepareSubmitPayload } from '@/core/utils/submitPayload';
 import { isIamBatchDeleteBlocked, isIamRowActionDisabled } from '@/core/utils/iamGuards';
 import { wfRowCanPatchWritable, wfRowEditLocked, wfRowWritable } from '@/core/types/workflow';
+import { kanbanGroupDragMeta } from '@/features/views/kanbanMove';
 import type { ListContext } from './listContext';
 
 interface ListCrudDeps {
@@ -30,6 +32,7 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
     enableBusy,
     fieldParts,
     fieldErrors,
+    activeKanbanMapping,
     saving,
     drawerMode,
     drawerVisible,
@@ -145,6 +148,61 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
       pkField: pkField.value,
     });
     await cubeApi.page.update(typePath.value, payload);
+  }
+
+  const kanbanMoveBusy = ref(false);
+
+  /** 分组字段在编辑表单、非只读、且有更新权时，看板卡片才可跨列拖 */
+  const kanbanGroupDrag = computed(() => {
+    const name = activeKanbanMapping.value?.groupField || '';
+    const edit = resolveFieldsForKind('edit', fieldParts.value);
+    const meta = kanbanGroupDragMeta(edit, name);
+    if (!meta || !flags.value.canEdit) return { enabled: false, required: false };
+    return { enabled: true, required: meta.required };
+  });
+
+  /**
+   * 看板跨列放下：先改本地分组字段让卡片换列，再 PATCH。
+   * 审批中且字段可写走流程补丁。失败只回滚这一字段，成功后再刷新列表。
+   */
+  async function onKanbanMove(payload: { row: Record<string, unknown>; field: string; value: unknown }) {
+    if (kanbanMoveBusy.value) return;
+    const id = getValueByKey(payload.row, pkField.value);
+    if (id == null || id === '') return;
+    const previous = getValueByKey(payload.row, payload.field);
+    kanbanMoveBusy.value = true;
+    setValueByKey(payload.row, payload.field, payload.value);
+    try {
+      if (wfRowEditLocked(payload.row)) {
+        const allowed = wfRowWritable(payload.row).some(
+          (name) => name.toLowerCase() === payload.field.toLowerCase(),
+        );
+        if (!allowed) throw new Error('审批中的记录不可修改该字段');
+        await cubeApi.workflow.patchEntity(typePath.value, id as string | number, {
+          [payload.field]: payload.value,
+        });
+      } else {
+        const res = await cubeApi.page.patchFields(typePath.value, {
+          id: id as string | number,
+          values: { [payload.field]: payload.value },
+        });
+        if (res.data && res.data.fail > 0) {
+          throw new Error(res.data.errors?.[0]?.message || '更新失败');
+        }
+      }
+    } catch (err) {
+      setValueByKey(payload.row, payload.field, previous);
+      Message.error(formatApiError(err, '更新失败'));
+      kanbanMoveBusy.value = false;
+      return;
+    }
+    try {
+      await loadData();
+    } catch (err) {
+      Message.error(formatApiError(err, '更新失败'));
+    } finally {
+      kanbanMoveBusy.value = false;
+    }
   }
 
   async function handleSave() {
@@ -341,6 +399,8 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
   return {
     onTableAction,
     onToggleEnable,
+    kanbanGroupDrag,
+    onKanbanMove,
     updateSingleBooleanField,
     handleSave,
     handleDelete,

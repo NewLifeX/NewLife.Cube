@@ -2,6 +2,13 @@ import { computed, reactive, ref, watch } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
 import type { ColumnPref } from '@/core/utils/viewProfile';
 import { bucketKanban, type KanbanMapping } from '@/core/utils/viewMapping';
+import { wfRowEditLocked, wfRowWritable } from '@/core/types/workflow';
+import {
+  dragStartedFromControl,
+  kanbanCardDraggable,
+  kanbanDropAllowed,
+  kanbanPatchValue,
+} from './kanbanMove';
 import { getValueByKey } from '@/core/utils/url';
 import { resolveCellLabel } from '@/core/utils/fieldBadge';
 import { buildCardBodyFields, cardExcludeKeys, resolveImageUrl } from './cardHelpers';
@@ -23,6 +30,12 @@ interface KanbanBoardProps {
   formatCell?: (field: FieldMeta, record: Record<string, unknown>) => string;
   formatRules?: ViewFormatRule[];
   compact?: boolean;
+  /** 分组字段在编辑表单且当前用户可更新 */
+  canDragGroup?: boolean;
+  /** 分组字段必填时，不能放到「未分组」 */
+  groupRequired?: boolean;
+  /** 当前命名视图。折叠按实体 + 视图 + 分组字段记住 */
+  viewId?: string;
 }
 
 /* ---------------- 滚动懒加载（每列先渲染 100 条，列内滚动到底动态追加） ---------------- */
@@ -35,8 +48,41 @@ export function toggleCollapsed(keys: readonly string[], key: string): string[] 
   return keys.includes(key) ? keys.filter((k) => k !== key) : [...keys, key];
 }
 
-/** KanbanBoard 组件全部业务 TS：分桶列构建与列内滚动懒加载（自 KanbanBoard.vue script setup 原样搬移） */
-export function useKanbanBoard(props: KanbanBoardProps) {
+/** 折叠记在 sessionStorage，刷新和重新进入看板仍在；不写入 ViewProfile */
+export function kanbanCollapsedStorageKey(typePath: string, viewId: string, groupField: string): string {
+  return `cube.kanban.collapsed:${encodeURIComponent(typePath)}:${encodeURIComponent(viewId)}:${encodeURIComponent(groupField)}`;
+}
+
+/** 读出已折叠列 key。坏数据当全部展开 */
+export function readKanbanCollapsed(storage: Storage, key: string): string[] {
+  try {
+    const raw = storage.getItem(key);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item): item is string => typeof item === 'string' && item.length > 0);
+  } catch {
+    return [];
+  }
+}
+
+/** 全部展开时删掉记录，避免留下空数组 */
+export function writeKanbanCollapsed(storage: Storage, key: string, keys: readonly string[]) {
+  if (!keys.length) storage.removeItem(key);
+  else storage.setItem(key, JSON.stringify(keys));
+}
+
+export interface KanbanMovePayload {
+  row: Record<string, unknown>;
+  field: string;
+  value: unknown;
+}
+
+/** KanbanBoard 组件全部业务 TS：分桶列构建、列内滚动懒加载与跨列拖放 */
+export function useKanbanBoard(
+  props: KanbanBoardProps,
+  emit: (event: 'move', payload: KanbanMovePayload) => void,
+) {
   const columns = computed(() => {
     if (!props.mapping?.groupField) return [];
     const gf = props.mapping.groupField;
@@ -63,16 +109,37 @@ export function useKanbanBoard(props: KanbanBoardProps) {
     { immediate: true },
   );
 
-  /** 折叠的列 key 集合（仅当前页内存，刷新/切换视图恢复全展开；不写入 ViewProfile，OSC-260926c2b8） */
+  /** 已折叠列。按实体、视图、分组字段记在 sessionStorage，刷新后仍收起 */
   const collapsedKeys = ref<string[]>([]);
 
-  /** 分组字段变化（配置切换）→ 清空折叠集合 */
-  watch(
-    () => props.mapping?.groupField,
-    () => {
-      collapsedKeys.value = [];
-    },
-  );
+  function collapsedStorageKey() {
+    const field = props.mapping?.groupField || '';
+    if (props.compact || !field) return '';
+    return kanbanCollapsedStorageKey(props.typePath || '', props.viewId || '', field);
+  }
+
+  function sessionStore(): Storage | null {
+    try {
+      return typeof sessionStorage === 'undefined' ? null : sessionStorage;
+    } catch {
+      return null;
+    }
+  }
+
+  function restoreCollapsed() {
+    const key = collapsedStorageKey();
+    const store = sessionStore();
+    collapsedKeys.value = key && store ? readKanbanCollapsed(store, key) : [];
+  }
+
+  function persistCollapsed() {
+    const key = collapsedStorageKey();
+    const store = sessionStore();
+    if (!key || !store) return;
+    writeKanbanCollapsed(store, key, collapsedKeys.value);
+  }
+
+  watch(collapsedStorageKey, () => restoreCollapsed(), { immediate: true });
 
   /** 列是否折叠 */
   function isColumnCollapsed(key: string): boolean {
@@ -83,6 +150,84 @@ export function useKanbanBoard(props: KanbanBoardProps) {
   function toggleColumn(key: string) {
     if (props.compact) return;
     collapsedKeys.value = toggleCollapsed(collapsedKeys.value, key);
+    persistCollapsed();
+  }
+
+  const dragging = ref<{ row: Record<string, unknown>; fromKey: string } | null>(null);
+  const dropKey = ref('');
+  /** 本次按下是否落在按钮或操作区。dragstart 的 target 是可拖元素本身，不能再靠它判断 */
+  const pressFromControl = ref(false);
+
+  function groupFieldMeta() {
+    const name = props.mapping?.groupField || '';
+    return (
+      props.fields.find((field) => field.name === name) ||
+      props.fields.find((field) => (field.name || '').toLowerCase() === name.toLowerCase())
+    );
+  }
+
+  function cardDraggable(row: Record<string, unknown>) {
+    return kanbanCardDraggable({
+      compact: !!props.compact,
+      canDragGroup: !!props.canDragGroup,
+      groupField: props.mapping?.groupField || '',
+      locked: wfRowEditLocked(row),
+      writable: wfRowWritable(row),
+    });
+  }
+
+  function onCardPointerDown(event: MouseEvent) {
+    pressFromControl.value = dragStartedFromControl(event.target);
+  }
+
+  function onCardDragStart(fromKey: string, row: Record<string, unknown>, event: DragEvent) {
+    if (pressFromControl.value || dragStartedFromControl(event.target) || !cardDraggable(row)) {
+      event.preventDefault();
+      return;
+    }
+    dragging.value = { row, fromKey };
+    event.dataTransfer?.setData('text/plain', fromKey);
+    if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
+  }
+
+  function onCardDragEnd() {
+    dragging.value = null;
+    dropKey.value = '';
+  }
+
+  function isDraggingCard(row: Record<string, unknown>) {
+    return dragging.value?.row === row;
+  }
+
+  function onColDragOver(toKey: string, event: DragEvent) {
+    const drag = dragging.value;
+    if (!drag || isColumnCollapsed(toKey)) return;
+    if (kanbanDropAllowed(drag.fromKey, toKey, !!props.groupRequired) !== 'move') return;
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+    dropKey.value = toKey;
+  }
+
+  function onColDragLeave(toKey: string, event: DragEvent) {
+    const current = event.currentTarget as HTMLElement | null;
+    const next = event.relatedTarget as Node | null;
+    if (current && next && current.contains(next)) return;
+    if (dropKey.value === toKey) dropKey.value = '';
+  }
+
+  function onColDrop(toKey: string, event: DragEvent) {
+    event.preventDefault();
+    const drag = dragging.value;
+    const field = props.mapping?.groupField || '';
+    dragging.value = null;
+    dropKey.value = '';
+    if (!drag || !field || isColumnCollapsed(toKey)) return;
+    if (kanbanDropAllowed(drag.fromKey, toKey, !!props.groupRequired) !== 'move') return;
+    emit('move', {
+      row: drag.row,
+      field: groupFieldMeta()?.name || field,
+      value: kanbanPatchValue(groupFieldMeta()?.typeName, toKey),
+    });
   }
 
   function onColScroll(key: string, e: Event) {
@@ -156,5 +301,14 @@ export function useKanbanBoard(props: KanbanBoardProps) {
     collapsedKeys,
     isColumnCollapsed,
     toggleColumn,
+    dropKey,
+    cardDraggable,
+    onCardPointerDown,
+    onCardDragStart,
+    onCardDragEnd,
+    isDraggingCard,
+    onColDragOver,
+    onColDragLeave,
+    onColDrop,
   };
 }

@@ -3,7 +3,7 @@
 验收命令（在对应项目目录执行，新增测试全过，构建无错误）：
 
 - `dotnet test` 中筛选 `LovEntityGuardTests`
-- `web` 目录 `npx vitest run src/features/views/calendarDay.spec.ts src/features/views/kanbanCollapse.spec.ts src/views/crud/commentMention.spec.ts`
+- `web` 目录 `npx vitest run src/features/views/calendarDay.spec.ts src/features/views/kanbanCollapse.spec.ts src/features/views/kanbanMove.spec.ts src/views/crud/commentMention.spec.ts`
 - `dotnet build`（NewLife.Cube）
 - `npx vue-tsc --noEmit`（web）
 
@@ -17,11 +17,13 @@
 - [ ] AC6 有 Insert 时点本月空白日，右侧新增抽屉打开，开始日期字段等于该日。
 - [ ] AC7 无 Insert 时点空白日，抽屉不打开，网络无新增请求。
 - [ ] AC8 点非本月格子不打开新增抽屉。
-- [ ] AC9 看板列头点击后卡片隐藏、条数仍在；刷新页面后列重新展开。
+- [ ] AC9 看板列头点击后卡片隐藏、条数仍在；刷新页面后已折叠的列仍然收起。拖动中的卡片透明度为 0.4。
 - [ ] AC10 工作台迷你看板无折叠钮。
 - [ ] AC11 讨论选两名用户发送，请求 JSON 含 `mentionUserIds` 长度 2，且含对应 `@显示名`。
 - [ ] AC12 第 21 人无法加入；自己不会出现在 `mentionUserIds`。
 - [ ] AC13 不传提及时，评论 POST 与今天一样成功。
+- [x] AC14 同列放下不写库；必填分组字段不能放到「未分组」；布尔列提交 true/false；无编辑权或审批中且字段不可写时卡片不可拖。（`kanbanMove.spec.ts`）
+- [x] AC15 有编辑权时把卡片拖到另一列，请求为 PATCH，body 只含分组字段；失败后卡片回到原列。（2026-09-29 部门看板：上海分公司 Id=5 从「公司」拖到「部门」，`PATCH /api/Admin/Department` body 为 `{"id":"5","values":{"Type":"2"}}`，`ok=1`；再拖回「公司」`Type=1`，列计数恢复 2/4/0/0。修复前两次失败（id 为数字、枚举字符串无法转换）卡片都留在原列。）
 
 ## 执行记录（2026-09-27 执行阶段）
 
@@ -42,6 +44,15 @@
 
 > 备忘：`packages/api-core` 改动后需 `npm run build` 重建 dist（web 的 vue-tsc 引用 dist 类型）。
 
+## 执行记录（2026-09-29 看板跨列写回）
+
+| 项 | 命令 / 操作 | 结果 |
+| --- | --- | --- |
+| 拖放纯函数 | `vitest run kanbanMove.spec.ts kanbanCollapse.spec.ts` | ✅ 8/8 |
+| 主键按字符串提交 | `vitest run src/api.spec.ts -t patchFields` | ✅ 2/2 |
+| 枚举列 key | `dotnet test NewLife.Cube.Tests --filter PatchFields_JsonElementString\|ChangeTypeValue_EnumKey` | ✅ 2/2 |
+| 浏览器 | 部门看板跨列拖放、拖回、按钮不发起、折叠列不接收、同列不写库 | ✅ 见 AC15；数据已拖回原列 |
+
 ## 收尾门禁记录（2026-09-27）
 
 - 代码审查：0🔴 / 4🟡 / 13🟢（「可放行」）；🟡1/🟡2/🟡4 已修，🟡3（`GetTenantField` 自定义实现防御）记入 T17 后续项。
@@ -51,7 +62,7 @@
 
 ## 必须保留
 
-- 日历仍只有月网格，无拖改日期。
-- 看板无列间拖拽。
+- 日历仍只有月网格，无拖改日期。甘特不做拖拽写回。
+- 看板只写回分组字段，不改列内顺序。
 - `SendMentionNotification` 不改。
 - `DataScopeContext.Current` 不被本号写入。

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Models;
 using NewLife.Reflection;
@@ -254,14 +256,52 @@ public partial class EntityController<TEntity, TModel>
     }
 
     /// <summary>把请求值转换到字段类型；可空类型解包。失败抛异常由调用方计入该行 fail</summary>
-    /// <param name="value">原始值</param>
+    /// <param name="value">原始值。HTTP 反序列化后经常是 JsonElement</param>
     /// <param name="type">字段类型</param>
     /// <returns></returns>
     private static Object ChangeTypeValue(Object value, Type type)
     {
         if (value == null) return null;
+        value = UnwrapJsonValue(value);
+        if (value == null) return null;
         var t = Nullable.GetUnderlyingType(type) ?? type;
         if (t.IsInstanceOfType(value)) return value;
+        // 枚举的列 key 是数字字符串（如部门类型 "2"）。ChangeType 会把 string 交给 Enum.ToObject 并抛错
+        if (t.IsEnum) return ChangeToEnum(value, t);
         return value.ChangeType(t);
+    }
+
+    /// <summary>把 JsonElement 拆成字符串、整数、布尔或 null，便于后续 ChangeType</summary>
+    /// <param name="value">请求值</param>
+    /// <returns></returns>
+    private static Object UnwrapJsonValue(Object value)
+    {
+        if (value is not JsonElement je) return value;
+        return je.ValueKind switch
+        {
+            JsonValueKind.Null or JsonValueKind.Undefined => null,
+            JsonValueKind.String => je.GetString(),
+            JsonValueKind.Number => je.TryGetInt64(out var n) ? n : je.GetDouble(),
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            _ => je.GetRawText(),
+        };
+    }
+
+    /// <summary>枚举接受底层整数或枚举名。数字字符串按整数转换</summary>
+    /// <param name="value">已拆包的请求值</param>
+    /// <param name="enumType">枚举类型</param>
+    /// <returns></returns>
+    private static Object ChangeToEnum(Object value, Type enumType)
+    {
+        if (value is String s)
+        {
+            s = s.Trim();
+            if (s.Length == 0) return null;
+            if (Int64.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out var n))
+                return Enum.ToObject(enumType, n);
+            return Enum.Parse(enumType, s, ignoreCase: true);
+        }
+        return Enum.ToObject(enumType, value);
     }
 }

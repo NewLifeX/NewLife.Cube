@@ -195,6 +195,41 @@ public class Osc260819P3Tests
         Assert.Equal("999999", res.Data.Errors[0].Id);
         Assert.Equal(1, c.UpdateCount);
     }
+
+    [Fact(DisplayName = "P3 PatchFields：JsonElement 字符串能写入白名单字段")]
+    public void PatchFields_JsonElementString()
+    {
+        var c = Ctrl();
+        c.Store["1"] = New(1);
+        using var doc = System.Text.Json.JsonDocument.Parse("\"新标题\"");
+        var res = c.PatchFields(new Osc260819P3Controller.PatchFieldsRequest
+        {
+            Id = "1",
+            Values = new() { ["Title"] = doc.RootElement.Clone() },
+        });
+        Assert.Equal(1, res.Data.Ok);
+        Assert.Equal("新标题", c.Store["1"].Title);
+    }
+
+    [Fact(DisplayName = "P3 ChangeTypeValue：枚举列 key 接受数字字符串与枚举名")]
+    public void ChangeTypeValue_EnumKey()
+    {
+        System.Reflection.MethodInfo mi = null;
+        for (var t = typeof(Osc260819P3Controller); t != null && mi == null; t = t.BaseType)
+        {
+            mi = t.GetMethod(
+                "ChangeTypeValue",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.DeclaredOnly);
+        }
+        Assert.NotNull(mi);
+
+        using var num = System.Text.Json.JsonDocument.Parse("\"2\"");
+        var fromJson = mi.Invoke(null, [num.RootElement.Clone(), typeof(XCode.Membership.DepartmentTypes)]);
+        Assert.Equal(XCode.Membership.DepartmentTypes.部门, fromJson);
+
+        var fromName = mi.Invoke(null, ["小组", typeof(XCode.Membership.DepartmentTypes)]);
+        Assert.Equal(XCode.Membership.DepartmentTypes.小组, fromName);
+    }
 }
 
 /// <summary>P3 修复回归控制器：EntityAutomation（含必填 String Name），可模拟校验头开启（EnableFieldValidation override）</summary>

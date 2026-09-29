@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | 值集行是否可见 | `LovEntityGuard` 的菜单 Detail + 租户表达式 + `DataScopeHelper` | 前端过滤下拉当安全边界；写 `DataScopeContext.Current` |
 | 日历当日事件 | `useCalendarMonth` 已算好的 `cell.events` | 再向服务端按日查一次 |
-| 看板列是否折叠 | `useKanbanBoard` 内存 `collapsedKeys` | 写入 `KanbanMapping` / ViewProfile |
+| 看板列是否折叠 | `sessionStorage`，键为实体 + 视图 + 分组字段 | 写入 `KanbanMapping` / ViewProfile |
 | 待提及用户 | 评论框本地 `mentionUserIds` + 正文中的 `@显示名` | 新评论列、富文本 |
 
 ## 1. 值集行权
@@ -56,10 +56,13 @@
 | `web/src/features/views/useCalendarMonth.ts` | 导出「某日事件」；不改月网格算法 | 周/议程 |
 | `web/src/features/views/CalendarMonth.vue` | `+N` 改为按钮；空白日点击；新增 props/emits | `placement` 与月切换 |
 | `web/src/features/views/calendarDay.spec.ts` | 门禁纯函数 | 不挂载 SFC |
-| `web/src/features/views/useKanbanBoard.ts` | `collapsedKeys`、`toggleColumn` | 分列算法 |
-| `web/src/features/views/KanbanBoard.vue` | 列头点击折叠 | `compact===true` 时不渲染折叠钮 |
+| `web/src/features/views/useKanbanBoard.ts` | `collapsedKeys`、`toggleColumn`、拖放事件 | 分列算法 |
+| `web/src/features/views/kanbanMove.ts` | 可否拖、可否放、提交值 | 不调用接口 |
+| `web/src/features/views/kanbanMove.spec.ts` | 上列纯函数 | 不挂载 SFC |
+| `web/src/features/views/KanbanBoard.vue` | 列头点击折叠；卡片 `draggable`；列身放下 | `compact===true` 时不可拖、不折叠 |
 | `web/src/features/views/kanbanCollapse.spec.ts` | 折叠集合纯函数 | — |
-| `web/src/views/crud/DefaultList.vue` | 日历传入 `canAdd`，接 `@create` | 看板拖拽 |
+| `web/src/views/crud/DefaultList.vue` | 日历传入 `canAdd`，接 `@create`；看板传入可拖并接 `@move` | 列内排序 |
+| `web/src/views/crud/useListCrud.ts` | `onKanbanMove`：乐观改值、`patchFields` 或审批补丁、失败回滚后 `loadData` | 新接口 |
 | `web/src/views/crud/useRecordNav.ts` | `openAdd` 之后写入开始日期字段 | 抽屉方向仍为右侧 |
 
 ### 2.2 日历交互
@@ -81,9 +84,38 @@
 
 - 列头整行可点。`aria-expanded` 反映状态。
 - 展开：现有列宽与卡片列表。
-- 折叠：列宽 48px，只显示列名（竖排或单行省略）和条数，卡片区 `display:none`。
-- 默认全部展开。切换视图或 `groupField` 变化时清空折叠集合。
-- `compact`（工作台迷你看板）不显示折叠，避免部件高度跳动。
+- 折叠：向上收起。列宽保持 280px（迷你看板 200px），`align-self: flex-start`，只留横排列头（列名与条数），卡片区不显示。不收成竖条。
+- 默认全部展开。折叠集合按实体、当前视图、分组字段记在 `sessionStorage`。刷新页面、切走再回到看板时仍收起。分组字段不同则各自记住。
+- 拖动中的卡片透明度为 0.4，松手后恢复。
+- `compact`（工作台迷你看板）不显示折叠，也不读写折叠记录，避免部件高度跳动。
+
+### 2.4 看板跨列拖放
+
+原生拖放，不新增依赖。`.vue` 只绑定 composable 返回的事件。
+
+| 操作 | 条件 | 结果 |
+| --- | --- | --- |
+| 拖卡片 | `canDragGroup` 且该行 `kanbanCardDraggable` | 可拖。从按钮或操作区按下则 `preventDefault`，单击/双击仍打开详情或编辑 |
+| 放到另一列 | 目标列未折叠，且 `kanbanDropAllowed` 为 `move` | emit `move`：`{ row, field, value }`。`value` 来自 `kanbanPatchValue` |
+| 放到同一列 | 源列 key 等于目标列 key | 不发 `move` |
+| 放到「未分组」 | 分组字段 `required` | 列身不加可放样式，不发 `move` |
+| 放到「未分组」 | 字段非必填 | `value` 为 `null` |
+| 折叠列 | 任意 | 不接收放下 |
+| 迷你看板 | `compact` | 卡片不可拖 |
+
+`canDragGroup`：当前用户有 Update，且分组字段在编辑字段中、非只读。由 `useListCrud` 根据 `edit` 分区计算，`DefaultList` 传入。
+
+`kanbanCardDraggable`：在 `canDragGroup` 之上，审批中的行仅当 `__wfWritable` 含该分组字段时为真。列表行没有这份名单时，审批中卡片不可拖。
+
+`kanbanPatchValue`：布尔列把 `true`/`1` 写成 `true`，其余写成 `false`；其它类型原样提交列 key（字符串）。`ChangeTypeValue` 先把 `JsonElement` 拆成 CLR 值；枚举列 key 为数字字符串或枚举名时转成枚举。
+
+`onKanbanMove`：先改行上的分组字段（卡片立即换列），再请求。
+
+- 审批中且字段可写：`cubeApi.workflow.patchEntity`。
+- 其它：`cubeApi.page.patchFields({ id, values: { [field]: value } })`。`id` 按字符串提交（`PatchFieldsRequest.Id` 是 `String`，数字主键不能原样进 JSON）。`data.fail > 0` 视为失败。
+- 成功后 `loadData`。失败把该字段设回原值并提示，不刷新覆盖回滚。
+
+不改列内顺序，不写 ViewProfile。
 
 ## 3. 评论提及
 
@@ -120,8 +152,9 @@
 - Guard：无菜单 403；`1=0` 租户；`GetFilter` AND 进查询；BatchLabel 对范围外主键返回的字典不含该键；枚举翻译仍在。
 - `canCreateOnCalendarCell(canAdd, inMonth, hasStart)` 真值表与上表一致。
 - `toggleCollapsed` 对同一 key 两次回到展开。
+- `kanbanCardDraggable` / `kanbanDropAllowed` / `kanbanPatchValue` 与 §2.4 表一致。
 - `buildMentionIds` 去重、去自己、截断 20。
 
 ## 6. 明确保留
 
-`CalendarMonth` 仍只有月网格。`KanbanBoard` 不发分组字段 PATCH。`CubeController.SendMentionNotification` 方法体不改。
+`CalendarMonth` 与甘特仍不做拖拽写回。看板不改列内顺序。`CubeController.SendMentionNotification` 方法体不改。

@@ -25,11 +25,26 @@
       <div
         v-show="!isColumnCollapsed(col.key)"
         class="kanban-col-body"
+        :class="{ 'kanban-col-body--over': dropKey === col.key }"
         @scroll="onColScroll(col.key, $event)"
+        @dragover="onColDragOver(col.key, $event)"
+        @dragleave="onColDragLeave(col.key, $event)"
+        @drop="onColDrop(col.key, $event)"
       >
-        <RecordCard
+        <div
           v-for="(row, idx) in col.rows.slice(0, colVisible[col.key] ?? INITIAL_VISIBLE)"
           :key="rowKeyOf(row, idx)"
+          class="kanban-card-wrap"
+          :class="{
+            'kanban-card-wrap--draggable': cardDraggable(row),
+            'kanban-card-wrap--dragging': isDraggingCard(row),
+          }"
+          :draggable="cardDraggable(row)"
+          @mousedown="onCardPointerDown"
+          @dragstart="onCardDragStart(col.key, row, $event)"
+          @dragend="onCardDragEnd"
+        >
+        <RecordCard
           :record="row"
           :title="titleOf(row)"
           :image-url="resolveImageUrl(row, mapping?.imageField)"
@@ -52,6 +67,7 @@
           @ops-link="(link, row) => $emit('opsLink', link, row)"
           @toggle-enable="(row, field) => $emit('toggleEnable', row, field)"
         />
+        </div>
       </div>
     </div>
   </div>
@@ -85,20 +101,27 @@ const props = withDefaults(
     formatCell?: (field: FieldMeta, record: Record<string, unknown>) => string;
     formatRules?: ViewFormatRule[];
     compact?: boolean;
+    canDragGroup?: boolean;
+    groupRequired?: boolean;
+    viewId?: string;
   }>(),
   {
     enableTableDoubleClick: true,
     opsCustomLinks: () => [],
     compact: false,
+    canDragGroup: false,
+    groupRequired: false,
+    viewId: '',
   },
 );
 
-defineEmits<{
+const emit = defineEmits<{
   detail: [row: Record<string, unknown>];
   edit: [row: Record<string, unknown>];
   delete: [row: Record<string, unknown>];
   toggleEnable: [row: Record<string, unknown>, field: string];
   opsLink: [link: OpsCustomLink, row: Record<string, unknown>];
+  move: [payload: { row: Record<string, unknown>; field: string; value: unknown }];
 }>();
 
 const {
@@ -115,7 +138,16 @@ const {
   resolveImageUrl,
   isColumnCollapsed,
   toggleColumn,
-} = useKanbanBoard(props);
+  dropKey,
+  cardDraggable,
+  onCardPointerDown,
+  onCardDragStart,
+  onCardDragEnd,
+  isDraggingCard,
+  onColDragOver,
+  onColDragLeave,
+  onColDrop,
+} = useKanbanBoard(props, (event, payload) => emit(event, payload));
 </script>
 
 <style scoped>
@@ -162,23 +194,12 @@ const {
   border-radius: 8px 8px 0 0;
 }
 .kanban-col--collapsed {
-  flex: 0 0 48px;
-  min-width: 48px;
+  align-self: flex-start;
+  min-height: 0;
 }
-.kanban-col--collapsed .kanban-col-head {
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 2px;
-  height: 100%;
-}
-.kanban-col--collapsed .kanban-col-title {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-height: 240px;
+.kanban-col--collapsed .kanban-col-head,
+.kanban-col--collapsed .kanban-col-head--clickable:hover {
+  border-radius: 8px;
 }
 .kanban-col-count {
   color: var(--color-text-3);
@@ -191,5 +212,18 @@ const {
   gap: 10px;
   overflow-y: auto;
   flex: 1;
+}
+.kanban-col-body--over {
+  background: var(--color-fill-2);
+  box-shadow: inset 0 0 0 1px var(--primary-6);
+}
+.kanban-card-wrap--draggable {
+  cursor: grab;
+}
+.kanban-card-wrap--dragging {
+  opacity: 0.4;
+}
+.kanban-card-wrap--draggable:active {
+  cursor: grabbing;
 }
 </style>

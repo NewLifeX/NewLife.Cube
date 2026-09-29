@@ -44,7 +44,7 @@
 | OSC-0019 | 甘特只读双条与 `tableWidth` 保持 |
 | OSC-0007 | 卡片 `standard/large/row` 保持，本号只加 `gallery` |
 | OSC-260830a1b2 | 排序字段白名单与 `search ∪ list` 同一集合 |
-| OSC-260926c2b8 / OSC-2609261fb9 | 无依赖 |
+| OSC-260926c2b8 | 无依赖 |
 
 ## 7. 测试范围
 

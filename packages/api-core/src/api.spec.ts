@@ -381,6 +381,18 @@ describe('createPageApi', () => {
     );
   });
 
+  it('patchFields stringifies numeric id for PatchFieldsRequest.Id', async () => {
+    const request = vi.fn().mockResolvedValueOnce({ code: 0, data: { ok: 1, fail: 0, errors: [] } });
+    const api = createPageApi(request);
+    await api.patchFields('/Admin/Department', { id: 5, values: { Type: '2' } });
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: 'patch',
+        data: { id: '5', values: { Type: '2' } },
+      }),
+    );
+  });
+
   it('batchUpdateFields hits POST /Admin/User/BatchUpdateFields with {keys,field,value}', async () => {
     const request = vi.fn().mockResolvedValueOnce({ code: 0, data: { ok: 2, fail: 1, errors: [{ id: '9', message: '数据不存在' }] } });
     const api = createPageApi(request);
