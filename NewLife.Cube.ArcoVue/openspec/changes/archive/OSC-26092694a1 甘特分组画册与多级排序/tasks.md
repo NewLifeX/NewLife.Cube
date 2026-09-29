@@ -12,6 +12,7 @@
 - [x] T5 `CardLayout` 增加 `gallery`；`normalizeCardLayout` / `normalizeCardBodyColumns` 按 design；spec 锁定 `standard` 仍可 2 列。
 - [x] T6 `RecordCard` / `useRecordCard`：图高 160、cover、无图占位、正文最多 2 字段、1 列。卡片列表 `useCardList` / `CardList` 识别 `gallery` 并单列排布（否则布局会被当成标准）。
 - [x] T7 配置单选增加「画册」，顺序为标准、偏大、整行、画册；画册时列数 2 与 3 禁用。
+- [x] T16 产品要求撤回画册：`CardLayout` 不含 `gallery`，旧值归一 `standard`，配置只剩标准、偏大、整行。T5–T7 的画册实现已按此删除，不再作为交付。
 
 ## C. 多级排序
 

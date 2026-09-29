@@ -110,7 +110,7 @@ sort?: ViewSort | null     // 始终等于 sorts[0]，无排序则为 null
 ## 5. 测试设计
 
 - 甘特：两枚举值 → 两个父节点；空值 →「未分组」；父 id 以 `__group:` 开头。
-- 画册：`normalizeCardLayout('gallery')`；列数被压成 1；`standard` 仍可 2 列。
+- 画册已撤回：`normalizeCardLayout('gallery')` 回落 `standard`；`standard` 仍可 2 列。
 - 排序：`Name,-CreateTime` → `Name asc, CreateTime desc` 且 Sort 为空；`Salary` 不在白名单 → 400；4 段 → 400；仅 `sort=Name&desc=true` 仍单列。
 
 ## 6. 明确保留
