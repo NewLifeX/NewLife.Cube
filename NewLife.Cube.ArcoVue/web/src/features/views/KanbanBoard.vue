@@ -103,7 +103,6 @@ const props = withDefaults(
     compact?: boolean;
     canDragGroup?: boolean;
     groupRequired?: boolean;
-    viewId?: string;
   }>(),
   {
     enableTableDoubleClick: true,
@@ -111,7 +110,6 @@ const props = withDefaults(
     compact: false,
     canDragGroup: false,
     groupRequired: false,
-    viewId: '',
   },
 );
 
@@ -122,6 +120,7 @@ const emit = defineEmits<{
   toggleEnable: [row: Record<string, unknown>, field: string];
   opsLink: [link: OpsCustomLink, row: Record<string, unknown>];
   move: [payload: { row: Record<string, unknown>; field: string; value: unknown }];
+  mappingChange: [mapping: KanbanMapping];
 }>();
 
 const {
@@ -147,7 +146,10 @@ const {
   onColDragOver,
   onColDragLeave,
   onColDrop,
-} = useKanbanBoard(props, (event, payload) => emit(event, payload));
+} = useKanbanBoard(props, {
+  move: (payload) => emit('move', payload),
+  mappingChange: (mapping) => emit('mappingChange', mapping),
+});
 </script>
 
 <style scoped>
@@ -221,7 +223,13 @@ const {
   cursor: grab;
 }
 .kanban-card-wrap--dragging {
-  opacity: 0.4;
+  opacity: 1;
+  position: relative;
+  z-index: 2;
+}
+.kanban-card-wrap--dragging :deep(.record-card) {
+  background: var(--color-bg-1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
 }
 .kanban-card-wrap--draggable:active {
   cursor: grabbing;

@@ -34,8 +34,6 @@ interface KanbanBoardProps {
   canDragGroup?: boolean;
   /** 分组字段必填时，不能放到「未分组」 */
   groupRequired?: boolean;
-  /** 当前命名视图。折叠按实体 + 视图 + 分组字段记住 */
-  viewId?: string;
 }
 
 /* ---------------- 滚动懒加载（每列先渲染 100 条，列内滚动到底动态追加） ---------------- */
@@ -48,30 +46,6 @@ export function toggleCollapsed(keys: readonly string[], key: string): string[] 
   return keys.includes(key) ? keys.filter((k) => k !== key) : [...keys, key];
 }
 
-/** 折叠记在 sessionStorage，刷新和重新进入看板仍在；不写入 ViewProfile */
-export function kanbanCollapsedStorageKey(typePath: string, viewId: string, groupField: string): string {
-  return `cube.kanban.collapsed:${encodeURIComponent(typePath)}:${encodeURIComponent(viewId)}:${encodeURIComponent(groupField)}`;
-}
-
-/** 读出已折叠列 key。坏数据当全部展开 */
-export function readKanbanCollapsed(storage: Storage, key: string): string[] {
-  try {
-    const raw = storage.getItem(key);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((item): item is string => typeof item === 'string' && item.length > 0);
-  } catch {
-    return [];
-  }
-}
-
-/** 全部展开时删掉记录，避免留下空数组 */
-export function writeKanbanCollapsed(storage: Storage, key: string, keys: readonly string[]) {
-  if (!keys.length) storage.removeItem(key);
-  else storage.setItem(key, JSON.stringify(keys));
-}
-
 export interface KanbanMovePayload {
   row: Record<string, unknown>;
   field: string;
@@ -81,7 +55,10 @@ export interface KanbanMovePayload {
 /** KanbanBoard 组件全部业务 TS：分桶列构建、列内滚动懒加载与跨列拖放 */
 export function useKanbanBoard(
   props: KanbanBoardProps,
-  emit: (event: 'move', payload: KanbanMovePayload) => void,
+  emit: {
+    move: (payload: KanbanMovePayload) => void;
+    mappingChange: (mapping: KanbanMapping) => void;
+  },
 ) {
   const columns = computed(() => {
     if (!props.mapping?.groupField) return [];
@@ -109,48 +86,39 @@ export function useKanbanBoard(
     { immediate: true },
   );
 
-  /** 已折叠列。按实体、视图、分组字段记在 sessionStorage，刷新后仍收起 */
+  /** 已折叠列，来自当前视图的看板 mapping */
   const collapsedKeys = ref<string[]>([]);
 
-  function collapsedStorageKey() {
-    const field = props.mapping?.groupField || '';
-    if (props.compact || !field) return '';
-    return kanbanCollapsedStorageKey(props.typePath || '', props.viewId || '', field);
+  function collapsedFromMapping(): string[] {
+    if (props.compact || props.mapping?.kind !== 'kanban') return [];
+    return props.mapping.collapsedColumns ? [...props.mapping.collapsedColumns] : [];
   }
 
-  function sessionStore(): Storage | null {
-    try {
-      return typeof sessionStorage === 'undefined' ? null : sessionStorage;
-    } catch {
-      return null;
-    }
-  }
-
-  function restoreCollapsed() {
-    const key = collapsedStorageKey();
-    const store = sessionStore();
-    collapsedKeys.value = key && store ? readKanbanCollapsed(store, key) : [];
-  }
-
-  function persistCollapsed() {
-    const key = collapsedStorageKey();
-    const store = sessionStore();
-    if (!key || !store) return;
-    writeKanbanCollapsed(store, key, collapsedKeys.value);
-  }
-
-  watch(collapsedStorageKey, () => restoreCollapsed(), { immediate: true });
+  watch(
+    () =>
+      props.compact || props.mapping?.kind !== 'kanban'
+        ? ''
+        : (props.mapping.collapsedColumns || []).join('\0'),
+    () => {
+      collapsedKeys.value = collapsedFromMapping();
+    },
+    { immediate: true },
+  );
 
   /** 列是否折叠 */
   function isColumnCollapsed(key: string): boolean {
     return collapsedKeys.value.includes(key);
   }
 
-  /** 列头点击折叠/展开；工作台迷你看板（compact）不参与 */
+  /** 列头点击折叠/展开。迷你看板不折叠。结果写回当前视图 mapping */
   function toggleColumn(key: string) {
-    if (props.compact) return;
-    collapsedKeys.value = toggleCollapsed(collapsedKeys.value, key);
-    persistCollapsed();
+    if (props.compact || props.mapping?.kind !== 'kanban') return;
+    const next = toggleCollapsed(collapsedKeys.value, key);
+    collapsedKeys.value = next;
+    emit.mappingChange({
+      ...props.mapping,
+      collapsedColumns: next.length ? next : undefined,
+    });
   }
 
   const dragging = ref<{ row: Record<string, unknown>; fromKey: string } | null>(null);
@@ -223,7 +191,7 @@ export function useKanbanBoard(
     dropKey.value = '';
     if (!drag || !field || isColumnCollapsed(toKey)) return;
     if (kanbanDropAllowed(drag.fromKey, toKey, !!props.groupRequired) !== 'move') return;
-    emit('move', {
+    emit.move({
       row: drag.row,
       field: groupFieldMeta()?.name || field,
       value: kanbanPatchValue(groupFieldMeta()?.typeName, toKey),

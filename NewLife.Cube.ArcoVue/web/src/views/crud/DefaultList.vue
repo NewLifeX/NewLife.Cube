@@ -72,6 +72,24 @@
                 +
               </button>
             </span>
+            <!-- 日历导航（仅日历视图显示，紧靠「关键字」输入框前，与甘特缩放同位；状态在 listContext）：
+                 今天 / ‹ › 位移（按模式：日/周/月）/ 标题 / 日·周·月分段 -->
+            <span v-if="activeViewKind === 'calendar'" class="tb-cal-nav">
+              <a-button size="small" @click="onCalendarToday">今天</a-button>
+              <button type="button" class="tb-zoom-btn tb-cal-arrow" title="向前" @click="onCalendarShift(-1)">‹</button>
+              <button type="button" class="tb-zoom-btn tb-cal-arrow" title="向后" @click="onCalendarShift(1)">›</button>
+              <span class="tb-cal-label">{{ calendarTitle }}</span>
+              <a-radio-group
+                :model-value="calendarMode"
+                type="button"
+                size="small"
+                @update:model-value="onCalendarModeChange"
+              >
+                <a-radio value="day">日</a-radio>
+                <a-radio value="week">周</a-radio>
+                <a-radio value="month">月</a-radio>
+              </a-radio-group>
+            </span>
             <!-- 查询组合框（OSC-260830a1b2）：关键字输入框内嵌 查询图标 + ▾ 下拉（最近搜索/自定义/预定义），紧靠「分组」；
                  已应用预定义方案时查询图标彩色 + 右上角角标（方案名首字） -->
             <span v-if="chrome.showSearch" class="tb-query-cluster">
@@ -521,7 +539,6 @@
           <KanbanBoard
             v-else-if="activeViewKind === 'kanban'"
             :key="'kanban:' + activeViewId"
-            :view-id="activeViewId || ''"
             :records="tableData"
             :columns="activeColumns"
             :fields="listFields"
@@ -544,6 +561,7 @@
             @ops-link="onOpsLinkClick"
             @toggle-enable="onToggleEnable"
             @move="onKanbanMove"
+            @mapping-change="onKanbanMappingChange"
           />
 
           <CalendarMonth
@@ -554,6 +572,8 @@
             :row-key="pkField"
             :height="resolvedTableHeight"
             :can-add="flags.canAdd"
+            :cursor="calendarCursor"
+            :mode="calendarMode"
             @detail="openDetail"
             @create="onCreateFromCalendar"
           />
@@ -807,6 +827,12 @@ const {
   ganttZoomLevel,
   ganttZoomLabel,
   onGanttZoom,
+  calendarCursor,
+  calendarMode,
+  calendarTitle,
+  onCalendarShift,
+  onCalendarToday,
+  onCalendarModeChange,
   filterPopoverVisible,
   filterFields,
   viewFilter,
@@ -902,6 +928,7 @@ const {
   activeCalendarMapping,
   activeGanttMapping,
   onGanttMappingChange,
+  onKanbanMappingChange,
   showPagerBar,
   pagination,
   effectivePageSize,
@@ -1121,6 +1148,23 @@ const automationFields = computed(() => {
   font-size: 12px;
   color: var(--color-text-2);
   white-space: nowrap;
+}
+/* 日历导航（位于「添加记录」之后，仅日历视图显示）：今天 / ‹ › 位移 / 标题 / 日·周·月分段 */
+.tb-cal-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.tb-cal-label {
+  min-width: 190px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-text-2);
+  white-space: nowrap;
+}
+.tb-cal-arrow {
+  font-size: 14px;
+  padding-bottom: 2px;
 }
 /* 有筛选/分组条件时按钮显示主题浅色底纹；文字用当前主题 Primary 色（--cube-primary，外观设置可换） */
 .tb-act.is-active :deep(.arco-btn) {

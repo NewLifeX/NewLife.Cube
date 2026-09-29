@@ -21,6 +21,7 @@ import { getSectionLoader } from '@/core/composables/useSections';
 import { selectListColumns } from '@/core/utils/listColumns';
 import { classifyListLink, partitionListFields } from '@/core/utils/listLinkFields';
 import { resolveFieldsForKind } from '@/core/utils/fieldParts';
+import { calendarRangeLabel, type CalendarViewMode } from '@/features/views/useCalendarMonth';
 import {
   defaultBadgeColumnWidth,
   isBadgeField,
@@ -235,6 +236,13 @@ export function createListContext(props: { type: string; authId?: number }) {
     () => ganttZoomLabels[ganttZoomLevel.value] ?? `${ganttZoomLevel.value}`,
   );
 
+  /** 日历导航游标（工具栏「今天/‹/›」控制；月网格与时间轴都按此渲染） */
+  const calendarCursor = ref(new Date());
+  /** 日历模式：日 / 周 / 月（工具栏分段切换；会话内记忆） */
+  const calendarMode = ref<CalendarViewMode>('month');
+  /** 导航标题：月「2026年9月」/ 周「… – …」/ 日「… 今天」 */
+  const calendarTitle = computed(() => calendarRangeLabel(calendarMode.value, calendarCursor.value));
+
   const activeViewId = computed(() => viewState.value?.activeViewId ?? '');
 
   /** 合法搜索 key（含范围字段 _min/_max 后缀，OSC-0012） */
@@ -316,7 +324,7 @@ export function createListContext(props: { type: string; authId?: number }) {
   );
 
   const showPagerBar = computed(
-    // 甘特图底部显示分页器可翻页（OSC-0019 后续）；看板/日历仍为大视图仅提示
+    // 看板（已恢复分页器）与甘特显示分页器；日历仍为大视图底部仅提示
     () => chrome.value.showPager && (!isLargePageView.value || activeViewKind.value === 'gantt'),
   );
 
@@ -687,6 +695,9 @@ export function createListContext(props: { type: string; authId?: number }) {
     GANTT_PAGE_SIZE_OPTIONS,
     ganttZoomLabels,
     ganttZoomLabel,
+    calendarCursor,
+    calendarMode,
+    calendarTitle,
     activeViewId,
     searchKeys,
     urlSearch,

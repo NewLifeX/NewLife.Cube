@@ -30,6 +30,8 @@ export type KanbanMapping = {
   groupField: string;
   titleField: string;
   imageField?: string;
+  /** 已折叠列 key。随当前命名视图写入 ViewsJson；空则全部展开 */
+  collapsedColumns?: string[];
 };
 export type GanttMapping = {
   kind: 'gantt';
@@ -60,6 +62,20 @@ export type CalendarMapping = {
 export type ViewMapping = CardMapping | KanbanMapping | GanttMapping | CalendarMapping;
 export type DataSourceOption = { value: string; label: string };
 
+/** 看板已折叠列：只留非空字符串，去重，最多 50 个；空则不落库 */
+export function normalizeCollapsedColumns(raw: unknown): string[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const keys: string[] = [];
+  for (const item of raw) {
+    if (typeof item !== 'string') continue;
+    const key = item.trim();
+    if (!key || keys.includes(key)) continue;
+    keys.push(key);
+    if (keys.length >= 50) break;
+  }
+  return keys.length ? keys : undefined;
+}
+
 /** 各视图分页器可选条数（与 a-pagination page-size-options 一致） */
 export const PAGE_SIZE_OPTIONS = [20, 50, 100, 200, 500, 1000] as const;
 
@@ -74,8 +90,9 @@ export function normalizePageSize(raw: unknown): number {
   return (PAGE_SIZE_OPTIONS as readonly number[]).includes(n) ? n : 0;
 }
 
+/** 大视图（一次大加载、底部仅提示）：日历与甘特；看板已恢复分页器（OSC-260926c2b8 补记） */
 export function isLargePageViewKind(kind: ViewKind): boolean {
-  return kind === 'kanban' || kind === 'calendar' || kind === 'gantt';
+  return kind === 'calendar' || kind === 'gantt';
 }
 
 /** 是否表格类视图：分组/排序/批量删除等工具仅在 table/tree 可用（OSC-0007） */
@@ -152,6 +169,8 @@ export function resolveViewPageSize(
   if (!isLargePageViewKind(kind)) {
     return Math.max(1, pagerSize && pagerSize > 0 ? pagerSize : 20);
   }
+  // 日历固定一次加载上限 1000 条；甘特按偏好 200~1000 钳制
+  if (kind === 'calendar') return LARGE_VIEW_PAGE_SIZE_MAX;
   const n = preferredLarge && preferredLarge > 0 ? preferredLarge : LARGE_VIEW_PAGE_SIZE_DEFAULT;
   return Math.min(LARGE_VIEW_PAGE_SIZE_MAX, Math.max(LARGE_VIEW_PAGE_SIZE_DEFAULT, n));
 }
@@ -355,11 +374,13 @@ export function normalizeMapping(
       pickFirst([String(o.titleField || '')], names) || titleFieldCandidates(fields)[0]?.name;
     if (!groupField || !titleField) return seedMapping('kanban', fields);
     const imageRaw = typeof o.imageField === 'string' ? o.imageField : '';
+    const rawGroup = typeof o.groupField === 'string' ? o.groupField : '';
     return {
       kind: 'kanban',
       groupField,
       titleField,
       imageField: imageRaw && names.has(imageRaw) ? imageRaw : imageFieldCandidates(fields)[0]?.name,
+      collapsedColumns: rawGroup === groupField ? normalizeCollapsedColumns(o.collapsedColumns) : undefined,
     };
   }
 

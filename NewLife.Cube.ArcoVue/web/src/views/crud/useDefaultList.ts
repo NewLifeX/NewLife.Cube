@@ -106,10 +106,11 @@ export function useDefaultList(props: { type: string; authId?: number }) {
   }
 
   /**
-   * 日历空白日新建（OSC-260926c2b8）：打开新增抽屉并预填开始日期（本地 0 点），不填结束字段。
-   * 日期种类按字段元数据：date → YYYY-MM-DD；datetime → YYYY-MM-DDT00:00:00（壁钟，无时区后缀）。
+   * 日历空白新建（OSC-260926c2b8）：打开新增抽屉并预填开始日期，不填结束字段。
+   * 月：空白日（本地 0 点）；日/周：时间轴空白，按点击位置取整点 `hour`。
+   * 日期种类按字段元数据：date → YYYY-MM-DD（忽略 hour）；datetime → YYYY-MM-DDTHH:00:00（壁钟，无时区后缀）。
    */
-  function onCreateFromCalendar(payload: { date: string }) {
+  function onCreateFromCalendar(payload: { date: string; hour?: number }) {
     if (!ctx.flags.value.canAdd) return;
     const startField = ctx.activeCalendarMapping.value?.startField;
     if (!startField || !payload?.date) return;
@@ -118,7 +119,8 @@ export function useDefaultList(props: { type: string; authId?: number }) {
       (f) => (f.name || '').toLowerCase() === startField.toLowerCase(),
     );
     const kind = meta ? inferDateKind(meta) : 'datetime';
-    const value = kind === 'date' ? payload.date : `${payload.date}T00:00:00`;
+    const hh = String(Math.min(23, Math.max(0, Math.floor(payload.hour ?? 0)))).padStart(2, '0');
+    const value = kind === 'date' ? payload.date : `${payload.date}T${hh}:00:00`;
 
     nav.openAdd({ field: meta?.name || startField, value });
   }

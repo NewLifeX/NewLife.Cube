@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | 值集行是否可见 | `LovEntityGuard` 的菜单 Detail + 租户表达式 + `DataScopeHelper` | 前端过滤下拉当安全边界；写 `DataScopeContext.Current` |
 | 日历当日事件 | `useCalendarMonth` 已算好的 `cell.events` | 再向服务端按日查一次 |
-| 看板列是否折叠 | `sessionStorage`，键为实体 + 视图 + 分组字段 | 写入 `KanbanMapping` / ViewProfile |
+| 看板列是否折叠 | 当前命名视图 `mapping.collapsedColumns`，随 ViewsJson 保存 | 另写 sessionStorage；迷你看板不写 |
 | 待提及用户 | 评论框本地 `mentionUserIds` + 正文中的 `@显示名` | 新评论列、富文本 |
 
 ## 1. 值集行权
@@ -53,15 +53,17 @@
 
 | 文件 | 改动 | 不动 |
 | --- | --- | --- |
-| `web/src/features/views/useCalendarMonth.ts` | 导出「某日事件」；不改月网格算法 | 周/议程 |
-| `web/src/features/views/CalendarMonth.vue` | `+N` 改为按钮；空白日点击；新增 props/emits | `placement` 与月切换 |
-| `web/src/features/views/calendarDay.spec.ts` | 门禁纯函数 | 不挂载 SFC |
+| `web/src/features/views/useCalendarMonth.ts` | 导出「某日事件」、模式位移与 `layoutDaySpans` 时间轴布局；游标/模式受控 | 议程 |
+| `web/src/features/views/CalendarMonth.vue` | `+N` 改为按钮；空白日点击；月导航移出；日/周时间轴网格 | `placement` 与月网格算法 |
+| `web/src/features/views/calendarDay.spec.ts` | 门禁纯函数；模式位移/周起始/标题/时间轴布局 | 不挂载 SFC |
+| `web/src/views/crud/listContext.ts` / `useListViews.ts` | 月游标 `calendarCursor` 与 `onCalendarShift` / `onCalendarToday` | — |
+| `web/src/core/utils/viewMapping.ts` | 日历固定 1000；看板退出大视图（`isLargePageViewKind`、`resolveViewPageSize`） | 甘特 200~1000 钳制 |
 | `web/src/features/views/useKanbanBoard.ts` | `collapsedKeys`、`toggleColumn`、拖放事件 | 分列算法 |
 | `web/src/features/views/kanbanMove.ts` | 可否拖、可否放、提交值 | 不调用接口 |
 | `web/src/features/views/kanbanMove.spec.ts` | 上列纯函数 | 不挂载 SFC |
 | `web/src/features/views/KanbanBoard.vue` | 列头点击折叠；卡片 `draggable`；列身放下 | `compact===true` 时不可拖、不折叠 |
 | `web/src/features/views/kanbanCollapse.spec.ts` | 折叠集合纯函数 | — |
-| `web/src/views/crud/DefaultList.vue` | 日历传入 `canAdd`，接 `@create`；看板传入可拖并接 `@move` | 列内排序 |
+| `web/src/views/crud/DefaultList.vue` | 日历传入 `canAdd`，接 `@create`；看板传入可拖并接 `@move`；工具栏月导航（仅日历视图） | 列内排序 |
 | `web/src/views/crud/useListCrud.ts` | `onKanbanMove`：乐观改值、`patchFields` 或审批补丁、失败回滚后 `loadData` | 新接口 |
 | `web/src/views/crud/useRecordNav.ts` | `openAdd` 之后写入开始日期字段 | 抽屉方向仍为右侧 |
 
@@ -78,15 +80,17 @@
 
 `DefaultList` 收到 `create`：调用现有 `openAdd()`，再把 `formModel[startField]` 设为该日期的本地 0 点 ISO 字符串。不填 `endField`。
 
-新增 props：`canAdd: boolean`。新增 emit：`create`。
+新增 props：`canAdd: boolean`、`cursor: Date`（受控游标）、`mode`（受控模式）。新增 emit：`create`。
+
+日历导航（今天 / ‹ / › / 标题 / 日·周·月 分段）在列表工具栏右侧、「关键字」输入框前（与甘特缩放同位）；游标与模式由列表页持有（`listContext.calendarCursor` / `calendarMode`），切走其他视图再回来不重置。日历固定一次加载上限 1000 条（底部提示），不随页面 PageSize 偏好钳制。
 
 ### 2.3 看板折叠
 
 - 列头整行可点。`aria-expanded` 反映状态。
 - 展开：现有列宽与卡片列表。
 - 折叠：向上收起。列宽保持 280px（迷你看板 200px），`align-self: flex-start`，只留横排列头（列名与条数），卡片区不显示。不收成竖条。
-- 默认全部展开。折叠集合按实体、当前视图、分组字段记在 `sessionStorage`。刷新页面、切走再回到看板时仍收起。分组字段不同则各自记住。
-- 拖动中的卡片透明度为 0.4，松手后恢复。
+- 默认全部展开。折叠列 key 写在当前看板视图的 `collapsedColumns` 上，立即保存到 ViewsJson。刷新、换浏览器登录同一视图后仍收起。更换分组字段时丢掉旧的折叠列。
+- 拖动中的卡片保持完全不透明，并换成实色底。松手后恢复。
 - `compact`（工作台迷你看板）不显示折叠，也不读写折叠记录，避免部件高度跳动。
 
 ### 2.4 看板跨列拖放
@@ -115,7 +119,21 @@
 - 其它：`cubeApi.page.patchFields({ id, values: { [field]: value } })`。`id` 按字符串提交（`PatchFieldsRequest.Id` 是 `String`，数字主键不能原样进 JSON）。`data.fail > 0` 视为失败。
 - 成功后 `loadData`。失败把该字段设回原值并提示，不刷新覆盖回滚。
 
-不改列内顺序，不写 ViewProfile。
+看板使用普通分页器（翻页请求随分页器、`pageIndex = current - 1`），拖放只作用于当前页已加载的卡片。不改列内顺序，不写 ViewProfile。
+
+### 2.5 日历 日/周/月 模式（2026-09-29 补记）
+
+| 模式 | 网格 | 说明 |
+| --- | --- | --- |
+| 月 | 42 格月网格 | 原有：每天最多 3 条 + `+N`；空白日新建 |
+| 周 | 7 列时间轴（周一起，周日最后） | 事件裁到当日、按小时定位；重叠并列；今天列高亮；当前时刻虚线 |
+| 日 | 1 列时间轴 | 同上，单日 |
+
+- 工具栏：「今天 / ‹ / › / 标题 / 日·周·月 分段」（工具栏右侧、「关键字」输入框前）；‹› 按模式位移（日 ±1 天、周 ±7 天、月 ±1 月）。标题：月「2026年9月」、周「2026年9月28日 – 10月4日」、日「2026年9月29日 今天/周X」。
+- 周起始为周一（`startOfCalendarWeek`）；月网格表头与补齐同步为 一…日（周日最后）。
+- 时间轴：每小时后高 48px（`CALENDAR_HOUR_HEIGHT`），00:00–23:00；挂载/切模式/切日期后滚到 08:00，或更早的首个事件；表头在滚动容器内 sticky 置顶（与列同宽，避免滚动条压缩内容区导致错位）。
+- 日/周点击列内空白：按点击位置取整点（0–23 时）发 `create` 载荷 `{ date, hour }`；`canAdd && startField` 才可点（`canCreateOnCalendarCell(canAdd, true, hasStart)`）；点事件块不触发新建。
+- 模式为会话内记忆（`listContext.calendarMode`），不写 ViewsJson；月空白日新建与 `+N` 保留；周/日不做拖改日期。
 
 ## 3. 评论提及
 
@@ -145,6 +163,8 @@
 | --- | --- |
 | 迁移方案 §8.6.5 BE-D2 / BE-D3、§7.4 日历/看板、§10.4 #17 #18 | 实施完成后把对应行标为本号 |
 | 竞品报告 §6.2 #9 #20 #21 | 同期改状态 |
+| 迁移方案 §7.4 / §10.4 #18 / §11 实施要点、竞品报告 §3.3 修正表 | 补记：看板恢复分页器、日历固定 1000 条与月导航移位 |
+| 迁移方案 §7.4 / §10.4 #17、竞品报告 §1.2 / §3.3 / §6.2 #20 | 补记：日历 日/周/月 模式与导航简化 |
 | `Doc/功能清单.md` | 若已有值集/评论编码，补测试列；没有则不新编码体系 |
 
 ## 5. 测试设计
@@ -153,6 +173,9 @@
 - `canCreateOnCalendarCell(canAdd, inMonth, hasStart)` 真值表与上表一致。
 - `toggleCollapsed` 对同一 key 两次回到展开。
 - `kanbanCardDraggable` / `kanbanDropAllowed` / `kanbanPatchValue` 与 §2.4 表一致。
+- `shiftCalendarCursor` 上一月/下一月保持日号；`resolveViewPageSize`：日历固定 1000、看板走分页尺寸、甘特 200~1000 钳制。
+- `shiftCalendarCursor` 模式位移、`startOfCalendarWeek`、`calendarRangeLabel`、`layoutDaySpans` 裁天/重叠/零时长。
+- `timeGridCreatePayload` 按位置取整点与 0~23 夹取。
 - `buildMentionIds` 去重、去自己、截断 20。
 
 ## 6. 明确保留

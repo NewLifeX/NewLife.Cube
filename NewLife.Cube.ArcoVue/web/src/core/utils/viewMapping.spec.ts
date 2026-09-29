@@ -14,6 +14,7 @@ import {
   normalizeCardBodyColumns,
   normalizeCardFieldOrientation,
   normalizeCardLayout,
+  normalizeCollapsedColumns,
   normalizeDataSource,
   normalizeMapping,
   normalizePageSize,
@@ -33,15 +34,18 @@ function f(partial: Partial<FieldMeta> & { name: string }): FieldMeta {
 }
 
 describe('resolveViewPageSize', () => {
-  it('uses pager size for table/card/tree', () => {
+  it('uses pager size for table/card/tree/kanban', () => {
     expect(resolveViewPageSize('table', 30)).toBe(30);
     expect(resolveViewPageSize('card', 15)).toBe(15);
     expect(resolveViewPageSize('tree')).toBe(20);
+    expect(resolveViewPageSize('kanban', 50, 800)).toBe(50);
+    expect(resolveViewPageSize('kanban')).toBe(20);
   });
 
-  it('clamps large views to 200–1000', () => {
-    expect(resolveViewPageSize('kanban')).toBe(200);
-    expect(resolveViewPageSize('calendar', 20, 300)).toBe(300);
+  it('calendar loads up to 1000; gantt clamps 200–1000', () => {
+    expect(resolveViewPageSize('calendar')).toBe(1000);
+    expect(resolveViewPageSize('calendar', 20, 300)).toBe(1000);
+    expect(resolveViewPageSize('gantt')).toBe(200);
     expect(resolveViewPageSize('gantt', 20, 900)).toBe(900);
     expect(resolveViewPageSize('gantt', 20, 2000)).toBe(1000);
   });
@@ -137,6 +141,24 @@ describe('normalizeMapping / seedMapping', () => {
       fields,
     );
     expect(m).toMatchObject({ kind: 'kanban', groupField: 'Status', titleField: 'Name' });
+  });
+
+  it('kanban keeps collapsed columns for the same group field', () => {
+    const m = normalizeMapping(
+      'kanban',
+      { kind: 'kanban', groupField: 'Status', titleField: 'Name', collapsedColumns: ['1', ' 1 ', '', 2, '2'] },
+      fields,
+    );
+    expect(m).toMatchObject({ collapsedColumns: ['1', '2'] });
+    expect(normalizeCollapsedColumns([])).toBeUndefined();
+    expect(normalizeCollapsedColumns('1')).toBeUndefined();
+
+    const switched = normalizeMapping(
+      'kanban',
+      { kind: 'kanban', groupField: 'Nope', titleField: 'Name', collapsedColumns: ['1'] },
+      fields,
+    );
+    expect(switched && 'collapsedColumns' in switched ? switched.collapsedColumns : undefined).toBeUndefined();
   });
 
   it('table has no mapping', () => {

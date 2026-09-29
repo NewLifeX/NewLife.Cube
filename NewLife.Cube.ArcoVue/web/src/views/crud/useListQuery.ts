@@ -253,7 +253,7 @@ export function useListQuery(ctx: ListContext) {
     try {
       const sort = buildSortsPayload(activeSorts.value);
       const pageSize = effectivePageSize.value;
-      // 甘特图现可翻页（pageIndex 随分页器 current），看板/日历仍固定第一页大加载
+      // 看板/甘特随分页器 current 翻页；日历仍固定第一页大加载
       const pageIndex =
         isLargePageView.value && activeViewKind.value !== 'gantt' ? 0 : pagination.current - 1;
       let rows: Record<string, unknown>[];
@@ -475,7 +475,7 @@ export function useListQuery(ctx: ListContext) {
 
   function onPageSizeChange(size: number) {
     pagination.pageSize = size;
-    // 页面级 PageSize：普通视图与甘特图（现可翻页）保存到当前 typePath，不再写全局 workspace
+    // 页面级 PageSize：普通视图与看板/甘特（可翻页）保存到当前 typePath，不再写全局 workspace
     if (!isLargePageView.value || activeViewKind.value === 'gantt') {
       evpStore.setPageSize(typePath.value, normalizePageSize(size), true);
     }

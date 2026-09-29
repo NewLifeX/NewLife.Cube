@@ -447,11 +447,14 @@ export function useViewConfigDrawer(props: ViewConfigDrawerProps, emit: ViewConf
     }
     if (kind === 'kanban') {
       if (!localMapping.groupField || !localMapping.titleField) return;
+      const prev = props.mapping?.kind === 'kanban' ? props.mapping : undefined;
+      const sameGroup = prev?.groupField === localMapping.groupField;
       emit('update:mapping', {
         kind: 'kanban',
         groupField: localMapping.groupField,
         titleField: localMapping.titleField,
         imageField: localMapping.imageField || undefined,
+        collapsedColumns: sameGroup ? prev?.collapsedColumns : undefined,
       });
       return;
     }

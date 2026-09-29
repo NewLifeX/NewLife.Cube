@@ -18,7 +18,8 @@ import type {
   ViewMapping,
   ViewSort,
 } from '@/core/utils/viewProfile';
-import type { GanttMapping } from '@/core/utils/viewMapping';
+import type { GanttMapping, KanbanMapping } from '@/core/utils/viewMapping';
+import { shiftCalendarCursor } from '@/features/views/useCalendarMonth';
 import { readQueryEmbed } from '@/core/utils/embedMode';
 import type { ListContext } from './listContext';
 
@@ -63,6 +64,8 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
     fullscreen,
     tableResizeObserver,
     ganttZoomLevel,
+    calendarCursor,
+    calendarMode,
     localFilter,
     localGroup,
     localFormat,
@@ -78,6 +81,21 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
   /** 甘特图缩放等级切换（− 缩小 / + 放大，0~4 夹取） */
   function onGanttZoom(delta: number) {
     ganttZoomLevel.value = Math.min(4, Math.max(0, ganttZoomLevel.value + delta));
+  }
+
+  /** 日历导航：按当前模式位移（日 ±1 天 / 周 ±7 天 / 月 ±1 月） */
+  function onCalendarShift(delta: number) {
+    calendarCursor.value = shiftCalendarCursor(calendarCursor.value, delta, calendarMode.value);
+  }
+
+  /** 日历导航：回到今天（日/周/月均定位到今天） */
+  function onCalendarToday() {
+    calendarCursor.value = new Date();
+  }
+
+  /** 日历模式切换（工具栏分段：日 / 周 / 月） */
+  function onCalendarModeChange(value: string | number | boolean) {
+    if (value === 'day' || value === 'week' || value === 'month') calendarMode.value = value;
   }
 
   /** 分组值显示标签：按分组字段 dataSource 枚举翻译（OSC-0015）；无映射回落显示原值 */
@@ -193,6 +211,12 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
   /** 甘特拖拽表格宽度上报：tableWidth 随 mapping 持久化到 ViewsJson（OSC-0019） */
   function onGanttMappingChange(mapping: GanttMapping) {
     evpStore.updateMapping(typePath.value, mapping);
+    syncLocalState();
+  }
+
+  /** 看板列折叠写入当前命名视图的 mapping（ViewsJson） */
+  function onKanbanMappingChange(mapping: KanbanMapping) {
+    evpStore.updateMapping(typePath.value, mapping, true);
     syncLocalState();
   }
 
@@ -397,6 +421,9 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
 
   return {
     onGanttZoom,
+    onCalendarShift,
+    onCalendarToday,
+    onCalendarModeChange,
     groupLabelOf,
     hexToRgba,
     onToggleFullscreen,
@@ -414,6 +441,7 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
     onChromeChange,
     onMappingChange,
     onGanttMappingChange,
+    onKanbanMappingChange,
     onInsightChange,
     onToggleCollapse,
     onConfigRename,

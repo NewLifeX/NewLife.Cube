@@ -720,18 +720,7 @@ watch(
 .detail-field {
   display: flex;
   align-items: stretch;
- 
-.detail-image {
-  max-width: 160px;
-  max-height: 120px;
-  object-fit: contain;
-  border-radius: 4px;
-  display: block;
-}
-.detail-json {
-  font-family: var(--font-family, inherit);
-  white-space: pre-wrap;
-} gap: 0;
+  gap: 0;
   min-height: 36px;
   border-bottom: 1px solid var(--color-border-2);
   background: var(--color-bg-2);
@@ -761,6 +750,17 @@ watch(
   line-height: 22px;
   opacity: 0.65;
   color: var(--color-text-3);
+}
+.detail-image {
+  max-width: 160px;
+  max-height: 120px;
+  object-fit: contain;
+  border-radius: 4px;
+  display: block;
+}
+.detail-json {
+  font-family: var(--font-family, inherit);
+  white-space: pre-wrap;
 }
 .detail-field__value {
   flex: 1;
@@ -862,9 +862,13 @@ watch(
   min-height: 0;
 }
 
-/* 评论 Tab */
+/* 评论 Tab：输入区改白卡承载，使默认样式输入框（fill-2 底）可见，与编辑表单输入框观感一致（同 AiAssistant composer 做法） */
 .comment-box {
   margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid var(--color-border-2);
+  border-radius: 8px;
+  background: var(--color-bg-2);
 }
 .comment-actions {
   display: flex;
@@ -959,6 +963,13 @@ watch(
   flex-direction: column;
   overflow: hidden;
 }
+/* 无侧栏分支（新建/只读实体）：表单与详情作为 body 直接子级自滚动 */
+.record-drawer .arco-drawer-body > .arco-form,
+.record-drawer .arco-drawer-body > .detail-grouped {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
 .record-drawer .arco-drawer-body > .arco-tabs {
   flex: 1;
   min-height: 0;
@@ -971,8 +982,12 @@ watch(
   flex: 1;
   min-height: 0;
 }
-.record-drawer .arco-tabs-content-list,
+.record-drawer .arco-tabs-content-list {
+  height: 100%;
+}
+/* 各 Tab 内容在自身内滚动（编辑/详情/历史/评论），标签栏保持固定 */
 .record-drawer .arco-tabs-pane {
   height: 100%;
+  overflow-y: auto;
 }
 </style>

@@ -1,0 +1,24 @@
+# Status
+- id: OSC-260926c2b8
+- state: Done
+- updated: 2026-09-30T01:00:00+08:00
+- approvedBy: openspec-approve
+- trigger: "按照本项目 OpenSpec 规范，批准并执行 OSC c2b8 变更。"
+- checklist: passed
+- note: created by openspec-create；2026-09-27 批准检查表五项通过（依赖 3d95/e483/0006/0008 均 Done，与 §3.1 非目标无冲突），进入执行。
+- note: 2026-09-27 执行完成：A 值集行权（TenantScopeHelper/LovEntityGuard/LovController/NC 链接）、B 日历看板、C 评论提及全部落地；新增 XUnit 15 + Vitest 23 全过，`vue-tsc` 与 dotnet build 无错误；迁移方案/竞品报告/功能清单已回写。下一步：收尾门禁（补录 → 代码审查 + 实现审计 → 补齐）。
+- note: 2026-09-27 收尾门禁完成：会话小任务已补录（本号无独立会话小任务）；代码审查 0🔴（3🟡 已修、1🟡 记后续），实现审计三条线全落实（G1–G4 已修、G5 已补控制器级测试 7/7）；dev-loop 修复 4 项后回归全绿（XUnit 15/15、Cube.Tests 相关 62/62、新增 G5 7/7、Vitest 23/23、vue-tsc 0）。剩余 T14 手工冒烟，待「验收 OSC-260926c2b8」阶段执行。
+- note: 2026-09-29 按评估把看板跨列拖放写回补进本号（提案决策 9–11、design §2.4、T18–T20），状态保持 Implementing，开始执行。
+- note: 2026-09-29 跨列写回已落地并做实现审查。审查中补了两处：主键按字符串提交；`ChangeTypeValue` 拆 JsonElement 并把枚举数字字符串转成枚举。部门看板拖到另一列 PATCH 成功，已拖回原列。T14 与 AC5–AC13 仍待验收。
+- note: 2026-09-29 拖动中卡片改为完全不透明；列折叠改写入当前视图 mapping.collapsedColumns。
+- note: 2026-09-29 收口：日历月导航移入工具栏「添加记录」后、日历固定加载 1000 条；看板恢复分页器（退出大视图）。vue-tsc 0，相关单测 61/61；全量仍为 4 处 sfcThin 存量。
+- note: 2026-09-29 日历扩项：日/周/月 模式（周/日时间轴网格：小时定位/重叠并列/今天高亮/当前时刻线）与导航简化（今天 ‹ › 标题 + 分段）；vue-tsc 0，日历单测 13/13。
+- note: 2026-09-29 续补：日/周时间轴点击空白新建（取整点 `hour`）；日历导航移至工具栏右侧「关键字」前。日历单测 14/14，vue-tsc 0。
+- note: 2026-09-29 周起始改周一：周视图 周一…周日（周日最后），月网格表头与补齐同步；用例与标题更新。
+- note: 2026-09-29 修复：周/日时间轴表头移入滚动容器并 sticky，消除滚动条宽度导致的表头/内容错位。
+- note: 2026-09-29 修复：记录抽屉内容超高不能滚动（`arco-drawer-body` 为固定标签栏改 `overflow:hidden` 后未接滚动容器）——无标签分支表单/详情直接子级自滚动、各 Tab pane 自滚动；vue-tsc 0，全量 1003/4 sfcThin 存量。
+- note: 2026-09-29 修复：讨论输入框未聚焦时不可见（fill-2 输入框叠在 fill-2 抽屉底上）——输入区改白卡承载（同 AiAssistant composer），与编辑表单输入框观感一致；顺带还原 OSC-0009 补丁拼坏的 `.detail-field` 样式块（悬空 `gap` 声明、`.detail-image/.detail-json` 归位）。vue-tsc 0，全量 1004/4 sfcThin 存量。
+- note: 2026-09-29 验收（Validating）：三步编排过（实现审计/代码审查/文档同步，0🔴）；门禁：前端聚焦 82/82、全量 1004/4 存量、vue-tsc 0、vite build 0；后端 build 0 错误、LovEntityGuardTests 15/15、LovControllerGuardTests 7/7。
+- note: 2026-09-29 验收补齐（用户决策：先补齐）：① 值集越权端到端——受限账号 `ListData {Entity.User}`→403 `无权访问[User]值集数据`、`BatchLabel`→`{}` 省略、同码 admin→200+6 行；授权已回滚、账号已删。② 日历空白日预填：模型级 `LastLogin=2026-09-25T00:00:00` 正确；「用户」无表单内 DateTime 字段，UI 可见性受限属演示配置。浏览器冒烟含 `+N`（292 条）、折叠刷新持久、`mentionUserIds:[5,4]`、抽屉三处滚动、评论框白底。
+- note: 2026-09-29 验收通过（补齐后）：checklist 保持 passed；无阻断缺口；AC7/AC10/AC12 为单测锁定记录项；T14 手工冒烟完成。
+- note: 2026-09-29 复盘归档：教训入 harness（抽屉滚动链/输入底色/值集拒绝矩阵/存储偏好/坏补丁扫描）；目录迁移至 archive，状态置 Done。
