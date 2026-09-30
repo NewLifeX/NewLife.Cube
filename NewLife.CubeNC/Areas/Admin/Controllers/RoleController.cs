@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc.Filters;
+using NewLife;
 using NewLife.Cube.Models;
 using NewLife.Data;
 using NewLife.Web;
@@ -77,6 +78,9 @@ public class RoleController(ITenantContext tenantContext) : EntityController<Rol
 
         if (post && type is DataObjectMethodType.Insert or DataObjectMethodType.Update)
         {
+            // 局部改字段不提交 Permission，禁止按空串重建权限，也禁止在落库前强清缓存
+            if (IsPartialFieldUpdate()) return rs;
+
             // 租户管理员（在租户上下文中操作、且本身不是系统管理员）只能授予自己拥有的权限，
             // 提交时对越权勾选的权限进行拦截，避免越界授权
             var current = ManageProvider.User as IUser;
@@ -99,8 +103,6 @@ public class RoleController(ITenantContext tenantContext) : EntityController<Rol
                     }
                 }
 
-                // JSON 模式仍需清空缓存，确保后续读取拿到最新数据
-                Role.Meta.Session.ClearCache($"{type}-{entity}", true);
                 return rs;
             }
 
@@ -168,9 +170,43 @@ public class RoleController(ITenantContext tenantContext) : EntityController<Rol
             }
         }
 
-        // 清空缓存
-        if (post) Role.Meta.Session.ClearCache($"{type}-{entity}", true);
+        return rs;
+    }
 
+    /// <summary>PATCH / 批量改字段不携带权限表单，Valid 不得按空 Permission 重建或在落库前强清实体缓存</summary>
+    private Boolean IsPartialFieldUpdate()
+    {
+        String action = null;
+        if (ControllerContext?.ActionDescriptor?.RouteValues != null
+            && ControllerContext.ActionDescriptor.RouteValues.TryGetValue("action", out var a))
+            action = a;
+        if (action.IsNullOrEmpty()) action = RouteData?.Values["action"] + "";
+        if (action.EqualIgnoreCase("BatchUpdateFields", "PatchFields")) return true;
+        var path = Request?.Path.Value;
+        return !path.IsNullOrEmpty() && path.EndsWith("/BatchUpdateFields", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <inheritdoc />
+    protected override Int32 OnInsert(Role entity)
+    {
+        var rs = base.OnInsert(entity);
+        Role.Meta.Session.ClearCache($"Insert-{entity}", true);
+        return rs;
+    }
+
+    /// <inheritdoc />
+    protected override Int32 OnUpdate(Role entity)
+    {
+        var rs = base.OnUpdate(entity);
+        Role.Meta.Session.ClearCache($"Update-{entity}", true);
+        return rs;
+    }
+
+    /// <inheritdoc />
+    protected override Int32 OnDelete(Role entity)
+    {
+        var rs = base.OnDelete(entity);
+        Role.Meta.Session.ClearCache($"Delete-{entity}", true);
         return rs;
     }
 

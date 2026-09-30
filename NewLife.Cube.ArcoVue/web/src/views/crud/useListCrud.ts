@@ -7,6 +7,7 @@ import { isEnableField, isTruthy } from '@/core/utils/fieldBadge';
 import { BATCH_ENABLE_MAX } from '@/core/utils/viewMapping';
 import { getValueByKey, normalizeKeysByFields, setValueByKey } from '@/core/utils/url';
 import { formatApiError } from '@/core/utils/apiError';
+import { readFieldPatchResult } from '@/core/utils/fieldPatchResult';
 import { resolveFieldsForKind } from '@/core/utils/fieldParts';
 import { prepareSubmitPayload } from '@/core/utils/submitPayload';
 import { isIamBatchDeleteBlocked, isIamRowActionDisabled } from '@/core/utils/iamGuards';
@@ -186,8 +187,9 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
           id: id as string | number,
           values: { [payload.field]: payload.value },
         });
-        if (res.data && res.data.fail > 0) {
-          throw new Error(res.data.errors?.[0]?.message || '更新失败');
+        const patch = readFieldPatchResult(res);
+        if (patch.fail > 0) {
+          throw new Error(patch.errors?.[0]?.message || '更新失败');
         }
       }
     } catch (err) {

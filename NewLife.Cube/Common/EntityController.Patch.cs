@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Models;
 using NewLife.Reflection;
 using NewLife.Remoting;
+using XCode;
 using XCode.Configuration;
 using XCode.Membership;
 
@@ -119,7 +120,7 @@ public partial class EntityController<TEntity, TModel>
             }
 
             // JSON 无 Form，OnUpdate 现码会落到 entity.Update()，子类 override 仍生效；自动化已由 AutomationPersistence 入队
-            OnUpdate(entity);
+            PersistPatchedEntity(entity);
             ok = 1;
         }
         catch (Exception ex)
@@ -222,7 +223,7 @@ public partial class EntityController<TEntity, TModel>
                     if (fieldErrors != null) throw new Exception(fieldErrors[0].Message);
                 }
 
-                OnUpdate(entity);
+                PersistPatchedEntity(entity);
                 ok++;
             }
             catch (Exception ex)
@@ -253,6 +254,16 @@ public partial class EntityController<TEntity, TModel>
             dic[fi.Name] = fi;
         }
         return dic;
+    }
+
+    /// <summary>局部更新落库：有脏数据但受影响行数为 0 视为失败（避免提示成功、库未变）</summary>
+    /// <param name="entity">已 SetItem 的实体</param>
+    private void PersistPatchedEntity(TEntity entity)
+    {
+        var dirty = ((IEntity)entity).HasDirty;
+        var affected = OnUpdate(entity);
+        if (dirty && affected <= 0)
+            throw new Exception("更新未写入数据库");
     }
 
     /// <summary>把请求值转换到字段类型；可空类型解包。失败抛异常由调用方计入该行 fail</summary>

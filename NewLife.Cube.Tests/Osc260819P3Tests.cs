@@ -229,6 +229,10 @@ public class Osc260819P3Tests
 
         var fromName = mi.Invoke(null, ["小组", typeof(XCode.Membership.DepartmentTypes)]);
         Assert.Equal(XCode.Membership.DepartmentTypes.小组, fromName);
+
+        using var scope = System.Text.Json.JsonDocument.Parse("\"本部门及下级\"");
+        var fromScopeName = mi.Invoke(null, [scope.RootElement.Clone(), typeof(XCode.Membership.DataScopes)]);
+        Assert.Equal(XCode.Membership.DataScopes.本部门及下级, fromScopeName);
     }
 }
 

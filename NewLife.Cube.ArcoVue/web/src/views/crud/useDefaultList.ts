@@ -21,6 +21,8 @@ import { resolveFieldsForKind } from '@/core/utils/fieldParts';
 import { parseUrlViewFilter } from '@/core/utils/searchFilters';
 import { getValueByKey } from '@/core/utils/url';
 import { inferDateKind } from '@/core/utils/datetime';
+import { dataSourceToOptions } from '@/core/utils/enumDataSource';
+import { readFieldPatchResult } from '@/core/utils/fieldPatchResult';
 import { useAppStore } from '@/stores/app';
 import { createListContext } from './listContext';
 import { useListQuery } from './useListQuery';
@@ -297,7 +299,7 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     }
     // 静态字典（GetPage/GetFields 已物化）优先：key=存储值、label=显示名
     if (field.dataSource && Object.keys(field.dataSource).length > 0) {
-      row.options = Object.entries(field.dataSource).map(([value, label]) => ({ value, label }));
+      row.options = dataSourceToOptions(field.dataSource);
       return;
     }
     if (field.options && field.options.length > 0) {
@@ -353,32 +355,38 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     batchEditVisible.value = true;
   }
 
-  async function confirmBatchEdit() {
+  async function confirmBatchEdit(): Promise<boolean> {
     const keys = ctx.selectedKeys.value.join(',');
     // 有效行：字段已选且值非空（空值行跳过，避免误设空）
     const fields = batchEditRows.value
       .filter((r) => r.field && r.value !== '')
       .map((r) => ({ field: r.field, value: String(r.value) }));
-    if (!keys || !fields.length) return;
+    if (!keys || !fields.length) {
+      Message.warning('请选择要修改的字段并填写值');
+      return false;
+    }
     try {
       const res = await cubeApi.page.batchUpdateFields(ctx.typePath.value, { keys, fields });
-      const { ok = 0, fail = 0, errors = [] } = res.data ?? {};
+      const { ok, fail, errors } = readFieldPatchResult(res);
       if (fail > 0) {
-        // 展示首条失败明细，便于定位（如必填/类型转换失败）
         const first = errors[0];
         Message.warning(
-          first
+          first?.message
             ? `批量修改：成功 ${ok} 条，失败 ${fail} 条（${first.message}）`
             : `批量修改：成功 ${ok} 条，失败 ${fail} 条`,
         );
+      } else if (ok <= 0) {
+        Message.warning('没有记录被修改');
       } else {
         Message.success(`已批量修改 ${ok} 条`);
       }
       batchEditVisible.value = false;
       ctx.selectedKeys.value = [];
       await query.loadData();
+      return true;
     } catch (err) {
       Message.error(formatApiError(err, '批量修改失败'));
+      return false;
     }
   }
 
