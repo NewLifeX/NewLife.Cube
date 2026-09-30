@@ -44,7 +44,8 @@ public class AutomationController(TokenService tokenService) : ControllerBaseX
         if (ap != null && ap.Enable) return true;
         var set = CubeSetting.Current;
         var (app, ex) = tokenService.TryDecodeToken(token, set.JwtSecret);
-        return app != null && app.Enable && ex != null;
+        // 验签通过（ex == null）且应用有效才放行；验签失败时 ex 非空绝不能放行，防止伪造 JWT 认证绕过
+        return app != null && app.Enable && ex == null;
     }
 
     /// <summary>列表</summary>
