@@ -1,5 +1,6 @@
 import { computed, nextTick, ref, watch } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
+import type { ViewFilter } from '@/core/utils/viewProfile';
 import type { CalendarMapping } from '@/core/utils/viewMapping';
 import { resolveCellBadge } from '@/core/utils/fieldBadge';
 import { getValueByKey } from '@/core/utils/url';
@@ -68,6 +69,60 @@ export function startOfCalendarWeek(cursor: Date): Date {
   const d = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate());
   d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
   return d;
+}
+
+export interface CalendarWindow {
+  /** 含，本地壁钟，无时区后缀 */
+  start: string;
+  /** 不含，交给 lt */
+  end: string;
+}
+
+function atMidnight(d: Date): string {
+  return `${formatCalendarDate(d)}T00:00:00`;
+}
+
+/** 当前日/周/月的请求区间。结束为开区间。 */
+export function calendarWindow(mode: CalendarViewMode, cursor: Date): CalendarWindow {
+  if (mode === 'day') {
+    const start = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate());
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    return { start: atMidnight(start), end: atMidnight(end) };
+  }
+  if (mode === 'week') {
+    const start = startOfCalendarWeek(cursor);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    return { start: atMidnight(start), end: atMidnight(end) };
+  }
+  const start = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+  const end = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
+  return { start: atMidnight(start), end: atMidnight(end) };
+}
+
+/**
+ * 给请求用筛选附上日历区间。返回新对象，不修改入参。
+ * 非日期开始字段、或 logic=any 且已有条件时，原样返回。
+ */
+export function withCalendarWindow(
+  filter: ViewFilter,
+  startField: string | undefined,
+  fieldType: string | undefined,
+  window: CalendarWindow | null,
+): ViewFilter {
+  if (!startField || !window) return filter;
+  const kind = (fieldType || '').toLowerCase();
+  if (kind !== 'datetime' && kind !== 'date') return filter;
+  if (filter.logic === 'any' && filter.conditions.length > 0) return filter;
+  return {
+    logic: 'all',
+    conditions: [
+      ...filter.conditions,
+      { field: startField, op: 'gte', value: window.start },
+      { field: startField, op: 'lt', value: window.end },
+    ],
+  };
 }
 
 /** 导航标题：月「2026年9月」；周「2026年9月28日 – 10月4日」；日「2026年9月29日 今天/周二」 */

@@ -2,7 +2,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router';
 import type { WidgetQueryResult } from '@newlifex/api-core';
 import { buildDrillViewFilter } from '@/core/utils/searchFilters';
-import { ensureEchartsTheme, initEcharts } from '@/core/utils/echartsTheme';
+import { ensureEchartsTheme, initEcharts, type EChartsHandle } from '@/core/utils/echartsTheme';
 import type { WidgetCardProps } from './context';
 import { buildMiniChartOption, resolveChartMeasures, type ChartItem } from './chartTemplates';
 import { normalizeTypePath } from './legacy';
@@ -44,7 +44,7 @@ export function resolveChartDimKey(
 export function useMiniChartWidget(props: WidgetCardProps) {
   const router = useRouter();
   const chartEl = ref<HTMLElement | null>(null);
-  let chart: ReturnType<typeof initEcharts> | null = null;
+  let chart: EChartsHandle | null = null;
   let ro: ResizeObserver | null = null;
   let raf = 0;
 
@@ -138,7 +138,7 @@ export function useMiniChartWidget(props: WidgetCardProps) {
       await ensureEchartsTheme(undefined);
       if (!chart || chart.getDom() !== el) {
         chart?.dispose();
-        chart = initEcharts(el);
+        chart = await initEcharts(el);
         bindResize(el);
       }
       chart.setOption(option.value, true);

@@ -1,4 +1,4 @@
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { onActivated, onBeforeUnmount, onDeactivated, onMounted, ref, watch } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
 import type { GanttMapping } from '@/core/utils/viewMapping';
 import { getValueByKey } from '@/core/utils/url';
@@ -601,6 +601,13 @@ export function useGanttView(props: GanttViewProps, emit: GanttViewEmit) {
       if (typeof level === 'number') applyZoomLevel(level);
     },
   );
+
+  onDeactivated(() => {
+    stopWidthWatch();
+  });
+  onActivated(() => {
+    if (gantt) startWidthWatch();
+  });
 
   onBeforeUnmount(() => {
     mountGen += 1;

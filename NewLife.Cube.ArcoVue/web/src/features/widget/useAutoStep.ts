@@ -1,4 +1,4 @@
-import { onBeforeUnmount, onMounted, unref, watch, type MaybeRef } from 'vue';
+import { onActivated, onBeforeUnmount, onDeactivated, onMounted, unref, watch, type MaybeRef } from 'vue';
 
 const TICK_MS = 1000;
 
@@ -26,6 +26,8 @@ export function useAutoStep(active: MaybeRef<boolean>, step: () => void | boolea
   }
 
   onMounted(start);
+  onDeactivated(stop);
+  onActivated(start);
   onBeforeUnmount(stop);
   watch(
     () => unref(active),

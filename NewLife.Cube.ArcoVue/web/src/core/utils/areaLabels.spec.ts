@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { collectCascaderIds, mergeAreaLabel } from './areaLabels';
+import { chunkAreaIds, collectCascaderIds, mergeAreaLabel, pendingAreaIds } from './areaLabels';
 import type { FieldMeta } from '../types/field';
 
 function base(over: Partial<FieldMeta> = {}): FieldMeta {
@@ -27,5 +27,12 @@ describe('areaLabels', () => {
       { AreaId: '', HomeId: null, Name: 'c' },
     ];
     expect(collectCascaderIds(fields, rows)).toEqual(['110101', '110105', '110106']);
+  });
+
+  it('201 个未缓存 ID 分成 200+1，已缓存 ID 被去掉', () => {
+    const fresh = Array.from({ length: 201 }, (_, i) => String(1000 + i));
+    expect(chunkAreaIds(fresh).map((c) => c.length)).toEqual([200, 1]);
+    const mixed = ['1', '2', '1'];
+    expect(pendingAreaIds(mixed, { '1': '已有' })).toEqual(['2']);
   });
 });

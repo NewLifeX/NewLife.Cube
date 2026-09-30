@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.ViewModels;
+using NewLife.Remoting;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -134,4 +135,77 @@ public class AreaController : EntityController<Area, AreaModel>
             cities = cities.Select(e => new { e.Name, e.Longitude, e.Latitude }),
         });
     }
+
+    /// <summary>按 ID 批量取地区名称。空数组返回空字典；去重后超过 200 返回 400。</summary>
+    /// <param name="model">ids 为地区主键字符串</param>
+    /// <returns>键为 ID 十进制字符串、值为名称</returns>
+    [HttpPost("/api/[area]/[controller]/Names")]
+    [EntityAuthorize(PermissionFlags.Detail)]
+    public ActionResult Names([FromBody] AreaNamesModel? model)
+    {
+        var ids = NormalizeNameIds(model?.Ids);
+        return Json(0, null, ResolveNames(ids));
+    }
+
+    /// <summary>去空白、忽略大小写去重。超过 200 个抛出 400，不截断。不能解析为整数的元素留给 <see cref="ResolveNames"/> 忽略。</summary>
+    /// <param name="ids">原始 ID 列表，null 当空</param>
+    /// <returns>去重后的 ID 字符串</returns>
+    public static IList<String> NormalizeNameIds(IList<String>? ids)
+    {
+        var list = new List<String>();
+        var seen = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
+        if (ids != null)
+        {
+            foreach (var raw in ids)
+            {
+                var s = raw?.Trim();
+                if (s.IsNullOrEmpty()) continue;
+                if (!seen.Add(s)) continue;
+                list.Add(s);
+            }
+        }
+        if (list.Count > 200) throw new ApiException(400, "一次最多查询 200 个地区");
+        return list;
+    }
+
+    /// <summary>先整表缓存，未命中再按主键回表。只收录非空 Name，未知 ID 不出现。</summary>
+    /// <param name="ids">已规范化的 ID 字符串</param>
+    /// <returns>ID 到名称</returns>
+    public static IDictionary<String, String> ResolveNames(IList<String>? ids)
+    {
+        var result = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
+        if (ids == null || ids.Count == 0) return result;
+
+        var pending = new HashSet<Int32>();
+        foreach (var s in ids)
+        {
+            if (Int32.TryParse(s, out var id) && id > 0) pending.Add(id);
+        }
+        if (pending.Count == 0) return result;
+
+        foreach (var area in Area.FindAllWithCache())
+        {
+            if (!pending.Contains(area.ID)) continue;
+            if (!area.Name.IsNullOrEmpty()) result[area.ID.ToString()] = area.Name;
+            pending.Remove(area.ID);
+            if (pending.Count == 0) break;
+        }
+
+        if (pending.Count > 0)
+        {
+            var extra = Area.FindAll(_.ID.In(pending.ToArray()), null, "ID,Name", 0, 0);
+            foreach (var area in extra)
+            {
+                if (!area.Name.IsNullOrEmpty()) result[area.ID.ToString()] = area.Name;
+            }
+        }
+        return result;
+    }
+}
+
+/// <summary>地区名称批量查询体</summary>
+public class AreaNamesModel
+{
+    /// <summary>地区 ID 字符串</summary>
+    public List<String>? Ids { get; set; }
 }

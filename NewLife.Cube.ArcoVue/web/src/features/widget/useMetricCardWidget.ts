@@ -1,7 +1,7 @@
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import type { WidgetQueryResult } from '@newlifex/api-core';
-import { ensureEchartsTheme, initEcharts } from '@/core/utils/echartsTheme';
+import { ensureEchartsTheme, initEcharts, type EChartsHandle } from '@/core/utils/echartsTheme';
 import { themeColor } from '@/core/utils/themeColor';
 import { resolveWorkbenchIcon } from '@/core/utils/workbench';
 import type { WidgetCardProps } from './context';
@@ -21,7 +21,7 @@ const COLORS: Record<string, string> = {
 export function useMetricCardWidget(props: WidgetCardProps) {
   const router = useRouter();
   const sparkEl = ref<HTMLElement | null>(null);
-  let chart: ReturnType<typeof initEcharts> | null = null;
+  let chart: EChartsHandle | null = null;
 
   const valueText = computed(() => {
     const syn = props.widget.syntheticValue;
@@ -58,7 +58,7 @@ export function useMetricCardWidget(props: WidgetCardProps) {
       await nextTick();
       if (!sparkEl.value || !opt) return;
       await ensureEchartsTheme(undefined);
-      if (!chart) chart = initEcharts(sparkEl.value);
+      if (!chart) chart = await initEcharts(sparkEl.value);
       chart.setOption(opt);
     },
     { immediate: true },

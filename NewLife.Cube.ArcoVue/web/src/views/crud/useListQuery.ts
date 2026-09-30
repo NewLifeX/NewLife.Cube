@@ -11,7 +11,8 @@ import {
   enrichFieldsWithLookup,
   fetchBatchLabel,
 } from '@/core/utils/lov-api';
-import { collectCascaderIds, mergeAreaLabel } from '@/core/utils/areaLabels';
+import { chunkAreaIds, collectCascaderIds, mergeAreaLabel, pendingAreaIds } from '@/core/utils/areaLabels';
+import { calendarWindow, withCalendarWindow } from '@/features/views/useCalendarMonth';
 import { buildSortsPayload, applyChartData, emptyViewFilter, normalizeFilter } from '@/core/utils/viewProfile';
 import { normalizePageSize } from '@/core/utils/viewMapping';
 import { buildViewFilterParam, matchesViewFilter } from '@/core/utils/searchFilters';
@@ -21,6 +22,19 @@ import { useTenantStore } from '@/stores/tenant';
 import { useRecentKeywords } from '@/core/composables/useRecentKeywords';
 import type { ListContext } from './listContext';
 import type { FieldMeta } from '@/core/types/field';
+
+/**
+ * 本页 LOV 值里，标签缓存和字段 dataSource 都没有的那些。已有 dataSource 不因此跳过整列。
+ */
+export function missingLovValues(
+  values: string[],
+  cached: Record<string, string> | undefined,
+  dataSource: Record<string, string> | undefined,
+): string[] {
+  const known = cached || {};
+  const ds = dataSource || {};
+  return values.filter((v) => v && !known[v] && !ds[v]);
+}
 
 /**
  * DefaultList 查询领域（OSC-260813c3e9）：查询 / 分页 / LOV 水合 / 预定义查询 / 图表加载。
@@ -60,6 +74,9 @@ export function useListQuery(ctx: ListContext) {
     searchTouched,
     activeSorts,
     activeViewKind,
+    activeCalendarMapping,
+    calendarCursor,
+    calendarMode,
     effectivePageSize,
     effectiveSearch,
     insight,
@@ -88,24 +105,23 @@ export function useListQuery(ctx: ListContext) {
   }
 
   async function hydrateLovLabels(rows: Record<string, unknown>[]) {
-    // 仅对仍无 dataSource 的 LIST/其它 LOV 走 BatchLabel；Enum 已在 enrich 阶段灌入
-    const lovFields = listFields.value.filter(
-      (f) =>
-        f.lovCode &&
-        resolveListControl(f) === 'lov' &&
-        !(f.dataSource && Object.keys(f.dataSource).length),
-    );
-    for (const f of lovFields) {
+    // Enum 已在 enrich 阶段灌入。LOV 只补 labelCache 与 dataSource 都没有的值，字段间并行。
+    const lovFields = listFields.value.filter((f) => f.lovCode && resolveListControl(f) === 'lov');
+    const jobs = lovFields.map(async (f) => {
       const code = f.lovCode!;
-      const values = [
-        ...new Set(
-          rows
-            .map((r) => getValueByKey(r, f.name))
-            .filter((v) => v != null && v !== '')
-            .map(String),
-        ),
-      ];
-      if (!values.length) continue;
+      const values = missingLovValues(
+        [
+          ...new Set(
+            rows
+              .map((r) => getValueByKey(r, f.name))
+              .filter((v) => v != null && v !== '')
+              .map(String),
+          ),
+        ],
+        labelCache[code],
+        f.dataSource,
+      );
+      if (!values.length) return;
       try {
         const map = await fetchBatchLabel({ lovCode: code, values });
         labelCache[code] = { ...(labelCache[code] || {}), ...map };
@@ -118,26 +134,43 @@ export function useListQuery(ctx: ListContext) {
       } catch {
         /* ignore */
       }
-    }
+    });
+    await Promise.allSettled(jobs);
   }
 
-  /** 地区/级联叶子批量补标签（OSC-2608139feb）：去重后逐 ID getDetail，单 ID 失败忽略不阻断列表 */
+  /** 地区/级联叶子批量补标签：缓存未命中的 ID 按 200 一片请求 Names，单片失败忽略 */
   async function hydrateAreaLabels(rows: Record<string, unknown>[]) {
-    const ids = collectCascaderIds(listFields.value, rows);
-    for (const id of ids) {
-      if (areaLabelCache[String(id)]) continue;
-      try {
-        const res = await cubeApi.page.getDetail<Record<string, unknown>>('/Cube/Area', id);
-        const data = (res as unknown as { data?: Record<string, unknown> })?.data ?? res;
-        if (data && typeof data === 'object') {
-          const rec = data as Record<string, unknown>;
-          const name = (rec.name ?? rec.Name) as unknown;
-          mergeAreaLabel(areaLabelCache, id, name);
+    const pending = pendingAreaIds(collectCascaderIds(listFields.value, rows), areaLabelCache);
+    if (!pending.length) return;
+    await Promise.all(
+      chunkAreaIds(pending).map(async (ids) => {
+        try {
+          const res = await cubeApi.page.areaNames(ids);
+          const data = res.data || {};
+          for (const [id, name] of Object.entries(data)) mergeAreaLabel(areaLabelCache, id, name);
+        } catch {
+          /* ignore */
         }
-      } catch {
-        /* ignore */
-      }
-    }
+      }),
+    );
+  }
+
+  /** 日历请求用的筛选副本。区间不写回 viewFilter。开始字段不在 search∪list 时不附加。 */
+  function requestViewFilter() {
+    const base = viewFilter.value;
+    if (activeViewKind.value !== 'calendar') return base;
+    const startField = activeCalendarMapping.value?.startField;
+    if (!startField) return base;
+    const known = [...listFields.value, ...searchFields.value].find(
+      (f) => f.name.toLowerCase() === startField.toLowerCase(),
+    );
+    if (!known) return base;
+    return withCalendarWindow(
+      base,
+      known.name,
+      known.typeName,
+      calendarWindow(calendarMode.value, calendarCursor.value),
+    );
   }
 
   async function loadFields() {
@@ -169,15 +202,6 @@ export function useListQuery(ctx: ListContext) {
     let list = toFieldMetas(
       (meta.list as never) || ((meta.fields as { list?: never })?.list),
     ).filter((f) => !!f.name);
-    // GetPage.list 异常为空时回落 GetFields(List)
-    if (!list.length) {
-      try {
-        const fb = await cubeApi.page.getFields(typePath.value, FieldKind.List);
-        list = toFieldMetas(fb.data).filter((f) => !!f.name);
-      } catch {
-        /* ignore */
-      }
-    }
     const nested = meta.fields as
       | { list?: unknown; search?: unknown; form?: { addForm?: unknown; editForm?: unknown; detail?: unknown } }
       | undefined;
@@ -193,41 +217,61 @@ export function useListQuery(ctx: ListContext) {
     let detail = toFieldMetas((meta.detail || nested?.form?.detail) as never).filter(
       (f) => !!f.name,
     );
-    // 各分区缺失时按 ViewKind 走 GetFields 兜底，保证表单/搜索有权威元数据（OSC-0009）
+    // 各分区缺失时按 ViewKind 并行 GetFields 兜底，某一分区失败仍忽略（OSC-0009 / OSC-2609307879）
+    const fills: Promise<void>[] = [];
+    if (!list.length) {
+      fills.push(
+        cubeApi.page
+          .getFields(typePath.value, FieldKind.List)
+          .then((fb) => {
+            list = toFieldMetas(fb.data).filter((f) => !!f.name);
+          })
+          .catch(() => undefined),
+      );
+    }
     if (!search.length) {
-      try {
-        const fb = await cubeApi.page.getFields(typePath.value, FieldKind.Search);
-        search = toFieldMetas(fb.data).filter(
-          (f) => !!f.name && !f.primaryKey && f.typeName !== 'Guid',
-        );
-      } catch {
-        /* ignore */
-      }
+      fills.push(
+        cubeApi.page
+          .getFields(typePath.value, FieldKind.Search)
+          .then((fb) => {
+            search = toFieldMetas(fb.data).filter(
+              (f) => !!f.name && !f.primaryKey && f.typeName !== 'Guid',
+            );
+          })
+          .catch(() => undefined),
+      );
     }
     if (!add.length) {
-      try {
-        const fb = await cubeApi.page.getFields(typePath.value, FieldKind.Add);
-        add = toFieldMetas(fb.data).filter((f) => !!f.name);
-      } catch {
-        /* ignore */
-      }
+      fills.push(
+        cubeApi.page
+          .getFields(typePath.value, FieldKind.Add)
+          .then((fb) => {
+            add = toFieldMetas(fb.data).filter((f) => !!f.name);
+          })
+          .catch(() => undefined),
+      );
     }
     if (!edit.length) {
-      try {
-        const fb = await cubeApi.page.getFields(typePath.value, FieldKind.Edit);
-        edit = toFieldMetas(fb.data).filter((f) => !!f.name);
-      } catch {
-        /* ignore */
-      }
+      fills.push(
+        cubeApi.page
+          .getFields(typePath.value, FieldKind.Edit)
+          .then((fb) => {
+            edit = toFieldMetas(fb.data).filter((f) => !!f.name);
+          })
+          .catch(() => undefined),
+      );
     }
     if (!detail.length) {
-      try {
-        const fb = await cubeApi.page.getFields(typePath.value, FieldKind.Detail);
-        detail = toFieldMetas(fb.data).filter((f) => !!f.name);
-      } catch {
-        /* ignore */
-      }
+      fills.push(
+        cubeApi.page
+          .getFields(typePath.value, FieldKind.Detail)
+          .then((fb) => {
+            detail = toFieldMetas(fb.data).filter((f) => !!f.name);
+          })
+          .catch(() => undefined),
+      );
     }
+    if (fills.length) await Promise.all(fills);
     // 一次 Meta 灌入 Enum dataSource；再按 Cube.Vue Lookup 补未知 typeName 枚举
     const allFields = [...list, ...search, ...add, ...edit, ...detail];
     await enrichFieldsWithEnumDataSource(allFields);
@@ -263,7 +307,8 @@ export function useListQuery(ctx: ListContext) {
       } else {
         // 视图筛选下推（OSC-260819e483 P2）：有条件才传 viewFilter，后端 SearchData 可下推时服务端过滤；
         // 无法下推时忽略服务端过滤，本页仍由下方 matchesViewFilter 复核（翻页不完整为已知限制）
-        const vf = buildViewFilterParam(viewFilter.value);
+        const requestFilter = requestViewFilter();
+        const vf = buildViewFilterParam(requestFilter);
         const res = await cubeApi.page.getList(typePath.value, {
           pageIndex,
           pageSize,
@@ -284,10 +329,11 @@ export function useListQuery(ctx: ListContext) {
       // 筛选构建器客户端复核（OSC-0015）：业务重写 Search 的控制器（如 Department.Search
       // 仅处理 id/parentId/enable/visible）与树控制器可能不应用通用等值过滤，对已加载数据
       // 兜底过滤保证筛选生效；普通控制器后端已过滤时此处幂等。同时覆盖 any 多条件 OR 降级。
-      if (viewFilter.value.conditions.length) {
+      const shownFilter = requestViewFilter();
+      if (shownFilter.conditions.length) {
         const rawCount = rows.length;
         tableData.value = rows.filter((r) =>
-          matchesViewFilter(r, viewFilter.value, filterFields.value),
+          matchesViewFilter(r, shownFilter, filterFields.value),
         );
         // 本页已加载全部数据且后端未按筛选过滤（发生删减）时，纠正 total 反映过滤结果
         if (
@@ -334,7 +380,7 @@ export function useListQuery(ctx: ListContext) {
     chartLoading.value = true;
     chartError.value = '';
     try {
-      const vf = buildViewFilterParam(viewFilter.value);
+      const vf = buildViewFilterParam(requestViewFilter());
       const res = await cubeApi.page.getChartData(typePath.value, {
         ...effectiveSearch.value,
         ...(vf ? { viewFilter: vf } : {}),

@@ -368,6 +368,14 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
     getDetail: <T = Record<string, unknown>>(type: string, id: number | string, extra?: Record<string, unknown>) =>
       request<T>({ url: `${type}/Detail`, method: 'get', params: { id, ...extra } }),
 
+    /** 按 ID 批量取地区名称（OSC-2609307879）。ids 为字符串，一次最多 200 个。 */
+    areaNames: (ids: string[]) =>
+      request<Record<string, string>>({
+        url: '/Cube/Area/Names',
+        method: 'post',
+        data: { ids },
+      }),
+
     /** 新增 */
     add: (type: string, data: Record<string, unknown>) =>
       request<unknown>({ url: type, method: 'post', data }),

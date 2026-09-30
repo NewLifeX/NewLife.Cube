@@ -154,6 +154,10 @@ public partial class WorkflowDefinition : Entity<WorkflowDefinition>
     {
         if (typePath.IsNullOrEmpty()) return [];
 
+        // 小表走整表实体缓存；写操作会更新缓存，发布或停用后下一次读取即可看到新结果
+        if (Meta.Session.Count < 1000)
+            return Meta.Cache.FindAll(e => e.TenantId == tenantId && e.TypePath == typePath && e.Enable && e.Published);
+
         return FindAll(_.TenantId == tenantId & _.TypePath == typePath & _.Enable == true & _.Published == true);
     }
 

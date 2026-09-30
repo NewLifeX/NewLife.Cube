@@ -192,6 +192,45 @@ export function resolveRowFormat(
   return undefined;
 }
 
+export interface RowFormatHit {
+  side?: string;
+  row?: CellFormatStyle;
+  cells: Record<string, CellFormatStyle>;
+}
+
+/**
+ * 按行预计算填色。规则为空时返回空 Map，外观与无规则相同。
+ * 单元格、整行、侧边都复用既有 resolve* ，匹配语义不变。
+ */
+export function buildFormatIndex(
+  rows: Record<string, unknown>[],
+  rules: ViewFormatRule[],
+  fields: FieldMeta[],
+  rowKey: (row: Record<string, unknown>) => string,
+  columnNames: string[] = [],
+): Map<string, RowFormatHit> {
+  const map = new Map<string, RowFormatHit>();
+  if (!rules.length) return map;
+  const names = new Set<string>();
+  for (const f of fields) if (f.name) names.add(f.name);
+  for (const name of columnNames) if (name) names.add(name);
+  for (const row of rows) {
+    if (row.__groupHeader) continue;
+    const cells: Record<string, CellFormatStyle> = {};
+    for (const name of names) {
+      const fmt = resolveCellFormat(row, name, rules, fields);
+      if (fmt) cells[name.toLowerCase()] = fmt;
+    }
+    const side = resolveRowSideColor(row, rules, fields);
+    map.set(rowKey(row), {
+      side,
+      row: resolveRowFormat(row, rules, fields),
+      cells,
+    });
+  }
+  return map;
+}
+
 /** 侧边通道：仅 apply=side */
 export function resolveRowSideColor(
   row: Record<string, unknown>,

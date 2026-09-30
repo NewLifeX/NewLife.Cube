@@ -213,44 +213,52 @@ public class DataField : IDictionarySource
         if (!ValueField.IsNullOrEmpty()) dic["valueField"] = ValueField;
         if (!LovCode.IsNullOrEmpty()) dic["lovCode"] = LovCode;
 
-        // 数据源。优先级：DataSource 委托（控制器显式配置，如角色组，每次新鲜）→ 枚举反射 → DataSourceMap
-        // （PrepareForApi / MapCandidateFiller 物化的 Map 外键候选）。前端按 dataSource 渲染本地下拉
-        // （对齐 MVC _Form_Item/_Form_Int）；漏掉 DataSourceMap 会让 Map 外键退化为数字输入框
+        // 数据源。优先级：已物化 DataSourceMap（非布尔，避免重复跑委托）→ DataSource 委托（控制器显式配置，如角色组）
+        // → 枚举反射 → DataSourceMap 回退。（PrepareForApi / MapCandidateFiller 物化的 Map 外键候选）。
+        // 前端按 dataSource 渲染本地下拉（对齐 MVC _Form_Item/_Form_Int）；漏掉 DataSourceMap 会让 Map 外键退化为数字输入框。
+        // 布尔不使用 map：各皮肤按 typeName 渲染开关，字典会让开关变下拉。
         var underlyingType = Type == null ? null : System.Nullable.GetUnderlyingType(Type) ?? Type;
         var isBooleanType = underlyingType == typeof(Boolean) || "Boolean".EqualIgnoreCase(TypeName);
         IDictionary ds = null;
         var fromDelegate = false;
-        if (DataSource != null)
+        if (!isBooleanType && DataSourceMap != null && DataSourceMap.Count > 0)
         {
-            try
-            {
-                ds = DataSource(null);
-                fromDelegate = true;
-            }
-            catch { /* 委托依赖实体上下文时可能失败，忽略并降级 */ }
+            ds = DataSourceMap;
         }
-
-        if ((ds == null || ds.Count == 0) && Type != null && Type.IsEnum)
+        else
         {
-            // 枚举选项：反射枚举成员，标签取 DisplayName/Description/成员名（对齐 MVC _Form_Int）
-            var eds = new Dictionary<String, String>();
-            foreach (var item in Type.GetFields(BindingFlags.Public | BindingFlags.Static))
+            if (DataSource != null)
             {
-                var value = Convert.ToInt64(item.GetValue(null));
-                var label = item.Name;
-                var dna = item.GetCustomAttribute<DisplayNameAttribute>(false);
-                if (dna != null && !String.IsNullOrEmpty(dna.DisplayName)) label = dna.DisplayName;
-                var att = item.GetCustomAttribute<DescriptionAttribute>(false);
-                if (att != null && !String.IsNullOrEmpty(att.Description)) label = att.Description;
-                eds[value + ""] = label;
+                try
+                {
+                    ds = DataSource(null);
+                    fromDelegate = true;
+                }
+                catch { /* 委托依赖实体上下文时可能失败，忽略并降级 */ }
             }
-            if (eds.Count > 0) ds = eds;
-        }
 
-        // Map 外键：委托与枚举都未产出时回退已物化字典，避免外键字段丢失候选。
-        // 布尔字段不回退：各皮肤按 typeName 渲染开关，dataSource 优先的皮肤（field-mapping / Cube.Vue）
-        // 会因字典存在而误判为下拉，导致开关变选择框
-        if ((ds == null || ds.Count == 0) && !isBooleanType && DataSourceMap != null && DataSourceMap.Count > 0) ds = DataSourceMap;
+            if ((ds == null || ds.Count == 0) && Type != null && Type.IsEnum)
+            {
+                // 枚举选项：反射枚举成员，标签取 DisplayName/Description/成员名（对齐 MVC _Form_Int）
+                var eds = new Dictionary<String, String>();
+                foreach (var item in Type.GetFields(BindingFlags.Public | BindingFlags.Static))
+                {
+                    var value = Convert.ToInt64(item.GetValue(null));
+                    var label = item.Name;
+                    var dna = item.GetCustomAttribute<DisplayNameAttribute>(false);
+                    if (dna != null && !String.IsNullOrEmpty(dna.DisplayName)) label = dna.DisplayName;
+                    var att = item.GetCustomAttribute<DescriptionAttribute>(false);
+                    if (att != null && !String.IsNullOrEmpty(att.Description)) label = att.Description;
+                    eds[value + ""] = label;
+                }
+                if (eds.Count > 0) ds = eds;
+            }
+
+            // Map 外键：委托与枚举都未产出时回退已物化字典，避免外键字段丢失候选。
+            // 布尔字段不回退：各皮肤按 typeName 渲染开关，dataSource 优先的皮肤（field-mapping / Cube.Vue）
+            // 会因字典存在而误判为下拉，导致开关变选择框
+            if ((ds == null || ds.Count == 0) && !isBooleanType && DataSourceMap != null && DataSourceMap.Count > 0) ds = DataSourceMap;
+        }
 
         if (ds != null && ds.Count > 0)
         {

@@ -9,6 +9,18 @@ export interface TagViewItem {
   name: string;
 }
 
+/** keep-alive 最多保住最近使用的 8 个页面 */
+export const CACHE_MAX = 8;
+
+/** 把名字移到末尾；超出上限时从头部丢掉。不改 visited。 */
+export function touchCachedNames(cached: string[], name: string, max = CACHE_MAX): string[] {
+  if (!name) return cached.slice();
+  const next = cached.filter((n) => n !== name);
+  next.push(name);
+  while (next.length > max) next.shift();
+  return next;
+}
+
 function routeCacheName(route: RouteLocationNormalizedLoaded): string {
   const n = route.name;
   if (typeof n === 'string' && n) return n;
@@ -30,9 +42,7 @@ export const useTagsViewStore = defineStore('tagsView', {
       if (!this.visited.some((v) => v.path === path)) {
         this.visited.push({ path, fullPath: route.fullPath, title, name });
       }
-      if (name && !this.cached.includes(name)) {
-        this.cached.push(name);
-      }
+      if (name) this.cached = touchCachedNames(this.cached, name);
     },
 
     /** 关闭页签并从 keep-alive 缓存剔除 */

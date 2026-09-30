@@ -2,10 +2,10 @@ import { computed, ref } from 'vue';
 import { Message, Modal } from '@arco-design/web-vue';
 import { ApiError } from '@newlifex/api-core';
 import cubeApi from '@/api';
-import type { FieldMeta } from '@/core/types/field';
 import { isEnableField, isTruthy } from '@/core/utils/fieldBadge';
+import { shouldReloadAfterPatch } from '@/core/utils/patchReload';
 import { BATCH_ENABLE_MAX } from '@/core/utils/viewMapping';
-import { getValueByKey, normalizeKeysByFields, setValueByKey } from '@/core/utils/url';
+import { getValueByKey, setValueByKey } from '@/core/utils/url';
 import { formatApiError } from '@/core/utils/apiError';
 import { readFieldPatchResult } from '@/core/utils/fieldPatchResult';
 import { resolveFieldsForKind } from '@/core/utils/fieldParts';
@@ -42,6 +42,8 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
     batchEnableState,
     selectedKeys,
     tableData,
+    activeSorts,
+    viewFilter,
     chartVisible,
     chartList,
   } = ctx;
@@ -78,8 +80,8 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
    * 点击 Boolean 字段徽标（Enable 及任意 Boolean 字段）：受 Update 权限控制（flags.canEdit）。
    * fieldName 由列表/树/卡片/看板点击携带；未携带时回退到 Enable 字段（兼容）。
    * 先乐观更新本地行——按切换后的实际值即时展示（开→success 徽标、关→danger 徽标，双向而非单一禁用态），
-   * 再调后端确认；成功后 loadData 权威刷新，失败回滚并提示。
-   * Enable 字段走既有 EnableSelect/DisableSelect；其余 Boolean 字段走单字段 Update（复用 Update 接口，不改后端）。
+   * 再调后端确认。Enable 走启停接口，其它布尔走 patchFields。
+   * 字段在当前排序或筛选里才 loadData；失败回滚本地值，不刷新列表。
    */
   async function onToggleEnable(row: Record<string, unknown>, fieldName?: string) {
     if (!flags.value.canEdit) return;
@@ -106,11 +108,15 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
         else await cubeApi.page.disableSelect(typePath.value, [id as string | number]);
         Message.success(target ? '启用成功' : '禁用成功');
       } else {
-        await updateSingleBooleanField(row, field, id as string | number, target);
+        const res = await cubeApi.page.patchFields(typePath.value, {
+          id: id as string | number,
+          values: { [field.name]: newRaw },
+        });
+        const patch = readFieldPatchResult(res);
+        if (patch.fail > 0) throw new Error(patch.errors?.[0]?.message || '操作失败');
         Message.success(target ? `${label}：已开启` : `${label}：已关闭`);
       }
-      // 后端权威刷新，保证展示与后端一致（含筛选/排序/统计）
-      await loadData();
+      if (shouldReloadAfterPatch(field.name, activeSorts.value, viewFilter.value)) await loadData();
     } catch (err) {
       // 失败回滚：恢复原状态展示
       setValueByKey(row, field.name, oldRaw);
@@ -118,37 +124,6 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
     } finally {
       enableBusy.value = false;
     }
-  }
-
-  /**
-   * 单字段 Update：拉完整详情 → 仅改目标字段 → 走既有 Update(PUT) 接口（与表单保存同模式），
-   * 避免直接提交最小 payload 时覆盖其它字段。
-   */
-  async function updateSingleBooleanField(
-    row: Record<string, unknown>,
-    field: FieldMeta,
-    id: string | number,
-    target: boolean,
-  ) {
-    // 与表单编辑同源的字段集（edit 分区回退）
-    const targetFields = resolveFieldsForKind('edit', fieldParts.value);
-    let detail: Record<string, unknown> = {};
-    try {
-      const res = await cubeApi.page.getDetail(typePath.value, id);
-      detail = (res.data as Record<string, unknown>) || row;
-    } catch {
-      detail = row;
-    }
-    // 归一化到字段元数据名（PascalCase），仅保留可编辑字段
-    const model = normalizeKeysByFields(detail, targetFields);
-    // 主键 + 目标字段
-    model[pkField.value] = getValueByKey(detail, pkField.value) ?? id;
-    model[field.name] = target;
-    const payload = prepareSubmitPayload(model, targetFields, {
-      mode: 'edit',
-      pkField: pkField.value,
-    });
-    await cubeApi.page.update(typePath.value, payload);
   }
 
   const kanbanMoveBusy = ref(false);
@@ -199,7 +174,7 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
       return;
     }
     try {
-      await loadData();
+      if (shouldReloadAfterPatch(payload.field, activeSorts.value, viewFilter.value)) await loadData();
     } catch (err) {
       Message.error(formatApiError(err, '更新失败'));
     } finally {
@@ -403,7 +378,6 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
     onToggleEnable,
     kanbanGroupDrag,
     onKanbanMove,
-    updateSingleBooleanField,
     handleSave,
     handleDelete,
     confirmBatchDelete,

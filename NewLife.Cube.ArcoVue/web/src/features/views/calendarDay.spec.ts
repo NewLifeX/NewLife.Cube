@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  calendarWindow,
   canCreateOnCalendarCell,
   calendarRangeLabel,
   formatCalendarDate,
@@ -7,6 +8,7 @@ import {
   shiftCalendarCursor,
   startOfCalendarWeek,
   timeGridCreatePayload,
+  withCalendarWindow,
 } from './useCalendarMonth';
 
 describe('canCreateOnCalendarCell（OSC-260926c2b8 日历空白日新建门禁）', () => {
@@ -67,6 +69,35 @@ describe('日历模式导航（日 / 周 / 月）', () => {
     expect(formatCalendarDate(startOfCalendarWeek(new Date(2026, 8, 29)))).toBe('2026-09-28');
     expect(formatCalendarDate(startOfCalendarWeek(new Date(2026, 8, 28)))).toBe('2026-09-28');
     expect(formatCalendarDate(startOfCalendarWeek(new Date(2026, 8, 27)))).toBe('2026-09-21');
+  });
+
+  it('calendarWindow 月/周/日为本地壁钟开区间', () => {
+    const cursor = new Date(2026, 8, 30);
+    expect(calendarWindow('month', cursor)).toEqual({
+      start: '2026-09-01T00:00:00',
+      end: '2026-10-01T00:00:00',
+    });
+    expect(calendarWindow('week', cursor)).toEqual({
+      start: '2026-09-28T00:00:00',
+      end: '2026-10-05T00:00:00',
+    });
+    expect(calendarWindow('day', cursor)).toEqual({
+      start: '2026-09-30T00:00:00',
+      end: '2026-10-01T00:00:00',
+    });
+  });
+
+  it('withCalendarWindow：any 且有条件时原样返回；all 追加 gte/lt 且不改入参', () => {
+    const win = calendarWindow('day', new Date(2026, 8, 30));
+    const anyFilter = { logic: 'any' as const, conditions: [{ field: 'Name', op: 'eq' as const, value: 'a' }] };
+    expect(withCalendarWindow(anyFilter, 'Start', 'DateTime', win)).toBe(anyFilter);
+    const all = { logic: 'all' as const, conditions: [{ field: 'Name', op: 'eq' as const, value: 'a' }] };
+    const next = withCalendarWindow(all, 'Start', 'DateTime', win);
+    expect(next).not.toBe(all);
+    expect(all.conditions).toHaveLength(1);
+    expect(next.conditions[1]).toMatchObject({ field: 'Start', op: 'gte', value: win.start });
+    expect(next.conditions[2]).toMatchObject({ field: 'Start', op: 'lt', value: win.end });
+    expect(withCalendarWindow(all, 'Start', 'String', win)).toBe(all);
   });
 
   it('calendarRangeLabel：月 / 周 / 日标题（含跨年周）', () => {

@@ -230,11 +230,10 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         };
 
         // 列表字段同样补 Map 外键候选（列表外键编号列直接出名称/徽章；列筛选候选来自 search 分区）
-        var listFields = OnGetFields(ViewKinds.List, null);
-        // 全部可用列表字段（应用用户列配置前，供前端列设置面板使用）
+        // List 只取一次：allList 供列设置（未套用户隐藏），克隆后再 Prepare，避免第二次 OnGetFields
         var allList = OnGetFields(ViewKinds.List, null);
         FixSearchMapCandidates(allList);
-        FixSearchMapCandidates(listFields);
+        var listFields = allList.Clone();
         var list = PrepareFieldsForApi(listFields);
         var addForm = PrepareMapViewFields(ViewKinds.AddForm);
         var editForm = PrepareMapViewFields(ViewKinds.EditForm);

@@ -1,6 +1,6 @@
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { nextTick, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref, watch } from 'vue';
 import cubeApi from '@/api';
-import { ensureEchartsTheme, initEcharts } from '@/core/utils/echartsTheme';
+import { ensureEchartsTheme, initEcharts, type EChartsHandle } from '@/core/utils/echartsTheme';
 import { themeColor } from '@/core/utils/themeColor';
 import type { WidgetCardProps } from './context';
 
@@ -26,7 +26,7 @@ function readPoint(raw: unknown): Point | null {
 export function useMonitorChartWidget(props: WidgetCardProps) {
   const chartEl = ref<HTMLElement | null>(null);
   const points = ref<Point[]>([]);
-  let chart: ReturnType<typeof initEcharts> | null = null;
+  let chart: EChartsHandle | null = null;
   let timer: ReturnType<typeof setInterval> | null = null;
   let ro: ResizeObserver | null = null;
   let raf = 0;
@@ -73,7 +73,7 @@ export function useMonitorChartWidget(props: WidgetCardProps) {
     await ensureEchartsTheme(undefined);
     if (!chart || chart.getDom() !== el) {
       chart?.dispose();
-      chart = initEcharts(el);
+      chart = await initEcharts(el);
       bindResize(el);
     }
     const list = points.value;
@@ -148,16 +148,31 @@ export function useMonitorChartWidget(props: WidgetCardProps) {
     void render();
   });
 
-  onMounted(() => {
-    void render();
+  function startTimer() {
+    if (timer) clearInterval(timer);
     timer = setInterval(() => {
       void tick();
     }, 5000);
+  }
+
+  function stopTimer() {
+    if (timer) clearInterval(timer);
+    timer = null;
+  }
+
+  onMounted(() => {
+    void render();
+    startTimer();
+  });
+
+  onDeactivated(stopTimer);
+  onActivated(() => {
+    startTimer();
+    void render();
   });
 
   onBeforeUnmount(() => {
-    if (timer) clearInterval(timer);
-    timer = null;
+    stopTimer();
     if (raf) cancelAnimationFrame(raf);
     raf = 0;
     ro?.disconnect();

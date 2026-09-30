@@ -66,6 +66,20 @@ import { buildTree, canBuildTree } from '@/core/utils/treeBuilder';
 import { hexToRgba } from './useListViews';
 import type { WorkflowPageBlock } from '@/core/types/workflow';
 
+/** fit 内容高度：短表至少 240，按行估算表头加行高。 */
+export function fitContentHeight(rowCount: number): number {
+  return Math.max(240, 48 + rowCount * 40);
+}
+
+/**
+ * fit 宿主高度。内容不高于视口时用内容高（可以小于 240）；
+ * 内容高出视口时用视口，且不低于 240。
+ */
+export function resolveFitHeight(contentHeight: number, viewport: number): number {
+  if (contentHeight <= viewport) return contentHeight;
+  return Math.max(240, viewport);
+}
+
 /**
  * DefaultList 共享状态上下文（OSC-260813c3e9）：全部 ref/reactive/computed/常量只创建一次，
  * 领域 composable 通过 ctx 消费，禁止各自重复创建。
@@ -558,7 +572,9 @@ export function createListContext(props: { type: string; authId?: number }) {
 
   const resolvedTableHeight = computed(() => {
     const mode = chrome.value.heightMode;
-    if (mode === 'fit') return Math.max(240, 48 + tableData.value.length * 40);
+    if (mode === 'fit') {
+      return resolveFitHeight(fitContentHeight(tableData.value.length), measuredTableHeight.value);
+    }
     // default/fill：动态填满可视空间，分页器与外壳底部保持在首屏内
     return measuredTableHeight.value;
   });

@@ -32,7 +32,7 @@ export function useListChartModal(props: ListChartModalProps, emit: ListChartMod
       if (instances.value[idx]) instances.value[idx].dispose();
       const theme = appStore.loginConfig?.echartsTheme;
       await ensureEchartsTheme(theme);
-      const inst = markRaw(initEcharts(el, theme));
+      const inst = markRaw(await initEcharts(el, theme));
       if (props.charts[idx]) inst.setOption(props.charts[idx] as import('echarts').EChartsOption);
       instances.value[idx] = inst;
     });

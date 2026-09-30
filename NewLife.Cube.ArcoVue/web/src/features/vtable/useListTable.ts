@@ -6,15 +6,17 @@ import type { FieldMeta } from '@/core/types/field';
 import type { ColumnPref, ViewFormatRule } from '@/core/utils/viewProfile';
 import { frozenLeftCount, frozenRightCount } from '@/core/utils/viewProfile';
 import {
+  buildFormatIndex,
   resolveCellFormat,
   resolveRowFormat,
   resolveRowSideColor,
   ROW_SIDE_WIDTH_PX,
+  type RowFormatHit,
 } from '@/core/utils/viewFormat';
 import { wfRowCanStart, wfRowEditLocked, wfRowInstanceId, wfRowStatus } from '@/core/types/workflow';
 import { BADGE_BORDER_RADIUS, BADGE_PADDING } from '@/core/utils/fieldBadge';
 import { getValueByKey } from '@/core/utils/url';
-import { themeColor } from '@/core/utils/themeColor';
+import { colorFromSnapshot, readThemeSnapshot, themeColor } from '@/core/utils/themeColor';
 import { customFreezeSides, freezeLineHeight, freezeLineXs } from './freezeLines';
 import { toVTableSortOption, vtableSortKey } from './vtableSortState';
 import {
@@ -192,6 +194,39 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
   let lastSetRecordsAt = 0;
   /** 分隔线层由 JS 动态创建：VTable 构造时会清空宿主容器，模板子元素会被删除 */
   let sepEl: HTMLElement | null = null;
+  const themeVars = [
+    '--primary-6',
+    '--primary-5',
+    '--danger-6',
+    '--danger-5',
+    '--link-6',
+    '--link-5',
+    '--color-text-1',
+    '--color-text-2',
+    '--color-text-3',
+    '--color-fill-1',
+    '--color-fill-2',
+    '--color-fill-3',
+    '--color-bg-2',
+    '--color-border-2',
+    '--color-border-3',
+  ];
+  let themeSnap: Record<string, string> = {};
+  function paintColor(name: string, fallback: string): string {
+    return colorFromSnapshot(themeSnap, name, fallback);
+  }
+  let formatByRow = new Map<string, RowFormatHit>();
+  let lastChecked: Record<string, unknown>[] | null = null;
+  let lastCheckedSrc: Record<string, unknown>[] | null = null;
+  let lastCheckedKeys = '';
+
+  function syncFormatIndex(records: Record<string, unknown>[]) {
+    const rules = props.formatRules || [];
+    const columns = (props.columns || []).map((c) => c.pref?.key).filter((k): k is string => !!k);
+    formatByRow = rules.length
+      ? buildFormatIndex(records, rules, props.formatFields || [], rowId, columns)
+      : new Map();
+  }
 
   /** 确保分隔线层存在（VTable 创建/重建后调用） */
   function ensureSeparatorLayer(): HTMLElement | null {
@@ -489,14 +524,14 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
         text: opsLabel(action, record),
         fontSize: 13,
         fontFamily: 'sans-serif',
-        fill: themeColor(color.token, color.fallback),
+        fill: paintColor(color.token, color.fallback),
         cursor: 'pointer',
         // 仅首项左内边距、项间距 6、末项右内边距（原先左右各 10 会叠成 20 间隙）
         boundsPadding: [0, isLast ? OPS_CELL_PAD : OPS_ITEM_GAP, 0, i === 0 ? OPS_CELL_PAD : 0],
       });
       link.states = {
         hover: {
-          fill: themeColor(color.hoverToken, color.hoverFallback),
+          fill: paintColor(color.hoverToken, color.hoverFallback),
           underline: 1,
         },
       };
@@ -717,17 +752,17 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
                 }
               : {
                   // 非徽标字段的普通按钮底色/文字跟随主题（VTable canvas 读 Arco token）
-                  buttonColor: themeColor('--color-fill-2', '#F2F3F5'),
-                  buttonBorderColor: themeColor('--color-fill-2', '#F2F3F5'),
+                  buttonColor: paintColor('--color-fill-2', '#F2F3F5'),
+                  buttonBorderColor: paintColor('--color-fill-2', '#F2F3F5'),
                   buttonBorderRadius: BADGE_BORDER_RADIUS,
                   buttonPadding: BADGE_PADDING,
-                  buttonDisableColor: themeColor('--color-fill-2', '#F2F3F5'),
-                  buttonDisableBorderColor: themeColor('--color-fill-2', '#F2F3F5'),
-                  buttonTextDisableColor: themeColor('--color-text-2', '#4E5969'),
+                  buttonDisableColor: paintColor('--color-fill-2', '#F2F3F5'),
+                  buttonDisableBorderColor: paintColor('--color-fill-2', '#F2F3F5'),
+                  buttonTextDisableColor: paintColor('--color-text-2', '#4E5969'),
                 };
             return {
               textAlign: 'center',
-              color: badge?.textColor || themeColor('--color-text-1', '#4b5563'),
+              color: badge?.textColor || paintColor('--color-text-1', '#4b5563'),
               cursor: c.enableToggle ? 'pointer' : 'default',
               buttonStyle,
               ...(isFormatBodyRow(args) ? cellBgPatch(record, c.pref.key) : {}),
@@ -769,7 +804,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
               : undefined;
           if (c.cellLink) {
             return {
-              color: themeColor(OPS_LINK_COLOR.token, '#165DFF'),
+              color: paintColor(OPS_LINK_COLOR.token, '#165DFF'),
               cursor: 'pointer',
               textDecoration: 'underline',
               ...fmt,
@@ -818,17 +853,22 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
   }
 
   function withChecks(records: Record<string, unknown>[]) {
+    const key = `${props.groupFields?.length ? 'g' : 't'}\u0000${(props.selectedKeys || []).map(String).join('\u0001')}`;
+    if (lastChecked && lastCheckedSrc === records && lastCheckedKeys === key) return lastChecked;
     const selected = new Set((props.selectedKeys || []).map(String));
     // 分组模式（OSC-0015 重构：VTable 原生 groupBy + rowSeriesNumber checkbox）：
     // 勾选初值写回记录 `_vtable_rowSeries_number` 字段，供 VTable 初始化行号列 checkbox
-    if (props.groupFields?.length) {
-      return records.map((r) => ({ ...r, _vtable_rowSeries_number: selected.has(rowId(r)) }));
-    }
-    return records.map((r) => ({
-      ...r,
-      // 组头行不参与勾选：渲染为禁用态（VTable checkbox 列支持 {checked, disable} 对象值）
-      __checked: r.__groupHeader ? { checked: false, disable: true } : selected.has(rowId(r)),
-    }));
+    const next = props.groupFields?.length
+      ? records.map((r) => ({ ...r, _vtable_rowSeries_number: selected.has(rowId(r)) }))
+      : records.map((r) => ({
+          ...r,
+          // 组头行不参与勾选：渲染为禁用态（VTable checkbox 列支持 {checked, disable} 对象值）
+          __checked: r.__groupHeader ? { checked: false, disable: true } : selected.has(rowId(r)),
+        }));
+    lastChecked = next;
+    lastCheckedSrc = records;
+    lastCheckedKeys = key;
+    return next;
   }
 
   /** 组头行显示文本（首数据列）或空串（其余列）；count 取组头节点自身字段 */
@@ -842,8 +882,8 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
   function groupHeaderStyle(rec: Record<string, unknown> | undefined): Record<string, unknown> | null {
     if (!rec?.__groupHeader) return null;
     return {
-      bgColor: themeColor('--color-fill-1', '#F7F8FA'),
-      color: themeColor('--color-text-1', '#1D2129'),
+      bgColor: paintColor('--color-fill-1', '#F7F8FA'),
+      color: paintColor('--color-text-1', '#1D2129'),
       fontWeight: 600,
     };
   }
@@ -873,9 +913,16 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
 
   function sideBarPatch(record: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
     if (!record || record.__groupHeader) return undefined;
-    const color = resolveRowSideColor(record, props.formatRules || [], props.formatFields || []);
+    const rules = props.formatRules || [];
+    const id = rowId(record);
+    const hit = rules.length && id ? formatByRow.get(id) : undefined;
+    const color = hit
+      ? hit.side
+      : rules.length
+        ? resolveRowSideColor(record, rules, props.formatFields || [])
+        : undefined;
     if (!color) return undefined;
-    const edge = themeColor('--color-border-2', '#E5E6EB');
+    const edge = paintColor('--color-border-2', '#E5E6EB');
     return {
       borderLineWidth: [1, 0, 0, ROW_SIDE_WIDTH_PX],
       borderColor: [edge, edge, edge, color],
@@ -884,7 +931,13 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
 
   function cellBgPatch(record: Record<string, unknown> | undefined, columnField: string): Record<string, unknown> | undefined {
     if (!record || record.__groupHeader) return undefined;
-    const fmt = resolveCellFormat(record, columnField, props.formatRules || [], props.formatFields || []);
+    const rules = props.formatRules || [];
+    if (!rules.length) return undefined;
+    const id = rowId(record);
+    const hit = id ? formatByRow.get(id) : undefined;
+    const fmt = hit
+      ? hit.cells[columnField.toLowerCase()]
+      : resolveCellFormat(record, columnField, rules, props.formatFields || []);
     if (!fmt) return undefined;
     return {
       ...(fmt.color ? { bgColor: fmt.color } : {}),
@@ -895,7 +948,11 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
   /** 整行填色铺到勾选 / 展开 / 操作等 chrome 列（单元格/整列规则不涂这些列） */
   function rowChromeFillPatch(record: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
     if (!record || record.__groupHeader) return undefined;
-    const fmt = resolveRowFormat(record, props.formatRules || [], props.formatFields || []);
+    const rules = props.formatRules || [];
+    if (!rules.length) return undefined;
+    const id = rowId(record);
+    const hit = id ? formatByRow.get(id) : undefined;
+    const fmt = hit ? hit.row : resolveRowFormat(record, rules, props.formatFields || []);
     if (!fmt) return undefined;
     return {
       ...(fmt.color ? { bgColor: fmt.color } : {}),
@@ -990,6 +1047,8 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
   }
 
   function buildOption(): any {
+    themeSnap = readThemeSnapshot(themeVars);
+    syncFormatIndex((props.records || []) as Record<string, unknown>[]);
     const cols = buildColumns();
     const groupedMode = !!props.groupFields?.length;
     // 树视图仍用 VTable hierarchy；分组视图不再设 tree（VTable 会把 checkbox 列自动设为 tree 列导致渲染异常），
@@ -1066,73 +1125,73 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       // 默认表头与数据行区分；颜色经 themeColor 读取 Arco 语义 token（canvas 不支持 CSS 变量，随亮/暗主题与用户主色）
       theme: {
         // VTable DEFAULT 主题 underlay 为 #FFF：空数据区/表体空白会透白；须跟 body 底色
-        underlayBackgroundColor: themeColor('--color-bg-2', '#FFFFFF'),
+        underlayBackgroundColor: paintColor('--color-bg-2', '#FFFFFF'),
         // 默认 cellBorderClipDirection=top-left 会裁掉底/右边；行分隔须用顶边
         // borderLineWidth: [上, 右, 下, 左] — 仅行分隔，无列分隔
         // DEFAULT.defaultStyle.bgColor=#ECF1F5，未覆盖时暗色下仍呈浅蓝灰
         defaultStyle: {
-          bgColor: themeColor('--color-bg-2', '#FFFFFF'),
-          color: themeColor('--color-text-1', '#1D2129'),
-          borderColor: themeColor('--color-border-2', '#E5E6EB'),
+          bgColor: paintColor('--color-bg-2', '#FFFFFF'),
+          color: paintColor('--color-text-1', '#1D2129'),
+          borderColor: paintColor('--color-border-2', '#E5E6EB'),
           borderLineWidth: [1, 0, 0, 0],
         },
         // 功能图标（展开/折叠箭头、排序等）颜色：VTable 默认 #141414 深黑，暗色下深底不可见
         // 读取 Arco 文字色 token，随亮/暗主题自动切换
         functionalIconsStyle: {
-          expand_color: themeColor('--color-text-3', '#86909C'),
-          collapse_color: themeColor('--color-text-3', '#86909C'),
-          sort_color: themeColor('--color-text-3', '#86909C'),
+          expand_color: paintColor('--color-text-3', '#86909C'),
+          collapse_color: paintColor('--color-text-3', '#86909C'),
+          sort_color: paintColor('--color-text-3', '#86909C'),
         },
         // 勾选框：VRender 默认 defaultFill 为白底，暗色表头上会整块发白；未选透明填充 + 描边，选中跟 Arco 主色
         checkboxStyle: {
           defaultFill: 'transparent',
-          defaultStroke: themeColor('--color-border-3', '#C9CDD4'),
-          disableFill: themeColor('--color-fill-2', '#F2F3F5'),
-          checkedFill: themeColor('--primary-6', '22, 93, 255'),
-          checkedStroke: themeColor('--primary-6', '22, 93, 255'),
-          disableCheckedFill: themeColor('--color-fill-3', '#E5E6EB'),
-          disableCheckedStroke: themeColor('--color-border-2', '#E5E6EB'),
+          defaultStroke: paintColor('--color-border-3', '#C9CDD4'),
+          disableFill: paintColor('--color-fill-2', '#F2F3F5'),
+          checkedFill: paintColor('--primary-6', '22, 93, 255'),
+          checkedStroke: paintColor('--primary-6', '22, 93, 255'),
+          disableCheckedFill: paintColor('--color-fill-3', '#E5E6EB'),
+          disableCheckedStroke: paintColor('--color-border-2', '#E5E6EB'),
         },
         headerStyle: {
-          bgColor: themeColor('--color-fill-2', '#F2F3F5'),
-          color: themeColor('--color-text-2', '#4E5969'),
+          bgColor: paintColor('--color-fill-2', '#F2F3F5'),
+          color: paintColor('--color-text-2', '#4E5969'),
           fontWeight: 500,
           fontSize: 13,
-          borderColor: themeColor('--color-border-2', '#E5E6EB'),
+          borderColor: paintColor('--color-border-2', '#E5E6EB'),
           borderLineWidth: [1, 0, 0, 0],
         },
         // 分组标题行样式（groupBy）：浅灰底 + 加粗，与普通行区分（OSC-0015）
         groupTitleStyle: {
-          bgColor: themeColor('--color-fill-1', '#F7F8FA'),
-          color: themeColor('--color-text-1', '#1D2129'),
+          bgColor: paintColor('--color-fill-1', '#F7F8FA'),
+          color: paintColor('--color-text-1', '#1D2129'),
           fontWeight: 600,
           fontSize: 13,
-          borderColor: themeColor('--color-border-2', '#E5E6EB'),
+          borderColor: paintColor('--color-border-2', '#E5E6EB'),
           borderLineWidth: [1, 0, 0, 0],
         },
         bodyStyle: {
-          bgColor: themeColor('--color-bg-2', '#FFFFFF'),
-          color: themeColor('--color-text-1', '#1D2129'),
+          bgColor: paintColor('--color-bg-2', '#FFFFFF'),
+          color: paintColor('--color-text-1', '#1D2129'),
           fontWeight: 400,
           fontSize: 13,
-          borderColor: themeColor('--color-border-2', '#E5E6EB'),
+          borderColor: paintColor('--color-border-2', '#E5E6EB'),
           borderLineWidth: [1, 0, 0, 0],
           hover: {
-            cellBgColor: themeColor('--color-fill-1', '#F7F8FA'),
-            inlineRowBgColor: themeColor('--color-fill-1', '#F7F8FA'),
+            cellBgColor: paintColor('--color-fill-1', '#F7F8FA'),
+            inlineRowBgColor: paintColor('--color-fill-1', '#F7F8FA'),
           },
         },
         // 右冻结操作列与表体共用 hover，避免整行填色后操作区选择态发花
         rightFrozenStyle: {
-          bgColor: themeColor('--color-bg-2', '#FFFFFF'),
-          color: themeColor('--color-text-1', '#1D2129'),
+          bgColor: paintColor('--color-bg-2', '#FFFFFF'),
+          color: paintColor('--color-text-1', '#1D2129'),
           fontWeight: 400,
           fontSize: 13,
-          borderColor: themeColor('--color-border-2', '#E5E6EB'),
+          borderColor: paintColor('--color-border-2', '#E5E6EB'),
           borderLineWidth: [1, 0, 0, 0],
           hover: {
-            cellBgColor: themeColor('--color-fill-1', '#F7F8FA'),
-            inlineRowBgColor: themeColor('--color-fill-1', '#F7F8FA'),
+            cellBgColor: paintColor('--color-fill-1', '#F7F8FA'),
+            inlineRowBgColor: paintColor('--color-fill-1', '#F7F8FA'),
           },
         },
         frameStyle: {
@@ -1154,8 +1213,8 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
         },
         // 滚动条：DEFAULT 浅色轨在暗色下刺眼
         scrollStyle: {
-          scrollRailColor: themeColor('--color-fill-2', '#F2F3F5'),
-          scrollSliderColor: themeColor('--color-fill-3', '#E5E6EB'),
+          scrollRailColor: paintColor('--color-fill-2', '#F2F3F5'),
+          scrollSliderColor: paintColor('--color-fill-3', '#E5E6EB'),
         },
       },
     };
@@ -1475,6 +1534,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
       mountTable();
       return;
     }
+    syncFormatIndex((props.records || []) as Record<string, unknown>[]);
     applying = true;
     lastSetRecordsAt = Date.now();
     try {

@@ -56,6 +56,7 @@
 | OSC-260922201a — 2026-09-25 | 发布校验按 kind 分支；UI 重构同步三件套；镜像防复活；排除统计忌文案耦合 |
 | OSC-26092694a1 — 2026-09-29 | 撤回要改成功标准；布尔分组用原始值；临时视图验完即删 |
 | OSC-260926c2b8 — 2026-09-29 | 抽屉滚动链与输入底色；值集三层拒绝矩阵；存储偏好≠代码；坏补丁拼坏扫描 |
+| OSC-2609307879 — 2026-09-30 | 连接名占用时内存库不生效；api-core 要先构建 dist；表头图标在模块顶层 |
 
 ---
 
@@ -382,3 +383,9 @@
 - **值集 `entity:` 拒绝矩阵要按层验证**：无 Lov 菜单→控制器 403；有 Lov 菜单、无目标实体→守卫 403（`无权访问[X]值集数据`）；BatchLabel 省略键（`data:{}`，不 500）；对照 admin 200。值集码为 `Entity.{FullName}` 或短名（`Entity.User`）；接口在 `/api/Admin/Lov/*`（`/Admin/Lov/*` 直连 404，勿误判）。
 - **存储偏好 ≠ 代码行为**：验收时看到的分页大小（如“1000 条/页”）可能只是演示账号已存偏好（部门/菜单页），要区分数据与实现，避免误报回归。
 - **坏补丁会拼坏相邻 CSS 块**：OSC-0009 曾把两条规则插进 `.detail-field {}` 体内并留悬空声明；批量补丁后回读结构，可扫 `^\}\s+[a-z-]+\s*:` 找悬挂声明。
+
+## OSC-2609307879 — 2026-09-30
+
+- **连接名已被占用时 `AddConnStr` 不会换成内存库**：地区名称测试用 `Data Source=Osc7879Area;Mode=Memory;Cache=Shared` 写 `Membership`。验收第二次跑在已有 `Area.ID=78790001` 上插入，报 `UNIQUE constraint failed`。固定主键要先删再插，断言后清理。
+- **`api-core` 类型在 `dist`**：`createPageApi` 加了 `areaNames` 之后，web 的 `vue-tsc` 仍报属性不存在，直到在 `packages/api-core` 执行 `pnpm build`。改这个包的公开方法后，验收前先出声明文件。
+- **模块顶层注册的图标读不到组合式函数里的主题快照**：排序表头 SVG 在 `useListTable` 外面 `register.icon`。单元格 `style` 用 `readThemeSnapshot`；这对图标仍每次 `themeColor`。不要把函数内的 `paintColor` 抽去替换模块顶层调用。

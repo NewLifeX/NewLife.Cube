@@ -1,6 +1,6 @@
 import { markRaw, nextTick, ref, watch } from 'vue';
 import { applyChartData } from '@/core/utils/viewProfile';
-import { ensureEchartsTheme, initEcharts } from '@/core/utils/echartsTheme';
+import { ensureEchartsTheme, initEcharts, type EChartsHandle } from '@/core/utils/echartsTheme';
 import { useAppStore } from '@/stores/app';
 
 /** ChartOptionEditor 组件 props 类型（与 ChartOptionEditor.vue defineProps 泛型逐字一致） */
@@ -32,7 +32,7 @@ export function useChartOptionEditor(props: ChartOptionEditorProps, emit: ChartO
   const text = ref('');
   const error = ref('');
   const previewRef = ref<HTMLElement | null>(null);
-  let inst: ReturnType<typeof initEcharts> | null = null;
+  let inst: EChartsHandle | null = null;
 
   function init() {
     text.value =
@@ -77,7 +77,7 @@ export function useChartOptionEditor(props: ChartOptionEditorProps, emit: ChartO
     if (inst) inst.dispose();
     const theme = appStore.loginConfig?.echartsTheme;
     await ensureEchartsTheme(theme);
-    inst = markRaw(initEcharts(previewRef.value, theme));
+    inst = markRaw(await initEcharts(previewRef.value, theme));
     try {
       const o = parse();
       if (o) inst.setOption(applyChartData(o, props.rows));

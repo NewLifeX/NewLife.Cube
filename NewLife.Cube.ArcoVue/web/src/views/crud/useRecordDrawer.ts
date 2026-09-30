@@ -23,7 +23,7 @@ import { filterDetailAuditFields } from '@/core/utils/auditDisplay';
 import { recordDrawerWidth } from './recordDrawerWidth';
 import { isCascaderField } from '@/core/utils/fieldControl';
 import { fetchBatchLabel } from '@/core/utils/lov-api';
-import { mergeAreaLabel } from '@/core/utils/areaLabels';
+import { chunkAreaIds, mergeAreaLabel, pendingAreaIds } from '@/core/utils/areaLabels';
 import { parseRemarkDiff, type RemarkDiff } from '@/core/utils/logRemarkDiff';
 import { useUserStore } from '@/stores/user';
 import cubeApi from '@/api';
@@ -270,25 +270,35 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
     return detailText(field, rawOf(field), { areaLabelCache: rowAreaLabels.value });
   }
 
-  /** 打开详情/编辑前补齐当前行标签：地区叶子 getDetail + LIST LOV BatchLabel（OSC-2608139feb） */
+  /** 打开详情/编辑前补齐当前行标签：地区叶子合并一次 Names，LIST LOV 仍 BatchLabel */
   async function hydrateRowLabels() {
     if (props.mode === 'add') return;
+    const areaIds: string[] = [];
+    for (const f of props.fields) {
+      if (!isCascaderField(f)) continue;
+      const v = rawOf(f);
+      if (v == null || v === '') continue;
+      areaIds.push(String(v));
+    }
+    const pending = pendingAreaIds(areaIds, rowAreaLabels.value);
+    if (pending.length) {
+      await Promise.all(
+        chunkAreaIds(pending).map(async (ids) => {
+          try {
+            const res = await cubeApi.page.areaNames(ids);
+            const data = res.data || {};
+            for (const [id, name] of Object.entries(data)) mergeAreaLabel(rowAreaLabels.value, id, name);
+          } catch {
+            /* ignore */
+          }
+        }),
+      );
+    }
     for (const f of props.fields) {
       const v = rawOf(f);
       if (v == null || v === '') continue;
-      if (isCascaderField(f)) {
-        if (rowAreaLabels.value[String(v)]) continue;
-        try {
-          const res = await cubeApi.page.getDetail<Record<string, unknown>>('/Cube/Area', v as number | string);
-          const data = (res as unknown as { data?: Record<string, unknown> })?.data ?? res;
-          if (data && typeof data === 'object') {
-            const rec = data as Record<string, unknown>;
-            mergeAreaLabel(rowAreaLabels.value, v, (rec.name ?? rec.Name) as unknown);
-          }
-        } catch {
-          /* ignore */
-        }
-      } else if (f.lovCode && !(f.dataSource && Object.keys(f.dataSource).length)) {
+      if (isCascaderField(f)) continue;
+      if (f.lovCode && !(f.dataSource && Object.keys(f.dataSource).length)) {
         try {
           const map = await fetchBatchLabel({ lovCode: f.lovCode, values: [String(v)] });
           f.dataSource = { ...(f.dataSource || {}), ...map };

@@ -41,3 +41,16 @@ export function themeColor(varName: string, fallback: string): string {
   if (/^\d+(?:\s*,\s*\d+){2}$/.test(v)) return `rgb(${v})`;
   return v;
 }
+
+/** 一次读取一组语义色，供表格绘制复用，避免单元格回调里反复 getComputedStyle。 */
+export function readThemeSnapshot(vars: readonly string[]): Record<string, string> {
+  const snap: Record<string, string> = {};
+  for (const name of vars) snap[name] = themeColor(name, '');
+  return snap;
+}
+
+/** 快照里没有该变量时用调用方兜底色。 */
+export function colorFromSnapshot(snap: Record<string, string>, name: string, fallback: string): string {
+  const v = snap[name];
+  return v ? v : fallback;
+}

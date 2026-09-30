@@ -40,3 +40,28 @@ export function collectCascaderIds(
   }
   return [...ids];
 }
+
+/** 地区名称接口单次上限（与后端 NormalizeNameIds 一致） */
+export const AREA_NAME_CHUNK = 200;
+
+/** 去掉缓存里已有的叶子 ID。 */
+export function pendingAreaIds(ids: (number | string)[], cache: Record<string, string>): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const id of ids) {
+    const key = String(id);
+    if (!key || cache[key] || seen.has(key)) continue;
+    seen.add(key);
+    out.push(key);
+  }
+  return out;
+}
+
+/** 按固定片大小切分 ID。空列表返回空数组。 */
+export function chunkAreaIds(ids: string[], size = AREA_NAME_CHUNK): string[][] {
+  if (!ids.length) return [];
+  const step = size > 0 ? size : ids.length;
+  const chunks: string[][] = [];
+  for (let i = 0; i < ids.length; i += step) chunks.push(ids.slice(i, i + step));
+  return chunks;
+}

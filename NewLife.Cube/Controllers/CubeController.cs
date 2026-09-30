@@ -625,7 +625,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         var set = CubeSetting.Current;
         var allowTenant = set.EnableTenant;
         var allowedIds = user?.Roles?.SelectMany(r => r.Resources).ToArray() ?? [];
-        var permissionedIds = Role.FindAll().SelectMany(r => r.Resources).ToArray();
+        var permissionedIds = Role.FindAllWithCache().SelectMany(r => r.Resources).ToArray();
 
         Boolean IsAccessible(IMenu m) => (allowedIds.Contains(m.ID) || !permissionedIds.Contains(m.ID))
             && (allowTenant || !NewLife.Cube.Membership.MenuHelper.IsTenantMenu(m));
