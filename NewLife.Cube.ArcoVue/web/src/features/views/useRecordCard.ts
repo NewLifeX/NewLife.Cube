@@ -26,6 +26,8 @@ interface RecordCardProps {
   titleFormatColor?: string;
   titleFormatBold?: boolean;
   sideFormatColor?: string;
+  /** 看板卡片：标题栏右侧折叠正文与操作 */
+  collapsible?: boolean;
 }
 
 const OPS_GAP = 6;

@@ -4,18 +4,47 @@
     :class="[
       layoutClass,
       orientationClass,
-      { 'record-card--no-image': !imageUrl, 'record-card--side': !!sideFormatColor },
+      {
+        'record-card--no-image': !imageUrl,
+        'record-card--side': !!sideFormatColor,
+        'record-card--folded': collapsed,
+      },
     ]"
     :style="cardShellStyle"
     @dblclick="onDblClick"
   >
     <div class="record-card-header" :style="headerFormatStyle">
       <div class="record-card-title" :style="titleTextStyle" :title="title">{{ title }}</div>
+      <button
+        v-if="collapsible"
+        type="button"
+        class="record-card-fold"
+        :aria-expanded="collapsed ? 'false' : 'true'"
+        :aria-label="collapsed ? '展开' : '折叠'"
+        :title="collapsed ? '展开' : '折叠'"
+        @click.stop="toggleCollapsed"
+        @dblclick.stop
+      >
+        <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
+          <path
+            d="M2.2 4.4 6 8.1 9.8 4.4"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
     </div>
-    <div v-if="imageUrl && layout !== 'row'" class="record-card-image record-card-image--bleed">
+    <div
+      v-if="imageUrl && layout !== 'row'"
+      v-show="!collapsed"
+      class="record-card-image record-card-image--bleed"
+    >
       <img :src="imageUrl" alt="" loading="lazy" decoding="async" />
     </div>
-    <div class="record-card-body">
+    <div v-show="!collapsed" class="record-card-body">
       <div v-if="imageUrl && layout === 'row'" class="record-card-image">
         <!-- 懒加载 + 异步解码：千条卡片时避免图片并发加载/解码阻塞首屏渲染 -->
         <img :src="imageUrl" alt="" loading="lazy" decoding="async" />
@@ -44,7 +73,7 @@
         </div>
       </div>
     </div>
-    <div v-if="hasActions" ref="opsRef" class="record-card-actions record-card-ops">
+    <div v-if="hasActions" v-show="!collapsed" ref="opsRef" class="record-card-actions record-card-ops">
       <button
         v-if="canViewDetail"
         type="button"
@@ -92,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import type {
   CardBodyColumns,
   CardFieldOrientation,
@@ -122,6 +151,8 @@ const props = withDefaults(
     titleFormatColor?: string;
     titleFormatBold?: boolean;
     sideFormatColor?: string;
+    /** 看板卡片：标题栏右侧折叠正文与操作 */
+    collapsible?: boolean;
   }>(),
   {
     layout: 'standard',
@@ -130,8 +161,15 @@ const props = withDefaults(
     minHeight: 0,
     enableTableDoubleClick: true,
     opsCustomLinks: () => [],
+    collapsible: false,
   },
 );
+
+const collapsed = ref(false);
+
+function toggleCollapsed() {
+  collapsed.value = !collapsed.value;
+}
 
 const emit = defineEmits<{
   detail: [row: Record<string, unknown>];
@@ -215,6 +253,37 @@ const {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+.record-card-fold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin-right: -6px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text-3);
+  cursor: pointer;
+}
+.record-card-fold:hover {
+  background: var(--color-fill-3);
+  color: var(--color-text-2);
+}
+.record-card-fold svg {
+  display: block;
+}
+.record-card--folded .record-card-fold svg {
+  transform: rotate(-90deg);
+}
+.record-card--folded .record-card-header {
+  border-bottom-color: transparent;
+}
+.record-card--folded {
+  grid-template-rows: auto;
 }
 .record-card-body {
   grid-area: body;

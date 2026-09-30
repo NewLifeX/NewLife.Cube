@@ -61,6 +61,7 @@
           :title-format-color="titleFormatColorOf(row)"
           :title-format-bold="titleFormatBoldOf(row)"
           :side-format-color="sideFormatColorOf(row)"
+          :collapsible="!compact"
           @detail="$emit('detail', $event)"
           @edit="$emit('edit', $event)"
           @delete="$emit('delete', $event)"
@@ -184,7 +185,7 @@ const {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  font-size: 13px;
+  font-size: var(--cube-font-size-body);
   font-weight: 500;
 }
 .kanban-col-head--clickable {
