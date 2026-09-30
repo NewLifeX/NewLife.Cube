@@ -48,6 +48,12 @@ function pickIndexed(field: DataField & Record<string, unknown>): boolean | unde
   return raw === true || raw === 1 || raw === '1' || raw === 'true' ? true : undefined;
 }
 
+/** 物理表字段。后端只在有列名时下发 column */
+function pickColumn(field: DataField & Record<string, unknown>): boolean | undefined {
+  const raw = field.column ?? (field as { Column?: unknown }).Column;
+  return raw === true || raw === 1 || raw === '1' || raw === 'true' ? true : undefined;
+}
+
 /** 敏感字段标记（OSC-2608273d95）：后端 GetPage 下发 sensitive，兼容 PascalCase */
 function pickSensitive(field: DataField & Record<string, unknown>): boolean | undefined {
   const raw = field.sensitive ?? field.Sensitive;
@@ -96,6 +102,7 @@ export function toFieldMeta(field: DataField): FieldMeta {
     nullable: field.nullable,
     primaryKey: field.primaryKey,
     indexed: pickIndexed(ext as DataField & Record<string, unknown>),
+    column: pickColumn(ext as DataField & Record<string, unknown>),
     readOnly: field.readOnly,
     required: field.required,
     visible: field.visible,

@@ -26,4 +26,16 @@ public class DataFieldIndexTests
         var type = new DataField(Department._.Type);
         Assert.False(type.Indexed);
     }
+
+    [Fact(DisplayName = "物理列标记 column，控制器合成字段不下发")]
+    public void Fill_Marks_PhysicalColumn()
+    {
+        var name = new DataField(Department._.Name);
+        Assert.True(name.Column);
+        Assert.Equal(true, name.ToDictionary()["column"]);
+
+        var synthetic = new DataField { Name = "Token", DisplayName = "令牌" };
+        Assert.False(synthetic.Column);
+        Assert.False(synthetic.ToDictionary().ContainsKey("column"));
+    }
 }

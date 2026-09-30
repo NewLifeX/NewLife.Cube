@@ -104,6 +104,8 @@ export interface DataField {
   primaryKey?: boolean;
   /** 可按索引排序（主键首列或索引最左列）。缺省表示不能单靠索引完成 ORDER BY */
   indexed?: boolean;
+  /** 物理表字段。缺省表示控制器添加的非表字段，不能排序 */
+  column?: boolean;
   /** 是否允许空 */
   nullable?: boolean;
   /** 是否只读 */

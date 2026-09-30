@@ -17,6 +17,18 @@ type SortPopoverEmit = <K extends keyof SortPopoverEmits>(event: K, ...args: Sor
 
 const MAX = 3;
 
+/**
+ * 能否作为排序字段。
+ * 已下发 column 时只留物理列；旧数据没有该标记时，用 hasTypeName 排除控制器合成列。
+ */
+export function isPhysicalSortField(
+  field: { column?: boolean; hasTypeName?: boolean },
+  knownColumn: boolean,
+): boolean {
+  if (knownColumn) return field.column === true;
+  return field.hasTypeName !== false;
+}
+
 /** 有索引可排序的字段排前（主键首列或索引最左列），组内保持原序 */
 export function orderSortCandidates<T extends { name?: string; indexed?: boolean; primaryKey?: boolean }>(
   fields: T[],
@@ -46,9 +58,12 @@ export function useSortPopover(props: SortPopoverProps, emit: SortPopoverEmit) {
 
   const used = computed(() => new Set(draft.value.map((s) => s.field)));
 
-  const candidateFields = computed(() =>
-    orderSortCandidates(props.fields.filter((f) => f.name && !used.value.has(f.name))),
-  );
+  const candidateFields = computed(() => {
+    const knownColumn = props.fields.some((f) => f.column === true);
+    return orderSortCandidates(
+      props.fields.filter((f) => f.name && !used.value.has(f.name) && isPhysicalSortField(f, knownColumn)),
+    );
+  });
 
   const labelOf = (name: string) => props.fields.find((f) => f.name === name)?.displayName || name;
 

@@ -90,6 +90,10 @@ public class DataField : IDictionarySource
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Boolean Indexed { get; set; }
 
+    /// <summary>是否物理表字段。控制器 AddListField 等没有对应列的字段为 false，不能参与排序</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public Boolean Column { get; set; }
+
     /// <summary>只读</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Boolean ReadOnly { get; set; }
@@ -195,6 +199,7 @@ public class DataField : IDictionarySource
         if (Nullable) dic["nullable"] = true;
         if (PrimaryKey) dic["primaryKey"] = true;
         if (Indexed) dic["indexed"] = true;
+        if (Column) dic["column"] = true;
         if (ReadOnly) dic["readOnly"] = true;
         if (Visible) dic["visible"] = true;
         // 必填显式下发 true/false（OSC-260925 审计修正）：前端 isFieldRequired 以「显式 required 优先，
@@ -329,6 +334,7 @@ public class DataField : IDictionarySource
         Nullable = field.IsNullable;
         PrimaryKey = field.PrimaryKey;
         Indexed = CanOrderByIndex(field);
+        Column = !field.ColumnName.IsNullOrEmpty();
         ReadOnly = field.ReadOnly;
 
         if (field.Map != null)

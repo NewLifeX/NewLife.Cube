@@ -73,6 +73,8 @@ export interface FieldMeta {
   primaryKey?: boolean;
   /** 可按索引排序（主键首列或索引最左列）。单独排序可走索引 */
   indexed?: boolean;
+  /** 物理表字段。为 true 才能进排序候选；缺省表示控制器合成列 */
+  column?: boolean;
   readOnly?: boolean;
   required?: boolean;
   visible?: boolean;
