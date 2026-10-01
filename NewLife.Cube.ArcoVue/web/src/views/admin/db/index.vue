@@ -72,29 +72,31 @@
       unmount-on-close
     >
       <a-alert v-if="drawerError" type="warning" show-icon>{{ drawerError }}</a-alert>
-      <a-spin v-else :loading="drawerLoading" style="display: block">
-        <template v-if="drawerMode === 'diff'">
-          <a-empty v-if="!drawerLoading && !diffRows.length" description="无差异" />
-          <a-table v-else :data="diffRows" :pagination="false" size="small">
-            <a-table-column title="表名" data-index="tableName" />
-            <a-table-column title="实体" data-index="name">
-              <template #cell="{ record }">{{ record.hasEntityModel ? record.name : '无实体' }}</template>
-            </a-table-column>
-            <a-table-column title="列名" data-index="columnName" />
-            <a-table-column title="类型" data-index="dataType" />
-          </a-table>
-        </template>
-        <template v-else>
-          <a-empty v-if="!drawerLoading && !drawerRows.length" description="无数据" />
-          <a-table v-else :data="drawerRows" :pagination="false" size="small">
-            <a-table-column title="名称" data-index="name" />
-            <a-table-column title="表名" data-index="tableName" />
-            <a-table-column title="行数" data-index="count">
-              <template #cell="{ record }">{{ record.count ?? '-' }}</template>
-            </a-table-column>
-          </a-table>
-        </template>
-      </a-spin>
+      <div v-else-if="drawerLoading" class="db-drawer-state">
+        <a-spin :loading="true" />
+        <span>正在加载…</span>
+      </div>
+      <template v-else-if="drawerMode === 'diff'">
+        <a-empty v-if="!diffRows.length" description="无差异" />
+        <a-table v-else :data="diffRows" :pagination="false" size="small">
+          <a-table-column title="表名" data-index="tableName" />
+          <a-table-column title="实体" data-index="name">
+            <template #cell="{ record }">{{ record.hasEntityModel ? record.name : '无实体' }}</template>
+          </a-table-column>
+          <a-table-column title="列名" data-index="columnName" />
+          <a-table-column title="类型" data-index="dataType" />
+        </a-table>
+      </template>
+      <template v-else>
+        <a-empty v-if="!drawerRows.length" description="无数据" />
+        <a-table v-else :data="drawerRows" :pagination="false" size="small">
+          <a-table-column title="名称" data-index="name" />
+          <a-table-column title="表名" data-index="tableName" />
+          <a-table-column title="行数" data-index="count">
+            <template #cell="{ record }">{{ record.count ?? '-' }}</template>
+          </a-table-column>
+        </a-table>
+      </template>
     </a-drawer>
   </div>
 </template>
@@ -165,5 +167,14 @@ const {
 /* 卡片底部操作按钮左对齐 */
 .db-card :deep(.arco-card-actions) {
   justify-content: flex-start;
+}
+.db-drawer-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  gap: 12px;
+  color: var(--color-text-3);
 }
 </style>

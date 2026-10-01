@@ -59,6 +59,7 @@ export function useDbPage() {
   const drawerRows = ref<DbCountItem[]>([]);
   const diffRows = ref<ReturnType<typeof flattenDiff>>([]);
   const drawerWidth = recordDrawerWidth(0);
+  let drawerRequest = 0;
 
   /** 备份/备份并压缩（Insert 权限）；无权限配置时允许（开发友好） */
   const canBackup = computed(() => {
@@ -135,6 +136,7 @@ export function useDbPage() {
   }
 
   async function openDrawer(name: string, mode: DbDrawerMode) {
+    const request = ++drawerRequest;
     drawerVisible.value = true;
     drawerMode.value = mode;
     drawerTitle.value = `${mode === 'tables' ? '表' : mode === 'entities' ? '实体' : '差异'} · ${name}`;
@@ -145,18 +147,22 @@ export function useDbPage() {
     try {
       if (mode === 'tables') {
         const data = readDbResponse<{ tables?: DbCountItem[] }>(await cubeApi.page.dbTables(name));
+        if (request !== drawerRequest) return;
         drawerRows.value = Array.isArray(data.tables) ? data.tables : [];
       } else if (mode === 'entities') {
         const data = readDbResponse<{ entities?: DbCountItem[] }>(await cubeApi.page.dbEntities(name));
+        if (request !== drawerRequest) return;
         drawerRows.value = Array.isArray(data.entities) ? data.entities : [];
       } else {
         const data = readDbResponse<{ tables?: DbDiffTable[] }>(await cubeApi.page.dbDiff(name));
+        if (request !== drawerRequest) return;
         diffRows.value = flattenDiff(Array.isArray(data.tables) ? data.tables : []);
       }
     } catch (err) {
+      if (request !== drawerRequest) return;
       drawerError.value = formatApiError(err, '数据库信息加载失败');
     } finally {
-      drawerLoading.value = false;
+      if (request === drawerRequest) drawerLoading.value = false;
     }
   }
 

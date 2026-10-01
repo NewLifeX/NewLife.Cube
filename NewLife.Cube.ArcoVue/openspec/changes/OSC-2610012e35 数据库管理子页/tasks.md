@@ -11,6 +11,7 @@
 - [x] T2-1 api-core 四个方法与 `api.spec.ts` URL 断言。
 - [x] T2-2 `dbPage.ts` 的权限与 `flattenDiff`，加 spec。
 - [x] T2-3 `useDbPage` 与 `index.vue`：四按钮、右抽屉、压缩确认。空差异文案「无差异」。
+  - [x] 修复：抽屉加载、错误、空态和表格状态互斥可见；快速切换动作不会被旧请求覆盖。
 
 ## T3 验证与文档
 
