@@ -3,7 +3,7 @@
  *
  * DynamicPage 按 typePath 探测后端契约种类：
  * - home：Admin/Index 短路（主页仪表盘，不请求任何探测）
- * - custom：Admin/Db、Admin/File，以及 Auth/Sso/Mfa/AI/Automation/CubeController 等服务控制器
+ * - custom：Admin/Db、Admin/File、Admin/Lov，以及 Auth/Sso/Mfa/AI/Automation/CubeController 等服务控制器
  *   （菜单可挂在任意 Area，如 /vTest1/Auth；无 GetPage）
  * - entity：GetPage 返回有效实体元数据 → DefaultList
  * - object：GetPage 失败且 GetFields 为数组、GET body 为对象且非分页形 → DefaultObject
@@ -23,7 +23,7 @@ export interface PageKindProbes {
 }
 
 const HOME_TYPES: ReadonlySet<string> = new Set(['admin/index']);
-const CUSTOM_TYPES: ReadonlySet<string> = new Set(['admin/db', 'admin/file']);
+const CUSTOM_TYPES: ReadonlySet<string> = new Set(['admin/db', 'admin/file', 'admin/lov']);
 
 function normalizePath(typePath: string): string {
   return typePath.replace(/^\/+/, '').replace(/\/+$/, '').toLowerCase();

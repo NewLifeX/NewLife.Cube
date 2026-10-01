@@ -33,6 +33,9 @@ public class LovController : ControllerBaseX
     [HttpGet("/api/[area]/[controller]")]
     public ApiListResponse<Object> Index()
     {
+        // 首次打开管理页时补齐样例（幂等；与 UseCube 种子互补，避免未重启宿主时列表仍空）
+        LovSampleSeeds.Ensure();
+
         var p = new Pager(WebHelper.Params);
         var type = p["type"];
         var source = p["source"];

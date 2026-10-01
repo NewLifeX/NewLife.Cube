@@ -90,6 +90,13 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '文件' },
       },
       {
+        /** 值集管理（非实体控制器，无 GetPage）；经 pageKind=custom 挂专用页（OSC-2610019c9d） */
+        path: 'Admin/Lov',
+        name: 'AdminLov',
+        component: () => import('@/views/dynamic/DynamicPage.vue'),
+        meta: { typePath: 'Admin/Lov', title: '值集' },
+      },
+      {
         /** 星尘设置（菜单 visible=false）；经探测落入 DefaultObject */
         path: 'Admin/Star',
         name: 'AdminStar',

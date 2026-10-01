@@ -429,6 +429,9 @@ public static class CubeService
         AreaBase.RegisterArea<Areas.Admin.AdminArea>();
         AreaBase.RegisterArea<Areas.Cube.CubeArea>();
 
+        // 值集管理页样例手工定义（已存在同编码则跳过）
+        Services.LovSampleSeeds.Ensure();
+
         // 插件
         var moduleManager = provider.GetRequiredService<ModuleManager>();
         var modules = moduleManager.LoadAll();

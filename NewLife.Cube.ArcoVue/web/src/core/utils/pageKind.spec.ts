@@ -42,9 +42,10 @@ describe('detectPageKind', () => {
     expect(called).toBe(false);
   });
 
-  it('Admin/Db 与 Admin/File → custom（本号新增行）', async () => {
+  it('Admin/Db、Admin/File、Admin/Lov → custom', async () => {
     expect(await detectPageKind('/Admin/Db', probes())).toBe('custom');
     expect(await detectPageKind('admin/file', probes())).toBe('custom');
+    expect(await detectPageKind('/Admin/Lov', probes())).toBe('custom');
   });
 
   it('服务控制器（含 vTest1 前缀）→ custom，不发探测', async () => {

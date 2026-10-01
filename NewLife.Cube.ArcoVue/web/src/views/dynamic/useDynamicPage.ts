@@ -40,10 +40,11 @@ export function useDynamicPage(props: DynamicPageProps) {
   /** 页面种类（entity/object/home/custom/unknown）；探测完成前为 null */
   const pageKind = ref<PageKind | null>(null);
 
-  /** custom 短路：Admin/Db、Admin/File；其余 custom 为服务控制器页 */
+  /** custom 短路：Admin/Db、Admin/File、Admin/Lov；其余 custom 为服务控制器页 */
   const normalizedPath = computed(() => typePath.value.replace(/^\/+/, '').toLowerCase());
   const isDbPage = computed(() => normalizedPath.value === 'admin/db');
   const isFilePage = computed(() => normalizedPath.value === 'admin/file');
+  const isLovPage = computed(() => normalizedPath.value === 'admin/lov');
 
   async function resolveOverride() {
     const loader = getSectionLoader(typePath.value, 'DefaultListPage');
@@ -109,5 +110,6 @@ export function useDynamicPage(props: DynamicPageProps) {
     pageKind,
     isDbPage,
     isFilePage,
+    isLovPage,
   };
 }

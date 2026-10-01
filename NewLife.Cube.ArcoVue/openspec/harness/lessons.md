@@ -60,6 +60,7 @@
 | OSC-261001e9e2 — 2026-10-01 | 刷新判断用所改字段；成功标准与修订同时改；冒烟要看真实排序 |
 | OSC-2610011cd6 — 2026-10-01 | 确认文案放 title；Kick 按删除权限裁 URL；ListFields 沿基类反射 |
 | OSC-2610011ff2 — 2026-10-01 | 隐藏路由不改 Visible；固定图滤持久化；boxplot 须升序；spin 防宽 0 |
+| OSC-2610019c9d — 2026-10-01 | getList type 须前导 /；执行期扩范围即时改三件套；Form tip 用 #label；抽屉表 nowrap |
 
 ---
 
@@ -411,3 +412,10 @@
 - **开发者固定图用 `dev-chart-*` 运行时注入，持久化前必须滤掉**：否则会写进个人 `DashboardJson`。设置/升级/删除对固定图隐藏。
 - **ECharts boxplot 五项必须升序 `[min,Q1,median,Q3,max]`**：乱序会画成横线。演示数据用业务指标拼五数时，前后端都要再 `Sort`。
 - **`a-spin` 包图表时用块级宽高**：默认 `inline-block` 在空容器里宽为 0，ECharts init 失败；配合 `chartEl` watch 与 `ResizeObserver`。
+
+## OSC-2610019c9d — 2026-10-01
+
+- **`cubeApi.page.getList/add/update/remove` 的 type 必须带前导 `/`**：否则 `resolveRequestUrl` 拼成 `/apiAdmin/Lov` 404。自定义页统一写 `/Admin/Xxx`。
+- **执行期扩大范围（如样例种子）要立刻改 proposal/design/tasks**：初稿写「不改后端」却加了 `LovSampleSeeds` 时，验收会当文档缺口；三件套与 AC 同步后再验。
+- **配置说明放 Form `#label` 槽（标签下左对齐）**：tip 跟在控件右侧会挤窄输入框，抽屉里尤其明显。
+- **抽屉内嵌表格防折行：固定列宽 + `white-space: nowrap` + 横向滚动**：短英文（如 `center`）也会在窄列里折成两行。

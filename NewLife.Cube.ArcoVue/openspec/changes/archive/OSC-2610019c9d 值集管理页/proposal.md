@@ -20,7 +20,7 @@
 | 1 | 页面只管理 `LovStore` 手工定义。代码枚举与 `[LovList]` 不在本列表出现（与控制器 Index 一致）。 |
 | 2 | 列表数据：`GET /api/Admin/Lov`。详情：`GET /api/Admin/Lov/Detail?id=`。新增：`POST /api/Admin/Lov`。更新：`PUT /api/Admin/Lov`。删除：`DELETE /api/Admin/Lov?id=`。配置：`GET /api/Admin/Lov/GetConfig?id=`、`POST /api/Admin/Lov/SaveConfig`。 |
 | 3 | 定义字段：`lovCode`、`name`、`type`（仅 `ENUM` / `LIST`）、`valueField`、`labelField`、`enabled`、`remark`。`lovCode` 新增后不可改。 |
-| 4 | 配置抽屉：`type=ENUM` 只编辑 `enumItems`（value、label、sort）；`type=LIST` 只编辑 `listConfig.requestUrl`、`valueField`、`labelField`、`searchFields`、`tableColumns`。保存为全量替换，与 `SaveConfig` 现语义一致。 |
+| 4 | 配置抽屉：`type=ENUM` 编辑 `enumItems`（value、label、sort、enabled）；`type=LIST` 三 Tab 对齐 Cube.Vue（listConfig 全字段 + searchFields + tableColumns 及编辑弹层）。保存为全量替换，与 `SaveConfig` 现语义一致。 |
 | 5 | 路由：`router/index.ts` 增加静态子路由 `Admin/Lov`；`pageKind` 将 `admin/lov` 标为 `custom`，`DynamicPage` 挂值集页。菜单动态注册与静态路由命中同一页。 |
 | 6 | 权限：用 `userStore.getMenuPermission('Admin/Lov')`。无键或含 Detail 可看列表；无 Insert 隐藏新增；无 Update 隐藏编辑与配置保存；无 Delete 隐藏删除。 |
 
@@ -48,4 +48,4 @@
 
 ## 7. 测试范围
 
-触及 `web/`。执行期跑本号 Vitest，并 `vue-tsc -b`。不改 `NewLife.Cube` 业务代码，后端测试 N/A。验收期本号新增单测全部通过，`pnpm exec vue-tsc -b` 无错误。
+触及 `web/` 与样例种子（`LovSampleSeeds` + `LovController.Index` / `UseCube` 幂等调用）。执行期跑本号 Vitest 与 `LovSampleSeedsTests`，并 `vue-tsc -b`。不改 Meta / ListData / BatchLabel。验收期本号新增单测全部通过，`pnpm exec vue-tsc -b` 与 `dotnet build NewLife.Cube` 无错误。

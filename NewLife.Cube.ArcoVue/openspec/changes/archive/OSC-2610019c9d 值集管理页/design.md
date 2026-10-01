@@ -23,8 +23,10 @@
 | `web/src/views/dynamic/DynamicPage.vue` | `isLovPage` 时挂值集页 | 其它 kind |
 | `web/src/views/dynamic/useDynamicPage.ts` | `isLovPage`：规范化路径 `admin/lov` | — |
 | `web/src/router/index.ts` | 静态子路由 `Admin/Lov`，组件 `DynamicPage`，`meta.title=值集`，`meta.typePath=Admin/Lov` | 现有静态路由 |
+| `NewLife.Cube/Services/LovSampleSeeds.cs` | 新建。幂等写入是否/性别/优先级 ENUM + 用户 LIST 样例 | — |
+| `LovController.Index` / `CubeService.UseCube` | 调用 `LovSampleSeeds.Ensure()` | CRUD / GetConfig / SaveConfig / Meta / ListData |
 
-不改 `LovController`、`Meta`、`ListData`、`BatchLabel`、`FieldInput`。
+不改 `Meta`、`ListData`、`BatchLabel`、`FieldInput`；`LovController` 仅挂种子调用，不改业务 API。
 
 ## 2. 权限与按钮
 
@@ -40,7 +42,7 @@
 
 ## 3. 列表与定义抽屉
 
-列：编码、名称、类型、启用、操作。类型只显示 `ENUM` 或 `LIST`。关键字过滤编码与名称（前端对已加载行过滤；请求仍带 `Q`，与 Index 的 `p["Q"]` 一致）。
+列：编码、名称、类型、启用、操作。类型展示文案为「枚举 / 自定义列表」（码仍为 `ENUM` / `LIST`）。关键字过滤编码与名称（前端对已加载行过滤；请求仍带 `Q`，与 Index 的 `p["Q"]` 一致）。
 
 定义抽屉 `placement=right`，宽 `recordDrawerWidth`。新增：编码可编辑，必填，仅字母数字点与下划线，最长 64。编辑：编码只读。类型必选 ENUM 或 LIST。名称必填，最长 40。保存失败展示 `message`，抽屉不关。
 
@@ -48,21 +50,21 @@
 
 ## 4. 配置抽屉
 
-仅编辑已保存的定义（有 lovCode）。打开时 `GetConfig`。
+仅编辑已保存的定义（有 lovCode）。打开时 `GetConfig`。LIST 配置界面与 Cube.Vue `lov/config.vue` 字段 1:1（Arco 组件替换）。
 
 | type | 可见区域 | 保存 body |
 | --- | --- | --- |
-| ENUM | 枚举表：value、label、sort；可增删行 | `{ id, enumItems }` |
-| LIST | requestUrl、valueField、labelField；搜索字段表；表格列表 | `{ id, listConfig, searchFields, tableColumns }` |
+| ENUM | 枚举表：sort、value、label、enabled；可增删行 | `{ id, enumItems }` |
+| LIST | 三 Tab：① 列表配置（requestUrl / method / proxyRequest / pageable / pageNumField / pageSizeField / dataPath / totalPath / fixedParams）；② 搜索字段表 + 编辑弹层；③ 表格列表 + 编辑弹层 | `{ id, listConfig, searchFields, tableColumns }` |
 | 其它或空 | `a-empty`「该类型不能在此配置」 | 保存按钮禁用 |
 
-ENUM 行：value、label 必填，空行在提交前剔除。LIST 的 requestUrl 允许空（保存后由后端按现逻辑处理）；不在前端发代理请求试拉。
+ENUM 行：value、label 必填，空行在提交前剔除。LIST 的 requestUrl 允许空；同源 `/` 开头强制 `proxyRequest=false`；不在前端发代理请求试拉。取值/显示字段仍在定义抽屉维护（与 Cube.Vue 一致）。
 
 ## 5. 空与失败
 
 | 输入 | 界面 |
 | --- | --- |
-| 列表 `[]` | 表格空「暂无手工值集」 |
+| 列表 `[]` | 表格空「暂无自定义值集」 |
 | 列表请求抛错 | `a-alert` warning，表格空 |
 | GetConfig 失败 | 抽屉内 alert，不展示半份旧数据 |
 | SaveConfig `code!==0` | Message.error，抽屉保持 |
@@ -83,5 +85,7 @@ ENUM 行：value、label 必填，空行在提交前剔除。LIST 的 requestUrl
 - 权限空对象 → 三个按钮都允许。
 - 仅有 Detail → 新增/编辑/删除均为否。
 - ENUM 配置剔除空 value 行，保留 0 与 false 不在本表（value 为字符串）。
-- LIST body 含 requestUrl 与列数组。
+- LIST body 含完整 listConfig（含 method/proxy/pageable 等）与列数组。
+- 同源 `/` 地址 → `proxyRequest` 强制 false。
 - 类型 `AUTO` → `canSaveConfig=false`。
+- `lovTypeLabel`：ENUM→枚举，LIST→自定义列表。
