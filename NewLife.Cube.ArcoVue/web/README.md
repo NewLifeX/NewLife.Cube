@@ -89,6 +89,11 @@ pnpm build
 - 统一 FieldKind 注册表契约（编辑/展示/搜索/筛选）：见 [docs/字段组件规范.md](./docs/字段组件规范.md)。
 - 本号为**纯文档**；运行时 `FieldWidget` / `resolveFieldKind` / DurationInput 等由后续实现 OSC 落地。
 
+## 系统性能治理（OSC-261001e9e2）
+
+- 列表打开的请求预算、列表/图表/导出三条读路径、写回是否整表刷新、缓存只走现有实体缓存：见 [docs/系统性能治理.md](./docs/系统性能治理.md)。
+- 草案状态为 Draft。单行局部更新、抽屉值集、`List.*` 最多翻 10 页，以及导出默认 100 万行，待批准后实现。图表仍按部件配置取数，不绑当前列表页。
+
 ## 壳与 UserProfile
 
 - 布局由 `userProfile.layout.mode`（`side` / `top` / `mix`）经 `layouts/RootLayout.vue` 动态切换。

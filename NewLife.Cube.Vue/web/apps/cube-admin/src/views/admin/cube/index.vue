@@ -658,7 +658,7 @@ const form = reactive<CubeSetting>({
   dataRetention: 30,
   fileRetention: 15,
   fileRetentionSize: 1024,
-  maxExport: 10000000,
+  maxExport: 1000000,
   maxBackup: 10000000,
 });
 

@@ -3,7 +3,8 @@ import { Message, Modal } from '@arco-design/web-vue';
 import { ApiError } from '@newlifex/api-core';
 import cubeApi from '@/api';
 import { isEnableField, isTruthy } from '@/core/utils/fieldBadge';
-import { shouldReloadAfterPatch } from '@/core/utils/patchReload';
+import { reloadWatchFields, shouldReloadAfterPatch, shouldReloadAfterWrite } from '@/core/utils/patchReload';
+import { assignRowFields, deleteFollowUp, removeListRow } from '@/core/utils/listRowPatch';
 import { BATCH_ENABLE_MAX } from '@/core/utils/viewMapping';
 import { getValueByKey, setValueByKey } from '@/core/utils/url';
 import { formatApiError } from '@/core/utils/apiError';
@@ -34,6 +35,10 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
     fieldParts,
     fieldErrors,
     activeKanbanMapping,
+    activeCalendarMapping,
+    activeGanttMapping,
+    activeViewKind,
+    pagination,
     saving,
     drawerMode,
     drawerVisible,
@@ -48,6 +53,35 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
     chartList,
   } = ctx;
   const { loadData, openEdit, openDetail } = deps;
+
+  function watchMapping() {
+    const kind = activeViewKind.value;
+    if (kind === 'kanban') return activeKanbanMapping.value;
+    if (kind === 'calendar') return activeCalendarMapping.value;
+    if (kind === 'gantt') return activeGanttMapping.value;
+    return null;
+  }
+
+  /** 编辑写回：树、排序、筛选或视图观察字段命中时整表刷新，否则改当前行。 */
+  async function finishEdit(patch: Record<string, unknown>) {
+    const watch = reloadWatchFields(activeViewKind.value, watchMapping());
+    if (
+      activeViewKind.value === 'tree' ||
+      shouldReloadAfterWrite(Object.keys(patch), activeSorts.value, viewFilter.value, watch)
+    ) {
+      await loadData();
+      return;
+    }
+    const id = getValueByKey(patch, pkField.value) ?? getValueByKey(formModel, pkField.value);
+    const row = tableData.value.find(
+      (item) => String(getValueByKey(item, pkField.value) ?? '') === String(id ?? ''),
+    );
+    if (!row || id == null || id === '') {
+      await loadData();
+      return;
+    }
+    assignRowFields(row, patch, pkField.value);
+  }
 
   function selectedRowsForKeys(): Record<string, unknown>[] {
     const keys = new Set(selectedKeys.value.map((k) => String(k)));
@@ -203,7 +237,7 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
         Message.success('可写字段已保存');
         fieldErrors.value = [];
         drawerVisible.value = false;
-        await loadData();
+        await finishEdit(patch);
         return;
       }
       const payload = prepareSubmitPayload({ ...formModel }, fields, {
@@ -215,7 +249,8 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
       Message.success('保存成功');
       fieldErrors.value = [];
       drawerVisible.value = false;
-      await loadData();
+      if (mode === 'add') await loadData();
+      else await finishEdit(payload);
     } catch (err) {
       // 后端字段级错误优先映射到表单字段；其余保留全局提示（OSC-0009）
       const errors =
@@ -241,7 +276,25 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
     const id = getValueByKey(row, pkField.value);
     await cubeApi.page.remove(typePath.value, id as string | number);
     Message.success('删除成功');
-    loadData();
+    if (activeViewKind.value === 'tree') {
+      loadData();
+      return;
+    }
+    const result = removeListRow(tableData.value, pkField.value, id);
+    if (!result.removed) {
+      loadData();
+      return;
+    }
+    const idText = String(id ?? '');
+    selectedKeys.value = selectedKeys.value.filter((key) => String(key) !== idText);
+    const pageIndex = Math.max(0, pagination.current - 1);
+    if (deleteFollowUp(pageIndex, result.rows.length) === 'prevPage') {
+      pagination.current = Math.max(1, pagination.current - 1);
+      loadData();
+      return;
+    }
+    tableData.value = result.rows;
+    if (pagination.total > 0) pagination.total -= 1;
   }
 
   function confirmBatchDelete() {

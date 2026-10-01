@@ -604,10 +604,10 @@ public class CubeSetting : Config<CubeSetting>
     [Category("系统功能")]
     public Int32 FileRetentionSize { get; set; } = 1024;
 
-    /// <summary>最大导出行数。页面允许导出的最大行数，默认10_000_000</summary>
-    [Description("最大导出行数。页面允许导出的最大行数，默认10_000_000")]
+    /// <summary>最大导出行数。页面允许导出的最大行数，默认1_000_000</summary>
+    [Description("最大导出行数。页面允许导出的最大行数，默认1_000_000")]
     [Category("系统功能")]
-    public Int32 MaxExport { get; set; } = 10_000_000;
+    public Int32 MaxExport { get; set; } = 1_000_000;
 
     /// <summary>最大备份行数。页面允许备份的最大行数，默认10_000_000</summary>
     [Description("最大备份行数。页面允许备份的最大行数，默认10_000_000")]

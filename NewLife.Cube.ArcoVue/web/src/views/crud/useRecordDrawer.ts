@@ -23,6 +23,7 @@ import { filterDetailAuditFields } from '@/core/utils/auditDisplay';
 import { recordDrawerWidth } from './recordDrawerWidth';
 import { isCascaderField } from '@/core/utils/fieldControl';
 import { fetchBatchLabel } from '@/core/utils/lov-api';
+import { groupMissingLov } from './lovHydrate';
 import { chunkAreaIds, mergeAreaLabel, pendingAreaIds } from '@/core/utils/areaLabels';
 import { parseRemarkDiff, type RemarkDiff } from '@/core/utils/logRemarkDiff';
 import { useUserStore } from '@/stores/user';
@@ -294,19 +295,18 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
         }),
       );
     }
-    for (const f of props.fields) {
-      const v = rawOf(f);
-      if (v == null || v === '') continue;
-      if (isCascaderField(f)) continue;
-      if (f.lovCode && !(f.dataSource && Object.keys(f.dataSource).length)) {
-        try {
-          const map = await fetchBatchLabel({ lovCode: f.lovCode, values: [String(v)] });
-          f.dataSource = { ...(f.dataSource || {}), ...map };
-        } catch {
-          /* ignore */
+    const groups = groupMissingLov(
+      props.fields.filter((field) => !isCascaderField(field)),
+      props.model,
+    );
+    await Promise.allSettled(
+      groups.map(async (group) => {
+        const map = await fetchBatchLabel({ lovCode: group.code, values: group.values });
+        for (const field of group.fields) {
+          field.dataSource = { ...(field.dataSource || {}), ...map };
         }
-      }
-    }
+      }),
+    );
   }
 
   function detailImageOf(field: FieldMeta) {

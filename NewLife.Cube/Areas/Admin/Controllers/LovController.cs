@@ -355,6 +355,7 @@ public class LovController : ControllerBaseX
                     .Select(v => v?.ToString())
                     .Where(v => !v.IsNullOrEmpty())
                     .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Take(LovLabelQuery.ListLabelValueCap)
                     .ToList();
                 var pendingSet = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
                 foreach (var v in pending)
@@ -362,28 +363,41 @@ public class LovController : ControllerBaseX
                     if (!pendingSet.ContainsKey(v)) pendingSet[v] = v;
                 }
 
-                var pageSize = config.Pageable ? 500 : Math.Max(200, pending.Count);
-                var maxPages = 20;
-                for (var pageNum = 1; pageNum <= maxPages; pageNum++)
+                var searchNames = desc.SearchFields?.Select(e => e.Field);
+                var plan = LovLabelQuery.PlanListLabelQuery(valueField, searchNames, pending.Count, config.Pageable);
+                if (plan.MaxPages > 0 && plan.Mode != "none")
                 {
-                    var (rows, _) = await FetchRemoteList(config, null, pageNum, pageSize);
-                    if (rows.Count == 0) break;
-
-                    foreach (var row in rows)
+                    Dictionary<String, Object>? extra = null;
+                    if (plan.Mode == "keyed")
                     {
-                        if (pendingSet.Count == 0) break;
-                        var v = GetRowValue(row, valueField);
-                        if (v == null) continue;
-                        var key = v.ToString()!;
-                        if (pendingSet.TryGetValue(key, out var original) && !result.ContainsKey(original))
+                        extra = new Dictionary<String, Object>(StringComparer.OrdinalIgnoreCase)
                         {
-                            var label = GetRowValue(row, labelField)?.ToString();
-                            if (!label.IsNullOrEmpty()) result[original] = label!;
-                            pendingSet.Remove(key);
-                        }
+                            [valueField] = pending.Join(","),
+                        };
                     }
 
-                    if (pendingSet.Count == 0 || !config.Pageable || rows.Count < pageSize) break;
+                    var pageSize = plan.PageSize;
+                    for (var pageNum = 1; pageNum <= plan.MaxPages && pendingSet.Count > 0; pageNum++)
+                    {
+                        var (rows, _) = await FetchRemoteList(config, extra, pageNum, pageSize);
+                        if (rows.Count == 0) break;
+
+                        foreach (var row in rows)
+                        {
+                            if (pendingSet.Count == 0) break;
+                            var v = GetRowValue(row, valueField);
+                            if (v == null) continue;
+                            var key = v.ToString()!;
+                            if (pendingSet.TryGetValue(key, out var original) && !result.ContainsKey(original))
+                            {
+                                var label = GetRowValue(row, labelField)?.ToString();
+                                if (!label.IsNullOrEmpty()) result[original] = label!;
+                                pendingSet.Remove(key);
+                            }
+                        }
+
+                        if (pendingSet.Count == 0 || rows.Count < pageSize) break;
+                    }
                 }
             }
         }

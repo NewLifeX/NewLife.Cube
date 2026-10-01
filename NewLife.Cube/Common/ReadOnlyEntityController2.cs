@@ -4,6 +4,7 @@ using NewLife.AI.Models;
 using NewLife.Collections;
 using NewLife.Common;
 using NewLife.Cube.AI;
+using NewLife.Cube.Common;
 using NewLife.Cube.Automation;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
@@ -382,7 +383,7 @@ public partial class ReadOnlyEntityController<TEntity>
     protected virtual IEnumerable<TEntity> ExportData(Int32 max = 0)
     {
         var set = CubeSetting.Current;
-        if (max <= 0) max = set.MaxExport;
+        max = ExportCap.ResolveExportCap(max, set.MaxExport);
 
         var p = GetCachePager();
         p.RetrieveTotalCount = true;

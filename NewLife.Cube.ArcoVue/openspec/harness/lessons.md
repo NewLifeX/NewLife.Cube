@@ -57,6 +57,7 @@
 | OSC-26092694a1 — 2026-09-29 | 撤回要改成功标准；布尔分组用原始值；临时视图验完即删 |
 | OSC-260926c2b8 — 2026-09-29 | 抽屉滚动链与输入底色；值集三层拒绝矩阵；存储偏好≠代码；坏补丁拼坏扫描 |
 | OSC-2609307879 — 2026-09-30 | 连接名占用时内存库不生效；api-core 要先构建 dist；表头图标在模块顶层 |
+| OSC-261001e9e2 — 2026-10-01 | 刷新判断用所改字段；成功标准与修订同时改；冒烟要看真实排序 |
 
 ---
 
@@ -389,3 +390,9 @@
 - **连接名已被占用时 `AddConnStr` 不会换成内存库**：地区名称测试用 `Data Source=Osc7879Area;Mode=Memory;Cache=Shared` 写 `Membership`。验收第二次跑在已有 `Area.ID=78790001` 上插入，报 `UNIQUE constraint failed`。固定主键要先删再插，断言后清理。
 - **`api-core` 类型在 `dist`**：`createPageApi` 加了 `areaNames` 之后，web 的 `vue-tsc` 仍报属性不存在，直到在 `packages/api-core` 执行 `pnpm build`。改这个包的公开方法后，验收前先出声明文件。
 - **模块顶层注册的图标读不到组合式函数里的主题快照**：排序表头 SVG 在 `useListTable` 外面 `register.icon`。单元格 `style` 用 `readThemeSnapshot`；这对图标仍每次 `themeColor`。不要把函数内的 `paintColor` 抽去替换模块顶层调用。
+
+## OSC-261001e9e2 — 2026-10-01
+
+- **局部刷新要看所改字段，不要看整份提交键**：编辑保存会带上未改的名称等字段。列表按名称排序时，只改备注仍会命中排序字段并整表 `loadData`。判断应拿本次变更的字段名。本号按仅记录留下，后续写回变更不要再用 `Object.keys(payload)`。
+- **修订口径要同时改成功标准**：翻页从 3 改到 10、图表取消「当前页」之后，proposal 成功标准和测试范围仍留着旧句子。草案修订时把愿景、成功标准、design、tasks 一次改完。
+- **冒烟要对照当前排序，不要只看纯函数**：`shouldReloadAfterWrite` 单测通过，不等于页面不刷新。部门页偏好是 `sort=Name`，卡片上又看不到备注，要用请求列表确认有没有 `GetList`。验完把演示数据改回去。

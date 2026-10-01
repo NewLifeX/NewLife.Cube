@@ -1,0 +1,15 @@
+# Status
+- id: OSC-261001e9e2
+- state: Done
+- updated: 2026-10-01T09:36:00+08:00
+- approvedBy: openspec-approve
+- trigger: "批准并执行 e9e2 变更。"
+- checklist: passed
+- note: created by openspec-create
+- note: 草案修订。洞察图不绑当前页、不渲染「当前页」；List.* 翻页上限改为 10，第 4 至 10 页名称不提前丢掉；导出默认与硬顶改为 100 万行。
+- note: 批准检查表通过。范围单一；依赖 OSC-2609307879、OSC-260926c2b8、OSC-260819e483、OSC-2608139feb 均已归档 Done；与迁移方案 §3.1 非目标无冲突。
+- note: 执行中。T1–T9 已完成。Vitest 17 通过；ExportCapTests、LovLabelQueryTests 与 LovControllerGuardTests 共 16 通过；NewLife.Cube 构建与 vue-tsc 无错误。图表文件无差异。T10 手工冒烟留到验收。
+- note: 会话小任务已补录。无计划外事项。单行删除顺带从 selectedKeys 去掉该主键，已写入 T4。
+- note: 收尾：代码审查无必须修复项；实现对照 design 无行为缺口。T10 未勾选，状态保持 Implementing。
+- note: 验收未通过。单测与构建通过。部门页只改备注仍因提交键含排序字段 Name 而整表刷新，记为 P1，待补齐或仅记录。proposal 成功标准里的「不超过 3」已改为 10。
+- note: 复盘前复核无新增会话事项。用户指示复盘，P1 仅记录不补齐。状态 Done 后整体归档。
