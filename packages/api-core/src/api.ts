@@ -544,6 +544,22 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
         params: name ? { name } : undefined,
       }),
 
+    /** 数据库表清单 */
+    dbTables: (name: string) =>
+      request<Record<string, unknown>>({ url: '/Admin/Db/ShowTables', method: 'get', params: { name } }),
+
+    /** 数据库实体清单 */
+    dbEntities: (name: string) =>
+      request<Record<string, unknown>>({ url: '/Admin/Db/ShowEntities', method: 'get', params: { name } }),
+
+    /** 数据库与实体模型差异 */
+    dbDiff: (name: string) =>
+      request<Record<string, unknown>>({ url: '/Admin/Db/ModelDiff', method: 'get', params: { name } }),
+
+    /** 压缩数据库 */
+    dbCompact: (name: string) =>
+      request<unknown>({ url: '/Admin/Db/Compact', method: 'post', params: { name } }),
+
     /** 文件列表（GET /Admin/File?r=&sort=） */
     getFileList: (params?: { r?: string; sort?: string }) =>
       request<{

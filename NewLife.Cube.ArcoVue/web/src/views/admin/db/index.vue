@@ -41,6 +41,21 @@
                     </a-button>
                   </template>
                   <a-button size="mini" @click="downloadSchema(row.name)">下载架构</a-button>
+                  <template v-if="canInspect">
+                    <a-button size="mini" @click="openDrawer(row.name, 'tables')">表</a-button>
+                    <a-button size="mini" @click="openDrawer(row.name, 'entities')">实体</a-button>
+                    <a-button size="mini" @click="openDrawer(row.name, 'diff')">差异</a-button>
+                  </template>
+                  <a-button
+                    v-if="canCompact"
+                    size="mini"
+                    status="warning"
+                    :loading="compactingName === row.name"
+                    :disabled="!!compactingName && compactingName !== row.name"
+                    @click="confirmCompact(row.name)"
+                  >
+                    压缩
+                  </a-button>
                 </a-space>
               </template>
             </a-card>
@@ -48,6 +63,39 @@
         </a-grid>
       </a-spin>
     </div>
+    <a-drawer
+      v-model:visible="drawerVisible"
+      :title="drawerTitle"
+      :width="drawerWidth"
+      :footer="false"
+      placement="right"
+      unmount-on-close
+    >
+      <a-alert v-if="drawerError" type="warning" show-icon>{{ drawerError }}</a-alert>
+      <a-spin v-else :loading="drawerLoading" style="display: block">
+        <template v-if="drawerMode === 'diff'">
+          <a-empty v-if="!drawerLoading && !diffRows.length" description="无差异" />
+          <a-table v-else :data="diffRows" :pagination="false" size="small">
+            <a-table-column title="表名" data-index="tableName" />
+            <a-table-column title="实体" data-index="name">
+              <template #cell="{ record }">{{ record.hasEntityModel ? record.name : '无实体' }}</template>
+            </a-table-column>
+            <a-table-column title="列名" data-index="columnName" />
+            <a-table-column title="类型" data-index="dataType" />
+          </a-table>
+        </template>
+        <template v-else>
+          <a-empty v-if="!drawerLoading && !drawerRows.length" description="无数据" />
+          <a-table v-else :data="drawerRows" :pagination="false" size="small">
+            <a-table-column title="名称" data-index="name" />
+            <a-table-column title="表名" data-index="tableName" />
+            <a-table-column title="行数" data-index="count">
+              <template #cell="{ record }">{{ record.count ?? '-' }}</template>
+            </a-table-column>
+          </a-table>
+        </template>
+      </a-spin>
+    </a-drawer>
   </div>
 </template>
 
@@ -64,9 +112,22 @@ const {
   error,
   busy,
   canBackup,
+  canInspect,
+  canCompact,
+  compactingName,
+  drawerVisible,
+  drawerLoading,
+  drawerError,
+  drawerMode,
+  drawerTitle,
+  drawerRows,
+  diffRows,
+  drawerWidth,
   load,
   confirmBackup,
   downloadSchema,
+  openDrawer,
+  confirmCompact,
 } = useDbPage();
 </script>
 

@@ -1,9 +1,11 @@
 ﻿using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.AI;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Jobs;
+using NewLife.Reflection;
 using NewLife.Serialization;
 using XCode;
 using XCode.DataAccessLayer;
@@ -159,4 +161,144 @@ public class DbController : ControllerBaseX, IPageDataContext
 
         return File(xml.GetBytes(), "application/xml", name + ".xml");
     }
+
+    /// <summary>显示数据表</summary>
+    /// <param name="name">连接名</param>
+    /// <returns>数据表及行数</returns>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet("/api/[area]/[controller]/ShowTables")]
+    public ActionResult ShowTables(String name)
+    {
+        if (!TryGetDatabase(name, out var dal)) return Json(1, "非法操作！");
+
+        var tables = dal.Tables
+            .Select(item => new
+            {
+                name = item.Name,
+                tableName = item.TableName,
+                count = dal.SelectCount(item.TableName, CommandType.Text),
+            })
+            .OrderBy(item => item.name)
+            .ToList();
+
+        return Json(0, null, new { name, tables });
+    }
+
+    /// <summary>显示实体类</summary>
+    /// <param name="name">连接名</param>
+    /// <returns>实体类及行数</returns>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet("/api/[area]/[controller]/ShowEntities")]
+    public ActionResult ShowEntities(String name)
+    {
+        if (!TryGetDatabase(name, out _)) return Json(1, "非法操作！");
+
+        var entities = EntityFactory.LoadEntities(name)
+            .Select(item =>
+            {
+                var factory = item.AsFactory();
+                if (factory == null) return null;
+
+                var table = factory.Table.DataTable;
+                var exists = factory.Session.Dal.TableNames.Contains(table.TableName);
+                return new
+                {
+                    name = item.Name,
+                    tableName = table.TableName,
+                    count = exists ? factory.Session.LongCount : (Int64?)null,
+                };
+            })
+            .Where(item => item != null)
+            .OrderBy(item => item!.name)
+            .ToList();
+
+        return Json(0, null, new { name, entities });
+    }
+
+    /// <summary>模型差异。返回数据库中存在而实体模型没有的字段</summary>
+    /// <param name="name">连接名</param>
+    /// <returns>模型差异</returns>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet("/api/[area]/[controller]/ModelDiff")]
+    public ActionResult ModelDiff(String name)
+    {
+        if (!TryGetDatabase(name, out var dal)) return Json(1, "非法操作！");
+
+        var entityTables = EntityFactory.LoadEntities(name)
+            .Select(item => (item, factory: item.AsFactory()))
+            .Where(item => item.factory != null)
+            .Select(item => (item.item.Name, table: item.factory!.Table.DataTable))
+            .Where(item => !item.table.TableName.IsNullOrEmpty())
+            .ToDictionary(item => item.table.TableName, item => (item.Name, item.table), StringComparer.OrdinalIgnoreCase);
+
+        var tables = new List<Object>();
+        foreach (var dbTable in dal.Tables.OrderBy(item => item.Name))
+        {
+            var hasEntityModel = entityTables.TryGetValue(dbTable.TableName, out var entity);
+            var entityColumns = hasEntityModel
+                ? new HashSet<String>(
+                    entity.table.Columns.Select(item => GetColumnName(item)),
+                    StringComparer.OrdinalIgnoreCase)
+                : null;
+            var columns = dbTable.Columns
+                .Where(item => entityColumns == null || !entityColumns.Contains(GetColumnName(item)))
+                .Select(item => new
+                {
+                    name = item.Name,
+                    columnName = item.ColumnName,
+                    dataType = item.DataType?.Name,
+                })
+                .ToList();
+
+            if (columns.Count == 0) continue;
+
+            tables.Add(new
+            {
+                name = hasEntityModel ? entity.Name : dbTable.Name,
+                tableName = dbTable.TableName,
+                displayName = dbTable.DisplayName,
+                hasEntityModel,
+                columns,
+            });
+        }
+
+        WriteLog("模型差异", true, $"查看数据库 {name} 模型差异，共 {tables.Count} 张表存在差异");
+        return Json(0, null, new { name, tables });
+    }
+
+    /// <summary>压缩数据库（回收空闲空间；SQLite 执行 VACUUM）</summary>
+    /// <param name="name">连接名</param>
+    /// <returns>压缩结果</returns>
+    [EntityAuthorize(PermissionFlags.Update)]
+    [HttpPost("/api/[area]/[controller]/Compact")]
+    public ActionResult Compact(String name)
+    {
+        if (!TryGetDatabase(name, out var dal)) return Json(1, "非法操作！");
+
+        var sw = Stopwatch.StartNew();
+        try
+        {
+            dal.Db.CreateMetaData().Invoke("CompactDatabase");
+            sw.Stop();
+            WriteLog("压缩", true, $"压缩数据库 {name} 完成，耗时 {sw.Elapsed}");
+            return Json(0, "压缩完成");
+        }
+        catch (Exception ex)
+        {
+            sw.Stop();
+            WriteLog("压缩", false, $"压缩数据库 {name} 失败：{ex.Message}");
+            return Json(1, ex.Message);
+        }
+    }
+
+    private static Boolean TryGetDatabase(String name, out DAL dal)
+    {
+        dal = null!;
+        if (name.IsNullOrEmpty() || DAL.ConnStrs == null || !DAL.ConnStrs.ContainsKey(name)) return false;
+
+        dal = DAL.Create(name);
+        return true;
+    }
+
+    private static String GetColumnName(IDataColumn column) => column.ColumnName.IsNullOrEmpty() ? column.Name : column.ColumnName;
 }

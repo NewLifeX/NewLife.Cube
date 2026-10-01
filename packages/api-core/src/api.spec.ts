@@ -6,6 +6,39 @@ vi.mock('axios', () => ({
   isAxiosError: (error: unknown) => !!(error as { isAxiosError?: boolean })?.isAxiosError,
 }));
 
+describe('createPageApi database tools', () => {
+  it('uses the Db JSON endpoints with the selected connection name', async () => {
+    const request = vi.fn().mockResolvedValue({ code: 0, data: {} });
+    const api = createPageApi(request);
+
+    await api.dbTables('Membership');
+    await api.dbEntities('Membership');
+    await api.dbDiff('Membership');
+    await api.dbCompact('Membership');
+
+    expect(request).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      url: '/Admin/Db/ShowTables',
+      method: 'get',
+      params: { name: 'Membership' },
+    }));
+    expect(request).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      url: '/Admin/Db/ShowEntities',
+      method: 'get',
+      params: { name: 'Membership' },
+    }));
+    expect(request).toHaveBeenNthCalledWith(3, expect.objectContaining({
+      url: '/Admin/Db/ModelDiff',
+      method: 'get',
+      params: { name: 'Membership' },
+    }));
+    expect(request).toHaveBeenNthCalledWith(4, expect.objectContaining({
+      url: '/Admin/Db/Compact',
+      method: 'post',
+      params: { name: 'Membership' },
+    }));
+  });
+});
+
 describe('createCommentApi', () => {
   it('getList hits GET /Cube/EntityComment with category+linkId', async () => {
     const ok: ApiResponse<EntityCommentModel[]> = { code: 0, data: [{ id: 1, content: 'hi' }] };
