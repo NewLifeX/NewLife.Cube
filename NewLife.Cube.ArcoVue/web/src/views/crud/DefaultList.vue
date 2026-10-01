@@ -490,6 +490,7 @@
               :format-rules="viewFormat"
               :format-fields="listFields"
               :height="resolvedTableHeight"
+              :loading="loading"
               :type-path="typePath"
               @row-dbl-click="openDetail"
               @selection-change="onSelectionChange"

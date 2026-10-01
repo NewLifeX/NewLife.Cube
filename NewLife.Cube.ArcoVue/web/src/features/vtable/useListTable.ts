@@ -155,6 +155,8 @@ interface ListTableProps {
   formatRules?: ViewFormatRule[];
   formatFields?: FieldMeta[];
   typePath?: string;
+  /** 列表请求进行中。空记录且加载中时不显示空态 */
+  loading?: boolean;
 }
 
 /** ListTable 组件 emits 类型（与 ListTable.vue defineEmits 泛型逐字一致） */
@@ -1215,6 +1217,8 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
         scrollStyle: {
           scrollRailColor: paintColor('--color-fill-2', '#F2F3F5'),
           scrollSliderColor: paintColor('--color-fill-3', '#E5E6EB'),
+          // 行数不满一页时，水平条贴画布底边（分页正上方），而不是停在最后一行下面
+          barToSide: true,
         },
       },
     };

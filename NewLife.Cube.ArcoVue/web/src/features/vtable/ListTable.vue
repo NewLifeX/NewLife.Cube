@@ -1,6 +1,12 @@
 <template>
   <!-- hover 表头时显示各列边界分隔线，辅助定位列宽拖拽区（VTable 原生分隔线仅拖动时显示） -->
-  <div ref="hostRef" class="cube-list-table" :style="{ height: height + 'px' }"></div>
+  <div class="cube-list-table-wrap" :style="{ height: height + 'px' }">
+    <div ref="hostRef" class="cube-list-table"></div>
+    <!-- VTable 构造会清空宿主，空态放在宿主外；加载中不提示，避免先闪「暂无数据」 -->
+    <div v-if="!loading && records.length === 0" class="cube-list-table-empty">
+      <a-empty description="暂无数据" />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -52,6 +58,8 @@ const props = withDefaults(
     formatFields?: FieldMeta[];
     /** 用于系统角色隐藏删除（OSC-260824fc7c） */
     typePath?: string;
+    /** 列表请求进行中。空记录且加载中时不显示空态 */
+    loading?: boolean;
   }>(),
   {
     selectedKeys: () => [],
@@ -68,6 +76,7 @@ const props = withDefaults(
     sortState: null,
     hierarchy: false,
     grouped: false,
+    loading: false,
   },
 );
 
@@ -93,16 +102,38 @@ const { hostRef } = useListTable(props, emit);
 </script>
 
 <style scoped>
-.cube-list-table {
+.cube-list-table-wrap {
   position: relative;
   width: 100%;
   max-width: 100%;
   min-width: 0;
   min-height: 320px;
+}
+
+.cube-list-table {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  min-width: 0;
   border: none;
   overflow: hidden;
   background: var(--color-bg-2);
   box-sizing: border-box;
+}
+
+.cube-list-table-empty {
+  position: absolute;
+  z-index: 2;
+  /* 让开表头，提示落在表体空白里 */
+  top: 40px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
 }
 
 /* hover 表头时的列边界分隔线层：JS 动态创建（无 scoped 属性），需 :deep 匹配；不拦截鼠标，浮于 VTable canvas 之上 */
