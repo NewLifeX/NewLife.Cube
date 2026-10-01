@@ -6,6 +6,7 @@ import {
   isDataListField,
   partitionListFields,
   toOpsCustomLink,
+  visibleOpsLinks,
 } from './listLinkFields';
 
 function field(partial: Partial<FieldMeta> & { name: string }): FieldMeta {
@@ -73,5 +74,14 @@ describe('partitionListFields', () => {
 
   it('OPS_LINK_INLINE_MAX 为 2', () => {
     expect(OPS_LINK_INLINE_MAX).toBe(2);
+  });
+
+  it('无 Delete 权限时隐藏强制下线，其它操作链接保留', () => {
+    const links = [
+      { name: 'Kick', label: '强制下线', url: '/Admin/UserOnline/Kick?id={Id}', dataAction: 'action' },
+      { name: 'Execute', label: '马上执行', url: '/Admin/CronJob/ExecuteNow?id={Id}', dataAction: 'action' },
+    ];
+    expect(visibleOpsLinks(links, true).map((l) => l.name)).toEqual(['Kick', 'Execute']);
+    expect(visibleOpsLinks(links, false).map((l) => l.name)).toEqual(['Execute']);
   });
 });

@@ -474,6 +474,8 @@
     <template #footer>
       <a-space>
         <a-button @click="emit('update:visible', false)">取消</a-button>
+        <a-button v-if="showUserSecurityActions" @click="clearPassword">清空密码</a-button>
+        <a-button v-if="showUserSecurityActions" status="warning" @click="revokeTokens">吊销令牌</a-button>
         <a-button
           v-if="mode !== 'detail' && (!wfEditLocked || wfCanPatchWritable)"
           type="primary"
@@ -625,6 +627,9 @@ const {
   avatarOf,
   canDeleteComment,
   removeComment,
+  showUserSecurityActions,
+  clearPassword,
+  revokeTokens,
   onSave,
   entityDeleteLocked,
   isRolePermField,

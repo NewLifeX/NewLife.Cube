@@ -55,3 +55,9 @@ export function partitionListFields(fields: FieldMeta[]): {
   }
   return { dataFields, opsLinks };
 }
+
+/** 无 Delete 权限时不展示强制下线链接（OSC-2610011cd6，沿用删除权限裁剪） */
+export function visibleOpsLinks(links: OpsCustomLink[], canDelete: boolean): OpsCustomLink[] {
+  if (canDelete) return links;
+  return links.filter((l) => !/\/UserOnline\/Kick(?:\?|#|$)/i.test(l.url));
+}

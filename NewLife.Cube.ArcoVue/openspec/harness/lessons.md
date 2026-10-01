@@ -58,6 +58,7 @@
 | OSC-260926c2b8 — 2026-09-29 | 抽屉滚动链与输入底色；值集三层拒绝矩阵；存储偏好≠代码；坏补丁拼坏扫描 |
 | OSC-2609307879 — 2026-09-30 | 连接名占用时内存库不生效；api-core 要先构建 dist；表头图标在模块顶层 |
 | OSC-261001e9e2 — 2026-10-01 | 刷新判断用所改字段；成功标准与修订同时改；冒烟要看真实排序 |
+| OSC-2610011cd6 — 2026-10-01 | 确认文案放 title；Kick 按删除权限裁 URL；ListFields 沿基类反射 |
 
 ---
 
@@ -396,3 +397,9 @@
 - **局部刷新要看所改字段，不要看整份提交键**：编辑保存会带上未改的名称等字段。列表按名称排序时，只改备注仍会命中排序字段并整表 `loadData`。判断应拿本次变更的字段名。本号按仅记录留下，后续写回变更不要再用 `Object.keys(payload)`。
 - **修订口径要同时改成功标准**：翻页从 3 改到 10、图表取消「当前页」之后，proposal 成功标准和测试范围仍留着旧句子。草案修订时把愿景、成功标准、design、tasks 一次改完。
 - **冒烟要对照当前排序，不要只看纯函数**：`shouldReloadAfterWrite` 单测通过，不等于页面不刷新。部门页偏好是 `sort=Name`，卡片上又看不到备注，要用请求列表确认有没有 `GetList`。验完把演示数据改回去。
+
+## OSC-2610011cd6 — 2026-10-01
+
+- **Arco `Modal.confirm` 的确认句放 `title`，`content` 给空字符串**：当前类型把 `content` 标成必填。句子只写在 `content` 会让 `title` 变空；只写 `title` 又过不了 `vue-tsc`。
+- **无删除权限时按链接地址裁剪，不要在前端写死「强制下线」按钮**：合成列仍来自 `UserOnlineController`。`visibleOpsLinks` 只去掉 URL 含 `/UserOnline/Kick` 的项，其它 `dataAction` 保持可见。
+- **泛型控制器的 `ListFields` 要用 `RunClassConstructor` 再沿 `BaseType` 查找**：`FlattenHierarchy` 拿不到基类上的受保护静态属性。`DeclaredOnly` 逐层向上才能读到合成列。

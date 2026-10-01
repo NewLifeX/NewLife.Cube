@@ -28,6 +28,12 @@ import { chunkAreaIds, mergeAreaLabel, pendingAreaIds } from '@/core/utils/areaL
 import { parseRemarkDiff, type RemarkDiff } from '@/core/utils/logRemarkDiff';
 import { useUserStore } from '@/stores/user';
 import cubeApi from '@/api';
+import { requestDataAction } from './useListOpsLinks';
+import {
+  CLEAR_PASSWORD_CONFIRM,
+  REVOKE_TOKENS_CONFIRM,
+  showUserSecurityActions as userSecurityVisible,
+} from '@/core/utils/opsRequest';
 import {
   addMentionEntry,
   buildMentionIds,
@@ -528,6 +534,44 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
     return uid != null && cid != null && String(uid) === String(cid);
   }
 
+  const showUserSecurityActions = computed(() =>
+    userSecurityVisible(
+      props.typePath,
+      props.mode,
+      userStore.userInfo,
+      getValueByKey(props.model, props.pkField),
+    ),
+  );
+
+  function confirmRecordAction(title: string, path: string) {
+    const raw = getValueByKey(props.model, props.pkField);
+    const id = typeof raw === 'number' ? raw : Number(raw);
+    if (!Number.isFinite(id) || id <= 0) return;
+    Modal.confirm({
+      title,
+      content: '',
+      okText: '确认',
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          const message = await requestDataAction(`${path}?id=${id}`, 'POST');
+          Message.success(message);
+        } catch (err) {
+          Message.error(err instanceof Error ? err.message : '操作失败');
+          throw err;
+        }
+      },
+    });
+  }
+
+  function clearPassword() {
+    confirmRecordAction(CLEAR_PASSWORD_CONFIRM, '/Admin/User/ClearPassword');
+  }
+
+  function revokeTokens() {
+    confirmRecordAction(REVOKE_TOKENS_CONFIRM, '/Admin/User/RevokeTokens');
+  }
+
   function removeComment(c: EntityCommentModel) {
     const id = c.id;
     if (id == null) return;
@@ -651,6 +695,9 @@ export function useRecordDrawer(props: RecordDrawerProps, emit: RecordDrawerEmit
     avatarOf,
     canDeleteComment,
     removeComment,
+    showUserSecurityActions,
+    clearPassword,
+    revokeTokens,
     onSave,
     entityDeleteLocked,
     isRolePermField,

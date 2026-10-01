@@ -120,7 +120,7 @@ export interface ListTableColumnDef {
   /** 启用/Enable 徽标：可点击切换启用/禁用（悬停显示 pointer） */
   enableToggle?: boolean;
   /** 字段挂 Url：单元格可点导航（OSC-2608178bdb） */
-  cellLink?: { url: string; target?: string };
+  cellLink?: { url: string; target?: string; label?: string };
 }
 
 /** ListTable 组件 props 类型（与 ListTable.vue defineProps 泛型逐字一致） */
@@ -173,7 +173,7 @@ interface ListTableEmits {
     clientY?: number;
   }];
   /** 单元格字段挂链接点击 */
-  cellLink: [payload: { url: string; target?: string; row: Record<string, unknown> }];
+  cellLink: [payload: { url: string; target?: string; label?: string; row: Record<string, unknown> }];
   toggleEnable: [row: Record<string, unknown>, field: string];
   /** 滚动接近底部（剩余不足 200px）时触发，供父级增量加载更多行（列表/树懒加载） */
   scrollBottom: [];
@@ -1321,6 +1321,7 @@ export function useListTable(props: ListTableProps, emit: ListTableEmit) {
         emit('cellLink', {
           url: colDef.cellLink.url,
           target: colDef.cellLink.target,
+          label: colDef.cellLink.label,
           row,
         });
         return;

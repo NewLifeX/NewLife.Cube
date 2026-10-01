@@ -19,7 +19,7 @@ import { selfOnlyUserAlertText, shouldShowSelfOnlyUserAlert } from '@/core/utils
 import { formatFieldValue } from '@/core/utils/fieldFormat';
 import { getSectionLoader } from '@/core/composables/useSections';
 import { selectListColumns } from '@/core/utils/listColumns';
-import { classifyListLink, partitionListFields } from '@/core/utils/listLinkFields';
+import { classifyListLink, partitionListFields, visibleOpsLinks } from '@/core/utils/listLinkFields';
 import { resolveFieldsForKind } from '@/core/utils/fieldParts';
 import { calendarRangeLabel, type CalendarViewMode } from '@/features/views/useCalendarMonth';
 import {
@@ -202,7 +202,9 @@ export function createListContext(props: { type: string; authId?: number }) {
   const metaKeys = computed(() => selectListColumns(listFields.value).map((f) => f.name));
 
   /** GetPage 合成 Url/dataAction → 操作列（OSC-2608178bdb） */
-  const opsCustomLinks = computed(() => partitionListFields(listFields.value).opsLinks);
+  const opsCustomLinks = computed(() =>
+    visibleOpsLinks(partitionListFields(listFields.value).opsLinks, flags.value.canDelete),
+  );
 
   const columnTitles = computed(() => {
     const m: Record<string, string> = {};
@@ -599,7 +601,7 @@ export function createListContext(props: { type: string; authId?: number }) {
         (field && badge ? defaultBadgeColumnWidth(field) : undefined);
       const cellLink =
         field && classifyListLink(field) === 'cell' && field.url?.trim()
-          ? { url: field.url.trim(), target: field.target }
+          ? { url: field.url.trim(), target: field.target, label: field.displayName || field.name }
           : undefined;
       return {
         pref: width && !pref.width ? { ...pref, width } : pref,

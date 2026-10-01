@@ -1,0 +1,13 @@
+# Status
+- id: OSC-2610011cd6
+- state: Done
+- updated: 2026-10-01T17:20:00+08:00
+- approvedBy: openspec-approve
+- trigger: "按照本项目 OpenSpec 规范，批准并执行 1cd6 变更 。"
+- checklist: passed
+- note: 批准通过（openspec-approve）。范围只含行内动作；OSC-2608178bdb 已 Done；OSC-2610011ff2 仅为可选路由兜底，不阻塞本号。proposal 目标愿景 4 条、不做什么与测试范围齐全；design 含框架、文件地图、真值表、文档影响与测试设计；tasks 可勾选；目录含 ui/。
+- note: 执行开始（openspec-apply），state=Implementing。
+- note: 执行未改任何业务文件。当前会话处于计划模式，只能写 Markdown；切换到执行模式被拒绝。下一步仍是按 design 改 opsRequest、useListOpsLinks、用户抽屉与 UserOnline 合成列，并跑 Vitest 与 Osc2610011cd6 测试。
+- note: 执行完成（openspec-apply）。T1–T5 已勾选。Vitest 4+8 通过；Osc2610011cd6 通过 2；vue-tsc 与 net10.0 构建无错误。会话小任务已补录。代码审查无 🔴；实现审计无缺口。下一步：验收 OSC-2610011cd6。
+- note: 验收通过（openspec-verify）。目标 1～4 达成，缺口无。Vitest 12/12，Osc2610011cd6 2/2，vue-tsc 与 net10.0 构建无错误。checklist: passed。
+- note: 复盘完成（openspec-retro）。会话小任务复核无新增。已归档。state=Done。

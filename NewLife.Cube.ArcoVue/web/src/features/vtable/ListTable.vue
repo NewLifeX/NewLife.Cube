@@ -92,7 +92,7 @@ const emit = defineEmits<{
     clientX?: number;
     clientY?: number;
   }];
-  cellLink: [payload: { url: string; target?: string; row: Record<string, unknown> }];
+  cellLink: [payload: { url: string; target?: string; label?: string; row: Record<string, unknown> }];
   toggleEnable: [row: Record<string, unknown>, field: string];
   /** 滚动接近底部（剩余不足 200px）时触发，供父级增量加载更多行（列表/树懒加载） */
   scrollBottom: [];

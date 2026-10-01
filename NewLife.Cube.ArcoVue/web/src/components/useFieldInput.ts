@@ -197,7 +197,7 @@ export function useFieldInput(props: FieldInputProps, emit: FieldInputEmit) {
         file,
         id == null ? undefined : { id },
       );
-      const body = (res ?? {}) as Record<string, unknown>;
+      const body = (res ?? {}) as unknown as Record<string, unknown>;
       const data = (
         body.data && typeof body.data === 'object' ? body.data : body
       ) as Record<string, unknown>;

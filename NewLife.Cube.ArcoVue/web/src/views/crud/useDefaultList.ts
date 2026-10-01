@@ -1,5 +1,5 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { Message } from '@arco-design/web-vue';
+import { Message, Modal } from '@arco-design/web-vue';
 import { useRouter } from 'vue-router';
 import cubeApi from '@/api';
 import { formatApiError } from '@/core/utils/apiError';
@@ -32,7 +32,8 @@ import { useRecordNav } from './useRecordNav';
 import { useListAutomation } from './useListAutomation';
 import { useWorkflowList } from './useWorkflowList';
 import { wfRowCanStart, wfRowEditLocked, wfRowInstanceId, wfRowRestartBlocked, wfRowStatus } from '@/core/types/workflow';
-import { runCellFieldLink, runOpsCustomLink } from './useListOpsLinks';
+import { runCellFieldLink, runOpsCustomLink, resolveRowUrl, toSpaPath } from './useListOpsLinks';
+import { confirmText, isApiActionUrl } from '@/core/utils/opsRequest';
 
 /** 路由 query 稳定签名。键排序，避免对象被替换但内容不变时被当成新查询。 */
 function routeQueryKey(query: Record<string, unknown> | null | undefined): string {
@@ -211,14 +212,7 @@ export function useDefaultList(props: { type: string; authId?: number }) {
     if (isOpsLinkKey(payload.action)) {
       const name = parseOpsLinkKey(payload.action);
       const link = ctx.opsCustomLinks.value.find((l) => l.name === name);
-      if (link) {
-        await runOpsCustomLink({
-          link,
-          row: payload.row,
-          router,
-          onDone: () => query.loadData(),
-        });
-      }
+      if (link) await invokeOpsLink(link, payload.row);
       return;
     }
     crud.onTableAction(payload);
@@ -227,24 +221,57 @@ export function useDefaultList(props: { type: string; authId?: number }) {
   async function onCellLink(payload: {
     url: string;
     target?: string;
+    label?: string;
     row: Record<string, unknown>;
   }) {
+    const resolved = resolveRowUrl(payload.url, payload.row);
+    const needsConfirm =
+      !!resolved &&
+      payload.target !== '_blank' &&
+      !/^https?:\/\//i.test(resolved) &&
+      isApiActionUrl(toSpaPath(resolved));
+    if (needsConfirm && !(await askActionConfirm(payload.label || ''))) return;
     await runCellFieldLink({
       urlTemplate: payload.url,
       target: payload.target,
       row: payload.row,
       router,
+      onDone: () => query.loadData(),
     });
   }
 
-  async function onOpsLinkClick(link: OpsCustomLink, row: Record<string, unknown>) {
-    closeMoreMenu();
+  function askActionConfirm(label: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      let settled = false;
+      const done = (value: boolean) => {
+        if (settled) return;
+        settled = true;
+        resolve(value);
+      };
+      Modal.confirm({
+        title: confirmText(label),
+        content: '',
+        okText: '确认',
+        cancelText: '取消',
+        onOk: () => done(true),
+        onCancel: () => done(false),
+      });
+    });
+  }
+
+  async function invokeOpsLink(link: OpsCustomLink, row: Record<string, unknown>) {
+    if (link.dataAction?.trim() && !(await askActionConfirm(link.label))) return;
     await runOpsCustomLink({
       link,
       row,
       router,
       onDone: () => query.loadData(),
     });
+  }
+
+  async function onOpsLinkClick(link: OpsCustomLink, row: Record<string, unknown>) {
+    closeMoreMenu();
+    await invokeOpsLink(link, row);
   }
 
   /** 高级菜单「批量修改」弹窗状态（OSC-260819e483 P3.5）：BatchUpdateFields 对选中 keys 改字段；支持多行字段（像筛选/填色弹窗一样增删行，一次应用多字段） */

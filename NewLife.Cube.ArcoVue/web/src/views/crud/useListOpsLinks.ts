@@ -3,6 +3,7 @@ import { resolveUrl } from '@newlifex/page-utils';
 import type { Router } from 'vue-router';
 import cubeApi from '@/api';
 import type { OpsCustomLink } from '@/core/utils/opsAction';
+import { isApiActionUrl, opsHttpMethod } from '@/core/utils/opsRequest';
 
 function isExternalOrBlank(target?: string, url?: string): boolean {
   if (target === '_blank') return true;
@@ -56,8 +57,8 @@ export async function navigateResolvedUrl(
   }
 }
 
-/** dataAction 非空：GET 解析后的 Url（经典 data-action 多为 GET 链），成功 resolve */
-export async function requestDataAction(url: string): Promise<void> {
+/** dataAction 走 POST；/api 单元格走 GET。成功时返回提示文案。 */
+export async function requestDataAction(url: string, method: 'GET' | 'POST'): Promise<string> {
   const path = toSpaPath(url);
   // 实体动作常挂在 /api 下；已是绝对/协议相对则原样请求
   const requestUrl =
@@ -68,12 +69,14 @@ export async function requestDataAction(url: string): Promise<void> {
         : path;
   const res = await cubeApi.client.request({
     url: requestUrl,
-    method: 'GET',
+    method,
   });
   const body = res?.data as { code?: number; message?: string } | undefined;
   if (body && typeof body.code === 'number' && body.code !== 0) {
     throw new Error(body.message || `动作失败(${body.code})`);
   }
+  const message = body?.message?.trim();
+  return message || '操作成功';
 }
 
 export async function runOpsCustomLink(options: {
@@ -90,8 +93,8 @@ export async function runOpsCustomLink(options: {
   }
   if (link.dataAction?.trim()) {
     try {
-      await requestDataAction(url);
-      Message.success('操作成功');
+      const message = await requestDataAction(url, opsHttpMethod(link.dataAction));
+      Message.success(message);
       await onDone?.();
     } catch (e) {
       Message.error(e instanceof Error ? e.message : '操作失败');
@@ -101,16 +104,27 @@ export async function runOpsCustomLink(options: {
   await navigateResolvedUrl(url, link.target, router);
 }
 
-/** 单元格挂链接：同导航语义 */
+/** 单元格挂链接：/api/ 发 GET，其余导航 */
 export async function runCellFieldLink(options: {
   urlTemplate: string;
   target: string | undefined;
   row: Record<string, unknown>;
   router: Router;
+  onDone?: () => void | Promise<void>;
 }): Promise<void> {
   const url = resolveRowUrl(options.urlTemplate, options.row);
   if (!url) {
     Message.warning('链接地址无效');
+    return;
+  }
+  if (!isExternalOrBlank(options.target, url) && isApiActionUrl(toSpaPath(url))) {
+    try {
+      const message = await requestDataAction(url, 'GET');
+      Message.success(message);
+      await options.onDone?.();
+    } catch (e) {
+      Message.error(e instanceof Error ? e.message : '操作失败');
+    }
     return;
   }
   await navigateResolvedUrl(url, options.target, options.router);

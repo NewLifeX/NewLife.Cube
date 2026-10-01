@@ -13,6 +13,17 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [Menu(0, false)]
 public class UserOnlineController : EntityController<UserOnline, UserOnlineModel>
 {
+    static UserOnlineController()
+    {
+        // OSC-2610011cd6：强制下线走操作列 dataAction，前端 POST Kick
+        var df = ListFields.GetField("Name") != null
+            ? ListFields.AddListField("Kick", null, "Name")
+            : ListFields.AddListField("Kick");
+        df.DisplayName = "强制下线";
+        df.Url = "/Admin/UserOnline/Kick?id={Id}";
+        df.DataAction = "action";
+    }
+
     /// <summary>
     /// 实例化
     /// </summary>
