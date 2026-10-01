@@ -830,7 +830,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     public virtual async Task<ActionResult> UploadFile(IFormFile file, String id = null, String title = null)
     {
         if (!ValidateUploadFile(file, out var error))
-            return new JsonResult(new { error });
+            return Json(400, error);
 
         TEntity entity;
         if (!id.IsNullOrEmpty())
@@ -850,7 +850,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         }
         catch (Exception ex)
         {
-            return new JsonResult(new { error = ex.Message });
+            return Json(500, ex.GetTrue()?.Message ?? ex.Message);
         }
 
         var url = ViewHelper.GetAttachmentUrl(att);

@@ -34,6 +34,7 @@
                   :model-value="model[field.name]"
                   :disabled="fieldDisabled(field)"
                   :type-path="typePath"
+                  :record-id="uploadRecordId"
                   @update:model-value="(v) => (model[field.name] = v)"
                 />
               </a-form-item>
@@ -81,6 +82,7 @@ const {
   rulesFor,
   fieldDisabled,
   fieldFullWidth,
+  uploadRecordId,
   validate,
   clearValidate,
 } = useFormContent(props);

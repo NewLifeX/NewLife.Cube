@@ -518,11 +518,12 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         return Json(0, null, user);
     }
 
-    /// <summary>上传头像。复用基类 UploadFile（SaveFile 核心一致），仅做三件事：
+    /// <summary>上传头像。复用基类 UploadFile（SaveFile 核心一致），并做三件事：
     /// 1) 增加登录鉴权（基类 UploadFile 无 [EntityAuthorize]，直接复用会变成未登录可访问的上传端点）；
-    /// 2) 强制 id 等于当前登录用户，防止越权给其它用户上传头像；
+    /// 2) 区分调用方：自助资料（id 为空）只归当前用户；管理端新增（id 为 0）走临时附件；
+    ///    管理端编辑他人须为系统角色，对齐 MVC 用户表单 SaveFiles 把图片挂到被编辑用户；
     /// 3) 仅允许图片类型（覆写 ValidateUploadFile，在基类「非空 + 危险扩展名黑名单」基础上加图片白名单）。
-    /// 返回附件信息 { attId, filePath, contentType }，前端再调用 Info(avatar=filePath) 持久化头像。</summary>
+    /// 返回附件信息 { attId, filePath, contentType }，前端把 filePath 写入 Avatar 后再提交。</summary>
     [HttpPost]
     [EntityAuthorize]
     public override async Task<ActionResult> UploadFile(IFormFile file, String id = null, String title = null)
@@ -530,12 +531,20 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         var cur = ManageProvider.User;
         if (cur == null) return RedirectToAction("Login");
 
-        // 强制只能为当前登录用户上传头像，避免越权
-        var targetId = id.IsNullOrEmpty() ? cur.ID + "" : id;
-        if (!targetId.EqualIgnoreCase(cur.ID + ""))
-            return new JsonResult(new { error = "只能为当前登录用户上传头像！" });
+        // 空 id：自助资料，归当前登录用户
+        // "0"：管理端新增，尚无主键，按临时附件保存，路径随后写入 Avatar
+        // 其它：本人，或系统角色编辑指定用户（MVC 管理表单可为其上传头像）
+        String targetId;
+        if (id.IsNullOrEmpty())
+            targetId = cur.ID + "";
+        else if (id == "0")
+            targetId = null;
+        else if (id.EqualIgnoreCase(cur.ID + "") || IsSystemRole())
+            targetId = id;
+        else
+            return Json(403, "只能为当前登录用户上传头像！");
 
-        return await base.UploadFile(file, cur.ID + "", title);
+        return await base.UploadFile(file, targetId, title);
     }
 
     /// <summary>头像上传校验：在基类「非空 + 危险扩展名黑名单」基础上，限制仅图片类型</summary>

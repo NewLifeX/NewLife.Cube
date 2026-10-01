@@ -7,6 +7,7 @@ import { shouldShowDataScopeField } from '@/core/utils/dataScopeForm';
 import { applyFormLayout, groupFieldsByCategory } from '@/core/utils/fieldGroups';
 import type { FormLayout } from '@/core/utils/viewProfile';
 import { isFieldRequired } from '@/core/utils/submitPayload';
+import { getValueByKey } from '@/core/utils/url';
 import { fieldFormatRules } from '@/core/utils/validation';
 import { useTenantStore } from '@/stores/tenant';
 
@@ -111,6 +112,15 @@ export function useFormContent(props: FormContentProps) {
     return false;
   }
 
+  /** 上传用主键：编辑取当前记录；新增固定 0（临时附件，对齐 MVC 新增后再挂路径） */
+  const uploadRecordId = computed(() => {
+    const raw = getValueByKey(props.model, 'id');
+    const n = Number(raw);
+    if (Number.isFinite(n) && n > 0) return n;
+    if (props.mode === 'add') return 0;
+    return undefined;
+  });
+
   function fieldFullWidth(field: FieldMeta): boolean {
     if (isIamPermissionFullWidth(props.typePath, field)) return true;
     return isFullWidthControl(resolveControl(field));
@@ -124,6 +134,7 @@ export function useFormContent(props: FormContentProps) {
     resolveControl,
     fieldDisabled,
     fieldFullWidth,
+    uploadRecordId,
     isFieldRequired: fieldRequired,
     rulesFor,
     validate,

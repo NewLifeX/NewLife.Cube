@@ -10,6 +10,8 @@ export const DEV_PROXY_PREFIXES = [
   '/Auth',
   '/Mfa',
   '/Cube',
+  // 附件地址是小写 /cube/image、/cube/file（ViewHelper.GetAttachmentUrl）
+  '/cube',
   '/Sso',
   '/api',
   '/Uploads',

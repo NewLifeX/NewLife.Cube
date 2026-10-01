@@ -1,4 +1,5 @@
 import { computed, ref } from 'vue';
+import { Message } from '@arco-design/web-vue';
 import type { ControlType, FieldMeta } from '@/core/types/field';
 import {
   resolveControl,
@@ -14,6 +15,7 @@ import {
 } from '@/core/utils/datetime';
 import { bitmaskToKeys, isBitmaskMultiSelect, keysToBitmask } from '@/core/utils/bitmaskSelect';
 import cubeApi from '@/api';
+import { formatApiError } from '@/core/utils/apiError';
 import {
   isMenuPermissionField,
   isRolePermissionField,
@@ -27,6 +29,8 @@ interface FieldInputProps {
   disabled?: boolean;
   /** 上传所属实体路径 */
   typePath?: string;
+  /** 主记录主键。编辑传正数，附件挂到该记录；新增传 0，表示临时附件 */
+  recordId?: number;
   controlOverride?: ControlType;
 }
 
@@ -36,6 +40,19 @@ interface FieldInputEmits {
 }
 
 type FieldInputEmit = <K extends keyof FieldInputEmits>(event: K, ...args: FieldInputEmits[K]) => void;
+
+/**
+ * 上传接口的实体主键。
+ * 大于 0：编辑，附件挂到该记录（对齐 MVC SaveFiles）。
+ * 0：新增，临时附件。
+ * 空：不传 id（自助头像把空 id 当成当前用户）。
+ */
+export function resolveUploadEntityId(raw: unknown): number | undefined {
+  if (raw == null || raw === '') return undefined;
+  const n = typeof raw === 'number' ? raw : Number(String(raw).trim());
+  if (!Number.isFinite(n) || n < 0) return undefined;
+  return Math.trunc(n);
+}
 
 /** FieldInput 组件全部业务 TS：控件解析、取值回写与上传（自 FieldInput.vue script setup 原样搬移） */
 export function useFieldInput(props: FieldInputProps, emit: FieldInputEmit) {
@@ -174,22 +191,33 @@ export function useFieldInput(props: FieldInputProps, emit: FieldInputEmit) {
       return;
     }
     try {
-      const res = await cubeApi.page.uploadFile(props.typePath, file, { id: 0 });
-      const data = (res.data || {}) as Record<string, unknown>;
+      const id = resolveUploadEntityId(props.recordId);
+      const res = await cubeApi.page.uploadFile(
+        props.typePath,
+        file,
+        id == null ? undefined : { id },
+      );
+      const body = (res ?? {}) as Record<string, unknown>;
+      const data = (
+        body.data && typeof body.data === 'object' ? body.data : body
+      ) as Record<string, unknown>;
       const url =
         data.url ??
         data.filePath ??
         data.path ??
         data.Url ??
         data.FilePath ??
-        (typeof res.data === 'string' ? res.data : null);
+        (typeof body.data === 'string' ? body.data : null);
       if (!url) {
+        const msg = body.error ?? body.message ?? data.error;
+        Message.error(msg ? String(msg) : '上传失败');
         option.onError();
         return;
       }
       emitValue(String(url));
       option.onSuccess();
-    } catch {
+    } catch (err) {
+      Message.error(formatApiError(err, '上传失败'));
       option.onError();
     }
   }

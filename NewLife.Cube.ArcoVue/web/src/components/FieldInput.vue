@@ -171,6 +171,8 @@ const props = defineProps<{
   disabled?: boolean;
   /** 上传所属实体路径 */
   typePath?: string;
+  /** 主记录主键。编辑传正数，附件挂到该记录；新增传 0，表示临时附件 */
+  recordId?: number;
   controlOverride?: ControlType;
 }>();
 
