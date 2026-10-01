@@ -1,5 +1,6 @@
 import { computed, nextTick, onBeforeUnmount, ref, watch, markRaw } from 'vue';
 import type { ECharts } from 'echarts';
+import { normalizeChartOptions } from '@/core/utils/chartOptions';
 import { ensureEchartsTheme, initEcharts } from '@/core/utils/echartsTheme';
 import { useAppStore } from '@/stores/app';
 
@@ -25,6 +26,7 @@ export function useListChartModal(props: ListChartModalProps, emit: ListChartMod
   });
 
   const instances = ref<ECharts[]>([]);
+  const chartItems = computed(() => normalizeChartOptions(props.charts));
 
   function setRef(el: HTMLElement | null, idx: number) {
     if (!el) return;
@@ -33,7 +35,7 @@ export function useListChartModal(props: ListChartModalProps, emit: ListChartMod
       const theme = appStore.loginConfig?.echartsTheme;
       await ensureEchartsTheme(theme);
       const inst = markRaw(await initEcharts(el, theme));
-      if (props.charts[idx]) inst.setOption(props.charts[idx] as import('echarts').EChartsOption);
+      if (chartItems.value[idx]) inst.setOption(chartItems.value[idx] as import('echarts').EChartsOption);
       instances.value[idx] = inst;
     });
   }
@@ -54,6 +56,7 @@ export function useListChartModal(props: ListChartModalProps, emit: ListChartMod
 
   return {
     visibleProxy,
+    chartItems,
     setRef,
   };
 }

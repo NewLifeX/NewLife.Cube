@@ -7,6 +7,7 @@ import { reloadWatchFields, shouldReloadAfterPatch, shouldReloadAfterWrite } fro
 import { assignRowFields, deleteFollowUp, removeListRow } from '@/core/utils/listRowPatch';
 import { BATCH_ENABLE_MAX } from '@/core/utils/viewMapping';
 import { getValueByKey, setValueByKey } from '@/core/utils/url';
+import { normalizeChartOptions } from '@/core/utils/chartOptions';
 import { formatApiError } from '@/core/utils/apiError';
 import { readFieldPatchResult } from '@/core/utils/fieldPatchResult';
 import { resolveFieldsForKind } from '@/core/utils/fieldParts';
@@ -417,7 +418,7 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
   async function openChart() {
     try {
       const res = await cubeApi.page.getChartData(typePath.value);
-      chartList.value = Array.isArray(res.data) ? res.data : [];
+      chartList.value = normalizeChartOptions(res.data);
     } catch {
       chartList.value = [];
     }

@@ -3,8 +3,17 @@
   <div v-if="hasWidgets" class="widget-host">
     <WidgetGrid :widgets="widgets">
       <template #default="{ widget }">
-        <div class="widget-shell" :class="{ 'widget-shell--with-add': showInlineAdd(widget) }">
-          <div v-if="canEdit" class="widget-shell-ops">
+        <div
+          class="widget-shell"
+          :class="{
+            'widget-shell--with-add': showInlineAdd(widget),
+            'widget-shell--fixed': isFixedChart(widget),
+          }"
+        >
+          <div
+            v-if="canEdit && (showInlineAdd(widget) || !isFixedChart(widget))"
+            class="widget-shell-ops"
+          >
             <a-button-group class="widget-ops-group" size="mini">
               <a-tooltip v-if="showInlineAdd(widget)" content="添加部件">
                 <a-button
@@ -16,7 +25,8 @@
                   <icon-park type="plus" :size="14" />
                 </a-button>
               </a-tooltip>
-              <a-dropdown trigger="click" position="br">
+              <!-- 固定开发者图：只保留添加入口，不接编辑/升级/删除 -->
+              <a-dropdown v-if="!isFixedChart(widget)" trigger="click" position="br">
                 <a-button type="text" class="widget-ops-btn widget-ops-btn--caret">
                   <icon-park type="down" :size="12" />
                 </a-button>
@@ -69,6 +79,7 @@ import { computed } from 'vue';
 import type { WidgetInstance } from '@newlifex/api-core';
 import WidgetGrid from './WidgetGrid.vue';
 import WidgetConfigDrawer from './WidgetConfigDrawer.vue';
+import { isFixedDeveloperChart } from '@/core/utils/chartOptions';
 import { useWidgetHost } from './useWidgetHost';
 
 const {
@@ -104,6 +115,9 @@ const inlineAddWidgetId = computed(() => {
 function showInlineAdd(w: WidgetInstance) {
   return w.id === inlineAddWidgetId.value;
 }
+function isFixedChart(w: WidgetInstance) {
+  return isFixedDeveloperChart(w.id);
+}
 
 defineExpose({ openAdd });
 </script>
@@ -134,6 +148,10 @@ defineExpose({ openAdd });
 }
 .widget-shell--with-add {
   --widget-ops-w: 48px;
+}
+/* 固定图仅「+」无下拉，预留与单按钮一致 */
+.widget-shell--fixed.widget-shell--with-add {
+  --widget-ops-w: 22px;
 }
 /* 与卡片内标题行水平对齐（卡片 padding-top: 10px，标题行高约 22px） */
 .widget-shell-ops {

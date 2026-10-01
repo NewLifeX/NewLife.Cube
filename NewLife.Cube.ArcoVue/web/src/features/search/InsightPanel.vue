@@ -1,9 +1,19 @@
 <template>
-  <WidgetHost ref="hostRef" />
+  <div class="insight-panel">
+    <a-alert
+      v-if="developerChartError && !hasDeveloperWidgets"
+      type="warning"
+      show-icon
+      class="insight-dev-alert"
+    >
+      {{ developerChartError }}
+    </a-alert>
+    <WidgetHost ref="hostRef" />
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import WidgetHost from '@/features/widget/WidgetHost.vue';
 import type { FieldMeta } from '@/core/types/field';
 import type { ViewFilter } from '@/core/utils/viewProfile';
@@ -24,9 +34,29 @@ const props = defineProps<{
   listFields?: { name: string; displayName?: string; typeName?: string }[];
   /** 宿主页 search∪list 字段候选（OSC-260903e2a4） */
   filterFields?: FieldMeta[];
+  /** Admin/UserStat 等：经 WidgetHost 以 legacyChart 部件样式展示 */
+  developerCharts?: unknown[];
+  developerChartError?: string;
 }>();
 
-useInsightPanel(props);
+const { developerChartError, dashboard } = useInsightPanel(props);
+
+const hasDeveloperWidgets = computed(() =>
+  (dashboard.value.widgets ?? []).some((w) => String(w.id).startsWith('dev-chart-')),
+);
+
 const hostRef = ref<{ openAdd?: () => void } | null>(null);
 defineExpose({ openAdd: () => hostRef.value?.openAdd?.() });
 </script>
+
+<style scoped>
+.insight-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.insight-dev-alert {
+  margin: 0;
+}
+</style>

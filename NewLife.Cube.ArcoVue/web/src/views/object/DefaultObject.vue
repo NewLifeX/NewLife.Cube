@@ -23,6 +23,11 @@
               </a-sub-menu>
               <a-menu-item v-else :key="p.type">{{ p.name }}</a-menu-item>
             </template>
+            <a-menu-item-group v-if="moreLinks.length" title="更多">
+              <a-menu-item v-for="link in moreLinks" :key="'more:' + link.path">
+                {{ link.title }}
+              </a-menu-item>
+            </a-menu-item-group>
           </a-menu>
         </a-spin>
       </aside>
@@ -102,6 +107,8 @@ const props = defineProps<{
 const {
   currentType,
   objectPages,
+  moreLinks,
+  onMoreLink,
   pagesLoading,
   loading,
   loadError,
@@ -122,6 +129,10 @@ const {
 
 /** 菜单点击：key 含 # 为「对象#分组」切分组，否则切配置页 */
 function onMenuClick(key: string) {
+  if (key.startsWith('more:')) {
+    onMoreLink(key.slice('more:'.length));
+    return;
+  }
   const idx = key.indexOf('#');
   if (idx >= 0) {
     const type = key.slice(0, idx);

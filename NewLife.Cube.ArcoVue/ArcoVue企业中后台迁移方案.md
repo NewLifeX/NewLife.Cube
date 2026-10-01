@@ -274,7 +274,7 @@
 | 修改历史（Log 筛选）                     | SYS-3              | 🟠 独立日志页                       | ✅（抽屉 timeline：分页 + 动作筛；Remark 前端启发式字段 diff，无后端结构化审计）                                                    | ✅ 抽屉 Tab          | P0   |
 | 实体评论 EntityComment               | **后端新建**           | ❌                              | ✅（OSC-0008 接线：api-core comment API + 抽屉评论 Tab 顶层/回复/删除本人）                                               | ✅                 | P0   |
 | Section 页面覆写                     | Vue skills         | ✅                              | ✅ 机制（useSections，仅 `_demo` 案例）                                                                          | ✅                 | P1   |
-| apps 自定义业务页                      | cube-admin 等       | ✅                              | 🟠 机制 + `_demo` + Admin/Db、Admin/File 专用页（detectPageKind custom）                                        | 🟠 机制+高频页         | P1   |
+| apps 自定义业务页                      | cube-admin 等       | ✅                              | 🟠 机制 + `_demo` + Admin/Db、Admin/File 专用页（detectPageKind custom）；Db 支持表、实体、模型差异与压缩（OSC-2610012e35） | 🟠 机制+高频页         | P1   |
 | 微前端多应用运行时                        | Vue microApp       | ✅                              | ➖（未做）                                                                                                   | ➖                 | —    |
 | FlowGram 工作流画布                   | 本方案                | ❌                              | ✅ 设计器已接定义 API（OSC-26090347f1；OSC-260922201a 补六选人/依次/多分支/办理人，待验收）。运行时是 Cube `Workflow` 状态机，不是画布执行器       | ✅ 设计器；运行时见 §8.5.5 | P1   |
 | 字段级变更 diff                       | 相对 Log             | ❌                              | ❌                                                                                                       | ➖ 一期 / P2 二期      | P2   |
@@ -676,7 +676,7 @@ API：`GET/POST/DELETE /Cube/EntityComment`；POST 传 `parentId` 即可回复�
 ### 8.1 自动生成路径
 
 1. 菜单来自 `/Cube/MenuTree`。
-2. **B3 叶路由**：有 `url` 的节点扁平 `addRoute` 到 Layout（文件夹不嵌套子路由）；`props: { type, authId }`；优先 `apps/*/src/views/**/index.vue` 整页覆写，否则 `DynamicPage`。
+2. **B3 叶路由**：有 `url` 的节点扁平 `addRoute` 到 Layout（文件夹不嵌套子路由）；`props: { type, authId }`；优先 `apps/*/src/views/**/index.vue` 整页覆写，否则 `DynamicPage`。`visible=false` 的隐藏菜单不进这条动态路由；用户在线、用户统计、令牌、用户链接、OAuth、访问规则、短信、邮件、字典参数、租户用户、应用日志，以及流程效率页，改为静态子路由直达，不改 Menus 的 Visible，侧栏是否显示仍由管理员在菜单管理里修改。
 3. **DynamicPage** 为薄宿主：解析 Section `DefaultListPage` 覆写，否则挂载 **DefaultList** 微内核（GetPage → fieldControl → 列表/搜索/LOV → **右侧**抽屉）。
 4. 点击行打开 **右侧 RecordDrawer**（`placement="right"`；表单 / 历史 / 评论）；微内核**不读**布局/主题 store（契约隔离）。
 5. 多视图 ViewShell / VTable 已由 **OSC-0005/0006** 落地（6 视图 + 命名视图 Tab + 配置抽屉）；在此基础上向「视图/表单容器 + 用户运行时自定义」演进，见 §8.2。

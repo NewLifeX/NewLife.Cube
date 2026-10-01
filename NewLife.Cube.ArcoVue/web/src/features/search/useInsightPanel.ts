@@ -4,6 +4,7 @@ import { useUserStore } from '@/stores/user';
 import { useViewProfileStore } from '@/stores/viewProfile';
 import type { FieldMeta } from '@/core/types/field';
 import { isEmbedMode } from '@/core/utils/embedMode';
+import { mergeDeveloperCharts, isFixedDeveloperChart } from '@/core/utils/chartOptions';
 import type { ViewFilter, ViewInsight } from '@/core/utils/viewProfile';
 import { WIDGET_SURFACE_KEY, type WidgetSurfaceContext } from '@/features/widget/context';
 import { synthesizeLegacyDashboard } from '@/features/widget/legacy';
@@ -19,17 +20,27 @@ export interface InsightPanelProps {
   chartOption?: unknown;
   hostFilter: ViewFilter | null;
   listFields?: { name: string; displayName?: string; typeName?: string }[];
-  /** 宿主页 search∪list 字段候选（OSC-260903e2a4，供部件查询条件/宿主引用） */
+  /** 宿主页 search∪list 字段候选（OSC-260903e2a4） */
   filterFields?: FieldMeta[];
+  /** 开发者 GetChartData：经 WidgetHost 按 legacyChart 部件样式挂洞察区（最多前 2 张） */
+  developerCharts?: unknown[];
+  developerChartError?: string;
 }
 
 function persistableDashboard(cfg: DashboardConfig, hadStored: boolean): DashboardConfig {
   const widgets: WidgetInstance[] = cfg.widgets
-    .filter((w) => w.kind !== 'legacyChart' && (hadStored || !String(w.id).startsWith('legacy-')))
+    .filter(
+      (w) =>
+        w.kind !== 'legacyChart' &&
+        !isFixedDeveloperChart(w.id) &&
+        (hadStored || !String(w.id).startsWith('legacy-')),
+    )
     .map((w) => {
       const next = { ...w };
       delete next.syntheticValue;
       delete next.chartOption;
+      delete next.chartIndex;
+      delete next.fixed;
       return next;
     });
   return { version: 1, widgets };
@@ -45,8 +56,18 @@ export function useInsightPanel(props: InsightPanelProps) {
     showChart: props.showChart,
     chartOption: props.chartOption,
   }));
+  const developerCharts = computed(() =>
+    Array.isArray(props.developerCharts) ? props.developerCharts : [],
+  );
+  const developerChartError = computed(() => String(props.developerChartError ?? ''));
+  const hasDeveloperCharts = computed(() => developerCharts.value.length > 0);
+
   const synthesized = computed(() => {
     if (stored.value != null) return null;
+    // 开发者图已由 mergeDeveloperCharts 注入，避免再合成一张全宽 legacyChart
+    if (hasDeveloperCharts.value) {
+      return synthesizeLegacyDashboard(insight.value, props.statData, false, props.typePath);
+    }
     return synthesizeLegacyDashboard(
       insight.value,
       props.statData,
@@ -54,8 +75,22 @@ export function useInsightPanel(props: InsightPanelProps) {
       props.typePath,
     );
   });
-  const dashboard = computed<DashboardConfig>(
+
+  const baseDashboard = computed<DashboardConfig>(
     () => stored.value ?? synthesized.value ?? emptyDashboard(),
+  );
+
+  const dashboard = computed<DashboardConfig>(() => {
+    if (!hasDeveloperCharts.value) return baseDashboard.value;
+    return mergeDeveloperCharts(baseDashboard.value, developerCharts.value, props.typePath);
+  });
+
+  /** 有开发者图时用其数组供各 legacyChart 按 chartIndex 取 option；否则沿用列表洞察 chartData */
+  const legacyChartData = computed(() =>
+    hasDeveloperCharts.value ? developerCharts.value : props.chartData,
+  );
+  const legacyChartError = computed(() =>
+    hasDeveloperCharts.value ? developerChartError.value : props.chartError,
   );
 
   const surface = reactive<WidgetSurfaceContext>({
@@ -71,9 +106,9 @@ export function useInsightPanel(props: InsightPanelProps) {
         true,
       );
     },
-    legacyChartData: props.chartData,
+    legacyChartData: legacyChartData.value,
     legacyChartLoading: props.chartLoading,
-    legacyChartError: props.chartError,
+    legacyChartError: legacyChartError.value,
     listFields: props.listFields,
     hostFilterFields: props.filterFields,
   });
@@ -84,9 +119,9 @@ export function useInsightPanel(props: InsightPanelProps) {
       props.hostFilter,
       canEdit.value,
       dashboard.value,
-      props.chartData,
+      legacyChartData.value,
       props.chartLoading,
-      props.chartError,
+      legacyChartError.value,
       props.listFields,
       props.filterFields,
     ],
@@ -95,9 +130,9 @@ export function useInsightPanel(props: InsightPanelProps) {
       surface.hostFilter = props.hostFilter;
       surface.canEdit = canEdit.value;
       surface.dashboard = dashboard.value;
-      surface.legacyChartData = props.chartData;
+      surface.legacyChartData = legacyChartData.value;
       surface.legacyChartLoading = props.chartLoading;
-      surface.legacyChartError = props.chartError;
+      surface.legacyChartError = legacyChartError.value;
       surface.listFields = props.listFields;
       surface.hostFilterFields = props.filterFields;
     },
@@ -106,5 +141,9 @@ export function useInsightPanel(props: InsightPanelProps) {
 
   provide(WIDGET_SURFACE_KEY, surface);
 
-  return { canEdit, dashboard };
+  return {
+    canEdit,
+    dashboard,
+    developerChartError,
+  };
 }

@@ -361,6 +361,15 @@ export function useListQuery(ctx: ListContext) {
     }
   }
 
+  /** 列表与用户统计图共用的 GetChartData 查询参数（关键字 + 筛选） */
+  const chartRequestParams = computed(() => {
+    const vf = buildViewFilterParam(requestViewFilter());
+    return {
+      ...effectiveSearch.value,
+      ...(vf ? { viewFilter: vf } : {}),
+    };
+  });
+
   /** 加载固定图表（OSC-0012 + OSC-260819e483 P5）：showChart 时带有效搜索请求 GetChartData；过期响应丢弃。
    *  渲染优先级：开发者 GetChartData 非空数组 → 开发者图；否则用户 chartOption → applyChartData 当前列表行；否则空态 */
   async function loadChart() {
@@ -380,11 +389,7 @@ export function useListQuery(ctx: ListContext) {
     chartLoading.value = true;
     chartError.value = '';
     try {
-      const vf = buildViewFilterParam(requestViewFilter());
-      const res = await cubeApi.page.getChartData(typePath.value, {
-        ...effectiveSearch.value,
-        ...(vf ? { viewFilter: vf } : {}),
-      });
+      const res = await cubeApi.page.getChartData(typePath.value, chartRequestParams.value);
       if (seq !== chartSeq.value) return;
       const dev = Array.isArray(res.data) ? res.data : [];
       if (dev.length) {
@@ -535,6 +540,7 @@ export function useListQuery(ctx: ListContext) {
     loadFields,
     loadData,
     loadChart,
+    chartRequestParams,
     applySearchToForm,
     handleSearch,
     handleReset,

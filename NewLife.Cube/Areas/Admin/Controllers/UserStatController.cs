@@ -95,21 +95,28 @@ public class UserStatController : ReadOnlyEntityController<UserStat>
             series = kpiSeries,
         };
 
-        // 箱线图：每日 5 个统计维度（对齐 MVC BoxplotItem）
+        // 箱线图：每日 5 个统计维度。ECharts boxplot 要求每项为升序 [min,Q1,median,Q3,max]
         var box = new
         {
             title = new { text = "用户箱线（仅用于演示）" },
             tooltip = new { trigger = "item" },
-            legend = new { data = new[] { "用户箱线（仅用于演示）" } },
-            xAxis = new { type = "category", data = dates },
-            yAxis = new { type = "value", name = "值" },
+            legend = new { show = false },
+            grid = new { left = "3%", right = "3%", top = 16, bottom = 28, containLabel = true },
+            xAxis = new { type = "category", data = dates, boundaryGap = true, axisLabel = new { hideOverlap = true } },
+            yAxis = new { type = "value", name = "值", scale = true },
             series = new Object[]
             {
                 new
                 {
                     name = "用户箱线（仅用于演示）",
                     type = "boxplot",
-                    data = list.Select(e => new Object[] { e.News, e.Actives, e.NewsT7, e.ActivesT7, e.NewsT30 }).ToArray(),
+                    data = list.Select(e =>
+                    {
+                        // 演示数据：五个指标升序后充当五数概括，避免乱序导致箱体塌缩
+                        Double[] vals = [e.News, e.Actives, e.NewsT7, e.ActivesT7, e.NewsT30];
+                        Array.Sort(vals);
+                        return (Object)vals;
+                    }).ToArray(),
                 }
             },
         };

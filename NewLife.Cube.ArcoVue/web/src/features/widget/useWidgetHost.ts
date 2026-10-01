@@ -1,6 +1,7 @@
 import { computed, inject, ref } from 'vue';
 import { Message } from '@arco-design/web-vue';
 import { emptyDashboard, maxWidgetsFor, type WidgetInstance } from '@newlifex/api-core';
+import { isFixedDeveloperChart } from '@/core/utils/chartOptions';
 import { WIDGET_SURFACE_KEY } from './context';
 import { getWidget } from './registry';
 import { isUnlinkedWidget } from './legacy';
@@ -81,6 +82,7 @@ export function useWidgetHost() {
   }
 
   function openUpgrade(w: WidgetInstance) {
+    if (isFixedDeveloperChart(w.id)) return;
     editing.value = {
       ...w,
       kind: 'miniChart',
@@ -96,9 +98,13 @@ export function useWidgetHost() {
     const filtered =
       ctx.surface === 'insight'
         ? next.filter(
-            (w) => w.kind !== 'miniKanban' && w.kind !== 'dataList' && w.kind !== 'dataCard',
+            (w) =>
+              w.kind !== 'miniKanban' &&
+              w.kind !== 'dataList' &&
+              w.kind !== 'dataCard' &&
+              !isFixedDeveloperChart(w.id),
           )
-        : next;
+        : next.filter((w) => !isFixedDeveloperChart(w.id));
     const widgetsNext = filtered.map((w, i) => ({ ...w, layout: { ...w.layout, order: i } }));
     await ctx.saveDashboard({
       ...dashboard.value,
@@ -149,14 +155,18 @@ export function useWidgetHost() {
   }
 
   async function removeWidget(id: string) {
+    if (isFixedDeveloperChart(id)) return;
     await persist(widgets.value.filter((w) => w.id !== id));
   }
 
   async function moveWidget(id: string, dir: -1 | 1) {
+    if (isFixedDeveloperChart(id)) return;
     const list = [...widgets.value];
     const i = list.findIndex((w) => w.id === id);
     const j = i + dir;
     if (i < 0 || j < 0 || j >= list.length) return;
+    // 不与固定图交换位置：固定图始终顶置
+    if (isFixedDeveloperChart(list[j]?.id)) return;
     const tmp = list[i];
     list[i] = list[j];
     list[j] = tmp;

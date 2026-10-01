@@ -1,7 +1,7 @@
 import type { LoginConfig } from '@newlifex/api-core';
 import type { FieldMeta } from '../types/field';
 
-export const ACCOUNT_TABS = ['profile', 'password', 'security', 'binds'] as const;
+export const ACCOUNT_TABS = ['profile', 'password', 'security', 'binds', 'links'] as const;
 export type AccountTab = (typeof ACCOUNT_TABS)[number];
 
 const TAB_SET = new Set<string>(ACCOUNT_TABS);

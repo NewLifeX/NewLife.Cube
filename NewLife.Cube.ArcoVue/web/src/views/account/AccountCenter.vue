@@ -80,6 +80,20 @@
         <a-tab-pane key="binds" title="绑定">
           <SecuritySettings v-if="tab === 'binds'" section="binds" />
         </a-tab-pane>
+        <a-tab-pane key="links" title="关联">
+          <div class="form-groups">
+            <section class="form-group account-links">
+              <a-button
+                v-for="link in links"
+                :key="link.path"
+                :disabled="link.disabled"
+                @click="openAccountLink(link)"
+              >
+                {{ link.title }}
+              </a-button>
+            </section>
+          </div>
+        </a-tab-pane>
       </a-tabs>
     </div>
     <div v-if="footerKind" class="account-footer">
@@ -96,6 +110,7 @@
 import FieldInput from '@/components/FieldInput.vue';
 import SecuritySettings from './SecuritySettings.vue';
 import { useAccountCenter } from './useAccountCenter';
+import { useAccountLinks } from './useAccountLinks';
 
 defineOptions({ name: 'AccountCenter' });
 
@@ -115,6 +130,8 @@ const {
   footerLoading,
   onFooterClick,
 } = useAccountCenter();
+
+const { links, openAccountLink } = useAccountLinks();
 </script>
 
 <style scoped>
@@ -160,6 +177,13 @@ const {
   color: var(--color-text-3);
   font-size: 13px;
   margin: 0 0 12px;
+}
+.account-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding-bottom: 16px;
 }
 /* 底部卡片：参照魔方设置 obj-footer / 列表 list-pager */
 .account-footer {

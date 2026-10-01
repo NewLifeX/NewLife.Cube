@@ -9,6 +9,7 @@
  * 权限不足/GET 失败 → 表单 disabled、保存隐藏、a-alert 说明。
  */
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { Message } from '@arco-design/web-vue';
 import { FieldKind, type MenuItem } from '@newlifex/api-core';
 import cubeApi from '@/api';
@@ -18,6 +19,7 @@ import { toFieldMetas } from '@/core/utils/fieldNormalize';
 import { serializeSubmitModel } from '@/core/utils/fieldControl';
 import { groupFieldsByCategory, mergeObjectModel } from '@/core/utils/objectForm';
 import { collectObjectCandidates, type ObjectPageRef } from '@/core/utils/objectPages';
+import { buildObjectMoreLinks } from '@/core/utils/objectMoreLinks';
 import {
   fingerprintMenus,
   hydrateObjectKindCache,
@@ -79,6 +81,7 @@ export function useDefaultObject(props: DefaultObjectProps) {
   const userStore = useUserStore();
   const appStore = useAppStore();
   const tenantStore = useTenantStore();
+  const router = useRouter();
 
   /** 当前配置对象类型（左侧切换后加载对应对象） */
   const currentType = ref(props.type);
@@ -243,6 +246,13 @@ export function useDefaultObject(props: DefaultObjectProps) {
     }
   }
 
+  /** 菜单树里有对应 url 才出现；点击整页跳转，不探测成对象页 */
+  const moreLinks = computed(() => buildObjectMoreLinks(userStore.menus || []));
+
+  function onMoreLink(path: string) {
+    void router.push(path);
+  }
+
   /** 左侧切换配置页 */
   function onSelectPage(type: string) {
     if (type === currentType.value) return;
@@ -374,6 +384,8 @@ export function useDefaultObject(props: DefaultObjectProps) {
   return {
     currentType,
     objectPages,
+    moreLinks,
+    onMoreLink,
     pagesLoading,
     loading,
     loadError,

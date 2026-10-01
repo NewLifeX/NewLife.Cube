@@ -59,6 +59,7 @@
 | OSC-2609307879 — 2026-09-30 | 连接名占用时内存库不生效；api-core 要先构建 dist；表头图标在模块顶层 |
 | OSC-261001e9e2 — 2026-10-01 | 刷新判断用所改字段；成功标准与修订同时改；冒烟要看真实排序 |
 | OSC-2610011cd6 — 2026-10-01 | 确认文案放 title；Kick 按删除权限裁 URL；ListFields 沿基类反射 |
+| OSC-2610011ff2 — 2026-10-01 | 隐藏路由不改 Visible；固定图滤持久化；boxplot 须升序；spin 防宽 0 |
 
 ---
 
@@ -403,3 +404,10 @@
 - **Arco `Modal.confirm` 的确认句放 `title`，`content` 给空字符串**：当前类型把 `content` 标成必填。句子只写在 `content` 会让 `title` 变空；只写 `title` 又过不了 `vue-tsc`。
 - **无删除权限时按链接地址裁剪，不要在前端写死「强制下线」按钮**：合成列仍来自 `UserOnlineController`。`visibleOpsLinks` 只去掉 URL 含 `/UserOnline/Kick` 的项，其它 `dataAction` 保持可见。
 - **泛型控制器的 `ListFields` 要用 `RunClassConstructor` 再沿 `BaseType` 查找**：`FlattenHierarchy` 拿不到基类上的受保护静态属性。`DeclaredOnly` 逐层向上才能读到合成列。
+
+## OSC-2610011ff2 — 2026-10-01
+
+- **隐藏功能只注册静态路由，禁止写 `Menu.Visible`**：侧栏是否出现交给管理员改库。改 `[Menu]` 可见参数或启动覆盖会经 `MenuHelper` 回写实体，破坏「默认隐藏」。
+- **开发者固定图用 `dev-chart-*` 运行时注入，持久化前必须滤掉**：否则会写进个人 `DashboardJson`。设置/升级/删除对固定图隐藏。
+- **ECharts boxplot 五项必须升序 `[min,Q1,median,Q3,max]`**：乱序会画成横线。演示数据用业务指标拼五数时，前后端都要再 `Sort`。
+- **`a-spin` 包图表时用块级宽高**：默认 `inline-block` 在空容器里宽为 0，ECharts init 失败；配合 `chartEl` watch 与 `ResizeObserver`。

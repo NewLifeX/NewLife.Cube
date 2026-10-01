@@ -4,16 +4,18 @@ import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
 import { useUserProfileStore } from '@/stores/userProfile';
 import { useAppStore } from '@/stores/app';
+import { HIDDEN_ENTRY_ROUTES } from '@/core/utils/hiddenEntryRoutes';
 import { registerLeafRoutes, resolvePageComponent } from '@/core/utils/menuRoutes';
 
-// OA 审批独立页（OSC-26090347f1）：菜单未播种/visible=false 时不注册动态路由，
-// 此处静态兜底注册使 URL 直达可用（/Cube/Workflow/{Todo|Done|Started|Designer}）。
+// OA 审批独立页（OSC-26090347f1 / OSC-2610011ff2）：菜单未播种或 visible=false 时不注册动态路由，
+// 此处静态兜底使 URL 直达（/Cube/Workflow/{Todo|Done|Started|Designer|Efficiency}）。
 const oaLeafRoutes: RouteRecordRaw[] = (
   [
     { sub: 'Todo', title: '我的待办' },
     { sub: 'Done', title: '已办' },
     { sub: 'Started', title: '我发起的' },
     { sub: 'Designer', title: '流程设计' },
+    { sub: 'Efficiency', title: '效率' },
   ] as const
 ).map(({ sub, title }) => {
   const path = `Cube/Workflow/${sub}`;
@@ -58,6 +60,14 @@ const routes: RouteRecordRaw[] = [
       },
       // OA 审批独立页静态路由（resolvePageComponent 特判 /Cube/Workflow 段）
       ...oaLeafRoutes,
+      // 隐藏菜单白名单：只注册路由，不改 Menu.Visible（OSC-2610011ff2）
+      ...HIDDEN_ENTRY_ROUTES.map(({ path, title }) => ({
+        path,
+        name: `Hidden${path.replace(/\//g, '')}`,
+        component: () => import('@/views/dynamic/DynamicPage.vue'),
+        meta: { typePath: path, title },
+        props: { type: `/${path}` },
+      })),
       {
         /** 系统监控页（菜单 visible=false 不注册动态路由，此处静态兜底）；pageKind=home → DefaultHome。自定义工作台在静态 /home */
         path: 'Admin/Index',

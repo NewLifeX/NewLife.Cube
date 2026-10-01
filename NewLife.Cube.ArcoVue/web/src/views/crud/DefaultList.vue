@@ -22,6 +22,8 @@
         :host-filter="viewFilter"
         :list-fields="listFields"
         :filter-fields="filterFields"
+        :developer-charts="userStatActive ? userStatCharts : []"
+        :developer-chart-error="userStatActive ? userStatError : ''"
       />
 
       <!-- 表格面板：视图 Tab + 工具栏 + 表格 + 分页 -->
@@ -752,6 +754,7 @@ import AutomationDrawer from './automation/AutomationDrawer.vue';
 import SubmitApprovalDrawer from '../workflow/SubmitApprovalDrawer.vue';
 import WorkflowProgressPanel from '../workflow/WorkflowProgressPanel.vue';
 import ShareViewPopover from './ShareViewPopover.vue';
+import { useUserStatChart } from './useUserStatChart';
 import { isEmbedMode } from '@/core/utils/embedMode';
 
 const props = defineProps<{
@@ -959,10 +962,17 @@ const {
   navigateRecord,
   chartVisible,
   chartList,
+  chartRequestParams,
   addFields,
   editFields,
   detailFields,
 } = useDefaultList(props);
+
+const {
+  active: userStatActive,
+  charts: userStatCharts,
+  error: userStatError,
+} = useUserStatChart(typePath, chartRequestParams);
 
 const insightPanelRef = ref<{ openAdd?: () => void } | null>(null);
 function openDashboard() {
