@@ -266,6 +266,10 @@ public class ManageProvider2 : ManageProvider
         // 销毁Cookie
         this.SaveCookie(null, TimeSpan.Zero, context);
 
+        // 清除租户 Cookie / 上下文，避免下一账号登录继承上一会话的租户
+        if (context != null && CubeSetting.Current.EnableTenant)
+            context.SaveTenant(-1);
+
         base.Logout();
     }
     #endregion

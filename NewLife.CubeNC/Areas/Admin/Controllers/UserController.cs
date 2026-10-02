@@ -906,15 +906,18 @@ public class UserController : EntityController<User, UserModel>
         if (user == null) return RedirectToAction("Login");
 
         var tlist = TenantUser.FindAllByUserId(user.ID);
+        var tenants = tlist.ToDictionary(e => e.TenantId, v => v.TenantName);
+        // 系统管理员下拉须含管理后台入口，否则误绑租户后个人中心无法切回平台
+        if (TenantAccessPolicy.IsSystemAdmin(user) && !tenants.ContainsKey(0))
+            tenants = new Dictionary<Int32, String> { [0] = "系统管理后台" }.Concat(tenants)
+                .ToDictionary(e => e.Key, e => e.Value);
+
         var model = new TenantSettingModel(user.Name)
         {
-            Tenants = tlist.ToDictionary(e => e.TenantId, v => v.TenantName)
+            Tenants = tenants
         };
 
         if (IsJsonRequest) return Ok(data: model);
-
-        //var tid = HttpContext.GetTenantId();
-        //var t = Tenant.FindById(tid);
 
         ViewData["TenantId"] = _tenantContext.TenantId;
 
@@ -986,11 +989,18 @@ public class UserController : EntityController<User, UserModel>
     public ActionResult TenantSetting(TenantSettingModel model)
     {
         var tagTenantId = Request.Form["TagTenantId"].ToInt(-1);
+        var user = ManageProvider.User as User;
 
-        // 仅允许切换到当前用户所属的有效租户，防止越权写入任意租户Cookie
-        if (tagTenantId > 0)
+        if (tagTenantId == 0)
         {
-            var user = ManageProvider.User;
+            // 切回系统管理后台：仅系统管理员
+            if (user == null || !TenantAccessPolicy.IsSystemAdmin(user))
+                throw new InvalidOperationException("仅系统管理员可进入系统管理后台");
+            HttpContext.SaveTenant(0);
+        }
+        else if (tagTenantId > 0)
+        {
+            // 仅允许切换到当前用户所属的有效租户，防止越权写入任意租户Cookie
             var tu = TenantUser.FindByTenantIdAndUserId(tagTenantId, user.ID);
             if (tu == null || !tu.Enable)
                 throw new InvalidOperationException("无权切换到该租户！");

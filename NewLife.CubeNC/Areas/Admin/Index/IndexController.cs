@@ -62,19 +62,23 @@ public class IndexController : ControllerBaseX, IPageDataContext
         //!!! 租户切换
         var set = CubeSetting.Current;
         var tenantId = Request.Query["TenantId"].ToInt(-1);
+        if (tenantId < 0) tenantId = Request.Query["tenantid"].ToInt(-1);
         if (tenantId >= 0 && set.EnableTenant)
         {
             // 判断租户关系
             var list = TenantUser.FindAllByUserId(user.ID);
 
-            // 管理后台（AdminBackend）仅系统管理员可切换；普通用户仅能切换到其所属的有效租户
+            // 管理后台（AdminBackend）仅系统管理员可切换；以库内角色为准，避免会话态角色缓存干扰
             if (tenantId.GetTenantMode() == TenantMode.AdminBackend)
             {
-                if (user is IUser iu && iu.Roles.Any(e => e.IsSystem))
+                var dbUser = XCode.Membership.User.FindByID(user.ID) ?? user as XCode.Membership.User;
+                if (dbUser != null && TenantAccessPolicy.IsSystemAdmin(dbUser))
                 {
                     HttpContext.SaveTenant(0);
                     return Redirect("/Admin");
                 }
+
+                XTrace.WriteLine("用户[{0}]尝试切换到系统管理后台被拒绝（非系统管理员）", user);
             }
             else if (list.Any(e => e.TenantId == tenantId && e.Enable))
             {

@@ -269,10 +269,14 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
     /// <returns>租户用户绑定记录，无需绑定时返回null</returns>
     private TenantUser EnsureTenantUser(HttpContext httpContext, IManageUser user, String ip)
     {
-        // 规则B（永久能力，非影子期兼容）：优先 X-App-Id（OAuth 配置租户），其次 X-Tenant/Query/Cookie；
-        // 有有效租户标识且用户未绑定时自动补建绑定。无租户标识返回 -1，不处理。
+        // 系统管理员不走规则B自动绑定：管理后台身份独立，租户归属须显式管理。
+        // 否则上一租户账号退出后残留 Cookie/上下文，会把管理员误绑进该租户。
+        if (TenantAccessPolicy.IsSystemAdmin(user)) return null;
+
+        // 规则B（永久能力，非影子期兼容）：仅显式标识（X-App-Id / X-Tenant / Query）触发自动绑定。
+        // Cookie 与 TenantContext 可能是上一账号会话残留，不能作为换账号登录后的绑定依据。
         var userId = user?.ID ?? 0;
-        var tenantId = httpContext.ResolveTenantForLogin();
+        var tenantId = httpContext.ResolveTenantForAutoBind();
         if (tenantId <= 0 || userId <= 0) return null;
 
         // 检查是否已绑定到该租户

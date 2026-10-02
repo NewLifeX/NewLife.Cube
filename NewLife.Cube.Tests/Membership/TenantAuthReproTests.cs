@@ -524,6 +524,39 @@ public class TenantAuthExpectationTests
         }
     }
 
+    [Fact(DisplayName = "期望：上一租户账号残留 Cookie 后管理员登录不误绑、进管理后台")]
+    public void Expect_Admin_Login_With_Leftover_Tenant_Cookie_Should_Not_Bind()
+    {
+        CubeSetting.Current.EnableTenant = true;
+        TenantContext.Current = null!;
+        try
+        {
+            // 模拟上一租户用户退出后残留的 TenantId Cookie + 中间件已写入的上下文
+            var cookieKey = $"TenantId-{SysConfig.Current.Name}";
+            TenantContext.Current = new TenantContext { TenantId = _fx.Tenant1.Id };
+
+            var loginCtx = _fx.CreateContext();
+            loginCtx.Request.Headers["Cookie"] = $"{cookieKey}={_fx.Tenant1.Id}";
+            var model = new LoginModel { Username = "admin01", Password = TenantAuthFixture.Password };
+            var result = _fx.UserService.Login(model, loginCtx);
+            Assert.True(result.IsSuccess);
+
+            // 不得因残留 Cookie/上下文自动建绑
+            var tu = TenantUser.FindByTenantIdAndUserId(_fx.Tenant1.Id, _fx.AdminUser.ID);
+            Assert.Null(tu);
+
+            // 登录后进入管理后台，而非残留租户
+            Assert.Equal(0, TenantContext.CurrentId);
+        }
+        finally
+        {
+            var tu = TenantUser.FindByTenantIdAndUserId(_fx.Tenant1.Id, _fx.AdminUser.ID);
+            tu?.Delete();
+            CubeSetting.Current.EnableTenant = false;
+            TenantContext.Current = null!;
+        }
+    }
+
     [Fact(DisplayName = "期望：Enforce 下管理员无租户标识也能登录并进入管理后台（管理员不属任何租户，无需租户标识）")]
     public void Expect_Admin_Enforce_NoIdentifier_Should_Succeed()
     {
