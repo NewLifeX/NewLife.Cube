@@ -79,9 +79,11 @@ public class TenantController : EntityController<Tenant, TenantModel>
     /// <returns></returns>
     protected override Boolean Valid(Tenant entity, DataObjectMethodType type, Boolean post)
     {
-        if (/*!post &&*/ type == DataObjectMethodType.Insert)
+        if (type == DataObjectMethodType.Insert && entity.ManagerId == 0)
         {
-            if (entity.ManagerId == 0) entity.ManagerId = ManageProvider.Provider.Current.ID;
+            // 当前用户可能为空（异常会话），避免直接解引用导致保存失败
+            var current = ManageProvider.Provider?.Current;
+            if (current != null) entity.ManagerId = current.ID;
         }
 
         return base.Valid(entity, type, post);
@@ -94,17 +96,8 @@ public class TenantController : EntityController<Tenant, TenantModel>
     {
         var result = base.OnInsert(entity);
 
-        var tuEntity = TenantUser.FindByTenantIdAndUserId(entity.Id, entity.ManagerId);
-        tuEntity ??= new TenantUser()
-        {
-            TenantId = entity.Id,
-            UserId = entity.ManagerId
-        };
-
-        tuEntity.Enable = true;
-        tuEntity.RoleIds = entity.RoleIds;
-
-        tuEntity.Save();
+        // 无有效管理员时不创建成员关系，避免 UserId=0 脏数据
+        if (entity.ManagerId > 0) SyncManagerMembership(entity, null);
 
         return result;
     }
@@ -115,26 +108,44 @@ public class TenantController : EntityController<Tenant, TenantModel>
     protected override Int32 OnUpdate(Tenant entity)
     {
         var oldTenantEntity = Tenant.FindById(entity.Id);
-        var tuEntity = TenantUser.FindByTenantIdAndUserId(oldTenantEntity.Id, oldTenantEntity.ManagerId);
+        // 旧记录缺失时仍允许更新租户本身，跳过成员同步
+        if (oldTenantEntity != null) SyncManagerMembership(entity, oldTenantEntity);
 
-        if (entity.ManagerId != oldTenantEntity.ManagerId)
+        return base.OnUpdate(entity);
+    }
+
+    /// <summary>同步租户管理员对应的 TenantUser 成员关系。
+    /// 变更管理员时禁用旧绑定（若不存在则跳过）；确保新管理员有启用的绑定。
+    /// 历史数据常缺 TenantUser，直接解引用会触发 NRE（表现为「保存失败！Object reference...」）。</summary>
+    /// <param name="entity">当前提交的租户</param>
+    /// <param name="oldEntity">更新前的租户；新增时传 null</param>
+    private static void SyncManagerMembership(Tenant entity, Tenant oldEntity)
+    {
+        // 管理员变更：禁用旧管理员绑定（历史库可能没有该行，必须判空）
+        if (oldEntity != null
+            && entity.ManagerId != oldEntity.ManagerId
+            && oldEntity.ManagerId > 0)
         {
-            tuEntity.Enable = false;
-            tuEntity.Save();
+            var oldTu = TenantUser.FindByTenantIdAndUserId(oldEntity.Id, oldEntity.ManagerId);
+            if (oldTu != null)
+            {
+                oldTu.Enable = false;
+                oldTu.Save();
+            }
         }
 
-        var newTuEntity = TenantUser.FindByTenantIdAndUserId(entity.Id, entity.ManagerId);
-        newTuEntity ??= new TenantUser()
+        if (entity.ManagerId <= 0) return;
+
+        var tu = TenantUser.FindByTenantIdAndUserId(entity.Id, entity.ManagerId);
+        tu ??= new TenantUser
         {
             TenantId = entity.Id,
             UserId = entity.ManagerId
         };
 
-        newTuEntity.Enable = entity.Enable;
-        newTuEntity.RoleIds = entity.RoleIds;
-
-        newTuEntity.Save();
-
-        return base.OnUpdate(entity);
+        // 新增时强制启用；更新时跟随租户启用状态
+        tu.Enable = oldEntity == null || entity.Enable;
+        tu.RoleIds = entity.RoleIds;
+        tu.Save();
     }
 }
