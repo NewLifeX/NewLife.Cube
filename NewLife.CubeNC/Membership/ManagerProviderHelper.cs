@@ -224,25 +224,23 @@ public static class ManagerProviderHelper
 
         /*
          * 用户登录后的租户选择逻辑：
-         *  已选租户且有效
+         *  已选租户且有效（系统管理员须为该租户成员绑定，避免仅凭 Cookie 残留误入）
          *      直接进入已选租户
          *  已选管理后台（租户0）
          *      系统管理员直接进入管理后台
          *      普通用户强制进入第一个有效租户，无租户则不设置（防止越权看到全部数据）
          *  未选租户
-         *      拥有租户
-         *          进入第一个租户
-         *      未有租户
-         *          系统管理员进入管理后台，普通用户不设置
+         *      系统管理员进入管理后台（不因误绑 TenantUser 自动切入租户）
+         *      普通用户拥有租户 → 进入第一个租户；无租户 → 不设置
          */
         var tlist = TenantUser.FindAllByUserId(userId).Where(e => e.Enable).ToList();
         var tenantId = GetTenantId(context);
 
         // 判断是否系统管理员，管理后台（租户0）仅系统管理员可进入
         var user = User.FindByID(userId);
-        var isAdmin = user != null && user.Roles.Any(e => e.IsSystem);
+        var isAdmin = TenantAccessPolicy.IsSystemAdmin(user);
 
-        // 进入最后一次使用的租户
+        // 进入最后一次使用的租户（须有有效成员绑定；管理员也不能仅靠 Cookie 残留进入）
         if (tenantId.GetTenantMode() == TenantMode.Tenant && tlist.Any(e => e.TenantId == tenantId))
             SetTenant(context, tenantId); // 有效租户
         else if (tenantId.GetTenantMode() == TenantMode.AdminBackend)
@@ -255,11 +253,11 @@ public static class ManagerProviderHelper
         }
         else
         {
-            // 如果 tenantId > 0 但无效，则重新选择租户
-            if (tlist.Count > 0)
-                SetTenant(context, tlist[0].TenantId); // 进入第一个租户
-            else if (isAdmin)
-                SetTenant(context, 0); // 系统管理员进入管理后台
+            // 未选或所选无效：系统管理员一律进管理后台，避免换账号后继承上一会话租户
+            if (isAdmin)
+                SetTenant(context, 0);
+            else if (tlist.Count > 0)
+                SetTenant(context, tlist[0].TenantId); // 普通用户进入第一个租户
             // 普通用户无有效租户，不设置租户上下文，防止进入管理后台越权
         }
 
@@ -426,6 +424,44 @@ public static class ManagerProviderHelper
         if (TenantContext.Current.GetTenantMode() == TenantMode.Tenant) return TenantContext.CurrentId;
 
         return context.ResolveTenant().TenantId;
+    }
+
+    /// <summary>解析规则B自动绑定用的租户：仅显式请求头/Query（X-App-Id、X-Tenant、X-Tenant-Id、tenantId），
+    /// 不含 Cookie 与已建立的 <see cref="TenantContext"/>。后者可能是上一账号会话残留，换账号登录时不得据此自动建绑。</summary>
+    /// <param name="context">HTTP上下文</param>
+    /// <returns>租户ID，未解析到有效租户返回 -1</returns>
+    public static Int32 ResolveTenantForAutoBind(this HttpContext context)
+    {
+        var req = context?.Request;
+        if (req == null) return -1;
+
+        // 优先 X-App-Id（OAuth 配置租户）
+        var appId = req.Headers["X-App-Id"].ToString();
+        if (!appId.IsNullOrEmpty())
+        {
+            var tid = ResolveTenantByAppId(appId);
+            return tid > 0 ? tid : -1;
+        }
+
+        var tenant = req.Headers["X-Tenant"].ToString();
+        if (!tenant.IsNullOrEmpty()) return ResolveTenantByCode(tenant);
+
+        // [已过期] X-Tenant-Id 兼容读取
+        var idStr = req.Headers["X-Tenant-Id"].ToString();
+        if (!idStr.IsNullOrEmpty())
+        {
+            var tid = ResolveTenantById(idStr);
+            return tid > 0 ? tid : -1;
+        }
+
+        idStr = req.Query["tenantId"].ToString();
+        if (!idStr.IsNullOrEmpty())
+        {
+            var tid = ResolveTenantById(idStr);
+            return tid > 0 ? tid : -1;
+        }
+
+        return -1;
     }
 
     /// <summary>校验租户ID是否存在且启用。0（管理后台）视为无效租户；未开启多租户时仅要求大于0</summary>
@@ -1157,6 +1193,21 @@ public class TenantContextService : ITenantContext
 /// 认证层 ValidateTenant 与（未来的）授权过滤器共用此唯一逻辑，语义只有一份</summary>
 public static class TenantAccessPolicy
 {
+    /// <summary>是否系统管理员（含主角色 IsSystem 兜底，避免 Roles 扩展缓存异常时误判）</summary>
+    /// <param name="user">用户</param>
+    /// <returns>系统管理员返回 true</returns>
+    public static Boolean IsSystemAdmin(IManageUser user)
+    {
+        if (user is not IUser u) return false;
+        if (u.Roles != null && u.Roles.Any(e => e.IsSystem)) return true;
+        if (u is User entity && entity.RoleID > 0)
+        {
+            var role = Role.FindByID(entity.RoleID);
+            return role != null && role.IsSystem;
+        }
+        return false;
+    }
+
     /// <summary>校验用户是否属于指定租户。管理员豁免（可进管理后台及任意租户）；普通用户须有有效 TenantUser 绑定，且不能进管理后台（tenantId=0）</summary>
     /// <param name="tenantId">租户ID（&gt;0 为租户；0 为管理后台，仅管理员）</param>
     /// <param name="user">已认证用户</param>
@@ -1165,7 +1216,7 @@ public static class TenantAccessPolicy
     {
         if (user == null) return false;
         // 系统管理员豁免：可进管理后台（tenantId=0）及任意租户
-        if (user is IUser u && u.Roles.Any(e => e.IsSystem)) return true;
+        if (IsSystemAdmin(user)) return true;
         // 普通用户不能进管理后台（tenantId<=0）
         if (tenantId <= 0) return false;
 

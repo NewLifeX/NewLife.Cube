@@ -179,7 +179,15 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
     {
         if (ManageProvider.User is not User user) throw new Exception("当前登录用户无效！");
 
-        user = XCode.Membership.User.FindByKeyForEdit(user.ID);
+        // FindByKeyForEdit 在部分多租户/缓存场景会抛「无法取得编号」；回落 FindByID 保证个人中心可用
+        try
+        {
+            user = XCode.Membership.User.FindByKeyForEdit(user.ID) ?? user;
+        }
+        catch
+        {
+            user = XCode.Membership.User.FindByID(user.ID) ?? user;
+        }
         if (user == null) throw new Exception("无效用户编号！");
 
         user["Password"] = null;
@@ -197,7 +205,7 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
             var tc = TenantContext.Current;
             userInfo.TenantId = TenantContext.CurrentId;
             userInfo.TenantMode = (Int32)tc.GetTenantMode();
-            userInfo.IsSystemAdmin = user.Roles.Any(e => e.IsSystem);
+            userInfo.IsSystemAdmin = TenantAccessPolicy.IsSystemAdmin(user);
 
             if (userInfo.TenantId > 0)
             {
@@ -218,6 +226,16 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
                     Name = e.Tenant?.Name,
                 })
                 .ToArray();
+
+            // 系统管理员可切换列表须含「系统管理后台」(Id=0)，否则误绑租户后前端无法切回平台
+            if (userInfo.IsSystemAdmin)
+            {
+                userInfo.Tenants =
+                [
+                    new TenantItem { Id = 0, Code = "", Name = "系统管理后台" },
+                    ..userInfo.Tenants,
+                ];
+            }
         }
 
         return Json(0, "ok", userInfo);
@@ -241,7 +259,7 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
         // 管理后台（0）仅系统管理员可进入
         if (tenantId == 0)
         {
-            if (!user.Roles.Any(e => e.IsSystem))
+            if (!TenantAccessPolicy.IsSystemAdmin(user))
                 throw new InvalidOperationException("仅系统管理员可进入系统管理后台");
         }
         else

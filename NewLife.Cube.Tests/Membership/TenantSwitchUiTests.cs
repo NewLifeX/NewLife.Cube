@@ -323,7 +323,7 @@ public class TenantSwitchUiTests
         }
     }
 
-    [Fact(DisplayName = "Info：管理后台模式返回 isSystemAdmin=true 且 tenantMode=1")]
+    [Fact(DisplayName = "Info：管理后台模式返回 isSystemAdmin=true 且 tenantMode=1，可切换列表含系统管理后台")]
     public void Info_Returns_AdminFlag_In_Backend_Mode()
     {
         EnableTenant();
@@ -343,9 +343,51 @@ public class TenantSwitchUiTests
             Assert.Equal(0, data.GetProperty("tenantId").GetInt32());
             Assert.Equal(1, data.GetProperty("tenantMode").GetInt32()); // AdminBackend
             Assert.True(data.GetProperty("isSystemAdmin").GetBoolean());
+
+            var tenants = data.GetProperty("tenants");
+            Assert.True(tenants.GetArrayLength() >= 1);
+            Assert.Equal(0, tenants[0].GetProperty("id").GetInt32());
+            Assert.Equal("系统管理后台", tenants[0].GetProperty("name").GetString());
         }
         finally
         {
+            Restore();
+        }
+    }
+
+    [Fact(DisplayName = "SwitchTenant：系统管理员已误绑租户后仍可切回管理后台（0）")]
+    public void SwitchTenant_Admin_BoundToTenant_Can_Switch_Back_To_Backend()
+    {
+        EnableTenant();
+        TenantUser? tu = null;
+        try
+        {
+            var ctx = _fx.CreateContext();
+            var user = _fx.Provider.Login("admin01", TenantAuthFixture.Password, false);
+            Assert.NotNull(user);
+            Assert.True(((User)user).Roles.Any(e => e.IsSystem));
+
+            // 模拟误绑：系统管理员被写入 TenantUser，并处于租户上下文
+            tu = new TenantUser { TenantId = _fx.Tenant1.Id, UserId = ((User)user).ID, Enable = true };
+            tu.Insert();
+            TenantContext.Current = new TenantContext { TenantId = _fx.Tenant1.Id };
+
+            var controller = CreateController(_fx, ctx);
+            var res = controller.SwitchTenant(0);
+            Assert.True(res.Data);
+            Assert.Equal(0, TenantContext.CurrentId);
+
+            // Info 可切换列表仍含系统管理后台
+            var info = controller.Info() as ContentResult;
+            using var doc = JsonDocument.Parse(info!.Content!);
+            var tenants = doc.RootElement.GetProperty("data").GetProperty("tenants");
+            Assert.Contains(tenants.EnumerateArray(), e => e.GetProperty("id").GetInt32() == 0);
+        }
+        finally
+        {
+            tu?.Delete();
+            var leftover = TenantUser.FindByTenantIdAndUserId(_fx.Tenant1.Id, _fx.AdminUser.ID);
+            leftover?.Delete();
             Restore();
         }
     }
