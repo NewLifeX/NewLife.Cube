@@ -41,21 +41,25 @@
                     </a-button>
                   </template>
                   <a-button size="mini" @click="downloadSchema(row.name)">下载架构</a-button>
-                  <template v-if="canInspect">
-                    <a-button size="mini" @click="openDrawer(row.name, 'tables')">表</a-button>
-                    <a-button size="mini" @click="openDrawer(row.name, 'entities')">实体</a-button>
-                    <a-button size="mini" @click="openDrawer(row.name, 'diff')">差异</a-button>
-                  </template>
-                  <a-button
-                    v-if="canCompact"
-                    size="mini"
-                    status="warning"
-                    :loading="compactingName === row.name"
-                    :disabled="!!compactingName && compactingName !== row.name"
-                    @click="confirmCompact(row.name)"
-                  >
-                    压缩
-                  </a-button>
+                  <a-dropdown v-if="canInspect || canCompact" trigger="click" position="br">
+                    <a-button size="mini">
+                      更多 <icon-park type="down" :size="12" />
+                    </a-button>
+                    <template #content>
+                      <a-doption v-if="canInspect" @click="openDrawer(row.name)">
+                        <template #icon><icon-park type="cube-three" /></template>
+                        实体
+                      </a-doption>
+                      <a-doption
+                        v-if="canCompact"
+                        :disabled="!!compactingName"
+                        @click="confirmCompact(row.name)"
+                      >
+                        <template #icon><icon-park type="tool" /></template>
+                        {{ compactingName === row.name ? '压缩中…' : '压缩' }}
+                      </a-doption>
+                    </template>
+                  </a-dropdown>
                 </a-space>
               </template>
             </a-card>
@@ -71,32 +75,71 @@
       placement="right"
       unmount-on-close
     >
-      <a-alert v-if="drawerError" type="warning" show-icon>{{ drawerError }}</a-alert>
-      <div v-else-if="drawerLoading" class="db-drawer-state">
-        <a-spin :loading="true" />
-        <span>正在加载…</span>
+      <div class="db-drawer-content">
+        <a-alert v-if="drawerError" type="warning" show-icon>{{ drawerError }}</a-alert>
+        <div v-else-if="drawerLoading" class="db-drawer-state">
+          <a-spin :loading="true" />
+          <span>正在加载…</span>
+        </div>
+        <div v-else-if="drawerMode === 'fields'">
+          <div class="db-drawer-toolbar">
+            <a-link @click="backToEntities">← 返回实体列表</a-link>
+            <span class="db-stat">{{ drawerEntityType }} · 共 {{ fieldRows.length }} 个字段</span>
+          </div>
+          <a-empty v-if="!fieldRows.length" description="无字段" />
+          <!-- 列对齐 CubeNC Db/Entities.cshtml 字段架构定义：显示名在首列，字段名为技术名；均可省略+Tooltip -->
+          <a-table v-else :data="fieldRows" :pagination="false" size="small" :scroll="{ x: 940 }">
+            <template #columns>
+              <a-table-column title="显示名" :width="110" :ellipsis="true" tooltip data-index="displayName" />
+              <a-table-column title="字段名" :width="130" :ellipsis="true" tooltip data-index="name" />
+              <a-table-column title="类型" :width="130" :ellipsis="true" tooltip data-index="type" />
+              <a-table-column title="长度" :width="64" align="right">
+                <template #cell="{ record }">{{ record.length > 0 ? record.length : '' }}</template>
+              </a-table-column>
+              <a-table-column title="精度" :width="88" align="right">
+                <template #cell="{ record }">
+                  {{ record.precision > 0 || record.scale > 0 ? `(${record.precision}, ${record.scale})` : '' }}
+                </template>
+              </a-table-column>
+              <a-table-column title="主键" :width="64">
+                <template #cell="{ record }">
+                  <a-tooltip
+                    v-if="record.key"
+                    :content="record.key === 'AI' ? '自增' : record.key === 'PK' ? '主键' : '唯一索引'"
+                  >
+                    <span>{{ record.key }}</span>
+                  </a-tooltip>
+                </template>
+              </a-table-column>
+              <a-table-column title="允许空" :width="84">
+                <template #cell="{ record }">{{ record.nullable ? '' : 'N' }}</template>
+              </a-table-column>
+              <a-table-column title="备注" :width="260" :ellipsis="true" tooltip data-index="description" />
+            </template>
+          </a-table>
+        </div>
+        <div v-else>
+          <a-empty v-if="!drawerRows.length" description="无数据" />
+          <!-- 列必须声明在 #columns 插槽：默认插槽会被 Arco 当作裸 <table> 内容渲染，列不注册导致表格空白（OSC-2610012e35） -->
+          <a-table v-else :data="drawerRows" :pagination="false" size="small" :scroll="{ x: 680 }">
+            <template #columns>
+              <!-- 显示名=描述首句（点击进入数据字典）；备注=描述余下部分，置于最后一列 -->
+              <a-table-column title="显示名" :width="140" :ellipsis="true" tooltip>
+                <template #cell="{ record }">
+                  <a-link @click="openDictionary(record)">{{ dbEntityNameText(record) }}</a-link>
+                </template>
+              </a-table-column>
+              <a-table-column title="表名" :width="150" :ellipsis="true" tooltip data-index="tableName" />
+              <a-table-column title="行数" :width="72" align="right">
+                <template #cell="{ record }">{{ record.count ?? '-' }}</template>
+              </a-table-column>
+              <a-table-column title="备注" :width="320" :ellipsis="true" tooltip>
+                <template #cell="{ record }">{{ dbEntityRemarkText(record) }}</template>
+              </a-table-column>
+            </template>
+          </a-table>
+        </div>
       </div>
-      <template v-else-if="drawerMode === 'diff'">
-        <a-empty v-if="!diffRows.length" description="无差异" />
-        <a-table v-else :data="diffRows" :pagination="false" size="small">
-          <a-table-column title="表名" data-index="tableName" />
-          <a-table-column title="实体" data-index="name">
-            <template #cell="{ record }">{{ record.hasEntityModel ? record.name : '无实体' }}</template>
-          </a-table-column>
-          <a-table-column title="列名" data-index="columnName" />
-          <a-table-column title="类型" data-index="dataType" />
-        </a-table>
-      </template>
-      <template v-else>
-        <a-empty v-if="!drawerRows.length" description="无数据" />
-        <a-table v-else :data="drawerRows" :pagination="false" size="small">
-          <a-table-column title="名称" data-index="name" />
-          <a-table-column title="表名" data-index="tableName" />
-          <a-table-column title="行数" data-index="count">
-            <template #cell="{ record }">{{ record.count ?? '-' }}</template>
-          </a-table-column>
-        </a-table>
-      </template>
     </a-drawer>
   </div>
 </template>
@@ -123,12 +166,17 @@ const {
   drawerMode,
   drawerTitle,
   drawerRows,
-  diffRows,
+  drawerEntityType,
+  fieldRows,
   drawerWidth,
   load,
   confirmBackup,
   downloadSchema,
   openDrawer,
+  openDictionary,
+  backToEntities,
+  dbEntityNameText,
+  dbEntityRemarkText,
   confirmCompact,
 } = useDbPage();
 </script>
@@ -176,5 +224,18 @@ const {
   min-height: 160px;
   gap: 12px;
   color: var(--color-text-3);
+}
+.db-drawer-content {
+  min-height: 160px;
+}
+.db-drawer-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+/* 数据字典表头不折行（如「允许空」）；数字列右对齐由列 align 控制 */
+.db-drawer-content :deep(.arco-table-th) {
+  white-space: nowrap;
 }
 </style>

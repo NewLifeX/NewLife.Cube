@@ -544,7 +544,7 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
         params: name ? { name } : undefined,
       }),
 
-    /** 数据库表清单 */
+    /** 数据库表清单（实体列表合并无实体模型的纯表） */
     dbTables: (name: string) =>
       request<Record<string, unknown>>({ url: '/Admin/Db/ShowTables', method: 'get', params: { name } }),
 
@@ -552,9 +552,21 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
     dbEntities: (name: string) =>
       request<Record<string, unknown>>({ url: '/Admin/Db/ShowEntities', method: 'get', params: { name } }),
 
-    /** 数据库与实体模型差异 */
-    dbDiff: (name: string) =>
-      request<Record<string, unknown>>({ url: '/Admin/Db/ModelDiff', method: 'get', params: { name } }),
+    /** 实体字段数据字典（type 为实体类名） */
+    dbEntityFields: (name: string, type: string) =>
+      request<Record<string, unknown>>({
+        url: '/Admin/Db/ShowEntityFields',
+        method: 'get',
+        params: { name, type },
+      }),
+
+    /** 数据表字段数据字典（无实体模型的表，数据源为数据库架构） */
+    dbTableFields: (name: string, table: string) =>
+      request<Record<string, unknown>>({
+        url: '/Admin/Db/ShowTableFields',
+        method: 'get',
+        params: { name, table },
+      }),
 
     /** 压缩数据库 */
     dbCompact: (name: string) =>

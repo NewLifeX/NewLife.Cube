@@ -13,7 +13,8 @@ describe('createPageApi database tools', () => {
 
     await api.dbTables('Membership');
     await api.dbEntities('Membership');
-    await api.dbDiff('Membership');
+    await api.dbEntityFields('Membership', 'User');
+    await api.dbTableFields('Membership', 'LovDefinition');
     await api.dbCompact('Membership');
 
     expect(request).toHaveBeenNthCalledWith(1, expect.objectContaining({
@@ -27,11 +28,16 @@ describe('createPageApi database tools', () => {
       params: { name: 'Membership' },
     }));
     expect(request).toHaveBeenNthCalledWith(3, expect.objectContaining({
-      url: '/Admin/Db/ModelDiff',
+      url: '/Admin/Db/ShowEntityFields',
       method: 'get',
-      params: { name: 'Membership' },
+      params: { name: 'Membership', type: 'User' },
     }));
     expect(request).toHaveBeenNthCalledWith(4, expect.objectContaining({
+      url: '/Admin/Db/ShowTableFields',
+      method: 'get',
+      params: { name: 'Membership', table: 'LovDefinition' },
+    }));
+    expect(request).toHaveBeenNthCalledWith(5, expect.objectContaining({
       url: '/Admin/Db/Compact',
       method: 'post',
       params: { name: 'Membership' },

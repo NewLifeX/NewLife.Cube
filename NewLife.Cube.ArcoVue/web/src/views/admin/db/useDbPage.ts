@@ -10,8 +10,8 @@ import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
 import { formatApiError } from '@/core/utils/apiError';
 import { blobOf, saveBlob } from '@/core/utils/download';
-import { flattenDiff, getDbActionPermissions, type DbDiffTable } from '@/core/utils/dbPage';
-import { recordDrawerWidth } from '@/views/crud/recordDrawerWidth';
+import { getDbActionPermissions, splitDbDescription } from '@/core/utils/dbPage';
+import { RECORD_DRAWER_WIDE } from '@/views/crud/recordDrawerWidth';
 
 /** 后端 DbItem 归一（兼容 PascalCase/camelCase） */
 export interface DbItemView {
@@ -23,11 +23,27 @@ export interface DbItemView {
 
 export interface DbCountItem {
   name: string;
+  description?: string;
   tableName: string;
   count: number | null;
+  /** 无实体模型的纯数据表行（T4-1：实体列表合并后的标记） */
+  pureTable?: boolean;
 }
 
-type DbDrawerMode = 'tables' | 'entities' | 'diff';
+/** 实体字段数据字典项（列对齐 CubeNC Db/Entities.cshtml 字段架构定义） */
+export interface DbFieldItem {
+  name: string;
+  displayName?: string;
+  type?: string;
+  length?: number;
+  precision?: number;
+  scale?: number;
+  key?: string;
+  nullable?: boolean;
+  description?: string;
+}
+
+type DbDrawerMode = 'entities' | 'fields';
 type DbApiResponse<T> = { code?: number; message?: string; data?: T };
 
 /** DbItem 行归一化；name 为空的行丢弃 */
@@ -42,6 +58,28 @@ export function dbItemOf(row: Record<string, unknown>): DbItemView | null {
   };
 }
 
+/** 实体行展示名：描述首句（无描述回落技术名） */
+export function dbEntityNameText(record: DbCountItem): string {
+  return splitDbDescription(record.name, record.description).name;
+}
+
+/** 实体行备注：描述首个「。」之后的余下部分；纯表无描述时显示占位说明 */
+export function dbEntityRemarkText(record: DbCountItem): string {
+  const remark = splitDbDescription(record.name, record.description).remark;
+  if (remark) return remark;
+
+  return record.pureTable ? '无实体模型（仅数据表）' : '';
+}
+
+/** 合并实体清单与数据表清单：实体在前，无实体模型的纯表追加在后并标记 pureTable */
+export function mergeDbEntityRows(entities: DbCountItem[], tables: DbCountItem[]): DbCountItem[] {
+  const known = new Set(entities.map((item) => (item.tableName || item.name).toLowerCase()));
+  const pureTables = tables
+    .filter((item) => !known.has((item.tableName || item.name).toLowerCase()))
+    .map((item) => ({ ...item, pureTable: true }));
+  return [...entities, ...pureTables];
+}
+
 /** Admin/Db 页全部业务 TS（薄 SFC 宿主） */
 export function useDbPage() {
   const userStore = useUserStore();
@@ -54,11 +92,14 @@ export function useDbPage() {
   const drawerVisible = ref(false);
   const drawerLoading = ref(false);
   const drawerError = ref('');
-  const drawerMode = ref<DbDrawerMode>('tables');
+  const drawerMode = ref<DbDrawerMode>('entities');
   const drawerTitle = ref('');
+  const drawerConnName = ref('');
+  const drawerEntityType = ref('');
   const drawerRows = ref<DbCountItem[]>([]);
-  const diffRows = ref<ReturnType<typeof flattenDiff>>([]);
-  const drawerWidth = recordDrawerWidth(0);
+  const fieldRows = ref<DbFieldItem[]>([]);
+  /** 抽屉宽度与实体对象 详情/编辑/添加 宽抽屉一致（RECORD_DRAWER_WIDE = 720） */
+  const drawerWidth = RECORD_DRAWER_WIDE;
   let drawerRequest = 0;
 
   /** 备份/备份并压缩（Insert 权限）；无权限配置时允许（开发友好） */
@@ -135,35 +176,67 @@ export function useDbPage() {
     return result.data;
   }
 
-  async function openDrawer(name: string, mode: DbDrawerMode) {
+  async function openDrawer(name: string) {
     const request = ++drawerRequest;
     drawerVisible.value = true;
-    drawerMode.value = mode;
-    drawerTitle.value = `${mode === 'tables' ? '表' : mode === 'entities' ? '实体' : '差异'} · ${name}`;
+    drawerMode.value = 'entities';
+    drawerConnName.value = name;
+    drawerTitle.value = `实体 · ${name}`;
     drawerError.value = '';
     drawerRows.value = [];
-    diffRows.value = [];
+    fieldRows.value = [];
+    drawerEntityType.value = '';
     drawerLoading.value = true;
     try {
-      if (mode === 'tables') {
-        const data = readDbResponse<{ tables?: DbCountItem[] }>(await cubeApi.page.dbTables(name));
-        if (request !== drawerRequest) return;
-        drawerRows.value = Array.isArray(data.tables) ? data.tables : [];
-      } else if (mode === 'entities') {
-        const data = readDbResponse<{ entities?: DbCountItem[] }>(await cubeApi.page.dbEntities(name));
-        if (request !== drawerRequest) return;
-        drawerRows.value = Array.isArray(data.entities) ? data.entities : [];
-      } else {
-        const data = readDbResponse<{ tables?: DbDiffTable[] }>(await cubeApi.page.dbDiff(name));
-        if (request !== drawerRequest) return;
-        diffRows.value = flattenDiff(Array.isArray(data.tables) ? data.tables : []);
-      }
+      const [entities, tables] = await Promise.all([
+        cubeApi.page.dbEntities(name),
+        cubeApi.page.dbTables(name),
+      ]);
+      if (request !== drawerRequest) return;
+      const entityData = readDbResponse<{ entities?: DbCountItem[] }>(entities);
+      const tableData = readDbResponse<{ tables?: DbCountItem[] }>(tables);
+      drawerRows.value = mergeDbEntityRows(
+        Array.isArray(entityData.entities) ? entityData.entities : [],
+        Array.isArray(tableData.tables) ? tableData.tables : [],
+      );
     } catch (err) {
       if (request !== drawerRequest) return;
       drawerError.value = formatApiError(err, '数据库信息加载失败');
     } finally {
       if (request === drawerRequest) drawerLoading.value = false;
     }
+  }
+
+  /** 打开数据字典（同一抽屉）：实体模型取 factory.Fields；无实体模型的纯表取数据库架构字段 */
+  async function openDictionary(record: DbCountItem) {
+    const request = ++drawerRequest;
+    drawerMode.value = 'fields';
+    drawerEntityType.value = record.name;
+    drawerTitle.value = `数据字典 · ${dbEntityNameText(record)}`;
+    drawerError.value = '';
+    fieldRows.value = [];
+    drawerLoading.value = true;
+    try {
+      const data = record.pureTable
+        ? readDbResponse<{ fields?: DbFieldItem[] }>(
+            await cubeApi.page.dbTableFields(drawerConnName.value, record.tableName),
+          )
+        : readDbResponse<{ fields?: DbFieldItem[] }>(
+            await cubeApi.page.dbEntityFields(drawerConnName.value, record.name),
+          );
+      if (request !== drawerRequest) return;
+      fieldRows.value = Array.isArray(data.fields) ? data.fields : [];
+    } catch (err) {
+      if (request !== drawerRequest) return;
+      drawerError.value = formatApiError(err, '字段加载失败');
+    } finally {
+      if (request === drawerRequest) drawerLoading.value = false;
+    }
+  }
+
+  /** 数据字典返回实体列表 */
+  function backToEntities() {
+    if (drawerConnName.value) void openDrawer(drawerConnName.value);
   }
 
   async function runCompact(name: string) {
@@ -209,12 +282,17 @@ export function useDbPage() {
     drawerMode,
     drawerTitle,
     drawerRows,
-    diffRows,
+    drawerEntityType,
+    fieldRows,
     drawerWidth,
     load,
     confirmBackup,
     downloadSchema,
     openDrawer,
+    openDictionary,
+    backToEntities,
+    dbEntityNameText,
+    dbEntityRemarkText,
     confirmCompact,
   };
 }

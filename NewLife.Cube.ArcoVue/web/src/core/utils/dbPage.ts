@@ -1,26 +1,5 @@
 import { Auth, checkAuth } from '@newlifex/page-utils';
 
-export interface DbDiffColumn {
-  name: string;
-  columnName: string;
-  dataType: string;
-}
-
-export interface DbDiffTable {
-  name: string;
-  tableName: string;
-  displayName: string;
-  hasEntityModel: boolean;
-  columns: DbDiffColumn[];
-}
-
-export interface DbDiffRow extends DbDiffColumn {
-  name: string;
-  tableName: string;
-  displayName: string;
-  hasEntityModel: boolean;
-}
-
 /** 数据库页动作权限；未配置菜单权限时保持现有页面的开发友好策略。 */
 export function getDbActionPermissions(perms: Record<string, string> | null | undefined) {
   const keys = Object.keys(perms ?? {}).length;
@@ -30,15 +9,13 @@ export function getDbActionPermissions(perms: Record<string, string> | null | un
   };
 }
 
-/** 将按表分组的模型差异展开为抽屉表格行。 */
-export function flattenDiff(tables: DbDiffTable[]): DbDiffRow[] {
-  return tables.flatMap((table) =>
-    table.columns.map((column) => ({
-      ...column,
-      name: table.name,
-      tableName: table.tableName,
-      displayName: table.displayName,
-      hasEntityModel: table.hasEntityModel,
-    })),
-  );
+/** 名称/备注拆分：Description 以首个「。」分隔，前半为名称（不含句号），后半为备注；无描述回落技术名。 */
+export function splitDbDescription(name: string, description?: string): { name: string; remark: string } {
+  const text = (description ?? '').trim();
+  if (!text) return { name, remark: '' };
+
+  const index = text.indexOf('。');
+  if (index < 0) return { name: text, remark: '' };
+
+  return { name: text.slice(0, index), remark: text.slice(index + 1).trim() };
 }

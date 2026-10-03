@@ -61,6 +61,7 @@
 | OSC-2610011cd6 — 2026-10-01 | 确认文案放 title；Kick 按删除权限裁 URL；ListFields 沿基类反射 |
 | OSC-2610011ff2 — 2026-10-01 | 隐藏路由不改 Visible；固定图滤持久化；boxplot 须升序；spin 防宽 0 |
 | OSC-2610019c9d — 2026-10-01 | getList type 须前导 /；执行期扩范围即时改三件套；Form tip 用 #label；抽屉表 nowrap |
+| OSC-2610012e35 — 2026-10-03 | a-table 列必须进 #columns；抽屉空白先用真实环境取证；友好名回落链；数据字典下钻对齐 MVC；单元格省略/对齐三件套 |
 
 ---
 
@@ -419,3 +420,12 @@
 - **执行期扩大范围（如样例种子）要立刻改 proposal/design/tasks**：初稿写「不改后端」却加了 `LovSampleSeeds` 时，验收会当文档缺口；三件套与 AC 同步后再验。
 - **配置说明放 Form `#label` 槽（标签下左对齐）**：tip 跟在控件右侧会挤窄输入框，抽屉里尤其明显。
 - **抽屉内嵌表格防折行：固定列宽 + `white-space: nowrap` + 横向滚动**：短英文（如 `center`）也会在窄列里折成两行。
+
+## OSC-2610012e35 — 2026-10-03
+
+- **`a-table` 的列必须声明在 `#columns` 插槽**：`<a-table-column>` 直接放默认插槽时，Arco 2.57 会把默认插槽当作裸 `<table>` 内容渲染（列组件只留注释节点），列不注册 → 表格 0 列空壳；在抽屉里表现为「全空白」。数据分支恒被选中，所以改加载/空态互斥、收敛容器都无效——空白类问题先看渲染出的 DOM，再改分支。
+- **真实环境取证优先于盲改**：Playwright（`admin/admin` + 验证码自动识别，`playwright/.auth/user.json`）可直接登录并 Dump 抽屉 DOM（`<table>` 内只剩 `<!---->` 即列未注册），从怀疑到定位只需一次运行。
+- **抽屉遮罩会拦截页面按钮**：E2E 里打开抽屉后，卡片上的「更多」被 `arco-drawer-mask` 挡住；切换模式前先 `Escape` 关闭（`escToClose` 默认开）。
+- **列表友好名回落链**：表/实体展示名 = 数据库注释 → 实体模型 [Description]（`EntityFactory.GetTables` / `TableItem.DataTable.Description`）→ 技术名；SQLite 无注释时友好名全部来自实体模型。「名称」列展示描述首句、「备注」列展示余下部分，「表名」列保留技术名。
+- **数据字典移植对齐 MVC 架构表**：实体字段字典的列与语义直接对齐 CubeNC `Db/Entities.cshtml`（主键列 AI/PK/UQ、允许空列 N=不允许空、备注用 `TrimPrefix(DisplayName)` 去重）；`factory.Fields` 为数据字段、`AllFields` 含全部属性，字典两者按需选择。
+- **表格单元格省略/对齐三件套**：溢出单行省略用 `:ellipsis="true" tooltip`（Arco 仅溢出时自动弹 Tooltip，无需手写）；数字列 `align="right"`（对齐类在 `.arco-table-cell-align-*`）；表头 `white-space: nowrap` 防「允许空」折行。UI 出口删除时：纯 UI 辅助（`flattenDiff`+spec）与仅被 UI 使用的 api-core 封装（`dbDiff`）一并清理；后端 REST 动作（ModelDiff）与仍被复用的封装（`dbTables`，纯表合并）保留。

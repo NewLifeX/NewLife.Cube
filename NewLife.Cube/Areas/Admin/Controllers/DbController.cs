@@ -171,12 +171,27 @@ public class DbController : ControllerBaseX, IPageDataContext
     {
         if (!TryGetDatabase(name, out var dal)) return Json(1, "非法操作！");
 
+        // 实体模型描述：数据库注释为空时回落，如 AccessRule → 访问规则
+        var descriptions = EntityFactory.LoadEntities(name)
+            .Select(item => item.AsFactory())
+            .Where(factory => factory != null)
+            .Select(factory => factory!.Table.DataTable)
+            .Where(table => !table.TableName.IsNullOrEmpty() && !table.Description.IsNullOrEmpty())
+            .GroupBy(table => table.TableName, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First().Description!, StringComparer.OrdinalIgnoreCase);
+
         var tables = dal.Tables
-            .Select(item => new
+            .Select(item =>
             {
-                name = item.Name,
-                tableName = item.TableName,
-                count = dal.SelectCount(item.TableName, CommandType.Text),
+                var description = item.Description;
+                if (description.IsNullOrEmpty()) descriptions.TryGetValue(item.TableName, out description);
+                return new
+                {
+                    name = item.Name,
+                    tableName = item.TableName,
+                    description,
+                    count = dal.SelectCount(item.TableName, CommandType.Text),
+                };
             })
             .OrderBy(item => item.name)
             .ToList();
@@ -205,6 +220,7 @@ public class DbController : ControllerBaseX, IPageDataContext
                 {
                     name = item.Name,
                     tableName = table.TableName,
+                    description = table.Description,
                     count = exists ? factory.Session.LongCount : (Int64?)null,
                 };
             })
@@ -213,6 +229,76 @@ public class DbController : ControllerBaseX, IPageDataContext
             .ToList();
 
         return Json(0, null, new { name, entities });
+    }
+
+    /// <summary>显示实体字段（数据字典）。各列对齐 CubeNC Db/Entities.cshtml 的字段架构定义</summary>
+    /// <param name="name">连接名</param>
+    /// <param name="type">实体类名</param>
+    /// <returns>实体字段清单</returns>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet("/api/[area]/[controller]/ShowEntityFields")]
+    public ActionResult ShowEntityFields(String name, String type)
+    {
+        if (!TryGetDatabase(name, out _)) return Json(1, "非法操作！");
+
+        var entityType = EntityFactory.LoadEntities(name).FirstOrDefault(item => item.Name.EqualIgnoreCase(type));
+        var factory = entityType?.AsFactory();
+        if (factory == null) return Json(1, "实体不存在！");
+
+        var table = factory.Table.DataTable;
+        var fields = factory.Fields.Select(field =>
+        {
+            var column = field.Field;
+            return new
+            {
+                name = field.Name,
+                displayName = field.DisplayName,
+                type = field.Type?.FullName.TrimPrefix("System."),
+                length = field.Length,
+                precision = column.Precision,
+                scale = column.Scale,
+                key = column.Identity ? "AI"
+                    : field.PrimaryKey ? "PK"
+                    : table.Indexes.Any(index => index.Unique && index.Columns.Length == 1 && index.Columns[0].EqualIgnoreCase(field.Name, field.ColumnName)) ? "UQ"
+                    : null,
+                nullable = column.Nullable,
+                description = column.Description?.TrimPrefix(column.DisplayName).TrimPrefix("。", "，"),
+            };
+        }).ToList();
+
+        return Json(0, null, new { name, type = entityType!.Name, tableName = table.TableName, fields });
+    }
+
+    /// <summary>显示数据表字段（无实体模型的表字段字典）。数据源为数据库架构，列对齐 CubeNC Db/Entities.cshtml 定义</summary>
+    /// <param name="name">连接名</param>
+    /// <param name="table">表名</param>
+    /// <returns>数据表字段清单</returns>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet("/api/[area]/[controller]/ShowTableFields")]
+    public ActionResult ShowTableFields(String name, String table)
+    {
+        if (!TryGetDatabase(name, out var dal)) return Json(1, "非法操作！");
+
+        var dbTable = dal.Tables.FirstOrDefault(item => item.TableName.EqualIgnoreCase(table));
+        if (dbTable == null) return Json(1, "数据表不存在！");
+
+        var fields = dbTable.Columns.Select(column => new
+        {
+            name = column.ColumnName.IsNullOrEmpty() ? column.Name : column.ColumnName,
+            displayName = column.DisplayName,
+            type = column.DataType?.Name,
+            length = column.Length,
+            precision = column.Precision,
+            scale = column.Scale,
+            key = column.Identity ? "AI"
+                : column.PrimaryKey ? "PK"
+                : dbTable.Indexes.Any(index => index.Unique && index.Columns.Length == 1 && index.Columns[0].EqualIgnoreCase(column.Name, column.ColumnName)) ? "UQ"
+                : null,
+            nullable = column.Nullable,
+            description = column.Description?.TrimPrefix(column.DisplayName).TrimPrefix("。", "，"),
+        }).ToList();
+
+        return Json(0, null, new { name, table = dbTable.TableName, fields });
     }
 
     /// <summary>模型差异。返回数据库中存在而实体模型没有的字段</summary>
