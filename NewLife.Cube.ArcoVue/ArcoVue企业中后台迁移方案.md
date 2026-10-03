@@ -248,8 +248,8 @@
 | -------------------------------- | ------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------- | ----------------- | ---- |
 | 动态 CRUD（GetPage 列表/表单）           | DATA-1/4/5/6，SPA-7 | ✅                              | ✅                                                                                                       | ✅                 | P0   |
 | 菜单驱动路由 + 鉴权守卫                    | PERM-3，SPA-1       | ✅                              | ✅                                                                                                       | ✅                 | P0   |
-| 登录（密码/验证码/OAuth）                 | AUTH-2/6/8，OAUTH-1 | ✅                              | ✅                                                                                                       | ✅                 | P0   |
-| Token 刷新 / 登出                    | AUTH-3             | ✅                              | ✅                                                                                                       | ✅                 | P0   |
+| 登录（密码/验证码/OAuth）                 | AUTH-2/6/8，OAUTH-1 | ✅                              | ✅（含公开页 `/activate` 激活：链接 `token`/`account` 与验证码，OSC-261001909b）                                                                                                       | ✅                 | P0   |
+| Token 刷新 / 登出                    | AUTH-3             | ✅                              | ✅（账号安全页可注销：`POST /Auth/CloseAccount`，OSC-261001909b）                                                                                                       | ✅                 | P0   |
 | MFA 二步验证 UI                      | AUTH-10，`/Mfa/*`   | ✅                              | ✅（登录二步屏 + 安全设置开启/关闭，`/Mfa/*`）                                                                           | ✅                 | P1   |
 | Challenge / 验证码登录增强              | AUTH-4/5           | ✅                              | ✅（needChallenge + getChallenge 加密提交 + 图形验证码）                                                            | ✅                 | P1   |
 | 导入导出                             | DATA-9             | ✅                              | ✅                                                                                                       | ✅                 | P0   |
@@ -282,7 +282,7 @@
 | E2E（Cypress 级）                   | Vue                | ✅                              | 🟠 Playwright 冒烟 3 spec（认证/实体表单/对象主页，OSC-2608139feb）                                                    | 🟠 冒烟即可           | P2   |
 | AI 助手浮窗                          | AI-7 / SPA-7       | ✅                              | ✅（OSC-26081903c0：右侧停靠 + FAB；流式对话；无会话持久化/搭建）                                                             | ✅                 | P1   |
 | 嵌入分享                             | UserToken          | 🟠                             | ✅（`?embed=1&token=` EmbedLayout；ShareView 短令牌；隐藏壳与 AI）                                                  | ✅                 | P1   |
-| 站内通知 Inbox                       | Automation         | 🟠                             | ✅（顶栏未读 + InboxDrawer + 工作台 inbox 部件）                                                                    | ✅                 | P1   |
+| 站内通知 Inbox                       | Automation         | 🟠                             | ✅（顶栏未读 + InboxDrawer；可解析 `target` 跳实体详情，OSC-261001909b；工作台 inbox 部件）                                                                    | ✅                 | P1   |
 | 嵌入 NuGet / UseArcoVue            | SPA-2/3/7          | ✅ UseVue                       | ✅                                                                                                       | ✅                 | P0   |
 
 

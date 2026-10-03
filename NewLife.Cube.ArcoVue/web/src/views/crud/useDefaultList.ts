@@ -434,6 +434,9 @@ export function useDefaultList(props: { type: string; authId?: number }) {
       const activeId = ctx.evpStore.getActiveQueryId(ctx.typePath.value);
       if (activeId) {
         query.handleApplyQuery(activeId);
+        // handleApplyQuery 内部未 await loadData；再等一轮以保证详情打开时列表已就绪
+        await query.loadData();
+        await tryOpenDetailFromQuery();
         return;
       }
       const last = query.restoreLastQuery();
@@ -443,10 +446,28 @@ export function useDefaultList(props: { type: string; authId?: number }) {
         ctx.searchTouched.value = true;
         ctx.pagination.current = 1;
         await query.loadData();
+        await tryOpenDetailFromQuery();
         return;
       }
     }
     await query.loadData();
+    await tryOpenDetailFromQuery();
+  }
+
+  /** 站内信跳转：查询 id 为正整数时打开详情一次（OSC-261001909b） */
+  let autoOpenedDetailKey = '';
+  async function tryOpenDetailFromQuery() {
+    const raw = ctx.route.query.id;
+    const idStr = Array.isArray(raw) ? String(raw[0] ?? '') : String(raw ?? '');
+    if (!/^[1-9][0-9]*$/.test(idStr)) return;
+    const key = `${ctx.typePath.value}|${idStr}`;
+    if (autoOpenedDetailKey === key) return;
+    autoOpenedDetailKey = key;
+    const pk = ctx.pkField.value;
+    const row =
+      ctx.tableData.value.find((r) => String(getValueByKey(r, pk)) === idStr) ??
+      ({ [pk]: idStr } as Record<string, unknown>);
+    await nav.openDetail(row);
   }
 
   function applyUrlViewFilter(): boolean {
@@ -461,6 +482,7 @@ export function useDefaultList(props: { type: string; authId?: number }) {
   watch(ctx.typePath, () => {
     ctx.pagination.current = 1;
     ctx.selectedKeys.value = [];
+    autoOpenedDetailKey = '';
     bootstrap();
   });
 
@@ -468,12 +490,13 @@ export function useDefaultList(props: { type: string; authId?: number }) {
   // 只比较序列化结果：deep 监听 route.query 会在对象被替换但内容不变时反复 loadData，列表停在 loading。
   watch(
     () => routeQueryKey(ctx.route.query as Record<string, unknown>),
-    () => {
+    async () => {
       ctx.searchTouched.value = false;
       query.applySearchToForm(ctx.baseSearch.value);
       applyUrlViewFilter();
       ctx.pagination.current = 1;
-      query.loadData();
+      await query.loadData();
+      await tryOpenDetailFromQuery();
     },
   );
 

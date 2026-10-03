@@ -12,6 +12,13 @@ public class TenantController : EntityController<Tenant, TenantModel>
     static TenantController()
     {
         LogOnChange = true;
+
+        {
+            // 导航至租户用户列表（无 DataAction，走操作列链接）
+            var df = ListFields.AddListField("Members");
+            df.DisplayName = "成员";
+            df.Url = "/Admin/TenantUser?tenantId={Id}";
+        }
     }
 
     /// <summary>搜索数据集</summary>

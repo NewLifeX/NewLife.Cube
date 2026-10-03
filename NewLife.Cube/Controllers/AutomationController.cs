@@ -450,6 +450,7 @@ public class AutomationController(TokenService tokenService) : ControllerBaseX
             e.CreateTime,
             e.Action,
             e.Channel,
+            e.Target,
         }).ToList();
         return Json(0, null, data, new { page = new { page.PageIndex, page.PageSize, page.TotalCount } });
     }

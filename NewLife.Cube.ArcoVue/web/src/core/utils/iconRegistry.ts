@@ -9,6 +9,7 @@
  */
 import type { Appearance } from './userProfile';
 import type { ViewKind } from './viewMapping';
+import type { InboxBucketKey } from './inboxBucket';
 import type { FieldMeta } from '@/core/types/field';
 
 /** 视图类型 → 图标（6 视图；kanban 用 blackboard 语义替代） */
@@ -26,6 +27,14 @@ export const APPEARANCE_ICONS: Record<Appearance, string> = {
   light: 'sun',
   dark: 'moon',
   system: 'computer',
+};
+
+/** 站内通知日期分桶 → 图标（今天=太阳；本周=日历；本月=日历30；更长时间=历史） */
+export const INBOX_BUCKET_ICONS: Record<InboxBucketKey, string> = {
+  today: 'sun',
+  week: 'calendar',
+  month: 'calendar-thirty',
+  earlier: 'history',
 };
 
 /** 数值类型集合（fieldIcon 分支） */

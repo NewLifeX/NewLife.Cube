@@ -1,20 +1,27 @@
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import type { InboxMessageItem } from '@newlifex/api-core';
 import cubeApi from '@/api';
 import { formatDateTime } from '@/core/utils/datetime';
 import { parseInboxUnreadCount, resolveInboxTotal } from '@/core/utils/inboxBadge';
+import { bucketInboxByDate } from '@/core/utils/inboxBucket';
+import { parseInboxTarget } from '@/core/utils/inboxTarget';
 import { useAppStore } from '@/stores/app';
 
 export type InboxRow = InboxMessageItem & { timeText: string };
 
-/** 站内通知抽屉：时间轴列表 + 已读 */
+/** 站内通知抽屉：按日期分桶的时间轴列表（今天/本周/本月/更长时间） + 已读 + 可解析 target 跳转 */
 export function useInboxDrawer(visible: { value: boolean }) {
+  const router = useRouter();
   const appStore = useAppStore();
   const loading = ref(false);
   const marking = ref(false);
   const items = ref<InboxRow[]>([]);
   const unreadCount = ref(0);
   const total = ref(0);
+
+  /** 日期分桶（今天/本周/本月/更长时间，从近到远；空桶不输出） */
+  const groups = computed(() => bucketInboxByDate(items.value));
 
   async function refreshUnread() {
     try {
@@ -75,6 +82,14 @@ export function useInboxDrawer(visible: { value: boolean }) {
     }
   }
 
+  async function onItemClick(m: InboxRow) {
+    if (!m.read && m.id) await markRead(m.id);
+    const parsed = parseInboxTarget(m.target);
+    if (!parsed) return;
+    visible.value = false;
+    await router.push({ path: parsed.path, query: { id: parsed.id } });
+  }
+
   watch(
     () => visible.value,
     (v) => {
@@ -88,11 +103,13 @@ export function useInboxDrawer(visible: { value: boolean }) {
     loading,
     marking,
     items,
+    groups,
     unreadCount,
     total,
     load,
     markRead,
     markAllRead,
+    onItemClick,
     refreshUnread,
   };
 }

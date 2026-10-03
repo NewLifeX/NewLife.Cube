@@ -47,6 +47,12 @@ const routes: RouteRecordRaw[] = [
     meta: { public: true },
   },
   {
+    path: '/activate',
+    name: 'Activate',
+    component: () => import('@/views/login/activate.vue'),
+    meta: { public: true },
+  },
+  {
     path: '/',
     name: 'Layout',
     component: RootLayout,

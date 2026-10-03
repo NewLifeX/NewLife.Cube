@@ -1363,16 +1363,26 @@ public static class WorkflowEngine
         return subject?.Title ?? instance.TypePath;
     }
 
+    /// <summary>拼装流程通知 Target；TypePath 与 EntityKey 皆非空才返回</summary>
+    /// <param name="typePath">主体类型路径</param>
+    /// <param name="entityKey">主体主键</param>
+    /// <returns>Area/Controller#Key，缺一则 null</returns>
+    internal static String BuildNotifyTarget(String typePath, String entityKey)
+    {
+        if (typePath.IsNullOrEmpty() || entityKey.IsNullOrEmpty()) return null;
+        return typePath + "#" + entityKey;
+    }
+
     /// <summary>写站内信通知</summary>
     /// <param name="instance">实例</param>
     /// <param name="userId">用户</param>
     /// <param name="action">动作</param>
     /// <param name="title">标题</param>
-    /// <param name="picks">提交人自选。节点 Id → 用户 Id</param>
     /// <param name="body">内容</param>
     static void Notify(WorkflowInstance instance, Int32 userId, String action, String title, String body)
     {
         if (userId <= 0) return;
+        var subject = WorkflowSubject.FindAll(WorkflowSubject._.InstanceId == instance.Id).OrderBy(e => e.Id).FirstOrDefault();
         var rec = new NotificationRecord
         {
             TenantId = instance.TenantId,
@@ -1381,6 +1391,7 @@ public static class WorkflowEngine
             UserId = userId,
             Title = title?.Cut(200),
             Content = body?.Cut(2000),
+            Target = BuildNotifyTarget(subject?.TypePath, subject?.EntityKey),
             Success = true,
         };
         try { rec.Insert(); }

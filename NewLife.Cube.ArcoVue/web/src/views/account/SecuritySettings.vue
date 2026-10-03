@@ -88,12 +88,43 @@
           </a-row>
         </section>
       </div>
+
+      <div v-if="showCloseAccount" class="form-groups">
+        <section class="form-group">
+          <h3 class="form-group__title">注销账号</h3>
+          <a-row :gutter="16" justify="center">
+            <a-col :span="12">
+              <p class="hint">注销后账号将被禁用且不可恢复。请输入当前用户名确认。</p>
+              <a-button status="danger" :disabled="!canOpenClose" @click="openCloseConfirm">
+                注销账号
+              </a-button>
+            </a-col>
+          </a-row>
+        </section>
+      </div>
     </a-spin>
+
+    <a-modal
+      :visible="closeConfirmVisible"
+      title="注销账号"
+      :ok-loading="closeSubmitting"
+      :ok-button-props="{ disabled: !canCloseSubmit, status: 'danger' }"
+      ok-text="确定注销"
+      @ok="submitClose"
+      @cancel="closeCloseConfirm"
+      @update:visible="(v: boolean) => { if (!v) closeCloseConfirm(); }"
+    >
+      <a-form-item label="输入用户名以确认">
+        <a-input v-model="closeConfirmName" :placeholder="closeUserName || '当前用户名'" allow-clear />
+      </a-form-item>
+    </a-modal>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useSecuritySettings } from './useSecuritySettings';
+import { useCloseAccount } from './useCloseAccount';
 
 defineOptions({ name: 'SecuritySettings' });
 
@@ -125,6 +156,20 @@ const {
   copyBackup,
   copySecret,
 } = useSecuritySettings(props);
+
+const {
+  confirmVisible: closeConfirmVisible,
+  confirmName: closeConfirmName,
+  submitting: closeSubmitting,
+  userName: closeUserName,
+  canOpen: canOpenClose,
+  canSubmit: canCloseSubmit,
+  openConfirm: openCloseConfirm,
+  closeConfirm: closeCloseConfirm,
+  submitClose,
+} = useCloseAccount();
+
+const showCloseAccount = computed(() => props.section === 'mfa' || props.section === 'all');
 </script>
 
 <style scoped>

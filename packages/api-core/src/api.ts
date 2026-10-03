@@ -908,6 +908,8 @@ export interface InboxMessageItem {
   createTime?: string;
   action?: string;
   channel?: string;
+  /** 关联跳转：Area/Controller#主键；提及通知为 category#linkId */
+  target?: string;
 }
 
 /**

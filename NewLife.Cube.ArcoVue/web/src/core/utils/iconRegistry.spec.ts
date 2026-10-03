@@ -5,6 +5,7 @@ import {
   APPEARANCE_ICONS,
   DEFAULT_MENU_ICON,
   FA_ICON_MAP,
+  INBOX_BUCKET_ICONS,
   VIEW_KIND_ICONS,
   fieldIcon,
   menuIcon,
@@ -45,6 +46,14 @@ describe('APPEARANCE_ICONS', () => {
   it('覆盖 light/dark/system 且有效', () => {
     expect(Object.keys(APPEARANCE_ICONS).sort()).toEqual(['dark', 'light', 'system']);
     assertAllValid(Object.values(APPEARANCE_ICONS));
+  });
+});
+
+describe('INBOX_BUCKET_ICONS', () => {
+  it('覆盖 4 个日期桶且有效且各不相同', () => {
+    expect(Object.keys(INBOX_BUCKET_ICONS).sort()).toEqual(['earlier', 'month', 'today', 'week']);
+    assertAllValid(Object.values(INBOX_BUCKET_ICONS));
+    expect(new Set(Object.values(INBOX_BUCKET_ICONS)).size).toBe(4);
   });
 });
 

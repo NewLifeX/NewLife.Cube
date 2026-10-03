@@ -23,6 +23,7 @@ import {
   Box,
   BuildingOne,
   Calendar,
+  CalendarThirty,
   ChartHistogram,
   ChartHistogramOne,
   ChartHistogramTwo,
@@ -126,6 +127,7 @@ export const ICON_COMPONENTS: Record<string, Component> = {
   pic: Pic,
   blackboard: Blackboard,
   calendar: Calendar,
+  'calendar-thirty': CalendarThirty,
   timeline: Timeline,
   // 外观
   sun: Sun,

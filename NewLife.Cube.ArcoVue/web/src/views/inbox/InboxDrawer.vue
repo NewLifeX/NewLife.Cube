@@ -22,19 +22,33 @@
     </div>
 
     <a-spin :loading="loading" class="inbox-spin">
-      <a-empty v-if="!items.length" description="暂无消息" />
+      <a-empty v-if="!groups.length" description="暂无消息" />
       <a-timeline v-else class="inbox-tl">
-        <a-timeline-item v-for="m in items" :key="m.id" :dot-color="m.read ? 'gray' : 'arcoblue'">
-          <div
-            class="inbox-item"
-            :class="{ 'inbox-item--unread': !m.read }"
-            @click="onItemClick(m)"
-          >
-            <div class="inbox-item__title">{{ m.title || '（无标题）' }}</div>
-            <div class="inbox-item__body">
-              <div class="inbox-item__time">{{ m.timeText }}</div>
-              <div class="inbox-item__content">{{ m.content || '' }}</div>
-            </div>
+        <a-timeline-item v-for="g in groups" :key="g.key">
+          <template #dot>
+            <span class="inbox-group-dot">
+              <icon-park :type="INBOX_BUCKET_ICONS[g.key]" />
+            </span>
+          </template>
+          <div class="inbox-group">
+            <div class="inbox-group__title">{{ g.label }}</div>
+            <a-timeline class="inbox-sub-tl">
+              <a-timeline-item
+                v-for="m in g.items"
+                :key="m.id"
+                :dot-color="m.read ? 'gray' : 'arcoblue'"
+              >
+                <div
+                  class="inbox-item"
+                  :class="{ 'inbox-item--unread': !m.read }"
+                  @click="onItemClick(m)"
+                >
+                  <div class="inbox-item__title">{{ m.title || '（无标题）' }}</div>
+                  <div class="inbox-item__time">{{ m.timeText }}</div>
+                  <div class="inbox-item__content">{{ m.content || '' }}</div>
+                </div>
+              </a-timeline-item>
+            </a-timeline>
           </div>
         </a-timeline-item>
       </a-timeline>
@@ -44,7 +58,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useInboxDrawer, type InboxRow } from './useInboxDrawer';
+import { INBOX_BUCKET_ICONS } from '@/core/utils/iconRegistry';
+import { useInboxDrawer } from './useInboxDrawer';
 
 const props = defineProps<{ visible: boolean }>();
 const emit = defineEmits<{ 'update:visible': [boolean] }>();
@@ -54,13 +69,9 @@ const visibleRef = computed({
   set: (v: boolean) => emit('update:visible', v),
 });
 
-const { loading, marking, items, unreadCount, total, markRead, markAllRead } = useInboxDrawer(
+const { loading, marking, groups, unreadCount, total, markAllRead, onItemClick } = useInboxDrawer(
   visibleRef,
 );
-
-function onItemClick(m: InboxRow) {
-  if (!m.read && m.id) void markRead(m.id);
-}
 
 defineExpose({ unreadCount });
 </script>
@@ -83,9 +94,34 @@ defineExpose({ unreadCount });
 .inbox-tl {
   padding-left: 4px;
 }
+.inbox-group-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 1;
+  color: rgb(var(--primary-6));
+}
+.inbox-sub-tl {
+  margin-top: 6px;
+}
+.inbox-sub-tl :deep(.arco-timeline-item:last-child) {
+  padding-bottom: 0;
+}
+.inbox-group__title {
+  font-size: var(--cube-font-size-body);
+  font-weight: var(--cube-font-weight-medium);
+  color: var(--color-text-1);
+  margin-bottom: 8px;
+}
 .inbox-item {
   cursor: pointer;
-  padding-bottom: 4px;
+  margin-bottom: 12px;
+  font-size: var(--cube-font-size-body);
+  color: var(--color-text-2);
+}
+.inbox-group .inbox-item:last-child {
+  margin-bottom: 0;
 }
 .inbox-item__title {
   font-size: var(--cube-font-size-title, var(--cube-font-size-body));
@@ -95,13 +131,6 @@ defineExpose({ unreadCount });
 }
 .inbox-item--unread .inbox-item__title {
   color: rgb(var(--primary-6));
-}
-.inbox-item__body {
-  position: relative;
-  padding-left: 10px;
-  border-left: 2px solid var(--color-border-2);
-  font-size: var(--cube-font-size-body);
-  color: var(--color-text-2);
 }
 .inbox-item__time {
   font-size: var(--cube-font-size-meta);
