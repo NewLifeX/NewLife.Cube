@@ -411,6 +411,23 @@ public class CubeSetting : Config<CubeSetting>
     public String StarWeb { get; set; }
     #endregion
 
+    #region 地图
+    /// <summary>地图服务商。用于列表页地图散点视图，支持 高德amap / 百度baidu / 腾讯tencent，留空表示未配置</summary>
+    [Description("地图服务商。支持 高德amap / 百度baidu / 腾讯tencent，留空表示未配置地图功能")]
+    [Category("地图")]
+    public String MapProvider { get; set; }
+
+    /// <summary>地图服务商密钥。JS API Key，须与 MapProvider 匹配</summary>
+    [Description("地图服务商密钥。JS API Key（Key），须与 MapProvider 匹配")]
+    [Category("地图")]
+    public String MapKey { get; set; }
+
+    /// <summary>地图脚本地址。可选覆盖服务商默认 JS 加载地址，留空使用内置默认</summary>
+    [Description("地图脚本地址。可选覆盖服务商默认 JS 加载地址，留空使用内置默认")]
+    [Category("地图")]
+    public String MapScriptUrl { get; set; }
+    #endregion
+
     #region AI
     /// <summary>AI 总开关。启用后可使用日志分析、通知润色等 AI 辅助功能，默认false</summary>
     [Description("AI 总开关。启用后可使用日志分析、通知润色等 AI 辅助功能，默认false")]

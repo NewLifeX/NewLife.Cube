@@ -23,6 +23,7 @@ const CUBE_SERVICE_ACTIONS = new Set([
   'Lookup',
   'SaveLayout',
   'GetAiConfig',
+  'GetMapConfig',
   'GetPageConfig',
   'SetPageConfig',
   'MenuTree',

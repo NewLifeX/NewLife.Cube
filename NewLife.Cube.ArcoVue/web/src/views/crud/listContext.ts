@@ -103,6 +103,8 @@ export function createListContext(props: { type: string; authId?: number }) {
   const tableData = ref<Record<string, unknown>[]>([]);
   /** 后端原始数据（未应用视图级前端筛选 viewFilter）；视图切换/筛选变化时复用避免重复请求（重绘优化） */
   const tableDataRaw = ref<Record<string, unknown>[]>([]);
+  /** 当前原始行对应的完整服务端请求签名；仅完全一致时允许本地重绘复用 */
+  const tableDataRequestSignature = ref('');
   const loading = ref(false);
   /** Enable 徽标切换请求进行中：防止快速双击并发回跳 */
   const enableBusy = ref(false);
@@ -664,6 +666,7 @@ export function createListContext(props: { type: string; authId?: number }) {
     pkField,
     tableData,
     tableDataRaw,
+    tableDataRequestSignature,
     loading,
     enableBusy,
     selectedKeys,

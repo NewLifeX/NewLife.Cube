@@ -16,6 +16,7 @@ import type {
   UserInfo,
   LoginResult,
   LoginConfig,
+  MapConfigModel,
   ChallengeResult,
   ResetPasswordModel,
   MenuItem,
@@ -647,6 +648,10 @@ export function createConfigApi(request: RequestFn) {
         url: '/Cube/GetAiConfig',
         method: 'get',
       }),
+
+    /** 地图配置（CubeSetting 系统级单服务商；未配置时 provider 为空串） */
+    getMapConfig: () =>
+      request<MapConfigModel>({ url: '/Cube/GetMapConfig', method: 'get' }),
 
     /** 更新系统配置 */
     updateSetting: (data: Record<string, unknown>) =>

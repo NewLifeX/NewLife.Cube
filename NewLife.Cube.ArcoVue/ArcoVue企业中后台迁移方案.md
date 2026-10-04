@@ -16,6 +16,7 @@
 > 版本：2026-09-29c（OSC-260926c2b8 补记：看板恢复分页器；日历固定加载 1000 条并附带当前日/周/月区间（用户筛选 logic=any 且已有条件时不附带）、月导航移入工具栏「添加记录」后）
 > 版本：2026-09-29d（OSC-260926c2b8 补记：日历 日/周/月 模式（周/日时间轴网格）与导航简化）
 > 版本：2026-09-29e（OSC-260926c2b8 补记：日/周时间轴点击空白新建（整点）；日历导航移至工具栏右侧「关键字」前）
+> 版本：2026-10-04（OSC-261004d7f4 实体地图散点视图落地（第 7 视图）：系统级单服务商 GetMapConfig + 适配层（高德/百度/腾讯 + 桩）+ 视口渐进加载 + 玻璃工具条/悬停卡/分类图标；刷新 §3.1、§7.1 与目录结构）
 > 状态：可落地执行稿  
 > 适用范围：以 NewLife.Cube（WebAPI）为后端，将 NewLife.Cube.ArcoVue 建设为默认企业中后台皮肤；复用 NewLife.Cube.Vue 能力成果，对接字节官方组件栈，支持用户级呈现配置与 AI（OpenSpec）协作。
 
@@ -214,6 +215,7 @@
 | 协作   | 恢复 `.github` Copilot 指令；OpenSpec（`openspec/`，新号 `OSC-YYMMDDxxxx`）；测试要求见 §9.3                           |
 | 测试   | 对齐 `development.instructions.md`：实现功能默认同步补充测试                                                          |
 
+**前端性能量测（OSC-261004e6ee）**：开发者工具 Network **总资源数**含 Vite 开发模式 ESM 模块，**不等于**业务 API 次数；断言壳层/列表请求时须勾选 **Fetch/XHR**（或等价过滤）。壳层稳定元数据（`LoginConfig` / `GetAiConfig` / `GetMapConfig` / `UserProfile` / `Tenants`）在 Pinia 会话内成功后复用，并做 in-flight 去重；`force` 作废本资源进行中请求后重取；登出/注销清缓存。站内信未读与审批 Meta **仅** in-flight 去重，不做会话缓存。实体列表普通刷新只走 `loadData()`，不重跑 `bootstrap`/`GetPage`/`ViewProfile`。
 
 ---
 
@@ -264,12 +266,13 @@
 | 多布局（侧/顶/混合）可配置                   | → UserProfile      | ✅ 多布局                          | ✅ 配置化（RootLayout 动态组件）                                                                                  | ✅ 配置化             | P0   |
 | 主题/密度/i18n                       | 壳                  | ✅                              | 🟠 主题/密度/预置色板 ✅（OSC-0017）；i18n ❌                                                                        | ✅                 | P0   |
 | UserProfile 持久化                  | **后端新建**           | ➖/局部                           | ✅（localStorage + 后端双通道；`workspace.defaultView/pageSize` 已消费：无 ViewProfile 回落默认视图、页面级 PageSize，OSC-0012） | ✅                 | P0   |
-| ViewProfile（列/视图）                | **后端新建**           | ➖/局部                           | ✅（直接后端权威：命名视图/列/sort/chrome/mapping + 筛选记忆 + 受限表单布局 FormJson + 全局只读模板 + 实体级预定义查询，OSC-0012~0016）         | ✅                 | P0   |
+| ViewProfile（列/视图）                | **后端新建**           | ➖/局部                           | ✅（直接后端权威：命名视图/列/sort/chrome/mapping + 筛选记忆 + 受限表单布局 FormJson + 全局只读模板 + 实体级预定义查询；分组/排序/筛选/填色及查询应用按视图隔离，只有完整 GetList 请求签名一致才复用原始行，OSC-0012~0016、OSC-261004e6ee）         | ✅                 | P0   |
 | VTable 表格+自定义列                   | 本方案增强              | 🟠 DOM 表                       | ✅                                                                                                       | ✅                 | P0   |
 | 树表视图                             | DATA-3             | 🟠 部分页                         | ✅（treeBuilder 组装 + VTable hierarchy）                                                                    | ✅                 | P0   |
 | 卡片视图                             | Vue 有未接线 stub      | ❌                              | ✅ 卡片流（CardList/RecordCard；标准/偏大/整行 + 可选封面；**非**飞书画册）                                                    | ✅ 卡片；画册布局见 §7.4   | P0   |
 | 看板 / 日历                          | 本方案新建              | ❌                              | ✅ 看板分列 + **列折叠** + **跨列拖放写回分组字段** + 底部普通分页器（OSC-260926c2b8）；日历 `+N` 当日弹出 + 有 Insert 权点空白新建 + 固定加载 1000 条（请求附带当前日/周/月区间；用户筛选 logic=any 且已有条件时不附带）+ **日/周/月模式**（OSC-260926c2b8）；日历不做拖改日期                                         | ✅ 看板可改分组字段；日历只读。完成度见 §7.4  | P0   |
 | 甘特视图                             | 本方案新建              | ❌                              | ✅ 只读（vtable-gantt 计划/实际双条重叠对比 + 任务条定位图标 + 表宽拖拽持久化 + 固定色，OSC-0019；`moveable:false`）                      | ✅ 只读；分组/依赖线见 §7.4 | P0   |
+| 地图散点视图                          | 本方案新建              | ❌                              | ✅ 系统级单服务商（高德/百度/腾讯三选一，OSC-261004d7f4）：视口渐进加载（首批 1000 → 异步续页，上限 100 万）+ 玻璃工具条（放大/缩小/查询/填色）+ 悬停卡片 + 分类值图标/颜色 + 点击详情；离线桩 `__mapStub=1` 供 E2E | ✅ 只读散点；点聚合/暗色底图见 §7.4 | P1   |
 | 右侧记录抽屉                           | 本方案                | ❌ 多为弹层                         | ✅ 右抽屉（表单/历史/评论全接线，OSC-0008）                                                                             | ✅                 | P0   |
 | 修改历史（Log 筛选）                     | SYS-3              | 🟠 独立日志页                       | ✅（抽屉 timeline：分页 + 动作筛；Remark 前端启发式字段 diff，无后端结构化审计）                                                    | ✅ 抽屉 Tab          | P0   |
 | 实体评论 EntityComment               | **后端新建**           | ❌                              | ✅（OSC-0008 接线：api-core comment API + 抽屉评论 Tab 顶层/回复/删除本人）                                               | ✅                 | P0   |
@@ -353,7 +356,7 @@ NewLife.Cube.ArcoVue/web/src/
 ├── theme/                    # Design Token + Arco 主题注入
 ├── components/               # FieldInput / LovSelect / TagsView 等
 ├── features/
-│   ├── views/                # card / kanban / calendar / gantt / RecordCard
+│   ├── views/                # card / kanban / calendar / gantt / map / RecordCard
 │   ├── vtable/               # ListTable / 冻结线
 │   ├── search/               # SearchDrawer / InsightPanel（→ WidgetHost）
 │   └── widget/               # 平台 Widget 注册、宿主、配置抽屉
@@ -618,11 +621,12 @@ DELETE /Cube/EntityComment?id=
 | kanban   | 看板只读分列（KanbanBoard）      | 存在可分组字段（枚举/布尔/选项）                                         |
 | calendar | 月历视图（CalendarMonth）      | 存在 DateTime 字段作为开始日期                                      |
 | gantt    | VisActor 甘特（只读，无拖拽写回）    | 存在可映射的起止日期字段                                              |
+| map      | 地图散点（MapView + 高德/百度/腾讯适配层） | 存在坐标字段（分列经/纬度或合并坐标）且系统已配置地图服务商（`/Cube/GetMapConfig`） |
 
 
-> 6 种视图均已落地（OSC-0006）；「看板/甘特/日历无拖拽写回」为设计内「不做」项。结构齐之后的**只读完成度**见 §7.4，差距编号见 §10.4 #17–#22。
+> 7 种视图均已落地（OSC-0006 六视图 + OSC-261004d7f4 地图）；「看板/甘特/日历无拖拽写回」为设计内「不做」项。结构齐之后的**只读完成度**见 §7.4，差距编号见 §10.4 #17–#22。
 
-视图切换器绑定当前 `typePath` 的 **ViewProfile.view**，切换即持久化该 Profile。同源 `GetList`：切视图不搬数据（与飞书「改一处全视图同步」同构，权限仍以后端为准）。
+视图切换器绑定当前 `typePath` 的 **ViewProfile.view**，切换即持久化该 Profile。分组/排序/筛选/填色及未保存查询按命名视图隔离；仅当完整 GetList **请求签名**（实体、租户、页码、页大小、排序、关键字、`viewFilter`/日历窗等）一致时才复用当前原始行本地重绘，否则必须重新请求（OSC-261004e6ee）。权限仍以后端为准。
 
 ### 7.2 右侧 RecordDrawer
 

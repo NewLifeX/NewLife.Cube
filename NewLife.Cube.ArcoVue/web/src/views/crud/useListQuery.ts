@@ -17,6 +17,7 @@ import { buildSortsPayload, applyChartData, emptyViewFilter, normalizeFilter } f
 import { normalizePageSize } from '@/core/utils/viewMapping';
 import { buildViewFilterParam, matchesViewFilter } from '@/core/utils/searchFilters';
 import { getPageCached } from '@/core/utils/pageMetaCache';
+import { listRequestSignature } from '@/core/utils/listRequestSignature';
 import type { WorkflowPageBlock } from '@/core/types/workflow';
 import { useTenantStore } from '@/stores/tenant';
 import { useRecentKeywords } from '@/core/composables/useRecentKeywords';
@@ -64,6 +65,7 @@ export function useListQuery(ctx: ListContext) {
     enableKey,
     tableData,
     tableDataRaw,
+    tableDataRequestSignature,
     loading,
     selectedKeys,
     statData,
@@ -300,18 +302,32 @@ export function useListQuery(ctx: ListContext) {
       // 看板/甘特随分页器 current 翻页；日历仍固定第一页大加载
       const pageIndex =
         isLargePageView.value && activeViewKind.value !== 'gantt' ? 0 : pagination.current - 1;
+      const requestFilter = requestViewFilter();
+      const vf = buildViewFilterParam(requestFilter);
+      const requestParams = {
+        typePath: typePath.value,
+        tenantCode: tenantStore.currentCode,
+        pageIndex,
+        pageSize,
+        ...sort,
+        ...effectiveSearch.value,
+        ...(vf ? { viewFilter: vf } : {}),
+      };
+      const requestSignature = listRequestSignature(requestParams);
       let rows: Record<string, unknown>[];
-      if (skipFetch && tableDataRaw.value.length) {
+      if (
+        skipFetch &&
+        tableDataRaw.value.length &&
+        tableDataRequestSignature.value === requestSignature
+      ) {
         // 复用已加载原始数据（视图切换/纯前端筛选变化：搜索、排序、加载量未变，避免重复请求后端）
         rows = tableDataRaw.value;
       } else {
         // 视图筛选下推（OSC-260819e483 P2）：有条件才传 viewFilter，后端 SearchData 可下推时服务端过滤；
         // 无法下推时忽略服务端过滤，本页仍由下方 matchesViewFilter 复核（翻页不完整为已知限制）
-        const requestFilter = requestViewFilter();
-        const vf = buildViewFilterParam(requestFilter);
         const res = await cubeApi.page.getList(typePath.value, {
-          pageIndex,
-          pageSize,
+          pageIndex: requestParams.pageIndex,
+          pageSize: requestParams.pageSize,
           ...sort,
           ...effectiveSearch.value,
           ...(vf ? { viewFilter: vf } : {}),
@@ -320,6 +336,7 @@ export function useListQuery(ctx: ListContext) {
         if (seq !== dataSeq.value) return;
         rows = (res.data as Record<string, unknown>[]) || [];
         tableDataRaw.value = rows;
+        tableDataRequestSignature.value = requestSignature;
         statData.value = (res.stat as Record<string, unknown>) ?? null;
         if (res.page) pagination.total = res.page.totalCount || 0;
         // 时间窗收窄提示（OSC-260830a1b2）：读响应体 filterNarrowed（后端已从响应头透传到 ApiListResponse.FilterNarrowed）
@@ -519,6 +536,29 @@ export function useListQuery(ctx: ListContext) {
     Message.success('已删除');
   }
 
+  /**
+   * 地图视图续页（OSC-261004d7f4）：与主请求同参（搜索/排序/视图筛选/条数），仅换 pageIndex；
+   * 不写主状态（tableData/loading），失败或无更多时返回 null；查询变更由调用方（地图管线）自行中止。
+   */
+  async function loadMapPage(pageIndex: number): Promise<Record<string, unknown>[] | null> {
+    try {
+      const sort = buildSortsPayload(activeSorts.value);
+      const requestFilter = requestViewFilter();
+      const vf = buildViewFilterParam(requestFilter);
+      const res = await cubeApi.page.getList(typePath.value, {
+        pageIndex,
+        pageSize: effectivePageSize.value,
+        ...sort,
+        ...effectiveSearch.value,
+        ...(vf ? { viewFilter: vf } : {}),
+      });
+      const rows = (res.data as Record<string, unknown>[]) || [];
+      return rows.length ? rows : null;
+    } catch {
+      return null;
+    }
+  }
+
   function onPageChange(page: number) {
     pagination.current = page;
     loadData();
@@ -560,6 +600,7 @@ export function useListQuery(ctx: ListContext) {
     onPageChange,
     onPageSizeChange,
     onTableScrollBottom,
+    loadMapPage,
   };
 }
 

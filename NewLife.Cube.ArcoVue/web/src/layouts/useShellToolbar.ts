@@ -90,6 +90,7 @@ export function useShellToolbar() {
   async function handleLogout() {
     await userStore.logout();
     clearSession();
+    appStore.clearSessionMetadata();
     tenantStore.clear();
     profileStore.resetSession();
     tagsStore.clearAll();

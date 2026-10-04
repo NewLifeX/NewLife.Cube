@@ -63,6 +63,7 @@
 | OSC-2610011ff2 — 2026-10-01 | 隐藏路由不改 Visible；固定图滤持久化；boxplot 须升序；spin 防宽 0 |
 | OSC-2610019c9d — 2026-10-01 | getList type 须前导 /；执行期扩范围即时改三件套；Form tip 用 #label；抽屉表 nowrap |
 | OSC-2610012e35 — 2026-10-03 | a-table 列必须进 #columns；抽屉空白先用真实环境取证；友好名回落链；数据字典下钻对齐 MVC；单元格省略/对齐三件套 |
+| OSC-261004e6ee — 2026-10-04 | force 用资源世代勿抬会话；注销也要清 app；扩后端即时改三件套；混 WIP 按白名单提交 |
 
 ---
 
@@ -439,3 +440,10 @@
 - **注销类验收用一次性账号走真实链路**：管理员 API `POST /api/Admin/User` 建号（`Name/Password/Enable`，密码由 OnInsert 哈希）→ 匿名登录 → 安全页签注销 → 断言 `CloseAccount code=0`、跳 `/login`、refresh/userName 已清、再登录被拒、管理员 `Detail` 核验 `enable=false` 且昵称已脱敏。
 - **VTable/canvas 列表与抽屉包裹层**：实体列表行不在 DOM（canvas），断言改用截图 + API 元数据；`.record-drawer` 类挂在全屏 `.arco-drawer-container` 上，可见性判断用 `offsetWidth/offsetHeight` 尺寸探测。
 - **演示环境未启用多租户**（MenuTree 无 Tenant → `/Admin/Tenant` SPA 不可达）：涉及租户 UI 的 AC 用真实 `GetPage` 元数据 + 后端单测替代取证，UI 级验收留给启用多租户的部署环境。
+
+## OSC-261004e6ee — 2026-10-04
+
+- **force 作废 in-flight 用 per-resource 世代，勿抬会话世代**：抬 `_sessionGeneration` 会连坐 Inbox/Workflow 等其它 in-flight；Login/AI/Map/Tenants/UserProfile 各自 `_xxxGen`，迟到响应双守卫（session + resource）。
+- **注销与登出同属会话失效**：`useCloseAccount` 必须调 `appStore.clearSessionMetadata()`（及 tenant/profile 既有清理），否则下一用户可能复用前用户壳层元数据。
+- **CubeSetting 对照可触发执行期扩范围**：草案写「不改后端」但对照后为 Map 配置补 `GetMapConfig`/`CubeSetting` 地图项时，须同步改 proposal/design/tasks/verify 并在 retro 标明偏离。
+- **并行 WIP 归档提交按白名单**：同工作区若混有 d7f4 地图视图 UI、徽标 `listRowPatch` 等，复盘 commit 只 add 本 OSC 文件，禁止 `git add .`。

@@ -728,6 +728,33 @@ describe('viewProfile store queries (OSC-0016)', () => {
     expect(store.getActiveQueryId('Admin/User')).toBeNull();
   });
 
+  it('keeps applied queries isolated by active named view', async () => {
+    getViewProfile.mockResolvedValue({
+      data: {
+        typePath: 'Admin/User',
+        activeViewId: 'default',
+        viewsJson: JSON.stringify([
+          { id: 'default', name: '默认', view: 'table', columns: [] },
+          { id: 'card', name: '卡片', view: 'card', columns: [] },
+        ]),
+        queriesJson: JSON.stringify({
+          version: 2,
+          queries: [{ id: 'q_1', name: '管理员', q: 'admin' }],
+        }),
+      },
+    });
+    const store = useViewProfileStore();
+    await store.load('Admin/User', ['Name']);
+
+    store.applyQuery('Admin/User', 'q_1');
+    expect(store.getActiveQueryId('Admin/User')).toBe('q_1');
+    store.switchView('Admin/User', 'card');
+    expect(store.getActiveQueryId('Admin/User')).toBeNull();
+    store.applyQuery('Admin/User', 'q_1');
+    store.switchView('Admin/User', 'default');
+    expect(store.getActiveQueryId('Admin/User')).toBe('q_1');
+  });
+
   it('saveQueryAs appends entry (q+filter), sets activeQueryId and PUTs queriesJson v2', async () => {
     getViewProfile.mockResolvedValue({ data: { typePath: 'Admin/User' } });
     const store = useViewProfileStore();
@@ -805,7 +832,7 @@ describe('viewProfile store queries (OSC-0016)', () => {
     expect(store.getQueries('Admin/User').queries.length).toBe(1);
   });
 
-  it('clearQuery 清空实体全部视图查询条件与预定义查询标记并单次持久化（重置查询条件）', async () => {
+  it('clearQuery 仅清空当前视图的查询条件与预定义查询标记', async () => {
     getViewProfile.mockResolvedValue({
       data: {
         typePath: 'Admin/User',
@@ -839,13 +866,14 @@ describe('viewProfile store queries (OSC-0016)', () => {
     store.clearQuery('Admin/User');
 
     expect(store.getActiveQueryId('Admin/User')).toBeNull();
-    // 所有命名视图的查询条件都被清除（filter 字段移除）
+    // 当前活动视图的筛选被清除；其它视图保持独立筛选。
     const st = store.getState('Admin/User');
-    expect(st?.views.every((v) => !('filter' in v))).toBe(true);
+    expect(st?.views.find((v) => v.id === 'default')?.filter).toBeUndefined();
+    expect(st?.views.find((v) => v.id === 'v2')?.filter?.conditions).toHaveLength(1);
     expect(store.getFilter('Admin/User').conditions.length).toBe(0);
     // activeViewId 保持不变
     expect(st?.activeViewId).toBe('default');
-    // activeQueryId 清除应发送空串（后端 null 不覆盖），确保服务端真正清空、重开不恢复方案
+    // 旧服务端实体级 activeQueryId 清除应发送空串，避免重开时跨视图恢复方案。
     expect(putViewProfile).toHaveBeenCalledWith(expect.objectContaining({ activeQueryId: '' }));
     // 预定义查询列表保留，未删除
     expect(store.getQueries('Admin/User').queries.length).toBe(1);

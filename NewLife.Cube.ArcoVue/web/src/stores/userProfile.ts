@@ -30,6 +30,9 @@ export const useUserProfileStore = defineStore('userProfile', {
     saveError: '' as string,
     _saveTimer: null as ReturnType<typeof setTimeout> | null,
     _stopWatch: null as null | (() => void),
+    _loadRequest: null as Promise<void> | null,
+    _sessionGeneration: 0,
+    _loadGen: 0,
   }),
   getters: {
     layout: (s) => s.prefs.layout,
@@ -58,24 +61,41 @@ export const useUserProfileStore = defineStore('userProfile', {
       saveLocalProfile(this.prefs);
     },
 
-    async loadFromServer() {
-      this.loadError = '';
-      try {
-        const res = await cubeApi.profile.getUserProfile();
-        this.prefs = prefsFromWire(res);
-        this.dirty = false;
-        this.loaded = true;
-        this.persistLocal();
-        this.applyVisual();
-        this.ensureSystemWatch();
-      } catch (err) {
-        this.loadError = formatApiError(err, '加载用户偏好失败');
-        // 保留本地 / 默认，不阻断壳
-        const local = loadLocalProfile();
-        if (local) this.prefs = local;
-        this.loaded = true;
-        this.applyVisual();
+    async loadFromServer(force = false) {
+      if (!force && this.loaded) return;
+      if (!force && this._loadRequest) return this._loadRequest;
+      if (force) {
+        this._loadGen++;
+        this._loadRequest = null;
+        this.loaded = false;
       }
+      this.loadError = '';
+      const sessionGen = this._sessionGeneration;
+      const loadGen = this._loadGen;
+      const request = cubeApi.profile
+        .getUserProfile()
+        .then((res) => {
+          if (sessionGen !== this._sessionGeneration || loadGen !== this._loadGen) return;
+          this.prefs = prefsFromWire(res);
+          this.dirty = false;
+          this.loaded = true;
+          this.persistLocal();
+          this.applyVisual();
+          this.ensureSystemWatch();
+        })
+        .catch((err) => {
+          if (sessionGen !== this._sessionGeneration || loadGen !== this._loadGen) return;
+          this.loadError = formatApiError(err, '加载用户偏好失败');
+          const local = loadLocalProfile();
+          if (local) this.prefs = local;
+          this.loaded = false;
+          this.applyVisual();
+        })
+        .finally(() => {
+          if (this._loadRequest === request) this._loadRequest = null;
+        });
+      this._loadRequest = request;
+      return request;
     },
 
     patchLayout(partial: Partial<LayoutPrefs>, opts?: { immediate?: boolean }) {
@@ -143,6 +163,8 @@ export const useUserProfileStore = defineStore('userProfile', {
     },
 
     resetSession() {
+      this._sessionGeneration++;
+      this._loadGen++;
       if (this._saveTimer) {
         clearTimeout(this._saveTimer);
         this._saveTimer = null;
@@ -153,6 +175,7 @@ export const useUserProfileStore = defineStore('userProfile', {
       }
       this.prefs = cloneProfile(SYSTEM_DEFAULT_PROFILE);
       this.loaded = false;
+      this._loadRequest = null;
       this.dirty = false;
       this.saveError = '';
       this.loadError = '';

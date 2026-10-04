@@ -560,6 +560,20 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         });
     }
 
+    /// <summary>获取地图配置。前端地图散点视图加载 JS API 所需的服务商与密钥，由 CubeSetting 配置；未配置时 Provider 为空串</summary>
+    /// <returns>返回 MapProvider 服务商（amap/baidu/tencent）、MapKey 密钥与 MapScriptUrl 自定义脚本地址</returns>
+    [HttpGet]
+    public ActionResult GetMapConfig()
+    {
+        var set = CubeSetting.Current;
+        return Json(0, null, new
+        {
+            Provider = set.MapProvider + "",
+            Key = set.MapKey + "",
+            ScriptUrl = set.MapScriptUrl + "",
+        });
+    }
+
     /// <summary>获取页面配置信息。列表页、表单页所需显示字段，以及各字段显示方式</summary>
     /// <param name="kind">种类。用于区分不同的前端类型，如Vue/Antd/QuickVue</param>
     /// <param name="page">页面路径。如/admin/user</param>

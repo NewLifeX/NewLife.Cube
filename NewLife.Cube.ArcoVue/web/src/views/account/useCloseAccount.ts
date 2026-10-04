@@ -6,6 +6,7 @@ import { formatApiError } from '@/core/utils/apiError';
 import { canConfirmCloseAccount } from '@/core/utils/closeAccount';
 import { clearLocalProfile } from '@/core/utils/userProfile';
 import { resetMenuRoutesFlag } from '@/router';
+import { useAppStore } from '@/stores/app';
 import { useUserStore } from '@/stores/user';
 import { useTenantStore } from '@/stores/tenant';
 import { useTagsViewStore } from '@/stores/tagsView';
@@ -15,6 +16,7 @@ import { clearSession } from '@/views/login/sessionTokens';
 /** 账号安全：注销确认与 POST CloseAccount */
 export function useCloseAccount() {
   const router = useRouter();
+  const appStore = useAppStore();
   const userStore = useUserStore();
   const tenantStore = useTenantStore();
   const tagsStore = useTagsViewStore();
@@ -53,6 +55,7 @@ export function useCloseAccount() {
       await userStore.logout();
       clearSession();
       clearLocalProfile();
+      appStore.clearSessionMetadata();
       tenantStore.clear();
       profileStore.resetSession();
       tagsStore.clearAll();

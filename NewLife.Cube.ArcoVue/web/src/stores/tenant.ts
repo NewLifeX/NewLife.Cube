@@ -34,6 +34,10 @@ export const useTenantStore = defineStore('tenant', {
     currentCode: readPersistedCode(),
     items: [] as TenantItem[],
     loaded: false,
+    _loadRequest: null as Promise<void> | null,
+    _sessionGeneration: 0,
+    /** force 世代：作废本资源 in-flight（如快速 switchTo） */
+    _loadGen: 0,
   }),
   getters: {
     /** 用户菜单展示的当前租户名 */
@@ -89,23 +93,45 @@ export const useTenantStore = defineStore('tenant', {
       this.persistCode(data.currentCode ?? '');
       this.loaded = true;
     },
-    async load() {
-      try {
-        const res = await cubeApi.user.listTenants();
-        this.applyResult(res.data);
-      } catch {
-        this.loaded = true;
+    async load(force = false) {
+      if (!force && this.loaded) return;
+      if (!force && this._loadRequest) return this._loadRequest;
+      if (force) {
+        this._loadGen++;
+        this._loadRequest = null;
+        this.loaded = false;
       }
+      const sessionGen = this._sessionGeneration;
+      const loadGen = this._loadGen;
+      const request = cubeApi.user
+        .listTenants()
+        .then((res) => {
+          if (sessionGen !== this._sessionGeneration || loadGen !== this._loadGen) return;
+          this.applyResult(res.data);
+          this.loaded = true;
+        })
+        .catch(() => {
+          if (sessionGen !== this._sessionGeneration || loadGen !== this._loadGen) return;
+          this.loaded = false;
+        })
+        .finally(() => {
+          if (this._loadRequest === request) this._loadRequest = null;
+        });
+      this._loadRequest = request;
+      return request;
     },
     async switchTo(tenantId: number) {
       // 后端 SwitchTenant 仅返回布尔结果，切换成功后重新拉取列表，刷新 currentId/currentCode/items
       await cubeApi.user.switchTenant(tenantId);
-      await this.load();
+      await this.load(true);
     },
     clear() {
+      this._sessionGeneration++;
+      this._loadGen++;
       this.currentId = 0;
       this.items = [];
       this.loaded = false;
+      this._loadRequest = null;
       this.persistCode('');
       this.persistEnable(true);
     },

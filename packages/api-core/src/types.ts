@@ -352,6 +352,16 @@ export interface SecurityConfig {
   passwordStrength?: string;
 }
 
+/** 地图配置（CubeSetting 系统级单服务商；Provider 为空串=未配置） */
+export interface MapConfigModel {
+  /** 服务商：amap 高德 / baidu 百度 / tencent 腾讯；空串=未配置 */
+  provider: string;
+  /** JS API Key */
+  key: string;
+  /** 自定义脚本地址（可选覆盖服务商默认加载地址） */
+  scriptUrl: string;
+}
+
 /** 登录配置（新版嵌套结构，v2 起） */
 export interface LoginConfig {
   /** 是否启用多租户。前端据此控制租户相关 UI（切换器/租户字段）显隐 */

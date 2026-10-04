@@ -5,7 +5,6 @@ import { formatApiError } from '@/core/utils/apiError';
 import { useUserStore } from './user';
 import type { FieldMeta } from '@/core/types/field';
 import {
-  clearAllViewsFilter,
   clearFormModeLayout,
   clearSavedViewFilters,
   createNamedView,
@@ -83,7 +82,7 @@ function cloneState(state: EntityViewState): EntityViewState {
   return JSON.parse(JSON.stringify(state)) as EntityViewState;
 }
 
-/** 未命名当前查询（Q + filter）会话持久化（OSC-260830a1b2）：刷新有效，关闭视图界面后不保留，故用 sessionStorage */
+/** 未命名当前查询（Q + filter）会话持久化：按实体与命名视图隔离，刷新有效，关闭视图界面后不保留。 */
 const LAST_QUERY_PREFIX = 'cube:lastQuery:';
 
 interface LastQueryWire {
@@ -91,39 +90,55 @@ interface LastQueryWire {
   filter?: ViewFilter;
 }
 
-function _restoreLastQuery(typePath: string): LastQueryWire | null {
+function lastQueryKey(typePath: string, viewId: string): string {
+  return `${LAST_QUERY_PREFIX}${typePath}:${viewId}`;
+}
+
+function legacyLastQueryKey(typePath: string): string {
+  return LAST_QUERY_PREFIX + typePath;
+}
+
+function _restoreLastQuery(typePath: string, viewId: string): LastQueryWire | null {
   try {
-    const raw = sessionStorage.getItem(LAST_QUERY_PREFIX + typePath);
+    const key = lastQueryKey(typePath, viewId);
+    const raw = sessionStorage.getItem(key) ?? sessionStorage.getItem(legacyLastQueryKey(typePath));
     if (!raw) return null;
     const o = JSON.parse(raw) as Record<string, unknown>;
-    return {
+    const wire = {
       q: typeof o.q === 'string' ? o.q : undefined,
       filter: o.filter ? normalizeFilter(o.filter) : undefined,
     };
+    if (!sessionStorage.getItem(key)) {
+      sessionStorage.setItem(key, JSON.stringify(wire));
+      sessionStorage.removeItem(legacyLastQueryKey(typePath));
+    }
+    return wire;
   } catch {
     return null;
   }
 }
 
-function _persistLastQuery(typePath: string, wire: LastQueryWire) {
+function _persistLastQuery(typePath: string, viewId: string, wire: LastQueryWire) {
   try {
     const o: LastQueryWire = {};
     const q = wire.q?.trim();
     if (q) o.q = q;
     if (wire.filter?.conditions?.length) o.filter = wire.filter;
     if (!o.q && !o.filter) {
-      sessionStorage.removeItem(LAST_QUERY_PREFIX + typePath);
+      sessionStorage.removeItem(lastQueryKey(typePath, viewId));
       return;
     }
-    sessionStorage.setItem(LAST_QUERY_PREFIX + typePath, JSON.stringify(o));
+    sessionStorage.setItem(lastQueryKey(typePath, viewId), JSON.stringify(o));
   } catch {
     /* ignore */
   }
 }
 
-function _clearLastQuery(typePath: string) {
+function _clearLastQuery(typePath: string, viewId: string) {
   try {
-    sessionStorage.removeItem(LAST_QUERY_PREFIX + typePath);
+    sessionStorage.removeItem(lastQueryKey(typePath, viewId));
+    // 同步清旧实体级键，避免跳过 restore 后仍被后续 applyLastQuery 回灌
+    sessionStorage.removeItem(legacyLastQueryKey(typePath));
   } catch {
     /* ignore */
   }
@@ -156,8 +171,8 @@ type CacheEntry = {
   /** 预定义查询（QueriesJson，OSC-0016）：实体级个人配置，不走模板域 */
   queries: SavedQueriesWire;
   committedQueries: SavedQueriesWire;
-  /** 当前应用的预定义查询 id（会话内存，不持久化；刷新后为 null） */
-  activeQueryId: string | null;
+  /** 当前应用的预定义查询，按命名视图隔离且仅在本次会话有效 */
+  activeQueryIds: Record<string, string>;
   /** 页面仪表盘（OSC-2608280e9e）：null=未配置（可合成旧 insight） */
   dashboard: DashboardConfig | null;
   committedDashboard: DashboardConfig | null;
@@ -201,7 +216,7 @@ export const useViewProfileStore = defineStore('viewProfile', {
           committedFilters: emptySavedFilters(),
           queries: emptySavedQueries(),
           committedQueries: emptySavedQueries(),
-          activeQueryId: null,
+          activeQueryIds: {},
           dashboard: null,
           committedDashboard: null,
           dashboardDirty: false,
@@ -284,11 +299,13 @@ export const useViewProfileStore = defineStore('viewProfile', {
       entry.pageSize = normalizePageSize(personal?.pageSize);
       entry.formJson = parseFormJson(personal?.formJson);
       // 预定义查询为实体级个人配置（OSC-0016）：仅个人域，不走模板回退；
-      // activeQueryId 服务端持久化（OSC-260830a1b2），跨浏览器/设备登录同一账号可恢复勾选的预定义查询
+      // 兼容旧服务端实体级 activeQueryId：仅迁入本次加载时的活动视图，不再跨视图传播。
       entry.queries = parseQueriesWire(personal?.queriesJson ?? null, entry.fields);
       const aq = (personal as Record<string, unknown> | null)?.activeQueryId;
-      entry.activeQueryId =
-        typeof aq === 'string' && aq && entry.queries.queries.some((x) => x.id === aq) ? aq : null;
+      entry.activeQueryIds =
+        typeof aq === 'string' && aq && entry.queries.queries.some((x) => x.id === aq)
+          ? { [entry.state.activeViewId]: aq }
+          : {};
       // 仪表盘：个人 present > 系统管理员模板（ViewProfileTemplate / global）> null（再合成旧 insight）
       // 后端 ViewProfile GET 也可能已把 global.DashboardJson 填入 personal；此处再兜底模板接口
       const personalDash = hasDashboardDomain(personal?.dashboardJson)
@@ -643,9 +660,10 @@ export const useViewProfileStore = defineStore('viewProfile', {
       return this.byType[typePath]?.queries ?? emptySavedQueries();
     },
 
-    /** 读取当前应用的预定义查询 id（会话内存） */
+    /** 读取当前视图应用的预定义查询 id（会话内存） */
     getActiveQueryId(typePath: string): string | null {
-      return this.byType[typePath]?.activeQueryId ?? null;
+      const entry = this.byType[typePath];
+      return entry?.activeQueryIds[entry.state.activeViewId] ?? null;
     },
 
     /** 将当前查询保存为预定义查询（OSC-260830a1b2 v2）：新增条目（q + filter）、activeQueryId 指向新条目并立即保存 */
@@ -671,7 +689,7 @@ export const useViewProfileStore = defineStore('viewProfile', {
         version: 2,
         queries: [...entry.queries.queries, item],
       };
-      entry.activeQueryId = id;
+      entry.activeQueryIds[entry.state.activeViewId] = id;
       entry.dirty = true;
       this.scheduleSave(typePath, true);
       return id;
@@ -701,7 +719,9 @@ export const useViewProfileStore = defineStore('viewProfile', {
         ...entry.queries,
         queries: entry.queries.queries.filter((q) => q.id !== id),
       };
-      if (entry.activeQueryId === id) entry.activeQueryId = null;
+      for (const [viewId, activeId] of Object.entries(entry.activeQueryIds)) {
+        if (activeId === id) delete entry.activeQueryIds[viewId];
+      }
       entry.dirty = true;
       this.scheduleSave(typePath, true);
     },
@@ -712,10 +732,7 @@ export const useViewProfileStore = defineStore('viewProfile', {
       if (!entry) return null;
       const q = entry.queries.queries.find((x) => x.id === id);
       if (!q) return null;
-      entry.activeQueryId = id;
-      // 服务端持久化，跨浏览器/设备登录同一账号可恢复勾选（OSC-260830a1b2）
-      entry.dirty = true;
-      this.scheduleSave(typePath, true);
+      entry.activeQueryIds[entry.state.activeViewId] = id;
       return q;
     },
 
@@ -723,38 +740,38 @@ export const useViewProfileStore = defineStore('viewProfile', {
     clearActiveQuery(typePath: string) {
       const entry = this.byType[typePath];
       if (!entry) return;
-      entry.activeQueryId = null;
-      entry.dirty = true;
-      this.scheduleSave(typePath, true);
+      delete entry.activeQueryIds[entry.state.activeViewId];
     },
 
-    /** 清除该实体对象全部查询条件（OSC-260830a1b2）：清空实体所有命名视图的查询条件（不只当前视图）、
-     *  清除已应用预定义查询标记与未命名当前查询，并单次持久化到服务端；刷新/重载后同样不应用任何查询。
-     *  单次保存避免调用方多次 scheduleSave(immediate) 产生 PUT 竞态导致旧 activeQueryId 覆盖。 */
+    /** 清除当前命名视图的查询条件与会话查询状态，不影响其它本地多维视图。 */
     clearQuery(typePath: string) {
       const entry = this.byType[typePath];
       if (!entry) return;
-      entry.activeQueryId = null;
-      entry.state = clearAllViewsFilter(entry.state);
+      delete entry.activeQueryIds[entry.state.activeViewId];
+      entry.state = patchActiveFilter(entry.state, emptyViewFilter());
       entry.dirty = true;
       entry.viewsDirty = true;
-      _clearLastQuery(typePath);
+      _clearLastQuery(typePath, entry.state.activeViewId);
       this.scheduleSave(typePath, true);
     },
 
-    /** 持久化未命名当前查询（Q + filter）到 sessionStorage（OSC-260830a1b2）：刷新有效，关闭视图界面后不保留 */
+    /** 持久化当前视图的未命名查询（Q + filter）到 sessionStorage。 */
     persistLastQuery(typePath: string, wire: { q?: string; filter?: ViewFilter }) {
-      _persistLastQuery(typePath, wire);
+      const entry = this.byType[typePath];
+      if (!entry) return;
+      _persistLastQuery(typePath, entry.state.activeViewId, wire);
     },
 
-    /** 读取未命名当前查询（sessionStorage）；无效/缺失返回 null */
+    /** 读取当前视图的未命名查询（sessionStorage）；无效/缺失返回 null */
     restoreLastQuery(typePath: string): { q?: string; filter?: ViewFilter } | null {
-      return _restoreLastQuery(typePath);
+      const entry = this.byType[typePath];
+      return entry ? _restoreLastQuery(typePath, entry.state.activeViewId) : null;
     },
 
     /** 清除未命名当前查询（sessionStorage） */
     clearLastQuery(typePath: string) {
-      _clearLastQuery(typePath);
+      const entry = this.byType[typePath];
+      if (entry) _clearLastQuery(typePath, entry.state.activeViewId);
     },
 
     switchView(typePath: string, viewId: string) {
@@ -912,10 +929,8 @@ export const useViewProfileStore = defineStore('viewProfile', {
       payload.pageSize = entry.pageSize || 0;
       // 预定义查询为实体级个人配置，始终随保存提交（OSC-0016）
       payload.queriesJson = serializeQueriesWire(entry.queries);
-      // 当前应用的预定义查询 id 服务端持久化（OSC-260830a1b2）：
-      // 后端约定「null 不覆盖，空串清除」。清除时需发送空串（而非 null），否则服务端仍保留旧 id，
-      // 重新打开界面会再次加载该预定义方案（修复：clearQuery 后重开恢复问题）。
-      payload.activeQueryId = entry.activeQueryId ?? '';
+      // 应用状态改为视图级会话状态；清空旧服务端实体级标记，避免其在其它视图重新生效。
+      payload.activeQueryId = '';
       // 表单布局为系统全局唯一配置（管理员定义，作用于所有用户）：
       // 仅管理员保存时提交；非管理员不发送，避免把全局布局写回或触发后端 403
       const userStore = useUserStore();

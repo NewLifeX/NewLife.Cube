@@ -684,4 +684,18 @@ describe('createConfigApi', () => {
       }),
     );
   });
+
+  it('getMapConfig hits GET /Cube/GetMapConfig without /api prefix', async () => {
+    const ok = { code: 0, data: { provider: 'amap', key: 'k', scriptUrl: '' } };
+    const request = vi.fn().mockResolvedValueOnce(ok);
+    const api = createConfigApi(request);
+    const result = await api.getMapConfig();
+    expect(result).toBe(ok);
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/Cube/GetMapConfig',
+        method: 'get',
+      }),
+    );
+  });
 });
