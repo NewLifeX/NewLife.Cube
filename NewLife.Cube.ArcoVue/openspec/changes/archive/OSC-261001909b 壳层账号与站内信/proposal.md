@@ -33,6 +33,7 @@ Cube.Vue 有 `/activate`，ArcoVue 没有。`CloseAccount` 已在 Auth 接口，
 2. Inbox 返回 `target`；流程通知写入关联主键；点击跳转；列表识别 `?id=` 打开详情。
 3. 租户合成列。
 4. 纯函数单测与后端 Inbox 投影/Target 拼装测试。
+5. 站内信抽屉按日期分桶双层时间轴（执行期补录，见 tasks T2-6）。
 
 ## 5. 不做什么
 

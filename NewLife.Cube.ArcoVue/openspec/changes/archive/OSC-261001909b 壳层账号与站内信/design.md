@@ -18,7 +18,9 @@
 | `web/src/views/account/useCloseAccount.ts` | 用户名确认与 POST | — |
 | `web/src/core/utils/inboxTarget.ts` | `parseInboxTarget` | — |
 | `web/src/core/utils/inboxTarget.spec.ts` | 新建 | — |
-| `web/src/views/inbox/useInboxDrawer.ts` | 点击：标已读；可解析则 push | 全部已读 |
+| `web/src/views/inbox/useInboxDrawer.ts` | 点击：标已读；可解析则 push；列表＝日期分桶双层时间轴（T2-6） | 全部已读 |
+| `web/src/core/utils/inboxBucket.ts` / `inboxBucket.spec.ts` | 新建：`bucketInboxByDate`（今天/本周/本月/更长时间；T2-6） | — |
+| `web/src/core/utils/iconRegistry.ts` / `iconComponents.ts` | `INBOX_BUCKET_ICONS`；登记 `CalendarThirty`（T2-6） | 既有图标体系 |
 | `packages/api-core/src/api.ts` | `InboxMessageItem.target?` | 其它字段 |
 | `NewLife.Cube/Controllers/AutomationController.cs` | Inbox 投影加 `e.Target` | 已读接口 |
 | `NewLife.Cube/Workflow/WorkflowEngine.cs` | `Notify` 写 Target | 通知正文截断 |

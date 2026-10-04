@@ -58,6 +58,7 @@
 | OSC-260926c2b8 — 2026-09-29 | 抽屉滚动链与输入底色；值集三层拒绝矩阵；存储偏好≠代码；坏补丁拼坏扫描 |
 | OSC-2609307879 — 2026-09-30 | 连接名占用时内存库不生效；api-core 要先构建 dist；表头图标在模块顶层 |
 | OSC-261001e9e2 — 2026-10-01 | 刷新判断用所改字段；成功标准与修订同时改；冒烟要看真实排序 |
+| OSC-261001909b — 2026-10-04 | 登录风控对回环仍生效；isVisible 不等待；Playwright 清 test-results |
 | OSC-2610011cd6 — 2026-10-01 | 确认文案放 title；Kick 按删除权限裁 URL；ListFields 沿基类反射 |
 | OSC-2610011ff2 — 2026-10-01 | 隐藏路由不改 Visible；固定图滤持久化；boxplot 须升序；spin 防宽 0 |
 | OSC-2610019c9d — 2026-10-01 | getList type 须前导 /；执行期扩范围即时改三件套；Form tip 用 #label；抽屉表 nowrap |
@@ -429,3 +430,12 @@
 - **列表友好名回落链**：表/实体展示名 = 数据库注释 → 实体模型 [Description]（`EntityFactory.GetTables` / `TableItem.DataTable.Description`）→ 技术名；SQLite 无注释时友好名全部来自实体模型。「名称」列展示描述首句、「备注」列展示余下部分，「表名」列保留技术名。
 - **数据字典移植对齐 MVC 架构表**：实体字段字典的列与语义直接对齐 CubeNC `Db/Entities.cshtml`（主键列 AI/PK/UQ、允许空列 N=不允许空、备注用 `TrimPrefix(DisplayName)` 去重）；`factory.Fields` 为数据字段、`AllFields` 含全部属性，字典两者按需选择。
 - **表格单元格省略/对齐三件套**：溢出单行省略用 `:ellipsis="true" tooltip`（Arco 仅溢出时自动弹 Tooltip，无需手写）；数字列 `align="right"`（对齐类在 `.arco-table-cell-align-*`）；表头 `white-space: nowrap` 防「允许空」折行。UI 出口删除时：纯 UI 辅助（`flattenDiff`+spec）与仅被 UI 使用的 api-core 封装（`dbDiff`）一并清理；后端 REST 动作（ModelDiff）与仍被复用的封装（`dbTables`，纯表合并）保留。
+
+## OSC-261001909b — 2026-10-04
+
+- **登录风控对本地回环同样生效**：`MaxLoginError=5`、`LoginForbiddenTime=600s`，用户名与 IP 各自计数；E2E 验证码识别重试的失败提交会累积计数，触发「登录错误过多」假性失败。锁定 TTL 自**首次**错误起算，锁定期重试只 +计数不续期（自然到期即解锁）。脚本策略：每次仅提交「图片刷新稳定约 800ms」后的识别结果，遇「错误过多」立即停，别在锁定期反复重试。
+- **`locator.isVisible({timeout})` 是即时探针、不等待**：用它判断「登录完成/组件出现」会误判（元素稍后出现也返回 false）。等待型判断一律 `waitFor({ state: 'visible', timeout })` 包 `.then(()=>true).catch(()=>false)`。
+- **Playwright 启动会清空 `test-results/`**：跨脚本共享的临时状态（待测账号等）放 `playwright/` 目录；跑单文件临时 spec 用 `--project=chromium --no-deps` 跳过 `auth.setup` 依赖，配合 `test.use({ storageState: { cookies: [], origins: [] } })` 做匿名登录场景。
+- **注销类验收用一次性账号走真实链路**：管理员 API `POST /api/Admin/User` 建号（`Name/Password/Enable`，密码由 OnInsert 哈希）→ 匿名登录 → 安全页签注销 → 断言 `CloseAccount code=0`、跳 `/login`、refresh/userName 已清、再登录被拒、管理员 `Detail` 核验 `enable=false` 且昵称已脱敏。
+- **VTable/canvas 列表与抽屉包裹层**：实体列表行不在 DOM（canvas），断言改用截图 + API 元数据；`.record-drawer` 类挂在全屏 `.arco-drawer-container` 上，可见性判断用 `offsetWidth/offsetHeight` 尺寸探测。
+- **演示环境未启用多租户**（MenuTree 无 Tenant → `/Admin/Tenant` SPA 不可达）：涉及租户 UI 的 AC 用真实 `GetPage` 元数据 + 后端单测替代取证，UI 级验收留给启用多租户的部署环境。

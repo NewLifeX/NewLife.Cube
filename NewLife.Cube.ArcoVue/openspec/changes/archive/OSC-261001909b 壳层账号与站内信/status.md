@@ -1,0 +1,14 @@
+# Status
+- id: OSC-261001909b
+- state: Done
+- updated: 2026-10-04T08:06:00+08:00
+- approvedBy: openspec-approve
+- trigger: "按 OpenSpec 规范批准并执行 909b 变更 。"
+- checklist: passed
+- note: 批准通过：范围单一（激活/注销/站内信跳转/租户成员）；依赖 OSC-2610011ff2、OSC-26081903c0、OSC-26090347f1 均 Done；不做菜单搜索已锁定；proposal/design/tasks/ui 齐备。
+- note: 执行开始（openspec-apply），state=Implementing。
+- note: 会话小任务已补录（无计划外事项）。T1–T4 已勾选。Vitest 4 通过；Osc261001909b 通过 2；vue-tsc 与 net10.0 构建无错误。代码审查无 🔴；实现审计无缺口。下一步：验收 OSC-261001909b。
+- note: 会话小任务补录（2026-10-03）：站内通知抽屉改双层时间轴——日期分桶（今天/本周/本月/更长时间）+ 分组图标（主题色）+ 组内消息时间轴节点（T2-6）；inboxBucket/iconRegistry spec 通过、vue-tsc 0，待验收。
+- note: 验收开始（openspec-verify，2026-10-03）：三步编排 + AC 执行；实现已提交 da0f6432（已推送）。
+- note: 验收完成（openspec-verify，2026-10-04）：三步编排完成（实现审计/代码审查/文档同步 4 处）；门禁全绿（vitest 121 文件 1092/1096 过，4 例存量 sfcThin 与 HEAD 基线一致；vue-tsc 0；XUnit 2/2；net10 build 0 错误）；AC1–AC4 全过，AC2.2 经用户决策补齐——一次性账号端到端：登录 → 注销（空/错名禁用、对名启用）→ code=0 → 跳 /login、refresh/userName 已清 → 再登录被拒（「账号…被禁用！」）→ enable=false + 昵称脱敏；环境限制 3 项仅记录（真实邮件 token、空用户名状态、租户页 UI）。临时账号 id 8–14 已删除。
+- note: 复盘完成（openspec-retro，2026-10-04）：retro.md 落档；lessons.md 新增 OSC-261001909b 条目；归档至 changes/archive。
