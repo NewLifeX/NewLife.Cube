@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
@@ -61,6 +61,10 @@ public static class CubeService
             services.AddSingleton(P => star.Config);
             services.AddSingleton(p => star.Service);
         }
+
+        // 基础日志。AddCube 的星尘注册是 AddStardust 的子集，缺 ILog；
+        // CubeFileStorage 等服务构造函数注入 ILog，未注册会导致启动即崩（TryAdd 避免宿主已注册时重复）
+        services.TryAddSingleton(XTrace.Log);
 
         // 检查是否延迟启动，可能是重启或更新
         var args = Environment.GetCommandLineArgs();

@@ -129,6 +129,35 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         var prv = ManageProvider.Provider;
         if (prv?.Current == null)
         {
+            // 已认证但租户校验失败（token 有效、租户不匹配）：属授权失败，返回 403；
+            // 与"未认证(401)"区分——租户问题刷新/重登无解（凭证本就有效），
+            // 若返回 401 会诱导客户端把租户拒绝误判为 token 过期而触发无意义刷新（死循环、refresh_token 轮换耗尽）
+            if (filterContext.HttpContext.Items[ManagerProviderHelper.TenantCheckFailedUserIdKey] is Int32 failedUserId)
+            {
+                var failedUser = filterContext.HttpContext.Items[ManagerProviderHelper.TenantCheckFailedKey] as String ?? "";
+                // 按失败原因输出差异化文案（F4）：显式标识无效 / 缺租户标识 / 非租户成员
+                var msg = filterContext.HttpContext.Items[ManagerProviderHelper.TenantCheckFailedReasonKey] as String switch
+                {
+                    "InvalidIdentifier" => $"用户[{failedUser}]携带的租户标识无效或不可用，请检查租户信息后重试",
+                    "MissingIdentifier" => $"用户[{failedUser}]未携带租户标识，无法确定访问租户，请携带租户信息后重试",
+                    _ => $"用户[{failedUser}]无权访问当前租户数据，请切换租户后重试",
+                };
+                // 落库审计日志到 Log 表（与 ManagerProviderHelper.WriteTenantCompatDataLog 同口径：
+                // CreateLog + SaveAsync 一次失败事件一行审计记录，供管理后台审计日志查询；写入失败不影响主流程）
+                try
+                {
+                    var log = LogProvider.Provider.CreateLog("租户", "拒绝", false, msg, failedUserId, failedUser, filterContext.HttpContext.GetUserHost());
+                    log?.SaveAsync();
+                }
+                catch (Exception ex)
+                {
+                    XTrace.WriteLine("租户拒绝审计日志写入失败：{0}", ex.Message);
+                }
+                filterContext.HttpContext.Response.StatusCode = 403;
+                filterContext.Result = new JsonResult(new { code = 403, message = msg });
+                return;
+            }
+
             filterContext.HttpContext.Response.StatusCode = 401;
             filterContext.Result = new JsonResult(new { code = 401, message = "没有登录或登录超时！" });
         }
