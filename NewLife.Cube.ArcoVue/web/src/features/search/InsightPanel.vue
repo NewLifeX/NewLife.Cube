@@ -1,5 +1,5 @@
 <template>
-  <div class="insight-panel">
+  <div class="insight-panel" :class="{ 'insight-panel--vacant': !hasVisibleContent }">
     <a-alert
       v-if="developerChartError && !hasDeveloperWidgets"
       type="warning"
@@ -39,7 +39,7 @@ const props = defineProps<{
   developerChartError?: string;
 }>();
 
-const { developerChartError, dashboard } = useInsightPanel(props);
+const { developerChartError, dashboard, hasVisibleContent } = useInsightPanel(props);
 
 const hasDeveloperWidgets = computed(() =>
   (dashboard.value.widgets ?? []).some((w) => String(w.id).startsWith('dev-chart-')),
@@ -55,6 +55,13 @@ defineExpose({ openAdd: () => hostRef.value?.openAdd?.() });
   flex-direction: column;
   gap: 12px;
   min-width: 0;
+}
+/* 未配置仪表盘：不占位，避免 list-surface gap 在多维视图顶部留空（含 padding） */
+.insight-panel--vacant {
+  display: none;
+  margin: 0;
+  padding: 0;
+  gap: 0;
 }
 .insight-dev-alert {
   margin: 0;

@@ -9,6 +9,17 @@ import type { ViewFilter, ViewInsight } from '@/core/utils/viewProfile';
 import { WIDGET_SURFACE_KEY, type WidgetSurfaceContext } from '@/features/widget/context';
 import { synthesizeLegacyDashboard } from '@/features/widget/legacy';
 
+/** 洞察槽是否应占列表顶栏布局（有部件墙或开发者图失败告警） */
+export function insightPanelShouldOccupyLayout(
+  widgetCount: number,
+  developerChartError: string,
+  hasDeveloperCharts: boolean,
+): boolean {
+  if (widgetCount > 0) return true;
+  if (developerChartError && !hasDeveloperCharts) return true;
+  return false;
+}
+
 export interface InsightPanelProps {
   typePath: string;
   showStat: boolean;
@@ -141,9 +152,18 @@ export function useInsightPanel(props: InsightPanelProps) {
 
   provide(WIDGET_SURFACE_KEY, surface);
 
+  const hasVisibleContent = computed(() =>
+    insightPanelShouldOccupyLayout(
+      (dashboard.value.widgets ?? []).length,
+      developerChartError.value,
+      hasDeveloperCharts.value,
+    ),
+  );
+
   return {
     canEdit,
     dashboard,
     developerChartError,
+    hasVisibleContent,
   };
 }
