@@ -65,6 +65,7 @@
 | OSC-2610012e35 — 2026-10-03 | a-table 列必须进 #columns；抽屉空白先用真实环境取证；友好名回落链；数据字典下钻对齐 MVC；单元格省略/对齐三件套 |
 | OSC-261004e6ee — 2026-10-04 | force 用资源世代勿抬会话；注销也要清 app；扩后端即时改三件套；混 WIP 按白名单提交 |
 | OSC-261004d7f4 — 2026-10-05 | 候选校验与 UI 同源；世代标志须复位；异步创建序号守卫；失败缓存要清理；增强须即时回写 AC；桩用 setViewport 驱动 |
+| OSC-26100514b7 — 2026-10-05 | 扩子孙与 Search 解耦；TotalCount 仍为命中数；签名含 viewKind；混 WIP 白名单提交；组合验收复盘则冒烟仅记录 |
 
 ---
 
@@ -458,3 +459,12 @@
 - **多轮增强必须即时回写 AC/design**：本次验收发现「四键 vs 五键、进度小条 vs 定位按钮、‘不做卫星图’ vs 已交付」等文本滞后——除当场修订外，后续同类增强应同步修订提案/设计判据。
 - **桩能力边界要在 design 标注**：桩 `zoomIn/zoomOut` 不触发视口事件，E2E 须用 `setViewport()` 驱动增量断言（本次冒烟 35→2941）。
 - **坐标脱节时用事件派发验证**：高德自定义覆盖物 `getBoundingClientRect` 与视觉位置脱节（Playwright hover 报 outside viewport）时，`dispatchEvent('mouseenter'/'mousemove')` 可驱动悬停卡片断言（computed style 取证），绕过 SDK 覆盖物坐标限制。
+
+## OSC-26100514b7 — 2026-10-05
+
+- **扩子孙做成 Index 挂钩纯函数**：SearchData 先出命中分页，再 BFS 并入子孙；`EntityTreeController` 虚方法短路，避免菜单全树二次遍历。
+- **TotalCount 与 Data.Count 口径分开**：命中总数仍走分页器；响应行可大于 pageSize，普通 table 不传 `viewKind` 行为不变。
+- **请求签名必须含 `viewKind`**：树表与表格结果集不同，缺签名会把扩子孙行复用到普通列表（或反过来裁掉子孙）。
+- **缓存索引阈值应对齐 `MaxCacheCount`**：本号写死 10000，与 design 符号不一致；改实体缓存上限时要一起改。
+- **「验收和复盘」组合指令对浏览器 AC 仅记录**：部门树表关键字冒烟有登录环境后再补；归档提交排除地图 WIP / 洞察空态等他号改动。
+
