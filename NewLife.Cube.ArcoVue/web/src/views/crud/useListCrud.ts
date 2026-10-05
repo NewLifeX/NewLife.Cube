@@ -275,6 +275,24 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
     }
   }
 
+  /**
+   * 轻量新增（地图「添加记录」弹层）：仅提交必填项 + 坐标字段；
+   * 成功返回 true 并刷新列表（含地图数据管线）；失败已弹错误提示，返回 false
+   */
+  async function createRowQuick(model: Record<string, unknown>): Promise<boolean> {
+    const fields = resolveFieldsForKind('add', fieldParts.value);
+    const payload = prepareSubmitPayload({ ...model }, fields, { mode: 'add', pkField: pkField.value });
+    try {
+      await cubeApi.page.add(typePath.value, payload);
+      Message.success('保存成功');
+      await loadData();
+      return true;
+    } catch (err) {
+      Message.error(formatApiError(err, '保存失败'));
+      return false;
+    }
+  }
+
   async function handleDelete(row: Record<string, unknown>) {
     if (wfRowEditLocked(row)) {
       Message.warning('审批中的记录不可删除');
@@ -440,6 +458,7 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
     kanbanGroupDrag,
     onKanbanMove,
     handleSave,
+    createRowQuick,
     handleDelete,
     confirmBatchDelete,
     confirmBatchEnable,

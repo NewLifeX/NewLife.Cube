@@ -47,6 +47,8 @@ export interface MapAdapter {
   onViewportChange(cb: () => void): () => void;
   /** 点位点击；返回退订函数 */
   onClick(cb: (id: string) => void): () => void;
+  /** 地图空白处点击（拾取模式用）；lng/lat 为目标底图坐标系；返回退订函数 */
+  onMapClick(cb: (lng: number, lat: number) => void): () => void;
   /** 点位悬停/离开（id=null 表示离开）；x/y 为相对地图容器像素；返回退订函数 */
   onPointHover(cb: (id: string | null, x: number, y: number) => void): () => void;
   /** 增量添加点位（幂等：已存在的 id 忽略） */

@@ -24,6 +24,7 @@ export function createStubAdapter(opts: MapAdapterOptions = {}): MapAdapter {
   const nodes = new Map<string, HTMLElement>();
   const viewportCbs = new Set<() => void>();
   const clickCbs = new Set<(id: string) => void>();
+  const mapClickCbs = new Set<(lng: number, lat: number) => void>();
   const hoverCbs = new Set<(id: string | null, x: number, y: number) => void>();
 
   const project = (lng: number, lat: number): { x: number; y: number } => {
@@ -72,6 +73,14 @@ export function createStubAdapter(opts: MapAdapterOptions = {}): MapAdapter {
       root.style.inset = '0';
       root.style.overflow = 'hidden';
       el.appendChild(root);
+      // 空白点击（拾取模式）：按点击像素位置在当前视口内反算经纬度（marker 点击已 stopPropagation）
+      root.addEventListener('click', (e) => {
+        const rect = root?.getBoundingClientRect();
+        if (!rect || !rect.width || !rect.height) return;
+        const lng = bounds.minLng + ((e.clientX - rect.left) / rect.width) * (bounds.maxLng - bounds.minLng);
+        const lat = bounds.maxLat - ((e.clientY - rect.top) / rect.height) * (bounds.maxLat - bounds.minLat);
+        for (const cb of mapClickCbs) cb(lng, lat);
+      });
       // 初始中心/缩放与真实适配器语义对齐（视口记忆恢复依赖 center 参数生效）
       if (opts.center) {
         const span = 360 / 2 ** zoom;
@@ -146,6 +155,10 @@ export function createStubAdapter(opts: MapAdapterOptions = {}): MapAdapter {
     onClick(cb) {
       clickCbs.add(cb);
       return () => clickCbs.delete(cb);
+    },
+    onMapClick(cb) {
+      mapClickCbs.add(cb);
+      return () => mapClickCbs.delete(cb);
     },
     onPointHover(cb) {
       hoverCbs.add(cb);

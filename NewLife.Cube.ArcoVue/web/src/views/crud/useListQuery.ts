@@ -1,4 +1,4 @@
-import { computed, nextTick, ref } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { Message } from '@arco-design/web-vue';
 import { FieldKind, type PageSetting } from '@newlifex/api-core';
 import cubeApi from '@/api';
@@ -490,6 +490,16 @@ export function useListQuery(ctx: ListContext) {
     pagination.current = 1;
     loadData();
   }
+
+  // 手工清空关键字：同步清除会话持久化里的最近查询 q（保留 filter），避免刷新/切视图后旧关键字回灌输入框
+  watch(
+    () => String(searchForm.Q ?? ''),
+    (v, old) => {
+      if (v.trim() === '' && String(old ?? '').trim() !== '') {
+        evpStore.persistLastQuery(typePath.value, { q: '', filter: viewFilter.value });
+      }
+    },
+  );
 
   /** 恢复未命名当前查询（OSC-260830a1b2）：读取 sessionStorage 的 Q+filter 回填表单与 viewFilter。
    *  仅设置查询关键字/自定义条件但未保存为预定义方案时，切换视图仍保持该查询（不被基准条件覆盖）；

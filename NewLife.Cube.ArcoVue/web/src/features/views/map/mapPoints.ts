@@ -172,6 +172,23 @@ export function resolveMarkerStyle(
   return { icon, color };
 }
 
+/**
+ * 拾取坐标换算（地图添加记录）：目标底图坐标系 → 数据坐标系（写库用），数值圆整到 6 位。
+ * 地图点击返回的是底图系统坐标（高德/腾讯 GCJ-02、百度 BD-09），写库前需换算回 mapping 配置的数据坐标系。
+ */
+export function pickDataCoord(
+  lng: number,
+  lat: number,
+  mapping: MapMapping,
+  targetSystem: 'gcj02' | 'bd09',
+): LngLat {
+  const r6 = (v: number) => Math.round(v * 1e6) / 1e6;
+  const to = mapping.coordSystem ?? 'gcj02';
+  if (targetSystem === to) return { lng: r6(lng), lat: r6(lat) };
+  const p = convert(lng, lat, targetSystem, to);
+  return { lng: r6(p.lng), lat: r6(p.lat) };
+}
+
 /** 层级字段名：地区实体 Level=1省/2市/3区县/4街道，用于地图逐层加载（OSC-261004d7f4） */
 const LEVEL_FIELD_RE = /^(level|levelid|grade|depth|tier)$/i;
 const LEVEL_NAME_RE = /层级|等级|级别/;

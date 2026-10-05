@@ -15,9 +15,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
-import { formatFieldValue } from '@/core/utils/fieldFormat';
-import { getValueByKey } from '@/core/utils/url';
 import type { ColumnPref } from '@/core/utils/viewProfile';
+import { buildHoverEntries, resolveHoverTitle } from './mapHoverEntries';
 
 const props = defineProps<{
   row: Record<string, unknown>;
@@ -38,17 +37,7 @@ const CARD_ROW_HEIGHT = 26;
 const CARD_BASE_HEIGHT = 64;
 const OFFSET = 14;
 
-const title = computed(() => {
-  const tf = props.titleField;
-  if (tf) {
-    const field = props.fields.find((f) => f.name === tf);
-    if (field) return formatFieldValue(field, props.row);
-    const v = getValueByKey(props.row, tf);
-    if (v != null && v !== '') return String(v);
-  }
-  const pk = getValueByKey(props.row, props.rowKey);
-  return pk == null || pk === '' ? '详情' : String(pk);
-});
+const title = computed(() => resolveHoverTitle(props.row, props.fields, props.titleField, props.rowKey));
 
 /** 字段配置的可见列（剔除标题字段本身），最多 10 行 */
 const visibleColumns = computed(() =>
@@ -56,13 +45,7 @@ const visibleColumns = computed(() =>
 );
 
 const entries = computed(() =>
-  visibleColumns.value.slice(0, MAX_ROWS).map((c) => {
-    const field = props.fields.find((f) => f.name === c.key);
-    return {
-      label: props.titles?.[c.key] || field?.displayName || c.key,
-      value: formatFieldValue(field, props.row),
-    };
-  }),
+  buildHoverEntries(props.row, props.fields, props.columns, props.titles, props.titleField, MAX_ROWS),
 );
 
 const more = computed(() => Math.max(0, visibleColumns.value.length - MAX_ROWS));

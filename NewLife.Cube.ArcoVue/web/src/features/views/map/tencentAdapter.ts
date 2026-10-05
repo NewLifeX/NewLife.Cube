@@ -1,8 +1,12 @@
 /**
  * 腾讯地图适配（TMap GL JS API v1.exp，脚本 map.qq.com/api/gljs）
  *
- * 标记采用 TMap.DOMOverlay 自定义 DOM（IconPark 图标）。腾讯 GL 无官方 Marker content DOM，
- * DOMOverlay 是官方推荐的自定义覆盖物方式；若 SDK 缺少 DOMOverlay 则初始化报错（由 MapView 呈现）。
+ * 标记采用 TMap.DOMOverlay 自定义 DOM（IconPark 图标）。腾讯 GL 无 Marker content DOM，
+ * DOMOverlay 是官方推荐的自定义覆盖物方式。
+ *
+ * SDK 内部契约（v1.exp 源码核对）：基类构造依次调用 `onInit(options)` 与 `this.dom = this.createDOM()`——
+ * onInit 中直接赋值的 this.dom 会被 createDOM 的返回值覆盖，自定义 DOM 必须由 createDOM() 返回；
+ * 定位钩子 updateDOM() 基类为空实现，必须子类实现（用 projectToContainer 换算容器像素）。
  */
 import type { MapAdapter, MapAdapterOptions, MapAdapterPoint } from './mapAdapter';
 import { CHINA_CENTER, MARKER_SIZE, clampZoom, viewForBounds } from './mapAdapter';
@@ -24,6 +28,7 @@ export async function createTencentAdapter(opts: MapAdapterOptions = {}): Promis
   const overlays = new Map<string, AnySdk>();
   const viewportCbs = new Set<() => void>();
   const clickCbs = new Set<(id: string) => void>();
+  const mapClickCbs = new Set<(lng: number, lat: number) => void>();
   const hoverCbs = new Set<(id: string | null, x: number, y: number) => void>();
 
   const emitViewport = () => {
@@ -31,21 +36,28 @@ export async function createTencentAdapter(opts: MapAdapterOptions = {}): Promis
   };
 
   class CubeMarker extends DOMOverlay {
-    private id: string;
-    private style: MapMarkerStyle;
+    // 字段值首次由 super() 内部的 onInit 写入，构造体再赋一次（useDefineForClassFields 会把声明字段重置为 undefined）
+    private id!: string;
+    private markerStyle!: MapMarkerStyle;
 
     constructor(options: AnySdk) {
       super(options);
       this.id = options.id;
-      this.style = options.style;
-      this.position = options.position;
+      this.markerStyle = options.style;
     }
 
     onInit(options: AnySdk) {
+      // super() 内部先于 createDOM 回调：构造参数转存实例字段供 createDOM 使用
       this.position = options.position;
-      const el = createMarkerElement(this.style);
-      el.style.marginLeft = `${-MARKER_SIZE / 2}px`;
-      el.style.marginTop = `${-MARKER_SIZE / 2}px`;
+      this.id = options.id;
+      this.markerStyle = options.style;
+    }
+
+    createDOM() {
+      const el = createMarkerElement(this.markerStyle);
+      el.style.position = 'absolute';
+      el.style.left = '0';
+      el.style.top = '0';
       el.style.cursor = 'pointer';
       el.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -61,12 +73,23 @@ export async function createTencentAdapter(opts: MapAdapterOptions = {}): Promis
       el.addEventListener('mouseleave', () => {
         for (const cb of hoverCbs) cb(null, 0, 0);
       });
-      // DOMOverlay 基类以 this.dom 作为定位元素
-      this.dom = el;
+      return el;
+    }
+
+    updateDOM() {
+      const m = this.map;
+      if (!m || !this.dom || !this.position) return;
+      const p = m.projectToContainer(this.position);
+      const x = Number(p?.x ?? p?.getX?.());
+      const y = Number(p?.y ?? p?.getY?.());
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+      // 元素中心对齐经纬度点（对标高德 offset / 百度 anchor 的居中语义）
+      this.dom.style.transform = `translate(${x - MARKER_SIZE / 2}px, ${y - MARKER_SIZE / 2}px)`;
     }
 
     update(options: AnySdk) {
       if (options?.position) this.position = options.position;
+      this.updateDOM();
     }
   }
 
@@ -79,12 +102,21 @@ export async function createTencentAdapter(opts: MapAdapterOptions = {}): Promis
         zoom: clampZoom(opts.zoom ?? 5),
         pitch: 0,
         rotation: 0,
+        // 关闭腾讯默认控件（缩放按钮 TOP_RIGHT / 比例尺 BOTTOM_LEFT）：项目自绘工具栏缩放键与实时比例尺，避免重复
+        showControl: false,
       });
       map = m;
       // 事件名兼容：不同小版本可能只有其中一种；未知事件名仅订阅不触发
       m.on('moveend', emitViewport);
       m.on('zoomend', emitViewport);
       m.on('idle', emitViewport);
+      // 空白点击（拾取模式）：DOMOverlay 点击已 stopPropagation，不会冒泡到此
+      m.on('click', (evt: AnySdk) => {
+        const lng = Number(evt?.latLng?.getLng?.());
+        const lat = Number(evt?.latLng?.getLat?.());
+        if (!Number.isFinite(lng) || !Number.isFinite(lat)) return;
+        for (const cb of mapClickCbs) cb(lng, lat);
+      });
     },
     destroy() {
       map?.destroy();
@@ -143,6 +175,10 @@ export async function createTencentAdapter(opts: MapAdapterOptions = {}): Promis
     onClick(cb) {
       clickCbs.add(cb);
       return () => clickCbs.delete(cb);
+    },
+    onMapClick(cb) {
+      mapClickCbs.add(cb);
+      return () => mapClickCbs.delete(cb);
     },
     onPointHover(cb) {
       hoverCbs.add(cb);

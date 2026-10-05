@@ -22,6 +22,7 @@ export async function createBaiduAdapter(opts: MapAdapterOptions = {}): Promise<
   const overlays = new Map<string, AnySdk>();
   const viewportCbs = new Set<() => void>();
   const clickCbs = new Set<(id: string) => void>();
+  const mapClickCbs = new Set<(lng: number, lat: number) => void>();
   const hoverCbs = new Set<(id: string | null, x: number, y: number) => void>();
 
   const emitViewport = () => {
@@ -88,6 +89,14 @@ export async function createBaiduAdapter(opts: MapAdapterOptions = {}): Promise<
       m.enableScrollWheelZoom(true);
       m.addEventListener('moveend', emitViewport);
       m.addEventListener('zoomend', emitViewport);
+      // 空白点击（拾取模式）：overlay 点击已 stopPropagation，不会冒泡到此
+      m.addEventListener('click', (e: AnySdk) => {
+        const pt = e?.point ?? e?.latlng;
+        const lng = Number(pt?.lng ?? pt?.getLng?.());
+        const lat = Number(pt?.lat ?? pt?.getLat?.());
+        if (!Number.isFinite(lng) || !Number.isFinite(lat)) return;
+        for (const cb of mapClickCbs) cb(lng, lat);
+      });
     },
     destroy() {
       map?.clearOverlays();
@@ -146,6 +155,10 @@ export async function createBaiduAdapter(opts: MapAdapterOptions = {}): Promise<
     onClick(cb) {
       clickCbs.add(cb);
       return () => clickCbs.delete(cb);
+    },
+    onMapClick(cb) {
+      mapClickCbs.add(cb);
+      return () => mapClickCbs.delete(cb);
     },
     onPointHover(cb) {
       hoverCbs.add(cb);

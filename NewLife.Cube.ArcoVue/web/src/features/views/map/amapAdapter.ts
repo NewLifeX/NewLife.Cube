@@ -22,6 +22,7 @@ export async function createAmapAdapter(opts: MapAdapterOptions = {}): Promise<M
   let darkOn = opts.dark === true;
   const viewportCbs = new Set<() => void>();
   const clickCbs = new Set<(id: string) => void>();
+  const mapClickCbs = new Set<(lng: number, lat: number) => void>();
   const hoverCbs = new Set<(id: string | null, x: number, y: number) => void>();
 
   const emitViewport = () => {
@@ -41,6 +42,13 @@ export async function createAmapAdapter(opts: MapAdapterOptions = {}): Promise<M
       map = m;
       m.on('moveend', emitViewport);
       m.on('zoomend', emitViewport);
+      // 空白点击（拾取模式）：marker 点击为独立事件，不会冒泡到此
+      m.on('click', (e: AnySdk) => {
+        const lng = Number(e?.lnglat?.getLng?.());
+        const lat = Number(e?.lnglat?.getLat?.());
+        if (!Number.isFinite(lng) || !Number.isFinite(lat)) return;
+        for (const cb of mapClickCbs) cb(lng, lat);
+      });
     },
     destroy() {
       map?.destroy();
@@ -101,6 +109,10 @@ export async function createAmapAdapter(opts: MapAdapterOptions = {}): Promise<M
     onClick(cb) {
       clickCbs.add(cb);
       return () => clickCbs.delete(cb);
+    },
+    onMapClick(cb) {
+      mapClickCbs.add(cb);
+      return () => mapClickCbs.delete(cb);
     },
     onPointHover(cb) {
       hoverCbs.add(cb);

@@ -39,3 +39,53 @@
 - 悬停卡图片缩略、无记录/全无坐标细分空态、百万级渲染优化（`pickViewportPoints` 全量扫描、`appendRows` 组拷贝）按需补做（verify 风险表）。
 - 百度/腾讯真实 SDK 有环境后补浅色+深色冒烟；G2 Playwright 地图 E2E spec 待 CI 化（design §13 已注明 setViewport 驱动）。
 - `QueryComboButton` 的 `message-search` 图标未注册（属 OSC-260830a1b2），另行处理。
+
+---
+
+# 二轮迭代复盘（2026-10-05）
+
+## 摘要
+
+| 项 | 结论 |
+| --- | --- |
+| 迭代范围 | 视口/底图记忆、查询聚焦与结果卡片、工具栏「+」添加记录（含地图拾取）、位置单框/必填/整行/标签合并、去标题栏与间隙压缩、查询清空持久化、底图图标 layers、比例尺深色 |
+| 门禁 | 聚焦 **160/160**；全量 **1168/1172**（4 项 e6ee 在途基线）；`vue-tsc -b` **0 错误** |
+| 判据同步 | proposal §5 修订；design 增《二轮迭代增强》；tasks K 组；status 二轮 note |
+| 提交 | K1 已随 698f498a 合入；其余改动未提交（待用户裁决时机） |
+
+## 实际完成范围
+
+- K1 视口/底图记忆：`lastViewport`（平移缩放防抖 600ms）/`lastBasemap`（切换即写）；`mappingConfigSig` 排除 last* 字段防重载回环；桩 `mount` 消费初始 center。
+- K2/K2b 查询聚焦与结果卡片：三入口（关键字/预定义/自定义）置标记 → 数据就绪 `focusFirstLocated`（首个有效坐标、保持缩放）；>2 条结果卡片（分类图标/颜色 + 标题字段、5 行滚动、点击定位高亮、可关闭）；`onMapFilterApply` 三处绑定修复。
+- K3–K6 添加记录链路：工具栏「+」（canAdd）→ `MapAddDialog` 轻量弹层（必填项 + 位置信息）→ 单框「经度,纬度」+ 地图点击拾取（四端 `onMapClick` + `pickDataCoord` + `__pick__` 标记）→ 三组校验 → `createRowQuick` 提交 → 列表刷新；弹层细节（标签合并/提示下移/整行/去标题栏/间隙 52→16px）；**根因修复**：无遮罩 modal 的 container/wrapper 全屏 `pointer-events` 拦截 → `:has()` 放行。
+- K7–K9 收尾：Q 清空同步清持久化（保留 filter）；底图图标 `layers`；比例尺深色可读。
+- 架构与门禁：新增 `useMapTools` composable（SFC 构薄门禁驱动业务收口）；`mapPoints.pickDataCoord` + 3 用例；文档同步（README/迁移方案 05b–05e/功能清单 SPA-7）。
+
+## 测试与构建
+
+- 聚焦 spec **160/160**（5 文件：`features/views/map` + `viewMapping` + `viewProfile` + `iconRegistry`）；全量 vitest **132/133 文件、1168/1172 通过**（4 项 `sfcThin` = e6ee 在途 `.vue`：FilterBuilderPanel/RecordDrawer/WfInstanceGraph/WorkflowTaskActions）；`vue-tsc -b` **0 错误**。
+- 实机：stub（拾取/校验/卡片/聚焦/清空/穿透）+ 真实高德（拾取 114.06192/23.244223 → 保存 120.5/30.5 后端核对；深色/比例尺/layers 图标）。
+
+## 做得好
+
+1. **根因级修复**：弹层「地图点击无反应」定位到 Arco 无遮罩 modal 的 container/wrapper 全屏 `pointer-events:auto`（`elementFromPoint` 实证命中 `.arco-modal-container`），以 `:has()` 精准放行而非猜着调 z-index；修复后真实鼠标拾取一次通过（stub + 真实高德）。
+2. **验证方法论升级**：发现 Playwright `dispatchEvent` 绕过 `elementFromPoint` 命中测试（曾误判「已修好」），穿透/遮挡类验证此后一律 `page.mouse.click` 真实命中链。
+3. **SFC 构薄门禁驱动架构收敛**：工具栏 + 弹层 + 查询聚焦全部业务逻辑收口 `useMapTools`，`DefaultList` 保持纯接线，门禁 spec 全程绿。
+4. **交互闭环完整性**：拾取→回填→校验→提交→刷新→标记清理全链路，含异常分支（空/非法/半截）；后端落库核对。
+5. **持久化语义对称**：清空 Q 与执行查询写持久化对称（watch 非空→空），保留 filter 不误伤。
+6. **上轮教训兑现**：「增强即回写判据」——「+」添加记录推翻 proposal §5 原「不做地图上的新增/编辑」条目时，当场修订判据文本（proposal/design/tasks 同步），不再等验收期集中补。
+
+## 偏离与教训
+
+1. **无遮罩模态仍全屏拦截**：`a-modal :mask="false"` 的 `.arco-modal-container`(fixed)/`.arco-modal-wrapper`(absolute) 依旧 `pointer-events:auto`，底层地图/画布点击被吃；需要「弹层可见但底层可点」时，`:has(.map-add-dialog)` 放行容器层、弹体 `auto`；且 CSS 须放全局样式块（本工程 scoped `:global` 不生效）。
+2. **穿透验证必须真实命中链**：`dispatchEvent` 直接派发到目标元素、绕过 `elementFromPoint`，点击穿透/遮挡类断言会用出假阳性（本轮曾据此误判修复未生效/已生效各一次）。
+3. **Arco 无 `field` 表单项内容区是 flex 行**：`arco-form-item-content-flex`（row/nowrap）会把 hint 与输入框并排压缩；要整行堆叠需覆盖 `display:block`（本次 hint 146→400px）。
+4. **小输入框也值得宽容解析**：单框坐标 `parseCoordText` 支持全角逗号/空白分隔（恰两数约束），把「按字段形态拆分」（分列 vs 合并、`coordOrder`）留到提交层——比在输入层强制格式更顺手且不丢信息。
+5. **模板批量替换要核实例数**：查询聚焦接线期两处模板替换失败（旧文本实例不止一处），靠替换报错暴露并补齐——机械替换前先确认目标唯一性。
+
+## 风险与后续
+
+- P2 记录：弹层去标题栏后不可拖；`useMapTools`/`useMapView` 坐标检测逻辑重复（可提取 util）；结果卡片窄屏与工具栏换行潜在重叠。
+- 一轮遗留风险表继续有效（聚合降级/缩略/空态细分/百万优化/百度腾讯冒烟/G2 E2E spec）。
+- 提交：本轮改动未提交（16 文件 +474/−38 + 2 新增文件 + changes 目录）；K1 已随 698f498a 合入。
+

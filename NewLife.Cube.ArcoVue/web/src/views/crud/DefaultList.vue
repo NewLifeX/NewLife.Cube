@@ -124,7 +124,7 @@
                       :model-value="viewFilter"
                       :can-save="!!activeViewId"
                       @update:visible="onFilterPopoverVisible"
-                      @apply="onFilterApply"
+                      @apply="onMapFilterApply"
                       @save="onFilterSave"
                     >
                       <span class="tb-query-anchor" />
@@ -156,7 +156,7 @@
                   :model-value="viewFilter"
                   :can-save="!!activeViewId"
                   @update:visible="onFilterPopoverVisible"
-                  @apply="onFilterApply"
+                  @apply="onMapFilterApply"
                   @save="onFilterSave"
                 >
                   <span class="tb-query-anchor" />
@@ -612,7 +612,9 @@
             :load-level-page="loadMapLevelPage"
             :load-locate-row="loadMapLocateRow"
             :height="measuredTableHeight"
+            :pick-active="mapAddVisible"
             @detail="openDetail"
+            @pick="onMapPick"
             @viewport-persist="onMapViewPersist"
           >
             <template #toolbar>
@@ -650,11 +652,18 @@
                       :disabled="!mapReady"
                       @click="onMapToggleSatellite"
                     >
-                      <icon-park type="copy" />
+                      <icon-park type="layers" />
                     </button>
                   </span>
                 </a-tooltip>
                 <span class="map-tb-divider" />
+                <a-tooltip v-if="flags.canAdd" content="添加记录">
+                  <span class="map-tb-anchor">
+                    <button type="button" class="map-tb-btn" @click="onMapAddOpen">
+                      <icon-park type="plus" />
+                    </button>
+                  </span>
+                </a-tooltip>
                 <a-input
                   v-if="enableKey !== false && chrome.showSearch !== false"
                   v-model="searchForm.Q"
@@ -670,7 +679,7 @@
                   :model-value="viewFilter"
                   :can-save="!!activeViewId"
                   @update:visible="onFilterPopoverVisible"
-                  @apply="onFilterApply"
+                  @apply="onMapFilterApply"
                   @save="onFilterSave"
                 >
                   <span class="tb-query-anchor" />
@@ -845,13 +854,26 @@
       :detail-fields="detailFields"
       :can-configure="isAdmin"
     />
+
+    <!-- 地图「添加记录」轻量弹层：仅必填项 + 位置信息（单输入框「经度,纬度」，支持地图点击拾取坐标） -->
+    <MapAddDialog
+      v-model:visible="mapAddVisible"
+      :saving="mapAddSaving"
+      :fields="mapAddFields"
+      :coord-enabled="mapAddCoordEnabled"
+      v-model:coord-text="mapAddCoordText"
+      :model="mapAddForm"
+      :type-path="typePath"
+      @submit="onMapAddSubmit"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, nextTick, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, ref } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
 import { useDefaultList } from './useDefaultList';
+import { useMapTools, type MapViewHandle } from './useMapTools';
 /** VTable / 多视图异步加载，降低 DynamicPage 首包 */
 const ListTable = defineAsyncComponent(() => import('@/features/vtable/ListTable.vue'));
 const CardList = defineAsyncComponent(() => import('@/features/views/CardList.vue'));
@@ -859,6 +881,7 @@ const KanbanBoard = defineAsyncComponent(() => import('@/features/views/KanbanBo
 const CalendarMonth = defineAsyncComponent(() => import('@/features/views/CalendarMonth.vue'));
 const GanttView = defineAsyncComponent(() => import('@/features/views/GanttView.vue'));
 const MapView = defineAsyncComponent(() => import('@/features/views/map/MapView.vue'));
+const MapAddDialog = defineAsyncComponent(() => import('@/features/views/map/MapAddDialog.vue'));
 import QueryComboButton from '@/features/search/QueryComboButton.vue';
 import InsightPanel from '@/features/search/InsightPanel.vue';
 import BatchEditValueInput from './BatchEditValueInput.vue';
@@ -1088,6 +1111,7 @@ const {
   drawerFormLayout,
   onToggleCollapse,
   handleSave,
+  createRowQuick,
   navigateRecord,
   chartVisible,
   chartList,
@@ -1109,15 +1133,7 @@ function openDashboard() {
 }
 
 /** 地图视图实例（放大/缩小/底图切换与缩放边界）；zoom/satellite/ready 经组件代理读取，具响应式 */
-const mapViewRef = ref<{
-  ready: boolean;
-  zoomIn: () => void;
-  zoomOut: () => void;
-  zoom: number;
-  satellite: boolean;
-  toggleSatellite: () => boolean;
-  focusRow: (row: Record<string, unknown>) => boolean;
-} | null>(null);
+const mapViewRef = ref<MapViewHandle | null>(null);
 /** 地图就绪（未就绪时缩放/底图键禁用，design §8） */
 const mapReady = computed(() => mapViewRef.value?.ready === true);
 const mapZoom = computed(() => Number(mapViewRef.value?.zoom ?? 5));
@@ -1147,22 +1163,32 @@ function onMapViewPersist(v: { lng: number; lat: number; zoom: number; basemap: 
   onMappingChange({ ...m, lastViewport: [v.lng, v.lat, v.zoom], lastBasemap: v.basemap });
 }
 
-/** 查询后聚焦：查询入口包装——标记待定位，结果就绪后在地图视图定位到首行（保持当前缩放） */
-const mapFocusAfterQuery = ref(false);
-function onQuerySearch() {
-  mapFocusAfterQuery.value = true;
-  handleSearch();
-}
-function onQueryApply(id: string) {
-  mapFocusAfterQuery.value = true;
-  handleApplyQuery(id);
-}
-watch(tableData, (rows) => {
-  if (!mapFocusAfterQuery.value) return;
-  mapFocusAfterQuery.value = false;
-  if (activeViewKind.value !== 'map') return;
-  const first = rows[0];
-  if (first) void nextTick(() => mapViewRef.value?.focusRow?.(first));
+/** 地图工具栏逻辑（查询聚焦/结果卡片/添加弹层）：watch 在 composable 内（SFC 构薄门禁） */
+const {
+  onQuerySearch,
+  onQueryApply,
+  onMapFilterApply,
+  mapAddVisible,
+  mapAddSaving,
+  mapAddForm,
+  mapAddFields,
+  mapAddCoordText,
+  mapAddCoordEnabled,
+  onMapAddOpen,
+  onMapPick,
+  onMapAddSubmit,
+} = useMapTools({
+  tableData,
+  activeViewKind,
+  total: () => pagination.total,
+  mapViewRef,
+  activeMapMapping,
+  listFields,
+  addFields,
+  createRowQuick,
+  handleSearch,
+  handleApplyQuery,
+  onFilterApply,
 });
 
 const hasAdvancedBatchGroup = computed(

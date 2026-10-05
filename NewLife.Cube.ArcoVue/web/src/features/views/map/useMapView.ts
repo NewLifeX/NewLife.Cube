@@ -7,10 +7,11 @@
  * - 逐层加载（地区实体）：检测到数值层级字段时，按缩放只拉取/绘制所需层级（省→市→区县→街道）
  * - 悬停卡片：150ms 显示 / 80ms 隐藏延迟；点击点位回调详情
  */
-import { onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue';
 import { useAppStore } from '@/stores/app';
 import type { FieldMeta } from '@/core/types/field';
 import { detectCoordinateFields, type CoordDetection } from '@/core/utils/mapCoord';
+import { formatFieldValue } from '@/core/utils/fieldFormat';
 import type { MapProviderKind } from '@/core/utils/mapConfig';
 import { getValueByKey } from '@/core/utils/url';
 import type { MapMapping } from '@/core/utils/viewMapping';
@@ -23,6 +24,7 @@ import {
   buildCategoryContext,
   buildMapPoints,
   detectLevelField,
+  pickDataCoord,
   readLevelOfRow,
   resolveMarkerStyle,
   targetSystemOf,
@@ -61,6 +63,10 @@ export interface UseMapViewOptions {
   height?: () => number;
   /** 定位查询（地图中心）：按标题字段搜索一行；未命中返回 null */
   loadLocateRow?: (field: string, value: string) => Promise<Record<string, unknown> | null>;
+  /** 拾取模式判定（地图添加记录弹层打开时）；激活时地图空白点击回填坐标而不触发详情 */
+  pickActive?: () => boolean;
+  /** 地图拾取回调（已换算为数据坐标系；宿主用于回填新增表单） */
+  onPick?: (lng: number, lat: number) => void;
   /** 强制桩模式（E2E 注入；默认按 URL __mapStub=1） */
   stub?: () => boolean;
   onDetail: (row: Record<string, unknown>) => void;
@@ -89,6 +95,12 @@ const LEVEL_PAGE_SIZE = 1000;
 const LEVEL_ZOOM_STEPS = [0, 7, 9, 11];
 /** 「定位」按钮跳转缩放（区县/街镇级可见） */
 const LOCATE_ZOOM = 10;
+/** 查询结果卡片最大渲染行数（超出仅显示前 N；列表 5 行高滚动查看） */
+const MAX_RESULT_ROWS = 200;
+/** 首行定位扫描上限（首行无坐标时向后查找首个有坐标的行） */
+const FOCUS_SCAN_LIMIT = 200;
+/** 拾取临时标记 id（独立于数据管线，不进 drawnIds） */
+const PICK_MARKER_ID = '__pick__';
 /** 赤道每像素米数（Web 墨卡托 zoom0，256px 瓦片） */
 const MEAN_M_PER_PX_EQ = 156543.03392;
 /** 比例尺目标条宽（px）与可取整距离（米） */
@@ -131,11 +143,16 @@ export function useMapView(opts: UseMapViewOptions) {
   const scaleWidth = ref(0);
   const scaleText = ref('');
   const centerLat = ref(35);
+  /** 查询结果卡片显隐（宿主查询完成后置位；结果 >2 条才显示） */
+  const resultPanelVisible = ref(false);
+  /** 结果卡片当前高亮项（记录主键文本） */
+  const selectedResultId = ref('');
 
   let adapter: MapAdapter | null = null;
   let adapterSource: AdapterSource = '';
   let detachViewport: (() => void) | null = null;
   let detachClick: (() => void) | null = null;
+  let detachMapClick: (() => void) | null = null;
   let detachHover: (() => void) | null = null;
 
   let detection: CoordDetection | null = null;
@@ -164,6 +181,8 @@ export function useMapView(opts: UseMapViewOptions) {
   let showTimer = 0;
   let hideTimer = 0;
   let hoveredId: string | null = null;
+  /** 拾取临时标记 id（非 null 表示已放置） */
+  let pickMarkerId: string | null = null;
   let mounted = false;
   let observer: ResizeObserver | null = null;
   /** 系统暗色主题监听（body[arco-theme] 变化→底图样式跟随） */
@@ -517,6 +536,71 @@ export function useMapView(opts: UseMapViewOptions) {
   }
 
   /**
+   * 查询后聚焦：从结果行中找首个有有效坐标的行定位（保持缩放）并高亮；
+   * 返回聚焦行主键文本（无有效坐标返回 ''）。
+   */
+  function focusFirstLocated(rows: readonly Record<string, unknown>[]): string {
+    for (const row of rows.slice(0, FOCUS_SCAN_LIMIT)) {
+      const p = pointOfRow(row);
+      if (!p) continue;
+      if (!adapter) return '';
+      adapter.setCenter(p.lng, p.lat);
+      onViewportFlush();
+      selectedResultId.value = String(getValueByKey(row, opts.rowKey()) ?? '');
+      return selectedResultId.value;
+    }
+    return '';
+  }
+
+  /** 查询结果卡片列表项：分类规则图标/颜色 + 标题字段文案（最多 MAX_RESULT_ROWS 条） */
+  const resultItems = computed(() => {
+    const m = opts.mapping();
+    const rows = opts.records();
+    if (!m || !rows.length) return [];
+    const ctx = categoryCtx();
+    const rules = opts.formatRules().filter((r) => r.apply === 'cell');
+    const tf = m.titleField;
+    const tfField = tf ? opts.fields().find((f) => f.name === tf) : undefined;
+    return rows.slice(0, MAX_RESULT_ROWS).map((row) => {
+      const id = String(getValueByKey(row, opts.rowKey()) ?? '');
+      const style = ctx
+        ? resolveMarkerStyle(row, m, ctx, rules)
+        : { icon: DEFAULT_ICON, color: DEFAULT_COLOR };
+      return { id, title: formatFieldValue(tfField, row), icon: style.icon, color: style.color, row };
+    });
+  });
+
+  /** 结果卡片显隐（宿主在查询完成后调用；总数 >2 显示，≤2/空结果隐藏） */
+  function setResultsVisible(v: boolean) {
+    resultPanelVisible.value = v;
+    if (!v) selectedResultId.value = '';
+  }
+
+  /** 结果卡片点击：定位到该记录（保持缩放）并高亮选中 */
+  function selectResult(item: { id: string; row: Record<string, unknown> }): boolean {
+    const ok = focusRow(item.row);
+    if (ok) selectedResultId.value = item.id;
+    return ok;
+  }
+
+  /** 当前地图中心（数据坐标系；地图添加记录弹层预填位置用）；未就绪返回 null */
+  function getCenterData(): { lng: number; lat: number } | null {
+    const m = opts.mapping();
+    const b = adapter?.getBounds();
+    if (!m || !b) return null;
+    const target = targetSystemOf(sourceOf() === 'baidu' ? 'baidu' : 'amap');
+    return pickDataCoord((b.minLng + b.maxLng) / 2, (b.minLat + b.maxLat) / 2, m, target);
+  }
+
+  /** 清除拾取临时标记（弹层关闭/取消/提交后） */
+  function clearPickMarker() {
+    if (pickMarkerId) {
+      adapter?.removePoints([pickMarkerId]);
+      pickMarkerId = null;
+    }
+  }
+
+  /**
    * 定位到地图中心点（自定义配置的地图中心名称）：
    * 先在已加载点位内按标题字段精确查找；未命中时按标题字段搜索一次后端；均未命中返回 false。
    */
@@ -645,8 +729,26 @@ export function useMapView(opts: UseMapViewOptions) {
   }
 
   function onPointClick(id: string) {
+    // 拾取模式下点击散点不打开详情（避免选位时误开抽屉）；仍由 onMapClickPick 回填坐标
+    if (opts.pickActive?.()) return;
     const p = pointById.get(id);
     if (p) opts.onDetail(p.row);
+  }
+
+  /** 地图空白点击：拾取模式下换算为数据坐标并通知宿主（同时放置临时标记） */
+  function onMapClickPick(lng: number, lat: number) {
+    if (!opts.pickActive?.() || !adapter) return;
+    const m = opts.mapping();
+    if (!m) return;
+    // 拾取临时标记：独立于数据管线（不进 drawnIds，不会被回收逻辑误删）
+    if (pickMarkerId) adapter.removePoints([pickMarkerId]);
+    pickMarkerId = PICK_MARKER_ID;
+    adapter.addPoints([
+      { id: PICK_MARKER_ID, lng, lat, style: { icon: DEFAULT_ICON, color: DEFAULT_COLOR } },
+    ]);
+    const target = targetSystemOf(sourceOf() === 'baidu' ? 'baidu' : 'amap');
+    const c = pickDataCoord(lng, lat, m, target);
+    opts.onPick?.(c.lng, c.lat);
   }
 
   function onPointHoverEvent(id: string | null, x: number, y: number) {
@@ -717,10 +819,13 @@ export function useMapView(opts: UseMapViewOptions) {
   function destroyAdapter() {
     detachViewport?.();
     detachClick?.();
+    detachMapClick?.();
     detachHover?.();
     detachViewport = null;
     detachClick = null;
+    detachMapClick = null;
     detachHover = null;
+    pickMarkerId = null;
     adapter?.destroy();
     adapter = null;
     adapterSource = '';
@@ -773,6 +878,7 @@ export function useMapView(opts: UseMapViewOptions) {
       adapterSource = src;
       detachViewport = adapter.onViewportChange(onViewport);
       detachClick = adapter.onClick(onPointClick);
+      detachMapClick = adapter.onMapClick(onMapClickPick);
       detachHover = adapter.onPointHover(onPointHoverEvent);
       ready.value = true;
       error.value = '';
@@ -928,6 +1034,14 @@ export function useMapView(opts: UseMapViewOptions) {
     zoomOut,
     locate,
     focusRow,
+    focusFirstLocated,
+    resultPanelVisible,
+    selectedResultId,
+    resultItems,
+    setResultsVisible,
+    selectResult,
+    clearPickMarker,
+    getCenterData,
     satellite,
     toggleSatellite,
     scaleWidth,

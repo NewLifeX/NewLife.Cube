@@ -129,6 +129,7 @@ import {
   Fire,
   Flag,
   Hospital,
+  Layers,
   Local,
   LocalTwo,
   MapDraw,
@@ -281,6 +282,7 @@ export const ICON_COMPONENTS: Record<string, Component> = {
   'parallel-gateway': ParallelGateway,
   // 地图视图 / 点位图标（OSC-261004d7f4）
   'map-draw': MapDraw,
+  layers: Layers,
   local: Local,
   'local-two': LocalTwo,
   'map-two': MapTwo,

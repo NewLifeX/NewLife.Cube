@@ -65,6 +65,9 @@
 | OSC-2610012e35 — 2026-10-03 | a-table 列必须进 #columns；抽屉空白先用真实环境取证；友好名回落链；数据字典下钻对齐 MVC；单元格省略/对齐三件套 |
 | OSC-261004e6ee — 2026-10-04 | force 用资源世代勿抬会话；注销也要清 app；扩后端即时改三件套；混 WIP 按白名单提交 |
 | OSC-261004d7f4 — 2026-10-05 | 候选校验与 UI 同源；世代标志须复位；异步创建序号守卫；失败缓存要清理；增强须即时回写 AC；桩用 setViewport 驱动 |
+| OSC-2610 d7f4 二轮 — 2026-10-05 | 无遮罩模态仍拦截（:has 放行容器层）；穿透验证用 mouse.click 真实命中；无 field 表单项 -flex 覆盖；lastQuery 清空对称；增强即回写判据 |
+| OSC-2610 d7f4 三轮 — 2026-10-05 | 第三方 SDK 契约以源码为准（文档 SPA 抓不到就下 JS）；DOMOverlay 自定义 DOM 必须由 createDOM 返回、updateDOM 自定位；showControl:false 关腾讯默认控件 |
+| OSC-2610 d7f4 四轮 — 2026-10-05 | 字段查找须大小写容错 + 未命中兜底（对齐卡片视图）；元数据 PascalCase 与行数据 camelCase 双形态端到端容错；去标题栏弹层拖动自实现（pointer 捕获 + 变量 transform + 交互元素排除） |
 | OSC-26100514b7 — 2026-10-05 | 扩子孙与 Search 解耦；TotalCount 仍为命中数；签名含 viewKind；混 WIP 白名单提交；组合验收复盘则冒烟仅记录 |
 
 ---
@@ -460,6 +463,29 @@
 - **桩能力边界要在 design 标注**：桩 `zoomIn/zoomOut` 不触发视口事件，E2E 须用 `setViewport()` 驱动增量断言（本次冒烟 35→2941）。
 - **坐标脱节时用事件派发验证**：高德自定义覆盖物 `getBoundingClientRect` 与视觉位置脱节（Playwright hover 报 outside viewport）时，`dispatchEvent('mouseenter'/'mousemove')` 可驱动悬停卡片断言（computed style 取证），绕过 SDK 覆盖物坐标限制。
 
+## OSC-2610 d7f4 二轮 — 2026-10-05
+
+- **无遮罩模态仍全屏拦截**：`a-modal :mask="false"` 的 `.arco-modal-container`(fixed)/`.arco-modal-wrapper`(absolute) 依旧 `pointer-events:auto`，底层地图/画布点击被吃；需要「弹层可见但底层可点」时用 `:has(.map-add-dialog)` 放行容器层、弹体 `auto`；CSS 须放全局样式块（本工程 scoped `:global` 不生效）。
+- **点击穿透验证走真实命中链**：`dispatchEvent` 绕过 `elementFromPoint` 会给假阳性（曾误判修复状态）；遮挡/穿透断言用 `page.mouse.click` 并读 `elementFromPoint` 取证（悬停卡片类 SDK 坐标脱节场景仍按上一条 dispatchEvent 替代）。
+- **Arco 无 field 表单项内容区为 flex 行**：`arco-form-item-content-flex` 并排压缩 hint/输入框；整行堆叠需 `:deep(.arco-form-item-content-flex) { display: block; }`。
+- **持久化清空要对称**：只「执行查询才写 lastQuery」会导致手工清空后刷新回灌；`watch` Q 非空→空时同步 `persistLastQuery({q:''})` 并保留 filter。
+- **增强即回写判据**：「+」添加记录推翻原「不做地图上的新增/编辑」提案项——当场修订 proposal §5 + design 二轮节 + tasks K 组（上轮教训兑现）。
+
+## OSC-2610 d7f4 三轮 — 2026-10-05
+
+- **第三方 SDK 契约以源码为准**：腾讯文档站（lbs.qq.com）是 SPA 抓不到内容时，直接下载官方 CDN 的 SDK JS（`map.qq.com/api/gljs?v=1.exp`，无 key 也返回完整包）并在压缩源码里搜关键词看上下文——DOMOverlay 构造时序（`onInit(options)` → `this.dom = this.createDOM()` → `setMap`）、`showControl` 消费点、事件 `_fire("zoomend")`、`setBaseMap` 参数均由源码实锤，比猜文档/博客可靠。
+- **TMap.DOMOverlay 子类契约**：自定义 DOM 必须由 `createDOM()` 返回——`onInit` 里直接赋值 `this.dom` 会被基类默认 `createDOM()`（空 div）覆盖（本次 marker 全部不显示的根因）；定位必须实现 `updateDOM()`（基类空实现），用 `map.projectToContainer(latLng)` 取 Pixel(x,y) 后 transform 定位；`useDefineForClassFields` 下构造参数要在 `onInit` 与构造体各存一次（super 期间字段尚未定义）。
+- **关闭腾讯默认控件**：`new TMap.Map(el, { showControl: false })`（源码：`if(!1===this._showControl) return this;` 跳过 SCALE/ZOOM 控件）——项目自绘缩放键/比例尺时必开，否则右下/右上双套控件重叠。
+- **腾讯底图切换与事件**：`setBaseMap({ type: 'satellite'|'vector' })`；`moveend`/`zoomend`/`idle` 事件名有效（源码核对）；`getBounds()` 返回对象含 `getSouthWest()/getNorthEast()`。
+- **第三方 SDK 内部 z-index 可达 1000，应用 overlay 15 级会被整体盖住且吃掉点击**：腾讯 GL 在地画画布内建 `z-index:1000` 覆盖容器（内含 marker 层 101）——工具栏/定位按钮/比例尺（15）全部不可点；给画布容器 `z-index:0` 建**独立堆叠上下文**（子级大 z-index 不外溢）即解，成本一行 CSS、对四端适配器均无副作用。
+- **“按钮不可用”类问题必须做真实命中链验证**：只看 `disabled` 属性会漏掉“上层元素遮挡拦截”——上一轮验收仅查 disabled（全 false）即判定可用，实际点击全被 1000 层吃掉；正确做法：`elementFromPoint（按钮中心）命中自身` + `page.mouse.click 实测功能生效`（本次以比例尺 5→2 公里变化验证缩放）。
+
+## OSC-2610 d7f4 四轮 — 2026-10-05
+
+- **同一字段查找逻辑多组件重复实现导致行为分叉**：卡片视图 `findBodyField` 大小写不敏感 + 未命中按列 key 容错取值（`getValueByKey`），而地图悬停卡片严格 `f.name === c.key` 且无兜底——视图列 key 与字段名大小写不一致（camelCase vs PascalCase）时整列渲染 “-”；已抽 `mapHoverEntries` 纯函数（含 8 用例 spec）对齐卡片视图语义。
+- **字段元数据（PascalCase）与行数据（camelCase）双形态必须端到端容错**：GetPage 元数据 `Kind/TelCode/ZipCode` vs API 行数据 `kind/telCode/zipCode`；任何“列 key → 字段 → 值”链路都要经 `getValueByKey`/大小写不敏感查找，禁止裸 `record[key]` 或严格相等匹配。
+- **去标题栏的 Arco 弹层拖动需自实现**：Arco `draggable` 依赖标题栏，`hide-title` 后失效；自实现三件套——`pointerdown` 时 `setPointerCapture`（拖出窗口不丢 `pointerup`）+ document 监听 move/up + CSS 变量 `--*-dx/dy` 配 class `transform`（动画后生效、不破坏 wrapper 居中）；按住交互元素（`closest('input,button,a,...')`）不启动拖动，保住输入/选择/点击行为。
+
 ## OSC-26100514b7 — 2026-10-05
 
 - **扩子孙做成 Index 挂钩纯函数**：SearchData 先出命中分页，再 BFS 并入子孙；`EntityTreeController` 虚方法短路，避免菜单全树二次遍历。
@@ -467,4 +493,3 @@
 - **请求签名必须含 `viewKind`**：树表与表格结果集不同，缺签名会把扩子孙行复用到普通列表（或反过来裁掉子孙）。
 - **缓存索引阈值应对齐 `MaxCacheCount`**：本号写死 10000，与 design 符号不一致；改实体缓存上限时要一起改。
 - **「验收和复盘」组合指令对浏览器 AC 仅记录**：部门树表关键字冒烟有登录环境后再补；归档提交排除地图 WIP / 洞察空态等他号改动。
-

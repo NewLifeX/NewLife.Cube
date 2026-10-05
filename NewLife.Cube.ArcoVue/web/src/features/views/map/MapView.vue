@@ -1,8 +1,35 @@
 <template>
-  <div class="map-view" :style="height ? { height: height + 'px' } : undefined">
+  <div
+    class="map-view"
+    :class="{ 'is-picking': pickActive }"
+    :style="height ? { height: height + 'px' } : undefined"
+  >
     <div ref="canvasRef" class="map-view__canvas" />
     <div class="map-view__toolbar">
       <slot name="toolbar" />
+    </div>
+    <!-- 查询结果卡片（工具栏下方）：分类图标/颜色 + 标题字段；默认 5 行高滚动查看；点击动态定位 -->
+    <div v-if="resultPanelVisible && resultItems.length" class="map-results">
+      <div class="map-results__head">
+        <span class="map-results__title">查询结果 · {{ total ?? resultItems.length }}</span>
+        <button type="button" class="map-results__close" title="关闭" @click="setResultsVisible(false)">
+          <icon-park type="close" />
+        </button>
+      </div>
+      <ul class="map-results__list">
+        <li
+          v-for="it in resultItems"
+          :key="it.id"
+          class="map-results__item"
+          :class="{ 'is-active': it.id === selectedResultId }"
+          @click="selectResult(it)"
+        >
+          <span class="map-results__icon" :style="{ color: it.color }">
+            <icon-park :type="it.icon" />
+          </span>
+          <span class="map-results__label">{{ it.title }}</span>
+        </li>
+      </ul>
     </div>
     <!-- 比例尺（定位按钮左侧）：当前缩放对应的地图标尺 -->
     <div v-if="ready && scaleText" class="map-view__scale">
@@ -87,11 +114,15 @@ const props = defineProps<{
   height?: number;
   /** 定位查询（地图中心）：按标题字段搜索一行 */
   loadLocateRow?: (field: string, value: string) => Promise<Record<string, unknown> | null>;
+  /** 拾取模式（地图添加记录弹层打开时）：地图点击回填坐标而非打开详情 */
+  pickActive?: boolean;
 }>();
 
 const emit = defineEmits<{
   detail: [row: Record<string, unknown>];
   'viewport-persist': [state: MapViewPersistState];
+  /** 地图拾取坐标（已换算为数据坐标系） */
+  pick: [lng: number, lat: number];
 }>();
 
 const canvasRef = ref<HTMLElement | null>(null);
@@ -112,11 +143,19 @@ const {
   levelField,
   activeLevel,
   levelBusy,
+  resultPanelVisible,
+  selectedResultId,
+  resultItems,
+  setResultsVisible,
+  selectResult,
+  clearPickMarker,
+  getCenterData,
   refresh,
   zoomIn,
   zoomOut,
   locate,
   focusRow,
+  focusFirstLocated,
   satellite,
   toggleSatellite,
   scaleWidth,
@@ -133,6 +172,8 @@ const {
   loadLevelPage: (f, l, i) => props.loadLevelPage?.(f, l, i) ?? Promise.resolve(null),
   height: () => props.height ?? 0,
   loadLocateRow: (f, v) => props.loadLocateRow?.(f, v) ?? Promise.resolve(null),
+  pickActive: () => props.pickActive ?? false,
+  onPick: (lng, lat) => emit('pick', lng, lat),
   stub: () => props.stub ?? false,
   onDetail: (row) => emit('detail', row),
   onViewPersist: (state) => emit('viewport-persist', state),
@@ -144,7 +185,21 @@ async function onLocate() {
   if (!ok) Message.info('未设置地图中心点，或未找到对应对象；请在「自定义配置 → 地图区」设置');
 }
 
-defineExpose({ ready, zoom, zoomIn, zoomOut, refresh, locate, focusRow, satellite, toggleSatellite });
+defineExpose({
+  ready,
+  zoom,
+  zoomIn,
+  zoomOut,
+  refresh,
+  locate,
+  focusRow,
+  focusFirstLocated,
+  setResultsVisible,
+  clearPickMarker,
+  getCenterData,
+  satellite,
+  toggleSatellite,
+});
 </script>
 
 <style>
@@ -188,6 +243,25 @@ body[arco-theme='dark'] .map-view__scale {
   color: rgba(255, 255, 255, 0.95);
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9));
 }
+/* 查询结果卡片暗色主题：深底白字（同样须全局样式） */
+body[arco-theme='dark'] .map-results {
+  background: rgba(32, 34, 40, 0.72);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+body[arco-theme='dark'] .map-results__head {
+  color: rgba(255, 255, 255, 0.72);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+body[arco-theme='dark'] .map-results__item {
+  color: rgba(255, 255, 255, 0.88);
+}
+body[arco-theme='dark'] .map-results__item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+body[arco-theme='dark'] .map-results__item.is-active {
+  background: rgba(var(--primary-6), 0.22);
+  color: rgb(var(--primary-6));
+}
 </style>
 
 <style scoped>
@@ -203,6 +277,9 @@ body[arco-theme='dark'] .map-view__scale {
 .map-view__canvas {
   position: absolute;
   inset: 0;
+  /* 隔离第三方 SDK 内部层级：腾讯 GL 覆盖容器 z-index 达 1000（内含 marker 层 101），
+     会盖住工具栏/定位按钮/比例尺（15）并被其吃掉点击；画布建独立堆叠上下文后内部层级不外溢 */
+  z-index: 0;
 }
 .map-view__locate {
   position: absolute;
@@ -264,6 +341,97 @@ body[arco-theme='dark'] .map-view__scale {
   top: 12px;
   right: 12px;
   z-index: 15;
+}
+/* 拾取模式（添加记录弹层打开）：地图区域鼠标化为十字准星 */
+.map-view.is-picking .map-view__canvas {
+  cursor: crosshair;
+}
+/* 查询结果卡片：工具栏正下方、玻璃质感、5 行高滚动（列表项 30px） */
+.map-results {
+  position: absolute;
+  top: 64px;
+  right: 12px;
+  z-index: 14;
+  width: 240px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.62);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+}
+.map-results__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 30px;
+  padding: 0 6px 0 10px;
+  font-size: 12px;
+  color: var(--color-text-2);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.map-results__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  color: var(--color-text-3);
+  background: transparent;
+  cursor: pointer;
+}
+.map-results__close:hover {
+  color: var(--color-text-1);
+  background: rgba(0, 0, 0, 0.06);
+}
+.map-results__close :deep(svg) {
+  width: 12px;
+  height: 12px;
+  display: block;
+}
+.map-results__list {
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  /* 默认显示 5 条（行高 30），更多滚轮查看 */
+  max-height: 150px;
+  overflow-y: auto;
+}
+.map-results__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 10px;
+  font-size: 13px;
+  color: var(--color-text-1);
+  cursor: pointer;
+}
+.map-results__item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+.map-results__item.is-active {
+  background: rgba(var(--primary-6), 0.12);
+  color: rgb(var(--primary-6));
+}
+.map-results__icon {
+  display: inline-flex;
+  flex: none;
+}
+.map-results__icon :deep(svg) {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+.map-results__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .map-view__notice {
   position: absolute;

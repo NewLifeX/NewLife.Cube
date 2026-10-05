@@ -69,7 +69,7 @@
 - [x] I4 悬停卡片标题栏化（对齐 RecordCard 头部：浅底 + 分隔线 + 8px 12px 内边距）；工具栏/输入框/卡片玻璃半透明化（工具栏 45% + blur16、输入 50%、卡片 82%→76% + blur10；暗色覆盖齐备）。
 - [x] I5 定位按钮（替换绘制统计条）：`DefaultCenter` 默认中心（抽屉「地图中心（按标题字段搜索）」；存量 `DefaultLocation` 仅透传不展示）；点击聚焦已加载点内精确匹配、未命中 Q 搜索一次、命中 `setCenter(…,10)`；加载自动定位；悬浮显示统计卡片；与右上工具栏右缘对齐（实测均 891px），后下移至 `bottom:8px`。
 - [x] I6 深色主题联动：`MutationObserver`（观察 `body[arco-theme]`）→ `MapAdapter.setDark`（高德 `amap://styles/dark|normal`；百度/腾讯无内置暗色 no-op 注释；桩 class 标记供 E2E）。
-- [x] I7 底图切换 + 缩放图标：缩放键改 IconPark `zoom-out`/`zoom-in`，「缩小」后新增底图切换键（图标终稿 `copy`）→ `setSatellite`（高德 Satellite+RoadNet；百度 setMapType；腾讯 setBaseMap try/catch；桩标记）。
+- [x] I7 底图切换 + 缩放图标：缩放键改 IconPark `zoom-out`/`zoom-in`，「缩小」后新增底图切换键（图标 `copy`，2026-10-05 用户要求终稿改 `layers`）→ `setSatellite`（高德 Satellite+RoadNet；百度 setMapType；腾讯 setBaseMap try/catch；桩标记）。
 - [x] I8 实时比例尺：`156543.03392·cos(lat)/2^zoom` 米/像素、目标 80px、宽 clamp 40–120；显示于定位按钮左侧；终稿去容器化（透明背景仅刻度线+文字，11px/400，`bottom:19px` 与按钮垂直居中；实测 5/10/20 公里随缩放）。
 - [x] I9 配置抽屉修订：移除「地图服务商/背景色宽度高度/默认视野」三处展示；「标题字段（悬停卡片）」改名「悬停卡片标题」；分类字段候选改用 `mapCategoryCandidates`（地区 `Kind` 可选）。
 - [x] I10 工具栏配置对齐实际键位：新增「填色」开关（`showColor`，table/tree/card/map 门禁）；「筛选」改走 `QueryComboButton.customEnabled` 实际生效；地图隐藏「分享」；开关实测联动（关→工具栏键 4→3、开→恢复）。
@@ -85,3 +85,16 @@
 - [x] J5 点聚合降级：抽屉开关禁用并标注「暂不支持」；proposal 锁定 #5、design §5/§11/§13 回写「聚合暂缓」。
 - [x] J6 注释同步（MapView pageIndex 1 基、DefaultList 工具条说明、ViewConfigDrawer 残句、loadMapLevelPage 失败语义）与 `chunk` 死代码清理（mapViewport + spec）。
 - [x] J7 文档修订对齐：proposal AC3/AC8/§5/§9、design 修订注记、迁移方案 §3.1/§7.4、web/README、功能清单 SPA-7。
+
+## K 二轮迭代（2026-10-05，使用反馈与瑕疵修复）
+
+- [x] K1 视口/底图记忆（`lastViewport`/`lastBasemap`）：平移缩放防抖 600ms、切底图即写回映射，刷新/切视图/重开恢复；桩 `mount` 消费初始 center。已随用户提交 698f498a 合入。
+- [x] K2 查询聚焦与结果卡片：关键字/预定义/自定义查询后定位**首个有坐标**结果行（保持缩放）；结果 >2 条显示透明卡片（分类图标/颜色 + 标题字段、5 行高滚动、点击动态定位、关闭按钮）；`MapView` 卡片 UI + `useMapView`（`resultItems`/`focusFirstLocated`/`selectResult`/`setResultsVisible`）；自定义查询应用纳入链路（`onMapFilterApply`）。
+- [x] K3 工具栏「+」添加记录（canAdd）：轻量弹层仅必填项（`isFieldRequired`）+ 位置信息；`createRowQuick` 复用提交归一；`useMapTools` composable（SFC 构薄门禁）。
+- [x] K4 位置信息单输入框与地图拾取：单框「经度,纬度」（宽容分隔解析、按字段形态拆分写入、必填校验——未选择/无效不允许保存）；`MapAdapter.onMapClick` 四端实现 + `pickDataCoord` 换算 + 临时标记（`__pick__` 独立于数据管线）。
+- [x] K5 拾取失效根因修复：无遮罩 `a-modal` 的 `.arco-modal-container`/`.arco-modal-wrapper` 全屏 `pointer-events:auto` 拦截地图点击 → `:has(.map-add-dialog)` 放行容器层、仅弹体可交互（Playwright 真实鼠标点击复验，stub + 真实高德）。
+- [x] K6 弹层表单细节：标签合并「位置信息（经纬度）」+ 提示行下移 + 表单末项/整行布局（覆盖 Arco 无 field 项 `-flex`）；去标题栏（`hideTitle`）并压缩底部间隙（body/footer/末项三处，52px→16px）。
+- [x] K7 查询关键字清空持久化：手工清空 Q 时同步清除 `cube:lastQuery:*` 的 q（保留 filter），刷新/切视图不回灌。
+- [x] K8 底图切换图标 `copy`→`layers`（iconComponents 注册 Layers）。
+- [x] K9 比例尺深色可读性：暗色主题白字黑晕（全局样式块；scoped `:global` 在本工程不生效）。
+- [x] K10 验证与门禁：聚焦 spec 通过（新增 `pickDataCoord` 3 用例）；全量 vitest 1168 通过（4 项 sfcThin 为 e6ee 在途）；`vue-tsc -b` 0 错误；实机 stub + 真实高德全链路（拾取/卡片/弹层/记忆/清空）。

@@ -114,3 +114,81 @@ dotnet build NewLife.Cube.csproj -f net10.0
 ## 验收结论
 
 **checklist: passed**。目标愿景 6 条全部达成（工具栏五键含底图切换、全出血、悬停卡/详情、分类与填色、单服务商门禁、数据渐进/分层）；P1 缺口经用户决策补齐或正式降级；文档已修订对齐。全量单测仅余 4 项 e6ee 在途文件失败（非本号）。状态 **Validating** → 可复盘归档（openspec-retro）。
+
+---
+
+# 二轮迭代验证（2026-10-05）
+
+验收执行：2026-10-05（openspec-verify，二轮）。**对象**：本变更恢复 working 后至 10-05 晚的全部迭代（视口/底图记忆、查询聚焦与结果卡片、工具栏「+」添加记录与地图拾取、弹层细节、查询清空持久化、底图图标、比例尺深色）。执行**固定编排三步**（实现审计 → 代码审查 → 文档同步）+ **门禁复跑**；一轮 AC（archive 版 verify）结论继续有效，本文档仅覆盖二轮增量。
+
+## 二轮范围对照（需求 → 落位 → 证据）
+
+| # | 需求（使用反馈） | 实现落位 | 实测/门禁证据 |
+| --- | --- | --- | --- |
+| K1 | 视口/底图记忆（重开恢复中心/缩放/底图） | `useMapView` 防抖 600ms 写回 `lastViewport`、切底图即写 `lastBasemap`；`mappingConfigSig` 排除 last* 防重载回环；桩 `mount` 消费初始 center | 刷新/切视图/重开恢复；**已随用户提交 698f498a 合入** |
+| K2 | 查询后聚焦（关键字/预定义/自定义三入口） | `useMapTools` 包装三入口置标记 → `watch(tableData)` 就绪后 `focusFirstLocated`（首个有有效坐标行、保持缩放，扫描上限 200） | 实机「市」34 条 → 定位「市中」116.997/36.651；空结果不跳转；2 处模板绑定修复后三入口一致 |
+| K2b | 结果 >2 条显示结果卡片 | `MapView` 结果卡片（宽 240、top 64/right 12、玻璃）+ `useMapView.resultItems/selectResult/setResultsVisible`（渲染上限 200、分类图标/颜色+`titleField`） | 实机 34 条卡片；点击「市南」→ 120.413/36.075 动态定位+高亮；≤2 条自动隐藏 |
+| K3 | 工具栏「+」添加记录（canAdd） | `DefaultList` 按钮（查询簇前、tooltip「添加记录」）+ `MapAddDialog` + `useMapTools` + `useListCrud.createRowQuick` | 实机权限 gating/按钮出现；弹层仅必填项 + 位置信息 |
+| K4 | 位置信息单输入框 + 地图点击拾取 | 单框「经度,纬度」（`parseCoordText` 恰两数、宽容 `[,，\s]+`）；`MapAdapter.onMapClick` 四端实现 + `pickDataCoord`（target→数据坐标系 6 位圆整）+ `__pick__` 临时标记（独立于数据管线） | stub 拾取 114.6654/23.500072 回填；**真实高德**拾取 114.06192/23.244223；保存 120.5/30.5 后端核对 |
+| K4b | 位置必填校验 | 空 →「请选择位置：在地图上点击选取，或输入「经度,纬度」」；非法 →「位置（经纬度）无效：应为「经度,纬度」，如 114.5,23.5」；空/无效不允许保存 | 三组拦截实测（空/非法/半截只输入一个数） |
+| K5 | 拾取失效根因修复 | 无遮罩 `a-modal` 的 `.arco-modal-container`(fixed)/`.arco-modal-wrapper`(absolute) 全屏 `pointer-events:auto` 拦截 → `:has(.map-add-dialog)` 放行容器层、仅弹体可交互（全局样式块） | 修复前 `elementFromPoint` 命中 container；修复后 `page.mouse.click` 命中地图且标记落地；stub+真实高德双复验 |
+| K6 | 弹层表单细节（标签/提示/整行/去标题栏/间隙） | `MapAddDialog`：`required` 标签「位置信息（经纬度）」、hint 下移、覆盖 `-flex` 整行、`:hide-title="true"`、body/footer/末项三处 padding 压缩 | 提示行 146→400px 整行；底部间隙 52→16px；去标题栏后无标题条 |
+| K7 | 查询关键字清空持久化 | `useListQuery` watch：Q 非空→空时 `persistLastQuery(typePath, { q: '', filter })`（保留 filter） | 清空后 sessionStorage `cube:lastQuery:*` 的 q 移除；重启 dev、刷新均不回灌 |
+| K8 | 底图切换图标 `copy`→`layers` | `iconComponents.ts` 注册 `Layers`；按钮 `type="layers"` | 截图确认（图层堆叠图标） |
+| K9 | 比例尺深色可读性 | 全局样式块暗色覆盖（白字黑晕） | 实机深色主题确认 |
+| K10 | 门禁 | 聚焦 spec / 全量 vitest / `vue-tsc -b` | 见下方「测试与构建记录」 |
+
+## 固定编排摘要（二轮）
+
+| 步 | 结论 |
+| --- | --- |
+| 实现审计 | K1–K10 逐项核对实现与测试落位；改动 **16 文件 +474/−38** + 新增 **2 文件**（`MapAddDialog.vue`/`useMapTools.ts`）；无未落位项；tasks 增 K 组 |
+| 代码审查 | 无 P0/P1；P2 记录见下（不可拖/检测逻辑重复/窄屏重叠）；SFC 构薄门禁通过：新增 `watch`/`cubeApi` 调用全部收口 `useMapTools`，`DefaultList`/`MapAddDialog` 无内嵌 watch |
+| 文档同步 | proposal §5 判据修订（「不做地图上的新增/编辑」→ 轻量添加记录已交付）；design 增《二轮迭代增强（2026-10-05）》节；tasks K 组；status 二轮 note；web/README（地图节）+ 迁移方案（05b–05e）+ 功能清单 SPA-7 已随迭代同步 |
+
+## 命令
+
+```powershell
+cd NewLife.Cube.ArcoVue/web
+# 聚焦（地图 + 映射/配置/图标）
+pnpm exec vitest run src/features/views/map src/core/utils/viewMapping.spec.ts src/core/utils/viewProfile.spec.ts src/core/utils/iconRegistry.spec.ts
+# 全量
+pnpm exec vitest run
+# 类型
+pnpm exec vue-tsc -b
+# 实机（stub / 真实高德）
+#   http://localhost:5183/Cube/Area?__mapStub=1        （桩）
+#   http://localhost:5183/Cube/Area                    （真实高德，CubeDemo:5000 + dev:5183）
+cd ..\openspec
+powershell -NoProfile -ExecutionPolicy Bypass -File harness\verify-lessons.ps1
+```
+
+## 测试与构建记录（2026-10-05 二轮复跑）
+
+| 项 | 结果 |
+| --- | --- |
+| 聚焦 spec（map + viewMapping + viewProfile + iconRegistry） | **160/160 通过**（5 文件，1.38s） |
+| 全量 vitest | **132/133 文件、1168/1172 通过**；4 项失败均为 `sfcThin.spec` 扫到的 **OSC-261004e6ee 在途 .vue**（`FilterBuilderPanel`/`RecordDrawer`/`WfInstanceGraph`/`WorkflowTaskActions`），非本号文件 |
+| `vue-tsc -b` | **0 错误**（exit 0） |
+| 实机（stub，`__mapStub=1`） | 拾取回填/三组校验拦截/结果卡片（34 条 + 点击定位）/聚焦首行/Q 清空持久化/弹层 pointer-events 穿透（`mouse.click` 真实命中） |
+| 实机（真实高德 + 后端核对） | 拾取 114.06192/23.244223 → 保存 120.5/30.5（列表核对）；深色主题；比例尺深色；`layers` 图标 |
+| 回归确认 | 拖动/缩放/底图切换/悬停卡片/详情抽屉/分层加载（46518/47）等一轮能力无回归（迭代期实机抽查） |
+
+## 缺口处置记录（二轮）
+
+### 仅记录（风险表）
+
+| 缺口 | 级别 | 处置 |
+| --- | --- | --- |
+| 弹层去标题栏后不可拖（原 `draggable` 依赖标题栏） | P2 | 仅记录：轻量弹层位置固定右上，拖动价值低 |
+| `useMapTools` 与 `useMapView` 各自实现坐标字段检测（`detectionOf` 逻辑重复） | P2 | 仅记录：两模块职责独立（视图配置 vs 添加表单）；后续如需可提取公共 util |
+| 结果卡片与工具栏窄屏换行时可能重叠（卡片 `top:64px` 固定） | P2 | 仅记录：当前工具栏单行无风险；窄屏布局后续按需处理 |
+
+### 一轮遗留（继续有效）
+
+点聚合降级（开关禁用「暂不支持」）、悬停卡图片缩略、空态细分、百万级渲染优化、百度/腾讯真实冒烟（环境豁免）、G2 E2E spec 待 CI 化、`QueryComboButton` `message-search` 图标（属 OSC-260830a1b2）——均见 archive 版 verify 风险表。
+
+## 验收结论
+
+**checklist: passed**。二轮十项（K1–K10）全部落位，均有门禁/实机证据；固定编排三步（实现审计/代码审查/文档同步）完成；判据文档同步修订（proposal/design/tasks/status + README/迁移方案/功能清单）；全量门禁与基线一致（4 项失败为 e6ee 在途，非本号）；一轮能力无回归。状态 **Done**（二轮验收 + 复盘完成）。
+

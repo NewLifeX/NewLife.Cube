@@ -236,3 +236,17 @@ export interface MapAdapter {
 - 玻璃样式：工具条与卡片由 CSS 自适应明暗；创建地图视图未种 chrome 玻璃默认（CSS 兜底）；「背景色」配置对地图隐藏后该联动不可达。
 - 验证期修正：`normalizeMapMapping` 分类字段保留改用 `mapCategoryCandidates`（原误用 `groupFieldCandidates`）；续页 `loadingMore` 世代复位；`mapScript` 失败任务缓存清理；`buildAdapter` 并发守卫（均本次修复，见 tasks J 组）。
 - 悬停卡片：实际固定 280px（design 320px）、`v-if` 非常驻单实例、无图片缩略（仅记录）；`ResizeObserver` 无 150ms 防抖（仅记录）。
+
+## 二轮迭代增强（2026-10-05，使用反馈与瑕疵修复）
+
+> 判据修订：proposal §5「不做地图上的新增/编辑」修订为——**轻量添加记录**弹层已交付（仅必填项+位置信息）；完整编辑/新建仍走列表视图与详情抽屉。
+
+- **视口/底图记忆**：`MapMapping.lastViewport`/`lastBasemap`；平移缩放防抖 600ms、切底图立即写回映射（`mappingConfigSig` 排除 last* 字段防重载回环）；刷新/切视图/重开恢复中心、缩放与底图（桩 `mount` 消费初始 center）。已随 698f498a 合入。
+- **查询聚焦与结果卡片**：关键字/预定义/**自定义**查询后定位**首个有有效坐标**的结果行（保持缩放，扫描上限 200）；结果 **>2 条**显示透明结果卡片（宽 240、工具栏下方右对齐；分类图标/颜色 + `titleField` 文案、5 行高滚动、渲染上限 200、点击动态定位并高亮、可关闭）；`useMapView` 暴露 `resultItems/focusFirstLocated/selectResult/setResultsVisible`；自定义查询应用纳入链路（`onMapFilterApply` 三处绑定）。
+- **工具栏「+」添加记录**（`flags.canAdd`）：查询簇前按钮（tooltip「添加记录」）；轻量弹层（`MapAddDialog`，去标题栏、无遮罩、可拖）——仅**必填项**（`isFieldRequired`，剔除坐标字段）+ **位置信息**；提交走 `useListCrud.createRowQuick`（`prepareSubmitPayload` 归一 + `loadData` 刷新）；逻辑收口 `useMapTools` composable（SFC 构薄门禁）。
+- **位置信息单输入框与拾取**：单框「经度,纬度」（`mapAddCoordText`；`parseCoordText` 宽容 `[,，\s]+`、**恰两数**且在界内；空/无效**不允许保存**）；提交按字段形态拆分（分列→lngField/latField；合并→按 `coordOrder`）；`MapAdapter.onMapClick` 四端实现（amap `map.on('click')` / baidu `e.point` / tencent `latLng` / stub 按 bounds 反算），`pickDataCoord`（target→数据坐标系、6 位圆整）回填 + 临时标记 `__pick__`（独立于数据管线，弹层关闭即清除）；弹层打开预填地图中心。
+- **拾取失效修复（根因）**：无遮罩 `a-modal` 的 `.arco-modal-container`（fixed 全屏）/`.arco-modal-wrapper`（absolute 全屏）仍 `pointer-events:auto` → 地图点击被吃；以 `:has(.map-add-dialog)` 放行容器层、仅弹体 `auto`（须全局样式块）。
+- **弹层表单细节**：标签合并「位置信息（经纬度）」+ 必填星标；提示行下移标签之下；覆盖 Arco 无 `field` 项 `-flex` 使提示行/输入框各占整行；`hideTitle` 去标题栏 + 压缩底部间隙（body 24→8、footer 16→12、末项 20→8）。
+- **查询清空语义**：手工清空 Q 时同步 `persistLastQuery({q:'', filter})`（`useListQuery` watch 非空→空），刷新/切视图不回灌。
+- **底图图标**：`copy`→`layers`（iconComponents 新增 Layers 注册）。
+- **比例尺深色**：暗色主题白字黑晕（全局样式块；scoped `:global` 在本工程不生效，仅记录）。

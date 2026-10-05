@@ -8,10 +8,12 @@ import {
   buildMapPoints,
   detectLevelField,
   matchFormatRule,
+  pickDataCoord,
   readLevelOfRow,
   resolveMarkerStyle,
   targetSystemOf,
 } from './mapPoints';
+import { convert } from '@/core/utils/mapTransform';
 
 const mapping: MapMapping = {
   kind: 'map',
@@ -122,6 +124,31 @@ describe('targetSystemOf', () => {
     expect(targetSystemOf('amap')).toBe('gcj02');
     expect(targetSystemOf('tencent')).toBe('gcj02');
     expect(targetSystemOf('baidu')).toBe('bd09');
+  });
+});
+
+describe('pickDataCoord（地图拾取换算）', () => {
+  it('同坐标系原样返回并圆整 6 位', () => {
+    const m: MapMapping = { ...mapping, coordSystem: 'gcj02' };
+    expect(pickDataCoord(114.50000049, 23.50000049, m, 'gcj02')).toEqual({ lng: 114.5, lat: 23.5 });
+  });
+
+  it('跨坐标系换算：GCJ-02 拾取 → WGS-84 写库，往返近似还原', () => {
+    const m: MapMapping = { ...mapping, coordSystem: 'wgs84' };
+    const wgs = pickDataCoord(114.5, 23.5, m, 'gcj02');
+    expect(wgs.lng).not.toBe(114.5);
+    const back = convert(wgs.lng, wgs.lat, 'wgs84', 'gcj02');
+    // GCJ-02 ⇄ WGS-84 为近似变换，往返允许 ~1e-5 误差
+    expect(back.lng).toBeCloseTo(114.5, 4);
+    expect(back.lat).toBeCloseTo(23.5, 4);
+  });
+
+  it('百度底图（BD-09）拾取 → GCJ-02 数据坐标系', () => {
+    const m: MapMapping = { ...mapping, coordSystem: 'gcj02' };
+    const gcj = pickDataCoord(114.5, 23.5, m, 'bd09');
+    const back = convert(gcj.lng, gcj.lat, 'gcj02', 'bd09');
+    expect(back.lng).toBeCloseTo(114.5, 4);
+    expect(back.lat).toBeCloseTo(23.5, 4);
   });
 });
 

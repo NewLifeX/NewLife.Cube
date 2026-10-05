@@ -1,11 +1,11 @@
 # Status
 - id: OSC-261004d7f4
 - state: Done
-- updated: 2026-10-05T09:30:00+08:00
+- updated: 2026-10-05T21:40:00+08:00
 - approvedBy: openspec-approve
 - checklist: passed
 - executor: openspec-retro
-- trigger: "按 OpenSpec 规范，验收并复盘 d7f4 变更。"
+- trigger: "请重新验收并复盘 d7f4 变更（二轮迭代）。"
 - note: 复盘完成（openspec-retro）：retro.md + harness/lessons.md（索引同步）；J1–J7 补齐与文档修订已随本轮完成；点聚合降级、图片缩略/空态细分/百万优化、百度/腾讯冒烟、G2 E2E spec 均记录于 verify 风险表。目录归档至 openspec/changes/archive/。
 - note: created by openspec-create（研究先行）：基于 CubeNC `Map.cshtml`、`ca567059` React AreaMap（已随皮肤出库）与在役 `/api/Cube/Area/Map` 端点研究，输出「实体地图散点视图」草案——高德|百度双底图、玻璃悬停卡片、悬浮四键工具栏、配置抽屉三落点（基础配置/字段配置/自定义配置）、坐标检测门禁。未改业务代码。
 - note: 草案修订（2026-10-04 评审）：① 系统地图配置单服务商（高德|百度|腾讯 三选一，`MapProvider`/`MapKey`/`MapScriptUrl` 三字段）；② `MapMapping` 默认样式字段命名 `DefaultLocation`/`DefaultIcon`；③ 工具栏改横条、置地图右上角；④ 数据改视口渐进（首批 1000 + 异步续拉 + 拖动增量绘制）；⑤ 未配置服务商时创建不可用且不做引导。
@@ -32,3 +32,5 @@
 - 增强: 选择分类字段自动列出分类值并推荐样式（2026-10-05 用户诉求）：`useListQuery.loadMapCategoryValues`（首页 1000 行抽样提取字段去重值、按出现顺序，只读不写主状态）→ `useViewConfigDrawer.onMapCategoryChange`（async：字段带 `dataSource` 优先用选项键，否则抽样；`seq` 防陈旧竞争；空值 Message 提示手动配置；超 `MAP_MAX_RULES`(50) 截断提示）→ `buildMapCategoryRules`（viewMapping 纯函数：按序循环分配推荐图标（`MAP_MARKER_ICONS`）与颜色（基础调色板前 9 色），跳过空/重复）→ 自动填充规则行并 `emitMapping` 即时生效；props 链 DefaultList → ViewConfigDrawer 新增 `loadCategoryValues`。
 - 验证（2026-10-05）：`vue-tsc -b` 0 错误；`viewMapping.spec` 54/54（新增 `buildMapCategoryRules` 与 `categoryField` Kind 保留回归用例）；全量 vitest 131/132 文件、1160 通过（4 项 sfcThin 为 e6ee 在途既有）；实机：选「类型」自动生成 13 行（直辖市/市辖区/省/地级市/县/县级市/自治县/自治区/旗/自治旗/盟/自治州/地区）各带循环推荐图标+颜色且选择保持不回落；选「启用」生成 1 行（true）；地图按分类即时重渲。- note: 会话小任务已补录（2026-10-05，验收阶段）：使用反馈五项、分页 off-by-one 修复、二期四项、视觉微调三项、验收反馈七项、三条微调、分类字段修复与自动生成增强，共 12 项并入 tasks.md「I 会话补录」；H1 坐标完备性补勾。进入 Validating（openspec-verify）。
 - note: 验收与补齐（2026-10-05，openspec-verify）：固定编排三步完成（实现审计/代码审查/文档同步），门禁复跑（聚焦 156/156、`vue-tsc` 0 错误、`pnpm build` 成功、后端 0 错误、桩冒烟 `__mapStubMarkers` 35→2941）；用户决策「补齐并复验 + 文档修订」→ J1–J7 落地（死锁/缓存泄漏/并发守卫/未就绪禁用/聚合降级标注/注释同步/文档对齐）。checklist: passed；可复盘（openspec-retro）。
+- note: 二轮验收与复盘（2026-10-05，openspec-verify/retro）：变更恢复 working 后对全部迭代执行固定编排 + 门禁复跑——视口/底图记忆（698f498a 已合入）、查询聚焦与结果卡片、工具栏「+」添加记录与地图拾取（含无遮罩弹层 pointer-events 拦截根因修复）、位置信息单框/必填/整行/标签合并、去标题栏与间隙压缩、查询清空持久化、底图图标 layers、比例尺深色。产出 verify.md（二轮节）/retro.md（二轮节）与 harness/lessons.md 二轮条目；proposal §5 判据修订、design 增《二轮迭代增强》节、tasks 增 K 组。checklist: passed。
+- note: 二轮合并归档（2026-10-05）：proposal/design/tasks/status 更新为二轮终态；verify/retro 以「一轮全文 + 二轮节」合并保留两轮记录；changes 目录移除。
