@@ -104,6 +104,19 @@ public class CubeController : ConfigController<CubeSetting>, IPageDataContext
                 ["4"] = "发验证码（防短信轰炸）",
             };
         }
+
+        // 地图服务商：系统级单服务商（高德/百度/腾讯），清空=未配置；下拉避免手输值出错
+        df = list.FirstOrDefault(e => e.Name == nameof(CubeSetting.MapProvider));
+        if (df != null)
+        {
+            df.ItemType = "singleSelect";
+            df.DataSource = _ => new Dictionary<String, String>
+            {
+                ["amap"] = "高德地图",
+                ["baidu"] = "百度地图",
+                ["tencent"] = "腾讯地图",
+            };
+        }
     }
 
     /// <summary>

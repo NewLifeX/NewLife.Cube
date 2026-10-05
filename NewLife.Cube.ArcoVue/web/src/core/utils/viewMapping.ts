@@ -6,8 +6,10 @@ import { isBadgeField } from '@/core/utils/fieldBadge';
 import { resolveListControl } from '@/core/utils/fieldControl';
 import { preferTreeByType } from '@/core/utils/tree';
 import { getValueByKey } from '@/core/utils/url';
+import { detectCoordinateFields } from '@/core/utils/mapCoord';
+import { MAP_MARKER_ICONS } from '@/core/utils/iconRegistry';
 
-export type ViewKind = 'table' | 'tree' | 'card' | 'kanban' | 'calendar' | 'gantt';
+export type ViewKind = 'table' | 'tree' | 'card' | 'kanban' | 'calendar' | 'gantt' | 'map';
 
 /** 卡片布局：标准 / 偏大 / 整行（OSC-0007） */
 export type CardLayout = 'standard' | 'large' | 'row';
@@ -59,7 +61,44 @@ export type CalendarMapping = {
   titleField: string;
   colorField?: string;
 };
-export type ViewMapping = CardMapping | KanbanMapping | GanttMapping | CalendarMapping;
+/** 地图提供商（系统级单服务商：高德/百度/腾讯；不随视图保存） */
+export type MapProvider = 'amap' | 'baidu' | 'tencent';
+/** 分类样式规则：值 → 图标 / 颜色（≤50 条） */
+export interface MapCategoryRule {
+  value: string;
+  icon?: string;
+  color?: string;
+}
+/** 地图映射（OSC-261004d7f4；服务商由系统配置统一决定） */
+export interface MapMapping {
+  kind: 'map';
+  coordMode: 'latlng' | 'merged';
+  lngField?: string;
+  latField?: string;
+  coordField?: string;
+  coordOrder?: 'lnglat' | 'latlng';
+  coordSystem?: 'gcj02' | 'wgs84' | 'bd09';
+  /** 悬停卡片标题字段 */
+  titleField: string;
+  /** 分类字段（枚举/布尔/选项/LIST） */
+  categoryField?: string;
+  categoryRules?: MapCategoryRule[];
+  /** 默认图标（评审命名），缺省 local */
+  DefaultIcon?: string;
+  /** 默认颜色 #RRGGBB */
+  defaultColor?: string;
+  /** 点聚合，默认 true */
+  cluster?: boolean;
+  /** 总拉取上限，默认 1000000 */
+  maxPoints?: number;
+  /** 默认地图位置 [lng, lat] */
+  DefaultLocation?: [number, number];
+  /** 地图中心点名称（按标题字段搜索定位，如：北京）；配置后加载自动定位、右下角定位按钮回到此处 */
+  DefaultCenter?: string;
+  /** 初始缩放 [3,18] */
+  zoom?: number;
+}
+export type ViewMapping = CardMapping | KanbanMapping | GanttMapping | CalendarMapping | MapMapping;
 export type DataSourceOption = { value: string; label: string };
 
 /** 看板已折叠列：只留非空字符串，去重，最多 50 个；空则不落库 */
@@ -93,6 +132,11 @@ export function normalizePageSize(raw: unknown): number {
 /** 大视图（一次大加载、底部仅提示）：日历与甘特；看板已恢复分页器（OSC-260926c2b8 补记） */
 export function isLargePageViewKind(kind: ViewKind): boolean {
   return kind === 'calendar' || kind === 'gantt';
+}
+
+/** 全出血视图（地图）：无常规工具栏/分页器/底部提示条，内容铺满（OSC-261004d7f4） */
+export function isFullbleedViewKind(kind: ViewKind): boolean {
+  return kind === 'map';
 }
 
 /** 是否表格类视图：分组/排序/批量删除等工具仅在 table/tree 可用（OSC-0007） */
@@ -166,6 +210,8 @@ export function resolveViewPageSize(
   pagerSize?: number,
   preferredLarge?: number,
 ): number {
+  // 地图固定一次 1000 条（视口渐进首批），忽略用户偏好条数（OSC-261004d7f4）
+  if (kind === 'map') return LARGE_VIEW_PAGE_SIZE_MAX;
   if (!isLargePageViewKind(kind)) {
     return Math.max(1, pagerSize && pagerSize > 0 ? pagerSize : 20);
   }
@@ -195,6 +241,37 @@ export function groupFieldCandidates(fields: FieldMeta[]): FieldMeta[] {
     const c = resolveListControl(f);
     return c === 'boolean' || c === 'select' || c === 'lov' || isBadgeField(f);
   });
+}
+
+/** 地图分类字段名启发：类型/状态类命名（含地区实体 Kind=省/市/区县） */
+const MAP_CATEGORY_NAME_RE = /(kind|type|status|state|category|class|group|level|grade|stage|tag)/i;
+
+/**
+ * 地图分类候选字段（OSC-261004d7f4）：状态/布尔 + 枚举 + 值集（dataSource / lovCode / itemType）+ 徒标 + 类型类命名启发。
+ * 供「自定义配置 → 地图区」分类字段下拉使用。
+ */
+export function mapCategoryCandidates(fields: FieldMeta[]): FieldMeta[] {
+  const seen = new Set<string>();
+  const out: FieldMeta[] = [];
+  for (const f of fields) {
+    if (!f.name || f.primaryKey) continue;
+    const itemType = (f.itemType || '').toLowerCase();
+    const hit =
+      f.typeName === 'Boolean' ||
+      f.typeName === 'Enum' ||
+      !!(f.dataSource && Object.keys(f.dataSource).length > 0) ||
+      !!f.lovCode ||
+      itemType === 'singleselect' ||
+      itemType === 'multipleselect' ||
+      isBadgeField(f) ||
+      (f.typeName === 'String' &&
+        (MAP_CATEGORY_NAME_RE.test(f.name) || MAP_CATEGORY_NAME_RE.test((f.displayName || '').trim())));
+    if (hit && !seen.has(f.name)) {
+      seen.add(f.name);
+      out.push(f);
+    }
+  }
+  return out;
 }
 
 export function dateFieldCandidates(fields: FieldMeta[]): FieldMeta[] {
@@ -255,7 +332,7 @@ export function canCreateViewKind(
   kind: ViewKind,
   fields: FieldMeta[],
   typePath: string,
-  opts?: { rowsHadChildren?: boolean },
+  opts?: { rowsHadChildren?: boolean; mapConfigured?: boolean },
 ): { ok: boolean; reason?: string } {
   switch (kind) {
     case 'table':
@@ -277,6 +354,11 @@ export function canCreateViewKind(
     case 'gantt':
       if (dateFieldCandidates(fields).length >= 2) return { ok: true };
       return { ok: false, reason: '甘特需要至少两个 DateTime 字段（开始/结束）' };
+    case 'map':
+      if (!detectCoordinateFields(fields))
+        return { ok: false, reason: '缺少坐标字段（经度/纬度或合并坐标字段）' };
+      if (!opts?.mapConfigured) return { ok: false, reason: '系统未配置地图服务商' };
+      return { ok: true };
     default:
       return { ok: false, reason: '未知视图类型' };
   }
@@ -332,6 +414,25 @@ export function seedMapping(kind: ViewKind, fields: FieldMeta[]): ViewMapping | 
       plannedStartField: dates[0],
       plannedEndField: dates[1],
     };
+  }
+  if (kind === 'map') {
+    const coord = detectCoordinateFields(fields);
+    if (!coord || !title) return undefined;
+    const seed: MapMapping = {
+      kind: 'map',
+      coordMode: coord.mode,
+      titleField: title,
+      cluster: true,
+      DefaultIcon: 'local',
+      defaultColor: '#165DFF',
+    };
+    if (coord.mode === 'latlng') {
+      seed.lngField = coord.lngField;
+      seed.latField = coord.latField;
+    } else {
+      seed.coordField = coord.coordField;
+    }
+    return seed;
   }
   return undefined;
 }
@@ -449,7 +550,167 @@ export function normalizeMapping(
     };
   }
 
+  if (view === 'map' || kind === 'map') {
+    return normalizeMapMapping(o, fields, seeded as MapMapping | undefined);
+  }
+
   return seeded;
+}
+
+export const MAP_COLOR_RE = /^#[0-9A-Fa-f]{6}$/;
+export const MAP_MAX_RULES = 50;
+export const MAP_MAX_POINTS = 1000000;
+export const MAP_COORD_SYSTEMS = ['gcj02', 'wgs84', 'bd09'] as const;
+
+/**
+ * 生成地图分类样式初始列表（选择分类字段后自动填充）：
+ * 按值顺序循环分配推荐图标与颜色，跳过空值/重复值，上限 MAP_MAX_RULES；
+ * 图标应取自 MAP_MARKER_ICONS（归一化时会校验），颜色板为空则不预填。
+ * @param values 分类值（按展示顺序）
+ * @param icons 推荐图标池（kebab-case 图标名）
+ * @param colors 推荐颜色池（#RRGGBB）
+ * @returns 预填图标/颜色的分类规则列表
+ */
+export function buildMapCategoryRules(
+  values: readonly string[],
+  icons: readonly string[],
+  colors: readonly string[],
+): MapCategoryRule[] {
+  const out: MapCategoryRule[] = [];
+  const used = new Set<string>();
+  for (const raw of values) {
+    if (out.length >= MAP_MAX_RULES) break;
+    const value = String(raw ?? '').trim();
+    if (!value || used.has(value)) continue;
+    used.add(value);
+    const rule: MapCategoryRule = { value };
+    if (icons.length) rule.icon = icons[out.length % icons.length];
+    if (colors.length) rule.color = colors[out.length % colors.length];
+    out.push(rule);
+  }
+  return out;
+}
+
+/** 宽容归一化地图映射（OSC-261004d7f4）：坐标/标题回落检测与种子；规则/图标/颜色/数值钳制 */
+export function normalizeMapMapping(
+  raw: Record<string, unknown>,
+  fields: FieldMeta[],
+  seeded?: MapMapping,
+): MapMapping | undefined {
+  const names = new Set(fields.map((f) => f.name).filter(Boolean));
+  const pickName = (v: unknown, fallback?: string): string => {
+    const s = typeof v === 'string' ? v.trim() : '';
+    if (s && names.has(s)) return s;
+    if (fallback && names.has(fallback)) return fallback;
+    return '';
+  };
+
+  const coord = detectCoordinateFields(fields);
+  let mode: MapMapping['coordMode'] =
+    raw.coordMode === 'merged' || raw.coordMode === 'latlng'
+      ? (raw.coordMode as MapMapping['coordMode'])
+      : seeded?.coordMode ?? coord?.mode ?? 'latlng';
+  const lngField =
+    pickName(raw.lngField, seeded?.lngField) || (coord?.mode === 'latlng' ? coord.lngField : '');
+  const latField =
+    pickName(raw.latField, seeded?.latField) || (coord?.mode === 'latlng' ? coord.latField : '');
+  const coordField =
+    pickName(raw.coordField, seeded?.coordField) || (coord?.mode === 'merged' ? coord.coordField : '');
+  if (mode === 'latlng' && (!lngField || !latField)) mode = 'merged';
+  if (mode === 'merged' && !coordField) mode = 'latlng';
+  if (mode === 'latlng' && (!lngField || !latField)) return undefined;
+  if (mode === 'merged' && !coordField) return undefined;
+
+  const titleField =
+    pickName(raw.titleField, seeded?.titleField) || titleFieldCandidates(fields)[0]?.name;
+  if (!titleField) return undefined;
+
+  const categoryRaw = typeof raw.categoryField === 'string' ? raw.categoryField : '';
+  // 修复：分类字段应按 mapCategoryCandidates 校验（原误用 groupFieldCandidates 导致 Kind 等分类字段被归一化剔除）
+  const categoryField = mapCategoryCandidates(fields).some((f) => f.name === categoryRaw)
+    ? categoryRaw
+    : undefined;
+
+  const rules: MapCategoryRule[] = [];
+  const used = new Set<string>();
+  if (Array.isArray(raw.categoryRules)) {
+    for (const item of raw.categoryRules) {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
+      const o = item as Record<string, unknown>;
+      const value = o.value == null ? '' : String(o.value).trim();
+      if (!value || used.has(value)) continue;
+      const rule: MapCategoryRule = { value };
+      if (typeof o.icon === 'string' && MAP_MARKER_ICONS.includes(o.icon)) rule.icon = o.icon;
+      if (typeof o.color === 'string' && MAP_COLOR_RE.test(o.color)) rule.color = o.color;
+      used.add(value);
+      rules.push(rule);
+      if (rules.length >= MAP_MAX_RULES) break;
+    }
+  }
+
+  const iconRaw = typeof raw.DefaultIcon === 'string' ? raw.DefaultIcon : '';
+  const defaultIcon = MAP_MARKER_ICONS.includes(iconRaw)
+    ? iconRaw
+    : seeded?.DefaultIcon && MAP_MARKER_ICONS.includes(seeded.DefaultIcon)
+      ? seeded.DefaultIcon
+      : 'local';
+
+  const colorRaw = typeof raw.defaultColor === 'string' ? raw.defaultColor : '';
+  const defaultColor = MAP_COLOR_RE.test(colorRaw) ? colorRaw : seeded?.defaultColor ?? '#165DFF';
+
+  const cluster = raw.cluster === false ? false : true;
+
+  const mp = Number(raw.maxPoints);
+  const maxPoints =
+    Number.isFinite(mp) && mp > 0
+      ? Math.min(MAP_MAX_POINTS, Math.max(1000, Math.round(mp)))
+      : MAP_MAX_POINTS;
+
+  let DefaultLocation: [number, number] | undefined;
+  const dl = raw.DefaultLocation;
+  if (Array.isArray(dl) && dl.length >= 2) {
+    const a = Number(dl[0]);
+    const b = Number(dl[1]);
+    if (
+      Number.isFinite(a) &&
+      Number.isFinite(b) &&
+      Math.abs(a) <= 180 &&
+      Math.abs(b) <= 90 &&
+      !(Math.abs(a) < 1e-6 && Math.abs(b) < 1e-6)
+    ) {
+      DefaultLocation = [a, b];
+    }
+  }
+
+  const z = Number(raw.zoom);
+  const zoom = Number.isFinite(z) && z > 0 ? Math.min(18, Math.max(3, Math.round(z))) : undefined;
+
+  const out: MapMapping = {
+    kind: 'map',
+    coordMode: mode,
+    titleField,
+    coordOrder: raw.coordOrder === 'latlng' ? 'latlng' : 'lnglat',
+    coordSystem: (MAP_COORD_SYSTEMS as readonly string[]).includes(raw.coordSystem as string)
+      ? (raw.coordSystem as MapMapping['coordSystem'])
+      : 'gcj02',
+    cluster,
+    maxPoints,
+    DefaultIcon: defaultIcon,
+    defaultColor,
+  };
+  if (mode === 'latlng') {
+    out.lngField = lngField;
+    out.latField = latField;
+  } else {
+    out.coordField = coordField;
+  }
+  if (categoryField) out.categoryField = categoryField;
+  if (rules.length) out.categoryRules = rules;
+  if (DefaultLocation) out.DefaultLocation = DefaultLocation;
+  const centerRaw = typeof raw.DefaultCenter === 'string' ? raw.DefaultCenter.trim() : '';
+  if (centerRaw) out.DefaultCenter = centerRaw.slice(0, 50);
+  if (zoom != null) out.zoom = zoom;
+  return out;
 }
 
 export type KanbanBucket = {
@@ -671,6 +932,7 @@ export const VIEW_KIND_LABEL: Record<ViewKind, string> = {
   kanban: '看板',
   calendar: '日历',
   gantt: '甘特图',
+  map: '地图',
 };
 
 /** 视图类型 → 默认视图名称（「保存视图为默认XX视图」文案；需求：列表/看板/卡片/树状/日历/甘特） */
@@ -681,6 +943,7 @@ export const DEFAULT_VIEW_KIND_NAME: Record<ViewKind, string> = {
   kanban: '看板',
   calendar: '日历',
   gantt: '甘特',
+  map: '地图',
 };
 
 /** 「+」新建视图菜单文案（类型名 +「视图」） */
@@ -699,7 +962,8 @@ export function parseViewKind(raw: unknown): ViewKind {
     raw === 'card' ||
     raw === 'kanban' ||
     raw === 'calendar' ||
-    raw === 'gantt'
+    raw === 'gantt' ||
+    raw === 'map'
   ) {
     return raw;
   }

@@ -8,6 +8,7 @@ import {
   viewKindCreateLabel,
 } from '@/core/utils/viewMapping';
 import { VIEW_KIND_ICONS } from '@/core/utils/iconRegistry';
+import { useAppStore } from '@/stores/app';
 
 /** ViewTabsToolbar 组件 props 类型（与 ViewTabsToolbar.vue defineProps 泛型逐字一致） */
 interface ViewTabsToolbarProps {
@@ -38,17 +39,23 @@ type ViewTabsToolbarEmit = <K extends keyof ViewTabsToolbarEmits>(event: K, ...a
 
 /** ViewTabsToolbar 组件全部业务 TS：视图 Tab 切换、新建视图类型下拉与命名弹层（自 ViewTabsToolbar.vue script setup 原样搬移） */
 export function useViewTabsToolbar(props: ViewTabsToolbarProps, emit: ViewTabsToolbarEmit) {
+  const appStore = useAppStore();
+  // 地图配置用于「新建视图」中地图项的可用性门禁（缓存，未配置时禁用地图项）
+  void appStore.fetchMapConfig();
+
   /** 当前激活视图的类型（决定「保存视图为默认XX视图」文案） */
   const activeViewKind = computed<ViewKind>(() => {
     const v = props.views.find((x) => x.id === props.activeId);
     return v?.view ?? 'table';
   });
 
-  const createKinds: ViewKind[] = ['table', 'tree', 'card', 'kanban', 'calendar', 'gantt'];
+  const createKinds: ViewKind[] = ['table', 'tree', 'card', 'kanban', 'calendar', 'gantt', 'map'];
 
   const createOptions = computed(() =>
     createKinds.map((kind) => {
-      const gate = canCreateViewKind(kind, props.fields, props.typePath);
+      const gate = canCreateViewKind(kind, props.fields, props.typePath, {
+        mapConfigured: appStore.mapConfig.provider != null,
+      });
       return {
         kind,
         label: viewKindCreateLabel(kind),
@@ -154,6 +161,8 @@ export function useViewTabsToolbar(props: ViewTabsToolbarProps, emit: ViewTabsTo
     const btn = ev.currentTarget as HTMLElement | null;
     const anchor = createAnchorRef.value;
     if (!btn || !anchor) return;
+    // 打开创建菜单时强制刷新地图配置：刚在魔方设置保存过服务商也能立即反映（OSC-261004d7f4）
+    void appStore.fetchMapConfig(true);
     const r = btn.getBoundingClientRect();
     anchor.style.position = 'fixed';
     anchor.style.left = `${r.left}px`;

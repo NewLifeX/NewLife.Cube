@@ -6,8 +6,8 @@
       <template #content>
         <div class="qcb-menu">
           <!-- 自定义查询（OSC-260830a1b2）：打开条件构建器（键盘/小屏备援），不在工具栏单独出按钮；
-               最近搜索已改为输入时自动匹配下拉，不再占用菜单 -->
-          <a-doption value="__custom">
+               最近搜索已改为输入时自动匹配下拉，不再占用菜单；customEnabled=false 时入口隐藏（视图配置-工具栏「筛选」） -->
+          <a-doption v-if="customEnabled !== false" value="__custom">
             <template #icon><icon-park type="message-search" /></template>
             自定义查询
           </a-doption>
@@ -95,6 +95,8 @@ const props = defineProps<{
   moreFieldCount: number;
   /** 面板当前是否展开（收起显示一行、展开显示第二行） */
   expanded: boolean;
+  /** 是否提供「自定义查询」入口（视图配置-工具栏「筛选」开关；缺省 true） */
+  customEnabled?: boolean;
 }>();
 
 const emit = defineEmits<{

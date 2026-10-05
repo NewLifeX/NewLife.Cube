@@ -321,6 +321,8 @@ export function useDefaultObject(props: DefaultObjectProps) {
             tenantStore.applyFeatureFlag(appStore.loginConfig?.enableTenant);
             await tenantStore.load();
             await appStore.fetchAiConfig();
+            // 保存魔方设置后刷新地图配置：列表页地图视图门禁/地图加载依赖最新服务商（OSC-261004d7f4）
+            void appStore.fetchMapConfig(true);
           }
           syncDocumentTitle();
         } catch {

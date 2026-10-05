@@ -45,6 +45,9 @@
               {{ visibleCount }} / {{ localColumns.length }} 可见
             </a-typography-text>
           </div>
+          <div v-if="viewKind === 'map'" class="cfg-hint" style="margin-bottom: 6px">
+            地图视图的可见字段决定悬停卡片内容（悬停散点显示）
+          </div>
           <a-empty v-if="!localColumns.length" description="暂无字段可配置" />
           <ul v-else class="field-list">
             <li
@@ -110,6 +113,145 @@
           </ul>
         </section>
 
+        <!-- 地图（OSC-261004d7f4）：坐标字段 / 点聚合（暂不支持，验收降级）/ 拉取上限 / 地图中心+默认缩放 -->
+        <section v-if="viewKind === 'map'" class="cfg-block">
+          <div class="cfg-label">地图</div>
+          <div class="nested-field">
+            <div class="cfg-label">坐标模式</div>
+            <div class="seg-group">
+              <button
+                type="button"
+                class="seg-item"
+                :class="{ active: localMapping.mapCoordMode === 'latlng' }"
+                @click="setMapCoordMode('latlng')"
+              >
+                <span>经纬度分列</span>
+              </button>
+              <button
+                type="button"
+                class="seg-item"
+                :class="{ active: localMapping.mapCoordMode === 'merged' }"
+                @click="setMapCoordMode('merged')"
+              >
+                <span>合并坐标</span>
+              </button>
+            </div>
+          </div>
+          <template v-if="localMapping.mapCoordMode === 'latlng'">
+            <div class="nested-field">
+              <div class="cfg-label">经度字段 *</div>
+              <a-select
+                v-model="localMapping.mapLngField"
+                placeholder="选择经度字段"
+                @change="emitMapping"
+              >
+                <a-option v-for="f in mapNumericCandidates" :key="f.name" :value="f.name">
+                  {{ fieldLabel(f) }}
+                </a-option>
+              </a-select>
+            </div>
+            <div class="nested-field">
+              <div class="cfg-label">纬度字段 *</div>
+              <a-select
+                v-model="localMapping.mapLatField"
+                placeholder="选择纬度字段"
+                @change="emitMapping"
+              >
+                <a-option v-for="f in mapNumericCandidates" :key="f.name" :value="f.name">
+                  {{ fieldLabel(f) }}
+                </a-option>
+              </a-select>
+            </div>
+          </template>
+          <template v-else>
+            <div class="nested-field">
+              <div class="cfg-label">坐标字段 *</div>
+              <a-select
+                v-model="localMapping.mapCoordField"
+                placeholder="选择存储“经度,纬度”的字段"
+                @change="emitMapping"
+              >
+                <a-option v-for="f in mapMergedCandidates" :key="f.name" :value="f.name">
+                  {{ fieldLabel(f) }}
+                </a-option>
+              </a-select>
+            </div>
+            <div class="nested-field">
+              <div class="cfg-label">坐标顺序</div>
+              <div class="seg-group">
+                <button
+                  type="button"
+                  class="seg-item"
+                  :class="{ active: localMapping.mapCoordOrder === 'lnglat' }"
+                  @click="localMapping.mapCoordOrder = 'lnglat'; emitMapping()"
+                >
+                  <span>经度在前</span>
+                </button>
+                <button
+                  type="button"
+                  class="seg-item"
+                  :class="{ active: localMapping.mapCoordOrder === 'latlng' }"
+                  @click="localMapping.mapCoordOrder = 'latlng'; emitMapping()"
+                >
+                  <span>纬度在前</span>
+                </button>
+              </div>
+            </div>
+          </template>
+          <div class="nested-field">
+            <div class="cfg-label">数据坐标系</div>
+            <a-select v-model="localMapping.mapCoordSystem" @change="emitMapping">
+              <a-option v-for="cs in mapCoordSystemOptions" :key="cs" :value="cs">
+                {{ cs === 'gcj02' ? 'GCJ-02（国内常见）' : cs === 'wgs84' ? 'WGS-84（GPS 原始）' : 'BD-09（百度）' }}
+              </a-option>
+            </a-select>
+          </div>
+          <div class="nested-field">
+            <div class="cfg-label">悬停卡片标题</div>
+            <a-select
+              v-model="localMapping.titleField"
+              placeholder="选择标题字段"
+              @change="emitMapping"
+            >
+              <a-option v-for="f in titleCandidates" :key="f.name" :value="f.name">
+                {{ fieldLabel(f) }}
+              </a-option>
+            </a-select>
+          </div>
+          <div class="switch-row">
+            <span>点聚合（暂不支持，后续变更实现）</span>
+            <a-switch v-model="localMapping.mapCluster" disabled @change="emitMapping" />
+          </div>
+          <div class="nested-field">
+            <div class="cfg-label">最大拉取点位</div>
+            <a-input-number
+              v-model="localMapping.mapMaxPoints"
+              :min="1000"
+              :max="mapMaxPointsLimit"
+              :step="1000"
+              @change="emitMapping"
+            />
+          </div>
+          <div class="nested-field">
+            <div class="cfg-label">
+              地图中心（按标题字段搜索）
+              <a-tooltip content="填写标题字段的值（如：北京）。地图加载时自动定位；右下角「定位」按钮可随时回到该中心。">
+                <icon-park type="info" class="hint-ico" />
+              </a-tooltip>
+            </div>
+            <a-input
+              v-model="localMapping.mapCenter"
+              allow-clear
+              placeholder="如：北京（按标题字段精确搜索）"
+              @change="emitMapping"
+            />
+          </div>
+          <div class="nested-field">
+            <div class="cfg-label">默认缩放</div>
+            <a-input-number v-model="localMapping.mapZoom" :min="3" :max="18" @change="emitMapping" />
+          </div>
+        </section>
+
         <section class="cfg-block">
           <div class="cfg-label">默认排序</div>
           <a-space direction="vertical" fill style="width: 100%">
@@ -148,8 +290,8 @@
       </a-tab-pane>
 
       <a-tab-pane key="custom" title="自定义配置">
-        <!-- 背景色 -->
-        <section class="cfg-block">
+        <!-- 背景色（地图视图全出血，不提供背景/宽度/高度配置） -->
+        <section v-if="viewKind !== 'map'" class="cfg-block">
           <div class="cfg-label">背景色</div>
           <button
             type="button"
@@ -202,7 +344,7 @@
         </section>
 
         <!-- 宽度：图标在左 -->
-        <section class="cfg-block">
+        <section v-if="viewKind !== 'map'" class="cfg-block">
           <div class="cfg-label">宽度</div>
           <div class="seg-group">
             <button
@@ -227,7 +369,7 @@
         </section>
 
         <!-- 高度：图标在左 -->
-        <section class="cfg-block">
+        <section v-if="viewKind !== 'map'" class="cfg-block">
           <div class="cfg-label">高度</div>
           <div class="seg-group seg-group-3">
             <button
@@ -285,7 +427,13 @@
               <span>搜索</span>
               <a-switch v-model="chrome.showSearch" @change="emitChrome" />
             </div>
-            <div class="switch-row">
+            <div v-if="['table', 'tree', 'card', 'map'].includes(viewKind)" class="switch-row">
+              <!-- 填色仅表格/树/卡片/地图视图有对应按钮（与 formatButtonVisible 同集合） -->
+              <span>填色</span>
+              <a-switch v-model="chrome.showColor" @change="emitChrome" />
+            </div>
+            <div v-if="viewKind !== 'map'" class="switch-row">
+              <!-- 分享：地图工具栏无分享按钮，不展示该项 -->
               <span>分享</span>
               <a-switch v-model="chrome.showShare" @change="emitChrome" />
             </div>
@@ -668,6 +816,120 @@
                 </div>
               </div>
             </template>
+
+            <!-- 地图区（OSC-261004d7f4）：分类字段 + 值→图标/颜色 规则 + 默认样式 -->
+            <template v-else-if="viewKind === 'map'">
+              <div class="nested-field">
+                <div class="cfg-label">分类字段（值 → 图标/颜色）</div>
+                <a-select
+                  v-model="localMapping.mapCategoryField"
+                  allow-clear
+                  placeholder="无（全部使用默认样式）"
+                  @change="onMapCategoryChange"
+                >
+                  <a-option v-for="f in mapCategoryOptions" :key="f.name" :value="f.name">
+                    {{ fieldLabel(f) }}
+                  </a-option>
+                </a-select>
+              </div>
+              <div v-if="localMapping.mapCategoryField" class="nested-field">
+                <div v-for="(rule, idx) in localMapping.mapCategoryRules" :key="idx" class="map-rule-row">
+                  <a-select
+                    v-if="mapCategoryValueOptions.length"
+                    v-model="rule.value"
+                    size="mini"
+                    class="map-rule-value"
+                    @change="updateMapRule(idx, {})"
+                  >
+                    <a-option v-for="opt in mapCategoryValueOptions" :key="opt.value" :value="opt.value">
+                      {{ opt.label }}
+                    </a-option>
+                  </a-select>
+                  <a-input
+                    v-else
+                    v-model="rule.value"
+                    size="mini"
+                    class="map-rule-value"
+                    placeholder="值"
+                    @change="updateMapRule(idx, {})"
+                  />
+                  <a-popover trigger="click" position="bl">
+                    <button
+                      type="button"
+                      class="map-rule-icon"
+                      :style="{ color: rule.color || localMapping.mapDefaultColor }"
+                    >
+                      <icon-park :type="rule.icon || localMapping.mapDefaultIcon" />
+                    </button>
+                    <template #content>
+                      <div class="map-icon-grid">
+                        <button
+                          v-for="ic in mapMarkerIcons"
+                          :key="ic"
+                          type="button"
+                          class="map-icon-cell"
+                          :class="{ selected: (rule.icon || localMapping.mapDefaultIcon) === ic }"
+                          @click="updateMapRule(idx, { icon: ic })"
+                        >
+                          <icon-park :type="ic" />
+                        </button>
+                      </div>
+                    </template>
+                  </a-popover>
+                  <input
+                    type="color"
+                    class="map-rule-color"
+                    :value="rule.color || localMapping.mapDefaultColor"
+                    @input="onMapRuleColorInput(idx, ($event.target as HTMLInputElement).value)"
+                  />
+                  <a-button type="text" size="mini" @click="removeMapRule(idx)">
+                    <icon-park type="close" />
+                  </a-button>
+                </div>
+                <a-button
+                  size="mini"
+                  :disabled="localMapping.mapCategoryRules.length >= mapMaxRules"
+                  @click="addMapRule"
+                >
+                  + 添加分类样式
+                </a-button>
+              </div>
+              <div class="nested-field">
+                <div class="cfg-label">默认样式（未命中分类）</div>
+                <div class="map-default-row">
+                  <a-popover trigger="click" position="bl">
+                    <button
+                      type="button"
+                      class="map-rule-icon"
+                      :style="{ color: localMapping.mapDefaultColor }"
+                    >
+                      <icon-park :type="localMapping.mapDefaultIcon" />
+                    </button>
+                    <template #content>
+                      <div class="map-icon-grid">
+                        <button
+                          v-for="ic in mapMarkerIcons"
+                          :key="ic"
+                          type="button"
+                          class="map-icon-cell"
+                          :class="{ selected: localMapping.mapDefaultIcon === ic }"
+                          @click="setMapDefaultIcon(ic)"
+                        >
+                          <icon-park :type="ic" />
+                        </button>
+                      </div>
+                    </template>
+                  </a-popover>
+                  <input
+                    type="color"
+                    class="map-rule-color"
+                    :value="localMapping.mapDefaultColor"
+                    @input="onMapDefaultColorInput(($event.target as HTMLInputElement).value)"
+                  />
+                  <a-button size="mini" @click="resetMapStyle">恢复默认</a-button>
+                </div>
+              </div>
+            </template>
           </div>
         </section>
       </a-tab-pane>
@@ -703,6 +965,8 @@ const props = withDefaults(
     mapping?: ViewMapping | null;
     insight?: ViewInsight | null;
     chartRows?: Record<string, unknown>[];
+    /** 分类字段值获取（拉数据抽样提取去重值；无 dataSource 字段用，OSC-261004d7f4 增强） */
+    loadCategoryValues?: (field: string) => Promise<string[]>;
   }>(),
   {
     viewKind: 'table',
@@ -776,6 +1040,23 @@ const {
   onBgColorPick,
   setWidth,
   setHeight,
+  mapCoordSystemOptions,
+  mapMarkerIcons,
+  mapMaxPointsLimit,
+  mapMaxRules,
+  mapNumericCandidates,
+  mapMergedCandidates,
+  mapCategoryOptions,
+  mapCategoryValueOptions,
+  setMapCoordMode,
+  onMapCategoryChange,
+  addMapRule,
+  removeMapRule,
+  updateMapRule,
+  onMapRuleColorInput,
+  setMapDefaultIcon,
+  onMapDefaultColorInput,
+  resetMapStyle,
 } = useViewConfigDrawer(props, emit);
 </script>
 
@@ -1167,5 +1448,70 @@ const {
 }
 .nested-field {
   padding: 8px 0 12px 12px;
+}
+/* 地图分类样式编辑（OSC-261004d7f4） */
+.map-rule-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.map-rule-value {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.map-rule-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--color-border-2);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+}
+.map-rule-icon:hover {
+  border-color: rgb(var(--primary-6));
+}
+.map-rule-color {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--color-border-2);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+.map-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 28px);
+  gap: 4px;
+}
+.map-icon-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-text-2);
+  font-size: 16px;
+}
+.map-icon-cell:hover {
+  background: var(--color-fill-2);
+}
+.map-icon-cell.selected {
+  border-color: rgb(var(--primary-6));
+  color: rgb(var(--primary-6));
+}
+.map-default-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 </style>

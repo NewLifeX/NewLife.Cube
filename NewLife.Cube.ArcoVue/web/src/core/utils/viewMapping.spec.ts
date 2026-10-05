@@ -1,14 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import type { FieldMeta } from '@/core/types/field';
-import type { GanttMapping } from './viewMapping';
+import type { GanttMapping, MapMapping } from './viewMapping';
 import {
+  VIEW_KIND_LABEL,
   bucketKanban,
   canCreateViewKind,
   defaultViewKindName,
+  buildMapCategoryRules,
   groupHeaderCell,
   groupRows,
   isGroupHeaderRow,
   isTableLikeViewKind,
+  mapCategoryCandidates,
+  MAP_MAX_RULES,
   moveGroupField,
   nextGroupFieldNames,
   normalizeCardBodyColumns,
@@ -18,6 +22,7 @@ import {
   normalizeDataSource,
   normalizeMapping,
   normalizePageSize,
+  parseViewKind,
   pushGroupField,
   resolveBatchDeleteState,
   resolveBatchEnableState,
@@ -97,6 +102,130 @@ describe('canCreateViewKind', () => {
     expect(
       canCreateViewKind('gantt', [f({ name: 'Start', typeName: 'DateTime' })], 'x').ok,
     ).toBe(false);
+  });
+});
+
+describe('map（OSC-261004d7f4）', () => {
+  const mapFields = [
+    f({ name: 'Name', typeName: 'String' }),
+    f({ name: 'Longitude', typeName: 'Double' }),
+    f({ name: 'Latitude', typeName: 'Double' }),
+  ];
+
+  it('resolveViewPageSize 固定首批 1000', () => {
+    expect(resolveViewPageSize('map', 20, 300)).toBe(1000);
+    expect(resolveViewPageSize('map')).toBe(1000);
+  });
+
+  it('canCreateViewKind：坐标字段 + 系统服务商双门禁', () => {
+    expect(canCreateViewKind('map', mapFields, 'x', { mapConfigured: true }).ok).toBe(true);
+    expect(canCreateViewKind('map', mapFields, 'x').ok).toBe(false);
+    expect(
+      canCreateViewKind('map', [f({ name: 'Name', typeName: 'String' })], 'x', {
+        mapConfigured: true,
+      }).ok,
+    ).toBe(false);
+  });
+
+  it('seed 与 normalize：默认图标 local、maxPoints/zoom 鉗制、非法位置丢弃', () => {
+    const seed = seedMapping('map', mapFields) as MapMapping;
+    expect(seed).toMatchObject({
+      kind: 'map',
+      coordMode: 'latlng',
+      lngField: 'Longitude',
+      latField: 'Latitude',
+      DefaultIcon: 'local',
+      cluster: true,
+    });
+    const m = normalizeMapping(
+      'map',
+      {
+        kind: 'map',
+        coordMode: 'latlng',
+        lngField: 'Longitude',
+        latField: 'Latitude',
+        titleField: 'Name',
+        maxPoints: 5,
+        zoom: 99,
+        DefaultLocation: [0, 0],
+        categoryRules: [{ value: 'a', icon: 'flag', color: '#FF0000' }],
+      },
+      mapFields,
+    ) as MapMapping;
+    expect(m.maxPoints).toBe(1000);
+    expect(m.zoom).toBe(18);
+    expect(m.DefaultLocation).toBeUndefined();
+    expect(m.categoryRules).toEqual([{ value: 'a', icon: 'flag', color: '#FF0000' }]);
+  });
+
+  it('地图中心 DefaultCenter：trim 保留、空白丢弃、超长截断（≤50）', () => {
+    const base = {
+      kind: 'map',
+      coordMode: 'latlng',
+      lngField: 'Longitude',
+      latField: 'Latitude',
+      titleField: 'Name',
+    };
+    const a = normalizeMapping('map', { ...base, DefaultCenter: '  北京  ' }, mapFields) as MapMapping;
+    expect(a.DefaultCenter).toBe('北京');
+    const b = normalizeMapping('map', { ...base, DefaultCenter: '   ' }, mapFields) as MapMapping;
+    expect(b.DefaultCenter).toBeUndefined();
+    const c = normalizeMapping('map', { ...base, DefaultCenter: 'x'.repeat(80) }, mapFields) as MapMapping;
+    expect((c.DefaultCenter || '').length).toBe(50);
+  });
+
+  it('categoryField：Kind 等分类字段经归一化保留（修复误用 groupFieldCandidates 被剔除）', () => {
+    const fields = [...mapFields, f({ name: 'Kind', typeName: 'String' }), f({ name: 'Remark', typeName: 'String' })];
+    const base = {
+      kind: 'map',
+      coordMode: 'latlng',
+      lngField: 'Longitude',
+      latField: 'Latitude',
+      titleField: 'Name',
+      categoryField: 'Kind',
+      categoryRules: [
+        { value: '省', icon: 'pin', color: '#3370FF' },
+        { value: '市', icon: 'anchor', color: '#7B67EE' },
+      ],
+    };
+    const m = normalizeMapping('map', base, fields) as MapMapping;
+    expect(m.categoryField).toBe('Kind');
+    expect(m.categoryRules).toHaveLength(2);
+    const m2 = normalizeMapping('map', { ...base, categoryField: 'Remark' }, fields) as MapMapping;
+    expect(m2.categoryField).toBeUndefined();
+  });
+
+  it('parseViewKind 识别 map；VIEW_KIND_LABEL 含地图', () => {
+    expect(parseViewKind('map')).toBe('map');
+    expect(VIEW_KIND_LABEL.map).toBe('地图');
+    expect(defaultViewKindName('map')).toBeTruthy();
+  });
+
+  it('mapCategoryCandidates：状态/枚举/值集/类型名启发均入选', () => {
+    const names = mapCategoryCandidates([
+      f({ name: 'Id', typeName: 'Int32', primaryKey: true }),
+      f({ name: 'Enable', typeName: 'Boolean' }),
+      f({ name: 'Status', typeName: 'Enum', dataSource: { a: 'A' } }),
+      f({ name: 'Kind', typeName: 'String' }),
+      f({ name: 'Lov', typeName: 'Int32', lovCode: 'List.Sample.User' }),
+      f({ name: 'Choice', typeName: 'Int32', itemType: 'singleSelect' }),
+      f({ name: 'Remark', typeName: 'String' }),
+    ]).map((x) => x.name);
+    expect(names).toEqual(['Enable', 'Status', 'Kind', 'Lov', 'Choice']);
+  });
+
+  it('buildMapCategoryRules：顺序循环分配图标/颜色，跳过空值重复、超限截断', () => {
+    const rules = buildMapCategoryRules(['A', 'B', 'C', ''], ['i1', 'i2'], ['#111111', '#222222']);
+    expect(rules).toEqual([
+      { value: 'A', icon: 'i1', color: '#111111' },
+      { value: 'B', icon: 'i2', color: '#222222' },
+      { value: 'C', icon: 'i1', color: '#111111' },
+    ]);
+    expect(buildMapCategoryRules(['X', 'X'], ['i'], ['#333333'])).toEqual([
+      { value: 'X', icon: 'i', color: '#333333' },
+    ]);
+    const many = Array.from({ length: MAP_MAX_RULES + 10 }, (_, i) => `v${i}`);
+    expect(buildMapCategoryRules(many, ['i'], ['#444444'])).toHaveLength(MAP_MAX_RULES);
   });
 });
 

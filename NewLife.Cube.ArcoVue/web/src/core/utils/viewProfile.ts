@@ -42,6 +42,8 @@ export interface ViewChrome {
   showGroup?: boolean;
   showSort?: boolean;
   showSearch?: boolean;
+  /** 工具栏「填色」；缺省 true（表格/树/卡片/地图有填色按钮） */
+  showColor?: boolean;
   /** 工具栏「分享」；缺省 true（兼容旧配置：原先始终显示分享） */
   showShare?: boolean;
   allowAdd?: boolean;
@@ -421,6 +423,7 @@ export const DEFAULT_CHROME: Required<ViewChrome> = {
   showGroup: true,
   showSort: true,
   showSearch: true,
+  showColor: true,
   showShare: true,
   allowAdd: true,
   addButtonText: '添加记录',
@@ -547,6 +550,7 @@ function normalizeChrome(raw: unknown): ViewChrome | undefined {
     showGroup: boolOr(o.showGroup, true),
     showSort: boolOr(o.showSort, true),
     showSearch: boolOr(o.showSearch, true),
+    showColor: boolOr(o.showColor, true),
     // 旧配置无 showShare → 默认开，与「原先始终显示分享按钮」行为一致
     showShare: boolOr(o.showShare, true),
     allowAdd: boolOr(o.allowAdd, true),

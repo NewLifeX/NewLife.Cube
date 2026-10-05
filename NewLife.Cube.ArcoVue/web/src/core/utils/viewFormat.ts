@@ -67,6 +67,7 @@ export interface CellFormatStyle {
 
 export function formatApplyOptions(viewKind: ViewKind): FormatApply[] {
   if (viewKind === 'card') return ['side', 'row'];
+  if (viewKind === 'map') return ['cell'];
   return ['cell', 'side', 'row', 'column'];
 }
 

@@ -27,7 +27,7 @@
       />
 
       <!-- 表格面板：视图 Tab + 工具栏 + 表格 + 分页 -->
-      <div ref="tablePanelRef" class="list-panel list-panel--table">
+      <div ref="tablePanelRef" class="list-panel list-panel--table" :class="{ 'list-panel--map': activeViewKind === 'map' }">
         <div v-if="viewState" class="list-view-tabs">
           <ViewTabsToolbar
             :views="viewState.views"
@@ -47,7 +47,7 @@
             @toggle-fullscreen="onToggleFullscreen"
           />
         </div>
-        <div class="list-topbar">
+        <div v-if="activeViewKind !== 'map'" class="list-topbar">
           <a-space>
             <a-button v-if="flags.canAdd" type="primary" @click="openAdd()">+ 添加记录</a-button>
           </a-space>
@@ -136,6 +136,7 @@
                       :has-more-fields="false"
                       :more-field-count="0"
                       :expanded="false"
+                      :custom-enabled="chrome.showFilter !== false"
                       @custom="onFilterPopoverVisible(true)"
                       @reset="handleReset"
                       @apply="handleApplyQuery"
@@ -167,6 +168,7 @@
                   :has-more-fields="false"
                   :more-field-count="0"
                   :expanded="false"
+                  :custom-enabled="chrome.showFilter !== false"
                   @custom="onFilterPopoverVisible(true)"
                   @reset="handleReset"
                   @apply="handleApplyQuery"
@@ -263,7 +265,7 @@
               @change="onFormatChange"
             >
               <div
-                v-if="formatButtonVisible"
+                v-if="formatButtonVisible && chrome.showColor !== false"
                 class="tb-act"
                 :class="{ 'is-active': viewFormat.length > 0 }"
               >
@@ -593,6 +595,121 @@
             @mapping-change="onGanttMappingChange"
           />
 
+          <!-- 地图散点视图（OSC-261004d7f4）：全出血地图 + 右上浮动玻璃工具条（缩小/放大/底图/查询/填色）+ 悬停卡 + 右下定位按钮与实时比例尺 -->
+          <MapView
+            v-else-if="activeViewKind === 'map'"
+            ref="mapViewRef"
+            :records="tableData"
+            :fields="listFields"
+            :columns="activeColumns"
+            :titles="columnTitles"
+            :mapping="activeMapMapping"
+            :row-key="pkField"
+            :format-rules="viewFormat"
+            :total="pagination.total"
+            :load-page="loadMapPage"
+            :load-level-page="loadMapLevelPage"
+            :load-locate-row="loadMapLocateRow"
+            :height="measuredTableHeight"
+            @detail="openDetail"
+          >
+            <template #toolbar>
+              <div class="map-toolbar" :style="mapToolbarStyle">
+                <a-tooltip content="缩小">
+                  <span class="map-tb-anchor">
+                    <button
+                      type="button"
+                      class="map-tb-btn"
+                      :disabled="!mapReady || mapZoom <= 3"
+                      @click="onMapZoomOut"
+                    >
+                      <icon-park type="zoom-out" />
+                    </button>
+                  </span>
+                </a-tooltip>
+                <a-tooltip content="放大">
+                  <span class="map-tb-anchor">
+                    <button
+                      type="button"
+                      class="map-tb-btn"
+                      :disabled="!mapReady || mapZoom >= 18"
+                      @click="onMapZoomIn"
+                    >
+                      <icon-park type="zoom-in" />
+                    </button>
+                  </span>
+                </a-tooltip>
+                <a-tooltip :content="mapSatellite ? '标准地图' : '卫星地图'">
+                  <span class="map-tb-anchor">
+                    <button
+                      type="button"
+                      class="map-tb-btn"
+                      :class="{ 'is-active': mapSatellite }"
+                      :disabled="!mapReady"
+                      @click="onMapToggleSatellite"
+                    >
+                      <icon-park type="copy" />
+                    </button>
+                  </span>
+                </a-tooltip>
+                <span class="map-tb-divider" />
+                <a-input
+                  v-if="enableKey !== false && chrome.showSearch !== false"
+                  v-model="searchForm.Q"
+                  placeholder="关键字"
+                  allow-clear
+                  size="small"
+                  class="map-tb-input"
+                  @press-enter="handleSearch"
+                />
+                <FilterBuilderPopover
+                  :visible="filterPopoverVisible"
+                  :fields="filterFields"
+                  :model-value="viewFilter"
+                  :can-save="!!activeViewId"
+                  @update:visible="onFilterPopoverVisible"
+                  @apply="onFilterApply"
+                  @save="onFilterSave"
+                >
+                  <span class="tb-query-anchor" />
+                </FilterBuilderPopover>
+                <QueryComboButton
+                  :queries="savedQueries"
+                  :active-query-id="appliedQueryId"
+                  :params-dirty="queryParamsDirty"
+                  :can-save="queryHasParams"
+                  :has-more-fields="false"
+                  :more-field-count="0"
+                  :expanded="false"
+                  :custom-enabled="chrome.showFilter !== false"
+                  @custom="onFilterPopoverVisible(true)"
+                  @reset="handleReset"
+                  @apply="handleApplyQuery"
+                  @save="handleSaveQuery"
+                  @rename="handleRenameQuery"
+                  @delete="handleDeleteQuery"
+                />
+                <FormatPopover
+                  v-if="chrome.showColor !== false"
+                  :visible="formatPopoverVisible"
+                  :fields="filterFields"
+                  :model-value="viewFormat"
+                  :view-kind="activeViewKind"
+                  @update:visible="onFormatPopoverVisible"
+                  @change="onFormatChange"
+                >
+                  <a-tooltip content="填色">
+                    <span class="map-tb-anchor">
+                      <button type="button" class="map-tb-btn" :class="{ 'is-active': viewFormat.length > 0 }">
+                        <icon-park type="background-color" />
+                      </button>
+                    </span>
+                  </a-tooltip>
+                </FormatPopover>
+              </div>
+            </template>
+          </MapView>
+
           <div
             v-else
             class="view-empty-wrap"
@@ -638,6 +755,7 @@
       :mapping="getActiveView(viewState).mapping"
       :insight="getActiveView(viewState).insight ?? null"
       :chart-rows="tableData"
+      :load-category-values="loadMapCategoryValues"
       @update:columns="onColumnsChange"
       @update:sort="onConfigSort"
       @update:chrome="onChromeChange"
@@ -738,6 +856,7 @@ const CardList = defineAsyncComponent(() => import('@/features/views/CardList.vu
 const KanbanBoard = defineAsyncComponent(() => import('@/features/views/KanbanBoard.vue'));
 const CalendarMonth = defineAsyncComponent(() => import('@/features/views/CalendarMonth.vue'));
 const GanttView = defineAsyncComponent(() => import('@/features/views/GanttView.vue'));
+const MapView = defineAsyncComponent(() => import('@/features/views/map/MapView.vue'));
 import QueryComboButton from '@/features/search/QueryComboButton.vue';
 import InsightPanel from '@/features/search/InsightPanel.vue';
 import BatchEditValueInput from './BatchEditValueInput.vue';
@@ -756,6 +875,7 @@ import WorkflowProgressPanel from '../workflow/WorkflowProgressPanel.vue';
 import ShareViewPopover from './ShareViewPopover.vue';
 import { useUserStatChart } from './useUserStatChart';
 import { isEmbedMode } from '@/core/utils/embedMode';
+import { glassPanelStyle } from '@/core/utils/glassStyle';
 
 const props = defineProps<{
   type: string;
@@ -893,6 +1013,7 @@ const {
   isGrouped,
   groupLabelOf,
   resolvedTableHeight,
+  measuredTableHeight,
   openDetail,
   onSelectionChange,
   onColumnsChange,
@@ -931,6 +1052,7 @@ const {
   activeKanbanMapping,
   activeCalendarMapping,
   activeGanttMapping,
+  activeMapMapping,
   onGanttMappingChange,
   onKanbanMappingChange,
   showPagerBar,
@@ -940,6 +1062,10 @@ const {
   PAGE_SIZE_OPTIONS,
   onPageChange,
   onPageSizeChange,
+  loadMapPage,
+  loadMapLevelPage,
+  loadMapLocateRow,
+  loadMapCategoryValues,
   isLargePageView,
   getActiveView,
   columnTitles,
@@ -977,6 +1103,38 @@ const {
 const insightPanelRef = ref<{ openAdd?: () => void } | null>(null);
 function openDashboard() {
   insightPanelRef.value?.openAdd?.();
+}
+
+/** 地图视图实例（放大/缩小/底图切换与缩放边界）；zoom/satellite/ready 经组件代理读取，具响应式 */
+const mapViewRef = ref<{
+  ready: boolean;
+  zoomIn: () => void;
+  zoomOut: () => void;
+  zoom: number;
+  satellite: boolean;
+  toggleSatellite: () => boolean;
+} | null>(null);
+/** 地图就绪（未就绪时缩放/底图键禁用，design §8） */
+const mapReady = computed(() => mapViewRef.value?.ready === true);
+const mapZoom = computed(() => Number(mapViewRef.value?.zoom ?? 5));
+/** 卫星底图激活态（工具栏底图按钮高亮） */
+const mapSatellite = computed(() => Boolean(mapViewRef.value?.satellite));
+/** 地图浮动工具条背景：默认玻璃（CSS 自适应明暗），自定义视图背景时覆写 */
+const mapToolbarStyle = computed(() => {
+  const v = viewState.value ? getActiveView(viewState.value) : null;
+  const c = v?.chrome;
+  if (c?.bgPreset === 'custom' && c.bgColor) return glassPanelStyle(c);
+  return {};
+});
+function onMapZoomIn() {
+  mapViewRef.value?.zoomIn();
+}
+function onMapZoomOut() {
+  mapViewRef.value?.zoomOut();
+}
+/** 底图切换：标准 ↔ 卫星（会话级，状态在 MapView 内部） */
+function onMapToggleSatellite() {
+  mapViewRef.value?.toggleSatellite();
 }
 
 const hasAdvancedBatchGroup = computed(
@@ -1057,6 +1215,75 @@ const automationFields = computed(() => {
 /* 多维视图：顶部仅留 12px，与 Tab 区（padding-top:0）相加即为页签到面板顶的总间距 */
 .list-panel--table {
   padding-top: 12px;
+}
+/* 地图视图（OSC-261004d7f4）：内容区铺满地图，无底部卡片 */
+.list-panel--map {
+  padding: 12px;
+}
+/* 地图浮动玻璃工具条（右上）：放大 / 缩小 / 查询 / 填色；半透明玻璃，透出底图 */
+.map-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.45);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+:global(body[arco-theme='dark']) .map-toolbar {
+  background: rgba(32, 34, 40, 0.45);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.map-tb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-2);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+.map-tb-btn:hover:not(:disabled) {
+  background: var(--color-fill-2);
+}
+.map-tb-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.map-tb-btn.is-active {
+  color: rgb(var(--primary-6));
+}
+.map-tb-divider {
+  width: 1px;
+  height: 18px;
+  margin: 0 2px;
+  background: var(--color-border-2);
+}
+.map-tb-input {
+  width: 160px;
+}
+/* 工具条内的关键字输入框跟随半透明（含 hover），与玻璃条一体；
+   a-input 根元素即 .arco-input-wrapper，直接设背景即可 */
+.map-tb-input {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+.map-tb-input:hover {
+  background-color: rgba(255, 255, 255, 0.68);
+}
+:global(body[arco-theme='dark']) .map-tb-input {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+:global(body[arco-theme='dark']) .map-tb-input:hover {
+  background-color: rgba(255, 255, 255, 0.14);
 }
 .list-view-tabs {
   /* Tab 底到工具栏：12px；顶部间距由 list-panel--table 的 padding-top 承担 */

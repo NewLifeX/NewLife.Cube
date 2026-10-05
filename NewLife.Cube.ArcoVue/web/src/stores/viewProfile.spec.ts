@@ -42,7 +42,16 @@ vi.mock('./user', () => ({
   useUserStore: () => mockUserStore(),
 }));
 
+// 地图视图创建门禁读取系统地图服务商（OSC-261004d7f4）：以可变状态替身隔离 app store
+const appState = vi.hoisted(() => ({
+  mapConfig: { provider: null as string | null, key: '', scriptUrl: '' },
+}));
+vi.mock('./app', () => ({
+  useAppStore: () => appState,
+}));
+
 import { useViewProfileStore } from './viewProfile';
+import type { FieldMeta } from '@/core/types/field';
 import type { ViewFilter } from '@/core/utils/viewProfile';
 
 // 默认模拟管理员身份（全局布局的唯一可写者），各 describe 的 beforeEach 会重置 API mock 但不重置身份
@@ -141,6 +150,51 @@ describe('viewProfile store', () => {
     expect(state.activeViewId).toBe('v-card');
     expect(store.getActive('Admin/Department')?.view).toBe('card');
     expect(store.getActive('Admin/Department')?.name).toBe('卡片视图');
+  });
+});
+
+describe('viewProfile store 地图视图门禁 (OSC-261004d7f4)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    getViewProfile.mockReset();
+    putViewProfile.mockReset().mockResolvedValue({ data: null });
+    appState.mapConfig = { provider: null, key: '', scriptUrl: '' };
+  });
+
+  it('addView(map)：未配置服务商拦截；已配置放行', async () => {
+    getViewProfile.mockResolvedValue({
+      data: {
+        typePath: 'Cube/Area',
+        view: 'table',
+        viewsJson: JSON.stringify([
+          {
+            id: 'default',
+            name: '默认列表',
+            view: 'table',
+            columns: [{ key: 'Name', visible: true }],
+          },
+        ]),
+        activeViewId: 'default',
+      },
+    });
+    const fields: FieldMeta[] = [
+      { name: 'Name', displayName: '名称', typeName: 'String' },
+      { name: 'Longitude', displayName: '经度', typeName: 'Double' },
+      { name: 'Latitude', displayName: '纬度', typeName: 'Double' },
+    ];
+
+    const store = useViewProfileStore();
+    await store.load('Cube/Area', ['Name'], fields);
+    const views = () => store.byType['Cube/Area'].state.views;
+
+    // 未配置：拦截并弹提示，视图不落库
+    store.addView('Cube/Area', '地图', 'map');
+    expect(views().some((v) => v.view === 'map')).toBe(false);
+
+    // 已配置高德：放行创建
+    appState.mapConfig = { provider: 'amap', key: 'k', scriptUrl: '' };
+    store.addView('Cube/Area', '地图', 'map');
+    expect(views().some((v) => v.view === 'map')).toBe(true);
   });
 });
 

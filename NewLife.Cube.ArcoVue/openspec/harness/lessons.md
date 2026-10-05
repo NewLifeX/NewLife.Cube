@@ -64,6 +64,7 @@
 | OSC-2610019c9d — 2026-10-01 | getList type 须前导 /；执行期扩范围即时改三件套；Form tip 用 #label；抽屉表 nowrap |
 | OSC-2610012e35 — 2026-10-03 | a-table 列必须进 #columns；抽屉空白先用真实环境取证；友好名回落链；数据字典下钻对齐 MVC；单元格省略/对齐三件套 |
 | OSC-261004e6ee — 2026-10-04 | force 用资源世代勿抬会话；注销也要清 app；扩后端即时改三件套；混 WIP 按白名单提交 |
+| OSC-261004d7f4 — 2026-10-05 | 候选校验与 UI 同源；世代标志须复位；异步创建序号守卫；失败缓存要清理；增强须即时回写 AC；桩用 setViewport 驱动 |
 
 ---
 
@@ -447,3 +448,13 @@
 - **注销与登出同属会话失效**：`useCloseAccount` 必须调 `appStore.clearSessionMetadata()`（及 tenant/profile 既有清理），否则下一用户可能复用前用户壳层元数据。
 - **CubeSetting 对照可触发执行期扩范围**：草案写「不改后端」但对照后为 Map 配置补 `GetMapConfig`/`CubeSetting` 地图项时，须同步改 proposal/design/tasks/verify 并在 retro 标明偏离。
 - **并行 WIP 归档提交按白名单**：同工作区若混有 d7f4 地图视图 UI、徽标 `listRowPatch` 等，复盘 commit 只 add 本 OSC 文件，禁止 `git add .`。
+
+## OSC-261004d7f4 — 2026-10-05
+
+- **归一化校验必须与 UI 候选同源**：`normalizeMapMapping` 保留 `categoryField` 误用分组候选（`groupFieldCandidates`）→ 选「类型」(Kind) 保存即被剔除、回载重置为「无」（表象＝“选择无效”）；改用 `mapCategoryCandidates` 修复。门禁/归一/UI 三处同类校验应共用同一候选函数。
+- **世代切换须复位在途标志**：续页 `loadingMore` 在 `generation++` 后旧任务被 gen 守卫丢弃、finally 不复位 → 新续页被拦截永久停摆；`resetPipeline` 显式复位（`levelBusy` 同）。异步标志 = 环境状态 + 世代属主，两者都要管。
+- **异步创建须序号守卫**：`buildAdapter` 并发进入（源/数据变更）→ 两实例挂载同一容器、慢者覆盖引用致泄漏；构建序号 + 完成后自检销毁。
+- **失败任务不得永久缓存**：`mapScript` 全局对象缺失路径 reject 未 `pending.delete` → 重进视图永远直接失败；失败/超时/成功各路径都要清理。
+- **多轮增强必须即时回写 AC/design**：本次验收发现「四键 vs 五键、进度小条 vs 定位按钮、‘不做卫星图’ vs 已交付」等文本滞后——除当场修订外，后续同类增强应同步修订提案/设计判据。
+- **桩能力边界要在 design 标注**：桩 `zoomIn/zoomOut` 不触发视口事件，E2E 须用 `setViewport()` 驱动增量断言（本次冒烟 35→2941）。
+- **坐标脱节时用事件派发验证**：高德自定义覆盖物 `getBoundingClientRect` 与视觉位置脱节（Playwright hover 报 outside viewport）时，`dispatchEvent('mouseenter'/'mousemove')` 可驱动悬停卡片断言（computed style 取证），绕过 SDK 覆盖物坐标限制。

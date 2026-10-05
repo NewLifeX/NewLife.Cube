@@ -12,7 +12,7 @@ import type { ViewKind } from './viewMapping';
 import type { InboxBucketKey } from './inboxBucket';
 import type { FieldMeta } from '@/core/types/field';
 
-/** 视图类型 → 图标（6 视图；kanban 用 blackboard 语义替代） */
+/** 视图类型 → 图标（7 视图；kanban 用 blackboard 语义替代） */
 export const VIEW_KIND_ICONS: Record<ViewKind, string> = {
   table: 'list-checkbox',
   tree: 'tree-list',
@@ -20,6 +20,7 @@ export const VIEW_KIND_ICONS: Record<ViewKind, string> = {
   kanban: 'blackboard',
   calendar: 'calendar',
   gantt: 'timeline',
+  map: 'map-draw',
 };
 
 /** 外观 → 图标（右上角主题按钮） */
@@ -36,6 +37,53 @@ export const INBOX_BUCKET_ICONS: Record<InboxBucketKey, string> = {
   month: 'calendar-thirty',
   earlier: 'history',
 };
+
+/** 地图点位图标候选（OSC-261004d7f4）：自定义配置分类规则的图标栅格与 DefaultIcon 校验来源 */
+export const MAP_MARKER_ICONS: readonly string[] = [
+  'local',
+  'local-two',
+  'map-draw',
+  'map-two',
+  'flag',
+  'pin',
+  'anchor',
+  'compass',
+  'navigation',
+  'direction',
+  'planet',
+  'earth',
+  'home',
+  'shop',
+  'building-one',
+  'bank',
+  'hospital',
+  'school',
+  'star',
+  'car',
+  'bus',
+  'train',
+  'fire',
+  'user',
+  // 抽象图形（二期补充：形状/符号类，点位区分更轻量）
+  'dot',
+  'square',
+  'round',
+  'triangle',
+  'diamond',
+  'octagon',
+  'asterisk',
+  'at-sign',
+  'plus-cross',
+  'minus',
+  'close-one',
+  'check-one',
+  'target',
+  'aiming',
+  'focus',
+  'rocket',
+  'sun-one',
+  'four-point-connection',
+];
 
 /** 数值类型集合（fieldIcon 分支） */
 const NUMBER_TYPE_NAMES = new Set([

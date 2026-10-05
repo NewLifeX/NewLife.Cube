@@ -6,6 +6,7 @@ import {
   DEFAULT_MENU_ICON,
   FA_ICON_MAP,
   INBOX_BUCKET_ICONS,
+  MAP_MARKER_ICONS,
   VIEW_KIND_ICONS,
   fieldIcon,
   menuIcon,
@@ -31,14 +32,23 @@ function assertAllValid(types: string[]) {
 }
 
 describe('VIEW_KIND_ICONS', () => {
-  it('覆盖 6 个 ViewKind 且值非空且有效', () => {
-    const kinds = ['table', 'tree', 'card', 'kanban', 'calendar', 'gantt'];
+  it('覆盖 7 个 ViewKind 且值非空且有效', () => {
+    const kinds = ['table', 'tree', 'card', 'kanban', 'calendar', 'gantt', 'map'];
     expect(Object.keys(VIEW_KIND_ICONS).sort()).toEqual([...kinds].sort());
     assertAllValid(Object.values(VIEW_KIND_ICONS));
   });
 
-  it('6 视图图标各不相同', () => {
-    expect(new Set(Object.values(VIEW_KIND_ICONS)).size).toBe(6);
+  it('7 视图图标各不相同', () => {
+    expect(new Set(Object.values(VIEW_KIND_ICONS)).size).toBe(7);
+  });
+});
+
+describe('MAP_MARKER_ICONS', () => {
+  it('至少 20 个点位图标，全部已登记组件且不重复，含默认 local', () => {
+    expect(MAP_MARKER_ICONS.length).toBeGreaterThanOrEqual(20);
+    expect(new Set(MAP_MARKER_ICONS).size).toBe(MAP_MARKER_ICONS.length);
+    assertAllValid([...MAP_MARKER_ICONS]);
+    expect(MAP_MARKER_ICONS).toContain('local');
   });
 });
 

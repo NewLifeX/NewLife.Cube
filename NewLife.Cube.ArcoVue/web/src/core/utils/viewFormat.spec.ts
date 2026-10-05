@@ -39,6 +39,10 @@ describe('formatApplyOptions', () => {
     expect(formatApplyOptions('table')).toEqual(['cell', 'side', 'row', 'column']);
     expect(formatApplyOptions('tree')).toEqual(['cell', 'side', 'row', 'column']);
   });
+
+  it('map 仅 cell（地图填色作散点颜色覆写）', () => {
+    expect(formatApplyOptions('map')).toEqual(['cell']);
+  });
 });
 
 describe('FORMAT_PRESET_COLORS', () => {

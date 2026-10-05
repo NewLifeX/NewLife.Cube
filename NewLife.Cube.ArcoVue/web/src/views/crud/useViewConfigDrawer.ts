@@ -1,4 +1,5 @@
 import { computed, reactive, ref, watch } from 'vue';
+import { Message } from '@arco-design/web-vue';
 import {
   applyFrozenLeftTo,
   applyFrozenRightTo,
@@ -16,18 +17,27 @@ import {
 } from '@/core/utils/viewProfile';
 import type { FieldMeta } from '@/core/types/field';
 import {
+  MAP_COORD_SYSTEMS,
+  MAP_MAX_POINTS,
+  MAP_MAX_RULES,
   VIEW_KIND_LABEL,
+  buildMapCategoryRules,
   colorFieldCandidates,
   dateFieldCandidates,
   groupFieldCandidates,
   imageFieldCandidates,
+  mapCategoryCandidates,
   normalizeCardBodyColumns,
   normalizeMapping,
   titleFieldCandidates,
   type CardBodyColumns,
   type CardFieldOrientation,
   type CardLayout,
+  type DataSourceOption,
+  type MapCategoryRule,
 } from '@/core/utils/viewMapping';
+import type { CoordMode, CoordOrder, CoordSystem } from '@/core/utils/mapCoord';
+import { MAP_MARKER_ICONS } from '@/core/utils/iconRegistry';
 import { useUserProfileStore } from '@/stores/userProfile';
 import { PRESET_THEME_COLORS, type PresetThemeColor } from '@/core/utils/presetColors';
 
@@ -69,6 +79,12 @@ const recommendedColors: Swatch[] = [
   { key: 'white', label: '白', color: '#FFFFFF' },
 ];
 
+/** 分类样式推荐色板（选择分类字段自动生成时循环取色，用基础调色板前 9 色） */
+const mapCategoryPalette: string[] = recommendedColors
+  .filter((s) => !!s.color)
+  .slice(0, 9)
+  .map((s) => s.color!);
+
 type PanelKey = 'bg' | null;
 
 /**
@@ -89,6 +105,8 @@ interface ViewConfigDrawerProps {
   insight?: ViewInsight | null;
   /** 当前列表行（图表配置预览用，OSC-260819e483 P5） */
   chartRows?: Record<string, unknown>[];
+  /** 分类字段值获取（拉数据抽样提取去重值；无 dataSource 字段用，OSC-261004d7f4 增强） */
+  loadCategoryValues?: (field: string) => Promise<string[]>;
 }
 
 /** ViewConfigDrawer 组件 emits 类型（与 ViewConfigDrawer.vue defineEmits 泛型逐字一致） */
@@ -131,6 +149,21 @@ export function useViewConfigDrawer(props: ViewConfigDrawerProps, emit: ViewConf
     layout: 'standard' as CardLayout,
     bodyColumns: 2 as CardBodyColumns,
     fieldOrientation: 'vertical' as CardFieldOrientation,
+    // 地图（OSC-261004d7f4）
+    mapCoordMode: 'latlng' as CoordMode,
+    mapLngField: '',
+    mapLatField: '',
+    mapCoordField: '',
+    mapCoordOrder: 'lnglat' as CoordOrder,
+    mapCoordSystem: 'gcj02' as CoordSystem,
+    mapCluster: true,
+    mapMaxPoints: MAP_MAX_POINTS,
+    mapZoom: 5,
+    mapCenter: '',
+    mapCategoryField: '',
+    mapCategoryRules: [] as MapCategoryRule[],
+    mapDefaultIcon: 'local',
+    mapDefaultColor: '#165DFF',
   });
 
   /** 当前主题主色（外观设置自定义主色 hex；缺省极客蓝） */
@@ -170,6 +203,8 @@ export function useViewConfigDrawer(props: ViewConfigDrawerProps, emit: ViewConf
         return '日历区';
       case 'gantt':
         return '甘特图区';
+      case 'map':
+        return '地图区';
       default:
         return '视图区';
     }
@@ -179,6 +214,30 @@ export function useViewConfigDrawer(props: ViewConfigDrawerProps, emit: ViewConf
   const groupCandidates = computed(() => groupFieldCandidates(props.fields));
   const dateCandidates = computed(() => dateFieldCandidates(props.fields));
   const colorCandidates = computed(() => colorFieldCandidates(props.fields));
+
+  // ---- 地图（OSC-261004d7f4）----
+  const mapCoordSystemOptions = MAP_COORD_SYSTEMS;
+  const mapMarkerIcons = MAP_MARKER_ICONS;
+  const mapMaxPointsLimit = MAP_MAX_POINTS;
+  const mapMaxRules = MAP_MAX_RULES;
+  /** 经度/纬度候选：数值字段 */
+  const mapNumericCandidates = computed(() =>
+    props.fields.filter(
+      (f) =>
+        !f.primaryKey &&
+        ['Byte', 'Int16', 'Int32', 'Int64', 'Single', 'Double', 'Decimal'].includes(f.typeName || ''),
+    ),
+  );
+  /** 合并坐标候选：非主键字段（坐标通常存 String） */
+  const mapMergedCandidates = computed(() => props.fields.filter((f) => !f.primaryKey));
+  /** 分类字段候选（状态/枚举/值集/类型名启发；含地区实体 Kind=省/市/区县） */
+  const mapCategoryOptions = computed(() => mapCategoryCandidates([...props.fields]));
+  /** 分类字段值候选（所选字段的 dataSource；无则自由输入） */
+  const mapCategoryValueOptions = computed<DataSourceOption[]>(() => {
+    const f = props.fields.find((x) => x.name === localMapping.mapCategoryField);
+    if (!f?.dataSource) return [];
+    return Object.entries(f.dataSource).map(([value, label]) => ({ value, label: String(label) }));
+  });
 
   function fieldLabel(f: FieldMeta): string {
     return (f.displayName?.trim() || f.name).toString();
@@ -251,6 +310,20 @@ export function useViewConfigDrawer(props: ViewConfigDrawerProps, emit: ViewConf
     localMapping.layout = 'standard';
     localMapping.bodyColumns = 2;
     localMapping.fieldOrientation = 'vertical';
+    localMapping.mapCoordMode = 'latlng';
+    localMapping.mapLngField = '';
+    localMapping.mapLatField = '';
+    localMapping.mapCoordField = '';
+    localMapping.mapCoordOrder = 'lnglat';
+    localMapping.mapCoordSystem = 'gcj02';
+    localMapping.mapCluster = true;
+    localMapping.mapMaxPoints = MAP_MAX_POINTS;
+    localMapping.mapZoom = 5;
+    localMapping.mapCenter = '';
+    localMapping.mapCategoryField = '';
+    localMapping.mapCategoryRules = [];
+    localMapping.mapDefaultIcon = 'local';
+    localMapping.mapDefaultColor = '#165DFF';
 
     const kind = props.viewKind;
     if (kind === 'table' || kind === 'tree') return;
@@ -282,6 +355,22 @@ export function useViewConfigDrawer(props: ViewConfigDrawerProps, emit: ViewConf
       localMapping.barColor = m.barColor;
       localMapping.groupField = m.groupField || '';
       barColorShown.value = m.barColor ?? currentPrimaryColor();
+    } else if (m.kind === 'map') {
+      localMapping.titleField = m.titleField || '';
+      localMapping.mapCoordMode = m.coordMode;
+      localMapping.mapLngField = m.lngField || '';
+      localMapping.mapLatField = m.latField || '';
+      localMapping.mapCoordField = m.coordField || '';
+      localMapping.mapCoordOrder = m.coordOrder || 'lnglat';
+      localMapping.mapCoordSystem = m.coordSystem || 'gcj02';
+      localMapping.mapCluster = m.cluster !== false;
+      localMapping.mapMaxPoints = m.maxPoints ?? MAP_MAX_POINTS;
+      localMapping.mapZoom = m.zoom ?? 5;
+      localMapping.mapCenter = m.DefaultCenter || '';
+      localMapping.mapCategoryField = m.categoryField || '';
+      localMapping.mapCategoryRules = (m.categoryRules || []).map((r) => ({ ...r }));
+      localMapping.mapDefaultIcon = m.DefaultIcon || 'local';
+      localMapping.mapDefaultColor = m.defaultColor || '#165DFF';
     }
   }
 
@@ -488,7 +577,118 @@ export function useViewConfigDrawer(props: ViewConfigDrawerProps, emit: ViewConf
         tableWidth: prev?.tableWidth,
         groupField: localMapping.groupField || '',
       });
+      return;
     }
+    if (kind === 'map') {
+      // 坐标必填：按模式校验（缺失时不提交，保持上次有效配置）
+      if (localMapping.mapCoordMode === 'latlng') {
+        if (!localMapping.mapLngField || !localMapping.mapLatField) return;
+      } else if (!localMapping.mapCoordField) {
+        return;
+      }
+      const prev = props.mapping?.kind === 'map' ? props.mapping : undefined;
+      const next: Record<string, unknown> = {
+        kind: 'map',
+        coordMode: localMapping.mapCoordMode,
+        lngField: localMapping.mapLngField || undefined,
+        latField: localMapping.mapLatField || undefined,
+        coordField: localMapping.mapCoordField || undefined,
+        coordOrder: localMapping.mapCoordOrder,
+        coordSystem: localMapping.mapCoordSystem,
+        titleField: localMapping.titleField || '',
+        categoryField: localMapping.mapCategoryField || undefined,
+        categoryRules: localMapping.mapCategoryRules.length
+          ? localMapping.mapCategoryRules.map((r) => ({ ...r }))
+          : undefined,
+        DefaultIcon: localMapping.mapDefaultIcon || undefined,
+        defaultColor: localMapping.mapDefaultColor || undefined,
+        cluster: localMapping.mapCluster,
+        maxPoints: localMapping.mapMaxPoints,
+        // 默认视野不再提供 UI（旧配置值保留不回写；定位改用「地图中心（名称）」）
+        DefaultLocation: prev?.DefaultLocation,
+        DefaultCenter: localMapping.mapCenter.trim() || undefined,
+        zoom: localMapping.mapZoom,
+      };
+      const normalized = normalizeMapping('map', next, props.fields);
+      if (normalized) emit('update:mapping', normalized);
+    }
+  }
+
+  function setMapCoordMode(mode: CoordMode) {
+    localMapping.mapCoordMode = mode;
+    emitMapping();
+  }
+
+  /** 分类字段变更（OSC-261004d7f4）：清空后自动列出该字段分类值并预填推荐图标/颜色 */
+  let categorySeq = 0;
+  async function onMapCategoryChange() {
+    const fieldName = localMapping.mapCategoryField;
+    localMapping.mapCategoryRules = [];
+    if (!fieldName) {
+      emitMapping();
+      return;
+    }
+    const seq = ++categorySeq;
+    const field = props.fields.find((x) => x.name === fieldName);
+    let values: string[];
+    if (field?.dataSource) {
+      values = Object.keys(field.dataSource);
+    } else if (props.loadCategoryValues) {
+      values = await props.loadCategoryValues(fieldName);
+    } else {
+      values = [];
+    }
+    if (seq !== categorySeq) return; // 已切换到其他字段，本次结果作废
+    if (!values.length) {
+      emitMapping();
+      Message.info('未获取到该字段的分类值，可点「添加分类样式」手动配置');
+      return;
+    }
+    localMapping.mapCategoryRules = buildMapCategoryRules(values, MAP_MARKER_ICONS, mapCategoryPalette);
+    if (values.length > MAP_MAX_RULES) Message.warning(`分类值较多，仅展示前 ${MAP_MAX_RULES} 项`);
+    emitMapping();
+  }
+
+  function addMapRule() {
+    if (localMapping.mapCategoryRules.length >= MAP_MAX_RULES) return;
+    localMapping.mapCategoryRules = [
+      ...localMapping.mapCategoryRules,
+      { value: '', icon: localMapping.mapDefaultIcon, color: localMapping.mapDefaultColor },
+    ];
+  }
+
+  function removeMapRule(idx: number) {
+    localMapping.mapCategoryRules = localMapping.mapCategoryRules.filter((_, i) => i !== idx);
+    emitMapping();
+  }
+
+  function updateMapRule(idx: number, patch: Partial<MapCategoryRule>) {
+    localMapping.mapCategoryRules = localMapping.mapCategoryRules.map((r, i) =>
+      i === idx ? { ...r, ...patch } : r,
+    );
+    emitMapping();
+  }
+
+  function onMapRuleColorInput(idx: number, value: string) {
+    updateMapRule(idx, { color: value });
+  }
+
+  function setMapDefaultIcon(icon: string) {
+    localMapping.mapDefaultIcon = icon;
+    emitMapping();
+  }
+
+  function onMapDefaultColorInput(value: string) {
+    localMapping.mapDefaultColor = value;
+    emitMapping();
+  }
+
+  /** 恢复地图默认样式：清空规则 + 默认图标/颜色回落 */
+  function resetMapStyle() {
+    localMapping.mapCategoryRules = [];
+    localMapping.mapDefaultIcon = 'local';
+    localMapping.mapDefaultColor = '#165DFF';
+    emitMapping();
   }
 
   /** 当前任务条颜色是否落在预置色板（自定义色块选中态） */
@@ -652,5 +852,22 @@ export function useViewConfigDrawer(props: ViewConfigDrawerProps, emit: ViewConf
     openChartConfig,
     onChartConfigSave,
     onChartConfigClear,
+    mapCoordSystemOptions,
+    mapMarkerIcons,
+    mapMaxPointsLimit,
+    mapMaxRules,
+    mapNumericCandidates,
+    mapMergedCandidates,
+    mapCategoryOptions,
+    mapCategoryValueOptions,
+    setMapCoordMode,
+    onMapCategoryChange,
+    addMapRule,
+    removeMapRule,
+    updateMapRule,
+    onMapRuleColorInput,
+    setMapDefaultIcon,
+    onMapDefaultColorInput,
+    resetMapStyle,
   };
 }

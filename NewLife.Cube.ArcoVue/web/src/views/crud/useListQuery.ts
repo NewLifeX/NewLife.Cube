@@ -299,9 +299,10 @@ export function useListQuery(ctx: ListContext) {
     try {
       const sort = buildSortsPayload(activeSorts.value);
       const pageSize = effectivePageSize.value;
-      // 看板/甘特随分页器 current 翻页；日历仍固定第一页大加载
+      // 看板/甘特随分页器 current 翻页；日历仍固定第一页大加载。
+      // 后端 GetPage 的 pageIndex 为 1 基（(pageIndex-1)*pageSize；0 与 1 同为第 1 页）
       const pageIndex =
-        isLargePageView.value && activeViewKind.value !== 'gantt' ? 0 : pagination.current - 1;
+        isLargePageView.value && activeViewKind.value !== 'gantt' ? 1 : pagination.current;
       const requestFilter = requestViewFilter();
       const vf = buildViewFilterParam(requestFilter);
       const requestParams = {
@@ -537,7 +538,8 @@ export function useListQuery(ctx: ListContext) {
   }
 
   /**
-   * 地图视图续页（OSC-261004d7f4）：与主请求同参（搜索/排序/视图筛选/条数），仅换 pageIndex；
+   * 地图视图续页（OSC-261004d7f4）：与主请求同参（搜索/排序/视图筛选/条数），仅换页码；
+   * pageIndex 为 1 基（后端 (pageIndex-1)*pageSize；首批为主列表第 1 页，续页从 2 起）；
    * 不写主状态（tableData/loading），失败或无更多时返回 null；查询变更由调用方（地图管线）自行中止。
    */
   async function loadMapPage(pageIndex: number): Promise<Record<string, unknown>[] | null> {
@@ -556,6 +558,78 @@ export function useListQuery(ctx: ListContext) {
       return rows.length ? rows : null;
     } catch {
       return null;
+    }
+  }
+
+  /**
+   * 地图分层续页（OSC-261004d7f4）：与主请求同参（搜索/排序/视图筛选），额外按层级字段过滤；
+   * 供地区等层级实体「放大逐层加载、缩小隐藏细层」使用；pageIndex 为 1 基（后端约定），
+   * 分页步长与地图视图页大小一致（1000）。失败返回 null（数据泵静默跳过）。不写主状态。
+   */
+  async function loadMapLevelPage(
+    levelField: string,
+    level: number,
+    pageIndex: number,
+  ): Promise<Record<string, unknown>[] | null> {
+    try {
+      const sort = buildSortsPayload(activeSorts.value);
+      const requestFilter = requestViewFilter();
+      const vf = buildViewFilterParam(requestFilter);
+      const res = await cubeApi.page.getList(typePath.value, {
+        pageIndex,
+        pageSize: 1000,
+        ...sort,
+        ...effectiveSearch.value,
+        ...(vf ? { viewFilter: vf } : {}),
+        [levelField]: level,
+      });
+      const rows = (res.data as Record<string, unknown>[]) || [];
+      return rows.length ? rows : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * 地图定位查询（OSC-261004d7f4）：按标题字段搜索一行（Q 关键字，后端模糊匹配）；
+   * 优先返回标题字段精确匹配的行，否则返回首行；未命中/失败返回 null。不写主状态。
+   */
+  async function loadMapLocateRow(
+    field: string,
+    value: string,
+  ): Promise<Record<string, unknown> | null> {
+    try {
+      const res = await cubeApi.page.getList(typePath.value, { pageIndex: 1, pageSize: 20, Q: value });
+      const rows = (res.data as Record<string, unknown>[]) || [];
+      if (!rows.length) return null;
+      const target = String(value).trim();
+      return rows.find((r) => String(getValueByKey(r, field) ?? '').trim() === target) ?? rows[0];
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * 地图分类取值（OSC-261004d7f4）：拉首页 1000 行抽样提取指定字段的去重值（按出现顺序），
+   * 供配置抽屉「分类字段」自动生成分类样式列表；失败返回空数组。不写主状态。
+   */
+  async function loadMapCategoryValues(field: string): Promise<string[]> {
+    try {
+      const res = await cubeApi.page.getList(typePath.value, { pageIndex: 1, pageSize: 1000 });
+      const rows = (res.data as Record<string, unknown>[]) || [];
+      const seen = new Set<string>();
+      const out: string[] = [];
+      for (const r of rows) {
+        const v = getValueByKey(r, field);
+        if (v == null || v === '') continue;
+        const key = String(v).trim();
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        out.push(key);
+      }
+      return out;
+    } catch {
+      return [];
     }
   }
 
@@ -601,6 +675,9 @@ export function useListQuery(ctx: ListContext) {
     onPageSizeChange,
     onTableScrollBottom,
     loadMapPage,
+    loadMapLevelPage,
+    loadMapLocateRow,
+    loadMapCategoryValues,
   };
 }
 

@@ -46,6 +46,7 @@ import {
   type ViewSort,
 } from '@/core/utils/viewProfile';
 import {
+  isFullbleedViewKind,
   isLargePageViewKind,
   parseViewKind,
   resolveBatchDeleteState,
@@ -55,6 +56,7 @@ import {
   type CardMapping,
   type GanttMapping,
   type KanbanMapping,
+  type MapMapping,
 } from '@/core/utils/viewMapping';
 import {
   cleanSearchParams,
@@ -103,7 +105,7 @@ export function createListContext(props: { type: string; authId?: number }) {
   const tableData = ref<Record<string, unknown>[]>([]);
   /** 后端原始数据（未应用视图级前端筛选 viewFilter）；视图切换/筛选变化时复用避免重复请求（重绘优化） */
   const tableDataRaw = ref<Record<string, unknown>[]>([]);
-  /** 当前原始行对应的完整服务端请求签名；仅完全一致时允许本地重绘复用 */
+  /** 当前原始行对应的完整服务端请求签名；仅完全一致时允许本地重绘复用。 */
   const tableDataRequestSignature = ref('');
   const loading = ref(false);
   /** Enable 徽标切换请求进行中：防止快速双击并发回跳 */
@@ -334,6 +336,9 @@ export function createListContext(props: { type: string; authId?: number }) {
     () =>
       (activeMapping.value?.kind === 'gantt' ? activeMapping.value : null) as GanttMapping | null,
   );
+  const activeMapMapping = computed(
+    () => (activeMapping.value?.kind === 'map' ? activeMapping.value : null) as MapMapping | null,
+  );
 
   const isLargePageView = computed(() => isLargePageViewKind(activeViewKind.value));
 
@@ -342,8 +347,11 @@ export function createListContext(props: { type: string; authId?: number }) {
   );
 
   const showPagerBar = computed(
-    // 看板（已恢复分页器）与甘特显示分页器；日历仍为大视图底部仅提示
-    () => chrome.value.showPager && (!isLargePageView.value || activeViewKind.value === 'gantt'),
+    // 看板（已恢复分页器）与甘特显示分页器；日历/地图为大视图底部仅提示（地图不显示提示条）
+    () =>
+      chrome.value.showPager &&
+      !isFullbleedViewKind(activeViewKind.value) &&
+      (!isLargePageView.value || activeViewKind.value === 'gantt'),
   );
 
   /** 树数据可用：后端已返回 children 树，或扁平行可组装为树 */
@@ -450,7 +458,7 @@ export function createListContext(props: { type: string; authId?: number }) {
   const viewFormat = computed<ViewFormatRule[]>(() => localFormat.value);
   const formatButtonVisible = computed(() => {
     const k = activeViewKind.value;
-    return k === 'table' || k === 'tree' || k === 'card';
+    return k === 'table' || k === 'tree' || k === 'card' || k === 'map';
   });
 
   /** 筛选构建器候选字段 = GetPage search∪list（与后端 viewFilter 白名单对齐，OSC-260830a1b2）。去重保序 */
@@ -495,10 +503,10 @@ export function createListContext(props: { type: string; authId?: number }) {
     return style;
   });
 
-  /** 是否配置了视图自定义背景（作用于搜索+表格整块） */
+  /** 是否配置了视图自定义背景（作用于搜索+表格整块）；地图满屏不使用表面背景 */
   const hasChromeBg = computed(() => {
     const c = chrome.value;
-    return c.bgPreset === 'custom' && !!c.bgColor;
+    return c.bgPreset === 'custom' && !!c.bgColor && !isFullbleedViewKind(activeViewKind.value);
   });
 
   /** 背景色：分布 + 搜索 + 表格（含视图 Tab） */
@@ -736,6 +744,7 @@ export function createListContext(props: { type: string; authId?: number }) {
     activeKanbanMapping,
     activeCalendarMapping,
     activeGanttMapping,
+    activeMapMapping,
     isLargePageView,
     effectivePageSize,
     showPagerBar,

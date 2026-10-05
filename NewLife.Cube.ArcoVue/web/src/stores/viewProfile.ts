@@ -3,6 +3,7 @@ import { Message } from '@arco-design/web-vue';
 import cubeApi from '@/api';
 import { formatApiError } from '@/core/utils/apiError';
 import { useUserStore } from './user';
+import { useAppStore } from './app';
 import type { FieldMeta } from '@/core/types/field';
 import {
   clearFormModeLayout,
@@ -793,7 +794,11 @@ export const useViewProfileStore = defineStore('viewProfile', {
     ) {
       const entry = this.byType[typePath];
       if (!entry) return;
-      const gate = canCreateViewKind(kind, entry.fields, typePath);
+      const gate = canCreateViewKind(kind, entry.fields, typePath, {
+        // 地图视图需系统已配置服务商（OSC-261004d7f4）：与创建入口门禁同源，
+        // 漏传 mapConfigured 会把已配置系统误判为未配置而拦下创建
+        mapConfigured: useAppStore().mapConfig.provider != null,
+      });
       if (!gate.ok) {
         Message.warning(gate.reason || '无法创建该视图类型');
         return;
