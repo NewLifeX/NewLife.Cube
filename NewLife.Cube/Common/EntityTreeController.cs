@@ -69,6 +69,9 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
         return set;
     }
 
+    /// <summary>菜单等已一次返回全树，跳过命中扩子孙（OSC-26100514b7）</summary>
+    protected override Boolean ShouldExpandTreeDescendants(Pager p) => false;
+
     /// <summary>实体树的数据来自缓存</summary>
     /// <param name="p"></param>
     /// <returns></returns>

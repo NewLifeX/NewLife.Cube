@@ -313,6 +313,7 @@ export function useListQuery(ctx: ListContext) {
         ...sort,
         ...effectiveSearch.value,
         ...(vf ? { viewFilter: vf } : {}),
+        ...(activeViewKind.value === 'tree' ? { viewKind: 'tree' } : {}),
       };
       const requestSignature = listRequestSignature(requestParams);
       let rows: Record<string, unknown>[];
@@ -332,6 +333,7 @@ export function useListQuery(ctx: ListContext) {
           ...sort,
           ...effectiveSearch.value,
           ...(vf ? { viewFilter: vf } : {}),
+          ...(activeViewKind.value === 'tree' ? { viewKind: 'tree' } : {}),
         });
         // 过期响应丢弃，避免覆盖最新的 tableData/total/loading
         if (seq !== dataSeq.value) return;
@@ -344,11 +346,10 @@ export function useListQuery(ctx: ListContext) {
         filterNarrowed.value =
           res.filterNarrowed && res.filterNarrowed > 0 ? `${res.filterNarrowed}d` : '';
       }
-      // 筛选构建器客户端复核（OSC-0015）：业务重写 Search 的控制器（如 Department.Search
-      // 仅处理 id/parentId/enable/visible）与树控制器可能不应用通用等值过滤，对已加载数据
-      // 兜底过滤保证筛选生效；普通控制器后端已过滤时此处幂等。同时覆盖 any 多条件 OR 降级。
+      // 筛选构建器客户端复核（OSC-0015）：业务重写 Search 的控制器可能不应用通用等值过滤。
+      // 树表命中扩子孙（OSC-26100514b7）：子孙无需匹配 viewFilter，跳过本页裁剪以免裁掉扩入行。
       const shownFilter = requestViewFilter();
-      if (shownFilter.conditions.length) {
+      if (shownFilter.conditions.length && activeViewKind.value !== 'tree') {
         const rawCount = rows.length;
         tableData.value = rows.filter((r) =>
           matchesViewFilter(r, shownFilter, filterFields.value),

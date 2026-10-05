@@ -97,6 +97,10 @@ export interface MapMapping {
   DefaultCenter?: string;
   /** 初始缩放 [3,18] */
   zoom?: number;
+  /** 用户视口记忆 [lng, lat, zoom]：平移/缩放防抖写回，打开时恢复（优先于 DefaultCenter/DefaultLocation/zoom） */
+  lastViewport?: [number, number, number];
+  /** 用户底图记忆：standard|satellite；切换即写回，打开时恢复 */
+  lastBasemap?: 'standard' | 'satellite';
 }
 export type ViewMapping = CardMapping | KanbanMapping | GanttMapping | CalendarMapping | MapMapping;
 export type DataSourceOption = { value: string; label: string };
@@ -332,13 +336,15 @@ export function canCreateViewKind(
   kind: ViewKind,
   fields: FieldMeta[],
   typePath: string,
-  opts?: { rowsHadChildren?: boolean; mapConfigured?: boolean },
+  opts?: { rowsHadChildren?: boolean; mapConfigured?: boolean; isTreeEntity?: boolean },
 ): { ok: boolean; reason?: string } {
   switch (kind) {
     case 'table':
       return { ok: true };
     case 'tree':
-      if (hasTreeMetadata(fields, typePath, opts?.rowsHadChildren)) return { ok: true };
+      if (opts?.isTreeEntity === true) return { ok: true };
+      if (opts?.isTreeEntity !== false && hasTreeMetadata(fields, typePath, opts?.rowsHadChildren))
+        return { ok: true };
       return { ok: false, reason: '当前实体无 Parent/children 等树元数据，无法创建树视图' };
     case 'card':
       if (titleFieldCandidates(fields).length) return { ok: true };
@@ -682,6 +688,27 @@ export function normalizeMapMapping(
     }
   }
 
+  // 用户视口记忆（[lng, lat, zoom]；越界/全零丢弃；zoom 鉗制 3-18）
+  let lastViewport: [number, number, number] | undefined;
+  const lvp = raw.lastViewport;
+  if (Array.isArray(lvp) && lvp.length >= 3) {
+    const a = Number(lvp[0]);
+    const b = Number(lvp[1]);
+    const c = Number(lvp[2]);
+    if (
+      Number.isFinite(a) &&
+      Number.isFinite(b) &&
+      Number.isFinite(c) &&
+      Math.abs(a) <= 180 &&
+      Math.abs(b) <= 90 &&
+      !(Math.abs(a) < 1e-6 && Math.abs(b) < 1e-6)
+    ) {
+      lastViewport = [a, b, Math.min(18, Math.max(3, Math.round(c)))];
+    }
+  }
+  const lastBasemap: MapMapping['lastBasemap'] =
+    raw.lastBasemap === 'satellite' ? 'satellite' : raw.lastBasemap === 'standard' ? 'standard' : undefined;
+
   const z = Number(raw.zoom);
   const zoom = Number.isFinite(z) && z > 0 ? Math.min(18, Math.max(3, Math.round(z))) : undefined;
 
@@ -707,6 +734,8 @@ export function normalizeMapMapping(
   if (categoryField) out.categoryField = categoryField;
   if (rules.length) out.categoryRules = rules;
   if (DefaultLocation) out.DefaultLocation = DefaultLocation;
+  if (lastViewport) out.lastViewport = lastViewport;
+  if (lastBasemap) out.lastBasemap = lastBasemap;
   const centerRaw = typeof raw.DefaultCenter === 'string' ? raw.DefaultCenter.trim() : '';
   if (centerRaw) out.DefaultCenter = centerRaw.slice(0, 50);
   if (zoom != null) out.zoom = zoom;

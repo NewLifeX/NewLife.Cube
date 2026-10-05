@@ -72,6 +72,16 @@ export function createStubAdapter(opts: MapAdapterOptions = {}): MapAdapter {
       root.style.inset = '0';
       root.style.overflow = 'hidden';
       el.appendChild(root);
+      // 初始中心/缩放与真实适配器语义对齐（视口记忆恢复依赖 center 参数生效）
+      if (opts.center) {
+        const span = 360 / 2 ** zoom;
+        bounds = {
+          minLng: Math.max(-180, opts.center[0] - span / 2),
+          maxLng: Math.min(180, opts.center[0] + span / 2),
+          minLat: Math.max(-90, opts.center[1] - span / 2),
+          maxLat: Math.min(90, opts.center[1] + span / 2),
+        };
+      }
       (window as AnySdk).__mapStubApi = {
         ...((window as AnySdk).__mapStubApi ?? {}),
         getViewport: () => ({ ...bounds }),

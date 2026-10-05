@@ -77,6 +77,17 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
         var list = SearchData(p).ToList();
 
+        // 树表命中扩子孙（OSC-26100514b7）：先按命中分页，再并入可见子孙；Page.TotalCount 仍为命中数
+        if (ShouldExpandTreeDescendants(p))
+        {
+            var parentName = ResolveTreeParentFieldName();
+            if (!parentName.IsNullOrEmpty())
+            {
+                var max = TreeDescendantExpand.ResolveMaxRows(CubeSetting.Current.TreeExpandMaxRows);
+                list = TreeDescendantExpand.ExpandEntities(list, parentName, CanAccess, max, Factory.EntityType.FullName).ToList();
+            }
+        }
+
         // 复刻 MVC ListField 按行计算值：虚拟字段/GetValue 字段写入实体扩展，随行 JSON 内联输出
         OnFillListValues(list);
 
@@ -227,6 +238,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             isSystem = user?.Roles.Any(e => e.IsSystem) == true,
             masterTimeName = masterTime?.Name,
             masterTimeDisplayName = masterTime?.DisplayName,
+            isTreeEntity = IsTreeEntity(),
         };
 
         // 列表字段同样补 Map 外键候选（列表外键编号列直接出名称/徽章；列筛选候选来自 search 分区）

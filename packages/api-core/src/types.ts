@@ -164,6 +164,8 @@ export interface PageSetting {
   masterTimeName?: string | null;
   /** 主时间字段显示名（OSC-0016） */
   masterTimeDisplayName?: string | null;
+  /** 实体是否为树（IEntityTree 或 ParentID 与主键同型，OSC-26100514b7） */
+  isTreeEntity?: boolean;
   /** 开发模式（后端 SysConfig.Develop）。驱动列表页高级菜单显示备份/还原/清空数据表等开发功能 */
   develop?: boolean;
   /** 当前用户是否系统管理员。开发功能仅系统管理员可用 */

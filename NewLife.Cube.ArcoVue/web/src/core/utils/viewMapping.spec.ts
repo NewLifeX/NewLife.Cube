@@ -93,6 +93,11 @@ describe('canCreateViewKind', () => {
         'Admin/User',
       ).ok,
     ).toBe(false);
+    expect(
+      canCreateViewKind('tree', [f({ name: 'Name', typeName: 'String' })], 'Admin/User', {
+        isTreeEntity: true,
+      }).ok,
+    ).toBe(true);
   });
 
   it('gates kanban/calendar/gantt by candidates', () => {
@@ -193,6 +198,25 @@ describe('map（OSC-261004d7f4）', () => {
     expect(m.categoryRules).toHaveLength(2);
     const m2 = normalizeMapping('map', { ...base, categoryField: 'Remark' }, fields) as MapMapping;
     expect(m2.categoryField).toBeUndefined();
+  });
+
+  it('lastViewport/lastBasemap：合法保留（zoom 鉗制 3-18）、非法丢弃', () => {
+    const fds = [...mapFields];
+    const base = {
+      kind: 'map',
+      coordMode: 'latlng',
+      lngField: 'Longitude',
+      latField: 'Latitude',
+      titleField: 'Name',
+    };
+    const m = normalizeMapping('map', { ...base, lastViewport: [107.2, 35.6, 12], lastBasemap: 'satellite' }, fds) as MapMapping;
+    expect(m.lastViewport).toEqual([107.2, 35.6, 12]);
+    expect(m.lastBasemap).toBe('satellite');
+    const m2 = normalizeMapping('map', { ...base, lastViewport: [107.2, 35.6, 99], lastBasemap: 'vector' }, fds) as MapMapping;
+    expect(m2.lastViewport).toEqual([107.2, 35.6, 18]);
+    expect(m2.lastBasemap).toBeUndefined();
+    const m3 = normalizeMapping('map', { ...base, lastViewport: [0, 0, 10] }, fds) as MapMapping;
+    expect(m3.lastViewport).toBeUndefined();
   });
 
   it('parseViewKind 识别 map；VIEW_KIND_LABEL 含地图', () => {

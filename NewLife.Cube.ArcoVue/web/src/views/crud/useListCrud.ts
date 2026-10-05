@@ -4,7 +4,7 @@ import { ApiError } from '@newlifex/api-core';
 import cubeApi from '@/api';
 import { isEnableField, isTruthy } from '@/core/utils/fieldBadge';
 import { reloadWatchFields, shouldReloadAfterPatch, shouldReloadAfterWrite } from '@/core/utils/patchReload';
-import { assignRowFields, deleteFollowUp, removeListRow } from '@/core/utils/listRowPatch';
+import { assignRowFields, deleteFollowUp, patchRowInList, removeListRow } from '@/core/utils/listRowPatch';
 import { BATCH_ENABLE_MAX } from '@/core/utils/viewMapping';
 import { getValueByKey, setValueByKey } from '@/core/utils/url';
 import { normalizeChartOptions } from '@/core/utils/chartOptions';
@@ -82,6 +82,8 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
       return;
     }
     assignRowFields(row, patch, pkField.value);
+    // 换数组引用：触发 ListTable 非 deep watch（就地改字段不会 setRecords）
+    tableData.value = tableData.value.slice();
   }
 
   function selectedRowsForKeys(): Record<string, unknown>[] {
@@ -114,7 +116,7 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
   /**
    * 点击 Boolean 字段徽标（Enable 及任意 Boolean 字段）：受 Update 权限控制（flags.canEdit）。
    * fieldName 由列表/树/卡片/看板点击携带；未携带时回退到 Enable 字段（兼容）。
-   * 先乐观更新本地行——按切换后的实际值即时展示（开→success 徽标、关→danger 徽标，双向而非单一禁用态），
+   * 先乐观写回 tableData 源行并换数组引用（ListTable 非 deep watch；树行可能是 buildTree 克隆），
    * 再调后端确认。Enable 走启停接口，其它布尔走 patchFields。
    * 字段在当前排序或筛选里才 loadData；失败回滚本地值，不刷新列表。
    */
@@ -134,9 +136,12 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
     const oldRaw = getValueByKey(row, field.name);
     const target = !isTruthy(oldRaw);
     const label = field.displayName || field.name;
-    // 按字段类型写切换后的实际值（Boolean→true/false，数值→1/0），ListTable deep watch 即时重绘徽标
+    // 按字段类型写切换后的实际值（Boolean→true/false，数值→1/0）
     const newRaw = field.typeName === 'Boolean' ? target : target ? 1 : 0;
-    setValueByKey(row, field.name, newRaw);
+    const patched = patchRowInList(tableData.value, pkField.value, id, { [field.name]: newRaw });
+    if (patched.row) tableData.value = patched.rows;
+    // 展示行若是树克隆，同步改当前点击行，避免瞬时双态不一致
+    if (patched.row !== row) setValueByKey(row, field.name, newRaw);
     try {
       if (field.name.toLowerCase() === 'enable') {
         if (target) await cubeApi.page.enableSelect(typePath.value, [id as string | number]);
@@ -153,8 +158,10 @@ export function useListCrud(ctx: ListContext, deps: ListCrudDeps) {
       }
       if (shouldReloadAfterPatch(field.name, activeSorts.value, viewFilter.value)) await loadData();
     } catch (err) {
-      // 失败回滚：恢复原状态展示
-      setValueByKey(row, field.name, oldRaw);
+      // 失败回滚：恢复源行与点击行，并再次换数组引用触发重绘
+      const rolled = patchRowInList(tableData.value, pkField.value, id, { [field.name]: oldRaw });
+      if (rolled.row) tableData.value = rolled.rows;
+      if (rolled.row !== row) setValueByKey(row, field.name, oldRaw);
       Message.error(formatApiError(err, '操作失败'));
     } finally {
       enableBusy.value = false;

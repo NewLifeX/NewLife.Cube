@@ -37,5 +37,18 @@ describe('listRequestSignature', () => {
     expect(listRequestSignature(source)).not.toBe(
       listRequestSignature({ ...source, viewFilter: '{"logic":"all"}' }),
     );
+    expect(listRequestSignature(source)).not.toBe(
+      listRequestSignature({ ...source, viewKind: 'tree' }),
+    );
+  });
+
+  it('tree viewKind is distinct from omitting the key', () => {
+    const source = { typePath: '/Admin/Department', pageIndex: 1, pageSize: 20 };
+    expect(listRequestSignature({ ...source, viewKind: 'tree' })).not.toBe(
+      listRequestSignature(source),
+    );
+    expect(listRequestSignature({ ...source, viewKind: 'table' })).not.toBe(
+      listRequestSignature({ ...source, viewKind: 'tree' }),
+    );
   });
 });

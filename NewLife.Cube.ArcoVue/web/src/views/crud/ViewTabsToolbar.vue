@@ -140,6 +140,8 @@ const props = defineProps<{
   isAdmin?: boolean;
   /** 当前视图是否处于全屏展示状态（切换按钮图标/提示随之变化） */
   fullscreen?: boolean;
+  /** GetPage 下发的树实体标志（OSC-26100514b7） */
+  isTreeEntity?: boolean;
 }>();
 
 const emit = defineEmits<{

@@ -106,6 +106,11 @@ public class CubeSetting : Config<CubeSetting>
     [Category("通用")]
     public String ForceRedirect { get; set; }
 
+    /// <summary>树表扩子孙上限。树表视图对命中行并入全部子孙后的单次响应最大行数，默认100000；0 表示使用默认</summary>
+    [Description("树表扩子孙上限。树表视图命中行并入子孙后的单次响应最大行数，默认100000；0 表示使用默认")]
+    [Category("通用")]
+    public Int32 TreeExpandMaxRows { get; set; } = 100000;
+
     /// <summary>筛选时间窗天数。分表/日志类实体在无时间条件时自动收窄近 N 天，默认30；0 表示关闭</summary>
     [Description("筛选时间窗天数。分表/日志类实体在无时间条件时自动收窄近 N 天，默认30；0 表示关闭")]
     [Category("通用")]

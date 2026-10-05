@@ -838,6 +838,30 @@ public partial class ReadOnlyEntityController<TEntity>
     #endregion
 
     #region 树形实体父级
+    /// <summary>请求是否为树表视图（OSC-26100514b7）</summary>
+    protected virtual Boolean IsTreeViewRequest(Pager p) => TreeDescendantExpand.IsTreeViewRequest(p);
+
+    /// <summary>实体是否按设计为树：IEntityTree 或 ParentID 与主键同型</summary>
+    protected virtual Boolean IsTreeEntity()
+    {
+        if (typeof(TEntity).As<IEntityTree>()) return true;
+        return GetTreeParentFieldName() != null;
+    }
+
+    /// <summary>树表是否应对命中扩子孙。EntityTreeController 已返回全树时覆写为 false</summary>
+    protected virtual Boolean ShouldExpandTreeDescendants(Pager p) =>
+        IsTreeViewRequest(p) && IsTreeEntity() && ResolveTreeParentFieldName() != null;
+
+    /// <summary>解析树父级字段：约定 ParentID，否则读 IEntityTree Setting.Parent</summary>
+    protected virtual String? ResolveTreeParentFieldName()
+    {
+        var name = GetTreeParentFieldName();
+        if (!name.IsNullOrEmpty()) return name;
+        if (typeof(TEntity).As<IEntityTree>() && typeof(TEntity).GetValue("Setting") is IEntityTreeSetting set)
+            return set.Parent.IsNullOrEmpty() ? null : set.Parent;
+        return null;
+    }
+
     /// <summary>父级字段名。约定 ParentID/ParentId，且与主键同型（自引用树）</summary>
     /// <returns>字段名；非树形实体返回 null</returns>
     protected virtual String? GetTreeParentFieldName()

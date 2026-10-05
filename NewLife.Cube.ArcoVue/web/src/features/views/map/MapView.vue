@@ -59,7 +59,7 @@ import type { FieldMeta } from '@/core/types/field';
 import type { MapMapping } from '@/core/utils/viewMapping';
 import type { ColumnPref, ViewFormatRule } from '@/core/utils/viewProfile';
 import MapHoverCard from './MapHoverCard.vue';
-import { useMapView } from './useMapView';
+import { useMapView, type MapViewPersistState } from './useMapView';
 
 const props = defineProps<{
   /** 已加载行（父级首批数据；续页由 loadPage 提供） */
@@ -89,7 +89,10 @@ const props = defineProps<{
   loadLocateRow?: (field: string, value: string) => Promise<Record<string, unknown> | null>;
 }>();
 
-const emit = defineEmits<{ detail: [row: Record<string, unknown>] }>();
+const emit = defineEmits<{
+  detail: [row: Record<string, unknown>];
+  'viewport-persist': [state: MapViewPersistState];
+}>();
 
 const canvasRef = ref<HTMLElement | null>(null);
 
@@ -113,6 +116,7 @@ const {
   zoomIn,
   zoomOut,
   locate,
+  focusRow,
   satellite,
   toggleSatellite,
   scaleWidth,
@@ -131,6 +135,7 @@ const {
   loadLocateRow: (f, v) => props.loadLocateRow?.(f, v) ?? Promise.resolve(null),
   stub: () => props.stub ?? false,
   onDetail: (row) => emit('detail', row),
+  onViewPersist: (state) => emit('viewport-persist', state),
 });
 
 /** 定位失败提示（未配置中心点或未找到对应对象） */
@@ -139,7 +144,7 @@ async function onLocate() {
   if (!ok) Message.info('未设置地图中心点，或未找到对应对象；请在「自定义配置 → 地图区」设置');
 }
 
-defineExpose({ ready, zoom, zoomIn, zoomOut, refresh, locate, satellite, toggleSatellite });
+defineExpose({ ready, zoom, zoomIn, zoomOut, refresh, locate, focusRow, satellite, toggleSatellite });
 </script>
 
 <style>
@@ -177,6 +182,11 @@ defineExpose({ ready, zoom, zoomIn, zoomOut, refresh, locate, satellite, toggleS
   gap: 2px;
   font-size: 12px;
   line-height: 18px;
+}
+/* 比例尺暗色主题覆盖：白字黑晕，深色/卫星底图上清晰可读（须全局样式：scoped 内 :global 在本工程不生效） */
+body[arco-theme='dark'] .map-view__scale {
+  color: rgba(255, 255, 255, 0.95);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9));
 }
 </style>
 
@@ -231,11 +241,13 @@ defineExpose({ ready, zoom, zoomIn, zoomOut, refresh, locate, satellite, toggleS
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: rgba(0, 0, 0, 0.65);
+  color: rgba(0, 0, 0, 0.68);
   font-size: 11px;
   font-weight: 400;
   line-height: 1;
   pointer-events: none;
+  /* 浅色底图：黑字白晕，深浅底图上均可读 */
+  filter: drop-shadow(0 1px 2px rgba(255, 255, 255, 0.9));
 }
 .map-view__scale-bar {
   display: inline-block;
@@ -246,9 +258,6 @@ defineExpose({ ready, zoom, zoomIn, zoomOut, refresh, locate, satellite, toggleS
 }
 .map-view__scale-text {
   white-space: nowrap;
-}
-:global(body[arco-theme='dark']) .map-view__scale {
-  color: rgba(255, 255, 255, 0.78);
 }
 .map-view__toolbar {
   position: absolute;

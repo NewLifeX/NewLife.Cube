@@ -64,6 +64,16 @@ export interface UseMapViewOptions {
   /** 强制桩模式（E2E 注入；默认按 URL __mapStub=1） */
   stub?: () => boolean;
   onDetail: (row: Record<string, unknown>) => void;
+  /** 视口/底图记忆回调：平移缩放（防抖 600ms）或切底图（立即）后上报，供宿主写回视图映射 */
+  onViewPersist?: (state: MapViewPersistState) => void;
+}
+
+/** 视口/底图记忆状态（宿主写回 MapMapping.lastViewport/lastBasemap） */
+export interface MapViewPersistState {
+  lng: number;
+  lat: number;
+  zoom: number;
+  basemap: 'standard' | 'satellite';
 }
 
 const VIEWPORT_THROTTLE = 150;
@@ -190,10 +200,55 @@ export function useMapView(opts: UseMapViewOptions) {
     updateScale();
   }
 
-  /** 卫星底图切换（标准↔卫星，会话级）；返回切换后的状态 */
+  /** mapping 实质配置签名（排除视口/底图记忆字段，避免持久化写回触发数据重载） */
+  function mappingConfigSig(): string {
+    const m = opts.mapping();
+    if (!m) return '';
+    const { lastViewport: _lv, lastBasemap: _lb, ...rest } = m;
+    return JSON.stringify(rest);
+  }
+
+  // —— 视口/底图记忆（平移缩放防抖写回；底图切换立即；打开时由 buildAdapter 恢复） ——
+  const PERSIST_DEBOUNCE = 600;
+  let persistTimer = 0;
+  let lastPersisted = '';
+
+  /** 收集当前视口/底图状态（中心取 bounds 中点；数值圆整到 6 位避免浮点抖动） */
+  function collectPersistState(): MapViewPersistState | null {
+    const b = adapter?.getBounds() ?? null;
+    if (!adapter || !b) return null;
+    const r6 = (v: number) => Math.round(v * 1e6) / 1e6;
+    return {
+      lng: r6((b.minLng + b.maxLng) / 2),
+      lat: r6((b.minLat + b.maxLat) / 2),
+      zoom: clampZoom(adapter.getZoom()),
+      basemap: satellite.value ? 'satellite' : 'standard',
+    };
+  }
+
+  function persistNow() {
+    persistTimer = 0;
+    const state = collectPersistState();
+    if (!state) return;
+    const sig = JSON.stringify(state);
+    if (sig === lastPersisted) return;
+    lastPersisted = sig;
+    opts.onViewPersist?.(state);
+  }
+
+  /** 防抖写回（拖动/缩放经 onViewport 150ms 节流后再聚合 600ms；底图切换立即） */
+  function schedulePersist(immediate = false) {
+    if (!opts.onViewPersist || disposed) return;
+    if (persistTimer) window.clearTimeout(persistTimer);
+    if (immediate) persistNow();
+    else persistTimer = window.setTimeout(persistNow, PERSIST_DEBOUNCE);
+  }
+
+  /** 卫星底图切换（标准↔卫星）；返回切换后的状态；切换即持久化到视图映射 */
   function toggleSatellite(): boolean {
     satellite.value = !satellite.value;
     adapter?.setSatellite(satellite.value);
+    schedulePersist(true);
     return satellite.value;
   }
 
@@ -427,6 +482,8 @@ export function useMapView(opts: UseMapViewOptions) {
     if (fitted || !adapter || !points.length) return;
     fitted = true;
     const m = opts.mapping();
+    // 用户视口记忆优先：保持恢复的中心/缩放，跳过自动定位与点位适配
+    if (m?.lastViewport) return;
     // 配置了地图中心（名称）→ 自动定位到该对象；配置了默认视野 → 保持 SDK 初始中心；否则适配全部点位
     if (m?.DefaultCenter) {
       void locate();
@@ -448,6 +505,15 @@ export function useMapView(opts: UseMapViewOptions) {
       rowKey: opts.rowKey(),
     });
     return built.points[0] ?? null;
+  }
+
+  /** 查询后聚焦结果首行（保持当前缩放等级）；行无有效坐标返回 false */
+  function focusRow(row: Record<string, unknown>): boolean {
+    const p = pointOfRow(row);
+    if (!p || !adapter) return false;
+    adapter.setCenter(p.lng, p.lat);
+    onViewportFlush();
+    return true;
   }
 
   /**
@@ -574,6 +640,7 @@ export function useMapView(opts: UseMapViewOptions) {
       recycle();
       schedulePump();
       void syncLevels();
+      schedulePersist();
     }, VIEWPORT_THROTTLE);
   }
 
@@ -613,7 +680,6 @@ export function useMapView(opts: UseMapViewOptions) {
     drawnIds = new Set();
     drawnCount.value = 0;
   }
-
   /** 数据/查询变更：中止续页、清空点位、重建并重新泵入 */
   function resetPipeline() {
     generation++;
@@ -671,8 +737,12 @@ export function useMapView(opts: UseMapViewOptions) {
     const src = sourceOf();
     try {
       let created: MapAdapter | null;
+      // 视口记忆优先：恢复上次中心/缩放（无则用配置的默认缩放/默认位置）
+      const lv = m?.lastViewport;
+      const initZoom = lv?.[2] ?? m?.zoom ?? 5;
+      const initCenter: [number, number] | undefined = lv ? [lv[0], lv[1]] : m?.DefaultLocation;
       if (src === 'stub') {
-        created = createStubAdapter({ zoom: m?.zoom ?? 5, center: m?.DefaultLocation, dark: isDarkTheme() });
+        created = createStubAdapter({ zoom: initZoom, center: initCenter, dark: isDarkTheme() });
       } else if (src) {
         const cfg = appStore.mapConfig;
         if (!cfg.key) return;
@@ -681,8 +751,8 @@ export function useMapView(opts: UseMapViewOptions) {
         created = await maker({
           key: cfg.key,
           scriptUrl: cfg.scriptUrl || undefined,
-          zoom: m?.zoom ?? 5,
-          center: m?.DefaultLocation,
+          zoom: initZoom,
+          center: initCenter,
           dark: isDarkTheme(),
         });
       } else {
@@ -707,7 +777,17 @@ export function useMapView(opts: UseMapViewOptions) {
       ready.value = true;
       error.value = '';
       zoom.value = clampZoom(adapter.getZoom());
-      satellite.value = false;
+      // 恢复上次底图（标准/卫星）；并设定持久化基线（有恢复视口时避免恢复动作回写同值）
+      satellite.value = m?.lastBasemap === 'satellite';
+      if (satellite.value) adapter.setSatellite(true);
+      lastPersisted = lv
+        ? JSON.stringify({
+            lng: Math.round(lv[0] * 1e6) / 1e6,
+            lat: Math.round(lv[1] * 1e6) / 1e6,
+            zoom: initZoom,
+            basemap: satellite.value ? 'satellite' : 'standard',
+          })
+        : '';
       syncScale();
       resetPipeline();
     } catch (e) {
@@ -740,6 +820,7 @@ export function useMapView(opts: UseMapViewOptions) {
     window.clearTimeout(viewportTimer);
     window.clearTimeout(showTimer);
     window.clearTimeout(hideTimer);
+    window.clearTimeout(persistTimer);
     if (pumpHandle) window.cancelAnimationFrame(pumpHandle);
     pumpHandle = 0;
     destroyAdapter();
@@ -810,7 +891,7 @@ export function useMapView(opts: UseMapViewOptions) {
   });
 
   watch(
-    () => [opts.records(), opts.mapping(), opts.fields()] as const,
+    () => [opts.records(), mappingConfigSig(), opts.fields()] as const,
     () => {
       void refresh();
     },
@@ -846,6 +927,7 @@ export function useMapView(opts: UseMapViewOptions) {
     zoomIn,
     zoomOut,
     locate,
+    focusRow,
     satellite,
     toggleSatellite,
     scaleWidth,

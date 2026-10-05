@@ -36,6 +36,7 @@
             :type-path="typePath"
             :is-admin="isAdmin"
             :fullscreen="fullscreen"
+            :is-tree-entity="pageSetting?.isTreeEntity"
             @switch="onSwitchView"
             @create="onCreateView"
             @rename="onRenameView"
@@ -102,7 +103,7 @@
                 placeholder="关键字"
                 allow-clear
                 class="tb-query-input"
-                @press-enter="handleSearch"
+                @press-enter="onQuerySearch"
                 @focus="openRecentDropdown"
                 @input="openRecentDropdown"
                 @blur="closeRecentDropdown"
@@ -114,7 +115,7 @@
                       class="tb-query-go"
                       :class="{ 'is-applied': queryActive }"
                       title="查询"
-                      @click.stop="handleSearch"
+                      @click.stop="onQuerySearch"
                     />
                     <!-- 自定义查询构建器：由 ▾ 菜单「自定义查询」触发打开，锚点吸附在输入框旁 -->
                     <FilterBuilderPopover
@@ -139,7 +140,7 @@
                       :custom-enabled="chrome.showFilter !== false"
                       @custom="onFilterPopoverVisible(true)"
                       @reset="handleReset"
-                      @apply="handleApplyQuery"
+                      @apply="onQueryApply"
                       @save="handleSaveQuery"
                       @rename="handleRenameQuery"
                       @delete="handleDeleteQuery"
@@ -171,7 +172,7 @@
                   :custom-enabled="chrome.showFilter !== false"
                   @custom="onFilterPopoverVisible(true)"
                   @reset="handleReset"
-                  @apply="handleApplyQuery"
+                  @apply="onQueryApply"
                   @save="handleSaveQuery"
                   @rename="handleRenameQuery"
                   @delete="handleDeleteQuery"
@@ -612,6 +613,7 @@
             :load-locate-row="loadMapLocateRow"
             :height="measuredTableHeight"
             @detail="openDetail"
+            @viewport-persist="onMapViewPersist"
           >
             <template #toolbar>
               <div class="map-toolbar" :style="mapToolbarStyle">
@@ -660,7 +662,7 @@
                   allow-clear
                   size="small"
                   class="map-tb-input"
-                  @press-enter="handleSearch"
+                  @press-enter="onQuerySearch"
                 />
                 <FilterBuilderPopover
                   :visible="filterPopoverVisible"
@@ -684,7 +686,7 @@
                   :custom-enabled="chrome.showFilter !== false"
                   @custom="onFilterPopoverVisible(true)"
                   @reset="handleReset"
-                  @apply="handleApplyQuery"
+                  @apply="onQueryApply"
                   @save="handleSaveQuery"
                   @rename="handleRenameQuery"
                   @delete="handleDeleteQuery"
@@ -847,7 +849,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref } from 'vue';
+import { computed, defineAsyncComponent, nextTick, ref, watch } from 'vue';
 import type { FieldMeta } from '@/core/types/field';
 import { useDefaultList } from './useDefaultList';
 /** VTable / 多视图异步加载，降低 DynamicPage 首包 */
@@ -946,6 +948,7 @@ const {
   configDrawerVisible,
   onToggleFullscreen,
   flags,
+  pageSetting,
   openAdd,
   activeViewKind,
   ganttZoomLevel,
@@ -1113,6 +1116,7 @@ const mapViewRef = ref<{
   zoom: number;
   satellite: boolean;
   toggleSatellite: () => boolean;
+  focusRow: (row: Record<string, unknown>) => boolean;
 } | null>(null);
 /** 地图就绪（未就绪时缩放/底图键禁用，design §8） */
 const mapReady = computed(() => mapViewRef.value?.ready === true);
@@ -1132,10 +1136,34 @@ function onMapZoomIn() {
 function onMapZoomOut() {
   mapViewRef.value?.zoomOut();
 }
-/** 底图切换：标准 ↔ 卫星（会话级，状态在 MapView 内部） */
+/** 底图切换：标准 ↔ 卫星（状态在 MapView 内部，切换即持久化） */
 function onMapToggleSatellite() {
   mapViewRef.value?.toggleSatellite();
 }
+/** 地图视口/底图记忆：平移缩放（防抖）/换底图后写回当前视图映射，下次打开恢复 */
+function onMapViewPersist(v: { lng: number; lat: number; zoom: number; basemap: 'standard' | 'satellite' }) {
+  const m = activeMapMapping.value;
+  if (!m) return;
+  onMappingChange({ ...m, lastViewport: [v.lng, v.lat, v.zoom], lastBasemap: v.basemap });
+}
+
+/** 查询后聚焦：查询入口包装——标记待定位，结果就绪后在地图视图定位到首行（保持当前缩放） */
+const mapFocusAfterQuery = ref(false);
+function onQuerySearch() {
+  mapFocusAfterQuery.value = true;
+  handleSearch();
+}
+function onQueryApply(id: string) {
+  mapFocusAfterQuery.value = true;
+  handleApplyQuery(id);
+}
+watch(tableData, (rows) => {
+  if (!mapFocusAfterQuery.value) return;
+  mapFocusAfterQuery.value = false;
+  if (activeViewKind.value !== 'map') return;
+  const first = rows[0];
+  if (first) void nextTick(() => mapViewRef.value?.focusRow?.(first));
+});
 
 const hasAdvancedBatchGroup = computed(
   () =>

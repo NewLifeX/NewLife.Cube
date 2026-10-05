@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assignRowFields, deleteFollowUp, removeListRow } from './listRowPatch';
+import { assignRowFields, deleteFollowUp, patchRowInList, removeListRow } from './listRowPatch';
 
 describe('assignRowFields', () => {
   it('跳过主键，并写到已有的大小写翻转键', () => {
@@ -8,6 +8,26 @@ describe('assignRowFields', () => {
     expect(row.Id).toBe(7);
     expect(row.name).toBe('新');
     expect(row.remark).toBe('补');
+  });
+});
+
+describe('patchRowInList', () => {
+  it('写回源行并换新数组引用', () => {
+    const a = { Id: 1, Enable: true };
+    const b = { Id: 2, Enable: false };
+    const rows = [a, b];
+    const result = patchRowInList(rows, 'Id', 2, { Enable: true });
+    expect(result.row).toBe(b);
+    expect(b.Enable).toBe(true);
+    expect(result.rows).not.toBe(rows);
+    expect(result.rows[1]).toBe(b);
+  });
+
+  it('找不到主键时不换数组', () => {
+    const rows = [{ Id: 1, Enable: true }];
+    const result = patchRowInList(rows, 'Id', 9, { Enable: false });
+    expect(result.row).toBeNull();
+    expect(result.rows).toBe(rows);
   });
 });
 

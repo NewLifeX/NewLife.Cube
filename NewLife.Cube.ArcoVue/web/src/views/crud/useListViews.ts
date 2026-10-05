@@ -67,6 +67,7 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
     calendarCursor,
     calendarMode,
     activeViewKind,
+    pageSetting,
     localFilter,
     localGroup,
     localFormat,
@@ -287,7 +288,9 @@ export function useListViews(ctx: ListContext, deps: ListViewsDeps) {
   }
 
   function onCreateView(kind: ViewKind, name: string) {
-    evpStore.addView(typePath.value, name, kind);
+    evpStore.addView(typePath.value, name, kind, undefined, {
+      isTreeEntity: pageSetting.value?.isTreeEntity,
+    });
     syncLocalState();
     selectedKeys.value = [];
     pagination.current = 1;
