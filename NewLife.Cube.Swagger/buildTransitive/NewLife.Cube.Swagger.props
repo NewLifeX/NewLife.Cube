@@ -1,0 +1,17 @@
+<Project>
+  <!--
+    面向【NuGet 包消费者】的默认值（NewLife.Cube.Swagger 打包时随 buildTransitive 自动导入）。
+    注意：对【ProjectReference 直连本地源码】的工程不生效——on-build 导出是每个 app 自身的构建行为，
+    且 ApiDescription.Server 的 PackageReference 无法经包传递，故本地/源码消费者仍需在自己 csproj 里：
+      <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" PrivateAssets="all" />
+      <OpenApiGenerateDocumentsOnBuild>true</OpenApiGenerateDocumentsOnBuild>
+      <OpenApiDocumentsDirectory>…</OpenApiDocumentsDirectory>
+    具名文档注册逻辑本身已在 AddCubeSwagger 内自动完成，无需消费者写。
+  -->
+  <PropertyGroup Condition="'$(TargetFramework)' != 'net8.0'">
+    <!-- 默认：dotnet build 即导出各 Area 的 openapi.json；显式置 false 可关 -->
+    <OpenApiGenerateDocumentsOnBuild Condition="'$(OpenApiGenerateDocumentsOnBuild)' == ''">true</OpenApiGenerateDocumentsOnBuild>
+    <!-- 默认导出目录；monorepo（前端独立）请覆盖成自己的 contracts/openapi 路径 -->
+    <OpenApiDocumentsDirectory Condition="'$(OpenApiDocumentsDirectory)' == ''">$(MSBuildProjectDirectory)/contracts/openapi</OpenApiDocumentsDirectory>
+  </PropertyGroup>
+</Project>

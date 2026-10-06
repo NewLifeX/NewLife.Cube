@@ -99,6 +99,11 @@ public static class SwaggerService
             }
         });
 
+#if NET9_0_OR_GREATER
+        // .NET 内建 OpenAPI：反射魔方 AreaBase，按 Area 自动注册具名文档（消费者 dotnet build 即产出各域 openapi.json）
+        services.AddCubeOpenApiByAreas();
+#endif
+
         return services;
     }
 
