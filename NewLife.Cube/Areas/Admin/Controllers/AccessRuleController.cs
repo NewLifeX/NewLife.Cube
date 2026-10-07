@@ -36,6 +36,7 @@ public class AccessRuleController : EntityController<AccessRule, AccessRuleModel
     /// <summary>解除自动封禁</summary>
     /// <param name="id">规则编号</param>
     /// <returns></returns>
+    [HttpGet]
     [EntityAuthorize(PermissionFlags.Update)]
     [DisplayName("解封")]
     public ActionResult Unblock(Int32 id)
