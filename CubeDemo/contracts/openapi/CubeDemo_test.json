@@ -1,0 +1,1140 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "CubeDemo | test",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/Test/TestField/RoleList": {
+      "get": {
+        "tags": [
+          "TestField"
+        ],
+        "parameters": [
+          {
+            "name": "pageIndex",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Test/TestField": {
+      "delete": {
+        "tags": [
+          "TestField"
+        ],
+        "summary": "删除数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOf测试字段"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "TestField"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/测试字段Model"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/测试字段Model"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/测试字段Model"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOf测试字段"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "TestField"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/测试字段Model"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/测试字段Model"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/测试字段Model"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOf测试字段"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "TestField"
+        ],
+        "summary": "多行数据列表",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiListResponseOf测试字段"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Test/TestField/DeleteSelect": {
+      "delete": {
+        "tags": [
+          "TestField"
+        ],
+        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "主键集合。为空时返回参数错误",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Test/TestField/DeleteAll": {
+      "delete": {
+        "tags": [
+          "TestField"
+        ],
+        "summary": "按当前搜索条件删除全部数据。至少需携带一个业务搜索条件，防止误删全表",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Test/TestField/ImportFile": {
+      "post": {
+        "tags": [
+          "TestField"
+        ],
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
+        "requestBody": {
+          "description": "上传的 Excel/Csv/Json/Zip 文件",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "统一 Json 响应，message 含导入行数",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Test/TestField/UploadFile": {
+      "post": {
+        "tags": [
+          "TestField"
+        ],
+        "summary": "上传编辑器文件，关联当前实体",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "实体主键。大于零时关联已有实体；为零时属新增场景，以临时实体归类路径，表单保存后通过 attachmentIds 绑定主记录",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "description": "附件标题（主记录显示名）。为空时使用 entity.ToString()；新增场景下主记录尚未保存，可传入预期标题",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "上传文件",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "附件编号、文件路径、MIME 类型",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Test/TestField/{id}": {
+      "get": {
+        "tags": [
+          "TestField"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOf测试字段"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Test/TestField/Detail": {
+      "get": {
+        "tags": [
+          "TestField"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOf测试字段"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Test/TestField/GetPage": {
+      "get": {
+        "tags": [
+          "TestField"
+        ],
+        "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Test/TestField/GetFields": {
+      "get": {
+        "tags": [
+          "TestField"
+        ],
+        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
+            "schema": {
+              "$ref": "#/components/schemas/ViewKinds"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataField"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Test/TestField/GetChartData": {
+      "get": {
+        "tags": [
+          "TestField"
+        ],
+        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Test/TestField/ExportFile": {
+      "get": {
+        "tags": [
+          "TestField"
+        ],
+        "summary": "统一导出接口。根据 format 参数分发到不同格式的导出逻辑",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "description": "导出格式，支持 excel/csv/json/xml，默认 excel",
+            "schema": {
+              "type": "string",
+              "default": "excel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "文件流",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Test/TestField/Develop/Develop": {
+      "get": {
+        "tags": [
+          "TestField"
+        ],
+        "summary": "高级开发接口。开发模式下系统管理员可执行备份/还原/备份导出/清空数据表（对齐 MVC Develop）",
+        "parameters": [
+          {
+            "name": "act",
+            "in": "query",
+            "description": "动作：Backup/BackupAndExport/Restore/Clear",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "测试枚举": {
+        "type": "integer"
+      },
+      "测试字段": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编号",
+            "format": "int32"
+          },
+          "shortText": {
+            "type": "string",
+            "description": "短文本。必填的短文本示例"
+          },
+          "longText": {
+            "type": "string",
+            "description": "长文本。大文本（Length>=300）渲染为多行文本域"
+          },
+          "int32Val": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "整数。Int32 数值",
+            "format": "int32"
+          },
+          "int64Val": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "长整数。Int64 数值",
+            "format": "int64"
+          },
+          "decimalVal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "金额。Decimal 数值，带精度",
+            "format": "double"
+          },
+          "doubleVal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "双精度。Double 数值",
+            "format": "double"
+          },
+          "floatVal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "单精度。Single 数值",
+            "format": "float"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用。布尔开关"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间。日期时间",
+            "format": "date-time"
+          },
+          "kind": {
+            "description": "种类。枚举类型，后端下发 lovCode 走 LOV 单选",
+            "$ref": "#/components/schemas/测试枚举"
+          },
+          "guidVal": {
+            "type": "string",
+            "description": "唯一标识。Guid，非主键，渲染为只读文本",
+            "format": "uuid"
+          },
+          "fileUrl": {
+            "type": "string",
+            "description": "附件。文件上传，存储上传后返回的 URL"
+          },
+          "avatar": {
+            "type": "string",
+            "description": "头像。图片上传，带预览，存储 URL"
+          },
+          "jsonVal": {
+            "type": "string",
+            "description": "Json。Json 编辑器，存储 Json 字符串"
+          },
+          "htmlVal": {
+            "type": "string",
+            "description": "富文本。html 富文本编辑器，存储 html 字符串"
+          },
+          "markdownVal": {
+            "type": "string",
+            "description": "Markdown。Markdown 富文本编辑器，存储 md 字符串"
+          },
+          "colorVal": {
+            "type": "string",
+            "description": "颜色。颜色选择器，存储色值字符串"
+          },
+          "iconVal": {
+            "type": "string",
+            "description": "图标。图标选择器，存储图标名字符串"
+          },
+          "mailVal": {
+            "type": "string",
+            "description": "邮箱。邮箱输入，带格式校验"
+          },
+          "mobileVal": {
+            "type": "string",
+            "description": "手机。手机输入，带格式校验"
+          },
+          "urlVal": {
+            "type": "string",
+            "description": "网址。网址输入，带格式校验"
+          },
+          "singleVal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "单选。singleSelect，后端下发 lovCode 走 LOV 单选",
+            "format": "int32"
+          },
+          "multiVal": {
+            "type": "string",
+            "description": "多选。multipleSelect，后端下发 lovCode 走 LOV 多选，存储逗号分隔的值"
+          },
+          "userId": {
+            "type": "string",
+            "description": "用户。singleSelect，后端下发 lovCode 走 LOV 单选"
+          },
+          "listVal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "下拉表格。lovTable，后端下发 List.* 类型 lovCode，走 LOV 弹窗表格选择",
+            "format": "int32"
+          },
+          "listMVal": {
+            "type": "string",
+            "description": "下拉表格(多选)。lovTableMulti，后端下发 List.* 类型 lovCode，走 LOV 弹窗表格多选，存储逗号分隔的 id"
+          }
+        },
+        "description": "字段类型全覆盖测试实体"
+      },
+      "测试字段Model": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "shortText": {
+            "type": "string"
+          },
+          "longText": {
+            "type": "string"
+          },
+          "int32Val": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "int64Val": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "decimalVal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "doubleVal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "floatVal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "float"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "createTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/测试枚举"
+          },
+          "guidVal": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fileUrl": {
+            "type": "string"
+          },
+          "avatar": {
+            "type": "string"
+          },
+          "jsonVal": {
+            "type": "string"
+          },
+          "htmlVal": {
+            "type": "string"
+          },
+          "markdownVal": {
+            "type": "string"
+          },
+          "colorVal": {
+            "type": "string"
+          },
+          "iconVal": {
+            "type": "string"
+          },
+          "mailVal": {
+            "type": "string"
+          },
+          "mobileVal": {
+            "type": "string"
+          },
+          "urlVal": {
+            "type": "string"
+          },
+          "singleVal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "multiVal": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "listVal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "listMVal": {
+            "type": "string"
+          }
+        }
+      },
+      "ApiListResponseOf测试字段": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "description": "分页信息",
+            "$ref": "#/components/schemas/PageModel"
+          },
+          "stat": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "统计行数据",
+                "$ref": "#/components/schemas/测试字段"
+              }
+            ]
+          },
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/测试字段"
+            },
+            "description": "响应数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "列表响应模型"
+      },
+      "ApiResponseOf测试字段": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "响应数据",
+                "$ref": "#/components/schemas/测试字段"
+              }
+            ]
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "ApiResponseOfObject": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "description": "响应数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "ApiResponseOfstring": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "响应数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "DataField": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "名称"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "显示名"
+          },
+          "description": {
+            "type": "string",
+            "description": "描述"
+          },
+          "category": {
+            "type": "string",
+            "description": "类别"
+          },
+          "typeName": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "属性类型"
+          },
+          "itemType": {
+            "type": "string",
+            "description": "元素类型。image,file-zip,html,singleSelect,multipleSelect"
+          },
+          "length": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "长度",
+            "format": "int32"
+          },
+          "precision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "精度",
+            "format": "int32"
+          },
+          "scale": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "位数",
+            "format": "int32"
+          },
+          "nullable": {
+            "type": "boolean",
+            "description": "允许空"
+          },
+          "primaryKey": {
+            "type": "boolean",
+            "description": "主键"
+          },
+          "readOnly": {
+            "type": "boolean",
+            "description": "只读"
+          },
+          "visible": {
+            "type": "boolean",
+            "description": "是否可见"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "是否必填"
+          },
+          "authority": {
+            "type": "string",
+            "description": "权限相关。用户自由发挥"
+          },
+          "extended1": {
+            "type": "string",
+            "description": "扩展字段。用户自由发挥"
+          },
+          "extended2": {
+            "type": "string",
+            "description": "扩展字段。用户自由发挥"
+          },
+          "extended3": {
+            "type": "string",
+            "description": "扩展字段。用户自由发挥"
+          },
+          "mapField": {
+            "type": "string",
+            "description": "映射字段"
+          },
+          "valueField": {
+            "type": "string",
+            "description": "取值字段。列表单元格优先取该字段值，为空时回退到本字段。如名称列优先显示昵称：Name.ValueField=DisplayName"
+          },
+          "lovCode": {
+            "type": "string",
+            "description": "LOV 配置代码"
+          },
+          "services": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "description": "扩展服务"
+          }
+        },
+        "description": "数据字段"
+      },
+      "FieldError": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "description": "字段名（与前端表单字段名对应）"
+          },
+          "message": {
+            "type": "string",
+            "description": "错误消息。例如\"XX字段不可以为空\""
+          },
+          "error": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "错误详情。例如异常堆栈信息"
+          }
+        },
+        "description": "字段级验证错误"
+      },
+      "IFormFile": {
+        "type": "string",
+        "format": "binary"
+      },
+      "PageModel": {
+        "type": "object",
+        "properties": {
+          "pageIndex": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "获取 或 设置 页面索引。从1开始，默认1",
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "获取 或 设置 页面大小。默认20，若为0表示不分页",
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "获取 或 设置 总记录数",
+            "format": "int64"
+          },
+          "longTotalCount": {
+            "type": "string",
+            "description": "获取 或 设置 总记录数，字符串类型"
+          }
+        },
+        "description": "分页模型"
+      },
+      "ViewKinds": {
+        "type": "integer",
+        "description": "视图类型。如List/Detail/AddForm/EditForm/Search等"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "TestField"
+    }
+  ]
+}

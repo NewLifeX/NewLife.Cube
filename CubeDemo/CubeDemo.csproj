@@ -17,6 +17,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
+    <!-- 编译期生成 OpenAPI json：本地源码直连消费者须自行开启（NewLife.Cube.Swagger 的 buildTransitive props 对 ProjectReference 不生效） -->
+    <OpenApiGenerateDocumentsOnBuild>true</OpenApiGenerateDocumentsOnBuild>
+    <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/obj/openapi</OpenApiDocumentsDirectory>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Doc\newlife.snk</AssemblyOriginatorKeyFile>
     <NoWarn>1701;1702;NU5104;NETSDK1138;CS7035</NoWarn>
@@ -35,6 +38,26 @@
 
   <ItemGroup>
     <PackageReference Include="NewLife.MySql" Version="1.4.2026.801" />
+    <!-- 编译期生成 OpenAPI json 的 build target 来源；本地源码直连消费者需自行显式引用 -->
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="10.0.*" PrivateAssets="all" />
   </ItemGroup>
+
+  <!--
+    构建后守卫（CubeDemo 每次编译产出 openapi.json 后触发）：
+    (a) 确保 pre-commit hook 已安装：幂等地把 core.hooksPath 指向 .githooks，给绕过构建直接提交的人兜底。
+        仅当本目录是 Cube 的 git 克隆（存在 ../.githooks）时执行，失败也不阻断构建。
+    (b) 构建期直接跑 OpenAPI 基线比对：接口/方法从基线消失（典型=漏写 [Http*] 动词被内建生成器静默丢弃）
+        则让整个 build 失败——比 hook 更自动：任何人 clone 后首次 build 即生效，不依赖 git config。
+    逃生阀：dotnet build -p:SkipOpenApiContractCheck=true （改接口、基线尚未刷新时临时放行）。
+    构建期比对依赖 git-bash 的 bash（Windows 需 bash 在 PATH；缺失时本 Exec 会失败，可临时 Skip，或改由 pre-commit hook / CI 跑同一脚本——那两处一定有 sh）。
+  -->
+  <Target Name="CubeDemoPostBuildGuards" AfterTargets="GenerateOpenApiDocuments">
+    <Exec Condition="Exists('$(MSBuildProjectDirectory)/../.githooks')"
+          Command="git -C &quot;$(MSBuildProjectDirectory)/..&quot; config core.hooksPath .githooks"
+          IgnoreExitCode="true" />
+    <Exec Condition="'$(SkipOpenApiContractCheck)' != 'true' And Exists('$(OpenApiDocumentsDirectory)')"
+          Command="bash &quot;$(MSBuildProjectDirectory)/../scripts/check-openapi.sh&quot; &quot;$(MSBuildProjectDirectory)/contracts/openapi&quot; &quot;$(OpenApiDocumentsDirectory)&quot;"
+          StandardOutputImportance="high" />
+  </Target>
 
 </Project>

@@ -1,0 +1,2923 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "CubeDemo | v1",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/Ai/AiChat": {
+      "post": {
+        "tags": [
+          "Ai"
+        ],
+        "summary": "AI 对话（全局统一端点）。按请求目标解析页面控制器能力，SSE 流式返回",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Ai/OperationResult": {
+      "post": {
+        "tags": [
+          "Ai"
+        ],
+        "summary": "浏览器操作结果回传。前端执行 run_js 脚本后回传结果，完成等待中的工具调用",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Auth/Login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "密码登录",
+        "requestBody": {
+          "description": "登录模型，包含用户名和密码",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "访问令牌和刷新令牌；需要图形验证码时返回 code=-6（CubeCode.CaptchaRequired）及 captchaId/image",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfLoginTokenModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Auth/SendCode": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "发送验证码（手机/邮箱）",
+        "requestBody": {
+          "description": "验证码模型，Channel 为 Sms/Mail，Username 为手机号或邮箱",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyCodeModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyCodeModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyCodeModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "验证码记录ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOflong"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Auth/Refresh": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "刷新令牌",
+        "requestBody": {
+          "description": "刷新令牌模型",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "新的访问令牌和刷新令牌",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Auth/Captcha": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "获取图片验证码",
+        "description": "当 CubeSetting.CaptchaScene 中包含对应场景位或风险自适应触发时，前端须先调用本接口获取验证码，\r\n再将 captchaId 和用户填写的 captchaCode 随请求一并提交。\r\n验证码 TTL 为 300 秒，校验成功后立即失效（防重放）。",
+        "responses": {
+          "200": {
+            "description": "captchaId（校验时回传）和 image（SVG 文本）",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Auth/LoginConfig": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "获取登录页配置（OAuth 提供商列表、是否允许注册等）",
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "query",
+            "description": "可选租户标识：租户ID整数、tenantCode 或 tenantName；为空时按请求域名自动匹配",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "登录配置信息",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Auth/Info": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "获取当前登录用户信息",
+        "responses": {
+          "200": {
+            "description": "用户信息，包含权限和角色",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Auth/SwitchTenant": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "切换当前租户。多租户开启时，将所选租户写入 Cookie（HttpOnly），下次登录沿用；前端切换成功后刷新页面",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "query",
+            "description": "租户编号。0=管理后台（仅系统管理员），&gt;0=租户",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "切换结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfboolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Auth/Logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "登出",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Auth/Challenge": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "获取RSA公钥挑战，用于客户端加密密码防明文传输。配合Login接口 ChallengeId + 加密密码实现安全登录",
+        "description": "流程：GET /Auth/Challenge 获取 challengeId 和 publicKey → 前端用 publicKey 以 RSA-OAEP/SHA-256 加密密码\r\n→ POST /Auth/Login 携带 challengeId 和加密后的 password。密钥有效期300秒，使用一次后立即失效防重放。",
+        "responses": {
+          "200": {
+            "description": "挑战标识(challengeId)和PEM格式RSA公钥(publicKey)",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Auth/ResetPassword": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "通过验证码重置密码（忘记密码流程）。先调用 SendCode 发送验证码，再调用本接口提交新密码",
+        "requestBody": {
+          "description": "重置密码模型，含手机号/邮箱、验证码、新密码、确认密码",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPwdModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPwdModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPwdModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "重置结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfboolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Auth/OAuthPendingInfo": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "查询OAuth回跳待注册预填信息",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "description": "临时令牌",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "预填信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfOAuthPendingInfoModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Auth/Register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "统一注册（用户名密码/手机验证码/邮箱验证码/OAuth回跳绑定）。开启邮箱/手机验证时注册成功返回待激活信息，激活后方可登录",
+        "requestBody": {
+          "description": "注册模型",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthRegisterModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthRegisterModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthRegisterModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "注册结果。正常返回访问令牌，待激活时返回 pendingActivation 信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfRegisterResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Auth/Activate": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "邮箱激活链接直达。激活邮件中的链接指向 {ActivateUrl}?token=&amp;account=，前端解析后调用本接口",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "description": "一次性激活令牌",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "account",
+            "in": "query",
+            "description": "邮箱",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "激活结果，data 含 activated",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "验证码激活（邮箱验证码/手机短信验证码）",
+        "requestBody": {
+          "description": "激活模型，channel 为 mail/sms，account 为邮箱或手机号",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivateModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivateModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivateModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "激活结果，data 含 activated",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Auth/SendActivateCode": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "重发激活。未激活账号重新发送激活邮件/短信（登录页「未激活？重新发送」入口）",
+        "requestBody": {
+          "description": "验证码模型，channel 为 mail/sms，username 为邮箱或手机号",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyCodeModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyCodeModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyCodeModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "发送结果，data 为脱敏目标",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Auth/VerifyContact": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "已登录用户验证/更换邮箱或手机（安全中心）。验证码经 SendCode（action=bind）发送",
+        "requestBody": {
+          "description": "验证模型，channel 为 mail/sms，account 为新邮箱或手机号，code 为验证码",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyContactModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyContactModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyContactModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "更新后的验证状态",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Auth/CloseAccount": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "注销账号（依据《个人信息保护法》提供账号注销功能）。禁用账号并清空个性化数据，吊销令牌、解绑三方，并通知下游清理业务数据",
+        "responses": {
+          "200": {
+            "description": "注销结果",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Cube/Info": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "服务器信息，用户健康检测",
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "description": "状态信息。可选，用于回显校验",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Cube/Apis": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "获取所有接口信息",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Cube/UserSearch": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "用户搜索",
+        "parameters": [
+          {
+            "name": "roleId",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "departmentId",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Cube/DepartmentSearch": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "网点搜索",
+        "parameters": [
+          {
+            "name": "parentid",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": -1
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Cube/GetArea": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "地区信息",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Cube/AreaChilds": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "获取地区子级",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Cube/AreaParents": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "获取地区父级",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "查询地区编号",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "isContainSelf",
+            "in": "query",
+            "description": "是否包含查询的地区",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Cube/AreaAllParents": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "获取地区所有父级",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Cube/Avatar/{id}": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "获取用户头像。头像文件不存在时根据昵称和性别自动生成 SVG 文字头像",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "用户编号",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Cube/Avatar": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "获取用户头像。头像文件不存在时根据昵称和性别自动生成 SVG 文字头像",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Cube/Lookup": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "查询一批Code的数据源",
+        "parameters": [
+          {
+            "name": "codes",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Cube/SaveLayout": {
+      "post": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "根据用户、类别及具体的名字保存字典参数到后台",
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "query",
+            "description": "The user identifier.",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "description": "The category.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "value",
+            "in": "query",
+            "description": "The value.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Cube/GetAiConfig": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "获取 AI 助手配置。前端浮窗展示所需的开关与配色，由 CubeSetting 配置",
+        "responses": {
+          "200": {
+            "description": "返回 AISwitch 开关、主色 PrimaryColor 与辅色 SecondaryColor、Mermaid 图表库地址（默认靛蓝紫渐变）",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Cube/GetPageConfig": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "获取页面配置信息。列表页、表单页所需显示字段，以及各字段显示方式",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "种类。用于区分不同的前端类型，如Vue/Antd/QuickVue",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页面路径。如/admin/user",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Cube/SetPageConfig": {
+      "post": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "保存页面配置信息。需要自定义部分字段，其它信息由字段列表和适配器动态生成",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "种类。用于区分不同的前端类型，如Vue/Antd/QuickVue",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页面路径。如/admin/user",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "配置对象。作为Body直接Post的Json配置",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonElement"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonElement"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonElement"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Cube/MenuTree": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "获取菜单树（按当前登录用户角色过滤，仅返回该用户有权访问的菜单）",
+        "parameters": [
+          {
+            "name": "module",
+            "in": "query",
+            "description": "模块名称，如 Admin；为空时返回全部菜单",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "菜单树",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Cube/Image": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "访问图片附件",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Cube/File": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "访问附件",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Mfa/Setup": {
+      "get": {
+        "tags": [
+          "Mfa"
+        ],
+        "summary": "初始化 TOTP 设置，返回二维码 URI 和手动输入密钥",
+        "description": "用户在个人安全设置页面点击\"开启两步验证\"时调用。\r\n返回的 totpUri 可直接传给二维码库生成扫码图。\r\n初始化后密钥暂存，须调用 /Mfa/Activate 完成激活。",
+        "responses": {
+          "200": {
+            "description": "totpUri 和 secret",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Mfa/Activate": {
+      "post": {
+        "tags": [
+          "Mfa"
+        ],
+        "summary": "激活 TOTP：校验用户扫码后的第一个验证码，通过后正式启用 MFA 并返回备用码",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "description": "6 位 TOTP 验证码",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "备用码列表（10 组，每组 10 位，只显示一次，请妥善保管）",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Mfa/Disable": {
+      "post": {
+        "tags": [
+          "Mfa"
+        ],
+        "summary": "禁用 MFA，清除当前用户所有 MFA 数据",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "description": "当前有效的 6 位 TOTP 验证码（防止他人擅自关闭）",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Mfa/Status": {
+      "get": {
+        "tags": [
+          "Mfa"
+        ],
+        "summary": "查询当前用户 MFA 启用状态",
+        "responses": {
+          "200": {
+            "description": "enabled: bool",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Mfa/Verify": {
+      "post": {
+        "tags": [
+          "Mfa"
+        ],
+        "summary": "二步验证登录。账密通过后携带 mfaToken + code 完成 MFA 校验，成功后下发正式 AccessToken",
+        "description": "调用流程：\r\n1. POST /Auth/Login → 账密正确但用户已开启 MFA → 返回 code=449，data.mfaToken\r\n2. 用户打开 Authenticator App 查看 6 位验证码（或使用备用码）\r\n3. POST /Mfa/Verify { mfaToken, code } → 返回 accessToken / refreshToken",
+        "requestBody": {
+          "description": "MFA 验证模型，包含 mfaToken 和 code",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaVerifyModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaVerifyModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaVerifyModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/Login/{name}": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "第三方登录",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/LoginInfo/{id}": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "第三方登录完成后跳转到此",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "提供者",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/LoginInfo": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "第三方登录完成后跳转到此",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/Logout": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "注销登录",
+        "description": "子系统引导用户跳转到这里注销登录。",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/Bind": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "绑定",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/UnBind": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "取消绑定",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/WxMiniLogin": {
+      "post": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "微信小程序登录",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WxLoginModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WxLoginModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WxLoginModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfTokenModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/WxAppLogin": {
+      "post": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "微信APP登录",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WxLoginModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WxLoginModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WxLoginModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfTokenModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/Authorize": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "1，验证用户身份",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "redirect_uri",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "response_type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "loginUrl",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/Auth2": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "2，用户登录成功后返回这里",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/Access_Token": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "3，根据code获取令牌",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client_secret",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "grant_type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "3，根据code获取令牌",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client_secret",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "grant_type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/Token": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "3，根据password/client_credentials获取令牌",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client_secret",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "username",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "password",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "refresh_token",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "grant_type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "3，根据password/client_credentials获取令牌",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client_secret",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "username",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "password",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "refresh_token",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "grant_type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/PasswordToken": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "3，根据password/client_credentials获取令牌（JSON Body）",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SsoTokenModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SsoTokenModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SsoTokenModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "3，根据password/client_credentials获取令牌（JSON Body）",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SsoTokenModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SsoTokenModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SsoTokenModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/UserInfo": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "4，根据token获取用户信息",
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/Refresh_Token": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "5，刷新令牌",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "grant_type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "refresh_token",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "5，刷新令牌",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "grant_type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "refresh_token",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/Auth": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "验证令牌是否有效",
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/GetKey": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "获取应用公钥，用于验证令牌",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client_secret",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/Verify": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "验证令牌，回写cookie",
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "redirect_uri",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/UserAuth": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "用户验证。借助OAuth密码式验证，并返回用户信息",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SsoTokenModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SsoTokenModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SsoTokenModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "用户验证。借助OAuth密码式验证，并返回用户信息",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SsoTokenModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SsoTokenModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SsoTokenModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/.well-known/openid-configuration": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "OpenID Connect 发现文档",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/Sso/Avatar": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "获取用户头像。头像文件不存在时根据昵称和性别自动生成 SVG 文字头像",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "用户编号",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActivateModel": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "string",
+            "description": "渠道。mail/sms"
+          },
+          "account": {
+            "type": "string",
+            "description": "邮箱或手机号"
+          },
+          "code": {
+            "type": "string",
+            "description": "验证码"
+          }
+        },
+        "description": "激活模型。邮箱/手机验证码激活"
+      },
+      "ApiResponseOfboolean": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "type": "boolean",
+            "description": "响应数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "ApiResponseOfLoginTokenModel": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "响应数据",
+                "$ref": "#/components/schemas/LoginTokenModel"
+              }
+            ]
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "ApiResponseOflong": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "响应数据",
+            "format": "int64"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "ApiResponseOfOAuthPendingInfoModel": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "响应数据",
+                "$ref": "#/components/schemas/OAuthPendingInfoModel"
+              }
+            ]
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "ApiResponseOfRegisterResult": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "响应数据",
+                "$ref": "#/components/schemas/RegisterResult"
+              }
+            ]
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "ApiResponseOfTokenModel": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "响应数据",
+                "$ref": "#/components/schemas/TokenModel"
+              }
+            ]
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "AuthCategory": {
+        "type": "integer",
+        "description": "统一认证分类，适用于登录与注册接口的 category 字段"
+      },
+      "AuthRegisterModel": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "description": "注册类型",
+            "$ref": "#/components/schemas/AuthCategory"
+          },
+          "username": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "用户名"
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "邮箱"
+          },
+          "mobile": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "手机号"
+          },
+          "password": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "密码"
+          },
+          "confirmPassword": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "确认密码"
+          },
+          "code": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "验证码（手机/邮箱注册时必填）"
+          },
+          "oAuthToken": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "OAuth 临时令牌（category=oauth 时必填）"
+          },
+          "captchaId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "验证码 ID。调用 /Auth/Captcha 获取，注册时原样回传；仅在注册场景需要验证码时必填"
+          },
+          "captchaCode": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "验证码用户输入。仅在注册场景需要验证码时必填"
+          },
+          "password2": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "兼容旧版字段，建议改用 ConfirmPassword"
+          }
+        },
+        "description": "统一认证注册模型"
+      },
+      "FieldError": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "description": "字段名（与前端表单字段名对应）"
+          },
+          "message": {
+            "type": "string",
+            "description": "错误消息。例如\"XX字段不可以为空\""
+          },
+          "error": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "错误详情。例如异常堆栈信息"
+          }
+        },
+        "description": "字段级验证错误"
+      },
+      "JsonElement": { },
+      "LoginModel": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "description": "登录类型",
+            "$ref": "#/components/schemas/AuthCategory"
+          },
+          "username": {
+            "type": "string",
+            "description": "登录用户名、手机号码、邮箱"
+          },
+          "password": {
+            "type": "string",
+            "description": "密码"
+          },
+          "remember": {
+            "type": "boolean",
+            "description": "记住登录状态"
+          },
+          "challengeId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "挑战标识。调用 /Auth/Challenge 获取，登录时原样回传；仅当关闭明文密码（AllowPlainPassword=false）时必填"
+          },
+          "captchaId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "验证码 ID。调用 /Auth/Captcha 获取，登录时原样回传；仅在登录场景需要验证码时必填"
+          },
+          "captchaCode": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "验证码用户输入。仅在登录场景需要验证码时必填"
+          },
+          "pkey": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "兼容旧版字段，建议改用 ChallengeId"
+          }
+        },
+        "description": "登录模型"
+      },
+      "LoginTokenModel": {
+        "type": "object",
+        "properties": {
+          "captchaRequired": {
+            "type": "boolean",
+            "description": "是否需要图形验证码。true 时前端据此展示验证码输入框"
+          },
+          "captchaId": {
+            "type": "string",
+            "description": "图片验证码ID。CaptchaRequired 为 true 时有效，校验时需要回传"
+          },
+          "image": {
+            "type": "string",
+            "description": "图片验证码数据（base64 PNG/SVG）。CaptchaRequired 为 true 时有效，前端可直接展示"
+          },
+          "captchaUrl": {
+            "type": "string",
+            "description": "获取验证码的接口地址，前端用于刷新验证码"
+          },
+          "accessToken": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "tokenType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "expireIn": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "refreshToken": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "scope": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "登录令牌模型。在 TokenModel 基础上补充风险自适应图形验证码字段，供登录接口 data 返回"
+      },
+      "MfaVerifyModel": {
+        "type": "object",
+        "properties": {
+          "mfaToken": {
+            "type": "string",
+            "description": "MFA 待验证令牌（由 Login 接口下发，仅用一次）"
+          },
+          "code": {
+            "type": "string",
+            "description": "用户输入的 6 位 TOTP 验证码或 10 位备用码"
+          }
+        },
+        "description": "MFA 校验入参（/Auth/Login 触发 MFA 流程时使用）"
+      },
+      "OAuthPendingInfoModel": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "description": "提供者名称"
+          },
+          "username": {
+            "type": "string",
+            "description": "建议用户名"
+          },
+          "email": {
+            "type": "string",
+            "description": "邮箱"
+          },
+          "mobile": {
+            "type": "string",
+            "description": "手机号"
+          },
+          "avatar": {
+            "type": "string",
+            "description": "头像"
+          }
+        },
+        "description": "OAuth回跳待注册信息"
+      },
+      "RefreshTokenModel": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "description": "刷新令牌"
+          },
+          "userName": {
+            "type": "string",
+            "description": "用户名"
+          }
+        },
+        "description": "令牌刷新模型"
+      },
+      "RegisterResult": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "访问令牌。待激活时为 null"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "刷新令牌。待激活时为 null"
+          },
+          "pendingActivation": {
+            "type": "boolean",
+            "description": "是否待激活。true 表示注册成功但需先激活邮箱/手机后才能登录"
+          },
+          "channels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "已发送激活的渠道列表。mail/sms"
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "对应渠道的脱敏目标。与 Channels 一一对应"
+          },
+          "expireIn": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "激活有效期（秒）",
+            "format": "int32"
+          }
+        },
+        "description": "注册结果。正常注册返回访问令牌，需要邮箱/手机验证时返回待激活信息"
+      },
+      "ResetPwdModel": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "用户名/手机号"
+          },
+          "code": {
+            "type": "string",
+            "description": "验证码"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "新密码"
+          },
+          "confirmPassword": {
+            "type": "string",
+            "description": "确认密码"
+          },
+          "challengeId": {
+            "type": "string",
+            "description": "挑战标识"
+          }
+        },
+        "description": "重置密码模型"
+      },
+      "SsoTokenModel": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "description": "应用标识"
+          },
+          "client_secret": {
+            "type": "string",
+            "description": "应用密钥"
+          },
+          "userName": {
+            "type": "string",
+            "description": "用户名。可以是设备编码等唯一使用者标识"
+          },
+          "password": {
+            "type": "string",
+            "description": "密码"
+          },
+          "grant_type": {
+            "type": "string",
+            "description": "授权类型"
+          }
+        },
+        "description": "Sso令牌模型"
+      },
+      "TokenModel": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "tokenType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "expireIn": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "refreshToken": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "scope": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "VerifyCodeModel": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "string",
+            "description": "渠道。Sms/Mail等"
+          },
+          "username": {
+            "type": "string",
+            "description": "用户名"
+          },
+          "action": {
+            "type": "string",
+            "description": "动作"
+          },
+          "captchaId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "验证码 ID。调用 /Auth/Captcha 获取，发送验证码时原样回传；仅在发验证码场景需要图片验证码时必填"
+          },
+          "captchaCode": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "验证码用户输入。仅在发验证码场景需要图片验证码时必填"
+          }
+        },
+        "description": "验证码模型"
+      },
+      "VerifyContactModel": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "string",
+            "description": "渠道。mail/sms"
+          },
+          "account": {
+            "type": "string",
+            "description": "新邮箱或手机号"
+          },
+          "code": {
+            "type": "string",
+            "description": "验证码（经 SendCode action=bind 发送）"
+          }
+        },
+        "description": "验证联系方式模型。安全中心验证/更换邮箱或手机"
+      },
+      "WxLoginModel": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "登录凭证。小程序为wx.login()返回的code，APP为微信SDK返回的授权码"
+          },
+          "appId": {
+            "type": "string",
+            "description": "对应小程序/APP的AppId"
+          }
+        },
+        "description": "微信登录请求参数模型"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Ai"
+    },
+    {
+      "name": "Auth"
+    },
+    {
+      "name": "Cube"
+    },
+    {
+      "name": "Mfa"
+    },
+    {
+      "name": "Sso"
+    }
+  ]
+}

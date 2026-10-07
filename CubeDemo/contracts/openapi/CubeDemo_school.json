@@ -1,0 +1,3438 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "CubeDemo | school",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/School/Class": {
+      "delete": {
+        "tags": [
+          "Class"
+        ],
+        "summary": "删除数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfClass"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Class"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfClass"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Class"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfClass"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Class"
+        ],
+        "summary": "多行数据列表",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiListResponseOfClass"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Class/DeleteSelect": {
+      "delete": {
+        "tags": [
+          "Class"
+        ],
+        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "主键集合。为空时返回参数错误",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Class/DeleteAll": {
+      "delete": {
+        "tags": [
+          "Class"
+        ],
+        "summary": "按当前搜索条件删除全部数据。至少需携带一个业务搜索条件，防止误删全表",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Class/ImportFile": {
+      "post": {
+        "tags": [
+          "Class"
+        ],
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
+        "requestBody": {
+          "description": "上传的 Excel/Csv/Json/Zip 文件",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "统一 Json 响应，message 含导入行数",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Class/UploadFile": {
+      "post": {
+        "tags": [
+          "Class"
+        ],
+        "summary": "上传编辑器文件，关联当前实体",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "实体主键。大于零时关联已有实体；为零时属新增场景，以临时实体归类路径，表单保存后通过 attachmentIds 绑定主记录",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "description": "附件标题（主记录显示名）。为空时使用 entity.ToString()；新增场景下主记录尚未保存，可传入预期标题",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "上传文件",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "附件编号、文件路径、MIME 类型",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Class/{id}": {
+      "get": {
+        "tags": [
+          "Class"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfClass"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Class/Detail": {
+      "get": {
+        "tags": [
+          "Class"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfClass"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Class/GetPage": {
+      "get": {
+        "tags": [
+          "Class"
+        ],
+        "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Class/GetFields": {
+      "get": {
+        "tags": [
+          "Class"
+        ],
+        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
+            "schema": {
+              "$ref": "#/components/schemas/ViewKinds"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataField"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Class/GetChartData": {
+      "get": {
+        "tags": [
+          "Class"
+        ],
+        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Class/ExportFile": {
+      "get": {
+        "tags": [
+          "Class"
+        ],
+        "summary": "统一导出接口。根据 format 参数分发到不同格式的导出逻辑",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "description": "导出格式，支持 excel/csv/json/xml，默认 excel",
+            "schema": {
+              "type": "string",
+              "default": "excel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "文件流",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Class/Develop/Develop": {
+      "get": {
+        "tags": [
+          "Class"
+        ],
+        "summary": "高级开发接口。开发模式下系统管理员可执行备份/还原/备份导出/清空数据表（对齐 MVC Develop）",
+        "parameters": [
+          {
+            "name": "act",
+            "in": "query",
+            "description": "动作：Backup/BackupAndExport/Restore/Clear",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Student": {
+      "delete": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "删除数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfStudent"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Student"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudentModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudentModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudentModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfStudent"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Student"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudentModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudentModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudentModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfStudent"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "多行数据列表",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiListResponseOfStudent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Student/DeleteSelect": {
+      "delete": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "主键集合。为空时返回参数错误",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Student/DeleteAll": {
+      "delete": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "按当前搜索条件删除全部数据。至少需携带一个业务搜索条件，防止误删全表",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Student/ImportFile": {
+      "post": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
+        "requestBody": {
+          "description": "上传的 Excel/Csv/Json/Zip 文件",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "统一 Json 响应，message 含导入行数",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Student/UploadFile": {
+      "post": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "上传编辑器文件，关联当前实体",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "实体主键。大于零时关联已有实体；为零时属新增场景，以临时实体归类路径，表单保存后通过 attachmentIds 绑定主记录",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "description": "附件标题（主记录显示名）。为空时使用 entity.ToString()；新增场景下主记录尚未保存，可传入预期标题",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "上传文件",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "附件编号、文件路径、MIME 类型",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Student/{id}": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfStudent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Student/Detail": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfStudent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Student/GetPage": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Student/GetFields": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
+            "schema": {
+              "$ref": "#/components/schemas/ViewKinds"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataField"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Student/GetChartData": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Student/ExportFile": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "统一导出接口。根据 format 参数分发到不同格式的导出逻辑",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "description": "导出格式，支持 excel/csv/json/xml，默认 excel",
+            "schema": {
+              "type": "string",
+              "default": "excel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "文件流",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/Student/Develop/Develop": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "高级开发接口。开发模式下系统管理员可执行备份/还原/备份导出/清空数据表（对齐 MVC Develop）",
+        "parameters": [
+          {
+            "name": "act",
+            "in": "query",
+            "description": "动作：Backup/BackupAndExport/Restore/Clear",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/TestConfig/GetFormSchema": {
+      "get": {
+        "tags": [
+          "TestConfig"
+        ],
+        "summary": "获取当前配置表单的字段结构（含当前值与敏感过滤），供 AI 生成填表值",
+        "parameters": [
+          {
+            "name": "mode",
+            "in": "query",
+            "description": "表单模式：add 新增 / edit 编辑，默认 edit（配置页恒为编辑既有配置）",
+            "schema": {
+              "type": "string",
+              "default": "edit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "表单字段结构 JSON：`{entity, description, mode, fields:[{name,displayName,type,description,value,fillable,...}]}`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/TestConfig/FillForm": {
+      "post": {
+        "tags": [
+          "TestConfig"
+        ],
+        "summary": "生成配置字段值并回填前端表单。不写数据库，由用户确认后提交",
+        "parameters": [
+          {
+            "name": "values",
+            "in": "query",
+            "description": "字段值 JSON 字符串，键为字段名，值为要填入的值，如 {\"AIModel\":\"qwen3.7-plus\"}",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "description": "表单模式：add 新增 / edit 编辑，默认 edit",
+            "schema": {
+              "type": "string",
+              "default": "edit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "工具结果，含回填值（供前端 applyFormValues 回填）与给 LLM 的说明",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IToolResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/TestConfig/BuildFormSystemPrompt": {
+      "post": {
+        "tags": [
+          "TestConfig"
+        ],
+        "summary": "构建 AI 对话系统提示词（配置表单上下文），引导 LLM 使用 get_form_schema / fill_form",
+        "requestBody": {
+          "description": "对话请求（含页面类型/模式等上下文）",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiChatRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiChatRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "系统提示词",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/TestConfig": {
+      "get": {
+        "tags": [
+          "TestConfig"
+        ],
+        "summary": "显示对象",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IoTSetting"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "TestConfig"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IoTSetting"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IoTSetting"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/IoTSetting"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IoTSetting"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/TestConfig/GetFields": {
+      "get": {
+        "tags": [
+          "TestConfig"
+        ],
+        "summary": "获取字段",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "$ref": "#/components/schemas/ViewKinds"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataField"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AiChatRequest": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "message": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "think": {
+            "type": "boolean"
+          },
+          "stream": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "object"
+          }
+        }
+      },
+      "ApiListResponseOfClass": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "description": "分页信息",
+            "$ref": "#/components/schemas/PageModel"
+          },
+          "stat": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "统计行数据",
+                "$ref": "#/components/schemas/Class"
+              }
+            ]
+          },
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/Class"
+            },
+            "description": "响应数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "列表响应模型"
+      },
+      "ApiListResponseOfStudent": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "description": "分页信息",
+            "$ref": "#/components/schemas/PageModel"
+          },
+          "stat": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "统计行数据",
+                "$ref": "#/components/schemas/Student"
+              }
+            ]
+          },
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/Student"
+            },
+            "description": "响应数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "列表响应模型"
+      },
+      "ApiResponseOfClass": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "响应数据",
+                "$ref": "#/components/schemas/Class"
+              }
+            ]
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "ApiResponseOfObject": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "description": "响应数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "ApiResponseOfstring": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "响应数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "ApiResponseOfStudent": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "响应数据",
+                "$ref": "#/components/schemas/Student"
+              }
+            ]
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "Area": {
+        "type": "object",
+        "properties": {
+          "parent": {
+            "$ref": "#/components/schemas/Area"
+          },
+          "parentPath": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "path": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "childs": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/Area"
+            }
+          },
+          "isVirtual": {
+            "type": "boolean"
+          },
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编码。行政区划编码",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称"
+          },
+          "fullName": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "全名"
+          },
+          "parentID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "父级",
+            "format": "int32"
+          },
+          "level": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "层级",
+            "format": "int32"
+          },
+          "kind": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "类型。省市县，自治州等"
+          },
+          "english": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "英文名"
+          },
+          "pinYin": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "拼音"
+          },
+          "jianPin": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "简拼"
+          },
+          "telCode": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "区号。电话区号"
+          },
+          "zipCode": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "邮编。邮政编码"
+          },
+          "longitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "经度",
+            "format": "double"
+          },
+          "latitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "纬度",
+            "format": "double"
+          },
+          "geoHash": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "地址编码。字符串前缀相同越多，地理距离越近，8位精度19米，6位610米"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "remark": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "备注"
+          }
+        },
+        "description": "地区。行政区划数据，最高支持四级地址，9位数字"
+      },
+      "Class": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编号",
+            "format": "int32"
+          },
+          "tenantId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "租户",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "graduationDate": {
+            "type": "string",
+            "description": "毕业时间",
+            "format": "date-time"
+          },
+          "model": {
+            "type": "string",
+            "description": "设备型号"
+          },
+          "createUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "创建者",
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址"
+          },
+          "updateUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "更新者",
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址"
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注"
+          },
+          "tenant": {
+            "$ref": "#/components/schemas/Tenant"
+          },
+          "tenantName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "班级"
+      },
+      "ClassModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "tenantId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "graduationDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "model": {
+            "type": "string"
+          },
+          "createUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string"
+          },
+          "updateUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string"
+          },
+          "remark": {
+            "type": "string"
+          }
+        }
+      },
+      "DataField": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "名称"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "显示名"
+          },
+          "description": {
+            "type": "string",
+            "description": "描述"
+          },
+          "category": {
+            "type": "string",
+            "description": "类别"
+          },
+          "typeName": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "属性类型"
+          },
+          "itemType": {
+            "type": "string",
+            "description": "元素类型。image,file-zip,html,singleSelect,multipleSelect"
+          },
+          "length": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "长度",
+            "format": "int32"
+          },
+          "precision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "精度",
+            "format": "int32"
+          },
+          "scale": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "位数",
+            "format": "int32"
+          },
+          "nullable": {
+            "type": "boolean",
+            "description": "允许空"
+          },
+          "primaryKey": {
+            "type": "boolean",
+            "description": "主键"
+          },
+          "readOnly": {
+            "type": "boolean",
+            "description": "只读"
+          },
+          "visible": {
+            "type": "boolean",
+            "description": "是否可见"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "是否必填"
+          },
+          "authority": {
+            "type": "string",
+            "description": "权限相关。用户自由发挥"
+          },
+          "extended1": {
+            "type": "string",
+            "description": "扩展字段。用户自由发挥"
+          },
+          "extended2": {
+            "type": "string",
+            "description": "扩展字段。用户自由发挥"
+          },
+          "extended3": {
+            "type": "string",
+            "description": "扩展字段。用户自由发挥"
+          },
+          "mapField": {
+            "type": "string",
+            "description": "映射字段"
+          },
+          "valueField": {
+            "type": "string",
+            "description": "取值字段。列表单元格优先取该字段值，为空时回退到本字段。如名称列优先显示昵称：Name.ValueField=DisplayName"
+          },
+          "lovCode": {
+            "type": "string",
+            "description": "LOV 配置代码"
+          },
+          "services": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "description": "扩展服务"
+          }
+        },
+        "description": "数据字段"
+      },
+      "DataScopes": {
+        "type": "integer"
+      },
+      "Department": {
+        "type": "object",
+        "properties": {
+          "parent": {
+            "$ref": "#/components/schemas/Department"
+          },
+          "parentName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "parentPath": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "path": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "childs": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/Department"
+            }
+          },
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编号",
+            "format": "int32"
+          },
+          "tenantId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "租户",
+            "format": "int32"
+          },
+          "type": {
+            "description": "类型。1公司/2部门/3小组/4虚拟",
+            "$ref": "#/components/schemas/DepartmentTypes"
+          },
+          "code": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "代码"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称"
+          },
+          "fullName": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "全名"
+          },
+          "parentID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "父级",
+            "format": "int32"
+          },
+          "level": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "层级。树状结构的层级",
+            "format": "int32"
+          },
+          "sort": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "排序。同级内排序",
+            "format": "int32"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "visible": {
+            "type": "boolean",
+            "description": "可见"
+          },
+          "managerId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "管理者",
+            "format": "int32"
+          },
+          "ex1": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "扩展1",
+            "format": "int32"
+          },
+          "ex2": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "扩展2",
+            "format": "int32"
+          },
+          "ex3": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "扩展3",
+            "format": "double"
+          },
+          "ex4": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "扩展4"
+          },
+          "ex5": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "扩展5"
+          },
+          "ex6": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "扩展6"
+          },
+          "createUser": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "创建者"
+          },
+          "createUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "创建用户",
+            "format": "int32"
+          },
+          "createIP": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "创建地址"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "updateUser": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "更新者"
+          },
+          "updateUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "更新用户",
+            "format": "int32"
+          },
+          "updateIP": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "更新地址"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "remark": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "备注"
+          },
+          "tenant": {
+            "$ref": "#/components/schemas/Tenant"
+          },
+          "tenantName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "manager": {
+            "$ref": "#/components/schemas/User"
+          },
+          "managerName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "部门。组织机构，多级树状结构，支持多租户"
+      },
+      "DepartmentTypes": {
+        "type": "integer"
+      },
+      "FieldError": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "description": "字段名（与前端表单字段名对应）"
+          },
+          "message": {
+            "type": "string",
+            "description": "错误消息。例如\"XX字段不可以为空\""
+          },
+          "error": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "错误详情。例如异常堆栈信息"
+          }
+        },
+        "description": "字段级验证错误"
+      },
+      "IFormFile": {
+        "type": "string",
+        "format": "binary"
+      },
+      "IoTSetting": {
+        "type": "object",
+        "properties": {
+          "rpcPort": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "RPC服务端口。默认1882",
+            "format": "int32"
+          },
+          "mqttPort": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "MQTT服务端口。默认1883",
+            "format": "int32"
+          },
+          "mqttCertPath": {
+            "type": "string",
+            "description": "MQTT证书地址。设置了才启用安全连接，默认为空"
+          },
+          "mqttCertPassword": {
+            "type": "string",
+            "description": "MQTT证书密码"
+          },
+          "loRaPort": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "RPC服务端口。默认1680",
+            "format": "int32"
+          },
+          "ioTServer": {
+            "type": "string",
+            "description": "IoT服务端。物联网服务端地址，用于IoTWeb调用IoTServer的接口"
+          },
+          "tokenSecret": {
+            "type": "string",
+            "description": "令牌密钥。用于生成JWT令牌的算法和密钥，如HS256:ABCD1234"
+          },
+          "tokenExpire": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "令牌有效期。默认2*3600秒",
+            "format": "int32"
+          },
+          "sessionTimeout": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "会话超时。设备客户端超过该时间没有心跳或数据传输时踢下线，默认300秒",
+            "format": "int32"
+          },
+          "autoRegister": {
+            "type": "boolean",
+            "description": "自动注册。允许客户端自动注册，默认true"
+          },
+          "useChildDeviceOnline": {
+            "type": "boolean",
+            "description": "启用子设备在线。子设备上线时写入在线表，默认false"
+          },
+          "maxUploadDelay": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "最大上传延迟时间。采集时间距离接收时间的最大差值，超过该值时取接收时间作为采集时间，默认86400秒，即24小时",
+            "format": "int32"
+          },
+          "storeData": {
+            "type": "boolean",
+            "description": "存储历史数据。保存设备历史数据到关系型数据库，按天分表，数据量很大，默认true"
+          },
+          "dataRetention": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "历史数据保留时间。保留时长决定占用的磁盘空间，不影响性能，默认30天",
+            "format": "int32"
+          },
+          "storeProperty": {
+            "type": "boolean",
+            "description": "存储属性数据。保存设备属性数据（即点位最新数据）到数据库，默认true"
+          },
+          "storeStatus": {
+            "type": "boolean",
+            "description": "存储状态数据。保存设备属性数据（即点位最新数据）到Redis，默认true"
+          },
+          "storeSegment": {
+            "type": "boolean",
+            "description": "存储分段数据。为每个属性点位计算分段并保存到数据库，默认true"
+          },
+          "dataQueue": {
+            "type": "boolean",
+            "description": "启用数据队列。推送历史数据到Redis消息队列，后端消费写入时序库、推送三方接口或者做实时计算，默认true"
+          },
+          "eventQueue": {
+            "type": "boolean",
+            "description": "启用事件队列。推送事件数据到Redis消息队列，后端消费推送三方接口或者做设备联动，默认true"
+          },
+          "isNew": {
+            "type": "boolean"
+          }
+        }
+      },
+      "IRole": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/RoleTypes"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "isSystem": {
+            "type": "boolean"
+          },
+          "tenantId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "dataScope": {
+            "$ref": "#/components/schemas/DataScopes"
+          },
+          "dataDepartmentIds": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "viewSensitive": {
+            "type": "boolean"
+          },
+          "permission": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sort": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "ex1": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "ex2": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "ex3": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "ex4": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ex5": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ex6": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createUser": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "createIP": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updateUser": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "updateUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "updateIP": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "updateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "remark": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "permissions": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PermissionFlags"
+            }
+          },
+          "resources": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        }
+      },
+      "IToolResult": {
+        "type": "object",
+        "properties": {
+          "contents": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/ToolContent"
+            }
+          },
+          "isError": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageModel": {
+        "type": "object",
+        "properties": {
+          "pageIndex": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "获取 或 设置 页面索引。从1开始，默认1",
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "获取 或 设置 页面大小。默认20，若为0表示不分页",
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "获取 或 设置 总记录数",
+            "format": "int64"
+          },
+          "longTotalCount": {
+            "type": "string",
+            "description": "获取 或 设置 总记录数，字符串类型"
+          }
+        },
+        "description": "分页模型"
+      },
+      "PermissionFlags": {
+        "type": "integer",
+        "description": "操作权限"
+      },
+      "Role": {
+        "type": "object",
+        "properties": {
+          "permissions": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PermissionFlags"
+            }
+          },
+          "resources": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编号",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称"
+          },
+          "type": {
+            "description": "类型。1系统/2普通/3租户",
+            "$ref": "#/components/schemas/RoleTypes"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "isSystem": {
+            "type": "boolean",
+            "description": "系统。用于业务系统开发使用，不受数据权限约束，禁止修改名称或删除"
+          },
+          "tenantId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "租户。角色所属组合，0表示全局角色",
+            "format": "int32"
+          },
+          "dataScope": {
+            "description": "数据范围。控制用户可访问的数据范围，0全部/1本部门及下级/2本部门/3仅本人/4自定义",
+            "$ref": "#/components/schemas/DataScopes"
+          },
+          "dataDepartmentIds": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "数据部门。数据范围为自定义时，选择的部门编号列表"
+          },
+          "viewSensitive": {
+            "type": "boolean",
+            "description": "敏感字段。是否可以查看其他人的敏感字段数据"
+          },
+          "permission": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "权限。对不同资源的权限，逗号分隔，每个资源编号与权限值用井号分隔，如 1#3,2#7"
+          },
+          "sort": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "排序",
+            "format": "int32"
+          },
+          "ex1": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "扩展1",
+            "format": "int32"
+          },
+          "ex2": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "扩展2",
+            "format": "int32"
+          },
+          "ex3": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "扩展3",
+            "format": "double"
+          },
+          "ex4": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "扩展4"
+          },
+          "ex5": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "扩展5"
+          },
+          "ex6": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "扩展6"
+          },
+          "createUser": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "创建者"
+          },
+          "createUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "创建用户",
+            "format": "int32"
+          },
+          "createIP": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "创建地址"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "updateUser": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "更新者"
+          },
+          "updateUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "更新用户",
+            "format": "int32"
+          },
+          "updateIP": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "更新地址"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "remark": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "备注"
+          },
+          "tenant": {
+            "$ref": "#/components/schemas/Tenant"
+          },
+          "tenantName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "角色。业务场景中的岗位，功能权限的集合。不管是用户还是租户，都以角色来管理权限"
+      },
+      "RoleTypes": {
+        "type": "integer"
+      },
+      "SexKinds": {
+        "type": "integer"
+      },
+      "Student": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编号",
+            "format": "int32"
+          },
+          "tenantId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "租户",
+            "format": "int32"
+          },
+          "classId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "班级",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称"
+          },
+          "sex": {
+            "description": "性别",
+            "$ref": "#/components/schemas/SexKinds"
+          },
+          "age": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "年龄",
+            "format": "int32"
+          },
+          "mobile": {
+            "type": "string",
+            "description": "手机"
+          },
+          "address": {
+            "type": "string",
+            "description": "地址"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "avatar": {
+            "type": "string",
+            "description": "头像"
+          },
+          "weight": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "体重。小数",
+            "format": "double"
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "存款。小数",
+            "format": "double"
+          },
+          "createUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "创建者",
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址"
+          },
+          "updateUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "更新者",
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址"
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注"
+          },
+          "tenant": {
+            "$ref": "#/components/schemas/Tenant"
+          },
+          "tenantName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "class": {
+            "$ref": "#/components/schemas/Class"
+          },
+          "className": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "学生"
+      },
+      "StudentModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "tenantId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "classId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sex": {
+            "$ref": "#/components/schemas/SexKinds"
+          },
+          "age": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "mobile": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "avatar": {
+            "type": "string"
+          },
+          "weight": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "createUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string"
+          },
+          "updateUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string"
+          },
+          "remark": {
+            "type": "string"
+          }
+        }
+      },
+      "Tenant": {
+        "type": "object",
+        "properties": {
+          "roleNames": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编号",
+            "format": "int32"
+          },
+          "code": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "编码。唯一编码"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称。显示名称"
+          },
+          "type": {
+            "description": "类型。1免费/2个人/3企业/4旗舰",
+            "$ref": "#/components/schemas/TenantTypes"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "level": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "等级。租户级别或套餐版本，数字越大功能越多",
+            "format": "int32"
+          },
+          "managerId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "管理者",
+            "format": "int32"
+          },
+          "roleIds": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "角色组。租户可选的角色集合，不同级别的租户所拥有的角色不一样，高级功能也会不同"
+          },
+          "logo": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "图标。附件路径"
+          },
+          "domain": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "域名。绑定的独立域名"
+          },
+          "maxUsers": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "用户数上限。该租户最大允许用户数，0表示不限制",
+            "format": "int32"
+          },
+          "maxStorage": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "存储上限。该租户最大允许存储字节数，0表示不限制",
+            "format": "int64"
+          },
+          "databaseName": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "数据库。分库用的数据库名"
+          },
+          "tableName": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "数据表。分表用的数据表前缀"
+          },
+          "expired": {
+            "type": "string",
+            "description": "过期时间。达到该时间后，自动禁用租户，空表示永不过期",
+            "format": "date-time"
+          },
+          "createUserId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "创建者",
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "创建地址"
+          },
+          "updateUserId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "更新者",
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "更新地址"
+          },
+          "remark": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "描述"
+          },
+          "manager": {
+            "$ref": "#/components/schemas/User"
+          },
+          "managerName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "租户。多租户SAAS平台，用于隔离业务数据"
+      },
+      "TenantTypes": {
+        "type": "integer"
+      },
+      "ToolAudience": {
+        "type": "integer",
+        "default": 3
+      },
+      "ToolContent": {
+        "required": [
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/ToolContentType"
+          },
+          "data": {
+            "type": "string"
+          },
+          "audience": {
+            "$ref": "#/components/schemas/ToolAudience"
+          },
+          "mimeType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ToolContentType": {
+        "type": "integer",
+        "default": 0
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "lastLoginAddress": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "areaName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "roles": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/IRole"
+            }
+          },
+          "roleNames": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编号",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称。登录用户名"
+          },
+          "password": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "密码"
+          },
+          "displayName": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "昵称"
+          },
+          "sex": {
+            "description": "性别。未知、男、女",
+            "$ref": "#/components/schemas/SexKinds"
+          },
+          "mail": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "邮件。支持登录"
+          },
+          "mailVerified": {
+            "type": "boolean",
+            "description": "邮箱验证。邮箱是否已通过验证"
+          },
+          "mobile": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "手机。支持登录"
+          },
+          "mobileVerified": {
+            "type": "boolean",
+            "description": "手机验证。手机是否已通过验证"
+          },
+          "code": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "代码。身份证、员工编码等，支持登录"
+          },
+          "areaId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "地区。省市区",
+            "format": "int32"
+          },
+          "avatar": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "头像"
+          },
+          "roleID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "角色。主要角色",
+            "format": "int32"
+          },
+          "roleIds": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "角色组。次要角色集合"
+          },
+          "departmentID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "部门。组织机构",
+            "format": "int32"
+          },
+          "online": {
+            "type": "boolean",
+            "description": "在线"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "age": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "年龄。周岁",
+            "format": "int32"
+          },
+          "birthday": {
+            "type": "string",
+            "description": "生日。公历年月日",
+            "format": "date-time"
+          },
+          "logins": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "登录次数",
+            "format": "int32"
+          },
+          "lastLogin": {
+            "type": "string",
+            "description": "最后登录",
+            "format": "date-time"
+          },
+          "lastLoginIP": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "最后登录IP"
+          },
+          "registerTime": {
+            "type": "string",
+            "description": "注册时间",
+            "format": "date-time"
+          },
+          "registerIP": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "注册IP"
+          },
+          "onlineTime": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "在线时间。累计在线总时间，单位秒",
+            "format": "int32"
+          },
+          "ex1": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "扩展1",
+            "format": "int32"
+          },
+          "ex2": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "扩展2",
+            "format": "int32"
+          },
+          "ex3": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "扩展3",
+            "format": "double"
+          },
+          "ex4": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "扩展4"
+          },
+          "ex5": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "扩展5"
+          },
+          "ex6": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "扩展6"
+          },
+          "updateUser": {
+            "type": "string",
+            "description": "更新者"
+          },
+          "updateUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "更新用户",
+            "format": "int32"
+          },
+          "updateIP": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "更新地址"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "remark": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "备注"
+          },
+          "area": {
+            "$ref": "#/components/schemas/Area"
+          },
+          "areaPath": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          },
+          "roleName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "department": {
+            "$ref": "#/components/schemas/Department"
+          },
+          "departmentName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "用户。用户帐号信息，以身份验证为中心，拥有多种角色，可加入多个租户"
+      },
+      "ViewKinds": {
+        "type": "integer",
+        "description": "视图类型。如List/Detail/AddForm/EditForm/Search等"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Class"
+    },
+    {
+      "name": "Student"
+    },
+    {
+      "name": "TestConfig"
+    }
+  ]
+}

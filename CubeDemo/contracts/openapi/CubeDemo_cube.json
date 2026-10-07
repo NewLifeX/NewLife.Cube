@@ -1,0 +1,5893 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "CubeDemo | cube",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/Cube/App": {
+      "delete": {
+        "tags": [
+          "App"
+        ],
+        "summary": "删除数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfApp"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "App"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfApp"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "App"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfApp"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "App"
+        ],
+        "summary": "多行数据列表",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiListResponseOfApp"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/App/DeleteSelect": {
+      "delete": {
+        "tags": [
+          "App"
+        ],
+        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "主键集合。为空时返回参数错误",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/App/DeleteAll": {
+      "delete": {
+        "tags": [
+          "App"
+        ],
+        "summary": "按当前搜索条件删除全部数据。至少需携带一个业务搜索条件，防止误删全表",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/App/ImportFile": {
+      "post": {
+        "tags": [
+          "App"
+        ],
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
+        "requestBody": {
+          "description": "上传的 Excel/Csv/Json/Zip 文件",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "统一 Json 响应，message 含导入行数",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/App/UploadFile": {
+      "post": {
+        "tags": [
+          "App"
+        ],
+        "summary": "上传编辑器文件，关联当前实体",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "实体主键。大于零时关联已有实体；为零时属新增场景，以临时实体归类路径，表单保存后通过 attachmentIds 绑定主记录",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "description": "附件标题（主记录显示名）。为空时使用 entity.ToString()；新增场景下主记录尚未保存，可传入预期标题",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "上传文件",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "附件编号、文件路径、MIME 类型",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/App/{id}": {
+      "get": {
+        "tags": [
+          "App"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfApp"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/App/Detail": {
+      "get": {
+        "tags": [
+          "App"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfApp"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/App/GetPage": {
+      "get": {
+        "tags": [
+          "App"
+        ],
+        "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/App/GetFields": {
+      "get": {
+        "tags": [
+          "App"
+        ],
+        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
+            "schema": {
+              "$ref": "#/components/schemas/ViewKinds"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataField"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/App/GetChartData": {
+      "get": {
+        "tags": [
+          "App"
+        ],
+        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/App/ExportFile": {
+      "get": {
+        "tags": [
+          "App"
+        ],
+        "summary": "统一导出接口。根据 format 参数分发到不同格式的导出逻辑",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "description": "导出格式，支持 excel/csv/json/xml，默认 excel",
+            "schema": {
+              "type": "string",
+              "default": "excel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "文件流",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/App/Develop/Develop": {
+      "get": {
+        "tags": [
+          "App"
+        ],
+        "summary": "高级开发接口。开发模式下系统管理员可执行备份/还原/备份导出/清空数据表（对齐 MVC Develop）",
+        "parameters": [
+          {
+            "name": "act",
+            "in": "query",
+            "description": "动作：Backup/BackupAndExport/Restore/Clear",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/AppLog": {
+      "get": {
+        "tags": [
+          "AppLog"
+        ],
+        "summary": "多行数据列表",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiListResponseOfAppLog"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/AppLog/{id}": {
+      "get": {
+        "tags": [
+          "AppLog"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfAppLog"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/AppLog/Detail": {
+      "get": {
+        "tags": [
+          "AppLog"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfAppLog"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/AppLog/GetPage": {
+      "get": {
+        "tags": [
+          "AppLog"
+        ],
+        "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/AppLog/GetFields": {
+      "get": {
+        "tags": [
+          "AppLog"
+        ],
+        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
+            "schema": {
+              "$ref": "#/components/schemas/ViewKinds"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataField"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/AppLog/GetChartData": {
+      "get": {
+        "tags": [
+          "AppLog"
+        ],
+        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/AppLog/ExportFile": {
+      "get": {
+        "tags": [
+          "AppLog"
+        ],
+        "summary": "统一导出接口。根据 format 参数分发到不同格式的导出逻辑",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "description": "导出格式，支持 excel/csv/json/xml，默认 excel",
+            "schema": {
+              "type": "string",
+              "default": "excel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "文件流",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/AppLog/Develop/Develop": {
+      "get": {
+        "tags": [
+          "AppLog"
+        ],
+        "summary": "高级开发接口。开发模式下系统管理员可执行备份/还原/备份导出/清空数据表（对齐 MVC Develop）",
+        "parameters": [
+          {
+            "name": "act",
+            "in": "query",
+            "description": "动作：Backup/BackupAndExport/Restore/Clear",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Area/Map": {
+      "get": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "中国地图数据：省级 + 有经纬度城市散点，供 React 地图模式渲染（对齐 MVC Map.cshtml）",
+        "responses": {
+          "200": {
+            "description": "省份与城市经纬度列表",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Area": {
+      "delete": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "删除数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfArea"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Area"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AreaModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AreaModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AreaModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfArea"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Area"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AreaModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AreaModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AreaModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfArea"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "多行数据列表",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiListResponseOfArea"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Area/DeleteSelect": {
+      "delete": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "主键集合。为空时返回参数错误",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Area/DeleteAll": {
+      "delete": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "按当前搜索条件删除全部数据。至少需携带一个业务搜索条件，防止误删全表",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Area/ImportFile": {
+      "post": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
+        "requestBody": {
+          "description": "上传的 Excel/Csv/Json/Zip 文件",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "统一 Json 响应，message 含导入行数",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Area/UploadFile": {
+      "post": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "上传编辑器文件，关联当前实体",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "实体主键。大于零时关联已有实体；为零时属新增场景，以临时实体归类路径，表单保存后通过 attachmentIds 绑定主记录",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "description": "附件标题（主记录显示名）。为空时使用 entity.ToString()；新增场景下主记录尚未保存，可传入预期标题",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "上传文件",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "附件编号、文件路径、MIME 类型",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Area/{id}": {
+      "get": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfArea"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Area/Detail": {
+      "get": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfArea"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Area/GetPage": {
+      "get": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Area/GetFields": {
+      "get": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
+            "schema": {
+              "$ref": "#/components/schemas/ViewKinds"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataField"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Area/GetChartData": {
+      "get": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Area/ExportFile": {
+      "get": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "统一导出接口。根据 format 参数分发到不同格式的导出逻辑",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "description": "导出格式，支持 excel/csv/json/xml，默认 excel",
+            "schema": {
+              "type": "string",
+              "default": "excel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "文件流",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Area/Develop/Develop": {
+      "get": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "高级开发接口。开发模式下系统管理员可执行备份/还原/备份导出/清空数据表（对齐 MVC Develop）",
+        "parameters": [
+          {
+            "name": "act",
+            "in": "query",
+            "description": "动作：Backup/BackupAndExport/Restore/Clear",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Attachment": {
+      "delete": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "删除数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfAttachment"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Attachment"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachmentModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachmentModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachmentModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfAttachment"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Attachment"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachmentModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachmentModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachmentModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfAttachment"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "多行数据列表",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiListResponseOfAttachment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Attachment/DeleteSelect": {
+      "delete": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "主键集合。为空时返回参数错误",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Attachment/DeleteAll": {
+      "delete": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "按当前搜索条件删除全部数据。至少需携带一个业务搜索条件，防止误删全表",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Attachment/ImportFile": {
+      "post": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
+        "requestBody": {
+          "description": "上传的 Excel/Csv/Json/Zip 文件",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "统一 Json 响应，message 含导入行数",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Attachment/UploadFile": {
+      "post": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "上传编辑器文件，关联当前实体",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "实体主键。大于零时关联已有实体；为零时属新增场景，以临时实体归类路径，表单保存后通过 attachmentIds 绑定主记录",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "description": "附件标题（主记录显示名）。为空时使用 entity.ToString()；新增场景下主记录尚未保存，可传入预期标题",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "上传文件",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "附件编号、文件路径、MIME 类型",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Attachment/{id}": {
+      "get": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfAttachment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Attachment/Detail": {
+      "get": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfAttachment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Attachment/GetPage": {
+      "get": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Attachment/GetFields": {
+      "get": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
+            "schema": {
+              "$ref": "#/components/schemas/ViewKinds"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataField"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Attachment/GetChartData": {
+      "get": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Attachment/ExportFile": {
+      "get": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "统一导出接口。根据 format 参数分发到不同格式的导出逻辑",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "description": "导出格式，支持 excel/csv/json/xml，默认 excel",
+            "schema": {
+              "type": "string",
+              "default": "excel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "文件流",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Attachment/Develop/Develop": {
+      "get": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "高级开发接口。开发模式下系统管理员可执行备份/还原/备份导出/清空数据表（对齐 MVC Develop）",
+        "parameters": [
+          {
+            "name": "act",
+            "in": "query",
+            "description": "动作：Backup/BackupAndExport/Restore/Clear",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/CronJob/ExecuteNow": {
+      "post": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "马上执行",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/CronJob": {
+      "delete": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "删除数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfCronJob"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "CronJob"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CronJobModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CronJobModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CronJobModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfCronJob"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "CronJob"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CronJobModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CronJobModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CronJobModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfCronJob"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "多行数据列表",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiListResponseOfCronJob"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/CronJob/DeleteSelect": {
+      "delete": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "主键集合。为空时返回参数错误",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/CronJob/DeleteAll": {
+      "delete": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "按当前搜索条件删除全部数据。至少需携带一个业务搜索条件，防止误删全表",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/CronJob/ImportFile": {
+      "post": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
+        "requestBody": {
+          "description": "上传的 Excel/Csv/Json/Zip 文件",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "统一 Json 响应，message 含导入行数",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/CronJob/UploadFile": {
+      "post": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "上传编辑器文件，关联当前实体",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "实体主键。大于零时关联已有实体；为零时属新增场景，以临时实体归类路径，表单保存后通过 attachmentIds 绑定主记录",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "description": "附件标题（主记录显示名）。为空时使用 entity.ToString()；新增场景下主记录尚未保存，可传入预期标题",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "上传文件",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "附件编号、文件路径、MIME 类型",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/CronJob/{id}": {
+      "get": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfCronJob"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/CronJob/Detail": {
+      "get": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfCronJob"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/CronJob/GetPage": {
+      "get": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/CronJob/GetFields": {
+      "get": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
+            "schema": {
+              "$ref": "#/components/schemas/ViewKinds"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataField"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/CronJob/GetChartData": {
+      "get": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/CronJob/ExportFile": {
+      "get": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "统一导出接口。根据 format 参数分发到不同格式的导出逻辑",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "description": "导出格式，支持 excel/csv/json/xml，默认 excel",
+            "schema": {
+              "type": "string",
+              "default": "excel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "文件流",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/CronJob/Develop/Develop": {
+      "get": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "高级开发接口。开发模式下系统管理员可执行备份/还原/备份导出/清空数据表（对齐 MVC Develop）",
+        "parameters": [
+          {
+            "name": "act",
+            "in": "query",
+            "description": "动作：Backup/BackupAndExport/Restore/Clear",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/OrderManager/GetInfo": {
+      "get": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "根据code获取指令集合",
+        "parameters": [
+          {
+            "name": "codes",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/OrderManager": {
+      "delete": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "删除数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfOrderManager"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "OrderManager"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderManagerModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderManagerModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderManagerModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfOrderManager"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "OrderManager"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderManagerModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderManagerModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderManagerModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfOrderManager"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "多行数据列表",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiListResponseOfOrderManager"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/OrderManager/DeleteSelect": {
+      "delete": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "主键集合。为空时返回参数错误",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/OrderManager/DeleteAll": {
+      "delete": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "按当前搜索条件删除全部数据。至少需携带一个业务搜索条件，防止误删全表",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/OrderManager/ImportFile": {
+      "post": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
+        "requestBody": {
+          "description": "上传的 Excel/Csv/Json/Zip 文件",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "统一 Json 响应，message 含导入行数",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/OrderManager/UploadFile": {
+      "post": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "上传编辑器文件，关联当前实体",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "实体主键。大于零时关联已有实体；为零时属新增场景，以临时实体归类路径，表单保存后通过 attachmentIds 绑定主记录",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "description": "附件标题（主记录显示名）。为空时使用 entity.ToString()；新增场景下主记录尚未保存，可传入预期标题",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "上传文件",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "附件编号、文件路径、MIME 类型",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/OrderManager/{id}": {
+      "get": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfOrderManager"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/OrderManager/Detail": {
+      "get": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfOrderManager"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/OrderManager/GetPage": {
+      "get": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/OrderManager/GetFields": {
+      "get": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
+            "schema": {
+              "$ref": "#/components/schemas/ViewKinds"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataField"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/OrderManager/GetChartData": {
+      "get": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/OrderManager/ExportFile": {
+      "get": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "统一导出接口。根据 format 参数分发到不同格式的导出逻辑",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "description": "导出格式，支持 excel/csv/json/xml，默认 excel",
+            "schema": {
+              "type": "string",
+              "default": "excel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "文件流",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/OrderManager/Develop/Develop": {
+      "get": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "高级开发接口。开发模式下系统管理员可执行备份/还原/备份导出/清空数据表（对齐 MVC Develop）",
+        "parameters": [
+          {
+            "name": "act",
+            "in": "query",
+            "description": "动作：Backup/BackupAndExport/Restore/Clear",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/PrincipalAgent": {
+      "delete": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "删除数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfPrincipalAgent"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrincipalAgentModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrincipalAgentModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrincipalAgentModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfPrincipalAgent"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrincipalAgentModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrincipalAgentModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrincipalAgentModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfPrincipalAgent"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "多行数据列表",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiListResponseOfPrincipalAgent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/PrincipalAgent/DeleteSelect": {
+      "delete": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "主键集合。为空时返回参数错误",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/PrincipalAgent/DeleteAll": {
+      "delete": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "按当前搜索条件删除全部数据。至少需携带一个业务搜索条件，防止误删全表",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/PrincipalAgent/ImportFile": {
+      "post": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
+        "requestBody": {
+          "description": "上传的 Excel/Csv/Json/Zip 文件",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "统一 Json 响应，message 含导入行数",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/PrincipalAgent/UploadFile": {
+      "post": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "上传编辑器文件，关联当前实体",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "实体主键。大于零时关联已有实体；为零时属新增场景，以临时实体归类路径，表单保存后通过 attachmentIds 绑定主记录",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "description": "附件标题（主记录显示名）。为空时使用 entity.ToString()；新增场景下主记录尚未保存，可传入预期标题",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "上传文件",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "附件编号、文件路径、MIME 类型",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/PrincipalAgent/{id}": {
+      "get": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfPrincipalAgent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/PrincipalAgent/Detail": {
+      "get": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfPrincipalAgent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/PrincipalAgent/GetPage": {
+      "get": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/PrincipalAgent/GetFields": {
+      "get": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
+            "schema": {
+              "$ref": "#/components/schemas/ViewKinds"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataField"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/PrincipalAgent/GetChartData": {
+      "get": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/PrincipalAgent/ExportFile": {
+      "get": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "统一导出接口。根据 format 参数分发到不同格式的导出逻辑",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "description": "导出格式，支持 excel/csv/json/xml，默认 excel",
+            "schema": {
+              "type": "string",
+              "default": "excel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "文件流",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/PrincipalAgent/Develop/Develop": {
+      "get": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "高级开发接口。开发模式下系统管理员可执行备份/还原/备份导出/清空数据表（对齐 MVC Develop）",
+        "parameters": [
+          {
+            "name": "act",
+            "in": "query",
+            "description": "动作：Backup/BackupAndExport/Restore/Clear",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Widget": {
+      "get": {
+        "tags": [
+          "Widget"
+        ],
+        "summary": "部件列表（含启用状态、分组顺序、组内顺序），供 React 页面渲染",
+        "responses": {
+          "200": {
+            "description": "部件列表与分组配置",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Widget/Enable": {
+      "post": {
+        "tags": [
+          "Widget"
+        ],
+        "summary": "启用或禁用部件（Parameter 表 UserID=0，分类 Widget.Enable）",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "部件名",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "enable",
+            "in": "query",
+            "description": "是否启用",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "操作结果",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Widget/SaveGroupOrder": {
+      "post": {
+        "tags": [
+          "Widget"
+        ],
+        "summary": "保存组件分组顺序（逗号分隔组名，Parameter 全局配置，UserID=0）。未列出的组排到最后并按名称排序",
+        "parameters": [
+          {
+            "name": "groups",
+            "in": "query",
+            "description": "逗号分隔的组名",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "操作结果",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Widget/SaveGroupItemOrder": {
+      "post": {
+        "tags": [
+          "Widget"
+        ],
+        "summary": "保存指定组内的默认部件顺序（逗号分隔部件名，Parameter 全局配置，UserID=0）。未列出的新部件自动排到组内末尾",
+        "parameters": [
+          {
+            "name": "group",
+            "in": "query",
+            "description": "组名",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "names",
+            "in": "query",
+            "description": "逗号分隔的部件名",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "操作结果",
+            "content": {
+              "application/json": { }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiListResponseOfApp": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "description": "分页信息",
+            "$ref": "#/components/schemas/PageModel"
+          },
+          "stat": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "统计行数据",
+                "$ref": "#/components/schemas/App"
+              }
+            ]
+          },
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/App"
+            },
+            "description": "响应数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "列表响应模型"
+      },
+      "ApiListResponseOfAppLog": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "description": "分页信息",
+            "$ref": "#/components/schemas/PageModel"
+          },
+          "stat": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "统计行数据",
+                "$ref": "#/components/schemas/AppLog"
+              }
+            ]
+          },
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/AppLog"
+            },
+            "description": "响应数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "列表响应模型"
+      },
+      "ApiListResponseOfArea": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "description": "分页信息",
+            "$ref": "#/components/schemas/PageModel"
+          },
+          "stat": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "统计行数据",
+                "$ref": "#/components/schemas/Area"
+              }
+            ]
+          },
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/Area"
+            },
+            "description": "响应数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "列表响应模型"
+      },
+      "ApiListResponseOfAttachment": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "description": "分页信息",
+            "$ref": "#/components/schemas/PageModel"
+          },
+          "stat": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "统计行数据",
+                "$ref": "#/components/schemas/Attachment"
+              }
+            ]
+          },
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/Attachment"
+            },
+            "description": "响应数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "列表响应模型"
+      },
+      "ApiListResponseOfCronJob": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "description": "分页信息",
+            "$ref": "#/components/schemas/PageModel"
+          },
+          "stat": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "统计行数据",
+                "$ref": "#/components/schemas/CronJob"
+              }
+            ]
+          },
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/CronJob"
+            },
+            "description": "响应数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "列表响应模型"
+      },
+      "ApiListResponseOfOrderManager": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "description": "分页信息",
+            "$ref": "#/components/schemas/PageModel"
+          },
+          "stat": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "统计行数据",
+                "$ref": "#/components/schemas/OrderManager"
+              }
+            ]
+          },
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/OrderManager"
+            },
+            "description": "响应数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "列表响应模型"
+      },
+      "ApiListResponseOfPrincipalAgent": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "description": "分页信息",
+            "$ref": "#/components/schemas/PageModel"
+          },
+          "stat": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "统计行数据",
+                "$ref": "#/components/schemas/PrincipalAgent"
+              }
+            ]
+          },
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/PrincipalAgent"
+            },
+            "description": "响应数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "列表响应模型"
+      },
+      "ApiResponseOfApp": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "响应数据",
+                "$ref": "#/components/schemas/App"
+              }
+            ]
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "ApiResponseOfAppLog": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "响应数据",
+                "$ref": "#/components/schemas/AppLog"
+              }
+            ]
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "ApiResponseOfArea": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "响应数据",
+                "$ref": "#/components/schemas/Area"
+              }
+            ]
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "ApiResponseOfAttachment": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "响应数据",
+                "$ref": "#/components/schemas/Attachment"
+              }
+            ]
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "ApiResponseOfCronJob": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "响应数据",
+                "$ref": "#/components/schemas/CronJob"
+              }
+            ]
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "ApiResponseOfObject": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "description": "响应数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "ApiResponseOfOrderManager": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "响应数据",
+                "$ref": "#/components/schemas/OrderManager"
+              }
+            ]
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "ApiResponseOfPrincipalAgent": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "响应数据",
+                "$ref": "#/components/schemas/PrincipalAgent"
+              }
+            ]
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "ApiResponseOfstring": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本"
+          },
+          "data": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "响应数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+          }
+        },
+        "description": "响应模型"
+      },
+      "App": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编号",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称。AppID"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "显示名"
+          },
+          "secret": {
+            "type": "string",
+            "description": "密钥。AppSecret"
+          },
+          "category": {
+            "type": "string",
+            "description": "类别"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "homePage": {
+            "type": "string",
+            "description": "首页"
+          },
+          "logo": {
+            "type": "string",
+            "description": "图标。附件路径"
+          },
+          "white": {
+            "type": "string",
+            "description": "IP白名单。符合条件的来源IP才允许访问，支持*通配符，多个逗号隔开"
+          },
+          "black": {
+            "type": "string",
+            "description": "IP黑名单。符合条件的来源IP禁止访问，支持*通配符，多个逗号隔开"
+          },
+          "tokenExpire": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "有效期。访问令牌AccessToken的有效期，单位秒，默认使用全局设置",
+            "format": "int32"
+          },
+          "urls": {
+            "type": "string",
+            "description": "回调地址。用于限制回调地址安全性，多个地址逗号隔开"
+          },
+          "roleIds": {
+            "type": "string",
+            "description": "授权角色。只允许这些角色登录该系统，多个角色逗号隔开，未填写时表示不限制"
+          },
+          "scopes": {
+            "type": "string",
+            "description": "能力集合。逗号分隔，password，client_credentials"
+          },
+          "oAuths": {
+            "type": "string",
+            "description": "三方OAuth。本系统作为OAuthServer时，该应用前来验证时可用的第三方OAuth提供商，多个逗号隔开"
+          },
+          "expired": {
+            "type": "string",
+            "description": "过期时间。空表示永不过期",
+            "format": "date-time"
+          },
+          "auths": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "次数",
+            "format": "int32"
+          },
+          "lastAuth": {
+            "type": "string",
+            "description": "最后请求",
+            "format": "date-time"
+          },
+          "createUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "创建者",
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址"
+          },
+          "updateUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "更新者",
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址"
+          },
+          "remark": {
+            "type": "string",
+            "description": "内容"
+          }
+        },
+        "description": "应用系统"
+      },
+      "AppLog": {
+        "type": "object",
+        "properties": {
+          "app": {
+            "description": "应用",
+            "$ref": "#/components/schemas/App"
+          },
+          "appName": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "应用"
+          },
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编号",
+            "format": "int64"
+          },
+          "appId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "应用",
+            "format": "int32"
+          },
+          "action": {
+            "type": "string",
+            "description": "操作"
+          },
+          "success": {
+            "type": "boolean",
+            "description": "成功"
+          },
+          "clientId": {
+            "type": "string",
+            "description": "应用标识"
+          },
+          "redirectUri": {
+            "type": "string",
+            "description": "回调地址"
+          },
+          "responseType": {
+            "type": "string",
+            "description": "响应类型。默认code"
+          },
+          "scope": {
+            "type": "string",
+            "description": "授权域"
+          },
+          "state": {
+            "type": "string",
+            "description": "状态数据"
+          },
+          "accessToken": {
+            "type": "string",
+            "description": "访问令牌"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "刷新令牌"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链"
+          },
+          "createUser": {
+            "type": "string",
+            "description": "创建者。可以是设备编码等唯一使用者标识"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注"
+          }
+        },
+        "description": "应用日志。用于OAuthServer的子系统"
+      },
+      "AppModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编号",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称。AppID"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "显示名"
+          },
+          "secret": {
+            "type": "string",
+            "description": "密钥。AppSecret"
+          },
+          "category": {
+            "type": "string",
+            "description": "类别"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "homePage": {
+            "type": "string",
+            "description": "首页"
+          },
+          "logo": {
+            "type": "string",
+            "description": "图标。附件路径"
+          },
+          "white": {
+            "type": "string",
+            "description": "IP白名单。符合条件的来源IP才允许访问，支持*通配符，多个逗号隔开"
+          },
+          "black": {
+            "type": "string",
+            "description": "IP黑名单。符合条件的来源IP禁止访问，支持*通配符，多个逗号隔开"
+          },
+          "tokenExpire": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "有效期。访问令牌AccessToken的有效期，单位秒，默认使用全局设置",
+            "format": "int32"
+          },
+          "urls": {
+            "type": "string",
+            "description": "回调地址。用于限制回调地址安全性，多个地址逗号隔开"
+          },
+          "roleIds": {
+            "type": "string",
+            "description": "授权角色。只允许这些角色登录该系统，多个角色逗号隔开，未填写时表示不限制"
+          },
+          "scopes": {
+            "type": "string",
+            "description": "能力集合。逗号分隔，password，client_credentials"
+          },
+          "oAuths": {
+            "type": "string",
+            "description": "三方OAuth。本系统作为OAuthServer时，该应用前来验证时可用的第三方OAuth提供商，多个逗号隔开"
+          },
+          "expired": {
+            "type": "string",
+            "description": "过期时间。空表示永不过期",
+            "format": "date-time"
+          },
+          "auths": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "次数",
+            "format": "int32"
+          },
+          "lastAuth": {
+            "type": "string",
+            "description": "最后请求",
+            "format": "date-time"
+          },
+          "createUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "创建者",
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址"
+          },
+          "updateUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "更新者",
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址"
+          },
+          "remark": {
+            "type": "string",
+            "description": "内容"
+          }
+        },
+        "description": "应用系统。用于OAuthServer的子系统"
+      },
+      "Area": {
+        "type": "object",
+        "properties": {
+          "parent": {
+            "$ref": "#/components/schemas/Area"
+          },
+          "parentPath": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "path": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "childs": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/Area"
+            }
+          },
+          "isVirtual": {
+            "type": "boolean"
+          },
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编码。行政区划编码",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称"
+          },
+          "fullName": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "全名"
+          },
+          "parentID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "父级",
+            "format": "int32"
+          },
+          "level": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "层级",
+            "format": "int32"
+          },
+          "kind": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "类型。省市县，自治州等"
+          },
+          "english": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "英文名"
+          },
+          "pinYin": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "拼音"
+          },
+          "jianPin": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "简拼"
+          },
+          "telCode": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "区号。电话区号"
+          },
+          "zipCode": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "邮编。邮政编码"
+          },
+          "longitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "经度",
+            "format": "double"
+          },
+          "latitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "纬度",
+            "format": "double"
+          },
+          "geoHash": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "地址编码。字符串前缀相同越多，地理距离越近，8位精度19米，6位610米"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "remark": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "备注"
+          }
+        },
+        "description": "地区。行政区划数据，最高支持四级地址，9位数字"
+      },
+      "AreaModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "parentID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "level": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "kind": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "english": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "pinYin": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "jianPin": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "telCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "zipCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "longitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "latitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "geoHash": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "createTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "remark": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "Attachment": {
+        "type": "object",
+        "properties": {
+          "storageName": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "存储类型名称。用于界面展示"
+          },
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编号",
+            "format": "int64"
+          },
+          "category": {
+            "type": "string",
+            "description": "业务分类"
+          },
+          "key": {
+            "type": "string",
+            "description": "业务主键"
+          },
+          "title": {
+            "type": "string",
+            "description": "标题。业务内容作为附件标题，便于查看管理"
+          },
+          "fileName": {
+            "type": "string",
+            "description": "文件名。原始文件名"
+          },
+          "extension": {
+            "type": "string",
+            "description": "扩展名"
+          },
+          "size": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "文件大小",
+            "format": "int64"
+          },
+          "contentType": {
+            "type": "string",
+            "description": "内容类型。用于Http响应"
+          },
+          "filePath": {
+            "type": "string",
+            "description": "路径。本地相对路径或OSS路径，本地相对路径加上附件目录的配置，方便整体转移附件"
+          },
+          "hash": {
+            "type": "string",
+            "description": "哈希。MD5"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "uploadTime": {
+            "type": "string",
+            "description": "上传时间。附件上传时间，可用于构造文件存储路径",
+            "format": "date-time"
+          },
+          "url": {
+            "type": "string",
+            "description": "网址。链接到附件所在信息页的地址"
+          },
+          "source": {
+            "type": "string",
+            "description": "来源。用于远程抓取的附件来源地址，本地文件不存在时自动依次抓取"
+          },
+          "storage": {
+            "type": "string",
+            "description": "存储类型。Local本地磁盘，Oss阿里云，Cos腾讯云，Qiniu七牛，EasyIO，默认Local"
+          },
+          "downloads": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "下载次数",
+            "format": "int32"
+          },
+          "lastDownload": {
+            "type": "string",
+            "description": "最后下载。最后一次下载的时间",
+            "format": "date-time"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链"
+          },
+          "createUser": {
+            "type": "string",
+            "description": "创建者"
+          },
+          "createUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "创建用户",
+            "format": "int32"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "updateUser": {
+            "type": "string",
+            "description": "更新者"
+          },
+          "updateUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "更新用户",
+            "format": "int32"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注"
+          }
+        },
+        "description": "附件。用于记录各系统模块使用的文件"
+      },
+      "AttachmentModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编号",
+            "format": "int64"
+          },
+          "category": {
+            "type": "string",
+            "description": "业务分类"
+          },
+          "key": {
+            "type": "string",
+            "description": "业务主键"
+          },
+          "title": {
+            "type": "string",
+            "description": "标题。业务内容作为附件标题，便于查看管理"
+          },
+          "fileName": {
+            "type": "string",
+            "description": "文件名。原始文件名"
+          },
+          "extension": {
+            "type": "string",
+            "description": "扩展名"
+          },
+          "size": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "文件大小",
+            "format": "int64"
+          },
+          "contentType": {
+            "type": "string",
+            "description": "内容类型。用于Http响应"
+          },
+          "filePath": {
+            "type": "string",
+            "description": "路径。本地相对路径或OSS路径，本地相对路径加上附件目录的配置，方便整体转移附件"
+          },
+          "hash": {
+            "type": "string",
+            "description": "哈希。MD5"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "uploadTime": {
+            "type": "string",
+            "description": "上传时间。附件上传时间，可用于构造文件存储路径",
+            "format": "date-time"
+          },
+          "url": {
+            "type": "string",
+            "description": "网址。链接到附件所在信息页的地址"
+          },
+          "source": {
+            "type": "string",
+            "description": "来源。用于远程抓取的附件来源地址，本地文件不存在时自动依次抓取"
+          },
+          "storage": {
+            "type": "string",
+            "description": "存储类型。Local本地磁盘，Oss阿里云，Cos腾讯云，Qiniu七牛，EasyIO，默认Local"
+          },
+          "downloads": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "下载次数",
+            "format": "int32"
+          },
+          "lastDownload": {
+            "type": "string",
+            "description": "最后下载。最后一次下载的时间",
+            "format": "date-time"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链"
+          },
+          "createUser": {
+            "type": "string",
+            "description": "创建者"
+          },
+          "createUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "创建用户",
+            "format": "int32"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "updateUser": {
+            "type": "string",
+            "description": "更新者"
+          },
+          "updateUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "更新用户",
+            "format": "int32"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注"
+          }
+        },
+        "description": "附件。用于记录各系统模块使用的文件，可以是Local/NAS/OSS等"
+      },
+      "CronJob": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编号",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "显示名"
+          },
+          "cron": {
+            "type": "string",
+            "description": "Cron表达式。用于定时执行的Cron表达式"
+          },
+          "method": {
+            "type": "string",
+            "description": "命令。ICubeJob类名或静态方法全名(包含一个String参数)"
+          },
+          "argument": {
+            "type": "string",
+            "description": "参数。方法参数，时间日期、网址、SQL等"
+          },
+          "data": {
+            "type": "string",
+            "description": "数据。作业运行中的小量数据，可传递给下一次作业执行，例如记录数据统计的时间点"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "enableLog": {
+            "type": "boolean",
+            "description": "启用日志"
+          },
+          "lastTime": {
+            "type": "string",
+            "description": "最后时间。最后一次执行作业的时间",
+            "format": "date-time"
+          },
+          "nextTime": {
+            "type": "string",
+            "description": "下一次时间。下一次执行作业的时间",
+            "format": "date-time"
+          },
+          "createUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "创建者",
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址"
+          },
+          "updateUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "更新者",
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址"
+          },
+          "remark": {
+            "type": "string",
+            "description": "内容"
+          }
+        },
+        "description": "定时作业。定时执行任务"
+      },
+      "CronJobModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编号",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "显示名"
+          },
+          "cron": {
+            "type": "string",
+            "description": "Cron表达式。用于定时执行的Cron表达式"
+          },
+          "method": {
+            "type": "string",
+            "description": "命令。ICubeJob类名或静态方法全名(包含一个String参数)"
+          },
+          "argument": {
+            "type": "string",
+            "description": "参数。方法参数，时间日期、网址、SQL等"
+          },
+          "data": {
+            "type": "string",
+            "description": "数据。作业运行中的小量数据，可传递给下一次作业执行，例如记录数据统计的时间点"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "enableLog": {
+            "type": "boolean",
+            "description": "启用日志"
+          },
+          "lastTime": {
+            "type": "string",
+            "description": "最后时间。最后一次执行作业的时间",
+            "format": "date-time"
+          },
+          "nextTime": {
+            "type": "string",
+            "description": "下一次时间。下一次执行作业的时间",
+            "format": "date-time"
+          },
+          "createUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "创建者",
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址"
+          },
+          "updateUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "更新者",
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址"
+          },
+          "remark": {
+            "type": "string",
+            "description": "内容"
+          }
+        },
+        "description": "定时作业。定时执行任务"
+      },
+      "DataField": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "名称"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "显示名"
+          },
+          "description": {
+            "type": "string",
+            "description": "描述"
+          },
+          "category": {
+            "type": "string",
+            "description": "类别"
+          },
+          "typeName": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "属性类型"
+          },
+          "itemType": {
+            "type": "string",
+            "description": "元素类型。image,file-zip,html,singleSelect,multipleSelect"
+          },
+          "length": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "长度",
+            "format": "int32"
+          },
+          "precision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "精度",
+            "format": "int32"
+          },
+          "scale": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "位数",
+            "format": "int32"
+          },
+          "nullable": {
+            "type": "boolean",
+            "description": "允许空"
+          },
+          "primaryKey": {
+            "type": "boolean",
+            "description": "主键"
+          },
+          "readOnly": {
+            "type": "boolean",
+            "description": "只读"
+          },
+          "visible": {
+            "type": "boolean",
+            "description": "是否可见"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "是否必填"
+          },
+          "authority": {
+            "type": "string",
+            "description": "权限相关。用户自由发挥"
+          },
+          "extended1": {
+            "type": "string",
+            "description": "扩展字段。用户自由发挥"
+          },
+          "extended2": {
+            "type": "string",
+            "description": "扩展字段。用户自由发挥"
+          },
+          "extended3": {
+            "type": "string",
+            "description": "扩展字段。用户自由发挥"
+          },
+          "mapField": {
+            "type": "string",
+            "description": "映射字段"
+          },
+          "valueField": {
+            "type": "string",
+            "description": "取值字段。列表单元格优先取该字段值，为空时回退到本字段。如名称列优先显示昵称：Name.ValueField=DisplayName"
+          },
+          "lovCode": {
+            "type": "string",
+            "description": "LOV 配置代码"
+          },
+          "services": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "description": "扩展服务"
+          }
+        },
+        "description": "数据字段"
+      },
+      "DataScopes": {
+        "type": "integer"
+      },
+      "FieldError": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "description": "字段名（与前端表单字段名对应）"
+          },
+          "message": {
+            "type": "string",
+            "description": "错误消息。例如\"XX字段不可以为空\""
+          },
+          "error": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "错误详情。例如异常堆栈信息"
+          }
+        },
+        "description": "字段级验证错误"
+      },
+      "IFormFile": {
+        "type": "string",
+        "format": "binary"
+      },
+      "IRole": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/RoleTypes"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "isSystem": {
+            "type": "boolean"
+          },
+          "tenantId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "dataScope": {
+            "$ref": "#/components/schemas/DataScopes"
+          },
+          "dataDepartmentIds": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "viewSensitive": {
+            "type": "boolean"
+          },
+          "permission": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sort": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "ex1": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "ex2": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "ex3": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "ex4": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ex5": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ex6": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createUser": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "createIP": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updateUser": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "updateUserID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "updateIP": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "updateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "remark": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "permissions": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PermissionFlags"
+            }
+          },
+          "resources": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        }
+      },
+      "IUser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "password": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "displayName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sex": {
+            "$ref": "#/components/schemas/SexKinds"
+          },
+          "mail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "mailVerified": {
+            "type": "boolean"
+          },
+          "mobile": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "mobileVerified": {
+            "type": "boolean"
+          },
+          "code": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "areaId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "avatar": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "roleID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "roleIds": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "departmentID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "age": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "birthday": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "logins": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "lastLogin": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastLoginIP": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "registerTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "registerIP": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "onlineTime": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "ex1": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "ex2": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "ex3": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "ex4": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ex5": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ex6": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "remark": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "role": {
+            "$ref": "#/components/schemas/IRole"
+          },
+          "roles": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/IRole"
+            }
+          },
+          "roleName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "OrderManager": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编号",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "指令名称"
+          },
+          "code": {
+            "type": "string",
+            "description": "指令编号"
+          },
+          "optCategory": {
+            "type": "string",
+            "description": "操作类型"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "data": {
+            "type": "string",
+            "description": "数据,进行后续操作依赖值"
+          },
+          "dataType": {
+            "type": "string",
+            "description": "数据类型,String、Int、Double、Decimal等"
+          },
+          "url": {
+            "type": "string",
+            "description": "请求地址"
+          },
+          "method": {
+            "type": "string",
+            "description": "请求方式,GET、POST、PUT、DELETE"
+          },
+          "valueField": {
+            "type": "string",
+            "description": "值字段"
+          },
+          "labelField": {
+            "type": "string",
+            "description": "文本字段"
+          },
+          "createUserId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "创建者",
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址"
+          },
+          "updateUserId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "更新者",
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址"
+          },
+          "remark": {
+            "type": "string",
+            "description": "内容"
+          }
+        },
+        "description": "指令管理"
+      },
+      "OrderManagerModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编号",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "指令名称"
+          },
+          "code": {
+            "type": "string",
+            "description": "指令编号"
+          },
+          "optCategory": {
+            "type": "string",
+            "description": "操作类型"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "data": {
+            "type": "string",
+            "description": "数据,进行后续操作依赖值"
+          },
+          "dataType": {
+            "type": "string",
+            "description": "数据类型,String、Int、Double、Decimal等"
+          },
+          "url": {
+            "type": "string",
+            "description": "请求地址"
+          },
+          "method": {
+            "type": "string",
+            "description": "请求方式,GET、POST、PUT、DELETE"
+          },
+          "valueField": {
+            "type": "string",
+            "description": "值字段"
+          },
+          "labelField": {
+            "type": "string",
+            "description": "文本字段"
+          },
+          "createUserId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "创建者",
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址"
+          },
+          "updateUserId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "更新者",
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址"
+          },
+          "remark": {
+            "type": "string",
+            "description": "内容"
+          }
+        },
+        "description": "指令管理"
+      },
+      "PageModel": {
+        "type": "object",
+        "properties": {
+          "pageIndex": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "获取 或 设置 页面索引。从1开始，默认1",
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "获取 或 设置 页面大小。默认20，若为0表示不分页",
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "获取 或 设置 总记录数",
+            "format": "int64"
+          },
+          "longTotalCount": {
+            "type": "string",
+            "description": "获取 或 设置 总记录数，字符串类型"
+          }
+        },
+        "description": "分页模型"
+      },
+      "PermissionFlags": {
+        "type": "integer",
+        "description": "操作权限"
+      },
+      "PrincipalAgent": {
+        "type": "object",
+        "properties": {
+          "principal": {
+            "description": "委托人",
+            "$ref": "#/components/schemas/IUser"
+          },
+          "principalName": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "委托人"
+          },
+          "agent": {
+            "description": "代理人",
+            "$ref": "#/components/schemas/IUser"
+          },
+          "agentName": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "代理人"
+          },
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编号",
+            "format": "int32"
+          },
+          "principalId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "委托人。把自己的身份权限委托给别人",
+            "format": "int32"
+          },
+          "agentId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代理人。代理获得别人身份权限",
+            "format": "int32"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "times": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "次数。可用代理次数，0表示已用完，-1表示无限制",
+            "format": "int32"
+          },
+          "expire": {
+            "type": "string",
+            "description": "有效期。截止时间之前有效，不设置表示无限制",
+            "format": "date-time"
+          },
+          "createUserId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "创建者",
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址"
+          },
+          "updateUserId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "更新者",
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址"
+          },
+          "remark": {
+            "type": "string",
+            "description": "内容"
+          }
+        },
+        "description": "委托代理。委托某人代理自己的用户权限，代理人下一次登录时将得到委托人的身份，一次有效"
+      },
+      "PrincipalAgentModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "编号",
+            "format": "int32"
+          },
+          "principalId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "委托人。把自己的身份权限委托给别人",
+            "format": "int32"
+          },
+          "agentId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "代理人。代理获得别人身份权限",
+            "format": "int32"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "times": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "次数。可用代理次数，0表示已用完，-1表示无限制",
+            "format": "int32"
+          },
+          "expire": {
+            "type": "string",
+            "description": "有效期。截止时间之前有效，不设置表示无限制",
+            "format": "date-time"
+          },
+          "createUserId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "创建者",
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址"
+          },
+          "updateUserId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "更新者",
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址"
+          },
+          "remark": {
+            "type": "string",
+            "description": "内容"
+          }
+        },
+        "description": "委托代理。委托某人代理自己的用户权限，代理人下一次登录时将得到委托人的身份"
+      },
+      "RoleTypes": {
+        "type": "integer"
+      },
+      "SexKinds": {
+        "type": "integer"
+      },
+      "ViewKinds": {
+        "type": "integer",
+        "description": "视图类型。如List/Detail/AddForm/EditForm/Search等"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "App"
+    },
+    {
+      "name": "AppLog"
+    },
+    {
+      "name": "Area"
+    },
+    {
+      "name": "Attachment"
+    },
+    {
+      "name": "CronJob"
+    },
+    {
+      "name": "OrderManager"
+    },
+    {
+      "name": "PrincipalAgent"
+    },
+    {
+      "name": "Widget"
+    }
+  ]
+}

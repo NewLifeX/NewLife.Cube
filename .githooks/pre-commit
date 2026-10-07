@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+# 提交时触发（替代 pre-push）：仅当本次【暂存】了控制器文件(*Controller.cs)才做 OpenAPI 契约检测。
+#
+# 动作：dotnet build CubeDemo —— 其构建后 target 会自动生成各 Area 的 openapi.json 并与基线逐接口比对，
+#       若接口/方法消失（典型=漏写 [Http*] 动词）即构建失败 → 本 hook 非0 → 提交被拒。
+#       hook 本体只依赖 git + dotnet，不做 shell 文本处理。
+# 绕过：git commit --no-verify（仅本地兜手滑，非根治；根治靠 CI 跑同一检测）。
+set -e
+
+# 只看暂存区(A/C/M/R)里以 Controller.cs 结尾的文件；无则跳过（不暂存控制器就不 build，省时）
+staged="$(git diff --cached --name-only --diff-filter=ACMR -- '*Controller.cs')"
+if [ -z "$staged" ]; then
+  exit 0
+fi
+
+echo "== pre-commit: 暂存了控制器改动，触发 OpenAPI 契约检测 =="
+echo "$staged"
+
+repo="$(git rev-parse --show-toplevel)"
+if dotnet build "$repo/CubeDemo/CubeDemo.csproj" -c Debug -clp:ErrorsOnly; then
+  echo "✅ OpenAPI 契约检测通过"
+  exit 0
+else
+  rc=$?
+  echo "✗ OpenAPI 契约检测未通过，提交已被拒绝。"
+  echo "  - 若是接口本就该变：先 bash scripts/check-openapi.sh --build 复核，再 bash scripts/check-openapi.sh --update-baseline 刷新基线并提交。"
+  echo "  - 若是漏写 [Http*] 动词：给该 action 补上 [HttpGet]/[HttpPost]/... 再提交。"
+  exit $rc
+fi
