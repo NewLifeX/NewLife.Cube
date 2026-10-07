@@ -1,0 +1,7 @@
+# 跨平台换行统一：以下文件强制 LF。
+# 目的：防止在 core.autocrlf=true 的机器上 checkout 成 CRLF，
+#       导致 git 执行 .githooks/pre-commit 时 shebang 带 \r（#!/usr/bin/env bash\r）而失败。
+# 仅约束这几类，不触碰仓库中既有的其它文件（含历史以 CRLF 存储的 .cs 等）。
+*.sh        text eol=lf
+.githooks/* text eol=lf
+CubeDemo/contracts/openapi/*.json text eol=lf
