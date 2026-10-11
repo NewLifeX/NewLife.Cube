@@ -38,6 +38,14 @@ declare module 'virtual:@newlifex/cube-vue-sections' {
   export default modules;
 }
 
+// vue-json-editor 为框架直接依赖但未提供 TS 类型声明（main 为 .vue 文件），JsonEditor.vue 引入会触发消费方 TS7016。
+// 声明置于本消费方类型入口（core/client.d.ts），凡通过 types:["@newlifex/cube-vue/core/client"] 加载框架的消费方均全局生效，无需各自补 shim。
+declare module 'vue-json-editor' {
+  import type { DefineComponent } from 'vue';
+  const JsonEditor: DefineComponent<Record<string, unknown>, Record<string, unknown>, unknown>;
+  export default JsonEditor;
+}
+
 interface Window {
   router: import('vue-router').Router;
   store: import('pinia').Pinia;
