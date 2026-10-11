@@ -1,5 +1,6 @@
 ﻿using NewLife.Cube.Models;
 using NewLife.Log;
+using NewLife.Web;
 namespace NewLife.Cube.Extensions;
 
 /// <summary>ApiResult返回扩展</summary>
@@ -78,4 +79,44 @@ public static partial class ApiResponseHelper
     public static ApiResponse<T> ToLogOffApiResponse<T>(this T data, String message = "请重新登录") => ToFailApiResponse(data, CubeCode.LogOff, message);
     /// <summary>内部错误</summary>
     public static ApiResponse<T> ToErrorApiResponse<T>(this T data, String errorMessage) => ToFailApiResponse(data, CubeCode.Exception, errorMessage);
+
+    /// <summary>成功返回列表（带分页信息）。Data=IList&lt;T&gt;，Page=PageModel。</summary>
+    public static ApiListResponse<T> ToOkListApiResponse<T>(this IList<T> data, PageModel page, String successMessage = "操作成功")
+    {
+        return new ApiListResponse<T>
+        {
+            Code = CubeCode.Ok.ToInt(),
+            Message = successMessage,
+            Data = data,
+            Page = page,
+            TraceId = DefaultSpan.Current?.TraceId,
+        };
+    }
+
+    /// <summary>成功返回列表（带分页信息+统计行）。Data=IList&lt;T&gt;，Page=PageModel，Stat=统计行。</summary>
+    public static ApiListResponse<T> ToOkListApiResponse<T>(this IList<T> data, PageModel page, T stat, String successMessage = "操作成功")
+    {
+        return new ApiListResponse<T>
+        {
+            Code = CubeCode.Ok.ToInt(),
+            Message = successMessage,
+            Data = data,
+            Page = page,
+            Stat = stat,
+            TraceId = DefaultSpan.Current?.TraceId,
+        };
+    }
+
+    /// <summary>失败返回列表</summary>
+    public static ApiListResponse<T> ToFailListApiResponse<T>(this IList<T> data, Int32 code, String failMessage)
+    {
+        if (code == CubeCode.Ok.ToInt()) code = CubeCode.Failed.ToInt();
+        return new ApiListResponse<T>
+        {
+            Code = code,
+            Message = failMessage,
+            Data = data,
+            TraceId = DefaultSpan.Current?.TraceId,
+        };
+    }
 }
