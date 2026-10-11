@@ -104,8 +104,11 @@
       </div>
     </div>
 
-    <!-- 底部：折叠 / 展开按钮 -->
-    <div class="cube-side-menu-footer">
+    <!-- 底部：业务系统扩展区（用户区/工具开关，折叠态隐藏） + 折叠/展开按钮 -->
+    <div class="cube-side-menu-footer" :class="{ 'has-extra': !collapsed && !!slots.foot }">
+      <div v-if="!collapsed && !!slots.foot" class="cube-side-menu-foot-extra">
+        <slot name="foot" />
+      </div>
       <button
         class="cube-side-menu-collapse-btn"
         :title="collapsed ? '展开菜单' : '收起菜单'"
@@ -171,7 +174,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, useSlots } from "vue";
 import { type Component } from "vue";
 import {
   useMenuStore,
@@ -189,9 +192,10 @@ import { Search, Expand, Fold } from "@element-plus/icons-vue";
 
 const props = defineProps<{ collapsed?: boolean }>();
 defineEmits<{ (e: "toggle"): void }>();
+const slots = useSlots();
 
 const menuStore = useMenuStore();
-const { treeMenus, activeMenu, loading, hasMenus } = storeToRefs(menuStore);
+const { treeMenus, activeMenu } = storeToRefs(menuStore);
 const searchText = ref("");
 
 // ======== 图标解析（复用 MenuItem.vue 的 resolveEpIcon 思路）========
@@ -518,10 +522,22 @@ function isLeafActive(leaf: TreeMenuItem): boolean {
 // ---- 底部折叠 / 展开按钮 ----
 .cube-side-menu-footer {
   flex-shrink: 0;
-  padding: 8px 0;
+  padding: 8px 12px;
   border-top: 1px solid var(--cube-layout-sidebar-border-color);
   display: flex;
+  align-items: center;
+  gap: 8px;
   justify-content: center;
+
+  // 有扩展内容（用户区/工具开关）时：扩展区居左、折叠按钮居右
+  &.has-extra {
+    justify-content: space-between;
+  }
+}
+
+.cube-side-menu-foot-extra {
+  flex: 1;
+  min-width: 0;
 }
 
 .cube-side-menu-collapse-btn {
