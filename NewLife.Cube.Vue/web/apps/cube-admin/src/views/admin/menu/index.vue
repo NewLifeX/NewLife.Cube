@@ -21,6 +21,28 @@
                   : ''
               }}
             </el-button> -->
+            <el-dropdown
+              trigger="click"
+              :disabled="selectedRows.length === 0"
+              @command="handleBatchCommand"
+            >
+              <el-button type="primary" plain :disabled="selectedRows.length === 0">
+                批量操作{{ selectedRows.length > 0 ? `（已选 ${selectedRows.length}）` : '' }}
+                <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item
+                    v-for="item in batchItems"
+                    :key="item.command"
+                    :command="item.command"
+                    :divided="item.divided"
+                  >
+                    {{ item.label }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
             <el-button type="primary" @click="handleAdd">新增菜单</el-button>
           </div>
         </div>
@@ -34,6 +56,7 @@
 
       <div class="table-wrapper">
         <el-table
+          ref="menuTableRef"
           :data="tableData"
           border
           style="width: 100%"
@@ -169,7 +192,9 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
-import type { FormInstance, FormRules } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import type { FormInstance, FormRules, TableInstance } from 'element-plus';
+import { ArrowDown } from '@element-plus/icons-vue';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 import { handleDeleteOperation, handleFormSubmit } from '@newlifex/cube-vue/core/utils/api-helpers';
 import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListToolbarSearch.vue';
@@ -207,6 +232,7 @@ const tableData = ref<Menu[]>([]);
 const loading = ref(false);
 const menuOptions = ref<Menu[]>([]);
 const selectedRows = ref<Menu[]>([]);
+const menuTableRef = ref<TableInstance>();
 
 // 页面请求参数
 const queryParams = reactive({
@@ -353,6 +379,74 @@ const getDepthPrefix = (depth: number): string => {
 // 选择变化处理
 const handleSelectionChange = (selection: Menu[]) => {
   selectedRows.value = selection;
+};
+
+// 批量操作项。command 形如「字段:目标值」，避免为每个开关各写一个处理函数
+const batchItems = [
+  { command: 'visible:true', label: '设为可见', divided: false },
+  { command: 'visible:false', label: '设为不可见', divided: false },
+  { command: 'necessary:true', label: '设为必要', divided: true },
+  { command: 'necessary:false', label: '设为不必要', divided: false },
+  { command: 'newWindow:true', label: '设为新窗口打开', divided: true },
+  { command: 'newWindow:false', label: '取消新窗口打开', divided: false },
+];
+
+// 批量修改选中菜单的开关字段（可见/必要/新窗口）
+const handleBatchCommand = async (command: string) => {
+  const rows = selectedRows.value;
+  const item = batchItems.find((e) => e.command === command);
+  if (rows.length === 0 || !item) return;
+
+  const [field, value] = command.split(':');
+
+  try {
+    await ElMessageBox.confirm(`确定将选中的 ${rows.length} 个菜单${item.label}吗？`, '批量操作', {
+      type: 'warning',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+    });
+  } catch {
+    return; // 用户取消
+  }
+
+  loading.value = true;
+  let ok = 0;
+  const fails: string[] = [];
+  try {
+    for (const row of rows) {
+      // 与 submitForm 同因：行数据同时含 camelCase 开关（visible/necessary/newWindow）
+      // 与 PascalCase 旧字段（Visible/Necessary/NewWindow 整型），后端大小写不敏感绑定下
+      // 旧值会覆盖新值而导致开关不生效，故发送前剔除 PascalCase 冗余键；
+      // children/_depth/hasChildren 是前端构建树结构的派生字段，不回传。
+      const payload: Record<string, unknown> = { ...row, [field]: value === 'true' };
+      delete payload.Visible;
+      delete payload.Necessary;
+      delete payload.NewWindow;
+      delete payload.children;
+      delete payload._depth;
+      delete payload.hasChildren;
+
+      try {
+        await request.put('/Admin/Menu', payload);
+        ok++;
+      } catch (err) {
+        fails.push(`${row.displayName || row.name}: ${(err as Error)?.message || '更新失败'}`);
+      }
+    }
+  } finally {
+    loading.value = false;
+  }
+
+  if (fails.length > 0) {
+    ElMessage.error(`成功 ${ok} 条，失败 ${fails.length} 条：${fails.slice(0, 3).join('；')}`);
+  } else {
+    ElMessage.success(`批量操作成功！共 ${ok} 条`);
+  }
+
+  // 开关影响列表标签与权限语义，重新加载；清空勾选避免对旧选择重复操作
+  menuTableRef.value?.clearSelection();
+  selectedRows.value = [];
+  loadData();
 };
 
 // 加载数据
