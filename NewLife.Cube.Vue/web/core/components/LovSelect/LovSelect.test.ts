@@ -171,12 +171,12 @@ describe('useLovSelect（逻辑/事件层）', () => {
     expect(api.options.value).toHaveLength(0);
   });
 
-  it('modelValue 回显：同步到内部选择状态', async () => {
+  it('modelValue 回显：同步到内部选择状态（ENUM auto→归一为数字·ADR-064）', async () => {
     const { api, modelValue } = setup();
     await api.loadMeta();
     modelValue.value = '1';
     await flushPromises();
-    expect(api.selectedValue.value).toBe('1');
+    expect(api.selectedValue.value).toBe(1);
   });
 
   it('onEnumChange 返回正确 emit 值', () => {
@@ -229,5 +229,147 @@ describe('useLovSelect（逻辑/事件层）', () => {
       valueField: 'id',
       labelField: 'name',
     });
+  });
+});
+
+describe('useLovSelect 级联（parent 过滤 + 父变清子 · ADR-063）', () => {
+  let scope: EffectScope | null = null;
+  afterEach(() => {
+    scope?.stop();
+    scope = null;
+  });
+
+  function parentMeta(): LovMetaResponse {
+    return {
+      meta: [
+        {
+          lovCode: 'Enum.Test.OrderType',
+          type: 'ENUM',
+          name: '工单类型',
+          options: [
+            { value: '1', label: '产线停机', parent: '1' },
+            { value: '2', label: '设备故障', parent: '1' },
+            { value: '3', label: '例行维保', parent: '2' },
+          ],
+        },
+      ],
+      inlineEnums: {},
+    };
+  }
+
+  function setupCascade(parentVal?: number) {
+    const code = ref('Enum.Test.OrderType');
+    const modelValue = ref<string | number | string[] | undefined>(undefined);
+    const multiple = ref(false);
+    const parent = ref<string | number | undefined>(parentVal);
+    const fetchMeta = vi.fn(async () => parentMeta());
+    scope = effectScope();
+    const api = scope.run(() => useLovSelect({ code, modelValue, multiple, parent, fetchMeta }))!;
+    return { api, parent };
+  }
+
+  it('无 parent → filteredOptions 等于全量 options', async () => {
+    const { api } = setupCascade(undefined);
+    await api.loadMeta();
+    expect(api.options.value).toHaveLength(3);
+    expect(api.filteredOptions.value).toHaveLength(3);
+  });
+
+  it('有 parent → filteredOptions 只含该父的子项（本地过滤·不重新请求·ENUM 值归一为数字）', async () => {
+    const { api } = setupCascade(1);
+    await api.loadMeta();
+    expect(api.filteredOptions.value.map((o) => o.value)).toEqual([1, 2]);
+  });
+
+  it('父值变化 → 清空不再属于新父的已选子值', async () => {
+    const { api, parent } = setupCascade(1);
+    await api.loadMeta();
+    api.selectedValue.value = '3'; // 属于 parent=2 的类型
+    parent.value = 2; // 先合法
+    await flushPromises();
+    expect(api.selectedValue.value).toBe('3');
+    parent.value = 1; // 切到 parent=1（合法只剩 1/2）→ 应清空
+    await flushPromises();
+    expect(api.selectedValue.value).toBeUndefined();
+  });
+});
+
+describe('useLovSelect 输出值类型 valueType（承 ADR-064）', () => {
+  let scope: EffectScope | null = null;
+  afterEach(() => {
+    scope?.stop();
+    scope = null;
+  });
+
+  function enumStatusMeta(): LovMetaResponse {
+    return {
+      meta: [
+        {
+          lovCode: 'Enum.Test.Status',
+          type: 'ENUM',
+          name: '状态',
+          options: [
+            { value: '0', label: '草稿' },
+            { value: '1', label: '启用' },
+          ],
+        },
+      ],
+      inlineEnums: {},
+    };
+  }
+
+  function setupEnum(valueType: 'auto' | 'number' | 'string', initial?: string | number) {
+    const code = ref('Enum.Test.Status');
+    const modelValue = ref<string | number | string[] | undefined>(initial);
+    const multiple = ref(false);
+    const vt = ref<'auto' | 'number' | 'string'>(valueType);
+    const fetchMeta = vi.fn(async () => enumStatusMeta());
+    scope = effectScope();
+    const api = scope.run(() => useLovSelect({ code, modelValue, multiple, valueType: vt, fetchMeta }))!;
+    return { api, modelValue };
+  }
+
+  function setupList(valueType: 'auto' | 'number' | 'string') {
+    const code = ref('List.Test.User');
+    const modelValue = ref<string | number | string[] | undefined>(undefined);
+    const multiple = ref(false);
+    const vt = ref<'auto' | 'number' | 'string'>(valueType);
+    const fetchMeta = vi.fn(async () => listMetaResponse());
+    scope = effectScope();
+    const api = scope.run(() => useLovSelect({ code, modelValue, multiple, valueType: vt, fetchMeta }))!;
+    return { api };
+  }
+
+  it('ENUM auto → 选项值默认出数字', async () => {
+    const { api } = setupEnum('auto');
+    await api.loadMeta();
+    expect(api.filteredOptions.value.map((o) => o.value)).toEqual([0, 1]);
+  });
+
+  it('ENUM string → 选项值保持字符串（旧行为显式回退）', async () => {
+    const { api } = setupEnum('string');
+    await api.loadMeta();
+    expect(api.filteredOptions.value.map((o) => o.value)).toEqual(['0', '1']);
+  });
+
+  it('ENUM auto → 外部传入字符串 modelValue 回显归一为数字', async () => {
+    const { api, modelValue } = setupEnum('auto', '1');
+    await api.loadMeta();
+    expect(api.selectedValue.value).toBe(1);
+    modelValue.value = '0';
+    await flushPromises();
+    expect(api.selectedValue.value).toBe(0);
+  });
+
+  it('LIST auto → 保持行数据原生类型（不转数字）', async () => {
+    const { api } = setupList('auto');
+    await api.loadMeta();
+    expect(api.onTableSelect({ id: '7', name: '张三' })).toBe('7');
+  });
+
+  it('LIST number → onTableSelect 把行 id 归一为数字', async () => {
+    const { api } = setupList('number');
+    await api.loadMeta();
+    expect(api.onTableSelect({ id: '7', name: '张三' })).toBe(7);
   });
 });

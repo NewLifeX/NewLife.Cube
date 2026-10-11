@@ -1,5 +1,5 @@
-import { ref, computed, watch, type Ref } from 'vue';
-import type { LovMetaItem, LovEnumOption, LovListMeta } from '@newlifex/cube-vue/core/types/lov';
+import { ref, computed, watch, type Ref, type ComputedRef } from 'vue';
+import type { LovMetaItem, LovEnumOption, LovListMeta, LovSelectOption, LovValueType } from '@newlifex/cube-vue/core/types/lov';
 import {
   getMeta,
   getCachedMeta,
@@ -8,8 +8,8 @@ import {
   resolveSelectedLabel,
 } from '@newlifex/cube-vue/core/components/LovSelect/lovStore';
 
-/** LovSelect 对外 emit 的 modelValue 类型 */
-export type LovValue = string | number | string[] | undefined;
+/** LovSelect 对外 emit 的 modelValue 类型（多选可为 string[] 或 number[]·承 ADR-064） */
+export type LovValue = string | number | Array<string | number> | undefined;
 
 export interface UseLovSelectOptions {
   /** 值集编码（响应式） */
@@ -18,6 +18,14 @@ export interface UseLovSelectOptions {
   modelValue: Ref<LovValue>;
   /** 是否多选（响应式） */
   multiple: Ref<boolean>;
+  /** 级联父级值（响应式，可选）。非空时按 option.parent 过滤 ENUM 选项，父变则清空不再合法的子选择 */
+  parent?: Ref<string | number | undefined>;
+  /**
+   * 输出值类型（响应式，可选·承 ADR-064）。
+   * auto（默认）=ENUM 出数字·LIST 原生；number/string=强制归一。
+   * 归一同时作用于「下拉选项 value」与「外部传入 modelValue」，保证选中/回显/emit 三者类型一致。
+   */
+  valueType?: Ref<LovValueType>;
   /**
    * 可注入的 meta 加载函数，便于单测隔离。
    * 注入后会绕过 lovStore 缓存，直接调用该函数获取 meta。
@@ -31,8 +39,10 @@ export interface UseLovSelectReturn {
   lovMeta: Ref<LovMetaItem | null>;
   resolvedType: Ref<'ENUM' | 'LIST' | null>;
   options: Ref<LovEnumOption[]>;
+  /** 按 parent 过滤 + 按 valueType 归一后的可选项（渲染 el-option 用·无 parent 时=全量·承 ADR-064） */
+  filteredOptions: ComputedRef<LovSelectOption[]>;
   selectedValue: Ref<string | number | undefined>;
-  selectedValues: Ref<string[]>;
+  selectedValues: Ref<Array<string | number>>;
   dialogVisible: Ref<boolean>;
   displayText: Ref<string>;
   listMeta: Ref<LovListMeta | null>;
@@ -44,7 +54,7 @@ export interface UseLovSelectReturn {
   /** 枚举单选：返回应 emit 的值（组件负责 emit） */
   onEnumChange: (val: string | number | undefined) => LovValue;
   /** 枚举多选：返回应 emit 的值 */
-  onEnumMultiChange: (vals: string[]) => LovValue;
+  onEnumMultiChange: (vals: Array<string | number>) => LovValue;
   /** 列表单选：根据行计算值+标签、更新 displayText、关闭弹窗，返回应 emit 的值 */
   onTableSelect: (row: Record<string, unknown>) => LovValue;
   /** 列表多选确认：更新选中集合、关闭弹窗，返回应 emit 的值 */
@@ -77,10 +87,42 @@ export function useLovSelect(opts: UseLovSelectOptions): UseLovSelectReturn {
       ? undefined
       : (opts.modelValue.value as string | number | undefined),
   );
-  const selectedValues = ref<string[]>(
-    Array.isArray(opts.modelValue.value) ? (opts.modelValue.value as string[]) : [],
+  const selectedValues = ref<Array<string | number>>(
+    Array.isArray(opts.modelValue.value) ? [...(opts.modelValue.value as Array<string | number>)] : [],
   );
   const options = ref<LovEnumOption[]>([]);
+
+  // ── 输出值类型归一（承 ADR-064）：同一 mode 同时作用于「选项 value」与「外部 modelValue」，
+  //    保证 el-select 选中匹配 / 回显 / emit 三者类型一致。auto：ENUM→number，LIST→native。
+  function outputMode(): 'number' | 'string' | 'native' {
+    const v = opts.valueType?.value ?? 'auto';
+    if (v === 'number') return 'number';
+    if (v === 'string') return 'string';
+    return resolvedType.value === 'ENUM' ? 'number' : 'native';
+  }
+  function applyMode(raw: string | number, m: 'number' | 'string' | 'native'): string | number {
+    if (m === 'native') return raw;
+    if (m === 'number') {
+      const n = Number(raw);
+      return Number.isNaN(n) ? raw : n;
+    }
+    return String(raw);
+  }
+  /** 按当前 mode 归一单值（null/'' 原样返回，交由必填/清空逻辑处理） */
+  function coerce(v: string | number | undefined): string | number | undefined {
+    if (v == null || v === '') return v;
+    return applyMode(v, outputMode());
+  }
+
+  const filteredOptions = computed<LovSelectOption[]>(() => {
+    const p = opts.parent?.value;
+    const list =
+      p == null || p === ''
+        ? options.value
+        : options.value.filter((o) => o.parent != null && String(o.parent) === String(p));
+    const m = outputMode();
+    return list.map((o) => ({ value: applyMode(o.value, m), label: o.label }));
+  });
 
   const dialogVisible = ref(false);
   const displayText = ref('');
@@ -109,8 +151,8 @@ export function useLovSelect(opts: UseLovSelectOptions): UseLovSelectReturn {
         }
       }
     }
-    // meta 解析完成后，如果外部已经传了 modelValue，需要把 displayText 回显出来。
-    updateDisplayText();
+    // meta 解析完成后，若外部已传 modelValue：按 valueType 归一后同步选择态并回显（承 ADR-064）
+    syncFromModelValue();
   }
 
   async function loadMeta() {
@@ -140,7 +182,7 @@ export function useLovSelect(opts: UseLovSelectOptions): UseLovSelectReturn {
       if (cached.type === 'ENUM') {
         options.value = cached.options || [];
       }
-      updateDisplayText();
+      syncFromModelValue();
       return;
     }
 
@@ -160,7 +202,7 @@ export function useLovSelect(opts: UseLovSelectOptions): UseLovSelectReturn {
           }
         }
       }
-      updateDisplayText();
+      syncFromModelValue();
     } catch (err) {
       console.error('LovSelect: 加载元数据失败', err);
     } finally {
@@ -172,7 +214,7 @@ export function useLovSelect(opts: UseLovSelectOptions): UseLovSelectReturn {
     return val;
   }
 
-  function onEnumMultiChange(vals: string[]): LovValue {
+  function onEnumMultiChange(vals: Array<string | number>): LovValue {
     return vals;
   }
 
@@ -188,18 +230,21 @@ export function useLovSelect(opts: UseLovSelectOptions): UseLovSelectReturn {
       registerSelectedRow(code, row, { valueField, labelField });
     }
 
-    selectedValue.value = val;
+    const out = coerce(val); // 承 ADR-064：按 valueType 归一 LIST 选中值
+    selectedValue.value = out;
     displayText.value = row[labelField] != null ? String(row[labelField]) : String(val ?? '');
     dialogVisible.value = false;
-    return val;
+    return out;
   }
 
   function onTableMultiConfirm(vals: string[]): LovValue {
-    selectedValues.value = vals;
+    const m = outputMode();
+    const out = vals.map((v) => applyMode(v, m)); // 承 ADR-064：按 valueType 归一多选值
+    selectedValues.value = out;
     dialogVisible.value = false;
     // 异步补全 displayText（lovStore 会在 listData 加载后自动映射 label）
     updateDisplayText();
-    return vals;
+    return out;
   }
 
   function openDialog() {
@@ -241,10 +286,11 @@ export function useLovSelect(opts: UseLovSelectOptions): UseLovSelectReturn {
 
   function syncFromModelValue() {
     const val = opts.modelValue.value;
+    const m = outputMode();
     if (Array.isArray(val)) {
-      selectedValues.value = val as string[];
+      selectedValues.value = val.map((v) => applyMode(v, m));
     } else {
-      selectedValue.value = val as string | number | undefined;
+      selectedValue.value = val == null ? undefined : applyMode(val, m);
     }
     updateDisplayText();
   }
@@ -264,11 +310,27 @@ export function useLovSelect(opts: UseLovSelectOptions): UseLovSelectReturn {
     syncFromModelValue();
   });
 
+  // 级联：父值变化后，清掉不再属于当前父的已选子值（单选+多选）
+  if (opts.parent) {
+    watch(opts.parent, () => {
+      const inSet = (v: string | number | undefined) =>
+        v != null && v !== '' && filteredOptions.value.some((o) => String(o.value) === String(v));
+      if (selectedValue.value != null && !inSet(selectedValue.value)) {
+        selectedValue.value = undefined;
+        displayText.value = '';
+      }
+      if (selectedValues.value.length) {
+        selectedValues.value = selectedValues.value.filter((v) => inSet(v));
+      }
+    });
+  }
+
   return {
     loading,
     lovMeta,
     resolvedType,
     options,
+    filteredOptions,
     selectedValue,
     selectedValues,
     dialogVisible,

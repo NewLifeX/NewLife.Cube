@@ -14,6 +14,9 @@ public class LovEnumOption
 
     /// <summary>显示文本</summary>
     public String Label { get; set; } = "";
+
+    /// <summary>父级值（级联用）。由成员上的 [Parent(...)] 特性按名反射得到；无则空</summary>
+    public String? Parent { get; set; }
 }
 
 /// <summary>列表型值集描述符。由 [LovList] 特性反射构建（不落库，运行时直读）</summary>
@@ -112,7 +115,19 @@ public static class LovRegistry
                 }
             }
 
-            list.Add(new LovEnumOption { Value = value, Label = label });
+            // 级联父级：按特性名识别 [Parent(...)]（业务层自定义同名特性，避免编译期耦合框架）
+            String? parent = null;
+            if (member != null)
+            {
+                var pa = member.GetCustomAttributes().FirstOrDefault(a => a.GetType().Name == "ParentAttribute");
+                if (pa != null)
+                {
+                    var pv = pa.GetType().GetProperty("Value")?.GetValue(pa);
+                    if (pv != null) parent = Convert.ToInt64(pv).ToString();
+                }
+            }
+
+            list.Add(new LovEnumOption { Value = value, Label = label, Parent = parent });
         }
         return list;
     }

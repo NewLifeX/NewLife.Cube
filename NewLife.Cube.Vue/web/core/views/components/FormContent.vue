@@ -223,7 +223,7 @@ function toMultiArray(val: unknown): string[] {
             :disabled="props.disabled"
             :model-value="(getValue(field.name) as string | number | undefined)"
             :placeholder="field.description || '请选择'"
-            @update:model-value="(v: string | number | string[] | undefined) => updateField(field.name, v)"
+            @update:model-value="(v: string | number | Array<string | number> | undefined) => updateField(field.name, v)"
           />
 
           <!-- 值集多选 -->
@@ -234,7 +234,7 @@ function toMultiArray(val: unknown): string[] {
             :disabled="props.disabled"
             :model-value="toMultiArray(getValue(field.name))"
             :placeholder="field.description || '请选择（多选）'"
-            @update:model-value="(v: string | number | string[] | undefined) => updateField(field.name, v)"
+            @update:model-value="(v: string | number | Array<string | number> | undefined) => updateField(field.name, v)"
           />
 
           <!-- 文件上传 -->

@@ -204,7 +204,7 @@ public class LovController : ControllerBaseX
                 if (type == null) continue;
 
                 var options = LovRegistry.GetEnumOptions(type)
-                    .Select(e => (Object)new { e.Value, e.Label })
+                    .Select(e => (Object)new { e.Value, e.Label, e.Parent })
                     .ToList();
                 result.Add(new
                 {

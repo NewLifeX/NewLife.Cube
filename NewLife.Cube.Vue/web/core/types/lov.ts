@@ -17,6 +17,22 @@ export interface LovEnumOption {
   label: string;
   /** 额外数据（可选） */
   extra?: string | null;
+  /** 级联父级值（由后端 [Parent] 特性反射回吐）；无则不参与级联过滤 */
+  parent?: string | null;
+}
+
+/**
+ * LovSelect 对外（v-model）输出的值类型（承 ADR-064）。
+ * - `auto`（默认）：ENUM 型值集出**数字**（后端枚举 Int32 落库、对外数字码 ADR-061），LIST 型保持行数据原生类型；
+ * - `number`：无论 ENUM/LIST，一律把值转成数字；
+ * - `string`：无论 ENUM/LIST，一律把值转成字符串（回退旧行为，供个别需字符串码的存量场景显式声明）。
+ */
+export type LovValueType = 'auto' | 'number' | 'string';
+
+/** LovSelect 渲染 el-option 用的选项：值已按 valueType 归一，故可能是 number 或 string */
+export interface LovSelectOption {
+  value: string | number;
+  label: string;
 }
 
 // ─── 列表型值集配置 ───────────────────────────────────────
@@ -155,8 +171,8 @@ export interface LovSelectProps {
   code: string;
   /** 强制指定类型（一般从 code 前缀自动推断） */
   type?: string;
-  /** v-model 值 */
-  modelValue?: string | number;
+  /** v-model 值（单选 string|number，多选 string[]|number[]） */
+  modelValue?: string | number | Array<string | number>;
   /** 占位文本 */
   placeholder?: string;
   /** 是否可清除 */
@@ -165,12 +181,18 @@ export interface LovSelectProps {
   disabled?: boolean;
   /** 尺寸 */
   size?: 'large' | 'default' | 'small';
+  /** 是否多选 */
+  multiple?: boolean;
+  /** 级联父级值：非空时 ENUM 选项按 option.parent 过滤（承 ADR-063） */
+  parent?: string | number;
+  /** 输出值类型：auto=ENUM 出数字·LIST 原生；number/string=强制。默认 auto（承 ADR-064） */
+  valueType?: LovValueType;
 }
 
 /** LovSelect 组件事件 */
 export interface LovSelectEmits {
-  (e: 'update:modelValue', value: string | number | undefined): void;
-  (e: 'change', value: string | number | undefined): void;
+  (e: 'update:modelValue', value: string | number | Array<string | number> | undefined): void;
+  (e: 'change', value: string | number | Array<string | number> | undefined): void;
 }
 
 // ─── LovSelectTable 组件 Props 类型 ────────────────────────

@@ -63,7 +63,7 @@
       style="width: 100%"
       @change="handleMultiChange"
     >
-      <el-option v-for="opt in options" :key="opt.value" :label="opt.label" :value="opt.value" />
+      <el-option v-for="opt in filteredOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
     </el-select>
 
     <!-- 枚举型 · 单选 -->
@@ -77,7 +77,7 @@
       style="width: 100%"
       @change="handleEnumChange"
     >
-      <el-option v-for="opt in options" :key="opt.value" :label="opt.label" :value="opt.value" />
+      <el-option v-for="opt in filteredOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
     </el-select>
   </div>
 </template>
@@ -88,8 +88,9 @@ defineOptions({ name: 'LovSelect' });
 import { toRef, computed, onMounted, ref, nextTick } from 'vue';
 import { Search } from '@element-plus/icons-vue';
 import LovSelectTable from '../LovSelectTable/index.vue';
-import { useLovSelect } from './useLovSelect';
+import { useLovSelect, type LovValue } from './useLovSelect';
 import { getSelectedLabel } from '@newlifex/cube-vue/core/components/LovSelect/lovStore';
+import type { LovValueType } from '@newlifex/cube-vue/core/types/lov';
 
 const props = withDefaults(
   defineProps<{
@@ -102,18 +103,24 @@ const props = withDefaults(
     size?: 'large' | 'default' | 'small';
     /** 是否为多选（multipleSelect 场景），emit string[] */
     multiple?: boolean;
+    /** 级联父级值：非空时 ENUM 选项按 option.parent 过滤（父变自动清空子选择） */
+    parent?: string | number;
+    /** 输出值类型：auto=ENUM 出数字·LIST 原生；number/string=强制归一（承 ADR-064） */
+    valueType?: LovValueType;
   }>(),
   {
     placeholder: '请选择',
     clearable: true,
     disabled: false,
     multiple: false,
+    parent: undefined,
+    valueType: 'auto',
   },
 );
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string | number | string[] | undefined): void;
-  (e: 'change', value: string | number | string[] | undefined): void;
+  (e: 'update:modelValue', value: LovValue): void;
+  (e: 'change', value: LovValue): void;
 }>();
 
 // ── 逻辑/事件全部委托给 useLovSelect；本组件只做「绑定模板 + emit 转发」的薄壳 ──
@@ -121,6 +128,7 @@ const {
   loading,
   resolvedType,
   options,
+  filteredOptions,
   selectedValue,
   selectedValues,
   dialogVisible,
@@ -138,6 +146,8 @@ const {
   code: toRef(props, 'code'),
   modelValue: toRef(props, 'modelValue'),
   multiple: toRef(props, 'multiple'),
+  parent: toRef(props, 'parent'),
+  valueType: toRef(props, 'valueType'),
 });
 
 // hook 不含生命周期，组件在挂载后显式加载元数据
@@ -174,7 +184,7 @@ const listTags = computed(() => {
   return v != null && v !== '' ? [{ value: v, label: fill(v) }] : [];
 });
 
-function emitChange(value: string | number | string[] | undefined) {
+function emitChange(value: LovValue) {
   emit('update:modelValue', value);
   emit('change', value);
 }
@@ -183,7 +193,7 @@ function handleEnumChange(val: string | number | undefined) {
   emitChange(onEnumChange(val));
 }
 
-function handleMultiChange(val: string[]) {
+function handleMultiChange(val: Array<string | number>) {
   emitChange(onEnumMultiChange(val));
 }
 

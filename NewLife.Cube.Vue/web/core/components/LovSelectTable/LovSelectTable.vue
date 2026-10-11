@@ -151,8 +151,8 @@ const props = defineProps<{
   translateCache: Map<string, string>;
   /** 是否多选（multipleSelect 场景），确定后 emit string[] */
   multiple?: boolean;
-  /** 当前已选值（单选为单个值，多选为逗号分隔字符串或 string[]），弹窗打开时用于回显已选 */
-  modelValue?: string | number | string[] | undefined;
+  /** 当前已选值（单选为单个值，多选为逗号分隔字符串或 string[]/number[]），弹窗打开时用于回显已选 */
+  modelValue?: string | number | Array<string | number> | undefined;
 }>();
 
 const emit = defineEmits<{
@@ -179,7 +179,7 @@ const restoringSelection = ref(false);
 const currentValue = ref<string | number | undefined>('');
 
 /** 将已存储值归一为 string[]（多选逗号分隔字符串 / 数组 / 单选单值） */
-function toValueArray(val?: string | number | string[] | null): string[] {
+function toValueArray(val?: string | number | Array<string | number> | null): string[] {
   if (val == null) return [];
   if (Array.isArray(val)) return val.map(String);
   if (typeof val === 'number') return [String(val)];
