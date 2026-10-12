@@ -1,6 +1,7 @@
 #if NET9_0_OR_GREATER
 #nullable enable
 using System.Reflection;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
 using NewLife.Cube;
 
@@ -38,6 +39,18 @@ public static class CubeOpenApiExtensions
             services.AddOpenApi(group, options =>
                 options.ShouldInclude = desc => string.Equals(desc.GroupName, group, StringComparison.OrdinalIgnoreCase));
         }
+
+        // 项目侧 XML 注释统一导入（框架级）：为 v1 与全部具名文档附加注释变换器——
+        // 项目只需开 GenerateDocumentationFile，无需任何接线（读取来源与行为见 OpenApiEntryXmlComments.cs）。
+        // 注：注释导入器依赖 .NET 10 的 Microsoft.OpenApi 2.x 对象模型，故仅在 net10 目标注册。
+#if NET10_0_OR_GREATER
+        services.ConfigureAll<OpenApiOptions>(options =>
+        {
+            options.AddOperationTransformer(new EntryXmlCommentOperationTransformer());
+            options.AddSchemaTransformer(new EntryXmlCommentSchemaTransformer());
+        });
+#endif
+
         return services;
     }
 

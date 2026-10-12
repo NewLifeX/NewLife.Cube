@@ -29,8 +29,10 @@ public static class SwaggerService
             // 解决 NewLife.Setting 与 XCode.Setting 冲突的问题
             options.CustomSchemaIds(type => type.FullName);
 
-            var xml = "NewLife.Cube.xml".GetFullPath();
-            if (File.Exists(xml)) options.IncludeXmlComments(xml, true);
+            // 并联 XML 注释：框架自身 + 各「已加载程序集」的同名 .xml（项目开 GenerateDocumentationFile 即自动并入）——
+            // 「项目只负责生成 xml、框架统一导入显示」，项目侧零接线（AppDomain 扫描避开构建期 host 的 GetEntryAssembly 坑）。
+            foreach (var xmlFile in XmlCommentFiles.Collect())
+                options.IncludeXmlComments(xmlFile, true);
 
             var asm = AssemblyX.Entry;
             options.SwaggerDoc("v1", new OpenApiInfo { Title = "第三代魔方", Description = "第三代魔方WebApi接口，用于前后端分离。", Version = asm.FileVersion });
