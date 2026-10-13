@@ -103,6 +103,11 @@ export interface FieldMeta {
    * 与 lovCode 二选一：有 lovCode 走 LOV 远程拉取；否则用本地 dataSource 渲染下拉。
    */
   dataSource?: Record<string, string>;
+  /**
+   * 级联父字段名（后端对带 [Parent] 的枚举子字典下发，如 OrderType → "Section"）。
+   * 有值时表单渲染 LovSelect 并把同级该字段的当前值作为 :parent 传入，实现"父变过滤子"。
+   */
+  parentField?: string;
 }
 
 /** 搜索字段（列表搜索区消费，继承 FieldMeta 并附带解析后的搜索控件类型） */

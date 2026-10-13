@@ -205,8 +205,9 @@ public class DataField : IDictionarySource
         else if (Type != null && Type.IsEnum)
         {
             // 枚举选项：反射枚举成员，标签取 DisplayName/Description/成员名（对齐 MVC _Form_Int）
+            var members = Type.GetFields(BindingFlags.Public | BindingFlags.Static);
             var sds = new Dictionary<String, String>();
-            foreach (var item in Type.GetFields(BindingFlags.Public | BindingFlags.Static))
+            foreach (var item in members)
             {
                 var value = Convert.ToInt64(item.GetValue(null));
                 var label = item.Name;
@@ -217,6 +218,30 @@ public class DataField : IDictionarySource
                 sds[value + ""] = label;
             }
             if (sds.Count > 0) dic["dataSource"] = sds;
+
+            // 级联（LovSelect）：枚举成员带 [Parent] 特性（按简单名识别，与框架解耦，同 LovRegistry.GetEnumOptions 约定）
+            // 时，该字段是"子字典"（如工单类型 OrderType 的每个成员归属某板块 Section）。
+            // 下发 lovCode（Enum.全名，供前端 LovSelect 拉取带 parent 的选项）+ parentField（父枚举类型名，
+            // 约定=同级字段名，如 Section），前端据此把同级父字段当前值传给 LovSelect :parent 做过滤。
+            // 无 [Parent] 的枚举（如 Section 本身、优先级）保持普通 select 下拉，行为不变。
+            Type parentType = null;
+            foreach (var m in members)
+            {
+                foreach (var a in m.GetCustomAttributes())
+                {
+                    if (a.GetType().Name == "ParentAttribute")
+                    {
+                        var pv = a.GetType().GetProperty("Value")?.GetValue(a);
+                        if (pv != null) { parentType = pv.GetType(); break; }
+                    }
+                }
+                if (parentType != null) break;
+            }
+            if (parentType != null)
+            {
+                dic["lovCode"] = "Enum." + Type.FullName;
+                dic["parentField"] = parentType.Name;
+            }
         }
 
         // 子类扩展字段

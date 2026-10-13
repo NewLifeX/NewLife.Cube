@@ -64,6 +64,8 @@ interface BackendField {
   lovCode?: string;
   multiple?: boolean;
   dataSource?: Record<string, string>;
+  /** 级联父字段名（后端对带 [Parent] 的枚举子字典下发，如 OrderType → "Section"） */
+  parentField?: string;
 }
 
 interface PageMeta {
@@ -164,6 +166,7 @@ function toFieldMeta(f: BackendField): FieldMeta {
     lovCode: f.lovCode,
     multiple: f.multiple,
     dataSource: f.dataSource,
+    parentField: f.parentField,
   };
 }
 
