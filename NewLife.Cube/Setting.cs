@@ -504,8 +504,8 @@ public class CubeSetting : Config<CubeSetting>
     [Category("系统功能")]
     public Int32 CaptchaScene { get; set; }
 
-    /// <summary>风险自适应验证码。自动感知当前请求环境安全度（内网/可信设备/登录失败历史），不安全时即使 CaptchaScene 未覆盖也要求图片验证码，默认true</summary>
-    [Description("风险自适应验证码。自动感知当前机器是否安全，不安全环境要求图片验证码，默认true")]
+    /// <summary>风险自适应验证码。CaptchaScene 非 0 时生效：自动感知当前请求环境安全度（内网/可信设备/登录失败历史），不安全时对未强制场景也要求图片验证码，默认true</summary>
+    [Description("风险自适应验证码。验证码场景全关（CaptchaScene=0）时整体不启用；启用后自动感知当前机器是否安全，不安全环境要求图片验证码，默认true")]
     [Category("系统功能")]
     public Boolean CaptchaRisk { get; set; } = true;
 

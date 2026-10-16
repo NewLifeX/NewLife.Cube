@@ -29,23 +29,28 @@ public class SsoAvatarFetchTests : IDisposable
 
     public SsoAvatarFetchTests()
     {
-        // 启动本地图片服务，模拟 SSO 头像地址。随机端口，冲突时重试
-        _server = new HttpListener();
+        // 启动本地图片服务，模拟 SSO 头像地址。随机端口，冲突时重试。
+        // 注意：Start 失败后同一实例可能已被释放，重试必须换新实例，否则下一次访问 Prefixes 抛 ObjectDisposedException
+        var server = default(HttpListener);
+        var port = 0;
         for (var i = 0; i < 5; i++)
         {
-            _port = Rand.Next(20000, 60000);
-            _server.Prefixes.Clear();
-            _server.Prefixes.Add($"http://127.0.0.1:{_port}/");
+            port = Rand.Next(20000, 60000);
+            server = new HttpListener();
+            server.Prefixes.Add($"http://127.0.0.1:{port}/");
             try
             {
-                _server.Start();
+                server.Start();
                 break;
             }
             catch (System.Net.HttpListenerException)
             {
+                try { server.Close(); } catch { }
                 if (i == 4) throw;
             }
         }
+        _server = server!;
+        _port = port;
         _ = Task.Run(ProcessRequest);
 
         _tmpDir = Path.Combine(Path.GetTempPath(), "cube-avatar-test-" + Guid.NewGuid().ToString("N"));

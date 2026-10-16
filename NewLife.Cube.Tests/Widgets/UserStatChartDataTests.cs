@@ -1,16 +1,67 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using NewLife.Cube.Areas.Admin.Controllers;
 using NewLife.Cube.Entity;
+using XCode.DataAccessLayer;
 using Xunit;
 
 namespace NewLife.Cube.Tests.Widgets;
 
-/// <summary>用户统计图表数据单元测试。验证 OnGetChartData 构建 3 个 ECharts option（主折线 + 箱线 + K线），纯内存数据不访问数据库</summary>
-public class UserStatChartDataTests
+/// <summary>用户统计图表数据测试集合。兜底查库路径访问数据库，集合禁并行（串行执行），避免与其它测试集合互相污染连接映射</summary>
+[CollectionDefinition("UserStatChartData", DisableParallelization = true)]
+public class UserStatChartDataCollection
 {
+}
+
+/// <summary>用户统计图表数据单元测试。验证 OnGetChartData 构建 3 个 ECharts option（主折线 + 箱线 + K线）</summary>
+[Collection("UserStatChartData")]
+public class UserStatChartDataTests : IDisposable
+{
+    private readonly String _connName = "UserStatChartUnit";
+    private readonly String _dbFile;
+    private readonly String _oldConnName;
+
+    public UserStatChartDataTests()
+    {
+        // OnGetChartData 空列表时兜底查库；测试期间把 UserStat 重映射到独立空库，
+        // 保证"空数据"语义与运行机器/其它测试集合的库状态无关
+        var dir = Path.Combine(AppContext.BaseDirectory, "Data");
+        Directory.CreateDirectory(dir);
+        _dbFile = Path.Combine(dir, "UserStatChartUnit.db");
+        foreach (var f in Directory.GetFiles(dir, "UserStatChartUnit.db*"))
+        {
+            try { File.Delete(f); } catch { }
+        }
+
+        DAL.AddConnStr(_connName, $"Data Source={_dbFile}", null, "SQLite");
+        _oldConnName = NewLife.Cube.Entity.UserStat.Meta.ConnName;
+        NewLife.Cube.Entity.UserStat.Meta.ConnName = _connName;
+
+        // 显式建空表：兜底查询需要表存在才能稳定返回空集；不依赖 XCode 反向工程（其迁移配置在测试进程内可能关闭）
+        DAL.Create(_connName).Execute("Create Table If Not Exists UserStat(Id INTEGER Primary Key AutoIncrement, Date DATETIME, Total INTEGER, Logins INTEGER, OAuths INTEGER, MaxOnline INTEGER, Actives INTEGER, ActivesT7 INTEGER, ActivesT30 INTEGER, News INTEGER, NewsT7 INTEGER, NewsT30 INTEGER, OnlineTime INTEGER, CreateTime DATETIME, UpdateTime DATETIME)");
+    }
+
+    public void Dispose()
+    {
+        NewLife.Cube.Entity.UserStat.Meta.ConnName = _oldConnName;
+        try { DAL.Create(_connName).Reset(); } catch { }
+        DAL.ConnStrs?.TryRemove(_connName, out _);
+        try
+        {
+            foreach (var f in Directory.GetFiles(Path.GetDirectoryName(_dbFile)!, "UserStatChartUnit.db*"))
+            {
+                File.Delete(f);
+            }
+        }
+        catch
+        {
+            // 忽略清理失败
+        }
+    }
+
     #region 测试控制器
     private class TestUserStatController : UserStatController
     {

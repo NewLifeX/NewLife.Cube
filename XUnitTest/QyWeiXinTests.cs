@@ -26,7 +26,8 @@ public class QyWeiXinTests
         {
             var str = File.ReadAllText(file);
             var ss = str.Split("#");
-            if (ss != null && ss.Length >= 2) return ss;
+            // 占位文件（本方法首次运行时自动生成）视为未配置，避免占位凭据被误当真凭据发起请求
+            if (ss != null && ss.Length >= 2 && ss[0] != "corpId") return ss;
         }
         else
         {

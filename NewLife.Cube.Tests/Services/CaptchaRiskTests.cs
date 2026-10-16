@@ -132,8 +132,9 @@ public class CaptchaRiskTests : IDisposable
     [Fact(DisplayName = "RequireCaptcha 自适应关闭 不要求验证码")]
     public void RequireCaptcha_RiskOff_NoCaptcha()
     {
+        // CaptchaScene 非 0（注册场景强制）但未覆盖登录场景，走风险自适应；自适应关闭则免
+        _set.CaptchaScene = 2;
         _set.CaptchaRisk = false;
-        _set.CaptchaScene = 0;
 
         Assert.False(_verifyCode.RequireCaptcha(1, "8.8.8.8"));
     }
@@ -141,16 +142,17 @@ public class CaptchaRiskTests : IDisposable
     [Fact(DisplayName = "RequireCaptcha 内网低风险 免验证码")]
     public void RequireCaptcha_InnerIp_NoCaptcha()
     {
-        _set.CaptchaScene = 0;
+        // CaptchaScene 非 0 但不覆盖登录场景（2=注册），登录走风险自适应
+        _set.CaptchaScene = 2;
 
         Assert.False(_verifyCode.RequireCaptcha(1, "127.0.0.1"));
-        Assert.False(_verifyCode.RequireCaptcha(2, "192.168.1.5"));
+        Assert.False(_verifyCode.RequireCaptcha(1, "192.168.1.5"));
     }
 
     [Fact(DisplayName = "RequireCaptcha 公网无异常 低于阈值免验证码")]
     public void RequireCaptcha_PublicIpBelowThreshold_NoCaptcha()
     {
-        _set.CaptchaScene = 0;
+        _set.CaptchaScene = 2;
 
         // 公网+无失败 = 风险1 < 阈值2 → 免
         Assert.False(_verifyCode.RequireCaptcha(1, "8.8.8.8"));
@@ -159,7 +161,7 @@ public class CaptchaRiskTests : IDisposable
     [Fact(DisplayName = "RequireCaptcha 公网有失败记录 达到阈值要求验证码")]
     public void RequireCaptcha_PublicIpWithFail_RequireCaptcha()
     {
-        _set.CaptchaScene = 0;
+        _set.CaptchaScene = 2;
         const String ip = "8.8.8.8";
         _cacheProvider.Cache.Set($"{PasswordLoginIpPrefix}{ip}", 1);
 
@@ -170,7 +172,7 @@ public class CaptchaRiskTests : IDisposable
     [Fact(DisplayName = "RequireCaptcha 阈值调低 公网即要求")]
     public void RequireCaptcha_ThresholdLowered_PublicIpRequires()
     {
-        _set.CaptchaScene = 0;
+        _set.CaptchaScene = 2;
         _set.CaptchaRiskThreshold = 1;
         const String ip = "8.8.8.8";
 
@@ -178,10 +180,22 @@ public class CaptchaRiskTests : IDisposable
         Assert.True(_verifyCode.RequireCaptcha(1, ip));
     }
 
+    [Fact(DisplayName = "RequireCaptcha 场景0（不启用） 风险再高也不要求（2026-09-15 语义）")]
+    public void RequireCaptcha_SceneZero_Disabled()
+    {
+        _set.CaptchaScene = 0;
+        const String ip = "8.8.8.8";
+        _cacheProvider.Cache.Set($"{PasswordLoginIpPrefix}{ip}", 5);
+
+        // CaptchaScene=0：整体关闭图片验证码（含风险自适应），默认配置下发码/登录均不再弹验证码
+        Assert.False(_verifyCode.RequireCaptcha(1, ip));
+        Assert.False(_verifyCode.RequireCaptcha(4, ip));
+    }
+
     [Fact(DisplayName = "RequireCaptcha 可信设备豁免自适应验证码")]
     public void RequireCaptcha_TrustedDevice_Exempt()
     {
-        _set.CaptchaScene = 0;
+        _set.CaptchaScene = 2;
         const String ip = "8.8.8.8";
         const String deviceId = "device-abc123";
         _cacheProvider.Cache.Set($"{PasswordLoginIpPrefix}{ip}", 1);
