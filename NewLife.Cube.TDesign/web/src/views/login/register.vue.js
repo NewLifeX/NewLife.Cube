@@ -68,7 +68,7 @@ const onSubmit = async () => {
         return;
     }
     if (activeTab.value === 'mail' && (!form.emailCodeTarget || !form.code)) {
-        error.value = '请填写邮笱和验证码';
+        error.value = '请填写邮箱和验证码';
         return;
     }
     const payload = oauthMode.value
@@ -187,11 +187,11 @@ if (!__VLS_ctx.oauthMode) {
         // @ts-ignore
         const __VLS_17 = __VLS_asFunctionalComponent(__VLS_16, new __VLS_16({
             value: "mail",
-            label: "邮笱注册",
+            label: "邮箱注册",
         }));
         const __VLS_18 = __VLS_17({
             value: "mail",
-            label: "邮笱注册",
+            label: "邮箱注册",
         }, ...__VLS_functionalComponentArgsRest(__VLS_17));
     }
     var __VLS_7;
@@ -255,11 +255,11 @@ if (__VLS_ctx.activeTab === 'password' || __VLS_ctx.activeTab === 'mail' || __VL
     // @ts-ignore
     const __VLS_41 = __VLS_asFunctionalComponent(__VLS_40, new __VLS_40({
         modelValue: (__VLS_ctx.form.email),
-        placeholder: "邮笱",
+        placeholder: "邮箱",
     }));
     const __VLS_42 = __VLS_41({
         modelValue: (__VLS_ctx.form.email),
-        placeholder: "邮笱",
+        placeholder: "邮箱",
     }, ...__VLS_functionalComponentArgsRest(__VLS_41));
     var __VLS_39;
 }

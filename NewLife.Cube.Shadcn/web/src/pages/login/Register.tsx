@@ -72,7 +72,7 @@ export default function Register() {
     if (!form.password || !form.confirmPassword) return setError('请输入密码和确认密码');
     if (form.password !== form.confirmPassword) return setError('两次密码不一致');
     if (tab === 'mobile' && (!form.mobile || !form.code)) return setError('请填写手机号和验证码');
-    if (tab === 'mail' && (!form.emailCodeTarget || !form.code)) return setError('请填写邮笱和验证码');
+    if (tab === 'mail' && (!form.emailCodeTarget || !form.code)) return setError('请填写邮箱和验证码');
 
     const payload = oauthMode
       ? { category: 'oauth' as AuthCategory, oauthToken, username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword }
@@ -113,7 +113,7 @@ export default function Register() {
           <div className="mb-4 flex rounded-lg bg-muted p-1">
             <button type="button" className={`flex-1 rounded-md px-3 py-1.5 text-sm ${tab==='password'?'bg-background shadow':''}`} onClick={() => setTab('password')}>账号</button>
             {enableSmsRegister && <button type="button" className={`flex-1 rounded-md px-3 py-1.5 text-sm ${tab==='mobile'?'bg-background shadow':''}`} onClick={() => setTab('mobile')}>手机</button>}
-            {enableMailRegister && <button type="button" className={`flex-1 rounded-md px-3 py-1.5 text-sm ${tab==='mail'?'bg-background shadow':''}`} onClick={() => setTab('mail')}>邮笱</button>}
+            {enableMailRegister && <button type="button" className={`flex-1 rounded-md px-3 py-1.5 text-sm ${tab==='mail'?'bg-background shadow':''}`} onClick={() => setTab('mail')}>邮箱</button>}
           </div>
         )}
 

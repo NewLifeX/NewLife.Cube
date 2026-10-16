@@ -38,7 +38,6 @@ const paddingStyle = { ...paddingLeft, ...paddingTop };
 
 <style lang="scss" scoped>
 $nav-size-height: 56px;
-$layout-max-width: 1100px;
 
 .layout {
   width: 100%;
@@ -58,7 +57,6 @@ $layout-max-width: 1100px;
 .layoutNavbar {
   position: fixed;
   width: 100%;
-  min-width: $layout-max-width;
   top: 0;
   left: 0;
   height: $nav-size-height;
@@ -77,7 +75,6 @@ $layout-max-width: 1100px;
   }
 
   .layoutContent {
-    min-width: $layout-max-width;
     min-height: 100vh;
     height: 100vh;
     transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);

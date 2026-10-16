@@ -8,7 +8,7 @@
       <a-tabs v-if="!oauthMode" v-model:active-key="activeTab">
         <a-tab-pane key="password" title="账号注册" />
         <a-tab-pane v-if="enableSmsRegister" key="mobile" title="手机注册" />
-        <a-tab-pane v-if="enableMailRegister" key="mail" title="邮笱注册" />
+        <a-tab-pane v-if="enableMailRegister" key="mail" title="邮箱注册" />
       </a-tabs>
 
       <a-alert v-if="oauthMode" type="info" style="margin-bottom: 12px">第三方账号首次登录，请补全密码完成本地账号创建</a-alert>
@@ -18,7 +18,7 @@
           <a-input v-model="form.username" :readonly="oauthMode" allow-clear />
         </a-form-item>
 
-        <a-form-item v-if="activeTab==='password' || activeTab==='mail' || oauthMode" field="email" label="邮笱">
+        <a-form-item v-if="activeTab==='password' || activeTab==='mail' || oauthMode" field="email" label="邮箱">
           <a-input v-model="form.email" allow-clear />
         </a-form-item>
 
@@ -29,7 +29,7 @@
           </a-input-group>
         </a-form-item>
 
-        <a-form-item v-if="activeTab==='mail'" field="emailCodeTarget" label="邮笱地址">
+        <a-form-item v-if="activeTab==='mail'" field="emailCodeTarget" label="邮箱地址">
           <a-input-group>
             <a-input v-model="form.emailCodeTarget" allow-clear style="flex:1" />
             <a-button :disabled="countdown>0" :loading="sending" @click="sendCode('Mail')">{{ countdown>0 ? `${countdown}s` : '发送验证码' }}</a-button>
@@ -125,7 +125,7 @@ const onSubmit = async () => {
   if (!form.password || !form.confirmPassword) return Message.warning('请输入密码和确认密码');
   if (form.password !== form.confirmPassword) return Message.warning('两次密码不一致');
   if (activeTab.value === 'mobile' && (!form.mobile || !form.code)) return Message.warning('请填写手机号和验证码');
-  if (activeTab.value === 'mail' && (!form.emailCodeTarget || !form.code)) return Message.warning('请填写邮笱和验证码');
+  if (activeTab.value === 'mail' && (!form.emailCodeTarget || !form.code)) return Message.warning('请填写邮箱和验证码');
 
   const payload = oauthMode.value
     ? { category: 'oauth' as AuthCategory, oauthToken: form.oauthToken, username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword }

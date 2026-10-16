@@ -8,14 +8,14 @@
       <t-tabs v-if="!oauthMode" v-model="activeTab">
         <t-tab-panel value="password" label="账号注册" />
         <t-tab-panel v-if="enableSmsRegister" value="mobile" label="手机注册" />
-        <t-tab-panel v-if="enableMailRegister" value="mail" label="邮笱注册" />
+        <t-tab-panel v-if="enableMailRegister" value="mail" label="邮箱注册" />
       </t-tabs>
 
       <t-alert v-if="oauthMode" theme="info" message="第三方账号首次登录，请补全密码完成本地账号创建" style="margin-bottom:12px" />
 
       <t-form :label-width="0">
         <t-form-item v-if="activeTab==='password' || oauthMode"><t-input v-model="form.username" placeholder="用户名" :readonly="oauthMode" /></t-form-item>
-        <t-form-item v-if="activeTab==='password' || activeTab==='mail' || oauthMode"><t-input v-model="form.email" placeholder="邮笱" /></t-form-item>
+        <t-form-item v-if="activeTab==='password' || activeTab==='mail' || oauthMode"><t-input v-model="form.email" placeholder="邮箱" /></t-form-item>
 
         <t-form-item v-if="activeTab==='mobile'">
           <t-input v-model="form.mobile" placeholder="手机号">
@@ -111,7 +111,7 @@ const onSubmit = async () => {
   if (!form.password || !form.confirmPassword) { error.value = '请输入密码和确认密码'; return; }
   if (form.password !== form.confirmPassword) { error.value = '两次密码不一致'; return; }
   if (activeTab.value === 'mobile' && (!form.mobile || !form.code)) { error.value = '请填写手机号和验证码'; return; }
-  if (activeTab.value === 'mail' && (!form.emailCodeTarget || !form.code)) { error.value = '请填写邮笱和验证码'; return; }
+  if (activeTab.value === 'mail' && (!form.emailCodeTarget || !form.code)) { error.value = '请填写邮箱和验证码'; return; }
 
   const payload = oauthMode.value
     ? { category: 'oauth' as AuthCategory, oauthToken: form.oauthToken, username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword }

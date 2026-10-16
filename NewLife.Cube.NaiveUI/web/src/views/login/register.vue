@@ -6,14 +6,14 @@
       <n-tabs v-if="!oauthMode" v-model:value="activeTab">
         <n-tab-pane name="password" tab="账号注册" />
         <n-tab-pane v-if="enableSmsRegister" name="mobile" tab="手机注册" />
-        <n-tab-pane v-if="enableMailRegister" name="mail" tab="邮笱注册" />
+        <n-tab-pane v-if="enableMailRegister" name="mail" tab="邮箱注册" />
       </n-tabs>
 
       <n-alert v-if="oauthMode" type="info" style="margin-bottom:12px">第三方账号首次登录，请补全密码完成本地账号创建</n-alert>
 
       <n-form :model="form" label-placement="left">
         <n-form-item v-if="activeTab==='password' || oauthMode" label="用户名"><n-input v-model:value="form.username" :readonly="oauthMode" /></n-form-item>
-        <n-form-item v-if="activeTab==='password' || activeTab==='mail' || oauthMode" label="邮笱"><n-input v-model:value="form.email" /></n-form-item>
+        <n-form-item v-if="activeTab==='password' || activeTab==='mail' || oauthMode" label="邮箱"><n-input v-model:value="form.email" /></n-form-item>
 
         <n-form-item v-if="activeTab==='mobile'" label="手机号">
           <n-input-group>
@@ -22,7 +22,7 @@
           </n-input-group>
         </n-form-item>
 
-        <n-form-item v-if="activeTab==='mail'" label="邮笱地址">
+        <n-form-item v-if="activeTab==='mail'" label="邮箱地址">
           <n-input-group>
             <n-input v-model:value="form.emailCodeTarget" style="flex:1" />
             <n-button :disabled="countdown>0" :loading="sending" @click="sendCode('Mail')">{{ countdown>0 ? `${countdown}s` : '发送验证码' }}</n-button>
@@ -108,7 +108,7 @@ const onSubmit = async () => {
   if (!form.password || !form.confirmPassword) return message.warning('请输入密码和确认密码');
   if (form.password !== form.confirmPassword) return message.warning('两次密码不一致');
   if (activeTab.value === 'mobile' && (!form.mobile || !form.code)) return message.warning('请填写手机号和验证码');
-  if (activeTab.value === 'mail' && (!form.emailCodeTarget || !form.code)) return message.warning('请填写邮笱和验证码');
+  if (activeTab.value === 'mail' && (!form.emailCodeTarget || !form.code)) return message.warning('请填写邮箱和验证码');
 
   const payload = oauthMode.value
     ? { category: 'oauth' as AuthCategory, oauthToken: form.oauthToken, username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword }
