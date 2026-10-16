@@ -21,7 +21,7 @@ NewLife.Cube 的自动化测试工程（xUnit，net10.0）。本文档记录测�
 | 状态 | 说明 |
 |---|---|
 | `ManageProvider.Provider` / `ManageProvider2.Context` | 管理提供者装配。`ManageProvider2.Context` 为 internal，经 `InternalsVisibleTo` 直接赋值，**禁止反射注入** |
-| `CubeSetting.Current` | `EnableTenant`、`TenantEnforceMode`、`TenantQueryPolicy`、`JwtSecret` 等开关 |
+| `CubeSetting.Current` | `EnableTenant`、`TenantQueryPolicy`、`JwtSecret` 等开关 |
 | `TenantContext.Current` | 当前租户上下文，测试结束必须清回 `null` |
 | `DAL.ConnStrs` / DAL 实例缓存 | 连接串与连接映射，见下节 |
 

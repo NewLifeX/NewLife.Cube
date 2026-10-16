@@ -133,7 +133,7 @@
         "tags": [
           "App"
         ],
-        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2",
+        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&id=2、索引形式 id[0]=1&id[1]=2、逗号分隔 id=1,2",
         "parameters": [
           {
             "name": "id",
@@ -270,7 +270,7 @@
           "App"
         ],
         "summary": "查看单行数据",
-        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "parameters": [
           {
             "name": "id",
@@ -302,7 +302,7 @@
           "App"
         ],
         "summary": "查看单行数据",
-        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "responses": {
           "200": {
             "description": "",
@@ -469,7 +469,7 @@
           "AppLog"
         ],
         "summary": "查看单行数据",
-        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "parameters": [
           {
             "name": "id",
@@ -501,7 +501,7 @@
           "AppLog"
         ],
         "summary": "查看单行数据",
-        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "responses": {
           "200": {
             "description": "",
@@ -786,7 +786,7 @@
         "tags": [
           "Area"
         ],
-        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2",
+        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&id=2、索引形式 id[0]=1&id[1]=2、逗号分隔 id=1,2",
         "parameters": [
           {
             "name": "id",
@@ -923,7 +923,7 @@
           "Area"
         ],
         "summary": "查看单行数据",
-        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "parameters": [
           {
             "name": "id",
@@ -955,7 +955,7 @@
           "Area"
         ],
         "summary": "查看单行数据",
-        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "responses": {
           "200": {
             "description": "",
@@ -1224,7 +1224,7 @@
         "tags": [
           "Attachment"
         ],
-        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2",
+        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&id=2、索引形式 id[0]=1&id[1]=2、逗号分隔 id=1,2",
         "parameters": [
           {
             "name": "id",
@@ -1361,7 +1361,7 @@
           "Attachment"
         ],
         "summary": "查看单行数据",
-        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "parameters": [
           {
             "name": "id",
@@ -1393,7 +1393,7 @@
           "Attachment"
         ],
         "summary": "查看单行数据",
-        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "responses": {
           "200": {
             "description": "",
@@ -1688,7 +1688,7 @@
         "tags": [
           "CronJob"
         ],
-        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2",
+        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&id=2、索引形式 id[0]=1&id[1]=2、逗号分隔 id=1,2",
         "parameters": [
           {
             "name": "id",
@@ -1825,7 +1825,7 @@
           "CronJob"
         ],
         "summary": "查看单行数据",
-        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "parameters": [
           {
             "name": "id",
@@ -1857,7 +1857,7 @@
           "CronJob"
         ],
         "summary": "查看单行数据",
-        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "responses": {
           "200": {
             "description": "",
@@ -2152,7 +2152,7 @@
         "tags": [
           "OrderManager"
         ],
-        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2",
+        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&id=2、索引形式 id[0]=1&id[1]=2、逗号分隔 id=1,2",
         "parameters": [
           {
             "name": "id",
@@ -2289,7 +2289,7 @@
           "OrderManager"
         ],
         "summary": "查看单行数据",
-        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "parameters": [
           {
             "name": "id",
@@ -2321,7 +2321,7 @@
           "OrderManager"
         ],
         "summary": "查看单行数据",
-        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "responses": {
           "200": {
             "description": "",
@@ -2590,7 +2590,7 @@
         "tags": [
           "PrincipalAgent"
         ],
-        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2",
+        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&id=2、索引形式 id[0]=1&id[1]=2、逗号分隔 id=1,2",
         "parameters": [
           {
             "name": "id",
@@ -2727,7 +2727,7 @@
           "PrincipalAgent"
         ],
         "summary": "查看单行数据",
-        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "parameters": [
           {
             "name": "id",
@@ -2759,7 +2759,7 @@
           "PrincipalAgent"
         ],
         "summary": "查看单行数据",
-        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "responses": {
           "200": {
             "description": "",
@@ -5415,7 +5415,8 @@
               "string"
             ]
           }
-        }
+        },
+        "description": "委托人"
       },
       "OrderManager": {
         "type": "object",

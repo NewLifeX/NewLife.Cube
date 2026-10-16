@@ -155,15 +155,11 @@ public class TenantMiddleware
             if (tenant != null) return tenant.Id;
         }
         
-        // 方式3：从请求头识别。优先 X-Tenant 租户编码，X-Tenant-Id 已废弃仅兼容
+        // 方式3：从请求头识别。X-Tenant 租户编码
         if (context.Request.Headers.TryGetValue("X-Tenant", out var headerValue))
         {
             var tenant = Tenant.FindByCode(headerValue.ToString());
             if (tenant != null) return tenant.Id;
-        }
-        if (context.Request.Headers.TryGetValue("X-Tenant-Id", out headerValue))
-        {
-            return headerValue.ToString().ToInt();
         }
         
         // 方式4：从登录用户识别
@@ -439,7 +435,7 @@ public enum TenantResolveMode
     /// <summary>子路径识别（/tenant/xxx/）</summary>
     Path,
     
-    /// <summary>请求头识别（X-Tenant 租户编码，X-Tenant-Id 已废弃兼容）</summary>
+    /// <summary>请求头识别（X-Tenant 租户编码）</summary>
     Header,
     
     /// <summary>查询参数识别（?tenantId=xxx）</summary>

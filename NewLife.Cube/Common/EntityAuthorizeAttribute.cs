@@ -142,8 +142,8 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
                     "MissingIdentifier" => $"用户[{failedUser}]未携带租户标识，无法确定访问租户，请携带租户信息后重试",
                     _ => $"用户[{failedUser}]无权访问当前租户数据，请切换租户后重试",
                 };
-                // 落库审计日志到 Log 表（与 ManagerProviderHelper.WriteTenantCompatDataLog 同口径：
-                // CreateLog + SaveAsync 一次失败事件一行审计记录，供管理后台审计日志查询；写入失败不影响主流程）
+                // 落库审计日志到 Log 表（CreateLog + SaveAsync：一次失败事件一行审计记录，
+                // 供管理后台审计日志查询；写入失败不影响主流程）
                 try
                 {
                     var log = LogProvider.Provider.CreateLog("租户", "拒绝", false, msg, failedUserId, failedUser, filterContext.HttpContext.GetUserHost());

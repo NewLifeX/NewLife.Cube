@@ -133,7 +133,7 @@
         "tags": [
           "Class"
         ],
-        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2",
+        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&id=2、索引形式 id[0]=1&id[1]=2、逗号分隔 id=1,2",
         "parameters": [
           {
             "name": "id",
@@ -270,7 +270,7 @@
           "Class"
         ],
         "summary": "查看单行数据",
-        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "parameters": [
           {
             "name": "id",
@@ -302,7 +302,7 @@
           "Class"
         ],
         "summary": "查看单行数据",
-        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "responses": {
           "200": {
             "description": "",
@@ -571,7 +571,7 @@
         "tags": [
           "Student"
         ],
-        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2",
+        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&id=2、索引形式 id[0]=1&id[1]=2、逗号分隔 id=1,2",
         "parameters": [
           {
             "name": "id",
@@ -708,7 +708,7 @@
           "Student"
         ],
         "summary": "查看单行数据",
-        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "parameters": [
           {
             "name": "id",
@@ -740,7 +740,7 @@
           "Student"
         ],
         "summary": "查看单行数据",
-        "description": "同时支持两种风格：\r\n1) RESTful：`/api/[area]/[controller]/{id}`，如 /api/Admin/User/21；\r\n2) 传统 Action+查询参数：`/api/[area]/[controller]/Detail?id=`，类级 Route 已生成该字面量路由。",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "responses": {
           "200": {
             "description": "",
@@ -900,7 +900,7 @@
         ],
         "responses": {
           "200": {
-            "description": "表单字段结构 JSON：`{entity, description, mode, fields:[{name,displayName,type,description,value,fillable,...}]}`",
+            "description": "表单字段结构 JSON：{entity, description, mode, fields:[{name,displayName,type,description,value,fillable,...}]}",
             "content": {
               "application/json": {
                 "schema": {
@@ -1092,24 +1092,30 @@
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "会话编号。前端生成并持久化；为空时按单轮处理（不保留会话历史）"
           },
           "message": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "用户消息"
           },
           "think": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "是否深度推理。为 true 时默认开启思考并降低温度"
           },
           "stream": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "是否流式输出（SSE）。默认 true"
           },
           "items": {
-            "type": "object"
+            "type": "object",
+            "description": "扩展数据。承载宿主自定义字段（如目标页面上下文），经索引器读写"
           }
-        }
+        },
+        "description": "轻量 AI 对话请求。魔方式页面内嵌 AI 助手的统一入参，供  编排"
       },
       "ApiListResponseOfClass": {
         "type": "object",
@@ -2391,12 +2397,15 @@
             ],
             "items": {
               "$ref": "#/components/schemas/ToolContent"
-            }
+            },
+            "description": "内容块列表。每块有独立的受众和类型"
           },
           "isError": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "是否失败。true 时 ToolChatClient 以 error 事件发出"
           }
-        }
+        },
+        "description": "工具调用结果。对齐 MCP CallToolResult + Anthropic tool_result"
       },
       "PageModel": {
         "type": "object",
@@ -3084,6 +3093,7 @@
       },
       "ToolAudience": {
         "type": "integer",
+        "description": "工具内容受众。标记一个内容块应该发送给谁",
         "default": 3
       },
       "ToolContent": {
@@ -3096,7 +3106,8 @@
             "$ref": "#/components/schemas/ToolContentType"
           },
           "data": {
-            "type": "string"
+            "type": "string",
+            "description": "内容数据。Text 时为字符串；Image 时为 Base64 或 SVG 源码"
           },
           "audience": {
             "$ref": "#/components/schemas/ToolAudience"
@@ -3105,12 +3116,15 @@
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "MIME 类型。可选，如 \"image/svg+xml\"、\"application/json\""
           }
-        }
+        },
+        "description": "工具内容块。描述工具返回的一个内容片段，含类型、数据和受众"
       },
       "ToolContentType": {
         "type": "integer",
+        "description": "工具内容类型。对齐 MCP content[].type",
         "default": 0
       },
       "User": {

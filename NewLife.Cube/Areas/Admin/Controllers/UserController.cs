@@ -633,9 +633,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
 
         if (TenantContext.Current.GetTenantMode() == TenantMode.Tenant) return TenantContext.CurrentId;
 
-        // Shadow 期：无租户标识注册兼容放行，不自动绑定；Enforce 期：必须显式带租户
-        if (set.TenantEnforceMode == TenantEnforceModes.Shadow) return 0;
-
+        // 多租户模式下，注册必须携带租户信息
         throw new ArgumentException("多租户模式下，注册必须携带X-App-Id或X-Tenant租户信息");
     }
 

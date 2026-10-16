@@ -502,87 +502,13 @@ public class UserBindingService : IUserBindingService
         user.DepartmentID = dep.ID;
     }
 
-    /// <summary>填充租户信息</summary>
+    /// <summary>填充租户信息。多租户模式下租户归属走显式管理动作（邀请/后台分配），不再按 SSO 客户端携带的租户标识自动建绑定。
+    /// 保留为空实现作为扩展点：下游如需自动绑定语义，可覆写本方法自行实现并承担相应安全评估</summary>
+    /// <param name="client">SSO 客户端配置，含客户端携带的租户标识</param>
+    /// <param name="user">本地用户</param>
+    /// <param name="manageUser">当前登录用户</param>
     protected virtual void FillTenant(OAuthClient client, User user, IManageUser manageUser)
     {
-        // 未开启多租户时跳过，避免自动创建租户关系导致 ChooseTenant 切入租户模式
-        if (!CubeSetting.Current.EnableTenant) return;
-
-        // 仅影子模式（兼容观察期）才自动按所带租户标识绑定租户；
-        // 非影子（Enforce 严格执行）不自动建绑定，租户归属走显式管理动作（邀请/后台分配）
-        if (CubeSetting.Current.TenantEnforceMode != TenantEnforceModes.Shadow) return;
-
-        var log = LogProvider.Provider;
-
-        if (!client.TenantCode.IsNullOrEmpty() && !client.TenantName.IsNullOrEmpty())
-        {
-            var tenant = Tenant.FindByCode(client.TenantCode);
-            tenant ??= new XCode.Membership.Tenant
-            {
-                Code = client.TenantCode,
-                Name = client.TenantName,
-                Enable = true,
-            };
-            tenant.Save();
-
-            var tenantUser = TenantUser.FindByTenantIdAndUserId(tenant.Id, user.ID);
-            if (tenantUser == null)
-            {
-                tenantUser = new XCode.Membership.TenantUser
-                {
-                    TenantId = tenant.Id,
-                    UserId = user.ID,
-                    //SSO 自动建租户关系时 RoleId 默认为 0，取默认角色兜底
-                    RoleId = ManagerProviderHelper.ResolveTenantRole(tenant.Id),
-                    Enable = true,
-                };
-                tenantUser.Insert();
-
-                log?.WriteLog(typeof(User), "SSO租户", true, $"[{manageUser}]自动创建租户关系[{tenant.Name}]", manageUser.ID, manageUser + "");
-            }
-            else
-            {
-                // 为了补偿存量用户的租户用户角色，始终启用租户用户并确保角色存在
-
-                tenantUser.Enable = true;
-                // 补偿：存量绑定无角色（主角色与角色组均为空）时，用租户默认角色兜底
-                if (tenantUser.RoleId <= 0 && tenantUser.RoleIds.IsNullOrEmpty()) tenantUser.RoleId = ManagerProviderHelper.ResolveTenantRole(tenant.Id);
-                tenantUser.Update();
-
-                log?.WriteLog(typeof(User), "SSO租户", true, $"[{manageUser}]启用租户关系[{tenant.Name}]", manageUser.ID, manageUser + "");
-            }
-        }
-        else if (client.TenantId > 0)
-        {
-            var tenant = Tenant.FindById(client.TenantId);
-            if (tenant != null)
-            {
-                var tenantUser = TenantUser.FindByTenantIdAndUserId(tenant.Id, user.ID);
-                if (tenantUser == null)
-                {
-                    tenantUser = new XCode.Membership.TenantUser
-                    {
-                        TenantId = tenant.Id,
-                        UserId = user.ID,
-                        // 补 RoleId，避免租户内空角色导致 403（SSO 自动建租户关系时 RoleId 默认为 0，取默认角色兜底）
-                        RoleId = ManagerProviderHelper.ResolveTenantRole(tenant.Id),
-                        Enable = true,
-                    };
-                    tenantUser.Insert();
-
-                    log?.WriteLog(typeof(User), "SSO租户", true, $"[{manageUser}]自动创建租户关系[{tenant.Name}]", manageUser.ID, manageUser + "");
-                }
-                else if (!tenantUser.Enable || tenantUser.RoleId == 0)
-                {
-                    tenantUser.Enable = true;
-                    // 补偿：存量绑定无角色（主角色与角色组均为空）时，用租户默认角色兜底
-                    if (tenantUser.RoleId <= 0 && tenantUser.RoleIds.IsNullOrEmpty()) tenantUser.RoleId = ManagerProviderHelper.ResolveTenantRole(tenant.Id);
-                    tenantUser.Update();
-
-                    log?.WriteLog(typeof(User), "SSO租户", true, $"[{manageUser}]启用租户关系[{tenant.Name}]", manageUser.ID, manageUser + "");
-                }
-            }
-        }
     }
     #endregion
 

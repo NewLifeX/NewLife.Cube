@@ -149,13 +149,13 @@ public async Task Invoke(HttpContext ctx)
         var set = CubeSetting.Current;
         if (set.EnableTenant && TenantContext.Current.GetTenantMode() == TenantMode.None)
         {
-            var tenantId = ctx.GetTenantId();  // X-Tenant(编码)/X-Tenant-Id/Query/Cookie
+            var tenantId = ctx.GetTenantId();  // X-Tenant(编码)/Query/Cookie
             if (tenantId.GetTenantMode() != TenantMode.None)
             {
                 // 非管理员校验归属：管理后台仅系统管理员可进，普通用户须是成员
                 ctx.SetTenant(tenantId);
             }
-            // Shadow 期无标识兼容放行；Enforce 无标识（带令牌）400/403
+            // 无标识：不在中间件拦截，由认证层 ValidateTenant 拒绝（管理员豁免进管理后台）
         }
         await _next.Invoke(ctx);
     }
@@ -286,11 +286,10 @@ if (post && CubeSetting.Current.EnableTenant && IsTenantSource)
 `GetTenantId` 方法按以下顺序获取租户标识，**各来源语义不同**：
 
 1. **Header `X-Tenant`**（优先，**租户编码 Code**，适合前后端分离/小程序）→ 按 `Tenant.FindByCode` 解析
-2. **Header `X-Tenant-Id`**（已废弃，仅兼容老客户端，**数字ID**）→ 按 `Int32` 解析
-3. **QueryString `tenantId`**（用于调试/回调，**数字ID**）→ 按 `Int32` 解析
-4. **Cookie `TenantId-{SysName}`**（兼容浏览器模式，存的是**数字ID**）→ 按 `Int32` 解析
+2. **QueryString `tenantId`**（用于调试/回调，**数字ID**）→ 按 `Int32` 解析
+3. **Cookie `TenantId-{SysName}`**（兼容浏览器模式，存的是**数字ID**）→ 按 `Int32` 解析
 
-> ⚠️ **语义约定**：`X-Tenant` 传**租户编码**（如 `abc`），`X-Tenant-Id` 传**数字ID**（如 `123`），两者不混用。租户编码即使为纯数字字符串（如 `"123"`）也会按编码 `FindByCode` 查询，不会误判为数字ID。
+> ⚠️ **语义约定**：`X-Tenant` 传**租户编码**（如 `abc`），即使为纯数字字符串（如 `"123"`）也会按编码 `FindByCode` 查询，不会误判为数字ID。旧的 `X-Tenant-Id` 数字ID头已随影子期结束移除，请改用 `X-Tenant`。
 
 多租户开启时，伪造、不存在或已禁用的租户标识会被拒绝（返回 400/403）；未开启多租户时不校验租户。
 

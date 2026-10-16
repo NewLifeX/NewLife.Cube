@@ -162,7 +162,7 @@
           "Auth"
         ],
         "summary": "获取图片验证码",
-        "description": "当 CubeSetting.CaptchaScene 中包含对应场景位或风险自适应触发时，前端须先调用本接口获取验证码，\r\n再将 captchaId 和用户填写的 captchaCode 随请求一并提交。\r\n验证码 TTL 为 300 秒，校验成功后立即失效（防重放）。",
+        "description": "当 CubeSetting.CaptchaScene 中包含对应场景位或风险自适应触发时，前端须先调用本接口获取验证码，\n            再将 captchaId 和用户填写的 captchaCode 随请求一并提交。\n            验证码 TTL 为 300 秒，校验成功后立即失效（防重放）。",
         "responses": {
           "200": {
             "description": "captchaId（校验时回传）和 image（SVG 文本）",
@@ -225,7 +225,7 @@
           {
             "name": "tenantId",
             "in": "query",
-            "description": "租户编号。0=管理后台（仅系统管理员），&gt;0=租户",
+            "description": "租户编号。0=管理后台（仅系统管理员），>0=租户",
             "schema": {
               "pattern": "^-?(?:0|[1-9]\\d*)$",
               "type": [
@@ -272,7 +272,7 @@
           "Auth"
         ],
         "summary": "获取RSA公钥挑战，用于客户端加密密码防明文传输。配合Login接口 ChallengeId + 加密密码实现安全登录",
-        "description": "流程：GET /Auth/Challenge 获取 challengeId 和 publicKey → 前端用 publicKey 以 RSA-OAEP/SHA-256 加密密码\r\n→ POST /Auth/Login 携带 challengeId 和加密后的 password。密钥有效期300秒，使用一次后立即失效防重放。",
+        "description": "流程：GET /Auth/Challenge 获取 challengeId 和 publicKey → 前端用 publicKey 以 RSA-OAEP/SHA-256 加密密码\n            → POST /Auth/Login 携带 challengeId 和加密后的 password。密钥有效期300秒，使用一次后立即失效防重放。",
         "responses": {
           "200": {
             "description": "挑战标识(challengeId)和PEM格式RSA公钥(publicKey)",
@@ -400,7 +400,7 @@
         "tags": [
           "Auth"
         ],
-        "summary": "邮箱激活链接直达。激活邮件中的链接指向 {ActivateUrl}?token=&amp;account=，前端解析后调用本接口",
+        "summary": "邮箱激活链接直达。激活邮件中的链接指向 {ActivateUrl}?token=&account=，前端解析后调用本接口",
         "parameters": [
           {
             "name": "token",
@@ -1145,7 +1145,7 @@
           "Mfa"
         ],
         "summary": "初始化 TOTP 设置，返回二维码 URI 和手动输入密钥",
-        "description": "用户在个人安全设置页面点击\"开启两步验证\"时调用。\r\n返回的 totpUri 可直接传给二维码库生成扫码图。\r\n初始化后密钥暂存，须调用 /Mfa/Activate 完成激活。",
+        "description": "用户在个人安全设置页面点击\"开启两步验证\"时调用。\n            返回的 totpUri 可直接传给二维码库生成扫码图。\n            初始化后密钥暂存，须调用 /Mfa/Activate 完成激活。",
         "responses": {
           "200": {
             "description": "totpUri 和 secret",
@@ -1230,7 +1230,7 @@
           "Mfa"
         ],
         "summary": "二步验证登录。账密通过后携带 mfaToken + code 完成 MFA 校验，成功后下发正式 AccessToken",
-        "description": "调用流程：\r\n1. POST /Auth/Login → 账密正确但用户已开启 MFA → 返回 code=449，data.mfaToken\r\n2. 用户打开 Authenticator App 查看 6 位验证码（或使用备用码）\r\n3. POST /Mfa/Verify { mfaToken, code } → 返回 accessToken / refreshToken",
+        "description": "调用流程：\n            1. POST /Auth/Login → 账密正确但用户已开启 MFA → 返回 code=449，data.mfaToken\n            2. 用户打开 Authenticator App 查看 6 位验证码（或使用备用码）\n            3. POST /Mfa/Verify { mfaToken, code } → 返回 accessToken / refreshToken",
         "requestBody": {
           "description": "MFA 验证模型，包含 mfaToken 和 code",
           "content": {
@@ -2835,7 +2835,8 @@
               "string"
             ]
           }
-        }
+        },
+        "description": "响应数据"
       },
       "VerifyCodeModel": {
         "type": "object",

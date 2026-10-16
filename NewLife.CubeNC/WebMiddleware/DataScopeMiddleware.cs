@@ -1,6 +1,5 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using NewLife.Common;
-using NewLife.Log;
 using XCode.Membership;
 using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 
@@ -44,15 +43,7 @@ public class DataScopeMiddleware(RequestDelegate next, ITenantContext tenantCont
                     await WriteError(ctx, 400, -1, "租户不存在或已禁用");
                     return;
                 }
-                else if (set.TenantEnforceMode == TenantEnforceModes.Shadow)
-                {
-                    // [TenantCompat] 影子期规则A：旧客户端无租户标识，兼容放行（不设租户上下文），仅记录影子日志。
-                    // 切 Enforce 后该分支不再需要，等待移除（见评审方案 5.5）
-                    XTrace.WriteLine("[TenantCompat] 旧客户端无租户标识，兼容放行：{0}", ctx.Request.Path);
-                    // 数据日志（CreateLog 落库）；中间件在认证前无用户上下文
-                    ManagerProviderHelper.WriteTenantCompatDataLog("影子兼容放行", $"旧客户端无租户标识，兼容放行 路径[{ctx.Request.Path}]", null, ctx.Connection.RemoteIpAddress + "");
-                }
-                // Enforce + 无租户标识：不在此拦截，交由认证层 ValidateTenant 处理——
+                // 无租户标识：不在此拦截，交由认证层 ValidateTenant 处理——
                 // 管理员本身不属任何租户、无需租户标识（进管理后台），普通用户缺标识才被拒。
                 // 中间件若在此拦截会依赖 ManageProvider.User 加载时机，误拒刚登录的管理员。
             }
@@ -94,12 +85,11 @@ public class DataScopeMiddleware(RequestDelegate next, ITenantContext tenantCont
         DataScope = DataScopes.全部,
     };
 
-    /// <summary>是否显式提供了租户信息（请求头或查询参数）</summary>
+    /// <summary>是否显式提供了租户信息（请求头/查询参数/Cookie 非空即算）</summary>
     /// <param name="ctx"></param>
     /// <returns></returns>
     private static Boolean HasExplicitTenant(HttpContext ctx)
         => !ctx.Request.Headers["X-Tenant"].ToString().IsNullOrEmpty()
-        || !ctx.Request.Headers["X-Tenant-Id"].ToString().IsNullOrEmpty()
         || !ctx.Request.Query["tenantId"].ToString().IsNullOrEmpty()
         || !ctx.Request.Cookies[$"TenantId-{SysConfig.Current.Name}"].IsNullOrEmpty();
 

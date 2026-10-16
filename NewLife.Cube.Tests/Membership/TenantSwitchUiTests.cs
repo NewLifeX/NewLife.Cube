@@ -33,7 +33,6 @@ public class TenantSwitchUiTests
     private static void EnableTenant()
     {
         CubeSetting.Current.EnableTenant = true;
-        CubeSetting.Current.TenantEnforceMode = TenantEnforceModes.Shadow;
         TenantContext.Current = null!;
     }
 
@@ -41,7 +40,6 @@ public class TenantSwitchUiTests
     private static void Restore()
     {
         CubeSetting.Current.EnableTenant = false;
-        CubeSetting.Current.TenantEnforceMode = TenantEnforceModes.Shadow;
         TenantContext.Current = null!;
     }
 

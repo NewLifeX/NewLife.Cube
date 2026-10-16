@@ -4,6 +4,10 @@
  * 魔方多租户访问控制矩阵测试
  * ============================
  *
+ * > **状态（2026-10-16）**：影子期已结束，影子开关 `TenantEnforceMode` 与全部 `[TenantCompat]` 兼容代码已移除，
+ * > 多租户为严格 fail-closed 单一语义——本脚本的"影子开关"维度与 `setTenantEnforceMode` 步骤已失效，仅作历史留档；
+ * > 当前语义下的矩阵验证请参考 `NewLife.Cube.Tests/Membership/TenantChecklistIntegrationTests.cs`。
+ *
  * 维度：
  *   1. 用户类型：管理员（系统管理员）/ 普通用户（无租户绑定）/ 普通用户（已绑定租户）
  *   2. 租户标识：无 / X-Tenant=t1 / Cookie=0（管理后台）

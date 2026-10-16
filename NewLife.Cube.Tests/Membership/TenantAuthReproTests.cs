@@ -116,7 +116,6 @@ public class TenantAuthFixture : IDisposable
         // ManageProvider.Provider/Context 保持不动：其它测试类可能依赖当前装配，
         // 且全量套件在本夹具存在时已通过
         CubeSetting.Current.EnableTenant = false;
-        CubeSetting.Current.TenantEnforceMode = TenantEnforceModes.Shadow;
         CubeSetting.Current.TenantQueryPolicy = TenantQueryPolicies.DenyWithEmpty;
         TenantContext.Current = null!;
     }
@@ -204,7 +203,7 @@ internal class TestCacheProvider : ICacheProvider
 
 /// <summary>
 /// 租户行为回归测试。P0-1/P0-2 等缺陷已修复，原"复现测试"（绿色=缺陷仍在）已退役，
-/// 保留的用例断言修复后的正确行为：Shadow 期兼容放行、Enforce 严格 fail-closed、令牌幂等等。
+/// 保留的用例断言修复后的正确行为：严格 fail-closed（无租户标识拒绝）、显式标识优先校验、令牌幂等等。
 /// 期望行为由 <see cref="TenantAuthExpectationTests"/> 与本类共同守护。
 /// </summary>
 [Collection("TenantAuth")]
@@ -247,11 +246,10 @@ public class TenantAuthReproTests
         }
     }
 
-    [Fact(DisplayName = "Enforce 无租户标识：存量用户登录令牌不可用、请求被拒、不建绑定（回归）")]
+    [Fact(DisplayName = "严格模式无租户标识：存量用户登录令牌不可用、请求被拒、不建绑定（回归）")]
     public void LegacyUser_LockedOut_When_Tenant_Enabled_Without_XTenant()
     {
         CubeSetting.Current.EnableTenant = true;
-        CubeSetting.Current.TenantEnforceMode = TenantEnforceModes.Enforce;
         TenantContext.Current = null!;
         try
         {
@@ -312,12 +310,11 @@ public class TenantAuthReproTests
         finally
         {
             CubeSetting.Current.EnableTenant = false;
-            CubeSetting.Current.TenantEnforceMode = TenantEnforceModes.Shadow;
             TenantContext.Current = null!;
         }
     }
 
-    [Fact(DisplayName = "Enforce 无绑定：存量用户旧令牌携带X-Tenant仍被拒绝（回归）")]
+    [Fact(DisplayName = "严格模式无绑定：存量用户旧令牌携带X-Tenant仍被拒绝（回归）")]
     public void LegacyUser_OldToken_Rejected_Even_With_XTenant()
     {
         // 多租户尚未开启时正常登录，取得旧令牌（存量用户的常态）
@@ -464,13 +461,14 @@ public class TenantAuthExpectationTests
 
     public TenantAuthExpectationTests(TenantAuthFixture fixture) => _fx = fixture;
 
-    [Fact(DisplayName = "期望：开启多租户后（影子期），存量用户未传X-Tenant也能登录并使用令牌")]
-    public void Expect_LegacyUser_Login_Should_Succeed_Without_XTenant()
+    [Fact(DisplayName = "期望：开启多租户后，存量用户未传X-Tenant可完成登录但令牌访问被拒（严格 fail-closed）")]
+    public void Expect_LegacyUser_Login_Without_XTenant_Token_Rejected()
     {
         CubeSetting.Current.EnableTenant = true;
         TenantContext.Current = null!;
         try
         {
+            // 登录凭据校验本身不拦（无显式租户标识不属于"显式无效"），登录成功并颁发令牌
             var loginCtx = _fx.CreateContext();
             var model = new LoginModel { Username = "legacy01", Password = TenantAuthFixture.Password };
             var result = _fx.UserService.Login(model, loginCtx);
@@ -479,12 +477,10 @@ public class TenantAuthExpectationTests
             var token = loginCtx.Items["jwtToken"] as String;
             Assert.False(String.IsNullOrEmpty(token));
 
-            // 后续无Cookie请求携带令牌应能通过认证
+            // 严格模式：无租户标识的后续请求携带该令牌访问 → 拒绝（普通用户必须携带租户标识）
             var ctx = _fx.CreateContext();
             ctx.Request.Headers["Authorization"] = $"Bearer {token}";
-            var current = _fx.Provider.TryLogin(ctx);
-            Assert.NotNull(current);
-            Assert.Equal(0, TenantContext.CurrentId); // 无绑定普通用户：无标识不设置租户上下文（Shadow 规则A）
+            Assert.Null(_fx.Provider.TryLogin(ctx));
         }
         finally
         {
@@ -524,11 +520,10 @@ public class TenantAuthExpectationTests
         }
     }
 
-    [Fact(DisplayName = "期望：Enforce 下管理员无租户标识也能登录并进入管理后台（管理员不属任何租户，无需租户标识）")]
-    public void Expect_Admin_Enforce_NoIdentifier_Should_Succeed()
+    [Fact(DisplayName = "期望：管理员无租户标识也能登录并进入管理后台（管理员不属任何租户，无需租户标识）")]
+    public void Expect_Admin_NoIdentifier_Should_Succeed()
     {
         CubeSetting.Current.EnableTenant = true;
-        CubeSetting.Current.TenantEnforceMode = TenantEnforceModes.Enforce;
         TenantContext.Current = null!;
         try
         {
@@ -553,7 +548,6 @@ public class TenantAuthExpectationTests
         finally
         {
             CubeSetting.Current.EnableTenant = false;
-            CubeSetting.Current.TenantEnforceMode = TenantEnforceModes.Shadow;
             TenantContext.Current = null!;
         }
     }
@@ -605,92 +599,82 @@ public class TenantAuthExpectationTests
     [Fact(DisplayName = "期望：显式标识优先校验——已绑定t1用户带X-Tenant:t2（别家租户）访问被拒，不再静默回落t1")]
     public void Expect_NonMember_With_OtherXTenant_Should_Be_Rejected()
     {
-        foreach (var enforce in new[] { false, true })
+        CubeSetting.Current.EnableTenant = true;
+        TenantContext.Current = null!;
+        try
         {
-            CubeSetting.Current.EnableTenant = true;
-            CubeSetting.Current.TenantEnforceMode = enforce ? TenantEnforceModes.Enforce : TenantEnforceModes.Shadow;
+            // tenant01 绑定 t1，带 X-Tenant:t1 登录拿令牌
+            var loginCtx = _fx.CreateContext();
+            loginCtx.Request.Headers["X-Tenant"] = TenantAuthFixture.TenantCode;
+            var model = new LoginModel { Username = "tenant01", Password = TenantAuthFixture.Password };
+            var result = _fx.UserService.Login(model, loginCtx);
+            Assert.True(result.IsSuccess);
+            var token = loginCtx.Items["jwtToken"] as String;
+            Assert.False(String.IsNullOrEmpty(token));
+
+            // 带令牌 + X-Tenant:t2（存在且启用，但用户非成员）访问 → 拒绝。
+            // 修复前：ChooseTenant 回落 t1 返回 200（静默换租户）；修复后：显式标识优先校验，非成员拒绝。
             TenantContext.Current = null!;
-            try
-            {
-                // tenant01 绑定 t1，带 X-Tenant:t1 登录拿令牌
-                var loginCtx = _fx.CreateContext();
-                loginCtx.Request.Headers["X-Tenant"] = TenantAuthFixture.TenantCode;
-                var model = new LoginModel { Username = "tenant01", Password = TenantAuthFixture.Password };
-                var result = _fx.UserService.Login(model, loginCtx);
-                Assert.True(result.IsSuccess);
-                var token = loginCtx.Items["jwtToken"] as String;
-                Assert.False(String.IsNullOrEmpty(token));
+            var ctx = _fx.CreateContext();
+            ctx.Request.Headers["Authorization"] = $"Bearer {token}";
+            ctx.Request.Headers["X-Tenant"] = TenantAuthFixture.OtherTenantCode;
+            Assert.Null(_fx.Provider.TryLogin(ctx));
 
-                // 带令牌 + X-Tenant:t2（存在且启用，但用户非成员）访问 → 拒绝。
-                // 修复前：ChooseTenant 回落 t1 返回 200（静默换租户）；修复后：显式标识优先校验，非成员拒绝。
-                TenantContext.Current = null!;
-                var ctx = _fx.CreateContext();
-                ctx.Request.Headers["Authorization"] = $"Bearer {token}";
-                ctx.Request.Headers["X-Tenant"] = TenantAuthFixture.OtherTenantCode;
-                Assert.Null(_fx.Provider.TryLogin(ctx));
-
-                // 正向对照：同一令牌带自己租户 X-Tenant:t1 → 放行（防止 TryLogin 全局损坏导致误绿）
-                TenantContext.Current = null!;
-                var ctxOk = _fx.CreateContext();
-                ctxOk.Request.Headers["Authorization"] = $"Bearer {token}";
-                ctxOk.Request.Headers["X-Tenant"] = TenantAuthFixture.TenantCode;
-                var ok = _fx.Provider.TryLogin(ctxOk);
-                Assert.NotNull(ok);
-                Assert.Equal(_fx.Tenant1.Id, TenantContext.CurrentId);
-            }
-            finally
-            {
-                CubeSetting.Current.EnableTenant = false;
-                CubeSetting.Current.TenantEnforceMode = TenantEnforceModes.Shadow;
-                TenantContext.Current = null!;
-            }
+            // 正向对照：同一令牌带自己租户 X-Tenant:t1 → 放行（防止 TryLogin 全局损坏导致误绿）
+            TenantContext.Current = null!;
+            var ctxOk = _fx.CreateContext();
+            ctxOk.Request.Headers["Authorization"] = $"Bearer {token}";
+            ctxOk.Request.Headers["X-Tenant"] = TenantAuthFixture.TenantCode;
+            var ok = _fx.Provider.TryLogin(ctxOk);
+            Assert.NotNull(ok);
+            Assert.Equal(_fx.Tenant1.Id, TenantContext.CurrentId);
+        }
+        finally
+        {
+            CubeSetting.Current.EnableTenant = false;
+            TenantContext.Current = null!;
         }
     }
 
     [Fact(DisplayName = "期望：普通用户显式请求管理后台（Cookie=0）被拒，稳定拒绝不再回落（M5 修复）")]
     public void Expect_NormalUser_With_AdminBackendCookie_Should_Be_Rejected()
     {
-        foreach (var enforce in new[] { false, true })
+        CubeSetting.Current.EnableTenant = true;
+        TenantContext.Current = null!;
+        try
         {
-            CubeSetting.Current.EnableTenant = true;
-            CubeSetting.Current.TenantEnforceMode = enforce ? TenantEnforceModes.Enforce : TenantEnforceModes.Shadow;
+            var cookieKey = $"TenantId-{SysConfig.Current.Name}";
+
+            // tenant01 绑定 t1，带 X-Tenant:t1 登录拿令牌
+            var loginCtx = _fx.CreateContext();
+            loginCtx.Request.Headers["X-Tenant"] = TenantAuthFixture.TenantCode;
+            var model = new LoginModel { Username = "tenant01", Password = TenantAuthFixture.Password };
+            var result = _fx.UserService.Login(model, loginCtx);
+            Assert.True(result.IsSuccess);
+            var token = loginCtx.Items["jwtToken"] as String;
+            Assert.False(String.IsNullOrEmpty(token));
+
+            // 带令牌 + Cookie=0（管理后台）访问 → 拒绝（普通用户进不了管理后台）。
+            // 修复前：回落 t1 返回 200 且时序不稳定；修复后：显式标识优先校验稳定拒绝。
             TenantContext.Current = null!;
-            try
-            {
-                var cookieKey = $"TenantId-{SysConfig.Current.Name}";
+            var ctx = _fx.CreateContext();
+            ctx.Request.Headers["Authorization"] = $"Bearer {token}";
+            ctx.Request.Headers["Cookie"] = $"{cookieKey}=0";
+            Assert.Null(_fx.Provider.TryLogin(ctx));
 
-                // tenant01 绑定 t1，带 X-Tenant:t1 登录拿令牌
-                var loginCtx = _fx.CreateContext();
-                loginCtx.Request.Headers["X-Tenant"] = TenantAuthFixture.TenantCode;
-                var model = new LoginModel { Username = "tenant01", Password = TenantAuthFixture.Password };
-                var result = _fx.UserService.Login(model, loginCtx);
-                Assert.True(result.IsSuccess);
-                var token = loginCtx.Items["jwtToken"] as String;
-                Assert.False(String.IsNullOrEmpty(token));
-
-                // 带令牌 + Cookie=0（管理后台）访问 → 拒绝（普通用户进不了管理后台）。
-                // 修复前：回落 t1 返回 200 且时序不稳定；修复后：显式标识优先校验稳定拒绝。
-                TenantContext.Current = null!;
-                var ctx = _fx.CreateContext();
-                ctx.Request.Headers["Authorization"] = $"Bearer {token}";
-                ctx.Request.Headers["Cookie"] = $"{cookieKey}=0";
-                Assert.Null(_fx.Provider.TryLogin(ctx));
-
-                // 正向对照：同一令牌带 X-Tenant:t1 → 放行（防止 TryLogin 全局损坏导致误绿）
-                TenantContext.Current = null!;
-                var ctxOk = _fx.CreateContext();
-                ctxOk.Request.Headers["Authorization"] = $"Bearer {token}";
-                ctxOk.Request.Headers["X-Tenant"] = TenantAuthFixture.TenantCode;
-                var ok = _fx.Provider.TryLogin(ctxOk);
-                Assert.NotNull(ok);
-                Assert.Equal(_fx.Tenant1.Id, TenantContext.CurrentId);
-            }
-            finally
-            {
-                CubeSetting.Current.EnableTenant = false;
-                CubeSetting.Current.TenantEnforceMode = TenantEnforceModes.Shadow;
-                TenantContext.Current = null!;
-            }
+            // 正向对照：同一令牌带 X-Tenant:t1 → 放行（防止 TryLogin 全局损坏导致误绿）
+            TenantContext.Current = null!;
+            var ctxOk = _fx.CreateContext();
+            ctxOk.Request.Headers["Authorization"] = $"Bearer {token}";
+            ctxOk.Request.Headers["X-Tenant"] = TenantAuthFixture.TenantCode;
+            var ok = _fx.Provider.TryLogin(ctxOk);
+            Assert.NotNull(ok);
+            Assert.Equal(_fx.Tenant1.Id, TenantContext.CurrentId);
+        }
+        finally
+        {
+            CubeSetting.Current.EnableTenant = false;
+            TenantContext.Current = null!;
         }
     }
 
@@ -701,7 +685,7 @@ public class TenantAuthExpectationTests
         TenantContext.Current = null!;
         try
         {
-            // admin01 无标识登录拿令牌（Shadow：管理员回落管理后台 0）
+            // admin01 无标识登录拿令牌（管理员回落管理后台 0）
             var loginCtx = _fx.CreateContext();
             var model = new LoginModel { Username = "admin01", Password = TenantAuthFixture.Password };
             var result = _fx.UserService.Login(model, loginCtx);
@@ -732,9 +716,10 @@ public class TenantAuthExpectationTests
         TenantContext.Current = null!;
         try
         {
-            // legacy01 无绑定，Shadow 无标识登录拿令牌
+            // tenant01 绑定 t1，带 X-Tenant:t1 登录拿令牌（令牌本身可用，隔离"无效标识"这一变量）
             var loginCtx = _fx.CreateContext();
-            var model = new LoginModel { Username = "legacy01", Password = TenantAuthFixture.Password };
+            loginCtx.Request.Headers["X-Tenant"] = TenantAuthFixture.TenantCode;
+            var model = new LoginModel { Username = "tenant01", Password = TenantAuthFixture.Password };
             var result = _fx.UserService.Login(model, loginCtx);
             Assert.True(result.IsSuccess);
             var token = loginCtx.Items["jwtToken"] as String;
@@ -747,13 +732,14 @@ public class TenantAuthExpectationTests
             ctx.Request.Headers["X-Tenant"] = "t9";
             Assert.Null(_fx.Provider.TryLogin(ctx));
 
-            // 正向对照：同一令牌无标识 → Shadow 规则A 放行（防止 TryLogin 全局损坏导致误绿）
+            // 正向对照：同一令牌带自己租户 X-Tenant:t1 → 放行（防止 TryLogin 全局损坏导致误绿）
             TenantContext.Current = null!;
             var ctxOk = _fx.CreateContext();
             ctxOk.Request.Headers["Authorization"] = $"Bearer {token}";
+            ctxOk.Request.Headers["X-Tenant"] = TenantAuthFixture.TenantCode;
             var ok = _fx.Provider.TryLogin(ctxOk);
             Assert.NotNull(ok);
-            Assert.Equal(0, TenantContext.CurrentId); // 无绑定：不设置租户上下文
+            Assert.Equal(_fx.Tenant1.Id, TenantContext.CurrentId);
         }
         finally
         {

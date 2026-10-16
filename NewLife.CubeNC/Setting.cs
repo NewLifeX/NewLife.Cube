@@ -501,11 +501,6 @@ public class CubeSetting : Config<CubeSetting>
     [Category("系统功能")]
     public Boolean EnableTenant { get; set; }
 
-    /// <summary>多租户强制模式。Shadow=兼容观察期（旧客户端无租户标识放行并记录影子日志，过渡期使用，后期移除），Enforce=严格执行fail-closed。默认Shadow</summary>
-    [Description("多租户强制模式。Shadow=兼容观察期（旧客户端无租户标识放行并记录影子日志，过渡期使用，后期移除），Enforce=严格执行fail-closed")]
-    [Category("系统功能")]
-    public TenantEnforceModes TenantEnforceMode { get; set; } = TenantEnforceModes.Shadow;
-
     /// <summary>多租户查询策略。DenyWithEmpty=无租户上下文返回空集（fail-closed），ThrowOnMissingTenant=显式抛错。默认DenyWithEmpty</summary>
     [Description("多租户查询策略。DenyWithEmpty=无租户上下文返回空集，ThrowOnMissingTenant=显式抛错")]
     [Category("系统功能")]

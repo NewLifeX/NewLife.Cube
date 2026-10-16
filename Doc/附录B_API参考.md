@@ -345,7 +345,7 @@ Cookie: token=eyJhbGciOiJIUzI1NiIs...
 | X-Token | Token（兼容） |
 | Content-Type | 请求内容类型 |
 | X-Request-Id | 请求追踪 ID |
-| X-Tenant | 租户编码（Code），多租户开启时用于定位/校验租户（`X-Tenant-Id` 数字ID 已废弃兼容） |
+| X-Tenant | 租户编码（Code），多租户开启时用于定位/校验租户（旧的 `X-Tenant-Id` 数字ID头已移除） |
 | X-App-Id | OAuth 应用 AppId，注册时定位所属租户、微信登录 appId 兜底 |
 
 ### 响应 Header
