@@ -676,7 +676,7 @@ services.AddCubeFileStorage("MyCluster");
 public class CubeFileStorage : DefaultFileStorage
 {
     public CubeFileStorage(CubeSetting setting, IServiceProvider serviceProvider, 
-        ICacheProvider cacheProvider, ITracer tracer, ILog log)
+        ITracer tracer, ILog log)
     {
         RootPath = setting.UploadPath;
         DownloadUri = "/cube/file?id={Id}";
@@ -684,19 +684,6 @@ public class CubeFileStorage : DefaultFileStorage
         ServiceProvider = serviceProvider;
         Tracer = tracer;
         Log = log;
-    }
-    
-    /// <summary>初始化</summary>
-    protected override Task OnInitializedAsync(CancellationToken cancellationToken)
-    {
-        // 优先Redis队列作为事件总线
-        var cache = _cacheProvider.Cache;
-        if (cache.GetType() != typeof(MemoryCache))
-            SetEventBus(_cacheProvider);
-        else if (_registry is AppClient client)
-            SetEventBus(client);
-        
-        return base.OnInitializedAsync(cancellationToken);
     }
     
     /// <summary>获取本地文件的元数据</summary>
@@ -714,6 +701,8 @@ public class CubeFileStorage : DefaultFileStorage
     }
 }
 ```
+
+> **事件总线自动初始化**：`DefaultFileStorage.OnInitializedAsync` 已内置通道降级链（优先 Redis 队列、其次星尘 WebSocket、最后内存缓存），通过 DI 的 `IEventBusFactory` 自动创建事件总线，无需在子类覆写初始化或在构造中注入 `ICacheProvider`。
 
 ### 使用文件存储
 

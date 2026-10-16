@@ -293,13 +293,15 @@ services.AddCubeFileStorage("MyApp");
 public class CubeFileStorage : DefaultFileStorage
 {
     public CubeFileStorage(CubeSetting setting, IServiceProvider serviceProvider,
-        ICacheProvider cacheProvider, ITracer tracer, ILog log)
+        ITracer tracer, ILog log)
     {
         RootPath = setting.UploadPath;           // 根路径
         DownloadUri = "/cube/file?id={Id}";      // 下载 URL 格式
     }
 }
 ```
+
+> 事件总线由基类 `DefaultFileStorage` 自动初始化（DI `IEventBusFactory` 统一通道降级：Redis 队列 → 星尘 WebSocket → 内存缓存），无需子类覆写。
 
 ### 核心功能
 

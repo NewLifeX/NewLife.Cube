@@ -128,11 +128,12 @@ public static class FileStorageExtensions
 /// <summary>魔方文件分布式存储</summary>
 public class CubeFileStorage : DefaultFileStorage
 {
-    private ICacheProvider _cacheProvider;
-    private IRegistry? _registry;
-
     /// <summary>实例化魔方文件分布式存储</summary>
-    public CubeFileStorage(CubeSetting setting, IServiceProvider serviceProvider, ICacheProvider cacheProvider, ITracer tracer, ILog log)
+    /// <param name="setting">魔方设置</param>
+    /// <param name="serviceProvider">服务提供者</param>
+    /// <param name="tracer">跟踪器</param>
+    /// <param name="log">日志</param>
+    public CubeFileStorage(CubeSetting setting, IServiceProvider serviceProvider, ITracer tracer, ILog log)
     {
         //NodeName = Environment.MachineName;
         RootPath = setting.UploadPath;
@@ -141,27 +142,6 @@ public class CubeFileStorage : DefaultFileStorage
         ServiceProvider = serviceProvider;
         Tracer = tracer;
         Log = log;
-
-        _cacheProvider = cacheProvider;
-        //_registry = registry;
-        _registry = serviceProvider.GetService<IRegistry>();
-    }
-
-    /// <summary>初始化</summary>
-    protected override Task OnInitializedAsync(CancellationToken cancellationToken)
-    {
-        // 优先Redis队列作为事件总线，其次使用星尘事件总线
-        var cache = _cacheProvider.Cache;
-        var type = cache.GetType();
-        var rtype = Type.GetType("NewLife.Caching.FullRedis, NewLife.Redis");
-        if (rtype != null && rtype.IsAssignableFrom(type) && cache.GetValue("Version") is Version ver && ver >= new Version(5, 0))
-            SetEventBus(_cacheProvider);
-        else if (_registry is AppClient client)
-            SetEventBus(client);
-        else if (type == typeof(MemoryCache))
-            SetEventBus(_cacheProvider);
-
-        return base.OnInitializedAsync(cancellationToken);
     }
 
     /// <summary>获取本地文件的元数据</summary>
