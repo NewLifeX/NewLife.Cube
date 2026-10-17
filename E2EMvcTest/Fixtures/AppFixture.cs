@@ -73,6 +73,9 @@ public sealed class AppFixture : IAsyncLifetime
             await WaitForServerReadyAsync(TimeSpan.FromSeconds(30));
         }
 
+        // 预热登录页：首次请求会触发模型建表/菜单权限扫描，慢速 CI 上可能超过测试等待时间
+        await WarmUpLoginPageAsync(TimeSpan.FromSeconds(180));
+
         _playwright = await Playwright.CreateAsync();
         Browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {
@@ -229,6 +232,31 @@ public sealed class AppFixture : IAsyncLifetime
 
         throw new TimeoutException(
             $"CubeSSO 未在 {timeout.TotalSeconds} 秒内就绪，请检查应用是否正常启动。BaseUrl={BaseUrl}");
+    }
+
+    /// <summary>预热登录页，等待服务端渲染出用户名输入框后再开始测试</summary>
+    private static async Task WarmUpLoginPageAsync(TimeSpan timeout)
+    {
+        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+        var url = BaseUrl + "/Admin/User/Login";
+        var deadline = DateTime.UtcNow + timeout;
+        while (DateTime.UtcNow < deadline)
+        {
+            try
+            {
+                var html = await client.GetStringAsync(url);
+                if (html.Contains("id=\"username\"", StringComparison.OrdinalIgnoreCase)) return;
+            }
+            catch
+            {
+                // 应用尚未完成初始化或暂时不可用，继续重试
+            }
+
+            await Task.Delay(1000);
+        }
+
+        throw new TimeoutException(
+            $"登录页未在 {timeout.TotalSeconds} 秒内完成预热，请检查应用是否正常启动。Url={url}");
     }
 
     private static async Task<Boolean> IsServerReadyAsync(TimeSpan timeout)

@@ -637,20 +637,22 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
 
         if (user == null || user.ID <= 0) return new ServiceResult { IsSuccess = false, Message = "用户未登录" };
 
-        // 注销脱敏前快照，供处理器定位并清理个人数据
-        var entity0 = User.FindByID(user.ID);
+        // 注销脱敏前快照，供处理器定位并清理个人数据。走 SQL 查询，避免单对象缓存返回陈旧副本
+        var entity0 = User.Find(User._.ID == user.ID);
         IUser snapshot = entity0?.CloneEntity();
 
         // 调用所有处理器清理个人数据。全部尽力而为，单个失败不影响其它处理器
         InvokeCloseHandlers(snapshot ?? user, ip);
 
-        // 兜底禁用账号：不依赖任何处理器，确保注销后无法登录
-        var entity = User.FindByID(user.ID);
+        // 兜底禁用账号：不依赖任何处理器，确保注销后无法登录。
+        // 从数据库重新加载，避免单对象缓存中的陈旧实体把处理器已脱敏的字段写回
+        var entity = User.Find(User._.ID == user.ID);
         if (entity != null)
         {
             entity.Enable = false;
             entity.Update();
         }
+        User.Meta.SingleCache.Clear("账号注销");
 
         LogProvider.Provider.WriteLog(typeof(User), "注销账号", true, $"用户：{user}", user.ID, user + "", ip);
 

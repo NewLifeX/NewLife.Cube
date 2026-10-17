@@ -30,4 +30,14 @@ jobs:
         pwsh Bin/E2ETest/playwright.ps1 install --with-deps chromium
     - name: Test
       run: |
-        dotnet test 魔方.sln
+        dotnet test XUnitTest/XUnitTest.csproj -c Release --no-build
+        dotnet test E2EMvcTest/E2EMvcTest.csproj -c Release --no-build
+    - name: Upload E2E artifacts
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: e2e-artifacts
+        path: |
+          Bin/E2ETest/Run-*/server-*.log
+          Bin/E2ETest/Run-*/screenshots/**
+        if-no-files-found: ignore

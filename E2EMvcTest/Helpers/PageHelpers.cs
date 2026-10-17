@@ -23,7 +23,7 @@ public static class PageHelpers
         // 捕获该异常并视为登录成功（当前上下文已认证）。
         try
         {
-            await page.GotoAsync(AppFixture.BaseUrl + "/Admin/User/Login", new PageGotoOptions { Timeout = 60_000 });
+            await page.GotoAsync(AppFixture.BaseUrl + "/Admin/User/Login", new PageGotoOptions { Timeout = 120_000 });
         }
         catch (PlaywrightException)
         {
@@ -50,7 +50,7 @@ public static class PageHelpers
             }
 
             // 首次请求可能触发应用初始化（菜单/权限扫描），慢速 CI 上留足等待时间
-            await page.WaitForSelectorAsync("#username", new PageWaitForSelectorOptions { Timeout = 60_000 });
+            await page.WaitForSelectorAsync("#username", new PageWaitForSelectorOptions { Timeout = 120_000 });
             await page.FillAsync("#username", username);
             await page.FillAsync("#password", password);
 

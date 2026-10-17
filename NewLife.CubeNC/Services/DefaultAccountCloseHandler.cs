@@ -52,7 +52,8 @@ public class DefaultAccountCloseHandler : IAccountCloseHandler
         PrincipalAgent.Delete(PrincipalAgent._.AgentId == user.ID);
 
         // 脱敏用户行（保留 ID/Name 防重名与审计；Enable 不动，由框架兜底禁用）
-        var entity = User.FindByID(user.ID);
+        // 走 SQL 查询而非单对象缓存，确保拿到数据库最新行；更新后清缓存，避免后续读取到陈旧副本
+        var entity = User.Find(User._.ID == user.ID);
         if (entity != null)
         {
             entity.Password = null;
@@ -75,6 +76,8 @@ public class DefaultAccountCloseHandler : IAccountCloseHandler
             entity.Ex5 = null;
             entity.Ex6 = null;
             entity.Update();
+
+            User.Meta.SingleCache.Clear("账号注销脱敏");
         }
 
         return Task.CompletedTask;
