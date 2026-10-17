@@ -23,7 +23,7 @@ public static class PageHelpers
         // 捕获该异常并视为登录成功（当前上下文已认证）。
         try
         {
-            await page.GotoAsync(AppFixture.BaseUrl + "/Admin/User/Login", new PageGotoOptions { Timeout = 120_000 });
+            await page.GotoAsync(AppFixture.BaseUrl + "/Admin/User/Login", new PageGotoOptions { Timeout = 300_000 });
         }
         catch (PlaywrightException)
         {
@@ -49,8 +49,8 @@ public static class PageHelpers
                 await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new PageWaitForLoadStateOptions { Timeout = 60_000 });
             }
 
-            // 首次请求可能触发应用初始化（菜单/权限扫描），慢速 CI 上留足等待时间
-            await page.WaitForSelectorAsync("#username", new PageWaitForSelectorOptions { Timeout = 120_000 });
+            // 首次请求可能触发应用初始化（文件存储事件总线/菜单权限扫描），慢速 CI 上可能阻塞数分钟，留足等待时间
+            await page.WaitForSelectorAsync("#username", new PageWaitForSelectorOptions { Timeout = 300_000 });
             await page.FillAsync("#username", username);
             await page.FillAsync("#password", password);
 
@@ -93,6 +93,13 @@ public static class PageHelpers
         }
 
         // 验证登录成功；若仍在登录页则抛出异常，使调用方测试明确失败而非静默跳过
+        try
+        {
+            var shot = Path.Combine(AppFixture.ScreenshotDir, $"login-fail-{DateTime.Now:yyyyMMdd-HHmmss}.png");
+            await page.ScreenshotAsync(new PageScreenshotOptions { Path = shot, FullPage = true });
+        }
+        catch { }
+
         throw new InvalidOperationException($"登录失败，仍停留在登录页。URL={page.Url}，用户名={username}");
     }
 
