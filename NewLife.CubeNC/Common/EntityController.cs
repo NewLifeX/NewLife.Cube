@@ -56,7 +56,7 @@ public partial class EntityController<TEntity, TModel>
     [DisplayName("添加{type}")]
     public virtual ActionResult Add()
     {
-        var entity = Factory.Create(true) as TEntity;
+        var entity = CreateNewEntity();
 
         // 填充QueryString参数
         var qs = Request.Query;
@@ -99,7 +99,7 @@ public partial class EntityController<TEntity, TModel>
         // 实例化实体对象，然后拷贝
         if (model is not TEntity entity)
         {
-            entity = Factory.Create(true) as TEntity;
+            entity = CreateNewEntity();
 
             if (entity is IEntity<TModel> entity2)
                 entity2.Copy(model);

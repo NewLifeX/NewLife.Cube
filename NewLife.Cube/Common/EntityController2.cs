@@ -716,9 +716,9 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
         TEntity entity;
         if (!id.IsNullOrEmpty())
-            entity = FindData(id) ?? Factory.Create(true) as TEntity;
+            entity = FindData(id) ?? CreateNewEntity();
         else
-            entity = Factory.Create(true) as TEntity;
+            entity = CreateNewEntity();
 
         Attachment att;
         try
@@ -737,6 +737,27 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
         var url = ViewHelper.GetAttachmentUrl(att);
         return Json(0, null, new { attId = att.Id, filePath = url, contentType = att.ContentType });
+    }
+
+    /// <summary>创建空白实体并清空自增主键</summary>
+    /// <remarks>
+    /// XCode 的 DataScopeInterceptor 会把 IUserScope.UserId 映射到 User.ID，
+    /// 使新建 User 实体带出当前登录用户的主键，进而被误判为编辑并可能覆盖现有数据。
+    /// </remarks>
+    /// <returns></returns>
+    private TEntity CreateNewEntity()
+    {
+        var entity = Factory.Create(true) as TEntity;
+
+        if (entity != null && Factory.Unique != null)
+        {
+            // 仅清空数值型主键（自增/雪花），字符串与 Guid 主键保持默认值
+            var tc = Type.GetTypeCode(Factory.Unique.Type);
+            if (tc is TypeCode.Int16 or TypeCode.Int32 or TypeCode.Int64 or TypeCode.UInt16 or TypeCode.UInt32 or TypeCode.UInt64)
+                entity[Factory.Unique.Name] = 0;
+        }
+
+        return entity;
     }
 
     /// <summary>从请求 QueryString 或表单中读取 attachmentIds 参数</summary>

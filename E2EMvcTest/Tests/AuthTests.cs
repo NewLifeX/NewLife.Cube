@@ -169,18 +169,22 @@ public sealed class AuthTests : IAsyncLifetime
     {
         const String testId = "TC-AUTH-016";
 
-        String? requestBody = null;
+        var loginRequest = new TaskCompletionSource<String?>(TaskCreationOptions.RunContinuationsAsynchronously);
         _page.Request += (_, req) =>
         {
             if (req.Method == "POST" && req.Url.Contains("/User/Login"))
-                requestBody = req.PostData;
+                loginRequest.TrySetResult(req.PostData);
         };
 
         await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Login");
         await _page.FillAsync("#username", AppFixture.AdminUser);
         await _page.FillAsync("#password", AppFixture.AdminPass);
         await _page.ClickAsync("#login-btn");
-        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+        // 登录按钮先异步获取 RSA 公钥再提交表单，NetworkIdle 可能在 POST 发出前就返回，需显式等待请求
+        var completed = await Task.WhenAny(loginRequest.Task, Task.Delay(TimeSpan.FromSeconds(10)));
+        Assert.True(completed == loginRequest.Task, $"[{testId}] 未捕获到登录 POST 请求");
+        var requestBody = await loginRequest.Task;
 
         Assert.NotNull(requestBody);
         Assert.True(requestBody!.Contains("challengeId=", StringComparison.OrdinalIgnoreCase),
@@ -233,7 +237,12 @@ public sealed class AuthTests : IAsyncLifetime
             await PageHelpers.GotoAndWaitAsync(_page, "/Admin/User/Login");
             await _page.FillAsync("#username", testUser);
             await _page.FillAsync("#password", $"WrongPass@{i}");
-            await _page.ClickAsync("#login-btn");
+
+            // 登录按钮先异步获取 RSA 公钥再提交，必须等登录导航完全结束再进入下一轮，
+            // 否则下一次 GotoAsync 会中断仍在进行的登录导航（navigation interrupted）
+            await _page.RunAndWaitForNavigationAsync(
+                async () => await _page.ClickAsync("#login-btn"),
+                new PageRunAndWaitForNavigationOptions { Timeout = 15_000 });
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             await PageHelpers.AssertUrlContainsAsync(_page, "/User/Login", $"{testId}[{i}]");

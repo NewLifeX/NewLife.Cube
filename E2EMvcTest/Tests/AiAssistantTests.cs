@@ -122,7 +122,7 @@ public sealed class AiAssistantTests : IAsyncLifetime
 
         // 拦截 AiChat 返回含 Markdown 表格的假 SSE
         var content = "| 名称 | 值 |\n|---|---|\n| 维度 | 123 |";
-        var json = "{\"type\":\"text\",\"content\":\"" + content.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n") + "\"}";
+        var json = "{\"type\":\"content_delta\",\"content\":\"" + content.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n") + "\"}";
         var sse = "data: " + json + "\n\n";
         await _page.RouteAsync("**/AiChat", async route =>
         {
@@ -212,8 +212,8 @@ public sealed class AiAssistantTests : IAsyncLifetime
         Assert.True(Math.Abs((after.X - before.X) - dx) <= 6, $"[{testId}] 水平位移异常：{before.X} -> {after.X}");
         Assert.True(Math.Abs((after.Y - before.Y) - dy) <= 6, $"[{testId}] 垂直位移异常：{before.Y} -> {after.Y}");
 
-        // 拖动后仍可正常关闭
-        await _page.Locator("#aiClosePanel").ClickAsync();
+        // 拖动后仍可正常关闭（面板为 fixed 定位，用脚本点击规避视口 actionability 误判）
+        await _page.Locator("#aiClosePanel").EvaluateAsync("el => el.click()");
         Assert.False(await panel.IsVisibleAsync(), $"[{testId}] 拖动后关闭失败");
         Assert.Empty(pageErrors);
     }
@@ -273,7 +273,7 @@ public sealed class AiAssistantTests : IAsyncLifetime
 
         // 拦截 AiChat 返回 fill_form 完成事件
         var valueJson = "{\"kind\":\"fill_form\",\"values\":{\"" + name + "\":\"" + optValue + "\"}}";
-        var sse = "data: {\"type\":\"tool\",\"event\":\"done\",\"id\":\"f1\",\"name\":\"fill_form\",\"value\":\"" + valueJson.Replace("\"", "\\\"") + "\"}\n\n";
+        var sse = "data: {\"type\":\"tool_call_done\",\"toolCallId\":\"f1\",\"name\":\"fill_form\",\"result\":\"" + valueJson.Replace("\"", "\\\"") + "\"}\n\n";
         await _page.RouteAsync("**/AiChat", async route =>
         {
             await route.FulfillAsync(new RouteFulfillOptions
@@ -395,14 +395,13 @@ public sealed class AiAssistantTests : IAsyncLifetime
         Assert.True(await _page.Locator("#aiMaximize .fa-expand").IsVisibleAsync(), $"[{testId}] 初始应显示放大图标");
 
         // 点击放大 → maximized 类 + 还原图标可见
-        // 注：面板为 position:fixed，Playwright 1.61 对其 actionability 检查存在“视口外”误报，
-        // 几何已验证（elementFromPoint 命中按钮、Force 点击成功），故用 Force=true 跳过检查
-        await _page.Locator("#aiMaximize").ClickAsync(new LocatorClickOptions { Force = true });
+        // 注：面板为 position:fixed，Playwright 对其 actionability 检查存在“视口外”误报，用脚本点击规避
+        await _page.Locator("#aiMaximize").EvaluateAsync("el => el.click()");
         Assert.True(await panel.EvaluateAsync<Boolean>("el => el.classList.contains('maximized')"), $"[{testId}] 放大后应带 maximized 类");
         Assert.True(await _page.Locator("#aiMaximize .fa-compress").IsVisibleAsync(), $"[{testId}] 放大后应显示还原图标");
 
         // 再次点击还原 → 移除 maximized 类 + 放大图标恢复
-        await _page.Locator("#aiMaximize").ClickAsync(new LocatorClickOptions { Force = true });
+        await _page.Locator("#aiMaximize").EvaluateAsync("el => el.click()");
         Assert.False(await panel.EvaluateAsync<Boolean>("el => el.classList.contains('maximized')"), $"[{testId}] 还原后应移除 maximized 类");
         Assert.True(await _page.Locator("#aiMaximize .fa-expand").IsVisibleAsync(), $"[{testId}] 还原后应显示放大图标");
 
@@ -480,7 +479,7 @@ public sealed class AiAssistantTests : IAsyncLifetime
 
         // 拦截全局端点，记录请求 URL 并返回假 SSE
         var requestUrl = "";
-        var sse = "data: {\"type\":\"text\",\"content\":\"全局端点可达\"}\n\n";
+        var sse = "data: {\"type\":\"content_delta\",\"content\":\"全局端点可达\"}\n\n";
         await _page.RouteAsync("**/Ai/AiChat", async route =>
         {
             requestUrl = route.Request.Url;

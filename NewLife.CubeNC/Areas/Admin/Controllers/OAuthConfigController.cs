@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using NewLife.Web;
+using XCode;
 using XCode.Membership;
 
 namespace NewLife.Cube.Areas.Admin.Controllers;
@@ -16,6 +17,15 @@ public class OAuthConfigController : EntityController<OAuthConfig, OAuthConfigMo
 
         ListFields.RemoveField("Secret", "Logo", "Server", "Scope", "AccessServer", "AuthUrl", "AccessUrl", "UserUrl", "AppUrl", "SecurityKey", "FieldMap", "AutoRole", "Remark");
         ListFields.RemoveCreateField();
+        // 恢复租户列：Map 外键按菜单地址生成跨 Area 链接（Issue #66）
+        var df = ListFields.AddListField("TenantName", null, "Provider");
+        if (df != null)
+        {
+            df.DisplayName = "租户";
+            df.GetValue = e => (e as OAuthConfig)?.TenantName;
+            df.MapField = "TenantId";
+            df.MapProvider = new MapProvider { EntityType = typeof(Tenant), Key = "Id" };
+        }
         SearchFields.RemoveField("Debug", "AutoRegister", "FetchAvatar");
     }
 

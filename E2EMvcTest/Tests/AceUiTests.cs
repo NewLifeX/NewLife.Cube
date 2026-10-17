@@ -132,8 +132,17 @@ public sealed class AceUiTests : IAsyncLifetime
         await _page.WaitForTimeoutAsync(300);
         Assert.True(await _page.IsVisibleAsync("#navbar .dropdown-menu"), $"[{testId}] 用户菜单下拉未展开");
 
-        // 侧边栏菜单展开态：ACE 默认首个一级菜单 active open，断言存在可见子菜单（nav-show）
+        // 侧边栏菜单展开态：ACE 默认首个一级菜单 active open；若首个菜单无子项，
+        // 则点击第一个带子菜单的一级菜单，验证交互后可展开出可见子菜单（nav-show）
         var visibleSub = _page.Locator("#sidebar .submenu.nav-show").First;
+        if (await visibleSub.CountAsync() == 0 || !await visibleSub.IsVisibleAsync())
+        {
+            var withSub = _page.Locator("#sidebar .nav-list > li:has(> ul.submenu)").First;
+            Assert.True(await withSub.CountAsync() > 0, $"[{testId}] 侧边栏没有任何含子菜单的一级菜单");
+            await withSub.Locator("a.dropdown-toggle").First.EvaluateAsync("el => el.click()");
+            await _page.WaitForTimeoutAsync(300);
+            visibleSub = _page.Locator("#sidebar .submenu.nav-show").First;
+        }
         Assert.True(await visibleSub.CountAsync() > 0 && await visibleSub.IsVisibleAsync(),
             $"[{testId}] 侧边栏无可见子菜单");
     }

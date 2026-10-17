@@ -18,7 +18,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <!-- 编译期生成 OpenAPI json：本地源码直连消费者须自行开启（NewLife.Cube.Swagger 的 buildTransitive props 对 ProjectReference 不生效） -->
-    <OpenApiGenerateDocumentsOnBuild>true</OpenApiGenerateDocumentsOnBuild>
+    <!-- 关闭官方内建 target，改由下方自定义 target 调用：官方 target 把应用 stderr 一律当作错误（LogStandardErrorAsError=true），
+         而 CubeDemo 启动时部分组件会向 stderr 输出非致命信息，导致构建被误判失败 -->
+    <OpenApiGenerateDocumentsOnBuild>false</OpenApiGenerateDocumentsOnBuild>
     <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/obj/openapi</OpenApiDocumentsDirectory>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Doc\newlife.snk</AssemblyOriginatorKeyFile>
@@ -39,7 +41,7 @@
   <ItemGroup>
     <PackageReference Include="NewLife.MySql" Version="1.4.2026.1016-beta0206" />
     <!-- 编译期生成 OpenAPI json 的 build target 来源；本地源码直连消费者需自行显式引用 -->
-    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="10.0.*" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="10.0.*" PrivateAssets="all" GeneratePathProperty="true" />
   </ItemGroup>
 
   <!--
@@ -51,7 +53,29 @@
     逃生阀：dotnet build -p:SkipOpenApiContractCheck=true （改接口、基线尚未刷新时临时放行）。
     构建期比对依赖 git-bash 的 bash（Windows 需 bash 在 PATH；缺失时本 Exec 会失败，可临时 Skip，或改由 pre-commit hook / CI 跑同一脚本——那两处一定有 sh）。
   -->
-  <Target Name="CubeDemoPostBuildGuards" AfterTargets="GenerateOpenApiDocuments">
+  <!--
+    自定义 OpenAPI 文档生成 target：
+    与官方 GenerateOpenApiDocuments 等价，但 LogStandardErrorAsError=false，避免应用 stderr 日志导致构建失败。
+    通过 Inputs/Outputs 保持与官方一致的增量判断；生成失败（非零退出码）仍会中断构建。
+  -->
+  <Target Name="CubeDemoGenerateOpenApiDocuments" AfterTargets="Build"
+          Condition="'$(OpenApiGenerateDocuments)' == 'true' And '$(DesignTimeBuild)' != 'true'"
+          Inputs="$(TargetPath)" Outputs="$(_OpenApiDocumentsCache)">
+    <PropertyGroup>
+      <_CubeOpenApiCommand>dotnet "$([System.IO.Path]::Combine('$(PkgMicrosoft_Extensions_ApiDescription_Server)', 'tools', 'dotnet-getdocument.dll'))" --assembly "$(TargetPath)"</_CubeOpenApiCommand>
+      <_CubeOpenApiCommand>$(_CubeOpenApiCommand) --file-list "$(_OpenApiDocumentsCache)" --framework "$(TargetFrameworkMoniker)"</_CubeOpenApiCommand>
+      <_CubeOpenApiCommand>$(_CubeOpenApiCommand) --output "$([System.IO.Path]::GetFullPath('$(OpenApiDocumentsDirectory)').TrimEnd('\'))" --project "$(MSBuildProjectName)"</_CubeOpenApiCommand>
+      <_CubeOpenApiCommand Condition="'$(ProjectAssetsFile)' != ''">$(_CubeOpenApiCommand) --assets-file "$(ProjectAssetsFile)"</_CubeOpenApiCommand>
+      <_CubeOpenApiCommand Condition="'$(PlatformTarget)' != ''">$(_CubeOpenApiCommand) --platform "$(PlatformTarget)"</_CubeOpenApiCommand>
+      <_CubeOpenApiCommand Condition="'$(PlatformTarget)' == '' And '$(Platform)' != ''">$(_CubeOpenApiCommand) --platform "$(Platform)"</_CubeOpenApiCommand>
+      <_CubeOpenApiCommand>$(_CubeOpenApiCommand) $(OpenApiGenerateDocumentsOptions)</_CubeOpenApiCommand>
+    </PropertyGroup>
+    <Message Importance="high" Text="%0ACubeDemoGenerateOpenApiDocuments:" />
+    <Message Importance="high" Text="  $(_CubeOpenApiCommand)" />
+    <Exec Command="$(_CubeOpenApiCommand)" LogStandardErrorAsError="false" />
+  </Target>
+
+  <Target Name="CubeDemoPostBuildGuards" AfterTargets="CubeDemoGenerateOpenApiDocuments">
     <Exec Condition="Exists('$(MSBuildProjectDirectory)/../.githooks')"
           Command="git -C &quot;$(MSBuildProjectDirectory)/..&quot; config core.hooksPath .githooks"
           IgnoreExitCode="true" />

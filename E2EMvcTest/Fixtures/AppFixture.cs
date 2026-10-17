@@ -109,8 +109,18 @@ public sealed class AppFixture : IAsyncLifetime
 
     private static Process StartCubeSSO()
     {
-        // 优先运行编排脚本已发布的程序；回退到源码目录 dotnet run（直接调试时使用）
+        // 优先使用构建输出（Bin/SSO），复制到本次运行目录后启动：
+        // appsettings.json 使用 ..\Data 相对路径，只有把工作目录定在 AppDir，数据库才会落到 RunDir\Data
+        var repoRoot = System.IO.Path.GetFullPath(System.IO.Path.Combine(AppContext.BaseDirectory, "..", ".."));
+        var buildDir = System.IO.Path.Combine(repoRoot, "Bin", "SSO");
         var dllPath = System.IO.Path.Combine(AppDir, "CubeSSO.dll");
+
+        if (System.IO.File.Exists(System.IO.Path.Combine(buildDir, "CubeSSO.dll")))
+        {
+            CopyDirectory(buildDir, AppDir);
+            RewriteConnectionStrings(System.IO.Path.Combine(AppDir, "appsettings.json"));
+        }
+
         String procFile;
         String procArgs;
         String workDir;
@@ -123,13 +133,11 @@ public sealed class AppFixture : IAsyncLifetime
         }
         else
         {
-            // 回退：从 Bin/E2ETest 上两级得到 repo root，再找 CubeSSO 源码目录
-            var repoRoot = System.IO.Path.GetFullPath(
-                System.IO.Path.Combine(AppContext.BaseDirectory, "..", ".."));
+            // 回退：从源码目录 dotnet run（直接调试时使用）
             var cubeSsoDir = System.IO.Path.Combine(repoRoot, "CubeSSO");
             procFile = "dotnet";
             procArgs = $"run --project \"{cubeSsoDir}\"";
-            workDir  = cubeSsoDir;
+            workDir  = AppDir;
         }
 
         var psi = new ProcessStartInfo(procFile, procArgs)
@@ -142,16 +150,70 @@ public sealed class AppFixture : IAsyncLifetime
 
         // 覆盖数据库路径指向本次运行目录
         psi.Environment["ConnectionStrings__Membership"] =
-            $"Data Source={DataDir}\\Membership.db;provider=sqlite";
+            $"Data Source={System.IO.Path.Combine(DataDir, "Membership.db")};provider=sqlite";
         psi.Environment["ConnectionStrings__Cube"] =
-            $"Data Source={DataDir}\\Cube.db;provider=sqlite";
+            $"Data Source={System.IO.Path.Combine(DataDir, "Cube.db")};provider=sqlite";
         psi.Environment["ConnectionStrings__Log"] =
-            $"Data Source={DataDir}\\Log.db;provider=sqlite";
+            $"Data Source={System.IO.Path.Combine(DataDir, "Log.db")};provider=sqlite";
         psi.Environment["URLS"] = BaseUrl;
 
         var proc = new Process { StartInfo = psi, EnableRaisingEvents = true };
+
+        var outLog = System.IO.Path.Combine(RunDir, "server-out.log");
+        var errLog = System.IO.Path.Combine(RunDir, "server-err.log");
+        var outWriter = new System.IO.StreamWriter(outLog, false) { AutoFlush = true };
+        var errWriter = new System.IO.StreamWriter(errLog, false) { AutoFlush = true };
+
+        // 必须异步消费 stdout/stderr，否则管道缓冲区写满后应用日志线程会阻塞
+        proc.OutputDataReceived += (_, e) => { if (e.Data != null) outWriter.WriteLine(e.Data); };
+        proc.ErrorDataReceived += (_, e) => { if (e.Data != null) errWriter.WriteLine(e.Data); };
+
         proc.Start();
+        proc.BeginOutputReadLine();
+        proc.BeginErrorReadLine();
+
         return proc;
+    }
+
+    /// <summary>递归复制构建输出，跳过运行时数据目录</summary>
+    private static void CopyDirectory(String source, String target)
+    {
+        System.IO.Directory.CreateDirectory(target);
+
+        foreach (var file in System.IO.Directory.GetFiles(source))
+        {
+            System.IO.File.Copy(file, System.IO.Path.Combine(target, System.IO.Path.GetFileName(file)), true);
+        }
+
+        foreach (var dir in System.IO.Directory.GetDirectories(source))
+        {
+            var name = System.IO.Path.GetFileName(dir);
+            if (name.Equals("Data", StringComparison.OrdinalIgnoreCase) ||
+                name.Equals("Log", StringComparison.OrdinalIgnoreCase) ||
+                name.Equals("Uploads", StringComparison.OrdinalIgnoreCase) ||
+                name.Equals("Avatars", StringComparison.OrdinalIgnoreCase) ||
+                name.Equals("Backup", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            CopyDirectory(dir, System.IO.Path.Combine(target, name));
+        }
+    }
+
+    /// <summary>把 appsettings.json 的连接字符串改写为本次运行目录的绝对路径</summary>
+    private static void RewriteConnectionStrings(String file)
+    {
+        if (!System.IO.File.Exists(file)) return;
+
+        var text = System.IO.File.ReadAllText(file);
+        foreach (var name in new[] { "Membership", "Cube", "Log" })
+        {
+            var db = System.IO.Path.Combine(DataDir, name + ".db").Replace("\\", "\\\\");
+            text = System.Text.RegularExpressions.Regex.Replace(
+                text,
+                $"(\"{name}\"\\s*:\\s*\")[^\"]*(\")",
+                "$1Data Source=" + db + ";provider=sqlite$2");
+        }
+        System.IO.File.WriteAllText(file, text);
     }
 
     private static async Task WaitForServerReadyAsync(TimeSpan timeout)
