@@ -2,13 +2,13 @@ name: publish-npm
 
 on:
   push:
-    - tags: [ 'v*' ]            # 稳定版：打 v* 标签触发（与 .NET publish.yml 共享标签）
-    - branches: [ master ]      # 预发布：master 上公共包变更触发
-      paths:
-        - 'packages/**'
-        - 'package.json'
-        - 'pnpm-workspace.yaml'
-        - 'pnpm-lock.yaml'
+    tags: [ 'v*' ]            # 稳定版：打 v* 标签触发（与 .NET publish.yml 共享标签）
+    branches: [ master ]      # 预发布：master 上公共包变更触发
+    paths:
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-workspace.yaml'
+      - 'pnpm-lock.yaml'
   workflow_dispatch:
 
 jobs:
