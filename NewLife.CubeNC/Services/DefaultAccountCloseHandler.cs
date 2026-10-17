@@ -1,4 +1,5 @@
 using NewLife.Cube.Entity;
+using NewLife.Log;
 using XCode.Membership;
 
 namespace NewLife.Cube.Services;
@@ -8,7 +9,7 @@ namespace NewLife.Cube.Services;
 /// 由 AddCube 通过 TryAddEnumerable 注册为默认实现，下游可继续追加自定义 <see cref="IAccountCloseHandler"/>。
 /// 清理范围：吊销全部令牌、解绑第三方、清理在线记录、OAuth日志、通知记录、验证码记录、用户字典参数、租户关系、委托代理；
 /// 随后脱敏用户行的敏感字段（保留 ID/Name，不含 Enable）。
-/// 失败策略：尽力而为，异常由调用方隔离记录。
+/// 失败策略：各清理步骤独立尽力而为，单步失败只记录日志，不阻断后续步骤与最终脱敏。
 /// </remarks>
 public class DefaultAccountCloseHandler : IAccountCloseHandler
 {
@@ -22,34 +23,34 @@ public class DefaultAccountCloseHandler : IAccountCloseHandler
         if (user == null || user.ID <= 0) return Task.CompletedTask;
 
         // 吊销全部令牌，使其立即失效
-        UserToken.RevokeByUser(user.ID);
+        TryClean("用户令牌", user.ID, () => UserToken.RevokeByUser(user.ID));
 
         // 解绑第三方
-        UserConnect.Delete(UserConnect._.UserID == user.ID);
+        TryClean("第三方绑定", user.ID, () => UserConnect.Delete(UserConnect._.UserID == user.ID));
 
         // 清理在线记录
-        UserOnline.Delete(UserOnline._.UserID == user.ID);
+        TryClean("在线记录", user.ID, () => UserOnline.Delete(UserOnline._.UserID == user.ID));
 
         // OAuth 日志。含第三方 OpenID 关联与访问令牌等敏感信息
-        OAuthLog.Delete(OAuthLog._.UserId == user.ID);
+        TryClean("OAuth日志", user.ID, () => OAuthLog.Delete(OAuthLog._.UserId == user.ID));
 
         // 通知记录。站内信/短信/邮件等个人消息
-        NotificationRecord.Delete(NotificationRecord._.UserId == user.ID);
+        TryClean("通知记录", user.ID, () => NotificationRecord.Delete(NotificationRecord._.UserId == user.ID));
 
         // 验证码记录。按用户编号，以及按注销前联系方式（未登录发码时 UserId 可能为 0）
-        VerifyCodeRecord.Delete(VerifyCodeRecord._.UserId == user.ID);
-        if (!user.Mail.IsNullOrEmpty()) VerifyCodeRecord.Delete(VerifyCodeRecord._.Target == user.Mail);
-        if (!user.Mobile.IsNullOrEmpty()) VerifyCodeRecord.Delete(VerifyCodeRecord._.Target == user.Mobile);
+        TryClean("验证码记录", user.ID, () => VerifyCodeRecord.Delete(VerifyCodeRecord._.UserId == user.ID));
+        if (!user.Mail.IsNullOrEmpty()) TryClean("验证码记录(邮箱)", user.ID, () => VerifyCodeRecord.Delete(VerifyCodeRecord._.Target == user.Mail));
+        if (!user.Mobile.IsNullOrEmpty()) TryClean("验证码记录(手机)", user.ID, () => VerifyCodeRecord.Delete(VerifyCodeRecord._.Target == user.Mobile));
 
         // 用户字典参数。保留 UserID=0 的系统参数
-        Parameter.Delete(Parameter._.UserID == user.ID);
+        TryClean("用户参数", user.ID, () => Parameter.Delete(Parameter._.UserID == user.ID));
 
         // 租户关系
-        TenantUser.Delete(TenantUser._.UserId == user.ID);
+        TryClean("租户关系", user.ID, () => TenantUser.Delete(TenantUser._.UserId == user.ID));
 
         // 委托代理。委托人与代理人双向
-        PrincipalAgent.Delete(PrincipalAgent._.PrincipalId == user.ID);
-        PrincipalAgent.Delete(PrincipalAgent._.AgentId == user.ID);
+        TryClean("委托代理(委托人)", user.ID, () => PrincipalAgent.Delete(PrincipalAgent._.PrincipalId == user.ID));
+        TryClean("委托代理(代理人)", user.ID, () => PrincipalAgent.Delete(PrincipalAgent._.AgentId == user.ID));
 
         // 脱敏用户行（保留 ID/Name 防重名与审计；Enable 不动，由框架兜底禁用）
         // 走 SQL 查询而非单对象缓存，确保拿到数据库最新行；更新后清缓存，避免后续读取到陈旧副本
@@ -81,5 +82,22 @@ public class DefaultAccountCloseHandler : IAccountCloseHandler
         }
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>执行单个清理步骤，失败只记录日志</summary>
+    /// <param name="name">步骤名称</param>
+    /// <param name="userId">用户编号</param>
+    /// <param name="action">清理动作</param>
+    private static void TryClean(String name, Int32 userId, Action action)
+    {
+        try
+        {
+            action();
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteLine("[CloseAccount] 清理{0}失败（用户 {1}）：{2}", name, userId, ex.Message);
+            XTrace.WriteException(ex);
+        }
     }
 }

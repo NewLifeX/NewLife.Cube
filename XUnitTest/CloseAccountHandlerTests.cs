@@ -136,6 +136,21 @@ public class CloseAccountHandlerTests : IDisposable
         Assert.Equal(user.Name, db.Name);
     }
 
+    [Fact(DisplayName = "CloseAccount：默认处理器可直接完成脱敏（验证单步清理失败不阻断脱敏）")]
+    public async Task CloseAccount_DefaultHandler_AnonymizesDirectly()
+    {
+        var mail = $"e2e_{Guid.NewGuid():N}@test.com";
+        var user = CreateUser(mail: mail, mobile: "13800003333", displayName: "直接脱敏");
+
+        await new DefaultAccountCloseHandler().HandleAsync(user, "10.0.0.1");
+
+        var db = FindUser(user.ID);
+        Assert.NotNull(db);
+        Assert.Null(db.Mail);
+        Assert.Null(db.Mobile);
+        Assert.Null(db.DisplayName);
+    }
+
     [Fact(DisplayName = "CloseAccount：未注册任何处理器时仅兜底禁用，不脱敏字段")]
     public void CloseAccount_NoHandler_StillDisables()
     {
