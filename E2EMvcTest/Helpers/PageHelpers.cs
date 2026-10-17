@@ -23,7 +23,7 @@ public static class PageHelpers
         // 捕获该异常并视为登录成功（当前上下文已认证）。
         try
         {
-            await page.GotoAsync(AppFixture.BaseUrl + "/Admin/User/Login");
+            await page.GotoAsync(AppFixture.BaseUrl + "/Admin/User/Login", new PageGotoOptions { Timeout = 60_000 });
         }
         catch (PlaywrightException)
         {
@@ -33,7 +33,7 @@ public static class PageHelpers
                 return; // 已导航至后台，视为登录成功
             // 若仍在登录页则说明是其他错误，继续正常流程
         }
-        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new PageWaitForLoadStateOptions { Timeout = 60_000 });
 
         // 若导航到登录页后被 302 重定向到后台（服务端会话仍有效），则直接返回
         if (!page.Url.Contains("/User/Login", StringComparison.OrdinalIgnoreCase))
@@ -45,10 +45,12 @@ public static class PageHelpers
         {
             if (attempt > 0)
             {
-                await page.GotoAsync(AppFixture.BaseUrl + "/Admin/User/Login");
-                await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                await page.GotoAsync(AppFixture.BaseUrl + "/Admin/User/Login", new PageGotoOptions { Timeout = 60_000 });
+                await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new PageWaitForLoadStateOptions { Timeout = 60_000 });
             }
 
+            // 首次请求可能触发应用初始化（菜单/权限扫描），慢速 CI 上留足等待时间
+            await page.WaitForSelectorAsync("#username", new PageWaitForSelectorOptions { Timeout = 60_000 });
             await page.FillAsync("#username", username);
             await page.FillAsync("#password", password);
 
