@@ -45,8 +45,13 @@ public static class PageHelpers
         {
             if (attempt > 0)
             {
-                await page.GotoAsync(AppFixture.BaseUrl + "/Admin/User/Login", new PageGotoOptions { Timeout = 60_000 });
+                await page.GotoAsync(AppFixture.BaseUrl + "/Admin/User/Login", new PageGotoOptions { Timeout = 300_000 });
                 await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new PageWaitForLoadStateOptions { Timeout = 60_000 });
+
+                // 上一次提交可能已登录成功，仅因重定向较慢而仍停留在登录页；
+                // 重试导航会 302 到后台，此时不应再等待用户名输入框
+                if (!page.Url.Contains("/User/Login", StringComparison.OrdinalIgnoreCase))
+                    return;
             }
 
             // 首次请求可能触发应用初始化（文件存储事件总线/菜单权限扫描），慢速 CI 上可能阻塞数分钟，留足等待时间
