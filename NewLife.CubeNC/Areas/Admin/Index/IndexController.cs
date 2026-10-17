@@ -510,6 +510,8 @@ public class IndexController : ControllerBaseX, IPageDataContext
 
         var menuTree = MenuTree.GetMenuTree(m => fact.GetMySubMenus(m.ID, user, true), list =>
         {
+            // GetMySubMenus 在极端情况下可能返回 null，LINQ from 会 NRE；统一按空集合处理
+            if (list == null) return null;
 
             var menuList = (from menu in list
                                 // where m.Visible
@@ -529,10 +531,11 @@ public class IndexController : ControllerBaseX, IPageDataContext
             return menuList.Count > 0 ? menuList : null;
         }, menus);
 
-        // 多租户开启时，按当前模式过滤菜单树（租户模式隐藏纯Admin菜单，管理后台隐藏纯Tenant菜单），与视图层 FilterByTenant 保持一致
+        // 多租户开启时，按当前模式过滤菜单树（租户模式隐藏纯Admin菜单，管理后台隐藏纯Tenant菜单），与视图层 FilterByTenant 保持一致。
+        // FilterByTenant 已对 null 容错；此处再归一为空列表，避免视图/JSON 拿到 null。
         if (CubeSetting.Current.EnableTenant)
             menuTree = MenuHelper.FilterByTenant(menuTree, TenantContext.Current.GetTenantMode() == TenantMode.Tenant);
 
-        return menuTree;
+        return menuTree ?? [];
     }
 }

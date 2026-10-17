@@ -306,38 +306,42 @@ public static class MenuHelper
     }
 
     /// <summary>根据租户隔离菜单</summary>
-    /// <param name="menus"></param>
-    /// <param name="isTenant"></param>
-    /// <returns></returns>
+    /// <param name="menus">菜单树；可为 null（空菜单时 GetMenuTree 返回 null），此时返回空列表</param>
+    /// <param name="isTenant">当前是否租户模式</param>
+    /// <returns>过滤后的菜单列表，永不返回 null</returns>
     public static IList<MenuTree> FilterByTenant(IList<MenuTree> menus, Boolean isTenant)
     {
         var list = new List<MenuTree>();
+        // GetMenuTree 在无可用菜单时返回 null；租户↔管理后台切换后偶发空树，必须容错避免 NRE
+        if (menus == null || menus.Count == 0) return list;
 
         foreach (var item in menus)
         {
-            if (!item.FullName.IsNullOrEmpty())
+            if (item == null || item.FullName.IsNullOrEmpty()) continue;
+
+            // 控制器菜单是否支持租户显示
+            if (CheckVisibleInTenant(item))
             {
-                // 控制器菜单是否支持租户显示
-                if (CheckVisibleInTenant(item))
-                {
-                    // 支持租户显示，且当前是租户，则显示
-                    if (isTenant)
-                        list.Add(item);
-                    // 同时支持租户和管理员显示
-                    else if (CheckVisibleInAdmin(item))
-                        list.Add(item);
-                }
+                // 支持租户显示，且当前是租户，则显示
+                if (isTenant)
+                    list.Add(item);
+                // 同时支持租户和管理员显示
+                else if (CheckVisibleInAdmin(item))
+                    list.Add(item);
+            }
+            else
+            {
+                // 不支持租户显示，且不是租户，则显示
+                if (!isTenant)
+                    list.Add(item);
                 else
                 {
-                    // 不支持租户显示，且不是租户，则显示
-                    if (!isTenant)
+                    // 虽然当前大菜单不支持租户显示，但是子菜单支持，则显示。
+                    // Children 为懒加载，getter 可能因子源为 null 失败，需兜底避免切换账号时首页崩溃。
+                    IList<MenuTree> children = null;
+                    try { children = item.Children; } catch { /* 忽略懒加载失败 */ }
+                    if (children != null && children.Any(e => e != null && CheckVisibleInTenant(e)))
                         list.Add(item);
-                    else if (item.Children != null)
-                    {
-                        // 虽然当前大菜单不支持租户显示，但是子菜单支持，则显示
-                        if (item.Children.Any(e => CheckVisibleInTenant(e)))
-                            list.Add(item);
-                    }
                 }
             }
         }
@@ -349,17 +353,10 @@ public static class MenuHelper
     static Boolean CheckVisibleInTenant(MenuTree menu)
     {
         var key = menu.FullName;
+        if (key.IsNullOrEmpty()) return false;
         if (_tenants.TryGetValue(key, out var rs)) return rs;
 
-        var type = Type.GetType(menu.FullName);
-        if (type == null)
-        {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                type = assembly.GetType(menu.FullName);
-                if (type != null) break;
-            }
-        }
+        var type = ResolveMenuType(key);
         var att = type?.GetCustomAttribute<MenuAttribute>();
         if (att != null && att.Mode.Has(MenuModes.Tenant))
         {
@@ -373,9 +370,11 @@ public static class MenuHelper
     static Boolean CheckVisibleInAdmin(MenuTree menu)
     {
         var key = menu.FullName;
+        if (key.IsNullOrEmpty()) return false;
         if (_admins.TryGetValue(key, out var rs)) return rs;
 
-        var type = Type.GetType(menu.FullName);
+        // 与 CheckVisibleInTenant 一致：跨程序集解析控制器类型，避免双模式菜单在管理后台被误隐藏
+        var type = ResolveMenuType(key);
         var att = type?.GetCustomAttribute<MenuAttribute>();
         if (att != null && att.Mode.Has(MenuModes.Admin))
         {
@@ -383,6 +382,22 @@ public static class MenuHelper
         }
 
         return _admins[key] = false;
+    }
+
+    /// <summary>按 FullName 解析菜单对应控制器类型（含跨程序集回退）</summary>
+    static Type ResolveMenuType(String fullName)
+    {
+        if (fullName.IsNullOrEmpty()) return null;
+
+        var type = Type.GetType(fullName);
+        if (type != null) return type;
+
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            type = assembly.GetType(fullName);
+            if (type != null) return type;
+        }
+        return null;
     }
 
     /// <summary>从控制器类型的继承链中提取 ReadOnlyEntityController&lt;TEntity&gt; 的泛型实参</summary>
