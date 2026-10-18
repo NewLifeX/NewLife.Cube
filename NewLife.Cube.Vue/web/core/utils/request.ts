@@ -166,6 +166,16 @@ function handleUnauthorized(url?: string) {
 }
 
 /**
+ * 剔除 .NET ArgumentException 自动追加的参数名后缀，如 "编码已存在 (Parameter 'Code')" → "编码已存在"。
+ * 该后缀属于框架内部细节，不应展示给最终用户。
+ * @param message 后端返回的错误消息
+ * @returns 去掉参数名后缀的消息
+ */
+function stripParameterSuffix(message: string) {
+  return String(message ?? '').replace(/\s*\(Parameter\s+'[^']+'\)\s*$/, '').trim();
+}
+
+/**
  * 错误弹窗（作为 api-core onResponseError 回调）。
  * api-core 已把网络/4xx/5xx 错误归一化为 ResponseErrorInfo（纯数据、无文案），
  * 此处负责本地化与展示——网络错误用中文提示，其余交给通知组件。
@@ -210,7 +220,8 @@ const api = createCubeApi({
   // 字段级验证错误：统一 toast（原 useCubeApi 逻辑合并至 request，页面无需各自处理）
   onFieldError: (fieldErrors) => {
     fieldErrorShown = true;
-    ElMessage.error(fieldErrors.map(e => e.message).join('；'));
+    // ArgumentException 的 Message 会自动追加 "(Parameter 'Code')"，属于 .NET 内部细节，展示前剔除
+    ElMessage.error(fieldErrors.map(e => stripParameterSuffix(e.message)).join('；'));
   },
   // 业务错误：统一 toast；若同一响应已弹字段级错误或消息为空则跳过，微任务后重置标志
   onBusinessError: (_code, message) => {
