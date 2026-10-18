@@ -190,6 +190,13 @@ describe('request.ts — cube-vue 请求层 UI 逻辑', () => {
       ]);
       expect(h.elMessageError).toHaveBeenCalledWith('编码不可空；名称不可空');
     });
+
+    it('剔除 ArgumentException 自动追加的 (Parameter \'xxx\') 后缀', () => {
+      opts.onFieldError([
+        { field: 'Code', message: "供应商编码[1]已被供应商[甲]占用，请更换！ (Parameter 'Code')" },
+      ]);
+      expect(h.elMessageError).toHaveBeenCalledWith('供应商编码[1]已被供应商[甲]占用，请更换！');
+    });
   });
 
   describe('onBusinessError（业务错误弹窗）', () => {
