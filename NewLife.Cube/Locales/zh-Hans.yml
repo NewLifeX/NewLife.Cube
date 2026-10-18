@@ -1,0 +1,5 @@
+# 简体中文译文。键为英文源文，缺失时运行期回退英文。
+"File or directory not found.": "找不到文件或目录！"
+"File not found.": "找不到文件！"
+"Directory not found.": "找不到目录！"
+"No data was specified for deletion.": "未指定要删除的数据！"

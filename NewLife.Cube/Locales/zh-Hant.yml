@@ -1,0 +1,5 @@
+# 繁體中文譯文。鍵為英文源文，缺失時執行期回退英文。
+"File or directory not found.": "找不到文件或目錄！"
+"File not found.": "找不到文件！"
+"Directory not found.": "找不到目錄！"
+"No data was specified for deletion.": "未指定要刪除的數據！"

@@ -5,6 +5,7 @@ using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
 using NewLife.Web;
 using XCode.Membership;
+using NewLife;
 
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
@@ -133,7 +134,7 @@ public class LovController : ControllerBaseX
     public ApiResponse<String> DeleteSelect([FromQuery] String[] id)
     {
         if (id == null || id.Length == 0)
-            throw new InvalidOperationException("未指定要删除的数据！");
+            throw new InvalidOperationException(L.T("No data was specified for deletion."));
 
         var n = 0;
         foreach (var item in id)
