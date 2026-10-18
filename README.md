@@ -1,10 +1,19 @@
 # 魔方 NewLife.Cube
 
 ![GitHub top language](https://img.shields.io/github/languages/top/newlifex/newlife.cube?logo=github)
-![GitHub License](https://img.shields.io/github/license/newlifex/newlife.cube?logo=github)
-![Nuget Downloads](https://img.shields.io/nuget/dt/newlife.cube.core?logo=nuget)
-![Nuget](https://img.shields.io/nuget/v/newlife.cube.core?logo=nuget)
-![Nuget (with prereleases)](https://img.shields.io/nuget/vpre/newlife.cube.core?label=dev%20nuget&logo=nuget)
+
+
+![GitHub License](https://img.shields.io/github/license/NewLifeX/NewLife.Cube?logo=github)
+![NuGet Downloads](https://img.shields.io/nuget/dt/NewLife.Cube?logo=nuget)
+![NuGet](https://img.shields.io/nuget/v/NewLife.Cube?logo=nuget)
+![NuGet prerelease](https://img.shields.io/nuget/vpre/NewLife.Cube?label=dev%20nuget&logo=nuget)
+[![test](https://github.com/NewLifeX/NewLife.Cube/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/NewLifeX/NewLife.Cube/actions/workflows/test.yml)
+![platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)
+[![contributors](https://img.shields.io/github/contributors/NewLifeX/NewLife.Cube?logo=github)](https://github.com/NewLifeX/NewLife.Cube/graphs/contributors)
+
+<!-- lang:start -->
+🌐 [繁體中文](README.zh-TW.md) | [English](README.en.md) | [Español](README.es.md) | [Deutsch](README.de.md) | [日本語](README.ja.md) | [Français](README.fr.md) | [Português](README.pt.md) | [Русский](README.ru.md) | [한국어](README.ko.md) | [العربية](README.ar.md)
+<!-- lang:end -->
 
 魔方是一个快速 Web 开发平台，面向“数据驱动 + 快速迭代 + 可深度定制”场景。几分钟内即可把实体 / 数据库表转为带权限、列表、详情、增删改、导出、统计的完整后台界面，并开放标准 API 给 Vue / Blazor / Antd / 移动端或第三方系统调用。默认模板已在真实项目中经历单表 100 亿数据增删改查考验。
 
@@ -423,8 +432,6 @@ A: 依靠字段元数据 + 标准 CRUD/JWT 登录。
 |          [SmartA2](https://github.com/NewLifeX/SmartA2)          | 2019  | 嵌入式工业计算机，物联网边缘网关，高性能.NET8主机，应用于工业、农业、交通、医疗             |
 |                          FIoT物联网平台                          | 2020  | 物联网整体解决方案，建筑、环保、农业，软硬件及大数据分析一体化，单机十万级点位项目验证      |
 |                        UWB高精度室内定位                         | 2020  | 厘米级（10~20cm）高精度室内定位，软硬件一体化，与其它系统联动，大型展厅项目验证             |
-
-
 
 ## 新生命开发团队
 ![XCode](https://newlifex.com/logo.png)  
