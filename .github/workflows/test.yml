@@ -41,3 +41,59 @@ jobs:
           Bin/E2ETest/Run-*/server-*.log
           Bin/E2ETest/Run-*/screenshots/**
         if-no-files-found: ignore
+
+  localization:
+    name: localization checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Check locales
+      shell: pwsh
+      run: |
+        $failed = $false
+        Get-ChildItem -Path . -Recurse -Directory -Filter Locales | ForEach-Object {
+          if (Test-Path (Join-Path $_.FullName 'zh-Hans.yml')) {
+            $src = Split-Path $_.FullName -Parent
+            pwsh -File ./check-locales.ps1 -LocaleDir $_.FullName -Baseline zh-Hans.yml -SourceDir $src
+            if ($LASTEXITCODE -ne 0) { $failed = $true }
+          }
+        }
+        if ($failed) { exit 1 }
+    - name: Check README languages
+      shell: pwsh
+      run: pwsh -File ./sync-readme-languages.ps1 -Check
+
+  # 多平台单元测试矩阵：win-x64 为阻断基线，linux-arm64 观察期（E2E 仅在 linux-x64 基线执行）
+  test-matrix:
+    name: test (${{ matrix.rid }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: win-x64
+            os: windows-latest
+            experimental: false
+          - rid: linux-arm64
+            os: ubuntu-24.04-arm
+            experimental: true
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup dotNET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.x
+    - name: Test
+      run: dotnet test XUnitTest/XUnitTest.csproj -c Release --nologo --logger "trx;LogFileName=${{ matrix.rid }}.trx" --results-directory TestResults
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.rid }}
+        path: TestResults/*.trx
+        if-no-files-found: ignore
