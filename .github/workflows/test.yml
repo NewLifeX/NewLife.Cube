@@ -24,7 +24,7 @@ jobs:
           10.x
     - name: Build
       run: |
-        dotnet build 魔方.sln -c Release
+        dotnet build 魔方.slnx -c Release
     - name: Install Playwright browsers
       run: |
         pwsh Bin/E2ETest/playwright.ps1 install --with-deps chromium

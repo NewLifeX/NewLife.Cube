@@ -1,0 +1,42 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/MVC版/">
+    <Project Path="CubeSSO/CubeSSO.csproj" />
+    <Project Path="NewLife.CubeNC/NewLife.CubeNC.csproj" />
+  </Folder>
+  <Folder Name="/Others/">
+    <File Path=".editorconfig" />
+    <File Path=".github/copilot-instructions.md" />
+    <File Path=".github/instructions/cube.instructions.md" />
+    <File Path=".github/instructions/xcode.instructions.md" />
+    <File Path=".github/workflows/publish-beta.yml" />
+    <File Path=".github/workflows/publish.yml" />
+    <File Path=".github/workflows/test.yml" />
+    <File Path=".gitignore" />
+    <File Path="Readme.MD" />
+  </Folder>
+  <Folder Name="/WebApi版/">
+    <Project Path="CubeDemo/CubeDemo.csproj" />
+    <Project Path="NewLife.Cube.Swagger/NewLife.Cube.Swagger.csproj" />
+    <Project Path="NewLife.Cube/NewLife.Cube.csproj" />
+  </Folder>
+  <Folder Name="/前端皮肤/">
+    <Project Path="NewLife.Cube.Angular/NewLife.Cube.Angular.csproj" />
+    <Project Path="NewLife.Cube.ArcoVue/NewLife.Cube.ArcoVue.csproj" />
+    <Project Path="NewLife.Cube.MUI/NewLife.Cube.MUI.csproj" />
+    <Project Path="NewLife.Cube.NaiveUI/NewLife.Cube.NaiveUI.csproj" />
+    <Project Path="NewLife.Cube.Shadcn/NewLife.Cube.Shadcn.csproj" />
+    <Project Path="NewLife.Cube.Svelte/NewLife.Cube.Svelte.csproj" />
+    <Project Path="NewLife.Cube.TDesign/NewLife.Cube.TDesign.csproj" />
+    <Project Path="NewLife.Cube.Vue/NewLife.Cube.Vue.csproj" />
+    <Project Path="NewLife.Cube.Vuetify/NewLife.Cube.Vuetify.csproj" />
+  </Folder>
+  <Folder Name="/测试/">
+    <Project Path="E2EMvcTest/E2EMvcTest.csproj" />
+    <Project Path="XUnitTest/XUnitTest.csproj" />
+  </Folder>
+</Solution>

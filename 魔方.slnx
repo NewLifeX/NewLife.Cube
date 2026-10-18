@@ -1,0 +1,42 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/MVC主题/">
+    <Project Path="NewLife.Cube.AdminLTE/NewLife.Cube.AdminLTE.csproj" />
+    <Project Path="NewLife.Cube.Blazor/NewLife.Cube.Blazor.csproj" />
+    <Project Path="NewLife.Cube.ElementUI/NewLife.Cube.ElementUI.csproj" />
+    <Project Path="NewLife.Cube.LayuiAdmin/NewLife.Cube.LayuiAdmin.csproj" />
+    <Project Path="NewLife.Cube.Metronic/NewLife.Cube.Metronic.csproj" />
+    <Project Path="NewLife.Cube.Metronic8/NewLife.Cube.Metronic8.csproj" />
+    <Project Path="NewLife.Cube.Tabler/NewLife.Cube.Tabler.csproj" />
+  </Folder>
+  <Folder Name="/MVC版/">
+    <Project Path="CubeDemoNC/CubeDemoNC.csproj" />
+    <Project Path="CubeSSO/CubeSSO.csproj" />
+    <Project Path="NewLife.CubeNC/NewLife.CubeNC.csproj" />
+  </Folder>
+  <Folder Name="/Others/">
+    <File Path=".editorconfig" />
+    <File Path=".github/copilot-instructions.md" />
+    <File Path=".github/instructions/cube.instructions.md" />
+    <File Path=".github/instructions/xcode.instructions.md" />
+    <File Path=".github/workflows/publish-beta.yml" />
+    <File Path=".github/workflows/publish.yml" />
+    <File Path=".github/workflows/test.yml" />
+    <File Path=".gitignore" />
+    <File Path="Readme.MD" />
+  </Folder>
+  <Folder Name="/WebApi版/">
+    <Project Path="CubeDemo/CubeDemo.csproj" />
+    <Project Path="NewLife.Cube.Swagger/NewLife.Cube.Swagger.csproj" />
+    <Project Path="NewLife.Cube/NewLife.Cube.csproj" />
+  </Folder>
+  <Folder Name="/测试/">
+    <Project Path="E2EMvcTest/E2EMvcTest.csproj" />
+    <Project Path="Test/Test.csproj" />
+    <Project Path="XUnitTest/XUnitTest.csproj" />
+  </Folder>
+</Solution>
