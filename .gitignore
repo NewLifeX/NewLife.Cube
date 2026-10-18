@@ -84,3 +84,4 @@ xcodetool.exe
 .umi-production/
 NewLife.Cube.Vue/web/scripts/element-tokens.json
 Doc/Architecture/
+.DS_Store
