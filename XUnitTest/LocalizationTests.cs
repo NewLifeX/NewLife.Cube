@@ -137,6 +137,8 @@ public class LocalizationTests
             "User [{0}] is disabled.",
             "The OAuth server is not configured.",
             "Unsupported verification channel.",
+            "The request body is empty.",
+            "Unknown error",
         };
 
         foreach (var culture in CubeLocalization.SupportedCultures)
