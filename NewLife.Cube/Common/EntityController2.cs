@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.IO.Compression;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
@@ -40,7 +40,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     private String ProcessDelete(TEntity entity)
     {
         // 假删除与恢复。首次删除标记假删除，假删除后再删除则是真正删除
-        var act = "删除";
+        var act = L.T("Delete");
         var fi = GetDeleteField();
         if (fi != null)
         {
@@ -51,7 +51,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                 entity.SetItem(fi.Name, true);
 
                 if (!Valid(entity, DataObjectMethodType.Update, true))
-                    throw new Exception("验证失败");
+                    throw new Exception(L.T("Validation failed."));
 
                 OnUpdate(entity);
             }
@@ -59,10 +59,10 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             else if (restore || !PageSetting.DoubleDelete)
             {
                 entity.SetItem(fi.Name, !restore);
-                if (restore) act = "恢复";
+                if (restore) act = L.T("Restore");
 
                 if (!Valid(entity, DataObjectMethodType.Update, true))
-                    throw new Exception("验证失败");
+                    throw new Exception(L.T("Validation failed."));
 
                 OnUpdate(entity);
             }
@@ -70,7 +70,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             else
             {
                 if (!Valid(entity, DataObjectMethodType.Delete, true))
-                    throw new Exception("验证失败");
+                    throw new Exception(L.T("Validation failed."));
 
                 OnDelete(entity);
             }
@@ -78,7 +78,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         else
         {
             if (!Valid(entity, DataObjectMethodType.Delete, true))
-                throw new Exception("验证失败");
+                throw new Exception(L.T("Validation failed."));
 
             OnDelete(entity);
         }

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using NewLife.Caching;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Common;
@@ -51,7 +51,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
                 return new ServiceResult<IToken>
                 {
                     IsSuccess = false,
-                    Message = "请输入图形验证码",
+                    Message = L.T("Please enter the captcha."),
                     CaptchaRequired = true,
                     CaptchaId = c.CaptchaId,
                     CaptchaImage = c.Image,
@@ -65,7 +65,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
                 return new ServiceResult<IToken>
                 {
                     IsSuccess = false,
-                    Message = "验证码错误或已过期，请重新输入",
+                    Message = L.T("Captcha is incorrect or has expired. Please try again."),
                     CaptchaRequired = true,
                     CaptchaId = c.CaptchaId,
                     CaptchaImage = c.Image,
@@ -85,12 +85,12 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         {
             case AuthCategory.Mobile://手机验证码登录
                 result = !ValidFormatHelper.IsMobile(loginModel.Username)
-                    ? new ServiceResult<IToken> { IsSuccess = false, Message = "手机号码格式不正确" }
+                    ? new ServiceResult<IToken> { IsSuccess = false, Message = L.T("Invalid mobile number format.") }
                     : LoginBySms(loginModel, httpContext);
                 break;
             case AuthCategory.Mail://邮箱验证码登录
                 result = !ValidFormatHelper.IsEmail(loginModel.Username)
-                    ? new ServiceResult<IToken> { IsSuccess = false, Message = "邮箱格式不正确" }
+                    ? new ServiceResult<IToken> { IsSuccess = false, Message = L.T("Invalid email format.") }
                     : LoginByMail(loginModel, httpContext);
                 break;
             case AuthCategory.OAuth:
@@ -113,9 +113,9 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         var ip = httpContext.GetUserHost();
         using var span = tracer?.NewSpan(nameof(LoginBySms), new { mobile, ip });
 
-        if (mobile.IsNullOrEmpty()) throw new ArgumentNullException(nameof(mobile), "手机号不能为空");
-        if (!ValidFormatHelper.IsMobile(mobile)) throw new XException("手机号格式不正确");
-        if (code.IsNullOrEmpty()) throw new ArgumentNullException(nameof(code), "验证码不能为空");
+        if (mobile.IsNullOrEmpty()) throw new ArgumentNullException(nameof(mobile), L.T("Mobile number is required."));
+        if (!ValidFormatHelper.IsMobile(mobile)) throw new XException("Invalid mobile number format.");
+        if (code.IsNullOrEmpty()) throw new ArgumentNullException(nameof(code), L.T("Verification code is required."));
 
         var key = $"{AuthCacheKeys.SmsLoginErrorPrefix}{mobile}";
         var errors = _cache.Get<Int32>(key);
@@ -134,19 +134,19 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         {
             // 错误次数检查
             if (errors >= set.MaxLoginError && set.MaxLoginError > 0)
-                throw new InvalidOperationException($"[{mobile}]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+                throw new InvalidOperationException(L.T("Too many verification attempts for [{0}]. Please try again in {1} seconds.", mobile, set.LoginForbiddenTime));
             if (ipErrors >= set.MaxLoginError && set.MaxLoginError > 0)
-                throw new InvalidOperationException($"IP地址[{ip}]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+                throw new InvalidOperationException(L.T("Too many verification attempts for IP address [{0}]. Please try again in {1} seconds.", ip, set.LoginForbiddenTime));
             if (!ip24Key.IsNullOrEmpty() && ip24Errors >= set.MaxLoginErrorBySubnet24 && set.MaxLoginErrorBySubnet24 > 0)
-                throw new InvalidOperationException($"IP段[{ip24}.*]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+                throw new InvalidOperationException(L.T("Too many verification attempts for IP range [{0}]. Please try again in {1} seconds.", ip24 + ".*", set.LoginForbiddenTime));
             if (!ip16Key.IsNullOrEmpty() && ip16Errors >= set.MaxLoginErrorBySubnet16 && set.MaxLoginErrorBySubnet16 > 0)
-                throw new InvalidOperationException($"IP段[{ip16}.*.*]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+                throw new InvalidOperationException(L.T("Too many verification attempts for IP range [{0}]. Please try again in {1} seconds.", ip16 + ".*.*", set.LoginForbiddenTime));
 
             // 校验验证码
             var codeKey = $"{AuthCacheKeys.SmsLoginCodePrefix}{mobile}";
             var cachedCode = _cache.Get<String>(codeKey);
-            if (cachedCode.IsNullOrEmpty()) throw new InvalidOperationException("验证码已过期，请重新获取");
-            if (!cachedCode.EqualIgnoreCase(code)) throw new InvalidOperationException("验证码错误");
+            if (cachedCode.IsNullOrEmpty()) throw new InvalidOperationException(L.T("Verification code has expired. Please request a new one."));
+            if (!cachedCode.EqualIgnoreCase(code)) throw new InvalidOperationException(L.T("Incorrect verification code."));
 
             // 验证通过，移除验证码缓存
             _cache.Remove(codeKey);
@@ -156,7 +156,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
             if (user == null)
             {
                 // 自动注册
-                if (!set.AutoRegister) throw new InvalidOperationException("用户不存在，且未开启自动注册");
+                if (!set.AutoRegister) throw new InvalidOperationException(L.T("User does not exist and auto-registration is disabled."));
 
                 user = new User
                 {
@@ -181,7 +181,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
                 LogProvider.Provider.WriteLog(typeof(User), "短信注册", true, $"手机号：{mobile} 自动注册", user.ID, user + "", ip);
             }
 
-            if (!user.Enable) throw new InvalidOperationException("用户已禁用");
+            if (!user.Enable) throw new InvalidOperationException(L.T("User is disabled."));
 
             // 验证通过，执行登录
             var provider = ManageProvider.Provider;
@@ -210,9 +210,9 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         var ip = httpContext.GetUserHost();
         using var span = tracer?.NewSpan(nameof(LoginByMail), new { mail, ip });
 
-        if (mail.IsNullOrEmpty()) throw new ArgumentNullException(nameof(mail), "邮箱不能为空");
-        if (!ValidFormatHelper.IsEmail(mail)) throw new XException("邮箱格式不正确");
-        if (code.IsNullOrEmpty()) throw new ArgumentNullException(nameof(code), "验证码不能为空");
+        if (mail.IsNullOrEmpty()) throw new ArgumentNullException(nameof(mail), L.T("Email is required."));
+        if (!ValidFormatHelper.IsEmail(mail)) throw new XException(L.T("Invalid email format."));
+        if (code.IsNullOrEmpty()) throw new ArgumentNullException(nameof(code), L.T("Verification code is required."));
 
         var key = $"{AuthCacheKeys.MailLoginErrorPrefix}{mail}";
         var errors = _cache.Get<Int32>(key);
@@ -231,19 +231,19 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         {
             // 错误次数检查
             if (errors >= set.MaxLoginError && set.MaxLoginError > 0)
-                throw new InvalidOperationException($"[{mail}]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+                throw new InvalidOperationException(L.T("Too many verification attempts for [{0}]. Please try again in {1} seconds.", mail, set.LoginForbiddenTime));
             if (ipErrors >= set.MaxLoginError && set.MaxLoginError > 0)
-                throw new InvalidOperationException($"IP地址[{ip}]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+                throw new InvalidOperationException(L.T("Too many verification attempts for IP address [{0}]. Please try again in {1} seconds.", ip, set.LoginForbiddenTime));
             if (!ip24Key.IsNullOrEmpty() && ip24Errors >= set.MaxLoginErrorBySubnet24 && set.MaxLoginErrorBySubnet24 > 0)
-                throw new InvalidOperationException($"IP段[{ip24}.*]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+                throw new InvalidOperationException(L.T("Too many verification attempts for IP range [{0}]. Please try again in {1} seconds.", ip24 + ".*", set.LoginForbiddenTime));
             if (!ip16Key.IsNullOrEmpty() && ip16Errors >= set.MaxLoginErrorBySubnet16 && set.MaxLoginErrorBySubnet16 > 0)
-                throw new InvalidOperationException($"IP段[{ip16}.*.*]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+                throw new InvalidOperationException(L.T("Too many verification attempts for IP range [{0}]. Please try again in {1} seconds.", ip16 + ".*.*", set.LoginForbiddenTime));
 
             // 校验验证码
             var codeKey = $"{AuthCacheKeys.MailLoginCodePrefix}{mail}";
             var cachedCode = _cache.Get<String>(codeKey);
-            if (cachedCode.IsNullOrEmpty()) throw new InvalidOperationException("验证码已过期，请重新获取");
-            if (!cachedCode.EqualIgnoreCase(code)) throw new InvalidOperationException("验证码错误");
+            if (cachedCode.IsNullOrEmpty()) throw new InvalidOperationException(L.T("Verification code has expired. Please request a new one."));
+            if (!cachedCode.EqualIgnoreCase(code)) throw new InvalidOperationException(L.T("Incorrect verification code."));
 
             // 验证通过，移除验证码缓存
             _cache.Remove(codeKey);
@@ -253,7 +253,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
             if (user == null)
             {
                 // 自动注册
-                if (!set.AutoRegister) throw new InvalidOperationException("用户不存在，且未开启自动注册");
+                if (!set.AutoRegister) throw new InvalidOperationException(L.T("User does not exist and auto-registration is disabled."));
 
                 user = new User
                 {
@@ -278,7 +278,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
                 LogProvider.Provider.WriteLog(typeof(User), "邮箱注册", true, $"邮箱：{mail} 自动注册", user.ID, user + "", ip);
             }
 
-            if (!user.Enable) throw new InvalidOperationException("用户已禁用");
+            if (!user.Enable) throw new InvalidOperationException(L.T("User is disabled."));
 
             // 验证通过，执行登录
             var provider = ManageProvider.Provider;
@@ -306,8 +306,8 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
     public async Task<ServiceResult<RegisterResult>> Register(AuthRegisterModel model, HttpContext httpContext)
     {
         var set = CubeSetting.Current;
-        if (!set.AllowRegister) return new ServiceResult<RegisterResult> { IsSuccess = false, Message = "禁止注册" };
-        if (model == null) return new ServiceResult<RegisterResult> { IsSuccess = false, Message = "注册参数不能为空" };
+        if (!set.AllowRegister) return new ServiceResult<RegisterResult> { IsSuccess = false, Message = L.T("Registration is disabled.") };
+        if (model == null) return new ServiceResult<RegisterResult> { IsSuccess = false, Message = L.T("Registration parameters are required.") };
 
         // 租户识别：优先X-App-Id（参考SSO登录按AppId查找OAuth配置取租户），其次X-Tenant租户编码；均未传时不强制，沿用原逻辑
         var tenantError = httpContext.ResolveRegisterTenant();
@@ -318,7 +318,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         if (_verifyCode.RequireCaptcha(2, regIp, model?.Username, AuthHelper.GetDeviceId(httpContext)))
         {
             if (!_verifyCode.ValidateCaptcha(model.CaptchaId, model.CaptchaCode))
-                return new ServiceResult<RegisterResult> { IsSuccess = false, Message = "验证码错误或已过期，请刷新后重试" };
+                return new ServiceResult<RegisterResult> { IsSuccess = false, Message = L.T("Captcha is incorrect or has expired. Please try again.") };
         }
 
         // 需要邮箱/手机验证：注册待激活（账号 Enable=false + 发送激活，不自动登录），激活后方可登录
@@ -370,21 +370,21 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
     private ServiceResult<IToken> RegisterByPhoneCode(AuthRegisterModel model, HttpContext httpContext, String ip)
     {
         var mobile = (model.Mobile ?? model.Username)?.Trim();
-        if (mobile.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = "手机号不能为空" };
-        if (!ValidFormatHelper.IsMobile(mobile)) return new ServiceResult<IToken> { IsSuccess = false, Message = "手机号格式不正确" };
-        if (model.Code.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码不能为空" };
+        if (mobile.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = L.T("Mobile number is required.") };
+        if (!ValidFormatHelper.IsMobile(mobile)) return new ServiceResult<IToken> { IsSuccess = false, Message = L.T("Invalid mobile number format.") };
+        if (model.Code.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = L.T("Verification code is required.") };
 
         // 密码可选：留空则生成随机密码（无法密码登录，仅验证码登录，登录后可再设置密码）
         var pwd = _userService.ResolveRegisterPassword(model);
         if (!pwd.IsSuccess) return new ServiceResult<IToken> { IsSuccess = false, Message = pwd.Message };
 
         var set = CubeSetting.Current;
-        if (!set.EnableSms) return new ServiceResult<IToken> { IsSuccess = false, Message = "短信验证码功能未启用" };
+        if (!set.EnableSms) return new ServiceResult<IToken> { IsSuccess = false, Message = L.T("SMS verification is not enabled.") };
 
         var codeKey = $"{AuthCacheKeys.SmsRegisterCodePrefix}{mobile}";
         var cachedCode = _cache.Get<String>(codeKey);
-        if (cachedCode.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码已过期或不存在，请重新获取" };
-        if (!cachedCode.EqualIgnoreCase(model.Code)) return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码错误" };
+        if (cachedCode.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = L.T("Verification code has expired or does not exist. Please request a new one.") };
+        if (!cachedCode.EqualIgnoreCase(model.Code)) return new ServiceResult<IToken> { IsSuccess = false, Message = L.T("Incorrect verification code.") };
 
         var username = model.Username?.Trim();
         if (username.IsNullOrEmpty()) username = mobile;
@@ -403,21 +403,21 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
     private ServiceResult<IToken> RegisterByMailCode(AuthRegisterModel model, HttpContext httpContext, String ip)
     {
         var mail = (model.Email ?? model.Username)?.Trim();
-        if (mail.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = "邮箱不能为空" };
-        if (!ValidFormatHelper.IsEmail(mail)) return new ServiceResult<IToken> { IsSuccess = false, Message = "邮箱格式不正确" };
-        if (model.Code.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码不能为空" };
+        if (mail.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = L.T("Email is required.") };
+        if (!ValidFormatHelper.IsEmail(mail)) return new ServiceResult<IToken> { IsSuccess = false, Message = L.T("Invalid email format.") };
+        if (model.Code.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = L.T("Verification code is required.") };
 
         // 密码可选：留空则生成随机密码（无法密码登录，仅验证码登录，登录后可再设置密码）
         var pwd = _userService.ResolveRegisterPassword(model);
         if (!pwd.IsSuccess) return new ServiceResult<IToken> { IsSuccess = false, Message = pwd.Message };
 
         var set = CubeSetting.Current;
-        if (!set.EnableMail) return new ServiceResult<IToken> { IsSuccess = false, Message = "邮件验证码功能未启用" };
+        if (!set.EnableMail) return new ServiceResult<IToken> { IsSuccess = false, Message = L.T("Email verification is not enabled.") };
 
         var codeKey = $"{AuthCacheKeys.MailRegisterCodePrefix}{mail}";
         var cachedCode = _cache.Get<String>(codeKey);
-        if (cachedCode.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码已过期或不存在，请重新获取" };
-        if (!cachedCode.EqualIgnoreCase(model.Code)) return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码错误" };
+        if (cachedCode.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = L.T("Verification code has expired or does not exist. Please request a new one.") };
+        if (!cachedCode.EqualIgnoreCase(model.Code)) return new ServiceResult<IToken> { IsSuccess = false, Message = L.T("Incorrect verification code.") };
 
         var username = model.Username?.Trim();
         if (username.IsNullOrEmpty()) username = mail;
@@ -447,13 +447,13 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
 
         // 1. 公共参数校验
         if (account.IsNullOrEmpty())
-            return new ServiceResult { IsSuccess = false, Message = "手机号或邮箱不能为空" };
+            return new ServiceResult { IsSuccess = false, Message = L.T("Mobile number or email is required.") };
 
         if (code.IsNullOrEmpty())
-            return new ServiceResult { IsSuccess = false, Message = "验证码不能为空" };
+            return new ServiceResult { IsSuccess = false, Message = L.T("Verification code is required.") };
 
         if (currentUser == null || currentUser.ID <= 0)
-            return new ServiceResult { IsSuccess = false, Message = "用户未登录，请先登录" };
+            return new ServiceResult { IsSuccess = false, Message = L.T("Please sign in first.") };
 
         // 2. 根据账号类型分发到具体处理方法
         if (ValidFormatHelper.IsEmail(account))
@@ -462,36 +462,36 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         if (ValidFormatHelper.IsMobile(account))
             return BindBySmsCode(account, code, currentUser, ip);
 
-        return new ServiceResult { IsSuccess = false, Message = "请输入正确的手机号或邮箱" };
+        return new ServiceResult { IsSuccess = false, Message = L.T("Please enter a valid mobile number or email.") };
     }
 
     /// <summary>通过短信验证码绑定手机号</summary>
     private ServiceResult BindBySmsCode(String mobile, String code, IUser currentUser, String ip)
     {
         var set = CubeSetting.Current;
-        if (!set.EnableSms) return new ServiceResult { IsSuccess = false, Message = "短信验证码功能未启用" };
+        if (!set.EnableSms) return new ServiceResult { IsSuccess = false, Message = L.T("SMS verification is not enabled.") };
 
         // 验证验证码
         var codeKey = $"{AuthCacheKeys.SmsBindCodePrefix}{mobile}";
         var cachedCode = _cache.Get<String>(codeKey);
-        if (cachedCode.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "验证码已过期或不存在，请重新获取" };
-        if (!cachedCode.EqualIgnoreCase(code)) return new ServiceResult { IsSuccess = false, Message = "验证码错误" };
+        if (cachedCode.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = L.T("Verification code has expired or does not exist. Please request a new one.") };
+        if (!cachedCode.EqualIgnoreCase(code)) return new ServiceResult { IsSuccess = false, Message = L.T("Incorrect verification code.") };
 
         // 检查手机号是否已被其他用户绑定
         var existingUser = User.FindByMobile(mobile);
         if (existingUser != null && existingUser.ID > 0 && existingUser.ID != currentUser.ID)
-            return new ServiceResult { IsSuccess = false, Message = "该手机号已被其他账户绑定" };
+            return new ServiceResult { IsSuccess = false, Message = L.T("This mobile number is already bound to another account.") };
 
         // 绑定到当前用户
         var user = User.FindByID(currentUser.ID);
-        if (user == null) return new ServiceResult { IsSuccess = false, Message = "用户不存在" };
+        if (user == null) return new ServiceResult { IsSuccess = false, Message = L.T("User does not exist.") };
 
         if (user.Mobile != mobile)
         {
             user.Mobile = mobile;
             user.MobileVerified = true;
             var updated = user.Update();
-            if (updated <= 0) return new ServiceResult { IsSuccess = false, Message = "绑定失败，请重试" };
+            if (updated <= 0) return new ServiceResult { IsSuccess = false, Message = L.T("Binding failed. Please try again.") };
         }
 
         // 验证成功后删除缓存验证码，防止重复使用
@@ -499,36 +499,36 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
 
         LogProvider.Provider.WriteLog(typeof(User), "绑定手机", true, $"手机号：{mobile}", currentUser.ID, currentUser + "", ip);
 
-        return new ServiceResult { IsSuccess = true, Message = "手机号绑定成功" };
+        return new ServiceResult { IsSuccess = true, Message = L.T("Mobile number bound successfully.") };
     }
 
     /// <summary>通过邮件验证码绑定邮箱</summary>
     private ServiceResult BindByMailCode(String mail, String code, IUser currentUser, String ip)
     {
         var set = CubeSetting.Current;
-        if (!set.EnableMail) return new ServiceResult { IsSuccess = false, Message = "邮件验证码功能未启用" };
+        if (!set.EnableMail) return new ServiceResult { IsSuccess = false, Message = L.T("Email verification is not enabled.") };
 
         // 验证验证码
         var codeKey = $"{AuthCacheKeys.MailBindCodePrefix}{mail}";
         var cachedCode = _cache.Get<String>(codeKey);
-        if (cachedCode.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "验证码已过期或不存在，请重新获取" };
-        if (!cachedCode.EqualIgnoreCase(code)) return new ServiceResult { IsSuccess = false, Message = "验证码错误" };
+        if (cachedCode.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = L.T("Verification code has expired or does not exist. Please request a new one.") };
+        if (!cachedCode.EqualIgnoreCase(code)) return new ServiceResult { IsSuccess = false, Message = L.T("Incorrect verification code.") };
 
         // 检查邮箱是否已被其他用户绑定
         var existingUser = User.FindByMail(mail);
         if (existingUser != null && existingUser.ID > 0 && existingUser.ID != currentUser.ID)
-            return new ServiceResult { IsSuccess = false, Message = "该邮箱已被其他账户绑定" };
+            return new ServiceResult { IsSuccess = false, Message = L.T("This email is already bound to another account.") };
 
         // 绑定到当前用户
         var user = User.FindByID(currentUser.ID);
-        if (user == null) return new ServiceResult { IsSuccess = false, Message = "用户不存在" };
+        if (user == null) return new ServiceResult { IsSuccess = false, Message = L.T("User does not exist.") };
 
         if (user.Mail != mail)
         {
             user.Mail = mail;
             user.MailVerified = true;
             var updated = user.Update();
-            if (updated <= 0) return new ServiceResult { IsSuccess = false, Message = "绑定失败，请重试" };
+            if (updated <= 0) return new ServiceResult { IsSuccess = false, Message = L.T("Binding failed. Please try again.") };
         }
 
         // 验证成功后删除缓存验证码，防止重复使用
@@ -536,7 +536,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
 
         LogProvider.Provider.WriteLog(typeof(User), "绑定邮箱", true, $"邮箱：{mail}", currentUser.ID, currentUser + "", ip);
 
-        return new ServiceResult { IsSuccess = true, Message = "邮箱绑定成功" };
+        return new ServiceResult { IsSuccess = true, Message = L.T("Email bound successfully.") };
     }
     #endregion
 
@@ -554,14 +554,14 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         using var span = tracer?.NewSpan(nameof(ResetPassword), new { account, ip });
 
         // 1. 公共参数校验
-        if (account.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "手机号或邮箱不能为空" };
-        if (code.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "验证码不能为空" };
-        if (newPassword.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "新密码不能为空" };
+        if (account.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = L.T("Mobile number or email is required.") };
+        if (code.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = L.T("Verification code is required.") };
+        if (newPassword.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = L.T("New password is required.") };
 
         var set = CubeSetting.Current;
         // 安全重置检查：若禁止明文密码且未携带挑战标识，则拒绝
         if (challengeId.IsNullOrEmpty() && !set.AllowPlainPassword)
-            return new ServiceResult { IsSuccess = false, Message = "禁止明文传输密码，请先获取公钥加密" };
+            return new ServiceResult { IsSuccess = false, Message = L.T("Plain-text password transmission is not allowed. Please obtain the public key and encrypt first.") };
 
         // 挑战解密：携带 challengeId 时必须能取到私钥；取不到（过期/伪造）时明确报错，禁止把密文当作明文新密码继续落库
         if (!challengeId.IsNullOrEmpty())
@@ -569,7 +569,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
             var pdic = _cache.Get<Tuple<String, String>>(challengeId);
             var rsaKey = pdic?.Item2;
             if (rsaKey.IsNullOrEmpty())
-                return new ServiceResult { IsSuccess = false, Message = "登录挑战已过期或无效，请重新获取公钥后重试" };
+                return new ServiceResult { IsSuccess = false, Message = L.T("The login challenge has expired or is invalid. Please obtain the public key again and retry.") };
 
             newPassword = UserService.DecryptByPrivateKey(rsaKey, newPassword);
             if (!confirmPassword.IsNullOrEmpty())
@@ -580,8 +580,8 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         }
 
         if (!confirmPassword.IsNullOrEmpty() && newPassword != confirmPassword)
-            return new ServiceResult { IsSuccess = false, Message = "两次输入密码不一致" };
-        if (!_passwordService.Valid(newPassword)) return new ServiceResult { IsSuccess = false, Message = "密码太弱" };
+            return new ServiceResult { IsSuccess = false, Message = L.T("The two passwords do not match.") };
+        if (!_passwordService.Valid(newPassword)) return new ServiceResult { IsSuccess = false, Message = L.T("Password is too weak.") };
 
         // 2. 根据账号类型分发到具体处理方法
         if (ValidFormatHelper.IsEmail(account))
@@ -590,32 +590,32 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         if (ValidFormatHelper.IsMobile(account))
             return ResetBySmsCode(account, code, newPassword, ip);
 
-        return new ServiceResult { IsSuccess = false, Message = "请输入正确的手机号或邮箱" };
+        return new ServiceResult { IsSuccess = false, Message = L.T("Please enter a valid mobile number or email.") };
     }
 
     /// <summary>通过短信验证码重置密码</summary>
     private ServiceResult ResetBySmsCode(String mobile, String code, String newPassword, String ip)
     {
         var set = CubeSetting.Current;
-        if (!set.EnableSms) return new ServiceResult { IsSuccess = false, Message = "短信验证码功能未启用" };
+        if (!set.EnableSms) return new ServiceResult { IsSuccess = false, Message = L.T("SMS verification is not enabled.") };
 
         // 验证验证码
         var codeKey = $"{AuthCacheKeys.SmsResetCodePrefix}{mobile}";
         var cachedCode = _cache.Get<String>(codeKey);
-        if (cachedCode.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "验证码已过期或不存在，请重新获取" };
-        if (!cachedCode.EqualIgnoreCase(code)) return new ServiceResult { IsSuccess = false, Message = "验证码错误" };
+        if (cachedCode.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = L.T("Verification code has expired or does not exist. Please request a new one.") };
+        if (!cachedCode.EqualIgnoreCase(code)) return new ServiceResult { IsSuccess = false, Message = L.T("Incorrect verification code.") };
 
         // 查找用户并更新密码
         var user = User.FindByMobile(mobile);
         if (user == null || user.ID <= 0)
-            return new ServiceResult { IsSuccess = false, Message = "该手机号未注册" };
+            return new ServiceResult { IsSuccess = false, Message = L.T("This mobile number is not registered.") };
 
         var newPassHash = ManageProvider.Provider.PasswordProvider.Hash(newPassword);
         if (user.Password != newPassHash)
         {
             user.Password = newPassHash;
             var updated = user.Update();
-            if (updated <= 0) return new ServiceResult { IsSuccess = false, Message = "密码重置失败，请重试" };
+            if (updated <= 0) return new ServiceResult { IsSuccess = false, Message = L.T("Password reset failed. Please try again.") };
         }
 
         // 验证成功后删除缓存验证码，防止重复使用
@@ -623,32 +623,32 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
 
         LogProvider.Provider.WriteLog(typeof(User), "重置密码", true, $"手机号：{mobile}", user.ID, user + "", ip);
 
-        return new ServiceResult { IsSuccess = true, Message = "密码重置成功" };
+        return new ServiceResult { IsSuccess = true, Message = L.T("Password reset succeeded.") };
     }
 
     /// <summary>通过邮件验证码重置密码</summary>
     private ServiceResult ResetByMailCode(String mail, String code, String newPassword, String ip)
     {
         var set = CubeSetting.Current;
-        if (!set.EnableMail) return new ServiceResult { IsSuccess = false, Message = "邮件验证码功能未启用" };
+        if (!set.EnableMail) return new ServiceResult { IsSuccess = false, Message = L.T("Email verification is not enabled.") };
 
         // 验证验证码
         var codeKey = $"{AuthCacheKeys.MailResetCodePrefix}{mail}";
         var cachedCode = _cache.Get<String>(codeKey);
-        if (cachedCode.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "验证码已过期或不存在，请重新获取" };
-        if (!cachedCode.EqualIgnoreCase(code)) return new ServiceResult { IsSuccess = false, Message = "验证码错误" };
+        if (cachedCode.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = L.T("Verification code has expired or does not exist. Please request a new one.") };
+        if (!cachedCode.EqualIgnoreCase(code)) return new ServiceResult { IsSuccess = false, Message = L.T("Incorrect verification code.") };
 
         // 查找用户并更新密码
         var user = User.FindByMail(mail);
         if (user == null || user.ID <= 0)
-            return new ServiceResult { IsSuccess = false, Message = "该邮箱未注册" };
+            return new ServiceResult { IsSuccess = false, Message = L.T("This email is not registered.") };
 
         var newPassHash = ManageProvider.Provider.PasswordProvider.Hash(newPassword);
         if (user.Password != newPassHash)
         {
             user.Password = newPassHash;
             var updated = user.Update();
-            if (updated <= 0) return new ServiceResult { IsSuccess = false, Message = "密码重置失败，请重试" };
+            if (updated <= 0) return new ServiceResult { IsSuccess = false, Message = L.T("Password reset failed. Please try again.") };
         }
 
         // 验证成功后删除缓存验证码，防止重复使用
@@ -656,7 +656,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
 
         LogProvider.Provider.WriteLog(typeof(User), "重置密码", true, $"邮箱：{mail}", user.ID, user + "", ip);
 
-        return new ServiceResult { IsSuccess = true, Message = "密码重置成功" };
+        return new ServiceResult { IsSuccess = true, Message = L.T("Password reset succeeded.") };
     }
     #endregion
 }

@@ -77,6 +77,9 @@ public static class CubeService
         var set = CubeSetting.Current;
         services.AddSingleton(set);
 
+        // 请求级多语言：?lang= / Cookie / Accept-Language，缺省跟随系统
+        services.AddCubeLocalization();
+
         // 租户上下文。封装静态 AsyncLocal 的无状态门面，注册为 Singleton 以避免被 Singleton 服务（如 UserService）捕获 scoped 依赖；租户状态本身由 AsyncLocal 按请求隔离
         services.AddSingleton<ITenantContext, TenantContextService>();
 
@@ -325,6 +328,9 @@ public static class CubeService
 
         // 配置静态Http上下文访问器
         app.UseStaticHttpContext();
+
+        // 请求级语言识别，必须早于任何产生用户可见消息的中间件
+        app.UseCubeLocalization();
 
         // 注册中间件
 

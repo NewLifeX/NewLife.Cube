@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO.Compression;
@@ -133,9 +133,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         // 导致传统前端 /Detail?id=xxx 因路由取不到 id 直接报 “The id field is required.”（与 MenuTree/Info 同类）。
         // 设默认值后走下方 query 兜底，RESTful 路径风格不受影响。
         if (id.IsNullOrEmpty()) id = Request.Query["id"].ToString();
-        if (id.IsNullOrEmpty()) throw new XException("缺少主键参数！");
+        if (id.IsNullOrEmpty()) throw new XException("Missing primary key.");
         var entity = FindData(id);
-        if (entity == null || (entity as IEntity).IsNullKey) throw new XException("要查看的数据[{0}]不存在！", id);
+        if (entity == null || (entity as IEntity).IsNullKey) throw new XException("The requested data [{0}] does not exist.", id);
 
         // 验证数据权限
         Valid(entity, DataObjectMethodType.Select, false);
@@ -324,7 +324,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             "json" => OnExportJson(),
             "xml" => OnExportXml(),
             "zip" => OnExportZip(),
-            _ => throw new ArgumentOutOfRangeException(nameof(format), $"不支持的导出格式：{format}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(format), L.T("Unsupported export format: {0}", format)),
         };
     }
 
@@ -591,10 +591,10 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     [HttpGet("Develop")]
     public virtual async Task<ActionResult> Develop(String act)
     {
-        if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
+        if (!SysConfig.Current.Develop) throw new InvalidOperationException(L.T("Only available in development mode."));
 
         var user = CurrentUser as IUser ?? ManageProvider.User;
-        if (user == null || !user.Roles.Any(e => e.IsSystem)) throw new InvalidOperationException("仅支持系统管理员使用！");
+        if (user == null || !user.Roles.Any(e => e.IsSystem)) throw new InvalidOperationException(L.T("Only available to system administrators."));
 
         return act switch
         {
@@ -602,7 +602,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             "BackupAndExport" => await BackupAndExport(),
             "Restore" => Restore(),
             "Clear" => Clear(),
-            _ => throw new NotSupportedException($"未支持[{act}]"),
+            _ => throw new NotSupportedException(L.T("Unsupported operation [{0}]", act)),
         };
     }
 
@@ -613,7 +613,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     {
         // 排除 act 参数后，若还有其它查询参数，禁止全表清空（对齐 MVC：page.Params.Count > 0 拒绝）
         if (WebHelper.Params.Keys.Any(e => !e.EqualIgnoreCase("act")))
-            throw new InvalidOperationException("当前带有查询参数，为免误解，禁止全表清空！");
+            throw new InvalidOperationException(L.T("Query parameters are present; clearing the whole table is not allowed."));
 
         try
         {
@@ -621,7 +621,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
             WriteLog("清空数据", true, $"共删除{count}行数据");
 
-            return Json(0, $"共删除{count}行数据");
+            return Json(0, L.T("Deleted {0} rows.", count));
         }
         catch (Exception ex)
         {
@@ -642,7 +642,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
             var fact = Factory;
             if (fact.Session.Count > set.MaxBackup)
-                throw new XException($"数据量[{fact.Session.Count:n0}>{set.MaxBackup:n0}]，禁止备份！");
+                throw new XException("Data count [{0:n0}] exceeds the backup limit [{1:n0}]; backup is not allowed.", fact.Session.Count, set.MaxBackup);
 
             var dal = fact.Session.Dal;
 
@@ -677,9 +677,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
                 }
             }, TaskCreationOptions.LongRunning);
             if (task.Wait(5_000))
-                return Json(0, $"备份[{fileName}]（{task.Result:n0}行）成功！");
+                return Json(0, L.T("Backup [{0}] ({1:n0} rows) succeeded.", fileName, task.Result));
             else
-                return Json(0, $"备份[{fileName}]后台执行中……");
+                return Json(0, L.T("Backup [{0}] is running in the background...", fileName));
         }
         catch (Exception ex)
         {
@@ -701,7 +701,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
         var fact = Factory;
         if (fact.Session.Count > set.MaxBackup)
-            throw new XException($"数据量[{fact.Session.Count:n0}>{set.MaxBackup:n0}]，禁止备份！");
+            throw new XException("Data count [{0:n0}] exceeds the backup limit [{1:n0}]; backup is not allowed.", fact.Session.Count, set.MaxBackup);
 
         var dal = fact.Session.Dal;
 
@@ -754,7 +754,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
             var di = NewLife.Setting.Current.BackupPath.GetBasePath().AsDirectory();
             var fi = di?.GetFiles(fileName)?.OrderByDescending(e => e.Name).FirstOrDefault();
-            if (fi == null || !fi.Exists) throw new XException($"找不到[{fileName}]的备份文件");
+            if (fi == null || !fi.Exists) throw new XException("Backup file [{0}] not found.", fileName);
 
             // 异步执行恢复，阻塞等待一点时间，避免前端超时。
             var task = Task.Factory.StartNew(() =>
@@ -779,9 +779,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             }, TaskCreationOptions.LongRunning);
 
             if (task.Wait(5_000))
-                return Json(0, $"恢复[{fileName}]（{task.Result:n0}行）成功！");
+                return Json(0, L.T("Restore [{0}] ({1:n0} rows) succeeded.", fileName, task.Result));
             else
-                return Json(0, $"恢复[{fileName}]后台执行中……");
+                return Json(0, L.T("Restore [{0}] is running in the background...", fileName));
         }
         catch (Exception ex)
         {

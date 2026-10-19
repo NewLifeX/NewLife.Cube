@@ -12,12 +12,12 @@ public static partial class ApiResponseHelper
     /// <param name="data">Data部分</param>
     /// <param name="successMessage">成功信息</param>
     /// <returns></returns>
-    public static ApiResponse<T> ToOkApiResponse<T>(this T data, String successMessage = "操作成功")
+    public static ApiResponse<T> ToOkApiResponse<T>(this T data, String? successMessage = null)
     {
         return new ApiResponse<T>
         {
             Code = CubeCode.Ok.ToInt(),
-            Message = successMessage,
+            Message = successMessage ?? L.T("Operation succeeded"),
             Data = data,
             TraceId = DefaultSpan.Current?.TraceId,
         };
@@ -67,26 +67,26 @@ public static partial class ApiResponseHelper
 
     /// <summary>请求参数错误</summary>
     public static ApiResponse<T> ToParaApiResponse<T>(this T data, String paraName,
-         String defaultTip = @"请求参数错误")
+         String? defaultTip = null)
     {
-        var msg = defaultTip;
+        var msg = defaultTip ?? L.T("Invalid request parameter");
         if (!String.IsNullOrWhiteSpace(paraName)) msg = $"{defaultTip}:{paraName}";
         return ToFailApiResponse(data, CubeCode.ParamError, msg);
     }
     /// <summary>内部错误</summary>
     public static ApiResponse<T> ToRemotingErrorApiResponse<T>(this T data, String errorMessage) => ToFailApiResponse(data, CubeCode.RemotingError, errorMessage);
     /// <returns>强制登出</returns>
-    public static ApiResponse<T> ToLogOffApiResponse<T>(this T data, String message = "请重新登录") => ToFailApiResponse(data, CubeCode.LogOff, message);
+    public static ApiResponse<T> ToLogOffApiResponse<T>(this T data, String? message = null) => ToFailApiResponse(data, CubeCode.LogOff, message ?? L.T("Please sign in again"));
     /// <summary>内部错误</summary>
     public static ApiResponse<T> ToErrorApiResponse<T>(this T data, String errorMessage) => ToFailApiResponse(data, CubeCode.Exception, errorMessage);
 
     /// <summary>成功返回列表（带分页信息）。Data=IList&lt;T&gt;，Page=PageModel。</summary>
-    public static ApiListResponse<T> ToOkListApiResponse<T>(this IList<T> data, PageModel page, String successMessage = "操作成功")
+    public static ApiListResponse<T> ToOkListApiResponse<T>(this IList<T> data, PageModel page, String? successMessage = null)
     {
         return new ApiListResponse<T>
         {
             Code = CubeCode.Ok.ToInt(),
-            Message = successMessage,
+            Message = successMessage ?? L.T("Operation succeeded"),
             Data = data,
             Page = page,
             TraceId = DefaultSpan.Current?.TraceId,
@@ -94,12 +94,12 @@ public static partial class ApiResponseHelper
     }
 
     /// <summary>成功返回列表（带分页信息+统计行）。Data=IList&lt;T&gt;，Page=PageModel，Stat=统计行。</summary>
-    public static ApiListResponse<T> ToOkListApiResponse<T>(this IList<T> data, PageModel page, T stat, String successMessage = "操作成功")
+    public static ApiListResponse<T> ToOkListApiResponse<T>(this IList<T> data, PageModel page, T stat, String? successMessage = null)
     {
         return new ApiListResponse<T>
         {
             Code = CubeCode.Ok.ToInt(),
-            Message = successMessage,
+            Message = successMessage ?? L.T("Operation succeeded"),
             Data = data,
             Page = page,
             Stat = stat,

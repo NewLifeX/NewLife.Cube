@@ -48,6 +48,11 @@ public class CubeSetting : Config<CubeSetting>
     [Category("通用")]
     public Boolean ShowRunTime { get; set; } = true;
 
+    /// <summary>默认语言。例如 zh-CN、zh-TW、en-US，留空跟随浏览器/系统</summary>
+    [Description("默认语言。例如 zh-CN、zh-TW、en-US，留空跟随浏览器/系统")]
+    [Category("通用")]
+    public String Language { get; set; }
+
     /// <summary>头像目录。设定后下载远程头像到本地，默认Avatars子目录，web上一级Avatars。清空表示不抓取</summary>
     [Description("头像目录。设定后下载远程头像到本地，默认Avatars子目录，web上一级Avatars。清空表示不抓取")]
     [Category("通用")]

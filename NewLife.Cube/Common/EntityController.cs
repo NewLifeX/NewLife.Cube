@@ -24,12 +24,12 @@ public partial class EntityController<TEntity, TModel>
     [HttpDelete("/api/[area]/[controller]")]
     public virtual ApiResponse<TEntity> Delete([Required] String id)
     {
-        var act = "删除";
+        var act = L.T("Delete");
         var entity = FindData(id);
         try
         {
             act = ProcessDelete(entity);
-            return new ApiResponse<TEntity> { Code = 0, Message = $"{act}成功！", Data = entity };
+            return new ApiResponse<TEntity> { Code = 0, Message = L.T("{0} succeeded!", act), Data = entity };
         }
         catch (Exception ex)
         {
@@ -45,11 +45,11 @@ public partial class EntityController<TEntity, TModel>
     [HttpDelete("/api/[area]/[controller]/DeleteSelect")]
     public virtual ApiResponse<String> DeleteSelect([FromQuery] String[] id)
     {
-        var act = "删除";
+        var act = L.T("Delete");
         try
         {
             if (id == null || id.Length == 0)
-                throw new ApiException(Models.CubeCode.ParamError.ToInt(), "未指定要删除的数据！");
+                throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("No data specified for deletion."));
 
             var n = 0;
             foreach (var item in id)
@@ -66,7 +66,7 @@ public partial class EntityController<TEntity, TModel>
                 }
             }
 
-            return new ApiResponse<String> { Code = 0, Message = $"{act}成功！共{n}条", Data = n.ToString() };
+            return new ApiResponse<String> { Code = 0, Message = L.T("{0} succeeded! Total {1} rows", act, n), Data = n.ToString() };
         }
         catch (Exception ex)
         {
@@ -83,14 +83,14 @@ public partial class EntityController<TEntity, TModel>
     [HttpDelete("/api/[area]/[controller]/DeleteAll")]
     public virtual ApiResponse<String> DeleteAll()
     {
-        var act = "删除";
+        var act = L.T("Delete");
         try
         {
             var p = new Pager(WebHelper.Params);
             // 排除分页系统参数后若无业务搜索条件，拒绝删除
             var sys = new[] { "pageIndex", "pageSize", "sort", "desc" };
             if (!p.Params.Keys.Any(e => !e.EqualIgnoreCase(sys)))
-                throw new ApiException(Models.CubeCode.ParamError.ToInt(), "未指定删除条件，拒绝删除全部数据！");
+                throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("No delete condition specified; refusing to delete all data."));
 
             var list = SearchData(p).ToList();
             var n = 0;
@@ -100,7 +100,7 @@ public partial class EntityController<TEntity, TModel>
                 n++;
             }
 
-            return new ApiResponse<String> { Code = 0, Message = $"{act}成功！共{n}条", Data = n.ToString() };
+            return new ApiResponse<String> { Code = 0, Message = L.T("{0} succeeded! Total {1} rows", act, n), Data = n.ToString() };
         }
         catch (Exception ex)
         {
@@ -146,12 +146,12 @@ public partial class EntityController<TEntity, TModel>
     {
         // 检测避免乱用Add/id
         if (Factory.Unique.IsIdentity && entity[Factory.Unique.Name].ToInt() != 0)
-            throw new Exception("我们约定添加数据时路由id部分默认没有数据，以免模型绑定器错误识别！");
+            throw new Exception(L.T("Adding data must not include a route id."));
 
         try
         {
             if (!Valid(entity, DataObjectMethodType.Insert, true))
-                throw new Exception("验证失败");
+                throw new Exception(L.T("Validation failed."));
 
             // 基于 Model.xml 元数据的字段级校验（必填、长度等），提前发现问题返回明确错误
             // 子类可通过 override EnableFieldValidation => false 关闭
@@ -165,7 +165,7 @@ public partial class EntityController<TEntity, TModel>
                     return new ApiResponse<TEntity>
                     {
                         Code = Models.CubeCode.ParamError.ToInt(),
-                        Message = SysConfig.Develop ? ($"添加失败！{firstMsg}") : "添加失败！",
+                        Message = SysConfig.Develop ? L.T("{0} {1}", L.T("Add failed!"), firstMsg) : L.T("Add failed!"),
                         Data = entity,
                         FieldErrors = fieldErrors
                     };
@@ -182,14 +182,14 @@ public partial class EntityController<TEntity, TModel>
 
             if (LogOnChange) LogProvider.Provider.WriteLog("Insert", entity);
 
-            return new ApiResponse<TEntity> { Code = 0, Message = "添加成功！", Data = entity };
+            return new ApiResponse<TEntity> { Code = 0, Message = L.T("Add succeeded!"), Data = entity };
         }
         catch (Exception ex)
         {
             // 添加失败，ID清零，否则会显示保存按钮
             entity[Factory.Unique.Name] = 0;
 
-            return BuildFailResponse(ex, "添加", entity);
+            return BuildFailResponse(ex, L.T("Add"), entity);
         }
     }
 
@@ -219,7 +219,7 @@ public partial class EntityController<TEntity, TModel>
         }
         catch (Exception ex)
         {
-            return BuildFailResponse(ex, "保存", entity);
+            return BuildFailResponse(ex, L.T("Save"), entity);
         }
 
         return await ProcessUpdate(entity);
@@ -234,7 +234,7 @@ public partial class EntityController<TEntity, TModel>
         try
         {
             if (!Valid(entity, DataObjectMethodType.Update, true))
-                throw new Exception("验证失败");
+                throw new Exception(L.T("Validation failed."));
 
             // 基于 Model.xml 元数据的字段级校验（必填、长度等），提前发现问题返回明确错误
             // 子类可通过 override EnableFieldValidation => false 关闭
@@ -248,7 +248,7 @@ public partial class EntityController<TEntity, TModel>
                     return new ApiResponse<TEntity>
                     {
                         Code = Models.CubeCode.ParamError.ToInt(),
-                        Message = SysConfig.Develop ? ($"保存失败！{firstMsg}") : "保存失败！",
+                        Message = SysConfig.Develop ? L.T("{0} {1}", L.T("Save failed!"), firstMsg) : L.T("Save failed!"),
                         Data = null,
                         FieldErrors = fieldErrors
                     };
@@ -261,14 +261,14 @@ public partial class EntityController<TEntity, TModel>
 
             OnUpdate(entity);
 
-            return new ApiResponse<TEntity> { Code = 0, Message = "保存成功！", Data = entity };
+            return new ApiResponse<TEntity> { Code = 0, Message = L.T("Save succeeded!"), Data = entity };
         }
         catch (Exception ex)
         {
             // 保留 ModelState 以兼容 MVC 视图场景
             ModelState.AddModelError((ex as ArgumentException)?.ParamName ?? "", ex.Message);
 
-            return BuildFailResponse(ex, "保存", null);
+            return BuildFailResponse(ex, L.T("Save"), null);
         }
     }
     #endregion
@@ -309,7 +309,7 @@ public partial class EntityController<TEntity, TModel>
                     errors.Add(new FieldError
                     {
                         Field = df.Name,
-                        Message = $"{displayName}不可以为空！"
+                        Message = L.T("{0} is required.", displayName)
                     });
                     continue; // 必填不通过则跳过后续长度检查
                 }
@@ -321,7 +321,7 @@ public partial class EntityController<TEntity, TModel>
                 errors.Add(new FieldError
                 {
                     Field = df.Name,
-                    Message = $"{displayName}长度不能超过{df.Length}个字符！"
+                    Message = L.T("{0} must not exceed {1} characters.", displayName, df.Length)
                 });
             }
         }
@@ -386,9 +386,9 @@ public partial class EntityController<TEntity, TModel>
 
         // 如果有字段级错误，使用第一条作为主消息提示
         if (fieldErrors != null && fieldErrors.Count > 0)
-            err = SysConfig.Develop ? ($"{action}失败！{fieldErrors[0].Message}") : $"{action}失败！";
+            err = SysConfig.Develop ? L.T("{0} {1}", L.T("{0} failed!", action), fieldErrors[0].Message) : L.T("{0} failed!", action);
         else
-            err = SysConfig.Develop ? ($"{action}失败！{err}") : $"{action}失败！";
+            err = SysConfig.Develop ? L.T("{0} {1}", L.T("{0} failed!", action), err) : L.T("{0} failed!", action);
 
         var code = ex is ApiException ae ? ae.Code : 500;
         return new ApiResponse<TEntity>

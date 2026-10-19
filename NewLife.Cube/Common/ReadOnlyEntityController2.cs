@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Reflection;
 using NewLife.AI.Models;
 using NewLife.Collections;
@@ -221,7 +221,7 @@ public partial class ReadOnlyEntityController<TEntity>
         {
             // 数据权限
             var builder = CreateWhere();
-            if (builder != null && !builder.Eval(entity)) throw new InvalidOperationException($"非法访问数据[{key}]");
+            if (builder != null && !builder.Eval(entity)) throw new InvalidOperationException(L.T("Illegal data access [{0}]", key));
         }
 
         return entity;
@@ -254,7 +254,7 @@ public partial class ReadOnlyEntityController<TEntity>
                 if (set.TenantQueryPolicy == TenantQueryPolicies.ThrowOnMissingTenant)
                 {
                     // 对外 API 可配置为显式抛错，而不是"假空数据"（P2-7）
-                    throw new NoPermissionException(PermissionFlags.None, $"缺少租户上下文，禁止查询{typeof(TEntity).Name}");
+                    throw new NoPermissionException(PermissionFlags.None, L.T("Tenant context is missing; querying {0} is not allowed.", typeof(TEntity).Name));
                 }
                 else
                 {
@@ -578,10 +578,10 @@ public partial class ReadOnlyEntityController<TEntity>
         {
             switch (type)
             {
-                case DataObjectMethodType.Select: throw new NoPermissionException(PermissionFlags.Detail, "无权查看数据");
-                case DataObjectMethodType.Update: throw new NoPermissionException(PermissionFlags.Update, "无权更新数据");
-                case DataObjectMethodType.Insert: throw new NoPermissionException(PermissionFlags.Insert, "无权新增数据");
-                case DataObjectMethodType.Delete: throw new NoPermissionException(PermissionFlags.Delete, "无权删除数据");
+                case DataObjectMethodType.Select: throw new NoPermissionException(PermissionFlags.Detail, L.T("No permission to view data."));
+                case DataObjectMethodType.Update: throw new NoPermissionException(PermissionFlags.Update, L.T("No permission to update data."));
+                case DataObjectMethodType.Insert: throw new NoPermissionException(PermissionFlags.Insert, L.T("No permission to insert data."));
+                case DataObjectMethodType.Delete: throw new NoPermissionException(PermissionFlags.Delete, L.T("No permission to delete data."));
             }
         }
 
@@ -616,7 +616,7 @@ public partial class ReadOnlyEntityController<TEntity>
                     case DataObjectMethodType.Delete:
                         // 修改/删除校验归属，防止跨租户操作
                         if (entityTenantId != tenantId)
-                            throw new NoPermissionException(PermissionFlags.None, $"无权操作其它租户的数据[{entityTenantId}]");
+                            throw new NoPermissionException(PermissionFlags.None, L.T("No permission to operate on data of another tenant [{0}]", entityTenantId));
                         break;
                 }
             }

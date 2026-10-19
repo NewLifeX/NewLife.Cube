@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Caching;
@@ -47,9 +47,9 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
     {
         var res = new LoginTokenModel();
         if (String.IsNullOrWhiteSpace(model.Username))
-            return res.ToFailApiResponse("用户名不能为空");
+            return res.ToFailApiResponse(L.T("Username is required."));
         if (String.IsNullOrWhiteSpace(model.Password))
-            return res.ToFailApiResponse("密码不能为空");
+            return res.ToFailApiResponse(L.T("Password is required."));
 
         try
         {
@@ -73,7 +73,7 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
 
             res.AccessToken = loginResult.Data.AccessToken;
             res.RefreshToken = loginResult.Data.RefreshToken;
-            return res.ToOkApiResponse("登录成功");
+            return res.ToOkApiResponse(L.T("Login succeeded."));
         }
         catch (Exception ex)
         {
@@ -92,11 +92,11 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
         {
             var ip = UserHost;
             var result = await verifyCode.SendVerifyCode(model, ip);
-            return result.Id.ToOkApiResponse("验证码已发送");
+            return result.Id.ToOkApiResponse(L.T("Verification code sent."));
         }
         catch (Exception ex)
         {
-            return 0L.ToRemotingErrorApiResponse("发送失败：" + ex.Message);
+            return 0L.ToRemotingErrorApiResponse(L.T("Send failed: {0}", ex.Message));
         }
     }
 
@@ -113,7 +113,7 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
         // 令牌轮换：旧令牌使用后加入黑名单，防止同一刷新令牌被重复使用（重放攻击/令牌泄漏检测）
         var blacklistKey = $"RefreshBlacklist:{refreshToken?.GetHashCode()}";
         if (!refreshToken.IsNullOrEmpty() && _cache.ContainsKey(blacklistKey))
-            return Json(-1, "refresh_token 已失效，请重新登录");
+            return Json(-1, L.T("refresh_token has expired; please sign in again."));
 
         var user = ManageProvider.Provider.FindByName(userName);
         var tokens = HttpContext.RefreshToken(user, refreshToken);
@@ -177,10 +177,10 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
     [Menu(0, false, Mode = MenuModes.Admin | MenuModes.Tenant)]
     public ActionResult Info()
     {
-        if (ManageProvider.User is not User user) throw new Exception("当前登录用户无效！");
+        if (ManageProvider.User is not User user) throw new Exception(L.T("The current user is invalid."));
 
         user = XCode.Membership.User.FindByKeyForEdit(user.ID);
-        if (user == null) throw new Exception("无效用户编号！");
+        if (user == null) throw new Exception(L.T("Invalid user id."));
 
         user["Password"] = null;
 
@@ -233,31 +233,31 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
     {
         var set = CubeSetting.Current;
         if (!set.EnableTenant)
-            throw new InvalidOperationException("未开启多租户，无法切换租户");
+            throw new InvalidOperationException(L.T("Multi-tenancy is not enabled; cannot switch tenant."));
 
         if (ManageProvider.User is not User user)
-            throw new InvalidOperationException("当前登录用户无效！");
+            throw new InvalidOperationException(L.T("The current user is invalid."));
 
         // 管理后台（0）仅系统管理员可进入
         if (tenantId == 0)
         {
             if (!user.Roles.Any(e => e.IsSystem))
-                throw new InvalidOperationException("仅系统管理员可进入系统管理后台");
+                throw new InvalidOperationException(L.T("Only system administrators can access the system administration console."));
         }
         else
         {
             // 普通租户：须存在且启用，且当前用户是成员（系统管理员豁免）
             var tenant = XCode.Membership.Tenant.FindById(tenantId);
             if (tenant == null || !tenant.Enable)
-                throw new ArgumentException($"租户[{tenantId}]不存在或已禁用", nameof(tenantId));
+                throw new ArgumentException(L.T("Tenant [{0}] does not exist or is disabled.", tenantId), nameof(tenantId));
 
             if (!TenantAccessPolicy.IsMember(tenantId, user))
-                throw new InvalidOperationException($"当前用户不属于租户[{tenant.Name}]");
+                throw new InvalidOperationException(L.T("The current user does not belong to tenant [{0}].", tenant.Name));
         }
 
         HttpContext.SaveTenant(tenantId);
 
-        return true.ToOkApiResponse("切换成功");
+        return true.ToOkApiResponse(L.T("Switch succeeded."));
     }
 
     /// <summary>登出</summary>
@@ -312,10 +312,10 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
     public ApiResponse<OAuthPendingInfoModel> OAuthPendingInfo(String token)
     {
         var model = new OAuthPendingInfoModel();
-        if (token.IsNullOrEmpty()) return model.ToFailApiResponse("token不能为空");
+        if (token.IsNullOrEmpty()) return model.ToFailApiResponse(L.T("Token is required."));
 
         var data = _cache.Get<OAuthPendingInfoModel>($"{OAuthPendingPrefix}{token}");
-        if (data == null) return model.ToFailApiResponse("OAuth预填信息不存在或已过期");
+        if (data == null) return model.ToFailApiResponse(L.T("OAuth profile does not exist or has expired."));
 
         return data.ToOkApiResponse("ok");
     }
@@ -339,12 +339,12 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
             res.Channels = registerResult.Data.Channels;
             res.Targets = registerResult.Data.Targets;
             res.ExpireIn = registerResult.Data.ExpireIn;
-            return res.ToOkApiResponse(registerResult.Message ?? "注册成功，请激活邮箱/手机");
+            return res.ToOkApiResponse(registerResult.Message ?? L.T("Registered successfully. Please activate your email/phone."));
         }
 
         res.AccessToken = registerResult.Data.AccessToken;
         res.RefreshToken = registerResult.Data.RefreshToken;
-        return res.ToOkApiResponse(registerResult.Message ?? "注册成功");
+        return res.ToOkApiResponse(registerResult.Message ?? L.T("Registered successfully."));
     }
 
     /// <summary>邮箱激活链接直达。激活邮件中的链接指向 {ActivateUrl}?token=&amp;account=，前端解析后调用本接口</summary>
@@ -384,7 +384,7 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
         }
         catch (Exception ex)
         {
-            return Json(1, "发送失败：" + ex.Message);
+            return Json(1, L.T("Send failed: {0}", ex.Message));
         }
     }
 
@@ -395,7 +395,7 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
     [EntityAuthorize]
     public ActionResult VerifyContact(VerifyContactModel model)
     {
-        if (ManageProvider.User is not User user) throw new Exception("当前登录用户无效！");
+        if (ManageProvider.User is not User user) throw new Exception(L.T("The current user is invalid."));
 
         var result = accountActivate.VerifyContact(user, model.Channel, model.Account, model.Code, UserHost);
         return Json(result.IsSuccess ? 0 : 1, result.Message, result.Data);
@@ -407,7 +407,7 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
     [EntityAuthorize]
     public ActionResult CloseAccount()
     {
-        if (ManageProvider.User is not User user) throw new Exception("当前登录用户无效！");
+        if (ManageProvider.User is not User user) throw new Exception(L.T("The current user is invalid."));
 
         var result = userService.CloseAccount(user, UserHost);
         if (!result.IsSuccess) return Json(1, result.Message);
@@ -415,6 +415,6 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
         // 注销当前会话
         ManageProvider.Provider.Logout();
 
-        return Json(0, "账号已注销");
+        return Json(0, L.T("Account closed."));
     }
 }
