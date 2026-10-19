@@ -67,8 +67,8 @@ const routes: RouteRecordRaw[] = [
     name: 'admin-oauth-log',
     component: () => import('../views/admin/oauth-log/index.vue'),
   },
-  // 参数管理 — 由默认引擎接管，删除手动路由
-  // 通过 apps/cube-admin/src/views/admin/parameter/ListTableContent.vue Section 覆盖定制 kind 列渲染
+  // 参数管理 — 不写手动路由：ViewResolver 按目录约定命中 views/admin/parameter/index.vue
+  // （默认列表页 CubeTable + #col-Kind 一处单元格定制，见该文件注释）
   // 角色管理
   {
     path: '/Admin/Role',
