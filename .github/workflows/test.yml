@@ -8,8 +8,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  # 全解决方案编译校验（含主题、示例、AOT 冒烟等非测试工程）。
+  # Windows/Linux 双平台阻断：大小写、路径分隔符、换行等跨平台问题在这里暴露。
+  build:
+    name: build (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows
+            os: windows-latest
+          - name: linux
+            os: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -22,26 +34,108 @@ jobs:
           8.x
           9.x
           10.x
+        cache: true
+        cache-dependency-path: '**/*.csproj'
     - name: Build
-      run: |
-        dotnet build 魔方.slnx -c Release
-    - name: Install Playwright browsers
-      run: |
-        pwsh Bin/E2ETest/playwright.ps1 install --with-deps chromium
-    - name: Test
-      run: |
-        dotnet test XUnitTest/XUnitTest.csproj -c Release --no-build
-        dotnet test E2EMvcTest/E2EMvcTest.csproj -c Release --no-build
-    - name: Upload E2E artifacts
-      if: failure()
+      run: dotnet build 魔方.slnx -c Release --nologo
+
+  # 单元/集成测试矩阵。win-x64 与 linux-x64 为阻断门禁，其余平台观察期。
+  unit:
+    name: unit (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    continue-on-error: ${{ matrix.experimental == true }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: win-x64
+            os: windows-latest
+          - name: linux-x64
+            os: ubuntu-latest
+          - name: linux-arm64
+            os: ubuntu-24.04-arm
+            experimental: true
+          - name: win-arm64
+            os: windows-11-arm
+            experimental: true
+          - name: osx-arm64
+            os: macos-latest
+            experimental: true
+          - name: osx-x64
+            os: macos-15-intel
+            experimental: true
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup dotNET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.x
+        cache: true
+        cache-dependency-path: '**/*.csproj'
+    - name: Test (XUnitTest)
+      run: dotnet test XUnitTest/XUnitTest.csproj -c Release --nologo --logger "trx;LogFileName=XUnitTest-${{ matrix.name }}.trx" --results-directory TestResults
+    - name: Test (NewLife.Cube.Tests)
+      run: dotnet test NewLife.Cube.Tests/NewLife.Cube.Tests.csproj -c Release --nologo --logger "trx;LogFileName=CubeTests-${{ matrix.name }}.trx" --results-directory TestResults
+    - name: Upload Test Results
+      if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: e2e-artifacts
+        name: test-results-${{ matrix.name }}
+        path: TestResults/*.trx
+        if-no-files-found: ignore
+
+  # MVC 端到端测试：启动真实 CubeSSO + SQLite 临时库 + Chromium。
+  e2e:
+    name: e2e (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    continue-on-error: ${{ matrix.experimental == true }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: win-x64
+            os: windows-latest
+          - name: linux-x64
+            os: ubuntu-latest
+          - name: osx-arm64
+            os: macos-latest
+            experimental: true
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup dotNET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.x
+        cache: true
+        cache-dependency-path: '**/*.csproj'
+    - name: Build CubeSSO
+      run: dotnet build CubeSSO/CubeSSO.csproj -c Release --nologo
+    - name: Install Playwright browsers
+      shell: pwsh
+      run: |
+        if ($IsLinux) {
+          pwsh Bin/E2ETest/playwright.ps1 install --with-deps chromium
+        } else {
+          pwsh Bin/E2ETest/playwright.ps1 install chromium
+        }
+    - name: Test
+      run: dotnet test E2EMvcTest/E2EMvcTest.csproj -c Release --nologo --logger "trx;LogFileName=E2E-${{ matrix.name }}.trx" --results-directory TestResults
+    - name: Upload E2E artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: e2e-${{ matrix.name }}
         path: |
+          TestResults/*.trx
           Bin/E2ETest/Run-*/server-*.log
           Bin/E2ETest/Run-*/screenshots/**
         if-no-files-found: ignore
 
+  # 多语言词表与 README 切换行守门。
   localization:
     name: localization checks
     runs-on: ubuntu-latest
@@ -65,22 +159,35 @@ jobs:
       shell: pwsh
       run: pwsh -File ./sync-readme-languages.ps1 -Check
 
-  # 多平台单元测试矩阵：win-x64 为阻断基线，linux-arm64 观察期（E2E 仅在 linux-x64 基线执行）
-  test-matrix:
-    name: test (${{ matrix.rid }})
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 60
-    continue-on-error: ${{ matrix.experimental }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - rid: win-x64
-            os: windows-latest
-            experimental: false
-          - rid: linux-arm64
-            os: ubuntu-24.04-arm
-            experimental: true
+  # 前端公共包构建 + Vue 类型检查/单测。
+  frontend:
+    name: frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: pnpm/action-setup@v4
+      with:
+        version: 9.15.0
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: pnpm
+    - name: Install
+      run: pnpm install --frozen-lockfile
+    - name: Build shared packages
+      run: pnpm build
+    - name: Vue type check
+      run: pnpm --filter ./NewLife.Cube.Vue/web run type-check
+    - name: Vue unit tests
+      run: pnpm --filter ./NewLife.Cube.Vue/web run test:unit
+
+  # OpenAPI 契约守门：漏写 [Http*] 动词的 action 会被内建生成器静默丢弃。
+  openapi:
+    name: openapi contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
     - uses: actions/checkout@v4
@@ -88,12 +195,7 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 10.x
-    - name: Test
-      run: dotnet test XUnitTest/XUnitTest.csproj -c Release --nologo --logger "trx;LogFileName=${{ matrix.rid }}.trx" --results-directory TestResults
-    - name: Upload Test Results
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-results-${{ matrix.rid }}
-        path: TestResults/*.trx
-        if-no-files-found: ignore
+        cache: true
+        cache-dependency-path: '**/*.csproj'
+    - name: Build & check contract
+      run: bash ./scripts/check-openapi.sh --build

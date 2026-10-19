@@ -16,7 +16,26 @@ on:
   workflow_dispatch:
 
 jobs:
+  test:
+    name: test gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup dotNET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.x
+        cache: true
+        cache-dependency-path: '**/*.csproj'
+    - name: Test
+      run: |
+        dotnet test XUnitTest/XUnitTest.csproj -c Release --nologo
+        dotnet test NewLife.Cube.Tests/NewLife.Cube.Tests.csproj -c Release --nologo
+
   build-publish:
+    needs: test
     runs-on: ubuntu-latest
 
     steps:

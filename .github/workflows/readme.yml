@@ -6,14 +6,18 @@ on:
       - 'README*'
       - 'Readme*'
       - 'readme-languages.json'
+      - 'readme-metrics.json'
       - 'sync-readme-languages.ps1'
+      - 'sync-readme-metrics.ps1'
       - '.github/workflows/readme.yml'
   pull_request:
     paths:
       - 'README*'
       - 'Readme*'
       - 'readme-languages.json'
+      - 'readme-metrics.json'
       - 'sync-readme-languages.ps1'
+      - 'sync-readme-metrics.ps1'
       - '.github/workflows/readme.yml'
   workflow_dispatch:
 
@@ -28,3 +32,6 @@ jobs:
     - name: Check README languages
       shell: pwsh
       run: pwsh -File ./sync-readme-languages.ps1 -Check
+    - name: Check README metrics
+      shell: pwsh
+      run: pwsh -File ./sync-readme-metrics.ps1 -Check
