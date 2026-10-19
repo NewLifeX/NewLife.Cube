@@ -33,7 +33,7 @@ public class DefaultLovListDataProxy : ILovListDataProxy
 
         var url = config.RequestUrl;
         if (url.IsNullOrEmpty())
-            throw new InvalidOperationException($"列表型值集未配置 RequestUrl，无法代理请求");
+            throw new InvalidOperationException(L.T("The list value set has no RequestUrl configured; proxy requests are unavailable."));
 
         var method = (config.Method ?? "GET").ToUpper();
         var httpClient = _httpClientFactory.CreateClient(nameof(DefaultLovListDataProxy));
@@ -111,7 +111,7 @@ public class DefaultLovListDataProxy : ILovListDataProxy
         var responseBody = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
 
         if (!httpResponse.IsSuccessStatusCode)
-            throw new InvalidOperationException($"请求外部接口失败：{httpResponse.StatusCode} - {responseBody}");
+            throw new InvalidOperationException(L.T("External API request failed: {0} - {1}", httpResponse.StatusCode, responseBody));
 
         // 解析响应：按 DataPath 取数据列表，按 TotalPath 取总数
         using var doc = JsonDocument.Parse(responseBody);

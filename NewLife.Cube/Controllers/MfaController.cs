@@ -41,10 +41,10 @@ public class MfaController : ControllerBaseX
     public ActionResult Setup()
     {
         if (!CubeSetting.Current.EnableMfa)
-            return Json(-1, "系统未开启 MFA 功能");
+            return Json(-1, L.T("MFA is not enabled on this system."));
 
         var user = ManageProvider.User as User;
-        if (user == null) return Json(-1, "当前登录用户无效");
+        if (user == null) return Json(-1, L.T("The current user is invalid."));
 
         var sysName = NewLife.Common.SysConfig.Current.DisplayName;
         var result = _mfa.SetupTotp(user, sysName.IsNullOrEmpty() ? "NewLife.Cube" : sysName);
@@ -58,15 +58,15 @@ public class MfaController : ControllerBaseX
     [EntityAuthorize]
     public ActionResult Activate(String code)
     {
-        if (code.IsNullOrEmpty()) return Json(-1, "验证码不能为空");
+        if (code.IsNullOrEmpty()) return Json(-1, L.T("Verification code is required."));
 
         var user = ManageProvider.User as User;
-        if (user == null) return Json(-1, "当前登录用户无效");
+        if (user == null) return Json(-1, L.T("The current user is invalid."));
 
         try
         {
             var backupCodes = _mfa.ActivateTotp(user, code);
-            return Json(0, "MFA 已激活", new { backupCodes });
+            return Json(0, L.T("MFA activated."), new { backupCodes });
         }
         catch (InvalidOperationException ex)
         {
@@ -80,16 +80,16 @@ public class MfaController : ControllerBaseX
     [EntityAuthorize]
     public ActionResult Disable(String code)
     {
-        if (code.IsNullOrEmpty()) return Json(-1, "验证码不能为空");
+        if (code.IsNullOrEmpty()) return Json(-1, L.T("Verification code is required."));
 
         var user = ManageProvider.User as User;
-        if (user == null) return Json(-1, "当前登录用户无效");
+        if (user == null) return Json(-1, L.T("The current user is invalid."));
 
         // 禁用前须通过一次 MFA 校验，防止会话劫持后被关闭
-        if (!_mfa.Verify(user, code)) return Json(-1, "验证码错误");
+        if (!_mfa.Verify(user, code)) return Json(-1, L.T("Incorrect verification code."));
 
         _mfa.DisableMfa(user);
-        return Json(0, "MFA 已禁用");
+        return Json(0, L.T("MFA disabled."));
     }
 
     /// <summary>查询当前用户 MFA 启用状态</summary>
@@ -99,7 +99,7 @@ public class MfaController : ControllerBaseX
     public ActionResult Status()
     {
         var user = ManageProvider.User as User;
-        if (user == null) return Json(-1, "当前登录用户无效");
+        if (user == null) return Json(-1, L.T("The current user is invalid."));
 
         return Json(0, null, new { enabled = _mfa.IsEnabled(user), available = CubeSetting.Current.EnableMfa });
     }
@@ -117,28 +117,28 @@ public class MfaController : ControllerBaseX
     public ActionResult Verify(MfaVerifyModel model)
     {
         if (model == null || model.MfaToken.IsNullOrEmpty())
-            return Json(-1, "mfaToken 不能为空");
+            return Json(-1, L.T("mfaToken is required."));
         if (model.Code.IsNullOrEmpty())
-            return Json(-1, "验证码不能为空");
+            return Json(-1, L.T("Verification code is required."));
 
         // 消费挂起令牌
-        if (_totp == null) return Json(-1, "MFA 服务不支持令牌验证");
+        if (_totp == null) return Json(-1, L.T("The MFA service does not support token verification."));
 
         var userId = _totp.ConsumePendingToken(model.MfaToken);
-        if (userId <= 0) return Json(-1, "mfaToken 无效或已过期，请重新登录");
+        if (userId <= 0) return Json(-1, L.T("Invalid or expired mfaToken; please sign in again."));
 
         var user = XCode.Membership.User.FindByID(userId);
-        if (user == null) return Json(-1, "用户不存在");
-        if (!user.Enable) return Json(-1, "用户已禁用");
+        if (user == null) return Json(-1, L.T("User does not exist."));
+        if (!user.Enable) return Json(-1, L.T("User is disabled."));
 
         if (!_mfa.Verify(user, model.Code))
-            return Json(-1, "MFA 验证码错误");
+            return Json(-1, L.T("MFA verification code is incorrect."));
 
         // MFA 通过，签发正式令牌
         var set = CubeSetting.Current;
         var tokens = HttpContext.IssueLoginToken(user, TimeSpan.FromSeconds(set.TokenExpire));
 
-        return Json(0, "登录成功", new
+        return Json(0, L.T("Login succeeded."), new
         {
             AccessToken = tokens.AccessToken,
             RefreshToken = tokens.RefreshToken,

@@ -30,7 +30,7 @@ public class WxOpenClient : OAuthClient
     /// <returns>返回原始响应内容</returns>
     public override String GetAccessToken(String code)
     {
-        if (code.IsNullOrEmpty()) throw new ArgumentNullException(nameof(code), "登录码不能为空");
+        if (code.IsNullOrEmpty()) throw new ArgumentNullException(nameof(code), L.T("The sign-in code is required."));
 
         Code = code;
 
@@ -52,8 +52,8 @@ public class WxOpenClient : OAuthClient
             if (dic.TryGetValue("errcode", out v) && v != null && v.ToString() != "0")
             {
                 var err = v.ToString();
-                var msg = dic.TryGetValue("errmsg", out v) && v != null ? v.ToString() : "未知错误";
-                throw new InvalidOperationException($"微信小程序登录失败[{err}]: {msg}");
+                var msg = dic.TryGetValue("errmsg", out v) && v != null ? v.ToString() : L.T("Unknown error");
+                throw new InvalidOperationException(L.T("WeChat Mini Program sign-in failed [{0}]: {1}", err, msg));
             }
 
             var strDic = dic.Where(e => e.Value is String).ToDictionary(e => e.Key, e => (String)e.Value);

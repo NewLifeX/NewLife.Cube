@@ -109,7 +109,7 @@ public class PageCheckpointService(IEventBusFactory? factory = null)
         }
         catch (Exception ex)
         {
-            XTrace.WriteLine("[Checkpoint] 回传发布失败 {0}：{1}", checkpointId, ex.Message);
+            XTrace.WriteLine("[Checkpoint] Failed to publish checkpoint {0}: {1}", checkpointId, ex.Message);
             return false;
         }
     }

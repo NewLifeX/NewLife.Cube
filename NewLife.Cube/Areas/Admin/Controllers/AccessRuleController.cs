@@ -42,7 +42,7 @@ public class AccessRuleController : EntityController<AccessRule, AccessRuleModel
     public ActionResult Unblock(Int32 id)
     {
         var rule = AccessRule.FindById(id);
-        if (rule == null || !rule.IsAutoBlock) return Json(1, "该规则不是自动封禁规则");
+        if (rule == null || !rule.IsAutoBlock) return Json(1, L.T("This rule is not an auto-block rule."));
 
         var rs = _blockService.Unblock(rule.IP);
 
@@ -50,6 +50,6 @@ public class AccessRuleController : EntityController<AccessRule, AccessRuleModel
         var accept = Request.Headers.Accept + "";
         if (accept.Contains("text/html")) return Redirect("/Admin/AccessRule");
 
-        return rs > 0 ? Json(0, $"已解除 {rule.IP} 的封禁") : Json(1, "解封失败");
+        return rs > 0 ? Json(0, L.T("Unblocked [{0}] successfully.", rule.IP)) : Json(1, L.T("Unblock failed."));
     }
 }

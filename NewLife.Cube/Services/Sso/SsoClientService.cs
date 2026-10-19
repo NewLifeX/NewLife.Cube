@@ -84,7 +84,7 @@ public class SsoClientService : ISsoClientService
                 var safeDomains = CubeSetting.Current.SsoSafeDomains;
                 if (!IsSafeDomain(url, safeDomains))
                 {
-                    XTrace.WriteLine("[安全] SSO 重定向目标不在白名单，已拦截: {0} (来自 {1})", url, request.GetRawUrl());
+                    XTrace.WriteLine("[Security] SSO redirect target blocked because it is not in the whitelist: {0} (from {1})", url, request.GetRawUrl());
                     url = null;
                 }
             }
@@ -228,9 +228,9 @@ public class SsoClientService : ISsoClientService
         }
 
         var log = LogProvider.Provider;
-        log?.WriteLog(typeof(User), "SSO登录", true, $"[{user}]从[{client.Name}]的[{client.UserName ?? client.NickName}]登录" + (source.IsNullOrEmpty() ? "" : $" 来源：{source}"), user.ID, user + "");
+        log?.WriteLog(typeof(User), L.T("SSO sign-in"), true, L.T("[{0}] signed in via [{1}] as [{2}]", user, client.Name, client.UserName ?? client.NickName) + (source.IsNullOrEmpty() ? "" : " " + L.T("Source: {0}", source)), user.ID, user + "");
 
-        if (!user.Enable) throw new InvalidOperationException($"用户[{user}]已禁用！");
+        if (!user.Enable) throw new InvalidOperationException(L.T("User [{0}] is disabled.", user));
 
         if (prv is ManageProvider2 prv2) user = prv2.CheckAgent(user);
         prv.Current = user;

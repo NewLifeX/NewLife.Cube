@@ -34,8 +34,8 @@ public class WxAppClient : OAuthClient
         // 检查错误
         if (dic.TryGetValue("errcode", out var err) && err != "0")
         {
-            var msg = dic.TryGetValue("errmsg", out var m) ? m : "未知错误";
-            throw new InvalidOperationException($"微信APP登录失败[{err}]: {msg}");
+            var msg = dic.TryGetValue("errmsg", out var m) ? m : L.T("Unknown error");
+            throw new InvalidOperationException(L.T("WeChat app sign-in failed [{0}]: {1}", err, msg));
         }
     }
 

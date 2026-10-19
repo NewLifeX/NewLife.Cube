@@ -176,7 +176,7 @@ public class SsoController : ControllerBaseX
         client.WriteLog("LoginInfo name={0} code={1} state={2} {3}", name, code, state, Request.GetRawUrl());
 
         var log = OAuthLog.FindById(state.ToLong());
-        if (log == null) throw new InvalidOperationException("无效state=" + state);
+        if (log == null) throw new InvalidOperationException(L.T("Invalid state={0}.", state));
 
         // 无法拿到code时，跳回去再来
         if (code.IsNullOrEmpty())
@@ -203,7 +203,7 @@ public class SsoController : ControllerBaseX
                 // 如果拿不到访问令牌或用户信息，则重新跳转
                 if (client.AccessToken.IsNullOrEmpty() && client.OpenID.IsNullOrEmpty() && client.UserID == 0 && client.UserName.IsNullOrEmpty())
                 {
-                    XTrace.WriteLine("[{2}]拿不到访问令牌，自动重跳SSO重新授权 code={0} state={1}", code, state, id);
+                    XTrace.WriteLine("[{2}] Failed to obtain an access token; redirecting to SSO for reauthorization, code={0} state={1}", code, state, id);
                     XTrace.WriteLine(Request.GetRawUrl() + "");
                     if (!html.IsNullOrEmpty()) XTrace.WriteLine(html);
 
@@ -280,7 +280,7 @@ public class SsoController : ControllerBaseX
             {
                 if (!_clientService.IsSafeDomain(url, set.SsoSafeDomains))
                 {
-                    XTrace.WriteLine("[安全] SSO Token 颁发被拦截，跨域目标不在 SsoSafeDomains 白名单: {0}", url);
+                    XTrace.WriteLine("[Security] SSO token issuance blocked: the cross-origin target is not in the SsoSafeDomains whitelist: {0}", url);
                     url = _clientService.SuccessUrl;
                 }
                 else
@@ -302,7 +302,7 @@ public class SsoController : ControllerBaseX
         catch (InvalidOperationException ex) when (OAuthHelper.IsCodeExpired(ex))
         {
             // 授权码已过期或无效（如停留在SSO登录页过久），自动重跳SSO重新授权，避免用户看到错误页
-            XTrace.WriteLine("[{0}]授权码已过期，自动重跳SSO重新授权 code={1} state={2} {3}", id, code, state, ex.Message);
+            XTrace.WriteLine("[{0}] The authorization code has expired; redirecting to SSO for reauthorization, code={1} state={2} {3}", id, code, state, ex.Message);
             XTrace.WriteLine(Request.GetRawUrl() + "");
 
             log.Success = false;
@@ -374,7 +374,7 @@ public class SsoController : ControllerBaseX
             if (!clientId.IsNullOrEmpty())
             {
                 var app = _appService.Auth(clientId, null, UserHost);
-                if (!app.ValidCallback(url)) throw new XException("回调地址不合法 {0}", url);
+                if (!app.ValidCallback(url)) throw new XException("Invalid callback URL [{0}].", url);
             }
             else
             {
@@ -431,7 +431,7 @@ public class SsoController : ControllerBaseX
     public virtual ActionResult UnBind(String id)
     {
         var user = _clientService.Current;
-        if (user == null) throw new Exception("未登录！");
+        if (user == null) throw new Exception(L.T("Please sign in first."));
 
         var binds = UserConnect.FindAllByUserID(user.ID);
 
@@ -456,7 +456,7 @@ public class SsoController : ControllerBaseX
     [HttpPost]
     public virtual ApiResponse<TokenModel> WxMiniLogin(WxLoginModel model)
     {
-        if (model == null) throw new ApiException(CubeCode.ParamError.ToInt(), "参数错误：请求体不能为空");
+        if (model == null) throw new ApiException(CubeCode.ParamError.ToInt(), L.T("Invalid request parameter: the request body cannot be empty."));
         return WxLogin(model.Code, model.AppId, "WxOpen").ToOkApiResponse();
     }
 
@@ -465,7 +465,7 @@ public class SsoController : ControllerBaseX
     [HttpPost]
     public virtual ApiResponse<TokenModel> WxAppLogin(WxLoginModel model)
     {
-        if (model == null) throw new ApiException(CubeCode.ParamError.ToInt(), "参数错误：请求体不能为空");
+        if (model == null) throw new ApiException(CubeCode.ParamError.ToInt(), L.T("Invalid request parameter: the request body cannot be empty."));
         return WxLogin(model.Code, model.AppId, "WxApp").ToOkApiResponse();
     }
 
@@ -473,7 +473,7 @@ public class SsoController : ControllerBaseX
     protected virtual TokenModel WxLogin(String code, String appId, String wxLoginType)
     {
         if (String.IsNullOrWhiteSpace(code))
-            throw new ApiException(CubeCode.ParamError.ToInt(), $"参数错误：{nameof(code)}");
+            throw new ApiException(CubeCode.ParamError.ToInt(), L.T("Invalid request parameter: {0}.", nameof(code)));
 
         // 请求体未传AppId时，尝试从请求头X-App-Id获取
         if (String.IsNullOrWhiteSpace(appId))
@@ -484,10 +484,10 @@ public class SsoController : ControllerBaseX
             var headerAppId = Request.Headers["X-App-Id"] + "";
             if (!headerAppId.IsNullOrEmpty() && !headerAppId.EqualIgnoreCase(appId))
                 throw new ApiException(CubeCode.ParamError.ToInt(),
-                    $"参数错误：请求体{nameof(appId)}与请求头X-App-Id不一致");
+                    L.T("Invalid request parameter: the request body {0} does not match the X-App-Id header.", nameof(appId)));
         }
         if (String.IsNullOrWhiteSpace(appId))
-            throw new ApiException(CubeCode.ParamError.ToInt(), $"参数错误：{nameof(appId)}");
+            throw new ApiException(CubeCode.ParamError.ToInt(), L.T("Invalid request parameter: {0}.", nameof(appId)));
 
         var client = CreateWxOpenClient(appId, wxLoginType);
         var tokenModel = ProcessWxLoginCore(client, code, $"{wxLoginType}", true);
@@ -556,7 +556,7 @@ public class SsoController : ControllerBaseX
             client.GetAccessToken(code);
 
             if (client.OpenID.IsNullOrEmpty())
-                throw new ApiException(CubeCode.RemotingError.ToInt(), "获取 OpenID 失败");
+                throw new ApiException(CubeCode.RemotingError.ToInt(), L.T("Failed to obtain OpenID."));
 
             log.AccessToken = client.AccessToken;
             log.RefreshToken = client.RefreshToken;
@@ -570,7 +570,7 @@ public class SsoController : ControllerBaseX
 
             var user = ManageProvider.Provider.Current;
             if (user == null)
-                throw new ApiException(CubeCode.Failed.ToInt(), "登录失败，用户不存在");
+                throw new ApiException(CubeCode.Failed.ToInt(), L.T("Sign-in failed: the user does not exist."));
 
             // 登录成功后设置租户上下文，保证后续请求/数据访问落在正确租户
             HttpContext.SetTenant(client.TenantId);
@@ -783,7 +783,7 @@ public class SsoController : ControllerBaseX
         {
             var username = _tokenService.Decode(access_token);
             user = _tokenService.GetUser(username);
-            if (user == null) throw new XException("用户[{0}]不存在", username);
+            if (user == null) throw new XException("User [{0}] does not exist.", username);
 
             var rs = _tokenService.GetUserInfo(access_token, user);
             return SsoJsonOK(rs);
@@ -848,7 +848,7 @@ public class SsoController : ControllerBaseX
             var username = _tokenService.Decode(access_token);
 
             var user = prv.FindByName(username);
-            prv.Current = user ?? throw new XException("用户[{0}]不存在", username);
+            prv.Current = user ?? throw new XException("User [{0}] does not exist.", username);
 
             return SsoJsonOK(new { errcode = 0, error = "ok" });
         }
@@ -866,7 +866,7 @@ public class SsoController : ControllerBaseX
         try
         {
             var app = _appService.Auth(client_id, client_secret + "", UserHost);
-            if (app == null) throw new ArgumentException($"无效应用[{client_id}]");
+            if (app == null) throw new ArgumentException(L.T("Invalid application [{0}].", client_id));
 
             var prv = _appService.GetProvider();
             var dsa = new DSACryptoServiceProvider();
@@ -894,7 +894,7 @@ public class SsoController : ControllerBaseX
         var username = _tokenService.Decode(access_token);
 
         var user = prv.FindByName(username);
-        prv.Current = user ?? throw new XException("用户[{0}]不存在", username);
+        prv.Current = user ?? throw new XException("User [{0}] does not exist.", username);
 
         var set = CubeSetting.Current;
         var expire = TimeSpan.FromMinutes(0);
@@ -935,7 +935,7 @@ public class SsoController : ControllerBaseX
             var dic = rs.ToDictionary();
 
             var user = _tokenService.GetUser(username);
-            if (user == null) throw new XException("用户[{0}]不存在", username);
+            if (user == null) throw new XException("User [{0}] does not exist.", username);
 
             var rs2 = _tokenService.GetUserInfo(token.AccessToken, user);
             dic.Merge(rs2);

@@ -95,11 +95,11 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
         if (RequireCaptcha(4, ip, model.Username, null))
         {
             if (!_captcha.Validate(model.CaptchaId, model.CaptchaCode))
-                throw new XException("图片验证码错误或已过期，请刷新后重试");
+                throw new XException("Captcha is incorrect or has expired. Please try again.");
         }
 
         var user = model.Username?.Trim() ?? "";
-        if (user.IsNullOrEmpty()) throw new XException("账号不能为空");
+        if (user.IsNullOrEmpty()) throw new XException("Account is required.");
 
         if (model.Channel.EqualIgnoreCase("Mail") || ValidFormatHelper.IsEmail(user))
             return await SendMailCode(model, ip);
@@ -107,7 +107,7 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
         if (model.Channel.EqualIgnoreCase("Sms") || ValidFormatHelper.IsMobile(user))
             return await SendSmsCode(model, ip);
 
-        throw new NotSupportedException();
+        throw new NotSupportedException(L.T("Unsupported verification channel."));
     }
 
     /// <summary>发送激活验证码（邮箱激活链接+验证码，手机短信验证码）。用于账号激活与重发激活</summary>
@@ -118,7 +118,7 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
     /// <returns>验证码记录</returns>
     public async Task<VerifyCodeRecord> SendActivateCode(String channel, String account, String link, String ip)
     {
-        if (account.IsNullOrEmpty()) throw new XException("邮箱/手机号不能为空");
+        if (account.IsNullOrEmpty()) throw new XException("Mobile number or email is required.");
 
         var model = new VerifyCodeModel { Channel = channel, Username = account, Action = "activate" };
 
@@ -126,7 +126,7 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
         if (RequireCaptcha(4, ip, account, null))
         {
             if (!_captcha.Validate(model.CaptchaId, model.CaptchaCode))
-                throw new XException("图片验证码错误或已过期，请刷新后重试");
+                throw new XException("Captcha is incorrect or has expired. Please try again.");
         }
 
         if (channel.EqualIgnoreCase("Mail") || ValidFormatHelper.IsEmail(account))
@@ -135,7 +135,7 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
         if (channel.EqualIgnoreCase("Sms") || ValidFormatHelper.IsMobile(account))
             return await SendSmsCode(model, ip);
 
-        throw new NotSupportedException($"不支持的激活渠道[{channel}]");
+        throw new NotSupportedException(L.T("Unsupported activation channel [{0}].", channel));
     }
 
     /// <summary>短信验证码发送逻辑</summary>
@@ -146,24 +146,24 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
     private async Task<VerifyCodeRecord> SendSmsCode(VerifyCodeModel model, String ip)
     {
         var mobile = model.Username?.Trim() ?? "";
-        if (mobile.IsNullOrEmpty()) throw new XException("手机号不能为空");
+        if (mobile.IsNullOrEmpty()) throw new XException("Mobile number is required.");
 
         // 校验手机号格式
-        if (!ValidFormatHelper.IsMobile(mobile)) throw new XException("手机号格式不正确");
+        if (!ValidFormatHelper.IsMobile(mobile)) throw new XException("Invalid mobile number format.");
 
         // 检查短信服务是否启用
         var set = CubeSetting.Current;
-        if (!set.EnableSms) throw new XException("短信验证码功能未启用");
+        if (!set.EnableSms) throw new XException("SMS verification is not enabled.");
 
         var config = smsService.GetConfig(_tenantContext.TenantId, model.Action);
-        if (config == null) throw new XException("短信服务未配置");
+        if (config == null) throw new XException("SMS service is not configured.");
 
         // 检查短信配置是否完整
         if (config.AppKey.IsNullOrEmpty() || config.AppSecret.IsNullOrEmpty())
-            throw new XException("短信AccessKey未配置，请在系统参数中配置AppKey和AppSecret");
+            throw new XException("SMS AccessKey is not configured. Please set AppKey and AppSecret in the system parameters.");
 
         if (config.SignName.IsNullOrEmpty())
-            throw new XException("短信签名未配置，请在系统参数中配置SignName");
+            throw new XException("SMS signature is not configured. Please set SignName in the system parameters.");
 
         // 根据 Action 类型选择缓存 key 前缀
         var (ipPrefix, lastSendPrefix, codePrefix) = GetSmsCachePrefix(model.Action);
@@ -172,14 +172,14 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
 
         // 防止频繁发送（IP限制）
         var ipCount = _cache.Get<Int32>(ipKey);
-        if (ipCount >= 5) throw new XException("发送频繁，请稍后再试");
+        if (ipCount >= 5) throw new XException("Too many requests. Please try again later.");
 
         // 防止频繁发送（手机号限制，60秒内只能发一次）
         var lastSend = _cache.Get<DateTime>($"{lastSendPrefix}{mobile}");
         if (lastSend > DateTime.MinValue && (DateTime.Now - lastSend).TotalSeconds < 60)
         {
             var wait = 60 - (Int32)(DateTime.Now - lastSend).TotalSeconds;
-            throw new XException($"请{wait}秒后再试");
+            throw new XException("Please try again in {0} seconds.", wait);
         }
 
         try
@@ -187,7 +187,7 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
             // 发送短信验证码
             var code = SmsService.GenerateVerifyCode(config.CodeLength);//通过配置指定验证码长度 
             var rs = await smsService.SendVerifyCode(model.Action, mobile, code, config);
-            if (rs == null || !rs.Success) throw new XException("短信发送失败");
+            if (rs == null || !rs.Success) throw new XException("Failed to send the SMS.");
 
             // 缓存验证码用于校验
             var codeKey = $"{codePrefix}{mobile}";
@@ -200,14 +200,14 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
             _cache.Increment(ipKey, 1);
             if (ipCount <= 0) _cache.SetExpire(ipKey, TimeSpan.FromMinutes(10));
 
-            LogProvider.Provider.WriteLog(typeof(User), "发送验证码", true, $"手机号：{mobile}", 0, mobile, ip);
+            LogProvider.Provider.WriteLog(typeof(User), L.T("Send verification code"), true, L.T("Mobile: {0}", mobile), 0, mobile, ip);
 
             return rs;
         }
         catch (Exception ex)
         {
             XTrace.WriteException(ex);
-            LogProvider.Provider.WriteLog(typeof(User), "发送验证码", false, $"手机号：{mobile}，错误：{ex.Message}", 0, mobile, ip);
+            LogProvider.Provider.WriteLog(typeof(User), L.T("Send verification code"), false, L.T("Mobile: {0}, error: {1}", mobile, ex.Message), 0, mobile, ip);
             throw;
         }
     }
@@ -221,11 +221,11 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
     private async Task<VerifyCodeRecord> SendMailCode(VerifyCodeModel model, String ip, String link = null)
     {
         var mail = model.Username?.Trim() ?? "";
-        if (mail.IsNullOrEmpty()) throw new XException("邮件地址不能为空");
+        if (mail.IsNullOrEmpty()) throw new XException("Email is required.");
 
         // 检查邮件服务是否启用
         var set = CubeSetting.Current;
-        if (!set.EnableMail) throw new XException("邮件验证码功能未启用");
+        if (!set.EnableMail) throw new XException("Email verification is not enabled.");
 
         var config = mailService.GetConfig(_tenantContext.TenantId, model.Action);
 
@@ -236,14 +236,14 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
 
         // 防止频繁发送（IP限制）
         var ipCount = _cache.Get<Int32>(ipKey);
-        if (ipCount >= 5) throw new XException("发送频繁，请稍后再试");
+        if (ipCount >= 5) throw new XException("Too many requests. Please try again later.");
 
         // 防止频繁发送
         var lastSend = _cache.Get<DateTime>($"{lastSendPrefix}{mail}");
         if (lastSend > DateTime.MinValue && (DateTime.Now - lastSend).TotalSeconds < 60)
         {
             var wait = 60 - (Int32)(DateTime.Now - lastSend).TotalSeconds;
-            throw new XException($"请{wait}秒后再试");
+            throw new XException("Please try again in {0} seconds.", wait);
         }
 
         try
@@ -251,7 +251,7 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
             // 发送邮件验证码
             var code = MailService.GenerateVerifyCode();
             var rs = await mailService.SendVerifyCode(model.Action, mail, code, config, link);
-            if (rs == null || !rs.Success) throw new XException("邮件发送失败");
+            if (rs == null || !rs.Success) throw new XException("Failed to send the email.");
 
             // 缓存验证码用于校验
             var codeKey = $"{codePrefix}{mail}";
@@ -264,14 +264,14 @@ public class VerifyCodeService(SmsService smsService, MailService mailService, I
             _cache.Increment(ipKey, 1);
             if (ipCount <= 0) _cache.SetExpire(ipKey, TimeSpan.FromMinutes(10));
 
-            LogProvider.Provider.WriteLog(typeof(User), "发送验证码", true, $"邮箱：{mail}", 0, mail, ip);
+            LogProvider.Provider.WriteLog(typeof(User), L.T("Send verification code"), true, L.T("Email: {0}", mail), 0, mail, ip);
 
             return rs;
         }
         catch (Exception ex)
         {
             XTrace.WriteException(ex);
-            LogProvider.Provider.WriteLog(typeof(User), "发送验证码", false, $"邮箱：{mail}，错误：{ex.Message}", 0, mail, ip);
+            LogProvider.Provider.WriteLog(typeof(User), L.T("Send verification code"), false, L.T("Email: {0}, error: {1}", mail, ex.Message), 0, mail, ip);
             throw;
         }
     }

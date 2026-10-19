@@ -75,7 +75,7 @@ public class WidgetController : ControllerBaseX
 
         _widgetManager.SetEnabled(name, enable);
 
-        return Json(0, null, enable ? "已启用" : "已禁用");
+        return Json(0, null, enable ? L.T("Enabled") : L.T("Disabled"));
     }
 
     /// <summary>保存组件分组顺序（逗号分隔组名，Parameter 全局配置，UserID=0）。未列出的组排到最后并按名称排序</summary>
@@ -89,7 +89,7 @@ public class WidgetController : ControllerBaseX
         var list = (groups + "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
         _widgetManager.SetGroupOrder(list);
 
-        return Json(0, null, "组顺序已保存");
+        return Json(0, null, L.T("Group order saved."));
     }
 
     /// <summary>保存指定组内的默认部件顺序（逗号分隔部件名，Parameter 全局配置，UserID=0）。未列出的新部件自动排到组内末尾</summary>
@@ -104,12 +104,12 @@ public class WidgetController : ControllerBaseX
         var list = (names + "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
         _widgetManager.SetGroupItemOrder(group, list);
 
-        return Json(0, null, "组内顺序已保存");
+        return Json(0, null, L.T("Item order saved."));
     }
 
     private void CheckAdmin()
     {
         var user = ManageProvider.User;
-        if (user == null || !user.Roles.Any(e => e.IsSystem)) throw new InvalidOperationException("仅支持系统管理员使用！");
+        if (user == null || !user.Roles.Any(e => e.IsSystem)) throw new InvalidOperationException(L.T("Only available to system administrators."));
     }
 }

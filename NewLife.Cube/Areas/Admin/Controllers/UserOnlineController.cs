@@ -63,7 +63,7 @@ public class UserOnlineController : EntityController<UserOnline, UserOnlineModel
 
         return type switch
         {
-            DataObjectMethodType.Update or DataObjectMethodType.Insert => throw new Exception("不允许添加/修改记录"),
+            DataObjectMethodType.Update or DataObjectMethodType.Insert => throw new Exception(L.T("Adding or modifying records is not allowed.")),
             _ => base.Valid(entity, type, post),
         };
     }
@@ -78,7 +78,7 @@ public class UserOnlineController : EntityController<UserOnline, UserOnlineModel
     public ActionResult Kick(Int32 id)
     {
         var online = UserOnline.FindByID(id);
-        if (online == null) return Json(1, "在线记录不存在");
+        if (online == null) return Json(1, L.T("The online record does not exist."));
 
         // 1. 吊销该用户所有令牌（API/JWT 即时失效）
         var count = UserToken.RevokeByUser(online.UserID);
@@ -92,10 +92,10 @@ public class UserOnlineController : EntityController<UserOnline, UserOnlineModel
         online.SaveAsync(3_000);
 
         // 4. 审计日志
-        LogProvider.Provider.WriteLog("用户在线", "强制下线", true,
-            $"用户[{online.Name}]被强制下线，吊销{count}个令牌", online.UserID, online.Name);
+        LogProvider.Provider.WriteLog(L.T("User online"), L.T("Force offline"), true,
+            L.T("User [{0}] was forced offline and {1} tokens were revoked.", online.Name, count), online.UserID, online.Name);
 
-        return Json(0, $"已强制下线，吊销{count}个令牌");
+        return Json(0, L.T("Forced offline; revoked {0} tokens.", count));
     }
     #endregion
 }

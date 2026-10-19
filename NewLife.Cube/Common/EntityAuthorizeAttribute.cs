@@ -23,7 +23,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
     #endregion
 
     #region 构造
-    static EntityAuthorizeAttribute() => XTrace.WriteLine("注册过滤器：{0}", typeof(EntityAuthorizeAttribute).FullName);
+    static EntityAuthorizeAttribute() => XTrace.WriteLine("Registering filter: {0}", typeof(EntityAuthorizeAttribute).FullName);
 
     /// <summary>实例化实体授权特性</summary>
     public EntityAuthorizeAttribute() { }
@@ -111,13 +111,13 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         {
             if (user is IUser user2) return user2.Has(menu, Permission); 
 
-            var msg = $"访问资源[{menu}]时无法验证用户[{user}]的权限";
-            LogProvider.Provider.WriteLog("访问", "拒绝", false, msg, ip: ctx.GetUserHost());
+            var msg = L.T("Unable to verify permission of user [{1}] when accessing resource [{0}].", menu, user);
+            LogProvider.Provider.WriteLog(L.T("Access"), L.T("Denied"), false, msg, ip: ctx.GetUserHost());
             DefaultSpan.Current?.AppendTag(msg);
         }
         else
         {
-            LogProvider.Provider.WriteLog("访问", "拒绝", false, "无法找到菜单", ip: ctx.GetUserHost());
+            LogProvider.Provider.WriteLog(L.T("Access"), L.T("Denied"), false, L.T("Menu not found"), ip: ctx.GetUserHost());
         }
 
         return false;
@@ -151,7 +151,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
                 }
                 catch (Exception ex)
                 {
-                    XTrace.WriteLine("租户拒绝审计日志写入失败：{0}", ex.Message);
+                    XTrace.WriteLine("Failed to write the tenant denial audit log: {0}", ex.Message);
                 }
                 filterContext.HttpContext.Response.StatusCode = 403;
                 filterContext.Result = new JsonResult(new { code = 403, message = msg });
@@ -181,8 +181,8 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         var ctx = filterContext.HttpContext;
 
         var res = $"[{ctrl.ControllerName}/{act.ActionName}]";
-        var msg = $"{user}访问资源 {res} 需要 {permission.GetDescription()} 权限";
-        LogProvider.Provider.WriteLog("访问", "拒绝", false, msg, ip: ctx.GetUserHost());
+        var msg = L.T("User {0} accessing resource {1} requires {2} permission.", user, res, permission);
+        LogProvider.Provider.WriteLog(L.T("Access"), L.T("Denied"), false, msg, ip: ctx.GetUserHost());
         DefaultSpan.Current?.AppendTag(msg);
 
         filterContext.HttpContext.Response.StatusCode = 403;
@@ -228,7 +228,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
             if (CreateMenu(type)) menu = mf.FindByFullName(fullName);
         }
 
-        if (menu == null) XTrace.WriteLine("设计错误！验证权限时无法找到[{0}/{1}]的菜单", type.FullName, act.ActionName);
+        if (menu == null) XTrace.WriteLine("Design error! Menu [{0}/{1}] was not found during permission validation.", type.FullName, act.ActionName);
 
         return menu;
     }

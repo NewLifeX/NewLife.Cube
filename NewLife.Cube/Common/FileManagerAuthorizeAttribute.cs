@@ -17,7 +17,7 @@ public class FileManagerAuthorizeAttribute : Attribute, IAuthorizationFilter
         if (set.EnableFileManager) return;
 
         var act = (ControllerActionDescriptor)context.ActionDescriptor;
-        XTrace.WriteLine("文件管理未启用，拒绝访问 {0}/{1}", act.ControllerName, act.ActionName);
+        XTrace.WriteLine("File management is not enabled; access denied for {0}/{1}", act.ControllerName, act.ActionName);
 
         context.HttpContext.Response.StatusCode = 403;
         context.Result = new JsonResult(new { code = 403, message = "未启用文件管理，请在魔方设置中开启" });

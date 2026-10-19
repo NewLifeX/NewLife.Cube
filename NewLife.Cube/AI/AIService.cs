@@ -91,11 +91,11 @@ public class AIService : IAIService
         try
         {
             client = GetClient();
-            WriteLog("DiagnoseSystemStream 开始", sysInfoJson[..Math.Min(sysInfoJson.Length, 200)]);
+            WriteLog("DiagnoseSystemStream started", sysInfoJson[..Math.Min(sysInfoJson.Length, 200)]);
         }
         catch (Exception ex)
         {
-            WriteLog("DiagnoseSystemStream 失败", ex.ToString());
+            WriteLog("DiagnoseSystemStream failed", ex.ToString());
             error = $"\n\n---\n>  AI 调用失败：{ex.Message}";
         }
 
@@ -116,7 +116,7 @@ public class AIService : IAIService
                 yield return chunk.Text;
         }
 
-        WriteLog("DiagnoseSystemStream 完成", "");
+        WriteLog("DiagnoseSystemStream completed", "");
     }
 
     /// <summary>构建系统诊断提示词</summary>
@@ -137,13 +137,13 @@ public class AIService : IAIService
                 content = $"{prompt}\n\n数据：\n{data}";
 
             var reply = await client.ChatAsync(content, options, cancellationToken);
-            WriteLog("ChatAsync 成功", content[..Math.Min(content.Length, 200)]);
+            WriteLog("ChatAsync succeeded", content[..Math.Min(content.Length, 200)]);
 
             return reply;
         }
         catch (Exception ex)
         {
-            WriteLog("ChatAsync 失败", ex.ToString());
+            WriteLog("ChatAsync failed", ex.ToString());
             return $"AI 调用失败：{ex.Message}";
         }
     }

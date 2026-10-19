@@ -30,7 +30,7 @@ public class ObjectAttachmentStorage : IAttachmentStorage
         await stream.CopyToAsync(ms);
 
         var rs = await Storage.PutAsync(filePath, new ArrayPacket(ms.ToArray()));
-        if (rs == null) throw new InvalidOperationException($"上传对象[{filePath}]失败");
+        if (rs == null) throw new InvalidOperationException(L.T("Failed to upload object [{0}].", filePath));
     }
 
     /// <summary>读取文件流</summary>

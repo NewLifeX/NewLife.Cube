@@ -93,7 +93,7 @@ public class DbController : ControllerBaseX, IPageDataContext
         if (BackupHelper.IsCompressedBackup(bak))
         {
             sw.Stop();
-            WriteLog("备份", true, $"备份数据库 {name} 到 {bak}，耗时 {sw.Elapsed}");
+            WriteLog(L.T("Backup"), true, L.T("Backed up database {0} to {1}; elapsed {2}", name, bak, sw.Elapsed));
             return Index();
         }
 
@@ -110,13 +110,13 @@ public class DbController : ControllerBaseX, IPageDataContext
             if (!rs.IsNullOrEmpty())
             {
                 sw.Stop();
-                WriteLog("备份", true, $"备份数据库 {name} 到 {rs}，耗时 {sw.Elapsed}");
+                WriteLog(L.T("Backup"), true, L.T("Backed up database {0} to {1}; elapsed {2}", name, rs, sw.Elapsed));
                 return Index();
             }
         }
 
         sw.Stop();
-        WriteLog("备份", true, $"备份数据库 {name} 到 {bak}，耗时 {sw.Elapsed}");
+        WriteLog(L.T("Backup"), true, L.T("Backed up database {0} to {1}; elapsed {2}", name, bak, sw.Elapsed));
 
         return Index();
     }
@@ -140,7 +140,7 @@ public class DbController : ControllerBaseX, IPageDataContext
         dal.BackupAll(tables, bak);
 
         sw.Stop();
-        WriteLog("备份", true, $"备份数据库 {name} 并压缩到 {bak}，耗时 {sw.Elapsed}");
+        WriteLog(L.T("Backup"), true, L.T("Backed up and compressed database {0} to {1}; elapsed {2}", name, bak, sw.Elapsed));
 
         return Index();
     }
@@ -155,7 +155,7 @@ public class DbController : ControllerBaseX, IPageDataContext
         var dal = DAL.Create(name);
         var xml = DAL.Export(dal.Tables);
 
-        WriteLog("下载", true, "下载数据库架构 " + name);
+        WriteLog(L.T("Download"), true, L.T("Downloaded database schema {0}.", name));
 
         return File(xml.GetBytes(), "application/xml", name + ".xml");
     }

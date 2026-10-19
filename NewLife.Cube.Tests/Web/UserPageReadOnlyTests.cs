@@ -67,8 +67,8 @@ public class UserPageReadOnlyTests
         var ex = RunAs(_fixture.LegacyUser, () => Assert.Throws<TargetInvocationException>(() => InvokeValid(_fixture.LegacyUser)));
 
         Assert.NotNull(ex.InnerException);
-        Assert.Contains("只读", ex.InnerException!.Message);
-        Assert.Contains("用户中心", ex.InnerException!.Message);
+        Assert.Contains("read-only", ex.InnerException!.Message);
+        Assert.Contains("user center", ex.InnerException!.Message);
     }
 
     [Fact(DisplayName = "系统角色在用户页写入放行（API版）")]
@@ -104,7 +104,7 @@ public class UserPageReadOnlyTests
         var ex = RunAs(_fixture.LegacyUser, () => Assert.Throws<TargetInvocationException>(() => InvokeImport(new List<IEntity>())));
 
         Assert.NotNull(ex.InnerException);
-        Assert.Contains("只读", ex.InnerException!.Message);
+        Assert.Contains("read-only", ex.InnerException!.Message);
     }
 
     [Fact(DisplayName = "系统角色批量导入不受只读规则影响（API版）")]
@@ -126,6 +126,6 @@ public class UserPageReadOnlyTests
         var ex = RunAs(_fixture.LegacyUser, () => Assert.Throws<TargetInvocationException>(() => method.Invoke(controller, [1])));
 
         Assert.NotNull(ex.InnerException);
-        Assert.Contains("管理员权限", ex.InnerException!.Message);
+        Assert.Contains("administrator privileges", ex.InnerException!.Message);
     }
 }

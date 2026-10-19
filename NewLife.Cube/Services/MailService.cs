@@ -172,7 +172,7 @@ public class MailService(ICacheProvider cacheProvider)
             };
         }
 
-        throw new NotSupportedException($"不支持邮件渠道[{config.Provider}]");
+        throw new NotSupportedException(L.T("Unsupported email channel [{0}].", config.Provider));
     }
 
     /// <summary>默认验证码长度</summary>

@@ -54,10 +54,10 @@ public class TotpMfaService : IMfaService
         if (user == null) throw new ArgumentNullException(nameof(user));
 
         var secret = GetExtend(user, ExtSecret);
-        if (secret.IsNullOrEmpty()) throw new InvalidOperationException("请先调用 Setup 初始化 MFA");
+        if (secret.IsNullOrEmpty()) throw new InvalidOperationException(L.T("Please call Setup to initialize MFA first."));
 
         if (!VerifyTotp(secret, code))
-            throw new InvalidOperationException("验证码错误，请确认 Authenticator App 时间已同步");
+            throw new InvalidOperationException(L.T("Incorrect verification code. Please ensure the Authenticator app time is synchronized."));
 
         // 激活：生成备用码
         var backupCodes = GenerateBackupCodes(10);
@@ -267,7 +267,7 @@ public class TotpMfaService : IMfaService
         foreach (var c in s.ToUpperInvariant())
         {
             if (c == '=' || c == ' ') continue;
-            if (c >= 128 || lookup[c] < 0) throw new FormatException($"无效的 Base32 字符: {c}");
+            if (c >= 128 || lookup[c] < 0) throw new FormatException(L.T("Invalid Base32 character: {0}.", c));
             buf = (buf << 5) | lookup[c];
             bitsLeft += 5;
             if (bitsLeft >= 8)

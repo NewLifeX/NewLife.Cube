@@ -62,7 +62,7 @@ public partial class OAuthConfig : Entity<OAuthConfig>, ITenantScope
         if (!HasDirty) return;
 
         // 这里验证参数范围，建议抛出参数异常，指定参数名，前端用户界面可以捕获参数异常并聚焦到对应的参数输入框
-        if (Name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Name), "名称不能为空！");
+        if (Name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Name), L.T("Name is required."));
 
         // 建议先调用基类方法，基类方法会做一些统一处理
         base.Valid(isNew);
@@ -87,7 +87,7 @@ public partial class OAuthConfig : Entity<OAuthConfig>, ITenantScope
         // InitData一般用于当数据表没有数据时添加一些默认数据，该实体类的任何第一次数据库操作都会触发该方法，默认异步调用
         if (Meta.Session.Count > 0) return;
 
-        if (XTrace.Debug) XTrace.WriteLine("开始初始化OAuthConfig[OAuth配置]数据……");
+        if (XTrace.Debug) XTrace.WriteLine("Start initializing OAuthConfig data...");
 
         //Add("NewLife", "新生命用户中心", "/Content/images/logo/NewLife.png");
         var entity = new OAuthConfig
@@ -153,7 +153,7 @@ public partial class OAuthConfig : Entity<OAuthConfig>, ITenantScope
             AutoRegister = true,
             FetchAvatar = true,
         }.Insert();
-        if (XTrace.Debug) XTrace.WriteLine("完成初始化OAuthConfig[OAuth配置]数据！");
+        if (XTrace.Debug) XTrace.WriteLine("OAuthConfig data initialization completed.");
     }
 
     /// <summary>已重载。显示友好名称</summary>

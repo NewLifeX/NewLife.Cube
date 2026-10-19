@@ -58,7 +58,7 @@ public partial class MailConfig : Entity<MailConfig>
         if (!HasDirty) return true;
 
         // 这里验证参数范围，建议抛出参数异常，指定参数名，前端用户界面可以捕获参数异常并聚焦到对应的参数输入框
-        if (Name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Name), "名称不能为空！");
+        if (Name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Name), L.T("Name is required."));
 
         // 建议先调用基类方法，基类方法会做一些统一处理
         if (!base.Valid(method)) return false;
@@ -90,7 +90,7 @@ public partial class MailConfig : Entity<MailConfig>
         // InitData一般用于当数据表没有数据时添加一些默认数据，该实体类的任何第一次数据库操作都会触发该方法，默认异步调用
         if (Meta.Session.Count > 0) return;
 
-        if (XTrace.Debug) XTrace.WriteLine($"开始初始化{nameof(MailConfig)}[邮件配置]数据……");
+        if (XTrace.Debug) XTrace.WriteLine("Start initializing {0} data...", nameof(MailConfig));
 
         var list = new[]
         {
@@ -165,7 +165,7 @@ public partial class MailConfig : Entity<MailConfig>
             entity.Insert();
         }
 
-        if (XTrace.Debug) XTrace.WriteLine($"完成初始化{nameof(MailConfig)}[邮件配置]数据！");
+        if (XTrace.Debug) XTrace.WriteLine("{0} data initialization completed.", nameof(MailConfig));
     }
 
     ///// <summary>已重载。基类先调用Valid(true)验证数据，然后在事务保护内调用OnInsert</summary>

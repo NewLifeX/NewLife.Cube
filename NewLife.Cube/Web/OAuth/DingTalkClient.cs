@@ -20,10 +20,10 @@ public class DingTalkClient : OAuthClient
         if (_show > 0 || Interlocked.CompareExchange(ref _show, 1, 0) != 0) return;
 
         // 输出帮助日志
-        XTrace.WriteLine("钉钉登录分多种方式，由Scope参数区分。");
-        XTrace.WriteLine("Scope=snsapi_qrlogin, 扫码登录");
-        XTrace.WriteLine("Scope=snsapi_login, 密码登录");
-        XTrace.WriteLine("Scope=snsapi_auth, 钉钉内免登");
+        XTrace.WriteLine("DingTalk sign-in has multiple modes selected by the Scope parameter.");
+        XTrace.WriteLine("Scope=snsapi_qrlogin, QR code sign-in");
+        XTrace.WriteLine("Scope=snsapi_login, password sign-in");
+        XTrace.WriteLine("Scope=snsapi_auth, in-app passwordless sign-in");
     }
 
     /// <summary>实例化</summary>
@@ -101,7 +101,7 @@ public class DingTalkClient : OAuthClient
         ShowHelp();
 
         var url = AccessUrl;
-        if (url.IsNullOrEmpty()) throw new ArgumentNullException(nameof(UserUrl), "未设置用户信息地址");
+        if (url.IsNullOrEmpty()) throw new ArgumentNullException(nameof(UserUrl), L.T("The user info URL is not configured."));
 
         var ts = DateTime.UtcNow.ToLong() + "";
         var sign = ts.GetBytes().SHA256(Secret.GetBytes()).ToBase64();

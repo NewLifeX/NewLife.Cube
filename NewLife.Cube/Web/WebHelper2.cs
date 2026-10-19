@@ -240,7 +240,7 @@ public static class WebHelper2
             {
                 set.Save();
 
-                XTrace.WriteLine("安全防御自动学习可信代理 {0}，累计 {1}/{2} 个", ip, list.Count, max);
+                XTrace.WriteLine("Security defense learned trusted proxy {0}; total {1}/{2}", ip, list.Count, max);
             }
             catch (Exception ex)
             {

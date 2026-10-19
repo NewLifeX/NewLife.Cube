@@ -56,7 +56,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
             // 1) 接受 json -> 返回 Json 封装的401
             if (accept.Contains("json"))
             {
-                context.Result = Json(401, "未授权");
+                context.Result = Json(401, L.T("Unauthorized"));
                 return;
             }
             // 2) 接受二进制下载或HTML -> 返回HTTP 401状态码
@@ -319,7 +319,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     public ActionResult GetArea(Int32 id = 0)
     {
         var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
-        if (r == null) return Json(500, null, "找不到地区");
+        if (r == null) return Json(500, null, L.T("Region not found."));
 
         return Json(0, null, new
         {
@@ -343,7 +343,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         AreaController.InitAreaData();
 
         var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
-        if (r == null) return Json(500, null, "找不到地区");
+        if (r == null) return Json(500, null, L.T("Region not found."));
 
         if (r.ID == 0)
             return Json(0, null, r.Childs.Where(e => e.Enable).Select(e => new { e.ID, e.Name, e.FullName, BigArea = e.GetBig() }).ToArray());
@@ -359,7 +359,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     public ActionResult AreaParents(Int32 id = 0, Boolean isContainSelf = false)
     {
         var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
-        if (r == null) return Json(500, null, "找不到地区");
+        if (r == null) return Json(500, null, L.T("Region not found."));
 
         var list = new List<Object>();
         foreach (var e in r.GetAllParents())
@@ -383,7 +383,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     public ActionResult AreaAllParents(Int32 id = 0)
     {
         var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
-        if (r == null) return Json(500, null, "找不到地区");
+        if (r == null) return Json(500, null, L.T("Region not found."));
 
         var rs = new List<AreaX>();
         foreach (var item in r.GetAllParents())
@@ -419,7 +419,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         if (id <= 0) throw new ArgumentNullException(nameof(id));
 
         var user = ManageProvider.Provider?.FindByID(id) as IUser;
-        if (user == null) throw new Exception("用户不存在 " + id);
+        if (user == null) throw new Exception(L.T("User [{0}] does not exist.", id));
 
         var set = CubeSetting.Current;
         var av = "";
@@ -541,12 +541,12 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     public ActionResult SaveLayout(Int32 userid, String category, String name, String value)
     {
         if (!category.EqualIgnoreCase("LayoutSetting"))
-            return Json(203, "非授权操作，不允许保存系统布局以外的信息");
+            return Json(203, L.T("This operation is not authorized; only system layout settings can be saved."));
 
         // 防水平越权：仅允许保存当前登录用户自己的布局；系统管理员可代用户设置
         var cur = ManageProvider.User;
         if (cur == null || userid != cur.ID && !cur.Roles.Any(e => e.IsSystem))
-            return Json(403, "仅能保存自己的布局设置");
+            return Json(403, L.T("You can only save your own layout settings."));
 
         var para = Parameter.GetOrAdd(userid, category, name);
         para.SetItem("Value", value);

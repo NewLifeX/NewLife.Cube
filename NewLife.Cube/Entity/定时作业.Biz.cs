@@ -39,7 +39,7 @@ public partial class CronJob : Entity<CronJob>
         if (!HasDirty) return;
 
         // 这里验证参数范围，建议抛出参数异常，指定参数名，前端用户界面可以捕获参数异常并聚焦到对应的参数输入框
-        if (Name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Name), "名称不能为空！");
+        if (Name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Name), L.T("Name is required."));
 
         // 建议先调用基类方法，基类方法会做一些统一处理
         base.Valid(isNew);
@@ -114,7 +114,7 @@ public partial class CronJob : Entity<CronJob>
     /// <returns></returns>
     public static CronJob Add(String name, MethodInfo method, String cron, Boolean enable = true)
     {
-        if (method == null || !method.IsStatic) throw new ArgumentOutOfRangeException(nameof(method), "定时作业执行方法必须是带有单个String参数的静态方法。");
+        if (method == null || !method.IsStatic) throw new ArgumentOutOfRangeException(nameof(method), L.T("The job method must be a static method with a single String parameter."));
 
         if (name.IsNullOrEmpty()) name = method.Name;
         var job = FindByName(name);

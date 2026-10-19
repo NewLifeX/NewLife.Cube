@@ -87,7 +87,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
 
         v = v.Split(",")[0];
 
-        if (!v.EqualIgnoreCase("true", "false")) throw new XException("非法布尔值Request[{0}]={1}", name, v);
+        if (!v.EqualIgnoreCase("true", "false")) throw new XException("Invalid boolean value in request [{0}]={1}", name, v);
 
         return v.ToBoolean();
     }
@@ -115,7 +115,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
                 sb.AppendFormat("{0}:{1}=>{2}", name, v2, v1);
             }
         }
-        WriteLog("修改", true, sb.ToString());
+        WriteLog(L.T("Update"), true, sb.ToString());
     }
 
     private static readonly Dictionary<Type, IList<DataField>> _cache = new();

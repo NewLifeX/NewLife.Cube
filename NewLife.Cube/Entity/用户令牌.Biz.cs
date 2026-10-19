@@ -118,10 +118,10 @@ namespace NewLife.Cube.Entity
         /// <returns></returns>
         public static UserToken Valid(String token, String ip)
         {
-            if (token.IsNullOrEmpty()) throw new Exception("缺少令牌token");
+            if (token.IsNullOrEmpty()) throw new Exception(L.T("Token is required."));
 
             var ut = FindByToken(token);
-            if (ut == null) throw new Exception("无效令牌token");
+            if (ut == null) throw new Exception(L.T("Invalid token."));
 
             ut.Times++;
             if (ut.FirstTime.Year < 2000)
@@ -133,13 +133,13 @@ namespace NewLife.Cube.Entity
             ut.LastTime = DateTime.Now;
             ut.SaveAsync(5000);
 
-            if (!ut.Enable || ut.UserID <= 0) throw new Exception("令牌已停用");
+            if (!ut.Enable || ut.UserID <= 0) throw new Exception(L.T("The token is disabled."));
 
-            if (ut.Expire.Year > 2000 && ut.Expire < DateTime.Now) throw new Exception("令牌已过期");
+            if (ut.Expire.Year > 2000 && ut.Expire < DateTime.Now) throw new Exception(L.T("The token has expired."));
 
             //var user = ManageProvider.Provider.FindByID(ut.UserID) as IUser;
             var user = ut.User;
-            if (user == null || !user.Enable) throw new Exception("无效令牌身份");
+            if (user == null || !user.Enable) throw new Exception(L.T("Invalid token identity."));
 
             //// 拥有系统角色
             //if (!user.Roles.Any(r => r.IsSystem)) throw new Exception("无权查看该数据");

@@ -232,7 +232,7 @@ public partial class Attachment : Entity<Attachment>
             if (uploadPath.IsNullOrEmpty()) uploadPath = CubeSetting.Current.UploadPath;
 
             var fullFile = uploadPath.CombinePath(file).GetBasePath();
-            XTrace.WriteLine("抓取附件 {0}，保存到 {1}", url, file);
+            XTrace.WriteLine("Fetching attachment {0} and saving it to {1}", url, file);
 
             fullFile.EnsureDirectory(true);
             //if (File.Exists(fullFile)) File.Delete(fullFile);

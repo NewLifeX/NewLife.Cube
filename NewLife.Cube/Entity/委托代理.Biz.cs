@@ -34,7 +34,7 @@ namespace NewLife.Cube.Entity
 
             if (PrincipalId <= 0) throw new ArgumentOutOfRangeException(nameof(PrincipalId));
             if (AgentId <= 0) throw new ArgumentOutOfRangeException(nameof(AgentId));
-            if (PrincipalId == AgentId) throw new ArgumentOutOfRangeException(nameof(AgentId), "委托人和代理人不能是同一个人");
+            if (PrincipalId == AgentId) throw new ArgumentOutOfRangeException(nameof(AgentId), L.T("The principal and agent cannot be the same person."));
         }
         #endregion
 

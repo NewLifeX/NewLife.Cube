@@ -32,7 +32,7 @@ public partial class App : Entity<App>
         if (!HasDirty) return;
 
         // 这里验证参数范围，建议抛出参数异常，指定参数名，前端用户界面可以捕获参数异常并聚焦到对应的参数输入框
-        if (Name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Name), "名称不能为空！");
+        if (Name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Name), L.T("Name is required."));
 
         //if (Secret.IsNullOrEmpty()) Secret = Rand.NextString(16).ToLower();
 

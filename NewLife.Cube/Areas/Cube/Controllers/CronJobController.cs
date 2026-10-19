@@ -54,7 +54,7 @@ public class CronJobController : EntityController<CronJob, CronJobModel>
             foreach (var item in entity.Cron.Split(";"))
             {
                 var cron = new Cron();
-                if (!cron.Parse(item)) throw new ArgumentException("Cron表达式有误！", nameof(entity.Cron));
+                if (!cron.Parse(item)) throw new ArgumentException(L.T("Invalid cron expression."), nameof(entity.Cron));
 
                 var dt = cron.GetNext(DateTime.Now);
                 if (next == DateTime.MinValue || dt < next) next = dt;
@@ -85,6 +85,6 @@ public class CronJobController : EntityController<CronJob, CronJobModel>
             JobService.Wake(entity.Id, -1);
         }
 
-        return Json(0, "已安排执行！");
+        return Json(0, L.T("Execution scheduled."));
     }
 }

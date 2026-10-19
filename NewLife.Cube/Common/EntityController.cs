@@ -165,7 +165,7 @@ public partial class EntityController<TEntity, TModel>
                     return new ApiResponse<TEntity>
                     {
                         Code = Models.CubeCode.ParamError.ToInt(),
-                        Message = SysConfig.Develop ? L.T("{0} {1}", L.T("Add failed!"), firstMsg) : L.T("Add failed!"),
+                        Message = SysConfig.Develop ? $"{L.T("Add failed!")} {firstMsg}" : L.T("Add failed!"),
                         Data = entity,
                         FieldErrors = fieldErrors
                     };
@@ -248,7 +248,7 @@ public partial class EntityController<TEntity, TModel>
                     return new ApiResponse<TEntity>
                     {
                         Code = Models.CubeCode.ParamError.ToInt(),
-                        Message = SysConfig.Develop ? L.T("{0} {1}", L.T("Save failed!"), firstMsg) : L.T("Save failed!"),
+                        Message = SysConfig.Develop ? $"{L.T("Save failed!")} {firstMsg}" : L.T("Save failed!"),
                         Data = null,
                         FieldErrors = fieldErrors
                     };
@@ -386,9 +386,9 @@ public partial class EntityController<TEntity, TModel>
 
         // 如果有字段级错误，使用第一条作为主消息提示
         if (fieldErrors != null && fieldErrors.Count > 0)
-            err = SysConfig.Develop ? L.T("{0} {1}", L.T("{0} failed!", action), fieldErrors[0].Message) : L.T("{0} failed!", action);
+            err = SysConfig.Develop ? $"{L.T("{0} failed!", action)} {fieldErrors[0].Message}" : L.T("{0} failed!", action);
         else
-            err = SysConfig.Develop ? L.T("{0} {1}", L.T("{0} failed!", action), err) : L.T("{0} failed!", action);
+            err = SysConfig.Develop ? $"{L.T("{0} failed!", action)} {err}" : L.T("{0} failed!", action);
 
         var code = ex is ApiException ae ? ae.Code : 500;
         return new ApiResponse<TEntity>
@@ -411,9 +411,9 @@ public partial class EntityController<TEntity, TModel>
     [DisplayName("导入Excel/Csv/Json/Zip")]
     public virtual IActionResult ImportFile(IFormFile file)
     {
-        if (file == null || file.Length <= 0) throw new ArgumentNullException(nameof(file), "未上传文件");
+        if (file == null || file.Length <= 0) throw new ArgumentNullException(nameof(file), L.T("No file was uploaded."));
 
-        WriteLog(nameof(ImportFile), true, $"开始导入文件[{file.FileName}]，大小[{file.Length:n0}]字节，类型[{file.ContentType}]");
+        WriteLog(nameof(ImportFile), true, L.T("Start importing file [{0}], size [{1:n0}] bytes, type [{2}].", file.FileName, file.Length, file.ContentType));
 
         var factory = Factory;
         var page = GetCachePager();
@@ -426,9 +426,9 @@ public partial class EntityController<TEntity, TModel>
             ".csv" => ImportCsv(name, stream, factory, page),
             ".json" => ImportJson(name, stream, factory, page),
             ".zip" => ImportZip(name, stream, factory, page),
-            _ => throw new NotSupportedException($"不支持的导入文件类型[{ext}]"),
+            _ => throw new NotSupportedException(L.T("Unsupported import file type [{0}].", ext)),
         };
-        var msg = $"导入[{name}] 共{rs}行";
+        var msg = L.T("Imported [{0}], {1} rows.", name, rs);
         WriteLog(nameof(ImportFile), true, msg);
 
         return Json(0, msg);

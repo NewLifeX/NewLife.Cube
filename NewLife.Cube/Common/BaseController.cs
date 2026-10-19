@@ -40,7 +40,7 @@ public abstract class BaseController : ControllerBase, IActionFilter
             if (context.ActionDescriptor is ControllerActionDescriptor act && !act.MethodInfo.IsDefined(typeof(AllowAnonymousAttribute)))
             {
                 var rs = !token.IsNullOrEmpty() && OnAuthorize(token);
-                if (!rs) throw new ApiException(403, "认证失败");
+                if (!rs) throw new ApiException(403, L.T("Authentication failed."));
             }
         }
         catch (Exception ex)

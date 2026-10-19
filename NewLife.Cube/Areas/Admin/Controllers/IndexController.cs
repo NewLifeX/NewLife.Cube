@@ -302,8 +302,8 @@ public class IndexController : ControllerBaseX, IPageDataContext
     public ActionResult SaveWidgetLayout(IDictionary<String, WidgetLayout> layout)
     {
         var userId = ManageProvider.User?.ID ?? 0;
-        if (userId <= 0) return Json(401, null, "未登录");
-        if (layout == null || layout.Count == 0) return Json(1, null, "布局为空");
+        if (userId <= 0) return Json(401, null, L.T("Please sign in first."));
+        if (layout == null || layout.Count == 0) return Json(1, null, L.T("The layout is empty."));
 
         _widgetManager.SaveLayout(userId, layout);
         return Json(0, null, "ok");
@@ -332,7 +332,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     public async Task<ActionResult> AiDiagnose()
     {
         var set = CubeSetting.Current;
-        if (!set.AISwitch) return Json(500, null, "AI 未启用，请在系统设置中开启");
+        if (!set.AISwitch) return Json(500, null, L.T("AI is not enabled. Please enable it in system settings."));
 
         var mi = MachineInfo.Current ?? new MachineInfo();
         var process = Process.GetCurrentProcess();

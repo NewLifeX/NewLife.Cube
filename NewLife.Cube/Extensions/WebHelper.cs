@@ -133,7 +133,7 @@ public static class WebHelper
         }
         catch (Exception ex)
         {
-            DefaultSpan.Current?.AppendTag($"GetRawUrl：{url} 失败：{ex.Message}");
+            DefaultSpan.Current?.AppendTag($"GetRawUrl failed for {url}: {ex.Message}");
             var port = request.Scheme switch
             {
                 "https" => 443,

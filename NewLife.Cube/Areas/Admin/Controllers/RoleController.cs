@@ -164,7 +164,7 @@ public class RoleController : EntityController<Role, RoleModel>
 
         v = v.Split(",")[0];
 
-        return !v.EqualIgnoreCase("true", "false") ? throw new XException("非法布尔值Request[{0}]={1}", name, v) : v.ToBoolean();
+        return !v.EqualIgnoreCase("true", "false") ? throw new XException("Invalid boolean value in request [{0}]={1}", name, v) : v.ToBoolean();
     }
 
     #region 权限配置
@@ -176,7 +176,7 @@ public class RoleController : EntityController<Role, RoleModel>
     [HttpGet]
     public Object PermissionTree(Int32 roleId)
     {
-        var role = Role.FindByID(roleId) ?? throw new XException("角色[{0}]不存在", roleId);
+        var role = Role.FindByID(roleId) ?? throw new XException("Role [{0}] does not exist.", roleId);
         var current = ManageProvider.User as IUser;
         var restricted = TenantContext.CurrentId > 0 && (current == null || !current.Roles.Any(e => e.IsSystem));
 
@@ -196,7 +196,7 @@ public class RoleController : EntityController<Role, RoleModel>
     [HttpPost]
     public Object SavePermission(RolePermissionModel model)
     {
-        var role = Role.FindByID(model.RoleId) ?? throw new XException("角色[{0}]不存在", model.RoleId);
+        var role = Role.FindByID(model.RoleId) ?? throw new XException("Role [{0}] does not exist.", model.RoleId);
         var current = ManageProvider.User as IUser;
         var restricted = TenantContext.CurrentId > 0 && (current == null || !current.Roles.Any(e => e.IsSystem));
 

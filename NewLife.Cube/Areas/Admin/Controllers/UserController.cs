@@ -287,7 +287,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         {
             // 用户页对非系统角色只读：仅支持查看本人信息，角色/部门/启用等管理字段一律禁止写入
             //（资料编辑走用户中心 Info，租户成员角色分配走 TenantUserController）
-            throw new Exception("用户页对非系统角色只读，资料编辑请前往用户中心！");
+            throw new Exception(L.T("The user page is read-only for non-system roles; edit your profile in the user center."));
         }
 
         if (post && type == DataObjectMethodType.Update)
@@ -313,7 +313,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
     protected override Int32 OnImport(IEntityFactory factory, IList<IEntity> list, ImportContext context)
     {
         // 用户页对非系统角色只读：批量导入属于写入旁路，一并禁止
-        if (!IsSystemRole()) throw new Exception("用户页对非系统角色只读，禁止批量导入！");
+        if (!IsSystemRole()) throw new Exception(L.T("The user page is read-only for non-system roles; bulk import is not allowed."));
 
         return base.OnImport(factory, list, context);
     }
@@ -443,10 +443,10 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
     [EntityAuthorize]
     public ActionResult Info()
     {
-        if (ManageProvider.User is not User user) throw new Exception("当前登录用户无效！");
+        if (ManageProvider.User is not User user) throw new Exception(L.T("The current user is invalid."));
 
         user = XCode.Membership.User.FindByKeyForEdit(user.ID);
-        if (user == null) throw new Exception("无效用户编号！");
+        if (user == null) throw new Exception(L.T("Invalid user id."));
 
         user["Password"] = null;
 
@@ -469,16 +469,16 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         var cur = ManageProvider.User;
         if (cur == null) return RedirectToAction("Login");
 
-        if (user.ID != cur.ID) throw new Exception("禁止修改非当前登录用户资料");
+        if (user.ID != cur.ID) throw new Exception(L.T("You cannot modify another user's profile."));
 
         var entity = user as IEntity;
         // 自助更新：仅当用户名实际变更时才拦截。
         // 原逻辑「请求出现 Name 字段即拦」会与移动端回传当前用户名冲突，导致昵称无法保存。
         // 改为值比对：Name 与当前登录用户名一致则放行。
         if (entity.Dirtys["Name"] && !user.Name.EqualIgnoreCase(cur.Name))
-            throw new Exception("禁止修改用户名！");
-        if (entity.Dirtys["RoleID"]) throw new Exception("禁止修改角色！");
-        if (entity.Dirtys["Enable"]) throw new Exception("禁止修改禁用！");
+            throw new Exception(L.T("The username cannot be changed."));
+        if (entity.Dirtys["RoleID"]) throw new Exception(L.T("The role cannot be changed."));
+        if (entity.Dirtys["Enable"]) throw new Exception(L.T("The disabled state cannot be changed."));
 
         // 头像上传已拆分为独立接口 UploadFile（POST /Admin/User/UploadFile），
         // 本接口仅负责文本字段更新（昵称/邮箱/手机等）以及 avatar 字段回填。
@@ -545,19 +545,19 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
     [EntityAuthorize]
     public ActionResult<String> ChangePassword(ChangePasswordModel model)
     {
-        if (model.NewPassword.IsNullOrWhiteSpace()) throw new ArgumentException($"新密码不能为 Null 或空白", nameof(model.NewPassword));
-        if (model.NewPassword2.IsNullOrWhiteSpace()) throw new ArgumentException($"确认密码不能为 Null 或空白", nameof(model.NewPassword2));
-        if (model.NewPassword != model.NewPassword2) throw new ArgumentException($"两次输入密码不一致", nameof(model.NewPassword));
+        if (model.NewPassword.IsNullOrWhiteSpace()) throw new ArgumentException(L.T("New password is required."), nameof(model.NewPassword));
+        if (model.NewPassword2.IsNullOrWhiteSpace()) throw new ArgumentException(L.T("Confirm password is required."), nameof(model.NewPassword2));
+        if (model.NewPassword != model.NewPassword2) throw new ArgumentException(L.T("The two passwords do not match."), nameof(model.NewPassword));
 
-        if (!passwordService.Valid(model.NewPassword)) throw new ArgumentException($"密码太弱，要求8位起且包含数字大小写字母和符号", nameof(model.NewPassword));
+        if (!passwordService.Valid(model.NewPassword)) throw new ArgumentException(L.T("Password is too weak."), nameof(model.NewPassword));
 
         // SSO 登录不需要知道原密码就可以修改，原则上更相信外方，同时也避免了直接第三方登录没有设置密码的尴尬
         var ssoName = Session["Cube_Sso"] as String;
         var requireOldPass = ssoName.IsNullOrEmpty();
         if (requireOldPass)
         {
-            if (model.OldPassword.IsNullOrWhiteSpace()) throw new ArgumentException($"原密码不能为 Null 或空白", nameof(model.OldPassword));
-            if (model.NewPassword == model.OldPassword) throw new ArgumentException($"修改密码不能与原密码一致", nameof(model.NewPassword));
+            if (model.OldPassword.IsNullOrWhiteSpace()) throw new ArgumentException(L.T("Current password is required."), nameof(model.OldPassword));
+            if (model.NewPassword == model.OldPassword) throw new ArgumentException(L.T("The new password must be different from the current password."), nameof(model.NewPassword));
         }
 
         var current = ManageProvider.User;
@@ -584,7 +584,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         if (user == null) return RedirectToAction("Login");
 
         user = XCode.Membership.User.FindByKeyForEdit(user.ID);
-        if (user == null) throw new Exception("无效用户编号！");
+        if (user == null) throw new Exception(L.T("Invalid user id."));
 
         // 第三方绑定
         var ucs = UserConnect.FindAllByUserID(user.ID);
@@ -609,13 +609,13 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         if (!appId.IsNullOrEmpty())
         {
             var config = OAuthConfig.FindByAppId(appId);
-            if (config == null) throw new ArgumentException($"应用{nameof(OAuthConfig.AppId)}未配置", nameof(appId));
+            if (config == null) throw new ArgumentException(L.T("The application [{0}] is not configured.", nameof(OAuthConfig.AppId)), nameof(appId));
 
             if (config.TenantId > 0)
             {
                 var tenant = Tenant.FindById(config.TenantId);
                 if (tenant == null || !tenant.Enable)
-                    throw new ArgumentException($"租户[{config.TenantId}]不存在或已禁用", nameof(appId));
+                    throw new ArgumentException(L.T("Tenant [{0}] does not exist or is disabled.", config.TenantId), nameof(appId));
             }
 
             return config.TenantId;
@@ -626,7 +626,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         {
             var tenant = Tenant.FindByCode(tenantStr);
             if (tenant == null || !tenant.Enable)
-                throw new ArgumentException($"租户[{tenantStr}]不存在或已禁用", nameof(tenantStr));
+                throw new ArgumentException(L.T("Tenant [{0}] does not exist or is disabled.", tenantStr), nameof(tenantStr));
 
             return tenant.Id;
         }
@@ -634,7 +634,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         if (TenantContext.Current.GetTenantMode() == TenantMode.Tenant) return TenantContext.CurrentId;
 
         // 多租户模式下，注册必须携带租户信息
-        throw new ArgumentException("多租户模式下，注册必须携带X-App-Id或X-Tenant租户信息");
+        throw new ArgumentException(L.T("In multi-tenant mode, registration must include X-App-Id or X-Tenant."));
     }
 
     /// <summary>注册</summary>
@@ -649,7 +649,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         var password2 = registerModel.Password2;
 
         var set = CubeSetting.Current;
-        if (!set.AllowRegister) throw new Exception("禁止注册！");
+        if (!set.AllowRegister) throw new Exception(L.T("Registration is disabled."));
 
         var tenantId = tenantContext.TenantId;
         try
@@ -658,26 +658,26 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
             if (tenantId > 0) TenantContext.Current = new TenantContext { TenantId = tenantId };
 
             //if (String.IsNullOrEmpty(email)) throw new ArgumentNullException("email", "邮箱地址不能为空！");
-            if (String.IsNullOrEmpty(username)) throw new ArgumentNullException("username", "用户名不能为空！");
-            if (String.IsNullOrEmpty(password)) throw new ArgumentNullException("password", "密码不能为空！");
-            if (String.IsNullOrEmpty(password2)) throw new ArgumentNullException("password2", "重复密码不能为空！");
-            if (password != password2) throw new ArgumentOutOfRangeException("password2", "两次密码必须一致！");
+            if (String.IsNullOrEmpty(username)) throw new ArgumentNullException("username", L.T("Username is required."));
+            if (String.IsNullOrEmpty(password)) throw new ArgumentNullException("password", L.T("Password is required."));
+            if (String.IsNullOrEmpty(password2)) throw new ArgumentNullException("password2", L.T("Confirm password is required."));
+            if (password != password2) throw new ArgumentOutOfRangeException("password2", L.T("The two passwords do not match."));
 
-            if (!passwordService.Valid(password)) throw new ArgumentException($"密码太弱，要求8位起且包含数字大小写字母和符号", nameof(password));
+            if (!passwordService.Valid(password)) throw new ArgumentException(L.T("Password is too weak."), nameof(password));
 
             // 不得使用OAuth前缀
             foreach (var item in OAuthConfig.GetValids(tenantId))
             {
                 if (username.StartsWithIgnoreCase($"{item.Name}_"))
-                    throw new ArgumentException(nameof(username), $"禁止使用[{item.Name}_]前缀！");
+                    throw new ArgumentException(nameof(username), L.T("The prefix [{0}_] is not allowed.", item.Name));
             }
 
             // 去重判断
             var user = FindByName(username);
-            if (user != null) throw new ArgumentException(nameof(username), $"用户[{username}]已存在！");
+            if (user != null) throw new ArgumentException(nameof(username), L.T("User [{0}] already exists.", username));
 
             user = FindByMail(email);
-            if (user != null) throw new ArgumentException(nameof(email), $"邮箱[{email}]已存在！");
+            if (user != null) throw new ArgumentException(nameof(email), L.T("Email [{0}] already exists.", email));
 
             var r = Role.GetOrAdd(set.DefaultRole);
             var user2 = ManageProvider.Provider.Register(username, password, r.ID, true);
@@ -756,7 +756,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
     [HttpPost]
     public ActionResult ClearPassword(Int32 id)
     {
-        if (!ManageProvider.User.Roles.Any(e => e.IsSystem)) throw new Exception("清除密码操作需要管理员权限，非法操作！");
+        if (!ManageProvider.User.Roles.Any(e => e.IsSystem)) throw new Exception(L.T("Clearing the password requires administrator privileges."));
 
         // 前面表单可能已经清空密码
         var user = FindByID(id);
@@ -776,17 +776,17 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
     public ActionResult RevokeTokens(Int32 id)
     {
         // 吊销令牌属于安全运维操作，仅管理员可用（用户页对非系统角色只读，防跨用户令牌吊销）
-        if (!IsSystemRole()) throw new Exception("吊销令牌需要管理员权限，非法操作！");
+        if (!IsSystemRole()) throw new Exception(L.T("Revoking tokens requires administrator privileges."));
 
         var user = FindByID(id);
-        if (user == null) return Json(1, "用户不存在");
+        if (user == null) return Json(1, L.T("User does not exist."));
 
         var count = UserToken.RevokeByUser(id);
 
-        LogProvider.Provider.WriteLog("用户", "吊销令牌", true,
-            $"吊销用户[{user.Name}]的{count}个令牌", id, user.Name);
+        LogProvider.Provider.WriteLog(L.T("User"), L.T("Revoke token"), true,
+            L.T("Revoked {0} tokens of user [{1}].", count, user.Name), id, user.Name);
 
-        return Json(0, $"已吊销 {count} 个令牌");
+        return Json(0, L.T("Revoked {0} tokens.", count));
     }
 
     #region  验证码

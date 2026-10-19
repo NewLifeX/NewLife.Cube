@@ -28,7 +28,7 @@ public class OAuthAppService : IOAuthAppService
         // 优先使用注入的 Setting；未注入时回退全局配置，确保 EnableOAuthServer 开关始终生效，
         // 不依赖 SsoController 构造函数的手动接线（否则服务被直接调用时开关形同虚设）
         var set = Setting ?? CubeSetting.Current;
-        if (set != null && !set.EnableOAuthServer) throw new XException("未启用OAuth服务");
+        if (set != null && !set.EnableOAuthServer) throw new XException("OAuth service is not enabled.");
     }
 
     /// <summary>验证应用</summary>
@@ -48,14 +48,14 @@ public class OAuthAppService : IOAuthAppService
             app.Insert();
         }
 
-        if (!app.Enable) throw new XException("应用[{0}]不可用", client_id);
-        if (app.Expired.Year > 2000 && app.Expired < DateTime.Now) throw new XException("应用[{0}]已过期", client_id);
+        if (!app.Enable) throw new XException("Application [{0}] is unavailable.", client_id);
+        if (app.Expired.Year > 2000 && app.Expired < DateTime.Now) throw new XException("Application [{0}] has expired.", client_id);
 
-        if (!ip.IsNullOrEmpty() && !app.ValidSource(ip)) throw new XException("来源地址不合法 {0}", ip);
+        if (!ip.IsNullOrEmpty() && !app.ValidSource(ip)) throw new XException("Invalid source address [{0}].", ip);
 
         if (client_secret != null)
         {
-            if (!app.Secret.IsNullOrEmpty() && !app.Secret.EqualIgnoreCase(client_secret)) throw new XException("应用密钥错误");
+            if (!app.Secret.IsNullOrEmpty() && !app.Secret.EqualIgnoreCase(client_secret)) throw new XException("Invalid application secret.");
         }
 
         return app;

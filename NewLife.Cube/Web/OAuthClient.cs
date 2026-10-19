@@ -136,7 +136,7 @@ public class OAuthClient
             var ms = OAuthConfig.GetValids(tenantId, GrantTypes.AuthorizationCode);
             if (ms.Count > 0) name = ms[0].Name;
         }
-        if (name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(name), "未正确配置OAuth");
+        if (name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(name), L.T("OAuth is not configured correctly."));
 
         //if (!_map.TryGetValue(name, out var type)) throw new Exception($"找不到[{name}]的OAuth客户端");
         // 找不到就用默认
@@ -159,11 +159,11 @@ public class OAuthClient
     public void Apply(Int32 tenantId, String name)
     {
         var ms = OAuthConfig.GetValids(tenantId, GrantTypes.AuthorizationCode);
-        if (ms.Count == 0) throw new InvalidOperationException("未设置OAuth服务端");
+        if (ms.Count == 0) throw new InvalidOperationException(L.T("The OAuth server is not configured."));
 
         var mi = ms.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
         if (mi == null && name.IsNullOrEmpty()) mi = ms[0];
-        if (mi == null || !mi.Enable) throw new InvalidOperationException($"未找到有效的OAuth服务端设置[{name}]");
+        if (mi == null || !mi.Enable) throw new InvalidOperationException(L.T("No valid OAuth server configuration found for [{0}].", name));
 
         Name = mi.Name;
 
@@ -215,8 +215,8 @@ public class OAuthClient
     {
         if (redirect.IsNullOrEmpty()) throw new ArgumentNullException(nameof(redirect));
 
-        if (Key.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Key), "未设置应用标识");
-        if (Secret.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Secret), "未设置应用密钥");
+        if (Key.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Key), L.T("The application key is not configured."));
+        if (Secret.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Secret), L.T("The application secret is not configured."));
 
         //if (state.IsNullOrEmpty()) state = Rand.Next().ToString();
 
@@ -243,7 +243,7 @@ public class OAuthClient
     /// <returns></returns>
     public virtual String GetAccessToken(String code)
     {
-        if (code.IsNullOrEmpty()) throw new ArgumentNullException(nameof(code), "未设置授权码");
+        if (code.IsNullOrEmpty()) throw new ArgumentNullException(nameof(code), L.T("The authorization code is not configured."));
 
         Code = code;
 
@@ -289,7 +289,7 @@ public class OAuthClient
     /// <returns></returns>
     public virtual String GetOpenID()
     {
-        if (AccessToken.IsNullOrEmpty()) throw new ArgumentNullException(nameof(AccessToken), "未设置授权码");
+        if (AccessToken.IsNullOrEmpty()) throw new ArgumentNullException(nameof(AccessToken), L.T("The access token is not configured."));
 
         var url = GetUrl(nameof(GetOpenID), OpenIDUrl);
         WriteLog("GetOpenID {0}", url);
@@ -381,7 +381,7 @@ public class OAuthClient
     public virtual String GetUserInfo()
     {
         var url = UserUrl;
-        if (url.IsNullOrEmpty()) throw new ArgumentNullException(nameof(UserUrl), "未设置用户信息地址");
+        if (url.IsNullOrEmpty()) throw new ArgumentNullException(nameof(UserUrl), L.T("The user info URL is not configured."));
 
         url = GetUrl(nameof(GetUserInfo), url);
         WriteLog("GetUserInfo {0}", url);
@@ -441,7 +441,7 @@ public class OAuthClient
     public virtual String Logout(String redirect = null, String state = null, Uri baseUri = null)
     {
         var url = LogoutUrl;
-        if (url.IsNullOrEmpty()) throw new ArgumentNullException(nameof(LogoutUrl), "未设置注销地址");
+        if (url.IsNullOrEmpty()) throw new ArgumentNullException(nameof(LogoutUrl), L.T("The logout URL is not configured."));
 
         // 如果是相对路径，自动加上前缀。需要考虑反向代理的可能，不能直接使用Request.Url
         //redirect = redirect.AsUri(baseUri) + "";

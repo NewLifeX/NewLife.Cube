@@ -88,7 +88,7 @@ public class AiController : ControllerBaseX
         if (target is IEntityAiContext eac)
         {
             // 实体控制器：按目标实体页 Detail 权限校验（等价原 {controller}/AiChat 的 EntityAuthorize），拒绝越权对话
-            if (!CheckEntityPermission(target.GetType())) return Json(403, null, "无权访问该页面数据");
+            if (!CheckEntityPermission(target.GetType())) return Json(403, null, L.T("You do not have permission to access the data on this page."));
 
             // 实体上下文工具集由目标控制器自建（保留子类重载 CreateCubeTools），数据查询委托走其 SearchData
             registry.AddTools(eac.CreateCubeTools(pager, request.Id));
@@ -147,13 +147,13 @@ public class AiController : ControllerBaseX
     private static async Task<(ActionResult? Error, CubeAiChatRequest? Req)> ParseAsync(ControllerBaseX ctrl)
     {
         var set = CubeSetting.Current;
-        if (!set.AISwitch) return (ctrl.Json(500, null, "AI 未启用，请联系系统管理员开启 AISwitch"), null);
+        if (!set.AISwitch) return (ctrl.Json(500, null, L.T("AI is not enabled. Please contact the system administrator to enable AISwitch.")), null);
 
         // 读取 JSON 请求体
         var body = await new StreamReader(ctrl.Request.Body).ReadToEndAsync();
-        if (body.IsNullOrEmpty()) return (ctrl.Json(500, null, "请求体为空"), null);
+        if (body.IsNullOrEmpty()) return (ctrl.Json(500, null, L.T("The request body is empty.")), null);
         var req = body.ToJsonEntity<CubeAiChatRequest>();
-        if (req == null || req.Message.IsNullOrEmpty()) return (ctrl.Json(500, null, "消息不能为空"), null);
+        if (req == null || req.Message.IsNullOrEmpty()) return (ctrl.Json(500, null, L.T("The message cannot be empty.")), null);
 
         return (null, req);
     }
@@ -174,7 +174,7 @@ public class AiController : ControllerBaseX
         }
         catch (Exception ex)
         {
-            XTrace.WriteLine("AiChat 解析 _query 失败：{0}", ex.Message);
+            XTrace.WriteLine("AiChat failed to parse _query: {0}", ex.Message);
             return null;
         }
     }
@@ -288,7 +288,7 @@ public class AiController : ControllerBaseX
         catch (Exception ex)
         {
             // 目标控制器初始化失败不影响对话可用性，降级为通用流程
-            XTrace.WriteLine("[AI] 初始化目标控制器[{0}]失败：{1}", type.FullName, ex.Message);
+            XTrace.WriteLine("[AI] Failed to initialize target controller [{0}]: {1}", type.FullName, ex.Message);
             return null;
         }
     }
@@ -362,15 +362,15 @@ public class AiController : ControllerBaseX
     public async Task<ActionResult> OperationResult()
     {
         var body = await new StreamReader(Request.Body).ReadToEndAsync();
-        if (body.IsNullOrEmpty()) return Json(500, null, "请求体为空");
+        if (body.IsNullOrEmpty()) return Json(500, null, L.T("The request body is empty."));
         var req = body.ToJsonEntity<BrowserOpResult>();
-        if (req == null || req.CheckpointId.IsNullOrEmpty()) return Json(500, null, "参数错误");
+        if (req == null || req.CheckpointId.IsNullOrEmpty()) return Json(500, null, L.T("Invalid request parameter"));
 
         // 分布式：经 DI 解析检查点服务（事件总线广播，POST 命中任意实例都能唤醒等待方），兜底进程内实例
         var cp = HttpContext.RequestServices.GetService<PageCheckpointService>() ?? PageCheckpointService.Instance;
         var user = HttpContext.User.Identity as IUser;
         var ok = await cp.Respond(req.CheckpointId, user?.ID ?? 0, req.Result ?? "{}");
 
-        return ok ? Json(0, null, "ok") : Json(500, null, "操作不存在或已过期");
+        return ok ? Json(0, null, "ok") : Json(500, null, L.T("The operation does not exist or has expired."));
     }
 }

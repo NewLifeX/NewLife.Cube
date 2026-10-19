@@ -63,7 +63,7 @@ public class LovController : ControllerBaseX
         if (id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(id));
 
         var def = LovStore.FindDef(id);
-        if (def == null) throw new InvalidOperationException($"值集 {id} 不存在");
+        if (def == null) throw new InvalidOperationException(L.T("Value set [{0}] does not exist.", id));
 
         return new ApiResponse<Object> { Data = ToRow(def) };
     }
@@ -79,11 +79,11 @@ public class LovController : ControllerBaseX
         CheckCode(model);
 
         if (LovStore.FindDef(model.LovCode) != null)
-            throw new InvalidOperationException($"值集 {model.LovCode} 已存在");
+            throw new InvalidOperationException(L.T("Value set [{0}] already exists.", model.LovCode));
 
         LovStore.SaveDef(model);
 
-        return new ApiResponse<Object> { Code = 0, Message = "添加成功", Data = new { id = model.LovCode } };
+        return new ApiResponse<Object> { Code = 0, Message = L.T("Add succeeded!"), Data = new { id = model.LovCode } };
     }
 
     /// <summary>更新手工定义。body.id 为原 LovCode，lovCode 变更时级联清理旧编码数据</summary>
@@ -100,7 +100,7 @@ public class LovController : ControllerBaseX
 
         if (oldCode.IsNullOrEmpty()) oldCode = model.LovCode;
         if (LovStore.FindDef(oldCode) == null)
-            throw new InvalidOperationException($"值集 {oldCode} 不存在");
+            throw new InvalidOperationException(L.T("Value set [{0}] does not exist.", oldCode));
 
         // 编码变更：级联清理旧编码数据，以新编码重建（明细需在配置页重新维护）
         if (!oldCode.EqualIgnoreCase(model.LovCode))
@@ -108,7 +108,7 @@ public class LovController : ControllerBaseX
 
         LovStore.SaveDef(model);
 
-        return new ApiResponse<Object> { Code = 0, Message = "更新成功", Data = new { id = model.LovCode } };
+        return new ApiResponse<Object> { Code = 0, Message = L.T("Save succeeded!"), Data = new { id = model.LovCode } };
     }
 
     /// <summary>删除手工定义（级联清理明细）</summary>
@@ -123,7 +123,7 @@ public class LovController : ControllerBaseX
 
         LovStore.DeleteDef(id);
 
-        return new ApiResponse<Object> { Code = 0, Message = "删除成功" };
+        return new ApiResponse<Object> { Code = 0, Message = L.T("Delete succeeded!") };
     }
 
     /// <summary>批量删除选中数据。支持重复参数 id=a&amp;id=b、逗号分隔 id=a,b</summary>
@@ -134,7 +134,7 @@ public class LovController : ControllerBaseX
     public ApiResponse<String> DeleteSelect([FromQuery] String[] id)
     {
         if (id == null || id.Length == 0)
-            throw new InvalidOperationException(L.T("No data was specified for deletion."));
+            throw new InvalidOperationException(L.T("No data specified for deletion."));
 
         var n = 0;
         foreach (var item in id)
@@ -245,7 +245,7 @@ public class LovController : ControllerBaseX
 
         var config = ResolveListConfig(request.LovCode);
         if (config == null)
-            throw new InvalidOperationException($"值集 {request.LovCode} 不存在或未配置列表数据源");
+            throw new InvalidOperationException(L.T("Value set [{0}] does not exist or has no list data source configured.", request.LovCode));
 
         // 通过 IOC 获取列表数据代理实现（默认 DefaultLovListDataProxy，可被使用者覆盖）
         var proxy = HttpContext.RequestServices.GetRequiredService<ILovListDataProxy>();
@@ -271,7 +271,7 @@ public class LovController : ControllerBaseX
         if (id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(id));
 
         var def = LovStore.FindDef(id);
-        if (def == null) throw new InvalidOperationException($"值集 {id} 不存在");
+        if (def == null) throw new InvalidOperationException(L.T("Value set [{0}] does not exist.", id));
 
         var result = new Dictionary<String, Object?>
         {
@@ -364,7 +364,7 @@ public class LovController : ControllerBaseX
         if (id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(id));
 
         var def = LovStore.FindDef(id);
-        if (def == null) throw new InvalidOperationException($"值集 {id} 不存在");
+        if (def == null) throw new InvalidOperationException(L.T("Value set [{0}] does not exist.", id));
 
         // ENUM 类型：保存枚举值（名值对）
         if (def.Type == "ENUM")
@@ -499,14 +499,14 @@ public class LovController : ControllerBaseX
     private static void CheckCode(LovDefModel def)
     {
         if (def.LovCode.IsNullOrEmpty())
-            throw new InvalidOperationException("值集编码不能为空");
+            throw new InvalidOperationException(L.T("Value set code is required."));
         if (def.Type != "ENUM" && def.Type != "LIST")
-            throw new InvalidOperationException($"值集类型 {def.Type} 无效，仅支持 ENUM/LIST");
+            throw new InvalidOperationException(L.T("Invalid value set type [{0}]; only ENUM and LIST are supported.", def.Type));
 
         var prefix = def.LovCode.Split('.')[0];
         var expectedPrefix = def.Type == "ENUM" ? "Enum" : "List";
         if (!prefix.EqualIgnoreCase(expectedPrefix))
-            throw new InvalidOperationException($"值集编码前缀与类型不匹配：LovCode 以 '{prefix}' 开头，但 Type 为 '{def.Type}'，{def.Type} 类型必须以 '{expectedPrefix}.' 开头");
+            throw new InvalidOperationException(L.T("Value set code prefix does not match the type: LovCode starts with '{0}' but Type is '{1}', which must start with '{2}.'", prefix, def.Type, expectedPrefix));
     }
 
     /// <summary>读取字符串属性（支持字符串/数字/布尔），不存在返回 null</summary>

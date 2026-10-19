@@ -139,7 +139,7 @@ public class S3ObjectStorage : IObjectStorage, ILogFeature, ITracerFeature, IDis
         if (!rs.IsSuccessStatusCode)
         {
             var msg = await rs.Content.ReadAsStringAsync();
-            throw new InvalidOperationException($"上传对象[{id}]失败：{(Int32)rs.StatusCode} {rs.ReasonPhrase} {msg}");
+            throw new InvalidOperationException(L.T("Failed to upload object [{0}]: {1} {2} {3}", id, (Int32)rs.StatusCode, rs.ReasonPhrase, msg));
         }
 
         return new ObjectInfo { Name = id, Length = data.Length, Data = data };
@@ -179,14 +179,14 @@ public class S3ObjectStorage : IObjectStorage, ILogFeature, ITracerFeature, IDis
     /// <param name="sourceId">源对象文件名</param>
     /// <param name="destId">目标对象文件名</param>
     /// <returns></returns>
-    public Task<IObjectInfo?> CopyAsync(String sourceId, String destId) => throw new NotSupportedException("S3兼容对象存储暂不支持复制");
+    public Task<IObjectInfo?> CopyAsync(String sourceId, String destId) => throw new NotSupportedException(L.T("Copy is not supported by the S3-compatible object storage."));
 
     /// <summary>搜索对象。S3兼容存储暂不支持</summary>
     /// <param name="pattern">匹配模式</param>
     /// <param name="start">开始序号</param>
     /// <param name="count">最大个数</param>
     /// <returns></returns>
-    public Task<IList<IObjectInfo>?> SearchAsync(String? pattern = null, Int32 start = 0, Int32 count = 100) => throw new NotSupportedException("S3兼容对象存储暂不支持搜索");
+    public Task<IList<IObjectInfo>?> SearchAsync(String? pattern = null, Int32 start = 0, Int32 count = 100) => throw new NotSupportedException(L.T("Search is not supported by the S3-compatible object storage."));
 
     #region 兼容旧版
     /// <summary>获取对象</summary>
@@ -248,11 +248,11 @@ public class S3ObjectStorage : IObjectStorage, ILogFeature, ITracerFeature, IDis
         var dateStamp = now.ToString("yyyyMMdd");
         var scope = $"{dateStamp}/{Region}/s3/aws4_request";
 
-        if (AppId.IsNullOrEmpty()) throw new ArgumentNullException(nameof(AppId), "缺少对象存储应用标识AccessKeyId");
-        if (Secret.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Secret), "缺少对象存储应用密钥AccessKeySecret");
+        if (AppId.IsNullOrEmpty()) throw new ArgumentNullException(nameof(AppId), L.T("Object storage AccessKeyId is required."));
+        if (Secret.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Secret), L.T("Object storage AccessKeySecret is required."));
 
         var server = Server;
-        if (server.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Server), "缺少对象存储服务器地址");
+        if (server.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Server), L.T("Object storage server address is required."));
         if (!server.StartsWithIgnoreCase("http://", "https://")) server = "https://" + server;
         server = server.TrimEnd('/');
 

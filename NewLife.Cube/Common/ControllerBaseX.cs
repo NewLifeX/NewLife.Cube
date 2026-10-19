@@ -99,13 +99,13 @@ public class ControllerBaseX : ControllerBase, IActionFilter
                 // 认证层租户校验（fail-closed）：多租户开启时，已认证用户必须处于有效租户上下文，否则拒绝访问
                 if (CurrentUser != null && !HttpContext.ValidateTenant(CurrentUser))
                 {
-                    throw new ApiException(403, "无权限访问当前租户");
+                    throw new ApiException(403, L.T("No permission to access the current tenant."));
                 }
             }
 
             if (CurrentUser == null && context.ActionDescriptor is ControllerActionDescriptor act && !act.MethodInfo.IsDefined(typeof(AllowAnonymousAttribute)))
             {
-                throw new ApiException(403, "认证失败");
+                throw new ApiException(403, L.T("Authentication failed."));
             }
 
             if (CurrentUser != null)

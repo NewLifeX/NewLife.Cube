@@ -21,7 +21,7 @@ public static class AIServiceExtensions
         //    return services;
         //}
 
-        XTrace.WriteLine("AI 已启用，Provider={0} Model={1}", set.AIProvider, set.AIModel);
+        XTrace.WriteLine("AI enabled, Provider={0} Model={1}", set.AIProvider, set.AIModel);
         services.AddSingleton<IAIService, AIService>();
 
         // 对话会话历史：单例存储（NewLife.AI 内置 MemoryCacheSessionStore，1h 过期；后续将由上游升级为 ICacheProvider 版本支持分布式）。

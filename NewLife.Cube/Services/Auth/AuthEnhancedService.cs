@@ -178,7 +178,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
                 user.RegisterTime = DateTime.Now;
                 user.Insert();
 
-                LogProvider.Provider.WriteLog(typeof(User), "短信注册", true, $"手机号：{mobile} 自动注册", user.ID, user + "", ip);
+                LogProvider.Provider.WriteLog(typeof(User), L.T("SMS registration"), true, L.T("Mobile: {0}, auto-registered", mobile), user.ID, user + "", ip);
             }
 
             if (!user.Enable) throw new InvalidOperationException(L.T("User is disabled."));
@@ -275,7 +275,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
                 user.RegisterTime = DateTime.Now;
                 user.Insert();
 
-                LogProvider.Provider.WriteLog(typeof(User), "邮箱注册", true, $"邮箱：{mail} 自动注册", user.ID, user + "", ip);
+                LogProvider.Provider.WriteLog(typeof(User), L.T("Email registration"), true, L.T("Email: {0}, auto-registered", mail), user.ID, user + "", ip);
             }
 
             if (!user.Enable) throw new InvalidOperationException(L.T("User is disabled."));
@@ -395,7 +395,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         var user = _userService.CreateUserAndBindContact(username, pwd.Data, model.Email?.Trim(), mobile, ip, false, true);
 
         _cache.Remove(codeKey);
-        LogProvider.Provider.WriteLog(typeof(User), "手机注册", true, $"手机号：{mobile}", user.ID, user + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), L.T("Mobile registration"), true, L.T("Mobile: {0}", mobile), user.ID, user + "", ip);
 
         return _userService.CompleteLogin(user, httpContext, false, "手机注册", username, ip);
     }
@@ -428,7 +428,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         var user = _userService.CreateUserAndBindContact(username, pwd.Data, mail, model.Mobile?.Trim(), ip, true, false);
 
         _cache.Remove(codeKey);
-        LogProvider.Provider.WriteLog(typeof(User), "邮箱注册", true, $"邮箱：{mail}", user.ID, user + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), L.T("Email registration"), true, L.T("Email: {0}", mail), user.ID, user + "", ip);
 
         return _userService.CompleteLogin(user, httpContext, false, "邮箱注册", username, ip);
     }
@@ -497,7 +497,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         // 验证成功后删除缓存验证码，防止重复使用
         _cache.Remove(codeKey);
 
-        LogProvider.Provider.WriteLog(typeof(User), "绑定手机", true, $"手机号：{mobile}", currentUser.ID, currentUser + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), L.T("Bind mobile"), true, L.T("Mobile: {0}", mobile), currentUser.ID, currentUser + "", ip);
 
         return new ServiceResult { IsSuccess = true, Message = L.T("Mobile number bound successfully.") };
     }
@@ -534,7 +534,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         // 验证成功后删除缓存验证码，防止重复使用
         _cache.Remove(codeKey);
 
-        LogProvider.Provider.WriteLog(typeof(User), "绑定邮箱", true, $"邮箱：{mail}", currentUser.ID, currentUser + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), L.T("Bind email"), true, L.T("Email: {0}", mail), currentUser.ID, currentUser + "", ip);
 
         return new ServiceResult { IsSuccess = true, Message = L.T("Email bound successfully.") };
     }
@@ -621,7 +621,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         // 验证成功后删除缓存验证码，防止重复使用
         _cache.Remove(codeKey);
 
-        LogProvider.Provider.WriteLog(typeof(User), "重置密码", true, $"手机号：{mobile}", user.ID, user + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), L.T("Reset password"), true, L.T("Mobile: {0}", mobile), user.ID, user + "", ip);
 
         return new ServiceResult { IsSuccess = true, Message = L.T("Password reset succeeded.") };
     }
@@ -654,7 +654,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         // 验证成功后删除缓存验证码，防止重复使用
         _cache.Remove(codeKey);
 
-        LogProvider.Provider.WriteLog(typeof(User), "重置密码", true, $"邮箱：{mail}", user.ID, user + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), L.T("Reset password"), true, L.T("Email: {0}", mail), user.ID, user + "", ip);
 
         return new ServiceResult { IsSuccess = true, Message = L.T("Password reset succeeded.") };
     }

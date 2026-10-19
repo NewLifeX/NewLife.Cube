@@ -66,7 +66,7 @@ public class SsoServerService : ISsoServerService
             app = AppService.Auth(client_id, null, ip);
             log.AppId = app.Id;
 
-            if (!app.ValidCallback(redirect_uri)) throw new XException("回调地址不合法 {0}", redirect_uri);
+            if (!app.ValidCallback(redirect_uri)) throw new XException("Invalid callback URL [{0}].", redirect_uri);
 
             app.Auths++;
             app.LastAuth = DateTime.Now;
@@ -96,7 +96,7 @@ public class SsoServerService : ISsoServerService
     public virtual String GetResult(String key, IManageUser user)
     {
         var log = AppLog.FindById(key.ToLong());
-        if (log == null) throw new ArgumentOutOfRangeException(nameof(key), "操作超时，请重试！");
+        if (log == null) throw new ArgumentOutOfRangeException(nameof(key), L.T("The operation timed out. Please try again."));
 
         var code = log.Id + "";
 

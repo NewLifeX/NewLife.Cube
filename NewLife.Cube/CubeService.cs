@@ -59,7 +59,7 @@ public static class CubeService
 
         using var span = DefaultTracer.Instance?.NewSpan(nameof(AddCube));
 
-        XTrace.WriteLine("{0} Start 配置魔方 {0}", new String('=', 32));
+        XTrace.WriteLine("{0} Start configuring Cube {0}", new String('=', 32));
         Assembly.GetExecutingAssembly().WriteVersion();
 
         // 修正系统名，确保可运行
@@ -269,15 +269,15 @@ public static class CubeService
         var modules = moduleManager.LoadAll(services);
         if (modules.Count > 0)
         {
-            XTrace.WriteLine("加载功能插件[{0}]个", modules.Count);
+            XTrace.WriteLine("Loaded {0} feature plugins", modules.Count);
             foreach (var item in modules)
             {
-                XTrace.WriteLine("加载插件：{0}", item.Key);
+                XTrace.WriteLine("Loading plugin: {0}", item.Key);
                 item.Value.Add(services);
             }
         }
 
-        XTrace.WriteLine("{0} End   配置魔方 {0}", new String('=', 32));
+        XTrace.WriteLine("{0} End   configuring Cube {0}", new String('=', 32));
 
         return services;
     }
@@ -293,7 +293,7 @@ public static class CubeService
         var provider = app.ApplicationServices;
         using var span = DefaultTracer.Instance?.NewSpan(nameof(UseCube));
 
-        XTrace.WriteLine("{0} Start 初始化魔方 {0}", new String('=', 32));
+        XTrace.WriteLine("{0} Start initializing Cube {0}", new String('=', 32));
 
         // 初始化数据库连接
         var set = CubeSetting.Current;
@@ -383,7 +383,7 @@ public static class CubeService
         // 设置默认路由。如果外部已经执行 UseRouting，则直接注册
         app.UseRouter(endpoints =>
         {
-            XTrace.WriteLine("注册魔方区域路由");
+            XTrace.WriteLine("Registering Cube area routes");
 
             endpoints.MapControllerRoute(
                 "CubeAreas",
@@ -401,15 +401,15 @@ public static class CubeService
         var modules = moduleManager.LoadAll();
         if (modules.Count > 0)
         {
-            XTrace.WriteLine("启用功能插件[{0}]个", modules.Count);
+            XTrace.WriteLine("Enabled {0} feature plugins", modules.Count);
             foreach (var item in modules)
             {
-                XTrace.WriteLine("启用插件：{0}", item.Key);
+                XTrace.WriteLine("Enabling plugin: {0}", item.Key);
                 item.Value.Use(app, env);
             }
         }
 
-        XTrace.WriteLine("{0} End   初始化魔方 {0}", new String('=', 32));
+        XTrace.WriteLine("{0} End   initializing Cube {0}", new String('=', 32));
 
         Task.Factory.StartNew(() => ResolveStarWeb(provider), TaskCreationOptions.LongRunning);
 
@@ -417,7 +417,7 @@ public static class CubeService
         if (app is IHost web)
             Model.Host.RegisterExit(() =>
             {
-                XTrace.WriteLine("魔方优雅退出！");
+                XTrace.WriteLine("Cube exited gracefully.");
                 web.StopAsync().Wait();
             });
 

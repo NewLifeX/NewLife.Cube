@@ -74,7 +74,7 @@ public class BrowserToolService(Int64 userId)
         if (script.IsNullOrEmpty()) return new { ok = false, error = "脚本不能为空" }.ToJson();
 
         // 审计：记录下发脚本内容，便于追溯
-        XTrace.WriteLine("[AI][run_js] 下发脚本：{0}", script);
+        XTrace.WriteLine("[AI][run_js] Sending script: {0}", script);
 
         var (writer, cp, uid, timeout) = ResolveChannel(context);
         if (writer == null) return new { ok = false, error = "浏览器通道未就绪（Writer 未注入）" }.ToJson();
@@ -225,7 +225,7 @@ public class PageDataContextToolService(ControllerBaseX ctrl, BrowserToolService
             }
             catch (Exception ex)
             {
-                XTrace.WriteLine("[AI][get_page_context] 服务端上下文失败，回退浏览器采集：{0}", ex.Message);
+                XTrace.WriteLine("[AI][get_page_context] Server-side context failed; falling back to browser collection: {0}", ex.Message);
             }
         }
 

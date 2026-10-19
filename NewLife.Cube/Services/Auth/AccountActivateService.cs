@@ -41,13 +41,13 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
         var email = model.Email?.Trim();
         var mobile = model.Mobile?.Trim();
         if (requireMail && email.IsNullOrEmpty())
-            return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = "需要邮箱验证，请填写邮箱" };
+            return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = L.T("Email verification is required; please provide an email address.") };
         if (requireMobile && mobile.IsNullOrEmpty())
-            return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = "需要手机验证，请填写手机号" };
+            return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = L.T("Mobile verification is required; please provide a mobile number.") };
         if (!email.IsNullOrEmpty() && !ValidFormatHelper.IsEmail(email))
-            return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = "邮箱格式不正确" };
+            return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = L.T("Invalid email format.") };
         if (!mobile.IsNullOrEmpty() && !ValidFormatHelper.IsMobile(mobile))
-            return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = "手机号格式不正确" };
+            return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = L.T("Invalid mobile number format.") };
 
         // 密码可选：留空则生成随机密码（激活后无法密码登录，仅验证码登录，登录后可再设置密码）
         var pwd = userService.ResolveRegisterPassword(model);
@@ -59,7 +59,7 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
             var codeKey = $"{AuthCacheKeys.SmsRegisterCodePrefix}{mobile}";
             var cached = _cache.Get<String>(codeKey);
             if (cached.IsNullOrEmpty() || !cached.EqualIgnoreCase(model.Code))
-                return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = "注册验证码错误或已过期，请重新获取" };
+                return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = L.T("The registration verification code is incorrect or has expired. Please request a new one.") };
             _cache.Remove(codeKey);
         }
         else if (model.Category == AuthCategory.Mail)
@@ -67,7 +67,7 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
             var codeKey = $"{AuthCacheKeys.MailRegisterCodePrefix}{email}";
             var cached = _cache.Get<String>(codeKey);
             if (cached.IsNullOrEmpty() || !cached.EqualIgnoreCase(model.Code))
-                return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = "注册验证码错误或已过期，请重新获取" };
+                return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = L.T("The registration verification code is incorrect or has expired. Please request a new one.") };
             _cache.Remove(codeKey);
         }
 
@@ -79,7 +79,7 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
             else if (!mobile.IsNullOrEmpty()) username = $"P{mobile}";
         }
         if (username.IsNullOrEmpty())
-            return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = "用户名不能为空" };
+            return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = L.T("Username is required.") };
 
         var duplicate = userService.CheckDuplicate(username, email, mobile);
         if (!duplicate.IsSuccess) return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = duplicate.Message };
@@ -87,7 +87,7 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
         // 创建未激活账号（Enable=false），激活后置 true 方可登录
         var user = userService.CreateUserAndBindContact(username, pwd.Data, email, mobile, ip, false, false, false);
         if (user == null || user.ID <= 0)
-            return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = "注册失败，请稍后重试" };
+            return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = L.T("Registration failed. Please try again later.") };
 
         try
         {
@@ -108,12 +108,12 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
                 targets.Add(MaskTarget(mobile));
             }
 
-            LogProvider.Provider.WriteLog(typeof(User), "注册待激活", true, $"邮箱：{email} 手机：{mobile}", user.ID, user + "", ip);
+            LogProvider.Provider.WriteLog(typeof(User), L.T("Registration pending activation"), true, L.T("Email: {0}, mobile: {1}", email, mobile), user.ID, user + "", ip);
 
             return new ServiceResult<ActivatePendingModel>
             {
                 IsSuccess = true,
-                Message = "注册成功，请激活邮箱/手机",
+                Message = L.T("Registered successfully. Please activate your email/phone."),
                 Data = new ActivatePendingModel { Channels = [.. channels], Targets = [.. targets], ExpireIn = DefaultExpire },
             };
         }
@@ -122,7 +122,7 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
             // 激活发送失败（如渠道未配置），回滚已创建的未激活账号，避免产生无法激活的孤儿账号
             try { (user as IEntity)?.Delete(); } catch { }
             span?.SetError(ex, null);
-            return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = $"注册失败：{ex.Message}" };
+            return new ServiceResult<ActivatePendingModel> { IsSuccess = false, Message = L.T("Registration failed: {0}", ex.Message) };
         }
     }
     #endregion
@@ -137,27 +137,27 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
     {
         using var span = tracer?.NewSpan(nameof(ActivateByMailToken), new { account, ip });
 
-        if (token.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "激活链接无效" };
-        if (account.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "邮箱不能为空" };
-        if (!ValidFormatHelper.IsEmail(account)) return new ServiceResult { IsSuccess = false, Message = "邮箱格式不正确" };
+        if (token.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = L.T("The activation link is invalid.") };
+        if (account.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = L.T("Email is required.") };
+        if (!ValidFormatHelper.IsEmail(account)) return new ServiceResult { IsSuccess = false, Message = L.T("Invalid email format.") };
 
         // 校验一次性令牌
         var key = $"{AuthCacheKeys.MailActivateLinkPrefix}{account}";
         var cached = _cache.Get<String>(key);
         if (cached.IsNullOrEmpty() || !String.Equals(cached, token, StringComparison.Ordinal))
-            return new ServiceResult { IsSuccess = false, Message = "激活链接无效或已过期，请重新发送激活邮件" };
+            return new ServiceResult { IsSuccess = false, Message = L.T("The activation link is invalid or has expired. Please resend the activation email.") };
 
         var user = User.FindByMail(account);
-        if (user == null || user.ID <= 0) return new ServiceResult { IsSuccess = false, Message = "用户不存在" };
+        if (user == null || user.ID <= 0) return new ServiceResult { IsSuccess = false, Message = L.T("User does not exist.") };
 
         // 幂等：已激活直接成功
         if (user.Enable && user.MailVerified)
-            return new ServiceResult { IsSuccess = true, Message = "账号已激活" };
+            return new ServiceResult { IsSuccess = true, Message = L.T("Account activated.") };
 
-        Activate(user, true, account, "邮箱激活", ip);
+        Activate(user, true, account, "Email activation", ip);
 
         _cache.Remove(key);
-        return new ServiceResult { IsSuccess = true, Message = "激活成功" };
+        return new ServiceResult { IsSuccess = true, Message = L.T("Activation succeeded.") };
     }
 
     /// <summary>通过验证码激活账号（邮箱验证码/手机短信验证码）</summary>
@@ -170,30 +170,30 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
     {
         using var span = tracer?.NewSpan(nameof(ActivateByCode), new { channel, account, ip });
 
-        if (account.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "邮箱/手机号不能为空" };
-        if (code.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "验证码不能为空" };
+        if (account.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = L.T("Mobile number or email is required.") };
+        if (code.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = L.T("Verification code is required.") };
 
         // 按渠道取缓存验证码
         var codeKey = channel.EqualIgnoreCase("Sms")
             ? $"{AuthCacheKeys.SmsActivateCodePrefix}{account}"
             : $"{AuthCacheKeys.MailActivateCodePrefix}{account}";
         var cached = _cache.Get<String>(codeKey);
-        if (cached.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "验证码已过期或不存在，请重新获取" };
-        if (!cached.EqualIgnoreCase(code)) return new ServiceResult { IsSuccess = false, Message = "验证码错误" };
+        if (cached.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = L.T("Verification code has expired or does not exist. Please request a new one.") };
+        if (!cached.EqualIgnoreCase(code)) return new ServiceResult { IsSuccess = false, Message = L.T("Incorrect verification code.") };
 
         var user = FindByContact(account);
-        if (user == null || user.ID <= 0) return new ServiceResult { IsSuccess = false, Message = "用户不存在" };
+        if (user == null || user.ID <= 0) return new ServiceResult { IsSuccess = false, Message = L.T("User does not exist.") };
 
         // 幂等：已激活直接成功
         var verified = channel.EqualIgnoreCase("Sms") ? user.MobileVerified : user.MailVerified;
         if (user.Enable && verified)
-            return new ServiceResult { IsSuccess = true, Message = "账号已激活" };
+            return new ServiceResult { IsSuccess = true, Message = L.T("Account activated.") };
 
-        var action = channel.EqualIgnoreCase("Sms") ? "手机激活" : "邮箱激活";
+        var action = channel.EqualIgnoreCase("Sms") ? "Mobile activation" : "Email activation";
         Activate(user, channel.EqualIgnoreCase("Sms"), account, action, ip);
 
         _cache.Remove(codeKey);
-        return new ServiceResult { IsSuccess = true, Message = "激活成功" };
+        return new ServiceResult { IsSuccess = true, Message = L.T("Activation succeeded.") };
     }
 
     /// <summary>激活账号：Enable=true + 对应联系方式标记已验证</summary>
@@ -211,7 +211,7 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
             user.MailVerified = true;
         (user as IEntity).Update();
 
-        LogProvider.Provider.WriteLog(typeof(User), action, true, $"目标：{target}", user.ID, user + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), L.T(action), true, L.T("Target: {0}", target), user.ID, user + "", ip);
     }
 
     /// <summary>重发激活：未激活账号重新发送激活邮件/短信</summary>
@@ -224,31 +224,31 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
     {
         using var span = tracer?.NewSpan(nameof(ResendActivation), new { channel, account, ip });
 
-        if (account.IsNullOrEmpty()) return new ServiceResult<String> { IsSuccess = false, Message = "邮箱/手机号不能为空" };
+        if (account.IsNullOrEmpty()) return new ServiceResult<String> { IsSuccess = false, Message = L.T("Mobile number or email is required.") };
 
         var user = FindByContact(account);
-        if (user == null || user.ID <= 0) return new ServiceResult<String> { IsSuccess = false, Message = "账号不存在" };
-        if (user.Enable) return new ServiceResult<String> { IsSuccess = false, Message = "账号已激活，无需重复验证" };
+        if (user == null || user.ID <= 0) return new ServiceResult<String> { IsSuccess = false, Message = L.T("Account does not exist.") };
+        if (user.Enable) return new ServiceResult<String> { IsSuccess = false, Message = L.T("The account is already activated; no repeated verification is needed.") };
 
         try
         {
             if (channel.EqualIgnoreCase("Sms") || ValidFormatHelper.IsMobile(account))
             {
                 await verifyCode.SendActivateCode("Sms", account, null, ip);
-                return new ServiceResult<String> { IsSuccess = true, Message = "激活短信已发送", Data = MaskTarget(account) };
+                return new ServiceResult<String> { IsSuccess = true, Message = L.T("Activation SMS sent."), Data = MaskTarget(account) };
             }
             if (channel.EqualIgnoreCase("Mail") || ValidFormatHelper.IsEmail(account))
             {
                 await SendMailActivation(account, user.ID, httpContext, ip);
-                return new ServiceResult<String> { IsSuccess = true, Message = "激活邮件已发送", Data = MaskTarget(account) };
+                return new ServiceResult<String> { IsSuccess = true, Message = L.T("Activation email sent."), Data = MaskTarget(account) };
             }
 
-            return new ServiceResult<String> { IsSuccess = false, Message = "请输入正确的手机号或邮箱" };
+            return new ServiceResult<String> { IsSuccess = false, Message = L.T("Please enter a valid mobile number or email.") };
         }
         catch (Exception ex)
         {
             span?.SetError(ex, null);
-            return new ServiceResult<String> { IsSuccess = false, Message = $"发送失败：{ex.Message}" };
+            return new ServiceResult<String> { IsSuccess = false, Message = L.T("Send failed: {0}", ex.Message) };
         }
     }
     #endregion
@@ -265,38 +265,38 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
     {
         using var span = tracer?.NewSpan(nameof(VerifyContact), new { channel, account, ip });
 
-        if (user == null || user.ID <= 0) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = "用户未登录，请先登录" };
-        if (account.IsNullOrEmpty()) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = "邮箱/手机号不能为空" };
-        if (code.IsNullOrEmpty()) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = "验证码不能为空" };
+        if (user == null || user.ID <= 0) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("Please sign in first.") };
+        if (account.IsNullOrEmpty()) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("Mobile number or email is required.") };
+        if (code.IsNullOrEmpty()) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("Verification code is required.") };
 
         // 校验 bind 验证码（用户通过 SendCode action=bind 获取）
         var codeKey = channel.EqualIgnoreCase("Sms")
             ? $"{AuthCacheKeys.SmsBindCodePrefix}{account}"
             : $"{AuthCacheKeys.MailBindCodePrefix}{account}";
         var cached = _cache.Get<String>(codeKey);
-        if (cached.IsNullOrEmpty()) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = "验证码已过期或不存在，请重新获取" };
-        if (!cached.EqualIgnoreCase(code)) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = "验证码错误" };
+        if (cached.IsNullOrEmpty()) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("Verification code has expired or does not exist. Please request a new one.") };
+        if (!cached.EqualIgnoreCase(code)) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("Incorrect verification code.") };
 
         // 目标联系方式不得被其他账号占用
         var entity = User.FindByID(user.ID);
-        if (entity == null) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = "用户不存在" };
+        if (entity == null) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("User does not exist.") };
 
         var changed = false;
         if (channel.EqualIgnoreCase("Sms"))
         {
-            if (!ValidFormatHelper.IsMobile(account)) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = "手机号格式不正确" };
+            if (!ValidFormatHelper.IsMobile(account)) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("Invalid mobile number format.") };
             var other = User.FindByMobile(account);
             if (other != null && other.ID != entity.ID)
-                return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = "该手机号已被其他账户绑定" };
+                return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("This mobile number is already bound to another account.") };
             if (entity.Mobile != account) { entity.Mobile = account; changed = true; }
             if (!entity.MobileVerified) { entity.MobileVerified = true; changed = true; }
         }
         else
         {
-            if (!ValidFormatHelper.IsEmail(account)) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = "邮箱格式不正确" };
+            if (!ValidFormatHelper.IsEmail(account)) return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("Invalid email format.") };
             var other = User.FindByMail(account);
             if (other != null && other.ID != entity.ID)
-                return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = "该邮箱已被其他账户绑定" };
+                return new ServiceResult<VerifyStatusModel> { IsSuccess = false, Message = L.T("This email is already bound to another account.") };
             if (entity.Mail != account) { entity.Mail = account; changed = true; }
             if (!entity.MailVerified) { entity.MailVerified = true; changed = true; }
         }
@@ -304,12 +304,12 @@ public class AccountActivateService(UserService userService, VerifyCodeService v
         if (changed) (entity as IEntity).Update();
         _cache.Remove(codeKey);
 
-        LogProvider.Provider.WriteLog(typeof(User), channel.EqualIgnoreCase("Sms") ? "验证手机" : "验证邮箱", true, $"目标：{account}", entity.ID, entity + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), channel.EqualIgnoreCase("Sms") ? "Verify mobile" : "Verify email", true, L.T("Target: {0}", account), entity.ID, entity + "", ip);
 
         return new ServiceResult<VerifyStatusModel>
         {
             IsSuccess = true,
-            Message = "验证成功",
+            Message = L.T("Verification succeeded."),
             Data = new VerifyStatusModel { MailVerified = entity.MailVerified, MobileVerified = entity.MobileVerified },
         };
     }

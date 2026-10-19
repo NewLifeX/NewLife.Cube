@@ -399,7 +399,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         var p = GetCachePager();
         OnExportZip(dic, p);
 
-        WriteLog("导出Zip", true, $"开始导出[{dic.Keys.Join()}]");
+        WriteLog(L.T("Export ZIP"), true, L.T("Start exporting [{0}].", dic.Keys.Join()));
 
         var ms = new MemoryStream();
         using (var zip = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
@@ -619,13 +619,13 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         {
             var count = Entity<TEntity>.Meta.Session.Truncate();
 
-            WriteLog("清空数据", true, $"共删除{count}行数据");
+            WriteLog(L.T("Clear data"), true, L.T("Deleted {0} rows.", count));
 
             return Json(0, L.T("Deleted {0} rows.", count));
         }
         catch (Exception ex)
         {
-            WriteLog("清空数据", false, ex.GetMessage());
+            WriteLog(L.T("Clear data"), false, ex.GetMessage());
 
             throw;
         }
@@ -654,7 +654,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             // 异步执行备份，阻塞等待一点时间，避免前端超时。
             var task = Task.Factory.StartNew(() =>
             {
-                WriteLog("备份", true, $"开始备份[{name}]到[{fileName}]");
+                WriteLog(L.T("Backup"), true, L.T("Start backing up [{0}] to [{1}].", name, fileName));
                 try
                 {
                     var rs = 0;
@@ -667,12 +667,12 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
                     }
 
                     var fi = bak.AsFile();
-                    WriteLog("备份", true, $"备份[{name}]到[{fileName}]（{rs:n0}行）（{fi.Length.ToGMK()}字节）成功！耗时：{sw.Elapsed}");
+                    WriteLog(L.T("Backup"), true, L.T("Backup [{0}] to [{1}] ({2:n0} rows, {3} bytes) succeeded. Elapsed: {4}", name, fileName, rs, fi.Length.ToGMK(), sw.Elapsed));
                     return rs;
                 }
                 catch (Exception ex)
                 {
-                    WriteLog("备份", false, $"备份[{fileName}]失败！{ex.GetMessage()}");
+                    WriteLog(L.T("Backup"), false, L.T("Backup [{0}] failed! {1}", fileName, ex.GetMessage()));
                     return -1;
                 }
             }, TaskCreationOptions.LongRunning);
@@ -685,7 +685,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         {
             XTrace.WriteException(ex);
 
-            WriteLog("备份", false, ex.GetMessage());
+            WriteLog(L.T("Backup"), false, ex.GetMessage());
 
             return Json(500, null, ex);
         }
@@ -718,14 +718,14 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         var ms = Response.Body;
         try
         {
-            WriteLog("备份导出", true, $"开始备份导出[{name}]");
+            WriteLog(L.T("Backup export"), true, L.T("Start backup export [{0}].", name));
 
             var sw = Stopwatch.StartNew();
             await using var gs = new GZipStream(ms, CompressionLevel.SmallestSize, true);
             var count = dal.Backup(fact.Table.DataTable, gs, HttpContext.RequestAborted);
             sw.Stop();
 
-            WriteLog("备份导出", true, $"备份[{name}]（{count:n0}行）成功！耗时：{sw.Elapsed}");
+            WriteLog(L.T("Backup export"), true, L.T("Backup [{0}] ({1:n0} rows) succeeded. Elapsed: {2}", name, count, sw.Elapsed));
 
             return new EmptyResult();
         }
@@ -733,7 +733,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         {
             XTrace.WriteException(ex);
 
-            WriteLog("备份导出", false, ex.GetMessage());
+            WriteLog(L.T("Backup export"), false, ex.GetMessage());
 
             return Json(500, null, ex);
         }
@@ -759,7 +759,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             // 异步执行恢复，阻塞等待一点时间，避免前端超时。
             var task = Task.Factory.StartNew(() =>
             {
-                WriteLog("恢复", true, $"开始恢复[{fileName}]到[{name}]（{fi.Length.ToGMK()}字节）");
+                WriteLog(L.T("Restore"), true, L.T("Start restoring [{0}] to [{1}] ({2} bytes).", fileName, name, fi.Length.ToGMK()));
                 try
                 {
                     var sw = Stopwatch.StartNew();
@@ -768,12 +768,12 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
                     var rs = dal.Restore(gs, fact.Table.DataTable, default);
                     sw.Stop();
 
-                    WriteLog("恢复", true, $"恢复[{fileName}]（{rs:n0}行）成功！");
+                    WriteLog(L.T("Restore"), true, L.T("Restore [{0}] ({1:n0} rows) succeeded.", fileName, rs));
                     return rs;
                 }
                 catch (Exception ex)
                 {
-                    WriteLog("恢复", false, $"恢复[{fileName}]失败！{ex.GetMessage()}");
+                    WriteLog(L.T("Restore"), false, L.T("Restore [{0}] failed! {1}", fileName, ex.GetMessage()));
                     return -1;
                 }
             }, TaskCreationOptions.LongRunning);
@@ -787,7 +787,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         {
             XTrace.WriteException(ex);
 
-            WriteLog("恢复", false, ex.GetMessage());
+            WriteLog(L.T("Restore"), false, ex.GetMessage());
 
             return Json(500, null, ex);
         }

@@ -78,7 +78,7 @@ public class TokenService : ITokenService
         if (jwt.Secret.IsNullOrEmpty())
         {
             var ss = set.JwtSecret.Split(':');
-            if (ss.Length != 2) throw new ArgumentException($"非法JwtSecret[{set.JwtSecret}]，应为“算法:密钥”格式");
+            if (ss.Length != 2) throw new ArgumentException(L.T("Invalid JwtSecret [{0}]; expected format is 'algorithm:key'.", set.JwtSecret));
             jwt.Algorithm = ss[0];
             jwt.Secret = ss[1];
         }
@@ -110,8 +110,8 @@ public class TokenService : ITokenService
     public virtual TokenModel GetToken(String code)
     {
         var log = AppLog.FindById(code.ToLong());
-        if (log == null) throw new ArgumentOutOfRangeException(nameof(code), "Code无效！");
-        if (log.UpdateTime.AddMinutes(1) < DateTime.Now) throw new ArgumentOutOfRangeException(nameof(code), "Code已过期！");
+        if (log == null) throw new ArgumentOutOfRangeException(nameof(code), L.T("Invalid code."));
+        if (log.UpdateTime.AddMinutes(1) < DateTime.Now) throw new ArgumentOutOfRangeException(nameof(code), L.T("The code has expired."));
 
         WriteLog("Token appid={0} code={1} token={2} {3}", log.AppName, code, log.AccessToken, log.CreateUser);
 
@@ -173,7 +173,7 @@ public class TokenService : ITokenService
 
             if (!jwt.TryDecode(token, out var msg))
             {
-                XTrace.WriteLine("令牌无效：{0}, token={1}", msg, token);
+                XTrace.WriteLine("Invalid token: {0}, token={1}", msg, token);
                 throw new Exception(msg);
             }
 
@@ -184,8 +184,8 @@ public class TokenService : ITokenService
             var prv = AppService.GetProvider();
 
             var rs = prv.TryDecode(token, out var name, out var expire);
-            if (!rs || name.IsNullOrEmpty()) throw new Exception("非法访问令牌");
-            if (expire < DateTime.Now) throw new Exception("令牌已过期");
+            if (!rs || name.IsNullOrEmpty()) throw new Exception(L.T("Invalid access token."));
+            if (expire < DateTime.Now) throw new Exception(L.T("The token has expired."));
 
             return name;
         }
@@ -198,7 +198,7 @@ public class TokenService : ITokenService
     private static void EnsureOAuthServer()
     {
         var set = CubeSetting.Current;
-        if (!set.EnableOAuthServer) throw new XException("未启用OAuth服务");
+        if (!set.EnableOAuthServer) throw new XException("OAuth service is not enabled.");
     }
 
     /// <summary>授权码方式获取访问令牌</summary>
@@ -242,7 +242,7 @@ public class TokenService : ITokenService
         // 密码式授权直接用用户名密码换取令牌，绕过登录页与 UserService.LoginByPassword 的
         // AllowLogin 守卫，不在此拦截将留下另一条账密通道（/Sso/Token grant_type=password 等）
         if (!CubeSetting.Current.AllowLogin)
-            throw new XException("已禁止密码登录，请使用 SSO 或其它登录方式");
+            throw new XException("Password sign-in is disabled. Please use SSO or another sign-in method.");
 
         var log = new AppLog
         {
@@ -265,7 +265,7 @@ public class TokenService : ITokenService
 
             // 验证应用能力
             var scopes = app.Scopes?.Split(",");
-            if (scopes == null || !"password".EqualIgnoreCase(scopes)) throw new InvalidOperationException($"应用[{app}]没有使用password密码凭证的能力！");
+            if (scopes == null || !"password".EqualIgnoreCase(scopes)) throw new InvalidOperationException(L.T("Application [{0}] is not allowed to use the password grant.", app));
 
             IManageUser user = null;
             if (password.StartsWithIgnoreCase("md5#"))
@@ -274,7 +274,7 @@ public class TokenService : ITokenService
                 user = User.Login(username, u =>
                 {
                     if (!u.Password.IsNullOrEmpty() && !u.Password.EqualIgnoreCase(pass))
-                        throw new InvalidOperationException($"密码不正确！");
+                        throw new InvalidOperationException(L.T("Incorrect password."));
                 });
             }
             else if (password.StartsWithIgnoreCase("$rsa$"))
@@ -313,7 +313,7 @@ public class TokenService : ITokenService
                     if (extUser != null)
                         user = ExternalAuthHelper.CreateOrUpdateUser(extUser, ip, CubeSetting.Current);
                 }
-                if (user == null) throw new XException("用户{0}验证失败", username);
+                if (user == null) throw new XException("User [{0}] authentication failed.", username);
             }
 
             var token = CreateToken(app, user.Name, null, $"{client_id}#{user.Name}");
@@ -375,7 +375,7 @@ public class TokenService : ITokenService
 
             // 验证应用能力
             var scopes = app.Scopes?.Split(",");
-            if (scopes == null || !"client_credentials".EqualIgnoreCase(scopes)) throw new InvalidOperationException($"应用[{app}]没有使用client_credentials客户端凭证的能力！");
+            if (scopes == null || !"client_credentials".EqualIgnoreCase(scopes)) throw new InvalidOperationException(L.T("Application [{0}] is not allowed to use the client_credentials grant.", app));
 
             var code = !username.IsNullOrEmpty() ? username : ("_" + Rand.NextString(7));
             var token = CreateToken(app, code, null, $"{client_id}#{code}");
@@ -436,7 +436,7 @@ public class TokenService : ITokenService
 
             var name = Decode(refresh_token);
             var ss = name.Split("#");
-            if (ss.Length != 2 || ss[0] != client_id) throw new Exception("非法令牌");
+            if (ss.Length != 2 || ss[0] != client_id) throw new Exception(L.T("Invalid token."));
 
             // 使用者标识保持不变
             var code = ss[1];

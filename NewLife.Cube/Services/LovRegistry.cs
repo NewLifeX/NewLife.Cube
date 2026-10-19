@@ -185,11 +185,11 @@ public static class LovRegistry
         InferLovList(attr, method);
 
         if (attr.LovCode.IsNullOrEmpty())
-            throw new InvalidOperationException("无法推断 LovCode，请在 [LovList] 特性中显式指定");
+            throw new InvalidOperationException(L.T("Cannot infer LovCode; specify it explicitly on the [LovList] attribute."));
 
         // 校验前缀：列表型值集 LovCode 必须以 List. 开头
         if (!attr.LovCode.StartsWith("List.", StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException($"LovList 特性的 LovCode 必须以 'List.' 开头：{attr.LovCode}");
+            throw new InvalidOperationException(L.T("The LovCode of the [LovList] attribute must start with 'List.': {0}.", attr.LovCode));
 
         return new LovListDescriptor
         {

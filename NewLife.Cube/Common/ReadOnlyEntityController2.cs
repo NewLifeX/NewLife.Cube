@@ -260,7 +260,7 @@ public partial class ReadOnlyEntityController<TEntity>
                 }
                 else
                 {
-                    XTrace.WriteLine($"多租户模式下缺少租户上下文，禁止查询{typeof(TEntity).Name}");
+                    XTrace.WriteLine("Tenant context is missing in multi-tenant mode; querying {0} is not allowed.", typeof(TEntity).Name);
                     exp = "1=0";
                 }
             }
@@ -275,7 +275,7 @@ public partial class ReadOnlyEntityController<TEntity>
                 tenant ??= Tenant.FindById(ctxTenant.TenantId);
                 if (tenant == null || !tenant.Enable)
                 {
-                    XTrace.WriteLine($"多租户模式下租户[{ctxTenant.TenantId}]不存在或已禁用，禁止查询{typeof(TEntity).Name}");
+                    XTrace.WriteLine("Tenant [{0}] does not exist or is disabled in multi-tenant mode; querying {1} is not allowed.", ctxTenant.TenantId, typeof(TEntity).Name);
                     exp = "1=0";
                 }
                 else
@@ -372,13 +372,13 @@ public partial class ReadOnlyEntityController<TEntity>
                 var speed = (Double)p.TotalCount / (24 * 3600);
                 var step = p.PageSize / speed;
 
-                XTrace.WriteLine("[{0}]导出数据[{1:n0}]，时间区间（{2},{3}），分片步进{4:n0}秒", Factory.EntityType.FullName, p.TotalCount, start, end, step);
+                XTrace.WriteLine("[{0}] Exporting {1:n0} rows in range ({2}, {3}) with a slice step of {4:n0} seconds", Factory.EntityType.FullName, p.TotalCount, start, end, step);
 
                 return ExportDataByDatetime((Int32)step, max);
             }
         }
 
-        XTrace.WriteLine("[{0}]导出数据[{1:n0}]，共[{2:n0}]页", Factory.EntityType.FullName, p.TotalCount, p.PageCount);
+        XTrace.WriteLine("[{0}] Exporting {1:n0} rows across {2:n0} pages", Factory.EntityType.FullName, p.TotalCount, p.PageCount);
 
         return ExportDataByPage(p.PageSize, max);
     }

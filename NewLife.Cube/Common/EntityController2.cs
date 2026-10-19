@@ -326,7 +326,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                         sb.AppendFormat("{0}=>{1}", headers[i], fields[i]?.Name);
                     }
                     var map = sb.Return(true);
-                    WriteLog("导入Excel", true, $"表头与字段映射[{headers.Count}]：{map}");
+                    WriteLog(L.T("Import Excel"), true, L.T("Header-to-field mapping [{0}]: {1}", headers.Count, map));
                     span?.AppendTag(map);
                 }
 
@@ -382,8 +382,8 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             result += OnImport(factory, list, context);
         }
 
-        var msg = $"导入[{name}]，共[{total}]行，成功[{result}]行，{blank}行无效！";
-        WriteLog("导入Excel", true, msg);
+        var msg = L.T("Imported [{0}]: {1} rows total, {2} succeeded, {3} invalid.", name, total, result, blank);
+        WriteLog(L.T("Import Excel"), true, msg);
         span?.Value = result;
 
         return result;
@@ -444,7 +444,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                         sb.AppendFormat("{0}=>{1}", headers[i], fields[i]?.Name);
                     }
                     var map = sb.Return(true);
-                    WriteLog("导入Csv", true, $"表头与字段映射[{headers.Count}]：{map}");
+                    WriteLog(L.T("Import CSV"), true, L.T("Header-to-field mapping [{0}]: {1}", headers.Count, map));
                     span?.AppendTag(map);
                 }
 
@@ -490,8 +490,8 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             result += OnImport(factory, list, context);
         }
 
-        var msg = $"导入[{name}]，共[{total}]行，成功[{result}]行，{blank}行无效！";
-        WriteLog("导入Csv", true, msg);
+        var msg = L.T("Imported [{0}]: {1} rows total, {2} succeeded, {3} invalid.", name, total, result, blank);
+        WriteLog(L.T("Import CSV"), true, msg);
         span?.Value = result;
 
         return result;
@@ -520,7 +520,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
         // 解析json，仅支持数组根节点，其它格式给出明确错误
         var items = json.Decode() as IList<Object>;
-        if (items == null) throw new XException("Json导入仅支持数组格式！");
+        if (items == null) throw new XException("JSON import only supports array format.");
 
         foreach (var item in items)
         {
@@ -562,8 +562,8 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             result += OnImport(factory, list, context);
         }
 
-        var msg = $"导入[{name}]，共[{total}]行，成功[{result}]行，{blank}行无效！";
-        WriteLog("导入Json", true, msg);
+        var msg = L.T("Imported [{0}]: {1} rows total, {2} succeeded, {3} invalid.", name, total, result, blank);
+        WriteLog(L.T("Import JSON"), true, msg);
         span?.Value = result;
 
         return result;
@@ -619,8 +619,8 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             span?.Value = result;
         }
 
-        var msg = $"导入[{name}]，成功[{result}]行！";
-        WriteLog("导入Zip", true, msg);
+        var msg = L.T("Imported [{0}]: {1} rows succeeded.", name, result);
+        WriteLog(L.T("Import ZIP"), true, msg);
         span?.Value = result;
 
         return result;
@@ -664,8 +664,8 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             result += OnImport(factory, list, context);
         }
 
-        var msg = $"导入[{name}]，共[{total}]行，成功[{result}]行！";
-        WriteLog("导入Db", true, msg);
+        var msg = L.T("Imported [{0}]: {1} rows total, {2} succeeded.", name, total, result);
+        WriteLog(L.T("Import DB"), true, msg);
         span?.Value = result;
 
         return result;

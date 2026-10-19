@@ -86,7 +86,7 @@ public static class OnlineAlertService
         };
         record.Insert();
 
-        XTrace.WriteLine("在线高峰预警：当前在线{0}人，超过近{1}天纪录{2}人的{3:0%}", total, Days, max, Ratio - 1);
+        XTrace.WriteLine("Online peak alert: {0} users online, exceeding the {1}-day record of {2} by {3:0%}", total, Days, max, Ratio - 1);
     }
     #endregion
 }

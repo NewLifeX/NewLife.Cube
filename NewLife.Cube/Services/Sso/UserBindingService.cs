@@ -112,7 +112,7 @@ public class UserBindingService : IUserBindingService
             var cfg = OAuthConfig.FindByName(client.Name);
             if (user == null && !set.AutoRegister && !cfg.AutoRegister)
             {
-                log?.WriteLog(typeof(User), "SSO登录", false, $"无法找到[{client.Name}]的[{client.NickName}]在本地的绑定，且没有打开自动注册，准备进入登录页面，利用其它登录方式后再绑定", 0, user + "");
+                log?.WriteLog(typeof(User), L.T("SSO sign-in"), false, L.T("No local binding was found for [{0}] of [{1}], and auto-registration is disabled. Redirecting to the sign-in page to bind after signing in with another method.", client.NickName, client.Name), 0, user + "");
 
                 return null;
             }
@@ -204,7 +204,7 @@ public class UserBindingService : IUserBindingService
         uc.Enable = true;
 
         // 写日志
-        log?.WriteLog(typeof(User), "绑定", true, $"[{user}]依据[{mode}]绑定到[{client.Name}]的[{client.NickName}]", user.ID, user + "");
+        log?.WriteLog(typeof(User), L.T("Bind"), true, L.T("[{0}] bound to [{1}] of [{2}] via [{3}].", user, client.NickName, client.Name, mode), user.ID, user + "");
 
         return user;
     }
@@ -237,7 +237,7 @@ public class UserBindingService : IUserBindingService
         log.UserId = user.ID;
         log.SaveAsync();
 
-        LogProvider.Provider?.WriteLog(typeof(User), "绑定", true, $"[{user}]依据[{mode}]绑定到[{uc.Provider}]的[{uc.NickName}]", user.ID, user + "");
+        LogProvider.Provider?.WriteLog(typeof(User), L.T("Bind"), true, L.T("[{0}] bound to [{1}] of [{2}] via [{3}].", user, uc.NickName, uc.Provider, mode), user.ID, user + "");
 
         return log;
     }
@@ -326,12 +326,12 @@ public class UserBindingService : IUserBindingService
         if (existPath.IsNullOrEmpty())
         {
             needUpdate = true;
-            LogProvider.Provider?.WriteLog(user.GetType(), "更新头像", true, $"本地文件不存在 {avatarUrl}", user.ID, user + "");
+            LogProvider.Provider?.WriteLog(user.GetType(), L.T("Update avatar"), true, L.T("Local file does not exist: {0}", avatarUrl), user.ID, user + "");
         }
         else if (!remoteHash.IsNullOrEmpty() && !existPath.AsFile().VerifyHash(remoteHash))
         {
             needUpdate = true;
-            LogProvider.Provider?.WriteLog(user.GetType(), "更新头像", true, $"哈希不匹配 {avatarUrl}", user.ID, user + "");
+            LogProvider.Provider?.WriteLog(user.GetType(), L.T("Update avatar"), true, L.T("Hash mismatch: {0}", avatarUrl), user.ID, user + "");
         }
         else if (!user2.Avatar.IsNullOrEmpty() && user2.Avatar.StartsWithIgnoreCase("https://", "http://"))
         {
@@ -596,7 +596,7 @@ public class UserBindingService : IUserBindingService
             {
                 dest = set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath();
 
-                LogProvider.Provider?.WriteLog(user.GetType(), "抓取头像", true, $"{downloadUrl} => {dest} (hash={expectedHash})", user.ID, user + "");
+                LogProvider.Provider?.WriteLog(user.GetType(), L.T("Fetch avatar"), true, $"{downloadUrl} => {dest} (hash={expectedHash})", user.ID, user + "");
 
                 var client = new HttpClient();
 
@@ -633,14 +633,14 @@ public class UserBindingService : IUserBindingService
         {
             span?.SetError(ex, null);
 
-            XTrace.WriteLine("抓取头像失败，{0}, {1}", user, downloadUrl);
+            XTrace.WriteLine("Failed to fetch avatar for {0}: {1}", user, downloadUrl);
             XTrace.WriteException(ex);
         }
 
         // 内网下载失败时，尝试外网地址降级
         if (!fallbackUrl.IsNullOrEmpty() && !url.IsNullOrEmpty() && fallbackUrl != url)
         {
-            XTrace.WriteLine("内网头像下载失败，降级使用外网地址 {0}", fallbackUrl);
+            XTrace.WriteLine("Intranet avatar download failed; falling back to the external URL {0}", fallbackUrl);
             return await FetchAvatar(user, fallbackUrl, accessToken);
         }
 
@@ -739,7 +739,7 @@ public class UserBindingService : IUserBindingService
             prv.Update();
             pub.Update();
         }
-        if (key.IsNullOrEmpty()) throw new ArgumentNullException(nameof(SecurityKey), $"无法找到名为[{name}]的密钥");
+        if (key.IsNullOrEmpty()) throw new ArgumentNullException(nameof(SecurityKey), L.T("The key named [{0}] was not found.", name));
 
         return key;
     }

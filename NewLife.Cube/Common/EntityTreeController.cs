@@ -163,12 +163,12 @@ public class EntityTreeApiController<TEntity, TModel> : EntityTreeController<TEn
     {
         var menu = FindByID(id);
         if (menu == null)
-            return Json(404, "数据不存在");
+            return Json(404, L.T("Data does not exist."));
 
         if (Valid(menu, DataObjectMethodType.Update, true))
             menu.Up();
 
-        return Json(0, "上移成功", menu);
+        return Json(0, L.T("Moved up successfully."), menu);
     }
 
     /// <summary>下降</summary>
@@ -181,11 +181,11 @@ public class EntityTreeApiController<TEntity, TModel> : EntityTreeController<TEn
     {
         var menu = FindByID(id);
         if (menu == null)
-            return Json(404, "数据不存在");
+            return Json(404, L.T("Data does not exist."));
 
         if (Valid(menu, DataObjectMethodType.Update, true))
             menu.Down();
 
-        return Json(0, "下移成功", menu);
+        return Json(0, L.T("Moved down successfully."), menu);
     }
 }
