@@ -30,7 +30,7 @@
 
 > ℹ️ 本繁體中文版與 [English README](README.md) 同步維護；若兩者內容不一致，以英文版為對外口徑。
 
-**目錄**：[快速開始](#快速開始) · [主要功能](#主要功能) · [生態全景](#生態全景) · [文件與示例](#文件與示例) · [參與貢獻](#參與貢獻) · [新生命開發團隊](#新生命開發團隊) · [許可證](#許可證)
+**目錄**：[快速開始](#快速開始) · [主要功能](#主要功能) · [生態版圖](#生態版圖) · [文件與示例](#文件與示例) · [參與貢獻](#參與貢獻) · [新生命開發團隊](#新生命開發團隊) · [許可證](#許可證)
 
 ## 快速開始
 
@@ -398,59 +398,55 @@ https://github.com/NewLifeX/NewLife.CubeVue · https://github.com/NewLifeX/NewLi
 
 </details>
 
-## 生態全景
+## 生態版圖
 
-NewLife 生態按依賴分層，各專案獨立版本、獨立發版。下面的分層圖在所有 NewLife 倉庫中逐字一致；專案明細額外給出每個專案的定位與歷史。
+NewLife 生態系按相依分層，各專案獨立版本、獨立發行。下面的版圖在所有 NewLife 儲存庫中逐字一致；每個專案連結到程式碼儲存庫與主 NuGet 套件。
 
-| 層 | 專案 |
-| --- | --- |
-| 基礎底座 | Core · XCode · Net · Remoting · Agent · Templates |
-| 資料儲存與訊息 | Redis · RocketMQ · MQTT · NovaDb · MySql |
-| Web、AI 與分散式 | Cube · Stardust · AntJob · NewLife.AI |
-| 工業與物聯網 | IoT · Modbus · Siemens · Omron · Melsec · OPC · BACnet · ZeroIoT |
-| 車聯網 | JT808 · JT809 · JT1078 |
-| 領域元件 | Office · Audio · Video · Map · IP |
-| 工具與產品 | CrazyCoder · GitCandy · LuckyClover |
+| 專案 | 一句話定位 | 下載量 |
+| --- | --- | --- |
+| **基礎底座** | | |
+| [NewLife.Core](https://github.com/NewLifeX/X) | 日誌、設定、快取、網路、序列化、排程與 APM 追蹤。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Core?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Core) |
+| [NewLife.XCode](https://github.com/NewLifeX/NewLife.XCode) | 資料中介層：單表百億級、自動分表、讀寫分離，支援 10 多種資料庫。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.XCode?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.XCode) |
+| [NewLife.Net](https://github.com/NewLifeX/NewLife.Net) | 高效能網路庫：單機 177 萬 pps、14.5 Gbps（TCP 1KB，2026-10 實測），400 萬 Tcp 長連線。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Net?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Net) |
+| [NewLife.Remoting](https://github.com/NewLifeX/NewLife.Remoting) | 協定通訊與 RPC 框架，面向 CS 應用程式與物聯網裝置。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Remoting?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Remoting) |
+| [NewLife.Agent](https://github.com/NewLifeX/NewLife.Agent) | 將 .NET 應用程式安裝為作業系統常駐服務：Windows 服務與 Linux systemd。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Agent?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Agent) |
+| [NewLife.Templates](https://github.com/NewLifeX/NewLife.Zero) | `dotnet new` 專案範本：主控台、Web、API、服務、資料與物聯網。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Templates?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Templates) |
+| **資料儲存與訊息** | | |
+| [NewLife.Redis](https://github.com/NewLifeX/NewLife.Redis) | Redis 用戶端：微秒級延遲、百萬級吞吐，內建訊息佇列。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Redis?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Redis) |
+| [NewLife.RocketMQ](https://github.com/NewLifeX/NewLife.RocketMQ) | 純受控 RocketMQ 用戶端，支援 Apache RocketMQ 與阿里雲訊息佇列。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.RocketMQ?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.RocketMQ) |
+| [NewLife.MQTT](https://github.com/NewLifeX/NewLife.MQTT) | MQTT 用戶端與服務端，含阿里雲物聯網接入。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.MQTT?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.MQTT) |
+| [NewLife.NovaDb](https://github.com/NewLifeX/NewLife.NovaDb) | C# 混合式資料庫：內嵌或網路雙模，關係型、時序、訊息佇列與 KV 於一體。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.NovaDb?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.NovaDb) |
+| [NewLife.MySql](https://github.com/NewLifeX/NewLife.MySql) | 建構於 NewLife 資料堆疊之上的 MySql 驅動與輔助層。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.MySql?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.MySql) |
+| **Web、AI 與分散式** | | |
+| [NewLife.Cube](https://github.com/NewLifeX/NewLife.Cube) | 快速後台開發框架：權限、SSO、OAuth 服務端與 CRUD 樣板。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Cube?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Cube) |
+| [Stardust](https://github.com/NewLifeX/Stardust) | 分散式服務平台：節點管理、APM、設定中心、註冊中心與發佈中心。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Stardust?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Stardust) |
+| [AntJob](https://github.com/NewLifeX/AntJob) | 分散式任務與即時資料排程平台，支援分片、重試與回溯補算。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.AntJob?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.AntJob) |
+| [NewLife.AI](https://github.com/NewLifeX/NewLife.AI) | 統一接入 46 家大模型服務商，附帶開箱即用的 ChatAI Web 對話應用。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.AI?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.AI) |
+| **工業與物聯網** | | |
+| [NewLife.IoT](https://github.com/NewLifeX/NewLife.IoT) | 物聯網標準庫，定義通訊協定契約與裝置抽象。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.IoT?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.IoT) |
+| [NewLife.Modbus](https://github.com/NewLifeX/NewLife.Modbus) | 建構於 NewLife.IoT 之上的 Modbus TCP/RTU/ASCII 實作。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Modbus?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Modbus) |
+| [NewLife.Siemens](https://github.com/NewLifeX/NewLife.Siemens) | 建構於 NewLife.IoT 之上的西門子 PLC 協定。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Siemens?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Siemens) |
+| [NewLife.Omron](https://github.com/NewLifeX/NewLife.Omron) | 建構於 NewLife.IoT 之上的歐姆龍 PLC 協定。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Omron?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Omron) |
+| [NewLife.Melsec](https://github.com/NewLifeX/NewLife.Melsec) | 建構於 NewLife.IoT 之上的三菱 Melsec PLC 協定。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Melsec?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Melsec) |
+| [NewLife.OPC](https://github.com/NewLifeX/NewLife.OPC) | 工業資料存取的 OPC 用戶端。 | — |
+| [NewLife.BACnet](https://github.com/NewLifeX/NewLife.BACnet) | BACnet 樓宇自動化協定堆疊。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.BACnet?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.BACnet) |
+| [ZeroIoT](https://github.com/NewLifeX/ZeroIoT) | 開源輕量級物聯網平台，含閘道與裝置管理。 | — |
+| **車聯網** | | |
+| NewLife.JT808 | JT/T 808 車輛定位協定：70+ 訊息體，涵蓋 2011/2013/2019 三個版本。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.JT808?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.JT808) |
+| NewLife.JT809 | JT/T 809 部標平台互聯協定，面向運輸管理部門。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.JT809?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.JT809) |
+| NewLife.JT1078 | JT/T 1078 車載視訊：RTP 解析、FLV/fMP4 轉封裝與直播推送。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.JT1078?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.JT1078) |
+| **領域元件** | | |
+| [NewLife.Office](https://github.com/NewLifeX/NewLife.Office) | 一個套件涵蓋 Excel、Word、PPT、PDF 等 15+ 文件格式。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Office?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Office) |
+| [NewLife.Audio](https://github.com/NewLifeX/NewLife.Audio) | 跨平台音訊：編解碼、裝置 IO、DSP、容器與串流處理。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Audio?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Audio) |
+| [NewLife.Video](https://github.com/NewLifeX/NewLife.Video) | 視訊編解碼、封裝格式、影格處理與串流。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Video?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Video) |
+| [NewLife.Map](https://github.com/NewLifeX/NewLife.Map) | 百度／高德／騰訊／天地圖統一介面，支援地理編碼與座標轉換。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.Map?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.Map) |
+| [NewLife.IP](https://github.com/NewLifeX/NewLife.IP) | IPv4 歸屬地：離線記憶體映射資料庫 + 線上 API 雙來源。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.IP?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.IP) |
+| **工具與產品** | | |
+| [CrazyCoder](https://github.com/NewLifeX/XCoder) | 開發者工具箱：網路、序列埠、加解密、正規表示式、Modbus 與 MQTT。 | [![NuGet](https://img.shields.io/nuget/dt/NewLife.XCoder?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/NewLife.XCoder) |
+| [GitCandy](https://github.com/NewLifeX/GitCandy) | 自架 Git 原始碼管理系統。 | — |
+| [LuckyClover](https://github.com/NewLifeX/LuckyClover) | 從較舊的宿主啟動時，自動安裝相符的 .NET 執行階段。 | — |
 
-**完整生態** → https://github.com/NewLifeX/X#生态全景
-
-<details>
-<summary><b>專案明細</b>（30 項）</summary>
-各專案預設支援net9.0/netstandard2.1/netstandard2.0/net4.62/net4.5，舊版（2024.0801）支援net4.0/net2.0  
-
-|                               專案                               | 年份  | 說明                                                                                        |
-| :--------------------------------------------------------------: | :---: | ------------------------------------------------------------------------------------------- |
-|                             基礎元件                             |       | 支撐其它中介軟體以及產品專案                                                                  |
-|          [NewLife.Core](https://github.com/NewLifeX/X)           | 2002  | 核心庫，日誌、配置、快取、網路、序列化、APM效能追蹤                                         |
-|    [NewLife.XCode](https://github.com/NewLifeX/NewLife.XCode)    | 2005  | 大數據中介軟體，單表百億級，MySql/SQLite/SqlServer/Oracle/PostgreSql/達夢，自動分表，讀寫分離 |
-|      [NewLife.Net](https://github.com/NewLifeX/NewLife.Net)      | 2005  | 網路庫，單機千萬級吞吐率（2266萬tps），單機百萬級連線（400萬Tcp長連線）                     |
-| [NewLife.Remoting](https://github.com/NewLifeX/NewLife.Remoting) | 2011  | 協議通訊庫，提供CS應用通訊框架，支援Http/RPC通訊框架，高吞吐，物聯網裝置低開銷易接入        |
-|     [NewLife.Cube](https://github.com/NewLifeX/NewLife.Cube)     | 2010  | 魔方快速開發平臺，集成了使用者許可權、SSO登入、OAuth服務端等，單表100億級專案驗證               |
-|    [NewLife.Agent](https://github.com/NewLifeX/NewLife.Agent)    | 2008  | 服務管理元件，把應用安裝成為作業系統守護程序，Windows服務、Linux的Systemd                   |
-|     [NewLife.Zero](https://github.com/NewLifeX/NewLife.Zero)     | 2020  | Zero零代腳手架，基於NewLife元件生態的專案模板NewLife.Templates，Web、WebApi、Service        |
-|                              中介軟體                              |       | 對接知名中介軟體平臺                                                                          |
-|    [NewLife.Redis](https://github.com/NewLifeX/NewLife.Redis)    | 2017  | Redis客戶端，微秒級延遲，百萬級吞吐，豐富的訊息佇列，百億級資料量專案驗證                   |
-| [NewLife.RocketMQ](https://github.com/NewLifeX/NewLife.RocketMQ) | 2018  | RocketMQ純託管客戶端，支援Apache RocketMQ和阿里雲訊息佇列，十億級專案驗                     |
-|     [NewLife.MQTT](https://github.com/NewLifeX/NewLife.MQTT)     | 2019  | 物聯網訊息協議，MqttClient/MqttServer，客戶端支援阿里雲物聯網                               |
-|      [NewLife.IoT](https://github.com/NewLifeX/NewLife.IoT)      | 2022  | IoT標準庫，定義物聯網領域的各種通訊協議標準規範                                             |
-|   [NewLife.Modbus](https://github.com/NewLifeX/NewLife.Modbus)   | 2022  | ModbusTcp/ModbusRTU/ModbusASCII，基於IoT標準庫實現，支援ZeroIoT平臺和IoTEdge閘道器            |
-|  [NewLife.Siemens](https://github.com/NewLifeX/NewLife.Siemens)  | 2022  | 西門子PLC協議，基於IoT標準庫實現，支援IoT平臺和IoTEdge                                      |
-|      [NewLife.Map](https://github.com/NewLifeX/NewLife.Map)      | 2022  | 地圖元件庫，封裝百度地圖、高德地圖、騰訊地圖、天地圖                                        |
-|    [NewLife.Audio](https://github.com/NewLifeX/NewLife.Audio)    | 2023  | 音訊編解碼庫，PCM/ADPCMA/G711A/G722U/WAV/AAC                                                |
-|                             產品平臺                             |       | 產品平臺級，編譯部署即用，個性化自定義                                                      |
-|         [Stardust](https://github.com/NewLifeX/Stardust)         | 2018  | 星塵，分散式服務平臺，節點管理、APM監控中心、配置中心、註冊中心、釋出中心                   |
-|           [AntJob](https://github.com/NewLifeX/AntJob)           | 2019  | 螞蟻排程，分散式大數據計算平臺（即時/離線），螞蟻搬家分片思想，萬億級資料量專案驗證         |
-|      [NewLife.ERP](https://github.com/NewLifeX/NewLife.ERP)      | 2021  | 企業ERP，產品管理、客戶管理、銷售管理、供應商管理                                           |
-|         [CrazyCoder](https://github.com/NewLifeX/XCoder)         | 2006  | 碼神工具，眾多開發者工具，網路、序列埠、加解密、正規表示式、Modbus、MQTT                      |
-|           [EasyIO](https://github.com/NewLifeX/EasyIO)           | 2023  | 簡易檔案儲存，支援分散式系統中檔案集中儲存。                                                |
-|           [XProxy](https://github.com/NewLifeX/XProxy)           | 2005  | 產品級反向代理，NAT代理、Http代理                                                           |
-|        [HttpMeter](https://github.com/NewLifeX/HttpMeter)        | 2022  | Http壓力測試工具                                                                            |
-|         [GitCandy](https://github.com/NewLifeX/GitCandy)         | 2015  | Git原始碼管理系統                                                                           |
-|          [SmartOS](https://github.com/NewLifeX/SmartOS)          | 2014  | 嵌入式作業系統，完全獨立自主，支援ARM Cortex-M晶片架構                                      |
-|          [SmartA2](https://github.com/NewLifeX/SmartA2)          | 2019  | 嵌入式工業計算機，物聯網邊緣閘道器，高效能.NET8主機，應用於工業、農業、交通、醫療             |
-|                          FIoT物聯網平臺                          | 2020  | 物聯網整體解決方案，建築、環保、農業，軟硬體及大數據分析一體化，單機十萬級點位專案驗證      |
-|                        UWB高精度室內定位                         | 2020  | 釐米級（10~20cm）高精度室內定位，軟硬體一體化，與其它系統聯動，大型展廳專案驗證             |
-</details>
+> 徽章取各專案主套件；主題套件、擴充套件與衛星套件見對應 NuGet 頁面。未在表中列出的 30 多個套件（FTP、LoRa、Office 擴充、各類協定驅動等）見 [NewLifeX 組織](https://github.com/NewLifeX) 與 [newlifex.com](https://newlifex.com)。本表以 NewLife.Core README 為維護來源。
 
 ## 文件與示例
 
@@ -518,20 +514,22 @@ dotnet test XUnitTest -c Release
 - 優先複用 NewLife 生態，避免不必要依賴。
 - 多 TFM 編譯通過後再提交。
 ## 新生命開發團隊
-![XCode](https://newlifex.com/logo.png)  
 
-新生命團隊（NewLife）成立於2002年，是新時代物聯網行業解決方案提供者，致力於提供軟硬體應用方案諮詢、系統架構規劃與開發服務。  
-團隊主導的80多個開源專案已被廣泛應用於各行業，Nuget累計下載量高達400餘萬次。  
-團隊開發的大數據中介軟體NewLife.XCode、螞蟻排程計算平臺AntJob、星塵分散式平臺Stardust、快取佇列元件NewLife.Redis以及物聯網平臺FIoT，均成功應用於電力、高校、網際網路、電信、交通、物流、工控、醫療、文博等行業，為客戶提供了大量先進、可靠、安全、高質量、易擴充套件的產品和系統整合服務。  
+<img src="https://newlifex.com/logo.png" width="48" align="right" alt="NewLife" />
 
-我們將不斷通過服務的持續改進，成為客戶長期信賴的合作伙伴，通過不斷的創新和發展，成為國內優秀的IoT服務供應商。  
+新生命團隊成立於 2002 年，二十餘年專注 .NET 與物聯網技術生態，主導開源專案近百個（生態版圖收錄 34 個主幹專案），為電力、物流、醫療、工控、網際網路等行業提供軟硬體一體化解決方案；以「學無先後達者為師」為信條。
 
-`新生命团队始于2002年，部分开源项目具有20年以上漫长历史，源码库保留有2010年以来所有修改记录`  
-網站：https://newlifex.com  
-開源：https://github.com/newlifex  
-QQ群：1600800/1600838  
-微信公眾號：  
-![智慧大石頭](https://newlifex.com/Stone.jpg)
+開源元件在 NuGet 累計下載 <!--nuget-total:start-->6.48M<!--nuget-total:end--> 次（全生態口徑，截至 2026-10）。
+
+網站：https://newlifex.com · 開源組織：https://github.com/NewLifeX
+
+<details>
+<summary>微信公眾號：智能大石头（掃碼關注）</summary>
+
+![智能大石头](https://newlifex.com/stone.jpg)
+
+</details>
+
 ## 許可證
 
 [MIT](https://github.com/NewLifeX/NewLife.Cube/blob/master/LICENSE) 協議；強名稱證書 `newlife.snk` 已公開，可自行編譯替換程式集，原始碼可修改與再分發且無需署名。

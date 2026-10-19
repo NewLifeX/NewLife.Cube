@@ -18,10 +18,18 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [config, setConfig] = useState<LoginConfig | null>(null);
+  const registerEnabled = config?.register?.enabled === true;
+  const tenantCode = params.get('tenant') ?? params.get('tenantCode') ?? params.get('code') ?? undefined;
 
   useEffect(() => {
-    api.user.getLoginConfig().then((res) => setConfig(res.data)).catch(() => {});
-  }, []);
+    api.user.getLoginConfig(tenantCode).then((res) => setConfig(res.data)).catch(() => {});
+  }, [tenantCode]);
+
+  /** 进入注册页时保留租户等查询参数 */
+  const goRegister = () => {
+    const search = params.toString();
+    navigate(search ? `/register?${search}` : '/register');
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -82,6 +90,15 @@ export default function Login() {
                 ))}
               </Stack>
             </>
+          ) : null}
+
+          {registerEnabled ? (
+            <Box textAlign="center" mt={2}>
+              <Typography variant="body2" color="text.secondary" component="span">
+                还没有账号？
+              </Typography>
+              <Button size="small" onClick={goRegister}>立即注册</Button>
+            </Box>
           ) : null}
         </CardContent>
       </Card>
