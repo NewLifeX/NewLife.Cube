@@ -51,6 +51,10 @@ internal static class Program
             Check("locale-zh-hant", Localization.Translate("Delete") == "刪除", Localization.Translate("Delete"));
             Localization.Culture = new CultureInfo("en-US");
             Check("locale-en", Localization.Translate("Operation succeeded") == "Operation succeeded");
+            Localization.Culture = new CultureInfo("de-DE");
+            Check("locale-de", Localization.Translate("MFA is not enabled on this system.") == "MFA ist in diesem System nicht aktiviert.", Localization.Translate("MFA is not enabled on this system."));
+            Localization.Culture = new CultureInfo("hi-IN");
+            Check("locale-hi", Localization.Translate("MFA is not enabled on this system.") == "इस सिस्टम पर MFA सक्षम नहीं है।", Localization.Translate("MFA is not enabled on this system."));
             Localization.Culture = new CultureInfo("sw-KE");
             Check("locale-fallback", Localization.Translate("Operation succeeded") == "Operation succeeded");
         }
