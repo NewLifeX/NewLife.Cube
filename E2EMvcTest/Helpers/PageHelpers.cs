@@ -115,8 +115,20 @@ public static class PageHelpers
 
     /// <summary>使用 admin 账号登录</summary>
     /// <param name="page">Playwright 页面对象</param>
-    public static Task LoginAsAdminAsync(IPage page) =>
-        LoginAsync(page, AppFixture.AdminUser, AppFixture.AdminPass);
+    public static async Task LoginAsAdminAsync(IPage page)
+    {
+        DatabaseHelper.EnsureAdminEnabled();
+        try
+        {
+            await LoginAsync(page, AppFixture.AdminUser, AppFixture.AdminPass);
+        }
+        catch
+        {
+            // 前序用例可能改过 admin 密码；回到默认密码后重试一次
+            DatabaseHelper.RestoreAdminPassword();
+            await LoginAsync(page, AppFixture.AdminUser, AppFixture.AdminPass);
+        }
+    }
 
     /// <summary>访问注销地址并等待跳转</summary>
     /// <param name="page">Playwright 页面对象</param>

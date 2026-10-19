@@ -28,7 +28,24 @@ public sealed class UserProfileTests : IAsyncLifetime
     {
         _context = await _fixture.Browser.NewContextAsync();
         _page = await _context.NewPageAsync();
-        await PageHelpers.LoginAsAdminAsync(_page);
+
+        // 本类含修改 admin 密码的用例，后续用例可能以前序状态登录；失败时依次尝试新密码并兜底复位
+        try
+        {
+            await PageHelpers.LoginAsAdminAsync(_page);
+        }
+        catch
+        {
+            try
+            {
+                await PageHelpers.LoginAsync(_page, AppFixture.AdminUser, "NewPass@2026");
+            }
+            catch
+            {
+                DatabaseHelper.RestoreAdminPassword();
+                await PageHelpers.LoginAsAdminAsync(_page);
+            }
+        }
     }
 
     public async Task DisposeAsync()

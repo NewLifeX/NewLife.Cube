@@ -52,6 +52,14 @@ public static class DatabaseHelper
         return ExecuteScalarWrite<Int32>(MembershipWriteConnStr, sql, ("@name", name));
     }
 
+    /// <summary>把内置 admin 恢复为默认密码（MD5("admin")）并启用</summary>
+    /// <returns>受影响行数</returns>
+    public static Int32 RestoreAdminPassword()
+    {
+        const String sql = "UPDATE User SET Password = '21232F297A57A5A743894A0E4A801FC3', Enable = 1 WHERE Name = 'admin'; SELECT changes();";
+        return ExecuteScalarWrite<Int32>(MembershipWriteConnStr, sql);
+    }
+
     #endregion
 
     #region User 表查询
