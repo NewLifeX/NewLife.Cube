@@ -259,3 +259,54 @@ describe('CubeTableGrid 空态与失败态', () => {
     expect(text).not.toContain('暂无数据');
   });
 });
+
+describe('CubeTableGrid 业务自写列', () => {
+  /** 业务页在 #default 里写 el-table-column（与 MES ListPage 同一用法） */
+  const CUSTOM = `<template #default="scope"><el-table-column label="自写列" prop="Name"><template #default="s"><span class="mine">{{ s.row.Name }}/{{ scope.visibleColumns.Name === false ? '隐藏' : '显示' }}</span></template></el-table-column></template>`;
+
+  it('应该让元数据生成列整块让位 当业务页写了 #default 时', async () => {
+    const ctx = makeFakeCtx({ listFields: [FIELDS.id, FIELDS.name], list: [{ Id: 1, Name: '泵体' }] });
+    const wrapper = await mountGrid(ctx, { slots: { default: CUSTOM } });
+    expect(wrapper.find('.mine').exists()).toBe(true);
+    const text = wrapper.text();
+    // 生成列的列头（编号/名称）不再出现，只剩业务自写的那一列
+    expect(text).toContain('自写列');
+    expect(text).not.toContain('编号');
+    expect(text).not.toContain('名称');
+  });
+
+  it('应该把列显隐结果与恢复函数放进作用域 当业务自写列时', async () => {
+    const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: '泵体' }] });
+    const resetVisibility = vi.fn();
+    const wrapper = await mountGrid(ctx, {
+      props: { visibility: { Name: false }, resetVisibility },
+      slots: {
+        default:
+          '<template #default="scope"><el-table-column label="L"><template #default><span class="kind">{{ typeof scope.resetColumnVisibility }}</span></template></el-table-column></template>',
+      },
+    });
+    expect(wrapper.find('.kind').text()).toBe('function');
+    expect(typeof resetVisibility).toBe('function');
+  });
+
+  it('应该保留勾选列与操作列 当业务自写数据列时', async () => {
+    const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: '泵体' }] });
+    const wrapper = await mountGrid(ctx, { slots: { default: CUSTOM } });
+    expect(wrapper.find('.el-table__header .el-checkbox').exists()).toBe(true);
+    expect(wrapper.text()).toContain('操作');
+  });
+});
+
+describe('CubeTableGrid 滚动模型', () => {
+  it('应该默认 height=100% 让表体内部滚动 当未指定高度时', async () => {
+    const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }] });
+    const wrapper = await mountGrid(ctx);
+    expect(wrapper.findComponent({ name: 'ElTable' }).props('height')).toBe('100%');
+  });
+
+  it('应该允许页面覆盖高度 当业务页给定 height 时', async () => {
+    const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }] });
+    const wrapper = await mountGrid(ctx, { props: { height: 360 } });
+    expect(wrapper.findComponent({ name: 'ElTable' }).props('height')).toBe(360);
+  });
+});

@@ -15,8 +15,15 @@ import { formatCellDateTime } from '../../engine/logic';
 import type { FieldMeta, ListControlType } from '../../types/field';
 import type { CubeColumnView, CubeSearchControl, CubeSearchKind } from './types';
 
-/** 搜索区收起态最多显示的条件数（与 `ListSearchBar.vue` 的 4 列栅格一致） */
-export const SEARCH_COLLAPSE_LIMIT = 4;
+/**
+ * 搜索区是否需要「展开/收起」按钮。
+ *
+ * MES 的列表页是一体式搜索栏：收起态只有关键字一行，展开才出现条件面板。
+ * 库场景的条件由 `GetPage` 元数据生成，所以「有条件」才给展开入口。
+ */
+export function showSearchToggle(fieldCount: number): boolean {
+  return fieldCount > 0;
+}
 
 /** 布尔搜索选项：`''` 表示不参与筛选（提交时被 `dropEmptyParams` 丢弃） */
 export const BOOLEAN_FILTER_OPTIONS = [
@@ -96,20 +103,7 @@ export function buildSearchControls(fields: FieldMeta[]): CubeSearchControl[] {
   return fields.map(buildSearchControl);
 }
 
-/**
- * 收起态只显示前 N 个条件，展开态全显示。
- * 返回「应显示的控件」与「被折叠的个数」，后者用于决定要不要给展开按钮。
- */
-export function collapseSearchControls(
-  controls: CubeSearchControl[],
-  expanded: boolean,
-  limit: number = SEARCH_COLLAPSE_LIMIT,
-): { shown: CubeSearchControl[]; hiddenCount: number } {
-  if (expanded || controls.length <= limit) {
-    return { shown: controls, hiddenCount: 0 };
-  }
-  return { shown: controls.slice(0, limit), hiddenCount: controls.length - limit };
-}
+
 
 /** 列宽（沿用 `ListTableContent.vue:60-66`，并补日期类宽度） */
 export function widthForControl(control: ListControlType, field: FieldMeta): number | string {
@@ -181,7 +175,7 @@ export interface ToolbarFlagInput {
   refresh?: boolean;
 }
 
-/** 工具栏按钮开关结论 */
+/** 操作行与指标行的按钮开关结论（同一份判定，两行各自取用） */
 export interface ToolbarFlags {
   add: boolean;
   batchDelete: boolean;

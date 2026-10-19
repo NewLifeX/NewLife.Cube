@@ -91,6 +91,11 @@ export interface BackendField {
   required?: boolean;
   /** 内联枚举字典（如 { "1": "小时", "2": "班次" }），有则免一次 LOV 请求 */
   dataSource?: Record<string, string>;
+  /**
+   * 级联父字段名（后端对带 `[Parent]` 的枚举子字典下发，如 OrderType → "Section"）。
+   * 表单侧由 `FormContent` 转成 `LovSelect` 的 `:parent`，实现「父变过滤子」。
+   */
+  parentField?: string;
 }
 
 /** `GET {type}/GetPage` 的页面元数据（六组独立字段数组） */
@@ -139,6 +144,11 @@ export interface CubeEngineOptions {
   autoQuery?: boolean;
   /** 关键字搜索开关：true 时把 `keyword` 作为 `q` 随列表/导出请求发出（默认 true） */
   keyword?: boolean;
+  /**
+   * 惰性附加查询条件：每次列表/导出取参时合并（对齐 MES ListPage 的 `queryParams`）。
+   * 用于页面级过滤（如看板选中的产线、路由 query 带的状态），不必写进 `searchModel`。
+   */
+  extraQuery?: () => Record<string, unknown>;
   /** 删除是否需要 `ElMessageBox` 之外的二次确认由视图层决定；此处仅声明后端口径 */
   doubleDelete?: boolean;
   /** 批量删除降级：后端不支持 `DeleteSelect` 时置 true，引擎改为逐条删除 */

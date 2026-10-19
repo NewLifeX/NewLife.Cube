@@ -188,11 +188,11 @@ export function createCubeEngine(
     formMode.value === 'add' ? '新增' : formMode.value === 'edit' ? '编辑' : '查看',
   );
 
-  /** 当前查询条件（关键字 + 搜索模型），列表与导出共用同一口径 */
+  /** 当前查询条件（关键字 + 搜索模型 + 页面附加条件），列表与导出共用同一口径 */
   function currentQuery(): Record<string, unknown> {
     return buildQueryParams({
       keyword: keyword.value,
-      filters: searchModel,
+      filters: { ...(options.extraQuery?.() ?? {}), ...searchModel },
       keywordEnabled: options.keyword !== false,
     });
   }
@@ -209,6 +209,9 @@ export function createCubeEngine(
       await action();
     } catch (err) {
       error.value = extractMessage(err) ?? '请求失败';
+      // 失败必须出声：否则用户只看到一片空表格，分不清「没数据」还是「没取到」
+      console.error('[CubeEngine] 列表加载失败:', err);
+      deps.notify?.error?.(error.value);
     } finally {
       loading.value = false;
     }

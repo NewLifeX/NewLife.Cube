@@ -35,6 +35,8 @@ export function toFieldMeta(field: BackendField): FieldMeta {
     lovCode: field.lovCode,
     multiple: field.multiple,
     dataSource: field.dataSource,
+    // 级联子字典：漏了这一项，表单里的 LovSelect 就拿不到 :parent，「父变过滤子」静默失效
+    parentField: field.parentField,
   };
 }
 

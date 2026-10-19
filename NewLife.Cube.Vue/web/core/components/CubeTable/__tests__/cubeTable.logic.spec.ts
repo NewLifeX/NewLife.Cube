@@ -15,7 +15,7 @@ import {
   cellBoolean,
   cellParts,
   cellText,
-  collapseSearchControls,
+  showSearchToggle,
   defaultColumnsStorageKey,
   dialogShapeFor,
   isExpandableCell,
@@ -99,24 +99,14 @@ describe('CubeTable/logic 搜索控件显示态', () => {
   });
 });
 
-describe('CubeTable/logic 条件折叠', () => {
-  const six = Array.from({ length: 6 }, (_v, i) => ({
-    ...buildSearchControl(FIELDS.name),
-    field: { ...FIELDS.name, name: `F${i}` },
-    key: `F${i}`,
-  }));
-
-  it('应该收起态只给前 4 个并回报被折叠数 当条件超过 4 个时', () => {
-    const { shown, hiddenCount } = collapseSearchControls(six, false);
-    expect(shown).toHaveLength(4);
-    expect(hiddenCount).toBe(2);
+describe('CubeTable/logic 展开入口判定', () => {
+  it('应该给展开按钮 当元数据里有搜索条件时', () => {
+    expect(showSearchToggle(1)).toBe(true);
+    expect(showSearchToggle(6)).toBe(true);
   });
 
-  it('应该全部显示且不报折叠数 当展开态或条件不超过 4 个时', () => {
-    expect(collapseSearchControls(six, true).shown).toHaveLength(6);
-    const small = collapseSearchControls(six.slice(0, 3), false);
-    expect(small.shown).toHaveLength(3);
-    expect(small.hiddenCount).toBe(0);
+  it('应该不给展开按钮 当没有任何搜索条件时', () => {
+    expect(showSearchToggle(0)).toBe(false);
   });
 });
 

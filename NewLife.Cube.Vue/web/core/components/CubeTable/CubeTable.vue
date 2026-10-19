@@ -1,70 +1,75 @@
 <script setup lang="ts">
 /**
- * CubeTable —— 默认列表页的单一集成组件
+ * CubeTable —— 一个组件就是一个列表页（结构与视觉对齐 MES ListPage）
  *
- * 一屏之内的 搜索 / 工具栏 / 表格 / 分页 / 新增编辑弹窗 全部内置，
- * 定制一律走具名插槽（不再有 Section 覆盖文件）：
- *   `#header` `#search` `#toolbar` `#toolbar-extra` `#table` `#table-row-actions`
- *   `#col-<字段名>` `#empty` `#pagination` `#footer` `#form`
+ * 从上到下固定五段：操作栏 → 搜索条件 → 表格统计 → 表格 → 分页。
+ * 页面不滚动，只有表格数据区滚动（`.ct-panel` + `el-table height=100%`）。
  *
- * 上下文三级解析（`docs/architecture/cube-engine.md` §5.2）：
- *   `:context` 外部指定 → `inject(CubeEngineKey)` 父级已建 → 按当前路由自动创建。
+ * 上下文三级解析：`:context` 外部指定 → `inject(CubeEngineKey)` 父级已建 → 按当前路由自建。
+ * props / 插槽命名沿用 MES ListPage，业务页两边平移时不用改称呼。
  */
 import { computed, inject, useSlots } from 'vue';
-import { Setting } from '@element-plus/icons-vue';
 import { CubeEngineKey, useCubeEngine } from '../../engine/useCubeEngine';
-import type { CubeEngineContext } from '../../engine/types';
 import { useCubeTableActions } from './useCubeTableActions';
 import { useCubeTableColumns } from './useCubeTableColumns';
+import type { CubeEngineContext } from '../../engine/types';
+import type { CubeTableProps } from './types';
+import CubeTableActions from './CubeTableActions.vue';
 import CubeTableSearch from './CubeTableSearch.vue';
-import CubeTableToolbar from './CubeTableToolbar.vue';
+import CubeTableMetrics from './CubeTableMetrics.vue';
+import CubeTableColumnSetting from './CubeTableColumnSetting.vue';
 import CubeTableGrid from './CubeTableGrid.vue';
 import CubeTablePagination from './CubeTablePagination.vue';
 import CubeTableFormDialog from './CubeTableFormDialog.vue';
-import type { CubeGridFlags, CubeToolbarFlags } from './types';
 
-const props = withDefaults(
-  defineProps<{
-    /** 外部指定引擎上下文（嵌入 / 自管引擎场景），传入则不再自动创建 */
-    context?: CubeEngineContext | null;
-    /** 无 context 且无注入时，是否按当前路由自动创建引擎 */
-    autoEngine?: boolean;
-    /** 自动创建时使用的前缀与路由（都不传则取当前路由） */
-    apiPrefix?: string;
-    routePath?: string;
-    /** 自动创建时的初始每页条数 */
-    pageSize?: number;
-    /** 是否启用「设置列」（localStorage 记忆） */
-    columnsSetting?: boolean;
-    /** 列显隐存储键，默认按实体前缀分桶 */
-    columnsStorageKey?: string;
-    /** 工具栏 / 表格按钮与列行为开关（不传跟随后端 pageSetting） */
-    toolbar?: CubeToolbarFlags;
-    grid?: CubeGridFlags;
-    /** 导出格式（默认 xlsx） */
-    exportFormat?: string;
-    /** 导入可选文件类型 */
-    importAccept?: string;
-    /** 删除是否二次确认（不传跟随后端 doubleDelete） */
-    confirmDelete?: boolean;
-    /** 分页可选项 */
-    pageSizes?: number[];
-  }>(),
-  {
-    context: null,
-    autoEngine: true,
-    pageSize: undefined,
-    columnsSetting: true,
-    exportFormat: 'xlsx',
-    importAccept: undefined,
-    confirmDelete: undefined,
-    pageSizes: () => [10, 20, 50, 100],
-  },
-);
+/** 本组件自己消费的插槽；其余（default / append 等）原样转给表格区 */
+const RESERVED_SLOTS = [
+  'header',
+  'actions',
+  'actions-extra',
+  'search',
+  'search-bar',
+  'search-advanced',
+  'metrics',
+  'toolbar-extra',
+  'table',
+  'row-actions',
+  'footer',
+  'footer-extra',
+  'form',
+];
+
+const props = withDefaults(defineProps<CubeTableProps>(), {
+  context: null,
+  autoEngine: true,
+  pageSize: undefined,
+  searchPlaceholder: '搜索...',
+  showSearch: true,
+  showRefresh: true,
+  metrics: () => [],
+  pageSizes: () => [10, 20, 50],
+  totalUnit: '条',
+  sizeUnit: undefined,
+  columnsSetting: true,
+  showAdd: undefined,
+  showBatchDelete: undefined,
+  showImport: undefined,
+  showExport: undefined,
+  showDownloadTemplate: undefined,
+  exportFormat: 'xlsx',
+  confirmDelete: undefined,
+});
 
 const injected = inject(CubeEngineKey, null);
 const ctx: CubeEngineContext =
-  props.context ?? injected ?? useCubeEngine({ routePath: props.routePath, apiPrefix: props.apiPrefix, pageSize: props.pageSize });
+  props.context ??
+  injected ??
+  useCubeEngine({
+    routePath: props.routePath,
+    apiPrefix: props.apiPrefix,
+    pageSize: props.pageSize,
+    extraQuery: props.queryParams,
+  });
 
 const slots = useSlots();
 const actions = useCubeTableActions(ctx, {
@@ -79,94 +84,110 @@ const columns = useCubeTableColumns(() => ctx.listFields.value, {
   enabled: props.columnsSetting,
   storageKey: props.columnsStorageKey,
 });
-/** 业务页写过的 `#col-Xxx` 转发给表格区（内置渲染让位） */
-const cellSlots = computed(() =>
-  Object.keys(slots).filter((name) => name.startsWith('col-')),
-);
+
+/** 转发给表格区的插槽名（业务自写列即 `#default`，与 MES 同一机制） */
+const gridSlotNames = computed(() => Object.keys(slots).filter((name) => !RESERVED_SLOTS.includes(name)));
+
+/** 列显隐结果同时给自写列用（业务列 `v-if="visibleColumns.Xxx"`） */
+const visibleColumns = computed(() => (props.columnsSetting ? columns.visibility.value : {}));
 </script>
 
 <template>
   <div class="cube-table">
+    <!-- ⓪ 页头：框架默认页传标题，业务自绘页面一般不用 -->
     <slot name="header" :ctx="ctx" />
 
-    <el-alert
-      v-if="ctx.error.value"
-      class="ct-error"
-      type="error"
-      :title="ctx.error.value"
-      show-icon
-      :closable="false"
+    <!-- ① 操作栏：业务按钮在前，内置通用按钮在后（与 MES 一致，#actions 是「加内容」不是「换整行」） -->
+    <CubeTableActions
+      :ctx="ctx"
+      :actions="actions"
+      :flags="{
+        add: showAdd,
+        batchDelete: showBatchDelete,
+        importFile: showImport,
+        exportFile: showExport,
+        downloadTemplate: showDownloadTemplate,
+      }"
     >
-      <template #default>
-        <el-button link type="primary" @click="ctx.retry()">重试</el-button>
+      <template v-if="slots.actions" #default="scope">
+        <slot name="actions" v-bind="scope" />
       </template>
-    </el-alert>
+      <template v-if="slots['actions-extra']" #extra="scope">
+        <slot name="actions-extra" v-bind="scope" />
+      </template>
+    </CubeTableActions>
 
-    <slot name="search" :ctx="ctx">
-      <CubeTableSearch :ctx="ctx" />
-    </slot>
+    <!-- ② 搜索条件：关键字行 + 可展开条件面板。
+         #search-bar / #search-advanced 是 MES 口径的「换内容」，#search 是 Cube 扩展的「换整块」 -->
+    <template v-if="showSearch || slots.search || slots['search-bar']">
+      <slot name="search" :ctx="ctx">
+        <CubeTableSearch :ctx="ctx" :placeholder="searchPlaceholder">
+          <template v-if="slots['search-bar']" #bar="scope">
+            <slot name="search-bar" v-bind="scope" />
+          </template>
+          <template v-if="slots['search-advanced']" #advanced="scope">
+            <slot name="search-advanced" v-bind="scope" />
+          </template>
+        </CubeTableSearch>
+      </slot>
+    </template>
 
-    <slot name="toolbar" :ctx="ctx">
-      <CubeTableToolbar
+    <!-- ③④⑤ 主面板：统计行 + 表格 + 分页 -->
+    <div class="ct-panel">
+      <CubeTableMetrics
         :ctx="ctx"
-        :actions="actions"
-        :show-add="toolbar?.add"
-        :show-batch-delete="toolbar?.batchDelete"
-        :show-import="toolbar?.importFile"
-        :show-export="toolbar?.exportFile"
-        :show-download-template="toolbar?.downloadTemplate"
-        :show-refresh="toolbar?.refresh"
+        :metrics="metrics"
+        :show-refresh="showRefresh"
+        :show-column-setting="columnsSetting"
       >
-        <template #extra>
-          <!-- 内置「设置列」排在业务自定义按钮之前：它是视图工具，不该抢业务动作的位 -->
-          <el-popover v-if="columnsSetting" placement="bottom-end" :width="220" trigger="click">
-            <!-- 不再套一层 el-tooltip：它的触发指令落在 fragment 根上会告警并失效，
-                 按钮自身的 title 已经能给悬停提示 -->
-            <template #reference>
-              <el-button class="ct-cols-trigger" :icon="Setting" circle title="设置列" />
+        <template v-if="slots.metrics" #metrics="scope">
+          <slot name="metrics" v-bind="scope" />
+        </template>
+        <template v-if="slots['toolbar-extra']" #extra="scope">
+          <slot name="toolbar-extra" v-bind="scope" />
+        </template>
+        <template v-if="columnsSetting" #column-setting>
+          <CubeTableColumnSetting
+            :items="columns.items.value"
+            :visibility="columns.visibility.value"
+            @set="(key: string, visible: boolean) => columns.setVisible(key, visible)"
+            @reset="columns.reset()"
+          />
+        </template>
+      </CubeTableMetrics>
+
+      <div class="ct-table-wrap">
+        <slot name="table" :ctx="ctx" :data="ctx.list.value" :loading="ctx.loading.value">
+          <CubeTableGrid
+            :ctx="ctx"
+            :actions="actions"
+            :visibility="visibleColumns"
+            :reset-visibility="columns.reset"
+            v-bind="grid"
+          >
+            <template v-for="name in gridSlotNames" #[name]="scope">
+              <slot
+                :name="name"
+                v-bind="scope ?? {}"
+                :visible-columns="visibleColumns"
+                :reset-column-visibility="columns.reset"
+              />
             </template>
-            <div class="ct-col-title">展示列</div>
-            <div v-for="item in columns.items.value" :key="item.key" class="ct-col-item">
-              <el-checkbox
-                :model-value="columns.visibility.value[item.key] !== false"
-                @change="(v: unknown) => columns.setVisible(item.key, v === true)"
-              >
-                {{ item.label }}
-              </el-checkbox>
-            </div>
-            <div class="ct-col-footer">
-              <el-button link type="primary" @click="columns.reset()">恢复默认</el-button>
-            </div>
-          </el-popover>
-          <slot name="toolbar-extra" :ctx="ctx" />
-        </template>
-      </CubeTableToolbar>
-    </slot>
+            <template v-if="slots['row-actions']" #row-actions="scope">
+              <slot name="row-actions" v-bind="scope" :ctx="ctx" />
+            </template>
+          </CubeTableGrid>
+        </slot>
+      </div>
 
-    <slot name="table" :ctx="ctx">
-      <CubeTableGrid
-        :ctx="ctx"
-        :actions="actions"
-        :visibility="columnsSetting ? columns.visibility.value : null"
-        v-bind="grid"
-      >
-        <template v-for="name in cellSlots" #[name]="scope">
-          <slot :name="name" v-bind="scope" />
-        </template>
-        <template v-if="slots['table-row-actions']" #row-actions="scope">
-          <slot name="table-row-actions" v-bind="scope" />
-        </template>
-        <template v-if="slots.empty" #empty>
-          <slot name="empty" />
-        </template>
-      </CubeTableGrid>
-    </slot>
-
-    <slot name="pagination" :ctx="ctx">
-      <CubeTablePagination :ctx="ctx" :page-sizes="pageSizes" />
-    </slot>
-
-    <slot name="footer" :ctx="ctx" />
+      <slot name="footer" :ctx="ctx" :total="ctx.total.value" :page="ctx.page.value" :page-size="ctx.pageSize.value">
+        <CubeTablePagination :ctx="ctx" :page-sizes="pageSizes" :unit="totalUnit" :size-unit="sizeUnit">
+          <template v-if="slots['footer-extra']" #extra>
+            <slot name="footer-extra" :ctx="ctx" />
+          </template>
+        </CubeTablePagination>
+      </slot>
+    </div>
 
     <slot name="form" :ctx="ctx">
       <CubeTableFormDialog :ctx="ctx" />
@@ -175,27 +196,45 @@ const cellSlots = computed(() =>
 </template>
 
 <style scoped>
+/* 列表页骨架：与 MES ListPage 同一套尺寸（页高 100%、12px 内边距、三段卡片） */
 .cube-table {
+  height: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  padding: 12px;
+}
+
+.ct-panel {
+  flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--el-bg-color-overlay);
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 8px;
+  box-shadow: var(--el-box-shadow-light);
+  overflow: hidden;
 }
-.ct-error {
-  margin-bottom: -4px;
+
+/* 表格容器：横向溢出滚动，纵向交给 el-table 内部（表头固定、数据区滚动） */
+.ct-table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
-.ct-col-title {
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
-  padding-bottom: 6px;
+.ct-table-wrap :deep(.el-table) {
+  --el-table-border-color: var(--el-border-color-extra-light);
+  --el-table-header-bg-color: var(--el-fill-color-light);
+  --el-table-row-hover-bg-color: var(--el-color-primary-light-9);
 }
-.ct-col-item {
-  padding: 1px 4px;
+.ct-table-wrap :deep(th.el-table__cell) {
+  height: 48px;
+  color: var(--el-text-color-primary);
+  font-weight: 500;
 }
-.ct-col-footer {
-  border-top: 1px solid var(--el-border-color-lighter);
-  margin-top: 6px;
-  padding-top: 6px;
-  text-align: right;
+.ct-table-wrap :deep(td.el-table__cell) {
+  height: 58px;
 }
 </style>

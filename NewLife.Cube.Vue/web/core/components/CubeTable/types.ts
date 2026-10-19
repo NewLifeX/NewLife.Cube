@@ -3,6 +3,7 @@
  *
  * 引擎契约见 `core/engine/types.ts`；这里只描述「怎么渲染」，不含业务状态。
  */
+import type { Component } from 'vue';
 import type { FieldMeta, ListControlType, SearchControlType } from '../../types/field';
 import type { CubeEngineContext } from '../../engine/types';
 
@@ -65,6 +66,35 @@ export interface CubeCellSlotProps {
   ctx: CubeEngineContext;
 }
 
+/**
+ * 表格统计指标项（对齐 MES `ListPage/types.ts` 的 `ListPageMetric`）。
+ * 渲染在「指标行」左侧：图标 + 名称 + 值 + 可选环比变化。
+ */
+export interface CubeTableMetric {
+  /** 指标名称（如「项目总数」） */
+  label: string;
+  /** 指标值 */
+  value: string | number;
+  /** 圆形图标组件（Element Plus 图标） */
+  icon?: Component;
+  /** 图标背景色（CSS 值，推荐 --el-* token） */
+  bg?: string;
+  /** 图标前景色 */
+  color?: string;
+  /** 环比变化文案（如「↑12%」），不传则不显示 */
+  change?: string;
+  /** 变化语义：up 绿 / warning 琥珀 / down 红 */
+  changeType?: 'up' | 'warning' | 'down';
+}
+
+/** 指标行入参 */
+export interface CubeMetricBarFlags {
+  /** 是否显示刷新按钮 */
+  refresh?: boolean;
+  /** 是否显示「设置列」入口 */
+  columnsSetting?: boolean;
+}
+
 /** 区域插槽的通用作用域 */
 export interface CubeSectionSlotProps {
   ctx: CubeEngineContext;
@@ -105,4 +135,72 @@ export interface CubeGridFlags {
   rowActions?: boolean;
   doubleClickEdit?: boolean;
   actionWidth?: number;
+}
+
+/**
+ * `CubeTable` 宿主入参（命名对齐 MES `ListPage` 的 props，业务页两边平移不改称呼）。
+ *
+ * 引擎接线类（`context` / `autoEngine` / `apiPrefix` / `routePath` / `pageSize`）是 Cube 特有的，
+ * 其余全部与 MES 一一对应。
+ */
+export interface CubeTableProps {
+  // ── 引擎接线 ──
+  /** 外部指定引擎上下文（嵌入 / 自管引擎场景），传入则不再自动创建 */
+  context?: CubeEngineContext | null;
+  /** 无 context 且无注入时，是否按当前路由自建引擎（默认 true） */
+  autoEngine?: boolean;
+  /** 自建引擎时使用的实体前缀 */
+  apiPrefix?: string;
+  /** 自建引擎时使用的路由路径 */
+  routePath?: string;
+  /** 初始每页条数 */
+  pageSize?: number;
+  /** 惰性附加查询条件（对应 MES `queryParams`），每次取数/导出时合并 */
+  queryParams?: () => Record<string, unknown>;
+
+  // ── 搜索区 ──
+  /** 搜索框占位文案 */
+  searchPlaceholder?: string;
+  /** 是否显示搜索区 */
+  showSearch?: boolean;
+
+  // ── 统计行 / 分页 ──
+  /** 统计指标（统计行左侧） */
+  metrics?: CubeTableMetric[];
+  /** 是否显示刷新按钮 */
+  showRefresh?: boolean;
+  /** 可选每页条数 */
+  pageSizes?: number[];
+  /** 总数单位（「共 N 条」） */
+  totalUnit?: string;
+  /** 每页条数单位（「N 条/页」），缺省跟随 `totalUnit` */
+  sizeUnit?: string;
+
+  // ── 设置列 ──
+  /** 是否启用「设置列」（localStorage 记忆） */
+  columnsSetting?: boolean;
+  /** 列显隐存储键，默认按实体前缀分桶 */
+  columnsStorageKey?: string;
+
+  // ── 操作栏 ──
+  /** 新增按钮：不传跟随后端 `enableAdd` */
+  showAdd?: boolean;
+  /** 批量删除按钮：不传跟随后端 `enableSelect` */
+  showBatchDelete?: boolean;
+  /** 导入按钮：不传默认开 */
+  showImport?: boolean;
+  /** 导出按钮：不传默认开 */
+  showExport?: boolean;
+  /** 下载模板按钮：不传默认关（后端需实现 `DownloadTemplate`） */
+  showDownloadTemplate?: boolean;
+  /** 导出格式（xlsx / csv / json） */
+  exportFormat?: string;
+  /** 导入可选文件类型 */
+  importAccept?: string;
+  /** 删除是否二次确认：不传跟随后端 `doubleDelete` */
+  confirmDelete?: boolean;
+
+  // ── 表格区 ──
+  /** 表格区开关（勾选列 / 索引列 / 操作列 / 双击编辑） */
+  grid?: CubeGridFlags;
 }

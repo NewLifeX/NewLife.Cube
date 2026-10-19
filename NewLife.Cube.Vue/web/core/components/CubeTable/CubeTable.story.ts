@@ -10,9 +10,11 @@
  * 组件里 `ctx.list.value` 就读成 undefined —— 表现是「一截图就白屏」。
  */
 import { markRaw } from 'vue';
+import { Cpu, VideoPlay, Warning } from '@element-plus/icons-vue';
 import CubeTable from './CubeTable.vue';
 import { createCubeEngine } from '../../engine/createCubeEngine';
 import type { CubeEngineContext, CubeEngineDeps, CubePageMeta } from '../../engine/types';
+import type { CubeTableMetric } from './types';
 
 /** 覆盖全部单元格分支的元数据：值集 / 布尔 / 数值 / 日期 / 日期时间 / 图片 / 附件 / 色块 / 图标 / Json */
 const META: CubePageMeta = {
@@ -61,9 +63,9 @@ const META: CubePageMeta = {
  * 破图占位要不要出现取决于网络时序，像素基线就会随机漂。
  */
 const AVATAR_A =
-  'data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\"><rect width=\"24\" height=\"24\" fill=\"%23409eff\"/></svg>';
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><rect width="24" height="24" fill="%23409eff"/></svg>';
 const AVATAR_B =
-  'data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\"><rect width=\"24\" height=\"24\" fill=\"%2367c23a\"/></svg>';
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><rect width="24" height="24" fill="%2367c23a"/></svg>';
 
 /** 确定性行数据：日期、值集码、空值都固定，像素基线才不会漂 */
 function makeRows(): Record<string, unknown>[] {
@@ -111,7 +113,7 @@ function makeRows(): Record<string, unknown>[] {
 }
 
 interface EngineOptions {
-  /** 元数据接口失败（验证失败态与重试入口） */
+  /** 元数据接口失败（验证失败态就地说明） */
   failMeta?: boolean;
   /** 行数据条数（0 = 空态） */
   rows?: number;
@@ -119,7 +121,7 @@ interface EngineOptions {
   readOnly?: boolean;
   /** 打开新增弹窗 */
   openDialog?: boolean;
-  /** 搜索条件折叠阈值演示用：截断 search 数组 */
+  /** 截断 search 数组，验证条件多少时的展开表现 */
   searchLimit?: number;
 }
 
@@ -190,21 +192,51 @@ function buildEngine(options: EngineOptions = {}): CubeEngineContext {
 /** 每个变体一套独立引擎实例（互不干扰，也不共享翻页状态） */
 const engine = (options: EngineOptions = {}) => markRaw(buildEngine(options));
 
+/** 指标行样例：圆形图标 + 名称 + 值 + 环比，覆盖 metrics 的全部可选字段 */
+const METRICS: CubeTableMetric[] = [
+  {
+    label: '设备总数',
+    value: 3,
+    icon: Cpu,
+    bg: 'var(--el-color-primary-light-9)',
+    color: 'var(--el-color-primary)',
+  },
+  {
+    label: '运行中',
+    value: 2,
+    icon: VideoPlay,
+    bg: 'var(--el-color-success-light-9)',
+    color: 'var(--el-color-success)',
+    change: '↑1',
+    changeType: 'up',
+  },
+  {
+    label: '停机待检',
+    value: 1,
+    icon: Warning,
+    bg: 'var(--el-color-warning-light-9)',
+    color: 'var(--el-color-warning)',
+  },
+];
+
 export const stories = [
-  // 测试状态：元数据已加载、3 行数据、搜索区 6 条件单行收起、工具栏含新增/批量删除/导入/导出/设置列/刷新
+  // 测试状态：操作栏 + 一体式搜索栏（收起）+ 主面板（表格 + 分页）；3 行数据、6 个搜索条件但未展开
   { id: 'CubeTable/Default', component: CubeTable, props: { context: engine() } },
 
-  // 测试状态：整页只读（后端 isReadOnly）—— 新增 / 批量删除 / 导入 / 操作列全部不出现，只留导出与刷新
+  // 测试状态：整页只读（后端 isReadOnly）—— 添加 / 批量删除 / 导入 / 操作列全部不出现，只留导出与刷新
   { id: 'CubeTable/ReadOnly', component: CubeTable, props: { context: engine({ readOnly: true }) } },
 
-  // 测试状态：0 行 —— 空态文案「暂无数据」，工具栏仍在（能筛选条件还没填）
+  // 测试状态：0 行 —— 空态文案「暂无数据」，操作栏仍在（还能导入/导出）
   { id: 'CubeTable/Empty', component: CubeTable, props: { context: engine({ rows: 0 }) } },
 
-  // 测试状态：元数据接口失败 —— 顶部错误条 + 就地重试入口，表格不留下半截列头
+  // 测试状态：元数据接口失败 —— 失败原因就地显示在表格空态里（不再顶部弹错误条）
   { id: 'CubeTable/LoadFail', component: CubeTable, props: { context: engine({ failMeta: true }) } },
 
-  // 测试状态：搜索条件超过一行 —— 收起态只给前 4 个，右侧出现「更多(2)」
-  { id: 'CubeTable/ManyFilters', component: CubeTable, props: { context: engine({ searchLimit: 6 }) } },
+  // 测试状态：统计指标行 —— 左三个指标（含图标与环比），右侧设置列齿轮 + 刷新
+  { id: 'CubeTable/Metrics', component: CubeTable, props: { context: engine(), metrics: METRICS } },
+
+  // 测试状态：只有 1 个搜索条件 —— 与 6 个条件同一套一体式搜索栏，差异只在展开后的行数
+  { id: 'CubeTable/OneFilter', component: CubeTable, props: { context: engine({ searchLimit: 1 }) } },
 
   // 测试状态：新增弹窗已打开 —— 字段控件与必填星号、底部「取消/保存」
   { id: 'CubeTable/FormDialog', component: CubeTable, props: { context: engine({ openDialog: true }) } },

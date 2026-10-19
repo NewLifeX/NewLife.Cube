@@ -1,29 +1,32 @@
 <script setup lang="ts">
 /**
- * CubeTable 搜索区（内置默认实现）
+ * CubeTable 搜索区（一体式，对应 MES ListPage 的 `.search-wrap`）
  *
- * 受控于引擎：条件写进 `ctx.searchModel` / `ctx.keyword`，动作直接调 `ctx.search()` /
- * `ctx.resetSearch()`，组件自身不持业务状态；`expanded` 是纯 UI 状态留在本地。
- * 控件类型判定来自 `core/utils/fieldControl.ts`（唯一真理源），本组件只负责渲染分支。
+ * 收起态只有一行：关键字输入 + 展开/收起按钮；展开才出现条件面板。
+ * 条件由 `GetPage` 元数据生成（业务页也可用 `#advanced` 整块替换成自己的表单）。
+ * 状态与动作全部落在引擎上：`ctx.keyword` / `ctx.searchModel` / `ctx.search()` / `ctx.resetSearch()`。
  */
-import { computed, ref } from 'vue';
-import { ArrowDown, ArrowUp, Search } from '@element-plus/icons-vue';
+import { computed, ref, useSlots } from 'vue';
+import { ArrowDown, ArrowUp, Filter, Search } from '@element-plus/icons-vue';
 import LovSelect from '../LovSelect/index.vue';
-import { buildSearchControls, collapseSearchControls } from './cubeTable.logic';
+import { buildSearchControls, showSearchToggle } from './cubeTable.logic';
 import type { CubeEngineContext } from '../../engine/types';
 
-const props = defineProps<{
-  /** 引擎上下文（受控 prop，不 inject，便于单测直接传入） */
-  ctx: CubeEngineContext;
-}>();
+const props = withDefaults(
+  defineProps<{
+    ctx: CubeEngineContext;
+    /** 关键字占位文案 */
+    placeholder?: string;
+  }>(),
+  { placeholder: '搜索...' },
+);
 
-// ctx 里的 Ref 直接取出来绑：写入落到同一个 Ref，语义不变。
-// （不用 toRefs(props.ctx)：引擎上下文是普通对象而非 reactive，会告警）
+const slots = useSlots();
 const keyword = props.ctx.keyword;
 const expanded = ref(false);
 const controls = computed(() => buildSearchControls(props.ctx.searchFields.value));
-const shown = computed(() => collapseSearchControls(controls.value, expanded.value));
-const searchable = computed(() => controls.value.length > 0);
+/** 业务自带条件面板时，即便元数据没给搜索字段也要留展开入口 */
+const showSearchControls = computed(() => Boolean(slots.advanced) || showSearchToggle(controls.value.length));
 
 function toggle(): void {
   expanded.value = !expanded.value;
@@ -31,123 +34,183 @@ function toggle(): void {
 </script>
 
 <template>
-  <div class="cts flex flex-wrap items-center gap-2 py-2">
-    <el-input
-      v-model="keyword"
-      class="cts-keyword"
-      :prefix-icon="Search"
-      clearable
-      placeholder="搜索..."
-      @keyup.enter="ctx.search()"
-      @clear="ctx.search()"
-    />
-
-    <template v-if="searchable">
-      <div
-        v-for="c in shown.shown"
-        :key="c.key"
-        class="cts-item"
-        :class="c.span === 2 ? 'cts-item--wide' : ''"
-      >
-        <span class="cts-label">{{ c.field.displayName || c.field.name }}</span>
-
+  <div class="cts-wrap" :class="{ expanded }">
+    <!-- 整行接管：业务页把「关键词 + 各条件下拉 + 查询/重置」排成一行时用这个 -->
+    <slot name="bar" :advanced="expanded" :toggle="toggle" :ctx="ctx">
+      <div class="cts-bar">
         <el-input
-          v-if="c.kind === 'text'"
-          v-model="ctx.searchModel[c.key] as string"
+          v-model="keyword"
+          class="cts-input"
           clearable
+          :placeholder="placeholder"
+          :prefix-icon="Search"
           @keyup.enter="ctx.search()"
+          @clear="ctx.search()"
         />
-
-        <el-select
-          v-else-if="c.kind === 'dict'"
-          v-model="ctx.searchModel[c.key] as string | number | undefined"
-          clearable
-          placeholder="全部"
-        >
-          <el-option v-for="o in c.options" :key="String(o.value)" :label="o.label" :value="o.value" />
-        </el-select>
-
-        <div v-else-if="c.kind === 'numberRange'" class="cts-range">
-          <el-input-number v-model="ctx.searchModel[c.key] as number" :controls="false" placeholder="最小" />
-          <span class="cts-range-sep">–</span>
-          <el-input-number v-model="ctx.searchModel[c.maxKey!] as number" :controls="false" placeholder="最大" />
-        </div>
-
-        <div v-else-if="c.kind === 'timeRange'" class="cts-range">
-          <el-time-picker v-model="ctx.searchModel[c.key] as string" value-format="HH:mm:ss" placeholder="起" />
-          <span class="cts-range-sep">–</span>
-          <el-time-picker v-model="ctx.searchModel[c.maxKey!] as string" value-format="HH:mm:ss" placeholder="止" />
-        </div>
-
-        <el-date-picker
-          v-else-if="c.kind === 'dateRange'"
-          v-model="ctx.searchModel[c.key] as [string, string] | null"
-          type="daterange"
-          value-format="YYYY-MM-DD"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-        />
-
-        <el-date-picker
-          v-else-if="c.kind === 'datetimeRange'"
-          v-model="ctx.searchModel[c.key] as [string, string] | null"
-          type="datetimerange"
-          value-format="YYYY-MM-DDTHH:mm:ss"
-          start-placeholder="开始时间"
-          end-placeholder="结束时间"
-        />
-
-        <LovSelect
-          v-else-if="c.kind === 'lov' || c.kind === 'lovMulti'"
-          v-model="ctx.searchModel[c.key] as string | number | string[] | undefined"
-          :code="c.field.lovCode ?? ''"
-          :multiple="c.kind === 'lovMulti'"
-        />
-
-        <el-select v-else v-model="ctx.searchModel[c.key] as string" clearable placeholder="全部">
-          <el-option v-for="o in c.options" :key="o.value" :label="o.label" :value="o.value" />
-        </el-select>
+        <button v-if="showSearchControls" type="button" class="cts-toggle" @click="toggle">
+          <el-icon :size="15"><Filter /></el-icon>
+          <span>{{ expanded ? '收起' : '展开' }}</span>
+          <el-icon :size="14">
+            <ArrowUp v-if="expanded" />
+            <ArrowDown v-else />
+          </el-icon>
+        </button>
       </div>
+    </slot>
 
-      <button
-        v-if="shown.hiddenCount > 0 || expanded"
-        type="button"
-        class="cts-toggle"
-        @click="toggle"
-      >
-        <span>{{ expanded ? '收起' : `更多(${shown.hiddenCount})` }}</span>
-        <el-icon><ArrowUp v-if="expanded" /><ArrowDown v-else /></el-icon>
-      </button>
-    </template>
+    <!-- 高级面板：默认按元数据渲染条件；#advanced 可整块替换 -->
+    <div v-if="expanded && showSearchControls" class="cts-panel">
+      <slot name="advanced" :ctx="ctx" :controls="controls">
+        <div class="cts-grid">
+          <div
+            v-for="c in controls"
+            :key="c.key"
+            class="cts-item"
+            :class="{ 'cts-item--wide': c.span === 2 }"
+          >
+            <span class="cts-label">{{ c.field.displayName || c.field.name }}</span>
 
-    <div class="cts-actions flex items-center gap-2">
-      <el-button type="primary" @click="ctx.search()">查询</el-button>
-      <el-button @click="ctx.resetSearch()">重置</el-button>
+            <el-input
+              v-if="c.kind === 'text'"
+              v-model="ctx.searchModel[c.key] as string"
+              clearable
+              @keyup.enter="ctx.search()"
+            />
+
+            <el-select
+              v-else-if="c.kind === 'dict'"
+              v-model="ctx.searchModel[c.key] as string | number | undefined"
+              clearable
+              placeholder="全部"
+            >
+              <el-option v-for="o in c.options" :key="String(o.value)" :label="o.label" :value="o.value" />
+            </el-select>
+
+            <div v-else-if="c.kind === 'numberRange'" class="cts-range">
+              <el-input-number v-model="ctx.searchModel[c.key] as number" :controls="false" placeholder="最小" />
+              <span class="cts-sep">–</span>
+              <el-input-number v-model="ctx.searchModel[c.maxKey!] as number" :controls="false" placeholder="最大" />
+            </div>
+
+            <div v-else-if="c.kind === 'timeRange'" class="cts-range">
+              <el-time-picker v-model="ctx.searchModel[c.key] as string" value-format="HH:mm:ss" placeholder="起" />
+              <span class="cts-sep">–</span>
+              <el-time-picker v-model="ctx.searchModel[c.maxKey!] as string" value-format="HH:mm:ss" placeholder="止" />
+            </div>
+
+            <el-date-picker
+              v-else-if="c.kind === 'dateRange'"
+              v-model="ctx.searchModel[c.key] as [string, string] | null"
+              type="daterange"
+              value-format="YYYY-MM-DD"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+            />
+
+            <el-date-picker
+              v-else-if="c.kind === 'datetimeRange'"
+              v-model="ctx.searchModel[c.key] as [string, string] | null"
+              type="datetimerange"
+              value-format="YYYY-MM-DDTHH:mm:ss"
+              start-placeholder="开始时间"
+              end-placeholder="结束时间"
+            />
+
+            <LovSelect
+              v-else-if="c.kind === 'lov' || c.kind === 'lovMulti'"
+              v-model="ctx.searchModel[c.key] as string | number | string[] | undefined"
+              :code="c.field.lovCode ?? ''"
+              :multiple="c.kind === 'lovMulti'"
+            />
+
+            <el-select v-else v-model="ctx.searchModel[c.key] as string" clearable placeholder="全部">
+              <el-option v-for="o in c.options" :key="o.value" :label="o.label" :value="o.value" />
+            </el-select>
+          </div>
+        </div>
+        <div class="cts-actions">
+          <el-button @click="ctx.resetSearch()">重置</el-button>
+          <el-button type="primary" @click="ctx.search()">搜索</el-button>
+        </div>
+      </slot>
     </div>
   </div>
 </template>
 
 <style scoped>
-.cts {
-  row-gap: 8px;
-}
-.cts-keyword {
-  width: 220px;
+/* 一体式卡片：搜索栏与展开面板无缝衔接（收起时只有关键字一行） */
+.cts-wrap {
   flex-shrink: 0;
+  margin-bottom: 8px;
+  background: var(--el-bg-color-overlay);
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.cts-bar {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  background: var(--el-bg-color-overlay);
+}
+.cts-input {
+  flex: 1;
+  min-width: 0;
+}
+.cts-input :deep(.el-input__wrapper) {
+  height: 40px;
+  padding-left: 12px;
+  box-shadow: none !important;
+  border-radius: 0;
+}
+.cts-input :deep(.el-input__inner) {
+  font-size: 13px;
+}
+.cts-toggle {
+  height: 42px;
+  min-width: 86px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 0;
+  border-left: 1px solid var(--el-border-color-lighter);
+  background: var(--el-bg-color-overlay);
+  color: var(--el-text-color-regular);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.cts-toggle:hover {
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+}
+.cts-panel {
+  padding: 16px 16px 4px;
+  background: var(--el-bg-color-overlay);
+  border-top: 1px solid var(--el-border-color-lighter);
+}
+.cts-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
 }
 .cts-item {
   display: flex;
   align-items: center;
   gap: 6px;
-  min-width: 220px;
+  min-width: 240px;
 }
 .cts-item--wide {
-  min-width: 320px;
+  min-width: 360px;
 }
 .cts-label {
   font-size: 12px;
   color: var(--el-text-color-secondary);
   white-space: nowrap;
+  min-width: 3em;
 }
 .cts-range {
   display: flex;
@@ -155,20 +218,14 @@ function toggle(): void {
   gap: 4px;
   flex: 1;
 }
-.cts-range-sep {
+.cts-sep {
   color: var(--el-text-color-secondary);
 }
-.cts-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  border: 0;
-  background: transparent;
-  color: var(--el-color-primary);
-  font-size: 12px;
-  cursor: pointer;
-}
 .cts-actions {
-  margin-left: auto;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+  padding-bottom: 12px;
 }
 </style>
