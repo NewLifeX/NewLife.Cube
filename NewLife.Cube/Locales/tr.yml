@@ -251,7 +251,7 @@
 "The list value set has no RequestUrl configured; proxy requests are unavailable.": "Liste değer kümesinde RequestUrl yapılandırılmamış; proxy istekleri kullanılamıyor."
 "External API request failed: {0} - {1}": "Harici API isteği başarısız: {0} - {1}"
 "Cannot infer LovCode; specify it explicitly on the [LovList] attribute.": "LovCode çıkarılamıyor; [LovList] özniteliğinde açıkça belirtin."
-"The LovCode of the [LovList] attribute must start with 'List.': {0}.": " [LovList] özniteliğinin LovCode değeri 'List.' ile başlamalıdır: {0}."
+"The LovCode of the [LovList] attribute must start with 'List.': {0}.": "[LovList] özniteliğinin LovCode değeri 'List.' ile başlamalıdır: {0}."
 "Failed to upload object [{0}].": "[{0}] nesnesi yüklenemedi."
 "Failed to upload object [{0}]: {1} {2} {3}": "[{0}] nesnesi yüklenemedi: {1} {2} {3}"
 "Copy is not supported by the S3-compatible object storage.": "S3 uyumlu nesne depolama kopyalamayı desteklemez."
