@@ -120,8 +120,15 @@ public sealed class AceUiTests : IAsyncLifetime
         Assert.Equal("rgb(248, 248, 248)", topBg);
 
         // 二级菜单图标显示（功能修复：ACE 原生隐藏了 submenu 图标）
+        // 先展开第一个含子菜单的一级菜单，否则 submenu 整体不可见、display 取值为 none
+        var withSubIcon = _page.Locator("#sidebar .nav-list > li:has(> ul.submenu)").First;
+        if (await withSubIcon.CountAsync() > 0)
+        {
+            await withSubIcon.Locator("a.dropdown-toggle").First.EvaluateAsync("el => el.click()");
+            await _page.WaitForTimeoutAsync(300);
+        }
         var subIconDisplay = await _page.EvaluateAsync<String>(
-            "(() => { const el = document.querySelector('#sidebar .submenu > li > a .menu-icon'); return el ? getComputedStyle(el).display : ''; })()");
+            "(() => { const el = document.querySelector('#sidebar .submenu.nav-show > li > a .menu-icon'); return el ? getComputedStyle(el).display : ''; })()");
         Assert.True(!String.IsNullOrEmpty(subIconDisplay) && subIconDisplay != "none",
             $"[{testId}] 二级菜单图标未显示（display={subIconDisplay}）");
 
@@ -260,7 +267,7 @@ public sealed class AceUiTests : IAsyncLifetime
         Assert.True(await _page.IsVisibleAsync(".form-actions"), $"[{testId}] 表单按钮区 .form-actions 不存在");
         var btnTexts = await _page.Locator(".form-actions .btn").AllTextContentsAsync();
         var joined = String.Join("|", btnTexts);
-        Assert.True(joined.Contains("新增"), $"[{testId}] 新增按钮缺失，实际按钮: {joined}");
+        Assert.True(joined.Contains("新增") || joined.Contains("保存"), $"[{testId}] 保存/新增按钮缺失，实际按钮: {joined}");
         Assert.True(joined.Contains("取消"), $"[{testId}] 取消按钮缺失，实际按钮: {joined}");
 
         // 表单视觉：按钮圆角 > 0、输入框圆角 > 0

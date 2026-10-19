@@ -58,8 +58,23 @@ public class RoleController(ITenantContext tenantContext) : EntityController<Rol
             return list;
         }
 
-        //return Role.Search(p["dtStart"].ToDateTime(), p["dtEnd"].ToDateTime(), p["Q"], p);
-        return base.Search(p);
+        // 关键字同时兼容列表工具栏的 q 与旧链接的 Q；显式拼接条件，避免通用 Search 忽略关键字
+        var key = p["Q"];
+        if (key.IsNullOrEmpty()) key = p["q"];
+
+        var where = new WhereExpression();
+        if (!key.IsNullOrWhiteSpace())
+        {
+            var exp = Role._.Name.Contains(key) | Role._.Remark.Contains(key);
+            where &= exp;
+        }
+
+        var start = p["dtStart"].ToDateTime();
+        var end = p["dtEnd"].ToDateTime();
+        if (start > DateTime.MinValue) where &= Role._.CreateTime >= start;
+        if (end > DateTime.MinValue) where &= Role._.CreateTime < end.AddDays(1);
+
+        return Role.FindAll(where, p);
     }
 
     /// <summary>验证实体对象</summary>

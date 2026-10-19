@@ -18,6 +18,11 @@ public static class PageHelpers
     /// <param name="verifySuccess">是否验证登录成功；测试故意用错误密码时传 false</param>
     public static async Task LoginAsync(IPage page, String username, String password, Boolean verifySuccess = true)
     {
+        // 首个注册用户会抢占管理员并禁用内置 admin；主链路每次登录前复位，避免用例顺序造成批量假红
+        if (String.Equals(username, AppFixture.AdminUser, StringComparison.OrdinalIgnoreCase) &&
+            String.Equals(password, AppFixture.AdminPass, StringComparison.Ordinal))
+            DatabaseHelper.EnsureAdminEnabled();
+
         // GotoAsync 到登录页时，若服务器检测到已有会话则会直接 302 到 /Admin；
         // Playwright 将此场景报告为 "Navigation ... is interrupted by another navigation to /Admin"。
         // 捕获该异常并视为登录成功（当前上下文已认证）。

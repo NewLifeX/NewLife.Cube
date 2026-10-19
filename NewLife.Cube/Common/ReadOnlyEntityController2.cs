@@ -67,7 +67,9 @@ public partial class ReadOnlyEntityController<TEntity>
     {
         var start = p["dtStart"].ToDateTime();
         var end = p["dtEnd"].ToDateTime();
+        // 列表工具栏搜索框 name="q"，部分控制器/旧链接使用 "Q"；两者都接受，避免关键字搜索被静默忽略
         var key = p["Q"];
+        if (key.IsNullOrEmpty()) key = p["q"];
 
         var whereExpression = Entity<TEntity>.SearchWhereByKeys(key);
         if (start > DateTime.MinValue || end > DateTime.MinValue)

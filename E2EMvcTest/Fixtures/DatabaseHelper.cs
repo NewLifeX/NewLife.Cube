@@ -17,6 +17,41 @@ public static class DatabaseHelper
     private static String LogConnStr =>
         $"Data Source={System.IO.Path.Combine(AppFixture.DataDir, "Log.db")};Mode=ReadOnly";
 
+    /// <summary>确认内置 admin 账号可用。注册首个用户会抢占管理员并禁用 admin，测试间需要复位</summary>
+    /// <returns>受影响行数</returns>
+    public static Int32 EnsureAdminEnabled()
+    {
+        const String sql = "UPDATE User SET Enable = 1 WHERE Name = 'admin'; SELECT changes();";
+        return ExecuteScalarWrite<Int32>(MembershipWriteConnStr, sql);
+    }
+
+    /// <summary>统计 Role 表中角色名精确匹配的行数</summary>
+    /// <param name="name">角色名</param>
+    /// <returns>匹配行数</returns>
+    public static Int32 CountRolesByName(String name)
+    {
+        const String sql = "SELECT COUNT(*) FROM Role WHERE Name = @name";
+        return ExecuteScalar<Int32>(MembershipConnStr, sql, ("@name", name));
+    }
+
+    /// <summary>按角色名获取角色编号</summary>
+    /// <param name="name">角色名</param>
+    /// <returns>角色编号，不存在时返回 0</returns>
+    public static Int32 GetRoleIdByName(String name)
+    {
+        const String sql = "SELECT IFNULL(ID, 0) FROM Role WHERE Name = @name LIMIT 1";
+        return ExecuteScalar<Int32>(MembershipConnStr, sql, ("@name", name));
+    }
+
+    /// <summary>按角色名删除角色（测试清理）</summary>
+    /// <param name="name">角色名</param>
+    /// <returns>受影响行数</returns>
+    public static Int32 DeleteRoleByName(String name)
+    {
+        const String sql = "DELETE FROM Role WHERE Name = @name; SELECT changes();";
+        return ExecuteScalarWrite<Int32>(MembershipWriteConnStr, sql, ("@name", name));
+    }
+
     #endregion
 
     #region User 表查询
