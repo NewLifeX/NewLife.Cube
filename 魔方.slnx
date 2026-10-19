@@ -38,6 +38,7 @@
     <Project Path="AotSmoke/AotSmoke.csproj" />
     <Project Path="E2EMvcTest/E2EMvcTest.csproj" />
     <Project Path="Test/Test.csproj" />
+    <Project Path="WebSmoke/WebSmoke.csproj" />
     <Project Path="XUnitTest/XUnitTest.csproj" />
   </Folder>
 </Solution>

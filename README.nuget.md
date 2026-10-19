@@ -17,7 +17,7 @@
 [![locales](https://img.shields.io/badge/locales-31-2ea44f?logo=dotnet)](https://github.com/NewLifeX/NewLife.Cube/blob/master/Doc/多语言本地化.md)
 <!-- metrics:end -->
 ![platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)
-![arch](https://img.shields.io/badge/arch-x64%20%7C%20arm64-orange)
+![arch](https://img.shields.io/badge/arch-x64%20%7C%20x86%20%7C%20arm64%20%7C%20arm%20%7C%20loongarch64%20%7C%20riscv64%20%7C%20s390x-orange)
 [![contributors](https://img.shields.io/github/contributors/NewLifeX/NewLife.Cube?logo=github)](https://github.com/NewLifeX/NewLife.Cube/graphs/contributors)
 
 <!-- lang:start -->
@@ -117,7 +117,7 @@ Core library tutorial: <https://newlifex.com/core>
 - CubeDemo / CubeDemoNC: samples.
 - CubeSSO: unified user center and OAuth server.
 - NewLife.Cube.Blazor: Blazor front-end experiment.
-- Test / XUnitTest / E2EMvcTest / AotSmoke: tests and verification.
+- Test / XUnitTest / E2EMvcTest / AotSmoke / WebSmoke: tests and verification (WebSmoke starts Kestrel and does one HTTP round-trip on non-x64/arm64 instruction sets).
 
 ---
 ## Core concepts

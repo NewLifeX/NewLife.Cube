@@ -15,7 +15,7 @@
 [![locales](https://img.shields.io/badge/locales-31-2ea44f?logo=dotnet)](Doc/多语言本地化.md)
 <!-- metrics:end -->
 ![platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)
-![arch](https://img.shields.io/badge/arch-x64%20%7C%20arm64-orange)
+![arch](https://img.shields.io/badge/arch-x64%20%7C%20x86%20%7C%20arm64%20%7C%20arm%20%7C%20loongarch64%20%7C%20riscv64%20%7C%20s390x-orange)
 [![contributors](https://img.shields.io/github/contributors/NewLifeX/NewLife.Cube?logo=github)](https://github.com/NewLifeX/NewLife.Cube/graphs/contributors)
 
 <!-- lang:start -->
@@ -125,7 +125,7 @@ XCode教程：<https://newlifex.com/xcode>
 - CubeDemo / CubeDemoNC：示例。  
 - CubeSSO：统一用户中心 & OAuth 服务端。  
 - NewLife.Cube.Blazor：Blazor 前端实验。  
-- Test / XUnitTest：测试与验证。  
+- Test / XUnitTest / E2EMvcTest / AotSmoke / WebSmoke：测试与验证（WebSmoke 在非 x64/arm64 指令集上启动 Kestrel 并完成一次 HTTP 往返）。  
 
 ---
 ## 核心概念

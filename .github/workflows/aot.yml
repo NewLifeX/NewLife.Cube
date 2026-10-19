@@ -36,7 +36,9 @@ jobs:
       run: dotnet build AotSmoke/AotSmoke.csproj -c Release -warnaserror:IL2026,IL2067,IL2070,IL2072,IL2075,IL2087,IL2090,IL2091,IL3000,IL3050
 
   # NativeAOT 官方不支持跨 OS 编译，每个 RID 使用原生 runner 发布并运行。
-  # win-x64 / linux-x64 为阻断门禁，其余平台观察期。
+  # 覆盖分层：win-x64 / linux-x64 为阻断门禁；linux-arm64、win-arm64、macOS 双架构、musl（x64/arm64）
+  # 与 win-x86 为观察期（continue-on-error），稳定全绿后逐项转阻断。
+  # LA64 / riscv64 官方无 NativeAOT 后端，只在 test.yml 做 JIT 指令集冒烟（见 Doc/AOT兼容性分析.md §6）。
   smoke:
     name: aot (${{ matrix.rid }})
     runs-on: ${{ matrix.os }}
@@ -87,3 +89,56 @@ jobs:
     - name: Run NativeAOT
       shell: bash
       run: ./AotSmoke/bin/aot-out/${{ matrix.bin }}
+
+  # NativeAOT（musl）：alpine 容器内原生发布运行，验证 glibc 之外的 C 运行时（Alpine/Docker 基础镜像常见）。
+  # 容器内 actions/setup-dotnet 不可用，改用 dotnet-install.sh；官方要求 alpine 3.15+ 且安装 clang/build-base/zlib-dev。
+  smoke-musl:
+    name: aot (${{ matrix.rid }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: linux-musl-x64
+            os: ubuntu-latest
+          - rid: linux-musl-arm64
+            os: ubuntu-24.04-arm
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: JIT baseline + Publish + Run NativeAOT (alpine)
+      run: |
+        docker run --rm -v "$PWD:/src" -w /src alpine:3.20 sh -c '
+          set -e
+          apk add --no-cache bash curl clang build-base zlib-dev icu-libs >/dev/null
+          curl -sSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
+          bash /tmp/dotnet-install.sh --channel 10.0 --install-dir /usr/share/dotnet >/dev/null
+          ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
+          export DOTNET_CLI_TELEMETRY_OPTOUT=1
+          dotnet run -c Release --project AotSmoke/AotSmoke.csproj
+          dotnet publish AotSmoke/AotSmoke.csproj -c Release -r ${{ matrix.rid }} -o AotSmoke/bin/aot-out
+          ./AotSmoke/bin/aot-out/AotSmoke
+        '
+
+  # Windows x86（32 位）：官方 NativeAOT 目标，windows-latest 交叉发布后经 WoW64 直接运行（观察期容错）。
+  # 32 位宿主没有托管 runner，单元测试仍在 x64/arm64 覆盖，这里只验证冒烟件在 x86 指令集下可发布可运行。
+  win-x86:
+    name: aot (win-x86)
+    runs-on: windows-latest
+    timeout-minutes: 40
+    continue-on-error: true
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup dotNET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.x
+        cache: true
+        cache-dependency-path: '**/*.csproj'
+    - name: Publish NativeAOT (win-x86)
+      run: dotnet publish AotSmoke/AotSmoke.csproj -c Release -r win-x86 -o AotSmoke/bin/aot-out
+    - name: Run NativeAOT (win-x86)
+      run: AotSmoke/bin/aot-out/AotSmoke.exe

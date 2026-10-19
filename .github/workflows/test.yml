@@ -86,6 +86,188 @@ jobs:
         path: TestResults/*.trx
         if-no-files-found: ignore
 
+  # ================= 指令集冒烟矩阵（JIT，观察期，不阻塞） =================
+  # 魔方是 Web 平台：不覆盖 Android/iOS 等应用模型目标（没有对应的测试宿主），但服务端指令集要真机/仿真跑过。
+  # 非 x64/arm64 指令集不跑单测与 E2E——数据库驱动要按目标架构取原生件、E2E 还要 Chromium，CI 无对应渠道；
+  # 这里改在目标架构运行时上跑两个冒烟件（产物由宿主 x64 SDK 构建，IL 与 RID 无关）：
+  #   AotSmoke —— 纯托管 18 场景（本地化、响应包装、格式校验、威胁检测、UA 解析、页面设置）；
+  #   WebSmoke —— 启动 Kestrel、动态端口绑定并完成一次 HTTP 往返，验证 Web 宿主栈。
+  # linux-arm / linux-riscv64 / linux-s390x 参与 push/PR，linux-loongarch64 仅人工触发
+  # （龙芯 SDK 240MB + QEMU 较慢，与 NewLife.Core 同策略）。转绿后逐项去掉 continue-on-error。
+  arch-arm32:
+    name: arch (linux-arm)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    continue-on-error: true
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup dotNET (host, for build)
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.x
+        cache: true
+        cache-dependency-path: '**/*.csproj'
+    - name: Build smokes (host x64 SDK, RID-independent IL)
+      run: |
+        dotnet build AotSmoke/AotSmoke.csproj -c Release --nologo
+        dotnet build WebSmoke/WebSmoke.csproj -c Release --nologo
+    - name: Set up QEMU (arm)
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: arm
+    - name: Smoke (linux-arm) in arm32 Container
+      # arm32 官方有 aspnetcore 运行时/SDK（SDK 内含 AspNetCore.App 共享框架），容器内用 dotnet-install 取 arm 版 SDK
+      run: |
+        docker run --rm --platform linux/arm/v7 -v "$PWD:/src" -w /src arm32v7/debian:bookworm-slim sh -c '
+          set -e
+          apt-get update -qq && apt-get install -y -qq curl libicu-dev ca-certificates >/dev/null
+          curl -sSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
+          bash /tmp/dotnet-install.sh --channel 10.0 --architecture arm --install-dir /usr/share/dotnet >/dev/null
+          ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
+          export DOTNET_CLI_TELEMETRY_OPTOUT=1
+          dotnet --list-runtimes
+          dotnet --list-runtimes | grep -q Microsoft.AspNetCore.App || { echo "缺失 Microsoft.AspNetCore.App 共享框架"; exit 1; }
+          dotnet /src/AotSmoke/bin/Release/net10.0/AotSmoke.dll
+          dotnet /src/WebSmoke/bin/Release/net10.0/WebSmoke.dll
+        '
+
+  arch-s390x:
+    name: arch (linux-s390x)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    continue-on-error: true
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup dotNET (host, for build)
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.x
+        cache: true
+        cache-dependency-path: '**/*.csproj'
+    - name: Build smokes (host x64 SDK, RID-independent IL)
+      run: |
+        dotnet build AotSmoke/AotSmoke.csproj -c Release --nologo
+        dotnet build WebSmoke/WebSmoke.csproj -c Release --nologo
+    - name: Set up QEMU (s390x)
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: s390x
+    - name: Smoke (linux-s390x) in s390x Container
+      # s390x 是唯一的**大端**平台，用来验证字节序假设；运行时取 Ubuntu 24.04 官方源
+      # （noble-updates 提供 dotnet-runtime-10.0 / aspnetcore-runtime-10.0，官方不发 s390x runtime pack）
+      run: |
+        docker run --rm --platform linux/s390x -v "$PWD:/src" -w /src s390x/ubuntu:24.04 sh -c '
+          set -e
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends aspnetcore-runtime-10.0 libicu74 libssl3 ca-certificates >/dev/null
+          export DOTNET_CLI_TELEMETRY_OPTOUT=1
+          dotnet --list-runtimes
+          dotnet --list-runtimes | grep -q Microsoft.AspNetCore.App || { echo "缺失 Microsoft.AspNetCore.App 共享框架"; exit 1; }
+          dotnet /src/AotSmoke/bin/Release/net10.0/AotSmoke.dll
+          dotnet /src/WebSmoke/bin/Release/net10.0/WebSmoke.dll
+        '
+
+  arch-riscv64:
+    name: arch (linux-riscv64)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    continue-on-error: true
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup dotNET (host, for build)
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.x
+        cache: true
+        cache-dependency-path: '**/*.csproj'
+    - name: Build smokes (host x64 SDK, RID-independent IL)
+      run: |
+        dotnet build AotSmoke/AotSmoke.csproj -c Release --nologo
+        dotnet build WebSmoke/WebSmoke.csproj -c Release --nologo
+    - name: Set up QEMU (riscv64)
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: riscv64
+    - name: Download RISC-V .NET SDK (community build)
+      # 官方不发 linux-riscv64 runtime pack/SDK；filipnavara/dotnet-riscv 跟踪 dotnet VMR 全量构建，
+      # 版本锁定 10.0.113 与仓库 net10 对齐（替换渠道见 Doc/AOT兼容性分析.md §6）
+      run: |
+        curl -fL -o "$HOME/riscv64-sdk.tar.gz" \
+          https://github.com/filipnavara/dotnet-riscv/releases/download/10.0.113/dotnet-sdk-10.0.113-linux-riscv64.tar.gz
+        mkdir -p "$HOME/riscv64" && tar -xzf "$HOME/riscv64-sdk.tar.gz" -C "$HOME/riscv64"
+        chmod +x "$HOME/riscv64/dotnet" || true
+    - name: Smoke (linux-riscv64) in riscv64 Container
+      # DOTNET_EnableHWIntrinsic=0 规避 QEMU 用户态对扩展指令覆盖不全导致的非法指令
+      run: |
+        docker run --rm --platform linux/riscv64 -v "$PWD:/src" -w /src \
+          -v "$HOME/riscv64:/opt/dotnet:ro" \
+          -e DOTNET_ROOT=/opt/dotnet \
+          -e DOTNET_CLI_TELEMETRY_OPTOUT=1 \
+          -e DOTNET_EnableHWIntrinsic=0 \
+          -e DOTNET_EnableWriteXorExecute=0 \
+          riscv64/ubuntu:24.04 sh -c '
+            set -e
+            apt-get update -qq
+            apt-get install -y -qq --no-install-recommends libicu74 libssl3 libstdc++6 ca-certificates >/dev/null
+            /opt/dotnet/dotnet --list-runtimes
+            /opt/dotnet/dotnet --list-runtimes | grep -q Microsoft.AspNetCore.App || { echo "缺失 Microsoft.AspNetCore.App 共享框架"; exit 1; }
+            /opt/dotnet/dotnet /src/AotSmoke/bin/Release/net10.0/AotSmoke.dll
+            /opt/dotnet/dotnet /src/WebSmoke/bin/Release/net10.0/WebSmoke.dll
+          '
+
+  arch-loongarch64:
+    name: arch (linux-loongarch64 qemu)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    if: github.event_name == 'workflow_dispatch'
+    continue-on-error: true
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup dotNET (host, for build)
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.x
+        cache: true
+        cache-dependency-path: '**/*.csproj'
+    - name: Build smokes (host x64 SDK, RID-independent IL)
+      run: |
+        dotnet build AotSmoke/AotSmoke.csproj -c Release --nologo
+        dotnet build WebSmoke/WebSmoke.csproj -c Release --nologo
+    - name: Set up QEMU (loong64)
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: loong64
+    - name: Download Loongson .NET SDK (linux-loongarch64)
+      # 官方无 LA64 runner/runtime pack；龙芯 SDK 为 VMR 源码构建，自带 LA64 loader 所需的共享框架
+      run: |
+        curl -fL -o "$HOME/la64-sdk.tar.gz" \
+          https://github.com/loongson/dotnet/releases/download/v10.0.113-loongarch64/dotnet-sdk-10.0.113-linux-loongarch64.tar.gz
+        mkdir -p "$HOME/la64" && tar -xzf "$HOME/la64-sdk.tar.gz" -C "$HOME/la64"
+        chmod +x "$HOME/la64/dotnet" || true
+    - name: Smoke (linux-loongarch64) in loong64 Container
+      # 裸宿主缺 LA64 动态加载器，必须在自带 loader 的 loong64 容器内执行；
+      # 龙芯 SDK 的 MSBuild 在 QEMU 下不稳，故构建全放宿主（IL 与 RID 无关）
+      run: |
+        docker run --rm --platform linux/loong64 \
+          -v "$PWD:/src" -w /src \
+          -v "$HOME/la64:/opt/dotnet:ro" \
+          -e DOTNET_ROOT=/opt/dotnet \
+          -e DOTNET_CLI_TELEMETRY_OPTOUT=1 \
+          -e DOTNET_EnableHWIntrinsic=0 \
+          lcr.loongnix.cn/debian:14-slim sh -c '
+            set -e
+            apt-get update -qq
+            apt-get install -y -qq --no-install-recommends libicu-dev libssl-dev >/dev/null
+            /opt/dotnet/dotnet --list-runtimes
+            /opt/dotnet/dotnet --list-runtimes | grep -q Microsoft.AspNetCore.App || { echo "缺失 Microsoft.AspNetCore.App 共享框架"; exit 1; }
+            /opt/dotnet/dotnet /src/AotSmoke/bin/Release/net10.0/AotSmoke.dll
+            /opt/dotnet/dotnet /src/WebSmoke/bin/Release/net10.0/WebSmoke.dll
+          '
+
   # MVC 端到端测试：启动真实 CubeSSO + SQLite 临时库 + Chromium。
   e2e:
     name: e2e (${{ matrix.name }})
