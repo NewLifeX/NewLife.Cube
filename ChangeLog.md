@@ -2,6 +2,29 @@
 
 ## 未发布 (2026-09-28)
 
+### 多语言本地化
+- **Core 12 编译期词表接入**：`Locales/*.yml` + `L.T`，英文为源文与兜底；API 与 MVC 共用一份词表
+- **请求级语言识别**：`?lang=` → Cookie → `Accept-Language`；`CubeSetting.Language` 可设宿主默认语言
+- **11 种运行时语言**：zh-Hans / zh-Hant / en / es / de / ja / fr / pt / ru / ko / ar，覆盖 CRUD、认证、权限、备份恢复等公共消息
+- **Vue 前端 11 语**：`vue-i18n` 扩展并同步 Element Plus locale，支持 RTL 与 `<html lang>`
+- **README 11 语**：切换行与指标徽章由脚本生成，CI 校验顺序与数字一致性
+- **边界**：MVC 主题视图与实体元数据（551 cshtml / 约 2.3 万汉字）留待后续批次
+
+### AOT 与 CI
+- **NativeAOT 冒烟**：`AotSmoke` 16 场景 JIT/AOT 双通（本地化、ApiResponse 源生成序列化、校验、威胁检测、UA 解析等），win-x64 实测通过
+- **多 OS/架构矩阵**：win-x64/linux-x64 阻断，linux-arm64/win-arm64/macOS 观察期；构建、单测、E2E、前端、OpenAPI 分 job
+- **TFM 守门**：nupkg `lib/` 资产集合校验（net6.0~net10.0）
+- **发布门禁**：`publish.yml` / `publish-beta.yml` 先跑单测再打包推送
+
+### 测试
+- **E2E 稳定性**：修复注册抢占 admin 导致的批量假红；修复 ACE 子菜单/表单按钮断言；搜索同时兼容 `q`/`Q`
+- **通用 CRUD 十场景**：新增 `EntityCrudTests`（页面/列表/搜索/新增/编辑/删除/校验/空状态/错误/未登录）
+- **缺陷修复**：列表工具栏关键字搜索此前被静默忽略（`q` 与 `Q` 大小写不一致），现已修复
+
+### 依赖升级
+- 升级 NewLife.Core 12.0.2026.1018-beta1517、XCode 12.2.2026.1018-beta1730、IP/Office/MySql/Stardust 等至最新 beta
+
+---
 ### 权限与安全
 - **租户隔离 401→403 语义修正**：已认证但租户不匹配（显式租户标识无效 / 非租户成员 / Enforce 下缺租户标识）由 401 改为 403（授权失败），与未认证（401）区分——租户问题下 token 本身有效，401 会诱导客户端误判过期而触发无意义刷新/重登（死循环、refresh_token 轮换耗尽）；403 响应按失败原因输出差异化文案（InvalidIdentifier / NotMember / MissingIdentifier），并落审计日志（Log 表 Category=租户/Action=拒绝，含真实用户 ID）
 - **契约变更提示**：魔方 API 版授权过滤器对"已认证但租户校验失败"的响应码由 401 调整为 403，依赖该语义的客户端（如自动刷新 token 逻辑）需同步适配，避免把租户拒绝误判为登录过期

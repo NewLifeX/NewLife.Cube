@@ -35,7 +35,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>集成 Scalar API 文档；新增 SVG 文字头像、工作台部件体系与 /Cube/Widget 管理、表格列自定义设置、多租户开关与租户切换；导出增强（xlsx 全量导出、Zip 导出、CSV 表头与 SYLK 防护）；地区管理地图模式与省市区级联选择器；修复导出 Xml 误输出 Json、SVG 头像溢出、SSO 头像抓取、分页页码约定等问题；升级 NewLife.Core/XCode 等核心依赖</PackageReleaseNotes>
+    <PackageReleaseNotes>接入 Core 12 编译期多语言（API 公共消息 11 语、请求级语言识别、Vue 前端 11 语）；NativeAOT 冒烟 16 场景 JIT/AOT 双通；CI 增加多 OS/架构矩阵、TFM 守门与发布测试门禁；新增实体 CRUD 十场景 E2E；升级 NewLife.Core/XCode 等核心依赖</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
