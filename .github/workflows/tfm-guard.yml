@@ -1,0 +1,87 @@
+name: tfm-guard
+
+# 目标框架清单守门：nupkg 的 lib/ 资产集合必须与约定集合完全一致。
+# 多一个或少一个都失败——防止 EOL 目标被无意加回、或新增目标后忘记同步 README 与架构文档。
+on:
+  push:
+    branches: [ '*' ]
+    paths:
+      - 'NewLife.Cube/NewLife.Cube.csproj'
+      - 'NewLife.CubeNC/NewLife.CubeNC.csproj'
+      - 'NewLife.Cube.Swagger/NewLife.Cube.Swagger.csproj'
+      - 'Directory.Build.props'
+      - '.github/workflows/tfm-guard.yml'
+  pull_request:
+    branches: [ '*' ]
+    paths:
+      - 'NewLife.Cube/NewLife.Cube.csproj'
+      - 'NewLife.CubeNC/NewLife.CubeNC.csproj'
+      - 'NewLife.Cube.Swagger/NewLife.Cube.Swagger.csproj'
+      - 'Directory.Build.props'
+      - '.github/workflows/tfm-guard.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    name: lib assets
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup dotNET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          6.x
+          7.x
+          8.x
+          9.x
+          10.x
+        cache: true
+        cache-dependency-path: '**/*.csproj'
+
+    - name: Pack and validate assets
+      shell: pwsh
+      run: |
+        $ErrorActionPreference = 'Stop'
+        # 包 ID -> 约定 TFM 集合
+        $expected = @{
+          'NewLife.Cube' = @('net6.0','net7.0','net8.0','net9.0','net10.0')
+          'NewLife.Cube.Core' = @('net6.0','net7.0','net8.0','net9.0','net10.0')
+          'NewLife.Cube.Swagger' = @('net8.0','net9.0','net10.0')
+        }
+        dotnet pack NewLife.Cube/NewLife.Cube.csproj -c Release -o out-tfm
+        dotnet pack NewLife.CubeNC/NewLife.CubeNC.csproj -c Release -o out-tfm
+        dotnet pack NewLife.Cube.Swagger/NewLife.Cube.Swagger.csproj -c Release -o out-tfm
+
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        $failed = $false
+        foreach ($zip in Get-ChildItem out-tfm/*.nupkg) {
+          $archive = [System.IO.Compression.ZipFile]::OpenRead($zip.FullName)
+          try {
+            $id = ($archive.Entries | Where-Object { $_.FullName -match '^[^/]+\.nuspec$' } | Select-Object -First 1)
+            $nuspec = [IO.Path]::GetTempFileName()
+            [System.IO.Compression.ZipFileExtensions]::ExtractToFile($id, $nuspec, $true)
+            [xml]$xml = Get-Content $nuspec -Raw
+            $packageId = $xml.package.metadata.id
+            Remove-Item $nuspec -Force
+            if (!$expected.ContainsKey($packageId)) { continue }
+
+            $actual = $archive.Entries |
+              Where-Object { $_.FullName -match '^lib/([^/]+)/[^/]+\.dll$' } |
+              ForEach-Object { ($_.FullName -split '/')[1] -replace '-windows[0-9.]+$', '-windows' } |
+              Sort-Object -Unique
+            $want = $expected[$packageId] | Sort-Object
+            $missing = $want | Where-Object { $actual -notcontains $_ }
+            $extra = $actual | Where-Object { $want -notcontains $_ }
+            Write-Host "$packageId => $($actual -join ', ')"
+            if ($missing) { Write-Host "  缺少：$($missing -join ', ')"; $failed = $true }
+            if ($extra) { Write-Host "  多出：$($extra -join ', ')"; $failed = $true }
+          }
+          finally { $archive.Dispose() }
+        }
+        if ($failed) { throw 'TFM 资产集合与约定不一致；确认要变更时同步更新本工作流、README 数量与架构设计决策表' }

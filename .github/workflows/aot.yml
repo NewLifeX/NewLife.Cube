@@ -1,0 +1,89 @@
+name: aot
+
+on:
+  push:
+    branches: [ '*' ]
+    paths:
+      - 'AotSmoke/**'
+      - 'NewLife.Cube/**'
+      - 'NewLife.CubeNC/**'
+      - '.github/workflows/aot.yml'
+  pull_request:
+    branches: [ '*' ]
+    paths:
+      - 'AotSmoke/**'
+      - 'NewLife.Cube/**'
+      - 'NewLife.CubeNC/**'
+      - '.github/workflows/aot.yml'
+  workflow_dispatch:
+
+jobs:
+  # 冒烟工程自身保持 AOT/裁剪分析器零告警（库本身的动态边界见 Doc/AOT兼容性分析.md）
+  analyzer:
+    name: aot analyzer (smoke)
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup dotNET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.x
+        cache: true
+        cache-dependency-path: '**/*.csproj'
+    - name: Analyzer check
+      run: dotnet build AotSmoke/AotSmoke.csproj -c Release -warnaserror:IL2026,IL2067,IL2070,IL2072,IL2075,IL2087,IL2090,IL2091,IL3000,IL3050
+
+  # NativeAOT 官方不支持跨 OS 编译，每个 RID 使用原生 runner 发布并运行。
+  # win-x64 / linux-x64 为阻断门禁，其余平台观察期。
+  smoke:
+    name: aot (${{ matrix.rid }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    continue-on-error: ${{ matrix.experimental == true }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: win-x64
+            os: windows-latest
+            bin: AotSmoke.exe
+          - rid: linux-x64
+            os: ubuntu-latest
+            bin: AotSmoke
+          - rid: win-arm64
+            os: windows-11-arm
+            bin: AotSmoke.exe
+            experimental: true
+          - rid: linux-arm64
+            os: ubuntu-24.04-arm
+            bin: AotSmoke
+            experimental: true
+          - rid: osx-arm64
+            os: macos-latest
+            bin: AotSmoke
+            experimental: true
+          - rid: osx-x64
+            os: macos-15-intel
+            bin: AotSmoke
+            experimental: true
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup dotNET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.x
+        cache: true
+        cache-dependency-path: '**/*.csproj'
+    - name: Install NativeAOT prerequisites (Linux)
+      if: runner.os == 'Linux'
+      run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
+    - name: JIT baseline
+      run: dotnet run -c Release --project AotSmoke/AotSmoke.csproj
+    - name: Publish NativeAOT
+      run: dotnet publish AotSmoke/AotSmoke.csproj -c Release -r ${{ matrix.rid }} -o AotSmoke/bin/aot-out
+    - name: Run NativeAOT
+      shell: bash
+      run: ./AotSmoke/bin/aot-out/${{ matrix.bin }}
