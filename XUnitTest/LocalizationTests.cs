@@ -135,6 +135,8 @@ public class LocalizationTests
             "OAuth service is not enabled.",
             "The operation timed out. Please try again.",
             "User [{0}] is disabled.",
+            "The OAuth server is not configured.",
+            "Unsupported verification channel.",
         };
 
         foreach (var culture in CubeLocalization.SupportedCultures)
