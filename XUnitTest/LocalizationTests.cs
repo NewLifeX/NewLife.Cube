@@ -128,6 +128,9 @@ public class LocalizationTests
             "MFA is not enabled on this system.",
             "The activation link is invalid.",
             "The new password must be different from the current password.",
+            "Authentication failed.",
+            "Invalid application [{0}].",
+            "User [{0}] does not exist.",
         };
 
         foreach (var culture in CubeLocalization.SupportedCultures)
