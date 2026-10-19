@@ -1,4 +1,6 @@
 using System;
+using System.Globalization;
+using NewLife;
 using NewLife.Cube;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services.Sso;
@@ -15,6 +17,23 @@ namespace NewLife.Cube.Tests.Services;
 /// </summary>
 public class OAuthServerDisabledTests
 {
+    /// <summary>在英文环境下执行，断言源文消息不受宿主语言影响</summary>
+    /// <param name="action">待执行操作</param>
+    /// <returns>捕获的异常</returns>
+    private static Exception? RecordEnglish(Action action)
+    {
+        var old = Localization.Culture;
+        try
+        {
+            Localization.Culture = new CultureInfo("en-US");
+            return Record.Exception(action);
+        }
+        finally
+        {
+            Localization.Culture = old;
+        }
+    }
+
     /// <summary>关闭OAuth服务端：四种令牌接口全部报"OAuth service is not enabled."，且在触碰应用验证前即被拦截</summary>
     [Fact(DisplayName = "关闭OAuth服务端：四种令牌接口全部拒绝")]
     public void Disabled_Rejects_All_GrantTypes()
@@ -25,19 +44,19 @@ public class OAuthServerDisabledTests
         {
             var svc = new TokenService();
 
-            var ex1 = Record.Exception(() => svc.GetAccessToken("app", "secret", "code", "127.0.0.1"));
+            var ex1 = RecordEnglish(() => svc.GetAccessToken("app", "secret", "code", "127.0.0.1"));
             Assert.NotNull(ex1);
             Assert.Contains("OAuth service is not enabled.", ex1.Message);
 
-            var ex2 = Record.Exception(() => svc.GetAccessTokenByPassword("app", "user", "pass", "127.0.0.1"));
+            var ex2 = RecordEnglish(() => svc.GetAccessTokenByPassword("app", "user", "pass", "127.0.0.1"));
             Assert.NotNull(ex2);
             Assert.Contains("OAuth service is not enabled.", ex2.Message);
 
-            var ex3 = Record.Exception(() => svc.GetAccessTokenByClientCredentials("app", "secret", "user", "127.0.0.1"));
+            var ex3 = RecordEnglish(() => svc.GetAccessTokenByClientCredentials("app", "secret", "user", "127.0.0.1"));
             Assert.NotNull(ex3);
             Assert.Contains("OAuth service is not enabled.", ex3.Message);
 
-            var ex4 = Record.Exception(() => svc.RefreshToken("app", "refresh_token", "127.0.0.1"));
+            var ex4 = RecordEnglish(() => svc.RefreshToken("app", "refresh_token", "127.0.0.1"));
             Assert.NotNull(ex4);
             Assert.Contains("OAuth service is not enabled.", ex4.Message);
         }
@@ -58,7 +77,7 @@ public class OAuthServerDisabledTests
             var svc = new TokenService { AppService = new ThrowingAppService() };
 
             // 若守卫误拦截，会抛"OAuth service is not enabled."；放行后应进入 AppService.Auth 抛出桩的哨兵异常
-            var ex = Record.Exception(() => svc.GetAccessToken("app", "secret", "code", "127.0.0.1"));
+            var ex = RecordEnglish(() => svc.GetAccessToken("app", "secret", "code", "127.0.0.1"));
             Assert.NotNull(ex);
             Assert.Contains("reached-app-service", ex.Message);
             Assert.DoesNotContain("OAuth service is not enabled.", ex.Message);
@@ -80,7 +99,7 @@ public class OAuthServerDisabledTests
             // 不注入 Setting（模拟服务被直接调用/未走 SsoController 构造的场景）
             var svc = new OAuthAppService();
 
-            var ex = Record.Exception(() => svc.Auth("app", null, "127.0.0.1"));
+            var ex = RecordEnglish(() => svc.Auth("app", null, "127.0.0.1"));
             Assert.NotNull(ex);
             Assert.Contains("OAuth service is not enabled.", ex.Message);
         }
@@ -101,3 +120,4 @@ internal class ThrowingAppService : IOAuthAppService
     /// <summary>获取令牌提供者。本测试不会走到这一步</summary>
     public TokenProvider GetProvider() => throw new NotSupportedException();
 }
+
