@@ -18,6 +18,7 @@
  */
 import { client, user, menu, page, config, tokenManager } from '../utils/request';
 import type { ApiResponse, PageParams } from '@newlifex/api-core';
+import type { AxiosResponse } from 'axios';
 
 // ── 全局 API 客户端实例 ──────────────────────────────────────────────
 // 复用 request.ts 的统一 createCubeApi 实例（底层 @newlifex/api-core），此处不再单独创建第二份实例。
@@ -124,7 +125,7 @@ export function usePageApi(area: string, controller: string) {
       cubeApi.client.request<ApiResponse<T>>({
         url: `${type}/${action}`,
         method: 'get',
-      }).then(res => res.data),
+      }).then((res: AxiosResponse<ApiResponse<T>>) => res.data),
 
     /**
      * 字典/枚举查询
