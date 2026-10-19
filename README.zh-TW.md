@@ -19,8 +19,10 @@
 [![contributors](https://img.shields.io/github/contributors/NewLifeX/NewLife.Cube?logo=github)](https://github.com/NewLifeX/NewLife.Cube/graphs/contributors)
 
 <!-- lang:start -->
-🌐 [中文](README.md) | [English](README.en.md) | [Español](README.es.md) | [Deutsch](README.de.md) | [日本語](README.ja.md) | [Français](README.fr.md) | [Português](README.pt.md) | [Русский](README.ru.md) | [한국어](README.ko.md) | [العربية](README.ar.md)
+🌐 [English](README.md) | [简体中文](README.zh-CN.md) | [Español](README.es.md) | [Deutsch](README.de.md) | [日本語](README.ja.md) | [Français](README.fr.md) | [Português](README.pt.md) | [Русский](README.ru.md) | [한국어](README.ko.md) | [العربية](README.ar.md)
 <!-- lang:end -->
+
+> ℹ️ 本繁體中文版與 [English README](README.md) 同步維護；若兩者內容不一致，以英文版為對外口徑。
 
 魔方是一個快速 Web 開發平臺，面向“資料驅動 + 快速迭代 + 可深度定製”場景。幾分鐘內即可把實體 / 資料庫錶轉為帶許可權、列表、詳情、增刪改、匯出、統計的完整後臺介面，並開放標準 API 給 Vue / Blazor / Antd / 移動端或第三方系統呼叫。預設模板已在真實專案中經歷單表 100 億資料增刪改查考驗。
 

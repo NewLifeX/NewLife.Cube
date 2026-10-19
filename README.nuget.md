@@ -1,3 +1,5 @@
+<!-- generated from README.md by sync-readme-package.ps1; do not edit -->
+
 # NewLife.Cube - Web rapid development and admin framework
 
 ![GitHub top language](https://img.shields.io/github/languages/top/NewLifeX/NewLife.Cube?logo=github)
@@ -10,19 +12,17 @@
 [![test](https://github.com/NewLifeX/NewLife.Cube/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/NewLifeX/NewLife.Cube/actions/workflows/test.yml)
 [![AOT](https://github.com/NewLifeX/NewLife.Cube/actions/workflows/aot.yml/badge.svg?branch=master)](https://github.com/NewLifeX/NewLife.Cube/actions/workflows/aot.yml)
 <!-- metrics:start -->
-[![AOT smoke](https://img.shields.io/badge/AOT%20smoke-16%2F16-brightgreen?logo=dotnet)](Doc/AOT兼容性分析.md)
+[![AOT smoke](https://img.shields.io/badge/AOT%20smoke-16%2F16-brightgreen?logo=dotnet)](https://github.com/NewLifeX/NewLife.Cube/blob/master/Doc/AOT兼容性分析.md)
 [![TFM](https://img.shields.io/badge/TFM-5%20%28net6.0%20%E2%86%92%20net10.0%29-512BD4?logo=dotnet)](https://www.nuget.org/packages/NewLife.Cube)
-[![locales](https://img.shields.io/badge/locales-31-2ea44f?logo=dotnet)](Doc/多语言本地化.md)
+[![locales](https://img.shields.io/badge/locales-31-2ea44f?logo=dotnet)](https://github.com/NewLifeX/NewLife.Cube/blob/master/Doc/多语言本地化.md)
 <!-- metrics:end -->
 ![platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue)
 ![arch](https://img.shields.io/badge/arch-x64%20%7C%20arm64-orange)
 [![contributors](https://img.shields.io/github/contributors/NewLifeX/NewLife.Cube?logo=github)](https://github.com/NewLifeX/NewLife.Cube/graphs/contributors)
 
 <!-- lang:start -->
-🌐 [中文](README.md) | [繁體中文](README.zh-TW.md) | [Español](README.es.md) | [Deutsch](README.de.md) | [日本語](README.ja.md) | [Français](README.fr.md) | [Português](README.pt.md) | [Русский](README.ru.md) | [한국어](README.ko.md) | [العربية](README.ar.md)
+🌐 [简体中文](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.zh-CN.md) | [繁體中文](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.zh-TW.md) | [Español](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.es.md) | [Deutsch](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.de.md) | [日本語](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.ja.md) | [Français](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.fr.md) | [Português](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.pt.md) | [Русский](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.ru.md) | [한국어](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.ko.md) | [العربية](https://github.com/NewLifeX/NewLife.Cube/blob/master/README.ar.md)
 <!-- lang:end -->
-
-> This translation may lag behind the Chinese version, which is authoritative.
 
 NewLife.Cube is a rapid web development platform for "data-driven + fast iteration + deep customization" scenarios. In minutes, an entity class or database table becomes a complete admin UI with permissions, lists, details, CRUD, export and statistics, while standard APIs are exposed for Vue / Blazor / Antd / mobile or third-party systems. The default template has been proven in real projects with a single table of 10 billion rows.
 
@@ -34,15 +34,15 @@ Cube tutorial: <https://newlifex.com/cube>
 XCode tutorial: <https://newlifex.com/xcode>  
 Core library tutorial: <https://newlifex.com/core>
 
-> **Documentation index** (Chinese): requirements, feature list and architecture live in [`Doc/`](Doc/):
-> - 📋 [Requirements](Doc/需求文档.md) — vision, goals, functional requirements
-> - ✅ [Feature list](Doc/功能清单.md) — implementation/test/comment tracking
-> - 🏗️ [Architecture](Doc/架构设计.md) — layering, modules, key decisions
-> - 🤖 [AI](Doc/AI-人工智能.md) — AI capabilities, configuration and extension points
-> - 🔔 [Alerts and inbox](Doc/ALM-在线告警与站内信.md) — online threshold alerts and broadcast messages
-> - ✉️ [Email/phone verification](Doc/AUTH-邮箱手机验证.md) — activation contract and UI integration
-> - 🛡️ [Security](Doc/PERM-安全防御.md) — threat detection, auto-ban and security audit
-> - 📚 [User manual](Doc/魔方用户手册.md) — full user and developer guide
+> **Documentation index** (Chinese): requirements, feature list and architecture live in [`Doc/`](https://github.com/NewLifeX/NewLife.Cube/blob/master/Doc/):
+> - 📋 [Requirements](https://github.com/NewLifeX/NewLife.Cube/blob/master/Doc/需求文档.md) — vision, goals, functional requirements
+> - ✅ [Feature list](https://github.com/NewLifeX/NewLife.Cube/blob/master/Doc/功能清单.md) — implementation/test/comment tracking
+> - 🏗️ [Architecture](https://github.com/NewLifeX/NewLife.Cube/blob/master/Doc/架构设计.md) — layering, modules, key decisions
+> - 🤖 [AI](https://github.com/NewLifeX/NewLife.Cube/blob/master/Doc/AI-人工智能.md) — AI capabilities, configuration and extension points
+> - 🔔 [Alerts and inbox](https://github.com/NewLifeX/NewLife.Cube/blob/master/Doc/ALM-在线告警与站内信.md) — online threshold alerts and broadcast messages
+> - ✉️ [Email/phone verification](https://github.com/NewLifeX/NewLife.Cube/blob/master/Doc/AUTH-邮箱手机验证.md) — activation contract and UI integration
+> - 🛡️ [Security](https://github.com/NewLifeX/NewLife.Cube/blob/master/Doc/PERM-安全防御.md) — threat detection, auto-ban and security audit
+> - 📚 [User manual](https://github.com/NewLifeX/NewLife.Cube/blob/master/Doc/魔方用户手册.md) — full user and developer guide
 
 ---
 ## Contents
@@ -60,6 +60,7 @@ Core library tutorial: <https://newlifex.com/core>
 - [Performance](#performance)
 - [Deployment](#deployment)
 - [Deploying the user center](#deploying-the-user-center)
+  - [Deploying the user center](#deploying-the-user-center-1)
 - [Cube generation 3](#cube-generation-3)
 - [Common scenarios](#common-scenarios)
 - [Contributing](#contributing)
@@ -254,6 +255,12 @@ app.UseTDesign(app.Environment);
 
 ---
 ## Deploying the user center
+(The original detailed steps follow below; kept consistent.)
+
+1. Clone the source and build the CubeSSO project … see the next section.
+
+---
+### Deploying the user center
 1. Clone the [source](https://github.com/NewLifeX/NewLife.Cube), build CubeSSO, go to `Bin/SSO`, adjust `appsettings.json`, package the exe/dll/appsettings/runtimeconfig files and deploy.
 ```json
 {
