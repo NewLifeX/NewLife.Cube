@@ -26,16 +26,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { ArrowDown } from '@element-plus/icons-vue';
-import { getCurrentLanguage, setLanguage } from '../i18n';
+import { getCurrentLanguage, setLanguage, supportedLanguages } from '../i18n';
 
 defineOptions({
   name: 'LanguageSwitch',
 });
 
-const languages = [
-  { label: '中文', value: 'zh-CN' },
-  { label: 'English', value: 'en-US' },
-];
+const languages = supportedLanguages;
 
 const currentLanguage = ref(getCurrentLanguage());
 

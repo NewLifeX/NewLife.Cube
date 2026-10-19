@@ -1,33 +1,83 @@
 import { createI18n } from 'vue-i18n';
 import zhCN from './locales/zh-CN';
+import zhTW from './locales/zh-TW';
 import enUS from './locales/en-US';
+import esES from './locales/es';
+import deDE from './locales/de';
+import jaJP from './locales/ja';
+import frFR from './locales/fr';
+import ptBR from './locales/pt';
+import ruRU from './locales/ru';
+import koKR from './locales/ko';
+import arSA from './locales/ar';
 /* Element Plus 组件（含 ElMessageBox / ElPagination 等）默认英文文案，
    必须显式传入与框架 i18n 一致的 locale 才会显示「确定 / 取消」 */
 import epZhCn from 'element-plus/es/locale/lang/zh-cn';
+import epZhTw from 'element-plus/es/locale/lang/zh-tw';
 import epEnUs from 'element-plus/es/locale/lang/en';
+import epEs from 'element-plus/es/locale/lang/es';
+import epDe from 'element-plus/es/locale/lang/de';
+import epJa from 'element-plus/es/locale/lang/ja';
+import epFr from 'element-plus/es/locale/lang/fr';
+import epPt from 'element-plus/es/locale/lang/pt';
+import epRu from 'element-plus/es/locale/lang/ru';
+import epKo from 'element-plus/es/locale/lang/ko';
+import epAr from 'element-plus/es/locale/lang/ar';
 
-// 获取浏览器语言设置
-function getBrowserLanguage() {
+/** 支持的语言。前三位固定为简体中文、繁體中文、英文，其余与 README 语种顺序一致 */
+export const supportedLanguages = [
+  { label: '中文', value: 'zh-CN' },
+  { label: '繁體中文', value: 'zh-TW' },
+  { label: 'English', value: 'en-US' },
+  { label: 'Español', value: 'es-ES' },
+  { label: 'Deutsch', value: 'de-DE' },
+  { label: '日本語', value: 'ja-JP' },
+  { label: 'Français', value: 'fr-FR' },
+  { label: 'Português', value: 'pt-BR' },
+  { label: 'Русский', value: 'ru-RU' },
+  { label: '한국어', value: 'ko-KR' },
+  { label: 'العربية', value: 'ar-SA' },
+] as const;
+
+export type CubeLocale = (typeof supportedLanguages)[number]['value'];
+
+const supportedValues = supportedLanguages.map((item) => item.value) as readonly string[];
+
+// 获取浏览器语言设置，命中支持列表则复用，否则回退英文
+function getBrowserLanguage(): CubeLocale {
   const navigatorLanguage = navigator.language;
-  if (navigatorLanguage.startsWith('zh')) {
-    return 'zh-CN';
-  }
-  return 'en-US';
+  const exact = supportedValues.find((item) => item.toLowerCase() === navigatorLanguage.toLowerCase());
+  if (exact) return exact as CubeLocale;
+
+  const prefix = navigatorLanguage.split('-')[0].toLowerCase();
+  const matched = supportedLanguages.find((item) => item.value.split('-')[0].toLowerCase() === prefix);
+  return matched ? matched.value : 'en-US';
 }
 
 // 获取本地存储的语言设置或使用浏览器语言
-function getLanguage() {
-  return localStorage.getItem('cube-language') || getBrowserLanguage();
+function getLanguage(): CubeLocale {
+  const stored = localStorage.getItem('cube-language');
+  if (stored && supportedValues.includes(stored)) return stored as CubeLocale;
+  return getBrowserLanguage();
 }
 
 // 创建 i18n 实例
 const i18n = createI18n({
   legacy: false, // 使用组合式 API
   locale: getLanguage(),
-  fallbackLocale: 'zh-CN', // 设置回退语言
+  fallbackLocale: 'en-US', // 英文为源文与兜底
   messages: {
     'zh-CN': zhCN,
+    'zh-TW': zhTW,
     'en-US': enUS,
+    'es-ES': esES,
+    'de-DE': deDE,
+    'ja-JP': jaJP,
+    'fr-FR': frFR,
+    'pt-BR': ptBR,
+    'ru-RU': ruRU,
+    'ko-KR': koKR,
+    'ar-SA': arSA,
   },
   silentTranslationWarn: true,
 });
@@ -37,24 +87,33 @@ export default i18n;
 
 /**
  * 切换语言的工具函数
- * @param {string} lang - 语言代码
+ * @param lang - 语言代码
  */
-export function setLanguage(lang: typeof i18n.global.locale.value) {
+export function setLanguage(lang: CubeLocale) {
   i18n.global.locale.value = lang;
   localStorage.setItem('cube-language', lang);
-  // 可以在这里添加其他语言切换逻辑，比如更新 HTML 标签的 lang 属性
   document.querySelector('html')?.setAttribute('lang', lang);
+  document.querySelector('html')?.setAttribute('dir', lang === 'ar-SA' ? 'rtl' : 'ltr');
 }
 
 // 获取当前语言
-export function getCurrentLanguage() {
-  return i18n.global.locale.value;
+export function getCurrentLanguage(): CubeLocale {
+  return i18n.global.locale.value as CubeLocale;
 }
 
 /** 框架语言代码 → Element Plus locale 对象 */
 export const elementPlusLocales = {
   'zh-CN': epZhCn,
+  'zh-TW': epZhTw,
   'en-US': epEnUs,
+  'es-ES': epEs,
+  'de-DE': epDe,
+  'ja-JP': epJa,
+  'fr-FR': epFr,
+  'pt-BR': epPt,
+  'ru-RU': epRu,
+  'ko-KR': epKo,
+  'ar-SA': epAr,
 } as const;
 
 /**
