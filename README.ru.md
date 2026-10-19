@@ -43,9 +43,14 @@ public class UserController : EntityController<User> { }
 
 ## Возможности
 
+<details>
+<summary><b>Возможности</b> (3)</summary>
+
 - Генерация кода и строго типизированные API без лишнего кода
 - Аутентификация, авторизация, шифрование и защита безопасности
 - Бесшовная интеграция с экосистемой NewLife (XCode/Cube/Remoting)
+
+</details>
 
 ## Документация
 

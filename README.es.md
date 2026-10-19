@@ -43,9 +43,14 @@ public class UserController : EntityController<User> { }
 
 ## Características
 
+<details>
+<summary><b>Características</b> (3)</summary>
+
 - Generación de código y API fuertemente tipadas con menos código repetitivo
 - Autenticación, autorización, cifrado y protecciones de seguridad
 - Integración perfecta con el ecosistema NewLife (XCode/Cube/Remoting)
+
+</details>
 
 ## Documentación
 

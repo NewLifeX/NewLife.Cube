@@ -43,9 +43,14 @@ public class UserController : EntityController<User> { }
 
 ## 主な機能
 
+<details>
+<summary><b>主な機能</b> (3)</summary>
+
 - コード生成と強く型付けされた API で定型的なコードを削減
 - 認証・認可・暗号化・セキュリティ対策を完備
 - NewLife エコシステム（XCode/Cube/Remoting）とシームレスに連携
+
+</details>
 
 ## ドキュメント
 

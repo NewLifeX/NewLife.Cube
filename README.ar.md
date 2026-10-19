@@ -43,9 +43,14 @@ public class UserController : EntityController<User> { }
 
 ## الميزات الرئيسية
 
+<details>
+<summary><b>الميزات الرئيسية</b> (3)</summary>
+
 - توليد الكود وواجهات قوية الأنواع مع تقليل الكود المتكرر
 - المصادقة والتفويض والتشفير والحماية الأمنية
 - تكامل سلس مع منظومة NewLife (XCode/Cube/Remoting)
+
+</details>
 
 ## التوثيق
 

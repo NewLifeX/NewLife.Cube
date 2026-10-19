@@ -43,9 +43,14 @@ public class UserController : EntityController<User> { }
 
 ## 주요 기능
 
+<details>
+<summary><b>주요 기능</b> (3)</summary>
+
 - 코드 생성과 강력한 형식 API로 반복 코드 감소
 - 인증, 권한 부여, 암호화 및 보안 보호
 - NewLife 생태계(XCode/Cube/Remoting)와 원활한 통합
+
+</details>
 
 ## 문서
 

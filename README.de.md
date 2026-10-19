@@ -43,9 +43,14 @@ public class UserController : EntityController<User> { }
 
 ## Funktionen
 
+<details>
+<summary><b>Funktionen</b> (3)</summary>
+
 - Codegenerierung und stark typisierte APIs mit weniger Boilerplate
 - Authentifizierung, Autorisierung, Verschlüsselung und Sicherheitsschutz
 - Nahtlose Integration in das NewLife-Ökosystem (XCode/Cube/Remoting)
+
+</details>
 
 ## Dokumentation
 

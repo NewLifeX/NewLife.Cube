@@ -43,9 +43,14 @@ public class UserController : EntityController<User> { }
 
 ## Recursos
 
+<details>
+<summary><b>Recursos</b> (3)</summary>
+
 - Geração de código e APIs fortemente tipadas com menos boilerplate
 - Autenticação, autorização, criptografia e proteções de segurança
 - Integração perfeita com o ecossistema NewLife (XCode/Cube/Remoting)
+
+</details>
 
 ## Documentação
 
