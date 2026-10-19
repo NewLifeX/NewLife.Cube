@@ -131,6 +131,8 @@ public class LocalizationTests
             "Authentication failed.",
             "Invalid application [{0}].",
             "User [{0}] does not exist.",
+            "The token has expired.",
+            "OAuth service is not enabled.",
         };
 
         foreach (var culture in CubeLocalization.SupportedCultures)
