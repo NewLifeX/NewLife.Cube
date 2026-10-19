@@ -133,6 +133,8 @@ public class LocalizationTests
             "User [{0}] does not exist.",
             "The token has expired.",
             "OAuth service is not enabled.",
+            "The operation timed out. Please try again.",
+            "User [{0}] is disabled.",
         };
 
         foreach (var culture in CubeLocalization.SupportedCultures)
