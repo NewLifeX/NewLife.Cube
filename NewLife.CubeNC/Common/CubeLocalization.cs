@@ -14,11 +14,14 @@ namespace NewLife.Cube;
 public static class CubeLocalization
 {
     #region 属性
-    /// <summary>支持的语言。前三位固定为简体中文、繁体中文、英文，其余按 README 语种顺序</summary>
+    /// <summary>支持的语言。前三位固定为简体中文、繁体中文、英文，其余与 Locales 词表集对齐</summary>
     public static String[] SupportedCultures { get; } =
     [
         "zh-CN", "zh-TW", "en-US",
         "es-ES", "de-DE", "ja-JP", "fr-FR", "pt-BR", "ru-RU", "ko-KR", "ar-SA",
+        "bn-BD", "cs-CZ", "da-DK", "el-GR", "fa-IR", "fi-FI", "he-IL", "hi-IN", "hu-HU",
+        "id-ID", "it-IT", "ms-MY", "nb-NO", "nl-NL", "pl-PL", "ro-RO", "sv-SE", "th-TH",
+        "tr-TR", "uk-UA", "vi-VN",
     ];
     #endregion
 
@@ -85,6 +88,22 @@ public static class CubeLocalization
     public static IApplicationBuilder UseCubeLocalization(this IApplicationBuilder app)
     {
         Localization.Culture = null;
+
+        // 服务端日志与配置注释使用宿主语言，避免同一日志文件随请求语言混杂。
+        // 显式配置 CubeSetting.Language 时优先使用，否则固定为启动时的系统语言。
+        var language = CubeSetting.Current?.Language;
+        if (!language.IsNullOrWhiteSpace())
+        {
+            try
+            {
+                Localization.LogCulture = new CultureInfo(language);
+            }
+            catch (CultureNotFoundException) { }
+        }
+        else
+        {
+            Localization.LogCulture = CultureInfo.CurrentUICulture;
+        }
 
         return app.UseRequestLocalization();
     }

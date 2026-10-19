@@ -135,7 +135,7 @@ jobs:
           Bin/E2ETest/Run-*/screenshots/**
         if-no-files-found: ignore
 
-  # 多语言词表与 README 切换行守门。
+  # 多语言词表、运行时消息与 README 切换行守门。
   localization:
     name: localization checks
     runs-on: ubuntu-latest
@@ -155,6 +155,9 @@ jobs:
           }
         }
         if ($failed) { exit 1 }
+    - name: Check English runtime messages
+      shell: pwsh
+      run: pwsh -File ./check-english-messages.ps1
     - name: Check README languages
       shell: pwsh
       run: pwsh -File ./sync-readme-languages.ps1 -Check
