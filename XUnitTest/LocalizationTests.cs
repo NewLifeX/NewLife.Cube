@@ -139,6 +139,9 @@ public class LocalizationTests
             "Unsupported verification channel.",
             "The request body is empty.",
             "Unknown error",
+            "Value set code is required.",
+            "Category is required.",
+            "The user page is read-only for non-system roles; edit your profile in the user center.",
         };
 
         foreach (var culture in CubeLocalization.SupportedCultures)
@@ -163,5 +166,24 @@ public class LocalizationTests
             Translate("en-US", "The new password must be different from the current password."));
         Assert.Equal("修改密码不能与原密码一致",
             Translate("zh-CN", "The new password must be different from the current password."));
+    }
+
+    [Fact(DisplayName = "多语言 - 日志与审计模板保持英文")]
+    public void LogMessagesStayEnglish()
+    {
+        var keys = new[]
+        {
+            "Backup",
+            "Start importing file [{0}], size [{1:n0}] bytes, type [{2}].",
+            "User [{0}] signed in with [{1}] via [{2}].",
+        };
+
+        foreach (var culture in new[] { "zh-CN", "zh-TW", "de-DE", "ja-JP", "ar-SA" })
+        {
+            foreach (var key in keys)
+            {
+                Assert.Equal(key, Translate(culture, key));
+            }
+        }
     }
 }
