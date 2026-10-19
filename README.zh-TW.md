@@ -28,7 +28,7 @@
 
 演示站點：<https://cube.newlifex.com> `CentOS7 + CDN`  
 SSO中心：<https://sso.newlifex.com> `OAuth 服务端`  
-Swagger：[https://cube3.newlifex.com@@P191@@
+Swagger：<https://cube3.newlifex.com>
 
 魔方教程：<https://newlifex.com/cube>  
 XCode教程：<https://newlifex.com/xcode>  
@@ -40,9 +40,9 @@ XCode教程：<https://newlifex.com/xcode>
 > - 🏗️ [架構設計](Doc/架构设计.md) — 分層架構、模組設計、關鍵決策
 > - 🤖 [AI 人工智慧](Doc/AI-人工智能.md) — AI 能力清單、配置與擴充套件點
 > - 🔔 [線上告警與站內信](Doc/ALM-在线告警与站内信.md) — 線上新高告警、系統級廣播站內信與未讀閉環
-> - � [郵箱/手機驗證](Doc/AUTH-邮箱手机验证.md) — 賬號啟用契約（註冊→啟用→登入），前端皮膚接入規範
+> - ✉️ [郵箱/手機驗證](Doc/AUTH-邮箱手机验证.md) — 賬號啟用契約（註冊→啟用→登入），前端皮膚接入規範
 > - 🛡️ [安全防禦](Doc/PERM-安全防御.md) — 內建威脅檢測、自動封禁與安全事件審計
-> - �📚 [魔方使用者手冊](Doc/魔方用户手册.md) — 完整的使用者與開發手冊
+> - 📚 [魔方使用者手冊](Doc/魔方用户手册.md) — 完整的使用者與開發手冊
 
 ---
 ## 目錄索引
