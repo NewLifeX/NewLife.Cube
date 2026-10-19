@@ -39,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.MySql" Version="1.4.2026.1016-beta0206" />
+    <PackageReference Include="NewLife.MySql" Version="1.4.2026.1018-beta1729" />
     <!-- 编译期生成 OpenAPI json 的 build target 来源；本地源码直连消费者需自行显式引用 -->
     <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="10.0.*" PrivateAssets="all" GeneratePathProperty="true" />
   </ItemGroup>
@@ -76,12 +76,19 @@
   </Target>
 
   <Target Name="CubeDemoPostBuildGuards" AfterTargets="CubeDemoGenerateOpenApiDocuments">
+    <!-- Windows 的 system32\bash.exe 是 WSL 存根，未安装发行版时退出码 127；优先使用 Git for Windows 自带的 bash -->
+    <PropertyGroup>
+      <_CubeBashExe Condition="'$(OS)' == 'Windows_NT' And Exists('C:\Program Files\Git\bin\bash.exe')">C:\Program Files\Git\bin\bash.exe</_CubeBashExe>
+      <_CubeBashExe Condition="'$(OS)' != 'Windows_NT'">bash</_CubeBashExe>
+    </PropertyGroup>
     <Exec Condition="Exists('$(MSBuildProjectDirectory)/../.githooks')"
           Command="git -C &quot;$(MSBuildProjectDirectory)/..&quot; config core.hooksPath .githooks"
           IgnoreExitCode="true" />
-    <Exec Condition="'$(SkipOpenApiContractCheck)' != 'true' And Exists('$(OpenApiDocumentsDirectory)')"
-          Command="bash &quot;$(MSBuildProjectDirectory)/../scripts/check-openapi.sh&quot; &quot;$(MSBuildProjectDirectory)/contracts/openapi&quot; &quot;$(OpenApiDocumentsDirectory)&quot;"
+    <Exec Condition="'$(SkipOpenApiContractCheck)' != 'true' And Exists('$(OpenApiDocumentsDirectory)') And '$(_CubeBashExe)' != ''"
+          Command="&quot;$(_CubeBashExe)&quot; &quot;$(MSBuildProjectDirectory)/../scripts/check-openapi.sh&quot; &quot;$(MSBuildProjectDirectory)/contracts/openapi&quot; &quot;$(OpenApiDocumentsDirectory)&quot;"
           StandardOutputImportance="high" />
+    <Warning Condition="'$(SkipOpenApiContractCheck)' != 'true' And Exists('$(OpenApiDocumentsDirectory)') And '$(_CubeBashExe)' == ''"
+             Text="未找到 bash，已跳过 OpenAPI 契约校验；可在 CI 或安装 Git for Windows 后运行 scripts/check-openapi.sh" />
   </Target>
 
 </Project>

@@ -17,7 +17,7 @@
     <File Path=".github/workflows/publish.yml" />
     <File Path=".github/workflows/test.yml" />
     <File Path=".gitignore" />
-    <File Path="Readme.MD" />
+    <File Path="README.md" />
   </Folder>
   <Folder Name="/WebApi版/">
     <Project Path="CubeDemo/CubeDemo.csproj" />
@@ -36,6 +36,7 @@
     <Project Path="NewLife.Cube.Vuetify/NewLife.Cube.Vuetify.csproj" />
   </Folder>
   <Folder Name="/测试/">
+    <Project Path="AotSmoke/AotSmoke.csproj" />
     <Project Path="E2EMvcTest/E2EMvcTest.csproj" />
     <Project Path="XUnitTest/XUnitTest.csproj" />
   </Folder>

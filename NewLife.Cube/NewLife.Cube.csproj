@@ -38,7 +38,7 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <PackageReadmeFile>Readme.MD</PackageReadmeFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
@@ -79,6 +79,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\NewLife.CubeNC\Common\CubeLocalization.cs" Link="Common\CubeLocalization.cs" />
     <Compile Include="..\NewLife.CubeNC\Jobs\AttachmentCleanJob.cs" Link="Jobs\AttachmentCleanJob.cs" />
     <Compile Include="..\NewLife.CubeNC\Jobs\BackupDbService.cs" Link="Jobs\BackupDbService.cs" />
     <Compile Include="..\NewLife.CubeNC\Jobs\BackupHelper.cs" Link="Jobs\BackupHelper.cs" />
@@ -132,12 +133,12 @@
   <ItemGroup>
     <PackageReference Include="NewLife.AI" Version="1.6.2026.907-beta0517" />
     <PackageReference Include="NewLife.Core" Version="12.0.2026.1018-beta1517" />
-    <PackageReference Include="NewLife.IP" Version="2.5.2026.1017-beta1408" />
-    <PackageReference Include="NewLife.Office" Version="1.4.2026.1017-beta1414" />
+    <PackageReference Include="NewLife.IP" Version="2.5.2026.1018-beta1725" />
+    <PackageReference Include="NewLife.Office" Version="1.4.2026.1018-beta1727" />
     <!-- Stardust 传递依赖 NewLife.Remoting，最小版本 3.9.2026.901 面向 Core 11 构建，与 Core 12 不兼容；显式提升到 Core 12 版本 -->
     <PackageReference Include="NewLife.Remoting" Version="3.9.2026.1017-beta1444" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.10.2026.1017-beta1056" />
-    <PackageReference Include="NewLife.XCode" Version="12.2.2026.1017-beta1246" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.10.2026.1018-beta1738" />
+    <PackageReference Include="NewLife.XCode" Version="12.2.2026.1018-beta1730" />
   </ItemGroup>
 
   <ItemGroup>
@@ -156,7 +157,7 @@
     <Content Include="..\Doc\leaf.png" Link="leaf.png" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Readme.MD">
+    <None Include="..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

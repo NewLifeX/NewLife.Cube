@@ -23,7 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.MySql" Version="1.4.2026.1016-beta0206" />
+    <PackageReference Include="NewLife.MySql" Version="1.4.2026.1018-beta1729" />
   </ItemGroup>
 
   <ItemGroup>
