@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using NewLife;
 using NewLife.Cube.Areas.Admin.Controllers;
 using NewLife.Cube.Models;
 using NewLife.Cube.Tests.Membership;
@@ -50,13 +52,16 @@ public class UserPageReadOnlyTests
     private T RunAs<T>(User user, Func<T> action)
     {
         var old = ManageProvider.Provider;
+        var oldCulture = Localization.Culture;
         try
         {
             ManageProvider.Provider = new StubProvider { Mock = user };
+            Localization.Culture = new CultureInfo("en-US");
             return action();
         }
         finally
         {
+            Localization.Culture = oldCulture;
             ManageProvider.Provider = old;
         }
     }
