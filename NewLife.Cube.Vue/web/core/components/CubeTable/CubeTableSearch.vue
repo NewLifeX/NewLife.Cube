@@ -6,7 +6,7 @@
  * `ctx.resetSearch()`，组件自身不持业务状态；`expanded` 是纯 UI 状态留在本地。
  * 控件类型判定来自 `core/utils/fieldControl.ts`（唯一真理源），本组件只负责渲染分支。
  */
-import { computed, ref, toRefs } from 'vue';
+import { computed, ref } from 'vue';
 import { ArrowDown, ArrowUp, Search } from '@element-plus/icons-vue';
 import LovSelect from '../LovSelect/index.vue';
 import { buildSearchControls, collapseSearchControls } from './cubeTable.logic';
@@ -17,7 +17,9 @@ const props = defineProps<{
   ctx: CubeEngineContext;
 }>();
 
-const { keyword } = toRefs(props.ctx);
+// ctx 里的 Ref 直接取出来绑：写入落到同一个 Ref，语义不变。
+// （不用 toRefs(props.ctx)：引擎上下文是普通对象而非 reactive，会告警）
+const keyword = props.ctx.keyword;
 const expanded = ref(false);
 const controls = computed(() => buildSearchControls(props.ctx.searchFields.value));
 const shown = computed(() => collapseSearchControls(controls.value, expanded.value));

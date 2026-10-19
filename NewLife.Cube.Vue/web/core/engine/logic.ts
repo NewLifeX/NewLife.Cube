@@ -35,9 +35,9 @@ export function dropEmptyParams(
 /**
  * 列表/导出的查询条件（关键字 + 搜索模型，空值已剔除）。
  *
- * 不含分页参数：`pageIndex` / `pageSize` 由数据层（`DataSet.read`）统一注入，
- * 避免引擎与数据层各算一份页码 —— 草案 §4.2 的 transport 忽略了合并进来的分页参数，
- * 表现就是「点第 2 页请求的仍是第 1 页」。
+ * 不含分页参数：`pageIndex` / `pageSize` 由引擎发请求时现取当前页码补上，
+ * 「查询条件」与「分页」因此只有一个拼装点。
+ * 草案 §4.2 的写法把分页参数整个丢了，表现就是「点第 2 页请求的仍是第 1 页」。
  */
 export function buildQueryParams(options: {
   keyword?: string;
@@ -53,7 +53,7 @@ export function buildQueryParams(options: {
   return { ...params, ...dropEmptyParams(options.filters ?? {}) };
 }
 
-/** 直接发请求（不走 DataSet）时补分页参数用 */
+/** 业务页绕开引擎 `refresh()` 自行发请求时，用它补分页参数（保持同一口径） */
 export function withPagination(
   params: Record<string, unknown>,
   pageIndex: number,

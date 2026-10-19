@@ -12,47 +12,122 @@ import { inject, onMounted, provide, watch, type InjectionKey } from 'vue';
 import { useRoute } from 'vue-router';
 import type { RouteLocationNormalizedLoaded } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import request from '../utils/request';
-import cubeApi from '../composables/useCubeApi';
 import { createCubeEngine } from './createCubeEngine';
-import type { CubeEngineContext, CubeEngineDeps, CubeEngineOptions, CubePageMeta } from './types';
+import type {
+  CubeEngineContext,
+  CubeEngineDeps,
+  CubeEngineOptions,
+  CubeHttpLike,
+  CubePageMeta,
+} from './types';
 
 /** 引擎上下文的注入键 */
 export const CubeEngineKey: InjectionKey<CubeEngineContext> = Symbol('CubeEngine');
 
 /**
- * 构造默认依赖：元数据 / 详情 / LOV 走 `cubeApi.page`（`@newlifex/api-core` 统一实现），
- * 文件流走 `request`（其返回值已是业务体 `ApiResponse`，blob 场景即响应体本身）。
+ * 真实请求层惰性加载。
  *
- * 注意两处解包口径（`docs/standards/api-contract.md`）：
- *   - `cubeApi.page.*` 返回 `ApiResponse`，元数据要取 `.data`；
- *   - `request` 已做薄解包，blob 直接就是返回值，不需要再 `.data`。
+ * `core/utils/request` 在模块作用域就 `getConfig()` 取配置并 `createCubeApi`，
+ * 一旦被静态 import，就会把 axios / cookie / i18n 整条链拖进：
+ *   - 纯逻辑单测（本不该关心网络）；
+ *   - CT gallery（它把 `@newlifex/cube-vue/core/utils/request` 别名成桩，但**相对路径 import 不吃别名**，
+ *     真实文件仍会被加载，配置虚拟模块在 gallery 里是空壳 → 直接抛错）；
+ *   - 只想注入自管 `deps` 的业务页（不该为它买单）。
+ * 所以这里只在真正要发请求时才 `import()`，同一次加载内复用同一份模块实例。
+ */
+let requestLayer: Promise<{ request: CubeHttpLike; cubeApi: CubeApiSurface }> | null = null;
+function loadRequestLayer() {
+  if (!requestLayer) {
+    requestLayer = Promise.all([
+      import('../utils/request'),
+      import('../composables/useCubeApi'),
+    ]).then(([req, api]) => ({
+      request: req.default as unknown as CubeHttpLike,
+      cubeApi: api.default as unknown as CubeApiSurface,
+    }));
+  }
+  return requestLayer;
+}
+
+/** `cubeApi.page` 的最小面（够引擎用即可，不锁死 api-core 的具体类型） */
+interface CubeApiSurface {
+  page: {
+    getPage: (type: string) => Promise<{ data?: unknown }>;
+    getDetail: (type: string, id: number | string) => Promise<{ data?: unknown }>;
+    importFile: (type: string, file: File) => Promise<unknown>;
+    deleteSelect: (
+      type: string,
+      keys: (number | string)[],
+      options?: { compatCommaJoin?: boolean },
+    ) => Promise<unknown>;
+  };
+}
+
+/**
+ * 构造默认依赖：元数据 / 详情 / 批量删除 / 导入走 `cubeApi.page`（`@newlifex/api-core` 统一实现），
+ * 文件流与列表读写走 `request`。
+ *
+ * 两处解包口径（`docs/standards/api-contract.md`）：
+ *   - `cubeApi.page.*` 返回 `ApiResponse`，元数据/详情要取 `.data`；
+ *   - `request` 已做薄解包，blob 场景返回值本身就是文件流。
  */
 export function createDefaultCubeEngineDeps(): CubeEngineDeps {
+  const http: CubeHttpLike = Object.assign(
+    async (config: Parameters<CubeHttpLike>[0]) => {
+      const { request } = await loadRequestLayer();
+      return request(config);
+    },
+    {
+      get: async (url: string, config?: Record<string, unknown>) => {
+        const { request } = await loadRequestLayer();
+        return request.get(url, config);
+      },
+      post: async (url: string, data?: unknown, config?: Record<string, unknown>) => {
+        const { request } = await loadRequestLayer();
+        return request.post(url, data, config);
+      },
+      put: async (url: string, data?: unknown, config?: Record<string, unknown>) => {
+        const { request } = await loadRequestLayer();
+        return request.put(url, data, config);
+      },
+      delete: async (url: string, config?: Record<string, unknown>) => {
+        const { request } = await loadRequestLayer();
+        return request.delete(url, config);
+      },
+    },
+  );
+
   return {
-    http: request as unknown as CubeEngineDeps['http'],
+    http,
     getPage: async (type: string) => {
+      const { cubeApi } = await loadRequestLayer();
       const res = await cubeApi.page.getPage(type);
       return (res?.data ?? null) as CubePageMeta | null;
     },
     getDetail: async (type: string, id: number | string) => {
+      const { cubeApi } = await loadRequestLayer();
       const res = await cubeApi.page.getDetail(type, id);
       return (res?.data ?? {}) as Record<string, unknown>;
     },
     exportFile: async (type: string, params: Record<string, unknown>) => {
-      const blob = await request.get(`${type}/ExportFile`, {
+      const { request } = await loadRequestLayer();
+      return (await request.get(`${type}/ExportFile`, {
         params,
         responseType: 'blob',
-      });
-      return blob as unknown as Blob;
+      })) as unknown as Blob;
     },
     downloadTemplate: async (type: string) => {
-      const blob = await request.get(`${type}/DownloadTemplate`, { responseType: 'blob' });
-      return blob as unknown as Blob;
+      const { request } = await loadRequestLayer();
+      return (await request.get(`${type}/DownloadTemplate`, {
+        responseType: 'blob',
+      })) as unknown as Blob;
     },
-    importFile: async (type: string, file: File) =>
-      (await cubeApi.page.importFile(type, file)) as unknown,
+    importFile: async (type: string, file: File) => {
+      const { cubeApi } = await loadRequestLayer();
+      return (await cubeApi.page.importFile(type, file)) as unknown;
+    },
     deleteSelect: async (type, keys, options) => {
+      const { cubeApi } = await loadRequestLayer();
       await cubeApi.page.deleteSelect(type, keys, { compatCommaJoin: options?.commaJoin });
     },
     notify: {

@@ -8,7 +8,7 @@
  *
  * 表单体复用 `FormContent.vue`（字段 → 控件的唯一分发点），本组件只管容器与动作。
  */
-import { computed, toRefs } from 'vue';
+import { computed } from 'vue';
 import FormContent from '../../views/components/FormContent.vue';
 import { dialogShapeFor } from './cubeTable.logic';
 import type { CubeEngineContext } from '../../engine/types';
@@ -16,12 +16,16 @@ import type { CubeEngineContext } from '../../engine/types';
 const props = defineProps<{ ctx: CubeEngineContext }>();
 
 /**
- * 上下文里的 Ref 先解包再绑（`docs/architecture/cube-engine.md` §8.7）：
- * 模板里直接写 `v-model="ctx.dialogVisible.value"` 是在改 prop 上的属性，
- * 会被 `vue/no-mutating-props` 拦下；解包后本地 ref 仍指向同一个 Ref，
- * 写入照样落到引擎，语义不变而依赖方向干净。
+ * 直接取引擎上下文里的 Ref 来绑（`docs/architecture/cube-engine.md` §8.7 的意图）。
+ * 模板里写 `v-model="ctx.dialogVisible.value"` 会被 `vue/no-mutating-props` 拦下 ——
+ * 它确实是在改 prop 对象上的属性；这里换成局部 Ref，写入照样落到引擎，依赖方向也更干净。
+ * 不用 `toRefs(props.ctx)`：上下文是普通对象而不是 reactive，toRefs 会告警。
  */
-const { dialogVisible, dialogTitle, formLoading, formFields, submitting } = toRefs(props.ctx);
+const dialogVisible = props.ctx.dialogVisible;
+const dialogTitle = props.ctx.dialogTitle;
+const formLoading = props.ctx.formLoading;
+const formFields = props.ctx.formFields;
+const submitting = props.ctx.submitting;
 
 const readonly = computed(() => props.ctx.formMode.value === 'view');
 const shape = computed(() => dialogShapeFor(props.ctx.formFields.value.length));

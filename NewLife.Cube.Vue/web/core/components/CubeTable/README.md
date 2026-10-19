@@ -101,7 +101,7 @@ const ctx = useCubeEngine({
 
 ## 契约要点（排查问题时先看这里）
 
-- **分页 1-based**：`pageIndex` / `pageSize` 由数据层 `DataSet` 注入，组件与引擎不各算一份。
+- **分页 1-based**：`pageIndex` / `pageSize` 由引擎发请求时现取当前页码补上，组件不各算一份。
 - **查询参数**：关键字走 `q`；数值/时间区间按 `名称_min` / `名称_max` 两个键提交（与旧 Section 组件同口径）；
   `''` / `null` / `undefined` 被丢弃，但 **`0` 与 `false` 保留**（否则「数量=0」「启用=否」永远查不出来）。
 - **写操作是集合路由**：`POST {type}`、`PUT {type}`（主键在 body）、`DELETE {type}?id=`。
@@ -118,6 +118,10 @@ const ctx = useCubeEngine({
 - **导出按 `Content-Type` 定扩展名**：xlsx 的 `spreadsheetml` 必须识别，否则会存成打不开的 `.bin`。
 - **值集标签只有一个来源**：`LovSelect` 与 `core/components/LovSelect/lovStore.ts` 的会话级缓存。
   引擎**不**预拉 LOV、不另建缓存（`deps.lookup` 保留但默认不启用）。
+- **枚举列不会停在码值**：`resolveColumnLabels()` 的 ENUM 快路径只读 `getCachedMeta()`、自己不拉 meta，
+  而 `labelCache` 是普通 `Map`（非响应式）。所以 `useCubeTableLov` 先 `getMeta()` 播种、
+  再把结果抄进本地响应式副本；共享缓存已命中时也必须抄，否则单元格会一直显示 `1` 而不是 `启用`。
+  （`ListTableContent.vue` 这两个坑都在，本组件修掉了，没有回改旧组件。）
 - **必填口径只有一个来源**：`core/utils/fieldControl.ts` 的 `isRequiredField()`，
   没有往 `FieldMeta` 里加草案设想的 `required` 同义字段。
 
@@ -140,11 +144,23 @@ const ctx = useCubeEngine({
 | --- | --- | --- |
 | 接入默认页 | `core/views/index.vue` 未改，默认页仍走裸 `request` + Section 组合 | 方案 §7 P3 后半段（含兼容桥与 e2e 回归） |
 | `@newlifex/page-logic` | 未接入。该包已有 `loadFields/loadData/add/remove/deleteSelect` 全家桶，但 `cube-vue` 目前零引用 | 引擎数据层收敛到一处，属架构决策，不该由组件层单方向定 |
-| CT 视觉基线 | 无 `CubeTable.story.ts` / `CubeTable.ct.spec.ts` | `testing-standard.md` 要求 UI 组件补 CT；聚合入口 `ct/stories.ts` 是既有文件，加一行 import 即可，本次按「不改任何既有文件」的约束没动 |
-| 组件目录登记 | `docs/reference/component-catalog.md` 未加条目 | `add-component.md` 第 6 步要求登记；同样是既有文件，留待评审后一并加 |
+| 组件目录登记 | `docs/reference/component-catalog.md` 未加条目 | `add-component.md` 第 6 步要求登记；纯文档，留待评审后一并加 |
 | 删除 `useSections` / Section 组件 | 全部保留原样 | 方案 §7 P6，必须在默认页切换并回归之后 |
 
 ---
+
+## CT（组件视觉回归）
+
+`CubeTable.story.ts` 定义 6 个变体，`CubeTable.ct.spec.ts` 对其中 5 个做像素基线 + 5 个做行为断言：
+`Default`（全控件形态的一屏）、`ReadOnly`、`Empty`、`LoadFail`、`ManyFilters`（折叠/展开两态）、`FormDialog`。
+story 用内存版 `deps` 构造上下文，**不依赖后端**；基线目录 `*-snapshots/` 已在 `.gitignore` 内（各机自产）。
+
+为了能在 gallery 里跑起来，动过两个既有文件，都不改任何组件行为：
+
+| 文件 | 改动 | 为什么必须 |
+| --- | --- | --- |
+| `ct/stories.ts` | 加 1 行 import + 展开进 `stories` | 该文件自己的注释就规定「新增组件 story 只需在此处追加一行 import」；不注册则 `mountStory` 报「未知 story」 |
+| `ct/vite.config.ts` | 配置虚拟模块的桩补上具名导出 `configData` / `currentEnv` | 原桩只给 `export default {}`，而 `core/configure/index.ts` 用的是具名导入 → 任何 import `core/utils/url` 的组件在 gallery 里整页白屏（报 `does not provide an export named 'configData'`）。形状对齐 `core/client.d.ts` 与 `vitest.config.unit.ts` 的同名桩 |
 
 ## 本地校验
 
@@ -154,6 +170,8 @@ pnpm exec vitest run --config vitest.config.unit.ts core/components/CubeTable co
 pnpm exec vue-tsc --build
 pnpm exec eslint core/components/CubeTable core/engine core/utils/fieldMeta.ts
 pnpm run check:theme
+pnpm run test:ct:update   # 首次生成基线
+pnpm run test:ct          # 之后做像素比对
 ```
 
 测试文件与覆盖范围：
@@ -171,3 +189,4 @@ pnpm run check:theme
 | `__tests__/CubeTableToolbar.spec.ts` | 按钮默认集、后端开关与页面意图优先级、只读收写入口、批量删除与勾选联动、导入文件框、插槽 |
 | `__tests__/CubeTablePagination.spec.ts` | 1-based 页码直传、条数档位、动作交给引擎 |
 | `__tests__/CubeTable.spec.ts` | 上下文三级解析优先级、每个插槽的替换边界、设置列持久化生效、失败重试、导出下载落地 |
+| `CubeTable.ct.spec.ts` + `CubeTable.story.ts` | 六个变体的像素基线与行为：勾选→批量删除带条数并弹确认、关键字走 `q`、设置列隐藏并落 localStorage、行内删除取消不动数据、编辑先取详情 |

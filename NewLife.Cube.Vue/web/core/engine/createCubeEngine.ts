@@ -12,21 +12,25 @@
  *   - **配置驱动**（业务整页 / 嵌入复用）：给 `apiPrefix` + `fields`，引擎跳过 `GetPage`，
  *     直接消费前端字段定义 —— 这是业务页「不写 Section 也能定制整页」的合法出口。
  *
- * 数据层用 `DataSet`（对齐 `TODO.md` 的 P0「集成 DataSet 到默认视图」），
- * 但对草案 §4.2 做了三处契约修正，照抄草案会回归：
+ * 数据访问**只经注入的 `deps.http`**，不依赖 `core/dataset/DataSet`：
+ * `DataSet` 在自身模块作用域 `import axios from '../../utils/request'`，
+ * 一旦被引擎牵进来，纯逻辑单测与 CT gallery 就得连带真实请求链与配置虚拟模块
+ * （gallery 把 `@newlifex/cube-vue/core/utils/request` 别名成桩，但相对路径 import 不受别名约束）。
+ * 引擎要的只是「列表状态 + 分页 + 四个动词」，自己持有反而更小更可测。
+ * 注：这与 ADR 0005 草案里「数据层以 DataSet 为底座」的选型不同，属有意偏离。
+ *
+ * 对草案 §4.2 的三处契约修正（照抄草案会回归）：
  *   1. 更新走 `PUT {type}`、删除走 `DELETE {type}?id=` —— 后端
  *      `NewLife.Cube/Common/EntityController.cs:201` 与 `:24` 都是集合路由，
  *      草案的路径式 `{type}/{id}` 命中不到路由（405）。`core/views/index.vue:266-268`
  *      的注释与 `@newlifex/api-core` 的 `page.remove`（api.ts:324）都是既有佐证。
- *   2. `DataSet.read` 会把 `pageIndex/pageSize` 合并进 transport 回调的 `params`，
- *      草案的 `read: () => ({ params: {...searchModel} })` 把它们丢了，
- *      表现是「翻页后请求仍是第 1 页」。这里改为只交查询条件、分页交数据层。
+ *   2. 分页参数由引擎自己带：`pageIndex`（1-based）+ `pageSize` 每次请求现取当前页码，
+ *      不依赖调用方回传 —— 草案的 transport 把合并进来的分页参数丢了，
+ *      表现是「翻页后请求仍是第 1 页」。
  *   3. 必填判定复用 `fieldControl.isRequiredField()`，不往共享契约 `FieldMeta`
  *      里加草案设想的 `required` 字段（避免出现两套「必填」口径）。
  */
 import { computed, reactive, ref } from 'vue';
-import type { AxiosInstance } from 'axios';
-import { DataSet } from '../dataset/data-set/DataSet';
 import { routeToApiPrefix } from '../utils/url';
 import { normalizeOverrideFields, normalizePageMeta } from '../utils/fieldMeta';
 import { serializeSubmitModel } from '../utils/fieldControl';
@@ -88,6 +92,27 @@ function clearModel(model: Record<string, unknown>): void {
   for (const key of Object.keys(model)) delete model[key];
 }
 
+/**
+ * Cube 分页回包 → `{ rows, total }`。
+ *
+ * 宽容三种既有形状（口径与 `core/views/index.vue:307-316` 一致，避免换引擎就换个解析）：
+ * `{ data: [...], page: { totalCount } }`、裸数组、`data` 为单对象。
+ */
+function readListResponse(res: unknown): { rows: Record<string, unknown>[]; total: number } {
+  if (Array.isArray(res)) return { rows: res as Record<string, unknown>[], total: res.length };
+  const body = (res ?? {}) as {
+    data?: unknown;
+    page?: { totalCount?: number; total?: number };
+  };
+  const rows = Array.isArray(body.data)
+    ? (body.data as Record<string, unknown>[])
+    : body.data && typeof body.data === 'object'
+      ? [body.data as Record<string, unknown>]
+      : [];
+  const total = body.page?.totalCount ?? body.page?.total ?? rows.length;
+  return { rows, total };
+}
+
 /** 详情里的 `'true'/'false'` 字符串需还原为布尔，否则开关控件回显成假 */
 function normalizeDetailBooleans(
   source: Record<string, unknown>,
@@ -140,29 +165,20 @@ export function createCubeEngine(
 
   const apiPrefix = computed(() => type.value);
 
-  /** 数据层：`DataSet` 承担列表与分页（`dataKey='data'`、`totalCountKey='page.totalCount'`） */
-  const dataSet = new DataSet<Record<string, unknown>, Record<string, unknown>>({
-    axios: deps.http as unknown as AxiosInstance,
-    idField: 'id',
-    pageSize: options.pageSize ?? 20,
-    autoQuery: false,
-    transport: {
-      // params 已含 DataSet 合并的 pageIndex/pageSize，这里只补 url
-      read: (props) => ({ url: type.value, method: 'get', params: props.params }),
-      create: (props) => ({ url: type.value, method: 'post', data: props.data }),
-      update: (props) => ({ url: type.value, method: 'put', data: props.data }),
-      destroy: (props) => ({
-        url: type.value,
-        method: 'delete',
-        params: { id: resolveRowId((props.data ?? {}) as Record<string, unknown>, idKey.value) },
-      }),
-    },
-  });
+  /**
+   * 列表状态由引擎自持（不再经 `DataSet`）：
+   * `dataKey='data'` / `totalCountKey='page.totalCount'` 是 Cube 分页回包的既有形状，
+   * 与 `@newlifex/api-core` 的 `PageResult` 对齐。
+   */
+  const listRows = ref<Record<string, unknown>[]>([]);
+  const totalRef = ref(0);
+  const pageIndex = ref(1);
+  const sizePerPage = ref(options.pageSize ?? 20);
 
-  const list = computed(() => dataSet.data);
-  const total = computed(() => dataSet.totalCount);
-  const page = computed(() => dataSet.currentPage);
-  const pageSize = computed(() => dataSet.pageSize);
+  const list = computed(() => listRows.value);
+  const total = computed(() => totalRef.value);
+  const page = computed(() => pageIndex.value);
+  const pageSize = computed(() => sizePerPage.value);
   const listFields = computed(() => fields.value.listFields);
   const searchFields = computed(() => fields.value.searchFields);
   const formFields = computed(() =>
@@ -198,7 +214,21 @@ export function createCubeEngine(
     }
   }
 
-  const load = () => runLoad(() => dataSet.read(currentQuery()));
+  const load = () =>
+    runLoad(async () => {
+      const res = await deps.http({
+        url: type.value,
+        method: 'get',
+        params: {
+          ...currentQuery(),
+          pageIndex: pageIndex.value,
+          pageSize: sizePerPage.value,
+        },
+      });
+      const next = readListResponse(res);
+      listRows.value = next.rows;
+      totalRef.value = next.total;
+    });
 
   /** 应用前端字段覆盖（配置驱动），或拉取后端元数据（元数据驱动） */
   async function applyFields(): Promise<void> {
@@ -261,14 +291,14 @@ export function createCubeEngine(
     if (next?.apiPrefix) options.apiPrefix = next.apiPrefix;
     else if (next?.routePath) options.routePath = next.routePath;
     type.value = resolveType(options);
-    dataSet.currentPage = 1;
+    pageIndex.value = 1;
     keyword.value = '';
     selected.value = [];
     await init();
   }
 
   async function search(): Promise<void> {
-    dataSet.currentPage = 1;
+    pageIndex.value = 1;
     await load();
   }
 
@@ -284,14 +314,14 @@ export function createCubeEngine(
   }
 
   async function changePage(next: number): Promise<void> {
-    dataSet.currentPage = next;
+    pageIndex.value = next;
     await load();
   }
 
   async function changePageSize(size: number): Promise<void> {
-    dataSet.pageSize = size;
+    sizePerPage.value = size;
     // 换每页条数后原页码失去意义，必须回第 1 页
-    dataSet.currentPage = 1;
+    pageIndex.value = 1;
     await load();
   }
 
@@ -383,9 +413,9 @@ export function createCubeEngine(
           Object.keys(data).find((k) => k.toLowerCase() === String(idKey.value).toLowerCase()) ??
           idKey.value;
         data[realKey] = formId.value;
-        await dataSet.remoteUpdate(data);
+        await deps.http({ url: type.value, method: 'put', data });
       } else {
-        await dataSet.create(data);
+        await deps.http({ url: type.value, method: 'post', data });
       }
       deps.notify?.success?.(isEdit ? '更新成功' : '新增成功');
       closeDialog();
@@ -407,10 +437,10 @@ export function createCubeEngine(
     }
     submitting.value = true;
     try {
-      await dataSet.destroy(row);
+      await deps.http({ url: type.value, method: 'delete', params: { id: resolveRowId(row, idKey.value) } });
       deps.notify?.success?.('删除成功');
       // 删掉当前页最后一条时回退一页，避免停在空页
-      if (list.value.length <= 1 && dataSet.currentPage > 1) dataSet.currentPage -= 1;
+      if (list.value.length <= 1 && pageIndex.value > 1) pageIndex.value -= 1;
       await load();
       selected.value = [];
       return true;

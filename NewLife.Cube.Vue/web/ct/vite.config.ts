@@ -17,8 +17,17 @@ function mockCubeVueVirtual(): Plugin {
       return null;
     },
     load(id) {
-      if (id.startsWith('\0virtual:@newlifex/cube-vue-')) return 'export default {}';
-      return null;
+      if (!id.startsWith('\0virtual:@newlifex/cube-vue-')) return null;
+      // 配置虚拟模块必须给具名导出：`core/configure/index.ts` 是
+      // `import { configData, currentEnv } from 'virtual:@newlifex/cube-vue-config'`，
+      // 只给 `export default {}` 会让浏览器在链接阶段就报
+      // “does not provide an export named 'configData'”，表现为 gallery 整页白屏、
+      // 任何用到 `core/utils/url`（它 import configure）的组件都拍不到。
+      // 形状与 `core/client.d.ts` 的声明、`vitest.config.unit.ts` 里的同名桩保持一致。
+      if (id === '\0virtual:@newlifex/cube-vue-config') {
+        return 'export const configData = {}; export const currentEnv = "development"; export default { configData, currentEnv };';
+      }
+      return 'export default {}';
     },
   };
 }

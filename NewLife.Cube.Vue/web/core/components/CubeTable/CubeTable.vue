@@ -120,10 +120,10 @@ const cellSlots = computed(() =>
         <template #extra>
           <!-- 内置「设置列」排在业务自定义按钮之前：它是视图工具，不该抢业务动作的位 -->
           <el-popover v-if="columnsSetting" placement="bottom-end" :width="220" trigger="click">
+            <!-- 不再套一层 el-tooltip：它的触发指令落在 fragment 根上会告警并失效，
+                 按钮自身的 title 已经能给悬停提示 -->
             <template #reference>
-              <el-tooltip content="设置列" placement="top">
-                <el-button class="ct-cols-trigger" :icon="Setting" circle />
-              </el-tooltip>
+              <el-button class="ct-cols-trigger" :icon="Setting" circle title="设置列" />
             </template>
             <div class="ct-col-title">展示列</div>
             <div v-for="item in columns.items.value" :key="item.key" class="ct-col-item">

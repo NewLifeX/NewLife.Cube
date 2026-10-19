@@ -5,6 +5,7 @@
 //   导致模块图不稳定、偶发漏注册（表现为部分 story 的 id 不在 gallery 的 registry 中，
 //   mountStory 报「未知 story」）。该 flaky 在沙箱/CI 极难排查。
 //   显式导入确定性最高；新增组件 story 只需在此处追加一行 import 即可。
+import { stories as cubeTableStories } from '../core/components/CubeTable/CubeTable.story';
 import { stories as lovSelectStories } from '../core/components/LovSelect/LovSelect.story';
 import { stories as lovSelectTableStories } from '../core/components/LovSelectTable/LovSelectTable.story';
 
@@ -12,4 +13,4 @@ export const stories: Array<{
   id: string;
   component: unknown;
   props?: Record<string, unknown>;
-}> = [...lovSelectStories, ...lovSelectTableStories];
+}> = [...lovSelectStories, ...lovSelectTableStories, ...cubeTableStories];

@@ -156,8 +156,8 @@ export interface CubeEngineDeps {
   getPage: (type: string) => Promise<CubePageMeta | null | undefined>;
   /**
    * HTTP 实例。默认 `core/utils/request`（其返回值已是业务体 `ApiResponse`，
-   * 与 `DataSet` 的 `dataKey='data'` / `totalCountKey='page.totalCount'` 默认口径对齐；
-   * 不要传 `cubeAxios`/`client`，那是未解包的 AxiosResponse）。
+   * 列表按 `{ data, page: { totalCount } }` 解包，blob 场景返回值本身就是文件流）。
+   * 不要传 `cubeAxios` / `client`，那是未解包的 `AxiosResponse`，解包口径会错一位。
    */
   http: CubeHttpLike;
   /**

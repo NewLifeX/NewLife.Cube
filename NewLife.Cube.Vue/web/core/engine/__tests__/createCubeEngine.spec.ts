@@ -52,8 +52,8 @@ function makeHttp(overrides: { blob?: Blob; detail?: unknown } = {}) {
     if (config.method === 'get' && config.url.endsWith('/Detail')) {
       return overrides.detail ?? DETAIL_BODY;
     }
-    // 每次返回**新数组**：DataSet.create 会往当前数组 push、remoteUpdate 会按下标写回，
-    // 若各用例共享同一数组引用，前一个用例的写副作用会污染后一个用例（实测会打出 null 行）
+    // 每次返回**新数组**：假响应体若被各用例共享同一引用，
+    // 前一个用例写过的行会串进后一个用例（跨用例污染，红得查不到原因）
     if (config.method === 'get') return { ...LIST_BODY, data: [...LIST_BODY.data] };
     return { code: 0, data: null, message: 'ok' };
   };

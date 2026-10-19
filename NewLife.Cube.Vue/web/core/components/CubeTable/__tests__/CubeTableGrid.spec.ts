@@ -18,11 +18,13 @@ import { FIELDS, makeFakeActions, makeFakeCtx } from './fakeCtx';
 const lovStubs = vi.hoisted(() => ({
   /** 默认按「未缓存」返回原值，从而触发异步解析分支 */
   getColumnLabel: vi.fn((_code: string, value: string) => value),
+  getMeta: vi.fn(async (_code: string) => ({ type: 'ENUM' })),
   resolveColumnLabels: vi.fn(async (_code: string, value: string) => `类型${value}`),
 }));
 
 vi.mock('../../LovSelect/lovStore', () => ({
   getColumnLabel: (...args: unknown[]) => lovStubs.getColumnLabel(...(args as [string, string])),
+  getMeta: (...args: unknown[]) => lovStubs.getMeta(...(args as [string])),
   resolveColumnLabels: (...args: unknown[]) =>
     lovStubs.resolveColumnLabels(...(args as [string, string])),
 }));
@@ -84,6 +86,34 @@ describe('CubeTableGrid 列渲染', () => {
     const ctx = makeFakeCtx({ listFields: [FIELDS.kind], list: [{ Kind: '1' }] });
     const wrapper = await mountGrid(ctx);
     await vi.waitFor(() => expect(wrapper.text()).toContain('类型1'));
+  });
+
+  it('应该先播种 meta 再解析标签 当列是枚举值集时', async () => {
+    // resolveColumnLabels 的 ENUM 快路径只读 getCachedMeta，不先 getMeta 就会一直回吐码值
+    const ctx = makeFakeCtx({ listFields: [FIELDS.kind], list: [{ Kind: '1' }] });
+    const wrapper = await mountGrid(ctx);
+    await vi.waitFor(() => expect(lovStubs.getMeta).toHaveBeenCalledWith('EquipmentKinds'));
+    expect(lovStubs.getMeta.mock.invocationCallOrder[0]).toBeLessThan(
+      lovStubs.resolveColumnLabels.mock.invocationCallOrder[0],
+    );
+    expect(wrapper.text()).toContain('类型1');
+  });
+
+  it('应该直接采用共享缓存里已有的标签且不重复拉 meta 当搜索区已替该值集预热时', async () => {
+    // 复现曾经的 bug：共享缓存已命中时旧代码把值整个跳过，本地响应式副本始终为空
+    // → 单元格一直显示码值。用 mockImplementation 常驻改写（load 会跑多轮，Once 会被后续轮次打穿）
+    lovStubs.getColumnLabel.mockImplementation(() => '预置标签');
+    lovStubs.getMeta.mockClear();
+    lovStubs.resolveColumnLabels.mockClear();
+    try {
+      const ctx = makeFakeCtx({ listFields: [FIELDS.kind], list: [{ Kind: '1' }] });
+      const wrapper = await mountGrid(ctx);
+      await vi.waitFor(() => expect(wrapper.text()).toContain('预置标签'));
+      expect(lovStubs.resolveColumnLabels).not.toHaveBeenCalled();
+      expect(lovStubs.getMeta).not.toHaveBeenCalled();
+    } finally {
+      lovStubs.getColumnLabel.mockImplementation((_code: string, value: string) => value);
+    }
   });
 
   it('应该把图片列渲染成缩略图、附件列渲染成链接 当列形态为 image/file 时', async () => {
