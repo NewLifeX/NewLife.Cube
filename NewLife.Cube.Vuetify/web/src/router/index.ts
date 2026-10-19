@@ -8,6 +8,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/login/index.vue'),
   },
   {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/views/register/index.vue'),
+  },
+  {
     path: '/',
     component: DefaultLayout,
     redirect: '/home',

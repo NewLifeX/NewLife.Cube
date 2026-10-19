@@ -320,6 +320,23 @@ test('登录结果字段归一化：snake_case access_token/refresh_token/expire
   assert.equal(res.data.expireIn, 7200);
 });
 
+test('注册结果归一化：保留 pendingActivation/channels/targets 业务字段', async () => {
+  const { adapter } = capturingAdapter(() => ({
+    data: {
+      code: 0,
+      message: '待激活',
+      data: { accessToken: '', pendingActivation: true, channels: ['mail'], targets: ['a***@example.com'] },
+    },
+  }));
+  const { client } = makeClient({ baseURL: 'http://host:5000', unwrapResponse: true });
+  client.defaults.adapter = adapter;
+  const res = await client.post('/Auth/Register', {});
+  assert.equal(res.data.pendingActivation, true, '归一化不能丢失待激活标记');
+  assert.deepEqual(res.data.channels, ['mail']);
+  assert.deepEqual(res.data.targets, ['a***@example.com']);
+  assert.equal(res.data.accessToken, '');
+});
+
 test('登录结果字段归一化：snake_case 缺失 access_token 时回退空串，不误取 undefined', async () => {
   const { adapter } = capturingAdapter(() => ({
     data: { code: 0, data: { code: 0, message: 'ok' } }, // 无令牌字段（异常登录响应）

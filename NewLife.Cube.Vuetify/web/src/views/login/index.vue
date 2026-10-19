@@ -35,27 +35,39 @@
           </div>
         </v-card-text>
       </template>
+
+      <v-card-text v-if="registerEnabled" class="text-center pt-0">
+        <span class="text-body-2 text-medium-emphasis">还没有账号？</span>
+        <v-btn variant="text" color="primary" @click="goRegister">立即注册</v-btn>
+      </v-card-text>
     </v-card>
   </div>
 </template>
 
 <script setup lang="ts">
 import { reactive, ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import type { OAuthProvider } from '@newlifex/api-core';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
 
+const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
 
 const form = reactive({ username: '', password: '' });
 const loading = ref(false);
 const oauthProviders = ref<OAuthProvider[]>([]);
+const registerEnabled = ref(false);
 
 onMounted(async () => {
-  const res = await cubeApi.user.getLoginConfig();
-  if (res.data?.providers) oauthProviders.value = res.data.providers;
+  try {
+    const res = await cubeApi.user.getLoginConfig();
+    oauthProviders.value = res.data?.oauth ?? res.data?.providers ?? [];
+    registerEnabled.value = res.data?.register?.enabled === true;
+  } catch {
+    // 配置加载失败不影响密码登录，注册入口保持隐藏
+  }
 });
 
 async function handleLogin() {
@@ -73,5 +85,10 @@ async function handleLogin() {
 
 function oauthLogin(name: string) {
   window.location.href = `/Sso/LoginExternal?provider=${name}`;
+}
+
+/** 进入注册页时保留租户等查询参数 */
+function goRegister() {
+  router.push({ path: '/register', query: route.query });
 }
 </script>

@@ -24,6 +24,9 @@ import { resolveRequestUrl } from './service-path';
 function normalizeLoginResult(data: LoginResult): LoginResult {
   const raw = data as unknown as Record<string, unknown>;
   return {
+    // 保留后端返回的其余字段（如注册待激活 pendingActivation/channels/targets），
+    // 避免归一化时只挑令牌字段而丢失业务信息。
+    ...data,
     accessToken:
       (raw.accessToken as string) ??
       (raw.access_token as string) ??

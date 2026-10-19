@@ -287,6 +287,8 @@ export interface LoginAbility {
   mail?: boolean;
   /** 登录时需要图片验证码 */
   captcha?: boolean;
+  /** 发送验证码时需要图片验证码（防短信轰炸） */
+  sendCode?: boolean;
 }
 
 /** 注册能力配置 */
