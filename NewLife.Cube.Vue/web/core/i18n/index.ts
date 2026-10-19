@@ -46,10 +46,17 @@ const supportedValues = supportedLanguages.map((item) => item.value) as readonly
 // 获取浏览器语言设置，命中支持列表则复用，否则回退英文
 function getBrowserLanguage(): CubeLocale {
   const navigatorLanguage = navigator.language;
-  const exact = supportedValues.find((item) => item.toLowerCase() === navigatorLanguage.toLowerCase());
+  const lower = navigatorLanguage.toLowerCase();
+  const exact = supportedValues.find((item) => item.toLowerCase() === lower);
   if (exact) return exact as CubeLocale;
 
-  const prefix = navigatorLanguage.split('-')[0].toLowerCase();
+  // 中文按书写系统区分：Hant/TW/HK/MO 使用繁體，其余使用简体
+  if (lower.startsWith('zh')) {
+    const isHant = lower.includes('hant') || lower.endsWith('-tw') || lower.endsWith('-hk') || lower.endsWith('-mo');
+    return isHant ? 'zh-TW' : 'zh-CN';
+  }
+
+  const prefix = lower.split('-')[0];
   const matched = supportedLanguages.find((item) => item.value.split('-')[0].toLowerCase() === prefix);
   return matched ? matched.value : 'en-US';
 }
@@ -81,6 +88,13 @@ const i18n = createI18n({
   },
   silentTranslationWarn: true,
 });
+
+// 初始化页面语言属性，保证首屏 <html lang>/<html dir> 与当前语言一致
+if (typeof document !== 'undefined') {
+  const lang = getLanguage();
+  document.querySelector('html')?.setAttribute('lang', lang);
+  document.querySelector('html')?.setAttribute('dir', lang === 'ar-SA' ? 'rtl' : 'ltr');
+}
 
 // 导出 i18n 实例
 export default i18n;

@@ -70,7 +70,7 @@ public static partial class ApiResponseHelper
          String? defaultTip = null)
     {
         var msg = defaultTip ?? L.T("Invalid request parameter");
-        if (!String.IsNullOrWhiteSpace(paraName)) msg = $"{defaultTip}:{paraName}";
+        if (!String.IsNullOrWhiteSpace(paraName)) msg = $"{msg}:{paraName}";
         return ToFailApiResponse(data, CubeCode.ParamError, msg);
     }
     /// <summary>内部错误</summary>

@@ -20,6 +20,7 @@
  * 保持兼容，业务文件无需改动。useCubeApi 复用本实例，不再单独创建 createCubeApi。
  */
 import { createCubeApi, type TokenStorage, type ResponseErrorInfo } from '@newlifex/api-core';
+import { getCurrentLanguage } from '../i18n';
 import type { AxiosInstance, AxiosResponse } from 'axios';
 import { ElMessage } from 'element-plus';
 import queryString from 'query-string';
@@ -205,8 +206,9 @@ const api = createCubeApi({
   unwrapResponse: false,
   additionalRequestHeaders: () => {
     const cfg = cubeConfig.request.additionalRequestHeaders;
-    if (!cfg) return {};
-    return typeof cfg === 'function' ? cfg() : cfg;
+    const headers = !cfg ? {} : typeof cfg === 'function' ? cfg() : cfg;
+    // Accept-Language 与 i18n 当前语言保持一致，后端按同一条链路返回本地化消息
+    return { 'Accept-Language': getCurrentLanguage(), ...headers };
   },
   onRequestHook: (config) => {
     const ri = cubeConfig.request.requestInterceptor;
