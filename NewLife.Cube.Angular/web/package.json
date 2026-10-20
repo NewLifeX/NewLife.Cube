@@ -6,6 +6,7 @@
     "ng": "ng",
     "dev": "ng serve",
     "build": "ng build --output-path ../wwwroot",
+    "test:unit": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test tests/register.test.ts",
     "watch": "ng build --watch --configuration development"
   },
   "dependencies": {

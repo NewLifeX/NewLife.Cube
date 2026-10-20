@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -11,6 +11,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import type { OAuthProvider } from '@newlifex/api-core';
 import { ApiService } from '../../services/api.service';
 import { UserService } from '../../services/user.service';
+import { resolveRegisterModes, resolveRegisterTenant } from '../../utils/register';
 
 @Component({
   selector: 'app-login',
@@ -43,6 +44,12 @@ import { UserService } from '../../services/user.service';
             }
           </div>
         }
+        @if (registerEnabled) {
+          <div style="text-align: center; margin-top: 16px; color: rgba(0, 0, 0, 0.45);">
+            还没有账号？
+            <button nz-button nzType="link" (click)="goRegister()">立即注册</button>
+          </div>
+        }
       </nz-card>
     </div>
   `,
@@ -52,17 +59,28 @@ export class LoginComponent implements OnInit {
   password = '';
   loading = false;
   oauthProviders: OAuthProvider[] = [];
+  /** 后端是否开放注册 */
+  registerEnabled = false;
+  /** 租户查询参数 */
+  private tenant: { appId?: string; tenantCode?: string } = {};
 
   constructor(
     private api: ApiService,
     private userService: UserService,
     private router: Router,
+    private route: ActivatedRoute,
     private message: NzMessageService,
   ) {}
 
   async ngOnInit() {
-    const res = await this.api.user.getLoginConfig();
-    if (res.data?.providers) this.oauthProviders = res.data.providers;
+    this.tenant = resolveRegisterTenant(this.route.snapshot.queryParams as Record<string, unknown>);
+    try {
+      const res = await this.api.user.getLoginConfig(this.tenant.tenantCode);
+      if (res.data?.providers) this.oauthProviders = res.data.providers;
+      this.registerEnabled = resolveRegisterModes(res.data?.register).length > 0;
+    } catch {
+      // 登录页配置加载失败不阻塞密码登录
+    }
   }
 
   async handleLogin() {
@@ -86,5 +104,15 @@ export class LoginComponent implements OnInit {
 
   oauthLogin(name: string) {
     window.location.href = `/Sso/LoginExternal?provider=${name}`;
+  }
+
+  /** 进入注册页，保留租户查询参数 */
+  goRegister() {
+    const queryParams: Record<string, string> = {};
+    if (this.tenant.appId) queryParams['appId'] = this.tenant.appId;
+    if (this.tenant.tenantCode) queryParams['tenant'] = this.tenant.tenantCode;
+    this.router.navigate(['/register'], {
+      queryParams: Object.keys(queryParams).length > 0 ? queryParams : undefined,
+    });
   }
 }
