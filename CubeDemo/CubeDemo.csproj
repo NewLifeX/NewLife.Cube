@@ -39,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.MySql" Version="1.4.2026.1019-beta0440" />
+    <PackageReference Include="NewLife.MySql" Version="1.4.2026.1019-beta1524" />
     <!-- 编译期生成 OpenAPI json 的 build target 来源；本地源码直连消费者需自行显式引用 -->
     <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="10.0.*" PrivateAssets="all" GeneratePathProperty="true" />
   </ItemGroup>

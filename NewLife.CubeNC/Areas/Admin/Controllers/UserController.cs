@@ -839,10 +839,16 @@ public class UserController : EntityController<User, UserModel>
             ModelState.AddModelError(aex.ParamName, aex.Message);
         }
 
+        var key = DateTime.Now.Ticks.ToString();
+        var dicKey = _cache.GetOrAdd(key, k => NCreateKeyPair(), 300);
+        ViewData["ChallengeKey"] = new KeyValuePair<String, String>(key, dicKey.Item1);
+        // 注册失败回到登录页并停留在注册标签，避免命中不存在的 Register 视图
+        ViewData["ActiveTab"] = "Register";
+
         var model = GetViewModel(returnUrl);
         model.OAuthItems = OAuthConfig.GetVisibles(_tenantContext.TenantId);
 
-        return _isMobile ? View("MLogin", model) : View(model);
+        return _isMobile ? View("MLogin", model) : View("Login", model);
     }
 
     /// <summary>清空密码</summary>

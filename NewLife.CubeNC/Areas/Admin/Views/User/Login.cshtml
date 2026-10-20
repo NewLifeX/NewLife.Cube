@@ -55,11 +55,12 @@
             </div>
 
             <!-- Tab 切换：登录 / 注册 -->
+            @{ var activeTab = ViewData["ActiveTab"] as String == "Register" ? "Register" : "Login"; }
             <div class="login-tabs">
-                <a class="active" data-tab="Login">登录</a>
+                <a class="@(activeTab == "Login" ? "active" : "")" data-tab="Login">登录</a>
                 @if (Model.AllowRegister)
                 {
-                    <a data-tab="Register">注册</a>
+                    <a class="@(activeTab == "Register" ? "active" : "")" data-tab="Register">注册</a>
                 }
             </div>
 
@@ -102,6 +103,10 @@
                 // 第三方登录只在登录面板显示
                 $('#thirdParty').toggle(tab === 'Login');
             });
+
+            // 按服务端指定标签初始化（注册失败时停留在注册页）
+            var initTab = '@activeTab';
+            if (initTab !== 'Login') $('.login-tabs a[data-tab="' + initTab + '"]').trigger('click');
 
             // ========== 密码可见切换 ==========
             $('.pwd-toggle').on('click', function () {

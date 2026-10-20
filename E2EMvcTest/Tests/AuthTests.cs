@@ -92,6 +92,15 @@ public sealed class AuthTests : IAsyncLifetime
         Assert.True(url.Contains("/User/", StringComparison.OrdinalIgnoreCase) ||
                     url.Contains("/Login", StringComparison.OrdinalIgnoreCase),
             $"[{testId}] 重复用户名注册后不应跳转离开注册/登录页。当前URL: {url}，页面标题: {await _page.TitleAsync()}");
+
+        // 注册失败必须渲染登录页（不能命中不存在的 Register 视图），并停留在注册标签显示已存在提示
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+        Assert.True(await _page.IsVisibleAsync("#Register.active, #Register.in"),
+            $"[{testId}] 重复用户名注册失败后应停留在注册标签页。当前URL: {url}");
+
+        var html = await _page.ContentAsync();
+        Assert.True(html.Contains("已存在", StringComparison.OrdinalIgnoreCase),
+            $"[{testId}] 重复用户名注册失败后页面未显示'已存在'提示。当前URL: {url}");
     }
 
     [Fact(DisplayName = "TC-AUTH-004 注册密码以密文传输（含 challengeId）")]
