@@ -90,9 +90,32 @@ public class LocalizationTests
         var options = provider.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value;
         Assert.Equal(32, options.SupportedUICultures.Count);
         Assert.Equal(3, options.RequestCultureProviders.Count);
-        Assert.IsType<QueryStringRequestCultureProvider>(options.RequestCultureProviders[0]);
-        Assert.IsType<CookieRequestCultureProvider>(options.RequestCultureProviders[1]);
-        Assert.IsType<AcceptLanguageHeaderRequestCultureProvider>(options.RequestCultureProviders[2]);
+        Assert.IsAssignableFrom<QueryStringRequestCultureProvider>(options.RequestCultureProviders[0]);
+        Assert.IsAssignableFrom<CookieRequestCultureProvider>(options.RequestCultureProviders[1]);
+        Assert.IsAssignableFrom<RequestCultureProvider>(options.RequestCultureProviders[2]);
+    }
+
+    [Fact(DisplayName = "多语言 - 语言名称归一化")]
+    public void NormalizeCulture()
+    {
+        // 精确名称原样返回
+        Assert.Equal("de-DE", CubeLocalization.NormalizeCulture("de-DE"));
+        Assert.Equal("en-US", CubeLocalization.NormalizeCulture("en-us"));
+
+        // 裸语言码与非支持区域映射到受支持的区域语言
+        Assert.Equal("en-US", CubeLocalization.NormalizeCulture("en"));
+        Assert.Equal("ja-JP", CubeLocalization.NormalizeCulture("ja"));
+        Assert.Equal("de-DE", CubeLocalization.NormalizeCulture("de-AT"));
+        Assert.Equal("zh-CN", CubeLocalization.NormalizeCulture("zh"));
+        Assert.Equal("pt-BR", CubeLocalization.NormalizeCulture("pt-PT"));
+
+        // 带权重的请求头
+        Assert.Equal("fr-FR", CubeLocalization.NormalizeCulture("fr-CA;q=0.9"));
+
+        // 不支持的语言与空值
+        Assert.Null(CubeLocalization.NormalizeCulture("sw-KE"));
+        Assert.Null(CubeLocalization.NormalizeCulture(""));
+        Assert.Null(CubeLocalization.NormalizeCulture(null));
     }
 
     [Fact(DisplayName = "多语言 - 新增公共消息覆盖全部语言")]

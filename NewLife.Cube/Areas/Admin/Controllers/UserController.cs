@@ -367,9 +367,9 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
     {
         var res = new TokenModel();
         if (String.IsNullOrWhiteSpace(model.Username))
-            return res.ToFailApiResponse("用户名不能为空");
+            return res.ToFailApiResponse(L.T("Username is required."));
         if (String.IsNullOrWhiteSpace(model.Password))
-            return res.ToFailApiResponse("密码不能为空");
+            return res.ToFailApiResponse(L.T("Password is required."));
 
         try
         {
@@ -379,7 +379,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
 
             res.AccessToken = loginResult.Data.AccessToken;
             res.RefreshToken = loginResult.Data.RefreshToken;
-            return res.ToOkApiResponse("登录成功");
+            return res.ToOkApiResponse(L.T("Login succeeded."));
 
         }
         catch (Exception ex)
@@ -803,11 +803,11 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         {
             var ip = UserHost;
             var result = await verifyCode.SendVerifyCode(model, ip);
-            return result.Id.ToOkApiResponse("验证码已发送");
+            return result.Id.ToOkApiResponse(L.T("Verification code sent."));
         }
         catch (Exception ex)
         {
-            return 0L.ToRemotingErrorApiResponse("发送失败：" + ex.Message);
+            return 0L.ToRemotingErrorApiResponse(L.T("Send failed: {0}", ex.Message));
         }
     }
 

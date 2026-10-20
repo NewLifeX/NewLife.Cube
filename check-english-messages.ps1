@@ -26,9 +26,23 @@ if ($dirs.Count -eq 0) { throw "未找到待检查目录：$($Dir -join ', ')" }
 
 $hits = @()
 
-foreach ($dir in $dirs) {
-    foreach ($file in Get-ChildItem $dir -Recurse -Filter *.cs) {
-        $rel = if ($file.FullName.StartsWith($Root, [StringComparison]::OrdinalIgnoreCase)) {
+# NewLife.Cube 通过 <Compile Include="..\NewLife.CubeNC\..."> 链接共享源码，
+# 这些文件编译进 API 版程序集，运行时消息同样必须使用英文源文（2026-10-20）
+$scanFiles = @()
+foreach ($dir in $dirs) { $scanFiles += Get-ChildItem $dir -Recurse -Filter *.cs }
+$linkProject = Join-Path $Root "NewLife.Cube\NewLife.Cube.csproj"
+if (Test-Path $linkProject) {
+    $csproj = [IO.File]::ReadAllText($linkProject)
+    $linkRoot = Join-Path $Root "NewLife.CubeNC"
+    foreach ($m in [regex]::Matches($csproj, 'Include="\.\.\\NewLife\.CubeNC\\([^"]+)"')) {
+        $linked = Join-Path $linkRoot $m.Groups[1].Value.Replace('\', '/')
+        if (Test-Path $linked) { $scanFiles += Get-Item $linked }
+    }
+}
+$scanFiles = $scanFiles | Sort-Object FullName -Unique
+
+foreach ($file in $scanFiles) {
+    $rel = if ($file.FullName.StartsWith($Root, [StringComparison]::OrdinalIgnoreCase)) {
             $file.FullName.Substring($Root.Length).TrimStart("\", "/")
         }
         else { $file.FullName }
@@ -56,11 +70,13 @@ foreach ($dir in $dirs) {
             $code = $line -replace "//.*$", ""
             # 特性参数（Description/DisplayName/Obsolete/RequiresXxx/Justification 等）属元数据，不在本检查范围
             if ($code -match "^\s*\[") { continue }
+            # 共享源码（CubeNC）的服务端日志暂保留中文模板，属待迁移存量（见 Doc/功能清单.md）；
+            # 本检查对共享文件只约束用户可见消息（异常/接口响应），避免存量日志噪声淹没新问题
+            if ($rel -like "NewLife.CubeNC\*" -and $code -match "XTrace\.|WriteLog\(|AppendTag\(|Log\.(Write|Error|Info|Debug|Warn|Fatal)") { continue }
             if ($code -match $MessageCall -and $code -match "[\u4e00-\u9fa5]") {
                 $hits += [pscustomobject]@{ File = $rel; Line = $i + 1; Text = $code }
             }
         }
-    }
 }
 
 if ($Csv) {

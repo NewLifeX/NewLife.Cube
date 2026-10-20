@@ -151,7 +151,7 @@ public static class ExternalAuthHelper
             if (dirty) user.Update();
         }
 
-        if (!user.Enable) throw new InvalidOperationException($"用户[{user.Name}]已禁用");
+        if (!user.Enable) throw new InvalidOperationException(L.T("User [{0}] is disabled.", user.Name));
 
         return user;
     }

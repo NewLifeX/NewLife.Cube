@@ -25,7 +25,7 @@ public class TokenService
     private static String[] ParseSecret(String secret)
     {
         var ss = secret.Split(':');
-        if (ss.Length != 2) throw new ArgumentException($"非法密钥[{secret}]，应为“算法:密钥”格式");
+        if (ss.Length != 2) throw new ArgumentException(L.T("Invalid JwtSecret [{0}]; expected format is 'algorithm:key'.", secret));
 
         return ss;
     }
@@ -53,11 +53,11 @@ public class TokenService
 
         // 检查黑白名单
         if (!app.ValidSource(ip))
-            throw new ApiException(403, $"应用[{username}]禁止{ip}访问！");
+            throw new ApiException(403, L.T("Application [{0}] is not allowed to access from {1}.", username, ip));
 
         // 检查应用有效性
-        if (!app.Enable) throw new ApiException(403, $"应用[{username}]已禁用！");
-        if (!app.Secret.IsNullOrEmpty() && password != app.Secret) throw new ApiException(401, $"非法访问应用[{username}]！");
+        if (!app.Enable) throw new ApiException(403, L.T("Application [{0}] is unavailable.", username));
+        if (!app.Secret.IsNullOrEmpty() && password != app.Secret) throw new ApiException(401, L.T("Invalid application secret."));
 
         return app;
     }
@@ -145,7 +145,7 @@ public class TokenService
         };
 
         Exception ex = null;
-        if (!jwt.TryDecode(token, out var message)) ex = new ApiException(403, $"[{jwt.Subject}]非法访问 {message}");
+        if (!jwt.TryDecode(token, out var message)) ex = new ApiException(403, L.T("Invalid access to [{0}]: {1}", jwt.Subject, message));
 
         return (jwt, ex);
     }
@@ -165,12 +165,12 @@ public class TokenService
             Algorithm = ss[0],
             Secret = ss[1],
         };
-        if (!jwt.TryDecode(token, out var message)) throw new ApiException(403, $"非法访问[{jwt.Subject}]，{message}");
+        if (!jwt.TryDecode(token, out var message)) throw new ApiException(403, L.T("Invalid access to [{0}]: {1}", jwt.Subject, message));
 
         // 验证应用
         var app = FindByName(jwt.Subject)
-            ?? throw new ApiException(403, $"无效应用[{jwt.Subject}]");
-        if (!app.Enable) throw new ApiException(403, $"已停用应用[{jwt.Subject}]");
+            ?? throw new ApiException(403, L.T("Invalid application [{0}].", jwt.Subject));
+        if (!app.Enable) throw new ApiException(403, L.T("Application [{0}] is unavailable.", jwt.Subject));
 
         return (jwt, app);
     }
@@ -192,11 +192,11 @@ public class TokenService
         };
 
         Exception ex = null;
-        if (!jwt.TryDecode(token, out var message)) ex = new ApiException(403, $"非法访问 {message}");
+        if (!jwt.TryDecode(token, out var message)) ex = new ApiException(403, L.T("Invalid access to [{0}]: {1}", jwt.Subject, message));
 
         // 验证应用
         var app = FindByName(jwt.Subject);
-        if ((app == null || !app.Enable) && ex == null) ex = new ApiException(401, $"无效应用[{jwt.Subject}]");
+        if ((app == null || !app.Enable) && ex == null) ex = new ApiException(401, L.T("Invalid application [{0}].", jwt.Subject));
 
         return (app, ex);
     }

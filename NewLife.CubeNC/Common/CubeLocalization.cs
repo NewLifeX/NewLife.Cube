@@ -37,6 +37,41 @@ public static class CubeLocalization
     /// <returns>本地化文本；缺少翻译或格式化失败时回退英文</returns>
     public static String T(String template, params Object?[]? args) => Localization.Translate(template, args);
 
+    /// <summary>归一化语言名称。把 en、de-AT 等未列入支持列表的语言映射到最接近的受支持区域语言</summary>
+    /// <param name="name">语言名称，可带 Accept-Language 权重（如 en-US,en;q=0.9）</param>
+    /// <returns>受支持的语言名称；无法匹配时返回 null</returns>
+    /// <remarks>
+    /// 请求头与查询串常用裸语言码（en、ja）或非支持区域（de-AT），
+    /// 而支持列表是区域语言（en-US、ja-JP、de-DE），直接匹配会失败并回退宿主语言。
+    /// </remarks>
+    public static String? NormalizeCulture(String? name)
+    {
+        if (name.IsNullOrWhiteSpace()) return null;
+
+        // 取首个候选并去掉权重
+        var first = name.Split(',')[0].Trim();
+        var p = first.IndexOf(';');
+        if (p > 0) first = first[..p].Trim();
+        if (first.IsNullOrEmpty()) return null;
+
+        // 精确匹配
+        foreach (var item in SupportedCultures)
+        {
+            if (item.EqualIgnoreCase(first)) return item;
+        }
+
+        // 语言前缀匹配：en → en-US，de-AT → de-DE，zh → zh-CN
+        var lang = first;
+        var dash = first.IndexOf('-');
+        if (dash > 0) lang = first[..dash];
+        foreach (var item in SupportedCultures)
+        {
+            if (item.StartsWith(lang + "-", StringComparison.OrdinalIgnoreCase)) return item;
+        }
+
+        return null;
+    }
+
     /// <summary>注册请求级语言识别</summary>
     /// <param name="services">服务集合</param>
     /// <returns>服务集合</returns>
@@ -69,9 +104,9 @@ public static class CubeLocalization
 
             options.RequestCultureProviders =
             [
-                new QueryStringRequestCultureProvider { QueryStringKey = "lang", UIQueryStringKey = "lang" },
-                new CookieRequestCultureProvider { CookieName = ".AspNet.Culture" },
-                new AcceptLanguageHeaderRequestCultureProvider(),
+                new NormalizedQueryStringRequestCultureProvider { QueryStringKey = "lang", UIQueryStringKey = "lang" },
+                new NormalizedCookieRequestCultureProvider { CookieName = ".AspNet.Culture" },
+                new NormalizedAcceptLanguageHeaderRequestCultureProvider(),
             ];
         });
 
@@ -108,4 +143,73 @@ public static class CubeLocalization
         return app.UseRequestLocalization();
     }
     #endregion
+
+    #region 语言来源
+    /// <summary>把语言来源的结果归一化到受支持语言</summary>
+    /// <param name="result">原始结果</param>
+    /// <returns>归一化后的结果；候选都不受支持时返回 null</returns>
+    internal static ProviderCultureResult? Normalize(ProviderCultureResult? result)
+    {
+        if (result == null) return null;
+
+        var name = FindSupported(result.UICultures) ?? FindSupported(result.Cultures);
+        return name == null ? null : new ProviderCultureResult(name);
+    }
+
+    private static String? FindSupported(System.Collections.IEnumerable? names)
+    {
+        if (names == null) return null;
+
+        foreach (var item in names)
+        {
+            var name = NormalizeCulture(item?.ToString());
+            if (name != null) return name;
+        }
+
+        return null;
+    }
+    #endregion
+}
+
+/// <summary>归一化查询串语言来源。支持 ?lang=en 这类裸语言码</summary>
+internal class NormalizedQueryStringRequestCultureProvider : QueryStringRequestCultureProvider
+{
+    /// <summary>读取查询串语言</summary>
+    /// <param name="httpContext">HTTP 上下文</param>
+    /// <returns>语言结果</returns>
+    public override async Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext)
+        => CubeLocalization.Normalize(await base.DetermineProviderCultureResult(httpContext));
+}
+
+/// <summary>归一化 Cookie 语言来源。支持区域语言写入的 Cookie 值</summary>
+internal class NormalizedCookieRequestCultureProvider : CookieRequestCultureProvider
+{
+    /// <summary>读取 Cookie 语言</summary>
+    /// <param name="httpContext">HTTP 上下文</param>
+    /// <returns>语言结果</returns>
+    public override async Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext)
+        => CubeLocalization.Normalize(await base.DetermineProviderCultureResult(httpContext));
+}
+
+/// <summary>归一化 Accept-Language 语言来源。支持 en、de-AT 等非支持列表中的语言</summary>
+internal class NormalizedAcceptLanguageHeaderRequestCultureProvider : RequestCultureProvider
+{
+    /// <summary>读取请求头语言。按客户端偏好顺序取首个受支持语言</summary>
+    /// <param name="httpContext">HTTP 上下文</param>
+    /// <returns>语言结果</returns>
+    public override Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext)
+    {
+        foreach (var header in httpContext.Request.Headers.AcceptLanguage)
+        {
+            if (header.IsNullOrEmpty()) continue;
+
+            foreach (var item in header.Split(','))
+            {
+                var name = CubeLocalization.NormalizeCulture(item);
+                if (name != null) return Task.FromResult<ProviderCultureResult?>(new ProviderCultureResult(name));
+            }
+        }
+
+        return Task.FromResult<ProviderCultureResult?>(null);
+    }
 }

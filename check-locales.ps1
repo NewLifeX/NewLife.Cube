@@ -139,6 +139,19 @@ if (!$SkipOrphan) {
         Where-Object { $_.FullName -notmatch '\\(obj|bin|Locales)\\' } |
         ForEach-Object { [IO.File]::ReadAllText($_.FullName) }) -join "`n"
 
+    # NewLife.Cube 通过 <Compile Include="..\NewLife.CubeNC\..."> 链接共享源码，
+    # 其中的 L.T 调用同样会命中词表；孤儿键检测必须把这些文件算进来（2026-10-20）
+    $linkProject = Join-Path $root "NewLife.Cube\NewLife.Cube.csproj"
+    if (Test-Path $linkProject) {
+        $csproj = [IO.File]::ReadAllText($linkProject)
+        $linkRoot = Join-Path $root "NewLife.CubeNC"
+        $linkedText = [regex]::Matches($csproj, 'Include="\.\.\\NewLife\.CubeNC\\([^"]+)"') |
+            ForEach-Object { Join-Path $linkRoot ($_.Groups[1].Value.Replace('\', '/')) } |
+            Where-Object { Test-Path $_ } |
+            ForEach-Object { [IO.File]::ReadAllText($_) }
+        if ($linkedText) { $sourceText += "`n" + ($linkedText -join "`n") }
+    }
+
     foreach ($key in $reference.Entries.Keys) {
         # 源码中的字面量形式：制表符写作 \t，引号写作 \"
         $escaped = $key.Replace('\', '\\').Replace('"', '\"').Replace("`t", '\t').Replace("`r", '\r').Replace("`n", '\n')

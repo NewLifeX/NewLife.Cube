@@ -19,7 +19,7 @@ namespace NewLife.Cube;
 public static class ManagerProviderHelper
 {
     /// <summary>登录失败统一文案。与 UserService.LoginByPassword 的用户名校验失败文案保持一致，避免泄露用户/租户存在性</summary>
-    private const String LoginFailedMessage = "提供的用户名或密码不正确。";
+    private static String LoginFailedMessage => L.T("Incorrect username or password!");
 
     /// <summary>租户校验失败标记（HttpContext.Items 键）。标识"已认证但租户不匹配"（授权失败，应返回 403），
     /// 与"未认证（凭证缺失/无效，应返回 401）"区分，避免客户端把租户拒绝误判为凭证过期而触发无意义的刷新/重登</summary>
@@ -554,7 +554,7 @@ public static class ManagerProviderHelper
 
         // 生成令牌
         var ss = set.JwtSecret?.Split(':');
-        if (ss == null || ss.Length < 2) throw new InvalidOperationException("未设置JWT算法和密钥");
+        if (ss == null || ss.Length < 2) throw new InvalidOperationException(L.T("JWT algorithm and secret are not configured."));
 
         var jwt = new JwtBuilder
         {
@@ -692,7 +692,7 @@ public static class ManagerProviderHelper
     {
         var set = CubeSetting.Current;
         var result = DecodeRefreshToken(refresh_token, out var username, out var expire);
-        if (!result) throw new Exception($"刷新令牌异常：{refresh_token}");
+        if (!result) throw new Exception(L.T("Failed to refresh the token: {0}", refresh_token));
 
         // 吊销旧令牌，实现令牌旋转
         var oldUt = UserToken.FindByToken(refresh_token);
@@ -798,7 +798,7 @@ public static class ManagerProviderHelper
 
         jwt = null;
         XTrace.WriteLine("令牌格式错误：{0}", token);
-        throw new Exception("非法访问令牌");
+        throw new Exception(L.T("Invalid access token."));
     }
 
     /// <summary>保存用户信息到Cookie</summary>
