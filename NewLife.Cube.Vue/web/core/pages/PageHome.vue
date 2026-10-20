@@ -238,7 +238,7 @@ onUnmounted(stopMonitorPolling);
     radial-gradient(circle at 92% 18%, rgb(255 255 255 / 20%) 0, transparent 42%),
     linear-gradient(120deg, var(--el-color-primary) 0%, var(--el-color-primary-light-3) 100%);
   color: var(--el-color-white);
-  box-shadow: 0 8px 22px rgb(0 0 0 / 8%);
+  box-shadow: var(--el-box-shadow-light);
 
   h1 {
     margin: 0 0 6px;
@@ -300,7 +300,7 @@ onUnmounted(stopMonitorPolling);
 
   &:hover:not(:disabled) {
     border-color: var(--wb-kpi-color);
-    box-shadow: 0 6px 16px rgb(0 0 0 / 8%);
+    box-shadow: var(--el-box-shadow-light);
     transform: translateY(-1px);
   }
 
@@ -356,7 +356,7 @@ onUnmounted(stopMonitorPolling);
 }
 
 .wb-kpi-cyan {
-  --wb-kpi-color: #13c2c2;
+  --wb-kpi-color: color-mix(in srgb, var(--el-color-success) 55%, var(--el-color-primary));
 }
 
 .wb-kpi-orange {
@@ -368,7 +368,7 @@ onUnmounted(stopMonitorPolling);
 }
 
 .wb-kpi-purple {
-  --wb-kpi-color: #722ed1;
+  --wb-kpi-color: color-mix(in srgb, var(--el-color-primary) 55%, var(--el-color-danger));
 }
 
 .wb-kpi-grey {
