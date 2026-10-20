@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
@@ -8,7 +8,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>访问规则</summary>
-[DisplayName("访问规则")]
+[DisplayName("Access rules")]
 [AdminArea]
 [Menu(0, false, Icon = "Star")]
 public class AccessRuleController : EntityController<AccessRule, AccessRuleModel>

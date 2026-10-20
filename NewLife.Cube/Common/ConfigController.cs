@@ -45,7 +45,7 @@ public class ConfigController<TConfig> : ObjectController<TConfig>, IFormAiConte
     /// <returns>本地化后的字段集合</returns>
     [AllowAnonymous]
     [HttpGet]
-    public override IList<DataField> GetFields(ViewKinds kind) => ConfigFieldLocalizer.Localize(base.GetFields(kind));
+    public override IList<DataField> GetFields(ViewKinds kind) => DataField.Localize(base.GetFields(kind));
 
     /// <summary>获取当前配置表单的字段结构（含当前值与敏感过滤），供 AI 生成填表值</summary>
     /// <param name="mode">表单模式：add 新增 / edit 编辑，默认 edit（配置页恒为编辑既有配置）</param>
@@ -55,12 +55,12 @@ public class ConfigController<TConfig> : ObjectController<TConfig>, IFormAiConte
     {
         var set = Config<TConfig>.Current;
         var fields = new List<AiFormField>();
-        foreach (var fi in ConfigFieldLocalizer.Localize(GetMembers(typeof(TConfig))))
+        foreach (var fi in DataField.Localize(GetMembers(typeof(TConfig))))
         {
             // 敏感字段不向 AI 暴露（ApiKey/Secret/Token/连接串等）
             if (AiFormHelper.IsSensitiveField(fi.Name)) continue;
 
-            // GetMembers 把 [Description] 合并进了 DisplayName；配置字段本地化后 Description 已就位，CanWrite 判断只读
+            // 配置字段本地化后 DisplayName/Description 已就位，CanWrite 判断只读
             var pi = typeof(TConfig).GetProperty(fi.Name);
             var field = new AiFormField
             {

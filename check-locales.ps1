@@ -2,13 +2,13 @@
 # 以基准语言文件（默认 zh-Hans.yml）为准，所有语言必须提供完全相同的键集合
 #
 # 用法：
-#   pwsh -File check-locales.ps1                                      # Core 默认目录
-#   pwsh -File check-locales.ps1 -LocaleDir src\Lib\Locales -SourceDir src\Lib
-#   pwsh -File check-locales.ps1 -LocaleDir src\Lib\Locales -SkipOrphan   # 下游只想校验词表内部一致性
+#   pwsh -File check-locales.ps1                                      # 魔方默认目录（NewLife.Cube + NewLife.CubeNC）
+#   pwsh -File check-locales.ps1 -LocaleDir NewLife.Cube\Locales -SourceDir NewLife.Cube,NewLife.CubeNC
+#   pwsh -File check-locales.ps1 -LocaleDir NewLife.Cube\Locales -SkipOrphan   # 下游只想校验词表内部一致性
 param(
-    [String]$LocaleDir = "NewLife.Core\Locales",
+    [String]$LocaleDir = "NewLife.Cube\Locales",
     [String]$Baseline = "zh-Hans.yml",
-    [String[]]$SourceDir = @("NewLife.Core", "NewLife.Core.SourceGenerator"),
+    [String[]]$SourceDir = @("NewLife.Cube", "NewLife.CubeNC"),
     [Switch]$SkipOrphan
 )
 
@@ -135,7 +135,8 @@ if (!$SkipOrphan) {
         if ([IO.Path]::IsPathRooted($_)) { $_ } else { Join-Path $root $_ }
     } | Where-Object { Test-Path $_ })
 
-    $sourceText = ($sourceDirs | ForEach-Object { Get-ChildItem $_ -Recurse -Filter *.cs } |
+    # 视图里的 L.T("...") 同样会命中词表，孤儿键检测必须把 .cshtml 也算进来（2026-10-20）
+    $sourceText = ($sourceDirs | ForEach-Object { Get-ChildItem $_ -Recurse -File | Where-Object { $_.Extension -in '.cs', '.cshtml' } } |
         Where-Object { $_.FullName -notmatch '\\(obj|bin|Locales)\\' } |
         ForEach-Object { [IO.File]::ReadAllText($_.FullName) }) -join "`n"
 

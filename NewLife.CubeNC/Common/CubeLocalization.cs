@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+using System.Collections;
+using System.Globalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,22 +15,39 @@ namespace NewLife.Cube;
 public static class CubeLocalization
 {
     #region 属性
-    /// <summary>支持的语言。前三位固定为简体中文、繁体中文、英文，其余与 Locales 词表集对齐</summary>
-    public static String[] SupportedCultures { get; } =
-    [
-        "zh-CN", "zh-TW", "en-US",
-        "es-ES", "de-DE", "ja-JP", "fr-FR", "pt-BR", "ru-RU", "ko-KR", "ar-SA",
-        "bn-BD", "cs-CZ", "da-DK", "el-GR", "fa-IR", "fi-FI", "he-IL", "hi-IN", "hu-HU",
-        "id-ID", "it-IT", "ms-MY", "nb-NO", "nl-NL", "pl-PL", "ro-RO", "sv-SE", "th-TH",
-        "tr-TR", "uk-UA", "vi-VN",
-    ];
+    /// <summary>支持的语言。直接取 Core 语言清单，与 Locales 词表集保持一致</summary>
+    /// <remarks>魔方 Locales 覆盖 Core 内置语言；Core 新增语言时若魔方缺少词表，界面回退英文源文。</remarks>
+    public static String[] SupportedCultures => Localization.SupportedCultures;
     #endregion
 
     #region 方法
+    /// <summary>获取基本设置中的界面语言</summary>
+    /// <returns>配置的语言名称；未配置时返回空</returns>
+    /// <remarks>语言统一由 NewLife.Setting.Language 控制，魔方不再单独维护语言配置。</remarks>
+    public static String GetConfiguredLanguage() => NewLife.Setting.Current?.Language;
+
     /// <summary>翻译指定文本</summary>
     /// <param name="template">英文原文模板</param>
     /// <returns>本地化文本；缺少翻译时返回原文</returns>
     public static String T(String template) => Localization.Translate(template);
+
+    /// <summary>获取语言选项，供基本设置等页面的语言下拉框绑定</summary>
+    /// <returns>语言键到显示名称的映射，空键表示自动跟随系统/浏览器</returns>
+    /// <remarks>清单与显示名称来自 Core 的 <see cref="Localization.GetLanguageOptions"/>，含运行时注册的语言，名称随界面语言本地化。</remarks>
+    public static IDictionary GetLanguageOptions()
+    {
+        var dic = new Dictionary<String, String>
+        {
+            [""] = T("Auto (follow system)"),
+        };
+
+        foreach (var item in Localization.GetLanguageOptions())
+        {
+            if (!item.Key.IsNullOrEmpty()) dic[item.Key] = item.Value;
+        }
+
+        return dic;
+    }
 
     /// <summary>翻译并格式化指定文本</summary>
     /// <param name="template">英文原文模板</param>
@@ -41,36 +59,10 @@ public static class CubeLocalization
     /// <param name="name">语言名称，可带 Accept-Language 权重（如 en-US,en;q=0.9）</param>
     /// <returns>受支持的语言名称；无法匹配时返回 null</returns>
     /// <remarks>
-    /// 请求头与查询串常用裸语言码（en、ja）或非支持区域（de-AT），
-    /// 而支持列表是区域语言（en-US、ja-JP、de-DE），直接匹配会失败并回退宿主语言。
+    /// 请求头与查询串常用裸语言码（en、ja）、非支持区域（de-AT）或旧版别名（in、iw、no、mo），
+    /// 统一交给 Core 的 <see cref="Localization.NormalizeCulture"/> 归一化。
     /// </remarks>
-    public static String? NormalizeCulture(String? name)
-    {
-        if (name.IsNullOrWhiteSpace()) return null;
-
-        // 取首个候选并去掉权重
-        var first = name.Split(',')[0].Trim();
-        var p = first.IndexOf(';');
-        if (p > 0) first = first[..p].Trim();
-        if (first.IsNullOrEmpty()) return null;
-
-        // 精确匹配
-        foreach (var item in SupportedCultures)
-        {
-            if (item.EqualIgnoreCase(first)) return item;
-        }
-
-        // 语言前缀匹配：en → en-US，de-AT → de-DE，zh → zh-CN
-        var lang = first;
-        var dash = first.IndexOf('-');
-        if (dash > 0) lang = first[..dash];
-        foreach (var item in SupportedCultures)
-        {
-            if (item.StartsWith(lang + "-", StringComparison.OrdinalIgnoreCase)) return item;
-        }
-
-        return null;
-    }
+    public static String? NormalizeCulture(String? name) => Localization.NormalizeCulture(name);
 
     /// <summary>注册请求级语言识别</summary>
     /// <param name="services">服务集合</param>
@@ -92,15 +84,9 @@ public static class CubeLocalization
             options.SupportedCultures = cultures;
             options.SupportedUICultures = cultures;
 
-            var language = CubeSetting.Current?.Language;
-            if (!language.IsNullOrWhiteSpace())
-            {
-                try
-                {
-                    options.SetDefaultCulture(language);
-                }
-                catch (CultureNotFoundException) { }
-            }
+            // 指定受支持语言时作为默认语言，请求阶段由 UseCubeLocalization 强制覆盖
+            var language = NormalizeCulture(GetConfiguredLanguage());
+            if (language != null) options.SetDefaultCulture(language);
 
             options.RequestCultureProviders =
             [
@@ -122,25 +108,35 @@ public static class CubeLocalization
     /// </remarks>
     public static IApplicationBuilder UseCubeLocalization(this IApplicationBuilder app)
     {
-        Localization.Culture = null;
-
         // 服务端日志与配置注释使用宿主语言，避免同一日志文件随请求语言混杂。
-        // 显式配置 CubeSetting.Language 时优先使用，否则固定为启动时的系统语言。
-        var language = CubeSetting.Current?.Language;
-        if (!language.IsNullOrWhiteSpace())
-        {
-            try
-            {
-                Localization.LogCulture = new CultureInfo(language);
-            }
-            catch (CultureNotFoundException) { }
-        }
-        else
-        {
-            Localization.LogCulture = CultureInfo.CurrentUICulture;
-        }
+        // 指定受支持的 NewLife.Setting.Language 时，界面与日志同时强制使用该语言。
+        var autoLog = CultureInfo.CurrentUICulture;
+        Localization.SetLanguage(NormalizeCulture(GetConfiguredLanguage()));
+        Localization.LogCulture ??= autoLog;
 
-        return app.UseRequestLocalization();
+        app.UseRequestLocalization();
+
+        // 强制语言在请求级再次生效，运行期修改设置后无需重启。
+        // 未强制时交还给请求语言来源（?lang → Cookie → Accept-Language）。
+        return app.Use((context, next) =>
+        {
+            var forced = NormalizeCulture(GetConfiguredLanguage());
+            if (forced != null)
+            {
+                var culture = new CultureInfo(forced);
+                CultureInfo.CurrentCulture = culture;
+                CultureInfo.CurrentUICulture = culture;
+            }
+
+            // 运行期由强制切换为自动时清除进程级语言，恢复请求语言与启动时的日志语言
+            if (forced != Localization.ForcedLanguage)
+            {
+                Localization.SetLanguage(forced);
+                if (forced == null) Localization.LogCulture = autoLog;
+            }
+
+            return next();
+        });
     }
     #endregion
 

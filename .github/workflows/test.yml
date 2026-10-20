@@ -331,8 +331,7 @@ jobs:
         $failed = $false
         Get-ChildItem -Path . -Recurse -Directory -Filter Locales | ForEach-Object {
           if (Test-Path (Join-Path $_.FullName 'zh-Hans.yml')) {
-            $src = Split-Path $_.FullName -Parent
-            pwsh -File ./check-locales.ps1 -LocaleDir $_.FullName -Baseline zh-Hans.yml -SourceDir $src
+            pwsh -File ./check-locales.ps1 -LocaleDir $_.FullName -Baseline zh-Hans.yml
             if ($LASTEXITCODE -ne 0) { $failed = $true }
           }
         }

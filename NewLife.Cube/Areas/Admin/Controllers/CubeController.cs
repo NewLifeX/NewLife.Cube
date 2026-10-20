@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.AI;
@@ -9,7 +9,7 @@ using NewLife.Serialization;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>系统设置控制器</summary>
-[DisplayName("魔方设置")]
+[DisplayName("Cube settings")]
 [AdminArea]
 [Menu(30, true, Icon = "Tools")]
 public class CubeController : ConfigController<CubeSetting>, IPageDataContext

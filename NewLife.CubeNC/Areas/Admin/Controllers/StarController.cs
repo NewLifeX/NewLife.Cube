@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Stardust;
 using XCode.Membership;
@@ -6,7 +6,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>设置控制器</summary>
-[DisplayName("星尘设置")]
+[DisplayName("Stardust settings")]
 [AdminArea]
 [Menu(0, false, Icon = "fa-bomb")]
 public class StarController : ConfigController<StarSetting>
