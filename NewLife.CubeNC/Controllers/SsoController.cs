@@ -195,7 +195,7 @@ public class SsoController : ControllerBaseX
 
                 if (client.AccessToken.IsNullOrEmpty() && client.OpenID.IsNullOrEmpty() && client.UserID == 0 && client.UserName.IsNullOrEmpty())
                 {
-                    XTrace.WriteLine("[{2}]拿不到访问令牌，自动重跳SSO重新授权 code={0} state={1}", code, state, id);
+                    XTrace.WriteLine(L.TLog("[{2}] no access token, redirecting to SSO again code={0} state={1}", code, state, id));
                     XTrace.WriteLine(Request.GetRawUrl() + "");
                     if (!html.IsNullOrEmpty()) XTrace.WriteLine(html);
 
@@ -277,7 +277,7 @@ public class SsoController : ControllerBaseX
             {
                 if (!_clientService.IsSafeDomain(url, set.SsoSafeDomains))
                 {
-                    XTrace.WriteLine("[安全] SSO Token 颁发被拦截，跨域目标不在 SsoSafeDomains 白名单: {0}", url);
+                    XTrace.WriteLine(L.TLog("[Security] SSO token issuance blocked, cross-domain target is not in the SsoSafeDomains whitelist: {0}", url));
                     url = _clientService.SuccessUrl;
                 }
                 else
@@ -304,7 +304,7 @@ public class SsoController : ControllerBaseX
         catch (InvalidOperationException ex) when (OAuthHelper.IsCodeExpired(ex))
         {
             // 授权码已过期或无效（如停留在SSO登录页过久），自动重跳SSO重新授权，避免用户看到错误页
-            XTrace.WriteLine("[{0}]授权码已过期，自动重跳SSO重新授权 code={1} state={2} {3}", id, code, state, ex.Message);
+            XTrace.WriteLine(L.TLog("[{0}] authorization code expired, redirecting to SSO again code={1} state={2} {3}", id, code, state, ex.Message));
             XTrace.WriteLine(Request.GetRawUrl() + "");
 
             log.Success = false;

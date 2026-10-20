@@ -28,7 +28,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
     #endregion
 
     #region 构造
-    static EntityAuthorizeAttribute() => XTrace.WriteLine("注册过滤器：{0}", typeof(EntityAuthorizeAttribute).FullName);
+    static EntityAuthorizeAttribute() => XTrace.WriteLine(L.TLog("Register filter: {0}", typeof(EntityAuthorizeAttribute).FullName));
 
     /// <summary>实例化实体授权特性</summary>
     public EntityAuthorizeAttribute() { }
@@ -110,12 +110,12 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
             if (user is IUser user2) return user2.Has(menu, Permission);
 
             var msg = $"访问资源[{menu}]时无法验证用户[{user}]的权限";
-            LogProvider.Provider.WriteLog("访问", "拒绝", false, msg, ip: ctx.GetUserHost());
+            LogProvider.Provider.WriteLog(L.TLog("Access"), L.TLog("Deny"), false, msg, ip: ctx.GetUserHost());
             DefaultSpan.Current?.AppendTag(msg);
         }
         else
         {
-            LogProvider.Provider.WriteLog("访问", "拒绝", false, "无法找到菜单", ip: ctx.GetUserHost());
+            LogProvider.Provider.WriteLog(L.TLog("Access"), L.TLog("Deny"), false, L.TLog("Cannot find the menu"), ip: ctx.GetUserHost());
         }
 
         return false;
@@ -162,7 +162,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
 
         var res = $"[{ctrl.ControllerName}/{act.ActionName}]";
         var msg = $"{user}访问资源 {res} 需要 {permission.GetDescription()} 权限";
-        LogProvider.Provider.WriteLog("访问", "拒绝", false, msg, ip: ctx.GetUserHost());
+        LogProvider.Provider.WriteLog(L.TLog("Access"), L.TLog("Deny"), false, msg, ip: ctx.GetUserHost());
         DefaultSpan.Current?.AppendTag(msg);
 
         if (filterContext.HttpContext.Request.IsAjaxRequest())
@@ -217,7 +217,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
             if (CreateMenu(type)) menu = mf.FindByFullName(fullName);
         }
 
-        if (menu == null) XTrace.WriteLine("设计错误！验证权限时无法找到[{0}/{1}]的菜单", type.FullName, act.ActionName);
+        if (menu == null) XTrace.WriteLine(L.TLog("Design error! Cannot find menu for [{0}/{1}] during permission check", type.FullName, act.ActionName));
 
         return menu;
     }

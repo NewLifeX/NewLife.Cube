@@ -119,7 +119,7 @@ public static class FileStorageExtensions
         // 静态门面，供 Attachment 实体与控制器访问
         AttachmentProvider.Provider = new AttachmentProvider { Storage = storage };
 
-        XTrace.WriteLine("附件存储：{0}", storage.Name);
+        XTrace.WriteLine(L.TLog("Attachment storage: {0}", storage.Name));
 
         return services;
     }

@@ -118,7 +118,7 @@ public static class ManagerProviderHelper
 
                                     provider.SaveCookie(user, expire, context);
 
-                                    XTrace.WriteLine("滑动刷新：用户[{0}]令牌有效期剩余[{1}]秒，已刷新续期至[{2}]秒", user, remaining.TotalSeconds.ToInt(), expire.TotalSeconds.ToInt());
+                                    XTrace.WriteLine(L.TLog("Sliding refresh: user [{0}] token had [{1}]s left, renewed to [{2}]s", user, remaining.TotalSeconds.ToInt(), expire.TotalSeconds.ToInt()));
                                 }
                             }
                         }
@@ -131,7 +131,7 @@ public static class ManagerProviderHelper
                     {
                         mu.SaveLogin(null);
 
-                        LogProvider.Provider.WriteLog("用户", "自动登录", true, $"{user} IssuedAt={jwt.IssuedAt.ToFullString()} Expire={jwt.Expire.ToFullString()}", user.ID, user + "", ip: context.GetUserHost());
+                        LogProvider.Provider.WriteLog(L.TLog("User"), L.TLog("Auto sign-in"), true, $"{user} IssuedAt={jwt.IssuedAt.ToFullString()} Expire={jwt.Expire.ToFullString()}", user.ID, user + "", ip: context.GetUserHost());
                     }
 #endif
                 }
@@ -146,7 +146,7 @@ public static class ManagerProviderHelper
             // 已认证但租户不匹配时 token 本身有效，返回 401 会诱导客户端无意义刷新/重登（死循环），403 语义才正确
             if (!context.ValidateTenant(user))
             {
-                XTrace.WriteLine("租户校验失败，拒绝访问：用户[{0}]没有可用的有效租户", user);
+                XTrace.WriteLine(L.TLog("Tenant check failed, access denied: user [{0}] has no valid tenant", user));
                 context.Items[TenantCheckFailedKey] = user.Name;
                 context.Items[TenantCheckFailedUserIdKey] = user.ID;
                 provider.SetCurrent(null, serviceProvider);
@@ -180,21 +180,21 @@ public static class ManagerProviderHelper
         var jwt = GetJwt();
         if (!jwt.TryDecode(token, out var msg))
         {
-            span?.AppendTag($"令牌无效：{msg}");
-            XTrace.WriteLine("令牌无效：{0}, token={1}", msg, token);
+            span?.AppendTag(L.TLog("Invalid token: {0}", msg));
+            XTrace.WriteLine(L.TLog("Invalid token: {0}, token={1}", msg, token));
 
             return (null, jwt);
         }
 
         var user = jwt.Subject;
         if (user.IsNullOrEmpty()) return (null, jwt);
-        span?.AppendTag($"账号：{user}");
+        span?.AppendTag(L.TLog("Account: {0}", user));
 
         // 判断有效期
         if (jwt.Expire < DateTime.Now)
         {
-            span?.AppendTag($"令牌过期：{jwt.Expire.ToFullString()}");
-            XTrace.WriteLine("令牌过期：{0} {1}", jwt.Expire, token);
+            span?.AppendTag(L.TLog("Token expired: {0}", jwt.Expire.ToFullString()));
+            XTrace.WriteLine(L.TLog("Token expired: {0} {1}", jwt.Expire, token));
 
             return (null, jwt);
         }
@@ -203,7 +203,7 @@ public static class ManagerProviderHelper
         if (jwt.Id.IsNullOrEmpty())
         {
             // 旧令牌可能不含 jti，写日志辅助排查，但仍放行（灰度期）
-            span?.AppendTag("令牌缺少 jti（可能是旧令牌，建议重新登录）");
+            span?.AppendTag(L.TLog("Token is missing jti (possibly an old token, please sign in again)"));
         }
         else
         {
@@ -213,8 +213,8 @@ public static class ManagerProviderHelper
                 var ut = UserToken.FindByID(utId);
                 if (ut == null || !ut.Enable)
                 {
-                    span?.AppendTag($"UserToken 已吊销：{utId}");
-                    XTrace.WriteLine("UserToken 已吊销：{0}", utId);
+                    span?.AppendTag(L.TLog("UserToken revoked: {0}", utId));
+                    XTrace.WriteLine(L.TLog("UserToken revoked: {0}", utId));
                     return (null, jwt);
                 }
             }
@@ -222,7 +222,7 @@ public static class ManagerProviderHelper
 
         var u = provider.FindByName(user);
         if (u == null || !u.Enable) return (null, jwt);
-        span?.AppendTag($"用户：{u}");
+        span?.AppendTag(L.TLog("User: {0}", u));
 
         return (u, jwt);
     }
@@ -304,7 +304,7 @@ public static class ManagerProviderHelper
             // 此处兜底 X-App-Id 未配置等中间件不解析的场景，及绕过中间件的直接调用。
             if (!resolution.IsValid)
             {
-                XTrace.WriteLine("租户校验失败：显式租户标识无效，拒绝访问：用户[{0}] resolution={1}", user, resolution.TenantId);
+                XTrace.WriteLine(L.TLog("Tenant check failed: explicit tenant id invalid, access denied: user [{0}] resolution={1}", user, resolution.TenantId));
                 context.Items[TenantCheckFailedReasonKey] = "InvalidIdentifier";
                 return false;
             }
@@ -319,7 +319,7 @@ public static class ManagerProviderHelper
             // 普通用户：必须是所带租户的成员（管理后台 tenantId=0 由 IsMember 拒绝，普通用户进不了管理后台）
             if (!TenantAccessPolicy.IsMember(resolution.TenantId, user))
             {
-                XTrace.WriteLine("租户校验失败：用户[{0}]不是租户[{1}]成员，拒绝访问", user, resolution.TenantId);
+                XTrace.WriteLine(L.TLog("Tenant check failed: user [{0}] is not a member of tenant [{1}], access denied", user, resolution.TenantId));
                 context.Items[TenantCheckFailedReasonKey] = "NotMember";
                 return false;
             }
@@ -747,7 +747,7 @@ public static class ManagerProviderHelper
                 var ut = UserToken.FindByID(utId);
                 if (ut == null || !ut.Enable)
                 {
-                    XTrace.WriteLine("UserToken 已吊销：{0}", utId);
+                    XTrace.WriteLine(L.TLog("UserToken revoked: {0}", utId));
                     return null;
                 }
             }
@@ -755,7 +755,7 @@ public static class ManagerProviderHelper
 
         // 设置登录用户
         var user = manageProvider.FindByName(username);
-        if (user == null) XTrace.WriteLine($"未查询到相关用户{username}");
+        if (user == null) XTrace.WriteLine(L.TLog("User not found: {0}", username));
 
         return user;
     }
@@ -789,7 +789,7 @@ public static class ManagerProviderHelper
 
             if (!jwt.TryDecode(token, out var msg))
             {
-                XTrace.WriteLine("令牌无效：{0}, token={1}", msg, token);
+                XTrace.WriteLine(L.TLog("Invalid token: {0}, token={1}", msg, token));
                 throw new Exception(msg);
             }
 
@@ -797,7 +797,7 @@ public static class ManagerProviderHelper
         }
 
         jwt = null;
-        XTrace.WriteLine("令牌格式错误：{0}", token);
+        XTrace.WriteLine(L.TLog("Malformed token: {0}", token));
         throw new Exception(L.T("Invalid access token."));
     }
 
@@ -995,7 +995,7 @@ public static class ManagerProviderHelper
     /// <param name="app"></param>
     public static void UseManagerProvider(this IApplicationBuilder app)
     {
-        XTrace.WriteLine("初始化ManageProvider");
+        XTrace.WriteLine(L.TLog("Initialize ManageProvider"));
 
         var provider = app.ApplicationServices;
         ManageProvider.Provider = ModelExtension.GetService<IManageProvider>(provider);

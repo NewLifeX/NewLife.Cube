@@ -151,7 +151,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
                 sb.AppendFormat("{0}:{1}=>{2}", name, v2, v1);
             }
         }
-        WriteLog("修改", true, sb.ToString());
+        WriteLog(L.TLog("Update"), true, sb.ToString());
     }
 
     private static readonly Dictionary<Type, IList<DataField>> _cache = [];

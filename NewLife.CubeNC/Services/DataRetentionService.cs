@@ -62,13 +62,13 @@ public class DataRetentionService(CubeSetting setting, ITracer tracer) : IHosted
         try
         {
             var rs = OAuthLog.DeleteBefore(time, 10000);
-            XTrace.WriteLine("删除[{0}]之前的 OAuthLog 共：{1:n0}", time.ToFullString(), rs);
+            XTrace.WriteLine(L.TLog("Deleted OAuthLog rows before [{0}]: {1:n0}", time.ToFullString(), rs));
 
             rs = AppLog.DeleteBefore(time);
-            XTrace.WriteLine("删除[{0}]之前的 AppLog 共：{1:n0}", time.ToFullString(), rs);
+            XTrace.WriteLine(L.TLog("Deleted AppLog rows before [{0}]: {1:n0}", time.ToFullString(), rs));
 
             rs = DeleteLogBefore(time);
-            XTrace.WriteLine("删除[{0}]之前的 Log 共：{1:n0}", time.ToFullString(), rs);
+            XTrace.WriteLine(L.TLog("Deleted Log rows before [{0}]: {1:n0}", time.ToFullString(), rs));
         }
         catch (Exception ex)
         {

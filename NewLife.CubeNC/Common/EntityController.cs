@@ -600,12 +600,12 @@ public partial class EntityController<TEntity, TModel>
         sw.Stop();
 
         var fact = Factory;
-        XTrace.WriteLine("[{0}]共同步数据[{1:n0}]行，耗时{2:n0}ms，数据源：{3}", fact.EntityType.FullName, list.Length, sw.ElapsedMilliseconds, url);
+        XTrace.WriteLine(L.TLog("[{0}] synchronized [{1:n0}] rows in {2:n0}ms, source: {3}", fact.EntityType.FullName, list.Length, sw.ElapsedMilliseconds, url));
 
         var arrType = fact.EntityType.MakeArrayType();
         if (list.Length > 0)
         {
-            XTrace.WriteLine("[{0}]准备覆盖写入[{1}]行数据", fact.EntityType.FullName, list.Length);
+            XTrace.WriteLine(L.TLog("[{0}] preparing to overwrite [{1}] rows", fact.EntityType.FullName, list.Length));
             using var tran = fact.Session.CreateTrans();
 
             // 清空

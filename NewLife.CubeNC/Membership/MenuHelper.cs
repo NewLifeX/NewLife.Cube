@@ -229,7 +229,7 @@ public static class MenuHelper
         {
             var task = Task.Factory.StartNew(() =>
             {
-                XTrace.WriteLine("新增了菜单，需要检查权限");
+                XTrace.WriteLine(L.TLog("New menus added, permission check required"));
                 //var fact = typeof(Role).AsFactory();
                 //fact.EntityType.Invoke("CheckRole");
                 Role.CheckRole();

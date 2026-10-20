@@ -19,7 +19,7 @@ public class DbXmlRepository : DisposeBase, IXmlRepository
     {
         if (key.IsNullOrEmpty()) throw new ArgumentNullException(nameof(key));
 
-        XTrace.WriteLine("DataProtection使用数据库持久化密钥，Key={0}", key);
+        XTrace.WriteLine(L.TLog("DataProtection persists keys in database, Key={0}", key));
 
         _key = key;
 
@@ -76,7 +76,7 @@ public class DbXmlRepository : DisposeBase, IXmlRepository
                 var expire = xml["expirationDate"].ToDateTime();
                 if (expire.Year > 2000 && expire.AddMonths(1) < DateTime.Now)
                 {
-                    LogProvider.Provider.WriteLog("DataProtection", "Remove", true, $"删除过期数据 {item.Name}");
+                    LogProvider.Provider.WriteLog("DataProtection", "Remove", true, L.TLog("Deleted expired data {0}", item.Name));
 
                     item.Delete();
                 }

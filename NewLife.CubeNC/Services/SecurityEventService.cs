@@ -91,7 +91,7 @@ public class SecurityEventService
     /// <param name="expireTime">解封时间</param>
     public void NotifyBlocked(String ip, String reason, DateTime expireTime)
     {
-        XTrace.WriteLine("安全防御封禁 {0}：{1}，解封时间 {2:yyyy-MM-dd HH:mm:ss}", ip, reason, expireTime);
+        XTrace.WriteLine(L.TLog("Security ban {0}: {1}, unban at {2:yyyy-MM-dd HH:mm:ss}", ip, reason, expireTime));
 
         NotifyOnce(BlockAlertAction, $"安全防御：封禁 {ip}", $"来源IP {ip} 因 {reason} 已被自动封禁，解封时间 {expireTime:yyyy-MM-dd HH:mm:ss}。请登录后台查看安全事件与封禁规则，必要时手动解封。", reason, false);
     }

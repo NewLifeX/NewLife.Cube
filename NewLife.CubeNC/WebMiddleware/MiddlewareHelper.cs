@@ -35,7 +35,7 @@ public static class MiddlewareHelper
         if (uri.Host.IsMatch("127.*")) return false;
 
         using var span = DefaultTracer.Instance?.NewSpan("ForceRedirect", uri + "");
-        span?.AppendTag($"规则：{set.ForceRedirect}");
+        span?.AppendTag(L.TLog("Rule: {0}", set.ForceRedirect));
 
         // 重建url
         if (u.Scheme.IsNullOrEmpty()) u.Scheme = uri.Scheme;
@@ -48,7 +48,7 @@ public static class MiddlewareHelper
             $"{u.Scheme}://{u.Host}{uri.PathAndQuery}" :
             $"{u.Scheme}://{u.Host}:{u.Port}{uri.PathAndQuery}";
 
-        span?.AppendTag($"跳转：{url}");
+        span?.AppendTag(L.TLog("Redirect: {0}", url));
 
         ctx.Response.Redirect(url);
 

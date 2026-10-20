@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.Builder;
@@ -218,23 +218,13 @@ public class LocalizationTests
         Assert.Equal("修改密码不能与原密码一致",
             Translate("zh-CN", "The new password must be different from the current password."));
     }
-
-    [Fact(DisplayName = "多语言 - 日志与审计模板保持英文")]
-    public void LogMessagesStayEnglish()
+    [Fact(DisplayName = "多语言 - 日志模板可本地化且英文为兜底")]
+    public void LogMessagesAreLocalizable()
     {
-        var keys = new[]
-        {
-            "Backup",
-            "Start importing file [{0}], size [{1:n0}] bytes, type [{2}].",
-            "User [{0}] signed in with [{1}] via [{2}].",
-        };
-
-        foreach (var culture in new[] { "zh-CN", "zh-TW", "de-DE", "ja-JP", "ar-SA" })
-        {
-            foreach (var key in keys)
-            {
-                Assert.Equal(key, Translate(culture, key));
-            }
-        }
+        // 日志模板按 L.TLog + LogCulture 翻译（IMP-3）：中文宿主保留中文，其余语言回退英文源文
+        var key = "Start importing file [{0}], size [{1:n0}] bytes, type [{2}].";
+        Assert.Equal("开始导入文件[{0}]，大小[{1:n0}]字节，类型[{2}]", Translate("zh-CN", key));
+        Assert.Equal(key, Translate("de-DE", key));
+        Assert.Equal(key, Translate("ja-JP", key));
     }
 }

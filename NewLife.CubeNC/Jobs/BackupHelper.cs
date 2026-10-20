@@ -57,7 +57,7 @@ public static class BackupHelper
         }
         catch (Exception ex)
         {
-            XTrace.WriteLine("备份文件压缩失败：{0}", ex.Message);
+            XTrace.WriteLine(L.TLog("Failed to compress backup file: {0}", ex.Message));
         }
         finally
         {
@@ -78,7 +78,7 @@ public static class BackupHelper
         {
             var zipFile = Path.ChangeExtension(bakFile, ".zip");
             var fi = new FileInfo(bakFile);
-            XTrace.WriteLine("开始压缩备份文件 {0}，大小 {1:n0} 字节", bakFile, fi.Length);
+            XTrace.WriteLine(L.TLog("Start compressing backup file {0}, size {1:n0} bytes", bakFile, fi.Length));
 
             // 如果已存在同名zip，先删除
             if (File.Exists(zipFile)) File.Delete(zipFile);
@@ -88,8 +88,8 @@ public static class BackupHelper
             archive.CreateEntryFromFile(bakFile, fi.Name, CompressionLevel.Optimal);
 
             var fi2 = new FileInfo(zipFile);
-            XTrace.WriteLine("备份压缩完成：{0}，大小 {1:n0} 字节，压缩率 {2:P1}",
-                zipFile, fi2.Length, (Double)fi2.Length / fi.Length);
+            XTrace.WriteLine(L.TLog("Backup compressed: {0}, size {1:n0} bytes, ratio {2:P1}",
+                zipFile, fi2.Length, (Double)fi2.Length / fi.Length));
 
             // 压缩成功后删除原始文件
             File.Delete(bakFile);

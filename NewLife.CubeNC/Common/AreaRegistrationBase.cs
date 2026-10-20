@@ -32,7 +32,7 @@ public class AreaBase : AreaAttribute
 
         var ns = areaType.Namespace + ".Controllers";
         var areaName = areaType.Name.TrimSuffix("Area");
-        XTrace.WriteLine("开始注册权限管理区域[{0}]，控制器命名空间[{1}]", areaName, ns);
+        XTrace.WriteLine(L.TLog("Start registering admin area [{0}], controller namespace [{1}]", areaName, ns));
 
         // 更新区域名集合
         var rs = CubeService.AreaNames?.ToList() ?? [];

@@ -124,7 +124,7 @@ public class JobService(IServiceProvider serviceProvider, ITracer tracer) : IHos
             }
             catch (Exception ex)
             {
-                WriteLog("控制", false, $"作业[{item.Name}/{item.DisplayName}]失败，{ex.Message}", item);
+                WriteLog(L.TLog("Control"), false, L.TLog("Job [{0}/{1}] failed, {2}", item.Name, item.DisplayName, ex.Message), item);
 
                 //item.Enable = false;
                 //item.Update();
@@ -242,7 +242,7 @@ internal class MyJob : IDisposable
             }
         }
 
-        JobService.WriteLog("启用", true, $"作业[{job.Name}]，定时 {job.Cron}，方法 {job.Method}", job);
+        JobService.WriteLog(L.TLog("Enable"), true, L.TLog("Job [{0}], cron {1}, method {2}", job.Name, job.Cron, job.Method), job);
 
         // 实例化定时器，原定时器销毁
         _timer.TryDispose();
@@ -260,7 +260,7 @@ internal class MyJob : IDisposable
         {
             //using var span = Tracer?.NewSpan($"job:{Job}:Stop");
 
-            JobService.WriteLog("停用", true, $"作业[{Job.Name}]", Job);
+            JobService.WriteLog(L.TLog("Disable"), true, L.TLog("Job [{0}]", Job.Name), Job);
 
             _timer.TryDispose();
             _timer = null;
@@ -324,7 +324,7 @@ internal class MyJob : IDisposable
         {
             var set = CubeSetting.Current;
             if (set.Debug)
-                JobService.WriteLog(job.Name, false, "分布式锁检查到任务正在处理中，本次跳过执行", job);
+                JobService.WriteLog(job.Name, false, L.TLog("Distributed lock shows the job is still running, skip this round"), job);
             return;
         }
 

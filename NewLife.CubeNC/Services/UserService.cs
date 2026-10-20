@@ -232,7 +232,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
             userSource.SaveAsync();
         }
 
-        LogProvider.Provider.WriteLog(typeof(User), action, true, $"用户：{username}" + (source.IsNullOrEmpty() ? "" : $" 来源：{source}"), user.ID, user + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), action, true, L.TLog("User: {0}", username) + (source.IsNullOrEmpty() ? "" : L.TLog(" (source: {0})", source)), user.ID, user + "", ip);
 
         // MFA 拦截：账密通过但用户已开启 MFA，不下发正式令牌，改为下发挂起令牌
         if (set.EnableMfa && _mfa != null && user is IUser iuser && _mfa.IsEnabled(iuser))
@@ -292,7 +292,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         // 已属于其它租户的用户不自动自建加入，防止带可猜编码的水平越权；多租户归属走显式管理动作。
         if (TenantUser.FindAllByUserId(userId).Any(e => e.Enable))
         {
-            XTrace.WriteLine("[TenantBind] 用户[{0}]已有有效租户归属，拒绝自动绑定到租户[{1}]", userId, tenantId);
+            XTrace.WriteLine(L.TLog("[TenantBind] user [{0}] already has a valid tenant, refuse to auto-bind to tenant [{1}]", userId, tenantId));
             return null;
         }
 
@@ -310,8 +310,8 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         tenantUser.Insert();
 
         // 审计：自动绑定租户（规则B），写入审计日志便于追溯自建绑定行为（P2-5）
-        XTrace.WriteLine($"[{userId}]用户自动绑定到租户[{tenantId}]");
-        LogProvider.Provider.WriteLog(typeof(TenantUser), "自动绑定", true, $"用户[{userId}]自动绑定到租户[{tenantId}]", userId, userId + "", ip);
+        XTrace.WriteLine(L.TLog("[{0}] user auto-bound to tenant [{1}]", userId, tenantId));
+        LogProvider.Provider.WriteLog(typeof(TenantUser), L.TLog("Auto bind"), true, L.TLog("User [{0}] auto-bound to tenant [{1}]", userId, tenantId), userId, userId + "", ip);
         return tenantUser;
     }
 
@@ -320,7 +320,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
     {
         var logAction = ex is InvalidOperationException ? "风控" : action;
         LogProvider.Provider.WriteLog(typeof(User), logAction, false, ex.Message, 0, username, ip);
-        XTrace.WriteLine("[{0}]{1}失败！{2}", username, action, ex.Message);
+        XTrace.WriteLine(L.TLog("[{0}] {1} failed! {2}", username, action, ex.Message));
 
         // 累加错误数，首次出错时设置过期时间
         _cache.Increment(key, 1);
@@ -510,7 +510,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         httpContext.Session.Remove("Cube_OAuthId");
         _cache.Remove(pendingKey);
 
-        LogProvider.Provider.WriteLog(typeof(User), "OAuth回跳注册", true, $"提供商：{pending.Provider}", user.ID, user + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), L.TLog("OAuth callback registration"), true, L.TLog("Provider: {0}", pending.Provider), user.ID, user + "", ip);
 
         return result;
     }
@@ -654,7 +654,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
         }
         User.Meta.SingleCache.Clear("账号注销");
 
-        LogProvider.Provider.WriteLog(typeof(User), "注销账号", true, $"用户：{user}", user.ID, user + "", ip);
+        LogProvider.Provider.WriteLog(typeof(User), L.TLog("Close account"), true, L.TLog("User: {0}", user), user.ID, user + "", ip);
 
         return new ServiceResult { IsSuccess = true, Message = L.T("Account closed.") };
     }
@@ -679,7 +679,7 @@ public class UserService(PasswordService passwordService, ICacheProvider cachePr
             catch (Exception ex)
             {
                 span?.SetError(ex, null);
-                XTrace.WriteLine("[CloseAccount] 处理器 {0} 清理失败（用户 {1}）：{2}", handler.GetType().FullName, user?.ID, ex.Message);
+                XTrace.WriteLine(L.TLog("[CloseAccount] handler {0} failed to clean up (user {1}): {2}", handler.GetType().FullName, user?.ID, ex.Message));
                 XTrace.WriteException(ex);
             }
         }

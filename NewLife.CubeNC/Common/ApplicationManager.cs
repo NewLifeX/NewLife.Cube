@@ -57,9 +57,9 @@ namespace NewLife.Cube
 
             StartTime = DateTime.Now;
             var t = host.RunAsync(_tokenSource.Token);
-            XTrace.WriteLine("系统已启动");
+            XTrace.WriteLine(L.TLog("System started"));
             t.Wait();
-            XTrace.WriteLine("系统已停止");
+            XTrace.WriteLine(L.TLog("System stopped"));
         }
 
         /// <summary>停止</summary>
@@ -74,7 +74,7 @@ namespace NewLife.Cube
         /// <summary>重启</summary>
         public void Restart()
         {
-            XTrace.WriteLine("系统重启中");
+            XTrace.WriteLine(L.TLog("System restarting"));
             Stop();
             _restart = true;
             _tokenSource = null;

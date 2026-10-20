@@ -96,7 +96,7 @@ public class DefaultAccountCloseHandler : IAccountCloseHandler
         }
         catch (Exception ex)
         {
-            XTrace.WriteLine("[CloseAccount] 清理{0}失败（用户 {1}）：{2}", name, userId, ex.Message);
+            XTrace.WriteLine(L.TLog("[CloseAccount] cleanup {0} failed (user {1}): {2}", name, userId, ex.Message));
             XTrace.WriteException(ex);
         }
     }

@@ -43,7 +43,7 @@ public class ApiPrefixRewriteMiddleware
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
             if (_prefixes.Length > 0)
-                XTrace.WriteLine("API 前缀中间件已加载前缀：{0}", String.Join(",", _prefixes));
+                XTrace.WriteLine(L.TLog("API prefix middleware loaded prefixes: {0}", String.Join(",", _prefixes)));
         }
 
         if (_prefixes.Length > 0)

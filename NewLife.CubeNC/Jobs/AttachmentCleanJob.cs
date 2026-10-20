@@ -64,8 +64,8 @@ public class AttachmentCleanJob : CubeJobBase<AttachmentCleanArgument>
             rs += list.Delete();
         }
 
-        span?.AppendTag($"删除附件 {rs} 个");
-        XTrace.WriteLine("清理附件 {0} 个", rs);
+        span?.AppendTag(L.TLog("Cleaned up {0} attachments", rs));
+        XTrace.WriteLine(L.TLog("Cleaned up {0} attachments", rs));
 
         return Task.FromResult($"清理附件 {rs} 个");
     }

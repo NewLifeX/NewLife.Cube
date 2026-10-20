@@ -186,7 +186,7 @@ public class BlockService : IHostedService
             _lastCleanup = now;
 
             var rs = Cleanup();
-            if (rs > 0) XTrace.WriteLine("清理过期封禁 {0:n0} 行", rs);
+            if (rs > 0) XTrace.WriteLine(L.TLog("Cleaned up {0:n0} expired ban rows", rs));
         }
     }
     #endregion

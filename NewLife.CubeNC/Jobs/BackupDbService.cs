@@ -32,7 +32,7 @@ public class BackupDbService
 
             var dal = DAL.Create(name);
 
-            XTrace.WriteLine("在[{0}]上备份数据库", name);
+            XTrace.WriteLine(L.TLog("Back up database on [{0}]", name));
 
             var sw = Stopwatch.StartNew();
 
@@ -43,9 +43,9 @@ public class BackupDbService
             }
             catch (Exception ex)
             {
-                XTrace.WriteLine("备份数据库失败：{0}", ex.Message);
+                XTrace.WriteLine(L.TLog("Failed to back up database: {0}", ex.Message));
                 var job = (TimerX.Current?.State as MyJob)?.Job;
-                job?.WriteLog(nameof(BackupDb), false, $"备份数据库 {name} 失败，{ex.Message}");
+                job?.WriteLog(nameof(BackupDb), false, L.TLog("Failed to back up database {0}, {1}", name, ex.Message));
                 continue;
             }
 
@@ -54,7 +54,7 @@ public class BackupDbService
             {
                 sw.Stop();
                 var job = (TimerX.Current?.State as MyJob)?.Job;
-                job?.WriteLog(nameof(BackupDb), true, $"备份数据库 {name} 到 {bak}，耗时 {sw.Elapsed}");
+                job?.WriteLog(nameof(BackupDb), true, L.TLog("Backed up database {0} to {1} in {2}", name, bak, sw.Elapsed));
                 continue;
             }
 
@@ -72,14 +72,14 @@ public class BackupDbService
                 {
                     sw.Stop();
                     var job = (TimerX.Current?.State as MyJob)?.Job;
-                    job?.WriteLog(nameof(BackupDb), true, $"备份数据库 {name} 到 {rs}，耗时 {sw.Elapsed}");
+                    job?.WriteLog(nameof(BackupDb), true, L.TLog("Backed up database {0} to {1} in {2}", name, rs, sw.Elapsed));
                     continue;
                 }
             }
 
             sw.Stop();
             var job2 = (TimerX.Current?.State as MyJob)?.Job;
-            job2?.WriteLog(nameof(BackupDb), true, $"备份数据库 {name} 到 {bak}，耗时 {sw.Elapsed}");
+            job2?.WriteLog(nameof(BackupDb), true, L.TLog("Backed up database {0} to {1} in {2}", name, bak, sw.Elapsed));
         }
     }
 }
