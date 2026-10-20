@@ -51,7 +51,7 @@ export interface CubeColumnView {
   isKey: boolean;
 }
 
-/** `#table-row-actions` 插槽作用域 */
+/** `#row-actions` 插槽作用域（整列替换，不参与自适应与收起；要追加动作请用 `extraRowActions`） */
 export interface CubeRowActionsSlotProps {
   row: Record<string, unknown>;
   index: number;
@@ -101,6 +101,29 @@ export interface CubeSectionSlotProps {
 }
 
 /**
+ * 行操作项（内置 查看/编辑/删除 + 业务页经 `extraRowActions` 追加的动作）。
+ *
+ * 数据驱动而不是插槽自由堆按钮，才能参与「列宽自适应 + 超过 4 个收进更多」
+ * 的布局（`layoutRowActions` / `splitRowActions`）。
+ */
+export interface CubeRowAction {
+  /** 唯一键（渲染 key，如 enable / remove / dispatch） */
+  key: string;
+  /** 按钮文本 */
+  label: string;
+  /** 图标（Element Plus 图标组件），不传则纯文本 */
+  icon?: Component;
+  /** 按钮语义色，缺省 primary；删除类用 danger */
+  type?: 'primary' | 'success' | 'warning' | 'danger' | 'info';
+  /** 行级可见性（不传默认显示；隐藏后不占宽度也不进「更多」） */
+  visible?: (row: Record<string, unknown>) => boolean;
+  /** 行级禁用（不传默认启用） */
+  disabled?: (row: Record<string, unknown>) => boolean;
+  /** 点击处理 */
+  onClick: (row: Record<string, unknown>) => void | Promise<void>;
+}
+
+/**
  * 工具栏 / 表格共用的动作集（由 `useCubeTableActions` 提供）。
  *
  * 组件按契约依赖而不是按实现类型依赖，便于单测直接注入假动作。
@@ -134,6 +157,7 @@ export interface CubeGridFlags {
   indexColumn?: boolean;
   rowActions?: boolean;
   doubleClickEdit?: boolean;
+  /** 操作列宽：不传按行动作数自适应（见 `layoutRowActions`），传了以页面意图为准 */
   actionWidth?: number;
 }
 
@@ -199,6 +223,8 @@ export interface CubeTableProps {
   importAccept?: string;
   /** 删除是否二次确认：不传跟随后端 `doubleDelete` */
   confirmDelete?: boolean;
+  /** 操作列追加动作：排在内置 查看/编辑/删除 之后，一起参与列宽自适应与「更多」收起 */
+  extraRowActions?: CubeRowAction[];
 
   // ── 表格区 ──
   /** 表格区开关（勾选列 / 索引列 / 操作列 / 双击编辑） */

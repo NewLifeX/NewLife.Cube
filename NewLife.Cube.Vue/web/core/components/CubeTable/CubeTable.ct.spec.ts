@@ -116,18 +116,37 @@ test('指标行-图标/环比/设置列齿轮与刷新', async ({ page }) => {
   await expect(bar).toHaveScreenshot();
 });
 
-test('搜索-收起只有一行，展开出条件面板', async ({ page }) => {
+test('搜索-收起态第一行三格，展开后每行三列栅格', async ({ page }) => {
   await openStory(page, 'CubeTable/Default');
 
   const search = page.locator('.cts-wrap');
-  // 收起态：只有关键字那一行，条件一个都不露
-  await expect(search.locator('.cts-panel')).toHaveCount(0);
+  // 收起态：第一行三格 = 关键字 + 第一个条件 + 动作钮（展开/重置/搜索），其余条件不渲染
+  await expect(search.locator('.cts-item')).toHaveCount(1);
   await expect(search.locator('.cts-toggle')).toContainText('展开');
+  await expect(search.locator('.cts-actions')).toHaveCount(1);
   await expect(search).toHaveScreenshot();
 
   await search.locator('.cts-toggle').click();
   await expect(search.locator('.cts-item')).toHaveCount(6);
   await expect(search.locator('.cts-toggle')).toContainText('收起');
+  // 三列栅格：DOM 格序 = 关键字 → 动作格 → 条件×N（动作格靠 CSS 钉回第一行最右列）
+  const grid = search.locator('.cts-grid');
+  // 中文 locale 下 getComputedStyle 用全角逗号分隔列表值，正则分隔符无关
+  await expect(grid).toHaveCSS('grid-template-columns', /^\d+(\.\d+)?px[ ,，]*\d+(\.\d+)?px[ ,，]*\d+(\.\d+)?px$/);
+  await expect(grid.locator('> *').first()).toHaveClass(/cts-input/);
+  await expect(grid.locator('> *').nth(1)).toHaveClass(/cts-cell--end/);
+  await expect(grid.locator('> *').nth(2)).toHaveClass(/cts-item/);
+  await expect(grid.locator('> .cts-cell--end').getByRole('button', { name: '搜索' })).toBeVisible();
+  // 展开后动作格仍钉在第一行行尾（与关键字同 y、在最右列），不随条件流到尾行
+  const box = (sel: string) => grid.locator(sel).boundingBox().then((b) => ({ x: b!.x, y: Math.round(b!.y) }));
+  const inputBox = await box('> .cts-input');
+  const endBox = await box('> .cts-cell--end');
+  const firstItemBox = await box('> .cts-item >> nth=0');
+  expect(endBox.y).toBe(inputBox.y);
+  expect(endBox.x).toBeGreaterThan(firstItemBox.x);
+  // 每行三列：第二格（条件1）自动流从第二行开始（第一行被动作格钉掉一列）
+  const secondItemBox = await box('> .cts-item >> nth=1');
+  expect(secondItemBox.y).toBeGreaterThan(inputBox.y);
   await expect(search).toHaveScreenshot();
 });
 
@@ -135,6 +154,8 @@ test('搜索-只有一个条件时也是同一套一体式栏', async ({ page })
   await openStory(page, 'CubeTable/OneFilter');
 
   const search = page.locator('.cts-wrap');
+  // 收起态就把唯一条件露在第一行
+  await expect(search.locator('.cts-item')).toHaveCount(1);
   await search.locator('.cts-toggle').click();
   await expect(search.locator('.cts-item')).toHaveCount(1);
   await expect(search).toHaveScreenshot();
@@ -238,4 +259,28 @@ test('行为-行内编辑先取详情再回显', async ({ page }) => {
   const dialog = page.locator('.el-dialog');
   await expect(dialog).toContainText('编辑');
   await expect(dialog.locator('input').first()).not.toHaveValue('');
+});
+
+test('行为-操作列超过 4 个动作收进更多', async ({ page }) => {
+  await openStory(page, 'CubeTable/RowActions');
+
+  const firstRow = table(page).locator('.el-table__row').first();
+  // 内置三键直接显示，第 4 个位置是「更多」；追加的两个动作不铺在行里
+  await expect(firstRow.getByRole('button', { name: '查看' })).toBeVisible();
+  await expect(firstRow.getByRole('button', { name: '编辑' })).toBeVisible();
+  await expect(firstRow.getByRole('button', { name: '删除' })).toBeVisible();
+  await expect(firstRow.getByRole('button', { name: '更多' })).toBeVisible();
+  await expect(firstRow.getByRole('button', { name: '复制' })).toHaveCount(0);
+  await expect(table(page)).toHaveScreenshot();
+
+  // 点开「更多」出现两个后加动作；点「复制」真触发回调（借新增弹窗作证）
+  await firstRow.getByRole('button', { name: '更多' }).click();
+  // 每行都挂了一个 popper（未展开的也在 DOM 里），必须限定到当前可见的那份
+  const popper = page.locator('.el-dropdown__popper:visible');
+  const menu = popper.locator('.el-dropdown-menu__item');
+  await expect(menu.filter({ hasText: '复制' })).toBeVisible();
+  await expect(menu.filter({ hasText: '归档' })).toBeVisible();
+  await expect(popper).toHaveScreenshot();
+  await menu.filter({ hasText: '复制' }).click();
+  await expect(page.locator('.el-dialog')).toContainText('新增');
 });

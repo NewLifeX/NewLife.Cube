@@ -50,6 +50,14 @@ async function mountGrid(
 
 const textOf = async (...args: Parameters<typeof mountGrid>) => (await mountGrid(...args)).text();
 
+/** 取「操作」列的宽（自适应断言入口） */
+const actionWidthOf = (wrapper: Awaited<ReturnType<typeof mountGrid>>) => {
+  const column = wrapper
+    .findAllComponents({ name: 'ElTableColumn' })
+    .find((c) => c.props('label') === '操作');
+  return column?.props('width');
+};
+
 describe('CubeTableGrid 列渲染', () => {
   it('应该按元数据渲染列头与行数据 当列表有数据时', async () => {
     const ctx = makeFakeCtx({
@@ -211,6 +219,60 @@ describe('CubeTableGrid 勾选列与操作列', () => {
     });
     expect(wrapper.find('.mine').exists()).toBe(true);
     expect(wrapper.text()).not.toContain('编辑');
+  });
+
+  it('应该按动作数自适应列宽 当未显式指定 actionWidth 时', async () => {
+    // 内置三键按 208 给宽（旧固定 168 会把「删除」裁成只剩图标）
+    const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }] });
+    expect(actionWidthOf(await mountGrid(ctx))).toBe(208);
+  });
+
+  it('应该让页面显式列宽优先于自适应 当传入 actionWidth 时', async () => {
+    const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }] });
+    const wrapper = await mountGrid(ctx, { props: { actionWidth: 300 } });
+    expect(actionWidthOf(wrapper)).toBe(300);
+  });
+
+  it('应该把追加动作排在删除之后并撑宽列 当 extraRowActions 给 1 个时', async () => {
+    const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }] });
+    const extra = { key: 'dispatch', label: '派工', onClick: vi.fn() };
+    const wrapper = await mountGrid(ctx, { props: { extraRowActions: [extra] } });
+    expect(wrapper.text()).toContain('派工');
+    expect(actionWidthOf(wrapper)).toBe(272);
+  });
+
+  it('应该只露前 3 个加更多 当单行动作超过 4 个时', async () => {
+    const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }] });
+    const dispatch = { key: 'dispatch', label: '派工', onClick: vi.fn() };
+    const suspend = { key: 'suspend', label: '停用', onClick: vi.fn() };
+    const wrapper = await mountGrid(ctx, { props: { extraRowActions: [dispatch, suspend] } });
+    const text = wrapper.text();
+    expect(text).toContain('更多');
+    // 第 4、5 个不再直接铺在行里，而是收进下拉（popper 未展开不渲染）
+    expect(text).not.toContain('派工');
+    expect(text).not.toContain('停用');
+    // 列宽按 4 个单元封顶，不再随动作数继续增长
+    expect(actionWidthOf(wrapper)).toBe(272);
+    // 下拉 command 接回原动作回调，带的是本行数据
+    wrapper.findComponent({ name: 'ElDropdown' }).vm.$emit('command', 0);
+    await nextTick();
+    expect(dispatch.onClick).toHaveBeenCalledWith({ Name: 'a' });
+  });
+
+  it('应该把行级不可见的追加动作剔除 当 visible 返回 false 时', async () => {
+    const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }, { Name: 'b' }] });
+    const extra = { key: 'dispatch', label: '派工', onClick: vi.fn(), visible: (row: Record<string, unknown>) => row.Name === 'a' };
+    const wrapper = await mountGrid(ctx, { props: { extraRowActions: [extra] } });
+    // a 行有、b 行没有：两行合计只出现一次
+    expect(wrapper.text().match(/派工/g)?.length).toBe(1);
+  });
+
+  it('应该给禁用行的追加动作置灰而不是隐藏 当 disabled 返回 true 时', async () => {
+    const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }] });
+    const extra = { key: 'dispatch', label: '派工', onClick: vi.fn(), disabled: () => true };
+    const wrapper = await mountGrid(ctx, { props: { extraRowActions: [extra] } });
+    const button = wrapper.findAll('button').find((b) => b.text().includes('派工'));
+    expect(button?.attributes('disabled')).toBeDefined();
   });
 
   it('应该让按字段名的插槽覆盖该列内置渲染 当业务页写了 col-Name 时', async () => {

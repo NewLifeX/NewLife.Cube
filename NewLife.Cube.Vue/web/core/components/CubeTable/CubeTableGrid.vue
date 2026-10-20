@@ -21,10 +21,13 @@
  *   - 动态 `#col-<字段名>`（宿主 CubeTable 转发）：单列单元格替换，优先于内置渲染；
  *   - `#empty`：空态替换。
  * 未声明的属性（`row-key`、`stripe`、`size` 等）透传给内部 `el-table`。
+ *
+ * 操作列宽度按行动作数自适应（`layoutRowActions`）：显式传 `actionWidth` 则覆盖；
+ * 单行动作超过 4 个时只露前 3 个，第 4 个位置是「更多」下拉，后加的操作一律收进去。
  */
 import { computed, useSlots } from 'vue';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
-import { Delete, Edit, View } from '@element-plus/icons-vue';
+import { ArrowDown, Delete, Edit, View } from '@element-plus/icons-vue';
 import { getValueByKey, resolveAssetUrl } from '../../utils/url';
 import { isBlankCell } from '../../engine/logic';
 import {
@@ -34,11 +37,13 @@ import {
   cellText,
   isExpandableCell,
   isOverflowTooltipCell,
+  layoutRowActions,
   resolveGridFlags,
+  splitRowActions,
 } from './cubeTable.logic';
 import { useCubeTableLov } from './useCubeTableLov';
 import type { CubeEngineContext } from '../../engine/types';
-import type { CubeColumnView, CubeTableActions } from './types';
+import type { CubeColumnView, CubeRowAction, CubeTableActions } from './types';
 
 defineOptions({ inheritAttrs: false });
 
@@ -57,14 +62,17 @@ const props = withDefaults(
     indexColumn?: boolean;
     rowActions?: boolean;
     doubleClickEdit?: boolean;
-    /** 操作列宽 */
+    /** 操作列宽：不传按行动作数自适应 */
     actionWidth?: number;
+    /** 操作列追加动作：排在内置 查看/编辑/删除 之后，一起参与自适应与「更多」收起 */
+    extraRowActions?: CubeRowAction[];
   }>(),
   {
     visibility: null,
     resetVisibility: null,
     height: '100%',
-    actionWidth: 168,
+    actionWidth: undefined,
+    extraRowActions: () => [],
     selection: undefined,
     indexColumn: undefined,
     rowActions: undefined,
@@ -110,6 +118,31 @@ const tagsOf = (row: Record<string, unknown>, column: CubeColumnView) =>
   column.control === 'lov' && parts(row, column).length > 1 ? parts(row, column) : [];
 const iconOf = (name: string) => (ElementPlusIconsVue as Record<string, unknown>)[name] ?? null;
 const slotName = (column: CubeColumnView) => `col-${column.key}`;
+
+/** 内置行操作：与旧 Section 组件同口径（查看 / 编辑 / 删除），删除走确认层不直连引擎 */
+const builtinRowActions = computed<CubeRowAction[]>(() => [
+  { key: '__view', label: '查看', icon: View, type: 'primary', onClick: (row) => void props.ctx.openView(row) },
+  { key: '__edit', label: '编辑', icon: Edit, type: 'primary', onClick: (row) => void props.ctx.openEdit(row) },
+  { key: '__remove', label: '删除', icon: Delete, type: 'danger', onClick: (row) => void props.actions.removeRow(row) },
+]);
+
+/** 某一行的完整动作列表：内置在前、业务追加在后，行级不可见的剔除 */
+const rowActionsOf = (row: Record<string, unknown>): CubeRowAction[] => [
+  ...builtinRowActions.value,
+  ...(props.extraRowActions ?? []).filter((action) => !action.visible || action.visible(row)),
+];
+
+// 列宽取当前页各行动作数的最大值：个别行藏了动作不至于把「更多」挤变形；
+// 列表为空时按内置三键给宽。
+const actionLayout = computed(() => {
+  const counts = rows.value.map((row) => rowActionsOf(row).length);
+  return layoutRowActions(counts.length ? Math.max(...counts) : builtinRowActions.value.length);
+});
+const resolvedActionWidth = computed(() => props.actionWidth ?? actionLayout.value.width);
+
+/** 单行拆成「直接按钮」与「收进更多」两段（按行判定，不足 4 个不硬塞空的「更多」） */
+const splitOf = (row: Record<string, unknown>) => splitRowActions(rowActionsOf(row));
+const onAction = (action: CubeRowAction, row: Record<string, unknown>) => void action.onClick(row);
 </script>
 
 <template>
@@ -234,14 +267,48 @@ const slotName = (column: CubeColumnView) => `col-${column.key}`;
       </el-table-column>
     </template>
 
-    <el-table-column v-if="flags.rowActions" label="操作" :width="actionWidth" fixed="right" align="center">
+    <el-table-column v-if="flags.rowActions" label="操作" :width="resolvedActionWidth" fixed="right" align="center">
       <template v-if="$slots['row-actions']" #default="scope">
         <slot name="row-actions" :row="scope.row" :index="scope.$index" />
       </template>
       <template v-else #default="scope">
-        <el-button link type="primary" :icon="View" @click="ctx.openView(scope.row)">查看</el-button>
-        <el-button link type="primary" :icon="Edit" @click="ctx.openEdit(scope.row)">编辑</el-button>
-        <el-button link type="danger" :icon="Delete" @click="actions.removeRow(scope.row)">删除</el-button>
+        <!-- 单一元素根：el-table-column 会用空行对象试渲染一次本插槽做列注册，
+             裸 v-for 的片段会被它采纳进 hidden-columns 多挂一份按钮（元素根则不参与） -->
+        <span class="ctg-actions">
+          <el-button
+            v-for="action in splitOf(scope.row).direct"
+            :key="action.key"
+            link
+            :type="action.type ?? 'primary'"
+            :icon="action.icon"
+            :disabled="action.disabled ? action.disabled(scope.row) : false"
+            @click="onAction(action, scope.row)"
+          >
+            {{ action.label }}
+          </el-button>
+          <el-dropdown
+            v-if="splitOf(scope.row).overflow.length"
+            trigger="click"
+            class="ctg-more"
+            @command="(index: number) => onAction(splitOf(scope.row).overflow[index], scope.row)"
+          >
+            <el-button link type="primary">
+              更多<el-icon><ArrowDown /></el-icon>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item
+                  v-for="(action, index) in splitOf(scope.row).overflow"
+                  :key="action.key"
+                  :command="index"
+                  :disabled="action.disabled ? action.disabled(scope.row) : false"
+                >
+                  {{ action.label }}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </span>
       </template>
     </el-table-column>
   </el-table>
@@ -283,5 +350,20 @@ const slotName = (column: CubeColumnView) => `col-${column.key}`;
   display: inline-flex;
   flex-wrap: wrap;
   gap: 4px;
+}
+/* 操作列单元格：按钮与「更多」同排流式布局 */
+.ctg-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+/* 按钮间距统一由 flex gap 提供：取消 el-button 默认 margin-left，避免双倍间距
+   把「删除」顶出列宽（与工具栏 .cta 同一口径） */
+.ctg-actions :deep(.el-button + .el-button) {
+  margin-left: 0;
+}
+/* 「更多」与直接按钮同排：下拉是行内元素，去掉它自带的基线偏移 */
+.ctg-more {
+  vertical-align: middle;
 }
 </style>

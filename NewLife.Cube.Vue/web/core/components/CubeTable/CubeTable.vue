@@ -43,7 +43,7 @@ const props = withDefaults(defineProps<CubeTableProps>(), {
   context: null,
   autoEngine: true,
   pageSize: undefined,
-  searchPlaceholder: '搜索...',
+  searchPlaceholder: '搜索关键字',
   showSearch: true,
   showRefresh: true,
   metrics: () => [],
@@ -58,6 +58,7 @@ const props = withDefaults(defineProps<CubeTableProps>(), {
   showDownloadTemplate: undefined,
   exportFormat: 'xlsx',
   confirmDelete: undefined,
+  extraRowActions: () => [],
 });
 
 const injected = inject(CubeEngineKey, null);
@@ -163,6 +164,7 @@ const visibleColumns = computed(() => (props.columnsSetting ? columns.visibility
             :actions="actions"
             :visibility="visibleColumns"
             :reset-visibility="columns.reset"
+            :extra-row-actions="extraRowActions"
             v-bind="grid"
           >
             <template v-for="name in gridSlotNames" #[name]="scope">
