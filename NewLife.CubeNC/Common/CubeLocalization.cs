@@ -103,8 +103,8 @@ public static class CubeLocalization
     /// <param name="app">应用构建器</param>
     /// <returns>应用构建器</returns>
     /// <remarks>
-    /// <see cref="Localization.Culture"/> 是进程级全局状态，置空后由中间件写入的
-    /// <see cref="CultureInfo.CurrentUICulture"/>（AsyncLocal）按请求生效。
+    /// 强制语言经 <see cref="Localization.SetLanguage"/> 写入进程级 <see cref="Localization.Culture"/>；
+    /// 未强制时置空，由中间件写入的 <see cref="CultureInfo.CurrentUICulture"/>（AsyncLocal）按请求生效。
     /// </remarks>
     public static IApplicationBuilder UseCubeLocalization(this IApplicationBuilder app)
     {
