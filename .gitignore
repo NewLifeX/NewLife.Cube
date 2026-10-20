@@ -63,6 +63,7 @@ NewLife.Cube.Vuetify/wwwroot/assets/
 TODO.md
 .codegraph/
 .serena/
+.tmp/
 
 # ===== 第三方主题静态资源 / 构建工具：移出版本库（不应入库） =====
 # 老皮肤项目的 wwwroot：均为第三方主题包、字体、vendored JS（echarts/element/bootstrap 等），
