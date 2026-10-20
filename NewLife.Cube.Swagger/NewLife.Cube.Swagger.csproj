@@ -49,7 +49,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.10.2026.1018-beta1738" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.10.2026.1020-beta0651" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.17.2" />
   </ItemGroup>
