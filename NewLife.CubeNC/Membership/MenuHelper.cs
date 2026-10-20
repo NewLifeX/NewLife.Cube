@@ -114,7 +114,12 @@ public static class MenuHelper
             if (controller == null)
             {
                 controller = menuFactory.FindByUrl(url);
-                controller ??= node.Add(name, type.GetDisplayName(), type.FullName, url);
+
+                // 菜单名是持久化数据，建菜单时按启动语言落库；页面标题等运行时文案仍由消费端 L.T 按请求翻译
+                var displayName = type.GetDisplayName();
+                if (!displayName.IsNullOrEmpty()) displayName = L.T(displayName);
+
+                controller ??= node.Add(name, displayName, type.FullName, url);
             }
             controller.Url = url;
             controller.FullName = type.FullName;
