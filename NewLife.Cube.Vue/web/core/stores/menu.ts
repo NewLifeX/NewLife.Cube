@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { getConfig } from '@newlifex/cube-vue/core/configure';
 import { getDataByKey } from '../utils/common';
+import { normalizeMenuUrl } from '../utils/url';
 import { type AxiosRequestConfig } from 'axios';
 import request from '../utils/request';
 
@@ -157,7 +158,11 @@ export const useMenuStore = defineStore('menu', {
       this.activeMenu = menu;
     },
     setActiveMenuByPath(path: string) {
-      const activeMenu = this.flatMenus?.find((item) => item.path === path);
+      // 高亮匹配须与路由命名风格一致：flatMenus 存的是后端原始 URL（PascalCase），
+      // 而传入 path 是按配置风格归一化后的当前路由路径。pascal 下两边同值恰好相等；
+      // kebab 等风格下若直接精确比较会失配、导致左侧高亮丢失，故先按同一风格归一化再比。
+      const { router: { routeNamingStyle } } = getConfig();
+      const activeMenu = this.flatMenus?.find((item) => normalizeMenuUrl(item.path, routeNamingStyle) === path);
       this.setActiveMenu(activeMenu as TreeMenuItem);
     },
     /** 标记路由已注册 */
