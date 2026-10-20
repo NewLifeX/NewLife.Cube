@@ -215,7 +215,7 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
         };
         tu.Insert();
 
-        LogProvider.Provider.WriteLog("租户", "添加成员", true, $"添加用户[{userId}]到租户[{tid}]", userId, userId + "", ip: HttpContext.GetUserHost());
+        LogProvider.Provider.WriteLog(L.TLog("Tenant"), L.TLog("Add member"), true, L.TLog("Added user [{0}] to tenant [{1}]", userId, tid), userId, userId + "", ip: HttpContext.GetUserHost());
 
         return Json(0, "添加成功", new { tu.Id, UserName = UserX.FindByID(userId)?.ToString() });
     }
@@ -236,7 +236,7 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
 
         tu.Delete();
 
-        LogProvider.Provider.WriteLog("租户", "移除成员", true, $"从租户[{tid}]移除用户[{tu.UserId}]", tu.UserId, tu.UserId + "", ip: HttpContext.GetUserHost());
+        LogProvider.Provider.WriteLog(L.TLog("Tenant"), L.TLog("Remove member"), true, L.TLog("Removed user [{1}] from tenant [{0}]", tid, tu.UserId), tu.UserId, tu.UserId + "", ip: HttpContext.GetUserHost());
 
         return Json(0, "移除成功");
     }
@@ -258,7 +258,7 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
         tu.Enable = enable;
         tu.Update();
 
-        LogProvider.Provider.WriteLog("租户", enable ? "启用成员" : "禁用成员", true, $"租户[{tid}]用户[{tu.UserId}]", tu.UserId, tu.UserId + "", ip: HttpContext.GetUserHost());
+        LogProvider.Provider.WriteLog(L.TLog("Tenant"), enable ? L.TLog("Enable member") : L.TLog("Disable member"), true, L.TLog("Tenant [{0}] user [{1}]", tid, tu.UserId), tu.UserId, tu.UserId + "", ip: HttpContext.GetUserHost());
 
         return Json(0, enable ? "已启用" : "已禁用");
     }

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
@@ -96,8 +96,8 @@ public class UserOnlineController : EntityController<UserOnline, UserOnlineModel
         online.SaveAsync(3_000);
 
         // 4. 审计日志
-        LogProvider.Provider.WriteLog("用户在线", "强制下线", true,
-            $"用户[{online.Name}]被强制下线，吊销{count}个令牌", online.UserID, online.Name);
+        LogProvider.Provider.WriteLog(L.TLog("User online"), L.TLog("Force offline"), true,
+            L.TLog("User [{0}] was forced offline and {1} tokens were revoked", online.Name, count), online.UserID, online.Name);
 
         return Json(0, $"已强制下线，吊销{count}个令牌");
     }

@@ -329,7 +329,7 @@ public partial class EntityController<TEntity, TModel>
             DefaultSpan.Current?.SetError(ex);
             XTrace.WriteException(ex);
 
-            WriteLog("导入Excel", false, ex.GetMessage());
+            WriteLog(L.TLog("Import Excel"), false, ex.GetMessage());
 
             return Json(500, ex.GetMessage(), ex);
         }
@@ -534,7 +534,7 @@ public partial class EntityController<TEntity, TModel>
     {
         if (file == null || file.Length <= 0) return RedirectToAction("Index");
 
-        WriteLog(nameof(ImportFile), true, $"开始导入文件[{file.FileName}]，大小[{file.Length:n0}]字节，类型[{file.ContentType}]");
+        WriteLog(nameof(ImportFile), true, L.TLog("Start importing file [{0}], size [{1:n0}] bytes, type [{2}]", file.FileName, file.Length, file.ContentType));
 
         var factory = Factory;
         var page = GetCachePager();

@@ -27,7 +27,7 @@ public class FileController : ControllerBaseX
         var root = Root.EnsureEnd(Path.DirectorySeparatorChar + "");
         if (!fi.FullName.StartsWithIgnoreCase(root))
         {
-            WriteLog("Valid", false, $"文件[{fi.FullName}]非法越界！");
+            WriteLog("Valid", false, L.TLog("File [{0}] is outside the allowed path!", fi.FullName));
 
             return null;
         }
@@ -47,7 +47,7 @@ public class FileController : ControllerBaseX
         var root = Root.EnsureEnd(Path.DirectorySeparatorChar + "");
         if (!di.FullName.StartsWithIgnoreCase(root))
         {
-            WriteLog("Valid", false, $"目录[{di.FullName}]非法越界！");
+            WriteLog("Valid", false, L.TLog("Directory [{0}] is outside the allowed path!", di.FullName));
 
             return null;
         }
@@ -181,7 +181,7 @@ public class FileController : ControllerBaseX
         if (fi != null)
         {
             p = GetFullName(fi.Directory.FullName);
-            WriteLog("删除", true, fi.FullName);
+            WriteLog(L.TLog("Delete"), true, fi.FullName);
             fi.Delete();
         }
         else
@@ -189,7 +189,7 @@ public class FileController : ControllerBaseX
             var di = GetDirectory(r) ?? throw new Exception("找不到文件或目录！");
 
             p = GetFullName(di.Parent.FullName);
-            WriteLog("删除", true, di.FullName);
+            WriteLog(L.TLog("Delete"), true, di.FullName);
             di.Delete(true);
         }
 
@@ -212,7 +212,7 @@ public class FileController : ControllerBaseX
             p = GetFullName(fi.Directory.FullName);
             var dst = $"{fi.Name}_{DateTime.Now:yyyyMMddHHmmss}.zip";
             dst = fi.Directory.FullName.CombinePath(dst);
-            WriteLog("压缩", true, $"{fi.FullName} => {dst}");
+            WriteLog(L.TLog("Compress"), true, $"{fi.FullName} => {dst}");
             fi.Compress(dst);
         }
         else
@@ -223,7 +223,7 @@ public class FileController : ControllerBaseX
             p = GetFullName(di.Parent.FullName);
             var dst = $"{di.Name}_{DateTime.Now:yyyyMMddHHmmss}.zip";
             dst = di.Parent.FullName.CombinePath(dst);
-            WriteLog("压缩", true, $"{di.FullName} => {dst}");
+            WriteLog(L.TLog("Compress"), true, $"{di.FullName} => {dst}");
             di.Compress(dst);
         }
 
@@ -240,7 +240,7 @@ public class FileController : ControllerBaseX
         if (fi == null) throw new Exception("找不到文件！");
 
         var p = GetFullName(fi.Directory.FullName);
-        WriteLog("解压缩", true, fi.FullName);
+        WriteLog(L.TLog("Uncompress"), true, fi.FullName);
         fi.Extract(fi.Directory.FullName, true);
 
         return RedirectToAction("Index", new { r = p });
@@ -266,7 +266,7 @@ public class FileController : ControllerBaseX
             // 防目录穿越：仅取文件名，丢弃客户端可控的路径部分
             var name = Path.GetFileName(file.FileName);
             var dest = di.FullName.CombinePath(name);
-            WriteLog("上传", true, dest);
+            WriteLog(L.TLog("Upload"), true, dest);
 
             dest.EnsureDirectory(true);
             //System.IO.File.WriteAllBytes(dest, file.OpenReadStream().ReadBytes(-1));
@@ -306,7 +306,7 @@ public class FileController : ControllerBaseX
                 // 防目录穿越：仅取文件名，丢弃客户端可控的路径部分
                 var name = Path.GetFileName(file.FileName);
                 var dest = di.FullName.CombinePath(name);
-                WriteLog("上传", true, dest);
+                WriteLog(L.TLog("Upload"), true, dest);
 
                 dest.EnsureDirectory(true);
                 //System.IO.File.WriteAllBytes(dest, file.OpenReadStream().ReadBytes(-1));
@@ -317,7 +317,7 @@ public class FileController : ControllerBaseX
         }
         catch (Exception ex)
         {
-            WriteLog("上传失败", false, ex + "");
+            WriteLog(L.TLog("Upload failed"), false, ex + "");
             return Json(new { code = 500, message = "上传失败" });
         }
     }
@@ -331,7 +331,7 @@ public class FileController : ControllerBaseX
         var fi = GetFile(r);
         if (fi == null) throw new Exception("找不到文件！");
 
-        WriteLog("下载", true, fi.FullName);
+        WriteLog(L.TLog("Download"), true, fi.FullName);
 
         return PhysicalFile(fi.FullName, "application/octet-stream", fi.Name, true);
     }
@@ -394,7 +394,7 @@ public class FileController : ControllerBaseX
         foreach (var item in list)
         {
             var dst = di.FullName.CombinePath(item.Name);
-            WriteLog("复制", true, $"{item.Raw} => {dst}");
+            WriteLog(L.TLog("Copy"), true, $"{item.Raw} => {dst}");
             if (item.Directory)
                 item.Raw.AsDirectory().CopyTo(dst);
             else
@@ -418,7 +418,7 @@ public class FileController : ControllerBaseX
         foreach (var item in list)
         {
             var dst = di.FullName.CombinePath(item.Name);
-            WriteLog("移动", true, $"{item.Raw} => {dst}");
+            WriteLog(L.TLog("Move"), true, $"{item.Raw} => {dst}");
             if (item.Directory)
                 Directory.Move(item.Raw, dst);
             else

@@ -122,12 +122,12 @@ public class DbController : ControllerBaseX, IPageDataContext
             var meta = dal.Db.CreateMetaData();
             meta.Invoke("CompactDatabase");
             sw.Stop();
-            WriteLog("压缩", true, $"压缩数据库 {name} 完成，耗时 {sw.Elapsed}");
+            WriteLog(L.TLog("Compress"), true, L.TLog("Compressed database {0} in {1}", name, sw.Elapsed));
         }
         catch (Exception ex)
         {
             sw.Stop();
-            WriteLog("压缩", false, $"压缩数据库 {name} 失败：{ex.Message}");
+            WriteLog(L.TLog("Compress"), false, L.TLog("Failed to compress database {0}: {1}", name, ex.Message));
         }
 
         return await Index();
@@ -150,7 +150,7 @@ public class DbController : ControllerBaseX, IPageDataContext
         if (BackupHelper.IsCompressedBackup(bak))
         {
             sw.Stop();
-            WriteLog("备份", true, $"备份数据库 {name} 到 {bak}，耗时 {sw.Elapsed}");
+            WriteLog(L.TLog("Backup"), true, L.TLog("Backed up database {0} to {1} in {2}", name, bak, sw.Elapsed));
             return await Index();
         }
 
@@ -167,13 +167,13 @@ public class DbController : ControllerBaseX, IPageDataContext
             if (!rs.IsNullOrEmpty())
             {
                 sw.Stop();
-                WriteLog("备份", true, $"备份数据库 {name} 到 {rs}，耗时 {sw.Elapsed}");
+                WriteLog(L.TLog("Backup"), true, L.TLog("Backed up database {0} to {1} in {2}", name, rs, sw.Elapsed));
                 return await Index();
             }
         }
 
         sw.Stop();
-        WriteLog("备份", true, $"备份数据库 {name} 到 {bak}，耗时 {sw.Elapsed}");
+        WriteLog(L.TLog("Backup"), true, L.TLog("Backed up database {0} to {1} in {2}", name, bak, sw.Elapsed));
 
         return await Index();
     }
@@ -196,7 +196,7 @@ public class DbController : ControllerBaseX, IPageDataContext
         dal.BackupAll(tables, bak);
 
         sw.Stop();
-        WriteLog("备份", true, $"备份数据库 {name} 并压缩到 {bak}，耗时 {sw.Elapsed}");
+        WriteLog(L.TLog("Backup"), true, L.TLog("Backed up and compressed database {0} to {1} in {2}", name, bak, sw.Elapsed));
 
         return await Index();
     }
@@ -210,7 +210,7 @@ public class DbController : ControllerBaseX, IPageDataContext
         var dal = DAL.Create(name);
         var xml = DAL.Export(dal.Tables);
 
-        WriteLog("下载", true, "下载数据库架构 " + name);
+        WriteLog(L.TLog("Download"), true, L.TLog("Downloaded database schema {0}", name));
 
         return File(xml.GetBytes(), "application/xml", name + ".xml");
     }
@@ -349,7 +349,7 @@ public class DbController : ControllerBaseX, IPageDataContext
             });
         }
 
-        WriteLog("模型差异", true, $"查看数据库 {name} 模型差异，共 {diffList.Count} 张表存在差异");
+        WriteLog(L.TLog("Model diff"), true, L.TLog("Checked model diff of database {0}: {1} tables differ", name, diffList.Count));
 
         var model = new DbDiffModel
         {

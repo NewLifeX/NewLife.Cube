@@ -143,6 +143,34 @@ public class LocalizationTests
         Assert.Equal(key, Translate("sw-KE", key));
     }
 
+    [Fact(DisplayName = "多语言 - 日志模板按 LogCulture 翻译")]
+    public void TranslateForLogUsesLogCulture()
+    {
+        const String key = "Compressed database {0} in {1}";
+        var oldLog = Localization.LogCulture;
+        var oldCulture = Localization.Culture;
+        try
+        {
+            // 日志按 LogCulture 固定语言，不受请求级 Culture 影响
+            Localization.Culture = new CultureInfo("de-DE");
+            Localization.LogCulture = new CultureInfo("zh-CN");
+            Assert.Equal("压缩数据库 Order 完成，耗时 3s", Localization.TranslateForLog(key, "Order", "3s"));
+
+            Localization.LogCulture = new CultureInfo("zh-TW");
+            Assert.Equal("壓縮資料庫 Order 完成，耗時 3s", Localization.TranslateForLog(key, "Order", "3s"));
+
+            // 未配置 LogCulture 时回退 Culture
+            Localization.LogCulture = null;
+            Localization.Culture = new CultureInfo("en-US");
+            Assert.Equal("Compressed database Order in 3s", Localization.TranslateForLog(key, "Order", "3s"));
+        }
+        finally
+        {
+            Localization.LogCulture = oldLog;
+            Localization.Culture = oldCulture;
+        }
+    }
+
     [Fact(DisplayName = "多语言 - 新增公共消息在全部译文语言中均有译文")]
     public void AllLanguagesTranslated()
     {

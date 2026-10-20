@@ -70,9 +70,9 @@ foreach ($file in $scanFiles) {
             $code = $line -replace "//.*$", ""
             # 特性参数（Description/DisplayName/Obsolete/RequiresXxx/Justification 等）属元数据，不在本检查范围
             if ($code -match "^\s*\[") { continue }
-            # 共享源码（CubeNC）的服务端日志暂保留中文模板，属待迁移存量（见 Doc/功能清单.md）；
-            # 本检查对共享文件只约束用户可见消息（异常/接口响应），避免存量日志噪声淹没新问题
-            if ($rel -like "NewLife.CubeNC\*" -and $code -match "XTrace\.|WriteLog\(|AppendTag\(|Log\.(Write|Error|Info|Debug|Warn|Fatal)") { continue }
+            # 共享源码（CubeNC）的服务端日志正分批迁移到 L.TLog（见 Doc/功能清单.md IMP-3）；
+            # 已改为 L.TLog 的行按英文源文校验，尚未迁移的中文日志继续豁免，避免存量噪声淹没新问题
+            if ($rel -like "NewLife.CubeNC\*" -and $code -match "XTrace\.|WriteLog\(|AppendTag\(|Log\.(Write|Error|Info|Debug|Warn|Fatal)" -and $code -notmatch "L\.TLog") { continue }
             if ($code -match $MessageCall -and $code -match "[\u4e00-\u9fa5]") {
                 $hits += [pscustomobject]@{ File = $rel; Line = $i + 1; Text = $code }
             }

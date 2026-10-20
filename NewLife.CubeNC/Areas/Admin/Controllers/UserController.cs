@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Text;
 using System.Web;
 using Microsoft.AspNetCore.Authorization;
@@ -895,8 +895,8 @@ public class UserController : EntityController<User, UserModel>
 
         var count = UserToken.RevokeByUser(id);
 
-        LogProvider.Provider.WriteLog("用户", "吊销令牌", true,
-            $"吊销用户[{user.Name}]的{count}个令牌", id, user.Name);
+        LogProvider.Provider.WriteLog(L.TLog("User"), L.TLog("Revoke tokens"), true,
+            L.TLog("Revoked {0} tokens of user [{1}]", count, user.Name), id, user.Name);
 
         if (IsJsonRequest) return Json(0, $"已吊销 {count} 个令牌");
 

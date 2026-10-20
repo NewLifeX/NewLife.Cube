@@ -171,7 +171,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         {
             var count = Entity<TEntity>.Meta.Session.Truncate();
 
-            WriteLog("清空数据", true, $"共删除{count}行数据");
+            WriteLog(L.TLog("Clear data"), true, L.TLog("Deleted {0} rows", count));
 
             if (Request.IsAjaxRequest())
                 return JsonRefresh($"共删除{count}行数据");
@@ -182,7 +182,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         }
         catch (Exception ex)
         {
-            WriteLog("清空数据", false, ex.GetMessage());
+            WriteLog(L.TLog("Clear data"), false, ex.GetMessage());
 
             throw;
         }
@@ -598,7 +598,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         var p = GetCachePager();
         OnExportZip(dic, p);
 
-        WriteLog("导出Zip", true, $"开始导出[{dic.Keys.Join()}]");
+        WriteLog(L.TLog("Export ZIP"), true, L.TLog("Start exporting [{0}]", dic.Keys.Join()));
 
         return new ZipResult { Data = dic, AttachmentName = fileName, HttpContext = HttpContext };
     }
