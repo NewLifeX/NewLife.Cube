@@ -394,3 +394,48 @@ export function resolveGridFlags(
     doubleClickEdit: input.doubleClickEdit ?? Boolean(setting?.enableTableDoubleClick),
   };
 }
+
+/** 操作列最多直接显示的动作数：超出即收起，第 4 个位置让给「更多」下拉 */
+export const MAX_VISIBLE_ACTIONS = 4;
+
+/** 单个行操作按钮的估算宽度（link 样式：图标 + 两字文本） */
+const ACTION_BUTTON_WIDTH = 56;
+
+/** 操作列单元格左右内边距的估算合计 */
+const ACTION_CELL_PADDING = 24;
+
+/** 按钮间留白（el-button 默认 margin-left 口径） */
+const ACTION_BUTTON_GAP = 8;
+
+/** 操作列布局结论 */
+export interface RowActionLayout {
+  /** 是否发生收起（动作数超过直接显示上限） */
+  folded: boolean;
+  /** 建议列宽（px）：按直接显示的动作数展开 */
+  width: number;
+}
+
+/**
+ * 按行动作数计算操作列布局：
+ * ≤4 个全部直接显示、列宽随个数增长；>4 个只露前 3 个 + 「更多」下拉，
+ * 列宽按 4 个单元封顶（后续新加的动作一律进「更多」，不再撑宽列）。
+ */
+export function layoutRowActions(count: number): RowActionLayout {
+  const unitCount = Math.max(Math.min(count, MAX_VISIBLE_ACTIONS), 1);
+  return {
+    folded: count > MAX_VISIBLE_ACTIONS,
+    width: ACTION_CELL_PADDING + unitCount * ACTION_BUTTON_WIDTH + (unitCount - 1) * ACTION_BUTTON_GAP,
+  };
+}
+
+/**
+ * 把某一行的动作列表切成「直接显示」与「收进更多」两段。
+ *
+ * 收起判定按行做：某行因 `visible(row)` 过滤后不足 4 个时，即使列宽按更多行
+ * 撑过，也直接全显、不给这一行硬塞一个空的「更多」。
+ */
+export function splitRowActions<T>(actions: T[]): { direct: T[]; overflow: T[] } {
+  if (actions.length <= MAX_VISIBLE_ACTIONS) return { direct: actions, overflow: [] };
+  const cut = MAX_VISIBLE_ACTIONS - 1;
+  return { direct: actions.slice(0, cut), overflow: actions.slice(cut) };
+}

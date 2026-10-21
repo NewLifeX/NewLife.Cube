@@ -169,7 +169,8 @@ describe('CubeTable 插槽转发', () => {
       slots: { 'search-bar': '<div class="my-bar">自定义搜索栏</div>' },
     });
     expect(wrapper.find('.my-bar').exists()).toBe(true);
-    expect(wrapper.find('.cts-bar input').exists()).toBe(false);
+    // 默认搜索条（三列栅格）被整行接管，不再渲染
+    expect(wrapper.find('.cts-grid input').exists()).toBe(false);
   });
 
   it('应该让业务页整块顶掉表格区 当提供 table 插槽时', async () => {

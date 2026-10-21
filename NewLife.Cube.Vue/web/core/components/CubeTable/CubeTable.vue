@@ -43,7 +43,7 @@ const props = withDefaults(defineProps<CubeTableProps>(), {
   context: null,
   autoEngine: true,
   pageSize: undefined,
-  searchPlaceholder: '搜索...',
+  searchPlaceholder: '搜索关键字',
   showSearch: true,
   showRefresh: true,
   metrics: () => [],
@@ -58,6 +58,7 @@ const props = withDefaults(defineProps<CubeTableProps>(), {
   showDownloadTemplate: undefined,
   exportFormat: 'xlsx',
   confirmDelete: undefined,
+  extraRowActions: () => [],
 });
 
 const injected = inject(CubeEngineKey, null);
@@ -163,6 +164,7 @@ const visibleColumns = computed(() => (props.columnsSetting ? columns.visibility
             :actions="actions"
             :visibility="visibleColumns"
             :reset-visibility="columns.reset"
+            :extra-row-actions="extraRowActions"
             v-bind="grid"
           >
             <template v-for="name in gridSlotNames" #[name]="scope">
@@ -196,10 +198,14 @@ const visibleColumns = computed(() => (props.columnsSetting ? columns.visibility
 </template>
 
 <style scoped>
-/* 列表页骨架：与 MES ListPage 同一套尺寸（页高 100%、12px 内边距、三段卡片） */
+/* 列表页骨架：与 MES ListPage 同一套尺寸（页高 100%、内边距 12px、三段卡片）。
+   滚动模型契约：`.cube-table` 靠 `height:100%` 撑满，要求宿主内容区给确定高度
+   （如 `height:100vh; overflow:hidden`，框架 TopMenu 即如此）；宿主未给定时百分比高度
+   不生效，整页会随内容撑高。overflow:hidden 在定高下兜住组件自身不外溢滚动条。 */
 .cube-table {
   height: 100%;
   box-sizing: border-box;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   padding: 12px;

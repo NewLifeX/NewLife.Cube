@@ -20,9 +20,11 @@ import {
   dialogShapeFor,
   isExpandableCell,
   isOverflowTooltipCell,
+  layoutRowActions,
   normalizeMulti,
   resolveGridFlags,
   resolveToolbarFlags,
+  splitRowActions,
   truncate,
 } from '../cubeTable.logic';
 import { FIELDS } from './fakeCtx';
@@ -187,6 +189,37 @@ describe('CubeTable/logic 工具栏与表格开关', () => {
   it('应该默认关索引列与双击编辑 当后端没声明时', () => {
     expect(resolveGridFlags({}, {})).toMatchObject({ indexColumn: false, doubleClickEdit: false });
     expect(resolveGridFlags({}, { enableTableDoubleClick: true }).doubleClickEdit).toBe(true);
+  });
+});
+
+describe('CubeTable/logic 操作列自适应与收起', () => {
+  it.each([
+    [1, false, 80],
+    [3, false, 208],
+    [4, false, 272],
+  ])('应该按个数撑宽且不收起 当动作数为 %i 时', (count, folded, width) => {
+    expect(layoutRowActions(count)).toEqual({ folded, width });
+  });
+
+  it('应该按 4 个单元封顶宽度并标收起 当动作数超过 4 时', () => {
+    // 5 个和 8 个同宽：后加的动作一律进「更多」，不再撑宽列
+    expect(layoutRowActions(5)).toEqual({ folded: true, width: 272 });
+    expect(layoutRowActions(8).width).toBe(layoutRowActions(5).width);
+  });
+
+  it('应该按一个单元保底 当动作数为 0 时', () => {
+    // 空列表也要给操作列一个稳定宽度，不能退化成 0 宽把表头挤变形
+    expect(layoutRowActions(0).width).toBe(80);
+  });
+
+  it('应该最多 4 个全部直接显示 当未超过收起阈值时', () => {
+    const items = ['a', 'b', 'c', 'd'];
+    expect(splitRowActions(items)).toEqual({ direct: items, overflow: [] });
+  });
+
+  it('应该前 3 个直接显示、其余收进更多 当有 5 个动作时', () => {
+    const items = ['a', 'b', 'c', 'd', 'e'];
+    expect(splitRowActions(items)).toEqual({ direct: ['a', 'b', 'c'], overflow: ['d', 'e'] });
   });
 });
 

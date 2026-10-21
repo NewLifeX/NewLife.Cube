@@ -1,9 +1,11 @@
 /**
  * `CubeTableSearch` 组件渲染测试
  *
- * 结构对齐 MES ListPage 的一体式搜索区：收起态只有关键字一行，展开才出条件面板。
+ * 结构对齐 MES ListPage 的一体式搜索区：常驻每行三列的栅格，收起态第一行 =
+ * 关键字 + 第一个条件 + 「展开/收起、重置、搜索」，展开把其余条件铺进后续行，
+ * 而动作格（钉在第一行最右列）不随条件流到尾部。
  * 断言点：展开入口的有无、条件按元数据出控件、范围类拆两格、内联字典出下拉、
- * 面板内查询/重置打到引擎、插槽整块接管。
+ * 动作格查/重置打到引擎、插槽整块接管。
  *
  * 运行：pnpm test:unit core/components/CubeTable/__tests__/CubeTableSearch.spec.ts
  */
@@ -69,33 +71,55 @@ const MANY: FieldMeta[] = Array.from({ length: 6 }, (_v, i): FieldMeta => ({
   typeName: 'String',
 }));
 
-/** 展开条件面板（只用到 find/trigger，结构类型即可，避免绑死 VTU 的包装类型） */
+/** 展开条件内联行（只用到 find/trigger，结构类型即可，避免绑死 VTU 的包装类型） */
 async function expand(wrapper: { find: (selector: string) => { trigger: (event: string) => Promise<void> } }) {
   await wrapper.find('.cts-toggle').trigger('click');
   await nextTick();
 }
 
 describe('CubeTableSearch 一体式结构', () => {
-  it('应该收起态只渲染关键字一行 当有条件但未展开时', async () => {
+  it('应该收起态第一行只出 关键字+首个条件+动作格 当有多条件未展开时', async () => {
     const { wrapper } = await mountSearch(MANY);
-    expect(wrapper.find('.cts-bar').exists()).toBe(true);
-    expect(wrapper.find('.cts-panel').exists()).toBe(false);
-    expect(wrapper.text()).not.toContain('条件0');
+    expect(wrapper.find('.cts-grid').exists()).toBe(true);
+    expect(wrapper.findAll('.cts-item')).toHaveLength(1);
+    expect(wrapper.text()).toContain('条件0');
+    expect(wrapper.text()).not.toContain('条件1');
+    expect(wrapper.find('.cts-toggle').text()).toContain('展开');
+    // 动作格常驻：重置/搜索不收进展开态
+    expect(wrapper.findAll('.cts-actions button')).toHaveLength(2);
   });
 
-  it('应该展开全部条件并切成「收起」文案 当点了展开按钮时', async () => {
+  it('应该把全部条件铺进栅格并切成「收起」文案 当点了展开按钮时', async () => {
     const { wrapper } = await mountSearch(MANY);
     await expand(wrapper);
-    expect(wrapper.find('.cts-panel').exists()).toBe(true);
+    // 条件不再进独立面板，而是排进 .cts-grid 的格子里
+    expect(wrapper.find('.cts-panel').exists()).toBe(false);
+    expect(wrapper.findAll('.cts-grid .cts-item')).toHaveLength(6);
     expect(wrapper.text()).toContain('条件0');
     expect(wrapper.text()).toContain('条件5');
     expect(wrapper.find('.cts-toggle').text()).toContain('收起');
+  });
+
+  it('应该栅格格序为 关键字 → 动作格(展开收起+重置+搜索) → 条件 当收起与展开时', async () => {
+    const { wrapper } = await mountSearch(MANY);
+    for (const _round of [0, 1]) {
+      const cells = wrapper.find('.cts-grid').element.children;
+      expect(cells[0]!.classList.contains('cts-input')).toBe(true);
+      // 动作格 DOM 紧随关键字：配合 CSS 钉格（第一行第三列），展开后不随条件流到尾行
+      const end = cells[1]!;
+      expect(end.classList.contains('cts-cell--end')).toBe(true);
+      expect(end.children[0]!.classList.contains('cts-toggle')).toBe(true);
+      expect(end.children[1]!.classList.contains('cts-actions')).toBe(true);
+      expect(cells[2]!.classList.contains('cts-item')).toBe(true);
+      await expand(wrapper);
+    }
   });
 
   it('应该不给展开按钮也不出面板 当元数据没有搜索条件时', async () => {
     const { wrapper } = await mountSearch([]);
     expect(wrapper.find('.cts-toggle').exists()).toBe(false);
     expect(wrapper.find('.cts-panel').exists()).toBe(false);
+    expect(wrapper.findAll('.cts-item')).toHaveLength(0);
   });
 
   it('应该用页面的占位文案 当业务页覆盖 placeholder 时', async () => {
@@ -183,7 +207,7 @@ describe('CubeTableSearch 条件渲染', () => {
 });
 
 describe('CubeTableSearch 动作', () => {
-  it('应该把搜索与重置打到引擎 当点击面板内两个按钮时', async () => {
+  it('应该把搜索与重置打到引擎 当点击动作格两个按钮时', async () => {
     const search = vi.fn(async () => undefined);
     const resetSearch = vi.fn(async () => undefined);
     const { wrapper } = await mountSearch([FIELDS.name], { search, resetSearch });

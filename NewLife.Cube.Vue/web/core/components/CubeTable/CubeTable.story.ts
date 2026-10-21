@@ -14,7 +14,7 @@ import { Cpu, VideoPlay, Warning } from '@element-plus/icons-vue';
 import CubeTable from './CubeTable.vue';
 import { createCubeEngine } from '../../engine/createCubeEngine';
 import type { CubeEngineContext, CubeEngineDeps, CubePageMeta } from '../../engine/types';
-import type { CubeTableMetric } from './types';
+import type { CubeRowAction, CubeTableMetric } from './types';
 
 /** 覆盖全部单元格分支的元数据：值集 / 布尔 / 数值 / 日期 / 日期时间 / 图片 / 附件 / 色块 / 图标 / Json */
 const META: CubePageMeta = {
@@ -219,6 +219,14 @@ const METRICS: CubeTableMetric[] = [
   },
 ];
 
+// 测试状态：操作列自适应与「更多」收起 —— 3 内置键 + 2 业务动作，只露前 3 个，第 4 个位置是「更多」
+const rowActionsCtx = engine();
+const ROW_EXTRA_ACTIONS: CubeRowAction[] = [
+  // 复制借引擎的新增弹窗证明「下拉项真触发了回调」；归档只验证存在，不产生可见变化
+  { key: 'copy', label: '复制', onClick: () => rowActionsCtx.openCreate() },
+  { key: 'archive', label: '归档', onClick: () => undefined },
+];
+
 export const stories = [
   // 测试状态：操作栏 + 一体式搜索栏（收起）+ 主面板（表格 + 分页）；3 行数据、6 个搜索条件但未展开
   { id: 'CubeTable/Default', component: CubeTable, props: { context: engine() } },
@@ -240,4 +248,7 @@ export const stories = [
 
   // 测试状态：新增弹窗已打开 —— 字段控件与必填星号、底部「取消/保存」
   { id: 'CubeTable/FormDialog', component: CubeTable, props: { context: engine({ openDialog: true }) } },
+
+  // 测试状态：操作列 5 个动作 —— 列宽按 4 单元封顶，后 2 个收进「更多」下拉
+  { id: 'CubeTable/RowActions', component: CubeTable, props: { context: rowActionsCtx, extraRowActions: ROW_EXTRA_ACTIONS } },
 ];
