@@ -233,6 +233,44 @@ public class LocalizationTests
         }
     }
 
+    [Fact(DisplayName = "多语言 - 实体元数据与视图文案全语言覆盖")]
+    public void MetadataAndViewKeysCoverAllLanguages()
+    {
+        // 实体元数据（字段名/设置项描述/控制器标题）与视图文案以英文为源文，
+        // 每种受支持语言都必须有译文，否则非中文用户会看到英文元数据。
+        String[] keys =
+        [
+            "Third-party authorization", "Tenant administrator", "Account closure failed",
+            "Password strength", "Share count", "Permission items", "Operation permissions",
+            "Security center", "Remember me", "No online users", "Move up", "Move down",
+            "Basic information", "Notification records", "System info", "Quick links",
+            "Attachments not downloaded for this many days are cleaned up",
+            "Gender", "Birthday", "Company name", "Login tip",
+        ];
+
+        // 含占位符的键：译文必须保留占位符，且不得等于源文
+        String[] placeholderKeys = ["{0} cores", "{0} assemblies", "{0} items in clipboard", "Bound to {0} platforms"];
+
+        foreach (var culture in CubeLocalization.SupportedCultures)
+        {
+            if (culture.StartsWith("en", StringComparison.OrdinalIgnoreCase)) continue;
+
+            foreach (var key in keys)
+            {
+                var text = Translate(culture, key);
+                Assert.True(text != key, $"{culture} 缺少元数据/视图译文：{key}");
+            }
+
+            foreach (var key in placeholderKeys)
+            {
+                // 取值为品牌/技术借词时可能与源文同形（如 pt 的 {0} assemblies），此处只要求占位符保留
+                var text = Translate(culture, key);
+                Assert.False(String.IsNullOrEmpty(text), $"{culture} 缺少元数据/视图译文：{key}");
+                Assert.Contains("{0}", text);
+            }
+        }
+    }
+
     [Fact(DisplayName = "多语言 - 密码提示覆盖全部语言")]
     public void PasswordMessages()
     {
