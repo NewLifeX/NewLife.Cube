@@ -19,8 +19,16 @@
 | ④ 表格 | `CubeTableGrid` | `.ct-table-wrap` | `.table-wrap` + `el-table height=100%` |
 | ⑤ 分页 | `CubeTablePagination` | `.ctp` | `ListPage/PaginationBar`（左「共 N 条」，右分页器 + 每页条数下拉） |
 
-滚动模型与 MES 一致：`.cube-table` 高 100%、页面本身不出滚动条，只有表格数据区滚动
-（③④⑤ 包在 `.ct-panel` 里，`flex:1 + min-height:0`）。
+### 滚动模型：视口自适应，只有表格内滚动
+
+`.cube-table` 高 100%、页面本身不出滚动条，只有表格数据区滚动（③④⑤ 包在 `.ct-panel` 里，
+`flex:1 + min-height:0`；`el-table height=100%`）。搜索区 `flex-shrink:0`，展开时变高、
+表格区自动变矮，收起时反之——**筛选展开/收起天然自适应，无需额外代码**。
+
+> **宿主契约（必读，否则分页会被顶出视窗、整页滚动）**：`height:100%` 依赖祖先链给出**确定高度**。
+> 宿主内容区必须 `height:100vh; overflow:hidden`（框架自带 `TopMenu` 布局即 `calc(100vh - 页头)`），
+> 仅 `min-height:100vh` 不算确定高度，百分比高度不生效→表格按内容撑高。`CubeTable` 自身已加
+> `overflow:hidden` 兜底，但撑不满的根因仍在宿主高度链。
 
 ---
 
@@ -266,7 +274,7 @@ const ctx = useCubeEngine({
 
 ## CT（组件视觉回归）
 
-`CubeTable.story.ts` 定义 8 个变体，`CubeTable.ct.spec.ts` 共 15 条用例（9 条带像素基线 + 6 条纯行为）：
+`CubeTable.story.ts` 定义 8 个变体，`CubeTable.ct.spec.ts` 共 16 条用例（9 条带像素基线 + 7 条纯行为）：
 `Default`（五段结构 + 全控件形态一屏）、`ReadOnly`、`Empty`、`LoadFail`、`Metrics`（指标行）、
 `OneFilter`（只有一个条件时的搜索栏）、`FormDialog`、`RowActions`（操作列 5 个动作：前 3 + 「更多」，
 含展开下拉点选真实触发回调的行为断言）。
@@ -314,5 +322,5 @@ pnpm run test:ct          # 之后做像素比对
 | `__tests__/CubeTableColumnSetting.spec.ts` | 列清单、未记录视为显示、按记录取消勾选、set/reset 事件 |
 | `__tests__/CubeTablePagination.spec.ts` | 「共 N 条」与单位、`prev,pager,next,jumper` 布局、每页条数独立下拉、档位默认与覆盖 |
 | `__tests__/CubeTable.spec.ts` | 五段自上而下顺序、上下文三级解析优先级、区块开关、每个插槽的替换/追加边界、自写列转发、设置列持久化、失败就地说明、导出下载落地 |
-| `CubeTable.ct.spec.ts` + `CubeTable.story.ts` | 八个变体的像素基线与行为：勾选→批量删除带条数并弹确认、关键字回车走 `q`、重置回全量、设置列隐藏并落 localStorage、换每页条数回第 1 页、行内删除取消不动数据、编辑先取详情、操作列超 4 个收「更多」并点选触发 |
+| `CubeTable.ct.spec.ts` + `CubeTable.story.ts` | 八个变体的像素基线与行为：勾选→批量删除带条数并弹确认、关键字回车走 `q`、重置回全量、设置列隐藏并落 localStorage、换每页条数回第 1 页、行内删除取消不动数据、编辑先取详情、操作列超 4 个收「更多」并点选触发、滚动模型（矮视口下验证页面不滚、分页在视口内、只有表体内滚、展开筛选面板变矮） |
 
