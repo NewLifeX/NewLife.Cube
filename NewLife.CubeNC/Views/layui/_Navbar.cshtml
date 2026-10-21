@@ -86,7 +86,7 @@
 
             <li class="layui-nav-item">
                 <a href="javascript:;">
-                    <span class="tenant-name">@(tenantName ?? "系统后台")</span>
+                    <span class="tenant-name">@(tenantName ?? L.T("System console"))</span>
                 </a>
                 <dl class="layui-nav-child">
                     @if (user.Roles.Any(e => e.IsSystem))
@@ -94,7 +94,7 @@
                         <dd>
                             <a href="~/Admin/Index?tenantid=0">
                                 <i class="layui-icon layui-icon-home"></i>
-                                系统管理后台
+                                @L.T("System admin console")
                             </a>
                         </dd>
                         <hr>
@@ -121,14 +121,14 @@
                 <span class="user-name">@user</span>
             </a>
             <dl class="layui-nav-child">
-                <dd><a href="javascript:void(0);" lay-header-event="menuSetting" data-url='/Admin/User/Info/@uid' data-title="用户信息">
+                <dd><a href="javascript:void(0);" lay-header-event="menuSetting" data-url='/Admin/User/Info/@uid' data-title="@L.T("Profile")">
                     <i class="layui-icon layui-icon-user"></i>
-                    用户信息
+                    @L.T("Profile")
                 </a></dd>
                 <hr>
-                <dd><a href="javascript:void(0);" lay-header-event="menuSetting" data-url='/Admin/User/Logout' data-title="注销" data-loginout="true">
+                <dd><a href="javascript:void(0);" lay-header-event="menuSetting" data-url='/Admin/User/Logout' data-title="@L.T("Sign out")" data-loginout="true">
                     <i class="layui-icon layui-icon-logout"></i>
-                    注销
+                    @L.T("Sign out")
                 </a></dd>
             </dl>
         </li>

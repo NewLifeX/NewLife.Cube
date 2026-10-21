@@ -1,4 +1,4 @@
-﻿@model XCode.Membership.User
+@model XCode.Membership.User
 @using System.Linq
 @using System.Reflection
 @using XCode
@@ -31,7 +31,7 @@
         <div class="profile-avatar">
             @if (!user.Avatar.IsNullOrEmpty())
             {
-                <img src="@user.GetAvatarUrl()" alt="头像" />
+                <img src="@user.GetAvatarUrl()" alt="@L.T("Avatar")" />
             }
             else
             {
@@ -58,19 +58,19 @@
     <div class="profile-stats">
         <div class="stat-item">
             <div class="stat-num">@user.Logins</div>
-            <div class="stat-label">登录次数</div>
+            <div class="stat-label">@L.T("Sign-in count")</div>
         </div>
         <div class="stat-item">
             <div class="stat-num">@user.LastLogin.ToFullString("")</div>
-            <div class="stat-label">最后登录</div>
+            <div class="stat-label">@L.T("Last sign-in")</div>
         </div>
         <div class="stat-item">
             <div class="stat-num">@(user2?.DepartmentName)</div>
-            <div class="stat-label">所属部门</div>
+            <div class="stat-label">@L.T("Department")</div>
         </div>
         <div class="stat-item">
             <div class="stat-num">@user.LastLoginIP</div>
-            <div class="stat-label">最后登录IP</div>
+            <div class="stat-label">@L.T("Last sign-in IP")</div>
         </div>
     </div>
 </div>
@@ -81,21 +81,21 @@
 
     <!-- 基础信息 -->
     <div class="form-section">
-        <div class="form-section-title"><i class="fa fa-id-card-o"></i>基础信息</div>
+        <div class="form-section-title"><i class="fa fa-id-card-o"></i>@L.T("Basic information")</div>
         <div class="form-section-body">
             <div class="row">
                 <div class="col-sm-6">
                     <div class="form-group">
-                        <label class="control-label col-sm-4">名称</label>
+                        <label class="control-label col-sm-4">@L.T("Name")</label>
                         <div class="col-sm-8">
                             <input value="@user.Name" class="form-control" disabled="disabled" />
-                            <span class="help-text">登录名，不可修改</span>
+                            <span class="help-text">@L.T("Sign-in name, cannot be modified")</span>
                         </div>
                     </div>
                 </div>
                 <div class="col-sm-6">
                     <div class="form-group">
-                        <label class="control-label col-sm-4">显示名</label>
+                        <label class="control-label col-sm-4">@L.T("Display name")</label>
                         <div class="col-sm-8">
                             @Html.ForEditor("DisplayName")
                             @Html.ForDescription("DisplayName")
@@ -106,7 +106,7 @@
             <div class="row">
                 <div class="col-sm-6">
                     <div class="form-group">
-                        <label class="control-label col-sm-4">性别</label>
+                        <label class="control-label col-sm-4">@L.T("Gender")</label>
                         <div class="col-sm-8">
                             @Html.ForEditor("Sex", user.Sex)
                             @Html.ForDescription("Sex")
@@ -115,7 +115,7 @@
                 </div>
                 <div class="col-sm-6">
                     <div class="form-group">
-                        <label class="control-label col-sm-4">生日</label>
+                        <label class="control-label col-sm-4">@L.T("Birthday")</label>
                         <div class="col-sm-8">
                             <div class="input-group">
                                 @Html.ForEditor("Birthday")
@@ -130,12 +130,12 @@
 
     <!-- 联系方式 -->
     <div class="form-section">
-        <div class="form-section-title"><i class="fa fa-envelope-o"></i>联系方式</div>
+        <div class="form-section-title"><i class="fa fa-envelope-o"></i>@L.T("Contact")</div>
         <div class="form-section-body">
             <div class="row">
                 <div class="col-sm-6">
                     <div class="form-group">
-                        <label class="control-label col-sm-4">邮件</label>
+                        <label class="control-label col-sm-4">@L.T("Email")</label>
                         <div class="col-sm-8">
                             @Html.ForEditor("Mail")
                         </div>
@@ -143,7 +143,7 @@
                 </div>
                 <div class="col-sm-6">
                     <div class="form-group">
-                        <label class="control-label col-sm-4">手机</label>
+                        <label class="control-label col-sm-4">@L.T("Mobile")</label>
                         <div class="col-sm-8">
                             @Html.ForEditor("Mobile")
                         </div>
@@ -155,12 +155,12 @@
 
     <!-- 身份信息 -->
     <div class="form-section">
-        <div class="form-section-title"><i class="fa fa-shield"></i>身份信息</div>
+        <div class="form-section-title"><i class="fa fa-shield"></i>@L.T("Identity information")</div>
         <div class="form-section-body">
             <div class="row">
                 <div class="col-sm-6">
                     <div class="form-group">
-                        <label class="control-label col-sm-4">代码</label>
+                        <label class="control-label col-sm-4">@L.T("Code")</label>
                         <div class="col-sm-8">
                             @Html.ForEditor("Code")
                             <span class="help-text">@Html.ForDescription("Code")</span>
@@ -169,7 +169,7 @@
                 </div>
                 <div class="col-sm-6">
                     <div class="form-group">
-                        <label class="control-label col-sm-4">角色</label>
+                        <label class="control-label col-sm-4">@L.T("Role")</label>
                         <div class="col-sm-8">
                             <p class="form-value">
                                 @if (roles != null)
@@ -180,7 +180,7 @@
                                     }
                                 }
                             </p>
-                            <span class="help-text">主要角色与次要角色</span>
+                            <span class="help-text">@L.T("Primary and secondary roles")</span>
                         </div>
                     </div>
                 </div>
@@ -188,7 +188,7 @@
             <div class="row">
                 <div class="col-sm-6">
                     <div class="form-group">
-                        <label class="control-label col-sm-4">部门</label>
+                        <label class="control-label col-sm-4">@L.T("Department")</label>
                         <div class="col-sm-8">
                             <p class="form-value"><i class="fa fa-sitemap"></i>@(user2?.DepartmentName)</p>
                             <span class="help-text">@Html.ForDescription("Department")</span>
@@ -197,7 +197,7 @@
                 </div>
                 <div class="col-sm-6">
                     <div class="form-group">
-                        <label class="control-label col-sm-4">头像</label>
+                        <label class="control-label col-sm-4">@L.T("Avatar")</label>
                         <div class="col-sm-8 avatar-upload">
                             <span class="avatar-thumb">
                                 @if (!user.Avatar.IsNullOrEmpty())
@@ -211,7 +211,7 @@
                             </span>
                             <span class="upload-box">
                                 <span class="btn btn-sm btn-default btn-file">
-                                    <i class="fa fa-upload"></i> 选择文件
+                                    <i class="fa fa-upload"></i> @L.T("Choose file")
                                     <input type="file" name="Avatar" accept="image/*" />
                                 </span>
                                 <span class="help-text">@user.Avatar</span>
@@ -225,12 +225,12 @@
 
     <!-- 登录信息 -->
     <div class="form-section">
-        <div class="form-section-title"><i class="fa fa-clock-o"></i>登录信息</div>
+        <div class="form-section-title"><i class="fa fa-clock-o"></i>@L.T("Sign-in information")</div>
         <div class="form-section-body">
             <div class="row">
                 <div class="col-sm-6">
                     <div class="form-group">
-                        <label class="control-label col-sm-4">登录次数</label>
+                        <label class="control-label col-sm-4">@L.T("Sign-in count")</label>
                         <div class="col-sm-8">
                             <p class="form-value"><i class="fa fa-sign-in"></i>@user.Logins</p>
                         </div>
@@ -238,7 +238,7 @@
                 </div>
                 <div class="col-sm-6">
                     <div class="form-group">
-                        <label class="control-label col-sm-4">最后登录</label>
+                        <label class="control-label col-sm-4">@L.T("Last sign-in")</label>
                         <div class="col-sm-8">
                             <p class="form-value"><i class="fa fa-calendar-o"></i>@user.LastLogin.ToFullString("")</p>
                         </div>
@@ -248,7 +248,7 @@
             <div class="row">
                 <div class="col-sm-6">
                     <div class="form-group">
-                        <label class="control-label col-sm-4">最后登录IP</label>
+                        <label class="control-label col-sm-4">@L.T("Last sign-in IP")</label>
                         <div class="col-sm-8">
                             <p class="form-value"><i class="fa fa-globe"></i>@user.LastLoginIP</p>
                         </div>
@@ -258,7 +258,7 @@
             <div class="row">
                 <div class="col-sm-12">
                     <div class="form-group">
-                        <label class="control-label col-sm-2">备注</label>
+                        <label class="control-label col-sm-2">@L.T("Remark")</label>
                         <div class="col-sm-10">
                             @{
                                 // 备注在用户实体上配置了 ItemType=html，与编辑页保持一致使用 HTML 富文本编辑器。
@@ -283,23 +283,23 @@
 
     <!-- 操作栏 -->
     <div class="profile-actions">
-        <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> 保存</button>
-        <button type="button" class="btn btn-default" onclick="history.go(-1);"><i class="fa fa-times"></i> 取消</button>
+        <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> @L.T("Save")</button>
+        <button type="button" class="btn btn-default" onclick="history.go(-1);"><i class="fa fa-times"></i> @L.T("Cancel")</button>
     </div>
 }
 
 <!-- 安全中心：更换绑定 / 导出数据 / 注销账号（依据《个人信息保护法》） -->
 <div class="form-section">
-    <div class="form-section-title"><i class="fa fa-lock"></i>安全中心</div>
+    <div class="form-section-title"><i class="fa fa-lock"></i>@L.T("Security center")</div>
     <div class="form-section-body">
         <!-- 导出个人数据 -->
         <div class="row">
             <div class="col-sm-12">
                 <div class="form-group">
-                    <label class="control-label col-sm-4">个人数据</label>
+                    <label class="control-label col-sm-4">@L.T("Personal data")</label>
                     <div class="col-sm-8">
-                        <a href="@Url.Action("ExportData")" class="btn btn-sm btn-info"><i class="fa fa-download"></i> 导出个人数据</a>
-                        <span class="help-text">依据《中华人民共和国个人信息保护法》提供数据可携带权，导出 JSON 文件</span>
+                        <a href="@Url.Action("ExportData")" class="btn btn-sm btn-info"><i class="fa fa-download"></i> @L.T("Export personal data")</a>
+                        <span class="help-text">@L.T("The right to data portability under the Personal Information Protection Law of the PRC; exports a JSON file")</span>
                     </div>
                 </div>
             </div>
@@ -308,10 +308,10 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="form-group">
-                    <label class="control-label col-sm-4">注销账号</label>
+                    <label class="control-label col-sm-4">@L.T("Close account")</label>
                     <div class="col-sm-8">
-                        <button type="button" class="btn btn-sm btn-danger" id="sec_close_btn"><i class="fa fa-times-circle"></i> 注销账号</button>
-                        <span class="help-text">依据《中华人民共和国个人信息保护法》、欧盟《通用数据保护条例》（GDPR）等法规提供账号注销（删除权）。注销后账号将被禁用，个人数据将删除或匿名化，且不可恢复</span>
+                        <button type="button" class="btn btn-sm btn-danger" id="sec_close_btn"><i class="fa fa-times-circle"></i> @L.T("Close account")</button>
+                        <span class="help-text">@L.T("Account closure (right to erasure) is provided in accordance with the Personal Information Protection Law of the PRC, the EU General Data Protection Regulation (GDPR) and other regulations. After closure the account is disabled and personal data is deleted or anonymized; this cannot be undone.")</span>
                     </div>
                 </div>
             </div>
@@ -327,15 +327,15 @@
             jQuery(function () {
                 // ========== 注销账号 ==========
                 $('#sec_close_btn').on('click', function () {
-                    if (!confirm('确定要注销账号吗？注销后账号将被禁用，个人数据将删除或匿名化，且不可恢复。')) return;
+                    if (!confirm('@L.T("Close this account? The account will be disabled and personal data will be deleted or anonymized. This cannot be undone.")')) return;
                     $.ajax({
                         url: '@Url.Action("CloseAccount", "User", new { area = "Admin" })',
                         type: 'POST',
                         dataType: 'json'
                     }).done(function (d) {
-                        if (d && d.code == 0) { alert('账号已注销'); location.href = '@Url.Action("Login", "User", new { area = "Admin" })'; }
-                        else { alert((d && d.message) || '注销失败'); }
-                    }).fail(function () { alert('注销失败，请稍后重试'); });
+                        if (d && d.code == 0) { alert('@L.T("Account closed")'); location.href = '@Url.Action("Login", "User", new { area = "Admin" })'; }
+                        else { alert((d && d.message) || '@L.T("Account closure failed")'); }
+                    }).fail(function () { alert('@L.T("Account closure failed, please try again later")'); });
                 });
             });
         }

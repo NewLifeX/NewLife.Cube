@@ -1,4 +1,4 @@
-﻿@model XCode.Membership.User
+@model XCode.Membership.User
 @using System.Linq
 @using System.Reflection
 @using XCode
@@ -31,7 +31,7 @@
         <div class="profile-avatar">
             @if (!user.Avatar.IsNullOrEmpty())
             {
-                <img src="@user.GetAvatarUrl()" alt="头像" />
+                <img src="@user.GetAvatarUrl()" alt="@L.T("Avatar")" />
             }
             else
             {
@@ -58,19 +58,19 @@
     <div class="profile-stats">
         <div class="stat-item">
             <div class="stat-num">@user.Logins</div>
-            <div class="stat-label">登录次数</div>
+            <div class="stat-label">@L.T("Sign-in count")</div>
         </div>
         <div class="stat-item">
             <div class="stat-num">@user.LastLogin.ToFullString("")</div>
-            <div class="stat-label">最后登录</div>
+            <div class="stat-label">@L.T("Last sign-in")</div>
         </div>
         <div class="stat-item">
             <div class="stat-num">@(user2?.DepartmentName)</div>
-            <div class="stat-label">所属部门</div>
+            <div class="stat-label">@L.T("Department")</div>
         </div>
         <div class="stat-item">
             <div class="stat-num">@user.LastLoginIP</div>
-            <div class="stat-label">最后登录IP</div>
+            <div class="stat-label">@L.T("Last sign-in IP")</div>
         </div>
     </div>
 </div>
@@ -81,31 +81,31 @@
 
     <!-- 基础信息 -->
     <div class="form-section">
-        <div class="form-section-title"><i class="fa fa-id-card-o"></i>基础信息</div>
+        <div class="form-section-title"><i class="fa fa-id-card-o"></i>@L.T("Basic information")</div>
         <div class="form-section-body">
             <div class="form-group">
-                <label class="control-label col-sm-4">名称</label>
+                <label class="control-label col-sm-4">@L.T("Name")</label>
                 <div class="col-sm-8">
                     <input value="@user.Name" class="form-control" disabled="disabled" />
-                    <span class="help-text">登录名，不可修改</span>
+                    <span class="help-text">@L.T("Sign-in name, cannot be modified")</span>
                 </div>
             </div>
             <div class="form-group">
-                <label class="control-label col-sm-4">显示名</label>
+                <label class="control-label col-sm-4">@L.T("Display name")</label>
                 <div class="col-sm-8">
                     @Html.ForEditor("DisplayName")
                     @Html.ForDescription("DisplayName")
                 </div>
             </div>
             <div class="form-group">
-                <label class="control-label col-sm-4">性别</label>
+                <label class="control-label col-sm-4">@L.T("Gender")</label>
                 <div class="col-sm-8">
                     @Html.ForEditor("Sex", user.Sex)
                     @Html.ForDescription("Sex")
                 </div>
             </div>
             <div class="form-group">
-                <label class="control-label col-sm-4">生日</label>
+                <label class="control-label col-sm-4">@L.T("Birthday")</label>
                 <div class="col-sm-8">
                     <div class="input-group">
                         @Html.ForEditor("Birthday")
@@ -118,16 +118,16 @@
 
     <!-- 联系方式 -->
     <div class="form-section">
-        <div class="form-section-title"><i class="fa fa-envelope-o"></i>联系方式</div>
+        <div class="form-section-title"><i class="fa fa-envelope-o"></i>@L.T("Contact")</div>
         <div class="form-section-body">
             <div class="form-group">
-                <label class="control-label col-sm-4">邮件</label>
+                <label class="control-label col-sm-4">@L.T("Email")</label>
                 <div class="col-sm-8">
                     @Html.ForEditor("Mail")
                 </div>
             </div>
             <div class="form-group">
-                <label class="control-label col-sm-4">手机</label>
+                <label class="control-label col-sm-4">@L.T("Mobile")</label>
                 <div class="col-sm-8">
                     @Html.ForEditor("Mobile")
                 </div>
@@ -137,17 +137,17 @@
 
     <!-- 身份信息 -->
     <div class="form-section">
-        <div class="form-section-title"><i class="fa fa-shield"></i>身份信息</div>
+        <div class="form-section-title"><i class="fa fa-shield"></i>@L.T("Identity information")</div>
         <div class="form-section-body">
             <div class="form-group">
-                <label class="control-label col-sm-4">代码</label>
+                <label class="control-label col-sm-4">@L.T("Code")</label>
                 <div class="col-sm-8">
                     @Html.ForEditor("Code")
                     <span class="help-text">@Html.ForDescription("Code")</span>
                 </div>
             </div>
             <div class="form-group">
-                <label class="control-label col-sm-4">角色</label>
+                <label class="control-label col-sm-4">@L.T("Role")</label>
                 <div class="col-sm-8">
                     <p class="form-value">
                         @if (roles != null)
@@ -158,18 +158,18 @@
                             }
                         }
                     </p>
-                    <span class="help-text">主要角色与次要角色</span>
+                    <span class="help-text">@L.T("Primary and secondary roles")</span>
                 </div>
             </div>
             <div class="form-group">
-                <label class="control-label col-sm-4">部门</label>
+                <label class="control-label col-sm-4">@L.T("Department")</label>
                 <div class="col-sm-8">
                     <p class="form-value"><i class="fa fa-sitemap"></i>@(user2?.DepartmentName)</p>
                     <span class="help-text">@Html.ForDescription("Department")</span>
                 </div>
             </div>
             <div class="form-group">
-                <label class="control-label col-sm-4">头像</label>
+                <label class="control-label col-sm-4">@L.T("Avatar")</label>
                 <div class="col-sm-8 avatar-upload">
                     <span class="avatar-thumb">
                         @if (!user.Avatar.IsNullOrEmpty())
@@ -183,7 +183,7 @@
                     </span>
                     <span class="upload-box">
                         <span class="btn btn-sm btn-default btn-file">
-                            <i class="fa fa-upload"></i> 选择文件
+                            <i class="fa fa-upload"></i> @L.T("Choose file")
                             <input type="file" name="Avatar" accept="image/*" />
                         </span>
                         <span class="help-text">@user.Avatar</span>
@@ -195,28 +195,28 @@
 
     <!-- 登录信息 -->
     <div class="form-section">
-        <div class="form-section-title"><i class="fa fa-clock-o"></i>登录信息</div>
+        <div class="form-section-title"><i class="fa fa-clock-o"></i>@L.T("Sign-in information")</div>
         <div class="form-section-body">
             <div class="form-group">
-                <label class="control-label col-sm-4">登录次数</label>
+                <label class="control-label col-sm-4">@L.T("Sign-in count")</label>
                 <div class="col-sm-8">
                     <p class="form-value"><i class="fa fa-sign-in"></i>@user.Logins</p>
                 </div>
             </div>
             <div class="form-group">
-                <label class="control-label col-sm-4">最后登录</label>
+                <label class="control-label col-sm-4">@L.T("Last sign-in")</label>
                 <div class="col-sm-8">
                     <p class="form-value"><i class="fa fa-calendar-o"></i>@user.LastLogin.ToFullString("")</p>
                 </div>
             </div>
             <div class="form-group">
-                <label class="control-label col-sm-4">最后登录IP</label>
+                <label class="control-label col-sm-4">@L.T("Last sign-in IP")</label>
                 <div class="col-sm-8">
                     <p class="form-value"><i class="fa fa-globe"></i>@user.LastLoginIP</p>
                 </div>
             </div>
             <div class="form-group">
-                <label class="control-label col-sm-4">备注</label>
+                <label class="control-label col-sm-4">@L.T("Remark")</label>
                 <div class="col-sm-8">
                     @{
                         // 备注在用户实体上配置了 ItemType=html，与编辑页保持一致使用 HTML 富文本编辑器。
@@ -239,8 +239,8 @@
 
     <!-- 操作栏 -->
     <div class="profile-actions">
-        <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> 保存</button>
-        <button type="button" class="btn btn-default" onclick="history.go(-1);"><i class="fa fa-times"></i> 取消</button>
+        <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> @L.T("Save")</button>
+        <button type="button" class="btn btn-default" onclick="history.go(-1);"><i class="fa fa-times"></i> @L.T("Cancel")</button>
     </div>
 }
 </div>

@@ -113,6 +113,44 @@ public class CubeLocalizationTests
         public Int32 LogLevel { get; set; }
     }
 
+    [Theory(DisplayName = "数据库页面文案 - 按请求语言输出词表译文")]
+    [InlineData("fr-FR", "Connection string", "Chaîne de connexion")]
+    [InlineData("ja-JP", "Model differences", "モデルの差分")]
+    [InlineData("ar-SA", "Backup", "نسخ احتياطي")]
+    [InlineData("de-DE", "Backup and compress", "Sichern und komprimieren")]
+    [InlineData("en-US", "Model differences", "Model differences")]
+    [InlineData("zh-CN", "Name", "名称")]
+    public void DbPageMessages(String culture, String key, String expected)
+    {
+        var prev = Localization.Culture;
+        try
+        {
+            Localization.Culture = CultureInfo.GetCultureInfo(culture);
+            Assert.Equal(expected, CubeLocalization.T(key));
+        }
+        finally
+        {
+            Localization.Culture = prev;
+        }
+    }
+
+    [Fact(DisplayName = "数据库页面文案 - 占位符参数替换")]
+    public void DbPageFormatting()
+    {
+        var prev = Localization.Culture;
+        try
+        {
+            Localization.Culture = CultureInfo.GetCultureInfo("fr-FR");
+
+            Assert.Equal(", 3 au total", CubeLocalization.T(", {0} total", 3));
+            Assert.Equal("Écarts de modèle de la base de données Cube", CubeLocalization.T("Model differences of database {0}", "Cube"));
+        }
+        finally
+        {
+            Localization.Culture = prev;
+        }
+    }
+
     [Fact(DisplayName = "魔方设置字段 - 英文源文且中文译文齐全")]
     public void CubeSettingFields()
     {

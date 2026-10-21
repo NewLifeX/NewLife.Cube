@@ -59,7 +59,7 @@
                 status: false,
                 uploadImage: true,
                 imageUploadFunction: function(file, onSuccess, onError) {
-                    if (!file.type.startsWith('image/')) { onError('只支持图片文件'); return; }
+                    if (!file.type.startsWith('image/')) { onError('@L.T("Only image files are supported")'); return; }
                     var fd = new FormData();
                     fd.append('file', file);
                     var eid = @Json.Serialize(entityId);
@@ -70,10 +70,10 @@
                         try {
                             var resp = JSON.parse(xhr.responseText);
                             if (resp && resp.data && resp.data.filePath) onSuccess(resp.data.filePath);
-                            else onError(resp && resp.error ? resp.error : '上传失败');
-                        } catch(e) { onError('响应解析失败'); }
+                            else onError(resp && resp.error ? resp.error : '@L.T("Upload failed")');
+                        } catch(e) { onError('@L.T("Failed to parse the response")'); }
                     };
-                    xhr.onerror = function() { onError('网络错误'); };
+                    xhr.onerror = function() { onError('@L.T("Network error")'); };
                     xhr.send(fd);
                 },
                 toolbar: [

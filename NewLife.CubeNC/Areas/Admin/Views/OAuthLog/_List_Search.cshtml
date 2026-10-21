@@ -1,4 +1,4 @@
-﻿@using NewLife;
+@using NewLife;
 @using NewLife.Web;
 @using XCode;
 @using NewLife.Cube.Entity;
@@ -9,7 +9,7 @@
     var providers = NewLife.Cube.Entity.OAuthConfig.FindAllWithCache().ToDictionary(e => e.Name, e => e.NickName ?? e.Name);
 }
 <div class="form-group">
-    <label for="provider" class="control-label">提供商：</label>
-    @Html.ForDropDownList("provider", providers, page["provider"], "全部", true)
+    <label for="provider" class="control-label">@L.T("Provider:")</label>
+    @Html.ForDropDownList("provider", providers, page["provider"], L.T("All"), true)
 </div>
 @await Html.PartialAsync("_DateRange")

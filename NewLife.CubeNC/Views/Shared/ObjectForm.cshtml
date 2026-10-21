@@ -38,7 +38,7 @@
                     <ul class="nav nav-tabs" role="tablist">
                         @foreach (var item in dic)
                         {
-                            <li class="@(i==0?"active":"")"><a href="@("#item"+i)" data-toggle="tab">@item.Key</a></li>
+                            <li class="@(i==0?"active":"")"><a href="@("#item"+i)" data-toggle="tab">@L.T(item.Key)</a></li>
                             i++;
                         }
                     </ul>

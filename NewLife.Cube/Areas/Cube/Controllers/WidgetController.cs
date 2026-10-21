@@ -50,10 +50,10 @@ public class WidgetController : ControllerBaseX
             widgets = list.Select(e => new
             {
                 e.Name,
-                e.Title,
+                Title = L.T(e.Title),
                 e.Icon,
                 e.Cols,
-                e.Category,
+                Category = L.T(e.Category),
                 e.Permission,
                 e.AdminOnly,
                 e.Sort,

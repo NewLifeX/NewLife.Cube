@@ -1,4 +1,4 @@
-﻿@model IList<XCode.Membership.Menu>
+@model IList<XCode.Membership.Menu>
 @using NewLife;
 @using NewLife.Web;
 @using XCode;
@@ -14,23 +14,23 @@
         <tr>
             @if (set.EnableSelect)
             {
-                <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
+                <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="@L.T("Select all")" /></th>
             }
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("TreeNodeName"))">节点名</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Icon"))">图标</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("DisplayName"))">显示名</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Url"))">链接</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Sort"))">排序</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ID"))">@L.T("ID")</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("TreeNodeName"))">@L.T("Node name")</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Icon"))">@L.T("Icon")</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("DisplayName"))">@L.T("Display name")</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Url"))">@L.T("Link")</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Sort"))">@L.T("Sort")</a></th>
             @*<th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Icon"))">图标</a></th>*@
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Visible"))">可见</a></th>
-            <th class="text-center" title="必要。必要的菜单，必须至少有角色拥有这些权限，如果没有则自动授权给系统角色"><a href="@Html.Raw(page.GetSortUrl("Necessary"))">必要</a></th>
-            <th class="text-center" title="权限子项。逗号分隔，每个权限子项名值竖线分隔"><a href="@Html.Raw(page.GetSortUrl("Permission"))">权限子项</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Visible"))">@L.T("Visible")</a></th>
+            <th class="text-center" title="@L.T("Required. A required menu must be owned by at least one role; otherwise it is granted to the system role automatically")"><a href="@Html.Raw(page.GetSortUrl("Necessary"))">@L.T("Required")</a></th>
+            <th class="text-center" title="@L.T("Permission items. Separated by commas; each item's name and value are separated by a vertical bar")"><a href="@Html.Raw(page.GetSortUrl("Permission"))">@L.T("Permission items")</a></th>
             @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
             {
-                <th class="text-center">升</th>
-                <th class="text-center">降</th>
-                <th class="text-center">操作</th>
+                <th class="text-center">@L.T("Asc")</th>
+                <th class="text-center">@L.T("Desc")</th>
+                <th class="text-center">@L.T("Operation")</th>
             }
         </tr>
     </thead>

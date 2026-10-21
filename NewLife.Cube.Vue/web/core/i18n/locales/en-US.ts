@@ -64,4 +64,15 @@ export default {
   'notification.info': 'Info',
   'notification.network.typeError': 'Network request exception',
   'notification.typeError.description': 'Please try again later',
+
+  // 布局外壳
+  'menu.searchPlaceholder': 'Search menus...',
+  'layout.dashboard': 'Dashboard',
+  'layout.administrator': 'Administrator',
+  'layout.collapseSidebar': 'Collapse sidebar',
+  'layout.searchPlaceholder': 'Search devices, alerts...',
+  'menu.navigation': 'Navigation menu',
+  'layout.collapseMenu': 'Collapse menu',
+  'layout.expandSidebar': 'Expand sidebar',
+  'layout.welcomeBack': 'Welcome back, {name} · {date}',
 };

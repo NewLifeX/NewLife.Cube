@@ -1,4 +1,4 @@
-﻿@using NewLife.Common;
+@using NewLife.Common;
 @using NewLife.Cube.WebMiddleware;
 @using NewLife.Cube.Charts;
 
@@ -31,12 +31,12 @@
     if (!tableDensity.EqualIgnoreCase("Compact", "Normal")) tableDensity = "Compact";
 }
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.Name">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="新生命团队,NewLife,魔方,Cube,XCode" />
+    <meta name="description" content="@L.T("NewLife Team, NewLife, Cube, XCode")" />
     @*上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！*@
     <title>@title</title>
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon">
@@ -130,7 +130,11 @@
 
     <!--日历控件支持-->
     <script src="@res/DateTimePicker/bootstrap-datetimepicker.min.js"></script>
-    <script src="@res/DateTimePicker/bootstrap-datetimepicker.zhCN.js"></script>
+    @* 日期控件只内置中文词包，非中文界面回退控件自带英文，避免德语界面出现中文月份 *@
+    @if (System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "zh")
+    {
+        <script src="@res/DateTimePicker/bootstrap-datetimepicker.zhCN.js"></script>
+    }
     <script>
         $(function () {
             $('.form_datetime').each(function () {
@@ -190,7 +194,7 @@
                 $(this).datetimepicker({
                     format: $(this).attr("dateformat"),
                     autoclose: true,
-                    language: "zh-CN",
+                    language: "@(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "zh" ? "zh-CN" : "en")",
                     forceParse: false,
                     startView: parseInt($(this).attr('startview')),
                     minView: parseInt($(this).attr('minview'))
@@ -213,16 +217,16 @@
                                     divider: '<li class="multiselect-item divider"></li>',
                                     liGroup: '<li class="multiselect-item group"><label class="multiselect-group"></label></li>'
                                 },
-                                filterPlaceholder: '搜索',
-                                nonSelectedText: '无',
-                                allSelectedText: '全选'
+                                filterPlaceholder: '@L.T("Filter options")',
+                                nonSelectedText: '@L.T("None")',
+                                allSelectedText: '@L.T("Select all")'
                             });
                                 });
             </text>
         }
         @*双击跳转到form
                 _List_Data_Action.cshtml变更
-                @Html.ActionLink("编辑", "Edit", new { id = @Model },new{@class="editcell"})*@
+                @Html.ActionLink('@L.T("Edit")', "Edit", new { id = @Model },new{@class="editcell"})*@
         @if (dbclickEnable)
         {
             <text>

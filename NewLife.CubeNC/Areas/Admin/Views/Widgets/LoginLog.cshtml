@@ -5,7 +5,7 @@
     var d = Model;
 }
 <div class="widget-login">
-    <div class="widget-sub-title">最近登录</div>
+    <div class="widget-sub-title">@L.T("Recent sign-ins")</div>
     <ul class="widget-list">
         @foreach (dynamic item in d.Logins)
         {
@@ -17,11 +17,11 @@
         }
         @if (!((IEnumerable<Object>)d.Logins).Any())
         {
-            <li class="list-empty">最近24h无登录记录</li>
+            <li class="list-empty">@L.T("No sign-in records in the last 24 hours")</li>
         }
     </ul>
 
-    <div class="widget-sub-title">在线用户</div>
+    <div class="widget-sub-title">@L.T("Online users")</div>
     <ul class="widget-list">
         @foreach (dynamic item in d.Onlines)
         {
@@ -33,9 +33,9 @@
         }
         @if (!((IEnumerable<Object>)d.Onlines).Any())
         {
-            <li class="list-empty">当前无在线用户</li>
+            <li class="list-empty">@L.T("No online users")</li>
         }
     </ul>
 
-    <div class="widget-more"><a href="/Admin/UserOnline" target="_blank">在线用户管理 »</a></div>
+    <div class="widget-more"><a href="/Admin/UserOnline" target="_blank">@L.T("Online user management »")</a></div>
 </div>

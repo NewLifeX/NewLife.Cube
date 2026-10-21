@@ -1,4 +1,4 @@
-﻿@model XCode.Membership.User
+@model XCode.Membership.User
 @using System.Linq
 @using System.Reflection
 @using XCode
@@ -49,7 +49,7 @@
     }
 }
 <!DOCTYPE html>
-<html lang="zh-CN" style="height: 100%">
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.Name" style="height: 100%">
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -91,8 +91,8 @@
 
         option = {
             title: {
-                text: '全国主要城市空气质量 - 模拟数据',
-                subtext: '魔方快速开发平台',
+                text: '@L.T("Air quality of major cities - simulated data")',
+                subtext: '@L.T("Cube rapid development platform")',
                 sublink: 'http://cube.newlifex.com',
                 left: 'center'
             },

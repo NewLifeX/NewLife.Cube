@@ -7,7 +7,7 @@ using NewLife.Reflection;
 namespace NewLife.Cube.Widgets.System;
 
 /// <summary>系统信息摘要。操作系统/运行时/应用启动等，提供完整服务器信息页链接。KV 卡固定表格渲染</summary>
-[Widget("SysInfo", "System information", Icon = "fa-server", Cols = 4, Sort = 100, Category = "System", AdminOnly = true, WidgetType = WidgetTypes.Kv)]
+[Widget("SysInfo", "System info", Icon = "fa-server", Cols = 4, Sort = 100, Category = "System", AdminOnly = true, WidgetType = WidgetTypes.Kv)]
 public class SysInfoWidget : IWidget
 {
     /// <summary>获取组件数据</summary>

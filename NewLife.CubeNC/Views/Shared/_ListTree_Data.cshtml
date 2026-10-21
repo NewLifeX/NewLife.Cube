@@ -16,7 +16,7 @@
         <tr>
             @if (set.EnableSelect)
             {
-                <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
+                <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="@L.T("Select all")" /></th>
             }
             @foreach (var item in fields)
             {
@@ -39,11 +39,11 @@
                     <th class="text-center" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
                 }
             }
-            <th class="text-center">升</th>
-            <th class="text-center">降</th>
+            <th class="text-center">@L.T("Move up")</th>
+            <th class="text-center">@L.T("Move down")</th>
             @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
             {
-                <th class="text-center">操作</th>
+                <th class="text-center">@L.T("Actions")</th>
             }
         </tr>
     </thead>

@@ -1,4 +1,4 @@
-﻿@model LoginViewModel
+@model LoginViewModel
 @using System.IO
 @using System.Web
 @using NewLife.Cube.Web;
@@ -14,7 +14,7 @@
 @if (set.OAuthItems.Count > 0)
 {
     <div class="third-party">
-        <div class="divider"><span>第三方登录</span></div>
+        <div class="divider"><span>@L.T("Third-party sign-in")</span></div>
         <div class="oauth-icons">
             @foreach (var mi in set.OAuthItems)
             {

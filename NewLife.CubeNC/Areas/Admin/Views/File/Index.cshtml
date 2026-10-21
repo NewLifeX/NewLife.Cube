@@ -1,4 +1,4 @@
-﻿@using System.Diagnostics;
+@using System.Diagnostics;
 @using NewLife.Common;
 @using NewLife.Cube.Areas.Admin;
 @{
@@ -12,11 +12,11 @@
             <span class="input-group-addon">
                 <i class="ace-icon fa fa-check"></i>
             </span>
-            <input name="r" type="search" id="r" value="@r" class="form-control" placeholder="当前路径" />
+            <input name="r" type="search" id="r" value="@r" class="form-control" placeholder="@L.T("Current path")" />
             <span class="input-group-btn">
                 <button type="submit" class="btn btn-primary btn-sm">
                     <span class="glyphicon glyphicon-folder-open icon-on-right bigger-110"></span>
-                    打开
+                    @L.T("Open")
                 </button>
             </span>
         </div>
@@ -24,30 +24,30 @@
             <span class="input-group-addon">
                 <i class="glyphicon glyphicon-file"></i>
             </span>
-            <input name="file" type="file" id="file" placeholder="上传文件" data-action="upload" data-url="/Admin/File/Upload" data-fields="r" />
+            <input name="file" type="file" id="file" placeholder="@L.T("Upload file")" data-action="upload" data-url="/Admin/File/Upload" data-fields="r" />
         </div>
         @if (clips.Count > 0)
         {
             <div class="input-group">
                 <span class="input-group-addon">
-                    <i class="glyphicon glyphicon-floppy-disk" title="剪切板共有 @clips.Count 项">@clips.Count</i>
+                    <i class="glyphicon glyphicon-floppy-disk" title="@String.Format(L.T("{0} items in clipboard"), clips.Count)">@clips.Count</i>
                 </span>
                 <span class="input-group-btn">
                     <button type="button" class="btn btn-pink btn-sm" onclick="location.href = '/Admin/File/Paste?r=@r';">
                         <span class="glyphicon glyphicon-floppy-save icon-on-right bigger-110"></span>
-                        粘贴
+                        @L.T("Paste")
                     </button>
                 </span>
                 <span class="input-group-btn">
                     <button type="button" class="btn btn-gray btn-sm" onclick="location.href = '/Admin/File/Move?r=@r';">
                         <span class="glyphicon glyphicon-floppy-save icon-on-right bigger-110"></span>
-                        移动
+                        @L.T("Move")
                     </button>
                 </span>
                 <span class="input-group-btn">
                     <button type="button" class="btn btn-yellow btn-sm" onclick="location.href = '/Admin/File/ClearClipboard?r=@r';">
                         <span class="glyphicon glyphicon-retweet icon-on-right bigger-110"></span>
-                        清空
+                        @L.T("Clear")
                     </button>
                 </span>
             </div>
@@ -57,12 +57,12 @@
 <table class="table table-bordered table-hover table-striped table-condensed">
     <thead>
         <tr>
-            <th class="text-center"><a href="~/Admin/File?r=@r&sort=name">名称</a></th>
-            <th class="text-center"><a href="~/Admin/File?r=@r&sort=size">大小</a></th>
-            <th class="text-center"><a href="~/Admin/File?r=@r&sort=lastwrite">修改时间</a></th>
-            <th class="text-center">复制</th>
-            <th class="text-center">压缩</th>
-            <th class="text-center">删除</th>
+            <th class="text-center"><a href="~/Admin/File?r=@r&sort=name">@L.T("Name")</a></th>
+            <th class="text-center"><a href="~/Admin/File?r=@r&sort=size">@L.T("Size")</a></th>
+            <th class="text-center"><a href="~/Admin/File?r=@r&sort=lastwrite">@L.T("Modify time")</a></th>
+            <th class="text-center">@L.T("Copy")</th>
+            <th class="text-center">@L.T("Compress")</th>
+            <th class="text-center">@L.T("Delete")</th>
         </tr>
     </thead>
     <tbody>
@@ -73,39 +73,39 @@
                 {
                     if (item.Directory)
                     {
-                        <td>&nbsp;&nbsp;<a href="~/Admin/File?r=@item.FullName" title="进入目录">@item.Name</a></td>
+                        <td>&nbsp;&nbsp;<a href="~/Admin/File?r=@item.FullName" title="@L.T("Enter directory")">@item.Name</a></td>
                     }
                     else
                     {
-                        <td>&nbsp;&nbsp;<a href="~/Admin/File/Download?r=@item.FullName" title="下载文件">@item.Name</a></td>
+                        <td>&nbsp;&nbsp;<a href="~/Admin/File/Download?r=@item.FullName" title="@L.T("Download file")">@item.Name</a></td>
                     }
                     <td class="text-right">@item.Size</td>
                     <td class="text-center">@item.LastWrite.ToFullString("")</td>
                     <td class="text-center">
                         @if (!clips.Any(e => e.FullName == item.FullName))
                         {
-                            <a href="~/Admin/File/Copy?r=@r&f=@item.FullName" title="复制到剪切板，然后去目标目录粘贴">复制</a>
+                            <a href="~/Admin/File/Copy?r=@r&f=@item.FullName" title="@L.T("Copy to clipboard, then paste in the target directory")">@L.T("Copy")</a>
                         }
                         else
                         {
-                            <a href="~/Admin/File/CancelCopy?r=@r&f=@item.FullName" title="从剪切板移除">取消复制</a>
+                            <a href="~/Admin/File/CancelCopy?r=@r&f=@item.FullName" title="@L.T("Remove from clipboard")">@L.T("Cancel copy")</a>
                         }
                     </td>
                     @if (item.Name.EndsWithIgnoreCase(".zip"))
                     {
-                        <td class="text-center"><a href="~/Admin/File/Decompress?r=@item.FullName" title="解压缩到当前目录">解压缩</a></td>
+                        <td class="text-center"><a href="~/Admin/File/Decompress?r=@item.FullName" title="@L.T("Extract to current directory")">@L.T("Extract")</a></td>
                     }
                     else
                     {
-                        <td class="text-center"><a href="~/Admin/File/Compress?r=@item.FullName" title="压缩到当前目录，加上时间后缀">压缩</a></td>
+                        <td class="text-center"><a href="~/Admin/File/Compress?r=@item.FullName" title="@L.T("Compress to current directory with a time suffix")">@L.T("Compress")</a></td>
                     }
-                    <td class="text-center"><a href="~/Admin/File/Delete?r=@item.FullName" onclick="return confirm('确认删除？');">删除</a></td>
+                    <td class="text-center"><a href="~/Admin/File/Delete?r=@item.FullName" onclick="return confirm('@L.T("Confirm delete?")');">@L.T("Delete")</a></td>
                 }
                 else
                 {
                     if (item.Directory)
                     {
-                        <td>&nbsp;&nbsp;<a href="~/Admin/File?r=@item.FullName" title="进入目录">@item.Name</a></td>
+                        <td>&nbsp;&nbsp;<a href="~/Admin/File?r=@item.FullName" title="@L.T("Enter directory")">@item.Name</a></td>
                     }
                     else
                     {

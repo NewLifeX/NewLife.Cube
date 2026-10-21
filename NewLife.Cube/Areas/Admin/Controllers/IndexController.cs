@@ -185,7 +185,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
             var value = d?.GetType().GetProperty("Value")?.GetValue(d) ?? "";
             var trend = d?.GetType().GetProperty("Trend")?.GetValue(d) ?? "";
             var url = d?.GetType().GetProperty("Url")?.GetValue(d) ?? "";
-            var item = new { name = info.Name, label = info.Title, value, trend, color = info.Color ?? "blue", url };
+            var item = new { name = info.Name, label = L.T(info.Title), value, trend, color = info.Color ?? "blue", url };
             if (layout.TryGetValue(info.Name, out var itemLayout) && itemLayout.Hide) hiddenKpis.Add(item);
             else kpis.Add(item);
         }
@@ -245,10 +245,10 @@ public class IndexController : ControllerBaseX, IPageDataContext
         Object BuildWidgetItem(WidgetAttribute info) => new
         {
             name = info.Name,
-            title = info.Title,
+            title = L.T(info.Title),
             icon = info.Icon,
             cols = info.Cols,
-            category = info.Category,
+            category = L.T(info.Category),
             widgetType = info.WidgetType.ToString(),
             data = info.WidgetType == WidgetTypes.Chart ? null : wm.GetData(info),
         };

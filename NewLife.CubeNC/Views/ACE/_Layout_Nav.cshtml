@@ -15,13 +15,13 @@
         {
             if (item.ID != 0)
             {
-                @item.DisplayName
+                @NewLife.Cube.Membership.MenuHelper.GetDisplayName(item)
             }
         }
     }
 </li>
 <li>
-    <a href="@Url.Action("Index")">@(menu != null ? menu.DisplayName : ViewBag.Title)</a>
+    <a href="@Url.Action("Index")">@(menu != null ? NewLife.Cube.Membership.MenuHelper.GetDisplayName(menu) : ViewBag.Title)</a>
 </li>
 @if (!String.IsNullOrEmpty(url) && us.Length > 2)
 {

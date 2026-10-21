@@ -191,8 +191,10 @@ public sealed class AppFixture : IAsyncLifetime
         foreach (var dir in System.IO.Directory.GetDirectories(source))
         {
             var name = System.IO.Path.GetFileName(dir);
+            // Data/Log/Uploads 等属于运行期数据；Config 会固化 UI 语言等宿主设置，复制过来会让 E2E 继承本地语言
             if (name.Equals("Data", StringComparison.OrdinalIgnoreCase) ||
                 name.Equals("Log", StringComparison.OrdinalIgnoreCase) ||
+                name.Equals("Config", StringComparison.OrdinalIgnoreCase) ||
                 name.Equals("Uploads", StringComparison.OrdinalIgnoreCase) ||
                 name.Equals("Avatars", StringComparison.OrdinalIgnoreCase) ||
                 name.Equals("Backup", StringComparison.OrdinalIgnoreCase))

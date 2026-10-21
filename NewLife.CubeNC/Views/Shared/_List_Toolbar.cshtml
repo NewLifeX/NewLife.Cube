@@ -17,7 +17,7 @@
             @if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
             {
                 var rv = page.GetRouteValue();
-                @Html.ActionLink("添加", "Add", rv, new { @class = "btn btn-success btn-sm" }.ToDictionary())
+                @Html.ActionLink(L.T("Add"), "Add", rv, new { @class = "btn btn-success btn-sm" }.ToDictionary())
             }
             @if (set.EnableSelect)
             {
@@ -32,10 +32,10 @@
                     @if (hasEnableField)
                     {
                         <button type="button" class="btn btn-purple btn-sm" data-action="action" data-url="@Url.Action("EnableSelect")" data-fields="keys" disabled>
-                            批量启用
+                            @L.T("Batch enable")
                         </button>
                         <button type="button" class="btn btn-purple btn-sm" data-action="action" data-url="@Url.Action("DisableSelect")" data-fields="keys" disabled>
-                            批量禁用
+                            @L.T("Batch disable")
                         </button>
                     }
                 </div>

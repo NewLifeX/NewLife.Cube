@@ -53,6 +53,31 @@ public class LocalizationTests
         Assert.Equal("Not translated", Translate("en-US", "Not translated"));
     }
 
+    [Fact(DisplayName = "多语言 - 共享视图文案 31 种语言齐备")]
+    public void SharedViewChrome()
+    {
+        // 共享视图（导航、通知铃铛、AI 助手、省市区选择、错误页）的界面文案以英文为源文，
+        // 每种受支持语言都必须有译文，避免非中文用户看到英文按钮。同形词（Send/ID 等）不在此列。
+        String[] keys =
+        [
+            "Notifications", "Mark all as read", "View all notifications", "No unread notifications",
+            "AI assistant", "AI diagnosis", "Collapse", "Clear session",
+            "Select province", "Select province/city/district/town", "Search department",
+            "Back", "Close", "No data", "Searching...", "Only image files are supported",
+        ];
+
+        foreach (var culture in CubeLocalization.SupportedCultures)
+        {
+            if (culture == "en-US") continue;
+
+            foreach (var key in keys)
+            {
+                var text = Translate(culture, key);
+                Assert.True(text != key, $"{culture} 缺少共享视图文案译文：{key}");
+            }
+        }
+    }
+
     [Fact(DisplayName = "多语言 - 未提供语言回退英文")]
     public void TranslateUnknownCulture()
     {
@@ -221,10 +246,16 @@ public class LocalizationTests
     [Fact(DisplayName = "多语言 - 日志模板可本地化且英文为兜底")]
     public void LogMessagesAreLocalizable()
     {
-        // 日志模板按 L.TLog + LogCulture 翻译（IMP-3）：中文宿主保留中文，其余语言回退英文源文
+        // 日志模板按 L.TLog + LogCulture 翻译：中文与已翻译语言使用译文，缺译文的语言回退英文源文
         var key = "Start importing file [{0}], size [{1:n0}] bytes, type [{2}].";
         Assert.Equal("开始导入文件[{0}]，大小[{1:n0}]字节，类型[{2}]", Translate("zh-CN", key));
-        Assert.Equal(key, Translate("de-DE", key));
-        Assert.Equal(key, Translate("ja-JP", key));
+
+        var de = Translate("de-DE", key);
+        Assert.NotEqual(key, de);
+        Assert.Contains("{0}", de);
+
+        // 未提供译文的模板回退英文源文
+        var missing = "Cube localization fallback probe [{0}].";
+        Assert.Equal(missing, Translate("ja-JP", missing));
     }
 }

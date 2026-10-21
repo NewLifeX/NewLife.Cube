@@ -6,6 +6,8 @@ using System.Linq;
 using System.Reflection;
 using NewLife;
 using NewLife.Cube.ViewModels;
+using XCode;
+using XCode.Membership;
 using Xunit;
 
 namespace NewLife.Cube.Tests.Common;
@@ -164,6 +166,133 @@ public class DataFieldLocalizationTests
         finally
         {
             Localization.Culture = prev;
+        }
+    }
+
+    [Fact(DisplayName = "实体字段 - 中文源文经 Fill 与 Localize 后按请求语言拆分")]
+    public void EntityField_ChineseSource()
+    {
+        var prev = Localization.Culture;
+        var culture = CultureInfo.GetCultureInfo("sw");
+        const String source = "用户。本地用户";
+        try
+        {
+            // 生成的实体特性：DisplayName 是首句、Description 是整段中文源文；实体模型与文件名保持中文
+            var field = new DataField();
+            field.Fill(typeof(Entity.UserConnect).GetProperty(nameof(Entity.UserConnect.UserID)));
+
+            Assert.Equal("用户", field.DisplayName);
+            Assert.Equal(source, field.Description);
+            Assert.Equal(source, field.SourceDescription);
+
+            Localization.Register(culture, new Dictionary<String, String> { [source] = "User. Local user" }, overwrite: true);
+            Localization.Culture = culture;
+            field.Localize();
+
+            Assert.Equal("User", field.DisplayName);
+            Assert.Equal("Local user", field.Description);
+        }
+        finally
+        {
+            Localization.Culture = prev;
+            Localization.Unregister(culture);
+        }
+    }
+
+    [Fact(DisplayName = "生成实体中文元数据 - 整段描述一条词条翻译")]
+    public void GeneratedMetadata_FullDescription()
+    {
+        var prev = Localization.Culture;
+        var culture = CultureInfo.GetCultureInfo("sw");
+        const String source = "名称。登录用户名";
+        try
+        {
+            var item = EntityFactory.CreateFactory(typeof(User)).Fields.First(e => e.Name == nameof(User.Name));
+            var field = new ListField();
+            field.Fill(item);
+
+            Assert.Equal("名称", field.DisplayName);
+            Assert.Equal("名称", field.Header);
+            Assert.Equal(source, field.Description);
+            Assert.Equal(source, field.SourceDescription);
+            Assert.Equal(field.Field.DisplayName, field.DisplayName);
+            Assert.True(field.IsDefaultDisplayName);
+
+            Localization.Register(culture, new Dictionary<String, String> { [source] = "Name. Login user name" }, overwrite: true);
+            Localization.Culture = culture;
+            Assert.Equal("Name. Login user name", Localization.Translate(source));
+
+            var plain = new DataField { DisplayName = "名称", Description = source, SourceDescription = source };
+            plain.Localize();
+            Assert.Equal("Name", plain.DisplayName);
+
+            field.Localize();
+
+            Assert.Equal("Name", field.DisplayName);
+            Assert.Equal("Name", field.Header);
+            Assert.Equal("Login user name", field.Description);
+            Assert.True(field.IsDefaultDisplayName);
+        }
+        finally
+        {
+            Localization.Culture = prev;
+            Localization.Unregister(culture);
+        }
+    }
+
+    [Fact(DisplayName = "生成实体中文元数据 - 只补显示名词条也能翻译列头")]
+    public void GeneratedMetadata_DisplayNameOnly()
+    {
+        var prev = Localization.Culture;
+        var culture = CultureInfo.GetCultureInfo("sw");
+        try
+        {
+            var item = EntityFactory.CreateFactory(typeof(User)).Fields.First(e => e.Name == nameof(User.Name));
+            var field = new ListField();
+            field.Fill(item);
+
+            Localization.Register(culture, new Dictionary<String, String> { ["名称"] = "Name" }, overwrite: true);
+            Localization.Culture = culture;
+            field.Localize();
+
+            Assert.Equal("Name", field.DisplayName);
+            Assert.Equal("Name", field.Header);
+            Assert.Equal("登录用户名", field.Description);
+        }
+        finally
+        {
+            Localization.Culture = prev;
+            Localization.Unregister(culture);
+        }
+    }
+
+    [Fact(DisplayName = "列表默认列本地化后仍按属性值显示")]
+    public void LocalizedDefaultColumn_GetLinkName()
+    {
+        var prev = Localization.Culture;
+        var culture = CultureInfo.GetCultureInfo("sw");
+        try
+        {
+            var item = EntityFactory.CreateFactory(typeof(User)).Fields.First(e => e.Name == nameof(User.Name));
+            var field = new ListField();
+            field.Fill(item);
+
+            Localization.Register(culture, new Dictionary<String, String> { ["名称"] = "Name" }, overwrite: true);
+            Localization.Culture = culture;
+            field.Localize();
+
+            var entity = new User { Name = "alice" };
+            Assert.Equal("alice", field.GetLinkName(entity));
+
+            // 控制器自定义显示名后，应显示自定义文字而不是属性值
+            field.DisplayName = "Custom";
+            field.Localize();
+            Assert.Equal("Custom", field.GetLinkName(entity));
+        }
+        finally
+        {
+            Localization.Culture = prev;
+            Localization.Unregister(culture);
         }
     }
 

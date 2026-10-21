@@ -48,4 +48,15 @@ export default {
   'notification.info': 'Информация',
   'notification.network.typeError': 'Ошибка сетевого запроса',
   'notification.typeError.description': 'Повторите позже',
+
+  // 布局外壳
+  'menu.searchPlaceholder': 'Поиск меню...',
+  'layout.dashboard': 'Панель',
+  'layout.administrator': 'Администратор',
+  'layout.collapseSidebar': 'Свернуть боковую панель',
+  'layout.searchPlaceholder': 'Поиск устройств, оповещений...',
+  'menu.navigation': 'Меню навигации',
+  'layout.collapseMenu': 'Свернуть меню',
+  'layout.expandSidebar': 'Развернуть боковую панель',
+  'layout.welcomeBack': 'С возвращением, {name} · {date}',
 };

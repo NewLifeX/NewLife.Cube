@@ -6,6 +6,7 @@ import { getConfig } from '@newlifex/cube-vue/core/configure';
 import { openMenuTab } from '@newlifex/cube-vue/core/utils/menuTab';
 import ThemeSwitcher from '@newlifex/cube-vue/core/components/ThemeSwitcher.vue';
 import LayoutSwitcher from '@newlifex/cube-vue/core/components/LayoutSwitcher.vue';
+import LanguageSwitch from '@newlifex/cube-vue/core/components/LanguageSwitch.vue';
 import ModeSwitcher from '@newlifex/cube-vue/core/components/ModeSwitcher.vue';
 import NotificationBell from '@newlifex/cube-vue/core/components/NotificationBell.vue';
 import SearchBar from '@newlifex/cube-vue/core/components/SearchBar.vue';
@@ -165,6 +166,9 @@ const handleMegaMouseLeave = () => {
 
       <!-- 布局切换 -->
       <LayoutSwitcher />
+
+      <!-- 界面语言切换 -->
+      <LanguageSwitch />
 
       <NotificationBell />
       <UserProfile variant="navbar" />

@@ -63,4 +63,15 @@ export default {
   'notification.info': '提示',
   'notification.network.typeError': '网络请求异常',
   'notification.typeError.description': '请稍后重试',
+
+  // 布局外壳
+  'menu.searchPlaceholder': '搜索菜单...',
+  'layout.dashboard': '仪表盘',
+  'layout.administrator': '管理员',
+  'layout.collapseSidebar': '折叠侧边栏',
+  'layout.searchPlaceholder': '搜索设备、告警...',
+  'menu.navigation': '导航菜单',
+  'layout.collapseMenu': '折叠菜单',
+  'layout.expandSidebar': '展开侧边栏',
+  'layout.welcomeBack': '欢迎回来，{name} · {date}',
 };

@@ -63,11 +63,11 @@ public class DbController : ControllerBaseX, IPageDataContext
                 }
                 catch (OperationCanceledException)
                 {
-                    di.Version = "获取数据库版本信息超时（300ms）";
+                    di.Version = L.T("Timed out after 300 ms while retrieving the database version");
                 }
                 catch (Exception ex)
                 {
-                    di.Version = $"获取版本失败: {ex.Message}";
+                    di.Version = L.T("Failed to retrieve version: {0}", ex.Message);
                 }
 
                 di.Tables = dal.Tables.Count;
@@ -80,7 +80,7 @@ public class DbController : ControllerBaseX, IPageDataContext
             }
             catch (Exception ex)
             {
-                di.Version = $"初始化失败: {ex.Message}";
+                di.Version = L.T("Initialization failed: {0}", ex.Message);
             }
 
             list.Add(di);
@@ -105,7 +105,7 @@ public class DbController : ControllerBaseX, IPageDataContext
             tables = e.Tables,
             backups = e.Backups,
         }).ToList();
-        return new { page = "数据库信息", databases = data }.ToJson();
+        return new { page = L.T("Database information"), databases = data }.ToJson();
     }
 
     /// <summary>压缩数据库（回收空闲空间）。对SQLite执行VACUUM</summary>
@@ -221,7 +221,7 @@ public class DbController : ControllerBaseX, IPageDataContext
     [EntityAuthorize(PermissionFlags.Detail)]
     public ActionResult ShowTables(String name)
     {
-        if (!name.EqualIgnoreCase(DAL.ConnStrs.Keys.ToArray())) throw new Exception("非法操作！");
+        if (!name.EqualIgnoreCase(DAL.ConnStrs.Keys.ToArray())) throw new XException("Illegal operation!");
 
         var dal = DAL.Create(name);
 
@@ -253,7 +253,7 @@ public class DbController : ControllerBaseX, IPageDataContext
     [EntityAuthorize(PermissionFlags.Detail)]
     public ActionResult ShowEntities(String name)
     {
-        if (!name.EqualIgnoreCase(DAL.ConnStrs.Keys.ToArray())) throw new Exception("非法操作！");
+        if (!name.EqualIgnoreCase(DAL.ConnStrs.Keys.ToArray())) throw new XException("Illegal operation!");
 
         var types = EntityFactory.LoadEntities(name);
 
@@ -292,7 +292,7 @@ public class DbController : ControllerBaseX, IPageDataContext
     [EntityAuthorize(PermissionFlags.Detail)]
     public ActionResult ModelDiff(String name)
     {
-        if (!name.EqualIgnoreCase(DAL.ConnStrs.Keys.ToArray())) throw new Exception("非法操作！");
+        if (!name.EqualIgnoreCase(DAL.ConnStrs.Keys.ToArray())) throw new XException("Illegal operation!");
 
         var dal = DAL.Create(name);
         var dbTables = dal.Tables;

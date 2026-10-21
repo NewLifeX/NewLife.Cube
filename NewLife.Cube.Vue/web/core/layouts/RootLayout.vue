@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onBeforeMount, onMounted, watch, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter, useRoute } from 'vue-router';
 // import NotFound from '../pages/404.vue'
 // import Loading from '../pages/loading.vue'
@@ -12,6 +13,7 @@ import TabsView from '../components/TabsView.vue';
 import TopMenuLayout from './TopMenu/index.vue'; // 兜底默认布局
 import { getConfig } from '../configure';
 
+const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 const userStore = useUserStore();
@@ -63,7 +65,7 @@ watch(
       // 首页标签
       tabsStore.addTab({
         ...newRoute,
-        meta: { ...newRoute.meta, title: newRoute.meta?.title || '首页' },
+        meta: { ...newRoute.meta, title: newRoute.meta?.title || t('menu.home') },
       });
     }
   },

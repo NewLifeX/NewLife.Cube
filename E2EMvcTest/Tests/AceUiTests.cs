@@ -267,7 +267,7 @@ public sealed class AceUiTests : IAsyncLifetime
         Assert.True(await _page.IsVisibleAsync(".form-actions"), $"[{testId}] 表单按钮区 .form-actions 不存在");
         var btnTexts = await _page.Locator(".form-actions .btn").AllTextContentsAsync();
         var joined = String.Join("|", btnTexts);
-        Assert.True(joined.Contains("新增") || joined.Contains("保存"), $"[{testId}] 保存/新增按钮缺失，实际按钮: {joined}");
+        Assert.True(joined.Contains("新增") || joined.Contains("保存") || joined.Contains("添加"), $"[{testId}] 保存/新增按钮缺失，实际按钮: {joined}");
         Assert.True(joined.Contains("取消"), $"[{testId}] 取消按钮缺失，实际按钮: {joined}");
 
         // 表单视觉：按钮圆角 > 0、输入框圆角 > 0

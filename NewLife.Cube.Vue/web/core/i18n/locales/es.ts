@@ -48,4 +48,15 @@ export default {
   'notification.info': 'Información',
   'notification.network.typeError': 'Error en la solicitud de red',
   'notification.typeError.description': 'Inténtelo más tarde',
+
+  // 布局外壳
+  'menu.searchPlaceholder': 'Buscar menús...',
+  'layout.dashboard': 'Panel',
+  'layout.administrator': 'Administrador',
+  'layout.collapseSidebar': 'Contraer barra lateral',
+  'layout.searchPlaceholder': 'Buscar dispositivos, alertas...',
+  'menu.navigation': 'Menú de navegación',
+  'layout.collapseMenu': 'Contraer menú',
+  'layout.expandSidebar': 'Expandir barra lateral',
+  'layout.welcomeBack': 'Bienvenido de nuevo, {name} · {date}',
 };

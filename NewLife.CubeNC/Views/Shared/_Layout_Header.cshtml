@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Http.Extensions
+@using Microsoft.AspNetCore.Http.Extensions
 @using NewLife.Common;
 @{
     var cfg = NewLife.Common.SysConfig.Current;
@@ -18,19 +18,19 @@
         </div>
         <div class="navbar-collapse navbar-responsive-collapse">
             <ul class="nav navbar-nav">
-                <li>@Html.ActionLink("首页", "Index", "Home")</li>
-                <li>@Html.ActionLink("关于我们", "About", "Home")</li>
+                <li>@Html.ActionLink(L.T("Home"), "Index", "Home")</li>
+                <li>@Html.ActionLink(L.T("About us"), "About", "Home")</li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 @if (user == null)
                 {
-                    <li class="">@Html.ActionLink("注册", "Register", "Account")</li>
-                    <li class="">@Html.ActionLink("登录", "Login", "Account", new { r = retUrl }, null)</li>
+                    <li class="">@Html.ActionLink(L.T("Sign up"), "Register", "Account")</li>
+                    <li class="">@Html.ActionLink(L.T("Sign in"), "Login", "Account", new { r = retUrl }, null)</li>
                 }
                 else
                 {
                     <li class="">@Html.ActionLink(user + "", "Detail", "Account", new { user.ID }, null)</li>
-                    <li class="">@Html.ActionLink("注销", "Logout", "Account", new { r = retUrl }, null)</li>
+                    <li class="">@Html.ActionLink(L.T("Close account"), "Logout", "Account", new { r = retUrl }, null)</li>
                 }
             </ul>
         </div>

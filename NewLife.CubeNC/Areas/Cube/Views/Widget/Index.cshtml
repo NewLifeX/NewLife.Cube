@@ -1,27 +1,27 @@
 @using NewLife.Cube.Widgets
 @using NewLife;
 @{
-    ViewBag.Title = "工作台部件";
+    ViewBag.Title = L.T("Dashboard widgets");
 
     var list = ViewBag.Widgets as IList<WidgetAttribute> ?? new List<WidgetAttribute>();
     var enabled = ViewBag.Enabled as IDictionary<String, Boolean> ?? new Dictionary<String, Boolean>();
 }
 <div class="page-header">
     <h1>
-        工作台部件
-        <small>启用后显示在工作台，禁用后立即隐藏（全局配置，存 Parameter 表）</small>
+        @L.T("Dashboard widgets")
+        <small>@L.T("Shown on the dashboard when enabled, hidden immediately when disabled (global setting stored in the Parameter table)")</small>
     </h1>
 </div>
 <div class="panel panel-default" style="max-width:760px;">
     <div class="panel-heading">
-        <i class="fa fa-sort-amount-asc"></i> 分组显示顺序
-        <small class="text-muted">同组卡片默认聚合显示；未列出的组排到最后并按名称排序（逗号分隔，如：系统,个人,通用,IoT）</small>
+        <i class="fa fa-sort-amount-asc"></i> @L.T("Group display order")
+        <small class="text-muted">@L.T("Cards in the same group are aggregated by default; unlisted groups come last and are ordered by name (comma separated, e.g. System,Profile,Common,IoT)")</small>
     </div>
     <div class="panel-body">
         <div class="input-group">
-            <input type="text" id="group-order" class="form-control" value="@(ViewBag.GroupOrder)" placeholder="系统,个人,通用" />
+            <input type="text" id="group-order" class="form-control" value="@(ViewBag.GroupOrder)" placeholder="@L.T("System,Profile,Common")" />
             <span class="input-group-btn">
-                <button type="button" class="btn btn-primary" onclick="saveGroupOrder()">保存</button>
+                <button type="button" class="btn btn-primary" onclick="saveGroupOrder()">@L.T("Save")</button>
             </span>
         </div>
     </div>
@@ -34,8 +34,8 @@
 {
     <div class="panel panel-default" style="max-width:760px;">
         <div class="panel-heading">
-            <i class="fa fa-list-ol"></i> 组内默认顺序
-            <small class="text-muted">每组一行，逗号分隔部件名；未填写的组按部件 Sort 排序；新部件自动排到组内末尾</small>
+            <i class="fa fa-list-ol"></i> @L.T("Default order in group")
+            <small class="text-muted">@L.T("One group per line with widget names separated by commas; groups left blank are ordered by widget Sort; new widgets are appended to the end of their group")</small>
         </div>
         <div class="panel-body">
             @foreach (var kv in groupItems)
@@ -43,24 +43,24 @@
                 <div class="form-group" style="margin-bottom:8px;">
                     <label style="font-weight:600;margin-bottom:2px;">@kv.Key</label>
                     <input type="text" class="form-control group-item-order" data-group="@kv.Key"
-                           value="@(String.Join(",", kv.Value))" title="@(String.Join(", ", kv.Value.Select(n => titles.TryGetValue(n, out var t) ? $"{n}({t})" : n)))" />
+                           value="@(String.Join(",", kv.Value))" title="@(String.Join(", ", kv.Value.Select(n => titles.TryGetValue(n, out var t) ? $"{n}({L.T(t)})" : n)))" />
                 </div>
             }
-            <button type="button" class="btn btn-primary" onclick="saveGroupItems()">保存组内顺序</button>
+            <button type="button" class="btn btn-primary" onclick="saveGroupItems()">@L.T("Save order within group")</button>
         </div>
     </div>
 }
 <table class="table table-bordered table-hover table-striped table-condensed table-data-list">
     <thead>
         <tr>
-            <th>名称</th>
-            <th>标题</th>
-            <th>图标</th>
-            <th style="width:60px;">宽度</th>
-            <th>分类</th>
-            <th>可见性</th>
-            <th style="width:80px;">状态</th>
-            <th style="width:90px;">操作</th>
+            <th>@L.T("Name")</th>
+            <th>@L.T("Title")</th>
+            <th>@L.T("Icon")</th>
+            <th style="width:60px;">@L.T("Width")</th>
+            <th>@L.T("Category")</th>
+            <th>@L.T("Visibility")</th>
+            <th style="width:80px;">@L.T("Status")</th>
+            <th style="width:90px;">@L.T("Operation")</th>
         </tr>
     </thead>
     <tbody>
@@ -69,15 +69,15 @@
             var enable = enabled.TryGetValue(item.Name, out var en) ? en : true;
             <tr>
                 <td>@item.Name</td>
-                <td>@item.Title</td>
+                <td>@L.T(item.Title)</td>
                 <td><i class="fa @item.Icon"></i> <span class="text-muted">@item.Icon</span></td>
                 <td class="text-center">@item.Cols</td>
-                <td>@item.Category</td>
-                <td>@(item.AdminOnly ? "仅管理员" : (item.Permission.IsNullOrEmpty() ? "所有用户" : item.Permission))</td>
-                <td class="text-center">@(enable ? "✅ 启用" : "⛔ 禁用")</td>
+                <td>@L.T(item.Category)</td>
+                <td>@(item.AdminOnly ? L.T("Administrators only") : (item.Permission.IsNullOrEmpty() ? L.T("All users") : item.Permission))</td>
+                <td class="text-center">@(enable ? L.T("✅ Enabled") : L.T("⛔ Disabled"))</td>
                 <td class="text-center">
                     <button type="button" class="btn btn-sm @(enable ? "btn-danger" : "btn-success")" onclick="toggle('@item.Name', @(!enable ? "true" : "false"))">
-                        @(enable ? "禁用" : "启用")
+                        @(enable ? L.T("Disabled") : L.T("Enabled"))
                     </button>
                 </td>
             </tr>

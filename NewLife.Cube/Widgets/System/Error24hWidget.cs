@@ -5,7 +5,7 @@ using static XCode.Membership.Log;
 namespace NewLife.Cube.Widgets.System;
 
 /// <summary>24h异常数。工作台 KPI 指标</summary>
-[Widget("Error24h", "24h errors", Icon = "fa-exclamation-triangle", Cols = 2, Sort = 50, Category = "System", AdminOnly = true, Color = "red", WidgetType = WidgetTypes.Kpi)]
+[Widget("Error24h", "24h exceptions", Icon = "fa-exclamation-triangle", Cols = 2, Sort = 50, Category = "System", AdminOnly = true, Color = "red", WidgetType = WidgetTypes.Kpi)]
 public class Error24hWidget : IWidget
 {
     /// <summary>获取组件数据</summary>

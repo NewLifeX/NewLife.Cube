@@ -1,4 +1,4 @@
-﻿@using System.Diagnostics;
+@using System.Diagnostics;
 @using System.Collections;
 @using System.Reflection;
 @using System.Runtime;
@@ -13,7 +13,7 @@
 @{
     //Layout = NewLife.Cube.Setting.Current.Layout;
 
-    ViewBag.Title = "服务器信息";
+    ViewBag.Title = L.T("Server information");
 
     //var os = Environment.OSVersion + "";
     //if (Runtime.Linux) os = WebHelper2.GetLinuxName();
@@ -38,15 +38,15 @@
         <thead>
             <tr>
                 <th colspan="4">
-                    服务器信息
-                    <button type="button" class="btn btn-info btn-sm" style="margin-left:16px;" onclick="CubeAI.diagnose()">AI 诊断</button>
+                    @L.T("Server information")
+                    <button type="button" class="btn btn-info btn-sm" style="margin-left:16px;" onclick="CubeAI.diagnose()">@L.T("AI diagnosis")</button>
                 </th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td class="name">
-                    应用系统：
+                    @L.T("Application system:")
                 </td>
                 <td class="value">
                     @*据说此功能已被干掉*@
@@ -54,12 +54,12 @@
                     &nbsp;
                     @if (this.Has(menu, (PermissionFlags)16))
                     {
-                        <a style="cursor: pointer;" data-action="action" data-href="@Url.Action("Restart")" data-confirm="仅重启本应用进程，而不是操作系统！<br/>确认重启？">重启应用系统</a>
+                        <a style="cursor: pointer;" data-action="action" data-href="@Url.Action("Restart")" data-confirm="@L.T("Only restart this application process, not the operating system!")<br/>@L.T("Confirm restart?")">@L.T("Restart application")</a>
                     }
                     &nbsp;&nbsp;&nbsp;&nbsp;@req.GetRawUrl()
                 </td>
                 <td class="name">
-                    目录：
+                    @L.T("Directory:")
                 </td>
                 <td class="value">
                     @Env.ContentRootPath
@@ -68,7 +68,7 @@
             </tr>
             <tr>
                 <td class="name">
-                    域名地址：
+                    @L.T("Domain address:")
                 </td>
                 <td class="value">
                     @{
@@ -78,16 +78,16 @@
                         if (addrRemote != null && addrRemote.IsIPv4MappedToIPv6) addrRemote = addrRemote.MapToIPv4();
                         var userHost = httpContext.GetUserHost();
                     }
-                    <span title="主机">@req.Headers["Host"]</span>，
-                    <span title="本地">@addrLocal:@conn.LocalPort</span>
-                    &nbsp;<span title="远程">[@addrRemote:@conn.RemotePort]</span>
+                    <span title="@L.T("Host")">@req.Headers["Host"]</span>,
+                    <span title="@L.T("Local")">@addrLocal:@conn.LocalPort</span>
+                    &nbsp;<span title="@L.T("Remote")">[@addrRemote:@conn.RemotePort]</span>
                     @if (addrRemote + "" != userHost)
                     {
-                        <span title="真实">&nbsp;[@httpContext.GetUserHost()]</span>
+                        <span title="@L.T("Real")">&nbsp;[@httpContext.GetUserHost()]</span>
                     }
                 </td>
                 <td class="name">
-                    应用程序：
+                    @L.T("Application:")
                 </td>
                 <td class="value">
                     <span title="@Environment.CommandLine">@Process.GetCurrentProcess().ProcessName</span>
@@ -95,16 +95,16 @@
             </tr>
             <tr>
                 <td class="name">
-                    应用域：
+                    @L.T("Application domain:")
                 </td>
                 <td class="value">
                     @AppDomain.CurrentDomain.FriendlyName
-                    <a href="@Url.Action("Main", new{ id = "Assembly" })" target="_blank" title="点击打开进程程序集列表">程序集列表</a>
-                    <a href="@Url.Action("Main", new{ id = "ProcessModules" })" target="_blank" title="点击打开进程模块列表">模块列表</a>
-                    <a href="@Url.Action("Main", new{ id = "ServerVar" })" target="_blank" title="点击打开服务器变量列表">服务器变量列表</a>
+                    <a href="@Url.Action("Main", new{ id = "Assembly" })" target="_blank" title="@L.T("Click to open the process assemblies list")">@L.T("Assemblies")</a>
+                    <a href="@Url.Action("Main", new{ id = "ProcessModules" })" target="_blank" title="@L.T("Click to open the process modules list")">@L.T("Module list")</a>
+                    <a href="@Url.Action("Main", new{ id = "ServerVar" })" target="_blank" title="@L.T("Click to open the server variables list")">@L.T("Server variables")</a>
                 </td>
                 <td class="name">
-                    .Net 版本：
+                    @L.T(".NET version:")
                 </td>
                 <td class="value">
                     @Environment.Version &nbsp;@ver
@@ -112,44 +112,45 @@
             </tr>
             <tr>
                 <td class="name">
-                    操作系统：
+                    @L.T("Operating system:")
                 </td>
                 <td class="value" title="@mi.Guid">
                     @mi.OSName @mi.OSVersion
                 </td>
                 <td class="name">
-                    机器用户：
+                    @L.T("Machine user:")
                 </td>
                 <td class="value" title="@mi.UUID">
                     @if (!mi.Product.IsNullOrEmpty())
                     {
-                        <apan>@mi.Product，</apan>
+                        <apan>@mi.Product, </apan>
                     }
                     @Environment.UserName/@Environment.MachineName
                 </td>
             </tr>
             <tr>
                 <td class="name">
-                    处理器：
+                    @L.T("Processor:")
                 </td>
                 <td class="value">
-                    @mi.Processor，
-                    @Environment.ProcessorCount
-                    核心，@mi.CpuRate.ToString("p0")
                     @if (mi.Temperature > 0)
                     {
-                        <span>，@mi.Temperature ℃</span>
+                        <span>@String.Format(L.T("{0}, {1} cores, usage {2}, {3} ℃"), mi.Processor, Environment.ProcessorCount, mi.CpuRate.ToString("p0"), mi.Temperature)</span>
+                    }
+                    else
+                    {
+                        <span>@String.Format(L.T("{0}, {1} cores, usage {2}"), mi.Processor, Environment.ProcessorCount, mi.CpuRate.ToString("p0"))</span>
                     }
                 </td>
                 <td class="name">
-                    时间：
+                    @L.T("Time:")
                 </td>
                 @{
                     //var uptime = TimeSpan.FromTicks(Environment.TickCount64);
                     var uptime = TimeSpan.FromMilliseconds(Environment.TickCount64);
                 }
-                <td class="value" title="这里使用了服务器默认的时间格式！后面是开机时间。">
-                    @DateTimeOffset.Now，开机@(uptime.ToString(@"dd\.hh\:mm\:ss"))
+                <td class="value" title="@L.T("The server's default time format is used here; the value after it is the boot time.")">
+                    @String.Format(L.T("{0}, up {1}"), DateTimeOffset.Now, uptime.ToString(@"dd\.hh\:mm\:ss"))
                 </td>
             </tr>
             <tr>
@@ -157,41 +158,41 @@
                     var process = Process.GetCurrentProcess();
                 }
                 <td class="name">
-                    内存：
+                    @L.T("Memory:")
                 </td>
                 <td class="value">
-                    物理：@((mi.AvailableMemory / 1024 / 1024).ToString("n0"))M / @((mi.Memory / 1024 / 1024).ToString("n0"))M，
-                    工作/提交: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M/@((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M
-                    GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M
+                    @String.Format(L.T("Physical: {0:n0}M / {1:n0}M"), mi.AvailableMemory / 1024 / 1024, mi.Memory / 1024 / 1024)
+                    @String.Format(L.T("Working set/Private: {0:n0}M / {1:n0}M"), process.WorkingSet64 / 1024 / 1024, process.PrivateMemorySize64 / 1024 / 1024)
+                    @String.Format(L.T("GC: {0:n0}M"), GC.GetTotalMemory(false) / 1024 / 1024)
                     @if (this.Has(menu, (PermissionFlags)32))
                     {
-                        <a href="@Url.Action("MemoryFree")" title="点击释放进程内存">释放内存</a>
+                        <a href="@Url.Action("MemoryFree")" title="@L.T("Click to free process memory")">@L.T("Free memory")</a>
                     }
                 </td>
                 <td class="name">
-                    进程时间：
+                    @L.T("Process time:")
                 </td>
                 <td class="value">
-                    @process.TotalProcessorTime.TotalSeconds.ToString("N2")秒 启动于 @process.StartTime.ToLocalTime().ToFullString()
+                    @String.Format(L.T("{0:N2} s of CPU time, started at {1}"), process.TotalProcessorTime.TotalSeconds, process.StartTime.ToLocalTime().ToFullString())
                 </td>
             </tr>
             <tr>
                 <td class="name">
-                    Session：
+                    @L.T("Session:")
                 </td>
                 <td class="value">
-                    @(httpContext.Features.Get<ISessionFeature>()?.Session.Keys.Count() ?? 0) 个
-                    <a href="@Url.Action("Main", new{ id = "Session" })" target="_blank" title="点击打开Session列表">Session列表</a>
-                    ，@gc
+                    @String.Format(L.T("{0} items"), httpContext.Features.Get<ISessionFeature>()?.Session.Keys.Count() ?? 0)
+                    <a href="@Url.Action("Main", new{ id = "Session" })" target="_blank" title="@L.T("Click to open the session list")">@L.T("Session list")</a>
+                    , @gc
                 </td>
                 <td class="name">
                     @{
                         var startTime = DateTime.Now.AddMilliseconds(-Environment.TickCount64);
                     }
-                    应用启动：
+                    @L.T("App started:")
                 </td>
                 <td class="value">
-                    启动于 @startTime.ToLocalTime().ToFullString()
+                    @String.Format(L.T("Started at {0}"), startTime.ToLocalTime().ToFullString())
                 </td>
             </tr>
         </tbody>
@@ -199,12 +200,12 @@
     <table class="table table-bordered table-hover table-striped table-condensed table-data-list">
         <thead>
             <tr>
-                <th>名称</th>
-                <th>标题</th>
-                <th>文件版本</th>
-                <th>内部版本</th>
-                <th>编译时间</th>
-                <th>描述</th>
+                <th>@L.T("Name")</th>
+                <th>@L.T("Title")</th>
+                <th>@L.T("File version")</th>
+                <th>@L.T("Internal version")</th>
+                <th>@L.T("Build time")</th>
+                <th>@L.T("Description")</th>
             </tr>
         </thead>
         <tbody>

@@ -1,4 +1,4 @@
-﻿@model BindsModel
+@model BindsModel
 @using System.Linq
 @using System.Reflection
 @using XCode
@@ -18,20 +18,20 @@
 
     <div class="form-section">
     <div class="form-section-title">
-        <i class="fa fa-plug"></i>第三方授权
+        <i class="fa fa-plug"></i>@L.T("Third-party authorization")
         @if (ms.Count > 0)
         {
-            <span class="label label-success" style="margin-left: 8px;"><i class="fa fa-link"></i> 已绑定 @boundCount 个平台</span>
+            <span class="label label-success" style="margin-left: 8px;"><i class="fa fa-link"></i> @String.Format(L.T("Bound to {0} platforms"), boundCount)</span>
         }
     </div>
     <div class="form-section-body">
         <div class="row">
             <div class="col-sm-6">
                 <div class="form-group">
-                    <label class="control-label col-sm-4">名称</label>
+                    <label class="control-label col-sm-4">@L.T("Name")</label>
                     <div class="col-sm-8">
                         <input value="@Model.Name" class="form-control" disabled="disabled" />
-                        <span class="help-text">绑定第三方平台后，可直接使用第三方账号一键登录</span>
+                        <span class="help-text">@L.T("After binding a third-party platform, you can sign in with one click using that account")</span>
                     </div>
                 </div>
             </div>
@@ -61,10 +61,10 @@
                                     </span>
                                     <span class="oauth-name">
                                         @nickName
-                                        <span class="oauth-nick"><i class="fa fa-user-o"></i> @(uc.NickName ?? uc.UserName) · 绑定于 @uc.CreateTime.ToFullString("yyyy-MM-dd")</span>
+                                        <span class="oauth-nick"><i class="fa fa-user-o"></i> @(uc.NickName ?? uc.UserName) · @L.T("Bound at") @uc.CreateTime.ToFullString("yyyy-MM-dd")</span>
                                     </span>
-                                    <span class="label label-success oauth-status"><i class="fa fa-check"></i> 已绑定</span>
-                                    <a href="~/Sso/UnBind/@mi.Name" class="btn btn-danger btn-sm oauth-action" title="取消绑定 @nickName" onclick="return confirm('确定取消绑定「@nickName」吗？');"><i class="fa fa-unlink"></i> 取消绑定</a>
+                                    <span class="label label-success oauth-status"><i class="fa fa-check"></i> @L.T("Bound")</span>
+                                    <a href="~/Sso/UnBind/@mi.Name" class="btn btn-danger btn-sm oauth-action" title="@L.T("Unbind") @nickName" onclick="return confirm('@L.T("Unbind this account?")');"><i class="fa fa-unlink"></i> @L.T("Unbind")</a>
                                 </li>
                             }
                             else
@@ -81,8 +81,8 @@
                                         }
                                     </span>
                                     <span class="oauth-name">@nickName</span>
-                                    <span class="label label-default oauth-status"><i class="fa fa-circle-o"></i> 未绑定</span>
-                                    <a href="~/Sso/Bind/@mi.Name" target="_blank" class="btn btn-primary btn-sm oauth-action" title="绑定 @nickName"><i class="fa fa-link"></i> 去绑定</a>
+                                    <span class="label label-default oauth-status"><i class="fa fa-circle-o"></i> @L.T("Not bound")</span>
+                                    <a href="~/Sso/Bind/@mi.Name" target="_blank" class="btn btn-primary btn-sm oauth-action" title="@L.T("Bind") @nickName"><i class="fa fa-link"></i> @L.T("Bind now")</a>
                                 </li>
                             }
                         }
@@ -93,7 +93,7 @@
         else
         {
             <div class="text-center" style="color: #999; padding: 20px 0;">
-                <i class="fa fa-info-circle"></i> 暂无可用的第三方登录平台，请在「魔方设置 → OAuth设置」中配置
+                <i class="fa fa-info-circle"></i> @L.T("No third-party sign-in platform available; configure it in Cube settings → OAuth settings")
             </div>
         }
     </div>

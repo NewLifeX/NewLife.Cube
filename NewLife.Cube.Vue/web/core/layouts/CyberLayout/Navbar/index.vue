@@ -1,36 +1,38 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import LayoutSwitcher from '@newlifex/cube-vue/core/components/LayoutSwitcher.vue';
+import LanguageSwitch from '@newlifex/cube-vue/core/components/LanguageSwitch.vue';
 import ThemeSwitcher from '@newlifex/cube-vue/core/components/ThemeSwitcher.vue';
 import ModeSwitcher from '@newlifex/cube-vue/core/components/ModeSwitcher.vue';
 import { useUserStore } from '@newlifex/cube-vue/core/stores/user';
 import { useMenuStore } from '@newlifex/cube-vue/core/stores/menu';
 import NotificationBell from '@newlifex/cube-vue/core/components/NotificationBell.vue';
 
+const { t, locale } = useI18n();
 const userStore = useUserStore();
 const menuStore = useMenuStore();
 
 // 用户信息
 const currentUser = computed(() => userStore.userInfo);
 const userName = computed(
-  () => currentUser.value?.displayName || currentUser.value?.name || '管理员',
+  () => currentUser.value?.displayName || currentUser.value?.name || t('layout.administrator'),
 );
 
 // 当前页面标题
 const pageTitle = computed(
-  () => menuStore.activeMenu?.title || menuStore.activeMenu?.name || '仪表盘',
+  () => menuStore.activeMenu?.title || menuStore.activeMenu?.name || t('layout.dashboard'),
 );
 
-// 当前日期
-const currentDate = computed(() => {
-  const now = new Date();
-  const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-  const day = now.getDate();
-  const weekday = weekdays[now.getDay()];
-  return `${year}年${month}月${day}日 ${weekday}`;
-});
+// 当前日期。按当前语言格式化，避免写死中文星期与日期模板
+const currentDate = computed(() =>
+  new Intl.DateTimeFormat(locale.value, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
+  }).format(new Date()),
+);
 </script>
 
 <template>
@@ -38,7 +40,7 @@ const currentDate = computed(() => {
     <!-- 左侧标题 -->
     <div class="navbar-left">
       <h2>{{ pageTitle }}</h2>
-      <p>欢迎回来，{{ userName }} · {{ currentDate }}</p>
+      <p>{{ t('layout.welcomeBack', { name: userName, date: currentDate }) }}</p>
     </div>
 
     <!-- 右侧操作 -->
@@ -49,7 +51,7 @@ const currentDate = computed(() => {
           <circle cx="11" cy="11" r="8" />
           <path d="M21 21l-4.35-4.35" />
         </svg>
-        <input type="text" placeholder="搜索设备、告警..." />
+        <input type="text" :placeholder="t('layout.searchPlaceholder')" />
       </div>
 
       <!-- 模式切换（太阳/月亮） -->
@@ -59,6 +61,7 @@ const currentDate = computed(() => {
       <ThemeSwitcher />
       <!-- 布局切换 -->
       <LayoutSwitcher />
+      <LanguageSwitch />
 
       <!-- 通知按钮 -->
       <NotificationBell show-label />

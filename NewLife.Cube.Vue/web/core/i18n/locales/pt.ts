@@ -48,4 +48,15 @@ export default {
   'notification.info': 'Informação',
   'notification.network.typeError': 'Requisição de rede anormal',
   'notification.typeError.description': 'Tente novamente mais tarde',
+
+  // 布局外壳
+  'menu.searchPlaceholder': 'Pesquisar menus...',
+  'layout.dashboard': 'Painel',
+  'layout.administrator': 'Administrador',
+  'layout.collapseSidebar': 'Recolher barra lateral',
+  'layout.searchPlaceholder': 'Pesquisar dispositivos, alertas...',
+  'menu.navigation': 'Menu de navegação',
+  'layout.collapseMenu': 'Recolher menu',
+  'layout.expandSidebar': 'Expandir barra lateral',
+  'layout.welcomeBack': 'Bem-vindo de volta, {name} · {date}',
 };

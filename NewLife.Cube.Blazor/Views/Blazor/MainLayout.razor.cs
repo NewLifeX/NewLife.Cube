@@ -168,12 +168,12 @@ namespace NewLife.Cube.Blazor.Views.Blazor
                                 {
                                     ID = menu.ID,
                                     Name = menu.Name,
-                                    DisplayName = menu.DisplayName ?? menu.Name,
+                                    DisplayName = NewLife.Cube.Membership.MenuHelper.GetDisplayName(menu),
                                     Url = menu.Url,
                                     Icon = menu.Icon,
                                     Visible = menu.Visible,
                                     ParentID = menu.ParentID,
-                                    Permissions = menu.Permissions
+                                    Permissions = NewLife.Cube.Membership.MenuHelper.GetPermissions(menu)
                                 }).ToList();
                 return menuList.Count > 0 ? menuList : null;
             }, menus);

@@ -11,10 +11,10 @@
             {
                 if (item.ID != 0)
                 {
-                    <li class="breadcrumb-item"><a href="@(item.Url!=null? Url.Content(item.Url):"#")">@item.DisplayName</a></li>
+                    <li class="breadcrumb-item"><a href="@(item.Url!=null? Url.Content(item.Url):"#")">@NewLife.Cube.Membership.MenuHelper.GetDisplayName(item)</a></li>
                 }
             }
         }
-        <li class="breadcrumb-item active" aria-current="page"><a href="@Url.Action("Index")">@(menu != null ? menu.DisplayName : ViewBag.Title)</a></li>
+        <li class="breadcrumb-item active" aria-current="page"><a href="@Url.Action("Index")">@(menu != null ? NewLife.Cube.Membership.MenuHelper.GetDisplayName(menu) : ViewBag.Title)</a></li>
     </ol>
 </nav>

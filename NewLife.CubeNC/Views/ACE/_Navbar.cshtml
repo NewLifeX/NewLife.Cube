@@ -97,7 +97,7 @@
                     <li class="light-blue">
                         <a data-toggle="dropdown" href="#" class="dropdown-toggle" target="main">
                             <span class="tenant-name hidden-xs">
-                                @(tenantName ?? "系统后台")
+                                @(tenantName ?? L.T("System console"))
                             </span>
                             <i class="ace-icon fa fa-caret-down"></i>
                         </a>
@@ -108,7 +108,7 @@
                                 <li>
                                     <a href="~/Admin/Index?tenantid=0">
                                         <i class="ace-icon fa fa-building-o"></i>
-                                        系统管理后台
+                                        @L.T("System admin console")
                                     </a>
                                 </li>
                                 <li class="divider"></li>
@@ -162,21 +162,21 @@
                         <li>
                             <a href="~/" target="_blank">
                                 <i class="ace-icon fa fa-home"></i>
-                                系统首页
+                                @L.T("System home")
                             </a>
                         </li>
                         <li class="divider"></li>
                         <li>
                             <a href="~/Admin/User/Info/@uid" target="main">
                                 <i class="ace-icon fa fa-user"></i>
-                                个人信息
+                                @L.T("Profile")
                             </a>
                         </li>
                         <li class="divider"></li>
                         <li>
                             <a href="~/Admin/User/Logout">
                                 <i class="ace-icon fa fa-power-off"></i>
-                                注销
+                                @L.T("Sign out")
                             </a>
                         </li>
                     </ul>

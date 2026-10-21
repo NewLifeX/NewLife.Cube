@@ -63,7 +63,7 @@ else
                 var val = v + "";
                 try
                 {
-                    val = EnumHelper.GetDescription((Enum)v) ?? v + "";
+                    val = EnumLocalization.GetDescription((Enum)v) ?? v + "";
                 }
                 catch { }
                 <td class="align-middle">@val</td>

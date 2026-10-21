@@ -13,9 +13,9 @@
     if (cls.IsNullOrEmpty()) { cls = "form-group col-xs-12 col-sm-6 col-lg-4"; }
 }
 <div class="@cls">
-    <label class="control-label col-xs-3 col-sm-3">用户</label>
+    <label class="control-label col-xs-3 col-sm-3">@L.T("User")</label>
     <div class="input-group col-xs-9 col-sm-5">
         @await Html.PartialAsync("_SelectUser", new SelectUserModel { Id = "UserId", UserId = entity?.UserId ?? 0 })
     </div>
-    <span class="hidden-xs col-sm-4">搜索用户，按编码/名称/昵称/手机号</span>
+    <span class="hidden-xs col-sm-4">@L.T("Search users by code/name/nickname/mobile")</span>
 </div>
