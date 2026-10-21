@@ -89,7 +89,11 @@ public class AreaBase : AreaAttribute
             else if (!dis.IsNullOrEmpty())
             {
                 var translated = L.T(dis);
-                if (translated != dis && menu.DisplayName == translated) { menu.DisplayName = dis; changed = true; }
+                if (translated != dis && menu.DisplayName == translated || MenuHelper.IsOtherLanguageName(menu.DisplayName, dis))
+                {
+                    menu.DisplayName = dis;
+                    changed = true;
+                }
             }
             if (menu.Remark.IsNullOrEmpty() && !des.IsNullOrEmpty()) { menu.Remark = des; changed = true; }
 

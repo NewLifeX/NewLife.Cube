@@ -454,14 +454,13 @@ public static class MenuHelper
     /// 源码恢复中文后，落库值既不是源文也不是当前语言译文，原有判定识别不到。
     /// 这里按"源文含汉字、落库名为纯 ASCII"识别这类旧语言残留。
     /// </remarks>
-    private static Boolean IsOtherLanguageName(String? displayName, String source)
+    internal static Boolean IsOtherLanguageName(String? displayName, String source)
     {
         if (displayName.IsNullOrEmpty()) return false;
         if (!source.Any(e => e >= 0x4E00 && e <= 0x9FFF)) return false;
 
         return displayName.All(e => e < 0x80);
     }
-
     /// <summary>按 FullName 解析菜单对应控制器类型（含跨程序集回退）</summary>
     static Type ResolveMenuType(String fullName)
     {        if (fullName.IsNullOrEmpty()) return null;
