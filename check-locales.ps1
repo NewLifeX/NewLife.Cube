@@ -6,6 +6,7 @@
 #   pwsh -File check-locales.ps1 -LocaleDir NewLife.Cube\Locales -SourceDir NewLife.Cube,NewLife.CubeNC
 #   pwsh -File check-locales.ps1 -LocaleDir NewLife.Cube\Locales -SkipOrphan   # 下游只想校验词表内部一致性
 #   pwsh -File check-locales.ps1 -MetadataKeys NewLife.Cube\Locales\metadata-keys.json -MetadataSourceDir NewLife.Cube\Entity  # 元数据键允许部分语言缺失
+#   pwsh -File check-locales.ps1 -MetadataKeys ... -RequireFullCoverage   # 元数据键也必须每种语言都有译文（魔方 CI 口径）
 param(
     [String]$LocaleDir = "NewLife.Cube\Locales",
     [String]$Baseline = "zh-Hans.yml",
@@ -15,7 +16,9 @@ param(
     # 从生成实体/控制器的 [DisplayName]/[Description] 特性中收集元数据键
     [String[]]$MetadataSourceDir = @(),
     [Switch]$SkipOrphan,
-    [Switch]$Strict
+    [Switch]$Strict,
+    # 元数据键不再允许部分语言缺失：每种语言都必须有译文，缺失即报错
+    [Switch]$RequireFullCoverage
 )
 
 $ErrorActionPreference = "Stop"
@@ -132,7 +135,9 @@ foreach ($file in Get-ChildItem $localeDir -Filter *.yml | Sort-Object Name) {
 
     foreach ($key in $reference.Entries.Keys) {
         # en 是源文语言，允许只提供元数据译文，其余消息回退英文源文
-        if (!$locale.Entries.Contains($key) -and !$metadataKeySet.Contains($key) -and $lang -ne "en") {
+        # 默认元数据键允许部分语言缺失；-RequireFullCoverage 时元数据键也必须覆盖所有语言
+        $allowMissing = $metadataKeySet.Contains($key) -and !$RequireFullCoverage
+        if (!$locale.Entries.Contains($key) -and !$allowMissing -and $lang -ne "en") {
             $allErrors += "$($file.Name): 缺少键 $key"
         }
     }
