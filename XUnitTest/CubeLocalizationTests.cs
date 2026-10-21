@@ -107,6 +107,25 @@ public class CubeLocalizationTests
     [InlineData("sw-KE", null)]
     public void NormalizeCulture(String name, String? expected) => Assert.Equal(expected, CubeLocalization.NormalizeCulture(name));
 
+    [Theory(DisplayName = "程序集元数据 - 标题与描述按请求语言输出词表译文")]
+    [InlineData("zh-CN", "NewLife Cube Library", "NewLife魔方组件库")]
+    [InlineData("zh-CN", "NewLife Cube MVC Library", "NewLife魔方MVC库")]
+    [InlineData("de-DE", "NewLife Cube MVC Library", "NewLife Cube MVC-Bibliothek")]
+    public void AssemblyMetadata(String culture, String source, String expected)
+    {
+        var prev = Localization.Culture;
+        try
+        {
+            Localization.Culture = CultureInfo.GetCultureInfo(culture);
+
+            Assert.Equal(expected, CubeLocalization.T(source));
+        }
+        finally
+        {
+            Localization.Culture = prev;
+        }
+    }
+
     private class EnglishSetting
     {
         [Description("Log level. Only logs at or above this level are output.")]

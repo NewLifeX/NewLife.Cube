@@ -374,6 +374,9 @@
                                     <tbody>
                                         @foreach (AssemblyX item in ViewBag.MyAsms)
                                         {
+                                            // 程序集标题与描述以英文源文编译进程序集特性，展示时按当前语言取词表译文，缺词条回退源文
+                                            var title = L.T(item.Title);
+                                            var desc = L.T(item.Description);
                                             <tr>
                                                 <td>
                                                     <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
@@ -382,7 +385,7 @@
                                                 </td>
                                                 <td>
                                                     <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
-                                                        @item.Title
+                                                        @title
                                                     </div>
                                                 </td>
                                                 <td>
@@ -400,9 +403,9 @@
                                                         @(item.Compile.Year <= 2000 ? "" : item.Compile.ToFullString())
                                                     </div>
                                                 </td>
-                                                <td title="@item.Description">
+                                                <td title="@desc">
                                                     <div class="layui-table-cell laytable-cell-1-0-5" data-id="1-0-5">
-                                                        @item.Description
+                                                        @desc
                                                     </div>
                                                 </td>
                                             </tr>

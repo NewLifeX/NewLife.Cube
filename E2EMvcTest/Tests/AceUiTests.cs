@@ -339,6 +339,43 @@ public sealed class AceUiTests : IAsyncLifetime
         Assert.True(await _page.IsVisibleAsync("button[onclick*='CubeAI.diagnose']"), $"[{testId}] AI 诊断按钮不存在");
     }
 
+    [Fact(DisplayName = "TC-ACE-032 服务器信息页程序集标题与描述按请求语言翻译")]
+    [Trait("Category", "AceUi")]
+    [Trait("Priority", "P1")]
+    public async Task TC_ACE_032_AssemblyMetadataLocalized()
+    {
+        const String testId = "TC-ACE-032";
+
+        // 中文界面：标题与描述取词表译文，而非编译期英文特性值
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/Index/Main?lang=zh-CN");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        // 页面上方是服务器信息表，下方才是程序集信息表
+        var asmTable = _page.Locator(".table-data-list").Last;
+
+        var coreRow = asmTable.Locator("tr:has-text('NewLife.Core')").First;
+        Assert.True(await coreRow.CountAsync() > 0, $"[{testId}] 程序集表中找不到 NewLife.Core 行");
+
+        var coreTitle = (await coreRow.Locator("td").Nth(1).TextContentAsync())?.Trim();
+        Assert.Equal("NewLife核心组件库", coreTitle);
+
+        var coreDesc = (await coreRow.Locator("td").Nth(5).TextContentAsync())?.Trim();
+        Assert.Contains("核心组件库", coreDesc);
+
+        // Cube 自身程序集：标题译文来自魔方词表
+        var cubeRow = asmTable.Locator("tr:has-text('NewLife.Cube')").First;
+        var cubeTitle = (await cubeRow.Locator("td").Nth(1).TextContentAsync())?.Trim();
+        Assert.Contains("魔方", cubeTitle);
+
+        // 英文界面：无词条时回退英文源文
+        await PageHelpers.GotoAndWaitAsync(_page, "/Admin/Index/Main?lang=en-US");
+        await PageHelpers.AssertNoServerErrorAsync(_page, testId);
+
+        var enRow = _page.Locator(".table-data-list").Last.Locator("tr:has-text('NewLife.Core')").First;
+        var enTitle = (await enRow.Locator("td").Nth(1).TextContentAsync())?.Trim();
+        Assert.Equal("NewLife Core Library", enTitle);
+    }
+
     #endregion
 
     #region D.5 表单视觉偏差（编辑页）

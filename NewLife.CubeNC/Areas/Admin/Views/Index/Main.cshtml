@@ -211,13 +211,16 @@
         <tbody>
             @foreach (AssemblyX item in ViewBag.MyAsms)
             {
+                // 程序集标题与描述以英文源文编译进程序集特性，展示时按当前语言取词表译文，缺词条回退源文
+                var title = L.T(item.Title);
+                var desc = L.T(item.Description);
                 <tr>
                     <td>@item.Name</td>
-                    <td style="max-width:240px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;">@item.Title</td>
+                    <td style="max-width:240px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;">@title</td>
                     <td style="max-width:160px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;">@item.FileVersion</td>
                     <td>@item.Version</td>
                     <td title="@item.Version">@(item.Compile.Year <= 2000 ? "" : item.Compile.ToFullString())</td>
-                    <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@item.Description">@item.Description</td>
+                    <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@desc">@desc</td>
                 </tr>
             }
         </tbody>
