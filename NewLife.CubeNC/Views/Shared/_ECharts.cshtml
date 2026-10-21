@@ -2,6 +2,7 @@
 @using NewLife;
 @using NewLife.Web;
 @using NewLife.Cube;
+@using System.Globalization;
 @using System.Text.RegularExpressions
 @using XCode;
 @{
@@ -30,10 +31,12 @@
     var set = NewLife.Cube.CubeSetting.Current;
     var theme = set.EChartsTheme;
     if (theme.EqualIgnoreCase("Default")) theme = "";
+    // ECharts 内置文案（工具箱、数据视图、缩放等）跟随界面语言，中文用 ZH，其余用内置的 EN
+    var echartsLocale = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.EqualIgnoreCase("zh") ? "ZH" : "EN";
 }
 <div id="@name" style="@style" class="@chart.Class"></div>
 <script type="text/javascript">
-    var @chartName = echarts.init(document.getElementById('@name'), '@theme');
+    var @chartName = echarts.init(document.getElementById('@name'), '@theme', { locale: '@echartsLocale' });
     var @optionName = @Html.Raw(json);
     @(chartName).setOption(@optionName);
 

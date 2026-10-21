@@ -21,6 +21,8 @@
     res = res.TrimEnd('/');
 
     var provinces = Area.Root.Childs;
+    // ECharts 内置文案跟随界面语言，中文用 ZH，其余用内置的 EN
+    var echartsLocale = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.EqualIgnoreCase("zh") ? "ZH" : "EN";
     var cities = provinces.SelectMany(e => e.Childs.Where(e => e.Longitude > 0)).ToList();
     var all = provinces.Union(cities).ToList();
     var data = new List<Object>();
@@ -83,7 +85,7 @@
     <div id="main" style="height: 100%;"></div>
     <script type="text/javascript">
         var chartDom = document.getElementById('main');
-        var myChart = echarts.init(chartDom);
+        var myChart = echarts.init(chartDom, null, { locale: '@echartsLocale' });
         var option;
 
         var data = @Html.Raw(data.ToJson(true));
