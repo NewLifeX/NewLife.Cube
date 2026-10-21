@@ -27,7 +27,13 @@
     "Host",
     "Offline",
     "Online",
-    "GC: {0:n0}M"
+    "GC: {0:n0}M",
+    "{ParentPath}",
+    "Gmail",
+    "Links",
+    "Outlook/Hotmail",
+    "Skin",
+    "{0}, {1}"
   ],
   "ja": [
     "AI",
@@ -40,7 +46,12 @@
     "精度",
     "列名",
     "{type}管理",
-    "ID"
+    "ID",
+    "{ParentPath}",
+    "Gmail",
+    "Outlook/Hotmail",
+    "System,Profile,Common",
+    "NewLife Team, NewLife, Cube, XCode"
   ],
   "zh-Hant": [
     "AI",
@@ -61,7 +72,10 @@
     "Excel接口",
     "Json接口",
     "Sql文本",
-    "Xml接口"
+    "Xml接口",
+    "{ParentPath}",
+    "Gmail",
+    "Outlook/Hotmail"
   ],
   "pl": [
     "Agent",
@@ -76,7 +90,14 @@
     "Get/Post",
     "ID",
     "GC: {0:n0}M",
-    "Host"
+    "Host",
+    "{ParentPath}",
+    "Gmail",
+    "Outlook/Hotmail",
+    "Offline",
+    "Link",
+    "Online",
+    "{0}, {1}"
   ],
   "nb": [
     "Agent",
@@ -98,7 +119,15 @@
     "Driver",
     "Send",
     "ID",
-    "GC: {0:n0}M"
+    "GC: {0:n0}M",
+    "{ParentPath}",
+    "AI ApiKey",
+    "Gmail",
+    "Outlook/Hotmail",
+    "Normal",
+    "Full",
+    "{0}, {1}",
+    "NewLife Team, NewLife, Cube, XCode"
   ],
   "cs": [
     "Tenant",
@@ -116,7 +145,14 @@
     "{0} h {1} min",
     "{0} min",
     "ID",
-    "GC: {0:n0}M"
+    "GC: {0:n0}M",
+    "{ParentPath}",
+    "Gmail",
+    "Outlook/Hotmail",
+    "Offline",
+    "Role:",
+    "Online",
+    "{0}, {1}"
   ],
   "fi": [
     "AI",
@@ -130,7 +166,12 @@
     "Token",
     "{0} h {1} min",
     "{0} min",
-    "GC: {0:n0}M"
+    "GC: {0:n0}M",
+    "{ParentPath}",
+    "Gmail",
+    "Outlook/Hotmail",
+    "{0}, {1}",
+    "NewLife Team, NewLife, Cube, XCode"
   ],
   "es": [
     "Error",
@@ -150,7 +191,17 @@
     "GC: {0:n0}M",
     "Local",
     "Real",
-    "Host"
+    "Host",
+    "{ParentPath}",
+    "Gmail",
+    "Outlook/Hotmail",
+    "Normal",
+    "Visible",
+    "Asc",
+    "Desc",
+    "Tokens",
+    "{0}, {1}",
+    "Personal"
   ],
   "fr": [
     "Agent",
@@ -185,7 +236,9 @@
     "Association",
     "Visible",
     "Mobile",
-    "Normal"
+    "Normal",
+    "{0}, {1}",
+    "Performance"
   ],
   "it": [
     "Backup",
@@ -215,7 +268,18 @@
     "ID",
     "GC: {0:n0}M",
     "Host",
-    "Directory:"
+    "Directory:",
+    "{ParentPath}",
+    "Gmail",
+    "Multi-tenancy",
+    "Outlook/Hotmail",
+    "Password",
+    "Offline",
+    "Email",
+    "Controller",
+    "Account",
+    "Online",
+    "{0}, {1}"
   ],
   "id": [
     "Debug",
@@ -237,7 +301,17 @@
     "Driver",
     "ID",
     "GC: {0:n0}M",
-    "Host"
+    "Host",
+    "{ParentPath}",
+    "Gmail",
+    "Log",
+    "Outlook/Hotmail",
+    "Total",
+    "Normal",
+    "Offline",
+    "Email",
+    "Online",
+    "{0}, {1}"
   ],
   "ms": [
     "Status",
@@ -253,7 +327,14 @@
     "Token",
     "Get/Post",
     "ID",
-    "GC: {0:n0}M"
+    "GC: {0:n0}M",
+    "{ParentPath}",
+    "Bootstrap select",
+    "Gmail",
+    "Log",
+    "Outlook/Hotmail",
+    "Normal",
+    "{0}, {1}"
   ],
   "ko": [
     "AI",
@@ -261,7 +342,11 @@
     "Qiniu",
     "Get/Post",
     "ID",
-    "GC: {0:n0}M"
+    "GC: {0:n0}M",
+    "{ParentPath}",
+    "Gmail",
+    "Outlook/Hotmail",
+    "{0}, {1}"
   ],
   "nl": [
     "AI",
@@ -291,7 +376,19 @@
     "GC: {0:n0}M",
     "{0} items",
     "Host",
-    "Processor:"
+    "Processor:",
+    "{ParentPath}",
+    "Gmail",
+    "Multi-tenancy",
+    "Outlook/Hotmail",
+    "Status",
+    "Offline",
+    "Controller",
+    "Account",
+    "Caches",
+    "Online",
+    "Tokens",
+    "{0}, {1}"
   ],
   "sv": [
     "AI",
@@ -314,7 +411,15 @@
     "ID",
     "GC: {0:n0}M",
     "Session:",
-    "Processor:"
+    "Processor:",
+    "{ParentPath}",
+    "Gmail",
+    "Outlook/Hotmail",
+    "Status",
+    "Normal",
+    "Offline",
+    "Online",
+    "{0}, {1}"
   ],
   "da": [
     "AI",
@@ -341,7 +446,21 @@
     "ID",
     "GC: {0:n0}M",
     "Session:",
-    "Processor:"
+    "Processor:",
+    "{ParentPath}",
+    "Gmail",
+    "Links",
+    "Log",
+    "Outlook/Hotmail",
+    "Job [{0}]",
+    "Status",
+    "Normal",
+    "Offline",
+    "Controller",
+    "Caches",
+    "Online",
+    "Tokens",
+    "{0}, {1}"
   ],
   "hi": [
     "AI",
@@ -350,7 +469,11 @@
     "Tencent COS",
     "Qiniu",
     "Get/Post",
-    "GC: {0:n0}M"
+    "GC: {0:n0}M",
+    "{ParentPath}",
+    "Gmail",
+    "Outlook/Hotmail",
+    "{0}, {1}"
   ],
   "th": [
     "AI",
@@ -360,7 +483,13 @@
     "Qiniu",
     "Get/Post",
     "ID",
-    "GC: {0:n0}M"
+    "GC: {0:n0}M",
+    "{ParentPath}",
+    "Bootstrap select",
+    "Gmail",
+    "Outlook/Hotmail",
+    "Stardust web",
+    "{0}, {1}"
   ],
   "vi": [
     "AI",
@@ -372,21 +501,33 @@
     "Menu",
     "Token",
     "ID",
-    "GC: {0:n0}M"
+    "GC: {0:n0}M",
+    "{ParentPath}",
+    "Gmail",
+    "Outlook/Hotmail",
+    "Email",
+    "{0}, {1}"
   ],
   "ar": [
     "Cube",
     "Aliyun OSS",
     "Tencent COS",
     "Qiniu",
-    "GC: {0:n0}M"
+    "GC: {0:n0}M",
+    "{ParentPath}",
+    "Gmail",
+    "Outlook/Hotmail"
   ],
   "fa": [
     "Cube",
     "Aliyun OSS",
     "Tencent COS",
     "Qiniu",
-    "GC: {0:n0}M"
+    "GC: {0:n0}M",
+    "{ParentPath}",
+    "Gmail",
+    "Outlook/Hotmail",
+    "Stardust web"
   ],
   "he": [
     "AI",
@@ -394,7 +535,13 @@
     "Aliyun OSS",
     "Tencent COS",
     "Qiniu",
-    "GC: {0:n0}M"
+    "GC: {0:n0}M",
+    "{ParentPath}",
+    "Bootstrap select",
+    "Gmail",
+    "Outlook/Hotmail",
+    "Stardust web",
+    "{0}, {1}"
   ],
   "ru": [
     "Cube",
@@ -402,7 +549,12 @@
     "Tencent COS",
     "Qiniu",
     "ID",
-    "GC: {0:n0}M"
+    "GC: {0:n0}M",
+    "{ParentPath}",
+    "Gmail",
+    "Outlook/Hotmail",
+    "Email",
+    "{0}, {1}"
   ],
   "uk": [
     "Cube",
@@ -410,14 +562,22 @@
     "Tencent COS",
     "Qiniu",
     "ID",
-    "GC: {0:n0}M"
+    "GC: {0:n0}M",
+    "{ParentPath}",
+    "Gmail",
+    "Outlook/Hotmail",
+    "{0}, {1}"
   ],
   "bn": [
     "Cube",
     "Aliyun OSS",
     "Tencent COS",
     "Qiniu",
-    "GC: {0:n0}M"
+    "GC: {0:n0}M",
+    "{ParentPath}",
+    "Gmail",
+    "Outlook/Hotmail",
+    "{0}, {1}"
   ],
   "tr": [
     "AI",
@@ -429,7 +589,12 @@
     "Token",
     "Get/Post",
     "ID",
-    "GC: {0:n0}M"
+    "GC: {0:n0}M",
+    "{ParentPath}",
+    "Gmail",
+    "Outlook/Hotmail",
+    "Normal",
+    "{0}, {1}"
   ],
   "hu": [
     "Cube platform",
@@ -441,7 +606,16 @@
     "Token",
     "Get/Post",
     "ID",
-    "GC: {0:n0}M"
+    "GC: {0:n0}M",
+    "{ParentPath}",
+    "AI ApiKey",
+    "Bootstrap select",
+    "Gmail",
+    "Outlook/Hotmail",
+    "Stardust web",
+    "Offline",
+    "Online",
+    "{0}, {1}"
   ],
   "pt": [
     "Runtime",
@@ -460,7 +634,21 @@
     "GC: {0:n0}M",
     "Local",
     "Real",
-    "Host"
+    "Host",
+    "{ParentPath}",
+    "Gmail",
+    "Outlook/Hotmail",
+    "Stardust web",
+    "Status",
+    "Total",
+    "Normal",
+    "Offline",
+    "Caches",
+    "Link",
+    "Online",
+    "Tokens",
+    "{0}, {1}",
+    "{0} assemblies"
   ],
   "ro": [
     "{value}s",
@@ -476,7 +664,17 @@
     "ID",
     "GC: {0:n0}M",
     "Local",
-    "Real"
+    "Real",
+    "{ParentPath}",
+    "Gmail",
+    "Outlook/Hotmail",
+    "Total",
+    "Normal",
+    "Offline",
+    "Link",
+    "Online",
+    "{0}, {1}",
+    "Personal"
   ],
   "el": [
     "{value}s",
@@ -485,6 +683,11 @@
     "Tencent COS",
     "Qiniu",
     "ID",
-    "GC: {0:n0}M"
+    "GC: {0:n0}M",
+    "{ParentPath}",
+    "Gmail",
+    "Outlook/Hotmail",
+    "Email",
+    "{0}, {1}"
   ]
 }
