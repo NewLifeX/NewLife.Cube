@@ -50,6 +50,9 @@ public sealed class UserProfileTests : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
+        // 本类会把 admin 密码改为新密码，收尾必须复位，否则后续测试类用默认口令登录失败
+        try { DatabaseHelper.RestoreAdminPassword(); } catch { }
+
         if (_page != null)
         {
             try { await PageHelpers.LogoutAsync(_page); } catch { }
