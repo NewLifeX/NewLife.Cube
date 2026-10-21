@@ -67,7 +67,7 @@ public static class CubeService
         if (sys.Name == "NewLife.Cube.Views" || sys.DisplayName == "NewLife.Cube.Views")
         {
             sys.Name = "NewLife.Cube";
-            sys.DisplayName = "魔方平台";
+            sys.DisplayName = L.T("Cube platform");
             sys.Save();
         }
 
@@ -158,10 +158,10 @@ public static class CubeService
                             var method = context.HttpContext.Request.Method;
                             var hint = method.ToUpperInvariant() switch
                             {
-                                "POST" => "请求数据格式不正确，请检查是否传递了正确的JSON对象",
-                                "PUT" => "请求数据格式不正确，请检查是否传递了正确的JSON对象",
-                                "DELETE" => "请求参数格式不正确，请检查ID值是否有效",
-                                _ => "请求数据格式不正确"
+                                "POST" => L.T("Invalid request body. Make sure a valid JSON object is sent."),
+                                "PUT" => L.T("Invalid request body. Make sure a valid JSON object is sent."),
+                                "DELETE" => L.T("Invalid request parameters. Make sure the id is valid."),
+                                _ => L.T("Invalid request body")
                             };
                             fieldErrors.Add(new FieldError
                             {
@@ -190,7 +190,7 @@ public static class CubeService
                     }
                 }
 
-                var firstMsg = fieldErrors.Count > 0 ? fieldErrors[0].Message : "请求参数错误";
+                var firstMsg = fieldErrors.Count > 0 ? fieldErrors[0].Message : L.T("Invalid request parameters");
                 var response = new ApiResponse<Object>
                 {
                     Code = Models.CubeCode.ParamError.ToInt(),

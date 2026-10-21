@@ -12,7 +12,7 @@ namespace NewLife.Cube.Controllers;
 /// Setup/Activate/Disable 需要已登录（EntityAuthorize）。
 /// Verify 端点接受 MFA 挂起令牌（由 Login 接口在账密通过但 MFA 未验证时签发），不需要完整登录态。
 /// </remarks>
-[DisplayName("多因素认证")]
+[DisplayName("Multi-factor authentication")]
 [ApiController]
 [Produces("application/json")]
 [Route("[controller]/[action]")]

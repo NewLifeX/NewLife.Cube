@@ -29,9 +29,9 @@ namespace NewLife.Cube.Controllers;
 /// <param name="pageService"></param>
 /// <param name="tokenService"></param>
 /// <param name="sources"></param>
-[DisplayName("魔方数据接口")]
+[DisplayName("Cube data API")]
 [Description("""
-    魔方向前端控件提供的一些常用接口，例如用户查询与头像获取等。
+    Common APIs that Cube provides to front-end controls, such as user lookup and avatar retrieval.
     """)]
 //[ApiExplorerSettings(GroupName = "Cube")]
 [Route("[controller]/[action]")]
@@ -656,14 +656,14 @@ public class CubeController(PageService pageService, TokenService tokenService, 
                             {
                                 ID = menu.ID,
                                 Name = menu.Name,
-                                DisplayName = menu.DisplayName ?? menu.Name,
+                                DisplayName = NewLife.Cube.Membership.MenuHelper.GetDisplayName(menu),
                                 FullName = menu.FullName,
                                 Url = menu.Url,
                                 Icon = menu.Icon,
                                 Visible = menu.Visible,
                                 NewWindow = menu.NewWindow,
                                 ParentID = menu.ParentID,
-                                Permissions = menu.Permissions
+                                Permissions = NewLife.Cube.Membership.MenuHelper.GetPermissions(menu)
                             }).ToList();
             return menuList.Count > 0 ? menuList : null;
         }, menus);

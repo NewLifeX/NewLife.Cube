@@ -55,10 +55,10 @@ namespace NewLife.Cube.Controllers;
 /// 魔方支持接入微信钉钉等多个第三方OAuth2.0服务。
 /// 魔方自身也可以作为OAuth2.0服务端，支持密码式、凭证式、刷新令牌等多种授权模式。
 /// </remarks>
-[DisplayName("单点登录")]
+[DisplayName("Single sign-on")]
 [Description("""
-    魔方支持接入微信钉钉等多个第三方OAuth2.0服务。
-    魔方自身也可以作为OAuth2.0服务端，支持密码式、凭证式、刷新令牌等多种授权模式。
+    Cube can integrate third-party OAuth 2.0 services such as WeChat and DingTalk.
+    Cube can also act as an OAuth 2.0 server, supporting password, client credentials, refresh token and other grant types.
     """)]
 //[ApiExplorerSettings(GroupName = "Cube")]
 [Route("[controller]/[action]")]
@@ -208,7 +208,7 @@ public class SsoController : ControllerBaseX
                     if (!html.IsNullOrEmpty()) XTrace.WriteLine(html);
 
                     log.Success = false;
-                    log.Remark = $"无法获取令牌，自动重新授权: {html}";
+                    log.Remark = L.T("Unable to get the token; re-authorizing automatically: {0}", html);
                     log.Update();
 
                     return Redirect(OnLogin(client, null, returnUrl, null));
@@ -306,7 +306,7 @@ public class SsoController : ControllerBaseX
             XTrace.WriteLine(Request.GetRawUrl() + "");
 
             log.Success = false;
-            log.Remark = $"授权码已过期，自动重新授权: {ex.Message}";
+            log.Remark = L.T("Authorization code expired; re-authorizing automatically: {0}", ex.Message);
             log.Update();
 
             return Redirect(OnLogin(client, null, returnUrl, null));
@@ -513,10 +513,10 @@ public class SsoController : ControllerBaseX
             config = OAuthConfig.FindByAppId(appId);
         if (config == null)
             throw new ApiException(CubeCode.Exception.ToInt(),
-                $"应用{nameof(OAuthConfig.AppId)}未配置");
+                L.T("Application {0} is not configured", nameof(OAuthConfig.AppId)));
         if (String.IsNullOrWhiteSpace(config.Secret))
             throw new ApiException(CubeCode.Exception.ToInt(),
-                $"应用{nameof(OAuthConfig.Secret)}未配置");
+                L.T("Application {0} is not configured", nameof(OAuthConfig.Secret)));
 
         // 以配置所属租户创建客户端，保证微信登录落在正确租户
         // wxLoginType 登录类型，用于取oauh2客户端，不能用配置的Name

@@ -55,7 +55,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         }
 
         var title = GetType().GetDisplayName() ?? typeof(TEntity).GetDisplayName() ?? Factory.Table.DataTable.DisplayName;
-        ViewBag.Title = title;
+        ViewBag.Title = L.T(title);
 
         // Ajax请求不需要设置ViewBag
         if (!Request.IsAjaxRequest())
@@ -76,7 +76,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             if (txt.IsNullOrEmpty()) txt = Factory.Table.Description;
             //if (txt.IsNullOrEmpty() && SysConfig.Current.Develop)
             //    txt = "这里是页头内容，来自于菜单备注，或者给控制器增加Description特性";
-            ViewBag.HeaderContent = txt;
+            ViewBag.HeaderContent = L.T(txt);
         }
 
         base.OnActionExecuting(filterContext);
@@ -565,6 +565,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     private IList<DataField> GetFields(IList<FieldItem> fs, IEnumerable<IModel> list)
     {
         var fields = fs.Select(e => new DataField(e)).ToList();
+        foreach (var field in fields) field.Localize();
+
         if (list.FirstOrDefault() is IExtend ext)
         {
             foreach (var item in ext.Items)

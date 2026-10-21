@@ -34,7 +34,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
         var txt = "";
         if (txt.IsNullOrEmpty()) txt = Menu?.Remark;
         if (txt.IsNullOrEmpty()) txt = des;
-        ViewBag.HeaderContent = txt;
+        ViewBag.HeaderContent = L.T(txt);
     }
 
     /// <summary>执行后</summary>

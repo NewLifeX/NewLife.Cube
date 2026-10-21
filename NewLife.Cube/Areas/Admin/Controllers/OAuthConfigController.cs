@@ -18,7 +18,7 @@ public class OAuthConfigController : EntityController<OAuthConfig, OAuthConfigMo
         var df = ListFields.AddListField("TenantName", null, "Provider");
         if (df != null)
         {
-            df.DisplayName = "租户";
+            df.DisplayName = "Tenant";
             df.GetValue = e => (e as OAuthConfig)?.TenantName;
             df.MapField = "TenantId";
             df.MapProvider = new MapProvider { EntityType = typeof(Tenant), Key = "Id" };

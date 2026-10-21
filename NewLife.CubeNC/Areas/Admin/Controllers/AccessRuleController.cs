@@ -25,7 +25,7 @@ public class AccessRuleController : EntityController<AccessRule, AccessRuleModel
         // 过期时间列改造为解封操作列：自动封禁行显示解封时间与解封链接
         if (ListFields.GetField("ExpireTime") is ListField df)
         {
-            df.DisplayName = "解封时间";
+            df.DisplayName = "Unblock time";
             df.AddService(new UnblockLink());
         }
     }

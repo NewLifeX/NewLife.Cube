@@ -339,7 +339,7 @@ public class WidgetManager
         }
 
         // 内置约定：系统 < 个人 < 通用 < 其它
-        if (order == null || order.Count == 0) order = new List<String> { "系统", "个人", "通用" };
+        if (order == null || order.Count == 0) order = new List<String> { "System", "Personal", "General" };
 
         return (order, items);
     }
@@ -376,7 +376,7 @@ public class WidgetManager
         // 组内位置：优先管理员配置列表；组无配置或部件未列出时回退 Sort（未列出的新部件排到配置列表之后）
         Int32 ItemPos(WidgetAttribute e, out Boolean configured)
         {
-            if (groupItems != null && groupItems.TryGetValue(e.Category.IsNullOrEmpty() ? "通用" : e.Category, out var items))
+            if (groupItems != null && groupItems.TryGetValue(e.Category.IsNullOrEmpty() ? "General" : e.Category, out var items))
             {
                 for (var i = 0; i < items.Count; i++)
                 {
@@ -394,7 +394,7 @@ public class WidgetManager
 
         // 默认顺序：KPI 小卡簇在前 → 外部业务组件在魔方内置前 → 组（已配置在前按序号，未配置在后按名称）→ 组内（配置在前按位置，未配置按 Sort）
         IEnumerable<WidgetAttribute> DefaultOrder(IEnumerable<WidgetAttribute> src) =>
-            src.Select(e => new { W = e, C = e.Category.IsNullOrEmpty() ? "通用" : e.Category, K = e.WidgetType == WidgetTypes.Kpi ? 0 : 1, O = IsExternal(e) ? 0 : 1 })
+            src.Select(e => new { W = e, C = e.Category.IsNullOrEmpty() ? "General" : e.Category, K = e.WidgetType == WidgetTypes.Kpi ? 0 : 1, O = IsExternal(e) ? 0 : 1 })
                .Select(x => new { x.W, x.C, x.K, x.O, P = ItemPos(x.W, out var cfg), Cfg = cfg })
                .OrderBy(x => x.K)
                .ThenBy(x => x.O)

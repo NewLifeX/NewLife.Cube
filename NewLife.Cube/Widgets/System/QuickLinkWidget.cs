@@ -5,7 +5,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Widgets.System;
 
 /// <summary>快捷入口。最近访问优先，新上菜单补足，全部按当前用户权限过滤</summary>
-[Widget("QuickLink", "快捷入口", Icon = "fa-th-large", Cols = 4, Sort = 80, Category = "通用", WidgetType = WidgetTypes.Content)]
+[Widget("QuickLink", "Quick links", Icon = "fa-th-large", Cols = 4, Sort = 80, Category = "General", WidgetType = WidgetTypes.Content)]
 public class QuickLinkWidget : IWidget
 {
     /// <summary>最近访问缓存。进程内缓存按用户隔离，600 秒无访问自动清理</summary>
@@ -29,7 +29,7 @@ public class QuickLinkWidget : IWidget
             if (!CanAccess(user, menu)) continue;
             if (!urls.Add(menu.Url)) continue;
 
-            links.Add(new { Name = menu.DisplayName ?? menu.Name, menu.Url, menu.Icon });
+            links.Add(new { Name = NewLife.Cube.Membership.MenuHelper.GetDisplayName(menu), menu.Url, menu.Icon });
         }
 
         // 新上菜单补足剩余位置：按更新时间倒序，权限过滤与 URL 去重
@@ -40,7 +40,7 @@ public class QuickLinkWidget : IWidget
                 if (links.Count >= 12) break;
                 if (!urls.Add(menu.Url)) continue;
 
-                links.Add(new { Name = menu.DisplayName ?? menu.Name, menu.Url, menu.Icon });
+                links.Add(new { Name = NewLife.Cube.Membership.MenuHelper.GetDisplayName(menu), menu.Url, menu.Icon });
             }
         }
 
@@ -65,7 +65,7 @@ public class QuickLinkWidget : IWidget
         try
         {
             var url = menu.Url;
-            var name = menu.DisplayName ?? menu.Name;
+            var name = NewLife.Cube.Membership.MenuHelper.GetDisplayName(menu);
             var icon = menu.Icon;
 
             var item = GetOrLoad(userId);

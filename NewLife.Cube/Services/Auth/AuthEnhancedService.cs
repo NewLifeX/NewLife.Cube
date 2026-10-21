@@ -161,7 +161,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
                 user = new User
                 {
                     Name = $"P{mobile}",//添加一个P（phone）前缀，区分登录方式
-                    DisplayName = $"手机用户{mobile[^4..]}",
+                    DisplayName = L.T("Mobile user {0}", mobile[^4..]),
                     Mobile = mobile,
                     Enable = true,
                     MobileVerified = true,
@@ -191,11 +191,11 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
             if (errors > 0) _cache.Remove(key);
             if (ipErrors > 0) _cache.Remove(ipKey);
 
-            return _userService.CompleteLogin(user, httpContext, remember, "短信登录", mobile, ip);
+            return _userService.CompleteLogin(user, httpContext, remember, L.T("SMS sign-in"), mobile, ip);
         }
         catch (Exception ex)
         {
-            _userService.HandleLoginError(ex, "短信登录", mobile, ip, key, ipKey, errors, ipErrors, ip24Key, ip24Errors, ip16Key, ip16Errors, set.LoginForbiddenTime);
+            _userService.HandleLoginError(ex, L.T("SMS sign-in"), mobile, ip, key, ipKey, errors, ipErrors, ip24Key, ip24Errors, ip16Key, ip16Errors, set.LoginForbiddenTime);
             throw;
         }
     }
@@ -258,7 +258,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
                 user = new User
                 {
                     Name = mail.Split('@')[0],
-                    DisplayName = $"邮箱用户",
+                    DisplayName = L.T("Email user"),
                     Mail = mail,
                     Enable = true,
                     MailVerified = true,
@@ -288,11 +288,11 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
             if (errors > 0) _cache.Remove(key);
             if (ipErrors > 0) _cache.Remove(ipKey);
 
-            return _userService.CompleteLogin(user, httpContext, remember, "邮箱登录", mail, ip);
+            return _userService.CompleteLogin(user, httpContext, remember, L.T("Email sign-in"), mail, ip);
         }
         catch (Exception ex)
         {
-            _userService.HandleLoginError(ex, "邮箱登录", mail, ip, key, ipKey, errors, ipErrors, ip24Key, ip24Errors, ip16Key, ip16Errors, set.LoginForbiddenTime);
+            _userService.HandleLoginError(ex, L.T("Email sign-in"), mail, ip, key, ipKey, errors, ipErrors, ip24Key, ip24Errors, ip16Key, ip16Errors, set.LoginForbiddenTime);
             throw;
         }
     }
@@ -397,7 +397,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         _cache.Remove(codeKey);
         LogProvider.Provider.WriteLog(typeof(User), L.T("Mobile registration"), true, L.T("Mobile: {0}", mobile), user.ID, user + "", ip);
 
-        return _userService.CompleteLogin(user, httpContext, false, "手机注册", username, ip);
+        return _userService.CompleteLogin(user, httpContext, false, L.T("Mobile registration"), username, ip);
     }
 
     private ServiceResult<IToken> RegisterByMailCode(AuthRegisterModel model, HttpContext httpContext, String ip)
@@ -430,7 +430,7 @@ public class AuthEnhancedService(UserService userService, VerifyCodeService veri
         _cache.Remove(codeKey);
         LogProvider.Provider.WriteLog(typeof(User), L.T("Email registration"), true, L.T("Email: {0}", mail), user.ID, user + "", ip);
 
-        return _userService.CompleteLogin(user, httpContext, false, "邮箱注册", username, ip);
+        return _userService.CompleteLogin(user, httpContext, false, L.T("Email registration"), username, ip);
     }
     #endregion
 

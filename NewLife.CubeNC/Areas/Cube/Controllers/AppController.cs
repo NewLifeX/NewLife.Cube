@@ -22,7 +22,7 @@ public class AppController : EntityController<App, AppModel>
         {
             var df = ListFields.AddListField("AppLog", "Enable");
             //df.Header = "日志";
-            df.DisplayName = "日志";
+            df.DisplayName = "Log";
             df.Url = "/Cube/AppLog?appId={Id}";
             df.Target = "_blank";
         }
@@ -39,9 +39,9 @@ public class AppController : EntityController<App, AppModel>
 
         {
             var df = ListFields.AddListField("Log", "UpdateUserId");
-            //df.Header = "修改日志";
-            df.DisplayName = "修改日志";
-            df.Url = "/Admin/Log?category=应用系统&linkId={ID}";
+            //df.Header = "Change log";
+            df.DisplayName = "Change log";
+            df.Url = "/Admin/Log?category=Applications&linkId={ID}";
             df.Target = "_blank";
         }
     }

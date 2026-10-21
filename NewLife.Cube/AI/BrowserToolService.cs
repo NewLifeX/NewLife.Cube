@@ -67,17 +67,17 @@ public class BrowserToolService(Int64 userId)
     /// <param name="context">工具调用上下文（由框架注入）。检查点编号优先使用 <c>ToolCallId</c>；通道上下文经 <c>Items</c> 读取</param>
     /// <returns>执行结果 JSON（<c>{ok,value,error}</c>）</returns>
     [ToolDescription("run_js")]
-    [DisplayName("执行页面脚本")]
-    [Description("在当前页面执行 JavaScript 并返回结果，可读取或操作页面元素。例如 document.title、document.querySelector('input[name=Name]').value 等")]
-    public virtual async Task<String> RunJs([Description("要在当前页面执行的 JavaScript 代码")] String script, ToolCallContext? context = null)
+    [DisplayName("Run page script")]
+    [Description("Runs JavaScript in the current page and returns the result; can read or modify page elements, for example document.title or document.querySelector('input[name=Name]').value")]
+    public virtual async Task<String> RunJs([Description("JavaScript code to run in the current page")] String script, ToolCallContext? context = null)
     {
-        if (script.IsNullOrEmpty()) return new { ok = false, error = "脚本不能为空" }.ToJson();
+        if (script.IsNullOrEmpty()) return new { ok = false, error = L.T("Script must not be empty") }.ToJson();
 
         // 审计：记录下发脚本内容，便于追溯
         XTrace.WriteLine("[AI][run_js] Sending script: {0}", script);
 
         var (writer, cp, uid, timeout) = ResolveChannel(context);
-        if (writer == null) return new { ok = false, error = "浏览器通道未就绪（Writer 未注入）" }.ToJson();
+        if (writer == null) return new { ok = false, error = L.T("Browser channel is not ready (Writer not injected)") }.ToJson();
 
         // 检查点编号：优先使用工具调用 ID（前端 tool 事件已携带，前后端一一对应），兜底生成
         var checkpointId = context?.ToolCallId;
@@ -186,7 +186,7 @@ public static class PageContextCollector
                 rs.dataAttrs[k] = txt(attrs[i]);
             }
             var trows = document.querySelectorAll('table tbody tr').length;
-            if (trows > 0) rs.hints.push('数据行数:' + trows);
+            if (trows > 0) rs.hints.push('Rows: ' + trows);
             return rs;
         })()
         """;
@@ -211,8 +211,8 @@ public class PageDataContextToolService(ControllerBaseX ctrl, BrowserToolService
     /// <param name="context">工具调用上下文（由框架注入），透传给浏览器采集层</param>
     /// <returns>页面数据上下文 JSON 字符串</returns>
     [ToolDescription("get_page_context", ReadOnly = true)]
-    [DisplayName("获取页面上下文")]
-    [Description("获取当前页面的主要数据与页面结构（标题、表格、表单等）。优先使用页面提供的服务端上下文；无服务端实现时自动采集用户浏览器当前页面内容")]
+    [DisplayName("Get page context")]
+    [Description("Gets the main data and structure of the current page (title, tables, forms and so on). Uses the server-side context when the page provides one; otherwise collects the page content from the user's browser")]
     public virtual async Task<String> GetPageContextAsync(ToolCallContext? context = null)
     {
         // 一级：宿主控制器实现服务端上下文接口，返回结构化权威数据

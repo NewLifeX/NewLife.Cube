@@ -18,9 +18,9 @@ public class ConfigFormToolService(IFormAiContext ctx)
     /// <param name="context">工具调用上下文（由框架注入）</param>
     /// <returns>表单字段结构 JSON</returns>
     [ToolDescription("get_form_schema", ReadOnly = true)]
-    [DisplayName("获取表单字段结构")]
-    [Description("获取当前表单的字段结构，包含字段名、类型、说明与当前值，供生成表单值使用")]
-    public virtual String GetFormSchema([Description("表单模式：add 新增 / edit 编辑")] String mode = "edit", ToolCallContext? context = null)
+    [DisplayName("Get form schema")]
+    [Description("Gets the schema of the current form, including field names, types, descriptions and current values, for generating form values")]
+    public virtual String GetFormSchema([Description("Form mode: add or edit")] String mode = "edit", ToolCallContext? context = null)
         => ctx.GetFormSchema(mode);
 
     /// <summary>生成表单字段值并回填到前端表单。不写数据库，由用户确认后提交</summary>
@@ -29,8 +29,8 @@ public class ConfigFormToolService(IFormAiContext ctx)
     /// <param name="context">工具调用上下文（由框架注入）</param>
     /// <returns>工具结果，含回填值</returns>
     [ToolDescription("fill_form")]
-    [DisplayName("回填表单")]
-    [Description("生成表单字段值并回填到前端表单。不写数据库，由用户确认后提交")]
-    public virtual IToolResult FillForm([Description("字段值 JSON 字符串，键为字段名，值为要填入的值")] String values, [Description("表单模式：add 新增 / edit 编辑")] String mode = "edit", ToolCallContext? context = null)
+    [DisplayName("Fill form")]
+    [Description("Generates form field values and fills them into the front-end form. Nothing is written to the database until the user confirms")]
+    public virtual IToolResult FillForm([Description("Field values as a JSON string, keyed by field name")] String values, [Description("Form mode: add or edit")] String mode = "edit", ToolCallContext? context = null)
         => ctx.FillForm(values, mode);
 }

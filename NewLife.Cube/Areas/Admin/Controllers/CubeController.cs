@@ -86,7 +86,7 @@ public class CubeController : ConfigController<CubeSetting>, IPageDataContext
             });
         }
 
-        var data = new { page = "魔方设置", description = "魔方后台系统配置，可按分类查看各项设置项", fields }.ToJson();
+        var data = new { page = L.T("Cube settings"), description = L.T("Cube backend settings, grouped by category"), fields }.ToJson();
         return Task.FromResult(data);
     }
 }

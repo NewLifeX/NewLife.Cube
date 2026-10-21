@@ -31,8 +31,8 @@ public class UserConnectController : EntityController<UserConnect, UserConnectMo
         // 用户列，增加连接
         {
             var df = ListFields.GetField("UserName") as ListField;
-            df.Header = "用户";
-            df.HeaderTitle = "对应的本地用户信息";
+            df.Header = "User";
+            df.HeaderTitle = "The corresponding local user";
             //df.DisplayName = "{UserName}";
             df.Url = "/Admin/User/Edit?id={UserID}";
             df.Target = "_blank";
@@ -40,8 +40,8 @@ public class UserConnectController : EntityController<UserConnect, UserConnectMo
 
         {
             var df = ListFields.AddListField("OAuthLog", "Enable");
-            //df.Header = "OAuth日志";
-            df.DisplayName = "OAuth日志";
+            //df.Header = "OAuth log";
+            df.DisplayName = "OAuth log";
             df.Url = "/Admin/OAuthLog?connectId={ID}";
         }
 

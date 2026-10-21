@@ -45,19 +45,19 @@ public class UserStatController : ReadOnlyEntityController<UserStat>
         // 主折线图：9 个统计系列 + 总数（右轴）+ 在线时间（右轴带平均线/最大最小）
         Object[] kpiSeries =
         [
-            new { name = "登录数", type = "line", data = list.Select(e => e.Logins).ToArray() },
-            new { name = "OAuth登录", type = "line", data = list.Select(e => e.OAuths).ToArray() },
-            new { name = "最大在线", type = "line", data = list.Select(e => e.MaxOnline).ToArray() },
-            new { name = "活跃", type = "line", data = list.Select(e => e.Actives).ToArray() },
-            new { name = "7天活跃", type = "line", data = list.Select(e => e.ActivesT7).ToArray() },
-            new { name = "30天活跃", type = "line", data = list.Select(e => e.ActivesT30).ToArray() },
-            new { name = "新用户", type = "line", data = list.Select(e => e.News).ToArray() },
-            new { name = "7天注册", type = "line", data = list.Select(e => e.NewsT7).ToArray() },
-            new { name = "30天注册", type = "line", data = list.Select(e => e.NewsT30).ToArray() },
-            new { name = "总数", type = "line", yAxisIndex = 1, smooth = true, data = list.Select(e => e.Total).ToArray() },
+            new { name = L.T("Sign-ins"), type = "line", data = list.Select(e => e.Logins).ToArray() },
+            new { name = L.T("OAuth sign-ins"), type = "line", data = list.Select(e => e.OAuths).ToArray() },
+            new { name = L.T("Peak online"), type = "line", data = list.Select(e => e.MaxOnline).ToArray() },
+            new { name = L.T("Active"), type = "line", data = list.Select(e => e.Actives).ToArray() },
+            new { name = L.T("Active (7d)"), type = "line", data = list.Select(e => e.ActivesT7).ToArray() },
+            new { name = L.T("Active (30d)"), type = "line", data = list.Select(e => e.ActivesT30).ToArray() },
+            new { name = L.T("New users"), type = "line", data = list.Select(e => e.News).ToArray() },
+            new { name = L.T("Registered (7d)"), type = "line", data = list.Select(e => e.NewsT7).ToArray() },
+            new { name = L.T("Registered (30d)"), type = "line", data = list.Select(e => e.NewsT30).ToArray() },
+            new { name = L.T("Total"), type = "line", yAxisIndex = 1, smooth = true, data = list.Select(e => e.Total).ToArray() },
             new
             {
-                name = "在线时间",
+                name = L.T("Online time"),
                 type = "line",
                 yAxisIndex = 2,
                 smooth = true,
@@ -69,9 +69,9 @@ public class UserStatController : ReadOnlyEntityController<UserStat>
 
         var chart = new
         {
-            title = new { text = "用户统计" },
+            title = new { text = L.T("User statistics") },
             tooltip = new { trigger = "axis" },
-            legend = new { data = new[] { "登录数", "OAuth登录", "最大在线", "活跃", "7天活跃", "30天活跃", "新用户", "7天注册", "30天注册", "总数", "在线时间" } },
+            legend = new { data = new[] { L.T("Sign-ins"), L.T("OAuth sign-ins"), L.T("Peak online"), L.T("Active"), L.T("Active (7d)"), L.T("Active (30d)"), L.T("New users"), L.T("Registered (7d)"), L.T("Registered (30d)"), L.T("Total"), L.T("Online time") } },
             grid = new { left = "3%", right = "4%", bottom = "3%", containLabel = true },
             toolbox = new
             {
@@ -88,9 +88,9 @@ public class UserStatController : ReadOnlyEntityController<UserStat>
             xAxis = new { type = "category", data = dates },
             yAxis = new Object[]
             {
-                new { type = "value", name = "用户数" },
-                new { type = "value", name = "总数", position = "right" },
-                new { type = "value", name = "时长", position = "right", offset = 40, axisLabel = new { formatter = "{value}秒" } },
+                new { type = "value", name = L.T("Users") },
+                new { type = "value", name = L.T("Total"), position = "right" },
+                new { type = "value", name = L.T("Duration"), position = "right", offset = 40, axisLabel = new { formatter = L.T("{value}s") } },
             },
             series = kpiSeries,
         };
@@ -98,16 +98,16 @@ public class UserStatController : ReadOnlyEntityController<UserStat>
         // 箱线图：每日 5 个统计维度（对齐 MVC BoxplotItem）
         var box = new
         {
-            title = new { text = "用户箱线（仅用于演示）" },
+            title = new { text = L.T("User box plot (demo only)") },
             tooltip = new { trigger = "item" },
-            legend = new { data = new[] { "用户箱线（仅用于演示）" } },
+            legend = new { data = new[] { L.T("User box plot (demo only)") } },
             xAxis = new { type = "category", data = dates },
-            yAxis = new { type = "value", name = "值" },
+            yAxis = new { type = "value", name = L.T("Value") },
             series = new Object[]
             {
                 new
                 {
-                    name = "用户箱线（仅用于演示）",
+                    name = L.T("User box plot (demo only)"),
                     type = "boxplot",
                     data = list.Select(e => new Object[] { e.News, e.Actives, e.NewsT7, e.ActivesT7, e.NewsT30 }).ToArray(),
                 }
@@ -117,16 +117,16 @@ public class UserStatController : ReadOnlyEntityController<UserStat>
         // K线图：开=活跃 收=7天注册 低=新用户 高=7天活跃（对齐 MVC CandlestickItem）
         var candle = new
         {
-            title = new { text = "用户K线（仅用于演示）" },
+            title = new { text = L.T("User candlestick (demo only)") },
             tooltip = new { trigger = "item" },
-            legend = new { data = new[] { "用户K线（仅用于演示）" } },
+            legend = new { data = new[] { L.T("User candlestick (demo only)") } },
             xAxis = new { type = "category", data = dates },
-            yAxis = new { type = "value", name = "值" },
+            yAxis = new { type = "value", name = L.T("Value") },
             series = new Object[]
             {
                 new
                 {
-                    name = "用户K线（仅用于演示）",
+                    name = L.T("User candlestick (demo only)"),
                     type = "candlestick",
                     data = list.Select(e => new Object[] { e.Actives, e.NewsT7, e.News, e.ActivesT7 }).ToArray(),
                 }

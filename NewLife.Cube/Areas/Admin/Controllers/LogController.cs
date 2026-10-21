@@ -31,9 +31,9 @@ public class LogController : ReadOnlyEntityController<XLog>
             var df = ListFields.GetField("TraceId") as ListField;
             if (df != null)
             {
-                df.DisplayName = "追踪";
-                df.Text = "追踪";
-                df.Title = "链路追踪，用于APM性能追踪定位，还原该事件的调用链";
+                df.DisplayName = "Trace";
+                df.Text = "Trace";
+                df.Title = "Distributed trace used by APM to locate performance issues and restore the call chain of this event";
                 df.Target = "_blank";
                 df.DataVisible = e => !(e as XLog).TraceId.IsNullOrEmpty();
 
@@ -48,8 +48,8 @@ public class LogController : ReadOnlyEntityController<XLog>
         SearchFields.RemoveField("LinkID");
         SearchFields.AddField("CreateTime");
         // 用户编号用虚拟文本字段（标量参数 userid），真实 CreateUserID 字段会渲染成范围输入，不适合单值查询
-        SearchFields.AddDataField("UserID", null, "Success").DisplayName = "用户编号";
-        SearchFields.AddDataField("Q", "Category", null).DisplayName = "关键字";
+        SearchFields.AddDataField("UserID", null, "Success").DisplayName = "User ID";
+        SearchFields.AddDataField("Q", "Category", null).DisplayName = "Keyword";
 
         //{
         //    var df = ListFields.GetField("TraceId") as ListField;

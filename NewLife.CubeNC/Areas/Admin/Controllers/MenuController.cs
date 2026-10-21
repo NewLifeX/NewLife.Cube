@@ -21,11 +21,11 @@ public class MenuController : EntityTreeController<Menu, MenuModel>
 
         {
             var ff = AddFormFields.GetField("Ex4") as FormField;
-            ff.DisplayName = "帮助文档链接";
+            ff.DisplayName = "Help document link";
         }
         {
             var ff = EditFormFields.GetField("Ex4") as FormField;
-            ff.DisplayName = "帮助文档链接";
+            ff.DisplayName = "Help document link";
         }
     }
 

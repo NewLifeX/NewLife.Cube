@@ -78,10 +78,10 @@ public static class OnlineAlertService
         {
             Action = "OnlineAlert",
             Channel = "InApp",
-            Title = $"在线数高峰预警 {now:MM-dd HH:mm}",
-            Content = $"当前在线 {total} 人，超过近 {Days} 天最高纪录 {max} 人（阈值 {max * Ratio:0} 人）。可能是推广活动、爬虫扫描或异常流量，建议查看在线列表与登录日志排查。",
+            Title = L.T("Online peak warning {0}", now.ToString("MM-dd HH:mm")),
+            Content = L.T("There are {0} users online, exceeding the {1}-day record of {2} (threshold {3:0}). This may be a campaign, a crawler scan or abnormal traffic; check the online list and sign-in log.", total, Days, max, max * Ratio),
             Success = true,
-            Result = $"近{Days}天纪录{max}",
+            Result = L.T("Record of the last {0} days: {1}", Days, max),
             CreateTime = now,
         };
         record.Insert();

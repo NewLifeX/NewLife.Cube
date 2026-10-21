@@ -40,6 +40,10 @@ public class DataField : IDictionarySource
     [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public String SourceDescription { get; set; }
 
+    /// <summary>是否为字段默认显示名。用于区分控制器自定义的列标题，避免本地化后误判</summary>
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
+    public Boolean IsDefaultDisplayName { get; set; } = true;
+
     /// <summary>类别</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String Category { get; set; }
@@ -219,7 +223,7 @@ public class DataField : IDictionarySource
                 if (dna != null && !String.IsNullOrEmpty(dna.DisplayName)) label = dna.DisplayName;
                 var att = item.GetCustomAttribute<DescriptionAttribute>(false);
                 if (att != null && !String.IsNullOrEmpty(att.Description)) label = att.Description;
-                sds[value + ""] = label;
+                sds[value + ""] = L.T(label);
             }
             if (sds.Count > 0) dic["dataSource"] = sds;
 
@@ -305,6 +309,15 @@ public class DataField : IDictionarySource
         Name = field.Name;
         DisplayName = field.DisplayName;
         Description = field.Description;
+        IsDefaultDisplayName = true;
+
+        // 生成器把整段描述同时写入显示名与描述，保留整段源文，翻译后再拆分
+        if (!DisplayName.IsNullOrEmpty() && !Description.IsNullOrEmpty() &&
+            (Description.StartsWith(DisplayName + "。", StringComparison.Ordinal) ||
+             Description.StartsWith(DisplayName + ". ", StringComparison.Ordinal)))
+        {
+            SourceDescription = Description;
+        }
 
         Category = pi?.GetCustomAttribute<CategoryAttribute>()?.Category;
 
@@ -357,12 +370,19 @@ public class DataField : IDictionarySource
 
         var dis = property.GetDisplayName();
         var des = property.GetDescription();
+        IsDefaultDisplayName = true;
         if (dis.IsNullOrEmpty() && !des.IsNullOrEmpty())
         {
             // 只有描述特性时，整段描述先作为显示名，并保留源文供多语言翻译后拆分
             dis = des;
             des = null;
             SourceDescription = dis;
+        }
+        if (!dis.IsNullOrEmpty() && !des.IsNullOrEmpty() &&
+            (des.StartsWith(dis + ". ", StringComparison.Ordinal) || des.StartsWith(dis + "。", StringComparison.Ordinal)))
+        {
+            // 生成器把整段描述同时写入显示名与描述，此时以整段描述为源文翻译后再拆分，词表只需登记一条
+            SourceDescription = des;
         }
         if (!dis.IsNullOrEmpty() && des.IsNullOrEmpty())
         {
@@ -388,11 +408,26 @@ public class DataField : IDictionarySource
     /// </remarks>
     public virtual void Localize()
     {
-        if (!SourceDescription.IsNullOrEmpty())
+        // 本地化前记录是否为默认列标题，供 ListField.GetLinkName 判断
+        var isDefault = Field == null || DisplayName == Field.DisplayName;
+        IsDefaultDisplayName = isDefault;
+
+        if (!SourceDescription.IsNullOrEmpty() && isDefault)
         {
-            var (name, desc) = SplitFirstSentence(L.T(SourceDescription));
-            DisplayName = name;
-            Description = desc;
+            var translated = L.T(SourceDescription);
+            if (!ReferenceEquals(translated, SourceDescription))
+            {
+                var (name, desc) = SplitFirstSentence(translated);
+                DisplayName = name;
+                Description = desc;
+            }
+            else
+            {
+                // 整段描述没有译文时，按源文拆分后分别翻译，允许只补显示名或说明
+                var (name, desc) = SplitFirstSentence(SourceDescription);
+                DisplayName = L.T(name);
+                Description = desc == null ? null : L.T(desc);
+            }
         }
         else if (Description.IsNullOrEmpty() && !DisplayName.IsNullOrEmpty())
         {

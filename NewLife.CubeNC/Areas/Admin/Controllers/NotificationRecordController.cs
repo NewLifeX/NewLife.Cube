@@ -33,7 +33,7 @@ public class NotificationRecordController : ReadOnlyEntityController<Notificatio
         // 行内“标记已读”，仅对当前用户可读的未读站内信显示
         {
             var df = ListFields.AddListField("op", null, "Remark");
-            df.DisplayName = "标记已读";
+            df.DisplayName = "Mark as read";
             df.Url = "/Admin/NotificationRecord/NotifyMarkRead?id={Id}";
             df.DataAction = "action";
             df.DataVisible = e => CanRead(e as NotificationRecord);

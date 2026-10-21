@@ -6,22 +6,22 @@ namespace NewLife.Cube.ViewModels;
 public enum ViewKinds
 {
     /// <summary>列表</summary>
-    [Description("列表")]
+    [Description("List")]
     List = 1,
 
     /// <summary>详情</summary>
-    [Description("详情")]
+    [Description("Details")]
     Detail = 2,
 
     /// <summary>添加表单</summary>
-    [Description("添加表单")]
+    [Description("Add form")]
     AddForm = 3,
 
     /// <summary>编辑表单</summary>
-    [Description("编辑表单")]
+    [Description("Edit form")]
     EditForm = 4,
 
     /// <summary>搜索</summary>
-    [Description("搜索")]
+    [Description("Search")]
     Search = 5,
 }

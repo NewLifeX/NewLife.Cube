@@ -4,7 +4,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Widgets.System;
 
 /// <summary>在线用户。工作台 KPI 指标，当前在线用户数（UserOnline 由定时任务清理 20 分钟不活跃会话）</summary>
-[Widget("OnlineCount", "在线用户", Icon = "fa-user-circle-o", Cols = 2, Sort = 30, Category = "系统", AdminOnly = true, Color = "cyan", WidgetType = WidgetTypes.Kpi)]
+[Widget("OnlineCount", "Online users", Icon = "fa-user-circle-o", Cols = 2, Sort = 30, Category = "System", AdminOnly = true, Color = "cyan", WidgetType = WidgetTypes.Kpi)]
 public class OnlineCountWidget : IWidget
 {
     /// <summary>获取组件数据</summary>
@@ -16,7 +16,7 @@ public class OnlineCountWidget : IWidget
         return new
         {
             Value = count.ToString(),
-            Trend = "当前在线",
+            Trend = L.T("Online now"),
             Url = "/Admin/UserOnline",
         };
     }

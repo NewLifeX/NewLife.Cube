@@ -609,7 +609,13 @@ public class ECharts : IExtend
     /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
     /// <param name="smooth">折线光滑</param>
     /// <returns></returns>
-    public Series AddLine<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null, Boolean smooth = false) where T : IModel => AddLine(list, new DataField(field), selector, smooth);
+    public Series AddLine<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null, Boolean smooth = false) where T : IModel
+    {
+        var df = new DataField(field);
+        df.Localize();
+
+        return AddLine(list, df, selector, smooth);
+    }
 
     /// <summary>添加柱状图</summary>
     /// <typeparam name="T"></typeparam>
@@ -643,7 +649,13 @@ public class ECharts : IExtend
     /// <param name="field">要使用数据的字段</param>
     /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
     /// <returns></returns>
-    public Series AddBar<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null) where T : IModel => AddBar(list, new DataField(field), selector);
+    public Series AddBar<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null) where T : IModel
+    {
+        var df = new DataField(field);
+        df.Localize();
+
+        return AddBar(list, df, selector);
+    }
 
     /// <summary>添加饼图</summary>
     /// <typeparam name="T"></typeparam>

@@ -31,8 +31,8 @@ public class LogController : ReadOnlyEntityController<XLog>
         SearchFields.RemoveField("LinkID");
         SearchFields.AddField("CreateTime");
         // 用户编号用虚拟文本字段（标量参数 userid），真实 CreateUserID 字段会渲染成范围输入，不适合单值查询
-        SearchFields.AddDataField("UserID", null, "Success").DisplayName = "用户编号";
-        SearchFields.AddDataField("Q", "Category", null).DisplayName = "关键字";
+        SearchFields.AddDataField("UserID", null, "Success").DisplayName = "User ID";
+        SearchFields.AddDataField("Q", "Category", null).DisplayName = "Keyword";
 
         //{
         //    var df = ListFields.GetField("TraceId") as ListField;

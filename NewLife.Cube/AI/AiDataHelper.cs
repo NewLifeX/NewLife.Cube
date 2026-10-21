@@ -112,7 +112,7 @@ public static class AiDataHelper
 
             // 大文本字段截断，避免撑爆 Prompt
             if (value is String str && str.Length > MaxTextLength)
-                value = str[..MaxTextLength] + "...[已截断]";
+                value = str[..MaxTextLength] + L.T("...[truncated]");
 
             dic[field.Name] = value;
         }

@@ -20,6 +20,6 @@ public class FileManagerAuthorizeAttribute : Attribute, IAuthorizationFilter
         XTrace.WriteLine("File management is not enabled; access denied for {0}/{1}", act.ControllerName, act.ActionName);
 
         context.HttpContext.Response.StatusCode = 403;
-        context.Result = new JsonResult(new { code = 403, message = "未启用文件管理，请在魔方设置中开启" });
+        context.Result = new JsonResult(new { code = 403, message = L.T("File management is disabled. Enable it in Cube settings.") });
     }
 }

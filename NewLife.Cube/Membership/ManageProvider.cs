@@ -209,7 +209,7 @@ public class ManageProvider2 : ManageProvider
         if (roles != null && roles.Any(e => e.IsSystem))
         {
             pa.Enable = false;
-            pa.Remark = "安全起见，不得代理系统管理员";
+            pa.Remark = L.T("For security reasons, acting on behalf of a system administrator is not allowed");
             pa.Update();
 
             LogProvider.Provider.WriteLog(L.T("User"), L.T("Agent"), false, L.T("For security reasons, [{0}] must not act on behalf of system administrator [{1}].", pa.AgentName, pa.PrincipalName), pa.AgentId, pa.AgentName);

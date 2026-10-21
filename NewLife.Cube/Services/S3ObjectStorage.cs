@@ -192,26 +192,26 @@ public class S3ObjectStorage : IObjectStorage, ILogFeature, ITracerFeature, IDis
     /// <summary>获取对象</summary>
     /// <param name="id">对象文件名</param>
     /// <returns></returns>
-    [Obsolete("请使用GetAsync")]
+    [Obsolete("Use GetAsync instead")]
     public Task<IObjectInfo?> Get(String id) => GetAsync(id);
 
     /// <summary>获取对象下载Url</summary>
     /// <param name="id">对象文件名</param>
     /// <returns></returns>
-    [Obsolete("请使用GetUrlAsync")]
+    [Obsolete("Use GetUrlAsync instead")]
     public Task<String?> GetUrl(String id) => GetUrlAsync(id);
 
     /// <summary>上传对象</summary>
     /// <param name="id">对象文件名</param>
     /// <param name="data">数据内容</param>
     /// <returns></returns>
-    [Obsolete("请使用PutAsync")]
+    [Obsolete("Use PutAsync instead")]
     public Task<IObjectInfo?> Put(String id, IPacket data) => PutAsync(id, data);
 
     /// <summary>删除对象</summary>
     /// <param name="id">对象文件名</param>
     /// <returns></returns>
-    [Obsolete("请使用DeleteAsync")]
+    [Obsolete("Use DeleteAsync instead")]
     public Task<Int32> Delete(String id) => DeleteAsync(id);
 
     /// <summary>搜索对象</summary>
@@ -219,7 +219,7 @@ public class S3ObjectStorage : IObjectStorage, ILogFeature, ITracerFeature, IDis
     /// <param name="start">开始序号</param>
     /// <param name="count">最大个数</param>
     /// <returns></returns>
-    [Obsolete("请使用SearchAsync")]
+    [Obsolete("Use SearchAsync instead")]
     public Task<IList<IObjectInfo>?> Search(String? pattern = null, Int32 start = 0, Int32 count = 100) => SearchAsync(pattern, start, count);
     #endregion
 

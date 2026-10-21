@@ -58,7 +58,7 @@ public class AiController : ControllerBaseX
     #region AI 对话
     /// <summary>AI 对话（全局统一端点）。按请求目标解析页面控制器能力，SSE 流式返回</summary>
     /// <returns></returns>
-    [DisplayName("AI 对话")]
+    [DisplayName("AI chat")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpPost]
     public async Task<ActionResult> AiChat()
@@ -118,21 +118,21 @@ public class AiController : ControllerBaseX
     private static String BuildChatSystemPrompt(AiChatRequest req)
     {
         var sysName = SysConfig.Current?.DisplayName;
-        if (sysName.IsNullOrEmpty()) sysName = "魔方后台管理系统";
+        if (sysName.IsNullOrEmpty()) sysName = L.T("Cube admin console");
 
         var sb = Pool.StringBuilder.Get();
-        sb.AppendLine($"你是{sysName}的 AI 助手，正在协助管理员操作当前页面。");
+        sb.AppendLine(L.T("You are the AI assistant of {0}, helping an administrator work on the current page.", sysName));
         sb.AppendLine();
-        sb.AppendLine("当前页面不属于实体数据页面（可能是系统设置、首页或系统信息等），无实体表上下文。");
+        sb.AppendLine(L.T("The current page is not an entity data page (it may be system settings, the home page or system information), so there is no entity table context."));
         sb.AppendLine();
-        sb.AppendLine("可用工具：get_page_context / get_system_info / run_js（详细说明见函数定义，按需调用）");
+        sb.AppendLine(L.T("Available tools: get_page_context / get_system_info / run_js (see the function definitions; call them when needed)"));
         sb.AppendLine();
-        sb.AppendLine("规则：");
-        sb.AppendLine("1. 使用简体中文回答，语言简洁专业");
-        sb.AppendLine("2. 用户询问当前页面内容/数据/结构时，调用 get_page_context 获取页面上下文（自动采集用户浏览器当前页面内容），再给出分析与结论");
-        sb.AppendLine("3. 用户询问系统状态/诊断时，调用 get_system_info 获取数据，再给出分析结论与建议");
-        sb.AppendLine("4. 用户要求读取或操作当前页面元素（填写输入框、点击按钮、读取标题等）时，可调用 run_js 执行 JavaScript；脚本在用户浏览器当前页面执行，可用 document.querySelector 等定位元素；修改页面内容或提交表单等写操作前，先向用户说明将执行的操作");
-        sb.AppendLine("5. 不要编造数据；信息不足时主动询问用户澄清");
+        sb.AppendLine(L.T("Rules:"));
+        sb.AppendLine(L.T("1. Answer in the same language as the user's question, concisely and professionally"));
+        sb.AppendLine(L.T("2. When the user asks about the content, data or structure of the current page, call get_page_context to collect the page context from the user's browser, then give your analysis and conclusion"));
+        sb.AppendLine(L.T("3. When the user asks about system status or diagnostics, call get_system_info, then give conclusions and suggestions"));
+        sb.AppendLine(L.T("4. When the user asks to read or operate elements of the current page (fill inputs, click buttons, read titles and so on), you may call run_js; the script runs in the user's current page and may use document.querySelector to locate elements; explain any write operation (changing page content, submitting forms) to the user before running it"));
+        sb.AppendLine(L.T("5. Never invent data; ask the user for clarification when information is insufficient"));
 
         return sb.Return(true);
     }
@@ -231,7 +231,7 @@ public class AiController : ControllerBaseX
         var aiSvc = ctrl.HttpContext.RequestServices.GetService<IAIService>();
         if (aiSvc == null)
         {
-            await writeEvent(new { type = "error", message = "AI 服务未注册" }.ToJson());
+            await writeEvent(new { type = "error", message = L.T("AI service is not registered") }.ToJson());
             return;
         }
         // 每请求以当前配置创建编排服务（AI 客户端随配置变化重建，运行中修改配置即时生效）；会话历史经单例 ChatSessionService 保持
@@ -356,7 +356,7 @@ public class AiController : ControllerBaseX
 
     /// <summary>浏览器操作结果回传。前端执行 run_js 脚本后回传结果，完成等待中的工具调用</summary>
     /// <returns></returns>
-    [DisplayName("浏览器操作结果回传")]
+    [DisplayName("Browser operation result callback")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpPost]
     public async Task<ActionResult> OperationResult()

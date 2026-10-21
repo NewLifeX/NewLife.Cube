@@ -29,7 +29,7 @@ public class AreaController : EntityController<Area, AreaModel>
         }
         {
             var df = ListFields.AddDataField("sub", "Level") as ListField;
-            df.DisplayName = "下级";
+            df.DisplayName = "Children";
             df.Url = "/Cube/Area?parentId={ID}";
         }
 

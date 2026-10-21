@@ -138,15 +138,15 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
                 // 按失败原因输出差异化文案（F4）：显式标识无效 / 缺租户标识 / 非租户成员
                 var msg = filterContext.HttpContext.Items[ManagerProviderHelper.TenantCheckFailedReasonKey] as String switch
                 {
-                    "InvalidIdentifier" => $"用户[{failedUser}]携带的租户标识无效或不可用，请检查租户信息后重试",
-                    "MissingIdentifier" => $"用户[{failedUser}]未携带租户标识，无法确定访问租户，请携带租户信息后重试",
-                    _ => $"用户[{failedUser}]无权访问当前租户数据，请切换租户后重试",
+                    "InvalidIdentifier" => L.T("The tenant identifier carried by user [{0}] is invalid or unavailable. Check the tenant settings and try again.", failedUser),
+                    "MissingIdentifier" => L.T("User [{0}] did not carry a tenant identifier, so the tenant cannot be determined. Include the tenant information and try again.", failedUser),
+                    _ => L.T("User [{0}] is not allowed to access the data of the current tenant. Switch tenant and try again.", failedUser),
                 };
                 // 落库审计日志到 Log 表（CreateLog + SaveAsync：一次失败事件一行审计记录，
                 // 供管理后台审计日志查询；写入失败不影响主流程）
                 try
                 {
-                    var log = LogProvider.Provider.CreateLog("租户", "拒绝", false, msg, failedUserId, failedUser, filterContext.HttpContext.GetUserHost());
+                    var log = LogProvider.Provider.CreateLog(L.T("Tenant"), L.T("Denied"), false, msg, failedUserId, failedUser, filterContext.HttpContext.GetUserHost());
                     log?.SaveAsync();
                 }
                 catch (Exception ex)
@@ -159,7 +159,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
             }
 
             filterContext.HttpContext.Response.StatusCode = 401;
-            filterContext.Result = new JsonResult(new { code = 401, message = "没有登录或登录超时！" });
+            filterContext.Result = new JsonResult(new { code = 401, message = L.T("Not signed in or the session has expired!") });
         }
         else
         {
@@ -181,7 +181,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         var ctx = filterContext.HttpContext;
 
         var res = $"[{ctrl.ControllerName}/{act.ActionName}]";
-        var msg = L.T("User {0} accessing resource {1} requires {2} permission.", user, res, permission);
+        var msg = L.T("User {0} accessing resource {1} requires {2} permission.", user, res, L.T(permission.GetDescription()));
         LogProvider.Provider.WriteLog(L.T("Access"), L.T("Denied"), false, msg, ip: ctx.GetUserHost());
         DefaultSpan.Current?.AppendTag(msg);
 

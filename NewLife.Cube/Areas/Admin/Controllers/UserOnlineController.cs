@@ -88,7 +88,7 @@ public class UserOnlineController : EntityController<UserOnline, UserOnlineModel
             SessionProvider.Instance.RemoveSession(online.SessionID);
 
         // 3. 标记记录为已强制下线，不删除（保留审计数据）
-        online.Status = "已强制下线";
+        online.Status = L.T("Forced offline");
         online.SaveAsync(3_000);
 
         // 4. 审计日志

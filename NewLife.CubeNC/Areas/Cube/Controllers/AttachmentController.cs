@@ -40,7 +40,7 @@ public class AttachmentController : EntityController<Attachment, AttachmentModel
 
         {
             var df = ListFields.AddListField("Info", null, "Title");
-            df.DisplayName = "信息页";
+            df.DisplayName = "Info page";
             df.Url = "{Url}";
             df.DataVisible = e => !(e as Attachment).Url.IsNullOrEmpty();
             df.Target = "_blank";
@@ -48,7 +48,7 @@ public class AttachmentController : EntityController<Attachment, AttachmentModel
 
         {
             var df = ListFields.AddListField("cloudUrl", null, "Title");
-            df.DisplayName = "云地址";
+            df.DisplayName = "Cloud URL";
             df.Target = "_blank";
             df.DataVisible = e => !(e as Attachment).IsLocalStorage();
             df.GetValue = e => AttachmentProvider.Provider.GetUrl((e as Attachment).FilePath) + "";
@@ -56,7 +56,7 @@ public class AttachmentController : EntityController<Attachment, AttachmentModel
 
         {
             var df = ListFields.AddListField("down", null, "Title");
-            df.DisplayName = "下载";
+            df.DisplayName = "Download";
             df.Url = "/cube/file/{Id}{Extension}";
             df.Target = "_blank";
         }
@@ -66,10 +66,10 @@ public class AttachmentController : EntityController<Attachment, AttachmentModel
             var sf = SearchFields.GetField("Storage") as SearchField;
             sf.DataSource = e => new Dictionary<String, String>
             {
-                ["Local"] = "本地磁盘",
-                ["Oss"] = "阿里云OSS",
-                ["Cos"] = "腾讯云COS",
-                ["Qiniu"] = "七牛",
+                ["Local"] = "Local disk",
+                ["Oss"] = "Aliyun OSS",
+                ["Cos"] = "Tencent COS",
+                ["Qiniu"] = "Qiniu",
                 ["EasyIO"] = "EasyIO",
             };
         }

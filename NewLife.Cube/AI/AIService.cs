@@ -81,7 +81,7 @@ public class AIService : IAIService
     {
         if (!_setting.AISwitch)
         {
-            yield return "AI 未启用，请在系统设置中开启 AISwitch";
+            yield return L.T("AI is not enabled. Turn on AISwitch in system settings.");
             yield break;
         }
 
@@ -96,7 +96,7 @@ public class AIService : IAIService
         catch (Exception ex)
         {
             WriteLog("DiagnoseSystemStream failed", ex.ToString());
-            error = $"\n\n---\n>  AI 调用失败：{ex.Message}";
+            error = $"\n\n---\n>  " + L.T("AI call failed: {0}", ex.Message);
         }
 
         if (error != null)
@@ -108,7 +108,7 @@ public class AIService : IAIService
         // 与 ChatInternalAsync 一致：提示词 + 数据拼接到一次对话
         var content = BuildDiagnosePrompt();
         if (!sysInfoJson.IsNullOrEmpty())
-            content = $"{content}\n\n数据：\n{sysInfoJson}";
+            content = $"{content}\n\n" + L.T("Data:") + $"\n{sysInfoJson}";
 
         await foreach (var chunk in client!.GetStreamingResponseAsync(content, _fastOptions, cancellationToken))
         {
@@ -120,21 +120,21 @@ public class AIService : IAIService
     }
 
     /// <summary>构建系统诊断提示词</summary>
-    private static String BuildDiagnosePrompt() => @"你是系统运维专家。根据以下系统运行指标，给出健康诊断报告（中文）：
-分析要点：是否存在瓶颈、是否需要扩容、是否需要关注的风险点。
-直接输出诊断报告，不要加无关解释。";
+    private static String BuildDiagnosePrompt() => L.T(@"You are a system operations expert. Based on the following runtime metrics, produce a health diagnosis report:
+Cover bottlenecks, whether capacity should be expanded, and any risks worth attention.
+Output the diagnosis report directly without extra explanation.");
 
     /// <summary>内部 AI 对话，支持自定义选项</summary>
     private async Task<String> ChatInternalAsync(String prompt, String data, ChatOptions? options, CancellationToken cancellationToken)
     {
-        if (!_setting.AISwitch) return "AI 未启用，请在系统设置中开启 AISwitch";
+        if (!_setting.AISwitch) return L.T("AI is not enabled. Turn on AISwitch in system settings.");
 
         try
         {
             var client = GetClient();
             var content = prompt;
             if (!data.IsNullOrEmpty())
-                content = $"{prompt}\n\n数据：\n{data}";
+                content = $"{prompt}\n\n" + L.T("Data:") + $"\n{data}";
 
             var reply = await client.ChatAsync(content, options, cancellationToken);
             WriteLog("ChatAsync succeeded", content[..Math.Min(content.Length, 200)]);
@@ -144,7 +144,7 @@ public class AIService : IAIService
         catch (Exception ex)
         {
             WriteLog("ChatAsync failed", ex.ToString());
-            return $"AI 调用失败：{ex.Message}";
+            return L.T("AI call failed: {0}", ex.Message);
         }
     }
     #endregion
