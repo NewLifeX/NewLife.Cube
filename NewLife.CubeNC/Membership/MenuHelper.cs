@@ -172,7 +172,8 @@ public static class MenuHelper
                     var translated = L.T(source);
                     // 旧版本没有 DisplayName 特性，自动菜单落库为 URL 名称或类型名；用户自定义名称不动
                     if (controller.DisplayName.IsNullOrEmpty() || controller.DisplayName == name || controller.DisplayName == type.Name ||
-                        (translated != source && controller.DisplayName == translated))
+                        (translated != source && controller.DisplayName == translated) ||
+                        IsOtherLanguageName(controller.DisplayName, source))
                         controller.DisplayName = source;
                 }
             }
@@ -444,10 +445,26 @@ public static class MenuHelper
         return _admins[key] = false;
     }
 
+    /// <summary>判断落库菜单名是否为旧版本按其它语言源码保存的自动菜单名</summary>
+    /// <param name="displayName">菜单落库的显示名</param>
+    /// <param name="source">控制器 DisplayName 源文</param>
+    /// <returns>需要按源文归一化时返回 true</returns>
+    /// <remarks>
+    /// i18n 改造期间源码 DisplayName 曾被批量改为英文并启动过站点，自动菜单把英文落库；
+    /// 源码恢复中文后，落库值既不是源文也不是当前语言译文，原有判定识别不到。
+    /// 这里按"源文含汉字、落库名为纯 ASCII"识别这类旧语言残留。
+    /// </remarks>
+    private static Boolean IsOtherLanguageName(String? displayName, String source)
+    {
+        if (displayName.IsNullOrEmpty()) return false;
+        if (!source.Any(e => e >= 0x4E00 && e <= 0x9FFF)) return false;
+
+        return displayName.All(e => e < 0x80);
+    }
+
     /// <summary>按 FullName 解析菜单对应控制器类型（含跨程序集回退）</summary>
     static Type ResolveMenuType(String fullName)
-    {
-        if (fullName.IsNullOrEmpty()) return null;
+    {        if (fullName.IsNullOrEmpty()) return null;
 
         var type = Type.GetType(fullName);
         if (type != null) return type;
