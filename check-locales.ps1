@@ -170,6 +170,38 @@ foreach ($file in Get-ChildItem $localeDir -Filter *.yml | Sort-Object Name) {
     }
 }
 
+# 英文词表：中文元数据 key 必须给出英文译文，否则英文界面会回退中文（2026-10-22）
+# en 是源文语言，不参与上面的「缺少键」校验，但中文源文的元数据必须在本表补英文译文。
+$enFile = Join-Path $localeDir "en.yml"
+if (Test-Path -LiteralPath $enFile) {
+    $enLocale = Read-Locale $enFile
+    foreach ($e in $enLocale.Errors) { $allErrors += "en.yml: $e" }
+
+    $cnRegex = '[\u4e00-\u9fa5]'
+    foreach ($key in $enLocale.Entries.Keys) {
+        if ($key -notmatch $cnRegex) { continue }
+
+        $value = $enLocale.Entries[$key]
+        if ($value -match $cnRegex) { $allErrors += "en.yml: 中文键缺少英文译文 → $key" }
+        $expected = Get-Placeholders $key
+        $actual = Get-Placeholders $value
+        if (!$expected.SetEquals($actual)) { $allErrors += "en.yml: 占位符不一致 → $key" }
+    }
+
+    # 覆盖率提示：元数据清单中的中文键是否都补了英文
+    if ($metadataKeySet.Count -gt 0) {
+        $cnMeta = @($metadataKeySet | Where-Object { $_ -match $cnRegex })
+        if ($cnMeta.Count -gt 0) {
+            $missing = @($cnMeta | Where-Object { !$enLocale.Entries.Contains($_) })
+            Write-Host "英文元数据覆盖率：$($cnMeta.Count - $missing.Count) / $($cnMeta.Count)" -ForegroundColor Cyan
+            if ($missing.Count -gt 0) {
+                $allWarnings += "en.yml: $($missing.Count) 个中文元数据键缺少英文译文（英文界面将回退中文）"
+                foreach ($m in ($missing | Select-Object -First 10)) { $allWarnings += "  缺译文：$m" }
+            }
+        }
+    }
+}
+
 # 严格模式：译文不得与英文源文完全相同（值等于键即视为未翻译），
 # 同形词（如德语 Status、荷兰语 Systeem）在 Locales/identical.allow.json 中按语言登记后放行。
 if ($Strict) {

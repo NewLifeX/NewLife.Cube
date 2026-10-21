@@ -1434,3 +1434,10 @@
 "GC: {0:n0}M": "GC：{0:n0}M"
 "{0}, {1} cores, usage {2}, {3} ℃": "{0}，{1} 核心，使用率 {2}，{3} ℃"
 "Started at {0}": "启动于 {0}"
+# 工作台部件与图表
+"Active today": "今日活跃"
+"CPU / Memory %": "CPU / 内存 %"
+"Memory": "内存"
+"{0} cores": "{0} 核心"
+"{0} assemblies": "{0} 个程序集"
+"Count": "数量"
