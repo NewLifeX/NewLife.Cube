@@ -27,9 +27,9 @@ public class SysInfoWidget : IWidget
         {
             [L.T("OS")] = $"{mi.OSName} {mi.OSVersion}",
             [L.T("Machine")] = $"{Environment.MachineName} / {Environment.UserName}",
-            [L.T("Processor")] = $"{mi.Processor}, {Environment.ProcessorCount} cores",
+            [L.T("Processor")] = $"{mi.Processor}, " + L.T("{0} cores", Environment.ProcessorCount),
             [L.T("Runtime")] = ver,
-            [L.T("Application")] = $"{process.ProcessName}, {asmCount} assemblies",
+            [L.T("Application")] = $"{process.ProcessName}, " + L.T("{0} assemblies", asmCount),
             [L.T("Start time")] = startTime.ToFullString(),
             [L.T("More information")] = "<a href=\"/Admin/Index/Main\" target=\"_blank\">" + L.T("View full server information »") + "</a>",
         };

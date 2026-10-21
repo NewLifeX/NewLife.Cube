@@ -768,27 +768,27 @@ public class ECharts : IExtend
         var script = """
                 function boxplotFormatter(params) {
                     return `${params.name}<br/>
-                    最小值: ${params.value[1]}<br/>
-                    下四分: ${params.value[2]}<br/>
-                    中位数: ${params.value[3]}<br/>
-                    上四分: ${params.value[4]}<br/>
-                    最大值: ${params.value[5]}`;
+                    Min: ${params.value[1]}<br/>
+                    Q1: ${params.value[2]}<br/>
+                    Median: ${params.value[3]}<br/>
+                    Q3: ${params.value[4]}<br/>
+                    Max: ${params.value[5]}`;
                 }
                 """;
         if (itemNames != null && itemNames.Length >= 5)
         {
             // 名称为null时表示不替换
-            if (itemNames[0] != null) script = script.Replace("最小值", itemNames[0]);
-            if (itemNames[1] != null) script = script.Replace("下四分", itemNames[1]);
-            if (itemNames[2] != null) script = script.Replace("中位数", itemNames[2]);
-            if (itemNames[3] != null) script = script.Replace("上四分", itemNames[3]);
-            if (itemNames[4] != null) script = script.Replace("最大值", itemNames[4]);
+            if (itemNames[0] != null) script = script.Replace("Min:", itemNames[0] + ":");
+            if (itemNames[1] != null) script = script.Replace("Q1:", itemNames[1] + ":");
+            if (itemNames[2] != null) script = script.Replace("Median:", itemNames[2] + ":");
+            if (itemNames[3] != null) script = script.Replace("Q3:", itemNames[3] + ":");
+            if (itemNames[4] != null) script = script.Replace("Max:", itemNames[4] + ":");
         }
 
         SetTooltip("item", script);
 
         // 添加Y轴
-        if (YAxis == null || YAxis.Count == 0) SetY("值", "value");
+        if (YAxis == null || YAxis.Count == 0) SetY(L.T("Value"), "value");
 
         return box;
     }
@@ -813,25 +813,25 @@ public class ECharts : IExtend
         var script = """
                 function candlestickFormatter(params) {
                     return `${params.name}<br/>
-                    开盘值: ${params.value[1]}<br/>
-                    收盘值: ${params.value[2]}<br/>
-                    最低值: ${params.value[3]}<br/>
-                    最高值: ${params.value[4]}`;
+                    Open: ${params.value[1]}<br/>
+                    Close: ${params.value[2]}<br/>
+                    Low: ${params.value[3]}<br/>
+                    High: ${params.value[4]}`;
                 }
                 """;
         if (itemNames != null && itemNames.Length >= 4)
         {
             // 名称为null时表示不替换
-            if (itemNames[0] != null) script = script.Replace("开盘值", itemNames[0]);
-            if (itemNames[1] != null) script = script.Replace("收盘值", itemNames[1]);
-            if (itemNames[2] != null) script = script.Replace("最低值", itemNames[2]);
-            if (itemNames[3] != null) script = script.Replace("最高值", itemNames[3]);
+            if (itemNames[0] != null) script = script.Replace("Open:", itemNames[0] + ":");
+            if (itemNames[1] != null) script = script.Replace("Close:", itemNames[1] + ":");
+            if (itemNames[2] != null) script = script.Replace("Low:", itemNames[2] + ":");
+            if (itemNames[3] != null) script = script.Replace("High:", itemNames[3] + ":");
         }
 
         SetTooltip("item", script);
 
         // 添加Y轴
-        if (YAxis == null || YAxis.Count == 0) SetY("值", "value");
+        if (YAxis == null || YAxis.Count == 0) SetY(L.T("Value"), "value");
 
         return box;
     }

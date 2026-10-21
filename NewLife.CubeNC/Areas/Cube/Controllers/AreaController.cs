@@ -107,7 +107,7 @@ public class AreaController : EntityController<Area, AreaModel>
             list2 = list2.OrderByDescending(e => e.ID).ToList();
             if (list2.Count >= 0)
             {
-                AddChart(list2, _.Kind, "个数", [_.ID], SeriesTypes.Bar);
+                AddChart(list2, _.Kind, L.T("Count"), [_.ID], SeriesTypes.Bar);
 
                 //var chart = new ECharts
                 //{

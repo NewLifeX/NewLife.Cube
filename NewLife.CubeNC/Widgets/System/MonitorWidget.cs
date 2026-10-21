@@ -39,10 +39,10 @@ public class MonitorWidget : IWidget
         var xAxis = chart.SetX(xs);
         xAxis.BoundaryGap = false;
 
-        var yAxis = chart.SetY("CPU / 内存 %", "value", "{value}%");
+        var yAxis = chart.SetY(L.T("CPU / Memory %"), "value", "{value}%");
         yAxis.Min = 0;
         yAxis.Max = 100;
-        chart.SetLegend(new[] { "CPU", "内存" });
+        chart.SetLegend(new[] { "CPU", L.T("Memory") });
         // 注意：SetTooltip 存在 2 参（formatterScript）重载，需用 3 参版本指定 axisPointerType
         chart.SetTooltip("axis", "cross", "#6a7985");
 
@@ -68,7 +68,7 @@ public class MonitorWidget : IWidget
 
         var mem = new SeriesLine
         {
-            Name = "内存",
+            Name = L.T("Memory"),
             Data = mems.ToArray(),
             ShowSymbol = false,
         };

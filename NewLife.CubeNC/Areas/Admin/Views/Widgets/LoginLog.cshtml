@@ -9,10 +9,10 @@
     <ul class="widget-list">
         @foreach (dynamic item in d.Logins)
         {
-            <li title="@item.Action @item.CreateIP">
+            <li title="@L.T(item.Action + "") @item.CreateIP">
                 <span class="list-time">@(((DateTime)item.CreateTime).ToString("MM-dd HH:mm"))</span>
                 <span class="list-name">@item.UserName</span>
-                <span class="list-action">@item.Action</span>
+                <span class="list-action">@L.T(item.Action + "")</span>
             </li>
         }
         @if (!((IEnumerable<Object>)d.Logins).Any())
