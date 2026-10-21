@@ -1052,7 +1052,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             {
                 foreach (var field in yFields)
                 {
-                    field.DisplayName = xAxis.DisplayName;
+                    // 字段元数据保存中文源文，按当前界面语言本地化后再作为系列名
+                    field.DisplayName = L.T(xAxis.DisplayName);
                     if (field.Category.IsNullOrEmpty()) field.Category = xAxis.Name;
                 }
             }
@@ -1071,7 +1072,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
             // 如果没有Y轴，自动补上
             if (yFields.Length > 0 && (chart.YAxis == null || chart.YAxis.Count == 0))
-                chart.SetY(yFields[0].Name, "value");
+                chart.SetY(L.T(yFields[0].DisplayName.IsNullOrEmpty() ? yFields[0].Name : yFields[0].DisplayName), "value");
         }
 
         // Y轴最小值自动使用数据最小值

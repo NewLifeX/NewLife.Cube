@@ -466,6 +466,26 @@ public class ECharts : IExtend
         return sr;
     }
 
+    /// <summary>获取数据字段的显示名。字段元数据保存中文源文，按当前界面语言本地化后再用于系列名与图例</summary>
+    /// <param name="field">数据字段</param>
+    /// <returns>本地化后的显示名</returns>
+    private static String GetDisplayName(DataField field)
+    {
+        if (field == null) return null;
+
+        return L.T(field.DisplayName.IsNullOrEmpty() ? field.Name : field.DisplayName);
+    }
+
+    /// <summary>获取数据字段的显示名。字段元数据保存中文源文，按当前界面语言本地化后再用于系列名与图例</summary>
+    /// <param name="field">数据字段</param>
+    /// <returns>本地化后的显示名</returns>
+    private static String GetDisplayName(FieldItem field)
+    {
+        if (field == null) return null;
+
+        return L.T(field.DisplayName.IsNullOrEmpty() ? field.Name : field.DisplayName);
+    }
+
     /// <summary>添加系列数据</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="list">实体列表</param>
@@ -505,7 +525,7 @@ public class ECharts : IExtend
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
             list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-        var sr = Create(field?.DisplayName ?? field.Name, type, data);
+        var sr = Create(GetDisplayName(field), type, data);
 
         if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
 
@@ -526,7 +546,7 @@ public class ECharts : IExtend
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
             list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-        var sr = Create(field?.DisplayName ?? field.Name, type, data);
+        var sr = Create(GetDisplayName(field), type, data);
 
         if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
 
@@ -559,7 +579,7 @@ public class ECharts : IExtend
                 list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
                 list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-                series = Create(field?.DisplayName ?? field.Name, type, data);
+                series = Create(GetDisplayName(field), type, data);
 
                 if (!Symbol.IsNullOrEmpty()) series.Symbol = Symbol;
 
@@ -593,7 +613,7 @@ public class ECharts : IExtend
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
             list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-        var sr = Create(field?.DisplayName ?? field.Name, "line", data) as SeriesLine;
+        var sr = Create(GetDisplayName(field), "line", data) as SeriesLine;
         sr.Smooth = smooth;
 
         if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
@@ -637,7 +657,7 @@ public class ECharts : IExtend
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
             list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-        var sr = Create(field?.DisplayName ?? field.Name, "bar", data);
+        var sr = Create(GetDisplayName(field), "bar", data);
 
         Add(sr);
         return sr;
@@ -686,7 +706,7 @@ public class ECharts : IExtend
         keyName ??= _xField as String;
         keyName ??= (_xField as DataField)?.Name;
         keyName ??= (_xField as FieldItem)?.Name;
-        var sr = Create(field?.DisplayName ?? field.Name, "pie");
+        var sr = Create(GetDisplayName(field), "pie");
         sr.Data = list.Select(e => selector == null ? new NameValue(e[keyName] + "", e[field.Name]) : selector(e)).ToArray();
 
         Add(sr);
@@ -705,7 +725,7 @@ public class ECharts : IExtend
         keyName ??= (_xField as DataField)?.Name;
         keyName ??= (_xField as FieldItem)?.Name;
         keyName ??= field.Table.Master?.Name ?? field.Table.PrimaryKeys.FirstOrDefault()?.Name;
-        var sr = Create(field?.DisplayName ?? field.Name, "pie");
+        var sr = Create(GetDisplayName(field), "pie");
         sr.Data = list.Select(e => selector == null ? new NameValue(e[keyName] + "", e[field.Name]) : selector(e)).ToArray();
 
         Add(sr);
