@@ -262,11 +262,11 @@ const loginResult = await fetch('/Auth/Login', {
 const { data: login } = await loginResult.json();
 const token = login?.accessToken;
 
-// 2. 获取字段元数据（实体端点带 /api 与 Area）
-const fieldsResult = await fetch('/api/School/Student/GetFields?kind=1', {
+// 2. 获取页面元数据（实体端点带 /api 与 Area）
+const metaResult = await fetch('/api/School/Student/meta', {
     headers: { 'Authorization': `Bearer ${token}` }
 });
-const fields = await fieldsResult.json();
+const { data: meta } = await metaResult.json();
 
 // 3. 获取数据列表
 const listResult = await fetch('/api/School/Student?pageIndex=1&pageSize=20', {

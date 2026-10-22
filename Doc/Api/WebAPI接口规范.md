@@ -30,7 +30,7 @@ public class ControllerBaseX : ControllerBase, IActionFilter
 ```
 
 - **Area 必填**：实体接口形如 `/api/{area}/{controller}`，例如 `/api/School/Student`。
-- 实体控制器用字面量路由覆盖默认模板，形成 RESTful 风格；其余动作沿用 `{action}` 模板。
+- 实体控制器的标准 CRUD 与标准子资源一律用字面量路由（`/{id}`、`/meta`、`/export`、`/import`、`/attachments`、`/charts`），其余业务动作沿用 `{action}` 模板。
 - 服务控制器（`Auth`、`Sso`、`OAuth` 等）用 `[Route("[controller]/[action]")]` 覆盖，**不带 `/api` 前缀**，例如 `POST /Auth/Login`。
 
 ### 标准 CRUD 路由
@@ -52,6 +52,8 @@ public class ControllerBaseX : ControllerBase, IActionFilter
 > **删除三态**：路径带主键删单条；`ids=` 删选中的多条；既无主键也无 `ids` 但带业务条件时，按条件删除全部匹配行（不受 `pageSize` 限制）。单条删除的响应 `data` 为被删行，批量与条件删除的 `data` 为删除行数。
 >
 > **已移除的历史端点**：`GET .../Detail?id=`、`PUT /api/{area}/{controller}`（主键在 body）、`DELETE .../DeleteSelect` 与 `DELETE .../DeleteAll` 不再提供。前端编译后嵌入 DLL、与后端同版本发布，无需兼容旧写法。
+>
+> **标准子资源改名**：`GetPage`→`meta`、`GetChartData`→`charts`、`ExportFile`→`export`、`ImportFile`→`import`、`UploadFile`→`attachments`；`GetFields` 已并入 `meta` 并移除。外部皮肤升级 `NewLife.Cube` 包时需同步这组路径。
 >
 > 未匹配的 `/api` 请求统一返回 **HTTP 404**（`UseCube` 已注册 `/api/{**path}` 回退，启用 SPA 皮肤时同样生效，不会落到 `index.html`）。
 
@@ -224,16 +226,39 @@ protected override IEnumerable<Student> Search(Pager p)
 
 ### 其它标准端点
 
+除 CRUD 外，实体控制器还提供 5 个子资源端点，按用途分为三类。下表中的 `{type}` 即 `/api/{area}/{controller}`。
+
+#### 元数据
+
 | 端点 | 方法 | 说明 | 权限 |
 |------|------|------|------|
-| `.../GetPage` | GET | 页面设置 + 列表/表单/搜索字段（含 `allList`），见 36.10 | 匿名 |
-| `.../GetFields?kind=` | GET | 单一场景字段集合；kind：1 列表、2 详情、3 新增、4 编辑、5 搜索 | 匿名 |
-| `.../GetChartData` | GET | ECharts 配置数组，最多 1000 行 | Detail |
-| `.../ExportFile?format=` | GET | 导出 excel/csv/json/xml/zip，返回**文件流** | Detail |
-| `.../ImportFile` | POST | 导入 Excel/Csv/Json/Zip（multipart） | Insert |
-| `.../UploadFile` | POST | 上传附件（multipart，`file`/`id`/`title`） | 基类未标注，子类应覆写加权限 |
+| `GET {type}/meta` | GET | 页面设置 + 列表/表单/搜索字段（含 `allList`），见 36.10 | 登录即可 |
 
-> 导出与上传**不返回信封**：前端必须按 `content-type` 分流，不能按 JSON 解析。
+- `meta` 是**唯一**的元数据入口；原 `GetFields?kind=` 已移除（`meta` 已包含全部五个场景字段）。
+- 单对象页（`ObjectController` / `ConfigController`）同样提供 `GET {type}/meta`，返回 `setting` 与 `editForm`。
+- 默认要求登录（不校验具体权限位）。公开页面需要匿名元数据时，在子类重写 `Meta()` 并显式标注 `[AllowAnonymous]`。
+
+#### 批量数据搬运
+
+| 端点 | 方法 | 说明 | 权限 |
+|------|------|------|------|
+| `GET {type}/export?format=` | GET | 导出 excel/csv/json/xml/zip，返回**文件流** | Detail |
+| `POST {type}/import` | POST | 导入 Excel/Csv/Json/Zip（multipart，字段名 `file`） | Insert |
+
+- 两者沿用列表查询条件（`_query` 或同名查询参数），`pageSize` 不生效；导出上限由 `CubeSetting.MaxExport` 控制。
+- `export` 返回文件流、`import` 返回信封：前端必须按 `content-type` 分流，不能把导出结果按 JSON 解析。
+- `import` 的 `message` 含行数口径，`data` 为 null。
+
+#### 附件与图表
+
+| 端点 | 方法 | 说明 | 权限 |
+|------|------|------|------|
+| `POST {type}/attachments` | POST | 上传附件（multipart，`file`/`id`/`title`） | Insert 或 Update |
+| `GET {type}/charts` | GET | ECharts 配置数组，最多 1000 行 | Detail |
+
+- `attachments` 返回 `{ attId, filePath, contentType }`；失败同样返回统一信封（`code != 0`），不再返回裸 `{error}`。
+- 新增场景先上传拿到 `attId`，表单提交时通过 `attachmentIds` 绑定主记录（两阶段上传）。
+- `charts` 返回后端生成的 ECharts 配置（`title` / `option`），属魔方既有的「图表配置」扩展点；未实现时返回空数组。
 
 ---
 
@@ -299,19 +324,22 @@ protected override IEnumerable<Student> Search(Pager p)
 
 | 动作 | PermissionFlags |
 |------|-----------------|
-| Index / Detail / GetChartData / ExportFile | Detail |
-| Insert / ImportFile | Insert |
+| Index / Detail / charts / export | Detail |
+| Insert / import | Insert |
 | Update | Update |
 | Delete（单条 / `ids=` 批量 / 条件删除） | Delete |
-| GetPage / GetFields | 匿名 |
+| attachments（上传附件） | Insert 或 Update |
+| meta | 登录即可（不校验权限位） |
 
 自定义 Action 必须显式标注 `[EntityAuthorize(...)]`，否则不参与权限校验。
 
+> `[EntityAuthorize]` 不带参数表示"登录即可"；传多个权限位表示"拥有其中任意一个即可"，例如 `[EntityAuthorize(PermissionFlags.Insert, PermissionFlags.Update)]`。
+
 ---
 
-## 36.10 GetPage 页面元数据
+## 36.10 meta 页面元数据
 
-`GET /api/{area}/{controller}/GetPage`（匿名）：
+`GET /api/{area}/{controller}/meta`（登录即可）：
 
 ```json
 {
@@ -375,7 +403,7 @@ protected override IEnumerable<Student> Search(Pager p)
 | `sort` 由数据层做安全性校验 | 单字段安全；复合排序未开放，避免绕过校验 |
 | 无并发控制（无 ETag / 版本号） | 并发修改为后写覆盖 |
 | JSON 的 PUT 请求体会被缓冲 | 用于解析"实际提交了哪些字段"，大请求体会落盘 |
-| 基类 `UploadFile` 未标注权限 | 子类必须覆写并加 `[EntityAuthorize]` |
+| `meta` 未做服务端缓存 | 每次请求实时生成（前端按会话内存缓存） |
 | 错误码无命名空间约束 | `ApiCode` 与 `CubeCode` 仅靠文档约定分层，业务正数码无强制分段 |
 
 ---
@@ -413,11 +441,12 @@ curl -X DELETE "$HOST/api/School/Student?ids=1,2,3" -H "Authorization: Bearer $T
 # 6c. 条件删除（与列表搜索同形，必须至少一个业务条件）
 curl -X DELETE "$HOST/api/School/Student?classId=12&Q=张" -H "Authorization: Bearer $TOKEN"
 
-# 7. 页面元数据（匿名）
-curl "$HOST/api/School/Student/GetPage"
+# 7. 页面元数据（登录即可）
+curl "$HOST/api/School/Student/meta" -H "Authorization: ******"
 
-# 8. 字段集合（匿名，1=列表）
-curl "$HOST/api/School/Student/GetFields?kind=1"
+# 8. 导出（文件流）与导入（multipart）
+curl -OJ "$HOST/api/School/Student/export?format=xlsx" -H "Authorization: ******"
+curl -X POST "$HOST/api/School/Student/import" -H "Authorization: ******" -F "file=@students.xlsx"
 ```
 
 > 请求体格式错误或缺少 `Content-Type: application/json` 时，框架返回 **415 ProblemDetails**，不是本章描述的 JSON 信封。

@@ -132,11 +132,11 @@
 }
 ```
 
-### 获取字段元数据
+### 获取页面元数据
 
-**GET** `/School/Student/GetFields?kind=List`
+**GET** `/School/Student/meta`
 
-响应：
+响应 `data` 中的 `list` 字段（同级的 `setting`、`allList`、`addForm`、`editForm`、`detail`、`search` 见《WebAPI接口规范》36.10）：
 ```json
 {
   "code": 0,

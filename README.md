@@ -108,7 +108,7 @@ Open `/` to sign in, use Swagger for APIs, and call the standard CRUD APIs from 
 | --- | --- |
 | EntityController scaffolding | Entity class + controller gives CRUD, statistics, export and permissions immediately; `ReadOnlyEntityController` covers read-only lists. |
 | Static-constructor configuration | Configure fields, action buttons, related links, statistics and export in a controller static constructor. |
-| Field metadata API | `GetFields?kind=1..4` (List / Detail / AddForm / EditForm) drives dynamic front-end generation — no hard coding. |
+| Field metadata API | `meta` (page settings + List / Detail / AddForm / EditForm / Search fields) drives dynamic front-end generation — no hard coding. |
 | Menu tree | `/Cube/MenuTree` builds multi-level menus from permissions; `/Admin/Index/GetMenuTree` serves the classic MVC UI. |
 | Standard API response | `ApiResponse` wraps code / data / page / stat for every endpoint. |
 | Zero deployment | Schema creation and seed data happen automatically on first run, with no manual intervention. |
@@ -125,7 +125,7 @@ Open `/` to sign in, use Swagger for APIs, and call the standard CRUD APIs from 
 | --- | --- |
 | Field set customization | `ListFields.RemoveField` / `AddListField` adjust columns, links and targets per controller. |
 | Change log | `LogOnChange = true` writes an audit entry for every modification. |
-| Dynamic front-end fields | The front-end fetches `/Cube/App/GetFields?kind=1` for list field definitions — no hard coding. |
+| Dynamic front-end fields | The front-end fetches `/Cube/App/meta` for page metadata and field definitions — no hard coding. |
 
 ```csharp
 public class AppController : EntityController<App, AppModel>
@@ -151,7 +151,7 @@ public class AppController : EntityController<App, AppModel>
 | --- | --- |
 | `/Auth/Login` | Sign in and receive a JWT token (header / cookie / query). |
 | `/Cube/MenuTree` | Permission-aware menu tree. |
-| `/{Area}/{Controller}/GetFields?kind=1..4` | Field metadata for list / detail / add form / edit form. |
+| `/{Area}/{Controller}/meta` | Page metadata for list / detail / add form / edit form / search. |
 | Main route + dynamic parameters | Query with paging, sorting and condition composition. |
 | `Detail` / `Insert` / `Update` / `Delete` | Standard CRUD actions. |
 | `stat` / `page` | Statistics row and paging information. |
@@ -369,7 +369,7 @@ Milestones (excerpt):
 | Concept | Description |
 | --- | --- |
 | EntityController | Configure fields, action buttons, related links, statistics and export in a static constructor. |
-| Field metadata API | `GetFields?kind=List\|Detail\|AddForm\|EditForm` drives dynamic front-end generation. |
+| Field metadata API | `meta` (page settings + List / Detail / AddForm / EditForm / Search fields) drives dynamic front-end generation. |
 | Menu tree | `/Admin/Index/GetMenuTree` builds multi-level menus from permissions. |
 | Permission model | User -> role -> menu (action set). The first registered user becomes administrator and `admin` is disabled. |
 | ApiResponse | Standard response wrapper with code / data / page / stat. |

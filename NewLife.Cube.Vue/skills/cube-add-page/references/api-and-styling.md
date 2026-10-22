@@ -139,18 +139,17 @@ static ProductController()
 
 | 方法                   | 功能                                 | 对应后端接口                            |
 | ---------------------- | ------------------------------------ | --------------------------------------- |
-| `getPage()`            | 获取页面元数据（字段配置、页面设置） | GET `/{area}/{controller}/GetPage`      |
-| `getFields(kind)`      | 获取指定类型的字段列表               | GET `/{area}/{controller}/GetFields`    |
+| `getPage()`            | 获取页面元数据（字段配置、页面设置） | GET `/{area}/{controller}/meta`         |
 | `getList(params)`      | 分页列表查询                         | GET `/{area}/{controller}`              |
 | `getDetail(id)`        | 查看详情                             | GET `/{area}/{controller}/Detail`       |
 | `add(data)`            | 新增                                 | POST `/{area}/{controller}`             |
 | `update(data)`         | 编辑                                 | PUT `/{area}/{controller}`              |
 | `remove(id)`           | 删除单条                             | DELETE `/{area}/{controller}`           |
 | `deleteSelect(keys)`   | 批量删除                             | DELETE `/{area}/{controller}`           |
-| `uploadFile(file)`     | 上传文件                             | POST `/{area}/{controller}/UploadFile`  |
-| `importFile(file)`     | 导入文件                             | POST `/{area}/{controller}/ImportFile`  |
+| `uploadFile(file)`     | 上传文件                             | POST `/{area}/{controller}/attachments` |
+| `importFile(file)`     | 导入文件                             | POST `/{area}/{controller}/import`      |
 | `getExportUrl(format)` | 获取导出下载 URL                     | 直接返回 URL                            |
-| `getChartData()`       | 获取图表数据                         | GET `/{area}/{controller}/GetChartData` |
+| `getChartData()`       | 获取图表数据                         | GET `/{area}/{controller}/charts`       |
 
 ### 在页面中使用
 
