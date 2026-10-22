@@ -300,7 +300,7 @@ const submitForm = async () => {
     if (formType.value === 'add') {
       await request.post('/Admin/Tenant', form);
     } else {
-      await request.put('/Admin/Tenant', form);
+      await request.put(`/Admin/Tenant/${form.id}`, form);
     }
   };
 

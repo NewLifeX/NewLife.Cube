@@ -157,7 +157,8 @@ async function handleSubmit() {
     try {
       const model = serializeSubmitModel(internalModelValue.value, renderFields.value);
       if (isEdit.value) {
-        await request({ url: apiPrefix.value, method: 'put', data: model });
+        const editId = route.query.id ?? model.id ?? model.Id;
+        await request({ url: `${apiPrefix.value}/${editId}`, method: 'put', data: model });
         ElMessage.success('更新成功');
       } else {
         await request({ url: apiPrefix.value, method: 'post', data: model });

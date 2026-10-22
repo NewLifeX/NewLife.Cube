@@ -231,43 +231,6 @@
           }
         }
       },
-      "put": {
-        "tags": [
-          "TestField"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/测试字段Model"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/测试字段Model"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/测试字段Model"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOf测试字段"
-                }
-              }
-            }
-          }
-        }
-      },
       "get": {
         "tags": [
           "TestField"

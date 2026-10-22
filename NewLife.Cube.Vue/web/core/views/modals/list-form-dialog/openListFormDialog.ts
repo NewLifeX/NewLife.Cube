@@ -281,7 +281,8 @@ export function openListFormDialog(options: OpenListFormDialogOptions): Promise<
               }
 
               if (mode === 'edit') {
-                await request({ url: options.apiPrefix, method: 'put', data });
+                const realKey = resolveKey(data, idKey);
+                await request({ url: `${options.apiPrefix}/${data[realKey]}`, method: 'put', data });
                 ElMessage.success('更新成功');
               } else {
                 await request({ url: options.apiPrefix, method: 'post', data });

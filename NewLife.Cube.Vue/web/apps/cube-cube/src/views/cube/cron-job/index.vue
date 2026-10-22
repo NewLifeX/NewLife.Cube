@@ -327,7 +327,7 @@ const submitForm = () => {
           await request.post('/Cube/CronJob', form);
           ElMessage.success('新增成功');
         } else {
-          await request.put('/Cube/CronJob', form);
+          await request.put(`/Cube/CronJob/${form.id}`, form);
           ElMessage.success('更新成功');
         }
         dialogVisible.value = false;

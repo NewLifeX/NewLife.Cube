@@ -364,7 +364,7 @@ const handleDelete = (row: UserToken) => {
 const submitForm = async () => {
   const apiCall = async () => {
     if (isEdit.value) {
-      await request.put('/Admin/UserToken', formData);
+      await request.put(`/Admin/UserToken/${formData.id}`, formData);
     } else {
       await request.post('/Admin/UserToken', formData);
     }

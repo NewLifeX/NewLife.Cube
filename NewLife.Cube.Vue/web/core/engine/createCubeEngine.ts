@@ -416,7 +416,7 @@ export function createCubeEngine(
           Object.keys(data).find((k) => k.toLowerCase() === String(idKey.value).toLowerCase()) ??
           idKey.value;
         data[realKey] = formId.value;
-        await deps.http({ url: type.value, method: 'put', data });
+        await deps.http({ url: `${type.value}/${encodeURIComponent(String(formId.value))}`, method: 'put', data });
       } else {
         await deps.http({ url: type.value, method: 'post', data });
       }

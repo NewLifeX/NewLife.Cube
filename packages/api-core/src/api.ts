@@ -319,9 +319,12 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
     add: (type: string, data: Record<string, unknown>) =>
       request<unknown>({ url: type, method: 'post', data }),
 
-    /** 编辑 */
-    update: (type: string, data: Record<string, unknown>) =>
-      request<unknown>({ url: type, method: 'put', data }),
+    /** 编辑：PUT {type}/{id}。主键取自 data 的 id/Id，也可由 id 显式指定；body 只需携带变更字段 */
+    update: async (type: string, data: Record<string, unknown>, id?: number | string) => {
+      const key = id ?? (data.id as number | string | undefined) ?? (data.Id as number | string | undefined);
+      if (key === undefined || key === null || key === '') throw new Error(`缺少主键，无法更新 ${type}`);
+      return request<unknown>({ url: `${type}/${encodeURIComponent(key)}`, method: 'put', data });
+    },
 
     /** 删除单条：DELETE {type}/{id} */
     remove: (type: string, id: number | string) =>

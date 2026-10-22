@@ -326,7 +326,7 @@ const submitForm = async () => {
     if (formType.value === 'add') {
       await request.post('/Admin/AccessRule', form);
     } else {
-      await request.put('/Admin/AccessRule', form);
+      await request.put(`/Admin/AccessRule/${form.id}`, form);
     }
   };
 

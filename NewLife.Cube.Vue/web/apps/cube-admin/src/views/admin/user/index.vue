@@ -553,7 +553,7 @@ const submitForm = async () => {
       };
       await request.post('/Admin/User', userData);
     } else if (formType.value === 'edit') {
-      await request.put('/Admin/User', userForm);
+      await request.put(`/Admin/User/${userForm.id}`, userForm);
     }
   };
 

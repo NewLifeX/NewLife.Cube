@@ -374,7 +374,7 @@ describe('createCubeEngine 表单提交', () => {
     expect(ctx.formFields.value.map((f) => f.name)).toEqual(['Name', 'Enable']);
   });
 
-  it('应该走集合路由 PUT 且清洗 PascalCase 重复键 当编辑提交时', async () => {
+  it('应该走路径主键 PUT 且清洗 PascalCase 重复键 当编辑提交时', async () => {
     const { deps, http, notify } = makeDeps({
       getDetail: async () => ({ id: 5, name: 'a', enable: false, Enable: 1 }),
     });
@@ -385,8 +385,8 @@ describe('createCubeEngine 表单提交', () => {
     ctx.formModel.name = 'b';
     expect(await ctx.submitForm()).toBe(true);
     const put = lastCall(http, 'put');
-    // 后端只有 [HttpPut("/api/[area]/[controller]")]（EntityController.cs:201）
-    expect(put?.url).toBe(TYPE);
+    // 后端 PUT /api/[area]/[controller]/{id}（EntityController.Update）
+    expect(put?.url).toBe(`${TYPE}/5`);
     expect(put?.data).not.toHaveProperty('Enable');
     expect(put?.data).toMatchObject({ id: 5, name: 'b', enable: false });
     expect(notify.success).toHaveBeenCalledWith('更新成功');

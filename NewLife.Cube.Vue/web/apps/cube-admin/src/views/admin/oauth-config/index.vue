@@ -418,7 +418,7 @@ const submitForm = async () => {
         if (formType.value === 'add') {
           await request.post('/Admin/OAuthConfig', payload);
         } else {
-          await request.put('/Admin/OAuthConfig', payload);
+          await request.put(`/Admin/OAuthConfig/${payload.id}`, payload);
         }
         dialogVisible.value = false;
         loadData();

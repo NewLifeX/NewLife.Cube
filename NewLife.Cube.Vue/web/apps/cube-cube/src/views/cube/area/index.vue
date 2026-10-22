@@ -346,7 +346,7 @@ const submitForm = () => {
           await request.post('/Cube/Area', form);
           ElMessage.success('新增成功');
         } else {
-          await request.put('/Cube/Area', form);
+          await request.put(`/Cube/Area/${form.id}`, form);
           ElMessage.success('更新成功');
         }
         dialogVisible.value = false;

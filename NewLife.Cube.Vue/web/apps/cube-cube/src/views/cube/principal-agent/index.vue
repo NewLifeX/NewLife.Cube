@@ -264,7 +264,7 @@ const submitForm = () => {
     formRef.value,
     () => formType.value === 'add'
       ? request.post('/Cube/PrincipalAgent', form)
-      : request.put('/Cube/PrincipalAgent', form),
+      : request.put(`/Cube/PrincipalAgent/${form.id}`, form),
     () => {
       dialogVisible.value = false;
       callback();

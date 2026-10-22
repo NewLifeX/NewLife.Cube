@@ -378,6 +378,34 @@ test('page.getDetail 附加查询参数透传', async () => {
   assert.deepEqual(captured.config.params, { fields: 'all' });
 });
 
+test('page.update 走 PUT {type}/{id}，主键取自 data.id', async () => {
+  const { adapter, captured } = capturingAdapter();
+  const api = core.createCubeApi({ baseURL: 'http://host:5000/api', tokenStorage: memToken('tok') });
+  api.client.defaults.adapter = adapter;
+  await api.page.update('/Admin/User', { id: 125, name: '小明' });
+  assert.equal(captured.config.url, 'http://host:5000/api/Admin/User/125');
+  assert.equal(captured.config.method, 'put');
+  assert.deepEqual(JSON.parse(captured.config.data), { id: 125, name: '小明' });
+});
+
+test('page.update 支持 PascalCase 主键与显式主键', async () => {
+  const { adapter, captured } = capturingAdapter();
+  const api = core.createCubeApi({ baseURL: 'http://host:5000/api', tokenStorage: memToken('tok') });
+  api.client.defaults.adapter = adapter;
+  await api.page.update('/Admin/User', { Id: 7, name: 'a' });
+  assert.equal(captured.config.url, 'http://host:5000/api/Admin/User/7');
+
+  await api.page.update('/Admin/User', { name: 'b' }, 9);
+  assert.equal(captured.config.url, 'http://host:5000/api/Admin/User/9');
+});
+
+test('page.update 缺少主键时拒绝请求', async () => {
+  const { adapter } = capturingAdapter();
+  const api = core.createCubeApi({ baseURL: 'http://host:5000/api', tokenStorage: memToken('tok') });
+  api.client.defaults.adapter = adapter;
+  await assert.rejects(() => api.page.update('/Admin/User', { name: 'a' }), /缺少主键/);
+});
+
 test('page.remove 走 DELETE {type}/{id} 路径主键', async () => {
   const { adapter, captured } = capturingAdapter();
   const api = core.createCubeApi({ baseURL: 'http://host:5000/api', tokenStorage: memToken('tok') });

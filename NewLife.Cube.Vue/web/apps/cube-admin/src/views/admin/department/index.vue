@@ -438,7 +438,7 @@ const submitForm = async () => {
     if (formType.value === 'add') {
       await request.post('/Admin/Department', payload);
     } else {
-      await request.put('/Admin/Department', payload);
+      await request.put(`/Admin/Department/${payload.id}`, payload);
     }
   };
 

@@ -181,22 +181,31 @@ public partial class EntityController<TEntity, TModel>
         }
     }
 
-    /// <summary>更新数据。支持两种风格：请求体携带主键，或 RESTful 路径 /api/{area}/{controller}/{id}</summary>
+    /// <summary>更新数据。主键在路径中</summary>
     /// <remarks>
     /// 语义为"部分更新"：先按主键查出库中记录，再只覆盖本次请求实际提交的字段。
     /// 提交范围优先取请求 JSON 的顶层字段名，非 JSON 请求退回实体脏字段标记。
     /// 未提交的字段保持数据库原值，显式提交 null 则清空该字段。
     /// </remarks>
-    /// <param name="model"></param>
+    /// <param name="id">主键</param>
+    /// <param name="model">提交的模型</param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Update)]
     [DisplayName("Update {type}")]
-    [HttpPut("/api/[area]/[controller]")]
-    public virtual async Task<ApiResponse<TEntity>> Update(TModel model)
+    [HttpPut("/api/[area]/[controller]/{id}")]
+    public virtual async Task<ApiResponse<TEntity>> Update(String id, TModel model)
     {
+        if (id.IsNullOrEmpty()) throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("Missing primary key."));
+
         var uk = Factory.Unique;
-        var key = model is IModel ext ? ext[uk.Name] : model.GetValue(uk.Name);
-        if (key == null || key + "" == "") throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("Missing primary key."));
+        // 路径与请求体都带主键时必须一致，避免"路径指向 A、内容改 B"。
+        // 注意用属性反射取值：XCode 实体索引器只读扩展字典，属性赋过的值取不到
+        var pi = typeof(TModel).GetProperty(uk.Name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+        var current = ((pi != null && pi.CanRead ? pi.GetValue(model) : model.GetValue(uk.Name)) + "").Trim();
+        if (!current.IsNullOrEmpty() && current != "0" && current != id)
+            throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("The primary key in the route does not match the one in the request body."));
+
+        var key = id.ChangeType(uk.Type);
 
         // 先查出来，再按提交范围覆盖，避免"未提交字段被默认值清空"
         var entity = FindData(key);
@@ -292,27 +301,6 @@ public partial class EntityController<TEntity, TModel>
         {
             body.Position = position;
         }
-    }
-
-    /// <summary>更新数据（RESTful 风格）。主键在路径中，写入模型后转发到 Update 以保留子类重载</summary>
-    /// <param name="id">主键</param>
-    /// <param name="model">提交的模型</param>
-    /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Update)]
-    [DisplayName("Update {type}")]
-    [HttpPut("/api/[area]/[controller]/{id}")]
-    public virtual Task<ApiResponse<TEntity>> UpdateById(String id, TModel model)
-    {
-        if (id.IsNullOrEmpty()) throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("Missing primary key."));
-
-        // 路径与请求体都带主键时必须一致，避免"路径指向 A、内容改 B"
-        var uk = Factory.Unique;
-        var current = (model is IModel src ? src[uk.Name] : model.GetValue(uk.Name)) + "";
-        if (!current.IsNullOrEmpty() && current != "0" && current != id)
-            throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("The primary key in the route does not match the one in the request body."));
-
-        model.SetValue(uk.Name, id.ChangeType(uk.Type));
-        return Update(model);
     }
 
     /// <summary>更新数据</summary>

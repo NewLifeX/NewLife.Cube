@@ -427,7 +427,7 @@ const handleBatchCommand = async (command: string) => {
       delete payload.hasChildren;
 
       try {
-        await request.put('/Admin/Menu', payload);
+        await request.put(`/Admin/Menu/${payload.id}`, payload);
         ok++;
       } catch (err) {
         fails.push(`${row.displayName || row.name}: ${(err as Error)?.message || '更新失败'}`);
@@ -552,7 +552,7 @@ const submitForm = async () => {
     if (formType.value === 'add') {
       await request.post('/Admin/Menu', payload);
     } else {
-      await request.put('/Admin/Menu', payload);
+      await request.put(`/Admin/Menu/${payload.id}`, payload);
     }
   };
 

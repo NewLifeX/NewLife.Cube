@@ -300,7 +300,7 @@ const submitForm = () => {
           await request.post('/Cube/App', form);
           ElMessage.success('新增成功');
         } else {
-          await request.put('/Cube/App', form);
+          await request.put(`/Cube/App/${form.id}`, form);
           ElMessage.success('更新成功');
         }
         dialogVisible.value = false;

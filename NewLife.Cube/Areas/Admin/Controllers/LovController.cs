@@ -2,7 +2,9 @@ using System.ComponentModel;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Models;
 using NewLife.Cube.Services;
+using NewLife.Remoting;
 using NewLife.Web;
 using XCode.Membership;
 using NewLife;
@@ -85,19 +87,26 @@ public class LovController : ControllerBaseX
         return new ApiResponse<Object> { Code = 0, Message = L.T("Add succeeded!"), Data = new { id = model.LovCode } };
     }
 
-    /// <summary>更新手工定义。body.id 为原 LovCode，lovCode 变更时级联清理旧编码数据</summary>
-    /// <param name="body">定义 JSON（含 id=旧 LovCode）</param>
+    /// <summary>更新手工定义。主键为原 LovCode，lovCode 变更时级联清理旧编码数据</summary>
+    /// <param name="id">原 LovCode</param>
+    /// <param name="body">定义 JSON</param>
     /// <returns>响应，data.id=LovCode</returns>
     [EntityAuthorize(PermissionFlags.Update)]
-    [HttpPut("/api/[area]/[controller]")]
-    public ApiResponse<Object> Update([FromBody] JsonDocument body)
+    [HttpPut("/api/[area]/[controller]/{id}")]
+    public ApiResponse<Object> Update(String id, [FromBody] JsonDocument body)
     {
+        if (id.IsNullOrEmpty()) throw new ApiException(CubeCode.ParamError.ToInt(), L.T("Missing primary key."));
+
         var root = body.RootElement;
-        var oldCode = GetStr(root, "id");
+        // 路径与请求体都带主键时必须一致，避免"路径指向 A、内容改 B"
+        var bodyId = GetStr(root, "id");
+        if (!bodyId.IsNullOrEmpty() && !bodyId.EqualIgnoreCase(id))
+            throw new ApiException(CubeCode.ParamError.ToInt(), L.T("The primary key in the route does not match the one in the request body."));
+
+        var oldCode = id;
         var model = ParseDef(root);
         CheckCode(model);
 
-        if (oldCode.IsNullOrEmpty()) oldCode = model.LovCode;
         if (LovStore.FindDef(oldCode) == null)
             throw new InvalidOperationException(L.T("Value set [{0}] does not exist.", oldCode));
 

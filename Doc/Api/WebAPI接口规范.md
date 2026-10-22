@@ -35,25 +35,23 @@ public class ControllerBaseX : ControllerBase, IActionFilter
 
 ### 标准 CRUD 路由
 
-| 操作 | 方法与路径（推荐） | 兼容写法 | 权限 |
-|------|------------------|---------|------|
-| 列表 | `GET /api/{area}/{controller}` | — | Detail |
-| 详情 | `GET /api/{area}/{controller}/{id}` | — | Detail |
-| 新增 | `POST /api/{area}/{controller}` | — | Insert |
-| 修改 | `PUT /api/{area}/{controller}/{id}`（body 可省略主键） | `PUT /api/{area}/{controller}`（主键在 body） | Update |
-| 删除 | `DELETE /api/{area}/{controller}/{id}` | — | Delete |
-| 批量删除 | `DELETE /api/{area}/{controller}?ids=1,2,3`（单次最多 100 个，超出改用条件删除） | `?ids=1&ids=2`（重复参数） | Delete |
-| 条件删除 | `DELETE /api/{area}/{controller}?<搜索条件>`（与列表搜索同形，必须至少一个业务条件） | — | Delete |
+| 操作 | 方法与路径 | 权限 |
+|------|-----------|------|
+| 列表 | `GET /api/{area}/{controller}` | Detail |
+| 详情 | `GET /api/{area}/{controller}/{id}` | Detail |
+| 新增 | `POST /api/{area}/{controller}` | Insert |
+| 修改 | `PUT /api/{area}/{controller}/{id}`（body 只需带变更字段，可省略主键） | Update |
+| 删除 | `DELETE /api/{area}/{controller}/{id}` | Delete |
+| 批量删除 | `DELETE /api/{area}/{controller}?ids=1,2,3`（单次最多 100 个，超出改用条件删除；也支持 `?ids=1&ids=2` 重复参数） | Delete |
+| 条件删除 | `DELETE /api/{area}/{controller}?<搜索条件>`（与列表搜索同形，必须至少一个业务条件） | Delete |
 
-> **主键一致性**：路径式修改时，若 body 也带主键，两者必须一致，否则返回 `-2`，避免"路径指向 A、内容改 B"。
->
-> **删除三态**：路径带主键删单条；`ids=` 删选中的多条；既无主键也无 `ids` 但带业务条件时，按条件删除全部匹配行（不受 `pageSize` 限制）。单条删除的响应 `data` 为被删行，批量与条件删除的 `data` 为删除行数。
->
-> **已移除的历史端点**：`GET .../Detail?id=`、`DELETE .../DeleteSelect` 与 `DELETE .../DeleteAll` 不再提供。前端编译后嵌入 DLL、与后端同版本发布，无需兼容旧写法。
+> **主键一致性**：修改时若 body 也带主键，必须与路径一致，否则返回 `-2`，避免"路径指向 A、内容改 B"。
 >
 > **路径主键**：详情、修改、删除的主键一律在路径中，与 `GET /{id}`、`PUT /{id}`、`DELETE /{id}` 对称。
 >
-> **兼容说明**：`PUT` 主键在 body 是历史写法，仍可用但已不推荐；路径式路由与 `GET /{id}` 对称，符合 REST 习惯。
+> **删除三态**：路径带主键删单条；`ids=` 删选中的多条；既无主键也无 `ids` 但带业务条件时，按条件删除全部匹配行（不受 `pageSize` 限制）。单条删除的响应 `data` 为被删行，批量与条件删除的 `data` 为删除行数。
+>
+> **已移除的历史端点**：`GET .../Detail?id=`、`PUT /api/{area}/{controller}`（主键在 body）、`DELETE .../DeleteSelect` 与 `DELETE .../DeleteAll` 不再提供。前端编译后嵌入 DLL、与后端同版本发布，无需兼容旧写法。
 >
 > 未匹配的 `/api` 请求统一返回 **HTTP 404**（`UseCube` 已注册 `/api/{**path}` 回退，启用 SPA 皮肤时同样生效，不会落到 `index.html`）。
 
@@ -218,7 +216,7 @@ protected override IEnumerable<Student> Search(Pager p)
   - 提交范围由请求 JSON 的顶层字段名确定：未出现的字段保持数据库原值，显式传 `null` 则清空该字段；
   - 前端无需做差异计算，按表单模型整体提交即可（20 个字段的表单只渲染 13 个，就提交这 13 个）；
   - 非 JSON 请求（如程序内直接调用）退回实体脏字段标记判断提交范围；
-  - 推荐 `PUT /{id}`；body 也可带主键，但必须与路径一致，否则返回 `-2`；
+  - 主键在路径中（`PUT /{id}`）；body 也可带主键，但必须与路径一致，否则返回 `-2`；
   - 没有版本号 / ETag，并发写为"后写覆盖"。
 - **删除**：`DELETE /{id}` 删单条，`DELETE ?ids=1,2,3` 删选中的多条（单次最多 100 个，超出由前端分片），`DELETE ?<搜索条件>` 按条件删全部匹配行。删除不存在的记录返回 `404`。
 - **条件删除** 必须至少携带一个业务搜索条件，否则返回 `-2`，防止误删全表；服务端按条件删除全部匹配行（不受 `pageSize` 限制）。
@@ -402,13 +400,9 @@ curl "$HOST/api/School/Student/1" -H "Authorization: Bearer $TOKEN"
 curl -X POST "$HOST/api/School/Student" -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" -d '{"name":"张三"}'
 
-# 5. 修改（RESTful，主键在路径）
+# 5. 修改（主键在路径，body 只需带变更字段）
 curl -X PUT "$HOST/api/School/Student/1" -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" -d '{"name":"李四"}'
-
-# 5b. 修改（兼容写法，主键在 body）
-curl -X PUT "$HOST/api/School/Student" -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" -d '{"id":1,"name":"李四"}'
 
 # 6. 删除单条（主键在路径）
 curl -X DELETE "$HOST/api/School/Student/1" -H "Authorization: Bearer $TOKEN"

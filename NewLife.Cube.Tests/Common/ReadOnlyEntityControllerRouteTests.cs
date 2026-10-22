@@ -19,16 +19,22 @@ public class ReadOnlyEntityControllerRouteTests
         Assert.Equal(["/api/[area]/[controller]/{id}"], routes);
     }
 
-    [Fact(DisplayName = "修改与删除同时提供 RESTful 路径主键路由")]
-    public void UpdateAndDelete_HaveRestfulIdRoute()
+    [Fact(DisplayName = "修改只保留路径主键路由，删除同样使用路径主键")]
+    public void UpdateAndDelete_HaveOnlyRestfulIdRoute()
     {
-        var update = typeof(EntityController<,>).GetMethod("UpdateById");
-        var putRoutes = update!.GetCustomAttributes<HttpPutAttribute>().Select(e => e.Template).ToArray();
-        Assert.Contains("/api/[area]/[controller]/{id}", putRoutes);
+        var update = typeof(EntityController<,>).GetMethods(BindingFlags.Public | BindingFlags.Instance)
+            .Where(e => e.Name == "Update")
+            .ToArray();
+        Assert.Single(update);
+        var putRoutes = update[0].GetCustomAttributes<HttpPutAttribute>().Select(e => e.Template).ToArray();
+        Assert.Equal(["/api/[area]/[controller]/{id}"], putRoutes);
 
         var delete = typeof(EntityController<,>).GetMethod("Delete");
         var delRoutes = delete!.GetCustomAttributes<HttpDeleteAttribute>().Select(e => e.Template).ToArray();
-        Assert.Contains("/api/[area]/[controller]/{id}", delRoutes);
+        Assert.Equal(["/api/[area]/[controller]/{id}"], delRoutes);
+
+        // 旧的路径转发动作已并入 Update
+        Assert.Null(typeof(EntityController<,>).GetMethod("UpdateById"));
     }
 
     [Fact(DisplayName = "批量与条件删除共用基路径删除动作")]

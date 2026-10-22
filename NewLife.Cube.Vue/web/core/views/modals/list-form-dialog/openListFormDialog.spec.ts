@@ -127,7 +127,7 @@ describe('openListFormDialog', () => {
     await modalOptions.onConfirm();
 
     expect(requestMock).toHaveBeenCalledWith({
-      url: '/api/test',
+      url: '/api/test/1',
       method: 'put',
       data: { id: 1, Name: 'old', Enable: true },
     });

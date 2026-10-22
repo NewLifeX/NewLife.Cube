@@ -212,43 +212,6 @@
           }
         }
       },
-      "put": {
-        "tags": [
-          "AccessRule"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AccessRuleModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AccessRuleModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/AccessRuleModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfAccessRule"
-                }
-              }
-            }
-          }
-        }
-      },
       "get": {
         "tags": [
           "AccessRule"
@@ -1169,43 +1132,6 @@
         }
       },
       "post": {
-        "tags": [
-          "Department"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DepartmentModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DepartmentModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/DepartmentModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfDepartment"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
         "tags": [
           "Department"
         ],
@@ -2413,45 +2339,6 @@
           }
         }
       },
-      "put": {
-        "tags": [
-          "Lov"
-        ],
-        "summary": "更新手工定义。body.id 为原 LovCode，lovCode 变更时级联清理旧编码数据",
-        "requestBody": {
-          "description": "定义 JSON（含 id=旧 LovCode）",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/JsonDocument"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/JsonDocument"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/JsonDocument"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "响应，data.id=LovCode",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfObject"
-                }
-              }
-            }
-          }
-        }
-      },
       "delete": {
         "tags": [
           "Lov"
@@ -2504,6 +2391,56 @@
         "responses": {
           "200": {
             "description": "行数据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Lov"
+        ],
+        "summary": "更新手工定义。主键为原 LovCode，lovCode 变更时级联清理旧编码数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "原 LovCode",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "定义 JSON",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonDocument"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonDocument"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonDocument"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "响应，data.id=LovCode",
             "content": {
               "application/json": {
                 "schema": {
@@ -2811,43 +2748,6 @@
         }
       },
       "post": {
-        "tags": [
-          "MailConfig"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MailConfigModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MailConfigModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/MailConfigModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfMailConfig"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
         "tags": [
           "MailConfig"
         ],
@@ -3350,43 +3250,6 @@
           }
         }
       },
-      "put": {
-        "tags": [
-          "Menu"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MenuModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MenuModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/MenuModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfMenu"
-                }
-              }
-            }
-          }
-        }
-      },
       "get": {
         "tags": [
           "Menu"
@@ -3755,43 +3618,6 @@
         }
       },
       "post": {
-        "tags": [
-          "OAuthConfig"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/OAuthConfigModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/OAuthConfigModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/OAuthConfigModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfOAuthConfig"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
         "tags": [
           "OAuthConfig"
         ],
@@ -4409,43 +4235,6 @@
           }
         }
       },
-      "put": {
-        "tags": [
-          "Parameter"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ParameterModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ParameterModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/ParameterModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfParameter"
-                }
-              }
-            }
-          }
-        }
-      },
       "get": {
         "tags": [
           "Parameter"
@@ -4918,43 +4707,6 @@
           }
         }
       },
-      "put": {
-        "tags": [
-          "Role"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RoleModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RoleModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/RoleModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfRole"
-                }
-              }
-            }
-          }
-        }
-      },
       "get": {
         "tags": [
           "Role"
@@ -5323,43 +5075,6 @@
         }
       },
       "post": {
-        "tags": [
-          "SmsConfig"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SmsConfigModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SmsConfigModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/SmsConfigModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfSmsConfig"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
         "tags": [
           "SmsConfig"
         ],
@@ -6202,43 +5917,6 @@
           }
         }
       },
-      "put": {
-        "tags": [
-          "Tenant"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TenantModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TenantModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/TenantModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfTenant"
-                }
-              }
-            }
-          }
-        }
-      },
       "get": {
         "tags": [
           "Tenant"
@@ -6643,43 +6321,6 @@
           }
         }
       },
-      "put": {
-        "tags": [
-          "TenantUser"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TenantUserModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TenantUserModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/TenantUserModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfTenantUser"
-                }
-              }
-            }
-          }
-        }
-      },
       "get": {
         "tags": [
           "TenantUser"
@@ -7048,43 +6689,6 @@
         }
       },
       "post": {
-        "tags": [
-          "UserConnect"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserConnectModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserConnectModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserConnectModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfUserConnect"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
         "tags": [
           "UserConnect"
         ],
@@ -7994,43 +7598,6 @@
           }
         }
       },
-      "put": {
-        "tags": [
-          "User"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfUser"
-                }
-              }
-            }
-          }
-        }
-      },
       "get": {
         "tags": [
           "User"
@@ -8380,43 +7947,6 @@
         }
       },
       "post": {
-        "tags": [
-          "UserOnline"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserOnlineModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserOnlineModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserOnlineModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfUserOnline"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
         "tags": [
           "UserOnline"
         ],
@@ -8998,43 +8528,6 @@
         }
       },
       "post": {
-        "tags": [
-          "UserToken"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserTokenModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserTokenModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserTokenModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfUserToken"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
         "tags": [
           "UserToken"
         ],

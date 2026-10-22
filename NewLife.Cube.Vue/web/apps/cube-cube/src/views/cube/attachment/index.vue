@@ -333,7 +333,7 @@ const submitForm = () => {
           });
           ElMessage.success('上传成功');
         } else {
-          await request.put('/Cube/Attachment', form);
+          await request.put(`/Cube/Attachment/${form.id}`, form);
           ElMessage.success('更新成功');
         }
 

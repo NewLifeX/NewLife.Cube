@@ -141,7 +141,8 @@ function buildEngine(options: EngineOptions = {}): CubeEngineContext {
   };
 
   const respondGet = (url: string, params?: Record<string, unknown>) => {
-    if (/\/[^/]+$/.test(url) && url !== TYPE) return { code: 0, data: rows[0] ?? {} };
+    // 详情请求形如 {apiPrefix}/{id}；列表请求是 {apiPrefix}，导出为 {apiPrefix}/ExportFile
+    if (/\/\d+$/.test(url)) return { code: 0, data: rows[0] ?? {} };
     const keyword = typeof params?.q === 'string' ? params.q : '';
     const filtered = keyword ? rows.filter((r) => String(r.Name).includes(keyword)) : rows;
     return { code: 0, data: filtered, page: { totalCount: filtered.length } };

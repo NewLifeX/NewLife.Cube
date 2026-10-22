@@ -322,7 +322,7 @@ const updateTenantUser = async (data: Partial<TenantUser>) => {
   try {
     loading.submit = true
 
-    await request.put('/Admin/TenantUser', data)
+    await request.put(`/Admin/TenantUser/${data.id}`, data)
 
     showFormDialog.value = false
     refreshList()

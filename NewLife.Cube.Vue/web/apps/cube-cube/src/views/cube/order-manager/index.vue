@@ -354,7 +354,7 @@ const submitForm = () => {
           await request.post('/Cube/OrderManager', form);
           ElMessage.success('新增成功');
         } else {
-          await request.put('/Cube/OrderManager', form);
+          await request.put(`/Cube/OrderManager/${form.id}`, form);
           ElMessage.success('更新成功');
         }
         dialogVisible.value = false;
