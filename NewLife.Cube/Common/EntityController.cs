@@ -379,18 +379,18 @@ public partial class EntityController<TEntity, TModel>
     {
         DefaultSpan.Current?.SetError(ex);
 
-        var err = ex.GetTrue().Message;
-        WriteLog(action, false, err);
+        var trueEx = ex.GetTrue();
+        var detail = trueEx.Message;
+        WriteLog(action, false, detail);
 
         var fieldErrors = BuildFieldErrors(ex);
 
-        // 如果有字段级错误，使用第一条作为主消息提示
-        if (fieldErrors != null && fieldErrors.Count > 0)
-            err = SysConfig.Develop ? $"{L.T("{0} failed!", action)} {fieldErrors[0].Message}" : L.T("{0} failed!", action);
-        else
-            err = SysConfig.Develop ? $"{L.T("{0} failed!", action)} {err}" : L.T("{0} failed!", action);
+        // ApiException 保留自身码与消息；其余异常统一 500，XException 视为已知业务异常、消息保留，未知异常仅开发模式暴露细节
+        var isBiz = trueEx is ApiException or XException;
+        var tip = fieldErrors != null && fieldErrors.Count > 0 ? fieldErrors[0].Message : detail;
+        var err = isBiz || SysConfig.Develop ? $"{L.T("{0} failed!", action)} {tip}" : L.T("{0} failed!", action);
 
-        var code = ex is ApiException ae ? ae.Code : 500;
+        var code = trueEx is ApiException ae ? ae.Code : ApiCode.InternalServerError.ToInt();
         return new ApiResponse<TEntity>
         {
             Code = code,
