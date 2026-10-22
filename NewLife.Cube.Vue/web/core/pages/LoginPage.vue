@@ -5,7 +5,7 @@
   核心理念：使用 Element Plus CSS 变量驱动全部配色，自动适配多主题（cyber/forest/aurora/industrial）与黑白模式。
 
   功能：
-  1. onMounted 并行调用 /Cube/Site 与 /Auth/LoginConfig，分别获取站点品牌与登录能力
+  1. onMounted 并行调用 /Cube/Site 与 /Auth/LoginConfig（透传 ?tenant=），分别获取站点品牌与登录能力
   2. 根据配置渲染密码表单 / OAuth 入口 / 版权信息
   3. 密码登录成功后写入 token 并跳回 redirect 页面
   4. OAuth 跳转 URL 统一为 /Sso/Login/{name}?source=front-end&redirect_uri={redirect}
@@ -204,6 +204,13 @@ import type { LoginConfig, LoginResult, OAuthProvider, SiteConfig } from '@newli
 const route = useRoute();
 const router = useRouter();
 const config = getConfig();
+
+/** 租户标识：登录链接可通过 ?tenant={id|code|name} 指定，未指定时由服务端按当前上下文解析 */
+const tenant = computed<string | undefined>(() => {
+  const value = route.query.tenant;
+  const text = Array.isArray(value) ? value[0] : value;
+  return text || undefined;
+});
 
 // ── 响应式状态 ──────────────────────────────────────────────────────
 /** 配置加载中 */
@@ -761,7 +768,7 @@ function destroyParticleSystem(): void {
  */
 async function reloadSiteConfig(): Promise<void> {
   try {
-    const res = await fetchSiteConfig();
+    const res = await fetchSiteConfig(tenant.value);
     if (res.code === 0 && res.data) siteConfig.value = res.data;
   } catch {
     // 站点配置是可选增强，失败不阻塞登录页
@@ -772,7 +779,7 @@ onMounted(async () => {
   // 初始化粒子动画
   initParticleSystem();
 
-  const [siteResult, loginResult] = await Promise.allSettled([fetchSiteConfig(), fetchLoginConfig()]);
+  const [siteResult, loginResult] = await Promise.allSettled([fetchSiteConfig(tenant.value), fetchLoginConfig(tenant.value)]);
 
   if (siteResult.status === 'fulfilled' && siteResult.value.code === 0) {
     siteConfig.value = siteResult.value.data;
