@@ -135,38 +135,6 @@
         "operationId": "0a8d064b24c67e34dfcfe174056a3a74"
       }
     },
-    "/Cube/App/Detail": {
-      "get": {
-        "tags": [
-          "App"
-        ],
-        "summary": "查看单行数据",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.App, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
-                }
-              }
-            }
-          }
-        },
-        "operationId": "681f6d1ada375fa4121f3010af8700aa"
-      }
-    },
     "/Cube/AppLog": {
       "get": {
         "tags": [
@@ -186,38 +154,6 @@
           }
         },
         "operationId": "a6cd50798871f747ed1378e459575aa6"
-      }
-    },
-    "/Cube/AppLog/Detail": {
-      "get": {
-        "tags": [
-          "AppLog"
-        ],
-        "summary": "查看单行数据",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.AppLog, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
-                }
-              }
-            }
-          }
-        },
-        "operationId": "7aa3348943320f40f6cddea3506174e3"
       }
     },
     "/Cube/Area": {
@@ -349,38 +285,6 @@
         "operationId": "0e280cdfd79593eb7c6cdd94fb15fa17"
       }
     },
-    "/Cube/Area/Detail": {
-      "get": {
-        "tags": [
-          "Area"
-        ],
-        "summary": "查看单行数据",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[XCode.Membership.Area, XCode, Version=11.19.2025.601, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
-                }
-              }
-            }
-          }
-        },
-        "operationId": "4ec16af8b5e735f57fe2782fa1cb9976"
-      }
-    },
     "/Cube/Attachment": {
       "delete": {
         "tags": [
@@ -508,38 +412,6 @@
           }
         },
         "operationId": "a79e2760962cff3c049c15bb4c9fb349"
-      }
-    },
-    "/Cube/Attachment/Detail": {
-      "get": {
-        "tags": [
-          "Attachment"
-        ],
-        "summary": "查看单行数据",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.Attachment, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
-                }
-              }
-            }
-          }
-        },
-        "operationId": "a9e77f531c9fcbf4721e7b00f46e6402"
       }
     },
     "/Cube/CronJob/ExecuteNow": {
@@ -695,38 +567,6 @@
         "operationId": "2259a5586f5f7da441be4a6357a6906b"
       }
     },
-    "/Cube/CronJob/Detail": {
-      "get": {
-        "tags": [
-          "CronJob"
-        ],
-        "summary": "查看单行数据",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.CronJob, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
-                }
-              }
-            }
-          }
-        },
-        "operationId": "3d8a172eab1694cf01e5ce37968ae116"
-      }
-    },
     "/Cube/OrderManager/GetInfo": {
       "get": {
         "tags": [
@@ -880,38 +720,6 @@
         "operationId": "c760d4914cbc853787d9d13035ecefb7"
       }
     },
-    "/Cube/OrderManager/Detail": {
-      "get": {
-        "tags": [
-          "OrderManager"
-        ],
-        "summary": "查看单行数据",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.OrderManager, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
-                }
-              }
-            }
-          }
-        },
-        "operationId": "dc6e409ff9f12a40876c91416d3a747a"
-      }
-    },
     "/Cube/PrincipalAgent": {
       "delete": {
         "tags": [
@@ -1039,38 +847,6 @@
           }
         },
         "operationId": "c0ab55a73c88ddb2ad219e36ff5164cf"
-      }
-    },
-    "/Cube/PrincipalAgent/Detail": {
-      "get": {
-        "tags": [
-          "PrincipalAgent"
-        ],
-        "summary": "查看单行数据",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.PrincipalAgent, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
-                }
-              }
-            }
-          }
-        },
-        "operationId": "47e2e0aac87b596d49db6cb44fff0945"
       }
     }
   },

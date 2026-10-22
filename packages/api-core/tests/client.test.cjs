@@ -395,6 +395,10 @@ test('page.update 支持 PascalCase 主键与显式主键', async () => {
   await api.page.update('/Admin/User', { Id: 7, name: 'a' });
   assert.equal(captured.config.url, 'http://host:5000/api/Admin/User/7');
 
+  // 全大写 ID（XCode 实体的字段名原样下发到表单模型）
+  await api.page.update('/Admin/User', { ID: 8, name: 'c' });
+  assert.equal(captured.config.url, 'http://host:5000/api/Admin/User/8');
+
   await api.page.update('/Admin/User', { name: 'b' }, 9);
   assert.equal(captured.config.url, 'http://host:5000/api/Admin/User/9');
 });

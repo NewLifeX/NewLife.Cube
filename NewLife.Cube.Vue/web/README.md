@@ -1,6 +1,6 @@
 # @newlifex/cube-vue（Cube 默认前端模板）
 
-> NewLife.Cube 的 Vue 3 默认前端模板 / 微前端框架。**元数据驱动**：后端 `EntityController` 下发字段元数据（`meta` / `GetFields`），前端自动渲染动态列表、动态搜索、动态表单，无需为每个实体手写页面。
+> NewLife.Cube 的 Vue 3 默认前端模板 / 微前端框架。**元数据驱动**：后端 `EntityController` 下发字段元数据（`GET {type}/meta`），前端自动渲染动态列表、动态搜索、动态表单，无需为每个实体手写页面。
 
 ## 目录真相（务必先读）
 

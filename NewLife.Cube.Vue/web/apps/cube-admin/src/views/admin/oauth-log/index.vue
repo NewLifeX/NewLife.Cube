@@ -201,9 +201,8 @@ const getOAuthLogDetail = async (id: number) => {
   try {
     loading.detail = true
 
-    const data = await request.get('/Admin/OAuthLog/Detail', {
-      params: { id }
-    })
+    // 详情端点：GET {type}/{id}（主键在路径中）
+    const data = await request.get<OAuthLog>(`/Admin/OAuthLog/${id}`)
 
     if (data) {
       detailData.value = (data.data as OAuthLog) || {}

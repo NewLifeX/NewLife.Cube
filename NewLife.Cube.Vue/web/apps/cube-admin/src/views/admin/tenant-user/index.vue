@@ -287,13 +287,10 @@ const getTenantUserDetail = async (id: number) => {
   try {
     loading.detail = true
 
-    const data = (await request.get('/Admin/TenantUser/Detail', {
-      params: { id }
-    })) as unknown as Partial<TenantUser> | null;
+    // 详情端点：GET {type}/{id}（主键在路径中）。request 已解包为业务体，实体在 data 上
+    const res = await request.get<TenantUser>(`/Admin/TenantUser/${id}`);
 
-    if (data) {
-      detailData.value = data || {}
-    }
+    detailData.value = res?.data ?? {}
   } catch {
     // 错误提示已经在 request 拦截器中自动处理
   } finally {

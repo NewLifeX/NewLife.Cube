@@ -313,9 +313,14 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
     add: (type: string, data: Record<string, unknown>) =>
       request<unknown>({ url: type, method: 'post', data }),
 
-    /** 编辑：PUT {type}/{id}。主键取自 data 的 id/Id，也可由 id 显式指定；body 只需携带变更字段 */
+    /** 编辑：PUT {type}/{id}。主键取自 data 的 id/Id/ID，也可由 id 显式指定；body 只需携带变更字段 */
     update: async (type: string, data: Record<string, unknown>, id?: number | string) => {
-      const key = id ?? (data.id as number | string | undefined) ?? (data.Id as number | string | undefined);
+      // 字段元数据来自后端 C# 属性名，主键可能是 id/Id/ID（如 XCode 的 ID），统一大小写不敏感匹配
+      const key =
+        id ??
+        (data.id as number | string | undefined) ??
+        (data.Id as number | string | undefined) ??
+        (data.ID as number | string | undefined);
       if (key === undefined || key === null || key === '') throw new Error(`缺少主键，无法更新 ${type}`);
       return request<unknown>({ url: `${type}/${encodeURIComponent(key)}`, method: 'put', data });
     },
