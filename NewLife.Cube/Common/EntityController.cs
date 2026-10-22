@@ -16,7 +16,7 @@ namespace NewLife.Cube;
 public partial class EntityController<TEntity, TModel>
 {
     #region 默认Action
-    /// <summary>删除数据</summary>
+    /// <summary>删除数据。支持两种风格：传统查询参数 /api/{area}/{controller}?id=，以及 RESTful 路径 /api/{area}/{controller}/{id}</summary>
     /// <param name="id"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Delete)]
@@ -35,6 +35,19 @@ public partial class EntityController<TEntity, TModel>
         {
             return BuildFailResponse(ex, act, entity);
         }
+    }
+
+    /// <summary>删除数据（RESTful 风格）。主键在路径中，转发到 Delete 以保留子类重载</summary>
+    /// <param name="id">主键</param>
+    /// <returns></returns>
+    [EntityAuthorize(PermissionFlags.Delete)]
+    [DisplayName("Delete {type}")]
+    [HttpDelete("/api/[area]/[controller]/{id}")]
+    public virtual ApiResponse<TEntity> DeleteById(String id)
+    {
+        if (id.IsNullOrEmpty()) throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("Missing primary key."));
+
+        return Delete(id);
     }
 
     /// <summary>批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2</summary>
