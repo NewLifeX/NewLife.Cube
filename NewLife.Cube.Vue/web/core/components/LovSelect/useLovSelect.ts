@@ -258,6 +258,11 @@ export function useLovSelect(opts: UseLovSelectOptions): UseLovSelectReturn {
     if (resolvedType.value !== 'LIST' || opts.modelValue.value == null) return;
     const code = opts.code.value;
     const val = opts.modelValue.value;
+    // 空串/空数组同属「未选中」，不解析 label（否则会把空值当成待翻译的原始值）
+    if (val === '' || (Array.isArray(val) && val.length === 0)) {
+      displayText.value = '';
+      return;
+    }
 
     if (Array.isArray(val)) {
       // 多选：异步解析各值 label，同步先用当前缓存
@@ -288,9 +293,11 @@ export function useLovSelect(opts: UseLovSelectOptions): UseLovSelectReturn {
     const val = opts.modelValue.value;
     const m = outputMode();
     if (Array.isArray(val)) {
-      selectedValues.value = val.map((v) => applyMode(v, m));
+      selectedValues.value = val.filter((v) => v != null && v !== '').map((v) => applyMode(v, m));
     } else {
-      selectedValue.value = val == null ? undefined : applyMode(val, m);
+      // 空串/空值代表「未选中」，不能交给 applyMode 归一：ENUM 下 Number('') === 0，
+      // 会把值为 0 的选项（如状态「草稿」）误显示成已选中——外部清空筛选条件后下拉框仍显示旧值。
+      selectedValue.value = val == null || val === '' ? undefined : applyMode(val, m);
     }
     updateDisplayText();
   }

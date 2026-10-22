@@ -179,6 +179,18 @@ describe('useLovSelect（逻辑/事件层）', () => {
     expect(api.selectedValue.value).toBe(1);
   });
 
+  it('modelValue 清空：空串视为未选中，不能被归一成 0（否则值为 0 的选项如「草稿」仍显示已选）', async () => {
+    const { api, modelValue } = setup();
+    await api.loadMeta();
+    modelValue.value = '1';
+    await flushPromises();
+    expect(api.selectedValue.value).toBe(1);
+
+    modelValue.value = '';
+    await flushPromises();
+    expect(api.selectedValue.value).toBeUndefined();
+  });
+
   it('onEnumChange 返回正确 emit 值', () => {
     const { api } = setup();
     expect(api.onEnumChange('0')).toBe('0');
