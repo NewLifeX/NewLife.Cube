@@ -1,517 +1,123 @@
-﻿# 附录B API参考
+# 附录B API参考
 
-> 本附录提供魔方 WebAPI 版的标准接口说明和错误码对照。
-
----
-
-## B.1 标准接口清单
-
-### 用户认证接口
-
-> **注意**：新版认证接口统一走 `/Auth/*`（AuthController）与 `/Sso/*`（SsoController），旧 `/Admin/User/*` 认证路径仅 MVC 版兼容。
-
-| 接口 | 方法 | 路径 | 说明 |
-|------|------|------|------|
-| 登录 | POST | `/Auth/Login` | 用户名密码/验证码登录（`category` 区分） |
-| 登出 | GET/POST | `/Auth/Logout` | 退出登录 |
-| 获取当前用户 | GET | `/Auth/Info` | 获取当前登录用户信息 |
-| 刷新令牌 | POST | `/Auth/Refresh` | 刷新访问令牌 |
-| 注册 | POST | `/Auth/Register` | 新用户注册（多租户需带 X-App-Id/X-Tenant） |
-| 微信登录（小程序） | POST | `/Sso/WxMiniLogin` | `{ code, appId? }` |
-| 微信登录（App） | POST | `/Sso/WxAppLogin` | 同上 |
-
-### 登录接口详情
-
-**POST** `/Auth/Login`
-
-请求：
-```json
-{
-  "username": "admin",
-  "password": "admin"
-}
-```
-
-响应：
-```json
-{
-  "code": 0,
-  "message": "登录成功",
-  "data": {
-    "token": "eyJhbGciOiJIUzI1NiIs...",
-    "refreshToken": "abc123...",
-    "expire": 7200,
-    "user": {
-      "id": 1,
-      "name": "admin",
-      "displayName": "管理员",
-      "avatar": "/Avatars/1.png",
-      "roleName": "管理员"
-    }
-  }
-}
-```
-
-### 菜单接口
-
-| 接口 | 方法 | 路径 | 说明 |
-|------|------|------|------|
-| 获取菜单树 | GET | `/Admin/Menu/GetMenuTree` | 获取用户有权限的菜单 |
-| 获取菜单列表 | GET | `/Admin/Menu` | 菜单管理列表 |
-
-**GET** `/Admin/Menu/GetMenuTree`
-
-响应：
-```json
-{
-  "code": 0,
-  "data": [
-    {
-      "id": 1,
-      "name": "系统管理",
-      "displayName": "系统管理",
-      "url": "/Admin",
-      "icon": "fa fa-cogs",
-      "sort": 100,
-      "children": [
-        {
-          "id": 2,
-          "name": "用户管理",
-          "displayName": "用户管理",
-          "url": "/Admin/User",
-          "icon": "fa fa-users",
-          "sort": 1
-        }
-      ]
-    }
-  ]
-}
-```
-
-### 实体 CRUD 接口
-
-以学生管理为例：
-
-| 接口 | 方法 | 路径 | 说明 |
-|------|------|------|------|
-| 列表查询 | GET | `/School/Student` | 分页查询学生列表 |
-| 获取详情 | GET | `/School/Student/{id}` | 获取学生详情 |
-| 新增 | POST | `/School/Student` | 添加学生 |
-| 修改 | PUT | `/School/Student` | 更新学生 |
-| 删除 | DELETE | `/School/Student/{id}` | 删除学生 |
-| 批量删除 | DELETE | `/School/Student` | 批量删除学生 |
-
-### 列表查询详情
-
-**GET** `/School/Student?pageIndex=1&pageSize=20&classId=1&name=张`
-
-响应：
-```json
-{
-  "code": 0,
-  "data": [
-    {
-      "id": 1,
-      "name": "张三",
-      "classId": 1,
-      "className": "一年级一班",
-      "score": 95.5,
-      "status": 1,
-      "createTime": "2024-01-15 10:30:00"
-    }
-  ],
-  "page": {
-    "pageIndex": 1,
-    "pageSize": 20,
-    "totalCount": 100
-  },
-  "stat": {
-    "总人数": 100,
-    "平均分": 85.5
-  }
-}
-```
-
-### 获取页面元数据
-
-**GET** `/School/Student/meta`
-
-响应 `data` 中的 `list` 字段（同级的 `setting`、`allList`、`addForm`、`editForm`、`detail`、`search` 见《WebAPI接口规范》36.10）：
-```json
-{
-  "code": 0,
-  "data": [
-    {
-      "name": "Id",
-      "displayName": "编号",
-      "type": "Int32",
-      "nullable": false,
-      "primaryKey": true
-    },
-    {
-      "name": "Name",
-      "displayName": "姓名",
-      "type": "String",
-      "length": 50,
-      "nullable": false
-    },
-    {
-      "name": "ClassId",
-      "displayName": "班级",
-      "type": "Int32",
-      "mapField": "ClassName",
-      "mapUrl": "/School/Class?id={ClassId}"
-    }
-  ]
-}
-```
-
-### 数据导出
-
-| 接口 | 方法 | 路径 | 说明 |
-|------|------|------|------|
-| 导出 Excel | GET | `/School/Student/ExportExcel` | 导出为 Excel |
-| 导出 CSV | GET | `/School/Student/ExportCsv` | 导出为 CSV |
-| 导出 JSON | GET | `/School/Student/ExportJson` | 导出为 JSON |
+> 本附录只补充第 36 章未展开的内容：服务接口清单、权限枚举、常用 Header、文件管理与批量导出入口。
+> 路由、响应信封、错误码、分页排序、搜索过滤、写操作语义、认证与异常边界统一见 [第36章 WebAPI接口规范](Api/WebAPI接口规范.md)；字段级契约见 `/swagger`。
 
 ---
 
-## B.2 统一响应格式
+## B.1 服务接口清单
 
-### 成功响应
+服务控制器（`Auth`、`Sso`、`Cube` 的服务动作）由 `[Route("[controller]/[action]")]` 暴露，**不带 `/api` 前缀**。
 
-```json
-{
-  "code": 0,
-  "message": "success",
-  "data": { ... }
-}
-```
+### 认证与账号
 
-### 分页响应
+| 接口 | 方法 | 说明 |
+|------|------|------|
+| `/Auth/Login` | POST | 用户名密码 / 验证码登录（`category` 为空表示密码登录） |
+| `/Auth/Refresh` | POST | 刷新访问令牌 |
+| `/Auth/Info` | GET | 当前登录用户信息 |
+| `/Auth/Logout` | POST | 登出 |
+| `/Auth/Register` | POST | 注册（多租户需带 `X-App-Id` 或 `X-Tenant`） |
+| `/Auth/SendCode` | POST | 发送手机/邮箱验证码 |
+| `/Auth/ResetPassword` | POST | 验证码重置密码 |
+| `/Auth/Challenge` | GET | Challenge-Response 公钥与 `challengeId` |
+| `/Sso/WxMiniLogin` | POST | 微信小程序登录（`{ code, appId? }`） |
+| `/Sso/WxAppLogin` | POST | 微信 App 登录 |
 
-```json
-{
-  "code": 0,
-  "message": "success",
-  "data": [ ... ],
-  "page": {
-    "pageIndex": 1,
-    "pageSize": 20,
-    "totalCount": 100
-  },
-  "stat": {
-    "统计项1": "值1",
-    "统计项2": "值2"
-  }
-}
-```
+### 站点与公共数据
 
-### 错误响应
+| 接口 | 方法 | 说明 |
+|------|------|------|
+| `/Cube/MenuTree` | GET | 当前用户可访问菜单树（`?module=` 过滤） |
+| `/Cube/Lookup?codes=enable,sex` | GET | 枚举字典 |
+| `/Cube/UserSearch` | GET | 用户选择器（`roleId` / `departmentId` / `key`） |
+| `/Cube/GetPageConfig?kind=&page=` | GET | 低代码页面配置 |
+| `/Cube/Info` | GET | 服务器信息（匿名，生产环境建议关闭） |
+| `/Cube/Apis` | GET | 端点清单（匿名，生产环境建议关闭） |
 
-```json
-{
-  "code": 500,
-  "message": "错误描述"
-}
-```
+### 实体接口
+
+CRUD、元数据（`meta`）、图表（`charts`）、导入导出（`import` / `export`）与附件（`attachments`）统一见 [第36章 36.2](Api/WebAPI接口规范.md)。
 
 ---
 
-## B.3 错误码对照表
+## B.2 权限标志说明
 
-### 系统错误码
-
-| 错误码 | 名称 | 说明 |
-|--------|------|------|
-| 0 | Ok | 成功 |
-| 1 | Unknown | 未知错误 |
-| 2 | Error | 一般错误 |
-| 400 | BadRequest | 请求参数错误 |
-| 401 | Unauthorized | 未授权/未登录 |
-| 403 | Forbidden | 禁止访问/无权限 |
-| 404 | NotFound | 资源不存在 |
-| 500 | InternalError | 服务器内部错误 |
-
-### 业务错误码
-
-| 错误码 | 名称 | 说明 |
-|--------|------|------|
-| 1001 | InvalidUser | 用户名或密码错误 |
-| 1002 | UserDisabled | 用户已禁用 |
-| 1003 | UserLocked | 用户已锁定 |
-| 1004 | TokenExpired | Token 已过期 |
-| 1005 | TokenInvalid | Token 无效 |
-| 1006 | PasswordWeak | 密码强度不足 |
-| 1007 | PasswordExpired | 密码已过期 |
-| 2001 | DataNotFound | 数据不存在 |
-| 2002 | DataExists | 数据已存在 |
-| 2003 | DataInvalid | 数据验证失败 |
-| 2004 | ForeignKeyError | 外键约束错误 |
-| 3001 | FileNotFound | 文件不存在 |
-| 3002 | FileTooBig | 文件太大 |
-| 3003 | FileTypeNotAllowed | 文件类型不允许 |
-
----
-
-## B.4 权限标志说明
-
-### PermissionFlags 枚举
+`PermissionFlags`（`XCode.Membership`，`UInt32`）：
 
 | 值 | 名称 | 说明 |
 |----|------|------|
-| 0 | None | 无权限 |
-| 1 | Detail | 查看详情 |
+| 0 | None | 无权限；`[EntityAuthorize]` 不带权限位时表示只需登录 |
+| 1 | Detail | 查看 |
 | 2 | Insert | 添加 |
 | 4 | Update | 修改 |
 | 8 | Delete | 删除 |
-| 16 | Custom1 | 自定义权限1 |
-| 32 | Custom2 | 自定义权限2 |
-| 64 | Custom3 | 自定义权限3 |
-| 128 | Custom4 | 自定义权限4 |
-| 255 | All | 所有权限 |
+| 4294967295 | All | 所有权限 |
 
-### 权限计算示例
-
-```
+```text
 查看 + 添加 + 修改 = 1 + 2 + 4 = 7
 查看 + 添加 + 修改 + 删除 = 1 + 2 + 4 + 8 = 15
-所有权限 = 255
 ```
+
+> 动作与权限的对应关系见 [第36章 36.2](Api/WebAPI接口规范.md)；多个权限位之间是"或"的关系（如附件上传 `Insert` 或 `Update`）。
 
 ---
 
-## B.5 分页参数说明
+## B.3 常用 Header
 
-### 请求参数
-
-| 参数名 | 类型 | 必填 | 默认值 | 说明 |
-|--------|------|------|--------|------|
-| pageIndex | Int32 | 否 | 1 | 页码，从 1 开始 |
-| pageSize | Int32 | 否 | 20 | 每页数量 |
-| sort | String | 否 | "" | 排序字段 |
-| desc | Boolean | 否 | false | 是否降序 |
-
-### 响应分页信息
-
-```json
-{
-  "page": {
-    "pageIndex": 1,
-    "pageSize": 20,
-    "totalCount": 100,
-    "pageCount": 5
-  }
-}
-```
-
----
-
-## B.6 Token 传递方式
-
-### Header 方式（推荐）
-
-```http
-Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
-```
-
-或
-
-```http
-X-Token: eyJhbGciOiJIUzI1NiIs...
-```
-
-### Cookie 方式
-
-```http
-Cookie: token=eyJhbGciOiJIUzI1NiIs...
-```
-
-### Query 方式（不推荐）
-
-```
-/api/data?token=eyJhbGciOiJIUzI1NiIs...
-```
-
----
-
-## B.7 常用 Header
-
-### 请求 Header
+### 请求
 
 | Header | 说明 |
 |--------|------|
-| Authorization | Bearer Token 认证 |
-| X-Token | Token（兼容） |
-| Content-Type | 请求内容类型 |
-| X-Request-Id | 请求追踪 ID |
-| X-Tenant | 租户编码（Code），多租户开启时用于定位/校验租户（旧的 `X-Tenant-Id` 数字ID头已移除） |
-| X-App-Id | OAuth 应用 AppId，注册时定位所属租户、微信登录 appId 兜底 |
+| `Authorization` | `Bearer {token}`，令牌来源见 [36.9](Api/WebAPI接口规范.md) |
+| `X-Token` | `{token}`（兼容） |
+| `Content-Type` | `application/json` 或 `multipart/form-data` |
+| `X-Tenant` | 租户编码，多租户开启时用于定位/校验租户（旧的 `X-Tenant-Id` 数字 ID 头已移除） |
+| `X-App-Id` | OAuth 应用 AppId，注册时定位所属租户、微信登录 appId 兜底 |
 
-### 响应 Header
+### 响应
 
 | Header | 说明 |
 |--------|------|
-| X-Run-Time | 运行时间（毫秒） |
-| X-Request-Id | 请求追踪 ID |
-| X-Server | 服务器标识 |
-| X-Tenant | 微信登录成功后返回租户编码，供客户端后续请求携带 |
+| `X-Tenant` | 微信登录成功后返回租户编码，供客户端后续请求携带 |
 
 ---
 
-## B.8 文件上传接口
+## B.4 文件管理接口
 
-### 单文件上传
+`FileController`（区域 Admin）提供服务器文件管理，路由带 `/api`：
 
-**POST** `/Admin/File/Upload`
+| 接口 | 方法 | 路径 | 说明 |
+|------|------|------|------|
+| 列表 | GET | `/api/Admin/File?r=` | 浏览目录 |
+| 上传 | POST | `/api/Admin/File/Upload` | multipart：`r`（目录）、`file` |
+| 删除 | POST | `/api/Admin/File/Delete` | `r`（路径） |
+| 压缩 / 解压 | POST | `/api/Admin/File/Compress`、`/Decompress` | 目录打包与还原 |
+| 复制 / 粘贴 / 移动 | POST | `/api/Admin/File/Copy`、`/Paste`、`/Move` | |
+| 下载 | POST | `/api/Admin/File/Download` | 打包下载 |
 
-请求（multipart/form-data）：
-```
-file: [二进制文件]
-category: "avatar"
-```
-
-响应：
-```json
-{
-  "code": 0,
-  "data": {
-    "id": 1,
-    "fileName": "avatar.png",
-    "url": "/Uploads/avatar_20240115.png",
-    "size": 10240,
-    "contentType": "image/png"
-  }
-}
-```
-
-### 多文件上传
-
-**POST** `/Admin/File/UploadMultiple`
-
-请求（multipart/form-data）：
-```
-files: [二进制文件1]
-files: [二进制文件2]
-```
-
-响应：
-```json
-{
-  "code": 0,
-  "data": [
-    {
-      "id": 1,
-      "fileName": "file1.png",
-      "url": "/Uploads/file1.png"
-    },
-    {
-      "id": 2,
-      "fileName": "file2.png",
-      "url": "/Uploads/file2.png"
-    }
-  ]
-}
-```
+> 实体附件上传用 `POST /api/{area}/{controller}/attachments`（multipart：`file` / `id` / `title`，需 Insert 或 Update），与文件管理器不同，见 [第36章 36.2](Api/WebAPI接口规范.md)。
 
 ---
 
-## B.9 批量操作接口
+## B.5 批量与导入导出
 
-### 批量删除
+- **批量删除**：`DELETE /api/{area}/{controller}?ids=1,2,3`（单次最多 100 个，超出由前端分片）；`?<搜索条件>` 为条件删除，必须至少一个业务条件，否则返回 `-2`。
+- **导入**：`POST /api/{area}/{controller}/import`（multipart），需 Insert 权限。
+- **导出**：`GET /api/{area}/{controller}/export?format=excel`（excel/xlsx/csv/json/xml/zip），需 Detail 权限，返回文件流而非信封。
+- **批量启用/禁用**：框架未内置，属各项目自定义 Action（MVC 版 `SetEnable` 可参考）。
 
-**DELETE** `/School/Student`
-
-请求：
-```json
-{
-  "ids": [1, 2, 3]
-}
-```
-
-响应：
-```json
-{
-  "code": 0,
-  "message": "成功删除 3 条数据"
-}
-```
-
-### 批量启用/禁用
-
-**POST** `/School/Student/SetEnable`
-
-请求：
-```json
-{
-  "ids": [1, 2, 3],
-  "enable": true
-}
-```
-
-响应：
-```json
-{
-  "code": 0,
-  "message": "成功更新 3 条数据"
-}
-```
-
----
-
-## B.10 搜索接口规范
-
-### 基本搜索
-
-```
-GET /School/Student?name=张&classId=1&status=1
-```
-
-### 范围搜索
-
-```
-# 日期范围
-GET /School/Student?dtStart=2024-01-01&dtEnd=2024-12-31
-
-# 数值范围
-GET /School/Student?scoreMin=60&scoreMax=100
-```
-
-### 模糊搜索
-
-```
-# 包含
-GET /School/Student?name=*张*
-
-# 开头
-GET /School/Student?name=张*
-
-# 结尾
-GET /School/Student?name=*三
-```
-
-### 多值搜索
-
-```
-# 多个值（OR）
-GET /School/Student?classId=1,2,3
-```
+> 完整语义见 [第36章 36.2 / 36.7](Api/WebAPI接口规范.md)。
 
 ---
 
 ## 本附录小结
 
-本附录提供了 WebAPI 版的完整接口参考：
-
-1. 标准接口清单（认证、菜单、CRUD）
-2. 统一响应格式
-3. 错误码对照表
-4. 权限标志说明
-5. 分页参数规范
-6. Token 传递方式
-7. 文件上传接口
-8. 批量操作接口
-9. 搜索接口规范
+1. 服务接口清单（认证、站点与公共数据）
+2. 权限标志枚举与计算
+3. 常用请求 / 响应 Header
+4. 文件管理接口
+5. 批量与导入导出入口
 
 ---
 

@@ -401,14 +401,14 @@ dotnet run
 
 ### 令牌传递方式
 
-`LoadToken()` 只接受三段式 JWT，来源依次为：
+令牌来源依次为 `Authorization`、`X-Token`、`?token=`、`?jwtToken=` 与 Cookie `token-{系统名}`，401/403 报文格式统一见 [WebAPI接口规范](WebAPI接口规范.md) 36.9。最常用的是请求头：
 
 ```http
 Authorization: Bearer {token}
 X-Token: {token}
 ```
 
-另外还支持 query `?token={token}`、`?jwtToken={token}`，以及 Cookie `token-{系统名}`（需开启 `TokenCookie`）。
+只接受三段式 JWT；`X-Token`、query 令牌与 Cookie 仅作兼容，新代码统一用 `Authorization` 头。
 
 ### 需要认证的接口
 
