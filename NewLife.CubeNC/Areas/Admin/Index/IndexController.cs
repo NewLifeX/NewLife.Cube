@@ -465,10 +465,10 @@ public class IndexController : ControllerBaseX, IPageDataContext
         var user = _provider.Current as IUser;
 
         var fact = ManageProvider.Menu;
-        var menus = fact.Root.Childs;
+        var menus = MenuHelper.FilterAvailable(fact.Root.Childs);
         if (user?.Role != null)
         {
-            menus = fact.GetMySubMenus(fact.Root.ID, user, true);
+            menus = MenuHelper.FilterAvailable(fact.GetMySubMenus(fact.Root.ID, user, true));
         }
 
         // 根据模块过滤菜单
@@ -497,7 +497,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
             {
                 foreach (var item in menus)
                 {
-                    ms = fact.GetMySubMenus(item.ID, user, true);
+                    ms = MenuHelper.FilterAvailable(fact.GetMySubMenus(item.ID, user, true));
                     if (ms.Count > 0) break;
                 }
             }
@@ -505,10 +505,13 @@ public class IndexController : ControllerBaseX, IPageDataContext
             menus = ms;
         }
 
+        // 跨宿主共享菜单数据时，过滤本站点未部署控制器的菜单
+        menus = MenuHelper.FilterAvailable(menus);
+
         // 如果顶级只有一层，并且至少有三级目录，则提升一级
         if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) { menus = menus[0].Childs; }
 
-        var menuTree = MenuTree.GetMenuTree(m => fact.GetMySubMenus(m.ID, user, true), list =>
+        var menuTree = MenuTree.GetMenuTree(m => MenuHelper.FilterAvailable(fact.GetMySubMenus(m.ID, user, true)), list =>
         {
             // GetMySubMenus 在极端情况下可能返回 null，LINQ from 会 NRE；统一按空集合处理
             if (list == null) return null;

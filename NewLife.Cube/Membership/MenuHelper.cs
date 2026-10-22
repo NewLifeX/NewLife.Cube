@@ -10,7 +10,7 @@ namespace NewLife.Cube.Membership;
 /// <summary>
 /// 菜单助手
 /// </summary>
-public static class MenuHelper
+public static partial class MenuHelper
 {
     /// <summary>获取菜单显示名。自动生成的菜单按当前请求语言翻译，用户自定义名称缺词条时原样返回</summary>
     /// <param name="menu">菜单</param>

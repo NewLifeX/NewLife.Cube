@@ -13,7 +13,7 @@ namespace NewLife.Cube.Membership;
 /// <summary>
 /// 菜单助手
 /// </summary>
-public static class MenuHelper
+public static partial class MenuHelper
 {
     /// <summary>获取菜单显示名。自动生成的菜单按当前请求语言翻译，用户自定义名称缺词条时原样返回</summary>
     /// <param name="menu">菜单</param>
@@ -461,21 +461,6 @@ public static class MenuHelper
 
         return displayName.All(e => e < 0x80);
     }
-    /// <summary>按 FullName 解析菜单对应控制器类型（含跨程序集回退）</summary>
-    static Type ResolveMenuType(String fullName)
-    {        if (fullName.IsNullOrEmpty()) return null;
-
-        var type = Type.GetType(fullName);
-        if (type != null) return type;
-
-        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-        {
-            type = assembly.GetType(fullName);
-            if (type != null) return type;
-        }
-        return null;
-    }
-
     /// <summary>从控制器类型的继承链中提取 ReadOnlyEntityController&lt;TEntity&gt; 的泛型实参</summary>
     /// <param name="controllerType">控制器类型</param>
     /// <returns>实体类型，非实体控制器返回 null</returns>

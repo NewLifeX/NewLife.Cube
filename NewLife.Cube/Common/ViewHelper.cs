@@ -840,7 +840,7 @@ public static class ViewHelper
         user ??= User.FindAll().FirstOrDefault();
 
         var fact = ManageProvider.Menu;
-        var menus = fact.Root.Childs;
+        var menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.Root.Childs);
 
         // 如果顶级只有一层，并且至少有三级目录，则提升一级
         if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) { menus = menus[0].Childs; }
@@ -850,8 +850,8 @@ public static class ViewHelper
             // 左侧菜单展示所有可见菜单，不按角色权限过滤
             // 权限控制在 Controller/Action 层通过 EntityAuthorizeAttribute 实现
             var parent = fact.FindByID(pMenuTree.ID);
-            var subMenus = parent?.Childs?.Where(m => m.Visible).ToList() as IList<IMenu> ?? [];
-            return subMenus;
+            var subMenus = parent?.Childs?.Where(m => m.Visible).ToList() as IList<IMenu>;
+            return NewLife.Cube.Membership.MenuHelper.FilterAvailable(subMenus);
         }, list =>
         {
 

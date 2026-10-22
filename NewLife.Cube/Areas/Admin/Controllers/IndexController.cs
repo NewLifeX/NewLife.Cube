@@ -541,7 +541,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     private IList<MenuTree> GetMenu(String module)
     {
         var fact = ManageProvider.Menu;
-        var menus = fact.Root.Childs;
+        var menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.Root.Childs);
 
         // 根据模块过滤菜单
         if (module.EqualIgnoreCase("base"))
@@ -563,6 +563,9 @@ public class IndexController : ControllerBaseX, IPageDataContext
         }
         // module 为空时不做过滤，直接返回全部根级菜单
 
+        // 跨宿主共享菜单数据时，过滤本站点未部署控制器的菜单
+        menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(menus);
+
         // 如果顶级只有一层，并且至少有三级目录，则提升一级
         if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) { menus = menus[0].Childs; }
 
@@ -571,8 +574,8 @@ public class IndexController : ControllerBaseX, IPageDataContext
             // 左侧菜单展示所有可见菜单，不按角色权限过滤
             // 权限控制在 Controller/Action 层通过 EntityAuthorizeAttribute 实现
             var parent = fact.FindByID(pMenuTree.ID);
-            var subMenus = parent?.Childs?.Where(m => m.Visible).ToList() as IList<IMenu> ?? [];
-            return subMenus;
+            var subMenus = parent?.Childs?.Where(m => m.Visible).ToList() as IList<IMenu>;
+            return NewLife.Cube.Membership.MenuHelper.FilterAvailable(subMenus);
         }, list =>
         {
             if (list == null || list.Count == 0) return null;

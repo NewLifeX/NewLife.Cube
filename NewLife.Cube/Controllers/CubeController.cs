@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Areas.Cube.Controllers;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Membership;
 using NewLife.Cube.Models;
 using NewLife.Cube.Services;
 using NewLife.Cube.Web;
@@ -671,9 +672,11 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         var permissionedIds = Role.FindAll().SelectMany(r => r.Resources).ToArray();
 
         Boolean IsAccessible(IMenu m) => (allowedIds.Contains(m.ID) || !permissionedIds.Contains(m.ID))
-            && (allowTenant || !NewLife.Cube.Membership.MenuHelper.IsTenantMenu(m));
+            && (allowTenant || !NewLife.Cube.Membership.MenuHelper.IsTenantMenu(m))
+            // 跨宿主共享菜单数据时，隐藏本站点未部署控制器的菜单（如 MVC 版读到的“值集管理”）
+            && m.IsMenuAvailable();
 
-        menus = menus.Where(IsAccessible).ToList();
+        menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(menus.Where(IsAccessible).ToList());
 
         var menuTree = ViewModels.MenuTree.GetMenuTree(pMenuTree =>
         {

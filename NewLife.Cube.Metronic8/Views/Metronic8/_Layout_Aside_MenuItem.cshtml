@@ -29,10 +29,10 @@
     {
         var user = ViewBag.User as IUser ?? ManageProvider.User;
         var fact = ManageProvider.Menu;
-        var menus = fact.Root.Childs;
+        var menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.Root.Childs);
         if (user?.Role != null)
         {
-            menus = fact.GetMySubMenus(item.ID, user, true);
+            menus = NewLife.Cube.Membership.MenuHelper.FilterAvailable(fact.GetMySubMenus(item.ID, user, true));
         }
 
         <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(item.ID == menu.ParentID || rs ? "show" : "")">
