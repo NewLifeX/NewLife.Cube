@@ -102,7 +102,7 @@ public partial class EntityController<TEntity, TModel>
         var act = L.T("Delete");
         try
         {
-            var p = new Pager(WebHelper.Params);
+            var p = new Pager(WebHelper.Params) { PageSize = 0 };// 删除全部匹配行，不受分页限制
             // 排除分页系统参数后若无业务搜索条件，拒绝删除
             var sys = new[] { "pageIndex", "pageSize", "sort", "desc" };
             if (!p.Params.Keys.Any(e => !e.EqualIgnoreCase(sys)))
