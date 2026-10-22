@@ -398,6 +398,13 @@ public static class CubeService
             endpoints.MapControllerRoute(
                 "CubeAreas",
                 "api/{area}/{controller=Index}/{action=Index}/{id?}");
+
+            // 未匹配的 /api 请求返回 404，避免被 SPA 回退（MapFallbackToFile）当成前端路由返回 index.html
+            endpoints.MapFallback("/api/{**path}", context =>
+            {
+                context.Response.StatusCode = 404;
+                return Task.CompletedTask;
+            });
         });
 
         //ManageProvider2.EndpointRoute = (IEndpointRouteBuilder)app.Properties["__EndpointRouteBuilder"];
