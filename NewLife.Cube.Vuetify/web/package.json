@@ -10,7 +10,7 @@
     "test:unit": "vitest run --config vitest.config.ts"
   },
   "dependencies": {
-    "vue": "^3.5.0",
+    "vue": "^3.5.33",
     "vue-router": "^4.5.0",
     "pinia": "^3.0.0",
     "vuetify": "^3.8.0",
