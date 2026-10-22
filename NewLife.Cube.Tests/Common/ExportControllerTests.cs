@@ -183,12 +183,12 @@ public class ExportControllerTests
         AssertXlsx(ms.ToArray(), "编号", "名称", "金额", "创建时间");
     }
 
-    [Fact(DisplayName = "ExportFile_Excel_返回xlsx内容类型与xlsx文件名")]
-    public void ExportFile_Excel_ReturnsXlsx()
+    [Fact(DisplayName = "Export_Excel_返回xlsx内容类型与xlsx文件名")]
+    public void Export_Excel_ReturnsXlsx()
     {
         var ctrl = CreateController();
 
-        var result = ctrl.ExportFile("Excel");
+        var result = ctrl.Export("Excel");
 
         var fr = Assert.IsType<FileStreamResult>(result);
         Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fr.ContentType);
@@ -199,12 +199,12 @@ public class ExportControllerTests
         AssertXlsx(ms.ToArray(), "编号", "名称");
     }
 
-    [Fact(DisplayName = "ExportFile_Xml_返回真实Xml而非Json")]
-    public void ExportFile_Xml_ReturnsRealXml()
+    [Fact(DisplayName = "Export_Xml_返回真实Xml而非Json")]
+    public void Export_Xml_ReturnsRealXml()
     {
         var ctrl = CreateController();
 
-        var result = ctrl.ExportFile("Xml");
+        var result = ctrl.Export("Xml");
 
         var fr = Assert.IsType<FileContentResult>(result);
         Assert.Equal("application/xml", fr.ContentType);
@@ -218,20 +218,20 @@ public class ExportControllerTests
         Assert.Contains("<Id>", text);
     }
 
-    [Fact(DisplayName = "ExportFile_未知格式_抛出ArgumentOutOfRangeException")]
-    public void ExportFile_UnknownFormat_Throws()
+    [Fact(DisplayName = "Export_未知格式_抛出ArgumentOutOfRangeException")]
+    public void Export_UnknownFormat_Throws()
     {
         var ctrl = CreateController();
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => ctrl.ExportFile("BadFormat"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => ctrl.Export("BadFormat"));
     }
 
-    [Fact(DisplayName = "ExportFile_Csv_英文表头且枚举导出数字")]
-    public void ExportFile_Csv_EnglishHeadersAndEnumNumber()
+    [Fact(DisplayName = "Export_Csv_英文表头且枚举导出数字")]
+    public void Export_Csv_EnglishHeadersAndEnumNumber()
     {
         var ctrl = CreateController();
 
-        var result = ctrl.ExportFile("Csv");
+        var result = ctrl.Export("Csv");
 
         var fr = Assert.IsType<FileStreamResult>(result);
         Assert.Equal("text/csv", fr.ContentType);
@@ -249,12 +249,12 @@ public class ExportControllerTests
         Assert.EndsWith(",1", lines[2].TrimEnd('\r'));
     }
 
-    [Fact(DisplayName = "ExportFile_Zip_返回zip且含db与xml条目")]
-    public void ExportFile_Zip_ReturnsZip()
+    [Fact(DisplayName = "Export_Zip_返回zip且含db与xml条目")]
+    public void Export_Zip_ReturnsZip()
     {
         var ctrl = CreateController();
 
-        var result = ctrl.ExportFile("Zip");
+        var result = ctrl.Export("Zip");
 
         var fr = Assert.IsType<FileStreamResult>(result);
         Assert.Equal("application/zip", fr.ContentType);

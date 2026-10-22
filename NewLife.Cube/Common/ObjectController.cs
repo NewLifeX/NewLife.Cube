@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
+using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Web;
 using XCode.Membership;
@@ -63,22 +64,46 @@ public abstract class ObjectController<TObject> : ControllerBaseX
         return obj;
     }
 
-    /// <summary>
-    /// 获取字段
-    /// </summary>
-    /// <param name="kind"></param>
+    /// <summary>获取单对象页面的元数据，包含页面设置与编辑表单字段</summary>
+    /// <remarks>单对象页（配置页、设置页）只有编辑表单，因此只返回 setting 与 editForm；需要匿名访问时在子类重写并标注 <see cref="AllowAnonymousAttribute"/></remarks>
     /// <returns></returns>
-    [AllowAnonymous]
-    [HttpGet]
-    public virtual IList<DataField> GetFields(ViewKinds kind)
+    [EntityAuthorize]
+    [HttpGet("/api/[area]/[controller]/meta")]
+    public virtual ApiResponse<Object> Meta()
     {
-        var list = GetMembers(Value?.GetType());
-        //var dic = list
-        //.GroupBy(e => e.Category + "")
-        //.ToDictionary(e => e.Key, e => e.ToList());
+        var setting = new
+        {
+            PageSetting.NavView,
+            PageSetting.EnableNavbar,
+            PageSetting.EnableToolbar,
+            PageSetting.EnableAdd,
+            PageSetting.EnableKey,
+            PageSetting.EnableSelect,
+            PageSetting.EnableFooter,
+            PageSetting.IsReadOnly,
+            PageSetting.EnableTableDoubleClick,
+            PageSetting.OrderByKey,
+            PageSetting.DoubleDelete,
+        };
 
-        return list;
+        var data = new
+        {
+            setting,
+            editForm = OnGetFields(ViewKinds.EditForm),
+        };
+
+        return new ApiResponse<Object>
+        {
+            Data = data,
+            TraceId = DefaultSpan.Current?.TraceId,
+        };
     }
+
+    /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>
+    /// <param name="kind">字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search</param>
+    /// <returns></returns>
+    [NonAction]
+    protected virtual IList<DataField> OnGetFields(ViewKinds kind) => GetMembers(Value?.GetType());
 
     private Boolean GetBool(String name)
     {

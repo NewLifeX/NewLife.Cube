@@ -18,14 +18,17 @@ namespace NewLife.Cube;
 public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
 {
     #region 属性
-    /// <summary>授权项</summary>
+    /// <summary>授权项。多授权项时取第一个，用于菜单权限项展示</summary>
     public PermissionFlags Permission { get; }
+
+    /// <summary>授权项集合。多个授权项之间是“或”的关系；全部为 None 时表示只需登录</summary>
+    public PermissionFlags[] Permissions { get; } = [PermissionFlags.None];
     #endregion
 
     #region 构造
     static EntityAuthorizeAttribute() => XTrace.WriteLine("Registering filter: {0}", typeof(EntityAuthorizeAttribute).FullName);
 
-    /// <summary>实例化实体授权特性</summary>
+    /// <summary>实例化实体授权特性。只需登录，不校验具体权限位</summary>
     public EntityAuthorizeAttribute() { }
 
     /// <summary>实例化实体授权特性</summary>
@@ -35,6 +38,17 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         if (permission <= PermissionFlags.None) throw new ArgumentNullException(nameof(permission));
 
         Permission = permission;
+        Permissions = [permission];
+    }
+
+    /// <summary>实例化实体授权特性。多个授权项之间是“或”的关系</summary>
+    /// <param name="permissions"></param>
+    public EntityAuthorizeAttribute(params PermissionFlags[] permissions)
+    {
+        if (permissions == null || permissions.Length == 0) throw new ArgumentNullException(nameof(permissions));
+
+        Permissions = permissions;
+        Permission = permissions[0];
     }
     #endregion
 
@@ -106,10 +120,13 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         user = ManagerProviderHelper.TryLogin(prv, httpContext);
         if (user == null) return false;
 
-        // 判断权限
+        // 未指定权限位时，只需登录即可
+        if (Permissions.All(e => e <= PermissionFlags.None)) return true;
+
+        // 判断权限（多个授权项之间是“或”的关系）
         if (menu != null)
         {
-            if (user is IUser user2) return user2.Has(menu, Permission); 
+            if (user is IUser user2) return user2.Has(menu, Permissions);
 
             var msg = L.T("Unable to verify permission of user [{1}] when accessing resource [{0}].", menu, user);
             LogProvider.Provider.WriteLog(L.T("Access"), L.T("Denied"), false, msg, ip: ctx.GetUserHost());
@@ -271,7 +288,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
                 if (method.GetCustomAttribute<AllowAnonymousAttribute>() != null) continue;
 
                 var att = method.GetCustomAttribute<EntityAuthorizeAttribute>();
-                if (att != null && att.Permission > PermissionFlags.None)
+                if (att != null && att.Permissions.Length == 1 && att.Permission > PermissionFlags.None)
                 {
                     var dn = method.GetDisplayName();
                     var pmName = !dn.IsNullOrEmpty() ? dn : method.Name;

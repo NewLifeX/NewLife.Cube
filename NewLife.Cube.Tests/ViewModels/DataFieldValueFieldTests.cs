@@ -3,7 +3,7 @@ using Xunit;
 
 namespace NewLife.Cube.Tests.ViewModels;
 
-/// <summary>覆盖 <see cref="DataField.ValueField"/> 取值字段元数据：GetPage 序列化输出，驱动前端单元格取值优先。</summary>
+/// <summary>覆盖 <see cref="DataField.ValueField"/> 取值字段元数据：meta 序列化输出，驱动前端单元格取值优先。</summary>
 public class DataFieldValueFieldTests
 {
     [Fact(DisplayName = "ToDictionary：设置 ValueField 时输出 valueField")]

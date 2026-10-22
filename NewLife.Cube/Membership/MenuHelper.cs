@@ -405,7 +405,8 @@ public static class MenuHelper
             else
             {
                 //var attAuth = method.GetCustomAttribute<EntityAuthorizeAttribute>();
-                if (attAuth != null && attAuth.Permission > PermissionFlags.None)
+                // 多授权项（或关系）不单独登记权限子项，避免覆盖它已包含的 Insert/Update 等显示名
+                if (attAuth != null && attAuth.Permissions.Length == 1 && attAuth.Permission > PermissionFlags.None)
                     dic.Add(method, (Int32)attAuth.Permission);
             }
         }

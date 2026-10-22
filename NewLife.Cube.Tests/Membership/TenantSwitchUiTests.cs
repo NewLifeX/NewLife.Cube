@@ -75,7 +75,7 @@ public class TenantSwitchUiTests
 
     #region 字段门控（OnGetFields 隐藏租户字段）
 
-    /// <summary>测试控制器子类，暴露受保护的 OnGetFields（基类已有公开 GetFields，改名避免遮蔽警告）</summary>
+    /// <summary>测试控制器子类，暴露受保护的 OnGetFields（基类 GetFields 路由已移除，避免遮蔽警告）</summary>
     private class TestTenantUserController : ReadOnlyEntityController<TenantUser>
     {
         public FieldCollection GetFieldsForTest(ViewKinds kind) => OnGetFields(kind, null);

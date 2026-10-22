@@ -480,18 +480,18 @@ public partial class EntityController<TEntity, TModel>
     #endregion
 
     #region 导入Excel/Csv/Json/Zip
-    /// <summary>导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile</summary>
+    /// <summary>导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import</summary>
     /// <param name="file">上传的 Excel/Csv/Json/Zip 文件</param>
     /// <returns>统一 Json 响应，message 含导入行数</returns>
     /// <remarks>依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误</remarks>
-    [HttpPost]
+    [HttpPost("/api/[area]/[controller]/import")]
     [EntityAuthorize(PermissionFlags.Insert)]
     [DisplayName("Import Excel/Csv/Json/Zip")]
-    public virtual IActionResult ImportFile(IFormFile file)
+    public virtual IActionResult Import(IFormFile file)
     {
         if (file == null || file.Length <= 0) throw new ArgumentNullException(nameof(file), L.T("No file was uploaded."));
 
-        WriteLog(nameof(ImportFile), true, L.T("Start importing file [{0}], size [{1:n0}] bytes, type [{2}].", file.FileName, file.Length, file.ContentType));
+        WriteLog(nameof(Import), true, L.T("Start importing file [{0}], size [{1:n0}] bytes, type [{2}].", file.FileName, file.Length, file.ContentType));
 
         var factory = Factory;
         var page = GetCachePager();
@@ -507,7 +507,7 @@ public partial class EntityController<TEntity, TModel>
             _ => throw new NotSupportedException(L.T("Unsupported import file type [{0}].", ext)),
         };
         var msg = L.T("Imported [{0}], {1} rows.", name, rs);
-        WriteLog(nameof(ImportFile), true, msg);
+        WriteLog(nameof(Import), true, msg);
 
         return Json(0, msg);
     }

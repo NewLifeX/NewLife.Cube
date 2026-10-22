@@ -231,12 +231,12 @@
         }
       }
     },
-    "/api/Admin/AccessRule/ImportFile": {
+    "/api/Admin/AccessRule/import": {
       "post": {
         "tags": [
           "AccessRule"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -264,12 +264,12 @@
         }
       }
     },
-    "/api/Admin/AccessRule/UploadFile": {
+    "/api/Admin/AccessRule/attachments": {
       "post": {
         "tags": [
           "AccessRule"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -314,12 +314,13 @@
         }
       }
     },
-    "/api/Admin/AccessRule/GetPage": {
+    "/api/Admin/AccessRule/meta": {
       "get": {
         "tags": [
           "AccessRule"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -334,45 +335,12 @@
         }
       }
     },
-    "/api/Admin/AccessRule/GetFields": {
+    "/api/Admin/AccessRule/charts": {
       "get": {
         "tags": [
           "AccessRule"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/AccessRule/GetChartData": {
-      "get": {
-        "tags": [
-          "AccessRule"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -387,7 +355,7 @@
         }
       }
     },
-    "/api/Admin/AccessRule/ExportFile": {
+    "/api/Admin/AccessRule/export": {
       "get": {
         "tags": [
           "AccessRule"
@@ -435,39 +403,6 @@
             "description": "",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/Core/GetFields": {
-      "get": {
-        "tags": [
-          "Core"
-        ],
-        "summary": "获取配置字段，按当前请求语言本地化",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "视图类型",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "本地化后的字段集合",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
             }
           }
         }
@@ -641,6 +576,27 @@
         }
       }
     },
+    "/api/Admin/Core/meta": {
+      "get": {
+        "tags": [
+          "Core"
+        ],
+        "summary": "获取单对象页面的元数据，包含页面设置与编辑表单字段",
+        "description": "单对象页（配置页、设置页）只有编辑表单，因此只返回 setting 与 editForm；需要匿名访问时在子类重写并标注",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Admin/Cube/GetLoginConfig": {
       "get": {
         "tags": [
@@ -670,39 +626,6 @@
               "application/json": {
                 "schema": {
                   "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/Cube/GetFields": {
-      "get": {
-        "tags": [
-          "Cube"
-        ],
-        "summary": "获取配置字段，按当前请求语言本地化",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "视图类型",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "本地化后的字段集合",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
                 }
               }
             }
@@ -871,6 +794,27 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CubeSetting"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Admin/Cube/meta": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "获取单对象页面的元数据，包含页面设置与编辑表单字段",
+        "description": "单对象页（配置页、设置页）只有编辑表单，因此只返回 setting 与 editForm；需要匿名访问时在子类重写并标注",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
                 }
               }
             }
@@ -1187,12 +1131,12 @@
         }
       }
     },
-    "/api/Admin/Department/ImportFile": {
+    "/api/Admin/Department/import": {
       "post": {
         "tags": [
           "Department"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -1220,12 +1164,12 @@
         }
       }
     },
-    "/api/Admin/Department/UploadFile": {
+    "/api/Admin/Department/attachments": {
       "post": {
         "tags": [
           "Department"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -1270,12 +1214,13 @@
         }
       }
     },
-    "/api/Admin/Department/GetPage": {
+    "/api/Admin/Department/meta": {
       "get": {
         "tags": [
           "Department"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -1290,45 +1235,12 @@
         }
       }
     },
-    "/api/Admin/Department/GetFields": {
+    "/api/Admin/Department/charts": {
       "get": {
         "tags": [
           "Department"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/Department/GetChartData": {
-      "get": {
-        "tags": [
-          "Department"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -1343,7 +1255,7 @@
         }
       }
     },
-    "/api/Admin/Department/ExportFile": {
+    "/api/Admin/Department/export": {
       "get": {
         "tags": [
           "Department"
@@ -2155,12 +2067,13 @@
         }
       }
     },
-    "/api/Admin/Log/GetPage": {
+    "/api/Admin/Log/meta": {
       "get": {
         "tags": [
           "Log"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -2175,45 +2088,12 @@
         }
       }
     },
-    "/api/Admin/Log/GetFields": {
+    "/api/Admin/Log/charts": {
       "get": {
         "tags": [
           "Log"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/Log/GetChartData": {
-      "get": {
-        "tags": [
-          "Log"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -2228,7 +2108,7 @@
         }
       }
     },
-    "/api/Admin/Log/ExportFile": {
+    "/api/Admin/Log/export": {
       "get": {
         "tags": [
           "Log"
@@ -2803,12 +2683,12 @@
         }
       }
     },
-    "/api/Admin/MailConfig/ImportFile": {
+    "/api/Admin/MailConfig/import": {
       "post": {
         "tags": [
           "MailConfig"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -2836,12 +2716,12 @@
         }
       }
     },
-    "/api/Admin/MailConfig/UploadFile": {
+    "/api/Admin/MailConfig/attachments": {
       "post": {
         "tags": [
           "MailConfig"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -2886,12 +2766,13 @@
         }
       }
     },
-    "/api/Admin/MailConfig/GetPage": {
+    "/api/Admin/MailConfig/meta": {
       "get": {
         "tags": [
           "MailConfig"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -2906,45 +2787,12 @@
         }
       }
     },
-    "/api/Admin/MailConfig/GetFields": {
+    "/api/Admin/MailConfig/charts": {
       "get": {
         "tags": [
           "MailConfig"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/MailConfig/GetChartData": {
-      "get": {
-        "tags": [
-          "MailConfig"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -2959,7 +2807,7 @@
         }
       }
     },
-    "/api/Admin/MailConfig/ExportFile": {
+    "/api/Admin/MailConfig/export": {
       "get": {
         "tags": [
           "MailConfig"
@@ -3269,12 +3117,12 @@
         }
       }
     },
-    "/api/Admin/Menu/ImportFile": {
+    "/api/Admin/Menu/import": {
       "post": {
         "tags": [
           "Menu"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -3302,12 +3150,12 @@
         }
       }
     },
-    "/api/Admin/Menu/UploadFile": {
+    "/api/Admin/Menu/attachments": {
       "post": {
         "tags": [
           "Menu"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -3352,12 +3200,13 @@
         }
       }
     },
-    "/api/Admin/Menu/GetPage": {
+    "/api/Admin/Menu/meta": {
       "get": {
         "tags": [
           "Menu"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -3372,45 +3221,12 @@
         }
       }
     },
-    "/api/Admin/Menu/GetFields": {
+    "/api/Admin/Menu/charts": {
       "get": {
         "tags": [
           "Menu"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/Menu/GetChartData": {
-      "get": {
-        "tags": [
-          "Menu"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -3425,7 +3241,7 @@
         }
       }
     },
-    "/api/Admin/Menu/ExportFile": {
+    "/api/Admin/Menu/export": {
       "get": {
         "tags": [
           "Menu"
@@ -3673,12 +3489,12 @@
         }
       }
     },
-    "/api/Admin/OAuthConfig/ImportFile": {
+    "/api/Admin/OAuthConfig/import": {
       "post": {
         "tags": [
           "OAuthConfig"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -3706,12 +3522,12 @@
         }
       }
     },
-    "/api/Admin/OAuthConfig/UploadFile": {
+    "/api/Admin/OAuthConfig/attachments": {
       "post": {
         "tags": [
           "OAuthConfig"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -3756,12 +3572,13 @@
         }
       }
     },
-    "/api/Admin/OAuthConfig/GetPage": {
+    "/api/Admin/OAuthConfig/meta": {
       "get": {
         "tags": [
           "OAuthConfig"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -3776,45 +3593,12 @@
         }
       }
     },
-    "/api/Admin/OAuthConfig/GetFields": {
+    "/api/Admin/OAuthConfig/charts": {
       "get": {
         "tags": [
           "OAuthConfig"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/OAuthConfig/GetChartData": {
-      "get": {
-        "tags": [
-          "OAuthConfig"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -3829,7 +3613,7 @@
         }
       }
     },
-    "/api/Admin/OAuthConfig/ExportFile": {
+    "/api/Admin/OAuthConfig/export": {
       "get": {
         "tags": [
           "OAuthConfig"
@@ -3933,12 +3717,13 @@
         }
       }
     },
-    "/api/Admin/OAuthLog/GetPage": {
+    "/api/Admin/OAuthLog/meta": {
       "get": {
         "tags": [
           "OAuthLog"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -3953,45 +3738,12 @@
         }
       }
     },
-    "/api/Admin/OAuthLog/GetFields": {
+    "/api/Admin/OAuthLog/charts": {
       "get": {
         "tags": [
           "OAuthLog"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/OAuthLog/GetChartData": {
-      "get": {
-        "tags": [
-          "OAuthLog"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -4006,7 +3758,7 @@
         }
       }
     },
-    "/api/Admin/OAuthLog/ExportFile": {
+    "/api/Admin/OAuthLog/export": {
       "get": {
         "tags": [
           "OAuthLog"
@@ -4254,12 +4006,12 @@
         }
       }
     },
-    "/api/Admin/Parameter/ImportFile": {
+    "/api/Admin/Parameter/import": {
       "post": {
         "tags": [
           "Parameter"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -4287,12 +4039,12 @@
         }
       }
     },
-    "/api/Admin/Parameter/UploadFile": {
+    "/api/Admin/Parameter/attachments": {
       "post": {
         "tags": [
           "Parameter"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -4337,12 +4089,13 @@
         }
       }
     },
-    "/api/Admin/Parameter/GetPage": {
+    "/api/Admin/Parameter/meta": {
       "get": {
         "tags": [
           "Parameter"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -4357,45 +4110,12 @@
         }
       }
     },
-    "/api/Admin/Parameter/GetFields": {
+    "/api/Admin/Parameter/charts": {
       "get": {
         "tags": [
           "Parameter"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/Parameter/GetChartData": {
-      "get": {
-        "tags": [
-          "Parameter"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -4410,7 +4130,7 @@
         }
       }
     },
-    "/api/Admin/Parameter/ExportFile": {
+    "/api/Admin/Parameter/export": {
       "get": {
         "tags": [
           "Parameter"
@@ -4726,12 +4446,12 @@
         }
       }
     },
-    "/api/Admin/Role/ImportFile": {
+    "/api/Admin/Role/import": {
       "post": {
         "tags": [
           "Role"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -4759,12 +4479,12 @@
         }
       }
     },
-    "/api/Admin/Role/UploadFile": {
+    "/api/Admin/Role/attachments": {
       "post": {
         "tags": [
           "Role"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -4809,12 +4529,13 @@
         }
       }
     },
-    "/api/Admin/Role/GetPage": {
+    "/api/Admin/Role/meta": {
       "get": {
         "tags": [
           "Role"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -4829,45 +4550,12 @@
         }
       }
     },
-    "/api/Admin/Role/GetFields": {
+    "/api/Admin/Role/charts": {
       "get": {
         "tags": [
           "Role"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/Role/GetChartData": {
-      "get": {
-        "tags": [
-          "Role"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -4882,7 +4570,7 @@
         }
       }
     },
-    "/api/Admin/Role/ExportFile": {
+    "/api/Admin/Role/export": {
       "get": {
         "tags": [
           "Role"
@@ -5130,12 +4818,12 @@
         }
       }
     },
-    "/api/Admin/SmsConfig/ImportFile": {
+    "/api/Admin/SmsConfig/import": {
       "post": {
         "tags": [
           "SmsConfig"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -5163,12 +4851,12 @@
         }
       }
     },
-    "/api/Admin/SmsConfig/UploadFile": {
+    "/api/Admin/SmsConfig/attachments": {
       "post": {
         "tags": [
           "SmsConfig"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -5213,12 +4901,13 @@
         }
       }
     },
-    "/api/Admin/SmsConfig/GetPage": {
+    "/api/Admin/SmsConfig/meta": {
       "get": {
         "tags": [
           "SmsConfig"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -5233,45 +4922,12 @@
         }
       }
     },
-    "/api/Admin/SmsConfig/GetFields": {
+    "/api/Admin/SmsConfig/charts": {
       "get": {
         "tags": [
           "SmsConfig"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/SmsConfig/GetChartData": {
-      "get": {
-        "tags": [
-          "SmsConfig"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -5286,7 +4942,7 @@
         }
       }
     },
-    "/api/Admin/SmsConfig/ExportFile": {
+    "/api/Admin/SmsConfig/export": {
       "get": {
         "tags": [
           "SmsConfig"
@@ -5334,39 +4990,6 @@
             "description": "",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/Star/GetFields": {
-      "get": {
-        "tags": [
-          "Star"
-        ],
-        "summary": "获取配置字段，按当前请求语言本地化",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "视图类型",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "本地化后的字段集合",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
             }
           }
         }
@@ -5540,32 +5163,20 @@
         }
       }
     },
-    "/api/Admin/Sys/GetFields": {
+    "/api/Admin/Star/meta": {
       "get": {
         "tags": [
-          "Sys"
+          "Star"
         ],
-        "summary": "获取配置字段，按当前请求语言本地化",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "视图类型",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
+        "summary": "获取单对象页面的元数据，包含页面设置与编辑表单字段",
+        "description": "单对象页（配置页、设置页）只有编辑表单，因此只返回 setting 与 editForm；需要匿名访问时在子类重写并标注",
         "responses": {
           "200": {
-            "description": "本地化后的字段集合",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
                 }
               }
             }
@@ -5734,6 +5345,27 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SysConfig"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Admin/Sys/meta": {
+      "get": {
+        "tags": [
+          "Sys"
+        ],
+        "summary": "获取单对象页面的元数据，包含页面设置与编辑表单字段",
+        "description": "单对象页（配置页、设置页）只有编辑表单，因此只返回 setting 与 editForm；需要匿名访问时在子类重写并标注",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
                 }
               }
             }
@@ -5936,12 +5568,12 @@
         }
       }
     },
-    "/api/Admin/Tenant/ImportFile": {
+    "/api/Admin/Tenant/import": {
       "post": {
         "tags": [
           "Tenant"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -5969,12 +5601,12 @@
         }
       }
     },
-    "/api/Admin/Tenant/UploadFile": {
+    "/api/Admin/Tenant/attachments": {
       "post": {
         "tags": [
           "Tenant"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -6019,12 +5651,13 @@
         }
       }
     },
-    "/api/Admin/Tenant/GetPage": {
+    "/api/Admin/Tenant/meta": {
       "get": {
         "tags": [
           "Tenant"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -6039,45 +5672,12 @@
         }
       }
     },
-    "/api/Admin/Tenant/GetFields": {
+    "/api/Admin/Tenant/charts": {
       "get": {
         "tags": [
           "Tenant"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/Tenant/GetChartData": {
-      "get": {
-        "tags": [
-          "Tenant"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -6092,7 +5692,7 @@
         }
       }
     },
-    "/api/Admin/Tenant/ExportFile": {
+    "/api/Admin/Tenant/export": {
       "get": {
         "tags": [
           "Tenant"
@@ -6340,12 +5940,12 @@
         }
       }
     },
-    "/api/Admin/TenantUser/ImportFile": {
+    "/api/Admin/TenantUser/import": {
       "post": {
         "tags": [
           "TenantUser"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -6373,12 +5973,12 @@
         }
       }
     },
-    "/api/Admin/TenantUser/UploadFile": {
+    "/api/Admin/TenantUser/attachments": {
       "post": {
         "tags": [
           "TenantUser"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -6423,12 +6023,13 @@
         }
       }
     },
-    "/api/Admin/TenantUser/GetPage": {
+    "/api/Admin/TenantUser/meta": {
       "get": {
         "tags": [
           "TenantUser"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -6443,45 +6044,12 @@
         }
       }
     },
-    "/api/Admin/TenantUser/GetFields": {
+    "/api/Admin/TenantUser/charts": {
       "get": {
         "tags": [
           "TenantUser"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/TenantUser/GetChartData": {
-      "get": {
-        "tags": [
-          "TenantUser"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -6496,7 +6064,7 @@
         }
       }
     },
-    "/api/Admin/TenantUser/ExportFile": {
+    "/api/Admin/TenantUser/export": {
       "get": {
         "tags": [
           "TenantUser"
@@ -6744,12 +6312,12 @@
         }
       }
     },
-    "/api/Admin/UserConnect/ImportFile": {
+    "/api/Admin/UserConnect/import": {
       "post": {
         "tags": [
           "UserConnect"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -6777,12 +6345,12 @@
         }
       }
     },
-    "/api/Admin/UserConnect/UploadFile": {
+    "/api/Admin/UserConnect/attachments": {
       "post": {
         "tags": [
           "UserConnect"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -6827,12 +6395,13 @@
         }
       }
     },
-    "/api/Admin/UserConnect/GetPage": {
+    "/api/Admin/UserConnect/meta": {
       "get": {
         "tags": [
           "UserConnect"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -6847,45 +6416,12 @@
         }
       }
     },
-    "/api/Admin/UserConnect/GetFields": {
+    "/api/Admin/UserConnect/charts": {
       "get": {
         "tags": [
           "UserConnect"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/UserConnect/GetChartData": {
-      "get": {
-        "tags": [
-          "UserConnect"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -6900,7 +6436,7 @@
         }
       }
     },
-    "/api/Admin/UserConnect/ExportFile": {
+    "/api/Admin/UserConnect/export": {
       "get": {
         "tags": [
           "UserConnect"
@@ -7096,12 +6632,12 @@
         }
       }
     },
-    "/api/Admin/User/UploadFile": {
+    "/api/Admin/User/attachments": {
       "post": {
         "tags": [
           "User"
         ],
-        "summary": "上传头像。复用基类 UploadFile（SaveFile 核心一致），仅做三件事：\n            1) 增加登录鉴权（基类 UploadFile 无 [EntityAuthorize]，直接复用会变成未登录可访问的上传端点）；\n            2) 强制 id 等于当前登录用户，防止越权给其它用户上传头像；\n            3) 仅允许图片类型（覆写 ValidateUploadFile，在基类「非空 + 危险扩展名黑名单」基础上加图片白名单）。\n            返回附件信息 { attId, filePath, contentType }，前端再调用 Info(avatar=filePath) 持久化头像。",
+        "summary": "上传头像。复用基类 Attachments（SaveFile 核心一致），仅做三件事：\n            1) 仅要求登录（覆写时标注 [EntityAuthorize]，不要求 User 实体的新增/修改权限）；\n            2) 强制 id 等于当前登录用户，防止越权给其它用户上传头像；\n            3) 仅允许图片类型（覆写 ValidateUploadFile，在基类「非空 + 危险扩展名黑名单」基础上加图片白名单）。\n            返回附件信息 { attId, filePath, contentType }，前端再调用 Info(avatar=filePath) 持久化头像。",
         "parameters": [
           {
             "name": "id",
@@ -7617,12 +7153,12 @@
         }
       }
     },
-    "/api/Admin/User/ImportFile": {
+    "/api/Admin/User/import": {
       "post": {
         "tags": [
           "User"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -7650,12 +7186,13 @@
         }
       }
     },
-    "/api/Admin/User/GetPage": {
+    "/api/Admin/User/meta": {
       "get": {
         "tags": [
           "User"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -7670,45 +7207,12 @@
         }
       }
     },
-    "/api/Admin/User/GetFields": {
+    "/api/Admin/User/charts": {
       "get": {
         "tags": [
           "User"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/User/GetChartData": {
-      "get": {
-        "tags": [
-          "User"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -7723,7 +7227,7 @@
         }
       }
     },
-    "/api/Admin/User/ExportFile": {
+    "/api/Admin/User/export": {
       "get": {
         "tags": [
           "User"
@@ -8002,12 +7506,12 @@
         }
       }
     },
-    "/api/Admin/UserOnline/ImportFile": {
+    "/api/Admin/UserOnline/import": {
       "post": {
         "tags": [
           "UserOnline"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -8035,12 +7539,12 @@
         }
       }
     },
-    "/api/Admin/UserOnline/UploadFile": {
+    "/api/Admin/UserOnline/attachments": {
       "post": {
         "tags": [
           "UserOnline"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -8085,12 +7589,13 @@
         }
       }
     },
-    "/api/Admin/UserOnline/GetPage": {
+    "/api/Admin/UserOnline/meta": {
       "get": {
         "tags": [
           "UserOnline"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -8105,45 +7610,12 @@
         }
       }
     },
-    "/api/Admin/UserOnline/GetFields": {
+    "/api/Admin/UserOnline/charts": {
       "get": {
         "tags": [
           "UserOnline"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/UserOnline/GetChartData": {
-      "get": {
-        "tags": [
-          "UserOnline"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -8158,7 +7630,7 @@
         }
       }
     },
-    "/api/Admin/UserOnline/ExportFile": {
+    "/api/Admin/UserOnline/export": {
       "get": {
         "tags": [
           "UserOnline"
@@ -8262,12 +7734,13 @@
         }
       }
     },
-    "/api/Admin/UserStat/GetPage": {
+    "/api/Admin/UserStat/meta": {
       "get": {
         "tags": [
           "UserStat"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -8282,45 +7755,12 @@
         }
       }
     },
-    "/api/Admin/UserStat/GetFields": {
+    "/api/Admin/UserStat/charts": {
       "get": {
         "tags": [
           "UserStat"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/UserStat/GetChartData": {
-      "get": {
-        "tags": [
-          "UserStat"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -8335,7 +7775,7 @@
         }
       }
     },
-    "/api/Admin/UserStat/ExportFile": {
+    "/api/Admin/UserStat/export": {
       "get": {
         "tags": [
           "UserStat"
@@ -8583,12 +8023,12 @@
         }
       }
     },
-    "/api/Admin/UserToken/ImportFile": {
+    "/api/Admin/UserToken/import": {
       "post": {
         "tags": [
           "UserToken"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -8616,12 +8056,12 @@
         }
       }
     },
-    "/api/Admin/UserToken/UploadFile": {
+    "/api/Admin/UserToken/attachments": {
       "post": {
         "tags": [
           "UserToken"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -8666,12 +8106,13 @@
         }
       }
     },
-    "/api/Admin/UserToken/GetPage": {
+    "/api/Admin/UserToken/meta": {
       "get": {
         "tags": [
           "UserToken"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -8686,45 +8127,12 @@
         }
       }
     },
-    "/api/Admin/UserToken/GetFields": {
+    "/api/Admin/UserToken/charts": {
       "get": {
         "tags": [
           "UserToken"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/UserToken/GetChartData": {
-      "get": {
-        "tags": [
-          "UserToken"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -8739,7 +8147,7 @@
         }
       }
     },
-    "/api/Admin/UserToken/ExportFile": {
+    "/api/Admin/UserToken/export": {
       "get": {
         "tags": [
           "UserToken"
@@ -8787,39 +8195,6 @@
             "description": "",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/XCode/GetFields": {
-      "get": {
-        "tags": [
-          "XCode"
-        ],
-        "summary": "获取配置字段，按当前请求语言本地化",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "视图类型",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "本地化后的字段集合",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
             }
           }
         }
@@ -8986,6 +8361,27 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/XCodeSetting"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Admin/XCode/meta": {
+      "get": {
+        "tags": [
+          "XCode"
+        ],
+        "summary": "获取单对象页面的元数据，包含页面设置与编辑表单字段",
+        "description": "单对象页（配置页、设置页）只有编辑表单，因此只返回 setting 与 editForm；需要匿名访问时在子类重写并标注",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
                 }
               }
             }
@@ -11906,121 +11302,6 @@
           }
         },
         "description": "魔方设置"
-      },
-      "DataField": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "名称"
-          },
-          "displayName": {
-            "type": "string",
-            "description": "显示名"
-          },
-          "description": {
-            "type": "string",
-            "description": "描述"
-          },
-          "category": {
-            "type": "string",
-            "description": "类别"
-          },
-          "typeName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "属性类型"
-          },
-          "itemType": {
-            "type": "string",
-            "description": "元素类型。image,file-zip,html,singleSelect,multipleSelect"
-          },
-          "length": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "description": "长度",
-            "format": "int32"
-          },
-          "precision": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "description": "精度",
-            "format": "int32"
-          },
-          "scale": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "description": "位数",
-            "format": "int32"
-          },
-          "nullable": {
-            "type": "boolean",
-            "description": "允许空"
-          },
-          "primaryKey": {
-            "type": "boolean",
-            "description": "主键"
-          },
-          "readOnly": {
-            "type": "boolean",
-            "description": "只读"
-          },
-          "visible": {
-            "type": "boolean",
-            "description": "是否可见"
-          },
-          "required": {
-            "type": "boolean",
-            "description": "是否必填"
-          },
-          "authority": {
-            "type": "string",
-            "description": "权限相关。用户自由发挥"
-          },
-          "extended1": {
-            "type": "string",
-            "description": "扩展字段。用户自由发挥"
-          },
-          "extended2": {
-            "type": "string",
-            "description": "扩展字段。用户自由发挥"
-          },
-          "extended3": {
-            "type": "string",
-            "description": "扩展字段。用户自由发挥"
-          },
-          "mapField": {
-            "type": "string",
-            "description": "映射字段"
-          },
-          "valueField": {
-            "type": "string",
-            "description": "取值字段。列表单元格优先取该字段值，为空时回退到本字段。如名称列优先显示昵称：Name.ValueField=DisplayName"
-          },
-          "lovCode": {
-            "type": "string",
-            "description": "LOV 配置代码"
-          },
-          "services": {
-            "type": [
-              "null",
-              "array"
-            ],
-            "description": "扩展服务"
-          }
-        },
-        "description": "数据字段"
       },
       "DataScopes": {
         "type": "integer"
@@ -17443,10 +16724,6 @@
           }
         },
         "description": "验证码模型"
-      },
-      "ViewKinds": {
-        "type": "integer",
-        "description": "视图类型。如List/Detail/AddForm/EditForm/Search等"
       },
       "WidgetLayout": {
         "type": "object",

@@ -200,12 +200,12 @@
         }
       }
     },
-    "/api/Cube/App/ImportFile": {
+    "/api/Cube/App/import": {
       "post": {
         "tags": [
           "App"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -233,12 +233,12 @@
         }
       }
     },
-    "/api/Cube/App/UploadFile": {
+    "/api/Cube/App/attachments": {
       "post": {
         "tags": [
           "App"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -283,12 +283,13 @@
         }
       }
     },
-    "/api/Cube/App/GetPage": {
+    "/api/Cube/App/meta": {
       "get": {
         "tags": [
           "App"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -303,45 +304,12 @@
         }
       }
     },
-    "/api/Cube/App/GetFields": {
+    "/api/Cube/App/charts": {
       "get": {
         "tags": [
           "App"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Cube/App/GetChartData": {
-      "get": {
-        "tags": [
-          "App"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -356,7 +324,7 @@
         }
       }
     },
-    "/api/Cube/App/ExportFile": {
+    "/api/Cube/App/export": {
       "get": {
         "tags": [
           "App"
@@ -460,12 +428,13 @@
         }
       }
     },
-    "/api/Cube/AppLog/GetPage": {
+    "/api/Cube/AppLog/meta": {
       "get": {
         "tags": [
           "AppLog"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -480,45 +449,12 @@
         }
       }
     },
-    "/api/Cube/AppLog/GetFields": {
+    "/api/Cube/AppLog/charts": {
       "get": {
         "tags": [
           "AppLog"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Cube/AppLog/GetChartData": {
-      "get": {
-        "tags": [
-          "AppLog"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -533,7 +469,7 @@
         }
       }
     },
-    "/api/Cube/AppLog/ExportFile": {
+    "/api/Cube/AppLog/export": {
       "get": {
         "tags": [
           "AppLog"
@@ -797,12 +733,12 @@
         }
       }
     },
-    "/api/Cube/Area/ImportFile": {
+    "/api/Cube/Area/import": {
       "post": {
         "tags": [
           "Area"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -830,12 +766,12 @@
         }
       }
     },
-    "/api/Cube/Area/UploadFile": {
+    "/api/Cube/Area/attachments": {
       "post": {
         "tags": [
           "Area"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -880,12 +816,13 @@
         }
       }
     },
-    "/api/Cube/Area/GetPage": {
+    "/api/Cube/Area/meta": {
       "get": {
         "tags": [
           "Area"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -900,45 +837,12 @@
         }
       }
     },
-    "/api/Cube/Area/GetFields": {
+    "/api/Cube/Area/charts": {
       "get": {
         "tags": [
           "Area"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Cube/Area/GetChartData": {
-      "get": {
-        "tags": [
-          "Area"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -953,7 +857,7 @@
         }
       }
     },
-    "/api/Cube/Area/ExportFile": {
+    "/api/Cube/Area/export": {
       "get": {
         "tags": [
           "Area"
@@ -1201,12 +1105,12 @@
         }
       }
     },
-    "/api/Cube/Attachment/ImportFile": {
+    "/api/Cube/Attachment/import": {
       "post": {
         "tags": [
           "Attachment"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -1234,12 +1138,12 @@
         }
       }
     },
-    "/api/Cube/Attachment/UploadFile": {
+    "/api/Cube/Attachment/attachments": {
       "post": {
         "tags": [
           "Attachment"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -1284,12 +1188,13 @@
         }
       }
     },
-    "/api/Cube/Attachment/GetPage": {
+    "/api/Cube/Attachment/meta": {
       "get": {
         "tags": [
           "Attachment"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -1304,45 +1209,12 @@
         }
       }
     },
-    "/api/Cube/Attachment/GetFields": {
+    "/api/Cube/Attachment/charts": {
       "get": {
         "tags": [
           "Attachment"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Cube/Attachment/GetChartData": {
-      "get": {
-        "tags": [
-          "Attachment"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -1357,7 +1229,7 @@
         }
       }
     },
-    "/api/Cube/Attachment/ExportFile": {
+    "/api/Cube/Attachment/export": {
       "get": {
         "tags": [
           "Attachment"
@@ -1631,12 +1503,12 @@
         }
       }
     },
-    "/api/Cube/CronJob/ImportFile": {
+    "/api/Cube/CronJob/import": {
       "post": {
         "tags": [
           "CronJob"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -1664,12 +1536,12 @@
         }
       }
     },
-    "/api/Cube/CronJob/UploadFile": {
+    "/api/Cube/CronJob/attachments": {
       "post": {
         "tags": [
           "CronJob"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -1714,12 +1586,13 @@
         }
       }
     },
-    "/api/Cube/CronJob/GetPage": {
+    "/api/Cube/CronJob/meta": {
       "get": {
         "tags": [
           "CronJob"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -1734,45 +1607,12 @@
         }
       }
     },
-    "/api/Cube/CronJob/GetFields": {
+    "/api/Cube/CronJob/charts": {
       "get": {
         "tags": [
           "CronJob"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Cube/CronJob/GetChartData": {
-      "get": {
-        "tags": [
-          "CronJob"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -1787,7 +1627,7 @@
         }
       }
     },
-    "/api/Cube/CronJob/ExportFile": {
+    "/api/Cube/CronJob/export": {
       "get": {
         "tags": [
           "CronJob"
@@ -2061,12 +1901,12 @@
         }
       }
     },
-    "/api/Cube/OrderManager/ImportFile": {
+    "/api/Cube/OrderManager/import": {
       "post": {
         "tags": [
           "OrderManager"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -2094,12 +1934,12 @@
         }
       }
     },
-    "/api/Cube/OrderManager/UploadFile": {
+    "/api/Cube/OrderManager/attachments": {
       "post": {
         "tags": [
           "OrderManager"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -2144,12 +1984,13 @@
         }
       }
     },
-    "/api/Cube/OrderManager/GetPage": {
+    "/api/Cube/OrderManager/meta": {
       "get": {
         "tags": [
           "OrderManager"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -2164,45 +2005,12 @@
         }
       }
     },
-    "/api/Cube/OrderManager/GetFields": {
+    "/api/Cube/OrderManager/charts": {
       "get": {
         "tags": [
           "OrderManager"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Cube/OrderManager/GetChartData": {
-      "get": {
-        "tags": [
-          "OrderManager"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -2217,7 +2025,7 @@
         }
       }
     },
-    "/api/Cube/OrderManager/ExportFile": {
+    "/api/Cube/OrderManager/export": {
       "get": {
         "tags": [
           "OrderManager"
@@ -2465,12 +2273,12 @@
         }
       }
     },
-    "/api/Cube/PrincipalAgent/ImportFile": {
+    "/api/Cube/PrincipalAgent/import": {
       "post": {
         "tags": [
           "PrincipalAgent"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -2498,12 +2306,12 @@
         }
       }
     },
-    "/api/Cube/PrincipalAgent/UploadFile": {
+    "/api/Cube/PrincipalAgent/attachments": {
       "post": {
         "tags": [
           "PrincipalAgent"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -2548,12 +2356,13 @@
         }
       }
     },
-    "/api/Cube/PrincipalAgent/GetPage": {
+    "/api/Cube/PrincipalAgent/meta": {
       "get": {
         "tags": [
           "PrincipalAgent"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -2568,45 +2377,12 @@
         }
       }
     },
-    "/api/Cube/PrincipalAgent/GetFields": {
+    "/api/Cube/PrincipalAgent/charts": {
       "get": {
         "tags": [
           "PrincipalAgent"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Cube/PrincipalAgent/GetChartData": {
-      "get": {
-        "tags": [
-          "PrincipalAgent"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -2621,7 +2397,7 @@
         }
       }
     },
-    "/api/Cube/PrincipalAgent/ExportFile": {
+    "/api/Cube/PrincipalAgent/export": {
       "get": {
         "tags": [
           "PrincipalAgent"
@@ -4659,121 +4435,6 @@
         },
         "description": "定时作业。定时执行任务"
       },
-      "DataField": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "名称"
-          },
-          "displayName": {
-            "type": "string",
-            "description": "显示名"
-          },
-          "description": {
-            "type": "string",
-            "description": "描述"
-          },
-          "category": {
-            "type": "string",
-            "description": "类别"
-          },
-          "typeName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "属性类型"
-          },
-          "itemType": {
-            "type": "string",
-            "description": "元素类型。image,file-zip,html,singleSelect,multipleSelect"
-          },
-          "length": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "description": "长度",
-            "format": "int32"
-          },
-          "precision": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "description": "精度",
-            "format": "int32"
-          },
-          "scale": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "description": "位数",
-            "format": "int32"
-          },
-          "nullable": {
-            "type": "boolean",
-            "description": "允许空"
-          },
-          "primaryKey": {
-            "type": "boolean",
-            "description": "主键"
-          },
-          "readOnly": {
-            "type": "boolean",
-            "description": "只读"
-          },
-          "visible": {
-            "type": "boolean",
-            "description": "是否可见"
-          },
-          "required": {
-            "type": "boolean",
-            "description": "是否必填"
-          },
-          "authority": {
-            "type": "string",
-            "description": "权限相关。用户自由发挥"
-          },
-          "extended1": {
-            "type": "string",
-            "description": "扩展字段。用户自由发挥"
-          },
-          "extended2": {
-            "type": "string",
-            "description": "扩展字段。用户自由发挥"
-          },
-          "extended3": {
-            "type": "string",
-            "description": "扩展字段。用户自由发挥"
-          },
-          "mapField": {
-            "type": "string",
-            "description": "映射字段"
-          },
-          "valueField": {
-            "type": "string",
-            "description": "取值字段。列表单元格优先取该字段值，为空时回退到本字段。如名称列优先显示昵称：Name.ValueField=DisplayName"
-          },
-          "lovCode": {
-            "type": "string",
-            "description": "LOV 配置代码"
-          },
-          "services": {
-            "type": [
-              "null",
-              "array"
-            ],
-            "description": "扩展服务"
-          }
-        },
-        "description": "数据字段"
-      },
       "DataScopes": {
         "type": "integer"
       },
@@ -5632,10 +5293,6 @@
       },
       "SexKinds": {
         "type": "integer"
-      },
-      "ViewKinds": {
-        "type": "integer",
-        "description": "视图类型。如List/Detail/AddForm/EditForm/Search等"
       }
     }
   },

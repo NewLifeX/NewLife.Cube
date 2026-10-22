@@ -53,7 +53,7 @@ public class AreaController : EntityController<Area, AreaModel>
                     FetchAndSave(null);
 
                     var url = NewLife.Setting.Current.PluginServer.TrimSuffix("/");
-                    Import(url + "/Area.csv.gz", true, 4, true);
+                    Area.Import(url + "/Area.csv.gz", true, 4, true);
                 }, TaskCreationOptions.LongRunning);
             }
         }

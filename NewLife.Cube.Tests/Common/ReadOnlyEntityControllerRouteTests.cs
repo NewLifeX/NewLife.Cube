@@ -71,4 +71,53 @@ public class ReadOnlyEntityControllerRouteTests
     {
         Assert.Equal(100, EntityController<XCode.Membership.User, XCode.Membership.UserModel>.MaxBatchDelete);
     }
+
+    [Fact(DisplayName = "元数据端点使用 meta 路由且 GetFields 已删除")]
+    public void Meta_HasRestfulRoute_And_GetFieldsRemoved()
+    {
+        var ctrl = typeof(ReadOnlyEntityController<>);
+
+        // GetFields 已并入 GetPage(meta)，实体控制器与单对象控制器都不再提供
+        Assert.Null(ctrl.GetMethod("GetFields"));
+        Assert.Null(typeof(ObjectController<>).GetMethod("GetFields"));
+
+        var meta = ctrl.GetMethod("Meta")!;
+        Assert.Equal(["/api/[area]/[controller]/meta"], meta.GetCustomAttributes<HttpGetAttribute>().Select(e => e.Template).ToArray());
+
+        // 元数据只要求登录，不绑定具体权限位
+        var auth = meta.GetCustomAttribute<EntityAuthorizeAttribute>()!;
+        Assert.All(auth.Permissions, e => Assert.Equal(XCode.Membership.PermissionFlags.None, e));
+
+        var objectMeta = typeof(ObjectController<>).GetMethod("Meta")!;
+        Assert.Equal(["/api/[area]/[controller]/meta"], objectMeta.GetCustomAttributes<HttpGetAttribute>().Select(e => e.Template).ToArray());
+    }
+
+    [Fact(DisplayName = "图表与导出端点使用 charts/export 路由")]
+    public void ChartsAndExport_HaveRestfulRoutes()
+    {
+        var ctrl = typeof(ReadOnlyEntityController<>);
+
+        var charts = ctrl.GetMethod("Charts")!;
+        Assert.Equal(["/api/[area]/[controller]/charts"], charts.GetCustomAttributes<HttpGetAttribute>().Select(e => e.Template).ToArray());
+
+        var export = ctrl.GetMethod("Export")!;
+        Assert.Equal(["/api/[area]/[controller]/export"], export.GetCustomAttributes<HttpGetAttribute>().Select(e => e.Template).ToArray());
+    }
+
+    [Fact(DisplayName = "导入与上传端点使用 import/attachments 路由且上传需写权限")]
+    public void ImportAndAttachments_HaveRestfulRoutes()
+    {
+        var ctrl = typeof(EntityController<,>);
+
+        var import = ctrl.GetMethods(BindingFlags.Public | BindingFlags.Instance).Single(e => e.Name == "Import");
+        Assert.Equal(["/api/[area]/[controller]/import"], import.GetCustomAttributes<HttpPostAttribute>().Select(e => e.Template).ToArray());
+
+        var att = ctrl.GetMethods(BindingFlags.Public | BindingFlags.Instance).Single(e => e.Name == "Attachments");
+        Assert.Equal(["/api/[area]/[controller]/attachments"], att.GetCustomAttributes<HttpPostAttribute>().Select(e => e.Template).ToArray());
+
+        // 新增或修改任一权限即可上传
+        var auth = att.GetCustomAttribute<EntityAuthorizeAttribute>()!;
+        Assert.Contains(XCode.Membership.PermissionFlags.Insert, auth.Permissions);
+        Assert.Contains(XCode.Membership.PermissionFlags.Update, auth.Permissions);
+    }
 }

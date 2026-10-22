@@ -200,12 +200,12 @@
         }
       }
     },
-    "/api/School/Class/ImportFile": {
+    "/api/School/Class/import": {
       "post": {
         "tags": [
           "Class"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -233,12 +233,12 @@
         }
       }
     },
-    "/api/School/Class/UploadFile": {
+    "/api/School/Class/attachments": {
       "post": {
         "tags": [
           "Class"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -283,12 +283,13 @@
         }
       }
     },
-    "/api/School/Class/GetPage": {
+    "/api/School/Class/meta": {
       "get": {
         "tags": [
           "Class"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -303,45 +304,12 @@
         }
       }
     },
-    "/api/School/Class/GetFields": {
+    "/api/School/Class/charts": {
       "get": {
         "tags": [
           "Class"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/School/Class/GetChartData": {
-      "get": {
-        "tags": [
-          "Class"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -356,7 +324,7 @@
         }
       }
     },
-    "/api/School/Class/ExportFile": {
+    "/api/School/Class/export": {
       "get": {
         "tags": [
           "Class"
@@ -604,12 +572,12 @@
         }
       }
     },
-    "/api/School/Student/ImportFile": {
+    "/api/School/Student/import": {
       "post": {
         "tags": [
           "Student"
         ],
-        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。经类级路由 api/[area]/[controller]/[action] 暴露为 POST /api/{area}/{controller}/ImportFile",
+        "summary": "导入文件（Excel/Csv/Json/Zip），然后批量写入数据库。路由为 POST /api/{area}/{controller}/import",
         "description": "依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误",
         "requestBody": {
           "description": "上传的 Excel/Csv/Json/Zip 文件",
@@ -637,12 +605,12 @@
         }
       }
     },
-    "/api/School/Student/UploadFile": {
+    "/api/School/Student/attachments": {
       "post": {
         "tags": [
           "Student"
         ],
-        "summary": "上传编辑器文件，关联当前实体",
+        "summary": "上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments",
         "parameters": [
           {
             "name": "id",
@@ -687,12 +655,13 @@
         }
       }
     },
-    "/api/School/Student/GetPage": {
+    "/api/School/Student/meta": {
       "get": {
         "tags": [
           "Student"
         ],
         "summary": "获取页面元数据。包含页面设置以及列表/表单/搜索字段",
+        "description": "默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 。",
         "responses": {
           "200": {
             "description": "",
@@ -707,45 +676,12 @@
         }
       }
     },
-    "/api/School/Student/GetFields": {
+    "/api/School/Student/charts": {
       "get": {
         "tags": [
           "Student"
         ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/School/Student/GetChartData": {
-      "get": {
-        "tags": [
-          "Student"
-        ],
-        "summary": "获取图表数据。子控制器可重写OnGetChartData来提供图表配置",
+        "summary": "获取图表数据。子控制器可重写OnGetCharts来提供图表配置",
         "responses": {
           "200": {
             "description": "",
@@ -760,7 +696,7 @@
         }
       }
     },
-    "/api/School/Student/ExportFile": {
+    "/api/School/Student/export": {
       "get": {
         "tags": [
           "Student"
@@ -808,39 +744,6 @@
             "description": "",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/School/TestConfig/GetFields": {
-      "get": {
-        "tags": [
-          "TestConfig"
-        ],
-        "summary": "获取配置字段，按当前请求语言本地化",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "视图类型",
-            "schema": {
-              "$ref": "#/components/schemas/ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "本地化后的字段集合",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataField"
-                  }
-                }
-              }
             }
           }
         }
@@ -1007,6 +910,27 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/IoTSetting"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/School/TestConfig/meta": {
+      "get": {
+        "tags": [
+          "TestConfig"
+        ],
+        "summary": "获取单对象页面的元数据，包含页面设置与编辑表单字段",
+        "description": "单对象页（配置页、设置页）只有编辑表单，因此只返回 setting 与 editForm；需要匿名访问时在子类重写并标注",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
                 }
               }
             }
@@ -1626,121 +1550,6 @@
             "type": "string"
           }
         }
-      },
-      "DataField": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "名称"
-          },
-          "displayName": {
-            "type": "string",
-            "description": "显示名"
-          },
-          "description": {
-            "type": "string",
-            "description": "描述"
-          },
-          "category": {
-            "type": "string",
-            "description": "类别"
-          },
-          "typeName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "属性类型"
-          },
-          "itemType": {
-            "type": "string",
-            "description": "元素类型。image,file-zip,html,singleSelect,multipleSelect"
-          },
-          "length": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "description": "长度",
-            "format": "int32"
-          },
-          "precision": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "description": "精度",
-            "format": "int32"
-          },
-          "scale": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "description": "位数",
-            "format": "int32"
-          },
-          "nullable": {
-            "type": "boolean",
-            "description": "允许空"
-          },
-          "primaryKey": {
-            "type": "boolean",
-            "description": "主键"
-          },
-          "readOnly": {
-            "type": "boolean",
-            "description": "只读"
-          },
-          "visible": {
-            "type": "boolean",
-            "description": "是否可见"
-          },
-          "required": {
-            "type": "boolean",
-            "description": "是否必填"
-          },
-          "authority": {
-            "type": "string",
-            "description": "权限相关。用户自由发挥"
-          },
-          "extended1": {
-            "type": "string",
-            "description": "扩展字段。用户自由发挥"
-          },
-          "extended2": {
-            "type": "string",
-            "description": "扩展字段。用户自由发挥"
-          },
-          "extended3": {
-            "type": "string",
-            "description": "扩展字段。用户自由发挥"
-          },
-          "mapField": {
-            "type": "string",
-            "description": "映射字段"
-          },
-          "valueField": {
-            "type": "string",
-            "description": "取值字段。列表单元格优先取该字段值，为空时回退到本字段。如名称列优先显示昵称：Name.ValueField=DisplayName"
-          },
-          "lovCode": {
-            "type": "string",
-            "description": "LOV 配置代码"
-          },
-          "services": {
-            "type": [
-              "null",
-              "array"
-            ],
-            "description": "扩展服务"
-          }
-        },
-        "description": "数据字段"
       },
       "DataScopes": {
         "type": "integer"
@@ -3363,10 +3172,6 @@
           }
         },
         "description": "用户。用户帐号信息，以身份验证为中心，拥有多种角色，可加入多个租户"
-      },
-      "ViewKinds": {
-        "type": "integer",
-        "description": "视图类型。如List/Detail/AddForm/EditForm/Search等"
       }
     }
   },

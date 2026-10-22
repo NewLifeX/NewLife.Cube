@@ -17,7 +17,7 @@ public class UserStatChartDataCollection
 {
 }
 
-/// <summary>用户统计图表数据单元测试。验证 OnGetChartData 构建 3 个 ECharts option（主折线 + 箱线 + K线）</summary>
+/// <summary>用户统计图表数据单元测试。验证 OnGetCharts 构建 3 个 ECharts option（主折线 + 箱线 + K线）</summary>
 [Collection("UserStatChartData")]
 public class UserStatChartDataTests : IDisposable
 {
@@ -27,7 +27,7 @@ public class UserStatChartDataTests : IDisposable
 
     public UserStatChartDataTests()
     {
-        // OnGetChartData 空列表时兜底查库；测试期间把 UserStat 重映射到独立空库，
+        // OnGetCharts 空列表时兜底查库；测试期间把 UserStat 重映射到独立空库，
         // 保证"空数据"语义与运行机器/其它测试集合的库状态无关
         var dir = Path.Combine(AppContext.BaseDirectory, "Data");
         Directory.CreateDirectory(dir);
@@ -66,8 +66,8 @@ public class UserStatChartDataTests : IDisposable
     #region 测试控制器
     private class TestUserStatController : UserStatController
     {
-        /// <summary>暴露 OnGetChartData 供测试（protected override 无法直接调用）</summary>
-        public Object[] TestOnGetChartData(IEnumerable<UserStat> data) => OnGetChartData(data);
+        /// <summary>暴露 OnGetCharts 供测试（protected override 无法直接调用）</summary>
+        public Object[] TestOnGetCharts(IEnumerable<UserStat> data) => OnGetCharts(data);
     }
     #endregion
 
@@ -100,13 +100,13 @@ public class UserStatChartDataTests : IDisposable
     private static JsonElement ToJson(Object obj)
         => JsonDocument.Parse(System.Text.Json.JsonSerializer.Serialize(obj)).RootElement;
 
-    [Fact(DisplayName = "OnGetChartData_有数据_返回3个图表")]
-    public void OnGetChartData_HasData_Returns3Charts()
+    [Fact(DisplayName = "OnGetCharts_有数据_返回3个图表")]
+    public void OnGetCharts_HasData_Returns3Charts()
     {
         var ctrl = new TestUserStatController();
         var list = BuildData(5);
 
-        var rs = ctrl.TestOnGetChartData(list);
+        var rs = ctrl.TestOnGetCharts(list);
 
         Assert.Equal(3, rs.Length);
 
@@ -137,8 +137,8 @@ public class UserStatChartDataTests : IDisposable
         Assert.Equal(4, candleData[0].GetArrayLength());
     }
 
-    [Fact(DisplayName = "OnGetChartData_有数据_主折线含三Y轴与系列名")]
-    public void OnGetChartData_HasData_LineHas3YAxis()
+    [Fact(DisplayName = "OnGetCharts_有数据_主折线含三Y轴与系列名")]
+    public void OnGetCharts_HasData_LineHas3YAxis()
     {
         // 实体元数据以中文为源文，图例名随请求语言翻译；本用例固定中文以断言源文系列名
         var prev = Localization.Culture;
@@ -148,7 +148,7 @@ public class UserStatChartDataTests : IDisposable
             var ctrl = new TestUserStatController();
             var list = BuildData(3);
 
-            var rs = ctrl.TestOnGetChartData(list);
+            var rs = ctrl.TestOnGetCharts(list);
 
             var chart = ToJson(rs[0]!);
             // 三 Y 轴：用户数 / 总数 / 时长
@@ -165,13 +165,13 @@ public class UserStatChartDataTests : IDisposable
         }
     }
 
-    [Fact(DisplayName = "OnGetChartData_空数据_返回空数组")]
-    public void OnGetChartData_Empty_ReturnsEmpty()
+    [Fact(DisplayName = "OnGetCharts_空数据_返回空数组")]
+    public void OnGetCharts_Empty_ReturnsEmpty()
     {
         var ctrl = new TestUserStatController();
 
-        // 直接传空数组（OnGetChartData 内部空列表时兜底查库，但传空则返回 []）
-        var rs = ctrl.TestOnGetChartData([]);
+        // 直接传空数组（OnGetCharts 内部空列表时兜底查库，但传空则返回 []）
+        var rs = ctrl.TestOnGetCharts([]);
 
         Assert.Empty(rs);
     }

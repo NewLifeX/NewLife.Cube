@@ -43,9 +43,7 @@ public class ConfigController<TConfig> : ObjectController<TConfig>, IFormAiConte
     /// <summary>获取配置字段，按当前请求语言本地化</summary>
     /// <param name="kind">视图类型</param>
     /// <returns>本地化后的字段集合</returns>
-    [AllowAnonymous]
-    [HttpGet]
-    public override IList<DataField> GetFields(ViewKinds kind) => DataField.Localize(base.GetFields(kind));
+    protected override IList<DataField> OnGetFields(ViewKinds kind) => DataField.Localize(base.OnGetFields(kind));
 
     /// <summary>获取当前配置表单的字段结构（含当前值与敏感过滤），供 AI 生成填表值</summary>
     /// <param name="mode">表单模式：add 新增 / edit 编辑，默认 edit（配置页恒为编辑既有配置）</param>

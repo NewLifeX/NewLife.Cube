@@ -166,7 +166,7 @@ public class ThreatDetectorTests
     [Theory(DisplayName = "正常请求不误报")]
     [InlineData("/Admin/User/Edit?id=5")]
     [InlineData("/Admin/User?q=%E6%B5%8B%E8%AF%95%E5%85%B3%E9%94%AE%E5%AD%97")]
-    [InlineData("/api/Order/GetPage?pageIndex=1&pageSize=20&sort=CreateTime")]
+    [InlineData("/api/Order/meta?pageIndex=1&pageSize=20&sort=CreateTime")]
     [InlineData("/Admin/Attachment/View?src=data:image/png;base64,iVBORw0KGgoAAAANSUhEUg")]
     [InlineData("/Cube/CronJob/ExecuteNow?id=123456")]
     public void NormalUrl_NotHit(String url)

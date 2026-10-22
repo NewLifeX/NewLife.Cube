@@ -31,7 +31,7 @@ public class UserStatController : ReadOnlyEntityController<UserStat>
     /// <summary>构建图表数据。对齐 MVC 版工作台：主折线图（多系列三Y轴）+ 箱线图 + K线图</summary>
     /// <param name="data">搜索得到的数据列表</param>
     /// <returns>ECharts 配置数组，每个元素为 option 对象</returns>
-    protected override Object[] OnGetChartData(IEnumerable<UserStat> data)
+    protected override Object[] OnGetCharts(IEnumerable<UserStat> data)
     {
         var list = data?.OrderBy(e => e.Date).ToList() ?? [];
         // 无日期参数时 Search 查空，兜底查询近 30 天保证图表默认有数据

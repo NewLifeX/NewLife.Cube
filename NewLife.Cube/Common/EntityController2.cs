@@ -703,16 +703,17 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         return true;
     }
 
-    /// <summary>上传编辑器文件，关联当前实体</summary>
+    /// <summary>上传附件，关联当前实体。路由为 POST /api/{area}/{controller}/attachments</summary>
     /// <param name="file">上传文件</param>
     /// <param name="id">实体主键。大于零时关联已有实体；为零时属新增场景，以临时实体归类路径，表单保存后通过 attachmentIds 绑定主记录</param>
     /// <param name="title">附件标题（主记录显示名）。为空时使用 entity.ToString()；新增场景下主记录尚未保存，可传入预期标题</param>
     /// <returns>附件编号、文件路径、MIME 类型</returns>
-    [HttpPost]
-    public virtual async Task<ActionResult> UploadFile(IFormFile file, String id = null, String title = null)
+    [HttpPost("/api/[area]/[controller]/attachments")]
+    [EntityAuthorize(PermissionFlags.Insert, PermissionFlags.Update)]
+    public virtual async Task<ActionResult> Attachments(IFormFile file, String id = null, String title = null)
     {
         if (!ValidateUploadFile(file, out var error))
-            return new JsonResult(new { error });
+            return Json(CubeCode.ParamError.ToInt(), error);
 
         TEntity entity;
         if (!id.IsNullOrEmpty())
@@ -732,7 +733,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         }
         catch (Exception ex)
         {
-            return new JsonResult(new { error = ex.Message });
+            return Json(0, null, ex);
         }
 
         var url = ViewHelper.GetAttachmentUrl(att);

@@ -136,10 +136,13 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
     #region 列表字段和表单字段
     /// <summary>获取页面元数据。包含页面设置以及列表/表单/搜索字段</summary>
+    /// <remarks>
+    /// 默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 <see cref="AllowAnonymousAttribute"/>。
+    /// </remarks>
     /// <returns></returns>
-    [AllowAnonymous]
-    [HttpGet]
-    public virtual ApiResponse<Object> GetPage()
+    [EntityAuthorize]
+    [HttpGet("/api/[area]/[controller]/meta")]
+    public virtual ApiResponse<Object> Meta()
     {
         // 开发模式与系统管理员标志：驱动前端高级菜单显示备份/还原/清空数据表等开发功能（对齐 MVC Develop 条件）
         var user = CurrentUser as IUser ?? ManageProvider.User;
@@ -190,13 +193,6 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             TraceId = DefaultSpan.Current?.TraceId,
         };
     }
-
-    /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>
-    /// <param name="kind">字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search</param>
-    /// <returns></returns>
-    [AllowAnonymous]
-    [HttpGet]
-    public virtual List<DataField> GetFields(ViewKinds kind) => OnGetFields(kind, null);
     #endregion
 
     #region 列配置
@@ -204,7 +200,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     /// <param name="list">列表字段集合（就地修改）</param>
     protected virtual void ApplyColumnConfig(List<DataField> list)
     {
-        // 页面路径：优先当前菜单 URL（如 /Cube/App）；菜单不可用时从路由推导（/api/Cube/App/GetPage → /Cube/App）
+        // 页面路径：优先当前菜单 URL（如 /Cube/App）；菜单不可用时从路由推导（/api/Cube/App/meta → /Cube/App）
         var page = Menu?.Url;
         if (page.IsNullOrEmpty())
         {
@@ -270,12 +266,12 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     #endregion
 
     #region 图表
-    /// <summary>获取图表数据。子控制器可重写OnGetChartData来提供图表配置</summary>
+    /// <summary>获取图表数据。子控制器可重写OnGetCharts来提供图表配置</summary>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("Chart {type}")]
-    [HttpGet]
-    public virtual Object[] GetChartData()
+    [HttpGet("/api/[area]/[controller]/charts")]
+    public virtual Object[] Charts()
     {
         var p = new Pager(WebHelper.Params)
         {
@@ -285,14 +281,14 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
         var list = SearchData(p);
 
-        return OnGetChartData(list);
+        return OnGetCharts(list);
     }
 
     /// <summary>构建图表数据。子控制器重写此方法以返回ECharts配置</summary>
     /// <param name="data">搜索得到的数据列表</param>
     /// <returns>ECharts配置数组，每个元素包含 title/option 等属性。无图表时返回空数组</returns>
     [NonAction]
-    protected virtual Object[] OnGetChartData(IEnumerable<TEntity> data) => [];
+    protected virtual Object[] OnGetCharts(IEnumerable<TEntity> data) => [];
     #endregion
 
     #region 导出
@@ -301,8 +297,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     /// <returns>文件流</returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("Export {type}")]
-    [HttpGet]
-    public virtual IActionResult ExportFile(String format = "excel")
+    [HttpGet("/api/[area]/[controller]/export")]
+    public virtual IActionResult Export(String format = "excel")
     {
         if (format.IsNullOrEmpty()) format = "excel";
 

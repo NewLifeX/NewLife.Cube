@@ -480,22 +480,22 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         if (entity.Dirtys["RoleID"]) throw new Exception(L.T("The role cannot be changed."));
         if (entity.Dirtys["Enable"]) throw new Exception(L.T("The disabled state cannot be changed."));
 
-        // 头像上传已拆分为独立接口 UploadFile（POST /Admin/User/UploadFile），
+        // 头像上传已拆分为独立接口 Attachments（POST /Admin/User/attachments），
         // 本接口仅负责文本字段更新（昵称/邮箱/手机等）以及 avatar 字段回填。
-        // 前端在上传头像后，将 UploadFile 返回的文件路径回填到 avatar 字段再调用本接口持久化。
+        // 前端在上传头像后，将 Attachments 返回的文件路径回填到 avatar 字段再调用本接口持久化。
         user.Update();
 
         return Json(0, null, user);
     }
 
-    /// <summary>上传头像。复用基类 UploadFile（SaveFile 核心一致），仅做三件事：
-    /// 1) 增加登录鉴权（基类 UploadFile 无 [EntityAuthorize]，直接复用会变成未登录可访问的上传端点）；
+    /// <summary>上传头像。复用基类 Attachments（SaveFile 核心一致），仅做三件事：
+    /// 1) 仅要求登录（覆写时标注 [EntityAuthorize]，不要求 User 实体的新增/修改权限）；
     /// 2) 强制 id 等于当前登录用户，防止越权给其它用户上传头像；
     /// 3) 仅允许图片类型（覆写 ValidateUploadFile，在基类「非空 + 危险扩展名黑名单」基础上加图片白名单）。
     /// 返回附件信息 { attId, filePath, contentType }，前端再调用 Info(avatar=filePath) 持久化头像。</summary>
-    [HttpPost]
+    [HttpPost("/api/[area]/[controller]/attachments")]
     [EntityAuthorize]
-    public override async Task<ActionResult> UploadFile(IFormFile file, String id = null, String title = null)
+    public override async Task<ActionResult> Attachments(IFormFile file, String id = null, String title = null)
     {
         var cur = ManageProvider.User;
         if (cur == null) return RedirectToAction("Login");
@@ -503,9 +503,9 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         // 强制只能为当前登录用户上传头像，避免越权
         var targetId = id.IsNullOrEmpty() ? cur.ID + "" : id;
         if (!targetId.EqualIgnoreCase(cur.ID + ""))
-            return new JsonResult(new { error = L.T("Only the signed-in user can upload an avatar.") });
+            return Json(CubeCode.ParamError.ToInt(), L.T("Only the signed-in user can upload an avatar."));
 
-        return await base.UploadFile(file, cur.ID + "", title);
+        return await base.Attachments(file, cur.ID + "", title);
     }
 
     /// <summary>头像上传校验：在基类「非空 + 危险扩展名黑名单」基础上，限制仅图片类型</summary>
