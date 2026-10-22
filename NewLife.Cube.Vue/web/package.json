@@ -80,7 +80,7 @@
     "jsdom": "^29.0.0",
     "npm-run-all2": "^7.0.2",
     "oxlint": "^0.15.13",
-    "postcss": "^8.5.3",
+    "postcss": "^8.5.23",
     "prettier": "3.5.3",
     "sass": "^1.86.3",
     "sass-loader": "^16.0.5",
