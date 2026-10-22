@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
@@ -8,6 +10,7 @@ using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Remoting;
 using NewLife.Web;
+using XCode;
 using XCode.Membership;
 
 namespace NewLife.Cube;
@@ -206,7 +209,12 @@ public partial class EntityController<TEntity, TModel>
         }
     }
 
-    /// <summary>更新数据</summary>
+    /// <summary>更新数据。支持两种风格：请求体携带主键，或 RESTful 路径 /api/{area}/{controller}/{id}</summary>
+    /// <remarks>
+    /// 语义为"部分更新"：先按主键查出库中记录，再只覆盖本次请求实际提交的字段。
+    /// 提交范围优先取请求 JSON 的顶层字段名，非 JSON 请求退回实体脏字段标记。
+    /// 未提交的字段保持数据库原值，显式提交 null 则清空该字段。
+    /// </remarks>
     /// <param name="model"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Update)]
@@ -214,19 +222,24 @@ public partial class EntityController<TEntity, TModel>
     [HttpPut("/api/[area]/[controller]")]
     public virtual async Task<ApiResponse<TEntity>> Update(TModel model)
     {
-        // 实例化实体对象，然后拷贝
-        if (model is TEntity entity) return await ProcessUpdate(entity);
-
         var uk = Factory.Unique;
         var key = model is IModel ext ? ext[uk.Name] : model.GetValue(uk.Name);
+        if (key == null || key + "" == "") throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("Missing primary key."));
 
-        // 先查出来，再拷贝。这里没有考虑脏数据的问题，有可能拷贝后并没有脏数据
-        entity = FindData(key);
+        // 先查出来，再按提交范围覆盖，避免"未提交字段被默认值清空"
+        var entity = FindData(key);
+        if (entity == null || (entity as IEntity).IsNullKey)
+            throw new XException("The requested data [{0}] does not exist.", key);
 
         try
         {
-            if (model is IModel src)
-                entity.CopyFrom(src, true, true);
+            // 优先用请求 JSON 的顶层字段名确定"提交范围"，能区分"未提交"与"显式 null"；
+            // 非 JSON 请求（如程序内调用）退回实体脏字段标记
+            var fields = await GetSubmittedFieldsAsync();
+            if (fields != null)
+                CopySubmitted(entity, model, fields, uk.Name);
+            else if (model is TEntity submitted)
+                MergeSubmitted(entity, submitted);
             else
                 entity.Copy(model, false, uk.Name);
         }
@@ -236,6 +249,98 @@ public partial class EntityController<TEntity, TModel>
         }
 
         return await ProcessUpdate(entity);
+    }
+
+    /// <summary>把提交实体中实际赋值过的字段覆盖到库中实体</summary>
+    /// <param name="target">库中实体</param>
+    /// <param name="source">请求绑定的实体</param>
+    protected void MergeSubmitted(TEntity target, TEntity source)
+    {
+        var uk = Factory.Unique;
+        var type = typeof(TEntity);
+        var dirtys = ((IEntity)source).Dirtys;
+        foreach (var fi in Factory.Fields)
+        {
+            if (fi.Name.EqualIgnoreCase(uk.Name)) continue;
+            if (!dirtys[fi.Name]) continue;
+
+            var pi = type.GetProperty(fi.Name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            if (pi == null || !pi.CanRead || !pi.CanWrite) continue;
+
+            pi.SetValue(target, pi.GetValue(source));
+        }
+    }
+
+    /// <summary>把模型中被请求 JSON 命中的字段覆盖到库中实体</summary>
+    /// <param name="target">库中实体</param>
+    /// <param name="model">请求绑定的模型</param>
+    /// <param name="fields">请求 JSON 的顶层字段名</param>
+    /// <param name="keyName">主键名，跳过不覆盖</param>
+    protected void CopySubmitted(TEntity target, TModel model, ISet<String> fields, String keyName)
+    {
+        var targetType = typeof(TEntity);
+        var modelType = model.GetType();
+        foreach (var fi in Factory.Fields)
+        {
+            if (fi.Name.EqualIgnoreCase(keyName)) continue;
+            if (!fields.Contains(fi.Name)) continue;
+
+            var tpi = targetType.GetProperty(fi.Name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            var spi = modelType.GetProperty(fi.Name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            if (tpi == null || !tpi.CanWrite || spi == null || !spi.CanRead) continue;
+
+            tpi.SetValue(target, spi.GetValue(model));
+        }
+    }
+
+    /// <summary>读取请求体中实际提交的顶层字段名。未启用缓冲或非 JSON 对象时返回 null</summary>
+    /// <returns></returns>
+    protected async Task<ISet<String>> GetSubmittedFieldsAsync()
+    {
+        var body = Request.Body;
+        if (body == null || !body.CanSeek) return null;
+
+        var position = body.Position;
+        try
+        {
+            body.Position = 0;
+            using var doc = await JsonDocument.ParseAsync(body);
+            if (doc.RootElement.ValueKind != JsonValueKind.Object) return null;
+
+            var set = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
+            foreach (var item in doc.RootElement.EnumerateObject()) set.Add(item.Name);
+
+            return set;
+        }
+        catch
+        {
+            return null;
+        }
+        finally
+        {
+            body.Position = position;
+        }
+    }
+
+    /// <summary>更新数据（RESTful 风格）。主键在路径中，写入模型后转发到 Update 以保留子类重载</summary>
+    /// <param name="id">主键</param>
+    /// <param name="model">提交的模型</param>
+    /// <returns></returns>
+    [EntityAuthorize(PermissionFlags.Update)]
+    [DisplayName("Update {type}")]
+    [HttpPut("/api/[area]/[controller]/{id}")]
+    public virtual Task<ApiResponse<TEntity>> UpdateById(String id, TModel model)
+    {
+        if (id.IsNullOrEmpty()) throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("Missing primary key."));
+
+        // 路径与请求体都带主键时必须一致，避免"路径指向 A、内容改 B"
+        var uk = Factory.Unique;
+        var current = (model is IModel src ? src[uk.Name] : model.GetValue(uk.Name)) + "";
+        if (!current.IsNullOrEmpty() && current != "0" && current != id)
+            throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("The primary key in the route does not match the one in the request body."));
+
+        model.SetValue(uk.Name, id.ChangeType(uk.Type));
+        return Update(model);
     }
 
     /// <summary>更新数据</summary>

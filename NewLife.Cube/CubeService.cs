@@ -332,6 +332,16 @@ public static class CubeService
         // 请求级语言识别，必须早于任何产生用户可见消息的中间件
         app.UseCubeLocalization();
 
+        // PUT 的 JSON 请求体允许重复读取：更新时据此判断"实际提交了哪些字段"，实现真正的部分更新
+        app.Use(async (context, next) =>
+        {
+            if (String.Equals(context.Request.Method, "PUT", StringComparison.OrdinalIgnoreCase) &&
+                context.Request.ContentType?.Contains("json", StringComparison.OrdinalIgnoreCase) == true)
+                context.Request.EnableBuffering();
+
+            await next();
+        });
+
         // 注册中间件
 
         // 服务魔方内嵌静态资源（wwwroot），支持物理目录覆盖
