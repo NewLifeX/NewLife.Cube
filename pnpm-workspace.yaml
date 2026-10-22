@@ -9,4 +9,3 @@ packages:
   - 'NewLife.Cube.Svelte/web'
   - 'NewLife.Cube.TDesign/web'
   - 'NewLife.Cube.Vue/web'
-  - 'NewLife.Cube.React/web'
