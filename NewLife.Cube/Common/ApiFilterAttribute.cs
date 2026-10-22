@@ -49,7 +49,27 @@ public sealed class ApiFilterAttribute : ActionFilterAttribute
     {
         if (context.HttpContext.WebSockets.IsWebSocketRequest) return;
 
-        if (context.Result != null)
+        if (context.Exception != null && !context.ExceptionHandled)
+        {
+            var ex = context.Exception.GetTrue();
+            if (ex is Remoting.ApiException aex)
+                context.Result = new JsonResult(new { code = aex.Code, message = aex.Message, data = aex.Message });
+            else
+            {
+                context.Result = new JsonResult(new { code = 500, message = ex.Message, data = ex.Message });
+                //context.Result = new JsonResult(ex.Message.ToFailApiResponse(ex.Message));
+
+                // 埋点拦截业务异常
+                var action = context.HttpContext.Request.Path + "";
+                if (context.ActionDescriptor is ControllerActionDescriptor act) action = $"/{act.ControllerName}/{act.ActionName}";
+
+                DefaultTracer.Instance?.NewError(action, ex);
+            }
+
+            context.ExceptionHandled = true;
+        }
+        else if (context.Result != null)
+        {
             if (context.Result is ObjectResult obj)
                 context.Result = new JsonResult(new { code = obj.StatusCode ?? 0, data = obj.Value });
             else if (context.Result is EmptyResult)
@@ -57,25 +77,7 @@ public sealed class ApiFilterAttribute : ActionFilterAttribute
                 DefaultTracer.Instance?.NewSpan("apiFilter-EmptyResult");
                 context.Result = new JsonResult(new { code = 0, data = new { } });
             }
-            else if (context.Exception != null && !context.ExceptionHandled)
-            {
-                var ex = context.Exception.GetTrue();
-                if (ex is Remoting.ApiException aex)
-                    context.Result = new JsonResult(new { code = aex.Code, message = aex.Message, data = aex.Message });
-                else
-                {
-                    context.Result = new JsonResult(new { code = 500, message = ex.Message, data = ex.Message });
-                    //context.Result = new JsonResult(ex.Message.ToFailApiResponse(ex.Message));
-
-                    // 埋点拦截业务异常
-                    var action = context.HttpContext.Request.Path + "";
-                    if (context.ActionDescriptor is ControllerActionDescriptor act) action = $"/{act.ControllerName}/{act.ActionName}";
-
-                    DefaultTracer.Instance?.NewError(action, ex);
-                }
-
-                context.ExceptionHandled = true;
-            }
+        }
 
         base.OnActionExecuted(context);
     }
