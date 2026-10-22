@@ -66,11 +66,12 @@ function normalizeLoginConfig(data: LoginConfig): LoginConfig {
  * 返回前对 data 做字段名归一化（oAuth / providers → oauth），该别名兼容为基础库未覆盖，
  * 故保留在皮肤层（@newlifex/api-core 不含此逻辑）。
  *
+ * @param tenant 租户标识（编号/编码/名称），为空时取当前请求上下文
  * @returns 登录配置响应
  * @throws 网络错误或 HTTP 状态码非 200 时抛出异常
  */
-export async function fetchLoginConfig(): Promise<ApiResponse<LoginConfig>> {
-  const json = await user.getLoginConfig();
+export async function fetchLoginConfig(tenant?: string): Promise<ApiResponse<LoginConfig>> {
+  const json = await user.getLoginConfig(tenant);
   if (json?.data) {
     json.data = normalizeLoginConfig(json.data);
   }

@@ -10,15 +10,16 @@ vi.mock('../utils/request', () => ({
   site: { getSite: mocks.getSite },
 }));
 
-import { fetchSiteConfig } from '../utils/loginApi';
+import { fetchLoginConfig, fetchSiteConfig } from '../utils/loginApi';
+
+beforeEach(() => {
+  mocks.getSite.mockReset();
+  mocks.getLoginConfig.mockReset();
+});
 
 describe('fetchSiteConfig', () => {
-  beforeEach(() => {
-    mocks.getSite.mockReset();
-  });
-
   it('把租户标识透传给站点接口', async () => {
-    mocks.getSite.mockResolvedValue({
+    mocks.getSite.mockResolvedValueOnce({
       code: 0,
       data: { name: 'Acme', tenantCode: 'acme' },
     });
@@ -26,14 +27,61 @@ describe('fetchSiteConfig', () => {
     const res = await fetchSiteConfig('acme');
 
     expect(mocks.getSite).toHaveBeenCalledWith('acme');
+    expect(res.code).toBe(0);
     expect(res.data?.name).toBe('Acme');
   });
 
-  it('未指定租户时不传参数', async () => {
-    mocks.getSite.mockResolvedValue({ code: 0, data: { name: 'Cube' } });
+  it('未指定租户时不带租户参数', async () => {
+    mocks.getSite.mockResolvedValueOnce({ code: 0, data: { name: 'Cube' } });
 
     await fetchSiteConfig();
 
     expect(mocks.getSite).toHaveBeenCalledWith(undefined);
+  });
+
+  it('站点接口异常时向上抛出，交由调用方统一处理', async () => {
+    mocks.getSite.mockRejectedValueOnce(new Error('network error'));
+
+    await expect(fetchSiteConfig()).rejects.toThrow('network error');
+  });
+});
+
+describe('fetchLoginConfig', () => {
+  it('把租户标识透传给登录配置接口', async () => {
+    mocks.getLoginConfig.mockResolvedValueOnce({
+      code: 0,
+      data: { enableTenant: true, code: 'acme' },
+    });
+
+    const res = await fetchLoginConfig('acme');
+
+    expect(mocks.getLoginConfig).toHaveBeenCalledWith('acme');
+    expect(res.data?.code).toBe('acme');
+  });
+
+  it('未指定租户时不带租户参数', async () => {
+    mocks.getLoginConfig.mockResolvedValueOnce({ code: 0, data: { enableTenant: false } });
+
+    await fetchLoginConfig();
+
+    expect(mocks.getLoginConfig).toHaveBeenCalledWith(undefined);
+  });
+
+  it('把 oAuth 别名字段归一化为 oauth', async () => {
+    const provider = { name: 'github', logo: '/github.png', nickName: 'GitHub' };
+    mocks.getLoginConfig.mockResolvedValueOnce({ code: 0, data: { oAuth: [provider] } });
+
+    const res = await fetchLoginConfig();
+
+    expect(res.data?.oauth).toEqual([provider]);
+  });
+
+  it('把旧版 providers 字段归一化为 oauth', async () => {
+    const provider = { name: 'gitee', logo: '/gitee.png', nickName: 'Gitee' };
+    mocks.getLoginConfig.mockResolvedValueOnce({ code: 0, data: { providers: [provider] } });
+
+    const res = await fetchLoginConfig();
+
+    expect(res.data?.oauth).toEqual([provider]);
   });
 });
