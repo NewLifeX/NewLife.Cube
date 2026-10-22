@@ -33,4 +33,16 @@ public class ReadOnlyEntityControllerRouteTests
         // 传统 Action 风格：无模板 [HttpGet] 由类级 [Route("api/[area]/[controller]/[action]")] 生成 /Detail 字面量路由
         Assert.Contains((String)null, routes);
     }
+
+    [Fact(DisplayName = "修改与删除同时提供 RESTful 路径主键路由")]
+    public void UpdateAndDelete_HaveRestfulIdRoute()
+    {
+        var update = typeof(EntityController<,>).GetMethod("UpdateById");
+        var putRoutes = update!.GetCustomAttributes<HttpPutAttribute>().Select(e => e.Template).ToArray();
+        Assert.Contains("/api/[area]/[controller]/{id}", putRoutes);
+
+        var delete = typeof(EntityController<,>).GetMethod("DeleteById");
+        var delRoutes = delete!.GetCustomAttributes<HttpDeleteAttribute>().Select(e => e.Template).ToArray();
+        Assert.Contains("/api/[area]/[controller]/{id}", delRoutes);
+    }
 }
