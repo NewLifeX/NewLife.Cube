@@ -23,23 +23,38 @@ namespace NewLife.Cube;
 public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
 {
     #region 属性
-    /// <summary>授权项</summary>
+    /// <summary>授权项。多授权项时取第一个，用于菜单权限项展示</summary>
     public PermissionFlags Permission { get; }
+
+    /// <summary>授权项集合。多个授权项之间是“或”的关系；全部为 None 时表示只需登录</summary>
+    public PermissionFlags[] Permissions { get; } = [PermissionFlags.None];
     #endregion
 
     #region 构造
     static EntityAuthorizeAttribute() => XTrace.WriteLine(L.TLog("Register filter: {0}", typeof(EntityAuthorizeAttribute).FullName));
 
-    /// <summary>实例化实体授权特性</summary>
+    /// <summary>实例化实体授权特性。只需登录，不校验具体权限位</summary>
     public EntityAuthorizeAttribute() { }
 
     /// <summary>实例化实体授权特性</summary>
     /// <param name="permission"></param>
     public EntityAuthorizeAttribute(PermissionFlags permission)
     {
-        if (permission < PermissionFlags.None) throw new ArgumentNullException(nameof(permission));
+        // None 表示只需登录，All(-1) 为合法的全权限组合；仅拒绝未知负值
+        if (permission < PermissionFlags.None && permission != PermissionFlags.All) throw new ArgumentNullException(nameof(permission));
 
         Permission = permission;
+        Permissions = [permission];
+    }
+
+    /// <summary>实例化实体授权特性。多个授权项之间是“或”的关系</summary>
+    /// <param name="permissions"></param>
+    public EntityAuthorizeAttribute(params PermissionFlags[] permissions)
+    {
+        if (permissions == null || permissions.Length == 0) throw new ArgumentNullException(nameof(permissions));
+
+        Permissions = permissions;
+        Permission = permissions[0];
     }
     #endregion
 
@@ -102,12 +117,12 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         if (user == null) return false;
 
         // 如果没有指定权限，则只要登录即可
-        if (Permission == PermissionFlags.None) return true;
+        if (Permissions.All(e => e == PermissionFlags.None)) return true;
 
-        // 判断权限
+        // 判断权限（多个授权项之间是“或”的关系）
         if (menu != null)
         {
-            if (user is IUser user2) return user2.Has(menu, Permission);
+            if (user is IUser user2) return user2.Has(menu, Permissions);
 
             var msg = $"访问资源[{menu}]时无法验证用户[{user}]的权限";
             LogProvider.Provider.WriteLog(L.TLog("Access"), L.TLog("Deny"), false, msg, ip: ctx.GetUserHost());
