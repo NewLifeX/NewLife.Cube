@@ -8,6 +8,7 @@ using NewLife.Cube.Extensions;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Remoting;
+using NewLife.Security;
 using NewLife.Serialization;
 using XCode.Membership;
 using IActionFilter = Microsoft.AspNetCore.Mvc.Filters.IActionFilter;
@@ -145,6 +146,13 @@ public class ControllerBaseX : ControllerBase, IActionFilter
 
         var traceId = DefaultSpan.Current?.TraceId;
 
+        // 304 条件请求：动作已写入状态码，直接返回空结果，避免被包装成 200 JSON
+        if (HttpContext.Response.StatusCode == 304 && !HttpContext.Response.HasStarted)
+        {
+            context.Result = new StatusCodeResult(304);
+            return;
+        }
+
         if (context.Result != null)
         {
             if (context.Result is ObjectResult obj)
@@ -256,6 +264,48 @@ public class ControllerBaseX : ControllerBase, IActionFilter
             FullTime = false// yyyy-MM-dd HH:mm:ss
         });
         return json;
+    }
+
+    /// <summary>校验条件请求。数据哈希与 If-None-Match 匹配时写入 304 并返回 true</summary>
+    /// <param name="data">响应数据（不含信封与 TraceId）</param>
+    /// <returns>是否命中缓存，调用方应返回 null</returns>
+    protected virtual Boolean CheckNotModified(Object data)
+    {
+        if (data == null) return false;
+
+        String json;
+        try
+        {
+            json = data.ToJson();
+        }
+        catch
+        {
+            // 序列化失败时放弃 ETag，不影响正常响应
+            return false;
+        }
+
+        var etag = "\"" + json.MD5() + "\"";
+        Response.Headers["ETag"] = etag;
+        Response.Headers["Cache-Control"] = "private, no-cache";
+        Response.Headers["Vary"] = "Accept-Language";
+
+        var inm = Request.Headers.IfNoneMatch;
+        foreach (var item in inm)
+        {
+            if (item.IsNullOrEmpty()) continue;
+
+            foreach (var part in item.Split(','))
+            {
+                var tag = part.Trim();
+                if (tag == "*" || tag == etag || tag == "W/" + etag)
+                {
+                    Response.StatusCode = 304;
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
     #endregion
 

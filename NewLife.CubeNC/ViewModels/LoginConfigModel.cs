@@ -1,4 +1,3 @@
-﻿using NewLife.Common;
 using NewLife.Cube.Entity;
 using XCode.Membership;
 
@@ -81,7 +80,6 @@ public class OAuthProviderModel
 public class LoginConfigModel
 {
     private readonly CubeSetting _set;
-    private readonly SysConfig _sys;
     private readonly Tenant _tenant;
 
     /// <summary>风险自适应验证码判定结果（登录场景）。null 表示未注入，回退 CaptchaScene</summary>
@@ -109,7 +107,6 @@ public class LoginConfigModel
     public LoginConfigModel(Tenant tenant = null)
     {
         _set = CubeSetting.Current;
-        _sys = SysConfig.Current;
         _tenant = tenant;
     }
 
@@ -118,27 +115,6 @@ public class LoginConfigModel
 
     /// <summary>租户Code。有租户时返回租户标识，无租户时为空</summary>
     public String Code => _tenant?.Code;
-
-    /// <summary>系统名称。租户级 Name 优先，回退到全局 DisplayName</summary>
-    public String Name => !_tenant?.Name.IsNullOrEmpty() == true ? _tenant.Name : _sys.DisplayName;
-
-    /// <summary>版权信息。动态替换 {now:yyyy} 等变量，留空不显示</summary>
-    public String Copyright => _set.GetCopyright();
-
-    /// <summary>备案号。留空不显示</summary>
-    public String Registration => _set.Registration;
-
-    /// <summary>Logo图标地址。留空时由前端皮肤使用内置默认</summary>
-    public String Logo => String.Empty;
-
-    /// <summary>登录提示。租户级 Remark 优先，回退到全局 LoginTip</summary>
-    public String LoginTip => _set.LoginTip;
-
-    /// <summary>登录页 Logo。留空时由前端皮肤使用内置默认</summary>
-    public String LoginLogo => _set.LoginLogo;
-
-    /// <summary>登录页背景图。留空时由前端皮肤使用内置默认</summary>
-    public String LoginBackground => _set.LoginBackground;
 
     /// <summary>登录能力配置</summary>
     public LoginAbilityModel Login => new()

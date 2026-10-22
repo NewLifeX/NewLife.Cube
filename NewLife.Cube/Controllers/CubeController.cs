@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Areas.Cube.Controllers;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Models;
 using NewLife.Cube.Services;
 using NewLife.Cube.Web;
 using NewLife.Data;
@@ -157,6 +158,38 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         if (token.IsNullOrEmpty()) token = request.Cookies["Token"] + "";
 
         return token;
+    }
+    #endregion
+
+    #region 站点配置
+    /// <summary>获取站点配置。为登录页与前台页面提供匿名可缓存的品牌、语言与功能开关</summary>
+    /// <param name="tenant">租户标识，支持编号、编码或名称；为空时取当前请求上下文</param>
+    /// <returns>站点配置</returns>
+    [AllowAnonymous]
+    [HttpGet]
+    public ActionResult Site(String tenant = null)
+    {
+        var model = new SiteConfigModel(ResolveTenant(tenant));
+
+        // 站点配置按语言与租户公共缓存，条件请求命中时返回 304
+        var notModified = CheckNotModified(model);
+        Response.Headers["Cache-Control"] = "public, max-age=60";
+        Response.Headers["Vary"] = "Accept-Language, X-Tenant";
+        if (notModified) return new EmptyResult();
+
+        return Json(0, null, model);
+    }
+
+    private static ITenant ResolveTenant(String tenant)
+    {
+        if (!tenant.IsNullOrEmpty())
+        {
+            if (Int32.TryParse(tenant, out var id)) return Tenant.FindById(id);
+
+            return Tenant.FindByCode(tenant) ?? Tenant.Find(Tenant._.Name == tenant);
+        }
+
+        return TenantContext.Current?.Tenant;
     }
     #endregion
 
