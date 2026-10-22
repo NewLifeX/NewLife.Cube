@@ -66,22 +66,4 @@ describe('fetchLoginConfig', () => {
 
     expect(mocks.getLoginConfig).toHaveBeenCalledWith(undefined);
   });
-
-  it('把 oAuth 别名字段归一化为 oauth', async () => {
-    const provider = { name: 'github', logo: '/github.png', nickName: 'GitHub' };
-    mocks.getLoginConfig.mockResolvedValueOnce({ code: 0, data: { oAuth: [provider] } });
-
-    const res = await fetchLoginConfig();
-
-    expect(res.data?.oauth).toEqual([provider]);
-  });
-
-  it('把旧版 providers 字段归一化为 oauth', async () => {
-    const provider = { name: 'gitee', logo: '/gitee.png', nickName: 'Gitee' };
-    mocks.getLoginConfig.mockResolvedValueOnce({ code: 0, data: { providers: [provider] } });
-
-    const res = await fetchLoginConfig();
-
-    expect(res.data?.oauth).toEqual([provider]);
-  });
 });

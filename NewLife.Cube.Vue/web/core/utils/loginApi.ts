@@ -16,44 +16,7 @@
  * 业务调用方在 catch 中处理失败即可（无需自行弹错，避免重复提示）。
  */
 import { user, site } from './request';
-import type { ApiResponse, LoginConfig, LoginResult, OAuthProvider, RegisterModel, SiteConfig, VerifyStatus } from '@newlifex/api-core';
-
-// ── 字段名归一化工具（皮肤专属，基础库无此逻辑，仅保留） ─────────────
-
-/**
- * 归一化登录配置字段名
- *
- * 后端 /Auth/LoginConfig 可能返回以下字段名变体：
- * - `oAuth`（C# 属性名 PascalCase 风格，首字母大写 O）→ 标准字段 `oauth`
- * - `providers`（v1 旧版字段名）→ 标准字段 `oauth`
- *
- * 归一化后确保 LoginConfig.oauth 始终有值（如果后端返回了的话）。
- * 该别名兼容由后端历史版本决定，基础库未做此处理，故保留在皮肤层。
- *
- * @param data 后端原始返回的 LoginConfig
- * @returns 归一化后的 LoginConfig
- */
-function normalizeLoginConfig(data: LoginConfig): LoginConfig {
-  // 浅拷贝，避免修改原始对象
-  const result: LoginConfig = { ...data };
-
-  // 用 Record 类型访问非标准字段名
-  const raw = data as Record<string, unknown>;
-
-  // 如果标准 oauth 字段为空，尝试从 oAuth / providers 补充
-  if (!result.oauth || result.oauth.length === 0) {
-    const oAuth = raw.oAuth as OAuthProvider[] | undefined;
-    const providers = raw.providers as OAuthProvider[] | undefined;
-    if (oAuth && Array.isArray(oAuth) && oAuth.length > 0) {
-      result.oauth = oAuth;
-    } else if (providers && Array.isArray(providers) && providers.length > 0) {
-      // v1 旧版字段名 providers → oauth
-      result.oauth = providers;
-    }
-  }
-
-  return result;
-}
+import type { ApiResponse, LoginConfig, LoginResult, RegisterModel, SiteConfig, VerifyStatus } from '@newlifex/api-core';
 
 // ── API 函数（全部委托 @newlifex/api-core 的 user 认证 API） ─────────
 
@@ -63,19 +26,12 @@ function normalizeLoginConfig(data: LoginConfig): LoginConfig {
  * 委托 user.getLoginConfig 调用 GET /Auth/LoginConfig，返回登录/注册能力、
  * OAuth 提供商列表、安全策略等。品牌、版权等站点信息由 /Cube/Site 返回。
  *
- * 返回前对 data 做字段名归一化（oAuth / providers → oauth），该别名兼容为基础库未覆盖，
- * 故保留在皮肤层（@newlifex/api-core 不含此逻辑）。
- *
  * @param tenant 租户标识（编号/编码/名称），为空时取当前请求上下文
  * @returns 登录配置响应
  * @throws 网络错误或 HTTP 状态码非 200 时抛出异常
  */
 export async function fetchLoginConfig(tenant?: string): Promise<ApiResponse<LoginConfig>> {
-  const json = await user.getLoginConfig(tenant);
-  if (json?.data) {
-    json.data = normalizeLoginConfig(json.data);
-  }
-  return json;
+  return user.getLoginConfig(tenant);
 }
 
 /**
