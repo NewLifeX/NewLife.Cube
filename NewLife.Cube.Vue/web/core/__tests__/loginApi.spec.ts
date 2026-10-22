@@ -66,4 +66,10 @@ describe('fetchLoginConfig', () => {
 
     expect(mocks.getLoginConfig).toHaveBeenCalledWith(undefined);
   });
+
+  it('登录配置接口异常时向上抛出，交由调用方统一处理', async () => {
+    mocks.getLoginConfig.mockRejectedValueOnce(new Error('network error'));
+
+    await expect(fetchLoginConfig()).rejects.toThrow('network error');
+  });
 });
