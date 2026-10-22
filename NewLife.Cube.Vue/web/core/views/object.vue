@@ -2,7 +2,7 @@
 /**
  * 单对象/配置页（对应后端 ObjectController / ConfigController）。
  * - GET  apiPrefix            -> 单对象（{code,data}）
- * - GET  apiPrefix/GetFields?kind=4 -> 编辑表单字段
+ * - GET  apiPrefix/meta -> 页面设置与编辑表单字段
  * - PUT  apiPrefix            -> 保存
  * 与列表页（index.vue）共用 FormContent 渲染，由 AutoPage 根据响应形态自动分流。
  */
@@ -31,8 +31,9 @@ async function load() {
   try {
     const objRes: any = await request({ url: apiPrefix.value, method: 'get' });
     model.value = objRes?.data ?? {};
-    const fldRes: any = await request({ url: `${apiPrefix.value}/GetFields?kind=4`, method: 'get' });
-    const raw: any[] = Array.isArray(fldRes) ? fldRes : fldRes?.data ?? [];
+    const fldRes: any = await request({ url: `${apiPrefix.value}/meta`, method: 'get' });
+    const meta = fldRes?.data ?? fldRes;
+    const raw: any[] = Array.isArray(meta?.editForm) ? meta.editForm : [];
     // 过滤主键与只读字段（与列表编辑表单一致）
     fields.value = raw.filter((f: any) => !f.primaryKey && !f.readOnly);
   } catch (e) {

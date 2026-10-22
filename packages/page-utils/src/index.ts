@@ -142,7 +142,7 @@ export function getMenuPermission<T extends MenuNode>(menus: T[], path: string):
  */
 export function buildExportUrl(type: string, format: string, baseUrl?: string): string {
   const base = baseUrl ?? '';
-  return `${base}${type}/ExportFile?format=${encodeURIComponent(format)}`;
+  return `${base}${type}/export?format=${encodeURIComponent(format)}`;
 }
 
 /**

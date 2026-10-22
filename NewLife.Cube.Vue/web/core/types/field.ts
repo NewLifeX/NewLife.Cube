@@ -1,7 +1,7 @@
 /**
  * 字段映射共享类型定义（全项目唯一契约来源）
  *
- * 后端 GetPage 下发的字段元数据（NewLife.Cube `DataField`）经前端归一为 `FieldMeta`，
+ * 后端 meta 下发的字段元数据（NewLife.Cube `DataField`）经前端归一为 `FieldMeta`，
  * 由 `web/core/utils/fieldControl.ts` 统一解析为控件类型，驱动
  * 列表渲染 / 动态搜索 / 表单编辑 三处视图。
  *

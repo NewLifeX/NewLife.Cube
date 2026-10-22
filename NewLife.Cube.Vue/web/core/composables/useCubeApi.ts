@@ -77,9 +77,6 @@ export function usePageApi(area: string, controller: string) {
     /** 获取页面元数据（字段配置 + 页面设置） */
     getPage: () => cubeApi.page.getPage(type),
 
-    /** 获取指定类型的字段列表 */
-    getFields: (kind: number) => cubeApi.page.getFields(type, kind),
-
     /** 分页列表查询 */
     getList: <T = Record<string, unknown>>(params: PageParams) =>
       cubeApi.page.getList<T>(type, params),

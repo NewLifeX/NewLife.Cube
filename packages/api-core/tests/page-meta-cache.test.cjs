@@ -1,4 +1,4 @@
-// GetPage 内存缓存单元测试（node:test + 已构建 dist，零额外依赖）
+// meta 内存缓存单元测试（node:test + 已构建 dist，零额外依赖）
 // 运行：在 packages/api-core 目录 `node --test tests/`（需先 `pnpm build` 生成 dist）
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -8,8 +8,10 @@ test('getPage: 同一 type 二次调用命中缓存，request 只发一次', asy
   clearPageMetaCache();
 
   let calls = 0;
-  const request = async () => {
+  let lastUrl = '';
+  const request = async (config) => {
     calls++;
+    lastUrl = config?.url ?? '';
     return { code: 0, data: { setting: {}, list: [], search: [], addForm: [], editForm: [], detail: [] } };
   };
   const api = createPageApi(request);
@@ -17,6 +19,7 @@ test('getPage: 同一 type 二次调用命中缓存，request 只发一次', asy
   const r1 = await api.getPage('/Admin/Log');
   const r2 = await api.getPage('/Admin/Log');
   assert.equal(calls, 1, '命中缓存后不应再次请求');
+  assert.equal(lastUrl, '/Admin/Log/meta', '元数据端点应为 {type}/meta');
   assert.equal(r1.data.list.length, 0);
   assert.deepEqual(r2, r1, '缓存响应应与首次一致');
 });

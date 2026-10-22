@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * 自动分页包装：根据后端响应形态在「列表页」与「单对象页」之间分流，
- * 避免对象控制器（ObjectController/ConfigController）因缺少 GetPage 而白屏。
+ * 避免对象控制器（ObjectController/ConfigController）因缺少 meta 而白屏。
  *
  * 判定规则（无 404 探测，两种控制器均返回 200）：
  * - 列表控制器 Index 返回 { data:[...], page:{...} }（无 code 字段）

@@ -8,8 +8,8 @@
  * 渲染在 `core/components/CubeTable/`，三者职责互不重叠。
  *
  * 两种驱动模式：
- *   - **元数据驱动**（默认页面主路径）：给 `routePath`，引擎拉 `GET {type}/GetPage` 归一字段；
- *   - **配置驱动**（业务整页 / 嵌入复用）：给 `apiPrefix` + `fields`，引擎跳过 `GetPage`，
+ *   - **元数据驱动**（默认页面主路径）：给 `routePath`，引擎拉 `GET {type}/meta` 归一字段；
+ *   - **配置驱动**（业务整页 / 嵌入复用）：给 `apiPrefix` + `fields`，引擎跳过 `meta`，
  *     直接消费前端字段定义 —— 这是业务页「不写 Section 也能定制整页」的合法出口。
  *
  * 数据访问**只经注入的 `deps.http`**，不依赖 `core/dataset/DataSet`：
@@ -497,7 +497,7 @@ export function createCubeEngine(
     try {
       const blob = deps.exportFile
         ? await deps.exportFile(type.value, params)
-        : await fetchBlob(`${type.value}/ExportFile`, params);
+        : await fetchBlob(`${type.value}/export`, params);
       const name = buildDownloadName(
         entityNameFromPrefix(type.value),
         dateStamp(),
@@ -566,7 +566,7 @@ export function createCubeEngine(
   async function postImport(file: File): Promise<unknown> {
     const formData = new FormData();
     formData.append('file', file);
-    return deps.http.post(`${type.value}/ImportFile`, formData, {
+    return deps.http.post(`${type.value}/import`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   }

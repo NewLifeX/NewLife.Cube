@@ -26,9 +26,9 @@ Pinia 状态集中在 `core/stores/`：
 
 ## 默认页面
 
-> **目标架构（ADR 0005）**：默认列表页 `core/views/index.vue` 仅渲染 `<CubeTable />`，由 `CubeEngine`（`core/engine/createCubeEngine.ts` 纯工厂 + `useCubeEngine` composable）按当前路由自动创建上下文，并驱动搜索/工具栏/表格/分页/新增编辑弹窗。字段元数据来自后端 `GetPage`（六数组 `setting/list/addForm/editForm/detail/search`），归一为 `FieldMeta[]`。业务定制一律用 `CubeTable` 具名插槽（见 `reference/route-conventions.md` 与 `guides/customize-page.md`）。
+> **目标架构（ADR 0005）**：默认列表页 `core/views/index.vue` 仅渲染 `<CubeTable />`，由 `CubeEngine`（`core/engine/createCubeEngine.ts` 纯工厂 + `useCubeEngine` composable）按当前路由自动创建上下文，并驱动搜索/工具栏/表格/分页/新增编辑弹窗。字段元数据来自后端 `meta`（六数组 `setting/list/addForm/editForm/detail/search`），归一为 `FieldMeta[]`。业务定制一律用 `CubeTable` 具名插槽（见 `reference/route-conventions.md` 与 `guides/customize-page.md`）。
 
-> **当前遗留实现**：过渡期内 `core/views/index.vue` 仍是「`GetPage` + `useSections` 的 Section 组合 + 命令式 `openListFormDialog`」的旧实现（约 470 行）。按 `architecture/cube-engine.md` §7 的 P0–P6 路线，旧实现将逐步被 `CubeTable` + 引擎取代；存量 Section 覆盖页面由兼容桥保留至 P6 移除。详见 `decisions/0005`。
+> **当前遗留实现**：过渡期内 `core/views/index.vue` 仍是「`meta` + `useSections` 的 Section 组合 + 命令式 `openListFormDialog`」的旧实现（约 470 行）。按 `architecture/cube-engine.md` §7 的 P0–P6 路线，旧实现将逐步被 `CubeTable` + 引擎取代；存量 Section 覆盖页面由兼容桥保留至 P6 移除。详见 `decisions/0005`。
 
 catch-all 解析入口 `core/pages/DefaultEntity.vue` 依据菜单匹配页面路径，渲染应用覆盖页或框架默认列表页，未匹配时回退 `PageNotFound`。
 

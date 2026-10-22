@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * 列表页「图表」按钮 + 弹窗（GetChartData）
+ * 列表页「图表」按钮 + 弹窗（charts）
  *
  * 魔方后台的通用能力，但不属于 `CubeTable` 的职责（组件只管一张表的 CRUD），
  * 所以从默认页里抽出来单独复用：默认列表页与需要它的自定义视图页都用这一个。
@@ -32,10 +32,10 @@ const prefix = computed(() => props.api ?? routeToApiPrefix(route.path));
 const visible = ref(false);
 const charts = ref<Record<string, unknown>[]>([]);
 
-/** 后端未实现 GetChartData 时按失败提示，而不是弹一个空图表窗 */
+/** 后端未实现 charts 时按失败提示，而不是弹一个空图表窗 */
 async function open(): Promise<void> {
   try {
-    const res = (await request.get(`${prefix.value}/GetChartData`)) as { data?: unknown };
+    const res = (await request.get(`${prefix.value}/charts`)) as { data?: unknown };
     const data = res?.data ?? res;
     charts.value = Array.isArray(data) ? (data as Record<string, unknown>[]) : [];
     visible.value = true;

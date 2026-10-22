@@ -95,7 +95,7 @@ import * as echarts from 'echarts';
           </nz-dropdown-menu>
         }
         @if (canImport) {
-          <nz-upload *nzSpaceItem [nzAction]="typePath + '/ImportFile'" [nzShowUploadList]="false" (nzChange)="onImportChange($event)">
+          <nz-upload *nzSpaceItem [nzAction]="typePath + '/import'" [nzShowUploadList]="false" (nzChange)="onImportChange($event)">
             <button nz-button><span nz-icon nzType="upload"></span>导入</button>
           </nz-upload>
         }

@@ -2,7 +2,7 @@
 /**
  * 表单页（默认模板）
  *
- * 自动模式下从后端 GetPage 拉取 addForm / editForm 字段元数据，归一为 `FieldMeta[]`
+ * 自动模式下从后端 meta 拉取 addForm / editForm 字段元数据，归一为 `FieldMeta[]`
  * 交给 `FormContent` 统一渲染（控件解析由 fieldControl.ts 的 resolveControl 完成，
  * 本文件不再维护本地 TYPE_TO_FORM_TYPE 映射，彻底消除与列表页的不一致）。
  */
@@ -118,9 +118,9 @@ function backendFieldsToFormFields(fields: BackendField[]): FieldMeta[] {
 async function fetchPageMeta() {
   if (!auto.value) return;
   try {
-    console.log('[DefaultForm] GetPage:', apiPrefix.value + '/GetPage');
-    const res = await request({ url: apiPrefix.value + '/GetPage', method: 'get' });
-    const meta = res as any;
+    console.log('[DefaultForm] meta:', apiPrefix.value + '/meta');
+    const res = await request({ url: apiPrefix.value + '/meta', method: 'get' });
+    const meta = res?.data ?? res;
     pageMeta.value = meta;
     const sourceFields = isEdit.value ? meta.editForm : meta.addForm;
     if (sourceFields && sourceFields.length > 0) {
@@ -129,7 +129,7 @@ async function fetchPageMeta() {
       internalFields.value = backendFieldsToFormFields(meta.addForm ?? meta.editForm ?? []);
     }
   } catch (err) {
-    console.error('[DefaultForm] GetPage failed:', err);
+    console.error('[DefaultForm] meta failed:', err);
   }
 }
 

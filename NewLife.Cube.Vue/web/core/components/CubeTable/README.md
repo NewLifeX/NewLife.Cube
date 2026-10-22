@@ -35,7 +35,7 @@
 ## 最小用法
 
 ```vue
-<!-- 默认列表页：按当前路由推导实体，拉 GetPage 元数据，渲染完整 CRUD -->
+<!-- 默认列表页：按当前路由推导实体，拉 meta 元数据，渲染完整 CRUD -->
 <template>
   <CubeTable />
 </template>
@@ -71,7 +71,7 @@ const history = useCubeEngine({ apiPrefix: '/api/Andon/History', pageSize: 10 })
 ```
 
 ```vue
-<!-- 配置驱动：后端没配 GetPage 也能用，字段由页面自己给 -->
+<!-- 配置驱动：后端没配 meta 也能用，字段由页面自己给 -->
 <template>
   <CubeTable :context="ctx" />
 </template>
@@ -190,7 +190,7 @@ const ctx = useCubeEngine({
 
 与 MES 的**有意差异**（其余口径一致）：
 
-1. 列、条件、表单默认由 `GetPage` 元数据生成（MES 是页面各写一遍 `columns` / `formFields`）；
+1. 列、条件、表单默认由 `meta` 元数据生成（MES 是页面各写一遍 `columns` / `formFields`）；
    要自己写列就用 `#default`。
 2. 取数失败就地说明在表格空态里，不再顶部弹错误条（`ElMessage` 由引擎统一提示）。
 3. 「图表」这类后台专属能力不属于组件：由页面经 `#toolbar-extra` 挂到统计行右侧，与「设置列」「刷新」同组
@@ -234,7 +234,7 @@ const ctx = useCubeEngine({
 - **整行回传前清洗 PascalCase 别名键**：回包里 `enable:true` 与 `Enable:1` 并存时，
   反序列化会取到后出现的旧值 → 实体与库里一致 → 更新被**静默忽略**（接口照样返回成功文案）。
 - **详情回包期间的弹窗是骨架屏**：否则用户已经往默认值上敲了字，回包一到就把输入覆盖掉。
-- **导入 0 行降级为警示**：后端 `ImportFile` 的 `message` 里「共0行」「成功[0]行」意味着一行都没落库
+- **导入 0 行降级为警示**：后端 `import` 的 `message` 里「共0行」「成功[0]行」意味着一行都没落库
   （多半是表头和字段名/显示名对不上），此时报「成功」就是在骗人。
 - **导出按 `Content-Type` 定扩展名**：xlsx 的 `spreadsheetml` 必须识别，否则会存成打不开的 `.bin`。
 - **值集标签只有一个来源**：`LovSelect` 与 `core/components/LovSelect/lovStore.ts` 的会话级缓存。

@@ -124,7 +124,7 @@ export interface DataField {
   multiple?: boolean;
 }
 
-/** 页面设置（GetPage.data.setting） */
+/** 页面设置（meta.data.setting） */
 export interface PageSetting {
   navView?: string;
   enableNavbar?: boolean;
@@ -143,7 +143,7 @@ export interface PageSetting {
   isSystem?: boolean;
 }
 
-/** GetPage 聚合元数据 */
+/** meta 聚合元数据 */
 export interface PageMeta {
   /** 新结构：页面设置 */
   setting?: PageSetting;
@@ -171,7 +171,7 @@ export interface PageMeta {
   };
 }
 
-/** GetFields 的 kind 参数枚举 */
+/** 字段视图类型枚举（保留给需要单场景字段的调用方；实体元数据统一由 meta 返回） */
 export enum FieldKind {
   /** 列表字段 */
   List = 1,

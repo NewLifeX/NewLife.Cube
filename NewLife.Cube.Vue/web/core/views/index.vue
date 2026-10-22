@@ -7,7 +7,7 @@
  *
  * 本文件只补两件 CubeTable 不该内置的事：
  *   - 页头（标题可由 `ListPageHeader` Section 覆盖，默认 `ListPageHeader.vue`）；
- *   - 「图表」（`GetChartData` 是魔方后台专属能力，放统计行右侧与「设置列」「刷新」同组）。
+ *   - 「图表」（`charts` 是魔方后台专属能力，放统计行右侧与「设置列」「刷新」同组）。
  */
 import { defineAsyncComponent, inject } from 'vue';
 import { useRoute } from 'vue-router';

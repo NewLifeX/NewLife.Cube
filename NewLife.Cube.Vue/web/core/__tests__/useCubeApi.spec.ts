@@ -17,7 +17,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const h = vi.hoisted(() => {
   const page = {
     getPage: vi.fn(),
-    getFields: vi.fn(),
     getList: vi.fn(),
     getDetail: vi.fn(),
     add: vi.fn(),

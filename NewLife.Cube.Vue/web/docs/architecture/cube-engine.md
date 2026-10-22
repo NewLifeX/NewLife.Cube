@@ -12,8 +12,8 @@
 
 | 维度 | 原始方案假设 | 本项目实际 | 本方案处理 |
 | --- | --- | --- | --- |
-| 后端配置 | 下发 `CubeSchema`（单数组 + `inSearch/inTable/inForm` 标志） | `GetPage` 已下发 `PageMeta`：`setting/list/addForm/editForm/detail/search` 六组独立 `BackendField[]`，前端归一为 `FieldMeta[]` | **复用** `PageMeta` + `FieldMeta`；“六数组分离”比单数组加标志更强，不重造 `CubeFieldConfig` |
-| 配置接口 | `/api/{moduleCode}/schema` | `GET {type}/GetPage`（`type` 由 `routeToApiPrefix(route.path)` 推导为 `/Area/Controller`） | 改用 `GetPage`；模块标识用 `routeToApiPrefix`，与 `DefaultEntity.vue` / `index.vue` 一致 |
+| 后端配置 | 下发 `CubeSchema`（单数组 + `inSearch/inTable/inForm` 标志） | `meta` 已下发 `PageMeta`：`setting/list/addForm/editForm/detail/search` 六组独立 `BackendField[]`，前端归一为 `FieldMeta[]` | **复用** `PageMeta` + `FieldMeta`；“六数组分离”比单数组加标志更强，不重造 `CubeFieldConfig` |
+| 配置接口 | `/api/{moduleCode}/schema` | `GET {type}/meta`（`type` 由 `routeToApiPrefix(route.path)` 推导为 `/Area/Controller`） | 改用 `meta`；模块标识用 `routeToApiPrefix`，与 `DefaultEntity.vue` / `index.vue` 一致 |
 | 路由推导 | `route.meta.moduleCode` | 菜单驱动动态路由，`DefaultEntity.vue` 按 `menuStore.flatMenus` 匹配 `route.path` 解析页面 | 引擎以 `route.path` 推导 `type`，与现有约定一致 |
 | 数据访问 | 直接 `import request` 手写 CRUD | 已存在 `usePageApi`（`@newlifex/api-core`）与 `DataSet` 类，且 `index.vue` 仍用裸 `request` 自建逻辑 | **数据层用 `DataSet`**（对齐 `TODO.md` P0）；元数据/LOV 用 `usePageApi`；收敛 `index.vue` 裸请求 |
 | 生命周期 | 塞进 `provideCubeContext()` | `onMounted` 仅在 `setup` 同步调用才有效 | 拆为**纯工厂 `createCubeEngine(deps)`**（无生命周期、可单测）+ 薄 composable `useCubeEngine()`（`onMounted(() => ctx.init())`） |
@@ -22,7 +22,7 @@
 | “0 行 JS 页面” | 靠 `CubeProvider` | `DefaultEntity.vue` 已是 catch-all | 默认 `index.vue` = `<CubeTable />`；定制在插槽内完成 |
 
 > **评审中发现的两处关键事实（已据以修订，v3 仍成立）**：
-> 1. `usePageApi.getPage()` 返回 `ApiResponse<PageMeta>`，须经 `.data` 取 `PageMeta`（不是直接返回 `PageMeta`）。
+> 1. `usePageApi.meta()` 返回 `ApiResponse<PageMeta>`，须经 `.data` 取 `PageMeta`（不是直接返回 `PageMeta`）。
 > 2. 项目 `TODO.md` 已把“**集成 DataSet 到默认视图**”列为 P0/高优先级——这直接决定了引擎数据层应选 `DataSet`，而非 `usePageApi` 的 CRUD 方法（后者删除端点为 `?id=` 查询式，与 `index.vue` 当前可用的路径式 `DELETE /{id}` 不一致，贸然切换会破坏删除）。
 
 > **v3 新增方向性决定**：**废除 Section 覆盖机制**。原 `decisions/0004` 与 `reference/route-conventions.md` 描述的“按文件名覆盖 `ListSearchBar` 等 Section”路径，统一收敛为 **`CubeTable` + 插槽**。理由见 §5 与 `decisions/0005`。
@@ -45,17 +45,17 @@
 
 | 能力 | 位置 | 说明 |
 | --- | --- | --- |
-| 元数据契约 `GetPage` | `core/views/index.vue` `fetchPageMeta()` | 返回 `PageMeta`（setting/list/addForm/editForm/detail/search） |
+| 元数据契约 `meta` | `core/views/index.vue` `fetchPageMeta()` | 返回 `PageMeta`（setting/list/addForm/editForm/detail/search） |
 | 路由→API 前缀 | `core/utils/url.ts` `routeToApiPrefix(path)` | `/device/device-profile` → `/Device/DeviceProfile`（支持多段） |
 | 字段归一 + 控件解析 | `core/types/field.ts`、`core/utils/fieldControl.ts` | `FieldMeta` / `ControlType` / `SearchControlType` / `ListControlType` 是全项目唯一真理源 |
-| 数据访问门面 | `core/composables/useCubeApi.ts` | `usePageApi().getPage/getList/.../lookup`；`getPage` 返回 `ApiResponse<PageMeta>` |
+| 数据访问门面 | `core/composables/useCubeApi.ts` | `usePageApi().meta/getList/.../lookup`；`meta` 返回 `ApiResponse<PageMeta>` |
 | 响应式数据集 | `core/dataset/data-set/DataSet.ts` | `read/create/remoteUpdate/destroy`、分页、`dataKey='data'`/`totalCountKey='page.totalCount'`（与 `ApiResponse` 默认对齐），`autoQuery` |
 | 页面解析 | `core/pages/DefaultEntity.vue` | 按菜单匹配解析默认列表页 / 覆盖页 / 404 |
 | Section 覆盖（**将被废除**） | `core/composables/useSections.ts` | `ListSearchBar/ListTableContent/ListToolbar/ListPagination/...` 可按路由文件名覆盖 |
 
 ### 2.2 当前缺口（本方案要补的）
 
-- `index.vue` 自己用裸 `request` 拼 `GetPage`、列表、删除（约 470 行），**没有统一数据访问层**；与 `usePageApi`/`DataSet` 三套并存（`TODO.md` 已标注为高风险）。
+- `index.vue` 自己用裸 `request` 拼 `meta`、列表、删除（约 470 行），**没有统一数据访问层**；与 `usePageApi`/`DataSet` 三套并存（`TODO.md` 已标注为高风险）。
 - 列表/搜索/表单/分页逻辑全挤在一个文件里，**无法单测**状态流转。
 - 没有“页面引擎”概念；业务应用想复用默认取数只能复制或整页覆盖。
 - **定制方式碎片化**：Section 覆盖需新建同名文件、靠 `useSections` 隐式解析，定制点分散、不易追踪；本方案用插槽内聚替代。
@@ -64,7 +64,7 @@
 
 ## 3. 契约（复用并扩展现有类型）
 
-**不重新定义字段契约。** 引擎消费现有 `FieldMeta` 与 `GetPage` 六数组，并补齐缺失的 `required` 与内联 `dataSource`。
+**不重新定义字段契约。** 引擎消费现有 `FieldMeta` 与 `meta` 六数组，并补齐缺失的 `required` 与内联 `dataSource`。
 
 ```ts
 // core/engine/types.ts
@@ -86,7 +86,7 @@ export interface PageSetting {
   doubleDelete?: boolean
 }
 
-/** 后端 GetPage 原始字段（从 index.vue 提升为共享类型，并补齐 required/dataSource/mapField） */
+/** 后端 meta 原始字段（从 index.vue 提升为共享类型，并补齐 required/dataSource/mapField） */
 export interface BackendField {
   name: string
   displayName?: string
@@ -155,7 +155,7 @@ export interface CubeEngineContext {
 > | 方案草案命名 | 本项目类型 / API | 说明 |
 > | --- | --- | --- |
 > | `CubeFieldConfig` | `FieldMeta`（`core/types/field.ts`）/ `BackendField`（`core/engine/types.ts`） | 字段契约唯一真理源，不重造 |
-> | `CubeSchema` | `CubePageMeta`（`setting/list/addForm/editForm/detail/search` 六数组） | 来自后端 `GetPage` 元数据，前端归一 |
+> | `CubeSchema` | `CubePageMeta`（`setting/list/addForm/editForm/detail/search` 六数组） | 来自后端 `meta` 元数据，前端归一 |
 > | `CubeContext` | `CubeEngineContext`（`core/engine/types.ts`） | 引擎暴露给视图根的上下文（状态/模型/行为单一出口） |
 > | `provideCubeContext()` | `createCubeEngine(deps)`（纯工厂）+ `useCubeEngine()`（setup/provide） | 生命周期拆出，可单测 |
 > | `useCubeContext()` | `useCubeContext()`（`inject` 消费，本项目保留） | 仅作消费端注入，与方案草案语义一致，非弃用名 |
@@ -179,7 +179,7 @@ export interface CubePageMeta {
 }
 export interface CubeEngineDeps {
   /** 拉取页面元数据（默认实现已解包 ApiResponse，返回 CubePageMeta） */
-  getPage: (type: string) => Promise<CubePageMeta>
+  meta: (type: string) => Promise<CubePageMeta>
   /** LOV 值集查询（默认 usePageApi.lookup） */
   lookup?: (codes: string) => Promise<Record<string, Array<{ label: string; value: unknown }>>>
   /** DataSet 使用的 HTTP 实例（默认 core/utils/request，返回 ApiResponse） */
@@ -206,7 +206,7 @@ export interface CreateCubeEngineOptions {
 
 export function createCubeEngine(options: CreateCubeEngineOptions, deps: CubeEngineDeps): CubeEngineContext {
   const type = routeToApiPrefix(options.routePath)   // 支持多段路由（/A/B/C）
-  const { getPage, lookup, http } = deps
+  const { meta, lookup, http } = deps
 
   const schemaReady = ref(false)
   const loading = ref(false)
@@ -262,7 +262,7 @@ export function createCubeEngine(options: CreateCubeEngineOptions, deps: CubeEng
   async function init() {
     error.value = null
     try {
-      const meta = await getPage(type)           // 默认实现已解包 ApiResponse
+      const meta = await meta(type)           // 默认实现已解包 ApiResponse
       pageSetting.value = meta.setting ?? {}
       rawSearch.value = (meta.search ?? []).filter(f => !f.primaryKey && f.typeName !== 'Guid').map(toFieldMeta)
       rawList.value = (meta.list ?? []).map(toFieldMeta)
@@ -300,16 +300,16 @@ export function createCubeEngine(options: CreateCubeEngineOptions, deps: CubeEng
   async function remove(row: Record<string, unknown>) { await dataSet.destroy(row); await dataSet.read() }
 
   async function exportFile() {
-    const blob = await http.get(`${type}/ExportFile`, { responseType: 'blob' })
+    const blob = await http.get(`${type}/export`, { responseType: 'blob' })
     downloadBlob(blob as Blob, `${type.split('/').pop()}_${Date.now()}.bin`)
   }
   async function importFile(file: File) {
     const fd = new FormData(); fd.append('file', file)
-    await http.post(`${type}/ImportFile`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+    await http.post(`${type}/import`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
     await dataSet.read()
   }
   async function openChart() {
-    const res: any = await http.get(`${type}/GetChartData`)
+    const res: any = await http.get(`${type}/charts`)
     chartData.value = Array.isArray(res?.data) ? res.data : []
     chartVisible.value = true
   }
@@ -345,8 +345,8 @@ export function useCubeEngine(options: { routePath: string; autoQuery?: boolean 
   const ctx = createCubeEngine(
     { routePath: options.routePath, autoQuery: options.autoQuery },
     {
-      // 默认 getPage 解包 ApiResponse<PageMeta> → CubePageMeta
-      getPage: async (type: string) => (await api.getPage()) as unknown as CubePageMeta, // 实际 .data
+      // 默认 meta 解包 ApiResponse<PageMeta> → CubePageMeta
+      meta: async (type: string) => (await api.meta()) as unknown as CubePageMeta, // 实际 .data
       lookup: (codes: string) => api.lookup(codes),
       http: request,                 // DataSet 用裸 request（返回 ApiResponse，匹配其 dataKey 默认值）
       routePath: options.routePath,
@@ -541,7 +541,7 @@ const ctx: CubeEngineContext = props.context
 
 **事实校正**：项目**已有**测试基建——`core/__tests__/*.spec.ts`（`fieldControl`、`url`、`usePasswordRules`、`parameter-kind`、`LovSelectTable`、`LoginForm.password-rules`、`FormContent.fieldtypes`）以及 `e2e/fieldtypes-crud.spec.ts`、`e2e/parameter-section.spec.ts`、`ListFormDialog.spec.ts`。因此 P3 是**扩展既有 e2e 回归**，而非从零搭建。
 
-测试对象 = 纯工厂 `createCubeEngine(deps)`。注入假 `getPage`/`lookup`/`http`，不依赖真实 `usePageApi` 与配置。
+测试对象 = 纯工厂 `createCubeEngine(deps)`。注入假 `meta`/`lookup`/`http`，不依赖真实 `usePageApi` 与配置。
 
 ```ts
 // core/engine/__tests__/createCubeEngine.spec.ts
@@ -560,21 +560,21 @@ const meta = {
 function makeDeps(overrides: any = {}) {
   const http = { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() } as any
   http.get.mockImplementation((url: string) => {
-    if (url.endsWith('/GetPage')) return Promise.resolve({ data: meta })        // 模拟已解包的 getPage
-    if (url.endsWith('/ExportFile')) return Promise.resolve(new Blob())
-    if (url.endsWith('/GetChartData')) return Promise.resolve({ data: [] })
+    if (url.endsWith('/meta')) return Promise.resolve({ data: meta })        // 模拟已解包的 meta
+    if (url.endsWith('/export')) return Promise.resolve(new Blob())
+    if (url.endsWith('/charts')) return Promise.resolve({ data: [] })
     return Promise.resolve({ data: [{ id: 1, name: 'admin' }], page: { totalCount: 1 } }) // 列表
   })
-  return { getPage: vi.fn().mockResolvedValue(meta), lookup: vi.fn().mockResolvedValue({}), http, routePath: '/device/device-profile', ...overrides }
+  return { meta: vi.fn().mockResolvedValue(meta), lookup: vi.fn().mockResolvedValue({}), http, routePath: '/device/device-profile', ...overrides }
 }
 
 describe('CubeEngine 纯工厂', () => {
-  it('init 自动拉取 GetPage 并首查', async () => {
+  it('init 自动拉取 meta 并首查', async () => {
     const d = makeDeps(); const ctx = createCubeEngine({ routePath: d.routePath }, d)
     expect(ctx.schemaReady.value).toBe(false)
     await ctx.init()
     expect(ctx.schemaReady.value).toBe(true)
-    expect(d.getPage).toHaveBeenCalledTimes(1)
+    expect(d.meta).toHaveBeenCalledTimes(1)
     expect(ctx.list.value).toEqual([{ id: 1, name: 'admin' }])
     expect(ctx.total.value).toBe(1)
     expect(ctx.searchModel).toHaveProperty('Name')
@@ -589,7 +589,7 @@ describe('CubeEngine 纯工厂', () => {
   })
 
   it('init 失败应设置 error 且不触发 search', async () => {
-    const d = makeDeps({ getPage: vi.fn().mockRejectedValue(new Error('boom')) })
+    const d = makeDeps({ meta: vi.fn().mockRejectedValue(new Error('boom')) })
     const ctx = createCubeEngine({ routePath: d.routePath }, d)
     await ctx.init()
     expect(ctx.error.value).toBe('boom')
@@ -640,7 +640,7 @@ describe('CubeEngine 纯工厂', () => {
 3. **表单弹窗纳入上下文**：弹窗开关/校验/提交反馈由 `CubeTableFormDialog` 声明式绑定 `ctx.dialogVisible/formModel/submitForm`，弹窗位于 `CubeTable` 组件树内（在 `provide` 之下），可直接消费 `ctx`，不再需要命令式 `openListFormDialog` 的 `Teleport` 取数补偿。
 4. **Section 覆盖废除的兼容（最大新增风险）**：存量业务应用靠 `ListSearchBar` 等 Section 文件定制。P3 用“兼容桥”（`index.vue` 按路由 meta 选择 `CubeTable`/旧布局）避免一次性破坏；P4–P6 逐步迁移并删除旧机制。过渡期间两套并存，需 e2e 双覆盖。
 5. **校验来源**：`FieldMeta` 新增 `required`（来自 `DataField.required`），表单渲染（`CubeTableFormDialog`）据此显示必填与前端校验；后端 `fieldErrors` 仍由 `usePageApi.onFieldError` 兜底。
-6. **i18n / 主题**：字段标签来自服务端 `GetPage`，引擎不翻译（既有约束）；组件层渲染，引擎不持有任何 `--el-*` / 布局类 token（符合 [ADR 0003](../decisions/0003-element-plus-tailwind-design-system.md) 与 [UI 规范](../standards/ui-spec.md)）。
+6. **i18n / 主题**：字段标签来自服务端 `meta`，引擎不翻译（既有约束）；组件层渲染，引擎不持有任何 `--el-*` / 布局类 token（符合 [ADR 0003](../decisions/0003-element-plus-tailwind-design-system.md) 与 [UI 规范](../standards/ui-spec.md)）。
 7. **`.value` 书写**：`useCubeContext()` 返回普通对象，嵌套 `Ref` 不会自动解包。推荐内置子组件用 `toRefs(props.ctx)` 解包后在模板使用，避免 `ctx.list.value` 噪声；直接操作 `ctx.searchModel`（reactive）无需 `.value`。
 8. **分页基数**：沿用现有 1-based（`pageIndex` 默认 1），与 `index.vue`/`DataSet` 一致；迁移前确认后端非 0-based。
 9. **CubeTable 上下文三重解析的歧义**：若自定义页面既 `useCubeEngine()` 提供、又 `<CubeTable />`（无 prop），`CubeTable` 会 `inject` 到该 provider 而不会重复创建（三级解析第二优先）。仅当“自管引擎但不想提供”时才需显式传 `:context` 并关闭 `autoEngine`，文档需明确此约定。
@@ -652,8 +652,8 @@ describe('CubeEngine 纯工厂', () => {
 本方案经四个方向并行审查（架构贴合、可测试性与渐进演进、后端契约/API 契合、UI 分离与 DX），据此修订；并在 v3 据用户决策进一步调整：
 
 - **架构/技术正确性**：修正了 `searchFields` 类型（应为 `FieldMeta[]` 而非 `SearchFieldMeta[]`）、补 `PageSetting`/`BackendField` 类型、`addForm`/`editForm` 按 mode 区分、导出/图表/删除确认/刷新/翻页动作补齐、主键用 `getValueByKey`、LOV 预拉取与缓存。
-- **可测试性/演进**：将 `deps` 设为唯一数据源（工厂零副作用、无需配置 stub）；修正 `getPage` 需 `.data` 的事实；P3 增加兼容桥 + 对等测试；明确项目**已有**测试基建，P3 扩展而非新建 e2e；测试矩阵补齐失败分支与参数过滤。
-- **后端契约**：修正 `getPage` 返回 `ApiResponse<PageMeta>` 须解包；修正 Boolean 搜索默认应为 `undefined`（非 `false`）；明确删除端点差异并改用路径式（经 DataSet）；补 `required`/`dataSource` 契约与校验来源。
+- **可测试性/演进**：将 `deps` 设为唯一数据源（工厂零副作用、无需配置 stub）；修正 `meta` 需 `.data` 的事实；P3 增加兼容桥 + 对等测试；明确项目**已有**测试基建，P3 扩展而非新建 e2e；测试矩阵补齐失败分支与参数过滤。
+- **后端契约**：修正 `meta` 返回 `ApiResponse<PageMeta>` 须解包；修正 Boolean 搜索默认应为 `undefined`（非 `false`）；明确删除端点差异并改用路径式（经 DataSet）；补 `required`/`dataSource` 契约与校验来源。
 - **UI 分离/DX（v2→v3 再反转）**：v2 曾决定“引擎只在页面根消费、叶子 Section 保持受控”。**v3 据用户决策改为：废除 Section 覆盖，改用单一 `CubeTable` 集成组件 + 具名插槽**。理由：定制内聚、可追踪、可测、DX 更好。内置子组件仍以 `ctx` 为 prop（受控可测），彻底脱离 Section 覆盖机器；表单弹窗随之改为声明式绑定 `ctx`，消除命令式取数难题。
 - **数据层**：据 `TODO.md` 与 api-core 源码事实，引擎数据层用“`DataSet` 底座 + `usePageApi` 元数据/LOV”，既对齐既定方向，又化解删除端点与多段路由两处回归风险。
 

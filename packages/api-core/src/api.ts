@@ -7,8 +7,6 @@ import type {
   BindsResult,
   CaptchaResult,
   ChangePasswordModel,
-  DataField,
-  FieldKind,
   MfaSetupResult,
   MfaVerifyResult,
   PageMeta,
@@ -278,7 +276,7 @@ export function createMenuApi(request: RequestFn) {
 /**
  * 页面元数据缓存（会话级内存缓存）
  *
- * GetPage 返回的页面配置（列表/搜索/表单字段）由控制器静态配置决定，同一会话内稳定不变。
+ * meta 接口返回的页面配置（列表/搜索/表单字段）由控制器静态配置决定，同一会话内稳定不变。
  * 按 type 缓存后，列表页「探测 + loadFields」与表单页只需请求一次，切换/重进页面不再重复请求。
  * 仅在浏览器刷新（内存重置）或登出换用户时失效。
  */
@@ -296,16 +294,12 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
       const hit = pageMetaCache.get(type);
       if (hit) return Promise.resolve(hit);
 
-      return request<PageMeta>({ url: `${type}/GetPage`, method: 'get' }).then((res) => {
+      return request<PageMeta>({ url: `${type}/meta`, method: 'get' }).then((res) => {
         // 仅缓存实体页配置（data 为对象）；非实体页返回 HTML 字符串，不缓存
         if (res && res.data && typeof res.data !== 'string') pageMetaCache.set(type, res);
         return res;
       });
     },
-
-    /** 获取字段元数据 */
-    getFields: (type: string, kind: FieldKind) =>
-      request<DataField[]>({ url: `${type}/GetFields`, method: 'get', params: { kind } }),
 
     /** 列表查询（分页） */
     getList: <T = Record<string, unknown>>(type: string, params: PageParams) =>
@@ -357,7 +351,7 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
 
     /** 获取导出 URL（直接下载，不走 ajax） */
     getExportUrl: (type: string, format: string): string => {
-      const url = resolveRequestUrl(baseApiUrl ?? '', `/${type}/ExportFile`);
+      const url = resolveRequestUrl(baseApiUrl ?? '', `/${type}/export`);
       return `${url}?format=${encodeURIComponent(format)}`;
     },
 
@@ -366,7 +360,7 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
       const formData = new FormData();
       formData.append('file', file);
       return request<unknown>({
-        url: `${type}/ImportFile`,
+        url: `${type}/import`,
         method: 'post',
         headers: { 'Content-Type': 'multipart/form-data' },
         data: formData,
@@ -378,7 +372,7 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
       const formData = new FormData();
       formData.append('file', file);
       return request<Record<string, unknown>>({
-        url: `${type}/UploadFile`,
+        url: `${type}/attachments`,
         method: 'post',
         headers: { 'Content-Type': 'multipart/form-data' },
         data: formData,
@@ -388,7 +382,7 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
 
     /** 获取图表数据 */
     getChartData: (type: string) =>
-      request<unknown[]>({ url: `${type}/GetChartData`, method: 'get' }),
+      request<unknown[]>({ url: `${type}/charts`, method: 'get' }),
   };
 }
 

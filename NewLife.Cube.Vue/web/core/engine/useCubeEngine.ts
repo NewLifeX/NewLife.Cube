@@ -107,7 +107,7 @@ export function createDefaultCubeEngineDeps(): CubeEngineDeps {
     },
     exportFile: async (type: string, params: Record<string, unknown>) => {
       const { request } = await loadRequestLayer();
-      return (await request.get(`${type}/ExportFile`, {
+      return (await request.get(`${type}/export`, {
         params,
         responseType: 'blob',
       })) as unknown as Blob;

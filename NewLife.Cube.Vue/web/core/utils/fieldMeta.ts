@@ -72,7 +72,7 @@ export function normalizeOverrideFields(
 }
 
 /**
- * `GetPage` 元数据 → 归一字段集合。
+ * `meta` 元数据 → 归一字段集合。
  * 缺组按空数组处理，`setting` 缺省为 `{}`，保证视图侧可无条件消费。
  */
 export function normalizePageMeta(meta?: CubePageMeta | null): NormalizedPageFields {

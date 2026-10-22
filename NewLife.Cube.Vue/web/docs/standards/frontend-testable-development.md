@@ -24,7 +24,7 @@
 | 泛型组件    | `CubeProvider` / `CubeTable` / `CubeSearch` / `CubeFormDialog` 四件套                            | 单一集成组件 `CubeTable`（`core/components/CubeTable/`）整合搜索/工具栏/表格/分页/表单弹窗，开放**具名插槽**；并**废除**旧的 Section 覆盖（`ListSearchBar` 等）                                                                                        | **采用 CubeTable + 插槽**，见 §3        |
 | 页面定制    | 全部靠插槽或整页覆盖                                                                                    | 同上；旧 Section 覆盖（`useSections`/`SectionKeyMap`）为**遗留机制，将被废除**（ADR 0005）                                                                                                                                         | 新页面一律用插槽；存量 Section 过渡期保留，见 §3、§7 |
 | 业务目录    | `modules/system/user/{index.vue,user.logic.ts,user.api.ts}`                                   | `apps/<app>/src/views/<area>/<entity>/index.vue`；页面级纯逻辑抽离为**同目录 `*.logic.ts`**（如 `user.logic.ts`），共享引擎逻辑在 `core/engine`                                                                                        | **采用实际约定**，见 §2、§3 L3             |
-| 网络 Mock | 引入 `msw` 全量拦截                                                                                 | 项目已用 **`vi.mock` 模块桩 + 依赖注入**：纯工厂 `createCubeEngine(deps)` 直接注入假 `getPage`/`http`；组件测试通过 `vi.mock('@newlifex/cube-vue/core/utils/request')` 等桩掉外部依赖（见 `core/components/LovSelectTable/LovSelectTable.test.ts`） | **不引入 MSW**；沿用 `vi.mock`/DI，见 §5  |
+| 网络 Mock | 引入 `msw` 全量拦截                                                                                 | 项目已用 **`vi.mock` 模块桩 + 依赖注入**：纯工厂 `createCubeEngine(deps)` 直接注入假 `meta`/`http`；组件测试通过 `vi.mock('@newlifex/cube-vue/core/utils/request')` 等桩掉外部依赖（见 `core/components/LovSelectTable/LovSelectTable.test.ts`） | **不引入 MSW**；沿用 `vi.mock`/DI，见 §5  |
 | 覆盖率/钩子  | 假设可直接加门禁                                                                                      | 当前**未安装** `@vitest/coverage-v8`、husky、lint-staged                                                                                                                                                              | 给出**安装与门槛**，见 §5、§7               |
 | 实现状态    | 当作已落地                                                                                         | 引擎 `core/engine/*` 与 `core/components/CubeTable/*` 是 ADR 0005 的**目标（P0–P6 路线）**，当前 `core/views/index.vue` 仍是旧 Section 实现                                                                                      | 本文描述**目标架构**，并显式标注遗留，见 §3、§7      |
 
@@ -39,7 +39,7 @@
 为保证项目从简单业务到超复杂业务都保持高可维护性，全栈开发遵循三大原则（与 `decisions/0005` 一致）：
 
 1. **关注点强制分离**：视图只负责渲染，逻辑只负责计算，基础设施只负责通信。严禁在 `index.vue` 的 `<template>` 和 `<script setup>` 中编写业务逻辑（转换、拼装、取数）。
-2. **配置与上下文驱动**：常规页面采用「后端 `GetPage` 下发字段元数据 + 前端 `CubeEngine` 上下文自动消费」模式，消灭胶水代码。字段契约复用现有 `FieldMeta`/`BackendField` 六数组（`setting/list/addForm/editForm/detail/search`）。
+2. **配置与上下文驱动**：常规页面采用「后端 `meta` 下发字段元数据 + 前端 `CubeEngine` 上下文自动消费」模式，消灭胶水代码。字段契约复用现有 `FieldMeta`/`BackendField` 六数组（`setting/list/addForm/editForm/detail/search`）。
 3. **测试金字塔模型**：重点投入单元测试（纯逻辑/引擎）和组件测试（交互表现），最小化昂贵且脆弱的端到端测试。
 
 ---
@@ -63,7 +63,7 @@ web/
 │   │   │   └── CubeTableFormDialog.vue # 新增/编辑弹窗（声明式绑定 ctx）
 │   │   └── ...（现有 LovSelectTable、Uploader 等）
 │   ├── composables/
-│   │   ├── useCubeApi.ts         # usePageApi：getPage / getList / lookup（元数据与 LOV）
+│   │   ├── useCubeApi.ts         # usePageApi：meta / getList / lookup（元数据与 LOV）
 │   │   └── useSections.ts        # ⚠️ 遗留：Section 覆盖（将被废除）
 │   ├── dataset/data-set/DataSet.ts  # 【数据层底座】read/create/remoteUpdate/destroy + 分页
 │   ├── utils/request.ts          # Axios 入口（401/错误拦截/通知）
@@ -102,7 +102,7 @@ web/
 
 ### Level 1：极简页面（常规 CRUD）— 接近零代码
 
-**场景**：标准增删改查列表页。**实现**：默认 `core/views/index.vue` 渲染 `<CubeTable />`（引擎按当前路由自动创建上下文），只需菜单配置了对应后端实体与 `GetPage` 元数据。
+**场景**：标准增删改查列表页。**实现**：默认 `core/views/index.vue` 渲染 `<CubeTable />`（引擎按当前路由自动创建上下文），只需菜单配置了对应后端实体与 `meta` 元数据。
 
 ```vue
 
@@ -181,7 +181,7 @@ export const transformUserBeforeSave = (formData: Record<string, unknown>) => {
 - **单一职责**：一个 `it` 只断言一个行为。
 - **避免逻辑**：测试代码不出现 `if/for`；多组数据用 `it.each`。
 - **拒绝脆弱快照**：禁止滥用 `toMatchSnapshot()`（尤其含动态类名的组件），改为精准断言文本/属性。
-- **Mock 策略（关键校正）**：**不使用 MSW**。纯工厂测试直接注入假 `getPage`/`http`；组件测试用 `vi.mock(...)` 桩掉 `@newlifex/cube-vue/core/utils/request`、`core/configure` 等外部模块（参考 `LovSelectTable.test.ts`）。**桩的配置写法、别名优先纪律、CT 的 `ct/mocks/` 统一 mock 方案**见技能 `vue-component-visual-loop` → `references/ct-environment-setup.md` 与 `vitest-strategy.md`。
+- **Mock 策略（关键校正）**：**不使用 MSW**。纯工厂测试直接注入假 `meta`/`http`；组件测试用 `vi.mock(...)` 桩掉 `@newlifex/cube-vue/core/utils/request`、`core/configure` 等外部模块（参考 `LovSelectTable.test.ts`）。**桩的配置写法、别名优先纪律、CT 的 `ct/mocks/` 统一 mock 方案**见技能 `vue-component-visual-loop` → `references/ct-environment-setup.md` 与 `vitest-strategy.md`。
 
 ---
 
@@ -214,7 +214,7 @@ export const transformUserBeforeSave = (formData: Record<string, unknown>) => {
 
 ## 6. 实战案例：如何测试 Cube 引擎
 
-被测对象 = 纯工厂 `createCubeEngine(deps)`。注入假 `getPage`/`lookup`/`http`，不依赖真实 `usePageApi` 与配置。完整示例见 `architecture/cube-engine.md` §6（**示例文件 `core/engine/__tests__/createCubeEngine.spec.ts` 待 ADR 0005 P1 落地**），覆盖：首查自动触发、`editForm` 只读主键、`init` 失败分支、`remove` 路径式 `DELETE`、搜索参数过滤、分页、LOV 缓存、`autoQuery:false` 不首查。组件组合测试则传入 mock `ctx` prop，断言默认子组件渲染与插槽覆盖生效。
+被测对象 = 纯工厂 `createCubeEngine(deps)`。注入假 `meta`/`lookup`/`http`，不依赖真实 `usePageApi` 与配置。完整示例见 `architecture/cube-engine.md` §6（**示例文件 `core/engine/__tests__/createCubeEngine.spec.ts` 待 ADR 0005 P1 落地**），覆盖：首查自动触发、`editForm` 只读主键、`init` 失败分支、`remove` 路径式 `DELETE`、搜索参数过滤、分页、LOV 缓存、`autoQuery:false` 不首查。组件组合测试则传入 mock `ctx` prop，断言默认子组件渲染与插槽覆盖生效。
 
 ---
 

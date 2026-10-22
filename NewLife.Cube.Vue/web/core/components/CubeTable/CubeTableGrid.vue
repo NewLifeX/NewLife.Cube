@@ -5,7 +5,7 @@
  * 两种列来源，同一时间只用一种（与 MES ListPage 的取舍一致）：
  *   - 消费方写 `#default`（自写 `el-table-column`）→ 本组件不再按元数据生成列，
  *     并把 `visibleColumns` / `resetColumnVisibility` 放进插槽作用域供 `v-if` 用；
- *   - 不写 → 按 `GetPage` 的 list 字段生成列。
+ *   - 不写 → 按 `meta` 的 list 字段生成列。
  * 勾选列 / 索引列 / 操作列在两种模式下都按 `pageSetting`（或显式 props）渲染。
  *
  * 渲染口径沿用 `core/views/components/ListTableContent.vue`（值集翻译、图片/附件、开关、

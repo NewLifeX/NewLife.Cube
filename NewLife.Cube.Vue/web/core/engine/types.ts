@@ -24,7 +24,7 @@ import type { Ref, ComputedRef } from 'vue';
 import type { FieldMeta } from '../types/field';
 
 /**
- * 后端 `GetPage` 下发的页面运行时开关。
+ * 后端 `meta` 下发的页面运行时开关。
  * 字段口径与 `core/views/index.vue` 的 `PageMeta.setting` 保持一致。
  */
 export interface PageSetting {
@@ -53,7 +53,7 @@ export interface PageSetting {
 }
 
 /**
- * 后端 `GetPage` 下发的原始字段（NewLife.Cube `DataField` 序列化结构，camelCase）。
+ * 后端 `meta` 下发的原始字段（NewLife.Cube `DataField` 序列化结构，camelCase）。
  *
  * 相比 `core/views/index.vue:53-67` 的内联声明，补齐 `required` 与 `precision/scale`
  * 等渲染必需信息（后端有则用，无则前端推导）。
@@ -98,7 +98,7 @@ export interface BackendField {
   parentField?: string;
 }
 
-/** `GET {type}/GetPage` 的页面元数据（六组独立字段数组） */
+/** `GET {type}/meta` 的页面元数据（六组独立字段数组） */
 export interface CubePageMeta {
   setting?: PageSetting;
   list?: BackendField[];
@@ -133,7 +133,7 @@ export interface CubeEngineOptions {
    */
   apiPrefix?: string;
   /**
-   * 字段覆盖：提供任一数组即**跳过 `GetPage` 请求**，直接用前端配置的字段
+   * 字段覆盖：提供任一数组即**跳过 `meta` 请求**，直接用前端配置的字段
    * （配置驱动模式，等价于业务页自持 `columns` / `formFields` 的用法）。
    * 未提供的组回退空数组，`setting` 回退 `{}`。
    */
@@ -173,10 +173,10 @@ export interface CubeEngineDeps {
    * 返回已解包的实体对象。
    */
   getDetail?: (type: string, id: number | string) => Promise<Record<string, unknown>>;
-  /** 列表导出。默认实现走 `GET {type}/ExportFile` 取 blob */
+  /** 列表导出。默认实现走 `GET {type}/export` 取 blob */
   exportFile?: (type: string, params: Record<string, unknown>) => Promise<Blob>;
   /**
-   * 导入。默认实现走 `POST {type}/ImportFile`（multipart）。
+   * 导入。默认实现走 `POST {type}/import`（multipart）。
    * 返回**原始响应体**（`ApiResponse` 形态），由引擎统一解析 code / message / 行数。
    */
   importFile?: (type: string, file: File) => Promise<unknown>;
@@ -216,7 +216,7 @@ export interface CubeNotifier {
   info?: (message: string) => void;
 }
 
-/** 导入结果（后端 `ImportFile` 返回 `ApiResponse`，`message` 内含行数口径） */
+/** 导入结果（后端 `import` 返回 `ApiResponse`，`message` 内含行数口径） */
 export interface ImportResult {
   /** 是否业务成功（`code === 0`） */
   ok: boolean;

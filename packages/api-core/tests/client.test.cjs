@@ -262,10 +262,10 @@ test('service 客户端（getServiceBaseUrl 派生）地址解析：服务不带
   assert.equal(captured.config.url, 'http://host:5000/Auth/Login');
 });
 
-test('createCubeApi：page.getExportUrl 返回 host/api/...ExportFile?format=', () => {
+test('createCubeApi：page.getExportUrl 返回 host/api/...export?format=', () => {
   const api = core.createCubeApi({ baseURL: 'http://host:5000/api', tokenStorage: memToken('tok') });
   const url = api.page.getExportUrl('Admin/User', 'xlsx');
-  assert.equal(url, 'http://host:5000/api/Admin/User/ExportFile?format=xlsx');
+  assert.equal(url, 'http://host:5000/api/Admin/User/export?format=xlsx');
 });
 
 // ── 反向断言：收敛审查盲区 ──────────────────────────────────────────

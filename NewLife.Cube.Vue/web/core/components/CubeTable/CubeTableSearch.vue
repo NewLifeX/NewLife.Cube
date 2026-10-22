@@ -7,7 +7,7 @@
  * 其余每格一个搜索条件，从第二格起自动铺格、满行换行（收起态只渲染第一个条件，
  * 第一行即 关键字 + 首个条件 + 动作钮）；不再单独出条件面板，
  * 只有业务页用 `#advanced` 自带面板时才渲染面板区域。
- * 条件由 `GetPage` 元数据生成（业务页也可用 `#advanced` 整块替换成自己的表单）。
+ * 条件由 `meta` 元数据生成（业务页也可用 `#advanced` 整块替换成自己的表单）。
  * 状态与动作全部落在引擎上：`ctx.keyword` / `ctx.searchModel` / `ctx.search()` / `ctx.resetSearch()`。
  */
 import { computed, ref, useSlots } from 'vue';

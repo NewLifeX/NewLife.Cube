@@ -167,40 +167,6 @@
         "operationId": "ad287d9d17fab7c531558ff08a4d6757"
       }
     },
-    "/Admin/AccessRule/GetFields": {
-      "get": {
-        "tags": [
-          "AccessRule"
-        ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "12cb3bc649d6362d8dc73b5f2d0f0ebd"
-      }
-    },
     "/Admin/Core": {
       "get": {
         "tags": [
@@ -261,40 +227,6 @@
         "operationId": "b70d2d392628a52776461013f3d5c056"
       }
     },
-    "/Admin/Core/GetFields": {
-      "get": {
-        "tags": [
-          "Core"
-        ],
-        "summary": "获取字段",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "",
-            "schema": {
-              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "aff5a7b160ac3cb2ac8299562c68f804"
-      }
-    },
     "/Admin/Cube/GetLoginConfig": {
       "get": {
         "tags": [
@@ -347,40 +279,6 @@
           }
         },
         "operationId": "eb834d00dbe63e678dd1597ea0ec1956"
-      }
-    },
-    "/Admin/Cube/GetFields": {
-      "get": {
-        "tags": [
-          "Cube"
-        ],
-        "summary": "获取字段",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "",
-            "schema": {
-              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "5b6ec968a82bd7455aaeee9de032ee53"
       }
     },
     "/Admin/Db": {
@@ -628,40 +526,6 @@
           }
         },
         "operationId": "4e0bf7843cd3954370003fff48b9bc5d"
-      }
-    },
-    "/Admin/Department/GetFields": {
-      "get": {
-        "tags": [
-          "Department"
-        ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "b667e5cdde9d51d39afd2d64a169277e"
       }
     },
     "/Admin/File": {
@@ -1252,40 +1116,6 @@
         "operationId": "774a14afe4424a6d96070c14ffc7a0a1"
       }
     },
-    "/Admin/Log/GetFields": {
-      "get": {
-        "tags": [
-          "Log"
-        ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "3cf5322ba5fa04e89be8224430e63477"
-      }
-    },
     "/Admin/Menu/Up": {
       "patch": {
         "tags": [
@@ -1497,40 +1327,6 @@
         "operationId": "15bc41fcd136970b7ea30df9abf555b4"
       }
     },
-    "/Admin/Menu/GetFields": {
-      "get": {
-        "tags": [
-          "Menu"
-        ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "6e662b2682b1a5d70961c4d08e27bfb0"
-      }
-    },
     "/Admin/OAuthConfig": {
       "delete": {
         "tags": [
@@ -1692,40 +1488,6 @@
         "operationId": "f487f854fa64b8750c4bc6d9d3f98bfa"
       }
     },
-    "/Admin/OAuthConfig/GetFields": {
-      "get": {
-        "tags": [
-          "OAuthConfig"
-        ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "df7c41dc4bddb1f343836df60d661e11"
-      }
-    },
     "/Admin/OAuthLog": {
       "get": {
         "tags": [
@@ -1777,40 +1539,6 @@
           }
         },
         "operationId": "13f1da29af1d5df4157cc1962be6d89e"
-      }
-    },
-    "/Admin/OAuthLog/GetFields": {
-      "get": {
-        "tags": [
-          "OAuthLog"
-        ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "d89e1a91241762674ed095b095ae3f8e"
       }
     },
     "/Admin/Parameter": {
@@ -1974,40 +1702,6 @@
         "operationId": "f1994291f8b9c80da0e08e3ffe96d2ee"
       }
     },
-    "/Admin/Parameter/GetFields": {
-      "get": {
-        "tags": [
-          "Parameter"
-        ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "302a52096d025493814c6d14edfa4572"
-      }
-    },
     "/Admin/Role": {
       "delete": {
         "tags": [
@@ -2169,40 +1863,6 @@
         "operationId": "4ebacfc2d2e695c190b0ffd1cea7bbfa"
       }
     },
-    "/Admin/Role/GetFields": {
-      "get": {
-        "tags": [
-          "Role"
-        ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "489880efa54eb66afbf1a3905e56d1e8"
-      }
-    },
     "/Admin/Sys": {
       "get": {
         "tags": [
@@ -2261,40 +1921,6 @@
           }
         },
         "operationId": "c2cdb36d9e2efa4a85204fb61629f9a9"
-      }
-    },
-    "/Admin/Sys/GetFields": {
-      "get": {
-        "tags": [
-          "Sys"
-        ],
-        "summary": "获取字段",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "",
-            "schema": {
-              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "99d918ee6fe36bbbc5eed2f363908fb3"
       }
     },
     "/Admin/Tenant": {
@@ -2458,40 +2084,6 @@
         "operationId": "b2df956b810bd02c1129d2e59fdda2c9"
       }
     },
-    "/Admin/Tenant/GetFields": {
-      "get": {
-        "tags": [
-          "Tenant"
-        ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "f0dc373e7bd617023fecbf593cee40e1"
-      }
-    },
     "/Admin/TenantUser": {
       "delete": {
         "tags": [
@@ -2651,40 +2243,6 @@
           }
         },
         "operationId": "4d11dbe29ffa9b7e59909965da7d19d5"
-      }
-    },
-    "/Admin/TenantUser/GetFields": {
-      "get": {
-        "tags": [
-          "TenantUser"
-        ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "32c61dba6b21bebde50b9046fdf433dc"
       }
     },
     "/Admin/User/Login": {
@@ -3047,40 +2605,6 @@
         "operationId": "a9e55c52b3e3bca4bfc4d79419a8d2f9"
       }
     },
-    "/Admin/User/GetFields": {
-      "get": {
-        "tags": [
-          "User"
-        ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "e70fb2278a8d10d7fd8250758557be52"
-      }
-    },
     "/Admin/UserConnect": {
       "delete": {
         "tags": [
@@ -3240,40 +2764,6 @@
           }
         },
         "operationId": "71bc7de7b40ec07442e3bd86f6fd8e9a"
-      }
-    },
-    "/Admin/UserConnect/GetFields": {
-      "get": {
-        "tags": [
-          "UserConnect"
-        ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "d180f8166158cff9919ab0272b4a2260"
       }
     },
     "/Admin/UserOnline": {
@@ -3437,40 +2927,6 @@
         "operationId": "d84ad7420d6d1c6e050e8f3851457da9"
       }
     },
-    "/Admin/UserOnline/GetFields": {
-      "get": {
-        "tags": [
-          "UserOnline"
-        ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "cc7bfd6a89d04a9a253408c782ee9440"
-      }
-    },
     "/Admin/UserStat": {
       "get": {
         "tags": [
@@ -3522,40 +2978,6 @@
           }
         },
         "operationId": "b42f0f75bbe2c840f7242e7c4a3c42c8"
-      }
-    },
-    "/Admin/UserStat/GetFields": {
-      "get": {
-        "tags": [
-          "UserStat"
-        ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "f6566052059564b2865f3c375f77c94c"
       }
     },
     "/Admin/UserToken": {
@@ -3719,40 +3141,6 @@
         "operationId": "f1eed3391764d6fa8bfb2b374c6c8382"
       }
     },
-    "/Admin/UserToken/GetFields": {
-      "get": {
-        "tags": [
-          "UserToken"
-        ],
-        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
-            "schema": {
-              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "c8f8e1e97031850afb6961c2af5767ec"
-      }
-    },
     "/Admin/XCode": {
       "get": {
         "tags": [
@@ -3811,40 +3199,6 @@
           }
         },
         "operationId": "f652e2fd003fb3f0204b93d89505490b"
-      }
-    },
-    "/Admin/XCode/GetFields": {
-      "get": {
-        "tags": [
-          "XCode"
-        ],
-        "summary": "获取字段",
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "description": "",
-            "schema": {
-              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "224fefbf9ce88140c2a968d5ea7fbd9b"
       }
     }
   },

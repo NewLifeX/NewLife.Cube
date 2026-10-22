@@ -19,7 +19,7 @@ import type { CubeColumnView, CubeSearchControl, CubeSearchKind } from './types'
  * 搜索区是否需要「展开/收起」按钮。
  *
  * MES 的列表页是一体式搜索栏：收起态只有关键字一行，展开才出现条件面板。
- * 库场景的条件由 `GetPage` 元数据生成，所以「有条件」才给展开入口。
+ * 库场景的条件由 `meta` 元数据生成，所以「有条件」才给展开入口。
  */
 export function showSearchToggle(fieldCount: number): boolean {
   return fieldCount > 0;

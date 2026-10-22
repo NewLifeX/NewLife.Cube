@@ -46,10 +46,10 @@ interface RecordedCall {
 function makeHttp(overrides: { blob?: Blob; detail?: unknown } = {}) {
   const calls: RecordedCall[] = [];
   const respond = (config: RecordedCall): unknown => {
-    if (config.method === 'get' && config.url.endsWith('/ExportFile')) {
+    if (config.method === 'get' && config.url.endsWith('/export')) {
       return overrides.blob ?? new Blob(['x'], { type: 'text/csv' });
     }
-    if (config.method === 'get' && /\/[^/]+$/.test(config.url) && config.url !== TYPE && !config.url.endsWith('/ExportFile')) {
+    if (config.method === 'get' && /\/[^/]+$/.test(config.url) && config.url !== TYPE && !config.url.endsWith('/export')) {
       return overrides.detail ?? DETAIL_BODY;
     }
     // 每次返回**新数组**：假响应体若被各用例共享同一引用，
@@ -113,7 +113,7 @@ function lastCall(http: ReturnType<typeof makeHttp>, method: string) {
 }
 
 describe('createCubeEngine 元数据驱动初始化', () => {
-  it('应该拉 GetPage 后自动首查 当 init 成功时', async () => {
+  it('应该拉 meta 后自动首查 当 init 成功时', async () => {
     const { deps, http, getPage } = makeDeps();
     const ctx = createCubeEngine({ routePath: ROUTE }, deps);
     expect(ctx.schemaReady.value).toBe(false);
@@ -138,7 +138,7 @@ describe('createCubeEngine 元数据驱动初始化', () => {
     expect(http.calls.filter((c) => c.method === 'get')).toHaveLength(0);
   });
 
-  it('应该置错并停在未就绪态 当 GetPage 失败时', async () => {
+  it('应该置错并停在未就绪态 当 meta 失败时', async () => {
     const { deps, http } = makeDeps({ getPage: vi.fn(async () => { throw new Error('boom'); }) });
     const ctx = createCubeEngine({ routePath: ROUTE }, deps);
     await ctx.init();
@@ -164,7 +164,7 @@ describe('createCubeEngine 元数据驱动初始化', () => {
     expect(ctx.listFields.value.map((f) => f.name)).toEqual(['Id', 'Name']);
   });
 
-  it('应该不请求 GetPage 当传入前端字段覆盖（配置驱动）时', async () => {
+  it('应该不请求 meta 当传入前端字段覆盖（配置驱动）时', async () => {
     const { deps, getPage } = makeDeps();
     const ctx = createCubeEngine(
       {

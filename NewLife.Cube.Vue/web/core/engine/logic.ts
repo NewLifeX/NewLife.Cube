@@ -13,7 +13,7 @@ import type { ImportResult } from './types';
 /** 关键字查询参数名（后端 EntityController 的模糊查询入参） */
 export const KEYWORD_PARAM = 'q';
 
-/** 导出格式参数名（后端 `ExportFile` 取 `format`，大写亦兼容） */
+/** 导出格式参数名（后端 `export` 取 `format`，大写亦兼容） */
 export const EXPORT_FORMAT_PARAM = 'format';
 
 /**
@@ -114,7 +114,7 @@ export function buildDownloadName(prefix: string, stamp: string, ext: string): s
 /**
  * 导入「0 行」判定。
  *
- * 后端 `ImportFile` 的 `message` 有两套文案口径：
+ * 后端 `import` 的 `message` 有两套文案口径：
  * - 外层汇总：`导入[xxx.xlsx] 共0行`
  * - 内层细分：`导入[xxx.csv]，共[10]行，成功[0]行，1行无效！`
  *

@@ -17,7 +17,7 @@
       <t-dropdown v-if="canExport" :options="exportOptions" @click="handleExport">
         <t-button variant="outline">导出 <chevron-down-icon /></t-button>
       </t-dropdown>
-      <t-upload v-if="canImport" :action="`${typePath}/ImportFile`" :auto-upload="true" theme="custom" accept=".csv,.xls,.xlsx" @success="loadData">
+      <t-upload v-if="canImport" :action="`${typePath}/import`" :auto-upload="true" theme="custom" accept=".csv,.xls,.xlsx" @success="loadData">
         <t-button variant="outline">导入</t-button>
       </t-upload>
       <div style="flex: 1" />

@@ -11,7 +11,7 @@
   -> DefaultEntity.vue（菜单匹配 catch-all）
   -> core/views/index.vue（目标态：单个 <CubeTable />）
        -> useCubeEngine() 按 route.path 推导 /Area/Controller，provide 上下文
-       -> createCubeEngine(deps) 拉 GetPage 元数据、初始化模型、自动首查
+       -> createCubeEngine(deps) 拉 meta 元数据、初始化模型、自动首查
        -> CubeTable 整合 搜索/工具栏/表格/分页/表单弹窗，开放具名插槽
   -> 业务定制：CubeTable 插槽（取代旧 Section 覆盖）
 ```

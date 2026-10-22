@@ -46,7 +46,7 @@ export interface PageState {
   loading: boolean;
   /** 表单提交中 */
   formLoading: boolean;
-  /** 页面设置（由 GetPage 返回的 setting 字段） */
+  /** 页面设置（由 meta 返回的 setting 字段） */
   pageSetting: PageSetting | null;
   /** 是否允许新增（来自 pageSetting 与菜单权限） */
   canAdd: boolean;
@@ -162,7 +162,7 @@ export class PageLogic {
     const hasAdd = hasPerm([2], ['新增', '添加', 'Add'], ['Add']);
     const hasEdit = hasPerm([4], ['编辑', '修改', 'Edit'], ['Edit']);
     const hasDel = hasPerm([8], ['删除', 'Delete'], ['Delete']);
-    // 导出/导入的后端授权：NewLife.Cube ExportFile=[EntityAuthorize(Detail=1)]、ImportFile=[EntityAuthorize(Insert=2)]，
+    // 导出/导入的后端授权：NewLife.Cube export=[EntityAuthorize(Detail=1)]、import=[EntityAuthorize(Insert=2)]，
     // 部分后端可能定义 16/32，故两种授权码都兼容
     const hasExport = hasPerm([1, 16], ['查看', '导出', 'Export', 'Detail'], ['Detail', 'Export']);
     const hasImport = hasPerm([2, 32], ['添加', '新增', '导入', 'Import', 'Insert'], ['Insert', 'Import']);

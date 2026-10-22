@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * 图表弹窗（GetChartData 数据渲染）
+ * 图表弹窗（charts 数据渲染）
  *
- * 后端 `GetChartData` 返回 ECharts 配置数组（每个元素含 title / option），
+ * 后端 `charts` 返回 ECharts 配置数组（每个元素含 title / option），
  * 本组件按需注册常用 ECharts 组件并逐个渲染。
  * 由列表页懒加载（defineAsyncComponent），仅在点击「图表」时载入 echarts。
  */

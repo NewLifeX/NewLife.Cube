@@ -1,6 +1,6 @@
 # @newlifex/cube-vue（Cube 默认前端模板）
 
-> NewLife.Cube 的 Vue 3 默认前端模板 / 微前端框架。**元数据驱动**：后端 `EntityController` 下发字段元数据（`GetPage` / `GetFields`），前端自动渲染动态列表、动态搜索、动态表单，无需为每个实体手写页面。
+> NewLife.Cube 的 Vue 3 默认前端模板 / 微前端框架。**元数据驱动**：后端 `EntityController` 下发字段元数据（`meta` / `GetFields`），前端自动渲染动态列表、动态搜索、动态表单，无需为每个实体手写页面。
 
 ## 目录真相（务必先读）
 
@@ -37,7 +37,7 @@
 
 ### 渲染流程
 1. 路由由**后端菜单驱动**：`pages/DefaultEntity.vue` 匹配当前菜单路径，渲染 `views/index.vue`。
-2. 列表页请求 `GetPage` 拿到 `setting / list / search / addForm / editForm / detail` 五区字段元数据。
+2. 列表页请求 `meta` 拿到 `setting / list / search / addForm / editForm / detail` 五区字段元数据。
 3. `backendFieldsToFormFields()` 把后端字段转成前端 `FormField[]`。
 4. 表单弹窗调用 `views/form.vue`（FormPage）→ `FormContent.vue` 按 `field.type` 渲染控件。
 
@@ -102,7 +102,7 @@ const TYPE_TO_FORM_TYPE = {
 > **完善默认模板**（让每种字段类型都能正常渲染 / 编辑 / 提交）即补齐上表缺口，并统一列表 / 表单两处映射。LOV 值集系统（见下）已可用于枚举 / 列表型下拉。
 
 ### LOV 值集（枚举 / 列表下拉）
-值集由后端 `LovController` + 前端 `LovSelect` 组件支撑：后端为字段配置 `LovCode`（`Enum.{FullName}` 或 `List.xxx`），`GetPage` 元数据携带 `lovCode`，前端自动渲染下拉并翻译列值。详见 `web/skills/cube-lov/SKILL.md`。
+值集由后端 `LovController` + 前端 `LovSelect` 组件支撑：后端为字段配置 `LovCode`（`Enum.{FullName}` 或 `List.xxx`），`meta` 元数据携带 `lovCode`，前端自动渲染下拉并翻译列值。详见 `web/skills/cube-lov/SKILL.md`。
 
 ## 开发
 

@@ -27,7 +27,7 @@ description: 愿景-实现进度差距分析与下一步行动计划
 - 默认页面引擎：`core/views/index.vue`（列表）+ `form.vue`（表单）+ `DefaultEntity.vue`（catch-all）
 - 字段类型映射：`fieldControl.ts` 唯一真理源，19 种控件类型
 - 命令式弹窗：`openListFormDialog()` + `ListFormDialog.vue`
-- 数据导入/导出：`ExportFile` + `ImportFile`
+- 数据导入/导出：`export` + `import`
 - Section 覆盖机制：`useSections.ts` + `pageSections.ts` + Vite 插件
 - 菜单动态路由：`menuRoutes.ts`
 - 单元测试矩阵：`fieldControl.spec.ts` + `FormContent.fieldtypes.spec.ts`

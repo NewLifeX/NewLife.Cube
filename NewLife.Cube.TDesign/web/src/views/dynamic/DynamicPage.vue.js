@@ -342,14 +342,14 @@ if (__VLS_ctx.canImport) {
     // @ts-ignore
     const __VLS_37 = __VLS_asFunctionalComponent(__VLS_36, new __VLS_36({
         ...{ 'onSuccess': {} },
-        action: (`${__VLS_ctx.typePath}/ImportFile`),
+        action: (`${__VLS_ctx.typePath}/import`),
         autoUpload: (true),
         theme: "custom",
         accept: ".csv,.xls,.xlsx",
     }));
     const __VLS_38 = __VLS_37({
         ...{ 'onSuccess': {} },
-        action: (`${__VLS_ctx.typePath}/ImportFile`),
+        action: (`${__VLS_ctx.typePath}/import`),
         autoUpload: (true),
         theme: "custom",
         accept: ".csv,.xls,.xlsx",

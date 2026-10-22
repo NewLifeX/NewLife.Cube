@@ -188,7 +188,7 @@ const columns = computed(() => {
 });
 
 const formFields = computed(() => (isEdit.value ? editFields.value : addFields.value));
-const importUrl = computed(() => `${typePath.value}/ImportFile`);
+const importUrl = computed(() => `${typePath.value}/import`);
 
 async function loadFields() {
   const path = typePath.value;
