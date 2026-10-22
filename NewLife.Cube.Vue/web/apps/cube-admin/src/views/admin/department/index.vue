@@ -418,7 +418,7 @@ const handleEdit = (row: Department) => {
 // 删除
 const handleDelete = (row: Department) => {
   handleDeleteOperation(
-    () => request.delete('/Admin/Department', { params: { id: row.id } }),
+    () => request.delete(`/Admin/Department/${row.id}`),
     loadData,
     '确认删除该部门吗？'
   );

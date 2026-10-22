@@ -354,7 +354,7 @@ const handleEdit = (row: UserToken) => {
 // 删除令牌
 const handleDelete = (row: UserToken) => {
   handleDeleteOperation(
-    () => request.delete('/Admin/UserToken', { params: { id: row.id } }),
+    () => request.delete(`/Admin/UserToken/${row.id}`),
     loadUserTokenData,
     '确认删除该令牌吗？'
   );

@@ -20,6 +20,7 @@ export {
   createPageApi,
   createConfigApi,
   clearPageMetaCache,
+  MaxBatchDelete,
   passwordLoginWithChallenge,
   type PasswordLoginOptions,
 } from './api';

@@ -41,13 +41,17 @@ public class ControllerBaseX : ControllerBase, IActionFilter
 | 详情 | `GET /api/{area}/{controller}/{id}` | `GET .../Detail?id=` | Detail |
 | 新增 | `POST /api/{area}/{controller}` | — | Insert |
 | 修改 | `PUT /api/{area}/{controller}/{id}`（body 可省略主键） | `PUT /api/{area}/{controller}`（主键在 body） | Update |
-| 删除 | `DELETE /api/{area}/{controller}/{id}` | `DELETE ...?id={id}` | Delete |
-| 批量删除 | `DELETE /api/{area}/{controller}/DeleteSelect?id=1&id=2`<br>兼容 `?id=1,2` 与 `?id[0]=1&id[1]=2` | — | Delete |
-| 条件删除 | `DELETE /api/{area}/{controller}/DeleteAll`（必须至少一个业务条件） | — | Delete |
+| 删除 | `DELETE /api/{area}/{controller}/{id}` | — | Delete |
+| 批量删除 | `DELETE /api/{area}/{controller}?ids=1,2,3`（单次最多 100 个，超出改用条件删除） | `?ids=1&ids=2`（重复参数） | Delete |
+| 条件删除 | `DELETE /api/{area}/{controller}?<搜索条件>`（与列表搜索同形，必须至少一个业务条件） | — | Delete |
 
 > **主键一致性**：路径式修改时，若 body 也带主键，两者必须一致，否则返回 `-2`，避免"路径指向 A、内容改 B"。
 >
-> **兼容说明**：`PUT` 主键在 body、`DELETE` 主键在 query 是历史写法，仍可用但已不推荐；路径式路由与 `GET /{id}` 对称，符合 REST 习惯。
+> **删除三态**：路径带主键删单条；`ids=` 删选中的多条；既无主键也无 `ids` 但带业务条件时，按条件删除全部匹配行（不受 `pageSize` 限制）。单条删除的响应 `data` 为被删行，批量与条件删除的 `data` 为删除行数。
+>
+> **已移除的历史端点**：`DELETE .../DeleteSelect` 与 `DELETE .../DeleteAll` 不再提供。前端编译后嵌入 DLL、与后端同版本发布，无需兼容旧写法。
+>
+> **兼容说明**：`PUT` 主键在 body 是历史写法，仍可用但已不推荐；路径式路由与 `GET /{id}` 对称，符合 REST 习惯。
 >
 > 未匹配的 `/api` 请求统一返回 **HTTP 404**（`UseCube` 已注册 `/api/{**path}` 回退，启用 SPA 皮肤时同样生效，不会落到 `index.html`）。
 
@@ -213,8 +217,9 @@ protected override IEnumerable<Student> Search(Pager p)
   - 非 JSON 请求（如程序内直接调用）退回实体脏字段标记判断提交范围；
   - 推荐 `PUT /{id}`；body 也可带主键，但必须与路径一致，否则返回 `-2`；
   - 没有版本号 / ETag，并发写为"后写覆盖"。
-- **删除**：推荐 `DELETE /{id}`；兼容 `?id=`。批量删除支持重复参数、索引形式与逗号分隔。
-- **条件删除（DeleteAll）** 必须至少携带一个业务搜索条件，否则返回 `-2`，防止误删全表；服务端按条件删除全部匹配行（不受 `pageSize` 限制）。
+- **删除**：`DELETE /{id}` 删单条，`DELETE ?ids=1,2,3` 删选中的多条（单次最多 100 个，超出由前端分片），`DELETE ?<搜索条件>` 按条件删全部匹配行。删除不存在的记录返回 `404`。
+- **条件删除** 必须至少携带一个业务搜索条件，否则返回 `-2`，防止误删全表；服务端按条件删除全部匹配行（不受 `pageSize` 限制）。
+- **假删除/恢复**：实体含假删除字段时，入口删除标记为假删除，再次删除才物理删除；`DELETE /{id}?restore=true` 用于恢复。
 
 ### 其它标准端点
 
@@ -296,7 +301,7 @@ protected override IEnumerable<Student> Search(Pager p)
 | Index / Detail / GetChartData / ExportFile | Detail |
 | Insert / ImportFile | Insert |
 | Update | Update |
-| Delete / DeleteSelect / DeleteAll | Delete |
+| Delete（单条 / `ids=` 批量 / 条件删除） | Delete |
 | GetPage / GetFields | 匿名 |
 
 自定义 Action 必须显式标注 `[EntityAuthorize(...)]`，否则不参与权限校验。
@@ -402,11 +407,14 @@ curl -X PUT "$HOST/api/School/Student/1" -H "Authorization: Bearer $TOKEN" \
 curl -X PUT "$HOST/api/School/Student" -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" -d '{"id":1,"name":"李四"}'
 
-# 6. 删除（RESTful，主键在路径）
+# 6. 删除单条（主键在路径）
 curl -X DELETE "$HOST/api/School/Student/1" -H "Authorization: Bearer $TOKEN"
 
-# 6b. 删除（兼容写法，主键在 query）
-curl -X DELETE "$HOST/api/School/Student?id=1" -H "Authorization: Bearer $TOKEN"
+# 6b. 批量删除选中（ids 逗号分隔，亦可用重复参数 ids=1&ids=2）
+curl -X DELETE "$HOST/api/School/Student?ids=1,2,3" -H "Authorization: Bearer $TOKEN"
+
+# 6c. 条件删除（与列表搜索同形，必须至少一个业务条件）
+curl -X DELETE "$HOST/api/School/Student?classId=12&Q=张" -H "Authorization: Bearer $TOKEN"
 
 # 7. 页面元数据（匿名）
 curl "$HOST/api/School/Student/GetPage"

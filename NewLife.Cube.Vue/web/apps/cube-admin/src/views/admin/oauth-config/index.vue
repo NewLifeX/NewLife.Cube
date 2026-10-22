@@ -391,9 +391,7 @@ const handleDelete = (row: OAuthConfig) => {
   })
     .then(async () => {
       try {
-        await request.delete('/Admin/OAuthConfig', {
-          params: { id: row.id }
-        });
+        await request.delete(`/Admin/OAuthConfig/${row.id}`);
         loadData();
       } catch {
         // 错误提示已经在 request 拦截器中自动处理

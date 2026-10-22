@@ -151,10 +151,8 @@ export interface CubeEngineOptions {
   extraQuery?: () => Record<string, unknown>;
   /** 删除是否需要 `ElMessageBox` 之外的二次确认由视图层决定；此处仅声明后端口径 */
   doubleDelete?: boolean;
-  /** 批量删除降级：后端不支持 `DeleteSelect` 时置 true，引擎改为逐条删除 */
+  /** 批量删除降级：置 true 时引擎改为逐条 `DELETE {type}/{id}`，不再走 `ids=` 批量端点 */
   batchDeleteSequential?: boolean;
-  /** 批量删除参数兼容：以逗号分隔单值传 id（后端已兼容拆分） */
-  batchDeleteCommaJoin?: boolean;
 }
 
 /** 引擎外部依赖（全部可注入，便于 Vitest 隔离测试） */
@@ -184,8 +182,8 @@ export interface CubeEngineDeps {
   importFile?: (type: string, file: File) => Promise<unknown>;
   /** 下载导入模板。默认实现走 `GET {type}/DownloadTemplate`（后端自定义 Action，可缺省） */
   downloadTemplate?: (type: string) => Promise<Blob>;
-  /** 批量删除。默认实现走 `DELETE {type}/DeleteSelect`（后端 EntityController.cs:45） */
-  deleteSelect?: (type: string, keys: (number | string)[], options?: { commaJoin?: boolean }) => Promise<void>;
+  /** 批量删除。默认实现走 `DELETE {type}?ids=1,2,3`（后端 EntityController.DeleteAll） */
+  deleteSelect?: (type: string, keys: (number | string)[]) => Promise<unknown>;
   /**
    * LOV 值集查询（可选注入，用于引擎侧预取标签）。
    * 默认**不启用**：列表/搜索/表单的 LOV 取值已由 `LovSelect` 与

@@ -217,7 +217,7 @@ const handleDetail = async (row: UserOnline) => {
 // 删除在线用户
 const handleDelete = (row: UserOnline) => {
   handleDeleteOperation(
-    () => request.delete('/Admin/UserOnline', { params: { id: row.id } }),
+    () => request.delete(`/Admin/UserOnline/${row.id}`),
     loadUserOnlineData,
     `确认删除在线用户 "${row.name}" 吗？`
   )

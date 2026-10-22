@@ -527,7 +527,7 @@ const handleClearPasswordInEdit = () => {
 // 删除用户
 const handleDelete = (row: User) => {
   handleDeleteOperation(
-    () => request.delete('/Admin/User', { params: { id: row.id } }),
+    () => request.delete(`/Admin/User/${row.id}`),
     queryUser, //() => null,
     '确认删除[' + (row.displayName || row.name) + ']用户吗？',
   );

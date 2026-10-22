@@ -232,7 +232,7 @@ const handleEdit = (row: PrincipalAgent) => {
 // 删除
 const handleDelete = (row: PrincipalAgent) => {
   handleDeleteOperation(
-    () => request.delete(`/Cube/PrincipalAgent?id=${row.id}`),
+    () => request.delete(`/Cube/PrincipalAgent/${row.id}`),
     () => callback(),
     `确定要删除代理"${row.displayName || row.name}"吗？`
   );

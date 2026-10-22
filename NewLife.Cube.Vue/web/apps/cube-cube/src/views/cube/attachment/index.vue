@@ -277,7 +277,7 @@ const handleDelete = (row: Attachment) => {
     }
   ).then(async () => {
     try {
-      await request.delete(`/Cube/Attachment?id=${row.id}`);
+      await request.delete(`/Cube/Attachment/${row.id}`);
       ElMessage.success('删除成功');
       loadData();
     } catch (error) {

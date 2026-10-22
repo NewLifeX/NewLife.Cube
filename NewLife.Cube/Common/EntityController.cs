@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
@@ -19,16 +18,23 @@ namespace NewLife.Cube;
 public partial class EntityController<TEntity, TModel>
 {
     #region 默认Action
-    /// <summary>删除数据。支持两种风格：传统查询参数 /api/{area}/{controller}?id=，以及 RESTful 路径 /api/{area}/{controller}/{id}</summary>
-    /// <param name="id"></param>
+    /// <summary>批量删除主键上限。超过时应改用条件删除</summary>
+    public const Int32 MaxBatchDelete = 100;
+
+    /// <summary>删除数据。主键在路径中</summary>
+    /// <param name="id">主键</param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Delete)]
     [DisplayName("Delete {type}")]
-    [HttpDelete("/api/[area]/[controller]")]
-    public virtual ApiResponse<TEntity> Delete([Required] String id)
+    [HttpDelete("/api/[area]/[controller]/{id}")]
+    public virtual ApiResponse<TEntity> Delete(String id)
     {
+        if (id.IsNullOrEmpty()) throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("Missing primary key."));
+
         var act = L.T("Delete");
         var entity = FindData(id);
+        if (entity == null || (entity as IEntity).IsNullKey) throw new ApiException(ApiCode.NotFound.ToInt(), L.T("The requested data [{0}] does not exist.", id));
+
         try
         {
             act = ProcessDelete(entity);
@@ -40,43 +46,43 @@ public partial class EntityController<TEntity, TModel>
         }
     }
 
-    /// <summary>删除数据（RESTful 风格）。主键在路径中，转发到 Delete 以保留子类重载</summary>
-    /// <param name="id">主键</param>
-    /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Delete)]
-    [DisplayName("Delete {type}")]
-    [HttpDelete("/api/[area]/[controller]/{id}")]
-    public virtual ApiResponse<TEntity> DeleteById(String id)
-    {
-        if (id.IsNullOrEmpty()) throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("Missing primary key."));
-
-        return Delete(id);
-    }
-
-    /// <summary>批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&amp;id=2、索引形式 id[0]=1&amp;id[1]=2、逗号分隔 id=1,2</summary>
-    /// <param name="id">主键集合。为空时返回参数错误</param>
+    /// <summary>批量或按条件删除。ids 传选中主键（逗号分隔或重复参数，最多 <see cref="MaxBatchDelete"/> 个）；未传 ids 时按当前搜索条件删除全部匹配行</summary>
+    /// <param name="ids">主键集合</param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Delete)]
     [DisplayName("Delete {type} in bulk")]
-    [HttpDelete("/api/[area]/[controller]/DeleteSelect")]
-    public virtual ApiResponse<String> DeleteSelect([FromQuery] String[] id)
+    [HttpDelete("/api/[area]/[controller]")]
+    public virtual ApiResponse<String> DeleteAll([FromQuery] String[] ids = null)
     {
         var act = L.T("Delete");
         try
         {
-            if (id == null || id.Length == 0)
-                throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("No data specified for deletion."));
-
             var n = 0;
-            foreach (var item in id)
+            if (Request.Query.ContainsKey("ids"))
             {
-                // 兼容逗号分隔形式 id=1,2,3（String[] 绑定为单个元素时拆分）
-                var parts = item.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                foreach (var part in parts)
+                var keys = (ids ?? []).SelectMany(e => e.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToArray();
+                if (keys.Length == 0) throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("No data specified for deletion."));
+                if (keys.Length > MaxBatchDelete) throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("Too many ids to delete at once. Use query conditions instead."));
+
+                foreach (var item in keys)
                 {
-                    var entity = FindData(part);
+                    var entity = FindData(item);
                     if (entity == null) continue;
 
+                    ProcessDelete(entity);
+                    n++;
+                }
+            }
+            else
+            {
+                var p = new Pager(WebHelper.Params) { PageSize = 0 };// 删除全部匹配行，不受分页限制
+                // 排除分页系统参数后若无业务搜索条件，拒绝删除
+                var sys = new[] { "pageIndex", "pageSize", "sort", "desc", "ids" };
+                if (!p.Params.Keys.Any(e => !e.EqualIgnoreCase(sys)))
+                    throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("No delete condition specified; refusing to delete all data."));
+
+                foreach (var entity in SearchData(p).ToList())
+                {
                     ProcessDelete(entity);
                     n++;
                 }
@@ -86,41 +92,7 @@ public partial class EntityController<TEntity, TModel>
         }
         catch (Exception ex)
         {
-            // DeleteSelect 返回 ApiResponse<String>，复用 BuildFailResponse 后做类型适配（保留错误码/消息/字段错误）
-            var fail = BuildFailResponse(ex, act, null);
-            return new ApiResponse<String> { Code = fail.Code, Message = fail.Message, Data = null, FieldErrors = fail.FieldErrors };
-        }
-    }
-
-    /// <summary>按当前搜索条件删除全部数据。至少需携带一个业务搜索条件，防止误删全表</summary>
-    /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Delete)]
-    [DisplayName("Delete {type} by condition")]
-    [HttpDelete("/api/[area]/[controller]/DeleteAll")]
-    public virtual ApiResponse<String> DeleteAll()
-    {
-        var act = L.T("Delete");
-        try
-        {
-            var p = new Pager(WebHelper.Params) { PageSize = 0 };// 删除全部匹配行，不受分页限制
-            // 排除分页系统参数后若无业务搜索条件，拒绝删除
-            var sys = new[] { "pageIndex", "pageSize", "sort", "desc" };
-            if (!p.Params.Keys.Any(e => !e.EqualIgnoreCase(sys)))
-                throw new ApiException(Models.CubeCode.ParamError.ToInt(), L.T("No delete condition specified; refusing to delete all data."));
-
-            var list = SearchData(p).ToList();
-            var n = 0;
-            foreach (var entity in list)
-            {
-                ProcessDelete(entity);
-                n++;
-            }
-
-            return new ApiResponse<String> { Code = 0, Message = L.T("{0} succeeded! Total {1} rows", act, n), Data = n.ToString() };
-        }
-        catch (Exception ex)
-        {
-            // DeleteAll 返回 ApiResponse<String>，复用 BuildFailResponse 后做类型适配（保留错误码/消息/字段错误）
+            // 返回 ApiResponse<String>，复用 BuildFailResponse 后做类型适配（保留错误码/消息/字段错误）
             var fail = BuildFailResponse(ex, act, null);
             return new ApiResponse<String> { Code = fail.Code, Message = fail.Message, Data = null, FieldErrors = fail.FieldErrors };
         }

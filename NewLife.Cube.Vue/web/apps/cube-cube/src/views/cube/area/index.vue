@@ -307,7 +307,7 @@ const handleDelete = (row: Area) => {
     }
   ).then(async () => {
     try {
-      await request.delete(`/Cube/Area?id=${row.id}`);
+      await request.delete(`/Cube/Area/${row.id}`);
       ElMessage.success('删除成功');
       loadData();
     } catch (error) {

@@ -55,11 +55,7 @@ interface CubeApiSurface {
     getPage: (type: string) => Promise<{ data?: unknown }>;
     getDetail: (type: string, id: number | string) => Promise<{ data?: unknown }>;
     importFile: (type: string, file: File) => Promise<unknown>;
-    deleteSelect: (
-      type: string,
-      keys: (number | string)[],
-      options?: { compatCommaJoin?: boolean },
-    ) => Promise<unknown>;
+    deleteSelect: (type: string, keys: (number | string)[]) => Promise<unknown>;
   };
 }
 
@@ -126,9 +122,9 @@ export function createDefaultCubeEngineDeps(): CubeEngineDeps {
       const { cubeApi } = await loadRequestLayer();
       return (await cubeApi.page.importFile(type, file)) as unknown;
     },
-    deleteSelect: async (type, keys, options) => {
+    deleteSelect: async (type, keys) => {
       const { cubeApi } = await loadRequestLayer();
-      await cubeApi.page.deleteSelect(type, keys, { compatCommaJoin: options?.commaJoin });
+      await cubeApi.page.deleteSelect(type, keys);
     },
     notify: {
       success: (message: string) => ElMessage.success(message),

@@ -440,7 +440,7 @@ export function createCubeEngine(
     }
     submitting.value = true;
     try {
-      await deps.http({ url: type.value, method: 'delete', params: { id: resolveRowId(row, idKey.value) } });
+      await deps.http({ url: `${type.value}/${encodeURIComponent(String(resolveRowId(row, idKey.value)))}`, method: 'delete' });
       deps.notify?.success?.('删除成功');
       // 删掉当前页最后一条时回退一页，避免停在空页
       if (list.value.length <= 1 && pageIndex.value > 1) pageIndex.value -= 1;
@@ -467,11 +467,11 @@ export function createCubeEngine(
     submitting.value = true;
     try {
       if (deps.deleteSelect && !options.batchDeleteSequential) {
-        await deps.deleteSelect(type.value, ids, { commaJoin: options.batchDeleteCommaJoin });
+        await deps.deleteSelect(type.value, ids);
       } else {
-        // 逐条降级：后端无 DeleteSelect 端点，或显式要求顺序删除时使用
+        // 逐条降级：显式要求顺序删除时使用
         await Promise.all(
-          ids.map((id) => deps.http({ url: type.value, method: 'delete', params: { id } })),
+          ids.map((id) => deps.http({ url: `${type.value}/${encodeURIComponent(String(id))}`, method: 'delete' })),
         );
       }
       deps.notify?.success?.(`已删除 ${ids.length} 条`);

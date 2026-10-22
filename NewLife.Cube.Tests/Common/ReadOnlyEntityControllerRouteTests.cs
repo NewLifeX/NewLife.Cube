@@ -41,8 +41,43 @@ public class ReadOnlyEntityControllerRouteTests
         var putRoutes = update!.GetCustomAttributes<HttpPutAttribute>().Select(e => e.Template).ToArray();
         Assert.Contains("/api/[area]/[controller]/{id}", putRoutes);
 
-        var delete = typeof(EntityController<,>).GetMethod("DeleteById");
+        var delete = typeof(EntityController<,>).GetMethod("Delete");
         var delRoutes = delete!.GetCustomAttributes<HttpDeleteAttribute>().Select(e => e.Template).ToArray();
         Assert.Contains("/api/[area]/[controller]/{id}", delRoutes);
+    }
+
+    [Fact(DisplayName = "批量与条件删除共用基路径删除动作")]
+    public void DeleteAll_HasBaseRouteAndIdsParameter()
+    {
+        var deleteAll = typeof(EntityController<,>).GetMethod("DeleteAll");
+        var routes = deleteAll!.GetCustomAttributes<HttpDeleteAttribute>().Select(e => e.Template).ToArray();
+
+        // 基路径：DELETE /api/{area}/{controller}?ids= 或 ?<搜索条件>
+        Assert.Contains("/api/[area]/[controller]", routes);
+
+        // ids 走查询串，需显式 [FromQuery]；有默认值以兼容"纯条件删除"调用
+        var param = deleteAll.GetParameters().Single(e => e.Name == "ids");
+        Assert.NotNull(param.GetCustomAttribute<FromQueryAttribute>());
+        Assert.True(param.HasDefaultValue);
+        Assert.Null(param.DefaultValue);
+    }
+
+    [Fact(DisplayName = "旧的删除专用端点已移除")]
+    public void LegacyDeleteEndpoints_Removed()
+    {
+        var routes = typeof(EntityController<,>).GetMethods(BindingFlags.Public | BindingFlags.Instance)
+            .SelectMany(e => e.GetCustomAttributes<HttpDeleteAttribute>())
+            .Select(e => e.Template ?? "")
+            .ToArray();
+
+        Assert.DoesNotContain(routes, e => e.Contains("DeleteSelect") || e.Contains("DeleteAll"));
+        Assert.Null(typeof(EntityController<,>).GetMethod("DeleteById"));
+        Assert.Null(typeof(EntityController<,>).GetMethod("DeleteSelect"));
+    }
+
+    [Fact(DisplayName = "批量删除上限与后端常量一致")]
+    public void MaxBatchDelete_IsDocumented()
+    {
+        Assert.Equal(100, EntityController<XCode.Membership.User, XCode.Membership.UserModel>.MaxBatchDelete);
     }
 }

@@ -128,7 +128,7 @@ const PageSizeChange = (size: number) => {
 // 删除
 const handleDelete = (row: UserConnect) => {
   handleDeleteOperation(
-    () => request.delete('/Admin/UserConnect', { params: { id: row.id } }),
+    () => request.delete(`/Admin/UserConnect/${row.id}`),
     loadData,
     '确认删除该用户连接吗？'
   );

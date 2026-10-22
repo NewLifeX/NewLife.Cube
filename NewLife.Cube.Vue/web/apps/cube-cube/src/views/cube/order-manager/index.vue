@@ -317,7 +317,7 @@ const handleDelete = (row: OrderManager) => {
     }
   ).then(async () => {
     try {
-      await request.delete(`/Cube/OrderManager?id=${row.id}`);
+      await request.delete(`/Cube/OrderManager/${row.id}`);
       ElMessage.success('删除成功');
       loadData();
     } catch (error) {

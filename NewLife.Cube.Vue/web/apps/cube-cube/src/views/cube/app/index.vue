@@ -260,7 +260,7 @@ const handleDelete = (row: App) => {
     }
   ).then(async () => {
     try {
-      await request.delete(`/Cube/App?id=${row.id}`);
+      await request.delete(`/Cube/App/${row.id}`);
       ElMessage.success('删除成功');
       fetchData();
     } catch (error) {

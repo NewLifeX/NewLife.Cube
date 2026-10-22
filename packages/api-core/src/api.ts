@@ -28,6 +28,9 @@ import type {
 
 type RequestFn = <T>(config: AxiosRequestConfig) => Promise<ApiResponse<T>>;
 
+/** 批量删除单次主键上限，与后端 EntityController.MaxBatchDelete 保持一致 */
+export const MaxBatchDelete = 100;
+
 /** 密码登录附加参数（图画验证码与记住登录态） */
 export interface PasswordLoginOptions {
   /** 图片验证码 ID（登录配置 login.captcha=true 时必填） */
@@ -320,27 +323,30 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
     update: (type: string, data: Record<string, unknown>) =>
       request<unknown>({ url: type, method: 'put', data }),
 
-    /** 删除单条 */
+    /** 删除单条：DELETE {type}/{id} */
     remove: (type: string, id: number | string) =>
-      request<unknown>({ url: type, method: 'delete', params: { id } }),
+      request<unknown>({ url: `${type}/${encodeURIComponent(id)}`, method: 'delete' }),
 
-    /** 恢复软删除单条（后端 Delete 支持 restore=true 参数） */
+    /** 恢复软删除单条：DELETE {type}/{id}?restore=true（后端 ProcessDelete 识别 restore 参数） */
     restore: (type: string, id: number | string) =>
-      request<unknown>({ url: type, method: 'delete', params: { id, restore: true } }),
+      request<unknown>({ url: `${type}/${encodeURIComponent(id)}`, method: 'delete', params: { restore: true } }),
 
     /**
-     * 批量删除选中，调用专用端点 DeleteSelect。
-     * 默认传数组（qs 序列化为索引形式 id[0]=1&id[1]=2，后端 String[] 绑定）；
-     * 后端不支持索引形式时可用 compatCommaJoin 传逗号分隔 id=1,2（后端已兼容拆分）。
+     * 批量删除选中：DELETE {type}?ids=1,2,3。
+     * 单次最多 {@link MaxBatchDelete} 个主键，超出时自动分片串行提交，返回最后一片的响应。
      */
-    deleteSelect: (type: string, keys: (number | string)[], options?: { compatCommaJoin?: boolean }) => {
-      const params = options?.compatCommaJoin ? { id: keys.join(',') } : { id: keys };
-      return request<unknown>({ url: `${type}/DeleteSelect`, method: 'delete', params });
+    deleteSelect: async (type: string, keys: (number | string)[]) => {
+      let res: ApiResponse<unknown> = { code: 0, data: null };
+      for (let i = 0; i < keys.length; i += MaxBatchDelete) {
+        const ids = keys.slice(i, i + MaxBatchDelete).join(',');
+        res = await request<unknown>({ url: type, method: 'delete', params: { ids } });
+      }
+      return res;
     },
 
-    /** 按条件删除全部，params 为搜索条件（至少需携带一个参数，否则后端拒绝）。调用专用端点 DeleteAll */
+    /** 按条件删除：DELETE {type}?<搜索条件>，params 与 getList 的搜索条件同形（至少一个业务条件，否则后端拒绝） */
     deleteAll: (type: string, params?: Record<string, unknown>) =>
-      request<unknown>({ url: `${type}/DeleteAll`, method: 'delete', params }),
+      request<unknown>({ url: type, method: 'delete', params }),
 
     /** 字典查询（codes 逗号分隔） */
     lookup: (codes: string) =>

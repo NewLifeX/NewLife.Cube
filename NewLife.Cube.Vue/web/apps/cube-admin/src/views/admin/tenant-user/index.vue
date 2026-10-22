@@ -336,9 +336,7 @@ const updateTenantUser = async (data: Partial<TenantUser>) => {
 // 删除租户用户
 const deleteTenantUser = async (id: number) => {
   try {
-    await request.delete('/Admin/TenantUser', {
-      params: { id }
-    })
+    await request.delete(`/Admin/TenantUser/${id}`)
     refreshList()
   } catch {
     // 错误提示已经在 request 拦截器中自动处理

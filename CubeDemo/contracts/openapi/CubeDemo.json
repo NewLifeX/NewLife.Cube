@@ -2220,22 +2220,22 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "type": "boolean",
-            "description": "响应数据"
+            "description": "响应数据。始终输出（可为 null）"
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "响应模型"
@@ -2254,7 +2254,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "oneOf": [
@@ -2262,21 +2262,21 @@
                 "type": "null"
               },
               {
-                "description": "响应数据",
+                "description": "响应数据。始终输出（可为 null）",
                 "$ref": "#/components/schemas/LoginTokenModel"
               }
             ]
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "响应模型"
@@ -2295,7 +2295,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
@@ -2303,19 +2303,19 @@
               "integer",
               "string"
             ],
-            "description": "响应数据",
+            "description": "响应数据。始终输出（可为 null）",
             "format": "int64"
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "响应模型"
@@ -2334,7 +2334,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "oneOf": [
@@ -2342,21 +2342,21 @@
                 "type": "null"
               },
               {
-                "description": "响应数据",
+                "description": "响应数据。始终输出（可为 null）",
                 "$ref": "#/components/schemas/OAuthPendingInfoModel"
               }
             ]
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "响应模型"
@@ -2375,7 +2375,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "oneOf": [
@@ -2383,21 +2383,21 @@
                 "type": "null"
               },
               {
-                "description": "响应数据",
+                "description": "响应数据。始终输出（可为 null）",
                 "$ref": "#/components/schemas/RegisterResult"
               }
             ]
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "响应模型"
@@ -2416,7 +2416,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "oneOf": [
@@ -2424,21 +2424,21 @@
                 "type": "null"
               },
               {
-                "description": "响应数据",
+                "description": "响应数据。始终输出（可为 null）",
                 "$ref": "#/components/schemas/TokenModel"
               }
             ]
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "响应模型"
@@ -2768,7 +2768,10 @@
             "description": "确认密码"
           },
           "challengeId": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "description": "挑战标识"
           }
         },
@@ -2836,7 +2839,7 @@
             ]
           }
         },
-        "description": "响应数据"
+        "description": "响应数据。始终输出（可为 null）"
       },
       "VerifyCodeModel": {
         "type": "object",

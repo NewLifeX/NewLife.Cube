@@ -115,7 +115,7 @@ public class LovController : ControllerBaseX
     /// <param name="id">值集编码</param>
     /// <returns>响应</returns>
     [EntityAuthorize(PermissionFlags.Delete)]
-    [HttpDelete("/api/[area]/[controller]")]
+    [HttpDelete("/api/[area]/[controller]/{id}")]
     public ApiResponse<Object> Delete(String id)
     {
         if (id.IsNullOrEmpty()) id = Request.Query["id"].ToString();
@@ -126,18 +126,18 @@ public class LovController : ControllerBaseX
         return new ApiResponse<Object> { Code = 0, Message = L.T("Delete succeeded!") };
     }
 
-    /// <summary>批量删除选中数据。支持重复参数 id=a&amp;id=b、逗号分隔 id=a,b</summary>
-    /// <param name="id">值集编码集合</param>
+    /// <summary>批量删除选中数据。ids 传值集编码，支持逗号分隔或重复参数</summary>
+    /// <param name="ids">值集编码集合</param>
     /// <returns>响应</returns>
     [EntityAuthorize(PermissionFlags.Delete)]
-    [HttpDelete("/api/[area]/[controller]/DeleteSelect")]
-    public ApiResponse<String> DeleteSelect([FromQuery] String[] id)
+    [HttpDelete("/api/[area]/[controller]")]
+    public ApiResponse<String> DeleteSelect([FromQuery] String[] ids)
     {
-        if (id == null || id.Length == 0)
+        if (ids == null || ids.Length == 0)
             throw new InvalidOperationException(L.T("No data specified for deletion."));
 
         var n = 0;
-        foreach (var item in id)
+        foreach (var item in ids)
         {
             var parts = item.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             foreach (var part in parts)

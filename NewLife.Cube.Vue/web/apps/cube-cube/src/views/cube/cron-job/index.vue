@@ -288,7 +288,7 @@ const handleDelete = (row: CronJob) => {
     }
   ).then(async () => {
     try {
-      await request.delete(`/Cube/CronJob?id=${row.id}`);
+      await request.delete(`/Cube/CronJob/${row.id}`);
       ElMessage.success('删除成功');
       fetchData();
     } catch (error) {

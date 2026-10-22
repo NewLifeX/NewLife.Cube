@@ -262,9 +262,8 @@ describe('createCubeEngine 分页与查询', () => {
 });
 
 describe('createCubeEngine 删除', () => {
-  it('应该用集合路由加 QueryString id 当删除单条时', async () => {
-    // 后端只有 [HttpDelete("/api/[area]/[controller]")]（EntityController.cs:24），
-    // 路径式 /{type}/{id} 命中不到路由会返回 405 —— 草案 §4.2 的写法正是踩这个坑
+  it('应该用路径主键删除单条 当调用 remove 时', async () => {
+    // 后端 DELETE /api/[area]/[controller]/{id}（EntityController.Delete）
     const { deps, http, notify } = makeDeps();
     const ctx = createCubeEngine({ routePath: ROUTE }, deps);
     await ctx.init();
@@ -272,8 +271,8 @@ describe('createCubeEngine 删除', () => {
     const ok = await ctx.remove({ id: 9 });
     expect(ok).toBe(true);
     const del = [...http.calls.slice(before)].reverse().find((c) => c.method === 'delete');
-    expect(del?.url).toBe(TYPE);
-    expect(del?.params).toEqual({ id: 9 });
+    expect(del?.url).toBe(`${TYPE}/9`);
+    expect(del?.params).toBeUndefined();
     expect(notify.success).toHaveBeenCalledWith('删除成功');
   });
 
@@ -288,7 +287,8 @@ describe('createCubeEngine 删除', () => {
     await ctx.init();
     await ctx.remove({ EquipmentId: 12 });
     const del = [...http.calls].reverse().find((c) => c.method === 'delete');
-    expect(del?.params).toEqual({ id: 12 });
+    expect(del?.url).toBe(`${TYPE}/12`);
+    expect(del?.params).toBeUndefined();
   });
 
   it('应该拒绝并提示 当行数据没有主键时', async () => {
@@ -301,25 +301,27 @@ describe('createCubeEngine 删除', () => {
     expect(notify.error).toHaveBeenCalled();
   });
 
-  it('应该走 DeleteSelect 当提供批量删除依赖时', async () => {
+  it('应该走批量删除依赖 当提供 ids 批量端点时', async () => {
     const deleteSelect = vi.fn(async () => undefined);
     const { deps, http } = makeDeps({ deleteSelect });
     const ctx = createCubeEngine({ routePath: ROUTE }, deps);
     await ctx.init();
     ctx.setSelected([{ id: 1 }, { id: 2 }, { name: '无主键' }]);
     expect(await ctx.removeSelected()).toBe(true);
-    expect(deleteSelect).toHaveBeenCalledWith(TYPE, [1, 2], { commaJoin: undefined });
+    expect(deleteSelect).toHaveBeenCalledWith(TYPE, [1, 2]);
     expect(http.calls.some((c) => c.method === 'delete')).toBe(false);
     expect(ctx.selected.value).toEqual([]);
   });
 
-  it('应该逐条降级删除 当后端没有 DeleteSelect 端点时', async () => {
+  it('应该逐条降级删除 当未提供批量删除依赖时', async () => {
     const { deps, http } = makeDeps();
     const ctx = createCubeEngine({ routePath: ROUTE }, deps);
     await ctx.init();
     ctx.setSelected([{ id: 1 }, { id: 2 }]);
     expect(await ctx.removeSelected()).toBe(true);
-    expect(http.calls.filter((c) => c.method === 'delete')).toHaveLength(2);
+    const dels = http.calls.filter((c) => c.method === 'delete');
+    expect(dels).toHaveLength(2);
+    expect(dels.map((c) => c.url)).toEqual([`${TYPE}/1`, `${TYPE}/2`]);
   });
 
   it('应该拒绝空勾选 当未选中任何行时', async () => {

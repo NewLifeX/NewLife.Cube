@@ -157,8 +157,7 @@ function buildEngine(options: EngineOptions = {}): CubeEngineContext {
         rows = rows.map((r) => (r.Id === data.Id ? { ...r, ...data } : r));
       }
       if (method === 'delete') {
-        const id = config.params?.id;
-        rows = rows.filter((r) => r.Id !== id);
+        rows = rows.filter((r) => String(r.Id) !== config.url.split('/').pop());
       }
       return { code: 0, data: null, message: '保存成功！' };
     },

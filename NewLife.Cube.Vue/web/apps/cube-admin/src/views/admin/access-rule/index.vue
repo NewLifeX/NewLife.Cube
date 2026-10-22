@@ -314,7 +314,7 @@ const handleEdit = (row: AccessRule) => {
 // 删除
 const handleDelete = (row: AccessRule) => {
   handleDeleteOperation(
-    () => request.delete('/Admin/AccessRule', { params: { id: row.id } }),
+    () => request.delete(`/Admin/AccessRule/${row.id}`),
     loadData,
     '确认删除该访问规则吗？'
   );

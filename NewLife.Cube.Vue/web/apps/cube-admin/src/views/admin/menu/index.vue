@@ -530,7 +530,7 @@ const handleEdit = (row: Menu) => {
 // 删除
 const handleDelete = (row: Menu) => {
   handleDeleteOperation(
-    () => request.delete('/Admin/Menu', { params: { id: row.id } }),
+    () => request.delete(`/Admin/Menu/${row.id}`),
     loadData,
     '确认删除该菜单吗？'
   );

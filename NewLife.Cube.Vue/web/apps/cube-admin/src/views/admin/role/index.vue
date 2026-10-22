@@ -602,7 +602,7 @@ const handleDelete = (row: Role) => {
   }
 
   handleDeleteOperation(
-    () => request.delete('/Admin/Role', { params: { id: row.id } }),
+    () => request.delete(`/Admin/Role/${row.id}`),
     loadData,
     '确认删除该角色吗？'
   );

@@ -288,7 +288,7 @@ const handleEdit = (row: Tenant) => {
 // 删除
 const handleDelete = (row: Tenant) => {
   handleDeleteOperation(
-    () => request.delete('/Admin/Tenant', { params: { id: row.id } }),
+    () => request.delete(`/Admin/Tenant/${row.id}`),
     loadData,
     '确认删除该租户吗？'
   );

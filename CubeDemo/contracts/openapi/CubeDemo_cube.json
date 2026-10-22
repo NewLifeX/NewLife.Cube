@@ -5,17 +5,17 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/api/Cube/App": {
+    "/api/Cube/App/{id}": {
       "delete": {
         "tags": [
           "App"
         ],
-        "summary": "删除数据",
+        "summary": "删除数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
-            "in": "query",
-            "description": "",
+            "in": "path",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -29,6 +29,116 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiResponseOfApp"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "App"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfApp"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "App"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfApp"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/App": {
+      "delete": {
+        "tags": [
+          "App"
+        ],
+        "summary": "批量或按条件删除。ids 传选中主键（逗号分隔或重复参数，最多  个）；未传 ids 时按当前搜索条件删除全部匹配行",
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "query",
+            "description": "主键集合",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
                 }
               }
             }
@@ -128,59 +238,6 @@
         }
       }
     },
-    "/api/Cube/App/DeleteSelect": {
-      "delete": {
-        "tags": [
-          "App"
-        ],
-        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&id=2、索引形式 id[0]=1&id[1]=2、逗号分隔 id=1,2",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "description": "主键集合。为空时返回参数错误",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfstring"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Cube/App/DeleteAll": {
-      "delete": {
-        "tags": [
-          "App"
-        ],
-        "summary": "按当前搜索条件删除全部数据。至少需携带一个业务搜索条件，防止误删全表",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfstring"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/Cube/App/ImportFile": {
       "post": {
         "tags": [
@@ -259,38 +316,6 @@
             "description": "附件编号、文件路径、MIME 类型",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/Cube/App/{id}": {
-      "get": {
-        "tags": [
-          "App"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfApp"
-                }
-              }
             }
           }
         }
@@ -658,17 +683,17 @@
         }
       }
     },
-    "/api/Cube/Area": {
+    "/api/Cube/Area/{id}": {
       "delete": {
         "tags": [
           "Area"
         ],
-        "summary": "删除数据",
+        "summary": "删除数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
-            "in": "query",
-            "description": "",
+            "in": "path",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -682,6 +707,116 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiResponseOfArea"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Area"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AreaModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AreaModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AreaModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfArea"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfArea"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Area": {
+      "delete": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "批量或按条件删除。ids 传选中主键（逗号分隔或重复参数，最多  个）；未传 ids 时按当前搜索条件删除全部匹配行",
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "query",
+            "description": "主键集合",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
                 }
               }
             }
@@ -781,59 +916,6 @@
         }
       }
     },
-    "/api/Cube/Area/DeleteSelect": {
-      "delete": {
-        "tags": [
-          "Area"
-        ],
-        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&id=2、索引形式 id[0]=1&id[1]=2、逗号分隔 id=1,2",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "description": "主键集合。为空时返回参数错误",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfstring"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Cube/Area/DeleteAll": {
-      "delete": {
-        "tags": [
-          "Area"
-        ],
-        "summary": "按当前搜索条件删除全部数据。至少需携带一个业务搜索条件，防止误删全表",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfstring"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/Cube/Area/ImportFile": {
       "post": {
         "tags": [
@@ -912,38 +994,6 @@
             "description": "附件编号、文件路径、MIME 类型",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/Cube/Area/{id}": {
-      "get": {
-        "tags": [
-          "Area"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfArea"
-                }
-              }
             }
           }
         }
@@ -1096,17 +1146,17 @@
         }
       }
     },
-    "/api/Cube/Attachment": {
+    "/api/Cube/Attachment/{id}": {
       "delete": {
         "tags": [
           "Attachment"
         ],
-        "summary": "删除数据",
+        "summary": "删除数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
-            "in": "query",
-            "description": "",
+            "in": "path",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -1120,6 +1170,116 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiResponseOfAttachment"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Attachment"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachmentModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachmentModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachmentModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfAttachment"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfAttachment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/Attachment": {
+      "delete": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "批量或按条件删除。ids 传选中主键（逗号分隔或重复参数，最多  个）；未传 ids 时按当前搜索条件删除全部匹配行",
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "query",
+            "description": "主键集合",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
                 }
               }
             }
@@ -1219,59 +1379,6 @@
         }
       }
     },
-    "/api/Cube/Attachment/DeleteSelect": {
-      "delete": {
-        "tags": [
-          "Attachment"
-        ],
-        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&id=2、索引形式 id[0]=1&id[1]=2、逗号分隔 id=1,2",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "description": "主键集合。为空时返回参数错误",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfstring"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Cube/Attachment/DeleteAll": {
-      "delete": {
-        "tags": [
-          "Attachment"
-        ],
-        "summary": "按当前搜索条件删除全部数据。至少需携带一个业务搜索条件，防止误删全表",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfstring"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/Cube/Attachment/ImportFile": {
       "post": {
         "tags": [
@@ -1350,38 +1457,6 @@
             "description": "附件编号、文件路径、MIME 类型",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/Cube/Attachment/{id}": {
-      "get": {
-        "tags": [
-          "Attachment"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfAttachment"
-                }
-              }
             }
           }
         }
@@ -1560,17 +1635,17 @@
         }
       }
     },
-    "/api/Cube/CronJob": {
+    "/api/Cube/CronJob/{id}": {
       "delete": {
         "tags": [
           "CronJob"
         ],
-        "summary": "删除数据",
+        "summary": "删除数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
-            "in": "query",
-            "description": "",
+            "in": "path",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -1584,6 +1659,116 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiResponseOfCronJob"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "CronJob"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CronJobModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CronJobModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CronJobModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfCronJob"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfCronJob"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/CronJob": {
+      "delete": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "批量或按条件删除。ids 传选中主键（逗号分隔或重复参数，最多  个）；未传 ids 时按当前搜索条件删除全部匹配行",
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "query",
+            "description": "主键集合",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
                 }
               }
             }
@@ -1683,59 +1868,6 @@
         }
       }
     },
-    "/api/Cube/CronJob/DeleteSelect": {
-      "delete": {
-        "tags": [
-          "CronJob"
-        ],
-        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&id=2、索引形式 id[0]=1&id[1]=2、逗号分隔 id=1,2",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "description": "主键集合。为空时返回参数错误",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfstring"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Cube/CronJob/DeleteAll": {
-      "delete": {
-        "tags": [
-          "CronJob"
-        ],
-        "summary": "按当前搜索条件删除全部数据。至少需携带一个业务搜索条件，防止误删全表",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfstring"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/Cube/CronJob/ImportFile": {
       "post": {
         "tags": [
@@ -1814,38 +1946,6 @@
             "description": "附件编号、文件路径、MIME 类型",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/Cube/CronJob/{id}": {
-      "get": {
-        "tags": [
-          "CronJob"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfCronJob"
-                }
-              }
             }
           }
         }
@@ -2024,17 +2124,17 @@
         }
       }
     },
-    "/api/Cube/OrderManager": {
+    "/api/Cube/OrderManager/{id}": {
       "delete": {
         "tags": [
           "OrderManager"
         ],
-        "summary": "删除数据",
+        "summary": "删除数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
-            "in": "query",
-            "description": "",
+            "in": "path",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -2048,6 +2148,116 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiResponseOfOrderManager"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "OrderManager"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderManagerModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderManagerModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderManagerModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfOrderManager"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfOrderManager"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/OrderManager": {
+      "delete": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "批量或按条件删除。ids 传选中主键（逗号分隔或重复参数，最多  个）；未传 ids 时按当前搜索条件删除全部匹配行",
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "query",
+            "description": "主键集合",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
                 }
               }
             }
@@ -2147,59 +2357,6 @@
         }
       }
     },
-    "/api/Cube/OrderManager/DeleteSelect": {
-      "delete": {
-        "tags": [
-          "OrderManager"
-        ],
-        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&id=2、索引形式 id[0]=1&id[1]=2、逗号分隔 id=1,2",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "description": "主键集合。为空时返回参数错误",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfstring"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Cube/OrderManager/DeleteAll": {
-      "delete": {
-        "tags": [
-          "OrderManager"
-        ],
-        "summary": "按当前搜索条件删除全部数据。至少需携带一个业务搜索条件，防止误删全表",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfstring"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/Cube/OrderManager/ImportFile": {
       "post": {
         "tags": [
@@ -2278,38 +2435,6 @@
             "description": "附件编号、文件路径、MIME 类型",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/Cube/OrderManager/{id}": {
-      "get": {
-        "tags": [
-          "OrderManager"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfOrderManager"
-                }
-              }
             }
           }
         }
@@ -2462,17 +2587,17 @@
         }
       }
     },
-    "/api/Cube/PrincipalAgent": {
+    "/api/Cube/PrincipalAgent/{id}": {
       "delete": {
         "tags": [
           "PrincipalAgent"
         ],
-        "summary": "删除数据",
+        "summary": "删除数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
-            "in": "query",
-            "description": "",
+            "in": "path",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -2486,6 +2611,116 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiResponseOfPrincipalAgent"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrincipalAgentModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrincipalAgentModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrincipalAgentModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfPrincipalAgent"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfPrincipalAgent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Cube/PrincipalAgent": {
+      "delete": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "批量或按条件删除。ids 传选中主键（逗号分隔或重复参数，最多  个）；未传 ids 时按当前搜索条件删除全部匹配行",
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "query",
+            "description": "主键集合",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
                 }
               }
             }
@@ -2585,59 +2820,6 @@
         }
       }
     },
-    "/api/Cube/PrincipalAgent/DeleteSelect": {
-      "delete": {
-        "tags": [
-          "PrincipalAgent"
-        ],
-        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&id=2、索引形式 id[0]=1&id[1]=2、逗号分隔 id=1,2",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "description": "主键集合。为空时返回参数错误",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfstring"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Cube/PrincipalAgent/DeleteAll": {
-      "delete": {
-        "tags": [
-          "PrincipalAgent"
-        ],
-        "summary": "按当前搜索条件删除全部数据。至少需携带一个业务搜索条件，防止误删全表",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfstring"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/Cube/PrincipalAgent/ImportFile": {
       "post": {
         "tags": [
@@ -2716,38 +2898,6 @@
             "description": "附件编号、文件路径、MIME 类型",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/Cube/PrincipalAgent/{id}": {
-      "get": {
-        "tags": [
-          "PrincipalAgent"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfPrincipalAgent"
-                }
-              }
             }
           }
         }
@@ -3017,7 +3167,7 @@
         "type": "object",
         "properties": {
           "page": {
-            "description": "分页信息",
+            "description": "分页信息。非列表响应或未分页时不输出",
             "$ref": "#/components/schemas/PageModel"
           },
           "stat": {
@@ -3026,7 +3176,7 @@
                 "type": "null"
               },
               {
-                "description": "统计行数据",
+                "description": "统计行数据。无统计时不输出",
                 "$ref": "#/components/schemas/App"
               }
             ]
@@ -3042,7 +3192,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "type": [
@@ -3052,18 +3202,18 @@
             "items": {
               "$ref": "#/components/schemas/App"
             },
-            "description": "响应数据"
+            "description": "响应数据。始终输出（可为 null）"
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "列表响应模型"
@@ -3072,7 +3222,7 @@
         "type": "object",
         "properties": {
           "page": {
-            "description": "分页信息",
+            "description": "分页信息。非列表响应或未分页时不输出",
             "$ref": "#/components/schemas/PageModel"
           },
           "stat": {
@@ -3081,7 +3231,7 @@
                 "type": "null"
               },
               {
-                "description": "统计行数据",
+                "description": "统计行数据。无统计时不输出",
                 "$ref": "#/components/schemas/AppLog"
               }
             ]
@@ -3097,7 +3247,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "type": [
@@ -3107,18 +3257,18 @@
             "items": {
               "$ref": "#/components/schemas/AppLog"
             },
-            "description": "响应数据"
+            "description": "响应数据。始终输出（可为 null）"
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "列表响应模型"
@@ -3127,7 +3277,7 @@
         "type": "object",
         "properties": {
           "page": {
-            "description": "分页信息",
+            "description": "分页信息。非列表响应或未分页时不输出",
             "$ref": "#/components/schemas/PageModel"
           },
           "stat": {
@@ -3136,7 +3286,7 @@
                 "type": "null"
               },
               {
-                "description": "统计行数据",
+                "description": "统计行数据。无统计时不输出",
                 "$ref": "#/components/schemas/Area"
               }
             ]
@@ -3152,7 +3302,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "type": [
@@ -3162,18 +3312,18 @@
             "items": {
               "$ref": "#/components/schemas/Area"
             },
-            "description": "响应数据"
+            "description": "响应数据。始终输出（可为 null）"
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "列表响应模型"
@@ -3182,7 +3332,7 @@
         "type": "object",
         "properties": {
           "page": {
-            "description": "分页信息",
+            "description": "分页信息。非列表响应或未分页时不输出",
             "$ref": "#/components/schemas/PageModel"
           },
           "stat": {
@@ -3191,7 +3341,7 @@
                 "type": "null"
               },
               {
-                "description": "统计行数据",
+                "description": "统计行数据。无统计时不输出",
                 "$ref": "#/components/schemas/Attachment"
               }
             ]
@@ -3207,7 +3357,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "type": [
@@ -3217,18 +3367,18 @@
             "items": {
               "$ref": "#/components/schemas/Attachment"
             },
-            "description": "响应数据"
+            "description": "响应数据。始终输出（可为 null）"
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "列表响应模型"
@@ -3237,7 +3387,7 @@
         "type": "object",
         "properties": {
           "page": {
-            "description": "分页信息",
+            "description": "分页信息。非列表响应或未分页时不输出",
             "$ref": "#/components/schemas/PageModel"
           },
           "stat": {
@@ -3246,7 +3396,7 @@
                 "type": "null"
               },
               {
-                "description": "统计行数据",
+                "description": "统计行数据。无统计时不输出",
                 "$ref": "#/components/schemas/CronJob"
               }
             ]
@@ -3262,7 +3412,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "type": [
@@ -3272,18 +3422,18 @@
             "items": {
               "$ref": "#/components/schemas/CronJob"
             },
-            "description": "响应数据"
+            "description": "响应数据。始终输出（可为 null）"
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "列表响应模型"
@@ -3292,7 +3442,7 @@
         "type": "object",
         "properties": {
           "page": {
-            "description": "分页信息",
+            "description": "分页信息。非列表响应或未分页时不输出",
             "$ref": "#/components/schemas/PageModel"
           },
           "stat": {
@@ -3301,7 +3451,7 @@
                 "type": "null"
               },
               {
-                "description": "统计行数据",
+                "description": "统计行数据。无统计时不输出",
                 "$ref": "#/components/schemas/OrderManager"
               }
             ]
@@ -3317,7 +3467,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "type": [
@@ -3327,18 +3477,18 @@
             "items": {
               "$ref": "#/components/schemas/OrderManager"
             },
-            "description": "响应数据"
+            "description": "响应数据。始终输出（可为 null）"
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "列表响应模型"
@@ -3347,7 +3497,7 @@
         "type": "object",
         "properties": {
           "page": {
-            "description": "分页信息",
+            "description": "分页信息。非列表响应或未分页时不输出",
             "$ref": "#/components/schemas/PageModel"
           },
           "stat": {
@@ -3356,7 +3506,7 @@
                 "type": "null"
               },
               {
-                "description": "统计行数据",
+                "description": "统计行数据。无统计时不输出",
                 "$ref": "#/components/schemas/PrincipalAgent"
               }
             ]
@@ -3372,7 +3522,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "type": [
@@ -3382,18 +3532,18 @@
             "items": {
               "$ref": "#/components/schemas/PrincipalAgent"
             },
-            "description": "响应数据"
+            "description": "响应数据。始终输出（可为 null）"
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "列表响应模型"
@@ -3412,7 +3562,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "oneOf": [
@@ -3420,21 +3570,21 @@
                 "type": "null"
               },
               {
-                "description": "响应数据",
+                "description": "响应数据。始终输出（可为 null）",
                 "$ref": "#/components/schemas/App"
               }
             ]
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "响应模型"
@@ -3453,7 +3603,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "oneOf": [
@@ -3461,21 +3611,21 @@
                 "type": "null"
               },
               {
-                "description": "响应数据",
+                "description": "响应数据。始终输出（可为 null）",
                 "$ref": "#/components/schemas/AppLog"
               }
             ]
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "响应模型"
@@ -3494,7 +3644,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "oneOf": [
@@ -3502,21 +3652,21 @@
                 "type": "null"
               },
               {
-                "description": "响应数据",
+                "description": "响应数据。始终输出（可为 null）",
                 "$ref": "#/components/schemas/Area"
               }
             ]
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "响应模型"
@@ -3535,7 +3685,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "oneOf": [
@@ -3543,21 +3693,21 @@
                 "type": "null"
               },
               {
-                "description": "响应数据",
+                "description": "响应数据。始终输出（可为 null）",
                 "$ref": "#/components/schemas/Attachment"
               }
             ]
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "响应模型"
@@ -3576,7 +3726,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "oneOf": [
@@ -3584,21 +3734,21 @@
                 "type": "null"
               },
               {
-                "description": "响应数据",
+                "description": "响应数据。始终输出（可为 null）",
                 "$ref": "#/components/schemas/CronJob"
               }
             ]
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "响应模型"
@@ -3617,21 +3767,21 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
-            "description": "响应数据"
+            "description": "响应数据。始终输出（可为 null）"
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "响应模型"
@@ -3650,7 +3800,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "oneOf": [
@@ -3658,21 +3808,21 @@
                 "type": "null"
               },
               {
-                "description": "响应数据",
+                "description": "响应数据。始终输出（可为 null）",
                 "$ref": "#/components/schemas/OrderManager"
               }
             ]
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "响应模型"
@@ -3691,7 +3841,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "oneOf": [
@@ -3699,21 +3849,21 @@
                 "type": "null"
               },
               {
-                "description": "响应数据",
+                "description": "响应数据。始终输出（可为 null）",
                 "$ref": "#/components/schemas/PrincipalAgent"
               }
             ]
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "响应模型"
@@ -3732,25 +3882,25 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "type": [
               "null",
               "string"
             ],
-            "description": "响应数据"
+            "description": "响应数据。始终输出（可为 null）"
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "响应模型"

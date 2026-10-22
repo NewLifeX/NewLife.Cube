@@ -55,17 +55,17 @@
         }
       }
     },
-    "/api/Test/TestField": {
+    "/api/Test/TestField/{id}": {
       "delete": {
         "tags": [
           "TestField"
         ],
-        "summary": "删除数据",
+        "summary": "删除数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
-            "in": "query",
-            "description": "",
+            "in": "path",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -79,6 +79,116 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiResponseOf测试字段"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "TestField"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/测试字段Model"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/测试字段Model"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/测试字段Model"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOf测试字段"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "TestField"
+        ],
+        "summary": "查看单行数据",
+        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOf测试字段"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Test/TestField": {
+      "delete": {
+        "tags": [
+          "TestField"
+        ],
+        "summary": "批量或按条件删除。ids 传选中主键（逗号分隔或重复参数，最多  个）；未传 ids 时按当前搜索条件删除全部匹配行",
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "query",
+            "description": "主键集合",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfstring"
                 }
               }
             }
@@ -178,59 +288,6 @@
         }
       }
     },
-    "/api/Test/TestField/DeleteSelect": {
-      "delete": {
-        "tags": [
-          "TestField"
-        ],
-        "summary": "批量删除选中数据。前端 deleteSelect 调用，支持重复参数 id=1&id=2、索引形式 id[0]=1&id[1]=2、逗号分隔 id=1,2",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "description": "主键集合。为空时返回参数错误",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfstring"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Test/TestField/DeleteAll": {
-      "delete": {
-        "tags": [
-          "TestField"
-        ],
-        "summary": "按当前搜索条件删除全部数据。至少需携带一个业务搜索条件，防止误删全表",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfstring"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/Test/TestField/ImportFile": {
       "post": {
         "tags": [
@@ -309,38 +366,6 @@
             "description": "附件编号、文件路径、MIME 类型",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/Test/TestField/{id}": {
-      "get": {
-        "tags": [
-          "TestField"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOf测试字段"
-                }
-              }
             }
           }
         }
@@ -787,7 +812,7 @@
         "type": "object",
         "properties": {
           "page": {
-            "description": "分页信息",
+            "description": "分页信息。非列表响应或未分页时不输出",
             "$ref": "#/components/schemas/PageModel"
           },
           "stat": {
@@ -796,7 +821,7 @@
                 "type": "null"
               },
               {
-                "description": "统计行数据",
+                "description": "统计行数据。无统计时不输出",
                 "$ref": "#/components/schemas/测试字段"
               }
             ]
@@ -812,7 +837,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "type": [
@@ -822,18 +847,18 @@
             "items": {
               "$ref": "#/components/schemas/测试字段"
             },
-            "description": "响应数据"
+            "description": "响应数据。始终输出（可为 null）"
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "列表响应模型"
@@ -852,7 +877,7 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "oneOf": [
@@ -860,21 +885,21 @@
                 "type": "null"
               },
               {
-                "description": "响应数据",
+                "description": "响应数据。始终输出（可为 null）",
                 "$ref": "#/components/schemas/测试字段"
               }
             ]
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "响应模型"
@@ -893,21 +918,21 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
-            "description": "响应数据"
+            "description": "响应数据。始终输出（可为 null）"
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "响应模型"
@@ -926,25 +951,25 @@
           },
           "message": {
             "type": "string",
-            "description": "消息内容。成功或错误时的提示文本"
+            "description": "消息内容。成功或错误时的提示文本；为 null 时不输出"
           },
           "data": {
             "type": [
               "null",
               "string"
             ],
-            "description": "响应数据"
+            "description": "响应数据。始终输出（可为 null）"
           },
           "traceId": {
             "type": "string",
-            "description": "跟踪编号"
+            "description": "跟踪编号。为 null 时不输出"
           },
           "fieldErrors": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldError"
             },
-            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误"
+            "description": "字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段"
           }
         },
         "description": "响应模型"
