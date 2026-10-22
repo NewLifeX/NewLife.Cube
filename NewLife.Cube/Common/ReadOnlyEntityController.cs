@@ -56,7 +56,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     /// <summary>多行数据列表</summary>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
-    [DisplayName("{type}管理")]
+    [DisplayName("{type} management")]
     [HttpGet("/api/[area]/[controller]")]
     public virtual ApiListResponse<TEntity> Index()
     {
@@ -123,7 +123,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     /// <param name="id">主键。可能为空（表示添加），所以用字符串而不是整数</param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
-    [DisplayName("查看{type}")]
+    [DisplayName("View {type}")]
     [HttpGet]
     [HttpGet("/api/[area]/[controller]/{id}")]
     public virtual ApiResponse<TEntity> Detail(String id = null)
@@ -284,7 +284,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     /// <summary>获取图表数据。子控制器可重写OnGetChartData来提供图表配置</summary>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
-    [DisplayName("图表{type}")]
+    [DisplayName("Chart {type}")]
     [HttpGet]
     public virtual Object[] GetChartData()
     {
@@ -311,7 +311,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     /// <param name="format">导出格式，支持 excel/csv/json/xml，默认 excel</param>
     /// <returns>文件流</returns>
     [EntityAuthorize(PermissionFlags.Detail)]
-    [DisplayName("导出{type}")]
+    [DisplayName("Export {type}")]
     [HttpGet]
     public virtual IActionResult ExportFile(String format = "excel")
     {
@@ -466,6 +466,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     protected List<DataField> GetExportFields(IList<FieldItem> fs, IEnumerable<TEntity> list)
     {
         var fields = fs.Select(e => new DataField(e)).ToList();
+        foreach (var field in fields) field.Localize();
+
         if (list.FirstOrDefault() is IExtend ext)
         {
             foreach (var item in ext.Items)
@@ -585,7 +587,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     /// <returns></returns>
     /// <exception cref="InvalidOperationException">非开发模式或非系统管理员时抛出</exception>
     [EntityAuthorize(PermissionFlags.Detail)]
-    [DisplayName("高级开发")]
+    [DisplayName("Advanced development")]
     // 必须带模板：无模板的 [HttpGet] 与 Index 的 [HttpGet] 同挂类级路由，GET 请求会 AmbiguousMatchException；
     // 显式 "Develop" 模板对齐 MVC 版 /Controller/Develop?act= 形态（NC 版走约定路由不受影响）
     [HttpGet("Develop")]

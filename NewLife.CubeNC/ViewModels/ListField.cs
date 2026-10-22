@@ -85,6 +85,20 @@ public class ListField : DataField
         Header = field.DisplayName;
     }
 
+    /// <summary>按当前语言本地化列头。基类只翻译 DisplayName/Description，列头需要额外处理</summary>
+    public override void Localize()
+    {
+        base.Localize();
+
+        // 默认列头跟随已本地化的显示名；控制器自定义列头单独翻译
+        if (!Header.IsNullOrEmpty() && Field != null && Header == Field.DisplayName)
+            Header = DisplayName;
+        else if (!Header.IsNullOrEmpty())
+            Header = L.T(Header);
+
+        if (!HeaderTitle.IsNullOrEmpty()) HeaderTitle = L.T(HeaderTitle);
+    }
+
     ///// <summary>克隆</summary>
     ///// <returns></returns>
     //public override DataField Clone()
@@ -143,7 +157,7 @@ public class ListField : DataField
                 return enumMode switch
                 {
                     EnumModes.Default or EnumModes.String => val + "",
-                    EnumModes.DisplayName => (val as Enum)?.GetDescription() ?? val + "",
+                    EnumModes.DisplayName => L.T((val as Enum)?.GetDescription() ?? val + ""),
                     EnumModes.Int => val.ToInt() + "",
                     _ => val + "",
                 };
@@ -172,7 +186,7 @@ public class ListField : DataField
                 return enumMode switch
                 {
                     EnumModes.Default or EnumModes.String => val + "",
-                    EnumModes.DisplayName => (val as Enum)?.GetDescription() ?? val + "",
+                    EnumModes.DisplayName => L.T((val as Enum)?.GetDescription() ?? val + ""),
                     EnumModes.Int => val.ToInt() + "",
                     _ => val + "",
                 };
@@ -243,7 +257,7 @@ public class ListField : DataField
         if (txt.IsNullOrEmpty())
         {
             // 在数据列中，实体对象取属性值优先于显示名
-            if (Field != null && DisplayName == Field.DisplayName)
+            if (Field != null && (IsDefaultDisplayName || DisplayName == Field.DisplayName))
             {
                 var val = GetValue?.Invoke(data) ?? data[Name];
                 if (val is DateTime dt)

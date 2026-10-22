@@ -1,4 +1,4 @@
-﻿@model TenantSettingModel
+@model TenantSettingModel
 @using System.Linq
 @using System.Reflection
 @using XCode
@@ -18,12 +18,12 @@
     @using (Html.BeginForm("TenantSetting", "User", null, FormMethod.Post, null, new { @class = "form-horizontal" }))
 {
     <div class="form-section">
-        <div class="form-section-title"><i class="fa fa-building-o"></i>租户信息</div>
+        <div class="form-section-title"><i class="fa fa-building-o"></i>@L.T("Tenant information")</div>
         <div class="form-section-body">
             <div class="row">
                 <div class="col-sm-6">
                     <div class="form-group">
-                        <label class="control-label col-sm-4">用户名</label>
+                        <label class="control-label col-sm-4">@L.T("User name")</label>
                         <div class="col-sm-8">
                             <input value="@Model.UserName" class="form-control" disabled="disabled" />
                         </div>
@@ -33,10 +33,10 @@
             <div class="row">
                 <div class="col-sm-6">
                     <div class="form-group">
-                        <label class="control-label col-sm-4">当前租户</label>
+                        <label class="control-label col-sm-4">@L.T("Current tenant")</label>
                         <div class="col-sm-8">
-                            @Html.DropDownList("TagTenantId", new SelectList(Model.Tenants, "Key", "Value", tenantId), "请选择", atts)
-                            <span class="help-text">切换后仅显示该租户下的数据</span>
+                            @Html.DropDownList("TagTenantId", new SelectList(Model.Tenants, "Key", "Value", tenantId), L.T("Please select"), atts)
+                            <span class="help-text">@L.T("Only data of this tenant is shown after switching")</span>
                         </div>
                     </div>
                 </div>
@@ -45,8 +45,8 @@
     </div>
 
     <div class="profile-actions">
-        <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> 保存</button>
-        <button type="button" class="btn btn-default" onclick="history.go(-1);"><i class="fa fa-times"></i> 取消</button>
+        <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> @L.T("Save")</button>
+        <button type="button" class="btn btn-default" onclick="history.go(-1);"><i class="fa fa-times"></i> @L.T("Cancel")</button>
     </div>
 }
 </div>

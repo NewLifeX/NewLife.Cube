@@ -22,8 +22,8 @@ namespace NewLife.Cube.Cube.Controllers
 
             {
                 var df = ListFields.AddListField("Columns", "Enable");
-                //df.Header = "列集合";
-                df.DisplayName = "列集合";
+                //df.Header = "Columns";
+                df.DisplayName = "Columns";
                 df.Url = "/Cube/ModelColumn?tableId={Id}";
             }
 
@@ -57,9 +57,9 @@ namespace NewLife.Cube.Cube.Controllers
                 {
                     TableId = table.Id,
                     Name = "Columns",
-                    DisplayName = "列集合",
-                    //CellText = "列集合",
-                    //CellTitle = "列集合",
+                    DisplayName = "Columns",
+                    //CellText = "Columns",
+                    //CellTitle = "Columns",
                     CellUrl = "/Admin/ModelColumn?tableId={id}",
                     ShowInList = true,
                     Enable = true,

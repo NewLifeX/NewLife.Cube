@@ -11,8 +11,8 @@
     var fields = ViewBag.SearchFields as FieldCollection ?? new(ViewKinds.Search);
 
     var dic = new Dictionary<Int32, String>();
-    dic[1] = "是";
-    dic[0] = "否";
+    dic[1] = L.T("Yes");
+    dic[0] = L.T("No");
 
     var atts = new Dictionary<String, Object>();
     if (!atts.ContainsKey("class")) atts.Add("class", "form-control");
@@ -39,7 +39,7 @@
     {
         <div class="form-group">
             <label for="@name" class="control-label">@field.DisplayName：</label>
-            @Html.ForDropDownList(name, dic, page[name], "全部", true)
+            @Html.ForDropDownList(name, dic, page[name], L.T("All"), true)
         </div>
     }
     else if (field.ItemType.EqualIgnoreCase("area4"))
@@ -66,13 +66,13 @@
             if (field.Multiple)
             {
                 <label for="@name" class="control-label">@field.DisplayName：</label>
-                @await Html.PartialAsync("_Form_ListBox", new ListBoxModel(name, EnumHelper.GetDescriptions(field.Type), page[name]))
+                @await Html.PartialAsync("_Form_ListBox", new ListBoxModel(name, EnumLocalization.GetDescriptions(field.Type), page[name]))
             }
             else
             {
                 <div class="form-group">
                     <label for="@name" class="control-label">@field.DisplayName：</label>
-                    @Html.ForDropDownList(name, EnumHelper.GetDescriptions(field.Type), page[name], "全部", true)
+                    @Html.ForDropDownList(name, EnumLocalization.GetDescriptions(field.Type), page[name], L.T("All"), true)
                 </div>
             }
         }

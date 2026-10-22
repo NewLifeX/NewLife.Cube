@@ -55,7 +55,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         }
 
         var title = GetType().GetDisplayName() ?? typeof(TEntity).GetDisplayName() ?? Factory.Table.DataTable.DisplayName;
-        ViewBag.Title = title;
+        ViewBag.Title = L.T(title);
 
         // Ajax请求不需要设置ViewBag
         if (!Request.IsAjaxRequest())
@@ -76,7 +76,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             if (txt.IsNullOrEmpty()) txt = Factory.Table.Description;
             //if (txt.IsNullOrEmpty() && SysConfig.Current.Develop)
             //    txt = "这里是页头内容，来自于菜单备注，或者给控制器增加Description特性";
-            ViewBag.HeaderContent = txt;
+            ViewBag.HeaderContent = L.T(txt);
         }
 
         base.OnActionExecuting(filterContext);
@@ -565,6 +565,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     private IList<DataField> GetFields(IList<FieldItem> fs, IEnumerable<IModel> list)
     {
         var fields = fs.Select(e => new DataField(e)).ToList();
+        foreach (var field in fields) field.Localize();
+
         if (list.FirstOrDefault() is IExtend ext)
         {
             foreach (var item in ext.Items)
@@ -1050,7 +1052,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             {
                 foreach (var field in yFields)
                 {
-                    field.DisplayName = xAxis.DisplayName;
+                    // 字段元数据保存中文源文，按当前界面语言本地化后再作为系列名
+                    field.DisplayName = L.T(xAxis.DisplayName);
                     if (field.Category.IsNullOrEmpty()) field.Category = xAxis.Name;
                 }
             }
@@ -1069,7 +1072,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
             // 如果没有Y轴，自动补上
             if (yFields.Length > 0 && (chart.YAxis == null || chart.YAxis.Count == 0))
-                chart.SetY(yFields[0].Name, "value");
+                chart.SetY(L.T(yFields[0].DisplayName.IsNullOrEmpty() ? yFields[0].Name : yFields[0].DisplayName), "value");
         }
 
         // Y轴最小值自动使用数据最小值

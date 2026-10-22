@@ -48,4 +48,15 @@ export default {
   'notification.info': '提示',
   'notification.network.typeError': '網路請求異常',
   'notification.typeError.description': '請稍後重試',
+
+  // 布局外壳
+  'menu.searchPlaceholder': '搜尋選單...',
+  'layout.dashboard': '儀表板',
+  'layout.administrator': '管理員',
+  'layout.collapseSidebar': '摺疊側邊欄',
+  'layout.searchPlaceholder': '搜尋裝置、警示...',
+  'menu.navigation': '導覽選單',
+  'layout.collapseMenu': '摺疊選單',
+  'layout.expandSidebar': '展開側邊欄',
+  'layout.welcomeBack': '歡迎回來，{name} · {date}',
 };

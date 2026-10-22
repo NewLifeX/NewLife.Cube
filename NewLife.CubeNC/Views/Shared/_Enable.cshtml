@@ -12,21 +12,21 @@
     var dic = new Dictionary<Int32, String>();
     if (name.EqualIgnoreCase("enable"))
     {
-        dic.Add(1, "启用");
-        dic.Add(0, "禁用");
+        dic.Add(1, L.T("Enabled"));
+        dic.Add(0, L.T("Disabled"));
     }
     else if (name.EqualIgnoreCase("success"))
     {
-        dic.Add(1, "成功");
-        dic.Add(0, "失败");
+        dic.Add(1, L.T("Succeeded"));
+        dic.Add(0, L.T("Failed"));
     }
     else
     {
-        dic.Add(1, "是");
-        dic.Add(0, "否");
+        dic.Add(1, L.T("Yes"));
+        dic.Add(0, L.T("No"));
     }
 }
 <div class="form-group">
-    <label for="@name" class="control-label">状态：</label>
-    @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dic,  page[name], "全部", true, null))
+    <label for="@name" class="control-label">@L.T("Status"):</label>
+    @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dic,  page[name], L.T("All"), true, null))
 </div>

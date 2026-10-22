@@ -108,7 +108,7 @@ function isMonitor(widget: WorkbenchWidget): boolean {
 }
 
 function cardStyle(cols?: number): Record<string, string> {
-  return { '--wb-span': String(normalizeCols(cols)) };
+  return { gridColumn: `span ${normalizeCols(cols)}` };
 }
 
 function openKpi(kpi: WorkbenchKpi): void {
@@ -238,7 +238,7 @@ onUnmounted(stopMonitorPolling);
     radial-gradient(circle at 92% 18%, rgb(255 255 255 / 20%) 0, transparent 42%),
     linear-gradient(120deg, var(--el-color-primary) 0%, var(--el-color-primary-light-3) 100%);
   color: var(--el-color-white);
-  box-shadow: 0 8px 22px rgb(0 0 0 / 8%);
+  box-shadow: var(--el-box-shadow-light);
 
   h1 {
     margin: 0 0 6px;
@@ -276,8 +276,6 @@ onUnmounted(stopMonitorPolling);
 }
 
 .wb-kpi {
-  --wb-kpi-color: var(--el-color-primary);
-
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   grid-template-areas:
@@ -300,7 +298,7 @@ onUnmounted(stopMonitorPolling);
 
   &:hover:not(:disabled) {
     border-color: var(--wb-kpi-color);
-    box-shadow: 0 6px 16px rgb(0 0 0 / 8%);
+    box-shadow: var(--el-box-shadow-light);
     transform: translateY(-1px);
   }
 
@@ -318,7 +316,7 @@ onUnmounted(stopMonitorPolling);
   height: 40px;
   border-radius: 10px;
   background: var(--el-fill-color-light);
-  color: var(--wb-kpi-color);
+  color: var(--el-color-primary);
 }
 
 .wb-kpi-value {
@@ -347,32 +345,71 @@ onUnmounted(stopMonitorPolling);
   white-space: nowrap;
 }
 
+/* KPI 强调色：直接映射 Element 主题变量；青/紫由主题色 color-mix 合成，避免引入硬编码色值 */
 .wb-kpi-blue {
-  --wb-kpi-color: var(--el-color-primary);
+  .wb-kpi-icon {
+    color: var(--el-color-primary);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--el-color-primary);
+  }
 }
 
 .wb-kpi-green {
-  --wb-kpi-color: var(--el-color-success);
+  .wb-kpi-icon {
+    color: var(--el-color-success);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--el-color-success);
+  }
 }
 
 .wb-kpi-cyan {
-  --wb-kpi-color: #13c2c2;
+  --wb-kpi-color: color-mix(in srgb, var(--el-color-success) 55%, var(--el-color-primary));
+
+  .wb-kpi-icon {
+    color: var(--wb-kpi-color);
+  }
 }
 
 .wb-kpi-orange {
-  --wb-kpi-color: var(--el-color-warning);
+  .wb-kpi-icon {
+    color: var(--el-color-warning);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--el-color-warning);
+  }
 }
 
 .wb-kpi-red {
-  --wb-kpi-color: var(--el-color-danger);
+  .wb-kpi-icon {
+    color: var(--el-color-danger);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--el-color-danger);
+  }
 }
 
 .wb-kpi-purple {
-  --wb-kpi-color: #722ed1;
+  --wb-kpi-color: color-mix(in srgb, var(--el-color-primary) 55%, var(--el-color-danger));
+
+  .wb-kpi-icon {
+    color: var(--wb-kpi-color);
+  }
 }
 
 .wb-kpi-grey {
-  --wb-kpi-color: var(--el-color-info);
+  .wb-kpi-icon {
+    color: var(--el-color-info);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--el-color-info);
+  }
 }
 
 /* ── 内容卡栅格 ── */
@@ -383,7 +420,6 @@ onUnmounted(stopMonitorPolling);
 }
 
 .wb-card {
-  grid-column: span var(--wb-span, 6);
   min-width: 0;
   border-radius: 10px;
 }

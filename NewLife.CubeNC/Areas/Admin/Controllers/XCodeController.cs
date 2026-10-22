@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using XCode;
@@ -7,7 +7,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>设置控制器</summary>
-[DisplayName("数据中间件")]
+[DisplayName("Data middleware")]
 [AdminArea]
 [Menu(0, false)]
 public class XCodeController : ConfigController<XCodeSetting>

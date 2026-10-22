@@ -26,7 +26,7 @@
         .cube-notify-item.read .cube-notify-title { color: #999; }
     </style>
     <li class="cube-notify" id="notifyBell" style="position:relative;display:inline-block;vertical-align:middle;list-style:none;">
-        <a href="javascript:void(0);" id="notifyBellToggle" title="通知" style="position:relative;display:block;padding:14px 10px;line-height:20px;text-decoration:none;">
+        <a href="javascript:void(0);" id="notifyBellToggle" title="@L.T("Notifications")" style="position:relative;display:block;padding:14px 10px;line-height:20px;text-decoration:none;">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true" style="display:block;">
                 <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"></path>
             </svg>
@@ -35,12 +35,12 @@
 
         <div class="cube-notify-panel" id="notifyPanel" style="display:none;position:absolute;top:100%;right:0;width:320px;max-width:88vw;background:#fff;border:1px solid #e6e6e6;border-radius:4px;box-shadow:0 2px 10px rgba(0,0,0,.18);z-index:9999;color:#333;font-size:13px;">
             <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #f2f2f2;">
-                <b>未读通知</b>
-                <a href="javascript:void(0);" id="notifyMarkAll" style="color:#1E9FFF;text-decoration:none;font-size:12px;">全部已读</a>
+                <b>@L.T("Unread notifications")</b>
+                <a href="javascript:void(0);" id="notifyMarkAll" style="color:#1E9FFF;text-decoration:none;font-size:12px;">@L.T("Mark all as read")</a>
             </div>
             <ul id="notifyList" style="list-style:none;margin:0;padding:0;max-height:300px;overflow:auto;"></ul>
             <div style="text-align:center;padding:6px 0;border-top:1px solid #f2f2f2;">
-                <a href="@listUrl" style="color:#666;text-decoration:none;font-size:12px;">查看全部通知</a>
+                <a href="@listUrl" style="color:#666;text-decoration:none;font-size:12px;">@L.T("View all notifications")</a>
             </div>
         </div>
     </li>
@@ -83,7 +83,7 @@
                 fetch(recentUrl + '?size=8').then(function (r) { return r.json(); }).then(function (d) {
                     var items = d && d.data ? d.data : [];
                     if (!items.length) {
-                        list.innerHTML = '<li style="padding:24px 12px;text-align:center;color:#999;font-size:12px;">暂无未读通知</li>';
+                        list.innerHTML = '<li style="padding:24px 12px;text-align:center;color:#999;font-size:12px;">@L.T("No unread notifications")</li>';
                         return;
                     }
                     var html = '';
@@ -92,9 +92,9 @@
                         var time = (it.createTime || '').toString().substring(5, 16);
                         // 完整正文直接入DOM（转义后），收起态由CSS单行省略，点击展开显示全文
                         html += '<li class="cube-notify-item" data-id="' + it.id + '">'
-                            + '<div class="cube-notify-title"><span class="cube-notify-readtag">已读</span>' + esc(it.title) + '</div>'
+                            + '<div class="cube-notify-title"><span class="cube-notify-readtag">@L.T("Read")</span>' + esc(it.title) + '</div>'
                             + '<div class="cube-notify-text">' + esc(it.content) + '</div>'
-                            + '<div class="cube-notify-time">' + esc(time) + (it.broadcast ? ' · 系统' : '') + '</div>'
+                            + '<div class="cube-notify-time">' + esc(time) + (it.broadcast ? ' · @L.T("System")' : '') + '</div>'
                             + '</li>';
                     }
                     list.innerHTML = html;

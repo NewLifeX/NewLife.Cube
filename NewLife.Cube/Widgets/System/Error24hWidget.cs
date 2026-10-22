@@ -5,7 +5,7 @@ using static XCode.Membership.Log;
 namespace NewLife.Cube.Widgets.System;
 
 /// <summary>24h异常数。工作台 KPI 指标</summary>
-[Widget("Error24h", "24h异常", Icon = "fa-exclamation-triangle", Cols = 2, Sort = 50, Category = "系统", AdminOnly = true, Color = "red", WidgetType = WidgetTypes.Kpi)]
+[Widget("Error24h", "24h exceptions", Icon = "fa-exclamation-triangle", Cols = 2, Sort = 50, Category = "System", AdminOnly = true, Color = "red", WidgetType = WidgetTypes.Kpi)]
 public class Error24hWidget : IWidget
 {
     /// <summary>获取组件数据</summary>
@@ -19,7 +19,7 @@ public class Error24hWidget : IWidget
         return new
         {
             Value = count.ToString(),
-            Trend = "最近24小时异常",
+            Trend = L.T("Errors in the last 24h"),
             // 跳转日志页带参数：24小时内错误日志（success=false）
             Url = $"/Admin/Log?dtStart={now.AddHours(-24):yyyy-MM-dd HH:mm:ss}&dtEnd={now:yyyy-MM-dd HH:mm:ss}&success=false",
         };

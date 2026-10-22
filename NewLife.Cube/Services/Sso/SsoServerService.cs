@@ -116,7 +116,7 @@ public class SsoServerService : ISsoServerService
             if (!user2.Roles.Any(r => ids.Contains(r.ID)))
             {
                 log.Success = false;
-                log.Remark = $"该应用[{log.AppName}]不支持用户所属角色登录！";
+                log.Remark = L.T("Application [{0}] does not support signing in with the user's role!", log.AppName);
                 log.Update();
 
                 throw new InvalidOperationException(log.Remark);

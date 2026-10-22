@@ -30,16 +30,16 @@ public class SmtpMailVerifyCode : IMailVerifyCode
     public String Password { get; set; }
 
     /// <summary>邮件主题模板。{action} 会被替换为操作类型</summary>
-    public String SubjectTemplate { get; set; } = "您的验证码";
+    public String SubjectTemplate { get; set; } = "Your verification code";
 
     /// <summary>邮件正文模板。{code} 会被替换为验证码，{expire} 会被替换为有效期（分钟）</summary>
-    public String BodyTemplate { get; set; } = "您的验证码是：{code}，有效期 {expire} 分钟。如非本人操作，请忽略此邮件。";
+    public String BodyTemplate { get; set; } = "Your verification code is {code}. It expires in {expire} minutes. If you did not request it, please ignore this email.";
 
     /// <summary>激活邮件主题模板</summary>
-    public String ActivateSubjectTemplate { get; set; } = "请激活您的账号";
+    public String ActivateSubjectTemplate { get; set; } = "Please activate your account";
 
     /// <summary>激活邮件正文模板。{link} 激活链接，{code} 验证码，{expire} 有效期（分钟）</summary>
-    public String ActivateBodyTemplate { get; set; } = "请点击以下链接激活您的账号：{link}（有效期 {expire} 分钟）。如无法点击，请在激活页输入验证码：{code}。";
+    public String ActivateBodyTemplate { get; set; } = "Click the link below to activate your account: {link} (valid for {expire} minutes). If the link does not work, enter the verification code on the activation page: {code}.";
     #endregion
 
     #region 方法
@@ -53,8 +53,8 @@ public class SmtpMailVerifyCode : IMailVerifyCode
     protected virtual Task<String> SendAsync(String mail, String action, String code, Int32 expire, MailVerifyCodeOptions options = null)
     {
         var expireMinutes = (expire + 59) / 60;
-        var subject = SubjectTemplate.Replace("{action}", action);
-        var body = BodyTemplate.Replace("{code}", code).Replace("{expire}", expireMinutes.ToString());
+        var subject = L.T(SubjectTemplate).Replace("{action}", action);
+        var body = L.T(BodyTemplate).Replace("{code}", code).Replace("{expire}", expireMinutes.ToString());
 
         return SendCore(mail, subject, body, options);
     }
@@ -87,7 +87,7 @@ public class SmtpMailVerifyCode : IMailVerifyCode
 
         await client.SendMailAsync(message).ConfigureAwait(false);
 
-        return "发送成功";
+        return L.T("Sent successfully");
     }
 
     /// <summary>发送登录验证码</summary>
@@ -97,7 +97,7 @@ public class SmtpMailVerifyCode : IMailVerifyCode
     /// <param name="options">可选项</param>
     /// <returns>发送结果</returns>
     public Task<String> SendLogin(String mail, String code, Int32 expire, MailVerifyCodeOptions options = null) 
-        => SendAsync(mail, "登录", code, expire, options);
+        => SendAsync(mail, L.T("Sign in"), code, expire, options);
 
     /// <summary>发送重置验证码</summary>
     /// <param name="mail">邮箱地址</param>
@@ -106,7 +106,7 @@ public class SmtpMailVerifyCode : IMailVerifyCode
     /// <param name="options">可选项</param>
     /// <returns>发送结果</returns>
     public Task<String> SendReset(String mail, String code, Int32 expire, MailVerifyCodeOptions options = null) 
-        => SendAsync(mail, "重置密码", code, expire, options);
+        => SendAsync(mail, L.T("Reset password"), code, expire, options);
 
     /// <summary>发送绑定验证码</summary>
     /// <param name="mail">邮箱地址</param>
@@ -115,7 +115,7 @@ public class SmtpMailVerifyCode : IMailVerifyCode
     /// <param name="options">可选项</param>
     /// <returns>发送结果</returns>
     public Task<String> SendBind(String mail, String code, Int32 expire, MailVerifyCodeOptions options = null) 
-        => SendAsync(mail, "绑定邮箱", code, expire, options);
+        => SendAsync(mail, L.T("Bind email"), code, expire, options);
 
     /// <summary>发送激活邮件。含激活链接与验证码</summary>
     /// <param name="mail">邮箱地址</param>
@@ -127,8 +127,8 @@ public class SmtpMailVerifyCode : IMailVerifyCode
     public Task<String> SendActivate(String mail, String link, String code, Int32 expire, MailVerifyCodeOptions options = null)
     {
         var expireMinutes = (expire + 59) / 60;
-        var subject = ActivateSubjectTemplate;
-        var body = ActivateBodyTemplate.Replace("{link}", link).Replace("{code}", code).Replace("{expire}", expireMinutes.ToString());
+        var subject = L.T(ActivateSubjectTemplate);
+        var body = L.T(ActivateBodyTemplate).Replace("{link}", link).Replace("{code}", code).Replace("{expire}", expireMinutes.ToString());
 
         return SendCore(mail, subject, body, options);
     }

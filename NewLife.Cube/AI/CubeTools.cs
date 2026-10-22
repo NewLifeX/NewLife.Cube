@@ -37,8 +37,8 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
     /// <summary>获取当前页面数据上下文：有当前记录时返回该记录的值与字段元数据，否则返回当前查询条件下的数据摘要与样本</summary>
     /// <param name="context">工具调用上下文（由框架注入，当前无需使用，预留扩展）</param>
     [ToolDescription("get_data_context", ReadOnly = true)]
-    [DisplayName("获取数据上下文")]
-    [Description("获取当前页面数据上下文：有当前记录时返回该记录的值与字段元数据，否则返回当前查询条件下的数据摘要与样本，供分析使用")]
+    [DisplayName("Get data context")]
+    [Description("Gets the data context of the current page: the current record with its field metadata, or a summary and sample of the current query result, for analysis")]
     public virtual String GetDataContext(ToolCallContext? context = null)
         => entityId > 0 ? GetRecordContext() : GetListContext();
 
@@ -46,9 +46,9 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
     /// <param name="mode">表单模式：add 新增 / edit 编辑，默认 add</param>
     /// <param name="context">工具调用上下文（由框架注入，当前无需使用，预留扩展）</param>
     [ToolDescription("get_form_schema", ReadOnly = true)]
-    [DisplayName("获取表单字段结构")]
-    [Description("获取当前实体的表单字段结构，包含字段名、类型、枚举值、必填、说明与已有值（编辑模式），供生成表单值使用")]
-    public virtual String GetFormSchema([Description("表单模式：add 新增 / edit 编辑")] String mode = "add", ToolCallContext? context = null)
+    [DisplayName("Get form schema")]
+    [Description("Gets the form schema of the current entity, including field names, types, enum values, required flags, descriptions and existing values (edit mode), for generating form values")]
+    public virtual String GetFormSchema([Description("Form mode: add or edit")] String mode = "add", ToolCallContext? context = null)
     {
         var fields = mode.EqualIgnoreCase("edit") ? EditFields : AddFields;
         var schema = AiFormHelper.BuildSchema(fields);
@@ -75,16 +75,16 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
     /// <param name="mode">表单模式：add 新增 / edit 编辑，默认 add</param>
     /// <param name="context">工具调用上下文（由框架注入，当前无需使用，预留扩展）</param>
     [ToolDescription("fill_form")]
-    [DisplayName("回填表单")]
-    [Description("生成表单字段值并回填到前端表单。不写数据库，由用户确认后提交")]
-    public virtual IToolResult FillForm([Description("字段值 JSON 字符串，键为字段名，值为要填入的值，如 {\"Name\":\"张三\",\"Status\":1}")] String values, [Description("表单模式：add 新增 / edit 编辑")] String mode = "add", ToolCallContext? context = null)
+    [DisplayName("Fill form")]
+    [Description("Generates form field values and fills them into the front-end form. Nothing is written to the database until the user confirms")]
+    public virtual IToolResult FillForm([Description("Field values as a JSON string, keyed by field name, for example {\"Name\":\"John\",\"Status\":1}")] String values, [Description("Form mode: add or edit")] String mode = "add", ToolCallContext? context = null)
     {
         // 参数解析：兼容 JSON 对象与扁平键值数组两种格式（部分 LLM 会生成扁平数组），解析失败返回友好错误而非抛异常
         var dic = AiFormHelper.ParseFieldValues(values);
         if (dic == null || dic.Count == 0)
         {
-            var err = new { kind = "fill_form", count = 0, message = "未收到有效的字段值字典" }.ToJson();
-            return new ToolResult(ToolContent.ForUser(err), ToolContent.ForLlm("[fill_form 参数错误] 未收到有效的字段值字典。请先调用 get_form_schema 获取字段结构，再以 {\"字段名\":值} 形式传入 values 参数。"))
+            var err = new { kind = "fill_form", count = 0, message = L.T("No valid field value dictionary was received") }.ToJson();
+            return new ToolResult(ToolContent.ForUser(err), ToolContent.ForLlm(L.T("[fill_form invalid argument] No valid field value dictionary was received. Call get_form_schema first to get the field structure, then pass the values parameter as {\"field\":value}.")))
             {
                 IsError = true
             };
@@ -125,7 +125,7 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
         }
 
         var user = new { kind = "fill_form", values = rs, count = rs.Count, skipped, errors }.ToJson();
-        var llm = $"已生成 {rs.Count} 个表单字段值（跳过 {skipped.Count} 个，失败 {errors.Count} 个），已预填到表单，请提示用户检查后提交。";
+        var llm = L.T("Generated {0} form field values (skipped {1}, failed {2}) and filled them into the form. Ask the user to review before submitting.", rs.Count, skipped.Count, errors.Count);
         return new ToolResult(ToolContent.ForUser(user), ToolContent.ForLlm(llm));
     }
 
@@ -155,7 +155,7 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
             total = factory.Session.Count,
             shown = data.Count,
             filters,
-            sort = pager.Sort + (pager.Desc ? " 降序" : ""),
+            sort = pager.Sort + (pager.Desc ? L.T(" descending") : ""),
             fields = ctx.Fields,
             data = ctx.Data,
         }.ToJson();
@@ -164,10 +164,10 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
     /// <summary>收集当前记录的值与字段元数据，供单条记录异常分析使用</summary>
     protected virtual String GetRecordContext()
     {
-        if (entityId <= 0) return "{\"error\":\"当前无记录（新增模式），请先保存或切换到详情/编辑页\"}";
+        if (entityId <= 0) return $"{{\"error\":\"{L.T("No current record (add mode). Save first or switch to the detail/edit page.")}\"}}";
 
         var entity = Entity<TEntity>.FindByKey(entityId);
-        if (entity == null) return "{\"error\":\"记录不存在\"}";
+        if (entity == null) return $"{{\"error\":\"{L.T("Record does not exist")}\"}}";
 
         var safeFields = AiDataHelper.FilterSafeFields(factory.AllFields, typeof(TEntity));
         var values = AiDataHelper.ToSafeDictionary(entity, safeFields);

@@ -1,10 +1,14 @@
-﻿@{
+@{
     var Obj = Model as Object;
+
+    // 设置页之间切换时保留当前语言参数
+    var lang = Context.Request.Query["lang"].ToString();
+    var route = lang.IsNullOrEmpty() ? null : new { lang };
 }
 <div class="text-center col-md-12">
-    @Html.ActionLink("基本设置", "Index", "Core", null, new { @class = "layui-btn layui-btn-sm" })
-    @Html.ActionLink("系统设置", "Index", "Sys", null, new { @class = "layui-btn layui-btn-sm" })
-    @Html.ActionLink("数据中间件", "Index", "XCode", null, new { @class = "layui-btn layui-btn-sm" })
-    @Html.ActionLink("魔方设置", "Index", "Cube", null, new { @class = "layui-btn layui-btn-sm" })
-    @Html.ActionLink("OAuth设置", "Index", "OAuthConfig", null, new { @class = "layui-btn layui-btn-sm" })
+    @Html.ActionLink(L.T("Basic settings"), "Index", "Core", route, new { @class = "layui-btn layui-btn-sm" })
+    @Html.ActionLink(L.T("System settings"), "Index", "Sys", route, new { @class = "layui-btn layui-btn-sm" })
+    @Html.ActionLink(L.T("Data middleware"), "Index", "XCode", route, new { @class = "layui-btn layui-btn-sm" })
+    @Html.ActionLink(L.T("Cube settings"), "Index", "Cube", route, new { @class = "layui-btn layui-btn-sm" })
+    @Html.ActionLink(L.T("OAuth settings"), "Index", "OAuthConfig", route, new { @class = "layui-btn layui-btn-sm" })
 </div>

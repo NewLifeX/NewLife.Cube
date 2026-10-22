@@ -293,7 +293,7 @@ public class WidgetManager
     public void SetGroupOrder(IEnumerable<String> groups)
     {
         var p = Parameter.GetOrAdd(0, GroupCategory, "Order");
-        p.SetItem("Value", String.Join(",", groups ?? []));
+        p.SetItem("Value", String.Join(",", (groups ?? []).Select(NormalizeGroup)));
         p.Save();
     }
 
@@ -304,7 +304,7 @@ public class WidgetManager
     {
         if (group.IsNullOrEmpty()) return null;
 
-        var p = Parameter.FindByUserIDAndCategoryAndName(0, GroupCategory, group);
+        var p = Parameter.FindByUserIDAndCategoryAndName(0, GroupCategory, NormalizeGroup(group));
         var vs = p?.Value;
 
         return vs.IsNullOrEmpty() ? null : vs.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
@@ -317,10 +317,23 @@ public class WidgetManager
     {
         if (group.IsNullOrEmpty()) return;
 
-        var p = Parameter.GetOrAdd(0, GroupCategory, group);
+        var p = Parameter.GetOrAdd(0, GroupCategory, NormalizeGroup(group));
         p.SetItem("Value", String.Join(",", names ?? []));
         p.Save();
     }
+
+    /// <summary>分组名别名。历史配置与第三方组件可能使用中文分组名，统一归一化为英文源文</summary>
+    private static readonly Dictionary<String, String> _groupAlias = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["系统"] = "System",
+        ["个人"] = "Personal",
+        ["通用"] = "General",
+    };
+
+    /// <summary>归一化分组名。中文旧名映射为英文源文，其余原样返回</summary>
+    /// <param name="group">分组名</param>
+    /// <returns>归一化后的分组名</returns>
+    internal static String NormalizeGroup(String group) => group != null && _groupAlias.TryGetValue(group, out var name) ? name : group;
 
     /// <summary>加载组配置（组顺序 + 各组内默认顺序），一次查询</summary>
     /// <returns>组顺序与组名到部件顺序的字典</returns>
@@ -332,14 +345,16 @@ public class WidgetManager
         var items = new Dictionary<String, IList<String>>(StringComparer.OrdinalIgnoreCase);
         foreach (var p in ps)
         {
+            // 历史配置可能用中文分组名，统一归一化为英文源文
+            var group = NormalizeGroup(p.Name);
             if (p.Name == "Order")
-                order = p.Value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+                order = p.Value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(NormalizeGroup).ToList();
             else if (!p.Value.IsNullOrEmpty())
-                items[p.Name] = p.Value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+                items[group] = p.Value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
         }
 
         // 内置约定：系统 < 个人 < 通用 < 其它
-        if (order == null || order.Count == 0) order = new List<String> { "系统", "个人", "通用" };
+        if (order == null || order.Count == 0) order = new List<String> { "System", "Personal", "General" };
 
         return (order, items);
     }
@@ -376,7 +391,7 @@ public class WidgetManager
         // 组内位置：优先管理员配置列表；组无配置或部件未列出时回退 Sort（未列出的新部件排到配置列表之后）
         Int32 ItemPos(WidgetAttribute e, out Boolean configured)
         {
-            if (groupItems != null && groupItems.TryGetValue(e.Category.IsNullOrEmpty() ? "通用" : e.Category, out var items))
+            if (groupItems != null && groupItems.TryGetValue(NormalizeGroup(e.Category.IsNullOrEmpty() ? "General" : e.Category), out var items))
             {
                 for (var i = 0; i < items.Count; i++)
                 {
@@ -394,7 +409,7 @@ public class WidgetManager
 
         // 默认顺序：KPI 小卡簇在前 → 外部业务组件在魔方内置前 → 组（已配置在前按序号，未配置在后按名称）→ 组内（配置在前按位置，未配置按 Sort）
         IEnumerable<WidgetAttribute> DefaultOrder(IEnumerable<WidgetAttribute> src) =>
-            src.Select(e => new { W = e, C = e.Category.IsNullOrEmpty() ? "通用" : e.Category, K = e.WidgetType == WidgetTypes.Kpi ? 0 : 1, O = IsExternal(e) ? 0 : 1 })
+            src.Select(e => new { W = e, C = NormalizeGroup(e.Category.IsNullOrEmpty() ? "General" : e.Category), K = e.WidgetType == WidgetTypes.Kpi ? 0 : 1, O = IsExternal(e) ? 0 : 1 })
                .Select(x => new { x.W, x.C, x.K, x.O, P = ItemPos(x.W, out var cfg), Cfg = cfg })
                .OrderBy(x => x.K)
                .ThenBy(x => x.O)

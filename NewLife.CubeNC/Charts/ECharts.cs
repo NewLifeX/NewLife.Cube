@@ -466,6 +466,26 @@ public class ECharts : IExtend
         return sr;
     }
 
+    /// <summary>获取数据字段的显示名。字段元数据保存中文源文，按当前界面语言本地化后再用于系列名与图例</summary>
+    /// <param name="field">数据字段</param>
+    /// <returns>本地化后的显示名</returns>
+    private static String GetDisplayName(DataField field)
+    {
+        if (field == null) return null;
+
+        return L.T(field.DisplayName.IsNullOrEmpty() ? field.Name : field.DisplayName);
+    }
+
+    /// <summary>获取数据字段的显示名。字段元数据保存中文源文，按当前界面语言本地化后再用于系列名与图例</summary>
+    /// <param name="field">数据字段</param>
+    /// <returns>本地化后的显示名</returns>
+    private static String GetDisplayName(FieldItem field)
+    {
+        if (field == null) return null;
+
+        return L.T(field.DisplayName.IsNullOrEmpty() ? field.Name : field.DisplayName);
+    }
+
     /// <summary>添加系列数据</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="list">实体列表</param>
@@ -505,7 +525,7 @@ public class ECharts : IExtend
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
             list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-        var sr = Create(field?.DisplayName ?? field.Name, type, data);
+        var sr = Create(GetDisplayName(field), type, data);
 
         if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
 
@@ -526,7 +546,7 @@ public class ECharts : IExtend
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
             list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-        var sr = Create(field?.DisplayName ?? field.Name, type, data);
+        var sr = Create(GetDisplayName(field), type, data);
 
         if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
 
@@ -559,7 +579,7 @@ public class ECharts : IExtend
                 list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
                 list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-                series = Create(field?.DisplayName ?? field.Name, type, data);
+                series = Create(GetDisplayName(field), type, data);
 
                 if (!Symbol.IsNullOrEmpty()) series.Symbol = Symbol;
 
@@ -593,7 +613,7 @@ public class ECharts : IExtend
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
             list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-        var sr = Create(field?.DisplayName ?? field.Name, "line", data) as SeriesLine;
+        var sr = Create(GetDisplayName(field), "line", data) as SeriesLine;
         sr.Smooth = smooth;
 
         if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
@@ -609,7 +629,13 @@ public class ECharts : IExtend
     /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
     /// <param name="smooth">折线光滑</param>
     /// <returns></returns>
-    public Series AddLine<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null, Boolean smooth = false) where T : IModel => AddLine(list, new DataField(field), selector, smooth);
+    public Series AddLine<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null, Boolean smooth = false) where T : IModel
+    {
+        var df = new DataField(field);
+        df.Localize();
+
+        return AddLine(list, df, selector, smooth);
+    }
 
     /// <summary>添加柱状图</summary>
     /// <typeparam name="T"></typeparam>
@@ -631,7 +657,7 @@ public class ECharts : IExtend
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
             list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-        var sr = Create(field?.DisplayName ?? field.Name, "bar", data);
+        var sr = Create(GetDisplayName(field), "bar", data);
 
         Add(sr);
         return sr;
@@ -643,7 +669,13 @@ public class ECharts : IExtend
     /// <param name="field">要使用数据的字段</param>
     /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
     /// <returns></returns>
-    public Series AddBar<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null) where T : IModel => AddBar(list, new DataField(field), selector);
+    public Series AddBar<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null) where T : IModel
+    {
+        var df = new DataField(field);
+        df.Localize();
+
+        return AddBar(list, df, selector);
+    }
 
     /// <summary>添加饼图</summary>
     /// <typeparam name="T"></typeparam>
@@ -674,7 +706,7 @@ public class ECharts : IExtend
         keyName ??= _xField as String;
         keyName ??= (_xField as DataField)?.Name;
         keyName ??= (_xField as FieldItem)?.Name;
-        var sr = Create(field?.DisplayName ?? field.Name, "pie");
+        var sr = Create(GetDisplayName(field), "pie");
         sr.Data = list.Select(e => selector == null ? new NameValue(e[keyName] + "", e[field.Name]) : selector(e)).ToArray();
 
         Add(sr);
@@ -693,7 +725,7 @@ public class ECharts : IExtend
         keyName ??= (_xField as DataField)?.Name;
         keyName ??= (_xField as FieldItem)?.Name;
         keyName ??= field.Table.Master?.Name ?? field.Table.PrimaryKeys.FirstOrDefault()?.Name;
-        var sr = Create(field?.DisplayName ?? field.Name, "pie");
+        var sr = Create(GetDisplayName(field), "pie");
         sr.Data = list.Select(e => selector == null ? new NameValue(e[keyName] + "", e[field.Name]) : selector(e)).ToArray();
 
         Add(sr);
@@ -756,27 +788,27 @@ public class ECharts : IExtend
         var script = """
                 function boxplotFormatter(params) {
                     return `${params.name}<br/>
-                    最小值: ${params.value[1]}<br/>
-                    下四分: ${params.value[2]}<br/>
-                    中位数: ${params.value[3]}<br/>
-                    上四分: ${params.value[4]}<br/>
-                    最大值: ${params.value[5]}`;
+                    Min: ${params.value[1]}<br/>
+                    Q1: ${params.value[2]}<br/>
+                    Median: ${params.value[3]}<br/>
+                    Q3: ${params.value[4]}<br/>
+                    Max: ${params.value[5]}`;
                 }
                 """;
         if (itemNames != null && itemNames.Length >= 5)
         {
             // 名称为null时表示不替换
-            if (itemNames[0] != null) script = script.Replace("最小值", itemNames[0]);
-            if (itemNames[1] != null) script = script.Replace("下四分", itemNames[1]);
-            if (itemNames[2] != null) script = script.Replace("中位数", itemNames[2]);
-            if (itemNames[3] != null) script = script.Replace("上四分", itemNames[3]);
-            if (itemNames[4] != null) script = script.Replace("最大值", itemNames[4]);
+            if (itemNames[0] != null) script = script.Replace("Min:", itemNames[0] + ":");
+            if (itemNames[1] != null) script = script.Replace("Q1:", itemNames[1] + ":");
+            if (itemNames[2] != null) script = script.Replace("Median:", itemNames[2] + ":");
+            if (itemNames[3] != null) script = script.Replace("Q3:", itemNames[3] + ":");
+            if (itemNames[4] != null) script = script.Replace("Max:", itemNames[4] + ":");
         }
 
         SetTooltip("item", script);
 
         // 添加Y轴
-        if (YAxis == null || YAxis.Count == 0) SetY("值", "value");
+        if (YAxis == null || YAxis.Count == 0) SetY(L.T("Value"), "value");
 
         return box;
     }
@@ -801,25 +833,25 @@ public class ECharts : IExtend
         var script = """
                 function candlestickFormatter(params) {
                     return `${params.name}<br/>
-                    开盘值: ${params.value[1]}<br/>
-                    收盘值: ${params.value[2]}<br/>
-                    最低值: ${params.value[3]}<br/>
-                    最高值: ${params.value[4]}`;
+                    Open: ${params.value[1]}<br/>
+                    Close: ${params.value[2]}<br/>
+                    Low: ${params.value[3]}<br/>
+                    High: ${params.value[4]}`;
                 }
                 """;
         if (itemNames != null && itemNames.Length >= 4)
         {
             // 名称为null时表示不替换
-            if (itemNames[0] != null) script = script.Replace("开盘值", itemNames[0]);
-            if (itemNames[1] != null) script = script.Replace("收盘值", itemNames[1]);
-            if (itemNames[2] != null) script = script.Replace("最低值", itemNames[2]);
-            if (itemNames[3] != null) script = script.Replace("最高值", itemNames[3]);
+            if (itemNames[0] != null) script = script.Replace("Open:", itemNames[0] + ":");
+            if (itemNames[1] != null) script = script.Replace("Close:", itemNames[1] + ":");
+            if (itemNames[2] != null) script = script.Replace("Low:", itemNames[2] + ":");
+            if (itemNames[3] != null) script = script.Replace("High:", itemNames[3] + ":");
         }
 
         SetTooltip("item", script);
 
         // 添加Y轴
-        if (YAxis == null || YAxis.Count == 0) SetY("值", "value");
+        if (YAxis == null || YAxis.Count == 0) SetY(L.T("Value"), "value");
 
         return box;
     }

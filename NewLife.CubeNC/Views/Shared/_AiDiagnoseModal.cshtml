@@ -3,23 +3,23 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; border-radius: 5px 5px 0 0;">
-                <button type="button" class="close" data-dismiss="modal" aria-label="关闭" style="color: #fff; opacity: 0.8;">
+                <button type="button" class="close" data-dismiss="modal" aria-label="@L.T("Close")" style="color: #fff; opacity: 0.8;">
                     <span aria-hidden="true">&times;</span>
                 </button>
                 <h4 class="modal-title" id="aiDiagnoseModalLabel">
-                    <i class="ace-icon fa fa-stethoscope"></i> AI 诊断
+                    <i class="ace-icon fa fa-stethoscope"></i> @L.T("AI diagnosis")
                     <small id="aiDiagnoseSubtitle" style="color: rgba(255,255,255,0.7); margin-left: 10px;"></small>
                 </h4>
             </div>
             <div class="modal-body" id="aiDiagnoseContent" style="max-height: 70vh; overflow-y: auto; padding: 20px; line-height: 1.8;">
                 <div class="text-center" style="padding: 40px 0;">
                     <i class="ace-icon fa fa-spinner fa-spin fa-3x" style="color: #667eea;"></i>
-                    <p style="margin-top: 15px; color: #999;">AI 正在诊断系统，请稍候...</p>
+                    <p style="margin-top: 15px; color: #999;">@L.T("AI is diagnosing the system, please wait...")</p>
                 </div>
             </div>
             <div class="modal-footer">
                 <span id="aiDiagStatus" style="float: left; color: #999; line-height: 34px;"></span>
-                <button type="button" class="btn btn-sm" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-sm" data-dismiss="modal">@L.T("Close")</button>
             </div>
         </div>
     </div>

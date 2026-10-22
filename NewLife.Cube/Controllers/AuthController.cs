@@ -28,7 +28,7 @@ namespace NewLife.Cube.Controllers;
 /// <param name="authEnhanced">增强认证服务</param>
 /// <param name="cacheProvider">缓存提供者</param>
 /// <param name="accountActivate">账号激活服务</param>
-[DisplayName("认证")]
+[DisplayName("Authentication")]
 [ApiController]
 [Produces("application/json")]
 [Route("[controller]/[action]")]

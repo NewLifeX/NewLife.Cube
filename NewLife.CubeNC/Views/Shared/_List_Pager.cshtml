@@ -9,19 +9,22 @@
 
     var act = Context.Request.Path + "";
     if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
+
+    // 跳转输入框嵌入译文，兼容不同语言的语序
+    var jumpHtml = String.Format(L.T("Go to page {0}"), $"<input name=\"PageIndex\" type=\"text\" value=\"{pager.PageIndex}\" class=\"input-sm\" style=\"width:40px;text-align:right;\" />");
 }
 @if (pager.TotalCount > 0)
 {<text><form action="@act?@pager.GetBaseUrl(true, true, false)" method="post" role="form">
-            共<span>@pager.TotalCount.ToString("n0")</span>条&nbsp;
-            每页<span>@pager.PageSize</span>条&nbsp;
-            当前第<span>@pager.PageIndex.ToString("n0")</span>页/共<span>@pager.PageCount.ToString("n0")</span>页&nbsp;
-            @Html.Raw(pager.GetPage("首页"))&nbsp;
-            @Html.Raw(pager.GetPage("上一页"))&nbsp;
-            @Html.Raw(pager.GetPage("下一页"))&nbsp;
-            @Html.Raw(pager.GetPage("尾页")) &nbsp;
-            转到第<input name="PageIndex" type="text" value="@pager.PageIndex" class="input-sm" style="width:40px;text-align:right;" />页
+            @L.T("Total {0} items", pager.TotalCount.ToString("n0"))&nbsp;
+            @L.T("{0} per page", pager.PageSize)&nbsp;
+            @L.T("Page {0} of {1}", pager.PageIndex.ToString("n0"), pager.PageCount.ToString("n0"))&nbsp;
+            @Html.Raw(pager.GetPage(L.T("First")))&nbsp;
+            @Html.Raw(pager.GetPage(L.T("Previous")))&nbsp;
+            @Html.Raw(pager.GetPage(L.T("Next")))&nbsp;
+            @Html.Raw(pager.GetPage(L.T("Last"))) &nbsp;
+            @Html.Raw(jumpHtml)
             <input type="submit" value="GO" class="btn btn-deafult btn-sm" />
-            页大小
+            @L.T("Page size")
             <select id="PageSize" name="PageSize" onchange="$(this).parents('form').submit();">
                 <option value="5">5</option>
                 <option value="10">10</option>
@@ -40,28 +43,28 @@
         </form></text>}
 else if (!set.EnableTotalCount && (hasNext || pager.PageIndex > 1))
 {<text><form action="@act?@pager.GetBaseUrl(true, true, false)" method="post" role="form">
-            每页<span>@pager.PageSize</span>条&nbsp;
+            @L.T("{0} per page", pager.PageSize)&nbsp;
             @if (pager.PageIndex > 1)
             {
-                @Html.Raw(pager.GetPageUrl("上一页", pager.PageIndex - 1))
+                @Html.Raw(pager.GetPageUrl(L.T("Previous"), pager.PageIndex - 1))
             }
             else
             {
-                <span>上一页</span>
+                <span>@L.T("Previous")</span>
             }
             &nbsp;
             @if (hasNext)
             {
-                @Html.Raw(pager.GetPageUrl("下一页", pager.PageIndex + 1))
+                @Html.Raw(pager.GetPageUrl(L.T("Next"), pager.PageIndex + 1))
             }
             else
             {
-                <span>下一页</span>
+                <span>@L.T("Next")</span>
             }
             &nbsp;
-            转到第<input name="PageIndex" type="text" value="@pager.PageIndex" class="input-sm" style="width:40px;text-align:right;" />页
+            @Html.Raw(jumpHtml)
             <input type="submit" value="GO" class="btn btn-deafult btn-sm" />
-            页大小
+            @L.T("Page size")
             <select id="PageSize" name="PageSize" onchange="$(this).parents('form').submit();">
                 <option value="5">5</option>
                 <option value="10">10</option>

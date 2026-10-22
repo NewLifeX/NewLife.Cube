@@ -1,4 +1,4 @@
-﻿@model LoginViewModel
+@model LoginViewModel
 @using NewLife.Common
 @{
     var set = Model;
@@ -11,30 +11,30 @@
         <div class="form-group">
             <div class="input-icon">
                 <i class="fa fa-user-o"></i>
-                <input type="text" class="form-control" id="reg_pwd_username" name="username" placeholder="用户名" required="required" autocomplete="username">
+                <input type="text" class="form-control" id="reg_pwd_username" name="username" placeholder="@L.T("User name")" required="required" autocomplete="username">
             </div>
         </div>
         <div class="form-group">
             <div class="input-icon">
                 <i class="fa fa-lock"></i>
-                <input type="password" class="form-control has-toggle" id="reg_pwd_password" name="password" data-pwd placeholder="密码" autocomplete="new-password">
-                <span class="pwd-toggle" data-target="reg_pwd_password" title="显示/隐藏密码"><i class="fa fa-eye"></i></span>
+                <input type="password" class="form-control has-toggle" id="reg_pwd_password" name="password" data-pwd placeholder="@L.T("Password")" autocomplete="new-password">
+                <span class="pwd-toggle" data-target="reg_pwd_password" title="@L.T("Show/hide password")"><i class="fa fa-eye"></i></span>
             </div>
             <p class="field-tip" data-tip-for="reg_pwd_password"></p>
         </div>
         <div class="form-group">
             <div class="input-icon">
                 <i class="fa fa-lock"></i>
-                <input type="password" class="form-control" id="reg_pwd_password2" name="confirmPassword" placeholder="重复密码" autocomplete="new-password">
+                <input type="password" class="form-control" id="reg_pwd_password2" name="confirmPassword" placeholder="@L.T("Repeat password")" autocomplete="new-password">
             </div>
         </div>
         <p class="form-tip reg-agreement" style="text-align:left;">
             <label class="checkbox-custom">
                 <input type="checkbox" name="agreement" value="true" />
-                <span class="box"></span>我已阅读并同意<a href="#" class="forgot-link" target="_blank">《用户协议》</a>和<a href="#" class="forgot-link" target="_blank">《隐私政策》</a>
+                <span class="box"></span>@Html.Raw(L.T("I have read and agree to {0} and {1}", $"<a href=\"#\" class=\"forgot-link\" target=\"_blank\">{L.T("User Agreement")}</a>", $"<a href=\"#\" class=\"forgot-link\" target=\"_blank\">{L.T("Privacy Policy")}</a>"))
             </label>
         </p>
-        <button type="submit" class="btn-login">注 册</button>
+        <button type="submit" class="btn-login">@L.T("Sign up")</button>
     </form>
 </div>
 
@@ -48,7 +48,7 @@
                 // EnablePasswordComplexity 关闭或 PaswordStrength 为空/* 时，前端跳过复杂度校验
                 var pwdRegex = @Html.Raw(Json.Serialize(set.PasswordStrength));
                 var pwdComplexity = @Html.Raw(Json.Serialize(set.EnablePasswordComplexity));
-                var PWD_HINT = '8-32位，需包含大小写字母、数字和符号';
+                var PWD_HINT = '@L.T("8-32 characters, must include upper and lower case letters, digits and symbols")';
                 var PWD_REGEX = null;
                 if (pwdComplexity && pwdRegex && pwdRegex != '' && pwdRegex != '*') {
                     try { PWD_REGEX = new RegExp(pwdRegex); } catch (e) { PWD_REGEX = null; }
@@ -69,7 +69,7 @@
                     }
                     if (PWD_REGEX.test(val)) {
                         input.removeClass('error').addClass('ok');
-                        tip.removeClass('error').addClass('ok').text('密码强度符合要求').addClass('show');
+                        tip.removeClass('error').addClass('ok').text('@L.T("Password strength is acceptable")').addClass('show');
                         return true;
                     }
                     input.removeClass('ok').addClass('error');
@@ -81,16 +81,16 @@
                 // ========== 注册提交前端前置校验（最终以后端为准） ==========
                 function pwdMatchCheck(input1, input2) {
                     if (input1.val() !== input2.val()) {
-                        alert('两次密码不一致');
+                        alert('@L.T("The two passwords do not match")');
                         return false;
                     }
                     return true;
                 }
                 $('#reg-pwd').on('submit', function () {
-                    if (!$('#reg_pwd_username').val()) { alert('请输入用户名'); return false; }
+                    if (!$('#reg_pwd_username').val()) { alert('@L.T("Please enter the user name")'); return false; }
                     if (!validatePwd($('#reg_pwd_password'))) return false;
                     if (!pwdMatchCheck($('#reg_pwd_password'), $('#reg_pwd_password2'))) return false;
-                    if (!$('#reg-pwd input[name="agreement"]').is(':checked')) { alert('请先阅读并同意《用户协议》和《隐私政策》'); return false; }
+                    if (!$('#reg-pwd input[name="agreement"]').is(':checked')) { alert('@L.T("Please read and accept the User Agreement and Privacy Policy first")'); return false; }
                     return true;
                 });
             });

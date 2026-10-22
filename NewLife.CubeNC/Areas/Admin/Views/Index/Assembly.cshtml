@@ -1,4 +1,4 @@
-﻿@using System.Diagnostics;
+@using System.Diagnostics;
 @using System.Collections;
 @using System.Reflection;
 @using System.Runtime.Versioning;
@@ -6,22 +6,22 @@
 @{
     //Layout = NewLife.Cube.Setting.Current.Layout;
 
-    ViewBag.Title = "程序集列表";
+    ViewBag.Title = L.T("Assemblies");
 }
 
 <table class="table table-bordered table-hover table-striped table-condensed">
     <tr>
         <th colspan="6">
-            程序集列表(@AppDomain.CurrentDomain.FriendlyName)
+            @(L.T("Assemblies"))(@AppDomain.CurrentDomain.FriendlyName)
         </th>
     </tr>
     <tr>
-        <th>名称</th>
-        <th>标题</th>
-        <th>文件版本</th>
-        <th>内部版本</th>
-        <th>编译时间</th>
-        <th>路径</th>
+        <th>@L.T("Name")</th>
+        <th>@L.T("Title")</th>
+        <th>@L.T("File version")</th>
+        <th>@L.T("Internal version")</th>
+        <th>@L.T("Build time")</th>
+        <th>@L.T("Path")</th>
     </tr>
     @foreach (AssemblyX item in ViewBag.Asms)
     {
@@ -30,7 +30,7 @@
                 @item.Name
             </td>
             <td>
-                @item.Title
+                @L.T(item.Title)
             </td>
             <td>
                 @item.FileVersion

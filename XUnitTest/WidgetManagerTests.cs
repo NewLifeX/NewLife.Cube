@@ -22,12 +22,12 @@ public class WidgetManagerTests
             Assert.True(dic.ContainsKey(name), $"未找到部件 {name}");
         }
 
-        // 元数据完整性
+        // 元数据完整性。标题与分组以英文为源文，展示时经 L.T 翻译
         var info = dic["UserCount"];
-        Assert.Equal("用户总数", info.Title);
+        Assert.Equal("Total users", info.Title);
         Assert.Equal(2, info.Cols);
         Assert.True(info.AdminOnly);
-        Assert.Equal("系统", info.Category);
+        Assert.Equal("System", info.Category);
         Assert.NotNull(info.Type);
         Assert.True(typeof(IWidget).IsAssignableFrom(info.Type));
     }

@@ -95,7 +95,7 @@ public class UserController : EntityController<User, UserModel>
             EditFormFields.RemoveField("RoleNames");
         }
         {
-            AddFormFields.GroupVisible = (entity, group) => (entity as User).ID == 0 && group != "扩展";
+            AddFormFields.GroupVisible = (entity, group) => (entity as User).ID == 0 && group != "Extended" && group != L.T("Extended");
         }
         {
             var ff = AddFormFields.GetField("AreaId") as FormField;

@@ -1,4 +1,4 @@
-﻿@using NewLife.Common;
+@using NewLife.Common;
 @{
     var cfg = NewLife.Common.SysConfig.Current;
     var user = ManageProvider.User;
@@ -7,11 +7,11 @@
     <div class="page-divider"></div>
     <div class="clearfix">
         <div class="pull-right btn-group dropup">
-            <a class="dropdown-toggle" data-toggle="dropdown" href="#">友情链接 <span class="caret"></span></a>
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">@L.T("Friendly links") <span class="caret"></span></a>
             <ul class="dropdown-menu">
-                <li>友情链接1</li>
-                <li>友情链接2</li>
-                <li>友情链接3</li>
+                <li>@L.T("Friendly link 1")</li>
+                <li>@L.T("Friendly link 2")</li>
+                <li>@L.T("Friendly link 3")</li>
             </ul>
         </div>
         <div class="pull-left"><p class="muted" title="">&copy; 2002-@DateTime.Now.Year @cfg.Company</p></div>

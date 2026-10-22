@@ -12,6 +12,49 @@ namespace NewLife.Cube.Membership;
 /// </summary>
 public static class MenuHelper
 {
+    /// <summary>获取菜单显示名。自动生成的菜单按当前请求语言翻译，用户自定义名称缺词条时原样返回</summary>
+    /// <param name="menu">菜单</param>
+    /// <returns>本地化显示名</returns>
+    public static String? GetDisplayName(IMenu menu)
+    {
+        if (menu == null) return null;
+
+        var name = menu.DisplayName;
+        if (name.IsNullOrEmpty()) name = menu.Name;
+
+        return name.IsNullOrEmpty() ? name : L.T(name);
+    }
+
+    /// <summary>获取权限子项显示名。标准权限位从枚举取源文，自定义动作保留 {type} 模板</summary>
+    /// <param name="menu">菜单</param>
+    /// <param name="key">权限位</param>
+    /// <param name="value">落库的权限名称</param>
+    /// <returns>本地化权限名称</returns>
+    public static String? GetPermissionName(IMenu menu, Int32 key, String? value)
+    {
+        var flag = (PermissionFlags)(UInt32)key;
+        if (key > 0 && key <= (Int32)PermissionFlags.Delete && Enum.IsDefined(typeof(PermissionFlags), flag))
+            return L.T(flag.GetDescription());
+
+        var text = L.T(value);
+        if (!text.IsNullOrEmpty() && text.Contains("{type}")) text = text.Replace("{type}", GetDisplayName(menu));
+
+        return text;
+    }
+
+    /// <summary>获取当前语言下的权限子项字典</summary>
+    /// <param name="menu">菜单</param>
+    /// <returns>权限位到本地化名称的映射</returns>
+    public static Dictionary<Int32, String> GetPermissions(IMenu menu)
+    {
+        var dic = new Dictionary<Int32, String>();
+        if (menu?.Permissions == null) return dic;
+
+        foreach (var item in menu.Permissions) dic[item.Key] = GetPermissionName(menu, item.Key, item.Value);
+
+        return dic;
+    }
+
     /// <summary>判断控制器菜单在指定模式下是否可见。租户模式（isTenant=true）仅放行含Tenant模式的菜单；管理后台仅放行含Admin模式或未声明模式的菜单</summary>
     /// <param name="controllerType">控制器类型</param>
     /// <param name="isTenant">是否租户模式（TenantId&gt;0）</param>
@@ -154,7 +197,25 @@ public static class MenuHelper
             if (controller == null)
             {
                 controller = menuFactory.FindByUrl(url);
-                controller ??= node.Add(name, type.GetDisplayName(), type.FullName, url);
+
+                // 菜单名是持久化数据，建菜单时保存源文；页面标题等运行时文案由消费端按请求语言翻译
+                var displayName = type.GetDisplayName();
+
+                controller ??= node.Add(name, displayName, type.FullName, url);
+            }
+            else
+            {
+                // 旧版本按启动语言落库的自动菜单，安全归一化为源文；用户自定义名称不动
+                var source = type.GetDisplayName();
+                if (!source.IsNullOrEmpty())
+                {
+                    var translated = L.T(source);
+                    // 旧版本没有 DisplayName 特性，自动菜单落库为 URL 名称或类型名；用户自定义名称不动
+                    if (controller.DisplayName.IsNullOrEmpty() || controller.DisplayName == name || controller.DisplayName == type.Name ||
+                        (translated != source && controller.DisplayName == translated) ||
+                        IsOtherLanguageName(controller.DisplayName, source))
+                        controller.DisplayName = source;
+                }
             }
             controller.Url = url;
             controller.FullName = type.FullName;
@@ -184,8 +245,8 @@ public static class MenuHelper
                 {
                     var method = item.Key;
 
+                    // 保留 {type} 模板，渲染期按当前语言翻译后再替换
                     var dn = method.GetDisplayName();
-                    if (!dn.IsNullOrEmpty()) dn = dn.Replace("{type}", (controller as Menu)?.FriendName);
 
                     var pmName = !dn.IsNullOrEmpty() ? dn : method.Name;
                     if (item.Value <= (Int32)PermissionFlags.Delete) pmName = ((PermissionFlags)item.Value).GetDescription();
@@ -215,8 +276,8 @@ public static class MenuHelper
                         {
                             var method = item.Key;
 
+                            // 保留 {type} 模板，渲染期按当前语言翻译后再替换
                             var dn = method.GetDisplayName();
-                            if (!dn.IsNullOrEmpty()) dn = dn.Replace("{type}", (controller as Menu)?.FriendName);
 
                             var pmName = !dn.IsNullOrEmpty() ? dn : method.Name;
                             if (item.Value <= (Int32)PermissionFlags.Delete) pmName = ((PermissionFlags)item.Value).GetDescription();
@@ -274,6 +335,23 @@ public static class MenuHelper
         }
 
         return list;
+    }
+
+    /// <summary>判断落库菜单名是否为旧版本按其它语言源码保存的自动菜单名</summary>
+    /// <param name="displayName">菜单落库的显示名</param>
+    /// <param name="source">控制器 DisplayName 源文</param>
+    /// <returns>需要按源文归一化时返回 true</returns>
+    /// <remarks>
+    /// i18n 改造期间源码 DisplayName 曾被批量改为英文并启动过站点，自动菜单把英文落库；
+    /// 源码恢复中文后，落库值既不是源文也不是当前语言译文，原有判定识别不到。
+    /// 这里按"源文含汉字、落库名为纯 ASCII"识别这类旧语言残留。
+    /// </remarks>
+    internal static Boolean IsOtherLanguageName(String? displayName, String source)
+    {
+        if (displayName.IsNullOrEmpty()) return false;
+        if (!source.Any(e => e >= 0x4E00 && e <= 0x9FFF)) return false;
+
+        return displayName.All(e => e < 0x80);
     }
 
     /// <summary>获取可用于生成权限菜单的Action集合</summary>

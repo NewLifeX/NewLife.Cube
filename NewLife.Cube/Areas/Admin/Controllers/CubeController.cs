@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.AI;
@@ -9,7 +9,7 @@ using NewLife.Serialization;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>系统设置控制器</summary>
-[DisplayName("魔方设置")]
+[DisplayName("Cube settings")]
 [AdminArea]
 [Menu(30, true, Icon = "Tools")]
 public class CubeController : ConfigController<CubeSetting>, IPageDataContext
@@ -86,7 +86,7 @@ public class CubeController : ConfigController<CubeSetting>, IPageDataContext
             });
         }
 
-        var data = new { page = "魔方设置", description = "魔方后台系统配置，可按分类查看各项设置项", fields }.ToJson();
+        var data = new { page = L.T("Cube settings"), description = L.T("Cube backend settings, grouped by category"), fields }.ToJson();
         return Task.FromResult(data);
     }
 }

@@ -52,7 +52,7 @@ public static partial class ApiResponseHelper
     {
         if (String.IsNullOrWhiteSpace(tipMessage))// 如果tipMessage为空
         {
-            tipMessage = code.GetDescription() ?? String.Empty;//则使用code的描述
+            tipMessage = L.T(code.GetDescription() + "");//则使用code的描述
             if (String.IsNullOrWhiteSpace(tipMessage))// 如果code的描述为空
                 tipMessage = code.ToString();//则直接使用变量名
         }

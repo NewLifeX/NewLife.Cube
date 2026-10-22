@@ -1,4 +1,4 @@
-﻿@model SuggestModel
+@model SuggestModel
 @using NewLife;
 @using NewLife.Serialization;
 @using NewLife.Web;
@@ -58,10 +58,10 @@
             showBtn: false,
             keyField: "@Model.NameField",
             clearable: true,
-            searchingTip: '搜索中...',
+            searchingTip: '@L.T("Searching...")',
             allowNoKeyword: true,
             delay: 500,
-            emptyTip: '无数据',
+            emptyTip: '@L.T("No data")',
             containerValueId: '@id',
             fnProcessData: function (result) {
                 dt = {};

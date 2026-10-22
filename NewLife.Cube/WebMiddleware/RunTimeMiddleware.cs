@@ -178,7 +178,7 @@ public class RunTimeMiddleware
     }
 
     /// <summary>执行时间字符串</summary>
-    public static String DbRunTimeFormat { get; set; } = "查询{0}次，执行{1}次，耗时{2:n0}毫秒";
+    public static String DbRunTimeFormat { get; set; } = "Queries {0}, executes {1}, elapsed {2:n0} ms";
 
     /// <summary>获取执行时间和查询次数等信息</summary>
     /// <param name="ctx"></param>

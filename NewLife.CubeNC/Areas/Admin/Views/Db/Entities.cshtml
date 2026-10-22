@@ -8,25 +8,25 @@
 @{
     //Layout = NewLife.Cube.Setting.Current.Layout;
 
-    ViewBag.Title = "实体类列表";
+    ViewBag.Title = L.T("Entity list");
 }
 
 @foreach (var item in Model.Entities)
 {
     var factory = item.Factory;
     var table = factory.Table.DataTable;
-    <h3>@table.DisplayName（@item.Name / @table.TableName）<span title="该表总行数">[@item.Count]</span></h3>
+    <h3>@table.DisplayName (@item.Name / @table.TableName)<span title="@L.T("Total rows of this table")">[@item.Count]</span></h3>
     <table class="table table-bordered table-hover table-striped table-condensed">
         <thead>
             <tr>
-                <th class="text-center">名称</th>
-                <th class="text-center">显示名</th>
-                <th class="text-center">类型</th>
-                <th class="text-center">长度</th>
-                <th class="text-center">精度</th>
-                <th class="text-center">主键</th>
-                <th class="text-center">允许空</th>
-                <th class="text-center">备注</th>
+                <th class="text-center">@L.T("Name")</th>
+                <th class="text-center">@L.T("Display name")</th>
+                <th class="text-center">@L.T("Type")</th>
+                <th class="text-center">@L.T("Length")</th>
+                <th class="text-center">@L.T("Precision")</th>
+                <th class="text-center">@L.T("Primary key")</th>
+                <th class="text-center">@L.T("Allow null")</th>
+                <th class="text-center">@L.T("Remark")</th>
             </tr>
         </thead>
         <tbody>
@@ -58,15 +58,15 @@
 
                     @if (column.Identity)
                     {
-                        <td title="自增" class="text-center">AI</td>
+                        <td title="@L.T("Auto increment")" class="text-center">AI</td>
                     }
                     else if (field.PrimaryKey)
                     {
-                        <td title="主键" class="text-center">PK</td>
+                        <td title="@L.T("Primary key")" class="text-center">PK</td>
                     }
                     else if (table.Indexes.Any(e => e.Unique && e.Columns.Length == 1 && e.Columns[0].EqualIgnoreCase(field.Name, field.ColumnName)))
                     {
-                        <td title="唯一索引" class="text-center">UQ</td>
+                        <td title="@L.T("Unique index")" class="text-center">UQ</td>
                     }
                     else
                     {

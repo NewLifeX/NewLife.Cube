@@ -46,7 +46,7 @@
 
                                 @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
                                 {
-                                    <th lay-data="{toolbar:'#barOpt',minWidth:120,fixed:'right',align:'center'}">操作</th>
+                                    <th lay-data="{toolbar:'#barOpt',minWidth:120,fixed:'right',align:'center'}">@L.T("Operation")</th>
                                 }
                             </tr>
                         </thead>
@@ -106,9 +106,9 @@
 
     <script type="text/html" id="toolbarDemo">
         <div class="layui-btn-container">
-            <button class="layui-btn layui-btn-sm" lay-event="getCheckData">获取选中行数据</button>
-            <button class="layui-btn layui-btn-sm" lay-event="getCheckLength">获取选中数目</button>
-            <button class="layui-btn layui-btn-sm" lay-event="isAll">验证是否全选</button>
+            <button class="layui-btn layui-btn-sm" lay-event="getCheckData">@L.T("Get selected row data")</button>
+            <button class="layui-btn layui-btn-sm" lay-event="getCheckLength">@L.T("Get selected count")</button>
+            <button class="layui-btn layui-btn-sm" lay-event="isAll">@L.T("Verify select all")</button>
         </div>
     </script>
 

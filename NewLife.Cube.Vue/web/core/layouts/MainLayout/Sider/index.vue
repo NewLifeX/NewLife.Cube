@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useMenuStore } from '@newlifex/cube-vue/core/stores/menu';
 import SideMenuItem from './SideMenuItem.vue';
 
+const { t } = useI18n();
 const menuStore = useMenuStore();
 
 const parentMenu = computed(() => menuStore.activeMenu?.parentMenu);
@@ -31,7 +33,7 @@ const secondLevelMenus = computed(() => parentMenu.value?.children || []);
         </svg>
       </div>
       <span class="sider-header-title">
-        {{ parentMenu?.title || parentMenu?.name || '导航菜单' }}
+        {{ parentMenu?.title || parentMenu?.name || t('menu.navigation') }}
       </span>
     </div>
 
@@ -53,7 +55,7 @@ const secondLevelMenus = computed(() => parentMenu.value?.children || []);
 
     <!-- 底部 -->
     <div class="sider-footer">
-      <button class="sider-collapse-btn" title="折叠菜单">
+      <button class="sider-collapse-btn" :title="t('layout.collapseMenu')">
         <svg
           width="16"
           height="16"

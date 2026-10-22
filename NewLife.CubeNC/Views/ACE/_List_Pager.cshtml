@@ -9,21 +9,24 @@
 
     var act = Context.Request.Path + "";
     if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
+
+    // 跳转输入框嵌入译文，兼容不同语言的语序
+    var jumpHtml = String.Format(L.T("Go to page {0}"), $"<input name=\"PageIndex\" type=\"text\" value=\"{pager.PageIndex}\" class=\"input-sm\" style=\"width:44px;text-align:center;\" />");
 }
 @* ACE 主题覆盖：分页器按钮化（保留 PageIndex/PageSize 提交逻辑） *@
 @if (pager.TotalCount > 0)
 {<text><form action="@act?@pager.GetBaseUrl(true, true, false)" method="post" role="form">
-            <span class="pager-info">共 <b>@pager.TotalCount.ToString("n0")</b> 条 · 每页 <b>@pager.PageSize</b> 条 · 第 <b>@pager.PageIndex.ToString("n0")</b>/<b>@pager.PageCount.ToString("n0")</b> 页</span>
+            <span class="pager-info">@Html.Raw(String.Format(L.T("Total {0} · {1} per page · page {2} of {3}"), $"<b>{pager.TotalCount:n0}</b>", $"<b>{pager.PageSize}</b>", $"<b>{pager.PageIndex:n0}</b>", $"<b>{pager.PageCount:n0}</b>"))</span>
             <span class="pager-btns">
                 @if (pager.PageIndex > 1)
                 {
-                    <a class="pager-btn" href="@pager.GetPageUrl("首页", 1)" title="首页"><i class="glyphicon glyphicon-step-backward"></i></a>
-                    <a class="pager-btn" href="@pager.GetPageUrl("上一页", pager.PageIndex - 1)" title="上一页"><i class="glyphicon glyphicon-chevron-left"></i></a>
+                    <a class="pager-btn" href="@pager.GetPageUrl(L.T("First"), 1)" title="@L.T("First")"><i class="glyphicon glyphicon-step-backward"></i></a>
+                    <a class="pager-btn" href="@pager.GetPageUrl(L.T("Previous"), pager.PageIndex - 1)" title="@L.T("Previous")"><i class="glyphicon glyphicon-chevron-left"></i></a>
                 }
                 else
                 {
-                    <span class="pager-btn disabled" title="首页"><i class="glyphicon glyphicon-step-backward"></i></span>
-                    <span class="pager-btn disabled" title="上一页"><i class="glyphicon glyphicon-chevron-left"></i></span>
+                    <span class="pager-btn disabled" title="@L.T("First")"><i class="glyphicon glyphicon-step-backward"></i></span>
+                    <span class="pager-btn disabled" title="@L.T("Previous")"><i class="glyphicon glyphicon-chevron-left"></i></span>
                 }
                 @{
                     var len = 7;
@@ -47,19 +50,19 @@
                 }
                 @if (pager.PageIndex < pager.PageCount)
                 {
-                    <a class="pager-btn" href="@pager.GetPageUrl("下一页", pager.PageIndex + 1)" title="下一页"><i class="glyphicon glyphicon-chevron-right"></i></a>
-                    <a class="pager-btn" href="@pager.GetPageUrl("尾页", pager.PageCount)" title="尾页"><i class="glyphicon glyphicon-step-forward"></i></a>
+                    <a class="pager-btn" href="@pager.GetPageUrl(L.T("Next"), pager.PageIndex + 1)" title="@L.T("Next")"><i class="glyphicon glyphicon-chevron-right"></i></a>
+                    <a class="pager-btn" href="@pager.GetPageUrl(L.T("Last"), pager.PageCount)" title="@L.T("Last")"><i class="glyphicon glyphicon-step-forward"></i></a>
                 }
                 else
                 {
-                    <span class="pager-btn disabled" title="下一页"><i class="glyphicon glyphicon-chevron-right"></i></span>
-                    <span class="pager-btn disabled" title="尾页"><i class="glyphicon glyphicon-step-forward"></i></span>
+                    <span class="pager-btn disabled" title="@L.T("Next")"><i class="glyphicon glyphicon-chevron-right"></i></span>
+                    <span class="pager-btn disabled" title="@L.T("Last")"><i class="glyphicon glyphicon-step-forward"></i></span>
                 }
             </span>
             <span class="pager-jump">
-                转到第<input name="PageIndex" type="text" value="@pager.PageIndex" class="input-sm" style="width:44px;text-align:center;" />页
+                @Html.Raw(jumpHtml)
                 <button type="submit" class="btn btn-default btn-sm">GO</button>
-                每页
+                @L.T("Page size")
                 <select id="PageSize" name="PageSize" onchange="$(this).parents('form').submit();">
                     <option value="5">5</option>
                     <option value="10">10</option>
@@ -79,29 +82,29 @@
         </form></text>}
 else if (!set.EnableTotalCount && (hasNext || pager.PageIndex > 1))
 {<text><form action="@act?@pager.GetBaseUrl(true, true, false)" method="post" role="form">
-            <span class="pager-info">每页 <b>@pager.PageSize</b> 条 · 第 <b>@pager.PageIndex.ToString("n0")</b> 页</span>
+            <span class="pager-info">@Html.Raw(String.Format(L.T("{0} per page · page {1}"), $"<b>{pager.PageSize}</b>", $"<b>{pager.PageIndex:n0}</b>"))</span>
             <span class="pager-btns">
                 @if (pager.PageIndex > 1)
                 {
-                    <a class="pager-btn" href="@pager.GetPageUrl("上一页", pager.PageIndex - 1)" title="上一页"><i class="glyphicon glyphicon-chevron-left"></i></a>
+                    <a class="pager-btn" href="@pager.GetPageUrl(L.T("Previous"), pager.PageIndex - 1)" title="@L.T("Previous")"><i class="glyphicon glyphicon-chevron-left"></i></a>
                 }
                 else
                 {
-                    <span class="pager-btn disabled" title="上一页"><i class="glyphicon glyphicon-chevron-left"></i></span>
+                    <span class="pager-btn disabled" title="@L.T("Previous")"><i class="glyphicon glyphicon-chevron-left"></i></span>
                 }
                 @if (hasNext)
                 {
-                    <a class="pager-btn" href="@pager.GetPageUrl("下一页", pager.PageIndex + 1)" title="下一页"><i class="glyphicon glyphicon-chevron-right"></i></a>
+                    <a class="pager-btn" href="@pager.GetPageUrl(L.T("Next"), pager.PageIndex + 1)" title="@L.T("Next")"><i class="glyphicon glyphicon-chevron-right"></i></a>
                 }
                 else
                 {
-                    <span class="pager-btn disabled" title="下一页"><i class="glyphicon glyphicon-chevron-right"></i></span>
+                    <span class="pager-btn disabled" title="@L.T("Next")"><i class="glyphicon glyphicon-chevron-right"></i></span>
                 }
             </span>
             <span class="pager-jump">
-                转到第<input name="PageIndex" type="text" value="@pager.PageIndex" class="input-sm" style="width:44px;text-align:center;" />页
+                @Html.Raw(jumpHtml)
                 <button type="submit" class="btn btn-default btn-sm">GO</button>
-                每页
+                @L.T("Page size")
                 <select id="PageSize" name="PageSize" onchange="$(this).parents('form').submit();">
                     <option value="5">5</option>
                     <option value="10">10</option>

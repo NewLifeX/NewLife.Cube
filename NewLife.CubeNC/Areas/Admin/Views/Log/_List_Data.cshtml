@@ -1,4 +1,4 @@
-﻿@model IList<XCode.Membership.Log>
+@model IList<XCode.Membership.Log>
 @using NewLife;
 @using NewLife.Web;
 @using XCode;
@@ -14,22 +14,22 @@
         <tr>
             @if (set.EnableSelect)
             {
-                <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
+                <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="@L.T("Select all")" /></th>
             }
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Category"))">类别</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Action"))">操作</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Success"))">成功</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Remark"))">详细信息</a></th>
-            <th class="text-center" title="追踪标识。用于记录调用链追踪标识，在APM查找调用链"><a href="@Html.Raw(page.GetSortUrl("TraceId"))">追踪</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("LinkID"))">关联</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UserName"))">用户名</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateIP"))">IP地址</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateAddress"))">物理地址</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateTime"))">时间</a></th>
-            <th class="text-center">附近</th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Category"))">@L.T("Category")</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Action"))">@L.T("Operation")</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Success"))">@L.T("Succeeded")</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Remark"))">@L.T("Details")</a></th>
+            <th class="text-center" title="@L.T("Trace id. Records the call chain trace id for locating the chain in APM")"><a href="@Html.Raw(page.GetSortUrl("TraceId"))">@L.T("Trace")</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("LinkID"))">@L.T("Association")</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UserName"))">@L.T("User name")</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateIP"))">@L.T("IP address")</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateAddress"))">@L.T("Physical address")</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateTime"))">@L.T("Time")</a></th>
+            <th class="text-center">@L.T("Nearby")</th>
             @if (this.Has(PermissionFlags.Detail))
             {
-                <th class="text-center">操作</th>
+                <th class="text-center">@L.T("Operation")</th>
             }
         </tr>
     </thead>
@@ -50,7 +50,7 @@
                 <td class="text-center">
                     @if (!entity.TraceId.IsNullOrEmpty())
                     {
-                        <a href="@StarHelper.BuildUrl(entity.TraceId)" title="链路追踪，用于APM性能追踪定位，还原该事件的调用链" target="_blank">追踪</a>
+                        <a href="@StarHelper.BuildUrl(entity.TraceId)" title="@L.T("Distributed tracing for APM; restores the call chain of this event")" target="_blank">@L.T("Trace")</a>
                     }
                 </td>
                 <td class="text-right">@entity.LinkID.ToString("n0")</td>
@@ -59,7 +59,7 @@
                 <td>@entity.CreateIP.IPToAddress()</td>
                 <td class="text-center" style="max-width:150px">@entity.CreateTime.ToFullString("").TrimPrefix(today)</td>
                 <td class="text-center">
-                    <a href="?act=near&id=@entity.ID&range=10" title="前后10行日志">附近</a>
+                    <a href="?act=near&id=@entity.ID&range=10" title="@L.T("10 lines before and after")">@L.T("Nearby")</a>
                 </td>
                 @if (this.Has(PermissionFlags.Detail))
                 {

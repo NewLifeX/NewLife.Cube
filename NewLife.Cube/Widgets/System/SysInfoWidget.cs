@@ -7,7 +7,7 @@ using NewLife.Reflection;
 namespace NewLife.Cube.Widgets.System;
 
 /// <summary>系统信息摘要。操作系统/运行时/应用启动等，提供完整服务器信息页链接。KV 卡固定表格渲染</summary>
-[Widget("SysInfo", "系统信息", Icon = "fa-server", Cols = 4, Sort = 100, Category = "系统", AdminOnly = true, WidgetType = WidgetTypes.Kv)]
+[Widget("SysInfo", "System info", Icon = "fa-server", Cols = 4, Sort = 100, Category = "System", AdminOnly = true, WidgetType = WidgetTypes.Kv)]
 public class SysInfoWidget : IWidget
 {
     /// <summary>获取组件数据</summary>
@@ -25,13 +25,13 @@ public class SysInfoWidget : IWidget
         // Kv 卡返回键值字典，固定表格视图渲染；值可为 HTML
         var dic = new Dictionary<String, Object>
         {
-            ["操作系统"] = $"{mi.OSName} {mi.OSVersion}",
-            ["机器"] = $"{Environment.MachineName} / {Environment.UserName}",
-            ["处理器"] = $"{mi.Processor}，{Environment.ProcessorCount} 核心",
-            ["运行时"] = ver,
-            ["应用"] = $"{process.ProcessName}，程序集 {asmCount} 个",
-            ["启动时间"] = startTime.ToFullString(),
-            ["更多信息"] = "<a href=\"/Admin/Index/Main\" target=\"_blank\">查看完整服务器信息 »</a>",
+            [L.T("OS")] = $"{mi.OSName} {mi.OSVersion}",
+            [L.T("Machine")] = $"{Environment.MachineName} / {Environment.UserName}",
+            [L.T("Processor")] = $"{mi.Processor}, " + L.T("{0} cores", Environment.ProcessorCount),
+            [L.T("Runtime")] = ver,
+            [L.T("Application")] = $"{process.ProcessName}, " + L.T("{0} assemblies", asmCount),
+            [L.T("Start time")] = startTime.ToFullString(),
+            [L.T("More information")] = "<a href=\"/Admin/Index/Main\" target=\"_blank\">" + L.T("View full server information »") + "</a>",
         };
 
         return dic;

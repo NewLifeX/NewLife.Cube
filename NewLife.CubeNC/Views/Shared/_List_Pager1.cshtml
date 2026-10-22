@@ -3,12 +3,17 @@
     var pager = ViewBag.Page as Pager;
     pager.PageUrlTemplate = Url.Action("Index") + "{链接}";
     // 没有总记录数的时候不显示分页，可以认为不启用分页
+    // 数字保留原有高亮标记，译文提供句子骨架
+    var info = String.Format(L.T("Total {0} records, page {1} of {2}"),
+        $"<i class=\"blue\">{pager.TotalCount}</i>",
+        $"<i class=\"blue\">{pager.PageIndex}&nbsp;</i>",
+        $"<i class=\"blue\">{pager.PageCount}&nbsp;</i>");
 }
 
 @if (pager.TotalCount > 0)
 {
     <div class="pagin">
-        <div class="message">共<i class="blue">@pager.TotalCount</i>条记录，当前显示第&nbsp;<i class="blue">@pager.PageIndex&nbsp;</i>页/共&nbsp;<i class="blue">@pager.PageCount&nbsp;</i>页</div>
+        <div class="message">@Html.Raw(info)</div>
         <ul class="paginList">
             @{
                 var len = 8;
@@ -24,8 +29,8 @@
                 }
                 else
                 {
-                    <li class="paginItem"><a href="@pager.GetPageUrl("首页", 1)">&Iota;&lt;</a></li>
-                    <li class="paginItem"><a href="@pager.GetPageUrl(" 上一页", pager.PageIndex-1)">&lt;</a></li>
+                    <li class="paginItem"><a href="@pager.GetPageUrl(L.T("First"), 1)">&Iota;&lt;</a></li>
+                    <li class="paginItem"><a href="@pager.GetPageUrl(" " + L.T("Previous"), pager.PageIndex-1)">&lt;</a></li>
                 }
 
                 for (int i = start; i <= end; i++)
@@ -47,8 +52,8 @@
                 }
                 else
                 {
-                    <li class="paginItem"><a href="@pager.GetPageUrl("下一页", pager.PageIndex + 1)">></a></li>
-                    <li class="paginItem"><a href="@pager.GetPageUrl("未页", pager.PageCount)">>|</a></li>
+                    <li class="paginItem"><a href="@pager.GetPageUrl(L.T("Next"), pager.PageIndex + 1)">></a></li>
+                    <li class="paginItem"><a href="@pager.GetPageUrl(L.T("Last"), pager.PageCount)">>|</a></li>
                 }
             }
         </ul>

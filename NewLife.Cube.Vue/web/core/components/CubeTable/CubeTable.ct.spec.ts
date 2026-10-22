@@ -284,3 +284,45 @@ test('行为-操作列超过 4 个动作收进更多', async ({ page }) => {
   await menu.filter({ hasText: '复制' }).click();
   await expect(page.locator('.el-dialog')).toContainText('新增');
 });
+
+test('滚动模型-表格填满宿主视口且只有表体内滚，展开筛选自适应', async ({ page }) => {
+  await openStory(page, 'CubeTable/Default');
+  // 较矮视口让 3 行数据溢出，从而能观测到「表体内滚」
+  await page.setViewportSize({ width: 1280, height: 360 });
+  // 模拟兑现契约的宿主：给挂载容器确定高度（真实由 WorkOrderLayout / TopMenu 提供）
+  await page.evaluate(() => {
+    const host = document.querySelector('.gal-preview') as HTMLElement | null;
+    if (host) {
+      host.style.height = '100vh';
+      host.style.overflow = 'hidden';
+    }
+  });
+  await page.waitForTimeout(300);
+
+  const root = table(page);
+  const vh = 360;
+
+  // 页面不滚：文档滚动高度不超过视口
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight))
+    .toBeLessThanOrEqual(1);
+
+  // 表格填满：分页条底边落在视口内
+  const ctBottom = await root.locator('.ctp').evaluate((el) => el.getBoundingClientRect().bottom);
+  expect(ctBottom).toBeLessThanOrEqual(vh + 1);
+
+  // 只有表体内滚：数据区内容高于可视区
+  const overflow = await root
+    .locator('.el-table__body-wrapper .el-scrollbar__wrap')
+    .evaluate((el) => el.scrollHeight - el.clientHeight);
+  expect(overflow).toBeGreaterThan(0);
+
+  // 展开筛选：搜索区变高、表格面板变矮，分页仍在视口内（自适应）
+  const panelBefore = await root.locator('.ct-panel').evaluate((el) => el.clientHeight);
+  await root.locator('.cts-toggle').click();
+  await expect(root.locator('.cts-item')).not.toHaveCount(1);
+  const panelAfter = await root.locator('.ct-panel').evaluate((el) => el.clientHeight);
+  const bottomAfter = await root.locator('.ctp').evaluate((el) => el.getBoundingClientRect().bottom);
+  expect(panelAfter).toBeLessThan(panelBefore);
+  expect(bottomAfter).toBeLessThanOrEqual(vh + 1);
+});

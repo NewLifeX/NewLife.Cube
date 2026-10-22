@@ -7,80 +7,80 @@
 }
 <div class="btn-group">
     <button data-toggle="dropdown" class="btn btn-info btn-sm dropdown-toggle" aria-expanded="false">
-        高级
+        @L.T("Advanced")
         <span class="ace-icon fa fa-caret-down icon-on-right"></span>
     </button>
 
     <ul class="dropdown-menu dropdown-info dropdown-menu-right">
         <li>
-            <a href="@Url.Action("ExportExcel", new { _query = queryData })" title="导出Csv格式，中文表头，含扩展属性，用于Excel查看数据">导出Excel</a>
+            <a href="@Url.Action("ExportExcel", new { _query = queryData })" title="@L.T("Export to Csv with Chinese headers and extended fields, for viewing in Excel")">@L.T("Export Excel")</a>
         </li>
         <li>
-            <a href="@Url.Action("ExportCsv", new { _query = queryData })" title="导出Csv格式，英文表头，不含扩展属性，快速导出，用于数据传输">导出Csv</a>
+            <a href="@Url.Action("ExportCsv", new { _query = queryData })" title="@L.T("Export to Csv with English headers, for data transfer")">@L.T("Export Csv")</a>
         </li>
         <li>
-            <a href="@Url.Action("ExportXml", new { _query = queryData })">导出Xml</a>
+            <a href="@Url.Action("ExportXml", new { _query = queryData })">@L.T("Export Xml")</a>
         </li>
         <li>
-            <a href="@Url.Action("ExportJson", new { _query = queryData })">导出Json</a>
+            <a href="@Url.Action("ExportJson", new { _query = queryData })">@L.T("Export Json")</a>
         </li>
         <li>
-            <a href="@Url.Action("ExportZip", new { _query = queryData })">导出Zip</a>
+            <a href="@Url.Action("ExportZip", new { _query = queryData })">@L.T("Export ZIP")</a>
         </li>
         <li>
-            <a href="javascript:;" onclick="$('#importFile').click();" title="从Exce/Csv/Json/Zip文件导入数据">导入Excel/Json/Zip</a>
+            <a href="javascript:;" onclick="$('#importFile').click();" title="@L.T("Import data from an Excel/Csv/Json/Zip file")">@L.T("Import Excel/Json/Zip")</a>
             <input type="file" id="importFile" name="file" accept=".xlsx,xls,.csv,.json,.zip" style="display:none;" data-action="upload" data-method="POST" data-url="@Url.Action("ImportFile", new { _query = queryData })" />
         </li>
         <li class="divider"></li>
         <li>
-            <a href="@Url.Action("Develop", new { act = "Share" })" title="把当前页数据分享给其他人">分享</a>
+            <a href="@Url.Action("Develop", new { act = "Share" })" title="@L.T("Share the current page data with others")">@L.T("Share")</a>
         </li>
         <li>
-            <a href="@Url.Action("Develop", new { act = "Sync" })" data-action="action" data-confirm="该操作将清空数据并不可恢复！确认同步？" title="清空并从主服务器同步数据">同步</a>
+            <a href="@Url.Action("Develop", new { act = "Sync" })" data-action="action" data-confirm="@L.T("Clear data and sync from the primary server")" title="@L.T("Clear data and sync from the primary server")">@L.T("Sync")</a>
         </li>
         @if (this.Has(PermissionFlags.Delete))
         {
             <li class="divider"></li>
             <li>
-                <a href="@Url.Action("DeleteSelect")" data-action="action" data-fields="keys" data-confirm="该操作将删除选中数据并不可恢复！确认删除？" title="删除选中数据">删除选中</a>
+                <a href="@Url.Action("DeleteSelect")" data-action="action" data-fields="keys" data-confirm="@L.T("Delete the selected data")" title="@L.T("Delete the selected data")">@L.T("Delete selected")</a>
             </li>
             <li>
-                <a href="@Url.Action("DeleteAll", new { _query = queryData })" data-action="action" data-confirm="该操作将删除当前查询的所有数据并不可恢复！确认删除？" title="删除当前查询的所有数据">删除全部</a>
+                <a href="@Url.Action("DeleteAll", new { _query = queryData })" data-action="action" data-confirm="@L.T("Delete all data in the current query")" title="@L.T("Delete all data in the current query")">@L.T("Delete all")</a>
             </li>
         }
         @if (SysConfig.Current.Develop && user != null && user.Roles.Any(e => e.IsSystem))
         {
             <li class="divider"></li>
             <li>
-                <a href="@Url.Action("Develop", new { act = "Backup" })" data-action="action" title="备份全表到服务器本地目录">备份</a>
+                <a href="@Url.Action("Develop", new { act = "Backup" })" data-action="action" title="@L.T("Backup the whole table to the server local directory")">@L.T("Backup")</a>
             </li>
             <li>
-                <a href="@Url.Action("Develop", new { act = "Restore" })" data-action="action" title="从服务器本地目录还原">还原</a>
+                <a href="@Url.Action("Develop", new { act = "Restore" })" data-action="action" title="@L.T("Restore from the server local directory")">@L.T("Restore backup")</a>
             </li>
             <li>
-                <a href="@Url.Action("Develop", new { act = "BackupAndExport" })" title="备份全表并下载">备份导出</a>
+                <a href="@Url.Action("Develop", new { act = "BackupAndExport" })" title="@L.T("Backup the whole table and download it")">@L.T("Backup and export")</a>
             </li>
             <li class="divider"></li>
             if (page == null || page.Params.Count == 0)
             {
                 <li>
-                    <a href="@Url.Action("Develop", new { act = "Clear" })" data-action="action" data-confirm="该操作将删除数据表所有数据并不可恢复！确认清空？" title="删除数据表所有数据">清空数据表</a>
+                    <a href="@Url.Action("Develop", new { act = "Clear" })" data-action="action" data-confirm="@L.T("Delete all data in the table")" title="@L.T("Delete all data in the table")">@L.T("Clear table")</a>
                 </li>
             }
             <li>
-                <a href="@Url.Action("Develop", new { act = "MakeList" })">生成列表</a>
+                <a href="@Url.Action("Develop", new { act = "MakeList" })">@L.T("Make list")</a>
             </li>
             <li>
-                <a href="@Url.Action("Develop", new { act = "MakeForm" })">生成表单</a>
+                <a href="@Url.Action("Develop", new { act = "MakeForm" })">@L.T("Make form")</a>
             </li>
             <li>
-                <a href="@Url.Action("Develop", new { act = "MakeSearch" })">生成搜索</a>
+                <a href="@Url.Action("Develop", new { act = "MakeSearch" })">@L.T("Make search")</a>
             </li>
             <li>
-                <a href="@Url.Action("Develop", new { act = "MakeBatch" })">生成批处理</a>
+                <a href="@Url.Action("Develop", new { act = "MakeBatch" })">@L.T("Make batch")</a>
             </li>
             <li>
-                <a href="@Url.Action("Index", "ViewTrace", new { area = "Cube" })" target="_blank" title="查看视图查找路径与实际命中，排查覆盖不生效">视图解析诊断</a>
+                <a href="@Url.Action("Index", "ViewTrace", new { area = "Cube" })" target="_blank" title="@L.T("Inspect view lookup paths and actual hits")">@L.T("View resolution diagnostics")</a>
             </li>
         }
     </ul>

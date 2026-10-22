@@ -1,0 +1,6 @@
+{
+  "_comment": "允许没有中文译文的英文源文键（如仅供 LLM 消费的 AI 工具提示词），check-missing-keys.ps1 放行。仅登记确认不需要面向用户翻译的条目。",
+  "keys": [
+    "[fill_form invalid argument] No valid field value dictionary was received. Call get_form_schema first to get the field structure, then pass the values parameter as {\"field\":value}."
+  ]
+}

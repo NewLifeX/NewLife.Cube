@@ -1,4 +1,4 @@
-﻿@using NewLife;
+@using NewLife;
 @using NewLife.Web;
 @using XCode;
 @using System.Linq;
@@ -20,7 +20,7 @@
     <div class="col-lg-12">
         <div class="input-group">
             <input type="hidden" name="@id" id="@id" value="@departmentId" />
-            <input type="text" class="form-control" id="@(id)_select" placeholder="搜索部门" value="@showValue">
+            <input type="text" class="form-control" id="@(id)_select" placeholder="@L.T("Search department")" value="@showValue">
             <div class="input-group-btn">
                 <ul class="dropdown-menu dropdown-menu-right" role="menu"></ul>
             </div>
@@ -34,7 +34,7 @@
         $("#@(id)_select").bsSuggest({
             url: "/cube/DepartmentSearch?key=",
             getDataMethod:"url",
-            effectiveFieldsAlias: { id:"编号",code:"代码",name: "名称",fullName:'全名',manager:'管理者'},
+            effectiveFieldsAlias: { id:'@L.T("ID")',code:'@L.T("Code")',name: '@L.T("Name")',fullName:'@L.T("Full name")',manager:'@L.T("Manager")'},
             ignorecase: true,
             showHeader: true,
             delayUntilKeyup: true, //获取数据的方式为 firstByUrl 时，延迟到有输入/获取到焦点时才请求数据
@@ -43,10 +43,10 @@
             showBtn: false,
             keyField: "name",
             clearable: true,
-            searchingTip: '搜索中...',
+            searchingTip: '@L.T("Searching...")',
             allowNoKeyword: true,
             delay: 500,
-            emptyTip: '无数据',
+            emptyTip: '@L.T("No data")',
             containerValueId: '@id',
             fnProcessData: function (result) {
                 dt = {};

@@ -41,7 +41,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
             // 头像列。复刻 MVC 版：AddListField 虚拟字段 + GetValue 按行计算头像地址，纯 C# 控制，前端通用 image 渲染
             // 始终显示头像列：无本地头像文件时由 /Cube/Avatar 端点兜底生成 SVG 文字头像（端点内部处理 本地文件→远程懒加载→SVG 生成）
             var df = ListFields.AddListField("AvatarImage", null, "Id");
-            df.DisplayName = "头像";
+            df.DisplayName = "Avatar";
             df.ItemType = "image";
             df.GetValue = entity =>
             {
@@ -108,30 +108,30 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         {
             var df = ListFields.AddListField("Link", "Logins");
             //df.Header = "链接";
-            df.HeaderTitle = "第三方登录的链接信息";
-            df.DisplayName = "链接";
-            df.Title = "第三方登录的链接信息";
+            df.HeaderTitle = "Third-party sign-in links";
+            df.DisplayName = "Links";
+            df.Title = "Third-party sign-in links";
             df.Url = "/Admin/UserConnect?userId={ID}";
         }
 
         {
             var df = ListFields.AddListField("Token", "Logins");
             //df.Header = "令牌";
-            df.DisplayName = "令牌";
+            df.DisplayName = "Token";
             df.Url = "/Admin/UserToken?userId={ID}";
         }
 
         {
             var df = ListFields.AddListField("Log", "Logins");
             //df.Header = "日志";
-            df.DisplayName = "日志";
+            df.DisplayName = "Log";
             df.Url = "/Admin/Log?userId={ID}";
         }
 
         {
             var df = ListFields.AddListField("OAuthLog", "Logins");
             //df.Header = "OAuth日志";
-            df.DisplayName = "OAuth日志";
+            df.DisplayName = "OAuth log";
             df.Url = "/Admin/OAuthLog?userId={ID}";
         }
 
@@ -152,7 +152,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         }
 
         {
-            AddFormFields.GroupVisible = (entity, group) => (entity as User).ID == 0 && group != "扩展";
+            AddFormFields.GroupVisible = (entity, group) => (entity as User).ID == 0 && group != "Extended" && group != L.T("Extended");
         }
     }
 
@@ -342,7 +342,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
 
         // 默认登录提示，没有新用户之前
         if (model.LoginTip.IsNullOrEmpty() && XCode.Membership.User.Meta.Count <= 1)
-            model.LoginTip = "首个注册登录用户成为管理员，默认用户admin/admin，推荐第三方登录";
+            model.LoginTip = L.T("The first registered user becomes the administrator. The default account is admin/admin; third-party sign-in is recommended.");
 
         if (model.ResourceUrl.IsNullOrEmpty()) model.ResourceUrl = "/Content";
         model.ResourceUrl = model.ResourceUrl.TrimEnd('/');
@@ -503,7 +503,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         // 强制只能为当前登录用户上传头像，避免越权
         var targetId = id.IsNullOrEmpty() ? cur.ID + "" : id;
         if (!targetId.EqualIgnoreCase(cur.ID + ""))
-            return new JsonResult(new { error = "只能为当前登录用户上传头像！" });
+            return new JsonResult(new { error = L.T("Only the signed-in user can upload an avatar.") });
 
         return await base.UploadFile(file, cur.ID + "", title);
     }
@@ -516,7 +516,7 @@ public class UserController(VerifyCodeService verifyCode, AuthEnhancedService au
         var ext = Path.GetExtension(file.FileName);
         if (!ext.EqualIgnoreCase(".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".svg"))
         {
-            error = "仅支持上传图片文件！";
+            error = L.T("Only image files can be uploaded.");
             return false;
         }
         return true;

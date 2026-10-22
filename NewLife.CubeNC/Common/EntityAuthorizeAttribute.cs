@@ -161,7 +161,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         var ctx = filterContext.HttpContext;
 
         var res = $"[{ctrl.ControllerName}/{act.ActionName}]";
-        var msg = $"{user}访问资源 {res} 需要 {permission.GetDescription()} 权限";
+        var msg = L.T("User {0} accessing resource {1} requires {2} permission.", user, res, L.T(permission.GetDescription()));
         LogProvider.Provider.WriteLog(L.TLog("Access"), L.TLog("Deny"), false, msg, ip: ctx.GetUserHost());
         DefaultSpan.Current?.AppendTag(msg);
 

@@ -33,7 +33,7 @@ public class UserStatController : ReadOnlyEntityController<UserStat>
         {
             var list2 = list.OrderBy(e => e.Date).ToList();
             var chart = AddChart(list2, _.Date, null, [_.Logins, _.OAuths, _.MaxOnline, _.Actives, _.ActivesT7, _.ActivesT30, _.News, _.NewsT7, _.NewsT30], SeriesTypes.Line);
-            chart.SetY(["用户数", "总数", "时长"], "value", [null, null, "{value}秒"]);
+            chart.SetY([L.T("Users"), L.T("Total"), L.T("Duration")], "value", [null, null, L.T("{value}s")]);
 
             var line = chart.AddLine(list2, _.Total, null, true);
             line.YAxisIndex = 1;
@@ -62,13 +62,13 @@ public class UserStatController : ReadOnlyEntityController<UserStat>
 
             var chart2 = new ECharts();
             chart2.SetX(list2, "Date", e => e.Date.ToString("MM-dd"));
-            chart2.AddBoxplot("用户箱线（仅用于演示）",
+            chart2.AddBoxplot(L.T("User box plot (demo only)"),
                 list2.Select(e => new BoxplotItem(e.News, e.Actives, e.NewsT7, e.ActivesT7, e.NewsT30)),
-                ["新用户", "今日活跃", "7天注册", "7天活跃", "30天注册"]);
+                [L.T("New users"), L.T("Active today"), L.T("Registered (7d)"), L.T("Active (7d)"), L.T("Registered (30d)")]);
 
             var chart3 = new ECharts();
             chart3.SetX(list2, "Date", e => e.Date.ToString("MM-dd"));
-            chart3.AddCandlestick("用户K线（仅用于演示）",
+            chart3.AddCandlestick(L.T("User candlestick (demo only)"),
                 list2.Select(e => new CandlestickItem(e.Actives, e.NewsT7, e.News, e.ActivesT7)));
 
             ViewBag.Charts2 = new[] { chart2, chart3 };

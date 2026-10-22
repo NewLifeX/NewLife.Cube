@@ -24,21 +24,21 @@ public class CronJobController : EntityController<CronJob, CronJobModel>
         {
             var df = ListFields.AddListField("Log", null, "Enable");
             //df.Header = "日志";
-            df.DisplayName = "日志";
-            df.Url = "/Admin/Log?category=定时作业&linkId={Id}";
+            df.DisplayName = "Log";
+            df.Url = "/Admin/Log?category=Scheduled job&linkId={Id}";
             df.Target = "_blank";
         }
         {
             var df = ListFields.AddListField("JobLog", null, "Enable");
-            //df.Header = "作业日志";
-            df.DisplayName = "作业日志";
+            //df.Header = "Job log";
+            df.DisplayName = "Job log";
             df.Url = "/Admin/Log?category=JobService&linkId={Id}";
             df.Target = "_blank";
         }
         {
             var df = ListFields.AddListField("Execute", null, "NextTime");
-            //df.Header = "马上执行";
-            df.DisplayName = "马上执行";
+            //df.Header = "Run now";
+            df.DisplayName = "Run now";
             df.Url = "/Cube/CronJob/ExecuteNow?id={Id}";
             df.DataAction = "action";
         }

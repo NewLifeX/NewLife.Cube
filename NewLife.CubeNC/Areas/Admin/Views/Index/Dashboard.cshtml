@@ -5,7 +5,7 @@
 @using NewLife.Common;
 @using NewLife.Cube.Charts;
 @{
-    ViewBag.Title = "工作台";
+    ViewBag.Title = L.T("Dashboard");
 
     var widgets = ViewBag.Widgets as IList<(WidgetAttribute Info, Object Data)> ?? new List<(WidgetAttribute, Object)>();
     var hiddenWidgets = ViewBag.HiddenWidgets as IList<WidgetAttribute> ?? new List<WidgetAttribute>();
@@ -21,7 +21,7 @@
 
     // 问候语
     var hour = DateTime.Now.Hour;
-    var greet = hour < 6 ? "夜深了" : hour < 12 ? "早上好" : hour < 14 ? "中午好" : hour < 18 ? "下午好" : "晚上好";
+    var greet = hour < 6 ? L.T("It's late") : hour < 12 ? L.T("Good morning") : hour < 14 ? L.T("Good noon") : hour < 18 ? L.T("Good afternoon") : L.T("Good evening");
 }
 <div class="cube-workbench">
 
@@ -33,37 +33,37 @@
                 <img src="@user.GetAvatarUrl()" alt="@user" onerror="this.style.display='none'" />
             </div>
             <div>
-                <div class="wb-banner-greet">@greet，@(user?.DisplayName ?? user?.Name)</div>
-                <div class="wb-banner-sub">欢迎回到 @sysName · @DateTime.Now.ToString("yyyy年M月d日 dddd")</div>
+                <div class="wb-banner-greet">@L.T("{0}, {1}", greet, user?.DisplayName ?? user?.Name)</div>
+                <div class="wb-banner-sub">@L.T("Welcome back,") @sysName · @DateTime.Now.ToString("D", System.Globalization.CultureInfo.CurrentCulture)</div>
             </div>
         </div>
         <div class="wb-banner-right">
             @if (isAdmin)
             {
-                <button type="button" class="btn" id="btn-widget-refresh" title="刷新数据"><i class="fa fa-refresh"></i> 刷新</button>
-                <button type="button" class="btn btn-solid" onclick="window.CubeAI && CubeAI.diagnose()" title="AI 系统诊断"><i class="fa fa-heartbeat"></i> AI 诊断</button>
+                <button type="button" class="btn" id="btn-widget-refresh" title="@L.T("Refresh data")"><i class="fa fa-refresh"></i> @L.T("Refresh")</button>
+                <button type="button" class="btn btn-solid" onclick="window.CubeAI && CubeAI.diagnose()" title="@L.T("AI system diagnosis")"><i class="fa fa-heartbeat"></i> @L.T("AI diagnosis")</button>
             }
             @if (hiddenWidgets.Count > 0)
             {
-                <button type="button" class="btn" id="btn-widget-hidden" title="查看已隐藏的卡片"><i class="fa fa-eye-slash"></i> 已隐藏 @hiddenWidgets.Count</button>
+                <button type="button" class="btn" id="btn-widget-hidden" title="@L.T("View hidden cards")"><i class="fa fa-eye-slash"></i> @L.T("Hidden") @hiddenWidgets.Count</button>
             }
-            <a class="btn" href="/Admin/User/Info"><i class="fa fa-user-circle"></i> 个人中心</a>
+            <a class="btn" href="/Admin/User/Info"><i class="fa fa-user-circle"></i> @L.T("Profile")</a>
         </div>
     </div>
 
     <!-- 已隐藏卡片恢复面板 -->
     <div class="wb-hidden-pop" id="wb-hidden-pop" style="display:none;">
-        <div class="wb-hidden-title">已隐藏卡片</div>
+        <div class="wb-hidden-title">@L.T("Hidden cards")</div>
         <ul class="wb-hidden-list">
             @foreach (var h in hiddenWidgets)
             {
                 <li>
-                    <span><i class="fa @h.Icon"></i> @h.Title</span>
-                    <button type="button" class="btn btn-sm btn-primary" onclick="restoreWidget('@h.Name')">恢复</button>
+                    <span><i class="fa @h.Icon"></i> @L.T(h.Title)</span>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="restoreWidget('@h.Name')">@L.T("Restore")</button>
                 </li>
             }
         </ul>
-        <div class="wb-hidden-foot"><a href="javascript:;" onclick="resetLayout()"><i class="fa fa-undo"></i> 恢复默认布局</a></div>
+        <div class="wb-hidden-foot"><a href="javascript:;" onclick="resetLayout()"><i class="fa fa-undo"></i> @L.T("Reset layout")</a></div>
     </div>
 
     <!-- 部件栅格（可拖拽，排序按用户保存到服务端） -->
@@ -74,7 +74,7 @@
             // 栅格宽度预计算百分比，微减余量避免 6 个 KPI 卡因舍入超 100% 换行
             var width = (info.Cols * 100 / 12.0 - 0.01).ToString("0.##") + "%";
             // 个人 KPI 卡仅普通用户显示；管理员只看系统 KPI 卡
-            if (isAdmin && info.WidgetType == WidgetTypes.Kpi && info.Category == "个人") continue;
+if (isAdmin && info.WidgetType == WidgetTypes.Kpi && info.Category.EqualIgnoreCase("Personal")) continue;
 
             if (info.WidgetType == WidgetTypes.Kpi)
             {
@@ -83,21 +83,21 @@
                 <div class="widget-col widget-col-kpi" style="width:@width;" data-name="@info.Name">
                     <div class="widget-kpi">
                         <span class="widget-menu-wrap widget-menu-kpi">
-                            <button type="button" class="widget-menu" title="更多操作" onclick="toggleMenu(event, this)"><i class="fa fa-ellipsis-v"></i></button>
+                            <button type="button" class="widget-menu" title="@L.T("More actions")" onclick="toggleMenu(event, this)"><i class="fa fa-ellipsis-v"></i></button>
                             <div class="widget-menu-drop" style="display:none;">
-                                <a href="javascript:;" onclick="hideWidget('@info.Name', this)"><i class="fa fa-eye-slash"></i> 隐藏卡片</a>
+                                <a href="javascript:;" onclick="hideWidget('@info.Name', this)"><i class="fa fa-eye-slash"></i> @L.T("Hide card")</a>
                             </div>
                         </span>
-                        <span class="widget-drag" title="拖拽排序"><i class="fa fa-arrows"></i></span>
+                        <span class="widget-drag" title="@L.T("Drag to sort")"><i class="fa fa-arrows"></i></span>
                         <div class="widget-kpi-icon k-@(info.Color ?? "primary")"><i class="fa @info.Icon"></i></div>
                         <div class="widget-kpi-info">
                             <div class="widget-kpi-value">@d.Value</div>
-                            <div class="widget-kpi-label">@info.Title</div>
+                            <div class="widget-kpi-label">@L.T(info.Title)</div>
                             @if (d.Trend != null) { <div class="widget-kpi-trend">@Html.Raw(d.Trend.ToString())</div> }
                         </div>
                         @if (d.Url != null && !String.IsNullOrEmpty(d.Url.ToString()))
                         {
-                            <a class="widget-kpi-link" href="@d.Url" title="@info.Title"></a>
+                            <a class="widget-kpi-link" href="@d.Url" title="@L.T(info.Title)"></a>
                         }
                     </div>
                 </div>
@@ -109,14 +109,14 @@
                     <div class="widget-card">
                         <div class="widget-header">
                             <i class="fa @info.Icon"></i>
-                            <span class="widget-title">@info.Title</span>
+                            <span class="widget-title">@L.T(info.Title)</span>
                             <span class="widget-menu-wrap">
-                                <button type="button" class="widget-menu" title="更多操作" onclick="toggleMenu(event, this)"><i class="fa fa-ellipsis-v"></i></button>
+                                <button type="button" class="widget-menu" title="@L.T("More actions")" onclick="toggleMenu(event, this)"><i class="fa fa-ellipsis-v"></i></button>
                                 <div class="widget-menu-drop" style="display:none;">
-                                    <a href="javascript:;" onclick="hideWidget('@info.Name', this)"><i class="fa fa-eye-slash"></i> 隐藏卡片</a>
+                                    <a href="javascript:;" onclick="hideWidget('@info.Name', this)"><i class="fa fa-eye-slash"></i> @L.T("Hide card")</a>
                                 </div>
                             </span>
-                            <span class="widget-drag" title="拖拽排序"><i class="fa fa-arrows"></i></span>
+                            <span class="widget-drag" title="@L.T("Drag to sort")"><i class="fa fa-arrows"></i></span>
                         </div>
                         <div class="widget-body">
                             @switch (info.WidgetType)
@@ -181,7 +181,7 @@
                                     }
                                     catch (Exception ex)
                                     {
-                                        <div class="widget-error">组件加载失败：@ex.Message</div>
+                                        <div class="widget-error">@L.T("Widget failed to load:") @ex.Message</div>
                                     }
                                     break;
                             }
@@ -232,7 +232,7 @@
 
         // 恢复默认布局
         function resetLayout() {
-            if (!confirm('确定恢复默认布局？当前排序与隐藏设置将被清除。')) return;
+            if (!confirm('@L.T("Reset the layout? Current ordering and hidden settings will be cleared.")')) return;
             $.post('@Url.Action("ResetLayout")', function () {
                 location.reload();
             });

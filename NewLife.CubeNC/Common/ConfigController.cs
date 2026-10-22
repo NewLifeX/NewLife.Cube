@@ -5,6 +5,7 @@ using NewLife.Collections;
 using NewLife.Common;
 using NewLife.Configuration;
 using NewLife.Cube.AI;
+using NewLife.Cube.ViewModels;
 using NewLife.Reflection;
 using NewLife.Serialization;
 
@@ -34,6 +35,10 @@ public class ConfigController<TConfig> : ObjectController<TConfig>, IFormAiConte
         }
     }
 
+    /// <summary>获取配置字段，按当前请求语言本地化</summary>
+    /// <returns>本地化后的字段集合</returns>
+    protected override IList<DataField> GetFields() => DataField.Localize(GetMembers(typeof(TConfig)));
+
     #region AI 表单
     // IFormAiContext：配置表单页（如魔方设置）经全局 AiController 注册 get_form_schema / fill_form 工具，支持 AI 填表。
     // 配置页虽非实体控制器，但其表单字段可由 GetMembers 枚举，填表能力与实体表单对齐（前端 applyFormValues 按 name 回填）。
@@ -45,12 +50,12 @@ public class ConfigController<TConfig> : ObjectController<TConfig>, IFormAiConte
     {
         var set = Config<TConfig>.Current;
         var fields = new List<AiFormField>();
-        foreach (var fi in GetMembers(typeof(TConfig)))
+        foreach (var fi in DataField.Localize(GetMembers(typeof(TConfig))))
         {
             // 敏感字段不向 AI 暴露（ApiKey/Secret/Token/连接串等）
             if (AiFormHelper.IsSensitiveField(fi.Name)) continue;
 
-            // 反射读取属性元数据：GetMembers 把 [Description] 合并进了 DisplayName，需单独读取说明；CanWrite 判断只读
+            // 字段显示名与描述已按当前请求语言本地化；CanWrite 判断只读
             var pi = typeof(TConfig).GetProperty(fi.Name);
             var field = new AiFormField
             {
@@ -58,7 +63,7 @@ public class ConfigController<TConfig> : ObjectController<TConfig>, IFormAiConte
                 DisplayName = fi.DisplayName,
                 Type = fi.Type?.Name ?? "unknown",
                 ItemType = fi.ItemType,
-                Description = pi?.GetDescription() ?? fi.Description,
+                Description = fi.Description,
                 Required = fi.Required,
                 Length = fi.Length,
             };
@@ -75,7 +80,7 @@ public class ConfigController<TConfig> : ObjectController<TConfig>, IFormAiConte
             fields.Add(field);
         }
 
-        var name = typeof(TConfig).GetDisplayName() ?? typeof(TConfig).Name;
+        var name = L.T(typeof(TConfig).GetDisplayName() ?? typeof(TConfig).Name);
         return new { entity = name, description = "系统配置，可按分类查看各项设置项", mode, fields }.ToJson();
     }
     #endregion

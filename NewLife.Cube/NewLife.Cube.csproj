@@ -3,8 +3,9 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
-    <AssemblyTitle>魔方快速开发平台Api版</AssemblyTitle>
-    <Description>魔方WebAPI核心库，提供实体控制器、权限管理、菜单管理、字段元数据、OAuth服务端、JWT认证等功能。支持前后端分离架构，对接Vue/Blazor/Antd等前端框架，单表100亿级数据验证。</Description>
+    <AssemblyTitle>NewLife Cube Library</AssemblyTitle>
+    <Description>Cube Web API library of the NewLife framework: entity controllers, permission and menu management, field metadata, OAuth server, JWT authentication and runtime localization. Built for front-end/back-end separation with Vue, Blazor and Ant Design front ends, validated with 10 billion rows in a single table.</Description>
+    <PackageDescription>Cube Web API library of the NewLife framework: entity controllers, permission and menu management, field metadata, OAuth server, JWT authentication and runtime localization. Built for front-end/back-end separation with Vue, Blazor and Ant Design front ends, validated with 10 billion rows in a single table. 魔方WebAPI核心库：实体控制器、权限管理、菜单管理、字段元数据、OAuth服务端、JWT认证与运行时多语言；支持前后端分离架构，对接Vue/Blazor/Antd等前端框架，单表100亿级数据验证。</PackageDescription>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 NewLife</Copyright>
     <VersionPrefix>6.15</VersionPrefix>
@@ -69,10 +70,6 @@
     <Compile Remove="Areas\Cube\Controllers\ModelTableController.cs" />
     <Compile Remove="Common\FormatType.cs" />
     <Compile Remove="Common\OAuthController.cs" />
-    <Compile Remove="Entity\模型列.Biz.cs" />
-    <Compile Remove="Entity\模型列.cs" />
-    <Compile Remove="Entity\模型表.Biz.cs" />
-    <Compile Remove="Entity\模型表.cs" />
     <Compile Remove="Extensions\ItemsExtend.cs" />
     <Compile Remove="Extensions\MvcActionResultHelper.cs" />
     <Compile Remove="Web\Models\TokenInfo.cs" />
@@ -80,6 +77,7 @@
 
   <ItemGroup>
     <Compile Include="..\NewLife.CubeNC\Common\CubeLocalization.cs" Link="Common\CubeLocalization.cs" />
+    <Compile Include="..\NewLife.CubeNC\Common\EnumLocalization.cs" Link="Common\EnumLocalization.cs" />
     <Compile Include="..\NewLife.CubeNC\Jobs\AttachmentCleanJob.cs" Link="Jobs\AttachmentCleanJob.cs" />
     <Compile Include="..\NewLife.CubeNC\Jobs\BackupDbService.cs" Link="Jobs\BackupDbService.cs" />
     <Compile Include="..\NewLife.CubeNC\Jobs\BackupHelper.cs" Link="Jobs\BackupHelper.cs" />
@@ -132,13 +130,13 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NewLife.AI" Version="1.6.2026.907-beta0517" />
-    <PackageReference Include="NewLife.Core" Version="12.0.2026.1019-beta1502" />
+    <PackageReference Include="NewLife.Core" Version="12.0.2026.1021-beta0321" />
     <PackageReference Include="NewLife.IP" Version="2.5.2026.1019-beta1510" />
     <PackageReference Include="NewLife.Office" Version="1.4.2026.1019-beta1504" />
     <!-- Stardust 传递依赖 NewLife.Remoting，最小版本 3.9.2026.901 面向 Core 11 构建，与 Core 12 不兼容；显式提升到 Core 12 版本 -->
-    <PackageReference Include="NewLife.Remoting" Version="3.9.2026.1019-beta1013" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.10.2026.1020-beta0651" />
-    <PackageReference Include="NewLife.XCode" Version="12.2.2026.1019-beta1521" />
+    <PackageReference Include="NewLife.Remoting" Version="3.9.2026.1021-beta0410" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.10.2026.1021-beta0432" />
+    <PackageReference Include="NewLife.XCode" Version="12.2.2026.1021-beta0423" />
   </ItemGroup>
 
   <ItemGroup>

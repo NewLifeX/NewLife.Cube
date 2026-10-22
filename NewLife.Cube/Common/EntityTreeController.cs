@@ -103,7 +103,7 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
     /// <summary>上升</summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [DisplayName("上升")]
+    [DisplayName("Move up")]
     [EntityAuthorize(PermissionFlags.Update)]
     [HttpPatch]
     public ActionResult Up(Int32 id)
@@ -119,7 +119,7 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
     /// <summary>下降</summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [DisplayName("下降")]
+    [DisplayName("Move down")]
     [EntityAuthorize(PermissionFlags.Update)]
     [HttpPatch]
     public ActionResult Down(Int32 id)
@@ -156,7 +156,7 @@ public class EntityTreeApiController<TEntity, TModel> : EntityTreeController<TEn
     /// <summary>上升</summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [DisplayName("上升")]
+    [DisplayName("Move up")]
     [EntityAuthorize(PermissionFlags.Update)]
     [HttpPost]
     public new virtual IActionResult Up(Int32 id)
@@ -174,7 +174,7 @@ public class EntityTreeApiController<TEntity, TModel> : EntityTreeController<TEn
     /// <summary>下降</summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [DisplayName("下降")]
+    [DisplayName("Move down")]
     [EntityAuthorize(PermissionFlags.Update)]
     [HttpPost]
     public new virtual IActionResult Down(Int32 id)

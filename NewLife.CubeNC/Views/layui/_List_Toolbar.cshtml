@@ -18,13 +18,13 @@
 
         @{
             var rv = page.GetRouteValue();
-            <button class="layui-btn layui-btn-sm" data-url="@(rv+"/Add")" lay-event="add">添加</button>
-            <button class="layui-btn layui-btn-sm" data-url="@(rv+"/Add")" lay-event="add">添加</button>
-            <button class="layui-btn layui-btn-sm" data-url="@(rv+"/Add")" lay-event="add">添加</button>
-            <button class="layui-btn layui-btn-sm" data-url="@(rv+"/Add")" lay-event="add">添加</button>
-            <button class="layui-btn layui-btn-sm" data-url="@(rv+"/Add")" lay-event="add">添加</button>
-            <button class="layui-btn layui-btn-sm" data-url="@(rv+"/Add")" lay-event="add">添加</button>
-            <button class="layui-btn layui-btn-sm" data-url="@(rv+"/Add")" lay-event="add">添加</button>
+            <button class="layui-btn layui-btn-sm" data-url="@(rv+"/Add")" lay-event="add">@L.T("Add")</button>
+            <button class="layui-btn layui-btn-sm" data-url="@(rv+"/Add")" lay-event="add">@L.T("Add")</button>
+            <button class="layui-btn layui-btn-sm" data-url="@(rv+"/Add")" lay-event="add">@L.T("Add")</button>
+            <button class="layui-btn layui-btn-sm" data-url="@(rv+"/Add")" lay-event="add">@L.T("Add")</button>
+            <button class="layui-btn layui-btn-sm" data-url="@(rv+"/Add")" lay-event="add">@L.T("Add")</button>
+            <button class="layui-btn layui-btn-sm" data-url="@(rv+"/Add")" lay-event="add">@L.T("Add")</button>
+            <button class="layui-btn layui-btn-sm" data-url="@(rv+"/Add")" lay-event="add">@L.T("Add")</button>
         }
 
         @*@if (set.EnableSelect)
@@ -44,9 +44,9 @@
         @if (set.EnableKey)
         {
             <div class="layui-inline">
-                <input class="layui-input" name="q" value="@Context.Request.GetRequestValue("q")" placeholder="搜索关键字" autocomplete="off">
+                <input class="layui-input" name="q" value="@Context.Request.GetRequestValue("q")" placeholder="@L.T("Search keyword")" autocomplete="off">
             </div>
         }
-        <button class="layui-btn layui-btn-sm" data-type="reload"><i class="layui-icon layui-icon-search"></i>查询</button>
+        <button class="layui-btn layui-btn-sm" data-type="reload"><i class="layui-icon layui-icon-search"></i>@L.T("Search")</button>
     </div>
 </script>

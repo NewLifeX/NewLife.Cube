@@ -72,7 +72,7 @@ public class DbController : ControllerBaseX, IPageDataContext
     {
         var list = BuildDatabaseList();
         var data = list.Select(e => new { name = e.Name, type = e.Type + "", version = e.Version, backups = e.Backups }).ToList();
-        return Task.FromResult(new { page = "数据库信息", databases = data }.ToJson());
+        return Task.FromResult(new { page = L.T("Database information"), databases = data }.ToJson());
     }
 
     /// <summary>备份数据库</summary>

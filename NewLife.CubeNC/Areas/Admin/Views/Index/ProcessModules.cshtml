@@ -1,4 +1,4 @@
-﻿@using System.Diagnostics;
+@using System.Diagnostics;
 @using System.Collections;
 @using System.Reflection;
 @using System.Runtime.Versioning;
@@ -7,7 +7,7 @@
 @{
     //Layout = NewLife.Cube.Setting.Current.Layout;
 
-    ViewBag.Title = "进程模块";
+    ViewBag.Title = L.T("Process modules");
 
     var isAll = String.Equals("All", Context.Request.GetRequestValue("Mode"), StringComparison.OrdinalIgnoreCase);
 
@@ -25,38 +25,38 @@
 <table class="table table-bordered table-hover table-striped table-condensed">
     <tr>
         <th colspan="7">
-            进程模块(@process.ProcessName , PID=@process.Id )
+            @(L.T("Process modules"))(@process.ProcessName , PID=@process.Id )
             @if (!isAll)
                 {
-                <text>（<a href="?Mode=All">完整</a>，仅用户）：</text>
+                <text>(@L.T("Users only"), <a href="?Mode=All">@L.T("show full list")</a>):</text>
                 }
                 else
                 {
-                <text>（完整，<a href="?Mode=OnlyUser">仅用户</a>）：</text>
+                <text>(@L.T("Full list"), <a href="?Mode=OnlyUser">@L.T("show users only")</a>):</text>
                 }
         </th>
     </tr>
     <tr>
         <th>
-            模块名称
+            @L.T("Module name")
         </th>
         <th>
-            公司名称
+            @L.T("Company name")
         </th>
         <th>
-            产品名称
+            @L.T("Product name")
         </th>
         <th>
-            描述
+            @L.T("Description")
         </th>
         <th>
-            版本
+            @L.T("Version")
         </th>
         <th>
-            大小
+            @L.T("Size")
         </th>
         <th>
-            路径
+            @L.T("Path")
         </th>
     </tr>
     @foreach (ProcessModule item in list)

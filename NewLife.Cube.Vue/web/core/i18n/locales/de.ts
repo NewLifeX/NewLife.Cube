@@ -48,4 +48,15 @@ export default {
   'notification.info': 'Info',
   'notification.network.typeError': 'Netzwerkanfrage fehlgeschlagen',
   'notification.typeError.description': 'Bitte später erneut versuchen',
+
+  // 布局外壳
+  'menu.searchPlaceholder': 'Menüs suchen...',
+  'layout.dashboard': 'Dashboard',
+  'layout.administrator': 'Administrator',
+  'layout.collapseSidebar': 'Seitenleiste einklappen',
+  'layout.searchPlaceholder': 'Geräte, Warnungen suchen...',
+  'menu.navigation': 'Navigationsmenü',
+  'layout.collapseMenu': 'Menü einklappen',
+  'layout.expandSidebar': 'Seitenleiste erweitern',
+  'layout.welcomeBack': 'Willkommen zurück, {name} · {date}',
 };

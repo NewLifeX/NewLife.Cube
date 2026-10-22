@@ -31,56 +31,56 @@
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
                                                 <span>
-                                                    名称
+                                                    @L.T("Name")
                                                 </span>
                                             </div>
                                         </th>
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
                                                 <span>
-                                                    类型
+                                                    @L.T("Type")
                                                 </span>
                                             </div>
                                         </th>
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-2" data-id="1-0-2">
                                                 <span>
-                                                    连接字符串
+                                                    @L.T("Connection string")
                                                 </span>
                                             </div>
                                         </th>
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-3" data-id="1-0-3">
                                                 <span>
-                                                    版本
+                                                    @L.T("Version")
                                                 </span>
                                             </div>
                                         </th>
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-4" data-id="1-0-4">
                                                 <span>
-                                                    备份
+                                                    @L.T("Backup")
                                                 </span>
                                             </div>
                                         </th>
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-5" data-id="1-0-5">
                                                 <span>
-                                                    备份并压缩
+                                                    @L.T("Backup and compress")
                                                 </span>
                                             </div>
                                         </th>
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-6" data-id="1-0-6">
                                                 <span>
-                                                    下载表结构
+                                                    @L.T("Download table schema")
                                                 </span>
                                             </div>
                                         </th>
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-7" data-id="1-0-7">
                                                 <span>
-                                                    模型差异
+                                                    @L.T("Model differences")
                                                 </span>
                                             </div>
                                         </th>
@@ -123,22 +123,22 @@
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-4" data-id="1-0-4">
-                                                    @Html.ActionLink("备份", "Backup", new { Name = item.Name })，共 @item.Backups.ToString("n0")个
+                                                    @Html.ActionLink(L.T("Backup"), "Backup", new { Name = item.Name })@L.T(", {0} total", item.Backups.ToString("n0"))
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-5" data-id="1-0-5">
-                                                    @Html.ActionLink("备份并压缩", "BackupAndCompress", new { Name = item.Name })
+                                                    @Html.ActionLink(L.T("Backup and compress"), "BackupAndCompress", new { Name = item.Name })
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-6" data-id="1-0-6">
-                                                    @Html.ActionLink("下载", "Download", new { Name = item.Name })
+                                                    @Html.ActionLink(L.T("Download"), "Download", new { Name = item.Name })
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-7" data-id="1-0-7">
-                                                    @Html.ActionLink("查看差异", "ModelDiff", new { Name = item.Name })
+                                                    @Html.ActionLink(L.T("View differences"), "ModelDiff", new { Name = item.Name })
                                                 </div>
                                             </td>
                                         </tr>

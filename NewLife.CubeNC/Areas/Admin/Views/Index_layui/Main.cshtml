@@ -1,4 +1,4 @@
-﻿@using System.Diagnostics;
+@using System.Diagnostics;
 @using System.Collections;
 @using System.Reflection;
 @using System.Runtime;
@@ -13,7 +13,7 @@
 @{
     //Layout = NewLife.Cube.Setting.Current.Layout;
 
-    ViewBag.Title = "服务器信息";
+    ViewBag.Title = L.T("Server information");
 
     var asm = Assembly.GetExecutingAssembly();
     var att = asm.GetCustomAttribute<TargetFrameworkAttribute>();
@@ -80,7 +80,7 @@
         <div class="layui-col-md12">
             <div class="layui-card">
                 <div class="layui-card-header">
-                    服务器信息
+                    @L.T("Server information")
                 </div>
                 <div class="layui-card-body">
                     <div class="layui-form layui-border-box layui-table-view">
@@ -92,7 +92,7 @@
                                             <th colspan="4">
                                                 <div class="layui-table-cell laytable-cell-group">
                                                     <span>
-                                                        服务器信息
+                                                        @L.T("Server information")
                                                     </span>
                                                 </div>
                                             </th>
@@ -106,7 +106,7 @@
                                         <tr>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
-                                                    应用系统：
+                                                    @L.T("Application system:")
                                                 </div>
                                             </td>
                                             <td>
@@ -114,14 +114,14 @@
                                                     &nbsp;
                                                     @if (this.Has((PermissionFlags)16))
                                                     {
-                                                        <a style="cursor: pointer;" data-action="action" data-href="@Url.Action("Restart")" data-confirm="仅重启ASP.Net Core应用程序域，而不是操作系统！<br/>确认重启？">重启应用系统</a>
+                                                        <a style="cursor: pointer;" data-action="action" data-href="@Url.Action("Restart")" data-confirm="@L.T("Only restart the ASP.NET Core application domain, not the operating system!")<br/>@L.T("Confirm restart?")">@L.T("Restart application")</a>
                                                     }
                                                     &nbsp;&nbsp;&nbsp;&nbsp;@req.GetRawUrl()
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-2" data-id="1-0-2">
-                                                    目录：
+                                                    @L.T("Directory:")
                                                 </div>
                                             </td>
                                             <td>
@@ -133,7 +133,7 @@
                                         <tr>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-0">
-                                                    域名地址：
+                                                    @L.T("Domain address:")
                                                 </div>
                                             </td>
                                             <td>
@@ -145,18 +145,18 @@
                                                         if (addrRemote != null && addrRemote.IsIPv4MappedToIPv6) addrRemote = addrRemote.MapToIPv4();
                                                         var userHost = httpContext.GetUserHost();
                                                     }
-                                                    <span title="主机">@req.Headers["Host"]</span>，
-                                                    <span title="本地">@addrLocal:@conn.LocalPort</span>
-                                                    &nbsp;<span title="远程">[@addrRemote:@conn.RemotePort]</span>
+                                                    <span title="@L.T("Host")">@req.Headers["Host"]</span>,
+                                                    <span title="@L.T("Local")">@addrLocal:@conn.LocalPort</span>
+                                                    &nbsp;<span title="@L.T("Remote")">[@addrRemote:@conn.RemotePort]</span>
                                                     @if (addrRemote + "" != userHost)
                                                     {
-                                                        <span title="真实">&nbsp;[@httpContext.GetUserHost()]</span>
+                                                        <span title="@L.T("Real")">&nbsp;[@httpContext.GetUserHost()]</span>
                                                     }
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-2">
-                                                    应用程序：
+                                                    @L.T("Application:")
                                                 </div>
                                             </td>
                                             <td>
@@ -168,20 +168,20 @@
                                         <tr>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-0">
-                                                    应用域：
+                                                    @L.T("Application domain:")
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-1">
                                                     @AppDomain.CurrentDomain.FriendlyName
-                                                    <a href="@Url.Action("Main", new{ id = "Assembly" })" target="_blank" title="点击打开进程程序集列表">程序集列表</a>
-                                                    <a href="@Url.Action("Main", new{ id = "ProcessModules" })" target="_blank" title="点击打开进程模块列表">模块列表</a>
-                                                    <a href="@Url.Action("Main", new{ id = "ServerVar" })" target="_blank" title="点击打开服务器变量列表">服务器变量列表</a>
+                                                    <a href="@Url.Action("Main", new{ id = "Assembly" })" target="_blank" title="@L.T("Click to open the process assemblies list")">@L.T("Assemblies")</a>
+                                                    <a href="@Url.Action("Main", new{ id = "ProcessModules" })" target="_blank" title="@L.T("Click to open the process modules list")">@L.T("Module list")</a>
+                                                    <a href="@Url.Action("Main", new{ id = "ServerVar" })" target="_blank" title="@L.T("Click to open the server variables list")">@L.T("Server variables")</a>
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-2">
-                                                    .Net 版本：
+                                                    @L.T(".NET version:")
                                                 </div>
                                             </td>
                                             <td>
@@ -193,7 +193,7 @@
                                         <tr>
                                             <td title="@mi.Guid">
                                                 <div class="layui-table-cell laytable-cell-1-0-0">
-                                                    操作系统：
+                                                    @L.T("Operating system:")
                                                 </div>
                                             </td>
                                             <td>
@@ -203,14 +203,14 @@
                                             </td>
                                             <td title="@mi.UUID">
                                                 <div class="layui-table-cell laytable-cell-1-0-2">
-                                                    机器用户：
+                                                    @L.T("Machine user:")
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-3">
                                                     @if (!mi.Product.IsNullOrEmpty())
                                                     {
-                                                        <apan>@mi.Product，</apan>
+                                                        <apan>@mi.Product, </apan>
                                                     }
                                                     @Environment.UserName/@Environment.MachineName
                                                 </div>
@@ -219,23 +219,24 @@
                                         <tr>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-0">
-                                                    处理器：
+                                                    @L.T("Processor:")
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-1">
-                                                    @mi.Processor，
-                                                    @Environment.ProcessorCount
-                                                    核心，@mi.CpuRate.ToString("p0")
                                                     @if (mi.Temperature > 0)
                                                     {
-                                                        <span>，@mi.Temperature ℃</span>
+                                                        <span>@String.Format(L.T("{0}, {1} cores, usage {2}, {3} ℃"), mi.Processor, Environment.ProcessorCount, mi.CpuRate.ToString("p0"), mi.Temperature)</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>@String.Format(L.T("{0}, {1} cores, usage {2}"), mi.Processor, Environment.ProcessorCount, mi.CpuRate.ToString("p0"))</span>
                                                     }
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-2">
-                                                    时间：
+                                                    @L.T("Time:")
                                                 </div>
                                             </td>
                                             <td>
@@ -243,7 +244,7 @@
                                                     var uptime = TimeSpan.FromMilliseconds(Environment.TickCount64);
                                                 }
                                                 <div class="layui-table-cell laytable-cell-1-0-3">
-                                                    @DateTimeOffset.Now，开机@(uptime.ToString(@"dd\.hh\:mm\:ss"))
+                                                    @String.Format(L.T("{0}, up {1}"), DateTimeOffset.Now, uptime.ToString(@"dd\.hh\:mm\:ss"))
                                                 </div>
                                             </td>
                                         </tr>
@@ -253,39 +254,39 @@
                                                     var process = Process.GetCurrentProcess();
                                                 }
                                                 <div class="layui-table-cell laytable-cell-1-0-0">
-                                                    内存：
+                                                    @L.T("Memory:")
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-1">
-                                                    物理：@((mi.AvailableMemory / 1024 / 1024).ToString("n0"))M / @((mi.Memory / 1024 / 1024).ToString("n0"))M，
-                                                    工作/提交: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M/@((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M
-                                                    GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M
-                                                    <a href="@Url.Action("MemoryFree")" title="点击释放进程内存">释放内存</a>
+                                                    @String.Format(L.T("Physical: {0:n0}M / {1:n0}M"), mi.AvailableMemory / 1024 / 1024, mi.Memory / 1024 / 1024)
+                                                    @String.Format(L.T("Working set/Private: {0:n0}M / {1:n0}M"), process.WorkingSet64 / 1024 / 1024, process.PrivateMemorySize64 / 1024 / 1024)
+                                                    @String.Format(L.T("GC: {0:n0}M"), GC.GetTotalMemory(false) / 1024 / 1024)
+                                                    <a href="@Url.Action("MemoryFree")" title="@L.T("Click to free process memory")">@L.T("Free memory")</a>
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-2">
-                                                    进程时间：
+                                                    @L.T("Process time:")
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-3">
-                                                    @process.TotalProcessorTime.TotalSeconds.ToString("N2")秒 启动于 @process.StartTime.ToLocalTime().ToFullString()
+                                                    @String.Format(L.T("{0:N2} s of CPU time, started at {1}"), process.TotalProcessorTime.TotalSeconds, process.StartTime.ToLocalTime().ToFullString())
                                                 </div>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-0">
-                                                    Session：
+                                                    @L.T("Session:")
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-1">
-                                                    @(httpContext.Features.Get<ISessionFeature>()?.Session.Keys.Count() ?? 0) 个
-                                                    <a href="@Url.Action("Main", new{ id = "Session" })" target="_blank" title="点击打开Session列表">Session列表</a>
-                                                    ，@gc
+                                                    @String.Format(L.T("{0} items"), httpContext.Features.Get<ISessionFeature>()?.Session.Keys.Count() ?? 0)
+                                                    <a href="@Url.Action("Main", new{ id = "Session" })" target="_blank" title="@L.T("Click to open the session list")">@L.T("Session list")</a>
+                                                    , @gc
                                                 </div>
                                             </td>
                                             <td>
@@ -293,12 +294,12 @@
                                                     @{
                                                         var startTime = DateTime.Now.AddMilliseconds(-Environment.TickCount64);
                                                     }
-                                                    应用启动：
+                                                    @L.T("App started:")
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-3">
-                                                    启动于 @startTime.ToLocalTime().ToFullString()
+                                                    @String.Format(L.T("Started at {0}"), startTime.ToLocalTime().ToFullString())
                                                 </div>
                                             </td>
                                         </tr>
@@ -313,7 +314,7 @@
         <div class="layui-col-md12">
             <div class="layui-card">
                 <div class="layui-card-header">
-                    程序集信息
+                    @L.T("Assembly information")
                 </div>
                 <div class="layui-card-body">
                     <div class="layui-form layui-border-box layui-table-view">
@@ -325,42 +326,42 @@
                                             <th>
                                                 <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
                                                     <span>
-                                                        名称
+                                                        @L.T("Name")
                                                     </span>
                                                 </div>
                                             </th>
                                             <th>
                                                 <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
                                                     <span>
-                                                        标题
+                                                        @L.T("Title")
                                                     </span>
                                                 </div>
                                             </th>
                                             <th>
                                                 <div class="layui-table-cell laytable-cell-1-0-2" data-id="1-0-2">
                                                     <span>
-                                                        文件版本
+                                                        @L.T("File version")
                                                     </span>
                                                 </div>
                                             </th>
                                             <th>
                                                 <div class="layui-table-cell laytable-cell-1-0-3" data-id="1-0-3">
                                                     <span>
-                                                        内部版本
+                                                        @L.T("Internal version")
                                                     </span>
                                                 </div>
                                             </th>
                                             <th>
                                                 <div class="layui-table-cell laytable-cell-1-0-4" data-id="1-0-4">
                                                     <span>
-                                                        编译时间
+                                                        @L.T("Build time")
                                                     </span>
                                                 </div>
                                             </th>
                                             <th>
                                                 <div class="layui-table-cell laytable-cell-1-0-5" data-id="1-0-5">
                                                     <span>
-                                                        描述
+                                                        @L.T("Description")
                                                     </span>
                                                 </div>
                                             </th>
@@ -373,6 +374,9 @@
                                     <tbody>
                                         @foreach (AssemblyX item in ViewBag.MyAsms)
                                         {
+                                            // 程序集标题与描述以英文源文编译进程序集特性，展示时按当前语言取词表译文，缺词条回退源文
+                                            var title = L.T(item.Title);
+                                            var desc = L.T(item.Description);
                                             <tr>
                                                 <td>
                                                     <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
@@ -381,7 +385,7 @@
                                                 </td>
                                                 <td>
                                                     <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
-                                                        @item.Title
+                                                        @title
                                                     </div>
                                                 </td>
                                                 <td>
@@ -399,9 +403,9 @@
                                                         @(item.Compile.Year <= 2000 ? "" : item.Compile.ToFullString())
                                                     </div>
                                                 </td>
-                                                <td title="@item.Description">
+                                                <td title="@desc">
                                                     <div class="layui-table-cell laytable-cell-1-0-5" data-id="1-0-5">
-                                                        @item.Description
+                                                        @desc
                                                     </div>
                                                 </td>
                                             </tr>

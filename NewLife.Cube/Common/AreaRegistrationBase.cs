@@ -92,17 +92,30 @@ public class AreaBase : AreaAttribute, IApiDescriptionGroupNameProvider
 
         var menus = MenuHelper.ScanController(mf, areaName, areaType);
 
-        // 更新区域名称为友好中文名
+        // 更新区域名称为源文；旧版本按启动语言落库的自动菜单安全归一化
         var menu = mf.Root.FindByPath(areaName);
-        if (menu != null && menu.DisplayName.IsNullOrEmpty())
+        if (menu != null)
         {
             var dis = areaType.GetDisplayName();
             var des = areaType.GetDescription();
+            var changed = false;
 
-            if (!dis.IsNullOrEmpty()) menu.DisplayName = dis;
-            if (!des.IsNullOrEmpty()) menu.Remark = des;
+            if (menu.DisplayName.IsNullOrEmpty())
+            {
+                if (!dis.IsNullOrEmpty()) { menu.DisplayName = dis; changed = true; }
+            }
+            else if (!dis.IsNullOrEmpty())
+            {
+                var translated = L.T(dis);
+                if (translated != dis && menu.DisplayName == translated || MenuHelper.IsOtherLanguageName(menu.DisplayName, dis))
+                {
+                    menu.DisplayName = dis;
+                    changed = true;
+                }
+            }
+            if (menu.Remark.IsNullOrEmpty() && !des.IsNullOrEmpty()) { menu.Remark = des; changed = true; }
 
-            (menu as IEntity).Update();
+            if (changed) (menu as IEntity).Update();
         }
 
         // 再次检查菜单权限，因为上面的ScanController里开启菜单权限检查时，菜单可能还没有生成

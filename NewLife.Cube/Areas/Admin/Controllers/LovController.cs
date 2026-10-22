@@ -146,7 +146,7 @@ public class LovController : ControllerBaseX
             }
         }
 
-        return new ApiResponse<String> { Code = 0, Message = $"删除成功！共{n}条", Data = n.ToString() };
+        return new ApiResponse<String> { Code = 0, Message = L.T("Deleted {0} rows", n), Data = n.ToString() };
     }
     #endregion
 

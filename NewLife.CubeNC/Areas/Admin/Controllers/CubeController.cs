@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -12,7 +12,7 @@ using NewLife.Serialization;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>系统设置控制器</summary>
-[DisplayName("魔方设置")]
+[DisplayName("Cube settings")]
 [AdminArea]
 [Menu(30, true, Icon = "fa-wrench")]
 public class CubeController : ConfigController<CubeSetting>, IPageDataContext
@@ -32,24 +32,15 @@ public class CubeController : ConfigController<CubeSetting>, IPageDataContext
         {
             var list = GetMembers(typeof(CubeSetting));
             var df = list.FirstOrDefault(e => e.Name == "Theme");
-            if (df != null)
-            {
-                df.Description = $"可选主题 {_uIService.Themes.Join("/")}";
-                df.DataSource = e => _uIService.Themes.ToDictionary(e => e, e => e);
-            }
+            if (df != null) df.DataSource = e => _uIService.Themes.ToDictionary(e => e, e => e);
 
             df = list.FirstOrDefault(e => e.Name == "Skin");
-            if (df != null)
-            {
-                df.Description = $"可选皮肤 {_uIService.Skins.Join("/")}";
-                df.DataSource = e => _uIService.Skins.ToDictionary(e => e, e => e);
-            }
+            if (df != null) df.DataSource = e => _uIService.Skins.ToDictionary(e => e, e => e);
 
             df = list.FirstOrDefault(e => e.Name == "EChartsTheme");
             if (df != null)
             {
                 var themes = _uIService.GetEChartsThemes();
-                df.Description = $"可选主题 {themes.Join("/")}";
                 themes.Insert(0, "default");
                 df.DataSource = e => themes.ToDictionary(e => e, e => e);
             }
@@ -60,9 +51,9 @@ public class CubeController : ConfigController<CubeSetting>, IPageDataContext
             {
                 df.DataSource = e => new Dictionary<String, String>
                 {
-                    ["Light"] = "Light-轻量（极简浅线）",
-                    ["Standard"] = "Standard-标准（清晰行线）",
-                    ["Grid"] = "Grid-网格（完整单元格边框）",
+                    ["Light"] = L.T("Light - minimal thin lines"),
+                    ["Standard"] = L.T("Standard - clear row lines"),
+                    ["Grid"] = L.T("Grid - full cell borders"),
                 };
             }
 
@@ -71,8 +62,8 @@ public class CubeController : ConfigController<CubeSetting>, IPageDataContext
             {
                 df.DataSource = e => new Dictionary<String, String>
                 {
-                    ["Compact"] = "Compact-紧凑（信息量大）",
-                    ["Normal"] = "Normal-适中（呼吸感强）",
+                    ["Compact"] = L.T("Compact - dense"),
+                    ["Normal"] = L.T("Normal - relaxed"),
                 };
             }
 
@@ -80,7 +71,6 @@ public class CubeController : ConfigController<CubeSetting>, IPageDataContext
             df = list.FirstOrDefault(e => e.Name == "AIColorScheme");
             if (df != null)
             {
-                df.Description = "选择预设主题色方案后自动填充主色/辅色，可再手动微调";
                 df.ItemType = "singleSelect";
                 df.DataSource = e => CubeSetting.ColorSchemes.Keys.ToDictionary(e => e, e => e);
                 // 联动映射传给前端：方案名 → "主色,辅色"

@@ -21,41 +21,41 @@
 }
 <div class="page-header">
     <h1>
-        视图解析诊断
-        <small>排查视图覆盖不生效</small>
+        @L.T("View resolution diagnostics")
+        <small>@L.T("Troubleshoot view override")</small>
     </h1>
 </div>
 
 <form class="form-inline" method="get" action="@Url.Action("Index")">
     <div class="form-group">
-        <label for="area">区域</label>
+        <label for="area">@L.T("Area")</label>
         <input type="text" class="form-control input-sm" id="area" name="area" value="@area" placeholder="Admin" />
     </div>
     <div class="form-group">
-        <label for="controller">控制器</label>
+        <label for="controller">@L.T("Controller")</label>
         <input type="text" class="form-control input-sm" id="controller" name="controller" value="@controller" placeholder="User" />
     </div>
     <div class="form-group">
-        <label for="view">视图</label>
+        <label for="view">@L.T("View")</label>
         <input type="text" class="form-control input-sm" id="view" name="view" value="@view" placeholder="_List_Search" />
     </div>
     <div class="form-group">
-        <label for="theme">主题</label>
+        <label for="theme">@L.T("Theme")</label>
         <input type="text" class="form-control input-sm" id="theme" name="theme" value="@theme" placeholder="ACE" />
     </div>
-    <button type="submit" class="btn btn-sm btn-primary"><i class="fa fa-search"></i> 解析</button>
+    <button type="submit" class="btn btn-sm btn-primary"><i class="fa fa-search"></i> @L.T("Resolve")</button>
 </form>
 
 @if (candidates != null)
 {
-    <h3>① 理论候选路径（ViewLocationHelper，7 级优先级）</h3>
+    <h3>@L.T("① Theoretical candidate paths (ViewLocationHelper, 7 levels of priority)")</h3>
     <table class="table table-bordered table-hover table-condensed vt-table">
         <thead>
             <tr>
-                <th style="width:60px;">优先级</th>
-                <th>候选路径</th>
-                <th style="width:100px;">物理文件</th>
-                <th style="width:100px;">实际命中</th>
+                <th style="width:60px;">@L.T("Priority")</th>
+                <th>@L.T("Candidate paths")</th>
+                <th style="width:100px;">@L.T("Physical file")</th>
+                <th style="width:100px;">@L.T("Actual hit")</th>
             </tr>
         </thead>
         <tbody>
@@ -66,31 +66,31 @@
                 <tr class="@cls">
                     <td class="text-center">@(i + 1)</td>
                     <td>@candidates[i]</td>
-                    <td class="text-center">@(physical[i] ? "✅ 存在" : "—")</td>
-                    <td class="text-center">@(hitPath != null && hitPath.EqualIgnoreCase(candidates[i]) ? "⭐ 命中" : "—")</td>
+                    <td class="text-center">@(physical[i] ? L.T("✅ Exists") : "—")</td>
+                    <td class="text-center">@(hitPath != null && hitPath.EqualIgnoreCase(candidates[i]) ? L.T("⭐ Hit") : "—")</td>
                 </tr>
             }
         </tbody>
     </table>
 }
 
-<h3>② 视图引擎实际查找结果</h3>
+<h3>@L.T("② Actual lookup result of the view engine")</h3>
 @if (result == null)
 {
-    <div class="alert alert-warning">暂无结果</div>
+    <div class="alert alert-warning">@L.T("No results")</div>
 }
 else if (result.Success)
 {
     <div class="alert alert-success">
-        <strong>命中：</strong>@result.View.Path
+        <strong>@L.T("Hit:")</strong>@result.View.Path
     </div>
 }
 else
 {
-    <div class="alert alert-danger"><strong>未命中！</strong>以下位置均未找到视图。</div>
+    <div class="alert alert-danger"><strong>@L.T("No hit!")</strong>@L.T("The view was not found in any of the following locations.")</div>
     <table class="table table-bordered table-hover table-condensed vt-table">
         <thead>
-            <tr><th>实际查找位置（按顺序）</th></tr>
+            <tr><th>@L.T("Actual lookup locations (in order)")</th></tr>
         </thead>
         <tbody>
             @foreach (var item in result.SearchedLocations)
@@ -102,7 +102,7 @@ else
 }
 
 <div class="alert alert-info">
-    <strong>提示：</strong>
-    绿色行 = 物理文件存在（放对了位置）；橙色行 = 与视图引擎实际命中一致。
-    覆盖不生效时，先看 ① 中你的文件是否出现、是否被更高优先级遮蔽，再看 ② 实际命中结果。
+    <strong>@L.T("Note:")</strong>
+    @L.T("Green row = the physical file exists (right location); orange row = matches the actual hit of the view engine.")
+    @L.T("If the override does not take effect, first check in ① whether your file appears and whether it is shadowed by a higher priority, then check the actual hit in ②.")
 </div>

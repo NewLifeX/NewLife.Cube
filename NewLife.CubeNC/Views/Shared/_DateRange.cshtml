@@ -19,11 +19,11 @@
             var url = p.GetBaseUrl(true, true, true, new[] { "dtStart", "dtEnd" });
             if (dtStart.Year > 2000 && dtEnd.Year > 2000) url.UrlParam("dtStart", dtStart.AddDays(-step).ToString("yyyy-MM-dd"));
             if (dtStart.Year > 2000 && dtEnd.Year > 2000) url.UrlParam("dtEnd", dtEnd.AddDays(-step).ToString("yyyy-MM-dd"));
-            <span class="input-group-addon"><a href="?@Html.Raw(url)" title="前一段"><i class="fa fa-calendar"></i></a></span>
+            <span class="input-group-addon"><a href="?@Html.Raw(url)" title="@L.T("Previous period")"><i class="fa fa-calendar"></i></a></span>
         }
         else
         {
-            <span class="input-group-addon"><i class="fa fa-calendar" title="点击使用今日"></i></span>
+            <span class="input-group-addon"><i class="fa fa-calendar" title="@L.T("Click to use today")"></i></span>
         }
         <input name="dtStart" id="dtStart" value="@p["dtStart"]" dateformat="@formatStr" class="form-control form_datetime" autocomplete="off" />
     </div>
@@ -32,7 +32,7 @@
         var url = p.GetBaseUrl(true, true, true, new[] { "dtStart", "dtEnd" });
         if (dtStart.Year > 2000 && dtEnd.Year > 2000) url.UrlParam("dtStart", dtStart.AddDays(step).ToString("yyyy-MM-dd"));
         if (dtStart.Year > 2000 && dtEnd.Year > 2000) url.UrlParam("dtEnd", dtEnd.AddDays(step).ToString("yyyy-MM-dd"));
-        <label for="dtEnd" class="control-label"><a href="?@Html.Raw(url)" title="后一段">~</a></label>
+        <label for="dtEnd" class="control-label"><a href="?@Html.Raw(url)" title="@L.T("Next period")">~</a></label>
     }
     else
     {

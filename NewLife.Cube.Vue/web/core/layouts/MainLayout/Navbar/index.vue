@@ -2,6 +2,7 @@
 import ModeSwitcher from '@newlifex/cube-vue/core/components/ModeSwitcher.vue';
 import ThemeSwitcher from '@newlifex/cube-vue/core/components/ThemeSwitcher.vue';
 import LayoutSwitcher from '@newlifex/cube-vue/core/components/LayoutSwitcher.vue';
+import LanguageSwitch from '@newlifex/cube-vue/core/components/LanguageSwitch.vue';
 import LogoBrand from '@newlifex/cube-vue/core/components/LogoBrand.vue';
 import UserProfile from '@newlifex/cube-vue/core/components/UserProfile.vue';
 </script>
@@ -26,6 +27,7 @@ import UserProfile from '@newlifex/cube-vue/core/components/UserProfile.vue';
 
       <!-- 布局切换 -->
       <LayoutSwitcher />
+      <LanguageSwitch />
 
       <UserProfile variant="navbar" />
     </div>

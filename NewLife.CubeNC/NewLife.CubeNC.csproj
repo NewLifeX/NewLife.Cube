@@ -5,8 +5,9 @@
     <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
     <RootNamespace>NewLife.Cube</RootNamespace>
     <AssemblyName>NewLife.Cube</AssemblyName>
-    <AssemblyTitle>魔方快速开发平台MVC版</AssemblyTitle>
-    <Description>魔方MVC/Razor兼容层，支持ASP.NET Core MVC传统开发模式。提供用户权限管理、Razor视图模板、SSO登录、OAuth服务端、数据导出等功能，单表100亿级数据验证。</Description>
+    <AssemblyTitle>NewLife Cube MVC Library</AssemblyTitle>
+    <Description>Cube MVC/Razor layer of the NewLife framework: ASP.NET Core MVC hosting, Razor view templates, user permission management, SSO sign-in, OAuth server, data export and runtime localization, validated with 10 billion rows in a single table.</Description>
+    <PackageDescription>Cube MVC/Razor layer of the NewLife framework: ASP.NET Core MVC hosting, Razor view templates, user permission management, SSO sign-in, OAuth server, data export and runtime localization, validated with 10 billion rows in a single table. 魔方MVC/Razor兼容层：支持ASP.NET Core MVC传统开发模式，提供用户权限管理、Razor视图模板、SSO登录、OAuth服务端、数据导出与运行时多语言，单表100亿级数据验证。</PackageDescription>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 NewLife</Copyright>
     <VersionPrefix>6.15</VersionPrefix>
@@ -58,13 +59,13 @@
 
   <ItemGroup>
     <PackageReference Include="NewLife.AI" Version="1.6.2026.907-beta0517" />
-    <PackageReference Include="NewLife.Core" Version="12.0.2026.1019-beta1502" />
+    <PackageReference Include="NewLife.Core" Version="12.0.2026.1021-beta0321" />
     <PackageReference Include="NewLife.IP" Version="2.5.2026.1019-beta1510" />
     <PackageReference Include="NewLife.Office" Version="1.4.2026.1019-beta1504" />
     <!-- Stardust 传递依赖 NewLife.Remoting，最小版本 3.9.2026.901 面向 Core 11 构建，与 Core 12 不兼容；显式提升到 Core 12 版本 -->
-    <PackageReference Include="NewLife.Remoting" Version="3.9.2026.1019-beta1013" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.10.2026.1020-beta0651" />
-    <PackageReference Include="NewLife.XCode" Version="12.2.2026.1019-beta1521" />
+    <PackageReference Include="NewLife.Remoting" Version="3.9.2026.1021-beta0410" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.10.2026.1021-beta0432" />
+    <PackageReference Include="NewLife.XCode" Version="12.2.2026.1021-beta0423" />
   </ItemGroup>
 
   <ItemGroup>

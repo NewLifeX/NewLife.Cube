@@ -5,8 +5,8 @@ namespace NewLife.Cube.Areas.Cube;
 /// <summary>魔方管理区域注册</summary>
 [DisplayName("魔方管理")]
 [Description("""
-    魔方提供一些常用的配套功能。
-    配套功能：附件、地区、定时任务、应用系统管理等。
+    Cube provides a set of common supporting features.
+    Supporting features: attachments, areas, scheduled jobs, application management and more.
     """)]
 [Menu(-2, true, Icon = "Odometer", LastUpdate = "20260731")]
 public class CubeArea : AreaBase

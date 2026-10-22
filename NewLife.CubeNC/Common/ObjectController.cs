@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -29,12 +29,12 @@ public abstract class ObjectController<TObject> : ControllerBaseX
         var name = GetType().GetDisplayName() ?? typeof(TObject).GetDisplayName() ?? typeof(TObject).Name;
         var des = GetType().GetDescription() ?? typeof(TObject).GetDescription();
 
-        ViewBag.Title = name;
+        ViewBag.Title = L.T(name);
 
         var txt = "";
         if (txt.IsNullOrEmpty()) txt = Menu?.Remark;
         if (txt.IsNullOrEmpty()) txt = des;
-        ViewBag.HeaderContent = txt;
+        ViewBag.HeaderContent = L.T(txt);
     }
 
     /// <summary>执行后</summary>
@@ -54,7 +54,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     {
         //var model = new ObjectModel { Value = Value };
 
-        var list = GetMembers(Value?.GetType());
+        var list = GetFields();
         if (IsJsonRequest)
         {
             list = list.Select(e => e.Clone()).ToList();
@@ -77,6 +77,10 @@ public abstract class ObjectController<TObject> : ControllerBaseX
             return View("ObjectForm", Value);
         }
     }
+
+    /// <summary>获取当前页面的字段集合</summary>
+    /// <returns></returns>
+    protected virtual IList<DataField> GetFields() => GetMembers(Value?.GetType());
 
     /// <summary>保存对象</summary>
     /// <param name="obj"></param>

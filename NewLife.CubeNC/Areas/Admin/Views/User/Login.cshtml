@@ -1,13 +1,13 @@
-﻿@model LoginViewModel
+@model LoginViewModel
 @using NewLife.Common;
 @{
     Layout = null;
-    ViewBag.Title = "登录";
+    ViewBag.Title = L.T("Sign in");
 
     var res = Model.ResourceUrl;
 }
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.Name">
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -51,16 +51,16 @@
                     }
                 </div>
                 <h1>@Model.DisplayName</h1>
-                <p>登录后即可访问管理后台</p>
+                <p>@L.T("Sign in to access the management console")</p>
             </div>
 
             <!-- Tab 切换：登录 / 注册 -->
             @{ var activeTab = ViewData["ActiveTab"] as String == "Register" ? "Register" : "Login"; }
             <div class="login-tabs">
-                <a class="@(activeTab == "Login" ? "active" : "")" data-tab="Login">登录</a>
+                <a class="@(activeTab == "Login" ? "active" : "")" data-tab="Login">@L.T("Sign in")</a>
                 @if (Model.AllowRegister)
                 {
-                    <a class="@(activeTab == "Register" ? "active" : "")" data-tab="Register">注册</a>
+                    <a class="@(activeTab == "Register" ? "active" : "")" data-tab="Register">@L.T("Sign up")</a>
                 }
             </div>
 
@@ -139,11 +139,11 @@
                 var password = $("#password").val();
 
                 if (username == '') {
-                    alert('请输入用户名');
+                    alert('@L.T("Please enter the user name")');
                     return;
                 }
                 if (password == '') {
-                    alert('请输入密码');
+                    alert('@L.T("Please enter the password")');
                     return;
                 }
 

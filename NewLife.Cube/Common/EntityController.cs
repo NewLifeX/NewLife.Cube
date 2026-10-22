@@ -20,7 +20,7 @@ public partial class EntityController<TEntity, TModel>
     /// <param name="id"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Delete)]
-    [DisplayName("删除{type}")]
+    [DisplayName("Delete {type}")]
     [HttpDelete("/api/[area]/[controller]")]
     public virtual ApiResponse<TEntity> Delete([Required] String id)
     {
@@ -41,7 +41,7 @@ public partial class EntityController<TEntity, TModel>
     /// <param name="id">主键集合。为空时返回参数错误</param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Delete)]
-    [DisplayName("批量删除{type}")]
+    [DisplayName("Delete {type} in bulk")]
     [HttpDelete("/api/[area]/[controller]/DeleteSelect")]
     public virtual ApiResponse<String> DeleteSelect([FromQuery] String[] id)
     {
@@ -79,7 +79,7 @@ public partial class EntityController<TEntity, TModel>
     /// <summary>按当前搜索条件删除全部数据。至少需携带一个业务搜索条件，防止误删全表</summary>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Delete)]
-    [DisplayName("按条件删除{type}")]
+    [DisplayName("Delete {type} by condition")]
     [HttpDelete("/api/[area]/[controller]/DeleteAll")]
     public virtual ApiResponse<String> DeleteAll()
     {
@@ -113,7 +113,7 @@ public partial class EntityController<TEntity, TModel>
     /// <summary>添加数据</summary>
     /// <param name="model"></param>
     /// <returns></returns>
-    [DisplayName("添加{type}")]
+    [DisplayName("Add {type}")]
     [EntityAuthorize(PermissionFlags.Insert)]
     [HttpPost("/api/[area]/[controller]")]
     public virtual async Task<ApiResponse<TEntity>> Insert(TModel model)
@@ -132,7 +132,7 @@ public partial class EntityController<TEntity, TModel>
         }
         catch (Exception ex)
         {
-            return BuildFailResponse(ex, "添加", entity);
+            return BuildFailResponse(ex, L.T("Add"), entity);
         }
 
         return await ProcessInsert(entity);
@@ -197,7 +197,7 @@ public partial class EntityController<TEntity, TModel>
     /// <param name="model"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Update)]
-    [DisplayName("更新{type}")]
+    [DisplayName("Update {type}")]
     [HttpPut("/api/[area]/[controller]")]
     public virtual async Task<ApiResponse<TEntity>> Update(TModel model)
     {
@@ -408,7 +408,7 @@ public partial class EntityController<TEntity, TModel>
     /// <remarks>依据文件扩展名分发到 ImportExcel/ImportCsv/ImportJson/ImportZip；导入失败时返回 code!=0 的业务错误</remarks>
     [HttpPost]
     [EntityAuthorize(PermissionFlags.Insert)]
-    [DisplayName("导入Excel/Csv/Json/Zip")]
+    [DisplayName("Import Excel/Csv/Json/Zip")]
     public virtual IActionResult ImportFile(IFormFile file)
     {
         if (file == null || file.Length <= 0) throw new ArgumentNullException(nameof(file), L.T("No file was uploaded."));

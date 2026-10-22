@@ -22,7 +22,7 @@ public class TenantController : EntityController<Tenant, TenantModel>
         {
             // 成员管理友好界面入口；标准列表可通过管理页内链接访问
             var df = ListFields.AddListField("Users", null, "ManagerName");
-            df.DisplayName = "成员";
+            df.DisplayName = "Member";
             df.Url = "/Admin/TenantUser/Manage?tenantId={Id}";
         }
 
@@ -38,7 +38,7 @@ public class TenantController : EntityController<Tenant, TenantModel>
         }
 
         {
-            AddFormFields.GroupVisible = (entity, group) => (entity as Tenant).Id == 0 && group != "扩展";
+            AddFormFields.GroupVisible = (entity, group) => (entity as Tenant).Id == 0 && group != "Extended" && group != L.T("Extended");
         }
     }
 

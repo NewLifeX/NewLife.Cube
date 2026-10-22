@@ -1,4 +1,4 @@
-﻿@using System.Diagnostics;
+@using System.Diagnostics;
 @using System.Collections;
 @using System.Reflection;
 @using System.Runtime.Versioning;
@@ -8,7 +8,7 @@
 @{
     //Layout = NewLife.Cube.Setting.Current.Layout;
 
-    ViewBag.Title = "Cache列表";
+    ViewBag.Title = L.T("Caches");
 
     // 如果自己实现了IMemoryCache，手动修改此处
     var cache = Cache as MemoryCache;
@@ -20,13 +20,13 @@
 <table class="table table-bordered table-hover table-striped table-condensed">
     <tr>
         <th colspan="6">
-            Cache列表(@cache.Count )
+            @(L.T("Caches"))(@cache.Count )
         </th>
     </tr>
     <tr>
-        <th>名称</th>
-        <th>类型</th>
-        <th>数值</th>
+        <th>@L.T("Name")</th>
+        <th>@L.T("Type")</th>
+        <th>@L.T("Value")</th>
     </tr>
     @*@foreach (DictionaryEntry item in cache)
         {

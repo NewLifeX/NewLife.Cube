@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
@@ -24,7 +24,7 @@ public class AccessRuleController : EntityController<AccessRule, AccessRuleModel
         // 过期时间列改造为解封操作列：点击自动封禁行的解封时间即可解除封禁
         if (ListFields.GetField("ExpireTime") is ListField df)
         {
-            df.DisplayName = "解封时间";
+            df.DisplayName = "Unblock time";
             df.Url = "/api/Admin/AccessRule/Unblock?id={Id}";
         }
     }

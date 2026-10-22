@@ -31,10 +31,10 @@
                     if (resp && resp.data && resp.data.filePath)
                         onSuccess(resp.data.filePath, resp.data.contentType);
                     else
-                        onError(resp && resp.error ? resp.error : '上传失败');
-                } catch(e) { onError('响应解析失败'); }
+                        onError(resp && resp.error ? resp.error : '@L.T("Upload failed")');
+                } catch(e) { onError('@L.T("Failed to parse the response")'); }
             };
-            xhr.onerror = function() { onError('网络错误'); };
+            xhr.onerror = function() { onError('@L.T("Network error")'); };
             xhr.send(fd);
         }
 
@@ -90,7 +90,7 @@
                             uploadFileXhr(file, function(url) {
                                 quill.insertEmbed(range.index, 'image', url, 'user');
                                 quill.setSelection(range.index + 1, 'user');
-                            }, function(err) { alert('图片上传失败: ' + err); });
+                            }, function(err) { alert('@L.T("Image upload failed:")' + ' ' + err); });
                         }
                     },
                     toolbar: {
@@ -116,7 +116,7 @@
                                         var range = q.getSelection(true);
                                         q.insertEmbed(range.index, 'image', url, 'user');
                                         q.setSelection(range.index + 1, 'user');
-                                    }, function(err) { alert('图片上传失败: ' + err); });
+                                    }, function(err) { alert('@L.T("Image upload failed:")' + ' ' + err); });
                                 };
                             }
                         }
@@ -148,7 +148,7 @@
                 // 附件上传按钮（倒数第二）
                 var fileBtn = document.createElement('button');
                 fileBtn.type = 'button';
-                fileBtn.title = '上传附件';
+                fileBtn.title = '@L.T("Upload attachment")';
                 fileBtn.innerHTML = '&#128206;';
                 fileBtn.className = 'ql-file';
                 fileBtn.style.cssText = 'font-size:15px;line-height:1;padding:2px 6px;';
@@ -169,14 +169,14 @@
                                 q.insertText(range.index, file.name, 'link', url, 'user');
                                 q.setSelection(range.index + file.name.length, 'user');
                             }
-                        }, function(err) { alert('附件上传失败: ' + err); });
+                        }, function(err) { alert('@L.T("Attachment upload failed:")' + ' ' + err); });
                     };
                 });
 
                 // HTML 源码切换按钮（最后）
                 var sourceBtn = document.createElement('button');
                 sourceBtn.type = 'button';
-                sourceBtn.title = '切换 HTML 源码';
+                sourceBtn.title = '@L.T("Toggle HTML source")';
                 sourceBtn.textContent = '</>';
                 sourceBtn.className = 'ql-source';
                 sourceBtn.style.cssText = 'font-size:12px;font-weight:bold;line-height:1;padding:2px 5px;';

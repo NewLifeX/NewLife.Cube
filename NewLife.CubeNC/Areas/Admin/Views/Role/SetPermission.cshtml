@@ -1,4 +1,4 @@
-﻿@using System.Reflection
+@using System.Reflection
 @using XCode
 @using XCode.Configuration
 @{
@@ -128,15 +128,15 @@
     });
 </script>
 <div class="form-group col-md-12">
-    <label class="control-label col-md-2">授权</label>
+    <label class="control-label col-md-2">@L.T("Authorization")</label>
     <div class="input-group col-md-10">
         <table class="table table-bordered table-hover table-striped table-condensed">
             <thead>
                 <tr>
-                    <th>名称</th>
-                    <th>显示名</th>
-                    <th>授权</th>
-                    <th>操作权限</th>
+                    <th>@L.T("Name")</th>
+                    <th>@L.T("Display name")</th>
+                    <th>@L.T("Authorization")</th>
+                    <th>@L.T("Operation permissions")</th>
                 </tr>
             </thead>
             <tbody>
@@ -145,8 +145,8 @@
                     // 受限管理员：跳过自己无任何权限的叶子资源，不予展示
                     if (restricted && entity.Childs.Count == 0 && !entity.Permissions.Any(e => owns(entity, (PermissionFlags)e.Key))) { continue; }
                     <tr>
-                        <td>@entity.TreeNodeName</td>
-                        <td>@entity.DisplayName</td>
+                        <td>@(entity.Deepth > 0 ? new String('　', (entity.Deepth - 1) * 2) : "")@NewLife.Cube.Membership.MenuHelper.GetDisplayName(entity)</td>
+                        <td>@NewLife.Cube.Membership.MenuHelper.GetDisplayName(entity)</td>
                         <td>@Html.CheckBox("p" + entity.ID, role.Has(entity.ID), new { @class = "authorize", @child = "auth_child" + entity.ID, @parentkey = "auth_child" + entity.ParentID, @childchange = 0 })</td>
                         <td class="childpf">
                             @if (entity.Childs.Count == 0)
@@ -157,7 +157,7 @@
                                     if (!owns(entity, (PermissionFlags)item.Key)) { continue; }
                                     var id = "pf" + entity.ID + "_" + ((Int32)item.Key);
                                     @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID, @proparentkey = "pro_" + item.Key + "_" + entity.ParentID, @prokey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.ParentID, @dataid = entity.ID })
-                                    @Html.Label(id, item.Value)
+                                    @Html.Label(id, NewLife.Cube.Membership.MenuHelper.GetPermissionName(entity, item.Key, item.Value))
                                     <text>&nbsp;</text>
                                 }
                             }
@@ -165,10 +165,10 @@
                             {
 
                                 @Html.CheckBox("pc_readonly_" + entity.ID, false, new { @class = "pro_detail", @prochildkey = "pro_" + (UInt32)PermissionFlags.Detail + "_" + entity.ID })
-                                @Html.Label("pc_readonly_" + entity.ID, "只读")
+                                @Html.Label("pc_readonly_" + entity.ID, L.T("Read-only"))
                                 <text>&nbsp;</text>
                                 @Html.CheckBox("pc_all_" + entity.ID, false, new { @class = "pro_all", @prochildkey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.ID })
-                                @Html.Label("pc_all_" + entity.ID, "全部")
+                                @Html.Label("pc_all_" + entity.ID, L.T("All"))
                             }
                         </td>
                     </tr>

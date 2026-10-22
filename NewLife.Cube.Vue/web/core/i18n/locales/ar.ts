@@ -48,4 +48,15 @@ export default {
   'notification.info': 'معلومات',
   'notification.network.typeError': 'طلب الشبكة غير طبيعي',
   'notification.typeError.description': 'يرجى المحاولة لاحقًا',
+
+  // 布局外壳
+  'menu.searchPlaceholder': 'البحث في القوائم...',
+  'layout.dashboard': 'لوحة المعلومات',
+  'layout.administrator': 'المسؤول',
+  'layout.collapseSidebar': 'طي الشريط الجانبي',
+  'layout.searchPlaceholder': 'البحث في الأجهزة والتنبيهات...',
+  'menu.navigation': 'قائمة التنقل',
+  'layout.collapseMenu': 'طي القائمة',
+  'layout.expandSidebar': 'توسيع الشريط الجانبي',
+  'layout.welcomeBack': 'مرحبًا بعودتك، {name} · {date}',
 };

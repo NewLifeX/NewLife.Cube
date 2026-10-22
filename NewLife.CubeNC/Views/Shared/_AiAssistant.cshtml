@@ -14,7 +14,7 @@
 {
     @* AI 助手：右下角悬浮球 + 对话面板。所有 MVC 主题共享 *@
     <div id="aiAssistant" class="ai-assistant" data-ai-url="/Ai/AiChat" data-ai-area="@area" data-ai-controller="@controller">
-        <button type="button" id="aiAssistantFab" class="ai-fab" title="AI 助手">
+        <button type="button" id="aiAssistantFab" class="ai-fab" title="@L.T("AI assistant")">
             <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
                 <g fill="#2ecc71">
                     <circle cx="12" cy="7" r="4.6" />
@@ -37,31 +37,31 @@
                         </g>
                         <circle cx="12" cy="12" r="2.6" fill="#ffffff" />
                     </svg>
-                    AI 助手
+                    @L.T("AI assistant")
                 </span>
                 <div class="ai-panel-actions">
-                    <button type="button" id="aiMaximize" title="最大化"><i class="ace-icon fa fa-expand"></i><i class="ace-icon fa fa-compress" style="display:none"></i></button>
-                    <button type="button" id="aiClearChat" title="清空会话"><i class="ace-icon fa fa-trash"></i></button>
-                    <button type="button" id="aiClosePanel" title="收起"><i class="ace-icon fa fa-times"></i></button>
+                    <button type="button" id="aiMaximize" title="@L.T("Maximize")"><i class="ace-icon fa fa-expand"></i><i class="ace-icon fa fa-compress" style="display:none"></i></button>
+                    <button type="button" id="aiClearChat" title="@L.T("Clear session")"><i class="ace-icon fa fa-trash"></i></button>
+                    <button type="button" id="aiClosePanel" title="@L.T("Collapse")"><i class="ace-icon fa fa-times"></i></button>
                 </div>
             </div>
             <div class="ai-messages" id="aiMessages">
                 <div class="ai-msg ai-msg-assistant">
-                    <div class="ai-bubble">你好，我是魔方 AI 助手 👋 我可以帮你分析当前数据、填写表单、检查系统状态。试试下面的快捷操作，或直接输入你的问题。</div>
+                    <div class="ai-bubble">@L.T("Hi, I am the Cube AI assistant 👋 I can analyze the current data, fill in forms and check system status. Try a shortcut below or just ask your question.")</div>
                 </div>
                 <div class="ai-quick" id="aiQuickActions">
-                    <button type="button" class="ai-chip" data-prompt="分析当前列表数据">📊 分析当前数据</button>
-                    <button type="button" class="ai-chip" data-prompt="帮我填写当前表单">📝 帮我填表</button>
-                    <button type="button" class="ai-chip" data-prompt="分析当前记录">🔍 分析当前记录</button>
-                    <button type="button" class="ai-chip" data-prompt="检查系统运行状态">🩺 系统诊断</button>
+                    <button type="button" class="ai-chip" data-prompt="分析当前列表数据">@L.T("📊 Analyze current data")</button>
+                    <button type="button" class="ai-chip" data-prompt="帮我填写当前表单">@L.T("📝 Fill the form for me")</button>
+                    <button type="button" class="ai-chip" data-prompt="分析当前记录">@L.T("🔍 Analyze current record")</button>
+                    <button type="button" class="ai-chip" data-prompt="检查系统运行状态">@L.T("🩺 System diagnosis")</button>
                 </div>
             </div>
             <div class="ai-panel-footer">
-                <label class="ai-think" title="深度推理更准确，但耗时更长">
-                    <input type="checkbox" id="aiThink" @(set.AIDefaultThink ? "checked" : "") /> 深度
+                <label class="ai-think" title="@L.T("Deep reasoning is more accurate but takes longer")">
+                    <input type="checkbox" id="aiThink" @(set.AIDefaultThink ? "checked" : "") /> @L.T("Deep thinking")
                 </label>
-                <textarea id="aiInput" rows="1" placeholder="输入问题，Enter 发送，Shift+Enter 换行"></textarea>
-                <button type="button" id="aiSend" class="ai-send" title="发送"><i class="ace-icon fa fa-paper-plane"></i></button>
+                <textarea id="aiInput" rows="1" placeholder="@L.T("Type your question. Enter to send, Shift+Enter for a new line")"></textarea>
+                <button type="button" id="aiSend" class="ai-send" title="@L.T("Send")"><i class="ace-icon fa fa-paper-plane"></i></button>
             </div>
         </div>
     </div>

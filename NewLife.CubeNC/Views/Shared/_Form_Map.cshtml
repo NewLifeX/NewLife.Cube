@@ -1,4 +1,4 @@
-﻿@model EntityField
+@model EntityField
 @using NewLife;
 @using NewLife.Cube
 @using XCode;
@@ -44,7 +44,7 @@ else
                 var dic2 = new Dictionary<Object, String>();
                 if (!dic.ContainsKey(0))
                 {
-                    dic2[0] = "<无>";
+                    dic2[0] = L.T("<none>");
                     foreach (var item in dic)
                     {
                         dic2[item.Key] = item.Value;

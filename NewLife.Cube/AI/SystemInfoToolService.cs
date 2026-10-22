@@ -16,8 +16,8 @@ public class SystemInfoToolService
 {
     /// <summary>收集服务器运行指标，供系统健康诊断使用</summary>
     [ToolDescription("get_system_info", ReadOnly = true)]
-    [DisplayName("获取系统状态")]
-    [Description("获取当前服务器运行指标，包括 CPU 使用率、内存、进程工作集、系统信息等，供系统健康诊断使用")]
+    [DisplayName("Get system status")]
+    [Description("Gets current server metrics such as CPU usage, memory, process working set and system information, for health diagnostics")]
     public virtual String GetSystemInfo() => BuildSystemInfo();
 
     /// <summary>构建服务器运行指标 JSON。实体工具集与全局工具服务共用同一实现，避免重复</summary>

@@ -48,4 +48,15 @@ export default {
   'notification.info': '정보',
   'notification.network.typeError': '네트워크 요청 오류',
   'notification.typeError.description': '나중에 다시 시도하세요',
+
+  // 布局外壳
+  'menu.searchPlaceholder': '메뉴 검색...',
+  'layout.dashboard': '대시보드',
+  'layout.administrator': '관리자',
+  'layout.collapseSidebar': '사이드바 접기',
+  'layout.searchPlaceholder': '장치, 경고 검색...',
+  'menu.navigation': '탐색 메뉴',
+  'layout.collapseMenu': '메뉴 접기',
+  'layout.expandSidebar': '사이드바 펼치기',
+  'layout.welcomeBack': '다시 오신 것을 환영합니다, {name} · {date}',
 };

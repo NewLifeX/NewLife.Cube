@@ -48,4 +48,15 @@ export default {
   'notification.info': '情報',
   'notification.network.typeError': 'ネットワーク要求が異常です',
   'notification.typeError.description': '後でもう一度お試しください',
+
+  // 布局外壳
+  'menu.searchPlaceholder': 'メニューを検索...',
+  'layout.dashboard': 'ダッシュボード',
+  'layout.administrator': '管理者',
+  'layout.collapseSidebar': 'サイドバーを折りたたむ',
+  'layout.searchPlaceholder': 'デバイス・アラートを検索...',
+  'menu.navigation': 'ナビゲーションメニュー',
+  'layout.collapseMenu': 'メニューを折りたたむ',
+  'layout.expandSidebar': 'サイドバーを展開',
+  'layout.welcomeBack': 'おかえりなさい、{name} · {date}',
 };

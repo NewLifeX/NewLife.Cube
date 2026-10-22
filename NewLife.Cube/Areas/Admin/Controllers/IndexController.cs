@@ -114,11 +114,11 @@ public class IndexController : ControllerBaseX, IPageDataContext
             osVersion = mi.OSVersion,
             machineId = mi.UUID,
             machineProduct = mi.Product,
-            cpu = mi.Processor + Environment.ProcessorCount + "核心 使用率" + mi.CpuRate.ToString("p0") + mi.Temperature + " ℃",
+            cpu = mi.Processor + " " + Environment.ProcessorCount + L.T(" cores, usage ") + mi.CpuRate.ToString("p0") + mi.Temperature + " ℃",
             openTime = TimeSpan.FromMilliseconds(Environment.TickCount64).ToString(@"dd\.hh\:mm\:ss"),
             serverTime = DateTime.Now,
-            memory = "物理：" + (mi.AvailableMemory / 1024 / 1024).ToString("n0") + "M/" + (mi.Memory / 1024 / 1024).ToString("n0") + "M    工作/提交: " + (process.WorkingSet64 / 1024 / 1024).ToString("n0") + "M/@" + (process.PrivateMemorySize64 / 1024 / 1024).ToString("n0") + "M   GC: " + (GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0") + "M",
-            processTime = process.TotalProcessorTime.TotalSeconds.ToString("N2") + "秒 启动于" + process.StartTime.ToLocalTime().ToFullString(),
+            memory = L.T("Physical: ") + (mi.AvailableMemory / 1024 / 1024).ToString("n0") + "M/" + (mi.Memory / 1024 / 1024).ToString("n0") + "M" + L.T("    Working/Committed: ") + (process.WorkingSet64 / 1024 / 1024).ToString("n0") + "M/@" + (process.PrivateMemorySize64 / 1024 / 1024).ToString("n0") + "M   GC: " + (GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0") + "M",
+            processTime = process.TotalProcessorTime.TotalSeconds.ToString("N2") + L.T("s since ") + process.StartTime.ToLocalTime().ToFullString(),
             gc = gc,
             //startTime = ApplicationManager.Load().StartTime.ToLocalTime().ToFullString()
         };
@@ -185,7 +185,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
             var value = d?.GetType().GetProperty("Value")?.GetValue(d) ?? "";
             var trend = d?.GetType().GetProperty("Trend")?.GetValue(d) ?? "";
             var url = d?.GetType().GetProperty("Url")?.GetValue(d) ?? "";
-            var item = new { name = info.Name, label = info.Title, value, trend, color = info.Color ?? "blue", url };
+            var item = new { name = info.Name, label = L.T(info.Title), value, trend, color = info.Color ?? "blue", url };
             if (layout.TryGetValue(info.Name, out var itemLayout) && itemLayout.Hide) hiddenKpis.Add(item);
             else kpis.Add(item);
         }
@@ -201,7 +201,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
                 if (menu == null || !menu.Visible || menu.Url.IsNullOrEmpty() || menu.Url.StartsWith("~/")) continue;
                 if (!urls.Add(menu.Url)) continue;
 
-                links.Add(new { Name = menu.DisplayName ?? menu.Name, Url = menu.Url, Icon = menu.Icon });
+                links.Add(new { Name = NewLife.Cube.Membership.MenuHelper.GetDisplayName(menu), Url = menu.Url, Icon = menu.Icon });
             }
         }
         if (links.Count < 8)
@@ -211,7 +211,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
                 if (links.Count >= 8) break;
                 if (!urls.Add(menu.Url)) continue;
 
-                links.Add(new { Name = menu.DisplayName ?? menu.Name, Url = menu.Url, Icon = menu.Icon });
+                links.Add(new { Name = NewLife.Cube.Membership.MenuHelper.GetDisplayName(menu), Url = menu.Url, Icon = menu.Icon });
             }
         }
 
@@ -232,12 +232,12 @@ public class IndexController : ControllerBaseX, IPageDataContext
         // 系统信息
         var sysInfo = new Dictionary<String, Object>
         {
-            ["操作系统"] = $"{mi.OSName} {mi.OSVersion}",
-            ["机器"] = $"{Environment.MachineName} / {Environment.UserName}",
-            ["处理器"] = $"{mi.Processor}，{Environment.ProcessorCount} 核心",
-            ["运行时"] = Assembly.GetExecutingAssembly().GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkDisplayName,
-            ["应用"] = $"{process.ProcessName}，程序集 {AssemblyX.GetAssemblies(null).Count()} 个",
-            ["启动时间"] = DateTime.Now.AddMilliseconds(-Environment.TickCount64).ToFullString(),
+            [L.T("OS")] = $"{mi.OSName} {mi.OSVersion}",
+            [L.T("Machine")] = $"{Environment.MachineName} / {Environment.UserName}",
+            [L.T("Processor")] = $"{mi.Processor}, {Environment.ProcessorCount} cores",
+            [L.T("Runtime")] = Assembly.GetExecutingAssembly().GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkDisplayName,
+            [L.T("Application")] = $"{process.ProcessName}, {AssemblyX.GetAssemblies(null).Count()} assemblies",
+            [L.T("Start time")] = DateTime.Now.AddMilliseconds(-Environment.TickCount64).ToFullString(),
         };
 
         // 内容部件（KPI 以外）：可见/隐藏分开返回，排序对齐 MVC WidgetManager.GetWidgets（组配置 + 用户布局）。
@@ -245,10 +245,10 @@ public class IndexController : ControllerBaseX, IPageDataContext
         Object BuildWidgetItem(WidgetAttribute info) => new
         {
             name = info.Name,
-            title = info.Title,
+            title = L.T(info.Title),
             icon = info.Icon,
             cols = info.Cols,
-            category = info.Category,
+            category = L.T(info.Category),
             widgetType = info.WidgetType.ToString(),
             data = info.WidgetType == WidgetTypes.Chart ? null : wm.GetData(info),
         };
@@ -581,14 +581,14 @@ public class IndexController : ControllerBaseX, IPageDataContext
                             {
                                 ID = menu.ID,
                                 Name = menu.Name,
-                                DisplayName = menu.DisplayName ?? menu.Name,
+                                DisplayName = NewLife.Cube.Membership.MenuHelper.GetDisplayName(menu),
                                 FullName = menu.FullName,
                                 Url = menu.Url,
                                 Icon = menu.Icon,
                                 Visible = menu.Visible,
                                 NewWindow = menu.NewWindow,
                                 ParentID = menu.ParentID,
-                                Permissions = menu.Permissions
+                                Permissions = NewLife.Cube.Membership.MenuHelper.GetPermissions(menu)
                             }).ToList();
             return menuList.Count > 0 ? menuList : null;
         }, menus);

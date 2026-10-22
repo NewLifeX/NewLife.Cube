@@ -176,7 +176,7 @@ public static class WebHelper2
         var sb = Pool.StringBuilder.Get();
         try
         {
-            sb.Append("直连=").Append(remote + "");
+            sb.Append("Direct=").Append(remote + "");
             var xff = request.Headers["X-Forwarded-For"] + "";
             if (xff.IsNullOrEmpty()) xff = request.Headers["HTTP_X_FORWARDED_FOR"] + "";
             if (!xff.IsNullOrEmpty()) sb.Append("; XFF=").Append(xff);

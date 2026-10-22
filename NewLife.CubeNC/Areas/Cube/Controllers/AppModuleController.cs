@@ -19,8 +19,8 @@ public class AppModuleController : EntityController<AppModule, AppModuleModel>
 
         {
             var df = ListFields.AddListField("Log");
-            df.DisplayName = "日志";
-            df.Url = "/Admin/Log?category=应用插件&linkId={Id}";
+            df.DisplayName = "Log";
+            df.Url = "/Admin/Log?category=App plugin&linkId={Id}";
             df.Target = "_blank";
         }
     }

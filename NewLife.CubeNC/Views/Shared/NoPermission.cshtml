@@ -1,4 +1,4 @@
-﻿@using NewLife;
+@using NewLife;
 @{
     //Layout = "_Ace_Layout.cshtml";
     Layout = "_Layout.cshtml";
@@ -6,22 +6,22 @@
 
     var res = ViewBag.Resource;
     var permission = (PermissionFlags)ViewBag.Permission;
-    var pm = permission.GetDescription();
+    var pm = L.T(permission.GetDescription());
     var menu = ViewBag.Menu as IMenu;
 
-    ViewBag.Title = String.Format("没有访问资源[{0}]的权限[{1}]", res, pm);
+    ViewBag.Title = String.Format(L.T("No permission [{1}] to access resource [{0}]"), res, pm);
 }
 <div class="panel panel-default">
     <div class="panel-body" title="@(menu?.FullName)">
         <strong>
-            <pre class="alert alert-danger" role="alert">访问资源 @res 需要 @pm 权限</pre>
+            <pre class="alert alert-danger" role="alert">@String.Format(L.T("Accessing resource {0} requires permission {1}"), res, pm)</pre>
         </strong>
     </div>
     <div class="panel-footer">
         <a href="~/Admin/User/Logout" class="btn btn-primary">
             <i class="ace-icon fa fa-power-off"></i>
-            以其它身份登录
+            @L.T("Sign in as another user")
         </a>
-        <a href="javascript: history.go(-1);" class="btn btn-info">返回上一页</a>
+        <a href="javascript: history.go(-1);" class="btn btn-info">@L.T("Back")</a>
     </div>
 </div>

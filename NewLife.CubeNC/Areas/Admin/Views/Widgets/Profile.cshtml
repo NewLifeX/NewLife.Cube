@@ -15,30 +15,30 @@
     <table class="table table-condensed widget-table">
         <tbody>
             <tr>
-                <td class="w-name">账号</td>
+                <td class="w-name">@L.T("Account")</td>
                 <td class="w-value">@d.Name</td>
             </tr>
             <tr>
-                <td class="w-name">状态</td>
-                <td class="w-value">@(d.Online ? "在线" : "离线")</td>
+                <td class="w-name">@L.T("Status")</td>
+                <td class="w-value">@(d.Online ? L.T("Online") : L.T("Offline"))</td>
             </tr>
             <tr>
-                <td class="w-name">登录次数</td>
-                <td class="w-value">@d.Logins 次</td>
+                <td class="w-name">@L.T("Sign-in count")</td>
+                <td class="w-value">@d.Logins @L.T("times")</td>
             </tr>
             <tr>
-                <td class="w-name">上次登录</td>
+                <td class="w-name">@L.T("Previous sign-in")</td>
                 <td class="w-value">@d.LastLogin</td>
             </tr>
             <tr>
-                <td class="w-name">上次地址</td>
+                <td class="w-name">@L.T("Previous address")</td>
                 <td class="w-value">@d.LastLoginIP</td>
             </tr>
             <tr>
-                <td class="w-name">注册时间</td>
+                <td class="w-name">@L.T("Registration time")</td>
                 <td class="w-value">@d.RegisterTime</td>
             </tr>
         </tbody>
     </table>
-    <div class="widget-more"><a href="/Admin/User/Info" target="_blank">个人中心 »</a></div>
+    <div class="widget-more"><a href="/Admin/User/Info" target="_blank">@L.T("Profile »")</a></div>
 </div>

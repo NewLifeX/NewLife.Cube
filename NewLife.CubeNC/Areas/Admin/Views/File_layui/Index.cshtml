@@ -1,4 +1,4 @@
-﻿@using System.Diagnostics;
+@using System.Diagnostics;
 @using NewLife.Common;
 @using NewLife.Cube.Areas.Admin;
 @{
@@ -29,13 +29,13 @@
         <div class="layui-col-md12">
             <div class="layui-panel">
                 <div class="layui-btn-container">
-                    <button type="button" class="layui-btn layui-btn-sm layui-btn-normal" id="selectFile">选择文件</button>
-                    <button type="button" class="layui-btn layui-btn-sm" id="startUpload">开始上传</button>
+                    <button type="button" class="layui-btn layui-btn-sm layui-btn-normal" id="selectFile">@L.T("Choose file")</button>
+                    <button type="button" class="layui-btn layui-btn-sm" id="startUpload">@L.T("Start upload")</button>
                     @if (clips.Count > 0)
                     {
-                        <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="Paste">粘贴</button>
-                        <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="Move">移动</button>
-                        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="Clear">清空</button>
+                        <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="Paste">@L.T("Paste")</button>
+                        <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="Move">@L.T("Move")</button>
+                        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="Clear">@L.T("Clear")</button>
                     }
                 </div>
                 <div class="layui-form layui-border-box layui-table-view" style="margin:10px;">
@@ -47,42 +47,42 @@
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
                                                 <span>
-                                                    名称
+                                                    @L.T("Name")
                                                 </span>
                                             </div>
                                         </th>
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
                                                 <span>
-                                                    大小
+                                                    @L.T("Size")
                                                 </span>
                                             </div>
                                         </th>
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-2" data-id="1-0-2">
                                                 <span>
-                                                    修改时间
+                                                    @L.T("Modify time")
                                                 </span>
                                             </div>
                                         </th>
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-3" data-id="1-0-3">
                                                 <span>
-                                                    复制
+                                                    @L.T("Copy")
                                                 </span>
                                             </div>
                                         </th>
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-4" data-id="1-0-4">
                                                 <span>
-                                                    压缩
+                                                    @L.T("Compress")
                                                 </span>
                                             </div>
                                         </th>
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-5" data-id="1-0-5">
                                                 <span>
-                                                    删除
+                                                    @L.T("Delete")
                                                 </span>
                                             </div>
                                         </th>
@@ -100,7 +100,7 @@
                                             {
                                                 <td>
                                                     <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
-                                                        <a href="~/Admin/File?r=@item.FullName" title="进入目录">@item.Name</a>
+                                                        <a href="~/Admin/File?r=@item.FullName" title="@L.T("Enter directory")">@item.Name</a>
                                                     </div>
                                                 </td>
                                             }
@@ -108,7 +108,7 @@
                                             {
                                                 <td>
                                                     <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
-                                                        <a href="~/Admin/File/Download?r=@item.FullName" title="下载文件">@item.Name</a>
+                                                        <a href="~/Admin/File/Download?r=@item.FullName" title="@L.T("Download file")">@item.Name</a>
                                                     </div>
                                                 </td>
                                             }
@@ -127,11 +127,11 @@
                                                 <div class="layui-table-cell laytable-cell-1-0-3" data-id="1-0-3">
                                                     @if (!clips.Any(e => e.FullName == item.FullName))
                                                     {
-                                                        <a href="~/Admin/File/Copy?r=@r&f=@item.FullName" title="复制到剪切板，然后去目标目录粘贴">复制</a>
+                                                        <a href="~/Admin/File/Copy?r=@r&f=@item.FullName" title="@L.T("Copy to clipboard, then paste in the target directory")">@L.T("Copy")</a>
                                                     }
                                                     else
                                                     {
-                                                        <a href="~/Admin/File/CancelCopy?r=@r&f=@item.FullName" title="从剪切板移除">取消复制</a>
+                                                        <a href="~/Admin/File/CancelCopy?r=@r&f=@item.FullName" title="@L.T("Remove from clipboard")">@L.T("Cancel copy")</a>
                                                     }
                                                 </div>
                                             </td>
@@ -139,17 +139,17 @@
                                                 <div class="layui-table-cell laytable-cell-1-0-4" data-id="1-0-4">
                                                     @if (item.Name.EndsWithIgnoreCase(".zip"))
                                                     {
-                                                        <a href="~/Admin/File/Decompress?r=@item.FullName" title="解压缩到当前目录">解压缩</a>
+                                                        <a href="~/Admin/File/Decompress?r=@item.FullName" title="@L.T("Extract to current directory")">@L.T("Extract")</a>
                                                     }
                                                     else
                                                     {
-                                                        <a href="~/Admin/File/Compress?r=@item.FullName" title="压缩到当前目录，加上时间后缀">压缩</a>
+                                                        <a href="~/Admin/File/Compress?r=@item.FullName" title="@L.T("Compress to current directory with a time suffix")">@L.T("Compress")</a>
                                                     }
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-5" data-id="1-0-5">
-                                                    <a href="~/Admin/File/Delete?r=@item.FullName" onclick="return confirm('确认删除？');">删除</a>
+                                                    <a href="~/Admin/File/Delete?r=@item.FullName" onclick="return confirm('@L.T("Confirm delete?")');">@L.T("Delete")</a>
                                                 </div>
                                             </td>
                                         </tr>

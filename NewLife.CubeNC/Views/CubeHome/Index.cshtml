@@ -1,4 +1,4 @@
-﻿@using NewLife;
+@using NewLife;
 @using NewLife.Common;
 @using NewLife.Web
 @{
@@ -18,7 +18,7 @@
 <body>
     <div>
         <h1>@SysConfig.Current.DisplayName</h1>
-        <h3>正在启动系统……</h3>
+        <h3>@L.T("Starting the system...")</h3>
         @SysConfig.Current.Company
     </div>
 </body>

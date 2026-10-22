@@ -53,6 +53,31 @@ public class LocalizationTests
         Assert.Equal("Not translated", Translate("en-US", "Not translated"));
     }
 
+    [Fact(DisplayName = "多语言 - 共享视图文案 31 种语言齐备")]
+    public void SharedViewChrome()
+    {
+        // 共享视图（导航、通知铃铛、AI 助手、省市区选择、错误页）的界面文案以英文为源文，
+        // 每种受支持语言都必须有译文，避免非中文用户看到英文按钮。同形词（Send/ID 等）不在此列。
+        String[] keys =
+        [
+            "Notifications", "Mark all as read", "View all notifications", "No unread notifications",
+            "AI assistant", "AI diagnosis", "Collapse", "Clear session",
+            "Select province", "Select province/city/district/town", "Search department",
+            "Back", "Close", "No data", "Searching...", "Only image files are supported",
+        ];
+
+        foreach (var culture in CubeLocalization.SupportedCultures)
+        {
+            if (culture == "en-US") continue;
+
+            foreach (var key in keys)
+            {
+                var text = Translate(culture, key);
+                Assert.True(text != key, $"{culture} 缺少共享视图文案译文：{key}");
+            }
+        }
+    }
+
     [Fact(DisplayName = "多语言 - 未提供语言回退英文")]
     public void TranslateUnknownCulture()
     {
@@ -208,6 +233,44 @@ public class LocalizationTests
         }
     }
 
+    [Fact(DisplayName = "多语言 - 实体元数据与视图文案全语言覆盖")]
+    public void MetadataAndViewKeysCoverAllLanguages()
+    {
+        // 实体元数据（字段名/设置项描述/控制器标题）与视图文案以英文为源文，
+        // 每种受支持语言都必须有译文，否则非中文用户会看到英文元数据。
+        String[] keys =
+        [
+            "Third-party authorization", "Tenant administrator", "Account closure failed",
+            "Password strength", "Share count", "Permission items", "Operation permissions",
+            "Security center", "Remember me", "No online users", "Move up", "Move down",
+            "Basic information", "Notification records", "System info", "Quick links",
+            "Attachments not downloaded for this many days are cleaned up",
+            "Gender", "Birthday", "Company name", "Login tip",
+        ];
+
+        // 含占位符的键：译文必须保留占位符，且不得等于源文
+        String[] placeholderKeys = ["{0} cores", "{0} assemblies", "{0} items in clipboard", "Bound to {0} platforms"];
+
+        foreach (var culture in CubeLocalization.SupportedCultures)
+        {
+            if (culture.StartsWith("en", StringComparison.OrdinalIgnoreCase)) continue;
+
+            foreach (var key in keys)
+            {
+                var text = Translate(culture, key);
+                Assert.True(text != key, $"{culture} 缺少元数据/视图译文：{key}");
+            }
+
+            foreach (var key in placeholderKeys)
+            {
+                // 取值为品牌/技术借词时可能与源文同形（如 pt 的 {0} assemblies），此处只要求占位符保留
+                var text = Translate(culture, key);
+                Assert.False(String.IsNullOrEmpty(text), $"{culture} 缺少元数据/视图译文：{key}");
+                Assert.Contains("{0}", text);
+            }
+        }
+    }
+
     [Fact(DisplayName = "多语言 - 密码提示覆盖全部语言")]
     public void PasswordMessages()
     {
@@ -221,10 +284,16 @@ public class LocalizationTests
     [Fact(DisplayName = "多语言 - 日志模板可本地化且英文为兜底")]
     public void LogMessagesAreLocalizable()
     {
-        // 日志模板按 L.TLog + LogCulture 翻译（IMP-3）：中文宿主保留中文，其余语言回退英文源文
+        // 日志模板按 L.TLog + LogCulture 翻译：中文与已翻译语言使用译文，缺译文的语言回退英文源文
         var key = "Start importing file [{0}], size [{1:n0}] bytes, type [{2}].";
         Assert.Equal("开始导入文件[{0}]，大小[{1:n0}]字节，类型[{2}]", Translate("zh-CN", key));
-        Assert.Equal(key, Translate("de-DE", key));
-        Assert.Equal(key, Translate("ja-JP", key));
+
+        var de = Translate("de-DE", key);
+        Assert.NotEqual(key, de);
+        Assert.Contains("{0}", de);
+
+        // 未提供译文的模板回退英文源文
+        var missing = "Cube localization fallback probe [{0}].";
+        Assert.Equal(missing, Translate("ja-JP", missing));
     }
 }

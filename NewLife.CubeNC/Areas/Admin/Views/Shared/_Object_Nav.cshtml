@@ -2,21 +2,25 @@
     var obj = Model as Object;
     var path = Context.Request.Path + "";
 
+    // 设置页之间切换时保留当前语言参数，避免丢失 lang=xx 后回落到默认语言
+    var lang = Context.Request.Query["lang"].ToString();
+    String WithLang(String url) => lang.IsNullOrEmpty() ? url : url + (url.Contains('?') ? "&" : "?") + "lang=" + Uri.EscapeDataString(lang);
+
     var dic = new Dictionary<String, Object>();
-    dic["基本设置"] = "/Admin/Core";
-    dic["系统设置"] = "/Admin/Sys";
-    dic["星尘设置"] = "/Admin/Star";
-    dic["数据中间件"] = "/Admin/XCode";
-    dic["魔方设置"] = "/Admin/Cube";
+    dic[L.T("Basic settings")] = WithLang("/Admin/Core");
+    dic[L.T("System settings")] = WithLang("/Admin/Sys");
+    dic[L.T("Stardust settings")] = WithLang("/Admin/Star");
+    dic[L.T("Data middleware")] = WithLang("/Admin/XCode");
+    dic[L.T("Cube settings")] = WithLang("/Admin/Cube");
 
     {
         var dic2 = new Dictionary<String, Object>();
-        dic["更多设置"] = dic2;
+        dic[L.T("More settings")] = dic2;
 
-        dic2["短信设置"] = "/Admin/SmsConfig?nav=1";
-        dic2["邮件设置"] = "/Admin/MailConfig?nav=1";
-        dic2["OAuth设置"] = "/Admin/OAuthConfig?nav=1";
-        dic2["访问规则"] = "/Admin/AccessRule?nav=1";
+        dic2[L.T("SMS settings")] = WithLang("/Admin/SmsConfig?nav=1");
+        dic2[L.T("Email settings")] = WithLang("/Admin/MailConfig?nav=1");
+        dic2[L.T("OAuth settings")] = WithLang("/Admin/OAuthConfig?nav=1");
+        dic2[L.T("Access rules")] = WithLang("/Admin/AccessRule?nav=1");
     }
 }
 <div class="navbar-collapse text-center">

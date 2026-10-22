@@ -1,4 +1,4 @@
-﻿@model SelectUserModel
+@model SelectUserModel
 @using NewLife;
 @using NewLife.Web;
 @using XCode;
@@ -23,7 +23,7 @@
     <div class="col-lg-12">
         <div class="input-group">
             <input type="hidden" name="@id" id="@id" value="@userId" />
-            <input type="text" class="form-control" id="@(id)_select" placeholder="搜索用户" value="@showValue">
+            <input type="text" class="form-control" id="@(id)_select" placeholder="@L.T("Search user")" value="@showValue">
             <div class="input-group-btn">
                 <ul class="dropdown-menu dropdown-menu-right" role="menu"></ul>
             </div>
@@ -37,7 +37,7 @@
         $("#@(id)_select").bsSuggest({
             url: "/cube/UserSearch?roleid=@Model.RoleId&department=@Model.DepartmentId&key=",
             getDataMethod:"url",
-            effectiveFieldsAlias: { id:"编号",code:"代码",name: "名称",displayName:'昵称',departmentName:'部门'},
+            effectiveFieldsAlias: { id:'@L.T("ID")',code:'@L.T("Code")',name: '@L.T("Name")',displayName:'@L.T("Nickname")',departmentName:'@L.T("Department")'},
             ignorecase: true,
             showHeader: true,
             delayUntilKeyup: true, //获取数据的方式为 firstByUrl 时，延迟到有输入/获取到焦点时才请求数据
@@ -46,10 +46,10 @@
             showBtn: false,
             keyField: "name",
             clearable: true,
-            searchingTip: '搜索中...',
+            searchingTip: '@L.T("Searching...")',
             allowNoKeyword: true,
             delay: 500,
-            emptyTip: '无数据',
+            emptyTip: '@L.T("No data")',
             containerValueId: '@id',
             fnProcessData: function (result) {
                 dt = {};

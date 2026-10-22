@@ -331,8 +331,14 @@ jobs:
         $failed = $false
         Get-ChildItem -Path . -Recurse -Directory -Filter Locales | ForEach-Object {
           if (Test-Path (Join-Path $_.FullName 'zh-Hans.yml')) {
-            $src = Split-Path $_.FullName -Parent
-            pwsh -File ./check-locales.ps1 -LocaleDir $_.FullName -Baseline zh-Hans.yml -SourceDir $src
+            # 带同形词白名单的目录（魔方主词表）额外做严格校验：译文不得回退英文
+            $strict = @()
+            if (Test-Path (Join-Path $_.FullName 'identical.allow.json')) { $strict = @('-Strict') }
+            # 元数据键清单存在时放宽孤儿键校验；RequireFullCoverage 要求每种语言都有元数据译文，缺一即失败
+            $meta = Join-Path $_.FullName 'metadata-keys.json'
+            $metaArgs = @()
+            if (Test-Path $meta) { $metaArgs = @('-MetadataKeys', $meta, '-MetadataSourceDir', (Split-Path $_.FullName -Parent), '-RequireFullCoverage') }
+            pwsh -File ./check-locales.ps1 -LocaleDir $_.FullName -Baseline zh-Hans.yml @strict @metaArgs
             if ($LASTEXITCODE -ne 0) { $failed = $true }
           }
         }
@@ -340,6 +346,9 @@ jobs:
     - name: Check English runtime messages
       shell: pwsh
       run: pwsh -File ./check-english-messages.ps1
+    - name: Check view keys have Chinese translation
+      shell: pwsh
+      run: pwsh -File ./check-missing-keys.ps1
     - name: Check README languages
       shell: pwsh
       run: pwsh -File ./sync-readme-languages.ps1 -Check

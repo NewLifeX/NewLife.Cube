@@ -36,6 +36,14 @@ public class DataField : IDictionarySource
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String Description { get; set; }
 
+    /// <summary>描述源文。字段只有描述特性时保存整段描述，供多语言翻译后再拆分显示名与描述</summary>
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
+    public String SourceDescription { get; set; }
+
+    /// <summary>是否为字段默认显示名。用于区分控制器自定义的列标题，避免本地化后误判</summary>
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
+    public Boolean IsDefaultDisplayName { get; set; } = true;
+
     /// <summary>类别</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String Category { get; set; }
@@ -215,7 +223,7 @@ public class DataField : IDictionarySource
                 if (dna != null && !String.IsNullOrEmpty(dna.DisplayName)) label = dna.DisplayName;
                 var att = item.GetCustomAttribute<DescriptionAttribute>(false);
                 if (att != null && !String.IsNullOrEmpty(att.Description)) label = att.Description;
-                sds[value + ""] = label;
+                sds[value + ""] = L.T(label);
             }
             if (sds.Count > 0) dic["dataSource"] = sds;
 
@@ -301,6 +309,15 @@ public class DataField : IDictionarySource
         Name = field.Name;
         DisplayName = field.DisplayName;
         Description = field.Description;
+        IsDefaultDisplayName = true;
+
+        // 生成器把整段描述同时写入显示名与描述，保留整段源文，翻译后再拆分
+        if (!DisplayName.IsNullOrEmpty() && !Description.IsNullOrEmpty() &&
+            (Description.StartsWith(DisplayName + "。", StringComparison.Ordinal) ||
+             Description.StartsWith(DisplayName + ". ", StringComparison.Ordinal)))
+        {
+            SourceDescription = Description;
+        }
 
         Category = pi?.GetCustomAttribute<CategoryAttribute>()?.Category;
 
@@ -353,17 +370,138 @@ public class DataField : IDictionarySource
 
         var dis = property.GetDisplayName();
         var des = property.GetDescription();
-        if (dis.IsNullOrEmpty() && !des.IsNullOrEmpty()) { dis = des; des = null; }
-        if (!dis.IsNullOrEmpty() && des.IsNullOrEmpty() && dis.Contains("。"))
+        IsDefaultDisplayName = true;
+        if (dis.IsNullOrEmpty() && !des.IsNullOrEmpty())
         {
-            des = dis.Substring("。");
-            dis = dis.Substring(null, "。");
+            // 只有描述特性时，整段描述先作为显示名，并保留源文供多语言翻译后拆分
+            dis = des;
+            des = null;
+            SourceDescription = dis;
+        }
+        if (!dis.IsNullOrEmpty() && !des.IsNullOrEmpty() &&
+            (des.StartsWith(dis + ". ", StringComparison.Ordinal) || des.StartsWith(dis + "。", StringComparison.Ordinal)))
+        {
+            // 生成器把整段描述同时写入显示名与描述，此时以整段描述为源文翻译后再拆分，词表只需登记一条
+            SourceDescription = des;
+        }
+        if (!dis.IsNullOrEmpty() && des.IsNullOrEmpty())
+        {
+            // 中文句号与英文句点均可作为显示名与描述的分隔符
+            var (name, desc) = SplitFirstSentence(dis);
+            if (desc != null)
+            {
+                dis = name;
+                des = desc;
+            }
         }
         DisplayName = dis ?? property.Name;
         Description = des;
 
         var ra = property.GetCustomAttribute<ReadOnlyAttribute>();
         if (ra != null) ReadOnly = ra.IsReadOnly;
+    }
+
+    /// <summary>按当前语言本地化显示名、描述与分类</summary>
+    /// <remarks>
+    /// 字段元数据来自静态缓存，缓存中保存源文；每次请求克隆后调用本方法即可切换语言。
+    /// 有整段描述时先翻译再按首句拆分，避免先拆分导致词表键不匹配。
+    /// </remarks>
+    public virtual void Localize()
+    {
+        // 本地化前记录是否为默认列标题，供 ListField.GetLinkName 判断
+        var isDefault = Field == null || DisplayName == Field.DisplayName;
+        IsDefaultDisplayName = isDefault;
+
+        if (!SourceDescription.IsNullOrEmpty() && isDefault)
+        {
+            var translated = L.T(SourceDescription);
+            if (!ReferenceEquals(translated, SourceDescription))
+            {
+                var (name, desc) = SplitFirstSentence(translated);
+                DisplayName = name;
+                Description = desc;
+            }
+            else
+            {
+                // 整段描述没有译文时，按源文拆分后分别翻译，允许只补显示名或说明
+                var (name, desc) = SplitFirstSentence(SourceDescription);
+                DisplayName = L.T(name);
+                Description = desc == null ? null : L.T(desc);
+            }
+        }
+        else if (Description.IsNullOrEmpty() && !DisplayName.IsNullOrEmpty())
+        {
+            var (name, desc) = SplitFirstSentence(L.T(DisplayName));
+            DisplayName = name;
+            Description = desc;
+        }
+        else
+        {
+            if (!DisplayName.IsNullOrEmpty()) DisplayName = L.T(DisplayName);
+            if (!Description.IsNullOrEmpty()) Description = L.T(Description);
+        }
+
+        if (!Category.IsNullOrEmpty()) Category = L.T(Category);
+    }
+
+    /// <summary>克隆并按当前语言本地化字段集合</summary>
+    /// <param name="fields">源字段集合，来自静态缓存，保留源文</param>
+    /// <returns>可直接输出的字段副本</returns>
+    public static IList<DataField> Localize(IList<DataField> fields)
+    {
+        if (fields == null) return [];
+
+        var list = new List<DataField>(fields.Count);
+        foreach (var item in fields)
+        {
+            var df = item.Clone();
+            df.Localize();
+            list.Add(df);
+        }
+
+        return list;
+    }
+
+    /// <summary>按句末标点拆分显示名和描述</summary>
+    /// <param name="text">完整描述</param>
+    /// <returns>显示名与剩余描述；没有第二句时描述为 null</returns>
+    public static (String Display, String? Description) SplitFirstSentence(String text)
+    {
+        if (text.IsNullOrEmpty()) return (text, null);
+
+        var index = FindSentenceEnd(text);
+        if (index > 0)
+        {
+            var display = text[..index];
+            var description = text[(index + 1)..].Trim();
+            return (display, description.IsNullOrEmpty() ? null : description);
+        }
+
+        // 泰语等无句末标点的长描述，取首个空格前的短语作为显示名；短标签整体返回
+        if (text.Length > 40)
+        {
+            var space = text.IndexOf(' ');
+            if (space > 0) return (text[..space], text[(space + 1)..].Trim());
+        }
+
+        return (text, null);
+    }
+
+    private static Int32 FindSentenceEnd(String text)
+    {
+        for (var i = 0; i < text.Length; i++)
+        {
+            var ch = text[i];
+            if (ch is '。' or '！' or '？' or '।') return i;
+
+            // 英文句点仅在后面是空白或结尾时拆分，避免小数和 URL
+            if (ch is '.' or '!' or '?')
+            {
+                if (i + 1 >= text.Length || Char.IsWhiteSpace(text[i + 1])) return i;
+            }
+        }
+
+        return -1;
     }
 
     /// <summary>克隆</summary>

@@ -519,14 +519,14 @@ public class IndexController : ControllerBaseX, IPageDataContext
                             {
                                 ID = menu.ID,
                                 Name = menu.Name,
-                                DisplayName = menu.DisplayName ?? menu.Name,
+                                DisplayName = NewLife.Cube.Membership.MenuHelper.GetDisplayName(menu),
                                 FullName = menu.FullName,
                                 Url = menu.Url,
                                 Icon = menu.Icon,
                                 Visible = menu.Visible,
                                 NewWindow = menu.NewWindow,
                                 ParentID = menu.ParentID,
-                                Permissions = menu.Permissions
+                                Permissions = NewLife.Cube.Membership.MenuHelper.GetPermissions(menu)
                             }).ToList();
             return menuList.Count > 0 ? menuList : null;
         }, menus);

@@ -21,31 +21,31 @@
     var dic = new Dictionary<String, Object>();
     if (userId == currentId)
     {
-        dic["基本信息"] = "/Admin/User/Info";
-        dic["修改密码"] = "/Admin/User/ChangePassword";
-        dic["第三方授权"] = "/Admin/User/Binds";
-        dic["租户信息"] = "/Admin/User/TenantSetting";
+        dic["Basic info"] = "/Admin/User/Info";
+        dic["Change password"] = "/Admin/User/ChangePassword";
+        dic["Third-party authorization"] = "/Admin/User/Binds";
+        dic["Tenant info"] = "/Admin/User/TenantSetting";
     }
     // 用户页对非系统角色只读（资料编辑走用户中心），此处统一指向只读查看页
     dic[user + ""] = $"/Admin/User/Detail?Id={userId}";
-    dic["三方链接"] = $"/Admin/UserConnect?userId={userId}";
-    dic["令牌"] = $"/Admin/UserToken?userId={userId}";
-    dic["OAuth日志"] = $"/Admin/OAuthLog?userId={userId}";
-    dic["日志"] = $"/Admin/Log?userId={userId}";
-    dic["通知记录"] = $"/Admin/NotificationRecord?userId={userId}&channel=InApp";
+    dic["Linked accounts"] = $"/Admin/UserConnect?userId={userId}";
+    dic["Tokens"] = $"/Admin/UserToken?userId={userId}";
+    dic["OAuth log"] = $"/Admin/OAuthLog?userId={userId}";
+    dic["Logs"] = $"/Admin/Log?userId={userId}";
+    dic["Notification records"] = $"/Admin/NotificationRecord?userId={userId}&channel=InApp";
 
     // Tab 图标
     var icons = new Dictionary<String, String>
     {
-        ["基本信息"] = "fa-user",
-        ["修改密码"] = "fa-key",
-        ["第三方授权"] = "fa-plug",
-        ["租户信息"] = "fa-building-o",
-        ["三方链接"] = "fa-link",
-        ["令牌"] = "fa-ticket",
-        ["OAuth日志"] = "fa-history",
-        ["日志"] = "fa-list-alt",
-        ["通知记录"] = "fa-bell-o",
+        ["Basic info"] = "fa-user",
+        ["Change password"] = "fa-key",
+        ["Third-party authorization"] = "fa-plug",
+        ["Tenant info"] = "fa-building-o",
+        ["Linked accounts"] = "fa-link",
+        ["Tokens"] = "fa-ticket",
+        ["OAuth log"] = "fa-history",
+        ["Logs"] = "fa-list-alt",
+        ["Notification records"] = "fa-bell-o",
     };
     // 用户标签为查看页
     icons[user + ""] = "fa-eye";
@@ -63,7 +63,7 @@
             // 用户标签指向查看页；用户编辑页（管理入口）同样点亮该标签
             var active = path.EqualIgnoreCase(v) || (v.EqualIgnoreCase("/Admin/User/Detail") && path.StartsWithIgnoreCase("/Admin/User/Edit"));
             <li role="presentation" class="@(active ? "active" : "")">
-                <a href="@url"><i class="fa @icon"></i>@item.Key</a>
+                <a href="@url"><i class="fa @icon"></i>@L.T(item.Key)</a>
             </li>
         }
     </ul>

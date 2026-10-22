@@ -250,23 +250,7 @@ public static class ViewHelper
                     case TypeCode.Double:
                         if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                         {
-                            var scale = item.Scale;
-                            var des = item.Description + "";
-                            if (des.Contains("十分之一")) scale += 1;
-                            if (des.Contains("百分之一")) scale += 2;
-                            if (des.Contains("千分之一")) scale += 3;
-                            if (des.Contains("万分之一")) scale += 4;
-                            scale = scale >= 2 ? scale - 2 : 0;
-                            if (des.Contains("十分之一"))
-                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 10).ToString("p{1}"))</td>""", item.Name, scale);
-                            else if (des.Contains("百分之一"))
-                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 100).ToString("p{1}"))</td>""", item.Name, scale);
-                            else if (des.Contains("千分之一"))
-                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 1000).ToString("p{1}"))</td>""", item.Name, scale);
-                            else if (des.Contains("万分之一"))
-                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 10000).ToString("p{1}"))</td>""", item.Name, scale);
-                            else
-                                sb.AppendFormat("""<td class="text-center">@entity.{0}.ToString("p{1}")</td>""", item.Name, scale);
+                            AppendPercentCell(sb, item, false);
                         }
                         else
                         {
@@ -287,23 +271,7 @@ public static class ViewHelper
                             BuildUser(item, sb);
                         else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                         {
-                            var scale = item.Scale;
-                            var des = item.Description + "";
-                            if (des.Contains("十分之一")) scale += 1;
-                            if (des.Contains("百分之一")) scale += 2;
-                            if (des.Contains("千分之一")) scale += 3;
-                            if (des.Contains("万分之一")) scale += 4;
-                            scale = scale >= 2 ? scale - 2 : 0;
-                            if (des.Contains("十分之一"))
-                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 10d).ToString("p{1}"))</td>""", item.Name, scale);
-                            else if (des.Contains("百分之一"))
-                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 100d).ToString("p{1}"))</td>""", item.Name, scale);
-                            else if (des.Contains("千分之一"))
-                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 1000d).ToString("p{1}"))</td>""", item.Name, scale);
-                            else if (des.Contains("万分之一"))
-                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 10000d).ToString("p{1}"))</td>""", item.Name, scale);
-                            else
-                                sb.AppendFormat("""<td class="text-center">@entity.{0}.ToString("p{1}")</td>""", item.Name, scale);
+                            AppendPercentCell(sb, item, true);
                         }
                         else
                             sb.AppendFormat("""<td class="text-right">@entity.{0}.ToString("n0")</td>""", item.Name);
@@ -384,23 +352,7 @@ public static class ViewHelper
                     case TypeCode.Double:
                         if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                         {
-                            var scale = item.Scale;
-                            var des = item.Description + "";
-                            if (des.Contains("十分之一")) scale += 1;
-                            if (des.Contains("百分之一")) scale += 2;
-                            if (des.Contains("千分之一")) scale += 3;
-                            if (des.Contains("万分之一")) scale += 4;
-                            scale = scale >= 2 ? scale - 2 : 0;
-                            if (des.Contains("十分之一"))
-                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 10).ToString("p{1}"))</td>""", item.Name, scale);
-                            else if (des.Contains("百分之一"))
-                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 100).ToString("p{1}"))</td>""", item.Name, scale);
-                            else if (des.Contains("千分之一"))
-                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 1000).ToString("p{1}"))</td>""", item.Name, scale);
-                            else if (des.Contains("万分之一"))
-                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 10000).ToString("p{1}"))</td>""", item.Name, scale);
-                            else
-                                sb.AppendFormat("""<td class="text-center">@entity.{0}.ToString("p{1}")</td>""", item.Name, scale);
+                            AppendPercentCell(sb, item, false);
                         }
                         else
                         {
@@ -422,23 +374,7 @@ public static class ViewHelper
                             sb.Append(@"<td></td>");
                         else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                         {
-                            var scale = item.Scale;
-                            var des = item.Description + "";
-                            if (des.Contains("十分之一")) scale += 1;
-                            if (des.Contains("百分之一")) scale += 2;
-                            if (des.Contains("千分之一")) scale += 3;
-                            if (des.Contains("万分之一")) scale += 4;
-                            scale = scale >= 2 ? scale - 2 : 0;
-                            if (des.Contains("十分之一"))
-                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 10d).ToString("p{1}"))</td>""", item.Name, scale);
-                            else if (des.Contains("百分之一"))
-                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 100d).ToString("p{1}"))</td>""", item.Name, scale);
-                            else if (des.Contains("千分之一"))
-                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 1000d).ToString("p{1}"))</td>""", item.Name, scale);
-                            else if (des.Contains("万分之一"))
-                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 10000d).ToString("p{1}"))</td>""", item.Name, scale);
-                            else
-                                sb.AppendFormat("""<td class="text-center">@entity.{0}.ToString("p{1}")</td>""", item.Name, scale);
+                            AppendPercentCell(sb, item, true);
                         }
                         else
                             sb.AppendFormat("""<td class="text-right">@entity.{0}.ToString("n0")</td>""", item.Name);
@@ -925,14 +861,14 @@ public static class ViewHelper
                             {
                                 ID = menu.ID,
                                 Name = menu.Name,
-                                DisplayName = menu.DisplayName ?? menu.Name,
+                                DisplayName = NewLife.Cube.Membership.MenuHelper.GetDisplayName(menu),
                                 FullName = menu.FullName,
                                 Url = menu.Url,
                                 Icon = menu.Icon,
                                 Visible = menu.Visible,
                                 NewWindow = menu.NewWindow,
                                 ParentID = menu.ParentID,
-                                Permissions = menu.Permissions
+                                Permissions = NewLife.Cube.Membership.MenuHelper.GetPermissions(menu)
                             }).ToList();
             return menuList.Count > 0 ? menuList : null;
         }, menus);
@@ -1007,6 +943,38 @@ public static class ViewHelper
     /// <returns></returns>
     public static Boolean IsAttachment(this IDataColumn dc) => dc.ItemType.EqualIgnoreCase("file", "image") || dc.ItemType.StartsWithIgnoreCase("file-", "image-");
 
+    /// <summary>生成百分比单元格代码。按字段描述推断缩放倍数</summary>
+    /// <param name="sb">输出缓冲</param>
+    /// <param name="item">字段</param>
+    /// <param name="useDouble">是否使用浮点除数，整数与字节类型需要</param>
+    private static void AppendPercentCell(StringBuilder sb, DataField item, Boolean useDouble)
+    {
+        var scale = item.Scale;
+        var divisor = GetPercentDivisor(item.Description + "", ref scale);
+        scale = scale >= 2 ? scale - 2 : 0;
+
+        if (divisor == 1)
+            sb.AppendFormat("""<td class="text-center">@entity.{0}.ToString("p{1}")</td>""", item.Name, scale);
+        else
+            sb.AppendFormat("""<td class="text-center">@((entity.{0} / {2}).ToString("p{1}"))</td>""", item.Name, scale, useDouble ? divisor + "d" : divisor + "");
+    }
+
+    /// <summary>按字段描述推断百分比缩放倍数。同时支持中文（十分之一/百分之一/千分之一/万分之一）与英文（1/10、1/100、1/1000、1/10000）写法</summary>
+    /// <param name="description">字段描述</param>
+    /// <param name="scale">小数位数。命中缩放规则时递增</param>
+    /// <returns>除数；未命中时返回 1</returns>
+    private static Int32 GetPercentDivisor(String description, ref Int32 scale)
+    {
+        if (!description.IsNullOrEmpty())
+        {
+            // 长串优先匹配，避免 1/10 误命中 1/1000
+            if (description.Contains("万分之一") || description.Contains("1/10000")) { scale += 4; return 10000; }
+            if (description.Contains("千分之一") || description.Contains("1/1000")) { scale += 3; return 1000; }
+            if (description.Contains("百分之一") || description.Contains("1/100")) { scale += 2; return 100; }
+            if (description.Contains("十分之一") || description.Contains("1/10")) { scale += 1; return 10; }
+        }
+        return 1;
+    }
     /// <summary>格式化数据用于显示</summary>
     /// <param name="itemType"></param>
     /// <param name="value"></param>
@@ -1023,19 +991,21 @@ public static class ViewHelper
             var ts = TimeSpan.FromSeconds(value.ToInt());
             if (!description.IsNullOrEmpty())
             {
-                if (description.Contains("毫秒") || description.Contains("ms"))
+                // 描述同时支持中文单位与英文单位（词表把字段描述翻译成各语言后，英文源文仍要能识别）
+                var des = description.ToLowerInvariant();
+                if (description.Contains("毫秒") || des.Contains("ms") || des.Contains("millisecond"))
                 {
                     ts = TimeSpan.FromMilliseconds(value.ToInt());
                 }
-                else if (description.Contains("秒"))
+                else if (description.Contains("秒") || des.Contains("second"))
                 {
                     //ts = TimeSpan.FromSeconds(value.ToInt());
                 }
-                else if (description.Contains("分"))
+                else if (description.Contains("分") || des.Contains("minute"))
                 {
                     ts = TimeSpan.FromMinutes(value.ToInt());
                 }
-                else if (description.Contains("小时"))
+                else if (description.Contains("小时") || des.Contains("hour"))
                 {
                     ts = TimeSpan.FromHours(value.ToInt());
                 }

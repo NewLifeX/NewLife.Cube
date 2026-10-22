@@ -141,7 +141,7 @@ else
                 var val = "";
                 try
                 {
-                    val = EnumHelper.GetDescription((Enum)value) ?? value + "";
+                    val = EnumLocalization.GetDescription((Enum)value) ?? value + "";
                 }
                 catch { }
                 <td class="@(tdClass ?? "text-center")" title="@title">@val</td>

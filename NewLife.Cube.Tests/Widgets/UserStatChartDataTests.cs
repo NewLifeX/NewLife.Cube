@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -139,19 +140,29 @@ public class UserStatChartDataTests : IDisposable
     [Fact(DisplayName = "OnGetChartData_有数据_主折线含三Y轴与系列名")]
     public void OnGetChartData_HasData_LineHas3YAxis()
     {
-        var ctrl = new TestUserStatController();
-        var list = BuildData(3);
+        // 实体元数据以中文为源文，图例名随请求语言翻译；本用例固定中文以断言源文系列名
+        var prev = Localization.Culture;
+        Localization.Culture = CultureInfo.GetCultureInfo("zh-CN");
+        try
+        {
+            var ctrl = new TestUserStatController();
+            var list = BuildData(3);
 
-        var rs = ctrl.TestOnGetChartData(list);
+            var rs = ctrl.TestOnGetChartData(list);
 
-        var chart = ToJson(rs[0]!);
-        // 三 Y 轴：用户数 / 总数 / 时长
-        Assert.Equal(3, chart.GetProperty("yAxis").GetArrayLength());
+            var chart = ToJson(rs[0]!);
+            // 三 Y 轴：用户数 / 总数 / 时长
+            Assert.Equal(3, chart.GetProperty("yAxis").GetArrayLength());
 
-        // 图例包含关键系列名
-        var legend = chart.GetProperty("legend").GetProperty("data").EnumerateArray().Select(e => e.GetString()).ToArray();
-        Assert.Contains("总数", legend);
-        Assert.Contains("在线时间", legend);
+            // 图例包含关键系列名（实体元数据以中文为源文）
+            var legend = chart.GetProperty("legend").GetProperty("data").EnumerateArray().Select(e => e.GetString()).ToArray();
+            Assert.Contains("总数", legend);
+            Assert.Contains("在线时间", legend);
+        }
+        finally
+        {
+            Localization.Culture = prev;
+        }
     }
 
     [Fact(DisplayName = "OnGetChartData_空数据_返回空数组")]

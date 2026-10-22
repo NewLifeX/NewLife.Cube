@@ -53,5 +53,5 @@
 @Html.TextBox(field.Name + "_attachment", entity[field.Name], new { type = "file", accept })
 @if (!value.IsNullOrEmpty())
 {
-    <a href="@value">下载</a>
+    <a href="@value">@L.T("Download")</a>
 }

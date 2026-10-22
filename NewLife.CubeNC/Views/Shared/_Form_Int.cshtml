@@ -33,6 +33,9 @@
         var att = item.GetCustomAttribute<DescriptionAttribute>(false);
         if (att != null && !String.IsNullOrEmpty(att.Description)) des = att.Description;
 
+        // 枚举描述属于元数据，界面输出时按当前语言翻译
+        des = L.T(des);
+
         //dic.Add(value, des);
         // 有些枚举可能不同名称有相同的值
         dic[v] = des;

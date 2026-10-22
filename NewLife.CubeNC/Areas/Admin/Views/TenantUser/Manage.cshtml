@@ -16,14 +16,14 @@
         .OrderByDescending(e => e.Sort)
         .ToList();
 
-    ViewBag.Title = $"租户「{tenant?.Name}」成员管理";
+    ViewBag.Title = String.Format(L.T("Member management of tenant [{0}]"), tenant?.Name);
 }
 <div class="page-header">
-    <h3><i class="fa fa-users"></i> 租户「@(tenant?.Name)」成员管理
+    <h3><i class="fa fa-users"></i> @String.Format(L.T("Member management of tenant [{0}]"), tenant?.Name)
         <small>@(tenant?.Code)</small>
         <span class="pull-right">
-            <a class="btn btn-sm btn-default" href="/Admin/Tenant"><i class="fa fa-list"></i> 返回租户</a>
-            <a class="btn btn-sm btn-default" href="/Admin/TenantUser?tenantId=@tid"><i class="fa fa-table"></i> 标准列表</a>
+            <a class="btn btn-sm btn-default" href="/Admin/Tenant"><i class="fa fa-list"></i> @L.T("Back to tenant")</a>
+            <a class="btn btn-sm btn-default" href="/Admin/TenantUser?tenantId=@tid"><i class="fa fa-table"></i> @L.T("Standard list")</a>
         </span>
     </h3>
 </div>
@@ -37,15 +37,15 @@
                 @await Html.PartialAsync("_SelectUser", new SelectUserModel { Id = "userId", UserId = 0 })
             </div>
             <div class="form-group">
-                <select id="roleIds" name="roleIds" class="form-control" multiple="multiple" style="min-width:180px;height:38px;" title="可多选角色">
+                <select id="roleIds" name="roleIds" class="form-control" multiple="multiple" style="min-width:180px;height:38px;" title="@L.T("Multiple roles allowed")">
                     @foreach (var role in roles)
                     {
                         <option value="@role.ID">@role.Name</option>
                     }
                 </select>
             </div>
-            <button type="button" class="btn btn-success" onclick="addMember()"><i class="fa fa-plus"></i> 添加成员</button>
-            <span class="help-block">搜索用户后添加到当前租户，可同时分配角色</span>
+            <button type="button" class="btn btn-success" onclick="addMember()"><i class="fa fa-plus"></i> @L.T("Add member")</button>
+            <span class="help-block">@L.T("Search a user to add to the current tenant and assign roles at the same time")</span>
         </form>
     </div>
 }
@@ -53,11 +53,11 @@
 <table class="table table-bordered table-hover table-striped table-condensed">
     <thead>
         <tr>
-            <th>用户</th>
-            <th>角色</th>
-            <th>状态</th>
-            <th>加入时间</th>
-            <th>操作</th>
+            <th>@L.T("User")</th>
+            <th>@L.T("Role")</th>
+            <th>@L.T("Status")</th>
+            <th>@L.T("Join time")</th>
+            <th>@L.T("Operation")</th>
         </tr>
     </thead>
     <tbody>
@@ -70,23 +70,23 @@
                 <td>
                     @if (tu.Enable)
                     {
-                        <span class="label label-success">正常</span>
+                        <span class="label label-success">@L.T("Normal")</span>
                     }
                     else
                     {
-                        <span class="label label-default">禁用</span>
+                        <span class="label label-default">@L.T("Disabled")</span>
                     }
                 </td>
                 <td>@tu.CreateTime.ToFullString()</td>
                 <td>
                     @if (tenant == null || tenant.ManagerId != tu.UserId)
                     {
-                        <button type="button" class="btn btn-xs btn-warning" onclick="toggleMember(@tu.Id, @(!tu.Enable))">@(tu.Enable ? "禁用" : "启用")</button>
-                        <button type="button" class="btn btn-xs btn-danger" onclick="removeMember(@tu.Id)">移除</button>
+                        <button type="button" class="btn btn-xs btn-warning" onclick="toggleMember(@tu.Id, @(!tu.Enable))">@(tu.Enable ? L.T("Disabled") : L.T("Enabled"))</button>
+                        <button type="button" class="btn btn-xs btn-danger" onclick="removeMember(@tu.Id)">@L.T("Remove")</button>
                     }
                     else
                     {
-                        <span class="text-muted">租户管理员</span>
+                        <span class="text-muted">@L.T("Tenant administrator")</span>
                     }
                 </td>
             </tr>
@@ -94,7 +94,7 @@
         @if (!Model.Any())
         {
             <tr>
-                <td colspan="5" class="text-center text-muted">暂无成员，请在下方搜索用户添加</td>
+                <td colspan="5" class="text-center text-muted">@L.T("No members yet; search a user below to add")</td>
             </tr>
         }
     </tbody>
@@ -103,7 +103,7 @@
 <script type="text/javascript">
     function addMember() {
         var userId = $('#userId').val();
-        if (!userId) { alert('请先搜索并选择用户'); return; }
+        if (!userId) { alert('@L.T("Search and select a user first")'); return; }
         $.ajax({
             url: '/Admin/TenantUser/AddMember',
             type: 'POST',
@@ -113,11 +113,11 @@
                 if (json && json.code === 0) {
                     location.reload();
                 } else {
-                    alert((json && json.message) || '添加失败');
+                    alert((json && json.message) || '@L.T("Add failed")');
                 }
             },
             error: function (xhr) {
-                alert('请求失败：' + (xhr.statusText || ''));
+                alert('@L.T("Request failed:")' + ' ' + (xhr.statusText || ''));
             }
         });
     }
@@ -132,17 +132,17 @@
                 if (json && json.code === 0) {
                     location.reload();
                 } else {
-                    alert((json && json.message) || '操作失败');
+                    alert((json && json.message) || '@L.T("Operation failed")');
                 }
             },
             error: function (xhr) {
-                alert('请求失败：' + (xhr.statusText || ''));
+                alert('@L.T("Request failed:")' + ' ' + (xhr.statusText || ''));
             }
         });
     }
 
     function removeMember(id) {
-        if (!confirm('确定移除该成员？')) return;
+        if (!confirm('@L.T("Remove this member?")')) return;
         $.ajax({
             url: '/Admin/TenantUser/RemoveMember',
             type: 'POST',
@@ -152,11 +152,11 @@
                 if (json && json.code === 0) {
                     location.reload();
                 } else {
-                    alert((json && json.message) || '操作失败');
+                    alert((json && json.message) || '@L.T("Operation failed")');
                 }
             },
             error: function (xhr) {
-                alert('请求失败：' + (xhr.statusText || ''));
+                alert('@L.T("Request failed:")' + ' ' + (xhr.statusText || ''));
             }
         });
     }

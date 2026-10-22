@@ -1,4 +1,4 @@
-﻿@using System.Diagnostics;
+@using System.Diagnostics;
 @using System.Collections;
 @using System.Reflection;
 @using System.Runtime.Versioning;
@@ -11,7 +11,7 @@
     //Layout = NewLife.Cube.Setting.Current.Layout;
     var session = HttpContextAccessor.HttpContext.Features.Get<ISessionFeature>()?.Session;
     var session2 = HttpContextAccessor.HttpContext.Items["Session"] as IDictionary<String, Object>;
-    ViewBag.Title = "Session列表";
+    ViewBag.Title = L.T("Session list");
 }
 
 <div class="layui-fluid" id="mainpage">
@@ -21,7 +21,7 @@
             <div class="layui-col-md12">
                 <div class="layui-card">
                     <div class="layui-card-header">
-                        Session列表(@session.Keys.Count())
+                        @(L.T("Session list"))(@session.Keys.Count())
                     </div>
                     <div class="layui-card-body">
                         <div class="layui-form layui-border-box layui-table-view">
@@ -33,21 +33,21 @@
                                                 <th>
                                                     <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
                                                         <span>
-                                                            名称
+                                                            @L.T("Name")
                                                         </span>
                                                     </div>
                                                 </th>
                                                 <th>
                                                     <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
                                                         <span>
-                                                            类型
+                                                            @L.T("Type")
                                                         </span>
                                                     </div>
                                                 </th>
                                                 <th>
                                                     <div class="layui-table-cell laytable-cell-1-0-2" data-id="1-0-2">
                                                         <span>
-                                                            数值
+                                                            @L.T("Value")
                                                         </span>
                                                     </div>
                                                 </th>
@@ -91,7 +91,7 @@
             <div class="layui-col-md12">
                 <div class="layui-card">
                     <div class="layui-card-header">
-                        Session2列表(@session2.Count)
+                        @(L.T("Session2 list"))(@session2.Count)
                     </div>
                     <div class="layui-card-body">
                         <div class="layui-form layui-border-box layui-table-view">
@@ -103,21 +103,21 @@
                                                 <th>
                                                     <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
                                                         <span>
-                                                            名称
+                                                            @L.T("Name")
                                                         </span>
                                                     </div>
                                                 </th>
                                                 <th>
                                                     <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
                                                         <span>
-                                                            类型
+                                                            @L.T("Type")
                                                         </span>
                                                     </div>
                                                 </th>
                                                 <th>
                                                     <div class="layui-table-cell laytable-cell-1-0-2" data-id="1-0-2">
                                                         <span>
-                                                            数值
+                                                            @L.T("Value")
                                                         </span>
                                                     </div>
                                                 </th>

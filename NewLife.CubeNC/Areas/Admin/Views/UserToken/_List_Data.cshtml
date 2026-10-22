@@ -1,4 +1,4 @@
-﻿@model IList<UserToken>
+@model IList<UserToken>
 @using NewLife.Cube.Entity
 @using NewLife;
 @using NewLife.Web;
@@ -17,26 +17,26 @@
         <tr>
             @if (set.EnableSelect)
             {
-                <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
+                <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="@L.T("Select all")" /></th>
             }
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Token"))">令牌</a></th>
-            <th class="text-center" title="地址。锁定该令牌只能访问该资源路径"><a href="@Html.Raw(page.GetSortUrl("Url"))">地址</a></th>
-            <th class="text-center">页面</th>
-            <th class="text-center">Json数据</th>
-            <th class="text-center">Xml数据</th>
-            <th class="text-center">Csv数据</th>
-            <th class="text-center">Excel数据</th>
-            <th class="text-center" title="用户。本地用户"><a href="@Html.Raw(page.GetSortUrl("UserID"))">用户</a></th>
-            <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("Expire"))">过期时间</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Enable"))">启用</a></th>
-            <th class="text-center" title="次数。该令牌使用次数"><a href="@Html.Raw(page.GetSortUrl("Times"))">分享次数</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("LastIP"))">最后地址</a></th>
-            <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("LastTime"))">最后时间</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UpdateIP"))">更新地址</a></th>
-            <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("UpdateTime"))">更新时间</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Token"))">@L.T("Token")</a></th>
+            <th class="text-center" title="@L.T("Address. When locked, the token can only access this resource path")"><a href="@Html.Raw(page.GetSortUrl("Url"))">@L.T("Address")</a></th>
+            <th class="text-center">@L.T("Page")</th>
+            <th class="text-center">@L.T("Json data")</th>
+            <th class="text-center">@L.T("Xml data")</th>
+            <th class="text-center">@L.T("Csv data")</th>
+            <th class="text-center">@L.T("Excel data")</th>
+            <th class="text-center" title="@L.T("User. Local user")"><a href="@Html.Raw(page.GetSortUrl("UserID"))">@L.T("User")</a></th>
+            <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("Expire"))">@L.T("Expiration time")</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Enable"))">@L.T("Enabled")</a></th>
+            <th class="text-center" title="@L.T("Times. How many times this token has been used")"><a href="@Html.Raw(page.GetSortUrl("Times"))">@L.T("Share count")</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("LastIP"))">@L.T("Last address")</a></th>
+            <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("LastTime"))">@L.T("Last time")</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UpdateIP"))">@L.T("Update address")</a></th>
+            <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("UpdateTime"))">@L.T("Update time")</a></th>
             @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
             {
-                <th class="text-center">操作</th>
+                <th class="text-center">@L.T("Operation")</th>
             }
         </tr>
     </thead>
@@ -63,11 +63,11 @@
                 }
                 <td>@entity.Token</td>
                 <td style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@entity.Url">@entity.Url</td>
-                <td class="text-center"><a href="@(url+"/Html"+query)" target="_blank">页面</a></td>
-                <td class="text-center"><a href="@(url+"/Json"+query)" target="_blank">Json数据</a></td>
-                <td class="text-center"><a href="@(url+"/Xml"+query)" target="_blank">Xml数据</a></td>
-                <td class="text-center"><a href="@(url+"/Csv"+query)" target="_blank">Csv数据</a></td>
-                <td class="text-center"><a href="@(url+"/Excel"+query)" target="_blank">Excel数据</a></td>
+                <td class="text-center"><a href="@(url+"/Html"+query)" target="_blank">@L.T("Page")</a></td>
+                <td class="text-center"><a href="@(url+"/Json"+query)" target="_blank">@L.T("Json data")</a></td>
+                <td class="text-center"><a href="@(url+"/Xml"+query)" target="_blank">@L.T("Xml data")</a></td>
+                <td class="text-center"><a href="@(url+"/Csv"+query)" target="_blank">@L.T("Csv data")</a></td>
+                <td class="text-center"><a href="@(url+"/Excel"+query)" target="_blank">@L.T("Excel data")</a></td>
                 <td class="text-center">@entity.UserName</td>
                 <td class="text-center">@entity.Expire.ToFullString("")</td>
                 <td class="text-center">

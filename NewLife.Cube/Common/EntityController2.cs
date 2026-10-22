@@ -688,14 +688,14 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     {
         if (file == null || file.Length == 0)
         {
-            error = "未收到文件";
+            error = L.T("No file was received");
             return false;
         }
 
         var ext = Path.GetExtension(file.FileName);
         if (!ext.IsNullOrEmpty() && _dangerousExtensions.Contains(ext))
         {
-            error = $"禁止上传该类型文件：{ext}";
+            error = L.T("Files of type {0} cannot be uploaded", ext);
             return false;
         }
 
@@ -902,7 +902,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         {
             // 写日志
             var type = entity.GetType();
-            var log = LogProvider.Provider.CreateLog(type, "上传", rs, $"上传 {file.FileName} ，目录 {uploadPath} ，保存为 {att.FilePath} " + msg, 0, null, UserHost);
+            var log = LogProvider.Provider.CreateLog(type, L.T("Upload"), rs, L.T("Uploaded {0} to {1}, saved as {2}", file.FileName, uploadPath, att.FilePath) + " " + msg, 0, null, UserHost);
             log.LinkID = id.ToLong();
             log.SaveAsync();
         }

@@ -70,19 +70,29 @@ public class WidgetOrderTests
     private static WidgetAttribute W(String name, String category, Int32 sort, WidgetTypes type = WidgetTypes.Content, Type impl = null) =>
         new(name, name) { Category = category, Sort = sort, WidgetType = type, Type = impl };
 
-    private static readonly IList<String> DefaultGroups = new List<String> { "系统", "个人", "通用" };
+    private static readonly IList<String> DefaultGroups = new List<String> { "System", "Personal", "General" };
+
+    [Fact(DisplayName = "分组名归一化_旧中文名映射为英文源文")]
+    public void NormalizeGroup_LegacyChineseName()
+    {
+        Assert.Equal("System", WidgetManager.NormalizeGroup("系统"));
+        Assert.Equal("Personal", WidgetManager.NormalizeGroup("个人"));
+        Assert.Equal("General", WidgetManager.NormalizeGroup("通用"));
+        Assert.Equal("IoT", WidgetManager.NormalizeGroup("IoT"));
+        Assert.Null(WidgetManager.NormalizeGroup(null));
+    }
 
     [Fact(DisplayName = "OrderWidgets_无布局_按组顺序聚合且组内排序")]
     public void OrderWidgets_Default_Grouped()
     {
         var widgets = new List<WidgetAttribute>
         {
-            W("A", "系统", 20),
-            W("B", "系统", 10),
-            W("C", "个人", 5),
+            W("A", "System", 20),
+            W("B", "System", 10),
+            W("C", "Personal", 5),
             W("D", "IoT", 1),
             W("E", "IoT", 2),
-            W("F", "通用", 1),
+            W("F", "General", 1),
             W("G", "订单", 3),
         };
 
@@ -98,12 +108,12 @@ public class WidgetOrderTests
         var widgets = new List<WidgetAttribute>
         {
             W("A", null!, 1),
-            W("B", "通用", 2),
+            W("B", "General", 2),
         };
 
         var rs = WidgetManager.OrderWidgets(widgets, null, DefaultGroups);
 
-        // 空分类按"通用"处理，与通用组聚合
+        // 空分类按"General"处理，与通用组聚合
         Assert.Equal(new[] { "A", "B" }, rs.Select(e => e.Name).ToArray());
     }
 
@@ -112,12 +122,12 @@ public class WidgetOrderTests
     {
         var widgets = new List<WidgetAttribute>
         {
-            W("A", "系统", 20),
-            W("B", "系统", 10),
-            W("C", "个人", 5),
+            W("A", "System", 20),
+            W("B", "System", 10),
+            W("C", "Personal", 5),
             W("D", "IoT", 1),
             W("E", "IoT", 2),
-            W("F", "通用", 1),
+            W("F", "General", 1),
             W("G", "订单", 3),
         };
 
@@ -139,8 +149,8 @@ public class WidgetOrderTests
     {
         var widgets = new List<WidgetAttribute>
         {
-            W("A", "系统", 10),
-            W("B", "系统", 20),
+            W("A", "System", 10),
+            W("B", "System", 20),
         };
 
         var layout = new Dictionary<String, WidgetLayout>
@@ -161,16 +171,16 @@ public class WidgetOrderTests
     {
         var widgets = new List<WidgetAttribute>
         {
-            W("A", "系统", 10),
-            W("B", "系统", 20),
-            W("C", "系统", 30),
-            W("D", "个人", 5),
+            W("A", "System", 10),
+            W("B", "System", 20),
+            W("C", "System", 30),
+            W("D", "Personal", 5),
         };
 
         // 管理员配置系统组顺序：C 第一、A 第二；B 未列出 → 追加组内末尾
         var groupItems = new Dictionary<String, IList<String>>
         {
-            ["系统"] = new List<String> { "C", "A" },
+            ["System"] = new List<String> { "C", "A" },
         };
 
         var rs = WidgetManager.OrderWidgets(widgets, null, DefaultGroups, groupItems);
@@ -183,16 +193,16 @@ public class WidgetOrderTests
     {
         var widgets = new List<WidgetAttribute>
         {
-            W("A", "系统", 20),
-            W("B", "系统", 10),
-            W("C", "个人", 5),
-            W("D", "个人", 3),
+            W("A", "System", 20),
+            W("B", "System", 10),
+            W("C", "Personal", 5),
+            W("D", "Personal", 3),
         };
 
         // 只配置了系统组；个人组无配置 → 按 Sort
         var groupItems = new Dictionary<String, IList<String>>
         {
-            ["系统"] = new List<String> { "A", "B" },
+            ["System"] = new List<String> { "A", "B" },
         };
 
         var rs = WidgetManager.OrderWidgets(widgets, null, DefaultGroups, groupItems);
@@ -206,8 +216,8 @@ public class WidgetOrderTests
         // 内容卡属于已配置组“系统”且 Sort 更小，KPI 卡属于“通用”；KPI 簇优先仍应排前
         var widgets = new List<WidgetAttribute>
         {
-            W("Content", "系统", 1, WidgetTypes.Content),
-            W("Kpi", "通用", 0, WidgetTypes.Kpi),
+            W("Content", "System", 1, WidgetTypes.Content),
+            W("Kpi", "General", 0, WidgetTypes.Kpi),
         };
 
         var rs = WidgetManager.OrderWidgets(widgets, null, DefaultGroups);
@@ -221,10 +231,10 @@ public class WidgetOrderTests
         // 外部组件（Type 指向其它程序集）与内置组件同簇时业务优先；KPI 簇仍整体在内容区前
         var widgets = new List<WidgetAttribute>
         {
-            W("CubeKpi", "系统", 10, WidgetTypes.Kpi),
-            W("BizKpi", "系统", 5, WidgetTypes.Kpi, typeof(WidgetOrderTests)),
-            W("BizContent", "通用", 1, WidgetTypes.Content, typeof(WidgetOrderTests)),
-            W("CubeContent", "通用", 1, WidgetTypes.Content),
+            W("CubeKpi", "System", 10, WidgetTypes.Kpi),
+            W("BizKpi", "System", 5, WidgetTypes.Kpi, typeof(WidgetOrderTests)),
+            W("BizContent", "General", 1, WidgetTypes.Content, typeof(WidgetOrderTests)),
+            W("CubeContent", "General", 1, WidgetTypes.Content),
         };
 
         var rs = WidgetManager.OrderWidgets(widgets, null, DefaultGroups);
@@ -239,8 +249,8 @@ public class WidgetOrderTests
         // 手工构造（Type 为空）默认按内置处理，不因来源判定抛异常
         var widgets = new List<WidgetAttribute>
         {
-            W("A", "系统", 10, WidgetTypes.Kpi),
-            W("B", "系统", 20, WidgetTypes.Kpi, typeof(WidgetOrderTests)),
+            W("A", "System", 10, WidgetTypes.Kpi),
+            W("B", "System", 20, WidgetTypes.Kpi, typeof(WidgetOrderTests)),
         };
 
         var rs = WidgetManager.OrderWidgets(widgets, null, DefaultGroups);
@@ -253,10 +263,10 @@ public class WidgetOrderTests
     {
         var widgets = new List<WidgetAttribute>
         {
-            W("C1", "系统", 10, WidgetTypes.Kpi),
-            W("C2", "系统", 20, WidgetTypes.Kpi),
-            W("M", "通用", 1, WidgetTypes.Content),
-            W("Biz", "系统", 30, WidgetTypes.Kpi, typeof(WidgetOrderTests)), // 新增业务 KPI
+            W("C1", "System", 10, WidgetTypes.Kpi),
+            W("C2", "System", 20, WidgetTypes.Kpi),
+            W("M", "General", 1, WidgetTypes.Content),
+            W("Biz", "System", 30, WidgetTypes.Kpi, typeof(WidgetOrderTests)), // 新增业务 KPI
         };
 
         // 用户已拖 C1/C2/M；Biz 未覆盖 → 外部 KPI 默认排最前，应插到 C1 之前
@@ -277,11 +287,11 @@ public class WidgetOrderTests
     {
         var widgets = new List<WidgetAttribute>
         {
-            W("C1", "系统", 10, WidgetTypes.Kpi),
-            W("C2", "系统", 20, WidgetTypes.Kpi),
-            W("C3", "系统", 30, WidgetTypes.Kpi), // 新增魔方 KPI
-            W("C4", "系统", 50, WidgetTypes.Kpi),
-            W("M", "通用", 1, WidgetTypes.Content),
+            W("C1", "System", 10, WidgetTypes.Kpi),
+            W("C2", "System", 20, WidgetTypes.Kpi),
+            W("C3", "System", 30, WidgetTypes.Kpi), // 新增魔方 KPI
+            W("C4", "System", 50, WidgetTypes.Kpi),
+            W("M", "General", 1, WidgetTypes.Content),
         };
 
         // 用户拖拽过：C1 第一、C4 第二、C2 第三、M 第四（把 C4 提到 C2 前）
@@ -365,16 +375,16 @@ public class WidgetLayoutTests : IDisposable
         p?.Delete();
 
         var rs = _manager.GetGroupOrder();
-        Assert.Equal(new[] { "系统", "个人", "通用" }, rs);
+        Assert.Equal(new[] { "System", "Personal", "General" }, rs);
     }
 
     [Fact(DisplayName = "SetGroupOrder_GetGroupOrder_往返一致")]
     public void SetGroupOrder_Roundtrip()
     {
-        _manager.SetGroupOrder(new[] { "系统", "IoT", "个人", "订单" });
+        _manager.SetGroupOrder(new[] { "System", "IoT", "Personal", "订单" });
 
         var rs = _manager.GetGroupOrder();
-        Assert.Equal(new[] { "系统", "IoT", "个人", "订单" }, rs);
+        Assert.Equal(new[] { "System", "IoT", "Personal", "订单" }, rs);
     }
 
     [Fact(DisplayName = "GetWidgets_布局重排并隐藏用户卡片")]
@@ -423,9 +433,9 @@ public class WidgetLayoutTests : IDisposable
     [Fact(DisplayName = "SetGroupItemOrder_GetGroupItemOrder_往返一致")]
     public void SetGroupItemOrder_Roundtrip()
     {
-        _manager.SetGroupItemOrder("系统", new[] { "LoginLog", "SysInfo", "UserCount" });
+        _manager.SetGroupItemOrder("System", new[] { "LoginLog", "SysInfo", "UserCount" });
 
-        var rs = _manager.GetGroupItemOrder("系统");
+        var rs = _manager.GetGroupItemOrder("System");
         Assert.Equal(new[] { "LoginLog", "SysInfo", "UserCount" }, rs);
     }
 
@@ -439,11 +449,11 @@ public class WidgetLayoutTests : IDisposable
     public void GetWidgets_GroupItemOrder_Applied()
     {
         // 清理可能存在的组内配置（同集合其它用例可能写入），保证默认断言自包含
-        Parameter.FindByUserIDAndCategoryAndName(0, WidgetManager.GroupCategory, "系统")?.Delete();
+        Parameter.FindByUserIDAndCategoryAndName(0, WidgetManager.GroupCategory, "System")?.Delete();
 
         // 系统组默认按 Sort：SysInfo(100) 在 LoginLog(120) 前
         var def = _manager.GetWidgets(null, true, 0)
-            .Where(e => e.Category == "系统")
+            .Where(e => e.Category == "System")
             .Select(e => e.Name)
             .ToList();
         Assert.Contains("SysInfo", def);
@@ -451,15 +461,15 @@ public class WidgetLayoutTests : IDisposable
         Assert.True(def.IndexOf("SysInfo") < def.IndexOf("LoginLog"), "默认系统组内 SysInfo 应在 LoginLog 前");
 
         // 配置系统组内顺序：LoginLog 在前
-        _manager.SetGroupItemOrder("系统", new[] { "LoginLog", "SysInfo" });
+        _manager.SetGroupItemOrder("System", new[] { "LoginLog", "SysInfo" });
 
         var rs = _manager.GetWidgets(null, true, 0)
-            .Where(e => e.Category == "系统")
+            .Where(e => e.Category == "System")
             .Select(e => e.Name)
             .ToList();
         Assert.True(rs.IndexOf("LoginLog") < rs.IndexOf("SysInfo"), "配置后 LoginLog 应在 SysInfo 前");
 
         // 清理全局配置，避免影响其它用例
-        Parameter.FindByUserIDAndCategoryAndName(0, WidgetManager.GroupCategory, "系统")?.Delete();
+        Parameter.FindByUserIDAndCategoryAndName(0, WidgetManager.GroupCategory, "System")?.Delete();
     }
 }
