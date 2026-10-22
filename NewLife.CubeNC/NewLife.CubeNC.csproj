@@ -118,7 +118,6 @@
     <Compile Include="..\NewLife.Cube\Entity\Models\NotificationRecordModel.cs" Link="Entity\Models\NotificationRecordModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\OAuthConfigModel.cs" Link="Entity\Models\OAuthConfigModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\OAuthLogModel.cs" Link="Entity\Models\OAuthLogModel.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\Models\OrderManagerModel.cs" Link="Entity\Models\OrderManagerModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\PrincipalAgentModel.cs" Link="Entity\Models\PrincipalAgentModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\SmsConfigModel.cs" Link="Entity\Models\SmsConfigModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\UserConnectModel.cs" Link="Entity\Models\UserConnectModel.cs" />

@@ -31,12 +31,6 @@ const routes: RouteRecordRaw[] = [
     name: 'cube-cron-job',
     component: () => import('../views/cube/cron-job/index.vue'),
   },
-  // 订单管理
-  {
-    path: '/Cube/OrderManager',
-    name: 'cube-order-manager',
-    component: () => import('../views/cube/order-manager/index.vue'),
-  },
   // 主体代理
   {
     path: '/Cube/PrincipalAgent',

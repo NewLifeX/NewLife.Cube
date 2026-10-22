@@ -96,23 +96,6 @@ export interface CronJob {
   updateUser: string;
 }
 
-// 订单管理
-export interface OrderManager {
-  id: number;
-  code: string;
-  name: string;
-  amount: number;
-  status: number;
-  customerName: string;
-  customerPhone: string;
-  customerAddress: string;
-  remark: string;
-  createTime: string;
-  updateTime: string;
-  createUser: string;
-  updateUser: string;
-}
-
 // 主体代理
 export interface PrincipalAgent {
   id: number;
