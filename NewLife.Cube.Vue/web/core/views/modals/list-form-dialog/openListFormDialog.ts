@@ -12,12 +12,9 @@
  * 详情接口返回的才是完整、原始、可提交的记录。
  *
  * 详情接口统一走 api-core 的 `cubeApi.page.getDetail(type, id)`，
- * 它请求 `GET {type}/Detail?id=`，由后端 `ApiEntityController.Detail3`
- * （`[HttpGet("Detail")]`，id 取 QueryString）承接。
+ * 它请求 `GET {type}/{id}`，由后端 `ReadOnlyEntityController.Detail`
+ * （`[HttpGet(".../{id}")]`，主键取自路径）承接。
  *
- * ⚠️ 后端必须同时保留两条详情路由，二者等价，仅取 id 的方式不同：
- *   - `GET {apiPrefix}/Detail?id=` → Detail3（Cube 风格，供 api-core / 魔方前端使用）
- *   - `GET {apiPrefix}/{id}`       → Detail2（REST 风格，路由里已有历史调用方）
  * 只用 api-core 时，`{type}` 传 `apiPrefix`（`/api/ioc/{area}/{controller}`）即可：
  * api-core 内部 `resolveRequestUrl` 会剥离 url 自带的 `/api` 再统一补回，
  * 传带或不带 `/api` 前缀都能得到同一最终地址。
@@ -206,7 +203,7 @@ export function openListFormDialog(options: OpenListFormDialogOptions): Promise<
     /**
      * 拉取详情回填表单（api-core 的 getDetail）。
      *
-     * 请求 `GET {apiPrefix}/Detail?id=`，由后端 Detail3 承接；返回已解包的
+     * 请求 `GET {apiPrefix}/{id}`，由后端 `ReadOnlyEntityController.Detail` 承接；返回已解包的
      * `ApiResponse<T>`，取 `.data` 即为记录本体。
      * 与 core/views/form.vue 一致，把字符串 "true"/"false" 归一为布尔，
      * 避免开关控件取值异常。

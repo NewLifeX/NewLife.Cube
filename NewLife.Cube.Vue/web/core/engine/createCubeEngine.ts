@@ -347,7 +347,7 @@ export function createCubeEngine(
   }
 
   async function fetchDetail(prefix: string, id: number | string): Promise<Record<string, unknown>> {
-    const res = (await deps.http.get(`${prefix}/Detail`, { params: { id } })) as {
+    const res = (await deps.http.get(`${prefix}/${encodeURIComponent(String(id))}`)) as {
       data?: Record<string, unknown>;
     };
     return res?.data ?? (res as Record<string, unknown>) ?? {};
@@ -356,7 +356,7 @@ export function createCubeEngine(
   /**
    * 打开编辑 / 查看：先取详情回显。
    * 列表行是「显示态投影」（LOV 已翻译成标签、可能未下发全部列），
-   * 直接铺进表单会把标签当值提交，故一律回源 `GET {type}/Detail?id=`。
+   * 直接铺进表单会把标签当值提交，故一律回源 `GET {type}/{id}`。
    *
    * ⚠️ 模型键名跟随**详情回包**（camelCase），不预先铺一层元数据字段名（PascalCase）：
    * 两套大小写键并存时，必填校验会读到那份 `undefined` 的别名键，表现为

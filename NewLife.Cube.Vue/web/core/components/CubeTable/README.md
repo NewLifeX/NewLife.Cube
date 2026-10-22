@@ -226,11 +226,10 @@ const ctx = useCubeEngine({
 - **分页 1-based**：`pageIndex` / `pageSize` 由引擎发请求时现取当前页码补上，组件不各算一份。
 - **查询参数**：关键字走 `q`；数值/时间区间按 `名称_min` / `名称_max` 两个键提交（与旧 Section 组件同口径）；
   `''` / `null` / `undefined` 被丢弃，但 **`0` 与 `false` 保留**（否则「数量=0」「启用=否」永远查不出来）。
-- **写操作是集合路由**：`POST {type}`、`PUT {type}`（主键在 body）、`DELETE {type}?id=`。
-  后端 `EntityController` 只声明了 `[HttpPut("/api/[area]/[controller]")]` 与
-  `[HttpDelete("/api/[area]/[controller]")]`，路径式 `{type}/{id}` 命中不到路由会 **405**，
-  所以方案草案 §4.2 里的路径式写法没有照搬。
-- **编辑/查看先取详情**：`GET {type}/Detail?id=`。列表行是「显示态投影」（值集已翻译成标签、
+- **读走集合路由，写走路径主键**：`GET {type}`（列表）、`POST {type}`（新增）、
+  `PUT {type}/{id}`（编辑，body 只需带变更字段）、`DELETE {type}/{id}`（删除）。
+  批量删除走 `DELETE {type}?ids=1,2,3`，条件删除走 `DELETE {type}?<搜索条件>`。
+- **编辑/查看先取详情**：`GET {type}/{id}`。列表行是「显示态投影」（值集已翻译成标签、
   列可能不全），直接铺进表单会把标签当值提交。
 - **整行回传前清洗 PascalCase 别名键**：回包里 `enable:true` 与 `Enable:1` 并存时，
   反序列化会取到后出现的旧值 → 实体与库里一致 → 更新被**静默忽略**（接口照样返回成功文案）。

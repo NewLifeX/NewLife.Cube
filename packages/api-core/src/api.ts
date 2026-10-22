@@ -311,9 +311,9 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
     getList: <T = Record<string, unknown>>(type: string, params: PageParams) =>
       request<T[]>({ url: type, method: 'get', params }),
 
-    /** 查看详情 */
+    /** 查看详情：GET {type}/{id}（extra 作为附加查询参数） */
     getDetail: <T = Record<string, unknown>>(type: string, id: number | string, extra?: Record<string, unknown>) =>
-      request<T>({ url: `${type}/Detail`, method: 'get', params: { id, ...extra } }),
+      request<T>({ url: `${type}/${encodeURIComponent(id)}`, method: 'get', params: extra }),
 
     /** 新增 */
     add: (type: string, data: Record<string, unknown>) =>

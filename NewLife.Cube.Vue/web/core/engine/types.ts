@@ -169,7 +169,7 @@ export interface CubeEngineDeps {
    */
   http: CubeHttpLike;
   /**
-   * 取详情。默认实现走 `GET {type}/Detail?id=`（与 `openListFormDialog` 编辑回显同源），
+   * 取详情。默认实现走 `GET {type}/{id}`（与 `openListFormDialog` 编辑回显同源），
    * 返回已解包的实体对象。
    */
   getDetail?: (type: string, id: number | string) => Promise<Record<string, unknown>>;

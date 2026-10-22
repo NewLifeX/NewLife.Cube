@@ -579,8 +579,8 @@ const handleEdit = async (row: Role) => {
   // 先使用行数据填充表单
   Object.assign(form, { ...row });
   try {
-    // 再通过 Detail 接口获取完整数据（包括 permission 字段）
-    const data = await request.get(`/Admin/Role/Detail?id=${row.id}`);
+    // 再通过详情接口获取完整数据（包括 permission 字段）
+    const data = await request.get(`/Admin/Role/${row.id}`);
     const detail = apiDataToSingle<Role>(data);
     if (detail) {
       Object.assign(form, detail);

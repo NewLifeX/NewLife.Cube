@@ -478,7 +478,7 @@ const handleEdit = async (row: User) => {
 
   try {
     // 方式2：请求最新数据
-    const data = await request.get(`/Admin/User/Detail?id=${row.id}`, { params: queryParams });
+    const data = await request.get(`/Admin/User/${row.id}`, { params: queryParams });
     const userDetail = apiDataToSingle<User>(data);
     if (userDetail) {
       Object.assign(userForm, userDetail);

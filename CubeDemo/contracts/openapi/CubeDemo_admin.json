@@ -117,13 +117,12 @@
         "tags": [
           "AccessRule"
         ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "summary": "查看单行数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -347,27 +346,6 @@
             "description": "附件编号、文件路径、MIME 类型",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/AccessRule/Detail": {
-      "get": {
-        "tags": [
-          "AccessRule"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfAccessRule"
-                }
-              }
             }
           }
         }
@@ -1132,13 +1110,12 @@
         "tags": [
           "Department"
         ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "summary": "查看单行数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -1362,27 +1339,6 @@
             "description": "附件编号、文件路径、MIME 类型",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/Department/Detail": {
-      "get": {
-        "tags": [
-          "Department"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfDepartment"
-                }
-              }
             }
           }
         }
@@ -2247,40 +2203,18 @@
         "tags": [
           "Log"
         ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "summary": "查看单行数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
             }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfLog"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/Log/Detail": {
-      "get": {
-        "tags": [
-          "Log"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "responses": {
           "200": {
             "description": "",
@@ -2550,7 +2484,7 @@
         }
       }
     },
-    "/api/Admin/Lov/Detail": {
+    "/api/Admin/Lov/{id}": {
       "get": {
         "tags": [
           "Lov"
@@ -2559,8 +2493,9 @@
         "parameters": [
           {
             "name": "id",
-            "in": "query",
-            "description": "值集编码（LovCode），可为空（兼容 ?id= 传参）",
+            "in": "path",
+            "description": "值集编码（LovCode）",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -2578,9 +2513,7 @@
             }
           }
         }
-      }
-    },
-    "/api/Admin/Lov/{id}": {
+      },
       "delete": {
         "tags": [
           "Lov"
@@ -2819,13 +2752,12 @@
         "tags": [
           "MailConfig"
         ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "summary": "查看单行数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -3049,27 +2981,6 @@
             "description": "附件编号、文件路径、MIME 类型",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/MailConfig/Detail": {
-      "get": {
-        "tags": [
-          "MailConfig"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfMailConfig"
-                }
-              }
             }
           }
         }
@@ -3344,13 +3255,12 @@
         "tags": [
           "Menu"
         ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "summary": "查看单行数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -3579,27 +3489,6 @@
         }
       }
     },
-    "/api/Admin/Menu/Detail": {
-      "get": {
-        "tags": [
-          "Menu"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfMenu"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/Admin/Menu/GetPage": {
       "get": {
         "tags": [
@@ -3807,13 +3696,12 @@
         "tags": [
           "OAuthConfig"
         ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "summary": "查看单行数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -4042,27 +3930,6 @@
         }
       }
     },
-    "/api/Admin/OAuthConfig/Detail": {
-      "get": {
-        "tags": [
-          "OAuthConfig"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfOAuthConfig"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/Admin/OAuthConfig/GetPage": {
       "get": {
         "tags": [
@@ -4214,40 +4081,18 @@
         "tags": [
           "OAuthLog"
         ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "summary": "查看单行数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
             }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfOAuthLog"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/OAuthLog/Detail": {
-      "get": {
-        "tags": [
-          "OAuthLog"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "responses": {
           "200": {
             "description": "",
@@ -4469,13 +4314,12 @@
         "tags": [
           "Parameter"
         ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "summary": "查看单行数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -4699,27 +4543,6 @@
             "description": "附件编号、文件路径、MIME 类型",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/Parameter/Detail": {
-      "get": {
-        "tags": [
-          "Parameter"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfParameter"
-                }
-              }
             }
           }
         }
@@ -5000,13 +4823,12 @@
         "tags": [
           "Role"
         ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "summary": "查看单行数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -5235,27 +5057,6 @@
         }
       }
     },
-    "/api/Admin/Role/Detail": {
-      "get": {
-        "tags": [
-          "Role"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfRole"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/Admin/Role/GetPage": {
       "get": {
         "tags": [
@@ -5463,13 +5264,12 @@
         "tags": [
           "SmsConfig"
         ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "summary": "查看单行数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -5693,27 +5493,6 @@
             "description": "附件编号、文件路径、MIME 类型",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/SmsConfig/Detail": {
-      "get": {
-        "tags": [
-          "SmsConfig"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfSmsConfig"
-                }
-              }
             }
           }
         }
@@ -6328,13 +6107,12 @@
         "tags": [
           "Tenant"
         ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "summary": "查看单行数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -6563,27 +6341,6 @@
         }
       }
     },
-    "/api/Admin/Tenant/Detail": {
-      "get": {
-        "tags": [
-          "Tenant"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfTenant"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/Admin/Tenant/GetPage": {
       "get": {
         "tags": [
@@ -6791,13 +6548,12 @@
         "tags": [
           "TenantUser"
         ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "summary": "查看单行数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -7026,27 +6782,6 @@
         }
       }
     },
-    "/api/Admin/TenantUser/Detail": {
-      "get": {
-        "tags": [
-          "TenantUser"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfTenantUser"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/Admin/TenantUser/GetPage": {
       "get": {
         "tags": [
@@ -7254,13 +6989,12 @@
         "tags": [
           "UserConnect"
         ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "summary": "查看单行数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -7484,27 +7218,6 @@
             "description": "附件编号、文件路径、MIME 类型",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/UserConnect/Detail": {
-      "get": {
-        "tags": [
-          "UserConnect"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfUserConnect"
-                }
-              }
             }
           }
         }
@@ -8186,13 +7899,12 @@
         "tags": [
           "User"
         ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "summary": "查看单行数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -8366,27 +8078,6 @@
             "description": "统一 Json 响应，message 含导入行数",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/User/Detail": {
-      "get": {
-        "tags": [
-          "User"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfUser"
-                }
-              }
             }
           }
         }
@@ -8630,13 +8321,12 @@
         "tags": [
           "UserOnline"
         ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "summary": "查看单行数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -8865,27 +8555,6 @@
         }
       }
     },
-    "/api/Admin/UserOnline/Detail": {
-      "get": {
-        "tags": [
-          "UserOnline"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfUserOnline"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/Admin/UserOnline/GetPage": {
       "get": {
         "tags": [
@@ -9037,40 +8706,18 @@
         "tags": [
           "UserStat"
         ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "summary": "查看单行数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
             }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfUserStat"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/UserStat/Detail": {
-      "get": {
-        "tags": [
-          "UserStat"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
         "responses": {
           "200": {
             "description": "",
@@ -9292,13 +8939,12 @@
         "tags": [
           "UserToken"
         ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "summary": "查看单行数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -9522,27 +9168,6 @@
             "description": "附件编号、文件路径、MIME 类型",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/Admin/UserToken/Detail": {
-      "get": {
-        "tags": [
-          "UserToken"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfUserToken"
-                }
-              }
             }
           }
         }

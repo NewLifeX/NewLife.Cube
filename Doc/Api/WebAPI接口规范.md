@@ -38,7 +38,7 @@ public class ControllerBaseX : ControllerBase, IActionFilter
 | 操作 | 方法与路径（推荐） | 兼容写法 | 权限 |
 |------|------------------|---------|------|
 | 列表 | `GET /api/{area}/{controller}` | — | Detail |
-| 详情 | `GET /api/{area}/{controller}/{id}` | `GET .../Detail?id=` | Detail |
+| 详情 | `GET /api/{area}/{controller}/{id}` | — | Detail |
 | 新增 | `POST /api/{area}/{controller}` | — | Insert |
 | 修改 | `PUT /api/{area}/{controller}/{id}`（body 可省略主键） | `PUT /api/{area}/{controller}`（主键在 body） | Update |
 | 删除 | `DELETE /api/{area}/{controller}/{id}` | — | Delete |
@@ -49,7 +49,9 @@ public class ControllerBaseX : ControllerBase, IActionFilter
 >
 > **删除三态**：路径带主键删单条；`ids=` 删选中的多条；既无主键也无 `ids` 但带业务条件时，按条件删除全部匹配行（不受 `pageSize` 限制）。单条删除的响应 `data` 为被删行，批量与条件删除的 `data` 为删除行数。
 >
-> **已移除的历史端点**：`DELETE .../DeleteSelect` 与 `DELETE .../DeleteAll` 不再提供。前端编译后嵌入 DLL、与后端同版本发布，无需兼容旧写法。
+> **已移除的历史端点**：`GET .../Detail?id=`、`DELETE .../DeleteSelect` 与 `DELETE .../DeleteAll` 不再提供。前端编译后嵌入 DLL、与后端同版本发布，无需兼容旧写法。
+>
+> **路径主键**：详情、修改、删除的主键一律在路径中，与 `GET /{id}`、`PUT /{id}`、`DELETE /{id}` 对称。
 >
 > **兼容说明**：`PUT` 主键在 body 是历史写法，仍可用但已不推荐；路径式路由与 `GET /{id}` 对称，符合 REST 习惯。
 >
@@ -211,6 +213,7 @@ protected override IEnumerable<Student> Search(Pager p)
 ## 36.7 写操作语义
 
 - **新增**：body 不允许携带自增主键，带了会被拒绝。
+- **读取**：详情为 `GET /{id}`，记录不存在返回 `404`。
 - **修改**：先按主键查出库中记录，再**只覆盖本次请求实际提交的字段**（提交多少改多少）。
   - 提交范围由请求 JSON 的顶层字段名确定：未出现的字段保持数据库原值，显式传 `null` 则清空该字段；
   - 前端无需做差异计算，按表单模型整体提交即可（20 个字段的表单只渲染 13 个，就提交这 13 个）；
@@ -392,7 +395,7 @@ curl -X POST "$HOST/Auth/Login" -H "Content-Type: application/json" \
 curl "$HOST/api/School/Student?pageIndex=1&pageSize=20&sort=Id&desc=true&Q=张" \
   -H "Authorization: Bearer $TOKEN"
 
-# 3. 详情（RESTful 风格）
+# 3. 详情（主键在路径）
 curl "$HOST/api/School/Student/1" -H "Authorization: Bearer $TOKEN"
 
 # 4. 新增

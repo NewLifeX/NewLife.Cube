@@ -53,13 +53,12 @@ public class LovController : ControllerBaseX
     }
 
     /// <summary>查看单条定义</summary>
-    /// <param name="id">值集编码（LovCode），可为空（兼容 ?id= 传参）</param>
+    /// <param name="id">值集编码（LovCode）</param>
     /// <returns>行数据</returns>
     [EntityAuthorize(PermissionFlags.Detail)]
-    [HttpGet]
+    [HttpGet("/api/[area]/[controller]/{id}")]
     public ApiResponse<Object> Detail(String id)
     {
-        if (id.IsNullOrEmpty()) id = Request.Query["id"].ToString();
         if (id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(id));
 
         var def = LovStore.FindDef(id);

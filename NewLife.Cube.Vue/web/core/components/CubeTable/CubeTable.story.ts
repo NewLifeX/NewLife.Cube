@@ -141,7 +141,7 @@ function buildEngine(options: EngineOptions = {}): CubeEngineContext {
   };
 
   const respondGet = (url: string, params?: Record<string, unknown>) => {
-    if (url.endsWith('/Detail')) return { code: 0, data: rows[0] ?? {} };
+    if (/\/[^/]+$/.test(url) && url !== TYPE) return { code: 0, data: rows[0] ?? {} };
     const keyword = typeof params?.q === 'string' ? params.q : '';
     const filtered = keyword ? rows.filter((r) => String(r.Name).includes(keyword)) : rows;
     return { code: 0, data: filtered, page: { totalCount: filtered.length } };

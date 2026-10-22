@@ -86,13 +86,12 @@
         "tags": [
           "Class"
         ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "summary": "查看单行数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -321,27 +320,6 @@
         }
       }
     },
-    "/api/School/Class/Detail": {
-      "get": {
-        "tags": [
-          "Class"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfClass"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/School/Class/GetPage": {
       "get": {
         "tags": [
@@ -549,13 +527,12 @@
         "tags": [
           "Student"
         ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
+        "summary": "查看单行数据。主键在路径中",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "description": "主键",
             "required": true,
             "schema": {
               "type": "string"
@@ -779,27 +756,6 @@
             "description": "附件编号、文件路径、MIME 类型",
             "content": {
               "application/json": { }
-            }
-          }
-        }
-      }
-    },
-    "/api/School/Student/Detail": {
-      "get": {
-        "tags": [
-          "Student"
-        ],
-        "summary": "查看单行数据",
-        "description": "同时支持两种风格：\n            1) RESTful：/api/[area]/[controller]/{id}，如 /api/Admin/User/21；\n            2) 传统 Action+查询参数：/api/[area]/[controller]/Detail?id=，类级 Route 已生成该字面量路由。",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfStudent"
-                }
-              }
             }
           }
         }

@@ -357,7 +357,26 @@ test('content-type text 分支：非字符串 data 经 JSON.stringify 透传', a
   assert.deepEqual(JSON.parse(res), payload);
 });
 
-// ── 删除端点（统一到基路径：/{id} 单条、?ids= 批量、?<条件> 条件删除）──
+// ── 读/删端点（详情 GET {type}/{id}；删除统一到基路径：/{id} 单条、?ids= 批量、?<条件> 条件删除）──
+
+test('page.getDetail 走 GET {type}/{id} 路径主键', async () => {
+  const { adapter, captured } = capturingAdapter();
+  const api = core.createCubeApi({ baseURL: 'http://host:5000/api', tokenStorage: memToken('tok') });
+  api.client.defaults.adapter = adapter;
+  await api.page.getDetail('/Admin/User', 125);
+  assert.equal(captured.config.url, 'http://host:5000/api/Admin/User/125');
+  assert.equal(captured.config.method, 'get');
+  assert.equal(captured.config.params, undefined);
+});
+
+test('page.getDetail 附加查询参数透传', async () => {
+  const { adapter, captured } = capturingAdapter();
+  const api = core.createCubeApi({ baseURL: 'http://host:5000/api', tokenStorage: memToken('tok') });
+  api.client.defaults.adapter = adapter;
+  await api.page.getDetail('/Admin/User', 125, { fields: 'all' });
+  assert.equal(captured.config.url, 'http://host:5000/api/Admin/User/125');
+  assert.deepEqual(captured.config.params, { fields: 'all' });
+});
 
 test('page.remove 走 DELETE {type}/{id} 路径主键', async () => {
   const { adapter, captured } = capturingAdapter();

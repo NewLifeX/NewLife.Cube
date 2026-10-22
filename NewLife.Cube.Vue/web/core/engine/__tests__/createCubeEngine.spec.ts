@@ -14,7 +14,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { createCubeEngine } from '../createCubeEngine';
 import type { CubeEngineDeps, CubePageMeta } from '../types';
 
-/** 与后端 EntityController 一致的假响应：列表 `GET {type}`、详情 `GET {type}/Detail` */
+/** 与后端 EntityController 一致的假响应：列表 `GET {type}`、详情 `GET {type}/{id}` */
 const LIST_BODY = { code: 0, data: [{ id: 1, name: 'admin' }], page: { totalCount: 1 } };
 const DETAIL_BODY = { code: 0, data: { id: 7, name: '详细名', enable: 'true' } };
 
@@ -49,7 +49,7 @@ function makeHttp(overrides: { blob?: Blob; detail?: unknown } = {}) {
     if (config.method === 'get' && config.url.endsWith('/ExportFile')) {
       return overrides.blob ?? new Blob(['x'], { type: 'text/csv' });
     }
-    if (config.method === 'get' && config.url.endsWith('/Detail')) {
+    if (config.method === 'get' && /\/[^/]+$/.test(config.url) && config.url !== TYPE && !config.url.endsWith('/ExportFile')) {
       return overrides.detail ?? DETAIL_BODY;
     }
     // 每次返回**新数组**：假响应体若被各用例共享同一引用，
