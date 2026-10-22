@@ -5,17 +5,18 @@
   核心理念：使用 Element Plus CSS 变量驱动全部配色，自动适配多主题（cyber/forest/aurora/industrial）与黑白模式。
 
   功能：
-  1. onMounted 调用 /Auth/LoginConfig 获取后端登录配置
+  1. onMounted 并行调用 /Cube/Site 与 /Auth/LoginConfig，分别获取站点品牌与登录能力
   2. 根据配置渲染密码表单 / OAuth 入口 / 版权信息
   3. 密码登录成功后写入 token 并跳回 redirect 页面
   4. OAuth 跳转 URL 统一为 /Sso/Login/{name}?source=front-end&redirect_uri={redirect}
   5. 当 login.password === false 且 oauth.length === 1 时自动跳转
   6. Canvas 粒子动画系统，颜色从 --el-color-primary 动态读取，随主题切换实时变化
+  7. 登录前即可切换语言，偏好仅存浏览器，服务端文案随 Accept-Language 刷新
 
   依赖：
   - core/configure 的 getConfig() 获取 baseUrl
   - core/utils/token 的 setAccessToken() 写入 token
-  - core/utils/loginApi 的 fetchLoginConfig / loginByPassword 调用后端
+  - core/utils/loginApi 的 fetchSiteConfig / fetchLoginConfig / loginByPassword 调用后端
   - @newlifex/api-core 的类型定义
 -->
 <template>
@@ -26,6 +27,13 @@
     <div class="bg-glow"></div>
     <!-- 粒子画布 -->
     <canvas ref="particleCanvas" class="particle-canvas"></canvas>
+
+    <!-- 语言切换：登录前也允许选择，偏好仅保存在浏览器 -->
+    <LanguageSwitch
+      v-if="!siteConfig?.language?.locked"
+      class="login-language"
+      @change="reloadSiteConfig"
+    />
 
     <!-- 登录主容器 -->
     <div class="login-wrapper" v-loading="loading">
@@ -50,8 +58,8 @@
             <rect x="21.5" y="21.5" width="13" height="13" rx="3" class="logo-core" />
           </svg>
           <h1 class="brand-name">{{ systemName }}</h1>
-          <p v-if="loginConfig?.loginTip" class="brand-hint">
-            {{ loginConfig.loginTip }}
+          <p v-if="siteConfig?.loginTip" class="brand-hint">
+            {{ siteConfig.loginTip }}
           </p>
         </div>
 
@@ -158,14 +166,14 @@
         </div>
 
         <!-- 底部版权信息 -->
-        <footer v-if="loginConfig?.copyright || loginConfig?.registration" class="login-footer">
+        <footer v-if="siteConfig?.copyright || siteConfig?.registration" class="login-footer">
           <div
-            v-if="loginConfig?.copyright"
+            v-if="siteConfig?.copyright"
             class="footer-copy"
-            v-html="loginConfig.copyright"
+            v-html="siteConfig.copyright"
           ></div>
-          <div v-if="loginConfig?.registration" class="footer-registration">
-            {{ loginConfig.registration }}
+          <div v-if="siteConfig?.registration" class="footer-registration">
+            {{ siteConfig.registration }}
           </div>
         </footer>
       </div>
@@ -181,6 +189,7 @@ import { getConfig } from '../configure';
 import { setAccessToken, setRefreshToken } from '../utils/token';
 import {
   fetchLoginConfig,
+  fetchSiteConfig,
   loginByPassword,
   registerByForm,
   sendCode,
@@ -188,7 +197,8 @@ import {
 } from '../utils/loginApi';
 import LoginForm from './LoginForm.vue';
 import RegisterForm from './RegisterForm.vue';
-import type { LoginConfig, LoginResult, OAuthProvider } from '@newlifex/api-core';
+import LanguageSwitch from '../components/LanguageSwitch.vue';
+import type { LoginConfig, LoginResult, OAuthProvider, SiteConfig } from '@newlifex/api-core';
 
 // ── 路由与配置 ──────────────────────────────────────────────────────
 const route = useRoute();
@@ -202,6 +212,8 @@ const loading = ref<boolean>(true);
 const submitting = ref<boolean>(false);
 /** 后端返回的登录配置 */
 const loginConfig = ref<LoginConfig | null>(null);
+/** 后端返回的站点配置（品牌、语言、功能开关） */
+const siteConfig = ref<SiteConfig | null>(null);
 /** 配置加载错误信息 */
 const configError = ref<string>('');
 /** 粒子画布引用 */
@@ -229,12 +241,12 @@ const oauthProviders = computed<OAuthProvider[]>(() => {
 
 /** 系统名称 */
 const systemName = computed<string>(() => {
-  return loginConfig.value?.displayName || loginConfig.value?.name || '';
+  return siteConfig.value?.name || '魔方系统';
 });
 
-/** 登录页 Logo 地址（优先 loginLogo，其次 logo） */
+/** 登录页 Logo 地址 */
 const logoSrc = computed<string>(() => {
-  const logo = loginConfig.value?.loginLogo || loginConfig.value?.logo;
+  const logo = siteConfig.value?.logo;
   if (!logo) return '';
   return resolveLogo(logo);
 });
@@ -242,7 +254,7 @@ const logoSrc = computed<string>(() => {
 /** 背景样式（支持自定义背景图） */
 const backgroundStyle = computed<Record<string, string>>(() => {
   const style: Record<string, string> = {};
-  const bg = loginConfig.value?.loginBackground;
+  const bg = siteConfig.value?.loginBackground;
   if (bg) {
     style.backgroundImage = `url(${resolveLogo(bg)})`;
     style.backgroundSize = 'cover';
@@ -742,30 +754,50 @@ function destroyParticleSystem(): void {
 
 // ── 生命周期 ────────────────────────────────────────────────────────
 
+/**
+ * 重新获取站点配置
+ *
+ * 语言切换后服务端可能返回不同语言的站点文案，需要重新拉取；失败时保留当前品牌信息。
+ */
+async function reloadSiteConfig(): Promise<void> {
+  try {
+    const res = await fetchSiteConfig();
+    if (res.code === 0 && res.data) siteConfig.value = res.data;
+  } catch {
+    // 站点配置是可选增强，失败不阻塞登录页
+  }
+}
+
 onMounted(async () => {
   // 初始化粒子动画
   initParticleSystem();
 
-  try {
-    const res = await fetchLoginConfig();
+  const [siteResult, loginResult] = await Promise.allSettled([fetchSiteConfig(), fetchLoginConfig()]);
 
+  if (siteResult.status === 'fulfilled' && siteResult.value.code === 0) {
+    siteConfig.value = siteResult.value.data;
+  }
+
+  if (loginResult.status === 'fulfilled') {
+    const res = loginResult.value;
     if (res.code === 0 && res.data) {
       loginConfig.value = res.data;
 
       // 自动跳转：禁用密码 + 单第三方
       if (shouldAutoRedirect() && loginConfig.value.oauth?.[0]) {
+        loading.value = false;
         handleOAuth(loginConfig.value.oauth[0].name);
         return;
       }
     } else {
       configError.value = res.message || '获取登录配置失败';
     }
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : '获取登录配置失败';
-    configError.value = message;
-  } finally {
-    loading.value = false;
+  } else {
+    const reason = loginResult.reason;
+    configError.value = reason instanceof Error ? reason.message : '获取登录配置失败';
   }
+
+  loading.value = false;
 });
 
 onUnmounted(() => {
@@ -780,6 +812,18 @@ onUnmounted(() => {
   min-height: 100vh;
   overflow-y: auto;
   background: var(--el-bg-color);
+}
+
+.login-language {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  z-index: 10;
+  padding: 6px 12px;
+  border-radius: 999px;
+  color: var(--el-text-color-primary);
+  background: var(--el-bg-color-overlay);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 8%);
 }
 
 /* ==================== 背景层 ==================== */

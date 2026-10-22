@@ -32,6 +32,11 @@ defineOptions({
   name: 'LanguageSwitch',
 });
 
+const emit = defineEmits<{
+  /** 语言切换完成事件，供调用方刷新服务端本地化文本 */
+  change: [language: string];
+}>();
+
 const languages = supportedLanguages;
 
 const currentLanguage = ref(getCurrentLanguage());
@@ -46,6 +51,7 @@ function handleCommand(command: typeof currentLanguage.value) {
   if (command !== currentLanguage.value) {
     currentLanguage.value = command;
     setLanguage(command);
+    emit('change', command);
   }
 }
 </script>

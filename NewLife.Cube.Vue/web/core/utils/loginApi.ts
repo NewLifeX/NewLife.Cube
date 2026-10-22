@@ -10,13 +10,13 @@
  * - 登录结果字段归一化（access_token / Token → accessToken）由 api-core 响应拦截器统一处理
  *   （LOGIN_RESULT_PATHS 含 /Auth/Login、/Auth/Register、/Auth/Refresh 等），皮肤无需重复归一化。
  *
- * 类型定义复用 @newlifex/api-core 的 LoginConfig、LoginResult、ApiResponse 等。
+ * 类型定义复用 @newlifex/api-core 的 LoginConfig、SiteConfig、LoginResult、ApiResponse 等。
  *
  * 注意：基础库的响应拦截器会在 code !== 0/200 时自动弹出错误提示并抛异常，
  * 业务调用方在 catch 中处理失败即可（无需自行弹错，避免重复提示）。
  */
-import { user } from './request';
-import type { ApiResponse, LoginConfig, LoginResult, OAuthProvider, RegisterModel, VerifyStatus } from '@newlifex/api-core';
+import { user, site } from './request';
+import type { ApiResponse, LoginConfig, LoginResult, OAuthProvider, RegisterModel, SiteConfig, VerifyStatus } from '@newlifex/api-core';
 
 // ── 字段名归一化工具（皮肤专属，基础库无此逻辑，仅保留） ─────────────
 
@@ -43,11 +43,12 @@ function normalizeLoginConfig(data: LoginConfig): LoginConfig {
   // 如果标准 oauth 字段为空，尝试从 oAuth / providers 补充
   if (!result.oauth || result.oauth.length === 0) {
     const oAuth = raw.oAuth as OAuthProvider[] | undefined;
+    const providers = raw.providers as OAuthProvider[] | undefined;
     if (oAuth && Array.isArray(oAuth) && oAuth.length > 0) {
       result.oauth = oAuth;
-    } else if (result.providers && Array.isArray(result.providers) && result.providers.length > 0) {
+    } else if (providers && Array.isArray(providers) && providers.length > 0) {
       // v1 旧版字段名 providers → oauth
-      result.oauth = result.providers;
+      result.oauth = providers;
     }
   }
 
@@ -59,8 +60,8 @@ function normalizeLoginConfig(data: LoginConfig): LoginConfig {
 /**
  * 获取登录配置
  *
- * 委托 user.getLoginConfig 调用 GET /Auth/LoginConfig，返回系统名称、Logo、版权、
- * 登录/注册能力、OAuth 提供商列表、安全策略等。
+ * 委托 user.getLoginConfig 调用 GET /Auth/LoginConfig，返回登录/注册能力、
+ * OAuth 提供商列表、安全策略等。品牌、版权等站点信息由 /Cube/Site 返回。
  *
  * 返回前对 data 做字段名归一化（oAuth / providers → oauth），该别名兼容为基础库未覆盖，
  * 故保留在皮肤层（@newlifex/api-core 不含此逻辑）。
@@ -74,6 +75,20 @@ export async function fetchLoginConfig(): Promise<ApiResponse<LoginConfig>> {
     json.data = normalizeLoginConfig(json.data);
   }
   return json;
+}
+
+/**
+ * 获取站点配置
+ *
+ * 委托 site.getSite 调用 GET /Cube/Site，返回站点名称、Logo、版权、语言与功能开关。
+ * 该接口匿名可访问，供登录页和前台页面使用。
+ *
+ * @param tenant 租户标识（编号/编码/名称），为空时取当前请求上下文
+ * @returns 站点配置响应
+ * @throws 网络错误或 HTTP 状态码非 200 时抛出异常
+ */
+export async function fetchSiteConfig(tenant?: string): Promise<ApiResponse<SiteConfig>> {
+  return site.getSite(tenant);
 }
 
 /**

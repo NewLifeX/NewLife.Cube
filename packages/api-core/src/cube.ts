@@ -2,6 +2,7 @@ import type { AxiosInstance } from 'axios';
 import { createApiClient, createRequest, type ApiClientOptions } from './client';
 import { TokenManager, type TokenStorage } from './token';
 import { createUserApi, createMenuApi, createPageApi, createConfigApi } from './api';
+import { createSiteApi } from './site';
 import { getServiceBaseUrl } from './service-path';
 
 export interface CubeApiOptions extends ApiClientOptions {
@@ -22,13 +23,15 @@ export interface CubeApi {
   page: ReturnType<typeof createPageApi>;
   /** 系统配置 API（/Auth /Cube 服务，后端无 /api 前缀） */
   config: ReturnType<typeof createConfigApi>;
+  /** 站点配置 API（/Cube/Site 服务，匿名可访问） */
+  site: ReturnType<typeof createSiteApi>;
 }
 
 /**
  * 一键创建完整的魔方 API 客户端
  *
  * 实体/页面接口（page、client）使用 baseURL（如 /api）拼接 /api 前缀，
- * 服务接口（user/menu/config：/Auth、/Cube、/Sso 等）走同源、不带 /api 前缀。
+ * 服务接口（user/menu/config/site：/Auth、/Cube、/Sso 等）走同源、不带 /api 前缀。
  *
  * @example
  * ```ts
@@ -62,5 +65,6 @@ export function createCubeApi(options: CubeApiOptions = {}): CubeApi {
     // 导出下载 URL 不走 axios，需直接拼完整地址；createPageApi 内部经 resolveRequestUrl 统一补 /api
     page: createPageApi(request, options.baseURL),
     config: createConfigApi(serviceRequest),
+    site: createSiteApi(serviceRequest),
   };
 }

@@ -262,7 +262,7 @@ export default request;
 export { request, client };
 export const cubeAxios = client;
 // user(认证) / menu(菜单) / page(通用 CRUD) / config(配置) / tokenManager(令牌)
-export const { user, menu, page, config, tokenManager } = api;
+export const { user, menu, page, config, site, tokenManager } = api;
 
 // 替换原来导出的toReLogin
 export { redirectToLogin as toReLogin };

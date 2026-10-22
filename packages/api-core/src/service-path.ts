@@ -14,6 +14,7 @@ const SERVICE_PREFIXES = ['/Auth/', '/Sso/', '/Mfa/', '/OAuth/', '/Ai/'];
 const CUBE_SERVICE_ACTIONS = new Set([
   'Info',
   'Apis',
+  'Site',
   'UserSearch',
   'DepartmentSearch',
   'GetArea',

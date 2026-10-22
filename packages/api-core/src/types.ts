@@ -321,26 +321,12 @@ export interface SecurityConfig {
   passwordStrength?: string;
 }
 
-/** 登录配置（新版嵌套结构，v2 起） */
+/** 登录配置（新版嵌套结构，v2 起）。站点品牌/语言/开关由 /Cube/Site 提供 */
 export interface LoginConfig {
   /** 是否启用多租户。前端据此控制租户相关 UI（切换器/租户字段）显隐 */
   enableTenant?: boolean;
   /** 租户 Code，有租户时非空 */
   code?: string;
-  /** 系统名称（租户级优先） */
-  name?: string;
-  /** 版权信息，服务端已替换 {now:yyyy} 等变量，前端直接渲染（支持 HTML） */
-  copyright?: string;
-  /** 备案号 */
-  registration?: string;
-  /** Logo图标地址，空则使用皮肤内置默认 */
-  logo?: string;
-  /** 登录提示 */
-  loginTip?: string;
-  /** 登录页 Logo，空则使用皮肤内置默认 */
-  loginLogo?: string;
-  /** 登录页背景图，空则使用皮肤内置默认 */
-  loginBackground?: string;
   /** 登录能力配置 */
   login?: LoginAbility;
   /** 注册能力配置 */
@@ -349,24 +335,72 @@ export interface LoginConfig {
   oauth?: OAuthProvider[];
   /** 安全策略 */
   security?: SecurityConfig;
+}
 
-  // === 兼容旧版平铺字段（v1），请勿在新代码中使用 ===
-  /** @deprecated 使用 name */
-  displayName?: string;
-  /** @deprecated 使用 login.password */
-  allowLogin?: boolean;
-  /** @deprecated 使用 register.enabled */
-  allowRegister?: boolean;
-  /** @deprecated 使用 login.sms */
-  enableSms?: boolean;
-  /** @deprecated 使用 login.mail */
-  enableMail?: boolean;
-  /** @deprecated 使用 login.sms */
-  enableSmsRegister?: boolean;
-  /** @deprecated 使用 login.mail */
-  enableMailRegister?: boolean;
-  /** @deprecated 使用 oauth */
-  providers?: OAuthProvider[];
+/** 语言信息（对应 NewLife.Core 的 LanguageInfo） */
+export interface SiteLanguageInfo {
+  /** 语言代码，如 zh-CN */
+  name: string;
+  /** 该语言的自称，如简体中文 */
+  nativeName: string;
+  /** 英文名称，如 Chinese (Simplified) */
+  englishName: string;
+}
+
+/** 站点语言信息 */
+export interface SiteLanguage {
+  /** 当前请求解析出的语言 */
+  current?: string;
+  /** 站点默认语言。浏览器语言不受支持时回退到该语言 */
+  default?: string;
+  /** 是否锁定语言。true 时前端隐藏语言切换入口 */
+  locked?: boolean;
+  /** 支持的语言列表 */
+  options?: SiteLanguageInfo[];
+}
+
+/** 站点 AI 能力 */
+export interface SiteAiFeature {
+  /** 是否启用 AI */
+  enabled?: boolean;
+  /** AI 主色 */
+  primaryColor?: string;
+  /** AI 辅色 */
+  secondaryColor?: string;
+  /** Mermaid 脚本地址 */
+  mermaidUrl?: string;
+}
+
+/** 站点功能开关 */
+export interface SiteFeatures {
+  /** AI 能力 */
+  ai?: SiteAiFeature;
+}
+
+/** 站点配置（匿名接口 /Cube/Site） */
+export interface SiteConfig {
+  /** 站点名称（租户级优先） */
+  name?: string;
+  /** 站点 Logo（租户级优先，回退到登录页 Logo 配置） */
+  logo?: string;
+  /** 登录页背景图 */
+  loginBackground?: string;
+  /** 登录提示 */
+  loginTip?: string;
+  /** 版权信息，服务端已替换变量，前端直接渲染（支持 HTML） */
+  copyright?: string;
+  /** 备案号 */
+  registration?: string;
+  /** 站点程序版本 */
+  version?: string;
+  /** 站点构建时间 */
+  buildTime?: string;
+  /** 当前租户编码。非空表示处于租户上下文 */
+  tenantCode?: string;
+  /** 语言信息 */
+  language?: SiteLanguage;
+  /** 功能开关 */
+  features?: SiteFeatures;
 }
 
 /**
