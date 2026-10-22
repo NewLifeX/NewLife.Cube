@@ -212,7 +212,7 @@ public class ResetPwdModel : ICubeModel
     public String ConfirmPassword { get; set; }
 
     /// <summary>挑战标识</summary>
-    public String ChallengeId { get; set; }
+    public String? ChallengeId { get; set; }
 }
 
 /// <summary> 用户信息 </summary>
