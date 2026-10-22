@@ -387,43 +387,46 @@ dotnet run
 
 ## 35.7 认证与授权
 
-### JWT 认证
+### 登录接口
 
-```csharp
-// WebAPI 版默认使用 JWT 认证
+服务控制器（`Auth`/`Sso`）由 `[Route("[controller]/[action]")]` 暴露，**不带 `/api` 前缀**：
 
-// 登录接口
-[HttpPost("login")]
-public ActionResult Login([FromBody] LoginModel model)
-{
-    var result = _userService.Login(model, HttpContext);
-    return Json(result);
-    // 返回：{ accessToken: "xxx", refreshToken: "xxx" }
-}
+| 接口 | 方法 | 说明 |
+|------|------|------|
+| `/Auth/Login` | POST | 用户名密码登录，返回访问令牌与刷新令牌 |
+| `/Auth/Refresh` | POST | 用刷新令牌换取新的访问令牌 |
+| `/Auth/LoginConfig` | GET | 登录页配置（是否允许密码/短信/邮件登录等） |
 
-// 需要认证的接口
-[EntityAuthorize(PermissionFlags.Detail)]
-[HttpGet]
-public ActionResult Index(Pager p)
-{
-    // 需要携带 Authorization: Bearer {token}
-    var list = Search(p);
-    return Json(0, null, list, new { page = p });
-}
-```
+登录结果放在 `data` 里，字段为 `accessToken` / `refreshToken`（响应格式见 [WebAPI接口规范](WebAPI接口规范.md) 36.3）。
 
 ### 令牌传递方式
 
-```csharp
-// 1. Header 方式（推荐）
+`LoadToken()` 只接受三段式 JWT，来源依次为：
+
+```http
 Authorization: Bearer {token}
-
-// 2. Query 方式
-/api/student?token={token}
-
-// 3. Cookie 方式
-Cookie: Token={token}
+X-Token: {token}
 ```
+
+另外还支持 query `?token={token}`、`?jwtToken={token}`，以及 Cookie `token-{系统名}`（需开启 `TokenCookie`）。
+
+### 需要认证的接口
+
+实体控制器基类已内置权限校验，业务代码只需继承 `EntityController<T>` 并重写 `Search`：
+
+```csharp
+// 基类已按 PermissionFlags.Detail 校验权限，无需重复标注
+public class StudentController : EntityController<Student>
+{
+    protected override IEnumerable<Student> Search(Pager p)
+    {
+        var classId = p["classId"].ToInt(-1);
+        return Student.Search(classId, p["Q"], p);
+    }
+}
+```
+
+完整路由、响应信封、错误码与异常边界见 [WebAPI接口规范](WebAPI接口规范.md)。
 
 ---
 
