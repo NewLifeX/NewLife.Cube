@@ -177,11 +177,21 @@ public class ControllerBaseX : ControllerBase, IActionFilter
         }
         else if (context.Exception != null && !context.ExceptionHandled && !HttpContext.Response.HasStarted)
         {
-            //var ex = context.Exception.GetTrue();
+            // 与实体控制器 BuildFailResponse 保持同一套映射：ApiException 用自身码，其余异常统一 500
+            var code = ApiCode.InternalServerError.ToInt();
+            var message = NewLife.Common.SysConfig.Current.Develop ? ex.Message : L.T("The server is busy. Please try again later.");
             if (ex is ApiException aex)
-                context.Result = new JsonResult(new { code = aex.Code, message = aex.Message, traceId });
-            else
-                context.Result = new JsonResult(new { code = 500, message = ex.Message, traceId });
+            {
+                code = aex.Code;
+                message = aex.Message;
+            }
+            else if (ex is XException)
+            {
+                // XException 视为已知业务异常，消息对用户可读，生产环境也保留
+                message = ex.Message;
+            }
+
+            context.Result = new JsonResult(new { code, message, traceId });
 
             context.ExceptionHandled = true;
 
