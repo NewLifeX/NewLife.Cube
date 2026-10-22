@@ -77,6 +77,8 @@ public class SiteConfigTests
         Assert.False(etag.IsNullOrEmpty());
         Assert.Equal("public, max-age=60", http.Response.Headers["Cache-Control"].ToString());
         Assert.Contains("X-Tenant", http.Response.Headers["Vary"].ToString());
+        Assert.Contains("X-App-Id", http.Response.Headers["Vary"].ToString());
+        Assert.Contains("Cookie", http.Response.Headers["Vary"].ToString());
 
         http.Request.Headers.IfNoneMatch = etag;
         var cached = controller.Site();

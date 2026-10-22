@@ -174,7 +174,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         // 站点配置按语言与租户公共缓存，条件请求命中时返回 304
         var notModified = CheckNotModified(model);
         Response.Headers["Cache-Control"] = "public, max-age=60";
-        Response.Headers["Vary"] = "Accept-Language, X-Tenant";
+        Response.Headers["Vary"] = "Accept-Language, X-Tenant, X-App-Id, Cookie";
         if (notModified) return new EmptyResult();
 
         return Json(0, null, model);
