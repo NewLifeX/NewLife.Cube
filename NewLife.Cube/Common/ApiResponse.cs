@@ -1,4 +1,5 @@
-﻿using NewLife.Web;
+﻿using System.Text.Json.Serialization;
+using NewLife.Web;
 
 namespace NewLife.Cube;
 
@@ -32,16 +33,19 @@ public class ApiResponse<T> : IApiResponse
     /// <summary>代码。0表示成功，其它为错误代码</summary>
     public Int32 Code { get; set; }
 
-    /// <summary>消息内容。成功或错误时的提示文本</summary>
+    /// <summary>消息内容。成功或错误时的提示文本；为 null 时不输出</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public String Message { get; set; }
 
-    /// <summary>响应数据</summary>
+    /// <summary>响应数据。始终输出（可为 null）</summary>
     public T Data { get; set; }
 
-    /// <summary>跟踪编号</summary>
+    /// <summary>跟踪编号。为 null 时不输出</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public String TraceId { get; set; }
 
-    /// <summary>字段级验证错误列表。每个元素对应一个字段的验证错误</summary>
+    /// <summary>字段级验证错误列表。每个元素对应一个字段的验证错误；无字段错误时不输出该字段</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<FieldError> FieldErrors { get; set; }
 }
 
@@ -49,9 +53,11 @@ public class ApiResponse<T> : IApiResponse
 /// <typeparam name="T"></typeparam>
 public class ApiListResponse<T> : ApiResponse<IList<T>>
 {
-    /// <summary>分页信息</summary>
+    /// <summary>分页信息。非列表响应或未分页时不输出</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public PageModel Page { get; set; }
 
-    /// <summary>统计行数据</summary>
+    /// <summary>统计行数据。无统计时不输出</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public T Stat { get; set; }
 }
