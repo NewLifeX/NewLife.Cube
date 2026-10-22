@@ -29,8 +29,8 @@
     "test": "node --test \"tests/**/*.test.cjs\""
   },
   "dependencies": {
-    "axios": "^1.16.0",
-    "qs": "^6.15.2"
+    "axios": "^1.20.0",
+    "qs": "^6.16.0"
   },
   "devDependencies": {
     "@types/qs": "^6.9.0",

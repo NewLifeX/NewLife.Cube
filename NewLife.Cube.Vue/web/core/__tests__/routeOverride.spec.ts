@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest';
 import { createRouter, createMemoryHistory, type Router } from 'vue-router';
 import {
   addExternalRoute,
@@ -57,7 +57,7 @@ describe('normalizeRoutePath（路径归一化）', () => {
 });
 
 describe('外部路由优先（框架侧让位）', () => {
-  let warnSpy: ReturnType<typeof vi.spyOn>;
+  let warnSpy: MockInstance<typeof console.warn>;
 
   beforeEach(() => {
     warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
