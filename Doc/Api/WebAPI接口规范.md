@@ -228,23 +228,56 @@ HTTP 403  { "code": 403, "message": "用户 admin 访问资源 [Student/Delete] 
 
 ## 36.10 页面元数据（meta）
 
-`GET /api/{area}/{controller}/meta`（登录即可；公开页需在子类重写并标注 `[AllowAnonymous]`）：
+`GET /api/{area}/{controller}/meta`（登录即可；公开页需在子类重写并标注 `[AllowAnonymous]`）。响应为**视图自描述**：`list / form / add / detail / search` 各自直接输出字段数组，消费端零合并；`@newlifex/api-core` 的 `getPage` 会展开为 `setting + list/addForm/editForm/detail/search + toolbar`，各皮肤调用方式不变。
 
 ```json
 {
   "code": 0,
   "data": {
-    "setting": { "enableAdd": true, "isReadOnly": false, "doubleDelete": true, "develop": false, "isSystem": false },
-    "list": [], "allList": [], "addForm": [], "editForm": [], "detail": [], "search": []
+    "entity": { "name": "Student", "displayName": "学生", "primaryKey": "Id" },
+    "setting": {
+      "enableAdd": true, "enableSelect": true, "enableToolbar": true,
+      "isReadOnly": false, "doubleDelete": true, "develop": false, "isSystem": false,
+      "menuId": 12,
+      "requiredPermissions": { "add": 2, "update": 4, "delete": 8 }
+    },
+    "list": [
+      { "name": "Id", "displayName": "编号", "typeName": "Int32", "primaryKey": true, "readOnly": true },
+      { "name": "Name", "displayName": "姓名", "typeName": "String", "length": 50 },
+      { "name": "Remark", "displayName": "备注", "typeName": "String", "visible": false },
+      { "name": "DetailLink", "displayName": "明细", "typeName": "String", "virtual": true, "url": "/School/StudentDetail?studentId={Id}", "text": "查看" }
+    ],
+    "form": [
+      { "name": "Name", "displayName": "姓名", "typeName": "String", "required": true }
+    ],
+    "search": [
+      { "name": "q", "kind": "keyword", "displayName": "关键字", "typeName": "String" },
+      { "name": "ClassId", "displayName": "班级", "typeName": "Int32", "itemType": "singleSelect", "dataSource": { "1": "一班", "2": "二班" } },
+      { "kind": "range", "name": "dtStart", "end": "dtEnd", "field": "CreateTime", "displayName": "创建时间", "typeName": "DateTime" }
+    ],
+    "toolbar": [
+      { "name": "批量刷新", "displayName": "批量刷新", "kind": "request",
+        "action": "Refresh", "method": "POST", "include": ["keys"], "requiresSelection": true,
+        "confirm": "确认刷新选中记录？" }
+    ]
   },
   "traceId": "0a0000031792650895535000026e3b3c"
 }
 ```
 
-- `setting` 与 `PageSetting` 同名，完整清单见 OpenAPI；`develop` / `isSystem` 驱动开发类菜单（备份、还原、清空数据表）的显示。
-- `list` 已应用当前用户列配置（顺序、隐藏）；`allList` 是未裁剪的全量字段，供列设置面板使用。
-- 字段对象结构见《第6章 字段元数据》；单对象控制器（`ObjectController`）只返回 `setting` 与 `editForm`。
-- 原 `GetPage` / `GetFields` 已并入本接口并移除。
+- `entity`：实体名、显示名与主键名；单对象页只返回 `entity/setting/form`。
+- `list` 是**全部可用列**；`visible: false` 表示默认隐藏但可由表格设置打开。列顺序和用户显隐由前端 `localStorage` 保存，不在 `/meta` 下发 `order` / `hidden`。
+- `form` 是编辑表单字段数组；`add` / `detail` 与 form 完全相同时省略，消费端回退 `form`。字段 `category` 用于前端表单分组。
+- `search` 是查询项数组。`kind: "keyword"` 的项由关键字框统一处理，不进入高级条件；缺省为单字段查询。主时间字段输出 `kind: "range"`，提交 `dtStart` / `dtEnd`。
+- `setting.enableAdd` / `enableSelect` / `isReadOnly` 是页面能力；`requiredPermissions` 是动作所需权限位。有效权限由前端结合 `menuId` 与登录用户 `permission` 计算，不写入 `/meta`，避免缓存旧权限。
+- `toolbar` 是**自定义按钮**，内置按钮（添加/导入/导出/批量删除/刷新）仍由 `setting` 控制。`kind` 取值：
+  - `link`：跳转 `url`；`appendQuery: true` 携带当前查询参数；`target` 控制窗口。
+  - `request`：请求 `{base}/{action}`（或用 `url` 指定地址）；`include` 声明提交字段，`keys` 表示选中行主键（逗号拼接），其它名字取当前查询参数；`method` 缺省 GET；`confirm` 为二次确认文案。
+  - `upload`：选择文件后以 `multipart` 提交到 `{base}/{action}`，文件字段名 `file`，其余 `include` 字段随表单一并提交；`accept` 限定文件类型。
+  - `custom`：由前端已注册的同名渲染器处理；未注册时前端忽略该按钮并告警一次。
+- 权限：`toolbar` 由服务端按当前用户过滤；新增/编辑/删除/批量按钮由前端按 `menuId + requiredPermissions + UserInfo.permission` 过滤。`requiresSelection` 的按钮在未选中数据时禁用。
+- 响应带 `ETag` / `Cache-Control: private, no-cache`，并按用户、租户、语言区分；`api-core` 的 `getPage` 按页面缓存展开结果。
+- 字段对象结构见《第6章 字段元数据》；`view` / `props` 为渲染器名与扩展属性透传。
 
 ---
 

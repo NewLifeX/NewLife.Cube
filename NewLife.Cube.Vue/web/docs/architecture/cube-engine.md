@@ -77,13 +77,14 @@ export interface PageSetting {
   enableNavbar?: boolean
   enableToolbar?: boolean
   enableAdd?: boolean
-  enableKey?: boolean
   enableSelect?: boolean
   enableFooter?: boolean
   isReadOnly?: boolean
   enableTableDoubleClick?: boolean
   orderByKey?: boolean
   doubleDelete?: boolean
+  menuId?: number
+  requiredPermissions?: { add?: number; update?: number; delete?: number }
 }
 
 /** 后端 meta 原始字段（从 index.vue 提升为共享类型，并补齐 required/dataSource/mapField） */
@@ -91,6 +92,8 @@ export interface BackendField {
   name: string
   displayName?: string
   description?: string
+  category?: string                  // 表单分组
+  visible?: boolean                  // 列表默认显隐
   typeName: string
   itemType?: string
   length?: number

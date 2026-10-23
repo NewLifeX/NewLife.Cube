@@ -450,6 +450,7 @@ Detailed requirements, feature tracking and architecture live in [`Doc/`](Doc/) 
 - 📋 [Requirements](Doc/需求文档.md) — vision, goals, functional requirements
 - ✅ [Feature list](Doc/功能清单.md) — implementation/test/comment tracking
 - 🏗️ [Architecture](Doc/架构设计.md) — layering, modules, key decisions
+- 🧩 [Page presentation](Doc/Api/页面呈现架构.md) — dynamic / hybrid / custom pages, backend and frontend extension ladders
 - 🤖 [AI](Doc/AI-人工智能.md) — AI capabilities, configuration and extension points
 - 🔔 [Alerts and inbox](Doc/ALM-在线告警与站内信.md) — online threshold alerts and broadcast messages
 - ✉️ [Email/phone verification](Doc/AUTH-邮箱手机验证.md) — activation contract and UI integration
