@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { login, fetchMenus } from '$lib/stores/user';
-  import { loginConfig as appLoginConfig, siteTitle } from '$lib/stores/app';
+  import { siteConfig as appSiteConfig, siteTitle } from '$lib/stores/app';
   import { getApi } from '$lib/api';
   import { onMount } from 'svelte';
   import type { LoginConfig } from '@newlifex/api-core';
@@ -14,11 +14,12 @@
 
   onMount(async () => {
     try {
-      const configRes = await getApi().user.getLoginConfig();
-      if (configRes?.data) {
-        appLoginConfig.set(configRes.data);
-        pageConfig = configRes.data;
-      }
+      const [configRes, siteRes] = await Promise.all([
+        getApi().user.getLoginConfig(),
+        getApi().site.getSite().catch(() => null),
+      ]);
+      if (siteRes?.data) appSiteConfig.set(siteRes.data);
+      if (configRes?.data) pageConfig = configRes.data;
     } catch { /* ignore */ }
   });
 
@@ -65,15 +66,15 @@
         </button>
       </form>
 
-      {#if pageConfig?.oauthItems?.length}
+      {#if pageConfig?.oauth?.length}
         <div class="mt-6">
           <div class="relative">
             <div class="absolute inset-0 flex items-center"><div class="w-full border-t" style="border-color: var(--border)"></div></div>
             <div class="relative flex justify-center text-sm"><span class="px-2" style="background: var(--bg); color: var(--text-secondary)">第三方登录</span></div>
           </div>
           <div class="flex justify-center gap-3 mt-4">
-            {#each pageConfig.oauthItems as item}
-              <a href={item.url} class="btn btn-outline btn-sm">{item.name}</a>
+            {#each pageConfig.oauth as item}
+              <a href={`/Sso/Login/${encodeURIComponent(item.name)}?r=${encodeURIComponent('/')}`} class="btn btn-outline btn-sm">{item.nickName || item.name}</a>
             {/each}
           </div>
         </div>

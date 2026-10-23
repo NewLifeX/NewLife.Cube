@@ -21,8 +21,8 @@ const form = reactive({
     oauthToken: '',
 });
 let timer = null;
-const enableSmsRegister = computed(() => !!(config.value?.enableSmsRegister ?? config.value?.enableSms));
-const enableMailRegister = computed(() => !!(config.value?.enableMailRegister ?? config.value?.enableMail));
+const enableSmsRegister = computed(() => config.value?.register?.sms === true);
+const enableMailRegister = computed(() => config.value?.register?.mail === true);
 const startCountdown = () => {
     if (timer)
         clearInterval(timer);

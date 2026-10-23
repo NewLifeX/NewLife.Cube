@@ -1,16 +1,16 @@
 import { Injectable, signal } from '@angular/core';
-import type { LoginConfig } from '@newlifex/api-core';
+import type { SiteConfig } from '@newlifex/api-core';
 import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
 export class AppService {
   private _collapsed = signal(false);
   private _darkMode = signal(false);
-  private _loginConfig = signal<LoginConfig | null>(null);
+  private _siteConfig = signal<SiteConfig | null>(null);
 
   readonly collapsed = this._collapsed.asReadonly();
   readonly darkMode = this._darkMode.asReadonly();
-  readonly loginConfig = this._loginConfig.asReadonly();
+  readonly siteConfig = this._siteConfig.asReadonly();
 
   constructor(private api: ApiService) {}
 
@@ -22,8 +22,8 @@ export class AppService {
     this._darkMode.update(v => !v);
   }
 
-  async fetchLoginConfig() {
-    const res = await this.api.user.getLoginConfig();
-    if (res.data) this._loginConfig.set(res.data);
+  async fetchSiteConfig() {
+    const res = await this.api.site.getSite();
+    if (res.data) this._siteConfig.set(res.data);
   }
 }

@@ -16,7 +16,7 @@ import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
-import { FieldKind, Auth, type DataField } from '@newlifex/api-core';
+import { Auth, type DataField } from '@newlifex/api-core';
 import { ApiService } from '../../services/api.service';
 import { UserService } from '../../services/user.service';
 import { FieldInputComponent } from '../../components/field-input.component';
@@ -320,19 +320,14 @@ export class DynamicPageComponent implements OnInit, OnDestroy, AfterViewChecked
   }
 
   async loadFields() {
-    const path = this.typePath;
-    const [list, search, add, edit, detail] = await Promise.all([
-      this.api.page.getFields(path, FieldKind.List),
-      this.api.page.getFields(path, FieldKind.Search),
-      this.api.page.getFields(path, FieldKind.Add),
-      this.api.page.getFields(path, FieldKind.Edit),
-      this.api.page.getFields(path, FieldKind.Detail),
-    ]);
-    this.listFields = list.data || [];
-    this.searchFields = search.data || [];
-    this.addFields = add.data || [];
-    this.editFields = edit.data || [];
-    this.detailFields = detail.data || [];
+    // meta 一次返回全部视图字段；api-core 已把 v2 的字段表 + 视图差异展开为旧结构
+    const res = await this.api.page.getPage(this.typePath);
+    const meta = res.data;
+    this.listFields = meta?.list ?? [];
+    this.searchFields = meta?.search ?? [];
+    this.addFields = meta?.addForm ?? [];
+    this.editFields = meta?.editForm ?? [];
+    this.detailFields = meta?.detail ?? [];
   }
 
   async loadData() {

@@ -22,7 +22,8 @@ export default function Layout() {
   useEffect(() => {
     if (!api.tokenManager.getToken()) { navigate('/login'); return; }
     api.menu.getMenuTree().then((res) => setMenus(res.data ?? [])).catch(() => {});
-    api.user.getLoginConfig().then((res) => { if (res.data) setSiteInfo(res.data); }).catch(() => {});
+    // 站点品牌由匿名接口 /Cube/Site 提供；LoginConfig 只含登录能力
+    api.site.getSite().then((res) => { if (res.data) setSiteInfo(res.data); }).catch(() => {});
     if (!userInfo) fetchUserInfo().catch(() => {});
   }, []);
 

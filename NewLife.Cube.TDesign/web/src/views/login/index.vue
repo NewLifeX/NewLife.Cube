@@ -5,7 +5,7 @@
         <div class="login-header">
           <img v-if="logoSrc" :src="logoSrc" class="login-logo" alt="" />
           <h2>{{ appStore.siteTitle }}</h2>
-          <p v-if="loginConfig?.loginTip" class="login-tip">{{ loginConfig.loginTip }}</p>
+          <p v-if="appStore.siteConfig?.loginTip" class="login-tip">{{ appStore.siteConfig.loginTip }}</p>
         </div>
       </template>
 
@@ -13,7 +13,7 @@
 
       <t-tabs v-model="activeTab">
         <!-- 密码登录 -->
-        <t-tab-panel v-if="loginConfig?.allowLogin !== false" value="password" label="密码登录">
+        <t-tab-panel v-if="loginConfig?.login?.password !== false" value="password" label="密码登录">
           <t-form @submit="handleLogin" :label-width="0" style="margin-top: 16px">
             <t-form-item>
               <t-input v-model="username" placeholder="请输入用户名" size="large" clearable>
@@ -32,7 +32,7 @@
         </t-tab-panel>
 
         <!-- 手机验证码登录 -->
-        <t-tab-panel v-if="loginConfig?.enableSms" value="sms" label="手机验证码">
+        <t-tab-panel v-if="loginConfig?.login?.sms" value="sms" label="手机验证码">
           <t-form :label-width="0" style="margin-top: 16px">
             <t-form-item>
               <t-input v-model="codeUsername" placeholder="请输入手机号" size="large" clearable />
@@ -53,7 +53,7 @@
         </t-tab-panel>
 
         <!-- 邮箱验证码登录 -->
-        <t-tab-panel v-if="loginConfig?.enableMail" value="email" label="邮箱验证码">
+        <t-tab-panel v-if="loginConfig?.login?.mail" value="email" label="邮箱验证码">
           <t-form :label-width="0" style="margin-top: 16px">
             <t-form-item>
               <t-input v-model="mailUsername" placeholder="请输入邮箱地址" size="large" clearable />
@@ -75,11 +75,11 @@
       </t-tabs>
 
       <!-- OAuth 第三方登录 -->
-      <template v-if="loginConfig?.providers?.length">
+      <template v-if="loginConfig?.oauth?.length">
         <t-divider>第三方登录</t-divider>
         <div class="oauth-list">
           <div
-            v-for="item in loginConfig.providers"
+            v-for="item in loginConfig.oauth"
             :key="item.name"
             class="oauth-item"
             :title="item.nickName || item.name"
@@ -93,7 +93,7 @@
       </template>
 
       <!-- 注册入口 -->
-      <div v-if="loginConfig?.allowRegister" class="register-link">
+      <div v-if="loginConfig?.register?.enabled" class="register-link">
         <span>还没有账号？</span>
         <t-link theme="primary" @click="router.push('/register')">立即注册</t-link>
       </div>
@@ -102,10 +102,10 @@
         <t-link theme="primary" @click="router.push('/forgot-password')">...忘记密码？</t-link>
       </div>
       <!-- 版权信息 -->
-      <div v-if="loginConfig?.copyright || loginConfig?.registration" class="login-footer">
-        <div v-if="loginConfig?.copyright" v-html="loginConfig.copyright"></div>
-        <div v-if="loginConfig?.registration">
-          <a href="https://www.beianx.cn/" target="_blank" rel="noopener noreferrer">{{ loginConfig.registration }}</a>
+      <div v-if="appStore.siteConfig?.copyright || appStore.siteConfig?.registration" class="login-footer">
+        <div v-if="appStore.siteConfig?.copyright" v-html="appStore.siteConfig.copyright"></div>
+        <div v-if="appStore.siteConfig?.registration">
+          <a href="https://www.beianx.cn/" target="_blank" rel="noopener noreferrer">{{ appStore.siteConfig.registration }}</a>
         </div>
       </div>
     </t-card>
@@ -140,16 +140,19 @@ const error = ref('');
 const activeTab = ref('password');
 const loginConfig = ref<LoginConfig | null>(null);
 
-const logoSrc = computed(() => appStore.loginConfig?.loginLogo || loginConfig.value?.logo || '');
+const logoSrc = computed(() => appStore.siteConfig?.logo || '');
 
 onMounted(async () => {
   try {
-    const configRes = await api.user.getLoginConfig();
-    if (configRes?.data) appStore.loginConfig = configRes.data;
+    const [configRes, siteRes] = await Promise.all([
+      api.user.getLoginConfig(),
+      api.site.getSite().catch(() => null),
+    ]);
+    if (siteRes?.data) appStore.siteConfig = siteRes.data;
     loginConfig.value = configRes?.data ?? null;
-    if (configRes?.data?.allowLogin === false) {
-      if (configRes.data.enableSms) activeTab.value = 'sms';
-      else if (configRes.data.enableMail) activeTab.value = 'email';
+    if (configRes?.data?.login?.password === false) {
+      if (configRes.data.login.sms) activeTab.value = 'sms';
+      else if (configRes.data.login.mail) activeTab.value = 'email';
     }
   } catch { /* ignore */ }
 });

@@ -3,13 +3,13 @@
     <a-card class="login-card" :bordered="false">
       <div class="login-header">
         <img v-if="logoSrc" :src="logoSrc" class="login-logo" alt="" />
-        <h2>{{ loginConfig?.name || '魔方管理平台' }}</h2>
-        <p v-if="loginConfig?.loginTip" class="login-tip">{{ loginConfig.loginTip }}</p>
+        <h2>{{ siteConfig?.name || '魔方管理平台' }}</h2>
+        <p v-if="siteConfig?.loginTip" class="login-tip">{{ siteConfig.loginTip }}</p>
       </div>
 
       <a-tabs v-model:active-key="activeTab">
         <!-- 密码登录 -->
-        <a-tab-pane v-if="loginConfig?.allowLogin !== false" key="password" title="密码登录">
+        <a-tab-pane v-if="loginConfig?.login?.password !== false" key="password" title="密码登录">
           <a-form :model="form" @submit="handleLogin" layout="vertical">
             <a-form-item field="username" label="用户名">
               <a-input v-model="form.username" placeholder="请输入用户名" allow-clear />
@@ -24,7 +24,7 @@
         </a-tab-pane>
 
         <!-- 手机验证码登录 -->
-        <a-tab-pane v-if="loginConfig?.enableSms" key="sms" title="手机验证码">
+        <a-tab-pane v-if="loginConfig?.login?.sms" key="sms" title="手机验证码">
           <a-form :model="codeForm" layout="vertical">
             <a-form-item label="手机号">
               <a-input v-model="codeForm.username" placeholder="请输入手机号" allow-clear />
@@ -44,7 +44,7 @@
         </a-tab-pane>
 
         <!-- 邮箱验证码登录 -->
-        <a-tab-pane v-if="loginConfig?.enableMail" key="email" title="邮箱验证码">
+        <a-tab-pane v-if="loginConfig?.login?.mail" key="email" title="邮箱验证码">
           <a-form :model="emailForm" layout="vertical">
             <a-form-item label="邮箱">
               <a-input v-model="emailForm.username" placeholder="请输入邮箱地址" allow-clear />
@@ -83,7 +83,7 @@
       </template>
 
       <!-- 注册入口 -->
-      <div v-if="loginConfig?.allowRegister" class="register-link">
+      <div v-if="loginConfig?.register?.enabled" class="register-link">
         <span>还没有账号？</span>
         <a-link @click="router.push('/register')">立即注册</a-link>
       </div>
@@ -94,10 +94,10 @@
       </div>
 
       <!-- 版权信息 -->
-      <div v-if="loginConfig?.copyright || loginConfig?.registration" class="login-footer">
-        <div v-if="loginConfig?.copyright" v-html="loginConfig.copyright" class="login-copyright"></div>
-        <div v-if="loginConfig?.registration">
-          <a href="https://www.beianx.cn/" target="_blank" rel="noopener noreferrer">{{ loginConfig.registration }}</a>
+      <div v-if="siteConfig?.copyright || siteConfig?.registration" class="login-footer">
+        <div v-if="siteConfig?.copyright" v-html="siteConfig.copyright" class="login-copyright"></div>
+        <div v-if="siteConfig?.registration">
+          <a href="https://www.beianx.cn/" target="_blank" rel="noopener noreferrer">{{ siteConfig.registration }}</a>
         </div>
       </div>
     </a-card>
@@ -108,7 +108,7 @@
 import { reactive, ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { Message } from '@arco-design/web-vue';
-import type { OAuthProvider, LoginConfig } from '@newlifex/api-core';
+import type { OAuthProvider, LoginConfig, SiteConfig } from '@newlifex/api-core';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
 
@@ -126,18 +126,23 @@ const mailCountdown = ref(0);
 const activeTab = ref('password');
 const oauthProviders = ref<OAuthProvider[]>([]);
 const loginConfig = ref<LoginConfig | null>(null);
+const siteConfig = ref<SiteConfig | null>(null);
 
-const logoSrc = computed(() => loginConfig.value?.loginLogo || loginConfig.value?.logo || '');
+const logoSrc = computed(() => siteConfig.value?.logo || '');
 
 onMounted(async () => {
   try {
-    const configRes = await cubeApi.user.getLoginConfig();
+    const [configRes, siteRes] = await Promise.all([
+      cubeApi.user.getLoginConfig(),
+      cubeApi.site.getSite().catch(() => null),
+    ]);
     loginConfig.value = configRes.data;
-    oauthProviders.value = configRes.data?.providers ?? [];
+    siteConfig.value = siteRes?.data ?? null;
+    oauthProviders.value = configRes.data?.oauth ?? [];
     // 自动切换到第一个可用 tab
-    if (configRes.data?.allowLogin === false) {
-      if (configRes.data.enableSms) activeTab.value = 'sms';
-      else if (configRes.data.enableMail) activeTab.value = 'email';
+    if (configRes.data?.login?.password === false) {
+      if (configRes.data.login.sms) activeTab.value = 'sms';
+      else if (configRes.data.login.mail) activeTab.value = 'email';
     }
   } catch { /* ignore */ }
 });

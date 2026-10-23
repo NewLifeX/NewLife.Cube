@@ -1,11 +1,11 @@
 import { writable, derived } from 'svelte/store';
-import type { LoginConfig } from '@newlifex/api-core';
+import type { SiteConfig } from '@newlifex/api-core';
 
 export const collapsed = writable(false);
 export const darkMode = writable(false);
-export const loginConfig = writable<LoginConfig | null>(null);
+export const siteConfig = writable<SiteConfig | null>(null);
 
-export const siteTitle = derived(loginConfig, ($c) => $c?.name || '魔方管理平台');
+export const siteTitle = derived(siteConfig, ($c) => $c?.name || '魔方管理平台');
 
 // 深色模式切换
 darkMode.subscribe((v) => {

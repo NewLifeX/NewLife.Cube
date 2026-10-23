@@ -21,17 +21,20 @@ const mailCountdown = ref(0);
 const error = ref('');
 const activeTab = ref('password');
 const loginConfig = ref(null);
-const logoSrc = computed(() => appStore.loginConfig?.loginLogo || loginConfig.value?.logo || '');
+const logoSrc = computed(() => appStore.siteConfig?.logo || '');
 onMounted(async () => {
     try {
-        const configRes = await api.user.getLoginConfig();
-        if (configRes?.data)
-            appStore.loginConfig = configRes.data;
+        const [configRes, siteRes] = await Promise.all([
+            api.user.getLoginConfig(),
+            api.site.getSite().catch(() => null),
+        ]);
+        if (siteRes?.data)
+            appStore.siteConfig = siteRes.data;
         loginConfig.value = configRes?.data ?? null;
-        if (configRes?.data?.allowLogin === false) {
-            if (configRes.data.enableSms)
+        if (configRes?.data?.login?.password === false) {
+            if (configRes.data.login.sms)
                 activeTab.value = 'sms';
-            else if (configRes.data.enableMail)
+            else if (configRes.data.login.mail)
                 activeTab.value = 'email';
         }
     }
@@ -152,11 +155,11 @@ __VLS_3.slots.default;
     }
     __VLS_asFunctionalElement(__VLS_intrinsicElements.h2, __VLS_intrinsicElements.h2)({});
     (__VLS_ctx.appStore.siteTitle);
-    if (__VLS_ctx.loginConfig?.loginTip) {
+    if (__VLS_ctx.appStore.siteConfig?.loginTip) {
         __VLS_asFunctionalElement(__VLS_intrinsicElements.p, __VLS_intrinsicElements.p)({
             ...{ class: "login-tip" },
         });
-        (__VLS_ctx.loginConfig.loginTip);
+        (__VLS_ctx.appStore.siteConfig.loginTip);
     }
 }
 if (__VLS_ctx.error) {
@@ -186,7 +189,7 @@ const __VLS_10 = __VLS_9({
     modelValue: (__VLS_ctx.activeTab),
 }, ...__VLS_functionalComponentArgsRest(__VLS_9));
 __VLS_11.slots.default;
-if (__VLS_ctx.loginConfig?.allowLogin !== false) {
+if (__VLS_ctx.loginConfig?.login?.password !== false) {
     const __VLS_12 = {}.TTabPanel;
     /** @type {[typeof __VLS_components.TTabPanel, typeof __VLS_components.tTabPanel, typeof __VLS_components.TTabPanel, typeof __VLS_components.tTabPanel, ]} */ ;
     // @ts-ignore
@@ -314,7 +317,7 @@ if (__VLS_ctx.loginConfig?.allowLogin !== false) {
     var __VLS_19;
     var __VLS_15;
 }
-if (__VLS_ctx.loginConfig?.enableSms) {
+if (__VLS_ctx.loginConfig?.login?.sms) {
     const __VLS_56 = {}.TTabPanel;
     /** @type {[typeof __VLS_components.TTabPanel, typeof __VLS_components.tTabPanel, typeof __VLS_components.TTabPanel, typeof __VLS_components.tTabPanel, ]} */ ;
     // @ts-ignore
@@ -403,7 +406,7 @@ if (__VLS_ctx.loginConfig?.enableSms) {
         let __VLS_86;
         const __VLS_87 = {
             onClick: (...[$event]) => {
-                if (!(__VLS_ctx.loginConfig?.enableSms))
+                if (!(__VLS_ctx.loginConfig?.login?.sms))
                     return;
                 __VLS_ctx.sendCode('Sms');
             }
@@ -442,7 +445,7 @@ if (__VLS_ctx.loginConfig?.enableSms) {
     let __VLS_98;
     const __VLS_99 = {
         onClick: (...[$event]) => {
-            if (!(__VLS_ctx.loginConfig?.enableSms))
+            if (!(__VLS_ctx.loginConfig?.login?.sms))
                 return;
             __VLS_ctx.handleCodeLogin('mobile');
         }
@@ -453,7 +456,7 @@ if (__VLS_ctx.loginConfig?.enableSms) {
     var __VLS_63;
     var __VLS_59;
 }
-if (__VLS_ctx.loginConfig?.enableMail) {
+if (__VLS_ctx.loginConfig?.login?.mail) {
     const __VLS_100 = {}.TTabPanel;
     /** @type {[typeof __VLS_components.TTabPanel, typeof __VLS_components.tTabPanel, typeof __VLS_components.TTabPanel, typeof __VLS_components.tTabPanel, ]} */ ;
     // @ts-ignore
@@ -542,7 +545,7 @@ if (__VLS_ctx.loginConfig?.enableMail) {
         let __VLS_130;
         const __VLS_131 = {
             onClick: (...[$event]) => {
-                if (!(__VLS_ctx.loginConfig?.enableMail))
+                if (!(__VLS_ctx.loginConfig?.login?.mail))
                     return;
                 __VLS_ctx.sendCode('Mail', __VLS_ctx.mailUsername);
             }
@@ -581,7 +584,7 @@ if (__VLS_ctx.loginConfig?.enableMail) {
     let __VLS_142;
     const __VLS_143 = {
         onClick: (...[$event]) => {
-            if (!(__VLS_ctx.loginConfig?.enableMail))
+            if (!(__VLS_ctx.loginConfig?.login?.mail))
                 return;
             __VLS_ctx.handleCodeLogin('mail', __VLS_ctx.mailUsername, __VLS_ctx.mailCodeVal);
         }
@@ -593,7 +596,7 @@ if (__VLS_ctx.loginConfig?.enableMail) {
     var __VLS_103;
 }
 var __VLS_11;
-if (__VLS_ctx.loginConfig?.providers?.length) {
+if (__VLS_ctx.loginConfig?.oauth?.length) {
     const __VLS_144 = {}.TDivider;
     /** @type {[typeof __VLS_components.TDivider, typeof __VLS_components.tDivider, typeof __VLS_components.TDivider, typeof __VLS_components.tDivider, ]} */ ;
     // @ts-ignore
@@ -604,10 +607,10 @@ if (__VLS_ctx.loginConfig?.providers?.length) {
     __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
         ...{ class: "oauth-list" },
     });
-    for (const [item] of __VLS_getVForSourceType((__VLS_ctx.loginConfig.providers))) {
+    for (const [item] of __VLS_getVForSourceType((__VLS_ctx.loginConfig.oauth))) {
         __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
             ...{ onClick: (...[$event]) => {
-                    if (!(__VLS_ctx.loginConfig?.providers?.length))
+                    if (!(__VLS_ctx.loginConfig?.oauth?.length))
                         return;
                     __VLS_ctx.goOAuth(item.name);
                 } },
@@ -634,7 +637,7 @@ if (__VLS_ctx.loginConfig?.providers?.length) {
         (item.nickName || item.name);
     }
 }
-if (__VLS_ctx.loginConfig?.allowRegister) {
+if (__VLS_ctx.loginConfig?.register?.enabled) {
     __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
         ...{ class: "register-link" },
     });
@@ -655,7 +658,7 @@ if (__VLS_ctx.loginConfig?.allowRegister) {
     let __VLS_154;
     const __VLS_155 = {
         onClick: (...[$event]) => {
-            if (!(__VLS_ctx.loginConfig?.allowRegister))
+            if (!(__VLS_ctx.loginConfig?.register?.enabled))
                 return;
             __VLS_ctx.router.push('/register');
         }
@@ -687,22 +690,22 @@ const __VLS_163 = {
 };
 __VLS_159.slots.default;
 var __VLS_159;
-if (__VLS_ctx.loginConfig?.copyright || __VLS_ctx.loginConfig?.registration) {
+if (__VLS_ctx.appStore.siteConfig?.copyright || __VLS_ctx.appStore.siteConfig?.registration) {
     __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
         ...{ class: "login-footer" },
     });
-    if (__VLS_ctx.loginConfig?.copyright) {
+    if (__VLS_ctx.appStore.siteConfig?.copyright) {
         __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({});
-        __VLS_asFunctionalDirective(__VLS_directives.vHtml)(null, { ...__VLS_directiveBindingRestFields, value: (__VLS_ctx.loginConfig.copyright) }, null, null);
+        __VLS_asFunctionalDirective(__VLS_directives.vHtml)(null, { ...__VLS_directiveBindingRestFields, value: (__VLS_ctx.appStore.siteConfig.copyright) }, null, null);
     }
-    if (__VLS_ctx.loginConfig?.registration) {
+    if (__VLS_ctx.appStore.siteConfig?.registration) {
         __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({});
         __VLS_asFunctionalElement(__VLS_intrinsicElements.a, __VLS_intrinsicElements.a)({
             href: "https://www.beianx.cn/",
             target: "_blank",
             rel: "noopener noreferrer",
         });
-        (__VLS_ctx.loginConfig.registration);
+        (__VLS_ctx.appStore.siteConfig.registration);
     }
 }
 var __VLS_3;

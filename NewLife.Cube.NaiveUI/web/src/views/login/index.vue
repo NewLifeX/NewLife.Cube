@@ -3,13 +3,13 @@
     <n-card class="login-card" :bordered="false">
       <div class="login-header">
         <img v-if="logoSrc" :src="logoSrc" class="login-logo" alt="" />
-        <h2>{{ loginConfig?.displayName ?? '魔方管理平台' }}</h2>
-        <p v-if="loginConfig?.loginTip" class="login-tip">{{ loginConfig.loginTip }}</p>
+        <h2>{{ siteConfig?.name ?? '魔方管理平台' }}</h2>
+        <p v-if="siteConfig?.loginTip" class="login-tip">{{ siteConfig.loginTip }}</p>
       </div>
 
       <n-tabs v-model:value="activeTab">
         <!-- 密码登录 -->
-        <n-tab-pane v-if="loginConfig?.allowLogin !== false" name="password" tab="密码登录">
+        <n-tab-pane v-if="loginConfig?.login?.password !== false" name="password" tab="密码登录">
           <n-form ref="formRef" :model="form" :rules="rules" label-placement="left">
             <n-form-item path="username" label="用户名">
               <n-input v-model:value="form.username" placeholder="请输入用户名" @keydown.enter="handleLogin" />
@@ -28,7 +28,7 @@
         </n-tab-pane>
 
         <!-- 手机验证码登录 -->
-        <n-tab-pane v-if="loginConfig?.enableSms" name="sms" tab="手机验证码">
+        <n-tab-pane v-if="loginConfig?.login?.sms" name="sms" tab="手机验证码">
           <n-form label-placement="left">
             <n-form-item label="手机号">
               <n-input v-model:value="codeForm.username" placeholder="请输入手机号" />
@@ -46,7 +46,7 @@
         </n-tab-pane>
 
         <!-- 邮箱验证码登录 -->
-        <n-tab-pane v-if="loginConfig?.enableMail" name="email" tab="邮箱验证码">
+        <n-tab-pane v-if="loginConfig?.login?.mail" name="email" tab="邮箱验证码">
           <n-form label-placement="left">
             <n-form-item label="邮箱">
               <n-input v-model:value="emailForm.username" placeholder="请输入邮箱地址" />
@@ -65,11 +65,11 @@
       </n-tabs>
 
       <!-- OAuth 登录 -->
-      <div v-if="loginConfig?.providers?.length" class="oauth-section">
+      <div v-if="loginConfig?.oauth?.length" class="oauth-section">
         <n-divider>其他登录方式</n-divider>
         <n-space justify="center">
           <div
-            v-for="p in loginConfig.providers"
+            v-for="p in loginConfig.oauth"
             :key="p.name"
             class="oauth-item"
             :title="p.nickName ?? p.name"
@@ -83,7 +83,7 @@
       </div>
 
       <!-- 注册入口 -->
-      <div v-if="loginConfig?.allowRegister" class="register-link">
+      <div v-if="loginConfig?.register?.enabled" class="register-link">
         <span>还没有账号？</span>
         <n-button text type="primary" @click="router.push('/register')">立即注册</n-button>
       </div>
@@ -94,10 +94,10 @@
       </div>
 
       <!-- 版权信息 -->
-      <div v-if="loginConfig?.copyright || loginConfig?.registration" class="login-footer">
-        <div v-if="loginConfig?.copyright" v-html="loginConfig.copyright"></div>
-        <div v-if="loginConfig?.registration">
-          <a href="https://www.beianx.cn/" target="_blank" rel="noopener noreferrer">{{ loginConfig.registration }}</a>
+      <div v-if="siteConfig?.copyright || siteConfig?.registration" class="login-footer">
+        <div v-if="siteConfig?.copyright" v-html="siteConfig.copyright"></div>
+        <div v-if="siteConfig?.registration">
+          <a href="https://www.beianx.cn/" target="_blank" rel="noopener noreferrer">{{ siteConfig.registration }}</a>
         </div>
       </div>
     </n-card>
@@ -110,7 +110,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useMessage, type FormInst, type FormRules } from 'naive-ui';
 import { useUserStore } from '@/stores/user';
 import api from '@/api';
-import type { LoginConfig } from '@newlifex/api-core';
+import type { LoginConfig, SiteConfig } from '@newlifex/api-core';
 
 const router = useRouter();
 const route = useRoute();
@@ -125,6 +125,7 @@ const smsCountdown = ref(0);
 const mailCountdown = ref(0);
 const activeTab = ref('password');
 const loginConfig = ref<LoginConfig | null>(null);
+const siteConfig = ref<SiteConfig | null>(null);
 
 const form = ref({ username: '', password: '' });
 const codeForm = ref({ username: '', code: '' });
@@ -135,7 +136,7 @@ const rules: FormRules = {
   password: { required: true, message: '请输入密码', trigger: 'blur' },
 };
 
-const logoSrc = computed(() => loginConfig.value?.loginLogo || loginConfig.value?.logo || '');
+const logoSrc = computed(() => siteConfig.value?.logo || '');
 
 async function handleLogin() {
   try {
@@ -209,11 +210,15 @@ function handleOAuth(provider: string) {
 
 onMounted(async () => {
   try {
-    const configRes = await api.user.getLoginConfig();
+    const [configRes, siteRes] = await Promise.all([
+      api.user.getLoginConfig(),
+      api.site.getSite().catch(() => null),
+    ]);
     loginConfig.value = configRes.data;
-    if (configRes.data?.allowLogin === false) {
-      if (configRes.data.enableSms) activeTab.value = 'sms';
-      else if (configRes.data.enableMail) activeTab.value = 'email';
+    siteConfig.value = siteRes?.data ?? null;
+    if (configRes.data?.login?.password === false) {
+      if (configRes.data.login.sms) activeTab.value = 'sms';
+      else if (configRes.data.login.mail) activeTab.value = 'email';
     }
   } catch { /* ignore */ }
 });

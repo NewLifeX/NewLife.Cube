@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { collapsed, darkMode, loginConfig, siteTitle } from '$lib/stores/app';
+  import { collapsed, darkMode, siteConfig, siteTitle } from '$lib/stores/app';
   import { user, menus, isLoggedIn, displayName, fetchUserInfo, fetchMenus, logout } from '$lib/stores/user';
   import { getApi } from '$lib/api';
   import type { MenuItem } from '@newlifex/api-core';
@@ -13,8 +13,8 @@
 
   onMount(async () => {
     try {
-      const [configRes] = await Promise.all([getApi().user.getLoginConfig()]);
-      if (configRes?.data) loginConfig.set(configRes.data);
+      const [siteRes] = await Promise.all([getApi().site.getSite()]);
+      if (siteRes?.data) siteConfig.set(siteRes.data);
     } catch { /* ignore */ }
 
     // 不在登录页时加载用户信息

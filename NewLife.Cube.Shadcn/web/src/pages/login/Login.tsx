@@ -5,12 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useUserStore } from '@/stores/user';
 import api from '@/api';
-import type { LoginConfig } from '@newlifex/api-core';
+import type { LoginConfig, SiteConfig } from '@newlifex/api-core';
 
 export default function Login() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const { login } = useUserStore();
+  // 登录链接可用 ?tenant={id|code|name} 指定租户，透传给站点配置与登录能力接口
+  const tenant = params.get('tenant') ?? params.get('tenantCode') ?? params.get('code') ?? undefined;
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -25,19 +27,22 @@ export default function Login() {
   const [mailCountdown, setMailCountdown] = useState(0);
   const [error, setError] = useState('');
   const [config, setConfig] = useState<LoginConfig | null>(null);
+  const [siteConfig, setSiteConfig] = useState<SiteConfig | null>(null);
   const [activeTab, setActiveTab] = useState('password');
 
   useEffect(() => {
-    api.user.getLoginConfig()
+    api.user.getLoginConfig(tenant)
       .then((configRes) => {
         setConfig(configRes.data);
-        if (configRes.data?.allowLogin === false) {
-          if (configRes.data.enableSms) setActiveTab('sms');
-          else if (configRes.data.enableMail) setActiveTab('email');
+        if (configRes.data?.login?.password === false) {
+          if (configRes.data.login.sms) setActiveTab('sms');
+          else if (configRes.data.login.mail) setActiveTab('email');
         }
       })
       .catch(() => {});
-  }, []);
+    // 品牌、版权、备案等站点信息由匿名接口提供，失败时回退内置默认
+    api.site.getSite(tenant).then((res) => setSiteConfig(res.data)).catch(() => {});
+  }, [tenant]);
 
   const startCountdown = (type: 'sms' | 'mail') => {
     const setter = type === 'sms' ? setSmsCountdown : setMailCountdown;
@@ -96,9 +101,14 @@ export default function Login() {
     }
   };
 
-  const logoSrc = config?.loginLogo || config?.logo || '';
+  const logoSrc = siteConfig?.logo || '';
+  const showPassword = config?.login?.password !== false;
+  const showSms = !!config?.login?.sms;
+  const showMail = !!config?.login?.mail;
+  const oauthProviders = config?.oauth ?? [];
+  const allowRegister = config?.register?.enabled === true;
 
-  const hasTabs = (config?.allowLogin !== false ? 1 : 0) + (config?.enableSms ? 1 : 0) + (config?.enableMail ? 1 : 0) > 1;
+  const hasTabs = (showPassword ? 1 : 0) + (showSms ? 1 : 0) + (showMail ? 1 : 0) > 1;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 p-4">
@@ -106,8 +116,8 @@ export default function Login() {
         {/* Logo + 标题 */}
         <div className="mb-6 text-center">
           {logoSrc && <img src={logoSrc} alt="logo" className="mx-auto mb-2 h-16 w-16 rounded-full object-contain" />}
-          <h1 className="text-2xl font-bold text-card-foreground">{config?.name ?? '魔方管理平台'}</h1>
-          {config?.loginTip && <p className="mt-1 text-sm text-muted-foreground">{config.loginTip}</p>}
+          <h1 className="text-2xl font-bold text-card-foreground">{siteConfig?.name ?? '魔方管理平台'}</h1>
+          {siteConfig?.loginTip && <p className="mt-1 text-sm text-muted-foreground">{siteConfig.loginTip}</p>}
         </div>
 
         {error && (
@@ -120,17 +130,17 @@ export default function Login() {
           <div>
             {/* Tab 导航栏 */}
             <div className="flex rounded-lg bg-muted p-1 mb-4">
-              {config?.allowLogin !== false && (
+              {showPassword && (
                 <button type="button"
                   className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${activeTab === 'password' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                   onClick={() => setActiveTab('password')}>密码登录</button>
               )}
-              {config?.enableSms && (
+              {showSms && (
                 <button type="button"
                   className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${activeTab === 'sms' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                   onClick={() => setActiveTab('sms')}>手机验证码</button>
               )}
-              {config?.enableMail && (
+              {showMail && (
                 <button type="button"
                   className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${activeTab === 'email' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                   onClick={() => setActiveTab('email')}>邮箱验证码</button>
@@ -138,7 +148,7 @@ export default function Login() {
             </div>
 
             {/* 密码登录 */}
-            {activeTab === 'password' && config?.allowLogin !== false && (
+            {activeTab === 'password' && showPassword && (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="username">用户名</Label>
@@ -153,7 +163,7 @@ export default function Login() {
             )}
 
             {/* 手机验证码 */}
-            {activeTab === 'sms' && config?.enableSms && (
+            {activeTab === 'sms' && showSms && (
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>手机号</Label>
@@ -175,7 +185,7 @@ export default function Login() {
             )}
 
             {/* 邮箱验证码 */}
-            {activeTab === 'email' && config?.enableMail && (
+            {activeTab === 'email' && showMail && (
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>邮箱地址</Label>
@@ -211,7 +221,7 @@ export default function Login() {
         )}
 
         {/* OAuth 第三方登录 */}
-        {config?.providers?.length ? (
+        {oauthProviders.length ? (
           <>
             <div className="relative my-4">
               <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
@@ -220,7 +230,7 @@ export default function Login() {
               </div>
             </div>
             <div className="flex flex-wrap justify-center gap-3">
-              {config.providers.map((p) => (
+              {oauthProviders.map((p) => (
                 <div key={p.name} className="flex flex-col items-center gap-1 cursor-pointer"
                   title={p.nickName ?? p.name}
                   onClick={() => { const redirect = new URLSearchParams(window.location.search).get('redirect') || '/'; window.location.href = `/Sso/Login/${p.name}?r=${encodeURIComponent(redirect)}`; }}
@@ -241,7 +251,7 @@ export default function Login() {
         ) : null}
 
         {/* 注册入口 */}
-        {config?.allowRegister && (
+        {allowRegister && (
           <p className="mt-4 text-center text-sm text-muted-foreground">
             还没有账号？{' '}
             <button type="button" className="text-primary underline-offset-4 hover:underline" onClick={() => navigate('/register')}>立即注册</button>
@@ -254,12 +264,12 @@ export default function Login() {
         </p>
 
         {/* 版权信息 */}
-        {(config?.copyright || config?.registration) && (
+        {(siteConfig?.copyright || siteConfig?.registration) && (
           <div className="mt-4 text-center text-xs text-muted-foreground">
-            {config.copyright && <div dangerouslySetInnerHTML={{ __html: config.copyright }} />}
-            {config.registration && (
+            {siteConfig.copyright && <div dangerouslySetInnerHTML={{ __html: siteConfig.copyright }} />}
+            {siteConfig.registration && (
               <a href="https://www.beianx.cn/" target="_blank" rel="noopener noreferrer" className="hover:underline">
-                {config.registration}
+                {siteConfig.registration}
               </a>
             )}
           </div>

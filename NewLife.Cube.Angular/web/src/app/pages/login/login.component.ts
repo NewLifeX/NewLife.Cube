@@ -76,7 +76,7 @@ export class LoginComponent implements OnInit {
     this.tenant = resolveRegisterTenant(this.route.snapshot.queryParams as Record<string, unknown>);
     try {
       const res = await this.api.user.getLoginConfig(this.tenant.tenantCode);
-      if (res.data?.providers) this.oauthProviders = res.data.providers;
+      if (res.data?.oauth) this.oauthProviders = res.data.oauth;
       this.registerEnabled = resolveRegisterModes(res.data?.register).length > 0;
     } catch {
       // 登录页配置加载失败不阻塞密码登录
@@ -103,7 +103,9 @@ export class LoginComponent implements OnInit {
   }
 
   oauthLogin(name: string) {
-    window.location.href = `/Sso/LoginExternal?provider=${name}`;
+    // 非 source=front-end 流程：后端写登录 Cookie 后回跳，保留原 redirect 参数
+    const redirect = this.route.snapshot.queryParamMap.get('redirect') || '/home';
+    window.location.href = `/Sso/Login/${encodeURIComponent(name)}?r=${encodeURIComponent(redirect)}`;
   }
 
   /** 进入注册页，保留租户查询参数 */

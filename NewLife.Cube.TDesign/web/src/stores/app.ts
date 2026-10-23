@@ -1,18 +1,18 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { LoginConfig } from '@newlifex/api-core';
+import type { SiteConfig } from '@newlifex/api-core';
 
 export const useAppStore = defineStore('app', () => {
   const collapsed = ref(false);
   const darkMode = ref(false);
-  const loginConfig = ref<LoginConfig | null>(null);
+  const siteConfig = ref<SiteConfig | null>(null);
 
-  const siteTitle = computed(() => loginConfig.value?.name || '魔方管理平台');
+  const siteTitle = computed(() => siteConfig.value?.name || '魔方管理平台');
 
   function toggleDark() {
     darkMode.value = !darkMode.value;
     document.documentElement.setAttribute('theme-mode', darkMode.value ? 'dark' : '');
   }
 
-  return { collapsed, darkMode, loginConfig, siteTitle, toggleDark };
+  return { collapsed, darkMode, siteConfig, siteTitle, toggleDark };
 });

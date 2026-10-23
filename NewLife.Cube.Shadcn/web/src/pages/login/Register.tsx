@@ -4,14 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import api from '@/api';
-import type { AuthCategory } from '@newlifex/api-core';
+import type { AuthCategory, LoginConfig } from '@newlifex/api-core';
 
 export default function Register() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const oauthToken = params.get('oauthToken') || '';
 
-  const [config, setConfig] = useState<any>(null);
+  const [config, setConfig] = useState<LoginConfig | null>(null);
   const [tab, setTab] = useState<'password' | 'mobile' | 'mail'>('password');
   const [sending, setSending] = useState(false);
   const [countdown, setCountdown] = useState(0);
@@ -28,12 +28,13 @@ export default function Register() {
   });
 
   const oauthMode = !!oauthToken;
-  const enableSmsRegister = useMemo(() => !!(config?.enableSmsRegister ?? config?.enableSms), [config]);
-  const enableMailRegister = useMemo(() => !!(config?.enableMailRegister ?? config?.enableMail), [config]);
+  const enableSmsRegister = useMemo(() => config?.register?.sms === true, [config]);
+  const enableMailRegister = useMemo(() => config?.register?.mail === true, [config]);
+  const tenant = params.get('tenant') ?? params.get('tenantCode') ?? params.get('code') ?? undefined;
 
   useEffect(() => {
-    api.user.getLoginConfig().then((res) => setConfig(res.data)).catch(() => {});
-  }, []);
+    api.user.getLoginConfig(tenant).then((res) => setConfig(res.data)).catch(() => {});
+  }, [tenant]);
 
   useEffect(() => {
     if (!oauthToken) return;

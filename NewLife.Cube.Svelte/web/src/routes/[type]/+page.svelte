@@ -4,7 +4,7 @@
   import { getApi } from '$lib/api';
   import { getMenuPermission } from '$lib/stores/user';
   import FieldInput from '$lib/components/FieldInput.svelte';
-  import { FieldKind, Auth, type DataField, type PageResult } from '@newlifex/api-core';
+  import { Auth, type DataField } from '@newlifex/api-core';
   import { toCamelCase } from '@newlifex/field-mapping';
   import * as echarts from 'echarts';
 
@@ -65,16 +65,13 @@
   async function loadFields() {
     const api = getApi();
     try {
-      const [listRes, editRes, detailRes, searchRes] = await Promise.all([
-        api.page.getFields(typePath, FieldKind.List),
-        api.page.getFields(typePath, FieldKind.Edit),
-        api.page.getFields(typePath, FieldKind.Detail),
-        api.page.getFields(typePath, FieldKind.Search),
-      ]);
-      listFields = listRes?.data ?? [];
-      editFields = editRes?.data ?? [];
-      detailFields = detailRes?.data ?? [];
-      searchFields = searchRes?.data ?? [];
+      // meta 一次返回全部视图字段；api-core 已把 v2 的字段表 + 视图差异展开为旧结构
+      const res = await api.page.getPage(typePath);
+      const meta = res?.data;
+      listFields = meta?.list ?? [];
+      editFields = meta?.editForm ?? [];
+      detailFields = meta?.detail ?? [];
+      searchFields = meta?.search ?? [];
     } catch { /* ignore */ }
   }
 
@@ -176,7 +173,7 @@
       if (isEdit) {
         await getApi().page.update(typePath, formData);
       } else {
-        await getApi().page.create(typePath, formData);
+        await getApi().page.add(typePath, formData);
       }
       showForm = false;
       await loadData();
@@ -192,7 +189,7 @@
   async function handleDelete() {
     if (deleteTargetId == null) return;
     try {
-      await getApi().page.delete(typePath, deleteTargetId);
+      await getApi().page.remove(typePath, deleteTargetId);
       showDeleteConfirm = false;
       deleteTargetId = null;
       await loadData();

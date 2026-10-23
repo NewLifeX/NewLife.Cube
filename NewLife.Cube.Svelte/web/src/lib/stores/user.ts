@@ -34,9 +34,10 @@ export function getMenuPermission(path: string): Record<string, string> {
 
 export async function login(username: string, password: string): Promise<boolean> {
   try {
-    const res = await getApi().user.login(username, password);
-    if (res?.data) {
-      user.set(res.data);
+    const res = await getApi().user.login({ username, password });
+    if (res?.data?.accessToken) {
+      // 登录结果只含令牌，用户资料由 /Auth/Info 获取
+      await fetchUserInfo();
       return true;
     }
     return false;

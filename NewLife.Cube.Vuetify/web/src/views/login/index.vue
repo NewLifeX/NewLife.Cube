@@ -63,7 +63,7 @@ const registerEnabled = ref(false);
 onMounted(async () => {
   try {
     const res = await cubeApi.user.getLoginConfig();
-    oauthProviders.value = res.data?.oauth ?? res.data?.providers ?? [];
+    oauthProviders.value = res.data?.oauth ?? [];
     registerEnabled.value = res.data?.register?.enabled === true;
   } catch {
     // 配置加载失败不影响密码登录，注册入口保持隐藏
@@ -84,7 +84,9 @@ async function handleLogin() {
 }
 
 function oauthLogin(name: string) {
-  window.location.href = `/Sso/LoginExternal?provider=${name}`;
+  // 非 source=front-end 流程：后端写登录 Cookie 后回跳，保留原 redirect 参数
+  const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/#/home';
+  window.location.href = `/Sso/Login/${encodeURIComponent(name)}?r=${encodeURIComponent(redirect)}`;
 }
 
 /** 进入注册页时保留租户等查询参数 */

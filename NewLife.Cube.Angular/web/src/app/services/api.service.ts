@@ -17,4 +17,6 @@ export class ApiService {
   get menu() { return this._api.menu; }
   get page() { return this._api.page; }
   get config() { return this._api.config; }
+  /** 站点配置（/Cube/Site，匿名可访问） */
+  get site() { return this._api.site; }
 }
