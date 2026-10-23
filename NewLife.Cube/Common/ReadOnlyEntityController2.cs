@@ -90,14 +90,25 @@ public partial class ReadOnlyEntityController<TEntity>
         //    whereExpression &= col.Field == val;
         //}
 
-        // 添加映射字段查询
+        // 添加映射字段查询。多选搜索项按逗号拆分后使用 In，其余保持等值匹配
+        var searchFields = OnGetFields(ViewKinds.Search, null);
         foreach (var field in Factory.Fields)
         {
             var val = p[field.Name];
-            if (!val.IsNullOrWhiteSpace())
+            if (val.IsNullOrWhiteSpace()) continue;
+
+            var searchField = searchFields.FirstOrDefault(e => e.Name.EqualIgnoreCase(field.Name)) as SearchField;
+            if (searchField?.Multiple == true)
             {
-                whereExpression &= field.Equal(val.ChangeType(field.Type));
+                var values = val.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                if (values.Length > 1)
+                {
+                    whereExpression &= field.In(values);
+                    continue;
+                }
             }
+
+            whereExpression &= field.Equal(val.ChangeType(field.Type));
         }
 
         return Entity<TEntity>.FindAll(whereExpression, p);
