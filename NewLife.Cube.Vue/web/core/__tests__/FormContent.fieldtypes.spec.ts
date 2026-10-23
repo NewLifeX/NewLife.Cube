@@ -11,10 +11,11 @@
  *
  * 运行：pnpm test:unit core/__tests__/FormContent.fieldtypes.spec.ts
  */
-import { describe, it, expect, vi, beforeAll } from 'vitest';
-import { h } from 'vue';
+import { afterEach, describe, it, expect, vi, beforeAll } from 'vitest';
+import { defineComponent, h } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
 import ElementPlus from 'element-plus';
+import { clearFieldRenderers, registerFieldRenderer } from '../engine/fieldRenderers';
 import type { FieldMeta } from '../types/field';
 
 // ── jsdom 兼容垫片：Element Plus 弹层（el-select/el-popover/el-date-picker 等）依赖 ResizeObserver / matchMedia / scrollIntoView ──
@@ -296,5 +297,65 @@ describe('FormContent 字段类型 → 控件渲染矩阵（§3.2 全矩阵）',
     await flushPromises();
     expect(w.find('.el-input.is-disabled').exists()).toBe(false);
     expect(w.find('.fmc-required').exists()).toBe(true);
+  });
+});
+describe('FormContent 字段级渲染器', () => {
+  afterEach(() => clearFieldRenderers());
+
+  it('应该把表单控件交给已注册的 view 组件并按 update:value 回写', async () => {
+    const Custom = defineComponent({
+      props: {
+        value: { type: null, default: null },
+        disabled: { type: Boolean, default: false },
+      },
+      emits: ['update:value'],
+      setup(props, { emit }) {
+        return () =>
+          h(
+            'button',
+            {
+              class: 'custom-form-field',
+              disabled: props.disabled,
+              onClick: () => emit('update:value', 'next'),
+            },
+            String(props.value ?? ''),
+          );
+      },
+    });
+    registerFieldRenderer('orgPicker', { component: Custom });
+
+    const w = mount(FormContent, {
+      props: {
+        fields: [fm({ name: 'OrgRange', typeName: 'String', view: 'orgPicker' })],
+        modelValue: { OrgRange: 'old' },
+      },
+      global: { plugins: [ElementPlus] },
+    });
+    await flushPromises();
+    expect(w.find('.custom-form-field').text()).toBe('old');
+
+    await w.find('.custom-form-field').trigger('click');
+    expect(w.emitted('update:modelValue')?.at(-1)?.[0]).toEqual({ OrgRange: 'next' });
+  });
+
+  it('应该在查看模式下把 disabled 传给渲染器', async () => {
+    const Custom = defineComponent({
+      props: { value: { type: null, default: null }, disabled: { type: Boolean, default: false } },
+      setup(props) {
+        return () => h('button', { class: 'custom-form-field', disabled: props.disabled }, 'x');
+      },
+    });
+    registerFieldRenderer('orgPicker', { component: Custom });
+
+    const w = mount(FormContent, {
+      props: {
+        fields: [fm({ name: 'OrgRange', typeName: 'String', view: 'orgPicker' })],
+        modelValue: { OrgRange: 'old' },
+        disabled: true,
+      },
+      global: { plugins: [ElementPlus] },
+    });
+    await flushPromises();
+    expect(w.find('.custom-form-field').attributes('disabled')).toBeDefined();
   });
 });

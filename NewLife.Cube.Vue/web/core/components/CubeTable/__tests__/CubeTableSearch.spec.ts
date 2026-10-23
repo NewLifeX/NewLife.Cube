@@ -10,11 +10,12 @@
  * 运行：pnpm test:unit core/components/CubeTable/__tests__/CubeTableSearch.spec.ts
  */
 import './domShims';
-import { describe, expect, it, vi } from 'vitest';
-import { nextTick } from 'vue';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { defineComponent, h, nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
 import ElementPlus from 'element-plus';
 import CubeTableSearch from '../CubeTableSearch.vue';
+import { clearFieldRenderers, registerFieldRenderer } from '../../../engine/fieldRenderers';
 import { FIELDS, makeFakeCtx } from './fakeCtx';
 import type { FieldMeta } from '../../../types/field';
 
@@ -76,6 +77,39 @@ async function expand(wrapper: { find: (selector: string) => { trigger: (event: 
   await wrapper.find('.cts-toggle').trigger('click');
   await nextTick();
 }
+
+describe('CubeTableSearch 字段级渲染器', () => {
+  afterEach(() => clearFieldRenderers());
+
+  it('应该用已注册的 view 组件替换搜索控件并回写模型', async () => {
+    const Picker = defineComponent({
+      props: { value: { type: null, default: null } },
+      emits: ['update:value'],
+      setup(props, { emit }) {
+        return () =>
+          h('input', {
+            class: 'custom-search',
+            value: String(props.value ?? ''),
+            onInput: (e: Event) => emit('update:value', (e.target as HTMLInputElement).value),
+          });
+      },
+    });
+    registerFieldRenderer('searchPicker', { component: Picker });
+
+    const field: FieldMeta = {
+      name: 'Org',
+      displayName: '组织',
+      typeName: 'String',
+      view: 'searchPicker',
+    };
+    const { wrapper, ctx } = await mountSearch([field]);
+    const input = wrapper.find('.custom-search');
+    expect(input.exists()).toBe(true);
+
+    await input.setValue('abc');
+    expect(ctx.searchModel.Org).toBe('abc');
+  });
+});
 
 describe('CubeTableSearch 一体式结构', () => {
   it('应该收起态第一行只出 关键字+首个条件+动作格 当有多条件未展开时', async () => {

@@ -31,6 +31,13 @@ export {
   toolbarDisabled,
 } from './toolbarRenderers';
 export type { ToolbarRenderer } from './toolbarRenderers';
+export {
+  registerFieldRenderer,
+  getFieldRenderer,
+  resolveFieldRenderer,
+  clearFieldRenderers,
+} from '../../engine/fieldRenderers';
+export type { FieldRenderer, FieldRendererProps } from '../../engine/fieldRenderers';
 export type { BackendToolbarItem } from '../../engine/types';
 
 export type {

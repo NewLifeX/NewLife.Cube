@@ -11,6 +11,7 @@
 import { computed, defineAsyncComponent } from 'vue';
 import type { FieldMeta, ControlType } from '../../types/field';
 import { resolveControl, isFullWidthControl, resolveNumberPrecision, resolveNumberStep, enumOptionValue } from '../../utils/fieldControl';
+import { resolveFieldRenderer } from '../../engine/fieldRenderers';
 import { toPascalAndCamel } from '../../utils/url';
 import LovSelect from '../../components/LovSelect/index.vue';
 import Uploader from '../../components/Uploader.vue';
@@ -71,6 +72,9 @@ const emit = defineEmits<{
 function controlOf(field: FieldMeta): ControlType {
   return resolveControl(field);
 }
+
+/** 后端下发 view 名时优先交给已注册的字段渲染器，未注册则回退内置控件 */
+const fieldRendererOf = (field: FieldMeta) => resolveFieldRenderer(field);
 
 function isRequired(field: FieldMeta): boolean {
   // Boolean 开关恒有值（默认 false），与 fieldControl.isRequiredField 口径一致，避免星号与校验漂移
@@ -163,9 +167,21 @@ function toMultiArray(val: unknown): string[] {
             <span v-if="!props.disabled && isRequired(field)" class="fmc-required" aria-hidden="true">*</span>
           </label>
 
+          <!-- 字段级渲染器：后端声明 view，前端按名注册；未注册时回退内置控件 -->
+          <component
+            v-if="fieldRendererOf(field)"
+            :is="fieldRendererOf(field)?.component"
+            v-bind="fieldRendererOf(field)?.props"
+            :field="field"
+            :value="getValue(field.name)"
+            :model="modelValue"
+            :disabled="props.disabled"
+            @update:value="(v: unknown) => updateField(field.name, v)"
+          />
+
           <!-- 大文本 -->
           <el-input
-            v-if="controlOf(field) === 'textarea'"
+            v-else-if="controlOf(field) === 'textarea'"
             :id="`fmc-${field.name}`"
             type="textarea"
             :rows="3"

@@ -8,11 +8,12 @@
  * 运行：pnpm test:unit core/components/CubeTable/__tests__/CubeTableGrid.spec.ts
  */
 import './domShims';
-import { describe, expect, it, vi } from 'vitest';
-import { nextTick } from 'vue';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { defineComponent, h, nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
 import ElementPlus from 'element-plus';
 import CubeTableGrid from '../CubeTableGrid.vue';
+import { clearFieldRenderers, registerFieldRenderer } from '../../../engine/fieldRenderers';
 import { FIELDS, makeFakeActions, makeFakeCtx } from './fakeCtx';
 
 const lovStubs = vi.hoisted(() => ({
@@ -151,6 +152,36 @@ describe('CubeTableGrid 列渲染', () => {
     const text = await textOf(ctx, { props: { visibility: { Name: false, Count: true } } });
     expect(text).not.toContain('名称');
     expect(text).toContain('数量');
+  });
+});
+
+describe('CubeTableGrid 字段级渲染器', () => {
+  afterEach(() => clearFieldRenderers());
+
+  it('应该把单元格交给已注册的 view 组件 当字段声明 view 时', async () => {
+    const Badge = defineComponent({
+      props: { value: { type: null, default: null } },
+      setup(props) {
+        return () => h('strong', { class: 'custom-badge' }, `标签:${props.value}`);
+      },
+    });
+    registerFieldRenderer('cellBadge', { component: Badge });
+    const ctx = makeFakeCtx({
+      listFields: [{ ...FIELDS.name, view: 'cellBadge' }],
+      list: [{ Name: '泵体' }],
+    });
+    const wrapper = await mountGrid(ctx);
+    expect(wrapper.find('.custom-badge').text()).toContain('标签:泵体');
+  });
+
+  it('应该回退内置控件 当 view 名称未注册时', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const ctx = makeFakeCtx({
+      listFields: [{ ...FIELDS.name, view: 'notRegistered' }],
+      list: [{ Name: '泵体' }],
+    });
+    expect(await textOf(ctx)).toContain('泵体');
+    expect(warn).toHaveBeenCalledWith('[CubeTable] 字段渲染器未注册：notRegistered');
   });
 });
 

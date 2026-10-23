@@ -43,6 +43,7 @@ import {
 } from './cubeTable.logic';
 import { useCubeTableLov } from './useCubeTableLov';
 import { usePagePermissions } from '../../composables/usePagePermissions';
+import { resolveFieldRenderer } from '../../engine/fieldRenderers';
 import type { CubeEngineContext } from '../../engine/types';
 import type { CubeColumnView, CubeRowAction, CubeTableActions } from './types';
 
@@ -122,6 +123,8 @@ const tagsOf = (row: Record<string, unknown>, column: CubeColumnView) =>
   column.control === 'lov' && parts(row, column).length > 1 ? parts(row, column) : [];
 const iconOf = (name: string) => (ElementPlusIconsVue as Record<string, unknown>)[name] ?? null;
 const slotName = (column: CubeColumnView) => `col-${column.key}`;
+/** 后端下发 view 名时优先交给已注册的字段渲染器，未注册则回退内置控件 */
+const fieldRendererOf = (column: CubeColumnView) => resolveFieldRenderer(column.field);
 
 /** 内置行操作：与旧 Section 组件同口径（查看 / 编辑 / 删除），删除走确认层不直连引擎 */
 const builtinRowActions = computed<CubeRowAction[]>(() => {
@@ -208,7 +211,19 @@ const onAction = (action: CubeRowAction, row: Record<string, unknown>) => void a
         </template>
 
         <template v-else #default="scope">
-          <span v-if="blank(scope.row, column)" class="ctg-blank">—</span>
+          <!-- 字段级渲染器：后端声明 view，前端按名注册；未注册时回退内置控件 -->
+          <component
+            v-if="fieldRendererOf(column)"
+            :is="fieldRendererOf(column)?.component"
+            v-bind="fieldRendererOf(column)?.props"
+            :field="column.field"
+            :column="column"
+            :value="raw(scope.row, column)"
+            :row="scope.row"
+            :ctx="ctx"
+          />
+
+          <span v-else-if="blank(scope.row, column)" class="ctg-blank">—</span>
 
           <el-image
             v-else-if="column.control === 'image'"

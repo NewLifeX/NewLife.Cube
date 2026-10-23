@@ -14,7 +14,9 @@ import { computed, ref, useSlots } from 'vue';
 import { ArrowDown, ArrowUp, Filter, Search } from '@element-plus/icons-vue';
 import LovSelect from '../LovSelect/index.vue';
 import { buildSearchControls, showSearchToggle } from './cubeTable.logic';
+import { resolveFieldRenderer } from '../../engine/fieldRenderers';
 import type { CubeEngineContext } from '../../engine/types';
+import type { CubeSearchControl } from './types';
 
 const props = withDefaults(
   defineProps<{
@@ -34,6 +36,14 @@ const showSearchControls = computed(() => Boolean(slots.advanced) || showSearchT
 
 function toggle(): void {
   expanded.value = !expanded.value;
+}
+
+/** 后端下发 view 名时优先交给已注册的字段渲染器，未注册则回退内置控件 */
+const fieldRendererOf = (control: CubeSearchControl) => resolveFieldRenderer(control.field);
+
+/** 渲染器回写值：只改搜索模型，是否立即查询仍由用户点「搜索」决定 */
+function onRendererValue(control: CubeSearchControl, value: unknown): void {
+  props.ctx.searchModel[control.key] = value;
 }
 </script>
 
@@ -72,8 +82,20 @@ function toggle(): void {
         <div v-for="c in expanded ? controls : controls.slice(0, 1)" :key="c.key" class="cts-item cts-cell">
           <span class="cts-label">{{ c.field.displayName || c.field.name }}</span>
 
+          <!-- 字段级渲染器：后端声明 view，前端按名注册；未注册时回退内置控件 -->
+          <component
+            v-if="fieldRendererOf(c)"
+            :is="fieldRendererOf(c)?.component"
+            v-bind="fieldRendererOf(c)?.props"
+            :field="c.field"
+            :value="ctx.searchModel[c.key]"
+            :model="ctx.searchModel"
+            :ctx="ctx"
+            @update:value="(v: unknown) => onRendererValue(c, v)"
+          />
+
           <el-input
-            v-if="c.kind === 'text'"
+            v-else-if="c.kind === 'text'"
             v-model="ctx.searchModel[c.key] as string"
             class="cts-ctl"
             clearable
