@@ -494,6 +494,25 @@ export function cellRawValue(row: Record<string, unknown>, column: CubeColumnVie
   return readRowValue(row, column.key);
 }
 
+/**
+ * 链接模板是否至少有一个有效行值。
+ *
+ * 模板不含行占位符（纯跳转按钮，如「查看」）时始终可用；
+ * 含 `{TraceId}` 等占位符但该行值全为空时返回 false，单元格回退为普通显示/空值占位。
+ */
+export function linkTemplateHasValue(
+  template: string,
+  row: Record<string, unknown>,
+): boolean {
+  if (!template) return false;
+  const placeholders = [...template.matchAll(/\{(?!page:)([^{}:]+)\}/g)].map((match) => match[1]!.trim());
+  if (!placeholders.length) return true;
+  return placeholders.some((path) => {
+    const value = readPathValue(row, path);
+    return value !== null && value !== undefined && value !== '';
+  });
+}
+
 /** 单元格链接地址：按行值 / 页面参数替换占位符 */
 export function cellLinkUrl(
   column: CubeColumnView,

@@ -24,6 +24,7 @@ import {
   formatDecimalCell,
   formatMoneyCell,
   formatPercentCell,
+  linkTemplateHasValue,
   normalizeTextAlign,
   showSearchToggle,
   defaultColumnsStorageKey,
@@ -457,6 +458,13 @@ describe('CubeTable/logic 列表呈现属性', () => {
   it('text 模板优先于原始值，并按 maxWidth 截断', () => {
     const column = view({ ...FIELDS.name, text: '打开{Name}', maxWidth: 4 });
     expect(cellText(column, '原值', { row: { Name: '设备档案' } })).toBe('打开设备…');
+  });
+
+  it('链接模板只在存在有效行值时可用', () => {
+    expect(linkTemplateHasValue('/Detail?id={Id}', { Id: 1 })).toBe(true);
+    expect(linkTemplateHasValue('/Detail?id={Id}', { Id: null })).toBe(false);
+    expect(linkTemplateHasValue('/Detail/{TraceId}', { TraceId: '' })).toBe(false);
+    expect(linkTemplateHasValue('/Map', {})).toBe(true);
   });
 
   it('percent 按比例乘 100 并按描述单位缩放', () => {

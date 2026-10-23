@@ -97,6 +97,7 @@ export {
   dictOptions,
   isExpandableCell,
   isOverflowTooltipCell,
+  linkTemplateHasValue,
   layoutRowActions,
   MAX_VISIBLE_ACTIONS,
   normalizeMulti,

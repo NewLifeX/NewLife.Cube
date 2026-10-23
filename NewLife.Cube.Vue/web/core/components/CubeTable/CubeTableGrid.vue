@@ -41,6 +41,7 @@ import {
   cellText,
   cellTitle,
   isExpandableCell,
+  linkTemplateHasValue,
   isOverflowTooltipCell,
   layoutRowActions,
   resolveGridFlags,
@@ -134,6 +135,9 @@ const linkOf = (row: Record<string, unknown>, column: CubeColumnView) =>
   cellLinkUrl(column, row, pageParams.value);
 const titleOf = (row: Record<string, unknown>, column: CubeColumnView) =>
   cellTitle(column, row, pageParams.value);
+/** 链接模板没有有效行值时（如空 TraceId）回退普通单元格 */
+const linkHasValue = (row: Record<string, unknown>, column: CubeColumnView) =>
+  linkTemplateHasValue(column.field.url ?? '', row);
 
 /** 单元格 AJAX 动作：dataAction 存在时阻止跳转，先请求再刷新列表 */
 async function onCellClick(
@@ -265,7 +269,7 @@ const onAction = (action: CubeRowAction, row: Record<string, unknown>) => void a
 
           <!-- 列表链接：支持 {字段} 与 {page:参数} 占位符，dataAction 时走 AJAX 后刷新 -->
           <el-link
-            v-else-if="column.field.url"
+            v-else-if="column.field.url && linkHasValue(scope.row, column)"
             type="primary"
             :href="linkOf(scope.row, column) || undefined"
             :target="column.field.target === '_blank' ? '_blank' : '_self'"

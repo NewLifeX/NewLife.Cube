@@ -177,6 +177,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
         // 列表字段直接平铺下发；显隐与顺序由前端 localStorage 保存
         var list = OnGetFields(ViewKinds.List, null);
+        // 配置星尘地址时自动为 TraceId 生成追踪链接
+        PageMetaBuilder.ApplyTraceUrl(list, CubeSetting.Current.StarWeb);
         var form = OnGetFields(ViewKinds.EditForm, null);
         var add = OnGetFields(ViewKinds.AddForm, null);
         var detail = OnGetFields(ViewKinds.Detail, null);

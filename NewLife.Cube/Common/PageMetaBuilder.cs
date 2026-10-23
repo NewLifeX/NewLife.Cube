@@ -36,6 +36,24 @@ internal static class PageMetaBuilder
         return list;
     }
 
+    /// <summary>为 TraceId 列表字段生成星尘追踪链接。控制器显式设置 Url 时不覆盖</summary>
+    /// <param name="fields">列表字段集合（就地修改）</param>
+    /// <param name="starWeb">星尘 Web 地址。为空时不生成链接</param>
+    public static void ApplyTraceUrl(IEnumerable<DataField> fields, String starWeb)
+    {
+        if (fields == null || starWeb.IsNullOrEmpty()) return;
+
+        // 只处理显式的 TraceId 列；控制器已自定义链接（如 LogController）时以控制器为准
+        var field = fields.OfType<ListField>().FirstOrDefault(e => e.Name.EqualIgnoreCase("TraceId"));
+        if (field == null || !field.Url.IsNullOrEmpty()) return;
+
+        field.Url = starWeb.Contains("{traceId}", StringComparison.OrdinalIgnoreCase)
+            ? starWeb.Replace("{traceId}", "{TraceId}", StringComparison.OrdinalIgnoreCase)
+            : starWeb.TrimEnd('/') + "/trace?id={TraceId}";
+        field.Target ??= "_blank";
+        if (field.Text.IsNullOrEmpty()) field.Text = "追踪";
+    }
+
     /// <summary>构建搜索区查询项</summary>
     /// <param name="fields">搜索字段集合</param>
     /// <param name="factory">实体工厂，用于识别主时间字段；为空时不生成时间区间</param>

@@ -86,6 +86,8 @@ public class FieldCollection : List<DataField>
         {
             case ViewKinds.List:
                 SetRelation(false);
+                // 列表默认隐藏扩展与审计定位字段，表单/详情不受影响；需要时控制器可显式 AddField 加回
+                RemoveAuditFields();
                 break;
             case ViewKinds.Detail:
                 SetRelation(true);
@@ -229,6 +231,14 @@ public class FieldCollection : List<DataField>
         }
 
         return this;
+    }
+
+    /// <summary>移除扩展与审计定位字段。仅用于列表视图，避免默认把内部排障列铺给业务用户</summary>
+    private void RemoveAuditFields()
+    {
+        RemoveAll(e => e.Name.EqualIgnoreCase(
+            "Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6",
+            "CreateIP", "UpdateIP", "CreateUserID", "UpdateUserID"));
     }
 
     private void NoPass()

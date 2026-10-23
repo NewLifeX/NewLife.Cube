@@ -67,6 +67,31 @@ public class PageMetaBuilderTests
         Assert.Equal("statusTag", listDic["view"]);
     }
 
+    [Fact(DisplayName = "TraceId 自动生成星尘追踪链接")]
+    public void ApplyTraceUrl_BuildsStarWebLink()
+    {
+        var trace = List("TraceId", "追踪");
+
+        PageMetaBuilder.ApplyTraceUrl([trace], "https://star.example.com/");
+
+        Assert.Equal("https://star.example.com/trace?id={TraceId}", trace.Url);
+        Assert.Equal("_blank", trace.Target);
+        Assert.Equal("追踪", trace.Text);
+    }
+
+    [Fact(DisplayName = "TraceId 链接支持 {traceId} 模板且不覆盖控制器自定义链接")]
+    public void ApplyTraceUrl_RespectsTemplateAndCustomUrl()
+    {
+        var trace = List("TraceId", "追踪");
+        PageMetaBuilder.ApplyTraceUrl([trace], "https://star.example.com/trace/{traceId}");
+        Assert.Equal("https://star.example.com/trace/{TraceId}", trace.Url);
+
+        var custom = List("TraceId", "追踪");
+        custom.Url = "/Admin/Log?trace={TraceId}";
+        PageMetaBuilder.ApplyTraceUrl([custom], "https://star.example.com");
+        Assert.Equal("/Admin/Log?trace={TraceId}", custom.Url);
+    }
+
     [Fact(DisplayName = "add/detail 与 form 属性一致时判定为同一视图")]
     public void SameFields_ComparesProperties()
     {
