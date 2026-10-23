@@ -10,7 +10,15 @@
  */
 import { computed, defineAsyncComponent } from 'vue';
 import type { FieldMeta, ControlType } from '../../types/field';
-import { resolveControl, isFullWidthControl, resolveNumberPrecision, resolveNumberStep, enumOptionValue } from '../../utils/fieldControl';
+import {
+  enumOptionValue,
+  isFullWidthControl,
+  isMoneyItemType,
+  isPercentItemType,
+  resolveControl,
+  resolveNumberPrecision,
+  resolveNumberStep,
+} from '../../utils/fieldControl';
 import { resolveFieldRenderer } from '../../engine/fieldRenderers';
 import { toPascalAndCamel } from '../../utils/url';
 import LovSelect from '../../components/LovSelect/index.vue';
@@ -75,6 +83,20 @@ function controlOf(field: FieldMeta): ControlType {
 
 /** 后端下发 view 名时优先交给已注册的字段渲染器，未注册则回退内置控件 */
 const fieldRendererOf = (field: FieldMeta) => resolveFieldRenderer(field);
+
+/** 纯日期字段（ItemType=date）只选日期，不带时分秒 */
+function isDateOnly(field: FieldMeta): boolean {
+  return (field.itemType ?? '').trim().toLowerCase() === 'date';
+}
+
+/** 数值控件的单位提示 */
+function numberPrefix(field: FieldMeta): string {
+  return isMoneyItemType(field.itemType) ? '¥' : '';
+}
+
+function numberSuffix(field: FieldMeta): string {
+  return isPercentItemType(field.itemType) ? '%' : '';
+}
 
 function isRequired(field: FieldMeta): boolean {
   // Boolean 开关恒有值（默认 false），与 fieldControl.isRequiredField 口径一致，避免星号与校验漂移
@@ -193,18 +215,21 @@ function toMultiArray(val: unknown): string[] {
           />
 
           <!-- 数值 -->
-          <el-input-number
-            v-else-if="controlOf(field) === 'inputNumber'"
-            :id="`fmc-${field.name}`"
-            class="fmc-input-number"
-            :controls="true"
-            :disabled="props.disabled"
-            :precision="resolveNumberPrecision(field)"
-            :step="resolveNumberStep(field)"
-            :placeholder="field.description || '请输入数值'"
-            :model-value="toNumber(getValue(field.name))"
-            @update:model-value="(v: number | undefined) => updateNumber(field.name, v)"
-          />
+          <div v-else-if="controlOf(field) === 'inputNumber'" class="fmc-number">
+            <span v-if="numberPrefix(field)" class="fmc-unit">{{ numberPrefix(field) }}</span>
+            <el-input-number
+              :id="`fmc-${field.name}`"
+              class="fmc-input-number"
+              :controls="true"
+              :disabled="props.disabled"
+              :precision="resolveNumberPrecision(field)"
+              :step="resolveNumberStep(field)"
+              :placeholder="field.description || '请输入数值'"
+              :model-value="toNumber(getValue(field.name))"
+              @update:model-value="(v: number | undefined) => updateNumber(field.name, v)"
+            />
+            <span v-if="numberSuffix(field)" class="fmc-unit">{{ numberSuffix(field) }}</span>
+          </div>
 
           <!-- 枚举 / 字典下拉（后端下发 dataSource） -->
           <el-select
@@ -231,15 +256,15 @@ function toMultiArray(val: unknown): string[] {
             />
           </div>
 
-          <!-- 日期时间 -->
+          <!-- 日期时间。ItemType=date 时只选日期 -->
           <el-date-picker
             v-else-if="controlOf(field) === 'datePicker'"
             class="fmc-date-picker"
-            type="datetime"
+            :type="isDateOnly(field) ? 'date' : 'datetime'"
             :disabled="props.disabled"
-            :placeholder="field.description || '选择日期时间'"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DDTHH:mm:ss"
+            :placeholder="isDateOnly(field) ? '选择日期' : '选择日期时间'"
+            :format="isDateOnly(field) ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:mm:ss'"
+            :value-format="isDateOnly(field) ? 'YYYY-MM-DD' : 'YYYY-MM-DDTHH:mm:ss'"
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
@@ -469,8 +494,21 @@ function toMultiArray(val: unknown): string[] {
   resize: vertical;
 }
 
-.fmc-input-number {
+.fmc-number {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fmc-number .fmc-input-number {
+  flex: 1;
   width: 100%;
+}
+
+.fmc-unit {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
 }
 
 .fmc-switch-wrapper {

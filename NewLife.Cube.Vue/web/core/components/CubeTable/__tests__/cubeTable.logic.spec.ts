@@ -21,6 +21,9 @@ import {
   cellText,
   cellTitle,
   fieldHeader,
+  formatDecimalCell,
+  formatMoneyCell,
+  formatPercentCell,
   normalizeTextAlign,
   showSearchToggle,
   defaultColumnsStorageKey,
@@ -454,5 +457,23 @@ describe('CubeTable/logic 列表呈现属性', () => {
   it('text 模板优先于原始值，并按 maxWidth 截断', () => {
     const column = view({ ...FIELDS.name, text: '打开{Name}', maxWidth: 4 });
     expect(cellText(column, '原值', { row: { Name: '设备档案' } })).toBe('打开设备…');
+  });
+
+  it('percent 按比例乘 100 并按描述单位缩放', () => {
+    const field: FieldMeta = { name: 'Rate', typeName: 'Double', itemType: 'percent', scale: 2 };
+    // 与 MVC "p{scale-2}" 同口径：scale=2 → 0 位小数
+    expect(formatPercentCell(field, 0.1234)).toBe('12%');
+    // 描述中的“百分之一”表示存储值为百分比数的 1/100
+    expect(formatPercentCell({ ...field, description: '百分之一' }, 12.34)).toBe('12.34%');
+  });
+
+  it('money 默认两位小数并带千分位', () => {
+    const field: FieldMeta = { name: 'Amount', typeName: 'Decimal', itemType: 'money' };
+    expect(formatMoneyCell(field, 1234.5)).toBe('¥1,234.50');
+  });
+
+  it('decimal(p,s) 按声明位数补零', () => {
+    const field: FieldMeta = { name: 'Price', typeName: 'Decimal', itemType: 'decimal(18,3)' };
+    expect(formatDecimalCell(field, 12.3)).toBe('12.300');
   });
 });

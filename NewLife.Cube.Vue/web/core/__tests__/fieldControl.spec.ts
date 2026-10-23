@@ -14,6 +14,9 @@
 import { describe, it, expect } from 'vitest';
 import type { FieldMeta } from '../types/field';
 import {
+  isMoneyItemType,
+  isPercentItemType,
+  parseDecimalItemType,
   resolveControl,
   resolveSearchControl,
   resolveListControl,
@@ -299,5 +302,39 @@ describe('resolveNumberPrecision / resolveNumberStep（数值精度）', () => {
 
   it('未识别数值类型 → undefined（不限制进度）', () => {
     expect(resolveNumberPrecision(f({ name: 'X', typeName: 'UnknownNum' }))).toBeUndefined();
+  });
+});
+
+describe('ItemType 扩展：percent / money / decimal(p,s) / 前缀', () => {
+  it('percent / money / decimal(p,s) → inputNumber', () => {
+    expect(resolveControl(f({ name: 'Rate', typeName: 'Double', itemType: 'percent' }))).toBe('inputNumber');
+    expect(resolveControl(f({ name: 'Amount', typeName: 'Decimal', itemType: 'Money' }))).toBe('inputNumber');
+    expect(resolveControl(f({ name: 'Price', typeName: 'Decimal', itemType: 'decimal(18,3)' }))).toBe('inputNumber');
+  });
+
+  it('file-zip / image-small 前缀 → upload / image', () => {
+    expect(resolveControl(f({ name: 'Zip', typeName: 'String', itemType: 'file-zip' }))).toBe('upload');
+    expect(resolveControl(f({ name: 'Pic', typeName: 'String', itemType: 'image-small' }))).toBe('image');
+  });
+
+  it('搜索与列表对 percent / money 走数值口径', () => {
+    expect(resolveSearchControl(f({ name: 'Rate', typeName: 'Double', itemType: 'percent' }))).toBe('numberRange');
+    expect(resolveSearchControl(f({ name: 'Amount', typeName: 'Decimal', itemType: 'Money' }))).toBe('numberRange');
+    expect(resolveListControl(f({ name: 'Amount', typeName: 'Decimal', itemType: 'Money' }))).toBe('number');
+    expect(resolveListControl(f({ name: 'Price', typeName: 'Decimal', itemType: 'decimal(18,3)' }))).toBe('number');
+  });
+
+  it('decimal(p,s) 的 scale 优先于 BindColumn.Scale', () => {
+    const field = f({ name: 'Price', typeName: 'Decimal', itemType: 'decimal(18,3)', scale: 2 });
+    expect(parseDecimalItemType(field.itemType)).toEqual({ precision: 18, scale: 3 });
+    expect(resolveNumberPrecision(field)).toBe(3);
+    expect(resolveNumberStep(field)).toBe(0.001);
+  });
+
+  it('ItemType 判定不区分大小写', () => {
+    expect(isPercentItemType('Percentage')).toBe(true);
+    expect(isPercentItemType('percent')).toBe(true);
+    expect(isMoneyItemType('MONEY')).toBe(true);
+    expect(isMoneyItemType('decimal(18,2)')).toBe(false);
   });
 });

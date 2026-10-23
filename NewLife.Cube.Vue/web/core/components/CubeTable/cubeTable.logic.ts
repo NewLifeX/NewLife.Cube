@@ -8,6 +8,9 @@
  */
 import {
   enumOptionValue,
+  isMoneyItemType,
+  isPercentItemType,
+  parseDecimalItemType,
   resolveListControl,
   resolveSearchControl,
 } from '../../utils/fieldControl';
@@ -158,6 +161,9 @@ export function fieldHeader(field: FieldMeta): string {
 export function alignItemsForControl(control: ListControlType, field: FieldMeta): 'left' | 'center' | 'right' {
   const explicit = normalizeTextAlign(field.textAlign);
   if (explicit) return explicit;
+  // 百分比与 MVC 同口径居中，金额与小数右对齐（与数字口径一致）
+  if (isPercentItemType(field.itemType)) return 'center';
+  if (isMoneyItemType(field.itemType) || parseDecimalItemType(field.itemType)) return 'right';
   if (control === 'number') return 'right';
   if (control === 'boolean' || control === 'color' || control === 'icon' || control === 'image') return 'center';
   if (field.primaryKey) return 'center';
@@ -320,8 +326,68 @@ export function cellParts(
   return one === '' ? [] : [one];
 }
 
+/** 百分比格式化。对齐 MVC `_List_Data_Item`：按描述中的单位先缩放，再乘 100 加 % */
+export function formatPercentCell(field: FieldMeta, raw: unknown): string {
+  let value = Number(raw);
+  if (!Number.isFinite(value)) return String(raw ?? '');
+
+  let scale = field.scale ?? 0;
+  const description = field.description ?? '';
+  if (description.includes('十分之一')) {
+    value /= 10;
+    scale += 1;
+  }
+  if (description.includes('百分之一')) {
+    value /= 100;
+    scale += 2;
+  }
+  if (description.includes('千分之一')) {
+    value /= 1000;
+    scale += 3;
+  }
+  if (description.includes('万分之一')) {
+    value /= 10000;
+    scale += 4;
+  }
+
+  const decimals = scale >= 2 ? scale - 2 : 0;
+  return `${(value * 100).toFixed(decimals)}%`;
+}
+
+/** 金额格式化。默认两位小数，带千分位与币种符号 */
+export function formatMoneyCell(field: FieldMeta, raw: unknown): string {
+  const value = Number(raw);
+  if (!Number.isFinite(value)) return String(raw ?? '');
+
+  const scale = field.scale && field.scale > 0 ? field.scale : 2;
+  return `¥${value.toLocaleString('zh-CN', {
+    minimumFractionDigits: scale,
+    maximumFractionDigits: scale,
+  })}`;
+}
+
+/** decimal(p,s) 格式化。按声明的小数位补齐，带千分位 */
+export function formatDecimalCell(field: FieldMeta, raw: unknown): string {
+  const value = Number(raw);
+  if (!Number.isFinite(value)) return String(raw ?? '');
+
+  const decimalType = parseDecimalItemType(field.itemType);
+  const scale = decimalType?.scale ?? field.scale ?? 0;
+  return scale > 0
+    ? value.toLocaleString('zh-CN', {
+        minimumFractionDigits: scale,
+        maximumFractionDigits: scale,
+      })
+    : String(value);
+}
+
 /** 非值集列的显示文本 */
 function singleCellText(column: CubeColumnView, raw: unknown): string {
+  const itemType = column.field.itemType;
+  if (isPercentItemType(itemType)) return formatPercentCell(column.field, raw);
+  if (isMoneyItemType(itemType)) return formatMoneyCell(column.field, raw);
+  if (parseDecimalItemType(itemType)) return formatDecimalCell(column.field, raw);
+
   switch (column.control) {
     case 'date': {
       const itemType = (column.field.itemType ?? '').trim().toLowerCase();
