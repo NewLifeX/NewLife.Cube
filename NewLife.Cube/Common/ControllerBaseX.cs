@@ -284,7 +284,8 @@ public class ControllerBaseX : ControllerBase, IActionFilter
         var etag = "\"" + json.MD5() + "\"";
         Response.Headers["ETag"] = etag;
         Response.Headers["Cache-Control"] = "private, no-cache";
-        Response.Headers["Vary"] = "Accept-Language";
+        // meta 含用户列偏好、权限标志与租户上下文；条件缓存必须按这些维度区分
+        Response.Headers["Vary"] = "Accept-Language, Authorization, Cookie, X-Tenant, X-App-Id";
 
         var inm = Request.Headers.IfNoneMatch;
         foreach (var item in inm)
