@@ -718,6 +718,10 @@ public partial class ReadOnlyEntityController<TEntity>
             }
         }
 
+        // B2 请求期统一配置：派生类/区域基类可在此按请求参数、用户或数据量调整字段，
+        // 不依赖派生控制器是否声明静态构造函数。fields 已是副本，修改不会污染静态集合
+        OnConfigureFields(kind, fields);
+
         // 字段元数据按请求语言本地化。fields 已是克隆副本，源文（英文）保留在静态字段集合中
         foreach (var item in fields)
         {
@@ -726,6 +730,12 @@ public partial class ReadOnlyEntityController<TEntity>
 
         return fields;
     }
+
+    /// <summary>请求期调整字段集合。每次获取字段后调用，可在此按当前请求统一增删改字段</summary>
+    /// <param name="kind">字段类型</param>
+    /// <param name="fields">字段集合副本，可就地修改</param>
+    /// <remarks>与静态构造函数相比，本方法不依赖派生控制器是否声明静态构造，也不会污染静态字段集合</remarks>
+    protected virtual void OnConfigureFields(ViewKinds kind, FieldCollection fields) { }
 
     /// <summary>展开字段</summary>
     protected virtual FieldCollection OnExpandFields(ExpandField field, TEntity entity, Object parameter) => field.Expand(entity, parameter);
