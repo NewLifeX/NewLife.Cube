@@ -133,8 +133,31 @@ export function widthForControl(control: ListControlType, field: FieldMeta): num
   return 'auto';
 }
 
-/** 对齐（数值右对齐、布尔/颜色/图标/图片/主键居中，其余左对齐） */
+/** 解析后端 TextAligns（1/2/3）或字符串形式的对齐方式，未声明返回 undefined */
+export function normalizeTextAlign(value?: string | number): 'left' | 'center' | 'right' | undefined {
+  if (value === undefined || value === null || value === '') return undefined;
+  if (typeof value === 'number') {
+    if (value === 1) return 'left';
+    if (value === 2) return 'center';
+    if (value === 3) return 'right';
+    return undefined;
+  }
+  const text = String(value).trim().toLowerCase();
+  if (text === 'left' || text === 'text-left') return 'left';
+  if (text === 'center' || text === 'text-center') return 'center';
+  if (text === 'right' || text === 'text-right') return 'right';
+  return undefined;
+}
+
+/** 列头文字：后端 header 优先，其次 displayName，最后字段名 */
+export function fieldHeader(field: FieldMeta): string {
+  return field.header?.trim() || field.displayName || field.name;
+}
+
+/** 对齐（字段显式 textAlign 优先；否则数值右对齐、布尔/颜色/图标/图片/主键居中，其余左对齐） */
 export function alignItemsForControl(control: ListControlType, field: FieldMeta): 'left' | 'center' | 'right' {
+  const explicit = normalizeTextAlign(field.textAlign);
+  if (explicit) return explicit;
   if (control === 'number') return 'right';
   if (control === 'boolean' || control === 'color' || control === 'icon' || control === 'image') return 'center';
   if (field.primaryKey) return 'center';
@@ -165,7 +188,7 @@ export function buildColumnViews(
       const control = resolveListControl(field);
       return {
         key: field.name,
-        label: field.displayName || field.name,
+        label: fieldHeader(field),
         control,
         field,
         width: widthForControl(control, field),
@@ -328,9 +351,97 @@ function singleCellText(column: CubeColumnView, raw: unknown): string {
 export function cellText(
   column: CubeColumnView,
   raw: unknown,
-  options?: { lovLabel: (lovCode: string, value: unknown) => string },
+  options?: {
+    lovLabel?: (lovCode: string, value: unknown) => string;
+    /** 当前行。用于 text 模板占位符替换 */
+    row?: Record<string, unknown>;
+    /** 当前查询参数。用于 {page:参数名} 占位符替换 */
+    page?: Record<string, unknown>;
+  },
 ): string {
-  return cellParts(column, raw, options).join('、');
+  const text = column.field.text
+    ? applyLinkTemplate(column.field.text, options?.row, options?.page)
+    : cellParts(
+        column,
+        raw,
+        options?.lovLabel ? { lovLabel: options.lovLabel } : undefined,
+      ).join('、');
+  const maxWidth = column.field.maxWidth ?? 0;
+  return maxWidth > 0 ? truncate(text, maxWidth) : text;
+}
+
+/** 读取行值。元数据字段名与行对象可能大小写不一致（Id/id、ID） */
+function readRowValue(row: Record<string, unknown>, key: string): unknown {
+  if (key in row) return row[key];
+  const hit = Object.keys(row).find((k) => k.toLowerCase() === key.toLowerCase());
+  return hit ? row[hit] : undefined;
+}
+
+/** 读取多级路径（如 Parent.Name），逐级大小写不敏感取值 */
+function readPathValue(row: Record<string, unknown>, path: string): unknown {
+  let current: unknown = row;
+  for (const part of path.split('.')) {
+    if (current === null || current === undefined || typeof current !== 'object') return undefined;
+    current = readRowValue(current as Record<string, unknown>, part);
+  }
+  return current;
+}
+
+/** 模板值转字符串：空值统一为空串，避免出现 "undefined" */
+function formatTemplateValue(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  return String(value);
+}
+
+/**
+ * 替换列表字段模板中的占位符。
+ *
+ * - `{字段名}` / `{父.子}`：取当前行值；
+ * - `{page:参数名}`：取当前页面查询参数，下钻时保留上下文；
+ * - 不支持的 `{page:$BaseUrl(...)}` 等复杂表达式按空串处理（API 版不复刻）。
+ */
+export function applyLinkTemplate(
+  template: string,
+  row?: Record<string, unknown>,
+  page?: Record<string, unknown>,
+): string {
+  if (!template) return '';
+  return template
+    .replace(/\{page:([^}]+)\}/g, (_match, name: string) =>
+      formatTemplateValue(page ? readRowValue(page, name.trim()) : undefined),
+    )
+    .replace(/\{([^{}]+)\}/g, (_match, path: string) =>
+      formatTemplateValue(row ? readPathValue(row, path.trim()) : undefined),
+    );
+}
+
+/** 单元格取值：valueField 有值时优先，空值回退本字段 */
+export function cellRawValue(row: Record<string, unknown>, column: CubeColumnView): unknown {
+  const valueField = column.field.valueField;
+  if (valueField) {
+    const value = readPathValue(row, valueField);
+    if (value !== null && value !== undefined && value !== '') return value;
+  }
+  return readRowValue(row, column.key);
+}
+
+/** 单元格链接地址：按行值 / 页面参数替换占位符 */
+export function cellLinkUrl(
+  column: CubeColumnView,
+  row: Record<string, unknown>,
+  page?: Record<string, unknown>,
+): string {
+  return applyLinkTemplate(column.field.url ?? '', row, page);
+}
+
+/** 单元格提示文字：title 优先，其次 headerTitle */
+export function cellTitle(
+  column: CubeColumnView,
+  row: Record<string, unknown>,
+  page?: Record<string, unknown>,
+): string {
+  const template = column.field.title || column.field.headerTitle;
+  return template ? applyLinkTemplate(template, row, page) : '';
 }
 
 /** 该列是否需要「点击看全文」的 popover（Json / 富文本） */
@@ -492,13 +603,6 @@ export function buildToolbarPayload(options: {
     payload[name] = Array.isArray(value) ? value.join(',') : value;
   }
   return payload;
-}
-
-/** 读取行值。元数据字段名与行对象可能大小写不一致（Id/id、ID） */
-function readRowValue(row: Record<string, unknown>, key: string): unknown {
-  if (key in row) return row[key];
-  const hit = Object.keys(row).find((k) => k.toLowerCase() === key.toLowerCase());
-  return hit ? row[hit] : undefined;
 }
 
 /** 拼接 link 按钮要携带的当前查询参数（对应 MVC 的 `page.GetBaseUrl`） */

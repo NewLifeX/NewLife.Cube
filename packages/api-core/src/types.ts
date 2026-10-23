@@ -106,16 +106,22 @@ export interface DataField {
   url?: string;
   /** 链接目标 */
   target?: string;
-  /** 链接文字。列表单元格有 url 时优先显示该文字（如「追踪」），为空回退显示字段值 */
+  /** 链接文字。列表单元格有 url 时优先显示该文字（如「追踪」），为空回退显示字段值，支持占位符 */
   text?: string;
-  /** 数据动作（AJAX POST） */
+  /** 单元格提示文字，支持占位符 */
+  title?: string;
+  /** 数据动作。action 表示点击链接走 AJAX 请求后刷新列表 */
   dataAction?: string;
   /** 表头文字 */
   header?: string;
-  /** 最大宽度 */
+  /** 表头提示文字 */
+  headerTitle?: string;
+  /** 最大宽度（超长文本截断字符数） */
   maxWidth?: number;
-  /** 文本对齐 */
-  textAlign?: string;
+  /** 文本对齐。后端 TextAligns 枚举值或 left/center/right */
+  textAlign?: string | number;
+  /** 单元格样式类 */
+  class?: string;
   /** 数据字典（键值对列表） */
   dataSource?: Record<string, string>;
   /** 值集编码（枚举 / singleSelect / multipleSelect 由后端静态构造下发，前端绝不硬编码） */

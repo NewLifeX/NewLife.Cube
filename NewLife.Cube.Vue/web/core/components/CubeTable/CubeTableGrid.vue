@@ -26,15 +26,20 @@
  * 单行动作超过 4 个时只露前 3 个，第 4 个位置是「更多」下拉，后加的操作一律收进去。
  */
 import { computed, useSlots } from 'vue';
+import { ElMessage } from 'element-plus';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import { ArrowDown, Delete, Edit, View } from '@element-plus/icons-vue';
-import { getValueByKey, resolveAssetUrl } from '../../utils/url';
+import request from '../../utils/request';
+import { resolveAssetUrl } from '../../utils/url';
 import { isBlankCell } from '../../engine/logic';
 import {
   buildColumnViews,
   cellBoolean,
+  cellLinkUrl,
   cellParts,
+  cellRawValue,
   cellText,
+  cellTitle,
   isExpandableCell,
   isOverflowTooltipCell,
   layoutRowActions,
@@ -111,13 +116,46 @@ const lov = useCubeTableLov(
   () => rows.value,
 );
 
-const raw = (row: Record<string, unknown>, column: CubeColumnView) => getValueByKey(row, column.key);
-const text = (row: Record<string, unknown>, column: CubeColumnView) => cellText(column, raw(row, column), lov);
-const parts = (row: Record<string, unknown>, column: CubeColumnView) => cellParts(column, raw(row, column), lov);
+/** 当前页面查询参数，供链接 {page:参数名} 占位符使用 */
+const pageParams = computed<Record<string, unknown>>(() => ({
+  ...props.ctx.searchModel,
+  q: props.ctx.keyword.value,
+}));
+const raw = (row: Record<string, unknown>, column: CubeColumnView) => cellRawValue(row, column);
+const text = (row: Record<string, unknown>, column: CubeColumnView) =>
+  cellText(column, raw(row, column), { lovLabel: lov.lovLabel, row, page: pageParams.value });
+const parts = (row: Record<string, unknown>, column: CubeColumnView) =>
+  cellParts(column, raw(row, column), { lovLabel: lov.lovLabel });
 const blank = (row: Record<string, unknown>, column: CubeColumnView) => isBlankCell(raw(row, column));
 const boolOf = (row: Record<string, unknown>, column: CubeColumnView) => cellBoolean(raw(row, column));
 const hrefOf = (row: Record<string, unknown>, column: CubeColumnView) =>
   resolveAssetUrl(String(raw(row, column) ?? ''));
+const linkOf = (row: Record<string, unknown>, column: CubeColumnView) =>
+  cellLinkUrl(column, row, pageParams.value);
+const titleOf = (row: Record<string, unknown>, column: CubeColumnView) =>
+  cellTitle(column, row, pageParams.value);
+
+/** 单元格 AJAX 动作：dataAction 存在时阻止跳转，先请求再刷新列表 */
+async function onCellClick(
+  event: MouseEvent,
+  row: Record<string, unknown>,
+  column: CubeColumnView,
+): Promise<void> {
+  if (!column.field.dataAction) return;
+  event.preventDefault();
+  const url = linkOf(row, column);
+  if (!url) return;
+
+  try {
+    const method = column.field.dataAction.toLowerCase() === 'post' ? 'post' : 'get';
+    const res = (await request({ url, method })) as { message?: string } | undefined;
+    if (res?.message) ElMessage.success(res.message);
+    await props.ctx.refresh();
+  } catch (err) {
+    // 请求层已统一提示错误，这里兜底避免未捕获 rejection
+    console.error('[CubeTable] 单元格动作失败:', err);
+  }
+}
 /** 值集多值才铺标签，单值走文本（一个孤立标签的观感比重复文本更差） */
 const tagsOf = (row: Record<string, unknown>, column: CubeColumnView) =>
   column.control === 'lov' && parts(row, column).length > 1 ? parts(row, column) : [];
@@ -198,6 +236,7 @@ const onAction = (action: CubeRowAction, row: Record<string, unknown>) => void a
         :width="column.width === 'auto' ? undefined : column.width"
         :min-width="column.width === 'auto' ? 120 : undefined"
         :align="column.align"
+        :class-name="column.field.class"
         :show-overflow-tooltip="isOverflowTooltipCell(column.control)"
       >
         <template v-if="$slots[slotName(column)]" #default="scope">
@@ -222,6 +261,18 @@ const onAction = (action: CubeRowAction, row: Record<string, unknown>) => void a
             :row="scope.row"
             :ctx="ctx"
           />
+
+          <!-- 列表链接：支持 {字段} 与 {page:参数} 占位符，dataAction 时走 AJAX 后刷新 -->
+          <el-link
+            v-else-if="column.field.url"
+            type="primary"
+            :href="linkOf(scope.row, column) || undefined"
+            :target="column.field.target === '_blank' ? '_blank' : '_self'"
+            :title="titleOf(scope.row, column) || undefined"
+            @click="onCellClick($event, scope.row, column)"
+          >
+            {{ text(scope.row, column) || column.label }}
+          </el-link>
 
           <span v-else-if="blank(scope.row, column)" class="ctg-blank">—</span>
 
@@ -288,7 +339,7 @@ const onAction = (action: CubeRowAction, row: Record<string, unknown>) => void a
             </el-tag>
           </span>
 
-          <span v-else>{{ text(scope.row, column) }}</span>
+          <span v-else :title="titleOf(scope.row, column) || undefined">{{ text(scope.row, column) }}</span>
         </template>
       </el-table-column>
     </template>

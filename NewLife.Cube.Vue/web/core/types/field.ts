@@ -96,6 +96,28 @@ export interface FieldMeta {
   category?: string;
   /** 是否显示（列表列） */
   visible?: boolean;
+  /** 表头文字。优先于 displayName */
+  header?: string;
+  /** 表头提示文字 */
+  headerTitle?: string;
+  /** 单元格链接。支持 {字段名} 与 {page:参数名} 占位符 */
+  url?: string;
+  /** 链接目标。_blank / _self */
+  target?: string;
+  /** 单元格文字。支持 {字段名} 与 {page:参数名} 占位符 */
+  text?: string;
+  /** 单元格提示文字。支持占位符 */
+  title?: string;
+  /** 数据动作。action 表示点击链接走 AJAX 请求后刷新列表 */
+  dataAction?: string;
+  /** 取值字段。列表单元格优先取该字段值，为空时回退本字段 */
+  valueField?: string;
+  /** 文本对齐。后端 TextAligns 枚举值（1/2/3）或 left/center/right */
+  textAlign?: string | number;
+  /** 最大宽度。超长文本截断到该字符数 */
+  maxWidth?: number;
+  /** 单元格样式类 */
+  class?: string;
   /** 值集编码（枚举 / singleSelect / multipleSelect 由后端静态构造下发，前端绝不硬编码） */
   lovCode?: string;
   /** 是否多选（multipleSelect 为 true；亦可由前端在映射时推导） */

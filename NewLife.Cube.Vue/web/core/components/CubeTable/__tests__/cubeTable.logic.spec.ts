@@ -10,12 +10,18 @@ import { describe, expect, it } from 'vitest';
 import {
   BOOLEAN_FILTER_OPTIONS,
   FILE_EXISTS_OPTIONS,
+  applyLinkTemplate,
   buildColumnViews,
   buildSearchControl,
   buildToolbarPayload,
   cellBoolean,
+  cellLinkUrl,
   cellParts,
+  cellRawValue,
   cellText,
+  cellTitle,
+  fieldHeader,
+  normalizeTextAlign,
   showSearchToggle,
   defaultColumnsStorageKey,
   dialogShapeFor,
@@ -392,5 +398,61 @@ describe('工具栏按钮参数组装', () => {
     expect(qs).toContain('ds=20250101');
     expect(qs).toContain('tags=a%2Cb');
     expect(qs).not.toContain('status');
+  });
+});
+
+describe('CubeTable/logic 列表呈现属性', () => {
+  it('列头应优先使用后端 header', () => {
+    expect(fieldHeader({ name: 'OrderNo', displayName: '订单号', header: '单号', typeName: 'String' })).toBe('单号');
+    expect(fieldHeader({ name: 'OrderNo', displayName: '订单号', typeName: 'String' })).toBe('订单号');
+    expect(fieldHeader({ name: 'OrderNo', typeName: 'String' })).toBe('OrderNo');
+  });
+
+  it('应识别后端 TextAligns 数值与常见字符串', () => {
+    expect(normalizeTextAlign(1)).toBe('left');
+    expect(normalizeTextAlign(2)).toBe('center');
+    expect(normalizeTextAlign(3)).toBe('right');
+    expect(normalizeTextAlign('text-center')).toBe('center');
+    expect(normalizeTextAlign(0)).toBeUndefined();
+    expect(normalizeTextAlign(5)).toBeUndefined();
+  });
+
+  it('列视图应采用 header 与 textAlign', () => {
+    const column = view({ ...FIELDS.name, header: '客户名', textAlign: 2 });
+    expect(column.label).toBe('客户名');
+    expect(column.align).toBe('center');
+  });
+
+  it('valueField 有值时优先，空值回退本字段', () => {
+    const column = view({ ...FIELDS.name, valueField: 'NickName' });
+    expect(cellRawValue({ Name: '张三', NickName: '小三' }, column)).toBe('小三');
+    expect(cellRawValue({ Name: '张三', NickName: '' }, column)).toBe('张三');
+    expect(cellRawValue({ name: '李四' }, column)).toBe('李四');
+  });
+
+  it('链接模板应替换行字段、多级路径与页面参数', () => {
+    const url = applyLinkTemplate(
+      '/School/StudentDetail?studentId={Id}&org={Parent.Name}&page={page:pageIndex}',
+      { Id: 7, Parent: { Name: '一班' } },
+      { pageIndex: 3 },
+    );
+    expect(url).toBe('/School/StudentDetail?studentId=7&org=一班&page=3');
+  });
+
+  it('链接与提示文字应走同一套占位符', () => {
+    const column = view({
+      ...FIELDS.name,
+      url: '/Detail?Id={Id}',
+      title: '查看 {Name}',
+      headerTitle: '查看 {Name}',
+    });
+    const row = { Id: 9, Name: '泵体' };
+    expect(cellLinkUrl(column, row)).toBe('/Detail?Id=9');
+    expect(cellTitle(column, row)).toBe('查看 泵体');
+  });
+
+  it('text 模板优先于原始值，并按 maxWidth 截断', () => {
+    const column = view({ ...FIELDS.name, text: '打开{Name}', maxWidth: 4 });
+    expect(cellText(column, '原值', { row: { Name: '设备档案' } })).toBe('打开设备…');
   });
 });
