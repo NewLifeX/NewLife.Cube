@@ -187,6 +187,9 @@ public class DataField : IDictionarySource
         if (!ValueField.IsNullOrEmpty()) dic["valueField"] = ValueField;
         if (!LovCode.IsNullOrEmpty()) dic["lovCode"] = LovCode;
 
+        // 扩展属性透传。核心不解释 props，由前端渲染器按约定消费
+        if (Properties != null && Properties.Count > 0) dic["props"] = Properties;
+
         // 数据源。优先 DataSource 委托（控制器显式配置，如角色组），否则枚举字段自动构建选项
         // 前端 LovSelect 优先使用 dataSource 渲染下拉选项（对齐 MVC _Form_Item/_Form_Int）
         if (DataSource != null)
@@ -266,18 +269,18 @@ public class DataField : IDictionarySource
                 if (!lf.Class.IsNullOrEmpty()) dic["class"] = lf.Class;
                 if (lf.MaxWidth > 0) dic["maxWidth"] = lf.MaxWidth;
                 if (!lf.DataAction.IsNullOrEmpty()) dic["dataAction"] = lf.DataAction;
+                if (!lf.View.IsNullOrEmpty()) dic["view"] = lf.View;
                 break;
             case SearchField sf:
                 if (sf.Multiple) dic["multiple"] = true;
-#if MVC
                 if (!sf.View.IsNullOrEmpty()) dic["view"] = sf.View;
-#endif
                 break;
             case FormField ff:
-#if MVC
                 if (!ff.GroupView.IsNullOrEmpty()) dic["groupView"] = ff.GroupView;
                 if (!ff.ItemView.IsNullOrEmpty()) dic["itemView"] = ff.ItemView;
-#endif
+                // 统一渲染器名：单字段控件优先 ItemView，多字段合并控件用 GroupView
+                if (!ff.ItemView.IsNullOrEmpty()) dic["view"] = ff.ItemView;
+                else if (!ff.GroupView.IsNullOrEmpty()) dic["view"] = ff.GroupView;
                 if (ff.Expand != null)
                 {
                     var exp = ff.Expand;

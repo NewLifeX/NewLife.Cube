@@ -13,9 +13,7 @@ public class SearchField : DataField
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Boolean Multiple { get; set; }
 
-#if MVC
-    /// <summary>视图。MVC特有，允许针对字段定义视图</summary>
+    /// <summary>视图。MVC 为分部视图名，API 为前端渲染器名</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String View { get; set; }
-#endif
 }

@@ -66,6 +66,10 @@ public class ListField : DataField
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String DataAction { get; set; }
 
+    /// <summary>单元格渲染器名。MVC 为分部视图名，API 为前端注册的渲染器名</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public String View { get; set; }
+
     /// <summary>获取数据委托。可用于自定义列表页单元格数值的显示</summary>
     [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public GetValueDelegate GetValue { get; set; }

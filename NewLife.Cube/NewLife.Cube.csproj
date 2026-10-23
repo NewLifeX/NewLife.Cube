@@ -110,21 +110,12 @@
     <Compile Include="..\NewLife.CubeNC\Services\UserService.cs" Link="Services\UserService.cs" />
     <Compile Include="..\NewLife.CubeNC\Session\SessionProvider.cs" Link="Session\SessionProvider.cs" />
     <Compile Include="..\NewLife.CubeNC\Extensions\CubeEmbeddedFileProvider.cs" Link="Extensions\CubeEmbeddedFileProvider.cs" />
-    <Compile Include="..\NewLife.CubeNC\ViewModels\DataField.cs" Link="ViewModels\DataField.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\ErrorModel.cs" Link="ViewModels\ErrorModel.cs" />
-    <Compile Include="..\NewLife.CubeNC\ViewModels\ExpandField.cs" Link="ViewModels\ExpandField.cs" />
-    <Compile Include="..\NewLife.CubeNC\ViewModels\FieldCollection.cs" Link="ViewModels\FieldCollection.cs" />
-    <Compile Include="..\NewLife.CubeNC\ViewModels\FormField.cs" Link="ViewModels\FormField.cs" />
-    <Compile Include="..\NewLife.CubeNC\ViewModels\ILinkExtend.cs" Link="ViewModels\ILinkExtend.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\ItemModel.cs" Link="ViewModels\ItemModel.cs" />
-    <Compile Include="..\NewLife.CubeNC\ViewModels\IUrlExtend.cs" Link="ViewModels\IUrlExtend.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\ListBoxModel.cs" Link="ViewModels\ListBoxModel.cs" />
-    <Compile Include="..\NewLife.CubeNC\ViewModels\ListField.cs" Link="ViewModels\ListField.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\LoginConfigModel.cs" Link="ViewModels\LoginConfigModel.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\MenuTree.cs" Link="ViewModels\MenuTree.cs" />
-    <Compile Include="..\NewLife.CubeNC\ViewModels\SearchField.cs" Link="ViewModels\SearchField.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\TextAligns.cs" Link="ViewModels\TextAligns.cs" />
-    <Compile Include="..\NewLife.CubeNC\ViewModels\ViewKinds.cs" Link="ViewModels\ViewKinds.cs" />
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\DataScopeMiddleware.cs" Link="WebMiddleware\DataScopeMiddleware.cs" />
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\MiddlewareHelper.cs" Link="WebMiddleware\MiddlewareHelper.cs" />
   </ItemGroup>
