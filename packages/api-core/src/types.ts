@@ -128,6 +128,8 @@ export interface DataField {
   lovCode?: string;
   /** 是否多选（multipleSelect 为 true；亦可由前端在映射时推导） */
   multiple?: boolean;
+  /** 级联父字段名。带 `[Parent]` 的枚举子字典下发，用于「父变过滤子」 */
+  parentField?: string;
   /** 渲染器名。对应控制器 View/ItemView/GroupView，前端按名注册 */
   view?: string;
   /** 扩展属性。核心不解释，透传给渲染器 */

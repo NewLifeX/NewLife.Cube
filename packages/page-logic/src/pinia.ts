@@ -13,7 +13,7 @@
  */
 
 import { ref, reactive, type Ref } from 'vue';
-import type { CubeApi, ApiResponse, PageSetting } from '@newlifex/api-core';
+import type { CubeApi, ApiResponse, PageSetting, EntityMeta, ToolbarItem } from '@newlifex/api-core';
 import { PageLogic, type FieldMapping, type Pagination } from './index';
 
 export interface PiniaPageLogic {
@@ -30,6 +30,12 @@ export interface PiniaPageLogic {
   loading: Ref<boolean>;
   formLoading: Ref<boolean>;
   pageSetting: Ref<PageSetting | null>;
+  /** 实体标识（meta.entity） */
+  entity: Ref<EntityMeta | null>;
+  /** 工具栏自定义按钮（meta.toolbar） */
+  toolbar: Ref<ToolbarItem[]>;
+  /** 页面 UI 扩展（meta.ui） */
+  ui: Ref<Record<string, unknown>>;
   canAdd: Ref<boolean>;
   canEdit: Ref<boolean>;
   canDelete: Ref<boolean>;
@@ -60,8 +66,17 @@ export interface PiniaPageLogic {
  * @param type - 路径前缀，如 `/Admin/User`
  * @param defaultPageSize - 默认每页大小
  * @param menuPermissions - 来自 auth-logic 的菜单权限映射，用于推断 canAdd/canEdit 等
+ * @param userPermission - 当前用户权限串（`menuId#flag`）；提供时优先按 menuId + requiredPermissions 判定
+ * @param isSystemAdmin - 是否系统管理员（动作权限直通）
  */
-export function usePageLogic(api: CubeApi, type: string, defaultPageSize = 20, menuPermissions?: Record<string, string>): PiniaPageLogic {
+export function usePageLogic(
+  api: CubeApi,
+  type: string,
+  defaultPageSize = 20,
+  menuPermissions?: Record<string, string>,
+  userPermission?: string,
+  isSystemAdmin?: boolean,
+): PiniaPageLogic {
   const listFields = ref<FieldMapping[]>([]);
   const searchFields = ref<FieldMapping[]>([]);
   const addFields = ref<FieldMapping[]>([]);
@@ -75,6 +90,9 @@ export function usePageLogic(api: CubeApi, type: string, defaultPageSize = 20, m
   const loading = ref(false);
   const formLoading = ref(false);
   const pageSetting = ref<PageSetting | null>(null);
+  const entity = ref<EntityMeta | null>(null);
+  const toolbar = ref<ToolbarItem[]>([]);
+  const ui = ref<Record<string, unknown>>({});
   const canAdd = ref(true);
   const canEdit = ref(true);
   const canDelete = ref(true);
@@ -98,6 +116,9 @@ export function usePageLogic(api: CubeApi, type: string, defaultPageSize = 20, m
       if (partial.loading !== undefined) loading.value = partial.loading;
       if (partial.formLoading !== undefined) formLoading.value = partial.formLoading;
       if (partial.pageSetting !== undefined) pageSetting.value = partial.pageSetting;
+      if (partial.entity !== undefined) entity.value = partial.entity;
+      if (partial.toolbar !== undefined) toolbar.value = partial.toolbar;
+      if (partial.ui !== undefined) ui.value = partial.ui;
       if (partial.canAdd !== undefined) canAdd.value = partial.canAdd;
       if (partial.canEdit !== undefined) canEdit.value = partial.canEdit;
       if (partial.canDelete !== undefined) canDelete.value = partial.canDelete;
@@ -107,6 +128,8 @@ export function usePageLogic(api: CubeApi, type: string, defaultPageSize = 20, m
     },
     defaultPageSize,
     menuPermissions,
+    userPermission,
+    isSystemAdmin,
   });
 
   return {
@@ -123,6 +146,9 @@ export function usePageLogic(api: CubeApi, type: string, defaultPageSize = 20, m
     loading,
     formLoading,
     pageSetting,
+    entity,
+    toolbar,
+    ui,
     canAdd,
     canEdit,
     canDelete,

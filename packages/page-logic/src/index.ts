@@ -5,7 +5,7 @@
  * 封装为框架无关的编排类，各框架通过适配器桥接到具体状态管理。
  */
 
-import type { CubeApi, DataField, ApiResponse, PageParams, PageSetting } from '@newlifex/api-core';
+import type { CubeApi, DataField, ApiResponse, PageParams, PageSetting, EntityMeta, ToolbarItem } from '@newlifex/api-core';
 import { resolveWidgets, type FieldMapping } from '@newlifex/field-mapping';
 import { buildExportUrl } from '@newlifex/page-utils';
 
@@ -46,6 +46,12 @@ export interface PageState {
   formLoading: boolean;
   /** 页面设置（由 meta 返回的 setting 字段） */
   pageSetting: PageSetting | null;
+  /** 实体标识（meta.entity：名称/显示名/主键） */
+  entity: EntityMeta | null;
+  /** 工具栏自定义按钮（meta.toolbar，服务端已按权限过滤） */
+  toolbar: ToolbarItem[];
+  /** 页面 UI 扩展（meta.ui，核心不解释，透传给 preset 与渲染器） */
+  ui: Record<string, unknown>;
   /** 是否允许新增（来自 pageSetting 与菜单权限） */
   canAdd: boolean;
   /** 是否允许编辑（来自菜单权限） */
@@ -63,6 +69,68 @@ export interface PageState {
 /** 状态变更回调 */
 export type PageStateUpdater = (partial: Partial<PageState>) => void;
 
+/** 魔方动作权限位（对齐 XCode.Membership.PermissionFlags） */
+export const PermissionFlags = {
+  /** 查看 */
+  Detail: 1,
+  /** 新增/导入 */
+  Insert: 2,
+  /** 修改 */
+  Update: 4,
+  /** 删除 */
+  Delete: 8,
+} as const;
+
+/**
+ * 解析用户权限串为 menuId → 权限位。
+ *
+ * 服务端 `UserInfo.permission` 格式为 `id#flag,id#flag`；`-1` 等价于 All（0xFFFFFFFF）。
+ * 非法项（缺 #、非数字）跳过，不抛异常。
+ *
+ * @param value 权限串，可空
+ * @returns menuId → 位集合；无有效项时返回空 Map
+ */
+export function parsePermissionString(value?: string | null): Map<number, number> {
+  const map = new Map<number, number>();
+  if (!value) return map;
+
+  for (const item of value.split(',')) {
+    const text = item.trim();
+    if (!text) continue;
+    const index = text.indexOf('#');
+    if (index <= 0) continue;
+    const idText = text.slice(0, index).trim();
+    const flagText = text.slice(index + 1).trim();
+    if (!idText || !flagText) continue;
+    const id = Number(idText);
+    const flag = Number(flagText);
+    if (!Number.isInteger(id) || !Number.isInteger(flag)) continue;
+    map.set(id, flag);
+  }
+
+  return map;
+}
+
+/**
+ * 权限位测试：判断某菜单的位集合是否包含动作位。
+ *
+ * @param map 权限串解析结果
+ * @param menuId 菜单编号；空表示无法判定
+ * @param flag 动作位；空表示无法判定
+ * @returns true 有权限 / false 无权限 / null 无法判定（交给调用方回退口径）
+ */
+export function hasPermissionAction(
+  map: Map<number, number>,
+  menuId?: number | null,
+  flag?: number | null,
+): boolean | null {
+  if (menuId == null || flag == null) return null;
+  const bits = map.get(menuId);
+  if (bits == null) return false;
+
+  return (bits & flag) === flag;
+}
+
 /** PageLogic 构造选项 */
 export interface PageLogicOptions {
   /** CubeApi 实例 */
@@ -74,6 +142,10 @@ export interface PageLogicOptions {
   /** 菜单权限（来自 auth-logic getMenuPermission），用于推断 canAdd/canEdit/canDelete 等；
    *  可传静态对象或返回对象的函数（菜单异步加载后动态读取） */
   menuPermissions?: Record<string, string> | (() => Record<string, string>);
+  /** 当前用户权限串（UserInfo.permission，如 `1#3,2#8`）。提供时优先用 setting.menuId + requiredPermissions 做位测试 */
+  userPermission?: string | (() => string | undefined);
+  /** 是否系统管理员。true 时编辑/删除等动作直通（对齐服务端系统角色） */
+  isSystemAdmin?: boolean | (() => boolean);
 }
 
 // ======================== 核心逻辑 ========================
@@ -86,6 +158,8 @@ export class PageLogic {
   private update: PageStateUpdater;
   private state: PageState;
   private getMenuPermissions: () => Record<string, string>;
+  private getUserPermission: () => string | undefined;
+  private getIsSystemAdmin: () => boolean;
 
   constructor(options: PageLogicOptions) {
     this.api = options.api;
@@ -95,6 +169,12 @@ export class PageLogic {
       typeof mp === 'function'
         ? (mp as () => Record<string, string>)
         : () => (mp as Record<string, string> | undefined) ?? {};
+    const up = options.userPermission;
+    this.getUserPermission =
+      typeof up === 'function' ? (up as () => string | undefined) : () => up;
+    const sa = options.isSystemAdmin;
+    this.getIsSystemAdmin =
+      typeof sa === 'function' ? (sa as () => boolean) : () => sa === true;
     this.state = {
       listFields: [],
       searchFields: [],
@@ -109,6 +189,9 @@ export class PageLogic {
       loading: false,
       formLoading: false,
       pageSetting: null,
+      entity: null,
+      toolbar: [],
+      ui: {},
       canAdd: true,
       canEdit: true,
       canDelete: true,
@@ -140,35 +223,51 @@ export class PageLogic {
     const editFields = resolveWidgets(editData);
     const detailFields = resolveWidgets(detailData);
 
-    // 推断主键字段
-    const pk = listData.find((f) => f.primaryKey);
-    const pkField = pk?.name ?? 'id';
-
-    // 提取页面设置
+    // 实体标识、页面设置与扩展块（/meta 视图自描述）
     const pageSetting = pageMeta.setting ?? pageMeta.pageSetting ?? null;
+    const entity = pageMeta.entity ?? null;
+    const toolbar = pageMeta.toolbar ?? [];
+    const ui = pageMeta.ui ?? {};
 
-    // 计算权限标志（菜单权限 + 页面设置双重限制）
-    // 权限码（2 的幂，对应 Auth 常量）优先按 key 匹配，兼容不同后端的权限标签文案（新增/添加、编辑/修改）
+    // 主键：优先实体标识下发的主键，其次列表字段的 primaryKey（列表可隐藏主键列）
+    const pk = listData.find((f) => f.primaryKey);
+    const pkField = entity?.primaryKey ?? pk?.name ?? 'id';
+
+    // 动作权限：优先 menuId + requiredPermissions + 用户权限串位测试（/meta 因此可缓存）；
+    // meta 未下发时回退菜单树权限映射，兼容旧后端与配置页
     const perms = this.getMenuPermissions();
-    const hasPerm = (codes: number[], labels: string[], keys: string[]) =>
+    const hasLegacy = (codes: number[], labels: string[], keys: string[]) =>
       keys.some((k) => perms[k] !== undefined) ||
       codes.some((c) => perms[String(c)] !== undefined) ||
       Object.values(perms).some((v) => labels.includes(v));
-    const hasAdd = hasPerm([2], ['新增', '添加', 'Add'], ['Add']);
-    const hasEdit = hasPerm([4], ['编辑', '修改', 'Edit'], ['Edit']);
-    const hasDel = hasPerm([8], ['删除', 'Delete'], ['Delete']);
-    // 导出/导入的后端授权：NewLife.Cube export=[EntityAuthorize(Detail=1)]、import=[EntityAuthorize(Insert=2)]，
-    // 部分后端可能定义 16/32，故两种授权码都兼容
-    const hasExport = hasPerm([1, 16], ['查看', '导出', 'Export', 'Detail'], ['Detail', 'Export']);
-    const hasImport = hasPerm([2, 32], ['添加', '新增', '导入', 'Import', 'Insert'], ['Insert', 'Import']);
-    // 无权限配置时（菜单未配 permissions）默认允许
-    const noPermConfig = Object.keys(perms).length === 0;
+    const legacyAdd = hasLegacy([2], ['新增', '添加', 'Add'], ['Add']);
+    const legacyEdit = hasLegacy([4], ['编辑', '修改', 'Edit'], ['Edit']);
+    const legacyDelete = hasLegacy([8], ['删除', 'Delete'], ['Delete']);
+    // 导出/导入的后端授权：export=[EntityAuthorize(Detail=1)]、import=[EntityAuthorize(Insert=2)]，
+    // 部分后端可能定义 16/32，故旧口径两种授权码都兼容
+    const legacyExport = hasLegacy([1, 16], ['查看', '导出', 'Export', 'Detail'], ['Detail', 'Export']);
+    const legacyImport = hasLegacy([2, 32], ['添加', '新增', '导入', 'Import', 'Insert'], ['Insert', 'Import']);
+    // 无任何权限配置时（菜单未配 permissions 且 meta 无 menuId）默认允许
+    const noPermConfig = Object.keys(perms).length === 0 && !pageSetting?.menuId;
 
-    const canAdd = (noPermConfig || hasAdd) && (pageSetting?.enableAdd !== false) && (pageSetting?.isReadOnly !== true);
-    const canEdit = (noPermConfig || hasEdit) && (pageSetting?.isReadOnly !== true);
-    const canDelete = (noPermConfig || hasDel) && (pageSetting?.isReadOnly !== true);
-    const canExport = noPermConfig || hasExport;
-    const canImport = noPermConfig || hasImport;
+    const permMap = parsePermissionString(this.getUserPermission());
+    const isSystem = this.getIsSystemAdmin();
+    const menuId = pageSetting?.menuId;
+    const required = pageSetting?.requiredPermissions;
+    /** 权限位测试；无法判定（无 menuId 或未声明 flag）时返回 null，交给旧口径 */
+    const allowed = (flag?: number): boolean | null => {
+      if (isSystem) return true;
+      return hasPermissionAction(permMap, menuId, flag);
+    };
+
+    const canAdd =
+      (allowed(required?.add) ?? (noPermConfig || legacyAdd)) &&
+      pageSetting?.enableAdd !== false &&
+      pageSetting?.isReadOnly !== true;
+    const canEdit = (allowed(required?.update) ?? (noPermConfig || legacyEdit)) && pageSetting?.isReadOnly !== true;
+    const canDelete = (allowed(required?.delete) ?? (noPermConfig || legacyDelete)) && pageSetting?.isReadOnly !== true;
+    const canExport = allowed(PermissionFlags.Detail) ?? (noPermConfig || legacyExport);
+    const canImport = allowed(PermissionFlags.Insert) ?? (noPermConfig || legacyImport);
     // 开发功能（备份/还原/备份导出/清空数据表）：开发模式 && 系统管理员（对齐 MVC Develop 条件）
     const canDevelop = !!(pageSetting?.develop && pageSetting?.isSystem);
 
@@ -179,6 +278,9 @@ export class PageLogic {
     this.state.detailFields = detailFields;
     this.state.pkField = pkField;
     this.state.pageSetting = pageSetting;
+    this.state.entity = entity;
+    this.state.toolbar = toolbar;
+    this.state.ui = ui;
     this.state.canAdd = canAdd;
     this.state.canEdit = canEdit;
     this.state.canDelete = canDelete;
@@ -186,7 +288,24 @@ export class PageLogic {
     this.state.canImport = canImport;
     this.state.canDevelop = canDevelop;
 
-    this.update({ listFields, searchFields, addFields, editFields, detailFields, pkField, pageSetting, canAdd, canEdit, canDelete, canExport, canImport, canDevelop });
+    this.update({
+      listFields,
+      searchFields,
+      addFields,
+      editFields,
+      detailFields,
+      pkField,
+      pageSetting,
+      entity,
+      toolbar,
+      ui,
+      canAdd,
+      canEdit,
+      canDelete,
+      canExport,
+      canImport,
+      canDevelop,
+    });
   }
 
   /** 加载列表数据（分页 + 搜索） */
