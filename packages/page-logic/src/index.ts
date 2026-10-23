@@ -109,6 +109,8 @@ export interface PagePreset {
   setting?: Partial<PageSetting>;
   /** 列表区 */
   list?: FieldPresetSpec;
+  /** 树形列表父字段名；false 关闭自动识别（菜单/部门/地区等树形实体） */
+  treeBy?: string | false;
   /** 表单区（新增/编辑共用） */
   form?: FieldPresetSpec & {
     /** 弹窗/表单列数 */
