@@ -197,6 +197,14 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         if (!PageMetaBuilder.SameFields(form, detail))
             data["detail"] = PageMetaBuilder.BuildFields(detail);
 
+        // 工具栏自定义按钮。内置按钮由 setting 控制，这里只下发后端声明的按钮
+        if (PageSetting.EnableToolbar)
+        {
+            var toolbar = OnGetToolbar();
+            if (toolbar != null && toolbar.Count > 0)
+                data["toolbar"] = toolbar.Select(e => e.ToDictionary()).ToList();
+        }
+
         if (CheckNotModified(data)) return null;
 
         return new ApiResponse<Object>
@@ -205,6 +213,28 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             TraceId = DefaultSpan.Current?.TraceId,
         };
     }
+    #endregion
+
+    #region 工具栏按钮
+    private static ToolbarCollection _Toolbar;
+    /// <summary>工具栏按钮。与字段集合同层，静态声明；区域统一配置建议重写 <see cref="OnBuildToolbar"/></summary>
+    protected static ToolbarCollection Toolbar => _Toolbar ??= new ToolbarCollection();
+
+    /// <summary>获取当前页面的工具栏自定义按钮。克隆配置、合并动作特性、按权限过滤</summary>
+    /// <remarks>
+    /// 内置按钮（添加/导入/导出/批量删除/刷新）由 <see cref="PageSetting"/> 控制，这里只处理自定义按钮。
+    /// 区域/项目级统一追加时重写 <see cref="OnBuildToolbar"/>，在权限过滤前加入按钮。
+    /// </remarks>
+    /// <returns></returns>
+    protected virtual IList<ToolbarItem> OnGetToolbar()
+    {
+        var user = CurrentUser as IUser ?? ManageProvider.User as IUser;
+        return ToolbarBuilder.Build(Toolbar, GetType(), OnBuildToolbar, user, Menu);
+    }
+
+    /// <summary>追加工具栏按钮。请求期执行，不依赖静态构造顺序；在权限过滤前调用</summary>
+    /// <param name="toolbar">按钮集合</param>
+    protected virtual void OnBuildToolbar(ToolbarCollection toolbar) { }
     #endregion
 
     #region 列配置
