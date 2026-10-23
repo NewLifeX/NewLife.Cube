@@ -205,6 +205,10 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
                 data["toolbar"] = toolbar.Select(e => e.ToDictionary()).ToList();
         }
 
+        // 预留的页面 UI 扩展键。核心不解释内容，原样下发给前端 preset / 渲染器消费
+        var ui = OnGetPageUi();
+        if (ui != null && ui.Count > 0) data["ui"] = ui;
+
         if (CheckNotModified(data)) return null;
 
         return new ApiResponse<Object>
@@ -235,6 +239,10 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     /// <summary>追加工具栏按钮。请求期执行，不依赖静态构造顺序；在权限过滤前调用</summary>
     /// <param name="toolbar">按钮集合</param>
     protected virtual void OnBuildToolbar(ToolbarCollection toolbar) { }
+
+    /// <summary>获取页面 UI 扩展。预留键，核心不解释，原样下发给前端</summary>
+    /// <returns>UI 扩展字典；无扩展时返回 null</returns>
+    protected virtual IDictionary<String, Object> OnGetPageUi() => null;
     #endregion
 
     #region 列配置

@@ -110,5 +110,6 @@ export function normalizePageMeta(meta?: CubePageMeta | null): NormalizedPageFie
     addFields: backendFieldsToFormFields(meta?.addForm ?? []),
     editFields: backendFieldsToFormFields(meta?.editForm ?? meta?.addForm ?? []),
     detailFields: backendFieldsToFormFields(meta?.detail ?? []),
+    ui: meta?.ui ?? {},
   };
 }

@@ -99,6 +99,10 @@ public abstract class ObjectController<TObject> : ControllerBaseX
             ["form"] = PageMetaBuilder.BuildFields(OnGetFields(ViewKinds.EditForm)),
         };
 
+        // 预留的页面 UI 扩展键。核心不解释内容，原样下发给前端 preset / 渲染器消费
+        var ui = OnGetPageUi();
+        if (ui != null && ui.Count > 0) data["ui"] = ui;
+
         if (CheckNotModified(data)) return null;
 
         return new ApiResponse<Object>
@@ -107,6 +111,11 @@ public abstract class ObjectController<TObject> : ControllerBaseX
             TraceId = DefaultSpan.Current?.TraceId,
         };
     }
+
+    /// <summary>获取页面 UI 扩展。预留键，核心不解释，原样下发给前端</summary>
+    /// <returns>UI 扩展字典；无扩展时返回 null</returns>
+    [NonAction]
+    protected virtual IDictionary<String, Object> OnGetPageUi() => null;
 
     /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>
     /// <param name="kind">字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search</param>

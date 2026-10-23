@@ -116,6 +116,16 @@ export interface FieldMeta {
   valueField?: string;
   /** 文本对齐。后端 TextAligns 枚举值（1/2/3）或 left/center/right */
   textAlign?: string | number;
+  /** 列宽。preset 覆盖，数字为像素，'auto' 为自适应 */
+  width?: number | 'auto';
+  /** 固定列。preset 覆盖 */
+  fixed?: 'left' | 'right';
+  /** 是否隐藏。preset 覆盖 */
+  hidden?: boolean;
+  /** 行/模型级显示条件。preset 覆盖 */
+  visibleWhen?: (model: Record<string, unknown>) => boolean;
+  /** 行/模型级必填条件。preset 覆盖 */
+  requiredWhen?: (model: Record<string, unknown>) => boolean;
   /** 最大宽度。超长文本截断到该字符数 */
   maxWidth?: number;
   /** 单元格样式类 */

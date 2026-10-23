@@ -91,6 +91,12 @@ const gridSlotNames = computed(() => Object.keys(slots).filter((name) => !RESERV
 
 /** 列显隐结果同时给自写列用（业务列 `v-if="visibleColumns.Xxx"`） */
 const visibleColumns = computed(() => (props.columnsSetting ? columns.visibility.value : {}));
+
+/** preset 追加的行操作排在页面显式 extraRowActions 之前 */
+const mergedRowActions = computed(() => [
+  ...(ctx.preset?.value?.list?.actions ?? []),
+  ...(props.extraRowActions ?? []),
+]);
 </script>
 
 <template>
@@ -164,7 +170,7 @@ const visibleColumns = computed(() => (props.columnsSetting ? columns.visibility
             :actions="actions"
             :visibility="visibleColumns"
             :reset-visibility="columns.reset"
-            :extra-row-actions="extraRowActions"
+            :extra-row-actions="mergedRowActions"
             v-bind="grid"
           >
             <template v-for="name in gridSlotNames" #[name]="scope">

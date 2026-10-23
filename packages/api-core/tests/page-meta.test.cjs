@@ -13,6 +13,7 @@ test('expandPageMeta: 各视图直接展开字段数组', () => {
     form: [field('Name', { required: true })],
     search: [{ name: 'q', kind: 'keyword', displayName: '关键字', typeName: 'String' }, field('Name')],
     toolbar: [{ name: 'Refresh', kind: 'request', action: 'Refresh', include: ['keys'] }],
+    ui: { density: 'compact' },
   });
 
   assert.equal(meta.entity.primaryKey, 'Id');
@@ -23,6 +24,7 @@ test('expandPageMeta: 各视图直接展开字段数组', () => {
   assert.deepEqual(meta.detail.map((f) => f.name), ['Name']);
   assert.equal(meta.search[0].kind, 'keyword');
   assert.equal(meta.toolbar[0].action, 'Refresh');
+  assert.equal(meta.ui.density, 'compact');
 });
 
 test('expandPageMeta: add/detail 省略时回退 form', () => {

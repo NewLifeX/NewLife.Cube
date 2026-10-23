@@ -22,6 +22,7 @@
  */
 import type { Ref, ComputedRef } from 'vue';
 import type { FieldMeta } from '../types/field';
+import type { PagePreset } from './pagePreset';
 
 /**
  * 后端 `meta` 下发的页面运行时开关。
@@ -156,6 +157,8 @@ export interface CubePageMeta {
   search?: BackendField[];
   /** 工具栏自定义按钮（内置按钮由 setting 控制） */
   toolbar?: BackendToolbarItem[];
+  /** 页面 UI 扩展。核心不解释，原样透传给前端 preset / 渲染器 */
+  ui?: Record<string, unknown>;
 }
 
 /**
@@ -191,6 +194,8 @@ export interface NormalizedPageFields {
   addFields: FieldMeta[];
   editFields: FieldMeta[];
   detailFields: FieldMeta[];
+  /** 后端下发的页面 UI 扩展 */
+  ui: Record<string, unknown>;
 }
 
 /** 引擎工厂入参 */
@@ -228,6 +233,8 @@ export interface CubeEngineOptions {
   doubleDelete?: boolean;
   /** 批量删除降级：置 true 时引擎改为逐条 `DELETE {type}/{id}`，不再走 `ids=` 批量端点 */
   batchDeleteSequential?: boolean;
+  /** 页面呈现配置。缺省按路由路径从 preset 注册表查找 */
+  preset?: PagePreset;
 }
 
 /** 引擎外部依赖（全部可注入，便于 Vitest 隔离测试） */
@@ -353,6 +360,10 @@ export interface CubeEngineContext {
   apiPrefix: ComputedRef<string>;
   /** 页面运行时开关 */
   pageSetting: Ref<PageSetting>;
+  /** 后端下发的页面 UI 扩展（meta.ui） */
+  ui: ComputedRef<Record<string, unknown>>;
+  /** 当前页面生效的呈现配置。缺省为 null */
+  preset: Ref<PagePreset | null>;
   /** 列表字段（控件类型由 `resolveListControl` 在组件内解析） */
   listFields: ComputedRef<FieldMeta[]>;
   /** 搜索字段（已过滤主键与 Guid） */

@@ -38,6 +38,21 @@ export {
   clearFieldRenderers,
 } from '../../engine/fieldRenderers';
 export type { FieldRenderer, FieldRendererProps } from '../../engine/fieldRenderers';
+export {
+  applyFieldPreset,
+  applyPagePreset,
+  clearPagePresets,
+  getPagePreset,
+  normalizePresetPath,
+  registerPagePreset,
+} from '../../engine/pagePreset';
+export type {
+  FieldPresetPatch,
+  FormPreset,
+  ListPreset,
+  PagePreset,
+  SearchPreset,
+} from '../../engine/pagePreset';
 export type { BackendToolbarItem } from '../../engine/types';
 
 export type {

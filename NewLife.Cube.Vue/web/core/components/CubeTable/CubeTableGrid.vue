@@ -236,6 +236,7 @@ const onAction = (action: CubeRowAction, row: Record<string, unknown>) => void a
         :width="column.width === 'auto' ? undefined : column.width"
         :min-width="column.width === 'auto' ? 120 : undefined"
         :align="column.align"
+        :fixed="column.fixed"
         :class-name="column.field.class"
         :show-overflow-tooltip="isOverflowTooltipCell(column.control)"
       >

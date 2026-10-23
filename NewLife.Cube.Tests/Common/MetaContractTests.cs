@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -18,6 +19,18 @@ public class MetaContractTests
     private sealed class TestObjectController : ObjectController<TestConfig>
     {
         protected override TestConfig Value { get; set; } = new();
+
+        public String Serialize(Object data) => OnJsonSerialize(data);
+    }
+
+    private sealed class UiObjectController : ObjectController<TestConfig>
+    {
+        protected override TestConfig Value { get; set; } = new();
+
+        protected override IDictionary<String, Object> OnGetPageUi() => new Dictionary<String, Object>
+        {
+            ["density"] = "compact",
+        };
 
         public String Serialize(Object data) => OnJsonSerialize(data);
     }
@@ -42,5 +55,21 @@ public class MetaContractTests
         Assert.DoesNotContain("\"fields\":", json);
         Assert.DoesNotContain("\"list\":", json);
         Assert.DoesNotContain("\"search\":", json);
+    }
+
+    [Fact(DisplayName = "单对象页原样下发 ui 扩展键")]
+    public void ObjectMeta_EmitsUiExtension()
+    {
+        var http = new DefaultHttpContext();
+        var controller = new UiObjectController
+        {
+            ControllerContext = new ControllerContext { HttpContext = http, RouteData = new RouteData() },
+        };
+
+        var response = controller.Meta();
+        var json = controller.Serialize(response.Data);
+
+        Assert.Contains("\"ui\":{", json);
+        Assert.Contains("\"density\":\"compact\"", json);
     }
 }

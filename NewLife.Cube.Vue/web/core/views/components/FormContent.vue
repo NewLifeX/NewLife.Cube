@@ -42,8 +42,8 @@ interface Props {
   columns?: number;
   /** 是否禁用所有表单控件（查看详情模式只读） */
   disabled?: boolean;
-  /** 分组方式：auto=有多个分类时按分类分区，category=强制按分类，none=平铺 */
-  groupBy?: 'auto' | 'category' | 'none';
+  /** 分组方式：auto=有多个分类时按分类分区，category=强制按分类，none=平铺，函数=自定义分组 */
+  groupBy?: 'auto' | 'category' | 'none' | ((field: FieldMeta) => string);
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -57,16 +57,26 @@ const props = withDefaults(defineProps<Props>(), {
 
 const DEFAULT_GROUP = '其他';
 
+/** preset 行级显隐：hidden 与 visibleWhen 共同决定字段是否出现在当前模型下 */
+const visibleFields = computed(() =>
+  props.fields.filter(
+    (field) => !field.hidden && (!field.visibleWhen || field.visibleWhen(props.modelValue ?? {})),
+  ),
+);
+
 /** 按 Category 分组；没有分类时保持一个默认分组，模板结构不变 */
 const groups = computed(() => {
-  const hasCategory = props.fields.some((f) => !!f.category?.trim());
+  const fields = visibleFields.value;
+  const hasCategory = fields.some((f) => !!f.category?.trim());
   if (props.groupBy === 'none' || (props.groupBy === 'auto' && !hasCategory)) {
-    return [{ key: '', title: '', fields: props.fields }];
+    return [{ key: '', title: '', fields }];
   }
 
-  const map = new Map<string, typeof props.fields>();
-  for (const field of props.fields) {
-    const key = field.category?.trim() || DEFAULT_GROUP;
+  const map = new Map<string, typeof fields>();
+  for (const field of fields) {
+    const key = typeof props.groupBy === 'function'
+      ? props.groupBy(field)?.trim() || DEFAULT_GROUP
+      : field.category?.trim() || DEFAULT_GROUP;
     const list = map.get(key) ?? [];
     list.push(field);
     map.set(key, list);
@@ -101,6 +111,8 @@ function numberSuffix(field: FieldMeta): string {
 }
 
 function isRequired(field: FieldMeta): boolean {
+  // preset 的 requiredWhen 优先于静态必填判定
+  if (field.requiredWhen) return field.requiredWhen(props.modelValue ?? {});
   // Boolean 开关恒有值（默认 false），与 fieldControl.isRequiredField 口径一致，避免星号与校验漂移
   if (field.typeName === 'Boolean') return false;
   return !field.nullable && !field.primaryKey && controlOf(field) !== 'readonly';

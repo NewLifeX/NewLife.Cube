@@ -186,6 +186,7 @@ export function buildColumnViews(
   const { showKeyColumn = true } = options;
   return fields
     .filter((field) => (field.primaryKey ? showKeyColumn : true))
+    .filter((field) => field.hidden !== true)
     .filter((field) => {
       // 用户显式设置优先；没有配置时按字段可见性（visible=false 的列收起）
       if (visibility && field.name in visibility) return visibility[field.name] !== false;
@@ -198,8 +199,9 @@ export function buildColumnViews(
         label: fieldHeader(field),
         control,
         field,
-        width: widthForControl(control, field),
+        width: field.width ?? widthForControl(control, field),
         align: alignItemsForControl(control, field),
+        fixed: field.fixed,
         isKey: Boolean(field.primaryKey),
       };
     });

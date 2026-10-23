@@ -28,7 +28,13 @@ const formFields = props.ctx.formFields;
 const submitting = props.ctx.submitting;
 
 const readonly = computed(() => props.ctx.formMode.value === 'view');
-const shape = computed(() => dialogShapeFor(props.ctx.formFields.value.length));
+/** 页面预设的表单布局；未配置时按字段数自适应 */
+const formPreset = computed(() => props.ctx.preset?.value?.form);
+const shape = computed(() => {
+  const base = dialogShapeFor(props.ctx.formFields.value.length);
+  const columns = formPreset.value?.columns;
+  return columns ? { ...base, columns } : base;
+});
 /** 骨架行数：字段多时不必等量渲染，8 行足够表示「在加载」 */
 const skeletonRows = computed(() => Math.min(props.ctx.formFields.value.length || 4, 8));
 
@@ -55,6 +61,7 @@ function onModelInput(value: Record<string, unknown>): void {
       :model-value="ctx.formModel"
       :api-prefix="ctx.apiPrefix.value"
       :columns="shape.columns"
+      :group-by="formPreset?.groupBy ?? 'auto'"
       :disabled="readonly"
       @update:model-value="onModelInput"
     />

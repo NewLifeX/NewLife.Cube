@@ -334,6 +334,7 @@ export function expandPageMeta(raw: unknown): PageMeta | undefined {
   if (meta.list) result.list = meta.list;
   if (meta.search) result.search = meta.search;
   if (meta.toolbar) result.toolbar = meta.toolbar;
+  if (meta.ui) result.ui = meta.ui;
 
   return result;
 }

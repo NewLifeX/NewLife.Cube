@@ -244,6 +244,8 @@ export interface PageMeta {
   search?: DataField[];
   /** 工具栏自定义按钮（内置按钮由 setting 控制） */
   toolbar?: ToolbarItem[];
+  /** 页面 UI 扩展。核心不解释，原样透传给前端 preset / 渲染器 */
+  ui?: Record<string, unknown>;
 
   /** 兼容旧结构：fields 嵌套 */
   fields?: {
@@ -275,6 +277,8 @@ export interface PageMetaData {
   search?: DataField[];
   /** 工具栏自定义按钮 */
   toolbar?: ToolbarItem[];
+  /** 页面 UI 扩展。核心不解释 */
+  ui?: Record<string, unknown>;
 }
 
 /** 字段视图类型枚举（保留给需要单场景字段的调用方；实体元数据统一由 meta 返回） */

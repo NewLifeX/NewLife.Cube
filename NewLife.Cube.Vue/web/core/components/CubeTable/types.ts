@@ -49,6 +49,8 @@ export interface CubeColumnView {
   width: number | string;
   /** 对齐方式 */
   align: 'left' | 'center' | 'right';
+  /** 固定列 */
+  fixed?: 'left' | 'right';
   /** 是否主键列 */
   isKey: boolean;
 }

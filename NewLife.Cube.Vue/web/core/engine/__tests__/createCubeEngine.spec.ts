@@ -139,6 +139,29 @@ describe('createCubeEngine 元数据驱动初始化', () => {
     expect(http.calls.filter((c) => c.method === 'get')).toHaveLength(0);
   });
 
+  it('应该在 meta 之后合并 preset 的字段与页面设置', async () => {
+    const preset = {
+      setting: { enableAdd: false },
+      list: {
+        remove: ['Id'],
+        patch: { NAME: { label: '设备名', width: 180 } },
+        append: [{ name: 'Extra', displayName: '扩展', typeName: 'String' }],
+      },
+      form: { columns: 1 as const },
+      search: { remove: ['q'] },
+    };
+    const { deps } = makeDeps();
+    const ctx = createCubeEngine({ routePath: ROUTE, preset }, deps);
+    await ctx.init();
+
+    expect(ctx.preset.value).toEqual(preset);
+    expect(ctx.pageSetting.value.enableAdd).toBe(false);
+    expect(ctx.listFields.value.map((item) => item.name)).toEqual(['Name', 'Extra']);
+    expect(ctx.listFields.value[0]).toMatchObject({ header: '设备名', width: 180 });
+    // 关键字查询项被移除后，首查不再携带 q
+    expect(ctx.hasKeyword.value).toBe(false);
+  });
+
   it('应该置错并停在未就绪态 当 meta 失败时', async () => {
     const { deps, http } = makeDeps({ getPage: vi.fn(async () => { throw new Error('boom'); }) });
     const ctx = createCubeEngine({ routePath: ROUTE }, deps);

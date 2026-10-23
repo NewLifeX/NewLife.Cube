@@ -33,6 +33,7 @@
 import { computed, reactive, ref } from 'vue';
 import { routeToApiPrefix } from '../utils/url';
 import { normalizeOverrideFields, normalizePageMeta } from '../utils/fieldMeta';
+import { applyPagePreset, getPagePreset, type PagePreset } from './pagePreset';
 import { serializeSubmitModel } from '../utils/fieldControl';
 import {
   buildDownloadName,
@@ -67,6 +68,7 @@ const EMPTY_FIELDS: NormalizedPageFields = {
   addFields: [],
   editFields: [],
   detailFields: [],
+  ui: {},
 };
 
 /** 解析实体前缀：显式 `apiPrefix` 优先，其次由路由推导（支持多段路由） */
@@ -152,6 +154,10 @@ export function createCubeEngine(
   const selected = ref<Record<string, unknown>[]>([]);
   const pendingBlob = ref<{ blob: Blob; name: string } | null>(null);
   const pageSetting = ref<PageSetting>({});
+  /** 后端下发的页面 UI 扩展（meta.ui）。核心不解释，原样交给 preset / 渲染器 */
+  const ui = ref<Record<string, unknown>>({});
+  /** 当前页面生效的呈现配置 */
+  const pagePreset = ref<PagePreset | null>(options.preset ?? null);
   const dialogVisible = ref(false);
   const formLoading = ref(false);
   const formMode = ref<CubeFormMode>('add');
@@ -243,29 +249,43 @@ export function createCubeEngine(
       totalRef.value = next.total;
     });
 
+  /** 解析当前页面生效的 preset：显式 options.preset 优先，其次按路由路径注册表 */
+  function resolvePreset(): PagePreset | null {
+    return options.preset ?? getPagePreset(options.routePath) ?? null;
+  }
+
   /** 应用前端字段覆盖（配置驱动），或拉取后端元数据（元数据驱动） */
   async function applyFields(): Promise<void> {
+    const preset = resolvePreset();
+    pagePreset.value = preset;
+
     if (options.fields) {
       const override = options.fields;
       const listO = override.listFields ?? [];
       const addO = override.addFields ?? normalizeOverrideFields(listO, 'form');
-      const setting = override.setting ?? {};
-      fields.value = {
-        setting,
-        listFields: listO,
-        searchFields: override.searchFields ?? normalizeOverrideFields(listO, 'search'),
-        addFields: addO,
-        editFields: override.editFields ?? addO,
-        detailFields: override.detailFields ?? addO,
-      };
-      pageSetting.value = setting;
+      const normalized = applyPagePreset(
+        {
+          setting: override.setting ?? {},
+          listFields: listO,
+          searchFields: override.searchFields ?? normalizeOverrideFields(listO, 'search'),
+          addFields: addO,
+          editFields: override.editFields ?? addO,
+          detailFields: override.detailFields ?? addO,
+          ui: override.ui ?? {},
+        },
+        preset,
+      );
+      fields.value = normalized;
+      pageSetting.value = normalized.setting;
+      ui.value = normalized.ui;
       return;
     }
     if (!type.value) return;
     const meta = (await deps.getPage(type.value)) as CubePageMeta | null | undefined;
-    const normalized = normalizePageMeta(meta ?? undefined);
+    const normalized = applyPagePreset(normalizePageMeta(meta ?? undefined), preset);
     fields.value = normalized;
     pageSetting.value = normalized.setting;
+    ui.value = normalized.ui;
     toolbarItems.value = meta?.toolbar ?? [];
   }
 
@@ -600,6 +620,8 @@ export function createCubeEngine(
     formModel,
     apiPrefix,
     pageSetting,
+    ui: computed(() => ui.value),
+    preset: pagePreset,
     listFields,
     searchFields,
     toolbar: computed(() => toolbarItems.value),

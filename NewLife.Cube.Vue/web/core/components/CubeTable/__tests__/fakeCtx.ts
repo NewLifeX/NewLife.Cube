@@ -8,6 +8,7 @@ import { computed, reactive, ref } from 'vue';
 import { vi } from 'vitest';
 import type { FieldMeta } from '../../../types/field';
 import type { BackendToolbarItem, CubeEngineContext, CubeFormMode, PageSetting } from '../../../engine/types';
+import type { PagePreset } from '../../../engine/pagePreset';
 
 /** 常用测试字段 */
 export const FIELDS: Record<string, FieldMeta> = {
@@ -42,6 +43,8 @@ export interface FakeCtxOptions {
   formMode?: CubeFormMode;
   pendingBlob?: { blob: Blob; name: string } | null;
   toolbar?: BackendToolbarItem[];
+  ui?: Record<string, unknown>;
+  preset?: PagePreset | null;
 }
 
 /** 造一个全 `vi.fn()` 化的上下文（断言调用即可，不触发任何请求） */
@@ -72,6 +75,8 @@ export function makeFakeCtx(options: FakeCtxOptions = {}): CubeEngineContext {
     formModel: reactive<Record<string, unknown>>({}),
     apiPrefix: computed(() => '/api/Equipments/Equipment'),
     pageSetting: ref(options.setting ?? {}),
+    ui: computed(() => options.ui ?? {}),
+    preset: ref(options.preset ?? null),
     listFields,
     searchFields,
     toolbar: computed(() => options.toolbar ?? []),
