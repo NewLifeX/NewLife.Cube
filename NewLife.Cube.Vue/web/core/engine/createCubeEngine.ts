@@ -48,6 +48,7 @@ import {
   resolveRowId,
 } from './logic';
 import type {
+  BackendToolbarItem,
   CubeEngineContext,
   CubeEngineDeps,
   CubeEngineOptions,
@@ -157,6 +158,8 @@ export function createCubeEngine(
   const formId = ref<number | string | null>(null);
 
   const fields = ref<NormalizedPageFields>(EMPTY_FIELDS);
+  /** 后端声明的工具栏自定义按钮 */
+  const toolbarItems = ref<BackendToolbarItem[]>([]);
   const searchModel = reactive<Record<string, unknown>>({});
   const formModel = reactive<Record<string, unknown>>({});
 
@@ -181,6 +184,12 @@ export function createCubeEngine(
   const pageSize = computed(() => sizePerPage.value);
   const listFields = computed(() => fields.value.listFields);
   const searchFields = computed(() => fields.value.searchFields);
+  const hasKeyword = computed(() => fields.value.keyword != null);
+  // 元数据就绪前无法判断页面是否有 keyword 项，保持旧行为发送 q；就绪后只按 search 声明决定
+  const keywordEnabled = computed(() => options.keyword !== false && (!schemaReady.value || hasKeyword.value));
+  const multiKeys = computed(() =>
+    searchFields.value.filter((f) => f.multiple || f.itemType === 'multipleSelect').map((f) => f.name),
+  );
   const formFields = computed(() =>
     formMode.value === 'add' ? fields.value.addFields : fields.value.editFields,
   );
@@ -193,7 +202,8 @@ export function createCubeEngine(
     return buildQueryParams({
       keyword: keyword.value,
       filters: { ...(options.extraQuery?.() ?? {}), ...searchModel },
-      keywordEnabled: options.keyword !== false,
+      keywordEnabled: keywordEnabled.value,
+      multiKeys: multiKeys.value,
     });
   }
 
@@ -256,6 +266,7 @@ export function createCubeEngine(
     const normalized = normalizePageMeta(meta ?? undefined);
     fields.value = normalized;
     pageSetting.value = normalized.setting;
+    toolbarItems.value = meta?.toolbar ?? [];
   }
 
   /**
@@ -492,7 +503,8 @@ export function createCubeEngine(
       format,
       keyword: keyword.value,
       filters: searchModel,
-      keywordEnabled: options.keyword !== false,
+      keywordEnabled: keywordEnabled.value,
+      multiKeys: multiKeys.value,
     });
     try {
       const blob = deps.exportFile
@@ -581,6 +593,7 @@ export function createCubeEngine(
     page,
     pageSize,
     keyword,
+    hasKeyword,
     selected,
     pendingBlob,
     searchModel,
@@ -589,6 +602,7 @@ export function createCubeEngine(
     pageSetting,
     listFields,
     searchFields,
+    toolbar: computed(() => toolbarItems.value),
     formFields,
     dialogVisible,
     formLoading,

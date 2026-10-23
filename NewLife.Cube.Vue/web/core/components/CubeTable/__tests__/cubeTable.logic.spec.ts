@@ -12,6 +12,7 @@ import {
   FILE_EXISTS_OPTIONS,
   buildColumnViews,
   buildSearchControl,
+  buildToolbarPayload,
   cellBoolean,
   cellParts,
   cellText,
@@ -25,6 +26,8 @@ import {
   resolveGridFlags,
   resolveToolbarFlags,
   splitRowActions,
+  toolbarKeyField,
+  toolbarQueryString,
   truncate,
 } from '../cubeTable.logic';
 import { FIELDS } from './fakeCtx';
@@ -59,6 +62,24 @@ describe('CubeTable/logic 搜索控件显示态', () => {
     expect(buildSearchControl(FIELDS.time)).toMatchObject({ kind: 'datetimeRange', key: 'Time', maxKey: null });
     const day = buildSearchControl({ ...FIELDS.time, itemType: 'date' });
     expect(day.kind).toBe('dateRange');
+  });
+
+  it('应该按后端 range 项使用显式起止参数', () => {
+    const control = buildSearchControl({
+      name: 'dtStart',
+      displayName: '创建时间',
+      typeName: 'DateTime',
+      kind: 'range',
+      end: 'dtEnd',
+      field: 'CreateTime',
+    });
+    expect(control).toMatchObject({
+      kind: 'range',
+      key: 'dtStart',
+      maxKey: 'dtEnd',
+      rangeType: 'datetime',
+      span: 2,
+    });
   });
 
   it('应该给是/否与有/无两套固定选项 当布尔与附件存在性条件时', () => {
@@ -123,7 +144,7 @@ describe('CubeTable/logic 列视图', () => {
     expect(columns.map((c) => c.key)).toEqual(['Id', 'Count']);
   });
 
-  it('应该整列去掉主键列 当后端 enableKey 为 false 时', () => {
+  it('应该整列去掉主键列 当 showKeyColumn 为 false 时', () => {
     const columns = buildColumnViews([FIELDS.id, FIELDS.name], null, { showKeyColumn: false });
     expect(columns.map((c) => c.key)).toEqual(['Name']);
   });
@@ -173,6 +194,10 @@ describe('CubeTable/logic 工具栏与表格开关', () => {
 
   it('应该标出整页只读 当后端 isReadOnly 时', () => {
     expect(resolveToolbarFlags({}, { isReadOnly: true }).readOnly).toBe(true);
+  });
+
+  it('应该在无更新和删除权限时收起勾选列', () => {
+    expect(resolveGridFlags({}, {}, { update: false, delete: false })).toMatchObject({ selection: false });
   });
 
   it('应该让勾选列与批量删除同一口径 当 enableSelect 未下发时', () => {
@@ -308,5 +333,64 @@ describe('CubeTable/logic 存储键', () => {
     expect(defaultColumnsStorageKey('/api/Equipments/Equipment')).toBe(
       'cube-table:columns:/api/Equipments/Equipment',
     );
+  });
+});
+describe('工具栏按钮参数组装', () => {
+  it('include 含 keys 时提交选中行主键（逗号拼接，与批量删除一致）', () => {
+    const payload = buildToolbarPayload({
+      include: ['keys'],
+      selected: [{ Id: 1 }, { Id: 2 }],
+      keyField: 'Id',
+      query: {},
+    });
+    expect(payload).toEqual({ keys: '1,2' });
+  });
+
+  it('未选中时不提交 keys，避免后端拿到空串误判', () => {
+    const payload = buildToolbarPayload({ include: ['keys'], selected: [], keyField: 'Id', query: {} });
+    expect(payload).toEqual({});
+  });
+
+  it('其它名称取当前查询值，空值跳过', () => {
+    const payload = buildToolbarPayload({
+      include: ['ds', 'sourceType', 'dtStart'],
+      selected: [],
+      keyField: 'Id',
+      query: { ds: '20250101', sourceType: 2, dtStart: '' },
+    });
+    expect(payload).toEqual({ ds: '20250101', sourceType: 2 });
+  });
+
+  it('数组查询值按逗号拼接', () => {
+    const payload = buildToolbarPayload({
+      include: ['status'],
+      selected: [],
+      keyField: 'Id',
+      query: { status: [1, 2] },
+    });
+    expect(payload).toEqual({ status: '1,2' });
+  });
+
+  it('主键字段取自元数据，缺省 id', () => {
+    expect(toolbarKeyField([{ name: 'Code', typeName: 'String' }, { name: 'Id', typeName: 'Int32', primaryKey: true }])).toBe('Id');
+    expect(toolbarKeyField([])).toBe('id');
+  });
+
+  it('选中行主键大小写不一致时仍能取值', () => {
+    const payload = buildToolbarPayload({
+      include: ['keys'],
+      selected: [{ ID: 7 }, { id: 8 }],
+      keyField: 'Id',
+      query: {},
+    });
+    expect(payload).toEqual({ keys: '7,8' });
+  });
+
+  it('link 的查询串携带关键字与搜索模型', () => {
+    const qs = toolbarQueryString('abc', { ds: '20250101', status: undefined, tags: ['a', 'b'] });
+    expect(qs).toContain('q=abc');
+    expect(qs).toContain('ds=20250101');
+    expect(qs).toContain('tags=a%2Cb');
+    expect(qs).not.toContain('status');
   });
 });

@@ -56,6 +56,19 @@ export function dictOptions(field: FieldMeta): Array<{ label: string; value: str
 
 /** 单个搜索字段的控件显示态 */
 export function buildSearchControl(field: FieldMeta): CubeSearchControl {
+  // 后端声明的区间项直接使用显式起止参数（主时间字段固定为 dtStart/dtEnd）
+  if (field.kind === 'range') {
+    return {
+      field,
+      kind: 'range',
+      key: field.name,
+      maxKey: field.end ?? null,
+      rangeType: (field.itemType ?? '').toLowerCase() === 'date' ? 'date' : 'datetime',
+      options: [],
+      span: 2,
+    };
+  }
+
   let kind: CubeSearchKind = resolveSearchControl(field);
 
   // 后端把 DateTime 字段声明为纯日期（ItemType='date'，如生日、班次日期）时，
@@ -132,7 +145,7 @@ export function alignItemsForControl(control: ListControlType, field: FieldMeta)
  * 生成列显示态。
  *
  * - `visibility` 为 `null` 表示未启用「设置列」，全部显示（取消勾选的列被过滤掉）；
- * - `showKeyColumn` 决定主键列是否出现（来自后端 `pageSetting.enableKey`）；
+ * - `showKeyColumn` 决定主键列是否出现（缺省显示）；
  * - 列顺序保持元数据下发顺序，前端不擅自排序。
  */
 export function buildColumnViews(
@@ -143,7 +156,11 @@ export function buildColumnViews(
   const { showKeyColumn = true } = options;
   return fields
     .filter((field) => (field.primaryKey ? showKeyColumn : true))
-    .filter((field) => (visibility ? visibility[field.name] !== false : true))
+    .filter((field) => {
+      // 用户显式设置优先；没有配置时按字段可见性（visible=false 的列收起）
+      if (visibility && field.name in visibility) return visibility[field.name] !== false;
+      return field.visible !== false;
+    })
     .map((field) => {
       const control = resolveListControl(field);
       return {
@@ -161,8 +178,8 @@ export function buildColumnViews(
 /** 「设置列」候选项（key/label） */
 export function columnItemsFromFields(
   fields: FieldMeta[],
-): Array<{ key: string; label: string }> {
-  return fields.map((f) => ({ key: f.name, label: f.displayName || f.name }));
+): Array<{ key: string; label: string; visible?: boolean }> {
+  return fields.map((f) => ({ key: f.name, label: f.displayName || f.name, visible: f.visible }));
 }
 
 /** 工具栏按钮开关入参（`undefined` 表示未显式指定，交由后端 `pageSetting` 决定） */
@@ -211,14 +228,15 @@ export function dialogShapeFor(fieldCount: number): { width: string; columns: nu
 export function resolveToolbarFlags(
   input: ToolbarFlagInput,
   setting?: { enableAdd?: boolean; enableSelect?: boolean; isReadOnly?: boolean } | null,
+  permissions?: { add?: boolean; delete?: boolean; export?: boolean },
 ): ToolbarFlags {
   const readOnly = setting?.isReadOnly === true;
   return {
     readOnly,
-    add: input.add ?? setting?.enableAdd !== false,
-    batchDelete: input.batchDelete ?? setting?.enableSelect !== false,
+    add: input.add ?? (setting?.enableAdd !== false && permissions?.add !== false),
+    batchDelete: input.batchDelete ?? (setting?.enableSelect !== false && permissions?.delete !== false),
     importFile: input.importFile ?? true,
-    exportFile: input.exportFile ?? true,
+    exportFile: input.exportFile ?? permissions?.export !== false,
     downloadTemplate: input.downloadTemplate ?? false,
     refresh: input.refresh ?? true,
   };
@@ -384,11 +402,13 @@ export function resolveGridFlags(
     isReadOnly?: boolean;
     enableTableDoubleClick?: boolean;
   } | null,
+  permissions?: { update?: boolean; delete?: boolean },
 ): GridFlags {
   const readOnly = setting?.isReadOnly === true;
+  const canBatch = permissions?.update !== false || permissions?.delete !== false;
   return {
     readOnly,
-    selection: input.selection ?? setting?.enableSelect !== false,
+    selection: input.selection ?? (setting?.enableSelect !== false && canBatch),
     indexColumn: input.indexColumn ?? false,
     rowActions: input.rowActions ?? !readOnly,
     doubleClickEdit: input.doubleClickEdit ?? Boolean(setting?.enableTableDoubleClick),
@@ -438,4 +458,62 @@ export function splitRowActions<T>(actions: T[]): { direct: T[]; overflow: T[] }
   if (actions.length <= MAX_VISIBLE_ACTIONS) return { direct: actions, overflow: [] };
   const cut = MAX_VISIBLE_ACTIONS - 1;
   return { direct: actions.slice(0, cut), overflow: actions.slice(cut) };
+}
+/** 工具栏按钮的主键字段名（来自元数据 `primaryKey`，缺省 `id`） */
+export function toolbarKeyField(fields: FieldMeta[]): string {
+  return fields.find((f) => f.primaryKey)?.name ?? 'id';
+}
+
+/**
+ * 组装工具栏按钮的提交参数。
+ *
+ * 口径对齐 MVC 的 `data-fields`：名称 `keys` 表示选中行主键（逗号拼接，与批量删除的
+ * `?ids=1,2,3` 一致），其余名称取当前查询值；空值不提交。
+ */
+export function buildToolbarPayload(options: {
+  include?: string[] | null;
+  selected: Record<string, unknown>[];
+  keyField: string;
+  query: Record<string, unknown>;
+}): Record<string, unknown> {
+  const payload: Record<string, unknown> = {};
+  for (const name of options.include ?? []) {
+    if (!name) continue;
+    if (name.toLowerCase() === 'keys') {
+      const keys = options.selected
+        .map((row) => readRowValue(row, options.keyField))
+        .filter((v) => v !== undefined && v !== null && v !== '')
+        .map(String);
+      if (keys.length > 0) payload.keys = keys.join(',');
+      continue;
+    }
+    const value = options.query[name];
+    if (value === undefined || value === null || value === '') continue;
+    payload[name] = Array.isArray(value) ? value.join(',') : value;
+  }
+  return payload;
+}
+
+/** 读取行值。元数据字段名与行对象可能大小写不一致（Id/id、ID） */
+function readRowValue(row: Record<string, unknown>, key: string): unknown {
+  if (key in row) return row[key];
+  const hit = Object.keys(row).find((k) => k.toLowerCase() === key.toLowerCase());
+  return hit ? row[hit] : undefined;
+}
+
+/** 拼接 link 按钮要携带的当前查询参数（对应 MVC 的 `page.GetBaseUrl`） */
+export function toolbarQueryString(keyword: string, model: Record<string, unknown>): string {
+  const params = new URLSearchParams();
+  const kw = (keyword ?? '').trim();
+  if (kw) params.set('q', kw);
+  for (const [key, value] of Object.entries(model ?? {})) {
+    if (value === undefined || value === null || value === '') continue;
+    if (Array.isArray(value)) {
+      if (value.length > 0) params.set(key, value.join(','));
+      continue;
+    }
+    if (typeof value === 'object') continue;
+    params.set(key, String(value));
+  }
+  return params.toString();
 }

@@ -92,6 +92,10 @@ export interface FieldMeta {
   readOnly?: boolean;
   /** 描述（用作表单占位提示） */
   description?: string;
+  /** 字段分类（表单分组） */
+  category?: string;
+  /** 是否显示（列表列） */
+  visible?: boolean;
   /** 值集编码（枚举 / singleSelect / multipleSelect 由后端静态构造下发，前端绝不硬编码） */
   lovCode?: string;
   /** 是否多选（multipleSelect 为 true；亦可由前端在映射时推导） */
@@ -108,6 +112,18 @@ export interface FieldMeta {
    * 有值时表单渲染 LovSelect 并把同级该字段的当前值作为 :parent 传入，实现"父变过滤子"。
    */
   parentField?: string;
+  /** 渲染器名（对应控制器 View/ItemView/GroupView） */
+  view?: string;
+  /** 扩展属性，核心不解释 */
+  props?: Record<string, unknown>;
+  /** 是否非实体列 */
+  virtual?: boolean;
+  /** 搜索项类型 */
+  kind?: 'keyword' | 'range';
+  /** 区间结束参数名（kind=range） */
+  end?: string;
+  /** 区间对应的实体字段名（kind=range） */
+  field?: string;
 }
 
 /** 搜索字段（列表搜索区消费，继承 FieldMeta 并附带解析后的搜索控件类型） */

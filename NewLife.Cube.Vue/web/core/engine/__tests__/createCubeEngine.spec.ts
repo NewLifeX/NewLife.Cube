@@ -25,6 +25,7 @@ const META: CubePageMeta = {
     { name: 'Name', displayName: '名称', typeName: 'String', length: 50 },
   ],
   search: [
+    { name: 'q', kind: 'keyword', displayName: '关键字', typeName: 'String' },
     { name: 'Name', displayName: '名称', typeName: 'String', length: 50 },
     { name: 'Enable', displayName: '启用', typeName: 'Boolean' },
   ],

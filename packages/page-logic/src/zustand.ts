@@ -60,7 +60,6 @@ export function createPageStore(
     return {
       // 初始状态
       listFields: [],
-      allListFields: [],
       searchFields: [],
       addFields: [],
       editFields: [],

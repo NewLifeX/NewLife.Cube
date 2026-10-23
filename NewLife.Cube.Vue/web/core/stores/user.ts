@@ -53,6 +53,8 @@ export interface UserInfo {
   updateTime: string;
   remark: string;
   permission: string;
+  /** 是否系统管理员（后端 /Auth/Info 可能返回） */
+  isSystemAdmin?: boolean;
 }
 
 const state: {

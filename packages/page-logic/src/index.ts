@@ -22,8 +22,6 @@ export interface Pagination {
 export interface PageState {
   /** 列表字段映射 */
   listFields: FieldMapping[];
-  /** 全部可用列表字段（应用用户列配置前，供列设置面板使用） */
-  allListFields: FieldMapping[];
   /** 搜索字段映射 */
   searchFields: FieldMapping[];
   /** 新增字段映射 */
@@ -99,7 +97,6 @@ export class PageLogic {
         : () => (mp as Record<string, string> | undefined) ?? {};
     this.state = {
       listFields: [],
-      allListFields: [],
       searchFields: [],
       addFields: [],
       editFields: [],
@@ -132,14 +129,12 @@ export class PageLogic {
     const pageMeta = pageRes.data ?? {};
 
     const listData = pageMeta.list ?? pageMeta.fields?.list ?? [];
-    const allListData = pageMeta.allList ?? listData;
     const addData = pageMeta.addForm ?? pageMeta.fields?.form?.addForm ?? [];
     const editData = pageMeta.editForm ?? pageMeta.fields?.form?.editForm ?? [];
     const detailData = pageMeta.detail ?? pageMeta.fields?.form?.detail ?? [];
     const searchData = pageMeta.search ?? pageMeta.fields?.search ?? [];
 
     const listFields = resolveWidgets(listData);
-    const allListFields = resolveWidgets(allListData);
     const searchFields = resolveWidgets(searchData);
     const addFields = resolveWidgets(addData);
     const editFields = resolveWidgets(editData);
@@ -178,7 +173,6 @@ export class PageLogic {
     const canDevelop = !!(pageSetting?.develop && pageSetting?.isSystem);
 
     this.state.listFields = listFields;
-    this.state.allListFields = allListFields;
     this.state.searchFields = searchFields;
     this.state.addFields = addFields;
     this.state.editFields = editFields;
@@ -192,7 +186,7 @@ export class PageLogic {
     this.state.canImport = canImport;
     this.state.canDevelop = canDevelop;
 
-    this.update({ listFields, allListFields, searchFields, addFields, editFields, detailFields, pkField, pageSetting, canAdd, canEdit, canDelete, canExport, canImport, canDevelop });
+    this.update({ listFields, searchFields, addFields, editFields, detailFields, pkField, pageSetting, canAdd, canEdit, canDelete, canExport, canImport, canDevelop });
   }
 
   /** 加载列表数据（分页 + 搜索） */

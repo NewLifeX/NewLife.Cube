@@ -143,7 +143,7 @@ describe('CubeTableActions 导入文件框', () => {
 
   it('应该把选中的文件交给动作集 当文件框变化时', async () => {
     const { wrapper, actions } = await mountActions();
-    await wrapper.find('input[type=file]').trigger('change');
+    await wrapper.find('input[type=file]:not([data-role="toolbar-upload"])').trigger('change');
     expect(actions.onImportFileChange).toHaveBeenCalled();
   });
 });
@@ -161,5 +161,45 @@ describe('CubeTableActions 插槽', () => {
   it('应该把追加内容排在行尾 当使用 #extra 时', async () => {
     const { wrapper } = await mountActions({ slots: { extra: '<span class="x">右侧动作</span>' } });
     expect(wrapper.find('.cta-right .x').exists()).toBe(true);
+  });
+});
+describe('CubeTableActions 后端声明的工具栏按钮', () => {
+  const toolbar = [
+    { name: '导入数据', displayName: '导入数据', kind: 'link' as const, url: '/School/Student/Import', target: '_blank' },
+    { name: '批量刷新', displayName: '批量刷新', kind: 'request' as const, action: 'Refresh', include: ['keys'], requiresSelection: true },
+    { name: '高级导入', displayName: '高级导入', kind: 'custom' as const, renderer: 'not-registered' },
+  ];
+
+  async function mountWithToolbar(selected: Record<string, unknown>[]) {
+    const ctx = makeFakeCtx({ setting: {}, selected, toolbar });
+    const wrapper = mount(CubeTableActions, {
+      props: { ctx, actions: makeFakeActions(), flags: {} },
+      global: { plugins: [ElementPlus] },
+    });
+    await nextTick();
+    return wrapper;
+  }
+
+  it('应该渲染后端声明的按钮，并跳过未注册渲染器的 custom 按钮', async () => {
+    const wrapper = await mountWithToolbar([{ Id: 1 }]);
+    const text = wrapper.text();
+
+    expect(text).toContain('导入数据');
+    expect(text).toContain('批量刷新');
+    expect(text).not.toContain('高级导入');
+  });
+
+  it('应该禁用需要选中数据的按钮 当没有勾选时', async () => {
+    const wrapper = await mountWithToolbar([]);
+    const btn = wrapper.findAll('button').filter((b) => b.text().includes('批量刷新'))[0];
+
+    expect(btn.attributes('disabled')).toBeDefined();
+  });
+
+  it('应该启用需要选中数据的按钮 当已勾选时', async () => {
+    const wrapper = await mountWithToolbar([{ Id: 1 }]);
+    const btn = wrapper.findAll('button').filter((b) => b.text().includes('批量刷新'))[0];
+
+    expect(btn.attributes('disabled')).toBeUndefined();
   });
 });

@@ -24,6 +24,14 @@ export { useCubeTableColumns } from './useCubeTableColumns';
 export type { ColumnStorageLike, UseCubeTableColumnsOptions } from './useCubeTableColumns';
 export { useCubeTableLov } from './useCubeTableLov';
 export { saveBlob } from './downloadFile';
+export {
+  registerToolbarRenderer,
+  getToolbarRenderer,
+  clearToolbarRenderers,
+  toolbarDisabled,
+} from './toolbarRenderers';
+export type { ToolbarRenderer } from './toolbarRenderers';
+export type { BackendToolbarItem } from '../../engine/types';
 
 export type {
   CubeCellSlotProps,
@@ -48,6 +56,9 @@ export {
   buildColumnViews,
   buildSearchControl,
   buildSearchControls,
+  buildToolbarPayload,
+  toolbarKeyField,
+  toolbarQueryString,
   cellBoolean,
   cellParts,
   cellText,

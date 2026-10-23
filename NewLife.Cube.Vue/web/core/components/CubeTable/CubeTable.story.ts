@@ -18,7 +18,7 @@ import type { CubeRowAction, CubeTableMetric } from './types';
 
 /** 覆盖全部单元格分支的元数据：值集 / 布尔 / 数值 / 日期 / 日期时间 / 图片 / 附件 / 色块 / 图标 / Json */
 const META: CubePageMeta = {
-  setting: { enableAdd: true, enableSelect: true, enableKey: true, doubleDelete: true },
+  setting: { enableAdd: true, enableSelect: true, doubleDelete: true },
   list: [
     { name: 'Id', displayName: '编号', typeName: 'Int32', primaryKey: true },
     { name: 'Name', displayName: '名称', typeName: 'String', length: 50 },

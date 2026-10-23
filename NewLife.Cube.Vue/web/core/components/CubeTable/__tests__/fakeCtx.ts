@@ -7,7 +7,7 @@
 import { computed, reactive, ref } from 'vue';
 import { vi } from 'vitest';
 import type { FieldMeta } from '../../../types/field';
-import type { CubeEngineContext, CubeFormMode, PageSetting } from '../../../engine/types';
+import type { BackendToolbarItem, CubeEngineContext, CubeFormMode, PageSetting } from '../../../engine/types';
 
 /** 常用测试字段 */
 export const FIELDS: Record<string, FieldMeta> = {
@@ -41,6 +41,7 @@ export interface FakeCtxOptions {
   loading?: boolean;
   formMode?: CubeFormMode;
   pendingBlob?: { blob: Blob; name: string } | null;
+  toolbar?: BackendToolbarItem[];
 }
 
 /** 造一个全 `vi.fn()` 化的上下文（断言调用即可，不触发任何请求） */
@@ -64,6 +65,7 @@ export function makeFakeCtx(options: FakeCtxOptions = {}): CubeEngineContext {
     page: computed(() => page.value),
     pageSize: computed(() => pageSize.value),
     keyword: ref(options.keyword ?? ''),
+    hasKeyword: computed(() => true),
     selected: ref(options.selected ?? []),
     pendingBlob: ref(options.pendingBlob ?? null),
     searchModel: reactive<Record<string, unknown>>({}),
@@ -72,6 +74,7 @@ export function makeFakeCtx(options: FakeCtxOptions = {}): CubeEngineContext {
     pageSetting: ref(options.setting ?? {}),
     listFields,
     searchFields,
+    toolbar: computed(() => options.toolbar ?? []),
     formFields,
     dialogVisible: ref(false),
     formMode: ref(options.formMode ?? 'add'),

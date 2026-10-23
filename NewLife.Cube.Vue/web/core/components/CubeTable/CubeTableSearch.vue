@@ -44,6 +44,7 @@ function toggle(): void {
       <!-- 常驻三列栅格：收起态第一行 = 关键字 + 第一个条件 + 动作格，展开铺入其余条件 -->
       <div class="cts-grid">
         <el-input
+          v-if="ctx.hasKeyword"
           v-model="keyword"
           class="cts-input cts-cell"
           clearable
@@ -99,6 +100,22 @@ function toggle(): void {
             <el-time-picker v-model="ctx.searchModel[c.key] as string" value-format="HH:mm:ss" placeholder="起" />
             <span class="cts-sep">–</span>
             <el-time-picker v-model="ctx.searchModel[c.maxKey!] as string" value-format="HH:mm:ss" placeholder="止" />
+          </div>
+
+          <div v-else-if="c.kind === 'range'" class="cts-range">
+            <el-date-picker
+              v-model="ctx.searchModel[c.key] as string"
+              :type="c.rangeType === 'date' ? 'date' : 'datetime'"
+              :value-format="c.rangeType === 'date' ? 'YYYY-MM-DD' : 'YYYY-MM-DDTHH:mm:ss'"
+              placeholder="开始"
+            />
+            <span class="cts-sep">–</span>
+            <el-date-picker
+              v-model="ctx.searchModel[c.maxKey!] as string"
+              :type="c.rangeType === 'date' ? 'date' : 'datetime'"
+              :value-format="c.rangeType === 'date' ? 'YYYY-MM-DD' : 'YYYY-MM-DDTHH:mm:ss'"
+              placeholder="结束"
+            />
           </div>
 
           <el-date-picker

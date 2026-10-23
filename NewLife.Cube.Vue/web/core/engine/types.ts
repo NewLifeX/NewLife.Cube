@@ -34,11 +34,9 @@ export interface PageSetting {
   enableNavbar?: boolean;
   /** 是否显示工具栏 */
   enableToolbar?: boolean;
-  /** 是否允许新增 */
+  /** 是否允许新增。页面能力，不代表当前用户权限 */
   enableAdd?: boolean;
-  /** 是否显示主键列 */
-  enableKey?: boolean;
-  /** 是否允许勾选（批量操作） */
+  /** 是否允许勾选（批量操作）。页面能力，不代表当前用户权限 */
   enableSelect?: boolean;
   /** 是否显示页脚 */
   enableFooter?: boolean;
@@ -50,6 +48,17 @@ export interface PageSetting {
   orderByKey?: boolean;
   /** 删除是否需要二次确认 */
   doubleDelete?: boolean;
+  /** 当前页面菜单编号，用于和用户权限串匹配 */
+  menuId?: number;
+  /** 页面动作所需权限位。有效权限由前端结合用户信息计算 */
+  requiredPermissions?: RequiredPermissions;
+}
+
+/** 页面动作所需权限位 */
+export interface RequiredPermissions {
+  add?: number;
+  update?: number;
+  delete?: number;
 }
 
 /**
@@ -75,6 +84,10 @@ export interface BackendField {
   precision?: number;
   /** 小数位数（BindColumn.Scale） */
   scale?: number;
+  /** 字段分类，用于表单分组 */
+  category?: string;
+  /** 是否显示。false 时仍作为可用列下发给表格设置 */
+  visible?: boolean;
   /** 是否允许空 */
   nullable?: boolean;
   /** 是否主键 */
@@ -89,6 +102,18 @@ export interface BackendField {
   multiple?: boolean;
   /** 后端显式声明必填（可选；缺省时由 `isRequiredField` 推导） */
   required?: boolean;
+  /** 渲染器名（对应控制器 View/ItemView/GroupView） */
+  view?: string;
+  /** 扩展属性，核心不解释 */
+  props?: Record<string, unknown>;
+  /** 是否非实体列 */
+  virtual?: boolean;
+  /** 搜索项类型：keyword 由关键字框统一处理 */
+  kind?: 'keyword' | 'range';
+  /** 区间结束参数名（kind=range） */
+  end?: string;
+  /** 区间对应的实体字段名（kind=range） */
+  field?: string;
   /** 内联枚举字典（如 { "1": "小时", "2": "班次" }），有则免一次 LOV 请求 */
   dataSource?: Record<string, string>;
   /**
@@ -101,11 +126,37 @@ export interface BackendField {
 /** `GET {type}/meta` 的页面元数据（六组独立字段数组） */
 export interface CubePageMeta {
   setting?: PageSetting;
+  entity?: { name?: string; displayName?: string; primaryKey?: string };
   list?: BackendField[];
   addForm?: BackendField[];
   editForm?: BackendField[];
   detail?: BackendField[];
   search?: BackendField[];
+  /** 工具栏自定义按钮（内置按钮由 setting 控制） */
+  toolbar?: BackendToolbarItem[];
+}
+
+/**
+ * 后端下发的工具栏按钮（`meta.toolbar[]`）。
+ * 对齐 MVC 的 `_List_Toolbar_Custom` / `_List_Toolbar_Batch`：
+ * `url`/`action` 对应 `data-url`，`include` 对应 `data-fields`，`method` 对应 `data-method`。
+ */
+export interface BackendToolbarItem {
+  name: string;
+  displayName?: string;
+  icon?: string;
+  type?: string;
+  kind: 'link' | 'request' | 'upload' | 'custom';
+  url?: string;
+  action?: string;
+  method?: string;
+  include?: string[];
+  appendQuery?: boolean;
+  target?: string;
+  accept?: string;
+  confirm?: string;
+  requiresSelection?: boolean;
+  renderer?: string;
 }
 
 /** 元数据归一后的字段集合（引擎与视图共用） */
@@ -113,6 +164,8 @@ export interface NormalizedPageFields {
   setting: PageSetting;
   listFields: FieldMeta[];
   searchFields: FieldMeta[];
+  /** 关键字查询项；为空表示该页面没有关键字搜索 */
+  keyword?: FieldMeta;
   addFields: FieldMeta[];
   editFields: FieldMeta[];
   detailFields: FieldMeta[];
@@ -257,6 +310,8 @@ export interface CubeEngineContext {
   pageSize: ComputedRef<number>;
   /** 关键字（后端 `q`） */
   keyword: Ref<string>;
+  /** 当前页面是否存在关键字查询项 `kind=keyword` */
+  hasKeyword: ComputedRef<boolean>;
   /** 当前勾选行（批量操作用） */
   selected: Ref<Record<string, unknown>[]>;
   /**
@@ -280,6 +335,8 @@ export interface CubeEngineContext {
   listFields: ComputedRef<FieldMeta[]>;
   /** 搜索字段（已过滤主键与 Guid） */
   searchFields: ComputedRef<FieldMeta[]>;
+  /** 工具栏自定义按钮 */
+  toolbar: ComputedRef<BackendToolbarItem[]>;
   /** 表单字段（按 `formMode` 取 addForm / editForm） */
   formFields: ComputedRef<FieldMeta[]>;
 

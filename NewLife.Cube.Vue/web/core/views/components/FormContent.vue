@@ -31,6 +31,8 @@ interface Props {
   columns?: number;
   /** 是否禁用所有表单控件（查看详情模式只读） */
   disabled?: boolean;
+  /** 分组方式：auto=有多个分类时按分类分区，category=强制按分类，none=平铺 */
+  groupBy?: 'auto' | 'category' | 'none';
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -39,6 +41,26 @@ const props = withDefaults(defineProps<Props>(), {
   modelValue: () => ({}),
   apiPrefix: '',
   columns: 2,
+  groupBy: 'auto',
+});
+
+const DEFAULT_GROUP = '其他';
+
+/** 按 Category 分组；没有分类时保持一个默认分组，模板结构不变 */
+const groups = computed(() => {
+  const hasCategory = props.fields.some((f) => !!f.category?.trim());
+  if (props.groupBy === 'none' || (props.groupBy === 'auto' && !hasCategory)) {
+    return [{ key: '', title: '', fields: props.fields }];
+  }
+
+  const map = new Map<string, typeof props.fields>();
+  for (const field of props.fields) {
+    const key = field.category?.trim() || DEFAULT_GROUP;
+    const list = map.get(key) ?? [];
+    list.push(field);
+    map.set(key, list);
+  }
+  return [...map.entries()].map(([key, fields]) => ({ key, title: key, fields }));
 });
 
 const emit = defineEmits<{
@@ -126,13 +148,15 @@ function toMultiArray(val: unknown): string[] {
       <h2 class="fmc-title">{{ title }}</h2>
     </div>
     <div class="fmc-body">
-      <div class="fmc-grid" :style="{ gridTemplateColumns: `repeat(${props.columns}, 1fr)` }">
-        <div
-          v-for="field in fields"
-          :key="field.name"
-          class="fmc-field"
-          :class="{ 'fmc-field--full': isFullWidthControl(controlOf(field)) }"
-        >
+      <section v-for="group in groups" :key="group.key" class="fmc-group">
+        <h3 v-if="group.title" class="fmc-group-title">{{ group.title }}</h3>
+        <div class="fmc-grid" :style="{ gridTemplateColumns: `repeat(${props.columns}, 1fr)` }">
+          <div
+            v-for="field in group.fields"
+            :key="field.name"
+            class="fmc-field"
+            :class="{ 'fmc-field--full': isFullWidthControl(controlOf(field)) }"
+          >
           <label :for="`fmc-${field.name}`" class="fmc-label">
             {{ field.displayName || field.name }}
             <!-- 查看（禁用）模式下不展示必填星号：详情只读无填写语义 -->
@@ -332,8 +356,9 @@ function toMultiArray(val: unknown): string[] {
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 </template>
@@ -362,6 +387,19 @@ function toMultiArray(val: unknown): string[] {
 
 .fmc-body {
   padding: 20px;
+}
+
+.fmc-group + .fmc-group {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--el-border-color-lighter);
+}
+
+.fmc-group-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+  margin: 0 0 14px;
 }
 
 .fmc-grid {

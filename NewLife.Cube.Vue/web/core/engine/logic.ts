@@ -44,13 +44,28 @@ export function buildQueryParams(options: {
   filters?: Record<string, unknown>;
   /** 是否把关键字并入 `q`（引擎 options.keyword） */
   keywordEnabled?: boolean;
+  /** 多选字段名；数组值统一转逗号分隔，避免生成 Field[0] 形式 */
+  multiKeys?: Iterable<string>;
 }): Record<string, unknown> {
   const params: Record<string, unknown> = {};
   if (options.keywordEnabled !== false) {
     const kw = (options.keyword ?? '').trim();
     if (kw) params[KEYWORD_PARAM] = kw;
   }
-  return { ...params, ...dropEmptyParams(options.filters ?? {}) };
+  return joinMultiParams({ ...params, ...dropEmptyParams(options.filters ?? {}) }, options.multiKeys);
+}
+
+/** 把多选字段的数组值转成后端约定的一致性逗号字符串 */
+export function joinMultiParams(
+  params: Record<string, unknown>,
+  keys?: Iterable<string>,
+): Record<string, unknown> {
+  if (!keys) return params;
+  const names = new Set(keys);
+  for (const [key, value] of Object.entries(params)) {
+    if (names.has(key) && Array.isArray(value)) params[key] = value.map(String).join(',');
+  }
+  return params;
 }
 
 /** 业务页绕开引擎 `refresh()` 自行发请求时，用它补分页参数（保持同一口径） */
@@ -68,13 +83,15 @@ export function buildExportParams(options: {
   keyword?: string;
   filters?: Record<string, unknown>;
   keywordEnabled?: boolean;
+  /** 多选字段名；数组值统一转逗号分隔 */
+  multiKeys?: Iterable<string>;
 }): Record<string, unknown> {
   const params: Record<string, unknown> = { [EXPORT_FORMAT_PARAM]: options.format };
   if (options.keywordEnabled !== false) {
     const kw = (options.keyword ?? '').trim();
     if (kw) params[KEYWORD_PARAM] = kw;
   }
-  return { ...params, ...dropEmptyParams(options.filters ?? {}) };
+  return joinMultiParams({ ...params, ...dropEmptyParams(options.filters ?? {}) }, options.multiKeys);
 }
 
 /**
@@ -164,14 +181,16 @@ export interface ColumnVisibilityItem {
   key: string;
   /** 列显示名 */
   label: string;
+  /** 是否显示；缺省显示 */
+  visible?: boolean;
 }
 
-/** 默认全显示 */
+/** 默认显示态：字段声明 false 时默认隐藏 */
 export function defaultColumnVisibility(
   columns: ColumnVisibilityItem[],
 ): Record<string, boolean> {
   const out: Record<string, boolean> = {};
-  for (const c of columns) out[c.key] = true;
+  for (const c of columns) out[c.key] = c.visible !== false;
   return out;
 }
 

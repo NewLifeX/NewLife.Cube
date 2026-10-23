@@ -15,7 +15,7 @@ import type { CubeEngineContext } from '../../engine/types';
  * 的 `select` 分支消费 dataSource，搜索侧此前没有对应处理。这里按同一份 `dataSource`
  * 渲染下拉，值仍提交字典键（数字键转 number），与表单口径一致。
  */
-export type CubeSearchKind = SearchControlType | 'dict';
+export type CubeSearchKind = SearchControlType | 'dict' | 'range';
 
 /** 搜索控件显示态 */
 export interface CubeSearchControl {
@@ -27,6 +27,8 @@ export interface CubeSearchControl {
   key: string;
   /** 范围类的第二个键（`_max`），非范围类为 null */
   maxKey: string | null;
+  /** `range` 的日期粒度 */
+  rangeType?: 'date' | 'datetime';
   /** `dict` / 本地选项 */
   options: Array<{ label: string; value: string | number }>;
   /** 栅格跨度（大控件占整行） */
@@ -47,7 +49,7 @@ export interface CubeColumnView {
   width: number | string;
   /** 对齐方式 */
   align: 'left' | 'center' | 'right';
-  /** 是否主键列（受 `pageSetting.enableKey` 控制显隐） */
+  /** 是否主键列 */
   isKey: boolean;
 }
 

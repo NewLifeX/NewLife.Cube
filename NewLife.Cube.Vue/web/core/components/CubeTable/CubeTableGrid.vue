@@ -42,6 +42,7 @@ import {
   splitRowActions,
 } from './cubeTable.logic';
 import { useCubeTableLov } from './useCubeTableLov';
+import { usePagePermissions } from '../../composables/usePagePermissions';
 import type { CubeEngineContext } from '../../engine/types';
 import type { CubeColumnView, CubeRowAction, CubeTableActions } from './types';
 
@@ -81,13 +82,12 @@ const props = withDefaults(
 );
 
 const slots = useSlots();
+const permissions = usePagePermissions(props.ctx);
 /** 业务页自写了列定义，元数据生成列就整块让位 */
 const customColumns = computed(() => Boolean(slots.default));
 
 const columns = computed(() =>
-  buildColumnViews(props.ctx.listFields.value, props.visibility, {
-    showKeyColumn: props.ctx.pageSetting.value.enableKey !== false,
-  }),
+  buildColumnViews(props.ctx.listFields.value, props.visibility),
 );
 const rows = computed(() => props.ctx.list.value);
 const flags = computed(() =>
@@ -99,6 +99,10 @@ const flags = computed(() =>
       doubleClickEdit: props.doubleClickEdit,
     },
     props.ctx.pageSetting.value,
+    {
+      update: permissions.canUpdate.value,
+      delete: permissions.canDelete.value,
+    },
   ),
 );
 const lov = useCubeTableLov(
@@ -120,11 +124,18 @@ const iconOf = (name: string) => (ElementPlusIconsVue as Record<string, unknown>
 const slotName = (column: CubeColumnView) => `col-${column.key}`;
 
 /** 内置行操作：与旧 Section 组件同口径（查看 / 编辑 / 删除），删除走确认层不直连引擎 */
-const builtinRowActions = computed<CubeRowAction[]>(() => [
-  { key: '__view', label: '查看', icon: View, type: 'primary', onClick: (row) => void props.ctx.openView(row) },
-  { key: '__edit', label: '编辑', icon: Edit, type: 'primary', onClick: (row) => void props.ctx.openEdit(row) },
-  { key: '__remove', label: '删除', icon: Delete, type: 'danger', onClick: (row) => void props.actions.removeRow(row) },
-]);
+const builtinRowActions = computed<CubeRowAction[]>(() => {
+  const actions: CubeRowAction[] = [
+    { key: '__view', label: '查看', icon: View, type: 'primary', onClick: (row) => void props.ctx.openView(row) },
+  ];
+  if (permissions.canUpdate.value) {
+    actions.push({ key: '__edit', label: '编辑', icon: Edit, type: 'primary', onClick: (row) => void props.ctx.openEdit(row) });
+  }
+  if (permissions.canDelete.value) {
+    actions.push({ key: '__remove', label: '删除', icon: Delete, type: 'danger', onClick: (row) => void props.actions.removeRow(row) });
+  }
+  return actions;
+});
 
 /** 某一行的完整动作列表：内置在前、业务追加在后，行级不可见的剔除 */
 const rowActionsOf = (row: Record<string, unknown>): CubeRowAction[] => [

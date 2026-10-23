@@ -24,6 +24,8 @@ export function toFieldMeta(field: BackendField): FieldMeta {
     name: field.name,
     displayName: field.displayName,
     description: field.description,
+    category: field.category,
+    visible: field.visible,
     typeName: field.typeName,
     itemType: field.itemType,
     length: field.length,
@@ -37,6 +39,12 @@ export function toFieldMeta(field: BackendField): FieldMeta {
     dataSource: field.dataSource,
     // 级联子字典：漏了这一项，表单里的 LovSelect 就拿不到 :parent，「父变过滤子」静默失效
     parentField: field.parentField,
+    view: field.view,
+    props: field.props,
+    virtual: field.virtual,
+    kind: field.kind,
+    end: field.end,
+    field: field.field,
   };
 }
 
@@ -48,11 +56,12 @@ export function backendFieldsToFormFields(fields: BackendField[]): FieldMeta[] {
 /** 后端字段 → 搜索字段（过滤主键与 Guid） */
 export function backendFieldsToSearchFields(fields: BackendField[]): FieldMeta[] {
   return fields
-    .filter((f) => !f.primaryKey && f.typeName !== 'Guid')
+    // keyword 查询项由独立关键字框处理，不再生成重复输入框
+    .filter((f) => f.kind !== 'keyword' && !f.primaryKey && f.typeName !== 'Guid')
     .map(toFieldMeta);
 }
 
-/** 后端字段 → 列表字段（保留全部，Guid/主键按只读文本渲染，是否展示由 `pageSetting.enableKey` 决定） */
+/** 后端字段 → 列表字段（保留全部，Guid/主键按只读文本渲染） */
 export function backendFieldsToListFields(fields: BackendField[]): FieldMeta[] {
   return fields.map(toFieldMeta);
 }
@@ -77,10 +86,16 @@ export function normalizeOverrideFields(
  */
 export function normalizePageMeta(meta?: CubePageMeta | null): NormalizedPageFields {
   const setting: PageSetting = meta?.setting ?? {};
+  const listFields = backendFieldsToListFields(meta?.list ?? []);
+
+  const rawSearch = meta?.search ?? [];
+  const keywordField = rawSearch.find((f) => f.kind === 'keyword');
+
   return {
     setting,
-    listFields: backendFieldsToListFields(meta?.list ?? []),
-    searchFields: backendFieldsToSearchFields(meta?.search ?? []),
+    listFields,
+    searchFields: backendFieldsToSearchFields(rawSearch),
+    keyword: keywordField ? toFieldMeta(keywordField) : undefined,
     addFields: backendFieldsToFormFields(meta?.addForm ?? []),
     editFields: backendFieldsToFormFields(meta?.editForm ?? meta?.addForm ?? []),
     detailFields: backendFieldsToFormFields(meta?.detail ?? []),
