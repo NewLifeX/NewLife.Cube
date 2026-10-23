@@ -46,6 +46,7 @@ export const FILE_EXISTS_OPTIONS = [
 const FULL_ROW_KINDS: ReadonlySet<CubeSearchKind> = new Set<CubeSearchKind>([
   'lovMulti',
   'fileExists',
+  'area',
 ]);
 
 /**

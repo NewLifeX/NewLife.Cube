@@ -44,6 +44,11 @@ const ITEM_TYPE_TO_CONTROL: Record<string, ControlType> = {
   percent: 'inputNumber',
   percentage: 'inputNumber',
   money: 'inputNumber',
+  area: 'area',
+  area1: 'area',
+  area2: 'area',
+  area3: 'area',
+  area4: 'area',
   singleselect: 'lov',
   multipleselect: 'lovMulti',
   lovtable: 'lov',
@@ -65,6 +70,12 @@ export function isPercentItemType(itemType?: string): boolean {
 /** 是否金额字段 */
 export function isMoneyItemType(itemType?: string): boolean {
   return (itemType ?? '').trim().toLowerCase() === 'money';
+}
+
+/** 地区字段层级。area1~area4 对应省/市/区/街道，未声明默认三级 */
+export function areaLevel(field: FieldMeta): number {
+  const match = /^area([1-4])$/i.exec((field.itemType ?? '').trim());
+  return match ? Number(match[1]) : 3;
 }
 
 /** 解析小写 ItemType */
@@ -138,6 +149,7 @@ export function resolveSearchControl(field: FieldMeta): SearchControlType {
   // ItemType 优先
   if (itemType.startsWith('file') || itemType.startsWith('image')) return 'fileExists';
   if (isPercentItemType(itemType) || isMoneyItemType(itemType) || parseDecimalItemType(itemType)) return 'numberRange';
+  if (itemType === 'area' || itemType === 'area1' || itemType === 'area2' || itemType === 'area3' || itemType === 'area4') return 'area';
   if (itemType === 'singleselect') return 'lov';
   if (itemType === 'multipleselect') return 'lovMulti';
   if (itemType === 'lovtable') return 'lov';

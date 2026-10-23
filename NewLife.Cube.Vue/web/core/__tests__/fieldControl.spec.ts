@@ -14,6 +14,7 @@
 import { describe, it, expect } from 'vitest';
 import type { FieldMeta } from '../types/field';
 import {
+  areaLevel,
   isMoneyItemType,
   isPercentItemType,
   parseDecimalItemType,
@@ -336,5 +337,15 @@ describe('ItemType 扩展：percent / money / decimal(p,s) / 前缀', () => {
     expect(isPercentItemType('percent')).toBe(true);
     expect(isMoneyItemType('MONEY')).toBe(true);
     expect(isMoneyItemType('decimal(18,2)')).toBe(false);
+  });
+
+  it('area1~4 映射为地区级联并解析层级', () => {
+    for (const level of [1, 2, 3, 4]) {
+      const field = f({ name: 'AreaId', typeName: 'Int32', itemType: `area${level}` });
+      expect(resolveControl(field)).toBe('area');
+      expect(resolveSearchControl(field)).toBe('area');
+      expect(areaLevel(field)).toBe(level);
+    }
+    expect(areaLevel(f({ name: 'AreaId', typeName: 'Int32', itemType: 'area' }))).toBe(3);
   });
 });

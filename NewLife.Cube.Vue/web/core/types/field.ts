@@ -30,7 +30,8 @@ export type ControlType =
   | 'tel' // 手机（带校验）
   | 'url' // 网址（带校验）
   | 'readonly' // 只读文本（Guid 等）
-  | 'select'; // 枚举 / 字典下拉（后端下发 dataSource）
+  | 'select' // 枚举 / 字典下拉（后端下发 dataSource）
+  | 'area'; // 地区级联（ItemType=area1~4）
 
 /** 动态搜索控件类型（搜索区子集） */
 export type SearchControlType =
@@ -42,7 +43,8 @@ export type SearchControlType =
   | 'lov' // 值集单选
   | 'lovMulti' // 值集多选
   | 'switch' // 布尔（是 / 否）
-  | 'fileExists'; // 附件存在性（有 / 无）
+  | 'fileExists' // 附件存在性（有 / 无）
+  | 'area'; // 地区级联（ItemType=area1~4）
 
 /** 列表单元格渲染类型 */
 export type ListControlType =

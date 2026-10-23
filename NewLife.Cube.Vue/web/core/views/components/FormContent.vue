@@ -11,6 +11,7 @@
 import { computed, defineAsyncComponent } from 'vue';
 import type { FieldMeta, ControlType } from '../../types/field';
 import {
+  areaLevel,
   enumOptionValue,
   isFullWidthControl,
   isMoneyItemType,
@@ -22,6 +23,7 @@ import {
 import { resolveFieldRenderer } from '../../engine/fieldRenderers';
 import { toPascalAndCamel } from '../../utils/url';
 import LovSelect from '../../components/LovSelect/index.vue';
+import AreaSelect from '../../components/AreaSelect/index.vue';
 import Uploader from '../../components/Uploader.vue';
 // 重型编辑器改为异步组件，仅在表单确有 json / 富文本字段时才按需加载，
 // 避免把 @wangeditor / md-editor-v3 / vanilla-jsoneditor 全部打进主表单 chunk。
@@ -279,6 +281,16 @@ function toMultiArray(val: unknown): string[] {
             value-format="HH:mm:ss"
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
+          />
+
+          <!-- 地区级联（ItemType=area1~4） -->
+          <AreaSelect
+            v-else-if="controlOf(field) === 'area'"
+            :model-value="getValue(field.name) as number | string | null"
+            :level="areaLevel(field)"
+            :disabled="props.disabled"
+            :placeholder="field.description || '请选择地区'"
+            @update:model-value="(v: number | undefined) => updateField(field.name, v)"
           />
 
           <!-- 值集单选 -->

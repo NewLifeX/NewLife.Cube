@@ -13,6 +13,8 @@
 import { computed, ref, useSlots } from 'vue';
 import { ArrowDown, ArrowUp, Filter, Search } from '@element-plus/icons-vue';
 import LovSelect from '../LovSelect/index.vue';
+import AreaSelect from '../AreaSelect/index.vue';
+import { areaLevel } from '../../utils/fieldControl';
 import { buildSearchControls, showSearchToggle } from './cubeTable.logic';
 import { resolveFieldRenderer } from '../../engine/fieldRenderers';
 import type { CubeEngineContext } from '../../engine/types';
@@ -92,6 +94,13 @@ function onRendererValue(control: CubeSearchControl, value: unknown): void {
             :model="ctx.searchModel"
             :ctx="ctx"
             @update:value="(v: unknown) => onRendererValue(c, v)"
+          />
+
+          <AreaSelect
+            v-else-if="c.kind === 'area'"
+            v-model="ctx.searchModel[c.key] as number | undefined"
+            class="cts-ctl"
+            :level="areaLevel(c.field)"
           />
 
           <el-input
