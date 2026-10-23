@@ -102,14 +102,18 @@ export function normalizePageMeta(meta?: CubePageMeta | null): NormalizedPageFie
   const rawSearch = meta?.search ?? [];
   const keywordField = rawSearch.find((f) => f.kind === 'keyword');
 
+  // 兼容服务端原始结构（form/add）与 api-core 展开后的结构（editForm/addForm）
+  const form = meta?.editForm ?? meta?.form ?? [];
+  const add = meta?.addForm ?? meta?.add ?? form;
+
   return {
     setting,
     listFields,
     searchFields: backendFieldsToSearchFields(rawSearch),
     keyword: keywordField ? toFieldMeta(keywordField) : undefined,
-    addFields: backendFieldsToFormFields(meta?.addForm ?? []),
-    editFields: backendFieldsToFormFields(meta?.editForm ?? meta?.addForm ?? []),
-    detailFields: backendFieldsToFormFields(meta?.detail ?? []),
+    addFields: backendFieldsToFormFields(add),
+    editFields: backendFieldsToFormFields(form),
+    detailFields: backendFieldsToFormFields(meta?.detail ?? form),
     ui: meta?.ui ?? {},
   };
 }

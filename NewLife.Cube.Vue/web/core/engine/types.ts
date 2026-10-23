@@ -155,6 +155,10 @@ export interface CubePageMeta {
   editForm?: BackendField[];
   detail?: BackendField[];
   search?: BackendField[];
+  /** 服务端原始编辑表单；api-core 的 expandPageMeta 会展开为 editForm */
+  form?: BackendField[];
+  /** 服务端原始新增表单；省略时回退 form */
+  add?: BackendField[];
   /** 工具栏自定义按钮（内置按钮由 setting 控制） */
   toolbar?: BackendToolbarItem[];
   /** 页面 UI 扩展。核心不解释，原样透传给前端 preset / 渲染器 */

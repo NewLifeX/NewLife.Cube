@@ -16,6 +16,8 @@ import type { FieldMeta } from '@newlifex/cube-vue/core/types/field';
 import FormContent from './components/FormContent.vue';
 import FormActions from './components/FormActions.vue';
 import FormPageHeader from './components/FormPageHeader.vue';
+import { backendFieldsToFormFields } from '../utils/fieldMeta';
+import type { BackendField } from '../engine/types';
 
 const props = withDefaults(defineProps<{ data?: any; apiPrefix?: string }>(), {});
 const route = useRoute();
@@ -32,10 +34,15 @@ async function load() {
     const objRes: any = await request({ url: apiPrefix.value, method: 'get' });
     model.value = objRes?.data ?? {};
     const fldRes: any = await request({ url: `${apiPrefix.value}/meta`, method: 'get' });
-    const meta = fldRes?.data ?? fldRes;
-    const raw: any[] = Array.isArray(meta?.editForm) ? meta.editForm : [];
+    const meta = (fldRes?.data ?? fldRes) as {
+      form?: BackendField[];
+      /** 旧服务端字段 */
+      editForm?: BackendField[];
+    };
+    // 新服务端：单对象页只有 form；旧服务端 editForm 保留兼容
+    const raw = Array.isArray(meta?.form) ? meta.form : Array.isArray(meta?.editForm) ? meta.editForm : [];
     // 过滤主键与只读字段（与列表编辑表单一致）
-    fields.value = raw.filter((f: any) => !f.primaryKey && !f.readOnly);
+    fields.value = backendFieldsToFormFields(raw);
   } catch (e) {
     console.error('[ObjectPage] load failed', e);
   } finally {
