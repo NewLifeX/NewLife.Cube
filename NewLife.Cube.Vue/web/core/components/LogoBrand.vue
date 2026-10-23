@@ -5,6 +5,7 @@
  */
 import { ref, computed } from 'vue';
 import { getConfig } from '@newlifex/cube-vue/core/configure';
+import { useSiteStore } from '@newlifex/cube-vue/core/stores/site';
 
 interface Props {
   /** 是否折叠（折叠时隐藏标题） */
@@ -19,8 +20,10 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const config = getConfig();
-const brandTitle = config.base.title || '魔方系统';
-const brandLogo = computed(() => config.base.logo);
+const siteStore = useSiteStore();
+void siteStore.load();
+const brandTitle = computed(() => siteStore.name || config.base.title || '魔方系统');
+const brandLogo = computed(() => siteStore.logo || config.base.logo);
 
 // 图片 logo 相关
 const logoImgRef = ref<HTMLImageElement | null>(null);
