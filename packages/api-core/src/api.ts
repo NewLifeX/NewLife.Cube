@@ -9,7 +9,9 @@ import type {
   ChangePasswordModel,
   MfaSetupResult,
   MfaVerifyResult,
+  DataField,
   PageMeta,
+  PageMetaData,
   UserInfo,
   LoginResult,
   LoginConfig,
@@ -277,28 +279,100 @@ export function createMenuApi(request: RequestFn) {
  * 页面元数据缓存（会话级内存缓存）
  *
  * meta 接口返回的页面配置（列表/搜索/表单字段）由控制器静态配置决定，同一会话内稳定不变。
- * 按 type 缓存后，列表页「探测 + loadFields」与表单页只需请求一次，切换/重进页面不再重复请求。
- * 仅在浏览器刷新（内存重置）或登出换用户时失效。
+ * 按 scope + type 缓存后，列表页「探测 + loadFields」与表单页只需请求一次，切换/重进页面不再重复请求。
+ * 默认会话级（0 = 不按时间过期）；仅在浏览器刷新、登出换用户、切语言/租户或显式 refresh 时失效。
  */
-const pageMetaCache = new Map<String, ApiResponse<PageMeta>>();
-
-/** 清空页面元数据缓存（登出/切换用户时调用，避免串用上一账号的配置） */
-export function clearPageMetaCache(): void {
-  pageMetaCache.clear();
+interface MetaCacheEntry {
+  /** 已展开的响应 */
+  data?: ApiResponse<PageMeta>;
+  /** 过期时间戳；0 表示会话级 */
+  expireAt: number;
+  /** 进行中的请求，用于并发去重 */
+  promise?: Promise<ApiResponse<PageMeta>>;
 }
 
-export function createPageApi(request: RequestFn, baseApiUrl?: string) {
-  return {
-    /** 获取页面元数据（setting + list/addForm/editForm/detail/search）。同一 type 会话内缓存，避免重复请求 */
-    getPage: (type: string) => {
-      const hit = pageMetaCache.get(type);
-      if (hit) return Promise.resolve(hit);
+const pageMetaCache = new Map<string, MetaCacheEntry>();
 
-      return request<PageMeta>({ url: `${type}/meta`, method: 'get' }).then((res) => {
-        // 仅缓存实体页配置（data 为对象）；非实体页返回 HTML 字符串，不缓存
-        if (res && res.data && typeof res.data !== 'string') pageMetaCache.set(type, res);
-        return res;
-      });
+/** 元数据缓存有效期（毫秒）。0 表示会话级 */
+let metaCacheTtl = 0;
+
+/** 清空页面元数据缓存（登出/切换用户/切语言/列设置保存时调用）。传入 type 时只清该页面 */
+export function clearPageMetaCache(type?: string): void {
+  if (!type) {
+    pageMetaCache.clear();
+    return;
+  }
+  for (const key of [...pageMetaCache.keys()]) {
+    if (key.endsWith(`|${type}`)) pageMetaCache.delete(key);
+  }
+}
+
+/** 设置元数据缓存有效期（毫秒）。0 表示会话级，SPA 不刷新不重复请求 */
+export function setMetaCacheTtl(ms: number): void {
+  metaCacheTtl = Math.max(0, ms);
+}
+
+/**
+ * 把 `/meta` 的各视图数组展开为消费端结构（list/addForm/editForm/detail/search）。
+ * 旧服务端直接返回数组的响应原样保留。
+ */
+export function expandPageMeta(raw: unknown): PageMeta | undefined {
+  if (!raw || typeof raw !== 'object') return raw as PageMeta | undefined;
+
+  const meta = raw as PageMetaData & { pageSetting?: PageMetaData['setting']; fields?: PageMeta['fields'] };
+  // 旧服务端兜底：旧结构没有 form 数组，原样返回
+  if (!meta.form) return meta as PageMeta;
+
+  const form = meta.form ?? [];
+  const result: PageMeta = {
+    setting: meta.setting,
+    entity: meta.entity,
+    addForm: meta.add ?? form,
+    editForm: form,
+    detail: meta.detail ?? form,
+  };
+  if (meta.list) result.list = meta.list;
+  if (meta.search) result.search = meta.search;
+  if (meta.toolbar) result.toolbar = meta.toolbar;
+
+  return result;
+}
+
+export function createPageApi(request: RequestFn, baseApiUrl?: string, metaCacheScope?: () => string) {
+  return {
+    /**
+     * 获取页面元数据（展开后为 setting + entity + list/addForm/editForm/detail/search + toolbar）。
+     * 同一 scope + type 会话内缓存；refresh=true 强制重新请求。
+     */
+    getPage: (type: string, options?: { refresh?: boolean }): Promise<ApiResponse<PageMeta>> => {
+      const key = `${metaCacheScope?.() ?? ''}|${type}`;
+      const hit = pageMetaCache.get(key);
+      if (!options?.refresh && hit) {
+        if (hit.promise) return hit.promise;
+        if (hit.data && (metaCacheTtl === 0 || Date.now() < hit.expireAt)) return Promise.resolve(hit.data);
+      }
+
+      let promise: Promise<ApiResponse<PageMeta>>;
+      promise = request<PageMetaData>({ url: `${type}/meta`, method: 'get' })
+        .then((res) => {
+          // 仅缓存实体页配置（data 为对象）；非实体页返回 HTML 字符串，不缓存
+          if (!res || !res.data || typeof res.data === 'string') {
+            pageMetaCache.delete(key);
+            return res as unknown as ApiResponse<PageMeta>;
+          }
+
+          const expanded: ApiResponse<PageMeta> = { ...res, data: expandPageMeta(res.data) as PageMeta };
+          pageMetaCache.set(key, { data: expanded, expireAt: metaCacheTtl > 0 ? Date.now() + metaCacheTtl : 0 });
+          return expanded;
+        })
+        .catch((error) => {
+          const current = pageMetaCache.get(key);
+          if (current?.promise === promise) pageMetaCache.delete(key);
+          throw error;
+        });
+
+      pageMetaCache.set(key, { data: hit?.data, expireAt: hit?.expireAt ?? 0, promise });
+      return promise;
     },
 
     /** 列表查询（分页） */

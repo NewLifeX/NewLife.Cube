@@ -96,7 +96,7 @@ export interface DataField {
   readOnly?: boolean;
   /** 是否必填 */
   required?: boolean;
-  /** 是否可见 */
+  /** 是否可见。列表字段为 false 时仍作为可用列下发，由表格设置按需打开 */
   visible?: boolean;
   /** 映射字段名 */
   mapField?: string;
@@ -122,6 +122,18 @@ export interface DataField {
   lovCode?: string;
   /** 是否多选（multipleSelect 为 true；亦可由前端在映射时推导） */
   multiple?: boolean;
+  /** 渲染器名。对应控制器 View/ItemView/GroupView，前端按名注册 */
+  view?: string;
+  /** 扩展属性。核心不解释，透传给渲染器 */
+  props?: Record<string, unknown>;
+  /** 是否非实体列（链接列、虚拟查询项） */
+  virtual?: boolean;
+  /** 搜索项类型。keyword 统一由关键字框处理，range 表示区间 */
+  kind?: 'keyword' | 'range';
+  /** 区间结束参数名（kind=range） */
+  end?: string;
+  /** 区间对应的实体字段名（kind=range） */
+  field?: string;
 }
 
 /** 页面设置（meta.data.setting） */
@@ -130,7 +142,6 @@ export interface PageSetting {
   enableNavbar?: boolean;
   enableToolbar?: boolean;
   enableAdd?: boolean;
-  enableKey?: boolean;
   enableSelect?: boolean;
   enableFooter?: boolean;
   isReadOnly?: boolean;
@@ -141,6 +152,73 @@ export interface PageSetting {
   develop?: boolean;
   /** 当前用户是否系统管理员。开发功能仅系统管理员可用 */
   isSystem?: boolean;
+  /** 当前页面菜单编号，用于和用户权限串匹配 */
+  menuId?: number;
+  /** 页面动作所需权限位。有效权限由前端结合用户信息计算 */
+  requiredPermissions?: RequiredPermissions;
+}
+
+/** 页面动作所需权限位 */
+export interface RequiredPermissions {
+  /** 新增 */
+  add?: number;
+  /** 编辑 */
+  update?: number;
+  /** 删除 */
+  delete?: number;
+}
+
+/** 实体标识（meta.data.entity） */
+export interface EntityMeta {
+  /** 实体类型名 */
+  name?: string;
+  /** 实体显示名 */
+  displayName?: string;
+  /** 主键字段名 */
+  primaryKey?: string;
+}
+
+/** 工具栏按钮类型 */
+export type ToolbarKind = 'link' | 'request' | 'upload' | 'custom';
+
+/**
+ * 工具栏自定义按钮（meta.data.toolbar[]）。
+ *
+ * 内置按钮（添加/导入/导出/批量删除/刷新）由 `setting` 控制，本类型只描述后端声明的自定义按钮。
+ * 对齐 MVC 的 `_List_Toolbar_Custom` / `_List_Toolbar_Batch`：
+ * `url`/`action` 对应 `data-url`，`include` 对应 `data-fields`，`method` 对应 `data-method`。
+ */
+export interface ToolbarItem {
+  /** 唯一名称 */
+  name: string;
+  /** 显示名 */
+  displayName?: string;
+  /** 图标名 */
+  icon?: string;
+  /** 按钮风格 primary/danger/warning/success/info */
+  type?: string;
+  /** 按钮类型 */
+  kind: ToolbarKind;
+  /** 跳转地址（link） */
+  url?: string;
+  /** 控制器动作名（request/upload），前端拼接当前控制器地址 */
+  action?: string;
+  /** 请求方法，缺省 GET */
+  method?: string;
+  /** 提交字段：keys 表示选中行主键，其它名字取当前查询参数 */
+  include?: string[];
+  /** 是否携带当前查询参数（link） */
+  appendQuery?: boolean;
+  /** 链接目标 _blank/_self */
+  target?: string;
+  /** 上传文件类型 */
+  accept?: string;
+  /** 二次确认文案 */
+  confirm?: string;
+  /** 是否要求先选中数据 */
+  requiresSelection?: boolean;
+  /** 前端渲染器名（custom） */
+  renderer?: string;
 }
 
 /** meta 聚合元数据 */
@@ -149,15 +227,17 @@ export interface PageMeta {
   setting?: PageSetting;
   /** 兼容旧结构 */
   pageSetting?: PageSetting;
+  /** 实体标识 */
+  entity?: EntityMeta;
 
-  /** 新结构：扁平字段集合 */
+  /** 列表字段 */
   list?: DataField[];
-  /** 全部可用列表字段（应用用户列配置前，供列设置面板） */
-  allList?: DataField[];
   addForm?: DataField[];
   editForm?: DataField[];
   detail?: DataField[];
   search?: DataField[];
+  /** 工具栏自定义按钮（内置按钮由 setting 控制） */
+  toolbar?: ToolbarItem[];
 
   /** 兼容旧结构：fields 嵌套 */
   fields?: {
@@ -169,6 +249,26 @@ export interface PageMeta {
     };
     search?: DataField[];
   };
+}
+
+/** `/meta` 响应数据：各视图直接是字段数组，消费端零合并 */
+export interface PageMetaData {
+  /** 实体标识 */
+  entity?: EntityMeta;
+  /** 页面设置 */
+  setting?: PageSetting;
+  /** 列表字段 */
+  list?: DataField[];
+  /** 表单字段（编辑表单） */
+  form?: DataField[];
+  /** 新增表单；与 form 相同则省略 */
+  add?: DataField[];
+  /** 详情视图；与 form 相同则省略 */
+  detail?: DataField[];
+  /** 搜索区查询项 */
+  search?: DataField[];
+  /** 工具栏自定义按钮 */
+  toolbar?: ToolbarItem[];
 }
 
 /** 字段视图类型枚举（保留给需要单场景字段的调用方；实体元数据统一由 meta 返回） */

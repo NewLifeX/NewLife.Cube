@@ -43,8 +43,9 @@ class LocalTokenStorage implements TokenStorage {
  */
 export class TokenManager {
   private storage: TokenStorage;
+  private onChange?: () => void;
 
-  constructor(storage?: TokenStorage | 'cookie' | 'localStorage') {
+  constructor(storage?: TokenStorage | 'cookie' | 'localStorage', onChange?: () => void) {
     if (!storage || storage === 'cookie') {
       this.storage = new CookieTokenStorage();
     } else if (storage === 'localStorage') {
@@ -52,16 +53,23 @@ export class TokenManager {
     } else {
       this.storage = storage;
     }
+    this.onChange = onChange;
   }
 
   /** 获取当前 Token */
   getToken(): string | null { return this.storage.getToken(); }
 
   /** 设置 Token（expireIn 供持久化存储设置过期时间） */
-  setToken(token: string, expireIn?: number): void { this.storage.setToken(token, expireIn); }
+  setToken(token: string, expireIn?: number): void {
+    this.storage.setToken(token, expireIn);
+    this.onChange?.();
+  }
 
   /** 清除 Token */
-  clearToken(): void { this.storage.clearToken(); }
+  clearToken(): void {
+    this.storage.clearToken();
+    this.onChange?.();
+  }
 }
 
 /**

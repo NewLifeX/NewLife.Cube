@@ -1,13 +1,15 @@
 import type { AxiosInstance } from 'axios';
 import { createApiClient, createRequest, type ApiClientOptions } from './client';
 import { TokenManager, type TokenStorage } from './token';
-import { createUserApi, createMenuApi, createPageApi, createConfigApi } from './api';
+import { createUserApi, createMenuApi, createPageApi, createConfigApi, clearPageMetaCache } from './api';
 import { createSiteApi } from './site';
 import { getServiceBaseUrl } from './service-path';
 
 export interface CubeApiOptions extends ApiClientOptions {
   /** Token 存储方式，默认 cookie */
   tokenStorage?: TokenStorage | 'cookie' | 'localStorage';
+  /** 页面元数据缓存作用域（用户 + 语言 + 租户）。缺省按 Token 隔离，避免换用户后复用上一账号的元数据 */
+  metaCacheScope?: () => string;
 }
 
 export interface CubeApi {
@@ -42,7 +44,9 @@ export interface CubeApi {
  */
 export function createCubeApi(options: CubeApiOptions = {}): CubeApi {
   const { tokenStorage, ...clientOpts } = options;
-  const tokenManager = new TokenManager(tokenStorage);
+  // Token 变更（登录/登出/401）时清空 meta 缓存，避免串用上一账号的字段配置与权限标志
+  const tokenManager = new TokenManager(tokenStorage, () => clearPageMetaCache());
+  const metaCacheScope = options.metaCacheScope ?? (() => tokenManager.getToken() ?? '');
 
   // 实体/页面接口：带 baseURL（http://host 或 http://host/api，对应后端实体路由 /api/{area}/...）
   const entityClient = createApiClient({ ...clientOpts, tokenManager });
@@ -63,7 +67,7 @@ export function createCubeApi(options: CubeApiOptions = {}): CubeApi {
     user: createUserApi(serviceRequest),
     menu: createMenuApi(serviceRequest),
     // 导出下载 URL 不走 axios，需直接拼完整地址；createPageApi 内部经 resolveRequestUrl 统一补 /api
-    page: createPageApi(request, options.baseURL),
+    page: createPageApi(request, options.baseURL, metaCacheScope),
     config: createConfigApi(serviceRequest),
     site: createSiteApi(serviceRequest),
   };
