@@ -52,6 +52,8 @@ export interface PageState {
   toolbar: ToolbarItem[];
   /** 页面 UI 扩展（meta.ui，核心不解释，透传给 preset 与渲染器） */
   ui: Record<string, unknown>;
+  /** 当前页面生效的呈现配置（未注册为 null） */
+  preset: PagePreset | null;
   /** 是否允许新增（来自 pageSetting 与菜单权限） */
   canAdd: boolean;
   /** 是否允许编辑（来自菜单权限） */
@@ -68,6 +70,141 @@ export interface PageState {
 
 /** 状态变更回调 */
 export type PageStateUpdater = (partial: Partial<PageState>) => void;
+
+/** 单个字段的呈现补丁（preset，纯前端；不改字段类型与提交语义） */
+export interface FieldPresetPatch {
+  /** 表头文案（写回 header） */
+  label?: string;
+  /** 列宽（像素或 auto；由皮肤读取） */
+  width?: number | 'auto';
+  /** 对齐（left/center/right） */
+  align?: 'left' | 'center' | 'right';
+  /** 固定列（由皮肤读取） */
+  fixed?: 'left' | 'right';
+  /** 渲染器名（写回 view） */
+  renderer?: string;
+  /** 是否隐藏（写回 visible=false） */
+  hidden?: boolean;
+  /** 行/模型级显示条件（由皮肤读取） */
+  visibleWhen?: (model: Record<string, unknown>) => boolean;
+  /** 模型级必填条件（由皮肤读取） */
+  requiredWhen?: (model: Record<string, unknown>) => boolean;
+}
+
+/** 字段集合补丁：移除 → 补丁 → 排序 → 追加 */
+export interface FieldPresetSpec {
+  /** 移除字段名 */
+  remove?: string[];
+  /** 字段补丁，键为字段名（大小写不敏感） */
+  patch?: Record<string, FieldPresetPatch>;
+  /** 追加字段（名称重复时跳过） */
+  append?: DataField[];
+  /** 列序；未列出的字段保持原序排在后面 */
+  order?: string[];
+}
+
+/** 页面呈现配置（对应呈现架构 §6.6 / F1） */
+export interface PagePreset {
+  /** 页面设置覆盖 */
+  setting?: Partial<PageSetting>;
+  /** 列表区 */
+  list?: FieldPresetSpec;
+  /** 表单区（新增/编辑共用） */
+  form?: FieldPresetSpec & {
+    /** 弹窗/表单列数 */
+    columns?: 1 | 2 | 3;
+    /** 分组方式 */
+    groupBy?: 'auto' | 'category' | 'tabs' | 'flat';
+  };
+  /** 搜索区 */
+  search?: { remove?: string[]; append?: DataField[] };
+}
+
+/**
+ * 应用字段集合补丁：移除 → 补丁 → 排序 → 追加。
+ *
+ * 只改呈现字段（header/textAlign/view/visible），不改 typeName、dataSource 等提交语义。
+ *
+ * @param fields 原始字段数组
+ * @param spec 补丁；为空时原样返回
+ * @returns 应用补丁后的新数组
+ */
+export function applyFieldPreset(fields: DataField[], spec?: FieldPresetSpec | null): DataField[] {
+  if (!spec) return fields;
+
+  const lower = (s: string) => s.toLowerCase();
+  const removed = new Set((spec.remove ?? []).map(lower));
+  const patches = new Map(Object.entries(spec.patch ?? {}).map(([k, v]) => [lower(k), v]));
+
+  let result = fields
+    .filter((f) => !removed.has(lower(f.name)))
+    .map((f) => {
+      const patch = patches.get(lower(f.name));
+      if (!patch) return f;
+      const next: DataField = { ...f };
+      if (patch.label !== undefined) next.header = patch.label;
+      if (patch.align !== undefined) next.textAlign = patch.align;
+      if (patch.renderer !== undefined) next.view = patch.renderer;
+      if (patch.hidden !== undefined) next.visible = !patch.hidden;
+      return next;
+    });
+
+  if (spec.order?.length) {
+    const map = new Map(result.map((f) => [lower(f.name), f]));
+    const ordered: DataField[] = [];
+    for (const name of spec.order) {
+      const field = map.get(lower(name));
+      if (!field) continue;
+      ordered.push(field);
+      map.delete(lower(name));
+    }
+    for (const field of result) {
+      if (map.has(lower(field.name))) ordered.push(field);
+    }
+    result = ordered;
+  }
+
+  if (spec.append?.length) {
+    const exists = new Set(result.map((f) => lower(f.name)));
+    for (const field of spec.append) {
+      if (!field?.name || exists.has(lower(field.name))) continue;
+      result.push({ ...field });
+      exists.add(lower(field.name));
+    }
+  }
+
+  return result;
+}
+
+/** preset 注册表。键为实体路径前缀（大小写不敏感） */
+const pagePresets = new Map<string, PagePreset>();
+
+/**
+ * 注册页面呈现配置（同一路径后注册覆盖先注册）
+ *
+ * @param type 实体路径前缀（如 `/Admin/User`）
+ * @param preset 页面呈现配置
+ */
+export function registerPagePreset(type: string, preset: PagePreset): void {
+  if (!type) return;
+  pagePresets.set(type.toLowerCase(), preset);
+}
+
+/**
+ * 取页面呈现配置
+ *
+ * @param type 实体路径前缀
+ * @returns 页面呈现配置；未注册返回 null
+ */
+export function getPagePreset(type?: string | null): PagePreset | null {
+  if (!type) return null;
+  return pagePresets.get(type.toLowerCase()) ?? null;
+}
+
+/** 清空 preset 注册表（测试用） */
+export function clearPagePresets(): void {
+  pagePresets.clear();
+}
 
 /** 魔方动作权限位（对齐 XCode.Membership.PermissionFlags） */
 export const PermissionFlags = {
@@ -146,6 +283,8 @@ export interface PageLogicOptions {
   userPermission?: string | (() => string | undefined);
   /** 是否系统管理员。true 时编辑/删除等动作直通（对齐服务端系统角色） */
   isSystemAdmin?: boolean | (() => boolean);
+  /** 页面呈现配置；缺省按实体路径从注册表查找 */
+  preset?: PagePreset | null;
 }
 
 // ======================== 核心逻辑 ========================
@@ -160,6 +299,7 @@ export class PageLogic {
   private getMenuPermissions: () => Record<string, string>;
   private getUserPermission: () => string | undefined;
   private getIsSystemAdmin: () => boolean;
+  private explicitPreset?: PagePreset | null;
 
   constructor(options: PageLogicOptions) {
     this.api = options.api;
@@ -175,6 +315,7 @@ export class PageLogic {
     const sa = options.isSystemAdmin;
     this.getIsSystemAdmin =
       typeof sa === 'function' ? (sa as () => boolean) : () => sa === true;
+    this.explicitPreset = options.preset;
     this.state = {
       listFields: [],
       searchFields: [],
@@ -192,6 +333,7 @@ export class PageLogic {
       entity: null,
       toolbar: [],
       ui: {},
+      preset: null,
       canAdd: true,
       canEdit: true,
       canDelete: true,
@@ -211,11 +353,16 @@ export class PageLogic {
     const pageRes = await this.api.page.getPage(type);
     const pageMeta = pageRes.data ?? {};
 
-    const listData = pageMeta.list ?? pageMeta.fields?.list ?? [];
-    const addData = pageMeta.addForm ?? pageMeta.fields?.form?.addForm ?? [];
-    const editData = pageMeta.editForm ?? pageMeta.fields?.form?.editForm ?? [];
-    const detailData = pageMeta.detail ?? pageMeta.fields?.form?.detail ?? [];
-    const searchData = pageMeta.search ?? pageMeta.fields?.search ?? [];
+    // 页面呈现配置：显式传入优先，否则按实体路径查注册表
+    const preset = this.explicitPreset !== undefined ? this.explicitPreset : getPagePreset(type);
+    const listData = applyFieldPreset(pageMeta.list ?? pageMeta.fields?.list ?? [], preset?.list);
+    const addData = applyFieldPreset(pageMeta.addForm ?? pageMeta.fields?.form?.addForm ?? [], preset?.form);
+    const editData = applyFieldPreset(pageMeta.editForm ?? pageMeta.fields?.form?.editForm ?? [], preset?.form);
+    const detailData = applyFieldPreset(pageMeta.detail ?? pageMeta.fields?.form?.detail ?? [], preset?.form);
+    const searchData = applyFieldPreset(
+      pageMeta.search ?? pageMeta.fields?.search ?? [],
+      preset?.search ? { remove: preset.search.remove, append: preset.search.append } : null,
+    );
 
     const listFields = resolveWidgets(listData);
     const searchFields = resolveWidgets(searchData);
@@ -224,7 +371,8 @@ export class PageLogic {
     const detailFields = resolveWidgets(detailData);
 
     // 实体标识、页面设置与扩展块（/meta 视图自描述）
-    const pageSetting = pageMeta.setting ?? pageMeta.pageSetting ?? null;
+    const baseSetting = pageMeta.setting ?? pageMeta.pageSetting ?? null;
+    const pageSetting = preset?.setting ? { ...(baseSetting ?? {}), ...preset.setting } : baseSetting;
     const entity = pageMeta.entity ?? null;
     const toolbar = pageMeta.toolbar ?? [];
     const ui = pageMeta.ui ?? {};
@@ -281,6 +429,7 @@ export class PageLogic {
     this.state.entity = entity;
     this.state.toolbar = toolbar;
     this.state.ui = ui;
+    this.state.preset = preset;
     this.state.canAdd = canAdd;
     this.state.canEdit = canEdit;
     this.state.canDelete = canDelete;
@@ -299,6 +448,7 @@ export class PageLogic {
       entity,
       toolbar,
       ui,
+      preset,
       canAdd,
       canEdit,
       canDelete,

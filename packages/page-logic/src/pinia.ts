@@ -14,7 +14,7 @@
 
 import { ref, reactive, type Ref } from 'vue';
 import type { CubeApi, ApiResponse, PageSetting, EntityMeta, ToolbarItem } from '@newlifex/api-core';
-import { PageLogic, type FieldMapping, type Pagination } from './index';
+import { PageLogic, type FieldMapping, type PagePreset, type Pagination } from './index';
 
 export interface PiniaPageLogic {
   listFields: Ref<FieldMapping[]>;
@@ -36,6 +36,8 @@ export interface PiniaPageLogic {
   toolbar: Ref<ToolbarItem[]>;
   /** 页面 UI 扩展（meta.ui） */
   ui: Ref<Record<string, unknown>>;
+  /** 页面呈现配置 */
+  preset: Ref<PagePreset | null>;
   canAdd: Ref<boolean>;
   canEdit: Ref<boolean>;
   canDelete: Ref<boolean>;
@@ -93,6 +95,7 @@ export function usePageLogic(
   const entity = ref<EntityMeta | null>(null);
   const toolbar = ref<ToolbarItem[]>([]);
   const ui = ref<Record<string, unknown>>({});
+  const preset = ref<PagePreset | null>(null);
   const canAdd = ref(true);
   const canEdit = ref(true);
   const canDelete = ref(true);
@@ -119,6 +122,7 @@ export function usePageLogic(
       if (partial.entity !== undefined) entity.value = partial.entity;
       if (partial.toolbar !== undefined) toolbar.value = partial.toolbar;
       if (partial.ui !== undefined) ui.value = partial.ui;
+      if (partial.preset !== undefined) preset.value = partial.preset;
       if (partial.canAdd !== undefined) canAdd.value = partial.canAdd;
       if (partial.canEdit !== undefined) canEdit.value = partial.canEdit;
       if (partial.canDelete !== undefined) canDelete.value = partial.canDelete;
@@ -149,6 +153,7 @@ export function usePageLogic(
     entity,
     toolbar,
     ui,
+    preset,
     canAdd,
     canEdit,
     canDelete,

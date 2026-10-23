@@ -81,6 +81,7 @@ export function createPageStore(
       entity: null,
       toolbar: [],
       ui: {},
+      preset: null,
       canAdd: true,
       canEdit: true,
       canDelete: true,
