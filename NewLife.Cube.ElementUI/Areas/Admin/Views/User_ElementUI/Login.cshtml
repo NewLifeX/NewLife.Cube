@@ -2,6 +2,7 @@
 @using NewLife;
 @using NewLife.Common;
 @using NewLife.Cube.Web;
+@using NewLife.Serialization;
 @{
     Layout = null;
     ViewBag.Title = "登录";
@@ -221,16 +222,16 @@
                 smsCountdown: 0,
                 mailCountdown: 0,
                 error: '',
-                // 配置（从接口加载）
-                allowLogin: true,
-                allowRegister: false,
-                enableSms: false,
-                enableMail: false,
-                providers: [],
+                // 登录能力由服务端 LoginViewModel 注入，OAuth 列表已按租户与可见性过滤
+                allowLogin: @(Model.AllowLogin ? "true" : "false"),
+                allowRegister: @(Model.AllowRegister ? "true" : "false"),
+                enableSms: @(Model.EnableSms ? "true" : "false"),
+                enableMail: @(Model.EnableMail ? "true" : "false"),
+                providers: @Html.Raw((Model.OAuthItems ?? []).Select(e => new { name = e.Name, nickName = e.NickName, logo = e.Logo }).ToJson()),
                 logoSrc: '@(loginLogo.IsNullOrEmpty() ? "" : loginLogo)',
                 displayName: '@SysConfig.Current.DisplayName',
                 loginTip: '@config.LoginTip',
-                copyright: '',
+                copyright: '@config.GetCopyright()',
                 registration: '@config.Registration',
                 returnUrl: new URLSearchParams(window.location.search).get('redirect') || '',
                 loginform: {
@@ -257,29 +258,11 @@
                 hasTabs() { return (this.allowLogin !== false ? 1 : 0) + (this.enableSms ? 1 : 0) + (this.enableMail ? 1 : 0) > 1; }
             },
             created() {
-                Promise.all([
-                    axios.get('/Auth/LoginConfig'),
-                    axios.get('/Cube/SiteInfo')
-                ]).then(([configRes, siteRes]) => {
-                    if (configRes.data && configRes.data.data) {
-                        var c = configRes.data.data;
-                        this.allowLogin = c.allowLogin !== false;
-                        this.allowRegister = !!c.allowRegister;
-                        this.enableSms = !!c.enableSms;
-                        this.enableMail = !!c.enableMail;
-                        this.providers = c.providers || [];
-                        if (!this.allowLogin) {
-                            if (this.enableSms) this.activeTab = 'sms';
-                            else if (this.enableMail) this.activeTab = 'email';
-                        }
-                    }
-                    if (siteRes.data && siteRes.data.data) {
-                        var s = siteRes.data.data;
-                        this.copyright = s.copyright || '';
-                        if (s.loginLogo) this.logoSrc = s.loginLogo;
-                        if (s.displayName) this.displayName = s.displayName;
-                    }
-                }).catch(() => {});
+                // 密码登录被禁用时自动切到第一个可用方式
+                if (!this.allowLogin) {
+                    if (this.enableSms) this.activeTab = 'sms';
+                    else if (this.enableMail) this.activeTab = 'email';
+                }
             },
             methods: {
                 submitPassword() {
