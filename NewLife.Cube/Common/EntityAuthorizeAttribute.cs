@@ -35,7 +35,8 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
     /// <param name="permission"></param>
     public EntityAuthorizeAttribute(PermissionFlags permission)
     {
-        if (permission <= PermissionFlags.None) throw new ArgumentNullException(nameof(permission));
+        // None 表示只需登录，All(-1) 为合法的全权限组合；仅拒绝未知负值
+        if (permission < PermissionFlags.None && permission != PermissionFlags.All) throw new ArgumentNullException(nameof(permission));
 
         Permission = permission;
         Permissions = [permission];
@@ -121,7 +122,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         if (user == null) return false;
 
         // 未指定权限位时，只需登录即可
-        if (Permissions.All(e => e <= PermissionFlags.None)) return true;
+        if (Permissions.All(e => e == PermissionFlags.None)) return true;
 
         // 判断权限（多个授权项之间是“或”的关系）
         if (menu != null)

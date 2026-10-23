@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using NewLife.Cube.Entity;
 using XCode.Membership;
 
@@ -139,6 +140,8 @@ public class LoginConfigModel
     };
 
     /// <summary>OAuth 提供商列表。仅返回当前租户可见的提供商</summary>
+    /// <remarks>显式指定 oauth，避免驼峰策略把 OAuth 转成 oAuth 而与前端契约不一致</remarks>
+    [JsonPropertyName("oauth")]
     public List<OAuthProviderModel> OAuth =>
         OAuthConfig.GetVisibles(_tenant != null ? _tenant.Id : TenantContext.CurrentId).Select(s => new OAuthProviderModel
         {
