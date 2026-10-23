@@ -135,7 +135,10 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     #endregion
 
     #region 列表字段和表单字段
-    /// <summary>获取页面元数据。包含页面设置以及列表/表单/搜索字段</summary>
+    /// <summary>是否启用主时间字段区间查询。默认启用，特殊页面或测试可重写关闭</summary>
+    protected virtual Boolean EnableTimeRange => true;
+
+    /// <summary>获取页面元数据。视图自描述，list/form/add/detail/search 各自输出完整字段数组</summary>
     /// <remarks>
     /// 默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 <see cref="AllowAnonymousAttribute"/>。
     /// </remarks>
@@ -152,7 +155,6 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             PageSetting.EnableNavbar,
             PageSetting.EnableToolbar,
             PageSetting.EnableAdd,
-            PageSetting.EnableKey,
             PageSetting.EnableSelect,
             PageSetting.EnableFooter,
             PageSetting.IsReadOnly,
@@ -163,29 +165,39 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             develop = SysConfig.Current.Develop,
             // 当前用户是否系统管理员。开发功能仅系统管理员可用
             isSystem = user?.Roles.Any(e => e.IsSystem) == true,
+            // 当前页面菜单与动作所需权限位。有效权限由前端结合用户信息计算，避免写入可缓存的 meta
+            menuId = Menu?.ID,
+            requiredPermissions = new
+            {
+                add = (Int32)PermissionFlags.Insert,
+                update = (Int32)PermissionFlags.Update,
+                delete = (Int32)PermissionFlags.Delete,
+            },
         };
 
+        // 列表字段直接平铺下发；显隐与顺序由前端 localStorage 保存
         var list = OnGetFields(ViewKinds.List, null);
-        // 全部可用列表字段（应用用户列配置前，供前端列设置面板使用）
-        var allList = OnGetFields(ViewKinds.List, null);
-        var addForm = OnGetFields(ViewKinds.AddForm, null);
-        var editForm = OnGetFields(ViewKinds.EditForm, null);
+        var form = OnGetFields(ViewKinds.EditForm, null);
+        var add = OnGetFields(ViewKinds.AddForm, null);
         var detail = OnGetFields(ViewKinds.Detail, null);
         var search = OnGetFields(ViewKinds.Search, null);
 
-        // 应用当前用户列配置：重排列顺序、标记隐藏字段 Visible=false（React 皮肤列设置）
-        ApplyColumnConfig(list);
-
-        var data = new
+        var data = new Dictionary<String, Object>
         {
-            setting,
-            list,
-            allList,
-            addForm,
-            editForm,
-            detail,
-            search,
+            ["entity"] = PageMetaBuilder.BuildEntity(Factory.EntityType, Factory),
+            ["setting"] = setting,
+            ["list"] = PageMetaBuilder.BuildFields(list),
+            ["form"] = PageMetaBuilder.BuildFields(form),
+            ["search"] = PageMetaBuilder.BuildSearch(search, EnableTimeRange ? Factory : null),
         };
+
+        // add/detail 与 form 完全一致时省略，消费端回退 form
+        if (!PageMetaBuilder.SameFields(form, add))
+            data["add"] = PageMetaBuilder.BuildFields(add);
+        if (!PageMetaBuilder.SameFields(form, detail))
+            data["detail"] = PageMetaBuilder.BuildFields(detail);
+
+        if (CheckNotModified(data)) return null;
 
         return new ApiResponse<Object>
         {
@@ -238,7 +250,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             list.AddRange(newList);
         }
 
-        // 隐藏列：listHidden 字段名数组 → 从列表移除（前端不再渲染；allList 仍含全部供列设置面板）。
+        // 隐藏列：listHidden 字段名数组 → 从列表移除（前端列设置由 localStorage 维护）。
         // 注意不能仅标记 Visible=false——DataField 序列化只输出 visible=true，false 不发到前端无法区分
         if (cfg.TryGetValue("listHidden", out var hiddenObj) && hiddenObj is System.Collections.IList hidden)
         {

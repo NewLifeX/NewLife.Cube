@@ -64,8 +64,8 @@ public abstract class ObjectController<TObject> : ControllerBaseX
         return obj;
     }
 
-    /// <summary>获取单对象页面的元数据，包含页面设置与编辑表单字段</summary>
-    /// <remarks>单对象页（配置页、设置页）只有编辑表单，因此只返回 setting 与 editForm；需要匿名访问时在子类重写并标注 <see cref="AllowAnonymousAttribute"/></remarks>
+    /// <summary>获取单对象页面的元数据。entity + setting + form 自描述字段数组</summary>
+    /// <remarks>单对象页（配置页、设置页）只有编辑表单，因此只返回 setting 与 form；需要匿名访问时在子类重写并标注 <see cref="AllowAnonymousAttribute"/></remarks>
     /// <returns></returns>
     [EntityAuthorize]
     [HttpGet("/api/[area]/[controller]/meta")]
@@ -77,20 +77,29 @@ public abstract class ObjectController<TObject> : ControllerBaseX
             PageSetting.EnableNavbar,
             PageSetting.EnableToolbar,
             PageSetting.EnableAdd,
-            PageSetting.EnableKey,
             PageSetting.EnableSelect,
             PageSetting.EnableFooter,
             PageSetting.IsReadOnly,
             PageSetting.EnableTableDoubleClick,
             PageSetting.OrderByKey,
             PageSetting.DoubleDelete,
+            menuId = Menu?.ID,
+            requiredPermissions = new
+            {
+                add = (Int32)PermissionFlags.Insert,
+                update = (Int32)PermissionFlags.Update,
+                delete = (Int32)PermissionFlags.Delete,
+            },
         };
 
-        var data = new
+        var data = new Dictionary<String, Object>
         {
-            setting,
-            editForm = OnGetFields(ViewKinds.EditForm),
+            ["entity"] = PageMetaBuilder.BuildEntity(typeof(TObject), null),
+            ["setting"] = setting,
+            ["form"] = PageMetaBuilder.BuildFields(OnGetFields(ViewKinds.EditForm)),
         };
+
+        if (CheckNotModified(data)) return null;
 
         return new ApiResponse<Object>
         {
