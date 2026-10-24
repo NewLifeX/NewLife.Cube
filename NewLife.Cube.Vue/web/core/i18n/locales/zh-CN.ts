@@ -160,6 +160,7 @@ export default {
   // 通用（跨页面复用）
   'common.id': '编号',
   'common.name': '名称',
+  'common.status': '状态',
   'common.sort': '排序',
   'common.remark': '备注',
   'common.enable': '启用',
@@ -358,6 +359,28 @@ export default {
   'grid.unit': '条',
   'grid.total': '共 {total} {unit}',
   'grid.pageSizeOption': '{size} {unit}/页',
+  'grid.chart': '图表',
+  'grid.tableView': '表格视图',
+  'grid.cardView': '卡片视图',
+
+  // 工作台首页
+  'home.greetingDawn': '凌晨好',
+  'home.greetingMorning': '早上好',
+  'home.greetingNoon': '中午好',
+  'home.greetingAfternoon': '下午好',
+  'home.greetingEvening': '晚上好',
+  'home.loadFailed': '工作台加载失败',
+  'home.retry': '重试',
+  'home.empty': '暂无工作台数据',
+
+  // 密码规则
+  'password.minLength': '至少 {min} 位',
+  'password.lengthRange': '长度为 {min}-{max} 位',
+  'password.digit': '至少包含 1 个数字',
+  'password.lower': '至少包含 1 个小写字母',
+  'password.upper': '至少包含 1 个大写字母',
+  'password.special': '至少包含 1 个特殊字符',
+  'password.complexity': '符合密码安全规则',
 
   // 安全中心
   'security.title': '安全中心',

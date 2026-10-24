@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Grid, List, Upload, DataLine } from '@element-plus/icons-vue';
+
+const { t } = useI18n();
 
 const emit = defineEmits<{
   new: [];
@@ -30,7 +33,7 @@ function toggleView() {
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
         </template>
-        新建
+        {{ t('button.add') }}
       </el-button>
       <el-button class="lt-btn lt-btn--secondary" @click="emit('delete')">
         <template #icon>
@@ -39,7 +42,7 @@ function toggleView() {
             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
           </svg>
         </template>
-        批量删除
+        {{ t('grid.batchDelete') }}
       </el-button>
       <el-button class="lt-btn lt-btn--secondary" @click="emit('export')">
         <template #icon>
@@ -49,19 +52,19 @@ function toggleView() {
             <line x1="12" y1="15" x2="12" y2="3"></line>
           </svg>
         </template>
-        导出
+        {{ t('grid.export') }}
       </el-button>
       <el-button class="lt-btn lt-btn--secondary" @click="emit('import')">
         <template #icon>
           <Upload />
         </template>
-        导入
+        {{ t('grid.import') }}
       </el-button>
       <el-button class="lt-btn lt-btn--secondary" @click="emit('chart')">
         <template #icon>
           <DataLine />
         </template>
-        图表
+        {{ t('grid.chart') }}
       </el-button>
     </div>
     <div class="lt-right">
@@ -70,7 +73,7 @@ function toggleView() {
           class="lt-view-btn"
           :class="{ active: viewMode === 'table' }"
           @click="toggleView"
-          title="表格视图"
+          :title="t('grid.tableView')"
         >
           <Grid />
         </button>
@@ -78,7 +81,7 @@ function toggleView() {
           class="lt-view-btn"
           :class="{ active: viewMode === 'card' }"
           @click="toggleView"
-          title="卡片视图"
+          :title="t('grid.cardView')"
         >
           <List />
         </button>
@@ -91,7 +94,7 @@ function toggleView() {
             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
           </svg>
         </template>
-        刷新
+        {{ t('grid.refresh') }}
       </el-button>
     </div>
   </div>

@@ -1,4 +1,8 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue';
+import i18n from '../i18n';
+
+/** 规则文案跟随语言：在 computed 内调用，locale 变化时会重新求值 */
+const t = (key: string, named: Record<string, unknown>): string => i18n.global.t(key, named);
 
 /**
  * 密码规则项（用于实时提示）
@@ -33,7 +37,7 @@ const PASSWORD_FALLBACK_MIN_LENGTH = 5;
 function buildFallbackRules(): PasswordRuleDef[] {
   return [
     {
-      label: `至少 ${PASSWORD_FALLBACK_MIN_LENGTH} 位`,
+      label: t('password.minLength', { min: PASSWORD_FALLBACK_MIN_LENGTH }),
       test: (p) => p.length >= PASSWORD_FALLBACK_MIN_LENGTH,
     },
   ];
@@ -61,19 +65,19 @@ export function parsePasswordRules(strength?: string): PasswordRuleDef[] {
 
   // 数字
   if (/\(\?=\.\*(?:\\d|\[0-9\])/.test(strength)) {
-    rules.push({ label: '至少包含 1 个数字', test: (p) => /\d/.test(p) });
+    rules.push({ label: t('password.digit', {}), test: (p) => /\d/.test(p) });
   }
   // 小写字母
   if (/\(\?=\.\*\[a-z\]/.test(strength)) {
-    rules.push({ label: '至少包含 1 个小写字母', test: (p) => /[a-z]/.test(p) });
+    rules.push({ label: t('password.lower', {}), test: (p) => /[a-z]/.test(p) });
   }
   // 大写字母
   if (/\(\?=\.\*\[A-Z\]/.test(strength)) {
-    rules.push({ label: '至少包含 1 个大写字母', test: (p) => /[A-Z]/.test(p) });
+    rules.push({ label: t('password.upper', {}), test: (p) => /[A-Z]/.test(p) });
   }
   // 特殊字符
   if (/\(\?=\.\*\[\^/.test(strength)) {
-    rules.push({ label: '至少包含 1 个特殊字符', test: (p) => /[^0-9a-zA-Z]/.test(p) });
+    rules.push({ label: t('password.special', {}), test: (p) => /[^0-9a-zA-Z]/.test(p) });
   }
   // 长度
   const lenMatch = strength.match(/\.\{(\d+)(?:,(\d+)?)?\}/);
@@ -81,9 +85,9 @@ export function parsePasswordRules(strength?: string): PasswordRuleDef[] {
     const min = parseInt(lenMatch[1], 10);
     const max = lenMatch[2] ? parseInt(lenMatch[2], 10) : null;
     if (max) {
-      rules.push({ label: `长度为 ${min}-${max} 位`, test: (p) => p.length >= min && p.length <= max });
+      rules.push({ label: t('password.lengthRange', { min, max }), test: (p) => p.length >= min && p.length <= max });
     } else {
-      rules.push({ label: `至少 ${min} 位`, test: (p) => p.length >= min });
+      rules.push({ label: t('password.minLength', { min }), test: (p) => p.length >= min });
     }
   }
 
@@ -91,7 +95,7 @@ export function parsePasswordRules(strength?: string): PasswordRuleDef[] {
   if (rules.length === 0) {
     try {
       const re = new RegExp(strength);
-      rules.push({ label: '符合密码安全规则', test: (p) => re.test(p) });
+      rules.push({ label: t('password.complexity', {}), test: (p) => re.test(p) });
     } catch {
       // 正则无效视为配置错误，使用兜底规则，避免完全不校验弱密码
       return buildFallbackRules();

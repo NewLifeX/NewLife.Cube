@@ -15,6 +15,7 @@ import { flushPromises, mount } from '@vue/test-utils';
 import ElementPlus from 'element-plus';
 import { createMemoryHistory, createRouter } from 'vue-router';
 import PageHome from '../pages/PageHome.vue';
+import { testI18n } from './helpers/i18n';
 
 const h = vi.hoisted(() => ({
   getAction: vi.fn(),
@@ -113,7 +114,7 @@ async function createTestRouter() {
 
 async function mountHome() {
   const router = await createTestRouter();
-  const wrapper = mount(PageHome, { global: { plugins: [ElementPlus, router] } });
+  const wrapper = mount(PageHome, { global: { plugins: [ElementPlus, testI18n, router] } });
   await flushPromises();
   return { wrapper, router };
 }

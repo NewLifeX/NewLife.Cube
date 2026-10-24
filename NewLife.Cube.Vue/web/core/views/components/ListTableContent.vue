@@ -9,6 +9,7 @@
  * 兼容旧版 `columns` 入参（仅文本渲染）。
  */
 import { ref, reactive, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { getValueByKey, resolveAssetUrl } from '@newlifex/cube-vue/core/utils/url';
 import { resolveListControl } from '@newlifex/cube-vue/core/utils/fieldControl';
 import { getColumnLabel, resolveColumnLabels } from '@newlifex/cube-vue/core/components/LovSelect/lovStore';
@@ -49,6 +50,8 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
   selectable: false,
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits<{
   view: [row: Record<string, unknown>];
@@ -104,8 +107,8 @@ const renderColumns = computed<InternalColumn[]>(() => {
   }
   return [
     { key: 'id', label: 'ID', width: '80px', align: 'center', mono: true, control: 'readonly' },
-    { key: 'name', label: '名称', control: 'text' },
-    { key: 'status', label: '状态', control: 'text' },
+    { key: 'name', label: t('common.name'), control: 'text' },
+    { key: 'status', label: t('common.status'), control: 'text' },
   ];
 });
 
@@ -275,7 +278,7 @@ function getCellRaw(row: Record<string, unknown>, col: InternalColumn): string {
               type="primary"
               :underline="true"
             >
-              查看文件
+              {{ t('grid.viewFile') }}
             </el-link>
             <span v-else class="ltc-cell-text">—</span>
           </template>
@@ -352,10 +355,10 @@ function getCellRaw(row: Record<string, unknown>, col: InternalColumn): string {
         </template>
       </el-table-column>
 
-      <el-table-column label="操作" width="168" fixed="right" align="center">
+      <el-table-column :label="t('common.actions')" width="168" fixed="right" align="center">
         <template #header>
-          <el-tooltip content="操作" placement="top" :show-after="500">
-            <span class="ltc-header-text">操作</span>
+          <el-tooltip :content="t('common.actions')" placement="top" :show-after="500">
+            <span class="ltc-header-text">{{ t('common.actions') }}</span>
           </el-tooltip>
         </template>
         <template #default="scope">
@@ -365,14 +368,14 @@ function getCellRaw(row: Record<string, unknown>, col: InternalColumn): string {
                 <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"></path>
                 <circle cx="12" cy="12" r="3"></circle>
               </svg>
-              <span>查看</span>
+              <span>{{ t('perm.detail') }}</span>
             </button>
             <button class="ltc-action-btn ltc-action-btn--edit" @click="emit('edit', scope.row)">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
                 <path d="m15 5 4 4"></path>
               </svg>
-              <span>编辑</span>
+              <span>{{ t('button.edit') }}</span>
             </button>
             <button class="ltc-action-btn ltc-action-btn--delete" @click="emit('delete', scope.row)">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
@@ -380,7 +383,7 @@ function getCellRaw(row: Record<string, unknown>, col: InternalColumn): string {
                 <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
                 <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
               </svg>
-              <span>删除</span>
+              <span>{{ t('button.delete') }}</span>
             </button>
           </div>
         </template>

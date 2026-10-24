@@ -2,7 +2,12 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import ElementPlus from 'element-plus';
 import LoginForm from '../pages/LoginForm.vue';
+import i18n from '../i18n';
 import type { LoginConfig } from '@newlifex/api-core';
+
+/** 错误文案跟随 locale，断言用词条拼期望值 */
+const ruleError = (rule: string): string => i18n.global.t('register.passwordRule', { rule });
+const minLength = (min: number): string => i18n.global.t('password.minLength', { min });
 
 interface Scenario {
   key: string;
@@ -14,11 +19,25 @@ interface Scenario {
 }
 
 const SCENARIOS: Scenario[] = [
-  { key: 'A', strength: '*', failingPwd: 'ab', validPwd: 'abcde', hintCount: 1, expectedError: '密码需至少 5 位' },
-  { key: 'B', strength: '.{6,}', failingPwd: 'abc', validPwd: 'abcdef', hintCount: 1, expectedError: '密码需至少 6 位' },
-  { key: 'C', strength: '^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$', failingPwd: 'Ab1', validPwd: 'Abcdef12', hintCount: 4, expectedError: '密码需至少 8 位' },
-  { key: 'D', strength: '', failingPwd: 'ab', validPwd: 'abcde', hintCount: 1, expectedError: '密码需至少 5 位' },
-  { key: 'E', strength: '^[a-z]+$', failingPwd: 'abc123', validPwd: 'abc', hintCount: 1, expectedError: '密码需符合密码安全规则' },
+  { key: 'A', strength: '*', failingPwd: 'ab', validPwd: 'abcde', hintCount: 1, expectedError: ruleError(minLength(5)) },
+  { key: 'B', strength: '.{6,}', failingPwd: 'abc', validPwd: 'abcdef', hintCount: 1, expectedError: ruleError(minLength(6)) },
+  {
+    key: 'C',
+    strength: '^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$',
+    failingPwd: 'Ab1',
+    validPwd: 'Abcdef12',
+    hintCount: 4,
+    expectedError: ruleError(minLength(8)),
+  },
+  { key: 'D', strength: '', failingPwd: 'ab', validPwd: 'abcde', hintCount: 1, expectedError: ruleError(minLength(5)) },
+  {
+    key: 'E',
+    strength: '^[a-z]+$',
+    failingPwd: 'abc123',
+    validPwd: 'abc',
+    hintCount: 1,
+    expectedError: ruleError(i18n.global.t('password.complexity')),
+  },
 ];
 
 function mountForm(strength: string, passwordComplexity = true) {
@@ -29,7 +48,8 @@ function mountForm(strength: string, passwordComplexity = true) {
       } as LoginConfig,
     },
     global: {
-      plugins: [ElementPlus],
+      // 密码规则文案由 usePasswordRules 直取全局 i18n，插件必须装同一个实例
+      plugins: [ElementPlus, i18n],
     },
   });
 }

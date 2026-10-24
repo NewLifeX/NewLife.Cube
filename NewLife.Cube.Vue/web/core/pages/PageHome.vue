@@ -8,6 +8,7 @@
  */
 import { computed, markRaw, onMounted, onUnmounted, type Component } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import {
   Calendar,
   Clock,
@@ -24,6 +25,8 @@ import {
 } from '@element-plus/icons-vue';
 import { useWorkbench } from '../composables/useWorkbench';
 import { normalizeCols, normalizeKpiColor, normalizeRoles } from './workbench/widget';
+
+const { t } = useI18n();
 import WorkbenchMonitor from './workbench/WorkbenchMonitor.vue';
 import WorkbenchWidgetBody from './workbench/WorkbenchWidgetBody.vue';
 import type { WorkbenchKpi, WorkbenchWidget } from '../types/workbench';
@@ -88,11 +91,11 @@ const today = computed(() =>
 );
 const greeting = computed(() => {
   const hour = new Date().getHours();
-  if (hour < 6) return '凌晨好';
-  if (hour < 12) return '早上好';
-  if (hour < 14) return '中午好';
-  if (hour < 18) return '下午好';
-  return '晚上好';
+  if (hour < 6) return t('home.greetingDawn');
+  if (hour < 12) return t('home.greetingMorning');
+  if (hour < 14) return t('home.greetingNoon');
+  if (hour < 18) return t('home.greetingAfternoon');
+  return t('home.greetingEvening');
 });
 
 function iconForKpi(kpi: WorkbenchKpi): Component {
@@ -136,11 +139,11 @@ onUnmounted(stopMonitorPolling);
     <el-result
       v-else-if="error && !data"
       icon="error"
-      title="工作台加载失败"
+      :title="t('home.loadFailed')"
       :sub-title="error"
     >
       <template #extra>
-        <el-button type="primary" @click="reload">重试</el-button>
+        <el-button type="primary" @click="reload">{{ t('home.retry') }}</el-button>
       </template>
     </el-result>
 
@@ -153,7 +156,7 @@ onUnmounted(stopMonitorPolling);
         </div>
         <div class="wb-banner-actions">
           <el-tag v-if="roleText" type="primary" effect="plain">{{ roleText }}</el-tag>
-          <el-button :loading="loading" @click="reload">刷新</el-button>
+          <el-button :loading="loading" @click="reload">{{ t('grid.refresh') }}</el-button>
         </div>
       </section>
 
@@ -208,7 +211,7 @@ onUnmounted(stopMonitorPolling);
         </el-card>
       </section>
 
-      <el-empty v-if="!hasContent" description="暂无工作台数据" />
+      <el-empty v-if="!hasContent" :description="t('home.empty')" />
     </template>
   </div>
 </template>

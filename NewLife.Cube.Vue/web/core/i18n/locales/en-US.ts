@@ -161,6 +161,7 @@ export default {
   // 通用（跨页面复用）
   'common.id': 'ID',
   'common.name': 'Name',
+  'common.status': 'Status',
   'common.sort': 'Sort',
   'common.remark': 'Remark',
   'common.enable': 'Enabled',
@@ -360,6 +361,28 @@ export default {
   'grid.unit': 'items',
   'grid.total': 'Total {total} {unit}',
   'grid.pageSizeOption': '{size} {unit}/page',
+  'grid.chart': 'Chart',
+  'grid.tableView': 'Table view',
+  'grid.cardView': 'Card view',
+
+  // Workbench home
+  'home.greetingDawn': 'Good early morning',
+  'home.greetingMorning': 'Good morning',
+  'home.greetingNoon': 'Good noon',
+  'home.greetingAfternoon': 'Good afternoon',
+  'home.greetingEvening': 'Good evening',
+  'home.loadFailed': 'Failed to load the workbench',
+  'home.retry': 'Retry',
+  'home.empty': 'No workbench data',
+
+  // Password rules
+  'password.minLength': 'At least {min} characters',
+  'password.lengthRange': '{min}-{max} characters',
+  'password.digit': 'At least one digit',
+  'password.lower': 'At least one lowercase letter',
+  'password.upper': 'At least one uppercase letter',
+  'password.special': 'At least one special character',
+  'password.complexity': 'Meets the password security rules',
 
   // Security center
   'security.title': 'Security center',

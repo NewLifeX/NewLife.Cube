@@ -145,6 +145,7 @@ export default {
   // 通用（跨頁面復用）
   'common.id': '編號',
   'common.name': '名稱',
+  'common.status': '狀態',
   'common.sort': '排序',
   'common.remark': '備註',
   'common.enable': '啟用',
@@ -343,6 +344,28 @@ export default {
   'grid.unit': '筆',
   'grid.total': '共 {total} {unit}',
   'grid.pageSizeOption': '{size} {unit}/頁',
+  'grid.chart': '圖表',
+  'grid.tableView': '表格檢視',
+  'grid.cardView': '卡片檢視',
+
+  // 工作台首頁
+  'home.greetingDawn': '凌晨好',
+  'home.greetingMorning': '早上好',
+  'home.greetingNoon': '中午好',
+  'home.greetingAfternoon': '下午好',
+  'home.greetingEvening': '晚上好',
+  'home.loadFailed': '工作台載入失敗',
+  'home.retry': '重試',
+  'home.empty': '暫無工作台資料',
+
+  // 密碼規則
+  'password.minLength': '至少 {min} 位',
+  'password.lengthRange': '長度為 {min}-{max} 位',
+  'password.digit': '至少包含 1 個數字',
+  'password.lower': '至少包含 1 個小寫字母',
+  'password.upper': '至少包含 1 個大寫字母',
+  'password.special': '至少包含 1 個特殊字元',
+  'password.complexity': '符合密碼安全規則',
 
   // 安全中心
   'security.title': '安全中心',

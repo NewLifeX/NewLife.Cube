@@ -10,6 +10,11 @@
 import { describe, it, expect } from 'vitest';
 import { ref } from 'vue';
 import { parsePasswordRules, usePasswordRules } from '../composables/usePasswordRules';
+import i18n from '../i18n';
+
+/** 规则文案跟随 locale，断言用词条拼期望值，避免硬编码中文 */
+const tr = (key: string, named: Record<string, unknown> = {}): string => i18n.global.t(key, named);
+const minLength = (min: number): string => tr('password.minLength', { min });
 
 interface Case {
   name: string;
@@ -24,7 +29,7 @@ const CASES: Case[] = [
   {
     name: '无规则（*）',
     strength: '*',
-    labels: ['至少 5 位'],
+    labels: [minLength(5)],
     samples: [
       { pwd: 'a', allPass: false },
       { pwd: '12345', allPass: true },
@@ -33,7 +38,7 @@ const CASES: Case[] = [
   {
     name: '空串',
     strength: '',
-    labels: ['至少 5 位'],
+    labels: [minLength(5)],
     samples: [
       { pwd: 'ab', allPass: false },
       { pwd: 'abcde', allPass: true },
@@ -42,7 +47,7 @@ const CASES: Case[] = [
   {
     name: '最小长度 .{6,}',
     strength: '.{6,}',
-    labels: ['至少 6 位'],
+    labels: [minLength(6)],
     samples: [
       { pwd: 'abc', allPass: false },
       { pwd: 'abcdef', allPass: true },
@@ -51,7 +56,7 @@ const CASES: Case[] = [
   {
     name: '复合 ^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$',
     strength: '^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$',
-    labels: ['至少包含 1 个数字', '至少包含 1 个小写字母', '至少包含 1 个大写字母', '至少 8 位'],
+    labels: [tr('password.digit'), tr('password.lower'), tr('password.upper'), minLength(8)],
     samples: [
       { pwd: 'Ab1', allPass: false }, // 长度不足
       { pwd: 'Abcdef12', allPass: true },
@@ -60,7 +65,7 @@ const CASES: Case[] = [
   {
     name: '回退正则 ^[a-z]+$',
     strength: '^[a-z]+$',
-    labels: ['符合密码安全规则'],
+    labels: [tr('password.complexity')],
     samples: [
       { pwd: 'abc123', allPass: false },
       { pwd: 'abc', allPass: true },
@@ -88,7 +93,7 @@ describe('parsePasswordRules 动态解析', () => {
     expect(() => parsePasswordRules('([')).not.toThrow();
     const rules = parsePasswordRules('([');
     expect(rules).toHaveLength(1);
-    expect(rules[0].label).toBe('至少 5 位');
+    expect(rules[0].label).toBe(minLength(5));
     expect(rules[0].test('123')).toBe(false);
     expect(rules[0].test('12345')).toBe(true);
   });

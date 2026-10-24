@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { User, Lock } from '@element-plus/icons-vue';
 import { usePasswordRules } from '../composables/usePasswordRules';
 import type { LoginConfig } from '@newlifex/api-core';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   /** 后端登录配置（主要消费 security.passwordStrength 动态生成密码规则） */
@@ -44,27 +47,27 @@ function handleSubmit(): void {
   const password = form.value.password;
 
   if (!username) {
-    errors.value.username = '请输入用户名';
+    errors.value.username = t('register.enterUsername');
     valid = false;
   } else if (username.length < 2) {
-    errors.value.username = '用户名至少 2 个字符';
+    errors.value.username = t('register.usernameTooShort');
     valid = false;
   }
 
   if (!password) {
-    errors.value.password = '请输入密码';
+    errors.value.password = t('register.enterPassword');
     valid = false;
   } else {
     // 动态规则：根据后端 passwordStrength 生成；无规则（* 或空）时回退为「至少 5 位」兜底
     const failed = passwordRuleDefs.value.find((r) => !r.test(password));
     if (failed) {
-      errors.value.password = `密码需${failed.label}`;
+      errors.value.password = t('register.passwordRule', { rule: failed.label });
       valid = false;
     }
   }
 
   if (!valid) {
-    ElMessage.warning('请检查输入信息');
+    ElMessage.warning(t('register.checkInput'));
     return;
   }
 
@@ -84,12 +87,12 @@ function onFormKeydown(e: KeyboardEvent): void {
   <form class="login-form" @submit.prevent="handleSubmit" @keydown="onFormKeydown">
     <!-- 用户名 -->
     <div class="input-group">
-      <label class="input-label" for="login-username">用户名</label>
+      <label class="input-label" for="login-username">{{ t('register.username') }}</label>
       <el-input
         id="login-username"
         data-cy="username"
         v-model="form.username"
-        placeholder="请输入用户名"
+        :placeholder="t('register.usernamePlaceholder')"
         size="large"
         :prefix-icon="User"
         clearable
@@ -101,13 +104,13 @@ function onFormKeydown(e: KeyboardEvent): void {
 
     <!-- 密码 -->
     <div class="input-group">
-      <label class="input-label" for="login-password">密码</label>
+      <label class="input-label" for="login-password">{{ t('register.password') }}</label>
       <el-input
         id="login-password"
         data-cy="password"
         v-model="form.password"
         type="password"
-        placeholder="请输入密码"
+        :placeholder="t('register.enterPassword')"
         size="large"
         :prefix-icon="Lock"
         show-password
@@ -137,7 +140,7 @@ function onFormKeydown(e: KeyboardEvent): void {
       :class="{ loading: submitting }"
       :disabled="submitting"
     >
-      <span class="login-btn-text">登 录</span>
+      <span class="login-btn-text">{{ t('login.tabLogin') }}</span>
       <span class="login-btn-spinner"></span>
     </button>
   </form>
