@@ -35,6 +35,7 @@ import { routeToApiPrefix } from '../utils/url';
 import { normalizeOverrideFields, normalizePageMeta } from '../utils/fieldMeta';
 import { applyPagePreset, getPagePreset, type PagePreset } from './pagePreset';
 import { serializeSubmitModel } from '../utils/fieldControl';
+import i18n from '../i18n';
 import {
   buildDownloadName,
   buildExportParams,
@@ -59,6 +60,11 @@ import type {
   NormalizedPageFields,
   PageSetting,
 } from './types';
+
+/** 引擎文案翻译：引擎不在组件上下文内，直接走全局 i18n 实例 */
+function t(key: string, named?: Record<string, unknown>): string {
+  return named ? i18n.global.t(key, named) : i18n.global.t(key);
+}
 
 /** 未提供任何字段组时的归一空集合（保证视图可无条件消费） */
 const EMPTY_FIELDS: NormalizedPageFields = {
@@ -200,7 +206,7 @@ export function createCubeEngine(
     formMode.value === 'add' ? fields.value.addFields : fields.value.editFields,
   );
   const dialogTitle = computed(() =>
-    formMode.value === 'add' ? '新增' : formMode.value === 'edit' ? '编辑' : '查看',
+    formMode.value === 'add' ? t('engine.add') : formMode.value === 'edit' ? t('engine.edit') : t('engine.view'),
   );
 
   /** 当前查询条件（关键字 + 搜索模型 + 页面附加条件），列表与导出共用同一口径 */
@@ -216,7 +222,7 @@ export function createCubeEngine(
   /** 统一包裹取数：维护 loading、收敛错误、避免未捕获 rejection */
   async function runLoad(action: () => Promise<unknown>): Promise<void> {
     if (!type.value) {
-      error.value = 'CubeEngine: 未提供 routePath 或 apiPrefix，无法定位实体接口';
+      error.value = t('engine.missingRoutePath');
       return;
     }
     loading.value = true;
@@ -224,9 +230,9 @@ export function createCubeEngine(
     try {
       await action();
     } catch (err) {
-      error.value = extractMessage(err) ?? '请求失败';
+      error.value = extractMessage(err) ?? t('engine.requestFailed');
       // 失败必须出声：否则用户只看到一片空表格，分不清「没数据」还是「没取到」
-      console.error('[CubeEngine] 列表加载失败:', err);
+      console.error(t('engine.listLoadFailed'), err);
       deps.notify?.error?.(error.value);
     } finally {
       loading.value = false;
@@ -317,7 +323,7 @@ export function createCubeEngine(
       if (options.autoQuery !== false) await load();
     } catch (err) {
       schemaReady.value = false;
-      error.value = extractMessage(err) ?? '初始化失败';
+      error.value = extractMessage(err) ?? t('engine.initFailed');
     }
   }
 
@@ -403,7 +409,7 @@ export function createCubeEngine(
     dialogVisible.value = true;
     if (id === undefined) {
       formLoading.value = false;
-      error.value = `CubeEngine: 行数据缺少主键（${idKey.value}），无法${mode === 'edit' ? '编辑' : '查看'}`;
+      error.value = t('engine.rowMissingKey', { key: idKey.value, action: mode === 'edit' ? t('engine.edit') : t('engine.view') });
       return;
     }
     try {
@@ -415,7 +421,7 @@ export function createCubeEngine(
       // 详情接口可能不返回主键，而 PUT 需要它定位记录
       if (resolveRowId(formModel, idKey.value) === undefined) formModel[idKey.value] = id;
     } catch (err) {
-      error.value = extractMessage(err) ?? '详情加载失败';
+      error.value = extractMessage(err) ?? t('engine.detailLoadFailed');
     } finally {
       formLoading.value = false;
     }
@@ -432,7 +438,7 @@ export function createCubeEngine(
     }
     const missing = findMissingRequiredField(formModel, formFields.value);
     if (missing) {
-      deps.notify?.warning?.(`${missing.displayName ?? missing.name}不能为空`);
+      deps.notify?.warning?.(t('engine.required', { field: missing.displayName ?? missing.name }));
       return false;
     }
     const isEdit = formId.value !== null;
@@ -451,13 +457,13 @@ export function createCubeEngine(
       } else {
         await deps.http({ url: type.value, method: 'post', data });
       }
-      deps.notify?.success?.(isEdit ? '更新成功' : '新增成功');
+      deps.notify?.success?.(isEdit ? t('engine.updateSuccess') : t('engine.createSuccess'));
       closeDialog();
       await load();
       return true;
     } catch (err) {
       // 字段级 / 业务错误已由请求层统一弹出，这里只保留引擎内可见的失败态
-      error.value = extractMessage(err) ?? '保存失败';
+      error.value = extractMessage(err) ?? t('engine.saveFailed');
       return false;
     } finally {
       submitting.value = false;
@@ -466,20 +472,20 @@ export function createCubeEngine(
 
   async function remove(row: Record<string, unknown>): Promise<boolean> {
     if (resolveRowId(row, idKey.value) === undefined) {
-      deps.notify?.error?.(`行数据缺少主键（${idKey.value}）`);
+      deps.notify?.error?.(t('engine.rowMissingKeyShort', { key: idKey.value }));
       return false;
     }
     submitting.value = true;
     try {
       await deps.http({ url: `${type.value}/${encodeURIComponent(String(resolveRowId(row, idKey.value)))}`, method: 'delete' });
-      deps.notify?.success?.('删除成功');
+      deps.notify?.success?.(t('engine.deleteSuccess'));
       // 删掉当前页最后一条时回退一页，避免停在空页
       if (list.value.length <= 1 && pageIndex.value > 1) pageIndex.value -= 1;
       await load();
       selected.value = [];
       return true;
     } catch (err) {
-      error.value = extractMessage(err) ?? '删除失败';
+      error.value = extractMessage(err) ?? t('engine.deleteFailed');
       return false;
     } finally {
       submitting.value = false;
@@ -491,8 +497,8 @@ export function createCubeEngine(
       .map((row) => resolveRowId(row, idKey.value))
       .filter((id): id is number | string => id !== undefined);
     if (!ids.length) {
-      if (!selected.value.length) deps.notify?.warning?.('请先勾选要删除的数据');
-      else deps.notify?.error?.('选中行缺少主键，无法删除');
+      if (!selected.value.length) deps.notify?.warning?.(t('engine.selectFirst'));
+      else deps.notify?.error?.(t('engine.selectMissingKey'));
       return false;
     }
     submitting.value = true;
@@ -505,12 +511,12 @@ export function createCubeEngine(
           ids.map((id) => deps.http({ url: `${type.value}/${encodeURIComponent(String(id))}`, method: 'delete' })),
         );
       }
-      deps.notify?.success?.(`已删除 ${ids.length} 条`);
+      deps.notify?.success?.(t('engine.deleted', { count: ids.length }));
       selected.value = [];
       await load();
       return true;
     } catch (err) {
-      error.value = extractMessage(err) ?? '批量删除失败';
+      error.value = extractMessage(err) ?? t('engine.batchDeleteFailed');
       return false;
     } finally {
       submitting.value = false;
@@ -536,10 +542,10 @@ export function createCubeEngine(
         inferBlobExtension(blob.type),
       );
       pendingBlob.value = { blob, name };
-      deps.notify?.success?.('导出成功');
+      deps.notify?.success?.(t('engine.exportSuccess'));
       return name;
     } catch (err) {
-      error.value = extractMessage(err) ?? '导出失败';
+      error.value = extractMessage(err) ?? t('engine.exportFailed');
       deps.notify?.error?.(error.value);
       return null;
     }
@@ -551,14 +557,14 @@ export function createCubeEngine(
         ? await deps.downloadTemplate(type.value)
         : await fetchBlob(`${type.value}/DownloadTemplate`, {});
       const name = buildDownloadName(
-        `${entityNameFromPrefix(type.value)}导入模板`,
+        t('engine.importTemplate', { name: entityNameFromPrefix(type.value) }),
         dateStamp(),
         inferBlobExtension(blob.type),
       );
       pendingBlob.value = { blob, name };
       return name;
     } catch (err) {
-      const message = '下载导入模板失败，请确认后端已实现 DownloadTemplate 接口';
+      const message = t('engine.templateDownloadFailed');
       error.value = extractMessage(err) ?? message;
       deps.notify?.error?.(message);
       return null;
@@ -570,7 +576,7 @@ export function createCubeEngine(
     if (res instanceof Blob) return res;
     const body = res as { data?: unknown };
     if (body?.data instanceof Blob) return body.data;
-    throw new Error('导出响应不是文件流');
+    throw new Error(t('engine.notFileStream'));
   }
 
   async function importFile(file: File): Promise<ImportResult | null> {
@@ -578,19 +584,19 @@ export function createCubeEngine(
       const res = deps.importFile ? await deps.importFile(type.value, file) : await postImport(file);
       const result = parseImportResult(res);
       if (!result.ok) {
-        error.value = result.message ?? '导入失败';
+        error.value = result.message ?? t('engine.importFailed');
         return result;
       }
       // 0 行必须降级为警示：否则「提示导入成功但列表没多一条」会直接误导使用者
       if (isZeroRowImport(result.message)) {
-        deps.notify?.warning?.(`${result.message ?? ''}，未导入任何数据，请检查表头是否与导入模板一致`);
+        deps.notify?.warning?.(t('engine.importNothing', { message: result.message ?? '' }));
       } else {
-        deps.notify?.success?.(result.message ?? '导入成功');
+        deps.notify?.success?.(result.message ?? t('engine.importSuccess'));
       }
       await load();
       return result;
     } catch (err) {
-      error.value = extractMessage(err) ?? '导入失败';
+      error.value = extractMessage(err) ?? t('engine.importFailed');
       return null;
     }
   }

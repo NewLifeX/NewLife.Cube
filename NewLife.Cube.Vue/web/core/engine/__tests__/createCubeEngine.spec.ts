@@ -11,8 +11,13 @@
  * 运行：pnpm test:unit core/engine/__tests__/createCubeEngine.spec.ts
  */
 import { describe, expect, it, vi } from 'vitest';
+import i18n from '../../i18n';
 import { createCubeEngine } from '../createCubeEngine';
 import type { CubeEngineDeps, CubePageMeta } from '../types';
+
+/** 引擎提示文案跟随当前 locale，断言用同一份字典拼期望值 */
+const t = (key: string, named?: Record<string, unknown>): string =>
+  named ? i18n.global.t(key, named) : i18n.global.t(key);
 
 /** 与后端 EntityController 一致的假响应：列表 `GET {type}`、详情 `GET {type}/{id}` */
 const LIST_BODY = { code: 0, data: [{ id: 1, name: 'admin' }], page: { totalCount: 1 } };
@@ -212,7 +217,7 @@ describe('createCubeEngine 元数据驱动初始化', () => {
     const { deps } = makeDeps();
     const ctx = createCubeEngine({}, deps);
     await ctx.init();
-    expect(ctx.error.value).toContain('无法定位实体接口');
+    expect(ctx.error.value).toContain(t('engine.missingRoutePath'));
   });
 });
 
@@ -297,7 +302,7 @@ describe('createCubeEngine 删除', () => {
     const del = [...http.calls.slice(before)].reverse().find((c) => c.method === 'delete');
     expect(del?.url).toBe(`${TYPE}/9`);
     expect(del?.params).toBeUndefined();
-    expect(notify.success).toHaveBeenCalledWith('删除成功');
+    expect(notify.success).toHaveBeenCalledWith(t('engine.deleteSuccess'));
   });
 
   it('应该按元数据主键取值 当主键列名不是 id 时', async () => {
@@ -364,14 +369,14 @@ describe('createCubeEngine 表单提交', () => {
     await ctx.init();
     ctx.openCreate();
     expect(ctx.formMode.value).toBe('add');
-    expect(ctx.dialogTitle.value).toBe('新增');
+    expect(ctx.dialogTitle.value).toBe(t('engine.add'));
     ctx.formModel.Name = '新记录';
     ctx.formModel.Enable = false;
     expect(await ctx.submitForm()).toBe(true);
     const post = lastCall(http, 'post');
     expect(post?.url).toBe(TYPE);
     expect(post?.data).toMatchObject({ Name: '新记录' });
-    expect(notify.success).toHaveBeenCalledWith('新增成功');
+    expect(notify.success).toHaveBeenCalledWith(t('engine.createSuccess'));
     expect(ctx.dialogVisible.value).toBe(false);
   });
 
@@ -381,7 +386,7 @@ describe('createCubeEngine 表单提交', () => {
     await ctx.init();
     ctx.openCreate();
     expect(await ctx.submitForm()).toBe(false);
-    expect(notify.warning).toHaveBeenCalledWith('名称不能为空');
+    expect(notify.warning).toHaveBeenCalledWith(t('engine.required', { field: '名称' }));
     expect(http.calls.some((c) => c.method === 'post')).toBe(false);
     expect(ctx.dialogVisible.value).toBe(true);
   });
@@ -413,7 +418,7 @@ describe('createCubeEngine 表单提交', () => {
     expect(put?.url).toBe(`${TYPE}/5`);
     expect(put?.data).not.toHaveProperty('Enable');
     expect(put?.data).toMatchObject({ id: 5, name: 'b', enable: false });
-    expect(notify.success).toHaveBeenCalledWith('更新成功');
+    expect(notify.success).toHaveBeenCalledWith(t('engine.updateSuccess'));
   });
 
   it('应该只关闭弹窗 当查看模式提交时', async () => {
@@ -465,7 +470,7 @@ describe('createCubeEngine 导入导出', () => {
     // 修正点：xlsx 不能再落成 .bin
     expect(name).toMatch(/^DeviceProfile_\d{14}\.xlsx$/);
     expect(ctx.pendingBlob.value).toEqual({ blob, name });
-    expect(notify.success).toHaveBeenCalledWith('导出成功');
+    expect(notify.success).toHaveBeenCalledWith(t('engine.exportSuccess'));
   });
 
   it('应该带上当前关键字与筛选 当导出参数拼装时', async () => {
@@ -486,6 +491,6 @@ describe('createCubeEngine 导入导出', () => {
     const ctx = createCubeEngine({ routePath: ROUTE }, deps);
     await ctx.init();
     expect(await ctx.downloadTemplate()).toBeNull();
-    expect(notify.error).toHaveBeenCalledWith('下载导入模板失败，请确认后端已实现 DownloadTemplate 接口');
+    expect(notify.error).toHaveBeenCalledWith(t('engine.templateDownloadFailed'));
   });
 });
