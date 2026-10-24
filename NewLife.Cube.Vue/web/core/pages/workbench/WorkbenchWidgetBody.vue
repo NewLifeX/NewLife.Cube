@@ -8,6 +8,7 @@
  * 不使用 v-html，避免把服务端字符串直接当 HTML 注入。
  */
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Link as LinkIcon } from '@element-plus/icons-vue';
 import type {
   LoginLogWidgetData,
@@ -24,6 +25,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const { t } = useI18n();
 
 const payload = computed(() => asRecord(props.widget.data));
 const profile = computed(() => payload.value as WorkbenchProfile);
@@ -67,20 +70,20 @@ const plainText = computed(() => {
           <div class="wb-profile-title">
             <div class="wb-profile-name">{{ profileName }}</div>
             <div class="wb-profile-meta">
-              <el-tag v-if="profile.online" type="success" size="small" effect="plain">在线</el-tag>
-              <el-tag v-else type="info" size="small" effect="plain">离线</el-tag>
+              <el-tag v-if="profile.online" type="success" size="small" effect="plain">{{ t('workbench.online') }}</el-tag>
+              <el-tag v-else type="info" size="small" effect="plain">{{ t('workbench.offline') }}</el-tag>
               <el-tag v-for="role in roles" :key="role" size="small" effect="plain">{{ role }}</el-tag>
             </div>
           </div>
         </div>
         <dl class="wb-kv">
-          <dt>登录次数</dt>
+          <dt>{{ t('workbench.loginCount') }}</dt>
           <dd>{{ profile.logins ?? 0 }}</dd>
-          <dt>上次登录</dt>
+          <dt>{{ t('workbench.lastLogin') }}</dt>
           <dd>{{ profile.lastLogin || '-' }}</dd>
-          <dt>登录 IP</dt>
+          <dt>{{ t('workbench.loginIP') }}</dt>
           <dd>{{ profile.lastLoginIP || '-' }}</dd>
-          <dt>注册时间</dt>
+          <dt>{{ t('workbench.registerTime') }}</dt>
           <dd>{{ profile.registerTime || '-' }}</dd>
         </dl>
       </div>
@@ -94,14 +97,14 @@ const plainText = computed(() => {
           <span>{{ link.name }}</span>
         </router-link>
       </div>
-      <el-empty v-else :image-size="48" description="暂无快捷入口" />
+      <el-empty v-else :image-size="48" :description="t('workbench.noQuickLink')" />
     </template>
 
     <!-- 登录与在线 -->
     <template v-else-if="widget.name === 'LoginLog'">
       <div class="wb-loginlog">
         <section class="wb-loginlog-section">
-          <h4>最近登录</h4>
+          <h4>{{ t('workbench.recentLogins') }}</h4>
           <ul v-if="logins.length" class="wb-list">
             <li v-for="(item, index) in logins" :key="`login-${index}`">
               <span class="wb-list-main">{{ item.userName || '-' }}</span>
@@ -109,19 +112,19 @@ const plainText = computed(() => {
               <time class="wb-list-time">{{ item.createTime || '-' }}</time>
             </li>
           </ul>
-          <el-empty v-else :image-size="40" description="暂无登录记录" />
+          <el-empty v-else :image-size="40" :description="t('workbench.noLoginLog')" />
         </section>
 
         <section class="wb-loginlog-section">
-          <h4>在线用户</h4>
+          <h4>{{ t('workbench.onlineUsers') }}</h4>
           <ul v-if="onlines.length" class="wb-list">
             <li v-for="(item, index) in onlines" :key="`online-${index}`">
               <span class="wb-list-main">{{ item.name || '-' }}</span>
-              <span class="wb-list-sub">{{ item.oAuthProvider || '本地登录' }}</span>
+              <span class="wb-list-sub">{{ item.oAuthProvider || t('workbench.localLogin') }}</span>
               <time class="wb-list-time">{{ item.createTime || '-' }}</time>
             </li>
           </ul>
-          <el-empty v-else :image-size="40" description="暂无在线用户" />
+          <el-empty v-else :image-size="40" :description="t('workbench.noOnlineUser')" />
         </section>
       </div>
     </template>
@@ -141,7 +144,7 @@ const plainText = computed(() => {
     </dl>
 
     <p v-else-if="plainText" class="wb-text">{{ plainText }}</p>
-    <el-empty v-else :image-size="48" description="暂无数据" />
+      <el-empty v-else :image-size="48" :description="t('grid.empty')" />
   </div>
 </template>
 

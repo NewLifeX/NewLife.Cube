@@ -9,6 +9,7 @@
  * v-model 绑定整个表单对象；任一控件变更时聚合 emit 整个对象（沿用既有行为）。
  */
 import { computed, defineAsyncComponent } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { FieldMeta, ControlType } from '../../types/field';
 import {
   areaLevel,
@@ -47,7 +48,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  title: '基本信息',
+  title: undefined,
   fields: () => [],
   modelValue: () => ({}),
   apiPrefix: '',
@@ -55,7 +56,13 @@ const props = withDefaults(defineProps<Props>(), {
   groupBy: 'auto',
 });
 
-const DEFAULT_GROUP = '其他';
+const { t } = useI18n();
+
+/** 未指定标题时的默认表单标题 */
+const titleText = computed(() => props.title || t('form.basicInfo'));
+
+/** 无分类字段的兜底分组名 */
+const defaultGroup = computed(() => t('form.otherGroup'));
 
 /** preset 行级显隐：hidden 与 visibleWhen 共同决定字段是否出现在当前模型下 */
 const visibleFields = computed(() =>
@@ -75,8 +82,8 @@ const groups = computed(() => {
   const map = new Map<string, typeof fields>();
   for (const field of fields) {
     const key = typeof props.groupBy === 'function'
-      ? props.groupBy(field)?.trim() || DEFAULT_GROUP
-      : field.category?.trim() || DEFAULT_GROUP;
+      ? props.groupBy(field)?.trim() || defaultGroup.value
+      : field.category?.trim() || defaultGroup.value;
     const list = map.get(key) ?? [];
     list.push(field);
     map.set(key, list);
@@ -195,7 +202,7 @@ function toMultiArray(val: unknown): string[] {
 <template>
   <div class="form-content">
     <div class="fmc-header">
-      <h2 class="fmc-title">{{ title }}</h2>
+      <h2 class="fmc-title">{{ titleText }}</h2>
     </div>
     <div class="fmc-body">
       <section v-for="group in groups" :key="group.key" class="fmc-group">
@@ -233,7 +240,7 @@ function toMultiArray(val: unknown): string[] {
             :rows="3"
             class="fmc-textarea"
             :disabled="props.disabled"
-            :placeholder="field.description || '请输入...'"
+            :placeholder="field.description || t('form.placeholderInput')"
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
@@ -248,7 +255,7 @@ function toMultiArray(val: unknown): string[] {
               :disabled="props.disabled"
               :precision="resolveNumberPrecision(field)"
               :step="resolveNumberStep(field)"
-              :placeholder="field.description || '请输入数值'"
+              :placeholder="field.description || t('form.placeholderNumber')"
               :model-value="toNumber(getValue(field.name))"
               @update:model-value="(v: number | undefined) => updateNumber(field.name, v)"
             />
@@ -259,7 +266,7 @@ function toMultiArray(val: unknown): string[] {
           <el-select
             v-else-if="controlOf(field) === 'select'"
             class="fmc-select"
-            :placeholder="field.description || '请选择'"
+            :placeholder="field.description || t('form.placeholderSelect')"
             :model-value="asScalar(getValue(field.name))"
             @update:model-value="(v: string | number) => updateField(field.name, v)"
           >
@@ -286,7 +293,7 @@ function toMultiArray(val: unknown): string[] {
             class="fmc-date-picker"
             :type="isDateOnly(field) ? 'date' : 'datetime'"
             :disabled="props.disabled"
-            :placeholder="isDateOnly(field) ? '选择日期' : '选择日期时间'"
+            :placeholder="isDateOnly(field) ? t('form.placeholderDate') : t('form.placeholderDateTime')"
             :format="isDateOnly(field) ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:mm:ss'"
             :value-format="isDateOnly(field) ? 'YYYY-MM-DD' : 'YYYY-MM-DDTHH:mm:ss'"
             :model-value="String(getValue(field.name) ?? '')"
@@ -298,7 +305,7 @@ function toMultiArray(val: unknown): string[] {
             v-else-if="controlOf(field) === 'timePicker'"
             class="fmc-date-picker"
             :disabled="props.disabled"
-            :placeholder="field.description || '选择时间'"
+            :placeholder="field.description || t('form.placeholderTime')"
             format="HH:mm:ss"
             value-format="HH:mm:ss"
             :model-value="String(getValue(field.name) ?? '')"
@@ -311,7 +318,7 @@ function toMultiArray(val: unknown): string[] {
             :model-value="asAreaValue(getValue(field.name))"
             :level="areaLevel(field)"
             :disabled="props.disabled"
-            :placeholder="field.description || '请选择地区'"
+            :placeholder="field.description || t('form.placeholderArea')"
             @update:model-value="(v: number | undefined) => updateField(field.name, v)"
           />
 
@@ -322,7 +329,7 @@ function toMultiArray(val: unknown): string[] {
             :disabled="props.disabled"
             :parent="field.parentField ? (getValue(field.parentField) as string | number | undefined) : undefined"
             :model-value="(getValue(field.name) as string | number | undefined)"
-            :placeholder="field.description || '请选择'"
+            :placeholder="field.description || t('form.placeholderSelect')"
             @update:model-value="(v: string | number | Array<string | number> | undefined) => updateField(field.name, v)"
           />
 
@@ -334,7 +341,7 @@ function toMultiArray(val: unknown): string[] {
             :disabled="props.disabled"
             :parent="field.parentField ? (getValue(field.parentField) as string | number | undefined) : undefined"
             :model-value="toMultiArray(getValue(field.name))"
-            :placeholder="field.description || '请选择（多选）'"
+            :placeholder="field.description || t('form.placeholderMultiSelect')"
             @update:model-value="(v: string | number | Array<string | number> | undefined) => updateField(field.name, v)"
           />
 
@@ -407,7 +414,7 @@ function toMultiArray(val: unknown): string[] {
             class="fmc-input"
             :disabled="props.disabled"
             :type="controlOf(field) === 'email' ? 'email' : controlOf(field) === 'tel' ? 'tel' : 'url'"
-            :placeholder="field.description || '请输入...'"
+            :placeholder="field.description || t('form.placeholderInput')"
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
@@ -421,7 +428,7 @@ function toMultiArray(val: unknown): string[] {
             type="password"
             show-password
             autocomplete="new-password"
-            :placeholder="field.description || '请输入...'"
+            :placeholder="field.description || t('form.placeholderInput')"
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
@@ -441,7 +448,7 @@ function toMultiArray(val: unknown): string[] {
             :id="`fmc-${field.name}`"
             class="fmc-input"
             :disabled="props.disabled"
-            :placeholder="field.description || '请输入...'"
+            :placeholder="field.description || t('form.placeholderInput')"
             :model-value="String(getValue(field.name) ?? '')"
             @update:model-value="(v: string) => updateField(field.name, v)"
           />

@@ -367,6 +367,32 @@ export default {
   'password.special': '至少包含 1 個特殊字元',
   'password.complexity': '符合密碼安全規則',
 
+  // 表單容器
+  'form.basicInfo': '基本資訊',
+  'form.otherGroup': '其他',
+  'form.placeholderInput': '請輸入...',
+  'form.placeholderNumber': '請輸入數值',
+  'form.placeholderSelect': '請選擇',
+  'form.placeholderMultiSelect': '請選擇（多選）',
+  'form.placeholderDate': '選擇日期',
+  'form.placeholderDateTime': '選擇日期時間',
+  'form.placeholderTime': '選擇時間',
+  'form.placeholderArea': '請選擇地區',
+
+  // 工作台卡片
+  'workbench.online': '線上',
+  'workbench.offline': '離線',
+  'workbench.loginCount': '登入次數',
+  'workbench.lastLogin': '上次登入',
+  'workbench.loginIP': '登入 IP',
+  'workbench.registerTime': '註冊時間',
+  'workbench.noQuickLink': '暫無快捷入口',
+  'workbench.recentLogins': '最近登入',
+  'workbench.noLoginLog': '暫無登入記錄',
+  'workbench.onlineUsers': '線上使用者',
+  'workbench.localLogin': '本機登入',
+  'workbench.noOnlineUser': '暫無線上使用者',
+
   // 安全中心
   'security.title': '安全中心',
   'security.mail': '電子郵件',

@@ -17,6 +17,7 @@ import { mount } from '@vue/test-utils';
 import ElementPlus from 'element-plus';
 import FormContent from './FormContent.vue';
 import type { FieldMeta } from '../../types/field';
+import { testI18n } from '../../__tests__/helpers/i18n';
 
 const FIELDS: FieldMeta[] = [
   { name: 'Name', displayName: '方案名称', typeName: 'String', length: 100 },
@@ -37,7 +38,7 @@ describe('FormContent 编辑回填', () => {
         fields: FIELDS,
         modelValue: { name: '季度保养', enable: true },
       },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
     });
 
     // 文本输入框应显示行数据
@@ -55,7 +56,7 @@ describe('FormContent 编辑回填', () => {
         fields: FIELDS,
         modelValue: { Name: '月度保养', Enable: true },
       },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
     });
 
     const input = wrapper.find('input.el-input__inner');
@@ -71,7 +72,7 @@ describe('FormContent 编辑回填', () => {
         fields: FIELDS,
         modelValue: { name: '季度保养', enable: true },
       },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
     });
 
     const input = wrapper.find('input.el-input__inner');
@@ -92,7 +93,7 @@ describe('FormContent 分组', () => {
   it('应该按 Category 保序分组并把无分类字段归入其他 当 groupBy=auto 时', () => {
     const wrapper = mount(FormContent, {
       props: { fields: GROUPED_FIELDS, modelValue: {} },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
     });
 
     expect(titles(wrapper)).toEqual(['基本信息', '扩展信息', '其他']);
@@ -101,7 +102,7 @@ describe('FormContent 分组', () => {
   it('应该平铺字段 当 groupBy=none 时', () => {
     const wrapper = mount(FormContent, {
       props: { fields: GROUPED_FIELDS, modelValue: {}, groupBy: 'none' },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
     });
 
     expect(titles(wrapper)).toEqual([]);
@@ -115,7 +116,7 @@ describe('FormContent 分组', () => {
         modelValue: {},
         groupBy: 'category',
       },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
     });
 
     expect(titles(wrapper)).toEqual(['基本信息']);
@@ -128,7 +129,7 @@ describe('FormContent 分组', () => {
         modelValue: {},
         groupBy: (field: FieldMeta) => (field.name === 'Remark' ? '自定义' : ''),
       },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
     });
 
     expect(titles(wrapper)).toEqual(['其他', '自定义']);

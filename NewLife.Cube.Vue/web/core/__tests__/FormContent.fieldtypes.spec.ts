@@ -74,6 +74,7 @@ import JsonEditor from '../components/JsonEditor.vue';
 import RichEditor from '../components/RichEditor.vue';
 import ColorPicker from '../components/ColorPicker.vue';
 import IconSelector from '../components/IconSelector.vue';
+import { testI18n } from './helpers/i18n';
 
 const ENUM_LOV = 'Enum.CubeDemo.Areas.Test.测试枚举';
 
@@ -90,7 +91,7 @@ function mountField(meta: FieldMeta, value: unknown) {
       modelValue: { [meta.name]: value },
     },
     global: {
-      plugins: [ElementPlus],
+      plugins: [ElementPlus, testI18n],
     },
   });
 }
@@ -254,7 +255,7 @@ describe('FormContent 字段类型 → 控件渲染矩阵（§3.2 全矩阵）',
     metas.forEach((m) => (model[m.name] = null));
     const w = mount(FormContent, {
       props: { fields: metas, modelValue: model },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
     });
     await flushPromises();
     expect(w.findAll('.fmc-field').length).toBe(19);
@@ -274,7 +275,7 @@ describe('FormContent 字段类型 → 控件渲染矩阵（§3.2 全矩阵）',
     ];
     const w = mount(FormContent, {
       props: { fields: metas, modelValue: { Name: 'demo', Status: '1' }, disabled: true },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
     });
     await flushPromises();
     // 文本输入禁用（el-input 根节点带 is-disabled）
@@ -292,7 +293,7 @@ describe('FormContent 字段类型 → 控件渲染矩阵（§3.2 全矩阵）',
     const metas = [fm({ name: 'Name', typeName: 'String', nullable: false })];
     const w = mount(FormContent, {
       props: { fields: metas, modelValue: { Name: 'demo' } },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
     });
     await flushPromises();
     expect(w.find('.el-input.is-disabled').exists()).toBe(false);
@@ -329,7 +330,7 @@ describe('FormContent 字段级渲染器', () => {
         fields: [fm({ name: 'OrgRange', typeName: 'String', view: 'orgPicker' })],
         modelValue: { OrgRange: 'old' },
       },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
     });
     await flushPromises();
     expect(w.find('.custom-form-field').text()).toBe('old');
@@ -353,7 +354,7 @@ describe('FormContent 字段级渲染器', () => {
         modelValue: { OrgRange: 'old' },
         disabled: true,
       },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
     });
     await flushPromises();
     expect(w.find('.custom-form-field').attributes('disabled')).toBeDefined();

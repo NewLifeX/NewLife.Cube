@@ -382,6 +382,32 @@ export default {
   'password.special': '至少包含 1 个特殊字符',
   'password.complexity': '符合密码安全规则',
 
+  // 表单容器
+  'form.basicInfo': '基本信息',
+  'form.otherGroup': '其他',
+  'form.placeholderInput': '请输入...',
+  'form.placeholderNumber': '请输入数值',
+  'form.placeholderSelect': '请选择',
+  'form.placeholderMultiSelect': '请选择（多选）',
+  'form.placeholderDate': '选择日期',
+  'form.placeholderDateTime': '选择日期时间',
+  'form.placeholderTime': '选择时间',
+  'form.placeholderArea': '请选择地区',
+
+  // 工作台卡片
+  'workbench.online': '在线',
+  'workbench.offline': '离线',
+  'workbench.loginCount': '登录次数',
+  'workbench.lastLogin': '上次登录',
+  'workbench.loginIP': '登录 IP',
+  'workbench.registerTime': '注册时间',
+  'workbench.noQuickLink': '暂无快捷入口',
+  'workbench.recentLogins': '最近登录',
+  'workbench.noLoginLog': '暂无登录记录',
+  'workbench.onlineUsers': '在线用户',
+  'workbench.localLogin': '本地登录',
+  'workbench.noOnlineUser': '暂无在线用户',
+
   // 安全中心
   'security.title': '安全中心',
   'security.mail': '邮箱',

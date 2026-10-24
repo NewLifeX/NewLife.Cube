@@ -384,6 +384,32 @@ export default {
   'password.special': 'At least one special character',
   'password.complexity': 'Meets the password security rules',
 
+  // Form container
+  'form.basicInfo': 'Basic information',
+  'form.otherGroup': 'Other',
+  'form.placeholderInput': 'Please enter...',
+  'form.placeholderNumber': 'Please enter a number',
+  'form.placeholderSelect': 'Please select',
+  'form.placeholderMultiSelect': 'Please select (multiple)',
+  'form.placeholderDate': 'Select a date',
+  'form.placeholderDateTime': 'Select a date and time',
+  'form.placeholderTime': 'Select a time',
+  'form.placeholderArea': 'Please select a region',
+
+  // Workbench cards
+  'workbench.online': 'Online',
+  'workbench.offline': 'Offline',
+  'workbench.loginCount': 'Sign-in count',
+  'workbench.lastLogin': 'Last sign-in',
+  'workbench.loginIP': 'Sign-in IP',
+  'workbench.registerTime': 'Registered at',
+  'workbench.noQuickLink': 'No quick links',
+  'workbench.recentLogins': 'Recent sign-ins',
+  'workbench.noLoginLog': 'No sign-in records',
+  'workbench.onlineUsers': 'Online users',
+  'workbench.localLogin': 'Local sign-in',
+  'workbench.noOnlineUser': 'No online users',
+
   // Security center
   'security.title': 'Security center',
   'security.mail': 'Email',
