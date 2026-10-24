@@ -81,20 +81,38 @@ test.describe('页面呈现架构全链路', () => {
   });
 
   test('M2 混合页：preset 调整列序且单元格插槽生效', async ({ page }) => {
-    await page.goto('/Admin/Parameter');
-    await expect(page.locator('.cube-table')).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('.el-table')).toBeVisible({ timeout: 15000 });
+    const apiBase = process.env.PLAYWRIGHT_API_URL || 'https://localhost:7116';
+    const paramName = `E2E-PARAM-${Date.now()}`;
 
-    const headers = await page.locator('.el-table__header th').allTextContents();
-    const kindIndex = headers.findIndex((text) => text.trim() === 'Kind');
-    const idIndex = headers.findIndex((text) => text.trim() === 'ID');
-    expect(kindIndex).toBeGreaterThanOrEqual(0);
-    expect(idIndex).toBeGreaterThanOrEqual(0);
-    // preset list.order 把 Kind 前置，验证真实页面消费了页面呈现配置
-    expect(kindIndex).toBeLessThan(idIndex);
+    // 参数页对当前角色未开放新增按钮，用真实接口播种一条参数，保证列表有行可断言插槽
+    const created = await page.request.post(`${apiBase}/api/Admin/Parameter`, {
+      data: { Name: paramName, Value: '1', Category: 'E2E', Kind: 0, Enable: true },
+      ignoreHTTPSErrors: true,
+    });
+    expect(created.ok()).toBeTruthy();
+    const createdBody = await created.json();
+    expect(createdBody.code).toBe(0);
+    const paramId = createdBody?.data?.id ?? createdBody?.data?.ID;
 
-    // 单元格插槽把枚举渲染成标签
-    await expect(page.locator('.el-table__row .el-tag').first()).toBeVisible({ timeout: 15000 });
+    try {
+      await page.goto('/Admin/Parameter');
+      await expect(page.locator('.cube-table')).toBeVisible({ timeout: 15000 });
+      await expect(page.locator('.el-table')).toBeVisible({ timeout: 15000 });
+
+      const headers = await page.locator('.el-table__header th').allTextContents();
+      const kindIndex = headers.findIndex((text) => text.trim() === 'Kind');
+      const idIndex = headers.findIndex((text) => text.trim() === 'ID');
+      expect(kindIndex).toBeGreaterThanOrEqual(0);
+      expect(idIndex).toBeGreaterThanOrEqual(0);
+      // preset list.order 把 Kind 前置，验证真实页面消费了页面呈现配置
+      expect(kindIndex).toBeLessThan(idIndex);
+
+      // 单元格插槽把枚举渲染成标签
+      await expect(page.locator('.el-table__row .el-tag').first()).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText(paramName)).toBeVisible();
+    } finally {
+      if (paramId) await page.request.delete(`${apiBase}/api/Admin/Parameter?ids=${paramId}`, { ignoreHTTPSErrors: true });
+    }
   });
 
   test('M3 自定义页：整页接管且不渲染 CubeTable', async ({ page }) => {
