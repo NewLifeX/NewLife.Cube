@@ -122,6 +122,14 @@ export interface DataField {
   textAlign?: string | number;
   /** 单元格样式类 */
   class?: string;
+  /** 列宽。数字为像素，'auto' 为自适应；由呈现配置（preset）或皮肤覆盖 */
+  width?: number | 'auto';
+  /** 固定列。由呈现配置（preset）或皮肤覆盖 */
+  fixed?: 'left' | 'right';
+  /** 行/模型级显示条件。由呈现配置（preset）写入，皮肤按当前行/模型求值 */
+  visibleWhen?: (model: Record<string, unknown>) => boolean;
+  /** 模型级必填条件。由呈现配置（preset）写入，优先于静态 required */
+  requiredWhen?: (model: Record<string, unknown>) => boolean;
   /** 数据字典（键值对列表） */
   dataSource?: Record<string, string>;
   /** 值集编码（枚举 / singleSelect / multipleSelect 由后端静态构造下发，前端绝不硬编码） */

@@ -53,6 +53,29 @@ test('applyFieldPreset: hidden=false 打开默认隐藏列', () => {
   assert.equal(result[0].visible, true);
 });
 
+test('applyFieldPreset: 列宽、固定列、条件显隐与条件必填写回字段', () => {
+  const visibleWhen = (model) => model.Kind === 1;
+  const requiredWhen = (model) => model.Kind === 2;
+
+  const result = applyFieldPreset([field('Amount')], {
+    patch: { Amount: { width: 160, fixed: 'right', visibleWhen, requiredWhen } },
+  });
+
+  assert.equal(result[0].width, 160);
+  assert.equal(result[0].fixed, 'right');
+  assert.equal(result[0].visibleWhen, visibleWhen);
+  assert.equal(result[0].requiredWhen, requiredWhen);
+  assert.equal(result[0].visibleWhen({ Kind: 1 }), true);
+  assert.equal(result[0].visibleWhen({ Kind: 2 }), false);
+  assert.equal(result[0].requiredWhen({ Kind: 2 }), true);
+});
+
+test('applyFieldPreset: 自适应列宽原样保留', () => {
+  const result = applyFieldPreset([field('Name')], { patch: { Name: { width: 'auto' } } });
+
+  assert.equal(result[0].width, 'auto');
+});
+
 test('applyFieldPreset: 列序中的未知字段被忽略', () => {
   const result = applyFieldPreset([field('Name'), field('Mobile')], { order: ['NotExist', 'Mobile'] });
 

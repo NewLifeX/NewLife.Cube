@@ -75,19 +75,19 @@ export type PageStateUpdater = (partial: Partial<PageState>) => void;
 export interface FieldPresetPatch {
   /** 表头文案（写回 header） */
   label?: string;
-  /** 列宽（像素或 auto；由皮肤读取） */
+  /** 列宽（写回 width；像素或 auto） */
   width?: number | 'auto';
-  /** 对齐（left/center/right） */
+  /** 对齐（写回 textAlign） */
   align?: 'left' | 'center' | 'right';
-  /** 固定列（由皮肤读取） */
+  /** 固定列（写回 fixed） */
   fixed?: 'left' | 'right';
   /** 渲染器名（写回 view） */
   renderer?: string;
   /** 是否隐藏（写回 visible=false） */
   hidden?: boolean;
-  /** 行/模型级显示条件（由皮肤读取） */
+  /** 行/模型级显示条件（写回 visibleWhen，由皮肤求值） */
   visibleWhen?: (model: Record<string, unknown>) => boolean;
-  /** 模型级必填条件（由皮肤读取） */
+  /** 模型级必填条件（写回 requiredWhen，由皮肤求值） */
   requiredWhen?: (model: Record<string, unknown>) => boolean;
 }
 
@@ -111,7 +111,7 @@ export interface PagePreset {
   list?: FieldPresetSpec;
   /** 树形列表父字段名；false 关闭自动识别（菜单/部门/地区等树形实体） */
   treeBy?: string | false;
-  /** 表单区（新增/编辑共用） */
+  /** 表单区（新增/编辑/详情共用） */
   form?: FieldPresetSpec & {
     /** 弹窗/表单列数 */
     columns?: 1 | 2 | 3;
@@ -125,7 +125,7 @@ export interface PagePreset {
 /**
  * 应用字段集合补丁：移除 → 补丁 → 排序 → 追加。
  *
- * 只改呈现字段（header/textAlign/view/visible），不改 typeName、dataSource 等提交语义。
+ * 只改呈现字段（header/textAlign/view/visible/width/fixed/visibleWhen/requiredWhen），不改 typeName、dataSource 等提交语义。
  *
  * @param fields 原始字段数组
  * @param spec 补丁；为空时原样返回
@@ -148,6 +148,10 @@ export function applyFieldPreset(fields: DataField[], spec?: FieldPresetSpec | n
       if (patch.align !== undefined) next.textAlign = patch.align;
       if (patch.renderer !== undefined) next.view = patch.renderer;
       if (patch.hidden !== undefined) next.visible = !patch.hidden;
+      if (patch.width !== undefined) next.width = patch.width;
+      if (patch.fixed !== undefined) next.fixed = patch.fixed;
+      if (patch.visibleWhen !== undefined) next.visibleWhen = patch.visibleWhen;
+      if (patch.requiredWhen !== undefined) next.requiredWhen = patch.requiredWhen;
       return next;
     });
 
