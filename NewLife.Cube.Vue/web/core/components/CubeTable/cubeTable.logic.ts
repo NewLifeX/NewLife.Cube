@@ -419,6 +419,226 @@ export function cellParts(
   return one === '' ? [] : [one];
 }
 
+/** 数值类型名集合（用于判断 ItemType=time/timespan 的载体是秒数还是日期） */
+function isNumericTypeName(typeName?: string): boolean {
+  const text = (typeName ?? '').trim().toLowerCase();
+  return (
+    text === 'int32' ||
+    text === 'int64' ||
+    text === 'int16' ||
+    text === 'decimal' ||
+    text === 'double' ||
+    text === 'single' ||
+    text === 'float' ||
+    text === 'byte' ||
+    text === 'sbyte'
+  );
+}
+
+/**
+ * .NET 日期格式串转文本（支持 yyyy/yy/MM/M/dd/d/HH/H/hh/h/mm/m/ss/s/fff/f/tt 与引号字面量）。
+ *
+ * 后端 ItemType 形如 `time-yyyy年MM月dd日`，只覆盖常用 token，未知字符原样输出。
+ */
+export function formatDotNetDate(date: Date, format: string): string {
+  if (!format) return '';
+  if (Number.isNaN(date.getTime())) return '';
+
+  const pad = (value: number, width = 2) => String(value).padStart(width, '0');
+  const hours = date.getHours();
+  const tokens: Array<[string, string]> = [
+    ['yyyy', String(date.getFullYear())],
+    ['yy', String(date.getFullYear()).slice(-2)],
+    ['MM', pad(date.getMonth() + 1)],
+    ['M', String(date.getMonth() + 1)],
+    ['dd', pad(date.getDate())],
+    ['d', String(date.getDate())],
+    ['HH', pad(hours)],
+    ['H', String(hours)],
+    ['hh', pad(hours % 12 || 12)],
+    ['h', String(hours % 12 || 12)],
+    ['mm', pad(date.getMinutes())],
+    ['m', String(date.getMinutes())],
+    ['ss', pad(date.getSeconds())],
+    ['s', String(date.getSeconds())],
+    ['fff', pad(date.getMilliseconds(), 3)],
+    ['f', String(Math.floor(date.getMilliseconds() / 100))],
+    ['tt', hours < 12 ? 'AM' : 'PM'],
+  ];
+
+  let result = '';
+  let index = 0;
+  while (index < format.length) {
+    const ch = format[index];
+    // 引号内为字面量，原样输出
+    if (ch === "'" || ch === '"') {
+      const end = format.indexOf(ch, index + 1);
+      if (end < 0) {
+        result += format.slice(index + 1);
+        break;
+      }
+      result += format.slice(index + 1, end);
+      index = end + 1;
+      continue;
+    }
+    const hit = tokens.find(([token]) => format.startsWith(token, index));
+    if (hit) {
+      result += hit[1];
+      index += hit[0].length;
+      continue;
+    }
+    result += ch;
+    index += 1;
+  }
+  return result;
+}
+
+/** .NET TimeSpan 默认格式：`[-][d.]hh:mm:ss[.fffffff]` */
+function formatTimeSpanDefault(totalSeconds: number): string {
+  const negative = totalSeconds < 0;
+  const abs = Math.abs(totalSeconds);
+  const days = Math.floor(abs / 86400);
+  const hours = Math.floor((abs % 86400) / 3600);
+  const minutes = Math.floor((abs % 3600) / 60);
+  const seconds = Math.floor(abs % 60);
+  const fraction = Math.round((abs - Math.floor(abs)) * 1000);
+  const pad = (value: number) => String(value).padStart(2, '0');
+
+  let text = days > 0 ? `${days}.${pad(hours)}:${pad(minutes)}:${pad(seconds)}` : `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  if (fraction > 0) text += `.${String(fraction).padStart(3, '0').replace(/0+$/, '')}`;
+  return negative ? `-${text}` : text;
+}
+
+/** .NET TimeSpan 自定义格式（支持 d/hh/h/mm/m/ss/s/f…） */
+function formatTimeSpanCustom(totalSeconds: number, format: string): string {
+  const negative = totalSeconds < 0;
+  const abs = Math.abs(totalSeconds);
+  const days = Math.floor(abs / 86400);
+  const hours = Math.floor((abs % 86400) / 3600);
+  const minutes = Math.floor((abs % 3600) / 60);
+  const seconds = Math.floor(abs % 60);
+  const milliseconds = Math.round((abs - Math.floor(abs)) * 1000);
+  const pad = (value: number, width = 2) => String(value).padStart(width, '0');
+
+  const tokens: Array<[string, string]> = [
+    ['dd', pad(days)],
+    ['d', String(days)],
+    ['hh', pad(hours)],
+    ['h', String(hours)],
+    ['mm', pad(minutes)],
+    ['m', String(minutes)],
+    ['ss', pad(seconds)],
+    ['s', String(seconds)],
+    ['fff', pad(milliseconds, 3)],
+    ['ff', pad(Math.floor(milliseconds / 10), 2)],
+    ['f', String(Math.floor(milliseconds / 100))],
+  ];
+
+  let result = '';
+  let index = 0;
+  while (index < format.length) {
+    const ch = format[index];
+    if (ch === "'" || ch === '"') {
+      const end = format.indexOf(ch, index + 1);
+      if (end < 0) {
+        result += format.slice(index + 1);
+        break;
+      }
+      result += format.slice(index + 1, end);
+      index = end + 1;
+      continue;
+    }
+    if (ch === '\\' && index + 1 < format.length) {
+      result += format[index + 1];
+      index += 2;
+      continue;
+    }
+    const hit = tokens.find(([token]) => format.startsWith(token, index));
+    if (hit) {
+      result += hit[1];
+      index += hit[0].length;
+      continue;
+    }
+    result += ch;
+    index += 1;
+  }
+  return negative ? `-${result}` : result;
+}
+
+/**
+ * 时长格式化（ItemType=`TimeSpan` / `TimeSpan:<格式>`）。对齐后端 `ViewHelper.FormatValue`：
+ * 按字段描述里的单位（毫秒/秒/分/小时）换算，再套默认或自定义格式。
+ */
+export function formatTimeSpanCell(field: FieldMeta, raw: unknown): string {
+  const value = Number(raw);
+  if (!Number.isFinite(value)) return String(raw ?? '');
+
+  const description = (field.description ?? '').toLowerCase();
+  let totalSeconds = value;
+  if (/毫秒|ms|millisecond/.test(description)) totalSeconds = value / 1000;
+  else if (/小时|hour/.test(description)) totalSeconds = value * 3600;
+  else if (/分|minute/.test(description)) totalSeconds = value * 60;
+
+  const itemType = (field.itemType ?? '').trim();
+  const colon = itemType.indexOf(':');
+  if (colon > 0) {
+    const format = itemType.slice(colon + 1).trim();
+    if (format) return formatTimeSpanCustom(totalSeconds, format);
+  }
+  return formatTimeSpanDefault(totalSeconds);
+}
+
+/** 时间戳（Unix 秒）格式化（ItemType=`Time` / `Time:<格式>`），对齐后端 `ToDateTime().ToLocalTime()` */
+export function formatTimeStampCell(field: FieldMeta, raw: unknown): string {
+  const seconds = Number(raw);
+  if (!Number.isFinite(seconds)) return String(raw ?? '');
+
+  const date = new Date(seconds * 1000);
+  if (Number.isNaN(date.getTime()) || date.getFullYear() <= 1) return '';
+
+  const itemType = (field.itemType ?? '').trim();
+  const colon = itemType.indexOf(':');
+  if (colon > 0) {
+    const format = itemType.slice(colon + 1).trim();
+    if (format) return formatDotNetDate(date, format);
+  }
+  return formatDotNetDate(date, 'yyyy-MM-dd HH:mm:ss');
+}
+
+/** 日期时间格式（ItemType=`time` 或 `time-<格式>`），对齐 MVC `_List_Data_Item` */
+export function formatTimeItemCell(field: FieldMeta, raw: unknown): string {
+  const itemType = (field.itemType ?? '').trim();
+  const text = String(raw ?? '');
+  if (!text) return '';
+
+  const date = new Date(text);
+  if (Number.isNaN(date.getTime())) return text;
+
+  const custom = /^time-(.+)$/i.exec(itemType);
+  if (custom) return formatDotNetDate(date, custom[1]);
+  return formatDotNetDate(date, 'yyyy-MM-dd HH:mm:ss');
+}
+
+/**
+ * 容量格式化（ItemType=`GMK`）。对齐后端 `ToGMK`：1024 进制，不足 1K 取整数，其余保留两位小数。
+ */
+export function formatGmkCell(raw: unknown): string {
+  const value = Math.trunc(Number(raw));
+  if (!Number.isFinite(value)) return String(raw ?? '');
+  if (value < 0) return `-${formatGmkCell(-value)}`;
+  if (value < 1024) return value.toLocaleString('zh-CN');
+
+  const units = ['K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+  let size = value / 1024;
+  for (const unit of units) {
+    if (size < 1024 || unit === 'Y') {
+      return `${size.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}${unit}`;
+    }
+    size /= 1024;
+  }
+  return String(value);
+}
+
 /** 百分比格式化。对齐 MVC `_List_Data_Item`：按描述中的单位先缩放，再乘 100 加 % */
 export function formatPercentCell(field: FieldMeta, raw: unknown): string {
   let value = Number(raw);
@@ -480,6 +700,19 @@ function singleCellText(column: CubeColumnView, raw: unknown): string {
   if (isPercentItemType(itemType)) return formatPercentCell(column.field, raw);
   if (isMoneyItemType(itemType)) return formatMoneyCell(column.field, raw);
   if (parseDecimalItemType(itemType)) return formatDecimalCell(column.field, raw);
+
+  // ItemType 精确格式化（MVC `_List_Data_Item` / `ViewHelper.FormatValue` 同口径）
+  const normalized = (itemType ?? '').trim().toLowerCase();
+  if (normalized === 'gmk') return formatGmkCell(raw);
+  if (normalized.startsWith('timespan')) return formatTimeSpanCell(column.field, raw);
+  // TimeSpan 列上的 time 表示时钟时间，继续走下方 control='time' 的归一
+  const isSpanColumn = (column.field.typeName ?? '').trim().toLowerCase() === 'timespan';
+  if (normalized.startsWith('time') && !isSpanColumn) {
+    // 数值列上的 Time 是 Unix 秒；日期/字符串列才是时间格式
+    return isNumericTypeName(column.field.typeName)
+      ? formatTimeStampCell(column.field, raw)
+      : formatTimeItemCell(column.field, raw);
+  }
 
   switch (column.control) {
     case 'date': {

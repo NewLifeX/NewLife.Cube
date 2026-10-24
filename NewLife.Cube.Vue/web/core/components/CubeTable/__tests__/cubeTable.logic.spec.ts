@@ -22,8 +22,13 @@ import {
   cellTitle,
   fieldHeader,
   formatDecimalCell,
+  formatDotNetDate,
+  formatGmkCell,
   formatMoneyCell,
   formatPercentCell,
+  formatTimeItemCell,
+  formatTimeSpanCell,
+  formatTimeStampCell,
   linkTemplateHasValue,
   mergeColumnOrder,
   normalizeTextAlign,
@@ -539,5 +544,55 @@ describe('CubeTable/logic 列表呈现属性', () => {
   it('decimal(p,s) 按声明位数补零', () => {
     const field: FieldMeta = { name: 'Price', typeName: 'Decimal', itemType: 'decimal(18,3)' };
     expect(formatDecimalCell(field, 12.3)).toBe('12.300');
+  });
+
+  it('TimeSpan 按默认格式与描述单位换算', () => {
+    const seconds: FieldMeta = { name: 'OnlineTime', typeName: 'Int32', itemType: 'TimeSpan' };
+    expect(formatTimeSpanCell(seconds, 3725)).toBe('01:02:05');
+    expect(formatTimeSpanCell(seconds, 90061)).toBe('1.01:01:01');
+    // 描述里的“毫秒”表示存储值为毫秒
+    expect(formatTimeSpanCell({ ...seconds, description: '耗时（毫秒）' }, 1500)).toBe('00:00:01.5');
+    // 描述里的“小时”表示存储值为小时数
+    expect(formatTimeSpanCell({ ...seconds, description: '时长（小时）' }, 2)).toBe('02:00:00');
+  });
+
+  it('TimeSpan:<格式> 支持自定义格式与引号字面量', () => {
+    const field: FieldMeta = {
+      name: 'OnlineTime',
+      typeName: 'Int32',
+      itemType: "TimeSpan:d'.'hh':'mm':'ss",
+    };
+    expect(formatTimeSpanCell(field, 3725)).toBe('0.01:02:05');
+  });
+
+  it('Time/Time:<格式> 把 Unix 秒转为本地时间', () => {
+    const stamp = Date.UTC(2026, 0, 2, 3, 4, 5) / 1000;
+    const plain: FieldMeta = { name: 'CreateTime', typeName: 'Int64', itemType: 'Time' };
+    expect(formatTimeStampCell(plain, stamp)).toMatch(/^2026-01-0[1-3] \d{2}:\d{2}:\d{2}$/);
+
+    const custom: FieldMeta = { name: 'CreateTime', typeName: 'Int64', itemType: 'Time:yyyy/MM/dd' };
+    expect(formatTimeStampCell(custom, stamp)).toMatch(/^2026\/01\/0[1-3]$/);
+  });
+
+  it('time / time-<格式> 格式化日期列', () => {
+    const full: FieldMeta = { name: 'CreateTime', typeName: 'DateTime', itemType: 'time' };
+    expect(formatTimeItemCell(full, '2026-01-02T03:04:05')).toMatch(/^2026-01-02 03:04:05$/);
+
+    const custom: FieldMeta = { name: 'CreateTime', typeName: 'DateTime', itemType: 'time-yyyy年MM月dd日' };
+    expect(formatTimeItemCell(custom, '2026-01-02T03:04:05')).toBe('2026年01月02日');
+  });
+
+  it('GMK 按 1024 进制转人类可读', () => {
+    expect(formatGmkCell(0)).toBe('0');
+    expect(formatGmkCell(1023)).toBe('1,023');
+    expect(formatGmkCell(1024)).toBe('1.00K');
+    expect(formatGmkCell(1024 * 1024 * 3.5)).toBe('3.50M');
+    expect(formatGmkCell(1024 * 1024 * 1024)).toBe('1.00G');
+  });
+
+  it('.NET 日期格式串转换覆盖常用 token', () => {
+    const date = new Date(2026, 0, 2, 15, 4, 5);
+    expect(formatDotNetDate(date, 'yyyy-MM-dd HH:mm:ss')).toBe('2026-01-02 15:04:05');
+    expect(formatDotNetDate(date, 'yy/M/d h:mm tt')).toBe('26/1/2 3:04 PM');
   });
 });

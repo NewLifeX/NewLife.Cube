@@ -124,6 +124,41 @@ describe('resolveControl（表单编辑控件）', () => {
     expect(resolveControl(f({ name: 'UrlVal', typeName: 'String', itemType: 'url' }))).toBe('url');
   });
 
+  it('ItemType=password → password（对齐 MVC 遮蔽输入）', () => {
+    expect(resolveControl(f({ name: 'Pass', typeName: 'String', itemType: 'password' }))).toBe('password');
+  });
+
+  it('ItemType=phone/fax → tel，email → email（MVC 别名对齐）', () => {
+    expect(resolveControl(f({ name: 'Phone', typeName: 'String', itemType: 'phone' }))).toBe('tel');
+    expect(resolveControl(f({ name: 'Fax', typeName: 'String', itemType: 'fax' }))).toBe('tel');
+    expect(resolveControl(f({ name: 'Email', typeName: 'String', itemType: 'email' }))).toBe('email');
+  });
+
+  it('ItemType=textarea → textarea，richtext → richHtml', () => {
+    expect(resolveControl(f({ name: 'Brief', typeName: 'String', itemType: 'textarea' }))).toBe('textarea');
+    expect(resolveControl(f({ name: 'Rich', typeName: 'String', itemType: 'richtext' }))).toBe('richHtml');
+  });
+
+  it('ItemType=avatar/attachment → image/upload', () => {
+    expect(resolveControl(f({ name: 'Photo', typeName: 'String', itemType: 'avatar' }))).toBe('image');
+    expect(resolveControl(f({ name: 'Doc', typeName: 'String', itemType: 'attachment' }))).toBe('upload');
+  });
+
+  it('ItemType=number → inputNumber', () => {
+    expect(resolveControl(f({ name: 'Num', typeName: 'String', itemType: 'number' }))).toBe('inputNumber');
+  });
+
+  it('ItemType 大小写与空格归一（PASSWORD / Phone /  Textarea ）', () => {
+    expect(resolveControl(f({ name: 'Pass', typeName: 'String', itemType: 'PASSWORD' }))).toBe('password');
+    expect(resolveControl(f({ name: 'Phone', typeName: 'String', itemType: 'Phone' }))).toBe('tel');
+    expect(resolveControl(f({ name: 'Brief', typeName: 'String', itemType: '  Textarea ' }))).toBe('textarea');
+  });
+
+  it('未知 ItemType 回退 TypeName 推断，不抛异常', () => {
+    expect(resolveControl(f({ name: 'N', typeName: 'Int32', itemType: 'not-a-type' }))).toBe('inputNumber');
+    expect(resolveControl(f({ name: 'S', typeName: 'String', length: 40, itemType: 'not-a-type' }))).toBe('input');
+  });
+
   it('Guid → readonly', () => {
     expect(resolveControl(f({ name: 'GuidVal', typeName: 'Guid' }))).toBe('readonly');
   });

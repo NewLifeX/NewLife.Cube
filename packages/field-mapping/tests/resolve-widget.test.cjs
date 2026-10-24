@@ -16,6 +16,18 @@ test('itemType 精确映射：json/icon/markdown/time', () => {
   assert.equal(resolveWidget({ name: 'F', typeName: 'String', itemType: 'time' }).widget, 'time');
 });
 
+test('itemType 文本类别名：password/phone/fax/email/textarea/richtext', () => {
+  const w = (itemType) => resolveWidget({ name: 'F', typeName: 'String', itemType }).widget;
+  assert.equal(w('password'), 'password');
+  assert.equal(w('phone'), 'phone');
+  assert.equal(w('fax'), 'phone');
+  assert.equal(w('email'), 'email');
+  assert.equal(w('textarea'), 'textarea');
+  assert.equal(w('richtext'), 'html');
+  assert.equal(w('avatar'), 'image');
+  assert.equal(w('attachment'), 'file');
+});
+
 test('itemType singleSelect + lovCode → lov（透传 lovCode）', () => {
   const r = resolveWidget({ name: 'Kind', typeName: 'Int32', itemType: 'singleSelect', lovCode: 'Enum.Kind' });
   assert.equal(r.widget, 'lov');

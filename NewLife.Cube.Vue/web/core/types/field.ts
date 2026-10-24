@@ -29,6 +29,7 @@ export type ControlType =
   | 'email' // 邮箱（带校验）
   | 'tel' // 手机（带校验）
   | 'url' // 网址（带校验）
+  | 'password' // 密码（遮蔽显示，ItemType=password）
   | 'readonly' // 只读文本（Guid 等）
   | 'select' // 枚举 / 字典下拉（后端下发 dataSource）
   | 'area'; // 地区级联（ItemType=area1~4）

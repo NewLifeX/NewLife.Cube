@@ -402,6 +402,20 @@ function toMultiArray(val: unknown): string[] {
             @update:model-value="(v: string) => updateField(field.name, v)"
           />
 
+          <!-- 密码（ItemType=password，对齐 MVC _Form_String 的遮蔽输入） -->
+          <el-input
+            v-else-if="controlOf(field) === 'password'"
+            :id="`fmc-${field.name}`"
+            class="fmc-input"
+            :disabled="props.disabled"
+            type="password"
+            show-password
+            autocomplete="new-password"
+            :placeholder="field.description || '请输入...'"
+            :model-value="String(getValue(field.name) ?? '')"
+            @update:model-value="(v: string) => updateField(field.name, v)"
+          />
+
           <!-- 只读（Guid 等） -->
           <el-input
             v-else-if="controlOf(field) === 'readonly'"
