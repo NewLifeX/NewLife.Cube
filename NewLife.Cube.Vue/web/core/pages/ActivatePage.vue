@@ -13,22 +13,22 @@
       <!-- 品牌区 -->
       <div class="brand">
         <div class="brand-icon">🔑</div>
-        <h1 class="brand-name">账号激活</h1>
-        <p class="brand-hint">激活邮箱/手机后即可正常登录</p>
+        <h1 class="brand-name">{{ t('activate.title') }}</h1>
+        <p class="brand-hint">{{ t('activate.hint') }}</p>
       </div>
 
       <!-- 结果态 -->
       <div v-if="done" class="result-box">
         <div class="result-icon">✓</div>
-        <div class="result-title">激活成功</div>
-        <div class="result-desc">您的账号已激活，现在可以登录了</div>
-        <button type="button" class="primary-btn" @click="goLogin">前往登录</button>
+        <div class="result-title">{{ t('activate.success') }}</div>
+        <div class="result-desc">{{ t('activate.successDesc') }}</div>
+        <button type="button" class="primary-btn" @click="goLogin">{{ t('activate.goLogin') }}</button>
       </div>
 
       <!-- 链接激活失败（无 token 时走验证码表单） -->
       <div v-else-if="linkError" class="link-error">
         <div class="result-desc">{{ linkError }}</div>
-        <p class="fallback-tip">您也可以在下方输入验证码完成激活：</p>
+        <p class="fallback-tip">{{ t('activate.fallbackTip') }}</p>
       </div>
 
       <!-- 验证码激活表单 -->
@@ -41,7 +41,7 @@
             :class="{ active: form.channel === 'mail' }"
             @click="form.channel = 'mail'"
           >
-            邮箱激活
+            {{ t('activate.channelMail') }}
           </button>
           <button
             type="button"
@@ -49,20 +49,20 @@
             :class="{ active: form.channel === 'sms' }"
             @click="form.channel = 'sms'"
           >
-            手机激活
+            {{ t('activate.channelSms') }}
           </button>
         </div>
 
         <!-- 邮箱/手机号 -->
         <div class="input-group">
           <label class="input-label" for="activate-account">
-            {{ form.channel === 'mail' ? '邮箱' : '手机号' }}
+            {{ form.channel === 'mail' ? t('activate.accountMail') : t('activate.accountMobile') }}
           </label>
           <el-input
             id="activate-account"
             data-cy="activate-account"
             v-model="form.account"
-            :placeholder="form.channel === 'mail' ? '请输入邮箱' : '请输入手机号'"
+            :placeholder="form.channel === 'mail' ? t('activate.accountMailPlaceholder') : t('activate.accountMobilePlaceholder')"
             size="large"
             :class="{ 'is-error': !!errors.account }"
             @input="clearError('account')"
@@ -72,20 +72,20 @@
 
         <!-- 验证码 -->
         <div class="input-group">
-          <label class="input-label" for="activate-code">验证码</label>
+          <label class="input-label" for="activate-code">{{ t('activate.code') }}</label>
           <div class="code-row">
             <el-input
               id="activate-code"
               data-cy="activate-code"
               v-model="form.code"
-              placeholder="请输入验证码"
+              :placeholder="t('activate.codePlaceholder')"
               size="large"
               maxlength="6"
               :class="{ 'is-error': !!errors.code }"
               @input="clearError('code')"
             />
             <button type="button" class="code-btn" :disabled="sending" @click="handleSendCode">
-              {{ sending ? '发送中...' : '发送验证码' }}
+              {{ sending ? t('activate.sending') : t('activate.sendCode') }}
             </button>
           </div>
           <span v-if="errors.code" class="input-error">{{ errors.code }}</span>
@@ -93,11 +93,11 @@
 
         <!-- 激活按钮 -->
         <button type="submit" class="primary-btn" :disabled="submitting">
-          {{ submitting ? '激活中...' : '激 活' }}
+          {{ submitting ? t('activate.submitting') : t('activate.submit') }}
         </button>
 
         <!-- 返回登录 -->
-        <button type="button" class="link-btn" @click="goLogin">返回登录</button>
+        <button type="button" class="link-btn" @click="goLogin">{{ t('activate.backLogin') }}</button>
       </form>
     </div>
   </div>
@@ -106,11 +106,13 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { activateByLink, activateByCode, sendCode } from '../utils/loginApi';
 
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 
 /** 是否已完成激活 */
 const done = ref<boolean>(false);
@@ -152,12 +154,12 @@ async function activateByLinkToken(token: string, account: string): Promise<void
     const res = await activateByLink(token, account);
     if (res.code === 0 && res.data?.activated) {
       done.value = true;
-      ElMessage.success('激活成功');
+      ElMessage.success(t('activate.success'));
     } else {
-      linkError.value = res.message || '激活链接无效或已过期';
+      linkError.value = res.message || t('activate.linkInvalid');
     }
   } catch (err: unknown) {
-    linkError.value = err instanceof Error ? err.message : '激活失败，请稍后重试';
+    linkError.value = err instanceof Error ? err.message : t('activate.failedRetry');
   } finally {
     submitting.value = false;
   }
@@ -167,15 +169,15 @@ async function activateByLinkToken(token: string, account: string): Promise<void
 async function handleSendCode(): Promise<void> {
   const account = form.account.trim();
   if (!account) {
-    errors.value.account = form.channel === 'mail' ? '请输入邮箱' : '请输入手机号';
+    errors.value.account = form.channel === 'mail' ? t('activate.accountMailPlaceholder') : t('activate.accountMobilePlaceholder');
     return;
   }
   if (form.channel === 'mail' && !isMail(account)) {
-    errors.value.account = '邮箱格式不正确';
+    errors.value.account = t('activate.mailInvalid');
     return;
   }
   if (form.channel === 'sms' && !isMobile(account)) {
-    errors.value.account = '手机号格式不正确';
+    errors.value.account = t('activate.mobileInvalid');
     return;
   }
 
@@ -183,12 +185,12 @@ async function handleSendCode(): Promise<void> {
   try {
     const res = await sendCode(form.channel === 'mail' ? 'Mail' : 'Sms', account, 'activate');
     if (res.code === 0) {
-      ElMessage.success('验证码已发送，请查收');
+      ElMessage.success(t('activate.codeSent'));
     } else {
-      ElMessage.error(res.message || '验证码发送失败');
+      ElMessage.error(res.message || t('activate.codeFailed'));
     }
   } catch (err: unknown) {
-    ElMessage.error(err instanceof Error ? err.message : '验证码发送失败');
+    ElMessage.error(err instanceof Error ? err.message : t('activate.codeFailed'));
   } finally {
     sending.value = false;
   }
@@ -201,18 +203,18 @@ async function handleSubmit(): Promise<void> {
 
   const account = form.account.trim();
   if (!account) {
-    errors.value.account = form.channel === 'mail' ? '请输入邮箱' : '请输入手机号';
+    errors.value.account = form.channel === 'mail' ? t('activate.accountMailPlaceholder') : t('activate.accountMobilePlaceholder');
     valid = false;
   } else if (form.channel === 'mail' && !isMail(account)) {
-    errors.value.account = '邮箱格式不正确';
+    errors.value.account = t('activate.mailInvalid');
     valid = false;
   } else if (form.channel === 'sms' && !isMobile(account)) {
-    errors.value.account = '手机号格式不正确';
+    errors.value.account = t('activate.mobileInvalid');
     valid = false;
   }
 
   if (!form.code.trim()) {
-    errors.value.code = '请输入验证码';
+    errors.value.code = t('activate.codeRequired');
     valid = false;
   }
 
@@ -223,12 +225,12 @@ async function handleSubmit(): Promise<void> {
     const res = await activateByCode(form.channel, account, form.code.trim());
     if (res.code === 0 && res.data?.activated) {
       done.value = true;
-      ElMessage.success('激活成功');
+      ElMessage.success(t('activate.success'));
     } else {
-      ElMessage.error(res.message || '激活失败');
+      ElMessage.error(res.message || t('activate.failed'));
     }
   } catch (err: unknown) {
-    ElMessage.error(err instanceof Error ? err.message : '激活失败，请稍后重试');
+    ElMessage.error(err instanceof Error ? err.message : t('activate.failedRetry'));
   } finally {
     submitting.value = false;
   }
