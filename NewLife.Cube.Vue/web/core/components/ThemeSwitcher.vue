@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useTheme, THEME_OPTIONS, type ThemeFamily } from '../composables/useTheme';
+import { useI18n } from 'vue-i18n';
 import SwitcherDropdown from './SwitcherDropdown.vue';
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {});
 
 const { currentTheme, switchTheme } = useTheme();
+const { t } = useI18n();
 
 const handleSelect = (id: string) => {
   const family = id as ThemeFamily;
@@ -25,7 +27,7 @@ const handleSelect = (id: string) => {
   <SwitcherDropdown
     :model-value="currentTheme.family"
     :options="THEME_OPTIONS"
-    title="切换主题"
+    :title="t('theme.switch')"
     @update:model-value="handleSelect"
   >
     <!-- 调色盘图标 -->

@@ -1,5 +1,9 @@
 import { ref, watchEffect } from 'vue';
 import { loadThemeCss } from '../themes';
+import i18n from '../i18n';
+
+/** 主题名跟随语言：模块级常量用 getter，读到时才取当前 locale 的文案 */
+const t = (key: string): string => i18n.global.t(key);
 
 export type ThemeFamily = 'cyber' | 'forest' | 'aurora' | 'industrial';
 export type ThemeMode = 'dark' | 'light';
@@ -24,38 +28,134 @@ export interface ThemeGroup {
 export const THEME_GROUPS: ThemeGroup[] = [
   {
     id: 'cyber',
-    label: 'Cyber 赛博',
+    get label() {
+      return t('theme.cyber');
+    },
     icon: '◉',
     variants: [
-      { id: 'cyber-dark', label: '赛博深色', icon: '🌙', description: '赛博深色主题', family: 'cyber', mode: 'dark' },
-      { id: 'cyber-light', label: '赛博浅色', icon: '☀️', description: '赛博浅色主题', family: 'cyber', mode: 'light' },
+      {
+        id: 'cyber-dark',
+        get label() {
+          return t('theme.cyberDark');
+        },
+        icon: '🌙',
+        get description() {
+          return t('theme.cyberDarkDesc');
+        },
+        family: 'cyber',
+        mode: 'dark',
+      },
+      {
+        id: 'cyber-light',
+        get label() {
+          return t('theme.cyberLight');
+        },
+        icon: '☀️',
+        get description() {
+          return t('theme.cyberLightDesc');
+        },
+        family: 'cyber',
+        mode: 'light',
+      },
     ],
   },
   {
     id: 'forest',
-    label: 'Forest 森林绿',
+    get label() {
+      return t('theme.forest');
+    },
     icon: '🌿',
     variants: [
-      { id: 'forest-dark', label: '森林深色', icon: '🌙', description: '森林绿深色主题', family: 'forest', mode: 'dark' },
-      { id: 'forest-light', label: '森林浅色', icon: '☀️', description: '森林绿浅色主题', family: 'forest', mode: 'light' },
+      {
+        id: 'forest-dark',
+        get label() {
+          return t('theme.forestDark');
+        },
+        icon: '🌙',
+        get description() {
+          return t('theme.forestDarkDesc');
+        },
+        family: 'forest',
+        mode: 'dark',
+      },
+      {
+        id: 'forest-light',
+        get label() {
+          return t('theme.forestLight');
+        },
+        icon: '☀️',
+        get description() {
+          return t('theme.forestLightDesc');
+        },
+        family: 'forest',
+        mode: 'light',
+      },
     ],
   },
   {
     id: 'aurora',
-    label: 'Aurora 极光蓝绿',
+    get label() {
+      return t('theme.aurora');
+    },
     icon: '🌌',
     variants: [
-      { id: 'aurora-dark', label: '极光深色', icon: '🌙', description: '极光蓝绿深色主题', family: 'aurora', mode: 'dark' },
-      { id: 'aurora-light', label: '极光浅色', icon: '☀️', description: '极光蓝绿浅色主题', family: 'aurora', mode: 'light' },
+      {
+        id: 'aurora-dark',
+        get label() {
+          return t('theme.auroraDark');
+        },
+        icon: '🌙',
+        get description() {
+          return t('theme.auroraDarkDesc');
+        },
+        family: 'aurora',
+        mode: 'dark',
+      },
+      {
+        id: 'aurora-light',
+        get label() {
+          return t('theme.auroraLight');
+        },
+        icon: '☀️',
+        get description() {
+          return t('theme.auroraLightDesc');
+        },
+        family: 'aurora',
+        mode: 'light',
+      },
     ],
   },
   {
     id: 'industrial',
-    label: 'Industrial 工业科技',
+    get label() {
+      return t('theme.industrial');
+    },
     icon: '⚙',
     variants: [
-      { id: 'industrial-dark', label: '工业深色', icon: '🌙', description: '工业科技深色主题', family: 'industrial', mode: 'dark' },
-      { id: 'industrial-light', label: '工业浅色', icon: '☀️', description: '工业科技浅色主题', family: 'industrial', mode: 'light' },
+      {
+        id: 'industrial-dark',
+        get label() {
+          return t('theme.industrialDark');
+        },
+        icon: '🌙',
+        get description() {
+          return t('theme.industrialDarkDesc');
+        },
+        family: 'industrial',
+        mode: 'dark',
+      },
+      {
+        id: 'industrial-light',
+        get label() {
+          return t('theme.industrialLight');
+        },
+        icon: '☀️',
+        get description() {
+          return t('theme.industrialLightDesc');
+        },
+        family: 'industrial',
+        mode: 'light',
+      },
     ],
   },
 ];
@@ -72,8 +172,16 @@ export interface ThemeSelectOption {
   family: ThemeFamily;
 }
 
-export const THEME_OPTIONS: ThemeSelectOption[] = THEME_GROUPS.map(g => ({
-  id: g.id, label: g.label, icon: g.icon, description: g.label, family: g.id,
+export const THEME_OPTIONS: ThemeSelectOption[] = THEME_GROUPS.map((g) => ({
+  id: g.id,
+  get label() {
+    return g.label;
+  },
+  icon: g.icon,
+  get description() {
+    return g.label;
+  },
+  family: g.id,
 }));
 
 // ── 独立状态：Mode ———————
