@@ -55,6 +55,13 @@ export default {
   'search.more': '更多',
   'search.less': '收起',
   'search.query': '查询',
+  'search.keyword': '搜索关键字',
+  'search.expand': '展开',
+  'search.collapse': '收起',
+  'search.minValue': '最小',
+  'search.maxValue': '最大',
+  'search.start': '开始',
+  'search.end': '结束',
 
   // AI 助手
   'ai.title': 'AI 助手',

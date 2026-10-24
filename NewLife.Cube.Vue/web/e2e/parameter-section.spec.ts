@@ -18,7 +18,8 @@ test.describe('参数管理（Section 覆盖示范页）', () => {
     await page.goto(basePath);
     await expect(page.locator('.el-table')).toBeVisible({ timeout: 20000 });
 
-    await expect(page.getByPlaceholder('搜索关键字')).toBeVisible();
+    // 关键字占位符随界面语言变化，用正则同时接受中/英（zh-CN / en-US）
+    await expect(page.getByPlaceholder(/搜索关键字|Search keyword/)).toBeVisible();
     await expect(page.getByRole('columnheader', { name: '操作' })).toBeVisible();
   });
 

@@ -17,6 +17,7 @@ import ElementPlus from 'element-plus';
 import CubeTableSearch from '../CubeTableSearch.vue';
 import { clearFieldRenderers, registerFieldRenderer } from '../../../engine/fieldRenderers';
 import { FIELDS, makeFakeCtx } from './fakeCtx';
+import { testI18n } from '../../../__tests__/helpers/i18n';
 import type { FieldMeta } from '../../../types/field';
 
 /**
@@ -58,7 +59,7 @@ async function mountSearch(
   const ctx = { ...makeFakeCtx({ searchFields, keyword }), ...patch };
   const wrapper = mount(CubeTableSearch, {
     props: { ctx },
-    global: { plugins: [ElementPlus] },
+    global: { plugins: [ElementPlus, testI18n] },
     slots,
   });
   await nextTick();
@@ -160,7 +161,7 @@ describe('CubeTableSearch 一体式结构', () => {
     const ctx = makeFakeCtx({ searchFields: [] });
     const wrapper = mount(CubeTableSearch, {
       props: { ctx, placeholder: '输入名称搜索' },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
     });
     await nextTick();
     expect(wrapper.find('input').attributes('placeholder')).toBe('输入名称搜索');

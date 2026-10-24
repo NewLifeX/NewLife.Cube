@@ -48,6 +48,13 @@ export default {
   'search.more': '更多',
   'search.less': '收起',
   'search.query': '查詢',
+  'search.keyword': '搜尋關鍵字',
+  'search.expand': '展開',
+  'search.collapse': '收起',
+  'search.minValue': '最小',
+  'search.maxValue': '最大',
+  'search.start': '開始',
+  'search.end': '結束',
 
   // AI 助手
   'ai.title': 'AI 助手',

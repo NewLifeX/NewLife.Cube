@@ -56,6 +56,13 @@ export default {
   'search.more': 'More',
   'search.less': 'Less',
   'search.query': 'Query',
+  'search.keyword': 'Search keyword',
+  'search.expand': 'Expand',
+  'search.collapse': 'Collapse',
+  'search.minValue': 'Min',
+  'search.maxValue': 'Max',
+  'search.start': 'Start',
+  'search.end': 'End',
 
   // AI 助手
   'ai.title': 'AI assistant',

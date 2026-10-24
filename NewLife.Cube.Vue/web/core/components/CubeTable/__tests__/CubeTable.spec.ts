@@ -14,6 +14,7 @@ import ElementPlus from 'element-plus';
 import CubeTable from '../CubeTable.vue';
 import { CubeEngineKey } from '../../../engine/useCubeEngine';
 import { FIELDS, makeFakeCtx } from './fakeCtx';
+import { testI18n } from '../../../__tests__/helpers/i18n';
 
 const downloadStubs = vi.hoisted(() => ({ saveBlob: vi.fn() }));
 vi.mock('../downloadFile', () => ({
@@ -59,7 +60,7 @@ async function mountHost(
   const wrapper = mount(CubeTable, {
     props: { context: ctx, ...options.props },
     slots: options.slots ?? {},
-    global: { plugins: [ElementPlus], provide: options.provide ?? {} },
+    global: { plugins: [ElementPlus, testI18n], provide: options.provide ?? {} },
   });
   await nextTick();
   await nextTick();
@@ -108,7 +109,7 @@ describe('CubeTable 五段结构', () => {
     // 不传 context：只能来自 inject；若走自动创建分支会去请求后端并报错
     const wrapper = mount(CubeTable, {
       props: {},
-      global: { plugins: [ElementPlus], provide: { [CubeEngineKey]: ctx } },
+      global: { plugins: [ElementPlus, testI18n], provide: { [CubeEngineKey]: ctx } },
     });
     await nextTick();
     await nextTick();
@@ -121,7 +122,7 @@ describe('CubeTable 五段结构', () => {
     const passed = baseCtx({ list: [{ Name: '来自prop', Count: 2 }] });
     const wrapper = mount(CubeTable, {
       props: { context: passed },
-      global: { plugins: [ElementPlus], provide: { [CubeEngineKey]: injected } },
+      global: { plugins: [ElementPlus, testI18n], provide: { [CubeEngineKey]: injected } },
     });
     await nextTick();
     await nextTick();
@@ -307,7 +308,7 @@ describe('CubeTable 表单弹窗', () => {
       formFields: [FIELDS.name, { ...FIELDS.enable, nullable: true }],
     });
     ctx.dialogVisible.value = true;
-    mount(CubeTable, { props: { context: ctx }, global: { plugins: [ElementPlus] } });
+    mount(CubeTable, { props: { context: ctx }, global: { plugins: [ElementPlus, testI18n] } });
     // el-dialog 是 append-to-body 的，内容不在 wrapper 里
     await vi.waitFor(() => expect(document.body.textContent).toContain('保存'));
     expect(document.body.textContent).toContain('启用');

@@ -11,6 +11,7 @@
  * 状态与动作全部落在引擎上：`ctx.keyword` / `ctx.searchModel` / `ctx.search()` / `ctx.resetSearch()`。
  */
 import { computed, ref, useSlots } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ArrowDown, ArrowUp, Filter, Search } from '@element-plus/icons-vue';
 import LovSelect from '../LovSelect/index.vue';
 import AreaSelect from '../AreaSelect/index.vue';
@@ -26,8 +27,10 @@ const props = withDefaults(
     /** 关键字占位文案 */
     placeholder?: string;
   }>(),
-  { placeholder: '搜索关键字' },
+  { placeholder: '' },
 );
+
+const { t } = useI18n();
 
 const slots = useSlots();
 const keyword = props.ctx.keyword;
@@ -60,7 +63,7 @@ function onRendererValue(control: CubeSearchControl, value: unknown): void {
           v-model="keyword"
           class="cts-input cts-cell"
           clearable
-          :placeholder="placeholder"
+          :placeholder="placeholder || t('search.keyword')"
           :prefix-icon="Search"
           @keyup.enter="ctx.search()"
           @clear="ctx.search()"
@@ -70,15 +73,15 @@ function onRendererValue(control: CubeSearchControl, value: unknown): void {
         <div class="cts-cell cts-cell--end">
           <button v-if="showSearchControls" type="button" class="cts-toggle" @click="toggle">
             <el-icon :size="15"><Filter /></el-icon>
-            <span>{{ expanded ? '收起' : '展开' }}</span>
+            <span>{{ expanded ? t('search.collapse') : t('search.expand') }}</span>
             <el-icon :size="14">
               <ArrowUp v-if="expanded" />
               <ArrowDown v-else />
             </el-icon>
           </button>
           <div class="cts-actions">
-            <el-button @click="ctx.resetSearch()">重置</el-button>
-            <el-button type="primary" @click="ctx.search()">搜索</el-button>
+            <el-button @click="ctx.resetSearch()">{{ t('button.reset') }}</el-button>
+            <el-button type="primary" @click="ctx.search()">{{ t('button.search') }}</el-button>
           </div>
         </div>
         <div v-for="c in expanded ? controls : controls.slice(0, 1)" :key="c.key" class="cts-item cts-cell">
@@ -116,21 +119,21 @@ function onRendererValue(control: CubeSearchControl, value: unknown): void {
             v-model="ctx.searchModel[c.key] as string | number | undefined"
             class="cts-ctl"
             clearable
-            placeholder="全部"
+            :placeholder="t('search.all')"
           >
             <el-option v-for="o in c.options" :key="String(o.value)" :label="o.label" :value="o.value" />
           </el-select>
 
           <div v-else-if="c.kind === 'numberRange'" class="cts-range">
-            <el-input-number v-model="ctx.searchModel[c.key] as number" :controls="false" placeholder="最小" />
+            <el-input-number v-model="ctx.searchModel[c.key] as number" :controls="false" :placeholder="t('search.minValue')" />
             <span class="cts-sep">–</span>
-            <el-input-number v-model="ctx.searchModel[c.maxKey!] as number" :controls="false" placeholder="最大" />
+            <el-input-number v-model="ctx.searchModel[c.maxKey!] as number" :controls="false" :placeholder="t('search.maxValue')" />
           </div>
 
           <div v-else-if="c.kind === 'timeRange'" class="cts-range">
-            <el-time-picker v-model="ctx.searchModel[c.key] as string" value-format="HH:mm:ss" placeholder="起" />
+            <el-time-picker v-model="ctx.searchModel[c.key] as string" value-format="HH:mm:ss" :placeholder="t('search.from')" />
             <span class="cts-sep">–</span>
-            <el-time-picker v-model="ctx.searchModel[c.maxKey!] as string" value-format="HH:mm:ss" placeholder="止" />
+            <el-time-picker v-model="ctx.searchModel[c.maxKey!] as string" value-format="HH:mm:ss" :placeholder="t('search.to')" />
           </div>
 
           <div v-else-if="c.kind === 'range'" class="cts-range">
@@ -138,14 +141,14 @@ function onRendererValue(control: CubeSearchControl, value: unknown): void {
               v-model="ctx.searchModel[c.key] as string"
               :type="c.rangeType === 'date' ? 'date' : 'datetime'"
               :value-format="c.rangeType === 'date' ? 'YYYY-MM-DD' : 'YYYY-MM-DDTHH:mm:ss'"
-              placeholder="开始"
+              :placeholder="t('search.start')"
             />
             <span class="cts-sep">–</span>
             <el-date-picker
               v-model="ctx.searchModel[c.maxKey!] as string"
               :type="c.rangeType === 'date' ? 'date' : 'datetime'"
               :value-format="c.rangeType === 'date' ? 'YYYY-MM-DD' : 'YYYY-MM-DDTHH:mm:ss'"
-              placeholder="结束"
+              :placeholder="t('search.end')"
             />
           </div>
 
@@ -155,8 +158,8 @@ function onRendererValue(control: CubeSearchControl, value: unknown): void {
             class="cts-ctl"
             type="daterange"
             value-format="YYYY-MM-DD"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
+            :start-placeholder="t('search.startDate')"
+            :end-placeholder="t('search.endDate')"
           />
 
           <el-date-picker
@@ -165,8 +168,8 @@ function onRendererValue(control: CubeSearchControl, value: unknown): void {
             class="cts-ctl"
             type="datetimerange"
             value-format="YYYY-MM-DDTHH:mm:ss"
-            start-placeholder="开始时间"
-            end-placeholder="结束时间"
+            :start-placeholder="t('search.startTime')"
+            :end-placeholder="t('search.endTime')"
           />
 
           <LovSelect
@@ -177,7 +180,7 @@ function onRendererValue(control: CubeSearchControl, value: unknown): void {
             :multiple="c.kind === 'lovMulti'"
           />
 
-          <el-select v-else v-model="ctx.searchModel[c.key] as string" class="cts-ctl" clearable placeholder="全部">
+          <el-select v-else v-model="ctx.searchModel[c.key] as string" class="cts-ctl" clearable :placeholder="t('search.all')">
             <el-option v-for="o in c.options" :key="o.value" :label="o.label" :value="o.value" />
           </el-select>
         </div>
