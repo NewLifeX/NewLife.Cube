@@ -87,6 +87,24 @@ public class TenantAuthFixture : IDisposable
         DAL.ConnStrs!.TryAdd("Cube", "MapTo=Membership");
         DAL.ConnStrs!.TryAdd("Log", "MapTo=Membership");
 
+        // 主动按表建结构：EntitySession 的“已检查”标记换库后不会复位，
+        // 其他用例先访问过实体时不再触发建表，直接 SetTables 绕过缓存，避免 no such table
+        // （与 XUnitTest.SqliteDb.Ensure 同法）
+        var dal = DAL.Create("Membership");
+        dal.SetTables(
+            (IDataTable)Role.Meta.Table.DataTable.Clone(),
+            (IDataTable)User.Meta.Table.DataTable.Clone(),
+            (IDataTable)Tenant.Meta.Table.DataTable.Clone(),
+            (IDataTable)TenantUser.Meta.Table.DataTable.Clone(),
+            (IDataTable)UserToken.Meta.Table.DataTable.Clone(),
+            (IDataTable)UserConnect.Meta.Table.DataTable.Clone(),
+            (IDataTable)UserStat.Meta.Table.DataTable.Clone(),
+            (IDataTable)Parameter.Meta.Table.DataTable.Clone(),
+            (IDataTable)OAuthConfig.Meta.Table.DataTable.Clone(),
+            (IDataTable)NotificationRecord.Meta.Table.DataTable.Clone(),
+            (IDataTable)UserOnline.Meta.Table.DataTable.Clone(),
+            (IDataTable)VerifyCodeRecord.Meta.Table.DataTable.Clone());
+
         // 2. 固定JWT密钥，保证测试内令牌签发/校验可复现
         CubeSetting.Current.JwtSecret = "HS256:CubeTenantReproTestSecret";
 
