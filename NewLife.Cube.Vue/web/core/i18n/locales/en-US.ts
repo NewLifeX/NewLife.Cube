@@ -594,6 +594,26 @@ export default {
   'onlineUser.detailTitle': 'Online user details',
   'onlineUser.deleteConfirm': 'Remove the online user "{name}"?',
 
+  // Tenants
+  'tenant.title': 'Tenants',
+  'tenant.add': 'New tenant',
+  'tenant.edit': 'Edit tenant',
+  'tenant.code': 'Code',
+  'tenant.codeHint': 'Enter the tenant code',
+  'tenant.name': 'Tenant name',
+  'tenant.nameHint': 'Enter the tenant name',
+  'tenant.manager': 'Manager',
+  'tenant.managerHint': 'Manager user ID',
+  'tenant.kind': 'Tenant type',
+  'tenant.kindHint': 'Select the tenant type',
+  'tenant.kindNormal': 'Standard tenant',
+  'tenant.kindSystem': 'System tenant',
+  'tenant.kindUnknown': 'Unknown',
+  'tenant.remarkHint': 'Enter a remark',
+  'tenant.codeRequired': 'Please enter the tenant code',
+  'tenant.nameRequired': 'Please enter the tenant name',
+  'tenant.deleteConfirm': 'Delete this tenant?',
+
   // Security center
   'security.title': 'Security center',
   'security.mail': 'Email',

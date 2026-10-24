@@ -592,6 +592,26 @@ export default {
   'onlineUser.detailTitle': '在线用户详情',
   'onlineUser.deleteConfirm': '确认删除在线用户 "{name}" 吗？',
 
+  // 租户管理
+  'tenant.title': '租户管理',
+  'tenant.add': '新增租户',
+  'tenant.edit': '编辑租户',
+  'tenant.code': '租户代码',
+  'tenant.codeHint': '请输入租户代码',
+  'tenant.name': '租户名称',
+  'tenant.nameHint': '请输入租户名称',
+  'tenant.manager': '管理者',
+  'tenant.managerHint': '管理者用户ID',
+  'tenant.kind': '租户类型',
+  'tenant.kindHint': '请选择租户类型',
+  'tenant.kindNormal': '普通租户',
+  'tenant.kindSystem': '系统租户',
+  'tenant.kindUnknown': '未知',
+  'tenant.remarkHint': '请输入备注',
+  'tenant.codeRequired': '请输入租户代码',
+  'tenant.nameRequired': '请输入租户名称',
+  'tenant.deleteConfirm': '确认删除该租户吗？',
+
   // 安全中心
   'security.title': '安全中心',
   'security.mail': '邮箱',

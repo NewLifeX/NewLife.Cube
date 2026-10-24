@@ -3,8 +3,8 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>租户管理</h3>
-          <el-button type="primary" @click="handleAdd">新增租户</el-button>
+          <h3>{{ t('tenant.title') }}</h3>
+          <el-button type="primary" @click="handleAdd">{{ t('tenant.add') }}</el-button>
         </div>
       </template>
 
@@ -15,34 +15,34 @@
       />
 
       <el-table :data="tableData" border style="width: 100%" v-loading="loading">
-        <el-table-column prop="id" label="编号" width="80" />
-        <el-table-column prop="code" label="租户代码" />
-        <el-table-column prop="name" label="租户名称" />
-        <el-table-column prop="managerName" label="管理者" />
-        <el-table-column prop="kind" label="类型" width="100">
+        <el-table-column prop="id" :label="t('common.id')" width="80" />
+        <el-table-column prop="code" :label="t('tenant.code')" />
+        <el-table-column prop="name" :label="t('tenant.name')" />
+        <el-table-column prop="managerName" :label="t('tenant.manager')" />
+        <el-table-column prop="kind" :label="t('tenant.kind')" width="100">
           <template #default="scope">
             <el-tag :type="getKindType(scope.row.kind)">
               {{ getKindText(scope.row.kind) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="updateTime" label="更新时间" />
-        <el-table-column label="启用" width="80">
+        <el-table-column prop="updateTime" :label="t('common.updateTime')" />
+        <el-table-column :label="t('common.enable')" width="80">
           <template #default="scope">
             <el-tag :type="scope.row.enable ? 'success' : 'danger'">
-              {{ scope.row.enable ? '是' : '否' }}
+              {{ scope.row.enable ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="备注" min-width="120" show-overflow-tooltip>
+        <el-table-column :label="t('common.remark')" min-width="120" show-overflow-tooltip>
           <template #default="scope">
             {{ scope.row.remark || '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180">
+        <el-table-column :label="t('common.actions')" width="180">
           <template #default="scope">
-            <el-button type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button type="danger" size="small" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button type="primary" size="small" @click="handleEdit(scope.row)">{{ t('button.edit') }}</el-button>
+            <el-button type="danger" size="small" @click="handleDelete(scope.row)">{{ t('button.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -58,33 +58,33 @@
     </el-card>
 
     <!-- 租户表单对话框 -->
-    <el-dialog v-model="dialogVisible" :title="formType === 'add' ? '新增租户' : '编辑租户'" width="600px">
+    <el-dialog v-model="dialogVisible" :title="formType === 'add' ? t('tenant.add') : t('tenant.edit')" width="600px">
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
-        <el-form-item label="租户代码" prop="code">
-          <el-input v-model="form.code" placeholder="请输入租户代码" />
+        <el-form-item :label="t('tenant.code')" prop="code">
+          <el-input v-model="form.code" :placeholder="t('tenant.codeHint')" />
         </el-form-item>
-        <el-form-item label="租户名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入租户名称" />
+        <el-form-item :label="t('tenant.name')" prop="name">
+          <el-input v-model="form.name" :placeholder="t('tenant.nameHint')" />
         </el-form-item>
-        <el-form-item label="租户类型" prop="kind">
-          <el-select v-model="form.kind" placeholder="请选择租户类型">
-            <el-option label="普通租户" :value="0" />
-            <el-option label="系统租户" :value="1" />
+        <el-form-item :label="t('tenant.kind')" prop="kind">
+          <el-select v-model="form.kind" :placeholder="t('tenant.kindHint')">
+            <el-option :label="t('tenant.kindNormal')" :value="0" />
+            <el-option :label="t('tenant.kindSystem')" :value="1" />
           </el-select>
         </el-form-item>
-        <el-form-item label="管理者" prop="managerId">
-          <el-input-number v-model="form.managerId" :min="0" placeholder="管理者用户ID" />
+        <el-form-item :label="t('tenant.manager')" prop="managerId">
+          <el-input-number v-model="form.managerId" :min="0" :placeholder="t('tenant.managerHint')" />
         </el-form-item>
-        <el-form-item label="启用状态" prop="enable">
+        <el-form-item :label="t('coreSetting.enable')" prop="enable">
           <el-switch v-model="form.enable" :active-value="true" :inactive-value="false" />
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" type="textarea" placeholder="请输入备注" />
+        <el-form-item :label="t('common.remark')" prop="remark">
+          <el-input v-model="form.remark" type="textarea" :placeholder="t('tenant.remarkHint')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">确定</el-button>
+        <el-button @click="dialogVisible = false">{{ t('button.cancel') }}</el-button>
+        <el-button type="primary" @click="submitForm">{{ t('button.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -92,6 +92,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { FormInstance, FormRules } from 'element-plus';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 import { apiDataToList, handleDeleteOperation, handleFormSubmit } from '@newlifex/cube-vue/core/utils/api-helpers';
@@ -130,6 +131,7 @@ interface Tenant {
 // 表格数据
 const tableData = ref<Tenant[]>([]);
 const loading = ref(false);
+const { t } = useI18n();
 
 // 页面请求参数
 const queryParams = reactive({
@@ -171,20 +173,20 @@ const form = reactive<Tenant>({
 // 表单验证规则
 const formRules = reactive<FormRules>({
   code: [
-    { required: true, message: '请输入租户代码', trigger: 'blur' }
+    { required: true, message: t('tenant.codeRequired'), trigger: 'blur' }
   ],
   name: [
-    { required: true, message: '请输入租户名称', trigger: 'blur' }
+    { required: true, message: t('tenant.nameRequired'), trigger: 'blur' }
   ]
 });
 
 // 获取类型文本
 const getKindText = (kind: number) => {
   const map: Record<number, string> = {
-    0: '普通租户',
-    1: '系统租户'
+    0: t('tenant.kindNormal'),
+    1: t('tenant.kindSystem')
   };
-  return map[kind] || '未知';
+  return map[kind] || t('tenant.kindUnknown');
 };
 
 // 获取类型标签类型
@@ -290,7 +292,7 @@ const handleDelete = (row: Tenant) => {
   handleDeleteOperation(
     () => request.delete(`/Admin/Tenant/${row.id}`),
     loadData,
-    '确认删除该租户吗？'
+    t('tenant.deleteConfirm')
   );
 };
 

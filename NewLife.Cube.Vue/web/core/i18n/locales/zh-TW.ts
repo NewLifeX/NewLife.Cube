@@ -577,6 +577,26 @@ export default {
   'onlineUser.detailTitle': '線上使用者詳情',
   'onlineUser.deleteConfirm': '確認刪除線上使用者 "{name}" 嗎？',
 
+  // 租戶管理
+  'tenant.title': '租戶管理',
+  'tenant.add': '新增租戶',
+  'tenant.edit': '編輯租戶',
+  'tenant.code': '租戶代碼',
+  'tenant.codeHint': '請輸入租戶代碼',
+  'tenant.name': '租戶名稱',
+  'tenant.nameHint': '請輸入租戶名稱',
+  'tenant.manager': '管理者',
+  'tenant.managerHint': '管理者使用者ID',
+  'tenant.kind': '租戶類型',
+  'tenant.kindHint': '請選擇租戶類型',
+  'tenant.kindNormal': '一般租戶',
+  'tenant.kindSystem': '系統租戶',
+  'tenant.kindUnknown': '未知',
+  'tenant.remarkHint': '請輸入備註',
+  'tenant.codeRequired': '請輸入租戶代碼',
+  'tenant.nameRequired': '請輸入租戶名稱',
+  'tenant.deleteConfirm': '確認刪除該租戶嗎？',
+
   // 安全中心
   'security.title': '安全中心',
   'security.mail': '電子郵件',
