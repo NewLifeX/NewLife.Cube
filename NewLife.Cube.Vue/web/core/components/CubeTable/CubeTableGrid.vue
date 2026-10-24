@@ -61,6 +61,8 @@ const props = withDefaults(
     actions: CubeTableActions;
     /** 列显隐（宿主「设置列」的结果；null 表示未启用） */
     visibility?: Record<string, boolean> | null;
+    /** 用户列序（宿主「设置列」的结果；空表示元数据顺序） */
+    columnOrder?: string[] | null;
     /** 恢复默认列显隐（放进 #default 作用域供业务列 `v-if` 配套使用） */
     resetVisibility?: (() => void) | null;
     /** 表格高度：默认撑满 .table-wrap，交给 el-table 内部滚动 */
@@ -77,6 +79,7 @@ const props = withDefaults(
   }>(),
   {
     visibility: null,
+    columnOrder: null,
     resetVisibility: null,
     height: '100%',
     actionWidth: undefined,
@@ -94,7 +97,7 @@ const permissions = usePagePermissions(props.ctx);
 const customColumns = computed(() => Boolean(slots.default));
 
 const columns = computed(() =>
-  buildColumnViews(props.ctx.listFields.value, props.visibility),
+  buildColumnViews(props.ctx.listFields.value, props.visibility, { order: props.columnOrder }),
 );
 const rows = computed(() => props.ctx.list.value);
 const flags = computed(() =>
@@ -152,8 +155,12 @@ async function onCellClick(
 
   try {
     const method = column.field.dataAction.toLowerCase() === 'post' ? 'post' : 'get';
-    const res = (await request({ url, method })) as { message?: string } | undefined;
-    if (res?.message) ElMessage.success(res.message);
+    const res = (await request({ url, method })) as
+      | { message?: string; data?: { message?: string } }
+      | undefined;
+    // 兼容裸对象与 ApiResponse 包裹两种返回形态
+    const message = res?.message ?? res?.data?.message;
+    if (message) ElMessage.success(message);
     await props.ctx.refresh();
   } catch (err) {
     // 请求层已统一提示错误，这里兜底避免未捕获 rejection

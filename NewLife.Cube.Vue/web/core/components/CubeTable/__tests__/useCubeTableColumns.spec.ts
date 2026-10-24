@@ -115,6 +115,69 @@ describe('useCubeTableColumns', () => {
     expect(storage.dump.get('/k')).toBe('{"Name":true}');
   });
 
+  it('应该按历史列序返回列 当用户调整过列序时', () => {
+    const storage = memoryStorage({
+      '/k': '{"Name":true,"Count":true}',
+      '/k:order': '["Count","Name"]',
+    });
+    const columns = useCubeTableColumns(ref(makeFields('name', 'count')), {
+      prefix: () => '/api/X/X',
+      enabled: true,
+      storageKey: '/k',
+      storage,
+    });
+
+    expect(columns.items.value.map((item) => item.key)).toEqual(['Count', 'Name']);
+    expect(columns.order.value).toEqual(['Count', 'Name']);
+  });
+
+  it('应该保存列序 当用户上移/下移列时', () => {
+    const storage = memoryStorage();
+    const columns = useCubeTableColumns(ref(makeFields('name', 'count')), {
+      prefix: () => '/api/X/X',
+      enabled: true,
+      storage,
+    });
+
+    columns.setOrder(['Count', 'Name']);
+
+    expect(columns.items.value.map((item) => item.key)).toEqual(['Count', 'Name']);
+    expect(JSON.parse(storage.dump.get('cube-table:columns:/api/X/X:order') ?? '[]')).toEqual([
+      'Count',
+      'Name',
+    ]);
+  });
+
+  it('应该把新列追加到末尾 当列序配置里还没有该列时', () => {
+    const storage = memoryStorage({ '/k:order': '["Name"]' });
+    const fields = ref(makeFields('name'));
+    const columns = useCubeTableColumns(fields, {
+      prefix: () => '/api/X/X',
+      enabled: true,
+      storageKey: '/k',
+      storage,
+    });
+
+    fields.value = makeFields('name', 'count');
+
+    expect(columns.items.value.map((item) => item.key)).toEqual(['Name', 'Count']);
+  });
+
+  it('应该恢复默认列序并落盘 当用户点恢复默认时', () => {
+    const storage = memoryStorage({ '/k:order': '["Count","Name"]' });
+    const columns = useCubeTableColumns(ref(makeFields('name', 'count')), {
+      prefix: () => '/api/X/X',
+      enabled: true,
+      storageKey: '/k',
+      storage,
+    });
+
+    columns.reset();
+
+    expect(columns.items.value.map((item) => item.key)).toEqual(['Name', 'Count']);
+    expect(JSON.parse(storage.dump.get('/k:order') ?? '[]')).toEqual(['Name', 'Count']);
+  });
+
   it('应该容忍坏数据与存储不可用 当 localStorage 里是垃圾或禁用时', () => {
     const broken = memoryStorage({ '/k': 'not-json{' });
     const columns = useCubeTableColumns(ref(makeFields('name')), {

@@ -8,12 +8,17 @@
  */
 import './domShims';
 import { describe, expect, it, vi } from 'vitest';
+
+const requestStub = vi.hoisted(() => vi.fn(async (..._args: unknown[]): Promise<unknown> => undefined));
+vi.mock('../../../utils/request', () => ({
+  default: (...args: unknown[]) => requestStub(...args),
+}));
 import { nextTick, ref } from 'vue';
 import { mount } from '@vue/test-utils';
 import ElementPlus from 'element-plus';
 import CubeTableActions from '../CubeTableActions.vue';
 import { makeFakeActions, makeFakeCtx } from './fakeCtx';
-import type { PageSetting } from '../../../engine/types';
+import type { BackendToolbarItem, PageSetting } from '../../../engine/types';
 
 interface MountOptions {
   setting?: PageSetting;
@@ -165,13 +170,14 @@ describe('CubeTableActions 插槽', () => {
 });
 describe('CubeTableActions 后端声明的工具栏按钮', () => {
   const toolbar = [
-    { name: '导入数据', displayName: '导入数据', kind: 'link' as const, url: '/School/Student/Import', target: '_blank' },
+    { name: '导入数据', displayName: '导入数据', kind: 'link' as const, url: '/School/Student/Import', target: '_blank', icon: 'Upload' },
     { name: '批量刷新', displayName: '批量刷新', kind: 'request' as const, action: 'Refresh', include: ['keys'], requiresSelection: true },
     { name: '高级导入', displayName: '高级导入', kind: 'custom' as const, renderer: 'not-registered' },
   ];
 
-  async function mountWithToolbar(selected: Record<string, unknown>[]) {
-    const ctx = makeFakeCtx({ setting: {}, selected, toolbar });
+  async function mountWithToolbar(selected: Record<string, unknown>[], override?: BackendToolbarItem[]) {
+    const toolbarItems = override ?? toolbar;
+    const ctx = makeFakeCtx({ setting: {}, selected, toolbar: toolbarItems });
     const wrapper = mount(CubeTableActions, {
       props: { ctx, actions: makeFakeActions(), flags: {} },
       global: { plugins: [ElementPlus] },
@@ -189,6 +195,24 @@ describe('CubeTableActions 后端声明的工具栏按钮', () => {
     expect(text).not.toContain('高级导入');
   });
 
+  it('应该渲染后端下发的按钮图标 当 icon 为已注册图标名时', async () => {
+    const wrapper = await mountWithToolbar([{ Id: 1 }]);
+    const btn = wrapper.findAll('button').filter((b) => b.text().includes('导入数据'))[0];
+
+    expect(btn.find('.el-icon').exists()).toBe(true);
+    expect(btn.find('svg').exists()).toBe(true);
+  });
+
+  it('应该忽略未知图标名而不影响按钮渲染 当 icon 拼写错误时', async () => {
+    const wrapper = await mountWithToolbar([{ Id: 1 }], [
+      { name: '未知图标', displayName: '未知图标', kind: 'link' as const, url: '/x', icon: 'NotARealIcon' },
+    ]);
+    const btn = wrapper.findAll('button').filter((b) => b.text().includes('未知图标'))[0];
+
+    expect(btn.exists()).toBe(true);
+    expect(btn.find('.el-icon').exists()).toBe(false);
+  });
+
   it('应该禁用需要选中数据的按钮 当没有勾选时', async () => {
     const wrapper = await mountWithToolbar([]);
     const btn = wrapper.findAll('button').filter((b) => b.text().includes('批量刷新'))[0];
@@ -201,5 +225,64 @@ describe('CubeTableActions 后端声明的工具栏按钮', () => {
     const btn = wrapper.findAll('button').filter((b) => b.text().includes('批量刷新'))[0];
 
     expect(btn.attributes('disabled')).toBeUndefined();
+  });
+
+  it('应该按 action 发请求并携带选中主键 当点 request 按钮时', async () => {
+    requestStub.mockClear();
+    requestStub.mockResolvedValueOnce({ data: { refresh: true } });
+    const wrapper = await mountWithToolbar([{ Id: 1 }, { Id: 2 }]);
+    const btn = wrapper.findAll('button').filter((b) => b.text().includes('批量刷新'))[0];
+
+    await btn.trigger('click');
+
+    await vi.waitFor(() => expect(requestStub).toHaveBeenCalled());
+    expect(requestStub.mock.calls[0][0]).toMatchObject({
+      url: '/api/Equipments/Equipment/Refresh',
+      method: 'GET',
+      params: { keys: '1,2' },
+    });
+  });
+
+  it('应该把选中文件与参数提交给 upload 动作 当选择文件后', async () => {
+    requestStub.mockClear();
+    const ctx = makeFakeCtx({
+      setting: {},
+      selected: [{ Id: 9 }],
+      toolbar: [
+        {
+          name: '上传数据',
+          displayName: '上传数据',
+          kind: 'upload' as const,
+          action: 'Upload',
+          include: ['keys'],
+          accept: '.xlsx',
+        },
+      ],
+    });
+    const wrapper = mount(CubeTableActions, {
+      props: { ctx, actions: makeFakeActions(), flags: {} },
+      global: { plugins: [ElementPlus] },
+    });
+    await nextTick();
+
+    const uploadButton = wrapper.findAll('button').filter((b) => b.text().includes('上传数据'))[0];
+    await uploadButton.trigger('click');
+    const upload = wrapper.find('input[data-role="toolbar-upload"]');
+    const file = new File(['x'], 'data.xlsx', { type: 'application/vnd.ms-excel' });
+    Object.defineProperty(upload.element, 'files', { value: [file], configurable: true });
+    await upload.trigger('change');
+
+    await vi.waitFor(() => expect(requestStub).toHaveBeenCalled());
+    const config = requestStub.mock.calls[0][0] as {
+      url: string;
+      method: string;
+      data: FormData;
+      headers: Record<string, string>;
+    };
+    expect(config.url).toBe('/api/Equipments/Equipment/Upload');
+    expect(config.method).toBe('POST');
+    expect(config.headers['Content-Type']).toBe('multipart/form-data');
+    expect((config.data.get('file') as File).name).toBe('data.xlsx');
+    expect(config.data.get('keys')).toBe('9');
   });
 });

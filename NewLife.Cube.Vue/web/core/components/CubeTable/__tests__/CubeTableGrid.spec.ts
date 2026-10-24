@@ -11,7 +11,7 @@ import './domShims';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent, h, nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
-import ElementPlus from 'element-plus';
+import ElementPlus, { ElMessage } from 'element-plus';
 import CubeTableGrid from '../CubeTableGrid.vue';
 import { clearFieldRenderers, registerFieldRenderer } from '../../../engine/fieldRenderers';
 import { FIELDS, makeFakeActions, makeFakeCtx } from './fakeCtx';
@@ -21,6 +21,11 @@ const lovStubs = vi.hoisted(() => ({
   getColumnLabel: vi.fn((_code: string, value: string) => value),
   getMeta: vi.fn(async (_code: string) => ({ type: 'ENUM' })),
   resolveColumnLabels: vi.fn(async (_code: string, value: string) => `类型${value}`),
+}));
+
+const requestStub = vi.hoisted(() => vi.fn(async (..._args: unknown[]): Promise<unknown> => undefined));
+vi.mock('../../../utils/request', () => ({
+  default: (...args: unknown[]) => requestStub(...args),
 }));
 
 vi.mock('../../LovSelect/lovStore', () => ({
@@ -152,6 +157,63 @@ describe('CubeTableGrid 列渲染', () => {
     const text = await textOf(ctx, { props: { visibility: { Name: false, Count: true } } });
     expect(text).not.toContain('名称');
     expect(text).toContain('数量');
+  });
+
+  it('应该按用户列序渲染列 当传入 columnOrder 时', async () => {
+    const ctx = makeFakeCtx({
+      listFields: [FIELDS.name, FIELDS.count],
+      list: [{ Name: '泵体', Count: 3 }],
+    });
+    const wrapper = await mountGrid(ctx, { props: { columnOrder: ['Count', 'Name'] } });
+    const labels = wrapper
+      .findAllComponents({ name: 'ElTableColumn' })
+      .map((c) => c.props('label'))
+      .filter((label): label is string => typeof label === 'string');
+
+    expect(labels.indexOf('数量')).toBeLessThan(labels.indexOf('名称'));
+  });
+
+  it('应该阻止跳转并请求动作后刷新 当单元格配置 dataAction 时', async () => {
+    requestStub.mockClear();
+    requestStub.mockResolvedValueOnce({ message: '已处理' });
+    const field = {
+      ...FIELDS.name,
+      url: '/api/Equipments/Equipment/{Id}/refresh',
+      dataAction: 'post',
+    };
+    const ctx = makeFakeCtx({ listFields: [field], list: [{ Id: 7, Name: '泵体' }] });
+    const refresh = vi.fn(async () => undefined);
+    ctx.refresh = refresh as never;
+    const wrapper = await mountGrid(ctx);
+
+    await wrapper.find('.el-link').trigger('click');
+
+    await vi.waitFor(() => expect(requestStub).toHaveBeenCalled());
+    expect(requestStub.mock.calls[0][0]).toMatchObject({
+      url: '/api/Equipments/Equipment/7/refresh',
+      method: 'post',
+    });
+    await vi.waitFor(() => expect(refresh).toHaveBeenCalled());
+  });
+
+  it('应该兼容 ApiResponse 包裹的 message 当动作返回统一响应时', async () => {
+    requestStub.mockClear();
+    requestStub.mockResolvedValueOnce({ code: 0, data: { message: '已处理' } });
+    const field = {
+      ...FIELDS.name,
+      url: '/Test/TestField/Touch/{Id}',
+      dataAction: 'get',
+    };
+    const ctx = makeFakeCtx({ listFields: [field], list: [{ Id: 7, Name: '泵体' }] });
+    const wrapper = await mountGrid(ctx);
+    const success = vi.spyOn(ElMessage, 'success').mockImplementation(() => undefined as never);
+
+    try {
+      await wrapper.find('.el-link').trigger('click');
+      await vi.waitFor(() => expect(success).toHaveBeenCalledWith('已处理'));
+    } finally {
+      success.mockRestore();
+    }
   });
 });
 

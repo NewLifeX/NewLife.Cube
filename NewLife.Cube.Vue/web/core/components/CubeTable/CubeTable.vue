@@ -158,6 +158,7 @@ const mergedRowActions = computed(() => [
             :items="columns.items.value"
             :visibility="columns.visibility.value"
             @set="(key: string, visible: boolean) => columns.setVisible(key, visible)"
+            @order="columns.setOrder"
             @reset="columns.reset()"
           />
         </template>
@@ -169,6 +170,7 @@ const mergedRowActions = computed(() => [
             :ctx="ctx"
             :actions="actions"
             :visibility="visibleColumns"
+            :column-order="columns.order.value"
             :reset-visibility="columns.reset"
             :extra-row-actions="mergedRowActions"
             v-bind="grid"

@@ -9,6 +9,8 @@ import { computed, ref, watch, type Ref } from 'vue';
 import {
   columnItemsFromFields,
   defaultColumnsStorageKey,
+  mergeColumnOrder,
+  parseColumnOrder,
 } from './cubeTable.logic';
 import { mergeColumnVisibility, parseColumnVisibility } from '../../engine/logic';
 import type { FieldMeta } from '../../types/field';
@@ -42,20 +44,30 @@ export function useCubeTableColumns(
     }
   };
 
-  const items = computed(() => columnItemsFromFields(typeof fields === 'function' ? fields() : fields.value));
+  const baseItems = computed(() => columnItemsFromFields(typeof fields === 'function' ? fields() : fields.value));
   const storageKey = computed(() => options.storageKey || defaultColumnsStorageKey(options.prefix()));
+  const orderStorageKey = computed(() => `${storageKey.value}:order`);
   const visibility = ref<Record<string, boolean>>({});
+  const order = ref<string[]>([]);
+  const items = computed(() => columnItemsFromFields(
+    typeof fields === 'function' ? fields() : fields.value,
+    order.value,
+  ));
 
   function load(): void {
     const storage = readStorage();
     let saved: Record<string, boolean> | null = null;
+    let savedOrder: string[] | null = null;
     try {
       saved = storage ? parseColumnVisibility(storage.getItem(storageKey.value)) : null;
+      savedOrder = storage ? parseColumnOrder(storage.getItem(orderStorageKey.value)) : null;
     } catch {
       // 存储被禁用（无痕模式 / 企业策略）时按默认全显示继续，而不是把整页打挂
       saved = null;
+      savedOrder = null;
     }
-    visibility.value = mergeColumnVisibility(items.value, saved);
+    visibility.value = mergeColumnVisibility(baseItems.value, saved);
+    order.value = mergeColumnOrder(baseItems.value.map((item) => item.key), savedOrder);
   }
 
   function persist(): void {
@@ -63,6 +75,7 @@ export function useCubeTableColumns(
     if (!storage) return;
     try {
       storage.setItem(storageKey.value, JSON.stringify(visibility.value));
+      storage.setItem(orderStorageKey.value, JSON.stringify(order.value));
     } catch {
       /* 隐私模式 / 配额不足时仅本次生效，不打断页面 */
     }
@@ -73,17 +86,24 @@ export function useCubeTableColumns(
     persist();
   }
 
+  function setOrder(keys: string[]): void {
+    order.value = mergeColumnOrder(baseItems.value.map((item) => item.key), keys);
+    persist();
+  }
+
   function reset(): void {
-    visibility.value = mergeColumnVisibility(items.value, null);
+    visibility.value = mergeColumnVisibility(baseItems.value, null);
+    order.value = baseItems.value.map((item) => item.key);
     persist();
   }
 
   if (options.enabled) {
     load();
     // 字段集在运行期可能因换实体 / 元数据刷新而变，重新合并一次。
-    // 必须 sync：默认 flush 要等下一个 tick，调用方紧接着读 visibility 会拿到旧列集
-    watch(items, load, { flush: 'sync' });
+    // 必须 sync：默认 flush 要等下一个 tick，调用方紧接着读 visibility 会拿到旧列集。
+    // 监听未排序的 baseItems，避免 order 变化反过来触发 load 形成循环。
+    watch(baseItems, load, { flush: 'sync' });
   }
 
-  return { items, visibility, setVisible, reset, storageKey };
+  return { items, visibility, order, setVisible, setOrder, reset, storageKey, orderStorageKey };
 }

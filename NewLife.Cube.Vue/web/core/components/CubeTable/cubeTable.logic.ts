@@ -172,19 +172,78 @@ export function alignItemsForControl(control: ListControlType, field: FieldMeta)
 }
 
 /**
+ * 按用户列序排序。未出现在 order 中的新列按原顺序追加到末尾。
+ * 大小写不敏感，返回的仍是原对象引用。
+ */
+export function sortByOrder<T>(
+  items: T[],
+  order: string[] | null | undefined,
+  keyOf: (item: T) => string,
+): T[] {
+  if (!order?.length || items.length === 0) return items;
+
+  const map = new Map<string, T>();
+  for (const item of items) map.set(keyOf(item).toLowerCase(), item);
+
+  const result: T[] = [];
+  for (const key of order) {
+    const hit = map.get(String(key).toLowerCase());
+    if (!hit) continue;
+    result.push(hit);
+    map.delete(String(key).toLowerCase());
+  }
+  for (const item of items) {
+    if (map.has(keyOf(item).toLowerCase())) result.push(item);
+  }
+  return result;
+}
+
+/** 解析持久化的列序。坏数据返回 null，由调用方回退元数据顺序 */
+export function parseColumnOrder(raw: string | null | undefined): string[] | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    const keys = parsed.filter((item): item is string => typeof item === 'string' && item.length > 0);
+    return keys.length > 0 ? keys : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 合并列序：只保留当前存在的列，新列追加到末尾。
+ * 缺省配置返回元数据顺序，保证升级后新字段不会凭空消失。
+ */
+export function mergeColumnOrder(keys: string[], saved: string[] | null | undefined): string[] {
+  const known = new Map(keys.map((key) => [key.toLowerCase(), key]));
+  const result: string[] = [];
+  for (const key of saved ?? []) {
+    const hit = known.get(String(key).toLowerCase());
+    if (!hit || result.includes(hit)) continue;
+    result.push(hit);
+    known.delete(String(key).toLowerCase());
+  }
+  for (const key of keys) {
+    if (!result.includes(key)) result.push(key);
+  }
+  return result;
+}
+
+/**
  * 生成列显示态。
  *
  * - `visibility` 为 `null` 表示未启用「设置列」，全部显示（取消勾选的列被过滤掉）；
  * - `showKeyColumn` 决定主键列是否出现（缺省显示）；
- * - 列顺序保持元数据下发顺序，前端不擅自排序。
+ * - `order` 为用户列序；缺省保持元数据下发顺序。
  */
 export function buildColumnViews(
   fields: FieldMeta[],
   visibility: Record<string, boolean> | null = null,
-  options: { showKeyColumn?: boolean } = {},
+  options: { showKeyColumn?: boolean; order?: string[] | null } = {},
 ): CubeColumnView[] {
   const { showKeyColumn = true } = options;
-  return fields
+  return sortByOrder(fields, options.order, (field) => field.name)
     .filter((field) => (field.primaryKey ? showKeyColumn : true))
     .filter((field) => field.hidden !== true)
     .filter((field) => {
@@ -210,8 +269,39 @@ export function buildColumnViews(
 /** 「设置列」候选项（key/label） */
 export function columnItemsFromFields(
   fields: FieldMeta[],
+  order?: string[] | null,
 ): Array<{ key: string; label: string; visible?: boolean }> {
-  return fields.map((f) => ({ key: f.name, label: f.displayName || f.name, visible: f.visible }));
+  const items = fields.map((f) => ({ key: f.name, label: f.displayName || f.name, visible: f.visible }));
+  return sortByOrder(items, order, (item) => item.key);
+}
+
+/** 工具栏响应。沿用 MVC onActionComplete 约定：message / data.refresh / data.url / data.time */
+export interface ToolbarResponse {
+  message?: string;
+  data?: Record<string, unknown>;
+}
+
+/** 工具栏响应解析结果。url 与 refresh 互斥，delay 为毫秒 */
+export interface ToolbarResult {
+  message?: string;
+  refresh: boolean;
+  url?: string;
+  delay: number;
+}
+
+/** 解析工具栏响应。`url='[refresh]'` 视为刷新，`time` 为跳转/刷新前的延迟秒数 */
+export function parseToolbarResult(res?: ToolbarResponse): ToolbarResult {
+  const body = res?.data ?? {};
+  const message = res?.message ?? (body.message as string | undefined);
+  const url = body.url as string | undefined;
+  const time = Number(body.time ?? 0);
+
+  return {
+    message: message ? String(message) : undefined,
+    refresh: url === '[refresh]' ? true : url ? false : body.refresh === true,
+    url: url && url !== '[refresh]' ? String(url) : undefined,
+    delay: time > 0 ? time * 1000 : 0,
+  };
 }
 
 /** 工具栏按钮开关入参（`undefined` 表示未显式指定，交由后端 `pageSetting` 决定） */

@@ -6,11 +6,12 @@
  * 批量删除）排在其后，右侧留给业务动作（`#extra`）。
  * 一行都没有内容时整行不渲染，不留一条空白带。
  */
-import { computed, ref, useSlots } from 'vue';
+import { computed, ref, useSlots, type Component } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import { Document, Download, Delete, Plus, Upload } from '@element-plus/icons-vue';
 import request from '../../utils/request';
-import { buildToolbarPayload, resolveToolbarFlags, toolbarKeyField, toolbarQueryString } from './cubeTable.logic';
+import { buildToolbarPayload, parseToolbarResult, resolveToolbarFlags, toolbarKeyField, toolbarQueryString } from './cubeTable.logic';
 import { getToolbarRenderer, toolbarDisabled } from './toolbarRenderers';
 import { usePagePermissions } from '../../composables/usePagePermissions';
 import type { BackendToolbarItem, CubeEngineContext } from '../../engine/types';
@@ -69,6 +70,10 @@ const toolbarViews = computed(() =>
     .filter((e) => e.item.kind !== 'custom' || e.component),
 );
 const keyField = computed(() => toolbarKeyField(props.ctx.listFields.value));
+
+/** 后端图标名为 Element Plus 图标组件的 PascalCase 名称（如 Upload / Refresh） */
+const iconOf = (name?: string): Component | undefined =>
+  name ? (ElementPlusIconsVue as unknown as Record<string, Component>)[name] : undefined;
 
 const uploadItem = ref<BackendToolbarItem | null>(null);
 const uploadRef = ref<HTMLInputElement | null>(null);
@@ -168,7 +173,7 @@ async function sendToolbarRequest(item: BackendToolbarItem, file?: File): Promis
       headers,
     })) as { message?: string; data?: Record<string, unknown> } | undefined;
 
-    applyToolbarResult(item, res);
+    applyToolbarResult(res);
   } catch (err) {
     // 请求层已提示业务错误，这里兜底避免未捕获 rejection
     console.error('[CubeTable] 工具栏动作失败:', err);
@@ -177,29 +182,20 @@ async function sendToolbarRequest(item: BackendToolbarItem, file?: File): Promis
   }
 }
 
-function applyToolbarResult(item: BackendToolbarItem, res?: { message?: string; data?: Record<string, unknown> }): void {
-  const body = res?.data ?? {};
-  const message = res?.message ?? (body.message as string | undefined);
-  if (message) ElMessage.success(String(message));
+function applyToolbarResult(res?: { message?: string; data?: Record<string, unknown> }): void {
+  const result = parseToolbarResult(res);
+  if (result.message) ElMessage.success(result.message);
 
-  const url = body.url as string | undefined;
-  const time = Number(body.time ?? 0);
-  const delay = time > 0 ? time * 1000 : 0;
-
-  if (url === '[refresh]') {
-    if (delay > 0) window.setTimeout(() => props.ctx.refresh(), delay);
+  if (result.refresh) {
+    if (result.delay > 0) window.setTimeout(() => props.ctx.refresh(), result.delay);
     else props.ctx.refresh();
     return;
   }
-  if (url) {
+  if (result.url) {
+    const url = result.url;
     window.setTimeout(() => {
-      window.location.href = String(url);
-    }, delay);
-    return;
-  }
-  if (body.refresh === true) {
-    if (delay > 0) window.setTimeout(() => props.ctx.refresh(), delay);
-    else props.ctx.refresh();
+      window.location.href = url;
+    }, result.delay);
   }
 }
 </script>
@@ -222,6 +218,7 @@ function applyToolbarResult(item: BackendToolbarItem, res?: { message?: string; 
         <el-button
           v-else
           :type="view.buttonType"
+          :icon="iconOf(view.item.icon)"
           :disabled="toolbarDisabled(view.item, selectedCount) || pending === view.item.name"
           :loading="pending === view.item.name || (busy && view.item.kind !== 'link')"
           @click="onToolbar(view.item)"

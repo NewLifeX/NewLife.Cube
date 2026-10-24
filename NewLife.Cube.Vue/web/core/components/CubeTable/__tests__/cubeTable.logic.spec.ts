@@ -25,8 +25,12 @@ import {
   formatMoneyCell,
   formatPercentCell,
   linkTemplateHasValue,
+  mergeColumnOrder,
   normalizeTextAlign,
+  parseColumnOrder,
+  parseToolbarResult,
   showSearchToggle,
+  sortByOrder,
   defaultColumnsStorageKey,
   dialogShapeFor,
   isExpandableCell,
@@ -143,6 +147,32 @@ describe('CubeTable/logic 展开入口判定', () => {
   });
 });
 
+describe('CubeTable/logic 工具栏响应', () => {
+  it('应该把 [refresh] 解析为刷新 当后端要求刷新列表时', () => {
+    expect(parseToolbarResult({ data: { url: '[refresh]' } })).toEqual({
+      message: undefined,
+      refresh: true,
+      url: undefined,
+      delay: 0,
+    });
+    expect(parseToolbarResult({ data: { refresh: true } })).toMatchObject({ refresh: true });
+  });
+
+  it('应该解析跳转地址与延迟秒数 当后端要求跳转时', () => {
+    expect(parseToolbarResult({ data: { url: '/Admin/Role', time: 2 } })).toEqual({
+      message: undefined,
+      refresh: false,
+      url: '/Admin/Role',
+      delay: 2000,
+    });
+  });
+
+  it('应该优先取顶层 message 并回退 body.message 当后端返回提示时', () => {
+    expect(parseToolbarResult({ message: '顶层', data: { message: '内层' } }).message).toBe('顶层');
+    expect(parseToolbarResult({ data: { message: '内层' } }).message).toBe('内层');
+  });
+});
+
 describe('CubeTable/logic 列视图', () => {
   it('应该默认全显示并保留元数据顺序 当未启用设置列时', () => {
     const columns = buildColumnViews([FIELDS.id, FIELDS.name, FIELDS.count]);
@@ -157,6 +187,32 @@ describe('CubeTable/logic 列视图', () => {
   it('应该整列去掉主键列 当 showKeyColumn 为 false 时', () => {
     const columns = buildColumnViews([FIELDS.id, FIELDS.name], null, { showKeyColumn: false });
     expect(columns.map((c) => c.key)).toEqual(['Name']);
+  });
+
+  it('应该按用户列序生成列视图 当传入 order 时', () => {
+    const columns = buildColumnViews([FIELDS.id, FIELDS.name, FIELDS.count], null, {
+      order: ['Count', 'Name'],
+    });
+    // 未出现在 order 中的主键列保持原位置（排在已声明列之后）
+    expect(columns.map((c) => c.key)).toEqual(['Count', 'Name', 'Id']);
+  });
+
+  it('应该只保留现存列并追加新列 当合并历史列序时', () => {
+    expect(mergeColumnOrder(['Name', 'Count', 'Enable'], ['count', 'Removed', 'Name'])).toEqual([
+      'Count',
+      'Name',
+      'Enable',
+    ]);
+  });
+
+  it('应该容忍坏列序并从元数据顺序重建 当解析失败时', () => {
+    expect(parseColumnOrder('not-json{')).toBeNull();
+    expect(parseColumnOrder('[]')).toBeNull();
+    expect(parseColumnOrder('["Count","Name"]')).toEqual(['Count', 'Name']);
+    expect(sortByOrder([{ key: 'Name' }, { key: 'Count' }], ['count'], (item) => item.key)).toEqual([
+      { key: 'Count' },
+      { key: 'Name' },
+    ]);
   });
 
   it('应该按控件类型给宽与对齐 当生成各类列时', () => {

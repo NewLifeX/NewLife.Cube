@@ -78,4 +78,27 @@ describe('CubeTableColumnSetting', () => {
     await nextTick();
     expect(wrapper.emitted('reset')).toBeTruthy();
   });
+
+  it('应该抛出完整列序 当点下移第一列时', async () => {
+    const wrapper = await mountSetting();
+    const first = document.body.querySelectorAll('.el-popper .ctcs-item')[0];
+    const down = first?.querySelector('button[title="下移"]') as HTMLButtonElement | null;
+
+    down?.dispatchEvent(new MouseEvent('click'));
+    await nextTick();
+
+    expect(wrapper.emitted('order')?.[0]).toEqual([['Count', 'Name']]);
+  });
+
+  it('应该禁用首列上移与末列下移 当列序到达边界时', async () => {
+    await mountSetting();
+    const items = Array.from(document.body.querySelectorAll('.el-popper .ctcs-item'));
+    const upOf = (item: Element) => item.querySelector('button[title="上移"]') as HTMLButtonElement;
+    const downOf = (item: Element) => item.querySelector('button[title="下移"]') as HTMLButtonElement;
+
+    expect(upOf(items[0]).disabled).toBe(true);
+    expect(downOf(items[0]).disabled).toBe(false);
+    expect(upOf(items[1]).disabled).toBe(false);
+    expect(downOf(items[1]).disabled).toBe(true);
+  });
 });
