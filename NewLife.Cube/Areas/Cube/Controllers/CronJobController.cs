@@ -50,15 +50,7 @@ public class CronJobController : EntityController<CronJob, CronJobModel>
     {
         if (post)
         {
-            var next = DateTime.MinValue;
-            foreach (var item in entity.Cron.Split(";"))
-            {
-                var cron = new Cron();
-                if (!cron.Parse(item)) throw new ArgumentException(L.T("Invalid cron expression."), nameof(entity.Cron));
-
-                var dt = cron.GetNext(DateTime.Now);
-                if (next == DateTime.MinValue || dt < next) next = dt;
-            }
+            var next = GetNextRunTime(entity.Cron, DateTime.Now);
 
             // 重算下一次的时间
             if (entity is IEntity e && !e.Dirtys[nameof(entity.Name)]) entity.NextTime = next;
@@ -67,6 +59,26 @@ public class CronJobController : EntityController<CronJob, CronJobModel>
         }
 
         return base.Valid(entity, type, post);
+    }
+
+    /// <summary>解析分号分隔的 Cron 表达式，返回最近一次执行时间</summary>
+    /// <param name="cron">一个或多个以分号分隔的 Cron 表达式（6 字段：秒 分 时 日 月 周）</param>
+    /// <param name="now">基准时间</param>
+    /// <returns>最近一次执行时间；无有效表达式时返回 <see cref="DateTime.MinValue"/></returns>
+    /// <exception cref="ArgumentException">存在无法解析的表达式</exception>
+    internal static DateTime GetNextRunTime(String cron, DateTime now)
+    {
+        var next = DateTime.MinValue;
+        foreach (var item in cron.Split(";"))
+        {
+            var c = new Cron();
+            if (!c.Parse(item)) throw new ArgumentException(L.T("Invalid cron expression."), nameof(cron));
+
+            var dt = c.GetNext(now);
+            if (next == DateTime.MinValue || dt < next) next = dt;
+        }
+
+        return next;
     }
 
     /// <summary>马上执行</summary>

@@ -101,15 +101,19 @@ public class AccessService
 
     private Boolean IsMatch(AccessRule rule, String url, String userAgent, String ip, IUser user)
     {
-        if (!IsMatch(rule.Url, url)) return false;
-        if (!IsMatch(rule.UserAgent, userAgent)) return false;
-        if (!IsMatch(rule.IP, ip)) return false;
-        if (!IsMatch(rule.LoginedUser, user?.Name)) return false;
+        if (!IsMatchPattern(rule.Url, url)) return false;
+        if (!IsMatchPattern(rule.UserAgent, userAgent)) return false;
+        if (!IsMatchPattern(rule.IP, ip)) return false;
+        if (!IsMatchPattern(rule.LoginedUser, user?.Name)) return false;
 
         return true;
     }
 
-    private Boolean IsMatch(String rule, String txt)
+    /// <summary>单字段规则匹配。空规则放行；`!` 前缀表示取反；逗号分隔表示任一项命中</summary>
+    /// <param name="rule">规则表达式，支持 `*` 通配符</param>
+    /// <param name="txt">待匹配文本</param>
+    /// <returns>是否命中</returns>
+    public static Boolean IsMatchPattern(String rule, String txt)
     {
         // 没有规则要求，直接通过
         if (rule.IsNullOrEmpty()) return true;
@@ -196,10 +200,10 @@ public class AccessService
             if (!codes.Any(c => c.Trim() == statusCode.ToString())) continue;
 
             // 检查URL是否匹配（用于过滤静态资源等不需小心的请求）
-            if (!IsMatch(rule.Url, url)) continue;
+            if (!IsMatchPattern(rule.Url, url)) continue;
 
             // 匹配IP静态过滤（可限制部分IP段检测）
-            if (!rule.IP.IsNullOrEmpty() && !IsMatch(rule.IP, ip)) continue;
+            if (!rule.IP.IsNullOrEmpty() && !IsMatchPattern(rule.IP, ip)) continue;
 
             // 未设置限流周期和次数，跳过
             if (rule.LimitCycle <= 0 || rule.LimitTimes <= 0) continue;
