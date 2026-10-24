@@ -3,7 +3,7 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>审计日志</h3>
+          <h3>{{ t('auditLog.title') }}</h3>
         </div>
       </template>
 
@@ -14,17 +14,17 @@
       />
 
       <el-table :data="tableData" border style="width: 100%" v-loading="loading">
-        <el-table-column prop="id" label="编号" width="80" />
-        <el-table-column prop="category" label="类别" width="100" />
-        <el-table-column prop="action" label="操作" width="120" />
-        <el-table-column prop="linkID" label="链接" width="80" />
-        <el-table-column prop="createUser" label="用户" width="100" />
-        <el-table-column prop="createTime" label="时间" width="160" />
-        <el-table-column prop="createIP" label="IP地址" width="120" />
-        <el-table-column prop="remark" label="详细信息" show-overflow-tooltip />
-        <el-table-column label="操作" width="120">
+        <el-table-column prop="id" :label="t('common.id')" width="80" />
+        <el-table-column prop="category" :label="t('auditLog.category')" width="100" />
+        <el-table-column prop="action" :label="t('auditLog.action')" width="120" />
+        <el-table-column prop="linkID" :label="t('auditLog.link')" width="80" />
+        <el-table-column prop="createUser" :label="t('auditLog.user')" width="100" />
+        <el-table-column prop="createTime" :label="t('auditLog.time')" width="160" />
+        <el-table-column prop="createIP" :label="t('auditLog.ip')" width="120" />
+        <el-table-column prop="remark" :label="t('auditLog.detail')" show-overflow-tooltip />
+        <el-table-column :label="t('common.actions')" width="120">
           <template #default="scope">
-            <el-button type="primary" size="small" @click="handleView(scope.row)">查看</el-button>
+            <el-button type="primary" size="small" @click="handleView(scope.row)">{{ t('perm.detail') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -40,22 +40,22 @@
     </el-card>
 
     <!-- 日志详情对话框 -->
-    <el-dialog v-model="detailVisible" title="日志详情" width="800px">
+    <el-dialog v-model="detailVisible" :title="t('auditLog.detailTitle')" width="800px">
       <el-descriptions :column="2" border>
-        <el-descriptions-item label="编号">{{ currentLog.id }}</el-descriptions-item>
-        <el-descriptions-item label="类别">{{ currentLog.category }}</el-descriptions-item>
-        <el-descriptions-item label="操作">{{ currentLog.action }}</el-descriptions-item>
-        <el-descriptions-item label="链接">{{ currentLog.linkID }}</el-descriptions-item>
-        <el-descriptions-item label="用户">{{ currentLog.createUser }}</el-descriptions-item>
-        <el-descriptions-item label="用户ID">{{ currentLog.createUserID }}</el-descriptions-item>
-        <el-descriptions-item label="时间">{{ currentLog.createTime }}</el-descriptions-item>
-        <el-descriptions-item label="IP地址">{{ currentLog.createIP }}</el-descriptions-item>
-        <el-descriptions-item label="详细信息" :span="2">
+        <el-descriptions-item :label="t('common.id')">{{ currentLog.id }}</el-descriptions-item>
+        <el-descriptions-item :label="t('auditLog.category')">{{ currentLog.category }}</el-descriptions-item>
+        <el-descriptions-item :label="t('auditLog.action')">{{ currentLog.action }}</el-descriptions-item>
+        <el-descriptions-item :label="t('auditLog.link')">{{ currentLog.linkID }}</el-descriptions-item>
+        <el-descriptions-item :label="t('auditLog.user')">{{ currentLog.createUser }}</el-descriptions-item>
+        <el-descriptions-item :label="t('auditLog.userID')">{{ currentLog.createUserID }}</el-descriptions-item>
+        <el-descriptions-item :label="t('auditLog.time')">{{ currentLog.createTime }}</el-descriptions-item>
+        <el-descriptions-item :label="t('auditLog.ip')">{{ currentLog.createIP }}</el-descriptions-item>
+        <el-descriptions-item :label="t('auditLog.detail')" :span="2">
           <div style="max-height: 300px; overflow-y: auto; white-space: pre-wrap;">{{ currentLog.remark }}</div>
         </el-descriptions-item>
       </el-descriptions>
       <template #footer>
-        <el-button @click="detailVisible = false">关闭</el-button>
+        <el-button @click="detailVisible = false">{{ t('button.close') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -64,6 +64,7 @@
 <script setup lang="ts">
 
 import { ref, reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListToolbarSearch.vue';
@@ -87,6 +88,7 @@ interface Log extends BaseEntity {
 // 表格数据
 const tableData = ref<Log[]>([]);
 const loading = ref(false);
+const { t } = useI18n();
 
 // 分页与搜索参数
 const queryParams = reactive({
@@ -143,8 +145,8 @@ const loadData = async () => {
       queryParams.total = 0;
     }
   } catch (error) {
-    ElMessage.error('加载数据失败');
-    console.error('加载数据失败:', error);
+    ElMessage.error(t('auditLog.loadFailed'));
+    console.error('Failed to load audit logs:', error);
   } finally {
     loading.value = false;
   }

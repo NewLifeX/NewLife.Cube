@@ -2,19 +2,23 @@
  * parameter-kind.ts — 参数类别枚举映射
  *
  * 提取为纯函数，便于单元测试和组件复用。
- * 从后端返回的 Int32 数字映射为中文标签和 Element Plus tag 类型。
+ * 从后端返回的 Int32 数字映射为标签展示文案和 Element Plus tag 类型。
  */
+import i18n from '@newlifex/cube-vue/core/i18n';
 
 export interface KindOption {
   text: string;
   type: 'info' | 'warning' | '' | 'success' | 'danger';
 }
 
-/** kind 枚举映射表 */
-const kindMap: Record<string, KindOption> = {
-  '0': { text: '普通', type: '' },
-  '1': { text: '系统', type: 'warning' },
-  '2': { text: '用户', type: 'info' },
+/** 标签文案跟随语言：取用时才翻译 */
+const t = (key: string): string => i18n.global.t(key);
+
+/** kind 枚举映射表（text 为词条 key，展示时翻译） */
+const kindMap: Record<string, { key: string; type: KindOption['type'] }> = {
+  '0': { key: 'param.kindNormal', type: '' },
+  '1': { key: 'param.kindSystem', type: 'warning' },
+  '2': { key: 'param.kindUser', type: 'info' },
 };
 
 /**
@@ -23,5 +27,6 @@ const kindMap: Record<string, KindOption> = {
  * @returns 包含显示文本和标签类型的对象
  */
 export function getKind(kind: unknown): KindOption {
-  return kindMap[String(kind)] ?? { text: '未知', type: 'info' };
+  const hit = kindMap[String(kind)];
+  return hit ? { text: t(hit.key), type: hit.type } : { text: t('param.kindUnknown'), type: 'info' };
 }

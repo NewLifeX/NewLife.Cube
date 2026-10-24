@@ -12,7 +12,10 @@ import CubeTable from '@newlifex/cube-vue/core/components/CubeTable/CubeTable.vu
 import ListChartButton from '@newlifex/cube-vue/core/views/components/ListChartButton.vue';
 import ListPageHeader from '@newlifex/cube-vue/core/views/components/ListPageHeader.vue';
 import { registerPagePreset } from '@newlifex/cube-vue/core/engine/pagePreset';
+import { useI18n } from 'vue-i18n';
 import { getKind } from './parameter-kind';
+
+const { t } = useI18n();
 
 // 页面呈现配置（preset）示例：把枚举列前置。元数据仍由后端下发，preset 只做呈现调整。
 registerPagePreset('/Admin/Parameter', { list: { order: ['Kind'] } });
@@ -21,7 +24,7 @@ registerPagePreset('/Admin/Parameter', { list: { order: ['Kind'] } });
 <template>
   <CubeTable>
     <template #header>
-      <ListPageHeader title="参数管理" />
+      <ListPageHeader :title="t('param.title')" />
     </template>
 
     <!-- 这页原本是默认页 + Section 覆盖，自带「图表」；改成自定义视图后显式放回来，保持能力不变 -->

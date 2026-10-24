@@ -3,28 +3,28 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>系统设置</h3>
-          <el-button type="primary" @click="handleSave">保存设置</el-button>
+          <h3>{{ t('sysSetting.title') }}</h3>
+          <el-button type="primary" @click="handleSave">{{ t('coreSetting.save') }}</el-button>
         </div>
       </template>
 
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="140px" v-loading="loading">
-        <el-form-item label="新建" prop="isNew">
+        <el-form-item :label="t('sysSetting.isNew')" prop="isNew">
           <el-tag :type="form.isNew ? 'success' : 'info'">
-            {{ form.isNew ? '是' : '否' }}
+            {{ form.isNew ? t('common.yes') : t('common.no') }}
           </el-tag>
         </el-form-item>
-        <el-form-item label="插件服务器" prop="pluginServer">
-          <el-input v-model="form.pluginServer" placeholder="插件服务器地址" />
+        <el-form-item :label="t('sysSetting.pluginServer')" prop="pluginServer">
+          <el-input v-model="form.pluginServer" :placeholder="t('sysSetting.pluginServerHint')" />
         </el-form-item>
-        <el-form-item label="插件缓存时间" prop="pluginCache">
-          <el-input-number v-model="form.pluginCache" :min="0" placeholder="插件缓存时间（秒）" />
+        <el-form-item :label="t('sysSetting.pluginCache')" prop="pluginCache">
+          <el-input-number v-model="form.pluginCache" :min="0" :placeholder="t('sysSetting.pluginCacheHint')" />
         </el-form-item>
-        <el-form-item label="网络调试" prop="networkDebug">
+        <el-form-item :label="t('sysSetting.networkDebug')" prop="networkDebug">
           <el-switch v-model="form.networkDebug" :active-value="true" :inactive-value="false" />
         </el-form-item>
-        <el-form-item label="日志级别" prop="logLevel">
-          <el-select v-model="form.logLevel" placeholder="请选择日志级别">
+        <el-form-item :label="t('sysSetting.logLevel')" prop="logLevel">
+          <el-select v-model="form.logLevel" :placeholder="t('sysSetting.logLevelHint')">
             <el-option label="All" :value="0" />
             <el-option label="Debug" :value="1" />
             <el-option label="Info" :value="2" />
@@ -34,26 +34,26 @@
             <el-option label="Off" :value="6" />
           </el-select>
         </el-form-item>
-        <el-form-item label="日志文件上限" prop="logFileMaxBytes">
-          <el-input-number v-model="form.logFileMaxBytes" :min="0" placeholder="日志文件最大字节数" />
+        <el-form-item :label="t('sysSetting.logFileMaxBytes')" prop="logFileMaxBytes">
+          <el-input-number v-model="form.logFileMaxBytes" :min="0" :placeholder="t('sysSetting.logFileMaxBytesHint')" />
         </el-form-item>
-        <el-form-item label="日志文件备份" prop="logFileBackups">
-          <el-input-number v-model="form.logFileBackups" :min="0" placeholder="日志文件备份数量" />
+        <el-form-item :label="t('sysSetting.logFileBackups')" prop="logFileBackups">
+          <el-input-number v-model="form.logFileBackups" :min="0" :placeholder="t('sysSetting.logFileBackupsHint')" />
         </el-form-item>
-        <el-form-item label="临时目录" prop="tempPath">
-          <el-input v-model="form.tempPath" placeholder="临时目录路径" />
+        <el-form-item :label="t('sysSetting.tempPath')" prop="tempPath">
+          <el-input v-model="form.tempPath" :placeholder="t('sysSetting.tempPathHint')" />
         </el-form-item>
-        <el-form-item label="插件目录" prop="pluginPath">
-          <el-input v-model="form.pluginPath" placeholder="插件目录路径" />
+        <el-form-item :label="t('sysSetting.pluginPath')" prop="pluginPath">
+          <el-input v-model="form.pluginPath" :placeholder="t('sysSetting.pluginPathHint')" />
         </el-form-item>
-        <el-form-item label="备份目录" prop="backupPath">
-          <el-input v-model="form.backupPath" placeholder="备份目录路径" />
+        <el-form-item :label="t('sysSetting.backupPath')" prop="backupPath">
+          <el-input v-model="form.backupPath" :placeholder="t('sysSetting.backupPathHint')" />
         </el-form-item>
-        <el-form-item label="运行模式" prop="mode">
-          <el-select v-model="form.mode" placeholder="请选择运行模式">
-            <el-option label="开发模式" value="Development" />
-            <el-option label="生产模式" value="Production" />
-            <el-option label="测试模式" value="Test" />
+        <el-form-item :label="t('sysSetting.mode')" prop="mode">
+          <el-select v-model="form.mode" :placeholder="t('sysSetting.modeHint')">
+            <el-option :label="t('sysSetting.modeDevelopment')" value="Development" />
+            <el-option :label="t('sysSetting.modeProduction')" value="Production" />
+            <el-option :label="t('sysSetting.modeTest')" value="Test" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -63,6 +63,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { FormInstance, FormRules } from 'element-plus';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 
@@ -83,6 +84,7 @@ interface SysSetting {
 
 const loading = ref(false);
 const formRef = ref<FormInstance | null>(null);
+const { t } = useI18n();
 
 // 表单数据
 const form = reactive<SysSetting>({
@@ -102,7 +104,7 @@ const form = reactive<SysSetting>({
 // 表单验证规则
 const formRules = reactive<FormRules>({
   mode: [
-    { required: true, message: '请选择运行模式', trigger: 'change' }
+    { required: true, message: t('sysSetting.modeRequired'), trigger: 'change' }
   ]
 });
 

@@ -3,42 +3,42 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>用户连接管理</h3>
+          <h3>{{ t('connect.title') }}</h3>
         </div>
       </template>
 
       <CubeListToolbarSearch :on-search="SearchData" :on-reset="ResetData" :on-callback="callback" />
 
       <el-table :data="tableData" border style="width: 100%" v-loading="loading">
-        <el-table-column prop="id" label="编号" width="80" />
-        <el-table-column prop="provider" label="提供者" />
-        <el-table-column prop="openID" label="用户标识" />
-        <el-table-column prop="userName" label="用户名" />
-        <el-table-column prop="nickName" label="昵称" />
-        <el-table-column prop="avatar" label="头像" width="80">
+        <el-table-column prop="id" :label="t('common.id')" width="80" />
+        <el-table-column prop="provider" :label="t('connect.provider')" />
+        <el-table-column prop="openID" :label="t('connect.openID')" />
+        <el-table-column prop="userName" :label="t('user.userName')" />
+        <el-table-column prop="nickName" :label="t('connect.nickName')" />
+        <el-table-column prop="avatar" :label="t('connect.avatar')" width="80">
           <template #default="scope">
             <el-avatar v-if="scope.row.avatar" :src="scope.row.avatar" :size="40" />
             <span v-else>-</span>
           </template>
         </el-table-column>
-        <el-table-column prop="refreshToken" label="刷新令牌" show-overflow-tooltip />
-        <el-table-column prop="expire" label="过期时间" />
-        <el-table-column prop="updateTime" label="更新时间" />
-        <el-table-column label="启用" width="80">
+        <el-table-column prop="refreshToken" :label="t('connect.refreshToken')" show-overflow-tooltip />
+        <el-table-column prop="expire" :label="t('connect.expire')" />
+        <el-table-column prop="updateTime" :label="t('common.updateTime')" />
+        <el-table-column :label="t('common.enable')" width="80">
           <template #default="scope">
             <el-tag :type="scope.row.enable ? 'success' : 'danger'">
-              {{ scope.row.enable ? '是' : '否' }}
+              {{ scope.row.enable ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="备注" min-width="120" show-overflow-tooltip>
+        <el-table-column :label="t('common.remark')" min-width="120" show-overflow-tooltip>
           <template #default="scope">
             {{ scope.row.remark || '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="120">
+        <el-table-column :label="t('common.actions')" width="120">
           <template #default="scope">
-            <el-button type="danger" size="small" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button type="danger" size="small" @click="handleDelete(scope.row)">{{ t('button.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -51,6 +51,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 import { apiDataToList, handleDeleteOperation } from '@newlifex/cube-vue/core/utils/api-helpers';
 import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListToolbarSearch.vue';
@@ -75,6 +76,7 @@ interface UserConnect extends BaseEntity {
 // 表格数据
 const tableData = ref<UserConnect[]>([]);
 const loading = ref(false);
+const { t } = useI18n();
 
 // 页面请求参数
 const queryParams = reactive({
@@ -130,7 +132,7 @@ const handleDelete = (row: UserConnect) => {
   handleDeleteOperation(
     () => request.delete(`/Admin/UserConnect/${row.id}`),
     loadData,
-    '确认删除该用户连接吗？'
+    t('connect.deleteConfirm')
   );
 };
 
