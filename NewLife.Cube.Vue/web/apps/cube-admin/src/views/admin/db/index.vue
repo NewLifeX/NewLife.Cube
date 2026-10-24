@@ -1,23 +1,23 @@
 <template>
   <div>
     <div class="page-header">
-      <h1>数据库管理</h1>
-      <p>数据库备份与管理操作</p>
+      <h1>{{ t('db.title') }}</h1>
+      <p>{{ t('db.subtitle') }}</p>
     </div>
 
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>数据库操作</span>
+          <span>{{ t('db.operations') }}</span>
         </div>
       </template>
 
       <div class="db-operations">
         <el-form :model="backupForm" label-width="120px">
-          <el-form-item label="备份名称">
+          <el-form-item :label="t('db.backupName')">
             <el-input
               v-model="backupForm.name"
-              placeholder="请输入备份名称，留空则自动生成"
+              :placeholder="t('db.backupNameHint')"
               style="width: 300px"
             />
           </el-form-item>
@@ -28,14 +28,14 @@
               :loading="loading.backup"
               @click="handleBackup"
             >
-              数据库备份
+              {{ t('db.backup') }}
             </el-button>
             <el-button
               type="success"
               :loading="loading.backupCompress"
               @click="handleBackupAndCompress"
             >
-              备份并压缩
+              {{ t('db.backupAndCompress') }}
             </el-button>
           </el-form-item>
         </el-form>
@@ -43,12 +43,12 @@
         <el-divider />
 
         <div class="download-section">
-          <h3>下载备份文件</h3>
+          <h3>{{ t('db.downloadTitle') }}</h3>
           <el-form :model="downloadForm" label-width="120px">
-            <el-form-item label="文件名称">
+            <el-form-item :label="t('db.fileName')">
               <el-input
                 v-model="downloadForm.name"
-                placeholder="请输入要下载的备份文件名"
+                :placeholder="t('db.fileNameHint')"
                 style="width: 300px"
               />
             </el-form-item>
@@ -59,7 +59,7 @@
                 :loading="loading.download"
                 @click="handleDownload"
               >
-                下载备份文件
+                {{ t('db.download') }}
               </el-button>
             </el-form-item>
           </el-form>
@@ -71,8 +71,11 @@
 
 <script setup lang="ts">
 import { reactive } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { request } from '@newlifex/cube-vue/core/utils/request'
+
+const { t } = useI18n()
 
 // 表单数据
 const backupForm = reactive({
@@ -96,16 +99,16 @@ const handleBackup = async () => {
     loading.backup = true
 
     const params = backupForm.name ? { name: backupForm.name } : {}
-    console.log('开始数据库备份:', params)
+    console.log('Starting database backup:', params)
 
     const data = await request.post('/Admin/Db/Backup', params)
-    console.log('数据库备份响应:', data)
+    console.log('Database backup response:', data)
 
-    ElMessage.success('数据库备份成功')
+    ElMessage.success(t('db.backupSuccess'))
     backupForm.name = ''
   } catch (error) {
-    console.error('数据库备份错误:', error)
-    ElMessage.error('数据库备份失败')
+    console.error('Database backup failed:', error)
+    ElMessage.error(t('db.backupFailed'))
   } finally {
     loading.backup = false
   }
@@ -115,11 +118,11 @@ const handleBackup = async () => {
 const handleBackupAndCompress = async () => {
   try {
     await ElMessageBox.confirm(
-      '备份并压缩操作可能需要较长时间，确定要继续吗？',
-      '确认操作',
+      t('db.compressConfirm'),
+      t('db.confirmAction'),
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        confirmButtonText: t('button.confirm'),
+        cancelButtonText: t('button.cancel'),
         type: 'warning',
       }
     )
@@ -127,17 +130,17 @@ const handleBackupAndCompress = async () => {
     loading.backupCompress = true
 
     const params = backupForm.name ? { name: backupForm.name } : {}
-    console.log('开始数据库备份并压缩:', params)
+    console.log('Starting database backup and compression:', params)
 
     const data = await request.post('/Admin/Db/BackupAndCompress', params)
-    console.log('数据库备份并压缩响应:', data)
+    console.log('Database backup and compression response:', data)
 
-    ElMessage.success('数据库备份并压缩成功')
+    ElMessage.success(t('db.compressSuccess'))
     backupForm.name = ''
   } catch (error) {
     if (error !== 'cancel') {
-      console.error('数据库备份压缩错误:', error)
-      ElMessage.error('数据库备份并压缩失败')
+      console.error('Database backup and compression failed:', error)
+      ElMessage.error(t('db.compressFailed'))
     }
   } finally {
     loading.backupCompress = false
@@ -147,14 +150,14 @@ const handleBackupAndCompress = async () => {
 // 下载备份文件
 const handleDownload = async () => {
   if (!downloadForm.name.trim()) {
-    ElMessage.warning('请输入要下载的文件名')
+    ElMessage.warning(t('db.fileNameRequired'))
     return
   }
 
   try {
     loading.download = true
 
-    console.log('开始下载备份文件:', downloadForm.name)
+    console.log('Starting backup file download:', downloadForm.name)
 
     // 使用 request 发送下载请求，获取二进制数据
     const blob = (await request.get('/Admin/Db/Download',
@@ -174,11 +177,11 @@ const handleDownload = async () => {
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
 
-    ElMessage.success('文件下载成功')
+    ElMessage.success(t('db.downloadSuccess'))
     downloadForm.name = ''
   } catch (error) {
-    console.error('文件下载错误:', error)
-    ElMessage.error('文件下载失败')
+    console.error('Backup file download failed:', error)
+    ElMessage.error(t('db.downloadFailed'))
   } finally {
     loading.download = false
   }

@@ -1,22 +1,22 @@
 <template>
   <div>
     <div class="page-header">
-      <h1>文件管理</h1>
-      <p>文件上传、下载、压缩解压等管理操作</p>
+      <h1>{{ t('fileManager.title') }}</h1>
+      <p>{{ t('fileManager.subtitle') }}</p>
     </div>
 
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>文件操作</span>
+          <span>{{ t('fileManager.operations') }}</span>
           <div>
             <el-button type="primary" @click="showUploadDialog = true">
               <el-icon><Plus /></el-icon>
-              上传文件
+              {{ t('fileManager.uploadFile') }}
             </el-button>
             <el-button @click="refreshFileList">
               <el-icon><Refresh /></el-icon>
-              刷新
+              {{ t('grid.refresh') }}
             </el-button>
           </div>
         </div>
@@ -24,48 +24,48 @@
 
       <div class="file-operations">
         <el-form :model="queryForm" inline>
-          <el-form-item label="路径">
+          <el-form-item :label="t('fileManager.path')">
             <el-input
               v-model="queryForm.r"
-              placeholder="请输入文件路径"
+              :placeholder="t('fileManager.pathHint')"
               style="width: 300px"
             />
           </el-form-item>
-          <el-form-item label="排序">
-            <el-select v-model="queryForm.sort" placeholder="选择排序方式" style="width: 120px">
-              <el-option label="名称" value="name" />
-              <el-option label="大小" value="size" />
-              <el-option label="时间" value="time" />
+          <el-form-item :label="t('fileManager.sort')">
+            <el-select v-model="queryForm.sort" :placeholder="t('fileManager.sortHint')" style="width: 120px">
+              <el-option :label="t('common.name')" value="name" />
+              <el-option :label="t('fileManager.size')" value="size" />
+              <el-option :label="t('fileManager.time')" value="time" />
             </el-select>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="getFileList">查询</el-button>
+            <el-button type="primary" @click="getFileList">{{ t('button.search') }}</el-button>
           </el-form-item>
         </el-form>
       </div>
 
       <div class="file-list" v-loading="loading.list">
         <el-table :data="fileList" style="width: 100%">
-          <el-table-column prop="name" label="文件名" />
-          <el-table-column prop="size" label="大小" />
-          <el-table-column prop="modified" label="修改时间" />
-          <el-table-column prop="type" label="类型" />
-          <el-table-column label="操作" width="300">
+          <el-table-column prop="name" :label="t('fileManager.fileName')" />
+          <el-table-column prop="size" :label="t('fileManager.size')" />
+          <el-table-column prop="modified" :label="t('fileManager.modified')" />
+          <el-table-column prop="type" :label="t('fileManager.type')" />
+          <el-table-column :label="t('common.actions')" width="300">
             <template #default="{ row }">
               <el-button size="small" @click="handleDownload(row)">
-                下载
+                {{ t('fileManager.download') }}
               </el-button>
               <el-button size="small" @click="handleCompress(row)">
-                压缩
+                {{ t('fileManager.compress') }}
               </el-button>
               <el-button size="small" @click="handleDecompress(row)">
-                解压
+                {{ t('fileManager.decompress') }}
               </el-button>
               <el-button size="small" @click="handleCopy(row)">
-                复制
+                {{ t('fileManager.copy') }}
               </el-button>
               <el-button size="small" type="danger" @click="handleDelete(row)">
-                删除
+                {{ t('button.delete') }}
               </el-button>
             </template>
           </el-table-column>
@@ -74,12 +74,12 @@
     </el-card>
 
     <!-- 上传对话框 -->
-    <el-dialog v-model="showUploadDialog" title="上传文件" width="500px">
+    <el-dialog v-model="showUploadDialog" :title="t('fileManager.uploadFile')" width="500px">
       <el-form :model="uploadForm" label-width="80px">
-        <el-form-item label="上传路径">
-          <el-input v-model="uploadForm.r" placeholder="请输入上传路径" />
+        <el-form-item :label="t('fileManager.uploadPath')">
+          <el-input v-model="uploadForm.r" :placeholder="t('fileManager.uploadPathHint')" />
         </el-form-item>
-        <el-form-item label="选择文件">
+        <el-form-item :label="t('fileManager.selectFile')">
           <el-upload
             ref="uploadRef"
             :action="uploadAction"
@@ -88,21 +88,21 @@
             :show-file-list="true"
             :limit="1"
           >
-            <el-button type="primary">选择文件</el-button>
+            <el-button type="primary">{{ t('fileManager.selectFile') }}</el-button>
           </el-upload>
         </el-form-item>
       </el-form>
 
       <template #footer>
-        <el-button @click="showUploadDialog = false">取消</el-button>
+        <el-button @click="showUploadDialog = false">{{ t('button.cancel') }}</el-button>
         <el-button type="primary" :loading="loading.upload" @click="handleUpload">
-          上传
+          {{ t('fileManager.upload') }}
         </el-button>
       </template>
     </el-dialog>
 
     <!-- 头像上传对话框 -->
-    <el-dialog v-model="showAvatarDialog" title="上传头像" width="400px">
+    <el-dialog v-model="showAvatarDialog" :title="t('fileManager.uploadAvatar')" width="400px">
       <el-upload
         ref="avatarUploadRef"
         :action="uploadAvatarAction"
@@ -111,18 +111,18 @@
         :limit="1"
         accept="image/*"
       >
-        <el-button type="primary">选择头像</el-button>
+        <el-button type="primary">{{ t('fileManager.selectAvatar') }}</el-button>
         <template #tip>
           <div class="el-upload__tip">
-            只能上传jpg/png文件，且不超过2MB
+            {{ t('fileManager.avatarTip') }}
           </div>
         </template>
       </el-upload>
 
       <template #footer>
-        <el-button @click="showAvatarDialog = false">取消</el-button>
+        <el-button @click="showAvatarDialog = false">{{ t('button.cancel') }}</el-button>
         <el-button type="primary" :loading="loading.avatar" @click="handleAvatarUpload">
-          上传
+          {{ t('fileManager.upload') }}
         </el-button>
       </template>
     </el-dialog>
@@ -131,6 +131,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessageBox } from 'element-plus'
 import { Plus, Refresh } from '@element-plus/icons-vue'
 import { request } from '@newlifex/cube-vue/core/utils/request'
@@ -148,6 +149,7 @@ interface FileInfo {
 // 对话框状态
 const showUploadDialog = ref(false)
 const showAvatarDialog = ref(false)
+const { t } = useI18n()
 
 // 表单数据
 const queryForm = reactive({
@@ -304,11 +306,11 @@ const handleCopy = async (row: FileInfo) => {
 const handleDelete = async (row: FileInfo) => {
   try {
     await ElMessageBox.confirm(
-      `确定要删除文件 "${row.name}" 吗？`,
-      '确认删除',
+      t('fileManager.deleteConfirm', { name: row.name }),
+      t('fileManager.confirmDelete'),
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        confirmButtonText: t('button.confirm'),
+        cancelButtonText: t('button.cancel'),
         type: 'warning',
       }
     )
