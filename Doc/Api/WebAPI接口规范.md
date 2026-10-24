@@ -129,14 +129,14 @@ HTTP 状态码与 body.code 双轨：
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | `pageIndex` | Int32 | 从 1 开始，默认 1 |
-| `pageSize` | Int32 | 默认 20；**0 表示不分页**（返回全部，慎用） |
+| `pageSize` | Int32 | 默认 20；**非正数按默认 20 处理，上限 1000**（超出截断） |
 | `totalCount` | Int64（JSON 字符串） | 总记录数 |
 | `longTotalCount` | String | `totalCount` 的字符串形式，前端优先使用 |
 
 - 没有 `pageCount`：总页数由前端按 `Math.ceil(totalCount / pageSize)` 计算。
-- 排序仅支持 `sort`（字段名，`-字段名` 表示倒序）+ `desc`（布尔），单字段；**不支持 `orderBy` 复合排序**（`sort` 由 `PageParameter` 做安全校验，`orderBy` 不校验，故未开放）。
+- 排序两种方式：①单字段 `sort`（字段名，`-字段名` 表示倒序）+ `desc`（布尔）；②复合排序 `orderBy`（如 `Name,CreateTime desc`），**优先级高于 `sort`**，仅接受「字段名（可带表别名点号）+ 可选 asc/desc，逗号分隔」的表达式，含子查询/函数/注释/分号等一律丢弃。
 - `PageSetting.EnableTotalCount = false` 时 `totalCount` 恒为 0，客户端需支持"无总数翻页"。
-- ⚠️ `pageSize` 没有服务端上限（后端默认 20、前端默认 10），客户端应自行约束。
+- `pageSize` 服务端有上限（`Pager.MaxPageSize`，默认 1000）：内部不分页场景（删除全部匹配行、分片导出）由服务端自己构造 Pager 后置 0，不受请求参数影响。
 
 ```text
 "page": { "pageIndex": 2, "pageSize": 20, "totalCount": "0", "longTotalCount": "0" }

@@ -144,7 +144,7 @@ public class CubeTools<TEntity>(IEntityFactory factory, Pager? pager, Int64 enti
         var ctx = AiInsightHelper.Collect<TEntity>(factory, pager, data);
 
         var filters = pager.Params
-            .Where(kv => !kv.Key.EqualIgnoreCase("_query") && !kv.Key.EqualIgnoreCase("Sort") && !kv.Key.EqualIgnoreCase("Desc") && !kv.Key.EqualIgnoreCase("PageIndex") && !kv.Key.EqualIgnoreCase("PageSize"))
+            .Where(kv => !kv.Key.EqualIgnoreCase("_query") && !kv.Key.EqualIgnoreCase("Sort") && !kv.Key.EqualIgnoreCase("Desc") && !kv.Key.EqualIgnoreCase("PageIndex") && !kv.Key.EqualIgnoreCase("PageSize") && !kv.Key.EqualIgnoreCase("orderBy"))
             .ToDictionary(kv => kv.Key, kv => kv.Value + "");
 
         return new

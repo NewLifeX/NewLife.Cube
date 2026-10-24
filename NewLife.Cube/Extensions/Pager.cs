@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Script.Serialization;
 using System.Xml.Serialization;
@@ -27,6 +28,9 @@ public class Pager : PageParameter, IExtend
 
         /// <summary>页面大小</summary>
         public String PageSize = "PageSize";
+
+        /// <summary>复合排序。如 <c>Name,CreateTime desc</c>，优先级高于 Sort</summary>
+        public String OrderBy = "orderBy";
     }
 
     /// <summary>名称类。用户可根据需要修改Url参数名</summary>
@@ -68,6 +72,8 @@ public class Pager : PageParameter, IExtend
                 return PageIndex + "";
             else if (key.EqualIgnoreCase(_.PageSize))
                 return PageSize + "";
+            else if (key.EqualIgnoreCase(_.OrderBy))
+                return OrderBy;
 
             // 为了布尔型取空字符串时得到null。var enable = p["enable"]?.ToBoolean()
             var v = Params[key];
@@ -83,6 +89,8 @@ public class Pager : PageParameter, IExtend
                 PageIndex = value.ToInt();
             else if (key.EqualIgnoreCase(_.PageSize))
                 PageSize = value.ToInt();
+            else if (key.EqualIgnoreCase(_.OrderBy))
+                OrderBy = value;
             else
                 Params[key] = value;
         }
@@ -121,13 +129,28 @@ public class Pager : PageParameter, IExtend
         if (parameters.TryGetValue(nameof(Desc), out str)) Desc = str.ToBoolean();
         if (parameters.TryGetValue(nameof(StartRow), out str)) StartRow = str.ToLong();
         if (parameters.TryGetValue(nameof(Sort), out str)) Sort = str;
-        //if (parameters.TryGetValue(nameof(OrderBy), out str)) OrderBy = str;
+        // 复合排序优先级高于 Sort，故放在 Sort 之后赋值（PageParameter.Sort 的 setter 会清空 OrderBy）
+        if (parameters.TryGetValue(_.OrderBy, out str) && IsValidOrderBy(str)) OrderBy = str;
 
         Params = parameters;
     }
     #endregion
 
     #region 方法
+    /// <summary>校验复合排序表达式是否安全。只允许字段名（可带表别名点号）与 asc/desc，逗号分隔</summary>
+    /// <param name="orderBy">排序表达式，如 <c>Name,CreateTime desc</c></param>
+    /// <returns>是否可安全交给数据层</returns>
+    /// <remarks>XCode 对 <see cref="PageParameter.OrderBy"/> 不做 SQL 安全性校验，因此入口必须自行把关，
+    /// 否则可拼接子查询/函数调用。不安全的表达式直接忽略，不报错，避免影响列表可用性。</remarks>
+    public static Boolean IsValidOrderBy(String orderBy)
+    {
+        if (orderBy.IsNullOrEmpty() || orderBy.Length > 200) return false;
+
+        return OrderByRegex.IsMatch(orderBy);
+    }
+
+    private static readonly Regex OrderByRegex = new(@"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)?(\s+(asc|desc))?(\s*,\s*[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)?(\s+(asc|desc))?)*$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     /// <summary>获取基础Url，用于附加参数</summary>
     /// <param name="where">查询条件，不包含排序和分页</param>
     /// <param name="order">排序</param>
@@ -150,6 +173,7 @@ public class Pager : PageParameter, IExtend
                 _.Desc,
                 _.PageIndex,
                 _.PageSize,
+                _.OrderBy,
             };
             if (excludes != null && excludes.Length > 0) ex.AddRange(excludes);
             sb.UrlParamsExcept(dic, ex.ToArray());
@@ -159,6 +183,8 @@ public class Pager : PageParameter, IExtend
             sb.UrlParams(dic, _.Sort, _.Desc);
             if (!dic.ContainsKey(_.Sort) && !Sort.IsNullOrEmpty()) sb.UrlParam(_.Sort, Sort);
             if (!dic.ContainsKey(_.Desc) && Desc) sb.UrlParam(_.Desc, Desc);
+            sb.UrlParams(dic, _.OrderBy);
+            if (!dic.ContainsKey(_.OrderBy) && !OrderBy.IsNullOrEmpty()) sb.UrlParam(_.OrderBy, OrderBy);
         }
         if (page)
         {

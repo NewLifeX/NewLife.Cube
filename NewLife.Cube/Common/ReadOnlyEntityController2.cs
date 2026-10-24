@@ -546,7 +546,7 @@ public partial class ReadOnlyEntityController<TEntity>
         if (pager != null && pager.Params.Count > 0)
         {
             sb.AppendLine(L.T("Current query conditions:"));
-            foreach (var kv in pager.Params.Where(e => !e.Key.EqualIgnoreCase("_query", "Sort", "Desc", "PageIndex", "PageSize")))
+            foreach (var kv in pager.Params.Where(e => !e.Key.EqualIgnoreCase("_query", "Sort", "Desc", "PageIndex", "PageSize", "orderBy")))
             {
                 sb.AppendLine($"- {kv.Key}: {kv.Value}");
             }

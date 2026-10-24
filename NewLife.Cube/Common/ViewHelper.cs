@@ -81,7 +81,7 @@ public static class ViewHelper
         var dic = new RouteValueDictionary();
         foreach (var item in page.Params)
         {
-            if (!item.Key.EqualIgnoreCase("Sort", "Desc", "PageIndex", "PageSize")) dic[item.Key] = item.Value;
+            if (!item.Key.EqualIgnoreCase("Sort", "Desc", "PageIndex", "PageSize", "orderBy")) dic[item.Key] = item.Value;
         }
 
         return dic;
