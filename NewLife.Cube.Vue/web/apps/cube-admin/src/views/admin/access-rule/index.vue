@@ -3,8 +3,8 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>访问规则管理</h3>
-          <el-button type="primary" @click="handleAdd">新增规则</el-button>
+          <h3>{{ t('rule.title') }}</h3>
+          <el-button type="primary" @click="handleAdd">{{ t('rule.add') }}</el-button>
         </div>
       </template>
 
@@ -15,35 +15,35 @@
       />
 
       <el-table :data="tableData" border style="width: 100%" v-loading="loading">
-        <el-table-column prop="id" label="编号" width="80" />
-        <el-table-column prop="name" label="名称" />
-        <el-table-column prop="url" label="URL路径" />
-        <el-table-column prop="priority" label="优先级" width="100" />
-        <el-table-column prop="actionKind" label="处理方式" width="100">
+        <el-table-column prop="id" :label="t('common.id')" width="80" />
+        <el-table-column prop="name" :label="t('common.name')" />
+        <el-table-column prop="url" :label="t('rule.url')" />
+        <el-table-column prop="priority" :label="t('rule.priority')" width="100" />
+        <el-table-column prop="actionKind" :label="t('rule.action')" width="100">
           <template #default="scope">
             <el-tag :type="getActionKindType(scope.row.actionKind)">
               {{ getActionKindText(scope.row.actionKind) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="limitTimes" label="限流次数" width="100" />
-        <el-table-column prop="updateTime" label="更新时间" />
-        <el-table-column label="状态" width="100">
+        <el-table-column prop="limitTimes" :label="t('rule.limitTimes')" width="100" />
+        <el-table-column prop="updateTime" :label="t('common.updateTime')" />
+        <el-table-column :label="t('rule.status')" width="100">
           <template #default="scope">
             <el-tag :type="scope.row.enable ? 'success' : 'danger'">
-              {{ scope.row.enable ? '启用' : '禁用' }}
+              {{ scope.row.enable ? t('common.enable') : t('rule.disabled') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="备注" min-width="120" show-overflow-tooltip>
+        <el-table-column :label="t('common.remark')" min-width="120" show-overflow-tooltip>
           <template #default="scope">
             {{ scope.row.remark || '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180">
+        <el-table-column :label="t('common.actions')" width="180">
           <template #default="scope">
-            <el-button type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button type="danger" size="small" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button type="primary" size="small" @click="handleEdit(scope.row)">{{ t('button.edit') }}</el-button>
+            <el-button type="danger" size="small" @click="handleDelete(scope.row)">{{ t('button.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -59,62 +59,62 @@
     </el-card>
 
     <!-- 访问规则表单对话框 -->
-    <el-dialog v-model="dialogVisible" :title="formType === 'add' ? '新增访问规则' : '编辑访问规则'" width="600px">
+    <el-dialog v-model="dialogVisible" :title="formType === 'add' ? t('rule.add') : t('rule.edit')" width="600px">
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="120px">
-        <el-form-item label="规则名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入规则名称" />
+        <el-form-item :label="t('rule.name')" prop="name">
+          <el-input v-model="form.name" :placeholder="t('form.placeholder', { field: t('rule.name') })" />
         </el-form-item>
-        <el-form-item label="启用状态" prop="enable">
+        <el-form-item :label="t('common.enable')" prop="enable">
           <el-switch v-model="form.enable" :active-value="true" :inactive-value="false" />
         </el-form-item>
-        <el-form-item label="优先级" prop="priority">
-          <el-input-number v-model="form.priority" :min="0" :max="999" placeholder="数值越大优先级越高" />
+        <el-form-item :label="t('rule.priority')" prop="priority">
+          <el-input-number v-model="form.priority" :min="0" :max="999" :placeholder="t('rule.priorityPlaceholder')" />
         </el-form-item>
-        <el-form-item label="URL路径" prop="url">
-          <el-input v-model="form.url" placeholder="支持*模糊匹配，多个逗号隔开" />
+        <el-form-item :label="t('rule.url')" prop="url">
+          <el-input v-model="form.url" :placeholder="t('rule.matchPlaceholder')" />
         </el-form-item>
-        <el-form-item label="用户代理" prop="userAgent">
-          <el-input v-model="form.userAgent" placeholder="支持*模糊匹配，多个逗号隔开" />
+        <el-form-item :label="t('rule.userAgent')" prop="userAgent">
+          <el-input v-model="form.userAgent" :placeholder="t('rule.matchPlaceholder')" />
         </el-form-item>
-        <el-form-item label="来源IP" prop="ip">
-          <el-input v-model="form.ip" placeholder="支持*模糊匹配，多个逗号隔开" />
+        <el-form-item :label="t('rule.ip')" prop="ip">
+          <el-input v-model="form.ip" :placeholder="t('rule.matchPlaceholder')" />
         </el-form-item>
-        <el-form-item label="登录用户" prop="loginedUser">
-          <el-input v-model="form.loginedUser" placeholder="支持*模糊匹配，多个逗号隔开" />
+        <el-form-item :label="t('rule.loginedUser')" prop="loginedUser">
+          <el-input v-model="form.loginedUser" :placeholder="t('rule.matchPlaceholder')" />
         </el-form-item>
-        <el-form-item label="处理方式" prop="actionKind">
-          <el-select v-model="form.actionKind" placeholder="请选择处理方式">
-            <el-option label="允许" :value="0" />
-            <el-option label="拦截" :value="1" />
-            <el-option label="限流" :value="2" />
+        <el-form-item :label="t('rule.action')" prop="actionKind">
+          <el-select v-model="form.actionKind" :placeholder="t('form.select.placeholder', { field: t('rule.action') })">
+            <el-option :label="t('rule.allow')" :value="0" />
+            <el-option :label="t('rule.block')" :value="1" />
+            <el-option :label="t('rule.throttle')" :value="2" />
           </el-select>
         </el-form-item>
-        <el-form-item label="拦截代码" prop="blockCode" v-if="form.actionKind === 1">
-          <el-input-number v-model="form.blockCode" :min="100" :max="599" placeholder="如404/500/302等" />
+        <el-form-item :label="t('rule.blockCode')" prop="blockCode" v-if="form.actionKind === 1">
+          <el-input-number v-model="form.blockCode" :min="100" :max="599" :placeholder="t('rule.blockCodePlaceholder')" />
         </el-form-item>
-        <el-form-item label="拦截内容" prop="blockContent" v-if="form.actionKind === 1">
-          <el-input v-model="form.blockContent" type="textarea" placeholder="拦截时返回内容" />
+        <el-form-item :label="t('rule.blockContent')" prop="blockContent" v-if="form.actionKind === 1">
+          <el-input v-model="form.blockContent" type="textarea" :placeholder="t('rule.blockContentPlaceholder')" />
         </el-form-item>
-        <el-form-item label="限流维度" prop="limitDimension" v-if="form.actionKind === 2">
-          <el-select v-model="form.limitDimension" placeholder="请选择限流维度">
+        <el-form-item :label="t('rule.limitDimension')" prop="limitDimension" v-if="form.actionKind === 2">
+          <el-select v-model="form.limitDimension" :placeholder="t('form.select.placeholder', { field: t('rule.limitDimension') })">
             <el-option label="IP" :value="1" />
-            <el-option label="用户" :value="2" />
-            <el-option label="全局" :value="3" />
+            <el-option :label="t('rule.dimensionUser')" :value="2" />
+            <el-option :label="t('rule.dimensionGlobal')" :value="3" />
           </el-select>
         </el-form-item>
-        <el-form-item label="限流时间" prop="limitCycle" v-if="form.actionKind === 2">
-          <el-input-number v-model="form.limitCycle" :min="1" placeholder="考察时间，单位秒" />
+        <el-form-item :label="t('rule.limitCycle')" prop="limitCycle" v-if="form.actionKind === 2">
+          <el-input-number v-model="form.limitCycle" :min="1" :placeholder="t('rule.limitCyclePlaceholder')" />
         </el-form-item>
-        <el-form-item label="限流次数" prop="limitTimes" v-if="form.actionKind === 2">
-          <el-input-number v-model="form.limitTimes" :min="1" placeholder="阈值达到时执行拦截" />
+        <el-form-item :label="t('rule.limitTimes')" prop="limitTimes" v-if="form.actionKind === 2">
+          <el-input-number v-model="form.limitTimes" :min="1" :placeholder="t('rule.limitTimesPlaceholder')" />
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" type="textarea" placeholder="请输入备注" />
+        <el-form-item :label="t('common.remark')" prop="remark">
+          <el-input v-model="form.remark" type="textarea" :placeholder="t('form.placeholder', { field: t('common.remark') })" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">确定</el-button>
+        <el-button @click="dialogVisible = false">{{ t('button.cancel') }}</el-button>
+        <el-button type="primary" @click="submitForm">{{ t('button.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -122,12 +122,15 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { FormInstance, FormRules } from 'element-plus';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 import { apiDataToList, handleDeleteOperation, handleFormSubmit } from '@newlifex/cube-vue/core/utils/api-helpers';
 import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListToolbarSearch.vue';
 import CubeListPager from '@newlifex/cube-vue/core/components/CubeListPager.vue';
 import { pageInfoDefault } from '@newlifex/cube-vue/core/types/common';
+
+const { t } = useI18n();
 
 // 定义访问规则类型接口
 interface AccessRule {
@@ -195,24 +198,24 @@ const form = reactive<AccessRule>({
 // 表单验证规则
 const formRules = reactive<FormRules>({
   name: [
-    { required: true, message: '请输入规则名称', trigger: 'blur' }
+    { required: true, message: t('form.placeholder', { field: t('rule.name') }), trigger: 'blur' }
   ],
   priority: [
-    { required: true, message: '请输入优先级', trigger: 'blur' }
+    { required: true, message: t('form.placeholder', { field: t('rule.priority') }), trigger: 'blur' }
   ],
   actionKind: [
-    { required: true, message: '请选择处理方式', trigger: 'change' }
+    { required: true, message: t('form.select.placeholder', { field: t('rule.action') }), trigger: 'change' }
   ]
 });
 
 // 获取处理方式文本
 const getActionKindText = (actionKind: number) => {
   const map: Record<number, string> = {
-    0: '允许',
-    1: '拦截',
-    2: '限流'
+    0: t('rule.allow'),
+    1: t('rule.block'),
+    2: t('rule.throttle')
   };
-  return map[actionKind] || '未知';
+  return map[actionKind] || t('rule.unknown');
 };
 
 // 获取处理方式标签类型
@@ -316,7 +319,7 @@ const handleDelete = (row: AccessRule) => {
   handleDeleteOperation(
     () => request.delete(`/Admin/AccessRule/${row.id}`),
     loadData,
-    '确认删除该访问规则吗？'
+    t('rule.deleteConfirm')
   );
 };
 
