@@ -551,6 +551,47 @@ export default {
   'fileManager.deleteConfirm': '确定要删除文件 "{name}" 吗？',
   'fileManager.confirmDelete': '确认删除',
 
+  // 详情字段通用名
+  'desc.userID': '用户ID',
+  'desc.sessionID': '会话ID',
+  'desc.createIP': '创建地址',
+  'desc.createTime': '创建时间',
+  'desc.detail': '详情',
+
+  // OAuth 日志
+  'oauthLog.title': 'OAuth日志管理',
+  'oauthLog.subtitle': 'OAuth认证登录日志查看与管理',
+  'oauthLog.listTitle': 'OAuth日志列表',
+  'oauthLog.provider': '提供商',
+  'oauthLog.success': '成功',
+  'oauthLog.failed': '失败',
+  'oauthLog.redirectUri': '回调地址',
+  'oauthLog.source': '来源',
+  'oauthLog.detailTitle': 'OAuth日志详情',
+  'oauthLog.connectId': '连接ID',
+  'oauthLog.responseType': '响应类型',
+  'oauthLog.scope': '授权域',
+  'oauthLog.state': '状态数据',
+  'oauthLog.accessToken': '访问令牌',
+  'oauthLog.refreshToken': '刷新令牌',
+  'oauthLog.traceId': '追踪ID',
+
+  // 在线用户
+  'onlineUser.title': '在线用户管理',
+  'onlineUser.provider': '登录方',
+  'onlineUser.times': '次数',
+  'onlineUser.page': '页面',
+  'onlineUser.platform': '平台',
+  'onlineUser.os': '操作系统',
+  'onlineUser.device': '设备',
+  'onlineUser.browser': '浏览器',
+  'onlineUser.onlineTimeSeconds': '在线时间(秒)',
+  'onlineUser.onlineTime': '在线时间',
+  'onlineUser.seconds': '秒',
+  'onlineUser.address': '地址',
+  'onlineUser.detailTitle': '在线用户详情',
+  'onlineUser.deleteConfirm': '确认删除在线用户 "{name}" 吗？',
+
   // 安全中心
   'security.title': '安全中心',
   'security.mail': '邮箱',

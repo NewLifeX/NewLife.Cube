@@ -1,14 +1,14 @@
 <template>
   <div>
     <div class="page-header">
-      <h1>OAuth日志管理</h1>
-      <p>OAuth认证登录日志查看与管理</p>
+      <h1>{{ t('oauthLog.title') }}</h1>
+      <p>{{ t('oauthLog.subtitle') }}</p>
     </div>
 
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>OAuth日志列表</span>
+          <span>{{ t('oauthLog.listTitle') }}</span>
         </div>
       </template>
 
@@ -27,31 +27,31 @@
           @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" width="55" />
-          <el-table-column prop="id" label="编号" width="80" />
-          <el-table-column prop="provider" label="提供商" width="120" />
-          <el-table-column prop="userId" label="用户ID" width="100" />
-          <el-table-column prop="userName" label="用户名" />
-          <el-table-column prop="action" label="操作" />
-          <el-table-column prop="success" label="状态" width="80">
+          <el-table-column prop="id" :label="t('common.id')" width="80" />
+          <el-table-column prop="provider" :label="t('oauthLog.provider')" width="120" />
+          <el-table-column prop="userId" :label="t('desc.userID')" width="100" />
+          <el-table-column prop="userName" :label="t('user.userName')" />
+          <el-table-column prop="action" :label="t('auditLog.action')" />
+          <el-table-column prop="success" :label="t('common.status')" width="80">
             <template #default="{ row }">
               <el-tag :type="row.success ? 'success' : 'danger'">
-                {{ row.success ? '成功' : '失败' }}
+                {{ row.success ? t('oauthLog.success') : t('oauthLog.failed') }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="redirectUri" label="回调地址" show-overflow-tooltip />
-          <el-table-column prop="source" label="来源" />
-          <el-table-column prop="createIP" label="创建地址" />
-          <el-table-column prop="createTime" label="创建时间" width="160">
+          <el-table-column prop="redirectUri" :label="t('oauthLog.redirectUri')" show-overflow-tooltip />
+          <el-table-column prop="source" :label="t('oauthLog.source')" />
+          <el-table-column prop="createIP" :label="t('desc.createIP')" />
+          <el-table-column prop="createTime" :label="t('desc.createTime')" width="160">
             <template #default="{ row }">
               {{ formatDate(row.createTime) }}
             </template>
           </el-table-column>
-          <el-table-column prop="remark" label="备注" show-overflow-tooltip />
-          <el-table-column label="操作" width="120" fixed="right">
+          <el-table-column prop="remark" :label="t('common.remark')" show-overflow-tooltip />
+          <el-table-column :label="t('common.actions')" width="120" fixed="right">
             <template #default="{ row }">
               <el-button size="small" @click="handleDetail(row)">
-                详情
+                {{ t('desc.detail') }}
               </el-button>
             </template>
           </el-table-column>
@@ -69,32 +69,32 @@
     </el-card>
 
     <!-- 详情对话框 -->
-    <el-dialog v-model="showDetailDialog" title="OAuth日志详情" width="800px">
+    <el-dialog v-model="showDetailDialog" :title="t('oauthLog.detailTitle')" width="800px">
       <div v-loading="loading.detail">
         <el-descriptions :column="2" border>
-          <el-descriptions-item label="编号">{{ detailData.id }}</el-descriptions-item>
-          <el-descriptions-item label="提供商">{{ detailData.provider }}</el-descriptions-item>
-          <el-descriptions-item label="连接ID">{{ detailData.connectId }}</el-descriptions-item>
-          <el-descriptions-item label="用户ID">{{ detailData.userId }}</el-descriptions-item>
-          <el-descriptions-item label="用户名">{{ detailData.userName }}</el-descriptions-item>
-          <el-descriptions-item label="操作">{{ detailData.action }}</el-descriptions-item>
-          <el-descriptions-item label="状态">
+          <el-descriptions-item :label="t('common.id')">{{ detailData.id }}</el-descriptions-item>
+          <el-descriptions-item :label="t('oauthLog.provider')">{{ detailData.provider }}</el-descriptions-item>
+          <el-descriptions-item :label="t('oauthLog.connectId')">{{ detailData.connectId }}</el-descriptions-item>
+          <el-descriptions-item :label="t('desc.userID')">{{ detailData.userId }}</el-descriptions-item>
+          <el-descriptions-item :label="t('user.userName')">{{ detailData.userName }}</el-descriptions-item>
+          <el-descriptions-item :label="t('auditLog.action')">{{ detailData.action }}</el-descriptions-item>
+          <el-descriptions-item :label="t('common.status')">
             <el-tag :type="detailData.success ? 'success' : 'danger'">
-              {{ detailData.success ? '成功' : '失败' }}
+              {{ detailData.success ? t('oauthLog.success') : t('oauthLog.failed') }}
             </el-tag>
           </el-descriptions-item>
-          <el-descriptions-item label="回调地址" :span="2">{{ detailData.redirectUri }}</el-descriptions-item>
-          <el-descriptions-item label="响应类型">{{ detailData.responseType }}</el-descriptions-item>
-          <el-descriptions-item label="授权域">{{ detailData.scope }}</el-descriptions-item>
-          <el-descriptions-item label="状态数据" :span="2">{{ detailData.state }}</el-descriptions-item>
-          <el-descriptions-item label="来源">{{ detailData.source }}</el-descriptions-item>
-          <el-descriptions-item label="访问令牌" :span="2">{{ detailData.accessToken }}</el-descriptions-item>
-          <el-descriptions-item label="刷新令牌" :span="2">{{ detailData.refreshToken }}</el-descriptions-item>
-          <el-descriptions-item label="追踪ID" :span="2">{{ detailData.traceId }}</el-descriptions-item>
-          <el-descriptions-item label="创建地址">{{ detailData.createIP }}</el-descriptions-item>
-          <el-descriptions-item label="创建时间">{{ formatDate(detailData.createTime) }}</el-descriptions-item>
-          <el-descriptions-item label="更新时间">{{ formatDate(detailData.updateTime) }}</el-descriptions-item>
-          <el-descriptions-item label="详细信息" :span="2">
+          <el-descriptions-item :label="t('oauthLog.redirectUri')" :span="2">{{ detailData.redirectUri }}</el-descriptions-item>
+          <el-descriptions-item :label="t('oauthLog.responseType')">{{ detailData.responseType }}</el-descriptions-item>
+          <el-descriptions-item :label="t('oauthLog.scope')">{{ detailData.scope }}</el-descriptions-item>
+          <el-descriptions-item :label="t('oauthLog.state')" :span="2">{{ detailData.state }}</el-descriptions-item>
+          <el-descriptions-item :label="t('oauthLog.source')">{{ detailData.source }}</el-descriptions-item>
+          <el-descriptions-item :label="t('oauthLog.accessToken')" :span="2">{{ detailData.accessToken }}</el-descriptions-item>
+          <el-descriptions-item :label="t('oauthLog.refreshToken')" :span="2">{{ detailData.refreshToken }}</el-descriptions-item>
+          <el-descriptions-item :label="t('oauthLog.traceId')" :span="2">{{ detailData.traceId }}</el-descriptions-item>
+          <el-descriptions-item :label="t('desc.createIP')">{{ detailData.createIP }}</el-descriptions-item>
+          <el-descriptions-item :label="t('desc.createTime')">{{ formatDate(detailData.createTime) }}</el-descriptions-item>
+          <el-descriptions-item :label="t('common.updateTime')">{{ formatDate(detailData.updateTime) }}</el-descriptions-item>
+          <el-descriptions-item :label="t('auditLog.detail')" :span="2">
             <div style="max-height: 200px; overflow-y: auto;">
               {{ detailData.remark }}
             </div>
@@ -103,7 +103,7 @@
       </div>
 
       <template #footer>
-        <el-button @click="showDetailDialog = false">关闭</el-button>
+        <el-button @click="showDetailDialog = false">{{ t('button.close') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -112,6 +112,7 @@
 <script setup lang="ts">
 
 import { ref, reactive, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { request } from '@newlifex/cube-vue/core/utils/request'
 import CubeListPager from '@newlifex/cube-vue/core/components/CubeListPager.vue'
 import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListToolbarSearch.vue'
@@ -143,6 +144,7 @@ interface OAuthLog extends BaseEntity {
 // 表格数据
 const tableData = ref<OAuthLog[]>([])
 const selectedRows = ref<OAuthLog[]>([])
+const { t } = useI18n()
 
 // 详情数据
 const detailData = ref<Partial<OAuthLog>>({})

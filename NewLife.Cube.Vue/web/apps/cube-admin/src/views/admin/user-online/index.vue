@@ -3,7 +3,7 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>在线用户管理</h3>
+          <h3>{{ t('onlineUser.title') }}</h3>
         </div>
       </template>
 
@@ -11,37 +11,37 @@
 
       <el-table :data="tableData" style="width: 100%" v-loading="loading" border>
           <el-table-column type="selection" width="55" />
-          <el-table-column prop="id" label="编号" width="80" />
-          <el-table-column prop="userID" label="用户ID" width="100" />
-          <el-table-column prop="name" label="用户名" />
-          <el-table-column prop="sessionID" label="会话ID" show-overflow-tooltip />
-          <el-table-column prop="oAuthProvider" label="登录方" />
-          <el-table-column prop="times" label="次数" width="80" />
-          <el-table-column prop="page" label="页面" show-overflow-tooltip />
-          <el-table-column prop="platform" label="平台" />
-          <el-table-column prop="device" label="设备" show-overflow-tooltip />
-          <el-table-column prop="brower" label="浏览器" show-overflow-tooltip />
-          <el-table-column prop="status" label="状态" />
-          <el-table-column prop="onlineTime" label="在线时间(秒)" width="120" />
-          <el-table-column prop="address" label="地址" />
-          <el-table-column prop="createIP" label="创建地址" />
-          <el-table-column prop="createTime" label="创建时间" width="160">
+          <el-table-column prop="id" :label="t('common.id')" width="80" />
+          <el-table-column prop="userID" :label="t('desc.userID')" width="100" />
+          <el-table-column prop="name" :label="t('user.userName')" />
+          <el-table-column prop="sessionID" :label="t('desc.sessionID')" show-overflow-tooltip />
+          <el-table-column prop="oAuthProvider" :label="t('onlineUser.provider')" />
+          <el-table-column prop="times" :label="t('onlineUser.times')" width="80" />
+          <el-table-column prop="page" :label="t('onlineUser.page')" show-overflow-tooltip />
+          <el-table-column prop="platform" :label="t('onlineUser.platform')" />
+          <el-table-column prop="device" :label="t('onlineUser.device')" show-overflow-tooltip />
+          <el-table-column prop="brower" :label="t('onlineUser.browser')" show-overflow-tooltip />
+          <el-table-column prop="status" :label="t('common.status')" />
+          <el-table-column prop="onlineTime" :label="t('onlineUser.onlineTimeSeconds')" width="120" />
+          <el-table-column prop="address" :label="t('onlineUser.address')" />
+          <el-table-column prop="createIP" :label="t('desc.createIP')" />
+          <el-table-column prop="createTime" :label="t('desc.createTime')" width="160">
             <template #default="{ row }">
               {{ formatDate(row.createTime) }}
             </template>
           </el-table-column>
-          <el-table-column label="备注" min-width="120" show-overflow-tooltip>
+          <el-table-column :label="t('common.remark')" min-width="120" show-overflow-tooltip>
             <template #default="scope">
               {{ scope.row.remark || '-' }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="120" fixed="right">
+          <el-table-column :label="t('common.actions')" width="120" fixed="right">
             <template #default="{ row }">
               <el-button size="small" @click="handleDetail(row)">
-                详情
+                {{ t('desc.detail') }}
               </el-button>
               <el-button size="small" type="danger" @click="handleDelete(row)">
-                删除
+                {{ t('button.delete') }}
               </el-button>
             </template>
           </el-table-column>
@@ -58,25 +58,27 @@
     </el-card>
 
     <!-- 详情对话框 -->
-    <el-dialog v-model="showDetailDialog" title="在线用户详情" width="600px">
+    <el-dialog v-model="showDetailDialog" :title="t('onlineUser.detailTitle')" width="600px">
       <el-descriptions :column="2" border>
-        <el-descriptions-item label="编号">{{ detailData.id }}</el-descriptions-item>
-        <el-descriptions-item label="用户ID">{{ detailData.userID }}</el-descriptions-item>
-        <el-descriptions-item label="用户名">{{ detailData.name }}</el-descriptions-item>
-        <el-descriptions-item label="会话ID">{{ detailData.sessionID }}</el-descriptions-item>
-        <el-descriptions-item label="登录方">{{ detailData.oAuthProvider }}</el-descriptions-item>
-        <el-descriptions-item label="次数">{{ detailData.times }}</el-descriptions-item>
-        <el-descriptions-item label="页面">{{ detailData.page }}</el-descriptions-item>
-        <el-descriptions-item label="平台">{{ detailData.platform }}</el-descriptions-item>
-        <el-descriptions-item label="操作系统">{{ detailData.oS }}</el-descriptions-item>
-        <el-descriptions-item label="设备">{{ detailData.device }}</el-descriptions-item>
-        <el-descriptions-item label="浏览器">{{ detailData.brower }}</el-descriptions-item>
-        <el-descriptions-item label="状态">{{ detailData.status }}</el-descriptions-item>
-        <el-descriptions-item label="在线时间">{{ detailData.onlineTime }}秒</el-descriptions-item>
-        <el-descriptions-item label="地址">{{ detailData.address }}</el-descriptions-item>
-        <el-descriptions-item label="创建地址">{{ detailData.createIP }}</el-descriptions-item>
-        <el-descriptions-item label="创建时间">{{ formatDate(detailData.createTime) }}</el-descriptions-item>
-        <el-descriptions-item label="备注">{{ detailData.remark || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="t('common.id')">{{ detailData.id }}</el-descriptions-item>
+        <el-descriptions-item :label="t('desc.userID')">{{ detailData.userID }}</el-descriptions-item>
+        <el-descriptions-item :label="t('user.userName')">{{ detailData.name }}</el-descriptions-item>
+        <el-descriptions-item :label="t('desc.sessionID')">{{ detailData.sessionID }}</el-descriptions-item>
+        <el-descriptions-item :label="t('onlineUser.provider')">{{ detailData.oAuthProvider }}</el-descriptions-item>
+        <el-descriptions-item :label="t('onlineUser.times')">{{ detailData.times }}</el-descriptions-item>
+        <el-descriptions-item :label="t('onlineUser.page')">{{ detailData.page }}</el-descriptions-item>
+        <el-descriptions-item :label="t('onlineUser.platform')">{{ detailData.platform }}</el-descriptions-item>
+        <el-descriptions-item :label="t('onlineUser.os')">{{ detailData.oS }}</el-descriptions-item>
+        <el-descriptions-item :label="t('onlineUser.device')">{{ detailData.device }}</el-descriptions-item>
+        <el-descriptions-item :label="t('onlineUser.browser')">{{ detailData.brower }}</el-descriptions-item>
+        <el-descriptions-item :label="t('common.status')">{{ detailData.status }}</el-descriptions-item>
+        <el-descriptions-item :label="t('onlineUser.onlineTime')">
+          {{ detailData.onlineTime }}{{ t('onlineUser.seconds') }}
+        </el-descriptions-item>
+        <el-descriptions-item :label="t('onlineUser.address')">{{ detailData.address }}</el-descriptions-item>
+        <el-descriptions-item :label="t('desc.createIP')">{{ detailData.createIP }}</el-descriptions-item>
+        <el-descriptions-item :label="t('desc.createTime')">{{ formatDate(detailData.createTime) }}</el-descriptions-item>
+        <el-descriptions-item :label="t('common.remark')">{{ detailData.remark || '-' }}</el-descriptions-item>
       </el-descriptions>
 
     </el-dialog>
@@ -86,6 +88,7 @@
 <script setup lang="ts">
 
 import { ref, reactive, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { request } from '@newlifex/cube-vue/core/utils/request'
 import { apiDataToList, handleDeleteOperation } from '@newlifex/cube-vue/core/utils/api-helpers'
 import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListToolbarSearch.vue'
@@ -122,6 +125,7 @@ interface UserOnline extends BaseEntity {
 // 表格数据
 const tableData = ref<UserOnline[]>([])
 const loading = ref(false)
+const { t } = useI18n()
 
 // 分页与搜索参数
 const queryParams = reactive({
@@ -185,7 +189,7 @@ const getUserOnlineDetail = async (id: number) => {
       params: { id }
     })
 
-    console.log('详情API返回数据:', response)
+    console.log('Detail API response:', response)
 
     // 使用 processListResponse 的逻辑来处理响应数据
     let detailResult: UserOnline | null = null
@@ -202,9 +206,9 @@ const getUserOnlineDetail = async (id: number) => {
     }
 
     detailData.value = detailResult || {}
-    console.log('设置的详情数据:', detailData.value)
+    console.log('Detail data applied:', detailData.value)
   } catch (error) {
-    console.error('获取用户详情失败:', error)
+    console.error('Failed to load user details:', error)
     detailData.value = {}
   }
 }
@@ -219,7 +223,7 @@ const handleDelete = (row: UserOnline) => {
   handleDeleteOperation(
     () => request.delete(`/Admin/UserOnline/${row.id}`),
     loadUserOnlineData,
-    `确认删除在线用户 "${row.name}" 吗？`
+    t('onlineUser.deleteConfirm', { name: row.name }),
   )
 }
 

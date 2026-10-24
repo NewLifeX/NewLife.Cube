@@ -536,6 +536,47 @@ export default {
   'fileManager.deleteConfirm': '確定要刪除檔案 "{name}" 嗎？',
   'fileManager.confirmDelete': '確認刪除',
 
+  // 詳情欄位通用名
+  'desc.userID': '使用者ID',
+  'desc.sessionID': '工作階段ID',
+  'desc.createIP': '建立位址',
+  'desc.createTime': '建立時間',
+  'desc.detail': '詳情',
+
+  // OAuth 日誌
+  'oauthLog.title': 'OAuth日誌管理',
+  'oauthLog.subtitle': 'OAuth認證登入日誌檢視與管理',
+  'oauthLog.listTitle': 'OAuth日誌列表',
+  'oauthLog.provider': '提供商',
+  'oauthLog.success': '成功',
+  'oauthLog.failed': '失敗',
+  'oauthLog.redirectUri': '回呼位址',
+  'oauthLog.source': '來源',
+  'oauthLog.detailTitle': 'OAuth日誌詳情',
+  'oauthLog.connectId': '連線ID',
+  'oauthLog.responseType': '回應類型',
+  'oauthLog.scope': '授權域',
+  'oauthLog.state': '狀態資料',
+  'oauthLog.accessToken': '存取權杖',
+  'oauthLog.refreshToken': '刷新權杖',
+  'oauthLog.traceId': '追蹤ID',
+
+  // 線上使用者
+  'onlineUser.title': '線上使用者管理',
+  'onlineUser.provider': '登入方',
+  'onlineUser.times': '次數',
+  'onlineUser.page': '頁面',
+  'onlineUser.platform': '平台',
+  'onlineUser.os': '作業系統',
+  'onlineUser.device': '裝置',
+  'onlineUser.browser': '瀏覽器',
+  'onlineUser.onlineTimeSeconds': '線上時間(秒)',
+  'onlineUser.onlineTime': '線上時間',
+  'onlineUser.seconds': '秒',
+  'onlineUser.address': '位址',
+  'onlineUser.detailTitle': '線上使用者詳情',
+  'onlineUser.deleteConfirm': '確認刪除線上使用者 "{name}" 嗎？',
+
   // 安全中心
   'security.title': '安全中心',
   'security.mail': '電子郵件',

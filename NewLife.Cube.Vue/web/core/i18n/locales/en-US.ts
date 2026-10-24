@@ -553,6 +553,47 @@ export default {
   'fileManager.deleteConfirm': 'Delete the file "{name}"?',
   'fileManager.confirmDelete': 'Confirm delete',
 
+  // Shared description labels
+  'desc.userID': 'User ID',
+  'desc.sessionID': 'Session ID',
+  'desc.createIP': 'Created from IP',
+  'desc.createTime': 'Created at',
+  'desc.detail': 'Details',
+
+  // OAuth log
+  'oauthLog.title': 'OAuth log',
+  'oauthLog.subtitle': 'Review and manage OAuth sign-in logs',
+  'oauthLog.listTitle': 'OAuth log entries',
+  'oauthLog.provider': 'Provider',
+  'oauthLog.success': 'Succeeded',
+  'oauthLog.failed': 'Failed',
+  'oauthLog.redirectUri': 'Redirect URI',
+  'oauthLog.source': 'Source',
+  'oauthLog.detailTitle': 'OAuth log details',
+  'oauthLog.connectId': 'Connection ID',
+  'oauthLog.responseType': 'Response type',
+  'oauthLog.scope': 'Scope',
+  'oauthLog.state': 'State',
+  'oauthLog.accessToken': 'Access token',
+  'oauthLog.refreshToken': 'Refresh token',
+  'oauthLog.traceId': 'Trace ID',
+
+  // Online users
+  'onlineUser.title': 'Online users',
+  'onlineUser.provider': 'Signed in via',
+  'onlineUser.times': 'Times',
+  'onlineUser.page': 'Page',
+  'onlineUser.platform': 'Platform',
+  'onlineUser.os': 'OS',
+  'onlineUser.device': 'Device',
+  'onlineUser.browser': 'Browser',
+  'onlineUser.onlineTimeSeconds': 'Online time (seconds)',
+  'onlineUser.onlineTime': 'Online time',
+  'onlineUser.seconds': ' seconds',
+  'onlineUser.address': 'Address',
+  'onlineUser.detailTitle': 'Online user details',
+  'onlineUser.deleteConfirm': 'Remove the online user "{name}"?',
+
   // Security center
   'security.title': 'Security center',
   'security.mail': 'Email',
