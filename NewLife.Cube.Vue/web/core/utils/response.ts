@@ -3,6 +3,12 @@
  * 处理API返回的标准格式数据
  */
 import notification from '../components/Notification';
+import i18n from '../i18n';
+
+/** 工具函数不在组件上下文内，直接走全局 i18n 实例 */
+function t(key: string): string {
+  return i18n.global.t(key);
+}
 
 /**
  * 标准API响应接口
@@ -80,15 +86,15 @@ export function handleApiResponse<T = unknown>(
     errorMessage
   } = options;
 
-  console.log('=== handleApiResponse 开始处理 ===');
-  console.log('响应数据:', response);
-  console.log('响应数据类型:', typeof response);
-  console.log('响应数据是否有 code 字段:', response && typeof response === 'object' && 'code' in response);
+  console.log('=== handleApiResponse start ===');
+  console.log('response:', response);
+  console.log('response type:', typeof response);
+  console.log('response has code field:', response && typeof response === 'object' && 'code' in response);
 
   // 检查响应是否为有效对象
   if (!response || typeof response !== 'object') {
-    console.log('❌ 无效响应数据');
-    const errorMsg = errorMessage || '无效的响应数据';
+    console.log('❌ invalid response');
+    const errorMsg = errorMessage || t('response.invalidData');
     if (showErrorMessage) {
       notification.error({ message: errorMsg });
     }
@@ -102,15 +108,15 @@ export function handleApiResponse<T = unknown>(
   }
 
   const responseObj = response as Record<string, unknown>;
-  console.log('转换后的响应对象 keys:', Object.keys(responseObj));
-  console.log('responseObj.code 原始值:', responseObj.code);
-  console.log('responseObj.code 类型:', typeof responseObj.code);
+  console.log('normalized response keys:', Object.keys(responseObj));
+  console.log('responseObj.code raw:', responseObj.code);
+  console.log('responseObj.code type:', typeof responseObj.code);
 
   // 1. 检查 code 字段并判断成功状态
   const code = responseObj.code as number;
   const isSuccess = code === 0 || code === 200;
 
-  console.log('响应状态判断:', {
+  console.log('status check:', {
     code: code,
     codeType: typeof code,
     codeValue: responseObj.code,
@@ -156,7 +162,7 @@ export function handleApiResponse<T = unknown>(
   // 6. 处理 data 字段（可能是对象、数组、基本类型或 null）
   const data = responseObj.data as T;
 
-  console.log('处理后的数据:', {
+  console.log('processed data:', {
     success: isSuccess,
     data: data,
     message: message,
@@ -166,12 +172,12 @@ export function handleApiResponse<T = unknown>(
 
   if (isSuccess) {
     // 成功处理
-    console.log('✅ 处理成功分支');
+    console.log('✅ success branch');
 
     // 显示成功提示（如果 message 不为空且配置了显示成功提示）
     const displayMessage = successMessage || message;
     if (showSuccessMessage && displayMessage) {
-      console.log('显示成功提示:', displayMessage);
+      console.log('show success message:', displayMessage);
       notification.success({ message: displayMessage });
     }
 
@@ -182,16 +188,16 @@ export function handleApiResponse<T = unknown>(
       page: pageInfo,
       stat: statInfo,
     };
-    console.log('✅ 返回成功结果:', result);
+    console.log('✅ returned success result:', result);
     return result;
   } else {
     // 错误处理
-    console.log('❌ 处理错误分支');
+    console.log('❌ error branch');
 
     // 显示错误提示
-    const displayMessage = errorMessage || message || '操作失败';
+    const displayMessage = errorMessage || message || t('response.operationFailed');
     if (showErrorMessage) {
-      console.log('显示错误提示:', displayMessage);
+      console.log('show error message:', displayMessage);
       notification.error({ message: displayMessage });
     }
 
@@ -202,7 +208,7 @@ export function handleApiResponse<T = unknown>(
       page: pageInfo,
       stat: statInfo,
     };
-    console.log('❌ 返回错误结果:', result);
+    console.log('❌ returned error result:', result);
     return result;
   }
 }
@@ -222,16 +228,16 @@ export function createApiWrapper<T = unknown, P = unknown>(
 ) {
   return async (params: P) => {
     try {
-      console.log('=== createApiWrapper 开始调用 ===');
-      console.log('调用参数:', params);
+      console.log('=== createApiWrapper call start ===');
+      console.log('params:', params);
 
       const response = await apiCall(params);
 
-      console.log('=== createApiWrapper 收到响应 ===');
-      console.log('apiCall 返回的 response:', response);
-      console.log('response 类型:', typeof response);
-      console.log('response 是否为数组:', Array.isArray(response));
-      console.log('response 是否有 code 字段:', response && typeof response === 'object' && 'code' in response);
+      console.log('=== createApiWrapper got response ===');
+      console.log('apiCall response:', response);
+      console.log('response type:', typeof response);
+      console.log('response is array:', Array.isArray(response));
+      console.log('response has code field:', response && typeof response === 'object' && 'code' in response);
 
       return handleApiResponse(response, {
         showSuccessMessage: false, // 默认不显示成功提示
@@ -240,17 +246,17 @@ export function createApiWrapper<T = unknown, P = unknown>(
       });
     } catch (error) {
       // 网络错误或其他异常
-      console.error('API调用失败:', error);
+      console.error('API call failed:', error);
 
       if (options?.showErrorMessage !== false) {
-        const message = options?.errorMessage || '网络请求失败，请稍后重试';
+        const message = options?.errorMessage || t('response.networkErrorRetry');
         notification.error({ message });
       }
 
       return {
         success: false,
         data: null,
-        message: '网络请求失败',
+        message: t('response.networkError'),
         page: null,
         stat: null,
       };

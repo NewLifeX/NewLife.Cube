@@ -332,4 +332,10 @@ export default {
   'engine.importFailed': '导入失败',
   'engine.importSuccess': '导入成功',
   'engine.importNothing': '{message}，未导入任何数据，请检查表头是否与导入模板一致',
+
+  // 响应处理
+  'response.invalidData': '无效的响应数据',
+  'response.operationFailed': '操作失败',
+  'response.networkErrorRetry': '网络请求失败，请稍后重试',
+  'response.networkError': '网络请求失败',
 };

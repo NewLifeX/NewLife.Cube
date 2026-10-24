@@ -334,4 +334,10 @@ export default {
   'engine.importFailed': 'Import failed',
   'engine.importSuccess': 'Imported',
   'engine.importNothing': '{message}, no data was imported. Please check whether the table header matches the import template',
+
+  // Response handling
+  'response.invalidData': 'Invalid response data',
+  'response.operationFailed': 'Operation failed',
+  'response.networkErrorRetry': 'Network request failed, please try again later',
+  'response.networkError': 'Network request failed',
 };

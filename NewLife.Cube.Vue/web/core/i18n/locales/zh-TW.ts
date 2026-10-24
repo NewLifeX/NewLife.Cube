@@ -317,4 +317,10 @@ export default {
   'engine.importFailed': '匯入失敗',
   'engine.importSuccess': '匯入成功',
   'engine.importNothing': '{message}，未匯入任何資料，請檢查表頭是否與匯入範本一致',
+
+  // 回應處理
+  'response.invalidData': '無效的回應資料',
+  'response.operationFailed': '操作失敗',
+  'response.networkErrorRetry': '網路請求失敗，請稍後重試',
+  'response.networkError': '網路請求失敗',
 };
