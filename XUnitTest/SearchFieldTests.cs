@@ -16,7 +16,6 @@ public class SearchFieldTests
 
         Assert.Null(field.Name);
         Assert.False(field.Multiple);
-        Assert.Null(field.LovCode);
     }
 
     [Fact]
@@ -27,12 +26,10 @@ public class SearchFieldTests
         {
             Name = "Status",
             Multiple = true,
-            LovCode = "OrderStatus"
         };
 
         Assert.Equal("Status", field.Name);
         Assert.True(field.Multiple);
-        Assert.Equal("OrderStatus", field.LovCode);
     }
 
     [Fact]

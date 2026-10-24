@@ -119,10 +119,6 @@ public class DataField : IDictionarySource
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public String ValueField { get; set; }
 
-    /// <summary>LOV 配置代码</summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public String LovCode { get; set; }
-
     /// <summary>映射提供者</summary>
     [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public MapProvider MapProvider { get; set; }
@@ -185,13 +181,12 @@ public class DataField : IDictionarySource
         if (!Extended3.IsNullOrEmpty()) dic["extended3"] = Extended3;
         if (!MapField.IsNullOrEmpty()) dic["mapField"] = MapField;
         if (!ValueField.IsNullOrEmpty()) dic["valueField"] = ValueField;
-        if (!LovCode.IsNullOrEmpty()) dic["lovCode"] = LovCode;
 
         // 扩展属性透传。核心不解释 props，由前端渲染器按约定消费
         if (Properties != null && Properties.Count > 0) dic["props"] = Properties;
 
         // 数据源。优先 DataSource 委托（控制器显式配置，如角色组），否则枚举字段自动构建选项
-        // 前端 LovSelect 优先使用 dataSource 渲染下拉选项（对齐 MVC _Form_Item/_Form_Int）
+        // 下拉选项对齐 MVC _Form_Item/_Form_Int
         if (DataSource != null)
         {
             try
@@ -229,30 +224,6 @@ public class DataField : IDictionarySource
                 sds[value + ""] = L.T(label);
             }
             if (sds.Count > 0) dic["dataSource"] = sds;
-
-            // 级联（LovSelect）：枚举成员带 [Parent] 特性（按简单名识别，与框架解耦，同 LovRegistry.GetEnumOptions 约定）
-            // 时，该字段是"子字典"（如工单类型 OrderType 的每个成员归属某板块 Section）。
-            // 下发 lovCode（Enum.全名，供前端 LovSelect 拉取带 parent 的选项）+ parentField（父枚举类型名，
-            // 约定=同级字段名，如 Section），前端据此把同级父字段当前值传给 LovSelect :parent 做过滤。
-            // 无 [Parent] 的枚举（如 Section 本身、优先级）保持普通 select 下拉，行为不变。
-            Type parentType = null;
-            foreach (var m in members)
-            {
-                foreach (var a in m.GetCustomAttributes())
-                {
-                    if (a.GetType().Name == "ParentAttribute")
-                    {
-                        var pv = a.GetType().GetProperty("Value")?.GetValue(a);
-                        if (pv != null) { parentType = pv.GetType(); break; }
-                    }
-                }
-                if (parentType != null) break;
-            }
-            if (parentType != null)
-            {
-                dic["lovCode"] = "Enum." + Type.FullName;
-                dic["parentField"] = parentType.Name;
-            }
         }
 
         // 子类扩展字段

@@ -55,7 +55,6 @@ public class DataFieldTests
         Assert.False(field.Visible);
         Assert.False(field.Required);
         Assert.Null(field.MapField);
-        Assert.Null(field.LovCode);
         Assert.NotNull(field.Properties);
     }
 
@@ -76,8 +75,7 @@ public class DataFieldTests
             ReadOnly = true,
             Visible = false,
             Required = true,
-            MapField = "Name",
-            LovCode = "Role"
+            MapField = "Name"
         };
 
         Assert.Equal("UserName", field.Name);
@@ -92,7 +90,6 @@ public class DataFieldTests
         Assert.False(field.Visible);
         Assert.True(field.Required);
         Assert.Equal("Name", field.MapField);
-        Assert.Equal("Role", field.LovCode);
     }
 
     [Fact]
@@ -179,7 +176,6 @@ public class DataFieldTests
         Assert.DoesNotContain("authority", json);
         Assert.DoesNotContain("extended1", json);
         Assert.DoesNotContain("mapField", json);
-        Assert.DoesNotContain("lovCode", json);
         Assert.DoesNotContain("category", json);
         Assert.DoesNotContain("description", json);
     }
@@ -200,7 +196,6 @@ public class DataFieldTests
             Nullable = true,
             Required = true,
             MapField = "LoginName",
-            LovCode = "Role",
         };
 
         var json = JsonSerializer.Serialize(field, CreateOptions());
@@ -212,7 +207,6 @@ public class DataFieldTests
         Assert.Contains("\"nullable\":true", json);
         Assert.Contains("\"required\":true", json);
         Assert.Contains("\"mapField\":\"LoginName\"", json);
-        Assert.Contains("\"lovCode\":\"Role\"", json);
     }
 
     [Fact]
@@ -298,7 +292,6 @@ public class DataFieldTests
         Assert.DoesNotContain("required", json);
         Assert.DoesNotContain("authority", json);
         Assert.DoesNotContain("mapField", json);
-        Assert.DoesNotContain("lovCode", json);
         Assert.DoesNotContain("category", json);
         Assert.DoesNotContain("description", json);
     }
@@ -319,7 +312,6 @@ public class DataFieldTests
             Nullable = true,
             Required = true,
             MapField = "LoginName",
-            LovCode = "Role",
         };
 
         var json = ToFastJson(field);
@@ -331,7 +323,6 @@ public class DataFieldTests
         Assert.Contains("\"nullable\":true", json);
         Assert.Contains("\"required\":true", json);
         Assert.Contains("\"mapField\":\"LoginName\"", json);
-        Assert.Contains("\"lovCode\":\"Role\"", json);
     }
 
     [Fact]
