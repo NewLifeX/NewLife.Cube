@@ -115,7 +115,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
         Value = obj;
 
         if (IsJsonRequest)
-            return Ok("保存成功");
+            return Ok("Saved successfully");
         else
             return Redirect("Index");
     }
@@ -127,7 +127,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
 
         v = v.Split(",")[0];
 
-        if (!v.EqualIgnoreCase("true", "false")) throw new XException("非法布尔值Request[{0}]={1}", name, v);
+        if (!v.EqualIgnoreCase("true", "false")) throw new XException("Invalid boolean Request[{0}]={1}", name, v);
 
         return v.ToBoolean();
     }

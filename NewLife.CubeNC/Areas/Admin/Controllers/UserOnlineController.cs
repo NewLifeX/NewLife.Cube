@@ -61,7 +61,7 @@ public class UserOnlineController : EntityController<UserOnline, UserOnlineModel
 
         return type switch
         {
-            DataObjectMethodType.Update or DataObjectMethodType.Insert => throw new Exception("不允许添加/修改记录"),
+            DataObjectMethodType.Update or DataObjectMethodType.Insert => throw new Exception("Adding or modifying records is not allowed"),
             _ => base.Valid(entity, type, post),
         };
     }
@@ -76,7 +76,7 @@ public class UserOnlineController : EntityController<UserOnline, UserOnlineModel
     public ActionResult Kick(Int32 id)
     {
         var online = UserOnline.FindByID(id);
-        if (online == null) return Json(1, "在线记录不存在");
+        if (online == null) return Json(1, "Online record not found");
 
         // 数据权限校验：非系统管理员只能强制下线自己的在线记录，防止越权踢人并吊销他人全部令牌
         var user = ManageProvider.User;

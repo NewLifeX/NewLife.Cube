@@ -1,6 +1,7 @@
 # 检查运行时消息（异常、日志、控制台、界面提示、埋点标签）是否全部为英文
 # 规则：调用点字符串中不得出现 CJK 字符；注释中的中文不受限制。
-# 仅检查 API 版（NewLife.Cube）；MVC 版不纳入运行时多语言范围。
+# 覆盖 API 版（NewLife.Cube）、其链接的共享源码（NewLife.CubeNC 中被 <Compile Include> 的文件）
+# 与 MVC 版（NewLife.CubeNC 全量）：2026-10-24 起 MVC 版中文消息已全部改英文源文。
 #
 # 用法：
 #   pwsh -File check-english-messages.ps1                         # 默认目录，失败退出码 1
@@ -70,9 +71,6 @@ foreach ($file in $scanFiles) {
             $code = $line -replace "//.*$", ""
             # 特性参数（Description/DisplayName/Obsolete/RequiresXxx/Justification 等）属元数据，不在本检查范围
             if ($code -match "^\s*\[") { continue }
-            # 共享源码（CubeNC）的服务端日志正分批迁移到 L.TLog（见 Doc/功能清单.md IMP-3）；
-            # 已改为 L.TLog 的行按英文源文校验，尚未迁移的中文日志继续豁免，避免存量噪声淹没新问题
-            if ($rel -like "NewLife.CubeNC\*" -and $code -match "XTrace\.|WriteLog\(|AppendTag\(|Log\.(Write|Error|Info|Debug|Warn|Fatal)" -and $code -notmatch "L\.TLog") { continue }
             if ($code -match $MessageCall -and $code -match "[\u4e00-\u9fa5]") {
                 $hits += [pscustomobject]@{ File = $rel; Line = $i + 1; Text = $code }
             }

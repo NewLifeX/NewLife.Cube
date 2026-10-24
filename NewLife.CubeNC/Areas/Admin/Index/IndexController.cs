@@ -423,7 +423,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
             //manager.Restart();
         }
 
-        return JsonRefresh("重启成功", 2);
+        return JsonRefresh("Restarted successfully", 2);
     }
 
     /// <summary>

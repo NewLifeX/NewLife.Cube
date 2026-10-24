@@ -263,7 +263,7 @@ public class UserController : EntityController<User, UserModel>
         {
             // 用户页对非系统角色只读：仅支持查看本人信息，角色/部门/启用等管理字段一律禁止写入
             // （含租户上下文；租户成员角色分配走 TenantUserController，个人资料编辑走用户中心）
-            throw new Exception("用户页对非系统角色只读，资料编辑请前往用户中心！");
+            throw new Exception("User page is read-only for non-system roles; edit your profile in the user center!");
         }
 
         if (post && type == DataObjectMethodType.Update)
@@ -291,7 +291,7 @@ public class UserController : EntityController<User, UserModel>
     protected override Int32 OnImport(IEntityFactory factory, IList<IEntity> list, ImportContext context)
     {
         // 用户页对非系统角色只读：批量导入属于写入旁路，一并禁止
-        if (!IsSystemRole()) throw new Exception("用户页对非系统角色只读，禁止批量导入！");
+        if (!IsSystemRole()) throw new Exception("User page is read-only for non-system roles; bulk import is not allowed!");
 
         return base.OnImport(factory, list, context);
     }
@@ -323,13 +323,13 @@ public class UserController : EntityController<User, UserModel>
         var set = CubeSetting.Current;
         if (ms != null && !set.AllowLogin)
         {
-            if (logId > 0) throw new Exception("已完成第三方登录，但无法绑定本地用户且没有开启自动注册，建议开启OAuth应用的自动注册");
+            if (logId > 0) throw new Exception("Third-party sign-in completed, but no local user can be bound and auto-registration is off; turn on auto-registration for the OAuth application");
 
             // 没有任何第三方登录渠道，且短信/邮箱登录也未开启时明确报错；
             // 不得静默重开密码登录（旧实现 set.AllowLogin=true 仅影响页面展示，服务层已强制拦截账密登录，
             // 两者叠加会陷入"页面有表单却登录不了"的困惑状态）
             if (ms.Count == 0 && !set.EnableSms && !set.EnableMail)
-                throw new Exception("已禁止密码登录，且未配置第三方登录渠道，请先在OAuth应用中启用SSO登录");
+                throw new Exception("Password sign-in is disabled and no third-party channel is configured; enable SSO sign-in on an OAuth application first");
 
             // 只有一个，跳转
             if (ms.Count == 1)
@@ -565,7 +565,7 @@ public class UserController : EntityController<User, UserModel>
     public ActionResult CloseAccount()
     {
         var user = ManageProvider.User as User;
-        if (user == null || user.ID <= 0) return Json(500, "用户未登录，请先登录");
+        if (user == null || user.ID <= 0) return Json(500, "Not signed in, please sign in first");
 
         var result = _userService.CloseAccount(user, UserHost);
         if (!result.IsSuccess) return Json(500, result.Message);
@@ -573,7 +573,7 @@ public class UserController : EntityController<User, UserModel>
         // 注销当前会话
         ManageProvider.Provider.Logout();
 
-        return Json(0, "账号已注销");
+        return Json(0, "Account closed");
     }
 
     /// <summary>导出个人数据（依据《个人信息保护法》提供数据可携带权）。下载 JSON 文件</summary>
@@ -586,7 +586,7 @@ public class UserController : EntityController<User, UserModel>
         if (cur == null) return RedirectToAction("Login");
 
         var user = XCode.Membership.User.FindByKeyForEdit(cur.ID);
-        if (user == null) throw new Exception("无效用户编号！");
+        if (user == null) throw new Exception("Invalid user id!");
 
         var data = new Dictionary<String, Object>
         {
@@ -652,10 +652,10 @@ public class UserController : EntityController<User, UserModel>
         var user = ManageProvider.User as XCode.Membership.User;
         if (user == null) return RedirectToAction("Login");
 
-        if (id > 0 && id != user.ID) throw new Exception("禁止查看非当前登录用户资料");
+        if (id > 0 && id != user.ID) throw new Exception("Not allowed to view another user's profile");
 
         user = XCode.Membership.User.FindByKeyForEdit(user.ID);
-        if (user == null) throw new Exception("无效用户编号！");
+        if (user == null) throw new Exception("Invalid user id!");
 
         //user.Password = null;
         user["Password"] = null;
@@ -690,20 +690,20 @@ public class UserController : EntityController<User, UserModel>
         var cur = ManageProvider.User;
         if (cur == null) return RedirectToAction("Login");
 
-        if (user.ID != cur.ID) throw new Exception("禁止修改非当前登录用户资料");
+        if (user.ID != cur.ID) throw new Exception("Not allowed to modify another user's profile");
 
         var entity = user as IEntity;
-        if (entity.Dirtys["Name"]) throw new Exception("禁止修改用户名！");
-        if (entity.Dirtys["RoleID"]) throw new Exception("禁止修改角色！");
-        if (entity.Dirtys["RoleIds"]) throw new Exception("禁止修改角色！");
-        if (entity.Dirtys["Enable"]) throw new Exception("禁止修改禁用！");
+        if (entity.Dirtys["Name"]) throw new Exception("User name cannot be modified!");
+        if (entity.Dirtys["RoleID"]) throw new Exception("Role cannot be modified!");
+        if (entity.Dirtys["RoleIds"]) throw new Exception("Role cannot be modified!");
+        if (entity.Dirtys["Enable"]) throw new Exception("Enable state cannot be modified!");
 
         var file = HttpContext.Request.Form.Files["avatar"];
         if (file != null)
         {
             var ext = Path.GetExtension(file.FileName);
             if (!ext.EqualIgnoreCase(".png", ".jpg", ".gif", ".bmp", ".tiff", ".svg"))
-                throw new Exception("仅支持上传图片文件！");
+                throw new Exception("Only image files can be uploaded!");
 
             //var set = CubeSetting.Current;
             //var fileName = user.ID + Path.GetExtension(file.FileName);
@@ -746,19 +746,19 @@ public class UserController : EntityController<User, UserModel>
     [EntityAuthorize]
     public ActionResult ChangePassword(ChangePasswordModel model)
     {
-        if (model.NewPassword.IsNullOrWhiteSpace()) throw new ArgumentException($"新密码不能为 Null 或空白", nameof(model.NewPassword));
-        if (model.NewPassword2.IsNullOrWhiteSpace()) throw new ArgumentException($"确认密码不能为 Null 或空白", nameof(model.NewPassword2));
-        if (model.NewPassword != model.NewPassword2) throw new ArgumentException($"两次输入密码不一致", nameof(model.NewPassword));
+        if (model.NewPassword.IsNullOrWhiteSpace()) throw new ArgumentException($"New password cannot be null or blank", nameof(model.NewPassword));
+        if (model.NewPassword2.IsNullOrWhiteSpace()) throw new ArgumentException($"Confirm password cannot be null or blank", nameof(model.NewPassword2));
+        if (model.NewPassword != model.NewPassword2) throw new ArgumentException($"The two passwords do not match", nameof(model.NewPassword));
 
-        if (!_passwordService.Valid(model.NewPassword)) throw new ArgumentException($"密码太弱，要求8位起且包含数字大小写字母和符号", nameof(model.NewPassword));
+        if (!_passwordService.Valid(model.NewPassword)) throw new ArgumentException($"Password too weak; at least 8 characters with digits, upper/lower case letters and symbols", nameof(model.NewPassword));
 
         // SSO 登录不需要知道原密码就可以修改，原则上更相信外方，同时也避免了直接第三方登录没有设置密码的尴尬
         var ssoName = Session["Cube_Sso"] as String;
         var requireOldPass = ssoName.IsNullOrEmpty();
         if (requireOldPass)
         {
-            if (model.OldPassword.IsNullOrWhiteSpace()) throw new ArgumentException($"原密码不能为 Null 或空白", nameof(model.OldPassword));
-            if (model.NewPassword == model.OldPassword) throw new ArgumentException($"修改密码不能与原密码一致", nameof(model.NewPassword));
+            if (model.OldPassword.IsNullOrWhiteSpace()) throw new ArgumentException($"Old password cannot be null or blank", nameof(model.OldPassword));
+            if (model.NewPassword == model.OldPassword) throw new ArgumentException($"New password must differ from the old one", nameof(model.NewPassword));
         }
 
         var current = ManageProvider.User;
@@ -768,7 +768,7 @@ public class UserController : EntityController<User, UserModel>
 
         //(user as User).Update();
 
-        ViewBag.StatusMessage = "修改成功！";
+        ViewBag.StatusMessage = "Changed successfully!";
 
         if (IsJsonRequest) return Ok(ViewBag.StatusMessage);
 
@@ -785,7 +785,7 @@ public class UserController : EntityController<User, UserModel>
         if (user == null) return RedirectToAction("Login");
 
         user = XCode.Membership.User.FindByKeyForEdit(user.ID);
-        if (user == null) throw new Exception("无效用户编号！");
+        if (user == null) throw new Exception("Invalid user id!");
 
         // 第三方绑定
         var ucs = UserConnect.FindAllByUserID(user.ID);
@@ -810,7 +810,7 @@ public class UserController : EntityController<User, UserModel>
     public ActionResult Register(AuthRegisterModel registerModel)
     {
         var set = CubeSetting.Current;
-        if (!set.AllowRegister) throw new Exception("禁止注册！");
+        if (!set.AllowRegister) throw new Exception("Registration is not allowed!");
 
         var returnUrl = GetRequest("r");
         if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
@@ -857,13 +857,13 @@ public class UserController : EntityController<User, UserModel>
     [EntityAuthorize(PermissionFlags.Update)]
     public ActionResult ClearPassword(Int32 id)
     {
-        if (!ManageProvider.User.Roles.Any(e => e.IsSystem)) throw new Exception("清除密码操作需要管理员权限，非法操作！");
+        if (!ManageProvider.User.Roles.Any(e => e.IsSystem)) throw new Exception("Clearing the password requires administrator permission!");
 
         // 前面表单可能已经清空密码
         var user = FindByID(id);
         if (user == null)
         {
-            if (IsJsonRequest) return Json(1, "用户不存在");
+            if (IsJsonRequest) return Json(1, "User not found");
             return RedirectToAction("Index");
         }
 
@@ -884,12 +884,12 @@ public class UserController : EntityController<User, UserModel>
     public ActionResult RevokeTokens(Int32 id)
     {
         // 吊销令牌属于安全运维操作，仅管理员可用（用户页对非系统角色只读，防跨用户令牌吊销）
-        if (!IsSystemRole()) throw new Exception("吊销令牌需要管理员权限，非法操作！");
+        if (!IsSystemRole()) throw new Exception("Revoking tokens requires administrator permission!");
 
         var user = FindByID(id);
         if (user == null)
         {
-            if (IsJsonRequest) return Json(1, "用户不存在");
+            if (IsJsonRequest) return Json(1, "User not found");
             return RedirectToAction("Edit", new { id });
         }
 
@@ -999,12 +999,12 @@ public class UserController : EntityController<User, UserModel>
             var user = ManageProvider.User;
             var tu = TenantUser.FindByTenantIdAndUserId(tagTenantId, user.ID);
             if (tu == null || !tu.Enable)
-                throw new InvalidOperationException("无权切换到该租户！");
+                throw new InvalidOperationException("No permission to switch to this tenant!");
 
             HttpContext.SaveTenant(tagTenantId);
         }
 
-        ViewBag.StatusMessage = "保存成功";
+        ViewBag.StatusMessage = "Saved";
         if (IsJsonRequest) return Ok(ViewBag.StatusMessage);
 
         return TenantSetting();

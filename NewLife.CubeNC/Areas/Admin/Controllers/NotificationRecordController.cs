@@ -126,9 +126,9 @@ public class NotificationRecordController : ReadOnlyEntityController<Notificatio
     {
         var (userId, admin, name) = GetCurrentUser();
         var entity = NotificationRecord.MarkRead(id, userId, name, admin);
-        if (entity == null) return Json(500, "记录不存在或无权标记已读");
+        if (entity == null) return Json(500, "Record not found or no permission to mark as read");
 
-        return Json(0, "已读", new { entity.Id, entity.Read });
+        return Json(0, "Read", new { entity.Id, entity.Read });
     }
 
     /// <summary>全部标记已读</summary>

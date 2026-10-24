@@ -196,7 +196,7 @@ public class RoleController(ITenantContext tenantContext) : EntityController<Rol
 
         v = v.Split(",")[0];
 
-        if (!v.EqualIgnoreCase("true", "false")) throw new XException("非法布尔值Request[{0}]={1}", name, v);
+        if (!v.EqualIgnoreCase("true", "false")) throw new XException("Invalid boolean Request[{0}]={1}", name, v);
 
         return v.ToBoolean();
     }

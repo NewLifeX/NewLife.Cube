@@ -345,7 +345,9 @@ jobs:
         if ($failed) { exit 1 }
     - name: Check English runtime messages
       shell: pwsh
-      run: pwsh -File ./check-english-messages.ps1
+      run: |
+        pwsh -File ./check-english-messages.ps1
+        pwsh -File ./check-english-messages.ps1 -Dir NewLife.CubeNC
     - name: Check view keys have Chinese translation
       shell: pwsh
       run: pwsh -File ./check-missing-keys.ps1

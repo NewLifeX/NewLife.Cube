@@ -56,12 +56,12 @@ public class AccessRuleController : EntityController<AccessRule, AccessRuleModel
     public ActionResult Unblock(Int32 id)
     {
         var rule = AccessRule.FindById(id);
-        if (rule == null) return Json(1, "规则不存在");
-        if (!rule.IsAutoBlock) return Json(1, "该规则不是自动封禁规则，无需解封");
+        if (rule == null) return Json(1, "Rule not found");
+            if (!rule.IsAutoBlock) return Json(1, "This rule is not an auto-block rule, no need to unblock");
 
         var rs = _blockService.Unblock(rule.IP);
 
-        return rs > 0 ? Json(0, $"已解除 {rule.IP} 的封禁") : Json(1, "解封失败，规则可能已被删除");
+            return rs > 0 ? Json(0, $"Unblocked {rule.IP}") : Json(1, "Unblock failed, the rule may have been deleted");
     }
 
     /// <summary>解封链接。仅自动封禁行渲染可点击的解封时间，其它行显示占位</summary>

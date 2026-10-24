@@ -141,7 +141,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     public virtual ActionResult Detail(String id)
     {
         var entity = FindData(id);
-        if (entity == null || (entity as IEntity).IsNullKey) throw new XException("要查看的数据[{0}]不存在！", id);
+        if (entity == null || (entity as IEntity).IsNullKey) throw new XException("Data [{0}] to view does not exist!", id);
 
         // 验证数据权限
         Valid(entity, DataObjectMethodType.Select, false);
@@ -165,7 +165,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         //var p = Session[CacheKey] as Pager;
         //p = new Pager(p);
         var p = GetCachePager();
-        if (p != null && p.Params.Count > 0) return Json(500, "当前带有查询参数，为免误解，禁止全表清空！");
+        if (p != null && p.Params.Count > 0) return Json(500, "Query conditions are present; clearing the whole table is not allowed!");
 
         try
         {
@@ -251,7 +251,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         var app = App.FindBySecret(token);
         if (app != null)
         {
-            if (!app.Enable) throw new XException("非法授权！");
+            if (!app.Enable) throw new XException("Invalid authorization!");
 
             return app?.ToString();
         }
@@ -259,21 +259,21 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         {
             var ut = UserToken.Valid(token, UserHost);
             // 防御：Valid 内部已校验，此处再兜底避免空引用
-            if (ut == null || ut.User == null) throw new XException("令牌无效或已过期！");
+            if (ut == null || ut.User == null) throw new XException("Token is invalid or expired!");
             var user = ut.User;
 
             // 定位菜单页面
             var menu = ManageProvider.Menu.FindByFullName(GetType().FullName);
 
             // 判断权限
-            if (menu == null || !user.Has(menu, PermissionFlags.Detail)) throw new Exception($"该用户[{user}]无权访问[{menu}]");
+            if (menu == null || !user.Has(menu, PermissionFlags.Detail)) throw new Exception($"User [{user}] has no access to [{menu}]");
 
             // 锁定页面
             if (!ut.Url.IsNullOrEmpty())
             {
                 var url = ut.Url;
                 if (url.Contains("?")) url = url.Substring(null, "?");
-                if (!url.StartsWithIgnoreCase(menu.Url.TrimPrefix("~"))) throw new Exception($"该令牌[{user}]无权访问[{menu}]，仅限于[{url}]");
+                if (!url.StartsWithIgnoreCase(menu.Url.TrimPrefix("~"))) throw new Exception($"Token [{user}] has no access to [{menu}], limited to [{url}]");
             }
 
             // 设置当前用户，用于数据权限控制
@@ -620,10 +620,10 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     [DisplayName("高级开发")]
     public virtual async Task<ActionResult> Develop(String act)
     {
-        if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
+        if (!SysConfig.Current.Develop) throw new InvalidOperationException("Only available in development mode!");
 
         var user = ManageProvider.User;
-        if (user == null || !user.Roles.Any(e => e.IsSystem)) throw new InvalidOperationException("仅支持系统管理员使用！");
+        if (user == null || !user.Roles.Any(e => e.IsSystem)) throw new InvalidOperationException("Only available to system administrators!");
 
         return act switch
         {
@@ -636,7 +636,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             "MakeForm" => MakeForm(),
             "MakeSearch" => MakeSearch(),
             "MakeBatch" => MakeBatch(),
-            _ => throw new NotSupportedException($"未支持[{act}]"),
+            _ => throw new NotSupportedException($"Unsupported action [{act}]"),
         };
     }
     #endregion
@@ -653,7 +653,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
             var fact = Factory;
             if (fact.Session.Count > set.MaxBackup)
-                throw new XException($"数据量[{fact.Session.Count:n0}>{set.MaxBackup:n0}]，禁止备份！");
+                throw new XException($"Row count [{fact.Session.Count:n0}>{set.MaxBackup:n0}], backup is not allowed!");
 
             var dal = fact.Session.Dal;
 
@@ -665,7 +665,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             // 异步执行备份，阻塞等待一点时间，避免前端超时。
             var task = Task.Factory.StartNew(() =>
             {
-                WriteLog(L.TLog("Backup"), true, $"开始备份[{name}]到[{fileName}]");
+                WriteLog(L.TLog("Backup"), true, $"Start backup [{name}] to [{fileName}]");
                 try
                 {
                     var rs = 0;
@@ -678,19 +678,19 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
                     }
 
                     var fi = bak.AsFile();
-                    WriteLog(L.TLog("Backup"), true, $"备份[{name}]到[{fileName}]（{rs:n0}行）（{fi.Length.ToGMK()}字节）成功！耗时：{sw.Elapsed}");
+                    WriteLog(L.TLog("Backup"), true, $"Backed up [{name}] to [{fileName}] ({rs:n0} rows) ({fi.Length.ToGMK()} bytes) at {sw.Elapsed}");
                     return rs;
                 }
                 catch (Exception ex)
                 {
-                    WriteLog(L.TLog("Backup"), false, $"备份[{fileName}]失败！{ex.GetMessage()}");
+                    WriteLog(L.TLog("Backup"), false, $"Failed to back up [{fileName}]! {ex.GetMessage()}");
                     return -1;
                 }
             }, TaskCreationOptions.LongRunning);
             if (task.Wait(5_000))
-                return Json(0, $"备份[{fileName}]（{task.Result:n0}行）成功！");
+                return Json(0, $"Backed up [{fileName}] ({task.Result:n0} rows) successfully!");
             else
-                return Json(0, $"备份[{fileName}]后台执行中……");
+                return Json(0, $"Backup of [{fileName}] is running in background...");
         }
         catch (Exception ex)
         {
@@ -712,7 +712,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
         var fact = Factory;
         if (fact.Session.Count > set.MaxBackup)
-            throw new XException($"数据量[{fact.Session.Count:n0}>{set.MaxBackup:n0}]，禁止备份！");
+            throw new XException($"Row count [{fact.Session.Count:n0}>{set.MaxBackup:n0}], backup is not allowed!");
 
         var dal = fact.Session.Dal;
 
@@ -726,14 +726,14 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         var ms = Response.Body;
         try
         {
-            WriteLog(L.TLog("Export backup"), true, $"开始备份导出[{name}]");
+            WriteLog(L.TLog("Export backup"), true, $"Start export backup [{name}]");
 
             var sw = Stopwatch.StartNew();
             await using var gs = new GZipStream(ms, CompressionLevel.SmallestSize, true);
             var count = dal.Backup(fact.Table.DataTable, gs, HttpContext.RequestAborted);
             sw.Stop();
 
-            WriteLog(L.TLog("Export backup"), true, $"备份[{name}]（{count:n0}行）成功！耗时：{sw.Elapsed}");
+            WriteLog(L.TLog("Export backup"), true, $"Backup [{name}] ({count:n0} rows) exported at {sw.Elapsed}");
 
             return new EmptyResult();
         }
@@ -763,12 +763,12 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             var di = NewLife.Setting.Current.BackupPath.GetBasePath().AsDirectory();
             //var fi = di?.GetFiles(fileName)?.LastOrDefault();
             var fi = di?.GetFiles(fileName)?.OrderByDescending(e => e.Name).FirstOrDefault();
-            if (fi == null || !fi.Exists) throw new XException($"找不到[{fileName}]的备份文件");
+            if (fi == null || !fi.Exists) throw new XException($"Backup file [{fileName}] not found");
 
             // 异步执行恢复，阻塞等待一点时间，避免前端超时。
             var task = Task.Factory.StartNew(() =>
             {
-                WriteLog(L.TLog("Restore"), true, $"开始恢复[{fileName}]到[{name}]（{fi.Length.ToGMK()}字节）");
+                WriteLog(L.TLog("Restore"), true, $"Start restoring [{fileName}] to [{name}] ({fi.Length.ToGMK()} bytes)");
                 try
                 {
                     var sw = Stopwatch.StartNew();
@@ -777,20 +777,20 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
                     var rs = dal.Restore(gs, fact.Table.DataTable, default);
                     sw.Stop();
 
-                    WriteLog(L.TLog("Restore"), true, $"恢复[{fileName}]（{rs:n0}行）成功！");
+                    WriteLog(L.TLog("Restore"), true, $"Restored [{fileName}] ({rs:n0} rows) successfully!");
                     return rs;
                 }
                 catch (Exception ex)
                 {
-                    WriteLog(L.TLog("Restore"), false, $"恢复[{fileName}]失败！{ex.GetMessage()}");
+                    WriteLog(L.TLog("Restore"), false, $"Failed to restore [{fileName}]! {ex.GetMessage()}");
                     return -1;
                 }
             }, TaskCreationOptions.LongRunning);
 
             if (task.Wait(5_000))
-                return JsonRefresh($"恢复[{fileName}]（{task.Result:n0}行）成功！", 2);
+                return JsonRefresh($"Restored [{fileName}] ({task.Result:n0} rows) successfully!", 2);
             else
-                return Json(0, $"恢复[{fileName}]后台执行中……", 2);
+                return Json(0, $"Restore of [{fileName}] is running in background...", 2);
         }
         catch (Exception ex)
         {
@@ -851,7 +851,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     [NonAction]
     public ActionResult MakeList()
     {
-        if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
+        if (!SysConfig.Current.Develop) throw new InvalidOperationException("Only available in development mode!");
 
         // 找到项目根目录
         var root = GetProjectRoot();
@@ -873,7 +873,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     [NonAction]
     public ActionResult MakeForm()
     {
-        if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
+        if (!SysConfig.Current.Develop) throw new InvalidOperationException("Only available in development mode!");
 
         // 找到项目根目录
         var root = GetProjectRoot();
@@ -895,7 +895,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     [NonAction]
     public ActionResult MakeSearch()
     {
-        if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
+        if (!SysConfig.Current.Develop) throw new InvalidOperationException("Only available in development mode!");
 
         // 找到项目根目录
         var root = GetProjectRoot();
@@ -917,7 +917,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     [NonAction]
     public ActionResult MakeBatch()
     {
-        if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
+        if (!SysConfig.Current.Develop) throw new InvalidOperationException("Only available in development mode!");
 
         // 找到项目根目录
         var root = GetProjectRoot();

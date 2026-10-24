@@ -14,7 +14,7 @@ public static class ExcelExtension
     {
         if (index < 0)
         {
-            throw new Exception("参数非法！");
+            throw new Exception("Invalid parameter!");
         }
         var chars = new List<String>();
         do

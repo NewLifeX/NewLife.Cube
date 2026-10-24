@@ -404,7 +404,7 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
         if (id <= 0) throw new ArgumentNullException(nameof(id));
 
         if (ManageProvider.Provider?.FindByID(id) is not IUser user)
-            throw new Exception("用户不存在 " + id);
+            throw new Exception("User not found: " + id);
 
         var set = CubeSetting.Current;
         var av = "";

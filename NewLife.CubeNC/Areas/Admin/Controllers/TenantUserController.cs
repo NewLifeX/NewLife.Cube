@@ -165,7 +165,7 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
             if (post && entity.TenantId > 0 && entity.UserId > 0)
             {
                 var tu = TenantUser.FindByTenantIdAndUserId(entity.TenantId, entity.UserId);
-                if (tu != null) throw new Exception("该用户已存在于当前租户！");
+                if (tu != null) throw new Exception("The user already exists in current tenant!");
             }
         }
 
@@ -180,7 +180,7 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
     {
         var tid = GetEffectiveTenantId(tenantId);
         var tenant = Tenant.FindById(tid);
-        if (tenant == null) throw new InvalidOperationException($"租户[{tid}]不存在或已删除");
+        if (tenant == null) throw new InvalidOperationException($"Tenant [{tid}] does not exist or has been deleted");
 
         var p = new Pager();
         var list = TenantUser.Search(tid, 0, 0, null, DateTime.MinValue, DateTime.MinValue, p["q"], p);
@@ -200,11 +200,11 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
     public ActionResult AddMember(Int32 tenantId, Int32 userId, Int32[] roleIds)
     {
         var tid = GetEffectiveTenantId(tenantId);
-        if (tid <= 0) throw new InvalidOperationException("请选择租户");
-        if (userId <= 0) throw new InvalidOperationException("请选择用户");
+        if (tid <= 0) throw new InvalidOperationException("Please select a tenant");
+        if (userId <= 0) throw new InvalidOperationException("Please select a user");
 
         var tu = TenantUser.FindByTenantIdAndUserId(tid, userId);
-        if (tu != null) throw new InvalidOperationException("该用户已存在于当前租户！");
+        if (tu != null) throw new InvalidOperationException("The user already exists in current tenant!");
 
         tu = new TenantUser
         {
@@ -217,7 +217,7 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
 
         LogProvider.Provider.WriteLog(L.TLog("Tenant"), L.TLog("Add member"), true, L.TLog("Added user [{0}] to tenant [{1}]", userId, tid), userId, userId + "", ip: HttpContext.GetUserHost());
 
-        return Json(0, "添加成功", new { tu.Id, UserName = UserX.FindByID(userId)?.ToString() });
+        return Json(0, "Added", new { tu.Id, UserName = UserX.FindByID(userId)?.ToString() });
     }
 
     /// <summary>移除成员</summary>
@@ -227,18 +227,18 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
     public ActionResult RemoveMember(Int32 id)
     {
         var tu = TenantUser.FindById(id);
-        if (tu == null) return Json(0, "成员不存在");
+        if (tu == null) return Json(0, "Member not found");
 
         var tid = GetEffectiveTenantId(tu.TenantId);
         var tenant = Tenant.FindById(tid);
-        if (tenant != null && tenant.ManagerId == tu.UserId) throw new InvalidOperationException("不能移除租户管理员");
-        if (tu.UserId == ManageProvider.Provider.Current.ID) throw new InvalidOperationException("不能移除自己");
+        if (tenant != null && tenant.ManagerId == tu.UserId) throw new InvalidOperationException("Cannot remove the tenant administrator");
+        if (tu.UserId == ManageProvider.Provider.Current.ID) throw new InvalidOperationException("Cannot remove yourself");
 
         tu.Delete();
 
         LogProvider.Provider.WriteLog(L.TLog("Tenant"), L.TLog("Remove member"), true, L.TLog("Removed user [{1}] from tenant [{0}]", tid, tu.UserId), tu.UserId, tu.UserId + "", ip: HttpContext.GetUserHost());
 
-        return Json(0, "移除成功");
+        return Json(0, "Removed");
     }
 
     /// <summary>启用或禁用成员</summary>
@@ -249,18 +249,18 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
     public ActionResult ToggleMember(Int32 id, Boolean enable)
     {
         var tu = TenantUser.FindById(id);
-        if (tu == null) return Json(0, "成员不存在");
+        if (tu == null) return Json(0, "Member not found");
 
         var tid = GetEffectiveTenantId(tu.TenantId);
         var tenant = Tenant.FindById(tid);
-        if (tenant != null && tenant.ManagerId == tu.UserId && !enable) throw new InvalidOperationException("不能禁用租户管理员");
+        if (tenant != null && tenant.ManagerId == tu.UserId && !enable) throw new InvalidOperationException("Cannot disable the tenant administrator");
 
         tu.Enable = enable;
         tu.Update();
 
         LogProvider.Provider.WriteLog(L.TLog("Tenant"), enable ? L.TLog("Enable member") : L.TLog("Disable member"), true, L.TLog("Tenant [{0}] user [{1}]", tid, tu.UserId), tu.UserId, tu.UserId + "", ip: HttpContext.GetUserHost());
 
-        return Json(0, enable ? "已启用" : "已禁用");
+        return Json(0, enable ? "Enabled" : "Disabled");
     }
 
     /// <summary>解析生效租户。租户管理员上下文忽略参数，平台管理员使用参数；越权操作其他租户直接拒绝</summary>
@@ -271,7 +271,7 @@ public class TenantUserController : EntityController<TenantUser, TenantUserModel
         var ctx = _tenantContext.TenantId;
         if (ctx > 0)
         {
-            if (tenantId > 0 && tenantId != ctx) throw new InvalidOperationException("无权操作其他租户成员");
+            if (tenantId > 0 && tenantId != ctx) throw new InvalidOperationException("No permission to operate members of other tenants");
             return ctx;
         }
 

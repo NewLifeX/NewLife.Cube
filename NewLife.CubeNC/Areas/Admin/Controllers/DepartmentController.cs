@@ -103,7 +103,7 @@ public class DepartmentController(ITenantContext tenantContext) : EntityControll
 
         // 不用 WhereBuilder.Eval：部门实现 ITenantScope，无租户上下文时求值恒为 false；
         // 可见性以管理者字段为准（与 [DataPermission] 的列表过滤一致）
-        if (entity != null && !CanView(entity)) throw new InvalidOperationException($"非法访问数据[{key}]");
+        if (entity != null && !CanView(entity)) throw new InvalidOperationException($"Illegal data access [{key}]");
 
         return entity;
     }

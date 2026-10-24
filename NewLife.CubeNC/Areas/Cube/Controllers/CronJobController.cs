@@ -69,7 +69,7 @@ public class CronJobController : EntityController<CronJob, CronJobModel>
             foreach (var item in entity.Cron.Split(";"))
             {
                 var cron = new Cron();
-                if (!cron.Parse(item)) throw new ArgumentException("Cron表达式有误！", nameof(entity.Cron));
+                if (!cron.Parse(item)) throw new ArgumentException("Invalid Cron expression!", nameof(entity.Cron));
 
                 var dt = cron.GetNext(DateTime.Now);
                 if (next == DateTime.MinValue || dt < next) next = dt;

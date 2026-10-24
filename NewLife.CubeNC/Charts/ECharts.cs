@@ -291,10 +291,10 @@ public class ECharts : IExtend
         if (formatterScript.IsNullOrEmpty()) throw new ArgumentNullException(nameof(formatterScript));
 
         var p = formatterScript.IndexOf("function") + "function".Length;
-        if (p < 0) throw new ArgumentOutOfRangeException(nameof(formatterScript), "无效js函数");
+        if (p < 0) throw new ArgumentOutOfRangeException(nameof(formatterScript), "Invalid js function");
 
         var p2 = formatterScript.IndexOf('(', p);
-        if (p2 < 0) throw new ArgumentOutOfRangeException(nameof(formatterScript), "无效js函数");
+        if (p2 < 0) throw new ArgumentOutOfRangeException(nameof(formatterScript), "Invalid js function");
 
         var name = formatterScript[p..p2].Trim();
 

@@ -156,9 +156,9 @@ public class ManageProvider2 : ManageProvider
         {
             if (!set.AutoRegister && !oa.AutoRegister)
             {
-                log.WriteLog(typeof(User), L.TLog("SSO sign-in"), false, $"无法找到[{username}]，且没有打开自动注册", 0, username);
+                log.WriteLog(typeof(User), L.TLog("SSO sign-in"), false, $"User [{username}] not found and auto-registration is off", 0, username);
 
-                throw new XException($"无法找到[{username}]，且没有打开自动注册");
+                throw new XException($"User [{username}] not found and auto-registration is off");
             }
 
             user = new User
@@ -181,7 +181,7 @@ public class ManageProvider2 : ManageProvider
         user.LastLogin = DateTime.Now;
         user.Save();
 
-        log.WriteLog(user.GetType(), L.TLog("OAuth sign-in"), true, $"用户[{user}]使用[{username}]登录[{_client.AppId}]成功！" + Environment.NewLine + ui.ToJson());
+        log.WriteLog(user.GetType(), L.TLog("OAuth sign-in"), true, $"User [{user}] signed in with [{username}] on [{_client.AppId}]" + Environment.NewLine + ui.ToJson());
 
         return user;
     }
@@ -216,10 +216,10 @@ public class ManageProvider2 : ManageProvider
         if (roles != null && roles.Any(e => e.IsSystem))
         {
             pa.Enable = false;
-            pa.Remark = "安全起见，不得代理系统管理员";
+            pa.Remark = "Security policy: impersonating a system administrator is not allowed";
             pa.Update();
 
-            LogProvider.Provider.WriteLog(L.TLog("User"), L.TLog("Impersonate"), false, $"安全起见，[{pa.AgentName}]不得代理系统管理员[{pa.PrincipalName}]的身份权限", pa.AgentId, pa.AgentName);
+            LogProvider.Provider.WriteLog(L.TLog("User"), L.TLog("Impersonate"), false, $"For security, [{pa.AgentName}] may not impersonate system administrator [{pa.PrincipalName}]", pa.AgentId, pa.AgentName);
 
             return user;
         }
@@ -228,8 +228,8 @@ public class ManageProvider2 : ManageProvider
         if (pa.Times == 0) pa.Enable = false;
         pa.Update();
 
-        LogProvider.Provider.WriteLog(L.TLog("User"), L.TLog("Delegate"), true, $"委托[{pa.AgentName}]使用[{pa.PrincipalName}]的身份权限", pa.PrincipalId, pa.PrincipalName);
-        LogProvider.Provider.WriteLog(L.TLog("User"), L.TLog("Impersonate"), true, $"[{pa.AgentName}]代理使用[{pa.PrincipalName}]的身份权限", pa.AgentId, pa.AgentName);
+        LogProvider.Provider.WriteLog(L.TLog("User"), L.TLog("Delegate"), true, $"[{pa.AgentName}] delegated to use the identity of [{pa.PrincipalName}]", pa.PrincipalId, pa.PrincipalName);
+        LogProvider.Provider.WriteLog(L.TLog("User"), L.TLog("Impersonate"), true, $"[{pa.AgentName}] is impersonating [{pa.PrincipalName}]", pa.AgentId, pa.AgentName);
 
         return pa.Principal as IManageUser;
     }

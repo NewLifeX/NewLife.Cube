@@ -24,7 +24,7 @@ public static class HtmlExtensions
     public static IHtmlContent ForEditor(this IHtmlHelper Html, String name, Object value, Type type = null, String format = null, Object htmlAttributes = null)
     {
         if (type == null && value != null) type = value.GetType();
-        if (type == null) throw new XException("设计错误！ForEditor({0}, null, null)不能值和类型同时为空，否则会导致死循环", name);
+        if (type == null) throw new XException("Design error! ForEditor({0}, null, null) cannot have both value and type null, otherwise it loops forever", name);
 
         switch (Type.GetTypeCode(type))
         {

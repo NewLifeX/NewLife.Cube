@@ -74,8 +74,8 @@ public class UserPageReadOnlyTests : IDisposable
 
         var ex = Assert.Throws<TargetInvocationException>(() => InvokeValid(user));
         Assert.NotNull(ex.InnerException);
-        Assert.Contains("只读", ex.InnerException!.Message);
-        Assert.Contains("用户中心", ex.InnerException!.Message);
+        Assert.Contains("read-only", ex.InnerException!.Message);
+        Assert.Contains("user center", ex.InnerException!.Message);
     }
 
     [Fact(DisplayName = "系统角色在用户页写入放行")]
@@ -105,7 +105,7 @@ public class UserPageReadOnlyTests : IDisposable
 
         var ex = Assert.Throws<TargetInvocationException>(() => InvokeImport(new List<IEntity>()));
         Assert.NotNull(ex.InnerException);
-        Assert.Contains("只读", ex.InnerException!.Message);
+        Assert.Contains("read-only", ex.InnerException!.Message);
     }
 
     [Fact(DisplayName = "系统角色批量导入不受只读规则影响")]
@@ -130,7 +130,7 @@ public class UserPageReadOnlyTests : IDisposable
 
         var ex = Assert.Throws<TargetInvocationException>(() => method.Invoke(controller, [1]));
         Assert.NotNull(ex.InnerException);
-        Assert.Contains("管理员权限", ex.InnerException!.Message);
+        Assert.Contains("administrator permission", ex.InnerException!.Message);
     }
 
     [Fact(DisplayName = "用户控制器重写编辑入口，管理表单仅系统角色可用")]

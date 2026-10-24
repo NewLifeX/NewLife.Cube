@@ -126,7 +126,7 @@ class EntityModelBinder(IDictionary<ModelMetadata, IModelBinder> propertyBinders
             var modelType = bindingContext.ModelType;
             if (modelType.IsAbstract || modelType.GetConstructor(Type.EmptyTypes) == null)
             {
-                if (!bindingContext.IsTopLevelObject) throw new InvalidOperationException($"类型[{modelType.FullName}]缺少无参构造函数");
+                if (!bindingContext.IsTopLevelObject) throw new InvalidOperationException($"Type [{modelType.FullName}] has no parameterless constructor");
             }
             _modelCreator = Expression.Lambda<Func<Object>>(Expression.New(bindingContext.ModelType), Array.Empty<ParameterExpression>()).Compile();
         }

@@ -186,7 +186,7 @@ public class FileController : ControllerBaseX
         }
         else
         {
-            var di = GetDirectory(r) ?? throw new Exception("找不到文件或目录！");
+            var di = GetDirectory(r) ?? throw new Exception("File or directory not found!");
 
             p = GetFullName(di.Parent.FullName);
             WriteLog(L.TLog("Delete"), true, di.FullName);
@@ -218,7 +218,7 @@ public class FileController : ControllerBaseX
         else
         {
             var di = GetDirectory(r);
-            if (di == null) throw new Exception("找不到文件或目录！");
+            if (di == null) throw new Exception("File or directory not found!");
 
             p = GetFullName(di.Parent.FullName);
             var dst = $"{di.Name}_{DateTime.Now:yyyyMMddHHmmss}.zip";
@@ -237,7 +237,7 @@ public class FileController : ControllerBaseX
     public ActionResult Decompress(String r)
     {
         var fi = GetFile(r);
-        if (fi == null) throw new Exception("找不到文件！");
+        if (fi == null) throw new Exception("File not found!");
 
         var p = GetFullName(fi.Directory.FullName);
         WriteLog(L.TLog("Uncompress"), true, fi.FullName);
@@ -258,10 +258,10 @@ public class FileController : ControllerBaseX
     {
         try
         {
-            if (file == null) throw new Exception("未选择文件！");
+            if (file == null) throw new Exception("No file selected!");
 
             var di = GetDirectory(r) ?? Root.AsDirectory();
-            if (di == null) throw new Exception("找不到目录！");
+            if (di == null) throw new Exception("Directory not found!");
 
             // 防目录穿越：仅取文件名，丢弃客户端可控的路径部分
             var name = Path.GetFileName(file.FileName);
@@ -301,7 +301,7 @@ public class FileController : ControllerBaseX
             if (file != null)
             {
                 var di = GetDirectory(r) ?? Root.AsDirectory();
-                if (di == null) throw new Exception("找不到目录！");
+                if (di == null) throw new Exception("Directory not found!");
 
                 // 防目录穿越：仅取文件名，丢弃客户端可控的路径部分
                 var name = Path.GetFileName(file.FileName);
@@ -313,12 +313,12 @@ public class FileController : ControllerBaseX
                 using var fs = new FileStream(dest, FileMode.OpenOrCreate, FileAccess.ReadWrite);
                 await file.CopyToAsync(fs);
             }
-            return Json(new { code = 0, message = "上传成功" });
+            return Json(new { code = 0, message = "Uploaded" });
         }
         catch (Exception ex)
         {
             WriteLog(L.TLog("Upload failed"), false, ex + "");
-            return Json(new { code = 500, message = "上传失败" });
+            return Json(new { code = 500, message = "Upload failed" });
         }
     }
 
@@ -329,7 +329,7 @@ public class FileController : ControllerBaseX
     public ActionResult Download(String r)
     {
         var fi = GetFile(r);
-        if (fi == null) throw new Exception("找不到文件！");
+        if (fi == null) throw new Exception("File not found!");
 
         WriteLog(L.TLog("Download"), true, fi.FullName);
 
@@ -355,7 +355,7 @@ public class FileController : ControllerBaseX
     public ActionResult Copy(String r, String f)
     {
         var fi = GetItem(f);
-        if (fi == null) throw new Exception("找不到文件或目录！");
+        if (fi == null) throw new Exception("File or directory not found!");
 
         var list = GetClip();
         if (!list.Any(e => e.Raw == fi.Raw)) list.Add(fi);
@@ -372,7 +372,7 @@ public class FileController : ControllerBaseX
     public ActionResult CancelCopy(String r, String f)
     {
         var fi = GetItem(f);
-        if (fi == null) throw new Exception("找不到文件或目录！");
+        if (fi == null) throw new Exception("File or directory not found!");
 
         var list = GetClip();
         list.RemoveAll(e => e.Raw == fi.Raw);
@@ -388,7 +388,7 @@ public class FileController : ControllerBaseX
     public ActionResult Paste(String r)
     {
         var di = GetDirectory(r) ?? Root.AsDirectory();
-        if (di == null) throw new Exception("找不到目录！");
+        if (di == null) throw new Exception("Directory not found!");
 
         var list = GetClip();
         foreach (var item in list)
@@ -412,7 +412,7 @@ public class FileController : ControllerBaseX
     public ActionResult Move(String r)
     {
         var di = GetDirectory(r) ?? Root.AsDirectory();
-        if (di == null) throw new Exception("找不到目录！");
+        if (di == null) throw new Exception("Directory not found!");
 
         var list = GetClip();
         foreach (var item in list)
