@@ -4,8 +4,8 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>用户管理</h3>
-          <el-button type="primary" @click="handleAdd">新增用户</el-button>
+          <h3>{{ t('user.title') }}</h3>
+          <el-button type="primary" @click="handleAdd">{{ t('user.add') }}</el-button>
         </div>
       </template>
 
@@ -16,8 +16,8 @@
       />
 
       <el-table :data="tableData" border style="width: 100%" v-loading="loading" row-key="id">
-        <el-table-column prop="id" label="编号" width="80" />
-        <el-table-column label="用户名" min-width="150" show-overflow-tooltip>
+        <el-table-column prop="id" :label="t('common.id')" width="80" />
+        <el-table-column :label="t('user.userName')" min-width="150" show-overflow-tooltip>
           <template #default="scope">
             <div class="user-cell">
               <el-avatar :size="24" :src="getAvatarUrl(scope.row.avatar)">
@@ -27,34 +27,34 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="displayName" label="显示名" min-width="110" show-overflow-tooltip />
-        <el-table-column label="角色" min-width="110" show-overflow-tooltip>
+        <el-table-column prop="displayName" :label="t('user.displayName')" min-width="110" show-overflow-tooltip />
+        <el-table-column :label="t('user.role')" min-width="110" show-overflow-tooltip>
           <template #default="scope">{{ scope.row.roleName || '-' }}</template>
         </el-table-column>
-        <el-table-column label="部门" min-width="110" show-overflow-tooltip>
+        <el-table-column :label="t('user.department')" min-width="110" show-overflow-tooltip>
           <template #default="scope">{{ scope.row.departmentName || '-' }}</template>
         </el-table-column>
-        <el-table-column label="邮箱" min-width="180" show-overflow-tooltip>
+        <el-table-column :label="t('user.mail')" min-width="180" show-overflow-tooltip>
           <template #default="scope">{{ scope.row.mail || '-' }}</template>
         </el-table-column>
-        <el-table-column label="手机号" width="130" show-overflow-tooltip>
+        <el-table-column :label="t('user.mobile')" width="130" show-overflow-tooltip>
           <template #default="scope">{{ scope.row.mobile || '-' }}</template>
         </el-table-column>
-        <el-table-column label="状态" width="80" align="center">
+        <el-table-column :label="t('rule.status')" width="80" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.enable ? 'success' : 'danger'" size="small">
-              {{ scope.row.enable ? '正常' : '禁用' }}
+              {{ scope.row.enable ? t('user.normal') : t('rule.disabled') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="updateTime" label="更新时间" width="160" show-overflow-tooltip />
-        <el-table-column label="备注" min-width="120" show-overflow-tooltip>
+        <el-table-column prop="updateTime" :label="t('common.updateTime')" width="160" show-overflow-tooltip />
+        <el-table-column :label="t('common.remark')" min-width="120" show-overflow-tooltip>
           <template #default="scope">{{ scope.row.remark || '-' }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="150" fixed="right" align="center">
+        <el-table-column :label="t('common.actions')" width="150" fixed="right" align="center">
           <template #default="scope">
-            <el-button type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button type="danger" size="small" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button type="primary" size="small" @click="handleEdit(scope.row)">{{ t('button.edit') }}</el-button>
+            <el-button type="danger" size="small" @click="handleDelete(scope.row)">{{ t('button.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -72,30 +72,30 @@
     <!-- ─── 用户表单弹窗 ─── -->
     <el-dialog
       v-model="dialogVisible"
-      :title="formType === 'add' ? '新增用户' : '编辑用户'"
+      :title="formType === 'add' ? t('user.add') : t('user.edit')"
       width="520px"
     >
       <el-form ref="userFormRef" :model="userForm" :rules="userFormRules" label-width="90px">
-        <el-form-item label="用户名" prop="name">
-          <el-input v-model="userForm.name" placeholder="请输入用户名" />
+        <el-form-item :label="t('user.userName')" prop="name">
+          <el-input v-model="userForm.name" :placeholder="t('form.placeholder', { field: t('user.userName') })" />
         </el-form-item>
-        <el-form-item label="显示名称" prop="displayName">
-          <el-input v-model="userForm.displayName" placeholder="请输入显示名称" />
+        <el-form-item :label="t('user.displayName')" prop="displayName">
+          <el-input v-model="userForm.displayName" :placeholder="t('form.placeholder', { field: t('user.displayName') })" />
         </el-form-item>
-        <el-form-item label="性别" prop="sex">
+        <el-form-item :label="t('user.sex')" prop="sex">
           <el-radio-group v-model="userForm.sex">
-            <el-radio :label="1">男</el-radio>
-            <el-radio :label="0">女</el-radio>
+            <el-radio :label="1">{{ t('user.male') }}</el-radio>
+            <el-radio :label="0">{{ t('user.female') }}</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="邮箱" prop="mail">
-          <el-input v-model="userForm.mail" placeholder="请输入邮箱" />
+        <el-form-item :label="t('user.mail')" prop="mail">
+          <el-input v-model="userForm.mail" :placeholder="t('form.placeholder', { field: t('user.mail') })" />
         </el-form-item>
-        <el-form-item label="手机号" prop="mobile">
-          <el-input v-model="userForm.mobile" placeholder="请输入手机号" />
+        <el-form-item :label="t('user.mobile')" prop="mobile">
+          <el-input v-model="userForm.mobile" :placeholder="t('form.placeholder', { field: t('user.mobile') })" />
         </el-form-item>
-        <el-form-item label="角色" prop="roleID">
-          <el-select v-model="userForm.roleID" placeholder="请选择角色" style="width: 100%">
+        <el-form-item :label="t('user.role')" prop="roleID">
+          <el-select v-model="userForm.roleID" :placeholder="t('form.select.placeholder', { field: t('user.role') })" style="width: 100%">
             <el-option
               v-for="role in roleOptions"
               :key="role.value"
@@ -104,8 +104,8 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="部门" prop="departmentID">
-          <el-select v-model="userForm.departmentID" placeholder="请选择部门" style="width: 100%">
+        <el-form-item :label="t('user.department')" prop="departmentID">
+          <el-select v-model="userForm.departmentID" :placeholder="t('form.select.placeholder', { field: t('user.department') })" style="width: 100%">
             <el-option
               v-for="dept in departmentOptions"
               :key="dept.value"
@@ -114,19 +114,19 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="密码" prop="password" v-if="formType === 'add'">
+        <el-form-item :label="t('user.password')" prop="password" v-if="formType === 'add'">
           <el-input
             v-model="userForm.password"
             type="password"
-            placeholder="请输入密码"
+            :placeholder="t('form.placeholder', { field: t('user.password') })"
             show-password
           />
         </el-form-item>
-        <el-form-item label="状态" prop="enable">
+        <el-form-item :label="t('rule.status')" prop="enable">
           <el-switch v-model="userForm.enable" :active-value="true" :inactive-value="false" />
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="userForm.remark" type="textarea" :rows="2" placeholder="请输入备注" />
+        <el-form-item :label="t('common.remark')" prop="remark">
+          <el-input v-model="userForm.remark" type="textarea" :rows="2" :placeholder="t('form.placeholder', { field: t('common.remark') })" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -137,56 +137,56 @@
               type="warning"
               size="small"
               @click="handleChangePasswordInEdit"
-              >修改密码</el-button
+              >{{ t('user.changePassword') }}</el-button
             >
           </div>
           <div>
-            <el-button @click="dialogVisible = false">取消</el-button>
-            <el-button type="primary" @click="submitForm">确定</el-button>
+            <el-button @click="dialogVisible = false">{{ t('button.cancel') }}</el-button>
+            <el-button type="primary" @click="submitForm">{{ t('button.confirm') }}</el-button>
           </div>
         </div>
       </template>
     </el-dialog>
 
     <!-- ─── 修改密码弹窗 ─── -->
-    <el-dialog v-model="changePasswordDialogVisible" title="修改密码" width="400px">
+    <el-dialog v-model="changePasswordDialogVisible" :title="t('user.changePassword')" width="400px">
       <el-form
         ref="changePasswordFormRef"
         :model="changePasswordForm"
         :rules="changePasswordFormRules"
         label-width="90px"
       >
-        <el-form-item label="用户名">
+        <el-form-item :label="t('user.userName')">
           <el-input v-model="changePasswordForm.name" disabled />
         </el-form-item>
-        <el-form-item label="旧密码" prop="oldPassword">
+        <el-form-item :label="t('user.oldPassword')" prop="oldPassword">
           <el-input
             v-model="changePasswordForm.oldPassword"
             type="password"
-            placeholder="请输入旧密码"
+            :placeholder="t('form.placeholder', { field: t('user.oldPassword') })"
             show-password
           />
         </el-form-item>
-        <el-form-item label="新密码" prop="newPassword">
+        <el-form-item :label="t('user.newPassword')" prop="newPassword">
           <el-input
             v-model="changePasswordForm.newPassword"
             type="password"
-            placeholder="请输入新密码"
+            :placeholder="t('form.placeholder', { field: t('user.newPassword') })"
             show-password
           />
         </el-form-item>
-        <el-form-item label="确认密码" prop="newPassword2">
+        <el-form-item :label="t('user.confirmPassword')" prop="newPassword2">
           <el-input
             v-model="changePasswordForm.newPassword2"
             type="password"
-            placeholder="请再次输入新密码"
+            :placeholder="t('form.placeholder', { field: t('user.confirmPassword') })"
             show-password
           />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="changePasswordDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitChangePassword">确定</el-button>
+        <el-button @click="changePasswordDialogVisible = false">{{ t('button.cancel') }}</el-button>
+        <el-button type="primary" @click="submitChangePassword">{{ t('button.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -194,6 +194,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { FormInstance, FormRules } from 'element-plus';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { request } from '@newlifex/cube-vue/core/utils/request';
@@ -207,6 +208,8 @@ import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListTo
 import CubeListPager from '@newlifex/cube-vue/core/components/CubeListPager.vue';
 import type { SelectOption, BaseEntity, EnableStatus } from '@newlifex/cube-vue/core/types/common';
 import { pageInfoDefault } from '@newlifex/cube-vue/core/types/common';
+
+const { t } = useI18n();
 
 // 定义用户类型接口
 interface User extends BaseEntity, EnableStatus {
@@ -331,47 +334,47 @@ const queryUser = async () => {
 // 表单验证规则
 const userFormRules = reactive<FormRules>({
   name: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur' },
+    { required: true, message: t('form.placeholder', { field: t('user.userName') }), trigger: 'blur' },
+    { min: 1, max: 50, message: t('form.lengthRange', { min: 1, max: 50 }), trigger: 'blur' },
   ],
-  displayName: [{ min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur' }],
+  displayName: [{ min: 1, max: 50, message: t('form.lengthRange', { min: 1, max: 50 }), trigger: 'blur' }],
   password: [
-    { required: formType.value === 'add', message: '请输入密码', trigger: 'blur' },
-    { min: 8, max: 200, message: '长度在 8 到 200 个字符', trigger: 'blur' },
+    { required: formType.value === 'add', message: t('form.placeholder', { field: t('user.password') }), trigger: 'blur' },
+    { min: 8, max: 200, message: t('form.lengthRange', { min: 8, max: 200 }), trigger: 'blur' },
   ],
-  sex: [{ required: true, message: '请选择性别', trigger: 'change' }],
+  sex: [{ required: true, message: t('form.select.placeholder', { field: t('user.sex') }), trigger: 'change' }],
   mail: [
-    { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' },
-    { max: 50, message: '长度不能超过 50 个字符', trigger: 'blur' },
+    { type: 'email', message: t('form.invalidMail'), trigger: 'blur' },
+    { max: 50, message: t('form.lengthMax', { max: 50 }), trigger: 'blur' },
   ],
   mobile: [
-    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' },
-    { max: 50, message: '长度不能超过 50 个字符', trigger: 'blur' },
+    { pattern: /^1[3-9]\d{9}$/, message: t('form.invalidMobile'), trigger: 'blur' },
+    { max: 50, message: t('form.lengthMax', { max: 50 }), trigger: 'blur' },
   ],
-  roleID: [{ required: true, message: '请选择角色', trigger: 'change' }],
-  departmentID: [{ required: true, message: '请选择部门', trigger: 'change' }],
-  code: [{ max: 50, message: '长度不能超过 50 个字符', trigger: 'blur' }],
-  avatar: [{ max: 200, message: '长度不能超过 200 个字符', trigger: 'blur' }],
-  roleIds: [{ max: 200, message: '长度不能超过 200 个字符', trigger: 'blur' }],
-  lastLoginIP: [{ max: 50, message: '长度不能超过 50 个字符', trigger: 'blur' }],
-  registerIP: [{ max: 50, message: '长度不能超过 50 个字符', trigger: 'blur' }],
-  ex4: [{ max: 50, message: '长度不能超过 50 个字符', trigger: 'blur' }],
-  remark: [{ max: 500, message: '长度不能超过 500 个字符', trigger: 'blur' }],
+  roleID: [{ required: true, message: t('form.select.placeholder', { field: t('user.role') }), trigger: 'change' }],
+  departmentID: [{ required: true, message: t('form.select.placeholder', { field: t('user.department') }), trigger: 'change' }],
+  code: [{ max: 50, message: t('form.lengthMax', { max: 50 }), trigger: 'blur' }],
+  avatar: [{ max: 200, message: t('form.lengthMax', { max: 200 }), trigger: 'blur' }],
+  roleIds: [{ max: 200, message: t('form.lengthMax', { max: 200 }), trigger: 'blur' }],
+  lastLoginIP: [{ max: 50, message: t('form.lengthMax', { max: 50 }), trigger: 'blur' }],
+  registerIP: [{ max: 50, message: t('form.lengthMax', { max: 50 }), trigger: 'blur' }],
+  ex4: [{ max: 50, message: t('form.lengthMax', { max: 50 }), trigger: 'blur' }],
+  remark: [{ max: 500, message: t('form.lengthMax', { max: 500 }), trigger: 'blur' }],
 });
 
 // 修改密码表单验证规则
 const changePasswordFormRules = reactive<FormRules>({
-  oldPassword: [{ required: true, message: '请输入旧密码', trigger: 'blur' }],
+  oldPassword: [{ required: true, message: t('form.placeholder', { field: t('user.oldPassword') }), trigger: 'blur' }],
   newPassword: [
-    { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 8, max: 200, message: '长度在 8 到 200 个字符', trigger: 'blur' },
+    { required: true, message: t('form.placeholder', { field: t('user.newPassword') }), trigger: 'blur' },
+    { min: 8, max: 200, message: t('form.lengthRange', { min: 8, max: 200 }), trigger: 'blur' },
   ],
   newPassword2: [
-    { required: true, message: '请再次输入新密码', trigger: 'blur' },
+    { required: true, message: t('form.placeholder', { field: t('user.confirmPassword') }), trigger: 'blur' },
     {
       validator: (_rule: unknown, value: string, callback: (error?: Error) => void) => {
         if (value !== changePasswordForm.newPassword) {
-          callback(new Error('两次输入的密码不一致'));
+          callback(new Error(t('form.passwordMismatch')));
         } else {
           callback();
         }
@@ -393,7 +396,7 @@ const loadDepartmentOptions = async (forceRefresh = false) => {
     }));
     departmentOptionsLoaded.value = true;
   } catch (error) {
-    console.error('加载部门数据失败:', error);
+    console.error(t('user.loadDeptFailed'), error);
     departmentOptions.value = [];
     departmentOptionsLoaded.value = false;
   }
@@ -422,7 +425,7 @@ const loadRoleOptions = async (forceRefresh = false) => {
     }));
     roleOptionsLoaded.value = true; // 标记为已加载
   } catch (error) {
-    console.error('加载角色数据失败:', error);
+    console.error(t('user.loadRoleFailed'), error);
     roleOptions.value = [];
     roleOptionsLoaded.value = false;
   }
@@ -485,7 +488,7 @@ const handleEdit = async (row: User) => {
     }
     dialogVisible.value = true;
   } catch (error) {
-    console.error('获取用户详情失败:', error);
+    console.error(t('user.loadDetailFailed'), error);
   }
 };
 
@@ -501,22 +504,22 @@ const handleChangePasswordInEdit = () => {
 // 清空密码 - 在编辑弹窗中使用
 const handleClearPasswordInEdit = () => {
   ElMessageBox.confirm(
-    `确认清空用户 [${userForm.displayName || userForm.name}] 的密码吗？清空后该用户将无法使用密码登录。`,
-    '确认清空密码',
+    t('user.clearPasswordConfirm', { name: userForm.displayName || userForm.name }),
+    t('user.clearPasswordTitle'),
     {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+      confirmButtonText: t('button.confirm'),
+      cancelButtonText: t('button.cancel'),
       type: 'warning',
     },
   )
     .then(async () => {
       try {
         await request.post('/Admin/User/ClearPassword', null, { params: { id: userForm.id } });
-        ElMessage.success('密码清空成功');
+        ElMessage.success(t('user.clearPasswordSuccess'));
         dialogVisible.value = false; // 关闭用户编辑对话框
       } catch (error) {
-        console.error('清空密码失败:', error);
-        ElMessage.error('清空密码失败');
+        console.error(t('user.clearPasswordFailed'), error);
+        ElMessage.error(t('user.clearPasswordFailed'));
       }
     })
     .catch(() => {
@@ -529,7 +532,7 @@ const handleDelete = (row: User) => {
   handleDeleteOperation(
     () => request.delete(`/Admin/User/${row.id}`),
     queryUser, //() => null,
-    '确认删除[' + (row.displayName || row.name) + ']用户吗？',
+    t('user.deleteConfirm', { name: row.displayName || row.name }),
   );
 };
 
@@ -578,7 +581,7 @@ const submitChangePassword = async () => {
 
   const onSuccess = () => {
     changePasswordDialogVisible.value = false; // 关闭修改密码对话框
-    ElMessage.success('密码修改成功');
+    ElMessage.success(t('user.changePasswordSuccess'));
     // 重置表单
     changePasswordForm.oldPassword = '';
     changePasswordForm.newPassword = '';
