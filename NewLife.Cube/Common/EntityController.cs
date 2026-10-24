@@ -142,7 +142,7 @@ public partial class EntityController<TEntity, TModel>
                 throw new Exception(L.T("Validation failed."));
 
             // 基于 Model.xml 元数据的字段级校验（必填、长度等），提前发现问题返回明确错误
-            // 子类可通过 override EnableFieldValidation => false 关闭
+            // 默认关闭（EntityController2.EnableFieldValidation => false）；子类重写为 true 开启
             if (EnableFieldValidation)
             {
                 var fieldErrors = ValidateEntityFields(entity, DataObjectMethodType.Insert);
@@ -315,7 +315,7 @@ public partial class EntityController<TEntity, TModel>
                 throw new Exception(L.T("Validation failed."));
 
             // 基于 Model.xml 元数据的字段级校验（必填、长度等），提前发现问题返回明确错误
-            // 子类可通过 override EnableFieldValidation => false 关闭
+            // 默认关闭（EntityController2.EnableFieldValidation => false）；子类重写为 true 开启
             if (EnableFieldValidation)
             {
                 var fieldErrors = ValidateEntityFields(entity, DataObjectMethodType.Update);
