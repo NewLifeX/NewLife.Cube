@@ -43,6 +43,10 @@ public class Pager : PageParameter, IExtend
     [XmlIgnore, ScriptIgnore, IgnoreDataMember]
     public String PageUrlTemplate { get; set; } = "<a href=\"{链接}\">{名称}</a>";
 
+    /// <summary>最大分页大小。外部请求传入的 pageSize 超过该值时按此值截断，避免一次拉走整表</summary>
+    /// <remarks>只约束「从请求参数构造」的入口；内部需要更大或不分页时，构造后再给 <see cref="PageParameter.PageSize"/> 赋值即可，不受此限。</remarks>
+    public static Int32 MaxPageSize { get; set; } = 1000;
+
     private static readonly PageParameter _def = new();
 
     /// <summary>默认参数。如果分页参数为默认参数，则不参与构造Url</summary>
@@ -103,11 +107,17 @@ public class Pager : PageParameter, IExtend
     }
 
     /// <summary>借助字典实例化</summary>
-    /// <param name="parameters"></param>
+    /// <param name="parameters">请求参数。其中 pageSize 非正数按默认大小处理，超过 <see cref="MaxPageSize"/> 时截断（0 不再表示不分页）</param>
     public Pager(IDictionary<String, String> parameters)
     {
         if (parameters.TryGetValue(nameof(PageIndex), out var str)) PageIndex = str.ToInt();
-        if (parameters.TryGetValue(nameof(PageSize), out str)) PageSize = str.ToInt();
+        if (parameters.TryGetValue(nameof(PageSize), out str))
+        {
+            // 外部可直接拼 ?pageSize=0 或极大值。0/负数过去表示“不分页”，等于允许一次拉走整表，
+            // 现统一回退到默认大小；内部确需不分页时，构造完成后给 PageSize 赋 0（如删除全部、分片导出）。
+            var size = str.ToInt();
+            PageSize = size > 0 ? Math.Min(size, MaxPageSize) : Default.PageSize;
+        }
         if (parameters.TryGetValue(nameof(Desc), out str)) Desc = str.ToBoolean();
         if (parameters.TryGetValue(nameof(StartRow), out str)) StartRow = str.ToLong();
         if (parameters.TryGetValue(nameof(Sort), out str)) Sort = str;
