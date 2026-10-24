@@ -3,8 +3,8 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>角色管理</h3>
-          <el-button type="primary" @click="handleAdd">新增角色</el-button>
+          <h3>{{ t('role.title') }}</h3>
+          <el-button type="primary" @click="handleAdd">{{ t('role.add') }}</el-button>
         </div>
       </template>
 
@@ -15,34 +15,34 @@
       />
 
       <el-table :data="tableData" border style="width: 100%" v-loading="loading">
-        <el-table-column prop="id" label="编号" width="80" />
-        <el-table-column prop="name" label="角色名称" />
-        <el-table-column prop="tenantName" label="租户" />
-        <el-table-column prop="sort" label="排序" width="80" />
-        <el-table-column prop="updateTime" label="更新时间" />
-        <el-table-column label="启用" width="80">
+        <el-table-column prop="id" :label="t('common.id')" width="80" />
+        <el-table-column prop="name" :label="t('role.name')" />
+        <el-table-column prop="tenantName" :label="t('common.tenant')" />
+        <el-table-column prop="sort" :label="t('common.sort')" width="80" />
+        <el-table-column prop="updateTime" :label="t('common.updateTime')" />
+        <el-table-column :label="t('common.enable')" width="80">
           <template #default="scope">
             <el-tag :type="scope.row.enable ? 'success' : 'danger'">
-              {{ scope.row.enable ? '是' : '否' }}
+              {{ scope.row.enable ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="系统角色" width="100">
+        <el-table-column :label="t('role.system')" width="100">
           <template #default="scope">
             <el-tag :type="scope.row.isSystem ? 'warning' : undefined">
-              {{ scope.row.isSystem ? '是' : '否' }}
+              {{ scope.row.isSystem ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="备注" min-width="120" show-overflow-tooltip>
+        <el-table-column :label="t('common.remark')" min-width="120" show-overflow-tooltip>
           <template #default="scope">
             {{ scope.row.remark || '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180">
+        <el-table-column :label="t('common.actions')" width="180">
           <template #default="scope">
-            <el-button type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button type="danger" size="small" @click="handleDelete(scope.row)" :disabled="scope.row.isSystem">删除</el-button>
+            <el-button type="primary" size="small" @click="handleEdit(scope.row)">{{ t('button.edit') }}</el-button>
+            <el-button type="danger" size="small" @click="handleDelete(scope.row)" :disabled="scope.row.isSystem">{{ t('button.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -58,21 +58,21 @@
     </el-card>
 
     <!-- 角色表单对话框 -->
-    <el-dialog v-model="dialogVisible" :title="formType === 'add' ? '新增角色' : '编辑角色'" width="720px">
+    <el-dialog v-model="dialogVisible" :title="formType === 'add' ? t('role.add') : t('role.edit')" width="720px">
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
-        <el-form-item label="角色名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入角色名称" :disabled="form.isSystem" />
+        <el-form-item :label="t('role.name')" prop="name">
+          <el-input v-model="form.name" :placeholder="t('role.namePlaceholder')" :disabled="form.isSystem" />
         </el-form-item>
-        <el-form-item label="启用状态" prop="enable">
+        <el-form-item :label="t('common.enable')" prop="enable">
           <el-switch v-model="form.enable" :active-value="true" :inactive-value="false" />
         </el-form-item>
-        <el-form-item label="系统角色" prop="isSystem">
+        <el-form-item :label="t('role.system')" prop="isSystem">
           <el-switch v-model="form.isSystem" :active-value="true" :inactive-value="false" :disabled="formType === 'edit'" />
-          <span class="form-tip">系统角色不受数据权限约束，禁止修改名称或删除</span>
+          <span class="form-tip">{{ t('role.systemTip') }}</span>
         </el-form-item>
-        <el-form-item label="租户" prop="tenantId">
-          <el-select v-model="form.tenantId" placeholder="请选择租户" style="width: 100%">
-            <el-option label="全局角色" :value="0" />
+        <el-form-item :label="t('common.tenant')" prop="tenantId">
+          <el-select v-model="form.tenantId" :placeholder="t('form.select.placeholder', { field: t('common.tenant') })" style="width: 100%">
+            <el-option :label="t('role.global')" :value="0" />
             <el-option
               v-for="tenant in tenantOptions"
               :key="tenant.value"
@@ -81,16 +81,16 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="排序" prop="sort">
-          <el-input-number v-model="form.sort" :min="0" placeholder="排序值" />
+        <el-form-item :label="t('common.sort')" prop="sort">
+          <el-input-number v-model="form.sort" :min="0" :placeholder="t('role.sortValue')" />
         </el-form-item>
-        <el-form-item label="菜单权限" prop="permission">
+        <el-form-item :label="t('role.menuPermission')" prop="permission">
           <div class="perm-tree-wrap">
             <div class="perm-tree-actions">
-              <el-button size="small" @click="checkAllMenus">全部选中</el-button>
-              <el-button size="small" @click="uncheckAllMenus">全部取消</el-button>
-              <el-button size="small" @click="expandAll">展开全部</el-button>
-              <el-button size="small" @click="collapseAll">收起全部</el-button>
+              <el-button size="small" @click="checkAllMenus">{{ t('role.selectAll') }}</el-button>
+              <el-button size="small" @click="uncheckAllMenus">{{ t('role.clearAll') }}</el-button>
+              <el-button size="small" @click="expandAll">{{ t('role.expandAll') }}</el-button>
+              <el-button size="small" @click="collapseAll">{{ t('role.collapseAll') }}</el-button>
             </div>
             <el-tree
               ref="menuTreeRef"
@@ -108,32 +108,35 @@
                 <span class="perm-tree-node">
                   <span>{{ data.displayName || data.name }}</span>
                   <span v-if="data.icon" class="perm-tree-icon">{{ data.icon }}</span>
-                  <span v-if="data.isPermission" class="perm-tag">权限</span>
+                  <span v-if="data.isPermission" class="perm-tag">{{ t('common.permission') }}</span>
                 </span>
               </template>
             </el-tree>
           </div>
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" type="textarea" placeholder="请输入备注" />
+        <el-form-item :label="t('common.remark')" prop="remark">
+          <el-input v-model="form.remark" type="textarea" :placeholder="t('form.placeholder', { field: t('common.remark') })" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">确定</el-button>
+        <el-button @click="dialogVisible = false">{{ t('button.cancel') }}</el-button>
+        <el-button type="primary" @click="submitForm">{{ t('button.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, nextTick } from 'vue';
+import { ref, reactive, computed, onMounted, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { FormInstance, FormRules } from 'element-plus';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 import { apiDataToList, apiDataToSingle, handleDeleteOperation, handleFormSubmit } from '@newlifex/cube-vue/core/utils/api-helpers';
 import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListToolbarSearch.vue';
 import CubeListPager from '@newlifex/cube-vue/core/components/CubeListPager.vue';
 import { pageInfoDefault } from '@newlifex/cube-vue/core/types/common';
+
+const { t } = useI18n();
 
 // 定义角色类型接口
 interface Role {
@@ -196,7 +199,7 @@ const loadTenantOptions = async () => {
     }
     tenantOptionsLoaded.value = true;
   } catch (error) {
-    console.error('加载租户数据失败:', error);
+    console.error(t('role.loadTenantFailed'), error);
     tenantOptions.value = [];
     tenantOptionsLoaded.value = false;
   }
@@ -256,10 +259,10 @@ const form = reactive<Role>({
 // 表单验证规则
 const formRules = reactive<FormRules>({
   name: [
-    { required: true, message: '请输入角色名称', trigger: 'blur' }
+    { required: true, message: t('role.namePlaceholder'), trigger: 'blur' }
   ],
   tenantId: [
-    { required: true, message: '请选择租户', trigger: 'change' }
+    { required: true, message: t('form.select.placeholder', { field: t('common.tenant') }), trigger: 'change' }
   ]
 });
 
@@ -292,19 +295,19 @@ const loadData = async () => {
 
 // ─── 菜单树与权限配置 ───
 
-// 标准 PermissionFlags 名称
-const permissionFlagNames: Record<number, string> = {
-  1: '查看',
-  2: '新增',
-  4: '修改',
-  8: '删除',
-};
+// 标准 PermissionFlags 名称（随语言切换）
+const permissionFlagNames = computed<Record<number, string>>(() => ({
+  1: t('perm.detail'),
+  2: t('perm.insert'),
+  4: t('perm.update'),
+  8: t('perm.delete'),
+}));
 
 // 将扁平菜单列表转换为树形结构（含权限子项）
 const buildMenuTree = (items: MenuTreeNode[]): MenuTreeNode[] => {
   const nodeMap = new Map<number, MenuTreeNode>();
   const roots: MenuTreeNode[] = [];
-  const flagNames = permissionFlagNames;
+  const flagNames = permissionFlagNames.value;
 
   // 初始化所有节点
   for (const item of items) {
@@ -380,7 +383,7 @@ const loadMenuTree = async () => {
     }
     menuTreeLoaded.value = true;
   } catch (error) {
-    console.error('加载菜单树失败:', error);
+    console.error(t('role.loadMenuFailed'), error);
     menuTree.value = [];
     menuTreeLoaded.value = false;
   }
@@ -586,7 +589,7 @@ const handleEdit = async (row: Role) => {
       Object.assign(form, detail);
     }
   } catch (error) {
-    console.error('获取角色详情失败:', error);
+    console.error(t('role.loadDetailFailed'), error);
   }
   await loadMenuTree();
   await loadTenantOptions();
@@ -604,7 +607,7 @@ const handleDelete = (row: Role) => {
   handleDeleteOperation(
     () => request.delete(`/Admin/Role/${row.id}`),
     loadData,
-    '确认删除该角色吗？'
+    t('role.deleteConfirm')
   );
 };
 
