@@ -23,6 +23,13 @@ const FIELDS: FieldMeta[] = [
   { name: 'Enable', displayName: '是否启用', typeName: 'Boolean' },
 ];
 
+const GROUPED_FIELDS: FieldMeta[] = [
+  { name: 'Name', displayName: '方案名称', typeName: 'String', category: '基本信息' },
+  { name: 'Count', displayName: '数量', typeName: 'Int32', category: '基本信息' },
+  { name: 'Remark', displayName: '备注', typeName: 'String', category: '扩展信息' },
+  { name: 'Loose', displayName: '无分类', typeName: 'String' },
+];
+
 describe('FormContent 编辑回填', () => {
   it('camelCase 行数据 + PascalCase 字段名 → 文本与开关正确回填', () => {
     const wrapper = mount(FormContent, {
@@ -75,5 +82,55 @@ describe('FormContent 编辑回填', () => {
     const next = emitted![0][0] as Record<string, unknown>;
     // 更新后的对象应只含原 camelCase 键，且值为新输入
     expect(next).toEqual({ name: '半年保养', enable: true });
+  });
+});
+
+describe('FormContent 分组', () => {
+  const titles = (wrapper: ReturnType<typeof mount>) =>
+    wrapper.findAll('.fmc-group-title').map((node) => node.text());
+
+  it('应该按 Category 保序分组并把无分类字段归入其他 当 groupBy=auto 时', () => {
+    const wrapper = mount(FormContent, {
+      props: { fields: GROUPED_FIELDS, modelValue: {} },
+      global: { plugins: [ElementPlus] },
+    });
+
+    expect(titles(wrapper)).toEqual(['基本信息', '扩展信息', '其他']);
+  });
+
+  it('应该平铺字段 当 groupBy=none 时', () => {
+    const wrapper = mount(FormContent, {
+      props: { fields: GROUPED_FIELDS, modelValue: {}, groupBy: 'none' },
+      global: { plugins: [ElementPlus] },
+    });
+
+    expect(titles(wrapper)).toEqual([]);
+    expect(wrapper.findAll('.fmc-field')).toHaveLength(GROUPED_FIELDS.length);
+  });
+
+  it('应该强制按 Category 分组 当只有一个分类且 groupBy=category 时', () => {
+    const wrapper = mount(FormContent, {
+      props: {
+        fields: [GROUPED_FIELDS[0], GROUPED_FIELDS[1]],
+        modelValue: {},
+        groupBy: 'category',
+      },
+      global: { plugins: [ElementPlus] },
+    });
+
+    expect(titles(wrapper)).toEqual(['基本信息']);
+  });
+
+  it('应该按自定义函数分组并对空分组名回退其他 当 groupBy 为函数时', () => {
+    const wrapper = mount(FormContent, {
+      props: {
+        fields: GROUPED_FIELDS,
+        modelValue: {},
+        groupBy: (field: FieldMeta) => (field.name === 'Remark' ? '自定义' : ''),
+      },
+      global: { plugins: [ElementPlus] },
+    });
+
+    expect(titles(wrapper)).toEqual(['其他', '自定义']);
   });
 });

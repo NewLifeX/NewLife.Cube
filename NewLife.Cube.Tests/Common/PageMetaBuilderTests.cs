@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NewLife.Cube.ViewModels;
+using XCode.Membership;
 using Xunit;
 
 namespace NewLife.Cube.Tests.Common;
@@ -36,6 +38,38 @@ public class PageMetaBuilderTests
         Assert.Equal("keyword", items[0]["kind"]);
         Assert.Equal("Name", items[1]["name"]);
         Assert.False(items[1].ContainsKey("kind"));
+    }
+
+    [Fact(DisplayName = "主时间字段收敛为 dtStart/dtEnd 区间并保留显示名")]
+    public void BuildSearch_ConvertsMasterTimeToRange()
+    {
+        var master = User.Meta.Factory.MasterTime;
+        Assert.NotNull(master);
+        var search = new List<DataField>
+        {
+            Search("Q", "关键字"),
+            Search(master!.Name, "更新时间"),
+            Search("Name", "姓名"),
+        };
+
+        var items = PageMetaBuilder.BuildSearch(search, User.Meta.Factory);
+
+        var range = items.FirstOrDefault(e => e.TryGetValue("kind", out var kind) && (String)kind == "range");
+        Assert.NotNull(range);
+        Assert.Equal("dtStart", range!["name"]);
+        Assert.Equal("dtEnd", range["end"]);
+        Assert.Equal(master.Name, range["field"]);
+        Assert.Equal("更新时间", range["displayName"]);
+        Assert.DoesNotContain(items, e => e.TryGetValue("name", out var name) && (String)name == master.Name);
+    }
+
+    [Fact(DisplayName = "不传实体工厂时不生成时间区间 对应 EnableTimeRange=false")]
+    public void BuildSearch_DisableTimeRange_OmitsRange()
+    {
+        var items = PageMetaBuilder.BuildSearch([Search("UpdateTime", "更新时间")], null);
+
+        Assert.DoesNotContain(items, e => e.TryGetValue("kind", out var kind) && (String)kind == "range");
+        Assert.Contains(items, e => e.TryGetValue("name", out var name) && (String)name == "UpdateTime");
     }
 
     [Fact(DisplayName = "列表字段默认隐藏时输出 visible=false")]
