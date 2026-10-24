@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NewLife;
 using NewLife.Cube;
+using NewLife.Cube.ViewModels;
 using NewLife.Log;
 using NewLife.Web;
 using XCode;
@@ -51,7 +52,38 @@ public class TestFieldController : EntityController<测试字段, 测试字段Mo
         SetLov(AddFormFields, 测试字段._.ListMVal, roleLovCode);
         SetLov(EditFormFields, 测试字段._.ListMVal, roleLovCode);
         SetLov(SearchFields, 测试字段._.ListMVal, roleLovCode);
+
+        // 页面呈现架构的端到端演示：普通链接列、dataAction 动作列、工具栏按钮、地区级联搜索
+        {
+            var df = ListFields.AddListField("DetailLink", null, "ShortText");
+            df.DisplayName = "查看";
+            df.Text = "查看";
+            df.Url = "/Test/TestField?Id={Id}";
+        }
+        {
+            var df = ListFields.AddListField("TouchLink", null, "ShortText");
+            df.DisplayName = "动作";
+            df.Text = "执行";
+            df.Url = "/Test/TestField/Touch/{Id}";
+            df.DataAction = "get";
+        }
+
+        Toolbar.AddLink("测试工具栏", "/Test/TestField?toolbar=1", "Document");
+
+        SearchFields.Add(new SearchField
+        {
+            Name = "Area",
+            DisplayName = "地区",
+            Type = typeof(Int32),
+            ItemType = "area3",
+        });
     }
+
+    /// <summary>演示 dataAction 单元格动作。前端点击动作列时请求该地址并刷新列表</summary>
+    /// <param name="id">记录编号</param>
+    /// <returns>操作结果</returns>
+    [HttpGet("/api/Test/TestField/Touch/{id}")]
+    public Object Touch(Int32 id) => new { message = $"已处理 {id}" };
 
     /// <summary>为字段集合中的指定字段设置 LOV 值集编码</summary>
     /// <param name="fields">字段集合</param>

@@ -18,6 +18,11 @@ setup('authenticate', async ({ page, request }) => {
   const token = body.data?.accessToken || body.data?.access_token || body.data?.Token;
   expect(token).toBeTruthy();
 
+  // Cube 的菜单/页面接口优先读登录 Cookie（token-{App}），只写 localStorage 会导致
+  // 页面能亮起登录态、但 /Cube/MenuTree 返回 302，动态菜单路由全部缺失（表现为 404）。
+  const apiCookies = (await request.storageState()).cookies;
+  if (apiCookies.length > 0) await page.context().addCookies(apiCookies);
+
   await page.goto('/');
   await page.evaluate(
     ([accessToken, refreshToken]) => {

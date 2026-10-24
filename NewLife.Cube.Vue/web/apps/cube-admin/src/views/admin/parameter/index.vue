@@ -6,11 +6,16 @@
  * 存在的唯一理由是把 Kind（枚举，后端下发数字）渲染成「普通/系统/用户」标签。
  * CubeTable 的 `#col-<字段名>` 就是为这种单列定制准备的，所以不再需要复制整张表：
  * 列集、搜索、分页、增删改查、导入导出全部回到框架默认行为。
+ * 同时用 preset 把 Kind 列前置，作为 M2 页面呈现配置的示例。
  */
 import CubeTable from '@newlifex/cube-vue/core/components/CubeTable/CubeTable.vue';
 import ListChartButton from '@newlifex/cube-vue/core/views/components/ListChartButton.vue';
 import ListPageHeader from '@newlifex/cube-vue/core/views/components/ListPageHeader.vue';
+import { registerPagePreset } from '@newlifex/cube-vue/core/engine/pagePreset';
 import { getKind } from './parameter-kind';
+
+// 页面呈现配置（preset）示例：把枚举列前置。元数据仍由后端下发，preset 只做呈现调整。
+registerPagePreset('/Admin/Parameter', { list: { order: ['Kind'] } });
 </script>
 
 <template>
