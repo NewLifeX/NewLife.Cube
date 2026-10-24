@@ -2,6 +2,7 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import ElementPlus from 'element-plus';
 import RegisterForm from '../pages/RegisterForm.vue';
+import { testI18n } from './helpers/i18n';
 import type { LoginConfig } from '@newlifex/api-core';
 
 function mountForm(registerOverrides: Record<string, unknown> = {}) {
@@ -17,7 +18,7 @@ function mountForm(registerOverrides: Record<string, unknown> = {}) {
       } as LoginConfig,
     },
     global: {
-      plugins: [ElementPlus],
+      plugins: [ElementPlus, testI18n],
     },
   });
 }

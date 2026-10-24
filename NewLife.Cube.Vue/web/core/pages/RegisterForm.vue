@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { User, Lock, Message } from '@element-plus/icons-vue';
 import { usePasswordRules } from '../composables/usePasswordRules';
 import type { LoginConfig } from '@newlifex/api-core';
+
+const { t } = useI18n();
 
 /**
  * 注册表单展示组件（纯展示，业务提交由容器层 LoginPage 处理）
@@ -85,12 +88,12 @@ function clearError(field: string): void {
 function sendMailCode(): void {
   const mail = form.value.email.trim();
   if (!mail) {
-    errors.value.email = '请输入邮箱';
-    ElMessage.warning('请先输入邮箱');
+    errors.value.email = t('register.enterMail');
+    ElMessage.warning(t('register.enterMailFirst'));
     return;
   }
   if (!isMail(mail)) {
-    errors.value.email = '邮箱格式不正确';
+    errors.value.email = t('register.invalidMail');
     return;
   }
   emit('sendCode', 'mail', mail);
@@ -100,12 +103,12 @@ function sendMailCode(): void {
 function sendMobileCode(): void {
   const mobile = form.value.mobile.trim();
   if (!mobile) {
-    errors.value.mobile = '请输入手机号';
-    ElMessage.warning('请先输入手机号');
+    errors.value.mobile = t('register.enterMobile');
+    ElMessage.warning(t('register.enterMobileFirst'));
     return;
   }
   if (!isMobile(mobile)) {
-    errors.value.mobile = '手机号格式不正确';
+    errors.value.mobile = t('register.invalidMobile');
     return;
   }
   emit('sendCode', 'sms', mobile);
@@ -138,51 +141,51 @@ function handleSubmit(): void {
   // 按注册方式校验
   if (category === 'password') {
     if (!username) {
-      errors.value.username = '请输入用户名';
+      errors.value.username = t('register.enterUsername');
       valid = false;
     } else if (username.length < 2) {
-      errors.value.username = '用户名至少 2 个字符';
+      errors.value.username = t('register.usernameTooShort');
       valid = false;
     }
   }
 
   // 需要验证的开关：对应联系方式必填
   if (requireMailVerify.value && !email) {
-    errors.value.email = '需要邮箱验证，请填写邮箱';
+    errors.value.email = t('register.mailRequired');
     valid = false;
   }
   if (requireMobileVerify.value && !mobile) {
-    errors.value.mobile = '需要手机验证，请填写手机号';
+    errors.value.mobile = t('register.mobileRequired');
     valid = false;
   }
 
   if (email && !isMail(email)) {
-    errors.value.email = '邮箱格式不正确';
+    errors.value.email = t('register.invalidMail');
     valid = false;
   }
   if (mobile && !isMobile(mobile)) {
-    errors.value.mobile = '手机号格式不正确';
+    errors.value.mobile = t('register.invalidMobile');
     valid = false;
   }
 
   // 密码校验（用户名/邮箱/手机注册均要求，验证码注册留空则后端生成随机密码）
   if (!form.value.password) {
-    errors.value.password = '请输入密码';
+    errors.value.password = t('register.enterPassword');
     valid = false;
   } else {
     const failed = passwordRuleDefs.value.find((r) => !r.test(form.value.password));
     if (failed) {
-      errors.value.password = `密码需${failed.label}`;
+      errors.value.password = t('register.passwordRule', { rule: failed.label });
       valid = false;
     }
   }
   if (form.value.password !== form.value.confirmPassword) {
-    errors.value.confirmPassword = '两次输入密码不一致';
+    errors.value.confirmPassword = t('register.passwordMismatch');
     valid = false;
   }
 
   if (!valid) {
-    ElMessage.warning('请检查输入信息');
+    ElMessage.warning(t('register.checkInput'));
     return;
   }
 
@@ -209,12 +212,12 @@ function onFormKeydown(e: KeyboardEvent): void {
   <form class="login-form" @submit.prevent="handleSubmit" @keydown="onFormKeydown">
     <!-- 用户名 -->
     <div class="input-group">
-      <label class="input-label" for="reg-username">用户名</label>
+      <label class="input-label" for="reg-username">{{ t('register.username') }}</label>
       <el-input
         id="reg-username"
         data-cy="reg-username"
         v-model="form.username"
-        placeholder="请输入用户名"
+        :placeholder="t('register.usernamePlaceholder')"
         size="large"
         :prefix-icon="User"
         clearable
@@ -227,33 +230,33 @@ function onFormKeydown(e: KeyboardEvent): void {
     <!-- 邮箱（requireMailVerify 时必填） -->
     <div class="input-group">
       <label class="input-label" for="reg-email">
-        邮箱<template v-if="requireMailVerify"><span class="required">*</span></template>
+        {{ t('register.mail') }}<template v-if="requireMailVerify"><span class="required">*</span></template>
       </label>
       <div class="code-row">
         <el-input
           id="reg-email"
           data-cy="reg-email"
           v-model="form.email"
-          placeholder="请输入邮箱"
+          :placeholder="t('register.enterMail')"
           size="large"
           :prefix-icon="Message"
           clearable
           :class="{ 'is-error': !!errors.email }"
           @input="clearError('email')"
         />
-        <button type="button" class="code-btn" @click="sendMailCode">发送验证码</button>
+        <button type="button" class="code-btn" @click="sendMailCode">{{ t('register.sendCode') }}</button>
       </div>
       <span v-if="errors.email" class="input-error">{{ errors.email }}</span>
     </div>
 
     <!-- 邮箱验证码 -->
     <div class="input-group" v-if="form.email">
-      <label class="input-label" for="reg-mailcode">邮箱验证码</label>
+      <label class="input-label" for="reg-mailcode">{{ t('register.mailCode') }}</label>
       <el-input
         id="reg-mailcode"
         data-cy="reg-mailcode"
         v-model="form.mailCode"
-        placeholder="请输入邮箱验证码"
+        :placeholder="t('register.mailCodePlaceholder')"
         size="large"
         maxlength="6"
         @input="clearError('mailCode')"
@@ -263,33 +266,33 @@ function onFormKeydown(e: KeyboardEvent): void {
     <!-- 手机（requireMobileVerify 时必填） -->
     <div class="input-group">
       <label class="input-label" for="reg-mobile">
-        手机号<template v-if="requireMobileVerify"><span class="required">*</span></template>
+        {{ t('register.mobile') }}<template v-if="requireMobileVerify"><span class="required">*</span></template>
       </label>
       <div class="code-row">
         <el-input
           id="reg-mobile"
           data-cy="reg-mobile"
           v-model="form.mobile"
-          placeholder="请输入手机号"
+          :placeholder="t('register.enterMobile')"
           size="large"
           :prefix-icon="Message"
           clearable
           :class="{ 'is-error': !!errors.mobile }"
           @input="clearError('mobile')"
         />
-        <button type="button" class="code-btn" @click="sendMobileCode">发送验证码</button>
+        <button type="button" class="code-btn" @click="sendMobileCode">{{ t('register.sendCode') }}</button>
       </div>
       <span v-if="errors.mobile" class="input-error">{{ errors.mobile }}</span>
     </div>
 
     <!-- 手机验证码 -->
     <div class="input-group" v-if="form.mobile">
-      <label class="input-label" for="reg-mobilecode">短信验证码</label>
+      <label class="input-label" for="reg-mobilecode">{{ t('register.smsCode') }}</label>
       <el-input
         id="reg-mobilecode"
         data-cy="reg-mobilecode"
         v-model="form.mobileCode"
-        placeholder="请输入短信验证码"
+        :placeholder="t('register.smsCodePlaceholder')"
         size="large"
         maxlength="6"
         @input="clearError('mobileCode')"
@@ -298,13 +301,13 @@ function onFormKeydown(e: KeyboardEvent): void {
 
     <!-- 密码 -->
     <div class="input-group">
-      <label class="input-label" for="reg-password">密码</label>
+      <label class="input-label" for="reg-password">{{ t('register.password') }}</label>
       <el-input
         id="reg-password"
         data-cy="reg-password"
         v-model="form.password"
         type="password"
-        placeholder="请输入密码"
+        :placeholder="t('register.enterPassword')"
         size="large"
         :prefix-icon="Lock"
         show-password
@@ -316,13 +319,13 @@ function onFormKeydown(e: KeyboardEvent): void {
 
     <!-- 确认密码 -->
     <div class="input-group">
-      <label class="input-label" for="reg-confirm">确认密码</label>
+      <label class="input-label" for="reg-confirm">{{ t('register.confirmPassword') }}</label>
       <el-input
         id="reg-confirm"
         data-cy="reg-confirm"
         v-model="form.confirmPassword"
         type="password"
-        placeholder="请再次输入密码"
+        :placeholder="t('register.confirmPasswordPlaceholder')"
         size="large"
         :prefix-icon="Lock"
         show-password
@@ -347,7 +350,7 @@ function onFormKeydown(e: KeyboardEvent): void {
 
     <!-- 注册按钮 -->
     <button type="submit" class="login-btn" :class="{ loading: submitting }" :disabled="submitting">
-      <span class="login-btn-text">注 册</span>
+      <span class="login-btn-text">{{ t('register.submit') }}</span>
       <span class="login-btn-spinner"></span>
     </button>
   </form>
