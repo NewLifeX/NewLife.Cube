@@ -21,6 +21,7 @@ import { nextTick } from 'vue';
 import ElementPlus from 'element-plus';
 import LovSelectTable from './index.vue';
 import type { LovListMeta } from '../../types/lov';
+import { testI18n } from '../../__tests__/helpers/i18n';
 
 // ── jsdom 缺失的全局对象 polyfill ──
 (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver = class {
@@ -147,7 +148,9 @@ function footerButtons(): string[] {
 }
 
 function footerCountText(): string {
-  return (document.querySelector('.lst-selected-count')?.textContent || '').trim();
+  // 弹窗 append-to-body 且各用例不 unmount，body 里会累积多个节点；取最后一个 = 当前用例刚打开的弹窗
+  const nodes = Array.from(document.querySelectorAll('.lst-selected-count'));
+  return (nodes[nodes.length - 1]?.textContent || '').trim();
 }
 
 const baseProps = (multiple: boolean, modelValue?: string | number | string[]) => ({
@@ -164,14 +167,14 @@ describe('LovSelectTable', () => {
   it('单选：footer 仅「取消」、无「确定」；左侧为 radio 列', async () => {
     const wrapper = mount(LovSelectTable, {
       props: baseProps(false),
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
       attachTo: document.body,
     });
     await openDialog(wrapper, false);
 
     const btns = footerButtons();
     expect(btns).toContain('取消');
-    expect(btns).not.toContain('确定');
+    expect(btns).not.toContain('确认');
     expect(footerCountText()).toContain('已选 0 项');
 
     expect(document.querySelectorAll('.el-radio').length).toBe(MOCK_ROWS.length);
@@ -182,14 +185,14 @@ describe('LovSelectTable', () => {
   it('多选：footer 含「取消 + 确定」；左侧为 checkbox 列', async () => {
     const wrapper = mount(LovSelectTable, {
       props: baseProps(true),
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
       attachTo: document.body,
     });
     await openDialog(wrapper, true);
 
     const btns = footerButtons();
     expect(btns).toContain('取消');
-    expect(btns).toContain('确定');
+    expect(btns).toContain('确认');
     // 多选 type=selection 会额外渲染表头全选 checkbox，故只统计表体行 checkbox
     expect(document.querySelectorAll('.el-table__body .el-checkbox').length).toBe(MOCK_ROWS.length);
     expect(document.querySelectorAll('.el-radio').length).toBe(0);
@@ -200,7 +203,7 @@ describe('LovSelectTable', () => {
   it('footer 布局：已选统计(.lst-selected-count)在左下角、按钮组(.lst-footer-buttons)在右下角（分居左右）', async () => {
     const wrapper = mount(LovSelectTable, {
       props: baseProps(true),
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
       attachTo: document.body,
     });
     await openDialog(wrapper, true);
@@ -221,7 +224,7 @@ describe('LovSelectTable', () => {
   it('回显（多选）：modelValue 恢复勾选，统计与高亮行数一致', async () => {
     const wrapper = mount(LovSelectTable, {
       props: baseProps(true, ['1', '2', '3']),
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
       attachTo: document.body,
     });
     await openDialog(wrapper, true, ['1', '2', '3']);
@@ -234,7 +237,7 @@ describe('LovSelectTable', () => {
   it('单选选中并关闭：点左侧 radio → emit select(行) 且关闭弹窗', async () => {
     const wrapper = mount(LovSelectTable, {
       props: baseProps(false),
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
       attachTo: document.body,
     });
     await openDialog(wrapper, false);
@@ -254,14 +257,14 @@ describe('LovSelectTable', () => {
   it('多选确认：回显后点「确定」→ emit confirm(已选值数组)', async () => {
     const wrapper = mount(LovSelectTable, {
       props: baseProps(true, ['1', '2', '3']),
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
       attachTo: document.body,
     });
     await openDialog(wrapper, true, ['1', '2', '3']);
 
     const confirmBtn = Array.from(
       document.querySelectorAll('.el-dialog__footer .el-button'),
-    ).find((b) => (b.textContent || '').includes('确定')) as HTMLElement;
+    ).find((b) => (b.textContent || '').includes('确认')) as HTMLElement;
     confirmBtn.click();
     await flushPromises();
 
@@ -275,7 +278,7 @@ describe('LovSelectTable', () => {
     const wrapper = mount(LovSelectTable, {
       // lovCode 含 'Paged' → mock 按 size=2 分页；modelValue 跨 3 页（1..6）
       props: { ...baseProps(true, ['1', '2', '3', '4', '5', '6']), lovCode: 'List.Paged.Role' },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
       attachTo: document.body,
     });
     await openDialog(wrapper, true, ['1', '2', '3', '4', '5', '6']);
@@ -290,7 +293,7 @@ describe('LovSelectTable', () => {
   it('回显（跨页）+ 翻页：翻到第 2 页后统计与勾选保持（根因 C2 修复，翻页后已选不正确/勾选才更新）', async () => {
     const wrapper = mount(LovSelectTable, {
       props: { ...baseProps(true, ['1', '2', '3', '4', '5', '6']), lovCode: 'List.Paged.Role' },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
       attachTo: document.body,
     });
     await openDialog(wrapper, true, ['1', '2', '3', '4', '5', '6']);

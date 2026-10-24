@@ -410,6 +410,11 @@ export default {
   'workbench.localLogin': 'Local sign-in',
   'workbench.noOnlineUser': 'No online users',
 
+  // Lov picker dialog
+  'lov.selectTitle': 'Select {name}',
+  'lov.selectedCount': 'Selected {count}',
+  'lov.itemCount': '{count} item(s)',
+
   // Security center
   'security.title': 'Security center',
   'security.mail': 'Email',

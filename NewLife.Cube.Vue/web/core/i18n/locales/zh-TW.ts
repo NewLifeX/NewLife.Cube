@@ -393,6 +393,11 @@ export default {
   'workbench.localLogin': '本機登入',
   'workbench.noOnlineUser': '暫無線上使用者',
 
+  // 值集選擇彈窗
+  'lov.selectTitle': '選擇 {name}',
+  'lov.selectedCount': '已選 {count}',
+  'lov.itemCount': '{count} 項',
+
   // 安全中心
   'security.title': '安全中心',
   'security.mail': '電子郵件',

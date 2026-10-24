@@ -408,6 +408,11 @@ export default {
   'workbench.localLogin': '本地登录',
   'workbench.noOnlineUser': '暂无在线用户',
 
+  // 值集选择弹窗
+  'lov.selectTitle': '选择 {name}',
+  'lov.selectedCount': '已选 {count}',
+  'lov.itemCount': '{count} 项',
+
   // 安全中心
   'security.title': '安全中心',
   'security.mail': '邮箱',

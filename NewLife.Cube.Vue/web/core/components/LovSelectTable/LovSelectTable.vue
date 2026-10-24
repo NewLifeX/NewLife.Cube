@@ -2,7 +2,7 @@
   <el-dialog
     :model-value="dialogVisible"
     @update:model-value="$emit('update:dialogVisible', $event)"
-    :title="'选择 ' + (lovMeta?.name || lovCode)"
+    :title="t('lov.selectTitle', { name: lovMeta?.name || lovCode })"
     width="680px"
     top="5vh"
     append-to-body
@@ -47,8 +47,8 @@
           style="width: 160px"
         />
       </template>
-      <el-button type="primary" size="small" @click="searchData">搜索</el-button>
-      <el-button size="small" @click="resetSearch">重置</el-button>
+      <el-button type="primary" size="small" @click="searchData">{{ t('button.search') }}</el-button>
+      <el-button size="small" @click="resetSearch">{{ t('button.reset') }}</el-button>
     </div>
 
     <!-- 数据表格 -->
@@ -108,10 +108,10 @@
 
     <template #footer>
       <div class="lst-footer">
-        <span class="lst-selected-count">已选 {{ selectedCountText }}</span>
+        <span class="lst-selected-count">{{ t('lov.selectedCount', { count: selectedCountText }) }}</span>
         <span class="lst-footer-buttons">
-          <el-button @click="$emit('update:dialogVisible', false)">取消</el-button>
-          <el-button v-if="multiple" type="primary" @click="confirmMulti">确定</el-button>
+          <el-button @click="$emit('update:dialogVisible', false)">{{ t('button.cancel') }}</el-button>
+          <el-button v-if="multiple" type="primary" @click="confirmMulti">{{ t('button.confirm') }}</el-button>
         </span>
       </div>
     </template>
@@ -122,6 +122,7 @@
 // 显式声明组件名，确保 Vue DevTools 显示为 LovSelectTable（不依赖目录/文件名推断）
 defineOptions({ name: 'LovSelectTable' });
 import { ref, watch, computed, nextTick, defineAsyncComponent } from 'vue';
+import { useI18n } from 'vue-i18n';
 // 用异步组件打破与 LovSelect 的循环依赖：LovSelect 静态 import 本组件用于 LIST 弹窗，
 // 本组件又需要 LovSelect 作为嵌套 lov 搜索控件。若双方都静态 import，会形成循环依赖，
 // 导致 Vite eager glob 在收集 story 时漏掉「先加载一方」的 stories 导出，使 LovSelect 的 CT story 无法注册。
@@ -160,6 +161,8 @@ const emit = defineEmits<{
   (e: 'select', row: Record<string, unknown>): void;
   (e: 'confirm', values: string[]): void;
 }>();
+
+const { t } = useI18n();
 
 /** el-table 实例引用（用于回显多选勾选状态） */
 const tableRef = ref<unknown>(null);
@@ -204,8 +207,12 @@ const total = ref(0);
 
 /** 弹窗底部「已选统计」文本（右下角展示） */
 const selectedCountText = computed(() => {
-  if (props.multiple) return `${selectedValues.value.length} 项`;
-  return currentValue.value != null && String(currentValue.value) !== '' ? '1 项' : '0 项';
+  const count = props.multiple
+    ? selectedValues.value.length
+    : currentValue.value != null && String(currentValue.value) !== ''
+      ? 1
+      : 0;
+  return t('lov.itemCount', { count });
 });
 
 /** 行唯一键（reserve-selection 跨页保留勾选所需） */
@@ -329,7 +336,7 @@ async function fetchListData() {
       await Promise.all(tasks);
     }
   } catch (err) {
-    console.error('LovSelectTable: 获取列表数据失败', err);
+    console.error('LovSelectTable: failed to load list data', err);
   } finally {
     tableLoading.value = false;
   }
