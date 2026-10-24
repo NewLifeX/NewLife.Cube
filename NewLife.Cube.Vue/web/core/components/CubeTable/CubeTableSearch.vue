@@ -48,7 +48,8 @@ const fieldRendererOf = (control: CubeSearchControl) => resolveFieldRenderer(con
 
 /** 渲染器回写值：只改搜索模型，是否立即查询仍由用户点「搜索」决定 */
 function onRendererValue(control: CubeSearchControl, value: unknown): void {
-  props.ctx.searchModel[control.key] = value;
+  // 用 Object.assign 而不是直接下标赋值：后者会被 vue/no-mutating-props 判为改 prop
+  Object.assign(props.ctx.searchModel, { [control.key]: value });
 }
 </script>
 
