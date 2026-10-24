@@ -1,17 +1,17 @@
 <template>
   <div>
     <div class="page-header">
-      <h1>用户令牌管理</h1>
-      <p>管理用户访问令牌和会话信息</p>
+      <h1>{{ t('token.title') }}</h1>
+      <p>{{ t('token.subtitle') }}</p>
     </div>
 
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>用户令牌列表</span>
+          <span>{{ t('token.listTitle') }}</span>
           <el-button type="primary" @click="handleAdd">
             <el-icon><Plus /></el-icon>
-            添加令牌
+            {{ t('token.add') }}
           </el-button>
         </div>
       </template>
@@ -30,44 +30,44 @@
           style="width: 100%"
         >
           <el-table-column type="selection" width="55" />
-          <el-table-column prop="id" label="编号" width="80" />
-          <el-table-column prop="userId" label="用户ID" width="100" />
-          <el-table-column prop="userName" label="用户名" />
-          <el-table-column prop="tokenType" label="令牌类型" />
-          <el-table-column prop="accessToken" label="访问令牌" show-overflow-tooltip />
-          <el-table-column prop="refreshToken" label="刷新令牌" show-overflow-tooltip />
-          <el-table-column prop="enable" label="状态" width="80">
+          <el-table-column prop="id" :label="t('common.id')" width="80" />
+          <el-table-column prop="userId" :label="t('token.userId')" width="100" />
+          <el-table-column prop="userName" :label="t('token.userName')" />
+          <el-table-column prop="tokenType" :label="t('token.type')" />
+          <el-table-column prop="accessToken" :label="t('token.accessToken')" show-overflow-tooltip />
+          <el-table-column prop="refreshToken" :label="t('token.refreshToken')" show-overflow-tooltip />
+          <el-table-column prop="enable" :label="t('rule.status')" width="80">
             <template #default="{ row }">
               <el-tag :type="row.enable ? 'success' : 'danger'">
-                {{ row.enable ? '启用' : '禁用' }}
+                {{ row.enable ? t('common.enable') : t('rule.disabled') }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="expire" label="过期时间" width="160">
+          <el-table-column prop="expire" :label="t('token.expire')" width="160">
             <template #default="{ row }">
               {{ formatDate(row.expire) }}
             </template>
           </el-table-column>
-          <el-table-column prop="createTime" label="创建时间" width="160">
+          <el-table-column prop="createTime" :label="t('dept.createTime')" width="160">
             <template #default="{ row }">
               {{ formatDate(row.createTime) }}
             </template>
           </el-table-column>
-          <el-table-column label="备注" min-width="120" show-overflow-tooltip>
+          <el-table-column :label="t('common.remark')" min-width="120" show-overflow-tooltip>
             <template #default="scope">
               {{ scope.row.remark || '-' }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="200" fixed="right">
+          <el-table-column :label="t('common.actions')" width="200" fixed="right">
             <template #default="{ row }">
               <el-button size="small" @click="handleDetail(row)">
-                详情
+                {{ t('token.detail') }}
               </el-button>
               <el-button size="small" @click="handleEdit(row)">
-                编辑
+                {{ t('button.edit') }}
               </el-button>
               <el-button size="small" type="danger" @click="handleDelete(row)">
-                删除
+                {{ t('button.delete') }}
               </el-button>
             </template>
           </el-table-column>
@@ -88,7 +88,7 @@
     <!-- 添加/编辑对话框 -->
     <el-dialog
       v-model="dialogVisible"
-      :title="isEdit ? '编辑用户令牌' : '添加用户令牌'"
+      :title="isEdit ? t('token.editTitle') : t('token.addTitle')"
       width="600px"
     >
       <el-form
@@ -98,11 +98,11 @@
         label-width="120px"
         v-loading="loading"
       >
-        <el-form-item label="用户ID" prop="userId">
-          <el-input v-model="formData.userId" placeholder="请输入用户ID" />
+        <el-form-item :label="t('token.userId')" prop="userId">
+          <el-input v-model="formData.userId" :placeholder="t('form.placeholder', { field: t('token.userId') })" />
         </el-form-item>
-        <el-form-item label="令牌类型" prop="tokenType">
-          <el-select v-model="formData.tokenType" placeholder="请选择令牌类型" style="width: 100%">
+        <el-form-item :label="t('token.type')" prop="tokenType">
+          <el-select v-model="formData.tokenType" :placeholder="t('form.select.placeholder', { field: t('token.type') })" style="width: 100%">
             <el-option
               v-for="item in tokenTypeOptions"
               :key="item.value"
@@ -111,38 +111,38 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="访问令牌" prop="accessToken">
+        <el-form-item :label="t('token.accessToken')" prop="accessToken">
           <el-input
             v-model="formData.accessToken"
-            placeholder="请输入访问令牌"
+            :placeholder="t('form.placeholder', { field: t('token.accessToken') })"
             type="textarea"
             :rows="3"
           />
         </el-form-item>
-        <el-form-item label="刷新令牌" prop="refreshToken">
+        <el-form-item :label="t('token.refreshToken')" prop="refreshToken">
           <el-input
             v-model="formData.refreshToken"
-            placeholder="请输入刷新令牌"
+            :placeholder="t('form.placeholder', { field: t('token.refreshToken') })"
             type="textarea"
             :rows="3"
           />
         </el-form-item>
-        <el-form-item label="启用状态" prop="enable">
+        <el-form-item :label="t('common.enable')" prop="enable">
           <el-switch v-model="formData.enable" />
         </el-form-item>
-        <el-form-item label="过期时间" prop="expire">
+        <el-form-item :label="t('token.expire')" prop="expire">
           <el-date-picker
             v-model="formData.expire"
             type="datetime"
-            placeholder="选择过期时间"
+            :placeholder="t('token.expirePlaceholder')"
             format="YYYY-MM-DD HH:mm:ss"
             value-format="YYYY-MM-DD HH:mm:ss"
           />
         </el-form-item>
-        <el-form-item label="描述" prop="remark">
+        <el-form-item :label="t('token.description')" prop="remark">
           <el-input
             v-model="formData.remark"
-            placeholder="请输入描述"
+            :placeholder="t('form.placeholder', { field: t('token.description') })"
             type="textarea"
             :rows="3"
           />
@@ -150,43 +150,43 @@
       </el-form>
 
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button @click="dialogVisible = false">{{ t('button.cancel') }}</el-button>
         <el-button type="primary" @click="submitForm" :loading="loading">
-          {{ isEdit ? '更新' : '创建' }}
+          {{ isEdit ? t('token.update') : t('token.create') }}
         </el-button>
       </template>
     </el-dialog>
 
     <!-- 详情对话框 -->
-    <el-dialog v-model="detailVisible" title="用户令牌详情" width="800px">
+    <el-dialog v-model="detailVisible" :title="t('token.detailTitle')" width="800px">
       <div v-loading="loading">
         <el-descriptions :column="2" border>
-          <el-descriptions-item label="编号">{{ detailData.id }}</el-descriptions-item>
-          <el-descriptions-item label="用户ID">{{ detailData.userId }}</el-descriptions-item>
-          <el-descriptions-item label="用户名">{{ detailData.userName }}</el-descriptions-item>
-          <el-descriptions-item label="令牌类型">{{ detailData.tokenType }}</el-descriptions-item>
-          <el-descriptions-item label="访问令牌" :span="2">
+          <el-descriptions-item :label="t('common.id')">{{ detailData.id }}</el-descriptions-item>
+          <el-descriptions-item :label="t('token.userId')">{{ detailData.userId }}</el-descriptions-item>
+          <el-descriptions-item :label="t('token.userName')">{{ detailData.userName }}</el-descriptions-item>
+          <el-descriptions-item :label="t('token.type')">{{ detailData.tokenType }}</el-descriptions-item>
+          <el-descriptions-item :label="t('token.accessToken')" :span="2">
             <div style="word-break: break-all;">{{ detailData.accessToken }}</div>
           </el-descriptions-item>
-          <el-descriptions-item label="刷新令牌" :span="2">
+          <el-descriptions-item :label="t('token.refreshToken')" :span="2">
             <div style="word-break: break-all;">{{ detailData.refreshToken }}</div>
           </el-descriptions-item>
-          <el-descriptions-item label="启用状态">
+          <el-descriptions-item :label="t('common.enable')">
             <el-tag :type="detailData.enable ? 'success' : 'danger'">
-              {{ detailData.enable ? '启用' : '禁用' }}
+              {{ detailData.enable ? t('common.enable') : t('rule.disabled') }}
             </el-tag>
           </el-descriptions-item>
-          <el-descriptions-item label="过期时间">{{ formatDate(detailData.expire) }}</el-descriptions-item>
-          <el-descriptions-item label="创建时间">{{ formatDate(detailData.createTime) }}</el-descriptions-item>
-          <el-descriptions-item label="更新时间">{{ formatDate(detailData.updateTime) }}</el-descriptions-item>
-          <el-descriptions-item label="创建地址">{{ detailData.createIP }}</el-descriptions-item>
-          <el-descriptions-item label="更新地址">{{ detailData.updateIP }}</el-descriptions-item>
-          <el-descriptions-item label="描述" :span="2">{{ detailData.remark }}</el-descriptions-item>
+          <el-descriptions-item :label="t('token.expire')">{{ formatDate(detailData.expire) }}</el-descriptions-item>
+          <el-descriptions-item :label="t('dept.createTime')">{{ formatDate(detailData.createTime) }}</el-descriptions-item>
+          <el-descriptions-item :label="t('common.updateTime')">{{ formatDate(detailData.updateTime) }}</el-descriptions-item>
+          <el-descriptions-item :label="t('token.createIP')">{{ detailData.createIP }}</el-descriptions-item>
+          <el-descriptions-item :label="t('token.updateIP')">{{ detailData.updateIP }}</el-descriptions-item>
+          <el-descriptions-item :label="t('token.description')" :span="2">{{ detailData.remark }}</el-descriptions-item>
         </el-descriptions>
       </div>
 
       <template #footer>
-        <el-button @click="detailVisible = false">关闭</el-button>
+        <el-button @click="detailVisible = false">{{ t('token.close') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -195,6 +195,7 @@
 <script setup lang="ts">
 
 import { ref, reactive, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Plus } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
@@ -204,6 +205,8 @@ import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListTo
 import CubeListPager from '@newlifex/cube-vue/core/components/CubeListPager.vue';
 import { pageInfoDefault } from '@newlifex/cube-vue/core/types/common';
 import type { BaseEntity } from '@newlifex/cube-vue/core/types/common';
+
+const { t } = useI18n();
 
 // 用户令牌类型接口，继承 BaseEntity
 interface UserToken extends BaseEntity {
@@ -261,13 +264,13 @@ const tokenTypeOptions = [
 // 表单验证规则
 const formRules: FormRules = {
   userId: [
-    { required: true, message: '请输入用户ID', trigger: 'blur' }
+    { required: true, message: t('form.placeholder', { field: t('token.userId') }), trigger: 'blur' }
   ],
   tokenType: [
-    { required: true, message: '请选择令牌类型', trigger: 'change' }
+    { required: true, message: t('form.select.placeholder', { field: t('token.type') }), trigger: 'change' }
   ],
   accessToken: [
-    { required: true, message: '请输入访问令牌', trigger: 'blur' }
+    { required: true, message: t('form.placeholder', { field: t('token.accessToken') }), trigger: 'blur' }
   ]
 };
 
@@ -324,8 +327,8 @@ const handleDetail = async (row: UserToken) => {
     detailData.value = tokenData || row;
     detailVisible.value = true;
   } catch (error) {
-    ElMessage.error('获取详情失败');
-    console.error('获取令牌详情失败:', error);
+    ElMessage.error(t('token.detailFailed'));
+    console.error(t('token.detailLoadFailed'), error);
   }
 };
 
@@ -356,7 +359,7 @@ const handleDelete = (row: UserToken) => {
   handleDeleteOperation(
     () => request.delete(`/Admin/UserToken/${row.id}`),
     loadUserTokenData,
-    '确认删除该令牌吗？'
+    t('token.deleteConfirm')
   );
 };
 
