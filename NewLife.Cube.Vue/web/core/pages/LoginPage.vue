@@ -72,7 +72,7 @@
             data-tab="Login"
             @click="switchTab('login')"
           >
-            登 录
+            {{ t('login.tabLogin') }}
           </button>
           <button
             v-if="showRegister"
@@ -82,28 +82,29 @@
             data-tab="Register"
             @click="switchTab('register')"
           >
-            注 册
+            {{ t('login.tabRegister') }}
           </button>
         </div>
 
         <!-- 注册成功待激活提示（开启邮箱/手机验证时注册后进入） -->
         <div v-if="pendingActivation" class="pending-card">
           <div class="pending-icon">✉</div>
-          <div class="pending-title">注册成功，请激活账号</div>
+          <div class="pending-title">{{ t('login.pendingTitle') }}</div>
           <div class="pending-desc">
-            激活{{ pendingActivation.channels?.includes('mail') ? '邮件' : '短信' }}已发送至
-            <strong>{{ pendingActivation.targets?.join('、') }}</strong>
-            ，请查收并完成激活。激活前无法登录。
+            {{ t('login.pendingDesc', {
+              channel: pendingActivation.channels?.includes('mail') ? t('login.channelMail') : t('login.channelSms'),
+              targets: pendingActivation.targets?.join(', ') ?? '',
+            }) }}
           </div>
           <div class="pending-actions">
-            <button type="button" class="login-btn pending-btn" @click="backToLogin">返回登录</button>
+            <button type="button" class="login-btn pending-btn" @click="backToLogin">{{ t('login.backToLogin') }}</button>
             <button
               v-if="pendingActivation.targets?.length"
               type="button"
               class="link-btn"
               @click="resendPending"
             >
-              重新发送
+              {{ t('login.resend') }}
             </button>
           </div>
         </div>
@@ -120,15 +121,15 @@
 
           <!-- 未激活账号：重发激活入口 -->
           <div v-if="notActivated" class="resend-row">
-            <span class="resend-text">账号未激活，请先激活后再登录</span>
-            <a class="resend-link" @click="openResend">重新发送激活</a>
+            <span class="resend-text">{{ t('login.notActivated') }}</span>
+            <a class="resend-link" @click="openResend">{{ t('login.resendActivation') }}</a>
           </div>
 
           <!-- OAuth 第三方登录入口 -->
           <div v-if="oauthProviders.length > 0" class="oauth-section">
             <div v-if="showPasswordForm" class="oauth-divider">
               <div class="divider-line"></div>
-              <span class="divider-text">其他登录方式</span>
+              <span class="divider-text">{{ t('login.otherMethods') }}</span>
               <div class="divider-line"></div>
             </div>
             <div class="oauth-buttons">
@@ -184,6 +185,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { getConfig } from '../configure';
 import { setAccessToken, setRefreshToken } from '../utils/token';
@@ -204,6 +206,7 @@ import type { LoginConfig, LoginResult, OAuthProvider, SiteConfig } from '@newli
 const route = useRoute();
 const router = useRouter();
 const config = getConfig();
+const { t } = useI18n();
 
 /** 租户标识：登录链接可通过 ?tenant={id|code|name} 指定，未指定时由服务端按当前上下文解析 */
 const tenant = computed<string | undefined>(() => {
@@ -248,7 +251,7 @@ const oauthProviders = computed<OAuthProvider[]>(() => {
 
 /** 系统名称 */
 const systemName = computed<string>(() => {
-  return siteConfig.value?.name || '魔方系统';
+  return siteConfig.value?.name || t('login.defaultSystemName');
 });
 
 /** 登录页 Logo 地址 */
@@ -336,7 +339,7 @@ async function handleLogin(payload: { username: string; password: string }): Pro
       if (res.data.refreshToken) {
         setRefreshToken(res.data.refreshToken);
       }
-      ElMessage.success('登录成功，正在跳转...');
+      ElMessage.success(t('login.loginSuccess'));
       const redirect = (route.query.redirect as string) || '/';
       router.push(redirect);
     } else {
@@ -345,10 +348,10 @@ async function handleLogin(payload: { username: string; password: string }): Pro
         notActivated.value = true;
         notActivatedAccount.value = payload.username;
       }
-      ElMessage.error(res.message || '登录失败，请检查用户名和密码');
+      ElMessage.error(res.message || t('login.loginFailed'));
     }
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : '网络错误，请稍后重试';
+    const message = err instanceof Error ? err.message : t('login.networkError');
     ElMessage.error(message);
   } finally {
     submitting.value = false;
@@ -413,18 +416,18 @@ async function handleRegister(payload: {
         if (res.data.refreshToken) {
           setRefreshToken(res.data.refreshToken);
         }
-        ElMessage.success('注册成功，正在跳转...');
+        ElMessage.success(t('login.registerSuccessRedirect'));
         const redirect = (route.query.redirect as string) || '/';
         router.push(redirect);
       } else {
-        ElMessage.success(res.message || '注册成功');
+        ElMessage.success(res.message || t('login.registerSuccess'));
         activeTab.value = 'login';
       }
     } else {
-      ElMessage.error(res.message || '注册失败，请稍后重试');
+      ElMessage.error(res.message || t('login.registerFailed'));
     }
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : '网络错误，请稍后重试';
+    const message = err instanceof Error ? err.message : t('login.networkError');
     ElMessage.error(message);
   } finally {
     submitting.value = false;
@@ -438,12 +441,12 @@ async function handleSendCode(channel: 'mail' | 'sms', account: string): Promise
   try {
     const res = await sendCode(channel === 'mail' ? 'Mail' : 'Sms', account, 'register');
     if (res.code === 0) {
-      ElMessage.success('验证码已发送，请查收');
+      ElMessage.success(t('security.codeSent'));
     } else {
-      ElMessage.error(res.message || '验证码发送失败');
+      ElMessage.error(res.message || t('security.codeSendFailed'));
     }
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : '验证码发送失败';
+    const message = err instanceof Error ? err.message : t('security.codeSendFailed');
     ElMessage.error(message);
   }
 }
@@ -454,14 +457,14 @@ async function handleSendCode(channel: 'mail' | 'sms', account: string): Promise
 async function openResend(): Promise<void> {
   try {
     const { value } = await ElMessageBox.prompt(
-      '请输入注册时填写的邮箱或手机号',
-      '重新发送激活',
+      t('login.resendPrompt'),
+      t('login.resendActivation'),
       {
         inputValue: notActivatedAccount.value || '',
         inputPattern: /^([\w.+-]+@[\w-]+(\.[\w-]+)+|1[3-9]\d{9})$/,
-        inputErrorMessage: '请输入正确的邮箱或手机号',
-        confirmButtonText: '发送',
-        cancelButtonText: '取消',
+        inputErrorMessage: t('login.resendPromptInvalid'),
+        confirmButtonText: t('login.send'),
+        cancelButtonText: t('button.cancel'),
       },
     );
     if (value) {
@@ -485,12 +488,12 @@ async function doResend(channel: 'mail' | 'sms', account: string): Promise<void>
   try {
     const res = await sendActivateCode(channel === 'mail' ? 'Mail' : 'Sms', account);
     if (res.code === 0) {
-      ElMessage.success(res.message || '激活邮件/短信已重新发送，请查收');
+      ElMessage.success(res.message || t('login.activationResent'));
     } else {
-      ElMessage.error(res.message || '重新发送失败');
+      ElMessage.error(res.message || t('login.resendFailed'));
     }
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : '重新发送失败';
+    const message = err instanceof Error ? err.message : t('login.resendFailed');
     ElMessage.error(message);
   }
 }
@@ -797,11 +800,11 @@ onMounted(async () => {
         return;
       }
     } else {
-      configError.value = res.message || '获取登录配置失败';
+      configError.value = res.message || t('login.configLoadFailed');
     }
   } else {
     const reason = loginResult.reason;
-    configError.value = reason instanceof Error ? reason.message : '获取登录配置失败';
+    configError.value = reason instanceof Error ? reason.message : t('login.configLoadFailed');
   }
 
   loading.value = false;
