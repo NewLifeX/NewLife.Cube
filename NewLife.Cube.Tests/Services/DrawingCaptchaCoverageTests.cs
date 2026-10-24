@@ -7,10 +7,10 @@ using NewLife.Cube.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace XUnitTest;
+namespace NewLife.Cube.Tests.Services;
 
-/// <summary>SkiaCaptchaService 图片验证码服务单元测试</summary>
-public class SkiaCaptchaTests
+/// <summary>图片验证码服务补充测试：PNG 输出、防重放与默认注册</summary>
+public class DrawingCaptchaCoverageTests
 {
     #region 辅助
 
