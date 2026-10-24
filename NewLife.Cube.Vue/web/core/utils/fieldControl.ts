@@ -193,6 +193,10 @@ export function resolveSearchControl(field: FieldMeta): SearchControlType {
 export function resolveListControl(field: FieldMeta): ListControlType {
   const itemType = normalizeItemType(field);
 
+  // 带后缀的附件类型（image-jpg / file-zip 等）与 MVC `IsAttachment` 同口径
+  if (itemType.startsWith('image')) return 'image';
+  if (itemType.startsWith('file')) return 'file';
+
   // ItemType 优先
   switch (itemType) {
     case 'image':

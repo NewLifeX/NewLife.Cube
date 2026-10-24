@@ -254,6 +254,16 @@ describe('resolveListControl（列表渲染控件）', () => {
     expect(resolveListControl(f({ name: 'F', typeName: 'String', itemType: 'file' }))).toBe('file');
   });
 
+  it('image-*/file-* 前缀同样识别为图片/附件', () => {
+    expect(resolveListControl(f({ name: 'I', typeName: 'String', itemType: 'image-jpg' }))).toBe('image');
+    expect(resolveListControl(f({ name: 'F', typeName: 'String', itemType: 'file-zip' }))).toBe('file');
+  });
+
+  it('password/textarea 等文本类别名在列表按文本呈现', () => {
+    expect(resolveListControl(f({ name: 'P', typeName: 'String', itemType: 'password' }))).toBe('text');
+    expect(resolveListControl(f({ name: 'T', typeName: 'String', itemType: 'textarea' }))).toBe('text');
+  });
+
   it('color → color', () => {
     expect(resolveListControl(f({ name: 'C', typeName: 'String', itemType: 'color' }))).toBe('color');
   });
