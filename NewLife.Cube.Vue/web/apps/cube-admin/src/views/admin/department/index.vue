@@ -3,8 +3,8 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>部门管理</h3>
-          <el-button type="primary" @click="handleAdd">新增部门</el-button>
+          <h3>{{ t('dept.title') }}</h3>
+          <el-button type="primary" @click="handleAdd">{{ t('dept.add') }}</el-button>
         </div>
       </template>
 
@@ -24,80 +24,80 @@
         :tree-props="{ children: 'children' }"
         :show-header="true"
         :highlight-current-row="true">
-        <el-table-column prop="name" label="部门名称" min-width="140" show-overflow-tooltip />
-        <el-table-column prop="code" label="部门代码" width="110" show-overflow-tooltip />
-        <el-table-column label="部门全名" min-width="160" show-overflow-tooltip>
+        <el-table-column prop="name" :label="t('dept.name')" min-width="140" show-overflow-tooltip />
+        <el-table-column prop="code" :label="t('dept.code')" width="110" show-overflow-tooltip />
+        <el-table-column :label="t('dept.fullName')" min-width="160" show-overflow-tooltip>
           <template #default="scope">
             {{ scope.row.fullName || '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="上级部门" min-width="110" show-overflow-tooltip>
+        <el-table-column :label="t('dept.parent')" min-width="110" show-overflow-tooltip>
           <template #default="scope">
             {{ scope.row.parentName || '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="部门路径" min-width="180" show-overflow-tooltip>
+        <el-table-column :label="t('dept.path')" min-width="180" show-overflow-tooltip>
           <template #default="scope">
             {{ scope.row.path || '-' }}
           </template>
         </el-table-column>
-        <el-table-column prop="level" label="层级" width="60" align="center" />
-        <el-table-column prop="sort" label="排序" width="60" align="center" />
-        <el-table-column label="启用" width="70" align="center">
+        <el-table-column prop="level" :label="t('dept.level')" width="60" align="center" />
+        <el-table-column prop="sort" :label="t('common.sort')" width="60" align="center" />
+        <el-table-column :label="t('common.enable')" width="70" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.enable ? 'success' : 'danger'" size="small">
-              {{ scope.row.enable ? '是' : '否' }}
+              {{ scope.row.enable ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="可见" width="70" align="center">
+        <el-table-column :label="t('dept.visible')" width="70" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.visible ? 'success' : 'danger'" size="small">
-              {{ scope.row.visible ? '是' : '否' }}
+              {{ scope.row.visible ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="管理者" width="90" show-overflow-tooltip>
+        <el-table-column :label="t('dept.manager')" width="90" show-overflow-tooltip>
           <template #default="scope">
             {{ scope.row.managerName || '-' }}
           </template>
         </el-table-column>
-        <el-table-column prop="createUser" label="创建者" width="90" show-overflow-tooltip />
-        <el-table-column prop="createTime" label="创建时间" width="150" show-overflow-tooltip />
-        <el-table-column label="备注" min-width="120" show-overflow-tooltip>
+        <el-table-column prop="createUser" :label="t('dept.createUser')" width="90" show-overflow-tooltip />
+        <el-table-column prop="createTime" :label="t('dept.createTime')" width="150" show-overflow-tooltip />
+        <el-table-column :label="t('common.remark')" min-width="120" show-overflow-tooltip>
           <template #default="scope">
             {{ scope.row.remark || '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="150" fixed="right" align="center">
+        <el-table-column :label="t('common.actions')" width="150" fixed="right" align="center">
           <template #default="scope">
-            <el-button type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button type="danger" size="small" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button type="primary" size="small" @click="handleEdit(scope.row)">{{ t('button.edit') }}</el-button>
+            <el-button type="danger" size="small" @click="handleDelete(scope.row)">{{ t('button.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
 
       <!-- 显示统计信息 -->
       <div class="table-footer">
-        <span>共 {{ total }} 个部门</span>
+        <span>{{ t('dept.total', { count: total }) }}</span>
       </div>
     </el-card>
 
     <!-- 部门表单对话框 -->
-    <el-dialog v-model="dialogVisible" :title="formType === 'add' ? '新增部门' : '编辑部门'" width="600px">
+    <el-dialog v-model="dialogVisible" :title="formType === 'add' ? t('dept.add') : t('dept.edit')" width="600px">
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
-        <el-form-item label="部门名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入部门名称" />
+        <el-form-item :label="t('dept.name')" prop="name">
+          <el-input v-model="form.name" :placeholder="t('form.placeholder', { field: t('dept.name') })" />
         </el-form-item>
-        <el-form-item label="部门代码" prop="code">
-          <el-input v-model="form.code" placeholder="请输入部门代码" />
+        <el-form-item :label="t('dept.code')" prop="code">
+          <el-input v-model="form.code" :placeholder="t('form.placeholder', { field: t('dept.code') })" />
         </el-form-item>
-        <el-form-item label="部门全名" prop="fullName">
-          <el-input v-model="form.fullName" placeholder="请输入部门全名" />
+        <el-form-item :label="t('dept.fullName')" prop="fullName">
+          <el-input v-model="form.fullName" :placeholder="t('form.placeholder', { field: t('dept.fullName') })" />
         </el-form-item>
-        <el-form-item label="上级部门" prop="parentID">
-          <el-select v-model="form.parentID" placeholder="请选择上级部门" clearable filterable>
-            <el-option label="无上级" :value="0" />
+        <el-form-item :label="t('dept.parent')" prop="parentID">
+          <el-select v-model="form.parentID" :placeholder="t('form.select.placeholder', { field: t('dept.parent') })" clearable filterable>
+            <el-option :label="t('dept.noParent')" :value="0" />
             <el-option
               v-for="dept in departmentOptions"
               :key="dept.id"
@@ -106,34 +106,34 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="排序" prop="sort">
-          <el-input-number v-model="form.sort" :min="0" placeholder="同级内排序" />
+        <el-form-item :label="t('common.sort')" prop="sort">
+          <el-input-number v-model="form.sort" :min="0" :placeholder="t('dept.sortInLevel')" />
         </el-form-item>
-        <el-form-item label="管理者" prop="managerId">
-          <el-select v-model="form.managerId" placeholder="请选择管理者" clearable filterable>
-            <el-option label="无管理者" :value="0" />
+        <el-form-item :label="t('dept.manager')" prop="managerId">
+          <el-select v-model="form.managerId" :placeholder="t('form.select.placeholder', { field: t('dept.manager') })" clearable filterable>
+            <el-option :label="t('dept.noManager')" :value="0" />
             <!-- 这里需要用户列表，暂时留空 -->
           </el-select>
         </el-form-item>
-        <el-form-item label="当前路径" v-if="formType === 'edit'">
+        <el-form-item :label="t('dept.currentPath')" v-if="formType === 'edit'">
           <el-input :value="form.path" readonly />
         </el-form-item>
-        <el-form-item label="创建信息" v-if="formType === 'edit'">
+        <el-form-item :label="t('dept.createInfo')" v-if="formType === 'edit'">
           <el-input :value="`${form.createUser} (${form.createTime})`" readonly />
         </el-form-item>
-        <el-form-item label="启用状态" prop="enable">
+        <el-form-item :label="t('common.enable')" prop="enable">
           <el-switch v-model="form.enable" :active-value="true" :inactive-value="false" />
         </el-form-item>
-        <el-form-item label="可见状态" prop="visible">
+        <el-form-item :label="t('dept.visible')" prop="visible">
           <el-switch v-model="form.visible" :active-value="true" :inactive-value="false" />
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" type="textarea" placeholder="请输入备注" />
+        <el-form-item :label="t('common.remark')" prop="remark">
+          <el-input v-model="form.remark" type="textarea" :placeholder="t('form.placeholder', { field: t('common.remark') })" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">确定</el-button>
+        <el-button @click="dialogVisible = false">{{ t('button.cancel') }}</el-button>
+        <el-button type="primary" @click="submitForm">{{ t('button.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -141,11 +141,14 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { FormInstance, FormRules } from 'element-plus';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 import { apiDataToList, handleDeleteOperation, handleFormSubmit } from '@newlifex/cube-vue/core/utils/api-helpers';
 import CubeListToolbarSearch from '@newlifex/cube-vue/core/components/CubeListToolbarSearch.vue';
 import type { BaseEntity } from '@newlifex/cube-vue/core/types/common';
+
+const { t } = useI18n();
 
 // 定义部门类型接口
 interface Department extends BaseEntity {
@@ -232,10 +235,10 @@ const form = reactive<Department>({
 // 表单验证规则
 const formRules = reactive<FormRules>({
   name: [
-    { required: true, message: '请输入部门名称', trigger: 'blur' }
+    { required: true, message: t('form.placeholder', { field: t('dept.name') }), trigger: 'blur' }
   ],
   code: [
-    { required: true, message: '请输入部门代码', trigger: 'blur' }
+    { required: true, message: t('form.placeholder', { field: t('dept.code') }), trigger: 'blur' }
   ]
 });
 
@@ -358,7 +361,7 @@ const loadData = async () => {
     // 同时保存平铺的数据用于部门选项（排除当前编辑的部门）
     departmentOptions.value = dataList.filter((item) => item.id !== form.id);
   } catch (error) {
-    console.error('加载部门数据失败:', error);
+    console.error(t('dept.loadFailed'), error);
     tableData.value = [];
     departmentOptions.value = [];
     total.value = 0;
@@ -420,7 +423,7 @@ const handleDelete = (row: Department) => {
   handleDeleteOperation(
     () => request.delete(`/Admin/Department/${row.id}`),
     loadData,
-    '确认删除该部门吗？'
+    t('dept.deleteConfirm')
   );
 };
 
