@@ -1,19 +1,25 @@
 import type { ConfigRoute } from '../typings';
+import i18n from '../i18n';
+
+/** 路由标题跟随语言：用 getter，读 meta.title 时才取当前 locale 的文案 */
+const titleOf = (key: string) => ({
+  get title() {
+    return i18n.global.t(key);
+  },
+});
 
 const routes: ConfigRoute[] = [
   {
     path: '/',
     name: 'home',
-    meta: {
-      title: '首页',
-    },
+    meta: titleOf('route.home'),
     component: () => import('../pages/PageHome.vue'),
   },
   {
     path: '/login',
     name: 'login',
     meta: {
-      title: '登录',
+      ...titleOf('route.login'),
       auth: false,
       layout: false,
     },
@@ -23,7 +29,7 @@ const routes: ConfigRoute[] = [
     path: '/activate',
     name: 'activate',
     meta: {
-      title: '账号激活',
+      ...titleOf('route.activate'),
       auth: false,
       layout: false,
     },
@@ -33,7 +39,7 @@ const routes: ConfigRoute[] = [
     path: '/profile/security',
     name: 'profile-security',
     meta: {
-      title: '安全中心',
+      ...titleOf('route.security'),
       auth: true,
     },
     component: () => import('../pages/ProfileSecurity.vue'),
@@ -42,7 +48,7 @@ const routes: ConfigRoute[] = [
     path: '/unauthorized',
     name: 'unauthorized',
     meta: {
-      title: '未授权',
+      ...titleOf('route.unauthorized'),
       layout: false,
       auth: false,
     },
@@ -53,7 +59,7 @@ const routes: ConfigRoute[] = [
     name: 'Loading',
     component: () => import('../views/Loading.vue'),
     meta: {
-      title: '加载中',
+      ...titleOf('route.loading'),
       layout: false,
       auth: false, // 不需要认证
     },
@@ -63,7 +69,7 @@ const routes: ConfigRoute[] = [
     name: 'DefaultEntity',
     component: () => import('../pages/DefaultEntity.vue'),
     meta: {
-      title: '默认页面',
+      ...titleOf('route.default'),
       auth: true,
     },
   },

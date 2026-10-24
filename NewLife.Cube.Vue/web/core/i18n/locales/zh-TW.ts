@@ -398,6 +398,15 @@ export default {
   'lov.selectedCount': '已選 {count}',
   'lov.itemCount': '{count} 項',
 
+  // 路由標題
+  'route.home': '首頁',
+  'route.login': '登入',
+  'route.activate': '帳號啟用',
+  'route.security': '安全中心',
+  'route.unauthorized': '未授權',
+  'route.loading': '載入中',
+  'route.default': '預設頁面',
+
   // 安全中心
   'security.title': '安全中心',
   'security.mail': '電子郵件',

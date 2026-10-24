@@ -413,6 +413,15 @@ export default {
   'lov.selectedCount': '已选 {count}',
   'lov.itemCount': '{count} 项',
 
+  // 路由标题
+  'route.home': '首页',
+  'route.login': '登录',
+  'route.activate': '账号激活',
+  'route.security': '安全中心',
+  'route.unauthorized': '未授权',
+  'route.loading': '加载中',
+  'route.default': '默认页面',
+
   // 安全中心
   'security.title': '安全中心',
   'security.mail': '邮箱',

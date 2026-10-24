@@ -415,6 +415,15 @@ export default {
   'lov.selectedCount': 'Selected {count}',
   'lov.itemCount': '{count} item(s)',
 
+  // Route titles
+  'route.home': 'Home',
+  'route.login': 'Sign in',
+  'route.activate': 'Account activation',
+  'route.security': 'Security center',
+  'route.unauthorized': 'Unauthorized',
+  'route.loading': 'Loading',
+  'route.default': 'Default page',
+
   // Security center
   'security.title': 'Security center',
   'security.mail': 'Email',
