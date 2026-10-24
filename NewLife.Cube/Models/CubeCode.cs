@@ -4,7 +4,8 @@ namespace NewLife.Cube.Models;
 
 /// <!-- Yann -->
 /// <summary>通用业务返回码/响应码定义：根据业务情况返回</summary>
-/// <remarks> 大于0的返回码均为业务码，可以由业务系统自定义 </remarks>
+/// <remarks> 大于0的返回码均为业务码，可以由业务系统自定义；正数码必须按分段约定分配（见《WebAPI接口规范》36.4.1），
+/// 1~999 为保留段（含与 ApiCode 重合的 400/401/403/404/429/500），业务从 1000 起按模块分段 </remarks>
 /// <returns> CODE : 0 表示成功；-1 表示通用错误，其他为特殊信息码；  </returns>
 public enum CubeCode
 {
