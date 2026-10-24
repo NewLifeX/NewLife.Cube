@@ -90,8 +90,6 @@
 
   <ItemGroup>
     <Compile Include="..\NewLife.Cube\Common\ApiFilterAttribute.cs" Link="Common\ApiFilterAttribute.cs" />
-    <Compile Include="..\NewLife.Cube\Common\AppControllerBase.cs" Link="Common\AppControllerBase.cs" />
-    <Compile Include="..\NewLife.Cube\Common\BaseController.cs" Link="Common\BaseController.cs" />
     <Compile Include="..\NewLife.Cube\Common\DataPermissionAttribute.cs" Link="Common\DataPermissionAttribute.cs" />
     <Compile Include="..\NewLife.Cube\Common\EntityController2.cs" Link="Common\EntityController2.cs" />
     <Compile Include="..\NewLife.Cube\Common\MembershipExtensions.cs" Link="Common\MembershipExtensions.cs" />
@@ -99,7 +97,6 @@
     <Compile Include="..\NewLife.Cube\Common\OAuthController.cs" Link="Common\OAuthController.cs" />
     <Compile Include="..\NewLife.Cube\Common\PageSetting.cs" Link="Common\PageSetting.cs" />
     <Compile Include="..\NewLife.Cube\Common\ReadOnlyEntityController2.cs" Link="Common\ReadOnlyEntityController2.cs" />
-    <Compile Include="..\NewLife.Cube\Common\ValidFormatHelper.cs" Link="Common\ValidFormatHelper.cs" />
     <Compile Include="..\NewLife.Cube\Common\EntityPageRegistry.cs" Link="Common\EntityPageRegistry.cs" />
     <Compile Include="..\NewLife.Cube\Common\ViewHelper.cs" Link="Common\ViewHelper.cs" />
     <Compile Include="..\NewLife.Cube\Common\RolePermissionHelper.cs" Link="Common\RolePermissionHelper.cs" />
@@ -113,8 +110,6 @@
     <Compile Include="..\NewLife.Cube\Entity\Models\AttachmentModel.cs" Link="Entity\Models\AttachmentModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\CronJobModel.cs" Link="Entity\Models\CronJobModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\MailConfigModel.cs" Link="Entity\Models\MailConfigModel.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\Models\ModelColumnModel.cs" Link="Entity\Models\ModelColumnModel.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\Models\ModelTableModel.cs" Link="Entity\Models\ModelTableModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\NotificationRecordModel.cs" Link="Entity\Models\NotificationRecordModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\OAuthConfigModel.cs" Link="Entity\Models\OAuthConfigModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\OAuthLogModel.cs" Link="Entity\Models\OAuthLogModel.cs" />
@@ -173,12 +168,9 @@
     <Compile Include="..\NewLife.Cube\Models\ImportContext.cs" Link="Models\ImportContext.cs" />
     <Compile Include="..\NewLife.Cube\Models\ServiceResult.cs" Link="Models\ServiceResult.cs" />
     <Compile Include="..\NewLife.Cube\Models\TokenInModel.cs" Link="Models\TokenInModel.cs" />
-    <Compile Include="..\NewLife.Cube\Models\VerifyCodeModel.cs" Link="Models\VerifyCodeModel.cs" />
-    <Compile Include="..\NewLife.Cube\Services\ICaptchaService.cs" Link="Services\ICaptchaService.cs" />
     <Compile Include="..\NewLife.Cube\Services\Auth\AuthCacheKeys.cs" Link="Services\Auth\AuthCacheKeys.cs" />
     <Compile Include="..\NewLife.Cube\Services\Auth\AuthHelper.cs" Link="Services\Auth\AuthHelper.cs" />
     <Compile Include="..\NewLife.Cube\Services\IMfaService.cs" Link="Services\IMfaService.cs" />
-    <Compile Include="..\NewLife.Cube\Services\DrawingCaptchaService.cs" Link="Services\DrawingCaptchaService.cs" />
     <Compile Include="..\NewLife.Cube\Services\TotpMfaService.cs" Link="Services\TotpMfaService.cs" />
     <Compile Include="..\NewLife.Cube\Services\IAttachmentStorage.cs" Link="Services\IAttachmentStorage.cs" />
     <Compile Include="..\NewLife.Cube\Services\LocalAttachmentStorage.cs" Link="Services\LocalAttachmentStorage.cs" />
@@ -228,28 +220,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Remove="wwwroot\**\*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Areas\Cube\Views\ModelTable\**" />
-    <Content Remove="Areas\Cube\Views\ModelTable\**" />
-    <EmbeddedResource Remove="Areas\Cube\Views\ModelTable\**" />
-    <None Remove="Areas\Cube\Views\ModelTable\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Areas\Cube\Controllers\ModelColumnController.cs" />
-    <Compile Remove="Areas\Cube\Controllers\ModelTableController.cs" />
-    <Compile Remove="Common\ApplicationManager.cs" />
-    <Compile Remove="Common\ITenantController.cs" />
-    <Compile Remove="Extensions\ItemsExtend.cs" />
-    <Compile Remove="Services\AliyunClient.cs" />
-    <Compile Remove="ViewModels\FieldModel.cs" />
-    <Compile Remove="WebMiddleware\TracerMiddleware.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Remove="Views\Shared\_List_Nav.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
