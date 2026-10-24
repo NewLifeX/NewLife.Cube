@@ -7,6 +7,7 @@
  * switch / fileExists 等控件（兼容旧版 `searchFields` 入参）。
  */
 import { ref, reactive, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ArrowDown, ArrowUp, Search } from '@element-plus/icons-vue';
 import LovSelect from '../../components/LovSelect/index.vue';
 import { resolveSearchControl } from '../../utils/fieldControl';
@@ -50,20 +51,22 @@ const emit = defineEmits<{
 
 const COLS = 4;
 
+const { t } = useI18n();
+
 const collapsed = ref(true);
 const formData = reactive<Record<string, unknown>>({});
 
-const switchOptions = [
-  { value: '', label: '全部' },
-  { value: 'true', label: '是' },
-  { value: 'false', label: '否' },
-];
+const switchOptions = computed(() => [
+  { value: '', label: t('search.all') },
+  { value: 'true', label: t('common.yes') },
+  { value: 'false', label: t('common.no') },
+]);
 
-const fileExistsOptions = [
-  { value: '', label: '全部' },
-  { value: 'true', label: '有' },
-  { value: 'false', label: '无' },
-];
+const fileExistsOptions = computed(() => [
+  { value: '', label: t('search.all') },
+  { value: 'true', label: t('search.exists') },
+  { value: 'false', label: t('search.none') },
+]);
 
 /** 搜索字段（优先 fields，回退 legacy searchFields） */
 const renderFields = computed<InternalField[]>(() => {
@@ -154,7 +157,7 @@ function toggleCollapse() {
             <el-input
               v-if="field.searchType === 'text'"
               v-model="formData[field.key] as string"
-              :placeholder="`请输入${field.label}`"
+              :placeholder="t('form.placeholder', { field: field.label })"
               clearable
               class="lsb-input"
               @keyup.enter="handleSearch"
@@ -164,14 +167,14 @@ function toggleCollapse() {
             <div v-else-if="field.searchType === 'numberRange'" class="lsb-range">
               <el-input-number
                 v-model="formData[`${field.key}_min`] as number"
-                placeholder="最小值"
+                :placeholder="t('search.min')"
                 :controls="false"
                 class="lsb-range-num"
               />
               <span class="lsb-range-sep">~</span>
               <el-input-number
                 v-model="formData[`${field.key}_max`] as number"
-                placeholder="最大值"
+                :placeholder="t('search.max')"
                 :controls="false"
                 class="lsb-range-num"
               />
@@ -183,8 +186,8 @@ function toggleCollapse() {
               v-model="formData[field.key] as [string, string] | null"
               type="daterange"
               range-separator="~"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
+              :start-placeholder="t('search.startDate')"
+              :end-placeholder="t('search.endDate')"
               value-format="YYYY-MM-DD"
               class="lsb-input lsb-datepicker"
             />
@@ -195,8 +198,8 @@ function toggleCollapse() {
               v-model="formData[field.key] as [string, string] | null"
               type="datetimerange"
               range-separator="~"
-              start-placeholder="开始时间"
-              end-placeholder="结束时间"
+              :start-placeholder="t('search.startTime')"
+              :end-placeholder="t('search.endTime')"
               value-format="YYYY-MM-DDTHH:mm:ss"
               class="lsb-input lsb-datepicker"
             />
@@ -205,7 +208,7 @@ function toggleCollapse() {
             <div v-else-if="field.searchType === 'timeRange'" class="lsb-range">
               <el-time-picker
                 v-model="formData[`${field.key}_min`] as string"
-                placeholder="起"
+                :placeholder="t('search.from')"
                 format="HH:mm:ss"
                 value-format="HH:mm:ss"
                 class="lsb-range-num"
@@ -213,7 +216,7 @@ function toggleCollapse() {
               <span class="lsb-range-sep">~</span>
               <el-time-picker
                 v-model="formData[`${field.key}_max`] as string"
-                placeholder="止"
+                :placeholder="t('search.to')"
                 format="HH:mm:ss"
                 value-format="HH:mm:ss"
                 class="lsb-range-num"
@@ -225,7 +228,7 @@ function toggleCollapse() {
               v-else-if="field.searchType === 'lov' && field.field?.lovCode"
               :code="field.field.lovCode"
               v-model="formData[field.key] as string | number | undefined"
-              :placeholder="`请选择${field.label}`"
+              :placeholder="t('form.select.placeholder', { field: field.label })"
               class="lsb-input"
             />
 
@@ -235,7 +238,7 @@ function toggleCollapse() {
               :code="field.field.lovCode"
               :multiple="true"
               v-model="formData[field.key] as string[] | undefined"
-              :placeholder="`请选择${field.label}`"
+              :placeholder="t('form.select.placeholder', { field: field.label })"
               class="lsb-input"
             />
 
@@ -243,7 +246,7 @@ function toggleCollapse() {
             <el-select
               v-else-if="field.searchType === 'switch'"
               v-model="formData[field.key] as string | undefined"
-              :placeholder="`请选择`"
+              :placeholder="t('form.selectAny')"
               clearable
               class="lsb-input"
             >
@@ -259,7 +262,7 @@ function toggleCollapse() {
             <el-select
               v-else-if="field.searchType === 'fileExists'"
               v-model="formData[field.key] as string | undefined"
-              :placeholder="`请选择`"
+              :placeholder="t('form.selectAny')"
               clearable
               class="lsb-input"
             >
@@ -275,7 +278,7 @@ function toggleCollapse() {
             <el-select
               v-else-if="field.legacyOptions"
               v-model="formData[field.key] as string | number | undefined"
-              :placeholder="`请选择`"
+              :placeholder="t('form.selectAny')"
               clearable
               class="lsb-input"
             >
@@ -292,11 +295,11 @@ function toggleCollapse() {
       <div class="lsb-actions">
         <el-button v-if="hasMore" class="lsb-btn lsb-btn--ghost" @click="toggleCollapse">
           <el-icon><ArrowUp v-if="!collapsed" /><ArrowDown v-else /></el-icon>
-          {{ collapsed ? '更多' : '收起' }}
+          {{ collapsed ? t('search.more') : t('search.less') }}
         </el-button>
-        <el-button class="lsb-btn lsb-btn--secondary" @click="handleReset">重置</el-button>
+        <el-button class="lsb-btn lsb-btn--secondary" @click="handleReset">{{ t('button.reset') }}</el-button>
         <el-button type="primary" class="lsb-btn lsb-btn--primary" @click="handleSearch">
-          <el-icon><Search /></el-icon>查询
+          <el-icon><Search /></el-icon>{{ t('search.query') }}
         </el-button>
       </div>
     </div>

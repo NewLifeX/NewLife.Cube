@@ -39,6 +39,23 @@ export default {
   'form.invalidMail': 'Please enter a valid email address',
   'form.invalidMobile': 'Please enter a valid mobile number',
   'form.passwordMismatch': 'The two passwords do not match',
+  'form.selectAny': 'Please select',
+
+  // 列表搜索栏
+  'search.all': 'All',
+  'search.exists': 'Has',
+  'search.none': 'None',
+  'search.min': 'Min',
+  'search.max': 'Max',
+  'search.startDate': 'Start date',
+  'search.endDate': 'End date',
+  'search.startTime': 'Start time',
+  'search.endTime': 'End time',
+  'search.from': 'From',
+  'search.to': 'To',
+  'search.more': 'More',
+  'search.less': 'Less',
+  'search.query': 'Query',
 
   // Authentication
   'auth.login': 'Login',

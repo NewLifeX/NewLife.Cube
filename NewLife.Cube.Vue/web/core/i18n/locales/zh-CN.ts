@@ -38,6 +38,23 @@ export default {
   'form.invalidMail': '请输入正确的邮箱地址',
   'form.invalidMobile': '请输入正确的手机号',
   'form.passwordMismatch': '两次输入的密码不一致',
+  'form.selectAny': '请选择',
+
+  // 列表搜索栏
+  'search.all': '全部',
+  'search.exists': '有',
+  'search.none': '无',
+  'search.min': '最小值',
+  'search.max': '最大值',
+  'search.startDate': '开始日期',
+  'search.endDate': '结束日期',
+  'search.startTime': '开始时间',
+  'search.endTime': '结束时间',
+  'search.from': '起',
+  'search.to': '止',
+  'search.more': '更多',
+  'search.less': '收起',
+  'search.query': '查询',
 
   // 认证
   'auth.login': '登录',
