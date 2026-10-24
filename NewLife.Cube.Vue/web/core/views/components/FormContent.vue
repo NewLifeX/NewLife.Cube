@@ -142,6 +142,16 @@ function getValue(key: string): unknown {
   return props.modelValue?.[resolveKey(key)];
 }
 
+/** 模板内类型收窄：不在模板里写 `as A | B`（竖线会被 vue/no-deprecated-filter 误判为过滤器） */
+function asScalar(val: unknown): string | number | undefined {
+  return val as string | number | undefined;
+}
+
+/** 地区级联的取值类型收窄 */
+function asAreaValue(val: unknown): number | string | null {
+  return val as number | string | null;
+}
+
 function toNumber(val: unknown): number | undefined {
   if (val === null || val === undefined || val === '') return undefined;
   const n = Number(val);
@@ -250,7 +260,7 @@ function toMultiArray(val: unknown): string[] {
             v-else-if="controlOf(field) === 'select'"
             class="fmc-select"
             :placeholder="field.description || '请选择'"
-            :model-value="getValue(field.name) as string | number | undefined"
+            :model-value="asScalar(getValue(field.name))"
             @update:model-value="(v: string | number) => updateField(field.name, v)"
           >
             <el-option
@@ -298,7 +308,7 @@ function toMultiArray(val: unknown): string[] {
           <!-- 地区级联（ItemType=area1~4） -->
           <AreaSelect
             v-else-if="controlOf(field) === 'area'"
-            :model-value="getValue(field.name) as number | string | null"
+            :model-value="asAreaValue(getValue(field.name))"
             :level="areaLevel(field)"
             :disabled="props.disabled"
             :placeholder="field.description || '请选择地区'"
