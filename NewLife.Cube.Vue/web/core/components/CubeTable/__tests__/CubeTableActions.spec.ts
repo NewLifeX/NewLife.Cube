@@ -19,6 +19,7 @@ import ElementPlus from 'element-plus';
 import CubeTableActions from '../CubeTableActions.vue';
 import { makeFakeActions, makeFakeCtx } from './fakeCtx';
 import type { BackendToolbarItem, PageSetting } from '../../../engine/types';
+import { testI18n } from '../../../__tests__/helpers/i18n';
 
 interface MountOptions {
   setting?: PageSetting;
@@ -35,7 +36,7 @@ async function mountActions(options: MountOptions = {}) {
   const wrapper = mount(CubeTableActions, {
     props: { ctx, actions, flags: options.flags ?? {} },
     slots: options.slots ?? {},
-    global: { plugins: [ElementPlus] },
+    global: { plugins: [ElementPlus, testI18n] },
   });
   await nextTick();
   return { wrapper, ctx, actions };
@@ -48,7 +49,7 @@ describe('CubeTableActions 按钮显隐', () => {
   it('应该默认给添加/导入/导出，不给下载模板 当后端没表明确时', async () => {
     const { wrapper } = await mountActions();
     const text = wrapper.text();
-    expect(text).toContain('添加');
+    expect(text).toContain('新增');
     expect(text).toContain('批量删除');
     expect(text).toContain('导入');
     expect(text).toContain('导出');
@@ -58,7 +59,7 @@ describe('CubeTableActions 按钮显隐', () => {
 
   it('应该跟随后端 enableAdd 关添加 当控制器声明不可新增时', async () => {
     const { wrapper } = await mountActions({ setting: { enableAdd: false } });
-    expect(wrapper.text()).not.toContain('添加');
+    expect(wrapper.text()).not.toContain('新增');
   });
 
   it('应该让页面意图盖过后端开关 当页面显式打开时', async () => {
@@ -66,14 +67,14 @@ describe('CubeTableActions 按钮显隐', () => {
       setting: { enableAdd: false, enableSelect: false },
       flags: { add: true, batchDelete: true },
     });
-    expect(wrapper.text()).toContain('添加');
+    expect(wrapper.text()).toContain('新增');
     expect(wrapper.text()).toContain('批量删除');
   });
 
   it('应该在整页只读时收掉全部写入口 当后端 isReadOnly 时', async () => {
     const { wrapper } = await mountActions({ setting: { isReadOnly: true } });
     const text = wrapper.text();
-    expect(text).not.toContain('添加');
+    expect(text).not.toContain('新增');
     expect(text).not.toContain('批量删除');
     expect(text).not.toContain('导入');
     // 查询类动作不受只读影响
@@ -102,7 +103,7 @@ describe('CubeTableActions 动作', () => {
     const { wrapper, ctx } = await mountActions();
     const openCreate = vi.fn();
     ctx.openCreate = openCreate;
-    await buttonByText(wrapper, '添加').trigger('click');
+    await buttonByText(wrapper, '新增').trigger('click');
     expect(openCreate).toHaveBeenCalled();
   });
 
@@ -158,7 +159,7 @@ describe('CubeTableActions 插槽', () => {
     const { wrapper } = await mountActions({ slots: { default: '<button class="biz">派工</button>' } });
     const buttons = wrapper.findAll('.cta-left button');
     const bizIndex = buttons.findIndex((b) => b.classes().includes('biz'));
-    const addIndex = buttons.findIndex((b) => b.text().includes('添加'));
+    const addIndex = buttons.findIndex((b) => b.text().includes('新增'));
     expect(bizIndex).toBeGreaterThanOrEqual(0);
     expect(bizIndex).toBeLessThan(addIndex);
   });
@@ -180,7 +181,7 @@ describe('CubeTableActions 后端声明的工具栏按钮', () => {
     const ctx = makeFakeCtx({ setting: {}, selected, toolbar: toolbarItems });
     const wrapper = mount(CubeTableActions, {
       props: { ctx, actions: makeFakeActions(), flags: {} },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
     });
     await nextTick();
     return wrapper;
@@ -261,7 +262,7 @@ describe('CubeTableActions 后端声明的工具栏按钮', () => {
     });
     const wrapper = mount(CubeTableActions, {
       props: { ctx, actions: makeFakeActions(), flags: {} },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
     });
     await nextTick();
 

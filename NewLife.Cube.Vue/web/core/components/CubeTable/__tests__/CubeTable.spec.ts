@@ -94,7 +94,7 @@ describe('CubeTable 五段结构', () => {
     expect(text).toContain('名称');
     expect(text).toContain('数量');
     expect(text).toContain('泵体');
-    expect(text).toContain('添加');
+    expect(text).toContain('新增');
     expect(text).toContain('共 123 条');
     expect(wrapper.findComponent({ name: 'ElPagination' }).exists()).toBe(true);
   });
@@ -253,7 +253,7 @@ describe('CubeTable 插槽转发', () => {
     expect(controls.find('.ex').exists()).toBe(true);
     expect(controls.find('.ctcs-trigger').exists()).toBe(true);
     // 内置按钮仍在
-    expect(wrapper.text()).toContain('添加');
+    expect(wrapper.text()).toContain('新增');
   });
 });
 

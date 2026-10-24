@@ -7,6 +7,7 @@
  * 一行都没有内容时整行不渲染，不留一条空白带。
  */
 import { computed, ref, useSlots, type Component } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import { Document, Download, Delete, Plus, Upload } from '@element-plus/icons-vue';
@@ -28,6 +29,7 @@ const props = withDefaults(
 );
 
 const slots = useSlots();
+const { t } = useI18n();
 const permissions = usePagePermissions(props.ctx);
 /** 隐藏的导入文件框（模板里 ref 会自动解包成元素本体传给 openFilePicker） */
 const fileInputRef = ref<HTMLInputElement | null>(null);
@@ -134,7 +136,7 @@ async function sendToolbarRequest(item: BackendToolbarItem, file?: File): Promis
 
   if (item.confirm) {
     try {
-      await ElMessageBox.confirm(item.confirm, '确认', { type: 'warning' });
+      await ElMessageBox.confirm(item.confirm, t('button.confirm'), { type: 'warning' });
     } catch {
       return;
     }
@@ -176,7 +178,7 @@ async function sendToolbarRequest(item: BackendToolbarItem, file?: File): Promis
     applyToolbarResult(res);
   } catch (err) {
     // 请求层已提示业务错误，这里兜底避免未捕获 rejection
-    console.error('[CubeTable] 工具栏动作失败:', err);
+    console.error('[CubeTable] toolbar action failed:', err);
   } finally {
     pending.value = null;
   }
@@ -237,7 +239,7 @@ function applyToolbarResult(res?: { message?: string; data?: Record<string, unkn
       />
 
       <el-button v-if="flags.add && !flags.readOnly" type="primary" :icon="Plus" @click="ctx.openCreate()">
-        添加
+        {{ t('button.add') }}
       </el-button>
 
       <template v-if="!flags.readOnly">
@@ -253,14 +255,14 @@ function applyToolbarResult(res?: { message?: string; data?: Record<string, unkn
           :icon="Document"
           @click="ctx.downloadTemplate()"
         >
-          下载模板
+          {{ t('grid.downloadTemplate') }}
         </el-button>
         <el-button v-if="flags.importFile" :icon="Upload" :loading="busy" @click="actions.openFilePicker(fileInputRef)">
-          导入
+          {{ t('grid.import') }}
         </el-button>
       </template>
 
-      <el-button v-if="flags.exportFile" :icon="Download" @click="actions.exportNow()">导出</el-button>
+      <el-button v-if="flags.exportFile" :icon="Download" @click="actions.exportNow()">{{ t('grid.export') }}</el-button>
 
       <el-button
         v-if="flags.batchDelete && !flags.readOnly"
@@ -270,7 +272,7 @@ function applyToolbarResult(res?: { message?: string; data?: Record<string, unkn
         :disabled="selectedCount === 0"
         @click="actions.removeSelectedRows()"
       >
-        批量删除<template v-if="selectedCount > 0">（{{ selectedCount }}）</template>
+        {{ selectedCount > 0 ? t('grid.batchDeleteCount', { count: selectedCount }) : t('grid.batchDelete') }}
       </el-button>
     </div>
 

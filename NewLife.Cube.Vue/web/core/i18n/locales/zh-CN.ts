@@ -27,6 +27,7 @@ export default {
   'button.reset': '重置',
   'button.back': '返回',
   'button.confirm': '确认',
+  'button.close': '关闭',
 
   // 表单
   'form.required': '必填项',
@@ -338,4 +339,23 @@ export default {
   'response.operationFailed': '操作失败',
   'response.networkErrorRetry': '网络请求失败，请稍后重试',
   'response.networkError': '网络请求失败',
+
+  // 列表表格
+  'grid.empty': '暂无数据',
+  'grid.viewFile': '查看文件',
+  'grid.more': '更多',
+  'grid.downloadTemplate': '下载模板',
+  'grid.import': '导入',
+  'grid.export': '导出',
+  'grid.batchDelete': '批量删除',
+  'grid.batchDeleteCount': '批量删除（{count}）',
+  'grid.columnSetting': '设置列',
+  'grid.visibleColumns': '展示列（上下移动调整列序）',
+  'grid.moveUp': '上移',
+  'grid.moveDown': '下移',
+  'grid.resetDefault': '恢复默认',
+  'grid.refresh': '刷新',
+  'grid.unit': '条',
+  'grid.total': '共 {total} {unit}',
+  'grid.pageSizeOption': '{size} {unit}/页',
 };

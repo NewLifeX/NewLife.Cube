@@ -9,11 +9,13 @@
  * 表单体复用 `FormContent.vue`（字段 → 控件的唯一分发点），本组件只管容器与动作。
  */
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import FormContent from '../../views/components/FormContent.vue';
 import { dialogShapeFor } from './cubeTable.logic';
 import type { CubeEngineContext } from '../../engine/types';
 
 const props = defineProps<{ ctx: CubeEngineContext }>();
+const { t } = useI18n();
 
 /**
  * 直接取引擎上下文里的 Ref 来绑（`docs/architecture/cube-engine.md` §8.7 的意图）。
@@ -67,15 +69,15 @@ function onModelInput(value: Record<string, unknown>): void {
     />
 
     <template #footer>
-      <el-button @click="ctx.closeDialog()">取消</el-button>
-      <el-button v-if="readonly" type="primary" @click="ctx.closeDialog()">关闭</el-button>
+      <el-button @click="ctx.closeDialog()">{{ t('button.cancel') }}</el-button>
+      <el-button v-if="readonly" type="primary" @click="ctx.closeDialog()">{{ t('button.close') }}</el-button>
       <el-button
         v-else
         type="primary"
         :loading="submitting"
         @click="ctx.submitForm()"
       >
-        保存
+        {{ t('button.save') }}
       </el-button>
     </template>
   </el-dialog>

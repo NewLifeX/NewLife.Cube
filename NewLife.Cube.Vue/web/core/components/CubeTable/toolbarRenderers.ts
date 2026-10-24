@@ -31,7 +31,7 @@ export function getToolbarRenderer(name?: string | null): ToolbarRenderer | unde
   const hit = registry.get(name);
   if (!hit && !warned.has(name)) {
     warned.add(name);
-    console.warn(`[CubeTable] 工具栏渲染器未注册：${name}`);
+    console.warn(`[CubeTable] toolbar renderer not registered: ${name}`);
   }
   return hit;
 }

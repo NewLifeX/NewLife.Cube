@@ -15,6 +15,7 @@ import ElementPlus, { ElMessage } from 'element-plus';
 import CubeTableGrid from '../CubeTableGrid.vue';
 import { clearFieldRenderers, registerFieldRenderer } from '../../../engine/fieldRenderers';
 import { FIELDS, makeFakeActions, makeFakeCtx } from './fakeCtx';
+import { testI18n } from '../../../__tests__/helpers/i18n';
 
 const lovStubs = vi.hoisted(() => ({
   /** 默认按「未缓存」返回原值，从而触发异步解析分支 */
@@ -47,7 +48,7 @@ async function mountGrid(
   const wrapper = mount(CubeTableGrid, {
     props: { ctx, actions: options.actions ?? makeFakeActions(), ...options.props },
     slots: options.slots ?? {},
-    global: { plugins: [ElementPlus] },
+    global: { plugins: [ElementPlus, testI18n] },
   });
   await nextTick();
   await nextTick();

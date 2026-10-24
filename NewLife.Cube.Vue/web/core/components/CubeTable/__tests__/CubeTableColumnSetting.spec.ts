@@ -12,6 +12,7 @@ import { nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
 import ElementPlus from 'element-plus';
 import CubeTableColumnSetting from '../CubeTableColumnSetting.vue';
+import { testI18n } from '../../../__tests__/helpers/i18n';
 
 const ITEMS = [
   { key: 'Name', label: '名称' },
@@ -33,7 +34,7 @@ const boxes = () =>
 async function mountSetting(visibility: Record<string, boolean> = {}) {
   const wrapper = mount(CubeTableColumnSetting, {
     props: { items: ITEMS, visibility },
-    global: { plugins: [ElementPlus] },
+    global: { plugins: [ElementPlus, testI18n] },
   });
   await nextTick();
   await wrapper.find('.ctcs-trigger').trigger('click');

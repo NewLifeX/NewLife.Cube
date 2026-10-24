@@ -7,6 +7,7 @@
  * 整行没有任何内容时不渲染，避免表格上面多一条空带。
  */
 import { computed, useSlots } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Refresh } from '@element-plus/icons-vue';
 import type { CubeEngineContext } from '../../engine/types';
 import type { CubeTableMetric } from './types';
@@ -25,6 +26,7 @@ const props = withDefaults(
 );
 
 const slots = useSlots();
+const { t } = useI18n();
 const metricList = computed(() => props.metrics ?? []);
 const visible = computed(
   () =>
@@ -56,7 +58,7 @@ const visible = computed(
     <div class="ctm-controls">
       <slot name="extra" :ctx="ctx" />
       <slot name="column-setting" />
-      <el-button v-if="showRefresh" :icon="Refresh" circle title="刷新" @click="ctx.refresh()" />
+      <el-button v-if="showRefresh" :icon="Refresh" circle :title="t('grid.refresh')" @click="ctx.refresh()" />
     </div>
   </div>
 </template>

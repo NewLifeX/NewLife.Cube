@@ -6,23 +6,28 @@
  * 页码 1-based（与后端 `pageIndex` 口径一致）；换每页条数回第 1 页由引擎负责。
  */
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { CubeEngineContext } from '../../engine/types';
+
+const { t } = useI18n();
 
 const props = withDefaults(
   defineProps<{
     ctx: CubeEngineContext;
     /** 可选每页条数 */
     pageSizes?: number[];
-    /** 总数单位（左侧「共 N 条」） */
+    /** 总数单位（左侧「共 N 条」），缺省取词条 */
     unit?: string;
     /** 每页条数单位（下拉「N 条/页」），缺省跟随 unit */
     sizeUnit?: string;
   }>(),
-  { pageSizes: () => [10, 20, 50], unit: '条', sizeUnit: undefined },
+  { pageSizes: () => [10, 20, 50], unit: undefined, sizeUnit: undefined },
 );
 
+/** 数量单位：未显式指定时跟随 locale */
+const unitLabel = computed(() => props.unit ?? t('grid.unit'));
 /** 每页条数下拉单位：未单独指定时跟随总数单位 */
-const sizeUnitLabel = computed(() => props.sizeUnit ?? props.unit);
+const sizeUnitLabel = computed(() => props.sizeUnit ?? unitLabel.value);
 
 /**
  * 页码/条数写成可读写计算属性，而不是「prop + change 事件」：
@@ -41,7 +46,7 @@ const pageSize = computed({
 <template>
   <div class="ctp">
     <div class="ctp-left">
-      <span class="ctp-total">共 {{ ctx.total.value }} {{ unit }}</span>
+      <span class="ctp-total">{{ t('grid.total', { total: ctx.total.value, unit: unitLabel }) }}</span>
       <slot name="extra"></slot>
     </div>
     <div class="ctp-group">
@@ -53,7 +58,7 @@ const pageSize = computed({
         background
       />
       <el-select v-model="pageSize" class="ctp-size">
-        <el-option v-for="s in pageSizes" :key="s" :value="s" :label="`${s} ${sizeUnitLabel}/页`" />
+        <el-option v-for="s in pageSizes" :key="s" :value="s" :label="t('grid.pageSizeOption', { size: s, unit: sizeUnitLabel })" />
       </el-select>
     </div>
   </div>

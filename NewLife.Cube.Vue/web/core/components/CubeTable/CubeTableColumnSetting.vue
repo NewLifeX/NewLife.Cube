@@ -6,6 +6,9 @@
  * 组件不碰存储（避免 UI 组件里藏持久化逻辑）。
  */
 import { ArrowDown, ArrowUp, Setting } from '@element-plus/icons-vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = withDefaults(
   defineProps<{
@@ -40,9 +43,9 @@ function move(index: number, delta: number): void {
   <el-popover placement="bottom-end" :width="220" trigger="click">
     <!-- 不套 el-tooltip：它的触发指令落在 fragment 根上会告警并失效，按钮自身的 title 已够用 -->
     <template #reference>
-      <el-button class="ctcs-trigger" :icon="Setting" circle title="设置列" />
+      <el-button class="ctcs-trigger" :icon="Setting" circle :title="t('grid.columnSetting')" />
     </template>
-    <div class="ctcs-title">展示列（上下移动调整列序）</div>
+    <div class="ctcs-title">{{ t('grid.visibleColumns') }}</div>
     <div v-for="(item, index) in items" :key="item.key" class="ctcs-item">
       <el-checkbox
         :model-value="visibility[item.key] !== false"
@@ -56,7 +59,7 @@ function move(index: number, delta: number): void {
           size="small"
           :icon="ArrowUp"
           :disabled="index === 0"
-          title="上移"
+          :title="t('grid.moveUp')"
           @click="move(index, -1)"
         />
         <el-button
@@ -64,13 +67,13 @@ function move(index: number, delta: number): void {
           size="small"
           :icon="ArrowDown"
           :disabled="index === items.length - 1"
-          title="下移"
+          :title="t('grid.moveDown')"
           @click="move(index, 1)"
         />
       </span>
     </div>
     <div class="ctcs-footer">
-      <el-button link type="primary" @click="emit('reset')">恢复默认</el-button>
+      <el-button link type="primary" @click="emit('reset')">{{ t('grid.resetDefault') }}</el-button>
     </div>
   </el-popover>
 </template>

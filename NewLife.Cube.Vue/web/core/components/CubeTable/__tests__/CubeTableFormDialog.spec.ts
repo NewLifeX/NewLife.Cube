@@ -14,6 +14,7 @@ import ElementPlus from 'element-plus';
 import CubeTableFormDialog from '../CubeTableFormDialog.vue';
 import FormContent from '../../../views/components/FormContent.vue';
 import { FIELDS, makeFakeCtx } from './fakeCtx';
+import { testI18n } from '../../../__tests__/helpers/i18n';
 
 describe('CubeTableFormDialog preset 集成', () => {
   it('应该把 preset 的表单列数与分组方式传给 FormContent', async () => {
@@ -27,7 +28,7 @@ describe('CubeTableFormDialog preset 集成', () => {
 
     const wrapper = mount(CubeTableFormDialog, {
       props: { ctx },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
     });
     await nextTick();
     await nextTick();
@@ -44,7 +45,7 @@ describe('CubeTableFormDialog preset 集成', () => {
 
     const wrapper = mount(CubeTableFormDialog, {
       props: { ctx },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
     });
     await nextTick();
     await nextTick();

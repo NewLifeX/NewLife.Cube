@@ -13,6 +13,7 @@ import { mount } from '@vue/test-utils';
 import ElementPlus from 'element-plus';
 import CubeTablePagination from '../CubeTablePagination.vue';
 import { makeFakeCtx } from './fakeCtx';
+import { testI18n } from '../../../__tests__/helpers/i18n';
 
 async function mountPagination(
   options: Parameters<typeof makeFakeCtx>[0] = {},
@@ -25,7 +26,7 @@ async function mountPagination(
   };
   const wrapper = mount(CubeTablePagination, {
     props: { ctx, ...props },
-    global: { plugins: [ElementPlus] },
+    global: { plugins: [ElementPlus, testI18n] },
   });
   await nextTick();
   return { wrapper, ctx };
@@ -97,7 +98,7 @@ describe('CubeTablePagination', () => {
     const ctx = makeFakeCtx({ total: 123 });
     const wrapper = mount(CubeTablePagination, {
       props: { ctx },
-      global: { plugins: [ElementPlus] },
+      global: { plugins: [ElementPlus, testI18n] },
       slots: { extra: '<span class="picked">已选 2</span>' },
     });
     await nextTick();

@@ -15,6 +15,7 @@ import { Cpu } from '@element-plus/icons-vue';
 import CubeTableMetrics from '../CubeTableMetrics.vue';
 import { makeFakeCtx } from './fakeCtx';
 import type { CubeTableMetric } from '../types';
+import { testI18n } from '../../../__tests__/helpers/i18n';
 
 async function mountMetrics(
   props: { metrics?: CubeTableMetric[]; showRefresh?: boolean; showColumnSetting?: boolean } = {},
@@ -24,7 +25,7 @@ async function mountMetrics(
   const wrapper = mount(CubeTableMetrics, {
     props: { ctx, ...props },
     slots,
-    global: { plugins: [ElementPlus] },
+    global: { plugins: [ElementPlus, testI18n] },
   });
   await nextTick();
   return { wrapper, ctx };

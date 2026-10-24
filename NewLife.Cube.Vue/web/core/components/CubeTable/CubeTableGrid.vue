@@ -26,6 +26,7 @@
  * 单行动作超过 4 个时只露前 3 个，第 4 个位置是「更多」下拉，后加的操作一律收进去。
  */
 import { computed, useSlots } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import { ArrowDown, Delete, Edit, View } from '@element-plus/icons-vue';
@@ -92,6 +93,7 @@ const props = withDefaults(
 );
 
 const slots = useSlots();
+const { t } = useI18n();
 const permissions = usePagePermissions(props.ctx);
 /** 业务页自写了列定义，元数据生成列就整块让位 */
 const customColumns = computed(() => Boolean(slots.default));
@@ -164,7 +166,7 @@ async function onCellClick(
     await props.ctx.refresh();
   } catch (err) {
     // 请求层已统一提示错误，这里兜底避免未捕获 rejection
-    console.error('[CubeTable] 单元格动作失败:', err);
+    console.error('[CubeTable] cell action failed:', err);
   }
 }
 /** 值集多值才铺标签，单值走文本（一个孤立标签的观感比重复文本更差） */
@@ -178,13 +180,13 @@ const fieldRendererOf = (column: CubeColumnView) => resolveFieldRenderer(column.
 /** 内置行操作：与旧 Section 组件同口径（查看 / 编辑 / 删除），删除走确认层不直连引擎 */
 const builtinRowActions = computed<CubeRowAction[]>(() => {
   const actions: CubeRowAction[] = [
-    { key: '__view', label: '查看', icon: View, type: 'primary', onClick: (row) => void props.ctx.openView(row) },
+    { key: '__view', label: t('perm.detail'), icon: View, type: 'primary', onClick: (row) => void props.ctx.openView(row) },
   ];
   if (permissions.canUpdate.value) {
-    actions.push({ key: '__edit', label: '编辑', icon: Edit, type: 'primary', onClick: (row) => void props.ctx.openEdit(row) });
+    actions.push({ key: '__edit', label: t('button.edit'), icon: Edit, type: 'primary', onClick: (row) => void props.ctx.openEdit(row) });
   }
   if (permissions.canDelete.value) {
-    actions.push({ key: '__remove', label: '删除', icon: Delete, type: 'danger', onClick: (row) => void props.actions.removeRow(row) });
+    actions.push({ key: '__remove', label: t('button.delete'), icon: Delete, type: 'danger', onClick: (row) => void props.actions.removeRow(row) });
   }
   return actions;
 });
@@ -222,7 +224,7 @@ const onAction = (action: CubeRowAction, row: Record<string, unknown>) => void a
     <template #empty>
       <slot name="empty">
         <!-- 取数失败时把原因就地说明，而不是留一片空白让人以为没数据 -->
-        <span class="ctg-empty">{{ ctx.error.value || '暂无数据' }}</span>
+        <span class="ctg-empty">{{ ctx.error.value || t('grid.empty') }}</span>
       </slot>
     </template>
 
@@ -303,7 +305,7 @@ const onAction = (action: CubeRowAction, row: Record<string, unknown>) => void a
             :href="hrefOf(scope.row, column)"
             target="_blank"
           >
-            查看文件
+            {{ t('grid.viewFile') }}
           </el-link>
 
           <el-switch
@@ -356,7 +358,7 @@ const onAction = (action: CubeRowAction, row: Record<string, unknown>) => void a
       </el-table-column>
     </template>
 
-    <el-table-column v-if="flags.rowActions" label="操作" :width="resolvedActionWidth" fixed="right" align="center">
+    <el-table-column v-if="flags.rowActions" :label="t('common.actions')" :width="resolvedActionWidth" fixed="right" align="center">
       <template v-if="$slots['row-actions']" #default="scope">
         <slot name="row-actions" :row="scope.row" :index="scope.$index" />
       </template>
@@ -382,7 +384,7 @@ const onAction = (action: CubeRowAction, row: Record<string, unknown>) => void a
             @command="(index: number) => onAction(splitOf(scope.row).overflow[index], scope.row)"
           >
             <el-button link type="primary">
-              更多<el-icon><ArrowDown /></el-icon>
+              {{ t('grid.more') }}<el-icon><ArrowDown /></el-icon>
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>

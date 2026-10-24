@@ -28,6 +28,7 @@ export default {
   'button.reset': 'Reset',
   'button.back': 'Back',
   'button.confirm': 'Confirm',
+  'button.close': 'Close',
 
   // Forms
   'form.required': 'Required',
@@ -340,4 +341,23 @@ export default {
   'response.operationFailed': 'Operation failed',
   'response.networkErrorRetry': 'Network request failed, please try again later',
   'response.networkError': 'Network request failed',
+
+  // List table
+  'grid.empty': 'No data',
+  'grid.viewFile': 'View file',
+  'grid.more': 'More',
+  'grid.downloadTemplate': 'Download template',
+  'grid.import': 'Import',
+  'grid.export': 'Export',
+  'grid.batchDelete': 'Batch delete',
+  'grid.batchDeleteCount': 'Batch delete ({count})',
+  'grid.columnSetting': 'Column settings',
+  'grid.visibleColumns': 'Visible columns (drag order with the arrows)',
+  'grid.moveUp': 'Move up',
+  'grid.moveDown': 'Move down',
+  'grid.resetDefault': 'Restore defaults',
+  'grid.refresh': 'Refresh',
+  'grid.unit': 'items',
+  'grid.total': 'Total {total} {unit}',
+  'grid.pageSizeOption': '{size} {unit}/page',
 };
