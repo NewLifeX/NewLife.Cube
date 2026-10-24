@@ -6,7 +6,7 @@
 <template>
   <div v-if="enabled" class="ai-assistant" :class="{ 'panel-open': visible }" :style="aiStyle">
     <!-- 悬浮球 -->
-    <div class="ai-fab" :title="'AI 助手'" @click="visible = !visible">
+    <div class="ai-fab" :title="t('ai.title')" @click="visible = !visible">
       <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
         <g fill="#2ecc71">
           <circle cx="12" cy="7" r="4.6" />
@@ -32,23 +32,23 @@
               </g>
               <circle cx="12" cy="12" r="2.6" fill="#ffffff" />
             </svg>
-            AI 助手
+            {{ t('ai.title') }}
           </span>
           <div class="ai-actions">
-            <el-button text size="small" :title="maximized ? '还原' : '最大化'" @click="toggleMaximize"><el-icon><FullScreen v-if="!maximized" /><CopyDocument v-else /></el-icon></el-button>
-            <el-button text size="small" title="清空会话" @click="clear"><el-icon><Delete /></el-icon></el-button>
-            <el-button text size="small" title="收起" @click="visible = false"><el-icon><Close /></el-icon></el-button>
+            <el-button text size="small" :title="maximized ? t('ai.restore') : t('ai.maximize')" @click="toggleMaximize"><el-icon><FullScreen v-if="!maximized" /><CopyDocument v-else /></el-icon></el-button>
+            <el-button text size="small" :title="t('ai.clear')" @click="clear"><el-icon><Delete /></el-icon></el-button>
+            <el-button text size="small" :title="t('ai.collapse')" @click="visible = false"><el-icon><Close /></el-icon></el-button>
           </div>
         </div>
 
         <div class="ai-messages" ref="msgBox">
           <!-- 欢迎语 + 快捷指令 -->
           <div v-if="messages.length === 0" class="ai-welcome">
-            <p>你好，我是魔方 AI 助手 👋 我可以帮你分析当前数据、填写表单、检查系统状态。</p>
+            <p>{{ t('ai.greeting') }}</p>
             <div class="ai-quick">
-              <el-button v-if="page === 'list'" size="small" round @click="quick('分析当前列表数据')">📊 分析当前数据</el-button>
-              <el-button v-if="page === 'form'" size="small" round @click="quick('帮我填写当前表单')">📝 帮我填表</el-button>
-              <el-button size="small" round @click="quick('检查系统运行状态')">🩺 系统诊断</el-button>
+              <el-button v-if="page === 'list'" size="small" round @click="quick('分析当前列表数据')">📊 {{ t('ai.actionAnalyze') }}</el-button>
+              <el-button v-if="page === 'form'" size="small" round @click="quick('帮我填写当前表单')">📝 {{ t('ai.actionFillForm') }}</el-button>
+              <el-button size="small" round @click="quick('检查系统运行状态')">🩺 {{ t('ai.actionDiagnose') }}</el-button>
             </div>
           </div>
 
@@ -59,26 +59,26 @@
           </template>
 
           <!-- 工具卡片 -->
-          <div v-for="t in toolCards" :key="t.id" class="ai-tool" :class="{ 'ai-tool-done': t.status === 'done', 'ai-tool-error': t.status === 'error' }">
-            <template v-if="t.status === 'start'"><span>🔧 正在调用 <b>{{ t.name }}</b>...</span></template>
-            <template v-else-if="t.status === 'done'"><span>✅ <b>{{ t.name }}</b> 完成</span></template>
-            <template v-else><span>❌ <b>{{ t.name }}</b> 失败</span></template>
+          <div v-for="card in toolCards" :key="card.id" class="ai-tool" :class="{ 'ai-tool-done': card.status === 'done', 'ai-tool-error': card.status === 'error' }">
+            <template v-if="card.status === 'start'"><span>🔧 {{ t('ai.toolRunning') }} <b>{{ card.name }}</b>...</span></template>
+            <template v-else-if="card.status === 'done'"><span>✅ <b>{{ card.name }}</b> {{ t('ai.toolDone') }}</span></template>
+            <template v-else><span>❌ <b>{{ card.name }}</b> {{ t('ai.toolFailed') }}</span></template>
           </div>
         </div>
 
         <div class="ai-panel-footer">
-          <label class="ai-think" title="深度推理更准确，但耗时更长">
-            <el-checkbox v-model="think">深度</el-checkbox>
+          <label class="ai-think" :title="t('ai.thinkTip')">
+            <el-checkbox v-model="think">{{ t('ai.think') }}</el-checkbox>
           </label>
           <el-input
             v-model="input"
             type="textarea"
             :rows="1"
             resize="none"
-            placeholder="输入问题，Enter 发送，Shift+Enter 换行"
+            :placeholder="t('ai.inputPlaceholder')"
             @keydown.enter.exact.prevent="send"
           />
-          <el-button type="primary" circle :icon="Promotion" title="发送" :loading="streaming" @click="send" />
+          <el-button type="primary" circle :icon="Promotion" :title="t('ai.send')" :loading="streaming" @click="send" />
         </div>
       </div>
     </Transition>
@@ -88,6 +88,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { Delete, Close, Promotion, FullScreen, CopyDocument } from '@element-plus/icons-vue';
 import { marked } from 'marked';
@@ -116,6 +117,8 @@ const emit = defineEmits<{
   /** fill_form 工具完成，携带生成的字段值，由宿主合并到表单 */
   (e: 'fill-form', values: Record<string, any>): void;
 }>();
+
+const { t } = useI18n();
 
 interface Msg {
   id: number;
@@ -261,8 +264,8 @@ function handleTool(status: 'start' | 'done' | 'error', json: any) {
         const data = JSON.parse(json.result);
         if (data && data.kind === 'fill_form' && data.values) {
           emit('fill-form', data.values as Record<string, any>);
-          const names = Object.keys(data.values).join('、');
-          ElMessage.success(`AI 已预填 ${Object.keys(data.values).length} 个字段（${names}），请检查后保存`);
+          const names = Object.keys(data.values).join(', ');
+          ElMessage.success(t('ai.prefilled', { count: Object.keys(data.values).length, names }));
         }
       } catch {
         /* 解析失败忽略 */
@@ -388,11 +391,11 @@ async function send() {
       const lines = buffer.split('\n');
       buffer = lines.pop() || '';
       for (const line of lines) {
-        const t = line.trim();
-        if (!t.startsWith('data: ')) continue;
+        const raw = line.trim();
+        if (!raw.startsWith('data: ')) continue;
         let json: any;
         try {
-          json = JSON.parse(t.substring(6));
+          json = JSON.parse(raw.substring(6));
         } catch {
           continue;
         }
@@ -410,20 +413,20 @@ async function send() {
         } else if (json.type === 'run_js') {
           handleRunJs(json);
         } else if (json.type === 'error') {
-          am.html = `<span style="color:#c62828">⚠️ ${json.message || 'AI 调用失败'}</span>`;
+          am.html = `<span style="color:#c62828">⚠️ ${json.message || t('ai.callFailed')}</span>`;
           scrollBottom();
         }
         // message_start / message_done / thinking_delta / heartbeat 规范事件无需处理，忽略
       }
     }
   } catch (err: any) {
-    am.html = `<span style="color:#c62828">⚠️ ${err?.message || '请求失败'}</span><br><small>请确认 AI 服务已启用（系统设置中开启 AISwitch）</small>`;
+    am.html = `<span style="color:#c62828">⚠️ ${err?.message || t('ai.requestFailed')}</span><br><small>${t('ai.enableHint')}</small>`;
   } finally {
     // 标记遗留"正在调用"的工具卡片为中断
     for (const c of toolCards.value) {
       if (c.status === 'start') {
         c.status = 'error';
-        c.name = c.name + '（中断）';
+        c.name = c.name + t('ai.interrupted');
       }
     }
     streaming.value = false;
