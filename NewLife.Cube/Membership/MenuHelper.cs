@@ -143,20 +143,14 @@ public static partial class MenuHelper
                 root.Visible = attArea.Visible;
                 root.Icon = attArea.Icon;
             }
-
-            var dis = areaType.GetDisplayName();
-            var des = areaType.GetDescription();
-
-            if (!dis.IsNullOrEmpty())
-            {
-                root.DisplayName = dis;
-            }
-
-            if (!des.IsNullOrEmpty())
-            {
-                root.Remark = des;
-            }
         }
+
+        // 区域根菜单：自动项跟随代码源文，用户自定义名称保持不动
+        SyncDisplayName(root, areaType.GetDisplayName(), rootName, areaType.Name);
+
+        var des = areaType.GetDescription();
+        if (root.Remark.IsNullOrEmpty() && !des.IsNullOrEmpty()) root.Remark = des;
+
         if (root.FullName != nameSpace) root.FullName = nameSpace;
         (root as IEntity).Save();
 
@@ -197,26 +191,18 @@ public static partial class MenuHelper
             if (controller == null)
             {
                 controller = menuFactory.FindByUrl(url);
-
-                // 菜单名是持久化数据，建菜单时保存源文；页面标题等运行时文案由消费端按请求语言翻译
-                var displayName = type.GetDisplayName();
-
-                controller ??= node.Add(name, displayName, type.FullName, url);
-            }
-            else
-            {
-                // 旧版本按启动语言落库的自动菜单，安全归一化为源文；用户自定义名称不动
-                var source = type.GetDisplayName();
-                if (!source.IsNullOrEmpty())
+                if (controller == null)
                 {
-                    var translated = L.T(source);
-                    // 旧版本没有 DisplayName 特性，自动菜单落库为 URL 名称或类型名；用户自定义名称不动
-                    if (controller.DisplayName.IsNullOrEmpty() || controller.DisplayName == name || controller.DisplayName == type.Name ||
-                        (translated != source && controller.DisplayName == translated) ||
-                        IsOtherLanguageName(controller.DisplayName, source))
-                        controller.DisplayName = source;
+                    // 菜单名是持久化数据，建菜单时只保存源文；页面标题等运行时文案由消费端按请求语言翻译
+                    var displayName = type.GetDisplayName();
+
+                    controller = node.Add(name, displayName, type.FullName, url);
+                    MarkAutoName(controller, displayName);
                 }
             }
+
+            // 旧版本按启动语言落库的自动菜单归一化为源文；用户自定义名称不动
+            SyncDisplayName(controller, type.GetDisplayName(), name, type.Name);
             controller.Url = url;
             controller.FullName = type.FullName;
             if (controller.Remark.IsNullOrEmpty()) controller.Remark = type.GetDescription();
@@ -337,23 +323,6 @@ public static partial class MenuHelper
         return list;
     }
 
-    /// <summary>判断落库菜单名是否为旧版本按其它语言源码保存的自动菜单名</summary>
-    /// <param name="displayName">菜单落库的显示名</param>
-    /// <param name="source">控制器 DisplayName 源文</param>
-    /// <returns>需要按源文归一化时返回 true</returns>
-    /// <remarks>
-    /// i18n 改造期间源码 DisplayName 曾被批量改为英文并启动过站点，自动菜单把英文落库；
-    /// 源码恢复中文后，落库值既不是源文也不是当前语言译文，原有判定识别不到。
-    /// 这里按"源文含汉字、落库名为纯 ASCII"识别这类旧语言残留。
-    /// </remarks>
-    internal static Boolean IsOtherLanguageName(String? displayName, String source)
-    {
-        if (displayName.IsNullOrEmpty()) return false;
-        if (!source.Any(e => e >= 0x4E00 && e <= 0x9FFF)) return false;
-
-        return displayName.All(e => e < 0x80);
-    }
-
     /// <summary>获取可用于生成权限菜单的Action集合</summary>
     /// <param name="controllerType">控制器类型</param>
     /// <param name="menu">该控制器所在菜单</param>
@@ -367,11 +336,12 @@ public static partial class MenuHelper
         var factory = pi?.GetValue(null, null) as IEntityFactory;
         //if (factory == null) return dic;
 
-        // 设置显示名
+        // 设置显示名。实体表显示名同样是源文，落库后由渲染期翻译
         if (menu.DisplayName.IsNullOrEmpty() && factory != null)
         {
             menu.DisplayName = factory.Table.DataTable.DisplayName;
             menu.Visible = true;
+            MarkAutoName(menu, menu.DisplayName);
             //menu.Save();
         }
 
@@ -395,7 +365,16 @@ public static partial class MenuHelper
                 // 添加系统信息菜单
                 var name = method.Name;
                 var m2 = menu.Parent.Childs.FirstOrDefault(_ => _.Name == name);
-                m2 ??= menu.Parent.Add(name, method.GetDisplayName(), $"{controllerType.FullName}.{name}", NewLife.Web.WebHelper.TrimApiPrefix($"{menu.Url}/{name}"));
+                if (m2 == null)
+                {
+                    var dn = method.GetDisplayName();
+                    m2 = menu.Parent.Add(name, dn, $"{controllerType.FullName}.{name}", NewLife.Web.WebHelper.TrimApiPrefix($"{menu.Url}/{name}"));
+                    MarkAutoName(m2, dn);
+                }
+                else
+                {
+                    SyncDisplayName(m2, method.GetDisplayName(), name);
+                }
                 if (m2.Sort == 0) m2.Sort = attMenu.Order;
                 if (m2.Icon.IsNullOrEmpty()) m2.Icon = attMenu.Icon;
                 if (m2.FullName.IsNullOrEmpty()) m2.FullName = $"{controllerType.FullName}.{name}";

@@ -19,6 +19,10 @@ public class MenuController : EntityTreeController<Menu, MenuModel>
         ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6");
         ListFields.RemoveField("Remark");
 
+        // 扩展字段是内部命名标记（Ex6 记录自动菜单源文或自定义标记），不暴露到表单以免误改
+        AddFormFields.RemoveField("Ex5", "Ex6");
+        EditFormFields.RemoveField("Ex5", "Ex6");
+
         {
             var ff = AddFormFields.GetField("Ex4") as FormField;
             ff.DisplayName = "Help document link";

@@ -67,6 +67,8 @@ public static class CubeService
         if (sys.Name == "NewLife.Cube.Views" || sys.DisplayName == "NewLife.Cube.Views")
         {
             sys.Name = "NewLife.Cube";
+            // 站点显示名属于业务数据（登录页直接展示、可在设置页修改），只修历史默认值；
+            // 菜单等元数据才要求「只落库源文，渲染期翻译」
             sys.DisplayName = L.T("Cube platform");
             sys.Save();
         }

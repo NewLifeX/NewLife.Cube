@@ -16,6 +16,10 @@ public class MenuController : EntityTreeController<Menu, MenuModel>
         ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6");
         ListFields.RemoveField("Remark");
 
+        // 扩展字段是内部命名标记（Ex6 记录自动菜单源文或自定义标记），不暴露到表单以免误改
+        AddFormFields.RemoveField("Ex5", "Ex6");
+        EditFormFields.RemoveField("Ex5", "Ex6");
+
         // 父级：下拉选择。菜单缓存作为数据源，label 用层级路径（如 系统管理/用户），
         // 避免同名菜单混淆；不依赖 FullName 字段数据质量。新增/编辑表单均生效
         foreach (var fields in new[] { AddFormFields, EditFormFields })

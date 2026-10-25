@@ -74,27 +74,13 @@ public class AreaBase : AreaAttribute
 
         var menus = MenuHelper.ScanController(mf, areaName, areaType);
 
-        // 更新区域名称为源文；旧版本按启动语言落库的自动菜单安全归一化
+        // 区域根菜单：自动项跟随代码源文，用户自定义名称保持不动
         var menu = mf.Root.FindByPath(areaName);
         if (menu != null)
         {
-            var dis = areaType.GetDisplayName();
             var des = areaType.GetDescription();
-            var changed = false;
+            var changed = MenuHelper.SyncDisplayName(menu, areaType.GetDisplayName(), areaName, areaType.Name);
 
-            if (menu.DisplayName.IsNullOrEmpty())
-            {
-                if (!dis.IsNullOrEmpty()) { menu.DisplayName = dis; changed = true; }
-            }
-            else if (!dis.IsNullOrEmpty())
-            {
-                var translated = L.T(dis);
-                if (translated != dis && menu.DisplayName == translated || MenuHelper.IsOtherLanguageName(menu.DisplayName, dis))
-                {
-                    menu.DisplayName = dis;
-                    changed = true;
-                }
-            }
             if (menu.Remark.IsNullOrEmpty() && !des.IsNullOrEmpty()) { menu.Remark = des; changed = true; }
 
             if (changed) (menu as IEntity).Update();
