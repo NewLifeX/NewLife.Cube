@@ -106,8 +106,8 @@ public static partial class MenuHelper
             }
         }
 
-        // 区域根菜单：自动项落库区域类型全名，用户自定义名称保持不动
-        SyncDisplayName(root, areaType.FullName, areaType.GetDisplayName(), rootName, areaType.Name);
+        // 区域根菜单：显示名为空时才写入区域显示名，已有值保持不动
+        FillDisplayName(root, areaType.GetDisplayName() ?? rootName);
 
         if (root.FullName != nameSpace) root.FullName = nameSpace;
         (root as IEntity).Save();
@@ -146,22 +146,17 @@ public static partial class MenuHelper
                 }
             }
             var entityType = GetEntityType(type);
-            var menuKey = BuildMenuKey(type, entityType);
-            var friendly = GetEntityDisplayName(entityType) ?? type.GetDisplayName();
+            var friendly = type.GetDisplayName() ?? GetEntityDisplayName(entityType) ?? name;
 
             if (controller == null)
             {
                 controller = menuFactory.FindByUrl(url);
-                if (controller == null)
-                {
-                    // 菜单名是持久化数据，建菜单时只保存规范键；页面标题等运行时文案由消费端按请求语言翻译
-                    controller = node.Add(name, menuKey, type.FullName, url);
-                    MarkAutoName(controller, menuKey);
-                }
+                // 新菜单直接带上控制器全名与显示名，后续扫描只在显示名为空时补齐
+                controller ??= node.Add(name, friendly, type.FullName, url);
             }
 
-            // 旧版本落库的源文/译文归一化为类型全名；用户自定义名称不动
-            SyncDisplayName(controller, menuKey, friendly, name, type.Name);
+            // 显示名只在为空时填充，已有值（开发者语言或管理员修改）保持不动
+            FillDisplayName(controller, friendly);
             controller.Url = url;
             controller.FullName = type.FullName;
             if (controller.Remark.IsNullOrEmpty()) controller.Remark = type.GetDescription();
@@ -298,16 +293,6 @@ public static partial class MenuHelper
         var factory = pi?.GetValue(null, null) as IEntityFactory;
         //if (factory == null) return dic;
 
-        // 设置显示名。实体控制器兜底为类型全名，落库后由渲染期翻译
-        if (menu.DisplayName.IsNullOrEmpty() && factory != null)
-        {
-            var key = BuildMenuKey(controllerType, GetEntityType(controllerType));
-            menu.DisplayName = key;
-            menu.Visible = true;
-            MarkAutoName(menu, key);
-            //menu.Save();
-        }
-
         // 添加该类型下的所有Action
         foreach (var method in controllerType.GetMethods())
         {
@@ -328,19 +313,15 @@ public static partial class MenuHelper
                 var name = method.Name;
                 var m2 = menu.Parent.Childs.FirstOrDefault(_ => _.Name == name);
                 var m2Key = $"{controllerType.FullName}.{name}";
-                if (m2 == null)
-                {
-                    m2 = menu.Parent.Add(name, m2Key, m2Key, $"{menu.Url}/{name}");
-                    MarkAutoName(m2, m2Key);
-                }
-                else
-                {
-                    SyncDisplayName(m2, m2Key, method.GetDisplayName(), name);
-                }
+                var m2Name = method.GetDisplayName() ?? name;
+                if (m2 == null) m2 = menu.Parent.Add(name, m2Name, m2Key, $"{menu.Url}/{name}");
+
+                // 显示名只在为空时填充，管理员改过的名字保持不动
+                FillDisplayName(m2, m2Name);
                 if (m2.Sort == 0) m2.Sort = attMenu.Order;
                 if (m2.Icon.IsNullOrEmpty()) m2.Icon = attMenu.Icon;
                 if (m2.Ex4.IsNullOrEmpty()) m2.Ex4 = attMenu.HelpUrl;
-                if (m2.FullName.IsNullOrEmpty()) m2.FullName = $"{controllerType.FullName}.{name}";
+                if (m2.FullName.IsNullOrEmpty()) m2.FullName = m2Key;
                 if (attAuth != null) m2.Permissions[(Int32)attAuth.Permission] = attAuth.Permission.GetDescription();
                 if (m2 is IEntity entity) entity.Update();
             }

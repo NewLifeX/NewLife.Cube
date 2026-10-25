@@ -74,12 +74,12 @@ public class AreaBase : AreaAttribute
 
         var menus = MenuHelper.ScanController(mf, areaName, areaType);
 
-        // 区域根菜单：自动项跟随代码源文，用户自定义名称保持不动
+        // 区域根菜单：显示名为空时才写入区域显示名，已有值保持不动
         var menu = mf.Root.FindByPath(areaName);
         if (menu != null)
         {
             var des = areaType.GetDescription();
-            var changed = MenuHelper.SyncDisplayName(menu, areaType.FullName, areaType.GetDisplayName(), areaName, areaType.Name);
+            var changed = MenuHelper.FillDisplayName(menu, areaType.GetDisplayName() ?? areaName);
 
             if (menu.Remark.IsNullOrEmpty() && !des.IsNullOrEmpty()) { menu.Remark = des; changed = true; }
 

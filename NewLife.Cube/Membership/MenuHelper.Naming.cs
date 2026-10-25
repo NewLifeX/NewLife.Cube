@@ -1,136 +1,168 @@
+﻿using System.Globalization;
 using System.Reflection;
 using XCode;
 using XCode.Membership;
 
 namespace NewLife.Cube.Membership;
 
-/// <summary>菜单命名契约与规范键解析。自动菜单落库类型全名，渲染期按词表翻译</summary>
+/// <summary>菜单命名契约：落库开发者语言快照，渲染期按语言决定用快照还是词表翻译</summary>
 /// <remarks>
-/// 自动生成菜单的规范名是类型全名：实体菜单用实体类 FullName，其余用控制器/区域 FullName。
-/// 词表键为 <c>menu:&lt;FullName&gt;</c>，前缀避免与消息键冲突（如消息键 Log 与实体「审计日志」不同义）。
-/// <c>Menu.Ex6</c> 记录自动项规范键或 <see cref="CustomNameMarker"/>，据此区分自动项与用户自定义项。
-/// 渲染时分层回退：menu 键 → 旧值/自定义名 → 按类型解析出人类可读名 → 短名，绝不把 FullName 直接展示到界面。
+/// 扫描只在显示名为空时写入开发者语言（控制器 <c>[DisplayName]</c> → 实体表描述 → 类名短名），已有值不覆盖。
+/// 渲染时：当前语言与源文语言一致则直接显示库值（管理员改过的名字在这一种语言下生效），
+/// 否则按 <c>menu:&lt;FullName&gt;</c> → <c>entity:&lt;实体全名&gt;</c> → 普通词条 → 短名 逐层翻译。
+/// 代码改名后库值不会自动跟进，由菜单管理页的「刷新菜单」动作按需重置。
 /// </remarks>
 public static partial class MenuHelper
 {
-    /// <summary>用户自定义名称标记。写入菜单扩展字段，此后的扫描不再覆盖该菜单显示名</summary>
-    public const String CustomNameMarker = "#custom";
-
-    /// <summary>菜单规范键前缀。词表键 = 前缀 + 类型全名</summary>
+    /// <summary>菜单词表键前缀。键 = 前缀 + 控制器/区域/命名空间全名</summary>
     public const String MenuKeyPrefix = "menu:";
 
-    /// <summary>计算菜单规范键</summary>
-    /// <param name="controllerType">控制器类型</param>
-    /// <param name="entityType">实体类型，非实体控制器为 null</param>
-    /// <returns>实体类全名，或控制器全名</returns>
-    public static String BuildMenuKey(Type controllerType, Type? entityType = null) => entityType?.FullName ?? controllerType?.FullName ?? "";
+    /// <summary>实体词表键前缀。键 = 前缀 + 实体类型全名</summary>
+    public const String EntityKeyPrefix = "entity:";
 
-    /// <summary>按规范键同步菜单显示名</summary>
+    #region 源文与快照
+    /// <summary>填充菜单显示名。仅在显示名为空时写入，已有值不覆盖</summary>
     /// <param name="menu">菜单</param>
-    /// <param name="key">规范键，通常是类型全名</param>
-    /// <param name="friendly">人类可读的源文（控制器/实体/区域显示名），用于存量迁移判定</param>
-    /// <param name="fallbackNames">旧版本可能落库的名称，如菜单名、类型名</param>
-    /// <returns>是否修改了菜单，调用方据此决定是否保存</returns>
-    /// <remarks>自动项跟随规范键刷新，用户自定义名称保持不动；未标记的存量行按旧值形态识别一次。</remarks>
-    public static Boolean SyncDisplayName(IMenu menu, String? key, String? friendly, params String?[] fallbackNames)
+    /// <param name="sourceName">开发者语言源文</param>
+    /// <returns>是否写入，调用方据此决定是否保存</returns>
+    public static Boolean FillDisplayName(IMenu menu, String? sourceName)
     {
-        if (menu == null || key.IsNullOrEmpty()) return false;
+        if (menu == null || sourceName.IsNullOrEmpty()) return false;
+        if (!menu.DisplayName.IsNullOrEmpty()) return false;
 
-        var marker = menu.Ex6;
-
-        // 用户自定义：永不覆盖
-        if (marker == CustomNameMarker) return false;
-
-        // 存量未标记：一次性判定，识别旧版本落库的源文或译文
-        if (marker == null)
-        {
-            if (IsAutoName(menu.DisplayName, key, friendly, fallbackNames))
-            {
-                menu.DisplayName = key;
-                menu.Ex6 = key;
-            }
-            else
-            {
-                menu.Ex6 = CustomNameMarker;
-            }
-
-            return true;
-        }
-
-        // 自动项且显示名未被人工改动：跟随代码规范键（含类型改名）
-        if (menu.DisplayName == marker)
-        {
-            if (menu.DisplayName == key) return false;
-
-            menu.DisplayName = key;
-            menu.Ex6 = key;
-
-            return true;
-        }
-
-        // 标记仍在但显示名已被人工改动：转自定义，保留用户输入
-        menu.Ex6 = CustomNameMarker;
+        menu.DisplayName = sourceName;
 
         return true;
     }
 
-    /// <summary>把新建的自动菜单标记为自动项</summary>
+    /// <summary>刷新单个菜单的显示名。按 FullName 重新解析代码源文并覆盖库值</summary>
     /// <param name="menu">菜单</param>
-    /// <param name="key">规范键，通常是类型全名</param>
-    /// <remarks>同时写入显示名与标记，保证「显示名 == 标记」的自动项约定成立</remarks>
-    public static void MarkAutoName(IMenu menu, String? key)
+    /// <returns>是否改动，调用方据此决定是否保存</returns>
+    /// <remarks>FullName 为空时按菜单名在当前已加载程序集里猜控制器，补全后再刷新。</remarks>
+    public static Boolean RefreshDisplayName(IMenu menu)
     {
-        if (menu == null || key.IsNullOrEmpty()) return;
+        if (menu == null) return false;
 
-        menu.DisplayName = key;
-        menu.Ex6 = key;
+        if (menu.FullName.IsNullOrEmpty()) menu.FullName = FindControllerFullName(menu.Name);
+        if (menu.FullName.IsNullOrEmpty()) return false;
+
+        var source = GetSourceName(menu);
+        if (source.IsNullOrEmpty()) return false;
+        if (menu.DisplayName == source) return false;
+
+        menu.DisplayName = source;
+
+        return true;
     }
 
-    /// <summary>判断落库名称是否为自动项</summary>
-    /// <param name="displayName">落库的显示名</param>
-    /// <param name="key">规范键</param>
-    /// <param name="friendly">人类可读的源文</param>
-    /// <param name="fallbackNames">旧版本可能落库的名称</param>
-    /// <returns>需要按规范键归一化时返回 true</returns>
-    private static Boolean IsAutoName(String? displayName, String key, String? friendly, String?[]? fallbackNames)
+    /// <summary>按菜单名猜测控制器类型全名</summary>
+    /// <param name="name">菜单名称，通常是去掉 Controller 后缀的类名</param>
+    /// <returns>控制器类型全名，找不到返回 null</returns>
+    /// <remarks>只用于历史遗留菜单补全 FullName，匹配到多个时取第一个非抽象类型。</remarks>
+    public static String? FindControllerFullName(String name)
     {
-        if (displayName.IsNullOrEmpty()) return true;
-        if (displayName == key) return true;
+        if (name.IsNullOrEmpty()) return null;
+        if (_controllerNames.TryGetValue(name, out var fullName)) return fullName;
 
-        if (!friendly.IsNullOrEmpty())
+        var typeName = name + "Controller";
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
         {
-            if (displayName == friendly) return true;
-            if (displayName == L.T(friendly)) return true;
-            if (LooksLikeTranslatedName(displayName, friendly)) return true;
+            if (assembly.IsDynamic) continue;
+
+            foreach (var type in assembly.GetTypes())
+            {
+                if (type.IsAbstract || !type.Name.EqualIgnoreCase(typeName)) continue;
+
+                fullName = type.FullName;
+                break;
+            }
+            if (!fullName.IsNullOrEmpty()) break;
         }
 
-        if (fallbackNames != null)
+        _controllerNames[name] = fullName;
+
+        return fullName;
+    }
+
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<String, String?> _controllerNames = [];
+
+    /// <summary>解析菜单的开发者语言源文</summary>
+    /// <param name="menu">菜单</param>
+    /// <returns>控制器/区域/方法的显示名，或实体表描述；无法解析时返回 null</returns>
+    /// <remarks>依次取控制器 <c>[DisplayName]</c>、实体表描述、类型短名；动作菜单取方法显示名。</remarks>
+    public static String? GetSourceName(IMenu menu)
+    {
+        if (menu == null) return null;
+        if (menu.FullName.IsNullOrEmpty()) return null;
+
+        var fullName = menu.FullName;
+        var type = ResolveMenuType(fullName);
+        if (type == null) return null;
+
+        // 动作菜单：控制器全名.方法名
+        var typeName = type.FullName;
+        if (!typeName.IsNullOrEmpty() && fullName.Length > typeName.Length + 1 && fullName.StartsWith(typeName + "."))
         {
-            foreach (var item in fallbackNames)
+            var methodName = fullName[(typeName.Length + 1)..];
+            var method = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance);
+            if (method != null)
             {
-                if (item != null && displayName == item) return true;
+                var name = method.GetDisplayName();
+
+                return name.IsNullOrEmpty() ? methodName : name;
             }
         }
 
-        return false;
+        // 实体类型本身：取表描述
+        if (typeof(IEntity).IsAssignableFrom(type)) return GetEntityDisplayName(type) ?? type.Name;
+
+        // 控制器：显式特性优先，其次实体表描述，最后类名短名
+        if (type.Name.EndsWith("Controller"))
+        {
+            var name = type.GetDisplayName();
+            if (!name.IsNullOrEmpty()) return name;
+
+            name = GetEntityDisplayName(GetEntityType(type));
+            if (!name.IsNullOrEmpty()) return name;
+
+            return type.Name.TrimSuffix("Controller");
+        }
+
+        // 区域等其它类型
+        return type.GetDisplayName() ?? type.Name;
     }
 
-    /// <summary>判断落库名称是否像旧版本按其它语言写入的译文</summary>
-    /// <param name="displayName">落库的显示名</param>
-    /// <param name="source">人类可读的源文</param>
-    /// <returns>疑似译文时返回 true</returns>
+    /// <summary>判断当前文化是否与源文语言一致</summary>
+    /// <param name="culture">当前文化，空时取本地化文化</param>
+    /// <param name="source">开发者语言源文</param>
+    /// <returns>一致时返回 true</returns>
     /// <remarks>
-    /// 仅用于存量迁移，不能用于日常判定：源码为中文、落库名为纯 ASCII 的，一律视为旧译文。
-    /// 由于只在未标记的存量行上执行一次，不会覆盖后续的用户自定义名称。
+    /// 按源文的书写文字判断：含汉字视为中文源，只有简体中文（zh/zh-CN/zh-SG/zh-Hans）算一致，繁體走词表；
+    /// 其余视为英文源，英文与不变文化算一致。
     /// </remarks>
-    internal static Boolean LooksLikeTranslatedName(String? displayName, String source)
+    public static Boolean IsSourceLanguage(CultureInfo? culture, String? source)
     {
-        if (displayName.IsNullOrEmpty()) return false;
-        if (!source.Any(e => e >= 0x4E00 && e <= 0x9FFF)) return false;
+        if (source.IsNullOrEmpty()) return false;
 
-        return displayName.All(e => e < 0x80);
+        culture ??= Localization.Culture ?? CultureInfo.CurrentUICulture;
+        var name = culture?.Name ?? "";
+
+        if (source.Any(e => e >= 0x4E00 && e <= 0x9FFF))
+        {
+            if (name.IsNullOrEmpty()) return false;
+
+            return name.EqualIgnoreCase("zh")
+                || name.StartsWith("zh-Hans", StringComparison.OrdinalIgnoreCase)
+                || name.StartsWith("zh-CHS", StringComparison.OrdinalIgnoreCase)
+                || name.StartsWith("zh-CN", StringComparison.OrdinalIgnoreCase)
+                || name.StartsWith("zh-SG", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return name.IsNullOrEmpty() || name.StartsWith("en", StringComparison.OrdinalIgnoreCase);
     }
+    #endregion
 
+    #region 渲染
     /// <summary>获取菜单在请求语言下的显示名</summary>
     /// <param name="menu">菜单</param>
     /// <returns>本地化显示名</returns>
@@ -138,79 +170,55 @@ public static partial class MenuHelper
     {
         if (menu == null) return null;
 
-        var name = menu.DisplayName;
-        if (name.IsNullOrEmpty()) name = menu.Name;
-        if (name.IsNullOrEmpty()) return name;
+        var stored = menu.DisplayName;
+        var source = GetSourceName(menu);
 
-        // 规范键词条
-        var key = MenuKeyPrefix + name;
-        var text = L.T(key);
-        if (text != key) return text;
+        // 源文语言界面：直接显示库值，管理员改过的名字在这一种语言下生效
+        if (!stored.IsNullOrEmpty() && !source.IsNullOrEmpty() && IsSourceLanguage(Localization.Culture, source)) return stored;
 
-        // 旧数据/自定义名：命中词条则翻译
-        text = L.T(name);
-        if (text != name) return text;
-
-        // 规范键缺译文：按类型解析人类可读名再翻译
-        var friendly = ResolveFriendlyName(name);
-        if (!friendly.IsNullOrEmpty() && friendly != name)
+        // 手工菜单（无 FullName）或类型已不存在：库值命中词条则翻译，否则原样显示
+        if (source.IsNullOrEmpty())
         {
-            text = L.T(friendly);
-            return text != friendly ? text : friendly;
+            if (stored.IsNullOrEmpty()) return menu.Name;
+
+            return Translate(stored) ?? stored;
         }
 
-        // 兜底：短名，绝不把类型全名铺到界面
-        var p = name.LastIndexOf('.');
-        return p >= 0 && p < name.Length - 1 ? name[(p + 1)..] : name;
+        // 其它语言：按规范键与词表即时翻译，词条全缺时回退源文，绝不把类型全名铺到界面
+        var text = Translate(MenuKeyPrefix + menu.FullName);
+        if (text != null) return text;
+
+        var type = ResolveMenuType(menu.FullName);
+        var entityType = GetEntityType(type) ?? (type != null && typeof(IEntity).IsAssignableFrom(type) ? type : null);
+        text = Translate(EntityKeyPrefix + entityType?.FullName);
+        if (text != null) return text;
+
+        return Translate(source) ?? source;
     }
 
-    /// <summary>按规范键解析人类可读名。先取实体表显示名，再取控制器/区域/方法的 DisplayName</summary>
-    /// <param name="key">菜单规范键或旧落库名</param>
-    /// <returns>人类可读名，无法解析时返回 null</returns>
-    internal static String? ResolveFriendlyName(String? key)
+    /// <summary>按词表键翻译，未命中返回 null</summary>
+    /// <param name="key">词表键</param>
+    /// <returns>译文，未命中返回 null</returns>
+    private static String? Translate(String? key)
     {
         if (key.IsNullOrEmpty()) return null;
 
-        var type = ResolveMenuType(key);
-        if (type == null) return null;
+        var text = L.T(key);
 
-        // 实体类型：取表显示名
-        if (typeof(IEntity).IsAssignableFrom(type)) return GetEntityDisplayName(type) ?? type.Name;
-
-        // 控制器类型
-        if (type.Name.EndsWith("Controller"))
-        {
-            // 方法级菜单：FullName 末尾为方法名
-            var prefix = type.FullName + ".";
-            if (prefix != null && key.Length > prefix.Length && key.StartsWith(prefix))
-            {
-                var methodName = key[prefix.Length..];
-                var method = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance);
-                if (method != null)
-                {
-                    var dn = method.GetDisplayName();
-                    return dn.IsNullOrEmpty() ? methodName : dn;
-                }
-            }
-
-            var name = GetEntityDisplayName(GetEntityType(type));
-            if (!name.IsNullOrEmpty()) return name;
-
-            return type.GetDisplayName() ?? type.Name.TrimSuffix("Controller");
-        }
-
-        // 区域或其它类型
-        return type.GetDisplayName() ?? type.Name;
+        return text != key ? text : null;
     }
+    #endregion
 
+    #region 类型解析
     /// <summary>获取实体表显示名</summary>
     /// <param name="entityType">实体类型</param>
     /// <returns>显示名，非实体或无法解析时返回 null</returns>
-    private static String? GetEntityDisplayName(Type? entityType)
+    public static String? GetEntityDisplayName(Type? entityType)
     {
         if (entityType == null) return null;
 
         var factory = EntityFactory.CreateFactory(entityType);
+
         return factory?.Table?.DataTable?.DisplayName;
     }
 
@@ -225,11 +233,12 @@ public static partial class MenuHelper
             if (t.IsGenericType)
             {
                 var name = t.GetGenericTypeDefinition().Name;
-                if (name.StartsWith("ReadOnlyEntityController`") || name.StartsWith("EntityController`"))
-                    return t.GetGenericArguments()[0];
+                if (name.StartsWith("ReadOnlyEntityController`") || name.StartsWith("EntityController`")) return t.GetGenericArguments()[0];
             }
             t = t.BaseType;
         }
+
         return null;
     }
+    #endregion
 }

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Reflection;
 using NewLife;
 using XCode.Membership;
 
@@ -74,8 +75,8 @@ public static partial class MenuHelper
         return list;
     }
 
-    /// <summary>按 FullName 解析菜单对应类型（含跨程序集回退）</summary>
-    /// <param name="fullName">类型全名</param>
+    /// <summary>按 FullName 解析菜单对应类型（含跨程序集回退与方法级菜单）</summary>
+    /// <param name="fullName">类型全名，或控制器全名加方法名</param>
     /// <returns>解析到的类型，未找到返回 null</returns>
     internal static Type ResolveMenuType(String fullName)
     {
@@ -89,6 +90,18 @@ public static partial class MenuHelper
             {
                 type = assembly.GetType(fullName);
                 if (type != null) break;
+            }
+        }
+
+        // 方法级菜单：去掉方法名后解析控制器，方法本身必须存在
+        if (type == null)
+        {
+            var p = fullName.LastIndexOf('.');
+            if (p > 0)
+            {
+                var method = fullName[(p + 1)..];
+                var controller = ResolveMenuType(fullName[..p]);
+                if (controller != null && controller.GetMethod(method, BindingFlags.Public | BindingFlags.Instance) != null) type = controller;
             }
         }
 
