@@ -127,6 +127,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
         ViewBag.SearchFields = OnGetFields(ViewKinds.Search, list);
         ViewBag.HasNext = hasNext;
 
+        // 工具栏自定义按钮：控制器上标注 [ToolbarButton] 的动作，由 _List_Toolbar_Custom 渲染
+        if (PageSetting.EnableToolbar) ViewBag.Toolbar = OnGetToolbar();
+
         // Json输出
         if (IsJsonRequest) return Json(0, null, list, new { page = p, hasNext });
 
@@ -1102,5 +1105,25 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
 
         return chart;
     }
+    #endregion
+
+    #region 工具栏按钮
+    private static ToolbarCollection _Toolbar;
+    /// <summary>工具栏按钮。与字段集合同层，静态声明；区域统一配置建议重写 <see cref="OnBuildToolbar"/></summary>
+    protected static ToolbarCollection Toolbar => _Toolbar ??= [];
+
+    /// <summary>获取当前页面的工具栏自定义按钮。克隆配置、合并动作特性、按权限过滤</summary>
+    /// <remarks>内置按钮（添加/导入/导出/批量删除/刷新）由 <see cref="PageSetting"/> 控制，这里只处理自定义按钮。</remarks>
+    /// <returns>已按权限过滤的按钮集合</returns>
+    protected virtual IList<ToolbarItem> OnGetToolbar()
+    {
+        var user = ManageProvider.User as IUser;
+
+        return ToolbarBuilder.Build(Toolbar, GetType(), OnBuildToolbar, user, Menu);
+    }
+
+    /// <summary>追加工具栏按钮。请求期执行，不依赖静态构造顺序；在权限过滤前调用</summary>
+    /// <param name="toolbar">按钮集合</param>
+    protected virtual void OnBuildToolbar(ToolbarCollection toolbar) { }
     #endregion
 }

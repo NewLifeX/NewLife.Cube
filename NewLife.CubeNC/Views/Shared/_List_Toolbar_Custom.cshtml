@@ -1,12 +1,24 @@
 @using NewLife.Common;
 @using NewLife.Cube
+@using NewLife.Cube.ViewModels
 @using XCode
 @{
     var user = ViewBag.User as IUser ?? User.Identity as IUser;
     var fact = ViewBag.Factory as IEntityFactory;
     var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+    var toolbar = ViewBag.Toolbar as IList<ToolbarItem>;
 }
-@*<button type="button" class="btn btn-purple btn-sm">
-    <span class="ace-icon fa fa-search icon-on-right bigger-110"></span>
-    @L.T("Custom button")
-</button>*@
+@if (toolbar != null && toolbar.Count > 0)
+{
+    foreach (var item in toolbar)
+    {
+        var type = item.Type.IsNullOrEmpty() ? "primary" : item.Type;
+        <button type="button" class="btn btn-sm btn-@type" data-action="action" data-url="@Url.Action(item.Action)" data-method="@item.Method" data-fields="@(item.Include == null ? "" : String.Join(",", item.Include))" data-confirm="@item.Confirm" disabled="@(item.RequiresSelection ? "disabled" : null)">
+            @if (!item.Icon.IsNullOrEmpty())
+            {
+                <i class="fa @item.Icon"></i>
+            }
+            @L.T(item.DisplayName)
+        </button>
+    }
+}

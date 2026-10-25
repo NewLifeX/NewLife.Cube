@@ -98,6 +98,10 @@
     <Compile Include="..\NewLife.Cube\Common\NoPermissionException.cs" Link="Common\NoPermissionException.cs" />
     <Compile Include="..\NewLife.Cube\Common\OAuthController.cs" Link="Common\OAuthController.cs" />
     <Compile Include="..\NewLife.Cube\Common\PageSetting.cs" Link="Common\PageSetting.cs" />
+    <Compile Include="..\NewLife.Cube\Common\ToolbarBuilder.cs" Link="Common\ToolbarBuilder.cs" />
+    <Compile Include="..\NewLife.Cube\Attributes\ToolbarButtonAttribute.cs" Link="Attributes\ToolbarButtonAttribute.cs" />
+    <Compile Include="..\NewLife.Cube\ViewModels\ToolbarItem.cs" Link="ViewModels\ToolbarItem.cs" />
+    <Compile Include="..\NewLife.Cube\ViewModels\ToolbarCollection.cs" Link="ViewModels\ToolbarCollection.cs" />
     <Compile Include="..\NewLife.Cube\Common\ReadOnlyEntityController2.cs" Link="Common\ReadOnlyEntityController2.cs" />
     <Compile Include="..\NewLife.Cube\Common\EntityPageRegistry.cs" Link="Common\EntityPageRegistry.cs" />
     <Compile Include="..\NewLife.Cube\Common\ViewHelper.cs" Link="Common\ViewHelper.cs" />
