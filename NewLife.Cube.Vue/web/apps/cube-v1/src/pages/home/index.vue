@@ -2,8 +2,8 @@
   <div class="home-container">
     <el-card class="welcome-card">
       <template #header>
-        <h1>Cube V1 API 管理系统</h1>
-        <p>基于 v1_OpenAPI.json 自动生成的 API 管理界面</p>
+        <h1>{{ t('apiHome.title') }}</h1>
+        <p>{{ t('apiHome.subtitle') }}</p>
       </template>
 
       <el-row :gutter="20">
@@ -15,12 +15,12 @@
             <div class="api-list">
               <el-button
                 v-for="api in cubeApis"
-                :key="api.name"
+                :key="api.nameKey"
                 type="primary"
                 @click="navigateToApi(api.path)"
                 class="api-button"
               >
-                {{ api.name }}
+                {{ t(api.nameKey) }}
               </el-button>
             </div>
           </el-card>
@@ -34,12 +34,12 @@
             <div class="api-list">
               <el-button
                 v-for="api in ssoApis"
-                :key="api.name"
+                :key="api.nameKey"
                 type="success"
                 @click="navigateToApi(api.path)"
                 class="api-button"
               >
-                {{ api.name }}
+                {{ t(api.nameKey) }}
               </el-button>
             </div>
           </el-card>
@@ -50,20 +50,26 @@
     <!-- 统计信息 -->
     <el-card class="stats-card">
       <template #header>
-        <h3>📊 统计信息</h3>
+        <h3>{{ t('apiHome.statsTitle') }}</h3>
       </template>
       <el-row :gutter="20">
         <el-col :span="6">
-          <el-statistic title="Cube API 数量" :value="cubeApis.length" />
+          <el-statistic :title="t('apiHome.cubeApiCount')" :value="cubeApis.length" />
         </el-col>
         <el-col :span="6">
-          <el-statistic title="SSO API 数量" :value="ssoApis.length" />
+          <el-statistic :title="t('apiHome.ssoApiCount')" :value="ssoApis.length" />
         </el-col>
         <el-col :span="6">
-          <el-statistic title="总 API 数量" :value="cubeApis.length + ssoApis.length" />
+          <el-statistic
+            :title="t('apiHome.totalApiCount')"
+            :value="cubeApis.length + ssoApis.length"
+          />
         </el-col>
         <el-col :span="6">
-          <el-statistic title="页面数量" :value="cubeApis.length + ssoApis.length" />
+          <el-statistic
+            :title="t('apiHome.pageCount')"
+            :value="cubeApis.length + ssoApis.length"
+          />
         </el-col>
       </el-row>
     </el-card>
@@ -71,7 +77,7 @@
     <!-- 最近访问 -->
     <el-card class="recent-card" v-if="recentVisited.length > 0">
       <template #header>
-        <h3>🕒 最近访问</h3>
+        <h3>{{ t('apiHome.recentTitle') }}</h3>
       </template>
       <div class="recent-list">
         <el-tag
@@ -81,7 +87,7 @@
           class="recent-tag"
           type="info"
         >
-          {{ item.name }}
+          {{ t(item.nameKey) }}
         </el-tag>
       </div>
     </el-card>
@@ -89,57 +95,219 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 
 interface ApiItem {
-  name: string;
+  nameKey: string;
   path: string;
   method: string;
-  description: string;
+  descKey: string;
 }
 
 const router = useRouter();
+const { t } = useI18n();
 
 // Cube API 列表
-const cubeApis = reactive<ApiItem[]>([
-  { name: 'Cube 信息', path: '/Cube/Info', method: 'GET', description: '获取 Cube 系统信息' },
-  { name: 'API 列表', path: '/Cube/Apis', method: 'GET', description: '获取所有可用的 API 列表' },
-  { name: '用户搜索', path: '/Cube/UserSearch', method: 'GET', description: '搜索用户信息' },
-  { name: '部门搜索', path: '/Cube/DepartmentSearch', method: 'GET', description: '搜索部门信息' },
-  { name: '获取区域', path: '/Cube/GetArea', method: 'GET', description: '获取指定区域信息' },
-  { name: '区域子节点', path: '/Cube/AreaChilds', method: 'GET', description: '获取区域的子节点' },
-  { name: '区域父节点', path: '/Cube/AreaParents', method: 'GET', description: '获取区域的父节点' },
-  { name: '区域所有父节点', path: '/Cube/AreaAllParents', method: 'GET', description: '获取区域的所有父节点' },
-  { name: '头像管理', path: '/Cube/Avatar', method: 'GET', description: '获取用户头像' },
-  { name: '查找配置', path: '/Cube/Lookup', method: 'GET', description: '查找系统配置' },
-  { name: '保存布局', path: '/Cube/SaveLayout', method: 'POST', description: '保存页面布局配置' },
-  { name: '获取页面配置', path: '/Cube/GetPageConfig', method: 'GET', description: '获取页面配置' },
-  { name: '设置页面配置', path: '/Cube/SetPageConfig', method: 'POST', description: '设置页面配置' },
-  { name: '图片管理', path: '/Cube/Image', method: 'GET', description: '图片资源管理' },
-  { name: '文件管理', path: '/Cube/File', method: 'GET', description: '文件资源管理' },
-]);
+const cubeApis: ApiItem[] = [
+  {
+    nameKey: 'apiHome.api.cubeInfo.name',
+    path: '/Cube/Info',
+    method: 'GET',
+    descKey: 'apiHome.api.cubeInfo.desc',
+  },
+  {
+    nameKey: 'apiHome.api.apiList.name',
+    path: '/Cube/Apis',
+    method: 'GET',
+    descKey: 'apiHome.api.apiList.desc',
+  },
+  {
+    nameKey: 'apiHome.api.userSearch.name',
+    path: '/Cube/UserSearch',
+    method: 'GET',
+    descKey: 'apiHome.api.userSearch.desc',
+  },
+  {
+    nameKey: 'apiHome.api.departmentSearch.name',
+    path: '/Cube/DepartmentSearch',
+    method: 'GET',
+    descKey: 'apiHome.api.departmentSearch.desc',
+  },
+  {
+    nameKey: 'apiHome.api.getArea.name',
+    path: '/Cube/GetArea',
+    method: 'GET',
+    descKey: 'apiHome.api.getArea.desc',
+  },
+  {
+    nameKey: 'apiHome.api.areaChilds.name',
+    path: '/Cube/AreaChilds',
+    method: 'GET',
+    descKey: 'apiHome.api.areaChilds.desc',
+  },
+  {
+    nameKey: 'apiHome.api.areaParents.name',
+    path: '/Cube/AreaParents',
+    method: 'GET',
+    descKey: 'apiHome.api.areaParents.desc',
+  },
+  {
+    nameKey: 'apiHome.api.areaAllParents.name',
+    path: '/Cube/AreaAllParents',
+    method: 'GET',
+    descKey: 'apiHome.api.areaAllParents.desc',
+  },
+  {
+    nameKey: 'apiHome.api.avatar.name',
+    path: '/Cube/Avatar',
+    method: 'GET',
+    descKey: 'apiHome.api.avatar.desc',
+  },
+  {
+    nameKey: 'apiHome.api.lookup.name',
+    path: '/Cube/Lookup',
+    method: 'GET',
+    descKey: 'apiHome.api.lookup.desc',
+  },
+  {
+    nameKey: 'apiHome.api.saveLayout.name',
+    path: '/Cube/SaveLayout',
+    method: 'POST',
+    descKey: 'apiHome.api.saveLayout.desc',
+  },
+  {
+    nameKey: 'apiHome.api.getPageConfig.name',
+    path: '/Cube/GetPageConfig',
+    method: 'GET',
+    descKey: 'apiHome.api.getPageConfig.desc',
+  },
+  {
+    nameKey: 'apiHome.api.setPageConfig.name',
+    path: '/Cube/SetPageConfig',
+    method: 'POST',
+    descKey: 'apiHome.api.setPageConfig.desc',
+  },
+  {
+    nameKey: 'apiHome.api.image.name',
+    path: '/Cube/Image',
+    method: 'GET',
+    descKey: 'apiHome.api.image.desc',
+  },
+  {
+    nameKey: 'apiHome.api.file.name',
+    path: '/Cube/File',
+    method: 'GET',
+    descKey: 'apiHome.api.file.desc',
+  },
+];
 
 // SSO API 列表
-const ssoApis = reactive<ApiItem[]>([
-  { name: 'SSO 登录', path: '/Sso/Login', method: 'GET', description: 'SSO 登录入口' },
-  { name: '登录信息', path: '/Sso/LoginInfo', method: 'GET', description: '获取登录信息' },
-  { name: 'SSO 登出', path: '/Sso/Logout', method: 'GET', description: 'SSO 登出' },
-  { name: '绑定账户', path: '/Sso/Bind', method: 'GET', description: '绑定 SSO 账户' },
-  { name: '解绑账户', path: '/Sso/UnBind', method: 'GET', description: '解绑 SSO 账户' },
-  { name: '授权认证', path: '/Sso/Authorize', method: 'GET', description: 'OAuth 授权认证' },
-  { name: 'Auth2 认证', path: '/Sso/Auth2', method: 'GET', description: 'Auth2 认证' },
-  { name: 'Access Token', path: '/Sso/Access_Token', method: 'GET/POST', description: '获取访问令牌' },
-  { name: 'Token 管理', path: '/Sso/Token', method: 'GET/POST', description: 'Token 管理' },
-  { name: '密码令牌', path: '/Sso/PasswordToken', method: 'GET/POST', description: '密码令牌管理' },
-  { name: '用户信息', path: '/Sso/UserInfo', method: 'GET', description: '获取用户信息' },
-  { name: '刷新令牌', path: '/Sso/Refresh_Token', method: 'GET/POST', description: '刷新访问令牌' },
-  { name: '认证验证', path: '/Sso/Auth', method: 'GET', description: '认证验证' },
-  { name: '获取密钥', path: '/Sso/GetKey', method: 'GET', description: '获取加密密钥' },
-  { name: '验证令牌', path: '/Sso/Verify', method: 'GET', description: '验证令牌有效性' },
-  { name: '用户认证', path: '/Sso/UserAuth', method: 'GET/POST', description: '用户认证' },
-  { name: 'SSO 头像', path: '/Sso/Avatar', method: 'GET', description: 'SSO 用户头像' },
-]);
+const ssoApis: ApiItem[] = [
+  {
+    nameKey: 'apiHome.api.ssoLogin.name',
+    path: '/Sso/Login',
+    method: 'GET',
+    descKey: 'apiHome.api.ssoLogin.desc',
+  },
+  {
+    nameKey: 'apiHome.api.loginInfo.name',
+    path: '/Sso/LoginInfo',
+    method: 'GET',
+    descKey: 'apiHome.api.loginInfo.desc',
+  },
+  {
+    nameKey: 'apiHome.api.ssoLogout.name',
+    path: '/Sso/Logout',
+    method: 'GET',
+    descKey: 'apiHome.api.ssoLogout.desc',
+  },
+  {
+    nameKey: 'apiHome.api.bind.name',
+    path: '/Sso/Bind',
+    method: 'GET',
+    descKey: 'apiHome.api.bind.desc',
+  },
+  {
+    nameKey: 'apiHome.api.unbind.name',
+    path: '/Sso/UnBind',
+    method: 'GET',
+    descKey: 'apiHome.api.unbind.desc',
+  },
+  {
+    nameKey: 'apiHome.api.authorize.name',
+    path: '/Sso/Authorize',
+    method: 'GET',
+    descKey: 'apiHome.api.authorize.desc',
+  },
+  {
+    nameKey: 'apiHome.api.auth2.name',
+    path: '/Sso/Auth2',
+    method: 'GET',
+    descKey: 'apiHome.api.auth2.desc',
+  },
+  {
+    nameKey: 'apiHome.api.accessToken.name',
+    path: '/Sso/Access_Token',
+    method: 'GET/POST',
+    descKey: 'apiHome.api.accessToken.desc',
+  },
+  {
+    nameKey: 'apiHome.api.token.name',
+    path: '/Sso/Token',
+    method: 'GET/POST',
+    descKey: 'apiHome.api.token.desc',
+  },
+  {
+    nameKey: 'apiHome.api.passwordToken.name',
+    path: '/Sso/PasswordToken',
+    method: 'GET/POST',
+    descKey: 'apiHome.api.passwordToken.desc',
+  },
+  {
+    nameKey: 'apiHome.api.userInfo.name',
+    path: '/Sso/UserInfo',
+    method: 'GET',
+    descKey: 'apiHome.api.userInfo.desc',
+  },
+  {
+    nameKey: 'apiHome.api.refreshToken.name',
+    path: '/Sso/Refresh_Token',
+    method: 'GET/POST',
+    descKey: 'apiHome.api.refreshToken.desc',
+  },
+  {
+    nameKey: 'apiHome.api.auth.name',
+    path: '/Sso/Auth',
+    method: 'GET',
+    descKey: 'apiHome.api.auth.desc',
+  },
+  {
+    nameKey: 'apiHome.api.getKey.name',
+    path: '/Sso/GetKey',
+    method: 'GET',
+    descKey: 'apiHome.api.getKey.desc',
+  },
+  {
+    nameKey: 'apiHome.api.verify.name',
+    path: '/Sso/Verify',
+    method: 'GET',
+    descKey: 'apiHome.api.verify.desc',
+  },
+  {
+    nameKey: 'apiHome.api.userAuth.name',
+    path: '/Sso/UserAuth',
+    method: 'GET/POST',
+    descKey: 'apiHome.api.userAuth.desc',
+  },
+  {
+    nameKey: 'apiHome.api.ssoAvatar.name',
+    path: '/Sso/Avatar',
+    method: 'GET',
+    descKey: 'apiHome.api.ssoAvatar.desc',
+  },
+];
 
 // 最近访问记录
 const recentVisited = ref<ApiItem[]>([]);
