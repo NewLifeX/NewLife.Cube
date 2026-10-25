@@ -3,38 +3,38 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>部门搜索</h3>
-          <el-button type="primary" @click="handleSearch">搜索部门</el-button>
+          <h3>{{ t('deptSearch.title') }}</h3>
+          <el-button type="primary" @click="handleSearch">{{ t('deptSearch.searchDept') }}</el-button>
         </div>
       </template>
 
       <el-form :inline="true" :model="searchForm" class="search-form">
-        <el-form-item label="上级部门ID">
-          <el-input-number v-model="searchForm.parentid" :min="-1" placeholder="上级部门ID" />
+        <el-form-item :label="t('deptSearch.parentId')">
+          <el-input-number v-model="searchForm.parentid" :min="-1" :placeholder="t('deptSearch.parentId')" />
         </el-form-item>
-        <el-form-item label="关键字">
-          <el-input v-model="searchForm.key" placeholder="请输入关键字" clearable />
+        <el-form-item :label="t('userSearch.keyword')">
+          <el-input v-model="searchForm.key" :placeholder="t('userSearch.keywordHint')" clearable />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="resetSearch">重置</el-button>
+          <el-button type="primary" @click="handleSearch">{{ t('button.search') }}</el-button>
+          <el-button @click="resetSearch">{{ t('button.reset') }}</el-button>
         </el-form-item>
       </el-form>
 
       <el-table :data="tableData" border style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="name" label="部门名称" min-width="150" />
-        <el-table-column prop="fullName" label="全名" min-width="200" />
-        <el-table-column prop="parentId" label="上级部门ID" width="120" />
-        <el-table-column prop="sort" label="排序" width="80" />
-        <el-table-column prop="manager" label="负责人" width="100" />
-        <el-table-column prop="phone" label="电话" width="120" />
-        <el-table-column prop="address" label="地址" min-width="150" />
-        <el-table-column prop="createTime" label="创建时间" width="160" />
-        <el-table-column label="状态" width="80">
+        <el-table-column prop="name" :label="t('deptSearch.deptName')" min-width="150" />
+        <el-table-column prop="fullName" :label="t('deptSearch.fullName')" min-width="200" />
+        <el-table-column prop="parentId" :label="t('deptSearch.parentId')" width="120" />
+        <el-table-column prop="sort" :label="t('common.sort')" width="80" />
+        <el-table-column prop="manager" :label="t('deptSearch.manager')" width="100" />
+        <el-table-column prop="phone" :label="t('deptSearch.phone')" width="120" />
+        <el-table-column prop="address" :label="t('deptSearch.address')" min-width="150" />
+        <el-table-column prop="createTime" :label="t('userSearch.createTime')" width="160" />
+        <el-table-column :label="t('userSearch.status')" width="80">
           <template #default="scope">
             <el-tag :type="scope.row.enable ? 'success' : 'danger'">
-              {{ scope.row.enable ? '启用' : '禁用' }}
+              {{ scope.row.enable ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
@@ -57,6 +57,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 
 // 定义搜索参数类型
@@ -85,6 +86,7 @@ const loading = ref(false);
 const total = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(10);
+const { t } = useI18n();
 
 // 查询表单
 const searchForm = reactive<DepartmentSearchParams>({
@@ -107,8 +109,9 @@ const loadData = async () => {
     if (Array.isArray(response)) {
       tableData.value = response.map((item, index) => ({
         id: item.id || index + 1,
-        name: item.name || `部门${index + 1}`,
-        fullName: item.fullName || item.name || `部门${index + 1}`,
+        name: item.name || t('deptSearch.defaultDeptName', { index: index + 1 }),
+        fullName:
+          item.fullName || item.name || t('deptSearch.defaultDeptName', { index: index + 1 }),
         parentId: item.parentId || item.parentID || 0,
         sort: item.sort || 0,
         manager: item.manager || '',

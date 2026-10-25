@@ -3,40 +3,48 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>用户搜索</h3>
-          <el-button type="primary" @click="handleSearch">搜索用户</el-button>
+          <h3>{{ t('userSearch.title') }}</h3>
+          <el-button type="primary" @click="handleSearch">{{ t('userSearch.searchUser') }}</el-button>
         </div>
       </template>
 
       <el-form :inline="true" :model="searchForm" class="search-form">
-        <el-form-item label="角色ID">
-          <el-input-number v-model="searchForm.roleId" :min="0" placeholder="角色ID" />
+        <el-form-item :label="t('userSearch.roleId')">
+          <el-input-number
+            v-model="searchForm.roleId"
+            :min="0"
+            :placeholder="t('userSearch.roleId')"
+          />
         </el-form-item>
-        <el-form-item label="部门ID">
-          <el-input-number v-model="searchForm.departmentId" :min="0" placeholder="部门ID" />
+        <el-form-item :label="t('userSearch.departmentId')">
+          <el-input-number
+            v-model="searchForm.departmentId"
+            :min="0"
+            :placeholder="t('userSearch.departmentId')"
+          />
         </el-form-item>
-        <el-form-item label="关键字">
-          <el-input v-model="searchForm.key" placeholder="请输入关键字" clearable />
+        <el-form-item :label="t('userSearch.keyword')">
+          <el-input v-model="searchForm.key" :placeholder="t('userSearch.keywordHint')" clearable />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="resetSearch">重置</el-button>
+          <el-button type="primary" @click="handleSearch">{{ t('button.search') }}</el-button>
+          <el-button @click="resetSearch">{{ t('button.reset') }}</el-button>
         </el-form-item>
       </el-form>
 
       <el-table :data="tableData" border style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="name" label="用户名" min-width="120" />
-        <el-table-column prop="displayName" label="显示名称" min-width="120" />
-        <el-table-column prop="email" label="邮箱" min-width="150" />
-        <el-table-column prop="mobile" label="手机号" min-width="120" />
-        <el-table-column prop="roleId" label="角色ID" width="80" />
-        <el-table-column prop="departmentId" label="部门ID" width="80" />
-        <el-table-column prop="createTime" label="创建时间" width="160" />
-        <el-table-column label="状态" width="80">
+        <el-table-column prop="name" :label="t('userSearch.userName')" min-width="120" />
+        <el-table-column prop="displayName" :label="t('userSearch.displayName')" min-width="120" />
+        <el-table-column prop="email" :label="t('userSearch.email')" min-width="150" />
+        <el-table-column prop="mobile" :label="t('userSearch.mobile')" min-width="120" />
+        <el-table-column prop="roleId" :label="t('userSearch.roleId')" width="80" />
+        <el-table-column prop="departmentId" :label="t('userSearch.departmentId')" width="80" />
+        <el-table-column prop="createTime" :label="t('userSearch.createTime')" width="160" />
+        <el-table-column :label="t('userSearch.status')" width="80">
           <template #default="scope">
             <el-tag :type="scope.row.enable ? 'success' : 'danger'">
-              {{ scope.row.enable ? '启用' : '禁用' }}
+              {{ scope.row.enable ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
@@ -59,6 +67,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 
 // 定义搜索参数类型
@@ -87,6 +96,7 @@ const loading = ref(false);
 const total = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(10);
+const { t } = useI18n();
 
 // 查询表单
 const searchForm = reactive<UserSearchParams>({
@@ -111,8 +121,9 @@ const loadData = async () => {
     if (Array.isArray(response)) {
       tableData.value = response.map((item, index) => ({
         id: item.id || index + 1,
-        name: item.name || `用户${index + 1}`,
-        displayName: item.displayName || item.name || `用户${index + 1}`,
+        name: item.name || t('userSearch.defaultUserName', { index: index + 1 }),
+        displayName:
+          item.displayName || item.name || t('userSearch.defaultUserName', { index: index + 1 }),
         email: item.email || item.mail || '',
         mobile: item.mobile || item.phone || '',
         roleId: item.roleId || item.roleID || 0,

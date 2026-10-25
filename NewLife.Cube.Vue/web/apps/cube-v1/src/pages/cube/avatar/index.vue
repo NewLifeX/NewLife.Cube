@@ -3,18 +3,22 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>头像管理</h3>
-          <el-button type="primary" @click="handleGetAvatar">获取头像</el-button>
+          <h3>{{ t('cubeAvatar.title') }}</h3>
+          <el-button type="primary" @click="handleGetAvatar">{{ t('cubeAvatar.getAvatar') }}</el-button>
         </div>
       </template>
 
       <el-form :inline="true" :model="searchForm" class="search-form">
-        <el-form-item label="用户ID">
-          <el-input-number v-model="searchForm.id" placeholder="请输入用户ID" :min="0" />
+        <el-form-item :label="t('saveLayout.userId')">
+          <el-input-number
+            v-model="searchForm.id"
+            :placeholder="t('saveLayout.userIdHint')"
+            :min="0"
+          />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleGetAvatar">获取头像</el-button>
-          <el-button @click="resetSearch">重置</el-button>
+          <el-button type="primary" @click="handleGetAvatar">{{ t('cubeAvatar.getAvatar') }}</el-button>
+          <el-button @click="resetSearch">{{ t('button.reset') }}</el-button>
         </el-form-item>
       </el-form>
 
@@ -33,25 +37,29 @@
             <div class="avatar-info">
               <h4>{{ avatar.name }}</h4>
               <p>ID: {{ avatar.id }}</p>
-              <p>更新时间: {{ avatar.updateTime }}</p>
+              <p>{{ t('cubeAvatar.updatedAt') }}: {{ avatar.updateTime }}</p>
             </div>
             <div class="avatar-actions">
-              <el-button type="primary" size="small" @click="viewAvatar(avatar)">查看</el-button>
-              <el-button type="success" size="small" @click="downloadAvatar(avatar)">下载</el-button>
+              <el-button type="primary" size="small" @click="viewAvatar(avatar)">
+                {{ t('cubeAvatar.view') }}
+              </el-button>
+              <el-button type="success" size="small" @click="downloadAvatar(avatar)">
+                {{ t('cubeAvatar.download') }}
+              </el-button>
             </div>
           </el-card>
         </el-col>
       </el-row>
 
       <!-- 如果没有头像 -->
-      <el-empty v-else-if="searchForm.id && !loading" description="未找到头像" />
+      <el-empty v-else-if="searchForm.id && !loading" :description="t('cubeAvatar.notFound')" />
 
       <!-- 加载状态 -->
       <div v-loading="loading" class="loading-container" />
     </el-card>
 
     <!-- 头像查看对话框 -->
-    <el-dialog v-model="dialogVisible" title="头像查看" width="500px">
+    <el-dialog v-model="dialogVisible" :title="t('cubeAvatar.viewTitle')" width="500px">
       <div class="dialog-avatar-container" v-if="selectedAvatar">
         <img
           :src="selectedAvatar.url"
@@ -59,15 +67,19 @@
           class="dialog-avatar-image"
         />
         <el-descriptions :column="1" class="avatar-details">
-          <el-descriptions-item label="用户ID">{{ selectedAvatar.id }}</el-descriptions-item>
-          <el-descriptions-item label="用户名">{{ selectedAvatar.name }}</el-descriptions-item>
-          <el-descriptions-item label="头像URL">{{ selectedAvatar.url }}</el-descriptions-item>
-          <el-descriptions-item label="更新时间">{{ selectedAvatar.updateTime }}</el-descriptions-item>
+          <el-descriptions-item :label="t('saveLayout.userId')">{{ selectedAvatar.id }}</el-descriptions-item>
+          <el-descriptions-item :label="t('saveLayout.name')">{{ selectedAvatar.name }}</el-descriptions-item>
+          <el-descriptions-item :label="t('cubeAvatar.avatarUrl')">{{ selectedAvatar.url }}</el-descriptions-item>
+          <el-descriptions-item :label="t('cubeAvatar.updatedAt')">
+            {{ selectedAvatar.updateTime }}
+          </el-descriptions-item>
         </el-descriptions>
       </div>
       <template #footer>
-        <el-button @click="dialogVisible = false">关闭</el-button>
-        <el-button type="primary" @click="downloadAvatar(selectedAvatar)">下载头像</el-button>
+        <el-button @click="dialogVisible = false">{{ t('button.close') }}</el-button>
+        <el-button type="primary" @click="downloadAvatar(selectedAvatar)">
+          {{ t('cubeAvatar.downloadAvatar') }}
+        </el-button>
       </template>
     </el-dialog>
   </div>
@@ -75,6 +87,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { request } from '@newlifex/cube-vue/core/utils/request';
 import { ElMessage } from 'element-plus';
 
@@ -100,11 +113,12 @@ const avatarList = ref<AvatarData[]>([]);
 const loading = ref(false);
 const dialogVisible = ref(false);
 const selectedAvatar = ref<AvatarData | null>(null);
+const { t } = useI18n();
 
 // 获取头像
 const handleGetAvatar = async () => {
   if (!searchForm.id) {
-    ElMessage.warning('请输入用户ID');
+    ElMessage.warning(t('saveLayout.userIdRequired'));
     return;
   }
 
@@ -122,27 +136,27 @@ const handleGetAvatar = async () => {
       const url = URL.createObjectURL(response);
       const avatarData: AvatarData = {
         id: searchForm.id,
-        name: `用户${searchForm.id}`,
+        name: t('cubeAvatar.userName', { id: searchForm.id }),
         url,
         updateTime: new Date().toLocaleString(),
       };
 
       avatarList.value = [avatarData];
-      ElMessage.success('头像获取成功');
+      ElMessage.success(t('cubeAvatar.getSuccess'));
     } else {
       // 如果返回的是URL字符串或其他格式
       const avatarData: AvatarData = {
         id: searchForm.id,
-        name: `用户${searchForm.id}`,
+        name: t('cubeAvatar.userName', { id: searchForm.id }),
         url: typeof response === 'string' ? response : `/Cube/Avatar?id=${searchForm.id}`,
         updateTime: new Date().toLocaleString(),
       };
 
       avatarList.value = [avatarData];
-      ElMessage.success('头像获取成功');
+      ElMessage.success(t('cubeAvatar.getSuccess'));
     }
   } catch {
-    ElMessage.error('头像获取失败');
+    ElMessage.error(t('cubeAvatar.getFailed'));
     avatarList.value = [];
   } finally {
     loading.value = false;
@@ -172,7 +186,7 @@ const downloadAvatar = (avatar: AvatarData | null) => {
   link.click();
   document.body.removeChild(link);
 
-  ElMessage.success('头像下载完成');
+  ElMessage.success(t('cubeAvatar.downloadDone'));
 };
 
 // 图片加载错误处理
