@@ -88,6 +88,40 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
     private static FieldItem GetDeleteField() => Factory.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Deleted", "IsDelete", "IsDeleted") && e.Type == typeof(Boolean));
 
+    /// <summary>批量启用。主键集合放在请求的 keys 参数（查询串、表单或 JSON 体均可）</summary>
+    /// <param name="reason">操作原因，写入操作日志</param>
+    /// <returns>实际改动的行数</returns>
+    /// <remarks>对齐 MVC 的 EnableSelect 动作：实体必须含 Boolean 类型 Enable 字段，权限要求为修改。</remarks>
+    [EntityAuthorize(PermissionFlags.Update)]
+    [DisplayName("Batch enable")]
+    [HttpPost("/api/[area]/[controller]/enableSelect")]
+    public virtual ApiResponse<Int32> EnableSelect(String reason = null) => SetEnableSelect(true, reason);
+
+    /// <summary>批量禁用。主键集合放在请求的 keys 参数（查询串、表单或 JSON 体均可）</summary>
+    /// <param name="reason">操作原因，写入操作日志</param>
+    /// <returns>实际改动的行数</returns>
+    /// <remarks>对齐 MVC 的 DisableSelect 动作：实体必须含 Boolean 类型 Enable 字段，权限要求为修改。</remarks>
+    [EntityAuthorize(PermissionFlags.Update)]
+    [DisplayName("Batch disable")]
+    [HttpPost("/api/[area]/[controller]/disableSelect")]
+    public virtual ApiResponse<Int32> DisableSelect(String reason = null) => SetEnableSelect(false, reason);
+
+    private ApiResponse<Int32> SetEnableSelect(Boolean isEnable, String reason)
+    {
+        var act = L.T(isEnable ? "Batch enable" : "Batch disable");
+        try
+        {
+            var count = EnableOrDisableSelect(isEnable, reason);
+
+            return new ApiResponse<Int32> { Code = 0, Message = L.T("{0} succeeded! Total {1} rows", act, count), Data = count };
+        }
+        catch (Exception ex)
+        {
+            var fail = BuildFailResponse(ex, act, null);
+            return new ApiResponse<Int32> { Code = fail.Code, Message = fail.Message, FieldErrors = fail.FieldErrors };
+        }
+    }
+
     /// <summary>
     /// 批量启用或禁用
     /// </summary>

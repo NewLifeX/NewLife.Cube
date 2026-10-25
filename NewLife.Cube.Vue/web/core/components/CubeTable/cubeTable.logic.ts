@@ -401,6 +401,19 @@ export function defaultColumnsStorageKey(prefix: string): string {
 }
 
 /**
+ * 是否提供批量启用/禁用。
+ *
+ * 对齐 MVC `_List_Toolbar.cshtml` 的自动注入规则：实体含 Boolean 类型的 `Enable` 字段时，
+ * 批量区多出「批量启用 / 批量禁用」两个动作（后端 `enableSelect` / `disableSelect`）。
+ * @param fields 列表字段元数据
+ */
+export function canBatchEnable(fields: FieldMeta[]): boolean {
+  return (fields ?? []).some(
+    (field) => field.name?.toLowerCase() === 'enable' && /bool/i.test(field.typeName ?? ''),
+  );
+}
+
+/**
  * 多值归一：数组 / JSON 数组串 / 逗号串 / 单值 → `string[]`。
  * 与 `ListTableContent.vue:116-133` 同一口径（多选 LOV 列后端可能以任意外形下发）。
  */

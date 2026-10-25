@@ -10,9 +10,16 @@ import { computed, ref, useSlots, type Component } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
-import { Document, Download, Delete, Plus, Upload } from '@element-plus/icons-vue';
+import { Document, Download, Delete, Plus, Upload, CircleCheck, CircleClose } from '@element-plus/icons-vue';
 import request from '../../utils/request';
-import { buildToolbarPayload, parseToolbarResult, resolveToolbarFlags, toolbarKeyField, toolbarQueryString } from './cubeTable.logic';
+import {
+  buildToolbarPayload,
+  canBatchEnable,
+  parseToolbarResult,
+  resolveToolbarFlags,
+  toolbarKeyField,
+  toolbarQueryString,
+} from './cubeTable.logic';
 import { getToolbarRenderer, toolbarDisabled } from './toolbarRenderers';
 import { usePagePermissions } from '../../composables/usePagePermissions';
 import type { BackendToolbarItem, CubeEngineContext } from '../../engine/types';
@@ -55,6 +62,50 @@ const busy = computed(() => props.ctx.submitting.value);
 /** 正在执行的工具栏按钮名，防止重复提交 */
 const pending = ref<string | null>(null);
 
+/** 实体含 Boolean 类型 Enable 字段时提供批量启用/禁用（与 MVC 工具栏自动注入同口径） */
+const batchEnableAvailable = computed(() => canBatchEnable(props.ctx.listFields.value));
+
+/** 勾选行主键（与工具栏动作同一取键口径） */
+function selectedKeys(): unknown[] {
+  const key = keyField.value;
+  return props.ctx.selected.value
+    .map((row) => row[key] ?? row[key.toLowerCase()] ?? row[key.toUpperCase()])
+    .filter((value) => value !== null && value !== undefined && value !== '');
+}
+
+/** 批量启用 / 禁用：POST 到后端 enableSelect / disableSelect，成功后刷新列表 */
+async function batchSetEnable(enable: boolean): Promise<void> {
+  const keys = selectedKeys();
+  if (keys.length === 0 || pending.value) return;
+
+  const act = enable ? 'enableSelect' : 'disableSelect';
+  const label = enable ? t('grid.batchEnable') : t('grid.batchDisable');
+  try {
+    await ElMessageBox.confirm(t('grid.batchEnableConfirm', { count: keys.length, action: label }), {
+      type: 'warning',
+    });
+  } catch {
+    return;
+  }
+
+  pending.value = label;
+  try {
+    const res = (await request({
+      url: `${props.ctx.apiPrefix.value}/${act}`,
+      method: 'post',
+      data: { keys: keys.join(',') },
+    })) as { message?: string } | undefined;
+    ElMessage.success(res?.message || t('common.saveSuccess'));
+    props.ctx.setSelected([]);
+    await props.ctx.refresh();
+  } catch (err) {
+    // 请求层已统一提示，这里只避免未捕获 rejection
+    console.error('[CubeTable] batch enable/disable failed:', err);
+  } finally {
+    pending.value = null;
+  }
+}
+
 type ElButtonType = 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger';
 
 /** 后端声明的自定义按钮；custom 类型只保留已注册渲染器的（未注册时告警一次并跳过） */
@@ -87,7 +138,12 @@ const visible = computed(
   () =>
     Boolean(slots.default || slots.extra) ||
     toolbarViews.value.length > 0 ||
-    (!flags.value.readOnly && (flags.value.add || flags.value.batchDelete || flags.value.importFile || flags.value.downloadTemplate)) ||
+    (!flags.value.readOnly &&
+      (flags.value.add ||
+        flags.value.batchDelete ||
+        flags.value.importFile ||
+        flags.value.downloadTemplate ||
+        batchEnableAvailable.value)) ||
     flags.value.exportFile,
 );
 
@@ -263,6 +319,29 @@ function applyToolbarResult(res?: { message?: string; data?: Record<string, unkn
       </template>
 
       <el-button v-if="flags.exportFile" :icon="Download" @click="actions.exportNow()">{{ t('grid.export') }}</el-button>
+
+      <el-button
+        v-if="batchEnableAvailable && !flags.readOnly"
+        type="success"
+        plain
+        :icon="CircleCheck"
+        :disabled="selectedCount === 0 || busy"
+        data-role="batch-enable"
+        @click="batchSetEnable(true)"
+      >
+        {{ t('grid.batchEnable') }}
+      </el-button>
+      <el-button
+        v-if="batchEnableAvailable && !flags.readOnly"
+        type="warning"
+        plain
+        :icon="CircleClose"
+        :disabled="selectedCount === 0 || busy"
+        data-role="batch-disable"
+        @click="batchSetEnable(false)"
+      >
+        {{ t('grid.batchDisable') }}
+      </el-button>
 
       <el-button
         v-if="flags.batchDelete && !flags.readOnly"

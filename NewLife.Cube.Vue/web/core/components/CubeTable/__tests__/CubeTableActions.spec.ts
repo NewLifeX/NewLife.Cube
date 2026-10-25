@@ -17,7 +17,7 @@ import { nextTick, ref } from 'vue';
 import { mount } from '@vue/test-utils';
 import ElementPlus from 'element-plus';
 import CubeTableActions from '../CubeTableActions.vue';
-import { makeFakeActions, makeFakeCtx } from './fakeCtx';
+import { makeFakeActions, makeFakeCtx, FIELDS, type FakeCtxOptions } from './fakeCtx';
 import type { BackendToolbarItem, PageSetting } from '../../../engine/types';
 import { testI18n } from '../../../__tests__/helpers/i18n';
 
@@ -95,6 +95,53 @@ describe('CubeTableActions 按钮显隐', () => {
       flags: { exportFile: false },
     });
     expect(wrapper.find('.cta').exists()).toBe(false);
+  });
+});
+
+describe('CubeTableActions 批量启用/禁用', () => {
+  async function mountWithEnable(listFields: FakeCtxOptions['listFields'], selected: Record<string, unknown>[] = []) {
+    const ctx = makeFakeCtx({ setting: {}, listFields, selected });
+    const actions = makeFakeActions();
+    const wrapper = mount(CubeTableActions, {
+      props: { ctx, actions, flags: {} },
+      global: { plugins: [ElementPlus, testI18n] },
+    });
+    await nextTick();
+    return { wrapper, ctx, actions };
+  }
+
+  it('应该只在含布尔 Enable 字段时出现 当实体没有启用字段时', async () => {
+    const { wrapper } = await mountWithEnable([FIELDS.id, FIELDS.name]);
+    expect(wrapper.find('[data-role="batch-enable"]').exists()).toBe(false);
+    expect(wrapper.find('[data-role="batch-disable"]').exists()).toBe(false);
+  });
+
+  it('应该无勾选时禁用、勾选后可点 当实体含 Enable 字段时', async () => {
+    const empty = await mountWithEnable([FIELDS.id, FIELDS.enable], []);
+    expect(empty.wrapper.find('[data-role="batch-enable"]').attributes('disabled')).toBeDefined();
+
+    const picked = await mountWithEnable([FIELDS.id, FIELDS.enable], [{ id: 7 }, { id: 8 }]);
+    expect(picked.wrapper.find('[data-role="batch-enable"]').attributes('disabled')).toBeUndefined();
+  });
+
+  it('应该按主键集合请求 enableSelect 并刷新 当确认批量启用时', async () => {
+    const { wrapper, ctx } = await mountWithEnable([FIELDS.id, FIELDS.enable], [{ id: 7 }, { id: 8 }]);
+    const refresh = vi.fn(async () => undefined);
+    ctx.refresh = refresh;
+    requestStub.mockResolvedValueOnce({ code: 0, message: 'ok' });
+
+    await wrapper.find('[data-role="batch-enable"]').trigger('click');
+    await nextTick();
+    // 二次确认弹窗：点「确定」后要等确认 Promise 与请求链结算
+    const confirm = document.querySelector('.el-message-box__btns .el-button--primary') as HTMLElement;
+    confirm?.click();
+    for (let i = 0; i < 4; i++) await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const call = requestStub.mock.calls.at(-1)?.[0] as { url: string; method: string; data: { keys: string } };
+    expect(call.url).toContain('enableSelect');
+    expect(call.method).toBe('post');
+    expect(call.data.keys).toBe('7,8');
+    expect(refresh).toHaveBeenCalled();
   });
 });
 

@@ -14,6 +14,7 @@ import {
   buildColumnViews,
   buildSearchControl,
   buildToolbarPayload,
+  canBatchEnable,
   cellBoolean,
   cellLinkUrl,
   cellParts,
@@ -241,8 +242,7 @@ describe('CubeTable/logic 列视图', () => {
   });
 });
 
-describe('CubeTable/logic 工具栏与表格开关', () => {
-  it('应该默认开新增导入导出刷新、模板默认关 当后端没给开关时', () => {
+describe('CubeTable/logic 工具栏与表格开关', () => {  it('应该默认开新增导入导出刷新、模板默认关 当后端没给开关时', () => {
     expect(resolveToolbarFlags({})).toEqual({
       add: true,
       batchDelete: true,
@@ -286,6 +286,14 @@ describe('CubeTable/logic 工具栏与表格开关', () => {
   it('应该默认关索引列与双击编辑 当后端没声明时', () => {
     expect(resolveGridFlags({}, {})).toMatchObject({ indexColumn: false, doubleClickEdit: false });
     expect(resolveGridFlags({}, { enableTableDoubleClick: true }).doubleClickEdit).toBe(true);
+  });
+
+  it('应该只在实体含布尔 Enable 字段时给批量启用/禁用', () => {
+    // 对齐 MVC `_List_Toolbar.cshtml`：仅默认批量区 + Boolean Enable 字段才注入
+    expect(canBatchEnable([FIELDS.name, FIELDS.enable])).toBe(true);
+    expect(canBatchEnable([{ name: 'Enable', displayName: '启用', typeName: 'Int32' }])).toBe(false);
+    expect(canBatchEnable([{ name: 'Enabled', displayName: '启用', typeName: 'Boolean' }])).toBe(false);
+    expect(canBatchEnable([])).toBe(false);
   });
 });
 

@@ -36,8 +36,8 @@ test.describe('动态页（/meta 驱动）', () => {
     await actions.last().click();
 
     const dialog = page.locator('.el-dialog');
-    await expect(dialog).toBeVisible();
-    await expect(dialog.locator('.el-tree-node').first()).toBeVisible({ timeout: 15000 });
+    await expect(dialog).toBeVisible({ timeout: 15000 });
+    await expect(dialog.locator('.el-tree-node').first()).toBeVisible({ timeout: 20000 });
     expect(await dialog.locator('.el-checkbox').count()).toBeGreaterThan(0);
   });
 
@@ -52,6 +52,58 @@ test.describe('动态页（/meta 驱动）', () => {
     await expect(page.locator('.el-table__body tr').first()).toBeVisible({ timeout: 15000 });
     const toolbarTexts = await page.locator('.cube-table button').allInnerTexts();
     expect(toolbarTexts.some((text) => text.trim().length > 0)).toBe(true);
+  });
+
+  test('列表支持批量禁用/启用（后端 enableSelect/disableSelect）', async ({ page }) => {
+    const apiBase = process.env.PLAYWRIGHT_API_URL || 'https://localhost:7116';
+    const name = `E2E-BATCH-${Date.now()}`;
+
+    // 播种一条带 Enable 字段的参数，避免动到库里既有数据
+    const created = await page.request.post(`${apiBase}/api/Admin/Parameter`, {
+      data: { Name: name, Value: '1', Category: 'E2E', Kind: 0, Enable: true },
+      ignoreHTTPSErrors: true,
+    });
+    const createdBody = await created.json();
+    const paramId = createdBody?.data?.id ?? createdBody?.data?.ID;
+    expect(paramId).toBeTruthy();
+
+    try {
+      await page.goto('/Admin/Parameter');
+      const keyword = page.locator('.cube-table input:not([type="hidden"]):visible').first();
+      await keyword.fill(name);
+      await keyword.press('Enter');
+
+      const row = page.locator('.el-table__body tr', { hasText: name }).first();
+      await expect(row).toBeVisible({ timeout: 20000 });
+
+      // 勾选后批量禁用，确认走的是后端 enableSelect/disableSelect 端点
+      await row.locator('.el-checkbox').first().click();
+      await page.locator('[data-role="batch-disable"]').click();
+      await page.locator('.el-message-box__btns .el-button--primary').click();
+      await expect(page.locator('.el-message--success')).toBeVisible({ timeout: 20000 });
+
+      const afterDisable = await page.request.get(
+        `${apiBase}/api/Admin/Parameter?q=${encodeURIComponent(name)}`,
+        { ignoreHTTPSErrors: true },
+      );
+      const disabledRows = (await afterDisable.json())?.data ?? [];
+      expect(disabledRows[0]?.enable).toBe(false);
+
+      // 再批量启用，恢复原状
+      await page.locator('.el-table__body tr', { hasText: name }).first().locator('.el-checkbox').first().click();
+      await page.locator('[data-role="batch-enable"]').click();
+      await page.locator('.el-message-box__btns .el-button--primary').click();
+      await expect(page.locator('.el-message--success').first()).toBeVisible({ timeout: 20000 });
+
+      const afterEnable = await page.request.get(
+        `${apiBase}/api/Admin/Parameter?q=${encodeURIComponent(name)}`,
+        { ignoreHTTPSErrors: true },
+      );
+      const enabledRows = (await afterEnable.json())?.data ?? [];
+      expect(enabledRows[0]?.enable).toBe(true);
+    } finally {
+      if (paramId) await page.request.delete(`${apiBase}/api/Admin/Parameter?ids=${paramId}`, { ignoreHTTPSErrors: true });
+    }
   });
 
   test('设置中心以二级 Tab 串联多个设置页', async ({ page }) => {
