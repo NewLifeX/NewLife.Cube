@@ -20,6 +20,7 @@ import {
   cellRawValue,
   cellText,
   cellTitle,
+  dictLabel,
   fieldHeader,
   formatDecimalCell,
   formatDotNetDate,
@@ -303,6 +304,19 @@ describe('CubeTable/logic 操作列自适应与收起', () => {
     expect(layoutRowActions(8).width).toBe(layoutRowActions(5).width);
   });
 
+  it('应该按按钮文案撑宽 当不同语言下文案长度不同时', () => {
+    // 固定 56px 单元宽会把 Delete / Löschen 挤成「删除…」，按文案估算才够放
+    const zh = layoutRowActions(3, ['查看', '编辑', '删除']);
+    const en = layoutRowActions(3, ['View', 'Edit', 'Delete']);
+    const de = layoutRowActions(3, ['Ansehen', 'Bearbeiten', 'Löschen']);
+
+    expect(zh.width).toBeGreaterThan(208);
+    expect(en.width).toBeGreaterThan(zh.width);
+    expect(de.width).toBeGreaterThan(en.width);
+    // 收起时最后一个位置是「更多」，文案一并参与估算
+    expect(layoutRowActions(6, ['查看', '编辑', '删除', '更多']).folded).toBe(true);
+  });
+
   it('应该按一个单元保底 当动作数为 0 时', () => {
     // 空列表也要给操作列一个稳定宽度，不能退化成 0 宽把表头挤变形
     expect(layoutRowActions(0).width).toBe(80);
@@ -375,6 +389,23 @@ describe('CubeTable/logic 单元格渲染', () => {
     }
     // 0 与 false 是有效值，必须显示出来
     expect(cellParts(view(FIELDS.count), 0)).toEqual(['0']);
+  });
+
+  it('应该按后端字典显示文案 当列是枚举字段时', () => {
+    // 后端对枚举字段下发 dataSource（键为字符串形式的值），前端不再维护枚举映射表
+    const kindEnum: FieldMeta = {
+      name: 'Kind',
+      displayName: '种类',
+      typeName: 'ParameterKinds',
+      dataSource: { '0': '普通', '21': '列表' },
+    };
+    expect(cellText(view(kindEnum), 21)).toBe('列表');
+    expect(cellText(view(kindEnum), '0')).toBe('普通');
+    // 字典里没有的值不假装有文案，回落到原值
+    expect(cellText(view(kindEnum), 99)).toBe('99');
+    expect(dictLabel(kindEnum, 21)).toBe('列表');
+    expect(dictLabel(kindEnum, 99)).toBe('');
+    expect(dictLabel(FIELDS.name, 'x')).toBe('');
   });
 
   it('应该只给纯文本类列开溢出提示 当列形态各异时', () => {

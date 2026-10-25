@@ -46,6 +46,7 @@ import {
   linkTemplateHasValue,
   isOverflowTooltipCell,
   layoutRowActions,
+  MAX_VISIBLE_ACTIONS,
   resolveGridFlags,
   splitRowActions,
 } from './cubeTable.logic';
@@ -203,10 +204,21 @@ const rowActionsOf = (row: Record<string, unknown>): CubeRowAction[] => [
 ];
 
 // 列宽取当前页各行动作数的最大值：个别行藏了动作不至于把「更多」挤变形；
-// 列表为空时按内置三键给宽。
+// 列表为空时按内置三键给宽。宽度按按钮文案估算，换语言不会把「删除」挤成「删除…」
 const actionLayout = computed(() => {
-  const counts = rows.value.map((row) => rowActionsOf(row).length);
-  return layoutRowActions(counts.length ? Math.max(...counts) : builtinRowActions.value.length);
+  const all = rows.value.map((row) => rowActionsOf(row));
+  const widest = all.reduce<CubeRowAction[]>(
+    (best, current) => (current.length > best.length ? current : best),
+    [],
+  );
+  const actions = widest.length ? widest : builtinRowActions.value;
+
+  const labels =
+    actions.length > MAX_VISIBLE_ACTIONS
+      ? [...actions.slice(0, MAX_VISIBLE_ACTIONS - 1).map((action) => action.label), t('grid.more')]
+      : actions.map((action) => action.label);
+
+  return layoutRowActions(actions.length, labels);
 });
 const resolvedActionWidth = computed(() => props.actionWidth ?? actionLayout.value.width);
 

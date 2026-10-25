@@ -315,10 +315,11 @@ describe('CubeTableGrid 勾选列与操作列', () => {
     expect(wrapper.text()).not.toContain('编辑');
   });
 
-  it('应该按动作数自适应列宽 当未显式指定 actionWidth 时', async () => {
-    // 内置三键按 208 给宽（旧固定 168 会把「删除」裁成只剩图标）
+  it('应该按动作文案自适应列宽 当未显式指定 actionWidth 时', async () => {
+    // 内置三键（查看/编辑/删除）按中文文案估算出 220（旧固定 168 会把「删除」裁成只剩图标，
+    // 而固定 56/单元又放不下英文的 Delete / 德文的 Löschen）
     const ctx = makeFakeCtx({ listFields: [FIELDS.name], list: [{ Name: 'a' }] });
-    expect(actionWidthOf(await mountGrid(ctx))).toBe(208);
+    expect(actionWidthOf(await mountGrid(ctx))).toBe(220);
   });
 
   it('应该让页面显式列宽优先于自适应 当传入 actionWidth 时', async () => {
@@ -332,7 +333,7 @@ describe('CubeTableGrid 勾选列与操作列', () => {
     const extra = { key: 'dispatch', label: '派工', onClick: vi.fn() };
     const wrapper = await mountGrid(ctx, { props: { extraRowActions: [extra] } });
     expect(wrapper.text()).toContain('派工');
-    expect(actionWidthOf(wrapper)).toBe(272);
+    expect(actionWidthOf(wrapper)).toBe(288);
   });
 
   it('应该只露前 3 个加更多 当单行动作超过 4 个时', async () => {
@@ -345,8 +346,8 @@ describe('CubeTableGrid 勾选列与操作列', () => {
     // 第 4、5 个不再直接铺在行里，而是收进下拉（popper 未展开不渲染）
     expect(text).not.toContain('派工');
     expect(text).not.toContain('停用');
-    // 列宽按 4 个单元封顶，不再随动作数继续增长
-    expect(actionWidthOf(wrapper)).toBe(272);
+    // 列宽按 4 个单元封顶（3 个直接动作 + 「更多」），不再随动作数继续增长
+    expect(actionWidthOf(wrapper)).toBe(288);
     // 下拉 command 接回原动作回调，带的是本行数据
     wrapper.findComponent({ name: 'ElDropdown' }).vm.$emit('command', 0);
     await nextTick();

@@ -430,6 +430,24 @@ export function truncate(text: string, len = 40): string {
 }
 
 /**
+ * 枚举 / 字典列的显示文案（后端 `dataSource` 下发的本地化字典）。
+ *
+ * 后端对枚举型字段会下发 `{ "0": "普通", "3": "布尔型" }` 这类字典（键是字符串形式的值，文案已按界面语言本地化）。
+ * 列表单元格按它翻译，前端不再维护字段的枚举映射表——与 MVC 直接显示后端枚举描述同一口径。
+ *
+ * @param field 列表字段元数据
+ * @param raw 行数据里的原始值
+ * @returns 字典文案；未命中返回空串，由调用方回落到其它格式化
+ */
+export function dictLabel(field: FieldMeta, raw: unknown): string {
+  const dict = field.dataSource;
+  if (!dict || raw === null || raw === undefined || raw === '') return '';
+
+  const label = dict[String(raw)];
+  return typeof label === 'string' ? label : '';
+}
+
+/**
  * 单元格的「片段数组」：值集列返回逐项标签（多值渲染成标签），其它列返回单元素数组。
  * 文本渲染与标签渲染共用它，避免两条分支对值集的处理漂移。
  */
@@ -727,6 +745,10 @@ export function formatDecimalCell(field: FieldMeta, raw: unknown): string {
 
 /** 非值集列的显示文本 */
 function singleCellText(column: CubeColumnView, raw: unknown): string {
+  // 枚举/字典列：后端在 dataSource 里下发了本地化后的「值 → 文案」，列表直接显示文案（对齐 MVC 枚举列口径）
+  const label = dictLabel(column.field, raw);
+  if (label !== '') return label;
+
   const itemType = column.field.itemType;
   if (isPercentItemType(itemType)) return formatPercentCell(column.field, raw);
   if (isMoneyItemType(itemType)) return formatMoneyCell(column.field, raw);
@@ -974,6 +996,9 @@ export const MAX_VISIBLE_ACTIONS = 4;
 /** 单个行操作按钮的估算宽度（link 样式：图标 + 两字文本） */
 const ACTION_BUTTON_WIDTH = 56;
 
+/** 按钮图标 + 图标与文字间距 + 按钮左右内边距的估算合计 */
+const ACTION_ICON_EXTRA = 34;
+
 /** 操作列单元格左右内边距的估算合计 */
 const ACTION_CELL_PADDING = 24;
 
@@ -989,16 +1014,37 @@ export interface RowActionLayout {
 }
 
 /**
+ * 估算单个行操作按钮宽度：中日韩字符按全角、其余按半角累加，再加图标与内边距。
+ *
+ * 文案随界面语言变化（查看 60px / Delete 79px / Löschen 88px），固定值会把按钮挤成「删除…」。
+ * @param label 按钮文案
+ * @returns 估算宽度（px），不低于固定单元宽
+ */
+export function estimateActionWidth(label: string): number {
+  const text = label ?? '';
+  const wide = (text.match(/[\u2e80-\u9fff\uff00-\uffef\u3000-\u303f]/g) ?? []).length;
+  const narrow = text.length - wide;
+  return Math.max(ACTION_BUTTON_WIDTH, Math.round(wide * 13 + narrow * 7.5 + ACTION_ICON_EXTRA));
+}
+
+/**
  * 按行动作数计算操作列布局：
  * ≤4 个全部直接显示、列宽随个数增长；>4 个只露前 3 个 + 「更多」下拉，
  * 列宽按 4 个单元封顶（后续新加的动作一律进「更多」，不再撑宽列）。
+ *
+ * @param count 单行动作数
+ * @param labels 直接显示的按钮文案（按显示顺序，可含「更多」）；缺省按固定单元宽估算
  */
-export function layoutRowActions(count: number): RowActionLayout {
+export function layoutRowActions(count: number, labels?: string[]): RowActionLayout {
   const unitCount = Math.max(Math.min(count, MAX_VISIBLE_ACTIONS), 1);
-  return {
-    folded: count > MAX_VISIBLE_ACTIONS,
-    width: ACTION_CELL_PADDING + unitCount * ACTION_BUTTON_WIDTH + (unitCount - 1) * ACTION_BUTTON_GAP,
-  };
+  const width =
+    labels && labels.length >= unitCount
+      ? ACTION_CELL_PADDING +
+        labels.slice(0, unitCount).reduce((sum, label) => sum + estimateActionWidth(label), 0) +
+        (unitCount - 1) * ACTION_BUTTON_GAP
+      : ACTION_CELL_PADDING + unitCount * ACTION_BUTTON_WIDTH + (unitCount - 1) * ACTION_BUTTON_GAP;
+
+  return { folded: count > MAX_VISIBLE_ACTIONS, width };
 }
 
 /**
