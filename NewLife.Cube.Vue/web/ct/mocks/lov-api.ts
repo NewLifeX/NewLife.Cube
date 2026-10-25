@@ -2,13 +2,13 @@
 // - SAMPLE：普通列表（5 条，pageable:false 故事用）。
 // - PAGED：分页列表（23 条，code 含 'Paged' 时分页故事用，pageSize 默认 20 → 2 页）。
 const SAMPLE = [
-  { id: 1, name: '管理员' },
-  { id: 2, name: '普通用户' },
-  { id: 3, name: '审计员' },
-  { id: 4, name: '访客' },
-  { id: 5, name: '只读用户' },
+  { id: 1, name: 'Administrator' },
+  { id: 2, name: 'Normal user' },
+  { id: 3, name: 'Auditor' },
+  { id: 4, name: 'Guest' },
+  { id: 5, name: 'Read-only user' },
 ];
-const PAGED = Array.from({ length: 23 }, (_, i) => ({ id: i + 1, name: `用户${i + 1}` }));
+const PAGED = Array.from({ length: 23 }, (_, i) => ({ id: i + 1, name: `User ${i + 1}` }));
 
 function paginate(
   req: { lovCode?: string; pageNum?: number; pageSize?: number } | undefined,
@@ -49,14 +49,14 @@ export const fetchLovMeta = async (lovCode: string): Promise<{
         {
           lovCode,
           type: 'LIST',
-          name: '用户',
+          name: 'User',
           valueField: 'id',
           labelField: 'name',
           listConfig: { pageable: false },
           searchFields: [],
           tableColumns: [
-            { field: 'id', title: '编号' },
-            { field: 'name', title: '名称' },
+            { field: 'id', title: 'No.' },
+            { field: 'name', title: 'Name' },
           ],
         },
       ],
@@ -71,11 +71,11 @@ export const fetchLovMeta = async (lovCode: string): Promise<{
       {
         lovCode,
         type: 'ENUM',
-        name: '状态',
+        name: 'Status',
         options: [
-          { value: '0', label: '草稿' },
-          { value: '1', label: '启用' },
-          { value: '2', label: '禁用' },
+          { value: '0', label: 'Draft' },
+          { value: '1', label: 'Enabled' },
+          { value: '2', label: 'Disabled' },
         ],
       },
     ],

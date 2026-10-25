@@ -31,7 +31,7 @@ function unmountCurrent() {
 // 与真实弹窗打开行为一致（避免改组件源码加 immediate）。
 (window as unknown as Record<string, unknown>).mountStory = (id: string, props?: Record<string, unknown>) => {
   const s = registry.get(id);
-  if (!s) throw new Error(`未知 story: ${id}`);
+    if (!s) throw new Error(`Unknown story: ${id}`);
   unmountCurrent();
   mountEl = document.createElement('div');
   mountEl.classList.add('gal-preview');
@@ -57,12 +57,12 @@ function renderGalleryNav() {
   const nav = document.getElementById('gallery-nav');
   if (!nav) return;
   document.body.classList.add('has-nav');
-  nav.innerHTML = '<h3>组件故事（点击预览）</h3>';
+  nav.innerHTML = '<h3>Component stories (click to preview)</h3>';
 
   // 按 story id 的 '/' 前缀分组（如 LovSelectTable / LovSelect），避免故事多了侧栏过长。
   const groups = new Map<string, typeof stories>();
   for (const s of stories) {
-    const key = s.id.includes('/') ? s.id.split('/')[0] : '(其他)';
+    const key = s.id.includes('/') ? s.id.split('/')[0] : '(Other)';
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key)!.push(s);
   }
@@ -139,7 +139,7 @@ function mountOnlyStory(id: string) {
   if (!s) {
     document.body.innerHTML =
       `<div style="padding:24px;color:#f56c6c;font-family:system-ui,sans-serif;line-height:1.8">` +
-      `未知 story: <b>${id}</b><br/>可用故事：<br/>` +
+      `Unknown story: <b>${id}</b><br/>Available stories:<br/>` +
       stories.map((x) => x.id).join('<br/>') +
       `</div>`;
     return;

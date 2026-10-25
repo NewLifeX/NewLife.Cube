@@ -5,13 +5,13 @@
 // 与真实后端"列表自身行不入 inlineEnums、靠组件登记/兜底拉取"的行为一致——不作弊塞 inlineEnums。
 
 const SAMPLE = [
-  { id: 1, name: '管理员' },
-  { id: 2, name: '普通用户' },
-  { id: 3, name: '审计员' },
-  { id: 4, name: '访客' },
-  { id: 5, name: '只读用户' },
+  { id: 1, name: 'Administrator' },
+  { id: 2, name: 'Normal user' },
+  { id: 3, name: 'Auditor' },
+  { id: 4, name: 'Guest' },
+  { id: 5, name: 'Read-only user' },
 ];
-const PAGED = Array.from({ length: 23 }, (_, i) => ({ id: i + 1, name: `用户${i + 1}` }));
+const PAGED = Array.from({ length: 23 }, (_, i) => ({ id: i + 1, name: `User ${i + 1}` }));
 
 function sourceFor(lovCode?: string) {
   return lovCode?.includes('Paged') ? PAGED : SAMPLE;
@@ -34,9 +34,9 @@ export function getMeta(lovCode: string): Promise<{ type: string; options?: unkn
   return Promise.resolve({
     type: 'ENUM',
     options: [
-      { value: '0', label: '草稿' },
-      { value: '1', label: '启用' },
-      { value: '2', label: '禁用' },
+      { value: '0', label: 'Draft' },
+      { value: '1', label: 'Enabled' },
+      { value: '2', label: 'Disabled' },
     ],
   });
 }

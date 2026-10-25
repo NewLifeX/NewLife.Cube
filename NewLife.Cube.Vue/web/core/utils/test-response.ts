@@ -10,9 +10,9 @@ const mockResponse = {
   "data": [
     {
       "id": 190,
-      "name": "测试2",
-      "displayName": "测试2",
-      "mail": "测试2@qq.com",
+      "name": "test2",
+      "displayName": "test2",
+      "mail": "test2@qq.com",
       "enable": true
     }
   ],

@@ -40,7 +40,7 @@ const loginPageUrl = reLoginParams?.loginPageUrl || '/login';
 // 先初始化微前端应用路由（异步操作）
 // 我们不会等待其完成再导出router，但会在导航守卫中检查初始化状态
 initAppRoutes(router).catch((error) => {
-  console.error('初始化微应用路由失败:', error);
+  console.error('Failed to initialize micro-app routes:', error);
 });
 
 // 全局导航守卫
