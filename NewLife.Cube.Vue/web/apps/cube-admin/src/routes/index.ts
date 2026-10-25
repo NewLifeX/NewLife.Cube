@@ -27,12 +27,7 @@ const routes: RouteRecordRaw[] = [
     name: 'admin-index',
     component: () => import('../views/admin/index/index.vue'),
   },
-  // 菜单管理（菜单树 + 拖拽排序 + 图标选择）
-  {
-    path: '/Admin/Menu',
-    name: 'admin-menu',
-    component: () => import('../views/admin/menu/index.vue'),
-  },
+
 
   // 角色管理（菜单权限树）
   {

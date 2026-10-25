@@ -49,6 +49,8 @@ export interface PageSetting {
   orderByKey?: boolean;
   /** 删除是否需要二次确认 */
   doubleDelete?: boolean;
+  /** 树形列表：前端把扁平列表按父字段组装成父子层级并以树形表格渲染 */
+  tree?: boolean;
   /** 当前页面菜单编号，用于和用户权限串匹配 */
   menuId?: number;
   /** 页面动作所需权限位。有效权限由前端结合用户信息计算 */

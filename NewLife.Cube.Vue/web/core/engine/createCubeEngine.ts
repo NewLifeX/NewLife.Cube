@@ -293,6 +293,9 @@ export function createCubeEngine(
     pageSetting.value = normalized.setting;
     ui.value = normalized.ui;
     toolbarItems.value = meta?.toolbar ?? [];
+
+    // 树形列表：分页会把父节点裁掉导致树不完整，改为一次取足够多的行
+    if (normalized.setting.tree && sizePerPage.value < 1000) sizePerPage.value = 1000;
   }
 
   /**

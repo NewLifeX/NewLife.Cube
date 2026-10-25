@@ -17,6 +17,9 @@ public class EntityTreeController<TEntity> : EntityTreeController<TEntity, TEnti
 /// <typeparam name="TModel">数据模型，用于接口数据传输</typeparam>
 public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, TModel> where TEntity : EntityTree<TEntity>, new()
 {
+    /// <summary>树形实体按树渲染列表（前端据 /meta 的 setting.tree 组装父子层级）</summary>
+    protected override Boolean EnableTree => true;
+
     static EntityTreeController()
     {
         var type = typeof(TEntity);

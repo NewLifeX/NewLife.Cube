@@ -35,6 +35,7 @@ import { resolveAssetUrl } from '../../utils/url';
 import { isBlankCell } from '../../engine/logic';
 import {
   buildColumnViews,
+  buildTreeRows,
   cellBoolean,
   cellLinkUrl,
   cellParts,
@@ -102,6 +103,10 @@ const columns = computed(() =>
   buildColumnViews(props.ctx.listFields.value, props.visibility, { order: props.columnOrder }),
 );
 const rows = computed(() => props.ctx.list.value);
+/** 树形列表：按父字段把扁平结果组装成父子层级（setting.tree 由后端元数据下发） */
+const treeMode = computed(() => props.ctx.pageSetting.value?.tree === true);
+const tableRows = computed(() => (treeMode.value ? buildTreeRows(rows.value as Record<string, unknown>[]) : rows.value));
+const tableRowKey = computed(() => (treeMode.value ? 'id' : undefined));
 const flags = computed(() =>
   resolveGridFlags(
     {
@@ -214,8 +219,11 @@ const onAction = (action: CubeRowAction, row: Record<string, unknown>) => void a
   <el-table
     v-bind="$attrs"
     v-loading="ctx.loading.value"
-    :data="rows"
+    :data="tableRows"
     :height="height"
+    :row-key="tableRowKey"
+    :tree-props="treeMode ? { children: 'children' } : undefined"
+    :default-expand-all="treeMode"
     border
     class="ctg"
     @selection-change="(sel: Record<string, unknown>[]) => ctx.setSelected(sel)"

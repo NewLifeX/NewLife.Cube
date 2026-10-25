@@ -1018,6 +1018,50 @@ export function toolbarKeyField(fields: FieldMeta[]): string {
 }
 
 /**
+ * 把扁平列表按父字段组装成树（`setting.tree` 为真的列表用）。
+ *
+ * - 父字段按 `parentID` / `parentId` / `ParentID` 依次探测，取行上实际存在的那个；
+ * - 找不到父节点的行按根节点处理（分页裁剪、父级被权限过滤时不会丢行）；
+ * - 保持同层原顺序，子节点挂在 `children` 上；入参不被修改。
+ * @param rows 接口返回的扁平行
+ * @returns 树形行
+ */
+export function buildTreeRows(rows: Record<string, unknown>[]): Record<string, unknown>[] {
+  if (!rows?.length) return [];
+
+  const parentKeys = ['parentID', 'parentId', 'ParentID', 'ParentId'];
+  const first = rows[0];
+  const parentKey = parentKeys.find((key) => key in first);
+  if (!parentKey) return rows;
+
+  const idOf = (row: Record<string, unknown>) => {
+    const id = row['id'] ?? row['ID'] ?? row['Id'];
+    return id == null ? '' : String(id);
+  };
+
+  const nodes = new Map<string, Record<string, unknown>>();
+  for (const row of rows) nodes.set(idOf(row), { ...row });
+
+  const roots: Record<string, unknown>[] = [];
+  for (const row of rows) {
+    const node = nodes.get(idOf(row))!;
+    const parentId = row[parentKey];
+    const parent = parentId == null ? undefined : nodes.get(String(parentId));
+
+    if (!parent || parent === node) {
+      roots.push(node);
+      continue;
+    }
+
+    const children = (parent['children'] as Record<string, unknown>[] | undefined) ?? [];
+    children.push(node);
+    parent['children'] = children;
+  }
+
+  return roots;
+}
+
+/**
  * 组装工具栏按钮的提交参数。
  *
  * 口径对齐 MVC 的 `data-fields`：名称 `keys` 表示选中行主键（逗号拼接，与批量删除的

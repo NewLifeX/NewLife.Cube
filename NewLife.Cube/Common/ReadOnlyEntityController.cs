@@ -138,6 +138,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
     /// <summary>是否启用主时间字段区间查询。默认启用，特殊页面或测试可重写关闭</summary>
     protected virtual Boolean EnableTimeRange => true;
 
+    /// <summary>是否树形列表。树形实体的子类重写为 true，前端据此把扁平列表组装成父子层级</summary>
+    protected virtual Boolean EnableTree => false;
+
     /// <summary>获取页面元数据。视图自描述，list/form/add/detail/search 各自输出完整字段数组</summary>
     /// <remarks>
     /// 默认要求登录（不需要具体权限位）。公开页面需要匿名获取元数据时，在子类重写本方法并标注 <see cref="AllowAnonymousAttribute"/>。
@@ -161,6 +164,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX, IEntit
             PageSetting.EnableTableDoubleClick,
             PageSetting.OrderByKey,
             PageSetting.DoubleDelete,
+            // 树形实体：前端据此把扁平列表组装成父子层级并以树形表格渲染
+            tree = EnableTree,
             // 开发模式（SysConfig.Develop），开发功能仅开发模式可用
             develop = SysConfig.Current.Develop,
             // 当前用户是否系统管理员。开发功能仅系统管理员可用
