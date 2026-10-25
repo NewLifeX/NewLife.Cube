@@ -123,6 +123,8 @@ public class DemoController : EntityController<DemoEntity>
 
 若只需标准表格列表 + 弹窗新增/编辑，**无需创建任何前端文件**，后端 Controller 创建完成后刷新即可访问。
 
+> **字段标签禁止手写**：实体页/设置页的字段名与提示由 `/meta` 的 `displayName` / `description` 提供（后端已按 `Accept-Language` 翻译），前端**不要**写 `t('xxx.fieldName')` 字段键，也不要手写列清单。只有元数据表达不了的交互才建自定义页面，并在提交说明里写明理由。
+
 #### 自定义页面（需创建 index.vue）
 
 非标准 CRUD 布局、看板、图表、自定义交互等场景，按「页面目录结构」在对应路径创建 `index.vue`：
@@ -197,6 +199,7 @@ const res = await api.getList({ pageIndex: 0, pageSize: 20 });
 5. **`useCubeApi` 内置 `onFieldError` 会 `ElMessage.error`**：业务页**不要**再对字段错误重复弹窗；只在需要时处理业务级错误。
 6. **不要臆造后端字段名 / Area 名**：字段名必须与实体属性名大小写一致；Area 必须加 `[XxxArea]` 特性；分页从 0 开始，`getList` 传 `pageIndex: page - 1`，总条数取 `res.page.totalCount`。
 7. **先有原型再写组件**：自定义页面（看板/图表等）必须先拿到原型参考（HTML/截图/描述），不要凭空发挥布局。
+8. **字段标签禁止手写（元数据红线）**：实体页/设置页的字段名与字段提示一律取后端 `/meta`（`displayName` / `description` / `category` / `dataSource`），**禁止**写 `t('模块.字段')` 字段键或手写 `el-table-column` 列清单；前端词表只放界面文案（按钮、空态、确认框、客户端校验）。需要局部定制用 M2（`CubeTable` + 具名插槽），整页自定义（M3）仅限元数据表达不了的交互（工作台、图表、表结构诊断、列配置、权限树、拖拽、上传），且提交说明写明理由。详见仓库 `Doc/规范/前端.md` §3。
 
 ## 参考文件
 
