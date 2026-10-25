@@ -79,7 +79,7 @@ public class AreaBase : AreaAttribute
         if (menu != null)
         {
             var des = areaType.GetDescription();
-            var changed = MenuHelper.SyncDisplayName(menu, areaType.GetDisplayName(), areaName, areaType.Name);
+            var changed = MenuHelper.SyncDisplayName(menu, areaType.FullName, areaType.GetDisplayName(), areaName, areaType.Name);
 
             if (menu.Remark.IsNullOrEmpty() && !des.IsNullOrEmpty()) { menu.Remark = des; changed = true; }
 

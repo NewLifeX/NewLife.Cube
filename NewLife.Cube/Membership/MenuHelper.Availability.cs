@@ -77,7 +77,7 @@ public static partial class MenuHelper
     /// <summary>按 FullName 解析菜单对应类型（含跨程序集回退）</summary>
     /// <param name="fullName">类型全名</param>
     /// <returns>解析到的类型，未找到返回 null</returns>
-    static Type ResolveMenuType(String fullName)
+    internal static Type ResolveMenuType(String fullName)
     {
         if (fullName.IsNullOrEmpty()) return null;
         if (_types.TryGetValue(fullName, out var type)) return type;

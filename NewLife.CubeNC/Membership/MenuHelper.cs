@@ -15,19 +15,6 @@ namespace NewLife.Cube.Membership;
 /// </summary>
 public static partial class MenuHelper
 {
-    /// <summary>获取菜单显示名。自动生成的菜单按当前请求语言翻译，用户自定义名称缺词条时原样返回</summary>
-    /// <param name="menu">菜单</param>
-    /// <returns>本地化显示名</returns>
-    public static String? GetDisplayName(IMenu menu)
-    {
-        if (menu == null) return null;
-
-        var name = menu.DisplayName;
-        if (name.IsNullOrEmpty()) name = menu.Name;
-
-        return name.IsNullOrEmpty() ? name : L.T(name);
-    }
-
     /// <summary>获取权限子项显示名。标准权限位从枚举取源文，自定义动作保留 {type} 模板</summary>
     /// <param name="menu">菜单</param>
     /// <param name="key">权限位</param>
@@ -119,8 +106,8 @@ public static partial class MenuHelper
             }
         }
 
-        // 区域根菜单：自动项跟随代码源文，用户自定义名称保持不动
-        SyncDisplayName(root, areaType.GetDisplayName(), rootName, areaType.Name);
+        // 区域根菜单：自动项落库区域类型全名，用户自定义名称保持不动
+        SyncDisplayName(root, areaType.FullName, areaType.GetDisplayName(), rootName, areaType.Name);
 
         if (root.FullName != nameSpace) root.FullName = nameSpace;
         (root as IEntity).Save();
@@ -158,21 +145,23 @@ public static partial class MenuHelper
                     if (controller2 is IEntity entity) entity.Delete();
                 }
             }
+            var entityType = GetEntityType(type);
+            var menuKey = BuildMenuKey(type, entityType);
+            var friendly = GetEntityDisplayName(entityType) ?? type.GetDisplayName();
+
             if (controller == null)
             {
                 controller = menuFactory.FindByUrl(url);
                 if (controller == null)
                 {
-                    // 菜单名是持久化数据，建菜单时只保存源文；页面标题等运行时文案由消费端按请求语言翻译
-                    var displayName = type.GetDisplayName();
-
-                    controller = node.Add(name, displayName, type.FullName, url);
-                    MarkAutoName(controller, displayName);
+                    // 菜单名是持久化数据，建菜单时只保存规范键；页面标题等运行时文案由消费端按请求语言翻译
+                    controller = node.Add(name, menuKey, type.FullName, url);
+                    MarkAutoName(controller, menuKey);
                 }
             }
 
-            // 旧版本按启动语言落库的自动菜单归一化为源文；用户自定义名称不动
-            SyncDisplayName(controller, type.GetDisplayName(), name, type.Name);
+            // 旧版本落库的源文/译文归一化为类型全名；用户自定义名称不动
+            SyncDisplayName(controller, menuKey, friendly, name, type.Name);
             controller.Url = url;
             controller.FullName = type.FullName;
             if (controller.Remark.IsNullOrEmpty()) controller.Remark = type.GetDescription();
@@ -181,7 +170,6 @@ public static partial class MenuHelper
             list.Add(controller);
 
             // 注册实体类型到页面的映射，供外键跳转链接使用
-            var entityType = GetEntityType(type);
             if (entityType != null)
             {
                 var factory = EntityFactory.CreateFactory(entityType);
@@ -310,12 +298,13 @@ public static partial class MenuHelper
         var factory = pi?.GetValue(null, null) as IEntityFactory;
         //if (factory == null) return dic;
 
-        // 设置显示名。实体表显示名同样是源文，落库后由渲染期翻译
+        // 设置显示名。实体控制器兜底为类型全名，落库后由渲染期翻译
         if (menu.DisplayName.IsNullOrEmpty() && factory != null)
         {
-            menu.DisplayName = factory.Table.DataTable.DisplayName;
+            var key = BuildMenuKey(controllerType, GetEntityType(controllerType));
+            menu.DisplayName = key;
             menu.Visible = true;
-            MarkAutoName(menu, menu.DisplayName);
+            MarkAutoName(menu, key);
             //menu.Save();
         }
 
@@ -338,15 +327,15 @@ public static partial class MenuHelper
                 // 添加系统信息菜单
                 var name = method.Name;
                 var m2 = menu.Parent.Childs.FirstOrDefault(_ => _.Name == name);
+                var m2Key = $"{controllerType.FullName}.{name}";
                 if (m2 == null)
                 {
-                    var dn = method.GetDisplayName();
-                    m2 = menu.Parent.Add(name, dn, $"{controllerType.FullName}.{name}", $"{menu.Url}/{name}");
-                    MarkAutoName(m2, dn);
+                    m2 = menu.Parent.Add(name, m2Key, m2Key, $"{menu.Url}/{name}");
+                    MarkAutoName(m2, m2Key);
                 }
                 else
                 {
-                    SyncDisplayName(m2, method.GetDisplayName(), name);
+                    SyncDisplayName(m2, m2Key, method.GetDisplayName(), name);
                 }
                 if (m2.Sort == 0) m2.Sort = attMenu.Order;
                 if (m2.Icon.IsNullOrEmpty()) m2.Icon = attMenu.Icon;
@@ -449,24 +438,5 @@ public static partial class MenuHelper
         }
 
         return _admins[key] = false;
-    }
-
-    /// <summary>从控制器类型的继承链中提取 ReadOnlyEntityController&lt;TEntity&gt; 的泛型实参</summary>
-    /// <param name="controllerType">控制器类型</param>
-    /// <returns>实体类型，非实体控制器返回 null</returns>
-    private static Type GetEntityType(Type controllerType)
-    {
-        var t = controllerType;
-        while (t != null && t != typeof(Object))
-        {
-            if (t.IsGenericType)
-            {
-                var name = t.GetGenericTypeDefinition().Name;
-                if (name.StartsWith("ReadOnlyEntityController`") || name.StartsWith("EntityController`"))
-                    return t.GetGenericArguments()[0];
-            }
-            t = t.BaseType;
-        }
-        return null;
     }
 }
