@@ -189,6 +189,10 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
         userInfo.SetPermission(user.Roles);
         userInfo.SetRoleNames(user.Roles);
 
+        // 系统管理员放行全部动作：前端据此跳过 menuId#flags 权限串判断。
+        // 该字段与是否开启多租户无关，必须无条件下发（角色权限串对系统管理员通常是空的）。
+        userInfo.IsSystemAdmin = user.Roles.Any(e => e.IsSystem);
+
         // 多租户信息：当前租户 + 用户可切换租户列表。未开启多租户时全部为空/空列表，前端据此隐藏租户 UI
         var set = CubeSetting.Current;
         userInfo.EnableTenant = set.EnableTenant;
@@ -197,7 +201,6 @@ public class AuthController(UserService userService, VerifyCodeService verifyCod
             var tc = TenantContext.Current;
             userInfo.TenantId = TenantContext.CurrentId;
             userInfo.TenantMode = (Int32)tc.GetTenantMode();
-            userInfo.IsSystemAdmin = user.Roles.Any(e => e.IsSystem);
 
             if (userInfo.TenantId > 0)
             {
