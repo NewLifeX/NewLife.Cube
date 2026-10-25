@@ -824,6 +824,7 @@ export default {
   'common.copy': 'Kopieren',
   'common.tip': 'Hinweis',
   'common.saveSuccess': 'Erfolgreich gespeichert',
+  'settingsCenter.unavailable': 'Keine Berechtigung oder Laden fehlgeschlagen',
   'common.addSuccess': 'Erfolgreich hinzugefügt',
   'common.addFailed': 'Hinzufügen fehlgeschlagen',
   'common.updateSuccess': 'Erfolgreich aktualisiert',

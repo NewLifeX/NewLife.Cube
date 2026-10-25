@@ -901,6 +901,7 @@ export default {
   'common.copy': '복사',
   'common.tip': '팁',
   'common.saveSuccess': '저장되었습니다',
+  'settingsCenter.unavailable': '권한이 없거나 불러오지 못했습니다',
   'common.addSuccess': '추가되었습니다',
   'common.addFailed': '추가에 실패했습니다',
   'common.updateSuccess': '수정되었습니다',

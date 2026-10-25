@@ -908,6 +908,7 @@ export default {
   'common.copy': 'Copier',
   'common.tip': 'Astuce',
   'common.saveSuccess': 'Enregistré avec succès',
+  'settingsCenter.unavailable': 'Aucune autorisation ou échec du chargement',
   'common.addSuccess': 'Ajouté avec succès',
   'common.addFailed': 'Échec de l\'ajout',
   'common.updateSuccess': 'Mis à jour avec succès',

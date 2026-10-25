@@ -9,7 +9,7 @@ using NewLife.Serialization;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>系统设置控制器</summary>
-[DisplayName("Cube settings")]
+[DisplayName("Settings center")]
 [AdminArea]
 [Menu(30, true, Icon = "Tools")]
 public class CubeController : ConfigController<CubeSetting>, IPageDataContext

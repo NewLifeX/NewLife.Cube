@@ -918,6 +918,7 @@ export default {
   'common.copy': 'Copy',
   'common.tip': 'Tip',
   'common.saveSuccess': 'Saved successfully',
+  'settingsCenter.unavailable': 'No permission or failed to load',
   'common.addSuccess': 'Added successfully',
   'common.addFailed': 'Failed to add',
   'common.updateSuccess': 'Updated successfully',

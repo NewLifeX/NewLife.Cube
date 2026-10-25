@@ -863,6 +863,7 @@ export default {
   'common.copy': 'نسخ',
   'common.tip': 'تلميح',
   'common.saveSuccess': 'تم الحفظ بنجاح',
+  'settingsCenter.unavailable': 'لا توجد صلاحية أو فشل التحميل',
   'common.addSuccess': 'تمت الإضافة بنجاح',
   'common.addFailed': 'فشلت الإضافة',
   'common.updateSuccess': 'تم التحديث بنجاح',

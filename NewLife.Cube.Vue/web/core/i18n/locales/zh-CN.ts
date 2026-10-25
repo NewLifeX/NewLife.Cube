@@ -915,6 +915,7 @@ export default {
   'common.copy': '复制',
   'common.tip': '提示',
   'common.saveSuccess': '保存成功',
+  'settingsCenter.unavailable': '暂无权限或加载失败',
   'common.addSuccess': '新增成功',
   'common.addFailed': '新增失败',
   'common.updateSuccess': '更新成功',

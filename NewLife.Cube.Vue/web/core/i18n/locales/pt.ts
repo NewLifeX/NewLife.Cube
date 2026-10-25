@@ -824,6 +824,7 @@ export default {
   'common.copy': 'Copiar',
   'common.tip': 'Dica',
   'common.saveSuccess': 'Salvo com sucesso',
+  'settingsCenter.unavailable': 'Sem permissão ou falha ao carregar',
   'common.addSuccess': 'Adicionado com sucesso',
   'common.addFailed': 'Falha ao adicionar',
   'common.updateSuccess': 'Atualizado com sucesso',

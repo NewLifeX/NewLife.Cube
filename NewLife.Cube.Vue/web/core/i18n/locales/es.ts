@@ -903,6 +903,7 @@ export default {
   'common.copy': 'Copiar',
   'common.tip': 'Sugerencia',
   'common.saveSuccess': 'Guardado correctamente',
+  'settingsCenter.unavailable': 'Sin permisos o error de carga',
   'common.addSuccess': 'Agregado correctamente',
   'common.addFailed': 'No se pudo agregar',
   'common.updateSuccess': 'Actualizado correctamente',

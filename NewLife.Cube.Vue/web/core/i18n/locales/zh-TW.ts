@@ -899,6 +899,7 @@ export default {
   'common.copy': '複製',
   'common.tip': '提示',
   'common.saveSuccess': '儲存成功',
+  'settingsCenter.unavailable': '暫無權限或載入失敗',
   'common.addSuccess': '新增成功',
   'common.addFailed': '新增失敗',
   'common.updateSuccess': '更新成功',

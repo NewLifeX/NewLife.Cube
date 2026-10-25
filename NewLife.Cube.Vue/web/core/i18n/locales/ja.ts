@@ -824,6 +824,7 @@ export default {
   'common.copy': 'コピー',
   'common.tip': 'ヒント',
   'common.saveSuccess': '保存しました',
+  'settingsCenter.unavailable': '権限がないか、読み込みに失敗しました',
   'common.addSuccess': '追加しました',
   'common.addFailed': '追加に失敗しました',
   'common.updateSuccess': '更新しました',

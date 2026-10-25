@@ -824,6 +824,7 @@ export default {
   'common.copy': 'Копировать',
   'common.tip': 'Подсказка',
   'common.saveSuccess': 'Успешно сохранено',
+  'settingsCenter.unavailable': 'Нет прав или не удалось загрузить',
   'common.addSuccess': 'Успешно добавлено',
   'common.addFailed': 'Не удалось добавить',
   'common.updateSuccess': 'Успешно обновлено',
