@@ -56,8 +56,9 @@ test.describe('皮肤列表页合规', () => {
       await page.goto(testFieldPath);
       await expect(page.locator('.el-table')).toBeVisible({ timeout: 20000 });
       await expect(page.getByText(name)).toBeVisible({ timeout: 20000 });
-      await expect(page.getByRole('columnheader', { name: '操作' })).toBeVisible();
-      await expect(page.getByRole('button', { name: '刷新' })).toBeVisible();
+      // 断言不写死文案：操作列取最后一列，工具栏按钮按结构断言
+      await expect(page.locator('.el-table__header th').last()).toBeVisible();
+      expect(await page.locator('.cube-table button').count()).toBeGreaterThan(1);
     } finally {
       await removeRow(request, id);
     }
@@ -71,7 +72,8 @@ test.describe('皮肤列表页合规', () => {
       await page.goto(testFieldPath);
       await expect(page.locator('.el-table')).toBeVisible({ timeout: 20000 });
 
-      const input = page.getByPlaceholder('搜索关键字');
+      // 搜索框占位符随界面语言变化，按结构取首个可见输入框
+      const input = page.locator('.cube-table input:not([type="hidden"]):visible').first();
       await expect(input).toBeVisible();
       await input.fill(`__no_such_record_${Date.now()}`);
       await input.press('Enter');

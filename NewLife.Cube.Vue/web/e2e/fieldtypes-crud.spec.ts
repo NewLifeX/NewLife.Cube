@@ -10,17 +10,22 @@
  * 运行：pnpm test:e2e --grep "字段类型全覆盖"
  */
 import { test, expect } from '@playwright/test';
+import { readListHeaders } from './metaHelper';
 
 const basePath = '/Test/TestField';
 
 test.describe('字段类型全覆盖', () => {
   test('列表按字段类型渲染列头', async ({ page }) => {
     await page.goto(basePath);
-    await expect(page.locator('.el-table')).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('.el-table__header th').nth(2)).toBeVisible({ timeout: 20000 });
 
-    // 文本 / 数值 / 布尔 / 枚举 / 附件 / 颜色 / 图标 / 邮箱 / 手机 / 链接 / 单选多选 / 操作列
-    for (const name of ['短文本', '长文本', '金额', 'Enabled', 'Kind', 'Attachment', 'Avatar', '颜色', 'Icon', '邮箱', 'Mobile', 'URL', '单选', '多选', '操作']) {
-      await expect(page.getByRole('columnheader', { name, exact: true })).toBeVisible();
+    // 列头文案来自后端元数据（按界面语言本地化），先取 /meta 再逐列比对，避免写死中文/英文
+    const expected = await readListHeaders(page, '/api/Test/TestField/meta');
+    expect(expected.length).toBeGreaterThan(10);
+
+    const headers = (await page.locator('.el-table__header th').allInnerTexts()).join('|');
+    for (const name of expected) {
+      expect(headers).toContain(name);
     }
   });
 

@@ -8,6 +8,7 @@
  *   pnpm test:e2e --grep "页面呈现"
  */
 import { test, expect } from '@playwright/test';
+import { readListFields } from './metaHelper';
 
 const testFieldPath = '/Test/TestField';
 
@@ -99,9 +100,13 @@ test.describe('页面呈现架构全链路', () => {
       await expect(page.locator('.cube-table')).toBeVisible({ timeout: 15000 });
       await expect(page.locator('.el-table')).toBeVisible({ timeout: 15000 });
 
+      const fields = await readListFields(page, '/api/Admin/Parameter/meta');
+      const headerOf = (name: string) =>
+        fields.find((field) => field.name.toLowerCase() === name.toLowerCase())?.header ?? name;
+
       const headers = await page.locator('.el-table__header th').allTextContents();
-      const kindIndex = headers.findIndex((text) => text.trim() === 'Kind');
-      const idIndex = headers.findIndex((text) => text.trim() === 'ID');
+      const kindIndex = headers.findIndex((text) => text.trim() === headerOf('Kind'));
+      const idIndex = headers.findIndex((text) => text.trim() === headerOf('Id'));
       expect(kindIndex).toBeGreaterThanOrEqual(0);
       expect(idIndex).toBeGreaterThanOrEqual(0);
       // preset list.order 把 Kind 前置，验证真实页面消费了页面呈现配置

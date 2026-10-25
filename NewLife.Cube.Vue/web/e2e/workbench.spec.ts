@@ -45,16 +45,18 @@ test.describe('Vue 工作台（真实数据）', () => {
     await expect(page.locator('[data-cy="workbench-banner"]')).toBeVisible();
     await expect(page.locator('[data-cy="workbench-kpis"] button').first()).toBeVisible();
     await expect(page.locator('[data-cy="workbench-widget"]').first()).toBeVisible();
-    await expect(page.getByText('工作台加载失败')).toHaveCount(0);
+    // 失败态由页面内的错误提示节点体现，语言无关
+    await expect(page.locator('.wb-alert')).toHaveCount(0);
   });
 
   test('点击刷新后工作台仍正常渲染', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('[data-cy="workbench-banner"]')).toBeVisible();
-
-    await page.getByRole('button', { name: '刷新' }).click();
+    // 刷新按钮文案随界面语言变化，按容器定位
+    await page.locator('[data-cy="workbench-banner"] button').first().click();
 
     await expect(page.locator('[data-cy="workbench-banner"]')).toBeVisible();
-    await expect(page.getByText('工作台加载失败')).toHaveCount(0);
+    // 失败态由页面内的错误提示节点体现，语言无关
+    await expect(page.locator('.wb-alert')).toHaveCount(0);
   });
 });
