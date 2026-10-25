@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.AI;
@@ -80,7 +80,7 @@ public class DbController : ControllerBaseX, IPageDataContext
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Insert)]
     [HttpPost]
-    public ActionResult Backup(String name)
+    public ActionResult Backup(String? name)
     {
         var sw = Stopwatch.StartNew();
 
@@ -126,7 +126,7 @@ public class DbController : ControllerBaseX, IPageDataContext
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Insert)]
     [HttpPost]
-    public ActionResult BackupAndCompress(String name)
+    public ActionResult BackupAndCompress(String? name)
     {
         var sw = Stopwatch.StartNew();
 

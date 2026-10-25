@@ -27,6 +27,12 @@ internal static class ToolbarBuilder
         Collect(controllerType, list);
         build?.Invoke(list);
 
+        // 与 MVC 视图的 @L.T(item.DisplayName) 一致：按钮文案按请求语言本地化（缺词条时返回原文）
+        foreach (var item in list)
+        {
+            if (!item.DisplayName.IsNullOrEmpty()) item.DisplayName = CubeLocalization.T(item.DisplayName);
+        }
+
         return Filter(list, user, menu);
     }
     #endregion

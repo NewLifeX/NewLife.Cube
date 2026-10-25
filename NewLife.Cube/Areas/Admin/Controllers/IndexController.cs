@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime;
@@ -421,7 +421,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     [DisplayName("进程模块列表")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpGet]
-    public ActionResult ProcessList(String model)
+    public ActionResult ProcessList(String? model)
     {
         var isAll = String.Equals("All", model, StringComparison.OrdinalIgnoreCase);
         var process = Process.GetCurrentProcess();
@@ -455,7 +455,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     [DisplayName("程序集列表")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpGet]
-    public ActionResult AssemblyList(String model)
+    public ActionResult AssemblyList(String? model)
     {
         var isAll = String.Equals("All", model, StringComparison.OrdinalIgnoreCase);
         var result = new List<dynamic>();
@@ -536,7 +536,7 @@ public class IndexController : ControllerBaseX, IPageDataContext
     /// <returns></returns>
     [EntityAuthorize]
     [HttpGet]
-    public ActionResult GetMenuTree(String module) => Json(0, null, GetMenu(module));
+    public ActionResult GetMenuTree(String? module) => Json(0, null, GetMenu(module));
 
     private IList<MenuTree> GetMenu(String module)
     {

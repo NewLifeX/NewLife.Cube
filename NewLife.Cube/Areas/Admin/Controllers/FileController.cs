@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife;
 using NewLife.Cube.Areas.Admin.Models;
@@ -125,7 +125,7 @@ public class FileController : ControllerBaseX
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpGet("/api/[area]/[controller]")]
-    public ActionResult Index(String r, String sort, String message = "")
+    public ActionResult Index(String? r, String? sort, String? message = "")
     {
         var di = GetDirectory(r) ?? Root.AsDirectory();
 
@@ -171,7 +171,7 @@ public class FileController : ControllerBaseX
         //ViewBag.Message = message;
 
         //return View("Index", list);
-        return Json(0, "ok");
+        return Json(0, "ok", list);
     }
 
     /// <summary>删除</summary>

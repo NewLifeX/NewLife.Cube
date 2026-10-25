@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using NewLife;
 using NewLife.Cube.ViewModels;
 using XCode.Membership;
 using Xunit;
@@ -171,5 +173,31 @@ public class ToolbarTests
 
         Assert.Equal("/custom/refresh", refresh.Url);
         Assert.Null(refresh.Action);
+    }
+
+    [Fact(DisplayName = "工具栏按钮文案按当前语言本地化，与 MVC 视图 @L.T 一致")]
+    public void OnGetToolbar_LocalizesDisplayName()
+    {
+        var prev = Localization.Culture;
+        var culture = CultureInfo.GetCultureInfo("sw");
+        try
+        {
+            Localization.Register(culture, new Dictionary<String, String>
+            {
+                ["批量刷新"] = "Refresh selected",
+                ["区域地图"] = "Area map",
+            }, overwrite: true);
+            Localization.Culture = culture;
+
+            var list = BuildToolbar();
+
+            Assert.Equal("Refresh selected", list.Single(e => e.Name == "Refresh").DisplayName);
+            Assert.Equal("Area map", list.Single(e => e.Name == "区域地图").DisplayName);
+        }
+        finally
+        {
+            Localization.Culture = prev;
+            Localization.Unregister(culture);
+        }
     }
 }
