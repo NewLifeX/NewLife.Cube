@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
@@ -156,7 +156,8 @@ public class LovController : ControllerBaseX
     /// <remarks>解析规则：手工定义（Parameter Lov.Def）优先 → 代码声明（Enum.* 反射 / List.* 读 [LovList] 描述符）。</remarks>
     /// <param name="lovCode">值集编码，逗号分隔</param>
     /// <returns>值集元数据集合</returns>
-    [EntityAuthorize(PermissionFlags.Detail)]
+    /// <remarks>值集为只读字典数据，任何登录用户可获取。</remarks>
+    [EntityAuthorize]
     [HttpGet]
     public Object Meta(String lovCode)
     {
@@ -236,7 +237,7 @@ public class LovController : ControllerBaseX
     /// <summary>列表数据代理。根据列表型值集配置代理请求外部接口（手工配置或 [LovList] 描述符）</summary>
     /// <param name="request">查询请求</param>
     /// <returns>代理查询结果</returns>
-    [EntityAuthorize(PermissionFlags.Detail)]
+    /// <remarks>用户 2026-10-25 裁定：值集列表数据登录即可读。目标地址由注册表配置、请求方无法指定，非 SSRF（t72 审查已核）。</remarks>
     [HttpPost]
     public async Task<Object> ListData([FromBody] LovListDataRequest request)
     {
