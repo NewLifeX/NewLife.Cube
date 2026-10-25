@@ -3,8 +3,8 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <h3>OAuth配置管理</h3>
-          <el-button type="primary" @click="handleAdd">新增配置</el-button>
+          <h3>{{ t('oauthConfig.title') }}</h3>
+          <el-button type="primary" @click="handleAdd">{{ t('oauthConfig.add') }}</el-button>
         </div>
       </template>
 
@@ -15,44 +15,44 @@
       />
 
       <el-table :data="tableData" border style="width: 100%" v-loading="loading">
-        <el-table-column prop="id" label="编号" width="80" />
-        <el-table-column prop="name" label="提供者名称" />
-        <el-table-column prop="nickName" label="昵称" />
-        <el-table-column prop="appId" label="应用标识" />
-        <el-table-column prop="server" label="服务地址" />
-        <el-table-column prop="scope" label="授权范围" />
-        <el-table-column prop="sort" label="排序" width="80" />
-        <el-table-column prop="updateTime" label="更新时间" />
-        <el-table-column label="启用" width="80">
+        <el-table-column prop="id" :label="t('common.id')" width="80" />
+        <el-table-column prop="name" :label="t('oauthConfig.name')" />
+        <el-table-column prop="nickName" :label="t('oauthConfig.nickName')" />
+        <el-table-column prop="appId" :label="t('oauthConfig.appId')" />
+        <el-table-column prop="server" :label="t('oauthConfig.server')" />
+        <el-table-column prop="scope" :label="t('oauthConfig.scope')" />
+        <el-table-column prop="sort" :label="t('common.sort')" width="80" />
+        <el-table-column prop="updateTime" :label="t('common.updateTime')" />
+        <el-table-column :label="t('common.enable')" width="80">
           <template #default="scope">
             <el-tag :type="scope.row.enable ? 'success' : 'danger'">
-              {{ scope.row.enable ? '是' : '否' }}
+              {{ scope.row.enable ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="可见" width="80">
+        <el-table-column :label="t('menuAdmin.visible')" width="80">
           <template #default="scope">
             <el-tag :type="scope.row.visible ? 'success' : 'danger'">
-              {{ scope.row.visible ? '是' : '否' }}
+              {{ scope.row.visible ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="自动注册" width="100">
+        <el-table-column :label="t('oauthConfig.autoRegister')" width="100">
           <template #default="scope">
             <el-tag :type="scope.row.autoRegister ? 'warning' : 'info'">
-              {{ scope.row.autoRegister ? '是' : '否' }}
+              {{ scope.row.autoRegister ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="备注" min-width="120" show-overflow-tooltip>
+        <el-table-column :label="t('common.remark')" min-width="120" show-overflow-tooltip>
           <template #default="scope">
             {{ scope.row.remark || '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180">
+        <el-table-column :label="t('common.actions')" width="180">
           <template #default="scope">
-            <el-button type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button type="danger" size="small" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button type="primary" size="small" @click="handleEdit(scope.row)">{{ t('button.edit') }}</el-button>
+            <el-button type="danger" size="small" @click="handleDelete(scope.row)">{{ t('button.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -68,102 +68,102 @@
     </el-card>
 
     <!-- OAuth配置表单对话框 -->
-    <el-dialog v-model="dialogVisible" :title="formType === 'add' ? '新增OAuth配置' : '编辑OAuth配置'" width="800px">
+    <el-dialog v-model="dialogVisible" :title="formType === 'add' ? t('oauthConfig.addTitle') : t('oauthConfig.editTitle')" width="800px">
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="120px">
         <el-tabs v-model="activeTab">
           <!-- 基本信息 -->
-          <el-tab-pane label="基本信息" name="basic">
-            <el-form-item label="提供者名称" prop="name">
-              <el-input v-model="form.name" placeholder="请输入提供者名称" />
+          <el-tab-pane :label="t('oauthConfig.tabBasic')" name="basic">
+            <el-form-item :label="t('oauthConfig.name')" prop="name">
+              <el-input v-model="form.name" :placeholder="t('oauthConfig.nameHint')" />
             </el-form-item>
-            <el-form-item label="昵称" prop="nickName">
-              <el-input v-model="form.nickName" placeholder="请输入昵称" />
+            <el-form-item :label="t('oauthConfig.nickName')" prop="nickName">
+              <el-input v-model="form.nickName" :placeholder="t('oauthConfig.nickNameHint')" />
             </el-form-item>
-            <el-form-item label="图标" prop="logo">
-              <el-input v-model="form.logo" placeholder="请输入图标URL" />
+            <el-form-item :label="t('menuAdmin.icon')" prop="logo">
+              <el-input v-model="form.logo" :placeholder="t('oauthConfig.logoHint')" />
             </el-form-item>
-            <el-form-item label="应用标识" prop="appId">
-              <el-input v-model="form.appId" placeholder="请输入应用标识" />
+            <el-form-item :label="t('oauthConfig.appId')" prop="appId">
+              <el-input v-model="form.appId" :placeholder="t('oauthConfig.appIdHint')" />
             </el-form-item>
-            <el-form-item label="应用密钥" prop="secret">
-              <el-input v-model="form.secret" type="password" placeholder="请输入应用密钥" show-password />
+            <el-form-item :label="t('oauthConfig.secret')" prop="secret">
+              <el-input v-model="form.secret" type="password" :placeholder="t('oauthConfig.secretHint')" show-password />
             </el-form-item>
-            <el-form-item label="服务地址" prop="server">
-              <el-input v-model="form.server" placeholder="请输入服务地址" />
+            <el-form-item :label="t('oauthConfig.server')" prop="server">
+              <el-input v-model="form.server" :placeholder="t('oauthConfig.serverHint')" />
             </el-form-item>
-            <el-form-item label="令牌服务地址" prop="accessServer">
-              <el-input v-model="form.accessServer" placeholder="可以不同于验证地址的内网直达地址" />
+            <el-form-item :label="t('oauthConfig.accessServer')" prop="accessServer">
+              <el-input v-model="form.accessServer" :placeholder="t('oauthConfig.accessServerHint')" />
             </el-form-item>
-            <el-form-item label="授权类型" prop="grantType">
-              <el-select v-model="form.grantType" placeholder="请选择授权类型">
+            <el-form-item :label="t('oauthConfig.grantType')" prop="grantType">
+              <el-select v-model="form.grantType" :placeholder="t('oauthConfig.grantTypeHint')">
                 <el-option label="AuthorizationCode" :value="1" />
                 <el-option label="Implicit" :value="2" />
                 <el-option label="ClientCredentials" :value="3" />
                 <el-option label="Password" :value="4" />
               </el-select>
             </el-form-item>
-            <el-form-item label="授权范围" prop="scope">
-              <el-input v-model="form.scope" placeholder="请输入授权范围" />
+            <el-form-item :label="t('oauthConfig.scope')" prop="scope">
+              <el-input v-model="form.scope" :placeholder="t('oauthConfig.scopeHint')" />
             </el-form-item>
           </el-tab-pane>
 
           <!-- 地址配置 -->
-          <el-tab-pane label="地址配置" name="urls">
-            <el-form-item label="验证地址" prop="authUrl">
-              <el-input v-model="form.authUrl" placeholder="跳转SSO的验证地址" />
+          <el-tab-pane :label="t('oauthConfig.tabUrls')" name="urls">
+            <el-form-item :label="t('oauthConfig.authUrl')" prop="authUrl">
+              <el-input v-model="form.authUrl" :placeholder="t('oauthConfig.authUrlHint')" />
             </el-form-item>
-            <el-form-item label="令牌地址" prop="accessUrl">
-              <el-input v-model="form.accessUrl" placeholder="根据code换取令牌的地址" />
+            <el-form-item :label="t('oauthConfig.accessUrl')" prop="accessUrl">
+              <el-input v-model="form.accessUrl" :placeholder="t('oauthConfig.accessUrlHint')" />
             </el-form-item>
-            <el-form-item label="用户地址" prop="userUrl">
-              <el-input v-model="form.userUrl" placeholder="根据令牌获取用户信息的地址" />
+            <el-form-item :label="t('oauthConfig.userUrl')" prop="userUrl">
+              <el-input v-model="form.userUrl" :placeholder="t('oauthConfig.userUrlHint')" />
             </el-form-item>
-            <el-form-item label="应用地址" prop="appUrl">
-              <el-input v-model="form.appUrl" placeholder="域名和端口，应用系统经过反向代理重定向时指定外部地址" />
+            <el-form-item :label="t('oauthConfig.appUrl')" prop="appUrl">
+              <el-input v-model="form.appUrl" :placeholder="t('oauthConfig.appUrlHint')" />
             </el-form-item>
           </el-tab-pane>
 
           <!-- 高级设置 -->
-          <el-tab-pane label="高级设置" name="advanced">
-            <el-form-item label="启用状态" prop="enable">
+          <el-tab-pane :label="t('oauthConfig.tabAdvanced')" name="advanced">
+            <el-form-item :label="t('coreSetting.enable')" prop="enable">
               <el-switch v-model="form.enable" :active-value="true" :inactive-value="false" />
             </el-form-item>
-            <el-form-item label="调试模式" prop="debug">
+            <el-form-item :label="t('oauthConfig.debug')" prop="debug">
               <el-switch v-model="form.debug" :active-value="true" :inactive-value="false" />
-              <span class="form-tip">设置处于调试状态，输出详细日志</span>
+              <span class="form-tip">{{ t('oauthConfig.debugTip') }}</span>
             </el-form-item>
-            <el-form-item label="可见状态" prop="visible">
+            <el-form-item :label="t('menuAdmin.visibleStatus')" prop="visible">
               <el-switch v-model="form.visible" :active-value="true" :inactive-value="false" />
-              <span class="form-tip">是否在登录页面可见</span>
+              <span class="form-tip">{{ t('oauthConfig.visibleTip') }}</span>
             </el-form-item>
-            <el-form-item label="自动注册" prop="autoRegister">
+            <el-form-item :label="t('oauthConfig.autoRegister')" prop="autoRegister">
               <el-switch v-model="form.autoRegister" :active-value="true" :inactive-value="false" />
-              <span class="form-tip">SSO登录后，如果本地没有匹配用户，自动注册新用户</span>
+              <span class="form-tip">{{ t('oauthConfig.autoRegisterTip') }}</span>
             </el-form-item>
-            <el-form-item label="自动角色" prop="autoRole">
-              <el-input v-model="form.autoRole" placeholder="该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开" />
+            <el-form-item :label="t('oauthConfig.autoRole')" prop="autoRole">
+              <el-input v-model="form.autoRole" :placeholder="t('oauthConfig.autoRoleHint')" />
             </el-form-item>
-            <el-form-item label="排序" prop="sort">
-              <el-input-number v-model="form.sort" :min="0" placeholder="较大者在前面" />
+            <el-form-item :label="t('common.sort')" prop="sort">
+              <el-input-number v-model="form.sort" :min="0" :placeholder="t('oauthConfig.sortHint')" />
             </el-form-item>
-            <el-form-item label="安全密钥" prop="securityKey">
-              <el-input v-model="form.securityKey" type="textarea" placeholder="公钥，用于RSA加密用户密码" />
+            <el-form-item :label="t('oauthConfig.securityKey')" prop="securityKey">
+              <el-input v-model="form.securityKey" type="textarea" :placeholder="t('oauthConfig.securityKeyHint')" />
             </el-form-item>
-            <el-form-item label="字段映射" prop="fieldMap">
-              <el-input v-model="form.fieldMap" type="textarea" placeholder="SSO用户字段如何映射到OAuthClient内部属性" />
+            <el-form-item :label="t('oauthConfig.fieldMap')" prop="fieldMap">
+              <el-input v-model="form.fieldMap" type="textarea" :placeholder="t('oauthConfig.fieldMapHint')" />
             </el-form-item>
-            <el-form-item label="抓取头像" prop="fetchAvatar">
+            <el-form-item :label="t('oauthConfig.fetchAvatar')" prop="fetchAvatar">
               <el-switch v-model="form.fetchAvatar" :active-value="true" :inactive-value="false" />
             </el-form-item>
-            <el-form-item label="备注" prop="remark">
-              <el-input v-model="form.remark" type="textarea" placeholder="请输入备注" />
+            <el-form-item :label="t('common.remark')" prop="remark">
+              <el-input v-model="form.remark" type="textarea" :placeholder="t('tenant.remarkHint')" />
             </el-form-item>
           </el-tab-pane>
         </el-tabs>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">确定</el-button>
+        <el-button @click="dialogVisible = false">{{ t('button.cancel') }}</el-button>
+        <el-button type="primary" @click="submitForm">{{ t('button.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -172,6 +172,7 @@
 <script setup lang="ts">
 
 import { ref, reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { FormInstance, FormRules } from 'element-plus';
 import { ElMessageBox } from 'element-plus';
 import { request } from '@newlifex/cube-vue/core/utils/request';
@@ -217,6 +218,7 @@ interface OAuthConfig extends BaseEntity {
 // 表格数据
 const tableData = ref<OAuthConfig[]>([]);
 const loading = ref(false);
+const { t } = useI18n();
 
 // 分页与搜索参数
 const queryParams = reactive({
@@ -266,13 +268,13 @@ const form = reactive<OAuthConfig>({
 // 表单验证规则
 const formRules = reactive<FormRules>({
   name: [
-    { required: true, message: '请输入提供者名称', trigger: 'blur' }
+    { required: true, message: t('oauthConfig.nameRequired'), trigger: 'blur' }
   ],
   appId: [
-    { required: true, message: '请输入应用标识', trigger: 'blur' }
+    { required: true, message: t('oauthConfig.appIdRequired'), trigger: 'blur' }
   ],
   secret: [
-    { required: true, message: '请输入应用密钥', trigger: 'blur' }
+    { required: true, message: t('oauthConfig.secretRequired'), trigger: 'blur' }
   ]
 });
 
@@ -384,9 +386,9 @@ const handleEdit = (row: OAuthConfig) => {
 
 // 删除
 const handleDelete = (row: OAuthConfig) => {
-  ElMessageBox.confirm('确认删除该OAuth配置吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('oauthConfig.deleteConfirm'), t('lovAdmin.confirmDelete'), {
+    confirmButtonText: t('button.confirm'),
+    cancelButtonText: t('button.cancel'),
     type: 'warning'
   })
     .then(async () => {
