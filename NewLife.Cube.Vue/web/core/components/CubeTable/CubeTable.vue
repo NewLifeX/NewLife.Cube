@@ -9,6 +9,7 @@
  * props / 插槽命名沿用 MES ListPage，业务页两边平移时不用改称呼。
  */
 import { computed, inject, useSlots } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { CubeEngineKey, useCubeEngine } from '../../engine/useCubeEngine';
 import { useCubeTableActions } from './useCubeTableActions';
 import { useCubeTableColumns } from './useCubeTableColumns';
@@ -43,12 +44,12 @@ const props = withDefaults(defineProps<CubeTableProps>(), {
   context: null,
   autoEngine: true,
   pageSize: undefined,
-  searchPlaceholder: '搜索关键字',
+  searchPlaceholder: undefined,
   showSearch: true,
   showRefresh: true,
   metrics: () => [],
   pageSizes: () => [10, 20, 50],
-  totalUnit: '条',
+  totalUnit: undefined,
   sizeUnit: undefined,
   columnsSetting: true,
   showAdd: undefined,
@@ -62,6 +63,7 @@ const props = withDefaults(defineProps<CubeTableProps>(), {
 });
 
 const injected = inject(CubeEngineKey, null);
+const { t } = useI18n();
 const ctx: CubeEngineContext =
   props.context ??
   injected ??
@@ -128,7 +130,7 @@ const mergedRowActions = computed(() => [
          #search-bar / #search-advanced 是 MES 口径的「换内容」，#search 是 Cube 扩展的「换整块」 -->
     <template v-if="showSearch || slots.search || slots['search-bar']">
       <slot name="search" :ctx="ctx">
-        <CubeTableSearch :ctx="ctx" :placeholder="searchPlaceholder">
+        <CubeTableSearch :ctx="ctx" :placeholder="searchPlaceholder ?? t('userSearch.keyword')">
           <template v-if="slots['search-bar']" #bar="scope">
             <slot name="search-bar" v-bind="scope" />
           </template>
@@ -191,7 +193,12 @@ const mergedRowActions = computed(() => [
       </div>
 
       <slot name="footer" :ctx="ctx" :total="ctx.total.value" :page="ctx.page.value" :page-size="ctx.pageSize.value">
-        <CubeTablePagination :ctx="ctx" :page-sizes="pageSizes" :unit="totalUnit" :size-unit="sizeUnit">
+        <CubeTablePagination
+          :ctx="ctx"
+          :page-sizes="pageSizes"
+          :unit="totalUnit ?? t('grid.unit')"
+          :size-unit="sizeUnit"
+        >
           <template v-if="slots['footer-extra']" #extra>
             <slot name="footer-extra" :ctx="ctx" />
           </template>

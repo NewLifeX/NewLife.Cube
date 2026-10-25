@@ -43,7 +43,7 @@ const currentLanguage = ref(getCurrentLanguage());
 
 const currentLanguageLabel = computed(() => {
   const lang = languages.find((item) => item.value === currentLanguage.value);
-  return lang ? lang.label : '中文';
+  return lang ? lang.label : currentLanguage.value;
 });
 
 // 处理语言切换

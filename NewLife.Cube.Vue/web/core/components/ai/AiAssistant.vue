@@ -46,9 +46,25 @@
           <div v-if="messages.length === 0" class="ai-welcome">
             <p>{{ t('ai.greeting') }}</p>
             <div class="ai-quick">
-              <el-button v-if="page === 'list'" size="small" round @click="quick('分析当前列表数据')">📊 {{ t('ai.actionAnalyze') }}</el-button>
-              <el-button v-if="page === 'form'" size="small" round @click="quick('帮我填写当前表单')">📝 {{ t('ai.actionFillForm') }}</el-button>
-              <el-button size="small" round @click="quick('检查系统运行状态')">🩺 {{ t('ai.actionDiagnose') }}</el-button>
+              <el-button
+                v-if="page === 'list'"
+                size="small"
+                round
+                @click="quick(t('ai.promptAnalyzeList'))"
+              >
+                📊 {{ t('ai.actionAnalyze') }}
+              </el-button>
+              <el-button
+                v-if="page === 'form'"
+                size="small"
+                round
+                @click="quick(t('ai.promptFillForm'))"
+              >
+                📝 {{ t('ai.actionFillForm') }}
+              </el-button>
+              <el-button size="small" round @click="quick(t('ai.promptDiagnose'))">
+                🩺 {{ t('ai.actionDiagnose') }}
+              </el-button>
             </div>
           </div>
 

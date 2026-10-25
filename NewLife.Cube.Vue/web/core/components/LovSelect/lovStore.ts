@@ -76,7 +76,7 @@ export async function getMeta(lovCode: string): Promise<LovMetaItem & { inlineEn
     try {
       const res = await fetchLovMeta(lovCode);
       const item = res.meta?.[0];
-      if (!item) throw new Error(`LovSelect: 值集 ${lovCode} 无元数据`);
+      if (!item) throw new Error(`LovSelect: value set ${lovCode} has no metadata`);
       // 枚举内联选项也并入 labelCache（ENUM 列翻译走这条，不再发 BatchLabel）
       if (item.type === 'ENUM') {
         for (const opt of (item as LovEnumMeta).options || []) {

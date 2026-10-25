@@ -10,6 +10,7 @@
  *   mode        — 显示模式，'icon' | 'box'，默认 'icon'
  *   placeholder — 输入框占位文字
  */
+import { useI18n } from 'vue-i18n';
 import ActionButton from './ActionButton.vue';
 
 interface Props {
@@ -21,12 +22,13 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   mode: 'icon',
-  placeholder: '搜索...',
+  placeholder: undefined,
 });
 
 const emit = defineEmits<{
   search: [value: string];
 }>();
+const { t } = useI18n();
 
 function handleSearch(e: Event) {
   emit('search', (e.target as HTMLInputElement).value);
@@ -41,7 +43,7 @@ function handleKeydown(e: KeyboardEvent) {
 
 <template>
   <!-- 图标模式：使用 ActionButton 基础样式 -->
-  <ActionButton v-if="mode === 'icon'" title="全局搜索">
+  <ActionButton v-if="mode === 'icon'" :title="t('topBar.globalSearch')">
     <svg
       width="15"
       height="15"

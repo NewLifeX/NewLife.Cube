@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import VueJsonEditor from 'vue-json-editor';
+
+const { t } = useI18n();
 
 const props = withDefaults(
   defineProps<{
@@ -8,7 +11,7 @@ const props = withDefaults(
     disabled?: boolean;
     placeholder?: string;
   }>(),
-  { modelValue: '', disabled: false, placeholder: '请输入 Json' },
+  { modelValue: '', disabled: false, placeholder: undefined },
 );
 
 const emit = defineEmits<{ (e: 'update:modelValue', value: string): void }>();
@@ -66,7 +69,9 @@ function onError(_err: unknown) {
       @input="onInput"
       @has-error="onError"
     />
-    <p v-if="!modelValue" class="json-editor__placeholder">{{ placeholder }}</p>
+      <p v-if="!modelValue" class="json-editor__placeholder">
+        {{ placeholder || t('editor.jsonPlaceholder') }}
+      </p>
   </div>
 </template>
 

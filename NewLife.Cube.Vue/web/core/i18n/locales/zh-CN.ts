@@ -1755,4 +1755,30 @@ export default {
   'layout.topMenuDesc': '顶部导航栏 + 内容区布局',
   'layout.cyber': '赛博风格',
   'layout.cyberDesc': '深色科技风格 + 霓虹发光效果',
+
+  'uploader.onlyImage': '只能上传图片文件',
+  'uploader.uploadFailed': '上传失败',
+  'uploader.noFileUrl': '上传成功但未返回文件地址',
+  'uploader.uploading': '上传中...',
+  'uploader.uploadImage': '上传图片',
+  'uploader.uploadFile': '上传文件',
+  'uploader.remove': '移除',
+
+  'lovSelect.loading': '加载中...',
+  'lovSelect.select': '请选择',
+
+  'editor.jsonPlaceholder': '请输入 Json',
+  'editor.contentPlaceholder': '请输入内容',
+
+  'topBar.switchLayout': '切换布局',
+  'topBar.switchToLight': '切换到浅色模式',
+  'topBar.switchToDark': '切换到深色模式',
+  'topBar.notifications': '通知',
+  'topBar.brandFallback': '魔方系统',
+
+  'ai.mermaidRendering': '⏳ 图表渲染中...',
+  'ai.mermaidViewSource': '查看源码',
+  'ai.promptAnalyzeList': '分析当前列表数据',
+  'ai.promptFillForm': '帮我填写当前表单',
+  'ai.promptDiagnose': '检查系统运行状态',
 };

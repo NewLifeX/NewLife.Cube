@@ -7,6 +7,7 @@
  * v-model 绑定「HTML 字符串 / Markdown 字符串」（resolveControl 映射的 control = 'richHtml' / 'richMarkdown'）。
  */
 import { ref, shallowRef, onBeforeUnmount, watch, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import '@wangeditor/editor/dist/css/style.css';
 // @ts-ignore
@@ -15,6 +16,8 @@ import type { IDomEditor, IEditorConfig, IToolbarConfig } from '@wangeditor/edit
 import { MdEditor } from 'md-editor-v3';
 import 'md-editor-v3/lib/style.css';
 
+const { t } = useI18n();
+
 const props = withDefaults(
   defineProps<{
     modelValue?: string;
@@ -22,7 +25,7 @@ const props = withDefaults(
     placeholder?: string;
     disabled?: boolean;
   }>(),
-  { modelValue: '', mode: 'html', placeholder: '请输入内容', disabled: false },
+  { modelValue: '', mode: 'html', placeholder: undefined, disabled: false },
 );
 
 const emit = defineEmits<{ (e: 'update:modelValue', value: string): void }>();

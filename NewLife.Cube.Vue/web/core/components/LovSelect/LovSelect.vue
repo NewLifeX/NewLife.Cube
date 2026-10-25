@@ -5,7 +5,7 @@
       v-if="loading && !resolvedType"
       disabled
       loading
-      placeholder="加载中..."
+      :placeholder="t('lovSelect.loading')"
       style="width: 100%"
     />
 
@@ -18,7 +18,7 @@
       :collapse-tags="multiple"
       :collapse-tags-tooltip="multiple"
       :max-collapse-tags="3"
-      :placeholder="placeholder"
+      :placeholder="placeholder ?? t('lovSelect.select')"
       :clearable="clearable"
       :disabled="disabled"
       :loading="loading"
@@ -56,7 +56,7 @@
       multiple
       collapse-tags
       collapse-tags-tooltip
-      :placeholder="placeholder"
+      :placeholder="placeholder ?? t('lovSelect.select')"
       :clearable="clearable"
       :disabled="disabled"
       :loading="loading"
@@ -70,7 +70,7 @@
     <el-select
       v-else
       v-model="selectedValue"
-      :placeholder="placeholder"
+      :placeholder="placeholder ?? t('lovSelect.select')"
       :clearable="clearable"
       :disabled="disabled"
       :loading="loading"
@@ -86,6 +86,7 @@
 // 显式声明组件名，确保 Vue DevTools 显示为 LovSelect（不依赖目录/文件名推断）
 defineOptions({ name: 'LovSelect' });
 import { toRef, computed, onMounted, ref, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Search } from '@element-plus/icons-vue';
 import LovSelectTable from '../LovSelectTable/index.vue';
 import { useLovSelect, type LovValue } from './useLovSelect';
@@ -109,7 +110,7 @@ const props = withDefaults(
     valueType?: LovValueType;
   }>(),
   {
-    placeholder: '请选择',
+    placeholder: undefined,
     clearable: true,
     disabled: false,
     multiple: false,
@@ -117,6 +118,8 @@ const props = withDefaults(
     valueType: 'auto',
   },
 );
+
+const { t } = useI18n();
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: LovValue): void;

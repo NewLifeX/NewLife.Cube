@@ -1739,4 +1739,30 @@ export default {
   'layout.topMenuDesc': '頂部導覽列 + 內容區版面',
   'layout.cyber': '賽博風格',
   'layout.cyberDesc': '深色科技風格 + 霓虹發光效果',
+
+  'uploader.onlyImage': '只能上傳圖片檔',
+  'uploader.uploadFailed': '上傳失敗',
+  'uploader.noFileUrl': '上傳成功但未回傳檔案位址',
+  'uploader.uploading': '上傳中...',
+  'uploader.uploadImage': '上傳圖片',
+  'uploader.uploadFile': '上傳檔案',
+  'uploader.remove': '移除',
+
+  'lovSelect.loading': '載入中...',
+  'lovSelect.select': '請選擇',
+
+  'editor.jsonPlaceholder': '請輸入 Json',
+  'editor.contentPlaceholder': '請輸入內容',
+
+  'topBar.switchLayout': '切換版面',
+  'topBar.switchToLight': '切換至淺色模式',
+  'topBar.switchToDark': '切換至深色模式',
+  'topBar.notifications': '通知',
+  'topBar.brandFallback': '魔方系統',
+
+  'ai.mermaidRendering': '⏳ 圖表渲染中...',
+  'ai.mermaidViewSource': '檢視原始碼',
+  'ai.promptAnalyzeList': '分析目前列表資料',
+  'ai.promptFillForm': '幫我填寫目前表單',
+  'ai.promptDiagnose': '檢查系統執行狀態',
 };

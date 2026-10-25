@@ -4,6 +4,7 @@
  * 铃铛图标，点击可展开通知面板
  * 使用 ActionButton 基类样式
  */
+import { useI18n } from 'vue-i18n';
 import ActionButton from './ActionButton.vue';
 
 interface Props {
@@ -17,12 +18,13 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   showLabel: false,
-  label: '通知',
+  label: undefined,
 });
 
 const emit = defineEmits<{
   click: [];
 }>();
+const { t } = useI18n();
 
 function handleClick() {
   if (props.onClick) {
@@ -34,7 +36,7 @@ function handleClick() {
 </script>
 
 <template>
-  <ActionButton title="通知" @click="handleClick">
+  <ActionButton :title="t('topBar.notifications')" @click="handleClick">
     <svg
       width="15"
       height="15"

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useLayout } from '../composables/useLayout';
+import { useI18n } from 'vue-i18n';
 import SwitcherDropdown from './SwitcherDropdown.vue';
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {});
 
 const { layouts, currentLayoutId, setLayout } = useLayout();
+const { t } = useI18n();
 
 const handleSelect = (layoutId: string) => {
   if (props.onChange) {
@@ -26,7 +28,7 @@ const handleSelect = (layoutId: string) => {
     v-if="layouts.length > 1"
     v-model="currentLayoutId"
     :options="layouts"
-    title="切换布局"
+    :title="t('topBar.switchLayout')"
     @update:model-value="handleSelect"
   >
     <!-- 默认图标：三栏布局 -->

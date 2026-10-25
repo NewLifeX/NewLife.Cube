@@ -4,6 +4,7 @@
  * 用于导航栏左侧的品牌展示
  */
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { getConfig } from '@newlifex/cube-vue/core/configure';
 import { useSiteStore } from '@newlifex/cube-vue/core/stores/site';
 
@@ -21,8 +22,9 @@ const props = withDefaults(defineProps<Props>(), {
 
 const config = getConfig();
 const siteStore = useSiteStore();
+const { t } = useI18n();
 void siteStore.load();
-const brandTitle = computed(() => siteStore.name || config.base.title || '魔方系统');
+const brandTitle = computed(() => siteStore.name || config.base.title || t('topBar.brandFallback'));
 const brandLogo = computed(() => siteStore.logo || config.base.logo);
 
 // 图片 logo 相关

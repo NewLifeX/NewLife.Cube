@@ -54,7 +54,7 @@ export function useCubeTableLov(
           } catch (err) {
             // 拉不到 meta 就保留原始码值继续显示，但在控制台留痕：
             // 否则「这一列为什么显示 1 不显示 启用」没有任何可查线索
-            console.warn(`[CubeTable] 值集 ${lovCode} 元数据加载失败:`, err);
+            console.warn(`[CubeTable] Failed to load metadata of value set ${lovCode}:`, err);
           }
           for (const value of pending) {
             labels[`${lovCode}:${value}`] = await resolveColumnLabels(lovCode, value);

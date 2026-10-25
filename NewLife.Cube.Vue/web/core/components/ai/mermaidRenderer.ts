@@ -6,6 +6,8 @@
  * - mermaid.parse 校验 + render 渲染 SVG，失败回退源码展示
  */
 
+import i18n from '../../i18n'
+
 /** 修复 LLM 生成的 `&amp;` HTML 实体，在 Mermaid 代码中还原为 `&` */
 function fixAmpersandEntities(code: string): string {
   return code.replace(/&amp;/g, '&')
@@ -221,7 +223,7 @@ export function getMermaid(url: string): Promise<MermaidApi> {
     s.onload = () => {
       try {
         const loaded = (window as unknown as { mermaid?: MermaidApi }).mermaid
-        if (!loaded) throw new Error('mermaid 未暴露全局变量')
+        if (!loaded) throw new Error('mermaid did not expose a global variable')
         if (!_mermaidInit) {
           loaded.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' })
           _mermaidInit = true
@@ -234,7 +236,7 @@ export function getMermaid(url: string): Promise<MermaidApi> {
     }
     s.onerror = () => {
       _mermaidLoading = null
-      reject(new Error(`mermaid 加载失败: ${src}`))
+      reject(new Error(`mermaid failed to load: ${src}`))
     }
     document.head.appendChild(s)
   })
@@ -279,7 +281,7 @@ function renderMermaidBlock(codeEl: HTMLElement, mermaid: MermaidApi): void {
   const raw = (codeEl.textContent || '').replace(/\n+$/, '')
   const holder = document.createElement('div')
   holder.className = 'ai-mermaid'
-  holder.textContent = '⏳ 图表渲染中...'
+  holder.textContent = i18n.global.t('ai.mermaidRendering')
   pre.parentNode?.replaceChild(holder, pre)
 
   resolveRenderableMermaidCode(mermaid, sanitizeMermaidCode(raw)).then((renderable) => {
@@ -312,7 +314,7 @@ function renderMermaidBlock(codeEl: HTMLElement, mermaid: MermaidApi): void {
         // 源码切换：<details> 展开查看原始 mermaid 源码
         const details = document.createElement('details')
         const summary = document.createElement('summary')
-        summary.textContent = '查看源码'
+        summary.textContent = i18n.global.t('ai.mermaidViewSource')
         details.appendChild(summary)
         const src = document.createElement('pre')
         src.textContent = raw

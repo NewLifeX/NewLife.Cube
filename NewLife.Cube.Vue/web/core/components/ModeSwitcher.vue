@@ -4,6 +4,7 @@
  * 使用 ActionButton 基类样式
  */
 import { computed, ref, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useTheme } from '../composables/useTheme';
 import ActionButton from './ActionButton.vue';
 
@@ -13,6 +14,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {});
+const { t } = useI18n();
 
 const { currentTheme, toggleMode } = useTheme();
 
@@ -71,7 +73,7 @@ const handleClick = async () => {
 <template>
   <ActionButton
     ref="switchRef"
-    :title="isDark ? '切换到浅色模式' : '切换到深色模式'"
+    :title="isDark ? t('topBar.switchToLight') : t('topBar.switchToDark')"
     @click="handleClick"
   >
     <!-- 太阳图标（浅色模式） -->

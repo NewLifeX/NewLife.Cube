@@ -166,7 +166,7 @@ export function useLovSelect(opts: UseLovSelectOptions): UseLovSelectReturn {
         const json = await opts.fetchMeta(code);
         applyMeta(json);
       } catch (err) {
-        console.error('LovSelect: 加载元数据失败', err);
+        console.error('LovSelect: failed to load metadata', err);
       } finally {
         loading.value = false;
       }
@@ -204,7 +204,7 @@ export function useLovSelect(opts: UseLovSelectOptions): UseLovSelectReturn {
       }
       syncFromModelValue();
     } catch (err) {
-      console.error('LovSelect: 加载元数据失败', err);
+      console.error('LovSelect: failed to load metadata', err);
     } finally {
       loading.value = false;
     }

@@ -1781,4 +1781,30 @@ export default {
   'layout.topMenuDesc': 'Top navigation bar plus content area',
   'layout.cyber': 'Cyber style',
   'layout.cyberDesc': 'Dark tech style with neon glow',
+
+  'uploader.onlyImage': 'Only image files can be uploaded',
+  'uploader.uploadFailed': 'Upload failed',
+  'uploader.noFileUrl': 'The upload succeeded but no file URL was returned',
+  'uploader.uploading': 'Uploading...',
+  'uploader.uploadImage': 'Upload image',
+  'uploader.uploadFile': 'Upload file',
+  'uploader.remove': 'Remove',
+
+  'lovSelect.loading': 'Loading...',
+  'lovSelect.select': 'Please select',
+
+  'editor.jsonPlaceholder': 'Please enter JSON',
+  'editor.contentPlaceholder': 'Please enter the content',
+
+  'topBar.switchLayout': 'Switch layout',
+  'topBar.switchToLight': 'Switch to light mode',
+  'topBar.switchToDark': 'Switch to dark mode',
+  'topBar.notifications': 'Notifications',
+  'topBar.brandFallback': 'Cube system',
+
+  'ai.mermaidRendering': '⏳ Rendering chart...',
+  'ai.mermaidViewSource': 'View source',
+  'ai.promptAnalyzeList': 'Analyze the current list data',
+  'ai.promptFillForm': 'Help me fill in the current form',
+  'ai.promptDiagnose': 'Check the system status',
 };
