@@ -215,6 +215,7 @@ export default {
   'user.clearPasswordSuccess': 'Password cleared',
   'user.clearPasswordFailed': 'Failed to clear the password',
   'user.changePasswordSuccess': 'Password changed',
+  'user.changePasswordFailed': 'Failed to change password',
   'user.deleteConfirm': 'Delete user [{name}]?',
   'user.loadDeptFailed': 'Failed to load departments',
   'user.loadRoleFailed': 'Failed to load roles',
@@ -696,6 +697,8 @@ export default {
   'security.submit': 'Submit verification',
   'security.tip':
     'A verified email or mobile number is used for system notifications and security alerts. Please keep your contact details safe.',
+  'security.enterPassword': 'Enter the new password',
+  'security.changePasswordHint': 'Change the password used to sign in',
   'security.enterMail': 'Please enter your email address',
   'security.enterMobile': 'Please enter your mobile number',
   'security.invalidMail': 'Invalid email address',

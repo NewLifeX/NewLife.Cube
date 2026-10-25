@@ -215,6 +215,7 @@ export default {
   'user.clearPasswordSuccess': '密码清空成功',
   'user.clearPasswordFailed': '清空密码失败',
   'user.changePasswordSuccess': '密码修改成功',
+  'user.changePasswordFailed': '密码修改失败',
   'user.deleteConfirm': '确认删除[{name}]用户吗？',
   'user.loadDeptFailed': '加载部门数据失败',
   'user.loadRoleFailed': '加载角色数据失败',
@@ -690,6 +691,8 @@ export default {
   'security.submit': '提交验证',
   'security.tip':
     '已验证的邮箱/手机可用于接收系统通知与安全提醒。依据《中华人民共和国个人信息保护法》，请妥善保管您的联系方式。',
+  'security.enterPassword': '请输入新密码',
+  'security.changePasswordHint': '修改用于登录的密码',
   'security.enterMail': '请输入邮箱',
   'security.enterMobile': '请输入手机号',
   'security.invalidMail': '邮箱格式不正确',

@@ -56,6 +56,47 @@
       </div>
     </el-card>
 
+    <!-- 修改密码 -->
+    <el-card class="contact-card" shadow="never">
+      <div class="contact-row">
+        <div class="contact-info">
+          <div class="contact-label">{{ t('user.changePassword') }}</div>
+          <div class="contact-value">
+            <span class="contact-text">{{ t('security.changePasswordHint') }}</span>
+          </div>
+        </div>
+        <el-button type="primary" plain size="small" data-cy="password-toggle" @click="togglePasswordPanel">
+          {{ passwordOpen ? t('security.collapse') : t('user.changePassword') }}
+        </el-button>
+      </div>
+    </el-card>
+
+    <!-- 修改密码表单 -->
+    <el-card v-if="passwordOpen" class="verify-panel" shadow="never">
+      <template #header>
+        <span>
+          {{ t('user.changePassword') }}
+          <el-button text type="primary" size="small" @click="passwordOpen = false">{{ t('security.collapse') }}</el-button>
+        </span>
+      </template>
+      <el-form label-width="110px" @submit.prevent>
+        <el-form-item :label="t('user.oldPassword')">
+          <el-input v-model="passwordForm.OldPassword" type="password" show-password autocomplete="current-password" data-cy="password-old" />
+        </el-form-item>
+        <el-form-item :label="t('user.newPassword')" required>
+          <el-input v-model="passwordForm.NewPassword" type="password" show-password autocomplete="new-password" data-cy="password-new" />
+        </el-form-item>
+        <el-form-item :label="t('user.confirmPassword')" required>
+          <el-input v-model="passwordForm.NewPassword2" type="password" show-password autocomplete="new-password" data-cy="password-confirm" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :loading="passwordSubmitting" @click="handleChangePassword" data-cy="password-submit">
+            {{ t('security.submit') }}
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
+
     <!-- 验证/更换面板 -->
     <el-card v-if="panel" class="verify-panel" shadow="never">
       <template #header>
@@ -126,6 +167,57 @@ const submitting = ref(false);
 const sending = ref(false);
 
 const verifyForm = reactive<{ account: string; code: string }>({ account: '', code: '' });
+
+/** 修改密码面板与表单 */
+const passwordOpen = ref(false);
+const passwordSubmitting = ref(false);
+const passwordForm = reactive<{ OldPassword: string; NewPassword: string; NewPassword2: string }>({
+  OldPassword: '',
+  NewPassword: '',
+  NewPassword2: '',
+});
+
+function togglePasswordPanel(): void {
+  passwordOpen.value = !passwordOpen.value;
+  passwordForm.OldPassword = '';
+  passwordForm.NewPassword = '';
+  passwordForm.NewPassword2 = '';
+}
+
+/** 提交修改密码（旧密码由后端按登录方式决定是否必填，SSO 登录可留空） */
+async function handleChangePassword(): Promise<void> {
+  const { OldPassword, NewPassword, NewPassword2 } = passwordForm;
+  if (!NewPassword || !NewPassword2) {
+    ElMessage.warning(t('security.enterPassword'));
+    return;
+  }
+  if (NewPassword !== NewPassword2) {
+    ElMessage.warning(t('form.passwordMismatch'));
+    return;
+  }
+
+  passwordSubmitting.value = true;
+  try {
+    const res = (await request.post('/Admin/User/ChangePassword', {
+      OldPassword,
+      NewPassword,
+      NewPassword2,
+    })) as unknown as { code?: number; message?: string };
+    if (res?.code === 0) {
+      ElMessage.success(t('user.changePasswordSuccess'));
+      passwordOpen.value = false;
+      passwordForm.OldPassword = '';
+      passwordForm.NewPassword = '';
+      passwordForm.NewPassword2 = '';
+    } else {
+      ElMessage.error(res?.message || t('user.changePasswordFailed'));
+    }
+  } catch (err: unknown) {
+    ElMessage.error(err instanceof Error ? err.message : t('user.changePasswordFailed'));
+  } finally {
+    passwordSubmitting.value = false;
+  }
+}
 
 function isMobile(v: string): boolean {
   return /^1[3-9]\d{9}$/.test(v);
