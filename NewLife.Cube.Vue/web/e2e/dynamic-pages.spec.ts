@@ -194,4 +194,18 @@ test.describe('动态页（/meta 驱动）', () => {
     const actions = page.locator('.cube-table button');
     expect(await actions.count()).toBeGreaterThan(3);
   });
+
+  test('通知记录（隐藏菜单）与应用插件页按元数据渲染', async ({ page }) => {
+    // 通知记录：隐藏菜单页面，直连 URL 也必须有路由（只读列表 + 行内标记已读列）
+    await page.goto('/Admin/NotificationRecord');
+    await expect(page.locator('.list-page-header h1')).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('.el-table__header th').nth(5)).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('.cube-table')).toBeVisible();
+
+    // 应用插件：魔方管理可见菜单，列表由首次查询扫描本地插件得到
+    await page.goto('/Cube/AppModule');
+    await expect(page.locator('.list-page-header h1')).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('.el-table__body tr').first()).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('.el-table__header th').nth(4)).toBeVisible();
+  });
 });
