@@ -2,35 +2,35 @@
   <div class="lov-page">
     <!-- 页面标题栏 -->
     <div class="page-header">
-      <h2 class="page-title">值集管理</h2>
-      <el-button type="primary" @click="handleAdd">新增值集</el-button>
+      <h2 class="page-title">{{ t('lovAdmin.title') }}</h2>
+      <el-button type="primary" @click="handleAdd">{{ t('lovAdmin.add') }}</el-button>
     </div>
 
     <!-- 搜索栏 -->
     <el-form :inline="true" :model="searchForm" class="search-bar">
-      <el-form-item label="关键词">
+      <el-form-item :label="t('lovAdmin.keyword')">
         <el-input
           v-model="searchForm.q"
-          placeholder="编码/名称搜索"
+          :placeholder="t('lovAdmin.keywordHint')"
           clearable
           @keyup.enter="handleSearch"
         />
       </el-form-item>
-      <el-form-item label="类型">
-        <el-select v-model="searchForm.type" placeholder="全部" clearable style="width: 120px">
-          <el-option label="枚举型" value="ENUM" />
-          <el-option label="列表型" value="LIST" />
+      <el-form-item :label="t('lovAdmin.type')">
+        <el-select v-model="searchForm.type" :placeholder="t('lovAdmin.all')" clearable style="width: 120px">
+          <el-option :label="t('lovAdmin.typeEnum')" value="ENUM" />
+          <el-option :label="t('lovAdmin.typeList')" value="LIST" />
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="handleSearch">查询</el-button>
-        <el-button @click="handleReset">重置</el-button>
+        <el-button type="primary" @click="handleSearch">{{ t('button.search') }}</el-button>
+        <el-button @click="handleReset">{{ t('button.reset') }}</el-button>
       </el-form-item>
     </el-form>
 
     <el-table :data="tableData" v-loading="loading" border style="width: 100%">
-      <el-table-column prop="id" label="编号" width="70" />
-      <el-table-column prop="lovCode" label="值集编码" min-width="200">
+      <el-table-column prop="id" :label="t('common.id')" width="70" />
+      <el-table-column prop="lovCode" :label="t('lovAdmin.code')" min-width="200">
         <template #default="{ row }">
           <el-tag :type="row.type === 'ENUM' ? 'primary' : 'success'" size="small">
             {{ row.type }}
@@ -38,29 +38,29 @@
           <code style="margin-left: 8px">{{ row.lovCode }}</code>
         </template>
       </el-table-column>
-      <el-table-column prop="name" label="名称" width="160" />
-      <el-table-column prop="type" label="类型" width="80" />
-      <el-table-column prop="source" label="来源" width="80">
+      <el-table-column prop="name" :label="t('common.name')" width="160" />
+      <el-table-column prop="type" :label="t('lovAdmin.type')" width="80" />
+      <el-table-column prop="source" :label="t('lovAdmin.source')" width="80">
         <template #default="{ row }">
-          <el-tag v-if="row.source === 'AUTO'" type="info" size="small">自动</el-tag>
-          <el-tag v-else size="small">手工</el-tag>
+          <el-tag v-if="row.source === 'AUTO'" type="info" size="small">{{ t('lovAdmin.sourceAuto') }}</el-tag>
+          <el-tag v-else size="small">{{ t('lovAdmin.sourceManual') }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="enabled" label="启用" width="70">
+      <el-table-column prop="enabled" :label="t('common.enable')" width="70">
         <template #default="{ row }">
           <el-tag :type="row.enabled ? 'success' : 'danger'" size="small">
-            {{ row.enabled ? '是' : '否' }}
+            {{ row.enabled ? t('common.yes') : t('common.no') }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="createTime" label="创建时间" width="160" />
-      <el-table-column label="操作" width="220" fixed="right">
+      <el-table-column prop="createTime" :label="t('desc.createTime')" width="160" />
+      <el-table-column :label="t('common.actions')" width="220" fixed="right">
         <template #default="{ row }">
-          <el-button type="primary" size="small" @click="handleEdit(row)">编辑</el-button>
+          <el-button type="primary" size="small" @click="handleEdit(row)">{{ t('button.edit') }}</el-button>
           <el-button type="primary" size="small" @click="handleConfig(row)">
-            {{ row.type === 'ENUM' ? '枚举值' : '列表配置' }}
+            {{ row.type === 'ENUM' ? t('lovAdmin.enumValues') : t('lovAdmin.listConfig') }}
           </el-button>
-          <el-button type="danger" size="small" @click="handleDelete(row)">删除</el-button>
+          <el-button type="danger" size="small" @click="handleDelete(row)">{{ t('button.delete') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -84,48 +84,48 @@
     />
 
     <!-- 新增/编辑弹窗 -->
-    <el-dialog v-model="dialogVisible" :title="editingId ? '编辑值集' : '新增值集'" width="600px">
+    <el-dialog v-model="dialogVisible" :title="editingId ? t('lovAdmin.edit') : t('lovAdmin.add')" width="600px">
       <el-form :model="form" label-width="100px">
-        <el-form-item label="值集类型" required>
+        <el-form-item :label="t('lovAdmin.lovType')" required>
           <el-select
             v-model="form.type"
-            placeholder="选择类型"
+            :placeholder="t('lovAdmin.typeHint')"
             style="width: 100%"
             @change="onTypeChange"
           >
-            <el-option label="枚举型 (ENUM)" value="ENUM" />
-            <el-option label="列表型 (LIST)" value="LIST" />
+            <el-option :label="t('lovAdmin.typeEnumFull')" value="ENUM" />
+            <el-option :label="t('lovAdmin.typeListFull')" value="LIST" />
           </el-select>
         </el-form-item>
-        <el-form-item label="值集编码" required>
+        <el-form-item :label="t('lovAdmin.code')" required>
           <el-input v-model="form.lovCode">
             <template #prepend v-if="form.type === 'ENUM'">Enum.</template>
             <template #prepend v-else-if="form.type === 'LIST'">List.</template>
           </el-input>
           <div class="form-tip">
-            完整编码 = 前缀 + 语义名，如：{{
-              form.type === 'ENUM' ? 'Enum.OrderStatus' : 'List.Department'
-            }}
+            {{ t('lovAdmin.codeTip', {
+              example: form.type === 'ENUM' ? 'Enum.OrderStatus' : 'List.Department',
+            }) }}
           </div>
         </el-form-item>
-        <el-form-item label="显示名称">
-          <el-input v-model="form.name" placeholder="值集的显示名称" />
+        <el-form-item :label="t('lovAdmin.displayName')">
+          <el-input v-model="form.name" :placeholder="t('lovAdmin.displayNameHint')" />
         </el-form-item>
         <template v-if="form.type === 'LIST'">
-          <el-form-item label="值字段">
-            <el-input v-model="form.valueField" placeholder="如 userId" />
+          <el-form-item :label="t('lovAdmin.valueField')">
+            <el-input v-model="form.valueField" :placeholder="t('lovAdmin.valueFieldHint')" />
           </el-form-item>
-          <el-form-item label="标签字段">
-            <el-input v-model="form.labelField" placeholder="如 userName" />
+          <el-form-item :label="t('lovAdmin.labelField')">
+            <el-input v-model="form.labelField" :placeholder="t('lovAdmin.labelFieldHint')" />
           </el-form-item>
         </template>
-        <el-form-item label="启用">
+        <el-form-item :label="t('common.enable')">
           <el-switch v-model="form.enabled" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSave" :loading="saving">保存</el-button>
+        <el-button @click="dialogVisible = false">{{ t('button.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSave" :loading="saving">{{ t('button.save') }}</el-button>
       </template>
     </el-dialog>
 
@@ -136,12 +136,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { usePageApi } from '@newlifex/cube-vue/core/composables/useCubeApi';
 import CubeListPager from '@newlifex/cube-vue/core/components/CubeListPager.vue';
 import LovConfig from './config.vue';
 
 const api = usePageApi('Admin', 'Lov');
+const { t } = useI18n();
 
 const tableData = ref<any[]>([]);
 const loading = ref(false);
@@ -199,7 +201,7 @@ async function loadData() {
     tableData.value = res?.data ?? res ?? [];
     total.value = res?.page?.totalCount ?? 0;
   } catch (err: any) {
-    ElMessage.error(err?.message || '加载失败');
+    ElMessage.error(err?.message || t('common.loadFailed'));
   } finally {
     loading.value = false;
   }
@@ -253,7 +255,7 @@ async function handleSave() {
           : 'List.' + form.value.lovCode.replace(/^List\./, '');
       await api.update(data);
       savedId = editingId.value;
-      ElMessage.success('更新成功');
+      ElMessage.success(t('engine.updateSuccess'));
     } else {
       data.lovCode =
         form.value.type === 'ENUM'
@@ -262,7 +264,7 @@ async function handleSave() {
       const res = await api.add(data);
       // @ts-ignore
       savedId = res?.data?.id || 0;
-      ElMessage.success('新增成功');
+      ElMessage.success(t('engine.createSuccess'));
     }
     dialogVisible.value = false;
     await loadData();
@@ -273,7 +275,7 @@ async function handleSave() {
       configDialogVisible.value = true;
     }
   } catch (err: any) {
-    ElMessage.error(err?.message || '保存失败');
+    ElMessage.error(err?.message || t('engine.saveFailed'));
   } finally {
     saving.value = false;
   }
@@ -281,16 +283,16 @@ async function handleSave() {
 
 async function handleDelete(row: any) {
   try {
-    await ElMessageBox.confirm(`确定要删除值集 "${row.lovCode}" 吗？`, '确认删除', {
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('lovAdmin.deleteConfirm', { code: row.lovCode }), t('lovAdmin.confirmDelete'), {
+      confirmButtonText: t('button.delete'),
+      cancelButtonText: t('button.cancel'),
       type: 'warning',
     });
     await api.remove(row.id);
-    ElMessage.success('删除成功');
+    ElMessage.success(t('engine.deleteSuccess'));
     await loadData();
   } catch (err: any) {
-    if (err !== 'cancel') ElMessage.error(err?.message || '删除失败');
+    if (err !== 'cancel') ElMessage.error(err?.message || t('engine.deleteFailed'));
   }
 }
 
