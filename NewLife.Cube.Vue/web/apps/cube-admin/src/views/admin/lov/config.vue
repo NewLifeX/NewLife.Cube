@@ -2,7 +2,7 @@
   <el-dialog
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
-    :title="`值集配置 — ${form.lovCode || '...'}`"
+    :title="t('lovConfig.title', { code: form.lovCode || '...' })"
     width="90%"
     top="3vh"
     :close-on-click-modal="false"
@@ -15,8 +15,8 @@
       </el-tag>
       <code>{{ form.lovCode }}</code>
       <span class="header-name">{{ form.name }}</span>
-      <el-tag v-if="form.source === 'AUTO'" type="info" size="small">自动</el-tag>
-      <el-tag v-else size="small">手工</el-tag>
+      <el-tag v-if="form.source === 'AUTO'" type="info" size="small">{{ t('lovAdmin.sourceAuto') }}</el-tag>
+      <el-tag v-else size="small">{{ t('lovAdmin.sourceManual') }}</el-tag>
     </div>
 
     <el-divider />
@@ -24,17 +24,17 @@
     <!-- 动态 Tab -->
     <el-tabs v-model="activeTab">
       <!-- 枚举值 (ENUM 类型) -->
-      <el-tab-pane v-if="form.type === 'ENUM'" label="枚举值" name="enumItems">
+      <el-tab-pane v-if="form.type === 'ENUM'" :label="t('lovConfig.enumItemsTab')" name="enumItems">
         <el-alert
           v-if="form.source === 'AUTO'"
-          title="该值集由代码自动管理(C#枚举)，枚举值不可手工编辑"
+          :title="t('lovConfig.autoManagedTip')"
           type="warning"
           :closable="false"
           show-icon
           style="margin-bottom: 16px"
         />
         <el-table :data="form.enumItems" max-height="400" border>
-          <el-table-column label="排序" width="120">
+          <el-table-column :label="t('common.sort')" width="120">
             <template #default="{ row }">
               <el-input-number
                 v-model="row.sort"
@@ -45,22 +45,22 @@
               />
             </template>
           </el-table-column>
-          <el-table-column label="值(Value)" min-width="120">
+          <el-table-column :label="t('lovConfig.valueColumn')" min-width="120">
             <template #default="{ row }">
               <el-input v-model="row.value" :disabled="form.source === 'AUTO'" size="small" />
             </template>
           </el-table-column>
-          <el-table-column label="标签(Label)" min-width="160">
+          <el-table-column :label="t('lovConfig.labelColumn')" min-width="160">
             <template #default="{ row }">
               <el-input v-model="row.label" :disabled="form.source === 'AUTO'" size="small" />
             </template>
           </el-table-column>
-          <el-table-column label="启用" width="70">
+          <el-table-column :label="t('common.enable')" width="70">
             <template #default="{ row }">
               <el-switch v-model="row.enabled" :disabled="form.source === 'AUTO'" />
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="100" fixed="right">
+          <el-table-column :label="t('common.actions')" width="100" fixed="right">
             <template #default="{ $index }">
               <el-button
                 v-if="form.source !== 'AUTO'"
@@ -68,59 +68,58 @@
                 type="danger"
                 text
                 @click="removeItem('enumItems', $index)"
-                >删除</el-button
+                >{{ t('button.delete') }}</el-button
               >
             </template>
           </el-table-column>
         </el-table>
         <el-button v-if="form.source !== 'AUTO'" type="primary" class="mt-2" @click="addEnumItem"
-          >+ 新增枚举值</el-button
+          >{{ t('lovConfig.addEnumItem') }}</el-button
         >
       </el-tab-pane>
 
       <!-- 列表配置 (LIST 类型) -->
-      <el-tab-pane v-if="form.type === 'LIST'" label="列表配置" name="listConfig">
+      <el-tab-pane v-if="form.type === 'LIST'" :label="t('lovAdmin.listConfig')" name="listConfig">
         <el-form :model="form.listConfig" label-width="120px" class="config-form">
-          <el-form-item label="请求地址">
+          <el-form-item :label="t('lovConfig.requestUrl')">
             <el-input v-model="form.listConfig.requestUrl" placeholder="/api/v1/xxx" />
-            <div class="form-tip">仅后端可见，不下发到前端</div>
+            <div class="form-tip">{{ t('lovConfig.requestUrlTip') }}</div>
           </el-form-item>
-          <el-form-item label="请求方式">
+          <el-form-item :label="t('lovConfig.method')">
             <el-radio-group v-model="form.listConfig.method">
               <el-radio value="GET">GET</el-radio>
               <el-radio value="POST">POST</el-radio>
             </el-radio-group>
           </el-form-item>
-          <el-form-item label="是否代理请求">
+          <el-form-item :label="t('lovConfig.proxyRequest')">
             <el-switch v-model="form.listConfig.proxyRequest" :disabled="isSameAppUrl" />
             <div class="form-tip">
-              开启后由后端 <code>/Admin/Lov/ListData</code> 代理转发外部数据源（地址对前端不可见、规避跨域）；
-              关闭则由前端直接请求上方「请求地址」。
+              {{ t('lovConfig.proxyRequestTip') }}
               <span v-if="isSameAppUrl" style="color: #e6a23c">
-                请求地址以 / 开头（同源同应用），已强制前端直连，不可开启代理。
+                {{ t('lovConfig.sameAppUrlTip') }}
               </span>
             </div>
           </el-form-item>
-          <el-form-item label="是否分页">
+          <el-form-item :label="t('lovConfig.pageable')">
             <el-switch v-model="form.listConfig.pageable" />
           </el-form-item>
           <template v-if="form.listConfig.pageable">
-            <el-form-item label="页码参数名">
+            <el-form-item :label="t('lovConfig.pageNumField')">
               <el-input v-model="form.listConfig.pageNumField" placeholder="pageNo" />
             </el-form-item>
-            <el-form-item label="每页条数参数名">
+            <el-form-item :label="t('lovConfig.pageSizeField')">
               <el-input v-model="form.listConfig.pageSizeField" placeholder="pageSize" />
             </el-form-item>
           </template>
-          <el-form-item label="数据路径">
+          <el-form-item :label="t('lovConfig.dataPath')">
             <el-input v-model="form.listConfig.dataPath" placeholder="data" />
-            <div class="form-tip">数据列表所在的 JSON 路径，如 data.list 或直接 data</div>
+            <div class="form-tip">{{ t('lovConfig.dataPathTip') }}</div>
           </el-form-item>
-          <el-form-item label="总数路径">
+          <el-form-item :label="t('lovConfig.totalPath')">
             <el-input v-model="form.listConfig.totalPath" placeholder="page.totalCount" />
-            <div class="form-tip">总记录数所在的 JSON 路径，如 page.totalCount</div>
+            <div class="form-tip">{{ t('lovConfig.totalPathTip') }}</div>
           </el-form-item>
-          <el-form-item label="固定参数(JSON)">
+          <el-form-item :label="t('lovConfig.fixedParams')">
             <el-input
               v-model="form.listConfig.fixedParams"
               type="textarea"
@@ -132,163 +131,164 @@
       </el-tab-pane>
 
       <!-- 搜索字段 (LIST 类型) -->
-      <el-tab-pane v-if="form.type === 'LIST'" label="搜索字段" name="searchFields">
+      <el-tab-pane v-if="form.type === 'LIST'" :label="t('lovConfig.searchFieldsTab')" name="searchFields">
         <el-table :data="form.searchFields" max-height="400" border>
-          <el-table-column label="排序" width="120">
+          <el-table-column :label="t('common.sort')" width="120">
             <template #default="{ row }">
               <el-input-number v-model="row.sort" size="small" :min="0" controls-position="right" />
             </template>
           </el-table-column>
-          <el-table-column label="字段名" prop="field" min-width="120" />
-          <el-table-column label="显示标题" prop="title" min-width="140" />
-          <el-table-column label="控件类型" width="100">
+          <el-table-column :label="t('lovConfig.fieldName')" prop="field" min-width="120" />
+          <el-table-column :label="t('lovConfig.displayTitle')" prop="title" min-width="140" />
+          <el-table-column :label="t('lovConfig.controlType')" width="100">
             <template #default="{ row }">
               <el-tag size="small">{{ row.componentType }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="关联值集" min-width="160">
+          <el-table-column :label="t('lovConfig.refLov')" min-width="160">
             <template #default="{ row }">
               <code v-if="row.refLovCode">{{ row.refLovCode }}</code>
               <span v-else class="text-muted">—</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="130" fixed="right">
+          <el-table-column :label="t('common.actions')" width="130" fixed="right">
             <template #default="{ $index }">
-              <el-button size="small" @click="editSearchField($index)">编辑</el-button>
+              <el-button size="small" @click="editSearchField($index)">{{ t('button.edit') }}</el-button>
               <el-button size="small" type="danger" text @click="removeItem('searchFields', $index)"
-                >删除</el-button
+                >{{ t('button.delete') }}</el-button
               >
             </template>
           </el-table-column>
         </el-table>
-        <el-button type="primary" class="mt-2" @click="addSearchField">+ 新增搜索字段</el-button>
+        <el-button type="primary" class="mt-2" @click="addSearchField">{{ t('lovConfig.addSearchField') }}</el-button>
 
         <!-- 搜索字段编辑弹窗 -->
-        <el-dialog v-model="sfVisible" title="编辑搜索字段" width="500px" append-to-body>
+        <el-dialog v-model="sfVisible" :title="t('lovConfig.editSearchField')" width="500px" append-to-body>
           <el-form :model="sfForm" label-width="100px">
-            <el-form-item label="字段名" required>
-              <el-input v-model="sfForm.field" placeholder="如 deptName" />
+            <el-form-item :label="t('lovConfig.fieldName')" required>
+              <el-input v-model="sfForm.field" :placeholder="t('lovConfig.fieldNameHint')" />
             </el-form-item>
-            <el-form-item label="显示标题">
-              <el-input v-model="sfForm.title" placeholder="如 部门名称" />
+            <el-form-item :label="t('lovConfig.displayTitle')">
+              <el-input v-model="sfForm.title" :placeholder="t('lovConfig.titleHint')" />
             </el-form-item>
-            <el-form-item label="控件类型">
+            <el-form-item :label="t('lovConfig.controlType')">
               <el-select v-model="sfForm.componentType" @change="sfForm.refLovCode = ''">
-                <el-option label="文本输入 (input)" value="input" />
-                <el-option label="下拉选择 (select)" value="select" />
-                <el-option label="值集选择 (lov)" value="lov" />
+                <el-option :label="t('lovConfig.controlInput')" value="input" />
+                <el-option :label="t('lovConfig.controlSelect')" value="select" />
+                <el-option :label="t('lovConfig.controlLov')" value="lov" />
               </el-select>
             </el-form-item>
             <el-form-item
               v-if="sfForm.componentType === 'select' || sfForm.componentType === 'lov'"
-              label="关联值集"
+              :label="t('lovConfig.refLov')"
             >
-              <el-input v-model="sfForm.refLovCode" placeholder="如 Enum.Department" />
+              <el-input v-model="sfForm.refLovCode" :placeholder="t('lovConfig.refLovHint')" />
             </el-form-item>
-            <el-form-item label="传参方式">
+            <el-form-item :label="t('lovConfig.paramType')">
               <el-radio-group v-model="sfForm.paramType">
                 <el-radio value="BODY">BODY</el-radio>
                 <el-radio value="QUERY">QUERY</el-radio>
               </el-radio-group>
             </el-form-item>
-            <el-form-item label="必填">
+            <el-form-item :label="t('lovConfig.required')">
               <el-switch v-model="sfForm.required" />
             </el-form-item>
-            <el-form-item label="默认值">
+            <el-form-item :label="t('lovConfig.defaultValue')">
               <el-input v-model="sfForm.defaultValue" />
             </el-form-item>
           </el-form>
           <template #footer>
-            <el-button @click="sfVisible = false">取消</el-button>
-            <el-button type="primary" @click="confirmSearchField">确定</el-button>
+            <el-button @click="sfVisible = false">{{ t('button.cancel') }}</el-button>
+            <el-button type="primary" @click="confirmSearchField">{{ t('button.confirm') }}</el-button>
           </template>
         </el-dialog>
       </el-tab-pane>
 
       <!-- 表格列 (LIST 类型) -->
-      <el-tab-pane v-if="form.type === 'LIST'" label="表格列" name="tableColumns">
+      <el-tab-pane v-if="form.type === 'LIST'" :label="t('lovConfig.tableColumnsTab')" name="tableColumns">
         <el-table :data="form.tableColumns" max-height="400" border>
-          <el-table-column label="排序" width="120">
+          <el-table-column :label="t('common.sort')" width="120">
             <template #default="{ row }">
               <el-input-number v-model="row.sort" size="small" :min="0" controls-position="right" />
             </template>
           </el-table-column>
-          <el-table-column label="字段名" prop="field" min-width="120" />
-          <el-table-column label="标题" prop="title" min-width="140" />
-          <el-table-column label="宽度" width="70" prop="width" />
-          <el-table-column label="对齐" width="70" prop="align" />
-          <el-table-column label="关联值集" min-width="160">
+          <el-table-column :label="t('lovConfig.fieldName')" prop="field" min-width="120" />
+          <el-table-column :label="t('lovConfig.columnTitle')" prop="title" min-width="140" />
+          <el-table-column :label="t('lovConfig.columnWidth')" width="70" prop="width" />
+          <el-table-column :label="t('lovConfig.columnAlign')" width="70" prop="align" />
+          <el-table-column :label="t('lovConfig.refLov')" min-width="160">
             <template #default="{ row }">
               <code v-if="row.refLovCode">{{ row.refLovCode }}</code>
               <span v-else class="text-muted">—</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="130" fixed="right">
+          <el-table-column :label="t('common.actions')" width="130" fixed="right">
             <template #default="{ $index }">
-              <el-button size="small" @click="editTableColumn($index)">编辑</el-button>
+              <el-button size="small" @click="editTableColumn($index)">{{ t('button.edit') }}</el-button>
               <el-button size="small" type="danger" text @click="removeItem('tableColumns', $index)"
-                >删除</el-button
+                >{{ t('button.delete') }}</el-button
               >
             </template>
           </el-table-column>
         </el-table>
-        <el-button type="primary" class="mt-2" @click="addTableColumn">+ 新增列</el-button>
+        <el-button type="primary" class="mt-2" @click="addTableColumn">{{ t('lovConfig.addColumn') }}</el-button>
 
         <!-- 表格列编辑弹窗 -->
-        <el-dialog v-model="tcVisible" title="编辑表格列" width="500px" append-to-body>
+        <el-dialog v-model="tcVisible" :title="t('lovConfig.editColumn')" width="500px" append-to-body>
           <el-form :model="tcForm" label-width="100px">
-            <el-form-item label="字段名" required>
-              <el-input v-model="tcForm.field" placeholder="如 status" />
+            <el-form-item :label="t('lovConfig.fieldName')" required>
+              <el-input v-model="tcForm.field" :placeholder="t('lovConfig.fieldNameHintStatus')" />
             </el-form-item>
-            <el-form-item label="显示标题">
-              <el-input v-model="tcForm.title" placeholder="如 状态" />
+            <el-form-item :label="t('lovConfig.displayTitle')">
+              <el-input v-model="tcForm.title" :placeholder="t('lovConfig.titleHintStatus')" />
             </el-form-item>
-            <el-form-item label="列宽(px)">
+            <el-form-item :label="t('lovConfig.columnWidthPx')">
               <el-input-number v-model="tcForm.width" :min="0" />
             </el-form-item>
-            <el-form-item label="对齐方式">
+            <el-form-item :label="t('lovConfig.align')">
               <el-radio-group v-model="tcForm.align">
-                <el-radio value="left">左</el-radio>
-                <el-radio value="center">中</el-radio>
-                <el-radio value="right">右</el-radio>
+                <el-radio value="left">{{ t('lovConfig.alignLeft') }}</el-radio>
+                <el-radio value="center">{{ t('lovConfig.alignCenter') }}</el-radio>
+                <el-radio value="right">{{ t('lovConfig.alignRight') }}</el-radio>
               </el-radio-group>
             </el-form-item>
-            <el-form-item label="可排序">
+            <el-form-item :label="t('lovConfig.sortable')">
               <el-switch v-model="tcForm.sortable" />
             </el-form-item>
-            <el-form-item label="关联值集">
+            <el-form-item :label="t('lovConfig.refLov')">
               <el-input
                 v-model="tcForm.refLovCode"
-                placeholder="如 Enum.Status"
+                :placeholder="t('lovConfig.refLovHintStatus')"
                 @input="tcForm.formatType = ''"
               />
-              <div class="form-tip">选中后自动对列值做翻译</div>
+              <div class="form-tip">{{ t('lovConfig.refLovTip') }}</div>
             </el-form-item>
-            <el-form-item label="格式化类型">
+            <el-form-item :label="t('lovConfig.formatType')">
               <el-input
                 v-model="tcForm.formatType"
                 @input="tcForm.refLovCode = ''"
-                placeholder="与关联值集互斥"
+                :placeholder="t('lovConfig.formatTypeHint')"
               />
             </el-form-item>
           </el-form>
           <template #footer>
-            <el-button @click="tcVisible = false">取消</el-button>
-            <el-button type="primary" @click="confirmTableColumn">确定</el-button>
+            <el-button @click="tcVisible = false">{{ t('button.cancel') }}</el-button>
+            <el-button type="primary" @click="confirmTableColumn">{{ t('button.confirm') }}</el-button>
           </template>
         </el-dialog>
       </el-tab-pane>
     </el-tabs>
 
     <template #footer>
-      <el-button @click="close">取消</el-button>
-      <el-button type="primary" :loading="saving" @click="save">保存配置</el-button>
+      <el-button @click="close">{{ t('button.cancel') }}</el-button>
+      <el-button type="primary" :loading="saving" @click="save">{{ t('lovConfig.saveConfig') }}</el-button>
     </template>
   </el-dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import cubeApi, { usePageApi } from '@newlifex/cube-vue/core/composables/useCubeApi';
 
@@ -370,6 +370,7 @@ const emit = defineEmits<{
 const api = usePageApi('Admin', 'Lov');
 const activeTab = ref('enumItems');
 const saving = ref(false);
+const { t } = useI18n();
 const loading = ref(false);
 
 const emptyListConfig = (): ListConfig => ({
@@ -570,7 +571,7 @@ async function loadConfig() {
           ? 'searchFields'
           : 'listConfig';
   } catch (err: any) {
-    ElMessage.error(err?.message || '加载配置失败');
+    ElMessage.error(err?.message || t('lovConfig.loadFailed'));
   } finally {
     loading.value = false;
   }
@@ -581,11 +582,11 @@ async function save() {
   try {
     const body = { ...form.value, id: props.lovDefId };
     await cubeApi.client.request({ url: '/Admin/Lov/SaveConfig', method: 'post', data: body });
-    ElMessage.success('保存成功');
+    ElMessage.success(t('lovConfig.saveSuccess'));
     emit('saved');
     close();
   } catch (err: any) {
-    ElMessage.error(err?.message || '保存失败');
+    ElMessage.error(err?.message || t('lovConfig.saveFailed'));
   } finally {
     saving.value = false;
   }
