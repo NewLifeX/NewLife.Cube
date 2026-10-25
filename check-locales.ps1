@@ -138,6 +138,20 @@ foreach ($dir in @($MetadataSourceDir | Where-Object { $_ })) {
     }
 }
 
+# 运行期组合键：菜单规范键 menu:<类型全名>、字段键 field:<...> 由类型全名拼出，源码中没有字面量，
+# 按元数据键口径处理——免于孤儿检查，非强制覆盖语言允许缺失（运行期回退源文/英文）
+$runtimeKeySet = [System.Collections.Generic.HashSet[String]]::new([StringComparer]::Ordinal)
+$runtimeKeyPrefixes = @("menu:", "field:")
+foreach ($key in @($reference.Entries.Keys)) {
+    foreach ($prefix in $runtimeKeyPrefixes) {
+        if ($key.StartsWith($prefix, [StringComparison]::Ordinal)) {
+            [void]$runtimeKeySet.Add($key)
+            [void]$metadataKeySet.Add($key)
+            break
+        }
+    }
+}
+
 # 强制 100% 覆盖的语言（逗号或分号分隔）
 $fullCoverageSet = [System.Collections.Generic.HashSet[String]]::new([StringComparer]::Ordinal)
 foreach ($item in @($FullCoverageCultures | ForEach-Object { $_ -split '[,;]' } | Where-Object { $_ })) {
@@ -232,6 +246,8 @@ foreach ($file in Get-ChildItem $localeDir -Filter *.yml | Sort-Object Name) {
             $allErrors += "$($file.Name): 缺少元数据译文 $key"
             continue
         }
+        # 运行期组合键：非强制覆盖语言允许缺失，不参与覆盖基线棘轮
+        if ($runtimeKeySet.Contains($key)) { continue }
         if ($baselinePath) {
             $allowed = $baselineCommon.Contains($key) -or ($baselinePerLang.ContainsKey($lang) -and $baselinePerLang[$lang].Contains($key))
             if (!$allowed) { $allErrors += "$($file.Name): 新增元数据缺口 $key" }
