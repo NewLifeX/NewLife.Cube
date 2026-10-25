@@ -7,6 +7,10 @@
 #   pwsh -File check-locales.ps1 -LocaleDir NewLife.Cube\Locales -SkipOrphan   # 下游只想校验词表内部一致性
 #   pwsh -File check-locales.ps1 -MetadataKeys NewLife.Cube\Locales\metadata-keys.json -MetadataSourceDir NewLife.Cube\Entity  # 元数据键允许部分语言缺失
 #   pwsh -File check-locales.ps1 -MetadataKeys ... -RequireFullCoverage   # 元数据键也必须每种语言都有译文（魔方 CI 口径）
+#   pwsh -File check-locales.ps1 -MetadataKeys ... -FullCoverageCultures "zh-Hant,de,fr" -CoverageBaseline NewLife.Cube\Locales\metadata-coverage-baseline.json
+#       译文较全的语言强制 100% 覆盖；其余语言按基线棘轮，只拦新增缺口
+#   pwsh -File check-locales.ps1 -MetadataKeys ... -UpdateCoverageBaseline ... -CoverageBaseline NewLife.Cube\Locales\metadata-coverage-baseline.json
+#       重新生成覆盖基线（人工确认后执行）
 param(
     [String]$LocaleDir = "NewLife.Cube\Locales",
     [String]$Baseline = "zh-Hans.yml",
@@ -18,7 +22,13 @@ param(
     [Switch]$SkipOrphan,
     [Switch]$Strict,
     # 元数据键不再允许部分语言缺失：每种语言都必须有译文，缺失即报错
-    [Switch]$RequireFullCoverage
+    [Switch]$RequireFullCoverage,
+    # 必须 100% 覆盖元数据键的语言（逗号或分号分隔），其余语言走覆盖基线棘轮
+    [String]$FullCoverageCultures,
+    # 覆盖基线：记录各语言当前允许缺失的元数据键，只允许减少不允许新增
+    [String]$CoverageBaseline,
+    # 按当前词表重新生成覆盖基线后退出
+    [Switch]$UpdateCoverageBaseline
 )
 
 $ErrorActionPreference = "Stop"
@@ -46,7 +56,8 @@ function Unescape-Yaml([string]$text) {
             'n' { return "`n" }
             'r' { return "`r" }
             't' { return "`t" }
-            '\\' { return '\' }
+            # 反斜杠转义：单引号字符串里写两个反斜杠表示「反斜杠」字符本身
+            '\' { return '\' }
             '"' { return '"' }
             default { return $m.Value }
         }
@@ -127,18 +138,103 @@ foreach ($dir in @($MetadataSourceDir | Where-Object { $_ })) {
     }
 }
 
+# 强制 100% 覆盖的语言（逗号或分号分隔）
+$fullCoverageSet = [System.Collections.Generic.HashSet[String]]::new([StringComparer]::Ordinal)
+foreach ($item in @($FullCoverageCultures | ForEach-Object { $_ -split '[,;]' } | Where-Object { $_ })) {
+    [void]$fullCoverageSet.Add($item.Trim())
+}
+
+# 覆盖基线：其余语言的元数据缺口只允许减少，不允许新增
+$baselineCommon = [System.Collections.Generic.HashSet[String]]::new([StringComparer]::Ordinal)
+$baselinePerLang = @{}
+$baselinePath = $null
+if ($CoverageBaseline) {
+    $baselinePath = if ([IO.Path]::IsPathRooted($CoverageBaseline)) { $CoverageBaseline } else { Join-Path $root $CoverageBaseline }
+    if ($UpdateCoverageBaseline) {
+        # 重新生成基线：统计各语言缺失的元数据键，公共缺口合并存放，避免文件膨胀
+        $missingByLang = @{}
+        $langs = @()
+        foreach ($file in Get-ChildItem $localeDir -Filter *.yml | Sort-Object Name) {
+            $lang = [IO.Path]::GetFileNameWithoutExtension($file.Name)
+            if ($file.Name -eq $Baseline -or $lang -eq "en" -or $fullCoverageSet.Contains($lang)) { continue }
+
+            $locale = Read-Locale $file.FullName
+            $missing = @($metadataKeySet | Where-Object { !$locale.Entries.Contains($_) })
+            $missingByLang[$lang] = $missing
+            $langs += $lang
+        }
+
+        $common = $null
+        foreach ($lang in $langs) {
+            $set = [System.Collections.Generic.HashSet[String]]::new([StringComparer]::Ordinal)
+            foreach ($k in $missingByLang[$lang]) { [void]$set.Add($k) }
+            if ($null -eq $common) { $common = $set } else { $common.IntersectWith($set) }
+        }
+        if ($null -eq $common) { $common = [System.Collections.Generic.HashSet[String]]::new([StringComparer]::Ordinal) }
+
+        $perLang = [ordered]@{}
+        foreach ($lang in $langs) {
+            $rest = @($missingByLang[$lang] | Where-Object { !$common.Contains($_) } | Sort-Object)
+            $perLang[$lang] = $rest
+        }
+        $doc = [ordered]@{
+            '_comment'    = '元数据词表覆盖基线：记录各语言当前允许缺失的键，只允许减少不允许新增。公共缺口放 common，个别语言额外缺口放 perLanguage。'
+            'generatedAt' = (Get-Date -Format 'yyyy-MM-dd')
+            'common'      = @($common | Sort-Object)
+            'perLanguage' = $perLang
+        }
+        $dir2 = Split-Path -Parent $baselinePath
+        if ($dir2 -and !(Test-Path -LiteralPath $dir2)) { New-Item -ItemType Directory -Path $dir2 | Out-Null }
+        $doc | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $baselinePath -Encoding UTF8
+        Write-Host "已生成覆盖基线：$baselinePath（公共缺口 $($common.Count) 条）" -ForegroundColor Green
+        exit 0
+    }
+    if (!(Test-Path -LiteralPath $baselinePath)) {
+        Write-Host "未找到覆盖基线：$baselinePath（可先用 -UpdateCoverageBaseline 生成）" -ForegroundColor Red
+        exit 1
+    }
+    $baselineJson = Get-Content -LiteralPath $baselinePath -Raw -Encoding UTF8 | ConvertFrom-Json
+    foreach ($item in @($baselineJson.common)) { if ($item) { [void]$baselineCommon.Add([String]$item) } }
+    if ($null -ne $baselineJson.perLanguage) {
+        foreach ($p in $baselineJson.perLanguage.PSObject.Properties) {
+            $set = [System.Collections.Generic.HashSet[String]]::new([StringComparer]::Ordinal)
+            foreach ($v in @($p.Value)) { if ($v) { [void]$set.Add([String]$v) } }
+            $baselinePerLang[$p.Name] = $set
+        }
+    }
+}
+
 foreach ($file in Get-ChildItem $localeDir -Filter *.yml | Sort-Object Name) {
     if ($file.Name -eq $Baseline) { continue }
     $lang = [IO.Path]::GetFileNameWithoutExtension($file.Name)
     $locale = Read-Locale $file.FullName
     foreach ($e in $locale.Errors) { $allErrors += "$($file.Name): $e" }
 
-    foreach ($key in $reference.Entries.Keys) {
+    # 必查键 = 基准键 ∪ 元数据键。基准键任何语言都必须有；元数据键按覆盖策略判定
+    $requiredKeys = [System.Collections.Generic.HashSet[String]]::new([StringComparer]::Ordinal)
+    foreach ($key in $reference.Entries.Keys) { [void]$requiredKeys.Add($key) }
+    foreach ($key in $metadataKeySet) { [void]$requiredKeys.Add($key) }
+
+    $fullCoverage = $RequireFullCoverage -or $fullCoverageSet.Contains($lang)
+    foreach ($key in $requiredKeys) {
         # en 是源文语言，允许只提供元数据译文，其余消息回退英文源文
-        # 默认元数据键允许部分语言缺失；-RequireFullCoverage 时元数据键也必须覆盖所有语言
-        $allowMissing = $metadataKeySet.Contains($key) -and !$RequireFullCoverage
-        if (!$locale.Entries.Contains($key) -and !$allowMissing -and $lang -ne "en") {
+        if ($lang -eq "en") { continue }
+        if ($locale.Entries.Contains($key)) { continue }
+
+        $isMeta = $metadataKeySet.Contains($key)
+        if (!$isMeta) {
             $allErrors += "$($file.Name): 缺少键 $key"
+            continue
+        }
+
+        # 元数据键：强制覆盖的语言缺失即报错；其余语言按基线棘轮，只拦新增缺口
+        if ($fullCoverage) {
+            $allErrors += "$($file.Name): 缺少元数据译文 $key"
+            continue
+        }
+        if ($baselinePath) {
+            $allowed = $baselineCommon.Contains($key) -or ($baselinePerLang.ContainsKey($lang) -and $baselinePerLang[$lang].Contains($key))
+            if (!$allowed) { $allErrors += "$($file.Name): 新增元数据缺口 $key" }
         }
     }
     foreach ($key in $locale.Entries.Keys) {

@@ -177,7 +177,8 @@ public class DeleteEndpointTests
         var rs = controller.DeleteAll([String.Join(",", ids)]);
 
         Assert.Equal(-2, rs.Code);
-        Assert.Contains("query conditions", rs.Message);
+        // 消息按请求语言翻译，用 L.T 结果做包含判断，避免绑定某一种语言
+        Assert.Contains(L.T("Too many ids to delete at once. Use query conditions instead."), rs.Message);
     }
 
     [Fact(DisplayName = "批量删除：既无 ids 也无业务条件时拒绝删除")]

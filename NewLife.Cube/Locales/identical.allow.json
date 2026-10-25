@@ -33,7 +33,9 @@
     "Links",
     "Outlook/Hotmail",
     "Skin",
-    "{0}, {1}"
+    "{0}, {1}",
+    "{0}",
+    "HeaderTitle"
   ],
   "ja": [
     "AI",
@@ -75,7 +77,10 @@
     "Xml接口",
     "{ParentPath}",
     "Gmail",
-    "Outlook/Hotmail"
+    "Outlook/Hotmail",
+    "{0}",
+    "HeaderTitle",
+    "控制器"
   ],
   "pl": [
     "Agent",
@@ -238,7 +243,8 @@
     "Mobile",
     "Normal",
     "{0}, {1}",
-    "Performance"
+    "Performance",
+    "{0}"
   ],
   "it": [
     "Backup",

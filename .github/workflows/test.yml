@@ -364,10 +364,20 @@ jobs:
             # 带同形词白名单的目录（魔方主词表）额外做严格校验：译文不得回退英文
             $strict = @()
             if (Test-Path (Join-Path $_.FullName 'identical.allow.json')) { $strict = @('-Strict') }
-            # 元数据键清单存在时放宽孤儿键校验；RequireFullCoverage 要求每种语言都有元数据译文，缺一即失败
+            # 元数据键清单存在时放宽孤儿键校验。
+            # 有覆盖基线时：译文较全的语言（zh-Hant/de/fr）强制 100%，其余语言按基线只拦新增缺口；
+            # 没有基线时退回 RequireFullCoverage（每种语言都必须有元数据译文）
             $meta = Join-Path $_.FullName 'metadata-keys.json'
             $metaArgs = @()
-            if (Test-Path $meta) { $metaArgs = @('-MetadataKeys', $meta, '-MetadataSourceDir', (Split-Path $_.FullName -Parent), '-RequireFullCoverage') }
+            if (Test-Path $meta) {
+              $metaArgs = @('-MetadataKeys', $meta, '-MetadataSourceDir', (Split-Path $_.FullName -Parent))
+              $baseline = Join-Path $_.FullName 'metadata-coverage-baseline.json'
+              if (Test-Path $baseline) {
+                $metaArgs += @('-FullCoverageCultures', 'zh-Hant,de,fr', '-CoverageBaseline', $baseline)
+              } else {
+                $metaArgs += '-RequireFullCoverage'
+              }
+            }
             pwsh -File ./check-locales.ps1 -LocaleDir $_.FullName -Baseline zh-Hans.yml @strict @metaArgs
             if ($LASTEXITCODE -ne 0) { $failed = $true }
           }
