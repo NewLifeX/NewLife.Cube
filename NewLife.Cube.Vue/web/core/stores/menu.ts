@@ -188,13 +188,13 @@ export const useMenuStore = defineStore('menu', {
             try {
               const res = await request(requestConfig);
               if (!res) {
-                throw new Error('获取菜单数据失败');
+                throw new Error('Failed to get menu data');
               }
 
               const data = getDataByKey(res as never, menuConfig.dataKey);
 
               if (!data) {
-                throw new Error('获取菜单数据失败');
+                throw new Error('Failed to get menu data');
               }
 
               if (menuConfig.isMenuTree) {
@@ -207,7 +207,7 @@ export const useMenuStore = defineStore('menu', {
               }
               this.setActiveMenuByPath(window.location.pathname);
             } catch (error) {
-              console.error('获取菜单失败:', error);
+              console.error('Failed to get menus:', error);
               throw error;
             }
           };
@@ -226,7 +226,7 @@ export const useMenuStore = defineStore('menu', {
             await processMenuRequestAsync(getMenuAxiosConfig);
           }
         } catch (error) {
-          console.error('加载菜单配置失败:', error);
+          console.error('Failed to load menu configuration:', error);
         } finally {
           // 增加延时，避免下面的赋值触发更新再次请求
           setTimeout(() => {

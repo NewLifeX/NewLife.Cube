@@ -1333,6 +1333,7 @@ export default {
   'apiHome.api.ssoAvatar.desc': 'SSO user avatar',
 
   'common.copy': 'Copy',
+  'common.tip': 'Tip',
   'common.addSuccess': 'Added successfully',
   'common.addFailed': 'Failed to add',
   'common.updateSuccess': 'Updated successfully',
@@ -1775,4 +1776,9 @@ export default {
 
   'workbench.monitorChartLabel': 'CPU and memory usage chart',
   'workbench.waitingMonitorData': 'Waiting for monitoring data...',
+
+  'layout.topMenu': 'Top menu',
+  'layout.topMenuDesc': 'Top navigation bar plus content area',
+  'layout.cyber': 'Cyber style',
+  'layout.cyberDesc': 'Dark tech style with neon glow',
 };

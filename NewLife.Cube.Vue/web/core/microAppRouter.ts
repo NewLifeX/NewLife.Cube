@@ -54,7 +54,7 @@ export function registerAppRoutes(
   appPrefix?: string,
 ): void {
   if (!appName || !routes) {
-    console.error('注册应用路由失败：缺少必要参数');
+    console.error('Failed to register app routes: missing required parameters');
     return;
   }
 
@@ -63,7 +63,7 @@ export function registerAppRoutes(
   if (existingApp) {
     // 合并路由而不是覆盖
     existingApp.routes.push(...routes);
-    console.log(`应用 ${appName} 路由已合并，新增 ${routes.length} 个路由`);
+    console.log(`Routes of app ${appName} merged, ${routes.length} route(s) added`);
   } else {
     // 注册新应用信息
     appRegistry.set(appName, {
@@ -84,7 +84,7 @@ export function registerAppRoutes(
     addFrameworkRoute(route, router);
   });
 
-  console.log(`应用 ${appName} 路由注册成功`);
+  console.log(`Routes of app ${appName} registered successfully`);
 }
 
 /**
@@ -141,7 +141,7 @@ export function isRoutesInitialized(): boolean {
 export async function initAppRoutes(router: Router): Promise<void> {
   // 重置初始化标记
   routesInitialized = false;
-  console.log('开始初始化微应用路由...', microAppConfigs);
+  console.log('Initializing micro-app routes...', microAppConfigs);
   try {
     // 遍历所有微应用配置
     for (const appConfig of microAppConfigs) {
@@ -150,7 +150,7 @@ export async function initAppRoutes(router: Router): Promise<void> {
         const appModule = await appConfig.module();
 
         if (appModule.routes) {
-          console.log('加载应用模块成功', appConfig.name, appModule);
+          console.log('App module loaded', appConfig.name, appModule);
 
           // 注册应用路由
           registerAppRoutes(
@@ -161,18 +161,18 @@ export async function initAppRoutes(router: Router): Promise<void> {
             appConfig.prefix,
           );
         } else {
-          console.warn(`应用 ${appConfig.name} 没有导出路由配置`);
+          console.warn(`App ${appConfig.name} exports no route configuration`);
         }
       } catch (error) {
-        console.error(`加载应用 ${appConfig.name} 失败:`, error);
+        console.error(`Failed to load app ${appConfig.name}:`, error);
       }
     }
 
     // 所有应用路由加载完成
     routesInitialized = true;
-    console.log('所有微应用路由初始化完成');
+    console.log('All micro-app routes initialized');
   } catch (error) {
-    console.error('初始化微应用路由失败:', error);
+    console.error('Failed to initialize micro-app routes:', error);
     throw error;
   }
 }

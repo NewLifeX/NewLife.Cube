@@ -1,4 +1,5 @@
 import { ref, shallowRef, computed, markRaw, type Component } from 'vue';
+import i18n from '../i18n';
 import TopMenuLayout from '../layouts/TopMenu/index.vue';
 import CyberLayout from '../layouts/CyberLayout/index.vue';
 
@@ -21,16 +22,24 @@ export const STORAGE_KEY = 'cube-layout';
 export const BUILT_IN_LAYOUTS: LayoutOption[] = [
   {
     id: 'top-menu',
-    label: '顶部菜单',
+    get label() {
+      return i18n.global.t('layout.topMenu');
+    },
     icon: '⊟',
-    description: '顶部导航栏 + 内容区布局',
+    get description() {
+      return i18n.global.t('layout.topMenuDesc');
+    },
     component: markRaw(TopMenuLayout),
   },
   {
     id: 'cyber',
-    label: '赛博风格',
+    get label() {
+      return i18n.global.t('layout.cyber');
+    },
     icon: '◉',
-    description: '深色科技风格 + 霓虹发光效果',
+    get description() {
+      return i18n.global.t('layout.cyberDesc');
+    },
     component: markRaw(CyberLayout),
   },
 ];

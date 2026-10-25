@@ -1293,6 +1293,7 @@ export default {
   'apiHome.api.ssoAvatar.desc': 'SSO 使用者頭像',
 
   'common.copy': '複製',
+  'common.tip': '提示',
   'common.addSuccess': '新增成功',
   'common.addFailed': '新增失敗',
   'common.updateSuccess': '更新成功',
@@ -1733,4 +1734,9 @@ export default {
 
   'workbench.monitorChartLabel': 'CPU 與記憶體使用率曲線',
   'workbench.waitingMonitorData': '等待監控資料…',
+
+  'layout.topMenu': '頂部選單',
+  'layout.topMenuDesc': '頂部導覽列 + 內容區版面',
+  'layout.cyber': '賽博風格',
+  'layout.cyberDesc': '深色科技風格 + 霓虹發光效果',
 };

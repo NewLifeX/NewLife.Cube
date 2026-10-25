@@ -4,6 +4,7 @@
  */
 
 import type { ListResponse, ApiPageInfo } from '@newlifex/cube-vue/core/types/common';
+import i18n from '../i18n';
 
 /**
  * 处理列表数据响应 - 兼容request.ts拦截器已处理的数据格式
@@ -54,14 +55,14 @@ export function apiDataToList<T = Record<string, unknown>>(data: unknown): ListR
 export async function handleDeleteOperation(
   apiCall: () => Promise<unknown>,
   onSuccess: () => void,
-  confirmMessage: string = '确认删除吗？',
+  confirmMessage: string = i18n.global.t('fileManager.confirmDelete'),
 ): Promise<void> {
   const { ElMessageBox } = await import('element-plus');
 
   try {
-    await ElMessageBox.confirm(confirmMessage, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(confirmMessage, i18n.global.t('common.tip'), {
+      confirmButtonText: i18n.global.t('button.confirm'),
+      cancelButtonText: i18n.global.t('button.cancel'),
       type: 'warning',
     });
 

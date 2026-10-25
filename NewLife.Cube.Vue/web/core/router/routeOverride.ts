@@ -57,7 +57,7 @@ let currentRouter: Router | null = null;
 const SAFETY_CRITICAL_KEYS = new Set(['/login', '/loading', '/unauthorized']);
 
 /** 告警前缀 */
-const LOG_PREFIX = '[路由优先级]';
+const LOG_PREFIX = '[route-priority]';
 
 /**
  * 归一化路由 path：把动态段统一成占位符，便于比较「同形态」路径
@@ -115,7 +115,7 @@ export function isDeclaredExternal(route: {
 export function declareExternalRoutes(routes: ConfigRoute[]): void {
   for (const route of routes) {
     if (!route?.path) {
-      console.warn(`${LOG_PREFIX} 忽略无 path 的外部路由声明:`, route);
+      console.warn(`${LOG_PREFIX} Ignored external route declaration without path:`, route);
       continue;
     }
     externalByPath.set(normalizeRoutePath(route.path), route);
@@ -225,28 +225,28 @@ function guardExternalRoute(
 
   if (SAFETY_CRITICAL_KEYS.has(normalizeRoutePath(route.path))) {
     console.warn(
-      `${LOG_PREFIX} 外部路由 ${label} 覆盖了框架安全关键路径：` +
-        '请确认自带 meta.auth=false / meta.layout=false，否则登录、加载、鉴权重定向链路可能异常',
+      `${LOG_PREFIX} External route ${label} overrides a safety-critical framework path: ` +
+        'make sure it declares meta.auth=false / meta.layout=false, otherwise the login, loading and auth-redirect chain may break',
     );
   }
   if (route.path.includes('*') || route.path.includes('(.*)')) {
     console.warn(
-      `${LOG_PREFIX} 外部路由 ${label} 覆盖了 catch-all 兜底路由：未匹配路径将不再落入框架默认页`,
+      `${LOG_PREFIX} External route ${label} overrides the catch-all fallback route: unmatched paths will no longer fall back to the framework default page`,
     );
   }
   if (typeof route.name !== 'string') {
     console.warn(
-      `${LOG_PREFIX} 外部路由 ${label} 未设置字符串 name：后续无法被撤销，同名覆盖判定也不生效`,
+      `${LOG_PREFIX} External route ${label} has no string name: it cannot be revoked later and same-name override detection will not work`,
     );
   }
   if (!route.component && !route.redirect && !route.children) {
     console.warn(
-      `${LOG_PREFIX} 外部路由 ${label} 既无 component 也无 redirect / children：命中后会白屏`,
+      `${LOG_PREFIX} External route ${label} has neither component nor redirect / children: it will render a blank page`,
     );
   }
   if (replaced.length) {
     console.info(
-      `${LOG_PREFIX} 外部路由 ${label} 已接管框架路由：${replaced
+      `${LOG_PREFIX} External route ${label} took over framework routes: ${replaced
         .map((r) => r.name ?? r.key)
         .join(', ')}`,
     );
@@ -268,15 +268,15 @@ export function addFrameworkRoute(
   router: Router | null = currentRouter,
 ): (() => void) | null {
   if (!router) {
-    console.error(`${LOG_PREFIX} 未绑定 router，框架路由注册失败:`, route.path);
+    console.error(`${LOG_PREFIX} No router bound, framework route registration failed:`, route.path);
     return null;
   }
 
   if (isDeclaredExternal(route)) {
     console.warn(
-      `${LOG_PREFIX} 框架路由 ${route.path}${
+      `${LOG_PREFIX} Framework route ${route.path}${
         typeof route.name === 'string' ? ` (${route.name})` : ''
-      } 让位于外部声明的同形态路由`,
+      } yields to an external route with the same shape`,
     );
     return null;
   }
@@ -305,11 +305,11 @@ export function addExternalRoute(
   router: Router | null = currentRouter,
 ): (() => void) | null {
   if (!router) {
-    console.error(`${LOG_PREFIX} 未绑定 router，外部路由注册失败:`, route.path);
+    console.error(`${LOG_PREFIX} No router bound, external route registration failed:`, route.path);
     return null;
   }
   if (!route?.path) {
-    console.error(`${LOG_PREFIX} 外部路由缺少 path，注册失败:`, route);
+    console.error(`${LOG_PREFIX} External route is missing path, registration failed:`, route);
     return null;
   }
 

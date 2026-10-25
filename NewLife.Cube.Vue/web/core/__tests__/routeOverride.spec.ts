@@ -86,7 +86,7 @@ describe('外部路由优先（框架侧让位）', () => {
     // 外部路由落盘后根路径命中外部声明
     applyExternalRoutes(undefined, router);
     expect(String(router.resolve('/').name)).toBe('HomeRedirect');
-    expect(warnSpy.mock.calls.some((args) => String(args[0]).includes('让位于外部声明'))).toBe(true);
+      expect(warnSpy.mock.calls.some((args) => String(args[0]).includes('yields to an external route'))).toBe(true);
   });
 
   it('框架先注册、外部后接管：清掉框架记录并接管同形态路径', () => {
@@ -217,7 +217,7 @@ describe('覆盖守门（只告警，不拦截）', () => {
     applyExternalRoutes([{ path: '/login', name: 'BizLogin', component: Stub }], router);
 
     expect(String(router.resolve('/login').name)).toBe('BizLogin');
-    expect(warnSpy.mock.calls.some((args) => String(args[0]).includes('安全关键路径'))).toBe(true);
+      expect(warnSpy.mock.calls.some((args) => String(args[0]).includes('safety-critical'))).toBe(true);
   });
 
   it('外部路由缺字符串 name 时告警', () => {
@@ -225,7 +225,7 @@ describe('覆盖守门（只告警，不拦截）', () => {
     const router = createFrameworkRouter();
     applyExternalRoutes([{ path: '/no-name', component: Stub }], router);
 
-    expect(warnSpy.mock.calls.some((args) => String(args[0]).includes('未设置字符串 name'))).toBe(true);
+      expect(warnSpy.mock.calls.some((args) => String(args[0]).includes('has no string name'))).toBe(true);
   });
 
   it('外部路由既无 component 也无 redirect 时告警（命中会白屏）', () => {
@@ -234,6 +234,6 @@ describe('覆盖守门（只告警，不拦截）', () => {
     // 刻意构造非法路由（无 component / redirect）以驱动守门告警，故此处用断言收窄类型
     applyExternalRoutes([{ path: '/blank', name: 'Blank' } as ConfigRoute], router);
 
-    expect(warnSpy.mock.calls.some((args) => String(args[0]).includes('命中后会白屏'))).toBe(true);
+      expect(warnSpy.mock.calls.some((args) => String(args[0]).includes('render a blank page'))).toBe(true);
   });
 });
