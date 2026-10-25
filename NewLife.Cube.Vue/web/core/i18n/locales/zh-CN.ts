@@ -337,13 +337,6 @@ export default {
   'route.loading': '加载中',
   'route.default': '默认页面',
 
-  // 参数管理（Admin/Parameter）
-  'param.title': '参数管理',
-  'param.kindNormal': '普通',
-  'param.kindSystem': '系统',
-  'param.kindUser': '用户',
-  'param.kindUnknown': '未知',
-
   // 用户连接管理
 
   // 审计日志
@@ -640,32 +633,6 @@ export default {
 
   // XCode 设置
 
-  // 用户统计
-  'userStat.title': '用户统计',
-  'userStat.subtitle': '查看用户访问统计数据',
-  'userStat.listTitle': '用户统计列表',
-  'userStat.date': '统计日期',
-  'userStat.total': '总数',
-  'userStat.logins': '登录数',
-  'userStat.oAuths': 'OAuth登录',
-  'userStat.maxOnline': '最大在线',
-  'userStat.actives': '活跃',
-  'userStat.activesT7': '7天活跃',
-  'userStat.activesT30': '30天活跃',
-  'userStat.news': '新用户',
-  'userStat.newsT7': '7天注册',
-  'userStat.newsT30': '30天注册',
-  'userStat.onlineTime': '在线时间',
-  'userStat.seconds': '秒',
-  'userStat.detailTitle': '用户统计详情',
-  'userStat.chartTitle': '用户统计趋势图',
-  'userStat.saveAsImage': '保存为图片',
-  'userStat.reset': '重置',
-  'userStat.zoom': '区域缩放',
-  'userStat.zoomBack': '区域缩放还原',
-  'userStat.userCount': '用户数',
-  'userStat.onlineDuration': '在线时长(秒)',
-
   // 安全中心
   'security.title': '安全中心',
   'security.mail': '邮箱',
@@ -838,7 +805,6 @@ export default {
   'lovConfig.saveSuccess': '保存成功',
   'lovConfig.saveFailed': '保存失败',
 
-
   'apiHome.title': 'Cube V1 API 管理系统',
   'apiHome.subtitle': '基于 v1_OpenAPI.json 自动生成的 API 管理界面',
   'apiHome.statsTitle': '📊 统计信息',
@@ -915,6 +881,15 @@ export default {
   'common.copy': '复制',
   'common.tip': '提示',
   'common.saveSuccess': '保存成功',
+
+  // 工作台部件管理（Cube/Widget）
+  'widgetAdmin.groupOrder': '分组顺序',
+  'widgetAdmin.itemOrder': '组内顺序',
+  'widgetAdmin.group': '分组',
+  'widgetAdmin.cols': '宽度',
+  'widgetAdmin.adminOnly': '仅管理员',
+  'widgetAdmin.moveUp': '上移',
+  'widgetAdmin.moveDown': '下移',
   'settingsCenter.unavailable': '暂无权限或加载失败',
   'common.addSuccess': '新增成功',
   'common.addFailed': '新增失败',

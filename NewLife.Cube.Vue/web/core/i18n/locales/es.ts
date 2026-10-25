@@ -326,11 +326,6 @@ export default {
   'route.default': 'Página predeterminada',
 
   // Parámetros
-  'param.title': 'Parámetros',
-  'param.kindNormal': 'Normal',
-  'param.kindSystem': 'Sistema',
-  'param.kindUser': 'Usuario',
-  'param.kindUnknown': 'Desconocido',
 
   // Conexiones de usuario
 
@@ -629,30 +624,6 @@ export default {
   // Configuración de XCode
 
   // Estadísticas de usuarios
-  'userStat.title': 'Estadísticas de usuarios',
-  'userStat.subtitle': 'Revise las estadísticas de visitas de usuarios',
-  'userStat.listTitle': 'Estadísticas de usuarios',
-  'userStat.date': 'Fecha',
-  'userStat.total': 'Total',
-  'userStat.logins': 'Inicios de sesión',
-  'userStat.oAuths': 'Inicios de sesión OAuth',
-  'userStat.maxOnline': 'Máximo en línea',
-  'userStat.actives': 'Activos',
-  'userStat.activesT7': 'Activos (7 días)',
-  'userStat.activesT30': 'Activos (30 días)',
-  'userStat.news': 'Nuevos usuarios',
-  'userStat.newsT7': 'Registrados (7 días)',
-  'userStat.newsT30': 'Registrados (30 días)',
-  'userStat.onlineTime': 'Tiempo en línea',
-  'userStat.seconds': ' s',
-  'userStat.detailTitle': 'Detalles de las estadísticas de usuarios',
-  'userStat.chartTitle': 'Tendencia de estadísticas de usuarios',
-  'userStat.saveAsImage': 'Guardar como imagen',
-  'userStat.reset': 'Restablecer',
-  'userStat.zoom': 'Zoom',
-  'userStat.zoomBack': 'Restaurar zoom',
-  'userStat.userCount': 'Usuarios',
-  'userStat.onlineDuration': 'Duración en línea (s)',
 
   // Centro de seguridad
   'security.title': 'Centro de seguridad',
@@ -903,6 +874,15 @@ export default {
   'common.copy': 'Copiar',
   'common.tip': 'Sugerencia',
   'common.saveSuccess': 'Guardado correctamente',
+
+  // 工作台部件管理（Cube/Widget）
+  'widgetAdmin.groupOrder': 'Orden de grupos',
+  'widgetAdmin.itemOrder': 'Orden interno',
+  'widgetAdmin.group': 'Grupo',
+  'widgetAdmin.cols': 'Ancho',
+  'widgetAdmin.adminOnly': 'Solo administradores',
+  'widgetAdmin.moveUp': 'Subir',
+  'widgetAdmin.moveDown': 'Bajar',
   'settingsCenter.unavailable': 'Sin permisos o error de carga',
   'common.addSuccess': 'Agregado correctamente',
   'common.addFailed': 'No se pudo agregar',

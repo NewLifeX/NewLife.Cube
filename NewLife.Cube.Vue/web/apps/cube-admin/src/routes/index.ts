@@ -36,14 +36,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/admin/role/index.vue'),
   },
 
-
-  // 用户统计（图表）
-  {
-    path: '/Admin/UserStat',
-    name: 'admin-user-stat',
-    component: () => import('../views/admin/user-stat/index.vue'),
-  },
-  // 值集管理（值集明细配置入口）
+  // 值集管理（手工「名值定义」的明细配置入口，MVC 侧同为自定义控制器）
   {
     path: '/Admin/Lov',
     name: 'admin-lov',

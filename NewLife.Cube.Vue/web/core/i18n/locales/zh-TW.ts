@@ -323,11 +323,6 @@ export default {
   'route.default': '預設頁面',
 
   // 參數管理（Admin/Parameter）
-  'param.title': '參數管理',
-  'param.kindNormal': '一般',
-  'param.kindSystem': '系統',
-  'param.kindUser': '使用者',
-  'param.kindUnknown': '未知',
 
   // 使用者連線管理
 
@@ -627,30 +622,6 @@ export default {
   // XCode 設定
 
   // 使用者統計
-  'userStat.title': '使用者統計',
-  'userStat.subtitle': '檢視使用者存取統計資料',
-  'userStat.listTitle': '使用者統計列表',
-  'userStat.date': '統計日期',
-  'userStat.total': '總數',
-  'userStat.logins': '登入數',
-  'userStat.oAuths': 'OAuth登入',
-  'userStat.maxOnline': '最大線上',
-  'userStat.actives': '活躍',
-  'userStat.activesT7': '7天活躍',
-  'userStat.activesT30': '30天活躍',
-  'userStat.news': '新使用者',
-  'userStat.newsT7': '7天註冊',
-  'userStat.newsT30': '30天註冊',
-  'userStat.onlineTime': '線上時間',
-  'userStat.seconds': '秒',
-  'userStat.detailTitle': '使用者統計詳情',
-  'userStat.chartTitle': '使用者統計趨勢圖',
-  'userStat.saveAsImage': '儲存為圖片',
-  'userStat.reset': '重設',
-  'userStat.zoom': '區域縮放',
-  'userStat.zoomBack': '區域縮放還原',
-  'userStat.userCount': '使用者數',
-  'userStat.onlineDuration': '線上時長(秒)',
 
   // 安全中心
   'security.title': '安全中心',
@@ -822,7 +793,6 @@ export default {
   'lovConfig.saveSuccess': '儲存成功',
   'lovConfig.saveFailed': '儲存失敗',
 
-
   'apiHome.title': 'Cube V1 API 管理系統',
   'apiHome.subtitle': '基於 v1_OpenAPI.json 自動產生的 API 管理介面',
   'apiHome.statsTitle': '📊 統計資訊',
@@ -899,6 +869,15 @@ export default {
   'common.copy': '複製',
   'common.tip': '提示',
   'common.saveSuccess': '儲存成功',
+
+  // 工作台部件管理（Cube/Widget）
+  'widgetAdmin.groupOrder': '分組順序',
+  'widgetAdmin.itemOrder': '組內順序',
+  'widgetAdmin.group': '分組',
+  'widgetAdmin.cols': '寬度',
+  'widgetAdmin.adminOnly': '僅管理員',
+  'widgetAdmin.moveUp': '上移',
+  'widgetAdmin.moveDown': '下移',
   'settingsCenter.unavailable': '暫無權限或載入失敗',
   'common.addSuccess': '新增成功',
   'common.addFailed': '新增失敗',

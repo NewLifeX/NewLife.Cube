@@ -325,11 +325,6 @@ export default {
   'route.default': '기본 페이지',
 
   // 매개변수
-  'param.title': '매개변수',
-  'param.kindNormal': '일반',
-  'param.kindSystem': '시스템',
-  'param.kindUser': '사용자',
-  'param.kindUnknown': '알 수 없음',
 
   // 사용자 연결
 
@@ -629,30 +624,6 @@ export default {
   // XCode 설정
 
   // 사용자 통계
-  'userStat.title': '사용자 통계',
-  'userStat.subtitle': '사용자 방문 통계 조회',
-  'userStat.listTitle': '사용자 통계',
-  'userStat.date': '날짜',
-  'userStat.total': '총계',
-  'userStat.logins': '로그인',
-  'userStat.oAuths': 'OAuth 로그인',
-  'userStat.maxOnline': '최대 동시 접속',
-  'userStat.actives': '활성',
-  'userStat.activesT7': '활성(7일)',
-  'userStat.activesT30': '활성(30일)',
-  'userStat.news': '신규 사용자',
-  'userStat.newsT7': '등록(7일)',
-  'userStat.newsT30': '등록(30일)',
-  'userStat.onlineTime': '온라인 시간',
-  'userStat.seconds': ' 초',
-  'userStat.detailTitle': '사용자 통계 상세',
-  'userStat.chartTitle': '사용자 통계 추이',
-  'userStat.saveAsImage': '이미지로 저장',
-  'userStat.reset': '초기화',
-  'userStat.zoom': '확대',
-  'userStat.zoomBack': '확대 복원',
-  'userStat.userCount': '사용자 수',
-  'userStat.onlineDuration': '온라인 시간(초)',
 
   // 보안 센터
   'security.title': '보안 센터',
@@ -824,7 +795,6 @@ export default {
   'lovConfig.saveSuccess': '저장되었습니다',
   'lovConfig.saveFailed': '저장에 실패했습니다',
 
-
   'apiHome.title': 'Cube V1 API 관리',
   'apiHome.subtitle': 'v1_OpenAPI.json으로 생성된 API 관리 화면',
   'apiHome.statsTitle': '📊 통계',
@@ -901,6 +871,15 @@ export default {
   'common.copy': '복사',
   'common.tip': '팁',
   'common.saveSuccess': '저장되었습니다',
+
+  // 工作台部件管理（Cube/Widget）
+  'widgetAdmin.groupOrder': '그룹 순서',
+  'widgetAdmin.itemOrder': '그룹 내 순서',
+  'widgetAdmin.group': '그룹',
+  'widgetAdmin.cols': '너비',
+  'widgetAdmin.adminOnly': '관리자 전용',
+  'widgetAdmin.moveUp': '위로',
+  'widgetAdmin.moveDown': '아래로',
   'settingsCenter.unavailable': '권한이 없거나 불러오지 못했습니다',
   'common.addSuccess': '추가되었습니다',
   'common.addFailed': '추가에 실패했습니다',

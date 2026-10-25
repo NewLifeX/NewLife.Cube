@@ -310,16 +310,7 @@ export default {
   'route.loading': 'جارٍ التحميل',
   'route.default': 'الصفحة الافتراضية',
 
-  'param.title': 'المعلمات',
-  'param.kindNormal': 'عادي',
-  'param.kindSystem': 'النظام',
-  'param.kindUser': 'المستخدم',
-  'param.kindUnknown': 'غير معروف',
-
-
-
   'coreSetting.enable': 'مفعّل',
-
 
   'db.title': 'قاعدة البيانات',
   'db.subtitle': 'نسخ احتياطي وإدارة قاعدة البيانات',
@@ -559,8 +550,6 @@ export default {
   'adminHome.labelStartTime': 'وقت البدء',
   'adminHome.labelUpTime': 'مدة التشغيل',
 
-
-
   'tenant.name': 'اسم المستأجر',
   'tenant.remarkHint': 'أدخل ملاحظة',
 
@@ -594,32 +583,6 @@ export default {
   'lovAdmin.confirmDelete': 'تأكيد الحذف',
 
   'common.loadFailed': 'فشل التحميل',
-
-
-  'userStat.title': 'إحصاءات المستخدمين',
-  'userStat.subtitle': 'مراجعة إحصاءات زيارات المستخدمين',
-  'userStat.listTitle': 'إحصاءات المستخدمين',
-  'userStat.date': 'التاريخ',
-  'userStat.total': 'الإجمالي',
-  'userStat.logins': 'تسجيلات الدخول',
-  'userStat.oAuths': 'دخول OAuth',
-  'userStat.maxOnline': 'ذروة المتصلين',
-  'userStat.actives': 'نشط',
-  'userStat.activesT7': 'نشط (7 أيام)',
-  'userStat.activesT30': 'نشط (30 يومًا)',
-  'userStat.news': 'مستخدمون جدد',
-  'userStat.newsT7': 'مسجلون (7 أيام)',
-  'userStat.newsT30': 'مسجلون (30 يومًا)',
-  'userStat.onlineTime': 'مدة الاتصال',
-  'userStat.seconds': ' ث',
-  'userStat.detailTitle': 'تفاصيل إحصاءات المستخدمين',
-  'userStat.chartTitle': 'اتجاه إحصاءات المستخدمين',
-  'userStat.saveAsImage': 'حفظ كصورة',
-  'userStat.reset': 'إعادة تعيين',
-  'userStat.zoom': 'تكبير',
-  'userStat.zoomBack': 'استعادة التكبير',
-  'userStat.userCount': 'المستخدمون',
-  'userStat.onlineDuration': 'مدة الاتصال (ث)',
 
   'security.title': 'مركز الأمان',
   'security.mail': 'البريد الإلكتروني',
@@ -786,7 +749,6 @@ export default {
   'lovConfig.saveSuccess': 'تم الحفظ',
   'lovConfig.saveFailed': 'فشل الحفظ',
 
-
   'apiHome.title': 'إدارة Cube V1 API',
   'apiHome.subtitle': 'واجهة إدارة API مولّدة من v1_OpenAPI.json',
   'apiHome.statsTitle': '📊 الإحصاءات',
@@ -863,6 +825,15 @@ export default {
   'common.copy': 'نسخ',
   'common.tip': 'تلميح',
   'common.saveSuccess': 'تم الحفظ بنجاح',
+
+  // 工作台部件管理（Cube/Widget）
+  'widgetAdmin.groupOrder': 'ترتيب المجموعات',
+  'widgetAdmin.itemOrder': 'ترتيب العناصر',
+  'widgetAdmin.group': 'المجموعة',
+  'widgetAdmin.cols': 'العرض',
+  'widgetAdmin.adminOnly': 'للمسؤولين فقط',
+  'widgetAdmin.moveUp': 'لأعلى',
+  'widgetAdmin.moveDown': 'لأسفل',
   'settingsCenter.unavailable': 'لا توجد صلاحية أو فشل التحميل',
   'common.addSuccess': 'تمت الإضافة بنجاح',
   'common.addFailed': 'فشلت الإضافة',

@@ -13,8 +13,8 @@ import AutoPage from '../../views/AutoPage.vue';
 const loadDefault = async (loader: () => Promise<{ default: unknown }>) => (await loader()).default;
 
 describe('menuRoutes 自定义视图解析', () => {
-  it('应该解析到业务自定义页 当存在 admin/parameter/index.vue 时', async () => {
-    const loader = resolvePageComponent('/Admin/Parameter');
+  it('应该解析到业务自定义页 当存在 admin/file/index.vue 时', async () => {
+    const loader = resolvePageComponent('/Admin/File');
 
     expect(typeof loader).toBe('function');
     const component = await loadDefault(loader);
@@ -23,7 +23,7 @@ describe('menuRoutes 自定义视图解析', () => {
   });
 
   it('应该支持带应用名的三段路径 当应用名参与视图查找时', async () => {
-    const component = await loadDefault(resolvePageComponent('/cube-admin/admin/parameter'));
+    const component = await loadDefault(resolvePageComponent('/cube-admin/admin/file'));
 
     expect(component).toBeTruthy();
     expect(component).not.toBe(AutoPage);
@@ -36,11 +36,11 @@ describe('menuRoutes 自定义视图解析', () => {
   });
 
   it('应该缓存同一路径的加载器 当重复解析时', () => {
-    expect(resolvePageComponent('/Admin/Parameter')).toBe(resolvePageComponent('/Admin/Parameter'));
+    expect(resolvePageComponent('/Admin/File')).toBe(resolvePageComponent('/Admin/File'));
   });
 
   it('应该准确判断自定义视图是否存在 供隐藏页入口使用', () => {
-    expect(hasMatchingCustomView('/Admin/Parameter')).toBe(true);
+    expect(hasMatchingCustomView('/Admin/File')).toBe(true);
     expect(hasMatchingCustomView('/Admin/NotExists')).toBe(false);
     expect(hasMatchingCustomView('')).toBe(false);
   });

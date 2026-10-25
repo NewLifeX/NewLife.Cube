@@ -339,11 +339,6 @@ export default {
   'route.default': 'Default page',
 
   // Parameters (Admin/Parameter)
-  'param.title': 'Parameters',
-  'param.kindNormal': 'Normal',
-  'param.kindSystem': 'System',
-  'param.kindUser': 'User',
-  'param.kindUnknown': 'Unknown',
 
   // User connections
 
@@ -643,30 +638,6 @@ export default {
   // XCode settings
 
   // User statistics
-  'userStat.title': 'User statistics',
-  'userStat.subtitle': 'Review user visit statistics',
-  'userStat.listTitle': 'User statistics',
-  'userStat.date': 'Date',
-  'userStat.total': 'Total',
-  'userStat.logins': 'Sign-ins',
-  'userStat.oAuths': 'OAuth sign-ins',
-  'userStat.maxOnline': 'Peak online',
-  'userStat.actives': 'Active',
-  'userStat.activesT7': 'Active (7 days)',
-  'userStat.activesT30': 'Active (30 days)',
-  'userStat.news': 'New users',
-  'userStat.newsT7': 'Registered (7 days)',
-  'userStat.newsT30': 'Registered (30 days)',
-  'userStat.onlineTime': 'Online time',
-  'userStat.seconds': ' s',
-  'userStat.detailTitle': 'User statistics details',
-  'userStat.chartTitle': 'User statistics trend',
-  'userStat.saveAsImage': 'Save as image',
-  'userStat.reset': 'Reset',
-  'userStat.zoom': 'Zoom',
-  'userStat.zoomBack': 'Restore zoom',
-  'userStat.userCount': 'Users',
-  'userStat.onlineDuration': 'Online duration (s)',
 
   // Security center
   'security.title': 'Security center',
@@ -841,7 +812,6 @@ export default {
   'lovConfig.saveSuccess': 'Saved',
   'lovConfig.saveFailed': 'Failed to save',
 
-
   'apiHome.title': 'Cube V1 API management',
   'apiHome.subtitle': 'API management UI generated from v1_OpenAPI.json',
   'apiHome.statsTitle': '📊 Statistics',
@@ -918,6 +888,15 @@ export default {
   'common.copy': 'Copy',
   'common.tip': 'Tip',
   'common.saveSuccess': 'Saved successfully',
+
+  // 工作台部件管理（Cube/Widget）
+  'widgetAdmin.groupOrder': 'Group order',
+  'widgetAdmin.itemOrder': 'Item order',
+  'widgetAdmin.group': 'Group',
+  'widgetAdmin.cols': 'Width',
+  'widgetAdmin.adminOnly': 'Admins only',
+  'widgetAdmin.moveUp': 'Move up',
+  'widgetAdmin.moveDown': 'Move down',
   'settingsCenter.unavailable': 'No permission or failed to load',
   'common.addSuccess': 'Added successfully',
   'common.addFailed': 'Failed to add',

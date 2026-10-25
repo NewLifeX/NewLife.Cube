@@ -329,11 +329,6 @@ export default {
   'route.default': 'Page par défaut',
 
   // Paramètres (Admin/Parameter)
-  'param.title': 'Paramètres',
-  'param.kindNormal': 'Normal',
-  'param.kindSystem': 'Système',
-  'param.kindUser': 'Utilisateur',
-  'param.kindUnknown': 'Inconnu',
 
   // Connexions utilisateur
 
@@ -633,30 +628,6 @@ export default {
   // Paramètres XCode
 
   // Statistiques utilisateur
-  'userStat.title': 'Statistiques utilisateur',
-  'userStat.subtitle': 'Consultez les statistiques de visite des utilisateurs',
-  'userStat.listTitle': 'Statistiques utilisateur',
-  'userStat.date': 'Date',
-  'userStat.total': 'Total',
-  'userStat.logins': 'Connexions',
-  'userStat.oAuths': 'Connexions OAuth',
-  'userStat.maxOnline': 'Pic en ligne',
-  'userStat.actives': 'Actifs',
-  'userStat.activesT7': 'Actifs (7 jours)',
-  'userStat.activesT30': 'Actifs (30 jours)',
-  'userStat.news': 'Nouveaux utilisateurs',
-  'userStat.newsT7': 'Inscrits (7 jours)',
-  'userStat.newsT30': 'Inscrits (30 jours)',
-  'userStat.onlineTime': 'Durée en ligne',
-  'userStat.seconds': ' s',
-  'userStat.detailTitle': 'Détails des statistiques utilisateur',
-  'userStat.chartTitle': 'Tendance des statistiques utilisateur',
-  'userStat.saveAsImage': 'Enregistrer comme image',
-  'userStat.reset': 'Réinitialiser',
-  'userStat.zoom': 'Zoom',
-  'userStat.zoomBack': 'Rétablir le zoom',
-  'userStat.userCount': 'Utilisateurs',
-  'userStat.onlineDuration': 'Durée en ligne (s)',
 
   // Centre de sécurité
   'security.title': 'Centre de sécurité',
@@ -908,6 +879,15 @@ export default {
   'common.copy': 'Copier',
   'common.tip': 'Astuce',
   'common.saveSuccess': 'Enregistré avec succès',
+
+  // 工作台部件管理（Cube/Widget）
+  'widgetAdmin.groupOrder': 'Ordre des groupes',
+  'widgetAdmin.itemOrder': 'Ordre interne',
+  'widgetAdmin.group': 'Groupe',
+  'widgetAdmin.cols': 'Largeur',
+  'widgetAdmin.adminOnly': 'Admins uniquement',
+  'widgetAdmin.moveUp': 'Monter',
+  'widgetAdmin.moveDown': 'Descendre',
   'settingsCenter.unavailable': 'Aucune autorisation ou échec du chargement',
   'common.addSuccess': 'Ajouté avec succès',
   'common.addFailed': 'Échec de l\'ajout',
