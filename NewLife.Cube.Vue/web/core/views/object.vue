@@ -8,6 +8,7 @@
  */
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import request from '@newlifex/cube-vue/core/utils/request';
 import { routeToApiPrefix } from '@newlifex/cube-vue/core/utils/url';
@@ -21,6 +22,7 @@ import type { BackendField } from '../engine/types';
 
 const props = withDefaults(defineProps<{ data?: any; apiPrefix?: string }>(), {});
 const route = useRoute();
+const { t } = useI18n();
 const apiPrefix = computed(() => props.apiPrefix || routeToApiPrefix(String(route.path)));
 
 const fields = ref<FieldMeta[]>([]);
@@ -55,7 +57,7 @@ async function handleSubmit() {
   try {
     const payload = serializeSubmitModel(model.value, fields.value);
     await request({ url: apiPrefix.value, method: 'put', data: payload });
-    ElMessage.success('保存成功');
+    ElMessage.success(t('common.saveSuccess'));
   } catch (e) {
     /* 错误已由 request 拦截器提示 */
   } finally {
@@ -68,7 +70,7 @@ onMounted(load);
 
 <template>
   <div class="object-page" v-loading="loading">
-    <FormPageHeader :title="(route.meta?.title as string) || '设置'" />
+    <FormPageHeader :title="(route.meta?.title as string) || t('objectPage.settings')" />
     <FormContent
       :fields="fields"
       :model-value="model"

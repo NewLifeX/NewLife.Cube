@@ -6,6 +6,7 @@
  * 不引入 ECharts，避免为了两张 0-100 曲线增加首屏运行时。
  */
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { MonitorPoint } from '../../types/workbench';
 import { buildSparkPoints, formatMemory, formatPercent } from './chart';
 
@@ -15,6 +16,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), { points: () => [] });
+const { t } = useI18n();
 
 const CHART_WIDTH = 600;
 const CHART_HEIGHT = 160;
@@ -41,14 +43,19 @@ const memoryPoints = computed(() =>
       </span>
       <span class="wb-legend-item memory">
         <i class="wb-dot"></i>
-        内存
+        {{ t('workbench.memory') }}
         <b>{{ formatPercent(latest?.memory ?? 0) }}</b>
       </span>
       <span class="wb-monitor-memory">{{ formatMemory(latest?.memUsed, latest?.memTotal) }}</span>
     </div>
 
     <div v-if="points.length" class="wb-monitor-chart">
-      <svg viewBox="0 0 600 160" preserveAspectRatio="none" role="img" aria-label="CPU 与内存使用率曲线">
+      <svg
+        viewBox="0 0 600 160"
+        preserveAspectRatio="none"
+        role="img"
+        :aria-label="t('workbench.monitorChartLabel')"
+      >
         <line
           v-for="ratio in GRID_LINES"
           :key="ratio"
@@ -62,7 +69,7 @@ const memoryPoints = computed(() =>
         <polyline class="wb-line memory" :points="memoryPoints" />
       </svg>
     </div>
-    <el-empty v-else :image-size="48" description="等待监控数据…" />
+    <el-empty v-else :image-size="48" :description="t('workbench.waitingMonitorData')" />
   </div>
 </template>
 

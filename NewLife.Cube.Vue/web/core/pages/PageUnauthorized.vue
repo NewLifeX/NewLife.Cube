@@ -5,16 +5,18 @@
         <img
           class="unauthorized-img"
           src="https://cdn.jsdelivr.net/gh/element-plus/element-plus@latest/docs/public/404.png"
-          alt="未授权"
+          alt="unauthorized"
         />
       </el-col>
       <el-col :span="24" class="text-col">
         <div class="unauthorized-text">
-          抱歉，您未登录或身份认证已失效，请点击下方按钮重新登录！
+          {{ t('pageUnauthorized.desc') }}
         </div>
       </el-col>
       <el-col :span="24" class="btn-col">
-        <el-button type="primary" size="large" @click="goLogin">立即跳转</el-button>
+        <el-button type="primary" size="large" @click="goLogin">
+          {{ t('pageUnauthorized.goLogin') }}
+        </el-button>
       </el-col>
     </el-row>
   </div>
@@ -22,10 +24,12 @@
 
 <script setup lang="ts">
 import { ElButton, ElRow, ElCol } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { getConfig } from '../configure';
 
 const router = useRouter();
+const { t } = useI18n();
 const {
   auth: { reLoginParams },
 } = getConfig();

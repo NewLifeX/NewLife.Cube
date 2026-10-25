@@ -1733,4 +1733,20 @@ export default {
   'iconSelector.select': '选择图标',
   'iconSelector.search': '搜索图标',
   'iconSelector.empty': '无匹配图标',
+
+  'pageNotFound.title': '页面不存在',
+  'pageNotFound.desc': '当前页面不存在或已被移动，请返回首页继续操作。',
+  'pageNotFound.backHome': '返回首页',
+
+  'pageUnauthorized.desc': '抱歉，您未登录或身份认证已失效，请点击下方按钮重新登录！',
+  'pageUnauthorized.goLogin': '立即跳转',
+
+  'listChart.title': '图表',
+  'listChart.empty': '暂无图表数据',
+  'listChart.loadFailed': '获取图表失败',
+
+  'objectPage.settings': '设置',
+
+  'workbench.monitorChartLabel': 'CPU 与内存使用率曲线',
+  'workbench.waitingMonitorData': '等待监控数据…',
 };

@@ -8,6 +8,7 @@
  */
 import { inject, provide, defineAsyncComponent, ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import type { Component } from 'vue';
 import request from '@newlifex/cube-vue/core/utils/request';
@@ -49,6 +50,7 @@ const emit = defineEmits<{
 
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 
 const registry = inject(
   PageSectionRegistryKey,
@@ -130,15 +132,15 @@ async function handleSubmit() {
       if (isEdit.value) {
         const editId = route.query.id ?? model.id ?? model.Id;
         await request({ url: `${apiPrefix.value}/${editId}`, method: 'put', data: model });
-        ElMessage.success('更新成功');
+        ElMessage.success(t('common.updateSuccess'));
       } else {
         await request({ url: apiPrefix.value, method: 'post', data: model });
-        ElMessage.success('新增成功');
+        ElMessage.success(t('common.addSuccess'));
       }
       router.back();
     } catch (err: any) {
       // 全局响应拦截器已统一弹出错误提示，业务层无需重复 toast
-      console.error('[DefaultForm] 保存失败:', err);
+      console.error('[DefaultForm] save failed:', err);
     } finally {
       isSubmitting.value = false;
     }

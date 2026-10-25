@@ -7,6 +7,7 @@
  * echarts 由弹窗组件懒加载，未点按钮时不进包。
  */
 import { computed, defineAsyncComponent, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { DataLine } from '@element-plus/icons-vue';
 import request from '../../utils/request';
@@ -20,7 +21,7 @@ const props = withDefaults(
     /** 按钮文案 */
     label?: string;
   }>(),
-  { api: undefined, label: '图表' },
+  { api: undefined, label: undefined },
 );
 
 const ChartDialog = defineAsyncComponent(
@@ -28,6 +29,8 @@ const ChartDialog = defineAsyncComponent(
 );
 
 const route = useRoute();
+const { t } = useI18n();
+const labelText = computed(() => props.label ?? t('listChart.title'));
 const prefix = computed(() => props.api ?? routeToApiPrefix(route.path));
 const visible = ref(false);
 const charts = ref<Record<string, unknown>[]>([]);
@@ -40,12 +43,12 @@ async function open(): Promise<void> {
     charts.value = Array.isArray(data) ? (data as Record<string, unknown>[]) : [];
     visible.value = true;
   } catch (err) {
-    ElMessage.error(err instanceof Error ? err.message : '获取图表失败');
+    ElMessage.error(err instanceof Error ? err.message : t('listChart.loadFailed'));
   }
 }
 </script>
 
 <template>
-  <el-button :icon="DataLine" @click="open">{{ label }}</el-button>
+    <el-button :icon="DataLine" @click="open">{{ labelText }}</el-button>
   <ChartDialog v-model:visible="visible" :charts="charts" />
 </template>

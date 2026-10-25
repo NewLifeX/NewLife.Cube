@@ -1,16 +1,16 @@
 ﻿<template>
   <div class="page-not-found">
     <div class="status-code">404</div>
-    <h1 class="title">页面不存在</h1>
-    <p class="desc">当前页面不存在或已被移动，请返回首页继续操作。</p>
-    <router-link to="/" class="home-link">返回首页</router-link>
+    <h1 class="title">{{ t('pageNotFound.title') }}</h1>
+    <p class="desc">{{ t('pageNotFound.desc') }}</p>
+    <router-link to="/" class="home-link">{{ t('pageNotFound.backHome') }}</router-link>
   </div>
 </template>
 
-<script lang="ts">
-export default {
-  name: 'PageNotFound',
-}
+<script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 </script>
 
 <style scoped>

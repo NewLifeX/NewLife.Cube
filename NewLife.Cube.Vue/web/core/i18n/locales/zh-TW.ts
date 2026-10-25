@@ -1717,4 +1717,20 @@ export default {
   'iconSelector.select': '選擇圖示',
   'iconSelector.search': '搜尋圖示',
   'iconSelector.empty': '無符合圖示',
+
+  'pageNotFound.title': '頁面不存在',
+  'pageNotFound.desc': '目前頁面不存在或已被移動，請返回首頁繼續操作。',
+  'pageNotFound.backHome': '返回首頁',
+
+  'pageUnauthorized.desc': '抱歉，您未登入或身分驗證已失效，請點擊下方按鈕重新登入！',
+  'pageUnauthorized.goLogin': '立即前往',
+
+  'listChart.title': '圖表',
+  'listChart.empty': '暫無圖表資料',
+  'listChart.loadFailed': '取得圖表失敗',
+
+  'objectPage.settings': '設定',
+
+  'workbench.monitorChartLabel': 'CPU 與記憶體使用率曲線',
+  'workbench.waitingMonitorData': '等待監控資料…',
 };

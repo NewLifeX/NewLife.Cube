@@ -1757,4 +1757,22 @@ export default {
   'iconSelector.select': 'Select an icon',
   'iconSelector.search': 'Search icons',
   'iconSelector.empty': 'No matching icon',
+
+  'pageNotFound.title': 'Page not found',
+  'pageNotFound.desc':
+    'The page does not exist or has been moved. Please go back to the home page.',
+  'pageNotFound.backHome': 'Back to home',
+
+  'pageUnauthorized.desc':
+    'Sorry, you are not signed in or your session has expired. Please click the button below to sign in again.',
+  'pageUnauthorized.goLogin': 'Sign in now',
+
+  'listChart.title': 'Charts',
+  'listChart.empty': 'No chart data',
+  'listChart.loadFailed': 'Failed to load the charts',
+
+  'objectPage.settings': 'Settings',
+
+  'workbench.monitorChartLabel': 'CPU and memory usage chart',
+  'workbench.waitingMonitorData': 'Waiting for monitoring data...',
 };

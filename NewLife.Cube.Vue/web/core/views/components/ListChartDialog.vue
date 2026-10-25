@@ -7,6 +7,7 @@
  * 由列表页懒加载（defineAsyncComponent），仅在点击「图表」时载入 echarts。
  */
 import VChart from 'vue-echarts';
+import { useI18n } from 'vue-i18n';
 import { use } from 'echarts/core';
 import {
   TitleComponent,
@@ -56,17 +57,19 @@ const emit = defineEmits<{ (e: 'update:visible', value: boolean): void }>();
 function close() {
   emit('update:visible', false);
 }
+
+const { t } = useI18n();
 </script>
 
 <template>
   <el-dialog
     :model-value="visible"
-    title="图表"
+    :title="t('listChart.title')"
     width="880px"
     destroy-on-close
     @update:model-value="(v: boolean) => emit('update:visible', v)"
   >
-    <div v-if="charts.length === 0" class="chart-empty">暂无图表数据</div>
+      <div v-if="charts.length === 0" class="chart-empty">{{ t('listChart.empty') }}</div>
     <div v-else class="chart-list">
       <div v-for="(item, idx) in charts" :key="idx" class="chart-item">
         <h3 v-if="item.title" class="chart-item__title">{{ item.title }}</h3>
@@ -74,7 +77,7 @@ function close() {
       </div>
     </div>
     <template #footer>
-      <el-button @click="close">关闭</el-button>
+        <el-button @click="close">{{ t('button.close') }}</el-button>
     </template>
   </el-dialog>
 </template>
